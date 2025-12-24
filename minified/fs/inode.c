@@ -12,15 +12,18 @@
 #include <linux/mount.h>
 #include <linux/tracepoint.h>
 
-static inline int inode_has_buffers(struct inode *inode) { return 0; }
+static inline int inode_has_buffers(struct inode *inode)
+{
+	return 0;
+}
 #include <linux/ratelimit.h>
 #include <linux/list_lru.h>
 #include "internal.h"
 
 /* Inlined from iversion.h - only used in this file */
-#define I_VERSION_QUERIED_SHIFT	(1)
-#define I_VERSION_QUERIED	(1ULL << (I_VERSION_QUERIED_SHIFT - 1))
-#define I_VERSION_INCREMENT	(1ULL << I_VERSION_QUERIED_SHIFT)
+#define I_VERSION_QUERIED_SHIFT (1)
+#define I_VERSION_QUERIED (1ULL << (I_VERSION_QUERIED_SHIFT - 1))
+#define I_VERSION_INCREMENT (1ULL << I_VERSION_QUERIED_SHIFT)
 
 static inline u64 inode_peek_iversion_raw(const struct inode *inode)
 {
@@ -54,15 +57,12 @@ static unsigned int i_hash_shift __read_mostly;
 static struct hlist_head *inode_hashtable __read_mostly;
 static __cacheline_aligned_in_smp DEFINE_SPINLOCK(inode_hash_lock);
 
-const struct address_space_operations empty_aops = {
-};
+const struct address_space_operations empty_aops = {};
 
 static DEFINE_PER_CPU(unsigned long, nr_inodes);
 static DEFINE_PER_CPU(unsigned long, nr_unused);
 
 static struct kmem_cache *inode_cachep __read_mostly;
-
-
 
 static int no_open(struct inode *inode, struct file *file)
 {
@@ -72,7 +72,7 @@ static int no_open(struct inode *inode, struct file *file)
 int inode_init_always(struct super_block *sb, struct inode *inode)
 {
 	static const struct inode_operations empty_iops;
-	static const struct file_operations no_open_fops = {.open = no_open};
+	static const struct file_operations no_open_fops = { .open = no_open };
 	struct address_space *const mapping = &inode->i_data;
 
 	inode->i_sb = sb;
@@ -126,7 +126,7 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 				   "mapping.invalidate_lock");
 	inode->i_private = NULL;
 	inode->i_mapping = mapping;
-	INIT_HLIST_HEAD(&inode->i_dentry);	
+	INIT_HLIST_HEAD(&inode->i_dentry);
 
 	inode->i_flctx = NULL;
 	this_cpu_inc(nr_inodes);
@@ -242,7 +242,6 @@ static void __address_space_init_once(struct address_space *mapping)
 	mapping->i_mmap = RB_ROOT_CACHED;
 }
 
-
 void inode_init_once(struct inode *inode)
 {
 	memset(inode, 0, sizeof(*inode));
@@ -257,7 +256,7 @@ void inode_init_once(struct inode *inode)
 
 static void init_once(void *foo)
 {
-	struct inode *inode = (struct inode *) foo;
+	struct inode *inode = (struct inode *)foo;
 
 	inode_init_once(inode);
 }
@@ -316,7 +315,6 @@ static inline void inode_sb_list_del(struct inode *inode)
 	}
 }
 
-
 void __remove_inode_hash(struct inode *inode)
 {
 	spin_lock(&inode_hash_lock);
@@ -326,19 +324,17 @@ void __remove_inode_hash(struct inode *inode)
 	spin_unlock(&inode_hash_lock);
 }
 
-
 void clear_inode(struct inode *inode)
 {
-	
 	xa_lock_irq(&inode->i_data.i_pages);
 	BUG_ON(inode->i_data.nrpages);
-	
+
 	xa_unlock_irq(&inode->i_data.i_pages);
 	BUG_ON(!list_empty(&inode->i_data.private_list));
 	BUG_ON(!(inode->i_state & I_FREEING));
 	BUG_ON(inode->i_state & I_CLEAR);
 	BUG_ON(!list_empty(&inode->i_wb_list));
-	
+
 	inode->i_state = I_FREEING | I_CLEAR;
 }
 
@@ -422,13 +418,13 @@ again:
 	dispose_list(&dispose);
 }
 
-
 static enum lru_status inode_lru_isolate(struct list_head *item,
-		struct list_lru_one *lru, spinlock_t *lru_lock, void *arg)
+					 struct list_lru_one *lru,
+					 spinlock_t *lru_lock, void *arg)
 {
 	/* Stub: simplified inode LRU isolation for minimal kernel */
 	struct list_head *freeable = arg;
-	struct inode	*inode = container_of(item, struct inode, i_lru);
+	struct inode *inode = container_of(item, struct inode, i_lru);
 
 	if (!spin_trylock(&inode->i_lock))
 		return LRU_SKIP;
@@ -452,12 +448,11 @@ long prune_icache_sb(struct super_block *sb, struct shrink_control *sc)
 	LIST_HEAD(freeable);
 	long freed;
 
-	freed = list_lru_shrink_walk(&sb->s_inode_lru, sc,
-				     inode_lru_isolate, &freeable);
+	freed = list_lru_shrink_walk(&sb->s_inode_lru, sc, inode_lru_isolate,
+				     &freeable);
 	dispose_list(&freeable);
 	return freed;
 }
-
 
 #define LAST_INO_BATCH 1024
 static DEFINE_PER_CPU(unsigned int, last_ino);
@@ -468,7 +463,7 @@ unsigned int get_next_ino(void)
 	unsigned int res = *p;
 
 	res++;
-	
+
 	if (unlikely(!res))
 		res++;
 	*p = res;
@@ -512,10 +507,11 @@ void unlock_new_inode(struct inode *inode)
 	spin_unlock(&inode->i_lock);
 }
 
-
-
 /* Used by ramfs */
-int generic_delete_inode(struct inode *inode) { return 1; }
+int generic_delete_inode(struct inode *inode)
+{
+	return 1;
+}
 
 static void iput_final(struct inode *inode)
 {
@@ -531,8 +527,7 @@ static void iput_final(struct inode *inode)
 	else
 		drop = generic_drop_inode(inode);
 
-	if (!drop &&
-	    !(inode->i_state & I_DONTCACHE) &&
+	if (!drop && !(inode->i_state & I_DONTCACHE) &&
 	    (sb->s_flags & SB_ACTIVE)) {
 		__inode_add_lru(inode, true);
 		spin_unlock(&inode->i_lock);
@@ -579,25 +574,25 @@ retry:
 }
 
 static int relatime_need_update(struct vfsmount *mnt, struct inode *inode,
-			     struct timespec64 now)
+				struct timespec64 now)
 {
-
 	if (!(mnt->mnt_flags & MNT_RELATIME))
 		return 1;
-	
+
 	if (timespec64_compare(&inode->i_mtime, &inode->i_atime) >= 0)
 		return 1;
-	
+
 	if (timespec64_compare(&inode->i_ctime, &inode->i_atime) >= 0)
 		return 1;
 
-	if ((long)(now.tv_sec - inode->i_atime.tv_sec) >= 24*60*60)
+	if ((long)(now.tv_sec - inode->i_atime.tv_sec) >= 24 * 60 * 60)
 		return 1;
-	
+
 	return 0;
 }
 
-static int generic_update_time(struct inode *inode, struct timespec64 *time, int flags)
+static int generic_update_time(struct inode *inode, struct timespec64 *time,
+			       int flags)
 {
 	int dirty_flags = 0;
 
@@ -675,7 +670,7 @@ void touch_atime(const struct path *path)
 
 	if (__mnt_want_write(mnt) != 0)
 		goto skip_update;
-	
+
 	now = current_time(inode);
 	inode_update_time(inode, &now, S_ATIME);
 	__mnt_drop_write(mnt);
@@ -724,7 +719,7 @@ static int __remove_privs(struct user_namespace *mnt_userns,
 	struct iattr newattrs;
 
 	newattrs.ia_valid = ATTR_FORCE | kill;
-	
+
 	return notify_change(mnt_userns, dentry, &newattrs, NULL);
 }
 
@@ -781,50 +776,31 @@ int file_update_time(struct file *file)
 	return ret;
 }
 
-
 static __initdata unsigned long ihash_entries;
 
 void __init inode_init_early(void)
 {
-	
 	if (hashdist)
 		return;
 
-	inode_hashtable =
-		alloc_large_system_hash("Inode-cache",
-					sizeof(struct hlist_head),
-					ihash_entries,
-					14,
-					HASH_EARLY | HASH_ZERO,
-					&i_hash_shift,
-					&i_hash_mask,
-					0,
-					0);
+	inode_hashtable = alloc_large_system_hash(
+		"Inode-cache", sizeof(struct hlist_head), ihash_entries, 14,
+		HASH_EARLY | HASH_ZERO, &i_hash_shift, &i_hash_mask, 0, 0);
 }
 
 void __init inode_init(void)
 {
-	
-	inode_cachep = kmem_cache_create("inode_cache",
-					 sizeof(struct inode),
-					 0,
-					 (SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|
-					 SLAB_MEM_SPREAD|SLAB_ACCOUNT),
+	inode_cachep = kmem_cache_create("inode_cache", sizeof(struct inode), 0,
+					 (SLAB_RECLAIM_ACCOUNT | SLAB_PANIC |
+					  SLAB_MEM_SPREAD | SLAB_ACCOUNT),
 					 init_once);
 
 	if (!hashdist)
 		return;
 
-	inode_hashtable =
-		alloc_large_system_hash("Inode-cache",
-					sizeof(struct hlist_head),
-					ihash_entries,
-					14,
-					HASH_ZERO,
-					&i_hash_shift,
-					&i_hash_mask,
-					0,
-					0);
+	inode_hashtable = alloc_large_system_hash(
+		"Inode-cache", sizeof(struct hlist_head), ihash_entries, 14,
+		HASH_ZERO, &i_hash_shift, &i_hash_mask, 0, 0);
 }
 
 void init_special_inode(struct inode *inode, umode_t mode, dev_t rdev)
@@ -839,11 +815,11 @@ void init_special_inode(struct inode *inode, umode_t mode, dev_t rdev)
 	} else if (S_ISFIFO(mode))
 		inode->i_fop = &pipefifo_fops;
 	else if (S_ISSOCK(mode))
-		;	
+		;
 	else
 		printk(KERN_DEBUG "init_special_inode: bogus i_mode (%o) for"
-				  " inode %s:%lu\n", mode, inode->i_sb->s_id,
-				  inode->i_ino);
+				  " inode %s:%lu\n",
+		       mode, inode->i_sb->s_id, inode->i_ino);
 }
 
 void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,
@@ -895,7 +871,7 @@ struct timespec64 timestamp_truncate(struct timespec64 t, struct inode *inode)
 		t.tv_nsec = 0;
 
 	if (gran == 1)
-		; 
+		;
 	else if (gran == NSEC_PER_SEC)
 		t.tv_nsec = 0;
 	else if (gran > 1 && gran < NSEC_PER_SEC)
@@ -912,7 +888,8 @@ struct timespec64 current_time(struct inode *inode)
 	ktime_get_coarse_real_ts64(&now);
 
 	if (unlikely(!inode->i_sb)) {
-		WARN(1, "current_time() called with uninitialized super_block in the inode");
+		WARN(1,
+		     "current_time() called with uninitialized super_block in the inode");
 		return now;
 	}
 

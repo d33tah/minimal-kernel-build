@@ -17,22 +17,23 @@
 #include <linux/mod_devicetable.h>
 #include <asm/cpufeature.h>
 #ifndef CPU_FEATURE_TYPEFMT
-#define CPU_FEATURE_TYPEFMT	"%s"
+#define CPU_FEATURE_TYPEFMT "%s"
 #endif
 #ifndef CPU_FEATURE_TYPEVAL
-#define CPU_FEATURE_TYPEVAL	ELF_PLATFORM
+#define CPU_FEATURE_TYPEVAL ELF_PLATFORM
 #endif
-#define module_cpu_feature_match(x, __initfunc)			\
-static struct cpu_feature const __maybe_unused cpu_feature_match_ ## x[] = \
-	{ { .feature = cpu_feature(x) }, { } };			\
-MODULE_DEVICE_TABLE(cpu, cpu_feature_match_ ## x);		\
-static int __init cpu_feature_match_ ## x ## _init(void)	\
-{								\
-	if (!cpu_have_feature(cpu_feature(x)))			\
-		return -ENODEV;					\
-	return __initfunc();					\
-}								\
-module_init(cpu_feature_match_ ## x ## _init)
+#define module_cpu_feature_match(x, __initfunc)                            \
+	static struct cpu_feature const __maybe_unused                     \
+		cpu_feature_match_##x[] = { { .feature = cpu_feature(x) }, \
+					    {} };                          \
+	MODULE_DEVICE_TABLE(cpu, cpu_feature_match_##x);                   \
+	static int __init cpu_feature_match_##x##_init(void)               \
+	{                                                                  \
+		if (!cpu_have_feature(cpu_feature(x)))                     \
+			return -ENODEV;                                    \
+		return __initfunc();                                       \
+	}                                                                  \
+	module_init(cpu_feature_match_##x##_init)
 #include <linux/pm_qos.h>
 #include <linux/sched/isolation.h>
 
@@ -40,13 +41,11 @@ module_init(cpu_feature_match_ ## x ## _init)
 
 static int cpu_subsys_match(struct device *dev, struct device_driver *drv)
 {
-	 
 	if (acpi_driver_match_device(dev, drv))
 		return 1;
 
 	return 0;
 }
-
 
 struct bus_type cpu_subsys = {
 	.name = "cpu",
@@ -54,15 +53,12 @@ struct bus_type cpu_subsys = {
 	.match = cpu_subsys_match,
 };
 
-
-
 struct cpu_attr {
 	struct device_attribute attr;
 	const struct cpumask *const map;
 };
 
-static ssize_t show_cpus_attr(struct device *dev,
-			      struct device_attribute *attr,
+static ssize_t show_cpus_attr(struct device *dev, struct device_attribute *attr,
 			      char *buf)
 {
 	struct cpu_attr *ca = container_of(attr, struct cpu_attr, attr);
@@ -70,8 +66,7 @@ static ssize_t show_cpus_attr(struct device *dev,
 	return cpumap_print_to_pagebuf(true, buf, ca->map);
 }
 
-#define _CPU_ATTR(name, map) \
-	{ __ATTR(name, 0444, show_cpus_attr, NULL), map }
+#define _CPU_ATTR(name, map) { __ATTR(name, 0444, show_cpus_attr, NULL), map }
 
 static struct cpu_attr cpu_attrs[] = {
 	_CPU_ATTR(online, &__cpu_online_mask),
@@ -79,17 +74,14 @@ static struct cpu_attr cpu_attrs[] = {
 	_CPU_ATTR(present, &__cpu_present_mask),
 };
 
-
 static void device_create_release(struct device *dev)
 {
 	kfree(dev);
 }
 
-__printf(4, 0)
-static struct device *
-__cpu_device_create(struct device *parent, void *drvdata,
-		    const struct attribute_group **groups,
-		    const char *fmt, va_list args)
+__printf(4, 0) static struct device *__cpu_device_create(
+	struct device *parent, void *drvdata,
+	const struct attribute_group **groups, const char *fmt, va_list args)
 {
 	struct device *dev = NULL;
 	int retval = -ENOMEM;
@@ -134,12 +126,9 @@ struct device *cpu_device_create(struct device *parent, void *drvdata,
 }
 
 /* Stub: CPU sysfs attributes minimized */
-static struct attribute *cpu_root_attrs[] = {
-	&cpu_attrs[0].attr.attr,
-	&cpu_attrs[1].attr.attr,
-	&cpu_attrs[2].attr.attr,
-	NULL
-};
+static struct attribute *cpu_root_attrs[] = { &cpu_attrs[0].attr.attr,
+					      &cpu_attrs[1].attr.attr,
+					      &cpu_attrs[2].attr.attr, NULL };
 
 static const struct attribute_group cpu_root_attr_group = {
 	.attrs = cpu_root_attrs,

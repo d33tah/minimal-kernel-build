@@ -4,7 +4,6 @@
 #include <linux/binfmts.h>
 #include <linux/mm.h>
 
-
 int cap_capable(const struct cred *cred, struct user_namespace *targ_ns,
 		int cap, unsigned int opts)
 {

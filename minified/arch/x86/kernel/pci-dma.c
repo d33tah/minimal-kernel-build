@@ -1,12 +1,17 @@
 #include <linux/dma-map-ops.h>
 #include <linux/dma-direct.h>
 #include <linux/iommu.h>
-static inline void detect_intel_iommu(void) { }
+static inline void detect_intel_iommu(void)
+{
+}
 #include <linux/export.h>
 #include <linux/memblock.h>
 #include <linux/gfp.h>
 #include <linux/pci.h>
-static inline int amd_iommu_detect(void) { return -ENODEV; }
+static inline int amd_iommu_detect(void)
+{
+	return -ENODEV;
+}
 
 #include <asm/proto.h>
 #include <asm/iommu.h>
@@ -37,13 +42,10 @@ void __init pci_iommu_alloc(void)
 	swiotlb_init(x86_swiotlb_enable, x86_swiotlb_flags);
 }
 
-
 static int __init pci_iommu_init(void)
 {
 	x86_init.iommu.iommu_init();
 
-
 	return 0;
 }
 rootfs_initcall(pci_iommu_init);
-

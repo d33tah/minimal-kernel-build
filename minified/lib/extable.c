@@ -7,7 +7,7 @@
 #include <linux/extable.h>
 
 #ifndef ARCH_HAS_RELATIVE_EXTABLE
-#define ex_to_insn(x)	((x)->insn)
+#define ex_to_insn(x) ((x)->insn)
 #else
 static inline unsigned long ex_to_insn(const struct exception_table_entry *x)
 {
@@ -16,7 +16,7 @@ static inline unsigned long ex_to_insn(const struct exception_table_entry *x)
 #endif
 
 #ifndef ARCH_HAS_RELATIVE_EXTABLE
-#define swap_ex		NULL
+#define swap_ex NULL
 #else
 static void swap_ex(void *a, void *b, int size)
 {
@@ -34,13 +34,12 @@ static void swap_ex(void *a, void *b, int size)
 	y->fixup = tmp.fixup - delta;
 #endif
 }
-#endif  
+#endif
 
 static int cmp_ex_sort(const void *a, const void *b)
 {
 	const struct exception_table_entry *x = a, *y = b;
 
-	 
 	if (ex_to_insn(x) > ex_to_insn(y))
 		return 1;
 	if (ex_to_insn(x) < ex_to_insn(y))
@@ -55,13 +54,11 @@ void sort_extable(struct exception_table_entry *start,
 	     cmp_ex_sort, swap_ex);
 }
 
-
 static int cmp_ex_search(const void *key, const void *elt)
 {
 	const struct exception_table_entry *_elt = elt;
 	unsigned long _key = *(unsigned long *)key;
 
-	 
 	if (_key > ex_to_insn(_elt))
 		return 1;
 	if (_key < ex_to_insn(_elt))
@@ -70,10 +67,9 @@ static int cmp_ex_search(const void *key, const void *elt)
 }
 
 const struct exception_table_entry *
-search_extable(const struct exception_table_entry *base,
-	       const size_t num,
+search_extable(const struct exception_table_entry *base, const size_t num,
 	       unsigned long value)
 {
-	return bsearch(&value, base, num,
-		       sizeof(struct exception_table_entry), cmp_ex_search);
+	return bsearch(&value, base, num, sizeof(struct exception_table_entry),
+		       cmp_ex_search);
 }

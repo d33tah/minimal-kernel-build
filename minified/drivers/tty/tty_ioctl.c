@@ -49,27 +49,34 @@ void tty_unthrottle(struct tty_struct *tty)
 	up_write(&tty->termios_rwsem);
 }
 
-
 void tty_wait_until_sent(struct tty_struct *tty, long timeout)
 {
-	 
 }
 
 /* tty_termios_copy_hw, tty_termios_hw_change, tty_get_char_size, tty_get_frame_size stubbed - no callers */
-void tty_termios_copy_hw(struct ktermios *new, struct ktermios *old) { }
-int tty_termios_hw_change(const struct ktermios *a, const struct ktermios *b) { return 0; }
-unsigned char tty_get_char_size(unsigned int cflag) { return 8; }
-unsigned char tty_get_frame_size(unsigned int cflag) { return 10; }
-
+void tty_termios_copy_hw(struct ktermios *new, struct ktermios *old)
+{
+}
+int tty_termios_hw_change(const struct ktermios *a, const struct ktermios *b)
+{
+	return 0;
+}
+unsigned char tty_get_char_size(unsigned int cflag)
+{
+	return 8;
+}
+unsigned char tty_get_frame_size(unsigned int cflag)
+{
+	return 10;
+}
 
 int tty_mode_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg)
 {
-
 	return -ENOIOCTLCMD;
 }
 
-int n_tty_ioctl_helper(struct tty_struct *tty, unsigned int cmd, unsigned long arg)
+int n_tty_ioctl_helper(struct tty_struct *tty, unsigned int cmd,
+		       unsigned long arg)
 {
-	 
 	return tty_mode_ioctl(tty, cmd, arg);
 }

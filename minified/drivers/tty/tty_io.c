@@ -42,24 +42,26 @@
 #include <linux/nsproxy.h>
 #include "tty.h"
 
-#define tty_debug_hangup(tty, f, args...)	do { } while (0)
+#define tty_debug_hangup(tty, f, args...) \
+	do {                              \
+	} while (0)
 
 #define TTY_PARANOIA_CHECK 1
 #define CHECK_TTY_COUNT 1
 
-struct ktermios tty_std_termios = {	
+struct ktermios tty_std_termios = {
 	.c_iflag = ICRNL | IXON,
 	.c_oflag = OPOST | ONLCR,
 	.c_cflag = B38400 | CS8 | CREAD | HUPCL,
-	.c_lflag = ISIG | ICANON | ECHO | ECHOE | ECHOK |
-		   ECHOCTL | ECHOKE | IEXTEN,
+	.c_lflag = ISIG | ICANON | ECHO | ECHOE | ECHOK | ECHOCTL | ECHOKE |
+		   IEXTEN,
 	.c_cc = INIT_C_CC,
 	.c_ispeed = 38400,
 	.c_ospeed = 38400,
-	
+
 };
 
-LIST_HEAD(tty_drivers);			
+LIST_HEAD(tty_drivers);
 
 DEFINE_MUTEX(tty_mutex);
 
@@ -132,7 +134,7 @@ static void tty_del_file(struct file *file)
 
 const char *tty_name(const struct tty_struct *tty)
 {
-	if (!tty) 
+	if (!tty)
 		return "NULL tty";
 	return tty->name;
 }
@@ -172,7 +174,6 @@ static struct tty_driver *get_tty_driver(dev_t device, int *index)
 	return NULL;
 }
 
-
 static ssize_t hung_up_tty_read(struct kiocb *iocb, struct iov_iter *to)
 {
 	return 0;
@@ -185,11 +186,12 @@ static ssize_t hung_up_tty_write(struct kiocb *iocb, struct iov_iter *from)
 
 static __poll_t hung_up_tty_poll(struct file *filp, poll_table *wait)
 {
-	return EPOLLIN | EPOLLOUT | EPOLLERR | EPOLLHUP | EPOLLRDNORM | EPOLLWRNORM;
+	return EPOLLIN | EPOLLOUT | EPOLLERR | EPOLLHUP | EPOLLRDNORM |
+	       EPOLLWRNORM;
 }
 
 static long hung_up_tty_ioctl(struct file *file, unsigned int cmd,
-		unsigned long arg)
+			      unsigned long arg)
 {
 	return cmd == TIOCSPGRP ? -ENOTTY : -EIO;
 }
@@ -202,44 +204,43 @@ static int hung_up_tty_fasync(int fd, struct file *file, int on)
 	return -ENOTTY;
 }
 
-
 static const struct file_operations tty_fops = {
-	.llseek		= no_llseek,
-	.read_iter	= tty_read,
-	.write_iter	= tty_write,
-	.splice_read	= generic_file_splice_read,
-	.splice_write	= iter_file_splice_write,
-	.poll		= tty_poll,
-	.unlocked_ioctl	= tty_ioctl,
-	.compat_ioctl	= tty_compat_ioctl,
-	.open		= tty_open,
-	.release	= tty_release,
-	.fasync		= tty_fasync,
+	.llseek = no_llseek,
+	.read_iter = tty_read,
+	.write_iter = tty_write,
+	.splice_read = generic_file_splice_read,
+	.splice_write = iter_file_splice_write,
+	.poll = tty_poll,
+	.unlocked_ioctl = tty_ioctl,
+	.compat_ioctl = tty_compat_ioctl,
+	.open = tty_open,
+	.release = tty_release,
+	.fasync = tty_fasync,
 };
 
 static const struct file_operations console_fops = {
-	.llseek		= no_llseek,
-	.read_iter	= tty_read,
-	.write_iter	= redirected_tty_write,
-	.splice_read	= generic_file_splice_read,
-	.splice_write	= iter_file_splice_write,
-	.poll		= tty_poll,
-	.unlocked_ioctl	= tty_ioctl,
-	.compat_ioctl	= tty_compat_ioctl,
-	.open		= tty_open,
-	.release	= tty_release,
-	.fasync		= tty_fasync,
+	.llseek = no_llseek,
+	.read_iter = tty_read,
+	.write_iter = redirected_tty_write,
+	.splice_read = generic_file_splice_read,
+	.splice_write = iter_file_splice_write,
+	.poll = tty_poll,
+	.unlocked_ioctl = tty_ioctl,
+	.compat_ioctl = tty_compat_ioctl,
+	.open = tty_open,
+	.release = tty_release,
+	.fasync = tty_fasync,
 };
 
 static const struct file_operations hung_up_tty_fops = {
-	.llseek		= no_llseek,
-	.read_iter	= hung_up_tty_read,
-	.write_iter	= hung_up_tty_write,
-	.poll		= hung_up_tty_poll,
-	.unlocked_ioctl	= hung_up_tty_ioctl,
-	.compat_ioctl	= hung_up_tty_compat_ioctl,
-	.release	= tty_release,
-	.fasync		= hung_up_tty_fasync,
+	.llseek = no_llseek,
+	.read_iter = hung_up_tty_read,
+	.write_iter = hung_up_tty_write,
+	.poll = hung_up_tty_poll,
+	.unlocked_ioctl = hung_up_tty_ioctl,
+	.compat_ioctl = hung_up_tty_compat_ioctl,
+	.release = tty_release,
+	.fasync = hung_up_tty_fasync,
 };
 
 static DEFINE_SPINLOCK(redirect_lock);
@@ -287,24 +288,21 @@ void tty_hangup(struct tty_struct *tty)
 	schedule_work(&tty->hangup_work);
 }
 
-
 int tty_hung_up_p(struct file *filp)
 {
 	return (filp && filp->f_op == &hung_up_tty_fops);
 }
 
-
 static void tty_update_time(struct timespec64 *time)
 {
 	time64_t sec = ktime_get_real_seconds();
 
-	
 	if ((sec ^ time->tv_sec) & ~7)
 		time->tv_sec = sec;
 }
 
 static int iterate_tty_read(struct tty_ldisc *ld, struct tty_struct *tty,
-		struct file *file, struct iov_iter *to)
+			    struct file *file, struct iov_iter *to)
 {
 	int retval = 0;
 	void *cookie = NULL;
@@ -316,17 +314,16 @@ static int iterate_tty_read(struct tty_ldisc *ld, struct tty_struct *tty,
 		int size, copied;
 
 		size = count > sizeof(kernel_buf) ? sizeof(kernel_buf) : count;
-		size = ld->ops->read(tty, file, kernel_buf, size, &cookie, offset);
+		size = ld->ops->read(tty, file, kernel_buf, size, &cookie,
+				     offset);
 		if (!size)
 			break;
 
 		if (size < 0) {
-			
 			if (retval)
 				break;
 			retval = size;
 
-			
 			if (retval == -EOVERFLOW)
 				offset = 0;
 			break;
@@ -336,14 +333,12 @@ static int iterate_tty_read(struct tty_ldisc *ld, struct tty_struct *tty,
 		offset += copied;
 		count -= copied;
 
-		
 		if (unlikely(copied != size)) {
 			count = 0;
 			retval = -EFAULT;
 		}
 	} while (cookie);
 
-	
 	memzero_explicit(kernel_buf, sizeof(kernel_buf));
 	return offset ? offset : retval;
 }
@@ -361,7 +356,6 @@ static ssize_t tty_read(struct kiocb *iocb, struct iov_iter *to)
 	if (!tty || tty_io_error(tty))
 		return -EIO;
 
-	
 	ld = tty_ldisc_ref_wait(tty);
 	if (!ld)
 		return hung_up_tty_read(iocb, to);
@@ -393,11 +387,10 @@ static int tty_write_lock(struct tty_struct *tty, int ndelay)
 	return 0;
 }
 
-static inline ssize_t do_tty_write(
-	ssize_t (*write)(struct tty_struct *, struct file *, const unsigned char *, size_t),
-	struct tty_struct *tty,
-	struct file *file,
-	struct iov_iter *from)
+static inline ssize_t
+do_tty_write(ssize_t (*write)(struct tty_struct *, struct file *,
+			      const unsigned char *, size_t),
+	     struct tty_struct *tty, struct file *file, struct iov_iter *from)
 {
 	size_t count = iov_iter_count(from);
 	ssize_t ret, written = 0;
@@ -407,14 +400,12 @@ static inline ssize_t do_tty_write(
 	if (ret < 0)
 		return ret;
 
-	
 	chunk = 2048;
 	if (test_bit(TTY_NO_WRITE_SPLIT, &tty->flags))
 		chunk = 65536;
 	if (count < chunk)
 		chunk = count;
 
-	
 	if (tty->write_cnt < chunk) {
 		unsigned char *buf_chunk;
 
@@ -431,7 +422,6 @@ static inline ssize_t do_tty_write(
 		tty->write_buf = buf_chunk;
 	}
 
-	
 	for (;;) {
 		size_t size = count;
 
@@ -450,9 +440,8 @@ static inline ssize_t do_tty_write(
 		if (ret > size)
 			break;
 
-		
 		if (ret != size)
-			iov_iter_revert(from, size-ret);
+			iov_iter_revert(from, size - ret);
 
 		count -= ret;
 		if (!count)
@@ -471,8 +460,8 @@ out:
 	return ret;
 }
 
-
-static ssize_t file_tty_write(struct file *file, struct kiocb *iocb, struct iov_iter *from)
+static ssize_t file_tty_write(struct file *file, struct kiocb *iocb,
+			      struct iov_iter *from)
 {
 	struct tty_struct *tty = file_tty(file);
 	struct tty_ldisc *ld;
@@ -480,9 +469,9 @@ static ssize_t file_tty_write(struct file *file, struct kiocb *iocb, struct iov_
 
 	if (tty_paranoia_check(tty, file_inode(file), "tty_write"))
 		return -EIO;
-	if (!tty || !tty->ops->write ||	tty_io_error(tty))
+	if (!tty || !tty->ops->write || tty_io_error(tty))
 		return -EIO;
-	
+
 	if (tty->ops->write_room == NULL)
 		tty_err(tty, "missing write_room method\n");
 	ld = tty_ldisc_ref_wait(tty);
@@ -510,7 +499,6 @@ ssize_t redirected_tty_write(struct kiocb *iocb, struct iov_iter *iter)
 		p = get_file(redirect);
 	spin_unlock(&redirect_lock);
 
-	
 	if (p) {
 		ssize_t res;
 
@@ -525,7 +513,7 @@ static void pty_line_name(struct tty_driver *driver, int index, char *p)
 {
 	static const char ptychar[] = "pqrstuvwxyzabcde";
 	int i = index + driver->name_base;
-	
+
 	sprintf(p, "%s%c%x",
 		driver->subtype == PTY_TYPE_SLAVE ? "tty" : driver->name,
 		ptychar[i >> 4 & 0xf], i & 0xf);
@@ -541,7 +529,7 @@ static ssize_t tty_line_name(struct tty_driver *driver, int index, char *p)
 }
 
 static struct tty_struct *tty_driver_lookup_tty(struct tty_driver *driver,
-		struct file *file, int idx)
+						struct file *file, int idx)
 {
 	struct tty_struct *tty;
 
@@ -566,15 +554,14 @@ void tty_init_termios(struct tty_struct *tty)
 	if (tty->driver->flags & TTY_DRIVER_RESET_TERMIOS)
 		tty->termios = tty->driver->init_termios;
 	else {
-		
 		tp = tty->driver->termios[idx];
 		if (tp != NULL) {
 			tty->termios = *tp;
-			tty->termios.c_line  = tty->driver->init_termios.c_line;
+			tty->termios.c_line = tty->driver->init_termios.c_line;
 		} else
 			tty->termios = tty->driver->init_termios;
 	}
-	
+
 	tty->termios.c_ispeed = tty_termios_input_baud_rate(&tty->termios);
 	tty->termios.c_ospeed = tty_termios_baud_rate(&tty->termios);
 }
@@ -589,13 +576,14 @@ int tty_standard_install(struct tty_driver *driver, struct tty_struct *tty)
 }
 
 static int tty_driver_install_tty(struct tty_driver *driver,
-						struct tty_struct *tty)
+				  struct tty_struct *tty)
 {
 	return driver->ops->install ? driver->ops->install(driver, tty) :
-		tty_standard_install(driver, tty);
+				      tty_standard_install(driver, tty);
 }
 
-static void tty_driver_remove_tty(struct tty_driver *driver, struct tty_struct *tty)
+static void tty_driver_remove_tty(struct tty_driver *driver,
+				  struct tty_struct *tty)
 {
 	if (driver->ops->remove)
 		driver->ops->remove(driver, tty);
@@ -643,8 +631,6 @@ struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx)
 	struct tty_struct *tty;
 	int retval;
 
-	
-
 	if (!try_module_get(driver->owner))
 		return ERR_PTR(-ENODEV);
 
@@ -662,9 +648,10 @@ struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx)
 	if (!tty->port)
 		tty->port = driver->ports[idx];
 
-	if (WARN_RATELIMIT(!tty->port,
-			"%s: %s driver does not set tty->port. This would crash the kernel. Fix the driver!\n",
-			__func__, tty->driver->name)) {
+	if (WARN_RATELIMIT(
+		    !tty->port,
+		    "%s: %s driver does not set tty->port. This would crash the kernel. Fix the driver!\n",
+		    __func__, tty->driver->name)) {
 		retval = -EINVAL;
 		goto err_release_lock;
 	}
@@ -674,12 +661,11 @@ struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx)
 		goto err_release_lock;
 	tty->port->itty = tty;
 
-	
 	retval = tty_ldisc_setup(tty, tty->link);
 	if (retval)
 		goto err_release_tty;
 	tty_ldisc_unlock(tty);
-	
+
 	return tty;
 
 err_free_tty:
@@ -689,7 +675,6 @@ err_module_put:
 	module_put(driver->owner);
 	return ERR_PTR(retval);
 
-	
 err_release_tty:
 	tty_ldisc_unlock(tty);
 	tty_info_ratelimited(tty, "ldisc open failed (%d), clearing slot %d\n",
@@ -705,11 +690,9 @@ static void tty_save_termios(struct tty_struct *tty)
 	struct ktermios *tp;
 	int idx = tty->index;
 
-	
 	if (tty->driver->flags & TTY_DRIVER_RESET_TERMIOS)
 		return;
 
-	
 	tp = tty->driver->termios[idx];
 	if (tp == NULL) {
 		tp = kmalloc(sizeof(*tp), GFP_KERNEL);
@@ -757,7 +740,6 @@ static void queue_release_one_tty(struct kref *kref)
 {
 	struct tty_struct *tty = container_of(kref, struct tty_struct, kref);
 
-	
 	INIT_WORK(&tty->hangup_work, release_one_tty);
 	schedule_work(&tty->hangup_work);
 }
@@ -770,7 +752,6 @@ void tty_kref_put(struct tty_struct *tty)
 
 static void release_tty(struct tty_struct *tty, int idx)
 {
-	
 	WARN_ON(tty->index != idx);
 	WARN_ON(!mutex_is_locked(&tty_mutex));
 	if (tty->ops->shutdown)
@@ -796,17 +777,14 @@ static int tty_release_checks(struct tty_struct *tty, int idx)
 	return 0;
 }
 
-
 static void tty_release_struct(struct tty_struct *tty, int idx)
 {
-	
 	tty_ldisc_release(tty);
 
-	
 	tty_flush_works(tty);
 
 	tty_debug_hangup(tty, "freeing structure\n");
-	
+
 	mutex_lock(&tty_mutex);
 	release_tty(tty, idx);
 	mutex_unlock(&tty_mutex);
@@ -856,10 +834,10 @@ static struct tty_struct *tty_open_current_tty(dev_t device, struct file *filp)
 	if (!tty)
 		return ERR_PTR(-ENXIO);
 
-	filp->f_flags |= O_NONBLOCK; 
-	
+	filp->f_flags |= O_NONBLOCK;
+
 	tty_lock(tty);
-	tty_kref_put(tty);	
+	tty_kref_put(tty);
 
 	retval = tty_reopen(tty);
 	if (retval < 0) {
@@ -870,7 +848,7 @@ static struct tty_struct *tty_open_current_tty(dev_t device, struct file *filp)
 }
 
 static struct tty_driver *tty_lookup_driver(dev_t device, struct file *filp,
-		int *index)
+					    int *index)
 {
 	struct tty_driver *driver = NULL;
 
@@ -888,7 +866,6 @@ static struct tty_driver *tty_lookup_driver(dev_t device, struct file *filp,
 		if (console_driver) {
 			driver = tty_driver_kref_get(console_driver);
 			if (driver && filp) {
-				
 				filp->f_flags |= O_NONBLOCK;
 				break;
 			}
@@ -906,9 +883,7 @@ static struct tty_driver *tty_lookup_driver(dev_t device, struct file *filp,
 	return driver;
 }
 
-
-static struct tty_struct *tty_open_by_driver(dev_t device,
-					     struct file *filp)
+static struct tty_struct *tty_open_by_driver(dev_t device, struct file *filp)
 {
 	struct tty_struct *tty;
 	struct tty_driver *driver = NULL;
@@ -922,7 +897,6 @@ static struct tty_struct *tty_open_by_driver(dev_t device,
 		return ERR_CAST(driver);
 	}
 
-	
 	tty = tty_driver_lookup_tty(driver, filp, index);
 	if (IS_ERR(tty)) {
 		mutex_unlock(&tty_mutex);
@@ -938,7 +912,7 @@ static struct tty_struct *tty_open_by_driver(dev_t device,
 		}
 		mutex_unlock(&tty_mutex);
 		retval = tty_lock_interruptible(tty);
-		tty_kref_put(tty);  
+		tty_kref_put(tty);
 		if (retval) {
 			if (retval == -EINTR)
 				retval = -ERESTARTSYS;
@@ -950,7 +924,7 @@ static struct tty_struct *tty_open_by_driver(dev_t device,
 			tty_unlock(tty);
 			tty = ERR_PTR(retval);
 		}
-	} else { 
+	} else {
 		tty = tty_init_dev(driver, index);
 		mutex_unlock(&tty_mutex);
 	}
@@ -1000,7 +974,7 @@ retry_open:
 	if (retval) {
 		tty_debug_hangup(tty, "open error %d, releasing\n", retval);
 
-		tty_unlock(tty); 
+		tty_unlock(tty);
 		tty_release(inode, filp);
 		if (retval != -ERESTARTSYS)
 			return retval;
@@ -1009,7 +983,7 @@ retry_open:
 			return retval;
 
 		schedule();
-		
+
 		if (tty_hung_up_p(filp))
 			filp->f_op = &tty_fops;
 		goto retry_open;
@@ -1108,12 +1082,10 @@ static int tty_do_resize(struct tty_struct *tty, struct winsize *ws)
 {
 	struct pid *pgrp;
 
-	
 	mutex_lock(&tty->winsize_mutex);
 	if (!memcmp(ws, &tty->winsize, sizeof(*ws)))
 		goto done;
 
-	
 	pgrp = tty_get_pgrp(tty);
 	if (pgrp)
 		kill_pgrp(pgrp, SIGWINCH, 1);
@@ -1137,7 +1109,6 @@ static int tiocswinsz(struct tty_struct *tty, struct winsize __user *arg)
 	else
 		return tty_do_resize(tty, &tmp_ws);
 }
-
 
 static struct tty_struct *tty_pair_get_tty(struct tty_struct *tty)
 {
@@ -1180,12 +1151,10 @@ long tty_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	return -ENOTTY;
 }
 
-
 static void do_SAK_work(struct work_struct *work)
 {
 	/* Stub: SAK_work never scheduled in minimal kernel */
 }
-
 
 static dev_t tty_devnum(struct tty_struct *tty);
 
@@ -1236,15 +1205,13 @@ struct tty_struct *alloc_tty_struct(struct tty_driver *driver, int idx)
 	return tty;
 }
 
-
 struct class *tty_class;
 
 static int tty_cdev_add(struct tty_driver *driver, dev_t dev,
-		unsigned int index, unsigned int count)
+			unsigned int index, unsigned int count)
 {
 	int err;
 
-	
 	driver->cdevs[index] = cdev_alloc();
 	if (!driver->cdevs[index])
 		return -ENOMEM;
@@ -1269,9 +1236,9 @@ static void tty_device_create_release(struct device *dev)
 }
 
 struct device *tty_register_device_attr(struct tty_driver *driver,
-				   unsigned index, struct device *device,
-				   void *drvdata,
-				   const struct attribute_group **attr_grp)
+					unsigned index, struct device *device,
+					void *drvdata,
+					const struct attribute_group **attr_grp)
 {
 	char name[64];
 	dev_t devt = MKDEV(driver->major, driver->minor_start) + index;
@@ -1309,7 +1276,6 @@ struct device *tty_register_device_attr(struct tty_driver *driver,
 		goto err_put;
 
 	if (!(driver->flags & TTY_DRIVER_DYNAMIC_ALLOC)) {
-		
 		tp = driver->termios[index];
 		if (tp) {
 			driver->termios[index] = NULL;
@@ -1338,7 +1304,7 @@ err_put:
 static void tty_unregister_device(struct tty_driver *driver, unsigned index)
 {
 	device_destroy(tty_class,
-		MKDEV(driver->major, driver->minor_start) + index);
+		       MKDEV(driver->major, driver->minor_start) + index);
 	if (!(driver->flags & TTY_DRIVER_DYNAMIC_ALLOC)) {
 		cdev_del(driver->cdevs[index]);
 		driver->cdevs[index] = NULL;
@@ -1346,7 +1312,7 @@ static void tty_unregister_device(struct tty_driver *driver, unsigned index)
 }
 
 struct tty_driver *__tty_alloc_driver(unsigned int lines, struct module *owner,
-		unsigned long flags)
+				      unsigned long flags)
 {
 	struct tty_driver *driver;
 	unsigned int cdevs = 1;
@@ -1366,10 +1332,10 @@ struct tty_driver *__tty_alloc_driver(unsigned int lines, struct module *owner,
 	driver->flags = flags;
 
 	if (!(flags & TTY_DRIVER_DEVPTS_MEM)) {
-		driver->ttys = kcalloc(lines, sizeof(*driver->ttys),
-				GFP_KERNEL);
-		driver->termios = kcalloc(lines, sizeof(*driver->termios),
-				GFP_KERNEL);
+		driver->ttys =
+			kcalloc(lines, sizeof(*driver->ttys), GFP_KERNEL);
+		driver->termios =
+			kcalloc(lines, sizeof(*driver->termios), GFP_KERNEL);
 		if (!driver->ttys || !driver->termios) {
 			err = -ENOMEM;
 			goto err_free_all;
@@ -1377,8 +1343,8 @@ struct tty_driver *__tty_alloc_driver(unsigned int lines, struct module *owner,
 	}
 
 	if (!(flags & TTY_DRIVER_DYNAMIC_ALLOC)) {
-		driver->ports = kcalloc(lines, sizeof(*driver->ports),
-				GFP_KERNEL);
+		driver->ports =
+			kcalloc(lines, sizeof(*driver->ports), GFP_KERNEL);
 		if (!driver->ports) {
 			err = -ENOMEM;
 			goto err_free_all;
@@ -1443,7 +1409,7 @@ int tty_register_driver(struct tty_driver *driver)
 
 	if (!driver->major) {
 		error = alloc_chrdev_region(&dev, driver->minor_start,
-						driver->num, driver->name);
+					    driver->num, driver->name);
 		if (!error) {
 			driver->major = MAJOR(dev);
 			driver->minor_start = MINOR(dev);
@@ -1536,11 +1502,11 @@ int __init tty_init(void)
 
 	cdev_init(&console_cdev, &console_fops);
 	if (cdev_add(&console_cdev, MKDEV(TTYAUX_MAJOR, 1), 1) ||
-	    register_chrdev_region(MKDEV(TTYAUX_MAJOR, 1), 1, "/dev/console") < 0)
+	    register_chrdev_region(MKDEV(TTYAUX_MAJOR, 1), 1, "/dev/console") <
+		    0)
 		panic("Couldn't register /dev/console driver\n");
 	device_create(tty_class, NULL, MKDEV(TTYAUX_MAJOR, 1), NULL, "console");
 
 	vty_init(&console_fops);
 	return 0;
 }
-

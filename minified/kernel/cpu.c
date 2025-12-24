@@ -11,34 +11,30 @@
 #include "smpboot.h"
 
 struct cpuhp_cpu_state {
-	enum cpuhp_state	state;
-	enum cpuhp_state	target;
-	enum cpuhp_state	fail;
+	enum cpuhp_state state;
+	enum cpuhp_state target;
+	enum cpuhp_state fail;
 };
 
 static DEFINE_PER_CPU(struct cpuhp_cpu_state, cpuhp_state) = {
 	.fail = CPUHP_INVALID,
 };
 
-
-
 struct cpuhp_step {
-	const char		*name;
+	const char *name;
 	union {
-		int		(*single)(unsigned int cpu);
-		int		(*multi)(unsigned int cpu,
-					 struct hlist_node *node);
+		int (*single)(unsigned int cpu);
+		int (*multi)(unsigned int cpu, struct hlist_node *node);
 	} startup;
 	union {
-		int		(*single)(unsigned int cpu);
-		int		(*multi)(unsigned int cpu,
-					 struct hlist_node *node);
+		int (*single)(unsigned int cpu);
+		int (*multi)(unsigned int cpu, struct hlist_node *node);
 	} teardown;
-	 
-	struct hlist_head	list;
-	 
-	bool			cant_stop;
-	bool			multi_instance;
+
+	struct hlist_head list;
+
+	bool cant_stop;
+	bool multi_instance;
 };
 
 static DEFINE_MUTEX(cpuhp_state_mutex);
@@ -78,31 +74,27 @@ static int cpuhp_invoke_callback(unsigned int cpu, enum cpuhp_state state,
 		WARN_ON_ONCE(lastp && *lastp);
 		cb = bringup ? step->startup.single : step->teardown.single;
 
-		 
 		ret = cb(cpu);
-		 
+
 		return ret;
 	}
 	cbm = bringup ? step->startup.multi : step->teardown.multi;
 
-	 
 	if (node) {
 		WARN_ON_ONCE(lastp && *lastp);
-		 
+
 		ret = cbm(cpu, node);
-		 
+
 		return ret;
 	}
 
-	 
 	cnt = 0;
 	hlist_for_each(node, &step->list) {
 		if (lastp && node == *lastp)
 			break;
 
-		 
 		ret = cbm(cpu, node);
-		 
+
 		if (ret) {
 			if (!lastp)
 				goto err;
@@ -116,7 +108,7 @@ static int cpuhp_invoke_callback(unsigned int cpu, enum cpuhp_state state,
 		*lastp = NULL;
 	return 0;
 err:
-	 
+
 	cbm = !bringup ? step->startup.multi : step->teardown.multi;
 	if (!cbm)
 		return ret;
@@ -125,15 +117,12 @@ err:
 		if (!cnt--)
 			break;
 
-		 
 		ret = cbm(cpu, node);
-		 
-		 
+
 		WARN_ON_ONCE(ret);
 	}
 	return ret;
 }
-
 
 static struct cpuhp_step cpuhp_hp_states[] = {
 	[CPUHP_OFFLINE] = {
@@ -190,13 +179,11 @@ static int cpuhp_store_callbacks(enum cpuhp_state state, const char *name,
 				 int (*teardown)(unsigned int cpu),
 				 bool multi_instance)
 {
-	 
 	struct cpuhp_step *sp;
 	int ret = 0;
 
-	 
-	if (name && (state == CPUHP_AP_ONLINE_DYN ||
-		     state == CPUHP_BP_PREPARE_DYN)) {
+	if (name &&
+	    (state == CPUHP_AP_ONLINE_DYN || state == CPUHP_BP_PREPARE_DYN)) {
 		ret = cpuhp_reserve_state(state);
 		if (ret < 0)
 			return ret;
@@ -214,17 +201,15 @@ static int cpuhp_store_callbacks(enum cpuhp_state state, const char *name,
 	return ret;
 }
 
-
 static int cpuhp_issue_call(int cpu, enum cpuhp_state state, bool bringup,
 			    struct hlist_node *node)
 {
 	struct cpuhp_step *sp = cpuhp_get_step(state);
 	int ret;
 
-	 
 	if (cpuhp_step_empty(bringup, sp))
 		return 0;
-	 
+
 	ret = cpuhp_invoke_callback(cpu, state, bringup, node, NULL);
 	BUG_ON(ret && !bringup);
 	return ret;
@@ -235,7 +220,6 @@ static void cpuhp_rollback_install(int failedcpu, enum cpuhp_state state,
 {
 	int cpu;
 
-	 
 	for_each_present_cpu(cpu) {
 		struct cpuhp_cpu_state *st = per_cpu_ptr(&cpuhp_state, cpu);
 		int cpustate = st->state;
@@ -243,15 +227,13 @@ static void cpuhp_rollback_install(int failedcpu, enum cpuhp_state state,
 		if (cpu >= failedcpu)
 			break;
 
-		 
 		if (cpustate >= state)
 			cpuhp_issue_call(cpu, state, false, node);
 	}
 }
 
 int __cpuhp_state_add_instance_cpuslocked(enum cpuhp_state state,
-					  struct hlist_node *node,
-					  bool invoke)
+					  struct hlist_node *node, bool invoke)
 {
 	struct cpuhp_step *sp;
 	int cpu;
@@ -268,7 +250,6 @@ int __cpuhp_state_add_instance_cpuslocked(enum cpuhp_state state,
 	if (!invoke || !sp->startup.multi)
 		goto add_node;
 
-	 
 	for_each_present_cpu(cpu) {
 		struct cpuhp_cpu_state *st = per_cpu_ptr(&cpuhp_state, cpu);
 		int cpustate = st->state;
@@ -302,8 +283,8 @@ int __cpuhp_state_add_instance(enum cpuhp_state state, struct hlist_node *node,
 	return ret;
 }
 
-int __cpuhp_setup_state_cpuslocked(enum cpuhp_state state,
-				   const char *name, bool invoke,
+int __cpuhp_setup_state_cpuslocked(enum cpuhp_state state, const char *name,
+				   bool invoke,
 				   int (*startup)(unsigned int cpu),
 				   int (*teardown)(unsigned int cpu),
 				   bool multi_instance)
@@ -330,7 +311,6 @@ int __cpuhp_setup_state_cpuslocked(enum cpuhp_state state,
 	if (ret || !invoke || !startup)
 		goto out;
 
-	 
 	for_each_present_cpu(cpu) {
 		struct cpuhp_cpu_state *st = per_cpu_ptr(&cpuhp_state, cpu);
 		int cpustate = st->state;
@@ -348,17 +328,15 @@ int __cpuhp_setup_state_cpuslocked(enum cpuhp_state state,
 	}
 out:
 	mutex_unlock(&cpuhp_state_mutex);
-	 
+
 	if (!ret && dynstate)
 		return state;
 	return ret;
 }
 
-int __cpuhp_setup_state(enum cpuhp_state state,
-			const char *name, bool invoke,
+int __cpuhp_setup_state(enum cpuhp_state state, const char *name, bool invoke,
 			int (*startup)(unsigned int cpu),
-			int (*teardown)(unsigned int cpu),
-			bool multi_instance)
+			int (*teardown)(unsigned int cpu), bool multi_instance)
 {
 	int ret;
 
@@ -369,17 +347,15 @@ int __cpuhp_setup_state(enum cpuhp_state state,
 	return ret;
 }
 
+#define MASK_DECLARE_1(x) [x + 1][0] = (1UL << (x))
+#define MASK_DECLARE_2(x) MASK_DECLARE_1(x), MASK_DECLARE_1(x + 1)
+#define MASK_DECLARE_4(x) MASK_DECLARE_2(x), MASK_DECLARE_2(x + 2)
+#define MASK_DECLARE_8(x) MASK_DECLARE_4(x), MASK_DECLARE_4(x + 4)
 
+const unsigned long cpu_bit_bitmap[BITS_PER_LONG + 1][BITS_TO_LONGS(NR_CPUS)] = {
 
-#define MASK_DECLARE_1(x)	[x+1][0] = (1UL << (x))
-#define MASK_DECLARE_2(x)	MASK_DECLARE_1(x), MASK_DECLARE_1(x+1)
-#define MASK_DECLARE_4(x)	MASK_DECLARE_2(x), MASK_DECLARE_2(x+2)
-#define MASK_DECLARE_8(x)	MASK_DECLARE_4(x), MASK_DECLARE_4(x+4)
-
-const unsigned long cpu_bit_bitmap[BITS_PER_LONG+1][BITS_TO_LONGS(NR_CPUS)] = {
-
-	MASK_DECLARE_8(0),	MASK_DECLARE_8(8),
-	MASK_DECLARE_8(16),	MASK_DECLARE_8(24),
+	MASK_DECLARE_8(0), MASK_DECLARE_8(8), MASK_DECLARE_8(16),
+	MASK_DECLARE_8(24),
 	/* BITS_PER_LONG == 32, no 64-bit masks */
 };
 
@@ -393,12 +369,10 @@ struct cpumask __cpu_present_mask __read_mostly;
 
 struct cpumask __cpu_active_mask __read_mostly;
 
-
 atomic_t __num_online_cpus __read_mostly;
 
 void set_cpu_online(unsigned int cpu, bool online)
 {
-	 
 	if (online) {
 		if (!cpumask_test_and_set_cpu(cpu, &__cpu_online_mask))
 			atomic_inc(&__num_online_cpus);
@@ -412,17 +386,13 @@ void __init boot_cpu_init(void)
 {
 	int cpu = smp_processor_id();
 
-	 
 	set_cpu_online(cpu, true);
 	set_cpu_active(cpu, true);
 	set_cpu_present(cpu, true);
 	set_cpu_possible(cpu, true);
-
 }
 
 void __init boot_cpu_hotplug_init(void)
 {
 	this_cpu_write(cpuhp_state.state, CPUHP_ONLINE);
 }
-
-

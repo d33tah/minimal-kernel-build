@@ -9,8 +9,8 @@
 #include <linux/sched/debug.h>
 #include <linux/errno.h>
 
-int __percpu_init_rwsem(struct percpu_rw_semaphore *sem,
-			const char *name, struct lock_class_key *key)
+int __percpu_init_rwsem(struct percpu_rw_semaphore *sem, const char *name,
+			struct lock_class_key *key)
 {
 	sem->read_count = alloc_percpu(int);
 	if (unlikely(!sem->read_count))
@@ -25,30 +25,25 @@ int __percpu_init_rwsem(struct percpu_rw_semaphore *sem,
 
 void percpu_free_rwsem(struct percpu_rw_semaphore *sem)
 {
-	 
 	if (!sem->read_count)
 		return;
 
 	rcu_sync_dtor(&sem->rss);
 	free_percpu(sem->read_count);
-	sem->read_count = NULL;  
+	sem->read_count = NULL;
 }
 
 static bool __percpu_down_read_trylock(struct percpu_rw_semaphore *sem)
 {
 	this_cpu_inc(*sem->read_count);
 
-	 
+	smp_mb();
 
-	smp_mb();  
-
-	 
 	if (likely(!atomic_read_acquire(&sem->block)))
 		return true;
 
 	this_cpu_dec(*sem->read_count);
 
-	 
 	rcuwait_wake_up(&sem->writer);
 
 	return false;
@@ -84,7 +79,6 @@ static int percpu_rwsem_wake_function(struct wait_queue_entry *wq_entry,
 	struct percpu_rw_semaphore *sem = key;
 	struct task_struct *p;
 
-	 
 	if (!__percpu_rwsem_trylock(sem, reader))
 		return 1;
 
@@ -95,7 +89,7 @@ static int percpu_rwsem_wake_function(struct wait_queue_entry *wq_entry,
 	wake_up_process(p);
 	put_task_struct(p);
 
-	return !reader;  
+	return !reader;
 }
 
 static void percpu_rwsem_wait(struct percpu_rw_semaphore *sem, bool reader)
@@ -104,7 +98,7 @@ static void percpu_rwsem_wait(struct percpu_rw_semaphore *sem, bool reader)
 	bool wait;
 
 	spin_lock_irq(&sem->waiters.lock);
-	 
+
 	wait = !__percpu_rwsem_trylock(sem, reader);
 	if (wait) {
 		wq_entry.flags |= WQ_FLAG_EXCLUSIVE | reader * WQ_FLAG_CUSTOM;
@@ -129,33 +123,29 @@ bool __sched __percpu_down_read(struct percpu_rw_semaphore *sem, bool try)
 	if (try)
 		return false;
 
-	 
 	preempt_enable();
-	percpu_rwsem_wait(sem,   true);
+	percpu_rwsem_wait(sem, true);
 	preempt_disable();
-	 
 
 	return true;
 }
 
-#define per_cpu_sum(var)						\
-({									\
-	typeof(var) __sum = 0;						\
-	int cpu;							\
-	compiletime_assert_atomic_type(__sum);				\
-	for_each_possible_cpu(cpu)					\
-		__sum += per_cpu(var, cpu);				\
-	__sum;								\
-})
+#define per_cpu_sum(var)                               \
+	({                                             \
+		typeof(var) __sum = 0;                 \
+		int cpu;                               \
+		compiletime_assert_atomic_type(__sum); \
+		for_each_possible_cpu(cpu)             \
+			__sum += per_cpu(var, cpu);    \
+		__sum;                                 \
+	})
 
 static bool readers_active_check(struct percpu_rw_semaphore *sem)
 {
 	if (per_cpu_sum(*sem->read_count) != 0)
 		return false;
 
-	 
-
-	smp_mb();  
+	smp_mb();
 
 	return true;
 }
@@ -164,21 +154,12 @@ void __sched percpu_down_write(struct percpu_rw_semaphore *sem)
 {
 	might_sleep();
 	rwsem_acquire(&sem->dep_map, 0, 0, _RET_IP_);
-	 
 
-	 
 	rcu_sync_enter(&sem->rss);
 
-	 
 	if (!__percpu_down_write_trylock(sem))
-		percpu_rwsem_wait(sem,   false);
+		percpu_rwsem_wait(sem, false);
 
-	 
-
-	 
-
-	 
-	rcuwait_wait_event(&sem->writer, readers_active_check(sem), TASK_UNINTERRUPTIBLE);
-	 
+	rcuwait_wait_event(&sem->writer, readers_active_check(sem),
+			   TASK_UNINTERRUPTIBLE);
 }
-

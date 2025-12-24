@@ -8,7 +8,6 @@
 #include <linux/string.h>
 #include <linux/string_helpers.h>
 
-
 ssize_t strscpy_pad(char *dest, const char *src, size_t count)
 {
 	size_t len;
@@ -20,7 +19,6 @@ ssize_t strscpy_pad(char *dest, const char *src, size_t count)
 	memset(dest + len, 0, count - len);
 	return len;
 }
-
 
 char *skip_spaces(const char *str)
 {

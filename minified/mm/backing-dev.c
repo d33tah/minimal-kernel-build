@@ -34,8 +34,16 @@ static inline void bdi_debug_unregister(struct backing_dev_info *bdi)
 }
 
 /* Stub: BDI sysfs attributes - all return 0 */
-static ssize_t bdi_stub_store(struct device *d, struct device_attribute *a, const char *b, size_t c) { return c; }
-static ssize_t bdi_stub_show(struct device *d, struct device_attribute *a, char *b) { return sysfs_emit(b, "0\n"); }
+static ssize_t bdi_stub_store(struct device *d, struct device_attribute *a,
+			      const char *b, size_t c)
+{
+	return c;
+}
+static ssize_t bdi_stub_show(struct device *d, struct device_attribute *a,
+			     char *b)
+{
+	return sysfs_emit(b, "0\n");
+}
 #define read_ahead_kb_store bdi_stub_store
 #define read_ahead_kb_show bdi_stub_show
 static DEVICE_ATTR_RW(read_ahead_kb);
@@ -72,21 +80,20 @@ postcore_initcall(bdi_class_init);
 
 static int __init default_bdi_init(void)
 {
-	bdi_wq = alloc_workqueue("writeback", WQ_MEM_RECLAIM | WQ_UNBOUND |
-				 WQ_SYSFS, 0);
+	bdi_wq = alloc_workqueue("writeback",
+				 WQ_MEM_RECLAIM | WQ_UNBOUND | WQ_SYSFS, 0);
 	if (!bdi_wq)
 		return -ENOMEM;
 	return 0;
 }
 subsys_initcall(default_bdi_init);
 
-
 static void wb_update_bandwidth_workfn(struct work_struct *work)
 {
 	/* Stub: bw_dwork never scheduled in minimal kernel */
 }
 
-#define INIT_BW		(100 << (20 - PAGE_SHIFT))
+#define INIT_BW (100 << (20 - PAGE_SHIFT))
 
 static int wb_init(struct bdi_writeback *wb, struct backing_dev_info *bdi,
 		   gfp_t gfp)
@@ -139,7 +146,6 @@ static void cgwb_remove_from_bdi_list(struct bdi_writeback *wb);
 
 static void wb_shutdown(struct bdi_writeback *wb)
 {
-	 
 	spin_lock_bh(&wb->work_lock);
 	if (!test_and_clear_bit(WB_registered, &wb->state)) {
 		spin_unlock_bh(&wb->work_lock);
@@ -148,7 +154,7 @@ static void wb_shutdown(struct bdi_writeback *wb)
 	spin_unlock_bh(&wb->work_lock);
 
 	cgwb_remove_from_bdi_list(wb);
-	 
+
 	mod_delayed_work(bdi_wq, &wb->dwork, 0);
 	flush_delayed_work(&wb->dwork);
 	WARN_ON(!list_empty(&wb->work_list));
@@ -167,19 +173,19 @@ static void wb_exit(struct bdi_writeback *wb)
 	fprop_local_destroy_percpu(&wb->completions);
 }
 
-
 static int cgwb_bdi_init(struct backing_dev_info *bdi)
 {
 	return wb_init(&bdi->wb, bdi, GFP_KERNEL);
 }
 
-static void cgwb_bdi_unregister(struct backing_dev_info *bdi) { }
+static void cgwb_bdi_unregister(struct backing_dev_info *bdi)
+{
+}
 
 static void cgwb_remove_from_bdi_list(struct bdi_writeback *wb)
 {
 	list_del_rcu(&wb->bdi_node);
 }
-
 
 int bdi_init(struct backing_dev_info *bdi)
 {
@@ -219,7 +225,6 @@ struct backing_dev_info *bdi_alloc(int node_id)
 	return bdi;
 }
 
-
 static void bdi_remove_from_list(struct backing_dev_info *bdi)
 {
 	spin_lock_bh(&bdi_lock);
@@ -234,12 +239,10 @@ void bdi_unregister(struct backing_dev_info *bdi)
 {
 	del_timer_sync(&bdi->laptop_mode_wb_timer);
 
-	 
 	bdi_remove_from_list(bdi);
 	wb_shutdown(&bdi->wb);
 	cgwb_bdi_unregister(bdi);
 
-	 
 	if (bdi->min_ratio)
 		bdi_set_min_ratio(bdi, 0);
 
@@ -258,7 +261,7 @@ void bdi_unregister(struct backing_dev_info *bdi)
 static void release_bdi(struct kref *ref)
 {
 	struct backing_dev_info *bdi =
-			container_of(ref, struct backing_dev_info, refcnt);
+		container_of(ref, struct backing_dev_info, refcnt);
 
 	WARN_ON_ONCE(test_bit(WB_registered, &bdi->wb.state));
 	WARN_ON_ONCE(bdi->dev);
@@ -281,4 +284,3 @@ struct backing_dev_info *inode_to_bdi(struct inode *inode)
 	sb = inode->i_sb;
 	return sb->s_bdi;
 }
-

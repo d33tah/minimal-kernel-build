@@ -48,7 +48,8 @@ static void class_release(struct kobject *kobj)
 	kfree(cp);
 }
 
-static const struct kobj_ns_type_operations *class_child_ns_type(struct kobject *kobj)
+static const struct kobj_ns_type_operations *
+class_child_ns_type(struct kobject *kobj)
 {
 	struct subsys_private *cp = to_subsys_private(kobj);
 	struct class *class = cp->class;
@@ -57,19 +58,17 @@ static const struct kobj_ns_type_operations *class_child_ns_type(struct kobject 
 }
 
 static const struct sysfs_ops class_sysfs_ops = {
-	.show	   = class_attr_show,
-	.store	   = class_attr_store,
+	.show = class_attr_show,
+	.store = class_attr_store,
 };
 
 static struct kobj_type class_ktype = {
-	.sysfs_ops	= &class_sysfs_ops,
-	.release	= class_release,
-	.child_ns_type	= class_child_ns_type,
+	.sysfs_ops = &class_sysfs_ops,
+	.release = class_release,
+	.child_ns_type = class_child_ns_type,
 };
 
 static struct kset *class_kset;
-
-
 
 static struct class *class_get(struct class *cls)
 {
@@ -124,7 +123,8 @@ int __class_register(struct class *cls, struct lock_class_key *key)
 	cp = kzalloc(sizeof(*cp), GFP_KERNEL);
 	if (!cp)
 		return -ENOMEM;
-	klist_init(&cp->klist_devices, klist_class_dev_get, klist_class_dev_put);
+	klist_init(&cp->klist_devices, klist_class_dev_get,
+		   klist_class_dev_put);
 	INIT_LIST_HEAD(&cp->interfaces);
 	kset_init(&cp->glue_dirs);
 	__mutex_init(&cp->mutex, "subsys mutex", key);
@@ -134,7 +134,6 @@ int __class_register(struct class *cls, struct lock_class_key *key)
 		return error;
 	}
 
-	 
 	if (!cls->dev_kobj)
 		cls->dev_kobj = sysfs_dev_char_kobj;
 
@@ -191,7 +190,6 @@ error:
 	return ERR_PTR(retval);
 }
 
-
 void class_dev_iter_init(struct class_dev_iter *iter, struct class *class,
 			 struct device *start, const struct device_type *type)
 {
@@ -223,8 +221,8 @@ void class_dev_iter_exit(struct class_dev_iter *iter)
 	klist_iter_exit(&iter->ki);
 }
 
-int class_for_each_device(struct class *class, struct device *start,
-			  void *data, int (*fn)(struct device *, void *))
+int class_for_each_device(struct class *class, struct device *start, void *data,
+			  int (*fn)(struct device *, void *))
 {
 	struct class_dev_iter iter;
 	struct device *dev;
@@ -312,5 +310,3 @@ int __init classes_init(void)
 		return -ENOMEM;
 	return 0;
 }
-
-

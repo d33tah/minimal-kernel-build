@@ -18,5 +18,5 @@ unsigned long lcm_not_zero(unsigned long a, unsigned long b)
 	if (l)
 		return l;
 
-	return (b ? : a);
+	return (b ?: a);
 }

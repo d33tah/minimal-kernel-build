@@ -2,8 +2,11 @@
 #include <linux/module.h>
 #include <linux/io.h>
 
-#define movs(type,to,from) \
-	asm volatile("movs" type:"=&D" (to), "=&S" (from):"0" (to), "1" (from):"memory")
+#define movs(type, to, from)                  \
+	asm volatile("movs" type              \
+		     : "=&D"(to), "=&S"(from) \
+		     : "0"(to), "1"(from)     \
+		     : "memory")
 
 static __always_inline void rep_movs(void *to, const void *from, size_t n)
 {
@@ -16,46 +19,47 @@ static __always_inline void rep_movs(void *to, const void *from, size_t n)
 		     "je 2f\n\t"
 		     "movsb\n"
 		     "2:"
-		     : "=&c" (d0), "=&D" (d1), "=&S" (d2)
-		     : "0" (n / 4), "q" (n), "1" ((long)to), "2" ((long)from)
+		     : "=&c"(d0), "=&D"(d1), "=&S"(d2)
+		     : "0"(n / 4), "q"(n), "1"((long)to), "2"((long)from)
 		     : "memory");
 }
 
-static void string_memcpy_fromio(void *to, const volatile void __iomem *from, size_t n)
+static void string_memcpy_fromio(void *to, const volatile void __iomem *from,
+				 size_t n)
 {
 	if (unlikely(!n))
 		return;
 
-	 
 	if (unlikely(1 & (unsigned long)from)) {
 		movs("b", to, from);
 		n--;
 	}
 	if (n > 1 && unlikely(2 & (unsigned long)from)) {
 		movs("w", to, from);
-		n-=2;
+		n -= 2;
 	}
 	rep_movs(to, (const void *)from, n);
 }
 
-static void string_memcpy_toio(volatile void __iomem *to, const void *from, size_t n)
+static void string_memcpy_toio(volatile void __iomem *to, const void *from,
+			       size_t n)
 {
 	if (unlikely(!n))
 		return;
 
-	 
 	if (unlikely(1 & (unsigned long)to)) {
 		movs("b", to, from);
 		n--;
 	}
 	if (n > 1 && unlikely(2 & (unsigned long)to)) {
 		movs("w", to, from);
-		n-=2;
+		n -= 2;
 	}
-	rep_movs((void *)to, (const void *) from, n);
+	rep_movs((void *)to, (const void *)from, n);
 }
 
-static void unrolled_memcpy_fromio(void *to, const volatile void __iomem *from, size_t n)
+static void unrolled_memcpy_fromio(void *to, const volatile void __iomem *from,
+				   size_t n)
 {
 	const volatile char __iomem *in = from;
 	char *out = to;
@@ -65,7 +69,8 @@ static void unrolled_memcpy_fromio(void *to, const volatile void __iomem *from, 
 		out[i] = readb(&in[i]);
 }
 
-static void unrolled_memcpy_toio(volatile void __iomem *to, const void *from, size_t n)
+static void unrolled_memcpy_toio(volatile void __iomem *to, const void *from,
+				 size_t n)
 {
 	volatile char __iomem *out = to;
 	const char *in = from;
@@ -105,7 +110,6 @@ void memset_io(volatile void __iomem *a, int b, size_t c)
 	if (cc_platform_has(CC_ATTR_GUEST_UNROLL_STRING_IO)) {
 		unrolled_memset_io(a, b, c);
 	} else {
-		 
 		memset((void *)a, b, c);
 	}
 }

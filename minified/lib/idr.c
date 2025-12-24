@@ -6,8 +6,8 @@
 #include <linux/spinlock.h>
 #include <linux/xarray.h>
 
-int idr_alloc_u32(struct idr *idr, void *ptr, u32 *nextid,
-			unsigned long max, gfp_t gfp)
+int idr_alloc_u32(struct idr *idr, void *ptr, u32 *nextid, unsigned long max,
+		  gfp_t gfp)
 {
 	struct radix_tree_iter iter;
 	void __rcu **slot;
@@ -24,7 +24,7 @@ int idr_alloc_u32(struct idr *idr, void *ptr, u32 *nextid,
 		return PTR_ERR(slot);
 
 	*nextid = iter.index + base;
-	 
+
 	radix_tree_iter_replace(&idr->idr_rt, &iter, slot, ptr);
 	radix_tree_iter_tag_clear(&idr->idr_rt, &iter, IDR_FREE);
 
@@ -93,10 +93,8 @@ void *idr_replace(struct idr *idr, void *ptr, unsigned long id)
 	return entry;
 }
 
-
-
 int ida_alloc_range(struct ida *ida, unsigned int min, unsigned int max,
-			gfp_t gfp)
+		    gfp_t gfp)
 {
 	XA_STATE(xas, &ida->xa, min / IDA_BITMAP_BITS);
 	unsigned bit = min % IDA_BITMAP_BITS;
@@ -223,14 +221,12 @@ void ida_free(struct ida *ida, unsigned int id)
 		xas_set_mark(&xas, XA_FREE_MARK);
 		if (bitmap_empty(bitmap->bitmap, IDA_BITMAP_BITS)) {
 			kfree(bitmap);
-delete:
-			xas_store(&xas, NULL);
+			delete : xas_store(&xas, NULL);
 		}
 	}
 	xas_unlock_irqrestore(&xas, flags);
 	return;
- err:
+err:
 	xas_unlock_irqrestore(&xas, flags);
 	WARN(1, "ida_free called for id=%d which is not allocated.\n", id);
 }
-

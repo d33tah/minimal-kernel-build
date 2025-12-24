@@ -21,25 +21,22 @@ struct ce_unbind {
 static u64 cev_delta2ns(unsigned long latch, struct clock_event_device *evt,
 			bool ismax)
 {
-	u64 clc = (u64) latch << evt->shift;
+	u64 clc = (u64)latch << evt->shift;
 	u64 rnd;
 
 	if (WARN_ON(!evt->mult))
 		evt->mult = 1;
-	rnd = (u64) evt->mult - 1;
+	rnd = (u64)evt->mult - 1;
 
-	 
 	if ((clc >> evt->shift) != (u64)latch)
 		clc = ~0ULL;
 
-	 
 	if ((~0ULL - clc > rnd) &&
 	    (!ismax || evt->mult <= (1ULL << evt->shift)))
 		clc += rnd;
 
 	do_div(clc, evt->mult);
 
-	 
 	return clc > 1000 ? clc : 1000;
 }
 
@@ -49,10 +46,8 @@ static int __clockevents_switch_state(struct clock_event_device *dev,
 	if (dev->features & CLOCK_EVT_FEAT_DUMMY)
 		return 0;
 
-	 
 	switch (state) {
 	case CLOCK_EVT_STATE_DETACHED:
-		 
 
 	case CLOCK_EVT_STATE_SHUTDOWN:
 		if (dev->set_state_shutdown)
@@ -60,7 +55,7 @@ static int __clockevents_switch_state(struct clock_event_device *dev,
 		return 0;
 
 	case CLOCK_EVT_STATE_PERIODIC:
-		 
+
 		if (!(dev->features & CLOCK_EVT_FEAT_PERIODIC))
 			return -ENOSYS;
 		if (dev->set_state_periodic)
@@ -68,7 +63,7 @@ static int __clockevents_switch_state(struct clock_event_device *dev,
 		return 0;
 
 	case CLOCK_EVT_STATE_ONESHOT:
-		 
+
 		if (!(dev->features & CLOCK_EVT_FEAT_ONESHOT))
 			return -ENOSYS;
 		if (dev->set_state_oneshot)
@@ -76,10 +71,9 @@ static int __clockevents_switch_state(struct clock_event_device *dev,
 		return 0;
 
 	case CLOCK_EVT_STATE_ONESHOT_STOPPED:
-		 
+
 		if (WARN_ONCE(!clockevent_state_oneshot(dev),
-			      "Current state: %d\n",
-			      clockevent_get_state(dev)))
+			      "Current state: %d\n", clockevent_get_state(dev)))
 			return -EINVAL;
 
 		if (dev->set_state_oneshot_stopped)
@@ -101,7 +95,6 @@ void clockevents_switch_state(struct clock_event_device *dev,
 
 		clockevent_set_state(dev, state);
 
-		 
 		if (clockevent_state_oneshot(dev)) {
 			if (WARN_ON(!dev->mult))
 				dev->mult = 1;
@@ -125,12 +118,10 @@ int clockevents_tick_resume(struct clock_event_device *dev)
 	return ret;
 }
 
-
-#define MIN_DELTA_LIMIT		(NSEC_PER_SEC / HZ)
+#define MIN_DELTA_LIMIT (NSEC_PER_SEC / HZ)
 
 static int clockevents_increase_min_delta(struct clock_event_device *dev)
 {
-	 
 	if (dev->min_delta_ns >= MIN_DELTA_LIMIT) {
 		printk_deferred(KERN_WARNING
 				"CE: Reprogramming failure. Giving up\n");
@@ -149,7 +140,7 @@ static int clockevents_increase_min_delta(struct clock_event_device *dev)
 	printk_deferred(KERN_WARNING
 			"CE: %s increased min_delta_ns to %llu nsec\n",
 			dev->name ? dev->name : "?",
-			(unsigned long long) dev->min_delta_ns);
+			(unsigned long long)dev->min_delta_ns);
 	return 0;
 }
 
@@ -167,19 +158,17 @@ static int clockevents_program_min_delta(struct clock_event_device *dev)
 			return 0;
 
 		dev->retries++;
-		clc = ((unsigned long long) delta * dev->mult) >> dev->shift;
-		if (dev->set_next_event((unsigned long) clc, dev) == 0)
+		clc = ((unsigned long long)delta * dev->mult) >> dev->shift;
+		if (dev->set_next_event((unsigned long)clc, dev) == 0)
 			return 0;
 
 		if (++i > 2) {
-			 
 			if (clockevents_increase_min_delta(dev))
 				return -ETIME;
 			i = 0;
 		}
 	}
 }
-
 
 int clockevents_program_event(struct clock_event_device *dev, ktime_t expires,
 			      bool force)
@@ -196,11 +185,9 @@ int clockevents_program_event(struct clock_event_device *dev, ktime_t expires,
 	if (clockevent_state_shutdown(dev))
 		return 0;
 
-	 
 	WARN_ONCE(!clockevent_state_oneshot(dev), "Current state: %d\n",
 		  clockevent_get_state(dev));
 
-	 
 	if (dev->features & CLOCK_EVT_FEAT_KTIME)
 		return dev->set_next_ktime(expires, dev);
 
@@ -208,11 +195,11 @@ int clockevents_program_event(struct clock_event_device *dev, ktime_t expires,
 	if (delta <= 0)
 		return force ? clockevents_program_min_delta(dev) : -ETIME;
 
-	delta = min(delta, (int64_t) dev->max_delta_ns);
-	delta = max(delta, (int64_t) dev->min_delta_ns);
+	delta = min(delta, (int64_t)dev->max_delta_ns);
+	delta = max(delta, (int64_t)dev->min_delta_ns);
 
-	clc = ((unsigned long long) delta * dev->mult) >> dev->shift;
-	rc = dev->set_next_event((unsigned long) clc, dev);
+	clc = ((unsigned long long)delta * dev->mult) >> dev->shift;
+	rc = dev->set_next_event((unsigned long)clc, dev);
 
 	return (rc && force) ? clockevents_program_min_delta(dev) : rc;
 }
@@ -233,7 +220,6 @@ void clockevents_register_device(struct clock_event_device *dev)
 {
 	unsigned long flags;
 
-	 
 	clockevent_set_state(dev, CLOCK_EVT_STATE_DETACHED);
 
 	if (!dev->cpumask) {
@@ -242,7 +228,8 @@ void clockevents_register_device(struct clock_event_device *dev)
 	}
 
 	if (dev->cpumask == cpu_all_mask) {
-		WARN(1, "%s cpumask == cpu_all_mask, using cpu_possible_mask instead\n",
+		WARN(1,
+		     "%s cpumask == cpu_all_mask, using cpu_possible_mask instead\n",
 		     dev->name);
 		dev->cpumask = cpu_possible_mask;
 	}
@@ -263,7 +250,6 @@ static void clockevents_config(struct clock_event_device *dev, u32 freq)
 	if (!(dev->features & CLOCK_EVT_FEAT_ONESHOT))
 		return;
 
-	 
 	sec = dev->max_delta_ticks;
 	do_div(sec, freq);
 	if (!sec)
@@ -276,8 +262,8 @@ static void clockevents_config(struct clock_event_device *dev, u32 freq)
 	dev->max_delta_ns = cev_delta2ns(dev->max_delta_ticks, dev, true);
 }
 
-void clockevents_config_and_register(struct clock_event_device *dev,
-				     u32 freq, unsigned long min_delta,
+void clockevents_config_and_register(struct clock_event_device *dev, u32 freq,
+				     unsigned long min_delta,
 				     unsigned long max_delta)
 {
 	dev->min_delta_ticks = min_delta;
@@ -293,7 +279,6 @@ void clockevents_handle_noop(struct clock_event_device *dev)
 void clockevents_exchange_device(struct clock_event_device *old,
 				 struct clock_event_device *new)
 {
-	 
 	if (old) {
 		module_put(old->owner);
 		clockevents_switch_state(old, CLOCK_EVT_STATE_DETACHED);
@@ -305,7 +290,3 @@ void clockevents_exchange_device(struct clock_event_device *old,
 		clockevents_shutdown(new);
 	}
 }
-
-
-
-

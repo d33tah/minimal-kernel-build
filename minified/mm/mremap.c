@@ -108,14 +108,13 @@ static void drop_rmap_locks(struct vm_area_struct *vma)
 
 static pte_t move_soft_dirty_pte(pte_t pte)
 {
-	 
 	return pte;
 }
 
 static void move_ptes(struct vm_area_struct *vma, pmd_t *old_pmd,
-		unsigned long old_addr, unsigned long old_end,
-		struct vm_area_struct *new_vma, pmd_t *new_pmd,
-		unsigned long new_addr, bool need_rmap_locks)
+		      unsigned long old_addr, unsigned long old_end,
+		      struct vm_area_struct *new_vma, pmd_t *new_pmd,
+		      unsigned long new_addr, bool need_rmap_locks)
 {
 	struct mm_struct *mm = vma->vm_mm;
 	pte_t *old_pte, *new_pte, pte;
@@ -123,11 +122,9 @@ static void move_ptes(struct vm_area_struct *vma, pmd_t *old_pmd,
 	bool force_flush = false;
 	unsigned long len = old_end - old_addr;
 
-	 
 	if (need_rmap_locks)
 		take_rmap_locks(vma);
 
-	 
 	old_pte = pte_offset_map_lock(mm, old_pmd, old_addr, &old_ptl);
 	new_pte = pte_offset_map(new_pmd, new_addr);
 	new_ptl = pte_lockptr(mm, new_pmd);
@@ -136,13 +133,13 @@ static void move_ptes(struct vm_area_struct *vma, pmd_t *old_pmd,
 	flush_tlb_batched_pending(vma->vm_mm);
 	arch_enter_lazy_mmu_mode();
 
-	for (; old_addr < old_end; old_pte++, old_addr += PAGE_SIZE,
-				   new_pte++, new_addr += PAGE_SIZE) {
+	for (; old_addr < old_end; old_pte++, old_addr += PAGE_SIZE, new_pte++,
+				   new_addr += PAGE_SIZE) {
 		if (pte_none(*old_pte))
 			continue;
 
 		pte = ptep_get_and_clear(mm, old_addr, old_pte);
-		 
+
 		if (pte_present(pte))
 			force_flush = true;
 		pte = move_pte(pte, new_vma->vm_page_prot, old_addr, new_addr);
@@ -166,12 +163,13 @@ static void move_ptes(struct vm_area_struct *vma, pmd_t *old_pmd,
 static inline bool arch_supports_page_table_move(void)
 {
 	return IS_ENABLED(CONFIG_HAVE_MOVE_PMD) ||
-		IS_ENABLED(CONFIG_HAVE_MOVE_PUD);
+	       IS_ENABLED(CONFIG_HAVE_MOVE_PUD);
 }
 #endif
 
 static bool move_normal_pmd(struct vm_area_struct *vma, unsigned long old_addr,
-		  unsigned long new_addr, pmd_t *old_pmd, pmd_t *new_pmd)
+			    unsigned long new_addr, pmd_t *old_pmd,
+			    pmd_t *new_pmd)
 {
 	spinlock_t *old_ptl, *new_ptl;
 	struct mm_struct *mm = vma->vm_mm;
@@ -179,17 +177,15 @@ static bool move_normal_pmd(struct vm_area_struct *vma, unsigned long old_addr,
 
 	if (!arch_supports_page_table_move())
 		return false;
-	 
+
 	if (WARN_ON_ONCE(!pmd_none(*new_pmd)))
 		return false;
 
-	 
 	old_ptl = pmd_lock(vma->vm_mm, old_pmd);
 	new_ptl = pmd_lockptr(mm, new_pmd);
 	if (new_ptl != old_ptl)
 		spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
 
-	 
 	pmd = *old_pmd;
 	pmd_clear(old_pmd);
 
@@ -206,7 +202,8 @@ static bool move_normal_pmd(struct vm_area_struct *vma, unsigned long old_addr,
 
 /* --- 2025-12-22 04:35 --- Removed #else branch - CONFIG_HAVE_MOVE_PUD is set */
 static bool move_normal_pud(struct vm_area_struct *vma, unsigned long old_addr,
-		  unsigned long new_addr, pud_t *old_pud, pud_t *new_pud)
+			    unsigned long new_addr, pud_t *old_pud,
+			    pud_t *new_pud)
 {
 	spinlock_t *old_ptl, *new_ptl;
 	struct mm_struct *mm = vma->vm_mm;
@@ -218,12 +215,10 @@ static bool move_normal_pud(struct vm_area_struct *vma, unsigned long old_addr,
 	if (WARN_ON_ONCE(!pud_none(*new_pud)))
 		return false;
 
-
 	old_ptl = pud_lock(vma->vm_mm, old_pud);
 	new_ptl = pud_lockptr(mm, new_pud);
 	if (new_ptl != old_ptl)
 		spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
-
 
 	pud = *old_pud;
 	pud_clear(old_pud);
@@ -247,8 +242,9 @@ enum pgt_entry {
 };
 
 static __always_inline unsigned long get_extent(enum pgt_entry entry,
-			unsigned long old_addr, unsigned long old_end,
-			unsigned long new_addr)
+						unsigned long old_addr,
+						unsigned long old_end,
+						unsigned long new_addr)
 {
 	unsigned long next, extent, mask, size;
 
@@ -269,7 +265,7 @@ static __always_inline unsigned long get_extent(enum pgt_entry entry,
 	}
 
 	next = (old_addr + size) & mask;
-	 
+
 	extent = next - old_addr;
 	if (extent > old_end - old_addr)
 		extent = old_end - old_addr;
@@ -280,12 +276,12 @@ static __always_inline unsigned long get_extent(enum pgt_entry entry,
 }
 
 static bool move_pgt_entry(enum pgt_entry entry, struct vm_area_struct *vma,
-			unsigned long old_addr, unsigned long new_addr,
-			void *old_entry, void *new_entry, bool need_rmap_locks)
+			   unsigned long old_addr, unsigned long new_addr,
+			   void *old_entry, void *new_entry,
+			   bool need_rmap_locks)
 {
 	bool moved = false;
 
-	 
 	if (need_rmap_locks)
 		take_rmap_locks(vma);
 
@@ -316,9 +312,10 @@ static bool move_pgt_entry(enum pgt_entry entry, struct vm_area_struct *vma,
 }
 
 unsigned long move_page_tables(struct vm_area_struct *vma,
-		unsigned long old_addr, struct vm_area_struct *new_vma,
-		unsigned long new_addr, unsigned long len,
-		bool need_rmap_locks)
+			       unsigned long old_addr,
+			       struct vm_area_struct *new_vma,
+			       unsigned long new_addr, unsigned long len,
+			       bool need_rmap_locks)
 {
 	unsigned long extent, old_end;
 	struct mmu_notifier_range range;
@@ -341,7 +338,7 @@ unsigned long move_page_tables(struct vm_area_struct *vma,
 
 	for (; old_addr < old_end; old_addr += extent, new_addr += extent) {
 		cond_resched();
-		 
+
 		extent = get_extent(NORMAL_PUD, old_addr, old_end, new_addr);
 
 		old_pud = get_old_pud(vma->vm_mm, old_addr);
@@ -352,13 +349,14 @@ unsigned long move_page_tables(struct vm_area_struct *vma,
 			break;
 		if (pud_trans_huge(*old_pud) || pud_devmap(*old_pud)) {
 			if (extent == HPAGE_PUD_SIZE) {
-				move_pgt_entry(HPAGE_PUD, vma, old_addr, new_addr,
-					       old_pud, new_pud, need_rmap_locks);
-				 
+				move_pgt_entry(HPAGE_PUD, vma, old_addr,
+					       new_addr, old_pud, new_pud,
+					       need_rmap_locks);
+
 				continue;
 			}
-		} else if (IS_ENABLED(CONFIG_HAVE_MOVE_PUD) && extent == PUD_SIZE) {
-
+		} else if (IS_ENABLED(CONFIG_HAVE_MOVE_PUD) &&
+			   extent == PUD_SIZE) {
 			if (move_pgt_entry(NORMAL_PUD, vma, old_addr, new_addr,
 					   old_pud, new_pud, true))
 				continue;
@@ -382,7 +380,6 @@ unsigned long move_page_tables(struct vm_area_struct *vma,
 				continue;
 		} else if (IS_ENABLED(CONFIG_HAVE_MOVE_PMD) &&
 			   extent == PMD_SIZE) {
-			 
 			if (move_pgt_entry(NORMAL_PMD, vma, old_addr, new_addr,
 					   old_pmd, new_pmd, true))
 				continue;
@@ -396,13 +393,12 @@ unsigned long move_page_tables(struct vm_area_struct *vma,
 
 	mmu_notifier_invalidate_range_end(&range);
 
-	return len + old_addr - old_end;	 
+	return len + old_addr - old_end;
 }
 
-
 SYSCALL_DEFINE5(mremap, unsigned long, addr, unsigned long, old_len,
-		unsigned long, new_len, unsigned long, flags,
-		unsigned long, new_addr)
+		unsigned long, new_len, unsigned long, flags, unsigned long,
+		new_addr)
 {
 	/* Stubbed: mremap not needed for minimal kernel */
 	return -ENOSYS;

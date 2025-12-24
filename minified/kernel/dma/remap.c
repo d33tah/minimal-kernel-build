@@ -11,20 +11,20 @@ struct page **dma_common_find_pages(void *cpu_addr)
 	return area->pages;
 }
 
-void *dma_common_pages_remap(struct page **pages, size_t size,
-			 pgprot_t prot, const void *caller)
+void *dma_common_pages_remap(struct page **pages, size_t size, pgprot_t prot,
+			     const void *caller)
 {
 	void *vaddr;
 
-	vaddr = vmap(pages, PAGE_ALIGN(size) >> PAGE_SHIFT,
-		     VM_DMA_COHERENT, prot);
+	vaddr = vmap(pages, PAGE_ALIGN(size) >> PAGE_SHIFT, VM_DMA_COHERENT,
+		     prot);
 	if (vaddr)
 		find_vm_area(vaddr)->pages = pages;
 	return vaddr;
 }
 
-void *dma_common_contiguous_remap(struct page *page, size_t size,
-			pgprot_t prot, const void *caller)
+void *dma_common_contiguous_remap(struct page *page, size_t size, pgprot_t prot,
+				  const void *caller)
 {
 	int count = PAGE_ALIGN(size) >> PAGE_SHIFT;
 	struct page **pages;

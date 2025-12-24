@@ -12,8 +12,14 @@
 #include <linux/slab.h>
 
 /* Inlined from pinctrl/devinfo.h - stubs for no PINCTRL */
-static inline int pinctrl_bind_pins(struct device *dev) { return 0; }
-static inline int pinctrl_init_done(struct device *dev) { return 0; }
+static inline int pinctrl_bind_pins(struct device *dev)
+{
+	return 0;
+}
+static inline int pinctrl_init_done(struct device *dev)
+{
+	return 0;
+}
 
 #include "base.h"
 #include "power/power.h"
@@ -24,10 +30,10 @@ static LIST_HEAD(deferred_probe_active_list);
 static atomic_t deferred_trigger_count = ATOMIC_INIT(0);
 static bool initcalls_done;
 
-
 static bool defer_all_probes;
 
-static void __device_set_deferred_probe_reason(const struct device *dev, char *reason)
+static void __device_set_deferred_probe_reason(const struct device *dev,
+					       char *reason)
 {
 	kfree(dev->p->deferred_probe_reason);
 	dev->p->deferred_probe_reason = reason;
@@ -37,11 +43,11 @@ static void deferred_probe_work_func(struct work_struct *work)
 {
 	struct device *dev;
 	struct device_private *private;
-	 
+
 	mutex_lock(&deferred_probe_mutex);
 	while (!list_empty(&deferred_probe_active_list)) {
 		private = list_first_entry(&deferred_probe_active_list,
-					typeof(*dev->p), deferred_probe);
+					   typeof(*dev->p), deferred_probe);
 		dev = private->device;
 		list_del_init(&private->deferred_probe);
 
@@ -49,10 +55,8 @@ static void deferred_probe_work_func(struct work_struct *work)
 
 		__device_set_deferred_probe_reason(dev, NULL);
 
-		 
 		mutex_unlock(&deferred_probe_mutex);
 
-		 
 		device_pm_move_to_tail(dev);
 
 		dev_dbg(dev, "Retrying from deferred list\n");
@@ -73,7 +77,8 @@ void driver_deferred_probe_add(struct device *dev)
 	mutex_lock(&deferred_probe_mutex);
 	if (list_empty(&dev->p->deferred_probe)) {
 		dev_dbg(dev, "Added to deferred list\n");
-		list_add_tail(&dev->p->deferred_probe, &deferred_probe_pending_list);
+		list_add_tail(&dev->p->deferred_probe,
+			      &deferred_probe_pending_list);
 	}
 	mutex_unlock(&deferred_probe_mutex);
 }
@@ -95,21 +100,16 @@ static void driver_deferred_probe_trigger(void)
 	if (!driver_deferred_probe_enable)
 		return;
 
-	 
 	mutex_lock(&deferred_probe_mutex);
 	atomic_inc(&deferred_trigger_count);
 	list_splice_tail_init(&deferred_probe_pending_list,
 			      &deferred_probe_active_list);
 	mutex_unlock(&deferred_probe_mutex);
 
-	 
 	queue_work(system_unbound_wq, &deferred_probe_work);
 }
 
-
 int driver_deferred_probe_timeout;
-
-
 
 static void deferred_probe_timeout_work_func(struct work_struct *work)
 {
@@ -122,17 +122,18 @@ static void deferred_probe_timeout_work_func(struct work_struct *work)
 	flush_work(&deferred_probe_work);
 
 	mutex_lock(&deferred_probe_mutex);
-	list_for_each_entry(p, &deferred_probe_pending_list, deferred_probe);
+	list_for_each_entry(p, &deferred_probe_pending_list, deferred_probe)
+		;
 	mutex_unlock(&deferred_probe_mutex);
 }
-static DECLARE_DELAYED_WORK(deferred_probe_timeout_work, deferred_probe_timeout_work_func);
+static DECLARE_DELAYED_WORK(deferred_probe_timeout_work,
+			    deferred_probe_timeout_work_func);
 
 void deferred_probe_extend_timeout(void)
 {
-	 
 	if (cancel_delayed_work(&deferred_probe_timeout_work)) {
 		schedule_delayed_work(&deferred_probe_timeout_work,
-				driver_deferred_probe_timeout * HZ);
+				      driver_deferred_probe_timeout * HZ);
 	}
 }
 
@@ -153,9 +154,7 @@ bool device_is_bound(struct device *dev)
 
 static void driver_bound(struct device *dev)
 {
-	 
 }
-
 
 /* Stub: driver_sysfs_add/remove not needed for minimal kernel (no sysfs browsing) */
 static int driver_sysfs_add(struct device *dev)
@@ -215,7 +214,7 @@ static int call_driver_probe(struct device *dev, struct device_driver *drv)
 	case 0:
 		break;
 	case -EPROBE_DEFER:
-		 
+
 		dev_dbg(dev, "Driver %s requests probe deferral\n", drv->name);
 		break;
 	case -ENODEV:
@@ -233,7 +232,6 @@ static int really_probe(struct device *dev, struct device_driver *drv)
 	int ret;
 
 	if (defer_all_probes) {
-		 
 		dev_dbg(dev, "Driver %s force probe deferral\n", drv->name);
 		return -EPROBE_DEFER;
 	}
@@ -250,7 +248,6 @@ static int really_probe(struct device *dev, struct device_driver *drv)
 
 	dev->driver = drv;
 
-	 
 	ret = pinctrl_bind_pins(dev);
 	if (ret)
 		goto pinctrl_bind_failed;
@@ -263,8 +260,8 @@ static int really_probe(struct device *dev, struct device_driver *drv)
 
 	ret = driver_sysfs_add(dev);
 	if (ret) {
-		pr_err("%s: driver_sysfs_add(%s) failed\n",
-		       __func__, dev_name(dev));
+		pr_err("%s: driver_sysfs_add(%s) failed\n", __func__,
+		       dev_name(dev));
 		goto sysfs_failed;
 	}
 
@@ -276,7 +273,6 @@ static int really_probe(struct device *dev, struct device_driver *drv)
 
 	ret = call_driver_probe(dev, drv);
 	if (ret) {
-		 
 		ret = -ret;
 		goto probe_failed;
 	}
@@ -314,7 +310,6 @@ done:
 	return ret;
 }
 
-
 int driver_probe_done(void)
 {
 	int local_probe_count = atomic_read(&probe_count);
@@ -326,10 +321,8 @@ int driver_probe_done(void)
 
 void wait_for_device_probe(void)
 {
-	 
 	flush_work(&deferred_probe_work);
 
-	 
 	wait_event(probe_waitqueue, atomic_read(&probe_count) == 0);
 	async_synchronize_full();
 }
@@ -370,7 +363,6 @@ static int driver_probe_device(struct device_driver *drv, struct device *dev)
 	if (ret == -EPROBE_DEFER || ret == EPROBE_DEFER) {
 		driver_deferred_probe_add(dev);
 
-		 
 		if (trigger_count != atomic_read(&deferred_trigger_count) &&
 		    !defer_all_probes)
 			driver_deferred_probe_trigger();
@@ -379,8 +371,6 @@ static int driver_probe_device(struct device_driver *drv, struct device *dev)
 	wake_up_all(&probe_waitqueue);
 	return ret;
 }
-
-
 
 /* Stub: driver_allows_async_probing not used in minimal kernel */
 bool driver_allows_async_probing(struct device_driver *drv)
@@ -391,13 +381,10 @@ bool driver_allows_async_probing(struct device_driver *drv)
 struct device_attach_data {
 	struct device *dev;
 
-	 
 	bool check_async;
 
-	 
 	bool want_async;
 
-	 
 	bool have_async;
 };
 
@@ -410,7 +397,6 @@ static int __device_attach_driver(struct device_driver *drv, void *_data)
 
 	ret = driver_match_device(drv, dev);
 	if (ret == 0) {
-		 
 		return 0;
 	} else if (ret == -EPROBE_DEFER) {
 		dev_dbg(dev, "Device match requests probe deferral\n");
@@ -419,7 +405,7 @@ static int __device_attach_driver(struct device_driver *drv, void *_data)
 	} else if (ret < 0) {
 		dev_dbg(dev, "Bus failed to match device: %d\n", ret);
 		return ret;
-	}  
+	}
 
 	async_allowed = driver_allows_async_probing(drv);
 
@@ -429,7 +415,6 @@ static int __device_attach_driver(struct device_driver *drv, void *_data)
 	if (data->check_async && async_allowed != data->want_async)
 		return 0;
 
-	 
 	ret = driver_probe_device(drv, dev);
 	if (ret < 0)
 		return ret;
@@ -440,14 +425,13 @@ static void __device_attach_async_helper(void *_dev, async_cookie_t cookie)
 {
 	struct device *dev = _dev;
 	struct device_attach_data data = {
-		.dev		= dev,
-		.check_async	= true,
-		.want_async	= true,
+		.dev = dev,
+		.check_async = true,
+		.want_async = true,
 	};
 
 	device_lock(dev);
 
-	 
 	if (dev->p->dead || dev->driver)
 		goto out_unlock;
 
@@ -498,9 +482,8 @@ static int __device_attach(struct device *dev, bool allow_async)
 			pm_runtime_get_sync(dev->parent);
 
 		ret = bus_for_each_drv(dev->bus, NULL, &data,
-					__device_attach_driver);
+				       __device_attach_driver);
 		if (!ret && allow_async && data.have_async) {
-			 
 			dev_dbg(dev, "scheduling asynchronous probe\n");
 			get_device(dev);
 			async = true;
@@ -542,7 +525,6 @@ static void __device_driver_unlock(struct device *dev, struct device *parent)
 		device_unlock(parent);
 }
 
-
 static void __driver_attach_async_helper(void *_dev, async_cookie_t cookie)
 {
 	struct device *dev = _dev;
@@ -565,11 +547,8 @@ static int __driver_attach(struct device *dev, void *data)
 	struct device_driver *drv = data;
 	int ret;
 
-	 
-
 	ret = driver_match_device(drv, dev);
 	if (ret == 0) {
-		 
 		return 0;
 	} else if (ret == -EPROBE_DEFER) {
 		dev_dbg(dev, "Device match requests probe deferral\n");
@@ -578,10 +557,9 @@ static int __driver_attach(struct device *dev, void *data)
 	} else if (ret < 0) {
 		dev_dbg(dev, "Bus failed to match device: %d\n", ret);
 		return ret;
-	}  
+	}
 
 	if (driver_allows_async_probing(drv)) {
-		 
 		dev_dbg(dev, "probing driver %s asynchronously\n", drv->name);
 		device_lock(dev);
 		if (!dev->driver && !dev->p->async_driver) {
@@ -619,7 +597,7 @@ static void __device_release_driver(struct device *dev, struct device *parent)
 			device_links_unbind_consumers(dev);
 
 			__device_driver_lock(dev, parent);
-			 
+
 			if (dev->driver != drv) {
 				pm_runtime_put(dev);
 				return;
@@ -668,10 +646,8 @@ void device_release_driver_internal(struct device *dev,
 
 void device_release_driver(struct device *dev)
 {
-	 
 	device_release_driver_internal(dev, NULL, NULL);
 }
-
 
 void driver_detach(struct device_driver *drv)
 {
@@ -688,8 +664,8 @@ void driver_detach(struct device_driver *drv)
 			break;
 		}
 		dev_prv = list_last_entry(&drv->p->klist_devices.k_list,
-				     struct device_private,
-				     knode_driver.n_node);
+					  struct device_private,
+					  knode_driver.n_node);
 		dev = dev_prv->device;
 		get_device(dev);
 		spin_unlock(&drv->p->klist_devices.k_lock);

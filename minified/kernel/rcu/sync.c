@@ -4,14 +4,13 @@
 
 enum { GP_IDLE = 0, GP_ENTER, GP_PASSED, GP_EXIT, GP_REPLAY };
 
-#define	rss_lock	gp_wait.lock
+#define rss_lock gp_wait.lock
 
 void rcu_sync_init(struct rcu_sync *rsp)
 {
 	memset(rsp, 0, sizeof(*rsp));
 	init_waitqueue_head(&rsp->gp_wait);
 }
-
 
 static void rcu_sync_func(struct rcu_head *rhp);
 
@@ -30,15 +29,12 @@ static void rcu_sync_func(struct rcu_head *rhp)
 
 	spin_lock_irqsave(&rsp->rss_lock, flags);
 	if (rsp->gp_count) {
-		 
 		WRITE_ONCE(rsp->gp_state, GP_PASSED);
 		wake_up_locked(&rsp->gp_wait);
 	} else if (rsp->gp_state == GP_REPLAY) {
-		 
 		WRITE_ONCE(rsp->gp_state, GP_EXIT);
 		rcu_sync_call(rsp);
 	} else {
-		 
 		WRITE_ONCE(rsp->gp_state, GP_IDLE);
 	}
 	spin_unlock_irqrestore(&rsp->rss_lock, flags);
@@ -53,16 +49,14 @@ void rcu_sync_enter(struct rcu_sync *rsp)
 	if (gp_state == GP_IDLE) {
 		WRITE_ONCE(rsp->gp_state, GP_ENTER);
 		WARN_ON_ONCE(rsp->gp_count);
-		 
 	}
 	rsp->gp_count++;
 	spin_unlock_irq(&rsp->rss_lock);
 
 	if (gp_state == GP_IDLE) {
-		 
 		synchronize_rcu();
 		rcu_sync_func(&rsp->cb_head);
-		 
+
 		return;
 	}
 

@@ -5,7 +5,6 @@
 #include <asm/apic.h>
 #include <asm/nmi.h>
 
-
 #ifdef arch_trigger_cpumask_backtrace
 static void nmi_raise_cpu_backtrace(cpumask_t *mask)
 {
@@ -29,8 +28,8 @@ NOKPROBE_SYMBOL(nmi_cpu_backtrace_handler);
 
 static int __init register_nmi_cpu_backtrace_handler(void)
 {
-	register_nmi_handler(NMI_LOCAL, nmi_cpu_backtrace_handler,
-				0, "arch_bt");
+	register_nmi_handler(NMI_LOCAL, nmi_cpu_backtrace_handler, 0,
+			     "arch_bt");
 	return 0;
 }
 early_initcall(register_nmi_cpu_backtrace_handler);

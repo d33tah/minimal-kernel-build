@@ -9,7 +9,10 @@
 #include <linux/rmap.h>
 #include <linux/swap.h>
 #include <linux/swapops.h>
-static inline bool vma_is_secretmem(struct vm_area_struct *vma) { return false; }
+static inline bool vma_is_secretmem(struct vm_area_struct *vma)
+{
+	return false;
+}
 
 #include <linux/sched/signal.h>
 #include <linux/rwsem.h>
@@ -28,7 +31,6 @@ struct follow_page_context {
 	unsigned int page_mask;
 };
 
-
 static inline struct folio *try_get_folio(struct page *page, int refs)
 {
 	struct folio *folio;
@@ -40,7 +42,6 @@ retry:
 	if (unlikely(!folio_ref_try_add_rcu(folio, refs)))
 		return NULL;
 
-	
 	if (unlikely(page_folio(page) != folio)) {
 		folio_put_refs(folio, refs);
 		goto retry;
@@ -56,22 +57,19 @@ struct folio *try_grab_folio(struct page *page, int refs, unsigned int flags)
 	else if (flags & FOLL_PIN) {
 		struct folio *folio;
 
-		
 		if (unlikely((flags & FOLL_LONGTERM) &&
 			     !is_pinnable_page(page)))
 			return NULL;
 
-		
 		folio = try_get_folio(page, refs);
 		if (!folio)
 			return NULL;
 
-		
 		if (folio_test_large(folio))
 			atomic_add(refs, folio_pincount_ptr(folio));
 		else
 			folio_ref_add(folio,
-					refs * (GUP_PIN_COUNTING_BIAS - 1));
+				      refs * (GUP_PIN_COUNTING_BIAS - 1));
 		node_stat_mod_folio(folio, NR_FOLL_PIN_ACQUIRED, refs);
 
 		return folio;
@@ -80,7 +78,6 @@ struct folio *try_grab_folio(struct page *page, int refs, unsigned int flags)
 	WARN_ON_ONCE(1);
 	return NULL;
 }
-
 
 bool __must_check try_grab_page(struct page *page, unsigned int flags)
 {
@@ -93,7 +90,6 @@ bool __must_check try_grab_page(struct page *page, unsigned int flags)
 	if (flags & FOLL_GET)
 		folio_ref_inc(folio);
 	else if (flags & FOLL_PIN) {
-		
 		if (folio_test_large(folio)) {
 			folio_ref_add(folio, 1);
 			atomic_add(1, folio_pincount_ptr(folio));
@@ -107,7 +103,6 @@ bool __must_check try_grab_page(struct page *page, unsigned int flags)
 	return true;
 }
 
-
 static inline void mm_set_has_pinned_flag(unsigned long *mm_flags)
 {
 	if (!test_bit(MMF_HAS_PINNED, mm_flags))
@@ -115,17 +110,16 @@ static inline void mm_set_has_pinned_flag(unsigned long *mm_flags)
 }
 
 static struct page *no_page_table(struct vm_area_struct *vma,
-		unsigned int flags)
+				  unsigned int flags)
 {
-	
 	if ((flags & FOLL_DUMP) &&
-			(vma_is_anonymous(vma) || !vma->vm_ops->fault))
+	    (vma_is_anonymous(vma) || !vma->vm_ops->fault))
 		return ERR_PTR(-EFAULT);
 	return NULL;
 }
 
 static int follow_pfn_pte(struct vm_area_struct *vma, unsigned long address,
-		pte_t *pte, unsigned int flags)
+			  pte_t *pte, unsigned int flags)
 {
 	if (flags & FOLL_TOUCH) {
 		pte_t entry = *pte;
@@ -140,19 +134,19 @@ static int follow_pfn_pte(struct vm_area_struct *vma, unsigned long address,
 		}
 	}
 
-	
 	return -EEXIST;
 }
 
 static inline bool can_follow_write_pte(pte_t pte, unsigned int flags)
 {
 	return pte_write(pte) ||
-		((flags & FOLL_FORCE) && (flags & FOLL_COW) && pte_dirty(pte));
+	       ((flags & FOLL_FORCE) && (flags & FOLL_COW) && pte_dirty(pte));
 }
 
 static struct page *follow_page_pte(struct vm_area_struct *vma,
-		unsigned long address, pmd_t *pmd, unsigned int flags,
-		struct dev_pagemap **pgmap)
+				    unsigned long address, pmd_t *pmd,
+				    unsigned int flags,
+				    struct dev_pagemap **pgmap)
 {
 	struct mm_struct *mm = vma->vm_mm;
 	struct page *page;
@@ -160,7 +154,6 @@ static struct page *follow_page_pte(struct vm_area_struct *vma,
 	pte_t *ptep, pte;
 	int ret;
 
-	
 	if (WARN_ON_ONCE((flags & (FOLL_PIN | FOLL_GET)) ==
 			 (FOLL_PIN | FOLL_GET)))
 		return ERR_PTR(-EINVAL);
@@ -172,7 +165,7 @@ retry:
 	pte = *ptep;
 	if (!pte_present(pte)) {
 		swp_entry_t entry;
-		
+
 		if (likely(!(flags & FOLL_MIGRATION)))
 			goto no_page;
 		if (pte_none(pte))
@@ -193,7 +186,6 @@ retry:
 
 	page = vm_normal_page(vma, address, pte);
 	if (!page && pte_devmap(pte) && (flags & (FOLL_GET | FOLL_PIN))) {
-		
 		*pgmap = get_dev_pagemap(pte_pfn(pte), *pgmap);
 		if (*pgmap)
 			page = pte_page(pte);
@@ -201,7 +193,6 @@ retry:
 			goto no_page;
 	} else if (unlikely(!page)) {
 		if (flags & FOLL_DUMP) {
-			
 			page = ERR_PTR(-EFAULT);
 			goto out;
 		}
@@ -221,14 +212,14 @@ retry:
 	}
 
 	VM_BUG_ON_PAGE((flags & FOLL_PIN) && PageAnon(page) &&
-		       !PageAnonExclusive(page), page);
+			       !PageAnonExclusive(page),
+		       page);
 
-	
 	if (unlikely(!try_grab_page(page, flags))) {
 		page = ERR_PTR(-ENOMEM);
 		goto out;
 	}
-	
+
 	if (flags & FOLL_PIN) {
 		ret = arch_make_page_accessible(page);
 		if (ret) {
@@ -238,10 +229,9 @@ retry:
 		}
 	}
 	if (flags & FOLL_TOUCH) {
-		if ((flags & FOLL_WRITE) &&
-		    !pte_dirty(pte) && !PageDirty(page))
+		if ((flags & FOLL_WRITE) && !pte_dirty(pte) && !PageDirty(page))
 			set_page_dirty(page);
-		
+
 		mark_page_accessed(page);
 	}
 out:
@@ -265,7 +255,7 @@ static struct page *follow_pmd_mask(struct vm_area_struct *vma,
 	struct mm_struct *mm = vma->vm_mm;
 
 	pmd = pmd_offset(pudp, address);
-	
+
 	pmdval = READ_ONCE(*pmd);
 	if (pmd_none(pmdval))
 		return no_page_table(vma, flags);
@@ -276,25 +266,23 @@ static struct page *follow_pmd_mask(struct vm_area_struct *vma,
 		return no_page_table(vma, flags);
 	}
 	if (is_hugepd(__hugepd(pmd_val(pmdval)))) {
-		page = follow_huge_pd(vma, address,
-				      __hugepd(pmd_val(pmdval)), flags,
-				      PMD_SHIFT);
+		page = follow_huge_pd(vma, address, __hugepd(pmd_val(pmdval)),
+				      flags, PMD_SHIFT);
 		if (page)
 			return page;
 		return no_page_table(vma, flags);
 	}
 retry:
 	if (!pmd_present(pmdval)) {
-		
 		VM_BUG_ON(!thp_migration_supported() ||
-				  !is_pmd_migration_entry(pmdval));
+			  !is_pmd_migration_entry(pmdval));
 
 		if (likely(!(flags & FOLL_MIGRATION)))
 			return no_page_table(vma, flags);
 
 		pmd_migration_entry_wait(mm, pmd);
 		pmdval = READ_ONCE(*pmd);
-		
+
 		if (pmd_none(pmdval))
 			return no_page_table(vma, flags);
 		goto retry;
@@ -345,7 +333,8 @@ retry_locked:
 		}
 
 		return ret ? ERR_PTR(ret) :
-			follow_page_pte(vma, address, pmd, flags, &ctx->pgmap);
+			     follow_page_pte(vma, address, pmd, flags,
+					     &ctx->pgmap);
 	}
 	page = follow_trans_huge_pmd(vma, address, pmd, flags);
 	spin_unlock(ptl);
@@ -373,9 +362,8 @@ static struct page *follow_pud_mask(struct vm_area_struct *vma,
 		return no_page_table(vma, flags);
 	}
 	if (is_hugepd(__hugepd(pud_val(*pud)))) {
-		page = follow_huge_pd(vma, address,
-				      __hugepd(pud_val(*pud)), flags,
-				      PUD_SHIFT);
+		page = follow_huge_pd(vma, address, __hugepd(pud_val(*pud)),
+				      flags, PUD_SHIFT);
 		if (page)
 			return page;
 		return no_page_table(vma, flags);
@@ -409,9 +397,8 @@ static struct page *follow_p4d_mask(struct vm_area_struct *vma,
 		return no_page_table(vma, flags);
 
 	if (is_hugepd(__hugepd(p4d_val(*p4d)))) {
-		page = follow_huge_pd(vma, address,
-				      __hugepd(p4d_val(*p4d)), flags,
-				      P4D_SHIFT);
+		page = follow_huge_pd(vma, address, __hugepd(p4d_val(*p4d)),
+				      flags, P4D_SHIFT);
 		if (page)
 			return page;
 		return no_page_table(vma, flags);
@@ -420,8 +407,8 @@ static struct page *follow_p4d_mask(struct vm_area_struct *vma,
 }
 
 static struct page *follow_page_mask(struct vm_area_struct *vma,
-			      unsigned long address, unsigned int flags,
-			      struct follow_page_context *ctx)
+				     unsigned long address, unsigned int flags,
+				     struct follow_page_context *ctx)
 {
 	pgd_t *pgd;
 	struct page *page;
@@ -429,7 +416,6 @@ static struct page *follow_page_mask(struct vm_area_struct *vma,
 
 	ctx->page_mask = 0;
 
-	
 	page = follow_huge_addr(mm, address, flags & FOLL_WRITE);
 	if (!IS_ERR(page)) {
 		WARN_ON_ONCE(flags & (FOLL_GET | FOLL_PIN));
@@ -448,9 +434,8 @@ static struct page *follow_page_mask(struct vm_area_struct *vma,
 		return no_page_table(vma, flags);
 	}
 	if (is_hugepd(__hugepd(pgd_val(*pgd)))) {
-		page = follow_huge_pd(vma, address,
-				      __hugepd(pgd_val(*pgd)), flags,
-				      PGDIR_SHIFT);
+		page = follow_huge_pd(vma, address, __hugepd(pgd_val(*pgd)),
+				      flags, PGDIR_SHIFT);
 		if (page)
 			return page;
 		return no_page_table(vma, flags);
@@ -459,10 +444,9 @@ static struct page *follow_page_mask(struct vm_area_struct *vma,
 	return follow_p4d_mask(vma, address, pgd, flags, ctx);
 }
 
-
 static int get_gate_page(struct mm_struct *mm, unsigned long address,
-		unsigned int gup_flags, struct vm_area_struct **vma,
-		struct page **page)
+			 unsigned int gup_flags, struct vm_area_struct **vma,
+			 struct page **page)
 {
 	pgd_t *pgd;
 	p4d_t *p4d;
@@ -471,7 +455,6 @@ static int get_gate_page(struct mm_struct *mm, unsigned long address,
 	pte_t *pte;
 	int ret = -EFAULT;
 
-	
 	if (gup_flags & FOLL_WRITE)
 		return -EFAULT;
 	if (address > TASK_SIZE)
@@ -513,9 +496,8 @@ unmap:
 	return ret;
 }
 
-static int faultin_page(struct vm_area_struct *vma,
-		unsigned long address, unsigned int *flags, bool unshare,
-		int *locked)
+static int faultin_page(struct vm_area_struct *vma, unsigned long address,
+			unsigned int *flags, bool unshare, int *locked)
 {
 	unsigned int fault_flags = 0;
 	vm_fault_t ret;
@@ -531,12 +513,11 @@ static int faultin_page(struct vm_area_struct *vma,
 	if (*flags & FOLL_NOWAIT)
 		fault_flags |= FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_RETRY_NOWAIT;
 	if (*flags & FOLL_TRIED) {
-		
 		fault_flags |= FAULT_FLAG_TRIED;
 	}
 	if (unshare) {
 		fault_flags |= FAULT_FLAG_UNSHARE;
-		
+
 		VM_BUG_ON(fault_flags & FAULT_FLAG_WRITE);
 	}
 
@@ -555,7 +536,6 @@ static int faultin_page(struct vm_area_struct *vma,
 		return -EBUSY;
 	}
 
-	
 	if ((ret & VM_FAULT_WRITE) && !(vma->vm_flags & VM_WRITE))
 		*flags |= FOLL_COW;
 	return 0;
@@ -583,27 +563,27 @@ static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
 		if (!(vm_flags & VM_WRITE)) {
 			if (!(gup_flags & FOLL_FORCE))
 				return -EFAULT;
-			
+
 			if (!is_cow_mapping(vm_flags))
 				return -EFAULT;
 		}
 	} else if (!(vm_flags & VM_READ)) {
 		if (!(gup_flags & FOLL_FORCE))
 			return -EFAULT;
-		
+
 		if (!(vm_flags & VM_MAYREAD))
 			return -EFAULT;
 	}
-	
+
 	if (!arch_vma_access_permitted(vma, write, false, foreign))
 		return -EFAULT;
 	return 0;
 }
 
-static long __get_user_pages(struct mm_struct *mm,
-		unsigned long start, unsigned long nr_pages,
-		unsigned int gup_flags, struct page **pages,
-		struct vm_area_struct **vmas, int *locked)
+static long __get_user_pages(struct mm_struct *mm, unsigned long start,
+			     unsigned long nr_pages, unsigned int gup_flags,
+			     struct page **pages, struct vm_area_struct **vmas,
+			     int *locked)
 {
 	long ret = 0, i = 0;
 	struct vm_area_struct *vma = NULL;
@@ -616,7 +596,6 @@ static long __get_user_pages(struct mm_struct *mm,
 
 	VM_BUG_ON(!!pages != !!(gup_flags & (FOLL_GET | FOLL_PIN)));
 
-	
 	if (!(gup_flags & FOLL_FORCE))
 		gup_flags |= FOLL_NUMA;
 
@@ -625,13 +604,12 @@ static long __get_user_pages(struct mm_struct *mm,
 		unsigned int foll_flags = gup_flags;
 		unsigned int page_increm;
 
-		
 		if (!vma || start >= vma->vm_end) {
 			vma = find_extend_vma(mm, start);
 			if (!vma && in_gate_area(mm, start)) {
 				ret = get_gate_page(mm, start & PAGE_MASK,
-						gup_flags, &vma,
-						pages ? &pages[i] : NULL);
+						    gup_flags, &vma,
+						    pages ? &pages[i] : NULL);
 				if (ret)
 					goto out;
 				ctx.page_mask = 0;
@@ -648,10 +626,9 @@ static long __get_user_pages(struct mm_struct *mm,
 
 			if (is_vm_hugetlb_page(vma)) {
 				i = follow_hugetlb_page(mm, vma, pages, vmas,
-						&start, &nr_pages, i,
-						gup_flags, locked);
+							&start, &nr_pages, i,
+							gup_flags, locked);
 				if (locked && *locked == 0) {
-					
 					BUG_ON(gup_flags & FOLL_NOWAIT);
 					goto out;
 				}
@@ -659,7 +636,7 @@ static long __get_user_pages(struct mm_struct *mm,
 			}
 		}
 retry:
-		
+
 		if (fatal_signal_pending(current)) {
 			ret = -EINTR;
 			goto out;
@@ -683,7 +660,6 @@ retry:
 			}
 			BUG();
 		} else if (PTR_ERR(page) == -EEXIST) {
-			
 			if (pages) {
 				ret = PTR_ERR(page);
 				goto out;
@@ -718,42 +694,36 @@ out:
 	return i ? i : ret;
 }
 
-
-static __always_inline long __get_user_pages_locked(struct mm_struct *mm,
-						unsigned long start,
-						unsigned long nr_pages,
-						struct page **pages,
-						struct vm_area_struct **vmas,
-						int *locked,
-						unsigned int flags)
+static __always_inline long
+__get_user_pages_locked(struct mm_struct *mm, unsigned long start,
+			unsigned long nr_pages, struct page **pages,
+			struct vm_area_struct **vmas, int *locked,
+			unsigned int flags)
 {
 	long ret, pages_done;
 	bool lock_dropped;
 
 	if (locked) {
-		
 		BUG_ON(vmas);
-		
+
 		BUG_ON(*locked != 1);
 	}
 
 	if (flags & FOLL_PIN)
 		mm_set_has_pinned_flag(&mm->flags);
 
-	
 	if (pages && !(flags & FOLL_PIN))
 		flags |= FOLL_GET;
 
 	pages_done = 0;
 	lock_dropped = false;
 	for (;;) {
-		ret = __get_user_pages(mm, start, nr_pages, flags, pages,
-				       vmas, locked);
+		ret = __get_user_pages(mm, start, nr_pages, flags, pages, vmas,
+				       locked);
 		if (!locked)
-			
+
 			return ret;
 
-		
 		if (!*locked) {
 			BUG_ON(ret < 0);
 			BUG_ON(ret >= nr_pages);
@@ -766,19 +736,17 @@ static __always_inline long __get_user_pages_locked(struct mm_struct *mm,
 				break;
 		}
 		if (*locked) {
-			
 			if (!pages_done)
 				pages_done = ret;
 			break;
 		}
-		
+
 		if (likely(pages))
 			pages += ret;
 		start += ret << PAGE_SHIFT;
 		lock_dropped = true;
 
 retry:
-		
 
 		if (fatal_signal_pending(current)) {
 			if (!pages_done)
@@ -795,10 +763,9 @@ retry:
 		}
 
 		*locked = 1;
-		ret = __get_user_pages(mm, start, 1, flags | FOLL_TRIED,
-				       pages, NULL, locked);
+		ret = __get_user_pages(mm, start, 1, flags | FOLL_TRIED, pages,
+				       NULL, locked);
 		if (!*locked) {
-			
 			BUG_ON(ret != 0);
 			goto retry;
 		}
@@ -817,15 +784,14 @@ retry:
 		start += PAGE_SIZE;
 	}
 	if (lock_dropped && *locked) {
-		
 		mmap_read_unlock(mm);
 		*locked = 0;
 	}
 	return pages_done;
 }
 
-long populate_vma_page_range(struct vm_area_struct *vma,
-		unsigned long start, unsigned long end, int *locked)
+long populate_vma_page_range(struct vm_area_struct *vma, unsigned long start,
+			     unsigned long end, int *locked)
 {
 	struct mm_struct *mm = vma->vm_mm;
 	unsigned long nr_pages = (end - start) / PAGE_SIZE;
@@ -835,29 +801,25 @@ long populate_vma_page_range(struct vm_area_struct *vma,
 	VM_BUG_ON(!PAGE_ALIGNED(start));
 	VM_BUG_ON(!PAGE_ALIGNED(end));
 	VM_BUG_ON_VMA(start < vma->vm_start, vma);
-	VM_BUG_ON_VMA(end   > vma->vm_end, vma);
+	VM_BUG_ON_VMA(end > vma->vm_end, vma);
 	mmap_assert_locked(mm);
 
-	
 	if (vma->vm_flags & VM_LOCKONFAULT)
 		return nr_pages;
 
 	gup_flags = FOLL_TOUCH;
-	
+
 	if ((vma->vm_flags & (VM_WRITE | VM_SHARED)) == VM_WRITE)
 		gup_flags |= FOLL_WRITE;
 
-	
 	if (vma_is_accessible(vma))
 		gup_flags |= FOLL_FORCE;
 
-	
-	ret = __get_user_pages(mm, start, nr_pages, gup_flags,
-				NULL, NULL, locked);
+	ret = __get_user_pages(mm, start, nr_pages, gup_flags, NULL, NULL,
+			       locked);
 	lru_add_drain();
 	return ret;
 }
-
 
 int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)
 {
@@ -870,7 +832,6 @@ int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)
 	end = start + len;
 
 	for (nstart = start; nstart < end; nstart = nend) {
-		
 		if (!locked) {
 			locked = 1;
 			mmap_read_lock(mm);
@@ -879,18 +840,18 @@ int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)
 			vma = vma->vm_next;
 		if (!vma || vma->vm_start >= end)
 			break;
-		
+
 		nend = min(end, vma->vm_end);
 		if (vma->vm_flags & (VM_IO | VM_PFNMAP))
 			continue;
 		if (nstart < vma->vm_start)
 			nstart = vma->vm_start;
-		
+
 		ret = populate_vma_page_range(vma, nstart, nend, &locked);
 		if (ret < 0) {
 			if (ignore_errors) {
 				ret = 0;
-				continue;	
+				continue;
 			}
 			break;
 		}
@@ -899,7 +860,7 @@ int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)
 	}
 	if (locked)
 		mmap_read_unlock(mm);
-	return ret;	
+	return ret;
 }
 
 size_t fault_in_writeable(char __user *uaddr, size_t size)
@@ -965,10 +926,8 @@ static long check_and_migrate_movable_pages(unsigned long nr_pages,
 	return nr_pages;
 }
 
-static long __gup_longterm_locked(struct mm_struct *mm,
-				  unsigned long start,
-				  unsigned long nr_pages,
-				  struct page **pages,
+static long __gup_longterm_locked(struct mm_struct *mm, unsigned long start,
+				  unsigned long nr_pages, struct page **pages,
 				  struct vm_area_struct **vmas,
 				  unsigned int gup_flags)
 {
@@ -993,46 +952,43 @@ static long __gup_longterm_locked(struct mm_struct *mm,
 
 static bool is_valid_gup_flags(unsigned int gup_flags)
 {
-	
 	if (WARN_ON_ONCE(gup_flags & FOLL_PIN))
 		return false;
-	
+
 	if (WARN_ON_ONCE(gup_flags & FOLL_LONGTERM))
 		return false;
 
 	return true;
 }
 
-static long __get_user_pages_remote(struct mm_struct *mm,
-				    unsigned long start, unsigned long nr_pages,
+static long __get_user_pages_remote(struct mm_struct *mm, unsigned long start,
+				    unsigned long nr_pages,
 				    unsigned int gup_flags, struct page **pages,
 				    struct vm_area_struct **vmas, int *locked)
 {
-	
 	if (gup_flags & FOLL_LONGTERM) {
 		if (WARN_ON_ONCE(locked))
 			return -EINVAL;
-		
-		return __gup_longterm_locked(mm, start, nr_pages, pages,
-					     vmas, gup_flags | FOLL_TOUCH |
-					     FOLL_REMOTE);
+
+		return __gup_longterm_locked(mm, start, nr_pages, pages, vmas,
+					     gup_flags | FOLL_TOUCH |
+						     FOLL_REMOTE);
 	}
 
-	return __get_user_pages_locked(mm, start, nr_pages, pages, vmas,
-				       locked,
+	return __get_user_pages_locked(mm, start, nr_pages, pages, vmas, locked,
 				       gup_flags | FOLL_TOUCH | FOLL_REMOTE);
 }
 
-long get_user_pages_remote(struct mm_struct *mm,
-		unsigned long start, unsigned long nr_pages,
-		unsigned int gup_flags, struct page **pages,
-		struct vm_area_struct **vmas, int *locked)
+long get_user_pages_remote(struct mm_struct *mm, unsigned long start,
+			   unsigned long nr_pages, unsigned int gup_flags,
+			   struct page **pages, struct vm_area_struct **vmas,
+			   int *locked)
 {
 	if (!is_valid_gup_flags(gup_flags))
 		return -EINVAL;
 
-	return __get_user_pages_remote(mm, start, nr_pages, gup_flags,
-				       pages, vmas, locked);
+	return __get_user_pages_remote(mm, start, nr_pages, gup_flags, pages,
+				       vmas, locked);
 }
 
 /* get_user_pages_unlocked, get_user_pages_fast_only, get_user_pages_fast,

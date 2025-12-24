@@ -4,36 +4,25 @@
 #ifdef XZ_DEC_BCJ
 
 struct xz_dec_bcj {
+	enum { BCJ_X86 = 4 } type;
 
-	enum {
-		BCJ_X86 = 4
-	} type;
-
-	 
 	enum xz_ret ret;
 
-	 
 	bool single_call;
 
-	 
 	uint32_t pos;
 
-	 
 	uint32_t x86_prev_mask;
 
-	 
 	uint8_t *out;
 	size_t out_pos;
 	size_t out_size;
 
 	struct {
-		 
 		size_t filtered;
 
-		 
 		size_t size;
 
-		 
 		uint8_t buf[16];
 	} temp;
 };
@@ -46,8 +35,9 @@ static inline int bcj_x86_test_msbyte(uint8_t b)
 
 static size_t bcj_x86(struct xz_dec_bcj *s, uint8_t *buf, size_t size)
 {
-	static const bool mask_to_allowed_status[8]
-		= { true, true, true, false, true, false, false, false };
+	static const bool mask_to_allowed_status[8] = { true,  true, true,
+							false, true, false,
+							false, false };
 
 	static const uint8_t mask_to_bit_num[8] = { 0, 1, 2, 2, 3, 3, 3, 3 };
 
@@ -74,8 +64,8 @@ static size_t bcj_x86(struct xz_dec_bcj *s, uint8_t *buf, size_t size)
 			prev_mask = (prev_mask << (prev_pos - 1)) & 7;
 			if (prev_mask != 0) {
 				b = buf[i + 4 - mask_to_bit_num[prev_mask]];
-				if (!mask_to_allowed_status[prev_mask]
-						|| bcj_x86_test_msbyte(b)) {
+				if (!mask_to_allowed_status[prev_mask] ||
+				    bcj_x86_test_msbyte(b)) {
 					prev_pos = i;
 					prev_mask = (prev_mask << 1) | 1;
 					continue;
@@ -115,8 +105,8 @@ static size_t bcj_x86(struct xz_dec_bcj *s, uint8_t *buf, size_t size)
 }
 #endif
 
-static void bcj_apply(struct xz_dec_bcj *s,
-		      uint8_t *buf, size_t *pos, size_t size)
+static void bcj_apply(struct xz_dec_bcj *s, uint8_t *buf, size_t *pos,
+		      size_t size)
 {
 	size_t filtered;
 
@@ -130,7 +120,7 @@ static void bcj_apply(struct xz_dec_bcj *s,
 		break;
 #endif
 	default:
-		 
+
 		filtered = 0;
 		break;
 	}
@@ -158,7 +148,6 @@ XZ_EXTERN enum xz_ret xz_dec_bcj_run(struct xz_dec_bcj *s,
 {
 	size_t out_start;
 
-	 
 	if (s->temp.filtered > 0) {
 		bcj_flush(s, b);
 		if (s->temp.filtered > 0)
@@ -168,20 +157,18 @@ XZ_EXTERN enum xz_ret xz_dec_bcj_run(struct xz_dec_bcj *s,
 			return XZ_STREAM_END;
 	}
 
-	 
 	if (s->temp.size < b->out_size - b->out_pos || s->temp.size == 0) {
 		out_start = b->out_pos;
 		memcpy(b->out + b->out_pos, s->temp.buf, s->temp.size);
 		b->out_pos += s->temp.size;
 
 		s->ret = xz_dec_lzma2_run(lzma2, b);
-		if (s->ret != XZ_STREAM_END
-				&& (s->ret != XZ_OK || s->single_call))
+		if (s->ret != XZ_STREAM_END &&
+		    (s->ret != XZ_OK || s->single_call))
 			return s->ret;
 
 		bcj_apply(s, b->out, &out_start, b->out_pos);
 
-		 
 		if (s->ret == XZ_STREAM_END)
 			return XZ_STREAM_END;
 
@@ -189,14 +176,11 @@ XZ_EXTERN enum xz_ret xz_dec_bcj_run(struct xz_dec_bcj *s,
 		b->out_pos -= s->temp.size;
 		memcpy(s->temp.buf, b->out + b->out_pos, s->temp.size);
 
-		 
 		if (b->out_pos + s->temp.size < b->out_size)
 			return XZ_OK;
 	}
 
-	 
 	if (b->out_pos < b->out_size) {
-		 
 		s->out = b->out;
 		s->out_pos = b->out_pos;
 		s->out_size = b->out_size;
@@ -216,7 +200,6 @@ XZ_EXTERN enum xz_ret xz_dec_bcj_run(struct xz_dec_bcj *s,
 
 		bcj_apply(s, s->temp.buf, &s->temp.filtered, s->temp.size);
 
-		 
 		if (s->ret == XZ_STREAM_END)
 			s->temp.filtered = s->temp.size;
 
@@ -246,7 +229,7 @@ XZ_EXTERN enum xz_ret xz_dec_bcj_reset(struct xz_dec_bcj *s, uint8_t id)
 		break;
 
 	default:
-		 
+
 		return XZ_OPTIONS_ERROR;
 	}
 

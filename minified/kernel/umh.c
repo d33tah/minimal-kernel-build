@@ -32,10 +32,10 @@ int call_usermodehelper(const char *path, char **argv, char **envp, int wait)
 	return -ENOENT;
 }
 
-struct subprocess_info *call_usermodehelper_setup(const char *path, char **argv,
-		char **envp, gfp_t gfp_mask,
-		int (*init)(struct subprocess_info *info, struct cred *new),
-		void (*cleanup)(struct subprocess_info *), void *data)
+struct subprocess_info *call_usermodehelper_setup(
+	const char *path, char **argv, char **envp, gfp_t gfp_mask,
+	int (*init)(struct subprocess_info *info, struct cred *new),
+	void (*cleanup)(struct subprocess_info *), void *data)
 {
 	return NULL;
 }

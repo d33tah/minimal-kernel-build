@@ -3,7 +3,7 @@
 #include <linux/mm.h>
 #include <linux/vmacache.h>
 
-#define VMACACHE_SHIFT	PMD_SHIFT
+#define VMACACHE_SHIFT PMD_SHIFT
 #define VMACACHE_HASH(addr) ((addr >> VMACACHE_SHIFT) & VMACACHE_MASK)
 
 static inline bool vmacache_valid_mm(struct mm_struct *mm)
@@ -26,7 +26,6 @@ static bool vmacache_valid(struct mm_struct *mm)
 
 	curr = current;
 	if (mm->vmacache_seqnum != curr->vmacache.seqnum) {
-		 
 		curr->vmacache.seqnum = mm->vmacache_seqnum;
 		vmacache_flush(curr);
 		return false;
@@ -59,4 +58,3 @@ struct vm_area_struct *vmacache_find(struct mm_struct *mm, unsigned long addr)
 
 	return NULL;
 }
-

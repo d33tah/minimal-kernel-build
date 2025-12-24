@@ -52,7 +52,6 @@ static void n_tty_flush_buffer(struct tty_struct *tty)
 
 static void n_tty_set_termios(struct tty_struct *tty, struct ktermios *old)
 {
-	 
 }
 
 static void n_tty_close(struct tty_struct *tty)
@@ -81,10 +80,9 @@ static int n_tty_open(struct tty_struct *tty)
 }
 
 static ssize_t n_tty_read(struct tty_struct *tty, struct file *file,
-			 unsigned char *buf, size_t nr,
-			 void **cookie, unsigned long offset)
+			  unsigned char *buf, size_t nr, void **cookie,
+			  unsigned long offset)
 {
-	 
 	return 0;
 }
 
@@ -104,7 +102,6 @@ static ssize_t n_tty_write(struct tty_struct *tty, struct file *file,
 
 	down_read(&tty->termios_rwsem);
 
-	 
 	while (nr > 0) {
 		mutex_lock(&ldata->output_lock);
 		c = tty->ops->write(tty, b, nr);
@@ -133,14 +130,13 @@ static ssize_t n_tty_write(struct tty_struct *tty, struct file *file,
 }
 
 static __poll_t n_tty_poll(struct tty_struct *tty, struct file *file,
-			  poll_table *wait)
+			   poll_table *wait)
 {
 	__poll_t mask = 0;
 
 	poll_wait(file, &tty->read_wait, wait);
 	poll_wait(file, &tty->write_wait, wait);
 
-	 
 	mask |= EPOLLOUT | EPOLLWRNORM;
 
 	return mask;
@@ -151,9 +147,9 @@ static int n_tty_ioctl(struct tty_struct *tty, unsigned int cmd,
 {
 	switch (cmd) {
 	case TIOCOUTQ:
-		return put_user(tty_chars_in_buffer(tty), (int __user *) arg);
+		return put_user(tty_chars_in_buffer(tty), (int __user *)arg);
 	case TIOCINQ:
-		return put_user(0, (unsigned int __user *) arg);
+		return put_user(0, (unsigned int __user *)arg);
 	default:
 		return n_tty_ioctl_helper(tty, cmd, arg);
 	}
@@ -162,31 +158,29 @@ static int n_tty_ioctl(struct tty_struct *tty, unsigned int cmd,
 static void n_tty_receive_buf(struct tty_struct *tty, const unsigned char *cp,
 			      const char *fp, int count)
 {
-	 
 }
 
 static int n_tty_receive_buf2(struct tty_struct *tty, const unsigned char *cp,
 			      const char *fp, int count)
 {
-	 
 	return 0;
 }
 
 static struct tty_ldisc_ops n_tty_ops = {
-	.owner		 = THIS_MODULE,
-	.num		 = N_TTY,
-	.name            = "n_tty",
-	.open            = n_tty_open,
-	.close           = n_tty_close,
-	.flush_buffer    = n_tty_flush_buffer,
-	.read            = n_tty_read,
-	.write           = n_tty_write,
-	.ioctl           = n_tty_ioctl,
-	.set_termios     = n_tty_set_termios,
-	.poll            = n_tty_poll,
-	.receive_buf     = n_tty_receive_buf,
-	.write_wakeup    = n_tty_write_wakeup,
-	.receive_buf2	 = n_tty_receive_buf2,
+	.owner = THIS_MODULE,
+	.num = N_TTY,
+	.name = "n_tty",
+	.open = n_tty_open,
+	.close = n_tty_close,
+	.flush_buffer = n_tty_flush_buffer,
+	.read = n_tty_read,
+	.write = n_tty_write,
+	.ioctl = n_tty_ioctl,
+	.set_termios = n_tty_set_termios,
+	.poll = n_tty_poll,
+	.receive_buf = n_tty_receive_buf,
+	.write_wakeup = n_tty_write_wakeup,
+	.receive_buf2 = n_tty_receive_buf2,
 };
 
 void __init n_tty_init(void)

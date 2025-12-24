@@ -11,12 +11,11 @@
 #include <linux/user_namespace.h>
 #include <linux/uaccess.h>
 
-
 const kernel_cap_t __cap_empty_set = CAP_EMPTY_SET;
 
 static bool privileged_wrt_inode_uidgid(struct user_namespace *ns,
-				 struct user_namespace *mnt_userns,
-				 const struct inode *inode)
+					struct user_namespace *mnt_userns,
+					const struct inode *inode)
 {
 	return kuid_has_mapping(ns, i_uid_into_mnt(mnt_userns, inode)) &&
 	       kgid_has_mapping(ns, i_gid_into_mnt(mnt_userns, inode));

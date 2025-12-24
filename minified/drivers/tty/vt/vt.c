@@ -24,7 +24,6 @@
 #include <linux/workqueue.h>
 #include <linux/pm.h>
 
-
 #include <linux/bitops.h>
 #include <linux/notifier.h>
 #include <linux/device.h>
@@ -35,7 +34,7 @@
 
 #define MAX_NR_CON_DRIVER 16
 
-#define CON_DRIVER_FLAG_INIT   2
+#define CON_DRIVER_FLAG_INIT 2
 
 struct con_driver {
 	const struct consw *con;
@@ -50,19 +49,19 @@ struct con_driver {
 static struct con_driver registered_con_driver[MAX_NR_CON_DRIVER];
 const struct consw *conswitchp;
 
-#define DEFAULT_BELL_PITCH	750
-#define DEFAULT_BELL_DURATION	(HZ/8)
-#define DEFAULT_CURSOR_BLINK_MS	200
+#define DEFAULT_BELL_PITCH 750
+#define DEFAULT_BELL_DURATION (HZ / 8)
+#define DEFAULT_CURSOR_BLINK_MS 200
 
-struct vc vc_cons [MAX_NR_CONSOLES];
+struct vc vc_cons[MAX_NR_CONSOLES];
 
 #ifndef VT_SINGLE_DRIVER
 static const struct consw *con_driver_map[MAX_NR_CONSOLES];
 #endif
 
 static int con_open(struct tty_struct *, struct file *);
-static void vc_init(struct vc_data *vc, unsigned int rows,
-		    unsigned int cols, int do_clear);
+static void vc_init(struct vc_data *vc, unsigned int rows, unsigned int cols,
+		    int do_clear);
 static void gotoxy(struct vc_data *vc, int new_x, int new_y);
 static void save_cur(struct vc_data *vc);
 static void reset_terminal(struct vc_data *vc, int do_clear);
@@ -102,7 +101,6 @@ static struct device *tty0dev;
 
 static ATOMIC_NOTIFIER_HEAD(vt_notifier_list);
 
-
 static void notify_write(struct vc_data *vc, unsigned int unicode)
 {
 	/* Stub: skip VT notifications for minimal kernel */
@@ -123,7 +121,6 @@ static inline bool con_should_update(const struct vc_data *vc)
 	return con_is_visible(vc) && !console_blanked;
 }
 
-
 #ifdef NO_VC_UNI_SCREEN
 
 #define get_vc_uniscr(vc) NULL
@@ -138,7 +135,6 @@ typedef uint32_t char32_t;
 struct uni_screen {
 	char32_t *lines[0];
 };
-
 
 static void vc_uniscr_clear_line(struct vc_data *vc, unsigned int x,
 				 unsigned int nr)
@@ -158,9 +154,8 @@ static void vc_uniscr_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
 	/* Stub: skip unicode screen buffer scroll for minimal kernel */
 }
 
-
 static void con_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
-		enum con_scroll dir, unsigned int nr)
+		       enum con_scroll dir, unsigned int nr)
 {
 	u16 *clear, *d, *s;
 
@@ -188,7 +183,7 @@ static void do_update_region(struct vc_data *vc, unsigned long start, int count)
 	unsigned int xx, yy, offset;
 	u16 *p;
 
-	p = (u16 *) start;
+	p = (u16 *)start;
 	if (!vc->vc_sw->con_getxy) {
 		offset = (start - vc->vc_origin) / 2;
 		xx = offset % vc->vc_cols;
@@ -196,16 +191,18 @@ static void do_update_region(struct vc_data *vc, unsigned long start, int count)
 	} else {
 		int nxx, nyy;
 		start = vc->vc_sw->con_getxy(vc, start, &nxx, &nyy);
-		xx = nxx; yy = nyy;
+		xx = nxx;
+		yy = nyy;
 	}
-	for(;;) {
+	for (;;) {
 		u16 attrib = scr_readw(p) & 0xff00;
 		int startx = xx;
 		u16 *q = p;
 		while (xx < vc->vc_cols && count) {
 			if (attrib != (scr_readw(p) & 0xff00)) {
 				if (p > q)
-					vc->vc_sw->con_putcs(vc, q, p-q, yy, startx);
+					vc->vc_sw->con_putcs(vc, q, p - q, yy,
+							     startx);
 				startx = xx;
 				q = p;
 				attrib = scr_readw(p) & 0xff00;
@@ -215,7 +212,7 @@ static void do_update_region(struct vc_data *vc, unsigned long start, int count)
 			count--;
 		}
 		if (p > q)
-			vc->vc_sw->con_putcs(vc, q, p-q, yy, startx);
+			vc->vc_sw->con_putcs(vc, q, p - q, yy, startx);
 		if (!count)
 			break;
 		xx = 0;
@@ -228,55 +225,53 @@ static void do_update_region(struct vc_data *vc, unsigned long start, int count)
 }
 
 static u8 build_attr(struct vc_data *vc, u8 _color,
-		enum vc_intensity _intensity, bool _blink, bool _underline,
-		bool _reverse, bool _italic)
+		     enum vc_intensity _intensity, bool _blink, bool _underline,
+		     bool _reverse, bool _italic)
 {
 	if (vc->vc_sw->con_build_attr)
-		return vc->vc_sw->con_build_attr(vc, _color, _intensity,
-		       _blink, _underline, _reverse, _italic);
+		return vc->vc_sw->con_build_attr(vc, _color, _intensity, _blink,
+						 _underline, _reverse, _italic);
 
 	{
-	u8 a = _color;
-	if (!vc->vc_can_do_color)
-		return _intensity |
-		       (_italic    << 1) |
-		       (_underline << 2) |
-		       (_reverse   << 3) |
-		       (_blink     << 7);
-	if (_italic)
-		a = (a & 0xF0) | vc->vc_itcolor;
-	else if (_underline)
-		a = (a & 0xf0) | vc->vc_ulcolor;
-	else if (_intensity == VCI_HALF_BRIGHT)
-		a = (a & 0xf0) | vc->vc_halfcolor;
-	if (_reverse)
-		a = (a & 0x88) | (((a >> 4) | (a << 4)) & 0x77);
-	if (_blink)
-		a ^= 0x80;
-	if (_intensity == VCI_BOLD)
-		a ^= 0x08;
-	if (vc->vc_hi_font_mask == 0x100)
-		a <<= 1;
-	return a;
+		u8 a = _color;
+		if (!vc->vc_can_do_color)
+			return _intensity | (_italic << 1) | (_underline << 2) |
+			       (_reverse << 3) | (_blink << 7);
+		if (_italic)
+			a = (a & 0xF0) | vc->vc_itcolor;
+		else if (_underline)
+			a = (a & 0xf0) | vc->vc_ulcolor;
+		else if (_intensity == VCI_HALF_BRIGHT)
+			a = (a & 0xf0) | vc->vc_halfcolor;
+		if (_reverse)
+			a = (a & 0x88) | (((a >> 4) | (a << 4)) & 0x77);
+		if (_blink)
+			a ^= 0x80;
+		if (_intensity == VCI_BOLD)
+			a ^= 0x08;
+		if (vc->vc_hi_font_mask == 0x100)
+			a <<= 1;
+		return a;
 	}
 }
 
 static void update_attr(struct vc_data *vc)
 {
 	vc->vc_attr = build_attr(vc, vc->state.color, vc->state.intensity,
-	              vc->state.blink, vc->state.underline,
-	              vc->state.reverse ^ vc->vc_decscnm, vc->state.italic);
-	vc->vc_video_erase_char = ' ' | (build_attr(vc, vc->state.color,
-				VCI_NORMAL, vc->state.blink, false,
-				vc->vc_decscnm, false) << 8);
+				 vc->state.blink, vc->state.underline,
+				 vc->state.reverse ^ vc->vc_decscnm,
+				 vc->state.italic);
+	vc->vc_video_erase_char =
+		' ' | (build_attr(vc, vc->state.color, VCI_NORMAL,
+				  vc->state.blink, false, vc->vc_decscnm, false)
+		       << 8);
 }
-
 
 static int softcursor_original = -1;
 
 static void add_softcursor(struct vc_data *vc)
 {
-	int i = scr_readw((u16 *) vc->vc_pos);
+	int i = scr_readw((u16 *)vc->vc_pos);
 	u32 type = vc->vc_cursor_type;
 
 	if (!(type & CUR_SW))
@@ -287,7 +282,7 @@ static void add_softcursor(struct vc_data *vc)
 	i |= CUR_SET(type);
 	i ^= CUR_CHANGE(type);
 	if ((type & CUR_ALWAYS_BG) &&
-			(softcursor_original & CUR_BG) == (i & CUR_BG))
+	    (softcursor_original & CUR_BG) == (i & CUR_BG))
 		i ^= CUR_BG;
 	if ((type & CUR_INVERT_FG_BG) && (i & CUR_FG) == ((i & CUR_BG) >> 4))
 		i ^= CUR_FG;
@@ -302,7 +297,7 @@ static void hide_softcursor(struct vc_data *vc)
 		scr_writew(softcursor_original, (u16 *)vc->vc_pos);
 		if (con_should_update(vc))
 			vc->vc_sw->con_putc(vc, softcursor_original,
-					vc->state.y, vc->state.x);
+					    vc->state.y, vc->state.x);
 		softcursor_original = -1;
 	}
 }
@@ -334,14 +329,13 @@ static void set_origin(struct vc_data *vc)
 {
 	WARN_CONSOLE_UNLOCKED();
 
-	if (!con_is_visible(vc) ||
-	    !vc->vc_sw->con_set_origin ||
+	if (!con_is_visible(vc) || !vc->vc_sw->con_set_origin ||
 	    !vc->vc_sw->con_set_origin(vc))
 		vc->vc_origin = (unsigned long)vc->vc_screenbuf;
 	vc->vc_visible_origin = vc->vc_origin;
 	vc->vc_scr_end = vc->vc_origin + vc->vc_screenbuf_size;
-	vc->vc_pos = vc->vc_origin + vc->vc_size_row * vc->state.y +
-		2 * vc->state.x;
+	vc->vc_pos =
+		vc->vc_origin + vc->vc_size_row * vc->state.y + 2 * vc->state.x;
 }
 
 static void save_screen(struct vc_data *vc)
@@ -359,7 +353,6 @@ static void flush_scrollback(struct vc_data *vc)
 	set_origin(vc);
 	/* con_flush_scrollback never assigned in any driver */
 	if (con_is_visible(vc)) {
-		
 		hide_cursor(vc);
 		vc->vc_sw->con_switch(vc);
 		set_cursor(vc);
@@ -380,8 +373,6 @@ static void redraw_screen(struct vc_data *vc, int is_switch)
 	WARN_CONSOLE_UNLOCKED();
 
 	if (!vc) {
-		
-		
 		return;
 	}
 
@@ -412,14 +403,15 @@ static void redraw_screen(struct vc_data *vc, int is_switch)
 		set_origin(vc);
 		update = vc->vc_sw->con_switch(vc);
 		set_palette(vc);
-		
+
 		if (old_was_color != vc->vc_can_do_color) {
 			update_attr(vc);
 			clear_buffer_attributes(vc);
 		}
 
 		if (update && vc->vc_mode != KD_GRAPHICS)
-			do_update_region(vc, vc->vc_origin, vc->vc_screenbuf_size / 2);
+			do_update_region(vc, vc->vc_origin,
+					 vc->vc_screenbuf_size / 2);
 	}
 	set_cursor(vc);
 	if (is_switch) {
@@ -435,7 +427,6 @@ int vc_cons_allocated(unsigned int i)
 
 static void visual_init(struct vc_data *vc, int num, int init)
 {
-	
 	if (vc->vc_sw)
 		module_put(vc->vc_sw->owner);
 	vc->vc_sw = conswitchp;
@@ -482,7 +473,7 @@ static const struct tty_port_operations vc_port_ops = {
 #define VC_MAXCOL (32767)
 #define VC_MAXROW (32767)
 
-int vc_allocate(unsigned int currcons)	
+int vc_allocate(unsigned int currcons)
 {
 	struct vt_notifier_param param;
 	struct vc_data *vc;
@@ -496,9 +487,6 @@ int vc_allocate(unsigned int currcons)
 	if (vc_cons[currcons].d)
 		return 0;
 
-	
-	
-	
 	param.vc = vc = kzalloc(sizeof(struct vc_data), GFP_KERNEL);
 	if (!vc)
 		return -ENOMEM;
@@ -522,7 +510,6 @@ int vc_allocate(unsigned int currcons)
 	if (!vc->vc_screenbuf)
 		goto err_free;
 
-	
 	if (global_cursor_default == -1)
 		global_cursor_default = 1;
 
@@ -539,7 +526,7 @@ err_free:
 }
 
 static int vc_do_resize(struct tty_struct *tty, struct vc_data *vc,
-				unsigned int cols, unsigned int lines)
+			unsigned int cols, unsigned int lines)
 {
 	/* Minimal stub: static console doesn't need resize */
 	return 0;
@@ -561,24 +548,23 @@ static int vt_resize(struct tty_struct *tty, struct winsize *ws)
 	return ret;
 }
 
+enum { EPecma = 0, EPdec, EPeq, EPgt, EPlt };
 
-enum { EPecma = 0, EPdec, EPeq, EPgt, EPlt};
+#define set_kbd(vc, x) vt_set_kbd_mode_bit((vc)->vc_num, (x))
+#define clr_kbd(vc, x) vt_clr_kbd_mode_bit((vc)->vc_num, (x))
+#define is_kbd(vc, x) vt_get_kbd_mode_bit((vc)->vc_num, (x))
 
-#define set_kbd(vc, x)	vt_set_kbd_mode_bit((vc)->vc_num, (x))
-#define clr_kbd(vc, x)	vt_clr_kbd_mode_bit((vc)->vc_num, (x))
-#define is_kbd(vc, x)	vt_get_kbd_mode_bit((vc)->vc_num, (x))
+#define decarm VC_REPEAT
+#define decckm VC_CKMODE
+#define kbdapplic VC_APPLIC
+#define lnm VC_CRLF
 
-#define decarm		VC_REPEAT
-#define decckm		VC_CKMODE
-#define kbdapplic	VC_APPLIC
-#define lnm		VC_CRLF
+const unsigned char color_table[] = { 0, 4,  2,	 6,  1, 5,  3,	7,
+				      8, 12, 10, 14, 9, 13, 11, 15 };
 
-const unsigned char color_table[] = { 0, 4, 2, 6, 1, 5, 3, 7,
-				       8,12,10,14, 9,13,11,15 };
-
-unsigned char default_red[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-unsigned char default_grn[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-unsigned char default_blu[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+unsigned char default_red[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+unsigned char default_grn[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+unsigned char default_blu[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 static void gotoxy(struct vc_data *vc, int new_x, int new_y)
 {
@@ -593,7 +579,7 @@ static void gotoxy(struct vc_data *vc, int new_x, int new_y)
 			vc->state.x = new_x;
 	}
 
- 	if (vc->vc_decom) {
+	if (vc->vc_decom) {
 		min_y = vc->vc_top;
 		max_y = vc->vc_bottom;
 	} else {
@@ -607,13 +593,12 @@ static void gotoxy(struct vc_data *vc, int new_x, int new_y)
 	else
 		vc->state.y = new_y;
 	vc->vc_pos = vc->vc_origin + vc->state.y * vc->vc_size_row +
-		(vc->state.x << 1);
+		     (vc->state.x << 1);
 	vc->vc_need_wrap = 0;
 }
 
 static void lf(struct vc_data *vc)
 {
-    	
 	if (vc->state.y + 1 == vc->vc_bottom)
 		con_scroll(vc, vc->vc_top, vc->vc_bottom, SM_UP, 1);
 	else if (vc->state.y < vc->vc_rows - 1) {
@@ -634,37 +619,37 @@ static inline void cr(struct vc_data *vc)
 static void csi_J(struct vc_data *vc, int vpar)
 {
 	unsigned int count;
-	unsigned short * start;
+	unsigned short *start;
 
 	switch (vpar) {
-		case 0:	
-			vc_uniscr_clear_line(vc, vc->state.x,
-					     vc->vc_cols - vc->state.x);
-			vc_uniscr_clear_lines(vc, vc->state.y + 1,
-					      vc->vc_rows - vc->state.y - 1);
-			count = (vc->vc_scr_end - vc->vc_pos) >> 1;
-			start = (unsigned short *)vc->vc_pos;
-			break;
-		case 1:	
-			vc_uniscr_clear_line(vc, 0, vc->state.x + 1);
-			vc_uniscr_clear_lines(vc, 0, vc->state.y);
-			count = ((vc->vc_pos - vc->vc_origin) >> 1) + 1;
-			start = (unsigned short *)vc->vc_origin;
-			break;
-		case 3: 
-			flush_scrollback(vc);
-			fallthrough;
-		case 2: 
-			vc_uniscr_clear_lines(vc, 0, vc->vc_rows);
-			count = vc->vc_cols * vc->vc_rows;
-			start = (unsigned short *)vc->vc_origin;
-			break;
-		default:
-			return;
+	case 0:
+		vc_uniscr_clear_line(vc, vc->state.x,
+				     vc->vc_cols - vc->state.x);
+		vc_uniscr_clear_lines(vc, vc->state.y + 1,
+				      vc->vc_rows - vc->state.y - 1);
+		count = (vc->vc_scr_end - vc->vc_pos) >> 1;
+		start = (unsigned short *)vc->vc_pos;
+		break;
+	case 1:
+		vc_uniscr_clear_line(vc, 0, vc->state.x + 1);
+		vc_uniscr_clear_lines(vc, 0, vc->state.y);
+		count = ((vc->vc_pos - vc->vc_origin) >> 1) + 1;
+		start = (unsigned short *)vc->vc_origin;
+		break;
+	case 3:
+		flush_scrollback(vc);
+		fallthrough;
+	case 2:
+		vc_uniscr_clear_lines(vc, 0, vc->vc_rows);
+		count = vc->vc_cols * vc->vc_rows;
+		start = (unsigned short *)vc->vc_origin;
+		break;
+	default:
+		return;
 	}
 	scr_memsetw(start, vc->vc_video_erase_char, 2 * count);
 	if (con_should_update(vc))
-		do_update_region(vc, (unsigned long) start, count);
+		do_update_region(vc, (unsigned long)start, count);
 	vc->vc_need_wrap = 0;
 }
 
@@ -683,35 +668,50 @@ static void save_cur(struct vc_data *vc)
 	memcpy(&vc->saved_state, &vc->state, sizeof(vc->state));
 }
 
-enum { ESnormal, ESesc, ESsquare, ESgetpars, ESfunckey,
-	EShash, ESsetG0, ESsetG1, ESpercent, EScsiignore, ESnonstd,
-	ESpalette, ESosc, ESapc, ESpm, ESdcs };
+enum {
+	ESnormal,
+	ESesc,
+	ESsquare,
+	ESgetpars,
+	ESfunckey,
+	EShash,
+	ESsetG0,
+	ESsetG1,
+	ESpercent,
+	EScsiignore,
+	ESnonstd,
+	ESpalette,
+	ESosc,
+	ESapc,
+	ESpm,
+	ESdcs
+};
 
 static void reset_terminal(struct vc_data *vc, int do_clear)
 {
 	unsigned int i;
 
-	vc->vc_top		= 0;
-	vc->vc_bottom		= vc->vc_rows;
-	vc->vc_state		= ESnormal;
-	vc->vc_priv		= EPecma;
-	vc->vc_translate	= set_translate(LAT1_MAP, vc);
-	vc->state.Gx_charset[0]	= LAT1_MAP;
-	vc->state.Gx_charset[1]	= GRAF_MAP;
-	vc->state.charset	= 0;
-	vc->vc_need_wrap	= 0;
-	vc->vc_report_mouse	= 0;
-	vc->vc_utf              = default_utf8;
-	vc->vc_utf_count	= 0;
+	vc->vc_top = 0;
+	vc->vc_bottom = vc->vc_rows;
+	vc->vc_state = ESnormal;
+	vc->vc_priv = EPecma;
+	vc->vc_translate = set_translate(LAT1_MAP, vc);
+	vc->state.Gx_charset[0] = LAT1_MAP;
+	vc->state.Gx_charset[1] = GRAF_MAP;
+	vc->state.charset = 0;
+	vc->vc_need_wrap = 0;
+	vc->vc_report_mouse = 0;
+	vc->vc_utf = default_utf8;
+	vc->vc_utf_count = 0;
 
-	vc->vc_disp_ctrl	= 0;
-	vc->vc_toggle_meta	= 0;
+	vc->vc_disp_ctrl = 0;
+	vc->vc_toggle_meta = 0;
 
-	vc->vc_decscnm		= 0;
-	vc->vc_decom		= 0;
-	vc->vc_decawm		= 1;
-	vc->vc_deccm		= global_cursor_default;
-	vc->vc_decim		= 0;
+	vc->vc_decscnm = 0;
+	vc->vc_decom = 0;
+	vc->vc_decawm = 1;
+	vc->vc_deccm = global_cursor_default;
+	vc->vc_decim = 0;
 
 	vt_reset_keyboard(vc->vc_num);
 
@@ -732,7 +732,7 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 	gotoxy(vc, 0, 0);
 	save_cur(vc);
 	if (do_clear)
-	    csi_J(vc, 2);
+		csi_J(vc, 2);
 }
 
 struct vc_draw_region {
@@ -746,8 +746,8 @@ static void con_flush(struct vc_data *vc, struct vc_draw_region *draw)
 		return;
 
 	vc->vc_sw->con_putcs(vc, (u16 *)draw->from,
-			(u16 *)draw->to - (u16 *)draw->from, vc->state.y,
-			draw->x);
+			     (u16 *)draw->to - (u16 *)draw->from, vc->state.y,
+			     draw->x);
 	draw->x = -1;
 }
 
@@ -766,14 +766,11 @@ static inline int vc_sanitize_unicode(const int c)
 
 static int vc_translate_unicode(struct vc_data *vc, int c, bool *rescan)
 {
-	static const u32 utf8_length_changes[] = {
-		0x0000007f, 0x000007ff, 0x0000ffff,
-		0x001fffff, 0x03ffffff, 0x7fffffff
-	};
+	static const u32 utf8_length_changes[] = { 0x0000007f, 0x000007ff,
+						   0x0000ffff, 0x001fffff,
+						   0x03ffffff, 0x7fffffff };
 
-	
 	if ((c & 0xc0) == 0x80) {
-		
 		if (!vc->vc_utf_count)
 			return 0xfffd;
 
@@ -782,29 +779,24 @@ static int vc_translate_unicode(struct vc_data *vc, int c, bool *rescan)
 		if (--vc->vc_utf_count)
 			goto need_more_bytes;
 
-		
 		c = vc->vc_utf_char;
-		
+
 		if (c <= utf8_length_changes[vc->vc_npar - 1] ||
-				c > utf8_length_changes[vc->vc_npar])
+		    c > utf8_length_changes[vc->vc_npar])
 			return 0xfffd;
 
 		return vc_sanitize_unicode(c);
 	}
 
-	
 	if (vc->vc_utf_count) {
-		
 		*rescan = true;
 		vc->vc_utf_count = 0;
 		return 0xfffd;
 	}
 
-	
 	if (c <= 0x7f)
 		return c;
 
-	
 	vc->vc_npar = 0;
 	if ((c & 0xe0) == 0xc0) {
 		vc->vc_utf_count = 1;
@@ -822,7 +814,6 @@ static int vc_translate_unicode(struct vc_data *vc, int c, bool *rescan)
 		vc->vc_utf_count = 5;
 		vc->vc_utf_char = (c & 0x01);
 	} else {
-		
 		return 0xfffd;
 	}
 
@@ -832,22 +823,19 @@ need_more_bytes:
 
 static int vc_translate(struct vc_data *vc, int *c, bool *rescan)
 {
-	
 	if (vc->vc_state != ESnormal)
 		return *c;
 
 	if (vc->vc_utf && !vc->vc_disp_ctrl)
 		return *c = vc_translate_unicode(vc, *c, rescan);
 
-	
 	return vc_translate_ascii(vc, *c);
 }
 
 static bool vc_is_control(struct vc_data *vc, int tc, int c)
 {
-	
 	static const u32 CTRL_ACTION = 0x0d00ff81;
-	
+
 	static const u32 CTRL_ALWAYS = 0x0800f501;
 
 	if (vc->vc_state != ESnormal)
@@ -856,7 +844,6 @@ static bool vc_is_control(struct vc_data *vc, int tc, int c)
 	if (!tc)
 		return true;
 
-	
 	if (c < 32) {
 		if (vc->vc_disp_ctrl)
 			return CTRL_ALWAYS & BIT(c);
@@ -874,7 +861,7 @@ static bool vc_is_control(struct vc_data *vc, int tc, int c)
 }
 
 static int vc_con_write_normal(struct vc_data *vc, int tc, int c,
-		struct vc_draw_region *draw)
+			       struct vc_draw_region *draw)
 {
 	/* Minimal stub: simplified character output without UTF-8/double-width support */
 	u16 himask = vc->vc_hi_font_mask;
@@ -911,7 +898,8 @@ static int vc_con_write_normal(struct vc_data *vc, int tc, int c,
 	return 0;
 }
 
-static int do_con_write(struct tty_struct *tty, const unsigned char *buf, int count)
+static int do_con_write(struct tty_struct *tty, const unsigned char *buf,
+			int count)
 {
 	struct vc_draw_region draw = { .x = -1 };
 	struct vc_data *vc;
@@ -974,7 +962,8 @@ static void vt_console_print(struct console *co, const char *b, unsigned count)
 			lf(vc);
 			cr(vc);
 		} else {
-			scr_writew((vc->vc_attr << 8) + c, (unsigned short *)vc->vc_pos);
+			scr_writew((vc->vc_attr << 8) + c,
+				   (unsigned short *)vc->vc_pos);
 			vc->vc_pos += 2;
 			vc->state.x++;
 		}
@@ -988,22 +977,23 @@ quit:
 
 static struct tty_driver *vt_console_device(struct console *c, int *index)
 {
-	*index = c->index ? c->index-1 : fg_console;
+	*index = c->index ? c->index - 1 : fg_console;
 	return console_driver;
 }
 
 static struct console vt_console_driver = {
-	.name		= "tty",
-	.write		= vt_console_print,
-	.device		= vt_console_device,
-	.unblank	= unblank_screen,
-	.flags		= CON_PRINTBUFFER,
-	.index		= -1,
+	.name = "tty",
+	.write = vt_console_print,
+	.device = vt_console_device,
+	.unblank = unblank_screen,
+	.flags = CON_PRINTBUFFER,
+	.index = -1,
 };
 
-static int con_write(struct tty_struct *tty, const unsigned char *buf, int count)
+static int con_write(struct tty_struct *tty, const unsigned char *buf,
+		     int count)
 {
-	int	retval;
+	int retval;
 
 	retval = do_con_write(tty, buf, count);
 	con_flush_chars(tty);
@@ -1020,7 +1010,7 @@ static unsigned int con_write_room(struct tty_struct *tty)
 {
 	if (tty->flow.stopped)
 		return 0;
-	return 32768;		
+	return 32768;
 }
 
 static void con_throttle(struct tty_struct *tty)
@@ -1060,10 +1050,9 @@ static void con_flush_chars(struct tty_struct *tty)
 {
 	struct vc_data *vc;
 
-	if (in_interrupt())	
+	if (in_interrupt())
 		return;
 
-	
 	console_lock();
 	vc = tty->driver_data;
 	if (vc)
@@ -1084,7 +1073,6 @@ static int con_install(struct tty_driver *driver, struct tty_struct *tty)
 
 	vc = vc_cons[currcons].d;
 
-	
 	if (vc->port.tty) {
 		ret = -ERESTARTSYS;
 		goto unlock;
@@ -1113,13 +1101,11 @@ unlock:
 
 static int con_open(struct tty_struct *tty, struct file *filp)
 {
-	
 	return 0;
 }
 
 static void con_close(struct tty_struct *tty, struct file *filp)
 {
-	
 }
 
 static void con_shutdown(struct tty_struct *tty)
@@ -1142,10 +1128,10 @@ static int default_color = 7;
 static int default_italic_color = 2;
 static int default_underline_color = 3;
 
-static void vc_init(struct vc_data *vc, unsigned int rows,
-		    unsigned int cols, int do_clear)
+static void vc_init(struct vc_data *vc, unsigned int rows, unsigned int cols,
+		    int do_clear)
 {
-	int j, k ;
+	int j, k;
 
 	vc->vc_cols = cols;
 	vc->vc_rows = rows;
@@ -1155,15 +1141,15 @@ static void vc_init(struct vc_data *vc, unsigned int rows,
 	set_origin(vc);
 	vc->vc_pos = vc->vc_origin;
 	reset_vc(vc);
-	for (j=k=0; j<16; j++) {
-		vc->vc_palette[k++] = default_red[j] ;
-		vc->vc_palette[k++] = default_grn[j] ;
-		vc->vc_palette[k++] = default_blu[j] ;
+	for (j = k = 0; j < 16; j++) {
+		vc->vc_palette[k++] = default_red[j];
+		vc->vc_palette[k++] = default_grn[j];
+		vc->vc_palette[k++] = default_blu[j];
 	}
-	vc->vc_def_color       = default_color;
-	vc->vc_ulcolor         = default_underline_color;
-	vc->vc_itcolor         = default_italic_color;
-	vc->vc_halfcolor       = 0x08;   
+	vc->vc_def_color = default_color;
+	vc->vc_ulcolor = default_underline_color;
+	vc->vc_itcolor = default_italic_color;
+	vc->vc_halfcolor = 0x08;
 	init_waitqueue_head(&vc->paste_wait);
 	reset_terminal(vc, do_clear);
 }
@@ -1207,11 +1193,12 @@ static int __init con_init(void)
 	}
 
 	for (currcons = 0; currcons < MIN_NR_CONSOLES; currcons++) {
-		vc_cons[currcons].d = vc = kzalloc(sizeof(struct vc_data), GFP_NOWAIT);
+		vc_cons[currcons].d = vc =
+			kzalloc(sizeof(struct vc_data), GFP_NOWAIT);
 		INIT_WORK(&vc_cons[currcons].SAK_work, vc_SAK);
 		tty_port_init(&vc->port);
 		visual_init(vc, currcons, 1);
-		
+
 		vc->vc_screenbuf = kzalloc(vc->vc_screenbuf_size, GFP_NOWAIT);
 		vc_init(vc, vc->vc_rows, vc->vc_cols,
 			currcons || !vc->vc_sw->con_save_screen);
@@ -1254,16 +1241,13 @@ static struct cdev vc0_cdev;
 
 /* Stub: show_tty_active simplified for minimal kernel */
 static ssize_t show_tty_active(struct device *dev,
-				struct device_attribute *attr, char *buf)
+			       struct device_attribute *attr, char *buf)
 {
 	return sprintf(buf, "tty1\n");
 }
 static DEVICE_ATTR(active, S_IRUGO, show_tty_active, NULL);
 
-static struct attribute *vt_dev_attrs[] = {
-	&dev_attr_active.attr,
-	NULL
-};
+static struct attribute *vt_dev_attrs[] = { &dev_attr_active.attr, NULL };
 
 ATTRIBUTE_GROUPS(vt_dev);
 
@@ -1281,8 +1265,9 @@ int __init vty_init(const struct file_operations *console_fops)
 
 	vcs_init();
 
-	console_driver = tty_alloc_driver(MAX_NR_CONSOLES, TTY_DRIVER_REAL_RAW |
-			TTY_DRIVER_RESET_TERMIOS);
+	console_driver = tty_alloc_driver(MAX_NR_CONSOLES,
+					  TTY_DRIVER_REAL_RAW |
+						  TTY_DRIVER_RESET_TERMIOS);
 	if (IS_ERR(console_driver))
 		panic("Couldn't allocate console driver\n");
 
@@ -1315,8 +1300,6 @@ bool con_is_visible(const struct vc_data *vc)
 	return *vc->vc_display_fg == vc;
 }
 
-
-
 /* vtconsole_class_init simplified - sysfs entries not needed for minimal kernel */
 static int __init vtconsole_class_init(void)
 {
@@ -1325,8 +1308,6 @@ static int __init vtconsole_class_init(void)
 postcore_initcall(vtconsole_class_init);
 
 #endif
-
-
 
 void do_unblank_screen(int leaving_gfx)
 {
@@ -1343,17 +1324,15 @@ static void blank_screen_t(struct timer_list *unused)
 	/* Stub: no screen blanking in minimal kernel */
 }
 
-
 static void set_palette(struct vc_data *vc)
 {
 	/* Stub: no palette setting in minimal kernel */
 }
 
-
 void reset_palette(struct vc_data *vc)
 {
 	int j, k;
-	for (j=k=0; j<16; j++) {
+	for (j = k = 0; j < 16; j++) {
 		vc->vc_palette[k++] = default_red[j];
 		vc->vc_palette[k++] = default_grn[j];
 		vc->vc_palette[k++] = default_blu[j];
@@ -1361,12 +1340,9 @@ void reset_palette(struct vc_data *vc)
 	set_palette(vc);
 }
 
-
-
-
-
 void vc_scrolldelta_helper(struct vc_data *c, int lines,
-		unsigned int rolled_over, void *base, unsigned int size)
+			   unsigned int rolled_over, void *base,
+			   unsigned int size)
 {
 	/* Stubbed: scrollback not needed for minimal boot */
 	if (!lines)

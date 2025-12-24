@@ -9,16 +9,19 @@
 #include <linux/fcntl.h>
 #include <linux/security.h>
 static inline void ima_inode_post_setattr(struct user_namespace *mnt_userns,
-					  struct dentry *dentry) {}
+					  struct dentry *dentry)
+{
+}
 
 #include <linux/xattr.h>
 
 /* Only evm_inode_post_setattr is used (from notify_change) */
-static inline void evm_inode_post_setattr(struct dentry *dentry, int ia_valid) { }
+static inline void evm_inode_post_setattr(struct dentry *dentry, int ia_valid)
+{
+}
 
 static bool chown_ok(struct user_namespace *mnt_userns,
-		     const struct inode *inode,
-		     kuid_t uid)
+		     const struct inode *inode, kuid_t uid)
 {
 	kuid_t kuid = i_uid_into_mnt(mnt_userns, inode);
 	if (uid_eq(current_fsuid(), kuid) && uid_eq(uid, inode->i_uid))
@@ -58,26 +61,21 @@ int setattr_prepare(struct user_namespace *mnt_userns, struct dentry *dentry,
 	struct inode *inode = d_inode(dentry);
 	unsigned int ia_valid = attr->ia_valid;
 
-	 
 	if (ia_valid & ATTR_SIZE) {
 		int error = inode_newsize_ok(inode, attr->ia_size);
 		if (error)
 			return error;
 	}
 
-	 
 	if (ia_valid & ATTR_FORCE)
 		goto kill_priv;
 
-	 
 	if ((ia_valid & ATTR_UID) && !chown_ok(mnt_userns, inode, attr->ia_uid))
 		return -EPERM;
 
-	 
 	if ((ia_valid & ATTR_GID) && !chgrp_ok(mnt_userns, inode, attr->ia_gid))
 		return -EPERM;
 
-	 
 	if (ia_valid & ATTR_MODE) {
 		kgid_t mapped_gid;
 
@@ -85,25 +83,23 @@ int setattr_prepare(struct user_namespace *mnt_userns, struct dentry *dentry,
 			return -EPERM;
 
 		if (ia_valid & ATTR_GID)
-			mapped_gid = mapped_kgid_fs(mnt_userns,
-						i_user_ns(inode), attr->ia_gid);
+			mapped_gid = mapped_kgid_fs(
+				mnt_userns, i_user_ns(inode), attr->ia_gid);
 		else
 			mapped_gid = i_gid_into_mnt(mnt_userns, inode);
 
-		 
 		if (!in_group_p(mapped_gid) &&
 		    !capable_wrt_inode_uidgid(mnt_userns, inode, CAP_FSETID))
 			attr->ia_mode &= ~S_ISGID;
 	}
 
-	 
 	if (ia_valid & (ATTR_MTIME_SET | ATTR_ATIME_SET | ATTR_TIMES_SET)) {
 		if (!inode_owner_or_capable(mnt_userns, inode))
 			return -EPERM;
 	}
 
 kill_priv:
-	 
+
 	if (ia_valid & ATTR_KILL_PRIV) {
 		int error;
 
@@ -116,7 +112,10 @@ kill_priv:
 }
 
 /* inode_newsize_ok used internally by setattr_prepare */
-int inode_newsize_ok(const struct inode *inode, loff_t offset) { return 0; }
+int inode_newsize_ok(const struct inode *inode, loff_t offset)
+{
+	return 0;
+}
 
 void setattr_copy(struct user_namespace *mnt_userns, struct inode *inode,
 		  const struct iattr *attr)
@@ -145,7 +144,10 @@ void setattr_copy(struct user_namespace *mnt_userns, struct inode *inode,
 
 /* may_setattr used internally by notify_change */
 int may_setattr(struct user_namespace *mnt_userns, struct inode *inode,
-		unsigned int ia_valid) { return 0; }
+		unsigned int ia_valid)
+{
+	return 0;
+}
 
 int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 		  struct iattr *attr, struct inode **delegated_inode)
@@ -164,7 +166,7 @@ int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 
 	if ((ia_valid & ATTR_MODE)) {
 		umode_t amode = attr->ia_mode;
-		 
+
 		if (is_sxid(amode))
 			inode->i_flags &= ~S_NOSEC;
 	}
@@ -189,8 +191,7 @@ int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 			ia_valid = attr->ia_valid &= ~ATTR_KILL_PRIV;
 	}
 
-	 
-	if ((ia_valid & (ATTR_KILL_SUID|ATTR_KILL_SGID)) &&
+	if ((ia_valid & (ATTR_KILL_SUID | ATTR_KILL_SGID)) &&
 	    (ia_valid & ATTR_MODE))
 		BUG();
 
@@ -212,7 +213,6 @@ int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 	if (!(attr->ia_valid & ~(ATTR_KILL_SUID | ATTR_KILL_SGID)))
 		return 0;
 
-	 
 	if (ia_valid & ATTR_UID &&
 	    !kuid_has_mapping(inode->i_sb->s_user_ns, attr->ia_uid))
 		return -EOVERFLOW;
@@ -220,7 +220,6 @@ int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 	    !kgid_has_mapping(inode->i_sb->s_user_ns, attr->ia_gid))
 		return -EOVERFLOW;
 
-	 
 	if (!(ia_valid & ATTR_UID) &&
 	    !uid_valid(i_uid_into_mnt(mnt_userns, inode)))
 		return -EOVERFLOW;

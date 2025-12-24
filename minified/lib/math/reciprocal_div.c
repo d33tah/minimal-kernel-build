@@ -8,7 +8,6 @@
 
 #include <linux/reciprocal_div.h>
 
-
 struct reciprocal_value reciprocal_value(u32 d)
 {
 	struct reciprocal_value R;
@@ -32,12 +31,11 @@ struct reciprocal_value_adv reciprocal_value_adv(u32 d, u8 prec)
 	u32 l, post_shift;
 	u64 mhigh, mlow;
 
-	 
 	l = fls(d - 1);
-	 
+
 	WARN(l == 32,
-	     "ceil(log2(0x%08x)) == 32, %s doesn't support such divisor",
-	     d, __func__);
+	     "ceil(log2(0x%08x)) == 32, %s doesn't support such divisor", d,
+	     __func__);
 	post_shift = l;
 	mlow = 1ULL << (32 + l);
 	do_div(mlow, d);

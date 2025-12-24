@@ -7,25 +7,26 @@
 #include "internal.h"
 
 static const struct constant_table bool_names[] = {
-	{ "0",		false },
-	{ "1",		true },
-	{ "false",	false },
-	{ "no",		false },
-	{ "true",	true },
-	{ "yes",	true },
-	{ },
+	{ "0", false },
+	{ "1", true },
+	{ "false", false },
+	{ "no", false },
+	{ "true", true },
+	{ "yes", true },
+	{},
 };
 
 static const struct constant_table *
 __lookup_constant(const struct constant_table *tbl, const char *name)
 {
-	for ( ; tbl->name; tbl++)
+	for (; tbl->name; tbl++)
 		if (strcmp(name, tbl->name) == 0)
 			return tbl;
 	return NULL;
 }
 
-int lookup_constant(const struct constant_table *tbl, const char *name, int not_found)
+int lookup_constant(const struct constant_table *tbl, const char *name,
+		    int not_found)
 {
 	const struct constant_table *p = __lookup_constant(tbl, name);
 
@@ -37,9 +38,9 @@ static inline bool is_flag(const struct fs_parameter_spec *p)
 	return p->type == NULL;
 }
 
-static const struct fs_parameter_spec *fs_lookup_key(
-	const struct fs_parameter_spec *desc,
-	struct fs_parameter *param, bool *negated)
+static const struct fs_parameter_spec *
+fs_lookup_key(const struct fs_parameter_spec *desc, struct fs_parameter *param,
+	      bool *negated)
 {
 	const struct fs_parameter_spec *p, *other = NULL;
 	const char *name = param->key;
@@ -68,10 +69,8 @@ static const struct fs_parameter_spec *fs_lookup_key(
 	return other;
 }
 
-int __fs_parse(struct p_log *log,
-	     const struct fs_parameter_spec *desc,
-	     struct fs_parameter *param,
-	     struct fs_parse_result *result)
+int __fs_parse(struct p_log *log, const struct fs_parameter_spec *desc,
+	       struct fs_parameter *param, struct fs_parse_result *result)
 {
 	const struct fs_parameter_spec *p;
 
@@ -84,13 +83,12 @@ int __fs_parse(struct p_log *log,
 	if (p->flags & fs_param_deprecated)
 		warn_plog(log, "Deprecated parameter '%s'", param->key);
 
-	 
 	if (is_flag(p)) {
 		if (param->type != fs_value_is_flag)
 			return inval_plog(log, "Unexpected value for '%s'",
-				      param->key);
+					  param->key);
 		result->boolean = !result->negated;
-	} else  {
+	} else {
 		int ret = p->type(log, p, param, result);
 		if (ret)
 			return ret;
@@ -98,10 +96,8 @@ int __fs_parse(struct p_log *log,
 	return p->opt;
 }
 
-int fs_lookup_param(struct fs_context *fc,
-		    struct fs_parameter *param,
-		    bool want_bdev,
-		    struct path *_path)
+int fs_lookup_param(struct fs_context *fc, struct fs_parameter *param,
+		    bool want_bdev, struct path *_path)
 {
 	struct filename *f;
 	unsigned int flags = 0;
@@ -129,13 +125,12 @@ int fs_lookup_param(struct fs_context *fc,
 		goto out;
 	}
 
-	if (want_bdev &&
-	    !S_ISBLK(d_backing_inode(_path->dentry)->i_mode)) {
+	if (want_bdev && !S_ISBLK(d_backing_inode(_path->dentry)->i_mode)) {
 		path_put(_path);
 		_path->dentry = NULL;
 		_path->mnt = NULL;
-		errorf(fc, "%s: Non-blockdev passed as '%s'",
-		       param->key, f->name);
+		errorf(fc, "%s: Non-blockdev passed as '%s'", param->key,
+		       f->name);
 		ret = -ENOTBLK;
 	}
 
@@ -218,7 +213,8 @@ int fs_param_is_enum(struct p_log *log, const struct fs_parameter_spec *p,
 }
 
 int fs_param_is_string(struct p_log *log, const struct fs_parameter_spec *p,
-		       struct fs_parameter *param, struct fs_parse_result *result)
+		       struct fs_parameter *param,
+		       struct fs_parse_result *result)
 {
 	if (param->type != fs_value_is_string ||
 	    (!*param->string && !(p->flags & fs_param_can_be_empty)))
@@ -235,7 +231,7 @@ int fs_param_is_blob(struct p_log *log, const struct fs_parameter_spec *p,
 }
 
 int fs_param_is_fd(struct p_log *log, const struct fs_parameter_spec *p,
-		  struct fs_parameter *param, struct fs_parse_result *result)
+		   struct fs_parameter *param, struct fs_parse_result *result)
 {
 	switch (param->type) {
 	case fs_value_is_string:
@@ -257,7 +253,8 @@ int fs_param_is_fd(struct p_log *log, const struct fs_parameter_spec *p,
 }
 
 int fs_param_is_blockdev(struct p_log *log, const struct fs_parameter_spec *p,
-		  struct fs_parameter *param, struct fs_parse_result *result)
+			 struct fs_parameter *param,
+			 struct fs_parse_result *result)
 {
 	return 0;
 }
@@ -267,4 +264,3 @@ int fs_param_is_path(struct p_log *log, const struct fs_parameter_spec *p,
 {
 	return 0;
 }
-

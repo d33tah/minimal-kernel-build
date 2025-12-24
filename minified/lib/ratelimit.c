@@ -11,7 +11,6 @@ int ___ratelimit(struct ratelimit_state *rs, const char *func)
 	if (!rs->interval)
 		return 1;
 
-	 
 	if (!raw_spin_trylock_irqsave(&rs->lock, flags))
 		return 0;
 
@@ -27,7 +26,7 @@ int ___ratelimit(struct ratelimit_state *rs, const char *func)
 				rs->missed = 0;
 			}
 		}
-		rs->begin   = jiffies;
+		rs->begin = jiffies;
 		rs->printed = 0;
 	}
 	if (rs->burst && rs->burst > rs->printed) {

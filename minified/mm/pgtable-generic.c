@@ -5,7 +5,6 @@
 #include <linux/mm_inline.h>
 #include <asm/tlb.h>
 
-
 void pgd_clear_bad(pgd_t *pgd)
 {
 	pgd_ERROR(*pgd);
@@ -33,4 +32,3 @@ pte_t ptep_clear_flush(struct vm_area_struct *vma, unsigned long address,
 	return pte;
 }
 #endif
-

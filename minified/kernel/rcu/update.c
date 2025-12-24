@@ -24,8 +24,6 @@
 #include <linux/slab.h>
 #include <linux/irq_work.h>
 
-
-
 #include "rcu.h"
 
 #ifdef MODULE_PARAM_PREFIX
@@ -33,12 +31,10 @@
 #endif
 #define MODULE_PARAM_PREFIX "rcupdate."
 
-
-
-
 /* PROVE_RCU disabled */
-void rcu_test_sync_prims(void) { }
-
+void rcu_test_sync_prims(void)
+{
+}
 
 static int __init rcu_set_runtime_mode(void)
 {
@@ -49,8 +45,6 @@ static int __init rcu_set_runtime_mode(void)
 	return 0;
 }
 core_initcall(rcu_set_runtime_mode);
-
-
 
 void wakeme_after_rcu(struct rcu_head *head)
 {
@@ -66,10 +60,8 @@ void __wait_rcu_gp(bool checktiny, int n, call_rcu_func_t *crcu_array,
 	int i;
 	int j;
 
-	 
 	for (i = 0; i < n; i++) {
-		if (checktiny &&
-		    (crcu_array[i] == call_rcu)) {
+		if (checktiny && (crcu_array[i] == call_rcu)) {
 			might_sleep();
 			continue;
 		}
@@ -83,10 +75,8 @@ void __wait_rcu_gp(bool checktiny, int n, call_rcu_func_t *crcu_array,
 		}
 	}
 
-	 
 	for (i = 0; i < n; i++) {
-		if (checktiny &&
-		    (crcu_array[i] == call_rcu))
+		if (checktiny && (crcu_array[i] == call_rcu))
 			continue;
 		for (j = 0; j < i; j++)
 			if (crcu_array[j] == crcu_array[i])
@@ -104,9 +94,8 @@ void finish_rcuwait(struct rcuwait *w)
 	__set_current_state(TASK_RUNNING);
 }
 
-
 int rcu_cpu_stall_suppress_at_boot __read_mostly;
 
-void rcu_early_boot_tests(void) {}
-
-
+void rcu_early_boot_tests(void)
+{
+}

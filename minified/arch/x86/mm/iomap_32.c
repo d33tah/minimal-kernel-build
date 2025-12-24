@@ -28,21 +28,18 @@ int iomap_create_wc(resource_size_t base, unsigned long size, pgprot_t *prot)
 		return ret;
 
 	*prot = __pgprot(__PAGE_KERNEL | cachemode2protval(pcm));
-	 
+
 	pgprot_val(*prot) &= __default_kernel_pte_mask;
 
 	return 0;
 }
 
-
 void __iomem *__iomap_local_pfn_prot(unsigned long pfn, pgprot_t prot)
 {
-	 
 	if (!pat_enabled() && pgprot2cachemode(prot) != _PAGE_CACHE_MODE_WB)
 		prot = __pgprot(__PAGE_KERNEL |
 				cachemode2protval(_PAGE_CACHE_MODE_UC_MINUS));
 
-	 
 	pgprot_val(prot) &= __default_kernel_pte_mask;
 
 	return (void __force __iomem *)__kmap_local_pfn_prot(pfn, prot);

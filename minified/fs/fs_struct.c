@@ -38,7 +38,6 @@ void set_fs_pwd(struct fs_struct *fs, const struct path *path)
 		path_put(&old_pwd);
 }
 
-
 void free_fs_struct(struct fs_struct *fs)
 {
 	path_put(&fs->root);
@@ -66,7 +65,7 @@ void exit_fs(struct task_struct *tsk)
 struct fs_struct *copy_fs_struct(struct fs_struct *old)
 {
 	struct fs_struct *fs = kmem_cache_alloc(fs_cachep, GFP_KERNEL);
-	 
+
 	if (fs) {
 		fs->users = 1;
 		fs->in_exec = 0;
@@ -84,15 +83,14 @@ struct fs_struct *copy_fs_struct(struct fs_struct *old)
 	return fs;
 }
 
-
 int current_umask(void)
 {
 	return current->fs->umask;
 }
 
 struct fs_struct init_fs = {
-	.users		= 1,
-	.lock		= __SPIN_LOCK_UNLOCKED(init_fs.lock),
-	.seq		= SEQCNT_SPINLOCK_ZERO(init_fs.seq, &init_fs.lock),
-	.umask		= 0022,
+	.users = 1,
+	.lock = __SPIN_LOCK_UNLOCKED(init_fs.lock),
+	.seq = SEQCNT_SPINLOCK_ZERO(init_fs.seq, &init_fs.lock),
+	.umask = 0022,
 };

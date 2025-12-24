@@ -8,41 +8,43 @@
 #include <linux/init_task.h>
 #include <linux/security.h>
 #include <linux/binfmts.h>
-#define PROC_EVENT_UID  0x00000004
-#define PROC_EVENT_GID  0x00000040
-static inline void proc_id_connector(struct task_struct *task, int which_id) {}
+#define PROC_EVENT_UID 0x00000004
+#define PROC_EVENT_GID 0x00000040
+static inline void proc_id_connector(struct task_struct *task, int which_id)
+{
+}
 #include <linux/uidgid.h>
 
-#define kdebug(FMT, ...)						\
-do {									\
-	if (0)								\
-		no_printk("[%-5.5s%5u] " FMT "\n",			\
-			  current->comm, current->pid, ##__VA_ARGS__);	\
-} while (0)
+#define kdebug(FMT, ...)                                                  \
+	do {                                                              \
+		if (0)                                                    \
+			no_printk("[%-5.5s%5u] " FMT "\n", current->comm, \
+				  current->pid, ##__VA_ARGS__);           \
+	} while (0)
 
 static struct kmem_cache *cred_jar;
 
 static struct group_info init_groups = { .usage = ATOMIC_INIT(2) };
 
 struct cred init_cred = {
-	.usage			= ATOMIC_INIT(4),
-	.uid			= GLOBAL_ROOT_UID,
-	.gid			= GLOBAL_ROOT_GID,
-	.suid			= GLOBAL_ROOT_UID,
-	.sgid			= GLOBAL_ROOT_GID,
-	.euid			= GLOBAL_ROOT_UID,
-	.egid			= GLOBAL_ROOT_GID,
-	.fsuid			= GLOBAL_ROOT_UID,
-	.fsgid			= GLOBAL_ROOT_GID,
-	.securebits		= SECUREBITS_DEFAULT,
-	.cap_inheritable	= CAP_EMPTY_SET,
-	.cap_permitted		= CAP_FULL_SET,
-	.cap_effective		= CAP_FULL_SET,
-	.cap_bset		= CAP_FULL_SET,
-	.user			= INIT_USER,
-	.user_ns		= &init_user_ns,
-	.group_info		= &init_groups,
-	.ucounts		= &init_ucounts,
+	.usage = ATOMIC_INIT(4),
+	.uid = GLOBAL_ROOT_UID,
+	.gid = GLOBAL_ROOT_GID,
+	.suid = GLOBAL_ROOT_UID,
+	.sgid = GLOBAL_ROOT_GID,
+	.euid = GLOBAL_ROOT_UID,
+	.egid = GLOBAL_ROOT_GID,
+	.fsuid = GLOBAL_ROOT_UID,
+	.fsgid = GLOBAL_ROOT_GID,
+	.securebits = SECUREBITS_DEFAULT,
+	.cap_inheritable = CAP_EMPTY_SET,
+	.cap_permitted = CAP_FULL_SET,
+	.cap_effective = CAP_FULL_SET,
+	.cap_bset = CAP_FULL_SET,
+	.user = INIT_USER,
+	.user_ns = &init_user_ns,
+	.group_info = &init_groups,
+	.ucounts = &init_ucounts,
 };
 
 static inline void set_cred_subscribers(struct cred *cred, int n)
@@ -65,8 +67,8 @@ static void put_cred_rcu(struct rcu_head *rcu)
 	kdebug("put_cred_rcu(%p)", cred);
 
 	if (atomic_read(&cred->usage) != 0)
-		panic("CRED: put_cred_rcu() sees %p with usage %d\n",
-		      cred, atomic_read(&cred->usage));
+		panic("CRED: put_cred_rcu() sees %p with usage %d\n", cred,
+		      atomic_read(&cred->usage));
 
 	security_cred_free(cred);
 	key_put(cred->session_keyring);
@@ -84,8 +86,7 @@ static void put_cred_rcu(struct rcu_head *rcu)
 
 void __put_cred(struct cred *cred)
 {
-	kdebug("__put_cred(%p{%d,%d})", cred,
-	       atomic_read(&cred->usage),
+	kdebug("__put_cred(%p{%d,%d})", cred, atomic_read(&cred->usage),
 	       read_cred_subscribers(cred));
 
 	BUG_ON(atomic_read(&cred->usage) != 0);
@@ -102,25 +103,22 @@ void exit_creds(struct task_struct *tsk)
 {
 	struct cred *cred;
 
-	kdebug("exit_creds(%u,%p,%p,{%d,%d})", tsk->pid, tsk->real_cred, tsk->cred,
-	       atomic_read(&tsk->cred->usage),
+	kdebug("exit_creds(%u,%p,%p,{%d,%d})", tsk->pid, tsk->real_cred,
+	       tsk->cred, atomic_read(&tsk->cred->usage),
 	       read_cred_subscribers(tsk->cred));
 
-	cred = (struct cred *) tsk->real_cred;
+	cred = (struct cred *)tsk->real_cred;
 	tsk->real_cred = NULL;
 	validate_creds(cred);
 	alter_cred_subscribers(cred, -1);
 	put_cred(cred);
 
-	cred = (struct cred *) tsk->cred;
+	cred = (struct cred *)tsk->cred;
 	tsk->cred = NULL;
 	validate_creds(cred);
 	alter_cred_subscribers(cred, -1);
 	put_cred(cred);
-
 }
-
-
 
 struct cred *prepare_creds(void)
 {
@@ -146,8 +144,6 @@ struct cred *prepare_creds(void)
 	get_uid(new->user);
 	get_user_ns(new->user_ns);
 
-
-
 	new->ucounts = get_ucounts(new->ucounts);
 	if (!new->ucounts)
 		goto error;
@@ -171,7 +167,6 @@ struct cred *prepare_exec_creds(void)
 	if (!new)
 		return new;
 
-
 	new->suid = new->fsuid = new->euid;
 	new->sgid = new->fsgid = new->egid;
 
@@ -183,15 +178,12 @@ int copy_creds(struct task_struct *p, unsigned long clone_flags)
 	struct cred *new;
 	int ret;
 
-
-	if (
-		clone_flags & CLONE_THREAD
-	    ) {
+	if (clone_flags & CLONE_THREAD) {
 		p->real_cred = get_cred(p->cred);
 		get_cred(p->cred);
 		alter_cred_subscribers(p->cred, 2);
-		kdebug("share_creds(%p{%d,%d})",
-		       p->cred, atomic_read(&p->cred->usage),
+		kdebug("share_creds(%p{%d,%d})", p->cred,
+		       atomic_read(&p->cred->usage),
 		       read_cred_subscribers(p->cred));
 		inc_rlimit_ucounts(task_ucounts(p), UCOUNT_RLIMIT_NPROC, 1);
 		return 0;
@@ -210,7 +202,6 @@ int copy_creds(struct task_struct *p, unsigned long clone_flags)
 			goto error_put;
 	}
 
-
 	p->cred = p->real_cred = get_cred(new);
 	inc_rlimit_ucounts(task_ucounts(p), UCOUNT_RLIMIT_NPROC, 1);
 	alter_cred_subscribers(new, 2);
@@ -227,13 +218,11 @@ static bool cred_cap_issubset(const struct cred *set, const struct cred *subset)
 	const struct user_namespace *set_ns = set->user_ns;
 	const struct user_namespace *subset_ns = subset->user_ns;
 
-	 
 	if (set_ns == subset_ns)
 		return cap_issubset(subset->cap_permitted, set->cap_permitted);
 
-	 
-	for (;subset_ns != &init_user_ns; subset_ns = subset_ns->parent) {
-		if ((set_ns == subset_ns->parent)  &&
+	for (; subset_ns != &init_user_ns; subset_ns = subset_ns->parent) {
+		if ((set_ns == subset_ns->parent) &&
 		    uid_eq(subset_ns->owner, set->euid))
 			return true;
 	}
@@ -246,35 +235,29 @@ int commit_creds(struct cred *new)
 	struct task_struct *task = current;
 	const struct cred *old = task->real_cred;
 
-	kdebug("commit_creds(%p{%d,%d})", new,
-	       atomic_read(&new->usage),
+	kdebug("commit_creds(%p{%d,%d})", new, atomic_read(&new->usage),
 	       read_cred_subscribers(new));
 
 	BUG_ON(task->cred != old);
 	BUG_ON(atomic_read(&new->usage) < 1);
 
-	get_cred(new);  
+	get_cred(new);
 
-	 
-	if (!uid_eq(old->euid, new->euid) ||
-	    !gid_eq(old->egid, new->egid) ||
+	if (!uid_eq(old->euid, new->euid) || !gid_eq(old->egid, new->egid) ||
 	    !uid_eq(old->fsuid, new->fsuid) ||
-	    !gid_eq(old->fsgid, new->fsgid) ||
-	    !cred_cap_issubset(old, new)) {
+	    !gid_eq(old->fsgid, new->fsgid) || !cred_cap_issubset(old, new)) {
 		if (task->mm)
 			set_dumpable(task->mm, suid_dumpable);
 		task->pdeath_signal = 0;
-		 
+
 		smp_wmb();
 	}
 
-	 
 	if (!uid_eq(new->fsuid, old->fsuid))
 		key_fsuid_changed(new);
 	if (!gid_eq(new->fsgid, old->fsgid))
 		key_fsgid_changed(new);
 
-	 
 	alter_cred_subscribers(new, 2);
 	if (new->user != old->user || new->user_ns != old->user_ns)
 		inc_rlimit_ucounts(new->ucounts, UCOUNT_RLIMIT_NPROC, 1);
@@ -284,20 +267,14 @@ int commit_creds(struct cred *new)
 		dec_rlimit_ucounts(old->ucounts, UCOUNT_RLIMIT_NPROC, 1);
 	alter_cred_subscribers(old, -2);
 
-	 
-	if (!uid_eq(new->uid,   old->uid)  ||
-	    !uid_eq(new->euid,  old->euid) ||
-	    !uid_eq(new->suid,  old->suid) ||
-	    !uid_eq(new->fsuid, old->fsuid))
+	if (!uid_eq(new->uid, old->uid) || !uid_eq(new->euid, old->euid) ||
+	    !uid_eq(new->suid, old->suid) || !uid_eq(new->fsuid, old->fsuid))
 		proc_id_connector(task, PROC_EVENT_UID);
 
-	if (!gid_eq(new->gid,   old->gid)  ||
-	    !gid_eq(new->egid,  old->egid) ||
-	    !gid_eq(new->sgid,  old->sgid) ||
-	    !gid_eq(new->fsgid, old->fsgid))
+	if (!gid_eq(new->gid, old->gid) || !gid_eq(new->egid, old->egid) ||
+	    !gid_eq(new->sgid, old->sgid) || !gid_eq(new->fsgid, old->fsgid))
 		proc_id_connector(task, PROC_EVENT_GID);
 
-	 
 	put_cred(old);
 	put_cred(old);
 	return 0;
@@ -305,22 +282,19 @@ int commit_creds(struct cred *new)
 
 void abort_creds(struct cred *new)
 {
-	kdebug("abort_creds(%p{%d,%d})", new,
-	       atomic_read(&new->usage),
+	kdebug("abort_creds(%p{%d,%d})", new, atomic_read(&new->usage),
 	       read_cred_subscribers(new));
 
 	BUG_ON(atomic_read(&new->usage) < 1);
 	put_cred(new);
 }
 
-
-
 int set_cred_ucounts(struct cred *new)
 {
 	struct ucounts *new_ucounts, *old_ucounts = new->ucounts;
 
-	 
-	if (old_ucounts->ns == new->user_ns && uid_eq(old_ucounts->uid, new->uid))
+	if (old_ucounts->ns == new->user_ns &&
+	    uid_eq(old_ucounts->uid, new->uid))
 		return 0;
 
 	if (!(new_ucounts = alloc_ucounts(new->user_ns, new->uid)))
@@ -334,9 +308,7 @@ int set_cred_ucounts(struct cred *new)
 
 void __init cred_init(void)
 {
-	 
-	cred_jar = kmem_cache_create("cred_jar", sizeof(struct cred), 0,
-			SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_ACCOUNT, NULL);
+	cred_jar = kmem_cache_create(
+		"cred_jar", sizeof(struct cred), 0,
+		SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT, NULL);
 }
-
-

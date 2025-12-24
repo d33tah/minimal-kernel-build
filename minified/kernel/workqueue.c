@@ -4,78 +4,79 @@
 #include <linux/timer.h>
 
 struct workqueue_struct {
-    unsigned int flags;
-    const char *name;
+	unsigned int flags;
+	const char *name;
 };
 
-bool queue_work_on(int cpu, struct workqueue_struct *wq, struct work_struct *work)
+bool queue_work_on(int cpu, struct workqueue_struct *wq,
+		   struct work_struct *work)
 {
-     
-    if (test_and_set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work)))
-        return false;
+	if (test_and_set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work)))
+		return false;
 
-    work->func(work);
-    clear_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work));
-    return true;
+	work->func(work);
+	clear_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work));
+	return true;
 }
 
 bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
-                           struct delayed_work *dwork, unsigned long delay)
+			   struct delayed_work *dwork, unsigned long delay)
 {
-    if (delay == 0)
-        return queue_work_on(cpu, wq, &dwork->work);
+	if (delay == 0)
+		return queue_work_on(cpu, wq, &dwork->work);
 
-
-    return queue_work_on(cpu, wq, &dwork->work);
+	return queue_work_on(cpu, wq, &dwork->work);
 }
-
 
 bool flush_work(struct work_struct *work)
 {
-     
-    return false;
+	return false;
 }
 
 bool cancel_work_sync(struct work_struct *work)
 {
-     
-    return test_and_clear_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work));
+	return test_and_clear_bit(WORK_STRUCT_PENDING_BIT,
+				  work_data_bits(work));
 }
 
 bool flush_delayed_work(struct delayed_work *dwork)
 {
-    return flush_work(&dwork->work);
+	return flush_work(&dwork->work);
 }
 
 bool cancel_delayed_work(struct delayed_work *dwork)
 {
-    return cancel_work_sync(&dwork->work);
+	return cancel_work_sync(&dwork->work);
 }
 
-
-__printf(1, 4) struct workqueue_struct *
-alloc_workqueue(const char *fmt, unsigned int flags, int max_active, ...)
+__printf(1, 4) struct workqueue_struct *alloc_workqueue(const char *fmt,
+							unsigned int flags,
+							int max_active, ...)
 {
-    struct workqueue_struct *wq;
+	struct workqueue_struct *wq;
 
-    wq = kzalloc(sizeof(*wq), GFP_KERNEL);
-    if (!wq)
-        return NULL;
+	wq = kzalloc(sizeof(*wq), GFP_KERNEL);
+	if (!wq)
+		return NULL;
 
-    wq->flags = flags;
-    wq->name = fmt;
-    return wq;
+	wq->flags = flags;
+	wq->name = fmt;
+	return wq;
 }
 
 void destroy_workqueue(struct workqueue_struct *wq)
 {
-    if (wq)
-        kfree(wq);
+	if (wq)
+		kfree(wq);
 }
 
 static struct workqueue_struct system_wq_storage = { .name = "events" };
-static struct workqueue_struct system_long_wq_storage = { .name = "events_long" };
-static struct workqueue_struct system_unbound_wq_storage = { .name = "events_unbound" };
+static struct workqueue_struct system_long_wq_storage = {
+	.name = "events_long"
+};
+static struct workqueue_struct system_unbound_wq_storage = {
+	.name = "events_unbound"
+};
 
 struct workqueue_struct *system_wq = &system_wq_storage;
 struct workqueue_struct *system_long_wq = &system_long_wq_storage;
@@ -83,22 +84,22 @@ struct workqueue_struct *system_unbound_wq = &system_unbound_wq_storage;
 
 void __init workqueue_init_early(void)
 {
-     
 }
 
 void __init workqueue_init(void)
 {
-     
 }
 
-
-void wq_worker_running(struct task_struct *task) {}
-void wq_worker_sleeping(struct task_struct *task) {}
+void wq_worker_running(struct task_struct *task)
+{
+}
+void wq_worker_sleeping(struct task_struct *task)
+{
+}
 
 void delayed_work_timer_fn(struct timer_list *t)
 {
-    struct delayed_work *dwork = from_timer(dwork, t, timer);
+	struct delayed_work *dwork = from_timer(dwork, t, timer);
 
-    queue_work(dwork->wq, &dwork->work);
+	queue_work(dwork->wq, &dwork->work);
 }
-

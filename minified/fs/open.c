@@ -22,32 +22,37 @@
 #include <linux/rcupdate.h>
 #include <linux/audit.h>
 
-#define FALLOC_FL_KEEP_SIZE	0x01
-#define FALLOC_FL_PUNCH_HOLE	0x02
-#define FALLOC_FL_NO_HIDE_STALE	0x04
-#define FALLOC_FL_COLLAPSE_RANGE	0x08
-#define FALLOC_FL_ZERO_RANGE		0x10
-#define FALLOC_FL_INSERT_RANGE		0x20
-#define FALLOC_FL_UNSHARE_RANGE		0x40
+#define FALLOC_FL_KEEP_SIZE 0x01
+#define FALLOC_FL_PUNCH_HOLE 0x02
+#define FALLOC_FL_NO_HIDE_STALE 0x04
+#define FALLOC_FL_COLLAPSE_RANGE 0x08
+#define FALLOC_FL_ZERO_RANGE 0x10
+#define FALLOC_FL_INSERT_RANGE 0x20
+#define FALLOC_FL_UNSHARE_RANGE 0x40
 struct space_resv {
-	__s16		l_type;
-	__s16		l_whence;
-	__s64		l_start;
-	__s64		l_len;
-	__s32		l_sysid;
-	__u32		l_pid;
-	__s32		l_pad[4];
+	__s16 l_type;
+	__s16 l_whence;
+	__s64 l_start;
+	__s64 l_len;
+	__s32 l_sysid;
+	__u32 l_pid;
+	__s32 l_pad[4];
 };
-#define FS_IOC_RESVSP		_IOW('X', 40, struct space_resv)
-#define FS_IOC_UNRESVSP		_IOW('X', 41, struct space_resv)
-#define FS_IOC_RESVSP64		_IOW('X', 42, struct space_resv)
-#define FS_IOC_UNRESVSP64	_IOW('X', 43, struct space_resv)
-#define FS_IOC_ZERO_RANGE	_IOW('X', 57, struct space_resv)
-#define	FALLOC_FL_SUPPORTED_MASK	(FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE | FALLOC_FL_COLLAPSE_RANGE | FALLOC_FL_ZERO_RANGE | FALLOC_FL_INSERT_RANGE | FALLOC_FL_UNSHARE_RANGE)
+#define FS_IOC_RESVSP _IOW('X', 40, struct space_resv)
+#define FS_IOC_UNRESVSP _IOW('X', 41, struct space_resv)
+#define FS_IOC_RESVSP64 _IOW('X', 42, struct space_resv)
+#define FS_IOC_UNRESVSP64 _IOW('X', 43, struct space_resv)
+#define FS_IOC_ZERO_RANGE _IOW('X', 57, struct space_resv)
+#define FALLOC_FL_SUPPORTED_MASK                           \
+	(FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE |      \
+	 FALLOC_FL_COLLAPSE_RANGE | FALLOC_FL_ZERO_RANGE | \
+	 FALLOC_FL_INSERT_RANGE | FALLOC_FL_UNSHARE_RANGE)
 #include <linux/fs_struct.h>
 
 /* Inlined from dnotify.h - only dnotify_flush kept (used by __fput) */
-static inline void dnotify_flush(struct file *filp, fl_owner_t id) {}
+static inline void dnotify_flush(struct file *filp, fl_owner_t id)
+{
+}
 
 #include <linux/compat.h>
 #include <linux/mnt_idmapping.h>
@@ -60,7 +65,6 @@ int do_truncate(struct user_namespace *mnt_userns, struct dentry *dentry,
 	int ret;
 	struct iattr newattrs;
 
-	 
 	if (length < 0)
 		return -EINVAL;
 
@@ -71,7 +75,6 @@ int do_truncate(struct user_namespace *mnt_userns, struct dentry *dentry,
 		newattrs.ia_valid |= ATTR_FILE;
 	}
 
-	 
 	ret = dentry_needs_remove_privs(dentry);
 	if (ret < 0)
 		return ret;
@@ -79,7 +82,7 @@ int do_truncate(struct user_namespace *mnt_userns, struct dentry *dentry,
 		newattrs.ia_valid |= ret | ATTR_FORCE;
 
 	inode_lock(dentry->d_inode);
-	 
+
 	ret = notify_change(mnt_userns, dentry, &newattrs, NULL);
 	inode_unlock(dentry->d_inode);
 	return ret;
@@ -93,7 +96,6 @@ long vfs_truncate(const struct path *path, loff_t length)
 
 	inode = path->dentry->d_inode;
 
-	 
 	if (S_ISDIR(inode->i_mode))
 		return -EISDIR;
 	if (!S_ISREG(inode->i_mode))
@@ -116,7 +118,6 @@ long vfs_truncate(const struct path *path, loff_t length)
 	if (error)
 		goto mnt_drop_write_and_out;
 
-	 
 	error = break_lease(inode, O_WRONLY);
 	if (error)
 		goto put_write_and_out;
@@ -143,7 +144,6 @@ SYSCALL_DEFINE2(truncate, const char __user *, path, long, length)
 	return do_sys_truncate(path, length);
 }
 
-
 long do_sys_ftruncate(unsigned int fd, loff_t length, int small)
 {
 	struct inode *inode;
@@ -159,7 +159,6 @@ long do_sys_ftruncate(unsigned int fd, loff_t length, int small)
 	if (!f.file)
 		goto out;
 
-	 
 	if (f.file->f_flags & O_LARGEFILE)
 		small = 0;
 
@@ -170,12 +169,12 @@ long do_sys_ftruncate(unsigned int fd, loff_t length, int small)
 		goto out_putf;
 
 	error = -EINVAL;
-	 
+
 	if (small && length > MAX_NON_LFS)
 		goto out_putf;
 
 	error = -EPERM;
-	 
+
 	if (IS_APPEND(file_inode(f.file)))
 		goto out_putf;
 	sb_start_write(inode->i_sb);
@@ -195,7 +194,6 @@ SYSCALL_DEFINE2(ftruncate, unsigned int, fd, unsigned long, length)
 	return do_sys_ftruncate(fd, length, 1);
 }
 
-
 #if BITS_PER_LONG == 32
 SYSCALL_DEFINE2(truncate64, const char __user *, path, loff_t, length)
 {
@@ -208,7 +206,6 @@ SYSCALL_DEFINE2(ftruncate64, unsigned int, fd, loff_t, length)
 }
 #endif
 
-
 int ksys_fallocate(int fd, int mode, loff_t offset, loff_t len)
 {
 	return -ENOSYS;
@@ -219,8 +216,8 @@ SYSCALL_DEFINE4(fallocate, int, fd, int, mode, loff_t, offset, loff_t, len)
 	return ksys_fallocate(fd, mode, offset, len);
 }
 
-
-static long do_faccessat(int dfd, const char __user *filename, int mode, int flags)
+static long do_faccessat(int dfd, const char __user *filename, int mode,
+			 int flags)
 {
 	return -ENOSYS;
 }
@@ -286,8 +283,8 @@ static int do_fchmodat(int dfd, const char __user *filename, umode_t mode)
 	return -ENOSYS;
 }
 
-SYSCALL_DEFINE3(fchmodat, int, dfd, const char __user *, filename,
-		umode_t, mode)
+SYSCALL_DEFINE3(fchmodat, int, dfd, const char __user *, filename, umode_t,
+		mode)
 {
 	return do_fchmodat(dfd, filename, mode);
 }
@@ -303,8 +300,8 @@ int chown_common(const struct path *path, uid_t user, gid_t group)
 	return -EOPNOTSUPP;
 }
 
-static int do_fchownat(int dfd, const char __user *filename, uid_t user, gid_t group,
-		int flag)
+static int do_fchownat(int dfd, const char __user *filename, uid_t user,
+		       gid_t group, int flag)
 {
 	return -ENOSYS;
 }
@@ -320,7 +317,8 @@ SYSCALL_DEFINE3(chown, const char __user *, filename, uid_t, user, gid_t, group)
 	return do_fchownat(AT_FDCWD, filename, user, group, 0);
 }
 
-SYSCALL_DEFINE3(lchown, const char __user *, filename, uid_t, user, gid_t, group)
+SYSCALL_DEFINE3(lchown, const char __user *, filename, uid_t, user, gid_t,
+		group)
 {
 	return do_fchownat(AT_FDCWD, filename, user, group,
 			   AT_SYMLINK_NOFOLLOW);
@@ -333,11 +331,10 @@ int vfs_fchown(struct file *file, uid_t user, gid_t group)
 
 SYSCALL_DEFINE3(fchown, unsigned int, fd, uid_t, user, gid_t, group)
 {
-	return -ENOSYS;  /* stubbed */
+	return -ENOSYS; /* stubbed */
 }
 
-static int do_dentry_open(struct file *f,
-			  struct inode *inode,
+static int do_dentry_open(struct file *f, struct inode *inode,
 			  int (*open)(struct inode *, struct file *))
 {
 	static const struct file_operations empty_fops = {};
@@ -367,7 +364,6 @@ static int do_dentry_open(struct file *f,
 		f->f_mode |= FMODE_WRITER;
 	}
 
-	 
 	if (S_ISREG(inode->i_mode) || S_ISDIR(inode->i_mode))
 		f->f_mode |= FMODE_ATOMIC_POS;
 
@@ -385,7 +381,6 @@ static int do_dentry_open(struct file *f,
 	if (error)
 		goto cleanup_all;
 
-	 
 	f->f_mode |= FMODE_LSEEK | FMODE_PREAD | FMODE_PWRITE;
 	if (!open)
 		open = f->f_op->open;
@@ -398,10 +393,10 @@ static int do_dentry_open(struct file *f,
 	if ((f->f_mode & (FMODE_READ | FMODE_WRITE)) == FMODE_READ)
 		i_readcount_inc(inode);
 	if ((f->f_mode & FMODE_READ) &&
-	     likely(f->f_op->read || f->f_op->read_iter))
+	    likely(f->f_op->read || f->f_op->read_iter))
 		f->f_mode |= FMODE_CAN_READ;
 	if ((f->f_mode & FMODE_WRITE) &&
-	     likely(f->f_op->write || f->f_op->write_iter))
+	    likely(f->f_op->write || f->f_op->write_iter))
 		f->f_mode |= FMODE_CAN_WRITE;
 	if (f->f_mapping->a_ops && f->f_mapping->a_ops->direct_IO)
 		f->f_mode |= FMODE_CAN_ODIRECT;
@@ -413,15 +408,13 @@ static int do_dentry_open(struct file *f,
 	if ((f->f_flags & O_DIRECT) && !(f->f_mode & FMODE_CAN_ODIRECT))
 		return -EINVAL;
 
-	 
 	if (f->f_mode & FMODE_WRITE) {
-		 
 		smp_mb();
 		if (filemap_nr_thps(inode->i_mapping)) {
 			struct address_space *mapping = inode->i_mapping;
 
 			filemap_invalidate_lock(inode->i_mapping);
-			 
+
 			unmap_mapping_range(mapping, 0, 0, 0);
 			truncate_inode_pages(mapping, 0);
 			filemap_invalidate_unlock(inode->i_mapping);
@@ -449,13 +442,11 @@ cleanup_file:
 int finish_open(struct file *file, struct dentry *dentry,
 		int (*open)(struct inode *, struct file *))
 {
-	BUG_ON(file->f_mode & FMODE_OPENED);  
+	BUG_ON(file->f_mode & FMODE_OPENED);
 
 	file->f_path.dentry = dentry;
 	return do_dentry_open(file, d_backing_inode(dentry), open);
 }
-
-
 
 int vfs_open(const struct path *path, struct file *file)
 {
@@ -471,7 +462,6 @@ struct file *dentry_open(const struct path *path, int flags,
 
 	validate_creds(cred);
 
-	 
 	BUG_ON(!path->mnt);
 
 	f = alloc_empty_file(flags, cred);
@@ -485,9 +475,8 @@ struct file *dentry_open(const struct path *path, int flags,
 	return f;
 }
 
-
-#define WILL_CREATE(flags)	(flags & (O_CREAT | __O_TMPFILE))
-#define O_PATH_FLAGS		(O_DIRECTORY | O_NOFOLLOW | O_PATH | O_CLOEXEC)
+#define WILL_CREATE(flags) (flags & (O_CREAT | __O_TMPFILE))
+#define O_PATH_FLAGS (O_DIRECTORY | O_NOFOLLOW | O_PATH | O_CLOEXEC)
 
 inline struct open_how build_open_how(int flags, umode_t mode)
 {
@@ -496,10 +485,9 @@ inline struct open_how build_open_how(int flags, umode_t mode)
 		.mode = mode & S_IALLUGO,
 	};
 
-	 
 	if (how.flags & O_PATH)
 		how.flags &= O_PATH_FLAGS;
-	 
+
 	if (!WILL_CREATE(how.flags))
 		how.mode = 0;
 	return how;
@@ -512,23 +500,21 @@ inline int build_open_flags(const struct open_how *how, struct open_flags *op)
 	int lookup_flags = 0;
 	int acc_mode = ACC_MODE(flags);
 
-	BUILD_BUG_ON_MSG(upper_32_bits(VALID_OPEN_FLAGS),
-			 "struct open_flags doesn't yet handle flags > 32 bits");
+	BUILD_BUG_ON_MSG(
+		upper_32_bits(VALID_OPEN_FLAGS),
+		"struct open_flags doesn't yet handle flags > 32 bits");
 
-	 
 	flags &= ~strip;
 
-	 
 	if (flags & ~VALID_OPEN_FLAGS)
 		return -EINVAL;
 	if (how->resolve & ~VALID_RESOLVE_FLAGS)
 		return -EINVAL;
 
-	 
-	if ((how->resolve & RESOLVE_BENEATH) && (how->resolve & RESOLVE_IN_ROOT))
+	if ((how->resolve & RESOLVE_BENEATH) &&
+	    (how->resolve & RESOLVE_IN_ROOT))
 		return -EINVAL;
 
-	 
 	if (WILL_CREATE(flags)) {
 		if (how->mode & ~S_IALLUGO)
 			return -EINVAL;
@@ -539,7 +525,6 @@ inline int build_open_flags(const struct open_how *how, struct open_flags *op)
 		op->mode = 0;
 	}
 
-	 
 	if (flags & __O_TMPFILE) {
 		if ((flags & O_TMPFILE_MASK) != O_TMPFILE)
 			return -EINVAL;
@@ -547,23 +532,19 @@ inline int build_open_flags(const struct open_how *how, struct open_flags *op)
 			return -EINVAL;
 	}
 	if (flags & O_PATH) {
-		 
 		if (flags & ~O_PATH_FLAGS)
 			return -EINVAL;
 		acc_mode = 0;
 	}
 
-	 
 	if (flags & __O_SYNC)
 		flags |= O_DSYNC;
 
 	op->open_flag = flags;
 
-	 
 	if (flags & O_TRUNC)
 		acc_mode |= MAY_WRITE;
 
-	 
 	if (flags & O_APPEND)
 		acc_mode |= MAY_APPEND;
 
@@ -595,7 +576,6 @@ inline int build_open_flags(const struct open_how *how, struct open_flags *op)
 	if (how->resolve & RESOLVE_IN_ROOT)
 		lookup_flags |= LOOKUP_IN_ROOT;
 	if (how->resolve & RESOLVE_CACHED) {
-		 
 		if (flags & (O_TRUNC | O_CREAT | O_TMPFILE))
 			return -EAGAIN;
 		lookup_flags |= LOOKUP_CACHED;
@@ -619,14 +599,13 @@ struct file *filp_open(const char *filename, int flags, umode_t mode)
 {
 	struct filename *name = getname_kernel(filename);
 	struct file *file = ERR_CAST(name);
-	
+
 	if (!IS_ERR(name)) {
 		file = file_open_name(name, flags, mode);
 		putname(name);
 	}
 	return file;
 }
-
 
 static long do_sys_openat2(int dfd, const char __user *filename,
 			   struct open_how *how)
@@ -663,7 +642,6 @@ long do_sys_open(int dfd, const char __user *filename, int flags, umode_t mode)
 	return do_sys_openat2(dfd, filename, &how);
 }
 
-
 SYSCALL_DEFINE3(open, const char __user *, filename, int, flags, umode_t, mode)
 {
 	return do_sys_open(AT_FDCWD, filename, flags, mode);
@@ -696,11 +674,11 @@ SYSCALL_DEFINE4(openat2, int, dfd, const char __user *, filename,
 	return do_sys_openat2(dfd, filename, &tmp);
 }
 
-
 /* x86 only - alpha exclusion removed, creat syscall always defined */
 SYSCALL_DEFINE2(creat, const char __user *, pathname, umode_t, mode)
 {
-	return do_sys_open(AT_FDCWD, pathname, O_CREAT | O_WRONLY | O_TRUNC, mode);
+	return do_sys_open(AT_FDCWD, pathname, O_CREAT | O_WRONLY | O_TRUNC,
+			   mode);
 }
 
 int filp_close(struct file *filp, fl_owner_t id)
@@ -723,14 +701,11 @@ int filp_close(struct file *filp, fl_owner_t id)
 	return retval;
 }
 
-
 SYSCALL_DEFINE1(close, unsigned int, fd)
 {
 	int retval = close_fd(fd);
 
-	 
-	if (unlikely(retval == -ERESTARTSYS ||
-		     retval == -ERESTARTNOINTR ||
+	if (unlikely(retval == -ERESTARTSYS || retval == -ERESTARTNOINTR ||
 		     retval == -ERESTARTNOHAND ||
 		     retval == -ERESTART_RESTARTBLOCK))
 		retval = -EINTR;
@@ -750,13 +725,12 @@ SYSCALL_DEFINE0(vhangup)
 	return -EPERM;
 }
 
-int generic_file_open(struct inode * inode, struct file * filp)
+int generic_file_open(struct inode *inode, struct file *filp)
 {
 	if (!(filp->f_flags & O_LARGEFILE) && i_size_read(inode) > MAX_NON_LFS)
 		return -EOVERFLOW;
 	return 0;
 }
-
 
 int nonseekable_open(struct inode *inode, struct file *filp)
 {
@@ -765,4 +739,3 @@ int nonseekable_open(struct inode *inode, struct file *filp)
 }
 
 /* Removed: stream_open - never called */
-

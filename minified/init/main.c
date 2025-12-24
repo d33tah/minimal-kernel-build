@@ -1,5 +1,5 @@
 
-#define DEBUG		 
+#define DEBUG
 
 #include <linux/types.h>
 #include <linux/extable.h>
@@ -8,7 +8,9 @@
 #include <linux/binfmts.h>
 #include <linux/kernel.h>
 #include <linux/syscalls.h>
-static inline void boot_init_stack_canary(void) {}
+static inline void boot_init_stack_canary(void)
+{
+}
 /* end stackprotector.h */
 #include <linux/string.h>
 #include <linux/ctype.h>
@@ -19,20 +21,25 @@ static inline void boot_init_stack_canary(void) {}
 #include <linux/memblock.h>
 #include <linux/acpi.h>
 
-#define BOOTCONFIG_MAGIC	"#BOOTCONFIG\n"
-#define BOOTCONFIG_MAGIC_LEN	12
+#define BOOTCONFIG_MAGIC "#BOOTCONFIG\n"
+#define BOOTCONFIG_MAGIC_LEN 12
 #include <linux/console.h>
 #include <linux/nmi.h>
 #include <linux/percpu.h>
 #include <linux/security.h>
 #include <linux/smp.h>
-static inline int profile_init(void) { return 0; }
+static inline int profile_init(void)
+{
+	return 0;
+}
 #include <linux/kfence.h>
 #include <linux/rcupdate.h>
 #include <linux/srcu.h>
 #include <linux/moduleparam.h>
 #include <linux/kallsyms.h>
-static inline void init_vmlinux_build_id(void) { }
+static inline void init_vmlinux_build_id(void)
+{
+}
 #include <linux/writeback.h>
 #include <linux/cpu.h>
 #include <linux/cpuset.h>
@@ -41,8 +48,12 @@ static inline void init_vmlinux_build_id(void) { }
 #include <linux/tick.h>
 #include <linux/sched/isolation.h>
 #include <linux/interrupt.h>
-static inline void taskstats_init_early(void) {}
-static inline void delayacct_init(void) {}
+static inline void taskstats_init_early(void)
+{
+}
+static inline void delayacct_init(void)
+{
+}
 #include <linux/unistd.h>
 #include <linux/utsname.h>
 #include <linux/rmap.h>
@@ -55,7 +66,9 @@ static inline void delayacct_init(void) {}
 #include <linux/pid_namespace.h>
 
 /* --- 2025-12-08 00:37 --- padata.h stubbed out */
-static inline void __init padata_init(void) {}
+static inline void __init padata_init(void)
+{
+}
 #include <linux/device/driver.h>
 #include <linux/kthread.h>
 #include <linux/sched.h>
@@ -63,9 +76,15 @@ extern void sched_init(void);
 extern void sched_init_smp(void);
 #include <linux/signal.h>
 #include <linux/idr.h>
-#define dbg_late_init() do { } while (0)
-static inline void kgdb_free_init_mem(void) { }
-static inline void kprobe_free_init_mem(void) { }
+#define dbg_late_init() \
+	do {            \
+	} while (0)
+static inline void kgdb_free_init_mem(void)
+{
+}
+static inline void kprobe_free_init_mem(void)
+{
+}
 #include <linux/async.h>
 #include <linux/shmem_fs.h>
 #include <linux/slab.h>
@@ -82,7 +101,9 @@ static inline void kprobe_free_init_mem(void) { }
 #include <linux/proc_ns.h>
 
 /* --- 2025-12-08 00:40 --- integrity.h stubbed out */
-static inline void integrity_load_keys(void) { }
+static inline void integrity_load_keys(void)
+{
+}
 #include <linux/io.h>
 #include <linux/cache.h>
 #include <linux/jump_label.h>
@@ -95,8 +116,6 @@ static inline void integrity_load_keys(void) { }
 #include <asm/setup.h>
 #include <asm/sections.h>
 #include <asm/cacheflush.h>
-
-
 
 static int kernel_init(void *);
 
@@ -119,17 +138,23 @@ static char *static_command_line;
 static char *extra_command_line;
 static char *extra_init_args;
 
-# define bootconfig_found false
-# define initargs_offs 0
+#define bootconfig_found false
+#define initargs_offs 0
 
 static char *execute_command;
 static char *ramdisk_execute_command = "/init";
 
 bool static_key_initialized __read_mostly;
 
-
-static const char *argv_init[MAX_INIT_ARGS+2] = { "init", NULL, };
-const char *envp_init[MAX_INIT_ENVS+2] = { "HOME=/", "TERM=linux", NULL, };
+static const char *argv_init[MAX_INIT_ARGS + 2] = {
+	"init",
+	NULL,
+};
+const char *envp_init[MAX_INIT_ENVS + 2] = {
+	"HOME=/",
+	"TERM=linux",
+	NULL,
+};
 static const char *panic_later, *panic_param;
 
 extern const struct obs_kernel_param __setup_start[], __setup_end[];
@@ -144,7 +169,6 @@ static bool __init obsolete_checksetup(char *line)
 		int n = strlen(p->str);
 		if (parameqn(line, p->str, n)) {
 			if (p->early) {
-				 
 				if (line[n] == '\0' || line[n] == '=')
 					had_early_param = true;
 			} else if (!p->setup_func) {
@@ -160,39 +184,54 @@ static bool __init obsolete_checksetup(char *line)
 	return had_early_param;
 }
 
-unsigned long loops_per_jiffy = (1<<12);
+unsigned long loops_per_jiffy = (1 << 12);
 
 /* Stub: debug/quiet/loglevel cmdline not needed for minimal kernel */
-static int __init debug_kernel(char *str) { return 0; }
-static int __init quiet_kernel(char *str) { return 0; }
+static int __init debug_kernel(char *str)
+{
+	return 0;
+}
+static int __init quiet_kernel(char *str)
+{
+	return 0;
+}
 early_param("debug", debug_kernel);
 early_param("quiet", quiet_kernel);
 
-static int __init loglevel(char *str) { return 0; }
+static int __init loglevel(char *str)
+{
+	return 0;
+}
 early_param("loglevel", loglevel);
 
 /* Stub: bootconfig not needed for minimal kernel */
-static void __init setup_boot_config(void) { }
-static int __init warn_bootconfig(char *str) { return 0; }
-#define exit_boot_config()	do {} while (0)
+static void __init setup_boot_config(void)
+{
+}
+static int __init warn_bootconfig(char *str)
+{
+	return 0;
+}
+#define exit_boot_config() \
+	do {               \
+	} while (0)
 early_param("bootconfig", warn_bootconfig);
 
 static void __init repair_env_string(char *param, char *val)
 {
 	if (val) {
-		 
-		if (val == param+strlen(param)+1)
+		if (val == param + strlen(param) + 1)
 			val[-1] = '=';
-		else if (val == param+strlen(param)+2) {
+		else if (val == param + strlen(param) + 2) {
 			val[-2] = '=';
-			memmove(val-1, val, strlen(val)+1);
+			memmove(val - 1, val, strlen(val) + 1);
 		} else
 			BUG();
 	}
 }
 
-static int __init set_init_arg(char *param, char *val,
-			       const char *unused, void *arg)
+static int __init set_init_arg(char *param, char *val, const char *unused,
+			       void *arg)
 {
 	unsigned int i;
 
@@ -212,18 +251,16 @@ static int __init set_init_arg(char *param, char *val,
 	return 0;
 }
 
-static int __init unknown_bootoption(char *param, char *val,
-				     const char *unused, void *arg)
+static int __init unknown_bootoption(char *param, char *val, const char *unused,
+				     void *arg)
 {
 	size_t len = strlen(param);
 
 	repair_env_string(param, val);
 
-	 
 	if (obsolete_checksetup(param))
 		return 0;
 
-	 
 	if (strnchr(param, len, '.'))
 		return 0;
 
@@ -231,19 +268,17 @@ static int __init unknown_bootoption(char *param, char *val,
 		return 0;
 
 	if (val) {
-		 
 		unsigned int i;
 		for (i = 0; envp_init[i]; i++) {
 			if (i == MAX_INIT_ENVS) {
 				panic_later = "env";
 				panic_param = param;
 			}
-			if (!strncmp(param, envp_init[i], len+1))
+			if (!strncmp(param, envp_init[i], len + 1))
 				break;
 		}
 		envp_init[i] = param;
 	} else {
-		 
 		unsigned int i;
 		for (i = 0; argv_init[i]; i++) {
 			if (i == MAX_INIT_ARGS) {
@@ -261,7 +296,7 @@ static int __init init_setup(char *str)
 	unsigned int i;
 
 	execute_command = str;
-	 
+
 	for (i = 1; i < MAX_INIT_ARGS; i++)
 		argv_init[i] = NULL;
 	return 1;
@@ -273,7 +308,7 @@ static int __init rdinit_setup(char *str)
 	unsigned int i;
 
 	ramdisk_execute_command = str;
-	 
+
 	for (i = 1; i < MAX_INIT_ARGS; i++)
 		argv_init[i] = NULL;
 	return 1;
@@ -281,8 +316,12 @@ static int __init rdinit_setup(char *str)
 __setup("rdinit=", rdinit_setup);
 
 static const unsigned int setup_max_cpus = NR_CPUS;
-static inline void setup_nr_cpu_ids(void) { }
-static inline void smp_prepare_cpus(unsigned int maxcpus) { }
+static inline void setup_nr_cpu_ids(void)
+{
+}
+static inline void smp_prepare_cpus(unsigned int maxcpus)
+{
+}
 
 static void __init setup_command_line(char *command_line)
 {
@@ -291,20 +330,20 @@ static void __init setup_command_line(char *command_line)
 	if (extra_command_line)
 		xlen = strlen(extra_command_line);
 	if (extra_init_args)
-		ilen = strlen(extra_init_args) + 4;  
+		ilen = strlen(extra_init_args) + 4;
 
 	len = xlen + strlen(boot_command_line) + 1;
 
 	saved_command_line = memblock_alloc(len + ilen, SMP_CACHE_BYTES);
 	if (!saved_command_line)
-		panic("%s: Failed to allocate %zu bytes\n", __func__, len + ilen);
+		panic("%s: Failed to allocate %zu bytes\n", __func__,
+		      len + ilen);
 
 	static_command_line = memblock_alloc(len, SMP_CACHE_BYTES);
 	if (!static_command_line)
 		panic("%s: Failed to allocate %zu bytes\n", __func__, len);
 
 	if (xlen) {
-		 
 		strcpy(saved_command_line, extra_command_line);
 		strcpy(static_command_line, extra_command_line);
 	}
@@ -312,13 +351,12 @@ static void __init setup_command_line(char *command_line)
 	strcpy(static_command_line + xlen, command_line);
 
 	if (ilen) {
-		 
 		if (initargs_offs) {
 			len = xlen + initargs_offs;
 			strcpy(saved_command_line + len, extra_init_args);
-			len += ilen - 4;	 
+			len += ilen - 4;
 			strcpy(saved_command_line + len,
-				boot_command_line + initargs_offs - 1);
+			       boot_command_line + initargs_offs - 1);
 		} else {
 			len = strlen(saved_command_line);
 			strcpy(saved_command_line + len, " -- ");
@@ -328,7 +366,6 @@ static void __init setup_command_line(char *command_line)
 	}
 }
 
-
 static __initdata DECLARE_COMPLETION(kthreadd_done);
 
 noinline void __ref rest_init(void)
@@ -337,9 +374,9 @@ noinline void __ref rest_init(void)
 	int pid;
 
 	rcu_scheduler_starting();
-	 
+
 	pid = user_mode_thread(kernel_init, NULL, CLONE_FS);
-	 
+
 	rcu_read_lock();
 	tsk = find_task_by_pid_ns(pid, &init_pid_ns);
 	tsk->flags |= PF_NO_SETAFFINITY;
@@ -352,32 +389,29 @@ noinline void __ref rest_init(void)
 	kthreadd_task = find_task_by_pid_ns(pid, &init_pid_ns);
 	rcu_read_unlock();
 
-	 
 	system_state = SYSTEM_SCHEDULING;
 
 	complete(&kthreadd_done);
 
-	 
 	schedule_preempt_disabled();
-	 
+
 	cpu_startup_entry(CPUHP_ONLINE);
 }
 
-static int __init do_early_param(char *param, char *val,
-				 const char *unused, void *arg)
+static int __init do_early_param(char *param, char *val, const char *unused,
+				 void *arg)
 {
 	const struct obs_kernel_param *p;
 
 	for (p = __setup_start; p < __setup_end; p++) {
 		if ((p->early && parameq(param, p->str)) ||
 		    (strcmp(param, "console") == 0 &&
-		     strcmp(p->str, "earlycon") == 0)
-		) {
+		     strcmp(p->str, "earlycon") == 0)) {
 			if (p->setup_func(val) != 0)
 				pr_warn("Malformed early option '%s'\n", param);
 		}
 	}
-	 
+
 	return 0;
 }
 
@@ -395,7 +429,6 @@ void __init parse_early_param(void)
 	if (done)
 		return;
 
-	 
 	strlcpy(tmp_cmdline, boot_command_line, COMMAND_LINE_SIZE);
 	parse_early_options(tmp_cmdline);
 	done = 1;
@@ -407,17 +440,21 @@ void __init __weak smp_setup_processor_id(void)
 {
 }
 
-# if THREAD_SIZE >= PAGE_SIZE
+#if THREAD_SIZE >= PAGE_SIZE
 void __init __weak thread_stack_cache_init(void)
 {
 }
 #endif
 
-void __init __weak mem_encrypt_init(void) { }
+void __init __weak mem_encrypt_init(void)
+{
+}
 
 void __init poking_init(void); /* in arch/x86/mm/init.c */
 
-void __init __weak pgtable_cache_init(void) { }
+void __init __weak pgtable_cache_init(void)
+{
+}
 
 void __init trap_init(void); /* in arch/x86/kernel/traps.c */
 
@@ -435,7 +472,6 @@ static void __init report_meminit(void)
 
 static void __init mm_init(void)
 {
-	 
 	page_ext_init_flatmem();
 	init_mem_debugging_and_hardening();
 	kfence_alloc_pool();
@@ -444,15 +480,14 @@ static void __init mm_init(void)
 	mem_init();
 	mem_init_print_info();
 	kmem_cache_init();
-	 
+
 	page_ext_init_flatmem_late();
 	kmemleak_init();
 	pgtable_init();
 	vmalloc_init();
-	 
+
 	init_espfix_bsp();
 }
-
 
 void __init __weak arch_call_rest_init(void)
 {
@@ -478,7 +513,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	local_irq_disable();
 	early_boot_irqs_disabled = true;
 
-	 
 	boot_cpu_init();
 	page_address_init();
 	pr_notice("%s", linux_banner);
@@ -488,36 +522,34 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	setup_command_line(command_line);
 	setup_nr_cpu_ids();
 	setup_per_cpu_areas();
-	smp_prepare_boot_cpu();	 
+	smp_prepare_boot_cpu();
 	boot_cpu_hotplug_init();
 
 	build_all_zonelists(NULL);
 	page_alloc_init();
 
 	pr_notice("Kernel command line: %s\n", saved_command_line);
-	 
+
 	jump_label_init();
 	parse_early_param();
-	after_dashes = parse_args("Booting kernel",
-				  static_command_line, __start___param,
-				  __stop___param - __start___param,
-				  -1, -1, NULL, &unknown_bootoption);
+	after_dashes = parse_args("Booting kernel", static_command_line,
+				  __start___param,
+				  __stop___param - __start___param, -1, -1,
+				  NULL, &unknown_bootoption);
 	print_unknown_bootoptions();
 	if (!IS_ERR_OR_NULL(after_dashes))
 		parse_args("Setting init args", after_dashes, NULL, 0, -1, -1,
 			   NULL, set_init_arg);
 	if (extra_init_args)
-		parse_args("Setting extra init args", extra_init_args,
-			   NULL, 0, -1, -1, NULL, set_init_arg);
+		parse_args("Setting extra init args", extra_init_args, NULL, 0,
+			   -1, -1, NULL, set_init_arg);
 
-	 
 	setup_log_buf(0);
 	vfs_caches_init_early();
 	sort_main_extable();
 	trap_init();
 	mm_init();
 
-	 
 	sched_init();
 
 	if (WARN(!irqs_disabled(),
@@ -525,10 +557,8 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 		local_irq_disable();
 	radix_tree_init();
 
-	 
 	housekeeping_init();
 
-	 
 	workqueue_init_early();
 
 	rcu_init();
@@ -537,7 +567,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 		initcall_debug_enable();
 
 	context_tracking_init();
-	 
+
 	early_irq_init();
 	init_IRQ();
 	tick_init();
@@ -550,7 +580,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	kfence_init();
 	time_init();
 
-	 
 	random_init(command_line);
 	boot_init_stack_canary();
 
@@ -564,7 +593,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	kmem_cache_init_late();
 
-	 
 	console_init();
 	if (panic_later)
 		panic("Too many boot %s vars at `%s'", panic_later,
@@ -572,17 +600,15 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	lockdep_init();
 
-	 
 	locking_selftest();
 
-	 
 	mem_encrypt_init();
 
 	if (initrd_start && !initrd_below_start_ok &&
 	    page_to_pfn(virt_to_page((void *)initrd_start)) < min_low_pfn) {
 		pr_crit("initrd overwritten (0x%08lx < 0x%08lx) - disabling it.\n",
-		    page_to_pfn(virt_to_page((void *)initrd_start)),
-		    min_low_pfn);
+			page_to_pfn(virt_to_page((void *)initrd_start)),
+			min_low_pfn);
 		initrd_start = 0;
 	}
 	setup_per_cpu_pageset();
@@ -620,7 +646,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	acpi_subsystem_init();
 	arch_post_acpi_subsys_init();
 
-	 
 	arch_call_rest_init();
 
 	prevent_tail_call_optimization();
@@ -630,13 +655,19 @@ static void __init do_ctors(void)
 {
 }
 
-static bool __init_or_module initcall_blacklisted(initcall_t fn) { return false; }
+static bool __init_or_module initcall_blacklisted(initcall_t fn)
+{
+	return false;
+}
 
 /* trace_initcall_start_cb and trace_initcall_finish_cb - stub only */
-static __init_or_module void
-trace_initcall_start_cb(void *data, initcall_t fn) { }
-static __init_or_module void
-trace_initcall_finish_cb(void *data, initcall_t fn, int ret) { }
+static __init_or_module void trace_initcall_start_cb(void *data, initcall_t fn)
+{
+}
+static __init_or_module void trace_initcall_finish_cb(void *data, initcall_t fn,
+						      int ret)
+{
+}
 
 static ktime_t initcall_calltime;
 
@@ -652,7 +683,7 @@ static inline void do_trace_initcall_finish(initcall_t fn, int ret)
 	if (!initcall_debug)
 		return;
 	trace_initcall_finish_cb(&initcall_calltime, fn, ret);
-}  
+}
 
 int __init_or_module do_one_initcall(initcall_t fn)
 {
@@ -683,7 +714,6 @@ int __init_or_module do_one_initcall(initcall_t fn)
 	return ret;
 }
 
-
 extern initcall_entry_t __initcall_start[];
 extern initcall_entry_t __initcall0_start[];
 extern initcall_entry_t __initcall1_start[];
@@ -696,30 +726,17 @@ extern initcall_entry_t __initcall7_start[];
 extern initcall_entry_t __initcall_end[];
 
 static initcall_entry_t *initcall_levels[] __initdata = {
-	__initcall0_start,
-	__initcall1_start,
-	__initcall2_start,
-	__initcall3_start,
-	__initcall4_start,
-	__initcall5_start,
-	__initcall6_start,
-	__initcall7_start,
-	__initcall_end,
+	__initcall0_start, __initcall1_start, __initcall2_start,
+	__initcall3_start, __initcall4_start, __initcall5_start,
+	__initcall6_start, __initcall7_start, __initcall_end,
 };
 
 static const char *initcall_level_names[] __initdata = {
-	"pure",
-	"core",
-	"postcore",
-	"arch",
-	"subsys",
-	"fs",
-	"device",
-	"late",
+	"pure", "core", "postcore", "arch", "subsys", "fs", "device", "late",
 };
 
 static int __init ignore_unknown_bootoption(char *param, char *val,
-			       const char *unused, void *arg)
+					    const char *unused, void *arg)
 {
 	return 0;
 }
@@ -728,14 +745,11 @@ static void __init do_initcall_level(int level, char *command_line)
 {
 	initcall_entry_t *fn;
 
-	parse_args(initcall_level_names[level],
-		   command_line, __start___param,
-		   __stop___param - __start___param,
-		   level, level,
-		   NULL, ignore_unknown_bootoption);
+	parse_args(initcall_level_names[level], command_line, __start___param,
+		   __stop___param - __start___param, level, level, NULL,
+		   ignore_unknown_bootoption);
 
-
-	for (fn = initcall_levels[level]; fn < initcall_levels[level+1]; fn++)
+	for (fn = initcall_levels[level]; fn < initcall_levels[level + 1]; fn++)
 		do_one_initcall(initcall_from_entry(fn));
 }
 
@@ -750,7 +764,6 @@ static void __init do_initcalls(void)
 		panic("%s: Failed to allocate %zu bytes\n", __func__, len);
 
 	for (level = 0; level < ARRAY_SIZE(initcall_levels) - 1; level++) {
-		 
 		strcpy(command_line, saved_command_line);
 		do_initcall_level(level, command_line);
 	}
@@ -770,7 +783,6 @@ static void __init do_basic_setup(void)
 static void __init do_pre_smp_initcalls(void)
 {
 	initcall_entry_t *fn;
-
 
 	for (fn = __initcall_start; fn < __initcall0_start; fn++)
 		do_one_initcall(initcall_from_entry(fn));
@@ -804,7 +816,6 @@ bool rodata_enabled __ro_after_init = true;
 static void mark_readonly(void)
 {
 	if (rodata_enabled) {
-		 
 		rcu_barrier();
 		mark_rodata_ro();
 	} else
@@ -817,11 +828,10 @@ static int __ref kernel_init(void *unused)
 {
 	int ret;
 
-	 
 	wait_for_completion(&kthreadd_done);
 
 	kernel_init_freeable();
-	 
+
 	async_synchronize_full();
 
 	system_state = SYSTEM_FREEING_INITMEM;
@@ -846,13 +856,12 @@ static int __ref kernel_init(void *unused)
 		       ramdisk_execute_command, ret);
 	}
 
-	 
 	if (execute_command) {
 		ret = run_init_process(execute_command);
 		if (!ret)
 			return 0;
-		panic("Requested init %s failed (error %d).",
-		      execute_command, ret);
+		panic("Requested init %s failed (error %d).", execute_command,
+		      ret);
 	}
 
 	if (CONFIG_DEFAULT_INIT[0] != '\0') {
@@ -890,9 +899,7 @@ void __init console_on_rootfs(void)
 
 static noinline void __init kernel_init_freeable(void)
 {
-	 
 	gfp_allowed_mask = __GFP_BITS_MASK;
-
 
 	set_mems_allowed(node_states[N_MEMORY]);
 
@@ -913,7 +920,7 @@ static noinline void __init kernel_init_freeable(void)
 
 	padata_init();
 	page_alloc_init_late();
-	 
+
 	page_ext_init();
 
 	do_basic_setup();
@@ -921,13 +928,10 @@ static noinline void __init kernel_init_freeable(void)
 	wait_for_initramfs();
 	console_on_rootfs();
 
-	 
 	if (init_eaccess(ramdisk_execute_command) != 0) {
 		ramdisk_execute_command = NULL;
 		prepare_namespace();
 	}
-
-	 
 
 	integrity_load_keys();
 }

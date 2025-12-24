@@ -14,20 +14,19 @@
 #include "tick-internal.h"
 #include "timekeeping_internal.h"
 
-void
-clocks_calc_mult_shift(u32 *mult, u32 *shift, u32 from, u32 to, u32 maxsec)
+void clocks_calc_mult_shift(u32 *mult, u32 *shift, u32 from, u32 to, u32 maxsec)
 {
 	u64 tmp;
-	u32 sft, sftacc= 32;
+	u32 sft, sftacc = 32;
 
 	tmp = ((u64)maxsec * from) >> 32;
 	while (tmp) {
-		tmp >>=1;
+		tmp >>= 1;
 		sftacc--;
 	}
 
 	for (sft = 32; sft > 0; sft--) {
-		tmp = (u64) to << sft;
+		tmp = (u64)to << sft;
 		tmp += from / 2;
 		do_div(tmp, from);
 		if ((tmp >> sftacc) == 0)
@@ -55,23 +54,28 @@ static inline void clocksource_watchdog_unlock(unsigned long *flags)
 	spin_unlock_irqrestore(&watchdog_lock, *flags);
 }
 
-void clocksource_mark_unstable(struct clocksource *cs) { }
-void clocksource_verify_percpu(struct clocksource *cs) { }
+void clocksource_mark_unstable(struct clocksource *cs)
+{
+}
+void clocksource_verify_percpu(struct clocksource *cs)
+{
+}
 
 static u32 clocksource_max_adjustment(struct clocksource *cs)
 {
 	u64 ret;
 	ret = (u64)cs->mult * 11;
-	do_div(ret,100);
+	do_div(ret, 100);
 	return (u32)ret;
 }
 
-u64 clocks_calc_max_nsecs(u32 mult, u32 shift, u32 maxadj, u64 mask, u64 *max_cyc)
+u64 clocks_calc_max_nsecs(u32 mult, u32 shift, u32 maxadj, u64 mask,
+			  u64 *max_cyc)
 {
 	u64 max_nsecs, max_cycles;
 
 	max_cycles = ULLONG_MAX;
-	do_div(max_cycles, mult+maxadj);
+	do_div(max_cycles, mult + maxadj);
 
 	max_cycles = min(max_cycles, mask);
 	max_nsecs = clocksource_cyc2ns(max_cycles, mult - maxadj, shift);
@@ -86,9 +90,8 @@ u64 clocks_calc_max_nsecs(u32 mult, u32 shift, u32 maxadj, u64 mask, u64 *max_cy
 
 static inline void clocksource_update_max_deferment(struct clocksource *cs)
 {
-	cs->max_idle_ns = clocks_calc_max_nsecs(cs->mult, cs->shift,
-						cs->maxadj, cs->mask,
-						&cs->max_cycles);
+	cs->max_idle_ns = clocks_calc_max_nsecs(cs->mult, cs->shift, cs->maxadj,
+						cs->mask, &cs->max_cycles);
 }
 
 static struct clocksource *clocksource_find_best(bool oneshot, bool skipcur)
@@ -182,7 +185,8 @@ static void clocksource_enqueue_watchdog(struct clocksource *cs)
 		cs->flags |= CLOCK_SOURCE_VALID_FOR_HRES;
 }
 
-void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale, u32 freq)
+void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale,
+				     u32 freq)
 {
 	u64 sec;
 
@@ -208,8 +212,8 @@ void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale, u32 freq
 	}
 
 	cs->maxadj = clocksource_max_adjustment(cs);
-	while (freq && ((cs->mult + cs->maxadj < cs->mult)
-		|| (cs->mult - cs->maxadj > cs->mult))) {
+	while (freq && ((cs->mult + cs->maxadj < cs->mult) ||
+			(cs->mult - cs->maxadj > cs->mult))) {
 		cs->mult >>= 1;
 		cs->shift--;
 		cs->maxadj = clocksource_max_adjustment(cs);
@@ -270,4 +274,3 @@ int clocksource_unregister(struct clocksource *cs)
 	mutex_unlock(&clocksource_mutex);
 	return ret;
 }
-

@@ -9,7 +9,7 @@
 #include "list.h"
 #include "lkc.h"
 
-#define ARRAY_SIZE(arr)		(sizeof(arr) / sizeof((arr)[0]))
+#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 
 static char *expand_string_with_args(const char *in, int argc, char *argv[]);
 static char *expand_string(const char *in);
@@ -71,7 +71,6 @@ static char *env_expand(const char *name)
 	if (!value)
 		return NULL;
 
-	 
 	env_add(name, value);
 
 	return xstrdup(value);
@@ -145,13 +144,11 @@ static char *do_shell(int argc, char *argv[])
 	if (nread == sizeof(buf))
 		nread--;
 
-	 
 	while (nread > 0 && buf[nread - 1] == '\n')
 		nread--;
 
 	buf[nread] = 0;
 
-	 
 	for (i = 0; i < nread; i++) {
 		if (buf[i] == '\n')
 			buf[i] = ' ';
@@ -168,23 +165,23 @@ static char *do_shell(int argc, char *argv[])
 static char *do_warning_if(int argc, char *argv[])
 {
 	if (!strcmp(argv[0], "y"))
-		fprintf(stderr, "%s:%d: %s\n",
-			current_file->name, yylineno, argv[1]);
+		fprintf(stderr, "%s:%d: %s\n", current_file->name, yylineno,
+			argv[1]);
 
 	return xstrdup("");
 }
 
 static const struct function function_table[] = {
-	 
-	{ "error-if",	2,	2,	do_error_if },
-	{ "filename",	0,	0,	do_filename },
-	{ "info",	1,	1,	do_info },
-	{ "lineno",	0,	0,	do_lineno },
-	{ "shell",	1,	1,	do_shell },
-	{ "warning-if",	2,	2,	do_warning_if },
+
+	{ "error-if", 2, 2, do_error_if },
+	{ "filename", 0, 0, do_filename },
+	{ "info", 1, 1, do_info },
+	{ "lineno", 0, 0, do_lineno },
+	{ "shell", 1, 1, do_shell },
+	{ "warning-if", 2, 2, do_warning_if },
 };
 
-#define FUNCTION_MAX_ARGS		16
+#define FUNCTION_MAX_ARGS 16
 
 static char *function_expand(const char *name, int argc, char *argv[])
 {
@@ -269,7 +266,6 @@ void variable_add(const char *name, const char *value,
 
 	v = variable_lookup(name);
 	if (v) {
-		 
 		if (flavor == VAR_APPEND) {
 			flavor = v->flavor;
 			append = true;
@@ -277,7 +273,6 @@ void variable_add(const char *name, const char *value,
 			free(v->value);
 		}
 	} else {
-		 
 		if (flavor == VAR_APPEND)
 			flavor = VAR_RECURSIVE;
 
@@ -332,7 +327,6 @@ static char *eval_clause(const char *str, size_t len, int argc, char *argv[])
 
 	tmp = xstrndup(str, len);
 
-	 
 	n = strtoul(tmp, &endptr, 10);
 	if (!*endptr && n > 0 && n <= argc) {
 		res = xstrdup(argv[n - 1]);
@@ -341,7 +335,6 @@ static char *eval_clause(const char *str, size_t len, int argc, char *argv[])
 
 	prev = p = tmp;
 
-	 
 	while (*p) {
 		if (nest == 0 && *p == ',') {
 			*p = 0;
@@ -359,24 +352,20 @@ static char *eval_clause(const char *str, size_t len, int argc, char *argv[])
 	}
 	new_argv[new_argc++] = prev;
 
-	 
 	name = expand_string_with_args(new_argv[0], argc, argv);
 	new_argc--;
 	for (i = 0; i < new_argc; i++)
-		new_argv[i] = expand_string_with_args(new_argv[i + 1],
-						      argc, argv);
+		new_argv[i] =
+			expand_string_with_args(new_argv[i + 1], argc, argv);
 
-	 
 	res = variable_expand(name, new_argc, new_argv);
 	if (res)
 		goto free;
 
-	 
 	res = function_expand(name, new_argc, new_argv);
 	if (res)
 		goto free;
 
-	 
 	if (new_argc == 0) {
 		res = env_expand(name);
 		if (res)
@@ -400,7 +389,6 @@ static char *expand_dollar_with_args(const char **str, int argc, char *argv[])
 	const char *q;
 	int nest = 0;
 
-	 
 	if (*p != '(') {
 		*str = p;
 		return xstrdup("$");
@@ -421,7 +409,6 @@ static char *expand_dollar_with_args(const char **str, int argc, char *argv[])
 	if (!*q)
 		pperror("unterminated reference to '%s': missing ')'", p);
 
-	 
 	*str = q + 1;
 
 	return eval_clause(p, q - p, argc, argv);
@@ -432,8 +419,8 @@ char *expand_dollar(const char **str)
 	return expand_dollar_with_args(str, 0, NULL);
 }
 
-static char *__expand_string(const char **str, bool (*is_end)(char c),
-			     int argc, char *argv[])
+static char *__expand_string(const char **str, bool (*is_end)(char c), int argc,
+			     char *argv[])
 {
 	const char *in, *p;
 	char *expansion, *out;
@@ -470,7 +457,6 @@ static char *__expand_string(const char **str, bool (*is_end)(char c),
 	out = xrealloc(out, out_len);
 	strncat(out, in, in_len);
 
-	 
 	*str = p;
 
 	return out;

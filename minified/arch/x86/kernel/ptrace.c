@@ -51,21 +51,18 @@ enum x86_regset {
 	REGSET_IOPERM32,
 };
 
-
-#define FLAG_MASK_32		((unsigned long)			\
-				 (X86_EFLAGS_CF | X86_EFLAGS_PF |	\
-				  X86_EFLAGS_AF | X86_EFLAGS_ZF |	\
-				  X86_EFLAGS_SF | X86_EFLAGS_TF |	\
-				  X86_EFLAGS_DF | X86_EFLAGS_OF |	\
-				  X86_EFLAGS_RF | X86_EFLAGS_AC))
+#define FLAG_MASK_32                                                     \
+	((unsigned long)(X86_EFLAGS_CF | X86_EFLAGS_PF | X86_EFLAGS_AF | \
+			 X86_EFLAGS_ZF | X86_EFLAGS_SF | X86_EFLAGS_TF | \
+			 X86_EFLAGS_DF | X86_EFLAGS_OF | X86_EFLAGS_RF | \
+			 X86_EFLAGS_AC))
 
 static inline bool invalid_selector(u16 value)
 {
 	return unlikely(value != 0 && (value & SEGMENT_RPL_MASK) != USER_RPL);
 }
 
-
-#define FLAG_MASK		FLAG_MASK_32
+#define FLAG_MASK FLAG_MASK_32
 
 static unsigned long *pt_regs_access(struct pt_regs *regs, unsigned long regno)
 {
@@ -75,7 +72,6 @@ static unsigned long *pt_regs_access(struct pt_regs *regs, unsigned long regno)
 
 static u16 get_segment_reg(struct task_struct *task, unsigned long offset)
 {
-	 
 	unsigned int retval;
 	if (offset != offsetof(struct user_regs_struct, gs))
 		retval = *pt_regs_access(task_pt_regs(task), offset);
@@ -88,17 +84,15 @@ static u16 get_segment_reg(struct task_struct *task, unsigned long offset)
 	return retval;
 }
 
-static int set_segment_reg(struct task_struct *task,
-			   unsigned long offset, u16 value)
+static int set_segment_reg(struct task_struct *task, unsigned long offset,
+			   u16 value)
 {
 	if (WARN_ON_ONCE(task == current))
 		return -EIO;
 
-	 
 	if (invalid_selector(value))
 		return -EIO;
 
-	 
 	switch (offset) {
 	case offsetof(struct user_regs_struct, cs):
 	case offsetof(struct user_regs_struct, ss):
@@ -117,12 +111,10 @@ static int set_segment_reg(struct task_struct *task,
 	return 0;
 }
 
-
 static unsigned long get_flags(struct task_struct *task)
 {
 	unsigned long retval = task_pt_regs(task)->flags;
 
-	 
 	if (test_tsk_thread_flag(task, TIF_FORCED_TF))
 		retval &= ~X86_EFLAGS_TF;
 
@@ -133,7 +125,6 @@ static int set_flags(struct task_struct *task, unsigned long value)
 {
 	struct pt_regs *regs = task_pt_regs(task);
 
-	 
 	if (value & X86_EFLAGS_TF)
 		clear_tsk_thread_flag(task, TIF_FORCED_TF);
 	else if (test_tsk_thread_flag(task, TIF_FORCED_TF))
@@ -144,8 +135,8 @@ static int set_flags(struct task_struct *task, unsigned long value)
 	return 0;
 }
 
-static int putreg(struct task_struct *child,
-		  unsigned long offset, unsigned long value)
+static int putreg(struct task_struct *child, unsigned long offset,
+		  unsigned long value)
 {
 	switch (offset) {
 	case offsetof(struct user_regs_struct, cs):
@@ -158,7 +149,6 @@ static int putreg(struct task_struct *child,
 
 	case offsetof(struct user_regs_struct, flags):
 		return set_flags(child, value);
-
 	}
 
 	*pt_regs_access(task_pt_regs(child), offset) = value;
@@ -178,15 +168,13 @@ static unsigned long getreg(struct task_struct *task, unsigned long offset)
 
 	case offsetof(struct user_regs_struct, flags):
 		return get_flags(task);
-
 	}
 
 	return *pt_regs_access(task_pt_regs(task), offset);
 }
 
 static int genregs_get(struct task_struct *target,
-		       const struct user_regset *regset,
-		       struct membuf to)
+		       const struct user_regset *regset, struct membuf to)
 {
 	int reg;
 
@@ -196,9 +184,9 @@ static int genregs_get(struct task_struct *target,
 }
 
 static int genregs_set(struct task_struct *target,
-		       const struct user_regset *regset,
-		       unsigned int pos, unsigned int count,
-		       const void *kbuf, const void __user *ubuf)
+		       const struct user_regset *regset, unsigned int pos,
+		       unsigned int count, const void *kbuf,
+		       const void __user *ubuf)
 {
 	int ret = 0;
 	if (kbuf) {
@@ -209,7 +197,7 @@ static int genregs_set(struct task_struct *target,
 			pos += sizeof(*k);
 		}
 	} else {
-		const unsigned long  __user *u = ubuf;
+		const unsigned long __user *u = ubuf;
 		while (count >= sizeof(*u) && !ret) {
 			unsigned long word;
 			ret = __get_user(word, u++);
@@ -223,7 +211,6 @@ static int genregs_set(struct task_struct *target,
 	return ret;
 }
 
-
 static int ioperm_active(struct task_struct *target,
 			 const struct user_regset *regset)
 {
@@ -233,8 +220,7 @@ static int ioperm_active(struct task_struct *target,
 }
 
 static int ioperm_get(struct task_struct *target,
-		      const struct user_regset *regset,
-		      struct membuf to)
+		      const struct user_regset *regset, struct membuf to)
 {
 	struct io_bitmap *iobm = target->thread.io_bitmap;
 
@@ -249,75 +235,75 @@ void ptrace_disable(struct task_struct *child)
 	user_disable_single_step(child);
 }
 
-static const struct user_regset_view user_x86_32_view;  
+static const struct user_regset_view user_x86_32_view;
 
-long arch_ptrace(struct task_struct *child, long request,
-		 unsigned long addr, unsigned long data)
+long arch_ptrace(struct task_struct *child, long request, unsigned long addr,
+		 unsigned long data)
 {
 	/* Stub: ptrace operations not needed for minimal kernel */
 	return ptrace_request(child, request, addr, data);
 }
 
-
-
-
-
-#define user_regs_struct32	user_regs_struct
-#define genregs32_get		genregs_get
-#define genregs32_set		genregs_set
-
+#define user_regs_struct32 user_regs_struct
+#define genregs32_get genregs_get
+#define genregs32_set genregs_set
 
 static struct user_regset x86_32_regsets[] __ro_after_init = {
-	[REGSET_GENERAL] = {
-		.core_note_type = NT_PRSTATUS,
-		.n = sizeof(struct user_regs_struct32) / sizeof(u32),
-		.size = sizeof(u32), .align = sizeof(u32),
-		.regset_get = genregs32_get, .set = genregs32_set
-	},
-	[REGSET_FP] = {
-		.core_note_type = NT_PRFPREG,
-		.n = sizeof(struct user_i387_ia32_struct) / sizeof(u32),
-		.size = sizeof(u32), .align = sizeof(u32),
-		.active = regset_fpregs_active, .regset_get = fpregs_get, .set = fpregs_set
-	},
-	[REGSET_XFP] = {
-		.core_note_type = NT_PRXFPREG,
-		.n = sizeof(struct fxregs_state) / sizeof(u32),
-		.size = sizeof(u32), .align = sizeof(u32),
-		.active = regset_xregset_fpregs_active, .regset_get = xfpregs_get, .set = xfpregs_set
-	},
-	[REGSET_XSTATE] = {
-		.core_note_type = NT_X86_XSTATE,
-		.size = sizeof(u64), .align = sizeof(u64),
-		.active = xstateregs_active, .regset_get = xstateregs_get,
-		.set = xstateregs_set
-	},
-	[REGSET_TLS] = {
-		.core_note_type = NT_386_TLS,
-		.n = GDT_ENTRY_TLS_ENTRIES, .bias = GDT_ENTRY_TLS_MIN,
-		.size = sizeof(struct user_desc),
-		.align = sizeof(struct user_desc),
-		.active = regset_tls_active,
-		.regset_get = regset_tls_get, .set = regset_tls_set
-	},
-	[REGSET_IOPERM32] = {
-		.core_note_type = NT_386_IOPERM,
-		.n = IO_BITMAP_BYTES / sizeof(u32),
-		.size = sizeof(u32), .align = sizeof(u32),
-		.active = ioperm_active, .regset_get = ioperm_get
-	},
+	[REGSET_GENERAL] = { .core_note_type = NT_PRSTATUS,
+			     .n = sizeof(struct user_regs_struct32) /
+				  sizeof(u32),
+			     .size = sizeof(u32),
+			     .align = sizeof(u32),
+			     .regset_get = genregs32_get,
+			     .set = genregs32_set },
+	[REGSET_FP] = { .core_note_type = NT_PRFPREG,
+			.n = sizeof(struct user_i387_ia32_struct) / sizeof(u32),
+			.size = sizeof(u32),
+			.align = sizeof(u32),
+			.active = regset_fpregs_active,
+			.regset_get = fpregs_get,
+			.set = fpregs_set },
+	[REGSET_XFP] = { .core_note_type = NT_PRXFPREG,
+			 .n = sizeof(struct fxregs_state) / sizeof(u32),
+			 .size = sizeof(u32),
+			 .align = sizeof(u32),
+			 .active = regset_xregset_fpregs_active,
+			 .regset_get = xfpregs_get,
+			 .set = xfpregs_set },
+	[REGSET_XSTATE] = { .core_note_type = NT_X86_XSTATE,
+			    .size = sizeof(u64),
+			    .align = sizeof(u64),
+			    .active = xstateregs_active,
+			    .regset_get = xstateregs_get,
+			    .set = xstateregs_set },
+	[REGSET_TLS] = { .core_note_type = NT_386_TLS,
+			 .n = GDT_ENTRY_TLS_ENTRIES,
+			 .bias = GDT_ENTRY_TLS_MIN,
+			 .size = sizeof(struct user_desc),
+			 .align = sizeof(struct user_desc),
+			 .active = regset_tls_active,
+			 .regset_get = regset_tls_get,
+			 .set = regset_tls_set },
+	[REGSET_IOPERM32] = { .core_note_type = NT_386_IOPERM,
+			      .n = IO_BITMAP_BYTES / sizeof(u32),
+			      .size = sizeof(u32),
+			      .align = sizeof(u32),
+			      .active = ioperm_active,
+			      .regset_get = ioperm_get },
 };
 
 static const struct user_regset_view user_x86_32_view = {
-	.name = "i386", .e_machine = EM_386,
-	.regsets = x86_32_regsets, .n = ARRAY_SIZE(x86_32_regsets)
+	.name = "i386",
+	.e_machine = EM_386,
+	.regsets = x86_32_regsets,
+	.n = ARRAY_SIZE(x86_32_regsets)
 };
 
 u64 xstate_fx_sw_bytes[USER_XSTATE_FX_SW_WORDS];
 
 const struct user_regset_view *task_user_regset_view(struct task_struct *task)
 {
-		return &user_x86_32_view;
+	return &user_x86_32_view;
 }
 
 void send_sigtrap(struct pt_regs *regs, int error_code, int si_code)
@@ -327,7 +313,6 @@ void send_sigtrap(struct pt_regs *regs, int error_code, int si_code)
 	tsk->thread.trap_nr = X86_TRAP_DB;
 	tsk->thread.error_code = error_code;
 
-	 
 	force_sig_fault(SIGTRAP, si_code,
 			user_mode(regs) ? (void __user *)regs->ip : NULL);
 }

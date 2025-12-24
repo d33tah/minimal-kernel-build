@@ -29,12 +29,10 @@ static int init_srcu_struct_fields(struct srcu_struct *ssp)
 	return 0;
 }
 
-
 int init_srcu_struct(struct srcu_struct *ssp)
 {
 	return init_srcu_struct_fields(ssp);
 }
-
 
 void cleanup_srcu_struct(struct srcu_struct *ssp)
 {
@@ -65,10 +63,10 @@ void srcu_drive_gp(struct work_struct *wp)
 	struct srcu_struct *ssp;
 
 	ssp = container_of(wp, struct srcu_struct, srcu_work);
-	if (ssp->srcu_gp_running || USHORT_CMP_GE(ssp->srcu_idx, READ_ONCE(ssp->srcu_idx_max)))
-		return;  
+	if (ssp->srcu_gp_running ||
+	    USHORT_CMP_GE(ssp->srcu_idx, READ_ONCE(ssp->srcu_idx_max)))
+		return;
 
-	 
 	WRITE_ONCE(ssp->srcu_gp_running, true);
 	local_irq_disable();
 	lh = ssp->srcu_cb_head;
@@ -77,12 +75,12 @@ void srcu_drive_gp(struct work_struct *wp)
 	local_irq_enable();
 	idx = (ssp->srcu_idx & 0x2) / 2;
 	WRITE_ONCE(ssp->srcu_idx, ssp->srcu_idx + 1);
-	WRITE_ONCE(ssp->srcu_gp_waiting, true);   
-	swait_event_exclusive(ssp->srcu_wq, !READ_ONCE(ssp->srcu_lock_nesting[idx]));
-	WRITE_ONCE(ssp->srcu_gp_waiting, false);  
+	WRITE_ONCE(ssp->srcu_gp_waiting, true);
+	swait_event_exclusive(ssp->srcu_wq,
+			      !READ_ONCE(ssp->srcu_lock_nesting[idx]));
+	WRITE_ONCE(ssp->srcu_gp_waiting, false);
 	WRITE_ONCE(ssp->srcu_idx, ssp->srcu_idx + 1);
 
-	 
 	while (lh) {
 		rhp = lh;
 		lh = lh->next;
@@ -91,7 +89,6 @@ void srcu_drive_gp(struct work_struct *wp)
 		local_bh_enable();
 	}
 
-	 
 	WRITE_ONCE(ssp->srcu_gp_running, false);
 	if (USHORT_CMP_LT(ssp->srcu_idx, READ_ONCE(ssp->srcu_idx_max)))
 		schedule_work(&ssp->srcu_work);
@@ -175,8 +172,8 @@ void __init srcu_init(void)
 
 	srcu_init_done = true;
 	while (!list_empty(&srcu_boot_list)) {
-		ssp = list_first_entry(&srcu_boot_list,
-				      struct srcu_struct, srcu_work.entry);
+		ssp = list_first_entry(&srcu_boot_list, struct srcu_struct,
+				       srcu_work.entry);
 		list_del_init(&ssp->srcu_work.entry);
 		schedule_work(&ssp->srcu_work);
 	}

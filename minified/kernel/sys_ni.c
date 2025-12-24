@@ -15,12 +15,11 @@ asmlinkage long sys_ni_syscall(void)
 
 #ifndef COND_SYSCALL
 #define COND_SYSCALL(name) cond_syscall(sys_##name)
-#endif  
+#endif
 
 #ifndef COND_SYSCALL_COMPAT
 #define COND_SYSCALL_COMPAT(name) cond_syscall(compat_sys_##name)
-#endif  
-
+#endif
 
 COND_SYSCALL(io_setup);
 COND_SYSCALL_COMPAT(io_setup);
@@ -38,8 +37,6 @@ COND_SYSCALL(io_uring_setup);
 COND_SYSCALL(io_uring_enter);
 COND_SYSCALL(io_uring_register);
 
-
-
 COND_SYSCALL(lookup_dcookie);
 COND_SYSCALL_COMPAT(lookup_dcookie);
 
@@ -52,34 +49,20 @@ COND_SYSCALL_COMPAT(epoll_pwait);
 COND_SYSCALL(epoll_pwait2);
 COND_SYSCALL_COMPAT(epoll_pwait2);
 
-
 COND_SYSCALL(inotify_init1);
 COND_SYSCALL(inotify_add_watch);
 COND_SYSCALL(inotify_rm_watch);
-
 
 COND_SYSCALL(ioprio_set);
 COND_SYSCALL(ioprio_get);
 
 COND_SYSCALL(flock);
 
-
-
-
-
-
 COND_SYSCALL(quotactl);
 COND_SYSCALL(quotactl_fd);
 
-
-
-
-
 COND_SYSCALL(signalfd4);
 COND_SYSCALL_COMPAT(signalfd4);
-
-
-
 
 COND_SYSCALL(timerfd_create);
 COND_SYSCALL(timerfd_settime);
@@ -87,13 +70,10 @@ COND_SYSCALL(timerfd_settime32);
 COND_SYSCALL(timerfd_gettime);
 COND_SYSCALL(timerfd_gettime32);
 
-
 COND_SYSCALL(acct);
 
 COND_SYSCALL(capget);
 COND_SYSCALL(capset);
-
-
 
 COND_SYSCALL(clone3);
 
@@ -105,18 +85,13 @@ COND_SYSCALL(get_robust_list);
 COND_SYSCALL_COMPAT(get_robust_list);
 COND_SYSCALL(futex_waitv);
 
-
-
 COND_SYSCALL(kexec_load);
 COND_SYSCALL_COMPAT(kexec_load);
 
 COND_SYSCALL(init_module);
 COND_SYSCALL(delete_module);
 
-
 COND_SYSCALL(syslog);
-
-
 
 COND_SYSCALL(setregid);
 COND_SYSCALL(setgid);
@@ -130,8 +105,6 @@ COND_SYSCALL(setfsuid);
 COND_SYSCALL(setfsgid);
 COND_SYSCALL(setgroups);
 COND_SYSCALL(getgroups);
-
-
 
 COND_SYSCALL(mq_open);
 COND_SYSCALL_COMPAT(mq_open);
@@ -194,7 +167,6 @@ COND_SYSCALL_COMPAT(sendmsg);
 COND_SYSCALL(recvmsg);
 COND_SYSCALL_COMPAT(recvmsg);
 
-
 COND_SYSCALL(mremap);
 
 COND_SYSCALL(add_key);
@@ -205,7 +177,6 @@ COND_SYSCALL_COMPAT(keyctl);
 COND_SYSCALL(landlock_create_ruleset);
 COND_SYSCALL(landlock_add_rule);
 COND_SYSCALL(landlock_restrict_self);
-
 
 COND_SYSCALL(fadvise64_64);
 
@@ -235,7 +206,6 @@ COND_SYSCALL(recvmmsg);
 COND_SYSCALL(recvmmsg_time32);
 COND_SYSCALL_COMPAT(recvmmsg_time32);
 COND_SYSCALL_COMPAT(recvmmsg_time64);
-
 
 COND_SYSCALL(fanotify_init);
 COND_SYSCALL(fanotify_mark);
@@ -277,7 +247,6 @@ COND_SYSCALL(pkey_free);
 
 COND_SYSCALL(memfd_secret);
 
-
 COND_SYSCALL(pciconfig_read);
 COND_SYSCALL(pciconfig_write);
 COND_SYSCALL(pciconfig_iobase);
@@ -301,8 +270,6 @@ COND_SYSCALL(rtas);
 COND_SYSCALL(spu_run);
 COND_SYSCALL(spu_create);
 COND_SYSCALL(subpage_prot);
-
-
 
 COND_SYSCALL(epoll_create);
 COND_SYSCALL(inotify_init);
@@ -340,7 +307,6 @@ COND_SYSCALL(ppoll_time32);
 COND_SYSCALL_COMPAT(ppoll_time32);
 COND_SYSCALL(utimensat_time32);
 COND_SYSCALL(clock_adjtime32);
-
 
 COND_SYSCALL(sgetmask);
 COND_SYSCALL(ssetmask);

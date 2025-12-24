@@ -17,10 +17,18 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <linux/iocontext.h>
 #include <linux/key.h>
 #include <linux/cpu.h>
-#define acct_collect(x,y)	do { } while (0)
-#define acct_process()		do { } while (0)
-#define acct_exit_ns(ns)	do { } while (0)
-static inline void acct_update_integrals(struct task_struct *tsk) {}
+#define acct_collect(x, y) \
+	do {               \
+	} while (0)
+#define acct_process() \
+	do {           \
+	} while (0)
+#define acct_exit_ns(ns) \
+	do {             \
+	} while (0)
+static inline void acct_update_integrals(struct task_struct *tsk)
+{
+}
 #include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/freezer.h>
@@ -32,20 +40,33 @@ static inline void acct_update_integrals(struct task_struct *tsk) {}
 #include <linux/proc_fs.h>
 #include <linux/kthread.h>
 #include <linux/mempolicy.h>
-static inline void taskstats_exit(struct task_struct *tsk, int group_dead) {}
+static inline void taskstats_exit(struct task_struct *tsk, int group_dead)
+{
+}
 #include <linux/cgroup.h>
 #include <linux/syscalls.h>
 #include <linux/signal.h>
 #include <linux/posix-timers.h>
-static inline void proc_exit_connector(struct task_struct *task) {}
+static inline void proc_exit_connector(struct task_struct *task)
+{
+}
 #include <linux/mutex.h>
 #include <linux/futex.h>
 #include <linux/pipe_fs_i.h>
-#include <linux/audit.h> 
+#include <linux/audit.h>
 #include <linux/resource.h>
-static inline unsigned long task_io_get_inblock(const struct task_struct *p) { return 0; }
-static inline unsigned long task_io_get_oublock(const struct task_struct *p) { return 0; }
-static inline void task_io_accounting_add(struct task_io_accounting *dst, struct task_io_accounting *src) {}
+static inline unsigned long task_io_get_inblock(const struct task_struct *p)
+{
+	return 0;
+}
+static inline unsigned long task_io_get_oublock(const struct task_struct *p)
+{
+	return 0;
+}
+static inline void task_io_accounting_add(struct task_io_accounting *dst,
+					  struct task_io_accounting *src)
+{
+}
 #include <linux/blkdev.h>
 #include <linux/task_work.h>
 #include <linux/fs_struct.h>
@@ -54,14 +75,20 @@ static inline void task_io_accounting_add(struct task_io_accounting *dst, struct
 #include <linux/hw_breakpoint.h>
 #include <linux/oom.h>
 #include <linux/writeback.h>
-static inline void exit_shm(struct task_struct *task) {}
-static inline void exit_sem(struct task_struct *tsk) { }
+static inline void exit_shm(struct task_struct *task)
+{
+}
+static inline void exit_sem(struct task_struct *tsk)
+{
+}
 #include <linux/random.h>
 #include <linux/rcuwait.h>
 #include <linux/compat.h>
 #include <linux/io_uring.h>
 #include <linux/kprobes.h>
-#define rethook_flush_task(tsk)	do { } while (0)
+#define rethook_flush_task(tsk) \
+	do {                    \
+	} while (0)
 
 #include <linux/uaccess.h>
 #include <asm/unistd.h>
@@ -100,7 +127,6 @@ static void __exit_signal(struct task_struct *tsk)
 		tty = sig->tty;
 		sig->tty = NULL;
 	} else {
-		
 		if (sig->notify_count > 0 && !--sig->notify_count)
 			wake_up_process(sig->group_exec_task);
 
@@ -108,7 +134,7 @@ static void __exit_signal(struct task_struct *tsk)
 			sig->curr_target = next_thread(tsk);
 	}
 
-	add_device_randomness((const void*) &tsk->se.sum_exec_runtime,
+	add_device_randomness((const void *)&tsk->se.sum_exec_runtime,
 			      sizeof(unsigned long long));
 
 	task_cputime(tsk, &utime, &stime);
@@ -147,7 +173,7 @@ static void delayed_put_task_struct(struct rcu_head *rhp)
 	kprobe_flush_task(tsk);
 	rethook_flush_task(tsk);
 	perf_event_delayed_put(tsk);
-	
+
 	put_task_struct(tsk);
 }
 
@@ -163,7 +189,7 @@ void release_task(struct task_struct *p)
 	struct pid *thread_pid;
 	int zap_leader;
 repeat:
-	
+
 	rcu_read_lock();
 	dec_rlimit_ucounts(task_ucounts(p), UCOUNT_RLIMIT_NPROC, 1);
 	rcu_read_unlock();
@@ -177,9 +203,8 @@ repeat:
 
 	zap_leader = 0;
 	leader = p->group_leader;
-	if (leader != p && thread_group_empty(leader)
-			&& leader->exit_state == EXIT_ZOMBIE) {
-		
+	if (leader != p && thread_group_empty(leader) &&
+	    leader->exit_state == EXIT_ZOMBIE) {
 		zap_leader = do_notify_parent(leader, leader->exit_signal);
 		if (zap_leader)
 			leader->exit_state = EXIT_DEAD;
@@ -204,7 +229,7 @@ int rcuwait_wake_up(struct rcuwait *w)
 
 	rcu_read_lock();
 
-	smp_mb(); 
+	smp_mb();
 
 	task = rcu_dereference(w->task);
 	if (task)
@@ -214,10 +239,9 @@ int rcuwait_wake_up(struct rcuwait *w)
 	return ret;
 }
 
-
 /* Stub: orphaned pgrp handling not needed for minimal kernel */
-static void
-kill_orphaned_pgrp(struct task_struct *tsk, struct task_struct *parent)
+static void kill_orphaned_pgrp(struct task_struct *tsk,
+			       struct task_struct *parent)
 {
 }
 
@@ -240,9 +264,9 @@ static void exit_mm(void)
 	mmap_read_lock(mm);
 	mmgrab(mm);
 	BUG_ON(mm != current->active_mm);
-	
+
 	task_lock(current);
-	
+
 	smp_mb__after_spinlock();
 	local_irq_disable();
 	current->mm = NULL;
@@ -269,9 +293,8 @@ static struct task_struct *find_alive_thread(struct task_struct *p)
 }
 
 static struct task_struct *find_child_reaper(struct task_struct *father,
-						struct list_head *dead)
-	__releases(&tasklist_lock)
-	__acquires(&tasklist_lock)
+					     struct list_head *dead)
+	__releases(&tasklist_lock) __acquires(&tasklist_lock)
 {
 	struct pid_namespace *pid_ns = task_active_pid_ns(father);
 	struct task_struct *reaper = pid_ns->child_reaper;
@@ -310,7 +333,7 @@ static struct task_struct *find_new_reaper(struct task_struct *father,
 
 	if (father->signal->has_child_subreaper) {
 		unsigned int ns_level = task_pid(father)->level;
-		
+
 		for (reaper = father->real_parent;
 		     task_pid(reaper)->level == ns_level;
 		     reaper = reaper->real_parent) {
@@ -328,15 +351,15 @@ static struct task_struct *find_new_reaper(struct task_struct *father,
 }
 
 static void reparent_leader(struct task_struct *father, struct task_struct *p,
-				struct list_head *dead)
+			    struct list_head *dead)
 {
 	if (unlikely(p->exit_state == EXIT_DEAD))
 		return;
 
 	p->exit_signal = SIGCHLD;
 
-	if (!p->ptrace &&
-	    p->exit_state == EXIT_ZOMBIE && thread_group_empty(p)) {
+	if (!p->ptrace && p->exit_state == EXIT_ZOMBIE &&
+	    thread_group_empty(p)) {
 		if (do_notify_parent(p, p->exit_signal)) {
 			p->exit_state = EXIT_DEAD;
 			list_add(&p->ptrace_entry, dead);
@@ -347,7 +370,7 @@ static void reparent_leader(struct task_struct *father, struct task_struct *p,
 }
 
 static void forget_original_parent(struct task_struct *father,
-					struct list_head *dead)
+				   struct list_head *dead)
 {
 	struct task_struct *p, *t, *reaper;
 
@@ -362,7 +385,8 @@ static void forget_original_parent(struct task_struct *father,
 	list_for_each_entry(p, &father->children, sibling) {
 		for_each_thread(p, t) {
 			RCU_INIT_POINTER(t->real_parent, reaper);
-			BUG_ON((!t->ptrace) != (rcu_access_pointer(t->parent) == father));
+			BUG_ON((!t->ptrace) !=
+			       (rcu_access_pointer(t->parent) == father));
 			if (likely(!t->ptrace))
 				t->parent = t->real_parent;
 			if (t->pdeath_signal)
@@ -370,7 +394,7 @@ static void forget_original_parent(struct task_struct *father,
 						    SEND_SIG_NOINFO, t,
 						    PIDTYPE_TGID);
 		}
-		
+
 		if (!same_thread_group(reaper, father))
 			reparent_leader(father, p, dead);
 	}
@@ -391,14 +415,14 @@ static void exit_notify(struct task_struct *tsk, int group_dead)
 
 	tsk->exit_state = EXIT_ZOMBIE;
 	if (unlikely(tsk->ptrace)) {
-		int sig = thread_group_leader(tsk) &&
-				thread_group_empty(tsk) &&
-				!ptrace_reparented(tsk) ?
-			tsk->exit_signal : SIGCHLD;
+		int sig = thread_group_leader(tsk) && thread_group_empty(tsk) &&
+					  !ptrace_reparented(tsk) ?
+				  tsk->exit_signal :
+				  SIGCHLD;
 		autoreap = do_notify_parent(tsk, sig);
 	} else if (thread_group_leader(tsk)) {
 		autoreap = thread_group_empty(tsk) &&
-			do_notify_parent(tsk, tsk->exit_signal);
+			   do_notify_parent(tsk, tsk->exit_signal);
 	} else {
 		autoreap = true;
 	}
@@ -418,7 +442,9 @@ static void exit_notify(struct task_struct *tsk, int group_dead)
 	}
 }
 
-static inline void check_stack_usage(void) {}
+static inline void check_stack_usage(void)
+{
+}
 
 void __noreturn do_exit(long code)
 {
@@ -433,17 +459,16 @@ void __noreturn do_exit(long code)
 	validate_creds_for_do_exit(tsk);
 
 	io_uring_files_cancel();
-	exit_signals(tsk);  
+	exit_signals(tsk);
 
 	if (tsk->mm)
 		sync_mm_rss(tsk->mm);
 	acct_update_integrals(tsk);
 	group_dead = atomic_dec_and_test(&tsk->signal->live);
 	if (group_dead) {
-		
 		if (unlikely(is_global_init(tsk)))
 			panic("Attempted to kill init! exitcode=0x%08x\n",
-				tsk->signal->group_exit_code ?: (int)code);
+			      tsk->signal->group_exit_code ?: (int)code);
 
 		if (tsk->mm)
 			setmax_mm_hiwater_rss(&tsk->signal->maxrss, tsk->mm);
@@ -460,7 +485,6 @@ void __noreturn do_exit(long code)
 
 	if (group_dead)
 		acct_process();
-	
 
 	exit_sem(tsk);
 	exit_shm(tsk);
@@ -483,7 +507,7 @@ void __noreturn do_exit(long code)
 	exit_notify(tsk, group_dead);
 	proc_exit_connector(tsk);
 	mpol_put_task_policy(tsk);
-	
+
 	debug_check_no_locks_held();
 
 	if (tsk->io_context)
@@ -511,7 +535,6 @@ void __noreturn do_exit(long code)
 
 void __noreturn make_task_dead(int signr)
 {
-	
 	struct task_struct *tsk = current;
 
 	if (unlikely(in_interrupt()))
@@ -536,11 +559,10 @@ void __noreturn make_task_dead(int signr)
 
 SYSCALL_DEFINE1(exit, int, error_code)
 {
-	do_exit((error_code&0xff)<<8);
+	do_exit((error_code & 0xff) << 8);
 }
 
-static void __noreturn
-do_group_exit(int exit_code)
+static void __noreturn do_group_exit(int exit_code)
 {
 	struct signal_struct *sig = current->signal;
 
@@ -553,7 +575,7 @@ do_group_exit(int exit_code)
 
 		spin_lock_irq(&sighand->siglock);
 		if (sig->flags & SIGNAL_GROUP_EXIT)
-			
+
 			exit_code = sig->group_exit_code;
 		else if (sig->group_exec_task)
 			exit_code = 0;
@@ -566,13 +588,12 @@ do_group_exit(int exit_code)
 	}
 
 	do_exit(exit_code);
-	
 }
 
 SYSCALL_DEFINE1(exit_group, int, error_code)
 {
 	do_group_exit((error_code & 0xff) << 8);
-	
+
 	return 0;
 }
 
@@ -584,26 +605,26 @@ struct waitid_info {
 };
 
 struct wait_opts {
-	enum pid_type		wo_type;
-	int			wo_flags;
-	struct pid		*wo_pid;
+	enum pid_type wo_type;
+	int wo_flags;
+	struct pid *wo_pid;
 
-	struct waitid_info	*wo_info;
-	int			wo_stat;
-	struct rusage		*wo_rusage;
+	struct waitid_info *wo_info;
+	int wo_stat;
+	struct rusage *wo_rusage;
 
-	wait_queue_entry_t		child_wait;
-	int			notask_error;
+	wait_queue_entry_t child_wait;
+	int notask_error;
 };
 
 static int eligible_pid(struct wait_opts *wo, struct task_struct *p)
 {
-	return	wo->wo_type == PIDTYPE_MAX ||
-		task_pid_type(p, wo->wo_type) == wo->wo_pid;
+	return wo->wo_type == PIDTYPE_MAX ||
+	       task_pid_type(p, wo->wo_type) == wo->wo_pid;
 }
 
-static int
-eligible_child(struct wait_opts *wo, bool ptrace, struct task_struct *p)
+static int eligible_child(struct wait_opts *wo, bool ptrace,
+			  struct task_struct *p)
 {
 	if (!eligible_pid(wo, p))
 		return 0;
@@ -628,8 +649,9 @@ static int wait_task_zombie(struct wait_opts *wo, struct task_struct *p)
 		return 0;
 
 	if (unlikely(wo->wo_flags & WNOWAIT)) {
-		status = (p->signal->flags & SIGNAL_GROUP_EXIT)
-			? p->signal->group_exit_code : p->exit_code;
+		status = (p->signal->flags & SIGNAL_GROUP_EXIT) ?
+				 p->signal->group_exit_code :
+				 p->exit_code;
 		get_task_struct(p);
 		read_unlock(&tasklist_lock);
 		sched_annotate_sleep();
@@ -638,12 +660,12 @@ static int wait_task_zombie(struct wait_opts *wo, struct task_struct *p)
 		put_task_struct(p);
 		goto out_info;
 	}
-	
-	state = (ptrace_reparented(p) && thread_group_leader(p)) ?
-		EXIT_TRACE : EXIT_DEAD;
+
+	state = (ptrace_reparented(p) && thread_group_leader(p)) ? EXIT_TRACE :
+								   EXIT_DEAD;
 	if (cmpxchg(&p->exit_state, EXIT_ZOMBIE, state) != EXIT_ZOMBIE)
 		return 0;
-	
+
 	read_unlock(&tasklist_lock);
 	sched_annotate_sleep();
 
@@ -659,20 +681,14 @@ static int wait_task_zombie(struct wait_opts *wo, struct task_struct *p)
 		psig->cutime += tgutime + sig->cutime;
 		psig->cstime += tgstime + sig->cstime;
 		psig->cgtime += task_gtime(p) + sig->gtime + sig->cgtime;
-		psig->cmin_flt +=
-			p->min_flt + sig->min_flt + sig->cmin_flt;
-		psig->cmaj_flt +=
-			p->maj_flt + sig->maj_flt + sig->cmaj_flt;
-		psig->cnvcsw +=
-			p->nvcsw + sig->nvcsw + sig->cnvcsw;
-		psig->cnivcsw +=
-			p->nivcsw + sig->nivcsw + sig->cnivcsw;
+		psig->cmin_flt += p->min_flt + sig->min_flt + sig->cmin_flt;
+		psig->cmaj_flt += p->maj_flt + sig->maj_flt + sig->cmaj_flt;
+		psig->cnvcsw += p->nvcsw + sig->nvcsw + sig->cnvcsw;
+		psig->cnivcsw += p->nivcsw + sig->nivcsw + sig->cnivcsw;
 		psig->cinblock +=
-			task_io_get_inblock(p) +
-			sig->inblock + sig->cinblock;
+			task_io_get_inblock(p) + sig->inblock + sig->cinblock;
 		psig->coublock +=
-			task_io_get_oublock(p) +
-			sig->oublock + sig->coublock;
+			task_io_get_oublock(p) + sig->oublock + sig->coublock;
 		maxrss = max(sig->maxrss, sig->cmaxrss);
 		if (psig->cmaxrss < maxrss)
 			psig->cmaxrss = maxrss;
@@ -684,13 +700,14 @@ static int wait_task_zombie(struct wait_opts *wo, struct task_struct *p)
 
 	if (wo->wo_rusage)
 		getrusage(p, RUSAGE_BOTH, wo->wo_rusage);
-	status = (p->signal->flags & SIGNAL_GROUP_EXIT)
-		? p->signal->group_exit_code : p->exit_code;
+	status = (p->signal->flags & SIGNAL_GROUP_EXIT) ?
+			 p->signal->group_exit_code :
+			 p->exit_code;
 	wo->wo_stat = status;
 
 	if (state == EXIT_TRACE) {
 		write_lock_irq(&tasklist_lock);
-		
+
 		ptrace_unlink(p);
 
 		state = EXIT_ZOMBIE;
@@ -709,7 +726,8 @@ out_info:
 			infop->cause = CLD_EXITED;
 			infop->status = status >> 8;
 		} else {
-			infop->cause = (status & 0x80) ? CLD_DUMPED : CLD_KILLED;
+			infop->cause = (status & 0x80) ? CLD_DUMPED :
+							 CLD_KILLED;
 			infop->status = status & 0x7f;
 		}
 		infop->pid = pid;
@@ -731,12 +749,12 @@ static int *task_stopped_code(struct task_struct *p, bool ptrace)
 	return NULL;
 }
 
-static int wait_task_stopped(struct wait_opts *wo,
-				int ptrace, struct task_struct *p)
+static int wait_task_stopped(struct wait_opts *wo, int ptrace,
+			     struct task_struct *p)
 {
 	struct waitid_info *infop;
 	int exit_code, *p_code, why;
-	uid_t uid = 0; 
+	uid_t uid = 0;
 	pid_t pid;
 
 	if (!ptrace && !(wo->wo_flags & WUNTRACED))
@@ -794,9 +812,8 @@ static int wait_task_continued(struct wait_opts *wo, struct task_struct *p)
 }
 
 static int wait_consider_task(struct wait_opts *wo, int ptrace,
-				struct task_struct *p)
+			      struct task_struct *p)
 {
-	
 	int exit_state = READ_ONCE(p->exit_state);
 	int ret;
 
@@ -808,22 +825,18 @@ static int wait_consider_task(struct wait_opts *wo, int ptrace,
 		return ret;
 
 	if (unlikely(exit_state == EXIT_TRACE)) {
-		
 		if (likely(!ptrace))
 			wo->notask_error = 0;
 		return 0;
 	}
 
 	if (likely(!ptrace) && unlikely(p->ptrace)) {
-		
 		if (!ptrace_reparented(p))
 			ptrace = 1;
 	}
 
 	if (exit_state == EXIT_ZOMBIE) {
-		
 		if (!delay_group_leader(p)) {
-			
 			if (unlikely(ptrace) || likely(!p->ptrace))
 				return wait_task_zombie(wo, p);
 		}
@@ -831,7 +844,6 @@ static int wait_consider_task(struct wait_opts *wo, int ptrace,
 		if (likely(!ptrace) || (wo->wo_flags & (WCONTINUED | WEXITED)))
 			wo->notask_error = 0;
 	} else {
-		
 		wo->notask_error = 0;
 	}
 
@@ -871,10 +883,9 @@ static int ptrace_do_wait(struct wait_opts *wo, struct task_struct *tsk)
 }
 
 static int child_wait_callback(wait_queue_entry_t *wait, unsigned mode,
-				int sync, void *key)
+			       int sync, void *key)
 {
-	struct wait_opts *wo = container_of(wait, struct wait_opts,
-						child_wait);
+	struct wait_opts *wo = container_of(wait, struct wait_opts, child_wait);
 	struct task_struct *p = key;
 
 	if (!eligible_pid(wo, p))
@@ -888,15 +899,15 @@ static int child_wait_callback(wait_queue_entry_t *wait, unsigned mode,
 
 void __wake_up_parent(struct task_struct *p, struct task_struct *parent)
 {
-	__wake_up_sync_key(&parent->signal->wait_chldexit,
-			   TASK_INTERRUPTIBLE, p);
+	__wake_up_sync_key(&parent->signal->wait_chldexit, TASK_INTERRUPTIBLE,
+			   p);
 }
 
 static bool is_effectively_child(struct wait_opts *wo, bool ptrace,
 				 struct task_struct *target)
 {
-	struct task_struct *parent =
-		!ptrace ? target->real_parent : target->parent;
+	struct task_struct *parent = !ptrace ? target->real_parent :
+					       target->parent;
 
 	return current == parent || (!(wo->wo_flags & __WNOTHREAD) &&
 				     same_thread_group(current, parent));
@@ -936,10 +947,10 @@ static long do_wait(struct wait_opts *wo)
 	wo->child_wait.private = current;
 	add_wait_queue(&current->signal->wait_chldexit, &wo->child_wait);
 repeat:
-	
+
 	wo->notask_error = -ECHILD;
 	if ((wo->wo_type < PIDTYPE_MAX) &&
-	   (!wo->wo_pid || !pid_has_task(wo->wo_pid, wo->wo_type)))
+	    (!wo->wo_pid || !pid_has_task(wo->wo_pid, wo->wo_type)))
 		goto notask;
 
 	set_current_state(TASK_INTERRUPTIBLE);
@@ -963,7 +974,8 @@ repeat:
 
 			if (wo->wo_flags & __WNOTHREAD)
 				break;
-		} while_each_thread(current, tsk);
+		}
+		while_each_thread(current, tsk);
 	}
 	read_unlock(&tasklist_lock);
 
@@ -991,10 +1003,10 @@ static long kernel_waitid(int which, pid_t upid, struct waitid_info *infop,
 	long ret;
 	unsigned int f_flags = 0;
 
-	if (options & ~(WNOHANG|WNOWAIT|WEXITED|WSTOPPED|WCONTINUED|
-			__WNOTHREAD|__WCLONE|__WALL))
+	if (options & ~(WNOHANG | WNOWAIT | WEXITED | WSTOPPED | WCONTINUED |
+			__WNOTHREAD | __WCLONE | __WALL))
 		return -EINVAL;
-	if (!(options & (WEXITED|WSTOPPED|WCONTINUED)))
+	if (!(options & (WEXITED | WSTOPPED | WCONTINUED)))
 		return -EINVAL;
 
 	switch (which) {
@@ -1032,11 +1044,11 @@ static long kernel_waitid(int which, pid_t upid, struct waitid_info *infop,
 		return -EINVAL;
 	}
 
-	wo.wo_type	= type;
-	wo.wo_pid	= pid;
-	wo.wo_flags	= options;
-	wo.wo_info	= infop;
-	wo.wo_rusage	= ru;
+	wo.wo_type = type;
+	wo.wo_pid = pid;
+	wo.wo_flags = options;
+	wo.wo_info = infop;
+	wo.wo_rusage = ru;
 	if (f_flags & O_NONBLOCK)
 		wo.wo_flags |= WNOHANG;
 
@@ -1048,11 +1060,11 @@ static long kernel_waitid(int which, pid_t upid, struct waitid_info *infop,
 	return ret;
 }
 
-SYSCALL_DEFINE5(waitid, int, which, pid_t, upid, struct siginfo __user *,
-		infop, int, options, struct rusage __user *, ru)
+SYSCALL_DEFINE5(waitid, int, which, pid_t, upid, struct siginfo __user *, infop,
+		int, options, struct rusage __user *, ru)
 {
 	struct rusage r;
-	struct waitid_info info = {.status = 0};
+	struct waitid_info info = { .status = 0 };
 	long err = kernel_waitid(which, upid, &info, options, ru ? &r : NULL);
 	int signo = 0;
 
@@ -1082,15 +1094,15 @@ Efault:
 }
 
 static long kernel_wait4(pid_t upid, int __user *stat_addr, int options,
-		  struct rusage *ru)
+			 struct rusage *ru)
 {
 	struct wait_opts wo;
 	struct pid *pid = NULL;
 	enum pid_type type;
 	long ret;
 
-	if (options & ~(WNOHANG|WUNTRACED|WCONTINUED|
-			__WNOTHREAD|__WCLONE|__WALL))
+	if (options & ~(WNOHANG | WUNTRACED | WCONTINUED | __WNOTHREAD |
+			__WCLONE | __WALL))
 		return -EINVAL;
 
 	if (upid == INT_MIN)
@@ -1104,17 +1116,17 @@ static long kernel_wait4(pid_t upid, int __user *stat_addr, int options,
 	} else if (upid == 0) {
 		type = PIDTYPE_PGID;
 		pid = get_task_pid(current, PIDTYPE_PGID);
-	} else  {
+	} else {
 		type = PIDTYPE_PID;
 		pid = find_get_pid(upid);
 	}
 
-	wo.wo_type	= type;
-	wo.wo_pid	= pid;
-	wo.wo_flags	= options | WEXITED;
-	wo.wo_info	= NULL;
-	wo.wo_stat	= 0;
-	wo.wo_rusage	= ru;
+	wo.wo_type = type;
+	wo.wo_pid = pid;
+	wo.wo_flags = options | WEXITED;
+	wo.wo_info = NULL;
+	wo.wo_stat = 0;
+	wo.wo_rusage = ru;
 	ret = do_wait(&wo);
 	put_pid(pid);
 	if (ret > 0 && stat_addr && put_user(wo.wo_stat, stat_addr))
@@ -1123,9 +1135,8 @@ static long kernel_wait4(pid_t upid, int __user *stat_addr, int options,
 	return ret;
 }
 
-
-SYSCALL_DEFINE4(wait4, pid_t, upid, int __user *, stat_addr,
-		int, options, struct rusage __user *, ru)
+SYSCALL_DEFINE4(wait4, pid_t, upid, int __user *, stat_addr, int, options,
+		struct rusage __user *, ru)
 {
 	struct rusage r;
 	long err = kernel_wait4(upid, stat_addr, options, ru ? &r : NULL);
@@ -1145,4 +1156,3 @@ SYSCALL_DEFINE3(waitpid, pid_t, pid, int __user *, stat_addr, int, options)
 }
 
 #endif
-

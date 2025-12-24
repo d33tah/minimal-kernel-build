@@ -16,10 +16,10 @@ static void usage(void)
 }
 
 struct item {
-	struct item	*next;
-	unsigned int	len;
-	unsigned int	hash;
-	char		name[];
+	struct item *next;
+	unsigned int len;
+	unsigned int hash;
+	char name[];
 };
 
 #define HASHSZ 256
@@ -27,7 +27,6 @@ static struct item *hashtab[HASHSZ];
 
 static unsigned int strhash(const char *str, unsigned int sz)
 {
-	 
 	unsigned int i, hash = 2166136261U;
 
 	for (i = 0; i < sz; i++)
@@ -67,10 +66,10 @@ static void use_config(const char *m, int slen)
 	unsigned int hash = strhash(m, slen);
 
 	if (is_defined_config(m, slen, hash))
-	    return;
+		return;
 
 	define_config(m, slen, hash);
-	 
+
 	printf("    $(wildcard include/config/%.*s) \\\n", slen, m);
 }
 
@@ -155,34 +154,29 @@ static void parse_dep_file(char *m, const char *target)
 	void *buf;
 
 	while (1) {
-		 
 		while (*m == ' ' || *m == '\\' || *m == '\n')
 			m++;
 
 		if (!*m)
 			break;
 
-		 
 		p = m;
 		while (*p && *p != ' ' && *p != '\\' && *p != '\n')
 			p++;
 		is_last = (*p == '\0');
-		 
-		is_target = (*(p-1) == ':');
-		 
+
+		is_target = (*(p - 1) == ':');
+
 		if (is_target) {
-			 
 			is_first_dep = 1;
 		} else if (!is_ignored_file(m, p - m)) {
 			*p = '\0';
 
-			 
 			if (is_first_dep) {
-				 
 				if (!saw_any_target) {
 					saw_any_target = 1;
-					printf("source_%s := %s\n\n",
-					       target, m);
+					printf("source_%s := %s\n\n", target,
+					       m);
 					printf("deps_%s := \\\n", target);
 				}
 				is_first_dep = 0;
@@ -198,7 +192,6 @@ static void parse_dep_file(char *m, const char *target)
 		if (is_last)
 			break;
 
-		 
 		m = p + 1;
 	}
 
@@ -231,9 +224,9 @@ int main(int argc, char *argv[])
 
 	fflush(stdout);
 
-	 
 	if (ferror(stdout)) {
-		fprintf(stderr, "fixdep: not all data was written to the output\n");
+		fprintf(stderr,
+			"fixdep: not all data was written to the output\n");
 		exit(1);
 	}
 

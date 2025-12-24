@@ -5,6 +5,16 @@
 #include <linux/string.h>
 
 bool mc146818_avoid_UIP(void (*callback)(unsigned char seconds, void *param),
-			void *param) { return false; }
-int mc146818_get_time(struct rtc_time *time) { memset(time, 0, sizeof(*time)); return -EIO; }
-int mc146818_set_time(struct rtc_time *time) { return -EINVAL; }
+			void *param)
+{
+	return false;
+}
+int mc146818_get_time(struct rtc_time *time)
+{
+	memset(time, 0, sizeof(*time));
+	return -EIO;
+}
+int mc146818_set_time(struct rtc_time *time)
+{
+	return -EINVAL;
+}

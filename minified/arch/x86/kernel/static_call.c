@@ -4,10 +4,10 @@
 #include <asm/text-patching.h>
 
 enum insn_type {
-	CALL = 0,  
-	NOP = 1,   
-	JMP = 2,   
-	RET = 3,   
+	CALL = 0,
+	NOP = 1,
+	JMP = 2,
+	RET = 3,
 };
 
 static const u8 tramp_ud[] = { 0x0f, 0xb9, 0xcc };
@@ -43,7 +43,8 @@ static void __ref __static_call_transform(void *insn, enum insn_type type,
 
 	case RET:
 		if (cpu_feature_enabled(X86_FEATURE_RETHUNK))
-			code = text_gen_insn(JMP32_INSN_OPCODE, insn, &__x86_return_thunk);
+			code = text_gen_insn(JMP32_INSN_OPCODE, insn,
+					     &__x86_return_thunk);
 		else
 			code = &retinsn;
 		break;
@@ -62,31 +63,28 @@ static void __static_call_validate(void *insn, bool tail, bool tramp)
 {
 	u8 opcode = *(u8 *)insn;
 
-	if (tramp && memcmp(insn+5, tramp_ud, 3)) {
+	if (tramp && memcmp(insn + 5, tramp_ud, 3)) {
 		pr_err("trampoline signature fail");
 		BUG();
 	}
 
 	if (tail) {
-		if (opcode == JMP32_INSN_OPCODE ||
-		    opcode == RET_INSN_OPCODE)
+		if (opcode == JMP32_INSN_OPCODE || opcode == RET_INSN_OPCODE)
 			return;
 	} else {
 		if (opcode == CALL_INSN_OPCODE ||
-		    !memcmp(insn, x86_nops[5], 5) ||
-		    !memcmp(insn, xor5rax, 5))
+		    !memcmp(insn, x86_nops[5], 5) || !memcmp(insn, xor5rax, 5))
 			return;
 	}
 
-	 
-	pr_err("unexpected static_call insn opcode 0x%x at %pS\n", opcode, insn);
+	pr_err("unexpected static_call insn opcode 0x%x at %pS\n", opcode,
+	       insn);
 	BUG();
 }
 
 static inline enum insn_type __sc_insn(bool null, bool tail)
 {
-	 
-	return 2*tail + null;
+	return 2 * tail + null;
 }
 
 void arch_static_call_transform(void *site, void *tramp, void *func, bool tail)
@@ -95,11 +93,11 @@ void arch_static_call_transform(void *site, void *tramp, void *func, bool tail)
 
 	if (tramp) {
 		__static_call_validate(tramp, true, true);
-		__static_call_transform(tramp, __sc_insn(!func, true), func, false);
+		__static_call_transform(tramp, __sc_insn(!func, true), func,
+					false);
 	}
 
 	/* HAVE_STATIC_CALL_INLINE disabled */
 
 	mutex_unlock(&text_mutex);
 }
-

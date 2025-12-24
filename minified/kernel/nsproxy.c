@@ -15,13 +15,16 @@ struct ipc_namespace {
 };
 extern struct ipc_namespace init_ipc_ns;
 static inline struct ipc_namespace *copy_ipcs(unsigned long flags,
-	struct user_namespace *user_ns, struct ipc_namespace *ns)
+					      struct user_namespace *user_ns,
+					      struct ipc_namespace *ns)
 {
 	if (flags & CLONE_NEWIPC)
 		return ERR_PTR(-EINVAL);
 	return ns;
 }
-static inline void put_ipc_ns(struct ipc_namespace *ns) {}
+static inline void put_ipc_ns(struct ipc_namespace *ns)
+{
+}
 #include <linux/fs_struct.h>
 #include <linux/proc_fs.h>
 #include <linux/proc_ns.h>
@@ -33,10 +36,10 @@ static inline void put_ipc_ns(struct ipc_namespace *ns) {}
 static struct kmem_cache *nsproxy_cachep;
 
 struct nsproxy init_nsproxy = {
-	.count			= ATOMIC_INIT(1),
-	.uts_ns			= &init_uts_ns,
-	.mnt_ns			= NULL,
-	.pid_ns_for_children	= &init_pid_ns,
+	.count = ATOMIC_INIT(1),
+	.uts_ns = &init_uts_ns,
+	.mnt_ns = NULL,
+	.pid_ns_for_children = &init_pid_ns,
 };
 
 static inline struct nsproxy *create_nsproxy(void)
@@ -50,8 +53,9 @@ static inline struct nsproxy *create_nsproxy(void)
 }
 
 static struct nsproxy *create_new_namespaces(unsigned long flags,
-	struct task_struct *tsk, struct user_namespace *user_ns,
-	struct fs_struct *new_fs)
+					     struct task_struct *tsk,
+					     struct user_namespace *user_ns,
+					     struct fs_struct *new_fs)
 {
 	struct nsproxy *new_nsp;
 	int err;
@@ -60,7 +64,8 @@ static struct nsproxy *create_new_namespaces(unsigned long flags,
 	if (!new_nsp)
 		return ERR_PTR(-ENOMEM);
 
-	new_nsp->mnt_ns = copy_mnt_ns(flags, tsk->nsproxy->mnt_ns, user_ns, new_fs);
+	new_nsp->mnt_ns =
+		copy_mnt_ns(flags, tsk->nsproxy->mnt_ns, user_ns, new_fs);
 	if (IS_ERR(new_nsp->mnt_ns)) {
 		err = PTR_ERR(new_nsp->mnt_ns);
 		goto out_ns;
@@ -85,8 +90,8 @@ static struct nsproxy *create_new_namespaces(unsigned long flags,
 		goto out_pid;
 	}
 
-	new_nsp->cgroup_ns = copy_cgroup_ns(flags, user_ns,
-					    tsk->nsproxy->cgroup_ns);
+	new_nsp->cgroup_ns =
+		copy_cgroup_ns(flags, user_ns, tsk->nsproxy->cgroup_ns);
 	if (IS_ERR(new_nsp->cgroup_ns)) {
 		err = PTR_ERR(new_nsp->cgroup_ns);
 		goto out_cgroup;
@@ -98,8 +103,8 @@ static struct nsproxy *create_new_namespaces(unsigned long flags,
 		goto out_net;
 	}
 
-	new_nsp->time_ns_for_children = copy_time_ns(flags, user_ns,
-					tsk->nsproxy->time_ns_for_children);
+	new_nsp->time_ns_for_children = copy_time_ns(
+		flags, user_ns, tsk->nsproxy->time_ns_for_children);
 	if (IS_ERR(new_nsp->time_ns_for_children)) {
 		err = PTR_ERR(new_nsp->time_ns_for_children);
 		goto out_time;
@@ -135,9 +140,9 @@ int copy_namespaces(unsigned long flags, struct task_struct *tsk)
 	struct user_namespace *user_ns = task_cred_xxx(tsk, user_ns);
 	struct nsproxy *new_ns;
 
-	if (likely(!(flags & (CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC |
-			      CLONE_NEWPID | CLONE_NEWNET |
-			      CLONE_NEWCGROUP | CLONE_NEWTIME)))) {
+	if (likely(!(flags &
+		     (CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC | CLONE_NEWPID |
+		      CLONE_NEWNET | CLONE_NEWCGROUP | CLONE_NEWTIME)))) {
 		if (likely(old_ns->time_ns_for_children == old_ns->time_ns)) {
 			get_nsproxy(old_ns);
 			return 0;
@@ -145,14 +150,13 @@ int copy_namespaces(unsigned long flags, struct task_struct *tsk)
 	} else if (!ns_capable(user_ns, CAP_SYS_ADMIN))
 		return -EPERM;
 
-	 
 	if ((flags & (CLONE_NEWIPC | CLONE_SYSVSEM)) ==
-		(CLONE_NEWIPC | CLONE_SYSVSEM))
+	    (CLONE_NEWIPC | CLONE_SYSVSEM))
 		return -EINVAL;
 
 	new_ns = create_new_namespaces(flags, tsk, user_ns, tsk->fs);
 	if (IS_ERR(new_ns))
-		return  PTR_ERR(new_ns);
+		return PTR_ERR(new_ns);
 
 	timens_on_fork(new_ns, tsk);
 
@@ -178,7 +182,6 @@ void free_nsproxy(struct nsproxy *ns)
 	put_net(ns->net_ns);
 	kmem_cache_free(nsproxy_cachep, ns);
 }
-
 
 static void switch_task_namespaces(struct task_struct *p, struct nsproxy *new)
 {
@@ -208,6 +211,6 @@ SYSCALL_DEFINE2(setns, int, fd, int, flags)
 
 int __init nsproxy_cache_init(void)
 {
-	nsproxy_cachep = KMEM_CACHE(nsproxy, SLAB_PANIC|SLAB_ACCOUNT);
+	nsproxy_cachep = KMEM_CACHE(nsproxy, SLAB_PANIC | SLAB_ACCOUNT);
 	return 0;
 }

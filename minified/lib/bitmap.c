@@ -17,17 +17,16 @@
 
 #include "kstrtox.h"
 
-
 /* Stub: __bitmap_equal not called externally */
-bool __bitmap_equal(const unsigned long *bitmap1,
-		    const unsigned long *bitmap2, unsigned int bits)
+bool __bitmap_equal(const unsigned long *bitmap1, const unsigned long *bitmap2,
+		    unsigned int bits)
 {
 	return false;
 }
 
 /* Stub: __bitmap_or not used in minimal kernel */
 void __bitmap_or(unsigned long *dst, const unsigned long *bitmap1,
-				const unsigned long *bitmap2, unsigned int bits)
+		 const unsigned long *bitmap2, unsigned int bits)
 {
 }
 
@@ -71,18 +70,14 @@ void __bitmap_clear(unsigned long *map, unsigned int start, int len)
 	}
 }
 
-unsigned long bitmap_find_next_zero_area_off(unsigned long *map,
-					     unsigned long size,
-					     unsigned long start,
-					     unsigned int nr,
-					     unsigned long align_mask,
-					     unsigned long align_offset)
+unsigned long bitmap_find_next_zero_area_off(
+	unsigned long *map, unsigned long size, unsigned long start,
+	unsigned int nr, unsigned long align_mask, unsigned long align_offset)
 {
 	unsigned long index, end, i;
 again:
 	index = find_next_zero_bit(map, size, start);
 
-	 
 	index = __ALIGN_MASK(index + align_offset, align_mask) - align_offset;
 
 	end = index + nr;
@@ -95,7 +90,6 @@ again:
 	}
 	return index;
 }
-
 
 int bitmap_print_to_pagebuf(bool list, char *buf, const unsigned long *maskp,
 			    int nmaskbits)

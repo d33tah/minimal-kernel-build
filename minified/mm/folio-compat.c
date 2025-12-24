@@ -24,7 +24,6 @@ void wait_on_page_writeback(struct page *page)
 	return folio_wait_writeback(page_folio(page));
 }
 
-
 bool page_mapped(struct page *page)
 {
 	return folio_mapped(page_folio(page));
@@ -34,7 +33,6 @@ void mark_page_accessed(struct page *page)
 {
 	folio_mark_accessed(page_folio(page));
 }
-
 
 bool set_page_writeback(struct page *page)
 {
@@ -56,21 +54,20 @@ bool clear_page_dirty_for_io(struct page *page)
 	return folio_clear_dirty_for_io(page_folio(page));
 }
 
-
 void lru_cache_add(struct page *page)
 {
 	folio_add_lru(page_folio(page));
 }
 
 int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
-		pgoff_t index, gfp_t gfp)
+			  pgoff_t index, gfp_t gfp)
 {
 	return filemap_add_folio(mapping, page_folio(page), index, gfp);
 }
 
-noinline
-struct page *pagecache_get_page(struct address_space *mapping, pgoff_t index,
-		int fgp_flags, gfp_t gfp)
+noinline struct page *pagecache_get_page(struct address_space *mapping,
+					 pgoff_t index, int fgp_flags,
+					 gfp_t gfp)
 {
 	struct folio *folio;
 
@@ -81,10 +78,10 @@ struct page *pagecache_get_page(struct address_space *mapping, pgoff_t index,
 }
 
 struct page *grab_cache_page_write_begin(struct address_space *mapping,
-					pgoff_t index)
+					 pgoff_t index)
 {
 	unsigned fgp_flags = FGP_LOCK | FGP_WRITE | FGP_CREAT | FGP_STABLE;
 
 	return pagecache_get_page(mapping, index, fgp_flags,
-			mapping_gfp_mask(mapping));
+				  mapping_gfp_mask(mapping));
 }

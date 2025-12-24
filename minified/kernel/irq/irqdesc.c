@@ -16,13 +16,18 @@ static void __init init_irq_default_affinity(void)
 {
 }
 
-static inline int
-alloc_masks(struct irq_desc *desc, int node) { return 0; }
-static inline void
-desc_smp_init(struct irq_desc *desc, int node, const struct cpumask *affinity) { }
+static inline int alloc_masks(struct irq_desc *desc, int node)
+{
+	return 0;
+}
+static inline void desc_smp_init(struct irq_desc *desc, int node,
+				 const struct cpumask *affinity)
+{
+}
 
 static void desc_set_defaults(unsigned int irq, struct irq_desc *desc, int node,
-			      const struct cpumask *affinity, struct module *owner)
+			      const struct cpumask *affinity,
+			      struct module *owner)
 {
 	int cpu;
 
@@ -53,17 +58,18 @@ int nr_irqs = NR_IRQS;
 static DEFINE_MUTEX(sparse_irq_lock);
 static DECLARE_BITMAP(allocated_irqs, IRQ_BITMAP_BITS);
 
-
 static void irq_kobj_release(struct kobject *kobj);
 
-
 static struct kobj_type irq_kobj_type = {
-	.release	= irq_kobj_release,
+	.release = irq_kobj_release,
 };
 
-static void irq_sysfs_add(int irq, struct irq_desc *desc) {}
-static void irq_sysfs_del(struct irq_desc *desc) {}
-
+static void irq_sysfs_add(int irq, struct irq_desc *desc)
+{
+}
+static void irq_sysfs_del(struct irq_desc *desc)
+{
+}
 
 static RADIX_TREE(irq_desc_tree, GFP_KERNEL);
 
@@ -82,8 +88,9 @@ static void delete_irq_desc(unsigned int irq)
 	radix_tree_delete(&irq_desc_tree, irq);
 }
 
-static inline void free_masks(struct irq_desc *desc) { }
-
+static inline void free_masks(struct irq_desc *desc)
+{
+}
 
 static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
 				   const struct cpumask *affinity,
@@ -94,7 +101,7 @@ static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
 	desc = kzalloc_node(sizeof(*desc), GFP_KERNEL, node);
 	if (!desc)
 		return NULL;
-	 
+
 	desc->kstat_irqs = alloc_percpu(unsigned int);
 	if (!desc->kstat_irqs)
 		goto err_desc;
@@ -144,11 +151,9 @@ static void free_desc(unsigned int irq)
 	irq_remove_debugfs_entry(desc);
 	unregister_irq_proc(irq, desc);
 
-	 
 	irq_sysfs_del(desc);
 	delete_irq_desc(irq);
 
-	 
 	call_rcu(&desc->rcu, delayed_free_desc);
 }
 
@@ -159,7 +164,6 @@ static int alloc_descs(unsigned int start, unsigned int cnt, int node,
 	struct irq_desc *desc;
 	int i;
 
-	 
 	if (affinity) {
 		for (i = 0; i < cnt; i++) {
 			if (cpumask_empty(&affinity[i].mask))
@@ -212,7 +216,6 @@ int __init early_irq_init(void)
 
 	init_irq_default_affinity();
 
-	 
 	initcnt = arch_probe_nr_irqs();
 	printk(KERN_INFO "NR_IRQS: %d, nr_irqs: %d, preallocated irqs: %d\n",
 	       NR_IRQS, nr_irqs, initcnt);
@@ -233,7 +236,6 @@ int __init early_irq_init(void)
 	}
 	return arch_early_irq_init();
 }
-
 
 int handle_irq_desc(struct irq_desc *desc)
 {
@@ -266,8 +268,6 @@ int generic_handle_irq_safe(unsigned int irq)
 	return ret;
 }
 
-
-
 void irq_free_descs(unsigned int from, unsigned int cnt)
 {
 	int i;
@@ -283,9 +283,9 @@ void irq_free_descs(unsigned int from, unsigned int cnt)
 	mutex_unlock(&sparse_irq_lock);
 }
 
-int __ref
-__irq_alloc_descs(int irq, unsigned int from, unsigned int cnt, int node,
-		  struct module *owner, const struct irq_affinity_desc *affinity)
+int __ref __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt,
+			    int node, struct module *owner,
+			    const struct irq_affinity_desc *affinity)
 {
 	int start, ret;
 
@@ -297,7 +297,6 @@ __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt, int node,
 			return -EINVAL;
 		from = irq;
 	} else {
-		 
 		from = arch_dynirq_lower_bound(from);
 	}
 
@@ -306,7 +305,7 @@ __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt, int node,
 	start = bitmap_find_next_zero_area(allocated_irqs, IRQ_BITMAP_BITS,
 					   from, cnt, 0);
 	ret = -EEXIST;
-	if (irq >=0 && start != irq)
+	if (irq >= 0 && start != irq)
 		goto unlock;
 
 	if (start + cnt > nr_irqs) {
@@ -325,9 +324,8 @@ unsigned int irq_get_next_irq(unsigned int offset)
 	return find_next_bit(allocated_irqs, nr_irqs, offset);
 }
 
-struct irq_desc *
-__irq_get_desc_lock(unsigned int irq, unsigned long *flags, bool bus,
-		    unsigned int check)
+struct irq_desc *__irq_get_desc_lock(unsigned int irq, unsigned long *flags,
+				     bool bus, unsigned int check)
 {
 	struct irq_desc *desc = irq_to_desc(irq);
 
@@ -356,6 +354,3 @@ void __irq_put_desc_unlock(struct irq_desc *desc, unsigned long flags, bool bus)
 	if (bus)
 		chip_bus_sync_unlock(desc);
 }
-
-
-

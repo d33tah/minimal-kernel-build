@@ -20,7 +20,6 @@
 #include <linux/memcontrol.h>
 #include <linux/stackdepot.h>
 
-
 #include "internal.h"
 
 #include "slab.h"
@@ -30,27 +29,25 @@ LIST_HEAD(slab_caches);
 DEFINE_MUTEX(slab_mutex);
 struct kmem_cache *kmem_cache;
 
+#define SLAB_NEVER_MERGE                                              \
+	(SLAB_RED_ZONE | SLAB_POISON | SLAB_STORE_USER | SLAB_TRACE | \
+	 SLAB_TYPESAFE_BY_RCU | SLAB_NOLEAKTRACE | SLAB_FAILSLAB |    \
+	 kasan_never_merge())
 
-#define SLAB_NEVER_MERGE (SLAB_RED_ZONE | SLAB_POISON | SLAB_STORE_USER | \
-		SLAB_TRACE | SLAB_TYPESAFE_BY_RCU | SLAB_NOLEAKTRACE | \
-		SLAB_FAILSLAB | kasan_never_merge())
-
-#define SLAB_MERGE_SAME (SLAB_RECLAIM_ACCOUNT | SLAB_CACHE_DMA | \
-			 SLAB_CACHE_DMA32 | SLAB_ACCOUNT)
+#define SLAB_MERGE_SAME                                             \
+	(SLAB_RECLAIM_ACCOUNT | SLAB_CACHE_DMA | SLAB_CACHE_DMA32 | \
+	 SLAB_ACCOUNT)
 
 static bool slab_nomerge = !IS_ENABLED(CONFIG_SLAB_MERGE_DEFAULT);
-
 
 static inline int kmem_cache_sanity_check(const char *name, unsigned int size)
 {
 	return 0;
 }
 
-
-static unsigned int calculate_alignment(slab_flags_t flags,
-		unsigned int align, unsigned int size)
+static unsigned int calculate_alignment(slab_flags_t flags, unsigned int align,
+					unsigned int size)
 {
-	 
 	if (flags & SLAB_HWCACHE_ALIGN) {
 		unsigned int ralign;
 
@@ -76,7 +73,6 @@ static int slab_unmergeable(struct kmem_cache *s)
 	if (s->usersize)
 		return 1;
 
-	 
 	if (s->refcount < 0)
 		return 1;
 
@@ -84,7 +80,8 @@ static int slab_unmergeable(struct kmem_cache *s)
 }
 
 struct kmem_cache *find_mergeable(unsigned int size, unsigned int align,
-		slab_flags_t flags, const char *name, void (*ctor)(void *))
+				  slab_flags_t flags, const char *name,
+				  void (*ctor)(void *))
 {
 	struct kmem_cache *s;
 
@@ -111,7 +108,7 @@ struct kmem_cache *find_mergeable(unsigned int size, unsigned int align,
 
 		if ((flags & SLAB_MERGE_SAME) != (s->flags & SLAB_MERGE_SAME))
 			continue;
-		 
+
 		if ((s->size & ~(align - 1)) != s->size)
 			continue;
 
@@ -124,11 +121,10 @@ struct kmem_cache *find_mergeable(unsigned int size, unsigned int align,
 	return NULL;
 }
 
-static struct kmem_cache *create_cache(const char *name,
-		unsigned int object_size, unsigned int align,
-		slab_flags_t flags, unsigned int useroffset,
-		unsigned int usersize, void (*ctor)(void *),
-		struct kmem_cache *root_cache)
+static struct kmem_cache *
+create_cache(const char *name, unsigned int object_size, unsigned int align,
+	     slab_flags_t flags, unsigned int useroffset, unsigned int usersize,
+	     void (*ctor)(void *), struct kmem_cache *root_cache)
 {
 	struct kmem_cache *s;
 	int err;
@@ -165,16 +161,14 @@ out_free_cache:
 }
 
 struct kmem_cache *
-kmem_cache_create_usercopy(const char *name,
-		  unsigned int size, unsigned int align,
-		  slab_flags_t flags,
-		  unsigned int useroffset, unsigned int usersize,
-		  void (*ctor)(void *))
+kmem_cache_create_usercopy(const char *name, unsigned int size,
+			   unsigned int align, slab_flags_t flags,
+			   unsigned int useroffset, unsigned int usersize,
+			   void (*ctor)(void *))
 {
 	struct kmem_cache *s = NULL;
 	const char *cache_name;
 	int err;
-
 
 	mutex_lock(&slab_mutex);
 
@@ -183,16 +177,13 @@ kmem_cache_create_usercopy(const char *name,
 		goto out_unlock;
 	}
 
-	 
 	if (flags & ~SLAB_FLAGS_PERMITTED) {
 		err = -EINVAL;
 		goto out_unlock;
 	}
 
-	 
 	flags &= CACHE_CREATE_MASK;
 
-	 
 	if (WARN_ON(!usersize && useroffset) ||
 	    WARN_ON(size < usersize || size - usersize < useroffset))
 		usersize = useroffset = 0;
@@ -209,8 +200,8 @@ kmem_cache_create_usercopy(const char *name,
 	}
 
 	s = create_cache(cache_name, size,
-			 calculate_alignment(flags, align, size),
-			 flags, useroffset, usersize, ctor, NULL);
+			 calculate_alignment(flags, align, size), flags,
+			 useroffset, usersize, ctor, NULL);
 	if (IS_ERR(s)) {
 		err = PTR_ERR(s);
 		kfree_const(cache_name);
@@ -222,10 +213,10 @@ out_unlock:
 	if (err) {
 		if (flags & SLAB_PANIC)
 			panic("%s: Failed to create slab '%s'. Error %d\n",
-				__func__, name, err);
+			      __func__, name, err);
 		else {
-			pr_warn("%s(%s) failed with error %d\n",
-				__func__, name, err);
+			pr_warn("%s(%s) failed with error %d\n", __func__, name,
+				err);
 			dump_stack();
 		}
 		return NULL;
@@ -233,24 +224,21 @@ out_unlock:
 	return s;
 }
 
-struct kmem_cache *
-kmem_cache_create(const char *name, unsigned int size, unsigned int align,
-		slab_flags_t flags, void (*ctor)(void *))
+struct kmem_cache *kmem_cache_create(const char *name, unsigned int size,
+				     unsigned int align, slab_flags_t flags,
+				     void (*ctor)(void *))
 {
-	return kmem_cache_create_usercopy(name, size, align, flags, 0, 0,
-					  ctor);
+	return kmem_cache_create_usercopy(name, size, align, flags, 0, 0, ctor);
 }
-
 
 bool slab_is_available(void)
 {
 	return slab_state >= UP;
 }
 
-
 void __init create_boot_cache(struct kmem_cache *s, const char *name,
-		unsigned int size, slab_flags_t flags,
-		unsigned int useroffset, unsigned int usersize)
+			      unsigned int size, slab_flags_t flags,
+			      unsigned int useroffset, unsigned int usersize)
 {
 	int err;
 	unsigned int align = ARCH_KMALLOC_MINALIGN;
@@ -258,7 +246,6 @@ void __init create_boot_cache(struct kmem_cache *s, const char *name,
 	s->name = name;
 	s->size = s->object_size = size;
 
-	 
 	if (is_power_of_2(size))
 		align = max(align, size);
 	s->align = calculate_alignment(flags, align, size);
@@ -270,14 +257,16 @@ void __init create_boot_cache(struct kmem_cache *s, const char *name,
 
 	if (err)
 		panic("Creation of kmalloc slab %s size=%u failed. Reason %d\n",
-					name, size, err);
+		      name, size, err);
 
-	s->refcount = -1;	 
+	s->refcount = -1;
 }
 
 struct kmem_cache *__init create_kmalloc_cache(const char *name,
-		unsigned int size, slab_flags_t flags,
-		unsigned int useroffset, unsigned int usersize)
+					       unsigned int size,
+					       slab_flags_t flags,
+					       unsigned int useroffset,
+					       unsigned int usersize)
 {
 	struct kmem_cache *s = kmem_cache_zalloc(kmem_cache, GFP_NOWAIT);
 
@@ -291,35 +280,11 @@ struct kmem_cache *__init create_kmalloc_cache(const char *name,
 	return s;
 }
 
-struct kmem_cache *
-kmalloc_caches[NR_KMALLOC_TYPES][KMALLOC_SHIFT_HIGH + 1] __ro_after_init =
-{   };
+struct kmem_cache *kmalloc_caches[NR_KMALLOC_TYPES]
+				 [KMALLOC_SHIFT_HIGH + 1] __ro_after_init = {};
 
 static u8 size_index[24] __ro_after_init = {
-	3,	 
-	4,	 
-	5,	 
-	5,	 
-	6,	 
-	6,	 
-	6,	 
-	6,	 
-	1,	 
-	1,	 
-	1,	 
-	1,	 
-	7,	 
-	7,	 
-	7,	 
-	7,	 
-	2,	 
-	2,	 
-	2,	 
-	2,	 
-	2,	 
-	2,	 
-	2,	 
-	2	 
+	3, 4, 5, 5, 6, 6, 6, 6, 1, 1, 1, 1, 7, 7, 7, 7, 2, 2, 2, 2, 2, 2, 2, 2
 };
 
 static inline unsigned int size_index_elem(unsigned int bytes)
@@ -349,42 +314,29 @@ struct kmem_cache *kmalloc_slab(size_t size, gfp_t flags)
 
 #define KMALLOC_CGROUP_NAME(sz)
 
-#define INIT_KMALLOC_INFO(__size, __short_size)			\
-{								\
-	.name[KMALLOC_NORMAL]  = "kmalloc-" #__short_size,	\
-	.name[KMALLOC_RECLAIM] = "kmalloc-rcl-" #__short_size,	\
-	KMALLOC_CGROUP_NAME(__short_size)			\
-	KMALLOC_DMA_NAME(__short_size)				\
-	.size = __size,						\
-}
+#define INIT_KMALLOC_INFO(__size, __short_size)                        \
+	{                                                              \
+		.name[KMALLOC_NORMAL] = "kmalloc-" #__short_size,      \
+		.name[KMALLOC_RECLAIM] = "kmalloc-rcl-" #__short_size, \
+		KMALLOC_CGROUP_NAME(__short_size)                      \
+			KMALLOC_DMA_NAME(__short_size)                 \
+				.size = __size,                        \
+	}
 
 const struct kmalloc_info_struct kmalloc_info[] __initconst = {
-	INIT_KMALLOC_INFO(0, 0),
-	INIT_KMALLOC_INFO(96, 96),
-	INIT_KMALLOC_INFO(192, 192),
-	INIT_KMALLOC_INFO(8, 8),
-	INIT_KMALLOC_INFO(16, 16),
-	INIT_KMALLOC_INFO(32, 32),
-	INIT_KMALLOC_INFO(64, 64),
-	INIT_KMALLOC_INFO(128, 128),
-	INIT_KMALLOC_INFO(256, 256),
-	INIT_KMALLOC_INFO(512, 512),
-	INIT_KMALLOC_INFO(1024, 1k),
-	INIT_KMALLOC_INFO(2048, 2k),
-	INIT_KMALLOC_INFO(4096, 4k),
-	INIT_KMALLOC_INFO(8192, 8k),
-	INIT_KMALLOC_INFO(16384, 16k),
-	INIT_KMALLOC_INFO(32768, 32k),
-	INIT_KMALLOC_INFO(65536, 64k),
-	INIT_KMALLOC_INFO(131072, 128k),
-	INIT_KMALLOC_INFO(262144, 256k),
-	INIT_KMALLOC_INFO(524288, 512k),
-	INIT_KMALLOC_INFO(1048576, 1M),
-	INIT_KMALLOC_INFO(2097152, 2M),
-	INIT_KMALLOC_INFO(4194304, 4M),
-	INIT_KMALLOC_INFO(8388608, 8M),
-	INIT_KMALLOC_INFO(16777216, 16M),
-	INIT_KMALLOC_INFO(33554432, 32M)
+	INIT_KMALLOC_INFO(0, 0),	  INIT_KMALLOC_INFO(96, 96),
+	INIT_KMALLOC_INFO(192, 192),	  INIT_KMALLOC_INFO(8, 8),
+	INIT_KMALLOC_INFO(16, 16),	  INIT_KMALLOC_INFO(32, 32),
+	INIT_KMALLOC_INFO(64, 64),	  INIT_KMALLOC_INFO(128, 128),
+	INIT_KMALLOC_INFO(256, 256),	  INIT_KMALLOC_INFO(512, 512),
+	INIT_KMALLOC_INFO(1024, 1k),	  INIT_KMALLOC_INFO(2048, 2k),
+	INIT_KMALLOC_INFO(4096, 4k),	  INIT_KMALLOC_INFO(8192, 8k),
+	INIT_KMALLOC_INFO(16384, 16k),	  INIT_KMALLOC_INFO(32768, 32k),
+	INIT_KMALLOC_INFO(65536, 64k),	  INIT_KMALLOC_INFO(131072, 128k),
+	INIT_KMALLOC_INFO(262144, 256k),  INIT_KMALLOC_INFO(524288, 512k),
+	INIT_KMALLOC_INFO(1048576, 1M),	  INIT_KMALLOC_INFO(2097152, 2M),
+	INIT_KMALLOC_INFO(4194304, 4M),	  INIT_KMALLOC_INFO(8388608, 8M),
+	INIT_KMALLOC_INFO(16777216, 16M), INIT_KMALLOC_INFO(33554432, 32M)
 };
 
 void __init setup_kmalloc_cache_index_table(void)
@@ -392,7 +344,7 @@ void __init setup_kmalloc_cache_index_table(void)
 	unsigned int i;
 
 	BUILD_BUG_ON(KMALLOC_MIN_SIZE > 256 ||
-		!is_power_of_2(KMALLOC_MIN_SIZE));
+		     !is_power_of_2(KMALLOC_MIN_SIZE));
 
 	for (i = 8; i < KMALLOC_MIN_SIZE; i += 8) {
 		unsigned int elem = size_index_elem(i);
@@ -403,30 +355,26 @@ void __init setup_kmalloc_cache_index_table(void)
 	}
 
 	if (KMALLOC_MIN_SIZE >= 64) {
-		 
 		for (i = 64 + 8; i <= 96; i += 8)
 			size_index[size_index_elem(i)] = 7;
-
 	}
 
 	if (KMALLOC_MIN_SIZE >= 128) {
-		 
 		for (i = 128 + 8; i <= 192; i += 8)
 			size_index[size_index_elem(i)] = 8;
 	}
 }
 
-static void __init
-new_kmalloc_cache(int idx, enum kmalloc_cache_type type, slab_flags_t flags)
+static void __init new_kmalloc_cache(int idx, enum kmalloc_cache_type type,
+				     slab_flags_t flags)
 {
 	/* CONFIG_MEMCG_KMEM and CONFIG_ZONE_DMA not enabled */
 	if (type == KMALLOC_RECLAIM)
 		flags |= SLAB_RECLAIM_ACCOUNT;
 
 	kmalloc_caches[type][idx] = create_kmalloc_cache(
-					kmalloc_info[idx].name[type],
-					kmalloc_info[idx].size, flags, 0,
-					kmalloc_info[idx].size);
+		kmalloc_info[idx].name[type], kmalloc_info[idx].size, flags, 0,
+		kmalloc_info[idx].size);
 }
 
 void __init create_kmalloc_caches(slab_flags_t flags)
@@ -434,23 +382,20 @@ void __init create_kmalloc_caches(slab_flags_t flags)
 	int i;
 	enum kmalloc_cache_type type;
 
-	 
 	for (type = KMALLOC_NORMAL; type < NR_KMALLOC_TYPES; type++) {
 		for (i = KMALLOC_SHIFT_LOW; i <= KMALLOC_SHIFT_HIGH; i++) {
 			if (!kmalloc_caches[type][i])
 				new_kmalloc_cache(i, type, flags);
 
-			 
 			if (KMALLOC_MIN_SIZE <= 32 && i == 6 &&
-					!kmalloc_caches[type][1])
+			    !kmalloc_caches[type][1])
 				new_kmalloc_cache(1, type, flags);
 			if (KMALLOC_MIN_SIZE <= 64 && i == 7 &&
-					!kmalloc_caches[type][2])
+			    !kmalloc_caches[type][2])
 				new_kmalloc_cache(2, type, flags);
 		}
 	}
 
-	 
 	slab_state = UP;
 }
 
@@ -460,7 +405,7 @@ gfp_t kmalloc_fix_flags(gfp_t flags)
 
 	flags &= ~GFP_SLAB_BUG_MASK;
 	pr_warn("Unexpected gfp: %#x (%pGg). Fixing up to gfp: %#x (%pGg). Fix your code!\n",
-			invalid_mask, &invalid_mask, flags, &flags);
+		invalid_mask, &invalid_mask, flags, &flags);
 	dump_stack();
 
 	return flags;
@@ -482,14 +427,10 @@ void *kmalloc_order(size_t size, gfp_t flags, unsigned int order)
 				      PAGE_SIZE << order);
 	}
 	ret = kasan_kmalloc_large(ret, size, flags);
-	 
+
 	kmemleak_alloc(ret, size, 1, flags);
 	return ret;
 }
-
-
-
-
 
 int should_failslab(struct kmem_cache *s, gfp_t gfpflags)
 {

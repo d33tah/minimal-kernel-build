@@ -11,7 +11,6 @@
 
 #include "common.h"
 
-
 static __always_inline void __enter_from_user_mode(struct pt_regs *regs)
 {
 	arch_enter_from_user_mode(regs);
@@ -19,8 +18,6 @@ static __always_inline void __enter_from_user_mode(struct pt_regs *regs)
 
 	CT_WARN_ON(ct_state() != CONTEXT_USER);
 	user_exit_irqoff();
-
-	 
 }
 
 void noinstr enter_from_user_mode(struct pt_regs *regs)
@@ -34,7 +31,8 @@ static inline void syscall_enter_audit(struct pt_regs *regs, long syscall)
 		unsigned long args[6];
 
 		syscall_get_arguments(current, regs, args);
-		audit_syscall_entry(syscall, args[0], args[1], args[2], args[3]);
+		audit_syscall_entry(syscall, args[0], args[1], args[2],
+				    args[3]);
 	}
 }
 
@@ -43,39 +41,34 @@ static long syscall_trace_enter(struct pt_regs *regs, long syscall,
 {
 	long ret = 0;
 
-	 
 	if (work & SYSCALL_WORK_SYSCALL_USER_DISPATCH) {
 		if (syscall_user_dispatch(regs))
 			return -1L;
 	}
 
-	 
 	if (work & (SYSCALL_WORK_SYSCALL_TRACE | SYSCALL_WORK_SYSCALL_EMU)) {
 		ret = ptrace_report_syscall_entry(regs);
 		if (ret || (work & SYSCALL_WORK_SYSCALL_EMU))
 			return -1L;
 	}
 
-	 
 	if (work & SYSCALL_WORK_SECCOMP) {
 		ret = __secure_computing(NULL);
 		if (ret == -1L)
 			return ret;
 	}
 
-	 
 	syscall = syscall_get_nr(current, regs);
 
 	if (unlikely(work & SYSCALL_WORK_SYSCALL_TRACEPOINT))
-		 
 
-	syscall_enter_audit(regs, syscall);
+		syscall_enter_audit(regs, syscall);
 
-	return ret ? : syscall;
+	return ret ?: syscall;
 }
 
-static __always_inline long
-__syscall_enter_from_user_work(struct pt_regs *regs, long syscall)
+static __always_inline long __syscall_enter_from_user_work(struct pt_regs *regs,
+							   long syscall)
 {
 	unsigned long work = READ_ONCE(current_thread_info()->syscall_work);
 
@@ -110,7 +103,6 @@ noinstr void syscall_enter_from_user_mode_prepare(struct pt_regs *regs)
 
 static __always_inline void __exit_to_user_mode(void)
 {
-	 
 	lockdep_hardirqs_on_prepare();
 
 	user_enter_irqoff();
@@ -128,9 +120,7 @@ void noinstr exit_to_user_mode(void)
 static unsigned long exit_to_user_mode_loop(struct pt_regs *regs,
 					    unsigned long ti_work)
 {
-	 
 	while (ti_work & EXIT_TO_USER_MODE_WORK) {
-
 		local_irq_enable_exit_to_user(ti_work);
 
 		if (ti_work & _TIF_NEED_RESCHED)
@@ -148,19 +138,15 @@ static unsigned long exit_to_user_mode_loop(struct pt_regs *regs,
 		if (ti_work & _TIF_NOTIFY_RESUME)
 			resume_user_mode_work(regs);
 
-		 
 		arch_exit_to_user_mode_work(regs, ti_work);
 
-		 
 		local_irq_disable_exit_to_user();
 
-		 
 		tick_nohz_user_enter_prepare();
 
 		ti_work = read_thread_flags();
 	}
 
-	 
 	return ti_work;
 }
 
@@ -170,7 +156,6 @@ static void exit_to_user_mode_prepare(struct pt_regs *regs)
 
 	lockdep_assert_irqs_disabled();
 
-	 
 	tick_nohz_user_enter_prepare();
 
 	if (unlikely(ti_work & EXIT_TO_USER_MODE_WORK))
@@ -178,7 +163,6 @@ static void exit_to_user_mode_prepare(struct pt_regs *regs)
 
 	arch_exit_to_user_mode_prepare(regs, ti_work);
 
-	 
 	addr_limit_user_check();
 	kmap_assert_nomap();
 	lockdep_assert_irqs_disabled();
@@ -197,7 +181,6 @@ static void syscall_exit_work(struct pt_regs *regs, unsigned long work)
 {
 	bool step;
 
-	 
 	if (work & SYSCALL_WORK_SYSCALL_USER_DISPATCH) {
 		if (unlikely(current->syscall_dispatch.on_dispatch)) {
 			current->syscall_dispatch.on_dispatch = false;
@@ -223,12 +206,12 @@ static void syscall_exit_to_user_mode_prepare(struct pt_regs *regs)
 
 	rseq_syscall(regs);
 
-	 
 	if (unlikely(work & SYSCALL_WORK_EXIT))
 		syscall_exit_work(regs, work);
 }
 
-static __always_inline void __syscall_exit_to_user_mode_work(struct pt_regs *regs)
+static __always_inline void
+__syscall_exit_to_user_mode_work(struct pt_regs *regs)
 {
 	syscall_exit_to_user_mode_prepare(regs);
 	local_irq_disable_exit_to_user();
@@ -288,14 +271,10 @@ noinstr void irqentry_exit(struct pt_regs *regs, irqentry_state_t state)
 {
 	lockdep_assert_irqs_disabled();
 
-	 
 	if (user_mode(regs)) {
 		irqentry_exit_to_user_mode(regs);
 	} else if (!regs_irqs_disabled(regs)) {
-		 
 		if (state.exit_rcu) {
-			 
-			 
 			lockdep_hardirqs_on_prepare();
 			rcu_irq_exit();
 			lockdep_hardirqs_on(CALLER_ADDR0);
@@ -303,7 +282,6 @@ noinstr void irqentry_exit(struct pt_regs *regs, irqentry_state_t state)
 		}
 
 	} else {
-		 
 		if (state.exit_rcu)
 			rcu_irq_exit();
 	}
@@ -320,15 +298,12 @@ irqentry_state_t noinstr irqentry_nmi_enter(struct pt_regs *regs)
 	lockdep_hardirq_enter();
 	rcu_nmi_enter();
 
-	 
-
 	return irq_state;
 }
 
 void noinstr irqentry_nmi_exit(struct pt_regs *regs, irqentry_state_t irq_state)
 {
 	if (irq_state.lockdep) {
-		 
 		lockdep_hardirqs_on_prepare();
 	}
 

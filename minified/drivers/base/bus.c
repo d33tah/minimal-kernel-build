@@ -16,13 +16,11 @@ static struct kset *system_kset;
 
 #define to_bus_attr(_attr) container_of(_attr, struct bus_attribute, attr)
 
-
 #define to_drv_attr(_attr) container_of(_attr, struct driver_attribute, attr)
 
 #define DRIVER_ATTR_IGNORE_LOCKDEP(_name, _mode, _show, _store) \
-	struct driver_attribute driver_attr_##_name =		\
+	struct driver_attribute driver_attr_##_name =           \
 		__ATTR_IGNORE_LOCKDEP(_name, _mode, _show, _store)
-
 
 static struct bus_type *bus_get(struct bus_type *bus)
 {
@@ -64,8 +62,8 @@ static ssize_t drv_attr_store(struct kobject *kobj, struct attribute *attr,
 }
 
 static const struct sysfs_ops driver_sysfs_ops = {
-	.show	= drv_attr_show,
-	.store	= drv_attr_store,
+	.show = drv_attr_show,
+	.store = drv_attr_store,
 };
 
 static void driver_release(struct kobject *kobj)
@@ -76,8 +74,8 @@ static void driver_release(struct kobject *kobj)
 }
 
 static struct kobj_type driver_ktype = {
-	.sysfs_ops	= &driver_sysfs_ops,
-	.release	= driver_release,
+	.sysfs_ops = &driver_sysfs_ops,
+	.release = driver_release,
 };
 
 static ssize_t bus_attr_show(struct kobject *kobj, struct attribute *attr,
@@ -105,15 +103,20 @@ static ssize_t bus_attr_store(struct kobject *kobj, struct attribute *attr,
 }
 
 static const struct sysfs_ops bus_sysfs_ops = {
-	.show	= bus_attr_show,
-	.store	= bus_attr_store,
+	.show = bus_attr_show,
+	.store = bus_attr_store,
 };
 
 /* Static: bus_create_file only used internally */
-static int bus_create_file(struct bus_type *bus, struct bus_attribute *attr) { return 0; }
+static int bus_create_file(struct bus_type *bus, struct bus_attribute *attr)
+{
+	return 0;
+}
 
 /* Static: bus_remove_file only used internally */
-static void bus_remove_file(struct bus_type *bus, struct bus_attribute *attr) { }
+static void bus_remove_file(struct bus_type *bus, struct bus_attribute *attr)
+{
+}
 
 static void bus_release(struct kobject *kobj)
 {
@@ -125,8 +128,8 @@ static void bus_release(struct kobject *kobj)
 }
 
 static struct kobj_type bus_ktype = {
-	.sysfs_ops	= &bus_sysfs_ops,
-	.release	= bus_release,
+	.sysfs_ops = &bus_sysfs_ops,
+	.release = bus_release,
 };
 
 static int bus_uevent_filter(struct kobject *kobj)
@@ -166,15 +169,15 @@ static ssize_t drivers_autoprobe_show(struct bus_type *bus, char *buf)
 	return sysfs_emit(buf, "1\n");
 }
 
-static ssize_t drivers_autoprobe_store(struct bus_type *bus,
-				       const char *buf, size_t count)
+static ssize_t drivers_autoprobe_store(struct bus_type *bus, const char *buf,
+				       size_t count)
 {
 	return count;
 }
 
 /* Stubbed: drivers_probe_store relies on bus_rescan_devices_helper */
-static ssize_t drivers_probe_store(struct bus_type *bus,
-				   const char *buf, size_t count)
+static ssize_t drivers_probe_store(struct bus_type *bus, const char *buf,
+				   size_t count)
 {
 	return -ENOSYS;
 }
@@ -192,8 +195,8 @@ static struct device *next_device(struct klist_iter *i)
 	return dev;
 }
 
-int bus_for_each_dev(struct bus_type *bus, struct device *start,
-		     void *data, int (*fn)(struct device *, void *))
+int bus_for_each_dev(struct bus_type *bus, struct device *start, void *data,
+		     int (*fn)(struct device *, void *))
 {
 	struct klist_iter i;
 	struct device *dev;
@@ -210,9 +213,9 @@ int bus_for_each_dev(struct bus_type *bus, struct device *start,
 	return error;
 }
 
-struct device *bus_find_device(struct bus_type *bus,
-			       struct device *start, const void *data,
-			       int (*match)(struct device *dev, const void *data))
+struct device *
+bus_find_device(struct bus_type *bus, struct device *start, const void *data,
+		int (*match)(struct device *dev, const void *data))
 {
 	struct klist_iter i;
 	struct device *dev;
@@ -228,7 +231,6 @@ struct device *bus_find_device(struct bus_type *bus,
 	klist_iter_exit(&i);
 	return dev;
 }
-
 
 static struct device_driver *next_driver(struct klist_iter *i)
 {
@@ -382,8 +384,8 @@ int bus_add_driver(struct device_driver *drv)
 	priv->driver = drv;
 	drv->p = priv;
 	priv->kobj.kset = bus->p->drivers_kset;
-	error = kobject_init_and_add(&priv->kobj, &driver_ktype, NULL,
-				     "%s", drv->name);
+	error = kobject_init_and_add(&priv->kobj, &driver_ktype, NULL, "%s",
+				     drv->name);
 	if (error)
 		goto out_unregister;
 
@@ -397,22 +399,20 @@ int bus_add_driver(struct device_driver *drv)
 
 	error = driver_create_file(drv, &driver_attr_uevent);
 	if (error) {
-		printk(KERN_ERR "%s: uevent attr (%s) failed\n",
-			__func__, drv->name);
+		printk(KERN_ERR "%s: uevent attr (%s) failed\n", __func__,
+		       drv->name);
 	}
 	error = driver_add_groups(drv, bus->drv_groups);
 	if (error) {
-		 
-		printk(KERN_ERR "%s: driver_add_groups(%s) failed\n",
-			__func__, drv->name);
+		printk(KERN_ERR "%s: driver_add_groups(%s) failed\n", __func__,
+		       drv->name);
 	}
 
 	if (!drv->suppress_bind_attrs) {
 		error = add_bind_files(drv);
 		if (error) {
-			 
 			printk(KERN_ERR "%s: add_bind_files(%s) failed\n",
-				__func__, drv->name);
+			       __func__, drv->name);
 		}
 	}
 
@@ -422,7 +422,7 @@ out_del_list:
 	klist_del(&priv->knode_bus);
 out_unregister:
 	kobject_put(&priv->kobj);
-	 
+
 	drv->p = NULL;
 out_put_bus:
 	bus_put(bus);
@@ -444,7 +444,6 @@ void bus_remove_driver(struct device_driver *drv)
 	kobject_put(&drv->p->kobj);
 	bus_put(drv->bus);
 }
-
 
 /* Stub: sysfs functions are stubs */
 static int bus_add_groups(struct bus_type *bus,
@@ -474,16 +473,16 @@ static void klist_devices_put(struct klist_node *n)
 	put_device(dev);
 }
 
-static ssize_t bus_uevent_store(struct bus_type *bus,
-				const char *buf, size_t count)
+static ssize_t bus_uevent_store(struct bus_type *bus, const char *buf,
+				size_t count)
 {
 	int rc;
 
 	rc = kobject_synth_uevent(&bus->p->subsys.kobj, buf, count);
 	return rc ? rc : count;
 }
-static struct bus_attribute bus_attr_uevent = __ATTR(uevent, 0200, NULL,
-						     bus_uevent_store);
+static struct bus_attribute bus_attr_uevent =
+	__ATTR(uevent, 0200, NULL, bus_uevent_store);
 
 int bus_register(struct bus_type *bus)
 {
@@ -516,15 +515,15 @@ int bus_register(struct bus_type *bus)
 	if (retval)
 		goto bus_uevent_fail;
 
-	priv->devices_kset = kset_create_and_add("devices", NULL,
-						 &priv->subsys.kobj);
+	priv->devices_kset =
+		kset_create_and_add("devices", NULL, &priv->subsys.kobj);
 	if (!priv->devices_kset) {
 		retval = -ENOMEM;
 		goto bus_devices_fail;
 	}
 
-	priv->drivers_kset = kset_create_and_add("drivers", NULL,
-						 &priv->subsys.kobj);
+	priv->drivers_kset =
+		kset_create_and_add("drivers", NULL, &priv->subsys.kobj);
 	if (!priv->drivers_kset) {
 		retval = -ENOMEM;
 		goto bus_drivers_fail;
@@ -628,7 +627,6 @@ int subsys_system_register(struct bus_type *subsys,
 {
 	return subsys_register(subsys, groups, &system_kset->kobj);
 }
-
 
 int __init buses_init(void)
 {

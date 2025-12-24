@@ -4,11 +4,10 @@
 
 int early_serial_base;
 
-#define XMTRDY          0x20
+#define XMTRDY 0x20
 
-#define TXR             0        
-#define LSR             5        
-
+#define TXR 0
+#define LSR 5
 
 static void __section(".inittext") serial_putchar(int ch)
 {
@@ -35,7 +34,7 @@ static void __section(".inittext") bios_putchar(int ch)
 void __section(".inittext") putchar(int ch)
 {
 	if (ch == '\n')
-		putchar('\r');	 
+		putchar('\r');
 
 	bios_putchar(ch);
 
@@ -48,7 +47,6 @@ void __section(".inittext") puts(const char *str)
 	while (*str)
 		putchar(*str++);
 }
-
 
 static u8 gettime(void)
 {
@@ -66,7 +64,7 @@ int getchar(void)
 	struct biosregs ireg, oreg;
 
 	initregs(&ireg);
-	 
+
 	intcall(0x16, &ireg, &oreg);
 
 	return oreg.al;
@@ -110,6 +108,5 @@ int getchar_timeout(void)
 		}
 	}
 
-	return 0;		 
+	return 0;
 }
-

@@ -4,10 +4,18 @@
 #include <linux/fcntl.h>
 
 /* Inlined from sched/xacct.h - all stubs */
-static inline void add_rchar(struct task_struct *tsk, ssize_t amt) {}
-static inline void add_wchar(struct task_struct *tsk, ssize_t amt) {}
-static inline void inc_syscr(struct task_struct *tsk) {}
-static inline void inc_syscw(struct task_struct *tsk) {}
+static inline void add_rchar(struct task_struct *tsk, ssize_t amt)
+{
+}
+static inline void add_wchar(struct task_struct *tsk, ssize_t amt)
+{
+}
+static inline void inc_syscr(struct task_struct *tsk)
+{
+}
+static inline void inc_syscw(struct task_struct *tsk)
+{
+}
 #include <linux/file.h>
 #include <linux/uio.h>
 #include <linux/fsnotify.h>
@@ -42,30 +50,29 @@ loff_t vfs_setpos(struct file *file, loff_t offset, loff_t maxsize)
 	return offset;
 }
 
-loff_t
-generic_file_llseek_size(struct file *file, loff_t offset, int whence,
-		loff_t maxsize, loff_t eof)
+loff_t generic_file_llseek_size(struct file *file, loff_t offset, int whence,
+				loff_t maxsize, loff_t eof)
 {
 	switch (whence) {
 	case SEEK_END:
 		offset += eof;
 		break;
 	case SEEK_CUR:
-		 
+
 		if (offset == 0)
 			return file->f_pos;
-		 
+
 		spin_lock(&file->f_lock);
 		offset = vfs_setpos(file, file->f_pos + offset, maxsize);
 		spin_unlock(&file->f_lock);
 		return offset;
 	case SEEK_DATA:
-		 
+
 		if ((unsigned long long)offset >= eof)
 			return -ENXIO;
 		break;
 	case SEEK_HOLE:
-		 
+
 		if ((unsigned long long)offset >= eof)
 			return -ENXIO;
 		offset = eof;
@@ -94,7 +101,6 @@ loff_t no_llseek(struct file *file, loff_t offset, int whence)
 	return -ESPIPE;
 }
 
-
 loff_t vfs_llseek(struct file *file, loff_t offset, int whence)
 {
 	loff_t (*fn)(struct file *, loff_t, int);
@@ -119,7 +125,7 @@ static off_t ksys_lseek(unsigned int fd, off_t offset, unsigned int whence)
 		loff_t res = vfs_llseek(f.file, offset, whence);
 		retval = res;
 		if (res != (loff_t)retval)
-			retval = -EOVERFLOW;	 
+			retval = -EOVERFLOW;
 	}
 	fdput_pos(f);
 	return retval;
@@ -129,7 +135,6 @@ SYSCALL_DEFINE3(lseek, unsigned int, fd, off_t, offset, unsigned int, whence)
 {
 	return ksys_lseek(fd, offset, whence);
 }
-
 
 #if !defined(CONFIG_64BIT) || defined(CONFIG_COMPAT) || \
 	defined(__ARCH_WANT_SYS_LLSEEK)
@@ -148,8 +153,8 @@ SYSCALL_DEFINE5(llseek, unsigned int, fd, unsigned long, offset_high,
 	if (whence > SEEK_MAX)
 		goto out_putf;
 
-	offset = vfs_llseek(f.file, ((loff_t) offset_high << 32) | offset_low,
-			whence);
+	offset = vfs_llseek(f.file, ((loff_t)offset_high << 32) | offset_low,
+			    whence);
 
 	retval = (int)offset;
 	if (offset >= 0) {
@@ -163,13 +168,14 @@ out_putf:
 }
 #endif
 
-int rw_verify_area(int read_write, struct file *file, const loff_t *ppos, size_t count)
+int rw_verify_area(int read_write, struct file *file, const loff_t *ppos,
+		   size_t count)
 {
-	 
 	return 0;
 }
 
-static ssize_t new_sync_read(struct file *filp, char __user *buf, size_t len, loff_t *ppos)
+static ssize_t new_sync_read(struct file *filp, char __user *buf, size_t len,
+			     loff_t *ppos)
 {
 	struct iovec iov = { .iov_base = buf, .iov_len = len };
 	struct kiocb kiocb;
@@ -198,8 +204,8 @@ static int warn_unsupported(struct file *file, const char *op)
 ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
 {
 	struct kvec iov = {
-		.iov_base	= buf,
-		.iov_len	= min_t(size_t, count, MAX_RW_COUNT),
+		.iov_base = buf,
+		.iov_len = min_t(size_t, count, MAX_RW_COUNT),
 	};
 	struct kiocb kiocb;
 	struct iov_iter iter;
@@ -209,7 +215,7 @@ ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
 		return -EINVAL;
 	if (!(file->f_mode & FMODE_CAN_READ))
 		return -EINVAL;
-	 
+
 	if (unlikely(!file->f_op->read_iter || file->f_op->read))
 		return warn_unsupported(file, "read");
 
@@ -252,7 +258,7 @@ ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
 	if (ret)
 		return ret;
 	if (count > MAX_RW_COUNT)
-		count =  MAX_RW_COUNT;
+		count = MAX_RW_COUNT;
 
 	if (file->f_op->read)
 		ret = file->f_op->read(file, buf, count, pos);
@@ -268,7 +274,8 @@ ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
 	return ret;
 }
 
-static ssize_t new_sync_write(struct file *filp, const char __user *buf, size_t len, loff_t *ppos)
+static ssize_t new_sync_write(struct file *filp, const char __user *buf,
+			      size_t len, loff_t *ppos)
 {
 	struct iovec iov = { .iov_base = (void __user *)buf, .iov_len = len };
 	struct kiocb kiocb;
@@ -286,11 +293,12 @@ static ssize_t new_sync_write(struct file *filp, const char __user *buf, size_t 
 	return ret;
 }
 
-ssize_t __kernel_write(struct file *file, const void *buf, size_t count, loff_t *pos)
+ssize_t __kernel_write(struct file *file, const void *buf, size_t count,
+		       loff_t *pos)
 {
 	struct kvec iov = {
-		.iov_base	= (void *)buf,
-		.iov_len	= min_t(size_t, count, MAX_RW_COUNT),
+		.iov_base = (void *)buf,
+		.iov_len = min_t(size_t, count, MAX_RW_COUNT),
 	};
 	struct kiocb kiocb;
 	struct iov_iter iter;
@@ -300,7 +308,7 @@ ssize_t __kernel_write(struct file *file, const void *buf, size_t count, loff_t 
 		return -EBADF;
 	if (!(file->f_mode & FMODE_CAN_WRITE))
 		return -EINVAL;
-	 
+
 	if (unlikely(!file->f_op->write_iter || file->f_op->write))
 		return warn_unsupported(file, "write");
 
@@ -319,7 +327,7 @@ ssize_t __kernel_write(struct file *file, const void *buf, size_t count, loff_t 
 }
 
 ssize_t kernel_write(struct file *file, const void *buf, size_t count,
-			    loff_t *pos)
+		     loff_t *pos)
 {
 	ssize_t ret;
 
@@ -328,12 +336,13 @@ ssize_t kernel_write(struct file *file, const void *buf, size_t count,
 		return ret;
 
 	file_start_write(file);
-	ret =  __kernel_write(file, buf, count, pos);
+	ret = __kernel_write(file, buf, count, pos);
 	file_end_write(file);
 	return ret;
 }
 
-ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_t *pos)
+ssize_t vfs_write(struct file *file, const char __user *buf, size_t count,
+		  loff_t *pos)
 {
 	ssize_t ret;
 
@@ -348,7 +357,7 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
 	if (ret)
 		return ret;
 	if (count > MAX_RW_COUNT)
-		count =  MAX_RW_COUNT;
+		count = MAX_RW_COUNT;
 	file_start_write(file);
 	if (file->f_op->write)
 		ret = file->f_op->write(file, buf, count, pos);
@@ -389,8 +398,8 @@ SYSCALL_DEFINE3(read, unsigned int, fd, char __user *, buf, size_t, count)
 	return ret;
 }
 
-SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf,
-		size_t, count)
+SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf, size_t,
+		count)
 {
 	struct fd f = fdget_pos(fd);
 	ssize_t ret = -EBADF;
@@ -416,25 +425,23 @@ ssize_t ksys_pread64(unsigned int fd, char __user *buf, size_t count,
 	return -ENOSYS;
 }
 
-SYSCALL_DEFINE4(pread64, unsigned int, fd, char __user *, buf,
-			size_t, count, loff_t, pos)
+SYSCALL_DEFINE4(pread64, unsigned int, fd, char __user *, buf, size_t, count,
+		loff_t, pos)
 {
 	return ksys_pread64(fd, buf, count, pos);
 }
 
-
-ssize_t ksys_pwrite64(unsigned int fd, const char __user *buf,
-		      size_t count, loff_t pos)
+ssize_t ksys_pwrite64(unsigned int fd, const char __user *buf, size_t count,
+		      loff_t pos)
 {
 	return -ENOSYS;
 }
 
-SYSCALL_DEFINE4(pwrite64, unsigned int, fd, const char __user *, buf,
-			 size_t, count, loff_t, pos)
+SYSCALL_DEFINE4(pwrite64, unsigned int, fd, const char __user *, buf, size_t,
+		count, loff_t, pos)
 {
 	return ksys_pwrite64(fd, buf, count, pos);
 }
-
 
 static ssize_t do_readv(unsigned long fd, const struct iovec __user *vec,
 			unsigned long vlen, rwf_t flags)
@@ -447,7 +454,6 @@ static ssize_t do_writev(unsigned long fd, const struct iovec __user *vec,
 {
 	return -ENOSYS;
 }
-
 
 SYSCALL_DEFINE3(readv, unsigned long, fd, const struct iovec __user *, vec,
 		unsigned long, vlen)
@@ -489,20 +495,21 @@ SYSCALL_DEFINE6(pwritev2, unsigned long, fd, const struct iovec __user *, vec,
 	return -ENOSYS;
 }
 
-
-SYSCALL_DEFINE4(sendfile, int, out_fd, int, in_fd, off_t __user *, offset, size_t, count)
+SYSCALL_DEFINE4(sendfile, int, out_fd, int, in_fd, off_t __user *, offset,
+		size_t, count)
 {
 	return -ENOSYS;
 }
 
-SYSCALL_DEFINE4(sendfile64, int, out_fd, int, in_fd, loff_t __user *, offset, size_t, count)
+SYSCALL_DEFINE4(sendfile64, int, out_fd, int, in_fd, loff_t __user *, offset,
+		size_t, count)
 {
 	return -ENOSYS;
 }
 
-SYSCALL_DEFINE6(copy_file_range, int, fd_in, loff_t __user *, off_in,
-		int, fd_out, loff_t __user *, off_out,
-		size_t, len, unsigned int, flags)
+SYSCALL_DEFINE6(copy_file_range, int, fd_in, loff_t __user *, off_in, int,
+		fd_out, loff_t __user *, off_out, size_t, len, unsigned int,
+		flags)
 {
 	return -ENOSYS;
 }
@@ -512,4 +519,3 @@ ssize_t generic_write_checks(struct kiocb *iocb, struct iov_iter *from)
 	iov_iter_truncate(from, iov_iter_count(from));
 	return iov_iter_count(from);
 }
-

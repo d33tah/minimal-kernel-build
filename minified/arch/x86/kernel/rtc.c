@@ -18,7 +18,10 @@ volatile unsigned long cmos_lock;
 DEFINE_SPINLOCK(rtc_lock);
 
 /* mach_set_rtc_mmss stubbed - x86_platform.set_wallclock is never called */
-int mach_set_rtc_mmss(const struct timespec64 *now) { return -EINVAL; }
+int mach_set_rtc_mmss(const struct timespec64 *now)
+{
+	return -EINVAL;
+}
 
 void mach_get_cmos_time(struct timespec64 *now)
 {
@@ -27,7 +30,6 @@ void mach_get_cmos_time(struct timespec64 *now)
 
 	spin_lock_irqsave(&rtc_lock, flags);
 
-	 
 	while ((CMOS_READ(RTC_FREQ_SELECT) & RTC_UIP))
 		cpu_relax();
 
@@ -37,7 +39,6 @@ void mach_get_cmos_time(struct timespec64 *now)
 	day = CMOS_READ(RTC_DAY_OF_MONTH);
 	mon = CMOS_READ(RTC_MONTH);
 	year = CMOS_READ(RTC_YEAR);
-
 
 	status = CMOS_READ(RTC_CONTROL);
 	WARN_ON_ONCE(RTC_ALWAYS_BCD && (status & RTC_DM_BINARY));
@@ -76,14 +77,14 @@ unsigned char rtc_cmos_read(unsigned char addr)
 }
 
 /* rtc_cmos_write stubbed - mc146818_set_time (only caller) is now a stub */
-void rtc_cmos_write(unsigned char val, unsigned char addr) { }
-
+void rtc_cmos_write(unsigned char val, unsigned char addr)
+{
+}
 
 void read_persistent_clock64(struct timespec64 *ts)
 {
 	x86_platform.get_wallclock(ts);
 }
-
 
 /* Stub: RTC platform device registration not needed for minimal kernel */
 static __init int add_rtc_cmos(void)

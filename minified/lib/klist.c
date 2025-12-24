@@ -3,13 +3,13 @@
 #include <linux/export.h>
 #include <linux/sched.h>
 
-#define KNODE_DEAD		1LU
-#define KNODE_KLIST_MASK	~KNODE_DEAD
+#define KNODE_DEAD 1LU
+#define KNODE_KLIST_MASK ~KNODE_DEAD
 
 static struct klist *knode_klist(struct klist_node *knode)
 {
-	return (struct klist *)
-		((unsigned long)knode->n_klist & KNODE_KLIST_MASK);
+	return (struct klist *)((unsigned long)knode->n_klist &
+				KNODE_KLIST_MASK);
 }
 
 static bool knode_dead(struct klist_node *knode)
@@ -20,13 +20,12 @@ static bool knode_dead(struct klist_node *knode)
 static void knode_set_klist(struct klist_node *knode, struct klist *klist)
 {
 	knode->n_klist = klist;
-	 
+
 	WARN_ON(knode_dead(knode));
 }
 
 static void knode_kill(struct klist_node *knode)
 {
-	 
 	WARN_ON(knode_dead(knode));
 	*(unsigned long *)&knode->n_klist |= KNODE_DEAD;
 }

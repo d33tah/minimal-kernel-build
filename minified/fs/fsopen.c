@@ -11,8 +11,9 @@ SYSCALL_DEFINE2(fsopen, const char __user *, _fs_name, unsigned int, flags)
 	return -ENOSYS;
 }
 
-// Stub: fspick - new mount API not needed  
-SYSCALL_DEFINE3(fspick, int, dfd, const char __user *, path, unsigned int, flags)
+// Stub: fspick - new mount API not needed
+SYSCALL_DEFINE3(fspick, int, dfd, const char __user *, path, unsigned int,
+		flags)
 {
 	return -ENOSYS;
 }

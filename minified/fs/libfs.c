@@ -11,7 +11,10 @@
 #include <linux/namei.h>
 #include <linux/writeback.h>
 
-static inline int sync_mapping_buffers(struct address_space *mapping) { return 0; }
+static inline int sync_mapping_buffers(struct address_space *mapping)
+{
+	return 0;
+}
 #include <linux/fs_context.h>
 #include <linux/fsnotify.h>
 
@@ -48,7 +51,8 @@ const struct dentry_operations simple_dentry_operations = {
 	.d_delete = always_delete_dentry,
 };
 
-struct dentry *simple_lookup(struct inode *dir, struct dentry *dentry, unsigned int flags)
+struct dentry *simple_lookup(struct inode *dir, struct dentry *dentry,
+			     unsigned int flags)
 {
 	if (dentry->d_name.len > NAME_MAX)
 		return ERR_PTR(-ENAMETOOLONG);
@@ -71,17 +75,15 @@ int dcache_dir_close(struct inode *inode, struct file *file)
 	return 0;
 }
 
-static struct dentry *scan_positives(struct dentry *cursor,
-					struct list_head *p,
-					loff_t count,
-					struct dentry *last)
+static struct dentry *scan_positives(struct dentry *cursor, struct list_head *p,
+				     loff_t count, struct dentry *last)
 {
 	struct dentry *dentry = cursor->d_parent, *found = NULL;
 
 	spin_lock(&dentry->d_lock);
 	while ((p = p->next) != &dentry->d_subdirs) {
 		struct dentry *d = list_entry(p, struct dentry, d_child);
-		 
+
 		if (d->d_flags & DCACHE_DENTRY_CURSOR)
 			continue;
 		if (simple_positive(d) && !--count) {
@@ -110,15 +112,15 @@ loff_t dcache_dir_lseek(struct file *file, loff_t offset, int whence)
 {
 	struct dentry *dentry = file->f_path.dentry;
 	switch (whence) {
-		case 1:
-			offset += file->f_pos;
-			fallthrough;
-		case 0:
-			if (offset >= 0)
-				break;
-			fallthrough;
-		default:
-			return -EINVAL;
+	case 1:
+		offset += file->f_pos;
+		fallthrough;
+	case 0:
+		if (offset >= 0)
+			break;
+		fallthrough;
+	default:
+		return -EINVAL;
 	}
 	if (offset != file->f_pos) {
 		struct dentry *cursor = file->private_data;
@@ -148,7 +150,6 @@ static inline unsigned char dt_type(struct inode *inode)
 {
 	return (inode->i_mode >> 12) & 15;
 }
-
 
 int dcache_readdir(struct file *file, struct dir_context *ctx)
 {
@@ -186,22 +187,23 @@ int dcache_readdir(struct file *file, struct dir_context *ctx)
 	return 0;
 }
 
-ssize_t generic_read_dir(struct file *filp, char __user *buf, size_t siz, loff_t *ppos)
+ssize_t generic_read_dir(struct file *filp, char __user *buf, size_t siz,
+			 loff_t *ppos)
 {
 	return -EISDIR;
 }
 
 const struct file_operations simple_dir_operations = {
-	.open		= dcache_dir_open,
-	.release	= dcache_dir_close,
-	.llseek		= dcache_dir_lseek,
-	.read		= generic_read_dir,
-	.iterate_shared	= dcache_readdir,
-	.fsync		= noop_fsync,
+	.open = dcache_dir_open,
+	.release = dcache_dir_close,
+	.llseek = dcache_dir_lseek,
+	.read = generic_read_dir,
+	.iterate_shared = dcache_readdir,
+	.fsync = noop_fsync,
 };
 
 static const struct super_operations simple_super_operations = {
-	.statfs		= simple_statfs,
+	.statfs = simple_statfs,
 };
 
 static int pseudo_fs_fill_super(struct super_block *s, struct fs_context *fc)
@@ -220,7 +222,6 @@ static int pseudo_fs_fill_super(struct super_block *s, struct fs_context *fc)
 	if (!root)
 		return -ENOMEM;
 
-	 
 	root->i_ino = 1;
 	root->i_mode = S_IFDIR | S_IRUSR | S_IWUSR;
 	root->i_atime = root->i_mtime = root->i_ctime = current_time(root);
@@ -242,12 +243,12 @@ static void pseudo_fs_free(struct fs_context *fc)
 }
 
 static const struct fs_context_operations pseudo_fs_context_ops = {
-	.free		= pseudo_fs_free,
-	.get_tree	= pseudo_fs_get_tree,
+	.free = pseudo_fs_free,
+	.get_tree = pseudo_fs_get_tree,
 };
 
 struct pseudo_fs_context *init_pseudo(struct fs_context *fc,
-					unsigned long magic)
+				      unsigned long magic)
 {
 	struct pseudo_fs_context *ctx;
 
@@ -262,8 +263,8 @@ struct pseudo_fs_context *init_pseudo(struct fs_context *fc,
 	return ctx;
 }
 
-
-int simple_link(struct dentry *old_dentry, struct inode *dir, struct dentry *dentry)
+int simple_link(struct dentry *old_dentry, struct inode *dir,
+		struct dentry *dentry)
 {
 	struct inode *inode = d_inode(old_dentry);
 
@@ -317,8 +318,13 @@ int simple_rmdir(struct inode *dir, struct dentry *dentry)
 }
 
 /* Stub: simple_rename_exchange only used internally */
-static int simple_rename_exchange(struct inode *old_dir, struct dentry *old_dentry,
-			   struct inode *new_dir, struct dentry *new_dentry) { return -EINVAL; }
+static int simple_rename_exchange(struct inode *old_dir,
+				  struct dentry *old_dentry,
+				  struct inode *new_dir,
+				  struct dentry *new_dentry)
+{
+	return -EINVAL;
+}
 
 int simple_rename(struct user_namespace *mnt_userns, struct inode *old_dir,
 		  struct dentry *old_dentry, struct inode *new_dir,
@@ -331,7 +337,8 @@ int simple_rename(struct user_namespace *mnt_userns, struct inode *old_dir,
 		return -EINVAL;
 
 	if (flags & RENAME_EXCHANGE)
-		return simple_rename_exchange(old_dir, old_dentry, new_dir, new_dentry);
+		return simple_rename_exchange(old_dir, old_dentry, new_dir,
+					      new_dentry);
 
 	if (!simple_empty(new_dentry))
 		return -ENOTEMPTY;
@@ -380,8 +387,8 @@ static int simple_read_folio(struct file *file, struct folio *folio)
 }
 
 int simple_write_begin(struct file *file, struct address_space *mapping,
-			loff_t pos, unsigned len,
-			struct page **pagep, void **fsdata)
+		       loff_t pos, unsigned len, struct page **pagep,
+		       void **fsdata)
 {
 	struct page *page;
 	pgoff_t index;
@@ -403,13 +410,12 @@ int simple_write_begin(struct file *file, struct address_space *mapping,
 }
 
 static int simple_write_end(struct file *file, struct address_space *mapping,
-			loff_t pos, unsigned len, unsigned copied,
-			struct page *page, void *fsdata)
+			    loff_t pos, unsigned len, unsigned copied,
+			    struct page *page, void *fsdata)
 {
 	struct inode *inode = page->mapping->host;
 	loff_t last_pos = pos + copied;
 
-	 
 	if (!PageUptodate(page)) {
 		if (copied < len) {
 			unsigned from = pos & (PAGE_SIZE - 1);
@@ -418,7 +424,7 @@ static int simple_write_end(struct file *file, struct address_space *mapping,
 		}
 		SetPageUptodate(page);
 	}
-	 
+
 	if (last_pos > inode->i_size)
 		i_size_write(inode, last_pos);
 
@@ -430,15 +436,16 @@ static int simple_write_end(struct file *file, struct address_space *mapping,
 }
 
 const struct address_space_operations ram_aops = {
-	.read_folio	= simple_read_folio,
-	.write_begin	= simple_write_begin,
-	.write_end	= simple_write_end,
-	.dirty_folio	= noop_dirty_folio,
+	.read_folio = simple_read_folio,
+	.write_begin = simple_write_begin,
+	.write_end = simple_write_end,
+	.dirty_folio = noop_dirty_folio,
 };
 
 static DEFINE_SPINLOCK(pin_fs_lock);
 
-int simple_pin_fs(struct file_system_type *type, struct vfsmount **mount, int *count)
+int simple_pin_fs(struct file_system_type *type, struct vfsmount **mount,
+		  int *count)
 {
 	struct vfsmount *mnt = NULL;
 	spin_lock(&pin_fs_lock);
@@ -477,12 +484,10 @@ int noop_fsync(struct file *file, loff_t start, loff_t end, int datasync)
 	return 0;
 }
 
-
-
 struct inode *alloc_anon_inode(struct super_block *s)
 {
 	static const struct address_space_operations anon_aops = {
-		.dirty_folio	= noop_dirty_folio,
+		.dirty_folio = noop_dirty_folio,
 	};
 	struct inode *inode = new_inode_pseudo(s);
 
@@ -492,7 +497,6 @@ struct inode *alloc_anon_inode(struct super_block *s)
 	inode->i_ino = get_next_ino();
 	inode->i_mapping->a_ops = &anon_aops;
 
-	 
 	inode->i_state = I_DIRTY;
 	inode->i_mode = S_IRUSR | S_IWUSR;
 	inode->i_uid = current_fsuid();
@@ -502,7 +506,8 @@ struct inode *alloc_anon_inode(struct super_block *s)
 	return inode;
 }
 
-static struct dentry *empty_dir_lookup(struct inode *dir, struct dentry *dentry, unsigned int flags)
+static struct dentry *empty_dir_lookup(struct inode *dir, struct dentry *dentry,
+				       unsigned int flags)
 {
 	return ERR_PTR(-ENOENT);
 }
@@ -522,22 +527,22 @@ static int empty_dir_setattr(struct user_namespace *mnt_userns,
 	return -EPERM;
 }
 
-static ssize_t empty_dir_listxattr(struct dentry *dentry, char *list, size_t size)
+static ssize_t empty_dir_listxattr(struct dentry *dentry, char *list,
+				   size_t size)
 {
 	return -EOPNOTSUPP;
 }
 
 static const struct inode_operations empty_dir_inode_operations = {
-	.lookup		= empty_dir_lookup,
-	.permission	= generic_permission,
-	.setattr	= empty_dir_setattr,
-	.getattr	= empty_dir_getattr,
-	.listxattr	= empty_dir_listxattr,
+	.lookup = empty_dir_lookup,
+	.permission = generic_permission,
+	.setattr = empty_dir_setattr,
+	.getattr = empty_dir_getattr,
+	.listxattr = empty_dir_listxattr,
 };
 
 static loff_t empty_dir_llseek(struct file *file, loff_t offset, int whence)
 {
-	 
 	return generic_file_llseek_size(file, offset, whence, 2, 2);
 }
 
@@ -548,17 +553,14 @@ static int empty_dir_readdir(struct file *file, struct dir_context *ctx)
 }
 
 static const struct file_operations empty_dir_operations = {
-	.llseek		= empty_dir_llseek,
-	.read		= generic_read_dir,
-	.iterate_shared	= empty_dir_readdir,
-	.fsync		= noop_fsync,
+	.llseek = empty_dir_llseek,
+	.read = generic_read_dir,
+	.iterate_shared = empty_dir_readdir,
+	.fsync = noop_fsync,
 };
-
 
 bool is_empty_dir_inode(struct inode *inode)
 {
 	return (inode->i_fop == &empty_dir_operations) &&
-		(inode->i_op == &empty_dir_inode_operations);
+	       (inode->i_op == &empty_dir_inode_operations);
 }
-
-

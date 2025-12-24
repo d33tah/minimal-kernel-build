@@ -24,41 +24,38 @@ asmlinkage noinstr void __noreturn doublefault_shim(void)
 
 	cr2 = native_read_cr2();
 
-	 
 	force_reload_TR();
 	set_df_gdt_entry(smp_processor_id());
 
 	trace_hardirqs_off();
 
-	 
-	regs.ss		= TSS(ss);
-	regs.__ssh	= 0;
-	regs.sp		= TSS(sp);
-	regs.flags	= TSS(flags);
-	regs.cs		= TSS(cs);
-	 
-	regs.__csh	= 0;
-	regs.ip		= TSS(ip);
-	regs.orig_ax	= 0;
-	regs.gs		= TSS(gs);
-	regs.__gsh	= 0;
-	regs.fs		= TSS(fs);
-	regs.__fsh	= 0;
-	regs.es		= TSS(es);
-	regs.__esh	= 0;
-	regs.ds		= TSS(ds);
-	regs.__dsh	= 0;
-	regs.ax		= TSS(ax);
-	regs.bp		= TSS(bp);
-	regs.di		= TSS(di);
-	regs.si		= TSS(si);
-	regs.dx		= TSS(dx);
-	regs.cx		= TSS(cx);
-	regs.bx		= TSS(bx);
+	regs.ss = TSS(ss);
+	regs.__ssh = 0;
+	regs.sp = TSS(sp);
+	regs.flags = TSS(flags);
+	regs.cs = TSS(cs);
+
+	regs.__csh = 0;
+	regs.ip = TSS(ip);
+	regs.orig_ax = 0;
+	regs.gs = TSS(gs);
+	regs.__gsh = 0;
+	regs.fs = TSS(fs);
+	regs.__fsh = 0;
+	regs.es = TSS(es);
+	regs.__esh = 0;
+	regs.ds = TSS(ds);
+	regs.__dsh = 0;
+	regs.ax = TSS(ax);
+	regs.bp = TSS(bp);
+	regs.di = TSS(di);
+	regs.si = TSS(si);
+	regs.dx = TSS(dx);
+	regs.cx = TSS(cx);
+	regs.bx = TSS(bx);
 
 	exc_double_fault(&regs, 0, cr2);
 
-	 
 	panic("cannot return from double fault\n");
 }
 
@@ -83,10 +80,8 @@ DEFINE_PER_CPU_PAGE_ALIGNED(struct doublefault_stack, doublefault_stack) = {
 
 static void set_df_gdt_entry(unsigned int cpu)
 {
-	 
 	__set_tss_desc(cpu, GDT_ENTRY_DOUBLEFAULT_TSS,
 		       &get_cpu_entry_area(cpu)->doublefault_stack.tss);
-
 }
 
 void doublefault_init_cpu_tss(void)
@@ -94,10 +89,9 @@ void doublefault_init_cpu_tss(void)
 	unsigned int cpu = smp_processor_id();
 	struct cpu_entry_area *cea = get_cpu_entry_area(cpu);
 
-	 
-        this_cpu_write(doublefault_stack.tss.sp,
-                       (unsigned long)&cea->doublefault_stack.stack +
-                       sizeof(doublefault_stack.stack));
+	this_cpu_write(doublefault_stack.tss.sp,
+		       (unsigned long)&cea->doublefault_stack.stack +
+			       sizeof(doublefault_stack.stack));
 
 	set_df_gdt_entry(cpu);
 }

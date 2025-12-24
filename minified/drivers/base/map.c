@@ -113,7 +113,7 @@ retry:
 		}
 		mutex_unlock(domain->lock);
 		kobj = probe(dev, index, data);
-		 
+
 		module_put(owner);
 		if (kobj)
 			return kobj;

@@ -17,14 +17,11 @@ int main(int argc, char *argv[])
 		goto bail;
 	}
 
-	 
-
 	f = fopen(argv[1], "r");
 	if (!f) {
 		perror(argv[1]);
 		goto bail;
 	}
-
 
 	if (fseek(f, -4L, SEEK_END)) {
 		perror(argv[1]);

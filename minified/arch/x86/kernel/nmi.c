@@ -23,14 +23,12 @@
 #include <asm/nospec-branch.h>
 #include <asm/sev.h>
 
-
 struct nmi_desc {
 	raw_spinlock_t lock;
 	struct list_head head;
 };
 
-static struct nmi_desc nmi_desc[NMI_MAX] = 
-{
+static struct nmi_desc nmi_desc[NMI_MAX] = {
 	{
 		.lock = __RAW_SPIN_LOCK_UNLOCKED(&nmi_desc[0].lock),
 		.head = LIST_HEAD_INIT(nmi_desc[0].head),
@@ -64,7 +62,6 @@ static int ignore_nmis __read_mostly;
 int unknown_nmi_panic;
 static DEFINE_RAW_SPINLOCK(nmi_reason_lock);
 
-
 #define nmi_to_desc(type) (&nmi_desc[type])
 
 /* Stub: nmi_warning_debugfs and nmi_check_duration not needed for minimal kernel */
@@ -73,7 +70,7 @@ static int nmi_handle(unsigned int type, struct pt_regs *regs)
 {
 	struct nmi_desc *desc = nmi_to_desc(type);
 	struct nmiaction *a;
-	int handled=0;
+	int handled = 0;
 
 	rcu_read_lock();
 
@@ -97,11 +94,9 @@ int __register_nmi_handler(unsigned int type, struct nmiaction *action)
 
 	raw_spin_lock_irqsave(&desc->lock, flags);
 
-	 
 	WARN_ON_ONCE(type == NMI_SERR && !list_empty(&desc->head));
 	WARN_ON_ONCE(type == NMI_IO_CHECK && !list_empty(&desc->head));
 
-	 
 	if (action->flags & NMI_FLAG_FIRST)
 		list_add_rcu(&action->list, &desc->head);
 	else
@@ -111,10 +106,8 @@ int __register_nmi_handler(unsigned int type, struct nmiaction *action)
 	return 0;
 }
 
-static void
-pci_serr_error(unsigned char reason, struct pt_regs *regs)
+static void pci_serr_error(unsigned char reason, struct pt_regs *regs)
 {
-	 
 	if (nmi_handle(NMI_SERR, regs))
 		return;
 
@@ -126,34 +119,29 @@ pci_serr_error(unsigned char reason, struct pt_regs *regs)
 
 	pr_emerg("Dazed and confused, but trying to continue\n");
 
-	 
 	reason = (reason & NMI_REASON_CLEAR_MASK) | NMI_REASON_CLEAR_SERR;
 	outb(reason, NMI_REASON_PORT);
 }
 NOKPROBE_SYMBOL(pci_serr_error);
 
-static void
-io_check_error(unsigned char reason, struct pt_regs *regs)
+static void io_check_error(unsigned char reason, struct pt_regs *regs)
 {
 	unsigned long i;
 
-	 
 	if (nmi_handle(NMI_IO_CHECK, regs))
 		return;
 
 	pr_emerg(
-	"NMI: IOCK error (debug interrupt?) for reason %02x on CPU %d.\n",
-		 reason, smp_processor_id());
+		"NMI: IOCK error (debug interrupt?) for reason %02x on CPU %d.\n",
+		reason, smp_processor_id());
 	show_regs(regs);
 
 	if (panic_on_io_nmi) {
 		nmi_panic(regs, "NMI IOCK error: Not continuing");
 
-		 
 		return;
 	}
 
-	 
 	reason = (reason & NMI_REASON_CLEAR_MASK) | NMI_REASON_CLEAR_IOCHK;
 	outb(reason, NMI_REASON_PORT);
 
@@ -168,12 +156,10 @@ io_check_error(unsigned char reason, struct pt_regs *regs)
 }
 NOKPROBE_SYMBOL(io_check_error);
 
-static void
-unknown_nmi_error(unsigned char reason, struct pt_regs *regs)
+static void unknown_nmi_error(unsigned char reason, struct pt_regs *regs)
 {
 	int handled;
 
-	 
 	handled = nmi_handle(NMI_UNKNOWN, regs);
 	if (handled) {
 		__this_cpu_add(nmi_stats.unknown, handled);
@@ -201,9 +187,6 @@ static noinstr void default_do_nmi(struct pt_regs *regs)
 	int handled;
 	bool b2b = false;
 
-	 
-
-	 
 	if (regs->ip == __this_cpu_read(last_nmi_rip))
 		b2b = true;
 	else
@@ -211,17 +194,14 @@ static noinstr void default_do_nmi(struct pt_regs *regs)
 
 	__this_cpu_write(last_nmi_rip, regs->ip);
 
-
 	handled = nmi_handle(NMI_LOCAL, regs);
 	__this_cpu_add(nmi_stats.normal, handled);
 	if (handled) {
-		 
 		if (handled > 1)
 			__this_cpu_write(swallow_nmi, true);
 		goto out;
 	}
 
-	 
 	while (!raw_spin_trylock(&nmi_reason_lock)) {
 		run_crash_ipi_callback(regs);
 		cpu_relax();
@@ -234,7 +214,7 @@ static noinstr void default_do_nmi(struct pt_regs *regs)
 			pci_serr_error(reason, regs);
 		else if (reason & NMI_REASON_IOCHK)
 			io_check_error(reason, regs);
-		 
+
 		reassert_nmi();
 		__this_cpu_add(nmi_stats.external, 1);
 		raw_spin_unlock(&nmi_reason_lock);
@@ -242,14 +222,12 @@ static noinstr void default_do_nmi(struct pt_regs *regs)
 	}
 	raw_spin_unlock(&nmi_reason_lock);
 
-	 
 	if (b2b && __this_cpu_read(swallow_nmi))
 		__this_cpu_add(nmi_stats.swallow, 1);
 	else
 		unknown_nmi_error(reason, regs);
 
-out:
-	;
+out:;
 }
 
 enum nmi_states {
@@ -265,7 +243,6 @@ DEFINE_IDTENTRY_RAW(exc_nmi)
 {
 	irqentry_state_t irq_state;
 
-	 
 	sev_es_nmi_complete();
 
 	if (this_cpu_read(nmi_state) != NMI_NOT_RUNNING) {
@@ -276,7 +253,6 @@ DEFINE_IDTENTRY_RAW(exc_nmi)
 	this_cpu_write(nmi_cr2, read_cr2());
 nmi_restart:
 
-	 
 	sev_es_ist_enter(regs);
 
 	this_cpu_write(nmi_dr7, local_db_save());

@@ -18,11 +18,12 @@ asmlinkage long sys_ni_posix_timers(void)
 }
 
 #ifndef SYS_NI
-#define SYS_NI(name)  SYSCALL_ALIAS(sys_##name, sys_ni_posix_timers)
+#define SYS_NI(name) SYSCALL_ALIAS(sys_##name, sys_ni_posix_timers)
 #endif
 
 #ifndef COMPAT_SYS_NI
-#define COMPAT_SYS_NI(name)  SYSCALL_ALIAS(compat_sys_##name, sys_ni_posix_timers)
+#define COMPAT_SYS_NI(name) \
+	SYSCALL_ALIAS(compat_sys_##name, sys_ni_posix_timers)
 #endif
 
 SYS_NI(timer_create);
@@ -37,7 +38,6 @@ SYS_NI(clock_adjtime32);
 #ifdef __ARCH_WANT_SYS_ALARM
 SYS_NI(alarm);
 #endif
-
 
 /* clock_settime stubbed - not needed for minimal kernel */
 SYSCALL_DEFINE2(clock_settime, const clockid_t, which_clock,
@@ -81,7 +81,8 @@ SYSCALL_DEFINE2(clock_gettime, const clockid_t, which_clock,
 	return 0;
 }
 
-SYSCALL_DEFINE2(clock_getres, const clockid_t, which_clock, struct __kernel_timespec __user *, tp)
+SYSCALL_DEFINE2(clock_getres, const clockid_t, which_clock,
+		struct __kernel_timespec __user *, tp)
 {
 	struct timespec64 rtn_tp = {
 		.tv_sec = 0,
@@ -127,11 +128,10 @@ SYSCALL_DEFINE4(clock_nanosleep, const clockid_t, which_clock, int, flags,
 	texp = timespec64_to_ktime(t);
 	if (flags & TIMER_ABSTIME)
 		texp = timens_ktime_to_host(which_clock, texp);
-	return hrtimer_nanosleep(texp, flags & TIMER_ABSTIME ?
-				 HRTIMER_MODE_ABS : HRTIMER_MODE_REL,
+	return hrtimer_nanosleep(texp,
+				 flags & TIMER_ABSTIME ? HRTIMER_MODE_ABS :
+							 HRTIMER_MODE_REL,
 				 which_clock);
 }
 
-
 /* CONFIG_COMPAT not defined */
-

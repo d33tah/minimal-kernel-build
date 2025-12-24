@@ -1,5 +1,5 @@
 
-#define pr_fmt(fmt)	"reboot: " fmt
+#define pr_fmt(fmt) "reboot: " fmt
 
 #include <linux/atomic.h>
 #include <linux/cpu.h>
@@ -55,19 +55,15 @@ void kernel_restart_prepare(char *cmd)
 
 void migrate_to_reboot_cpu(void)
 {
-	 
 	int cpu = reboot_cpu;
 
 	cpu_hotplug_disable();
 
-	 
 	if (!cpu_online(cpu))
 		cpu = cpumask_first(cpu_online_mask);
 
-	 
 	current->flags |= PF_NO_SETAFFINITY;
 
-	 
 	set_cpus_allowed_ptr(current, cpumask_of(cpu));
 }
 
@@ -86,7 +82,8 @@ void kernel_restart(char *cmd)
 
 static void kernel_shutdown_prepare(enum system_states state)
 {
-	blocking_notifier_call_chain(&reboot_notifier_list,
+	blocking_notifier_call_chain(
+		&reboot_notifier_list,
 		(state == SYSTEM_HALT) ? SYS_HALT : SYS_POWER_OFF, NULL);
 	system_state = state;
 	usermodehelper_disable();
@@ -108,8 +105,7 @@ static ATOMIC_NOTIFIER_HEAD(power_off_handler_list);
 
 /* Stubbed sys_off_handler infrastructure - not used externally */
 struct sys_off_handler *
-register_sys_off_handler(enum sys_off_mode mode,
-			 int priority,
+register_sys_off_handler(enum sys_off_mode mode, int priority,
 			 int (*callback)(struct sys_off_data *data),
 			 void *cb_data)
 {
@@ -137,7 +133,6 @@ void do_kernel_power_off(void)
 {
 	struct sys_off_handler *sys_off = NULL;
 
-	 
 	if (pm_power_off)
 		sys_off = register_sys_off_handler(SYS_OFF_MODE_POWER_OFF,
 						   SYS_OFF_PRIO_DEFAULT,
@@ -151,7 +146,7 @@ void do_kernel_power_off(void)
 bool kernel_can_power_off(void)
 {
 	return !atomic_notifier_call_chain_is_empty(&power_off_handler_list) ||
-		pm_power_off;
+	       pm_power_off;
 }
 
 void kernel_power_off(void)
@@ -174,24 +169,18 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
 	char buffer[256];
 	int ret = 0;
 
-	 
 	if (!ns_capable(pid_ns->user_ns, CAP_SYS_BOOT))
 		return -EPERM;
 
-	 
 	if (magic1 != LINUX_REBOOT_MAGIC1 ||
-			(magic2 != LINUX_REBOOT_MAGIC2 &&
-			magic2 != LINUX_REBOOT_MAGIC2A &&
-			magic2 != LINUX_REBOOT_MAGIC2B &&
-			magic2 != LINUX_REBOOT_MAGIC2C))
+	    (magic2 != LINUX_REBOOT_MAGIC2 && magic2 != LINUX_REBOOT_MAGIC2A &&
+	     magic2 != LINUX_REBOOT_MAGIC2B && magic2 != LINUX_REBOOT_MAGIC2C))
 		return -EINVAL;
 
-	 
 	ret = reboot_pid_ns(pid_ns, cmd);
 	if (ret)
 		return ret;
 
-	 
 	if ((cmd == LINUX_REBOOT_CMD_POWER_OFF) && !kernel_can_power_off())
 		cmd = LINUX_REBOOT_CMD_HALT;
 
@@ -226,8 +215,6 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
 		kernel_restart(buffer);
 		break;
 
-
-
 	default:
 		ret = -EINVAL;
 		break;
@@ -235,6 +222,3 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
 	mutex_unlock(&system_transition_mutex);
 	return ret;
 }
-
-
-

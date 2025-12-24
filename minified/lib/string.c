@@ -21,7 +21,7 @@ char *strcpy(char *dest, const char *src)
 	char *tmp = dest;
 
 	while ((*dest++ = *src++) != '\0')
-		 ;
+		;
 	return tmp;
 }
 #endif
@@ -65,7 +65,6 @@ ssize_t strscpy(char *dest, const char *src, size_t count)
 	if (count == 0 || WARN_ON_ONCE(count > INT_MAX))
 		return -E2BIG;
 
-	 
 	if ((long)src & (sizeof(long) - 1)) {
 		size_t limit = PAGE_SIZE - ((long)src & (PAGE_SIZE - 1));
 		if (limit < max)
@@ -75,14 +74,15 @@ ssize_t strscpy(char *dest, const char *src, size_t count)
 	while (max >= sizeof(unsigned long)) {
 		unsigned long c, data;
 
-		c = read_word_at_a_time(src+res);
+		c = read_word_at_a_time(src + res);
 		if (has_zero(c, &data, &constants)) {
 			data = prep_zero_mask(c, data, &constants);
 			data = create_zero_mask(data);
-			*(unsigned long *)(dest+res) = c & zero_bytemask(data);
+			*(unsigned long *)(dest + res) = c &
+							 zero_bytemask(data);
 			return res + find_zero(data);
 		}
-		*(unsigned long *)(dest+res) = c;
+		*(unsigned long *)(dest + res) = c;
 		res += sizeof(unsigned long);
 		count -= sizeof(unsigned long);
 		max -= sizeof(unsigned long);
@@ -99,14 +99,12 @@ ssize_t strscpy(char *dest, const char *src, size_t count)
 		count--;
 	}
 
-	 
 	if (res)
-		dest[res-1] = '\0';
+		dest[res - 1] = '\0';
 
 	return -E2BIG;
 }
 #endif
-
 
 #ifndef __HAVE_ARCH_STRLCAT
 size_t strlcat(char *dest, const char *src, size_t count)
@@ -115,13 +113,12 @@ size_t strlcat(char *dest, const char *src, size_t count)
 	size_t len = strlen(src);
 	size_t res = dsize + len;
 
-	 
 	BUG_ON(dsize >= count);
 
 	dest += dsize;
 	count -= dsize;
 	if (len >= count)
-		len = count-1;
+		len = count - 1;
 	memcpy(dest, src, len);
 	dest[len] = 0;
 	return res;
@@ -173,7 +170,6 @@ char *strchr(const char *s, int c)
 }
 #endif
 
-
 #ifndef __HAVE_ARCH_STRRCHR
 char *strrchr(const char *s, int c)
 {
@@ -205,7 +201,7 @@ size_t strlen(const char *s)
 	const char *sc;
 
 	for (sc = s; *sc != '\0'; ++sc)
-		 ;
+		;
 	return sc - s;
 }
 #endif
@@ -216,11 +212,10 @@ size_t strnlen(const char *s, size_t count)
 	const char *sc;
 
 	for (sc = s; count-- && *sc != '\0'; ++sc)
-		 ;
+		;
 	return sc - s;
 }
 #endif
-
 
 #ifndef __HAVE_ARCH_STRPBRK
 char *strpbrk(const char *cs, const char *ct)
@@ -264,7 +259,6 @@ void *memset(void *s, int c, size_t count)
 	return s;
 }
 #endif
-
 
 #ifndef __HAVE_ARCH_MEMCPY
 void *memcpy(void *dest, const void *src, size_t count)
@@ -328,7 +322,6 @@ __visible int memcmp(const void *cs, const void *ct, size_t count)
 }
 #endif
 
-
 #ifndef __HAVE_ARCH_STRSTR
 char *strstr(const char *s1, const char *s2)
 {
@@ -353,7 +346,7 @@ void *memchr(const void *s, int c, size_t n)
 {
 	const unsigned char *p = s;
 	while (n-- != 0) {
-        	if ((unsigned char)c == *p++) {
+		if ((unsigned char)c == *p++) {
 			return (void *)(p - 1);
 		}
 	}

@@ -3,14 +3,17 @@
 #include <linux/vt_kern.h>
 #include <linux/module.h>
 
-
 /* x86 only - arm version removed */
-#define DUMMY_COLUMNS	CONFIG_DUMMY_CONSOLE_COLUMNS
-#define DUMMY_ROWS	CONFIG_DUMMY_CONSOLE_ROWS
+#define DUMMY_COLUMNS CONFIG_DUMMY_CONSOLE_COLUMNS
+#define DUMMY_ROWS CONFIG_DUMMY_CONSOLE_ROWS
 
-static void dummycon_putc(struct vc_data *vc, int c, int ypos, int xpos) { }
+static void dummycon_putc(struct vc_data *vc, int c, int ypos, int xpos)
+{
+}
 static void dummycon_putcs(struct vc_data *vc, const unsigned short *s,
-			   int count, int ypos, int xpos) { }
+			   int count, int ypos, int xpos)
+{
+}
 static int dummycon_blank(struct vc_data *vc, int blank, int mode_switch)
 {
 	return 0;
@@ -18,23 +21,29 @@ static int dummycon_blank(struct vc_data *vc, int blank, int mode_switch)
 
 static const char *dummycon_startup(void)
 {
-    return "dummy device";
+	return "dummy device";
 }
 
 static void dummycon_init(struct vc_data *vc, int init)
 {
-    vc->vc_can_do_color = 1;
-    if (init) {
-	vc->vc_cols = DUMMY_COLUMNS;
-	vc->vc_rows = DUMMY_ROWS;
-    } else
-	vc_resize(vc, DUMMY_COLUMNS, DUMMY_ROWS);
+	vc->vc_can_do_color = 1;
+	if (init) {
+		vc->vc_cols = DUMMY_COLUMNS;
+		vc->vc_rows = DUMMY_ROWS;
+	} else
+		vc_resize(vc, DUMMY_COLUMNS, DUMMY_ROWS);
 }
 
-static void dummycon_deinit(struct vc_data *vc) { }
+static void dummycon_deinit(struct vc_data *vc)
+{
+}
 static void dummycon_clear(struct vc_data *vc, int sy, int sx, int height,
-			   int width) { }
-static void dummycon_cursor(struct vc_data *vc, int mode) { }
+			   int width)
+{
+}
+static void dummycon_cursor(struct vc_data *vc, int mode)
+{
+}
 
 static bool dummycon_scroll(struct vc_data *vc, unsigned int top,
 			    unsigned int bottom, enum con_scroll dir,
@@ -48,17 +57,16 @@ static int dummycon_switch(struct vc_data *vc)
 	return 0;
 }
 
-
 const struct consw dummy_con = {
-	.owner =		THIS_MODULE,
-	.con_startup =	dummycon_startup,
-	.con_init =		dummycon_init,
-	.con_deinit =	dummycon_deinit,
-	.con_clear =	dummycon_clear,
-	.con_putc =		dummycon_putc,
-	.con_putcs =	dummycon_putcs,
-	.con_cursor =	dummycon_cursor,
-	.con_scroll =	dummycon_scroll,
-	.con_switch =	dummycon_switch,
-	.con_blank =	dummycon_blank,
+	.owner = THIS_MODULE,
+	.con_startup = dummycon_startup,
+	.con_init = dummycon_init,
+	.con_deinit = dummycon_deinit,
+	.con_clear = dummycon_clear,
+	.con_putc = dummycon_putc,
+	.con_putcs = dummycon_putcs,
+	.con_cursor = dummycon_cursor,
+	.con_scroll = dummycon_scroll,
+	.con_switch = dummycon_switch,
+	.con_blank = dummycon_blank,
 };

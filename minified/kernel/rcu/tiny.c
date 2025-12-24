@@ -17,16 +17,16 @@
 #include "rcu.h"
 
 struct rcu_ctrlblk {
-	struct rcu_head *rcucblist;	 
-	struct rcu_head **donetail;	 
-	struct rcu_head **curtail;	 
-	unsigned long gp_seq;		 
+	struct rcu_head *rcucblist;
+	struct rcu_head **donetail;
+	struct rcu_head **curtail;
+	unsigned long gp_seq;
 };
 
 static struct rcu_ctrlblk rcu_ctrlblk = {
-	.donetail	= &rcu_ctrlblk.rcucblist,
-	.curtail	= &rcu_ctrlblk.rcucblist,
-	.gp_seq		= 0 - 300UL,
+	.donetail = &rcu_ctrlblk.rcucblist,
+	.curtail = &rcu_ctrlblk.rcucblist,
+	.gp_seq = 0 - 300UL,
 };
 
 void rcu_barrier(void)
@@ -64,13 +64,11 @@ static inline bool rcu_reclaim_tiny(struct rcu_head *head)
 
 	rcu_lock_acquire(&rcu_callback_map);
 	if (__is_kvfree_rcu_offset(offset)) {
-		 
 		kvfree((void *)head - offset);
 		rcu_lock_release(&rcu_callback_map);
 		return true;
 	}
 
-	 
 	f = head->func;
 	WRITE_ONCE(head->func, (rcu_callback_t)0L);
 	f(head);
@@ -78,15 +76,14 @@ static inline bool rcu_reclaim_tiny(struct rcu_head *head)
 	return false;
 }
 
-static __latent_entropy void rcu_process_callbacks(struct softirq_action *unused)
+static __latent_entropy void
+rcu_process_callbacks(struct softirq_action *unused)
 {
 	struct rcu_head *next, *list;
 	unsigned long flags;
 
-	 
 	local_irq_save(flags);
 	if (rcu_ctrlblk.donetail == &rcu_ctrlblk.rcucblist) {
-		 
 		local_irq_restore(flags);
 		return;
 	}
@@ -98,7 +95,6 @@ static __latent_entropy void rcu_process_callbacks(struct softirq_action *unused
 	rcu_ctrlblk.donetail = &rcu_ctrlblk.rcucblist;
 	local_irq_restore(flags);
 
-	 
 	while (list) {
 		next = list->next;
 		prefetch(next);
@@ -112,10 +108,10 @@ static __latent_entropy void rcu_process_callbacks(struct softirq_action *unused
 
 void synchronize_rcu(void)
 {
-	RCU_LOCKDEP_WARN(lock_is_held(&rcu_bh_lock_map) ||
-			 lock_is_held(&rcu_lock_map) ||
-			 lock_is_held(&rcu_sched_lock_map),
-			 "Illegal synchronize_rcu() in RCU read-side critical section");
+	RCU_LOCKDEP_WARN(
+		lock_is_held(&rcu_bh_lock_map) || lock_is_held(&rcu_lock_map) ||
+			lock_is_held(&rcu_sched_lock_map),
+		"Illegal synchronize_rcu() in RCU read-side critical section");
 }
 
 void call_rcu(struct rcu_head *head, rcu_callback_t func)
@@ -132,7 +128,6 @@ void call_rcu(struct rcu_head *head, rcu_callback_t func)
 	local_irq_restore(flags);
 
 	if (unlikely(is_idle_task(current))) {
-		 
 		resched_cpu(0);
 	}
 }
@@ -147,7 +142,6 @@ unsigned long start_poll_synchronize_rcu(void)
 	unsigned long gp_seq = get_state_synchronize_rcu();
 
 	if (unlikely(is_idle_task(current))) {
-		 
 		resched_cpu(0);
 	}
 	return gp_seq;

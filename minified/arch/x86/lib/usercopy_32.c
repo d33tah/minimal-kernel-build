@@ -2,8 +2,8 @@
 #include <linux/uaccess.h>
 #include <asm/asm.h>
 
-
-static inline int __movsl_is_ok(unsigned long a1, unsigned long a2, unsigned long n)
+static inline int __movsl_is_ok(unsigned long a1, unsigned long a2,
+				unsigned long n)
 {
 	return 1;
 }
@@ -29,8 +29,7 @@ do {									\
 } while (0)
 /* clang-format on */
 
-unsigned long
-clear_user(void __user *to, unsigned long n)
+unsigned long clear_user(void __user *to, unsigned long n)
 {
 	might_fault();
 	if (access_ok(to, n))
@@ -38,16 +37,14 @@ clear_user(void __user *to, unsigned long n)
 	return n;
 }
 
-unsigned long
-__clear_user(void __user *to, unsigned long n)
+unsigned long __clear_user(void __user *to, unsigned long n)
 {
 	__do_clear_user(to, n);
 	return n;
 }
 
-
 unsigned long __copy_user_intel(void __user *to, const void *from,
-					unsigned long size);
+				unsigned long size);
 
 /* d33tah: disabled clang-format because extra spaces break inline asm */
 /* clang-format off */
@@ -90,8 +87,9 @@ unsigned long __copy_user_ll(void *to, const void *from, unsigned long n)
 	return n;
 }
 
-unsigned long __copy_from_user_ll_nocache_nozero(void *to, const void __user *from,
-					unsigned long n)
+unsigned long __copy_from_user_ll_nocache_nozero(void *to,
+						 const void __user *from,
+						 unsigned long n)
 {
 	__uaccess_begin_nospec();
 	__copy_user(to, from, n);

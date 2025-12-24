@@ -5,7 +5,9 @@
 #include <linux/nmi.h>
 #include <linux/percpu.h>
 #define CPU_PROFILING 1
-static inline void profile_tick(int type) { }
+static inline void profile_tick(int type)
+{
+}
 #include <linux/sched.h>
 #include <linux/module.h>
 
@@ -29,7 +31,6 @@ static void tick_periodic(int cpu)
 		raw_spin_lock(&jiffies_lock);
 		write_seqcount_begin(&jiffies_seq);
 
-		 
 		tick_next_period = ktime_add_ns(tick_next_period, TICK_NSEC);
 
 		do_timer(1);
@@ -49,16 +50,14 @@ void tick_handle_periodic(struct clock_event_device *dev)
 
 	tick_periodic(cpu);
 
-
 	if (!clockevent_state_oneshot(dev))
 		return;
 	for (;;) {
-		 
 		next = ktime_add_ns(next, TICK_NSEC);
 
 		if (!clockevents_program_event(dev, next, false))
 			return;
-		 
+
 		if (timekeeping_valid_for_hres())
 			tick_periodic(cpu);
 	}
@@ -68,7 +67,6 @@ void tick_setup_periodic(struct clock_event_device *dev, int broadcast)
 {
 	tick_set_periodic_handler(dev, broadcast);
 
-	 
 	if (!tick_device_is_functional(dev))
 		return;
 
@@ -94,7 +92,6 @@ void tick_setup_periodic(struct clock_event_device *dev, int broadcast)
 	}
 }
 
-
 static void tick_setup_device(struct tick_device *td,
 			      struct clock_event_device *newdev, int cpu,
 			      const struct cpumask *cpumask)
@@ -102,16 +99,13 @@ static void tick_setup_device(struct tick_device *td,
 	void (*handler)(struct clock_event_device *) = NULL;
 	ktime_t next_event = 0;
 
-	 
 	if (!td->evtdev) {
-		 
 		if (tick_do_timer_cpu == TICK_DO_TIMER_BOOT) {
 			tick_do_timer_cpu = cpu;
 
 			tick_next_period = ktime_get();
 		}
 
-		 
 		td->mode = TICKDEV_MODE_PERIODIC;
 	} else {
 		handler = td->evtdev->event_handler;
@@ -121,11 +115,9 @@ static void tick_setup_device(struct tick_device *td,
 
 	td->evtdev = newdev;
 
-	 
 	if (!cpumask_equal(newdev->cpumask, cpumask))
 		irq_set_affinity(newdev->irq, cpumask);
 
-	 
 	if (tick_device_uses_broadcast(newdev, cpu))
 		return;
 
@@ -153,10 +145,10 @@ static bool tick_check_percpu(struct clock_event_device *curdev,
 		return false;
 	if (cpumask_equal(newdev->cpumask, cpumask_of(cpu)))
 		return true;
-	 
+
 	if (newdev->irq >= 0 && !irq_can_set_affinity(newdev->irq))
 		return false;
-	 
+
 	if (curdev && cpumask_equal(curdev->cpumask, cpumask_of(cpu)))
 		return false;
 	return true;
@@ -165,7 +157,6 @@ static bool tick_check_percpu(struct clock_event_device *curdev,
 static bool tick_check_preferred(struct clock_event_device *curdev,
 				 struct clock_event_device *newdev)
 {
-	 
 	if (!(newdev->features & CLOCK_EVT_FEAT_ONESHOT)) {
 		if (curdev && (curdev->features & CLOCK_EVT_FEAT_ONESHOT))
 			return false;
@@ -173,9 +164,7 @@ static bool tick_check_preferred(struct clock_event_device *curdev,
 			return false;
 	}
 
-	 
-	return !curdev ||
-		newdev->rating > curdev->rating ||
+	return !curdev || newdev->rating > curdev->rating ||
 	       !cpumask_equal(curdev->cpumask, newdev->cpumask);
 }
 
@@ -204,7 +193,6 @@ void tick_check_new_device(struct clock_event_device *newdev)
 	if (!try_module_get(newdev->owner))
 		return;
 
-	 
 	if (tick_is_broadcast_device(curdev)) {
 		clockevents_shutdown(curdev);
 		curdev = NULL;
@@ -216,14 +204,9 @@ void tick_check_new_device(struct clock_event_device *newdev)
 	return;
 
 out_bc:
-	 
+
 	tick_install_broadcast_device(newdev, cpu);
 }
-
-
-
-
-
 
 void __init tick_init(void)
 {

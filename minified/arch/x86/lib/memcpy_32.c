@@ -17,22 +17,20 @@ __visible void *memset(void *s, int c, size_t count)
 
 __visible void *memmove(void *dest, const void *src, size_t n)
 {
-	int d0,d1,d2,d3,d4,d5;
+	int d0, d1, d2, d3, d4, d5;
 	char *ret = dest;
 
 	__asm__ __volatile__(
-		 
+
 		"cmp $0x10, %0\n\t"
 		"jb	1f\n\t"
 
-		 
 		"cmp %2, %1\n\t"
 		"jb	2f\n\t"
 
-		 
 		"cmp  $680, %0\n\t"
 		"jb 3f\n\t"
-		 
+
 		"mov %1, %3\n\t"
 		"xor %2, %3\n\t"
 		"and $0xff, %3\n\t"
@@ -40,7 +38,6 @@ __visible void *memmove(void *dest, const void *src, size_t n)
 		"3:\n\t"
 		"sub $0x10, %0\n\t"
 
-		 
 		"3:\n\t"
 		"sub $0x10, %0\n\t"
 		"mov 0*4(%1), %3\n\t"
@@ -57,7 +54,6 @@ __visible void *memmove(void *dest, const void *src, size_t n)
 		"add $0x10, %0\n\t"
 		"jmp 1f\n\t"
 
-		 
 		".p2align 4\n\t"
 		"4:\n\t"
 		"mov -4(%1, %0), %3\n\t"
@@ -66,7 +62,7 @@ __visible void *memmove(void *dest, const void *src, size_t n)
 		"rep movsl\n\t"
 		"mov %3, (%4)\n\t"
 		"jmp 11f\n\t"
-		 
+
 		".p2align 4\n\t"
 		"6:\n\t"
 		"mov (%1), %3\n\t"
@@ -80,7 +76,6 @@ __visible void *memmove(void *dest, const void *src, size_t n)
 		"cld\n\t"
 		"jmp 11f\n\t"
 
-		 
 		".p2align 4\n\t"
 		"2:\n\t"
 		"cmp  $680, %0\n\t"
@@ -90,13 +85,11 @@ __visible void *memmove(void *dest, const void *src, size_t n)
 		"and $0xff, %3\n\t"
 		"jz 6b\n\t"
 
-		 
 		"5:\n\t"
 		"add %0, %1\n\t"
 		"add %0, %2\n\t"
 		"sub $0x10, %0\n\t"
 
-		 
 		"7:\n\t"
 		"sub $0x10, %0\n\t"
 
@@ -111,12 +104,11 @@ __visible void *memmove(void *dest, const void *src, size_t n)
 		"lea  -0x10(%1), %1\n\t"
 		"lea  -0x10(%2), %2\n\t"
 		"jae 7b\n\t"
-		 
+
 		"add $0x10, %0\n\t"
 		"sub %0, %1\n\t"
 		"sub %0, %2\n\t"
 
-		 
 		".p2align 4\n\t"
 		"1:\n\t"
 		"cmp $8, %0\n\t"
@@ -132,7 +124,6 @@ __visible void *memmove(void *dest, const void *src, size_t n)
 		"mov  %1, -1*4(%2, %0)\n\t"
 		"jmp 11f\n\t"
 
-		 
 		".p2align 4\n\t"
 		"8:\n\t"
 		"cmp $4, %0\n\t"
@@ -143,7 +134,6 @@ __visible void *memmove(void *dest, const void *src, size_t n)
 		"mov  %4, -1*4(%2, %0)\n\t"
 		"jmp 11f\n\t"
 
-		 
 		".p2align 4\n\t"
 		"9:\n\t"
 		"cmp $2, %0\n\t"
@@ -154,7 +144,6 @@ __visible void *memmove(void *dest, const void *src, size_t n)
 		"movw %%bx, -1*2(%2, %0)\n\t"
 		"jmp 11f\n\t"
 
-		 
 		".p2align 4\n\t"
 		"10:\n\t"
 		"cmp $1, %0\n\t"
@@ -163,13 +152,9 @@ __visible void *memmove(void *dest, const void *src, size_t n)
 		"movb %%cl, (%2)\n\t"
 		".p2align 4\n\t"
 		"11:"
-		: "=&c" (d0), "=&S" (d1), "=&D" (d2),
-		  "=r" (d3),"=r" (d4), "=r"(d5)
-		:"0" (n),
-		 "1" (src),
-		 "2" (dest)
-		:"memory");
+		: "=&c"(d0), "=&S"(d1), "=&D"(d2), "=r"(d3), "=r"(d4), "=r"(d5)
+		: "0"(n), "1"(src), "2"(dest)
+		: "memory");
 
 	return ret;
-
 }

@@ -2,14 +2,13 @@
 #include <linux/task_work.h>
 #include <linux/resume_user_mode.h>
 
-static struct callback_head work_exited;  
+static struct callback_head work_exited;
 
 int task_work_add(struct task_struct *task, struct callback_head *work,
 		  enum task_work_notify_mode notify)
 {
 	struct callback_head *head;
 
-	 
 	kasan_record_aux_stack(work);
 
 	do {
@@ -50,7 +49,7 @@ task_work_cancel_match(struct task_struct *task,
 
 	if (likely(!task_work_pending(task)))
 		return NULL;
-	 
+
 	raw_spin_lock_irqsave(&task->pi_lock, flags);
 	while ((work = READ_ONCE(*pprev))) {
 		if (!match(work, data))
@@ -68,8 +67,8 @@ static bool task_work_func_match(struct callback_head *cb, void *data)
 	return cb->func == data;
 }
 
-struct callback_head *
-task_work_cancel(struct task_struct *task, task_work_func_t func)
+struct callback_head *task_work_cancel(struct task_struct *task,
+				       task_work_func_t func)
 {
 	return task_work_cancel_match(task, task_work_func_match, func);
 }
@@ -80,7 +79,6 @@ void task_work_run(void)
 	struct callback_head *work, *head, *next;
 
 	for (;;) {
-		 
 		do {
 			head = NULL;
 			work = READ_ONCE(task->task_works);
@@ -94,7 +92,7 @@ void task_work_run(void)
 
 		if (!work)
 			break;
-		 
+
 		raw_spin_lock_irq(&task->pi_lock);
 		raw_spin_unlock_irq(&task->pi_lock);
 

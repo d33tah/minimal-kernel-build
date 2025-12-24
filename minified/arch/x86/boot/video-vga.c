@@ -72,11 +72,11 @@ static int vga_probe(void)
 
 	video_vga.modes = vga_modes;
 	video_vga.card_name = "VGA";
-	return 1;  /* Always return 1 mode (80x25) */
+	return 1; /* Always return 1 mode (80x25) */
 }
 
 static __videocard video_vga = {
-	.card_name	= "VGA",
-	.probe		= vga_probe,
-	.set_mode	= vga_set_mode,
+	.card_name = "VGA",
+	.probe = vga_probe,
+	.set_mode = vga_set_mode,
 };

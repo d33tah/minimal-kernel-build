@@ -28,7 +28,6 @@
 #include <linux/vt_kern.h>
 #include <linux/selection.h>
 
-
 int vt_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg)
 {
 	struct vc_data *vc = tty->driver_data;
@@ -39,15 +38,15 @@ int vt_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg)
 		return put_user(vc->vc_mode, (int __user *)arg);
 	case KDGKBTYPE:
 		return put_user(KB_101, (char __user *)arg);
-	case VT_GETSTATE:
-	{
+	case VT_GETSTATE: {
 		struct vt_stat __user *vtstat = up;
 		if (put_user(fg_console + 1, &vtstat->v_active))
 			return -EFAULT;
 		return put_user(1, &vtstat->v_state);
 	}
 	case VT_GETHIFONTMASK:
-		return put_user(vc->vc_hi_font_mask, (unsigned short __user *)arg);
+		return put_user(vc->vc_hi_font_mask,
+				(unsigned short __user *)arg);
 	default:
 		return -ENOIOCTLCMD;
 	}
@@ -73,4 +72,3 @@ void vc_SAK(struct work_struct *work)
 {
 	/* Stub: SAK (Secure Attention Key) never called in minimal kernel */
 }
-

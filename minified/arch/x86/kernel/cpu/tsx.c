@@ -6,4 +6,3 @@
 void __init tsx_init(void)
 {
 }
-

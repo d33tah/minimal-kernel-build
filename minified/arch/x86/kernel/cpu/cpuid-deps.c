@@ -4,21 +4,20 @@
 #include <asm/cpufeature.h>
 
 struct cpuid_dep {
-	unsigned int	feature;
-	unsigned int	depends;
+	unsigned int feature;
+	unsigned int depends;
 };
 
 static const struct cpuid_dep cpuid_deps[] = {
-	{ X86_FEATURE_FXSR,			X86_FEATURE_FPU	      },
-	{ X86_FEATURE_XSAVE,			X86_FEATURE_FXSR      },
-	{ X86_FEATURE_XMM,			X86_FEATURE_FXSR      },
-	{ X86_FEATURE_XMM2,			X86_FEATURE_XMM       },
+	{ X86_FEATURE_FXSR, X86_FEATURE_FPU },
+	{ X86_FEATURE_XSAVE, X86_FEATURE_FXSR },
+	{ X86_FEATURE_XMM, X86_FEATURE_FXSR },
+	{ X86_FEATURE_XMM2, X86_FEATURE_XMM },
 	{}
 };
 
 static inline void clear_feature(struct cpuinfo_x86 *c, unsigned int feature)
 {
-	 
 	if (!c) {
 		clear_cpu_cap(&boot_cpu_data, feature);
 		set_bit(feature, (unsigned long *)cpu_caps_cleared);
@@ -40,11 +39,9 @@ static void do_clear_cpu_cap(struct cpuinfo_x86 *c, unsigned int feature)
 
 	clear_feature(c, feature);
 
-	 
 	memset(disable, 0, sizeof(disable));
 	__set_bit(feature, disable);
 
-	 
 	do {
 		changed = false;
 		for (d = cpuid_deps; d->feature; d++) {

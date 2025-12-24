@@ -10,7 +10,6 @@
 #include <linux/uaccess.h>
 #include <linux/fs_parser.h>
 
-
 static struct file_system_type *file_systems;
 static DEFINE_RWLOCK(file_systems_lock);
 
@@ -29,16 +28,15 @@ static struct file_system_type **find_filesystem(const char *name, unsigned len)
 {
 	struct file_system_type **p;
 	for (p = &file_systems; *p; p = &(*p)->next)
-		if (strncmp((*p)->name, name, len) == 0 &&
-		    !(*p)->name[len])
+		if (strncmp((*p)->name, name, len) == 0 && !(*p)->name[len])
 			break;
 	return p;
 }
 
-int register_filesystem(struct file_system_type * fs)
+int register_filesystem(struct file_system_type *fs)
 {
 	int res = 0;
-	struct file_system_type ** p;
+	struct file_system_type **p;
 
 	if (fs->parameters &&
 	    !fs_validate_description(fs->name, fs->parameters))
@@ -56,7 +54,6 @@ int register_filesystem(struct file_system_type * fs)
 	write_unlock(&file_systems_lock);
 	return res;
 }
-
 
 int __init list_bdev_fs_names(char *buf, size_t size)
 {
@@ -80,7 +77,6 @@ int __init list_bdev_fs_names(char *buf, size_t size)
 	read_unlock(&file_systems_lock);
 	return count;
 }
-
 
 static struct file_system_type *__get_fs_type(const char *name, int len)
 {
@@ -111,4 +107,3 @@ struct file_system_type *get_fs_type(const char *name)
 	}
 	return fs;
 }
-

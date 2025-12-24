@@ -8,7 +8,6 @@
 #include <linux/kernel_stat.h>
 #include <linux/irqdomain.h>
 
-
 #include "internals.h"
 
 static irqreturn_t bad_chained_irq(int irq, void *dev_id)
@@ -31,7 +30,7 @@ int irq_set_chip(unsigned int irq, const struct irq_chip *chip)
 
 	desc->irq_data.chip = (struct irq_chip *)(chip ?: &no_irq_chip);
 	irq_put_desc_unlock(desc, flags);
-	 
+
 	irq_mark_irq(irq);
 	return 0;
 }
@@ -39,7 +38,8 @@ int irq_set_chip(unsigned int irq, const struct irq_chip *chip)
 int irq_set_irq_type(unsigned int irq, unsigned int type)
 {
 	unsigned long flags;
-	struct irq_desc *desc = irq_get_desc_buslock(irq, &flags, IRQ_GET_DESC_CHECK_GLOBAL);
+	struct irq_desc *desc =
+		irq_get_desc_buslock(irq, &flags, IRQ_GET_DESC_CHECK_GLOBAL);
 	int ret = 0;
 
 	if (!desc)
@@ -106,7 +106,6 @@ static int __irq_startup(struct irq_desc *desc)
 	struct irq_data *d = irq_desc_get_irq_data(desc);
 	int ret = 0;
 
-	 
 	WARN_ON_ONCE(!irqd_is_activated(d));
 
 	if (d->chip->irq_startup) {
@@ -187,11 +186,10 @@ void irq_shutdown(struct irq_desc *desc)
 	}
 }
 
-
 void irq_shutdown_and_deactivate(struct irq_desc *desc)
 {
 	irq_shutdown(desc);
-	 
+
 	irq_domain_deactivate_irq(&desc->irq_data);
 }
 
@@ -230,7 +228,6 @@ void irq_disable(struct irq_desc *desc)
 {
 	__irq_disable(desc, irq_settings_disable_unlazy(desc));
 }
-
 
 static inline void mask_ack_irq(struct irq_desc *desc)
 {
@@ -287,23 +284,17 @@ static bool irq_may_run(struct irq_desc *desc)
 {
 	unsigned int mask = IRQD_IRQ_INPROGRESS | IRQD_WAKEUP_ARMED;
 
-	 
 	if (!irqd_has_set(&desc->irq_data, mask))
 		return true;
 
-	 
 	if (irq_pm_check_wakeup(desc))
 		return false;
 
-	 
 	return irq_check_poll(desc);
 }
 
-
-
 static void cond_unmask_irq(struct irq_desc *desc)
 {
-	 
 	if (!irqd_irq_disabled(&desc->irq_data) &&
 	    irqd_irq_masked(&desc->irq_data) && !desc->threads_oneshot)
 		unmask_irq(desc);
@@ -319,7 +310,6 @@ void handle_level_irq(struct irq_desc *desc)
 
 	desc->istate &= ~(IRQS_REPLAY | IRQS_WAITING);
 
-	 
 	if (unlikely(!desc->action || irqd_irq_disabled(&desc->irq_data))) {
 		desc->istate |= IRQS_PENDING;
 		goto out_unlock;
@@ -334,16 +324,9 @@ out_unlock:
 	raw_spin_unlock(&desc->lock);
 }
 
-
-
-
-
-
-
-
-static void
-__irq_do_set_handler(struct irq_desc *desc, irq_flow_handler_t handle,
-		     int is_chained, const char *name)
+static void __irq_do_set_handler(struct irq_desc *desc,
+				 irq_flow_handler_t handle, int is_chained,
+				 const char *name)
 {
 	if (!handle) {
 		handle = handle_bad_irq;
@@ -353,7 +336,6 @@ __irq_do_set_handler(struct irq_desc *desc, irq_flow_handler_t handle,
 			return;
 	}
 
-	 
 	if (handle == handle_bad_irq) {
 		if (desc->irq_data.chip != &no_irq_chip)
 			mask_ack_irq(desc);
@@ -370,7 +352,6 @@ __irq_do_set_handler(struct irq_desc *desc, irq_flow_handler_t handle,
 	if (handle != handle_bad_irq && is_chained) {
 		unsigned int type = irqd_get_trigger_type(&desc->irq_data);
 
-		 
 		if (type != IRQ_TYPE_NONE) {
 			__irq_set_trigger(desc, type);
 			desc->handle_irq = handle;
@@ -385,9 +366,8 @@ __irq_do_set_handler(struct irq_desc *desc, irq_flow_handler_t handle,
 	}
 }
 
-void
-__irq_set_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained,
-		  const char *name)
+void __irq_set_handler(unsigned int irq, irq_flow_handler_t handle,
+		       int is_chained, const char *name)
 {
 	unsigned long flags;
 	struct irq_desc *desc = irq_get_desc_buslock(irq, &flags, 0);
@@ -399,10 +379,9 @@ __irq_set_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained,
 	irq_put_desc_busunlock(desc, flags);
 }
 
-
-void
-irq_set_chip_and_handler_name(unsigned int irq, const struct irq_chip *chip,
-			      irq_flow_handler_t handle, const char *name)
+void irq_set_chip_and_handler_name(unsigned int irq,
+				   const struct irq_chip *chip,
+				   irq_flow_handler_t handle, const char *name)
 {
 	irq_set_chip(irq, chip);
 	__irq_set_handler(irq, handle, 0, name);
@@ -416,7 +395,6 @@ void irq_modify_status(unsigned int irq, unsigned long clr, unsigned long set)
 	if (!desc)
 		return;
 
-	 
 	WARN_ON_ONCE(!desc->depth && (set & _IRQ_NOAUTOEN));
 
 	irq_settings_clr_and_set(desc, clr, set);
@@ -424,7 +402,8 @@ void irq_modify_status(unsigned int irq, unsigned long clr, unsigned long set)
 	trigger = irqd_get_trigger_type(&desc->irq_data);
 
 	irqd_clear(&desc->irq_data, IRQD_NO_BALANCING | IRQD_PER_CPU |
-		   IRQD_TRIGGER_MASK | IRQD_LEVEL | IRQD_MOVE_PCNTXT);
+					    IRQD_TRIGGER_MASK | IRQD_LEVEL |
+					    IRQD_MOVE_PCNTXT);
 	if (irq_settings_has_no_balance_set(desc))
 		irqd_set(&desc->irq_data, IRQD_NO_BALANCING);
 	if (irq_settings_is_per_cpu(desc))
@@ -442,9 +421,6 @@ void irq_modify_status(unsigned int irq, unsigned long clr, unsigned long set)
 
 	irq_put_desc_unlock(desc, flags);
 }
-
-
-
 
 int irq_chip_pm_get(struct irq_data *data)
 {

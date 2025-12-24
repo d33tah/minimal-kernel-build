@@ -20,11 +20,9 @@ static bool map_pte(struct page_vma_mapped_walk *pvmw)
 			if (!is_swap_pte(*pvmw->pte))
 				return false;
 		} else {
-			 
 			if (is_swap_pte(*pvmw->pte)) {
 				swp_entry_t entry;
 
-				 
 				entry = pte_to_swp_entry(*pvmw->pte);
 				if (!is_device_private_entry(entry) &&
 				    !is_device_exclusive_entry(entry))
@@ -56,7 +54,6 @@ static bool check_pte(struct page_vma_mapped_walk *pvmw)
 	} else if (is_swap_pte(*pvmw->pte)) {
 		swp_entry_t entry;
 
-		 
 		entry = pte_to_swp_entry(*pvmw->pte);
 		if (!is_device_private_entry(entry) &&
 		    !is_device_exclusive_entry(entry))
@@ -99,18 +96,16 @@ bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw)
 	pud_t *pud;
 	pmd_t pmde;
 
-	 
 	if (pvmw->pmd && !pvmw->pte)
 		return not_found(pvmw);
 
 	if (unlikely(is_vm_hugetlb_page(vma))) {
 		struct hstate *hstate = hstate_vma(vma);
 		unsigned long size = huge_page_size(hstate);
-		 
+
 		if (pvmw->pte)
 			return not_found(pvmw);
 
-		 
 		pvmw->pte = huge_pte_offset(mm, pvmw->address, size);
 		if (!pvmw->pte)
 			return false;
@@ -144,7 +139,7 @@ restart:
 		}
 
 		pvmw->pmd = pmd_offset(pud, pvmw->address);
-		 
+
 		pmde = READ_ONCE(*pvmw->pmd);
 
 		if (pmd_trans_huge(pmde) || is_pmd_migration_entry(pmde) ||
@@ -170,11 +165,10 @@ restart:
 					return not_found(pvmw);
 				return true;
 			}
-			 
+
 			spin_unlock(pvmw->ptl);
 			pvmw->ptl = NULL;
 		} else if (!pmd_present(pmde)) {
-			 
 			if ((pvmw->flags & PVMW_SYNC) &&
 			    transparent_hugepage_active(vma) &&
 			    (pvmw->nr_pages >= HPAGE_PMD_NR)) {
@@ -195,7 +189,7 @@ next_pte:
 			pvmw->address += PAGE_SIZE;
 			if (pvmw->address >= end)
 				return not_found(pvmw);
-			 
+
 			if ((pvmw->address & (PMD_SIZE - PAGE_SIZE)) == 0) {
 				if (pvmw->ptl) {
 					spin_unlock(pvmw->ptl);

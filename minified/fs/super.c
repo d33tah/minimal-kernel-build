@@ -4,7 +4,7 @@
 #include <linux/blkdev.h>
 #include <linux/mount.h>
 #include <linux/security.h>
-#include <linux/writeback.h>		
+#include <linux/writeback.h>
 #include <linux/idr.h>
 #include <linux/mutex.h>
 #include <linux/backing-dev.h>
@@ -30,11 +30,11 @@ static unsigned long super_cache_scan(struct shrinker *shrink,
 				      struct shrink_control *sc)
 {
 	struct super_block *sb;
-	long	fs_objects = 0;
-	long	total_objects;
-	long	freed = 0;
-	long	dentries;
-	long	inodes;
+	long fs_objects = 0;
+	long total_objects;
+	long freed = 0;
+	long dentries;
+	long inodes;
 
 	sb = container_of(shrink, struct super_block, s_shrink);
 
@@ -75,7 +75,7 @@ static unsigned long super_cache_count(struct shrinker *shrink,
 				       struct shrink_control *sc)
 {
 	struct super_block *sb;
-	long	total_objects = 0;
+	long total_objects = 0;
 
 	sb = container_of(shrink, struct super_block, s_shrink);
 
@@ -98,8 +98,8 @@ static unsigned long super_cache_count(struct shrinker *shrink,
 
 static void destroy_super_work(struct work_struct *work)
 {
-	struct super_block *s = container_of(work, struct super_block,
-							destroy_work);
+	struct super_block *s =
+		container_of(work, struct super_block, destroy_work);
 	int i;
 
 	for (i = 0; i < SB_FREEZE_LEVELS; i++)
@@ -125,14 +125,14 @@ static void destroy_unused_super(struct super_block *s)
 	put_user_ns(s->s_user_ns);
 	kfree(s->s_subtype);
 	free_prealloced_shrinker(&s->s_shrink);
-	
+
 	destroy_super_work(&s->destroy_work);
 }
 
 static struct super_block *alloc_super(struct file_system_type *type, int flags,
 				       struct user_namespace *user_ns)
 {
-	struct super_block *s = kzalloc(sizeof(struct super_block),  GFP_USER);
+	struct super_block *s = kzalloc(sizeof(struct super_block), GFP_USER);
 	static const struct super_operations default_op;
 	int i;
 
@@ -143,7 +143,7 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags,
 	s->s_user_ns = get_user_ns(user_ns);
 	init_rwsem(&s->s_umount);
 	lockdep_set_class(&s->s_umount, &type->s_umount_key);
-	
+
 	down_write_nested(&s->s_umount, SINGLE_DEPTH_NESTING);
 
 	if (security_sb_alloc(s))
@@ -236,7 +236,6 @@ void deactivate_locked_super(struct super_block *s)
 	}
 }
 
-
 void deactivate_super(struct super_block *s)
 {
 	if (!atomic_add_unless(&s->s_active, -1, 1)) {
@@ -244,7 +243,6 @@ void deactivate_super(struct super_block *s)
 		deactivate_locked_super(s);
 	}
 }
-
 
 static int grab_super(struct super_block *s) __releases(sb_lock)
 {
@@ -260,8 +258,10 @@ static int grab_super(struct super_block *s) __releases(sb_lock)
 	return 0;
 }
 
-bool trylock_super(struct super_block *sb) {
-	return down_read_trylock(&sb->s_umount) && sb->s_root && (sb->s_flags & SB_BORN);
+bool trylock_super(struct super_block *sb)
+{
+	return down_read_trylock(&sb->s_umount) && sb->s_root &&
+	       (sb->s_flags & SB_BORN);
 }
 
 void generic_shutdown_super(struct super_block *sb)
@@ -276,7 +276,7 @@ void generic_shutdown_super(struct super_block *sb)
 		cgroup_writeback_umount();
 
 		evict_inodes(sb);
-		
+
 		fsnotify_sb_delete(sb);
 		security_sb_delete(sb);
 
@@ -290,12 +290,12 @@ void generic_shutdown_super(struct super_block *sb)
 
 		if (!list_empty(&sb->s_inodes)) {
 			printk("VFS: Busy inodes after unmount of %s. "
-			   "Self-destruct in 5 seconds.  Have a nice day...\n",
-			   sb->s_id);
+			       "Self-destruct in 5 seconds.  Have a nice day...\n",
+			       sb->s_id);
 		}
 	}
 	spin_lock(&sb_lock);
-	
+
 	hlist_del_init(&sb->s_instances);
 	spin_unlock(&sb_lock);
 	up_write(&sb->s_umount);
@@ -307,7 +307,6 @@ void generic_shutdown_super(struct super_block *sb)
 	}
 }
 
-
 bool mount_capable(struct fs_context *fc)
 {
 	if (!(fc->fs_type->fs_flags & FS_USERNS_MOUNT))
@@ -316,19 +315,22 @@ bool mount_capable(struct fs_context *fc)
 		return ns_capable(fc->user_ns, CAP_SYS_ADMIN);
 }
 
-struct super_block *sget_fc(struct fs_context *fc,
-			    int (*test)(struct super_block *, struct fs_context *),
-			    int (*set)(struct super_block *, struct fs_context *))
+struct super_block *
+sget_fc(struct fs_context *fc,
+	int (*test)(struct super_block *, struct fs_context *),
+	int (*set)(struct super_block *, struct fs_context *))
 {
 	struct super_block *s = NULL;
 	struct super_block *old;
-	struct user_namespace *user_ns = fc->global ? &init_user_ns : fc->user_ns;
+	struct user_namespace *user_ns = fc->global ? &init_user_ns :
+						      fc->user_ns;
 	int err;
 
 retry:
 	spin_lock(&sb_lock);
 	if (test) {
-		hlist_for_each_entry(old, &fc->fs_type->fs_supers, s_instances) {
+		hlist_for_each_entry(old, &fc->fs_type->fs_supers,
+				     s_instances) {
 			if (test(old, fc))
 				goto share_extant_sb;
 		}
@@ -373,10 +375,9 @@ share_extant_sb:
 }
 
 struct super_block *sget(struct file_system_type *type,
-			int (*test)(struct super_block *,void *),
-			int (*set)(struct super_block *,void *),
-			int flags,
-			void *data)
+			 int (*test)(struct super_block *, void *),
+			 int (*set)(struct super_block *, void *), int flags,
+			 void *data)
 {
 	struct user_namespace *user_ns = current_user_ns();
 	struct super_block *s = NULL;
@@ -436,7 +437,6 @@ void drop_super(struct super_block *sb)
 /* Removed: drop_super_exclusive, iterate_supers, iterate_supers_type,
    get_super, get_active_super, user_get_super - never called */
 
-
 static DEFINE_IDA(unnamed_dev_ida);
 
 int get_anon_bdev(dev_t *p)
@@ -444,7 +444,7 @@ int get_anon_bdev(dev_t *p)
 	int dev;
 
 	dev = ida_alloc_range(&unnamed_dev_ida, 1, (1 << MINORBITS) - 1,
-			GFP_ATOMIC);
+			      GFP_ATOMIC);
 	if (dev == -ENOSPC)
 		dev = -EMFILE;
 	if (dev < 0)
@@ -491,8 +491,7 @@ static int test_single_super(struct super_block *s, struct fs_context *fc)
 	return 1;
 }
 
-int vfs_get_super(struct fs_context *fc,
-		  enum vfs_get_super_keying keying,
+int vfs_get_super(struct fs_context *fc, enum vfs_get_super_keying keying,
 		  int (*fill_super)(struct super_block *sb,
 				    struct fs_context *fc))
 {
@@ -537,12 +536,11 @@ error:
 }
 
 int get_tree_nodev(struct fs_context *fc,
-		  int (*fill_super)(struct super_block *sb,
-				    struct fs_context *fc))
+		   int (*fill_super)(struct super_block *sb,
+				     struct fs_context *fc))
 {
 	return vfs_get_super(fc, vfs_get_independent_super, fill_super);
 }
-
 
 /* Removed: mount_nodev - never called (~7 LOC) */
 
@@ -561,7 +559,7 @@ int vfs_get_tree(struct fs_context *fc)
 	if (!fc->root) {
 		pr_err("Filesystem %s get_tree() didn't set fc->root\n",
 		       fc->fs_type->name);
-		
+
 		BUG();
 	}
 
@@ -577,8 +575,10 @@ int vfs_get_tree(struct fs_context *fc)
 		return error;
 	}
 
-	WARN((sb->s_maxbytes < 0), "%s set sb->s_maxbytes to "
-		"negative value (%lld)\n", fc->fs_type->name, sb->s_maxbytes);
+	WARN((sb->s_maxbytes < 0),
+	     "%s set sb->s_maxbytes to "
+	     "negative value (%lld)\n",
+	     fc->fs_type->name, sb->s_maxbytes);
 
 	return 0;
 }

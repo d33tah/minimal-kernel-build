@@ -5,7 +5,6 @@
 #include <linux/syscalls.h>
 #include <linux/uaccess.h>
 
-
 int wait_for_random_bytes(void)
 {
 	return 0;
@@ -35,26 +34,25 @@ void add_device_randomness(const void *buf, size_t len)
 {
 }
 
-
 void add_interrupt_randomness(int irq)
 {
 }
-
 
 bool rng_is_initialized(void)
 {
 	return true;
 }
 
-
-static ssize_t random_read(struct file *file, char __user *buf, size_t nbytes, loff_t *ppos)
+static ssize_t random_read(struct file *file, char __user *buf, size_t nbytes,
+			   loff_t *ppos)
 {
 	if (clear_user(buf, nbytes))
 		return -EFAULT;
 	return nbytes;
 }
 
-static ssize_t random_write(struct file *file, const char __user *buffer, size_t count, loff_t *ppos)
+static ssize_t random_write(struct file *file, const char __user *buffer,
+			    size_t count, loff_t *ppos)
 {
 	return count;
 }
@@ -84,8 +82,8 @@ const struct file_operations urandom_fops = {
 	.llseek = noop_llseek,
 };
 
-
-SYSCALL_DEFINE3(getrandom, char __user *, buf, size_t, count, unsigned int, flags)
+SYSCALL_DEFINE3(getrandom, char __user *, buf, size_t, count, unsigned int,
+		flags)
 {
 	if (clear_user(buf, count))
 		return -EFAULT;

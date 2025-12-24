@@ -57,14 +57,14 @@ static void store_mode_params(void)
 	boot_params.screen_info.orig_video_points = font_size;
 
 	x = rdfs16(0x44a);
-	y = (adapter == ADAPTER_CGA) ? 25 : rdfs8(0x484)+1;
+	y = (adapter == ADAPTER_CGA) ? 25 : rdfs8(0x484) + 1;
 
 	if (force_x)
 		x = force_x;
 	if (force_y)
 		y = force_y;
 
-	boot_params.screen_info.orig_video_cols  = x;
+	boot_params.screen_info.orig_video_cols = x;
 	boot_params.screen_info.orig_video_lines = y;
 }
 

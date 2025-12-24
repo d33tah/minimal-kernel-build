@@ -15,14 +15,12 @@
 #include <linux/ratelimit.h>
 #include "tty.h"
 
-#define MIN_TTYB_SIZE	256
-#define TTYB_ALIGN_MASK	255
+#define MIN_TTYB_SIZE 256
+#define TTYB_ALIGN_MASK 255
 
-#define TTYB_DEFAULT_MEM_LIMIT	(640 * 1024UL)
+#define TTYB_DEFAULT_MEM_LIMIT (640 * 1024UL)
 
-
-#define TTY_BUFFER_PAGE	(((PAGE_SIZE - sizeof(struct tty_buffer)) / 2) & ~0xFF)
-
+#define TTY_BUFFER_PAGE (((PAGE_SIZE - sizeof(struct tty_buffer)) / 2) & ~0xFF)
 
 unsigned int tty_buffer_space_avail(struct tty_port *port)
 {
@@ -65,7 +63,7 @@ void tty_buffer_free_all(struct tty_port *port)
 
 	still_used = atomic_xchg(&buf->mem_used, 0);
 	WARN(still_used != freed, "we still have not freed %d bytes!",
-			still_used - freed);
+	     still_used - freed);
 }
 
 static struct tty_buffer *tty_buffer_alloc(struct tty_port *port, size_t size)
@@ -73,7 +71,6 @@ static struct tty_buffer *tty_buffer_alloc(struct tty_port *port, size_t size)
 	struct llist_node *free;
 	struct tty_buffer *p;
 
-	 
 	size = __ALIGN_MASK(size, TTYB_ALIGN_MASK);
 
 	if (size <= MIN_TTYB_SIZE) {
@@ -84,7 +81,6 @@ static struct tty_buffer *tty_buffer_alloc(struct tty_port *port, size_t size)
 		}
 	}
 
-	 
 	if (atomic_read(&port->buf.mem_used) > port->buf.mem_limit)
 		return NULL;
 	p = kmalloc(sizeof(struct tty_buffer) + 2 * size,
@@ -102,7 +98,6 @@ static void tty_buffer_free(struct tty_port *port, struct tty_buffer *b)
 {
 	struct tty_bufhead *buf = &port->buf;
 
-	 
 	WARN_ON(atomic_sub_return(b->size, &buf->mem_used) < 0);
 
 	if (b->size > MIN_TTYB_SIZE)
@@ -113,7 +108,6 @@ static void tty_buffer_free(struct tty_port *port, struct tty_buffer *b)
 
 void tty_buffer_flush(struct tty_struct *tty, struct tty_ldisc *ld)
 {
-	 
 }
 
 static int __tty_buffer_request_room(struct tty_port *port, size_t size,
@@ -131,14 +125,13 @@ static int __tty_buffer_request_room(struct tty_port *port, size_t size,
 
 	change = (b->flags & TTYB_NORMAL) && (~flags & TTYB_NORMAL);
 	if (change || left < size) {
-		 
 		n = tty_buffer_alloc(port, size);
 		if (n != NULL) {
 			n->flags = flags;
 			buf->tail = n;
-			 
+
 			smp_store_release(&b->commit, b->used);
-			 
+
 			smp_store_release(&b->next, n);
 		} else if (change)
 			size = 0;
@@ -154,7 +147,8 @@ int tty_buffer_request_room(struct tty_port *port, size_t size)
 }
 
 int tty_insert_flip_string_fixed_flag(struct tty_port *port,
-		const unsigned char *chars, char flag, size_t size)
+				      const unsigned char *chars, char flag,
+				      size_t size)
 {
 	int copied = 0;
 
@@ -172,13 +166,14 @@ int tty_insert_flip_string_fixed_flag(struct tty_port *port,
 		tb->used += space;
 		copied += space;
 		chars += space;
-		 
+
 	} while (unlikely(size > copied));
 	return copied;
 }
 
 int tty_insert_flip_string_flags(struct tty_port *port,
-		const unsigned char *chars, const char *flags, size_t size)
+				 const unsigned char *chars, const char *flags,
+				 size_t size)
 {
 	int copied = 0;
 
@@ -195,7 +190,7 @@ int tty_insert_flip_string_flags(struct tty_port *port,
 		copied += space;
 		chars += space;
 		flags += space;
-		 
+
 	} while (unlikely(size > copied));
 	return copied;
 }
@@ -217,7 +212,7 @@ int __tty_insert_flip_char(struct tty_port *port, unsigned char ch, char flag)
 }
 
 int tty_prepare_flip_string(struct tty_port *port, unsigned char **chars,
-		size_t size)
+			    size_t size)
 {
 	int space = __tty_buffer_request_room(port, size, TTYB_NORMAL);
 
@@ -245,8 +240,8 @@ int tty_ldisc_receive_buf(struct tty_ldisc *ld, const unsigned char *p,
 	return count;
 }
 
-static int
-receive_buf(struct tty_port *port, struct tty_buffer *head, int count)
+static int receive_buf(struct tty_port *port, struct tty_buffer *head,
+		       int count)
 {
 	unsigned char *p = char_buf_ptr(head, head->read);
 	const char *f = NULL;
@@ -273,13 +268,11 @@ static void flush_to_ldisc(struct work_struct *work)
 		struct tty_buffer *next;
 		int count;
 
-		 
 		if (atomic_read(&buf->priority))
 			break;
 
-		 
 		next = smp_load_acquire(&head->next);
-		 
+
 		count = smp_load_acquire(&head->commit) - head->read;
 		if (!count) {
 			if (next == NULL)
@@ -299,12 +292,10 @@ static void flush_to_ldisc(struct work_struct *work)
 	}
 
 	mutex_unlock(&buf->lock);
-
 }
 
 static inline void tty_flip_buffer_commit(struct tty_buffer *tail)
 {
-	 
 	smp_store_release(&tail->commit, tail->used);
 }
 
@@ -315,7 +306,6 @@ void tty_flip_buffer_push(struct tty_port *port)
 	tty_flip_buffer_commit(buf->tail);
 	queue_work(system_unbound_wq, &buf->work);
 }
-
 
 void tty_buffer_init(struct tty_port *port)
 {
@@ -332,7 +322,6 @@ void tty_buffer_init(struct tty_port *port)
 	buf->mem_limit = TTYB_DEFAULT_MEM_LIMIT;
 }
 
-
 bool tty_buffer_restart_work(struct tty_port *port)
 {
 	return queue_work(system_unbound_wq, &port->buf.work);
@@ -342,4 +331,3 @@ bool tty_buffer_cancel_work(struct tty_port *port)
 {
 	return cancel_work_sync(&port->buf.work);
 }
-

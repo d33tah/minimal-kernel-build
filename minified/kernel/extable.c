@@ -8,8 +8,14 @@
 #include <linux/kallsyms.h>
 
 /* kprobes stub - kprobes disabled */
-static inline bool is_kprobe_insn_slot(unsigned long addr) { return false; }
-static inline bool is_kprobe_optinsn_slot(unsigned long addr) { return false; }
+static inline bool is_kprobe_insn_slot(unsigned long addr)
+{
+	return false;
+}
+static inline bool is_kprobe_optinsn_slot(unsigned long addr)
+{
+	return false;
+}
 
 #include <asm/sections.h>
 #include <linux/uaccess.h>
@@ -34,8 +40,8 @@ void __init sort_main_extable(void)
 	}
 }
 
-const
-struct exception_table_entry *search_kernel_exception_table(unsigned long addr)
+const struct exception_table_entry *
+search_kernel_exception_table(unsigned long addr)
 {
 	return search_extable(__start___ex_table,
 			      __stop___ex_table - __start___ex_table, addr);
@@ -58,8 +64,7 @@ int notrace core_kernel_text(unsigned long addr)
 	if (is_kernel_text(addr))
 		return 1;
 
-	if (system_state < SYSTEM_FREEING_INITMEM &&
-	    is_kernel_inittext(addr))
+	if (system_state < SYSTEM_FREEING_INITMEM && is_kernel_inittext(addr))
 		return 1;
 	return 0;
 }
@@ -68,7 +73,7 @@ int __kernel_text_address(unsigned long addr)
 {
 	if (kernel_text_address(addr))
 		return 1;
-	 
+
 	if (is_kernel_inittext(addr))
 		return 1;
 	return 0;
@@ -82,10 +87,8 @@ int kernel_text_address(unsigned long addr)
 	if (core_kernel_text(addr))
 		return 1;
 
-	 
 	no_rcu = !rcu_is_watching();
 
-	 
 	if (no_rcu)
 		rcu_nmi_enter();
 
@@ -104,4 +107,3 @@ out:
 
 	return ret;
 }
-

@@ -8,8 +8,11 @@
 #include <linux/timer.h>
 /* Inlined from acpi_pmtmr.h */
 #define PMTMR_TICKS_PER_SEC 3579545
-#define ACPI_PM_OVRRUN	(1<<24)
-static inline u32 acpi_pm_read_early(void) { return 0; }
+#define ACPI_PM_OVRRUN (1 << 24)
+static inline u32 acpi_pm_read_early(void)
+{
+	return 0;
+}
 #include <linux/delay.h>
 #include <linux/clocksource.h>
 #include <linux/percpu.h>
@@ -17,7 +20,10 @@ static inline u32 acpi_pm_read_early(void) { return 0; }
 #include <linux/jump_label.h>
 #include <linux/static_call.h>
 
-static inline int is_hpet_enabled(void) { return 0; }
+static inline int is_hpet_enabled(void)
+{
+	return 0;
+}
 #define hpet_readl(a) 0
 #define HPET_COUNTER 0
 #define HPET_PERIOD 0
@@ -31,13 +37,16 @@ static inline int is_hpet_enabled(void) { return 0; }
 #include <asm/apic.h>
 #include <asm/intel-family.h>
 #include <asm/i8259.h>
-static inline bool is_early_uv_system(void) { return 0; }
+static inline bool is_early_uv_system(void)
+{
+	return 0;
+}
 
-unsigned int __read_mostly cpu_khz;	 
+unsigned int __read_mostly cpu_khz;
 
 unsigned int __read_mostly tsc_khz;
 
-#define KHZ	1000
+#define KHZ 1000
 
 static int __read_mostly tsc_unstable;
 static unsigned int __initdata tsc_early_khz;
@@ -50,13 +59,11 @@ int tsc_clocksource_reliable;
    art_related_clocksource removed - unused after convert_art_to_tsc removal */
 
 struct cyc2ns {
-	struct cyc2ns_data data[2];	 
-	seqcount_latch_t   seq;		 
-
-};  
+	struct cyc2ns_data data[2];
+	seqcount_latch_t seq;
+};
 
 static DEFINE_PER_CPU_ALIGNED(struct cyc2ns, cyc2ns);
-
 
 __always_inline void cyc2ns_read_begin(struct cyc2ns_data *data)
 {
@@ -68,9 +75,11 @@ __always_inline void cyc2ns_read_begin(struct cyc2ns_data *data)
 		seq = this_cpu_read(cyc2ns.seq.seqcount.sequence);
 		idx = seq & 1;
 
-		data->cyc2ns_offset = this_cpu_read(cyc2ns.data[idx].cyc2ns_offset);
-		data->cyc2ns_mul    = this_cpu_read(cyc2ns.data[idx].cyc2ns_mul);
-		data->cyc2ns_shift  = this_cpu_read(cyc2ns.data[idx].cyc2ns_shift);
+		data->cyc2ns_offset =
+			this_cpu_read(cyc2ns.data[idx].cyc2ns_offset);
+		data->cyc2ns_mul = this_cpu_read(cyc2ns.data[idx].cyc2ns_mul);
+		data->cyc2ns_shift =
+			this_cpu_read(cyc2ns.data[idx].cyc2ns_shift);
 
 	} while (unlikely(seq != this_cpu_read(cyc2ns.seq.seqcount.sequence)));
 }
@@ -79,7 +88,6 @@ __always_inline void cyc2ns_read_end(void)
 {
 	preempt_enable_notrace();
 }
-
 
 static __always_inline unsigned long long cycles_2_ns(unsigned long long cyc)
 {
@@ -96,7 +104,8 @@ static __always_inline unsigned long long cycles_2_ns(unsigned long long cyc)
 	return ns;
 }
 
-static void __set_cyc2ns_scale(unsigned long khz, int cpu, unsigned long long tsc_now)
+static void __set_cyc2ns_scale(unsigned long khz, int cpu,
+			       unsigned long long tsc_now)
 {
 	unsigned long long ns_now;
 	struct cyc2ns_data data;
@@ -104,18 +113,16 @@ static void __set_cyc2ns_scale(unsigned long khz, int cpu, unsigned long long ts
 
 	ns_now = cycles_2_ns(tsc_now);
 
-	 
 	clocks_calc_mult_shift(&data.cyc2ns_mul, &data.cyc2ns_shift, khz,
 			       NSEC_PER_MSEC, 0);
 
-	 
 	if (data.cyc2ns_shift == 32) {
 		data.cyc2ns_shift = 31;
 		data.cyc2ns_mul >>= 1;
 	}
 
-	data.cyc2ns_offset = ns_now -
-		mul_u64_u32_shr(tsc_now, data.cyc2ns_mul, data.cyc2ns_shift);
+	data.cyc2ns_offset = ns_now - mul_u64_u32_shr(tsc_now, data.cyc2ns_mul,
+						      data.cyc2ns_shift);
 
 	c2n = per_cpu_ptr(&cyc2ns, cpu);
 
@@ -154,13 +161,9 @@ u64 native_sched_clock(void)
 	if (static_branch_likely(&__use_tsc)) {
 		u64 tsc_now = rdtsc();
 
-		 
 		return cycles_2_ns(tsc_now);
 	}
 
-	 
-
-	 
 	return (jiffies_64 - INITIAL_JIFFIES) * (1000000000 / HZ);
 }
 
@@ -169,18 +172,19 @@ u64 native_sched_clock_from_tsc(u64 tsc)
 	return cycles_2_ns(tsc);
 }
 
-unsigned long long
-sched_clock(void) __attribute__((alias("native_sched_clock")));
+unsigned long long sched_clock(void)
+	__attribute__((alias("native_sched_clock")));
 
-bool using_native_sched_clock(void) { return true; }
-
-
+bool using_native_sched_clock(void)
+{
+	return true;
+}
 
 static int no_sched_irq_time;
 static int no_tsc_watchdog;
 
-#define MAX_RETRIES		5
-#define TSC_DEFAULT_THRESHOLD	0x20000
+#define MAX_RETRIES 5
+#define TSC_DEFAULT_THRESHOLD 0x20000
 
 static u64 tsc_read_refs(u64 *p, int hpet)
 {
@@ -212,7 +216,7 @@ static unsigned long calc_hpet_ref(u64 deltatsc, u64 hpet1, u64 hpet2)
 	do_div(tmp, 1000000);
 	deltatsc = div64_u64(deltatsc, tmp);
 
-	return (unsigned long) deltatsc;
+	return (unsigned long)deltatsc;
 }
 
 static unsigned long calc_pmtimer_ref(u64 deltatsc, u64 pm1, u64 pm2)
@@ -229,17 +233,16 @@ static unsigned long calc_pmtimer_ref(u64 deltatsc, u64 pm1, u64 pm2)
 	do_div(tmp, PMTMR_TICKS_PER_SEC);
 	do_div(deltatsc, tmp);
 
-	return (unsigned long) deltatsc;
+	return (unsigned long)deltatsc;
 }
 
-#define CAL_MS		10
-#define CAL_LATCH	(PIT_TICK_RATE / (1000 / CAL_MS))
-#define CAL_PIT_LOOPS	1000
+#define CAL_MS 10
+#define CAL_LATCH (PIT_TICK_RATE / (1000 / CAL_MS))
+#define CAL_PIT_LOOPS 1000
 
-#define CAL2_MS		50
-#define CAL2_LATCH	(PIT_TICK_RATE / (1000 / CAL2_MS))
-#define CAL2_PIT_LOOPS	5000
-
+#define CAL2_MS 50
+#define CAL2_LATCH (PIT_TICK_RATE / (1000 / CAL2_MS))
+#define CAL2_PIT_LOOPS 5000
 
 static unsigned long pit_calibrate_tsc(u32 latch, unsigned long ms, int loopmin)
 {
@@ -248,7 +251,6 @@ static unsigned long pit_calibrate_tsc(u32 latch, unsigned long ms, int loopmin)
 	int pitcnt;
 
 	if (!has_legacy_pic()) {
-		 
 		udelay(10 * USEC_PER_MSEC);
 		udelay(10 * USEC_PER_MSEC);
 		udelay(10 * USEC_PER_MSEC);
@@ -257,10 +259,8 @@ static unsigned long pit_calibrate_tsc(u32 latch, unsigned long ms, int loopmin)
 		return ULONG_MAX;
 	}
 
-	 
 	outb((inb(0x61) & ~0x02) | 0x01, 0x61);
 
-	 
 	outb(0xb0, 0x43);
 	outb(latch & 0xff, 0x42);
 	outb(latch >> 8, 0x42);
@@ -274,18 +274,16 @@ static unsigned long pit_calibrate_tsc(u32 latch, unsigned long ms, int loopmin)
 		t2 = get_cycles();
 		delta = t2 - tsc;
 		tsc = t2;
-		if ((unsigned long) delta < tscmin)
-			tscmin = (unsigned int) delta;
-		if ((unsigned long) delta > tscmax)
-			tscmax = (unsigned int) delta;
+		if ((unsigned long)delta < tscmin)
+			tscmin = (unsigned int)delta;
+		if ((unsigned long)delta > tscmax)
+			tscmax = (unsigned int)delta;
 		pitcnt++;
 	}
 
-	 
 	if (pitcnt < loopmin || tscmax > 10 * tscmin)
 		return ULONG_MAX;
 
-	 
 	delta = t2 - t1;
 	do_div(delta, ms);
 	return delta;
@@ -293,12 +291,12 @@ static unsigned long pit_calibrate_tsc(u32 latch, unsigned long ms, int loopmin)
 
 static inline int pit_verify_msb(unsigned char val)
 {
-	 
 	inb(0x42);
 	return inb(0x42) == val;
 }
 
-static inline int pit_expect_msb(unsigned char val, u64 *tscp, unsigned long *deltap)
+static inline int pit_expect_msb(unsigned char val, u64 *tscp,
+				 unsigned long *deltap)
 {
 	int count;
 	u64 tsc = 0, prev_tsc = 0;
@@ -312,7 +310,6 @@ static inline int pit_expect_msb(unsigned char val, u64 *tscp, unsigned long *de
 	*deltap = get_cycles() - prev_tsc;
 	*tscp = tsc;
 
-	 
 	return count > 5;
 }
 
@@ -328,36 +325,29 @@ static unsigned long quick_pit_calibrate(void)
 	if (!has_legacy_pic())
 		return 0;
 
-	 
 	outb((inb(0x61) & ~0x02) | 0x01, 0x61);
 
-	 
 	outb(0xb0, 0x43);
 
-	 
 	outb(0xff, 0x42);
 	outb(0xff, 0x42);
 
-	 
 	pit_verify_msb(0);
 
 	if (pit_expect_msb(0xff, &tsc, &d1)) {
 		for (i = 1; i <= MAX_QUICK_PIT_ITERATIONS; i++) {
-			if (!pit_expect_msb(0xff-i, &delta, &d2))
+			if (!pit_expect_msb(0xff - i, &delta, &d2))
 				break;
 
 			delta -= tsc;
 
-			 
 			if (i == 1 &&
 			    d1 + d2 >= (delta * MAX_QUICK_PIT_ITERATIONS) >> 11)
 				return 0;
 
-			 
-			if (d1+d2 >= delta >> 11)
+			if (d1 + d2 >= delta >> 11)
 				continue;
 
-			 
 			if (!pit_verify_msb(0xfe - i))
 				break;
 			goto success;
@@ -367,9 +357,9 @@ static unsigned long quick_pit_calibrate(void)
 	return 0;
 
 success:
-	 
+
 	delta *= PIT_TICK_RATE;
-	do_div(delta, i*256*1000);
+	do_div(delta, i * 256 * 1000);
 	pr_info("Fast TSC calibration using PIT\n");
 	return delta;
 }
@@ -387,7 +377,6 @@ unsigned long native_calibrate_tsc(void)
 
 	eax_denominator = ebx_numerator = ecx_hz = edx = 0;
 
-	 
 	cpuid(0x15, &eax_denominator, &ebx_numerator, &ecx_hz, &edx);
 
 	if (ebx_numerator == 0 || eax_denominator == 0)
@@ -395,31 +384,26 @@ unsigned long native_calibrate_tsc(void)
 
 	crystal_khz = ecx_hz / 1000;
 
-	 
 	if (crystal_khz == 0 &&
-			boot_cpu_data.x86_model == INTEL_FAM6_ATOM_GOLDMONT_D)
+	    boot_cpu_data.x86_model == INTEL_FAM6_ATOM_GOLDMONT_D)
 		crystal_khz = 25000;
 
-	 
 	if (crystal_khz != 0)
 		setup_force_cpu_cap(X86_FEATURE_TSC_KNOWN_FREQ);
 
-	 
 	if (crystal_khz == 0 && boot_cpu_data.cpuid_level >= 0x16) {
 		unsigned int eax_base_mhz, ebx, ecx, edx;
 
 		cpuid(0x16, &eax_base_mhz, &ebx, &ecx, &edx);
-		crystal_khz = eax_base_mhz * 1000 *
-			eax_denominator / ebx_numerator;
+		crystal_khz =
+			eax_base_mhz * 1000 * eax_denominator / ebx_numerator;
 	}
 
 	if (crystal_khz == 0)
 		return 0;
 
-	 
 	if (boot_cpu_data.x86_model == INTEL_FAM6_ATOM_GOLDMONT)
 		setup_force_cpu_cap(X86_FEATURE_TSC_RELIABLE);
-
 
 	return crystal_khz * ebx_numerator / eax_denominator;
 }
@@ -448,9 +432,6 @@ static unsigned long pit_hpet_ptimer_calibrate_cpu(void)
 	unsigned long flags, latch, ms;
 	int hpet = is_hpet_enabled(), i, loopmin;
 
-	 
-
-	 
 	latch = CAL_LATCH;
 	ms = CAL_MS;
 	loopmin = CAL_PIT_LOOPS;
@@ -458,21 +439,17 @@ static unsigned long pit_hpet_ptimer_calibrate_cpu(void)
 	for (i = 0; i < 3; i++) {
 		unsigned long tsc_pit_khz;
 
-		 
 		local_irq_save(flags);
 		tsc1 = tsc_read_refs(&ref1, hpet);
 		tsc_pit_khz = pit_calibrate_tsc(latch, ms, loopmin);
 		tsc2 = tsc_read_refs(&ref2, hpet);
 		local_irq_restore(flags);
 
-		 
 		tsc_pit_min = min(tsc_pit_min, tsc_pit_khz);
 
-		 
 		if (ref1 == ref2)
 			continue;
 
-		 
 		if (tsc1 == ULLONG_MAX || tsc2 == ULLONG_MAX)
 			continue;
 
@@ -482,20 +459,17 @@ static unsigned long pit_hpet_ptimer_calibrate_cpu(void)
 		else
 			tsc2 = calc_pmtimer_ref(tsc2, ref1, ref2);
 
-		tsc_ref_min = min(tsc_ref_min, (unsigned long) tsc2);
+		tsc_ref_min = min(tsc_ref_min, (unsigned long)tsc2);
 
-		 
-		delta = ((u64) tsc_pit_min) * 100;
+		delta = ((u64)tsc_pit_min) * 100;
 		do_div(delta, tsc_ref_min);
 
-		 
 		if (delta >= 90 && delta <= 110) {
 			pr_info("PIT calibration matches %s. %d loops\n",
 				hpet ? "HPET" : "PMTIMER", i + 1);
 			return tsc_ref_min;
 		}
 
-		 
 		if (i == 1 && tsc_pit_min == ULONG_MAX) {
 			latch = CAL2_LATCH;
 			ms = CAL2_MS;
@@ -503,43 +477,35 @@ static unsigned long pit_hpet_ptimer_calibrate_cpu(void)
 		}
 	}
 
-	 
 	if (tsc_pit_min == ULONG_MAX) {
-		 
 		pr_warn("Unable to calibrate against PIT\n");
 
-		 
 		if (!hpet && !ref1 && !ref2) {
 			pr_notice("No reference (HPET/PMTIMER) available\n");
 			return 0;
 		}
 
-		 
 		if (tsc_ref_min == ULONG_MAX) {
 			pr_warn("HPET/PMTIMER calibration failed\n");
 			return 0;
 		}
 
-		 
 		pr_info("using %s reference calibration\n",
 			hpet ? "HPET" : "PMTIMER");
 
 		return tsc_ref_min;
 	}
 
-	 
 	if (!hpet && !ref1 && !ref2) {
 		pr_info("Using PIT calibration value\n");
 		return tsc_pit_min;
 	}
 
-	 
 	if (tsc_ref_min == ULONG_MAX) {
 		pr_warn("HPET/PMTIMER calibration failed. Using PIT calibration.\n");
 		return tsc_pit_min;
 	}
 
-	 
 	pr_warn("PIT calibration deviates from %s: %lu %lu\n",
 		hpet ? "HPET" : "PMTIMER", tsc_pit_min, tsc_ref_min);
 	pr_info("Using PIT calibration value\n");
@@ -560,7 +526,6 @@ unsigned long native_calibrate_cpu_early(void)
 	return fast_calibrate;
 }
 
-
 static unsigned long native_calibrate_cpu(void)
 {
 	unsigned long tsc_freq = native_calibrate_cpu_early();
@@ -570,9 +535,6 @@ static unsigned long native_calibrate_cpu(void)
 
 	return tsc_freq;
 }
-
-
-
 
 void tsc_save_sched_clock_state(void)
 {
@@ -584,12 +546,11 @@ void tsc_restore_sched_clock_state(void)
 	/* Stub: suspend/resume not needed for minimal kernel */
 }
 
-
 /* detect_art stubbed out - ART feature not needed for minimal kernel
    (convert_art_to_tsc was removed) */
-static void __init detect_art(void) { }
-
-
+static void __init detect_art(void)
+{
+}
 
 static void tsc_resume(struct clocksource *cs)
 {
@@ -629,36 +590,33 @@ static int tsc_cs_enable(struct clocksource *cs)
 }
 
 static struct clocksource clocksource_tsc_early = {
-	.name			= "tsc-early",
-	.rating			= 299,
-	.uncertainty_margin	= 32 * NSEC_PER_MSEC,
-	.read			= read_tsc,
-	.mask			= CLOCKSOURCE_MASK(64),
-	.flags			= CLOCK_SOURCE_IS_CONTINUOUS |
-				  CLOCK_SOURCE_MUST_VERIFY,
-	.vdso_clock_mode	= VDSO_CLOCKMODE_TSC,
-	.enable			= tsc_cs_enable,
-	.resume			= tsc_resume,
-	.mark_unstable		= tsc_cs_mark_unstable,
-	.tick_stable		= tsc_cs_tick_stable,
-	.list			= LIST_HEAD_INIT(clocksource_tsc_early.list),
+	.name = "tsc-early",
+	.rating = 299,
+	.uncertainty_margin = 32 * NSEC_PER_MSEC,
+	.read = read_tsc,
+	.mask = CLOCKSOURCE_MASK(64),
+	.flags = CLOCK_SOURCE_IS_CONTINUOUS | CLOCK_SOURCE_MUST_VERIFY,
+	.vdso_clock_mode = VDSO_CLOCKMODE_TSC,
+	.enable = tsc_cs_enable,
+	.resume = tsc_resume,
+	.mark_unstable = tsc_cs_mark_unstable,
+	.tick_stable = tsc_cs_tick_stable,
+	.list = LIST_HEAD_INIT(clocksource_tsc_early.list),
 };
 
 static struct clocksource clocksource_tsc = {
-	.name			= "tsc",
-	.rating			= 300,
-	.read			= read_tsc,
-	.mask			= CLOCKSOURCE_MASK(64),
-	.flags			= CLOCK_SOURCE_IS_CONTINUOUS |
-				  CLOCK_SOURCE_VALID_FOR_HRES |
-				  CLOCK_SOURCE_MUST_VERIFY |
-				  CLOCK_SOURCE_VERIFY_PERCPU,
-	.vdso_clock_mode	= VDSO_CLOCKMODE_TSC,
-	.enable			= tsc_cs_enable,
-	.resume			= tsc_resume,
-	.mark_unstable		= tsc_cs_mark_unstable,
-	.tick_stable		= tsc_cs_tick_stable,
-	.list			= LIST_HEAD_INIT(clocksource_tsc.list),
+	.name = "tsc",
+	.rating = 300,
+	.read = read_tsc,
+	.mask = CLOCKSOURCE_MASK(64),
+	.flags = CLOCK_SOURCE_IS_CONTINUOUS | CLOCK_SOURCE_VALID_FOR_HRES |
+		 CLOCK_SOURCE_MUST_VERIFY | CLOCK_SOURCE_VERIFY_PERCPU,
+	.vdso_clock_mode = VDSO_CLOCKMODE_TSC,
+	.enable = tsc_cs_enable,
+	.resume = tsc_resume,
+	.mark_unstable = tsc_cs_mark_unstable,
+	.tick_stable = tsc_cs_tick_stable,
+	.list = LIST_HEAD_INIT(clocksource_tsc.list),
 };
 
 void mark_tsc_unstable(char *reason)
@@ -676,7 +634,6 @@ void mark_tsc_unstable(char *reason)
 	clocksource_mark_unstable(&clocksource_tsc);
 }
 
-
 static void __init tsc_disable_clocksource_watchdog(void)
 {
 	clocksource_tsc_early.flags &= ~CLOCK_SOURCE_MUST_VERIFY;
@@ -688,11 +645,9 @@ static void __init check_system_tsc_reliable(void)
 	if (boot_cpu_has(X86_FEATURE_TSC_RELIABLE))
 		tsc_clocksource_reliable = 1;
 
-	 
 	if (boot_cpu_has(X86_FEATURE_CONSTANT_TSC) &&
 	    boot_cpu_has(X86_FEATURE_NONSTOP_TSC) &&
-	    boot_cpu_has(X86_FEATURE_TSC_ADJUST) &&
-	    nr_online_nodes <= 2)
+	    boot_cpu_has(X86_FEATURE_TSC_ADJUST) && nr_online_nodes <= 2)
 		tsc_disable_clocksource_watchdog();
 }
 
@@ -702,8 +657,6 @@ int unsynchronized_tsc(void)
 	return 0;
 }
 
-
-
 static void tsc_refine_calibration_work(struct work_struct *work);
 static DECLARE_DELAYED_WORK(tsc_irqwork, tsc_refine_calibration_work);
 static void tsc_refine_calibration_work(struct work_struct *work)
@@ -712,7 +665,6 @@ static void tsc_refine_calibration_work(struct work_struct *work)
 	clocksource_register_khz(&clocksource_tsc, tsc_khz);
 	clocksource_unregister(&clocksource_tsc_early);
 }
-
 
 static int __init init_tsc_clocksource(void)
 {
@@ -724,7 +676,6 @@ static int __init init_tsc_clocksource(void)
 
 	if (boot_cpu_has(X86_FEATURE_NONSTOP_TSC_S3))
 		clocksource_tsc.flags |= CLOCK_SOURCE_SUSPEND_NONSTOP;
-
 
 	if (boot_cpu_has(X86_FEATURE_TSC_KNOWN_FREQ)) {
 		clocksource_register_khz(&clocksource_tsc, tsc_khz);
@@ -740,7 +691,6 @@ device_initcall(init_tsc_clocksource);
 
 static bool __init determine_cpu_tsc_frequencies(bool early)
 {
-	 
 	WARN_ON(cpu_khz || tsc_khz);
 
 	if (early) {
@@ -750,12 +700,10 @@ static bool __init determine_cpu_tsc_frequencies(bool early)
 		else
 			tsc_khz = x86_platform.calibrate_tsc();
 	} else {
-		 
 		WARN_ON(x86_platform.calibrate_cpu != native_calibrate_cpu);
 		cpu_khz = pit_hpet_ptimer_calibrate_cpu();
 	}
 
-	 
 	if (tsc_khz == 0)
 		tsc_khz = cpu_khz;
 	else if (abs(cpu_khz - tsc_khz) * 10 > tsc_khz)
@@ -765,8 +713,7 @@ static bool __init determine_cpu_tsc_frequencies(bool early)
 		return false;
 
 	pr_info("Detected %lu.%03lu MHz processor\n",
-		(unsigned long)cpu_khz / KHZ,
-		(unsigned long)cpu_khz % KHZ);
+		(unsigned long)cpu_khz / KHZ, (unsigned long)cpu_khz % KHZ);
 
 	if (cpu_khz != tsc_khz) {
 		pr_info("Detected %lu.%03lu MHz TSC",
@@ -789,7 +736,6 @@ static void __init tsc_enable_sched_clock(void)
 	loops_per_jiffy = get_loops_per_jiffy();
 	use_tsc_delay();
 
-	 
 	tsc_store_and_check_tsc_adjust(true);
 	cyc2ns_init_boot_cpu();
 	static_branch_enable(&__use_tsc);
@@ -799,7 +745,7 @@ void __init tsc_early_init(void)
 {
 	if (!boot_cpu_has(X86_FEATURE_TSC))
 		return;
-	 
+
 	if (is_early_uv_system())
 		return;
 	if (!determine_cpu_tsc_frequencies(true))
@@ -809,7 +755,6 @@ void __init tsc_early_init(void)
 
 void __init tsc_init(void)
 {
-	 
 	if (x86_platform.calibrate_cpu == native_calibrate_cpu_early)
 		x86_platform.calibrate_cpu = native_calibrate_cpu;
 
@@ -819,7 +764,6 @@ void __init tsc_init(void)
 	}
 
 	if (!tsc_khz) {
-		 
 		if (!determine_cpu_tsc_frequencies(false)) {
 			mark_tsc_unstable("could not calculate TSC khz");
 			setup_clear_cpu_cap(X86_FEATURE_TSC_DEADLINE_TIMER);
@@ -848,4 +792,3 @@ void __init tsc_init(void)
 	clocksource_register_khz(&clocksource_tsc_early, tsc_khz);
 	detect_art();
 }
-

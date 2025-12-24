@@ -7,7 +7,7 @@
 /* Use default 0x80 port IO delay - no DMI detection or command line params */
 void native_io_delay(void)
 {
-	asm volatile ("outb %al, $0x80");
+	asm volatile("outb %al, $0x80");
 }
 
 void __init io_delay_init(void)

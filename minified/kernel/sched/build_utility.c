@@ -11,7 +11,6 @@
 #include <linux/ctype.h>
 #include <linux/debugfs.h>
 
-
 #include <linux/irq.h>
 
 #include <linux/mempolicy.h>
@@ -21,8 +20,6 @@
 
 #include <linux/timex.h>
 #include <linux/utsname.h>
-
-
 
 #include <linux/sched/types.h>
 
@@ -45,19 +42,8 @@ static const u32 runnable_avg_yN_inv[] __maybe_unused = {
 
 #include "clock.c"
 
-
-
-
-
-
 #include "loadavg.c"
 #include "completion.c"
 #include "swait.c"
 #include "wait_bit.c"
 #include "wait.c"
-
-
-
-
-
-

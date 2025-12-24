@@ -15,17 +15,16 @@ uint32_t __attribute__((weak)) __div64_32(uint64_t *n, uint32_t base)
 	uint64_t res, d = 1;
 	uint32_t high = rem >> 32;
 
-	 
 	res = 0;
 	if (high >= base) {
 		high /= base;
-		res = (uint64_t) high << 32;
-		rem -= (uint64_t) (high*base) << 32;
+		res = (uint64_t)high << 32;
+		rem -= (uint64_t)(high * base) << 32;
 	}
 
 	while ((int64_t)b > 0 && b < rem) {
-		b = b+b;
-		d = d+d;
+		b = b + b;
+		d = d + d;
 	}
 
 	do {
@@ -48,12 +47,14 @@ s64 div_s64_rem(s64 dividend, s32 divisor, s32 *remainder)
 	u64 quotient;
 
 	if (dividend < 0) {
-		quotient = div_u64_rem(-dividend, abs(divisor), (u32 *)remainder);
+		quotient =
+			div_u64_rem(-dividend, abs(divisor), (u32 *)remainder);
 		*remainder = -*remainder;
 		if (divisor > 0)
 			quotient = -quotient;
 	} else {
-		quotient = div_u64_rem(dividend, abs(divisor), (u32 *)remainder);
+		quotient =
+			div_u64_rem(dividend, abs(divisor), (u32 *)remainder);
 		if (divisor < 0)
 			quotient = -quotient;
 	}
@@ -123,7 +124,7 @@ s64 div64_s64(s64 dividend, s64 divisor)
 }
 #endif
 
-#endif  
+#endif
 
 u32 iter_div_u64_rem(u64 dividend, u32 divisor, u64 *remainder)
 {
@@ -136,16 +137,13 @@ u64 mul_u64_u64_div_u64(u64 a, u64 b, u64 c)
 	u64 res = 0, div, rem;
 	int shift;
 
-	 
 	if (ilog2(a) + ilog2(b) > 62) {
-		 
 		div = div64_u64_rem(b, c, &rem);
 		res = div * a;
 		b = rem;
 
 		shift = ilog2(a) + ilog2(b) - 62;
 		if (shift > 0) {
-			 
 			b >>= shift;
 			c >>= shift;
 			if (!c)

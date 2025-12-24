@@ -2,9 +2,7 @@
 unsigned long gcd(unsigned long a, unsigned long b) __attribute_const__;
 #include <linux/export.h>
 
-
 #if !defined(CONFIG_CPU_NO_EFFICIENT_FFS)
-
 
 unsigned long gcd(unsigned long a, unsigned long b)
 {
@@ -39,7 +37,6 @@ unsigned long gcd(unsigned long a, unsigned long b)
 	if (!a || !b)
 		return r;
 
-	 
 	r &= -r;
 
 	while (!(b & r))
@@ -66,4 +63,3 @@ unsigned long gcd(unsigned long a, unsigned long b)
 }
 
 #endif
-

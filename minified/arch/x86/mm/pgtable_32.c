@@ -19,7 +19,6 @@
 
 unsigned int __VMALLOC_RESERVE = 128 << 20;
 
-  
 void set_pte_vaddr(unsigned long vaddr, pte_t pteval)
 {
 	pgd_t *pgd;
@@ -54,9 +53,7 @@ void set_pte_vaddr(unsigned long vaddr, pte_t pteval)
 	else
 		pte_clear(&init_mm, vaddr, pte);
 
-	 
 	flush_tlb_one_kernel(vaddr);
 }
 
 unsigned long __FIXADDR_TOP = 0xfffff000;
-

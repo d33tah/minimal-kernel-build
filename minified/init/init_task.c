@@ -41,7 +41,6 @@ static struct sighand_struct init_sighand = {
 	.signalfd_wqh	= __WAIT_QUEUE_HEAD_INITIALIZER(init_sighand.signalfd_wqh),
 };
 
-
 struct task_struct init_task
 	__aligned(L1_CACHE_BYTES)
 = {
@@ -105,4 +104,3 @@ struct task_struct init_task
 	.perf_event_list = LIST_HEAD_INIT(init_task.perf_event_list),
 	INIT_PREV_CPUTIME(init_task)
 };
-

@@ -9,9 +9,9 @@ __read_mostly u64 __sched_clock_offset;
 static __read_mostly u64 __gtod_offset;
 
 struct sched_clock_data {
-	u64			tick_raw;
-	u64			tick_gtod;
-	u64			clock;
+	u64 tick_raw;
+	u64 tick_gtod;
+	u64 clock;
 };
 
 static DEFINE_PER_CPU_SHARED_ALIGNED(struct sched_clock_data, sched_clock_data);
@@ -41,16 +41,17 @@ notrace static void __set_sched_clock_stable(void)
 {
 	struct sched_clock_data *scd;
 
-	 
 	local_irq_disable();
 	scd = this_scd();
-	 
-	__sched_clock_offset = (scd->tick_gtod + __gtod_offset) - (scd->tick_raw);
+
+	__sched_clock_offset =
+		(scd->tick_gtod + __gtod_offset) - (scd->tick_raw);
 	local_irq_enable();
 
-	printk(KERN_INFO "sched_clock: Marking stable (%lld, %lld)->(%lld, %lld)\n",
-			scd->tick_gtod, __gtod_offset,
-			scd->tick_raw,  __sched_clock_offset);
+	printk(KERN_INFO
+	       "sched_clock: Marking stable (%lld, %lld)->(%lld, %lld)\n",
+	       scd->tick_gtod, __gtod_offset, scd->tick_raw,
+	       __sched_clock_offset);
 
 	static_branch_enable(&__sched_clock_stable);
 	tick_dep_clear(TICK_DEP_BIT_CLOCK_UNSTABLE);
@@ -61,21 +62,21 @@ notrace static void __sched_clock_work(struct work_struct *work)
 	struct sched_clock_data *scd;
 	int cpu;
 
-	 
 	preempt_disable();
 	scd = this_scd();
 	__scd_stamp(scd);
 	scd->clock = scd->tick_gtod + __gtod_offset;
 	preempt_enable();
 
-	 
 	for_each_possible_cpu(cpu)
 		per_cpu(sched_clock_data, cpu) = *scd;
 
-	printk(KERN_WARNING "TSC found unstable after boot, most likely due to broken BIOS. Use 'tsc=unstable'.\n");
-	printk(KERN_INFO "sched_clock: Marking unstable (%lld, %lld)<-(%lld, %lld)\n",
-			scd->tick_gtod, __gtod_offset,
-			scd->tick_raw,  __sched_clock_offset);
+	printk(KERN_WARNING
+	       "TSC found unstable after boot, most likely due to broken BIOS. Use 'tsc=unstable'.\n");
+	printk(KERN_INFO
+	       "sched_clock: Marking unstable (%lld, %lld)<-(%lld, %lld)\n",
+	       scd->tick_gtod, __gtod_offset, scd->tick_raw,
+	       __sched_clock_offset);
 
 	static_branch_disable(&__sched_clock_stable);
 }
@@ -95,7 +96,7 @@ notrace void clear_sched_clock_stable(void)
 {
 	__sched_clock_stable_early = 0;
 
-	smp_mb();  
+	smp_mb();
 
 	if (static_key_count(&sched_clock_running.key) == 2)
 		__clear_sched_clock_stable();
@@ -111,7 +112,6 @@ notrace static void __sched_clock_gtod_offset(void)
 
 void __init sched_clock_init(void)
 {
-	 
 	local_irq_disable();
 	__sched_clock_gtod_offset();
 	local_irq_enable();
@@ -121,8 +121,8 @@ void __init sched_clock_init(void)
 static int __init sched_clock_init_late(void)
 {
 	static_branch_inc(&sched_clock_running);
-	 
-	smp_mb();  
+
+	smp_mb();
 
 	if (__sched_clock_stable_early)
 		__set_sched_clock_stable();
@@ -130,7 +130,6 @@ static int __init sched_clock_init_late(void)
 	return 0;
 }
 late_initcall(sched_clock_init_late);
-
 
 notrace static inline u64 wrap_min(u64 x, u64 y)
 {
@@ -154,8 +153,6 @@ again:
 		delta = 0;
 
 	old_clock = scd->clock;
-
-	 
 
 	gtod = scd->tick_gtod + __gtod_offset;
 	clock = gtod + delta;
@@ -182,13 +179,11 @@ again:
 	this_clock = sched_clock_local(my_scd);
 	remote_clock = cmpxchg64(&scd->clock, 0, 0);
 
-	 
 	if (likely((s64)(remote_clock - this_clock) < 0)) {
 		ptr = &scd->clock;
 		old_val = remote_clock;
 		val = this_clock;
 	} else {
-		 
 		ptr = &my_scd->clock;
 		old_val = this_clock;
 		val = remote_clock;
@@ -245,9 +240,7 @@ notrace void sched_clock_tick_stable(void)
 	if (!sched_clock_stable())
 		return;
 
-	 
 	local_irq_disable();
 	__sched_clock_gtod_offset();
 	local_irq_enable();
 }
-

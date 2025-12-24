@@ -1,5 +1,5 @@
 #ifndef __LINUX_KBUILD_H
-# error "Please do not build this file directly, build asm-offsets.c instead"
+#error "Please do not build this file directly, build asm-offsets.c instead"
 #endif
 
 #include <linux/efi.h>
@@ -26,26 +26,27 @@ void foo(void)
 	OFFSET(PT_EDI, pt_regs, di);
 	OFFSET(PT_EBP, pt_regs, bp);
 	OFFSET(PT_EAX, pt_regs, ax);
-	OFFSET(PT_DS,  pt_regs, ds);
-	OFFSET(PT_ES,  pt_regs, es);
-	OFFSET(PT_FS,  pt_regs, fs);
-	OFFSET(PT_GS,  pt_regs, gs);
+	OFFSET(PT_DS, pt_regs, ds);
+	OFFSET(PT_ES, pt_regs, es);
+	OFFSET(PT_FS, pt_regs, fs);
+	OFFSET(PT_GS, pt_regs, gs);
 	OFFSET(PT_ORIG_EAX, pt_regs, orig_ax);
 	OFFSET(PT_EIP, pt_regs, ip);
-	OFFSET(PT_CS,  pt_regs, cs);
+	OFFSET(PT_CS, pt_regs, cs);
 	OFFSET(PT_EFLAGS, pt_regs, flags);
 	OFFSET(PT_OLDESP, pt_regs, sp);
-	OFFSET(PT_OLDSS,  pt_regs, ss);
+	OFFSET(PT_OLDSS, pt_regs, ss);
 	BLANK();
 
 	OFFSET(saved_context_gdt_desc, saved_context, gdt_desc);
 	BLANK();
 
-	 
 	DEFINE(TSS_entry2task_stack,
 	       offsetof(struct cpu_entry_area, tss.x86_tss.sp1) -
-	       offsetofend(struct cpu_entry_area, entry_stack_page.stack));
+		       offsetofend(struct cpu_entry_area,
+				   entry_stack_page.stack));
 
 	BLANK();
-	DEFINE(EFI_svam, offsetof(efi_runtime_services_t, set_virtual_address_map));
+	DEFINE(EFI_svam,
+	       offsetof(efi_runtime_services_t, set_virtual_address_map));
 }

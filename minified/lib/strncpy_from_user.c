@@ -10,10 +10,12 @@
 #include <asm/byteorder.h>
 #include <asm/word-at-a-time.h>
 
-#define IS_UNALIGNED(src, dst)	0
+#define IS_UNALIGNED(src, dst) 0
 
-static __always_inline long do_strncpy_from_user(char *dst, const char __user *src,
-					unsigned long count, unsigned long max)
+static __always_inline long do_strncpy_from_user(char *dst,
+						 const char __user *src,
+						 unsigned long count,
+						 unsigned long max)
 {
 	const struct word_at_a_time constants = WORD_AT_A_TIME_CONSTANTS;
 	unsigned long res = 0;
@@ -24,19 +26,18 @@ static __always_inline long do_strncpy_from_user(char *dst, const char __user *s
 	while (max >= sizeof(unsigned long)) {
 		unsigned long c, data, mask;
 
-		 
-		unsafe_get_user(c, (unsigned long __user *)(src+res), byte_at_a_time);
+		unsafe_get_user(c, (unsigned long __user *)(src + res),
+				byte_at_a_time);
 
-		 
 		if (has_zero(c, &data, &constants)) {
 			data = prep_zero_mask(c, data, &constants);
 			data = create_zero_mask(data);
 			mask = zero_bytemask(data);
-			*(unsigned long *)(dst+res) = c & mask;
+			*(unsigned long *)(dst + res) = c & mask;
 			return res + find_zero(data);
 		}
 
-		*(unsigned long *)(dst+res) = c;
+		*(unsigned long *)(dst + res) = c;
 
 		res += sizeof(unsigned long);
 		max -= sizeof(unsigned long);
@@ -46,7 +47,7 @@ byte_at_a_time:
 	while (max) {
 		char c;
 
-		unsafe_get_user(c,src+res, efault);
+		unsafe_get_user(c, src + res, efault);
 		dst[res] = c;
 		if (!c)
 			return res;
@@ -54,11 +55,9 @@ byte_at_a_time:
 		max--;
 	}
 
-	 
 	if (res >= count)
 		return res;
 
-	 
 efault:
 	return -EFAULT;
 }
@@ -79,7 +78,6 @@ long strncpy_from_user(char *dst, const char __user *src, long count)
 		unsigned long max = max_addr - src_addr;
 		long retval;
 
-		 
 		if (max > count)
 			max = count;
 

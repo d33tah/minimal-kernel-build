@@ -57,7 +57,7 @@ void pin_kill(struct fs_pin *p)
 		rcu_read_lock();
 		if (likely(list_empty(&wait.entry)))
 			break;
-		 
+
 		spin_lock_irq(&p->wait.lock);
 		if (p->done > 0) {
 			spin_unlock_irq(&p->wait.lock);
@@ -80,4 +80,3 @@ void mnt_pin_kill(struct mount *m)
 		pin_kill(hlist_entry(p, struct fs_pin, m_list));
 	}
 }
-

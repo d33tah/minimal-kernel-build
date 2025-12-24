@@ -1,7 +1,7 @@
 
 
 #ifdef _SETUP
-# include "boot.h"
+#include "boot.h"
 #endif
 #include <linux/types.h>
 #include <asm/intel-family.h>
@@ -15,28 +15,27 @@ static u32 err_flags[NCAPINTS];
 
 static const int req_level = CONFIG_X86_MINIMUM_CPU_FAMILY;
 
-static const u32 req_flags[NCAPINTS] =
-{
+static const u32 req_flags[NCAPINTS] = {
 	REQUIRED_MASK0,
 	REQUIRED_MASK1,
-	0,  
-	0,  
+	0,
+	0,
 	REQUIRED_MASK4,
-	0,  
+	0,
 	REQUIRED_MASK6,
-	0,  
-	0,  
-	0,  
-	0,  
-	0,  
-	0,  
-	0,  
-	0,  
-	0,  
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
 	REQUIRED_MASK16,
 };
 
-#define A32(a, b, c, d) (((d) << 24)+((c) << 16)+((b) << 8)+(a))
+#define A32(a, b, c, d) (((d) << 24) + ((c) << 16) + ((b) << 8) + (a))
 
 static int is_amd(void)
 {
@@ -99,23 +98,18 @@ int check_cpu(int *cpu_level_ptr, int *req_level_ptr, u32 **err_flags_ptr)
 
 	if (err == 0x01 &&
 	    !(err_flags[0] &
-	      ~((1 << X86_FEATURE_XMM)|(1 << X86_FEATURE_XMM2))) &&
+	      ~((1 << X86_FEATURE_XMM) | (1 << X86_FEATURE_XMM2))) &&
 	    is_amd()) {
-		 
-
 		struct msr m;
 
 		boot_rdmsr(MSR_K7_HWCR, &m);
 		m.l &= ~(1 << 15);
 		boot_wrmsr(MSR_K7_HWCR, &m);
 
-		get_cpuflags();	 
+		get_cpuflags();
 		err = check_cpuflags();
-	} else if (err == 0x01 &&
-		   !(err_flags[0] & ~(1 << X86_FEATURE_CX8)) &&
+	} else if (err == 0x01 && !(err_flags[0] & ~(1 << X86_FEATURE_CX8)) &&
 		   is_centaur() && cpu.model >= 6) {
-		 
-
 		struct msr m;
 
 		boot_rdmsr(MSR_VIA_FCR, &m);
@@ -125,8 +119,6 @@ int check_cpu(int *cpu_level_ptr, int *req_level_ptr, u32 **err_flags_ptr)
 		set_bit(X86_FEATURE_CX8, cpu.flags);
 		err = check_cpuflags();
 	} else if (err == 0x01 && is_transmeta()) {
-		 
-
 		struct msr m, m_tmp;
 		u32 level = 1;
 
@@ -134,23 +126,18 @@ int check_cpu(int *cpu_level_ptr, int *req_level_ptr, u32 **err_flags_ptr)
 		m_tmp = m;
 		m_tmp.l = ~0;
 		boot_wrmsr(0x80860004, &m_tmp);
-		asm("cpuid"
-		    : "+a" (level), "=d" (cpu.flags[0])
-		    : : "ecx", "ebx");
+		asm("cpuid" : "+a"(level), "=d"(cpu.flags[0]) : : "ecx", "ebx");
 		boot_wrmsr(0x80860004, &m);
 
 		err = check_cpuflags();
-	} else if (err == 0x01 &&
-		   !(err_flags[0] & ~(1 << X86_FEATURE_PAE)) &&
+	} else if (err == 0x01 && !(err_flags[0] & ~(1 << X86_FEATURE_PAE)) &&
 		   is_intel() && cpu.level == 6 &&
 		   (cpu.model == 9 || cpu.model == 13)) {
-		 
 		if (cmdline_find_option_bool("forcepae")) {
 			puts("WARNING: Forcing PAE in CPU flags\n");
 			set_bit(X86_FEATURE_PAE, cpu.flags);
 			err = check_cpuflags();
-		}
-		else {
+		} else {
 			puts("WARNING: PAE disabled. Use parameter 'forcepae' to enable at your own risk!\n");
 		}
 	}
@@ -169,13 +156,10 @@ int check_cpu(int *cpu_level_ptr, int *req_level_ptr, u32 **err_flags_ptr)
 
 int check_knl_erratum(void)
 {
-	 
-	if (!is_intel() ||
-	    cpu.family != 6 ||
+	if (!is_intel() || cpu.family != 6 ||
 	    cpu.model != INTEL_FAM6_XEON_PHI_KNL)
 		return 0;
 
-	 
 	if (IS_ENABLED(CONFIG_X86_64) || IS_ENABLED(CONFIG_X86_PAE))
 		return 0;
 
@@ -185,5 +169,3 @@ int check_knl_erratum(void)
 
 	return -1;
 }
-
-

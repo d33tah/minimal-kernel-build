@@ -16,8 +16,8 @@ void exit_ptrace(struct task_struct *tracer, struct list_head *dead)
 {
 }
 
-int ptrace_request(struct task_struct *child, long request,
-		   unsigned long addr, unsigned long data)
+int ptrace_request(struct task_struct *child, long request, unsigned long addr,
+		   unsigned long data)
 {
 	return -EIO;
 }
@@ -27,4 +27,3 @@ SYSCALL_DEFINE4(ptrace, long, request, long, pid, unsigned long, addr,
 {
 	return -ENOSYS;
 }
-

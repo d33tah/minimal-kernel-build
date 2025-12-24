@@ -52,7 +52,7 @@ static inline int __flip_bit(u32 msr, u8 bit, bool set)
 
 	m1 = m;
 	if (set)
-		m1.q |=  BIT_64(bit);
+		m1.q |= BIT_64(bit);
 	else
 		m1.q &= ~BIT_64(bit);
 
@@ -75,4 +75,3 @@ int msr_clear_bit(u32 msr, u8 bit)
 {
 	return __flip_bit(msr, bit, false);
 }
-

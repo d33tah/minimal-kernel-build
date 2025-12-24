@@ -21,8 +21,6 @@
 
 void do_softirq_own_stack(void);
 
-
-
 #ifndef __ARCH_IRQ_STAT
 DEFINE_PER_CPU_ALIGNED(irq_cpustat_t, irq_stat);
 #endif
@@ -31,14 +29,13 @@ static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp
 
 DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
 
-const char * const softirq_to_name[NR_SOFTIRQS] = {
-	"HI", "TIMER", "NET_TX", "NET_RX", "BLOCK", "IRQ_POLL",
-	"TASKLET", "SCHED", "HRTIMER", "RCU"
+const char *const softirq_to_name[NR_SOFTIRQS] = {
+	"HI",	    "TIMER",   "NET_TX", "NET_RX",  "BLOCK",
+	"IRQ_POLL", "TASKLET", "SCHED",	 "HRTIMER", "RCU"
 };
 
 static void wakeup_softirqd(void)
 {
-	 
 	struct task_struct *tsk = __this_cpu_read(ksoftirqd);
 
 	if (tsk)
@@ -55,9 +52,6 @@ static bool ksoftirqd_running(unsigned long pending)
 	return tsk && task_is_running(tsk) && !__kthread_should_park(tsk);
 }
 
-
-
-
 static void __local_bh_enable(unsigned int cnt)
 {
 	lockdep_assert_irqs_disabled();
@@ -68,19 +62,17 @@ static void __local_bh_enable(unsigned int cnt)
 	__preempt_count_sub(cnt);
 }
 
-
 void __local_bh_enable_ip(unsigned long ip, unsigned int cnt)
 {
 	WARN_ON_ONCE(in_hardirq());
 	lockdep_assert_irqs_enabled();
-	 
+
 	if (softirq_count() == SOFTIRQ_DISABLE_OFFSET)
 		lockdep_softirqs_on(ip);
-	 
+
 	__preempt_count_sub(cnt - 1);
 
 	if (unlikely(!in_interrupt() && local_softirq_pending())) {
-		 
 		do_softirq();
 	}
 
@@ -120,7 +112,6 @@ static inline void invoke_softirq(void)
 		return;
 
 	if (!force_irqthreads() || !__this_cpu_read(ksoftirqd)) {
-		 
 		do_softirq_own_stack();
 	} else {
 		wakeup_softirqd();
@@ -145,12 +136,16 @@ asmlinkage __visible void do_softirq(void)
 	local_irq_restore(flags);
 }
 
-
-#define MAX_SOFTIRQ_TIME  msecs_to_jiffies(2)
+#define MAX_SOFTIRQ_TIME msecs_to_jiffies(2)
 #define MAX_SOFTIRQ_RESTART 10
 
-static inline bool lockdep_softirq_start(void) { return false; }
-static inline void lockdep_softirq_end(bool in_hardirq) { }
+static inline bool lockdep_softirq_start(void)
+{
+	return false;
+}
+static inline void lockdep_softirq_end(bool in_hardirq)
+{
+}
 
 asmlinkage __visible void __softirq_entry __do_softirq(void)
 {
@@ -162,7 +157,6 @@ asmlinkage __visible void __softirq_entry __do_softirq(void)
 	__u32 pending;
 	int softirq_bit;
 
-	 
 	current->flags &= ~PF_MEMALLOC;
 
 	pending = local_softirq_pending();
@@ -172,7 +166,7 @@ asmlinkage __visible void __softirq_entry __do_softirq(void)
 	account_softirq_enter(current);
 
 restart:
-	 
+
 	set_softirq_pending(0);
 
 	local_irq_enable();
@@ -190,9 +184,8 @@ restart:
 
 		kstat_incr_softirqs_this_cpu(vec_nr);
 
-		 
 		h->action(h);
-		 
+
 		if (unlikely(prev_count != preempt_count())) {
 			pr_err("huh, entered softirq %u %s %p with preempt_count %08x, exited with %08x?\n",
 			       vec_nr, softirq_to_name[vec_nr], h->action,
@@ -260,7 +253,7 @@ static inline void __irq_exit_rcu(void)
 void irq_exit_rcu(void)
 {
 	__irq_exit_rcu();
-	  
+
 	lockdep_hardirq_exit();
 }
 
@@ -268,7 +261,7 @@ void irq_exit(void)
 {
 	__irq_exit_rcu();
 	rcu_irq_exit();
-	  
+
 	lockdep_hardirq_exit();
 }
 
@@ -276,7 +269,6 @@ inline void raise_softirq_irqoff(unsigned int nr)
 {
 	__raise_softirq_irqoff(nr);
 
-	 
 	if (!in_interrupt() && should_wake_ksoftirqd())
 		wakeup_softirqd();
 }
@@ -293,7 +285,7 @@ void raise_softirq(unsigned int nr)
 void __raise_softirq_irqoff(unsigned int nr)
 {
 	lockdep_assert_irqs_disabled();
-	 
+
 	or_softirq_pending(1UL << nr);
 }
 
@@ -301,7 +293,6 @@ void open_softirq(int nr, void (*action)(struct softirq_action *))
 {
 	softirq_vec[nr].action = action;
 }
-
 
 void __init softirq_init(void)
 {
@@ -317,7 +308,6 @@ static void run_ksoftirqd(unsigned int cpu)
 {
 	ksoftirqd_run_begin();
 	if (local_softirq_pending()) {
-		 
 		__do_softirq();
 		ksoftirqd_run_end();
 		cond_resched();
@@ -326,13 +316,13 @@ static void run_ksoftirqd(unsigned int cpu)
 	ksoftirqd_run_end();
 }
 
-#define takeover_tasklets	NULL
+#define takeover_tasklets NULL
 
 static struct smp_hotplug_thread softirq_threads = {
-	.store			= &ksoftirqd,
-	.thread_should_run	= ksoftirqd_should_run,
-	.thread_fn		= run_ksoftirqd,
-	.thread_comm		= "ksoftirqd/%u",
+	.store = &ksoftirqd,
+	.thread_should_run = ksoftirqd_should_run,
+	.thread_fn = run_ksoftirqd,
+	.thread_comm = "ksoftirqd/%u",
 };
 
 static __init int spawn_ksoftirqd(void)
@@ -344,7 +334,6 @@ static __init int spawn_ksoftirqd(void)
 	return 0;
 }
 early_initcall(spawn_ksoftirqd);
-
 
 int __init __weak early_irq_init(void)
 {

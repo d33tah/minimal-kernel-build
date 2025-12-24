@@ -18,7 +18,9 @@
 #include <linux/percpu_counter.h>
 #include <linux/percpu.h>
 #include <linux/task_work.h>
-static inline void ima_file_free(struct file *file) {}
+static inline void ima_file_free(struct file *file)
+{
+}
 #include <linux/swap.h>
 #include <linux/kmemleak.h>
 
@@ -26,9 +28,7 @@ static inline void ima_file_free(struct file *file) {}
 
 #include "internal.h"
 
-static struct files_stat_struct files_stat = {
-	.max_files = NR_FILE
-};
+static struct files_stat_struct files_stat = { .max_files = NR_FILE };
 
 static struct kmem_cache *filp_cachep __read_mostly;
 
@@ -77,7 +77,6 @@ static struct file *__alloc_file(int flags, const struct cred *cred)
 	mutex_init(&f->f_pos_lock);
 	f->f_flags = flags;
 	f->f_mode = OPEN_FMODE(flags);
-	 
 
 	return f;
 }
@@ -87,10 +86,9 @@ struct file *alloc_empty_file(int flags, const struct cred *cred)
 	static long old_max;
 	struct file *f;
 
-	 
 	if (get_nr_files() >= files_stat.max_files && !capable(CAP_SYS_ADMIN)) {
-		 
-		if (percpu_counter_sum_positive(&nr_files) >= files_stat.max_files)
+		if (percpu_counter_sum_positive(&nr_files) >=
+		    files_stat.max_files)
 			goto over;
 	}
 
@@ -107,9 +105,8 @@ over:
 	return ERR_PTR(-ENFILE);
 }
 
-
 static struct file *alloc_file(const struct path *path, int flags,
-		const struct file_operations *fop)
+			       const struct file_operations *fop)
 {
 	struct file *file;
 
@@ -122,11 +119,10 @@ static struct file *alloc_file(const struct path *path, int flags,
 	file->f_mapping = path->dentry->d_inode->i_mapping;
 	file->f_wb_err = filemap_sample_wb_err(file->f_mapping);
 	file->f_sb_err = file_sample_sb_err(file);
-	if ((file->f_mode & FMODE_READ) &&
-	     likely(fop->read || fop->read_iter))
+	if ((file->f_mode & FMODE_READ) && likely(fop->read || fop->read_iter))
 		file->f_mode |= FMODE_CAN_READ;
 	if ((file->f_mode & FMODE_WRITE) &&
-	     likely(fop->write || fop->write_iter))
+	    likely(fop->write || fop->write_iter))
 		file->f_mode |= FMODE_CAN_WRITE;
 	file->f_mode |= FMODE_OPENED;
 	file->f_op = fop;
@@ -136,8 +132,8 @@ static struct file *alloc_file(const struct path *path, int flags,
 }
 
 struct file *alloc_file_pseudo(struct inode *inode, struct vfsmount *mnt,
-				const char *name, int flags,
-				const struct file_operations *fops)
+			       const char *name, int flags,
+			       const struct file_operations *fops)
 {
 	static const struct dentry_operations anon_ops = {
 		.d_dname = simple_dname
@@ -161,7 +157,6 @@ struct file *alloc_file_pseudo(struct inode *inode, struct vfsmount *mnt,
 	return file;
 }
 
-
 static void __fput(struct file *file)
 {
 	struct dentry *dentry = file->f_path.dentry;
@@ -175,7 +170,7 @@ static void __fput(struct file *file)
 	might_sleep();
 
 	fsnotify_close(file);
-	 
+
 	eventpoll_release(file);
 	locks_remove_file(file);
 
@@ -235,9 +230,9 @@ void fput(struct file *file)
 
 		if (likely(!in_interrupt() && !(task->flags & PF_KTHREAD))) {
 			init_task_work(&file->f_u.fu_rcuhead, ____fput);
-			if (!task_work_add(task, &file->f_u.fu_rcuhead, TWA_RESUME))
+			if (!task_work_add(task, &file->f_u.fu_rcuhead,
+					   TWA_RESUME))
 				return;
-			 
 		}
 
 		if (llist_add(&file->f_u.fu_llist, &delayed_fput_list))
@@ -245,12 +240,11 @@ void fput(struct file *file)
 	}
 }
 
-
-
 void __init files_init(void)
 {
-	filp_cachep = kmem_cache_create("filp", sizeof(struct file), 0,
-			SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT, NULL);
+	filp_cachep = kmem_cache_create(
+		"filp", sizeof(struct file), 0,
+		SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT, NULL);
 	percpu_counter_init(&nr_files, 0, GFP_KERNEL);
 }
 
@@ -258,7 +252,7 @@ void __init files_maxfiles_init(void)
 {
 	unsigned long n;
 	unsigned long nr_pages = totalram_pages();
-	unsigned long memreserve = (nr_pages - nr_free_pages()) * 3/2;
+	unsigned long memreserve = (nr_pages - nr_free_pages()) * 3 / 2;
 
 	memreserve = min(memreserve, nr_pages - 1);
 	n = ((nr_pages - memreserve) * (PAGE_SIZE / 1024)) / 10;

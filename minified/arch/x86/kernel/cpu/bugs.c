@@ -42,7 +42,7 @@ void __init check_bugs(void)
 
 	init_utsname()->machine[1] =
 		'0' + (boot_cpu_data.x86 > 6 ? 6 : boot_cpu_data.x86);
-	
+
 	alternative_instructions();
 	fpu__init_check_bugs();
 }
@@ -56,10 +56,9 @@ int arch_prctl_spec_ctrl_get(struct task_struct *task, unsigned long which)
 }
 
 int arch_prctl_spec_ctrl_set(struct task_struct *task, unsigned long which,
-			      unsigned long ctrl)
+			     unsigned long ctrl)
 {
 	return -ENODEV;
 }
-
 
 DEFINE_STATIC_KEY_FALSE(switch_mm_cond_l1d_flush);

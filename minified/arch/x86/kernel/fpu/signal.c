@@ -19,22 +19,20 @@
 static inline bool check_xstate_in_sigframe(struct fxregs_state __user *fxbuf,
 					    struct _fpx_sw_bytes *fx_sw)
 {
-	int min_xstate_size = sizeof(struct fxregs_state) +
-			      sizeof(struct xstate_header);
+	int min_xstate_size =
+		sizeof(struct fxregs_state) + sizeof(struct xstate_header);
 	void __user *fpstate = fxbuf;
 	unsigned int magic2;
 
 	if (__copy_from_user(fx_sw, &fxbuf->sw_reserved[0], sizeof(*fx_sw)))
 		return false;
 
-	 
 	if (fx_sw->magic1 != FP_XSTATE_MAGIC1 ||
 	    fx_sw->xstate_size < min_xstate_size ||
 	    fx_sw->xstate_size > current->thread.fpu.fpstate->user_size ||
 	    fx_sw->xstate_size > fx_sw->extended_size)
 		goto setfx;
 
-	 
 	if (__get_user(magic2, (__u32 __user *)(fpstate + fx_sw->xstate_size)))
 		return false;
 
@@ -43,7 +41,6 @@ static inline bool check_xstate_in_sigframe(struct fxregs_state __user *fxbuf,
 setfx:
 	trace_x86_fpu_xstate_check_failed(&current->thread.fpu);
 
-	 
 	fx_sw->magic1 = 0;
 	fx_sw->xstate_size = sizeof(struct fxregs_state);
 	fx_sw->xfeatures = XFEATURE_MASK_FPSSE;
@@ -53,7 +50,8 @@ setfx:
 static inline bool save_fsave_header(struct task_struct *tsk, void __user *buf)
 {
 	if (use_fxsr()) {
-		struct xregs_state *xsave = &tsk->thread.fpu.fpstate->regs.xsave;
+		struct xregs_state *xsave =
+			&tsk->thread.fpu.fpstate->regs.xsave;
 		struct user_i387_ia32_struct env;
 		struct _fpstate_32 __user *fp = buf;
 
@@ -79,8 +77,8 @@ static inline bool save_fsave_header(struct task_struct *tsk, void __user *buf)
 	return true;
 }
 
-static inline void save_sw_bytes(struct _fpx_sw_bytes *sw_bytes, bool ia32_frame,
-				 struct fpstate *fpstate)
+static inline void save_sw_bytes(struct _fpx_sw_bytes *sw_bytes,
+				 bool ia32_frame, struct fpstate *fpstate)
 {
 	sw_bytes->magic1 = FP_XSTATE_MAGIC1;
 	sw_bytes->extended_size = fpstate->user_size + FP_XSTATE_MAGIC2_SIZE;
@@ -99,7 +97,6 @@ static inline bool save_xstate_epilog(void __user *buf, int ia32_frame,
 	u32 xfeatures;
 	int err;
 
-	 
 	save_sw_bytes(&sw_bytes, ia32_frame, fpstate);
 	err = __copy_to_user(&x->i387.sw_reserved, &sw_bytes, sizeof(sw_bytes));
 
@@ -109,10 +106,8 @@ static inline bool save_xstate_epilog(void __user *buf, int ia32_frame,
 	err |= __put_user(FP_XSTATE_MAGIC2,
 			  (__u32 __user *)(buf + fpstate->user_size));
 
-	 
 	err |= __get_user(xfeatures, (__u32 __user *)&x->header.xfeatures);
 
-	 
 	xfeatures |= XFEATURE_MASK_FPSSE;
 
 	err |= __put_user(xfeatures, (__u32 __user *)&x->header.xfeatures);
@@ -125,9 +120,11 @@ static inline int copy_fpregs_to_sigframe(struct xregs_state __user *buf)
 	if (use_xsave())
 		return xsave_to_user_sigframe(buf);
 	if (use_fxsr())
-		return fxsave_to_user_sigframe((struct fxregs_state __user *) buf);
+		return fxsave_to_user_sigframe(
+			(struct fxregs_state __user *)buf);
 	else
-		return fnsave_to_user_sigframe((struct fregs_state __user *) buf);
+		return fnsave_to_user_sigframe(
+			(struct fregs_state __user *)buf);
 }
 
 bool copy_fpstate_to_sigframe(void __user *buf, void __user *buf_fx, int size)
@@ -142,8 +139,9 @@ bool copy_fpstate_to_sigframe(void __user *buf, void __user *buf_fx, int size)
 	if (!static_cpu_has(X86_FEATURE_FPU)) {
 		struct user_i387_ia32_struct fp;
 
-		fpregs_soft_get(current, NULL, (struct membuf){.p = &fp,
-						.left = sizeof(fp)});
+		fpregs_soft_get(current, NULL,
+				(struct membuf){ .p = &fp,
+						 .left = sizeof(fp) });
 		return !copy_to_user(buf, &fp, sizeof(fp));
 	}
 
@@ -153,12 +151,11 @@ bool copy_fpstate_to_sigframe(void __user *buf, void __user *buf_fx, int size)
 	if (use_xsave()) {
 		struct xregs_state __user *xbuf = buf_fx;
 
-		 
 		if (__clear_user(&xbuf->header, sizeof(xbuf->header)))
 			return false;
 	}
 retry:
-	 
+
 	fpregs_lock();
 	if (test_thread_flag(TIF_NEED_FPU_LOAD))
 		fpregs_restore_userregs();
@@ -174,7 +171,6 @@ retry:
 		return false;
 	}
 
-	 
 	if ((ia32_fxstate || !use_fxsr()) && !save_fsave_header(tsk, buf))
 		return false;
 
@@ -214,7 +210,7 @@ static bool restore_fpregs_from_user(void __user *buf, u64 xrestore,
 
 retry:
 	fpregs_lock();
-	 
+
 	xfd_update_state(fpu->fpstate);
 	pagefault_disable();
 	ret = __restore_fpregs_from_user(buf, fpu->fpstate->user_xfeatures,
@@ -222,12 +218,10 @@ retry:
 	pagefault_enable();
 
 	if (unlikely(ret)) {
-		 
 		if (test_thread_flag(TIF_NEED_FPU_LOAD))
 			__cpu_invalidate_fpregs_state();
 		fpregs_unlock();
 
-		 
 		if (ret != X86_TRAP_PF)
 			return false;
 
@@ -236,7 +230,6 @@ retry:
 		return false;
 	}
 
-	 
 	if (test_thread_flag(TIF_NEED_FPU_LOAD) && xfeatures_mask_supervisor())
 		os_xrstor_supervisor(fpu->fpstate);
 
@@ -271,19 +264,15 @@ static bool __fpu_restore_sig(void __user *buf, void __user *buf_fx,
 	}
 
 	if (likely(!ia32_fxstate)) {
-		 
 		return restore_fpregs_from_user(buf_fx, user_xfeatures, fx_only,
 						state_size);
 	}
 
-	 
 	if (__copy_from_user(&env, buf, sizeof(env)))
 		return false;
 
-	 
 	fpregs_lock();
 	if (!test_thread_flag(TIF_NEED_FPU_LOAD)) {
-		 
 		if (xfeatures_mask_supervisor())
 			os_xsave(fpu->fpstate);
 		set_thread_flag(TIF_NEED_FPU_LOAD);
@@ -304,17 +293,14 @@ static bool __fpu_restore_sig(void __user *buf, void __user *buf_fx,
 		/* X86_32: just mask mxcsr */
 		fpregs->fxsave.mxcsr &= mxcsr_feature_mask;
 
-		 
 		if (use_xsave())
 			fpregs->xsave.header.xfeatures |= XFEATURE_MASK_FPSSE;
 	}
 
-	 
 	convert_to_fxsr(&fpregs->fxsave, &env);
 
 	fpregs_lock();
 	if (use_xsave()) {
-		 
 		u64 mask = user_xfeatures | xfeatures_mask_supervisor();
 
 		fpregs->xsave.header.xfeatures &= mask;
@@ -355,7 +341,6 @@ bool fpu__restore_sig(void __user *buf, int ia32_frame)
 
 	/* X86_32 always enabled */
 
-	 
 	if (ia32_frame && use_fxsr()) {
 		buf_fx = buf + sizeof(struct fregs_state);
 		size += sizeof(struct fregs_state);
@@ -380,11 +365,11 @@ out:
 	return success;
 }
 
-unsigned long
-fpu__alloc_mathframe(unsigned long sp, int ia32_frame,
-		     unsigned long *buf_fx, unsigned long *size)
+unsigned long fpu__alloc_mathframe(unsigned long sp, int ia32_frame,
+				   unsigned long *buf_fx, unsigned long *size)
 {
-	unsigned long frame_size = xstate_sigframe_size(current->thread.fpu.fpstate);
+	unsigned long frame_size =
+		xstate_sigframe_size(current->thread.fpu.fpstate);
 
 	*buf_fx = sp = round_down(sp - frame_size, 64);
 	if (ia32_frame && use_fxsr()) {
@@ -410,4 +395,3 @@ unsigned long __init fpu__get_fpstate_size(void)
 
 	return ret;
 }
-

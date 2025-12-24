@@ -2,10 +2,10 @@
 #include <linux/syscall_user_dispatch.h>
 
 /* Inlined from prctl.h */
-#define PR_SYS_DISPATCH_OFF		0
-#define PR_SYS_DISPATCH_ON		1
-#define SYSCALL_DISPATCH_FILTER_ALLOW	0
-#define SYSCALL_DISPATCH_FILTER_BLOCK	1
+#define PR_SYS_DISPATCH_OFF 0
+#define PR_SYS_DISPATCH_ON 1
+#define SYSCALL_DISPATCH_FILTER_ALLOW 0
+#define SYSCALL_DISPATCH_FILTER_BLOCK 1
 #include <linux/uaccess.h>
 #include <linux/signal.h>
 #include <linux/elf.h>
@@ -44,7 +44,6 @@ bool syscall_user_dispatch(struct pt_regs *regs)
 		return false;
 
 	if (likely(sd->selector)) {
-		 
 		if (unlikely(__get_user(state, sd->selector))) {
 			force_exit_sig(SIGSEGV);
 			return true;
@@ -75,7 +74,7 @@ int set_syscall_user_dispatch(unsigned long mode, unsigned long offset,
 			return -EINVAL;
 		break;
 	case PR_SYS_DISPATCH_ON:
-		 
+
 		if (offset && offset + len <= offset)
 			return -EINVAL;
 

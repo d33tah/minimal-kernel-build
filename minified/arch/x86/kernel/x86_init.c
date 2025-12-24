@@ -14,23 +14,45 @@
 #include <asm/time.h>
 #include <asm/irq.h>
 #include <asm/io_apic.h>
-static inline int hpet_enable(void) { return 0; }
+static inline int hpet_enable(void)
+{
+	return 0;
+}
 #define hpet_readl(a) 0
-#define default_setup_hpet_msi	NULL
+#define default_setup_hpet_msi NULL
 #include <asm/memtype.h>
 #include <asm/tsc.h>
 #include <asm/iommu.h>
 #include <asm/mach_traps.h>
-#define native_create_pci_msi_domain	NULL
+#define native_create_pci_msi_domain NULL
 
-void x86_init_noop(void) { }
-void __init x86_init_uint_noop(unsigned int unused) { }
-static int __init iommu_init_noop(void) { return 0; }
-static void iommu_shutdown_noop(void) { }
-bool __init bool_x86_init_noop(void) { return false; }
-void x86_op_int_noop(int cpu) { }
-static __init int set_rtc_noop(const struct timespec64 *now) { return -EINVAL; }
-static __init void get_rtc_noop(struct timespec64 *now) { }
+void x86_init_noop(void)
+{
+}
+void __init x86_init_uint_noop(unsigned int unused)
+{
+}
+static int __init iommu_init_noop(void)
+{
+	return 0;
+}
+static void iommu_shutdown_noop(void)
+{
+}
+bool __init bool_x86_init_noop(void)
+{
+	return false;
+}
+void x86_op_int_noop(int cpu)
+{
+}
+static __init int set_rtc_noop(const struct timespec64 *now)
+{
+	return -EINVAL;
+}
+static __init void get_rtc_noop(struct timespec64 *now)
+{
+}
 
 static __initconst const struct of_device_id of_cmos_match[] = {
 	{ .compatible = "motorola,mc146818" },
@@ -111,16 +133,29 @@ struct x86_init_ops x86_init __initdata = {
 };
 
 struct x86_cpuinit_ops x86_cpuinit = {
-	.early_percpu_clock_init	= x86_init_noop,
-	.setup_percpu_clockev		= setup_secondary_APIC_clock,
+	.early_percpu_clock_init = x86_init_noop,
+	.setup_percpu_clockev = setup_secondary_APIC_clock,
 };
 
-static void default_nmi_init(void) { };
+static void default_nmi_init(void) {};
 
-static void enc_status_change_prepare_noop(unsigned long vaddr, int npages, bool enc) { }
-static bool enc_status_change_finish_noop(unsigned long vaddr, int npages, bool enc) { return false; }
-static bool enc_tlb_flush_required_noop(bool enc) { return false; }
-static bool enc_cache_flush_required_noop(void) { return false; }
+static void enc_status_change_prepare_noop(unsigned long vaddr, int npages,
+					   bool enc)
+{
+}
+static bool enc_status_change_finish_noop(unsigned long vaddr, int npages,
+					  bool enc)
+{
+	return false;
+}
+static bool enc_tlb_flush_required_noop(bool enc)
+{
+	return false;
+}
+static bool enc_cache_flush_required_noop(void)
+{
+	return false;
+}
 
 struct x86_platform_ops x86_platform __ro_after_init = {
 	.calibrate_cpu			= native_calibrate_cpu_early,
@@ -143,8 +178,7 @@ struct x86_platform_ops x86_platform __ro_after_init = {
 	},
 };
 
-
 struct x86_apic_ops x86_apic_ops __ro_after_init = {
-	.io_apic_read	= native_io_apic_read,
-	.restore	= native_restore_boot_irq_mode,
+	.io_apic_read = native_io_apic_read,
+	.restore = native_restore_boot_irq_mode,
 };

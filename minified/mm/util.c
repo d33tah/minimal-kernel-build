@@ -97,7 +97,6 @@ void *memdup_user(const void __user *src, size_t len)
 	return p;
 }
 
-
 char *strndup_user(const char __user *s, long n)
 {
 	char *p;
@@ -121,9 +120,8 @@ char *strndup_user(const char __user *s, long n)
 	return p;
 }
 
-
 void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
-		struct vm_area_struct *prev)
+		     struct vm_area_struct *prev)
 {
 	struct vm_area_struct *next;
 
@@ -154,9 +152,8 @@ void __vma_unlink_list(struct mm_struct *mm, struct vm_area_struct *vma)
 		next->vm_prev = prev;
 }
 
-
 #ifndef STACK_RND_MASK
-#define STACK_RND_MASK (0x7ff >> (PAGE_SHIFT - 12))      
+#define STACK_RND_MASK (0x7ff >> (PAGE_SHIFT - 12))
 #endif
 
 unsigned long randomize_stack_top(unsigned long stack_top)
@@ -189,7 +186,7 @@ unsigned long randomize_page(unsigned long start, unsigned long range)
 	return start + (get_random_long() % range << PAGE_SHIFT);
 }
 
-#if   defined(CONFIG_MMU) && !defined(HAVE_ARCH_PICK_MMAP_LAYOUT)
+#if defined(CONFIG_MMU) && !defined(HAVE_ARCH_PICK_MMAP_LAYOUT)
 void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
 {
 	mm->mmap_base = TASK_UNMAPPED_BASE;
@@ -197,10 +194,9 @@ void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
 }
 #endif
 
-
 unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
-	unsigned long len, unsigned long prot,
-	unsigned long flag, unsigned long pgoff)
+			    unsigned long len, unsigned long prot,
+			    unsigned long flag, unsigned long pgoff)
 {
 	unsigned long ret;
 	struct mm_struct *mm = current->mm;
@@ -221,9 +217,9 @@ unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
 	return ret;
 }
 
-unsigned long vm_mmap(struct file *file, unsigned long addr,
-	unsigned long len, unsigned long prot,
-	unsigned long flag, unsigned long offset)
+unsigned long vm_mmap(struct file *file, unsigned long addr, unsigned long len,
+		      unsigned long prot, unsigned long flag,
+		      unsigned long offset)
 {
 	if (unlikely(offset + PAGE_ALIGN(len) < offset))
 		return -EINVAL;
@@ -238,33 +234,28 @@ void *kvmalloc_node(size_t size, gfp_t flags, int node)
 	gfp_t kmalloc_flags = flags;
 	void *ret;
 
-	 
 	if (size > PAGE_SIZE) {
 		kmalloc_flags |= __GFP_NOWARN;
 
 		if (!(kmalloc_flags & __GFP_RETRY_MAYFAIL))
 			kmalloc_flags |= __GFP_NORETRY;
 
-		 
 		kmalloc_flags &= ~__GFP_NOFAIL;
 	}
 
 	ret = kmalloc_node(size, kmalloc_flags, node);
 
-	 
 	if (ret || size <= PAGE_SIZE)
 		return ret;
 
-	 
 	if (unlikely(size > INT_MAX)) {
 		WARN_ON_ONCE(!(flags & __GFP_NOWARN));
 		return NULL;
 	}
 
-	 
-	return __vmalloc_node_range(size, 1, VMALLOC_START, VMALLOC_END,
-			flags, PAGE_KERNEL, VM_ALLOW_HUGE_VMAP,
-			node, __builtin_return_address(0));
+	return __vmalloc_node_range(size, 1, VMALLOC_START, VMALLOC_END, flags,
+				    PAGE_KERNEL, VM_ALLOW_HUGE_VMAP, node,
+				    __builtin_return_address(0));
 }
 
 void kvfree(const void *addr)
@@ -274,8 +265,6 @@ void kvfree(const void *addr)
 	else
 		kfree(addr);
 }
-
-
 
 void *page_rmapping(struct page *page)
 {
@@ -314,7 +303,6 @@ struct address_space *folio_mapping(struct folio *folio)
 {
 	struct address_space *mapping;
 
-
 	if (unlikely(folio_test_slab(folio)))
 		return NULL;
 
@@ -330,7 +318,7 @@ int __page_mapcount(struct page *page)
 	int ret;
 
 	ret = atomic_read(&page->_mapcount) + 1;
-	 
+
 	if (!PageAnon(page) && !PageHuge(page))
 		return ret;
 	page = compound_head(page);
@@ -344,8 +332,8 @@ int sysctl_overcommit_memory __read_mostly = OVERCOMMIT_GUESS;
 int sysctl_overcommit_ratio __read_mostly = 50;
 unsigned long sysctl_overcommit_kbytes __read_mostly;
 int sysctl_max_map_count __read_mostly = DEFAULT_MAX_MAP_COUNT;
-unsigned long sysctl_user_reserve_kbytes __read_mostly = 1UL << 17;  
-unsigned long sysctl_admin_reserve_kbytes __read_mostly = 1UL << 13;  
+unsigned long sysctl_user_reserve_kbytes __read_mostly = 1UL << 17;
+unsigned long sysctl_admin_reserve_kbytes __read_mostly = 1UL << 13;
 
 unsigned long vm_commit_limit(void)
 {
@@ -354,8 +342,8 @@ unsigned long vm_commit_limit(void)
 	if (sysctl_overcommit_kbytes)
 		allowed = sysctl_overcommit_kbytes >> (PAGE_SHIFT - 10);
 	else
-		allowed = ((totalram_pages() - hugetlb_total_pages())
-			   * sysctl_overcommit_ratio / 100);
+		allowed = ((totalram_pages() - hugetlb_total_pages()) *
+			   sysctl_overcommit_ratio / 100);
 	allowed += total_swap_pages;
 
 	return allowed;
@@ -369,7 +357,6 @@ int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin)
 
 	vm_acct_memory(pages);
 
-	 
 	if (sysctl_overcommit_memory == OVERCOMMIT_ALWAYS)
 		return 0;
 
@@ -380,11 +367,10 @@ int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin)
 	}
 
 	allowed = vm_commit_limit();
-	 
+
 	if (!cap_sys_admin)
 		allowed -= sysctl_admin_reserve_kbytes >> (PAGE_SHIFT - 10);
 
-	 
 	if (mm) {
 		long reserve = sysctl_user_reserve_kbytes >> (PAGE_SHIFT - 10);
 
@@ -398,7 +384,6 @@ error:
 
 	return -ENOMEM;
 }
-
 
 #ifndef ARCH_IMPLEMENTS_FLUSH_DCACHE_FOLIO
 void flush_dcache_folio(struct folio *folio)

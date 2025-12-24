@@ -7,10 +7,8 @@
 
 #include "base.h"
 
-
 void __init driver_init(void)
 {
-	 
 	bdi_init(&noop_backing_dev_info);
 	devtmpfs_init();
 	devices_init();
@@ -19,7 +17,6 @@ void __init driver_init(void)
 	firmware_init();
 	hypervisor_init();
 
-	 
 	of_core_init();
 	platform_bus_init();
 	auxiliary_bus_init();

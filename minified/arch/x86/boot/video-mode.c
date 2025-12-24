@@ -59,9 +59,8 @@ static int raw_set_mode(u16 mode, u16 *real_mode)
 		for (i = 0; i < card->nmodes; i++, mi++) {
 			int visible = mi->x || mi->y;
 
-			if ((mode == nmode && visible) ||
-			    mode == mi->mode ||
-			    mode == (mi->y << 8)+mi->x) {
+			if ((mode == nmode && visible) || mode == mi->mode ||
+			    mode == (mi->y << 8) + mi->x) {
 				*real_mode = mi->mode;
 				return card->set_mode(mi);
 			}
@@ -84,7 +83,7 @@ int set_mode(u16 mode)
 	else if (mode == NORMAL_VGA)
 		mode = VIDEO_80x25;
 	else if (mode == EXTENDED_VGA)
-		mode = VIDEO_80x25;  /* Use 80x25 instead of 8POINT */
+		mode = VIDEO_80x25; /* Use 80x25 instead of 8POINT */
 
 	rv = raw_set_mode(mode, &real_mode);
 	if (rv)

@@ -11,14 +11,13 @@
 #include <linux/bitops.h>
 #include <linux/spinlock.h>
 #include <linux/rcupdate.h>
-#define CLOSE_RANGE_UNSHARE	(1U << 1)
-#define CLOSE_RANGE_CLOEXEC	(1U << 2)
+#define CLOSE_RANGE_UNSHARE (1U << 1)
+#define CLOSE_RANGE_CLOEXEC (1U << 2)
 #include <linux/security.h>
 
 #include "internal.h"
 
-
-unsigned int sysctl_nr_open __read_mostly = 1024*1024;
+unsigned int sysctl_nr_open __read_mostly = 1024 * 1024;
 
 static void __free_fdtable(struct fdtable *fdt)
 {
@@ -32,8 +31,8 @@ static void free_fdtable_rcu(struct rcu_head *rcu)
 	__free_fdtable(container_of(rcu, struct fdtable, rcu));
 }
 
-#define BITBIT_NR(nr)	BITS_TO_LONGS(BITS_TO_LONGS(nr))
-#define BITBIT_SIZE(nr)	(BITBIT_NR(nr) * sizeof(long))
+#define BITBIT_NR(nr) BITS_TO_LONGS(BITS_TO_LONGS(nr))
+#define BITBIT_SIZE(nr) (BITBIT_NR(nr) * sizeof(long))
 
 static void copy_fd_bitmaps(struct fdtable *nfdt, struct fdtable *ofdt,
 			    unsigned int count)
@@ -67,17 +66,16 @@ static void copy_fdtable(struct fdtable *nfdt, struct fdtable *ofdt)
 	copy_fd_bitmaps(nfdt, ofdt, ofdt->max_fds);
 }
 
-static struct fdtable * alloc_fdtable(unsigned int nr)
+static struct fdtable *alloc_fdtable(unsigned int nr)
 {
 	struct fdtable *fdt;
 	void *data;
 
-	 
 	nr /= (1024 / sizeof(struct file *));
 	nr = roundup_pow_of_two(nr + 1);
 	nr *= (1024 / sizeof(struct file *));
 	nr = ALIGN(nr, BITS_PER_LONG);
-	 
+
 	if (unlikely(nr > sysctl_nr_open))
 		nr = ((sysctl_nr_open - 1) | (BITS_PER_LONG - 1)) + 1;
 
@@ -90,9 +88,9 @@ static struct fdtable * alloc_fdtable(unsigned int nr)
 		goto out_fdt;
 	fdt->fd = data;
 
-	data = kvmalloc(max_t(size_t,
-				 2 * nr / BITS_PER_BYTE + BITBIT_SIZE(nr), L1_CACHE_BYTES),
-				 GFP_KERNEL_ACCOUNT);
+	data = kvmalloc(max_t(size_t, 2 * nr / BITS_PER_BYTE + BITBIT_SIZE(nr),
+			      L1_CACHE_BYTES),
+			GFP_KERNEL_ACCOUNT);
 	if (!data)
 		goto out_arr;
 	fdt->open_fds = data;
@@ -112,22 +110,20 @@ out:
 }
 
 static int expand_fdtable(struct files_struct *files, unsigned int nr)
-	__releases(files->file_lock)
-	__acquires(files->file_lock)
+	__releases(files->file_lock) __acquires(files->file_lock)
 {
 	struct fdtable *new_fdt, *cur_fdt;
 
 	spin_unlock(&files->file_lock);
 	new_fdt = alloc_fdtable(nr);
 
-	 
 	if (atomic_read(&files->count) > 1)
 		synchronize_rcu();
 
 	spin_lock(&files->file_lock);
 	if (!new_fdt)
 		return -ENOMEM;
-	 
+
 	if (unlikely(new_fdt->max_fds <= nr)) {
 		__free_fdtable(new_fdt);
 		return -EMFILE;
@@ -138,14 +134,13 @@ static int expand_fdtable(struct files_struct *files, unsigned int nr)
 	rcu_assign_pointer(files->fdt, new_fdt);
 	if (cur_fdt != &files->fdtab)
 		call_rcu(&cur_fdt->rcu, free_fdtable_rcu);
-	 
+
 	smp_wmb();
 	return 1;
 }
 
 static int expand_files(struct files_struct *files, unsigned int nr)
-	__releases(files->file_lock)
-	__acquires(files->file_lock)
+	__releases(files->file_lock) __acquires(files->file_lock)
 {
 	struct fdtable *fdt;
 	int expanded = 0;
@@ -153,11 +148,9 @@ static int expand_files(struct files_struct *files, unsigned int nr)
 repeat:
 	fdt = files_fdtable(files);
 
-	 
 	if (nr < fdt->max_fds)
 		return expanded;
 
-	 
 	if (nr >= sysctl_nr_open)
 		return -EMFILE;
 
@@ -169,7 +162,6 @@ repeat:
 		goto repeat;
 	}
 
-	 
 	files->resize_in_progress = true;
 	expanded = expand_fdtable(files, nr);
 	files->resize_in_progress = false;
@@ -208,8 +200,7 @@ static unsigned int count_open_files(struct fdtable *fdt)
 	unsigned int size = fdt->max_fds;
 	unsigned int i;
 
-	 
-	for (i = size / BITS_PER_LONG; i > 0; ) {
+	for (i = size / BITS_PER_LONG; i > 0;) {
 		if (fdt->open_fds[--i])
 			break;
 	}
@@ -227,7 +218,8 @@ static unsigned int sane_fdtable_size(struct fdtable *fdt, unsigned int max_fds)
 	return ALIGN(min(count, max_fds), BITS_PER_LONG);
 }
 
-struct files_struct *dup_fd(struct files_struct *oldf, unsigned int max_fds, int *errorp)
+struct files_struct *dup_fd(struct files_struct *oldf, unsigned int max_fds,
+			    int *errorp)
 {
 	struct files_struct *newf;
 	struct file **old_fds, **new_fds;
@@ -256,7 +248,6 @@ struct files_struct *dup_fd(struct files_struct *oldf, unsigned int max_fds, int
 	old_fdt = files_fdtable(oldf);
 	open_files = sane_fdtable_size(old_fdt, max_fds);
 
-	 
 	while (unlikely(open_files > new_fdt->max_fds)) {
 		spin_unlock(&oldf->file_lock);
 
@@ -269,14 +260,12 @@ struct files_struct *dup_fd(struct files_struct *oldf, unsigned int max_fds, int
 			goto out_release;
 		}
 
-		 
 		if (unlikely(new_fdt->max_fds < open_files)) {
 			__free_fdtable(new_fdt);
 			*errorp = -EMFILE;
 			goto out_release;
 		}
 
-		 
 		spin_lock(&oldf->file_lock);
 		old_fdt = files_fdtable(oldf);
 		open_files = sane_fdtable_size(old_fdt, max_fds);
@@ -292,15 +281,14 @@ struct files_struct *dup_fd(struct files_struct *oldf, unsigned int max_fds, int
 		if (f) {
 			get_file(f);
 		} else {
-			 
 			__clear_open_fd(open_files - i, new_fdt);
 		}
 		rcu_assign_pointer(*new_fds++, f);
 	}
 	spin_unlock(&oldf->file_lock);
 
-	 
-	memset(new_fds, 0, (new_fdt->max_fds - open_files) * sizeof(struct file *));
+	memset(new_fds, 0,
+	       (new_fdt->max_fds - open_files) * sizeof(struct file *));
 
 	rcu_assign_pointer(newf->fdt, new_fdt);
 
@@ -312,9 +300,8 @@ out:
 	return NULL;
 }
 
-static struct fdtable *close_files(struct files_struct * files)
+static struct fdtable *close_files(struct files_struct *files)
 {
-	 
 	struct fdtable *fdt = rcu_dereference_raw(files->fdt);
 	unsigned int i, j = 0;
 
@@ -326,7 +313,7 @@ static struct fdtable *close_files(struct files_struct * files)
 		set = fdt->open_fds[j++];
 		while (set) {
 			if (set & 1) {
-				struct file * file = xchg(&fdt->fd[i], NULL);
+				struct file *file = xchg(&fdt->fd[i], NULL);
 				if (file) {
 					filp_close(file, files);
 					cond_resched();
@@ -345,7 +332,6 @@ void put_files_struct(struct files_struct *files)
 	if (atomic_dec_and_test(&files->count)) {
 		struct fdtable *fdt = close_files(files);
 
-		 
 		if (fdt != &files->fdtab)
 			__free_fdtable(fdt);
 		kmem_cache_free(files_cachep, files);
@@ -354,7 +340,7 @@ void put_files_struct(struct files_struct *files)
 
 void exit_files(struct task_struct *tsk)
 {
-	struct files_struct * files = tsk->files;
+	struct files_struct *files = tsk->files;
 
 	if (files) {
 		task_lock(tsk);
@@ -384,7 +370,8 @@ static unsigned int find_next_fd(struct fdtable *fdt, unsigned int start)
 	unsigned int maxbit = maxfd / BITS_PER_LONG;
 	unsigned int bitbit = start / BITS_PER_LONG;
 
-	bitbit = find_next_zero_bit(fdt->full_fds_bits, maxbit, bitbit) * BITS_PER_LONG;
+	bitbit = find_next_zero_bit(fdt->full_fds_bits, maxbit, bitbit) *
+		 BITS_PER_LONG;
 	if (bitbit > maxfd)
 		return maxfd;
 	if (bitbit > start)
@@ -409,7 +396,6 @@ repeat:
 	if (fd < fdt->max_fds)
 		fd = find_next_fd(fdt, fd);
 
-	 
 	error = -EMFILE;
 	if (fd >= end)
 		goto out;
@@ -418,7 +404,6 @@ repeat:
 	if (error < 0)
 		goto out;
 
-	 
 	if (error)
 		goto repeat;
 
@@ -432,7 +417,7 @@ repeat:
 		__clear_close_on_exec(fd, fdt);
 	error = fd;
 #if 1
-	 
+
 	if (rcu_access_pointer(fdt->fd[fd]) != NULL) {
 		printk(KERN_WARNING "alloc_fd: slot %d not NULL!\n", fd);
 		rcu_assign_pointer(fdt->fd[fd], NULL);
@@ -470,8 +455,6 @@ void put_unused_fd(unsigned int fd)
 	spin_unlock(&files->file_lock);
 }
 
-
-
 void fd_install(unsigned int fd, struct file *file)
 {
 	struct files_struct *files = current->files;
@@ -488,14 +471,13 @@ void fd_install(unsigned int fd, struct file *file)
 		spin_unlock(&files->file_lock);
 		return;
 	}
-	 
+
 	smp_rmb();
 	fdt = rcu_dereference_sched(files->fdt);
 	BUG_ON(fdt->fd[fd] != NULL);
 	rcu_assign_pointer(fdt->fd[fd], file);
 	rcu_read_unlock_sched();
 }
-
 
 static struct file *pick_file(struct files_struct *files, unsigned fd)
 {
@@ -538,9 +520,8 @@ void do_close_on_exec(struct files_struct *files)
 	unsigned i;
 	struct fdtable *fdt;
 
-	 
 	spin_lock(&files->file_lock);
-	for (i = 0; ; i++) {
+	for (i = 0;; i++) {
 		unsigned long set;
 		unsigned fd = i * BITS_PER_LONG;
 		fdt = files_fdtable(files);
@@ -550,7 +531,7 @@ void do_close_on_exec(struct files_struct *files)
 		if (!set)
 			continue;
 		fdt->close_on_exec[i] = 0;
-		for ( ; set ; fd++, set >>= 1) {
+		for (; set; fd++, set >>= 1) {
 			struct file *file;
 			if (!(set & 1))
 				continue;
@@ -564,13 +545,12 @@ void do_close_on_exec(struct files_struct *files)
 			cond_resched();
 			spin_lock(&files->file_lock);
 		}
-
 	}
 	spin_unlock(&files->file_lock);
 }
 
 static inline struct file *__fget_files_rcu(struct files_struct *files,
-	unsigned int fd, fmode_t mask)
+					    unsigned int fd, fmode_t mask)
 {
 	for (;;) {
 		struct file *file;
@@ -588,18 +568,15 @@ static inline struct file *__fget_files_rcu(struct files_struct *files,
 		if (unlikely(file->f_mode & mask))
 			return NULL;
 
-		 
 		if (unlikely(!get_file_rcu(file)))
 			continue;
 
-		 
 		if (unlikely(rcu_dereference_raw(files->fdt) != fdt) ||
 		    unlikely(rcu_dereference_raw(*fdentry) != file)) {
 			fput(file);
 			continue;
 		}
 
-		 
 		return file;
 	}
 }
@@ -629,9 +606,8 @@ struct file *fget(unsigned int fd)
 /* fget_raw - used internally by replace_fd */
 static struct file *fget_raw(unsigned int fd)
 {
-	return __fget(fd, 0);  /* No FMODE_PATH filter */
+	return __fget(fd, 0); /* No FMODE_PATH filter */
 }
-
 
 static unsigned long __fget_light(unsigned int fd, fmode_t mask)
 {
@@ -680,7 +656,6 @@ void __f_unlock_pos(struct file *f)
 	mutex_unlock(&f->f_pos_lock);
 }
 
-
 bool get_close_on_exec(unsigned int fd)
 {
 	struct files_struct *files = current->files;
@@ -693,14 +668,12 @@ bool get_close_on_exec(unsigned int fd)
 	return res;
 }
 
-static int do_dup2(struct files_struct *files,
-	struct file *file, unsigned fd, unsigned flags)
-__releases(&files->file_lock)
+static int do_dup2(struct files_struct *files, struct file *file, unsigned fd,
+		   unsigned flags) __releases(&files->file_lock)
 {
 	struct file *tofree;
 	struct fdtable *fdt;
 
-	 
 	fdt = files_fdtable(files);
 	tofree = fdt->fd[fd];
 	if (!tofree && fd_is_open(fd, fdt))
@@ -723,7 +696,6 @@ Ebusy:
 	spin_unlock(&files->file_lock);
 	return -EBUSY;
 }
-
 
 static int ksys_dup3(unsigned int oldfd, unsigned int newfd, int flags)
 {
@@ -766,7 +738,7 @@ SYSCALL_DEFINE3(dup3, unsigned int, oldfd, unsigned int, newfd, int, flags)
 
 SYSCALL_DEFINE2(dup2, unsigned int, oldfd, unsigned int, newfd)
 {
-	if (unlikely(newfd == oldfd)) {  
+	if (unlikely(newfd == oldfd)) {
 		struct files_struct *files = current->files;
 		int retval = oldfd;
 
@@ -793,4 +765,3 @@ SYSCALL_DEFINE1(dup, unsigned int, fildes)
 	}
 	return ret;
 }
-

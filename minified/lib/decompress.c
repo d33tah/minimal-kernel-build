@@ -1,17 +1,11 @@
-typedef int (*decompress_fn) (unsigned char *inbuf, long len,
-			      long (*fill)(void*, unsigned long),
-			      long (*flush)(void*, unsigned long),
-			      unsigned char *outbuf,
-			      long *posp,
-			      void(*error)(char *x));
+typedef int (*decompress_fn)(unsigned char *inbuf, long len,
+			     long (*fill)(void *, unsigned long),
+			     long (*flush)(void *, unsigned long),
+			     unsigned char *outbuf, long *posp,
+			     void (*error)(char *x));
 decompress_fn decompress_method(const unsigned char *inbuf, long len,
 				const char **name);
 /* end decompress/generic.h */
-
-
-
-
-
 
 #include <linux/types.h>
 #include <linux/string.h>
@@ -19,25 +13,25 @@ decompress_fn decompress_method(const unsigned char *inbuf, long len,
 #include <linux/printk.h>
 
 #ifndef CONFIG_DECOMPRESS_GZIP
-# define gunzip NULL
+#define gunzip NULL
 #endif
 #ifndef CONFIG_DECOMPRESS_BZIP2
-# define bunzip2 NULL
+#define bunzip2 NULL
 #endif
 #ifndef CONFIG_DECOMPRESS_LZMA
-# define unlzma NULL
+#define unlzma NULL
 #endif
 #ifndef CONFIG_DECOMPRESS_XZ
-# define unxz NULL
+#define unxz NULL
 #endif
 #ifndef CONFIG_DECOMPRESS_LZO
-# define unlzo NULL
+#define unlzo NULL
 #endif
 #ifndef CONFIG_DECOMPRESS_LZ4
-# define unlz4 NULL
+#define unlz4 NULL
 #endif
 #ifndef CONFIG_DECOMPRESS_ZSTD
-# define unzstd NULL
+#define unzstd NULL
 #endif
 
 struct compress_format {
@@ -47,32 +41,31 @@ struct compress_format {
 };
 
 static const struct compress_format compressed_formats[] __initconst = {
-	{ {0x1f, 0x8b}, "gzip", gunzip },
-	{ {0x1f, 0x9e}, "gzip", gunzip },
-	{ {0x42, 0x5a}, "bzip2", bunzip2 },
-	{ {0x5d, 0x00}, "lzma", unlzma },
-	{ {0xfd, 0x37}, "xz", unxz },
-	{ {0x89, 0x4c}, "lzo", unlzo },
-	{ {0x02, 0x21}, "lz4", unlz4 },
-	{ {0x28, 0xb5}, "zstd", unzstd },
-	{ {0, 0}, NULL, NULL }
+	{ { 0x1f, 0x8b }, "gzip", gunzip },
+	{ { 0x1f, 0x9e }, "gzip", gunzip },
+	{ { 0x42, 0x5a }, "bzip2", bunzip2 },
+	{ { 0x5d, 0x00 }, "lzma", unlzma },
+	{ { 0xfd, 0x37 }, "xz", unxz },
+	{ { 0x89, 0x4c }, "lzo", unlzo },
+	{ { 0x02, 0x21 }, "lz4", unlz4 },
+	{ { 0x28, 0xb5 }, "zstd", unzstd },
+	{ { 0, 0 }, NULL, NULL }
 };
 
 decompress_fn __init decompress_method(const unsigned char *inbuf, long len,
-				const char **name)
+				       const char **name)
 {
 	const struct compress_format *cf;
 
 	if (len < 2) {
 		if (name)
 			*name = NULL;
-		return NULL;	 
+		return NULL;
 	}
 
 	for (cf = compressed_formats; cf->name; cf++) {
 		if (!memcmp(inbuf, cf->magic, 2))
 			break;
-
 	}
 	if (name)
 		*name = cf->name;

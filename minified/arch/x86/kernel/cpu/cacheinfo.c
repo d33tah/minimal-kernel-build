@@ -25,13 +25,13 @@ struct cacheinfo {
 	unsigned int size;
 	cpumask_t shared_cpu_map;
 	unsigned int attributes;
-#define CACHE_WRITE_THROUGH	BIT(0)
-#define CACHE_WRITE_BACK	BIT(1)
-#define CACHE_WRITE_POLICY_MASK	(CACHE_WRITE_THROUGH | CACHE_WRITE_BACK)
-#define CACHE_READ_ALLOCATE	BIT(2)
-#define CACHE_WRITE_ALLOCATE	BIT(3)
+#define CACHE_WRITE_THROUGH BIT(0)
+#define CACHE_WRITE_BACK BIT(1)
+#define CACHE_WRITE_POLICY_MASK (CACHE_WRITE_THROUGH | CACHE_WRITE_BACK)
+#define CACHE_READ_ALLOCATE BIT(2)
+#define CACHE_WRITE_ALLOCATE BIT(3)
 #define CACHE_ALLOCATE_POLICY_MASK (CACHE_READ_ALLOCATE | CACHE_WRITE_ALLOCATE)
-#define CACHE_ID		BIT(4)
+#define CACHE_ID BIT(4)
 	void *fw_token;
 	bool disable_sysfs;
 	void *priv;
@@ -49,7 +49,10 @@ int init_cache_level(unsigned int cpu);
 int populate_cache_leaves(unsigned int cpu);
 int cache_setup_acpi(unsigned int cpu);
 
-static inline int acpi_find_last_cache_level(unsigned int cpu) { return 0; }
+static inline int acpi_find_last_cache_level(unsigned int cpu)
+{
+	return 0;
+}
 
 const struct attribute_group *cache_get_priv_group(struct cacheinfo *this_leaf);
 

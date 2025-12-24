@@ -23,13 +23,11 @@
 #include "do_mounts.h"
 
 int root_mountflags = MS_RDONLY | MS_SILENT;
-static char * __initdata root_device_name;
+static char *__initdata root_device_name;
 static char __initdata saved_root_name[64];
 static int root_wait;
 
 dev_t ROOT_DEV;
-
-
 
 static dev_t devt_from_devnum(const char *name)
 {
@@ -63,24 +61,39 @@ dev_t name_to_dev_t(const char *name)
 }
 
 /* Stub: root= cmdline not needed for minimal kernel */
-static int __init root_dev_setup(char *line) { return 1; }
+static int __init root_dev_setup(char *line)
+{
+	return 1;
+}
 __setup("root=", root_dev_setup);
 
 /* Stub: rootwait cmdline not needed for minimal kernel */
-static int __init rootwait_setup(char *str) { return 1; }
+static int __init rootwait_setup(char *str)
+{
+	return 1;
+}
 __setup("rootwait", rootwait_setup);
 
-static char * __initdata root_mount_data;
+static char *__initdata root_mount_data;
 /* Stub: rootflags= not needed for minimal kernel */
-static int __init root_data_setup(char *str) { return 1; }
+static int __init root_data_setup(char *str)
+{
+	return 1;
+}
 
-static char * __initdata root_fs_names;
+static char *__initdata root_fs_names;
 /* Stub: rootfstype= not needed for minimal kernel */
-static int __init fs_names_setup(char *str) { return 1; }
+static int __init fs_names_setup(char *str)
+{
+	return 1;
+}
 
 static unsigned int __initdata root_delay;
 /* Stub: rootdelay= not needed for minimal kernel */
-static int __init root_delay_setup(char *str) { return 1; }
+static int __init root_delay_setup(char *str)
+{
+	return 1;
+}
 
 __setup("rootflags=", root_data_setup);
 __setup("rootfstype=", fs_names_setup);
@@ -103,7 +116,7 @@ static int __init split_fs_names(char *page, size_t size, char *names)
 }
 
 static int __init do_mount_root(const char *name, const char *fs,
-				 const int flags, const void *data)
+				const int flags, const void *data)
 {
 	struct super_block *s;
 	struct page *p = NULL;
@@ -111,12 +124,11 @@ static int __init do_mount_root(const char *name, const char *fs,
 	int ret;
 
 	if (data) {
-		 
 		p = alloc_page(GFP_KERNEL);
 		if (!p)
 			return -ENOMEM;
 		data_page = page_address(p);
-		 
+
 		strncpy(data_page, data, PAGE_SIZE);
 	}
 
@@ -129,8 +141,7 @@ static int __init do_mount_root(const char *name, const char *fs,
 	ROOT_DEV = s->s_dev;
 	printk(KERN_INFO
 	       "VFS: Mounted root (%s filesystem)%s on device %u:%u.\n",
-	       s->s_type->name,
-	       sb_rdonly(s) ? " readonly" : "",
+	       s->s_type->name, sb_rdonly(s) ? " readonly" : "",
 	       MAJOR(ROOT_DEV), MINOR(ROOT_DEV));
 
 out:
@@ -147,29 +158,29 @@ void __init mount_block_root(char *name, int flags)
 	char b[BDEVNAME_SIZE];
 	int num_fs, i;
 
-	scnprintf(b, BDEVNAME_SIZE, "unknown-block(%u,%u)",
-		  MAJOR(ROOT_DEV), MINOR(ROOT_DEV));
+	scnprintf(b, BDEVNAME_SIZE, "unknown-block(%u,%u)", MAJOR(ROOT_DEV),
+		  MINOR(ROOT_DEV));
 	if (root_fs_names)
 		num_fs = split_fs_names(fs_names, PAGE_SIZE, root_fs_names);
 	else
 		num_fs = list_bdev_fs_names(fs_names, PAGE_SIZE);
 retry:
-	for (i = 0, p = fs_names; i < num_fs; i++, p += strlen(p)+1) {
+	for (i = 0, p = fs_names; i < num_fs; i++, p += strlen(p) + 1) {
 		int err;
 
 		if (!*p)
 			continue;
 		err = do_mount_root(name, p, flags, root_mount_data);
 		switch (err) {
-			case 0:
-				goto out;
-			case -EACCES:
-			case -EINVAL:
-				continue;
+		case 0:
+			goto out;
+		case -EACCES:
+		case -EINVAL:
+			continue;
 		}
-	         
+
 		printk("VFS: Cannot open root device \"%s\" or %s: error %d\n",
-				root_device_name, b, err);
+		       root_device_name, b, err);
 		printk("Please append a correct \"root=\" boot option; here are the available partitions:\n");
 
 		printk_all_partitions();
@@ -183,14 +194,13 @@ retry:
 	printk("List of all partitions:\n");
 	printk_all_partitions();
 	printk("No filesystem could mount root, tried: ");
-	for (i = 0, p = fs_names; i < num_fs; i++, p += strlen(p)+1)
+	for (i = 0, p = fs_names; i < num_fs; i++, p += strlen(p) + 1)
 		printk(" %s", p);
 	printk("\n");
 	panic("VFS: Unable to mount root fs on %s", b);
 out:
 	put_page(page);
 }
-
 
 static bool __init fs_is_nodev(char *fstype)
 {
@@ -243,12 +253,12 @@ void __init mount_root(void)
 void __init prepare_namespace(void)
 {
 	if (root_delay) {
-		printk(KERN_INFO "Waiting %d sec before mounting root device...\n",
+		printk(KERN_INFO
+		       "Waiting %d sec before mounting root device...\n",
 		       root_delay);
 		ssleep(root_delay);
 	}
 
-	 
 	wait_for_device_probe();
 
 	if (saved_root_name[0]) {
@@ -266,12 +276,11 @@ void __init prepare_namespace(void)
 	if (initrd_load())
 		goto out;
 
-	 
 	if ((ROOT_DEV == 0) && root_wait) {
 		printk(KERN_INFO "Waiting for root device %s...\n",
-			saved_root_name);
+		       saved_root_name);
 		while (driver_probe_done() != 0 ||
-			(ROOT_DEV = name_to_dev_t(saved_root_name)) == 0)
+		       (ROOT_DEV = name_to_dev_t(saved_root_name)) == 0)
 			msleep(5);
 		async_synchronize_full();
 	}
@@ -290,9 +299,11 @@ static int rootfs_init_fs_context(struct fs_context *fc)
 }
 
 struct file_system_type rootfs_fs_type = {
-	.name		= "rootfs",
+	.name = "rootfs",
 	.init_fs_context = rootfs_init_fs_context,
-	.kill_sb	= kill_litter_super,
+	.kill_sb = kill_litter_super,
 };
 
-void __init init_rootfs(void) { }
+void __init init_rootfs(void)
+{
+}

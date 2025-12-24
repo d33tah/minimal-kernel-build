@@ -31,8 +31,8 @@ static bool tlb_next_batch(struct mmu_gather *tlb)
 
 	tlb->batch_count++;
 	batch->next = NULL;
-	batch->nr   = 0;
-	batch->max  = MAX_GATHER_BATCH;
+	batch->nr = 0;
+	batch->max = MAX_GATHER_BATCH;
 
 	tlb->active->next = batch;
 	tlb->active = batch;
@@ -48,7 +48,6 @@ static void tlb_batch_pages_flush(struct mmu_gather *tlb)
 		struct page **pages = batch->pages;
 
 		do {
-			 
 			unsigned int nr = min(512U, batch->nr);
 
 			free_pages_and_swap_cache(pages, nr);
@@ -72,15 +71,15 @@ static void tlb_batch_list_free(struct mmu_gather *tlb)
 	tlb->local.next = NULL;
 }
 
-bool __tlb_remove_page_size(struct mmu_gather *tlb, struct page *page, int page_size)
+bool __tlb_remove_page_size(struct mmu_gather *tlb, struct page *page,
+			    int page_size)
 {
 	struct mmu_gather_batch *batch;
 
 	VM_BUG_ON(!tlb->end);
 
-
 	batch = tlb->active;
-	 
+
 	batch->pages[batch->nr++] = page;
 	if (batch->nr == batch->max) {
 		if (!tlb_next_batch(tlb))
@@ -92,9 +91,12 @@ bool __tlb_remove_page_size(struct mmu_gather *tlb, struct page *page, int page_
 	return false;
 }
 
-static inline void tlb_table_flush(struct mmu_gather *tlb) { }
-static inline void tlb_table_init(struct mmu_gather *tlb) { }
-
+static inline void tlb_table_flush(struct mmu_gather *tlb)
+{
+}
+static inline void tlb_table_init(struct mmu_gather *tlb)
+{
+}
 
 static void tlb_flush_mmu_free(struct mmu_gather *tlb)
 {
@@ -116,9 +118,9 @@ static void __tlb_gather_mmu(struct mmu_gather *tlb, struct mm_struct *mm,
 
 	tlb->need_flush_all = 0;
 	tlb->local.next = NULL;
-	tlb->local.nr   = 0;
-	tlb->local.max  = ARRAY_SIZE(tlb->__pages);
-	tlb->active     = &tlb->local;
+	tlb->local.nr = 0;
+	tlb->local.max = ARRAY_SIZE(tlb->__pages);
+	tlb->active = &tlb->local;
 	tlb->batch_count = 0;
 
 	tlb_table_init(tlb);
@@ -139,9 +141,7 @@ void tlb_gather_mmu_fullmm(struct mmu_gather *tlb, struct mm_struct *mm)
 
 void tlb_finish_mmu(struct mmu_gather *tlb)
 {
-	 
 	if (mm_tlb_flush_nested(tlb->mm)) {
-		 
 		tlb->fullmm = 1;
 		__tlb_reset_range(tlb);
 		tlb->freed_tables = 1;

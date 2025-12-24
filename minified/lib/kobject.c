@@ -6,7 +6,8 @@
 #include <linux/slab.h>
 #include <linux/random.h>
 
-static void kobject_get_ownership(struct kobject *kobj, kuid_t *uid, kgid_t *gid)
+static void kobject_get_ownership(struct kobject *kobj, kuid_t *uid,
+				  kgid_t *gid)
 {
 	*uid = GLOBAL_ROOT_UID;
 	*gid = GLOBAL_ROOT_GID;
@@ -17,7 +18,6 @@ static void kobject_get_ownership(struct kobject *kobj, kuid_t *uid, kgid_t *gid
 
 static int create_dir(struct kobject *kobj)
 {
-	 
 	return 0;
 }
 
@@ -55,7 +55,6 @@ static void kobject_init_internal(struct kobject *kobj)
 	kobj->state_initialized = 1;
 }
 
-
 static int kobject_add_internal(struct kobject *kobj)
 {
 	int error = 0;
@@ -73,7 +72,6 @@ static int kobject_add_internal(struct kobject *kobj)
 
 	parent = kobject_get(kobj->parent);
 
-	 
 	if (kobj->kset) {
 		if (!parent)
 			parent = kobject_get(&kobj->kset->kobj);
@@ -87,7 +85,6 @@ static int kobject_add_internal(struct kobject *kobj)
 		kobject_put(parent);
 		kobj->parent = NULL;
 
-		 
 		if (error == -EEXIST)
 			pr_err("%s failed for %s with -EEXIST, don't try to register things with the same name in the same directory.\n",
 			       __func__, kobject_name(kobj));
@@ -101,8 +98,7 @@ static int kobject_add_internal(struct kobject *kobj)
 	return error;
 }
 
-int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
-				  va_list vargs)
+int kobject_set_name_vargs(struct kobject *kobj, const char *fmt, va_list vargs)
 {
 	const char *s;
 
@@ -113,7 +109,6 @@ int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
 	if (!s)
 		return -ENOMEM;
 
-	 
 	if (strchr(s, '/')) {
 		char *t;
 
@@ -155,7 +150,6 @@ void kobject_init(struct kobject *kobj, const struct kobj_type *ktype)
 		goto error;
 	}
 	if (kobj->state_initialized) {
-		 
 		pr_err("kobject (%p): tried to init an initialized object, something is seriously wrong.\n",
 		       kobj);
 		dump_stack();
@@ -185,8 +179,8 @@ static __printf(3, 0) int kobject_add_varg(struct kobject *kobj,
 	return kobject_add_internal(kobj);
 }
 
-int kobject_add(struct kobject *kobj, struct kobject *parent,
-		const char *fmt, ...)
+int kobject_add(struct kobject *kobj, struct kobject *parent, const char *fmt,
+		...)
 {
 	va_list args;
 	int retval;
@@ -250,15 +244,16 @@ struct kobject *kobject_get(struct kobject *kobj)
 {
 	if (kobj) {
 		if (!kobj->state_initialized)
-			WARN(1, KERN_WARNING
-				"kobject: '%s' (%p): is not initialized, yet kobject_get() is being called.\n",
+			WARN(1,
+			     KERN_WARNING
+			     "kobject: '%s' (%p): is not initialized, yet kobject_get() is being called.\n",
 			     kobject_name(kobj), kobj);
 		kref_get(&kobj->kref);
 	}
 	return kobj;
 }
 
-struct kobject * __must_check kobject_get_unless_zero(struct kobject *kobj)
+struct kobject *__must_check kobject_get_unless_zero(struct kobject *kobj)
 {
 	if (!kobj)
 		return NULL;
@@ -273,11 +268,9 @@ static void kobject_cleanup(struct kobject *kobj)
 	const struct kobj_type *t = get_ktype(kobj);
 	const char *name = kobj->name;
 
-	 
 	if (kobj->state_in_sysfs) {
 		__kobject_del(kobj);
 	} else {
-		 
 		parent = NULL;
 	}
 
@@ -285,14 +278,12 @@ static void kobject_cleanup(struct kobject *kobj)
 		t->release(kobj);
 	}
 
-	 
 	if (name) {
 		kfree_const(name);
 	}
 
 	kobject_put(parent);
 }
-
 
 static void kobject_release(struct kref *kref)
 {
@@ -304,8 +295,9 @@ void kobject_put(struct kobject *kobj)
 {
 	if (kobj) {
 		if (!kobj->state_initialized)
-			WARN(1, KERN_WARNING
-				"kobject: '%s' (%p): is not initialized, yet kobject_put() is being called.\n",
+			WARN(1,
+			     KERN_WARNING
+			     "kobject: '%s' (%p): is not initialized, yet kobject_put() is being called.\n",
 			     kobject_name(kobj), kobj);
 		kref_put(&kobj->kref, kobject_release);
 	}
@@ -317,8 +309,8 @@ static void dynamic_kobj_release(struct kobject *kobj)
 }
 
 static struct kobj_type dynamic_kobj_ktype = {
-	.release	= dynamic_kobj_release,
-	.sysfs_ops	= &kobj_sysfs_ops,
+	.release = dynamic_kobj_release,
+	.sysfs_ops = &kobj_sysfs_ops,
 };
 
 static struct kobject *kobject_create(void)
@@ -383,8 +375,8 @@ static ssize_t kobj_attr_store(struct kobject *kobj, struct attribute *attr,
 }
 
 const struct sysfs_ops kobj_sysfs_ops = {
-	.show	= kobj_attr_show,
-	.store	= kobj_attr_store,
+	.show = kobj_attr_show,
+	.store = kobj_attr_store,
 };
 
 int kset_register(struct kset *k)
@@ -411,7 +403,10 @@ void kset_unregister(struct kset *k)
 }
 
 /* Stub: kset_find_obj not used in minimal kernel */
-struct kobject *kset_find_obj(struct kset *kset, const char *name) { return NULL; }
+struct kobject *kset_find_obj(struct kset *kset, const char *name)
+{
+	return NULL;
+}
 
 static void kset_release(struct kobject *kobj)
 {
@@ -426,9 +421,9 @@ static void kset_get_ownership(struct kobject *kobj, kuid_t *uid, kgid_t *gid)
 }
 
 static struct kobj_type kset_ktype = {
-	.sysfs_ops	= &kobj_sysfs_ops,
-	.release	= kset_release,
-	.get_ownership	= kset_get_ownership,
+	.sysfs_ops = &kobj_sysfs_ops,
+	.release = kset_release,
+	.get_ownership = kset_get_ownership,
 };
 
 static struct kset *kset_create(const char *name,
@@ -449,7 +444,6 @@ static struct kset *kset_create(const char *name,
 	kset->uevent_ops = uevent_ops;
 	kset->kobj.parent = parent_kobj;
 
-	 
 	kset->kobj.ktype = &kset_ktype;
 	kset->kobj.kset = NULL;
 

@@ -1,4 +1,4 @@
-#include <linux/memblock.h>  
+#include <linux/memblock.h>
 #include <linux/acpi.h>
 #include <linux/dma-map-ops.h>
 #include <linux/export.h>
@@ -12,36 +12,35 @@
 bool dma_default_coherent;
 
 struct dma_devres {
-	size_t		size;
-	void		*vaddr;
-	dma_addr_t	dma_handle;
-	unsigned long	attrs;
+	size_t size;
+	void *vaddr;
+	dma_addr_t dma_handle;
+	unsigned long attrs;
 };
 
 static bool dma_go_direct(struct device *dev, dma_addr_t mask,
-		const struct dma_map_ops *ops)
+			  const struct dma_map_ops *ops)
 {
 	if (likely(!ops))
 		return true;
 	return false;
 }
 
-
 static inline bool dma_alloc_direct(struct device *dev,
-		const struct dma_map_ops *ops)
+				    const struct dma_map_ops *ops)
 {
 	return dma_go_direct(dev, dev->coherent_dma_mask, ops);
 }
 
 static inline bool dma_map_direct(struct device *dev,
-		const struct dma_map_ops *ops)
+				  const struct dma_map_ops *ops)
 {
 	return dma_go_direct(dev, *dev->dma_mask, ops);
 }
 
 dma_addr_t dma_map_page_attrs(struct device *dev, struct page *page,
-		size_t offset, size_t size, enum dma_data_direction dir,
-		unsigned long attrs)
+			      size_t offset, size_t size,
+			      enum dma_data_direction dir, unsigned long attrs)
 {
 	const struct dma_map_ops *ops = get_dma_ops(dev);
 	dma_addr_t addr;
@@ -62,7 +61,7 @@ dma_addr_t dma_map_page_attrs(struct device *dev, struct page *page,
 }
 
 void dma_unmap_page_attrs(struct device *dev, dma_addr_t addr, size_t size,
-		enum dma_data_direction dir, unsigned long attrs)
+			  enum dma_data_direction dir, unsigned long attrs)
 {
 	const struct dma_map_ops *ops = get_dma_ops(dev);
 
@@ -76,7 +75,8 @@ void dma_unmap_page_attrs(struct device *dev, dma_addr_t addr, size_t size,
 }
 
 static int __dma_map_sg_attrs(struct device *dev, struct scatterlist *sg,
-	 int nents, enum dma_data_direction dir, unsigned long attrs)
+			      int nents, enum dma_data_direction dir,
+			      unsigned long attrs)
 {
 	const struct dma_map_ops *ops = get_dma_ops(dev);
 	int ents;
@@ -86,8 +86,7 @@ static int __dma_map_sg_attrs(struct device *dev, struct scatterlist *sg,
 	if (WARN_ON_ONCE(!dev->dma_mask))
 		return 0;
 
-	if (dma_map_direct(dev, ops) ||
-	    arch_dma_map_sg_direct(dev, sg, nents))
+	if (dma_map_direct(dev, ops) || arch_dma_map_sg_direct(dev, sg, nents))
 		ents = dma_direct_map_sg(dev, sg, nents, dir, attrs);
 	else
 		ents = ops->map_sg(dev, sg, nents, dir, attrs);
@@ -102,7 +101,8 @@ static int __dma_map_sg_attrs(struct device *dev, struct scatterlist *sg,
 }
 
 unsigned int dma_map_sg_attrs(struct device *dev, struct scatterlist *sg,
-		    int nents, enum dma_data_direction dir, unsigned long attrs)
+			      int nents, enum dma_data_direction dir,
+			      unsigned long attrs)
 {
 	int ret;
 
@@ -124,9 +124,8 @@ int dma_map_sgtable(struct device *dev, struct sg_table *sgt,
 	return 0;
 }
 
-void dma_unmap_sg_attrs(struct device *dev, struct scatterlist *sg,
-				      int nents, enum dma_data_direction dir,
-				      unsigned long attrs)
+void dma_unmap_sg_attrs(struct device *dev, struct scatterlist *sg, int nents,
+			enum dma_data_direction dir, unsigned long attrs)
 {
 	const struct dma_map_ops *ops = get_dma_ops(dev);
 
@@ -140,7 +139,7 @@ void dma_unmap_sg_attrs(struct device *dev, struct scatterlist *sg,
 }
 
 void dma_sync_single_for_cpu(struct device *dev, dma_addr_t addr, size_t size,
-		enum dma_data_direction dir)
+			     enum dma_data_direction dir)
 {
 	const struct dma_map_ops *ops = get_dma_ops(dev);
 
@@ -153,7 +152,7 @@ void dma_sync_single_for_cpu(struct device *dev, dma_addr_t addr, size_t size,
 }
 
 void dma_sync_single_for_device(struct device *dev, dma_addr_t addr,
-		size_t size, enum dma_data_direction dir)
+				size_t size, enum dma_data_direction dir)
 {
 	const struct dma_map_ops *ops = get_dma_ops(dev);
 
@@ -165,8 +164,8 @@ void dma_sync_single_for_device(struct device *dev, dma_addr_t addr,
 	debug_dma_sync_single_for_device(dev, addr, size, dir);
 }
 
-void dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg,
-		    int nelems, enum dma_data_direction dir)
+void dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg, int nelems,
+			 enum dma_data_direction dir)
 {
 	const struct dma_map_ops *ops = get_dma_ops(dev);
 
@@ -179,7 +178,7 @@ void dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg,
 }
 
 void dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
-		       int nelems, enum dma_data_direction dir)
+			    int nelems, enum dma_data_direction dir)
 {
 	const struct dma_map_ops *ops = get_dma_ops(dev);
 
@@ -193,7 +192,9 @@ void dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
 
 /* Used by direct.c */
 pgprot_t dma_pgprot(struct device *dev, pgprot_t prot, unsigned long attrs)
-{ return prot; }
+{
+	return prot;
+}
 
 u64 dma_get_required_mask(struct device *dev)
 {
@@ -204,12 +205,11 @@ u64 dma_get_required_mask(struct device *dev)
 	if (ops->get_required_mask)
 		return ops->get_required_mask(dev);
 
-	 
 	return DMA_BIT_MASK(32);
 }
 
 void *dma_alloc_attrs(struct device *dev, size_t size, dma_addr_t *dma_handle,
-		gfp_t flag, unsigned long attrs)
+		      gfp_t flag, unsigned long attrs)
 {
 	const struct dma_map_ops *ops = get_dma_ops(dev);
 	void *cpu_addr;
@@ -219,7 +219,6 @@ void *dma_alloc_attrs(struct device *dev, size_t size, dma_addr_t *dma_handle,
 	if (dma_alloc_from_dev_coherent(dev, size, dma_handle, &cpu_addr))
 		return cpu_addr;
 
-	 
 	flag &= ~(__GFP_DMA | __GFP_DMA32 | __GFP_HIGHMEM);
 
 	if (dma_alloc_direct(dev, ops))
@@ -234,13 +233,13 @@ void *dma_alloc_attrs(struct device *dev, size_t size, dma_addr_t *dma_handle,
 }
 
 void dma_free_attrs(struct device *dev, size_t size, void *cpu_addr,
-		dma_addr_t dma_handle, unsigned long attrs)
+		    dma_addr_t dma_handle, unsigned long attrs)
 {
 	const struct dma_map_ops *ops = get_dma_ops(dev);
 
 	if (dma_release_from_dev_coherent(dev, get_order(size), cpu_addr))
 		return;
-	 
+
 	WARN_ON(irqs_disabled());
 
 	if (!cpu_addr)
@@ -257,7 +256,6 @@ int dma_supported(struct device *dev, u64 mask)
 {
 	const struct dma_map_ops *ops = get_dma_ops(dev);
 
-	 
 	if (!ops)
 		return dma_direct_supported(dev, mask);
 	if (!ops->dma_supported)
@@ -265,11 +263,12 @@ int dma_supported(struct device *dev, u64 mask)
 	return ops->dma_supported(dev, mask);
 }
 
-#define arch_dma_set_mask(dev, mask)	do { } while (0)
+#define arch_dma_set_mask(dev, mask) \
+	do {                         \
+	} while (0)
 
 int dma_set_mask(struct device *dev, u64 mask)
 {
-	 
 	mask = (dma_addr_t)mask;
 
 	if (!dev->dma_mask || !dma_supported(dev, mask))
@@ -282,7 +281,6 @@ int dma_set_mask(struct device *dev, u64 mask)
 
 int dma_set_coherent_mask(struct device *dev, u64 mask)
 {
-	 
 	mask = (dma_addr_t)mask;
 
 	if (!dma_supported(dev, mask))
@@ -291,4 +289,3 @@ int dma_set_coherent_mask(struct device *dev, u64 mask)
 	dev->coherent_dma_mask = mask;
 	return 0;
 }
-

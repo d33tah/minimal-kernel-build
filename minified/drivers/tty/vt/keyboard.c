@@ -7,12 +7,10 @@
 
 void vt_kbd_con_start(int console)
 {
-	 
 }
 
 void vt_kbd_con_stop(int console)
 {
-	 
 }
 
 int vt_get_kbd_mode_bit(int console, int bit)
@@ -22,23 +20,18 @@ int vt_get_kbd_mode_bit(int console, int bit)
 
 void vt_set_kbd_mode_bit(int console, int bit)
 {
-	 
 }
 
 void vt_clr_kbd_mode_bit(int console, int bit)
 {
-	 
 }
-
 
 void vt_reset_keyboard(int console)
 {
-	 
 }
 
 void vt_set_leds_compute_shiftstate(void)
 {
-
 }
 
 /* vt_do_diacrit, vt_do_kdskbmode, vt_do_kdskbmeta, vt_do_kbkeycode_ioctl,

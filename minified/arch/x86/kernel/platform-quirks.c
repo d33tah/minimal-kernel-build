@@ -36,4 +36,3 @@ bool __init x86_pnpbios_disabled(void)
 {
 	return x86_platform.legacy.devices.pnpbios == 0;
 }
-

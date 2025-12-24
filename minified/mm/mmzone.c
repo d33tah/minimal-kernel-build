@@ -40,16 +40,15 @@ static inline int zref_in_nodemask(struct zoneref *zref, nodemask_t *nodes)
 }
 
 struct zoneref *__next_zones_zonelist(struct zoneref *z,
-					enum zone_type highest_zoneidx,
-					nodemask_t *nodes)
+				      enum zone_type highest_zoneidx,
+				      nodemask_t *nodes)
 {
-	 
 	if (unlikely(nodes == NULL))
 		while (zonelist_zone_idx(z) > highest_zoneidx)
 			z++;
 	else
 		while (zonelist_zone_idx(z) > highest_zoneidx ||
-				(z->zone && !zref_in_nodemask(z, nodes)))
+		       (z->zone && !zref_in_nodemask(z, nodes)))
 			z++;
 
 	return z;
@@ -64,7 +63,6 @@ void lruvec_init(struct lruvec *lruvec)
 
 	for_each_lru(lru)
 		INIT_LIST_HEAD(&lruvec->lists[lru]);
-	 
+
 	list_del(&lruvec->lists[LRU_UNEVICTABLE]);
 }
-

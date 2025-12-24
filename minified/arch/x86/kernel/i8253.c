@@ -24,4 +24,3 @@ bool __init pit_timer_init(void)
 	global_clock_event = &i8253_clockevent;
 	return true;
 }
-

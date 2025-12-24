@@ -1,4 +1,4 @@
-#include <linux/memblock.h>  
+#include <linux/memblock.h>
 #include <linux/export.h>
 #include <linux/mm.h>
 #include <linux/dma-map-ops.h>
@@ -12,7 +12,7 @@
 unsigned int zone_dma_bits __ro_after_init = 24;
 
 static inline dma_addr_t phys_to_dma_direct(struct device *dev,
-		phys_addr_t phys)
+					    phys_addr_t phys)
 {
 	if (force_dma_unencrypted(dev))
 		return phys_to_dma_unencrypted(dev, phys);
@@ -20,7 +20,7 @@ static inline dma_addr_t phys_to_dma_direct(struct device *dev,
 }
 
 static inline struct page *dma_direct_to_page(struct device *dev,
-		dma_addr_t dma_addr)
+					      dma_addr_t dma_addr)
 {
 	return pfn_to_page(PHYS_PFN(dma_to_phys(dev, dma_addr)));
 }
@@ -34,11 +34,10 @@ u64 dma_direct_get_required_mask(struct device *dev)
 }
 
 static gfp_t dma_direct_optimal_gfp_mask(struct device *dev, u64 dma_mask,
-				  u64 *phys_limit)
+					 u64 *phys_limit)
 {
 	u64 dma_limit = min_not_zero(dma_mask, dev->bus_dma_limit);
 
-	 
 	*phys_limit = dma_to_phys(dev, dma_limit);
 	if (*phys_limit <= DMA_BIT_MASK(zone_dma_bits))
 		return GFP_DMA;
@@ -54,7 +53,7 @@ static bool dma_coherent_ok(struct device *dev, phys_addr_t phys, size_t size)
 	if (dma_addr == DMA_MAPPING_ERROR)
 		return false;
 	return dma_addr + size - 1 <=
-		min_not_zero(dev->coherent_dma_mask, dev->bus_dma_limit);
+	       min_not_zero(dev->coherent_dma_mask, dev->bus_dma_limit);
 }
 
 static int dma_set_decrypted(struct device *dev, void *vaddr, size_t size)
@@ -72,7 +71,8 @@ static int dma_set_encrypted(struct device *dev, void *vaddr, size_t size)
 		return 0;
 	ret = set_memory_encrypted((unsigned long)vaddr, PFN_UP(size));
 	if (ret)
-		pr_warn_ratelimited("leaking DMA memory that can't be re-encrypted\n");
+		pr_warn_ratelimited(
+			"leaking DMA memory that can't be re-encrypted\n");
 	return ret;
 }
 
@@ -97,7 +97,7 @@ static struct page *dma_direct_alloc_swiotlb(struct device *dev, size_t size)
 }
 
 static struct page *__dma_direct_alloc_pages(struct device *dev, size_t size,
-		gfp_t gfp, bool allow_highmem)
+					     gfp_t gfp, bool allow_highmem)
 {
 	int node = dev_to_node(dev);
 	struct page *page = NULL;
@@ -134,14 +134,14 @@ static bool dma_direct_use_pool(struct device *dev, gfp_t gfp)
 }
 
 static void *dma_direct_alloc_from_pool(struct device *dev, size_t size,
-		dma_addr_t *dma_handle, gfp_t gfp)
+					dma_addr_t *dma_handle, gfp_t gfp)
 {
 	/* CONFIG_DMA_COHERENT_POOL not enabled */
 	return NULL;
 }
 
 static void *dma_direct_alloc_no_mapping(struct device *dev, size_t size,
-		dma_addr_t *dma_handle, gfp_t gfp)
+					 dma_addr_t *dma_handle, gfp_t gfp)
 {
 	struct page *page;
 
@@ -149,17 +149,15 @@ static void *dma_direct_alloc_no_mapping(struct device *dev, size_t size,
 	if (!page)
 		return NULL;
 
-	 
 	if (!PageHighMem(page))
 		arch_dma_prep_coherent(page, size);
 
-	 
 	*dma_handle = phys_to_dma_direct(dev, page_to_phys(page));
 	return page;
 }
 
-void *dma_direct_alloc(struct device *dev, size_t size,
-		dma_addr_t *dma_handle, gfp_t gfp, unsigned long attrs)
+void *dma_direct_alloc(struct device *dev, size_t size, dma_addr_t *dma_handle,
+		       gfp_t gfp, unsigned long attrs)
 {
 	bool remap = false, set_uncached = false;
 	struct page *page;
@@ -180,16 +178,13 @@ void *dma_direct_alloc(struct device *dev, size_t size,
 					      attrs);
 	}
 
-	 
 	if (force_dma_unencrypted(dev) && dma_direct_use_pool(dev, gfp))
 		return dma_direct_alloc_from_pool(dev, size, dma_handle, gfp);
 
-	 
 	page = __dma_direct_alloc_pages(dev, size, gfp & ~__GFP_ZERO, true);
 	if (!page)
 		return NULL;
 
-	 
 	if (PageHighMem(page)) {
 		remap = true;
 		set_uncached = false;
@@ -201,12 +196,10 @@ void *dma_direct_alloc(struct device *dev, size_t size,
 		if (force_dma_unencrypted(dev))
 			prot = pgprot_decrypted(prot);
 
-		 
 		arch_dma_prep_coherent(page, size);
 
-		 
 		ret = dma_common_contiguous_remap(page, size, prot,
-				__builtin_return_address(0));
+						  __builtin_return_address(0));
 		if (!ret)
 			goto out_free_pages;
 	} else {
@@ -235,12 +228,11 @@ out_free_pages:
 	return NULL;
 }
 
-void dma_direct_free(struct device *dev, size_t size,
-		void *cpu_addr, dma_addr_t dma_addr, unsigned long attrs)
+void dma_direct_free(struct device *dev, size_t size, void *cpu_addr,
+		     dma_addr_t dma_addr, unsigned long attrs)
 {
 	if ((attrs & DMA_ATTR_NO_KERNEL_MAPPING) &&
 	    !force_dma_unencrypted(dev) && !is_swiotlb_for_alloc(dev)) {
-		 
 		dma_free_contiguous(dev, cpu_addr, size);
 		return;
 	}
@@ -261,7 +253,8 @@ void dma_direct_free(struct device *dev, size_t size,
 }
 
 struct page *dma_direct_alloc_pages(struct device *dev, size_t size,
-		dma_addr_t *dma_handle, enum dma_data_direction dir, gfp_t gfp)
+				    dma_addr_t *dma_handle,
+				    enum dma_data_direction dir, gfp_t gfp)
 {
 	struct page *page;
 	void *ret;
@@ -284,9 +277,8 @@ out_free_pages:
 	return NULL;
 }
 
-void dma_direct_free_pages(struct device *dev, size_t size,
-		struct page *page, dma_addr_t dma_addr,
-		enum dma_data_direction dir)
+void dma_direct_free_pages(struct device *dev, size_t size, struct page *page,
+			   dma_addr_t dma_addr, enum dma_data_direction dir)
 {
 	void *vaddr = page_address(page);
 
@@ -296,10 +288,9 @@ void dma_direct_free_pages(struct device *dev, size_t size,
 	__dma_direct_free_pages(dev, page, size);
 }
 
-#if defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_DEVICE) || \
-    defined(CONFIG_SWIOTLB)
-void dma_direct_sync_sg_for_device(struct device *dev,
-		struct scatterlist *sgl, int nents, enum dma_data_direction dir)
+#if defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_DEVICE) || defined(CONFIG_SWIOTLB)
+void dma_direct_sync_sg_for_device(struct device *dev, struct scatterlist *sgl,
+				   int nents, enum dma_data_direction dir)
 {
 	struct scatterlist *sg;
 	int i;
@@ -312,17 +303,16 @@ void dma_direct_sync_sg_for_device(struct device *dev,
 						       dir);
 
 		if (!dev_is_dma_coherent(dev))
-			arch_sync_dma_for_device(paddr, sg->length,
-					dir);
+			arch_sync_dma_for_device(paddr, sg->length, dir);
 	}
 }
 #endif
 
-#if defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU) || \
-    defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU_ALL) || \
-    defined(CONFIG_SWIOTLB)
-void dma_direct_sync_sg_for_cpu(struct device *dev,
-		struct scatterlist *sgl, int nents, enum dma_data_direction dir)
+#if defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU) ||         \
+	defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU_ALL) || \
+	defined(CONFIG_SWIOTLB)
+void dma_direct_sync_sg_for_cpu(struct device *dev, struct scatterlist *sgl,
+				int nents, enum dma_data_direction dir)
 {
 	struct scatterlist *sg;
 	int i;
@@ -345,27 +335,27 @@ void dma_direct_sync_sg_for_cpu(struct device *dev,
 		arch_sync_dma_for_cpu_all();
 }
 
-void dma_direct_unmap_sg(struct device *dev, struct scatterlist *sgl,
-		int nents, enum dma_data_direction dir, unsigned long attrs)
+void dma_direct_unmap_sg(struct device *dev, struct scatterlist *sgl, int nents,
+			 enum dma_data_direction dir, unsigned long attrs)
 {
 	struct scatterlist *sg;
 	int i;
 
 	for_each_sg(sgl, sg, nents, i)
 		dma_direct_unmap_page(dev, sg->dma_address, sg_dma_len(sg), dir,
-			     attrs);
+				      attrs);
 }
 #endif
 
 int dma_direct_map_sg(struct device *dev, struct scatterlist *sgl, int nents,
-		enum dma_data_direction dir, unsigned long attrs)
+		      enum dma_data_direction dir, unsigned long attrs)
 {
 	int i;
 	struct scatterlist *sg;
 
 	for_each_sg(sgl, sg, nents, i) {
-		sg->dma_address = dma_direct_map_page(dev, sg_page(sg),
-				sg->offset, sg->length, dir, attrs);
+		sg->dma_address = dma_direct_map_page(
+			dev, sg_page(sg), sg->offset, sg->length, dir, attrs);
 		if (sg->dma_address == DMA_MAPPING_ERROR)
 			goto out_unmap;
 		sg_dma_len(sg) = sg->length;
@@ -379,14 +369,16 @@ out_unmap:
 }
 
 dma_addr_t dma_direct_map_resource(struct device *dev, phys_addr_t paddr,
-		size_t size, enum dma_data_direction dir, unsigned long attrs)
+				   size_t size, enum dma_data_direction dir,
+				   unsigned long attrs)
 {
 	dma_addr_t dma_addr = paddr;
 
 	if (unlikely(!dma_capable(dev, dma_addr, size, false))) {
-		dev_err_once(dev,
-			     "DMA addr %pad+%zu overflow (mask %llx, bus limit %llx).\n",
-			     &dma_addr, size, *dev->dma_mask, dev->bus_dma_limit);
+		dev_err_once(
+			dev,
+			"DMA addr %pad+%zu overflow (mask %llx, bus limit %llx).\n",
+			&dma_addr, size, *dev->dma_mask, dev->bus_dma_limit);
 		WARN_ON_ONCE(1);
 		return DMA_MAPPING_ERROR;
 	}
@@ -406,11 +398,8 @@ int dma_direct_supported(struct device *dev, u64 mask)
 
 size_t dma_direct_max_mapping_size(struct device *dev)
 {
-	 
 	if (is_swiotlb_active(dev) &&
 	    (dma_addressing_limited(dev) || is_swiotlb_force_bounce(dev)))
 		return swiotlb_max_mapping_size(dev);
 	return SIZE_MAX;
 }
-
-

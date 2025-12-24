@@ -14,7 +14,7 @@
 #include "internal.h"
 
 static inline void __clear_shadow_entry(struct address_space *mapping,
-				pgoff_t index, void *entry)
+					pgoff_t index, void *entry)
 {
 	XA_STATE(xas, &mapping->i_pages, index);
 
@@ -37,12 +37,12 @@ static void clear_shadow_entry(struct address_space *mapping, pgoff_t index,
 }
 
 static void truncate_folio_batch_exceptionals(struct address_space *mapping,
-				struct folio_batch *fbatch, pgoff_t *indices)
+					      struct folio_batch *fbatch,
+					      pgoff_t *indices)
 {
 	int i, j;
 	bool dax;
 
-	 
 	if (shmem_mapping(mapping))
 		return;
 
@@ -88,7 +88,6 @@ static void truncate_folio_batch_exceptionals(struct address_space *mapping,
 static int invalidate_exceptional_entry(struct address_space *mapping,
 					pgoff_t index, void *entry)
 {
-	 
 	if (shmem_mapping(mapping) || dax_mapping(mapping))
 		return 1;
 	clear_shadow_entry(mapping, index, entry);
@@ -98,7 +97,6 @@ static int invalidate_exceptional_entry(struct address_space *mapping,
 static int invalidate_exceptional_entry2(struct address_space *mapping,
 					 pgoff_t index, void *entry)
 {
-	 
 	if (shmem_mapping(mapping))
 		return 1;
 	if (dax_mapping(mapping))
@@ -123,7 +121,6 @@ static void truncate_cleanup_folio(struct folio *folio)
 	if (folio_has_private(folio))
 		folio_invalidate(folio, 0, folio_size(folio));
 
-	 
 	folio_cancel_dirty(folio);
 	folio_clear_mappedtodisk(folio);
 }
@@ -159,7 +156,6 @@ bool truncate_inode_partial_folio(struct folio *folio, loff_t start, loff_t end)
 		return true;
 	}
 
-	 
 	folio_zero_range(folio, offset, length);
 
 	if (folio_has_private(folio))
@@ -175,13 +171,13 @@ bool truncate_inode_partial_folio(struct folio *folio, loff_t start, loff_t end)
 }
 
 static long mapping_evict_folio(struct address_space *mapping,
-		struct folio *folio)
+				struct folio *folio)
 {
 	if (folio_test_dirty(folio) || folio_test_writeback(folio))
 		return 0;
-	 
+
 	if (folio_ref_count(folio) >
-			folio_nr_pages(folio) + folio_has_private(folio) + 1)
+	    folio_nr_pages(folio) + folio_has_private(folio) + 1)
 		return 0;
 	if (folio_has_private(folio) && !filemap_release_folio(folio, 0))
 		return 0;
@@ -194,39 +190,37 @@ long invalidate_inode_page(struct page *page)
 	struct folio *folio = page_folio(page);
 	struct address_space *mapping = folio_mapping(folio);
 
-	 
 	if (!mapping)
 		return 0;
 	return mapping_evict_folio(mapping, folio);
 }
 
-void truncate_inode_pages_range(struct address_space *mapping,
-				loff_t lstart, loff_t lend)
+void truncate_inode_pages_range(struct address_space *mapping, loff_t lstart,
+				loff_t lend)
 {
-	pgoff_t		start;		 
-	pgoff_t		end;		 
+	pgoff_t start;
+	pgoff_t end;
 	struct folio_batch fbatch;
-	pgoff_t		indices[PAGEVEC_SIZE];
-	pgoff_t		index;
-	int		i;
-	struct folio	*folio;
-	bool		same_folio;
+	pgoff_t indices[PAGEVEC_SIZE];
+	pgoff_t index;
+	int i;
+	struct folio *folio;
+	bool same_folio;
 
 	if (mapping_empty(mapping))
 		return;
 
-	 
 	start = (lstart + PAGE_SIZE - 1) >> PAGE_SHIFT;
 	if (lend == -1)
-		 
+
 		end = -1;
 	else
 		end = (lend + 1) >> PAGE_SHIFT;
 
 	folio_batch_init(&fbatch);
 	index = start;
-	while (index < end && find_lock_entries(mapping, index, end - 1,
-			&fbatch, indices)) {
+	while (index < end &&
+	       find_lock_entries(mapping, index, end - 1, &fbatch, indices)) {
 		index = indices[folio_batch_count(&fbatch) - 1] + 1;
 		truncate_folio_batch_exceptionals(mapping, &fbatch, indices);
 		for (i = 0; i < folio_batch_count(&fbatch); i++)
@@ -254,7 +248,7 @@ void truncate_inode_pages_range(struct address_space *mapping,
 
 	if (!same_folio)
 		folio = __filemap_get_folio(mapping, lend >> PAGE_SHIFT,
-						FGP_LOCK, 0);
+					    FGP_LOCK, 0);
 	if (folio) {
 		if (!truncate_inode_partial_folio(folio, lstart, lend))
 			end = folio->index;
@@ -266,11 +260,10 @@ void truncate_inode_pages_range(struct address_space *mapping,
 	while (index < end) {
 		cond_resched();
 		if (!find_get_entries(mapping, index, end - 1, &fbatch,
-				indices)) {
-			 
+				      indices)) {
 			if (index == start)
 				break;
-			 
+
 			index = start;
 			continue;
 		}
@@ -278,7 +271,6 @@ void truncate_inode_pages_range(struct address_space *mapping,
 		for (i = 0; i < folio_batch_count(&fbatch); i++) {
 			struct folio *folio = fbatch.folios[i];
 
-			 
 			index = indices[i];
 
 			if (xa_is_value(folio))
@@ -304,11 +296,9 @@ void truncate_inode_pages(struct address_space *mapping, loff_t lstart)
 
 void truncate_inode_pages_final(struct address_space *mapping)
 {
-	 
 	mapping_set_exiting(mapping);
 
 	if (!mapping_empty(mapping)) {
-		 
 		xa_lock_irq(&mapping->i_pages);
 		xa_unlock_irq(&mapping->i_pages);
 	}
@@ -317,7 +307,8 @@ void truncate_inode_pages_final(struct address_space *mapping)
 }
 
 unsigned long invalidate_mapping_pagevec(struct address_space *mapping,
-		pgoff_t start, pgoff_t end, unsigned long *nr_pagevec)
+					 pgoff_t start, pgoff_t end,
+					 unsigned long *nr_pagevec)
 {
 	pgoff_t indices[PAGEVEC_SIZE];
 	struct folio_batch fbatch;
@@ -331,23 +322,21 @@ unsigned long invalidate_mapping_pagevec(struct address_space *mapping,
 		for (i = 0; i < folio_batch_count(&fbatch); i++) {
 			struct folio *folio = fbatch.folios[i];
 
-			 
 			index = indices[i];
 
 			if (xa_is_value(folio)) {
-				count += invalidate_exceptional_entry(mapping,
-								      index,
-								      folio);
+				count += invalidate_exceptional_entry(
+					mapping, index, folio);
 				continue;
 			}
 			index += folio_nr_pages(folio) - 1;
 
 			ret = mapping_evict_folio(mapping, folio);
 			folio_unlock(folio);
-			 
+
 			if (!ret) {
 				deactivate_file_folio(folio);
-				 
+
 				if (nr_pagevec)
 					(*nr_pagevec)++;
 			}
@@ -362,13 +351,13 @@ unsigned long invalidate_mapping_pagevec(struct address_space *mapping,
 }
 
 unsigned long invalidate_mapping_pages(struct address_space *mapping,
-		pgoff_t start, pgoff_t end)
+				       pgoff_t start, pgoff_t end)
 {
 	return invalidate_mapping_pagevec(mapping, start, end, NULL);
 }
 
 static int invalidate_complete_folio2(struct address_space *mapping,
-					struct folio *folio)
+				      struct folio *folio)
 {
 	if (folio->mapping != mapping)
 		return 0;
@@ -406,8 +395,8 @@ static int folio_launder(struct address_space *mapping, struct folio *folio)
 	return mapping->a_ops->launder_folio(folio);
 }
 
-int invalidate_inode_pages2_range(struct address_space *mapping,
-				  pgoff_t start, pgoff_t end)
+int invalidate_inode_pages2_range(struct address_space *mapping, pgoff_t start,
+				  pgoff_t end)
 {
 	pgoff_t indices[PAGEVEC_SIZE];
 	struct folio_batch fbatch;
@@ -426,20 +415,18 @@ int invalidate_inode_pages2_range(struct address_space *mapping,
 		for (i = 0; i < folio_batch_count(&fbatch); i++) {
 			struct folio *folio = fbatch.folios[i];
 
-			 
 			index = indices[i];
 
 			if (xa_is_value(folio)) {
-				if (!invalidate_exceptional_entry2(mapping,
-						index, folio))
+				if (!invalidate_exceptional_entry2(
+					    mapping, index, folio))
 					ret = -EBUSY;
 				continue;
 			}
 
 			if (!did_range_unmap && folio_mapped(folio)) {
-				 
 				unmap_mapping_pages(mapping, index,
-						(1 + end - index), false);
+						    (1 + end - index), false);
 				did_range_unmap = 1;
 			}
 
@@ -469,7 +456,7 @@ int invalidate_inode_pages2_range(struct address_space *mapping,
 		cond_resched();
 		index++;
 	}
-	 
+
 	if (dax_mapping(mapping)) {
 		unmap_mapping_pages(mapping, start, end - start + 1, false);
 	}
@@ -481,7 +468,6 @@ void truncate_pagecache(struct inode *inode, loff_t newsize)
 	struct address_space *mapping = inode->i_mapping;
 	loff_t holebegin = round_up(newsize, PAGE_SIZE);
 
-	 
 	unmap_mapping_range(mapping, holebegin, 0, 1);
 	truncate_inode_pages(mapping, newsize);
 	unmap_mapping_range(mapping, holebegin, 0, 1);
@@ -508,17 +494,17 @@ void pagecache_isize_extended(struct inode *inode, loff_t from, loff_t to)
 
 	if (from >= to || bsize == PAGE_SIZE)
 		return;
-	 
+
 	rounded_from = round_up(from, bsize);
 	if (to <= rounded_from || !(rounded_from & (PAGE_SIZE - 1)))
 		return;
 
 	index = from >> PAGE_SHIFT;
 	page = find_lock_page(inode->i_mapping, index);
-	 
+
 	if (!page)
 		return;
-	 
+
 	if (page_mkclean(page))
 		set_page_dirty(page);
 	unlock_page(page);

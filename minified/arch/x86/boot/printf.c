@@ -11,31 +11,31 @@ static int skip_atoi(const char **s)
 	return i;
 }
 
-#define ZEROPAD	1		 
-#define SIGN	2		 
-#define PLUS	4		 
-#define SPACE	8		 
-#define LEFT	16		 
-#define SMALL	32		 
-#define SPECIAL	64		 
+#define ZEROPAD 1
+#define SIGN 2
+#define PLUS 4
+#define SPACE 8
+#define LEFT 16
+#define SMALL 32
+#define SPECIAL 64
 
-#define __do_div(n, base) ({ \
-int __res; \
-__res = ((unsigned long) n) % (unsigned) base; \
-n = ((unsigned long) n) / (unsigned) base; \
-__res; })
+#define __do_div(n, base)                                    \
+	({                                                   \
+		int __res;                                   \
+		__res = ((unsigned long)n) % (unsigned)base; \
+		n = ((unsigned long)n) / (unsigned)base;     \
+		__res;                                       \
+	})
 
 static char *number(char *str, long num, int base, int size, int precision,
 		    int type)
 {
-	 
-	static const char digits[16] = "0123456789ABCDEF";  
+	static const char digits[16] = "0123456789ABCDEF";
 
 	char tmp[66];
 	char c, sign, locase;
 	int i;
 
-	 
 	locase = (type & SMALL);
 	if (type & LEFT)
 		type &= ~ZEROPAD;
@@ -104,11 +104,11 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 	char *str;
 	const char *s;
 
-	int flags;		 
+	int flags;
 
-	int field_width;	 
-	int precision;		 
-	int qualifier;		 
+	int field_width;
+	int precision;
+	int qualifier;
 
 	for (str = buf; *fmt; ++fmt) {
 		if (*fmt != '%') {
@@ -116,10 +116,9 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 			continue;
 		}
 
-		 
 		flags = 0;
-	      repeat:
-		++fmt;		 
+repeat:
+		++fmt;
 		switch (*fmt) {
 		case '-':
 			flags |= LEFT;
@@ -138,13 +137,12 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 			goto repeat;
 		}
 
-		 
 		field_width = -1;
 		if (isdigit(*fmt))
 			field_width = skip_atoi(&fmt);
 		else if (*fmt == '*') {
 			++fmt;
-			 
+
 			field_width = va_arg(args, int);
 			if (field_width < 0) {
 				field_width = -field_width;
@@ -152,7 +150,6 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 			}
 		}
 
-		 
 		precision = -1;
 		if (*fmt == '.') {
 			++fmt;
@@ -160,21 +157,19 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 				precision = skip_atoi(&fmt);
 			else if (*fmt == '*') {
 				++fmt;
-				 
+
 				precision = va_arg(args, int);
 			}
 			if (precision < 0)
 				precision = 0;
 		}
 
-		 
 		qualifier = -1;
 		if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L') {
 			qualifier = *fmt;
 			++fmt;
 		}
 
-		 
 		base = 10;
 
 		switch (*fmt) {
@@ -205,9 +200,8 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 				field_width = 2 * sizeof(void *);
 				flags |= ZEROPAD;
 			}
-			str = number(str,
-				     (unsigned long)va_arg(args, void *), 16,
-				     field_width, precision, flags);
+			str = number(str, (unsigned long)va_arg(args, void *),
+				     16, field_width, precision, flags);
 			continue;
 
 		case 'n':
@@ -224,7 +218,6 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 			*str++ = '%';
 			continue;
 
-			 
 		case 'o':
 			base = 8;
 			break;

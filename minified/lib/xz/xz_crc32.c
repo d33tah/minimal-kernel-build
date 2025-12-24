@@ -3,7 +3,7 @@
 #include "xz_private.h"
 
 #ifndef STATIC_RW_DATA
-#	define STATIC_RW_DATA static
+#define STATIC_RW_DATA static
 #endif
 
 STATIC_RW_DATA uint32_t xz_crc32_table[256];

@@ -4,7 +4,9 @@
 #include <linux/printk.h>
 #include <linux/kallsyms.h>
 #include <linux/kmsg_dump.h>
-static inline void kgdb_panic(const char *msg) { }
+static inline void kgdb_panic(const char *msg)
+{
+}
 #include <linux/notifier.h>
 #include <linux/vt_kern.h>
 #include <linux/module.h>
@@ -40,18 +42,16 @@ unsigned long panic_on_taint;
 
 int panic_timeout = CONFIG_PANIC_TIMEOUT;
 
-#define PANIC_PRINT_TASK_INFO		0x00000001
-#define PANIC_PRINT_MEM_INFO		0x00000002
-#define PANIC_PRINT_TIMER_INFO		0x00000004
-#define PANIC_PRINT_LOCK_INFO		0x00000008
-#define PANIC_PRINT_FTRACE_INFO		0x00000010
-#define PANIC_PRINT_ALL_PRINTK_MSG	0x00000020
-#define PANIC_PRINT_ALL_CPU_BT		0x00000040
+#define PANIC_PRINT_TASK_INFO 0x00000001
+#define PANIC_PRINT_MEM_INFO 0x00000002
+#define PANIC_PRINT_TIMER_INFO 0x00000004
+#define PANIC_PRINT_LOCK_INFO 0x00000008
+#define PANIC_PRINT_FTRACE_INFO 0x00000010
+#define PANIC_PRINT_ALL_PRINTK_MSG 0x00000020
+#define PANIC_PRINT_ALL_CPU_BT 0x00000040
 unsigned long panic_print;
 
 ATOMIC_NOTIFIER_HEAD(panic_notifier_list);
-
-
 
 static long no_blink(int state)
 {
@@ -75,11 +75,9 @@ void __weak crash_smp_send_stop(void)
 {
 	static int cpus_stopped;
 
-	 
 	if (cpus_stopped)
 		return;
 
-	 
 	smp_send_stop();
 	cpus_stopped = 1;
 }
@@ -114,17 +112,14 @@ void panic(const char *fmt, ...)
 	bool _crash_kexec_post_notifiers = crash_kexec_post_notifiers;
 
 	if (panic_on_warn) {
-		 
 		panic_on_warn = 0;
 	}
 
-	 
 	local_irq_disable();
 	preempt_disable_notrace();
 
-	 
 	this_cpu = raw_smp_processor_id();
-	old_cpu  = atomic_cmpxchg(&panic_cpu, PANIC_CPU_INVALID, this_cpu);
+	old_cpu = atomic_cmpxchg(&panic_cpu, PANIC_CPU_INVALID, this_cpu);
 
 	if (old_cpu != PANIC_CPU_INVALID && old_cpu != this_cpu)
 		panic_smp_self_stop();
@@ -140,35 +135,28 @@ void panic(const char *fmt, ...)
 
 	pr_emerg("Kernel panic - not syncing: %s\n", buf);
 
-	 
 	kgdb_panic(buf);
 
-	 
 	if (!_crash_kexec_post_notifiers) {
 		__crash_kexec(NULL);
 
-		 
 		smp_send_stop();
 	} else {
-		 
 		crash_smp_send_stop();
 	}
 
-	 
 	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
 
 	panic_print_sys_info(false);
 
 	kmsg_dump(KMSG_DUMP_PANIC);
 
-	 
 	if (_crash_kexec_post_notifiers)
 		__crash_kexec(NULL);
 
 	unblank_screen();
 	console_unblank();
 
-	 
 	debug_locks_off();
 	console_flush_on_panic(CONSOLE_FLUSH_PENDING);
 
@@ -178,7 +166,6 @@ void panic(const char *fmt, ...)
 		panic_blink = no_blink;
 
 	if (panic_timeout > 0) {
-		 
 		pr_emerg("Rebooting in %d seconds..\n", panic_timeout);
 
 		for (i = 0; i < panic_timeout * 1000; i += PANIC_TIMER_STEP) {
@@ -191,7 +178,6 @@ void panic(const char *fmt, ...)
 		}
 	}
 	if (panic_timeout != 0) {
-		 
 		if (panic_reboot_mode != REBOOT_UNDEFINED)
 			reboot_mode = panic_reboot_mode;
 		emergency_restart();
@@ -200,7 +186,7 @@ void panic(const char *fmt, ...)
 	pr_emerg("---[ end Kernel panic - not syncing: %s ]---\n", buf);
 
 	local_irq_enable();
-	for (i = 0; ; i += PANIC_TIMER_STEP) {
+	for (i = 0;; i += PANIC_TIMER_STEP) {
 		touch_softlockup_watchdog();
 		if (i >= i_next) {
 			i += panic_blink(state ^= 1);
@@ -209,9 +195,6 @@ void panic(const char *fmt, ...)
 		mdelay(PANIC_TIMER_STEP);
 	}
 }
-
-
-
 
 void add_taint(unsigned flag, enum lockdep_ok lockdep_ok)
 {
@@ -246,12 +229,9 @@ static void do_oops_enter_exit(void)
 
 	spin_lock_irqsave(&pause_on_oops_lock, flags);
 	if (pause_on_oops_flag == 0) {
-		 
 		pause_on_oops_flag = 1;
 	} else {
-		 
 		if (!spin_counter) {
-			 
 			spin_counter = pause_on_oops;
 			do {
 				spin_unlock(&pause_on_oops_lock);
@@ -260,7 +240,6 @@ static void do_oops_enter_exit(void)
 			} while (--spin_counter);
 			pause_on_oops_flag = 0;
 		} else {
-			 
 			while (spin_counter) {
 				spin_unlock(&pause_on_oops_lock);
 				spin_msec(1);
@@ -276,7 +255,7 @@ static void do_oops_enter_exit(void)
 void oops_enter(void)
 {
 	tracing_off();
-	 
+
 	debug_locks_off();
 	do_oops_enter_exit();
 
@@ -308,8 +287,3 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
 		panic("panic_on_warn set ...\n");
 	add_taint(taint, LOCKDEP_STILL_OK);
 }
-
-
-
-
-

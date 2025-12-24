@@ -19,11 +19,10 @@ static __initdata bool csum_present;
 static __initdata u32 io_csum;
 
 static ssize_t __init xwrite(struct file *file, const unsigned char *p,
-		size_t count, loff_t *pos)
+			     size_t count, loff_t *pos)
 {
 	ssize_t out = 0;
 
-	 
 	while (count) {
 		ssize_t rv = kernel_write(file, p, count, pos);
 
@@ -65,7 +64,6 @@ static void panic_show_mem(const char *fmt, ...)
 	va_end(args);
 }
 
-
 #define N_ALIGN(len) ((((len) + 1) & ~3) + 2)
 
 static __initdata struct hash {
@@ -82,8 +80,8 @@ static inline int hash(int major, int minor, int ino)
 	return tmp & 31;
 }
 
-static char __init *find_link(int major, int minor, int ino,
-			      umode_t mode, char *name)
+static char __init *find_link(int major, int minor, int ino, umode_t mode,
+			      char *name)
 {
 	struct hash **p, *q;
 	for (p = head + hash(major, minor, ino); *p; p = &(*p)->next) {
@@ -122,13 +120,20 @@ static void __init free_hash(void)
 	}
 }
 
-static void __init do_utime(char *filename, time64_t mtime) {}
-static void __init do_utime_path(const struct path *path, time64_t mtime) {}
-static void __init dir_add(const char *name, time64_t mtime) {}
-static void __init dir_utime(void) {}
+static void __init do_utime(char *filename, time64_t mtime)
+{
+}
+static void __init do_utime_path(const struct path *path, time64_t mtime)
+{
+}
+static void __init dir_add(const char *name, time64_t mtime)
+{
+}
+static void __init dir_utime(void)
+{
+}
 
 static __initdata time64_t mtime;
-
 
 static __initdata unsigned long ino, major, minor, nlink;
 static __initdata umode_t mode;
@@ -154,7 +159,7 @@ static void __init parse_header(char *s)
 	uid = parsed[2];
 	gid = parsed[3];
 	nlink = parsed[4];
-	mtime = parsed[5];  
+	mtime = parsed[5];
 	body_len = parsed[6];
 	major = parsed[7];
 	minor = parsed[8];
@@ -162,7 +167,6 @@ static void __init parse_header(char *s)
 	name_len = parsed[11];
 	hdr_csum = parsed[12];
 }
-
 
 static __initdata enum state {
 	Start,
@@ -173,7 +177,8 @@ static __initdata enum state {
 	CopyFile,
 	GotSymlink,
 	Reset
-} state, next_state;
+} state,
+	next_state;
 
 static __initdata char *victim;
 static unsigned long byte_count __initdata;
@@ -320,7 +325,7 @@ static int __init do_name(void)
 	if (S_ISREG(mode)) {
 		int ml = maybe_link();
 		if (ml >= 0) {
-			int openflags = O_WRONLY|O_CREAT;
+			int openflags = O_WRONLY | O_CREAT;
 			if (ml != 1)
 				openflags |= O_TRUNC;
 			wfile = filp_open(collected, openflags, mode);
@@ -340,8 +345,8 @@ static int __init do_name(void)
 		init_chown(collected, uid, gid, 0);
 		init_chmod(collected, mode);
 		dir_add(collected, mtime);
-	} else if (S_ISBLK(mode) || S_ISCHR(mode) ||
-		   S_ISFIFO(mode) || S_ISSOCK(mode)) {
+	} else if (S_ISBLK(mode) || S_ISCHR(mode) || S_ISFIFO(mode) ||
+		   S_ISSOCK(mode)) {
 		if (maybe_link() == 0) {
 			init_mknod(collected, mode, rdev);
 			init_chown(collected, uid, gid, 0);
@@ -387,14 +392,10 @@ static int __init do_symlink(void)
 }
 
 static __initdata int (*actions[])(void) = {
-	[Start]		= do_start,
-	[Collect]	= do_collect,
-	[GotHeader]	= do_header,
-	[SkipIt]	= do_skip,
-	[GotName]	= do_name,
-	[CopyFile]	= do_copy,
-	[GotSymlink]	= do_symlink,
-	[Reset]		= do_reset,
+	[Start] = do_start,	   [Collect] = do_collect,
+	[GotHeader] = do_header,   [SkipIt] = do_skip,
+	[GotName] = do_name,	   [CopyFile] = do_copy,
+	[GotSymlink] = do_symlink, [Reset] = do_reset,
 };
 
 static long __init write_buffer(char *buf, unsigned long len)
@@ -409,7 +410,7 @@ static long __init write_buffer(char *buf, unsigned long len)
 
 static long __init flush_buffer(void *bufv, unsigned long len)
 {
-	char *buf = (char *) bufv;
+	char *buf = (char *)bufv;
 	long written;
 	long origLen = len;
 	if (message)
@@ -432,17 +433,16 @@ static long __init flush_buffer(void *bufv, unsigned long len)
 
 static unsigned long my_inptr;
 
-typedef int (*decompress_fn) (unsigned char *inbuf, long len,
-			      long (*fill)(void*, unsigned long),
-			      long (*flush)(void*, unsigned long),
-			      unsigned char *outbuf,
-			      long *posp,
-			      void(*error)(char *x));
+typedef int (*decompress_fn)(unsigned char *inbuf, long len,
+			     long (*fill)(void *, unsigned long),
+			     long (*flush)(void *, unsigned long),
+			     unsigned char *outbuf, long *posp,
+			     void (*error)(char *x));
 decompress_fn decompress_method(const unsigned char *inbuf, long len,
 				const char **name);
 /* end decompress/generic.h */
 
-static char * __init unpack_to_rootfs(char *buf, unsigned long len)
+static char *__init unpack_to_rootfs(char *buf, unsigned long len)
 {
 	long written;
 	decompress_fn decompress;
@@ -478,7 +478,7 @@ static char * __init unpack_to_rootfs(char *buf, unsigned long len)
 		decompress = decompress_method(buf, len, &compress_name);
 		if (decompress) {
 			int res = decompress(buf, len, NULL, flush_buffer, NULL,
-				   &my_inptr, error);
+					     &my_inptr, error);
 			if (res)
 				error("decompressor failed");
 		} else if (compress_name) {
@@ -505,7 +505,6 @@ static char * __init unpack_to_rootfs(char *buf, unsigned long len)
 
 static int __initdata do_retain_initrd;
 
-
 static bool __initdata initramfs_async = true;
 
 extern char __initramfs_start[];
@@ -518,12 +517,11 @@ void __init reserve_initrd_mem(void)
 	phys_addr_t start;
 	unsigned long size;
 
-	 
 	initrd_start = initrd_end = 0;
 
 	if (!phys_initrd_size)
 		return;
-	 
+
 	start = round_down(phys_initrd_start, PAGE_SIZE);
 	size = phys_initrd_size + (phys_initrd_start - start);
 	size = round_up(size, PAGE_SIZE);
@@ -541,7 +539,7 @@ void __init reserve_initrd_mem(void)
 	}
 
 	memblock_reserve(start, size);
-	 
+
 	initrd_start = (unsigned long)__va(phys_initrd_start);
 	initrd_end = initrd_start + phys_initrd_size;
 	initrd_below_start_ok = 1;
@@ -560,13 +558,11 @@ static inline bool kexec_free_initrd(void)
 	return false;
 }
 
-
 static void __init do_populate_rootfs(void *unused, async_cookie_t cookie)
 {
-	 
 	char *err = unpack_to_rootfs(__initramfs_start, __initramfs_size);
 	if (err)
-		panic_show_mem("%s", err);  
+		panic_show_mem("%s", err);
 
 	/* INITRAMFS_FORCE not defined */
 	if (!initrd_start)
@@ -581,7 +577,7 @@ static void __init do_populate_rootfs(void *unused, async_cookie_t cookie)
 	}
 
 done:
-	 
+
 	if (!do_retain_initrd && initrd_start && !kexec_free_initrd())
 		free_initrd_mem(initrd_start, initrd_end);
 	initrd_start = 0;
@@ -597,11 +593,12 @@ static async_cookie_t initramfs_cookie;
 void wait_for_initramfs(void)
 {
 	if (!initramfs_cookie) {
-		 
-		pr_warn_once("wait_for_initramfs() called before rootfs_initcalls\n");
+		pr_warn_once(
+			"wait_for_initramfs() called before rootfs_initcalls\n");
 		return;
 	}
-	async_synchronize_cookie_domain(initramfs_cookie + 1, &initramfs_domain);
+	async_synchronize_cookie_domain(initramfs_cookie + 1,
+					&initramfs_domain);
 }
 
 static int __init populate_rootfs(void)

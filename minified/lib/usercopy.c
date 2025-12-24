@@ -2,9 +2,9 @@
 #include <linux/instrumented.h>
 #include <linux/uaccess.h>
 
-
 #ifndef INLINE_COPY_FROM_USER
-unsigned long _copy_from_user(void *to, const void __user *from, unsigned long n)
+unsigned long _copy_from_user(void *to, const void __user *from,
+			      unsigned long n)
 {
 	unsigned long res = n;
 	might_fault();

@@ -635,13 +635,6 @@ static __always_inline void trace_page_fault_entries(struct pt_regs *regs,
 						     unsigned long error_code,
 						     unsigned long address)
 {
-	if (!trace_pagefault_enabled())
-		return;
-
-	if (user_mode(regs))
-		trace_page_fault_user(address, regs, error_code);
-	else
-		trace_page_fault_kernel(address, regs, error_code);
 }
 
 static __always_inline void handle_page_fault(struct pt_regs *regs,
@@ -668,9 +661,6 @@ DEFINE_IDTENTRY_RAW_ERRORCODE(exc_page_fault)
 	irqentry_state_t state;
 
 	prefetchw(&current->mm->mmap_lock);
-
-	if (kvm_handle_async_pf(regs, (u32)address))
-		return;
 
 	state = irqentry_enter(regs);
 

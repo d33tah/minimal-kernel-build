@@ -45,11 +45,6 @@
 #include <asm/alternative.h>
 #include <asm/fpu/xstate.h>
 #include <asm/vm86.h>
-/* Inlined from asm/umip.h */
-static inline bool fixup_umip_exception(struct pt_regs *regs)
-{
-	return false;
-}
 #include <asm/vdso.h>
 #include <asm/tdx.h>
 
@@ -234,13 +229,9 @@ DEFINE_IDTENTRY_ERRORCODE(exc_alignment_check)
 
 	local_irq_enable();
 
-	if (handle_user_split_lock(regs, error_code))
-		goto out;
-
 	do_trap(X86_TRAP_AC, SIGBUS, "alignment check", regs, error_code,
 		BUS_ADRALN, NULL);
 
-out:
 	local_irq_disable();
 }
 
@@ -286,17 +277,6 @@ static enum kernel_gp_hint get_kernel_gp_address(struct pt_regs *regs,
 
 #define GPFSTR "general protection fault"
 
-static bool fixup_iopl_exception(struct pt_regs *regs)
-{
-	/* Stub: IOPL emulation not needed for minimal kernel */
-	return false;
-}
-
-static bool try_fixup_enqcmd_gp(void)
-{
-	return false;
-}
-
 static bool gp_try_fixup_and_notify(struct pt_regs *regs, int trapnr,
 				    unsigned long error_code, const char *str)
 {
@@ -329,15 +309,7 @@ DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
 	enum kernel_gp_hint hint = GP_NO_HINT;
 	unsigned long gp_addr;
 
-	if (user_mode(regs) && try_fixup_enqcmd_gp())
-		return;
-
 	cond_local_irq_enable(regs);
-
-	if (static_cpu_has(X86_FEATURE_UMIP)) {
-		if (user_mode(regs) && fixup_umip_exception(regs))
-			goto exit;
-	}
 
 	if (v8086_mode(regs)) {
 		local_irq_enable();
@@ -347,9 +319,6 @@ DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
 	}
 
 	if (user_mode(regs)) {
-		if (fixup_iopl_exception(regs))
-			goto exit;
-
 		if (fixup_vdso_exception(regs, X86_TRAP_GP, error_code, 0))
 			goto exit;
 

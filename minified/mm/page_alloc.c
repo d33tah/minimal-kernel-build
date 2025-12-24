@@ -966,14 +966,9 @@ failed:
 	return NULL;
 }
 
-static inline bool __should_fail_alloc_page(gfp_t gfp_mask, unsigned int order)
-{
-	return false;
-}
-
 noinline bool should_fail_alloc_page(gfp_t gfp_mask, unsigned int order)
 {
-	return __should_fail_alloc_page(gfp_mask, order);
+	return false;
 }
 ALLOW_ERROR_INJECTION(should_fail_alloc_page, TRUE);
 
@@ -1152,9 +1147,6 @@ static inline bool prepare_alloc_pages(gfp_t gfp_mask, unsigned int order,
 	fs_reclaim_release(gfp_mask);
 
 	might_sleep_if(gfp_mask & __GFP_DIRECT_RECLAIM);
-
-	if (should_fail_alloc_page(gfp_mask, order))
-		return false;
 
 	*alloc_flags = gfp_to_alloc_flags_cma(gfp_mask, *alloc_flags);
 
@@ -1451,8 +1443,6 @@ static void __meminit memmap_init_range(unsigned long size, int nid,
 		if (context == MEMINIT_EARLY) {
 			if (overlap_memmap_init(zone, &pfn))
 				continue;
-			if (defer_init(nid, pfn, zone_end_pfn))
-				break;
 		}
 
 		page = pfn_to_page(pfn);

@@ -7,23 +7,8 @@
 #include <linux/hardirq.h>
 #include <linux/kallsyms.h>
 
-/* kprobes stub - kprobes disabled */
-static inline bool is_kprobe_insn_slot(unsigned long addr)
-{
-	return false;
-}
-static inline bool is_kprobe_optinsn_slot(unsigned long addr)
-{
-	return false;
-}
-
 #include <asm/sections.h>
 #include <linux/uaccess.h>
-
-static inline bool is_bpf_text_address(unsigned long addr)
-{
-	return false;
-}
 
 DEFINE_MUTEX(text_mutex);
 
@@ -95,10 +80,6 @@ int kernel_text_address(unsigned long addr)
 	if (is_module_text_address(addr))
 		goto out;
 	if (is_ftrace_trampoline(addr))
-		goto out;
-	if (is_kprobe_optinsn_slot(addr) || is_kprobe_insn_slot(addr))
-		goto out;
-	if (is_bpf_text_address(addr))
 		goto out;
 	ret = 0;
 out:

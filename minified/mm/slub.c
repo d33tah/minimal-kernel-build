@@ -425,10 +425,6 @@ static inline int init_cache_random_seq(struct kmem_cache *s)
 static inline void init_freelist_randomization(void)
 {
 }
-static inline bool shuffle_freelist(struct kmem_cache *s, struct slab *slab)
-{
-	return false;
-}
 
 static struct slab *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 {
@@ -437,8 +433,6 @@ static struct slab *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 	gfp_t alloc_gfp;
 	void *start, *p, *next;
 	int idx;
-	bool shuffle;
-
 	flags &= gfp_allowed_mask;
 
 	flags |= s->allocflags;
@@ -471,20 +465,16 @@ static struct slab *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 
 	setup_slab_debug(s, slab, start);
 
-	shuffle = shuffle_freelist(s, slab);
-
-	if (!shuffle) {
-		start = fixup_red_left(s, start);
-		start = setup_object(s, start);
-		slab->freelist = start;
-		for (idx = 0, p = start; idx < slab->objects - 1; idx++) {
-			next = p + s->size;
-			next = setup_object(s, next);
-			set_freepointer(s, p, next);
-			p = next;
-		}
-		set_freepointer(s, p, NULL);
+	start = fixup_red_left(s, start);
+	start = setup_object(s, start);
+	slab->freelist = start;
+	for (idx = 0, p = start; idx < slab->objects - 1; idx++) {
+		next = p + s->size;
+		next = setup_object(s, next);
+		set_freepointer(s, p, next);
+		p = next;
 	}
+	set_freepointer(s, p, NULL);
 
 	slab->inuse = slab->objects;
 	slab->frozen = 1;

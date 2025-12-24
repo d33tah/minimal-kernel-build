@@ -48,9 +48,6 @@ static inline void apic_intr_mode_init(void) { }
 static inline void lapic_assign_system_vectors(void) { }
 /* lapic_assign_legacy_vector removed - unused */
 static inline bool apic_needs_pit(void) { return true; }
-/* Removed: lapic_shutdown, lapic_update_tsc_freq, check_x2apic */
-static inline void x2apic_setup(void) { }
-/* x2apic_enabled removed - unused */
 
 #define x2apic_mode		(0)
 #define	x2apic_supported()	(0)

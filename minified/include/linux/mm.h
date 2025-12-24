@@ -1401,7 +1401,6 @@ static inline int in_gate_area(struct mm_struct *mm, unsigned long addr)
 	return 0;
 }
 
-
 extern int randomize_va_space;
 
 

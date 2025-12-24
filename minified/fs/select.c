@@ -2,13 +2,11 @@
 #include <linux/export.h>
 #include <linux/syscalls.h>
 #include <linux/compat.h>
-
 struct sel_arg_struct {
 	unsigned long n;
 	fd_set __user *inp, *outp, *exp;
 	struct timeval __user *tvp;
 };
-
 SYSCALL_DEFINE5(select, int, n, fd_set __user *, inp, fd_set __user *, outp,
 		fd_set __user *, exp, struct __kernel_old_timeval __user *, tvp)
 {

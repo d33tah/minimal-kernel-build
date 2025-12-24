@@ -156,10 +156,7 @@ int movable_zone;
 
 int page_group_by_mobility_disabled __read_mostly;
 
-static inline bool defer_init(int nid, unsigned long pfn, unsigned long end_pfn)
-{
-	return false;
-}
+/* defer_init removed - unused */
 
 static inline unsigned long *get_pageblock_bitmap(const struct page *page,
 						  unsigned long pfn)
@@ -413,16 +410,7 @@ static void free_pcppages_bulk(struct zone *zone, int count,
 	/* Stub: per-CPU page caching optimization not needed for minimal kernel */
 }
 
-static void free_one_page(struct zone *zone, struct page *page,
-			  unsigned long pfn, unsigned int order,
-			  int migratetype, fpi_t fpi_flags)
-{
-	unsigned long flags;
-
-	spin_lock_irqsave(&zone->lock, flags);
-	__free_one_page(page, pfn, zone, order, migratetype, fpi_flags);
-	spin_unlock_irqrestore(&zone->lock, flags);
-}
+/* free_one_page removed - unused (callers use __free_one_page directly) */
 
 static void __meminit __init_single_page(struct page *page, unsigned long pfn,
 					 unsigned long zone, int nid)

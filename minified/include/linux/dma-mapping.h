@@ -23,15 +23,9 @@ static inline int valid_dma_direction(enum dma_data_direction dir)
 #include <linux/mem_encrypt.h>
 
 
-#define DMA_ATTR_WEAK_ORDERING		(1UL << 1)
-#define DMA_ATTR_WRITE_COMBINE		(1UL << 2)
 #define DMA_ATTR_NO_KERNEL_MAPPING	(1UL << 4)
 #define DMA_ATTR_SKIP_CPU_SYNC		(1UL << 5)
-#define DMA_ATTR_FORCE_CONTIGUOUS	(1UL << 6)
-#define DMA_ATTR_ALLOC_SINGLE_PAGES	(1UL << 7)
 #define DMA_ATTR_NO_WARN	(1UL << 8)
-
-#define DMA_ATTR_PRIVILEGED		(1UL << 9)
 
 #define DMA_MAPPING_ERROR		(~(dma_addr_t)0)
 

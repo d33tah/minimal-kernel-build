@@ -210,11 +210,7 @@ static inline unsigned int obj_to_index(const struct kmem_cache *cache,
 	return __obj_to_index(cache, slab_address(slab), obj);
 }
 
-static inline int objs_per_slab(const struct kmem_cache *cache,
-				     const struct slab *slab)
-{
-	return slab->objects;
-}
+/* objs_per_slab removed - unused */
 
 #include <linux/memcontrol.h>
 int should_failslab(struct kmem_cache *s, gfp_t gfpflags);
@@ -341,9 +337,7 @@ static inline enum node_stat_item cache_vmstat_idx(struct kmem_cache *s)
 		NR_SLAB_RECLAIMABLE_B : NR_SLAB_UNRECLAIMABLE_B;
 }
 
-static inline void print_tracking(struct kmem_cache *s, void *object)
-{
-}
+/* print_tracking removed - unused */
 static inline bool __slub_debug_enabled(void)
 {
 	return false;
@@ -499,11 +493,7 @@ static inline struct kmem_cache_node *get_node(struct kmem_cache *s, int node)
 
 void ___cache_free(struct kmem_cache *cache, void *x, unsigned long addr);
 
-static inline int cache_random_seq_create(struct kmem_cache *cachep,
-					unsigned int count, gfp_t gfp)
-{
-	return 0;
-}
+/* cache_random_seq_create removed - unused */
 static inline void cache_random_seq_destroy(struct kmem_cache *cachep) { }
 
 static inline bool slab_want_init_on_alloc(gfp_t flags, struct kmem_cache *c)

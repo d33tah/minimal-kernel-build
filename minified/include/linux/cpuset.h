@@ -1,15 +1,7 @@
 #ifndef _LINUX_CPUSET_H
 #define _LINUX_CPUSET_H
 
-#include <linux/sched.h>
-#include <linux/sched/topology.h>
-#include <linux/sched/task.h>
-#include <linux/cpumask.h>
 #include <linux/nodemask.h>
-#include <linux/mm.h>
-#include <linux/mmu_context.h>
-#include <linux/jump_label.h>
-
 
 static inline bool cpusets_enabled(void) { return false; }
 
@@ -22,6 +14,5 @@ static inline void cpuset_init_current_mems_allowed(void) {}
 static inline void set_mems_allowed(nodemask_t nodemask)
 {
 }
-
 
 #endif  

@@ -58,4 +58,3 @@ int getchar(void)
 
 	return oreg.al;
 }
-

@@ -1,10 +1,7 @@
 #ifndef IOCONTEXT_H
 #define IOCONTEXT_H
 
-#include <linux/radix-tree.h>
-#include <linux/rcupdate.h>
-#include <linux/workqueue.h>
-
+#include <linux/types.h>
 
 struct io_context {
 	atomic_long_t refcount;
@@ -13,7 +10,6 @@ struct io_context {
 };
 
 struct task_struct;
-struct io_context;
 static inline void exit_io_context(struct task_struct *task) { }
 static inline int copy_io(unsigned long clone_flags, struct task_struct *tsk)
 {

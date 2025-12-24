@@ -104,10 +104,7 @@ static inline int slab_order(const struct slab *slab)
 	return folio_order((struct folio *)slab_folio(slab));
 }
 
-static inline size_t slab_size(const struct slab *slab)
-{
-	return PAGE_SIZE << slab_order(slab);
-}
+/* slab_size removed - unused */
 
 
 

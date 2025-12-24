@@ -1,6 +1,6 @@
-
-int __init init_mount(const char *dev_name, const char *dir_name,
-		const char *type_page, unsigned long flags, void *data_page);
+#ifndef _LINUX_INIT_SYSCALLS_H
+#define _LINUX_INIT_SYSCALLS_H
+int __init init_mount(const char *dev_name, const char *dir_name, const char *type_page, unsigned long flags, void *data_page);
 int __init init_umount(const char *name, int flags);
 int __init init_chdir(const char *filename);
 int __init init_chroot(const char *filename);
@@ -16,3 +16,4 @@ int __init init_mkdir(const char *pathname, umode_t mode);
 int __init init_rmdir(const char *pathname);
 int __init init_utimes(char *filename, struct timespec64 *ts);
 int __init init_dup(struct file *file);
+#endif

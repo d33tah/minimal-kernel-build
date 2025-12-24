@@ -15,11 +15,6 @@ struct e820_table *e820_table __refdata = &e820_table_init;
 
 unsigned long pci_mem_start = 0xaeedbabe;
 
-bool e820__mapped_any(u64 start, u64 end, enum e820_type type)
-{
-	return false;
-}
-
 static struct e820_entry *__e820__mapped_all(u64 start, u64 end,
 					     enum e820_type type)
 {

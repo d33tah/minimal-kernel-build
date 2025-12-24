@@ -29,8 +29,7 @@ unsigned int x86_family(unsigned int sig);
 unsigned int x86_model(unsigned int sig);
 unsigned int x86_stepping(unsigned int sig);
 extern void __init sld_setup(struct cpuinfo_x86 *c);
-extern bool handle_user_split_lock(struct pt_regs *regs, long error_code);
-/* handle_guest_split_lock removed - never called */
+/* handle_guest_split_lock, handle_user_split_lock removed - never called */
 extern void handle_bus_lock(struct pt_regs *regs);
 /* get_this_hybrid_cpu_type, init_ia32_feat_ctl, cet_disable, intel_cpu_collect_info, intel_cpu_signatures_match removed - never called */
 

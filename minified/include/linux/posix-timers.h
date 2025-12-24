@@ -1,9 +1,7 @@
 #ifndef _linux_POSIX_TIMERS_H
 #define _linux_POSIX_TIMERS_H
 
-#include <linux/spinlock.h>
-#include <linux/list.h>
-#include <linux/timerqueue.h>
+#include <linux/types.h>
 
 struct kernel_siginfo;
 struct task_struct;
@@ -17,8 +15,6 @@ static inline void posix_cputimers_group_init(struct posix_cputimers *pct,
 
 static inline void clear_posix_cputimers_work(struct task_struct *p) { }
 static inline void posix_cputimers_init_work(void) { }
-
-struct k_itimer;
 
 void run_posix_cpu_timers(void);
 void posix_cpu_timers_exit(struct task_struct *task);

@@ -1263,8 +1263,6 @@ int __init vty_init(const struct file_operations *console_fops)
 	if (IS_ERR(tty0dev))
 		tty0dev = NULL;
 
-	vcs_init();
-
 	console_driver = tty_alloc_driver(MAX_NR_CONSOLES,
 					  TTY_DRIVER_REAL_RAW |
 						  TTY_DRIVER_RESET_TERMIOS);

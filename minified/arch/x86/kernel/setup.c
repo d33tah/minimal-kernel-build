@@ -660,8 +660,6 @@ void __init setup_arch(char **cmdline_p)
 
 	x86_init.timers.wallclock_init();
 
-	mcheck_init();
-
 	register_refined_jiffies(CLOCK_TICK_RATE);
 
 	unwind_init();

@@ -52,15 +52,6 @@ void __cpuidle default_idle_call(void)
 	}
 }
 
-static int call_cpuidle_s2idle(struct cpuidle_driver *drv,
-			       struct cpuidle_device *dev)
-{
-	if (current_clr_polling_and_test())
-		return -EBUSY;
-
-	return cpuidle_enter_s2idle(drv, dev);
-}
-
 static int call_cpuidle(struct cpuidle_driver *drv, struct cpuidle_device *dev,
 			int next_state)
 {
@@ -91,18 +82,8 @@ static void cpuidle_idle_call(void)
 		goto exit_idle;
 	}
 
-	if (idle_should_enter_s2idle() || dev->forced_idle_latency_limit_ns) {
-		u64 max_latency_ns;
-
-		if (idle_should_enter_s2idle()) {
-			entered_state = call_cpuidle_s2idle(drv, dev);
-			if (entered_state > 0)
-				goto exit_idle;
-
-			max_latency_ns = U64_MAX;
-		} else {
-			max_latency_ns = dev->forced_idle_latency_limit_ns;
-		}
+	if (dev->forced_idle_latency_limit_ns) {
+		u64 max_latency_ns = dev->forced_idle_latency_limit_ns;
 
 		tick_nohz_idle_stop_tick();
 

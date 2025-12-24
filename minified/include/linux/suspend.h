@@ -16,7 +16,7 @@ typedef int __bitwise suspend_state_t;
 #define PM_SUSPEND_MIN		PM_SUSPEND_TO_IDLE
 #define PM_SUSPEND_MAX		((__force suspend_state_t) 4)
 #define suspend_valid_only_mem	NULL
-static inline bool idle_should_enter_s2idle(void) { return false; }
+/* idle_should_enter_s2idle removed - uncalled */
 struct pbe { void *address; void *orig_address; struct pbe *next; };
 extern struct mutex system_transition_mutex;
 #define pm_notifier(fn, pri)	do { (void)(fn); } while (0)

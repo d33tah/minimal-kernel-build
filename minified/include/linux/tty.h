@@ -212,8 +212,7 @@ int __init tty_init(void);
 const char *tty_name(const struct tty_struct *tty);
 
 extern struct ktermios tty_std_termios;
-
-static inline int vcs_init(void) { return 0; }
+/* vcs_init removed - uncalled */
 
 extern struct class *tty_class;
 

@@ -79,16 +79,6 @@ struct cmos_rtc_board_info {
 #define RTC_VALID	RTC_REG_D
 # define RTC_VRT 0x80		 
 
-#ifndef ARCH_RTC_LOCATION	 
-
-#define RTC_IO_EXTENT	0x8
-#define RTC_IO_EXTENT_USED	0x2
-#define RTC_IOMAPPED	1	 
-
-#else
-#define RTC_IO_EXTENT_USED      RTC_IO_EXTENT
-#endif  
-
 int mc146818_get_time(struct rtc_time *time);
 int mc146818_set_time(struct rtc_time *time);
 

@@ -1,11 +1,9 @@
 #include <linux/syscalls.h>
 #include <linux/fs.h>
-
 int vfs_utimes(const struct path *path, struct timespec64 *times)
 {
 	return 0;
 }
-
 SYSCALL_DEFINE4(utimensat, int, dfd, const char __user *, filename,
 		struct __kernel_timespec __user *, utimes, int, flags)
 {

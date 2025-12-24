@@ -95,11 +95,6 @@ int tty_register_ldisc(struct tty_ldisc_ops *new_ldisc);
 #define NR_LDISCS	31
 #include <linux/llist.h>
 
-
-
-#define __DISABLED_CHAR '\0'
-
-
 /* Flag accessor macros - only keep used ones */
 #define _C_FLAG(tty, f)	((tty)->termios.c_cflag & (f))
 #define _L_FLAG(tty, f)	((tty)->termios.c_lflag & (f))

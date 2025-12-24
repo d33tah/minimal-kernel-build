@@ -1,6 +1,5 @@
 /* Stub RTC library - functions never called in minimal kernel */
 #include <linux/rtc.h>
-
 int rtc_month_days(unsigned int month, unsigned int year)
 {
 	return 0;

@@ -357,7 +357,7 @@ void device_remove_groups(struct device *dev,
 struct device *get_device(struct device *dev);
 void put_device(struct device *dev);
 
-static inline int devtmpfs_mount(void) { return 0; }
+/* devtmpfs_mount removed - unused */
 
 void device_shutdown(void);
 

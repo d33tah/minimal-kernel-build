@@ -5,14 +5,6 @@
 #include <linux/memblock.h>
 #include <linux/kfence.h>
 #include <linux/kprobes.h>
-static inline int is_kmmio_active(void)
-{
-	return 0;
-}
-static inline int kmmio_handler(struct pt_regs *regs, unsigned long addr)
-{
-	return 0;
-}
 #include <linux/perf_event.h>
 #include <linux/hugetlb.h>
 
@@ -55,16 +47,6 @@ static inline void trace_page_fault_kernel(unsigned long address,
 
 static nokprobe_inline int kmmio_fault(struct pt_regs *regs, unsigned long addr)
 {
-	if (unlikely(is_kmmio_active()))
-		if (kmmio_handler(regs, addr) == 1)
-			return -1;
-	return 0;
-}
-
-static int is_prefetch(struct pt_regs *regs, unsigned long error_code,
-		       unsigned long addr)
-{
-	/* Stub: AMD K8 prefetch quirk not needed for minimal kernel */
 	return 0;
 }
 
@@ -156,22 +138,6 @@ void arch_sync_kernel_mappings(unsigned long start, unsigned long end)
 	}
 }
 
-static int is_errata93(struct pt_regs *regs, unsigned long address)
-{
-	return 0;
-}
-
-static int is_errata100(struct pt_regs *regs, unsigned long address)
-{
-	return 0;
-}
-
-static int is_f00f_bug(struct pt_regs *regs, unsigned long error_code,
-		       unsigned long address)
-{
-	return 0;
-}
-
 static noinline void pgtable_bad(struct pt_regs *regs, unsigned long error_code,
 				 unsigned long address)
 {
@@ -234,9 +200,6 @@ static noinline void kernelmode_fixup_or_oops(struct pt_regs *regs,
 		return;
 	}
 
-	if (is_prefetch(regs, error_code, address))
-		return;
-
 	page_fault_oops(regs, error_code, address);
 }
 
@@ -266,12 +229,6 @@ static void __bad_area_nosemaphore(struct pt_regs *regs,
 	}
 
 	local_irq_enable();
-
-	if (is_prefetch(regs, error_code, address))
-		return;
-
-	if (is_errata100(regs, address))
-		return;
 
 	sanitize_error_code(address, &error_code);
 
@@ -352,9 +309,6 @@ static void do_sigbus(struct pt_regs *regs, unsigned long error_code,
 					 BUS_ADRERR, ARCH_DEFAULT_PKEY);
 		return;
 	}
-
-	if (is_prefetch(regs, error_code, address))
-		return;
 
 	sanitize_error_code(address, &error_code);
 
@@ -480,9 +434,6 @@ static void do_kern_addr_fault(struct pt_regs *regs,
 			return;
 	}
 
-	if (is_f00f_bug(regs, hw_error_code, address))
-		return;
-
 	if (spurious_kernel_fault(hw_error_code, address))
 		return;
 
@@ -508,9 +459,6 @@ static inline void do_user_addr_fault(struct pt_regs *regs,
 
 	if (unlikely((error_code & (X86_PF_USER | X86_PF_INSTR)) ==
 		     X86_PF_INSTR)) {
-		if (is_errata93(regs, address))
-			return;
-
 		page_fault_oops(regs, error_code, address);
 		return;
 	}

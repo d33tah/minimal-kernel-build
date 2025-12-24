@@ -648,8 +648,6 @@ static void place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 
 static void check_enqueue_throttle(struct cfs_rq *cfs_rq);
 
-static inline bool cfs_bandwidth_used(void);
-
 static void enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 			   int flags)
 {
@@ -679,7 +677,7 @@ static void enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 		__enqueue_entity(cfs_rq, se);
 	se->on_rq = 1;
 
-	if (cfs_rq->nr_running == 1 || cfs_bandwidth_used())
+	if (cfs_rq->nr_running == 1)
 		list_add_leaf_cfs_rq(cfs_rq);
 
 	if (cfs_rq->nr_running == 1)
@@ -891,11 +889,6 @@ static void entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr,
 		check_preempt_tick(cfs_rq, curr);
 }
 
-static inline bool cfs_bandwidth_used(void)
-{
-	return false;
-}
-
 static void account_cfs_rq_runtime(struct cfs_rq *cfs_rq, u64 delta_exec)
 {
 }
@@ -1002,16 +995,6 @@ static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		update_overutilized_status(rq);
 
 enqueue_throttle:
-	if (cfs_bandwidth_used()) {
-		for_each_sched_entity(se)
-		{
-			cfs_rq = cfs_rq_of(se);
-
-			if (list_add_leaf_cfs_rq(cfs_rq))
-				break;
-		}
-	}
-
 	assert_list_leaf_cfs_rq(rq);
 
 	hrtick_update(rq);

@@ -243,13 +243,6 @@ static int __filemap_fdatawrite_range(struct address_space *mapping,
 	return filemap_fdatawrite_wbc(mapping, &wbc);
 }
 
-/* filemap_range_has_page used internally */
-static bool filemap_range_has_page(struct address_space *mapping,
-				   loff_t start_byte, loff_t end_byte)
-{
-	return false;
-}
-
 static void __filemap_fdatawait_range(struct address_space *mapping,
 				      loff_t start_byte, loff_t end_byte)
 {
@@ -1697,11 +1690,7 @@ ssize_t generic_file_direct_write(struct kiocb *iocb, struct iov_iter *from)
 	write_len = iov_iter_count(from);
 	end = (pos + write_len - 1) >> PAGE_SHIFT;
 
-	if (iocb->ki_flags & IOCB_NOWAIT) {
-		if (filemap_range_has_page(file->f_mapping, pos,
-					   pos + write_len - 1))
-			return -EAGAIN;
-	} else {
+	if (!(iocb->ki_flags & IOCB_NOWAIT)) {
 		written = filemap_write_and_wait_range(mapping, pos,
 						       pos + write_len - 1);
 		if (written)

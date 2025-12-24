@@ -614,12 +614,6 @@ static int fallbacks[MIGRATE_TYPES][3] = {
 				  MIGRATE_TYPES },
 };
 
-static inline struct page *__rmqueue_cma_fallback(struct zone *zone,
-						  unsigned int order)
-{
-	return NULL;
-}
-
 static bool can_steal_fallback(unsigned int order, int start_mt)
 {
 	/* Stub: always allow fallback for minimal kernel */

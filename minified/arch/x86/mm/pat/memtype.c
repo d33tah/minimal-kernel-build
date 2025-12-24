@@ -61,23 +61,6 @@ static inline char *cattr_name(enum page_cache_mode pcm)
 	}
 }
 
-static inline int memtype_check_insert(struct memtype *entry_new,
-				       enum page_cache_mode *new_type)
-{
-	return 0;
-}
-static inline struct memtype *memtype_erase(u64 start, u64 end)
-{
-	return NULL;
-}
-static inline struct memtype *memtype_lookup(u64 addr)
-{
-	return NULL;
-}
-static inline int memtype_copy_nth_element(struct memtype *out, loff_t pos)
-{
-	return 0;
-}
 
 #include "../mm_internal.h"
 

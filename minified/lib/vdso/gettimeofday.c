@@ -37,19 +37,6 @@ static inline bool vdso_cycles_ok(u64 cycles)
 }
 #endif
 
-static __always_inline const struct vdso_data *
-__arch_get_timens_vdso_data(const struct vdso_data *vd)
-{
-	return NULL;
-}
-
-static __always_inline int do_hres_timens(const struct vdso_data *vdns,
-					  clockid_t clk,
-					  struct __kernel_timespec *ts)
-{
-	return -EINVAL;
-}
-
 static __always_inline int do_hres(const struct vdso_data *vd, clockid_t clk,
 				   struct __kernel_timespec *ts)
 {
@@ -82,13 +69,6 @@ static __always_inline int do_hres(const struct vdso_data *vd, clockid_t clk,
 	ts->tv_nsec = ns;
 
 	return 0;
-}
-
-static __always_inline int do_coarse_timens(const struct vdso_data *vdns,
-					    clockid_t clk,
-					    struct __kernel_timespec *ts)
-{
-	return -1;
 }
 
 static __always_inline int do_coarse(const struct vdso_data *vd, clockid_t clk,

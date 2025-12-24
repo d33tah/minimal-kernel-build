@@ -10,9 +10,10 @@ copy:
 	chown 1000:1000 -R minified
 
 vm:
-	cd minified && make LLVM=1 tinyconfig -j6 && yes "" | make LLVM=1 olddefconfig && make LLVM=1 -j6
+	cd minified && find -name '*.h' -or -name '*.c' -exec clang-format -i {} \; && cloc . > /tmp/cloc && make LLVM=1 tinyconfig -j6 && make LLVM=1
 	./vmtest.tcl
 	ls -lh minified/arch/x86/boot/bzImage*
+	cat /tmp/cloc
 
 test:
 	cd minified && make mrproper && cd .. && make vm

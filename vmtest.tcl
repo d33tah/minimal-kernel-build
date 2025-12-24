@@ -7,6 +7,9 @@ spawn qemu-system-x86_64 -kernel minified/arch/x86/boot/bzImage -display curses 
 # The simple init doesn't support interactivity.
 
 expect {
-    "Hello, World!" { exit 0 }
-    timeout { exit 1 }
+	"Hello, World!" { exit 0 }
+	timeout {
+		exec reset >@ stdout
+		send_error "\nTest failed\n"
+	}
 }

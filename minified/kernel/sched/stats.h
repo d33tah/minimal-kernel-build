@@ -3,9 +3,7 @@
 #define _KERNEL_STATS_H
 
 
-static inline void rq_sched_info_arrive  (struct rq *rq, unsigned long long delta) { }
-static inline void rq_sched_info_dequeue(struct rq *rq, unsigned long long delta) { }
-static inline void rq_sched_info_depart  (struct rq *rq, unsigned long long delta) { }
+/* rq_sched_info_arrive/dequeue/depart removed - never called */
 # define   schedstat_enabled()		0
 # define __schedstat_inc(var)		do { } while (0)
 # define   schedstat_inc(var)		do { } while (0)

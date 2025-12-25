@@ -171,11 +171,6 @@ extern int mmap_rnd_bits __read_mostly;
 #define page_to_virt(x)	__va(PFN_PHYS(page_to_pfn(x)))
 #endif
 
-
-#ifndef mm_forbids_zeropage
-#define mm_forbids_zeropage(X)	(0)
-#endif
-
 /* BITS_PER_LONG == 32 */
 #define mm_zero_struct_page(pp)  ((void)memset((pp), 0, sizeof(struct page)))
 
@@ -522,14 +517,11 @@ vm_fault_t finish_fault(struct vm_fault *vmf);
 #define NODES_PGOFF		(SECTIONS_PGOFF - NODES_WIDTH)
 #define ZONES_PGOFF		(NODES_PGOFF - ZONES_WIDTH)
 #define LAST_CPUPID_PGOFF	(ZONES_PGOFF - LAST_CPUPID_WIDTH)
-#define KASAN_TAG_PGOFF		(LAST_CPUPID_PGOFF - KASAN_TAG_WIDTH)
 
 #define NODES_PGSHIFT		(NODES_PGOFF * (NODES_WIDTH != 0))
 #define ZONES_PGSHIFT		(ZONES_PGOFF * (ZONES_WIDTH != 0))
 
 #define ZONEID_SHIFT		(SECTIONS_SHIFT + ZONES_SHIFT)
-#define ZONEID_PGOFF		((SECTIONS_PGOFF < ZONES_PGOFF)? \
-						SECTIONS_PGOFF : ZONES_PGOFF)
 
 #define ZONES_MASK		((1UL << ZONES_WIDTH) - 1)
 #define NODES_MASK		((1UL << NODES_WIDTH) - 1)
@@ -761,7 +753,6 @@ static inline void clear_page_pfmemalloc(struct page *page)
 extern void pagefault_out_of_memory(void);
 
 #define offset_in_page(p)	((unsigned long)(p) & ~PAGE_MASK)
-#define offset_in_thp(page, p)	((unsigned long)(p) & (thp_size(page) - 1))
 #define offset_in_folio(folio, p) ((unsigned long)(p) & (folio_size(folio) - 1))
 
 struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
@@ -1091,7 +1082,6 @@ static inline void free_reserved_page(struct page *page)
 	__free_page(page);
 	adjust_managed_page_count(page, 1);
 }
-#define free_highmem_page(page) free_reserved_page(page)
 
 static inline unsigned long free_initmem_default(int poison)
 {

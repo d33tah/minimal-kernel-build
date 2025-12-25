@@ -42,9 +42,6 @@ static inline void on_each_cpu_mask(const struct cpumask *mask,
 static inline void smp_send_stop(void) { }
 
 #define raw_smp_processor_id()			0
-static inline void up_smp_call_function(smp_call_func_t func, void *info) { }
-#define smp_call_function(func, info, wait) (up_smp_call_function(func, info))
-
 static inline void smp_send_reschedule(int cpu) { }
 #define smp_prepare_boot_cpu()			do {} while (0)
 static inline void call_function_init(void) { }

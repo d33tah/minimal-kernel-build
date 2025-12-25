@@ -322,66 +322,8 @@ static inline void dec_slabs_node(struct kmem_cache *s, int node, int objects)
 {
 }
 
-static __always_inline void kfree_hook(void *x)
-{
-	kmemleak_free(x);
-	kasan_kfree_large(x);
-}
-
-static __always_inline bool slab_free_hook(struct kmem_cache *s, void *x,
-					   bool init)
-{
-	kmemleak_free_recursive(x, s->flags);
-
-	debug_check_no_locks_freed(x, s->object_size);
-
-	if (init) {
-		int rsize;
-
-		if (!kasan_has_integrated_init())
-			memset(kasan_reset_tag(x), 0, s->object_size);
-		rsize = (s->flags & SLAB_RED_ZONE) ? s->red_left_pad : 0;
-		memset((char *)kasan_reset_tag(x) + s->inuse, 0,
-		       s->size - s->inuse - rsize);
-	}
-
-	return kasan_slab_free(s, x, init);
-}
-
-static inline bool slab_free_freelist_hook(struct kmem_cache *s, void **head,
-					   void **tail, int *cnt)
-{
-	void *object;
-	void *next = *head;
-	void *old_tail = *tail ? *tail : *head;
-
-	if (is_kfence_address(next)) {
-		slab_free_hook(s, next, false);
-		return true;
-	}
-
-	*head = NULL;
-	*tail = NULL;
-
-	do {
-		object = next;
-		next = get_freepointer(s, object);
-
-		if (!slab_free_hook(s, object, slab_want_init_on_free(s))) {
-			set_freepointer(s, object, *head);
-			*head = object;
-			if (!*tail)
-				*tail = object;
-		} else {
-			--(*cnt);
-		}
-	} while (object != old_tail);
-
-	if (*head == *tail)
-		*tail = NULL;
-
-	return *head != NULL;
-}
+/* Removed: kfree_hook, slab_free_hook, slab_free_freelist_hook
+ * - No longer needed since kfree/kmem_cache_free are no-ops */
 
 static void *setup_object(struct kmem_cache *s, void *object)
 {
@@ -1069,141 +1011,12 @@ void *kmem_cache_alloc_lru(struct kmem_cache *s, struct list_lru *lru,
 	return __kmem_cache_alloc_lru(s, lru, gfpflags);
 }
 
-static void __slab_free(struct kmem_cache *s, struct slab *slab, void *head,
-			void *tail, int cnt, unsigned long addr)
-
-{
-	void *prior;
-	int was_frozen;
-	struct slab new;
-	unsigned long counters;
-	struct kmem_cache_node *n = NULL;
-	unsigned long flags;
-
-	stat(s, FREE_SLOWPATH);
-
-	if (kfence_free(head))
-		return;
-
-	if (kmem_cache_debug(s) &&
-	    !free_debug_processing(s, slab, head, tail, cnt, addr))
-		return;
-
-	do {
-		if (unlikely(n)) {
-			spin_unlock_irqrestore(&n->list_lock, flags);
-			n = NULL;
-		}
-		prior = slab->freelist;
-		counters = slab->counters;
-		set_freepointer(s, tail, prior);
-		new.counters = counters;
-		was_frozen = new.frozen;
-		new.inuse -= cnt;
-		if ((!new.inuse || !prior) && !was_frozen) {
-			n = get_node(s, slab_nid(slab));
-			spin_lock_irqsave(&n->list_lock, flags);
-		}
-
-	} while (!cmpxchg_double_slab(s, slab, prior, counters, head,
-				      new.counters, "__slab_free"));
-
-	if (likely(!n)) {
-		if (likely(was_frozen)) {
-			stat(s, FREE_FROZEN);
-		} else if (new.frozen) {
-			put_cpu_partial(s, slab, 1);
-			stat(s, CPU_PARTIAL_FREE);
-		}
-
-		return;
-	}
-
-	if (unlikely(!new.inuse && n->nr_partial >= s->min_partial))
-		goto slab_empty;
-
-	if (unlikely(!prior)) {
-		remove_full(s, n, slab);
-		add_partial(n, slab, DEACTIVATE_TO_TAIL);
-		stat(s, FREE_ADD_PARTIAL);
-	}
-	spin_unlock_irqrestore(&n->list_lock, flags);
-	return;
-
-slab_empty:
-	if (prior) {
-		remove_partial(n, slab);
-		stat(s, FREE_REMOVE_PARTIAL);
-	} else {
-		remove_full(s, n, slab);
-	}
-
-	spin_unlock_irqrestore(&n->list_lock, flags);
-	stat(s, FREE_SLAB);
-	discard_slab(s, slab);
-}
-
-static __always_inline void do_slab_free(struct kmem_cache *s,
-					 struct slab *slab, void *head,
-					 void *tail, int cnt,
-					 unsigned long addr)
-{
-	void *tail_obj = tail ?: head;
-	struct kmem_cache_cpu *c;
-	unsigned long tid;
-
-	if (!tail)
-		memcg_slab_free_hook(s, &head, 1);
-redo:
-
-	c = raw_cpu_ptr(s->cpu_slab);
-	tid = READ_ONCE(c->tid);
-
-	barrier();
-
-	if (likely(slab == c->slab)) {
-		void **freelist = READ_ONCE(c->freelist);
-
-		set_freepointer(s, tail_obj, freelist);
-
-		if (unlikely(!this_cpu_cmpxchg_double(
-			    s->cpu_slab->freelist, s->cpu_slab->tid, freelist,
-			    tid, head, next_tid(tid)))) {
-			note_cmpxchg_failure("slab_free", s, tid);
-			goto redo;
-		}
-		stat(s, FREE_FASTPATH);
-	} else
-		__slab_free(s, slab, head, tail_obj, cnt, addr);
-}
-
-static __always_inline void slab_free(struct kmem_cache *s, struct slab *slab,
-				      void *head, void *tail, int cnt,
-				      unsigned long addr)
-{
-	if (slab_free_freelist_hook(s, &head, &tail, &cnt))
-		do_slab_free(s, slab, head, tail, cnt, addr);
-}
+/* Removed: __slab_free, do_slab_free, slab_free, free_large_kmalloc
+ * - All dead code since kfree/kmem_cache_free are no-ops (~115 lines) */
 
 void kmem_cache_free(struct kmem_cache *s, void *x)
 {
-	s = cache_from_obj(s, x);
-	if (!s)
-		return;
-	slab_free(s, virt_to_slab(x), x, NULL, 1, _RET_IP_);
-}
-
-static inline void free_large_kmalloc(struct folio *folio, void *object)
-{
-	unsigned int order = folio_order(folio);
-
-	if (WARN_ON_ONCE(order == 0))
-		pr_warn_once("object pointer: 0x%p\n", object);
-
-	kfree_hook(object);
-	mod_lruvec_page_state(folio_page(folio, 0), NR_SLAB_UNRECLAIMABLE_B,
-			      -(PAGE_SIZE << order));
-	__free_pages(folio_page(folio, 0), order);
+	/* No-op: bump allocator style - no deallocation */
 }
 
 static unsigned int slub_min_order;
@@ -1552,20 +1365,7 @@ size_t __ksize(const void *object)
 
 void kfree(const void *x)
 {
-	struct folio *folio;
-	struct slab *slab;
-	void *object = (void *)x;
-
-	if (unlikely(ZERO_OR_NULL_PTR(x)))
-		return;
-
-	folio = virt_to_folio(x);
-	if (unlikely(!folio_test_slab(folio))) {
-		free_large_kmalloc(folio, object);
-		return;
-	}
-	slab = folio_slab(folio);
-	slab_free(slab->slab_cache, slab, object, NULL, 1, _RET_IP_);
+	/* No-op: bump allocator style - no deallocation */
 }
 
 /* Memory hotplug callbacks removed - not needed for minimal kernel

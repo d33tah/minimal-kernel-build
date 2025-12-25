@@ -61,8 +61,7 @@ extern void machine_halt(void);
 extern void machine_power_off(void);
 
 extern void machine_shutdown(void);
-struct pt_regs;
-extern void machine_crash_shutdown(struct pt_regs *);
+/* machine_crash_shutdown removed - declared but never implemented */
 
 void do_kernel_power_off(void);
 

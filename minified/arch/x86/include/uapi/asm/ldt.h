@@ -22,10 +22,6 @@ struct user_desc {
 	unsigned int  seg_not_present:1;
 	unsigned int  useable:1;
 };
-
-#define MODIFY_LDT_CONTENTS_DATA	0
-#define MODIFY_LDT_CONTENTS_STACK	1
-#define MODIFY_LDT_CONTENTS_CODE	2
-
+/* MODIFY_LDT_CONTENTS_* macros removed - unused */
 #endif  
 #endif  

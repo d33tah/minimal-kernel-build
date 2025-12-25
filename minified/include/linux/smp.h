@@ -21,10 +21,6 @@ struct __call_single_data {
 typedef struct __call_single_data call_single_data_t
 	__aligned(sizeof(struct __call_single_data));
 
-
-int smp_call_function_single(int cpuid, smp_call_func_t func, void *info,
-			     int wait);
-
 void on_each_cpu_cond_mask(smp_cond_func_t cond_func, smp_call_func_t func,
 			   void *info, bool wait, const struct cpumask *mask);
 

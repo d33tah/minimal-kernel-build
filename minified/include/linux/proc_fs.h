@@ -24,5 +24,5 @@ enum proc_hidepid { HIDEPID_OFF = 0, HIDEPID_NO_ACCESS = 1, HIDEPID_INVISIBLE = 
 enum proc_pidonly { PROC_PIDONLY_OFF = 0, PROC_PIDONLY_ON = 1, };
 static inline void proc_root_init(void) {}
 static inline void proc_flush_pid(struct pid *pid) {}
-static inline void *pde_data(const struct inode *inode) {BUG(); return NULL;}
+/* Removed uncalled: pde_data */
 #endif

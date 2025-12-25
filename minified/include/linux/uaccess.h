@@ -154,16 +154,8 @@ bool copy_from_kernel_nofault_allowed(const void *unsafe_src, size_t size);
 long copy_from_kernel_nofault(void *dst, const void *src, size_t size);
 long notrace copy_to_kernel_nofault(void *dst, const void *src, size_t size);
 
-long copy_from_user_nofault(void *dst, const void __user *src, size_t size);
-long notrace copy_to_user_nofault(void __user *dst, const void *src,
-		size_t size);
-
-long strncpy_from_kernel_nofault(char *dst, const void *unsafe_addr,
-		long count);
-
-long strncpy_from_user_nofault(char *dst, const void __user *unsafe_addr,
-		long count);
-long strnlen_user_nofault(const void __user *unsafe_addr, long count);
+/* Removed uncalled: copy_from_user_nofault, copy_to_user_nofault,
+ * strncpy_from_kernel_nofault, strncpy_from_user_nofault, strnlen_user_nofault */
 
 #ifndef __get_kernel_nofault
 #define __get_kernel_nofault(dst, src, type, label)	\

@@ -508,18 +508,7 @@ static inline int pud_write(pud_t pud)
 	return pud_flags(pud) & _PAGE_RW;
 }
 
-#ifndef pmdp_establish
-#define pmdp_establish pmdp_establish
-static inline pmd_t pmdp_establish(struct vm_area_struct *vma,
-		unsigned long address, pmd_t *pmdp, pmd_t pmd)
-{
-	pmd_t old;
-	page_table_check_pmd_set(vma->vm_mm, address, pmdp, pmd);
-	old = *pmdp;
-	WRITE_ONCE(*pmdp, pmd);
-	return old;
-}
-#endif
+/* pmdp_establish removed - never called */
 
 /* pmdp_invalidate_ad, pgdp_maps_userspace, pgd_large removed - unused */
 

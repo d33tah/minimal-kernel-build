@@ -18,16 +18,8 @@ struct __call_single_data {
 	void *info;
 };
 
-#define CSD_INIT(_func, _info) \
-	(struct __call_single_data){ .func = (_func), .info = (_info), }
-
 typedef struct __call_single_data call_single_data_t
 	__aligned(sizeof(struct __call_single_data));
-
-#define INIT_CSD(_csd, _func, _info)		\
-do {						\
-	*(_csd) = CSD_INIT((_func), (_info));	\
-} while (0)
 
 
 int smp_call_function_single(int cpuid, smp_call_func_t func, void *info,

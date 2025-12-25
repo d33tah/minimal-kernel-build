@@ -32,12 +32,7 @@
 #define	APIC_ESR	0x280
 #define 	APIC_LVTCMCI	0x2f0
 #define	APIC_ICR	0x300
-#define		APIC_INT_LEVELTRIG	0x08000
-#define		APIC_INT_ASSERT		0x04000
 #define		APIC_ICR_BUSY		0x01000
-#define		APIC_DM_FIXED		0x00000
-#define		APIC_DM_NMI		0x00400
-#define		APIC_DM_INIT		0x00500
 #define		APIC_VECTOR_MASK	0x000FF
 #define	APIC_ICR2	0x310
 #define	APIC_LVTT	0x320
@@ -50,23 +45,8 @@
 #define	APIC_TMICT	0x380
 #define	APIC_TMCCT	0x390
 #define	APIC_TDCR	0x3E0
-#define		APIC_TDR_DIV_TMBASE	(1 << 2)
-#define		APIC_TDR_DIV_1		0xB
-#define		APIC_TDR_DIV_2		0x0
-#define		APIC_TDR_DIV_4		0x1
-#define		APIC_TDR_DIV_8		0x2
-#define		APIC_TDR_DIV_16		0x3
-#define		APIC_TDR_DIV_32		0x8
-#define		APIC_TDR_DIV_64		0x9
-#define		APIC_TDR_DIV_128	0xA
 #define	APIC_EFEAT	0x400
 #define APIC_EILVTn(n)	(0x500 + 0x10 * n)
-#define		APIC_EILVT_NR_AMD_K8	1
-#define		APIC_EILVT_NR_AMD_10H	4
-#define		APIC_EILVT_NR_MAX	APIC_EILVT_NR_AMD_10H
-#define		APIC_EILVT_LVTOFF(x)	(((x) >> 4) & 0xF)
-#define		APIC_EILVT_MSG_NMI	0x4
-#define		APIC_EILVT_MASKED	(1 << 16)
 
 #define APIC_BASE (fix_to_virt(FIX_APIC_BASE))
 #define APIC_BASE_MSR	0x800

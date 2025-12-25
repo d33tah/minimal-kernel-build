@@ -1100,46 +1100,6 @@ static void purge_fragmented_blocks_allcpus(void)
 	/* Stub: calls purge_fragmented_blocks which is already stubbed */
 }
 
-static void _vm_unmap_aliases(unsigned long start, unsigned long end, int flush)
-{
-	int cpu;
-
-	if (unlikely(!vmap_initialized))
-		return;
-
-	might_sleep();
-
-	for_each_possible_cpu(cpu) {
-		struct vmap_block_queue *vbq = &per_cpu(vmap_block_queue, cpu);
-		struct vmap_block *vb;
-
-		rcu_read_lock();
-		list_for_each_entry_rcu(vb, &vbq->free, free_list) {
-			spin_lock(&vb->lock);
-			if (vb->dirty && vb->dirty != VMAP_BBMAP_BITS) {
-				unsigned long va_start = vb->va->va_start;
-				unsigned long s, e;
-
-				s = va_start + (vb->dirty_min << PAGE_SHIFT);
-				e = va_start + (vb->dirty_max << PAGE_SHIFT);
-
-				start = min(s, start);
-				end = max(e, end);
-
-				flush = 1;
-			}
-			spin_unlock(&vb->lock);
-		}
-		rcu_read_unlock();
-	}
-
-	mutex_lock(&vmap_purge_lock);
-	purge_fragmented_blocks_allcpus();
-	if (!__purge_vmap_area_lazy(start, end) && flush)
-		flush_tlb_kernel_range(start, end);
-	mutex_unlock(&vmap_purge_lock);
-}
-
 static struct vm_struct *vmlist __initdata;
 
 static inline unsigned int vm_area_page_order(struct vm_struct *vm)

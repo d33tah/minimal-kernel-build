@@ -46,22 +46,8 @@ bool is_vmalloc_addr(const void *x)
 	return addr >= VMALLOC_START && addr < VMALLOC_END;
 }
 
-struct vfree_deferred {
-	struct llist_head list;
-	struct work_struct wq;
-};
-static DEFINE_PER_CPU(struct vfree_deferred, vfree_deferred);
-
-static void __vunmap(const void *, int);
-
-static void free_work(struct work_struct *w)
-{
-	struct vfree_deferred *p = container_of(w, struct vfree_deferred, wq);
-	struct llist_node *t, *llnode;
-
-	llist_for_each_safe(llnode, t, llist_del_all(&p->list))
-		__vunmap((void *)llnode, 1);
-}
+/* Removed: struct vfree_deferred, vfree_deferred, free_work
+ * - Dead code since vfree is a no-op (~17 lines) */
 
 static int vmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
 			  phys_addr_t phys_addr, pgprot_t prot,
@@ -1220,14 +1206,11 @@ void __init vmalloc_init(void)
 
 	for_each_possible_cpu(i) {
 		struct vmap_block_queue *vbq;
-		struct vfree_deferred *p;
 
 		vbq = &per_cpu(vmap_block_queue, i);
 		spin_lock_init(&vbq->lock);
 		INIT_LIST_HEAD(&vbq->free);
-		p = &per_cpu(vfree_deferred, i);
-		init_llist_head(&p->list);
-		INIT_WORK(&p->wq, free_work);
+		/* Removed vfree_deferred initialization - vfree is a no-op */
 	}
 
 	for (tmp = vmlist; tmp; tmp = tmp->next) {
@@ -1354,110 +1337,12 @@ struct vm_struct *remove_vm_area(const void *addr)
 	return NULL;
 }
 
-static inline void set_area_direct_map(const struct vm_struct *area,
-				       int (*set_direct_map)(struct page *page))
-{
-	int i;
-
-	for (i = 0; i < area->nr_pages; i++)
-		if (page_address(area->pages[i]))
-			set_direct_map(area->pages[i]);
-}
-
-static void vm_remove_mappings(struct vm_struct *area, int deallocate_pages)
-{
-	unsigned long start = ULONG_MAX, end = 0;
-	unsigned int page_order = vm_area_page_order(area);
-	int flush_reset = area->flags & VM_FLUSH_RESET_PERMS;
-	int flush_dmap = 0;
-	int i;
-
-	remove_vm_area(area->addr);
-
-	if (!flush_reset)
-		return;
-
-	if (!deallocate_pages) {
-		_vm_unmap_aliases(ULONG_MAX, 0, 1);
-		return;
-	}
-
-	for (i = 0; i < area->nr_pages; i += 1U << page_order) {
-		unsigned long addr =
-			(unsigned long)page_address(area->pages[i]);
-		if (addr) {
-			unsigned long page_size;
-
-			page_size = PAGE_SIZE << page_order;
-			start = min(addr, start);
-			end = max(addr + page_size, end);
-			flush_dmap = 1;
-		}
-	}
-
-	set_area_direct_map(area, set_direct_map_invalid_noflush);
-	_vm_unmap_aliases(start, end, flush_dmap);
-	set_area_direct_map(area, set_direct_map_default_noflush);
-}
-
-static void __vunmap(const void *addr, int deallocate_pages)
-{
-	struct vm_struct *area;
-
-	if (!addr)
-		return;
-
-	if (WARN(!PAGE_ALIGNED(addr), "Trying to vfree() bad address (%p)\n",
-		 addr))
-		return;
-
-	area = find_vm_area(addr);
-	if (unlikely(!area)) {
-		WARN(1, KERN_ERR "Trying to vfree() nonexistent vm area (%p)\n",
-		     addr);
-		return;
-	}
-
-	debug_check_no_locks_freed(area->addr, get_vm_area_size(area));
-
-	kasan_poison_vmalloc(area->addr, get_vm_area_size(area));
-
-	vm_remove_mappings(area, deallocate_pages);
-
-	if (deallocate_pages) {
-		int i;
-
-		for (i = 0; i < area->nr_pages; i++) {
-			struct page *page = area->pages[i];
-
-			BUG_ON(!page);
-			mod_memcg_page_state(page, MEMCG_VMALLOC, -1);
-
-			__free_pages(page, 0);
-			cond_resched();
-		}
-		atomic_long_sub(area->nr_pages, &nr_vmalloc_pages);
-
-		kvfree(area->pages);
-	}
-
-	kfree(area);
-}
-
-static inline void __vfree_deferred(const void *addr)
-{
-	struct vfree_deferred *p = raw_cpu_ptr(&vfree_deferred);
-
-	if (llist_add((struct llist_node *)addr, &p->list))
-		schedule_work(&p->wq);
-}
+/* Removed: set_area_direct_map, vm_remove_mappings, __vunmap, __vfree_deferred
+ * - Dead code since vfree is a no-op (~80 lines) */
 
 static void __vfree(const void *addr)
 {
-	if (unlikely(in_interrupt()))
-		__vfree_deferred(addr);
-	else
-		__vunmap(addr, 1);
+	/* No-op: bump allocator style - no deallocation */
 }
 
 void vfree(const void *addr)

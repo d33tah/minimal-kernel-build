@@ -126,7 +126,6 @@
 #define _raw_spin_trylock(lock)			({ __LOCK(lock); 1; })
 #define _raw_read_trylock(lock)			({ __LOCK(lock); 1; })
 #define _raw_write_trylock(lock)		({ __LOCK(lock); 1; })
-#define _raw_spin_trylock_bh(lock)		({ __LOCK_BH(lock); 1; })
 #define _raw_spin_unlock(lock)			__UNLOCK(lock)
 #define _raw_read_unlock(lock)			__UNLOCK(lock)
 #define _raw_write_unlock(lock)			__UNLOCK(lock)

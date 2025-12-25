@@ -122,7 +122,6 @@
 #define _raw_read_lock_irq(lock)		__LOCK_IRQ(lock)
 #define _raw_write_lock_irq(lock)		__LOCK_IRQ(lock)
 #define _raw_spin_lock_irqsave(lock, flags)	__LOCK_IRQSAVE(lock, flags)
-#define _raw_read_lock_irqsave(lock, flags)	__LOCK_IRQSAVE(lock, flags)
 #define _raw_write_lock_irqsave(lock, flags)	__LOCK_IRQSAVE(lock, flags)
 #define _raw_spin_trylock(lock)			({ __LOCK(lock); 1; })
 #define _raw_read_trylock(lock)			({ __LOCK(lock); 1; })
@@ -136,7 +135,6 @@
 #define _raw_read_unlock_irq(lock)		__UNLOCK_IRQ(lock)
 #define _raw_write_unlock_irq(lock)		__UNLOCK_IRQ(lock)
 #define _raw_spin_unlock_irqrestore(lock, flags) __UNLOCK_IRQRESTORE(lock, flags)
-#define _raw_read_unlock_irqrestore(lock, flags) __UNLOCK_IRQRESTORE(lock, flags)
 #define _raw_write_unlock_irqrestore(lock, flags) __UNLOCK_IRQRESTORE(lock, flags)
 /* End of spinlock_api_up.h */
 

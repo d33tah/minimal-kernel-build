@@ -1152,25 +1152,11 @@ static void list_slab_objects(struct kmem_cache *s, struct slab *slab,
 
 static void free_partial(struct kmem_cache *s, struct kmem_cache_node *n)
 {
-	LIST_HEAD(discard);
-	struct slab *slab, *h;
-
-	BUG_ON(irqs_disabled());
+	/* Simplified: just clear the partial list, no actual freeing */
 	spin_lock_irq(&n->list_lock);
-	list_for_each_entry_safe(slab, h, &n->partial, slab_list) {
-		if (!slab->inuse) {
-			remove_partial(n, slab);
-			list_add(&slab->slab_list, &discard);
-		} else {
-			list_slab_objects(
-				s, slab,
-				"Objects remaining in %s on __kmem_cache_shutdown()");
-		}
-	}
+	INIT_LIST_HEAD(&n->partial);
+	n->nr_partial = 0;
 	spin_unlock_irq(&n->list_lock);
-
-	list_for_each_entry_safe(slab, h, &discard, slab_list)
-		discard_slab(s, slab);
 }
 
 int __kmem_cache_shutdown(struct kmem_cache *s)

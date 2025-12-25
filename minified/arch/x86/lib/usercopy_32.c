@@ -87,12 +87,4 @@ unsigned long __copy_user_ll(void *to, const void *from, unsigned long n)
 	return n;
 }
 
-unsigned long __copy_from_user_ll_nocache_nozero(void *to,
-						 const void __user *from,
-						 unsigned long n)
-{
-	__uaccess_begin_nospec();
-	__copy_user(to, from, n);
-	__uaccess_end();
-	return n;
-}
+/* __copy_from_user_ll_nocache_nozero removed - never called */

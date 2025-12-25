@@ -115,16 +115,7 @@ static inline bool pagefault_disabled(void)
 #define faulthandler_disabled() (pagefault_disabled() || in_atomic())
 
 
-#ifndef ARCH_HAS_NOCACHE_UACCESS
-
-static inline __must_check unsigned long
-__copy_from_user_inatomic_nocache(void *to, const void __user *from,
-				  unsigned long n)
-{
-	return __copy_from_user_inatomic(to, from, n);
-}
-
-#endif		 
+/* __copy_from_user_inatomic_nocache fallback removed - ARCH_HAS_NOCACHE_UACCESS defined and never called */
 
 static inline __must_check int check_zeroed_user(const void __user *from, size_t size) { return 1; }
 

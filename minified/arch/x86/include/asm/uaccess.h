@@ -298,8 +298,6 @@ unsigned long __must_check __clear_user(void __user *mem, unsigned long len);
 /* --- 2025-12-07 20:27 --- Inlined uaccess_32.h */
 unsigned long __must_check __copy_user_ll
 		(void *to, const void *from, unsigned long n);
-unsigned long __must_check __copy_from_user_ll_nocache_nozero
-		(void *to, const void __user *from, unsigned long n);
 
 static __always_inline unsigned long __must_check
 raw_copy_to_user(void __user *to, const void *from, unsigned long n)
@@ -313,14 +311,9 @@ raw_copy_from_user(void *to, const void __user *from, unsigned long n)
 	return __copy_user_ll(to, (__force const void *)from, n);
 }
 
-static __always_inline unsigned long
-__copy_from_user_inatomic_nocache(void *to, const void __user *from,
-				  unsigned long n)
-{
-       return __copy_from_user_ll_nocache_nozero(to, from, n);
-}
+/* __copy_from_user_inatomic_nocache removed - never called */
 
- 
+
 static __must_check __always_inline bool user_access_begin(const void __user *ptr, size_t len)
 {
 	if (unlikely(!access_ok(ptr,len)))

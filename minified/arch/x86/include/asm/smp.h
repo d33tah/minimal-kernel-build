@@ -55,15 +55,7 @@ struct smp_ops {
 	void (*send_call_func_single_ipi)(int cpu);
 };
 
-/* set_cpu_sibling_map removed - never defined (SMP only) */
+/* set_cpu_sibling_map, wbinvd_on_cpu, hard_smp_processor_id, nmi_selftest removed - unused */
 
-#define wbinvd_on_cpu(cpu)     wbinvd()
-
-/* disabled_cpus removed - never defined (SMP only) */
-
-#define hard_smp_processor_id()	0
-
-#define nmi_selftest() do { } while (0)
-
-#endif  
+#endif
 #endif  

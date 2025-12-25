@@ -15,8 +15,6 @@
 
 
 
-#define __lockfunc __section(".spinlock.text")
-
 #include <linux/spinlock_types.h>
 
 #include <asm/processor.h>
@@ -100,7 +98,6 @@
 
 
 /* Inlined from spinlock_api_up.h */
-#define in_lock_functions(ADDR)		0
 #define assert_raw_spin_locked(lock)	do { (void)(lock); } while (0)
 #define ___LOCK(lock) do { __acquire(lock); (void)(lock); } while (0)
 #define __LOCK(lock) do { preempt_disable(); ___LOCK(lock); } while (0)

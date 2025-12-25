@@ -15,8 +15,7 @@
 # define __ASM_REGPFX			%%
 #endif
 
-#define _ASM_BYTES(x, ...)	__ASM_FORM(.byte x,##__VA_ARGS__ ;)
-
+/* _ASM_BYTES removed - unused */
 /* 32-bit only kernel */
 #define __ASM_SEL(a,b)		__ASM_FORM(a)
 #define __ASM_SEL_RAW(a,b)	__ASM_FORM_RAW(a)

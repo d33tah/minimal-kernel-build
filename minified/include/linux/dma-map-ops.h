@@ -59,10 +59,6 @@ static inline const struct dma_map_ops *get_dma_ops(struct device *dev)
 	return NULL;
 }
 
-static inline struct cma *dev_get_cma_area(struct device *dev)
-{
-	return NULL;
-}
 static inline void dma_contiguous_reserve(phys_addr_t limit)
 {
 }
@@ -80,16 +76,6 @@ static inline void dma_free_contiguous(struct device *dev, struct page *page,
 #define dma_alloc_from_dev_coherent(dev, size, handle, ret) (0)
 #define dma_release_from_dev_coherent(dev, order, vaddr) (0)
 #define dma_mmap_from_dev_coherent(dev, vma, vaddr, order, ret) (0)
-
-static inline void *dma_alloc_from_global_coherent(struct device *dev,
-		ssize_t size, dma_addr_t *dma_handle)
-{
-	return NULL;
-}
-static inline int dma_release_from_global_coherent(int order, void *vaddr)
-{
-	return 0;
-}
 
 /* Only keeping functions actually used in kernel/dma/ */
 void *dma_common_contiguous_remap(struct page *page, size_t size, pgprot_t prot,

@@ -171,16 +171,6 @@ static inline void set_shrinker_bit(struct mem_cgroup *memcg,
 {
 }
 
-static inline bool mem_cgroup_kmem_disabled(void)
-{
-	return true;
-}
-
-
-static inline void memcg_kmem_uncharge_page(struct page *page, int order)
-{
-}
-
 static inline int __memcg_kmem_charge_page(struct page *page, gfp_t gfp,
 					   int order)
 {

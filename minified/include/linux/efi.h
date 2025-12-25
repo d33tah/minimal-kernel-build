@@ -85,12 +85,6 @@ static inline int efi_mem_type(unsigned long phys_addr)
 	return 0;
 }
 
-static inline u64 efi_mem_attributes(unsigned long phys_addr)
-{
-	return 0;
-}
-
-
 static inline void parse_efi_setup(u64 phys_addr, u32 data_len) {}
 
 #endif  

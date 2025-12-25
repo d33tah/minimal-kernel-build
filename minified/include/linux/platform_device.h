@@ -72,11 +72,6 @@ extern int __platform_driver_register(struct platform_driver *,
 extern int __platform_driver_probe(struct platform_driver *driver,
 		int (*probe)(struct platform_device *), struct module *module);
 
-static inline void *platform_get_drvdata(const struct platform_device *pdev)
-{
-	return dev_get_drvdata(&pdev->dev);
-}
-
 #define builtin_platform_driver(__platform_driver) \
 	builtin_driver(__platform_driver, platform_driver_register)
 

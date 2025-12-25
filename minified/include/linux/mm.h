@@ -906,7 +906,6 @@ static inline int __pud_alloc(struct mm_struct *mm, p4d_t *p4d,
 {
 	return 0;
 }
-static inline void mm_inc_nr_puds(struct mm_struct *mm) {}
 static inline void mm_dec_nr_puds(struct mm_struct *mm) {}
 
 /* __PAGETABLE_PMD_FOLDED=1 - 2-level paging, PMD folded */
@@ -916,7 +915,6 @@ static inline int __pmd_alloc(struct mm_struct *mm, pud_t *pud,
 	return 0;
 }
 
-static inline void mm_inc_nr_pmds(struct mm_struct *mm) {}
 static inline void mm_dec_nr_pmds(struct mm_struct *mm) {}
 
 static inline void mm_pgtables_bytes_init(struct mm_struct *mm)
@@ -1035,22 +1033,6 @@ static inline spinlock_t *pmd_lock(struct mm_struct *mm, pmd_t *pmd)
 	return ptl;
 }
 
-static inline bool pgtable_pmd_page_ctor(struct page *page)
-{
-	if (!pmd_ptlock_init(page))
-		return false;
-	__SetPageTable(page);
-	inc_lruvec_page_state(page, NR_PAGETABLE);
-	return true;
-}
-
-static inline void pgtable_pmd_page_dtor(struct page *page)
-{
-	pmd_ptlock_free(page);
-	__ClearPageTable(page);
-	dec_lruvec_page_state(page, NR_PAGETABLE);
-}
-
 static inline spinlock_t *pud_lockptr(struct mm_struct *mm, pud_t *pud)
 {
 	return &mm->page_table_lock;
@@ -1082,15 +1064,6 @@ static inline void free_reserved_page(struct page *page)
 	__free_page(page);
 	adjust_managed_page_count(page, 1);
 }
-
-static inline unsigned long free_initmem_default(int poison)
-{
-	extern char __init_begin[], __init_end[];
-
-	return free_reserved_area(&__init_begin, &__init_end,
-				  poison, "unused kernel image (initmem)");
-}
-
 
 void free_area_init(unsigned long *max_zone_pfn);
 extern int __meminit init_per_zone_wmark_min(void);

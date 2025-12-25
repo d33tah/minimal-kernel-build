@@ -20,7 +20,6 @@ struct shmem_sb_info {
 	struct mempolicy *mpol; spinlock_t shrinklist_lock; struct list_head shrinklist;
 	unsigned long shrinklist_len;
 };
-static inline struct shmem_inode_info *SHMEM_I(struct inode *inode) { return container_of(inode, struct shmem_inode_info, vfs_inode); }
 extern const struct fs_parameter_spec shmem_fs_parameters[];
 extern void shmem_init(void);
 extern int shmem_init_fs_context(struct fs_context *fc);

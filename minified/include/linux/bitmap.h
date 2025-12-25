@@ -187,19 +187,6 @@ static inline void bitmap_fill(unsigned long *dst, unsigned int nbits)
 	memset(dst, 0xff, len);
 }
 
-
-
-static inline void bitmap_or(unsigned long *dst, const unsigned long *src1,
-			const unsigned long *src2, unsigned int nbits)
-{
-	if (small_const_nbits(nbits))
-		*dst = *src1 | *src2;
-	else
-		__bitmap_or(dst, src1, src2, nbits);
-}
-
-
-
 #define BITMAP_MEM_ALIGNMENT 8
 #define BITMAP_MEM_MASK (BITMAP_MEM_ALIGNMENT - 1)
 

@@ -263,16 +263,12 @@ static inline bool pcp_allowed_order(unsigned int order)
 
 static inline void free_the_page(struct page *page, unsigned int order)
 {
-	if (pcp_allowed_order(order))
-		free_unref_page(page, order);
-	else
-		__free_pages_ok(page, order, FPI_NONE);
+	/* No-op: bump allocator style - no deallocation */
 }
 
 void free_compound_page(struct page *page)
 {
-	mem_cgroup_uncharge(page_folio(page));
-	free_the_page(page, compound_order(page));
+	/* No-op: bump allocator style - no deallocation */
 }
 
 static void prep_compound_head(struct page *page, unsigned int order)
@@ -396,19 +392,8 @@ static __always_inline bool free_pages_prepare(struct page *page,
 	return true;
 }
 
-static bool free_pcp_prepare(struct page *page, unsigned int order)
-{
-	if (debug_pagealloc_enabled_static())
-		return free_pages_prepare(page, order, true, FPI_NONE);
-	else
-		return free_pages_prepare(page, order, false, FPI_NONE);
-}
-
-static void free_pcppages_bulk(struct zone *zone, int count,
-			       struct per_cpu_pages *pcp, int pindex)
-{
-	/* Stub: per-CPU page caching optimization not needed for minimal kernel */
-}
+/* Removed: free_pcp_prepare, free_pcppages_bulk
+ * - Dead code since free_unref_page and free_the_page are no-ops (~15 lines) */
 
 /* free_one_page removed - unused (callers use __free_one_page directly) */
 
@@ -729,109 +714,17 @@ static void drain_pages(unsigned int cpu)
 	/* Stub: skip per-CPU page draining for minimal kernel */
 }
 
-static bool free_unref_page_prepare(struct page *page, unsigned long pfn,
-				    unsigned int order)
-{
-	int migratetype;
-
-	if (!free_pcp_prepare(page, order))
-		return false;
-
-	migratetype = get_pfnblock_migratetype(page, pfn);
-	set_pcppage_migratetype(page, migratetype);
-	return true;
-}
-
-static int nr_pcp_free(struct per_cpu_pages *pcp, int high, int batch,
-		       bool free_high)
-{
-	/* Stub: simple PCP freeing for minimal kernel */
-	return free_high ? pcp->count : batch;
-}
-
-static int nr_pcp_high(struct per_cpu_pages *pcp, struct zone *zone,
-		       bool free_high)
-{
-	/* Stub: simple PCP high watermark for minimal kernel */
-	return free_high ? 0 : READ_ONCE(pcp->high);
-}
-
-static void free_unref_page_commit(struct page *page, int migratetype,
-				   unsigned int order)
-{
-	struct zone *zone = page_zone(page);
-	struct per_cpu_pages *pcp;
-	int high;
-	int pindex;
-	bool free_high;
-
-	__count_vm_event(PGFREE);
-	pcp = this_cpu_ptr(zone->per_cpu_pageset);
-	pindex = order_to_pindex(migratetype, order);
-	list_add(&page->lru, &pcp->lists[pindex]);
-	pcp->count += 1 << order;
-
-	free_high =
-		(pcp->free_factor && order && order <= PAGE_ALLOC_COSTLY_ORDER);
-
-	high = nr_pcp_high(pcp, zone, free_high);
-	if (pcp->count >= high) {
-		int batch = READ_ONCE(pcp->batch);
-
-		free_pcppages_bulk(zone,
-				   nr_pcp_free(pcp, high, batch, free_high),
-				   pcp, pindex);
-	}
-}
+/* Removed: free_unref_page_prepare, nr_pcp_free, nr_pcp_high, free_unref_page_commit
+ * - Dead code since free_unref_page is now a no-op (~55 lines) */
 
 void free_unref_page(struct page *page, unsigned int order)
 {
-	unsigned long flags;
-	unsigned long pfn = page_to_pfn(page);
-	int migratetype;
-
-	if (!free_unref_page_prepare(page, pfn, order))
-		return;
-
-	migratetype = get_pcppage_migratetype(page);
-	if (unlikely(migratetype >= MIGRATE_PCPTYPES))
-		migratetype = MIGRATE_MOVABLE;
-
-	local_lock_irqsave(&pagesets.lock, flags);
-	free_unref_page_commit(page, migratetype, order);
-	local_unlock_irqrestore(&pagesets.lock, flags);
+	/* No-op: bump allocator style - no deallocation */
 }
 
 void free_unref_page_list(struct list_head *list)
 {
-	struct page *page, *next;
-	unsigned long flags;
-	int batch_count = 0;
-	int migratetype;
-
-	list_for_each_entry_safe(page, next, list, lru) {
-		unsigned long pfn = page_to_pfn(page);
-		if (!free_unref_page_prepare(page, pfn, 0)) {
-			list_del(&page->lru);
-			continue;
-		}
-	}
-
-	local_lock_irqsave(&pagesets.lock, flags);
-	list_for_each_entry_safe(page, next, list, lru) {
-		migratetype = get_pcppage_migratetype(page);
-		if (unlikely(migratetype >= MIGRATE_PCPTYPES))
-			migratetype = MIGRATE_MOVABLE;
-
-		free_unref_page_commit(page, migratetype, 0);
-
-		if (++batch_count == SWAP_CLUSTER_MAX) {
-			local_unlock_irqrestore(&pagesets.lock, flags);
-			batch_count = 0;
-			local_lock_irqsave(&pagesets.lock, flags);
-		}
-	}
-	local_unlock_irqrestore(&pagesets.lock, flags);
+	/* No-op: bump allocator style - no deallocation */
 }
 
 void split_page(struct page *page, unsigned int order)

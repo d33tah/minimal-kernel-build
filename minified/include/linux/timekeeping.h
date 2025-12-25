@@ -68,34 +68,6 @@ static inline void ktime_get_boottime_ts64(struct timespec64 *ts)
 	*ts = ktime_to_timespec64(ktime_get_boottime());
 }
 
-
-struct ktime_timestamps {
-	u64		mono;
-	u64		boot;
-	u64		real;
-};
-
-struct system_time_snapshot {
-	u64			cycles;
-	ktime_t			real;
-	ktime_t			raw;
-	enum clocksource_ids	cs_id;
-	unsigned int		clock_was_set_seq;
-	u8			cs_was_changed_seq;
-};
-
-struct system_device_crosststamp {
-	ktime_t device;
-	ktime_t sys_realtime;
-	ktime_t sys_monoraw;
-};
-
-struct system_counterval_t {
-	u64			cycles;
-	struct clocksource	*cs;
-};
-
-
 extern void read_persistent_clock64(struct timespec64 *ts);
 void read_persistent_wall_and_boot_offset(struct timespec64 *wall_clock,
 					  struct timespec64 *boot_offset);

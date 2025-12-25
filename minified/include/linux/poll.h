@@ -69,17 +69,6 @@ struct poll_table_entry {
 	wait_queue_head_t *wait_address;
 };
 
-struct poll_wqueues {
-	poll_table pt;
-	struct poll_table_page *table;
-	struct task_struct *polling_task;
-	int triggered;
-	int error;
-	int inline_index;
-	struct poll_table_entry inline_entries[N_INLINE_POLL_ENTRIES];
-};
-
-
 #define MAX_INT64_SECONDS (((s64)(~((u64)0)>>1)/HZ)-1)
 
 /* core_sys_select, poll_select_set_timeout removed - declared but never implemented */

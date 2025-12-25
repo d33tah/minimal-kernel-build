@@ -5,8 +5,6 @@
 #include <linux/device.h>
 #include <linux/mod_devicetable.h>
 #include <linux/pm.h>
-struct of_dev_auxdata { char *compatible; resource_size_t phys_addr; char *name; void *platform_data; };
-#define OF_DEV_AUXDATA(_compat,_phys,_name,_pdata) { .compatible = _compat, .phys_addr = _phys, .name = _name, .platform_data = _pdata }
 /* of_find_device_by_node removed - unused */
 static inline void of_platform_register_reconfig_notifier(void) { }
 #include <linux/of.h>

@@ -616,7 +616,7 @@ static inline void page_cpupid_reset_last(struct page *page)
 {
 }
 
-static inline void page_kasan_tag_reset(struct page *page) { }
+/* page_kasan_tag_reset removed - unused */
 
 static inline struct zone *page_zone(const struct page *page)
 {

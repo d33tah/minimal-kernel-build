@@ -235,58 +235,12 @@ enum rcutorture_type {
 	INVALID_RCU_FLAVOR
 };
 
-#if defined(CONFIG_TREE_RCU)
-void rcutorture_get_gp_data(enum rcutorture_type test_type, int *flags,
-			    unsigned long *gp_seq);
-void do_trace_rcu_torture_read(const char *rcutorturename,
-			       struct rcu_head *rhp,
-			       unsigned long secs,
-			       unsigned long c_old,
-			       unsigned long c);
-void rcu_gp_set_torture_wait(int duration);
-#else
-static inline void rcutorture_get_gp_data(enum rcutorture_type test_type,
-					  int *flags, unsigned long *gp_seq)
-{
-	*flags = 0;
-	*gp_seq = 0;
-}
-#define do_trace_rcu_torture_read(rcutorturename, rhp, secs, c_old, c) \
-	do { } while (0)
-static inline void rcu_gp_set_torture_wait(int duration) { }
-#endif
-
-/* CONFIG_RCU_TORTURE_TEST not enabled */
-
-
-static inline void srcutorture_get_gp_data(enum rcutorture_type test_type,
-					   struct srcu_struct *sp, int *flags,
-					   unsigned long *gp_seq)
-{
-	if (test_type != SRCU_FLAVOR)
-		return;
-	*flags = 0;
-	*gp_seq = sp->srcu_idx;
-}
-
-
-static inline bool rcu_dynticks_zero_in_eqs(int cpu, int *vp) { return false; }
-static inline unsigned long rcu_get_gp_seq(void) { return 0; }
-static inline unsigned long rcu_exp_batches_completed(void) { return 0; }
-static inline unsigned long
-srcu_batches_completed(struct srcu_struct *sp) { return 0; }
-static inline void rcu_force_quiescent_state(void) { }
-static inline bool rcu_check_boost_fail(unsigned long gp_state, int *cpup) { return true; }
-static inline void show_rcu_gp_kthreads(void) { }
-static inline int rcu_get_gp_kthreads_prio(void) { return 0; }
-static inline void rcu_fwd_progress_check(unsigned long j) { }
-static inline void rcu_gp_slow_register(atomic_t *rgssp) { }
-static inline void rcu_gp_slow_unregister(atomic_t *rgssp) { }
-
-static inline void rcu_bind_current_to_nocb(void) { }
-
-static inline void show_rcu_tasks_classic_gp_kthread(void) {}
-static inline void show_rcu_tasks_rude_gp_kthread(void) {}
-static inline void show_rcu_tasks_trace_gp_kthread(void) {}
+/* Removed uncalled: rcutorture_get_gp_data, do_trace_rcu_torture_read,
+ * rcu_gp_set_torture_wait, srcutorture_get_gp_data, rcu_dynticks_zero_in_eqs,
+ * rcu_get_gp_seq, rcu_exp_batches_completed, srcu_batches_completed,
+ * rcu_force_quiescent_state, rcu_check_boost_fail, show_rcu_gp_kthreads,
+ * rcu_get_gp_kthreads_prio, rcu_fwd_progress_check, rcu_gp_slow_register,
+ * rcu_gp_slow_unregister, rcu_bind_current_to_nocb, show_rcu_tasks_classic_gp_kthread,
+ * show_rcu_tasks_rude_gp_kthread, show_rcu_tasks_trace_gp_kthread */
 
 #endif  

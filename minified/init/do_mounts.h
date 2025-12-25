@@ -21,8 +21,7 @@ static inline __init int create_dev(char *name, dev_t dev)
 }
 
 
-static inline int rd_load_disk(int n) { return 0; }
-static inline int rd_load_image(char *from) { return 0; }
+/* Removed uncalled: rd_load_disk, rd_load_image */
 
 
 

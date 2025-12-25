@@ -104,12 +104,7 @@
 #define X86_CR4_OSXMMEXCPT	_BITUL(X86_CR4_OSXMMEXCPT_BIT)
 #define X86_CR4_UMIP_BIT	11  
 #define X86_CR4_UMIP		_BITUL(X86_CR4_UMIP_BIT)
-#define X86_CR4_LA57_BIT	12  
-#define X86_CR4_LA57		_BITUL(X86_CR4_LA57_BIT)
-#define X86_CR4_VMXE_BIT	13  
-#define X86_CR4_VMXE		_BITUL(X86_CR4_VMXE_BIT)
-#define X86_CR4_SMXE_BIT	14  
-#define X86_CR4_SMXE		_BITUL(X86_CR4_SMXE_BIT)
+/* Removed: X86_CR4_LA57 (bit 12), X86_CR4_VMXE (bit 13), X86_CR4_SMXE (bit 14) */
 #define X86_CR4_FSGSBASE_BIT	16  
 #define X86_CR4_FSGSBASE	_BITUL(X86_CR4_FSGSBASE_BIT)
 #define X86_CR4_PCIDE_BIT	17  
@@ -122,30 +117,11 @@
 #define X86_CR4_SMAP		_BITUL(X86_CR4_SMAP_BIT)
 #define X86_CR4_PKE_BIT		22  
 #define X86_CR4_PKE		_BITUL(X86_CR4_PKE_BIT)
-#define X86_CR4_CET_BIT		23  
+#define X86_CR4_CET_BIT		23
 #define X86_CR4_CET		_BITUL(X86_CR4_CET_BIT)
 
- 
-#define X86_CR8_TPR		_AC(0x0000000f,UL)  
-
- 
-
- 
-#define CX86_PCR0	0x20
-#define CX86_GCR	0xb8
-#define CX86_CCR0	0xc0
-#define CX86_CCR1	0xc1
-#define CX86_CCR2	0xc2
-#define CX86_CCR3	0xc3
-#define CX86_CCR4	0xe8
-#define CX86_CCR5	0xe9
-#define CX86_CCR6	0xea
-#define CX86_CCR7	0xeb
-#define CX86_PCR1	0xf0
-#define CX86_DIR0	0xfe
-#define CX86_DIR1	0xff
-#define CX86_ARR_BASE	0xc4
-#define CX86_RCR_BASE	0xdc
+/* Removed unused: X86_CR8_TPR, X86_CR4_SMXE, X86_CR4_VMXE, X86_CR4_LA57,
+   CX86_* (all Cyrix CPU registers) */
 
 #define CR0_STATE	(X86_CR0_PE | X86_CR0_MP | X86_CR0_ET | \
 			 X86_CR0_NE | X86_CR0_WP | X86_CR0_AM | \

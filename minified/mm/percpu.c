@@ -387,16 +387,7 @@ static void pcpu_chunk_relocate(struct pcpu_chunk *chunk, int oslot)
 		__pcpu_chunk_move(chunk, nslot, oslot < nslot);
 }
 
-static void pcpu_isolate_chunk(struct pcpu_chunk *chunk)
-{
-	lockdep_assert_held(&pcpu_lock);
-
-	if (!chunk->isolated) {
-		chunk->isolated = true;
-		pcpu_nr_empty_pop_pages -= chunk->nr_empty_pop_pages;
-	}
-	list_move(&chunk->list, &pcpu_chunk_lists[pcpu_to_depopulate_slot]);
-}
+/* Removed: pcpu_isolate_chunk - dead code since free_percpu is a no-op */
 
 static void pcpu_reintegrate_chunk(struct pcpu_chunk *chunk)
 {
@@ -1047,17 +1038,7 @@ static int __init pcpu_verify_alloc_info(const struct pcpu_alloc_info *ai);
 
 #include "percpu-km.c"
 
-static struct pcpu_chunk *pcpu_chunk_addr_search(void *addr)
-{
-	if (pcpu_addr_in_chunk(pcpu_first_chunk, addr))
-		return pcpu_first_chunk;
-
-	if (pcpu_addr_in_chunk(pcpu_reserved_chunk, addr))
-		return pcpu_reserved_chunk;
-
-	addr += pcpu_unit_offsets[raw_smp_processor_id()];
-	return pcpu_get_page_chunk(pcpu_addr_to_page(addr));
-}
+/* Removed: pcpu_chunk_addr_search - dead code since free_percpu is a no-op */
 
 static bool pcpu_memcg_pre_alloc_hook(size_t size, gfp_t gfp,
 				      struct obj_cgroup **objcgp)
@@ -1454,46 +1435,7 @@ static void pcpu_balance_workfn(struct work_struct *work)
 
 void free_percpu(void __percpu *ptr)
 {
-	void *addr;
-	struct pcpu_chunk *chunk;
-	unsigned long flags;
-	int size, off;
-	bool need_balance = false;
-
-	if (!ptr)
-		return;
-
-	kmemleak_free_percpu(ptr);
-
-	addr = __pcpu_ptr_to_addr(ptr);
-
-	spin_lock_irqsave(&pcpu_lock, flags);
-
-	chunk = pcpu_chunk_addr_search(addr);
-	off = addr - chunk->base_addr;
-
-	size = pcpu_free_area(chunk, off);
-
-	pcpu_memcg_free_hook(chunk, off, size);
-
-	if (!chunk->isolated && chunk->free_bytes == pcpu_unit_size) {
-		struct pcpu_chunk *pos;
-
-		list_for_each_entry(pos, &pcpu_chunk_lists[pcpu_free_slot],
-				    list)
-			if (pos != chunk) {
-				need_balance = true;
-				break;
-			}
-	} else if (pcpu_should_reclaim_chunk(chunk)) {
-		pcpu_isolate_chunk(chunk);
-		need_balance = true;
-	}
-
-	spin_unlock_irqrestore(&pcpu_lock, flags);
-
-	if (need_balance)
-		pcpu_schedule_balance_work();
+	/* No-op: bump allocator style - no deallocation */
 }
 
 /* Stub: per_cpu_ptr_to_phys not used in minimal kernel */

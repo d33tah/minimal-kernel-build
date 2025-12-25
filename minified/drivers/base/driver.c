@@ -39,24 +39,13 @@ int driver_for_each_device(struct device_driver *drv, struct device *start,
 	return error;
 }
 
+/* driver_find_device stubbed - never called */
 struct device *driver_find_device(struct device_driver *drv,
 				  struct device *start, const void *data,
 				  int (*match)(struct device *dev,
 					       const void *data))
 {
-	struct klist_iter i;
-	struct device *dev;
-
-	if (!drv || !drv->p)
-		return NULL;
-
-	klist_iter_init_node(&drv->p->klist_devices, &i,
-			     (start ? &start->p->knode_driver : NULL));
-	while ((dev = next_device(&i)))
-		if (match(dev, data) && get_device(dev))
-			break;
-	klist_iter_exit(&i);
-	return dev;
+	return NULL;
 }
 
 /* Stub: sysfs functions are stubs - minimal driver file/group management */

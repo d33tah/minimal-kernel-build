@@ -20,7 +20,7 @@ static inline void tick_nohz_idle_retain_tick(void) { }
 static inline void tick_nohz_idle_restart_tick(void) { }
 static inline void tick_nohz_idle_enter(void) { }
 static inline void tick_nohz_idle_exit(void) { }
-static inline bool tick_nohz_full_cpu(int cpu) { return false; }
+/* Removed uncalled: tick_nohz_full_cpu */
 static inline void tick_dep_set(enum tick_dep_bits bit) { }
 static inline void tick_dep_clear(enum tick_dep_bits bit) { }
 static inline void tick_nohz_task_switch(void) { }

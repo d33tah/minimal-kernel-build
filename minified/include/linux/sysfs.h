@@ -54,29 +54,14 @@ struct attribute_group {
 	.attr	= { .name = __stringify(_name), .mode = 0444 },		\
 	.show	= _name##_show,						\
 }
-
-#define __ATTR_RO_MODE(_name, _mode) {					\
-	.attr	= { .name = __stringify(_name),				\
-		    .mode = VERIFY_OCTAL_PERMISSIONS(_mode) },		\
-	.show	= _name##_show,						\
-}
-
-#define __ATTR_RW_MODE(_name, _mode) {					\
-	.attr	= { .name = __stringify(_name),				\
-		    .mode = VERIFY_OCTAL_PERMISSIONS(_mode) },		\
-	.show	= _name##_show,						\
-	.store	= _name##_store,					\
-}
-
+/* __ATTR_RO_MODE, __ATTR_RW_MODE removed - unused */
 #define __ATTR_WO(_name) {						\
 	.attr	= { .name = __stringify(_name), .mode = 0200 },		\
 	.store	= _name##_store,					\
 }
 
 #define __ATTR_RW(_name) __ATTR(_name, 0644, _name##_show, _name##_store)
-
-#define __ATTR_NULL { .attr = { .name = NULL } }
-
+/* __ATTR_NULL removed - unused */
 #define __ATTR_IGNORE_LOCKDEP	__ATTR
 
 #define __ATTRIBUTE_GROUPS(_name)				\

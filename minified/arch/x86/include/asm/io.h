@@ -26,31 +26,17 @@ build_mmio_read(readb, "b", unsigned char, "=q", :"memory")
 build_mmio_read(readw, "w", unsigned short, "=r", :"memory")
 build_mmio_read(readl, "l", unsigned int, "=r", :"memory")
 
-build_mmio_read(__readb, "b", unsigned char, "=q", )
-build_mmio_read(__readw, "w", unsigned short, "=r", )
-build_mmio_read(__readl, "l", unsigned int, "=r", )
-
 build_mmio_write(writeb, "b", unsigned char, "q", :"memory")
 build_mmio_write(writew, "w", unsigned short, "r", :"memory")
 build_mmio_write(writel, "l", unsigned int, "r", :"memory")
 
-build_mmio_write(__writeb, "b", unsigned char, "q", )
-build_mmio_write(__writew, "w", unsigned short, "r", )
-build_mmio_write(__writel, "l", unsigned int, "r", )
-
 #define readb readb
 #define readw readw
 #define readl readl
-#define readb_relaxed(a) __readb(a)
-#define readw_relaxed(a) __readw(a)
-#define readl_relaxed(a) __readl(a)
 #define writeb writeb
 #define writew writew
 #define writel writel
-#define writeb_relaxed(v, a) __writeb(v, a)
-#define writew_relaxed(v, a) __writew(v, a)
-#define writel_relaxed(v, a) __writel(v, a)
-/* __raw_read*, __raw_write* removed - unused */
+/* __read*, __write*, relaxed versions, __raw versions removed - unused */
 /* ARCH_HAS_VALID_PHYS_ADDR_RANGE, valid_*_range removed - unused */
 
  

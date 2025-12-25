@@ -585,7 +585,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	perf_event_init();
 	profile_init();
-	call_function_init();
 	WARN(!irqs_disabled(), "Interrupts were enabled early\n");
 
 	early_boot_irqs_disabled = false;

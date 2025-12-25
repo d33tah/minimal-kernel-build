@@ -123,14 +123,7 @@ do {                                                                \
 		c.cap[__capi] = a.cap[__capi] OP b.cap[__capi];     \
 	}                                                           \
 } while (0)
-
-#define CAP_UOP_ALL(c, a, OP)                                       \
-do {                                                                \
-	unsigned __capi;                                            \
-	CAP_FOR_EACH_U32(__capi) {                                  \
-		c.cap[__capi] = OP a.cap[__capi];                   \
-	}                                                           \
-} while (0)
+/* CAP_UOP_ALL removed - unused */
 
 static inline kernel_cap_t cap_drop(const kernel_cap_t a,
 				    const kernel_cap_t drop)

@@ -303,44 +303,11 @@ void kobject_put(struct kobject *kobj)
 	}
 }
 
-static void dynamic_kobj_release(struct kobject *kobj)
-{
-	kfree(kobj);
-}
-
-static struct kobj_type dynamic_kobj_ktype = {
-	.release = dynamic_kobj_release,
-	.sysfs_ops = &kobj_sysfs_ops,
-};
-
-static struct kobject *kobject_create(void)
-{
-	struct kobject *kobj;
-
-	kobj = kzalloc(sizeof(*kobj), GFP_KERNEL);
-	if (!kobj)
-		return NULL;
-
-	kobject_init(kobj, &dynamic_kobj_ktype);
-	return kobj;
-}
-
+/* dynamic_kobj_release, dynamic_kobj_ktype, kobject_create,
+   kobject_create_and_add removed - never called externally */
 struct kobject *kobject_create_and_add(const char *name, struct kobject *parent)
 {
-	struct kobject *kobj;
-	int retval;
-
-	kobj = kobject_create();
-	if (!kobj)
-		return NULL;
-
-	retval = kobject_add(kobj, parent, "%s", name);
-	if (retval) {
-		pr_warn("%s: kobject_add error: %d\n", __func__, retval);
-		kobject_put(kobj);
-		kobj = NULL;
-	}
-	return kobj;
+	return NULL;
 }
 
 void kset_init(struct kset *k)

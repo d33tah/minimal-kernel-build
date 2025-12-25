@@ -437,8 +437,7 @@ static void do_kern_addr_fault(struct pt_regs *regs,
 	if (spurious_kernel_fault(hw_error_code, address))
 		return;
 
-	if (WARN_ON_ONCE(kprobe_page_fault(regs, X86_TRAP_PF)))
-		return;
+	/* kprobe_page_fault always returns false when CONFIG_KPROBES is disabled */
 
 	bad_area_nosemaphore(regs, hw_error_code, address);
 }
@@ -463,8 +462,7 @@ static inline void do_user_addr_fault(struct pt_regs *regs,
 		return;
 	}
 
-	if (WARN_ON_ONCE(kprobe_page_fault(regs, X86_TRAP_PF)))
-		return;
+	/* kprobe_page_fault always returns false when CONFIG_KPROBES is disabled */
 
 	if (unlikely(error_code & X86_PF_RSVD))
 		pgtable_bad(regs, error_code, address);

@@ -173,16 +173,6 @@ extern void unxlate_dev_mem_ptr(phys_addr_t phys, void *addr);
 
 #define IO_SPACE_LIMIT 0xffff
 
-/* ioport_map/unmap removed - declared but never defined/used */
-
-#ifndef ioremap_np
-#define ioremap_np ioremap_np
-static inline void __iomem *ioremap_np(phys_addr_t offset, size_t size)
-{
-	return NULL;
-}
-#endif
-
-/* phys_mem_access_encrypted removed - unused */
+/* ioport_map/unmap, ioremap_np removed - unused */
 
 #endif  

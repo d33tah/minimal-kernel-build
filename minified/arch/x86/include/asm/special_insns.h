@@ -123,12 +123,7 @@ static inline void wbinvd(void)
 	native_wbinvd();
 }
 
-/* load_gs_index removed - unused */
-
-static inline void clflush(volatile void *__p)
-{
-	asm volatile("clflush %0" : "+m" (*(volatile char __force *)__p));
-}
+/* load_gs_index, clflush removed - unused */
 
 #define nop() asm volatile ("nop")
 

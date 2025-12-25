@@ -245,19 +245,8 @@ static inline pte_t pte_mkdevmap(pte_t pte)
 	return pte_set_flags(pte, _PAGE_SPECIAL|_PAGE_DEVMAP);
 }
 
-static inline pmd_t pmd_set_flags(pmd_t pmd, pmdval_t set)
-{
-	pmdval_t v = native_pmd_val(pmd);
-
-	return native_make_pmd(v | set);
-}
-
+/* pmd_set_flags, pmd_mkdevmap removed - never called */
 /* pmd_mkold, pmd_mkclean, pmd_wrprotect, pmd_mkdirty, pmd_mkhuge, pmd_mkyoung, pmd_mkwrite removed - unused */
-
-static inline pmd_t pmd_mkdevmap(pmd_t pmd)
-{
-	return pmd_set_flags(pmd, _PAGE_DEVMAP);
-}
 
 /* pud_set_flags, pud_clear_flags removed - unused */
 /* pud_mkold, pud_mkclean, pud_wrprotect, pud_mkdirty, pud_mkdevmap, pud_mkhuge, pud_mkyoung, pud_mkwrite removed - unused */
@@ -315,7 +304,7 @@ static inline pgprot_t pgprot_modify(pgprot_t oldprot, pgprot_t newprot)
 #define pud_pgprot(x) __pgprot(pud_flags(x))
 #define p4d_pgprot(x) __pgprot(p4d_flags(x))
 
-#define canon_pgprot(p) __pgprot(massage_pgprot(p))
+/* canon_pgprot removed - never called */
 
 static inline int is_new_memtype_allowed(u64 paddr, unsigned long size,
 					 enum page_cache_mode pcm,

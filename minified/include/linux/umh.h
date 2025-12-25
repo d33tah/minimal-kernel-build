@@ -21,7 +21,6 @@ struct subprocess_info {
 extern int call_usermodehelper(const char *path, char **argv, char **envp, int wait);
 extern struct subprocess_info *call_usermodehelper_setup(const char *path, char **argv, char **envp, gfp_t gfp_mask, int (*init)(struct subprocess_info *info, struct cred *new), void (*cleanup)(struct subprocess_info *), void *data);
 extern int call_usermodehelper_exec(struct subprocess_info *info, int wait);
-extern struct ctl_table usermodehelper_table[];
 enum umh_disable_depth { UMH_ENABLED = 0, UMH_DISABLED, };
 extern int __usermodehelper_disable(enum umh_disable_depth depth);
 extern void __usermodehelper_set_disable_depth(enum umh_disable_depth depth);

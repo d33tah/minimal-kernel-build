@@ -30,9 +30,6 @@ struct kstatfs {
 #define ST_NOATIME	0x0400	 
 #define ST_NODIRATIME	0x0800	 
 #define ST_RELATIME	0x1000	 
-#define ST_NOSYMFOLLOW	0x2000	 
-
-struct dentry;
-extern int vfs_get_fsid(struct dentry *dentry, __kernel_fsid_t *fsid);
+#define ST_NOSYMFOLLOW	0x2000
 
 #endif

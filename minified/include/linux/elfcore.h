@@ -61,6 +61,4 @@ struct elf_prpsinfo
 	char	pr_psargs[ELF_PRARGSZ];
 };
 
-extern int dump_fpu (struct pt_regs *, elf_fpregset_t *);
-
 #endif  

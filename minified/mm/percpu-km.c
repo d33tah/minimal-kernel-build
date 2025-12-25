@@ -1,21 +1,13 @@
 
-
 #include <linux/log2.h>
 
-static void pcpu_post_unmap_tlb_flush(struct pcpu_chunk *chunk, int page_start,
-				      int page_end)
-{
-}
+/* Removed: pcpu_post_unmap_tlb_flush, pcpu_depopulate_chunk
+ * - Dead code since no chunk depopulation (~10 LOC) */
 
 static int pcpu_populate_chunk(struct pcpu_chunk *chunk, int page_start,
 			       int page_end, gfp_t gfp)
 {
 	return 0;
-}
-
-static void pcpu_depopulate_chunk(struct pcpu_chunk *chunk, int page_start,
-				  int page_end)
-{
 }
 
 static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp)
@@ -51,19 +43,7 @@ static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp)
 	return chunk;
 }
 
-static void pcpu_destroy_chunk(struct pcpu_chunk *chunk)
-{
-	const int nr_pages = pcpu_group_sizes[0] >> PAGE_SHIFT;
-
-	if (!chunk)
-		return;
-
-	pcpu_stats_chunk_dealloc();
-
-	if (chunk->data)
-		__free_pages(chunk->data, order_base_2(nr_pages));
-	pcpu_free_chunk(chunk);
-}
+/* Removed: pcpu_destroy_chunk - dead code since pcpu_balance_free is a no-op */
 
 static struct page *pcpu_addr_to_page(void *addr)
 {

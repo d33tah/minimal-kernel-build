@@ -1011,28 +1011,11 @@ static void pcpu_chunk_populated(struct pcpu_chunk *chunk, int page_start,
 	pcpu_update_empty_pages(chunk, nr);
 }
 
-static void pcpu_chunk_depopulated(struct pcpu_chunk *chunk, int page_start,
-				   int page_end)
-{
-	int nr = page_end - page_start;
-
-	lockdep_assert_held(&pcpu_lock);
-
-	bitmap_clear(chunk->populated, page_start, nr);
-	chunk->nr_populated -= nr;
-	pcpu_nr_populated -= nr;
-
-	pcpu_update_empty_pages(chunk, -nr);
-}
+/* Removed: pcpu_chunk_depopulated - dead code since no chunk depopulation */
 
 static int pcpu_populate_chunk(struct pcpu_chunk *chunk, int page_start,
 			       int page_end, gfp_t gfp);
-static void pcpu_depopulate_chunk(struct pcpu_chunk *chunk, int page_start,
-				  int page_end);
-static void pcpu_post_unmap_tlb_flush(struct pcpu_chunk *chunk, int page_start,
-				      int page_end);
 static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp);
-static void pcpu_destroy_chunk(struct pcpu_chunk *chunk);
 static struct page *pcpu_addr_to_page(void *addr);
 static int __init pcpu_verify_alloc_info(const struct pcpu_alloc_info *ai);
 
@@ -1243,41 +1226,7 @@ void __percpu *__alloc_percpu(size_t size, size_t align)
 
 static void pcpu_balance_free(bool empty_only)
 {
-	LIST_HEAD(to_free);
-	struct list_head *free_head = &pcpu_chunk_lists[pcpu_free_slot];
-	struct pcpu_chunk *chunk, *next;
-
-	lockdep_assert_held(&pcpu_lock);
-
-	list_for_each_entry_safe(chunk, next, free_head, list) {
-		WARN_ON(chunk->immutable);
-
-		if (chunk ==
-		    list_first_entry(free_head, struct pcpu_chunk, list))
-			continue;
-
-		if (!empty_only || chunk->nr_empty_pop_pages == 0)
-			list_move(&chunk->list, &to_free);
-	}
-
-	if (list_empty(&to_free))
-		return;
-
-	spin_unlock_irq(&pcpu_lock);
-	list_for_each_entry_safe(chunk, next, &to_free, list) {
-		unsigned int rs, re;
-
-		for_each_set_bitrange(rs, re, chunk->populated,
-				      chunk->nr_pages) {
-			pcpu_depopulate_chunk(chunk, rs, re);
-			spin_lock_irq(&pcpu_lock);
-			pcpu_chunk_depopulated(chunk, rs, re);
-			spin_unlock_irq(&pcpu_lock);
-		}
-		pcpu_destroy_chunk(chunk);
-		cond_resched();
-	}
-	spin_lock_irq(&pcpu_lock);
+	/* No-op: bump allocator style - no deallocation */
 }
 
 static void pcpu_balance_populated(void)
@@ -1350,72 +1299,15 @@ retry_pop:
 static void pcpu_reclaim_populated(void)
 {
 	struct pcpu_chunk *chunk;
-	struct pcpu_block_md *block;
-	int freed_page_start, freed_page_end;
-	int i, end;
-	bool reintegrate;
 
 	lockdep_assert_held(&pcpu_lock);
 
+	/* No-op for reclaim - just reintegrate chunks back to active lists */
 	while (!list_empty(&pcpu_chunk_lists[pcpu_to_depopulate_slot])) {
 		chunk = list_first_entry(
 			&pcpu_chunk_lists[pcpu_to_depopulate_slot],
 			struct pcpu_chunk, list);
-		WARN_ON(chunk->immutable);
-
-		freed_page_start = chunk->nr_pages;
-		freed_page_end = 0;
-		reintegrate = false;
-		for (i = chunk->nr_pages - 1, end = -1; i >= 0; i--) {
-			if (chunk->nr_empty_pop_pages == 0)
-				break;
-
-			if (pcpu_nr_empty_pop_pages <
-			    PCPU_EMPTY_POP_PAGES_HIGH) {
-				reintegrate = true;
-				goto end_chunk;
-			}
-
-			block = chunk->md_blocks + i;
-			if (block->contig_hint == PCPU_BITMAP_BLOCK_BITS &&
-			    test_bit(i, chunk->populated)) {
-				if (end == -1)
-					end = i;
-				if (i > 0)
-					continue;
-				i--;
-			}
-
-			if (end == -1)
-				continue;
-
-			spin_unlock_irq(&pcpu_lock);
-			pcpu_depopulate_chunk(chunk, i + 1, end + 1);
-			cond_resched();
-			spin_lock_irq(&pcpu_lock);
-
-			pcpu_chunk_depopulated(chunk, i + 1, end + 1);
-			freed_page_start = min(freed_page_start, i + 1);
-			freed_page_end = max(freed_page_end, end + 1);
-
-			end = -1;
-		}
-
-end_chunk:
-
-		if (freed_page_start < freed_page_end) {
-			spin_unlock_irq(&pcpu_lock);
-			pcpu_post_unmap_tlb_flush(chunk, freed_page_start,
-						  freed_page_end);
-			cond_resched();
-			spin_lock_irq(&pcpu_lock);
-		}
-
-		if (reintegrate || chunk->free_bytes == pcpu_unit_size)
-			pcpu_reintegrate_chunk(chunk);
-		else
-			list_move_tail(&chunk->list,
-				       &pcpu_chunk_lists[pcpu_sidelined_slot]);
+		pcpu_reintegrate_chunk(chunk);
 	}
 }
 

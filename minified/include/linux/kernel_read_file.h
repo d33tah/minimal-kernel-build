@@ -14,11 +14,6 @@ enum kernel_read_file_id {
 	__kernel_read_file_id(__fid_enumify)
 };
 
-static inline const char *kernel_read_file_id_str(enum kernel_read_file_id id)
-{
-	return "";
-}
-
 int kernel_read_file(struct file *file, loff_t offset,
 		     void **buf, size_t buf_size,
 		     size_t *file_size,

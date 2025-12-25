@@ -20,10 +20,6 @@ struct filename;
 #define AUDIT_INODE_NOEVAL	4
 
 
-static inline int audit_alloc(struct task_struct *task)
-{
-	return 0;
-}
 static inline void audit_free(struct task_struct *task)
 { }
 static inline void audit_syscall_entry(int major, unsigned long a0,

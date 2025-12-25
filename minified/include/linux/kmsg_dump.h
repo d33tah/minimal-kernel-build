@@ -29,9 +29,4 @@ static inline void kmsg_dump(enum kmsg_dump_reason reason)
 {
 }
 
-static inline const char *kmsg_dump_reason_str(enum kmsg_dump_reason reason)
-{
-	return "Disabled";
-}
-
 #endif  

@@ -98,7 +98,6 @@ do { \
 
 
 static inline void migrate_disable(void) { }
-static inline void migrate_enable(void) { }
 
 
 #endif  

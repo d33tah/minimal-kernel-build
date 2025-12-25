@@ -82,11 +82,6 @@ struct poll_wqueues {
 
 #define MAX_INT64_SECONDS (((s64)(~((u64)0)>>1)/HZ)-1)
 
-extern int core_sys_select(int n, fd_set __user *inp, fd_set __user *outp,
-			   fd_set __user *exp, struct timespec64 *end_time);
-
-extern int poll_select_set_timeout(struct timespec64 *to, time64_t sec,
-				   long nsec);
-
+/* core_sys_select, poll_select_set_timeout removed - declared but never implemented */
 
 #endif  

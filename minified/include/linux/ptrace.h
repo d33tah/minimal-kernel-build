@@ -21,8 +21,7 @@
 #define PTRACE_EVENTMSG_SYSCALL_EXIT	2
 
 
-extern int ptrace_access_vm(struct task_struct *tsk, unsigned long addr,
-			    void *buf, int len, unsigned int gup_flags);
+/* ptrace_access_vm removed - declared but never implemented */
 
 
 #define PT_SEIZED	0x00010000	 
@@ -50,7 +49,7 @@ extern void exit_ptrace(struct task_struct *tracer, struct list_head *dead);
 #define PTRACE_MODE_REALCREDS	0x10
 
 
-extern bool ptrace_may_access(struct task_struct *task, unsigned int mode);
+/* ptrace_may_access removed - declared but never implemented */
 
 static inline int ptrace_reparented(struct task_struct *child)
 {
@@ -135,9 +134,8 @@ static inline void ptrace_release_task(struct task_struct *task)
 
 /* x86 defines arch_has_single_step, arch_has_block_step,
  * and ARCH_HAS_USER_SINGLE_STEP_REPORT */
-extern void user_enable_single_step(struct task_struct *);
+/* user_enable_single_step, user_enable_block_step removed - declared but never implemented */
 extern void user_disable_single_step(struct task_struct *);
-extern void user_enable_block_step(struct task_struct *);
 extern void user_single_step_report(struct pt_regs *regs);
 
 #ifndef arch_ptrace_stop_needed

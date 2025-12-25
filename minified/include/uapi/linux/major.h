@@ -8,11 +8,4 @@
 #define TTY_MAJOR		4
 #define TTYAUX_MAJOR		5
 
-/* Unused but needed by root_dev.h enum (values don't matter since unused) */
-#define FLOPPY_MAJOR		2
-#define IDE0_MAJOR		3
-#define IDE1_MAJOR		22
-#define SCSI_DISK0_MAJOR	8
-#define SCSI_CDROM_MAJOR	11
-
 #endif

@@ -75,10 +75,7 @@ static inline u64 protnone_mask(u64 val)
 {
 	return 0;
 }
-static inline u64 flip_protnone_guard(u64 oldval, u64 val, u64 mask)
-{
-	return val;
-}
+/* flip_protnone_guard removed - unused */
 static inline bool __pte_needs_invert(u64 val)
 {
 	return false;

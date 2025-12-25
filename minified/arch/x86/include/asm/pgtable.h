@@ -32,14 +32,7 @@ static inline void pkru_write_default(void) { if (!cpu_feature_enabled(X86_FEATU
 /* End of pkru.h */
 /* --- 2025-12-07 20:42 --- Inlined coco.h */
 #include <asm/types.h>
-enum cc_vendor {
-	CC_VENDOR_NONE,
-	CC_VENDOR_AMD,
-	CC_VENDOR_HYPERV,
-	CC_VENDOR_INTEL,
-};
-void cc_set_vendor(enum cc_vendor v);
-void cc_set_mask(u64 mask);
+/* cc_vendor enum, cc_set_vendor, cc_set_mask removed - unused */
 static inline u64 cc_mkenc(u64 val)
 {
 	return val;
@@ -60,11 +53,7 @@ static __always_inline pte_t pte_swp_clear_uffd_wp(pte_t pte) { return pte; }
 extern pgd_t early_top_pgt[PTRS_PER_PGD];
 bool __init __early_make_pgtable(unsigned long address, pmdval_t pmd);
 
-void ptdump_walk_pgd_level(struct seq_file *m, struct mm_struct *mm);
-void ptdump_walk_pgd_level_debugfs(struct seq_file *m, struct mm_struct *mm,
-				   bool user);
-void ptdump_walk_pgd_level_checkwx(void);
-void ptdump_walk_user_pgd_level_checkwx(void);
+/* ptdump_walk_* declarations removed - unused */
 
  
 #define pgprot_encrypted(prot)	__pgprot(cc_mkenc(pgprot_val(prot)))

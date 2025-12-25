@@ -7,10 +7,6 @@
 struct device;
 struct page;
 struct scatterlist;
-#define IO_TLB_SEGSIZE	128
-#define IO_TLB_SHIFT 11
-#define IO_TLB_SIZE (1 << IO_TLB_SHIFT)
-#define IO_TLB_DEFAULT_SIZE (64UL<<20)
 static inline void swiotlb_init(bool addressing_limited, unsigned int flags) {}
 static inline bool is_swiotlb_buffer(struct device *dev, phys_addr_t paddr) { return false; }
 static inline bool is_swiotlb_force_bounce(struct device *dev) { return false; }

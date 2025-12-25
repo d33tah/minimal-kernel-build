@@ -55,7 +55,7 @@ struct tick_sched {
 
 extern struct tick_sched *tick_get_tick_sched(int cpu);
 
-extern void tick_setup_sched_timer(void);
+/* tick_setup_sched_timer removed - unused */
 static inline void tick_cancel_sched_timer(int cpu) { }
 
 static inline int
@@ -75,8 +75,7 @@ extern int tick_do_timer_cpu __read_mostly;
 extern void tick_setup_periodic(struct clock_event_device *dev, int broadcast);
 extern void tick_handle_periodic(struct clock_event_device *dev);
 extern void tick_check_new_device(struct clock_event_device *dev);
-extern void tick_shutdown(unsigned int cpu);
-/* tick_suspend, tick_resume removed - unused */
+/* tick_shutdown, tick_suspend, tick_resume removed - unused */
 extern bool tick_check_replacement(struct clock_event_device *curdev,
 				   struct clock_event_device *newdev);
 extern void tick_install_replacement(struct clock_event_device *dev);
@@ -148,7 +147,7 @@ static inline void tick_nohz_init(void) { }
 
 DECLARE_PER_CPU(struct hrtimer_cpu_base, hrtimer_bases);
 
-extern u64 get_next_timer_interrupt(unsigned long basej, u64 basem);
+/* get_next_timer_interrupt removed - unused */
 void timer_clear_idle(void);
 
 #define CLOCK_SET_WALL							\

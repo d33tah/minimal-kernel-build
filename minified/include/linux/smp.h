@@ -52,14 +52,6 @@ static inline void up_smp_call_function(smp_call_func_t func, void *info) { }
 static inline void smp_send_reschedule(int cpu) { }
 #define smp_prepare_boot_cpu()			do {} while (0)
 static inline void call_function_init(void) { }
-
-static inline int
-smp_call_function_any(const struct cpumask *mask, smp_call_func_t func,
-		      void *info, int wait)
-{
-	return smp_call_function_single(0, func, info, wait);
-}
-
 static inline void smp_init(void) { }
 
 

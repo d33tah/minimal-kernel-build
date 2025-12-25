@@ -300,7 +300,7 @@ static inline void mminit_verify_zonelist(void)
 {
 }
 
-extern int hwpoison_filter(struct page *p);
+/* hwpoison_filter removed - unused */
 
 extern unsigned long  __must_check vm_mmap_pgoff(struct file *, unsigned long,
         unsigned long, unsigned long,
@@ -336,10 +336,7 @@ extern struct workqueue_struct *mm_percpu_wq;
 
 void flush_tlb_batched_pending(struct mm_struct *mm);
 
-extern const struct trace_print_flags pageflag_names[];
-extern const struct trace_print_flags vmaflag_names[];
-extern const struct trace_print_flags gfpflag_names[];
-
+/* pageflag_names, vmaflag_names, gfpflag_names removed - unused (tracing disabled) */
 /* is_migrate_highatomic, is_migrate_highatomic_page removed - unused */
 
 void setup_zone_pageset(struct zone *zone);

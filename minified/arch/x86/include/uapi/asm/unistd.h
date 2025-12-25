@@ -1,9 +1,7 @@
- 
 #ifndef _UAPI_ASM_X86_UNISTD_H
 #define _UAPI_ASM_X86_UNISTD_H
 
- 
-#define __X32_SYSCALL_BIT	0x40000000
+/* __X32_SYSCALL_BIT removed - x32 ABI not supported */
 
 #ifndef __KERNEL__
 # ifdef __i386__

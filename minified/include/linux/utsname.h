@@ -36,9 +36,7 @@ struct new_utsname {
 	char domainname[__NEW_UTS_LEN + 1];
 };
 
-/* Unused enum uts_proc reduced */
-enum uts_proc { UTS_PROC_UNUSED };
-
+/* enum uts_proc removed - unused */
 struct user_namespace;
 extern struct user_namespace init_user_ns;
 

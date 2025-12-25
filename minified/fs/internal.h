@@ -29,8 +29,7 @@ extern void __init chrdev_init(void);
  
 extern const struct fs_context_operations legacy_fs_context_ops;
 extern int parse_monolithic_mount_data(struct fs_context *, void *);
-extern void vfs_clean_context(struct fs_context *fc);
-extern int finish_clean_context(struct fs_context *fc);
+/* vfs_clean_context, finish_clean_context removed - unused */
 
  
 extern int filename_lookup(int dfd, struct filename *name, unsigned flags,
@@ -49,7 +48,7 @@ int do_linkat(int olddfd, struct filename *old, int newdfd,
 
  
 extern struct vfsmount *lookup_mnt(const struct path *);
-extern int finish_automount(struct vfsmount *, const struct path *);
+/* finish_automount removed - unused */
 
 extern int sb_prepare_remount_readonly(struct super_block *);
 
@@ -65,8 +64,7 @@ int path_mount(const char *dev_name, struct path *path,
 		const char *type_page, unsigned long flags, void *data_page);
 int path_umount(struct path *path, int flags);
 
- 
-extern void chroot_fs_refs(const struct path *, const struct path *);
+/* chroot_fs_refs removed - unused */
 
  
 extern struct file *alloc_empty_file(int, const struct cred *);
@@ -102,9 +100,7 @@ extern int vfs_open(const struct path *, struct file *);
 extern long prune_icache_sb(struct super_block *sb, struct shrink_control *sc);
 extern int dentry_needs_remove_privs(struct dentry *dentry);
 
- 
-extern long get_nr_dirty_inodes(void);
-extern int invalidate_inodes(struct super_block *, bool);
+/* get_nr_dirty_inodes, invalidate_inodes removed - unused */
 
  
 extern int d_set_mounted(struct dentry *dentry);

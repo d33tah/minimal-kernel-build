@@ -92,16 +92,14 @@ extern void driver_remove_groups(struct device_driver *drv,
 				 const struct attribute_group **groups);
 void device_driver_detach(struct device *dev);
 
-extern char *make_class_name(const char *name, struct kobject *kobj);
+/* make_class_name removed - unused */
 
 extern int devres_release_all(struct device *dev);
-extern void device_block_probing(void);
-extern void device_unblock_probing(void);
+/* device_block_probing, device_unblock_probing removed - unused */
 extern void deferred_probe_extend_timeout(void);
 
- 
+/* devices_kset_move_last removed - unused */
 extern struct kset *devices_kset;
-extern void devices_kset_move_last(struct device *dev);
 
 static inline void module_add_driver(struct module *mod,
 				     struct device_driver *drv) { }

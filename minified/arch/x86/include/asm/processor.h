@@ -48,11 +48,7 @@ struct math_emu_info {
 # define ARCH_MIN_TASKALIGN		__alignof__(union fpregs_state)
 # define ARCH_MIN_MMSTRUCT_ALIGN	0
 
-enum tlb_infos {
-	ENTRIES,
-	NR_INFO
-};
-/* TLB arrays removed - never used in minimal kernel */
+/* enum tlb_infos removed - never used in minimal kernel */
 
 struct cpuinfo_x86 {
 	__u8			x86;		 
@@ -111,16 +107,7 @@ struct cpuinfo_x86 {
 	unsigned		initialized : 1;
 } __randomize_layout;
 
-struct cpuid_regs {
-	u32 eax, ebx, ecx, edx;
-};
-
-enum cpuid_regs_idx {
-	CPUID_EAX = 0,
-	CPUID_EBX,
-	CPUID_ECX,
-	CPUID_EDX,
-};
+/* struct cpuid_regs, enum cpuid_regs_idx removed - unused */
 
 #define X86_VENDOR_INTEL	0
 /* X86_VENDOR_CYRIX, UMC, CENTAUR, TRANSMETA, NSC, HYGON, ZHAOXIN, VORTEX removed - unused */
@@ -345,11 +332,7 @@ static __always_inline unsigned long current_top_of_stack(void)
 	return this_cpu_read_stable(cpu_current_top_of_stack);
 }
 
-static __always_inline bool on_thread_stack(void)
-{
-	return (unsigned long)(current_top_of_stack() -
-			       current_stack_pointer) < THREAD_SIZE;
-}
+/* on_thread_stack removed - unused */
 
 #define __cpuid			native_cpuid
 
@@ -462,8 +445,7 @@ static inline void spin_lock_prefetch(const void *x)
 #define TOP_OF_INIT_STACK ((unsigned long)&init_stack + sizeof(init_stack) - \
 			   TOP_OF_KERNEL_STACK_PADDING)
 
-#define task_top_of_stack(task) ((unsigned long)(task_pt_regs(task) + 1))
-
+/* task_top_of_stack removed - unused */
 #define task_pt_regs(task) \
 ({									\
 	unsigned long __ptr = (unsigned long)task_stack_page(task);	\

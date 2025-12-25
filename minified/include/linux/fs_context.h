@@ -129,9 +129,7 @@ extern int get_tree_nodev(struct fs_context *fc,
 			 int (*fill_super)(struct super_block *sb,
 					   struct fs_context *fc));
 
-extern int get_tree_bdev(struct fs_context *fc,
-			       int (*fill_super)(struct super_block *sb,
-						 struct fs_context *fc));
+/* get_tree_bdev removed - declared but never implemented */
 
 extern const struct file_operations fscontext_fops;
 

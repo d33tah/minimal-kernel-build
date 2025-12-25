@@ -22,7 +22,7 @@ struct shmem_sb_info {
 };
 extern const struct fs_parameter_spec shmem_fs_parameters[];
 extern void shmem_init(void);
-extern int shmem_init_fs_context(struct fs_context *fc);
+/* shmem_init_fs_context removed - declared but never implemented */
 extern struct file *shmem_file_setup(const char *name, loff_t size, unsigned long flags);
 extern struct file *shmem_kernel_file_setup(const char *name, loff_t size, unsigned long flags);
 extern int shmem_zero_setup(struct vm_area_struct *);

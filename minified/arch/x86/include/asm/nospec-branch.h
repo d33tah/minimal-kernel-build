@@ -105,33 +105,8 @@ extern void entry_ibpb(void);
 # define CALL_NOSPEC "call *%[thunk_target]\n"
 # define THUNK_TARGET(addr) [thunk_target] "rm" (addr)
 
- 
-enum spectre_v2_mitigation {
-	SPECTRE_V2_NONE,
-	SPECTRE_V2_RETPOLINE,
-	SPECTRE_V2_LFENCE,
-	SPECTRE_V2_EIBRS,
-	SPECTRE_V2_EIBRS_RETPOLINE,
-	SPECTRE_V2_EIBRS_LFENCE,
-	SPECTRE_V2_IBRS,
-};
-
- 
-enum spectre_v2_user_mitigation {
-	SPECTRE_V2_USER_NONE,
-	SPECTRE_V2_USER_STRICT,
-	SPECTRE_V2_USER_STRICT_PREFERRED,
-	SPECTRE_V2_USER_PRCTL,
-	SPECTRE_V2_USER_SECCOMP,
-};
-
- 
-enum ssb_mitigation {
-	SPEC_STORE_BYPASS_NONE,
-	SPEC_STORE_BYPASS_DISABLE,
-	SPEC_STORE_BYPASS_PRCTL,
-	SPEC_STORE_BYPASS_SECCOMP,
-};
+/* Removed unused spectre_v2_mitigation, spectre_v2_user_mitigation,
+   ssb_mitigation enums */
 
 extern char __indirect_thunk_start[];
 extern char __indirect_thunk_end[];

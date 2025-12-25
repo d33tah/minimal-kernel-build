@@ -3,9 +3,7 @@
 #include <linux/fcntl.h>
 #include <linux/types.h>
 #define EPOLL_CLOEXEC O_CLOEXEC
-#define EPOLL_CTL_ADD 1
-#define EPOLL_CTL_DEL 2
-#define EPOLL_CTL_MOD 3
+/* EPOLL_CTL_ADD/DEL/MOD removed - unused (epoll stubbed) */
 #define EPOLLIN		(__force __poll_t)0x00000001
 #define EPOLLPRI	(__force __poll_t)0x00000002
 #define EPOLLOUT	(__force __poll_t)0x00000004

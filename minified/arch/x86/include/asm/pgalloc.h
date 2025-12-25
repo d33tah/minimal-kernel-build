@@ -76,12 +76,9 @@ static inline void paravirt_pgd_free(struct mm_struct *mm, pgd_t *pgd) {}
 static inline void paravirt_alloc_pte(struct mm_struct *mm, unsigned long pfn)	{}
 static inline void paravirt_alloc_pmd(struct mm_struct *mm, unsigned long pfn)	{}
 /* paravirt_alloc_pmd_clone removed - unused */
-static inline void paravirt_alloc_pud(struct mm_struct *mm, unsigned long pfn)	{}
-static inline void paravirt_alloc_p4d(struct mm_struct *mm, unsigned long pfn)	{}
+/* paravirt_alloc/release_pud/p4d removed - unused (no 3/4 level paging) */
 static inline void paravirt_release_pte(unsigned long pfn) {}
 static inline void paravirt_release_pmd(unsigned long pfn) {}
-static inline void paravirt_release_pud(unsigned long pfn) {}
-static inline void paravirt_release_p4d(unsigned long pfn) {}
 
  
 extern gfp_t __userpte_alloc_gfp;

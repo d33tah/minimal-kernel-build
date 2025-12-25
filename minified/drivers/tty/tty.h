@@ -21,10 +21,7 @@ enum {
 	TTY_LOCK_SLAVE,
 };
 
- 
-#define TTY_THROTTLE_SAFE	1
-#define TTY_UNTHROTTLE_SAFE	2
-
+/* TTY_THROTTLE_SAFE, TTY_UNTHROTTLE_SAFE removed - unused */
 /* __tty_set_flow_change, tty_set_flow_change removed - unused */
 
 int tty_ldisc_lock(struct tty_struct *tty, unsigned long timeout);
@@ -56,7 +53,7 @@ void tty_add_file(struct tty_struct *tty, struct file *file);
 void tty_free_file(struct file *file);
 int tty_release(struct inode *inode, struct file *filp);
 
-#define tty_is_writelocked(tty)  (mutex_is_locked(&tty->atomic_write_lock))
+/* tty_is_writelocked removed - unused */
 
 int tty_ldisc_setup(struct tty_struct *tty, struct tty_struct *o_tty);
 void tty_ldisc_release(struct tty_struct *tty);

@@ -150,8 +150,7 @@ struct kmem_cache_cpu {
 };
 
 #define slub_percpu_partial(c)			NULL
-#define slub_set_percpu_partial(c, p)
-#define slub_percpu_partial_read_once(c)	NULL
+/* slub_set_percpu_partial and slub_percpu_partial_read_once removed - unused */
 
 struct kmem_cache_order_objects {
 	unsigned int x;

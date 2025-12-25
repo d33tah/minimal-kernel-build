@@ -6,24 +6,11 @@
 #include <linux/stringify.h>
 #include <asm/asm.h>
 
-#define ALTINSTR_FLAG_INV	(1 << 15)
-#define ALT_NOT(feat)		((feat) | ALTINSTR_FLAG_INV)
-
 #ifndef __ASSEMBLY__
 
 #include <linux/stddef.h>
 
- 
-
-#define LOCK_PREFIX_HERE ""
 #define LOCK_PREFIX ""
-
- 
-#define ANNOTATE_IGNORE_ALTERNATIVE				\
-	"999:\n\t"						\
-	".pushsection .discard.ignore_alts\n\t"			\
-	".long 999b - .\n\t"					\
-	".popsection\n\t"
 
 struct alt_instr {
 	s32 instr_offset;	 
@@ -180,15 +167,6 @@ extern void apply_alternatives(struct alt_instr *start, struct alt_instr *end);
 	.macro LOCK_PREFIX
 	.endm
 
- 
-.macro ANNOTATE_IGNORE_ALTERNATIVE
-	.Lannotate_\@:
-	.pushsection .discard.ignore_alts
-	.long .Lannotate_\@ - .
-	.popsection
-.endm
-
- 
 .macro altinstruction_entry orig alt feature orig_len alt_len
 	.long \orig - .
 	.long \alt - .

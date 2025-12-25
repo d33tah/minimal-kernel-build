@@ -1340,7 +1340,6 @@ static inline bool want_init_on_free(void)
 				   &init_on_free);
 }
 
-extern bool _debug_pagealloc_enabled_early;
 static inline bool debug_pagealloc_enabled(void)
 {
 	return false;

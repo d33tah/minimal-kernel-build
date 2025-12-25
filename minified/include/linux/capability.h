@@ -96,14 +96,7 @@ extern const kernel_cap_t __cap_empty_set;
 	for (__capi = 0; __capi < _KERNEL_CAPABILITY_U32S; ++__capi)
 
 
-# define CAP_FS_MASK_B0     (CAP_TO_MASK(CAP_CHOWN)		\
-			    | CAP_TO_MASK(CAP_MKNOD)		\
-			    | CAP_TO_MASK(CAP_DAC_OVERRIDE)	\
-			    | CAP_TO_MASK(CAP_DAC_READ_SEARCH)	\
-			    | CAP_TO_MASK(CAP_FOWNER)		\
-			    | CAP_TO_MASK(CAP_FSETID))
-
-# define CAP_FS_MASK_B1     (CAP_TO_MASK(CAP_MAC_OVERRIDE))
+/* CAP_FS_MASK_B0, CAP_FS_MASK_B1 removed - unused */
 
 #if _KERNEL_CAPABILITY_U32S != 2
 # error Fix up hand-coded capability macro initializers
@@ -114,13 +107,7 @@ extern const kernel_cap_t __cap_empty_set;
 
 # define CAP_EMPTY_SET    ((kernel_cap_t){{ 0, 0 }})
 # define CAP_FULL_SET     ((kernel_cap_t){{ ~0, CAP_LAST_U32_VALID_MASK }})
-# define CAP_FS_SET       ((kernel_cap_t){{ CAP_FS_MASK_B0 \
-				    | CAP_TO_MASK(CAP_LINUX_IMMUTABLE), \
-				    CAP_FS_MASK_B1 } })
-# define CAP_NFSD_SET     ((kernel_cap_t){{ CAP_FS_MASK_B0 \
-				    | CAP_TO_MASK(CAP_SYS_RESOURCE), \
-				    CAP_FS_MASK_B1 } })
-
+/* CAP_FS_SET, CAP_NFSD_SET removed - unused */
 #endif
 
 # define cap_clear(c)         do { (c) = __cap_empty_set; } while (0)

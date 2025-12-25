@@ -637,87 +637,7 @@ static void init_kmem_cache_cpus(struct kmem_cache *s)
 	}
 }
 
-static void deactivate_slab(struct kmem_cache *s, struct slab *slab,
-			    void *freelist)
-{
-	enum slab_modes { M_NONE, M_PARTIAL, M_FULL, M_FREE, M_FULL_NOLIST };
-	struct kmem_cache_node *n = get_node(s, slab_nid(slab));
-	int free_delta = 0;
-	enum slab_modes mode = M_NONE;
-	void *nextfree, *freelist_iter, *freelist_tail;
-	int tail = DEACTIVATE_TO_HEAD;
-	unsigned long flags = 0;
-	struct slab new;
-	struct slab old;
-
-	if (slab->freelist) {
-		stat(s, DEACTIVATE_REMOTE_FREES);
-		tail = DEACTIVATE_TO_TAIL;
-	}
-
-	freelist_tail = NULL;
-	freelist_iter = freelist;
-	while (freelist_iter) {
-		nextfree = get_freepointer(s, freelist_iter);
-		freelist_tail = freelist_iter;
-		free_delta++;
-		freelist_iter = nextfree;
-	}
-
-redo:
-
-	old.freelist = READ_ONCE(slab->freelist);
-	old.counters = READ_ONCE(slab->counters);
-	VM_BUG_ON(!old.frozen);
-
-	new.counters = old.counters;
-	if (freelist_tail) {
-		new.inuse -= free_delta;
-		set_freepointer(s, freelist_tail, old.freelist);
-		new.freelist = freelist;
-	} else
-		new.freelist = old.freelist;
-
-	new.frozen = 0;
-
-	if (!new.inuse && n->nr_partial >= s->min_partial) {
-		mode = M_FREE;
-	} else if (new.freelist) {
-		mode = M_PARTIAL;
-
-		spin_lock_irqsave(&n->list_lock, flags);
-	} else if (kmem_cache_debug_flags(s, SLAB_STORE_USER)) {
-		mode = M_FULL;
-
-		spin_lock_irqsave(&n->list_lock, flags);
-	} else {
-		mode = M_FULL_NOLIST;
-	}
-
-	if (!cmpxchg_double_slab(s, slab, old.freelist, old.counters,
-				 new.freelist, new.counters,
-				 "unfreezing slab")) {
-		if (mode == M_PARTIAL || mode == M_FULL)
-			spin_unlock_irqrestore(&n->list_lock, flags);
-		goto redo;
-	}
-
-	if (mode == M_PARTIAL) {
-		add_partial(n, slab, tail);
-		spin_unlock_irqrestore(&n->list_lock, flags);
-		stat(s, tail);
-	} else if (mode == M_FREE) {
-		stat(s, DEACTIVATE_EMPTY);
-		discard_slab(s, slab);
-		stat(s, FREE_SLAB);
-	} else if (mode == M_FULL) {
-		add_full(s, n, slab);
-		spin_unlock_irqrestore(&n->list_lock, flags);
-		stat(s, DEACTIVATE_FULL);
-	} else if (mode == M_FULL_NOLIST) {
-		stat(s, DEACTIVATE_FULL);
-	}
-}
+/* Removed: deactivate_slab - dead code since flush_slab simplified (~80 LOC) */
 
 static inline void unfreeze_partials(struct kmem_cache *s)
 {
@@ -729,43 +649,22 @@ static inline void unfreeze_partials_cpu(struct kmem_cache *s,
 
 static inline void flush_slab(struct kmem_cache *s, struct kmem_cache_cpu *c)
 {
+	/* Simplified: just clear the cpu slab */
 	unsigned long flags;
-	struct slab *slab;
-	void *freelist;
-
 	local_lock_irqsave(&s->cpu_slab->lock, flags);
-
-	slab = c->slab;
-	freelist = c->freelist;
-
 	c->slab = NULL;
 	c->freelist = NULL;
 	c->tid = next_tid(c->tid);
-
 	local_unlock_irqrestore(&s->cpu_slab->lock, flags);
-
-	if (slab) {
-		deactivate_slab(s, slab, freelist);
-		stat(s, CPUSLAB_FLUSH);
-	}
 }
 
 static inline void __flush_cpu_slab(struct kmem_cache *s, int cpu)
 {
+	/* Simplified: just clear the cpu slab without deactivation */
 	struct kmem_cache_cpu *c = per_cpu_ptr(s->cpu_slab, cpu);
-	void *freelist = c->freelist;
-	struct slab *slab = c->slab;
-
 	c->slab = NULL;
 	c->freelist = NULL;
 	c->tid = next_tid(c->tid);
-
-	if (slab) {
-		deactivate_slab(s, slab, freelist);
-		stat(s, CPUSLAB_FLUSH);
-	}
-
-	unfreeze_partials_cpu(s, c);
 }
 
 struct slub_flush_work {

@@ -12,15 +12,6 @@
 typedef void (*smp_call_func_t)(void *info);
 typedef bool (*smp_cond_func_t)(int cpu, void *info);
 
-struct __call_single_data {
-	struct __call_single_node node;
-	smp_call_func_t func;
-	void *info;
-};
-
-typedef struct __call_single_data call_single_data_t
-	__aligned(sizeof(struct __call_single_data));
-
 void on_each_cpu_cond_mask(smp_cond_func_t cond_func, smp_call_func_t func,
 			   void *info, bool wait, const struct cpumask *mask);
 

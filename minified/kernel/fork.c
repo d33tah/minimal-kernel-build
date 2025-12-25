@@ -122,7 +122,6 @@ static inline void clear_user_return_notifier(struct task_struct *p)
 #include <linux/sysctl.h>
 #include <linux/init_task.h>
 #include <linux/thread_info.h>
-#include <linux/kasan.h>
 #include <linux/io_uring.h>
 static inline void scs_init(void)
 {
@@ -195,7 +194,7 @@ static int alloc_thread_stack_node(struct task_struct *tsk, int node)
 		alloc_pages_node(node, THREADINFO_GFP, THREAD_SIZE_ORDER);
 
 	if (likely(page)) {
-		tsk->stack = kasan_reset_tag(page_address(page));
+		tsk->stack = page_address(page);
 		return 0;
 	}
 	return -ENOMEM;
@@ -227,7 +226,6 @@ static int alloc_thread_stack_node(struct task_struct *tsk, int node)
 {
 	unsigned long *stack;
 	stack = kmem_cache_alloc_node(thread_stack_cache, THREADINFO_GFP, node);
-	stack = kasan_reset_tag(stack);
 	tsk->stack = stack;
 	return stack ? 0 : -ENOMEM;
 }

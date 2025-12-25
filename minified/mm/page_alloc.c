@@ -10,7 +10,6 @@
 #include <linux/memblock.h>
 #include <linux/compiler.h>
 #include <linux/kernel.h>
-#include <linux/kasan.h>
 #include <linux/module.h>
 #include <linux/suspend.h>
 #include <linux/pagevec.h>
@@ -405,7 +404,6 @@ static void __meminit __init_single_page(struct page *page, unsigned long pfn,
 	init_page_count(page);
 	page_mapcount_reset(page);
 	page_cpupid_reset_last(page);
-	page_kasan_tag_reset(page);
 
 	INIT_LIST_HEAD(&page->lru);
 	/* WANT_PAGE_VIRTUAL not defined */

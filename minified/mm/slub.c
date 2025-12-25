@@ -10,7 +10,6 @@
 #include "slab.h"
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
-#include <linux/kasan.h>
 #include <linux/cpu.h>
 #include <linux/cpuset.h>
 #include <linux/mempolicy.h>
@@ -110,7 +109,6 @@ static inline void *freelist_dereference(const struct kmem_cache *s,
 
 static inline void *get_freepointer(struct kmem_cache *s, void *object)
 {
-	object = kasan_reset_tag(object);
 	return freelist_dereference(s, object + s->offset);
 }
 
@@ -127,7 +125,6 @@ static inline void *get_freepointer_safe(struct kmem_cache *s, void *object)
 	if (!debug_pagealloc_enabled_static())
 		return get_freepointer(s, object);
 
-	object = kasan_reset_tag(object);
 	freepointer_addr = (unsigned long)object + s->offset;
 	copy_from_kernel_nofault(&p, (void **)freepointer_addr, sizeof(p));
 	return freelist_ptr(s, p, freepointer_addr);
@@ -137,7 +134,6 @@ static inline void set_freepointer(struct kmem_cache *s, void *object, void *fp)
 {
 	unsigned long freeptr_addr = (unsigned long)object + s->offset;
 
-	freeptr_addr = (unsigned long)kasan_reset_tag((void *)freeptr_addr);
 	*(void **)freeptr_addr = freelist_ptr(s, fp, freeptr_addr);
 }
 
@@ -328,12 +324,8 @@ static inline void dec_slabs_node(struct kmem_cache *s, int node, int objects)
 static void *setup_object(struct kmem_cache *s, void *object)
 {
 	setup_object_debug(s, object);
-	object = kasan_init_slab_obj(s, object);
-	if (unlikely(s->ctor)) {
-		kasan_unpoison_object_data(s, object);
+	if (unlikely(s->ctor))
 		s->ctor(object);
-		kasan_poison_object_data(s, object);
-	}
 	return object;
 }
 
@@ -400,8 +392,6 @@ static struct slab *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 	account_slab(slab, oo_order(oo), s, flags);
 
 	slab->slab_cache = s;
-
-	kasan_poison_slab(slab);
 
 	start = slab_address(slab);
 
@@ -791,8 +781,7 @@ static __always_inline void maybe_wipe_obj_freeptr(struct kmem_cache *s,
 						   void *obj)
 {
 	if (unlikely(slab_want_init_on_free(s)) && obj)
-		memset((void *)((char *)kasan_reset_tag(obj) + s->offset), 0,
-		       sizeof(void *));
+		memset((void *)((char *)obj + s->offset), 0, sizeof(void *));
 }
 
 static __always_inline void *
@@ -996,7 +985,6 @@ static void early_kmem_cache_node_alloc(int node)
 
 	n = slab->freelist;
 	BUG_ON(!n);
-	n = kasan_slab_alloc(kmem_cache_node, n, GFP_KERNEL, false);
 	slab->freelist = get_freepointer(kmem_cache_node, n);
 	slab->inuse = 1;
 	slab->frozen = 0;
@@ -1072,8 +1060,6 @@ static int calculate_sizes(struct kmem_cache *s)
 	} else {
 		s->offset = ALIGN_DOWN(s->object_size / 2, sizeof(void *));
 	}
-
-	kasan_cache_create(s, &size, &s->flags);
 
 	size = ALIGN(size, s->align);
 	s->size = size;
@@ -1192,8 +1178,6 @@ void *__kmalloc(size_t size, gfp_t flags)
 		return s;
 
 	ret = slab_alloc(s, NULL, flags, _RET_IP_, size);
-
-	ret = kasan_kmalloc(s, ret, size, flags);
 
 	return ret;
 }

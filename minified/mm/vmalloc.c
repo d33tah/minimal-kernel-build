@@ -41,7 +41,7 @@ static const bool vmap_allow_huge = false;
 
 bool is_vmalloc_addr(const void *x)
 {
-	unsigned long addr = (unsigned long)kasan_reset_tag(x);
+	unsigned long addr = (unsigned long)x;
 
 	return addr >= VMALLOC_START && addr < VMALLOC_END;
 }
@@ -503,8 +503,6 @@ static struct vmap_area *__find_vmap_area(unsigned long addr)
 {
 	struct rb_node *n = vmap_area_root.rb_node;
 
-	addr = (unsigned long)kasan_reset_tag((void *)addr);
-
 	while (n) {
 		struct vmap_area *va;
 
@@ -957,12 +955,6 @@ retry:
 	BUG_ON(va->va_start < vstart);
 	BUG_ON(va->va_end > vend);
 
-	ret = kasan_populate_vmalloc(addr, size);
-	if (ret) {
-		free_vmap_area(va);
-		return ERR_PTR(ret);
-	}
-
 	return va;
 
 overflow:
@@ -1287,10 +1279,6 @@ __get_vm_area_node(unsigned long size, unsigned long align, unsigned long shift,
 
 	setup_vmalloc_vm(area, va, flags, caller);
 
-	if (!(flags & VM_ALLOC))
-		area->addr = kasan_unpoison_vmalloc(area->addr, requested_size,
-						    KASAN_VMALLOC_PROT_NORMAL);
-
 	return area;
 }
 
@@ -1327,7 +1315,6 @@ struct vm_struct *remove_vm_area(const void *addr)
 		va->vm = NULL;
 		spin_unlock(&vmap_area_lock);
 
-		kasan_free_module_shadow(vm);
 		free_unmap_vmap_area(va);
 
 		return vm;
@@ -1538,7 +1525,6 @@ void *__vmalloc_node_range(unsigned long size, unsigned long align,
 {
 	struct vm_struct *area;
 	void *ret;
-	kasan_vmalloc_flags_t kasan_flags = KASAN_VMALLOC_NONE;
 	unsigned long real_size = size;
 	unsigned long real_align = align;
 	unsigned int shift = PAGE_SHIFT;
@@ -1585,25 +1571,9 @@ again:
 		goto fail;
 	}
 
-	if (pgprot_val(prot) == pgprot_val(PAGE_KERNEL)) {
-		if (kasan_hw_tags_enabled()) {
-			prot = arch_vmap_pgprot_tagged(prot);
-
-			gfp_mask |= __GFP_SKIP_KASAN_UNPOISON | __GFP_SKIP_ZERO;
-		}
-
-		kasan_flags |= KASAN_VMALLOC_PROT_NORMAL;
-	}
-
 	ret = __vmalloc_area_node(area, gfp_mask, prot, shift, node);
 	if (!ret)
 		goto fail;
-
-	kasan_flags |= KASAN_VMALLOC_VM_ALLOC;
-	if (!want_init_on_free() && want_init_on_alloc(gfp_mask))
-		kasan_flags |= KASAN_VMALLOC_INIT;
-
-	area->addr = kasan_unpoison_vmalloc(area->addr, real_size, kasan_flags);
 
 	clear_vm_uninitialized_flag(area);
 

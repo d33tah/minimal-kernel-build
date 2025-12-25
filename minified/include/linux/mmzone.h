@@ -190,11 +190,6 @@ enum vmscan_throttle_state {
 
 #define for_each_lru(lru) for (lru = 0; lru < NR_LRU_LISTS; lru++)
 
-
-enum lruvec_flags {
-	LRUVEC_CONGESTED,
-};
-
 struct lruvec {
 	struct list_head		lists[NR_LRU_LISTS];
 

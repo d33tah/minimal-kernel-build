@@ -12,26 +12,10 @@
 #include <uapi/asm/msr.h>
 #include <asm/shared/msr.h>
 
-struct msr_info {
-	u32 msr_no;
-	struct msr reg;
-	struct msr *msrs;
-	int err;
-};
-
-struct msr_regs_info {
-	u32 *regs;
-	int err;
-};
-
-struct saved_msr {
-	bool valid;
-	struct msr_info info;
-};
-
+/* msr_info, msr_regs_info, saved_msr structs removed - unused */
 struct saved_msrs {
 	unsigned int num;
-	struct saved_msr *array;
+	void *array;
 };
 
  
@@ -214,10 +198,7 @@ static inline int wrmsrl_safe(u32 msr, u64 val)
 	return wrmsr_safe(msr, (u32)val,  (u32)(val >> 32));
 }
 
-struct msr *msrs_alloc(void);
-void msrs_free(struct msr *msrs);
-int msr_set_bit(u32 msr, u8 bit);
-int msr_clear_bit(u32 msr, u8 bit);
+/* Removed unused declarations: msrs_alloc, msrs_free, msr_set_bit, msr_clear_bit */
 
 #endif
 #endif

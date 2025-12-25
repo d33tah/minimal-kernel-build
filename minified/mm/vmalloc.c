@@ -1462,24 +1462,12 @@ static void __vfree(const void *addr)
 
 void vfree(const void *addr)
 {
-	BUG_ON(in_nmi());
-
-	kmemleak_free(addr);
-
-	might_sleep_if(!in_interrupt());
-
-	if (!addr)
-		return;
-
-	__vfree(addr);
+	/* No-op: bump allocator style - no deallocation */
 }
 
 void vunmap(const void *addr)
 {
-	BUG_ON(in_interrupt());
-	might_sleep();
-	if (addr)
-		__vunmap(addr, 0);
+	/* No-op: bump allocator style - no deallocation */
 }
 
 void *vmap(struct page **pages, unsigned int count, unsigned long flags,

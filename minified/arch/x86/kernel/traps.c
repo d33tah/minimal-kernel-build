@@ -286,9 +286,7 @@ static bool gp_try_fixup_and_notify(struct pt_regs *regs, int trapnr,
 	current->thread.error_code = error_code;
 	current->thread.trap_nr = trapnr;
 
-	if (!preemptible() && kprobe_running() &&
-	    kprobe_fault_handler(regs, trapnr))
-		return true;
+	/* kprobe_running() always returns NULL when CONFIG_KPROBES is disabled */
 
 	return notify_die(DIE_GPF, str, regs, error_code, trapnr, SIGSEGV) ==
 	       NOTIFY_STOP;

@@ -13,19 +13,9 @@
 struct kprobe;
 struct task_struct;
 
-static inline int kprobe_fault_handler(struct pt_regs *regs, int trapnr) { return 0; }
-static inline struct kprobe *kprobe_running(void) { return NULL; }
-
+/* Removed uncalled: kprobe_fault_handler, kprobe_running */
 static inline void kprobe_flush_task(struct task_struct *tk) { }
 static inline void kprobe_free_init_mem(void) { }
-
-static inline bool is_kprobe_insn_slot(unsigned long addr) { return false; }
-static inline bool is_kprobe_optinsn_slot(unsigned long addr) { return false; }
-
-static nokprobe_inline bool kprobe_page_fault(struct pt_regs *regs,
-					      unsigned int trap)
-{
-	return false;
-}
+/* Removed uncalled: is_kprobe_insn_slot, is_kprobe_optinsn_slot, kprobe_page_fault */
 
 #endif

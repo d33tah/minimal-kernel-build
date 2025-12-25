@@ -132,21 +132,6 @@ void call_rcu(struct rcu_head *head, rcu_callback_t func)
 	}
 }
 
-unsigned long get_state_synchronize_rcu(void)
-{
-	return READ_ONCE(rcu_ctrlblk.gp_seq);
-}
-
-unsigned long start_poll_synchronize_rcu(void)
-{
-	unsigned long gp_seq = get_state_synchronize_rcu();
-
-	if (unlikely(is_idle_task(current))) {
-		resched_cpu(0);
-	}
-	return gp_seq;
-}
-
 void __init rcu_init(void)
 {
 	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);

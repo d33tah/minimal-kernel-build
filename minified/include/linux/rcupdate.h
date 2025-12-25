@@ -45,9 +45,6 @@ static inline void exit_tasks_rcu_finish(void) { }
 /* TINY_RCU only */
 #include <asm/param.h>
 
-unsigned long get_state_synchronize_rcu(void);
-unsigned long start_poll_synchronize_rcu(void);
-
 extern void rcu_barrier(void);
 
 static inline void synchronize_rcu_expedited(void)

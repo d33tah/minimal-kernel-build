@@ -441,48 +441,13 @@ static struct slab *new_slab(struct kmem_cache *s, gfp_t flags, int node)
 		s, flags & (GFP_RECLAIM_MASK | GFP_CONSTRAINT_MASK), node);
 }
 
-static void __free_slab(struct kmem_cache *s, struct slab *slab)
-{
-	struct folio *folio = slab_folio(slab);
-	int order = folio_order(folio);
-	int pages = 1 << order;
-
-	if (kmem_cache_debug_flags(s, SLAB_CONSISTENCY_CHECKS)) {
-		void *p;
-
-		slab_pad_check(s, slab);
-		for_each_object(p, s, slab_address(slab), slab->objects)
-			check_object(s, slab, p, SLUB_RED_INACTIVE);
-	}
-
-	__slab_clear_pfmemalloc(slab);
-	__folio_clear_slab(folio);
-	folio->mapping = NULL;
-	if (current->reclaim_state)
-		current->reclaim_state->reclaimed_slab += pages;
-	unaccount_slab(slab, order, s);
-	__free_pages(folio_page(folio, 0), order);
-}
-
-static void rcu_free_slab(struct rcu_head *h)
-{
-	struct slab *slab = container_of(h, struct slab, rcu_head);
-
-	__free_slab(slab->slab_cache, slab);
-}
-
-static void free_slab(struct kmem_cache *s, struct slab *slab)
-{
-	if (unlikely(s->flags & SLAB_TYPESAFE_BY_RCU)) {
-		call_rcu(&slab->rcu_head, rcu_free_slab);
-	} else
-		__free_slab(s, slab);
-}
+/* Removed: __free_slab, rcu_free_slab, free_slab
+ * - Simplified since __free_pages is a no-op (~35 LOC) */
 
 static void discard_slab(struct kmem_cache *s, struct slab *slab)
 {
+	/* No-op: bump allocator style - no deallocation */
 	dec_slabs_node(s, slab_nid(slab), slab->objects);
-	free_slab(s, slab);
 }
 
 static inline void __add_partial(struct kmem_cache_node *n, struct slab *slab,

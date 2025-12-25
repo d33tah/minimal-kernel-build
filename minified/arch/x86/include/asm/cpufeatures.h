@@ -147,12 +147,8 @@
 
 /* Word 18 - Intel extended 3 */
 #define X86_FEATURE_SERIALIZE		(18*32+14)
-#define X86_FEATURE_ARCH_LBR		(18*32+19)
 #define X86_FEATURE_IBT			(18*32+20)
 #define X86_FEATURE_SPEC_CTRL_SSBD	(18*32+31)
-
-/* Word 19 - AMD SEV/SME */
-#define X86_FEATURE_SME			(19*32+ 0)
 
 /* CPU bugs - only keep the used ones */
 #define X86_BUG(x)			(NCAPINTS*32 + (x))

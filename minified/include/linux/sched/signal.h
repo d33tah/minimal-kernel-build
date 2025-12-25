@@ -365,11 +365,6 @@ struct pid *task_pid_type(struct task_struct *task, enum pid_type type)
 	return pid;
 }
 
-static inline struct pid *task_tgid(struct task_struct *task)
-{
-	return task->signal->pids[PIDTYPE_TGID];
-}
-
 static inline struct pid *task_pgrp(struct task_struct *task)
 {
 	return task->signal->pids[PIDTYPE_PGID];

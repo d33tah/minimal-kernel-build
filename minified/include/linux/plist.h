@@ -32,11 +32,4 @@ struct plist_node {
 	.node_list = LIST_HEAD_INIT((node).node_list),	\
 }
 
-static inline void
-plist_head_init(struct plist_head *head)
-{
-	INIT_LIST_HEAD(&head->node_list);
-}
-
-
 #endif

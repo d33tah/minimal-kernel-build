@@ -18,13 +18,6 @@ static inline unsigned long *end_of_stack(const struct task_struct *task)
 	return task->stack;
 }
 
-
-static inline void *try_get_task_stack(struct task_struct *tsk)
-{
-	return refcount_inc_not_zero(&tsk->stack_refcount) ?
-		task_stack_page(tsk) : NULL;
-}
-
 extern void put_task_stack(struct task_struct *tsk);
 
 void exit_task_stack_account(struct task_struct *tsk);

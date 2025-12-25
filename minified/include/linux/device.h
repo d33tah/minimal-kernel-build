@@ -275,11 +275,6 @@ static inline void set_dev_node(struct device *dev, int node)
 {
 }
 
-static inline void *dev_get_drvdata(const struct device *dev)
-{
-	return dev->driver_data;
-}
-
 static inline void dev_set_drvdata(struct device *dev, void *data)
 {
 	dev->driver_data = data;

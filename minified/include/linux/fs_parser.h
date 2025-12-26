@@ -17,9 +17,8 @@ typedef int fs_param_type(struct p_log *,
 			  const struct fs_parameter_spec *,
 			  struct fs_parameter *,
 			  struct fs_parse_result *);
-fs_param_type fs_param_is_bool, fs_param_is_u32, fs_param_is_s32, fs_param_is_u64,
-	fs_param_is_enum, fs_param_is_string, fs_param_is_blob, fs_param_is_blockdev,
-	fs_param_is_path, fs_param_is_fd;
+/* Only fs_param_is_u32 kept - others unused */
+fs_param_type fs_param_is_u32;
 
 struct fs_parameter_spec {
 	const char		*name;

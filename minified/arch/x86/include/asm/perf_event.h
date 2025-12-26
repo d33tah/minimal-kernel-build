@@ -13,29 +13,6 @@ struct perf_guest_switch_msr {
 	u64 host, guest;
 };
 
-struct x86_pmu_lbr {
-	unsigned int nr;
-	unsigned int from;
-	unsigned int to;
-	unsigned int info;
-};
-
-struct x86_pmu_capability {
-	int version;
-	int num_counters_gp;
-	int num_counters_fixed;
-	int bit_width_gp;
-	int bit_width_fixed;
-	unsigned int events_mask;
-	int events_mask_len;
-};
-
-struct x86_perf_regs {
-	struct pt_regs regs;
-	u64 *xmm_regs;
-};
-
- 
 extern void perf_clear_dirty_counters(void);
 
 static inline struct perf_guest_switch_msr *perf_guest_get_msrs(int *nr) { *nr = 0; return NULL; }

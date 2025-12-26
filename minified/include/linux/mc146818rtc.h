@@ -9,21 +9,8 @@
 #include <linux/delay.h>
 
 #ifdef __KERNEL__
-#include <linux/spinlock.h>		 
-extern spinlock_t rtc_lock;		 
-
-struct cmos_rtc_board_info {
-	void	(*wake_on)(struct device *dev);
-	void	(*wake_off)(struct device *dev);
-
-	u32	flags;
-#define CMOS_RTC_FLAGS_NOFREQ	(1 << 0)
-	int	address_space;
-
-	u8	rtc_day_alarm;		 
-	u8	rtc_mon_alarm;		 
-	u8	rtc_century;		 
-};
+#include <linux/spinlock.h>
+extern spinlock_t rtc_lock;
 #endif
 
 #define RTC_SECONDS		0

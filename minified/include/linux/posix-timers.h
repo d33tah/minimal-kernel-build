@@ -7,7 +7,6 @@ struct kernel_siginfo;
 struct task_struct;
 
 struct posix_cputimers { };
-struct cpu_timer { };
 #define INIT_CPU_TIMERS(s)
 static inline void posix_cputimers_init(struct posix_cputimers *pct) { }
 static inline void posix_cputimers_group_init(struct posix_cputimers *pct,

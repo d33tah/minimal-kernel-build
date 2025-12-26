@@ -15,8 +15,6 @@ struct fscrypt_name {
 	bool is_nokey_name;
 };
 
-struct fscrypt_dummy_policy { };
-
 #define fname_name(p)		((p)->disk_name.name)
 #define fname_len(p)		((p)->disk_name.len)
 

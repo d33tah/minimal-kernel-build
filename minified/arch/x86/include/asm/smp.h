@@ -37,25 +37,5 @@ DECLARE_EARLY_PER_CPU_READ_MOSTLY(u16, x86_bios_cpu_apicid);
 
 struct task_struct;
 
-struct smp_ops {
-	void (*smp_prepare_boot_cpu)(void);
-	void (*smp_prepare_cpus)(unsigned max_cpus);
-	void (*smp_cpus_done)(unsigned max_cpus);
-
-	void (*stop_other_cpus)(int wait);
-	void (*crash_stop_other_cpus)(void);
-	void (*smp_send_reschedule)(int cpu);
-
-	int (*cpu_up)(unsigned cpu, struct task_struct *tidle);
-	int (*cpu_disable)(void);
-	void (*cpu_die)(unsigned int cpu);
-	void (*play_dead)(void);
-
-	void (*send_call_func_ipi)(const struct cpumask *mask);
-	void (*send_call_func_single_ipi)(int cpu);
-};
-
-/* set_cpu_sibling_map, wbinvd_on_cpu, hard_smp_processor_id, nmi_selftest removed - unused */
-
 #endif
 #endif  

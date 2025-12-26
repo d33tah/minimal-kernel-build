@@ -14,7 +14,7 @@ struct seccomp_data { int nr; __u32 arch; __u64 instruction_pointer; __u64 args[
 #define SECCOMP_NOTIFY_ADDFD_SIZE_LATEST SECCOMP_NOTIFY_ADDFD_SIZE_VER0
 #include <linux/errno.h>
 struct seccomp { };
-struct seccomp_filter { };
+/* struct seccomp_filter removed - unused */
 struct seccomp_data;
 static inline int __secure_computing(const struct seccomp_data *sd) { return 0; }
 static inline void seccomp_filter_release(struct task_struct *tsk) { }

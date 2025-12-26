@@ -9,7 +9,7 @@ struct page;
 struct mempolicy {};
 static inline bool mpol_equal(struct mempolicy *a, struct mempolicy *b) { return true; }
 static inline void mpol_put(struct mempolicy *p) {}
-struct shared_policy {};
+/* struct shared_policy removed - unused */
 #define vma_policy(vma) NULL
 static inline int vma_dup_policy(struct vm_area_struct *src, struct vm_area_struct *dst) { return 0; }
 static inline void numa_policy_init(void) {}

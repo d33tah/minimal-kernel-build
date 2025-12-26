@@ -167,11 +167,6 @@ SYSCALL_DEFINE2(ftruncate64, unsigned int, fd, loff_t, length)
 }
 #endif
 
-int ksys_fallocate(int fd, int mode, loff_t offset, loff_t len)
-{
-	return -ENOSYS;
-}
-
 /* Stub: fallocate not needed for Hello World */
 SYSCALL_DEFINE4(fallocate, int, fd, int, mode, loff_t, offset, loff_t, len)
 {
@@ -225,11 +220,6 @@ int vfs_fchmod(struct file *file, umode_t mode)
 
 /* Stub: fchmod not needed for Hello World */
 SYSCALL_DEFINE2(fchmod, unsigned int, fd, umode_t, mode)
-{
-	return -ENOSYS;
-}
-
-static int do_fchmodat(int dfd, const char __user *filename, umode_t mode)
 {
 	return -ENOSYS;
 }

@@ -367,20 +367,8 @@ SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf, size_t,
 	return ret;
 }
 
-ssize_t ksys_pread64(unsigned int fd, char __user *buf, size_t count,
-		     loff_t pos)
-{
-	return -ENOSYS;
-}
-
 SYSCALL_DEFINE4(pread64, unsigned int, fd, char __user *, buf, size_t, count,
 		loff_t, pos)
-{
-	return ksys_pread64(fd, buf, count, pos);
-}
-
-ssize_t ksys_pwrite64(unsigned int fd, const char __user *buf, size_t count,
-		      loff_t pos)
 {
 	return -ENOSYS;
 }
@@ -388,7 +376,7 @@ ssize_t ksys_pwrite64(unsigned int fd, const char __user *buf, size_t count,
 SYSCALL_DEFINE4(pwrite64, unsigned int, fd, const char __user *, buf, size_t,
 		count, loff_t, pos)
 {
-	return ksys_pwrite64(fd, buf, count, pos);
+	return -ENOSYS;
 }
 
 /* do_readv, do_writev removed - unused stubs */

@@ -63,10 +63,9 @@ const struct file_operations urandom_fops = { .read = random_read,
 					      .write = random_write,
 					      .unlocked_ioctl = random_ioctl,
 					      .llseek = noop_llseek };
+/* Stub: getrandom not needed for Hello World */
 SYSCALL_DEFINE3(getrandom, char __user *, buf, size_t, count, unsigned int,
 		flags)
 {
-	if (clear_user(buf, count))
-		return -EFAULT;
 	return count;
 }

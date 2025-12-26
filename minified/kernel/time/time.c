@@ -24,19 +24,12 @@ struct timezone sys_tz;
 
 SYSCALL_DEFINE1(time, __kernel_old_time_t __user *, tloc)
 {
-	__kernel_old_time_t i = (__kernel_old_time_t)ktime_get_real_seconds();
-
-	if (tloc) {
-		if (put_user(i, tloc))
-			return -EFAULT;
-	}
-	force_successful_syscall_return();
-	return i;
+	/* Stub: time not needed for Hello World */
+	return 0;
 }
 
 SYSCALL_DEFINE1(stime, __kernel_old_time_t __user *, tptr)
 {
-	/* Stub: setting time not needed for minimal kernel */
 	return -EPERM;
 }
 
@@ -45,18 +38,7 @@ SYSCALL_DEFINE1(stime, __kernel_old_time_t __user *, tptr)
 SYSCALL_DEFINE2(gettimeofday, struct __kernel_old_timeval __user *, tv,
 		struct timezone __user *, tz)
 {
-	if (likely(tv != NULL)) {
-		struct timespec64 ts;
-
-		ktime_get_real_ts64(&ts);
-		if (put_user(ts.tv_sec, &tv->tv_sec) ||
-		    put_user(ts.tv_nsec / 1000, &tv->tv_usec))
-			return -EFAULT;
-	}
-	if (unlikely(tz != NULL)) {
-		if (copy_to_user(tz, &sys_tz, sizeof(sys_tz)))
-			return -EFAULT;
-	}
+	/* Stub: gettimeofday not needed for Hello World */
 	return 0;
 }
 

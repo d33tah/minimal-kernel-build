@@ -731,37 +731,18 @@ out_unlock:
 	return err;
 }
 
+/* Stub: dup syscalls not needed for Hello World */
 SYSCALL_DEFINE3(dup3, unsigned int, oldfd, unsigned int, newfd, int, flags)
 {
-	return ksys_dup3(oldfd, newfd, flags);
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE2(dup2, unsigned int, oldfd, unsigned int, newfd)
 {
-	if (unlikely(newfd == oldfd)) {
-		struct files_struct *files = current->files;
-		int retval = oldfd;
-
-		rcu_read_lock();
-		if (!files_lookup_fd_rcu(files, oldfd))
-			retval = -EBADF;
-		rcu_read_unlock();
-		return retval;
-	}
-	return ksys_dup3(oldfd, newfd, 0);
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE1(dup, unsigned int, fildes)
 {
-	int ret = -EBADF;
-	struct file *file = fget_raw(fildes);
-
-	if (file) {
-		ret = get_unused_fd_flags(0);
-		if (ret >= 0)
-			fd_install(ret, file);
-		else
-			fput(file);
-	}
-	return ret;
+	return -ENOSYS;
 }

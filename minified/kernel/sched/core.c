@@ -1341,11 +1341,8 @@ SYSCALL_DEFINE1(sched_getscheduler, pid_t, pid)
 
 SYSCALL_DEFINE2(sched_getparam, pid_t, pid, struct sched_param __user *, param)
 {
-	/* Stub: sched_getparam not needed for minimal kernel */
-	struct sched_param lp = { .sched_priority = 0 };
-	if (!param || pid < 0)
-		return -EINVAL;
-	return copy_to_user(param, &lp, sizeof(*param)) ? -EFAULT : 0;
+	/* Stub: sched_getparam not needed for Hello World */
+	return 0;
 }
 
 SYSCALL_DEFINE4(sched_getattr, pid_t, pid, struct sched_attr __user *, uattr,
@@ -1381,26 +1378,9 @@ SYSCALL_DEFINE3(sched_getaffinity, pid_t, pid, unsigned int, len,
 	return -ENOSYS;
 }
 
-static void do_sched_yield(void)
-{
-	struct rq_flags rf;
-	struct rq *rq;
-
-	rq = this_rq_lock_irq(&rf);
-
-	schedstat_inc(rq->yld_count);
-	current->sched_class->yield_task(rq);
-
-	preempt_disable();
-	rq_unlock_irq(rq, &rf);
-	sched_preempt_enable_no_resched();
-
-	schedule();
-}
-
+/* Stub: sched_yield not needed for Hello World */
 SYSCALL_DEFINE0(sched_yield)
 {
-	do_sched_yield();
 	return 0;
 }
 

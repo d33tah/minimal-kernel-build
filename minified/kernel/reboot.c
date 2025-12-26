@@ -162,63 +162,9 @@ void kernel_power_off(void)
 
 DEFINE_MUTEX(system_transition_mutex);
 
+/* Stub: reboot syscall not needed for Hello World */
 SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
 		void __user *, arg)
 {
-	struct pid_namespace *pid_ns = task_active_pid_ns(current);
-	char buffer[256];
-	int ret = 0;
-
-	if (!ns_capable(pid_ns->user_ns, CAP_SYS_BOOT))
-		return -EPERM;
-
-	if (magic1 != LINUX_REBOOT_MAGIC1 ||
-	    (magic2 != LINUX_REBOOT_MAGIC2 && magic2 != LINUX_REBOOT_MAGIC2A &&
-	     magic2 != LINUX_REBOOT_MAGIC2B && magic2 != LINUX_REBOOT_MAGIC2C))
-		return -EINVAL;
-
-	ret = reboot_pid_ns(pid_ns, cmd);
-	if (ret)
-		return ret;
-
-	if ((cmd == LINUX_REBOOT_CMD_POWER_OFF) && !kernel_can_power_off())
-		cmd = LINUX_REBOOT_CMD_HALT;
-
-	mutex_lock(&system_transition_mutex);
-	switch (cmd) {
-	case LINUX_REBOOT_CMD_RESTART:
-		kernel_restart(NULL);
-		break;
-
-	case LINUX_REBOOT_CMD_CAD_ON:
-	case LINUX_REBOOT_CMD_CAD_OFF:
-		/* Stub: C_A_D never read, just accept the command */
-		break;
-
-	case LINUX_REBOOT_CMD_HALT:
-		kernel_halt();
-		do_exit(0);
-
-	case LINUX_REBOOT_CMD_POWER_OFF:
-		kernel_power_off();
-		do_exit(0);
-		break;
-
-	case LINUX_REBOOT_CMD_RESTART2:
-		ret = strncpy_from_user(&buffer[0], arg, sizeof(buffer) - 1);
-		if (ret < 0) {
-			ret = -EFAULT;
-			break;
-		}
-		buffer[sizeof(buffer) - 1] = '\0';
-
-		kernel_restart(buffer);
-		break;
-
-	default:
-		ret = -EINVAL;
-		break;
-	}
-	mutex_unlock(&system_transition_mutex);
-	return ret;
+	return -ENOSYS;
 }

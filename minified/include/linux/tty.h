@@ -186,10 +186,8 @@ struct tty_file_private {
 #define TTY_EXCLUSIVE		3
 #define TTY_DO_WRITE_WAKEUP	5
 #define TTY_LDISC_OPEN		11
-#define TTY_PTY_LOCK		16
 #define TTY_NO_WRITE_SPLIT	17
 #define TTY_HUPPED		18
-#define TTY_HUPPING		19
 #define TTY_LDISC_CHANGING	20
 #define TTY_LDISC_HALTED	22
 

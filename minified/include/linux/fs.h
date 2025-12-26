@@ -28,7 +28,7 @@
 #include <linux/atomic.h>
 #include <linux/shrinker.h>
 enum migrate_mode { MIGRATE_MODE_LAST };
-enum migrate_reason { MR_TYPES };
+/* enum migrate_reason removed - unused */
 #include <linux/uidgid.h>
 #include <linux/lockdep.h>
 #include <linux/percpu-rwsem.h>

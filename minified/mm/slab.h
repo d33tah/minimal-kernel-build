@@ -67,12 +67,7 @@ static inline void slab_set_pfmemalloc(struct slab *slab)
 	folio_set_active(slab_folio(slab));
 }
 
-/* slab_clear_pfmemalloc removed - unused */
-
-static inline void __slab_clear_pfmemalloc(struct slab *slab)
-{
-	__folio_clear_active(slab_folio(slab));
-}
+/* slab_clear_pfmemalloc, __slab_clear_pfmemalloc removed - unused */
 
 static inline void *slab_address(const struct slab *slab)
 {
@@ -469,8 +464,7 @@ static inline struct kmem_cache_node *get_node(struct kmem_cache *s, int node)
 
 void ___cache_free(struct kmem_cache *cache, void *x, unsigned long addr);
 
-/* cache_random_seq_create removed - unused */
-static inline void cache_random_seq_destroy(struct kmem_cache *cachep) { }
+/* cache_random_seq_create, cache_random_seq_destroy removed - unused */
 
 static inline bool slab_want_init_on_alloc(gfp_t flags, struct kmem_cache *c)
 {

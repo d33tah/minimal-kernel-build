@@ -11,7 +11,6 @@
 #define MAX_MP_BUSSES		32
 
 extern unsigned int boot_cpu_physical_apicid;
-extern u8 boot_cpu_apic_version;
 extern unsigned long mp_lapic_addr;
 
 #define smp_found_config 0

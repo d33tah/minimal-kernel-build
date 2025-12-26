@@ -38,9 +38,6 @@ extern unsigned long saved_video_mode;
 
 extern void reserve_standard_io_resources(void);
 extern void i386_reserve_resources(void);
-/* __startup_64, startup_64_setup_env removed - 64-bit only, unused in 32-bit build */
-extern void early_setup_idt(void);
-extern void __init do_early_exception(struct pt_regs *regs, int trapnr);
 
 static inline void x86_intel_mid_early_setup(void) { }
 

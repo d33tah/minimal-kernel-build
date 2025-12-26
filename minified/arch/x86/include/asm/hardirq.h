@@ -21,13 +21,6 @@ DECLARE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
 
 extern void ack_bad_irq(unsigned int irq);
 
-extern u64 arch_irq_stat_cpu(unsigned int cpu);
-#define arch_irq_stat_cpu	arch_irq_stat_cpu
-
-extern u64 arch_irq_stat(void);
-#define arch_irq_stat		arch_irq_stat
-
-
 /* CONFIG_KVM_INTEL not enabled */
 static inline void kvm_set_cpu_l1tf_flush_l1d(void) { }  
 

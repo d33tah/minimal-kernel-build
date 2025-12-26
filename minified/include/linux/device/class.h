@@ -95,18 +95,6 @@ struct class_attribute {
 	struct class_attribute class_attr_##_name = __ATTR_WO(_name)
 
 
-struct class_attribute_string {
-	struct class_attribute attr;
-	char *str;
-};
-
-#define _CLASS_ATTR_STRING(_name, _mode, _str) \
-	{ __ATTR(_name, _mode, show_class_attr_string, NULL), _str }
-#define CLASS_ATTR_STRING(_name, _mode, _str) \
-	struct class_attribute_string class_attr_##_name = \
-		_CLASS_ATTR_STRING(_name, _mode, _str)
-
-
 struct class_interface {
 	struct list_head	node;
 	struct class		*class;

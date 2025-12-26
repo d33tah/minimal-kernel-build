@@ -11,9 +11,6 @@
 
 #define TAIL_MAPPING	((void *) 0x400 + POISON_POINTER_DELTA)
 
-#define SLUB_RED_INACTIVE	0xbb
-#define SLUB_RED_ACTIVE		0xcc
-
 #define POISON_FREE_INITMEM	0xcc
 
 /* Removed unused poison defines: PAGE_POISON, RED_INACTIVE, RED_ACTIVE,

@@ -110,8 +110,7 @@ struct cpuinfo_x86 {
 /* struct cpuid_regs, enum cpuid_regs_idx removed - unused */
 
 #define X86_VENDOR_INTEL	0
-/* X86_VENDOR_CYRIX, UMC, CENTAUR, TRANSMETA, NSC, HYGON, ZHAOXIN, VORTEX removed - unused */
-#define X86_VENDOR_AMD		2
+/* X86_VENDOR_CYRIX, UMC, CENTAUR, TRANSMETA, NSC, AMD, HYGON, ZHAOXIN, VORTEX removed - unused */
 #define X86_VENDOR_NUM		12
 
 #define X86_VENDOR_UNKNOWN	0xff

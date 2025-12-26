@@ -9,43 +9,6 @@
 #include <linux/ctype.h>
 #include <linux/security.h>
 
-struct kmalloced_param {
-	struct list_head list;
-	char val[];
-};
-static LIST_HEAD(kmalloced_params);
-static DEFINE_SPINLOCK(kmalloced_params_lock);
-
-static void *kmalloc_parameter(unsigned int size)
-{
-	struct kmalloced_param *p;
-
-	p = kmalloc(sizeof(*p) + size, GFP_KERNEL);
-	if (!p)
-		return NULL;
-
-	spin_lock(&kmalloced_params_lock);
-	list_add(&p->list, &kmalloced_params);
-	spin_unlock(&kmalloced_params_lock);
-
-	return p->val;
-}
-
-static void maybe_kfree_parameter(void *param)
-{
-	struct kmalloced_param *p;
-
-	spin_lock(&kmalloced_params_lock);
-	list_for_each_entry(p, &kmalloced_params, list) {
-		if (p->val == param) {
-			list_del(&p->list);
-			kfree(p);
-			break;
-		}
-	}
-	spin_unlock(&kmalloced_params_lock);
-}
-
 static char dash2underscore(char c)
 {
 	if (c == '-')

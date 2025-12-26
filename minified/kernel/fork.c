@@ -1571,26 +1571,18 @@ pid_t user_mode_thread(int (*fn)(void *), void *arg, unsigned long flags)
 	return kernel_clone(&args);
 }
 
+/* Stub: fork syscalls not needed for Hello World kernel */
 #ifdef __ARCH_WANT_SYS_FORK
 SYSCALL_DEFINE0(fork)
 {
-	struct kernel_clone_args args = {
-		.exit_signal = SIGCHLD,
-	};
-
-	return kernel_clone(&args);
+	return -ENOSYS;
 }
 #endif
 
 #ifdef __ARCH_WANT_SYS_VFORK
 SYSCALL_DEFINE0(vfork)
 {
-	struct kernel_clone_args args = {
-		.flags = CLONE_VFORK | CLONE_VM,
-		.exit_signal = SIGCHLD,
-	};
-
-	return kernel_clone(&args);
+	return -ENOSYS;
 }
 #endif
 
@@ -1599,17 +1591,7 @@ SYSCALL_DEFINE5(clone, unsigned long, clone_flags, unsigned long, newsp,
 		int __user *, parent_tidptr, unsigned long, tls, int __user *,
 		child_tidptr)
 {
-	struct kernel_clone_args args = {
-		.flags = (lower_32_bits(clone_flags) & ~CSIGNAL),
-		.pidfd = parent_tidptr,
-		.child_tid = child_tidptr,
-		.parent_tid = parent_tidptr,
-		.exit_signal = (lower_32_bits(clone_flags) & CSIGNAL),
-		.stack = newsp,
-		.tls = tls,
-	};
-
-	return kernel_clone(&args);
+	return -ENOSYS;
 }
 #endif
 

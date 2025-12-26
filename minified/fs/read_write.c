@@ -455,16 +455,17 @@ static ssize_t do_writev(unsigned long fd, const struct iovec __user *vec,
 	return -ENOSYS;
 }
 
+/* Stub: readv/writev not needed for Hello World */
 SYSCALL_DEFINE3(readv, unsigned long, fd, const struct iovec __user *, vec,
 		unsigned long, vlen)
 {
-	return do_readv(fd, vec, vlen, 0);
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE3(writev, unsigned long, fd, const struct iovec __user *, vec,
 		unsigned long, vlen)
 {
-	return do_writev(fd, vec, vlen, 0);
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE5(preadv, unsigned long, fd, const struct iovec __user *, vec,

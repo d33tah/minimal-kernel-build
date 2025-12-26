@@ -261,11 +261,6 @@ static void init_once(void *foo)
 	inode_init_once(inode);
 }
 
-void __iget(struct inode *inode)
-{
-	atomic_inc(&inode->i_count);
-}
-
 void ihold(struct inode *inode)
 {
 	WARN_ON(atomic_inc_return(&inode->i_count) < 2);
@@ -494,17 +489,6 @@ struct inode *new_inode(struct super_block *sb)
 	if (inode)
 		inode_sb_list_add(inode);
 	return inode;
-}
-
-void unlock_new_inode(struct inode *inode)
-{
-	lockdep_annotate_inode_mutex_key(inode);
-	spin_lock(&inode->i_lock);
-	WARN_ON(!(inode->i_state & I_NEW));
-	inode->i_state &= ~I_NEW & ~I_CREATING;
-	smp_mb();
-	wake_up_bit(&inode->i_state, __I_NEW);
-	spin_unlock(&inode->i_lock);
 }
 
 /* Used by ramfs */

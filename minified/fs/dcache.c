@@ -1049,13 +1049,6 @@ static void __d_rehash(struct dentry *entry)
 	hlist_bl_unlock(b);
 }
 
-void d_rehash(struct dentry *entry)
-{
-	spin_lock(&entry->d_lock);
-	__d_rehash(entry);
-	spin_unlock(&entry->d_lock);
-}
-
 static inline unsigned start_dir_add(struct inode *dir)
 {
 	for (;;) {

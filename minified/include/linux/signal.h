@@ -251,10 +251,6 @@ extern struct kmem_cache *sighand_cachep;
 #define SIG_KERNEL_ONLY_MASK (\
 	rt_sigmask(SIGKILL)   |  rt_sigmask(SIGSTOP))
 
-#define SIG_KERNEL_STOP_MASK (\
-	rt_sigmask(SIGSTOP)   |  rt_sigmask(SIGTSTP)   | \
-	rt_sigmask(SIGTTIN)   |  rt_sigmask(SIGTTOU)   )
-
 #define SIG_KERNEL_IGNORE_MASK (\
         rt_sigmask(SIGCONT)   |  rt_sigmask(SIGCHLD)   | \
 	rt_sigmask(SIGWINCH)  |  rt_sigmask(SIGURG)    )

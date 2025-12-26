@@ -116,8 +116,6 @@ do {									\
 #define lock_map_release(l)			lock_release(l, _THIS_IP_)
 
 # define might_lock(lock) do { } while (0)
-# define might_lock_read(lock) do { } while (0)
-# define might_lock_nested(lock, subclass) do { } while (0)
 
 # define lockdep_assert_irqs_enabled() do { } while (0)
 # define lockdep_assert_irqs_disabled() do { } while (0)

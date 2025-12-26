@@ -46,10 +46,6 @@ struct apm_bios_info {
 	__u16	dseg_len;
 };
 
-#define APM_CS		(GDT_ENTRY_APMBIOS_BASE * 8)
-#define APM_CS_16	(APM_CS + 8)
-#define APM_DS		(APM_CS_16 + 8)
-/* APM_*_SUPPORT, APM_BIOS_* - unused */
 
 struct apm_info {
 	struct apm_bios_info	bios;

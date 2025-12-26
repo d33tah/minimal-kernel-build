@@ -1875,32 +1875,6 @@ struct file *do_filp_open(int dfd, struct filename *pathname,
 	return filp;
 }
 
-struct file *do_file_open_root(const struct path *root, const char *name,
-			       const struct open_flags *op)
-{
-	struct nameidata nd;
-	struct file *file;
-	struct filename *filename;
-	int flags = op->lookup_flags;
-
-	if (d_is_symlink(root->dentry) && op->intent & LOOKUP_OPEN)
-		return ERR_PTR(-ELOOP);
-
-	filename = getname_kernel(name);
-	if (IS_ERR(filename))
-		return ERR_CAST(filename);
-
-	set_nameidata(&nd, -1, filename, root);
-	file = path_openat(&nd, op, flags | LOOKUP_RCU);
-	if (unlikely(file == ERR_PTR(-ECHILD)))
-		file = path_openat(&nd, op, flags);
-	if (unlikely(file == ERR_PTR(-ESTALE)))
-		file = path_openat(&nd, op, flags | LOOKUP_REVAL);
-	restore_nameidata();
-	putname(filename);
-	return file;
-}
-
 static struct dentry *filename_create(int dfd, struct filename *name,
 				      struct path *path,
 				      unsigned int lookup_flags)

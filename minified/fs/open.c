@@ -390,27 +390,6 @@ int vfs_open(const struct path *path, struct file *file)
 	return do_dentry_open(file, d_backing_inode(path->dentry), NULL);
 }
 
-struct file *dentry_open(const struct path *path, int flags,
-			 const struct cred *cred)
-{
-	int error;
-	struct file *f;
-
-	validate_creds(cred);
-
-	BUG_ON(!path->mnt);
-
-	f = alloc_empty_file(flags, cred);
-	if (!IS_ERR(f)) {
-		error = vfs_open(path, f);
-		if (error) {
-			fput(f);
-			f = ERR_PTR(error);
-		}
-	}
-	return f;
-}
-
 #define WILL_CREATE(flags) (flags & (O_CREAT | __O_TMPFILE))
 #define O_PATH_FLAGS (O_DIRECTORY | O_NOFOLLOW | O_PATH | O_CLOEXEC)
 
@@ -543,41 +522,6 @@ struct file *filp_open(const char *filename, int flags, umode_t mode)
 	return file;
 }
 
-static long do_sys_openat2(int dfd, const char __user *filename,
-			   struct open_how *how)
-{
-	struct open_flags op;
-	int fd = build_open_flags(how, &op);
-	struct filename *tmp;
-
-	if (fd)
-		return fd;
-
-	tmp = getname(filename);
-	if (IS_ERR(tmp))
-		return PTR_ERR(tmp);
-
-	fd = get_unused_fd_flags(how->flags);
-	if (fd >= 0) {
-		struct file *f = do_filp_open(dfd, tmp, &op);
-		if (IS_ERR(f)) {
-			put_unused_fd(fd);
-			fd = PTR_ERR(f);
-		} else {
-			fsnotify_open(f);
-			fd_install(fd, f);
-		}
-	}
-	putname(tmp);
-	return fd;
-}
-
-long do_sys_open(int dfd, const char __user *filename, int flags, umode_t mode)
-{
-	struct open_how how = build_open_how(flags, mode);
-	return do_sys_openat2(dfd, filename, &how);
-}
-
 /* Stub: open syscalls */
 SYSCALL_DEFINE3(open, const char __user *, filename, int, flags, umode_t, mode)
 {
@@ -637,13 +581,6 @@ SYSCALL_DEFINE0(vhangup)
 {
 	/* Stub: vhangup not needed for minimal kernel */
 	return -EPERM;
-}
-
-int generic_file_open(struct inode *inode, struct file *filp)
-{
-	if (!(filp->f_flags & O_LARGEFILE) && i_size_read(inode) > MAX_NON_LFS)
-		return -EOVERFLOW;
-	return 0;
 }
 
 int nonseekable_open(struct inode *inode, struct file *filp)

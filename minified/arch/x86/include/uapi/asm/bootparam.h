@@ -27,11 +27,6 @@
 #define CAN_USE_HEAP	(1<<7)
 
  
-#define XLF_KERNEL_64			(1<<0)
-#define XLF_CAN_BE_LOADED_ABOVE_4G	(1<<1)
-/* XLF_EFI_HANDOVER_32, XLF_EFI_HANDOVER_64, XLF_EFI_KEXEC - unused */
-#define XLF_5LEVEL			(1<<5)
-#define XLF_5LEVEL_ENABLED		(1<<6)
 
 #ifndef __ASSEMBLY__
 

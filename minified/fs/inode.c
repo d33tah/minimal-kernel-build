@@ -881,17 +881,9 @@ struct timespec64 timestamp_truncate(struct timespec64 t, struct inode *inode)
 	return t;
 }
 
+/* Simplified for minimal kernel - fixed timestamp */
 struct timespec64 current_time(struct inode *inode)
 {
-	struct timespec64 now;
-
-	ktime_get_coarse_real_ts64(&now);
-
-	if (unlikely(!inode->i_sb)) {
-		WARN(1,
-		     "current_time() called with uninitialized super_block in the inode");
-		return now;
-	}
-
-	return timestamp_truncate(now, inode);
+	struct timespec64 now = { .tv_sec = 0, .tv_nsec = 0 };
+	return now;
 }

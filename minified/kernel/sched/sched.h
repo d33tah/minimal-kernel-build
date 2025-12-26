@@ -829,11 +829,6 @@ extern void init_cfs_rq(struct cfs_rq *cfs_rq);
 extern void init_rt_rq(struct rt_rq *rt_rq);
 extern void init_dl_rq(struct dl_rq *dl_rq);
 
-/* nohz_balance_exit_idle removed - unused */
-
-static inline void nohz_run_idle_balance(int cpu) { }
-
-
 static inline void cpufreq_update_util(struct rq *rq, unsigned int flags) {}
 
 #ifdef arch_scale_freq_capacity

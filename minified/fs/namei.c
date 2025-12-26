@@ -10,24 +10,14 @@
 #include <linux/fsnotify.h>
 #include <linux/personality.h>
 #include <linux/security.h>
-static inline int ima_file_check(struct file *file, int mask)
-{
-	return 0;
-}
+/* Removed: ima_file_check, devcgroup_inode_permission, devcgroup_inode_mknod
+ * - Always returned 0 (no-op stubs) */
 #include <linux/syscalls.h>
 #include <linux/mount.h>
 #include <linux/audit.h>
 #include <linux/capability.h>
 #include <linux/file.h>
 #include <linux/fcntl.h>
-static inline int devcgroup_inode_permission(struct inode *inode, int mask)
-{
-	return 0;
-}
-static inline int devcgroup_inode_mknod(int mode, dev_t dev)
-{
-	return 0;
-}
 #include <linux/fs_struct.h>
 
 #include <linux/hash.h>
@@ -263,10 +253,6 @@ int inode_permission(struct user_namespace *mnt_userns, struct inode *inode,
 	}
 
 	retval = do_inode_permission(mnt_userns, inode, mask);
-	if (retval)
-		return retval;
-
-	retval = devcgroup_inode_permission(inode, mask);
 	if (retval)
 		return retval;
 
@@ -1804,8 +1790,6 @@ static int do_open(struct nameidata *nd, struct file *file,
 	error = may_open(mnt_userns, &nd->path, acc_mode, open_flag);
 	if (!error && !(file->f_mode & FMODE_OPENED))
 		error = vfs_open(&nd->path, file);
-	if (!error)
-		error = ima_file_check(file, op->acc_mode);
 	if (!error && do_truncate)
 		error = handle_truncate(mnt_userns, file);
 	if (unlikely(error > 0)) {
@@ -2004,10 +1988,6 @@ int vfs_mknod(struct user_namespace *mnt_userns, struct inode *dir,
 
 	if (!dir->i_op->mknod)
 		return -EPERM;
-
-	error = devcgroup_inode_mknod(mode, dev);
-	if (error)
-		return error;
 
 	error = security_inode_mknod(dir, dentry, mode, dev);
 	if (error)

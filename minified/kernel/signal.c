@@ -911,18 +911,11 @@ static int do_sigaltstack(const stack_t *ss, stack_t *oss, unsigned long sp,
 	return 0;
 }
 
+/* Stub: sigaltstack not needed for Hello World */
 SYSCALL_DEFINE2(sigaltstack, const stack_t __user *, uss, stack_t __user *,
 		uoss)
 {
-	stack_t new, old;
-	int err;
-	if (uss && copy_from_user(&new, uss, sizeof(stack_t)))
-		return -EFAULT;
-	err = do_sigaltstack(uss ? &new : NULL, uoss ? &old : NULL,
-			     current_user_stack_pointer(), MINSIGSTKSZ);
-	if (!err && uoss && copy_to_user(uoss, &old, sizeof(stack_t)))
-		err = -EFAULT;
-	return err;
+	return -ENOSYS;
 }
 
 int restore_altstack(const stack_t __user *uss)
@@ -945,23 +938,12 @@ int __save_altstack(stack_t __user *uss, unsigned long sp)
 	return err;
 }
 
+/* Stub: sigpending not needed for Hello World */
 #ifdef __ARCH_WANT_SYS_SIGPENDING
-
 SYSCALL_DEFINE1(sigpending, old_sigset_t __user *, uset)
 {
-	sigset_t set;
-
-	if (sizeof(old_sigset_t) > sizeof(*uset))
-		return -EINVAL;
-
-	do_sigpending(&set);
-
-	if (copy_to_user(uset, &set, sizeof(old_sigset_t)))
-		return -EFAULT;
-
-	return 0;
+	return -ENOSYS;
 }
-
 #endif
 
 #ifdef __ARCH_WANT_SYS_SIGPROCMASK
@@ -1065,66 +1047,30 @@ SYSCALL_DEFINE3(sigaction, int, sig, const struct old_sigaction __user *, act,
 	return ret;
 }
 
+/* Stub: old signal() syscall not needed for Hello World */
 #ifdef __ARCH_WANT_SYS_SIGNAL
-
 SYSCALL_DEFINE2(signal, int, sig, __sighandler_t, handler)
 {
-	struct k_sigaction new_sa, old_sa;
-	int ret;
-
-	new_sa.sa.sa_handler = handler;
-	new_sa.sa.sa_flags = SA_ONESHOT | SA_NOMASK;
-	sigemptyset(&new_sa.sa.sa_mask);
-
-	ret = do_sigaction(sig, &new_sa, &old_sa);
-
-	return ret ? ret : (unsigned long)old_sa.sa.sa_handler;
+	return -ENOSYS;
 }
 #endif
 
+/* Stub: pause and sigsuspend not needed for Hello World */
 #ifdef __ARCH_WANT_SYS_PAUSE
-
 SYSCALL_DEFINE0(pause)
 {
-	while (!signal_pending(current)) {
-		__set_current_state(TASK_INTERRUPTIBLE);
-		schedule();
-	}
-	return -ERESTARTNOHAND;
+	return -ENOSYS;
 }
-
 #endif
-
-static int sigsuspend(sigset_t *set)
-{
-	current->saved_sigmask = current->blocked;
-	set_current_blocked(set);
-
-	while (!signal_pending(current)) {
-		__set_current_state(TASK_INTERRUPTIBLE);
-		schedule();
-	}
-	set_restore_sigmask();
-	return -ERESTARTNOHAND;
-}
 
 SYSCALL_DEFINE2(rt_sigsuspend, sigset_t __user *, unewset, size_t, sigsetsize)
 {
-	sigset_t newset;
-
-	if (sigsetsize != sizeof(sigset_t))
-		return -EINVAL;
-
-	if (copy_from_user(&newset, unewset, sizeof(newset)))
-		return -EFAULT;
-	return sigsuspend(&newset);
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE3(sigsuspend, int, unused1, int, unused2, old_sigset_t, mask)
 {
-	sigset_t blocked;
-	siginitset(&blocked, mask);
-	return sigsuspend(&blocked);
+	return -ENOSYS;
 }
 
 static inline void siginfo_buildtime_checks(void)

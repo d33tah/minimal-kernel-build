@@ -603,36 +603,20 @@ long do_sys_open(int dfd, const char __user *filename, int flags, umode_t mode)
 	return do_sys_openat2(dfd, filename, &how);
 }
 
+/* Stub: open syscalls */
 SYSCALL_DEFINE3(open, const char __user *, filename, int, flags, umode_t, mode)
 {
-	return do_sys_open(AT_FDCWD, filename, flags, mode);
+	return -ENOSYS;
 }
-
 SYSCALL_DEFINE4(openat, int, dfd, const char __user *, filename, int, flags,
 		umode_t, mode)
 {
-	return do_sys_open(dfd, filename, flags, mode);
+	return -ENOSYS;
 }
-
 SYSCALL_DEFINE4(openat2, int, dfd, const char __user *, filename,
 		struct open_how __user *, how, size_t, usize)
 {
-	int err;
-	struct open_how tmp;
-
-	BUILD_BUG_ON(sizeof(struct open_how) < OPEN_HOW_SIZE_VER0);
-	BUILD_BUG_ON(sizeof(struct open_how) != OPEN_HOW_SIZE_LATEST);
-
-	if (unlikely(usize < OPEN_HOW_SIZE_VER0))
-		return -EINVAL;
-
-	err = copy_struct_from_user(&tmp, sizeof(tmp), how, usize);
-	if (err)
-		return err;
-
-	audit_openat2_how(&tmp);
-
-	return do_sys_openat2(dfd, filename, &tmp);
+	return -ENOSYS;
 }
 
 /* Stub: creat not needed for Hello World */
@@ -661,16 +645,10 @@ int filp_close(struct file *filp, fl_owner_t id)
 	return retval;
 }
 
+/* Stub: close syscall */
 SYSCALL_DEFINE1(close, unsigned int, fd)
 {
-	int retval = close_fd(fd);
-
-	if (unlikely(retval == -ERESTARTSYS || retval == -ERESTARTNOINTR ||
-		     retval == -ERESTARTNOHAND ||
-		     retval == -ERESTART_RESTARTBLOCK))
-		retval = -EINTR;
-
-	return retval;
+	return -ENOSYS;
 }
 
 /* Stub: close_range not needed for Hello World */

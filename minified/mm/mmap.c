@@ -118,33 +118,10 @@ static struct vm_area_struct *remove_vma(struct vm_area_struct *vma)
 static int do_brk_flags(unsigned long addr, unsigned long request,
 			unsigned long flags, struct list_head *uf);
 
-/* Stub: simplified brk for Hello World - just update brk pointer */
+/* Stub: brk syscall */
 SYSCALL_DEFINE1(brk, unsigned long, brk)
 {
-	struct mm_struct *mm = current->mm;
-	unsigned long retval, newbrk, oldbrk;
-
-	if (mmap_write_lock_killable(mm))
-		return -EINTR;
-
-	retval = mm->brk;
-	if (brk < mm->start_brk)
-		goto out;
-
-	newbrk = PAGE_ALIGN(brk);
-	oldbrk = PAGE_ALIGN(mm->brk);
-
-	/* Simple case: just update brk */
-	if (newbrk > oldbrk) {
-		if (do_brk_flags(oldbrk, newbrk - oldbrk, 0, NULL) < 0)
-			goto out;
-	}
-	mm->brk = brk;
-	retval = brk;
-
-out:
-	mmap_write_unlock(mm);
-	return retval;
+	return -ENOSYS;
 }
 
 static inline unsigned long vma_compute_gap(struct vm_area_struct *vma)
@@ -747,11 +724,12 @@ out_fput:
 	return retval;
 }
 
+/* Stub: mmap syscalls - keep ksys_mmap_pgoff for kernel use */
 SYSCALL_DEFINE6(mmap_pgoff, unsigned long, addr, unsigned long, len,
 		unsigned long, prot, unsigned long, flags, unsigned long, fd,
 		unsigned long, pgoff)
 {
-	return ksys_mmap_pgoff(addr, len, prot, flags, fd, pgoff);
+	return -ENOSYS;
 }
 
 #ifdef __ARCH_WANT_SYS_OLD_MMAP
@@ -763,18 +741,9 @@ struct mmap_arg_struct {
 	unsigned long fd;
 	unsigned long offset;
 };
-
 SYSCALL_DEFINE1(old_mmap, struct mmap_arg_struct __user *, arg)
 {
-	struct mmap_arg_struct a;
-
-	if (copy_from_user(&a, arg, sizeof(a)))
-		return -EFAULT;
-	if (offset_in_page(a.offset))
-		return -EINVAL;
-
-	return ksys_mmap_pgoff(a.addr, a.len, a.prot, a.flags, a.fd,
-			       a.offset >> PAGE_SHIFT);
+	return -ENOSYS;
 }
 #endif
 
@@ -1381,10 +1350,10 @@ int vm_munmap(unsigned long start, size_t len)
 	return __vm_munmap(start, len, false);
 }
 
+/* Stub: munmap syscall */
 SYSCALL_DEFINE2(munmap, unsigned long, addr, size_t, len)
 {
-	addr = untagged_addr(addr);
-	return __vm_munmap(addr, len, true);
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE5(remap_file_pages, unsigned long, start, unsigned long, size,

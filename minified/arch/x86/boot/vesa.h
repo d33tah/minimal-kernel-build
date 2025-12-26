@@ -17,10 +17,10 @@ struct vesa_general_info {
 	far_ptr video_mode_ptr;	 
 	u16 total_memory;	 
 
-	u8 reserved[236];	 
+	u8 reserved[236];
 } __attribute__ ((packed));
 
-#define VESA_MAGIC ('V' + ('E' << 8) + ('S' << 16) + ('A' << 24))
+/* VESA_MAGIC removed - unused */
 
 struct vesa_mode_info {
 	u16 mode_attr;		 

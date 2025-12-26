@@ -28,7 +28,7 @@ typedef struct user_i387_struct elf_fpregset_t;
 #define R_386_RELATIVE	8
 #define R_386_GOTOFF	9
 #define R_386_GOTPC	10
-#define R_386_NUM	11
+/* R_386_NUM removed - unused */
 
 #define ELF_CLASS	ELFCLASS32
 #define ELF_DATA	ELFDATA2LSB
@@ -56,28 +56,7 @@ extern unsigned int vdso32_enabled;
 	_r->ax = 0;				\
 } while (0)
 
- 
-
-#define ELF_CORE_COPY_REGS(pr_reg, regs)	\
-do {						\
-	pr_reg[0] = regs->bx;			\
-	pr_reg[1] = regs->cx;			\
-	pr_reg[2] = regs->dx;			\
-	pr_reg[3] = regs->si;			\
-	pr_reg[4] = regs->di;			\
-	pr_reg[5] = regs->bp;			\
-	pr_reg[6] = regs->ax;			\
-	pr_reg[7] = regs->ds;			\
-	pr_reg[8] = regs->es;			\
-	pr_reg[9] = regs->fs;			\
-	savesegment(gs, pr_reg[10]);		\
-	pr_reg[11] = regs->orig_ax;		\
-	pr_reg[12] = regs->ip;			\
-	pr_reg[13] = regs->cs;			\
-	pr_reg[14] = regs->flags;		\
-	pr_reg[15] = regs->sp;			\
-	pr_reg[16] = regs->ss;			\
-} while (0);
+/* ELF_CORE_COPY_REGS removed - unused */
 
 #define ELF_PLATFORM	(utsname()->machine)
 #define set_personality_64bit()	do { } while (0)

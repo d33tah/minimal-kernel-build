@@ -242,13 +242,6 @@ extern void exit_signals(struct task_struct *tsk);
 
 extern struct kmem_cache *sighand_cachep;
 
-
-#ifdef SIGEMT
-#define SIGEMT_MASK	rt_sigmask(SIGEMT)
-#else
-#define SIGEMT_MASK	0
-#endif
-
 /* SIGRTMIN == BITS_PER_LONG == 32 */
 #define rt_sigmask(sig)	sigmask(sig)
 
@@ -262,26 +255,12 @@ extern struct kmem_cache *sighand_cachep;
 	rt_sigmask(SIGSTOP)   |  rt_sigmask(SIGTSTP)   | \
 	rt_sigmask(SIGTTIN)   |  rt_sigmask(SIGTTOU)   )
 
-#define SIG_KERNEL_COREDUMP_MASK (\
-        rt_sigmask(SIGQUIT)   |  rt_sigmask(SIGILL)    | \
-	rt_sigmask(SIGTRAP)   |  rt_sigmask(SIGABRT)   | \
-        rt_sigmask(SIGFPE)    |  rt_sigmask(SIGSEGV)   | \
-	rt_sigmask(SIGBUS)    |  rt_sigmask(SIGSYS)    | \
-        rt_sigmask(SIGXCPU)   |  rt_sigmask(SIGXFSZ)   | \
-	SIGEMT_MASK				       )
-
 #define SIG_KERNEL_IGNORE_MASK (\
         rt_sigmask(SIGCONT)   |  rt_sigmask(SIGCHLD)   | \
 	rt_sigmask(SIGWINCH)  |  rt_sigmask(SIGURG)    )
 
-
 #define sig_kernel_only(sig)		siginmask(sig, SIG_KERNEL_ONLY_MASK)
-#define sig_kernel_coredump(sig)	siginmask(sig, SIG_KERNEL_COREDUMP_MASK)
 #define sig_kernel_ignore(sig)		siginmask(sig, SIG_KERNEL_IGNORE_MASK)
-
-#define sig_fatal(t, signr) \
-	(!siginmask(signr, SIG_KERNEL_IGNORE_MASK|SIG_KERNEL_STOP_MASK) && \
-	 (t)->sighand->action[(signr)-1].sa.sa_handler == SIG_DFL)
 
 void signals_init(void);
 

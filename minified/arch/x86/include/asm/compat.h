@@ -97,31 +97,6 @@ typedef u32 compat_dev_t;
 typedef s32 compat_ipc_pid_t;
 #endif
 
-#ifndef compat_fsid_t
-typedef __kernel_fsid_t	compat_fsid_t;
-#endif
-
-#ifndef compat_statfs
-struct compat_statfs {
-	compat_int_t	f_type;
-	compat_int_t	f_bsize;
-	compat_int_t	f_blocks;
-	compat_int_t	f_bfree;
-	compat_int_t	f_bavail;
-	compat_int_t	f_files;
-	compat_int_t	f_ffree;
-	compat_fsid_t	f_fsid;
-	compat_int_t	f_namelen;
-	compat_int_t	f_frsize;
-	compat_int_t	f_flags;
-	compat_int_t	f_spare[4];
-};
-#endif
-
 /* end asm-generic/compat.h */
-
-#define COMPAT_UTS_MACHINE	"i686\0\0"
-
-#define __ARCH_NEED_COMPAT_FLOCK64_PACKED
 
 #endif  

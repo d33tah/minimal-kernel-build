@@ -17,9 +17,6 @@
 
 #define _RET_IP_		((unsigned long)__builtin_return_address(0))
 
-#define PERF_ALIGN(x, a)	__PERF_ALIGN_MASK(x, (typeof(x))(a)-1)
-#define __PERF_ALIGN_MASK(x, mask)	(((x)+(mask))&~(mask))
-
 #ifndef offsetof
 #define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
 #endif

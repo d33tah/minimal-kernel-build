@@ -116,10 +116,6 @@ static inline void set_page_refcounted(struct page *page)
 
 extern unsigned long highest_memmap_pfn;
 
- 
-#define MAX_RECLAIM_RETRIES 16
-
- 
 pgprot_t __init early_memremap_pgprot_adjust(resource_size_t phys_addr,
 					unsigned long size, pgprot_t prot);
 
@@ -318,10 +314,9 @@ unsigned int reclaim_clean_pages_from_list(struct zone *zone,
  
 #define ALLOC_OOM		0x08
 
-#define ALLOC_HARDER		 0x10  
+#define ALLOC_HARDER		 0x10
 #define ALLOC_HIGH		 0x20
 #define ALLOC_CPUSET		 0x40
-#define ALLOC_CMA		 0x80
 #define ALLOC_KSWAPD		0x800  
 
 enum ttu_flags;

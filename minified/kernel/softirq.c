@@ -136,7 +136,7 @@ asmlinkage __visible void do_softirq(void)
 	local_irq_restore(flags);
 }
 
-#define MAX_SOFTIRQ_TIME msecs_to_jiffies(2)
+/* Simplified for minimal kernel - no time-based limiting */
 #define MAX_SOFTIRQ_RESTART 10
 
 static inline bool lockdep_softirq_start(void)
@@ -149,7 +149,6 @@ static inline void lockdep_softirq_end(bool in_hardirq)
 
 asmlinkage __visible void __softirq_entry __do_softirq(void)
 {
-	unsigned long end = jiffies + MAX_SOFTIRQ_TIME;
 	unsigned long old_flags = current->flags;
 	int max_restart = MAX_SOFTIRQ_RESTART;
 	struct softirq_action *h;
@@ -204,8 +203,8 @@ restart:
 
 	pending = local_softirq_pending();
 	if (pending) {
-		if (time_before(jiffies, end) && !need_resched() &&
-		    --max_restart)
+		/* Simplified: only count-based restart, no time checking */
+		if (!need_resched() && --max_restart)
 			goto restart;
 
 		wakeup_softirqd();

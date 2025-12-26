@@ -6,7 +6,6 @@
 #include <linux/swapops.h>
 #include <linux/interrupt.h>
 #include <linux/pagemap.h>
-#include <linux/jiffies.h>
 #include <linux/memblock.h>
 #include <linux/compiler.h>
 #include <linux/kernel.h>
@@ -28,7 +27,6 @@
 #include <linux/mempolicy.h>
 #include <linux/memremap.h>
 #include <linux/stop_machine.h>
-#include <linux/random.h>
 #include <linux/sort.h>
 #include <linux/pfn.h>
 #include <linux/backing-dev.h>

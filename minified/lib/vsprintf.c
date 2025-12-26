@@ -22,8 +22,7 @@ static inline const char *errname(int err)
 #include <linux/uuid.h>
 #include <linux/of.h>
 
-#include <linux/random.h>
-#include <linux/siphash.h>
+/* Removed: linux/random.h, linux/siphash.h - ptr hashing disabled */
 
 #define IPV6_FLOWINFO_MASK cpu_to_be32(0x0FFFFFFF)
 
@@ -494,66 +493,11 @@ static char *pointer_string(char *buf, char *end, const void *ptr,
 	return number(buf, end, (unsigned long int)ptr, spec);
 }
 
-static int debug_boot_weak_hash __ro_after_init;
-
-static DEFINE_STATIC_KEY_FALSE(filled_random_ptr_key);
-
-static void enable_ptr_key_workfn(struct work_struct *work)
-{
-	static_branch_enable(&filled_random_ptr_key);
-}
-
-static inline int ptr_to_hashval(const void *ptr, unsigned long *hashval_out)
-{
-	static siphash_key_t ptr_key __read_mostly;
-	unsigned long hashval;
-
-	if (!static_branch_likely(&filled_random_ptr_key)) {
-		static bool filled = false;
-		static DEFINE_SPINLOCK(filling);
-		static DECLARE_WORK(enable_ptr_key_work, enable_ptr_key_workfn);
-		unsigned long flags;
-
-		if (!system_unbound_wq || !rng_is_initialized() ||
-		    !spin_trylock_irqsave(&filling, flags))
-			return -EAGAIN;
-
-		if (!filled) {
-			get_random_bytes(&ptr_key, sizeof(ptr_key));
-			queue_work(system_unbound_wq, &enable_ptr_key_work);
-			filled = true;
-		}
-		spin_unlock_irqrestore(&filling, flags);
-	}
-
-	hashval = (unsigned long)siphash_1u32((u32)ptr, &ptr_key);
-	*hashval_out = hashval;
-	return 0;
-}
-
+/* Simplified for minimal kernel - no pointer hashing */
 static char *ptr_to_id(char *buf, char *end, const void *ptr,
 		       struct printf_spec spec)
 {
-	const char *str = sizeof(ptr) == 8 ? "(____ptrval____)" : "(ptrval)";
-	unsigned long hashval;
-	int ret;
-
-	if (IS_ERR_OR_NULL(ptr))
-		return pointer_string(buf, end, ptr, spec);
-
-	if (unlikely(debug_boot_weak_hash)) {
-		hashval = hash_long((unsigned long)ptr, 32);
-		return pointer_string(buf, end, (const void *)hashval, spec);
-	}
-
-	ret = ptr_to_hashval(ptr, &hashval);
-	if (ret) {
-		spec.field_width = 2 * sizeof(ptr);
-
-		return error_string(buf, end, str, spec);
-	}
-
-	return pointer_string(buf, end, (const void *)hashval, spec);
+	return pointer_string(buf, end, ptr, spec);
 }
 
 static char *default_pointer(char *buf, char *end, const void *ptr,

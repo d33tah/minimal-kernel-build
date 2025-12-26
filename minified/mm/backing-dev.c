@@ -103,7 +103,7 @@ static int wb_init(struct bdi_writeback *wb, struct backing_dev_info *bdi,
 	memset(wb, 0, sizeof(*wb));
 
 	wb->bdi = bdi;
-	wb->last_old_flush = jiffies;
+	wb->last_old_flush = 0; /* Simplified for minimal kernel */
 	INIT_LIST_HEAD(&wb->b_dirty);
 	INIT_LIST_HEAD(&wb->b_io);
 	INIT_LIST_HEAD(&wb->b_more_io);
@@ -111,7 +111,7 @@ static int wb_init(struct bdi_writeback *wb, struct backing_dev_info *bdi,
 	spin_lock_init(&wb->list_lock);
 
 	atomic_set(&wb->writeback_inodes, 0);
-	wb->bw_time_stamp = jiffies;
+	wb->bw_time_stamp = 0; /* Simplified for minimal kernel */
 	wb->balanced_dirty_ratelimit = INIT_BW;
 	wb->dirty_ratelimit = INIT_BW;
 	wb->write_bandwidth = INIT_BW;
@@ -121,7 +121,7 @@ static int wb_init(struct bdi_writeback *wb, struct backing_dev_info *bdi,
 	INIT_LIST_HEAD(&wb->work_list);
 	INIT_DELAYED_WORK(&wb->dwork, wb_workfn);
 	INIT_DELAYED_WORK(&wb->bw_dwork, wb_update_bandwidth_workfn);
-	wb->dirty_sleep = jiffies;
+	wb->dirty_sleep = 0; /* Simplified for minimal kernel */
 
 	err = fprop_local_init_percpu(&wb->completions, gfp);
 	if (err)

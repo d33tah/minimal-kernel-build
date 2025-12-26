@@ -17,7 +17,7 @@
 #include <linux/userfaultfd_k.h>
 #include <linux/elf.h>
 #include <linux/personality.h>
-#include <linux/random.h>
+/* Removed: linux/random.h - randomization disabled */
 
 #include <linux/sizes.h>
 #include <linux/compat.h>
@@ -152,38 +152,15 @@ void __vma_unlink_list(struct mm_struct *mm, struct vm_area_struct *vma)
 		next->vm_prev = prev;
 }
 
-#ifndef STACK_RND_MASK
-#define STACK_RND_MASK (0x7ff >> (PAGE_SHIFT - 12))
-#endif
-
+/* Randomization disabled for minimal kernel - no ASLR needed */
 unsigned long randomize_stack_top(unsigned long stack_top)
 {
-	unsigned long random_variable = 0;
-
-	if (current->flags & PF_RANDOMIZE) {
-		random_variable = get_random_long();
-		random_variable &= STACK_RND_MASK;
-		random_variable <<= PAGE_SHIFT;
-	}
-	return PAGE_ALIGN(stack_top) - random_variable;
+	return PAGE_ALIGN(stack_top);
 }
 
 unsigned long randomize_page(unsigned long start, unsigned long range)
 {
-	if (!PAGE_ALIGNED(start)) {
-		range -= PAGE_ALIGN(start) - start;
-		start = PAGE_ALIGN(start);
-	}
-
-	if (start > ULONG_MAX - range)
-		range = ULONG_MAX - start;
-
-	range >>= PAGE_SHIFT;
-
-	if (range == 0)
-		return start;
-
-	return start + (get_random_long() % range << PAGE_SHIFT);
+	return PAGE_ALIGNED(start) ? start : PAGE_ALIGN(start);
 }
 
 #if defined(CONFIG_MMU) && !defined(HAVE_ARCH_PICK_MMAP_LAYOUT)

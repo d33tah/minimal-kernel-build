@@ -21,7 +21,6 @@
 #include <linux/stacktrace.h>
 
 #include <linux/memcontrol.h>
-#include <linux/random.h>
 #include <linux/sort.h>
 
 #include <linux/debugfs.h>
@@ -351,13 +350,8 @@ static inline struct slab *alloc_slab_page(gfp_t flags, int node,
 	return slab;
 }
 
-static inline int init_cache_random_seq(struct kmem_cache *s)
-{
-	return 0;
-}
-static inline void init_freelist_randomization(void)
-{
-}
+/* Removed: init_cache_random_seq, init_freelist_randomization
+ * - Slab freelist randomization disabled for minimal kernel */
 
 static struct slab *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 {
@@ -994,7 +988,6 @@ static void free_kmem_cache_nodes(struct kmem_cache *s)
 
 void __kmem_cache_release(struct kmem_cache *s)
 {
-	cache_random_seq_destroy(s);
 	free_percpu(s->cpu_slab);
 	free_kmem_cache_nodes(s);
 }
@@ -1099,11 +1092,6 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 	s->min_partial = max_t(unsigned long, MIN_PARTIAL, s->min_partial);
 
 	set_cpu_partial(s);
-
-	if (slab_state >= UP) {
-		if (init_cache_random_seq(s))
-			goto error;
-	}
 
 	if (!init_kmem_cache_nodes(s))
 		goto error;
@@ -1242,8 +1230,6 @@ void __init kmem_cache_init(void)
 
 	setup_kmalloc_cache_index_table();
 	create_kmalloc_caches(0);
-
-	init_freelist_randomization();
 
 	cpuhp_setup_state_nocalls(CPUHP_SLUB_DEAD, "slub:dead", NULL,
 				  slub_cpu_dead);

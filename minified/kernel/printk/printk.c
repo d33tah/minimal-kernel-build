@@ -7,7 +7,6 @@
 #include <linux/tty_driver.h>
 #include <linux/console.h>
 #include <linux/init.h>
-#include <linux/jiffies.h>
 #include <linux/nmi.h>
 #include <linux/module.h>
 #include <linux/moduleparam.h>

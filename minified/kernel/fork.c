@@ -38,7 +38,6 @@
 #include <linux/seccomp.h>
 #include <linux/swap.h>
 #include <linux/syscalls.h>
-#include <linux/jiffies.h>
 #include <linux/futex.h>
 #include <linux/compat.h>
 #include <linux/kthread.h>
@@ -1326,8 +1325,9 @@ copy_process(struct pid *pid, int trace, int node,
 
 	sched_cgroup_fork(p, args);
 
-	p->start_time = ktime_get_ns();
-	p->start_boottime = ktime_get_boottime_ns();
+	/* Simplified for minimal kernel - no accurate time needed */
+	p->start_time = 0;
+	p->start_boottime = 0;
 
 	write_lock_irq(&tasklist_lock);
 

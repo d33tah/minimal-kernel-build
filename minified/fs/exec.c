@@ -1330,11 +1330,12 @@ void set_dumpable(struct mm_struct *mm, int value)
 	set_mask_bits(&mm->flags, MMF_DUMPABLE_MASK, value);
 }
 
+/* Stub: execve syscall not needed - kernel uses kernel_execve for init */
 SYSCALL_DEFINE3(execve, const char __user *, filename,
 		const char __user *const __user *, argv,
 		const char __user *const __user *, envp)
 {
-	return do_execve(getname(filename), argv, envp);
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE5(execveat, int, fd, const char __user *, filename,

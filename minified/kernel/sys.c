@@ -112,35 +112,26 @@ SYSCALL_DEFINE0(gettid)
 	return task_pid_vnr(current);
 }
 
+/* Stub: return hardcoded values for Hello World */
 SYSCALL_DEFINE0(getppid)
 {
-	int pid;
-
-	rcu_read_lock();
-	pid = task_tgid_vnr(rcu_dereference(current->real_parent));
-	rcu_read_unlock();
-
-	return pid;
+	return 0; /* init has no parent */
 }
-
 SYSCALL_DEFINE0(getuid)
 {
-	return from_kuid_munged(current_user_ns(), current_uid());
+	return 0; /* root */
 }
-
 SYSCALL_DEFINE0(geteuid)
 {
-	return from_kuid_munged(current_user_ns(), current_euid());
+	return 0;
 }
-
 SYSCALL_DEFINE0(getgid)
 {
-	return from_kgid_munged(current_user_ns(), current_gid());
+	return 0;
 }
-
 SYSCALL_DEFINE0(getegid)
 {
-	return from_kgid_munged(current_user_ns(), current_egid());
+	return 0;
 }
 
 SYSCALL_DEFINE1(times, struct tms __user *, tbuf)

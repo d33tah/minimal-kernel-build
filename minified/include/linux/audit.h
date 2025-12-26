@@ -56,7 +56,4 @@ static inline void audit_bprm(struct linux_binprm *bprm)
 static inline void audit_mmap_fd(int fd, int flags)
 { }
 
-static inline void audit_openat2_how(struct open_how *how)
-{ }
-
 #endif

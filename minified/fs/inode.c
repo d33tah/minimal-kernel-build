@@ -557,207 +557,34 @@ retry:
 	}
 }
 
-static int relatime_need_update(struct vfsmount *mnt, struct inode *inode,
-				struct timespec64 now)
-{
-	if (!(mnt->mnt_flags & MNT_RELATIME))
-		return 1;
-
-	if (timespec64_compare(&inode->i_mtime, &inode->i_atime) >= 0)
-		return 1;
-
-	if (timespec64_compare(&inode->i_ctime, &inode->i_atime) >= 0)
-		return 1;
-
-	if ((long)(now.tv_sec - inode->i_atime.tv_sec) >= 24 * 60 * 60)
-		return 1;
-
-	return 0;
-}
-
-static int generic_update_time(struct inode *inode, struct timespec64 *time,
-			       int flags)
-{
-	int dirty_flags = 0;
-
-	if (flags & (S_ATIME | S_CTIME | S_MTIME)) {
-		if (flags & S_ATIME)
-			inode->i_atime = *time;
-		if (flags & S_CTIME)
-			inode->i_ctime = *time;
-		if (flags & S_MTIME)
-			inode->i_mtime = *time;
-
-		if (inode->i_sb->s_flags & SB_LAZYTIME)
-			dirty_flags |= I_DIRTY_TIME;
-		else
-			dirty_flags |= I_DIRTY_SYNC;
-	}
-
-	if ((flags & S_VERSION) && inode_maybe_inc_iversion(inode, false))
-		dirty_flags |= I_DIRTY_SYNC;
-
-	__mark_inode_dirty(inode, dirty_flags);
-	return 0;
-}
-
+/* Stub: timestamps not needed for Hello World */
 int inode_update_time(struct inode *inode, struct timespec64 *time, int flags)
 {
-	if (inode->i_op->update_time)
-		return inode->i_op->update_time(inode, time, flags);
-	return generic_update_time(inode, time, flags);
+	return 0;
 }
 
 bool atime_needs_update(const struct path *path, struct inode *inode)
 {
-	struct vfsmount *mnt = path->mnt;
-	struct timespec64 now;
-
-	if (inode->i_flags & S_NOATIME)
-		return false;
-
-	if (HAS_UNMAPPED_ID(mnt_user_ns(mnt), inode))
-		return false;
-
-	if (IS_NOATIME(inode))
-		return false;
-	if ((inode->i_sb->s_flags & SB_NODIRATIME) && S_ISDIR(inode->i_mode))
-		return false;
-
-	if (mnt->mnt_flags & MNT_NOATIME)
-		return false;
-	if ((mnt->mnt_flags & MNT_NODIRATIME) && S_ISDIR(inode->i_mode))
-		return false;
-
-	now = current_time(inode);
-
-	if (!relatime_need_update(mnt, inode, now))
-		return false;
-
-	if (timespec64_equal(&inode->i_atime, &now))
-		return false;
-
-	return true;
+	return false;
 }
 
 void touch_atime(const struct path *path)
 {
-	struct vfsmount *mnt = path->mnt;
-	struct inode *inode = d_inode(path->dentry);
-	struct timespec64 now;
-
-	if (!atime_needs_update(path, inode))
-		return;
-
-	if (!sb_start_write_trylock(inode->i_sb))
-		return;
-
-	if (__mnt_want_write(mnt) != 0)
-		goto skip_update;
-
-	now = current_time(inode);
-	inode_update_time(inode, &now, S_ATIME);
-	__mnt_drop_write(mnt);
-skip_update:
-	sb_end_write(inode->i_sb);
-}
-
-static int should_remove_suid(struct dentry *dentry)
-{
-	umode_t mode = d_inode(dentry)->i_mode;
-	int kill = 0;
-
-	if (unlikely(mode & S_ISUID))
-		kill = ATTR_KILL_SUID;
-
-	if (unlikely((mode & S_ISGID) && (mode & S_IXGRP)))
-		kill |= ATTR_KILL_SGID;
-
-	if (unlikely(kill && !capable(CAP_FSETID) && S_ISREG(mode)))
-		return kill;
-
-	return 0;
 }
 
 int dentry_needs_remove_privs(struct dentry *dentry)
 {
-	struct inode *inode = d_inode(dentry);
-	int mask = 0;
-	int ret;
-
-	if (IS_NOSEC(inode))
-		return 0;
-
-	mask = should_remove_suid(dentry);
-	ret = security_inode_need_killpriv(dentry);
-	if (ret < 0)
-		return ret;
-	if (ret)
-		mask |= ATTR_KILL_PRIV;
-	return mask;
-}
-
-static int __remove_privs(struct user_namespace *mnt_userns,
-			  struct dentry *dentry, int kill)
-{
-	struct iattr newattrs;
-
-	newattrs.ia_valid = ATTR_FORCE | kill;
-
-	return notify_change(mnt_userns, dentry, &newattrs, NULL);
+	return 0;
 }
 
 int file_remove_privs(struct file *file)
 {
-	struct dentry *dentry = file_dentry(file);
-	struct inode *inode = file_inode(file);
-	int kill;
-	int error = 0;
-
-	if (IS_NOSEC(inode) || !S_ISREG(inode->i_mode))
-		return 0;
-
-	kill = dentry_needs_remove_privs(dentry);
-	if (kill < 0)
-		return kill;
-	if (kill)
-		error = __remove_privs(file_mnt_user_ns(file), dentry, kill);
-	if (!error)
-		inode_has_no_xattr(inode);
-
-	return error;
+	return 0;
 }
 
 int file_update_time(struct file *file)
 {
-	struct inode *inode = file_inode(file);
-	struct timespec64 now;
-	int sync_it = 0;
-	int ret;
-
-	if (IS_NOCMTIME(inode))
-		return 0;
-
-	now = current_time(inode);
-	if (!timespec64_equal(&inode->i_mtime, &now))
-		sync_it = S_MTIME;
-
-	if (!timespec64_equal(&inode->i_ctime, &now))
-		sync_it |= S_CTIME;
-
-	if (IS_I_VERSION(inode) && inode_iversion_need_inc(inode))
-		sync_it |= S_VERSION;
-
-	if (!sync_it)
-		return 0;
-
-	if (__mnt_want_write_file(file))
-		return 0;
-
-	ret = inode_update_time(inode, &now, sync_it);
-	__mnt_drop_write_file(file);
-
-	return ret;
+	return 0;
 }
 
 static __initdata unsigned long ihash_entries;

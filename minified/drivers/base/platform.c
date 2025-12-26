@@ -30,7 +30,6 @@ static inline int of_clk_set_defaults(struct device_node *node,
 	return 0;
 }
 #include <linux/limits.h>
-#include <linux/kmemleak.h>
 #include <linux/types.h>
 #include <linux/dma-map-ops.h>
 

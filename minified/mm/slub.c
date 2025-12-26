@@ -16,7 +16,6 @@
 #include <linux/ctype.h>
 #include <linux/stackdepot.h>
 #include <linux/kallsyms.h>
-#include <linux/kfence.h>
 #include <linux/memory.h>
 #include <linux/math64.h>
 #include <linux/stacktrace.h>
@@ -790,10 +789,6 @@ slab_alloc_node(struct kmem_cache *s, struct list_lru *lru, gfp_t gfpflags,
 	if (!s)
 		return NULL;
 
-	object = kfence_alloc(s, orig_size, gfpflags);
-	if (unlikely(object))
-		goto out;
-
 redo:
 
 	c = raw_cpu_ptr(s->cpu_slab);
@@ -822,7 +817,6 @@ redo:
 	maybe_wipe_obj_freeptr(s, object);
 	init = slab_want_init_on_alloc(gfpflags, s);
 
-out:
 	slab_post_alloc_hook(s, objcg, gfpflags, 1, &object, init);
 
 	return object;

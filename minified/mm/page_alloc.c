@@ -32,7 +32,6 @@
 #include <linux/sort.h>
 #include <linux/pfn.h>
 #include <linux/backing-dev.h>
-#include <linux/kmemleak.h>
 
 #define MEMORY_OFFLINE 0x1
 #define REPORT_FAILURE 0x2

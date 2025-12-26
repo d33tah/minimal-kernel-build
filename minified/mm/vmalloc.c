@@ -18,7 +18,6 @@
 #include <linux/io.h>
 #include <linux/rcupdate.h>
 #include <linux/pfn.h>
-#include <linux/kmemleak.h>
 #include <linux/atomic.h>
 #include <linux/compiler.h>
 #include <linux/memcontrol.h>
@@ -921,8 +920,6 @@ alloc_vmap_area(unsigned long size, unsigned long align, unsigned long vstart,
 	if (unlikely(!va))
 		return ERR_PTR(-ENOMEM);
 
-	kmemleak_scan_area(&va->rb_node, SIZE_MAX, gfp_mask);
-
 retry:
 	preload_this_cpu_lock(&free_vmap_area_lock, gfp_mask, node);
 	addr = __alloc_vmap_area(size, align, vstart, vend);
@@ -1524,10 +1521,6 @@ again:
 		goto fail;
 
 	clear_vm_uninitialized_flag(area);
-
-	size = PAGE_ALIGN(size);
-	if (!(vm_flags & VM_DEFER_KMEMLEAK))
-		kmemleak_vmalloc(area, size, gfp_mask);
 
 	return area->addr;
 

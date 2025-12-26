@@ -4,7 +4,6 @@
 #include <linux/swap.h>
 #include <linux/memblock.h>
 #include <linux/swapops.h>
-#include <linux/kmemleak.h>
 #include <linux/sched/task.h>
 
 #include <asm/set_memory.h>
@@ -517,7 +516,6 @@ void free_init_pages(const char *what, unsigned long begin, unsigned long end)
 		pr_info("debug: unmapping init [mem %#010lx-%#010lx]\n", begin,
 			end - 1);
 
-		kmemleak_free_part((void *)begin, end - begin);
 		set_memory_np(begin, (end - begin) >> PAGE_SHIFT);
 	} else {
 		set_memory_nx(begin, (end - begin) >> PAGE_SHIFT);

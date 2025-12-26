@@ -424,7 +424,6 @@ void *kmalloc_order(size_t size, gfp_t flags, unsigned int order)
 				      PAGE_SIZE << order);
 	}
 
-	kmemleak_alloc(ret, size, 1, flags);
 	return ret;
 }
 

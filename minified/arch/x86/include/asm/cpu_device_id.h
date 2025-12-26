@@ -9,11 +9,6 @@
  
 #include <asm/processor.h>
 
- 
-#define X86_CENTAUR_FAM6_C7_A		0xa
-#define X86_CENTAUR_FAM6_C7_D		0xd
-#define X86_CENTAUR_FAM6_NANO		0xf
-
 #define X86_STEPPINGS(mins, maxs)    GENMASK(maxs, mins)
  
 #define X86_MATCH_VENDOR_FAM_MODEL_STEPPINGS_FEATURE(_vendor, _family, _model, \

@@ -4,7 +4,6 @@
 #include <linux/export.h>
 #include <linux/stat.h>
 #include <linux/slab.h>
-#include <linux/random.h>
 
 static void kobject_get_ownership(struct kobject *kobj, kuid_t *uid,
 				  kgid_t *gid)

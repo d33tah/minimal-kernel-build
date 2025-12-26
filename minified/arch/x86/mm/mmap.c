@@ -1,7 +1,6 @@
 
 #include <linux/personality.h>
 #include <linux/mm.h>
-#include <linux/random.h>
 #include <linux/limits.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/mm.h>
@@ -45,11 +44,10 @@ static int mmap_is_legacy(void)
 	return sysctl_legacy_va_layout;
 }
 
+/* Simplified for minimal kernel - no ASLR randomization */
 static unsigned long arch_rnd(unsigned int rndbits)
 {
-	if (!(current->flags & PF_RANDOMIZE))
-		return 0;
-	return (get_random_long() & ((1UL << rndbits) - 1)) << PAGE_SHIFT;
+	return 0;
 }
 
 unsigned long arch_mmap_rnd(void)

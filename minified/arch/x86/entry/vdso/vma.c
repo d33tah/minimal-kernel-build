@@ -4,7 +4,6 @@
 #include <linux/sched/task_stack.h>
 #include <linux/slab.h>
 #include <linux/init.h>
-#include <linux/random.h>
 #include <linux/elf.h>
 #include <linux/cpu.h>
 #include <linux/ptrace.h>

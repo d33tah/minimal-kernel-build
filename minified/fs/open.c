@@ -139,70 +139,31 @@ long do_sys_truncate(const char __user *pathname, loff_t length)
 	return -ENOSYS;
 }
 
+/* Stub: truncate not needed for Hello World kernel */
 SYSCALL_DEFINE2(truncate, const char __user *, path, long, length)
 {
-	return do_sys_truncate(path, length);
+	return -ENOSYS;
 }
 
+/* Stub: ftruncate not needed for Hello World kernel */
 long do_sys_ftruncate(unsigned int fd, loff_t length, int small)
 {
-	struct inode *inode;
-	struct dentry *dentry;
-	struct fd f;
-	int error;
-
-	error = -EINVAL;
-	if (length < 0)
-		goto out;
-	error = -EBADF;
-	f = fdget(fd);
-	if (!f.file)
-		goto out;
-
-	if (f.file->f_flags & O_LARGEFILE)
-		small = 0;
-
-	dentry = f.file->f_path.dentry;
-	inode = dentry->d_inode;
-	error = -EINVAL;
-	if (!S_ISREG(inode->i_mode) || !(f.file->f_mode & FMODE_WRITE))
-		goto out_putf;
-
-	error = -EINVAL;
-
-	if (small && length > MAX_NON_LFS)
-		goto out_putf;
-
-	error = -EPERM;
-
-	if (IS_APPEND(file_inode(f.file)))
-		goto out_putf;
-	sb_start_write(inode->i_sb);
-	error = security_path_truncate(&f.file->f_path);
-	if (!error)
-		error = do_truncate(file_mnt_user_ns(f.file), dentry, length,
-				    ATTR_MTIME | ATTR_CTIME, f.file);
-	sb_end_write(inode->i_sb);
-out_putf:
-	fdput(f);
-out:
-	return error;
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE2(ftruncate, unsigned int, fd, unsigned long, length)
 {
-	return do_sys_ftruncate(fd, length, 1);
+	return -ENOSYS;
 }
 
 #if BITS_PER_LONG == 32
 SYSCALL_DEFINE2(truncate64, const char __user *, path, loff_t, length)
 {
-	return do_sys_truncate(path, length);
+	return -ENOSYS;
 }
-
 SYSCALL_DEFINE2(ftruncate64, unsigned int, fd, loff_t, length)
 {
-	return do_sys_ftruncate(fd, length, 0);
+	return -ENOSYS;
 }
 #endif
 

@@ -985,23 +985,17 @@ int path_umount(struct path *path, int flags)
 	return ret;
 }
 
-static int ksys_umount(char __user *name, int flags)
+/* Stub: umount not needed for Hello World kernel */
+SYSCALL_DEFINE2(umount, char __user *, name, int, flags)
 {
 	return -ENOSYS;
 }
 
-SYSCALL_DEFINE2(umount, char __user *, name, int, flags)
-{
-	return ksys_umount(name, flags);
-}
-
 #ifdef __ARCH_WANT_SYS_OLDUMOUNT
-
 SYSCALL_DEFINE1(oldumount, char __user *, name)
 {
-	return ksys_umount(name, 0);
+	return -ENOSYS;
 }
-
 #endif
 
 static struct mnt_namespace *to_mnt_ns(struct ns_common *ns)
@@ -1433,42 +1427,7 @@ static int do_new_mount(struct path *path, const char *fstype, int sb_flags,
 	return err;
 }
 
-static void *copy_mount_options(const void __user *data)
-{
-	char *copy;
-	unsigned left, offset;
-
-	if (!data)
-		return NULL;
-
-	copy = kmalloc(PAGE_SIZE, GFP_KERNEL);
-	if (!copy)
-		return ERR_PTR(-ENOMEM);
-
-	left = copy_from_user(copy, data, PAGE_SIZE);
-
-	offset = PAGE_SIZE - left;
-	while (left) {
-		char c;
-		if (get_user(c, (const char __user *)data + offset))
-			break;
-		copy[offset] = c;
-		left--;
-		offset++;
-	}
-
-	if (left == PAGE_SIZE) {
-		kfree(copy);
-		return ERR_PTR(-EFAULT);
-	}
-
-	return copy;
-}
-
-static char *copy_mount_string(const void __user *data)
-{
-	return data ? strndup_user(data, PATH_MAX) : NULL;
-}
+/* Removed: copy_mount_options, copy_mount_string - mount syscall stubbed */
 
 int path_mount(const char *dev_name, struct path *path, const char *type_page,
 	       unsigned long flags, void *data_page)
@@ -1613,38 +1572,11 @@ copy_mnt_ns(unsigned long flags, struct mnt_namespace *ns,
 	return ERR_PTR(-EINVAL);
 }
 
+/* Stub: mount syscall not needed for Hello World kernel */
 SYSCALL_DEFINE5(mount, char __user *, dev_name, char __user *, dir_name,
 		char __user *, type, unsigned long, flags, void __user *, data)
 {
-	int ret;
-	char *kernel_type;
-	char *kernel_dev;
-	void *options;
-
-	kernel_type = copy_mount_string(type);
-	ret = PTR_ERR(kernel_type);
-	if (IS_ERR(kernel_type))
-		goto out_type;
-
-	kernel_dev = copy_mount_string(dev_name);
-	ret = PTR_ERR(kernel_dev);
-	if (IS_ERR(kernel_dev))
-		goto out_dev;
-
-	options = copy_mount_options(data);
-	ret = PTR_ERR(options);
-	if (IS_ERR(options))
-		goto out_data;
-
-	ret = do_mount(kernel_dev, dir_name, kernel_type, flags, options);
-
-	kfree(options);
-out_data:
-	kfree(kernel_dev);
-out_dev:
-	kfree(kernel_type);
-out_type:
-	return ret;
+	return -ENOSYS;
 }
 
 #define FSMOUNT_VALID_FLAGS                                              \

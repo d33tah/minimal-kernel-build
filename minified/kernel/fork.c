@@ -1028,10 +1028,9 @@ static void copy_seccomp(struct task_struct *p)
 {
 }
 
+/* Stub: set_tid_address not needed for Hello World */
 SYSCALL_DEFINE1(set_tid_address, int __user *, tidptr)
 {
-	current->clear_child_tid = tidptr;
-
 	return task_pid_vnr(current);
 }
 

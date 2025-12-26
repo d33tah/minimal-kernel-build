@@ -757,32 +757,10 @@ int set_user_sigmask(const sigset_t __user *umask, size_t sigsetsize)
 	return 0;
 }
 
+/* Stub: rt_sigprocmask not needed for Hello World */
 SYSCALL_DEFINE4(rt_sigprocmask, int, how, sigset_t __user *, nset,
 		sigset_t __user *, oset, size_t, sigsetsize)
 {
-	sigset_t old_set, new_set;
-	int error;
-
-	if (sigsetsize != sizeof(sigset_t))
-		return -EINVAL;
-
-	old_set = current->blocked;
-
-	if (nset) {
-		if (copy_from_user(&new_set, nset, sizeof(sigset_t)))
-			return -EFAULT;
-		sigdelsetmask(&new_set, sigmask(SIGKILL) | sigmask(SIGSTOP));
-
-		error = sigprocmask(how, &new_set, NULL);
-		if (error)
-			return error;
-	}
-
-	if (oset) {
-		if (copy_to_user(oset, &old_set, sizeof(sigset_t)))
-			return -EFAULT;
-	}
-
 	return 0;
 }
 
@@ -796,18 +774,9 @@ static void do_sigpending(sigset_t *set)
 	sigandsets(set, &current->blocked, set);
 }
 
+/* Stub: rt_sigpending not needed for Hello World */
 SYSCALL_DEFINE2(rt_sigpending, sigset_t __user *, uset, size_t, sigsetsize)
 {
-	sigset_t set;
-
-	if (sigsetsize > sizeof(*uset))
-		return -EINVAL;
-
-	do_sigpending(&set);
-
-	if (copy_to_user(uset, &set, sigsetsize))
-		return -EFAULT;
-
 	return 0;
 }
 
@@ -948,103 +917,28 @@ SYSCALL_DEFINE1(sigpending, old_sigset_t __user *, uset)
 
 #ifdef __ARCH_WANT_SYS_SIGPROCMASK
 
+/* Stub: sigprocmask not needed for Hello World */
 SYSCALL_DEFINE3(sigprocmask, int, how, old_sigset_t __user *, nset,
 		old_sigset_t __user *, oset)
 {
-	old_sigset_t old_set, new_set;
-	sigset_t new_blocked;
-
-	old_set = current->blocked.sig[0];
-
-	if (nset) {
-		if (copy_from_user(&new_set, nset, sizeof(*nset)))
-			return -EFAULT;
-
-		new_blocked = current->blocked;
-
-		switch (how) {
-		case SIG_BLOCK:
-			sigaddsetmask(&new_blocked, new_set);
-			break;
-		case SIG_UNBLOCK:
-			sigdelsetmask(&new_blocked, new_set);
-			break;
-		case SIG_SETMASK:
-			new_blocked.sig[0] = new_set;
-			break;
-		default:
-			return -EINVAL;
-		}
-
-		set_current_blocked(&new_blocked);
-	}
-
-	if (oset) {
-		if (copy_to_user(oset, &old_set, sizeof(*oset)))
-			return -EFAULT;
-	}
-
 	return 0;
 }
 #endif
 
+/* Stub: rt_sigaction not needed for Hello World */
 #ifndef CONFIG_ODD_RT_SIGACTION
-
 SYSCALL_DEFINE4(rt_sigaction, int, sig, const struct sigaction __user *, act,
 		struct sigaction __user *, oact, size_t, sigsetsize)
 {
-	struct k_sigaction new_sa, old_sa;
-	int ret;
-
-	if (sigsetsize != sizeof(sigset_t))
-		return -EINVAL;
-
-	if (act && copy_from_user(&new_sa.sa, act, sizeof(new_sa.sa)))
-		return -EFAULT;
-
-	ret = do_sigaction(sig, act ? &new_sa : NULL, oact ? &old_sa : NULL);
-	if (ret)
-		return ret;
-
-	if (oact && copy_to_user(oact, &old_sa.sa, sizeof(old_sa.sa)))
-		return -EFAULT;
-
 	return 0;
 }
 #endif
 
+/* Stub: sigaction not needed for Hello World */
 SYSCALL_DEFINE3(sigaction, int, sig, const struct old_sigaction __user *, act,
 		struct old_sigaction __user *, oact)
 {
-	struct k_sigaction new_ka, old_ka;
-	int ret;
-
-	if (act) {
-		old_sigset_t mask;
-		if (!access_ok(act, sizeof(*act)) ||
-		    __get_user(new_ka.sa.sa_handler, &act->sa_handler) ||
-		    __get_user(new_ka.sa.sa_restorer, &act->sa_restorer) ||
-		    __get_user(new_ka.sa.sa_flags, &act->sa_flags) ||
-		    __get_user(mask, &act->sa_mask))
-			return -EFAULT;
-#ifdef __ARCH_HAS_KA_RESTORER
-		new_ka.ka_restorer = NULL;
-#endif
-		siginitset(&new_ka.sa.sa_mask, mask);
-	}
-
-	ret = do_sigaction(sig, act ? &new_ka : NULL, oact ? &old_ka : NULL);
-
-	if (!ret && oact) {
-		if (!access_ok(oact, sizeof(*oact)) ||
-		    __put_user(old_ka.sa.sa_handler, &oact->sa_handler) ||
-		    __put_user(old_ka.sa.sa_restorer, &oact->sa_restorer) ||
-		    __put_user(old_ka.sa.sa_flags, &oact->sa_flags) ||
-		    __put_user(old_ka.sa.sa_mask.sig[0], &oact->sa_mask))
-			return -EFAULT;
-	}
-
-	return ret;
+	return 0;
 }
 
 /* Stub: old signal() syscall not needed for Hello World */

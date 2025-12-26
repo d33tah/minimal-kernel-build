@@ -307,26 +307,6 @@ slab_flags_t kmem_cache_flags(unsigned int object_size,
 int __kmem_cache_shutdown(struct kmem_cache *);
 void __kmem_cache_release(struct kmem_cache *);
 
-struct seq_file;
-struct file;
-
-struct slabinfo {
-	unsigned long active_objs;
-	unsigned long num_objs;
-	unsigned long active_slabs;
-	unsigned long num_slabs;
-	unsigned long shared_avail;
-	unsigned int limit;
-	unsigned int batchcount;
-	unsigned int shared;
-	unsigned int objects_per_slab;
-	unsigned int cache_order;
-};
-
-/* get_slabinfo, slabinfo_show_stats, slabinfo_write removed - never called/defined */
-
-/* __kmem_cache_free_bulk, __kmem_cache_alloc_bulk removed - never called */
-
 static inline enum node_stat_item cache_vmstat_idx(struct kmem_cache *s)
 {
 	return (s->flags & SLAB_RECLAIM_ACCOUNT) ?

@@ -44,10 +44,6 @@ extern void __ptrace_unlink(struct task_struct *child);
 extern void exit_ptrace(struct task_struct *tracer, struct list_head *dead);
 #define PTRACE_MODE_READ	0x01
 #define PTRACE_MODE_ATTACH	0x02
-#define PTRACE_MODE_NOAUDIT	0x04
-#define PTRACE_MODE_FSCREDS	0x08
-#define PTRACE_MODE_REALCREDS	0x10
-
 
 /* ptrace_may_access removed - declared but never implemented */
 

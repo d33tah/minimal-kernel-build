@@ -1109,20 +1109,6 @@ extern void __vma_link_rb(struct mm_struct *, struct vm_area_struct *,
 extern void unlink_file_vma(struct vm_area_struct *);
 extern void exit_mmap(struct mm_struct *);
 
-static inline int check_data_rlimit(unsigned long rlim,
-				    unsigned long new,
-				    unsigned long start,
-				    unsigned long end_data,
-				    unsigned long start_data)
-{
-	if (rlim < RLIM_INFINITY) {
-		if (((new - start) + (end_data - start_data)) > rlim)
-			return -ENOSPC;
-	}
-
-	return 0;
-}
-
 extern int set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file);
 extern struct file *get_mm_exe_file(struct mm_struct *mm);
 

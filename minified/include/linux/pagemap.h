@@ -58,14 +58,10 @@ static inline bool mapping_shrinkable(struct address_space *mapping)
 }
 
 enum mapping_flags {
-	AS_EIO		= 0,	 
-	AS_ENOSPC	= 1,	 
-	AS_MM_ALL_LOCKS	= 2,	 
-	AS_UNEVICTABLE	= 3,	 
-	AS_EXITING	= 4, 	 
-	 
-	AS_NO_WRITEBACK_TAGS = 5,
-	AS_LARGE_FOLIO_SUPPORT = 6,
+	AS_EIO		= 0,
+	AS_ENOSPC	= 1,
+	AS_UNEVICTABLE	= 3,
+	AS_EXITING	= 4,
 };
 
 static inline void mapping_set_unevictable(struct address_space *mapping)

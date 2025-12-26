@@ -33,47 +33,7 @@ struct vt_stat {
 #define VT_ACTIVATE	0x5606
 #define VT_WAITACTIVE	0x5607
 #define VT_DISALLOCATE	0x5608
-
-struct vt_sizes {
-	unsigned short v_rows;
-	unsigned short v_cols;
-	unsigned short v_scrollsize;
-};
-#define VT_RESIZE	0x5609
-
-struct vt_consize {
-	unsigned short v_rows;
-	unsigned short v_cols;
-	unsigned short v_vlin;
-	unsigned short v_clin;
-	unsigned short v_vcol;
-	unsigned short v_ccol;
-};
-#define VT_RESIZEX      0x560A
-#define VT_LOCKSWITCH   0x560B
-#define VT_UNLOCKSWITCH 0x560C
 #define VT_GETHIFONTMASK 0x560D
-
-struct vt_event {
-	unsigned int event;
-#define VT_EVENT_SWITCH		0x0001
-#define VT_EVENT_BLANK		0x0002
-#define VT_EVENT_UNBLANK	0x0004
-#define VT_EVENT_RESIZE		0x0008
-#define VT_MAX_EVENT		0x000F
-	unsigned int oldev;
-	unsigned int newev;
-	unsigned int pad[4];
-};
-
-#define VT_WAITEVENT	0x560E
-
-struct vt_setactivate {
-	unsigned int console;
-	struct vt_mode mode;
-};
-
-#define VT_SETACTIVATE	0x560F
 /* End uapi/linux/vt.h */
 
 /* Internal VT definitions */

@@ -46,11 +46,6 @@ struct mod_arch_specific {
 
 #define MODULE_NAME_LEN MAX_PARAM_PREFIX_LEN
 
-struct modversion_info {
-	unsigned long crc;
-	char name[MODULE_NAME_LEN];
-};
-
 struct module;
 struct exception_table_entry;
 

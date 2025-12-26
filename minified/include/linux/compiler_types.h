@@ -56,28 +56,6 @@
 #define __diag_ignore_all(option, comment) \
 	__diag_clang(11, ignore, option)
 
-struct ftrace_branch_data {
-	const char *func;
-	const char *file;
-	unsigned line;
-	union {
-		struct {
-			unsigned long correct;
-			unsigned long incorrect;
-		};
-		struct {
-			unsigned long miss;
-			unsigned long hit;
-		};
-		unsigned long miss_hit[2];
-	};
-};
-
-struct ftrace_likely_data {
-	struct ftrace_branch_data	data;
-	unsigned long			constant;
-};
-
 #define notrace			__attribute__((__no_instrument_function__))
 
 #define __naked			__attribute__((__naked__)) notrace

@@ -5,11 +5,6 @@
 
 #include <linux/types.h>
 
-struct pci_sysdata {
-	int		domain;
-	int		node;
-};
-
 struct pci_bus;
 struct pci_dev;
 

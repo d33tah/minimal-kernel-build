@@ -7,19 +7,6 @@
 #include <linux/percpu_counter.h>
 #include <linux/xattr.h>
 #include <linux/fs_parser.h>
-struct shmem_inode_info {
-	spinlock_t lock; unsigned int seals; unsigned long flags; unsigned long alloced;
-	unsigned long swapped; pgoff_t fallocend; struct list_head shrinklist;
-	struct list_head swaplist; struct shared_policy policy; struct simple_xattrs xattrs;
-	atomic_t stop_eviction; struct timespec64 i_crtime; struct inode vfs_inode;
-};
-struct shmem_sb_info {
-	unsigned long max_blocks; struct percpu_counter used_blocks; unsigned long max_inodes;
-	unsigned long free_inodes; raw_spinlock_t stat_lock; umode_t mode; unsigned char huge;
-	kuid_t uid; kgid_t gid; bool full_inums; ino_t next_ino; ino_t __percpu *ino_batch;
-	struct mempolicy *mpol; spinlock_t shrinklist_lock; struct list_head shrinklist;
-	unsigned long shrinklist_len;
-};
 extern const struct fs_parameter_spec shmem_fs_parameters[];
 extern void shmem_init(void);
 /* shmem_init_fs_context removed - declared but never implemented */

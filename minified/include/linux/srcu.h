@@ -10,13 +10,6 @@
 #include <linux/types.h>
 #include <linux/atomic.h>
 
-struct rcu_cblist {
-	struct rcu_head *head;
-	struct rcu_head **tail;
-	long len;
-};
-
-#define RCU_CBLIST_INITIALIZER(n) { .head = NULL, .tail = &n.head }
 
 #define RCU_DONE_TAIL		0
 #define RCU_WAIT_TAIL		1

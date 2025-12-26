@@ -4,14 +4,6 @@
 #ifndef __ASSEMBLY__
 
 #include <linux/types.h>
-
-struct unwind_hint {
-	u32		ip;
-	s16		sp_offset;
-	u8		sp_reg;
-	u8		type;
-	u8		end;
-};
 #endif
 
 #define UNWIND_HINT_TYPE_CALL		0

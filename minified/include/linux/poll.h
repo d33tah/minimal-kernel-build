@@ -27,14 +27,6 @@ static inline void poll_wait(struct file * filp, wait_queue_head_t * wait_addres
 		p->_qproc(filp, wait_address, p);
 }
 
-
-struct poll_table_entry {
-	struct file *filp;
-	__poll_t key;
-	wait_queue_entry_t wait;
-	wait_queue_head_t *wait_address;
-};
-
 #define MAX_INT64_SECONDS (((s64)(~((u64)0)>>1)/HZ)-1)
 
 /* core_sys_select, poll_select_set_timeout removed - declared but never implemented */

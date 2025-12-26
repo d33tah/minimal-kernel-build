@@ -22,25 +22,6 @@
 
 #ifndef __ASSEMBLY__
 #include <asm/byteorder.h>
-
- 
-struct orc_entry {
-	s16		sp_offset;
-	s16		bp_offset;
-#if defined(__LITTLE_ENDIAN_BITFIELD)
-	unsigned	sp_reg:4;
-	unsigned	bp_reg:4;
-	unsigned	type:2;
-	unsigned	end:1;
-#elif defined(__BIG_ENDIAN_BITFIELD)
-	unsigned	bp_reg:4;
-	unsigned	sp_reg:4;
-	unsigned	unused:5;
-	unsigned	end:1;
-	unsigned	type:2;
 #endif
-} __packed;
-
-#endif  
 
 #endif  

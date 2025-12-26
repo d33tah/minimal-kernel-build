@@ -20,17 +20,10 @@ struct scatterlist {
 #define sg_dma_len(sg)		((sg)->dma_length)
 
 struct sg_table {
-	struct scatterlist *sgl;	 
-	unsigned int nents;		 
-	unsigned int orig_nents;	 
+	struct scatterlist *sgl;
+	unsigned int nents;
+	unsigned int orig_nents;
 };
-
-struct sg_append_table {
-	struct sg_table sgt;		 
-	struct scatterlist *prv;	 
-	unsigned int total_nents;	 
-};
-
 
 #define SG_CHAIN	0x01UL
 #define SG_END		0x02UL

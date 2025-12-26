@@ -408,95 +408,15 @@ inline struct open_how build_open_how(int flags, umode_t mode)
 	return how;
 }
 
+/* Stub: build_open_flags simplified for Hello World */
 inline int build_open_flags(const struct open_how *how, struct open_flags *op)
 {
-	u64 flags = how->flags;
-	u64 strip = FMODE_NONOTIFY | O_CLOEXEC;
-	int lookup_flags = 0;
-	int acc_mode = ACC_MODE(flags);
-
-	BUILD_BUG_ON_MSG(
-		upper_32_bits(VALID_OPEN_FLAGS),
-		"struct open_flags doesn't yet handle flags > 32 bits");
-
-	flags &= ~strip;
-
-	if (flags & ~VALID_OPEN_FLAGS)
-		return -EINVAL;
-	if (how->resolve & ~VALID_RESOLVE_FLAGS)
-		return -EINVAL;
-
-	if ((how->resolve & RESOLVE_BENEATH) &&
-	    (how->resolve & RESOLVE_IN_ROOT))
-		return -EINVAL;
-
-	if (WILL_CREATE(flags)) {
-		if (how->mode & ~S_IALLUGO)
-			return -EINVAL;
-		op->mode = how->mode | S_IFREG;
-	} else {
-		if (how->mode != 0)
-			return -EINVAL;
-		op->mode = 0;
-	}
-
-	if (flags & __O_TMPFILE) {
-		if ((flags & O_TMPFILE_MASK) != O_TMPFILE)
-			return -EINVAL;
-		if (!(acc_mode & MAY_WRITE))
-			return -EINVAL;
-	}
-	if (flags & O_PATH) {
-		if (flags & ~O_PATH_FLAGS)
-			return -EINVAL;
-		acc_mode = 0;
-	}
-
-	if (flags & __O_SYNC)
-		flags |= O_DSYNC;
-
+	u64 flags = how->flags & ~(FMODE_NONOTIFY | O_CLOEXEC);
 	op->open_flag = flags;
-
-	if (flags & O_TRUNC)
-		acc_mode |= MAY_WRITE;
-
-	if (flags & O_APPEND)
-		acc_mode |= MAY_APPEND;
-
-	op->acc_mode = acc_mode;
-
-	op->intent = flags & O_PATH ? 0 : LOOKUP_OPEN;
-
-	if (flags & O_CREAT) {
-		op->intent |= LOOKUP_CREATE;
-		if (flags & O_EXCL) {
-			op->intent |= LOOKUP_EXCL;
-			flags |= O_NOFOLLOW;
-		}
-	}
-
-	if (flags & O_DIRECTORY)
-		lookup_flags |= LOOKUP_DIRECTORY;
-	if (!(flags & O_NOFOLLOW))
-		lookup_flags |= LOOKUP_FOLLOW;
-
-	if (how->resolve & RESOLVE_NO_XDEV)
-		lookup_flags |= LOOKUP_NO_XDEV;
-	if (how->resolve & RESOLVE_NO_MAGICLINKS)
-		lookup_flags |= LOOKUP_NO_MAGICLINKS;
-	if (how->resolve & RESOLVE_NO_SYMLINKS)
-		lookup_flags |= LOOKUP_NO_SYMLINKS;
-	if (how->resolve & RESOLVE_BENEATH)
-		lookup_flags |= LOOKUP_BENEATH;
-	if (how->resolve & RESOLVE_IN_ROOT)
-		lookup_flags |= LOOKUP_IN_ROOT;
-	if (how->resolve & RESOLVE_CACHED) {
-		if (flags & (O_TRUNC | O_CREAT | O_TMPFILE))
-			return -EAGAIN;
-		lookup_flags |= LOOKUP_CACHED;
-	}
-
-	op->lookup_flags = lookup_flags;
+	op->mode = WILL_CREATE(flags) ? (how->mode | S_IFREG) : 0;
+	op->acc_mode = ACC_MODE(flags);
+	op->intent = (flags & O_PATH) ? 0 : LOOKUP_OPEN;
+	op->lookup_flags = (flags & O_NOFOLLOW) ? 0 : LOOKUP_FOLLOW;
 	return 0;
 }
 

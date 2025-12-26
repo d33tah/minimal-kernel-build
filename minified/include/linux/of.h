@@ -3,7 +3,6 @@
 #include <linux/types.h>
 #include <linux/property.h>
 typedef u32 phandle;
-typedef u32 ihandle;
 struct property { char *name; int length; void *value; struct property *next; };
 struct device_node { const char *name; phandle phandle; const char *full_name; struct fwnode_handle fwnode; struct property *properties; struct property *deadprops; struct device_node *parent; struct device_node *child; struct device_node *sibling; unsigned long _flags; void *data; };
 struct of_device_id;

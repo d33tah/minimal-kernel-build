@@ -41,10 +41,7 @@ extern unsigned long mmap_min_addr;
 #define LSM_UNSAFE_PTRACE	2
 #define LSM_UNSAFE_NO_NEW_PRIVS	4
 
-
-typedef int (*initxattrs) (struct inode *inode,
-			   const struct xattr *xattr_array, void *fs_data);
-
+/* initxattrs typedef removed - unused */
 
 #define __data_id_enumify(ENUM, dummy) LOADING_ ## ENUM,
 #define __data_id_stringify(dummy, str) #str,

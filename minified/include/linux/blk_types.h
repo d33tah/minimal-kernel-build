@@ -11,7 +11,6 @@ struct bio_integrity_payload;
 struct page;
 struct io_context;
 struct cgroup_subsys_state;
-typedef void (bio_end_io_t) (struct bio *);
 struct bio_crypt_ctx;
 
 /* Minimal block_device struct - only pointers used, never instantiated */
@@ -19,12 +18,8 @@ struct block_device {
 	int dummy;
 };
 
-/* x86 only - alpha version removed */
-typedef u8 __bitwise blk_status_t;
-typedef u16 blk_short_t;
+/* blk_status_t, blk_short_t, blk_qc_t removed - unused */
 #define	BLK_STS_OK 0
-
-typedef unsigned int blk_qc_t;
 
 /* Minimal struct bio - only forward declaration needed */
 struct bio {

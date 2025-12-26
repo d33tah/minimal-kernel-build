@@ -200,8 +200,7 @@ struct lruvec {
 	unsigned long			flags;
 };
 
-
-typedef unsigned __bitwise isolate_mode_t;
+/* isolate_mode_t removed - unused */
 
 enum zone_watermarks {
 	WMARK_MIN,

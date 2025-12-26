@@ -9,18 +9,10 @@
 /* Inlined from sched/jobctl.h - trimmed to used flags only */
 #define JOBCTL_STOP_PENDING_BIT	17
 #define JOBCTL_TRAP_STOP_BIT	19
-#define JOBCTL_LISTENING_BIT	22
 #define JOBCTL_TRAP_FREEZE_BIT	23
-#define JOBCTL_PTRACE_FROZEN_BIT	24
-#define JOBCTL_STOPPED_BIT	26
-#define JOBCTL_TRACED_BIT	27
 #define JOBCTL_STOP_PENDING	(1UL << JOBCTL_STOP_PENDING_BIT)
 #define JOBCTL_TRAP_STOP	(1UL << JOBCTL_TRAP_STOP_BIT)
-#define JOBCTL_LISTENING	(1UL << JOBCTL_LISTENING_BIT)
 #define JOBCTL_TRAP_FREEZE	(1UL << JOBCTL_TRAP_FREEZE_BIT)
-#define JOBCTL_PTRACE_FROZEN	(1UL << JOBCTL_PTRACE_FROZEN_BIT)
-#define JOBCTL_STOPPED		(1UL << JOBCTL_STOPPED_BIT)
-#define JOBCTL_TRACED		(1UL << JOBCTL_TRACED_BIT)
 #define JOBCTL_TRAP_MASK	(JOBCTL_TRAP_STOP)
 #define JOBCTL_PENDING_MASK	(JOBCTL_STOP_PENDING | JOBCTL_TRAP_MASK)
 extern bool task_set_jobctl_pending(struct task_struct *task, unsigned long mask);
@@ -252,10 +244,9 @@ extern void signal_wake_up_state(struct task_struct *t, unsigned int state);
 static inline void signal_wake_up(struct task_struct *t, bool fatal)
 {
 	unsigned int state = 0;
-	if (fatal && !(t->jobctl & JOBCTL_PTRACE_FROZEN)) {
-		t->jobctl &= ~(JOBCTL_STOPPED | JOBCTL_TRACED);
+	/* Simplified: JOBCTL_PTRACE_FROZEN/STOPPED/TRACED never set */
+	if (fatal)
 		state = TASK_WAKEKILL | __TASK_TRACED;
-	}
 	signal_wake_up_state(t, state);
 }
 

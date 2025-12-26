@@ -19,9 +19,4 @@ static inline int mtrr_trim_uncached_memory(unsigned long end_pfn)
 #define mtrr_aps_init() do {} while (0)
 #define mtrr_bp_restore() do {} while (0)
 
-
- 
-#define MTRR_STATE_MTRR_FIXED_ENABLED	0x01
-#define MTRR_STATE_MTRR_ENABLED		0x02
-
 #endif  

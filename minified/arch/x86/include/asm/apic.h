@@ -142,9 +142,4 @@ static inline void ack_APIC_irq(void)
 	apic_eoi();
 }
 
- 
-#define TRAMPOLINE_PHYS_LOW		0x467
-#define TRAMPOLINE_PHYS_HIGH		0x469
-
-
 #endif

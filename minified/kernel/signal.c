@@ -672,10 +672,10 @@ void exit_signals(struct task_struct *tsk)
 	cgroup_threadgroup_change_end(tsk);
 }
 
+/* Stub: restart_syscall not needed for Hello World */
 SYSCALL_DEFINE0(restart_syscall)
 {
-	struct restart_block *restart = &current->restart_block;
-	return restart->fn(restart);
+	return -EINTR;
 }
 
 long do_no_restart_syscall(struct restart_block *param)

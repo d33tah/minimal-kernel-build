@@ -113,27 +113,10 @@ loff_t vfs_llseek(struct file *file, loff_t offset, int whence)
 	return fn(file, offset, whence);
 }
 
-static off_t ksys_lseek(unsigned int fd, off_t offset, unsigned int whence)
-{
-	off_t retval;
-	struct fd f = fdget_pos(fd);
-	if (!f.file)
-		return -EBADF;
-
-	retval = -EINVAL;
-	if (whence <= SEEK_MAX) {
-		loff_t res = vfs_llseek(f.file, offset, whence);
-		retval = res;
-		if (res != (loff_t)retval)
-			retval = -EOVERFLOW;
-	}
-	fdput_pos(f);
-	return retval;
-}
-
+/* Stub: lseek syscalls not needed for Hello World */
 SYSCALL_DEFINE3(lseek, unsigned int, fd, off_t, offset, unsigned int, whence)
 {
-	return ksys_lseek(fd, offset, whence);
+	return -ENOSYS;
 }
 
 #if !defined(CONFIG_64BIT) || defined(CONFIG_COMPAT) || \
@@ -142,29 +125,7 @@ SYSCALL_DEFINE5(llseek, unsigned int, fd, unsigned long, offset_high,
 		unsigned long, offset_low, loff_t __user *, result,
 		unsigned int, whence)
 {
-	int retval;
-	struct fd f = fdget_pos(fd);
-	loff_t offset;
-
-	if (!f.file)
-		return -EBADF;
-
-	retval = -EINVAL;
-	if (whence > SEEK_MAX)
-		goto out_putf;
-
-	offset = vfs_llseek(f.file, ((loff_t)offset_high << 32) | offset_low,
-			    whence);
-
-	retval = (int)offset;
-	if (offset >= 0) {
-		retval = -EFAULT;
-		if (!copy_to_user(result, &offset, sizeof(offset)))
-			retval = 0;
-	}
-out_putf:
-	fdput_pos(f);
-	return retval;
+	return -ENOSYS;
 }
 #endif
 

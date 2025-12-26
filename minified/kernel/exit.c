@@ -555,43 +555,14 @@ void __noreturn make_task_dead(int signr)
 	do_exit(signr);
 }
 
+/* Stub: exit syscalls - Hello World doesn't need to exit cleanly */
 SYSCALL_DEFINE1(exit, int, error_code)
 {
-	do_exit((error_code & 0xff) << 8);
-}
-
-static void __noreturn do_group_exit(int exit_code)
-{
-	struct signal_struct *sig = current->signal;
-
-	if (sig->flags & SIGNAL_GROUP_EXIT)
-		exit_code = sig->group_exit_code;
-	else if (sig->group_exec_task)
-		exit_code = 0;
-	else if (!thread_group_empty(current)) {
-		struct sighand_struct *const sighand = current->sighand;
-
-		spin_lock_irq(&sighand->siglock);
-		if (sig->flags & SIGNAL_GROUP_EXIT)
-
-			exit_code = sig->group_exit_code;
-		else if (sig->group_exec_task)
-			exit_code = 0;
-		else {
-			sig->group_exit_code = exit_code;
-			sig->flags = SIGNAL_GROUP_EXIT;
-			zap_other_threads(current);
-		}
-		spin_unlock_irq(&sighand->siglock);
-	}
-
-	do_exit(exit_code);
+	return 0;
 }
 
 SYSCALL_DEFINE1(exit_group, int, error_code)
 {
-	do_group_exit((error_code & 0xff) << 8);
-
 	return 0;
 }
 

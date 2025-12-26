@@ -1434,21 +1434,11 @@ SYSCALL_DEFINE1(sched_get_priority_min, int, policy)
 	return 0;
 }
 
-static int sched_rr_get_interval(pid_t pid, struct timespec64 *t)
-{
-	return -EINVAL;
-}
-
+/* Stub: sched_rr_get_interval not needed for Hello World */
 SYSCALL_DEFINE2(sched_rr_get_interval, pid_t, pid,
 		struct __kernel_timespec __user *, interval)
 {
-	struct timespec64 t;
-	int retval = sched_rr_get_interval(pid, &t);
-
-	if (retval == 0)
-		retval = put_timespec64(&t, interval);
-
-	return retval;
+	return -ENOSYS;
 }
 
 void __init init_idle(struct task_struct *idle, int cpu)

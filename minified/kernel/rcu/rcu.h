@@ -66,19 +66,7 @@ static inline unsigned long rcu_seq_current(unsigned long *sp)
 	return READ_ONCE(*sp);
 }
 
- 
-static inline bool rcu_seq_started(unsigned long *sp, unsigned long s)
-{
-	return ULONG_CMP_LT((s - 1) & ~RCU_SEQ_STATE_MASK, READ_ONCE(*sp));
-}
-
- 
-static inline bool rcu_seq_done(unsigned long *sp, unsigned long s)
-{
-	return ULONG_CMP_GE(READ_ONCE(*sp), s);
-}
-
-/* rcu_seq_completed_gp, rcu_seq_new_gp, rcu_seq_diff removed - unused */
+/* rcu_seq_started, rcu_seq_done, rcu_seq_completed_gp, rcu_seq_new_gp, rcu_seq_diff removed - unused */
 
 static inline int debug_rcu_head_queue(struct rcu_head *head)
 {

@@ -10,8 +10,6 @@
 
 unsigned long long native_sched_clock(void);
 
-extern int no_timer_check;
-
 extern bool using_native_sched_clock(void);
 
  

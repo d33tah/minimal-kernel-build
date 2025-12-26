@@ -111,10 +111,8 @@ extern const struct file_operations pipefifo_fops;
 /* group_pin_kill removed - unused */
 extern void mnt_pin_kill(struct mount *m);
 
- 
-extern const struct dentry_operations ns_dentry_operations;
+/* ns_dentry_operations removed - unused */
 
- 
 int sb_init_dio_done_wq(struct super_block *sb);
 
  

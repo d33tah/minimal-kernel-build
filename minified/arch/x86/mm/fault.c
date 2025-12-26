@@ -26,24 +26,9 @@
 /* Removed: #include <asm/kvm_para.h> - stub below */
 #include <asm/vdso.h>
 
-/* Minimal stub for kvm_handle_async_pf - not running under KVM */
-static __always_inline bool kvm_handle_async_pf(struct pt_regs *regs, u32 token)
-{
-	return false;
-}
 #include <asm/irq_stack.h>
 
-/* Inlined from asm/trace/exceptions.h - tracing disabled */
-static inline void trace_page_fault_user(unsigned long address,
-					 struct pt_regs *regs,
-					 unsigned long error_code)
-{
-}
-static inline void trace_page_fault_kernel(unsigned long address,
-					   struct pt_regs *regs,
-					   unsigned long error_code)
-{
-}
+/* kvm_handle_async_pf, trace_page_fault_user, trace_page_fault_kernel removed - unused */
 
 static nokprobe_inline int kmmio_fault(struct pt_regs *regs, unsigned long addr)
 {

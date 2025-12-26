@@ -30,11 +30,6 @@
 #define slub_get_cpu_ptr(var) get_cpu_ptr(var)
 #define slub_put_cpu_ptr(var) put_cpu_ptr(var)
 
-static inline bool kmem_cache_debug(struct kmem_cache *s)
-{
-	return kmem_cache_debug_flags(s, SLAB_DEBUG_FLAGS);
-}
-
 void *fixup_red_left(struct kmem_cache *s, void *p)
 {
 	if (kmem_cache_debug_flags(s, SLAB_RED_ZONE))
@@ -273,29 +268,6 @@ static inline void setup_slab_debug(struct kmem_cache *s, struct slab *slab,
 {
 }
 
-static inline int free_debug_processing(struct kmem_cache *s, struct slab *slab,
-					void *head, void *tail, int bulk_cnt,
-					unsigned long addr)
-{
-	return 0;
-}
-
-static inline void slab_pad_check(struct kmem_cache *s, struct slab *slab)
-{
-}
-static inline int check_object(struct kmem_cache *s, struct slab *slab,
-			       void *object, u8 val)
-{
-	return 1;
-}
-static inline void add_full(struct kmem_cache *s, struct kmem_cache_node *n,
-			    struct slab *slab)
-{
-}
-static inline void remove_full(struct kmem_cache *s, struct kmem_cache_node *n,
-			       struct slab *slab)
-{
-}
 slab_flags_t kmem_cache_flags(unsigned int object_size, slab_flags_t flags,
 			      const char *name)
 {
@@ -312,10 +284,6 @@ static inline unsigned long slabs_node(struct kmem_cache *s, int node)
 static inline void inc_slabs_node(struct kmem_cache *s, int node, int objects)
 {
 }
-static inline void dec_slabs_node(struct kmem_cache *s, int node, int objects)
-{
-}
-
 /* Removed: kfree_hook, slab_free_hook, slab_free_freelist_hook
  * - No longer needed since kfree/kmem_cache_free are no-ops */
 

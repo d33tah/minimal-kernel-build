@@ -94,9 +94,6 @@ static inline void pcpu_stats_area_dealloc(struct pcpu_chunk *chunk)
 static inline void pcpu_stats_chunk_alloc(void)
 {
 }
-static inline void pcpu_stats_chunk_dealloc(void)
-{
-}
 /* end percpu-internal.h */
 
 #define PCPU_SLOT_BASE_SHIFT 5

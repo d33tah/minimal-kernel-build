@@ -764,16 +764,6 @@ SYSCALL_DEFINE4(rt_sigprocmask, int, how, sigset_t __user *, nset,
 	return 0;
 }
 
-static void do_sigpending(sigset_t *set)
-{
-	spin_lock_irq(&current->sighand->siglock);
-	sigorsets(set, &current->pending.signal,
-		  &current->signal->shared_pending.signal);
-	spin_unlock_irq(&current->sighand->siglock);
-
-	sigandsets(set, &current->blocked, set);
-}
-
 /* Stub: rt_sigpending not needed for Hello World */
 SYSCALL_DEFINE2(rt_sigpending, sigset_t __user *, uset, size_t, sigsetsize)
 {
@@ -788,13 +778,6 @@ enum siginfo_layout siginfo_layout(unsigned sig, int si_code)
 int copy_siginfo_to_user(siginfo_t __user *to, const kernel_siginfo_t *from)
 {
 	if (copy_to_user(to, from, sizeof(struct kernel_siginfo)))
-		return -EFAULT;
-	return 0;
-}
-
-int copy_siginfo_from_user(kernel_siginfo_t *to, const siginfo_t __user *from)
-{
-	if (copy_from_user(to, from, sizeof(struct kernel_siginfo)))
 		return -EFAULT;
 	return 0;
 }
@@ -841,61 +824,11 @@ SYSCALL_DEFINE4(rt_tgsigqueueinfo, pid_t, tgid, pid_t, pid, int, sig,
 	return -ENOSYS;
 }
 
-int do_sigaction(int sig, struct k_sigaction *act, struct k_sigaction *oact)
-{
-	struct k_sigaction *k;
-
-	if (!valid_signal(sig) || sig < 1 || (act && sig_kernel_only(sig)))
-		return -EINVAL;
-
-	k = &current->sighand->action[sig - 1];
-
-	spin_lock_irq(&current->sighand->siglock);
-	if (k->sa.sa_flags & SA_IMMUTABLE) {
-		spin_unlock_irq(&current->sighand->siglock);
-		return -EINVAL;
-	}
-	if (oact)
-		*oact = *k;
-
-	if (act) {
-		act->sa.sa_flags &= UAPI_SA_FLAGS;
-		sigdelsetmask(&act->sa.sa_mask,
-			      sigmask(SIGKILL) | sigmask(SIGSTOP));
-		*k = *act;
-	}
-
-	spin_unlock_irq(&current->sighand->siglock);
-	return 0;
-}
-
-static int do_sigaltstack(const stack_t *ss, stack_t *oss, unsigned long sp,
-			  size_t min_ss_size)
-{
-	/* Minimal stub: just handle reads */
-	if (oss) {
-		memset(oss, 0, sizeof(stack_t));
-		oss->ss_flags = SS_DISABLE;
-	}
-	return 0;
-}
-
 /* Stub: sigaltstack not needed for Hello World */
 SYSCALL_DEFINE2(sigaltstack, const stack_t __user *, uss, stack_t __user *,
 		uoss)
 {
 	return -ENOSYS;
-}
-
-int restore_altstack(const stack_t __user *uss)
-{
-	stack_t new;
-	if (copy_from_user(&new, uss, sizeof(stack_t)))
-		return -EFAULT;
-	(void)do_sigaltstack(&new, NULL, current_user_stack_pointer(),
-			     MINSIGSTKSZ);
-
-	return 0;
 }
 
 int __save_altstack(stack_t __user *uss, unsigned long sp)

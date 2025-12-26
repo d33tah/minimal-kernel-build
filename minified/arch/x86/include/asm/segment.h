@@ -36,8 +36,6 @@
 #define SEGMENT_TI_MASK		0x4
  
 #define SEGMENT_LDT		0x4
- 
-#define SEGMENT_GDT		0x0
 
 #define GDT_ENTRY_INVALID_SEG	0
 

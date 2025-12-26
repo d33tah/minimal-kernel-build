@@ -123,7 +123,6 @@ struct task_group;
 #define TASK_WAKING			0x0200
 #define TASK_NOLOAD			0x0400
 #define TASK_NEW			0x0800
-#define TASK_RTLOCK_WAIT		0x1000
 
 #define TASK_KILLABLE			(TASK_WAKEKILL | TASK_UNINTERRUPTIBLE)
 
@@ -139,8 +138,6 @@ struct task_group;
 
 # define debug_normal_state_change(cond)	do { } while (0)
 # define debug_special_state_change(cond)	do { } while (0)
-# define debug_rtlock_wait_set_state()		do { } while (0)
-# define debug_rtlock_wait_restore_state()	do { } while (0)
 
 #define __set_current_state(state_value)				\
 	do {								\
@@ -163,26 +160,6 @@ struct task_group;
 		WRITE_ONCE(current->__state, (state_value));		\
 		raw_spin_unlock_irqrestore(&current->pi_lock, flags);	\
 	} while (0)
-
-#define current_save_and_set_rtlock_wait_state()			\
-	do {								\
-		lockdep_assert_irqs_disabled();				\
-		raw_spin_lock(&current->pi_lock);			\
-		current->saved_state = current->__state;		\
-		debug_rtlock_wait_set_state();				\
-		WRITE_ONCE(current->__state, TASK_RTLOCK_WAIT);		\
-		raw_spin_unlock(&current->pi_lock);			\
-	} while (0);
-
-#define current_restore_rtlock_saved_state()				\
-	do {								\
-		lockdep_assert_irqs_disabled();				\
-		raw_spin_lock(&current->pi_lock);			\
-		debug_rtlock_wait_restore_state();			\
-		WRITE_ONCE(current->__state, current->saved_state);	\
-		current->saved_state = TASK_RUNNING;			\
-		raw_spin_unlock(&current->pi_lock);			\
-	} while (0);
 
 #define get_current_state()	READ_ONCE(current->__state)
 

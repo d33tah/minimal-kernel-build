@@ -656,19 +656,7 @@ static inline int is_global_init(struct task_struct *tsk)
 #define PF_KTHREAD		0x00200000
 #define PF_RANDOMIZE		0x00400000
 #define PF_NO_SETAFFINITY	0x04000000
-#define PF_MEMALLOC_PIN		0x10000000       
-
-#define clear_stopped_child_used_math(child)	do { (child)->flags &= ~PF_USED_MATH; } while (0)
-#define set_stopped_child_used_math(child)	do { (child)->flags |= PF_USED_MATH; } while (0)
-#define clear_used_math()			clear_stopped_child_used_math(current)
-#define set_used_math()				set_stopped_child_used_math(current)
-
-#define conditional_stopped_child_used_math(condition, child) \
-	do { (child)->flags &= ~PF_USED_MATH, (child)->flags |= (condition) ? PF_USED_MATH : 0; } while (0)
-
-#define tsk_used_math(p)			((p)->flags & PF_USED_MATH)
-#define used_math()				tsk_used_math(current)
-
+#define PF_MEMALLOC_PIN		0x10000000
 
 #define PFA_NO_NEW_PRIVS		0
 #define PFA_SPEC_SSB_DISABLE		3

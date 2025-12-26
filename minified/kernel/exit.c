@@ -81,7 +81,6 @@ static inline void exit_shm(struct task_struct *task)
 static inline void exit_sem(struct task_struct *tsk)
 {
 }
-#include <linux/random.h>
 #include <linux/rcuwait.h>
 #include <linux/compat.h>
 #include <linux/io_uring.h>
@@ -134,8 +133,7 @@ static void __exit_signal(struct task_struct *tsk)
 			sig->curr_target = next_thread(tsk);
 	}
 
-	add_device_randomness((const void *)&tsk->se.sum_exec_runtime,
-			      sizeof(unsigned long long));
+	/* Removed: add_device_randomness - not needed for minimal kernel */
 
 	task_cputime(tsk, &utime, &stime);
 	write_seqlock(&sig->stats_lock);

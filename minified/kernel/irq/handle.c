@@ -1,6 +1,5 @@
 
 #include <linux/irq.h>
-#include <linux/random.h>
 #include <linux/sched.h>
 #include <linux/interrupt.h>
 #include <linux/kernel_stat.h>
@@ -99,7 +98,7 @@ irqreturn_t handle_irq_event_percpu(struct irq_desc *desc)
 
 	retval = __handle_irq_event_percpu(desc);
 
-	add_interrupt_randomness(desc->irq_data.irq);
+	/* Removed: add_interrupt_randomness - not needed for minimal kernel */
 
 	if (!irq_settings_no_debug(desc))
 		note_interrupt(desc, retval);

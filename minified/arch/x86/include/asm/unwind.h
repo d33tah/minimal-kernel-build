@@ -39,12 +39,6 @@ void unwind_start(struct unwind_state *state, struct task_struct *task,
 	__unwind_start(state, task, regs, first_frame);
 }
 
-static inline struct pt_regs *unwind_get_entry_regs(struct unwind_state *state,
-						    bool *partial)
-{
-	return NULL;
-}
-
 static inline void unwind_init(void) {}
 static inline
 void unwind_module_init(struct module *mod, void *orc_ip, size_t orc_ip_size,

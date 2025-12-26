@@ -129,11 +129,6 @@ static inline void __count_memcg_events(struct mem_cgroup *memcg,
 {
 }
 
-static inline void split_page_memcg(struct page *head, unsigned int nr)
-{
-}
-
-
 static inline void unlock_page_lruvec_irq(struct lruvec *lruvec)
 {
 	spin_unlock_irq(&lruvec->lru_lock);

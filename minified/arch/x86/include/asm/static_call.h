@@ -34,6 +34,4 @@
 	    ".long " STATIC_CALL_KEY_STR(name) " - .		\n"	\
 	    ".popsection					\n")
 
-extern bool __static_call_fixup(void *tramp, u8 op, void *dest);
-
 #endif  

@@ -220,11 +220,6 @@ static inline pgdval_t native_pgd_val(pgd_t pgd)
 	return pgd.pgd & PGD_ALLOWED_BITS;
 }
 
-static inline pgdval_t pgd_flags(pgd_t pgd)
-{
-	return native_pgd_val(pgd) & PTE_FLAGS_MASK;
-}
-
 /* --- 2025-12-07 10:14 --- Inlined asm-generic/pgtable-nop4d.h content */
 #define __PAGETABLE_P4D_FOLDED 1
 
@@ -262,11 +257,6 @@ static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
 
 #undef  p4d_addr_end
 #define p4d_addr_end(addr, end)			(end)
-
-static inline p4d_t native_make_p4d(pudval_t val)
-{
-	return (p4d_t) { .pgd = native_make_pgd((pgdval_t)val) };
-}
 
 static inline p4dval_t native_p4d_val(p4d_t p4d)
 {
@@ -312,11 +302,6 @@ static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
 #undef  pud_addr_end
 #define pud_addr_end(addr, end)			(end)
 
-static inline pud_t native_make_pud(pudval_t val)
-{
-	return (pud_t) { .p4d.pgd = native_make_pgd(val) };
-}
-
 static inline pudval_t native_pud_val(pud_t pud)
 {
 	return native_pgd_val(pud.p4d.pgd);
@@ -359,18 +344,10 @@ static inline pmd_t * pmd_offset(pud_t * pud, unsigned long address)
 #define pud_pgtable(pud)			((pmd_t *)(pmd_page_vaddr((pmd_t){ pud })))
 
 #define pmd_alloc_one(mm, address)		NULL
-static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
-{
-}
 #define pmd_free_tlb(tlb, x, a)		do { } while (0)
 
 #undef  pmd_addr_end
 #define pmd_addr_end(addr, end)			(end)
-
-static inline pmd_t native_make_pmd(pmdval_t val)
-{
-	return (pmd_t) { .pud.p4d.pgd = native_make_pgd(val) };
-}
 
 static inline pmdval_t native_pmd_val(pmd_t pmd)
 {

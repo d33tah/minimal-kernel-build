@@ -61,7 +61,6 @@ int path_umount(struct path *path, int flags);
 
  
 extern struct file *alloc_empty_file(int, const struct cred *);
-extern struct file *alloc_empty_file_noaccount(int, const struct cred *);
 
 /* reconfigure_super, user_get_super removed - unused */
 extern bool trylock_super(struct super_block *sb);

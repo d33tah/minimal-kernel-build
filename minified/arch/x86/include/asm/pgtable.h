@@ -148,19 +148,7 @@ static inline unsigned long pmd_pfn(pmd_t pmd)
 	return (pfn & pmd_pfn_mask(pmd)) >> PAGE_SHIFT;
 }
 
-static inline unsigned long pud_pfn(pud_t pud)
-{
-	phys_addr_t pfn = pud_val(pud);
-	pfn ^= protnone_mask(pfn);
-	return (pfn & pud_pfn_mask(pud)) >> PAGE_SHIFT;
-}
-
-/* p4d_pfn removed - unused */
-
-static inline unsigned long pgd_pfn(pgd_t pgd)
-{
-	return (pgd_val(pgd) & PTE_PFN_MASK) >> PAGE_SHIFT;
-}
+/* pud_pfn, p4d_pfn, pgd_pfn removed - unused */
 
 #define p4d_leaf	p4d_large
 static inline int p4d_large(p4d_t p4d)

@@ -78,7 +78,6 @@ static inline void paravirt_alloc_pmd(struct mm_struct *mm, unsigned long pfn)	{
 /* paravirt_alloc_pmd_clone removed - unused */
 /* paravirt_alloc/release_pud/p4d removed - unused (no 3/4 level paging) */
 static inline void paravirt_release_pte(unsigned long pfn) {}
-static inline void paravirt_release_pmd(unsigned long pfn) {}
 
  
 extern gfp_t __userpte_alloc_gfp;

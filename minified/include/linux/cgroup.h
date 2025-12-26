@@ -31,7 +31,6 @@ static inline int cgroup_init(void) { return 0; }
 static inline void cgroup_init_kthreadd(void) {}
 static inline void cgroup_kthread_ready(void) {}
 static inline void cgroup_account_cputime(struct task_struct *task, u64 delta_exec) {}
-static inline void cgroup_account_cputime_field(struct task_struct *task, enum cpu_usage_stat index, u64 delta_exec) {}
 struct cgroup_namespace { struct ns_common ns; struct user_namespace *user_ns; struct ucounts *ucounts; struct css_set *root_cset; };
 static inline void free_cgroup_ns(struct cgroup_namespace *ns) { }
 static inline struct cgroup_namespace *copy_cgroup_ns(unsigned long flags, struct user_namespace *user_ns, struct cgroup_namespace *old_ns) { return old_ns; }

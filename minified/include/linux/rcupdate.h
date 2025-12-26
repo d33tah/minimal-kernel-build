@@ -35,7 +35,7 @@ void rcutree_migrate_callbacks(int cpu);
 static inline void rcu_init_tasks_generic(void) { }
 
 static inline void rcu_init_nohz(void) { }
-static inline void rcu_nocb_flush_deferred_wakeup(void) { }
+/* rcu_nocb_flush_deferred_wakeup removed - unused */
 
 #define rcu_tasks_qs(t, preempt) do { } while (0)
 static inline void exit_tasks_rcu_start(void) { }

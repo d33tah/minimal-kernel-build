@@ -57,11 +57,7 @@ static inline u64 ktime_get_ns(void)
 	return ktime_to_ns(ktime_get());
 }
 
-
-static inline u64 ktime_get_boottime_ns(void)
-{
-	return ktime_to_ns(ktime_get_boottime());
-}
+/* ktime_get_boottime_ns removed - unused */
 
 static inline void ktime_get_boottime_ts64(struct timespec64 *ts)
 {

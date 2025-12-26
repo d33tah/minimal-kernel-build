@@ -8,37 +8,6 @@
 #include <linux/sysfs.h>
 #include "base.h"
 
-static struct device *next_device(struct klist_iter *i)
-{
-	struct klist_node *n = klist_next(i);
-	struct device *dev = NULL;
-	struct device_private *dev_prv;
-
-	if (n) {
-		dev_prv = to_device_private_driver(n);
-		dev = dev_prv->device;
-	}
-	return dev;
-}
-
-int driver_for_each_device(struct device_driver *drv, struct device *start,
-			   void *data, int (*fn)(struct device *, void *))
-{
-	struct klist_iter i;
-	struct device *dev;
-	int error = 0;
-
-	if (!drv)
-		return -EINVAL;
-
-	klist_iter_init_node(&drv->p->klist_devices, &i,
-			     start ? &start->p->knode_driver : NULL);
-	while (!error && (dev = next_device(&i)))
-		error = fn(dev, data);
-	klist_iter_exit(&i);
-	return error;
-}
-
 /* driver_find_device stubbed - never called */
 struct device *driver_find_device(struct device_driver *drv,
 				  struct device *start, const void *data,

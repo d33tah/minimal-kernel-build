@@ -42,13 +42,6 @@ SYSCALL_DEFINE2(gettimeofday, struct __kernel_old_timeval __user *, tv,
 	return 0;
 }
 
-int do_sys_settimeofday64(const struct timespec64 *tv,
-			  const struct timezone *tz)
-{
-	/* Stub: setting time not needed for minimal kernel */
-	return -EPERM;
-}
-
 SYSCALL_DEFINE2(settimeofday, struct __kernel_old_timeval __user *, tv,
 		struct timezone __user *, tz)
 {
@@ -186,31 +179,4 @@ unsigned long nsecs_to_jiffies(u64 n)
 	return (unsigned long)nsecs_to_jiffies64(n);
 }
 
-int get_timespec64(struct timespec64 *ts,
-		   const struct __kernel_timespec __user *uts)
-{
-	struct __kernel_timespec kts;
-	int ret;
-
-	ret = copy_from_user(&kts, uts, sizeof(kts));
-	if (ret)
-		return -EFAULT;
-
-	ts->tv_sec = kts.tv_sec;
-
-	if (in_compat_syscall())
-		kts.tv_nsec &= 0xFFFFFFFFUL;
-
-	ts->tv_nsec = kts.tv_nsec;
-
-	return 0;
-}
-
-int put_timespec64(const struct timespec64 *ts,
-		   struct __kernel_timespec __user *uts)
-{
-	struct __kernel_timespec kts = { .tv_sec = ts->tv_sec,
-					 .tv_nsec = ts->tv_nsec };
-
-	return copy_to_user(uts, &kts, sizeof(kts)) ? -EFAULT : 0;
-}
+/* Removed: get_timespec64, put_timespec64 - dead code */

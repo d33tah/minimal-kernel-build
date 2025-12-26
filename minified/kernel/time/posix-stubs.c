@@ -46,13 +46,6 @@ SYSCALL_DEFINE2(clock_settime, const clockid_t, which_clock,
 	return -ENOSYS;
 }
 
-int do_clock_gettime(clockid_t which_clock, struct timespec64 *tp)
-{
-	tp->tv_sec = 0;
-	tp->tv_nsec = 0;
-	return 0;
-}
-
 SYSCALL_DEFINE2(clock_gettime, const clockid_t, which_clock,
 		struct __kernel_timespec __user *, tp)
 {

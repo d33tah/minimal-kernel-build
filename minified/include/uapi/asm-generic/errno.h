@@ -32,7 +32,6 @@
 #define	ESPIPE		29
 #define	EROFS		30
 #define	EMLINK		31
-#define	EPIPE		32
 #define	ERANGE		34
 /* end errno-base.h */
 

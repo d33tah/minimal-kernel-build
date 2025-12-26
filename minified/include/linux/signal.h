@@ -22,13 +22,6 @@ static inline void clear_siginfo(kernel_siginfo_t *info)
 
 
 int copy_siginfo_to_user(siginfo_t __user *to, const kernel_siginfo_t *from);
-int copy_siginfo_from_user(kernel_siginfo_t *to, const siginfo_t __user *from);
-
-enum siginfo_layout {
-	SIL_KILL,
-};
-
-enum siginfo_layout siginfo_layout(unsigned sig, int si_code);
 
 
 #ifndef __HAVE_ARCH_SIG_BITOPS
@@ -167,27 +160,9 @@ static inline void sigemptyset(sigset_t *set)
 
 
 
-static inline void sigaddsetmask(sigset_t *set, unsigned long mask)
-{
-	set->sig[0] |= mask;
-}
-
 static inline void sigdelsetmask(sigset_t *set, unsigned long mask)
 {
 	set->sig[0] &= ~mask;
-}
-
-static inline void siginitset(sigset_t *set, unsigned long mask)
-{
-	set->sig[0] = mask;
-	switch (_NSIG_WORDS) {
-	default:
-		memset(&set->sig[1], 0, sizeof(long)*(_NSIG_WORDS-1));
-		break;
-	case 2: set->sig[1] = 0;
-		break;
-	case 1: ;
-	}
 }
 
 static inline void siginitsetinv(sigset_t *set, unsigned long mask)

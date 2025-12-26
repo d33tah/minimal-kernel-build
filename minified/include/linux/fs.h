@@ -84,7 +84,6 @@ int errseq_check_and_advance(errseq_t *eseq, errseq_t *since);
 #define SEEK_END	2
 #define SEEK_DATA	3
 #define SEEK_HOLE	4
-#define SEEK_MAX	SEEK_HOLE
 #define RENAME_NOREPLACE	(1 << 0)
 #define RENAME_EXCHANGE		(1 << 1)
 struct files_stat_struct {

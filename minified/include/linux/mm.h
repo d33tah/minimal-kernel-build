@@ -1257,13 +1257,6 @@ vm_fault_t vmf_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
 			unsigned long pfn);
 vm_fault_t vmf_insert_pfn_prot(struct vm_area_struct *vma, unsigned long addr,
 			unsigned long pfn, pgprot_t pgprot);
-vm_fault_t vmf_insert_mixed(struct vm_area_struct *vma, unsigned long addr,
-			pfn_t pfn);
-vm_fault_t vmf_insert_mixed_prot(struct vm_area_struct *vma, unsigned long addr,
-			pfn_t pfn, pgprot_t pgprot);
-vm_fault_t vmf_insert_mixed_mkwrite(struct vm_area_struct *vma,
-		unsigned long addr, pfn_t pfn);
-
 
 #define FOLL_WRITE	0x01	
 #define FOLL_TOUCH	0x02	
@@ -1334,30 +1327,6 @@ static inline int in_gate_area(struct mm_struct *mm, unsigned long addr)
 }
 
 extern int randomize_va_space;
-
-
-void *sparse_buffer_alloc(unsigned long size);
-struct page * __populate_section_memmap(unsigned long pfn,
-		unsigned long nr_pages, int nid, struct vmem_altmap *altmap,
-		struct dev_pagemap *pgmap);
-pgd_t *vmemmap_pgd_populate(unsigned long addr, int node);
-p4d_t *vmemmap_p4d_populate(pgd_t *pgd, unsigned long addr, int node);
-pud_t *vmemmap_pud_populate(p4d_t *p4d, unsigned long addr, int node);
-pmd_t *vmemmap_pmd_populate(pud_t *pud, unsigned long addr, int node);
-pte_t *vmemmap_pte_populate(pmd_t *pmd, unsigned long addr, int node,
-			    struct vmem_altmap *altmap, struct page *reuse);
-void *vmemmap_alloc_block(unsigned long size, int node);
-struct vmem_altmap;
-void *vmemmap_alloc_block_buf(unsigned long size, int node,
-			      struct vmem_altmap *altmap);
-void vmemmap_verify(pte_t *, int, unsigned long, unsigned long);
-int vmemmap_populate_basepages(unsigned long start, unsigned long end,
-			       int node, struct vmem_altmap *altmap);
-int vmemmap_populate(unsigned long start, unsigned long end, int node,
-		struct vmem_altmap *altmap);
-void vmemmap_populate_print_last(void);
-void register_page_bootmem_memmap(unsigned long section_nr, struct page *map,
-				  unsigned long nr_pages);
 
 
 static inline unsigned int debug_guardpage_minorder(void) { return 0; }

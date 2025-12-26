@@ -1672,13 +1672,6 @@ SYSCALL_DEFINE5(move_mount, int, from_dfd, const char __user *, from_pathname,
 	return -ENOSYS;
 }
 
-/* Stub: is_path_reachable not used in minimal kernel */
-bool is_path_reachable(struct mount *mnt, struct dentry *dentry,
-		       const struct path *root)
-{
-	return true;
-}
-
 SYSCALL_DEFINE2(pivot_root, const char __user *, new_root, const char __user *,
 		put_old)
 {

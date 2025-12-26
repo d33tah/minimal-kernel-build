@@ -46,7 +46,5 @@ void mnt_set_mountpoint(struct mount *, struct mountpoint *,
 void mnt_change_mountpoint(struct mount *parent, struct mountpoint *mp,
 			   struct mount *mnt);
 struct mount *copy_tree(struct mount *, struct dentry *, int);
-bool is_path_reachable(struct mount *, struct dentry *,
-			 const struct path *root);
-/* count_mounts removed - unused */
+/* is_path_reachable, count_mounts removed - unused */
 #endif  

@@ -2006,16 +2006,17 @@ static int do_mknodat(int dfd, struct filename *name, umode_t mode,
 	return -ENOSYS;
 }
 
+/* Stub: mknod syscalls not needed for Hello World */
 SYSCALL_DEFINE4(mknodat, int, dfd, const char __user *, filename, umode_t, mode,
 		unsigned int, dev)
 {
-	return do_mknodat(dfd, getname(filename), mode, dev);
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE3(mknod, const char __user *, filename, umode_t, mode, unsigned,
 		dev)
 {
-	return do_mknodat(AT_FDCWD, getname(filename), mode, dev);
+	return -ENOSYS;
 }
 
 int vfs_mkdir(struct user_namespace *mnt_userns, struct inode *dir,
@@ -2050,14 +2051,15 @@ int do_mkdirat(int dfd, struct filename *name, umode_t mode)
 	return -ENOSYS;
 }
 
+/* Stub: mkdir syscalls not needed for Hello World */
 SYSCALL_DEFINE3(mkdirat, int, dfd, const char __user *, pathname, umode_t, mode)
 {
-	return do_mkdirat(dfd, getname(pathname), mode);
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE2(mkdir, const char __user *, pathname, umode_t, mode)
 {
-	return do_mkdirat(AT_FDCWD, getname(pathname), mode);
+	return -ENOSYS;
 }
 
 int do_rmdir(int dfd, struct filename *name)
@@ -2066,9 +2068,10 @@ int do_rmdir(int dfd, struct filename *name)
 	return -ENOSYS;
 }
 
+/* Stub: rmdir not needed for Hello World */
 SYSCALL_DEFINE1(rmdir, const char __user *, pathname)
 {
-	return do_rmdir(AT_FDCWD, getname(pathname));
+	return -ENOSYS;
 }
 
 int do_unlinkat(int dfd, struct filename *name)
@@ -2083,9 +2086,10 @@ SYSCALL_DEFINE3(unlinkat, int, dfd, const char __user *, pathname, int, flag)
 	return -ENOSYS;
 }
 
+/* Stub: unlink not needed for Hello World */
 SYSCALL_DEFINE1(unlink, const char __user *, pathname)
 {
-	return do_unlinkat(AT_FDCWD, getname(pathname));
+	return -ENOSYS;
 }
 
 int vfs_symlink(struct user_namespace *mnt_userns, struct inode *dir,
@@ -2102,16 +2106,17 @@ int do_symlinkat(struct filename *from, int newdfd, struct filename *to)
 	return -ENOSYS;
 }
 
+/* Stub: symlink syscalls not needed for Hello World */
 SYSCALL_DEFINE3(symlinkat, const char __user *, oldname, int, newdfd,
 		const char __user *, newname)
 {
-	return do_symlinkat(getname(oldname), newdfd, getname(newname));
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE2(symlink, const char __user *, oldname, const char __user *,
 		newname)
 {
-	return do_symlinkat(getname(oldname), AT_FDCWD, getname(newname));
+	return -ENOSYS;
 }
 
 int vfs_link(struct dentry *old_dentry, struct user_namespace *mnt_userns,

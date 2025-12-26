@@ -26,7 +26,6 @@ static inline void wake_up_nohz_cpu(int cpu)
 #include <linux/sched/debug.h>
 #include <linux/slab.h>
 #include <linux/compat.h>
-#include <linux/random.h>
 #include <linux/sysctl.h>
 
 #include <linux/uaccess.h>

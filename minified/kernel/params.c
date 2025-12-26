@@ -161,23 +161,20 @@ parse_args(const char *doing, char *args, const struct kernel_param *params,
 	return err;
 }
 
+/* Stub: module parameters not needed for Hello World kernel */
 #define STANDARD_PARAM_DEF(name, type, format, strtolfn)                     \
 	int param_set_##name(const char *val, const struct kernel_param *kp) \
 	{                                                                    \
-		return strtolfn(val, 0, (type *)kp->arg);                    \
+		return 0;                                                    \
 	}                                                                    \
 	int param_get_##name(char *buffer, const struct kernel_param *kp)    \
 	{                                                                    \
-		return scnprintf(buffer, PAGE_SIZE, format "\n",             \
-				 *((type *)kp->arg));                        \
+		return 0;                                                    \
 	}                                                                    \
 	const struct kernel_param_ops param_ops_##name = {                   \
 		.set = param_set_##name,                                     \
 		.get = param_get_##name,                                     \
-	};                                                                   \
-	EXPORT_SYMBOL(param_set_##name);                                     \
-	EXPORT_SYMBOL(param_get_##name);                                     \
-	EXPORT_SYMBOL(param_ops_##name)
+	}
 
 STANDARD_PARAM_DEF(byte, unsigned char, "%hhu", kstrtou8);
 STANDARD_PARAM_DEF(short, short, "%hi", kstrtos16);
@@ -191,58 +188,25 @@ STANDARD_PARAM_DEF(hexint, unsigned int, "%#08x", kstrtouint);
 
 int param_set_charp(const char *val, const struct kernel_param *kp)
 {
-	if (strlen(val) > 1024) {
-		pr_err("%s: string parameter too long\n", kp->name);
-		return -ENOSPC;
-	}
-
-	maybe_kfree_parameter(*(char **)kp->arg);
-
-	if (slab_is_available()) {
-		*(char **)kp->arg = kmalloc_parameter(strlen(val) + 1);
-		if (!*(char **)kp->arg)
-			return -ENOMEM;
-		strcpy(*(char **)kp->arg, val);
-	} else
-		*(const char **)kp->arg = val;
-
 	return 0;
 }
-
 int param_get_charp(char *buffer, const struct kernel_param *kp)
 {
-	return scnprintf(buffer, PAGE_SIZE, "%s\n", *((char **)kp->arg));
+	return 0;
 }
-
-static void param_free_charp(void *arg)
-{
-	maybe_kfree_parameter(*((char **)arg));
-}
-
-const struct kernel_param_ops param_ops_charp = {
-	.set = param_set_charp,
-	.get = param_get_charp,
-	.free = param_free_charp,
-};
+const struct kernel_param_ops param_ops_charp = { .set = param_set_charp,
+						  .get = param_get_charp };
 
 int param_set_bool(const char *val, const struct kernel_param *kp)
 {
-	if (!val)
-		val = "1";
-
-	return strtobool(val, kp->arg);
+	return 0;
 }
-
 int param_get_bool(char *buffer, const struct kernel_param *kp)
 {
-	return sprintf(buffer, "%c\n", *(bool *)kp->arg ? 'Y' : 'N');
+	return 0;
 }
-
-const struct kernel_param_ops param_ops_bool = {
-	.flags = KERNEL_PARAM_OPS_FL_NOARG,
-	.set = param_set_bool,
-	.get = param_get_bool,
-};
+const struct kernel_param_ops param_ops_bool = { .set = param_set_bool,
+						 .get = param_get_bool };
 
 #define to_module_attr(n) container_of(n, struct module_attribute, attr)
 #define to_module_kobject(n) container_of(n, struct module_kobject, kobj)

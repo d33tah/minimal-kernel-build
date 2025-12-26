@@ -409,7 +409,6 @@ void release_pages(struct page **pages, int nr)
 		if (unlikely(PageMlocked(page))) {
 			__ClearPageMlocked(page);
 			dec_zone_page_state(page, NR_MLOCK);
-			count_vm_event(UNEVICTABLE_PGCLEARED);
 		}
 
 		list_add(&page->lru, &pages_to_free);

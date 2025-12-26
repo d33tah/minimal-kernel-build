@@ -1031,7 +1031,7 @@ static void copy_seccomp(struct task_struct *p)
 /* Stub: set_tid_address not needed for Hello World */
 SYSCALL_DEFINE1(set_tid_address, int __user *, tidptr)
 {
-	return task_pid_vnr(current);
+	return 1;
 }
 
 static void rt_mutex_init_task(struct task_struct *p)

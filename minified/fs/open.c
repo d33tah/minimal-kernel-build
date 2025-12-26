@@ -227,16 +227,10 @@ int vfs_fchmod(struct file *file, umode_t mode)
 	return chmod_common(&file->f_path, mode);
 }
 
+/* Stub: fchmod not needed for Hello World */
 SYSCALL_DEFINE2(fchmod, unsigned int, fd, umode_t, mode)
 {
-	struct fd f = fdget(fd);
-	int err = -EBADF;
-
-	if (f.file) {
-		err = vfs_fchmod(f.file, mode);
-		fdput(f);
-	}
-	return err;
+	return -ENOSYS;
 }
 
 static int do_fchmodat(int dfd, const char __user *filename, umode_t mode)

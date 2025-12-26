@@ -6,27 +6,21 @@
 
 struct pt_regs;
 
- 
+/* Reduced die_val enum - unused values removed */
 enum die_val {
 	DIE_OOPS = 1,
 	DIE_INT3,
 	DIE_DEBUG,
 	DIE_PANIC,
 	DIE_NMI,
-	DIE_DIE,
-	DIE_KERNELDEBUG,
-	DIE_TRAP,
+	DIE_TRAP = 8,
 	DIE_GPF,
-	DIE_CALL,
-	DIE_PAGE_FAULT,
-	DIE_NMIUNKNOWN,
+	DIE_PAGE_FAULT = 11,
 };
 
 enum show_regs_mode {
 	SHOW_REGS_SHORT,
-	 
-	SHOW_REGS_USER,
-	SHOW_REGS_ALL
+	SHOW_REGS_ALL = 2
 };
 
 extern void die(const char *, struct pt_regs *,long);

@@ -147,9 +147,6 @@ static inline unsigned int buddy_order(struct page *page)
 	return page_private(page);
 }
 
- 
-#define buddy_order_unsafe(page)	READ_ONCE(page_private(page))
-
 /* page_is_buddy removed - unused */
 /* __find_buddy_pfn, find_buddy_page_pfn removed - unused */
 

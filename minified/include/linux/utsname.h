@@ -7,8 +7,6 @@
 #include <linux/ns_common.h>
 #include <linux/err.h>
 
-#define __OLD_UTS_LEN 8
-
 struct oldold_utsname {
 	char sysname[9];
 	char nodename[9];

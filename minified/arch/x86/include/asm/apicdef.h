@@ -5,9 +5,7 @@
 
 /* Only keeping definitions that are actually used */
 
-#define IO_APIC_DEFAULT_PHYS_BASE	0xfec00000
 #define	APIC_DEFAULT_PHYS_BASE		0xfee00000
-#define IO_APIC_SLOT_SIZE		1024
 
 #define	APIC_ID		0x20
 #define	APIC_LVR	0x30
@@ -46,14 +44,8 @@
 #define	APIC_TMCCT	0x390
 #define	APIC_TDCR	0x3E0
 #define	APIC_EFEAT	0x400
-#define APIC_EILVTn(n)	(0x500 + 0x10 * n)
 
 #define APIC_BASE (fix_to_virt(FIX_APIC_BASE))
-#define APIC_BASE_MSR	0x800
-#define XAPIC_ENABLE	(1UL << 11)
-#define X2APIC_ENABLE	(1UL << 10)
-
-#define MAX_IO_APICS 64
 #define MAX_LOCAL_APIC 256
 
 /* Cluster destination mode macros */
@@ -61,19 +53,11 @@
 #define XAPIC_DEST_CPUS_MASK	((1u << XAPIC_DEST_CPUS_SHIFT) - 1)
 #define XAPIC_DEST_CLUSTER_MASK	(XAPIC_DEST_CPUS_MASK << XAPIC_DEST_CPUS_SHIFT)
 #define APIC_CLUSTER(apicid)	((apicid) & XAPIC_DEST_CLUSTER_MASK)
-#define APIC_CLUSTERID(apicid)	(APIC_CLUSTER(apicid) >> XAPIC_DEST_CPUS_SHIFT)
-#define APIC_CPUID(apicid)	((apicid) & XAPIC_DEST_CPUS_MASK)
-#define NUM_APIC_CLUSTERS	((BAD_APICID + 1) >> XAPIC_DEST_CPUS_SHIFT)
 
 #define BAD_APICID 0xFFu
 
 enum apic_delivery_modes {
 	APIC_DELIVERY_MODE_FIXED	= 0,
-	APIC_DELIVERY_MODE_LOWESTPRIO   = 1,
-	APIC_DELIVERY_MODE_SMI		= 2,
-	APIC_DELIVERY_MODE_NMI		= 4,
-	APIC_DELIVERY_MODE_INIT		= 5,
-	APIC_DELIVERY_MODE_EXTINT	= 7,
 };
 
 #endif /* _ASM_X86_APICDEF_H */

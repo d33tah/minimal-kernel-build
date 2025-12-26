@@ -13,19 +13,8 @@ struct pci_sysdata {
 struct pci_bus;
 struct pci_dev;
 
-/* pci_routeirq, noioapicquirk, noioapicreroute, pcibios_enabled removed - unused */
-static inline struct pci_sysdata *to_pci_sysdata(const struct pci_bus *bus) { return NULL; }
-
 extern unsigned long pci_mem_start;
-#define PCIBIOS_MIN_IO		0x1000
 #define PCIBIOS_MIN_MEM		(pci_mem_start)
-#define PCIBIOS_MIN_CARDBUS_IO	0x4000
-
-/* pcibios_get_irq_routing_table removed - unused */
-
-#define HAVE_PCI_MMAP
-#define arch_can_pci_mmap_wc()	0
-#define ARCH_GENERIC_PCI_MMAP_RESOURCE
 
 static inline void early_quirks(void) { }
 extern void pci_iommu_alloc(void);

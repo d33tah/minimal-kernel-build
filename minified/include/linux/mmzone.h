@@ -59,9 +59,6 @@ enum migratetype {
 };
 
 #  define is_migrate_cma(migratetype) false
-#  define is_migrate_cma_page(_page) false
-
-
 
 #define for_each_migratetype_order(order, type) \
 	for (order = 0; order < MAX_ORDER; order++) \
@@ -554,7 +551,6 @@ static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
 #define sparse_init()	do {} while (0)
 #define sparse_index_init(_sec, _nid)  do {} while (0)
 #define pfn_in_present_section pfn_valid
-#define subsection_map_init(_pfn, _nr_pages) do {} while (0)
 
 #endif  
 #endif  

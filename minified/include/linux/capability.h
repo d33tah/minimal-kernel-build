@@ -52,9 +52,6 @@ typedef struct __user_cap_data_struct {
 #define CAP_LEASE            28
 #define CAP_AUDIT_WRITE      29
 #define CAP_AUDIT_CONTROL    30
-#define CAP_OPT_NONE    0
-#define CAP_OPT_NOAUDIT 2
-#define CAP_OPT_INSETID 4
 #define CAP_SETFCAP	     31
 #define CAP_MAC_OVERRIDE     32
 #define CAP_MAC_ADMIN        33

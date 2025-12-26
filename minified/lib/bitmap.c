@@ -24,12 +24,6 @@ bool __bitmap_equal(const unsigned long *bitmap1, const unsigned long *bitmap2,
 	return false;
 }
 
-/* Stub: __bitmap_or not used in minimal kernel */
-void __bitmap_or(unsigned long *dst, const unsigned long *bitmap1,
-		 const unsigned long *bitmap2, unsigned int bits)
-{
-}
-
 void __bitmap_set(unsigned long *map, unsigned int start, int len)
 {
 	unsigned long *p = map + BIT_WORD(start);

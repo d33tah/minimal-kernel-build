@@ -77,16 +77,4 @@ get_stack_pointer(struct task_struct *task, struct pt_regs *regs)
 	return (unsigned long *)task->thread.sp;
 }
 
- 
-struct stack_frame {
-	struct stack_frame *next_frame;
-	unsigned long return_address;
-};
-
-struct stack_frame_ia32 {
-    u32 next_frame;
-    u32 return_address;
-};
-
-/* show_opcodes, show_ip removed - unused */
 #endif  

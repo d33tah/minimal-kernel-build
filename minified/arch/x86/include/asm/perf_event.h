@@ -7,11 +7,7 @@
 #include <linux/static_call.h>
 #include <asm/stacktrace.h>
 
- 
-struct perf_guest_switch_msr {
-	unsigned msr;
-	u64 host, guest;
-};
+/* struct perf_guest_switch_msr removed - unused */
 
 extern void perf_clear_dirty_counters(void);
 

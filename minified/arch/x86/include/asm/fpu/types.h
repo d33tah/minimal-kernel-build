@@ -230,25 +230,8 @@ struct fpu {
 	 
 };
 
- 
-struct fpu_guest {
-	 
-	u64				xfeatures;
+/* struct fpu_guest removed - unused */
 
-	 
-	u64				perm;
-
-	 
-	u64				xfd_err;
-
-	 
-	unsigned int			uabi_size;
-
-	 
-	struct fpstate			*fpstate;
-};
-
- 
 struct fpu_state_config {
 	 
 	unsigned int		max_size;

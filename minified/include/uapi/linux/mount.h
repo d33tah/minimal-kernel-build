@@ -55,6 +55,4 @@ struct mount_attr {
 	__u64 userns_fd;
 };
 
-#define MOUNT_ATTR_SIZE_VER0	32  
-
 #endif  

@@ -1,9 +1,6 @@
 #ifndef _ASM_X86_STATFS_H
 #define _ASM_X86_STATFS_H
 
-/* x86-specific */
-#define ARCH_PACK_COMPAT_STATFS64 __attribute__((packed,aligned(4)))
-
 /* Inlined from asm-generic/statfs.h */
 #include <linux/types.h>
 

@@ -4,17 +4,12 @@
 #include <linux/sched/mm.h>
 #include <linux/sched/coredump.h>
 #include <linux/sched/user.h>
-static inline void task_numa_free(struct task_struct *p, bool final)
-{
-}
-/* end sched/numa_balancing.h */
+/* Removed: task_numa_free, rt_mutex_debug_task_free, copy_semundo, exit_sem, shm_init_task
+ * - All were no-op stubs (~25 LOC) */
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
 #include <linux/sched/cputime.h>
 #include <linux/seq_file.h>
-static inline void rt_mutex_debug_task_free(struct task_struct *tsk)
-{
-}
 #include <linux/init.h>
 #include <linux/unistd.h>
 #include <linux/module.h>
@@ -22,17 +17,6 @@ static inline void rt_mutex_debug_task_free(struct task_struct *tsk)
 #include <linux/completion.h>
 #include <linux/personality.h>
 #include <linux/mempolicy.h>
-static inline int copy_semundo(unsigned long clone_flags,
-			       struct task_struct *tsk)
-{
-	return 0;
-}
-static inline void exit_sem(struct task_struct *tsk)
-{
-}
-static inline void shm_init_task(struct task_struct *task)
-{
-}
 #include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/iocontext.h>
@@ -344,7 +328,6 @@ void free_task(struct task_struct *tsk)
 	scs_release(tsk);
 
 	WARN_ON_ONCE(refcount_read(&tsk->stack_refcount) != 0);
-	rt_mutex_debug_task_free(tsk);
 	arch_release_task_struct(tsk);
 	if (tsk->flags & PF_KTHREAD)
 		free_kthread_struct(tsk);
@@ -489,7 +472,6 @@ void __put_task_struct(struct task_struct *tsk)
 
 	io_uring_free(tsk);
 	cgroup_free(tsk);
-	task_numa_free(tsk, true);
 	security_task_free(tsk);
 
 	exit_creds(tsk);
@@ -1252,16 +1234,12 @@ copy_process(struct pid *pid, int trace, int node,
 	retval = perf_event_init_task(p, clone_flags);
 	if (retval)
 		goto bad_fork_cleanup_policy;
-	shm_init_task(p);
 	retval = security_task_alloc(p, clone_flags);
 	if (retval)
 		goto bad_fork_cleanup_audit;
-	retval = copy_semundo(clone_flags, p);
-	if (retval)
-		goto bad_fork_cleanup_security;
 	retval = copy_files(clone_flags, p);
 	if (retval)
-		goto bad_fork_cleanup_semundo;
+		goto bad_fork_cleanup_security;
 	retval = copy_fs(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_files;
@@ -1479,8 +1457,6 @@ bad_fork_cleanup_fs:
 	exit_fs(p);
 bad_fork_cleanup_files:
 	exit_files(p);
-bad_fork_cleanup_semundo:
-	exit_sem(p);
 bad_fork_cleanup_security:
 	security_task_free(p);
 bad_fork_cleanup_audit:

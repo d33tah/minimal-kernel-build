@@ -127,10 +127,6 @@ SYSCALL_DEFINE2(setrlimit, unsigned int, resource, struct rlimit __user *, rlim)
 {
 	return 0;
 }
-void getrusage(struct task_struct *p, int who, struct rusage *r)
-{
-	memset(r, 0, sizeof(*r));
-}
 SYSCALL_DEFINE2(getrusage, int, who, struct rusage __user *, ru)
 {
 	return -ENOSYS;

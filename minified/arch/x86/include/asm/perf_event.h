@@ -15,11 +15,8 @@ struct perf_guest_switch_msr {
 
 extern void perf_clear_dirty_counters(void);
 
-static inline struct perf_guest_switch_msr *perf_guest_get_msrs(int *nr) { *nr = 0; return NULL; }
-static inline unsigned long perf_misc_flags(struct pt_regs *regs) { return 0; }
-#define perf_misc_flags(regs) perf_misc_flags(regs)
+/* perf_guest_get_msrs, perf_misc_flags removed - unused */
 
- 
 #define perf_arch_fetch_caller_regs(regs, __ip) do { \
 	(regs)->ip = (__ip); \
 	(regs)->sp = (unsigned long)__builtin_frame_address(0); \

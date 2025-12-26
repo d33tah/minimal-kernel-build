@@ -73,9 +73,6 @@
 #define X86_FEATURE_LM			( 1*32+29)
 
 /* Word 3 - Auxiliary flags (required for DISABLE_* macros) */
-#define X86_FEATURE_K6_MTRR		( 3*32+ 1)
-#define X86_FEATURE_CYRIX_ARR		( 3*32+ 2)
-#define X86_FEATURE_CENTAUR_MCR		( 3*32+ 3)
 #define X86_FEATURE_CONSTANT_TSC	( 3*32+ 8)
 #define X86_FEATURE_LFENCE_RDTSC	( 3*32+18)
 #define X86_FEATURE_NOPL		( 3*32+20)

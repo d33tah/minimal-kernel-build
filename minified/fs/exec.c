@@ -203,47 +203,7 @@ err:
 	return err;
 }
 
-struct user_arg_ptr {
-	union {
-		const char __user *const __user *native;
-	} ptr;
-};
-
-static const char __user *get_user_arg_ptr(struct user_arg_ptr argv, int nr)
-{
-	const char __user *native;
-
-	if (get_user(native, argv.ptr.native + nr))
-		return ERR_PTR(-EFAULT);
-
-	return native;
-}
-
-static int count(struct user_arg_ptr argv, int max)
-{
-	int i = 0;
-
-	if (argv.ptr.native != NULL) {
-		for (;;) {
-			const char __user *p = get_user_arg_ptr(argv, i);
-
-			if (!p)
-				break;
-
-			if (IS_ERR(p))
-				return -EFAULT;
-
-			if (i >= max)
-				return -E2BIG;
-			++i;
-
-			if (fatal_signal_pending(current))
-				return -ERESTARTNOHAND;
-			cond_resched();
-		}
-	}
-	return i;
-}
+/* Removed: user_arg_ptr, get_user_arg_ptr, count - only used by removed do_execveat_common */
 
 static int count_strings_kernel(const char *const *argv)
 {
@@ -280,95 +240,7 @@ static int bprm_stack_limits(struct linux_binprm *bprm)
 	return 0;
 }
 
-static int copy_strings(int argc, struct user_arg_ptr argv,
-			struct linux_binprm *bprm)
-{
-	struct page *kmapped_page = NULL;
-	char *kaddr = NULL;
-	unsigned long kpos = 0;
-	int ret;
-
-	while (argc-- > 0) {
-		const char __user *str;
-		int len;
-		unsigned long pos;
-
-		ret = -EFAULT;
-		str = get_user_arg_ptr(argv, argc);
-		if (IS_ERR(str))
-			goto out;
-
-		len = strnlen_user(str, MAX_ARG_STRLEN);
-		if (!len)
-			goto out;
-
-		ret = -E2BIG;
-		if (!valid_arg_len(bprm, len))
-			goto out;
-
-		pos = bprm->p;
-		str += len;
-		bprm->p -= len;
-		if (bprm->p < bprm->argmin)
-			goto out;
-
-		while (len > 0) {
-			int offset, bytes_to_copy;
-
-			if (fatal_signal_pending(current)) {
-				ret = -ERESTARTNOHAND;
-				goto out;
-			}
-			cond_resched();
-
-			offset = pos % PAGE_SIZE;
-			if (offset == 0)
-				offset = PAGE_SIZE;
-
-			bytes_to_copy = offset;
-			if (bytes_to_copy > len)
-				bytes_to_copy = len;
-
-			offset -= bytes_to_copy;
-			pos -= bytes_to_copy;
-			str -= bytes_to_copy;
-			len -= bytes_to_copy;
-
-			if (!kmapped_page || kpos != (pos & PAGE_MASK)) {
-				struct page *page;
-
-				page = get_arg_page(bprm, pos, 1);
-				if (!page) {
-					ret = -E2BIG;
-					goto out;
-				}
-
-				if (kmapped_page) {
-					flush_dcache_page(kmapped_page);
-					kunmap(kmapped_page);
-					put_arg_page(kmapped_page);
-				}
-				kmapped_page = page;
-				kaddr = kmap(kmapped_page);
-				kpos = pos & PAGE_MASK;
-				flush_arg_page(bprm, kpos, kmapped_page);
-			}
-			if (copy_from_user(kaddr + offset, str,
-					   bytes_to_copy)) {
-				ret = -EFAULT;
-				goto out;
-			}
-		}
-	}
-	ret = 0;
-out:
-	if (kmapped_page) {
-		flush_dcache_page(kmapped_page);
-		kunmap(kmapped_page);
-		put_arg_page(kmapped_page);
-	}
-	return ret;
-}
+/* Removed: copy_strings() - only used by removed do_execveat_common */
 
 int copy_string_kernel(const char *arg, struct linux_binprm *bprm)
 {
@@ -1175,73 +1047,7 @@ out_unmark:
 	return retval;
 }
 
-static int do_execveat_common(int fd, struct filename *filename,
-			      struct user_arg_ptr argv,
-			      struct user_arg_ptr envp, int flags)
-{
-	struct linux_binprm *bprm;
-	int retval;
-
-	if (IS_ERR(filename))
-		return PTR_ERR(filename);
-
-	if ((current->flags & PF_NPROC_EXCEEDED) &&
-	    is_ucounts_overlimit(current_ucounts(), UCOUNT_RLIMIT_NPROC,
-				 rlimit(RLIMIT_NPROC))) {
-		retval = -EAGAIN;
-		goto out_ret;
-	}
-
-	current->flags &= ~PF_NPROC_EXCEEDED;
-
-	bprm = alloc_bprm(fd, filename);
-	if (IS_ERR(bprm)) {
-		retval = PTR_ERR(bprm);
-		goto out_ret;
-	}
-
-	retval = count(argv, MAX_ARG_STRINGS);
-	if (retval < 0)
-		goto out_free;
-	bprm->argc = retval;
-
-	retval = count(envp, MAX_ARG_STRINGS);
-	if (retval < 0)
-		goto out_free;
-	bprm->envc = retval;
-
-	retval = bprm_stack_limits(bprm);
-	if (retval < 0)
-		goto out_free;
-
-	retval = copy_string_kernel(bprm->filename, bprm);
-	if (retval < 0)
-		goto out_free;
-	bprm->exec = bprm->p;
-
-	retval = copy_strings(bprm->envc, envp, bprm);
-	if (retval < 0)
-		goto out_free;
-
-	retval = copy_strings(bprm->argc, argv, bprm);
-	if (retval < 0)
-		goto out_free;
-
-	if (bprm->argc == 0) {
-		retval = copy_string_kernel("", bprm);
-		if (retval < 0)
-			goto out_free;
-		bprm->argc = 1;
-	}
-
-	retval = bprm_execve(bprm, fd, filename, flags);
-out_free:
-	free_bprm(bprm);
-
-out_ret:
-	putname(filename);
-	return retval;
-}
+/* Removed: do_execveat_common - execve syscall is stubbed */
 
 int kernel_execve(const char *kernel_filename, const char *const *argv,
 		  const char *const *envp)
@@ -1301,14 +1107,7 @@ out_ret:
 	return retval;
 }
 
-static int do_execve(struct filename *filename,
-		     const char __user *const __user *__argv,
-		     const char __user *const __user *__envp)
-{
-	struct user_arg_ptr argv = { .ptr.native = __argv };
-	struct user_arg_ptr envp = { .ptr.native = __envp };
-	return do_execveat_common(AT_FDCWD, filename, argv, envp, 0);
-}
+/* Removed: do_execve - execve syscall is stubbed */
 
 void set_binfmt(struct linux_binfmt *new)
 {

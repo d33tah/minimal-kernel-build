@@ -1999,13 +1999,6 @@ int vfs_mknod(struct user_namespace *mnt_userns, struct inode *dir,
 	return error;
 }
 
-static int do_mknodat(int dfd, struct filename *name, umode_t mode,
-		      unsigned int dev)
-{
-	putname(name);
-	return -ENOSYS;
-}
-
 /* Stub: mknod syscalls not needed for Hello World */
 SYSCALL_DEFINE4(mknodat, int, dfd, const char __user *, filename, umode_t, mode,
 		unsigned int, dev)
@@ -2043,12 +2036,6 @@ int vfs_mkdir(struct user_namespace *mnt_userns, struct inode *dir,
 	if (!error)
 		fsnotify_mkdir(dir, dentry);
 	return error;
-}
-
-int do_mkdirat(int dfd, struct filename *name, umode_t mode)
-{
-	putname(name);
-	return -ENOSYS;
 }
 
 /* Stub: mkdir syscalls not needed for Hello World */
@@ -2099,13 +2086,6 @@ int vfs_symlink(struct user_namespace *mnt_userns, struct inode *dir,
 	return -EPERM;
 }
 
-int do_symlinkat(struct filename *from, int newdfd, struct filename *to)
-{
-	putname(to);
-	putname(from);
-	return -ENOSYS;
-}
-
 /* Stub: symlink syscalls not needed for Hello World */
 SYSCALL_DEFINE3(symlinkat, const char __user *, oldname, int, newdfd,
 		const char __user *, newname)
@@ -2127,14 +2107,6 @@ int vfs_link(struct dentry *old_dentry, struct user_namespace *mnt_userns,
 	return -EPERM;
 }
 
-int do_linkat(int olddfd, struct filename *old, int newdfd,
-	      struct filename *new, int flags)
-{
-	putname(old);
-	putname(new);
-	return -ENOSYS;
-}
-
 /* Stub: linkat not needed for Hello World */
 SYSCALL_DEFINE5(linkat, int, olddfd, const char __user *, oldname, int, newdfd,
 		const char __user *, newname, int, flags)
@@ -2146,14 +2118,6 @@ SYSCALL_DEFINE5(linkat, int, olddfd, const char __user *, oldname, int, newdfd,
 SYSCALL_DEFINE2(link, const char __user *, oldname, const char __user *,
 		newname)
 {
-	return -ENOSYS;
-}
-
-int do_renameat2(int olddfd, struct filename *from, int newdfd,
-		 struct filename *to, unsigned int flags)
-{
-	putname(from);
-	putname(to);
 	return -ENOSYS;
 }
 

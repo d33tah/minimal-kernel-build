@@ -1131,11 +1131,6 @@ error:
 	return -EINVAL;
 }
 
-static void list_slab_objects(struct kmem_cache *s, struct slab *slab,
-			      const char *text)
-{
-}
-
 static void free_partial(struct kmem_cache *s, struct kmem_cache_node *n)
 {
 	/* Simplified: just clear the partial list, no actual freeing */

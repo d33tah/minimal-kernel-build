@@ -1311,20 +1311,7 @@ typedef int (*pte_fn_t)(pte_t *pte, unsigned long addr, void *data);
 extern void init_mem_debugging_and_hardening(void);
 
 DECLARE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_ALLOC_DEFAULT_ON, init_on_alloc);
-static inline bool want_init_on_alloc(gfp_t flags)
-{
-	if (static_branch_maybe(CONFIG_INIT_ON_ALLOC_DEFAULT_ON,
-				&init_on_alloc))
-		return true;
-	return flags & __GFP_ZERO;
-}
-
 DECLARE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_FREE_DEFAULT_ON, init_on_free);
-static inline bool want_init_on_free(void)
-{
-	return static_branch_maybe(CONFIG_INIT_ON_FREE_DEFAULT_ON,
-				   &init_on_free);
-}
 
 static inline bool debug_pagealloc_enabled(void)
 {

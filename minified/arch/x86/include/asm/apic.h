@@ -13,24 +13,6 @@
 #include <asm/msr.h>
 #include <asm/hardirq.h>
 
-#define ARCH_APICTIMER_STOPS_ON_C3	1
-
- 
-#define APIC_QUIET   0
-#define APIC_VERBOSE 1
-#define APIC_DEBUG   2
-
- 
-#define APIC_EXTNMI_BSP		0  
-#define APIC_EXTNMI_ALL		1
-#define APIC_EXTNMI_NONE	2
-
- 
-#define apic_printk(v, s, a...) do {       \
-		if ((v) <= apic_verbosity) \
-			printk(s, ##a);    \
-	} while (0)
-
 
 static inline void generic_apic_probe(void)
 {

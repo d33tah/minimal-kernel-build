@@ -93,27 +93,4 @@ struct desc_ptr {
  
 #define	BOOT_IDT_ENTRIES	32
 
- 
-#define AR_TYPE_RODATA		(0 * (1 << 9))
-#define AR_TYPE_RWDATA		(1 * (1 << 9))
-#define AR_TYPE_RODATA_EXPDOWN	(2 * (1 << 9))
-#define AR_TYPE_RWDATA_EXPDOWN	(3 * (1 << 9))
-#define AR_TYPE_XOCODE		(4 * (1 << 9))
-#define AR_TYPE_XRCODE		(5 * (1 << 9))
-#define AR_TYPE_XOCODE_CONF	(6 * (1 << 9))
-#define AR_TYPE_XRCODE_CONF	(7 * (1 << 9))
-#define AR_TYPE_MASK		(7 * (1 << 9))
-
-#define AR_DPL0			(0 * (1 << 13))
-#define AR_DPL3			(3 * (1 << 13))
-#define AR_DPL_MASK		(3 * (1 << 13))
-
-#define AR_A			(1 << 8)    
-#define AR_S			(1 << 12)   
-#define AR_P			(1 << 15)   
-#define AR_AVL			(1 << 20)   
-#define AR_L			(1 << 21)   
-#define AR_DB			(1 << 22)   
-#define AR_G			(1 << 23)   
-
 #endif  

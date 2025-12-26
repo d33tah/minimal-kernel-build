@@ -1461,7 +1461,6 @@ bad_fork_cleanup_security:
 	security_task_free(p);
 bad_fork_cleanup_audit:
 	audit_free(p);
-bad_fork_cleanup_perf:
 	perf_event_free_task(p);
 bad_fork_cleanup_policy:
 	lockdep_free_task(p);

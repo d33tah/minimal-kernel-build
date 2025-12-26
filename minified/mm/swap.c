@@ -156,8 +156,6 @@ void folio_rotate_reclaimable(struct folio *folio)
 static void __folio_activate(struct folio *folio, struct lruvec *lruvec)
 {
 	if (!folio_test_active(folio) && !folio_test_unevictable(folio)) {
-		long nr_pages = folio_nr_pages(folio);
-
 		lruvec_del_folio(lruvec, folio);
 		folio_set_active(folio);
 		lruvec_add_folio(lruvec, folio);
@@ -247,9 +245,6 @@ void lru_cache_add_inactive_or_unevictable(struct page *page,
 
 static void lru_deactivate_file_fn(struct page *page, struct lruvec *lruvec)
 {
-	bool active = PageActive(page);
-	int nr_pages = thp_nr_pages(page);
-
 	if (PageUnevictable(page))
 		return;
 
@@ -432,8 +427,7 @@ void __pagevec_release(struct pagevec *pvec)
 
 static void __pagevec_lru_add_fn(struct folio *folio, struct lruvec *lruvec)
 {
-	int was_unevictable = folio_test_clear_unevictable(folio);
-	long nr_pages = folio_nr_pages(folio);
+	(void)folio_test_clear_unevictable(folio); /* side effect needed */
 
 	VM_BUG_ON_FOLIO(folio_test_lru(folio), folio);
 

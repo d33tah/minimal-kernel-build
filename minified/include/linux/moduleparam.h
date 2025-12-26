@@ -169,14 +169,7 @@ extern char *parse_args(const char *name,
 #define param_check_short(name, p) __param_check(name, p, short)
 #define param_check_ushort(name, p) __param_check(name, p, unsigned short)
 
-extern const struct kernel_param_ops param_ops_int;
-extern int param_set_int(const char *val, const struct kernel_param *kp);
-extern int param_get_int(char *buffer, const struct kernel_param *kp);
 #define param_check_int(name, p) __param_check(name, p, int)
-
-extern const struct kernel_param_ops param_ops_uint;
-extern int param_set_uint(const char *val, const struct kernel_param *kp);
-extern int param_get_uint(char *buffer, const struct kernel_param *kp);
 #define param_check_uint(name, p) __param_check(name, p, unsigned int)
 
 #define param_check_long(name, p) __param_check(name, p, long)

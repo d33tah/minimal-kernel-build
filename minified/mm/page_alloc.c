@@ -434,8 +434,6 @@ static void __free_pages_ok(struct page *page, unsigned int order,
 	spin_lock_irqsave(&zone->lock, flags);
 	__free_one_page(page, pfn, zone, order, migratetype, fpi_flags);
 	spin_unlock_irqrestore(&zone->lock, flags);
-
-	__count_vm_events(PGFREE, 1 << order);
 }
 
 void __free_pages_core(struct page *page, unsigned int order)
@@ -720,10 +718,7 @@ void split_page(struct page *page, unsigned int order)
 		set_page_refcounted(page + i);
 }
 
-static inline void zone_statistics(struct zone *preferred_zone, struct zone *z,
-				   long nr_account)
-{
-}
+/* Removed: zone_statistics - NUMA stats not needed */
 
 static inline struct page *
 __rmqueue_pcplist(struct zone *zone, unsigned int order, int migratetype,
@@ -809,16 +804,7 @@ static inline struct page *rmqueue(struct zone *preferred_zone,
 		spin_unlock_irqrestore(&zone->lock, flags);
 	} while (check_new_pages(page, order));
 
-	__count_zid_vm_events(PGALLOC, page_zonenum(page), 1 << order);
-	zone_statistics(preferred_zone, zone, 1);
-
 out:
-
-	if (test_bit(ZONE_BOOSTED_WATERMARK, &zone->flags)) {
-		clear_bit(ZONE_BOOSTED_WATERMARK, &zone->flags);
-		wakeup_kswapd(zone, 0, 0, zone_idx(zone));
-	}
-
 	VM_BUG_ON_PAGE(page && bad_range(zone, page), page);
 	return page;
 

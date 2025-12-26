@@ -62,7 +62,6 @@ static void __page_cache_release(struct page *page)
 
 		__ClearPageMlocked(page);
 		mod_zone_page_state(page_zone(page), NR_MLOCK, -nr_pages);
-		count_vm_events(UNEVICTABLE_PGCLEARED, nr_pages);
 	}
 }
 
@@ -124,7 +123,6 @@ static void pagevec_move_tail_fn(struct page *page, struct lruvec *lruvec)
 		lruvec_del_folio(lruvec, folio);
 		folio_clear_active(folio);
 		lruvec_add_folio_tail(lruvec, folio);
-		__count_vm_events(PGROTATED, folio_nr_pages(folio));
 	}
 }
 
@@ -163,10 +161,6 @@ static void __folio_activate(struct folio *folio, struct lruvec *lruvec)
 		lruvec_del_folio(lruvec, folio);
 		folio_set_active(folio);
 		lruvec_add_folio(lruvec, folio);
-
-		__count_vm_events(PGACTIVATE, nr_pages);
-		__count_memcg_events(lruvec_memcg(lruvec), PGACTIVATE,
-				     nr_pages);
 	}
 }
 
@@ -271,29 +265,16 @@ static void lru_deactivate_file_fn(struct page *page, struct lruvec *lruvec)
 		SetPageReclaim(page);
 	} else {
 		add_page_to_lru_list_tail(page, lruvec);
-		__count_vm_events(PGROTATED, nr_pages);
-	}
-
-	if (active) {
-		__count_vm_events(PGDEACTIVATE, nr_pages);
-		__count_memcg_events(lruvec_memcg(lruvec), PGDEACTIVATE,
-				     nr_pages);
 	}
 }
 
 static void lru_deactivate_fn(struct page *page, struct lruvec *lruvec)
 {
 	if (PageActive(page) && !PageUnevictable(page)) {
-		int nr_pages = thp_nr_pages(page);
-
 		del_page_from_lru_list(page, lruvec);
 		ClearPageActive(page);
 		ClearPageReferenced(page);
 		add_page_to_lru_list(page, lruvec);
-
-		__count_vm_events(PGDEACTIVATE, nr_pages);
-		__count_memcg_events(lruvec_memcg(lruvec), PGDEACTIVATE,
-				     nr_pages);
 	}
 }
 
@@ -301,18 +282,12 @@ static void lru_lazyfree_fn(struct page *page, struct lruvec *lruvec)
 {
 	if (PageAnon(page) && PageSwapBacked(page) && !PageSwapCache(page) &&
 	    !PageUnevictable(page)) {
-		int nr_pages = thp_nr_pages(page);
-
 		del_page_from_lru_list(page, lruvec);
 		ClearPageActive(page);
 		ClearPageReferenced(page);
 
 		ClearPageSwapBacked(page);
 		add_page_to_lru_list(page, lruvec);
-
-		__count_vm_events(PGLAZYFREE, nr_pages);
-		__count_memcg_events(lruvec_memcg(lruvec), PGLAZYFREE,
-				     nr_pages);
 	}
 }
 
@@ -465,16 +440,10 @@ static void __pagevec_lru_add_fn(struct folio *folio, struct lruvec *lruvec)
 
 	folio_set_lru(folio);
 
-	if (folio_evictable(folio)) {
-		if (was_unevictable)
-			__count_vm_events(UNEVICTABLE_PGRESCUED, nr_pages);
-	} else {
+	if (!folio_evictable(folio)) {
 		folio_clear_active(folio);
 		folio_set_unevictable(folio);
-
 		folio->mlock_count = 0;
-		if (!was_unevictable)
-			__count_vm_events(UNEVICTABLE_PGCULLED, nr_pages);
 	}
 
 	lruvec_add_folio(lruvec, folio);

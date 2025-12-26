@@ -1,11 +1,8 @@
 #ifndef _LINUX_VT_H
 #define _LINUX_VT_H
 
-/* Inlined from uapi/linux/vt.h */
 #define MIN_NR_CONSOLES 1
 #define MAX_NR_CONSOLES	63
-
-#define VT_OPENQRY	0x5600
 
 struct vt_mode {
 	char mode;
@@ -14,11 +11,7 @@ struct vt_mode {
 	short acqsig;
 	short frsig;
 };
-#define VT_GETMODE	0x5601
-#define VT_SETMODE	0x5602
-#define		VT_AUTO		0x00
-#define		VT_PROCESS	0x01
-#define		VT_ACKACQ	0x02
+#define VT_AUTO		0x00
 
 struct vt_stat {
 	unsigned short v_active;
@@ -26,21 +19,8 @@ struct vt_stat {
 	unsigned short v_state;
 };
 #define VT_GETSTATE	0x5603
-#define VT_SENDSIG	0x5604
-
-#define VT_RELDISP	0x5605
-
-#define VT_ACTIVATE	0x5606
-#define VT_WAITACTIVE	0x5607
-#define VT_DISALLOCATE	0x5608
 #define VT_GETHIFONTMASK 0x560D
-/* End uapi/linux/vt.h */
 
-/* Internal VT definitions */
-#define VT_ALLOCATE		0x0001
-#define VT_DEALLOCATE		0x0002
-#define VT_WRITE		0x0003
-#define VT_UPDATE		0x0004
-#define VT_PREWRITE		0x0005
+#define VT_ALLOCATE	0x0001
 
 #endif

@@ -431,15 +431,6 @@ static struct slab *new_slab(struct kmem_cache *s, gfp_t flags, int node)
 		s, flags & (GFP_RECLAIM_MASK | GFP_CONSTRAINT_MASK), node);
 }
 
-/* Removed: __free_slab, rcu_free_slab, free_slab
- * - Simplified since __free_pages is a no-op (~35 LOC) */
-
-static void discard_slab(struct kmem_cache *s, struct slab *slab)
-{
-	/* No-op: bump allocator style - no deallocation */
-	dec_slabs_node(s, slab_nid(slab), slab->objects);
-}
-
 static inline void __add_partial(struct kmem_cache_node *n, struct slab *slab,
 				 int tail)
 {

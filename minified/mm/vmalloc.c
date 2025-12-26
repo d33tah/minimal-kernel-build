@@ -883,18 +883,6 @@ static __always_inline unsigned long __alloc_vmap_area(unsigned long size,
 	return nva_start_addr;
 }
 
-static void free_vmap_area(struct vmap_area *va)
-{
-	spin_lock(&vmap_area_lock);
-	unlink_va(va, &vmap_area_root);
-	spin_unlock(&vmap_area_lock);
-
-	spin_lock(&free_vmap_area_lock);
-	merge_or_add_vmap_area_augment(va, &free_vmap_area_root,
-				       &free_vmap_area_list);
-	spin_unlock(&free_vmap_area_lock);
-}
-
 static inline void preload_this_cpu_lock(spinlock_t *lock, gfp_t gfp_mask,
 					 int node)
 {

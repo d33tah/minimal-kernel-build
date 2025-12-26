@@ -154,20 +154,6 @@ static void pcpu_schedule_balance_work(void)
 		schedule_work(&pcpu_balance_work);
 }
 
-static bool pcpu_addr_in_chunk(struct pcpu_chunk *chunk, void *addr)
-{
-	void *start_addr, *end_addr;
-
-	if (!chunk)
-		return false;
-
-	start_addr = chunk->base_addr + chunk->start_offset;
-	end_addr = chunk->base_addr + chunk->nr_pages * PAGE_SIZE -
-		   chunk->end_offset;
-
-	return addr >= start_addr && addr < end_addr;
-}
-
 static int __pcpu_size_to_slot(int size)
 {
 	int highbit = fls(size);
@@ -195,11 +181,6 @@ static int pcpu_chunk_slot(const struct pcpu_chunk *chunk)
 static void pcpu_set_page_chunk(struct page *page, struct pcpu_chunk *pcpu)
 {
 	page->index = (unsigned long)pcpu;
-}
-
-static struct pcpu_chunk *pcpu_get_page_chunk(struct page *page)
-{
-	return (struct pcpu_chunk *)page->index;
 }
 
 static unsigned long pcpu_unit_page_offset(unsigned int cpu, int page_idx)
@@ -1032,10 +1013,6 @@ static bool pcpu_memcg_pre_alloc_hook(size_t size, gfp_t gfp,
 static void pcpu_memcg_post_alloc_hook(struct obj_cgroup *objcg,
 				       struct pcpu_chunk *chunk, int off,
 				       size_t size)
-{
-}
-
-static void pcpu_memcg_free_hook(struct pcpu_chunk *chunk, int off, size_t size)
 {
 }
 

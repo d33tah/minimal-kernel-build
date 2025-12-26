@@ -30,10 +30,4 @@ extern unsigned long pci_mem_start;
 static inline void early_quirks(void) { }
 extern void pci_iommu_alloc(void);
 
-struct pci_setup_rom {
-	unsigned long data;
-	uint16_t vendor;
-	uint16_t devid;
-};
-
 #endif  

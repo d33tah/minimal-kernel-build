@@ -12,29 +12,6 @@ struct user_regs_struct { unsigned long bx; unsigned long cx; unsigned long dx; 
 struct user { struct user_regs_struct regs; int u_fpvalid; struct user_i387_struct i387; unsigned long int u_tsize; unsigned long int u_dsize; unsigned long int u_ssize; unsigned long start_code; unsigned long start_stack; long int signal; int reserved; unsigned long u_ar0; struct user_i387_struct *u_fpstate; unsigned long magic; char u_comm[32]; int u_debugreg[8]; };
 /* End of user_32.h */
 
-struct user_ymmh_regs {
-	 
-	__u32 ymmh_space[64];
-};
-
-struct user_xstate_header {
-	__u64 xfeatures;
-	__u64 reserved1[2];
-	__u64 reserved2[5];
-};
-
- 
 #define USER_XSTATE_FX_SW_WORDS 6
-#define USER_XSTATE_XCR0_WORD	0
-
-struct user_xstateregs {
-	struct {
-		__u64 fpx_space[58];
-		__u64 xstate_fx_sw[USER_XSTATE_FX_SW_WORDS];
-	} i387;
-	struct user_xstate_header header;
-	struct user_ymmh_regs ymmh;
-	 
-};
 
 #endif  

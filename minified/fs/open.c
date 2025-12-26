@@ -172,31 +172,27 @@ int ksys_fallocate(int fd, int mode, loff_t offset, loff_t len)
 	return -ENOSYS;
 }
 
+/* Stub: fallocate not needed for Hello World */
 SYSCALL_DEFINE4(fallocate, int, fd, int, mode, loff_t, offset, loff_t, len)
-{
-	return ksys_fallocate(fd, mode, offset, len);
-}
-
-static long do_faccessat(int dfd, const char __user *filename, int mode,
-			 int flags)
 {
 	return -ENOSYS;
 }
 
+/* Stub: access syscalls not needed for Hello World */
 SYSCALL_DEFINE3(faccessat, int, dfd, const char __user *, filename, int, mode)
 {
-	return do_faccessat(dfd, filename, mode, 0);
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE4(faccessat2, int, dfd, const char __user *, filename, int, mode,
 		int, flags)
 {
-	return do_faccessat(dfd, filename, mode, flags);
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE2(access, const char __user *, filename, int, mode)
 {
-	return do_faccessat(AT_FDCWD, filename, mode, 0);
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE1(chdir, const char __user *, filename)
@@ -238,15 +234,16 @@ static int do_fchmodat(int dfd, const char __user *filename, umode_t mode)
 	return -ENOSYS;
 }
 
+/* Stub: chmod syscalls not needed for Hello World */
 SYSCALL_DEFINE3(fchmodat, int, dfd, const char __user *, filename, umode_t,
 		mode)
 {
-	return do_fchmodat(dfd, filename, mode);
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE2(chmod, const char __user *, filename, umode_t, mode)
 {
-	return do_fchmodat(AT_FDCWD, filename, mode);
+	return -ENOSYS;
 }
 
 int chown_common(const struct path *path, uid_t user, gid_t group)
@@ -255,28 +252,22 @@ int chown_common(const struct path *path, uid_t user, gid_t group)
 	return -EOPNOTSUPP;
 }
 
-static int do_fchownat(int dfd, const char __user *filename, uid_t user,
-		       gid_t group, int flag)
+/* Stub: chown syscalls not needed for Hello World */
+SYSCALL_DEFINE5(fchownat, int, dfd, const char __user *, filename, uid_t, user,
+		gid_t, group, int, flag)
 {
 	return -ENOSYS;
 }
 
-SYSCALL_DEFINE5(fchownat, int, dfd, const char __user *, filename, uid_t, user,
-		gid_t, group, int, flag)
-{
-	return do_fchownat(dfd, filename, user, group, flag);
-}
-
 SYSCALL_DEFINE3(chown, const char __user *, filename, uid_t, user, gid_t, group)
 {
-	return do_fchownat(AT_FDCWD, filename, user, group, 0);
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE3(lchown, const char __user *, filename, uid_t, user, gid_t,
 		group)
 {
-	return do_fchownat(AT_FDCWD, filename, user, group,
-			   AT_SYMLINK_NOFOLLOW);
+	return -ENOSYS;
 }
 
 int vfs_fchown(struct file *file, uid_t user, gid_t group)

@@ -138,8 +138,6 @@ static inline void alloc_bootmem_cpumask_var(cpumask_var_t *mask)
 extern const DECLARE_BITMAP(cpu_all_bits, NR_CPUS);
 #define cpu_all_mask to_cpumask(cpu_all_bits)
 
-#define cpu_none_mask to_cpumask(cpu_bit_bitmap[0])
-
 #define for_each_possible_cpu(cpu) for_each_cpu((cpu), cpu_possible_mask)
 #define for_each_online_cpu(cpu)   for_each_cpu((cpu), cpu_online_mask)
 #define for_each_present_cpu(cpu)  for_each_cpu((cpu), cpu_present_mask)

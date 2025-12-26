@@ -20,14 +20,6 @@ static inline int amd_iommu_detect(void)
 
 const struct dma_map_ops *dma_ops;
 
-int panic_on_overflow __read_mostly = 0;
-int force_iommu __read_mostly = 0;
-
-int iommu_merge __read_mostly = 0;
-
-int no_iommu __read_mostly;
-int iommu_detected __read_mostly = 0;
-
 static inline void __init pci_swiotlb_detect(void)
 {
 }

@@ -5,12 +5,6 @@
 #include <linux/acpi.h>
 
 #include <asm/e820/api.h>
-
-extern int force_iommu, no_iommu;
-extern int iommu_detected;
-extern int iommu_merge;
-extern int panic_on_overflow;
-
 #define x86_swiotlb_enable false
 
  

@@ -7,11 +7,6 @@ unsigned long preset_lpj;
 
 static DEFINE_PER_CPU(unsigned long, cpu_loops_per_jiffy) = { 0 };
 
-unsigned long __attribute__((weak)) calibrate_delay_is_known(void)
-{
-	return 0;
-}
-
 void __attribute__((weak)) calibration_delay_done(void)
 {
 }

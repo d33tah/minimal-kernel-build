@@ -56,16 +56,8 @@ struct alloc_context;
 #include <linux/sched/rt.h>
 #include <linux/sched/mm.h>
 
-static inline void reset_page_owner(struct page *page, unsigned short order)
-{
-}
-static inline void set_page_owner(struct page *page, unsigned int order,
-				  gfp_t gfp_mask)
-{
-}
-static inline void split_page_owner(struct page *page, unsigned short order)
-{
-}
+/* Removed: reset_page_owner, set_page_owner, split_page_owner
+ * - Dead code: page_owner tracking not needed for minimal kernel (~9 LOC) */
 #include <linux/page_table_check.h>
 #include <linux/kthread.h>
 #include <linux/memcontrol.h>
@@ -383,10 +375,6 @@ static __always_inline bool free_pages_prepare(struct page *page,
 		__memcg_kmem_uncharge_page(page, order);
 
 	page->flags &= ~PAGE_FLAGS_CHECK_AT_PREP;
-	reset_page_owner(page, order);
-	page_table_check_free(page, order);
-
-	arch_free_page(page, order);
 	return true;
 }
 
@@ -534,9 +522,6 @@ inline void post_alloc_hook(struct page *page, unsigned int order,
 	/* Stub: minimal post-allocation setup */
 	set_page_private(page, 0);
 	set_page_refcounted(page);
-	arch_alloc_page(page, order);
-	set_page_owner(page, order, gfp_flags);
-	page_table_check_alloc(page, order);
 }
 
 static void prep_new_page(struct page *page, unsigned int order,
@@ -733,8 +718,6 @@ void split_page(struct page *page, unsigned int order)
 
 	for (i = 1; i < (1 << order); i++)
 		set_page_refcounted(page + i);
-	split_page_owner(page, 1 << order);
-	split_page_memcg(page, 1 << order);
 }
 
 static inline void zone_statistics(struct zone *preferred_zone, struct zone *z,

@@ -40,58 +40,46 @@ SYSCALL_DEFINE3(ia32_truncate64, const char __user *, filename, unsigned long,
 	return -ENOSYS;
 }
 
+/* Stub: ia32 compat syscalls not needed for Hello World */
 SYSCALL_DEFINE3(ia32_ftruncate64, unsigned int, fd, unsigned long, offset_low,
 		unsigned long, offset_high)
 {
-	return ksys_ftruncate(fd, ((loff_t)offset_high << 32) | offset_low);
+	return -ENOSYS;
 }
-
 SYSCALL_DEFINE5(ia32_pread64, unsigned int, fd, char __user *, ubuf, u32, count,
 		u32, poslo, u32, poshi)
 {
-	return ksys_pread64(fd, ubuf, count,
-			    ((loff_t)AA(poshi) << 32) | AA(poslo));
+	return -ENOSYS;
 }
-
 SYSCALL_DEFINE5(ia32_pwrite64, unsigned int, fd, const char __user *, ubuf, u32,
 		count, u32, poslo, u32, poshi)
 {
-	return ksys_pwrite64(fd, ubuf, count,
-			     ((loff_t)AA(poshi) << 32) | AA(poslo));
+	return -ENOSYS;
 }
-
 SYSCALL_DEFINE6(ia32_fadvise64_64, int, fd, __u32, offset_low, __u32,
 		offset_high, __u32, len_low, __u32, len_high, int, advice)
 {
-	return ksys_fadvise64_64(fd, (((u64)offset_high) << 32) | offset_low,
-				 (((u64)len_high) << 32) | len_low, advice);
+	return -ENOSYS;
 }
-
 SYSCALL_DEFINE4(ia32_readahead, int, fd, unsigned int, off_lo, unsigned int,
 		off_hi, size_t, count)
 {
-	return ksys_readahead(fd, ((u64)off_hi << 32) | off_lo, count);
+	return -ENOSYS;
 }
-
 SYSCALL_DEFINE6(ia32_sync_file_range, int, fd, unsigned int, off_low,
 		unsigned int, off_hi, unsigned int, n_low, unsigned int, n_hi,
 		int, flags)
 {
-	return ksys_sync_file_range(fd, ((u64)off_hi << 32) | off_low,
-				    ((u64)n_hi << 32) | n_low, flags);
+	return -ENOSYS;
 }
-
 SYSCALL_DEFINE5(ia32_fadvise64, int, fd, unsigned int, offset_lo, unsigned int,
 		offset_hi, size_t, len, int, advice)
 {
-	return ksys_fadvise64_64(fd, ((u64)offset_hi << 32) | offset_lo, len,
-				 advice);
+	return -ENOSYS;
 }
-
 SYSCALL_DEFINE6(ia32_fallocate, int, fd, int, mode, unsigned int, offset_lo,
 		unsigned int, offset_hi, unsigned int, len_lo, unsigned int,
 		len_hi)
 {
-	return ksys_fallocate(fd, mode, ((u64)offset_hi << 32) | offset_lo,
-			      ((u64)len_hi << 32) | len_lo);
+	return -ENOSYS;
 }

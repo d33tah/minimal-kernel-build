@@ -635,11 +635,10 @@ SYSCALL_DEFINE4(openat2, int, dfd, const char __user *, filename,
 	return do_sys_openat2(dfd, filename, &tmp);
 }
 
-/* x86 only - alpha exclusion removed, creat syscall always defined */
+/* Stub: creat not needed for Hello World */
 SYSCALL_DEFINE2(creat, const char __user *, pathname, umode_t, mode)
 {
-	return do_sys_open(AT_FDCWD, pathname, O_CREAT | O_WRONLY | O_TRUNC,
-			   mode);
+	return -ENOSYS;
 }
 
 int filp_close(struct file *filp, fl_owner_t id)
@@ -674,10 +673,11 @@ SYSCALL_DEFINE1(close, unsigned int, fd)
 	return retval;
 }
 
+/* Stub: close_range not needed for Hello World */
 SYSCALL_DEFINE3(close_range, unsigned int, fd, unsigned int, max_fd,
 		unsigned int, flags)
 {
-	return __close_range(fd, max_fd, flags);
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE0(vhangup)

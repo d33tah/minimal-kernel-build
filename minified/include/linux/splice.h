@@ -28,21 +28,6 @@ struct splice_desc {
 	bool need_wakeup;		 
 };
 
-struct partial_page {
-	unsigned int offset;
-	unsigned int len;
-	unsigned long private;
-};
-
-struct splice_pipe_desc {
-	struct page **pages;		 
-	struct partial_page *partial;	 
-	int nr_pages;			 
-	unsigned int nr_pages_max;	 
-	const struct pipe_buf_operations *ops; 
-	void (*spd_release)(struct splice_pipe_desc *, unsigned int);
-};
-
 typedef int (splice_actor)(struct pipe_inode_info *, struct pipe_buffer *,
 			   struct splice_desc *);
 

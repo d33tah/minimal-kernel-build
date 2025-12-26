@@ -806,27 +806,21 @@ static inline unsigned long get_mm_counter(struct mm_struct *mm, int member)
 	return (unsigned long)val;
 }
 
-static inline void mm_trace_rss_stat(struct mm_struct *mm, int member, long count) {}
+/* Removed: mm_trace_rss_stat - tracing not needed for minimal kernel */
 
 static inline void add_mm_counter(struct mm_struct *mm, int member, long value)
 {
-	long count = atomic_long_add_return(value, &mm->rss_stat.count[member]);
-
-	mm_trace_rss_stat(mm, member, count);
+	atomic_long_add(value, &mm->rss_stat.count[member]);
 }
 
 static inline void inc_mm_counter(struct mm_struct *mm, int member)
 {
-	long count = atomic_long_inc_return(&mm->rss_stat.count[member]);
-
-	mm_trace_rss_stat(mm, member, count);
+	atomic_long_inc(&mm->rss_stat.count[member]);
 }
 
 static inline void dec_mm_counter(struct mm_struct *mm, int member)
 {
-	long count = atomic_long_dec_return(&mm->rss_stat.count[member]);
-
-	mm_trace_rss_stat(mm, member, count);
+	atomic_long_dec(&mm->rss_stat.count[member]);
 }
 
 static inline int mm_counter_file(struct page *page)
@@ -904,7 +898,7 @@ static inline int __pud_alloc(struct mm_struct *mm, p4d_t *p4d,
 {
 	return 0;
 }
-static inline void mm_dec_nr_puds(struct mm_struct *mm) {}
+/* Removed: mm_dec_nr_puds - never called */
 
 /* __PAGETABLE_PMD_FOLDED=1 - 2-level paging, PMD folded */
 static inline int __pmd_alloc(struct mm_struct *mm, pud_t *pud,
@@ -913,7 +907,7 @@ static inline int __pmd_alloc(struct mm_struct *mm, pud_t *pud,
 	return 0;
 }
 
-static inline void mm_dec_nr_pmds(struct mm_struct *mm) {}
+/* Removed: mm_dec_nr_pmds - never called */
 
 static inline void mm_pgtables_bytes_init(struct mm_struct *mm)
 {
@@ -960,20 +954,15 @@ static inline spinlock_t *pte_lockptr(struct mm_struct *mm, pmd_t *pmd)
 {
 	return &mm->page_table_lock;
 }
-static inline void ptlock_cache_init(void) {}
-static inline bool ptlock_init(struct page *page) { return true; }
-static inline void ptlock_free(struct page *page) {}
+/* Removed: ptlock_cache_init, ptlock_init, ptlock_free - not needed for minimal kernel */
 
 static inline void pgtable_init(void)
 {
-	ptlock_cache_init();
 	pgtable_cache_init();
 }
 
 static inline bool pgtable_pte_page_ctor(struct page *page)
 {
-	if (!ptlock_init(page))
-		return false;
 	__SetPageTable(page);
 	inc_lruvec_page_state(page, NR_PAGETABLE);
 	return true;
@@ -981,7 +970,6 @@ static inline bool pgtable_pte_page_ctor(struct page *page)
 
 static inline void pgtable_pte_page_dtor(struct page *page)
 {
-	ptlock_free(page);
 	__ClearPageTable(page);
 	dec_lruvec_page_state(page, NR_PAGETABLE);
 }
@@ -1388,7 +1376,7 @@ void register_page_bootmem_memmap(unsigned long section_nr, struct page *map,
 static inline unsigned int debug_guardpage_minorder(void) { return 0; }
 
 /* MAX_NUMNODES == 1, always inline */
-static inline void setup_nr_node_ids(void) {}
+/* Removed: setup_nr_node_ids - never called */
 
 
 #define  ZAP_FLAG_DROP_MARKER        ((__force zap_flags_t) BIT(0))

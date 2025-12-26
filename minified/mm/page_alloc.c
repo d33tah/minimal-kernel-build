@@ -1878,7 +1878,6 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 	}
 
 	/* Basic node initialization */
-	setup_nr_node_ids();
 	for_each_node(nid) {
 		if (node_online(nid)) {
 			free_area_init_node(nid);

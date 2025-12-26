@@ -696,16 +696,7 @@ insert:
 	return va;
 }
 
-static __always_inline struct vmap_area *
-merge_or_add_vmap_area_augment(struct vmap_area *va, struct rb_root *root,
-			       struct list_head *head)
-{
-	va = merge_or_add_vmap_area(va, root, head);
-	if (va)
-		augment_tree_propagate_from(va);
-
-	return va;
-}
+/* merge_or_add_vmap_area_augment removed - unused */
 
 static __always_inline bool is_within_this_va(struct vmap_area *va,
 					      unsigned long size,

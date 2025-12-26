@@ -443,19 +443,7 @@ SYSCALL_DEFINE4(pwrite64, unsigned int, fd, const char __user *, buf, size_t,
 	return ksys_pwrite64(fd, buf, count, pos);
 }
 
-static ssize_t do_readv(unsigned long fd, const struct iovec __user *vec,
-			unsigned long vlen, rwf_t flags)
-{
-	return -ENOSYS;
-}
-
-static ssize_t do_writev(unsigned long fd, const struct iovec __user *vec,
-			 unsigned long vlen, rwf_t flags)
-{
-	return -ENOSYS;
-}
-
-/* Stub: readv/writev not needed for Hello World */
+/* do_readv, do_writev removed - unused stubs */
 SYSCALL_DEFINE3(readv, unsigned long, fd, const struct iovec __user *, vec,
 		unsigned long, vlen)
 {

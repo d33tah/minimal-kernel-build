@@ -402,12 +402,7 @@ static inline void __add_partial(struct kmem_cache_node *n, struct slab *slab,
 		list_add(&slab->slab_list, &n->partial);
 }
 
-static inline void add_partial(struct kmem_cache_node *n, struct slab *slab,
-			       int tail)
-{
-	lockdep_assert_held(&n->list_lock);
-	__add_partial(n, slab, tail);
-}
+/* add_partial removed - unused, callers use __add_partial directly */
 
 static inline void remove_partial(struct kmem_cache_node *n, struct slab *slab)
 {

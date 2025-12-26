@@ -32,39 +32,6 @@ typedef u16		 compat_ipc_pid_t;
 #define compat_statfs	compat_statfs
 
 /* --- 2025-12-07 10:28 --- Inlined asm-generic/compat.h content */
-#ifndef COMPAT_USER_HZ
-#define COMPAT_USER_HZ		100
-#endif
-
-#ifndef COMPAT_RLIM_INFINITY
-#define COMPAT_RLIM_INFINITY	0xffffffff
-#endif
-
-#ifndef COMPAT_OFF_T_MAX
-#define COMPAT_OFF_T_MAX	0x7fffffff
-#endif
-
-#if !defined(compat_arg_u64) && !defined(CONFIG_CPU_BIG_ENDIAN)
-#define compat_arg_u64(name)		u32  name##_lo, u32  name##_hi
-#define compat_arg_u64_dual(name)	u32, name##_lo, u32, name##_hi
-#define compat_arg_u64_glue(name)	(((u64)name##_lo & 0xffffffffUL) | \
-					 ((u64)name##_hi << 32))
-#endif
-
-typedef u32 compat_size_t;
-typedef s32 compat_ssize_t;
-typedef s32 compat_clock_t;
-typedef s32 compat_pid_t;
-typedef u32 compat_ino_t;
-typedef s32 compat_off_t;
-typedef s64 compat_loff_t;
-typedef s16 compat_short_t;
-typedef s32 compat_int_t;
-typedef s32 compat_long_t;
-typedef u16 compat_ushort_t;
-typedef u32 compat_uint_t;
-typedef u32 compat_ulong_t;
-typedef u32 compat_uptr_t;
 
 #ifndef __compat_uid_t
 typedef u32 __compat_uid_t;

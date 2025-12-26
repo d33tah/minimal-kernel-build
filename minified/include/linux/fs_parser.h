@@ -75,23 +75,10 @@ static inline bool fs_validate_description(const char *name,
 		.data = DATA \
 	}
 
-#define fsparam_flag(NAME, OPT)	__fsparam(NULL, NAME, OPT, 0, NULL)
-#define fsparam_flag_no(NAME, OPT) \
-			__fsparam(NULL, NAME, OPT, fs_param_neg_with_no, NULL)
-#define fsparam_bool(NAME, OPT)	__fsparam(fs_param_is_bool, NAME, OPT, 0, NULL)
-#define fsparam_u32(NAME, OPT)	__fsparam(fs_param_is_u32, NAME, OPT, 0, NULL)
+/* Unused fsparam macros removed: fsparam_flag, fsparam_flag_no, fsparam_bool,
+   fsparam_u32, fsparam_u32hex, fsparam_s32, fsparam_u64, fsparam_enum,
+   fsparam_string, fsparam_blob, fsparam_bdev, fsparam_path, fsparam_fd */
 #define fsparam_u32oct(NAME, OPT) \
 			__fsparam(fs_param_is_u32, NAME, OPT, 0, (void *)8)
-#define fsparam_u32hex(NAME, OPT) \
-			__fsparam(fs_param_is_u32_hex, NAME, OPT, 0, (void *)16)
-#define fsparam_s32(NAME, OPT)	__fsparam(fs_param_is_s32, NAME, OPT, 0, NULL)
-#define fsparam_u64(NAME, OPT)	__fsparam(fs_param_is_u64, NAME, OPT, 0, NULL)
-#define fsparam_enum(NAME, OPT, array)	__fsparam(fs_param_is_enum, NAME, OPT, 0, array)
-#define fsparam_string(NAME, OPT) \
-				__fsparam(fs_param_is_string, NAME, OPT, 0, NULL)
-#define fsparam_blob(NAME, OPT)	__fsparam(fs_param_is_blob, NAME, OPT, 0, NULL)
-#define fsparam_bdev(NAME, OPT)	__fsparam(fs_param_is_blockdev, NAME, OPT, 0, NULL)
-#define fsparam_path(NAME, OPT)	__fsparam(fs_param_is_path, NAME, OPT, 0, NULL)
-#define fsparam_fd(NAME, OPT)	__fsparam(fs_param_is_fd, NAME, OPT, 0, NULL)
 
 #endif  

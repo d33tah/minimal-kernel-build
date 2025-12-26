@@ -2130,18 +2130,18 @@ int do_linkat(int olddfd, struct filename *old, int newdfd,
 	return -ENOSYS;
 }
 
+/* Stub: linkat not needed for Hello World */
 SYSCALL_DEFINE5(linkat, int, olddfd, const char __user *, oldname, int, newdfd,
 		const char __user *, newname, int, flags)
 {
-	return do_linkat(olddfd, getname_uflags(oldname, flags), newdfd,
-			 getname(newname), flags);
+	return -ENOSYS;
 }
 
+/* Stub: link not needed for Hello World */
 SYSCALL_DEFINE2(link, const char __user *, oldname, const char __user *,
 		newname)
 {
-	return do_linkat(AT_FDCWD, getname(oldname), AT_FDCWD, getname(newname),
-			 0);
+	return -ENOSYS;
 }
 
 int do_renameat2(int olddfd, struct filename *from, int newdfd,
@@ -2152,25 +2152,23 @@ int do_renameat2(int olddfd, struct filename *from, int newdfd,
 	return -ENOSYS;
 }
 
+/* Stub: rename syscalls not needed for Hello World */
 SYSCALL_DEFINE5(renameat2, int, olddfd, const char __user *, oldname, int,
 		newdfd, const char __user *, newname, unsigned int, flags)
 {
-	return do_renameat2(olddfd, getname(oldname), newdfd, getname(newname),
-			    flags);
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE4(renameat, int, olddfd, const char __user *, oldname, int,
 		newdfd, const char __user *, newname)
 {
-	return do_renameat2(olddfd, getname(oldname), newdfd, getname(newname),
-			    0);
+	return -ENOSYS;
 }
 
 SYSCALL_DEFINE2(rename, const char __user *, oldname, const char __user *,
 		newname)
 {
-	return do_renameat2(AT_FDCWD, getname(oldname), AT_FDCWD,
-			    getname(newname), 0);
+	return -ENOSYS;
 }
 
 const char *page_get_link(struct dentry *dentry, struct inode *inode,

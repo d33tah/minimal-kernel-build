@@ -293,12 +293,9 @@ int tty_hung_up_p(struct file *filp)
 	return (filp && filp->f_op == &hung_up_tty_fops);
 }
 
+/* Simplified for minimal kernel - no time update needed */
 static void tty_update_time(struct timespec64 *time)
 {
-	time64_t sec = ktime_get_real_seconds();
-
-	if ((sec ^ time->tv_sec) & ~7)
-		time->tv_sec = sec;
 }
 
 static int iterate_tty_read(struct tty_ldisc *ld, struct tty_struct *tty,

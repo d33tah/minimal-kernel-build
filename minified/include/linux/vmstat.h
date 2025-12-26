@@ -25,32 +25,16 @@ struct reclaim_stat;
 
 enum writeback_stat_item { NR_VM_WRITEBACK_STAT_ITEMS };
 
+/* count_vm_event, count_vm_events, __count_vm_event, __count_vm_events,
+   __count_zid_vm_events removed - unused */
 
-static inline void count_vm_event(enum vm_event_item item)
-{
-}
-static inline void count_vm_events(enum vm_event_item item, long delta)
-{
-}
-static inline void __count_vm_event(enum vm_event_item item)
-{
-}
-static inline void __count_vm_events(enum vm_event_item item, long delta)
-{
-}
 static inline void vm_events_fold_cpu(int cpu)
 {
 }
 
-
-
 #define count_vm_tlb_event(x)     do {} while (0)
 #define count_vm_tlb_events(x, y) do { (void)(y); } while (0)
-
 #define count_vm_vmacache_event(x) do {} while (0)
-
-#define __count_zid_vm_events(item, zid, delta) \
-	__count_vm_events(item##_NORMAL - ZONE_NORMAL + zid, delta)
 
 extern atomic_long_t vm_zone_stat[NR_VM_ZONE_STAT_ITEMS];
 extern atomic_long_t vm_node_stat[NR_VM_NODE_STAT_ITEMS];

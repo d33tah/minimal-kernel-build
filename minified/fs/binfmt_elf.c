@@ -20,7 +20,6 @@
 #include <linux/hugetlb.h>
 #include <linux/pagemap.h>
 #include <linux/vmalloc.h>
-#include <linux/random.h>
 #include <linux/elf.h>
 #include <linux/utsname.h>
 #include <linux/sched.h>
@@ -152,7 +151,8 @@ static int create_elf_tables(struct linux_binprm *bprm,
 			return -EFAULT;
 	}
 
-	get_random_bytes(k_rand_bytes, sizeof(k_rand_bytes));
+	/* Simplified: no randomness needed for minimal kernel */
+	memset(k_rand_bytes, 0, sizeof(k_rand_bytes));
 	u_rand_bytes =
 		(elf_addr_t __user *)STACK_ALLOC(p, sizeof(k_rand_bytes));
 	if (copy_to_user(u_rand_bytes, k_rand_bytes, sizeof(k_rand_bytes)))

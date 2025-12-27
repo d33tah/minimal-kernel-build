@@ -106,7 +106,6 @@ static inline void hlists_swap_heads_rcu(struct hlist_head *left, struct hlist_h
 
 #define hlist_first_rcu(head)	(*((struct hlist_node __rcu **)(&(head)->first)))
 #define hlist_next_rcu(node)	(*((struct hlist_node __rcu **)(&(node)->next)))
-#define hlist_pprev_rcu(node)	(*((struct hlist_node __rcu **)((node)->pprev)))
 
 static inline void hlist_add_head_rcu(struct hlist_node *n,
 					struct hlist_head *h)

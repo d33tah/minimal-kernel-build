@@ -438,8 +438,14 @@ typedef int (*decompress_fn)(unsigned char *inbuf, long len,
 			     long (*flush)(void *, unsigned long),
 			     unsigned char *outbuf, long *posp,
 			     void (*error)(char *x));
-decompress_fn decompress_method(const unsigned char *inbuf, long len,
-				const char **name);
+/* Stub for uncompressed initramfs - no decompressor needed */
+static decompress_fn decompress_method(const unsigned char *inbuf, long len,
+				       const char **name)
+{
+	if (name)
+		*name = NULL;
+	return NULL;
+}
 /* end decompress/generic.h */
 
 static char *__init unpack_to_rootfs(char *buf, unsigned long len)

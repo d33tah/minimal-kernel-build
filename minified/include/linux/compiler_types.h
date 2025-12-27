@@ -35,7 +35,6 @@
 
 /* Clang-specific definitions - inlined from compiler-clang.h */
 #define __UNIQUE_ID(prefix) __PASTE(__PASTE(__UNIQUE_ID_, prefix), __COUNTER__)
-#define KASAN_ABI_VERSION 5
 #define __no_sanitize_address
 #define __no_sanitize_thread
 #define __HAVE_BUILTIN_BSWAP32__

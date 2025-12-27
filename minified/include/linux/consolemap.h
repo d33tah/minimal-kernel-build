@@ -3,8 +3,6 @@
 
 #define LAT1_MAP 0
 #define GRAF_MAP 1
-#define IBMPC_MAP 2
-#define USER_MAP 3
 
 #include <linux/types.h>
 

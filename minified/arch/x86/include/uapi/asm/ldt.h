@@ -3,9 +3,6 @@
 #ifndef _ASM_X86_LDT_H
 #define _ASM_X86_LDT_H
 
- 
-#define LDT_ENTRIES	8192
- 
 #define LDT_ENTRY_SIZE	8
 
 #ifndef __ASSEMBLY__

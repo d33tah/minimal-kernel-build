@@ -2,11 +2,7 @@
 #ifndef _ASM_X86_PRCTL_H
 #define _ASM_X86_PRCTL_H
 
-#define ARCH_SET_GS			0x1001
 #define ARCH_SET_FS			0x1002
-#define ARCH_GET_FS			0x1003
-#define ARCH_GET_GS			0x1004
-
 #define ARCH_GET_CPUID			0x1011
 #define ARCH_SET_CPUID			0x1012
 
@@ -15,7 +11,5 @@
 #define ARCH_REQ_XCOMP_PERM		0x1023
 #define ARCH_GET_XCOMP_GUEST_PERM	0x1024
 #define ARCH_REQ_XCOMP_GUEST_PERM	0x1025
-
-/* ARCH_MAP_VDSO_X32/32/64 removed - unused */
 
 #endif  

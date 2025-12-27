@@ -29,11 +29,8 @@ static int vidport;
 static int lines __section(".data");
 static int cols __section(".data");
 
-#ifdef CONFIG_KERNEL_UNCOMPRESSED
+/* Uncompressed kernel - just copy */
 #include "../../../../lib/decompress_none.c"
-#else
-#include "../../../../lib/decompress_unxz.c"
-#endif
 
 static void scroll(void)
 {

@@ -203,25 +203,6 @@ void tty_port_tty_set(struct tty_port *port, struct tty_struct *tty)
 	spin_unlock_irqrestore(&port->lock, flags);
 }
 
-static void tty_port_shutdown(struct tty_port *port, struct tty_struct *tty)
-{
-	mutex_lock(&port->mutex);
-	if (port->console)
-		goto out;
-
-	if (tty_port_initialized(port)) {
-		tty_port_set_initialized(port, 0);
-
-		if (tty && C_HUPCL(tty))
-			tty_port_lower_dtr_rts(port);
-
-		if (port->ops->shutdown)
-			port->ops->shutdown(port);
-	}
-out:
-	mutex_unlock(&port->mutex);
-}
-
 /* Stub: tty_port_hangup not needed for Hello World console */
 void tty_port_hangup(struct tty_port *port)
 {

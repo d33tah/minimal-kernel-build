@@ -55,11 +55,6 @@ struct hrtimer {
 	u8				is_hard;
 };
 
-struct hrtimer_sleeper {
-	struct hrtimer timer;
-	struct task_struct *task;
-};
-
 # define __hrtimer_clock_base_align
 
 struct hrtimer_clock_base {

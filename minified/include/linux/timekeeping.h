@@ -47,15 +47,6 @@ static inline ktime_t ktime_get_clocktai(void)
 {
 	return ktime_get_with_offset(TK_OFFS_TAI);
 }
-
-
-static inline u64 ktime_get_ns(void)
-{
-	return ktime_to_ns(ktime_get());
-}
-
-/* ktime_get_boottime_ns removed - unused */
-
 static inline void ktime_get_boottime_ts64(struct timespec64 *ts)
 {
 	*ts = ktime_to_timespec64(ktime_get_boottime());

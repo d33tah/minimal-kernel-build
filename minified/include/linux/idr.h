@@ -23,10 +23,7 @@ struct idr {
 	.idr_next = 0,							\
 }
 
-#define IDR_INIT(name)	IDR_INIT_BASE(name, 0)
-
-#define DEFINE_IDR(name)	struct idr name = IDR_INIT(name)
-
+#define IDR_INIT(name) IDR_INIT_BASE(name, 0)
 static inline unsigned int idr_get_cursor(const struct idr *idr)
 {
 	return READ_ONCE(idr->idr_next);

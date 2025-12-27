@@ -969,15 +969,7 @@ struct inode_operations {
 			struct dentry *, umode_t);
 	/* set_acl, fileattr_set, fileattr_get removed - unused */
 } ____cacheline_aligned;
-
-static inline ssize_t call_read_iter(struct file *file, struct kiocb *kio,
-				     struct iov_iter *iter)
-{
-	return file->f_op->read_iter(kio, iter);
-}
-
-static inline ssize_t call_write_iter(struct file *file, struct kiocb *kio,
-				      struct iov_iter *iter)
+static inline ssize_t call_write_iter(struct file *file, struct kiocb *kio, struct iov_iter *iter)
 {
 	return file->f_op->write_iter(kio, iter);
 }
@@ -1495,13 +1487,6 @@ static inline bool is_sxid(umode_t mode)
 {
 	return (mode & S_ISUID) || ((mode & S_ISGID) && (mode & S_IXGRP));
 }
-
-static inline void inode_has_no_xattr(struct inode *inode)
-{
-	if (!is_sxid(inode->i_mode) && (inode->i_sb->s_flags & SB_NOSEC))
-		inode->i_flags |= S_NOSEC;
-}
-
 static inline bool dir_emit(struct dir_context *ctx,
 			    const char *name, int namelen,
 			    u64 ino, unsigned type)

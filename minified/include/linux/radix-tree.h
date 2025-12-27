@@ -70,8 +70,6 @@ int radix_tree_insert(struct radix_tree_root *, unsigned long index,
 void *__radix_tree_lookup(const struct radix_tree_root *, unsigned long index,
 			  struct radix_tree_node **nodep, void __rcu ***slotp);
 void *radix_tree_lookup(const struct radix_tree_root *, unsigned long);
-void __rcu **radix_tree_lookup_slot(const struct radix_tree_root *,
-					unsigned long index);
 void __radix_tree_replace(struct radix_tree_root *, struct radix_tree_node *,
 			  void __rcu **slot, void *entry);
 void radix_tree_iter_replace(struct radix_tree_root *,
@@ -102,9 +100,6 @@ radix_tree_iter_init(struct radix_tree_iter *iter, unsigned long start)
 	iter->next_index = start;
 	return NULL;
 }
-
-void __rcu **radix_tree_next_chunk(const struct radix_tree_root *,
-			     struct radix_tree_iter *iter, unsigned flags);
 
 static inline unsigned long
 __radix_tree_iter_add(struct radix_tree_iter *iter, unsigned long slots)

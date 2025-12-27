@@ -8,10 +8,6 @@
 #include <linux/screen_info.h>
 #include <asm/page.h>
 
-/* efi_status_t removed - unused */
-
-#define EFI_SUCCESS		0
-
 #define EFI_CONVENTIONAL_MEMORY		 7
 
 typedef struct {

@@ -145,9 +145,6 @@ extern void hrtimer_init(struct hrtimer *timer, clockid_t which_clock,
 			 enum hrtimer_mode mode);
 extern void hrtimer_init_sleeper(struct hrtimer_sleeper *sl, clockid_t clock_id,
 				 enum hrtimer_mode mode);
-
-static inline void destroy_hrtimer_on_stack(struct hrtimer *timer) { }
-
 extern void hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
 				   u64 range_ns, const enum hrtimer_mode mode);
 

@@ -43,8 +43,7 @@
 #endif
 
 #ifndef __ALIGN
-#define __ALIGN		.align 4,0x90
-#define __ALIGN_STR	".align 4,0x90"
+#define __ALIGN .align 4, 0x90
 #endif
 
 #ifdef __ASSEMBLY__
@@ -70,9 +69,6 @@
 
 #ifndef LINKER_SCRIPT
 #define ALIGN __ALIGN
-#define ALIGN_STR __ALIGN_STR
-
-
 #endif  
 
 

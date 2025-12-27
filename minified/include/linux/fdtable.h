@@ -29,12 +29,6 @@ static inline bool close_on_exec(unsigned int fd, const struct fdtable *fdt)
 {
 	return test_bit(fd, fdt->close_on_exec);
 }
-
-static inline bool fd_is_open(unsigned int fd, const struct fdtable *fdt)
-{
-	return test_bit(fd, fdt->open_fds);
-}
-
 struct files_struct {
    
 	atomic_t count;

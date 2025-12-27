@@ -1,7 +1,5 @@
 #ifndef _LINUX_POLL_H
 #define _LINUX_POLL_H
-
-
 #include <linux/compiler.h>
 #include <linux/ktime.h>
 #include <linux/wait.h>
@@ -9,9 +7,6 @@
 #include <linux/fs.h>
 #include <linux/uaccess.h>
 #include <linux/eventpoll.h>
-
-#define DEFAULT_POLLMASK (EPOLLIN | EPOLLOUT | EPOLLRDNORM | EPOLLWRNORM)
-
 struct poll_table_struct;
 
 typedef void (*poll_queue_proc)(struct file *, wait_queue_head_t *, struct poll_table_struct *);

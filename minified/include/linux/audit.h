@@ -52,8 +52,5 @@ static inline void audit_inode_child(struct inode *parent,
 				     const unsigned char type)
 { }
 static inline void audit_bprm(struct linux_binprm *bprm)
-{ }
-static inline void audit_mmap_fd(int fd, int flags)
-{ }
-
+{}
 #endif

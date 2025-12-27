@@ -2,11 +2,8 @@
 #ifndef _ASM_X86_BOOTPARAM_H
 #define _ASM_X86_BOOTPARAM_H
 
- 
-#define SETUP_NONE			0
 #define SETUP_E820_EXT			1
 #define SETUP_DTB			2
-#define SETUP_PCI			3
 #define SETUP_EFI			4
 /* SETUP_APPLE_PROPERTIES, SETUP_JAILHOUSE - unused */
 #define SETUP_CC_BLOB			7
@@ -22,8 +19,6 @@
  
 #define LOADED_HIGH	(1<<0)
 #define KASLR_FLAG	(1<<1)
-#define QUIET_FLAG	(1<<5)
-#define KEEP_SEGMENTS	(1<<6)
 #define CAN_USE_HEAP	(1<<7)
 
  

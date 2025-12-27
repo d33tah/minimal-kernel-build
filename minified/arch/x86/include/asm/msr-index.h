@@ -7,9 +7,6 @@
 
 /* AMD64 MSRs */
 #define MSR_EFER		0xc0000080
-#define MSR_FS_BASE		0xc0000100
-#define MSR_GS_BASE		0xc0000101
-#define MSR_KERNEL_GS_BASE	0xc0000102
 
 /* EFER bits */
 #define _EFER_SCE		0
@@ -44,15 +41,8 @@
 
 /* Debug control */
 #define MSR_IA32_DEBUGCTLMSR		0x000001d9
-#define DEBUGCTLMSR_LBR			(1UL <<  0)
 #define DEBUGCTLMSR_BTF_SHIFT		1
 #define DEBUGCTLMSR_BTF			(1UL <<  1)
-
-/* TSC adjust */
-#define MSR_IA32_TSC_ADJUST		0x0000003b
-
-/* Microcode revision */
-#define MSR_IA32_UCODE_REV		0x0000008b
 
 /* MISC_ENABLE */
 #define MSR_IA32_MISC_ENABLE		0x000001a0

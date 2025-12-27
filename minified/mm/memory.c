@@ -696,28 +696,6 @@ static inline int remap_pmd_range(struct mm_struct *mm, pud_t *pud,
 	return 0;
 }
 
-static inline int remap_pud_range(struct mm_struct *mm, p4d_t *p4d,
-				  unsigned long addr, unsigned long end,
-				  unsigned long pfn, pgprot_t prot)
-{
-	pud_t *pud;
-	unsigned long next;
-	int err;
-
-	pfn -= addr >> PAGE_SHIFT;
-	pud = pud_alloc(mm, p4d, addr);
-	if (!pud)
-		return -ENOMEM;
-	do {
-		next = pud_addr_end(addr, end);
-		err = remap_pmd_range(mm, pud, addr, next,
-				      pfn + (addr >> PAGE_SHIFT), prot);
-		if (err)
-			return err;
-	} while (pud++, addr = next, addr != end);
-	return 0;
-}
-
 static gfp_t __get_fault_gfp_mask(struct vm_area_struct *vma)
 {
 	struct file *vm_file = vma->vm_file;

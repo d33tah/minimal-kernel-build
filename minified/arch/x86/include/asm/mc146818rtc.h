@@ -66,6 +66,4 @@ void rtc_cmos_write(unsigned char val, unsigned char addr);
 extern int mach_set_rtc_mmss(const struct timespec64 *now);
 extern void mach_get_cmos_time(struct timespec64 *now);
 
-#define RTC_IRQ 8
-
 #endif  

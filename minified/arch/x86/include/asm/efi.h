@@ -8,9 +8,6 @@
 #include <linux/kernel.h>
 #include <asm/tlbflush.h>
 
-#define EFI32_LOADER_SIGNATURE	"EL32"
-#define EFI64_LOADER_SIGNATURE	"EL64"
-
 #define ARCH_EFI_IRQ_FLAGS_MASK	X86_EFLAGS_IF
 
 

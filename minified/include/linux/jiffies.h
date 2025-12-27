@@ -40,16 +40,9 @@
 # error Invalid value of HZ.
 #endif
 
-#define SH_DIV(NOM,DEN,LSH) (   (((NOM) / (DEN)) << (LSH))              \
-                             + ((((NOM) % (DEN)) << (LSH)) + (DEN) / 2) / (DEN))
-
-#define LATCH ((CLOCK_TICK_RATE + HZ/2) / HZ)	 
+#define LATCH ((CLOCK_TICK_RATE + HZ/2) / HZ)
 
 extern int register_refined_jiffies(long clock_tick_rate);
-
-#define TICK_USEC ((USEC_PER_SEC + HZ/2) / HZ)
-
-#define USER_TICK_USEC ((1000000UL + USER_HZ/2) / USER_HZ)
 
 #ifndef __jiffy_arch_data
 #define __jiffy_arch_data
@@ -72,33 +65,6 @@ u64 get_jiffies_64(void);
 	 typecheck(unsigned long, b) && \
 	 ((long)((a) - (b)) >= 0))
 #define time_before_eq(a,b)	time_after_eq(b,a)
-
-
-#define time_after64(a,b)	\
-	(typecheck(__u64, a) &&	\
-	 typecheck(__u64, b) && \
-	 ((__s64)((b) - (a)) < 0))
-#define time_before64(a,b)	time_after64(b,a)
-
-#define time_after_eq64(a,b)	\
-	(typecheck(__u64, a) && \
-	 typecheck(__u64, b) && \
-	 ((__s64)((a) - (b)) >= 0))
-#define time_before_eq64(a,b)	time_after_eq64(b,a)
-
-
-
-#define time_is_before_jiffies(a) time_after(jiffies, a)
-#define time_is_before_jiffies64(a) time_after64(get_jiffies_64(), a)
-
-#define time_is_after_jiffies(a) time_before(jiffies, a)
-#define time_is_after_jiffies64(a) time_before64(get_jiffies_64(), a)
-
-#define time_is_before_eq_jiffies(a) time_after_eq(jiffies, a)
-#define time_is_before_eq_jiffies64(a) time_after_eq64(get_jiffies_64(), a)
-
-#define time_is_after_eq_jiffies(a) time_before_eq(jiffies, a)
-#define time_is_after_eq_jiffies64(a) time_before_eq64(get_jiffies_64(), a)
 
 #define INITIAL_JIFFIES ((unsigned long)(unsigned int) (-300*HZ))
 

@@ -53,42 +53,6 @@ void signal_fault(struct pt_regs *regs, void __user *frame, char *where);
 
 #define CONTEXT_COPY_SIZE sizeof(struct sigcontext)
 
-static bool restore_sigcontext(struct pt_regs *regs,
-			       struct sigcontext __user *usc,
-			       unsigned long uc_flags)
-{
-	struct sigcontext sc;
-
-	current->restart_block.fn = do_no_restart_syscall;
-
-	if (copy_from_user(&sc, usc, CONTEXT_COPY_SIZE))
-		return false;
-
-	loadsegment(gs, sc.gs);
-	regs->fs = sc.fs;
-	regs->es = sc.es;
-	regs->ds = sc.ds;
-
-	regs->bx = sc.bx;
-	regs->cx = sc.cx;
-	regs->dx = sc.dx;
-	regs->si = sc.si;
-	regs->di = sc.di;
-	regs->bp = sc.bp;
-	regs->ax = sc.ax;
-	regs->sp = sc.sp;
-	regs->ip = sc.ip;
-
-	regs->cs = sc.cs | 0x03;
-	regs->ss = sc.ss | 0x03;
-
-	regs->flags = (regs->flags & ~FIX_EFLAGS) | (sc.flags & FIX_EFLAGS);
-
-	regs->orig_ax = -1;
-
-	return fpu__restore_sig((void __user *)sc.fpstate, true);
-}
-
 static __always_inline int
 __unsafe_setup_sigcontext(struct sigcontext __user *sc, void __user *fpstate,
 			  struct pt_regs *regs, unsigned long mask)

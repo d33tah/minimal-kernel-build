@@ -10,7 +10,7 @@
 extern void __init tick_init(void);
 /* tick_handover_do_timer removed - declared but never implemented */
 static inline void tick_irq_enter(void) { }
-enum tick_broadcast_mode { TICK_BROADCAST_OFF, TICK_BROADCAST_ON, TICK_BROADCAST_FORCE, };
+enum tick_broadcast_mode { TICK_BROADCAST_OFF, TICK_BROADCAST_ON, };
 enum tick_broadcast_state { TICK_BROADCAST_EXIT, TICK_BROADCAST_ENTER, };
 enum tick_dep_bits { TICK_DEP_BIT_CLOCK_UNSTABLE = 3, };
 #define tick_nohz_enabled (0)

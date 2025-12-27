@@ -17,7 +17,6 @@ static inline int ktime_compare(const ktime_t cmp1, const ktime_t cmp2) { if (cm
 static inline bool ktime_before(const ktime_t cmp1, const ktime_t cmp2) { return ktime_compare(cmp1, cmp2) < 0; }
 extern ktime_t ktime_add_safe(const ktime_t lhs, const ktime_t rhs);
 #define LOW_RES_NSEC		TICK_NSEC
-#define KTIME_LOW_RES		(LOW_RES_NSEC)
 static inline ktime_t ns_to_ktime(u64 ns) { return ns; }
 #include <linux/timekeeping.h>
 #endif

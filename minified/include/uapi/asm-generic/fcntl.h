@@ -76,29 +76,8 @@
 #define F_GETFD		1	 
 #define F_SETFD		2	 
 #define F_GETFL		3	 
-#define F_SETFL		4	 
-#ifndef F_GETLK
-#define F_GETLK		5
-#define F_SETLK		6
-#define F_SETLKW	7
-#endif
-#ifndef F_SETOWN
-#define F_SETOWN	8	 
-#define F_GETOWN	9	 
-#endif
-
-
-#define FD_CLOEXEC	1	 
-
-#ifndef F_RDLCK
-#define F_RDLCK		0
-#define F_WRLCK		1
-#define F_UNLCK		2
-#endif
-
-
-
-#define F_LINUX_SPECIFIC_BASE	1024
+#define F_SETFL		4
+#define FD_CLOEXEC	1
 
 struct flock {
 	short	l_type;

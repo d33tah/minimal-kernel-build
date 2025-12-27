@@ -15,11 +15,5 @@ static __always_inline bool arch_cpu_online(int cpu)
 	return cpu == 0;
 }
 
-static __always_inline void arch_cpumask_clear_cpu(int cpu, struct cpumask *dstp)
-{
-}
-
-#define arch_cpu_is_offline(cpu)	unlikely(!arch_cpu_online(cpu))
-
-#endif  
-#endif  
+#endif
+#endif

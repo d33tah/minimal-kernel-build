@@ -159,7 +159,6 @@ typedef struct siginfo {
 /* Only keep signal sub-codes actually used */
 #define ILL_ILLOPN	2
 #define ILL_BADSTK	8
-#define NSIGILL		11
 
 /* FPE codes used by x86 FPU */
 #define FPE_INTDIV	1
@@ -168,43 +167,28 @@ typedef struct siginfo {
 #define FPE_FLTUND	5
 #define FPE_FLTRES	6
 #define FPE_FLTINV	7
-#define NSIGFPE		15
 
 /* SEGV codes used by x86 fault handler */
 #define SEGV_MAPERR	1
 #define SEGV_ACCERR	2
 #define SEGV_PKUERR	4
-#define NSIGSEGV	9
 
 /* BUS codes used by x86 */
 #define BUS_ADRALN	1
 #define BUS_ADRERR	2
-#define NSIGBUS		5
 
 /* TRAP codes used by x86 */
 #define TRAP_BRKPT	1
 #define TRAP_TRACE	2
 #define TRAP_HWBKPT     4
-#define NSIGTRAP	6
 
-/* CLD codes used by kernel/exit.c, kernel/signal.c */
-#define CLD_EXITED	1
-#define CLD_KILLED	2
-#define CLD_DUMPED	3
+/* CLD codes used by kernel/signal.c */
 #define CLD_TRAPPED	4
-#define CLD_STOPPED	5
-#define CLD_CONTINUED	6
-#define NSIGCHLD	6
 
 /* POLL codes */
 #define POLL_OUT	2
-#define NSIGPOLL	6
 
 /* SYS codes */
 #define SYS_USER_DISPATCH 2
-#define NSIGSYS		2
-
-/* EMT_TAGOVF, NSIGEMT - unused */
-/* SIGEV_* and sigevent_t - unused */
 
 #endif  

@@ -1,6 +1,3 @@
 #ifndef _LINUX_SERIAL_H
 #define _LINUX_SERIAL_H
-
-#define ASYNC_CLOSING_WAIT_NONE	65535
-
-#endif  
+#endif

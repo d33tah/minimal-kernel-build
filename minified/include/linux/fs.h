@@ -75,7 +75,6 @@ int errseq_check_and_advance(errseq_t *eseq, errseq_t *since);
 #include <asm/byteorder.h>
 #include <linux/limits.h>
 #include <linux/ioctl.h>
-#undef NR_OPEN
 #define INR_OPEN_CUR 1024
 #define INR_OPEN_MAX 4096
 #define NR_FILE  8192

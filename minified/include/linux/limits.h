@@ -2,12 +2,9 @@
 #define _LINUX_LIMITS_H
 
 /* Inlined from uapi/linux/limits.h */
-#define NR_OPEN	        1024
 #define ARG_MAX       131072
 #define NAME_MAX         255
 #define PATH_MAX        4096
-#define PIPE_BUF        4096
-#define XATTR_NAME_MAX   255
 
 #include <linux/types.h>
 

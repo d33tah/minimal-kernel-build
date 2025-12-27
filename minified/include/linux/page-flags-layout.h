@@ -29,10 +29,6 @@
 #define NODES_WIDTH		0
 #endif
 
-#if NODES_SHIFT != 0 && NODES_WIDTH == 0
-#define NODE_NOT_IN_PAGE_FLAGS	1
-#endif
-
 #define KASAN_TAG_WIDTH 0
 
 #define LAST_CPUPID_SHIFT 0

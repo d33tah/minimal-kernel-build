@@ -180,7 +180,6 @@ extern void force_fatal_sig(int);
 extern void force_exit_sig(int);
 extern int send_sig(int, struct task_struct *, int);
 extern int zap_other_threads(struct task_struct *p);
-extern int do_sigaction(int, struct k_sigaction *, struct k_sigaction *);
 
 static inline bool __set_notify_signal(struct task_struct *task)
 {

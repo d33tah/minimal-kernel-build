@@ -69,7 +69,6 @@ struct module_attribute {
 struct module_version_attribute;
 
 extern int init_module(void);
-extern void cleanup_module(void);
 
 /* Built-in kernel, not building as module */
 #define module_init(x)	__initcall(x);

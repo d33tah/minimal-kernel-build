@@ -25,8 +25,6 @@ struct time_namespace {
 	bool			frozen_offsets;
 } __randomize_layout;
 
-extern struct time_namespace init_time_ns;
-
 static inline struct time_namespace *get_time_ns(struct time_namespace *ns)
 {
 	return NULL;

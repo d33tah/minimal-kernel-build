@@ -4,8 +4,6 @@
 
 #include <asm/posix_types.h>
 
-#define STAT_HAVE_NSEC 1
-
 /* 32-bit only kernel - removed x86_64 stat structures */
 struct stat {
 	unsigned long  st_dev;
@@ -28,15 +26,6 @@ struct stat {
 	unsigned long  __unused5;
 };
 
- 
-#define INIT_STRUCT_STAT_PADDING(st) do {	\
-	st.__unused4 = 0;			\
-	st.__unused5 = 0;			\
-} while (0)
-
-#define STAT64_HAS_BROKEN_ST_INO	1
-
- 
 struct stat64 {
 	unsigned long long	st_dev;
 	unsigned char	__pad0[4];
@@ -69,14 +58,6 @@ struct stat64 {
 
 	unsigned long long	st_ino;
 };
-
-
-#define INIT_STRUCT_STAT64_PADDING(st) do {		\
-	memset(&st.__pad0, 0, sizeof(st.__pad0));	\
-	memset(&st.__pad3, 0, sizeof(st.__pad3));	\
-} while (0)
-
-/* Removed x86_64 stat structure - 32-bit only kernel */
 
 /* 32-bit only kernel */
 struct __old_kernel_stat {

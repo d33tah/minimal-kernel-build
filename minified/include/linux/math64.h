@@ -125,46 +125,6 @@ static inline u64 mul_u64_u64_shr(u64 a, u64 b, unsigned int shift)
 }
 #endif
 
-#ifndef mul_s64_u64_shr
-static inline u64 mul_s64_u64_shr(s64 a, u64 b, unsigned int shift)
-{
-	u64 ret;
-
-	 
-	ret = mul_u64_u64_shr(abs(a), b, shift);
-
-	if (a < 0)
-		ret = -((s64) ret);
-
-	return ret;
-}
-#endif  
-
-#ifndef mul_u64_u32_div
-static inline u64 mul_u64_u32_div(u64 a, u32 mul, u32 divisor)
-{
-	union {
-		u64 ll;
-		struct {
-			u32 low, high;
-		} l;
-	} u, rl, rh;
-
-	u.ll = a;
-	rl.ll = mul_u32_u32(u.l.low, mul);
-	rh.ll = mul_u32_u32(u.l.high, mul) + rl.l.high;
-
-	 
-	rl.l.high = do_div(rh.ll, divisor);
-
-	 
-	do_div(rl.ll, divisor);
-
-	rl.l.high = rh.l.low;
-	return rl.ll;
-}
-#endif  
-
 u64 mul_u64_u64_div_u64(u64 a, u64 mul, u64 div);
 
 #endif  

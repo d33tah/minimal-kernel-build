@@ -43,20 +43,6 @@ static __always_inline void jump_label_init(void)
 	static_key_initialized = true;
 }
 
-static __always_inline bool static_key_false(struct static_key *key)
-{
-	if (unlikely_notrace(static_key_count(key) > 0))
-		return true;
-	return false;
-}
-
-static __always_inline bool static_key_true(struct static_key *key)
-{
-	if (likely_notrace(static_key_count(key) > 0))
-		return true;
-	return false;
-}
-
 static inline void static_key_slow_inc(struct static_key *key)
 {
 	STATIC_KEY_CHECK_USE(key);

@@ -403,7 +403,7 @@ struct inode {
 		const struct file_operations	*i_fop;	
 		void (*free_inode)(struct inode *);
 	};
-	struct file_lock_context	*i_flctx;
+	/* i_flctx removed - never used */
 	struct address_space	i_data;
 	struct list_head	i_devices;
 	union {

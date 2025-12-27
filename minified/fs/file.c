@@ -603,12 +603,6 @@ struct file *fget(unsigned int fd)
 	return __fget(fd, FMODE_PATH);
 }
 
-/* fget_raw - used internally by replace_fd */
-static struct file *fget_raw(unsigned int fd)
-{
-	return __fget(fd, 0); /* No FMODE_PATH filter */
-}
-
 static unsigned long __fget_light(unsigned int fd, fmode_t mask)
 {
 	struct files_struct *files = current->files;

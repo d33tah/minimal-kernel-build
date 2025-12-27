@@ -424,19 +424,6 @@ static char *string_nocheck(char *buf, char *end, const char *s,
 	return widen_string(buf, len, end, spec);
 }
 
-static char *err_ptr(char *buf, char *end, void *ptr, struct printf_spec spec)
-{
-	int err = PTR_ERR(ptr);
-	const char *sym = errname(err);
-
-	if (sym)
-		return string_nocheck(buf, end, sym, spec);
-
-	spec.flags |= SIGN;
-	spec.base = 10;
-	return number(buf, end, err, spec);
-}
-
 static char *error_string(char *buf, char *end, const char *s,
 			  struct printf_spec spec)
 {

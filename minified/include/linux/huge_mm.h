@@ -76,8 +76,6 @@ static inline bool transparent_hugepage_active(struct vm_area_struct *vma)
 
 static inline void prep_transhuge_page(struct page *page) {}
 
-#define transparent_hugepage_flags 0UL
-
 #define thp_get_unmapped_area	NULL
 
 static inline int split_huge_page(struct page *page)

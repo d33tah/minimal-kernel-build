@@ -78,9 +78,6 @@ extern unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
 					gfp_t gfp_mask, nodemask_t *mask);
 long remove_mapping(struct address_space *mapping, struct folio *folio);
 
-#define node_reclaim_mode 0
-
-
 #define total_swap_pages			0L
 
 #define free_page_and_swap_cache(page) \

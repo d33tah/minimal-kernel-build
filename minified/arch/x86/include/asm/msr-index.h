@@ -27,8 +27,6 @@
 /* Speculation control MSRs */
 #define MSR_IA32_SPEC_CTRL		0x00000048
 #define SPEC_CTRL_IBRS			BIT(0)
-#define SPEC_CTRL_STIBP_SHIFT		1
-#define SPEC_CTRL_STIBP			BIT(SPEC_CTRL_STIBP_SHIFT)
 #define SPEC_CTRL_SSBD_SHIFT		2
 #define SPEC_CTRL_SSBD			BIT(SPEC_CTRL_SSBD_SHIFT)
 
@@ -58,8 +56,6 @@
 
 /* MISC_ENABLE */
 #define MSR_IA32_MISC_ENABLE		0x000001a0
-#define MSR_IA32_MISC_ENABLE_XD_DISABLE_BIT		34
-#define MSR_IA32_MISC_ENABLE_XD_DISABLE			(1ULL << MSR_IA32_MISC_ENABLE_XD_DISABLE_BIT)
 
 /* MISC_FEATURES_ENABLES */
 #define MSR_MISC_FEATURES_ENABLES	0x00000140
@@ -68,10 +64,7 @@
 
 /* CET (Control-flow Enforcement Technology) */
 #define MSR_IA32_S_CET			0x000006a2
-#define CET_SHSTK_EN			BIT_ULL(0)
-/* CET_WRSS_EN - unused */
 #define CET_ENDBR_EN			BIT_ULL(2)
-/* CET_LEG_IW_EN through CET_WAIT_ENDBR - unused */
 
 /* AMD specific */
 #define MSR_AMD64_LS_CFG		0xc0011020

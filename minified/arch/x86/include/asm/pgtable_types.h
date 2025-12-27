@@ -40,7 +40,6 @@
 #define _PAGE_PAT	(_AT(pteval_t, 1) << _PAGE_BIT_PAT)
 #define _PAGE_PAT_LARGE (_AT(pteval_t, 1) << _PAGE_BIT_PAT_LARGE)
 #define _PAGE_SPECIAL	(_AT(pteval_t, 1) << _PAGE_BIT_SPECIAL)
-#define _PAGE_CPA_TEST	(_AT(pteval_t, 1) << _PAGE_BIT_CPA_TEST)
 #define _PAGE_PKEY_BIT0	(_AT(pteval_t, 0))
 #define _PAGE_PKEY_BIT1	(_AT(pteval_t, 0))
 #define _PAGE_PKEY_BIT2	(_AT(pteval_t, 0))
@@ -425,10 +424,6 @@ static inline pteval_t pte_flags(pte_t pte)
 	((((cb) >> (_PAGE_BIT_PAT - 2)) & 4) |		\
 	 (((cb) >> (_PAGE_BIT_PCD - 1)) & 2) |		\
 	 (((cb) >> _PAGE_BIT_PWT) & 1))
-#define __cm_idx2pte(i)					\
-	((((i) & 4) << (_PAGE_BIT_PAT - 2)) |		\
-	 (((i) & 2) << (_PAGE_BIT_PCD - 1)) |		\
-	 (((i) & 1) << _PAGE_BIT_PWT))
 
 unsigned long cachemode2protval(enum page_cache_mode pcm);
 

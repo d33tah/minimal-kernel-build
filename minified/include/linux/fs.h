@@ -1334,7 +1334,6 @@ static inline int generic_drop_inode(struct inode *inode)
 {
 	return !inode->i_nlink || inode_unhashed(inode);
 }
-static inline void lockdep_annotate_inode_mutex_key(struct inode *inode) { };
 extern unsigned int get_next_ino(void);
 extern void evict_inodes(struct super_block *sb);
 

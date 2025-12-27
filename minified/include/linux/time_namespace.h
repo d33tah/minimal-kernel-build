@@ -47,15 +47,9 @@ struct time_namespace *copy_time_ns(unsigned long flags,
 	return old_ns;
 }
 
-static inline void timens_on_fork(struct nsproxy *nsproxy,
-				 struct task_struct *tsk)
+static inline void timens_on_fork(struct nsproxy *nsproxy, struct task_struct *tsk)
 {
-	return;
 }
-
-static inline void timens_add_monotonic(struct timespec64 *ts) { }
-static inline void timens_add_boottime(struct timespec64 *ts) { }
-
 static inline ktime_t timens_ktime_to_host(clockid_t clockid, ktime_t tim)
 {
 	return tim;

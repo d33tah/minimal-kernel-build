@@ -105,16 +105,4 @@ extern void percpu_free_rwsem(struct percpu_rw_semaphore *);
 #define percpu_rwsem_is_held(sem)	lockdep_is_held(sem)
 #define percpu_rwsem_assert_held(sem)	lockdep_assert_held(sem)
 
-static inline void percpu_rwsem_release(struct percpu_rw_semaphore *sem,
-					bool read, unsigned long ip)
-{
-	lock_release(&sem->dep_map, ip);
-}
-
-static inline void percpu_rwsem_acquire(struct percpu_rw_semaphore *sem,
-					bool read, unsigned long ip)
-{
-	lock_acquire(&sem->dep_map, 0, 1, read, 1, NULL, ip);
-}
-
 #endif

@@ -149,19 +149,6 @@ extern void hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
 
 extern int hrtimer_cancel(struct hrtimer *timer);
 
-static inline void hrtimer_start_expires(struct hrtimer *timer,
-					 enum hrtimer_mode mode)
-{
-	u64 delta;
-	ktime_t soft, hard;
-	soft = hrtimer_get_softexpires(timer);
-	hard = hrtimer_get_expires(timer);
-	delta = ktime_to_ns(ktime_sub(hard, soft));
-	hrtimer_start_range_ns(timer, soft, delta, mode);
-}
-
-
-
 extern bool hrtimer_active(const struct hrtimer *timer);
 
 

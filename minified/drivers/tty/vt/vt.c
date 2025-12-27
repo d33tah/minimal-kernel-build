@@ -68,7 +68,6 @@ static void reset_terminal(struct vc_data *vc, int do_clear);
 static void con_flush_chars(struct tty_struct *tty);
 static void set_cursor(struct vc_data *vc);
 static void hide_cursor(struct vc_data *vc);
-static void console_callback(struct work_struct *ignored);
 static void blank_screen_t(struct timer_list *unused);
 static void set_palette(struct vc_data *vc);
 
@@ -78,8 +77,6 @@ int global_cursor_default = -1;
 static int cur_default = CUR_UNDERLINE;
 int console_blanked;
 static int blankinterval;
-
-static DECLARE_WORK(console_work, console_callback);
 
 int fg_console;
 int last_console;
@@ -925,17 +922,6 @@ static int do_con_write(struct tty_struct *tty, const unsigned char *buf,
 	con_flush(vc, &draw);
 	console_unlock();
 	return n;
-}
-
-static void console_callback(struct work_struct *ignored)
-{
-	/* Stub: console_work never scheduled */
-}
-
-int set_console(int nr)
-{
-	/* Stub: no console switching in minimal kernel */
-	return -EINVAL;
 }
 
 struct tty_driver *console_driver;

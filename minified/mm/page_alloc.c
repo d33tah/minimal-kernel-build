@@ -249,10 +249,7 @@ static inline bool pcp_allowed_order(unsigned int order)
 	return false;
 }
 
-static inline void free_the_page(struct page *page, unsigned int order)
-{
-	/* No-op: bump allocator style - no deallocation */
-}
+/* free_the_page removed - unused stub */
 
 void free_compound_page(struct page *page)
 {

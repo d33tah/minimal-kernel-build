@@ -545,8 +545,6 @@ static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
 #define pfn_to_nid(pfn)		(0)
 
 #define sparse_init()	do {} while (0)
-#define sparse_index_init(_sec, _nid)  do {} while (0)
-#define pfn_in_present_section pfn_valid
 
 #endif  
 #endif  

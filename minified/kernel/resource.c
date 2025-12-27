@@ -414,20 +414,6 @@ void __release_region(struct resource *parent, resource_size_t start,
 	       (unsigned long long)start, (unsigned long long)end);
 }
 
-/* Stubbed: __devm_request_region and __devm_release_region - needed by lib/devres.c */
-struct resource *__devm_request_region(struct device *dev,
-				       struct resource *parent,
-				       resource_size_t start, resource_size_t n,
-				       const char *name)
-{
-	return NULL;
-}
-
-void __devm_release_region(struct device *dev, struct resource *parent,
-			   resource_size_t start, resource_size_t n)
-{
-}
-
 #define MAXRESERVE 4
 
 int iomem_map_sanity_check(resource_size_t addr, unsigned long size)

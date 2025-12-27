@@ -105,23 +105,6 @@ extern void __release_region(struct resource *, resource_size_t,
 
 struct device;
 
-
-#define devm_request_region(dev,start,n,name) \
-	__devm_request_region(dev, &ioport_resource, (start), (n), (name))
-#define devm_request_mem_region(dev,start,n,name) \
-	__devm_request_region(dev, &iomem_resource, (start), (n), (name))
-
-extern struct resource * __devm_request_region(struct device *dev,
-				struct resource *parent, resource_size_t start,
-				resource_size_t n, const char *name);
-
-#define devm_release_region(dev, start, n) \
-	__devm_release_region(dev, &ioport_resource, (start), (n))
-#define devm_release_mem_region(dev, start, n) \
-	__devm_release_region(dev, &iomem_resource, (start), (n))
-
-extern void __devm_release_region(struct device *dev, struct resource *parent,
-				  resource_size_t start, resource_size_t n);
 extern int iomem_map_sanity_check(resource_size_t addr, unsigned long size);
 
 extern int

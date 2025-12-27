@@ -72,21 +72,6 @@
 #define __USER_CS			(GDT_ENTRY_DEFAULT_USER_CS*8 + 3)
 #define __ESPFIX_SS			(GDT_ENTRY_ESPFIX_SS*8)
 
- 
-#define PNP_CS32			(GDT_ENTRY_PNPBIOS_CS32*8)
- 
-#define PNP_CS16			(GDT_ENTRY_PNPBIOS_CS16*8)
-
- 
-#define SEGMENT_IS_PNP_CODE(x)		(((x) & 0xf4) == PNP_CS32)
-
- 
-#define PNP_DS				(GDT_ENTRY_PNPBIOS_DS*8)
- 
-#define PNP_TS1				(GDT_ENTRY_PNPBIOS_TS1*8)
- 
-#define PNP_TS2				(GDT_ENTRY_PNPBIOS_TS2*8)
-
 # define __KERNEL_PERCPU		0
 
 
@@ -103,11 +88,7 @@
 
 #ifdef __KERNEL__
 
- 
 #define EARLY_IDT_HANDLER_SIZE (9 + ENDBR_INSN_SIZE)
-
- 
-#define XEN_EARLY_IDT_HANDLER_SIZE (8 + ENDBR_INSN_SIZE)
 
 #ifndef __ASSEMBLY__
 

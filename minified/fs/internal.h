@@ -77,8 +77,6 @@ struct open_flags {
 };
 extern struct file *do_filp_open(int dfd, struct filename *pathname,
 		const struct open_flags *op);
-extern struct file *do_file_open_root(const struct path *,
-		const char *, const struct open_flags *);
 extern struct open_how build_open_how(int flags, umode_t mode);
 extern int build_open_flags(const struct open_how *how, struct open_flags *op);
 
@@ -113,37 +111,3 @@ extern void mnt_pin_kill(struct mount *m);
 /* ns_dentry_operations removed - unused */
 
 int sb_init_dio_done_wq(struct super_block *sb);
-
- 
-
-int getname_statx_lookup_flags(int flags);
-int do_statx(int dfd, struct filename *filename, unsigned int flags,
-	     unsigned int mask, struct statx __user *buffer);
-
-/* splice_file_to_pipe removed - unused */
-
-struct xattr_name {
-	char name[XATTR_NAME_MAX + 1];
-};
-
-struct xattr_ctx {
-	 
-	union {
-		const void __user *cvalue;
-		void __user *value;
-	};
-	void *kvalue;
-	size_t size;
-	 
-	struct xattr_name *kname;
-	unsigned int flags;
-};
-
-
-ssize_t do_getxattr(struct user_namespace *mnt_userns,
-		    struct dentry *d,
-		    struct xattr_ctx *ctx);
-
-int setxattr_copy(const char __user *name, struct xattr_ctx *ctx);
-int do_setxattr(struct user_namespace *mnt_userns, struct dentry *dentry,
-		struct xattr_ctx *ctx);

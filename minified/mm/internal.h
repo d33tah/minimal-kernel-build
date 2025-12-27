@@ -333,13 +333,6 @@ void flush_tlb_batched_pending(struct mm_struct *mm);
 
 void setup_zone_pageset(struct zone *zone);
 
-struct migration_target_control {
-	int nid;		 
-	nodemask_t *nmask;
-	gfp_t gfp_mask;
-};
-
- 
 int vmap_pages_range_noflush(unsigned long addr, unsigned long end,
                 pgprot_t prot, struct page **pages, unsigned int page_shift);
 

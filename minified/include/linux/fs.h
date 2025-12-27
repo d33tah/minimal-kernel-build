@@ -130,7 +130,6 @@ typedef int (get_block_t)(struct inode *inode, sector_t iblock,
 #define MAY_EXEC		0x00000001
 #define MAY_WRITE		0x00000002
 #define MAY_READ		0x00000004
-#define MAY_APPEND		0x00000008
 #define MAY_ACCESS		0x00000010
 #define MAY_OPEN		0x00000020
 #define MAY_CHDIR		0x00000040
@@ -633,7 +632,6 @@ extern void __f_setown(struct file *filp, struct pid *, enum pid_type, int force
 #define SB_MANDLOCK	64
 #define SB_DIRSYNC	128
 #define SB_NOATIME	1024
-#define SB_NODIRATIME	2048
 #define SB_SILENT	32768
 #define SB_POSIXACL	(1<<16)
 #define SB_KERNMOUNT	(1<<22)
@@ -658,7 +656,6 @@ extern void __f_setown(struct file *filp, struct pid *, enum pid_type, int force
 #define SB_I_NODEV	0x00000004
 #define SB_I_USERNS_VISIBLE		0x00000010
 #define SB_I_PERSB_BDI	0x00000200
-#define SB_I_TS_EXPIRY_WARNED 0x00000400 
 
 enum {
 	SB_UNFROZEN = 0,		

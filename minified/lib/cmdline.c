@@ -4,12 +4,6 @@
 #include <linux/string.h>
 #include <linux/ctype.h>
 
-/* parse_option_str stubbed - never called */
-bool parse_option_str(const char *str, const char *option)
-{
-	return false;
-}
-
 char *next_arg(char *args, char **param, char **val)
 {
 	unsigned int i, equals = 0;

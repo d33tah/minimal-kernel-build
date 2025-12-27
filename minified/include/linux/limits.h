@@ -3,7 +3,6 @@
 
 /* Inlined from uapi/linux/limits.h */
 #define NR_OPEN	        1024
-#define NGROUPS_MAX    65536
 #define ARG_MAX       131072
 #define NAME_MAX         255
 #define PATH_MAX        4096
@@ -22,9 +21,7 @@
 #define LONG_MIN	(-LONG_MAX - 1)
 #define ULONG_MAX	(~0UL)
 #define LLONG_MAX	((long long)(~0ULL >> 1))
-#define LLONG_MIN	(-LLONG_MAX - 1)
 #define ULLONG_MAX	(~0ULL)
-#define UINTPTR_MAX	ULONG_MAX
 
 #define SIZE_MAX	(~(size_t)0)
 #define PHYS_ADDR_MAX	(~(phys_addr_t)0)

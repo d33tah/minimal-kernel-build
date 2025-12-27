@@ -413,8 +413,7 @@ struct inode {
 		unsigned		i_dir_seq;
 	};
 
-	__u32			i_generation;
-
+	/* i_generation removed - only initialized, never used */
 	void			*i_private; 
 } __randomize_layout;
 

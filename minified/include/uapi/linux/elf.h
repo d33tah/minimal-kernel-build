@@ -189,30 +189,17 @@ typedef struct elf64_phdr {
   Elf64_Xword p_align;		 
 } Elf64_Phdr;
 
-#define SHT_NULL	0
-#define SHT_PROGBITS	1
 #define SHT_SYMTAB	2
 #define SHT_STRTAB	3
 #define SHT_RELA	4
-/* SHT_HASH, SHT_DYNSYM - unused */
-#define SHT_DYNAMIC	6
-#define SHT_NOTE	7
-#define SHT_NOBITS	8
 #define SHT_REL		9
 
-#define SHF_WRITE		0x1
 #define SHF_ALLOC		0x2
 #define SHF_EXECINSTR		0x4
-#define SHF_RELA_LIVEPATCH	0x00100000
-#define SHF_RO_AFTER_INIT	0x00200000
-#define SHF_MASKPROC		0xf0000000
 
 #define SHN_UNDEF	0
-#define SHN_LORESERVE	0xff00
-/* SHN_LOPROC, SHN_HIPROC - unused */
 #define SHN_ABS		0xfff1
 #define SHN_COMMON	0xfff2
-#define SHN_HIRESERVE	0xffff
 typedef struct elf32_shdr {
   Elf32_Word	sh_name;
   Elf32_Word	sh_type;
@@ -265,8 +252,6 @@ typedef struct elf64_shdr {
 #define EV_CURRENT	1
 
 #define ELFOSABI_NONE	0
-#define ELFOSABI_LINUX	3
-
 #ifndef ELF_OSABI
 #define ELF_OSABI ELFOSABI_NONE
 #endif

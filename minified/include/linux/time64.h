@@ -37,12 +37,6 @@ struct itimerspec64 {
 #define TIME_UPTIME_SEC_MAX		(30LL * 365 * 24 *3600)
 #define TIME_SETTOD_SEC_MAX		(KTIME_SEC_MAX - TIME_UPTIME_SEC_MAX)
 
-static inline int timespec64_equal(const struct timespec64 *a,
-				   const struct timespec64 *b)
-{
-	return (a->tv_sec == b->tv_sec) && (a->tv_nsec == b->tv_nsec);
-}
-
 static inline int timespec64_compare(const struct timespec64 *lhs, const struct timespec64 *rhs)
 {
 	if (lhs->tv_sec < rhs->tv_sec)

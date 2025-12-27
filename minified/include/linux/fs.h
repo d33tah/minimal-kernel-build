@@ -572,11 +572,8 @@ static inline struct file *get_file(struct file *f)
 typedef void *fl_owner_t;
 
 struct file_lock;
-struct file_lock_operations;
-struct lock_manager_operations;
-struct lock_manager;
 struct net;
-struct file_lock_context;
+/* file_lock_*, lock_manager_* forward declarations removed - unused */
 
 #ifndef OFFSET_MAX
 #define INT_LIMIT(x)	(~((x)1 << (sizeof(x)*8 - 1)))

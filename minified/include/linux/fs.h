@@ -397,7 +397,7 @@ struct inode {
 	atomic64_t		i_version;
 	atomic64_t		i_sequence; 
 	atomic_t		i_count;
-	atomic_t		i_dio_count;
+	/* i_dio_count removed - only initialized, never used */
 	atomic_t		i_writecount;
 	union {
 		const struct file_operations	*i_fop;	

@@ -402,7 +402,6 @@ PAGEFLAG_FALSE(DoubleMap, double_map)
 
 
 #define PAGE_TYPE_BASE	0xf0000000
-#define PAGE_MAPCOUNT_RESERVE	-128
 #define PG_buddy	0x00000080
 #define PG_table	0x00000200
 
@@ -447,15 +446,6 @@ static __always_inline void SetPageAnonExclusive(struct page *page)
 	VM_BUG_ON_PGFLAGS(PageHuge(page) && !PageHead(page), page);
 	set_bit(PG_anon_exclusive, &PF_ANY(page, 1)->flags);
 }
-
-#define __PG_MLOCKED		(1UL << PG_mlocked)
-
-#define PAGE_FLAGS_CHECK_AT_FREE				\
-	(1UL << PG_lru		| 1UL << PG_locked	|	\
-	 1UL << PG_private	| 1UL << PG_private_2	|	\
-	 1UL << PG_writeback	| 1UL << PG_reserved	|	\
-	 1UL << PG_slab		| 1UL << PG_active 	|	\
-	 1UL << PG_unevictable	| __PG_MLOCKED)
 
 #define PAGE_FLAGS_CHECK_AT_PREP	\
 	(PAGEFLAGS_MASK & ~__PG_HWPOISON)

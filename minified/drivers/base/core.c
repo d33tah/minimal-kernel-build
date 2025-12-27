@@ -750,11 +750,6 @@ void device_destroy(struct class *class, dev_t devt)
 	}
 }
 
-void device_shutdown(void)
-{
-	/* Stubbed: device shutdown not needed for minimal boot */
-}
-
 int dev_err_probe(const struct device *dev, int err, const char *fmt, ...)
 {
 	/* Stub: minimal error probe for tiny kernel */

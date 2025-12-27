@@ -97,29 +97,6 @@ void *memdup_user(const void __user *src, size_t len)
 	return p;
 }
 
-char *strndup_user(const char __user *s, long n)
-{
-	char *p;
-	long length;
-
-	length = strnlen_user(s, n);
-
-	if (!length)
-		return ERR_PTR(-EFAULT);
-
-	if (length > n)
-		return ERR_PTR(-EINVAL);
-
-	p = memdup_user(s, length);
-
-	if (IS_ERR(p))
-		return p;
-
-	p[length - 1] = '\0';
-
-	return p;
-}
-
 void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 		     struct vm_area_struct *prev)
 {

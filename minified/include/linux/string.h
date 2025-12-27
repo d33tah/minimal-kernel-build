@@ -8,7 +8,6 @@
 #include <linux/stdarg.h>
 
 
-extern char *strndup_user(const char __user *, long);
 extern void *memdup_user(const void __user *, size_t);
 
 #include <asm/string_32.h>

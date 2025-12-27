@@ -141,6 +141,4 @@ static inline void arch_teardown_dma_ops(struct device *dev)
 {
 }
 
-extern const struct dma_map_ops dma_dummy_ops;
-
 #endif  

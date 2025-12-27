@@ -188,10 +188,6 @@ struct prev_cputime {
 
 enum uclamp_id { UCLAMP_CNT };
 
-
-struct sched_info {
-};
-
 # define SCHED_FIXEDPOINT_SHIFT		10
 # define SCHED_FIXEDPOINT_SCALE		(1L << SCHED_FIXEDPOINT_SHIFT)
 
@@ -329,11 +325,6 @@ struct task_struct {
 	cpumask_t			cpus_mask;
 	void				*migration_pending;
 	unsigned short			migration_flags;
-
-
-
-
-	struct sched_info		sched_info;
 
 	struct list_head		tasks;
 

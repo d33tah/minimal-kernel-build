@@ -131,8 +131,6 @@ extern int get_tree_nodev(struct fs_context *fc,
 
 /* get_tree_bdev removed - declared but never implemented */
 
-extern const struct file_operations fscontext_fops;
-
 struct fc_log {
 	refcount_t	usage;
 	u8		head;		 

@@ -32,7 +32,4 @@ typedef struct {
 
 /* UUID_STRING_LEN - unused */
 
-extern const guid_t guid_null;
-extern const uuid_t uuid_null;
-
 #endif

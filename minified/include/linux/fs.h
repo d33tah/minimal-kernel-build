@@ -382,8 +382,7 @@ struct inode {
 	unsigned long		i_state;
 	struct rw_semaphore	i_rwsem;
 
-	unsigned long		dirtied_when;	
-	unsigned long		dirtied_time_when;
+	unsigned long		dirtied_when;
 
 	struct hlist_node	i_hash;
 	struct list_head	i_io_list;	

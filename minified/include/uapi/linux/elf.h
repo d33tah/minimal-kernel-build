@@ -3,7 +3,6 @@
 
 #include <linux/types.h>
 
-#define EM_NONE		0
 #define EM_386		3
 #define EM_486		6
 #define EM_X86_64	62
@@ -35,13 +34,10 @@ typedef __s64	Elf64_Sxword;
 #define PT_GNU_STACK	(PT_LOOS + 0x474e551)
 #define PT_GNU_PROPERTY	(PT_LOOS + 0x474e553)
 
-#define ET_NONE   0
-#define ET_REL    1
 #define ET_EXEC   2
 #define ET_DYN    3
-/* ET_CORE, ET_LOPROC, ET_HIPROC - unused */
 
-/* Dynamic section tags - only keep those used */
+/* Dynamic section tags - used by vdso2c build tool */
 #define DT_NULL		0
 #define DT_RELA		7
 #define DT_REL	        17

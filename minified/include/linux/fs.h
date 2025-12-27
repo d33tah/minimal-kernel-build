@@ -631,22 +631,15 @@ extern void __f_setown(struct file *filp, struct pid *, enum pid_type, int force
 #define SB_SYNCHRONOUS	16
 #define SB_MANDLOCK	64
 #define SB_DIRSYNC	128
-#define SB_NOATIME	1024
 #define SB_SILENT	32768
 #define SB_POSIXACL	(1<<16)
 #define SB_KERNMOUNT	(1<<22)
 #define SB_I_VERSION	(1<<23)
 #define SB_LAZYTIME	(1<<25)
 #define SB_SUBMOUNT     (1<<26)
-#define SB_NOSEC	(1<<28)
 #define SB_BORN		(1<<29)
 #define SB_ACTIVE	(1<<30)
 #define SB_NOUSER	(1<<31)
-
-#define SB_ENC_STRICT_MODE_FL	(1 << 0)
-
-#define sb_has_strict_encoding(sb) \
-	(sb->s_encoding_flags & SB_ENC_STRICT_MODE_FL)
 
 #define MNT_FORCE	0x00000001
 #define MNT_DETACH	0x00000002
@@ -839,11 +832,6 @@ static inline bool __sb_start_write_trylock(struct super_block *sb, int level)
 	return percpu_down_read_trylock(sb->s_writers.rw_sem + level - 1);
 }
 
-#define __sb_writers_acquired(sb, lev)	\
-	percpu_rwsem_acquire(&(sb)->s_writers.rw_sem[(lev)-1], 1, _THIS_IP_)
-#define __sb_writers_release(sb, lev)	\
-	percpu_rwsem_release(&(sb)->s_writers.rw_sem[(lev)-1], 1, _THIS_IP_)
-
 static inline void sb_end_write(struct super_block *sb)
 {
 	__sb_end_write(sb, SB_FREEZE_WRITE);
@@ -1005,12 +993,9 @@ struct super_operations {
 				    struct shrink_control *);
 };
 
-#define S_SYNC		(1 << 0)
-#define S_NOATIME	(1 << 1)
 #define S_APPEND	(1 << 2)
 #define S_IMMUTABLE	(1 << 3)
 #define S_DEAD		(1 << 4)
-#define S_DIRSYNC	(1 << 6)
 #define S_NOCMTIME	(1 << 7)
 #define S_SWAPFILE	(1 << 8)
 #define S_PRIVATE	(1 << 9)
@@ -1025,10 +1010,8 @@ static inline bool sb_rdonly(const struct super_block *sb) { return sb->s_flags 
 #define IS_IMMUTABLE(inode)	((inode)->i_flags & S_IMMUTABLE)
 #define IS_POSIXACL(inode)	__IS_FLG(inode, SB_POSIXACL)
 #define IS_DEADDIR(inode)	((inode)->i_flags & S_DEAD)
-#define IS_NOCMTIME(inode)	((inode)->i_flags & S_NOCMTIME)
 #define IS_SWAPFILE(inode)	((inode)->i_flags & S_SWAPFILE)
 #define IS_AUTOMOUNT(inode)	((inode)->i_flags & S_AUTOMOUNT)
-#define IS_NOSEC(inode)		((inode)->i_flags & S_NOSEC)
 #define IS_DAX(inode)		((inode)->i_flags & S_DAX)
 
 static inline bool HAS_UNMAPPED_ID(struct user_namespace *mnt_userns,
@@ -1062,7 +1045,6 @@ static inline void init_sync_kiocb(struct kiocb *kiocb, struct file *filp)
 #define I_REFERENCED		(1 << 8)
 #define I_LINKABLE		(1 << 10)
 #define I_DIRTY_TIME		(1 << 11)
-#define I_CREATING		(1 << 15)
 #define I_DONTCACHE		(1 << 16)
 
 #define I_DIRTY_INODE (I_DIRTY_SYNC | I_DIRTY_DATASYNC)
@@ -1434,10 +1416,6 @@ extern const struct file_operations simple_dir_operations;
 extern bool is_empty_dir_inode(struct inode *inode);
 extern int simple_pin_fs(struct file_system_type *, struct vfsmount **mount, int *count);
 extern void simple_release_fs(struct vfsmount **mount, int *count);
-
-
-#define buffer_migrate_page NULL
-#define buffer_migrate_page_norefs NULL
 
 int may_setattr(struct user_namespace *mnt_userns, struct inode *inode,
 		unsigned int ia_valid);

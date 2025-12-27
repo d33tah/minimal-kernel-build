@@ -116,7 +116,6 @@ struct task_group;
 #define __TASK_TRACED			0x0008
 #define EXIT_DEAD			0x0010
 #define EXIT_ZOMBIE			0x0020
-#define EXIT_TRACE			(EXIT_ZOMBIE | EXIT_DEAD)
 #define TASK_PARKED			0x0040
 #define TASK_DEAD			0x0080
 #define TASK_WAKEKILL			0x0100

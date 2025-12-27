@@ -8,14 +8,6 @@
 #include <linux/srcu.h>
 #include <linux/rbtree.h>
 
-/* Inlined from interval_tree.h */
-struct interval_tree_node {
-	struct rb_node rb;
-	unsigned long start;
-	unsigned long last;
-	unsigned long __subtree_last;
-};
-
 struct mmu_notifier_subscriptions;
 struct mmu_notifier;
 struct mmu_notifier_range;

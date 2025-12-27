@@ -109,8 +109,6 @@ struct vc {
 extern struct vc vc_cons [MAX_NR_CONSOLES];
 extern void vc_SAK(struct work_struct *work);
 
-#define CUR_MAKE(size, change, set)	((size) | ((change) << 8) |	\
-		((set) << 16))
 #define CUR_SIZE(c)		 ((c) & 0x00000f)
 # define CUR_NONE			       1
 # define CUR_UNDERLINE			       2

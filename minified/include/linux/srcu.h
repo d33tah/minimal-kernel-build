@@ -67,8 +67,6 @@ void srcu_drive_gp(struct work_struct *wp);
 	__SRCU_DEP_MAP_INIT(name)					\
 }
 
-#define DEFINE_SRCU(name) \
-	struct srcu_struct name = __SRCU_STRUCT_INIT(name, name)
 #define DEFINE_STATIC_SRCU(name) \
 	static struct srcu_struct name = __SRCU_STRUCT_INIT(name, name)
 

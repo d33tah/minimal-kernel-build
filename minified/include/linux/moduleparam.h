@@ -17,9 +17,6 @@
 #define __MODULE_PARM_TYPE(name, _type)					  \
 	__MODULE_INFO(parmtype, name##type, #name ":" _type)
 
-#define MODULE_PARM_DESC(_parm, desc) \
-	__MODULE_INFO(parm, _parm, #_parm ":" desc)
-
 struct kernel_param;
 
 enum {

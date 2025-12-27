@@ -41,11 +41,6 @@ static inline bool __nodes_empty(const nodemask_t *srcp, unsigned int nbits)
 	[BITS_TO_LONGS(MAX_NUMNODES)-1] = NODE_MASK_LAST_WORD		\
 } })
 
-#define NODE_MASK_NONE							\
-((nodemask_t) { {							\
-	[0 ... BITS_TO_LONGS(MAX_NUMNODES)-1] =  0UL			\
-} })
-
 #define nodes_addr(src) ((src).bits)
 
 

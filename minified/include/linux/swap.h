@@ -22,14 +22,6 @@ struct pagevec;
 
 #define MAX_SWAPFILES_SHIFT	5
 #define SWP_SWAPIN_ERROR_NUM 1
-#define SWP_PTE_MARKER_NUM 0
-#define SWP_DEVICE_NUM 0
-#define SWP_MIGRATION_NUM 0
-#define SWP_HWPOISON_NUM 0
-#define MAX_SWAPFILES \
-	((1 << MAX_SWAPFILES_SHIFT) - SWP_DEVICE_NUM - \
-	SWP_MIGRATION_NUM - SWP_HWPOISON_NUM - \
-	SWP_PTE_MARKER_NUM - SWP_SWAPIN_ERROR_NUM)
 struct reclaim_state {
 	unsigned long reclaimed_slab;
 };

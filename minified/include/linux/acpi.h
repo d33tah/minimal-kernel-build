@@ -10,7 +10,7 @@
 #ifndef _LINUX
 #define _LINUX
 #endif
-typedef void *acpi_handle;
+/* acpi_handle typedef removed - unused */
 #define acpi_disabled 1
 struct fwnode_handle;
 static inline void acpi_early_init(void) { }

@@ -16,7 +16,7 @@ typedef __kernel_dev_t		dev_t;
 typedef __kernel_ulong_t	ino_t;
 typedef __kernel_mode_t		mode_t;
 typedef unsigned short		umode_t;
-typedef u32			nlink_t;
+/* nlink_t removed - unused */
 typedef __kernel_off_t		off_t;
 typedef __kernel_pid_t		pid_t;
 typedef __kernel_clockid_t	clockid_t;
@@ -47,10 +47,7 @@ typedef __kernel_ssize_t	ssize_t;
 typedef __kernel_ptrdiff_t	ptrdiff_t;
 #endif
 
-#ifndef _CLOCK_T
-#define _CLOCK_T
-typedef __kernel_clock_t	clock_t;
-#endif
+/* clock_t removed - unused */
 
 typedef unsigned short		ushort;
 typedef unsigned int		uint;

@@ -12,7 +12,7 @@
 #define NSEC_PER_SEC	1000000000L
 
 typedef __s64 time64_t;
-typedef __u64 timeu64_t;
+/* timeu64_t removed - unused */
 
 #include <uapi/linux/time.h>
 

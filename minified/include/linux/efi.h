@@ -8,7 +8,7 @@
 #include <linux/screen_info.h>
 #include <asm/page.h>
 
-typedef unsigned long efi_status_t;
+/* efi_status_t removed - unused */
 
 #define EFI_SUCCESS		0
 

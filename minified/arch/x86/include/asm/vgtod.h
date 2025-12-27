@@ -10,10 +10,6 @@
 
 #include <uapi/linux/time.h>
 
-#ifdef BUILD_VDSO32_64
-typedef u64 gtod_long_t;
-#else
-typedef unsigned long gtod_long_t;
-#endif
+/* gtod_long_t removed - unused */
 
 #endif  

@@ -5,8 +5,7 @@
 #include <linux/types.h>
 
 #ifdef __KERNEL__
-typedef int32_t key_serial_t;
-typedef uint32_t key_perm_t;
+/* key_serial_t, key_perm_t removed - unused */
 
 struct key;
 struct net;

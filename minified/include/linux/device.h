@@ -121,12 +121,7 @@ __printf(3, 4) char *devm_kasprintf(struct device *dev, gfp_t gfp,
 				    const char *fmt, ...) __malloc;
 char *devm_kstrdup(struct device *dev, const char *s, gfp_t gfp) __malloc;
 
-/* devm_kmalloc, devm_krealloc, devm_kvasprintf, devm_kfree,
-   devm_kstrdup_const, devm_kmemdup, devm_get_free_pages,
-   devm_free_pages removed - none are called in minimal kernel */
-
-void __iomem *devm_ioremap_resource(struct device *dev,
-				    const struct resource *res);
+/* devm_* functions removed - none are called in minimal kernel */
 
 struct device_dma_parameters {
 	 

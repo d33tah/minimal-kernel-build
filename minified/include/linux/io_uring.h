@@ -3,9 +3,6 @@
 #define _LINUX_IO_URING_H
 
 struct task_struct;
-struct file;
-struct sock;
-struct io_uring_cmd;
 
 static inline void io_uring_task_cancel(void)
 {

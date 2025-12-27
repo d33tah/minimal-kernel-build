@@ -21,10 +21,9 @@ struct user_namespace;
 struct fs_context;
 struct fs_parameter;
 
-/* Reduced lockdown enum for minimal kernel - only keep used values */
+/* Reduced lockdown enum for minimal kernel */
 enum lockdown_reason {
 	LOCKDOWN_NONE,
-	LOCKDOWN_DEV_MEM,           /* Used by drivers/char/mem.c */
 	LOCKDOWN_MODULE_PARAMETERS, /* Used by kernel/params.c */
 	LOCKDOWN_CONFIDENTIALITY_MAX,
 };

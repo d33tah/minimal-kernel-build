@@ -6,8 +6,6 @@
 #include <linux/fs.h>
 #include <linux/pagemap.h>
 
-struct ctl_table;
-struct user_struct;
 struct mmu_gather;
 struct vm_area_struct;
 struct mm_struct;

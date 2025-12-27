@@ -12,8 +12,6 @@
 
 struct tty_struct;
 struct tty_driver;
-struct serial_icounter_struct;
-struct serial_struct;
 
 struct tty_operations {
 	struct tty_struct * (*lookup)(struct tty_driver *driver,

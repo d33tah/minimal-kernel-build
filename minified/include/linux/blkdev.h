@@ -34,6 +34,4 @@ static inline void printk_all_partitions(void)
 
 #define BDEVNAME_SIZE	32
 
-struct io_comp_batch;
-
 #endif

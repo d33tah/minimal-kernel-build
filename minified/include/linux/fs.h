@@ -99,9 +99,7 @@ typedef int rwf_t;
 struct backing_dev_info;
 struct bdi_writeback;
 struct bio;
-struct io_comp_batch;
 struct export_operations;
-struct fiemap_extent_info;
 struct iovec;
 struct kiocb;
 struct kobject;
@@ -111,13 +109,11 @@ struct kstatfs;
 struct vm_area_struct;
 struct vfsmount;
 struct cred;
-struct swap_info_struct;
 struct seq_file;
 struct workqueue_struct;
 struct iov_iter;
 struct fs_context;
 struct fs_parameter_spec;
-struct fileattr;
 
 extern void __init inode_init(void);
 extern void __init inode_init_early(void);
@@ -906,7 +902,6 @@ struct dir_context {
 
 
 struct iov_iter;
-struct io_uring_cmd;
 
 struct file_operations {
 	struct module *owner;
@@ -1497,7 +1492,6 @@ static inline ino_t parent_ino(struct dentry *dentry)
 }
 
 
-struct ctl_table;
 int __init list_bdev_fs_names(char *buf, size_t size);
 
 #define __FMODE_EXEC		((__force int) FMODE_EXEC)

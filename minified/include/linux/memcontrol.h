@@ -23,9 +23,6 @@ enum memcg_memory_event { MEMCG_NR_MEMORY_EVENTS };
 
 struct mem_cgroup_reclaim_cookie;
 
-#define MEM_CGROUP_ID_SHIFT	0
-#define MEM_CGROUP_ID_MAX	0
-
 static inline struct mem_cgroup *folio_memcg(struct folio *folio)
 {
 	return NULL;
@@ -153,8 +150,6 @@ static inline struct lruvec *folio_lruvec_relock_irqsave(struct folio *folio,
 	}
 	return folio_lruvec_lock_irqsave(folio, flags);
 }
-
-#define mem_cgroup_sockets_enabled 0
 
 static inline void set_shrinker_bit(struct mem_cgroup *memcg,
 				    int nid, int shrinker_id)

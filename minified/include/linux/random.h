@@ -29,8 +29,6 @@ static inline unsigned long get_random_long(void)
 	return get_random_u32(); /* BITS_PER_LONG == 32 */
 }
 
-# define CANARY_MASK 0xffffffffUL
-
 int __init random_init(const char *command_line);
 bool rng_is_initialized(void);
 int wait_for_random_bytes(void);

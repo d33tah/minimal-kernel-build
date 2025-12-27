@@ -9,7 +9,6 @@
 #include <asm/cpumask.h>
 
 extern int smp_num_siblings;
-extern unsigned int num_processors;
 
 DECLARE_PER_CPU_READ_MOSTLY(cpumask_var_t, cpu_sibling_map);
 DECLARE_PER_CPU_READ_MOSTLY(cpumask_var_t, cpu_core_map);

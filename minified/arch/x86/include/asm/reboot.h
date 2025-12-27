@@ -15,8 +15,6 @@ struct machine_ops {
 	void (*emergency_restart)(void);
 };
 
-extern struct machine_ops machine_ops;
-extern int crashing_cpu;
 
 /* native_machine_crash_shutdown removed - declared but never implemented */
 void native_machine_shutdown(void);

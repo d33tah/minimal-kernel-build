@@ -5,10 +5,6 @@
 /* --- 2025-12-07 23:58 --- Inlined from linux/dev_printk.h */
 #include <linux/compiler.h>
 
-#ifndef dev_fmt
-#define dev_fmt(fmt) fmt
-#endif
-
 #define PRINTK_INFO_SUBSYSTEM_LEN	16
 #define PRINTK_INFO_DEVICE_LEN		48
 

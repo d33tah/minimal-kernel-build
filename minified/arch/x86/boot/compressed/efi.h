@@ -98,13 +98,4 @@ struct efi_setup_data {
 	u64 reserved[8];
 };
 
-static inline int efi_guidcmp (efi_guid_t left, efi_guid_t right)
-{
-	return memcmp(&left, &right, sizeof (efi_guid_t));
-}
-
-static inline bool efi_soft_reserve_enabled(void)
-{
-	return false;
-}
-#endif  
+#endif

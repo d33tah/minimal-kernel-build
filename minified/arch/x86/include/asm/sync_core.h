@@ -31,15 +31,4 @@ static inline void sync_core(void)
 	iret_to_self();
 }
 
- 
-static inline void sync_core_before_usermode(void)
-{
-	 
-	if (static_cpu_has(X86_FEATURE_PTI))
-		return;
-
-	 
-	sync_core();
-}
-
-#endif  
+#endif

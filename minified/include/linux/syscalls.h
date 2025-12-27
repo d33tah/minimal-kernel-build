@@ -159,10 +159,4 @@ ssize_t ksys_readahead(int fd, loff_t offset, size_t count);
 
 extern long do_sys_ftruncate(unsigned int fd, loff_t length, int small);
 
-static inline long ksys_ftruncate(unsigned int fd, loff_t length)
-{
-	return do_sys_ftruncate(fd, length, 1);
-}
-
-
 #endif

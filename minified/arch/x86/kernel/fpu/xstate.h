@@ -36,17 +36,6 @@ static inline void xstate_init_xcomp_bv(struct xregs_state *xsave, u64 mask)
 		xsave->header.xcomp_bv = mask | XCOMP_BV_COMPACTED_FORMAT;
 }
 
-static inline u64 xstate_get_group_perm(bool guest)
-{
-	struct fpu *fpu = &current->group_leader->thread.fpu;
-	struct fpu_state_perm *perm;
-
-	 
-	perm = guest ? &fpu->guest_perm : &fpu->perm;
-	return READ_ONCE(perm->__state_perm);
-}
-
-
 enum xstate_copy_mode {
 	XSTATE_COPY_FP,
 	XSTATE_COPY_FX,

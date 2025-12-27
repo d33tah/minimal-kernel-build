@@ -227,11 +227,6 @@ int tty_hung_up_p(struct file *filp);
 void no_tty(void);
 speed_t tty_termios_baud_rate(struct ktermios *termios);
 
-static inline speed_t tty_get_baud_rate(struct tty_struct *tty)
-{
-	return tty_termios_baud_rate(&tty->termios);
-}
-
 unsigned char tty_get_char_size(unsigned int cflag);
 unsigned char tty_get_frame_size(unsigned int cflag);
 

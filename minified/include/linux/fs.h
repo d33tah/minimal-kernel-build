@@ -603,11 +603,6 @@ static inline struct inode *file_inode(const struct file *f)
 	return f->f_inode;
 }
 
-static inline struct dentry *file_dentry(const struct file *file)
-{
-	return d_real(file->f_path.dentry, file_inode(file));
-}
-
 struct fasync_struct {
 	rwlock_t		fa_lock;
 	int			magic;
@@ -839,11 +834,6 @@ static inline void sb_end_pagefault(struct super_block *sb)
 static inline void sb_start_write(struct super_block *sb)
 {
 	__sb_start_write(sb, SB_FREEZE_WRITE);
-}
-
-static inline bool sb_start_write_trylock(struct super_block *sb)
-{
-	return __sb_start_write_trylock(sb, SB_FREEZE_WRITE);
 }
 
 static inline void sb_start_pagefault(struct super_block *sb)

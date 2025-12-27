@@ -73,7 +73,6 @@ __seqprop_##lockname##_assert(const seqcount_##lockname##_t *s)		\
 	__SEQ_LOCK(lockdep_assert_held(lockmember));			\
 }
 
-
 static inline seqcount_t *__seqprop_ptr(seqcount_t *s)
 {
 	return s;

@@ -14,14 +14,7 @@ void  mount_block_root(char *name, int flags);
 void  mount_root(void);
 extern int root_mountflags;
 
-static inline __init int create_dev(char *name, dev_t dev)
-{
-	init_unlink(name);
-	return init_mknod(name, S_IFBLK | 0600, new_encode_dev(dev));
-}
-
-
-/* Removed uncalled: rd_load_disk, rd_load_image */
+/* Removed uncalled: rd_load_disk, rd_load_image, create_dev */
 
 
 

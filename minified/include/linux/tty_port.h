@@ -138,16 +138,6 @@ static inline void tty_port_set_active(struct tty_port *port, bool val)
 }
 
 
-static inline bool tty_port_initialized(const struct tty_port *port)
-{
-	return test_bit(TTY_PORT_INITIALIZED, &port->iflags);
-}
-
-static inline void tty_port_set_initialized(struct tty_port *port, bool val)
-{
-	assign_bit(TTY_PORT_INITIALIZED, &port->iflags, val);
-}
-
 static inline bool tty_port_kopened(const struct tty_port *port)
 {
 	return test_bit(TTY_PORT_KOPENED, &port->iflags);

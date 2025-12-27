@@ -169,13 +169,6 @@ static inline void wrmsrl(unsigned int msr, u64 val)
 	native_write_msr(msr, (u32)(val & 0xffffffffULL), (u32)(val >> 32));
 }
 
- 
-static inline int wrmsr_safe(unsigned int msr, u32 low, u32 high)
-{
-	return native_write_msr_safe(msr, low, high);
-}
-
- 
 #define rdmsr_safe(msr, low, high)				\
 ({								\
 	int __err;						\

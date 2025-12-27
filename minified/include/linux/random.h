@@ -24,10 +24,6 @@ static inline unsigned int get_random_int(void)
 {
 	return get_random_u32();
 }
-static inline unsigned long get_random_long(void)
-{
-	return get_random_u32(); /* BITS_PER_LONG == 32 */
-}
 
 int __init random_init(const char *command_line);
 bool rng_is_initialized(void);

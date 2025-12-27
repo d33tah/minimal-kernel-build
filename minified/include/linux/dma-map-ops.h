@@ -54,11 +54,6 @@ struct dma_map_ops {
 	unsigned long (*get_merge_boundary)(struct device *dev);
 };
 
-static inline const struct dma_map_ops *get_dma_ops(struct device *dev)
-{
-	return NULL;
-}
-
 static inline void dma_contiguous_reserve(phys_addr_t limit)
 {
 }

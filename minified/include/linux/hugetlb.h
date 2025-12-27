@@ -157,16 +157,6 @@ hugetlb_file_setup(const char *name, size_t size, vm_flags_t acctflag,
 
 struct hstate {};
 
-static inline struct hstate *hstate_file(struct file *f)
-{
-	return NULL;
-}
-
-static inline struct hstate *hstate_sizelog(int page_size_log)
-{
-	return NULL;
-}
-
 static inline struct hstate *hstate_vma(struct vm_area_struct *vma)
 {
 	return NULL;

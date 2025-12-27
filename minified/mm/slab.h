@@ -94,12 +94,7 @@ static inline struct slab *virt_to_slab(const void *addr)
 	return folio_slab(folio);
 }
 
-static inline int slab_order(const struct slab *slab)
-{
-	return folio_order((struct folio *)slab_folio(slab));
-}
-
-/* slab_size removed - unused */
+/* slab_order, slab_size removed - unused */
 
 
 
@@ -178,33 +173,7 @@ struct kmem_cache {
 
 void *fixup_red_left(struct kmem_cache *s, void *p);
 
-static inline void *nearest_obj(struct kmem_cache *cache, const struct slab *slab,
-				void *x) {
-	void *object = x - (x - slab_address(slab)) % cache->size;
-	void *last_object = slab_address(slab) +
-		(slab->objects - 1) * cache->size;
-	void *result = (unlikely(object > last_object)) ? last_object : object;
-
-	result = fixup_red_left(cache, result);
-	return result;
-}
-
-static inline unsigned int __obj_to_index(const struct kmem_cache *cache,
-					  void *addr, void *obj)
-{
-	return reciprocal_divide(kasan_reset_tag(obj) - addr,
-				 cache->reciprocal_size);
-}
-
-static inline unsigned int obj_to_index(const struct kmem_cache *cache,
-					const struct slab *slab, void *obj)
-{
-	if (is_kfence_address(obj))
-		return 0;
-	return __obj_to_index(cache, slab_address(slab), obj);
-}
-
-/* objs_per_slab removed - unused */
+/* nearest_obj, __obj_to_index, obj_to_index, objs_per_slab removed - unused */
 
 #include <linux/memcontrol.h>
 int should_failslab(struct kmem_cache *s, gfp_t gfpflags);
@@ -348,21 +317,7 @@ static inline void memcg_slab_post_alloc_hook(struct kmem_cache *s,
 {
 }
 
-static inline void memcg_slab_free_hook(struct kmem_cache *s,
-					void **p, int objects)
-{
-}
-
-static inline struct kmem_cache *virt_to_cache(const void *obj)
-{
-	struct slab *slab;
-
-	slab = virt_to_slab(obj);
-	if (WARN_ONCE(!slab, "%s: Object is not a Slab page!\n",
-					__func__))
-		return NULL;
-	return slab->slab_cache;
-}
+/* memcg_slab_free_hook, virt_to_cache removed - unused */
 
 static __always_inline void account_slab(struct slab *slab, int order,
 					 struct kmem_cache *s, gfp_t gfp)
@@ -384,11 +339,7 @@ static __always_inline void unaccount_slab(struct slab *slab, int order,
 			    -(PAGE_SIZE << order));
 }
 
-static inline struct kmem_cache *cache_from_obj(struct kmem_cache *s, void *x)
-{
-	/* SLAB_FREELIST_HARDENED not enabled, debug always false */
-	return s;
-}
+/* cache_from_obj removed - unused */
 
 static inline size_t slab_ksize(const struct kmem_cache *s)
 {

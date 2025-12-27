@@ -67,25 +67,6 @@ static inline struct file *files_lookup_fd_raw(struct files_struct *files, unsig
 	return NULL;
 }
 
-static inline struct file *files_lookup_fd_locked(struct files_struct *files, unsigned int fd)
-{
-	RCU_LOCKDEP_WARN(!lockdep_is_held(&files->file_lock),
-			   "suspicious rcu_dereference_check() usage");
-	return files_lookup_fd_raw(files, fd);
-}
-
-static inline struct file *files_lookup_fd_rcu(struct files_struct *files, unsigned int fd)
-{
-	RCU_LOCKDEP_WARN(!rcu_read_lock_held(),
-			   "suspicious rcu_dereference_check() usage");
-	return files_lookup_fd_raw(files, fd);
-}
-
-static inline struct file *lookup_fd_rcu(unsigned int fd)
-{
-	return files_lookup_fd_rcu(current->files, fd);
-}
-
 struct file *task_lookup_fd_rcu(struct task_struct *task, unsigned int fd);
 struct file *task_lookup_next_fd_rcu(struct task_struct *task, unsigned int *fd);
 

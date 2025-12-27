@@ -592,12 +592,6 @@ static inline pid_t task_tgid_nr(struct task_struct *tsk)
 	return tsk->tgid;
 }
 
-static inline pid_t task_tgid_vnr(struct task_struct *tsk)
-{
-	return __task_pid_nr_ns(tsk, PIDTYPE_TGID, NULL);
-}
-
-
 static inline int is_global_init(struct task_struct *tsk)
 {
 	return task_tgid_nr(tsk) == 1;

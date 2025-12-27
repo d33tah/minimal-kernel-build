@@ -43,9 +43,4 @@ int __must_check kstrtobool(const char *s, bool *res);
 extern unsigned long simple_strtoul(const char *,char **,unsigned int);
 extern unsigned long long simple_strtoull(const char *,char **,unsigned int);
 
-static inline int strtobool(const char *s, bool *res)
-{
-	return kstrtobool(s, res);
-}
-
-#endif	 
+#endif

@@ -21,12 +21,6 @@ static inline void put_net(struct net *net)
 {
 }
 
-static inline struct net *read_pnet(possible_net_t *pnet)
-{
-	return *pnet;
-}
-
-
 static inline struct net *copy_net_ns(unsigned long flags,
 	struct user_namespace *user_ns, struct net *old_ns)
 {

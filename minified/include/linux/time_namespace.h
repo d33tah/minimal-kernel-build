@@ -48,9 +48,5 @@ struct time_namespace *copy_time_ns(unsigned long flags,
 static inline void timens_on_fork(struct nsproxy *nsproxy, struct task_struct *tsk)
 {
 }
-static inline ktime_t timens_ktime_to_host(clockid_t clockid, ktime_t tim)
-{
-	return tim;
-}
 
-#endif  
+#endif

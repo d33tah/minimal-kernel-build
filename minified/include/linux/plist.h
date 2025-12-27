@@ -22,14 +22,4 @@ struct plist_node {
 	.node_list = LIST_HEAD_INIT((head).node_list)	\
 }
 
-#define PLIST_HEAD(head) \
-	struct plist_head head = PLIST_HEAD_INIT(head)
-
-#define PLIST_NODE_INIT(node, __prio)			\
-{							\
-	.prio  = (__prio),				\
-	.prio_list = LIST_HEAD_INIT((node).prio_list),	\
-	.node_list = LIST_HEAD_INIT((node).node_list),	\
-}
-
 #endif

@@ -25,9 +25,6 @@
 
 #define IS_MODULE(option) __is_defined(option##_MODULE)
 
-#define IS_REACHABLE(option) __or(IS_BUILTIN(option), \
-				__and(IS_MODULE(option), __is_defined(MODULE)))
-
 #define IS_ENABLED(option) __or(IS_BUILTIN(option), IS_MODULE(option))
 
 #endif  

@@ -86,7 +86,6 @@ void tty_ldisc_flush(struct tty_struct *tty);
 
 int tty_register_ldisc(struct tty_ldisc_ops *new_ldisc);
 #include <linux/mutex.h>
-#include <linux/tty_flags.h>
 #include <linux/rwsem.h>
 
 /* From uapi/linux/tty.h - reduced to only used values */

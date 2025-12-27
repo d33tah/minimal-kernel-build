@@ -52,22 +52,6 @@ enum {
 	IORES_MAP_ENCRYPTED		= BIT(1),
 };
 
-#define DEFINE_RES_NAMED(_start, _size, _name, _flags)			\
-	{								\
-		.start = (_start),					\
-		.end = (_start) + (_size) - 1,				\
-		.name = (_name),					\
-		.flags = (_flags),					\
-		.desc = IORES_DESC_NONE,				\
-	}
-
-
-#define DEFINE_RES_MEM_NAMED(_start, _size, _name)			\
-	DEFINE_RES_NAMED((_start), (_size), (_name), IORESOURCE_MEM)
-#define DEFINE_RES_MEM(_start, _size)					\
-	DEFINE_RES_MEM_NAMED((_start), (_size), NULL)
-
-
 extern struct resource ioport_resource;
 extern struct resource iomem_resource;
 
@@ -110,12 +94,6 @@ extern int iomem_map_sanity_check(resource_size_t addr, unsigned long size);
 extern int
 walk_mem_res(u64 start, u64 end, void *arg,
 	     int (*func)(struct resource *, void *));
-
-struct resource *devm_request_free_mem_region(struct device *dev,
-		struct resource *base, unsigned long size);
-struct resource *request_free_mem_region(struct resource *base,
-		unsigned long size, const char *name);
-
 
 #endif
 #endif	 

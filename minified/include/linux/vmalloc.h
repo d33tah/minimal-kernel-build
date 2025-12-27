@@ -25,9 +25,6 @@ struct notifier_block;
 #define VM_MAP_PUT_PAGES	0x00000200
 #define VM_ALLOW_HUGE_VMAP	0x00000400
 
-#define VM_DEFER_KMEMLEAK	0
-
-
 #ifndef IOREMAP_MAX_ORDER
 #define IOREMAP_MAX_ORDER	(7 + PAGE_SHIFT)	 
 #endif

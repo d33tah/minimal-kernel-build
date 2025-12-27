@@ -99,70 +99,21 @@ static inline void slow_down_io(void)
 }
 
 
-#define BUILDIO(bwl, bw, type)						\
-static inline void out##bwl##_p(type value, u16 port)			\
-{									\
-	out##bwl(value, port);						\
-	slow_down_io();							\
-}									\
-									\
-static inline type in##bwl##_p(u16 port)				\
-{									\
-	type value = in##bwl(port);					\
-	slow_down_io();							\
-	return value;							\
-}									\
-									\
-static inline void outs##bwl(u16 port, const void *addr, unsigned long count) \
-{									\
-	if (cc_platform_has(CC_ATTR_GUEST_UNROLL_STRING_IO)) {		\
-		type *value = (type *)addr;				\
-		while (count) {						\
-			out##bwl(*value, port);				\
-			value++;					\
-			count--;					\
-		}							\
-	} else {							\
-		asm volatile("rep; outs" #bwl				\
-			     : "+S"(addr), "+c"(count)			\
-			     : "d"(port) : "memory");			\
-	}								\
-}									\
-									\
-static inline void ins##bwl(u16 port, void *addr, unsigned long count)	\
-{									\
-	if (cc_platform_has(CC_ATTR_GUEST_UNROLL_STRING_IO)) {		\
-		type *value = (type *)addr;				\
-		while (count) {						\
-			*value = in##bwl(port);				\
-			value++;					\
-			count--;					\
-		}							\
-	} else {							\
-		asm volatile("rep; ins" #bwl				\
-			     : "+D"(addr), "+c"(count)			\
-			     : "d"(port) : "memory");			\
-	}								\
+static inline void outb_p(u8 value, u16 port)
+{
+	outb(value, port);
+	slow_down_io();
 }
 
-BUILDIO(b, b, u8)
-BUILDIO(w, w, u16)
-BUILDIO(l,  , u32)
-#undef BUILDIO
+static inline u8 inb_p(u16 port)
+{
+	u8 value = inb(port);
+	slow_down_io();
+	return value;
+}
 
 #define inb_p inb_p
-#define inw_p inw_p
-#define inl_p inl_p
-#define insb insb
-#define insw insw
-#define insl insl
-
 #define outb_p outb_p
-#define outw_p outw_p
-#define outl_p outl_p
-#define outsb outsb
-#define outsw outsw
-#define outsl outsl
 
 /* xlate_dev_mem_ptr, unxlate_dev_mem_ptr removed - unused */
 /* ioremap_change_attr, ioremap_wc, ioremap_wt removed - no callers */

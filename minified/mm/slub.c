@@ -544,10 +544,6 @@ static void init_kmem_cache_cpus(struct kmem_cache *s)
 static inline void unfreeze_partials(struct kmem_cache *s)
 {
 }
-static inline void unfreeze_partials_cpu(struct kmem_cache *s,
-					 struct kmem_cache_cpu *c)
-{
-}
 
 static inline void flush_slab(struct kmem_cache *s, struct kmem_cache_cpu *c)
 {

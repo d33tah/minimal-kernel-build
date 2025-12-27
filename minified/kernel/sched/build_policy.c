@@ -9,9 +9,6 @@
 #include <linux/init_task.h>
 #include <linux/slab.h>
 #include <linux/suspend.h>
-static inline void acct_account_cputime(struct task_struct *tsk)
-{
-}
 #include <linux/vtime.h>
 
 #include <linux/sched/types.h>

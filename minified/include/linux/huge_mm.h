@@ -35,23 +35,7 @@ vm_fault_t vmf_insert_pfn_pmd_prot(struct vm_fault *vmf, pfn_t pfn,
 				   pgprot_t pgprot, bool write);
 
 
-enum transparent_hugepage_flag {
-	TRANSPARENT_HUGEPAGE_FLAG,
-};
-
-struct kobject;
-struct kobj_attribute;
-
-ssize_t single_hugepage_flag_store(struct kobject *kobj,
-				   struct kobj_attribute *attr,
-				   const char *buf, size_t count,
-				   enum transparent_hugepage_flag flag);
-ssize_t single_hugepage_flag_show(struct kobject *kobj,
-				  struct kobj_attribute *attr, char *buf,
-				  enum transparent_hugepage_flag flag);
-extern struct kobj_attribute shmem_enabled_attr;
-
-#define HPAGE_PMD_ORDER (HPAGE_PMD_SHIFT-PAGE_SHIFT)
+#define HPAGE_PMD_ORDER (HPAGE_PMD_SHIFT - PAGE_SHIFT)
 #define HPAGE_PMD_NR (1<<HPAGE_PMD_ORDER)
 
 #define HPAGE_PMD_SHIFT ({ BUILD_BUG(); 0; })

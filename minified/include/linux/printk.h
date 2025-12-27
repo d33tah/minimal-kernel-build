@@ -99,26 +99,6 @@ static inline void dump_stack(void)
 {
 }
 
-#define __printk_cpu_sync_try_get() true
-#define __printk_cpu_sync_wait()
-#define __printk_cpu_sync_put()
-
-#define printk_cpu_sync_get_irqsave(flags)		\
-	for (;;) {					\
-		local_irq_save(flags);			\
-		if (__printk_cpu_sync_try_get())	\
-			break;				\
-		local_irq_restore(flags);		\
-		__printk_cpu_sync_wait();		\
-	}
-
-#define printk_cpu_sync_put_irqrestore(flags)	\
-	do {					\
-		__printk_cpu_sync_put();	\
-		local_irq_restore(flags);	\
-	} while (0)
-
-
 #ifndef pr_fmt
 #define pr_fmt(fmt) fmt
 #endif

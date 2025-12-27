@@ -143,15 +143,10 @@ typedef struct siginfo {
 #define si_syscall	_sifields._sigsys._syscall
 #define si_arch		_sifields._sigsys._arch
 
-#define SI_USER		0		 
-#define SI_KERNEL	0x80		 
-#define SI_QUEUE	-1		 
-#define SI_TIMER	-2		 
-/* SI_MESGQ, SI_ASYNCIO - unused */
-#define SI_SIGIO	-5
-#define SI_TKILL	-6
-#define SI_DETHREAD	-7
-/* SI_ASYNCNL - unused */
+#define SI_USER		0
+#define SI_KERNEL	0x80
+#define SI_QUEUE	-1
+#define SI_TIMER	-2
 
 #define SI_FROMUSER(siptr)	((siptr)->si_code <= 0)
 #define SI_FROMKERNEL(siptr)	((siptr)->si_code > 0)

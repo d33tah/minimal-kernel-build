@@ -46,9 +46,6 @@ struct timezone {
 	int	tz_dsttime;
 };
 
-/* Only ITIMER_REAL is used */
-#define	ITIMER_REAL		0
-
 /* Only keep clock IDs actually used */
 #define CLOCK_REALTIME			0
 #define CLOCK_MONOTONIC			1
@@ -59,9 +56,5 @@ struct timezone {
 #define CLOCK_TAI			11
 
 #define MAX_CLOCKS			16
-#define CLOCKS_MASK			(CLOCK_REALTIME | CLOCK_MONOTONIC)
-#define CLOCKS_MONO			CLOCK_MONOTONIC
-
-#define TIMER_ABSTIME			0x01
 
 #endif

@@ -27,24 +27,18 @@ do {								\
 
 /* local_lock_acquire/release are empty stubs - simplified macros */
 #define __local_lock(lock)		preempt_disable()
-#define __local_lock_irq(lock)		local_irq_disable()
 #define __local_lock_irqsave(lock, flags) local_irq_save(flags)
 #define __local_unlock(lock)		preempt_enable()
-#define __local_unlock_irq(lock)	local_irq_enable()
 #define __local_unlock_irqrestore(lock, flags) local_irq_restore(flags)
 
 #define local_lock_init(lock)		__local_lock_init(lock)
 
 #define local_lock(lock)		__local_lock(lock)
 
-#define local_lock_irq(lock)		__local_lock_irq(lock)
-
 #define local_lock_irqsave(lock, flags)				\
 	__local_lock_irqsave(lock, flags)
 
 #define local_unlock(lock)		__local_unlock(lock)
-
-#define local_unlock_irq(lock)		__local_unlock_irq(lock)
 
 #define local_unlock_irqrestore(lock, flags)			\
 	__local_unlock_irqrestore(lock, flags)

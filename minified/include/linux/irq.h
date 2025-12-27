@@ -251,9 +251,6 @@ enum {
 
 struct irqaction;
 
-# define irq_affinity_online_cpu	NULL
-
-
 extern void handle_level_irq(struct irq_desc *desc);
 extern void handle_bad_irq(struct irq_desc *desc);
 

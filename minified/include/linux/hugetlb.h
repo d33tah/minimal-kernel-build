@@ -196,13 +196,6 @@ static inline void hugetlb_count_init(struct mm_struct *mm)
 {
 }
 
-
-
-static inline __init void hugetlb_cma_reserve(int order)
-{
-}
-
-
 #ifndef __HAVE_ARCH_FLUSH_HUGETLB_TLB_RANGE
 #define flush_hugetlb_tlb_range(vma, addr, end)	flush_tlb_range(vma, addr, end)
 #endif

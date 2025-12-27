@@ -124,11 +124,6 @@ static inline void mod_lruvec_kmem_state(void *p, enum node_stat_item idx,
 	mod_node_page_state(page_pgdat(page), idx, val);
 }
 
-static inline void __count_memcg_events(struct mem_cgroup *memcg,
-					enum vm_event_item idx, unsigned long count)
-{
-}
-
 static inline void unlock_page_lruvec_irq(struct lruvec *lruvec)
 {
 	spin_unlock_irq(&lruvec->lru_lock);
@@ -185,11 +180,6 @@ static inline bool memcg_kmem_enabled(void)
 static inline int memcg_kmem_id(struct mem_cgroup *memcg)
 {
 	return -1;
-}
-
-static inline
-void count_memcg_event_mm(struct mm_struct *mm, enum vm_event_item idx)
-{
 }
 
 static inline bool task_in_memcg_oom(struct task_struct *p)

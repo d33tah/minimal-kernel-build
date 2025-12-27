@@ -45,9 +45,5 @@ struct tty_bufhead {
 };
 
 #define TTY_NORMAL	0
-#define TTY_BREAK	1
-#define TTY_FRAME	2
-#define TTY_PARITY	3
-#define TTY_OVERRUN	4
 
 #endif

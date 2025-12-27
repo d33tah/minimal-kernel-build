@@ -3,7 +3,6 @@
 
 #include <linux/mm_types.h>
 
-#define SUID_DUMP_DISABLE	0
 #define SUID_DUMP_USER		1
 #define SUID_DUMP_ROOT		2
 
@@ -42,7 +41,6 @@ static inline int get_dumpable(struct mm_struct *mm)
 #define MMF_UNSTABLE		22
 #define MMF_DISABLE_THP		24
 #define MMF_OOM_VICTIM		25
-#define MMF_OOM_REAP_QUEUED	26
 #define MMF_HAS_PINNED		28
 #define MMF_DISABLE_THP_MASK	(1 << MMF_DISABLE_THP)
 

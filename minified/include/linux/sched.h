@@ -614,7 +614,6 @@ static inline int is_global_init(struct task_struct *tsk)
 }
 
 
-#define PF_VCPU			0x00000001
 #define PF_IDLE			0x00000002
 #define PF_EXITING		0x00000004
 #define PF_POSTCOREDUMP		0x00000008
@@ -624,7 +623,6 @@ static inline int is_global_init(struct task_struct *tsk)
 #define PF_SUPERPRIV		0x00000100
 #define PF_MEMALLOC		0x00000800
 #define PF_NPROC_EXCEEDED	0x00001000
-#define PF_USED_MATH		0x00002000
 #define PF_NOFREEZE		0x00008000
 #define PF_FROZEN		0x00010000
 #define PF_MEMALLOC_NOFS	0x00040000

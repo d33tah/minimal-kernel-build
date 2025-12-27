@@ -20,12 +20,6 @@ struct cred;
 #ifndef __SC_DELOUSE
 #define __SC_DELOUSE(t,v) ((__force t)(unsigned long)(v))
 #endif
-struct compat_iovec;
-struct compat_sigaltstack;
-struct compat_tms;
-struct compat_sigaction;
-struct compat_siginfo;
-struct compat_rlimit;
 #ifndef compat_sigset_t
 typedef struct { compat_sigset_word sig[_COMPAT_NSIG_WORDS]; } compat_sigset_t;
 #endif

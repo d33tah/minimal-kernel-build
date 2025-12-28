@@ -47,12 +47,6 @@ static inline unsigned int cpumask_first(const struct cpumask *srcp)
 	return 0;
 }
 
-
-static inline unsigned int cpumask_next(int n, const struct cpumask *srcp)
-{
-	return n+1;
-}
-
 static inline unsigned int cpumask_any_but(const struct cpumask *mask,
 					   unsigned int cpu)
 {

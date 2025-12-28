@@ -9,8 +9,6 @@ struct kref {
 	refcount_t refcount;
 };
 
-#define KREF_INIT(n)	{ .refcount = REFCOUNT_INIT(n), }
-
 static inline void kref_init(struct kref *kref)
 {
 	refcount_set(&kref->refcount, 1);

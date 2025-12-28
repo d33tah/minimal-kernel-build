@@ -71,11 +71,6 @@ struct completion;
   static inline void __might_resched(const char *file, int line,
 				     unsigned int offsets) { }
 # define might_sleep() do { might_resched(); } while (0)
-# define cant_sleep() do { } while (0)
-# define cant_migrate()		do { } while (0)
-# define sched_annotate_sleep() do { } while (0)
-# define non_block_start() do { } while (0)
-# define non_block_end() do { } while (0)
 
 #define might_sleep_if(cond) do { if (cond) might_sleep(); } while (0)
 

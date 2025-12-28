@@ -185,9 +185,6 @@ struct prev_cputime {
 	raw_spinlock_t			lock;
 };
 
-
-enum uclamp_id { UCLAMP_CNT };
-
 # define SCHED_FIXEDPOINT_SHIFT		10
 # define SCHED_FIXEDPOINT_SCALE		(1L << SCHED_FIXEDPOINT_SHIFT)
 

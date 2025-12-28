@@ -319,17 +319,7 @@ static __always_inline void account_slab(struct slab *slab, int order,
 			    PAGE_SIZE << order);
 }
 
-static __always_inline void unaccount_slab(struct slab *slab, int order,
-					   struct kmem_cache *s)
-{
-	if (memcg_kmem_enabled())
-		memcg_free_slab_cgroups(slab);
-
-	mod_node_page_state(slab_pgdat(slab), cache_vmstat_idx(s),
-			    -(PAGE_SIZE << order));
-}
-
-/* cache_from_obj removed - unused */
+/* unaccount_slab, cache_from_obj removed - unused */
 
 static inline size_t slab_ksize(const struct kmem_cache *s)
 {

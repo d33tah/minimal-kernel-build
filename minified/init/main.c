@@ -8,10 +8,7 @@
 #include <linux/binfmts.h>
 #include <linux/kernel.h>
 #include <linux/syscalls.h>
-static inline void boot_init_stack_canary(void)
-{
-}
-/* end stackprotector.h */
+/* boot_init_stack_canary removed - empty stub */
 #include <linux/string.h>
 #include <linux/ctype.h>
 #include <linux/delay.h>
@@ -28,24 +25,12 @@ static inline void boot_init_stack_canary(void)
 #include <linux/percpu.h>
 #include <linux/security.h>
 #include <linux/smp.h>
-static inline int profile_init(void)
-{
-	return 0;
-}
-/* Inlined from linux/kfence.h */
-static inline void kfence_alloc_pool(void)
-{
-}
-static inline void kfence_init(void)
-{
-}
+/* profile_init, kfence_alloc_pool, kfence_init removed - empty stubs */
 #include <linux/rcupdate.h>
 #include <linux/srcu.h>
 #include <linux/moduleparam.h>
 #include <linux/kallsyms.h>
-static inline void init_vmlinux_build_id(void)
-{
-}
+/* init_vmlinux_build_id removed - empty stub */
 #include <linux/writeback.h>
 #include <linux/cpu.h>
 #include <linux/cpuset.h>
@@ -54,12 +39,7 @@ static inline void init_vmlinux_build_id(void)
 #include <linux/tick.h>
 #include <linux/sched/isolation.h>
 #include <linux/interrupt.h>
-static inline void taskstats_init_early(void)
-{
-}
-static inline void delayacct_init(void)
-{
-}
+/* taskstats_init_early, delayacct_init removed - empty stubs */
 #include <linux/unistd.h>
 #include <linux/utsname.h>
 #include <linux/rmap.h>
@@ -71,10 +51,7 @@ static inline void delayacct_init(void)
 #include <linux/pid_namespace.h>
 #include <linux/vmalloc.h>
 
-/* --- 2025-12-08 00:37 --- padata.h stubbed out */
-static inline void __init padata_init(void)
-{
-}
+/* padata_init removed - empty stub */
 #include <linux/device/driver.h>
 #include <linux/kthread.h>
 #include <linux/sched.h>
@@ -82,15 +59,7 @@ extern void sched_init(void);
 extern void sched_init_smp(void);
 #include <linux/signal.h>
 #include <linux/idr.h>
-#define dbg_late_init() \
-	do {            \
-	} while (0)
-static inline void kgdb_free_init_mem(void)
-{
-}
-static inline void kprobe_free_init_mem(void)
-{
-}
+/* dbg_late_init, kgdb_free_init_mem, kprobe_free_init_mem removed - empty stubs */
 #include <linux/async.h>
 #include <linux/shmem_fs.h>
 #include <linux/slab.h>
@@ -106,10 +75,7 @@ static inline void kprobe_free_init_mem(void)
 #include <linux/list.h>
 #include <linux/proc_ns.h>
 
-/* --- 2025-12-08 00:40 --- integrity.h stubbed out */
-static inline void integrity_load_keys(void)
-{
-}
+/* integrity_load_keys removed - empty stub */
 #include <linux/io.h>
 #include <linux/cache.h>
 #include <linux/jump_label.h>
@@ -322,12 +288,7 @@ static int __init rdinit_setup(char *str)
 __setup("rdinit=", rdinit_setup);
 
 static const unsigned int setup_max_cpus = NR_CPUS;
-static inline void setup_nr_cpu_ids(void)
-{
-}
-static inline void smp_prepare_cpus(unsigned int maxcpus)
-{
-}
+/* setup_nr_cpu_ids, smp_prepare_cpus removed - empty stubs */
 
 static void __init setup_command_line(char *command_line)
 {
@@ -480,7 +441,7 @@ static void __init mm_init(void)
 {
 	page_ext_init_flatmem();
 	init_mem_debugging_and_hardening();
-	kfence_alloc_pool();
+	/* kfence_alloc_pool removed - empty stub */
 	report_meminit();
 	stack_depot_early_init();
 	mem_init();
@@ -508,8 +469,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	set_task_stack_end_magic(&init_task);
 	smp_setup_processor_id();
-	init_vmlinux_build_id();
-
+	/* init_vmlinux_build_id removed - empty stub */
 	cgroup_init_early();
 
 	local_irq_disable();
@@ -522,7 +482,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	setup_arch(&command_line);
 	setup_boot_config();
 	setup_command_line(command_line);
-	setup_nr_cpu_ids();
+	/* setup_nr_cpu_ids removed - empty stub */
 	setup_per_cpu_areas();
 	smp_prepare_boot_cpu();
 	boot_cpu_hotplug_init();
@@ -579,14 +539,13 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	hrtimers_init();
 	softirq_init();
 	timekeeping_init();
-	kfence_init();
+	/* kfence_init removed - empty stub */
 	time_init();
 
 	random_init(command_line);
-	boot_init_stack_canary();
-
+	/* boot_init_stack_canary removed - empty stub */
 	perf_event_init();
-	profile_init();
+	/* profile_init removed - empty stub */
 	WARN(!irqs_disabled(), "Interrupts were enabled early\n");
 
 	early_boot_irqs_disabled = false;
@@ -630,7 +589,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	uts_ns_init();
 	key_init();
 	security_init();
-	dbg_late_init();
+	/* dbg_late_init removed - empty stub */
 	vfs_caches_init();
 	pagecache_init();
 	signals_init();
@@ -638,9 +597,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	proc_root_init();
 	cpuset_init();
 	cgroup_init();
-	taskstats_init_early();
-	delayacct_init();
-
+	/* taskstats_init_early, delayacct_init removed - empty stubs */
 	poking_init();
 	check_bugs();
 
@@ -828,8 +785,7 @@ static int __ref kernel_init(void *unused)
 	async_synchronize_full();
 
 	system_state = SYSTEM_FREEING_INITMEM;
-	kprobe_free_init_mem();
-	kgdb_free_init_mem();
+	/* kprobe_free_init_mem, kgdb_free_init_mem removed - empty stubs */
 	exit_boot_config();
 	free_initmem();
 	mark_readonly();
@@ -898,8 +854,7 @@ static noinline void __init kernel_init_freeable(void)
 
 	/* cad_pid removed - only set, never read */
 
-	smp_prepare_cpus(setup_max_cpus);
-
+	/* smp_prepare_cpus removed - empty stub */
 	workqueue_init();
 
 	init_mm_internals();
@@ -911,7 +866,7 @@ static noinline void __init kernel_init_freeable(void)
 	smp_init();
 	sched_init_smp();
 
-	padata_init();
+	/* padata_init removed - empty stub */
 	page_alloc_init_late();
 
 	page_ext_init();
@@ -925,6 +880,5 @@ static noinline void __init kernel_init_freeable(void)
 		ramdisk_execute_command = NULL;
 		prepare_namespace();
 	}
-
-	integrity_load_keys();
+	/* integrity_load_keys removed - empty stub */
 }

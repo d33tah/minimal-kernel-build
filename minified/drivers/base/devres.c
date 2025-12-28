@@ -12,21 +12,8 @@ void *__devres_alloc_node(dr_release_t release, size_t size, gfp_t gfp, int nid,
 {
 	return NULL;
 }
-void devres_free(void *res)
-{
-}
-void devres_add(struct device *dev, void *res)
-{
-}
+/* devres_free, devres_add, devm_kstrdup, devm_kasprintf removed - never called */
 int devres_release_all(struct device *dev)
 {
 	return 0;
-}
-char *devm_kstrdup(struct device *dev, const char *s, gfp_t gfp)
-{
-	return NULL;
-}
-char *devm_kasprintf(struct device *dev, gfp_t gfp, const char *fmt, ...)
-{
-	return NULL;
 }

@@ -515,8 +515,7 @@ unsigned long native_calibrate_cpu_early(void)
 {
 	unsigned long flags, fast_calibrate = cpu_khz_from_cpuid();
 
-	if (!fast_calibrate)
-		fast_calibrate = cpu_khz_from_msr();
+	/* cpu_khz_from_msr removed - was stub returning 0 */
 	if (!fast_calibrate) {
 		local_irq_save(flags);
 		fast_calibrate = quick_pit_calibrate();

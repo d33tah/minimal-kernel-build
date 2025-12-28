@@ -61,7 +61,8 @@ obj-$(CONFIG_SYSFS)	+= ksysfs.o
 obj-y			+= e820.o
 obj-y			+= pci-dma.o quirks.o
 obj-y			+= alternative.o i8253.o hw_breakpoint.o
-obj-y			+= tsc.o tsc_msr.o io_delay.o rtc.o
+# tsc_msr.o removed - cpu_khz_from_msr was stub returning 0
+obj-y			+= tsc.o io_delay.o rtc.o
 # resource.o removed - arch_remove_reservations never called
 obj-y			+= irqflags.o
 # static_call.o removed - __static_call_return0 never called

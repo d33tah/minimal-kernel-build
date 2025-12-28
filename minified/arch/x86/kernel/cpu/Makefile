@@ -19,7 +19,8 @@ KCSAN_SANITIZE_common.o := n
 # Make sure load_percpu_segment has no stackprotector
 CFLAGS_common.o		:= -fno-stack-protector
 
-obj-y			:= cacheinfo.o topology.o
+# cacheinfo.o removed - only had type defs, no functions
+obj-y			:= topology.o
 # scattered.o removed - was empty stub
 obj-y			+= common.o
 # match.o removed - x86_match_cpu was never called

@@ -993,7 +993,6 @@ static void pcpu_chunk_populated(struct pcpu_chunk *chunk, int page_start,
 static int pcpu_populate_chunk(struct pcpu_chunk *chunk, int page_start,
 			       int page_end, gfp_t gfp);
 static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp);
-static struct page *pcpu_addr_to_page(void *addr);
 static int __init pcpu_verify_alloc_info(const struct pcpu_alloc_info *ai);
 
 #include "percpu-km.c"

@@ -103,17 +103,9 @@ void *__devres_alloc_node(dr_release_t release, size_t size, gfp_t gfp,
 #define devres_alloc_node(release, size, gfp, nid) \
 	__devres_alloc_node(release, size, gfp, nid, #release)
 
-/* devres_for_each_res, devres_find, devres_get, devres_remove,
-   devres_destroy, devres_release removed - never called */
-void devres_free(void *res);
-void devres_add(struct device *dev, void *res);
-
-
-__printf(3, 4) char *devm_kasprintf(struct device *dev, gfp_t gfp,
-				    const char *fmt, ...) __malloc;
-char *devm_kstrdup(struct device *dev, const char *s, gfp_t gfp) __malloc;
-
-/* devm_* functions removed - none are called in minimal kernel */
+/* devres_for_each_res, devres_find, devres_get, devres_remove, devres_destroy,
+   devres_release, devres_free, devres_add, devm_kasprintf, devm_kstrdup
+   removed - never called */
 
 struct device_dma_parameters {
 	 

@@ -128,24 +128,6 @@ static inline void put_cred(const struct cred *_cred)
 #define get_current_cred()				\
 	(get_cred(current_cred()))
 
-#define get_current_user()				\
-({							\
-	struct user_struct *__u;			\
-	const struct cred *__cred;			\
-	__cred = current_cred();			\
-	__u = get_uid(__cred->user);			\
-	__u;						\
-})
-
-#define get_current_groups()				\
-({							\
-	struct group_info *__groups;			\
-	const struct cred *__cred;			\
-	__cred = current_cred();			\
-	__groups = get_group_info(__cred->group_info);	\
-	__groups;					\
-})
-
 #define task_cred_xxx(task, xxx)			\
 ({							\
 	__typeof__(((struct cred *)NULL)->xxx) ___val;	\
@@ -155,8 +137,6 @@ static inline void put_cred(const struct cred *_cred)
 	___val;						\
 })
 
-#define task_uid(task)		(task_cred_xxx((task), uid))
-#define task_euid(task)		(task_cred_xxx((task), euid))
 #define task_ucounts(task)	(task_cred_xxx((task), ucounts))
 
 #define current_cred_xxx(xxx)			\
@@ -170,7 +150,6 @@ static inline void put_cred(const struct cred *_cred)
 #define current_egid()		(current_cred_xxx(egid))
 #define current_fsuid() 	(current_cred_xxx(fsuid))
 #define current_fsgid() 	(current_cred_xxx(fsgid))
-#define current_user()		(current_cred_xxx(user))
 #define current_ucounts()	(current_cred_xxx(ucounts))
 
 extern struct user_namespace init_user_ns;
@@ -178,30 +157,5 @@ static inline struct user_namespace *current_user_ns(void)
 {
 	return &init_user_ns;
 }
-
-
-#define current_uid_gid(_uid, _gid)		\
-do {						\
-	const struct cred *__cred;		\
-	__cred = current_cred();		\
-	*(_uid) = __cred->uid;			\
-	*(_gid) = __cred->gid;			\
-} while(0)
-
-#define current_euid_egid(_euid, _egid)		\
-do {						\
-	const struct cred *__cred;		\
-	__cred = current_cred();		\
-	*(_euid) = __cred->euid;		\
-	*(_egid) = __cred->egid;		\
-} while(0)
-
-#define current_fsuid_fsgid(_fsuid, _fsgid)	\
-do {						\
-	const struct cred *__cred;		\
-	__cred = current_cred();		\
-	*(_fsuid) = __cred->fsuid;		\
-	*(_fsgid) = __cred->fsgid;		\
-} while(0)
 
 #endif  

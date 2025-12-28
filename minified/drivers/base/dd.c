@@ -186,7 +186,6 @@ static void device_unbind_cleanup(struct device *dev)
 	dev_set_drvdata(dev, NULL);
 	if (dev->pm_domain && dev->pm_domain->dismiss)
 		dev->pm_domain->dismiss(dev);
-	pm_runtime_reinit(dev);
 	dev_pm_set_driver_flags(dev, 0);
 }
 
@@ -621,7 +620,6 @@ static void __device_release_driver(struct device *dev, struct device *parent)
 		device_unbind_cleanup(dev);
 
 		klist_remove(&dev->p->knode_driver);
-		device_pm_check_callbacks(dev);
 		if (dev->bus)
 			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
 						     BUS_NOTIFY_UNBOUND_DRIVER,

@@ -523,7 +523,6 @@ int device_add(struct device *dev)
 	if (error)
 		goto parent_error;
 
-	device_pm_add(dev);
 	bus_probe_device(dev);
 
 	error = 0;
@@ -586,7 +585,6 @@ void device_del(struct device *dev)
 		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
 					     BUS_NOTIFY_DEL_DEVICE, dev);
 
-	dpm_sysfs_remove(dev);
 	if (parent)
 		klist_del(&dev->p->knode_parent);
 	if (MAJOR(dev->devt)) {
@@ -610,7 +608,6 @@ void device_del(struct device *dev)
 	device_remove_file(dev, &dev_attr_uevent);
 	device_remove_attrs(dev);
 	bus_remove_device(dev);
-	device_pm_remove(dev);
 	driver_deferred_probe_del(dev);
 	device_platform_notify_remove(dev);
 	device_links_purge(dev);

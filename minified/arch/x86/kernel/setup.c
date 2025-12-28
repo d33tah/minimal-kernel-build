@@ -524,7 +524,7 @@ void __init setup_arch(char **cmdline_p)
 	init_hypervisor_platform();
 
 	tsc_early_init();
-	x86_init.resources.probe_roms();
+	/* x86_init.resources.probe_roms removed - was empty stub */
 
 	insert_resource(&iomem_resource, &code_resource);
 	insert_resource(&iomem_resource, &rodata_resource);
@@ -612,7 +612,7 @@ void __init setup_arch(char **cmdline_p)
 
 	io_delay_init();
 
-	early_platform_quirks();
+	/* early_platform_quirks removed - was empty stub */
 
 	early_acpi_boot_init();
 

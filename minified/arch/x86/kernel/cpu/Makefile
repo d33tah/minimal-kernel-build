@@ -22,7 +22,7 @@ CFLAGS_common.o		:= -fno-stack-protector
 obj-y			:= cacheinfo.o topology.o
 # scattered.o removed - was empty stub
 obj-y			+= common.o
-obj-y			+= match.o
+# match.o removed - x86_match_cpu was never called
 obj-y			+= bugs.o
 # aperfmperf.o removed - inlined in topology.h
 obj-y			+= cpuid-deps.o

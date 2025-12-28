@@ -52,14 +52,15 @@ obj-$(CONFIG_MODIFY_LDT_SYSCALL)	+= ldt.o
 obj-y			+= setup.o x86_init.o i8259.o irqinit.o
 obj-$(CONFIG_JUMP_LABEL)	+= jump_label.o
 obj-$(CONFIG_IRQ_WORK)  += irq_work.o
-obj-y			+= probe_roms.o
+# probe_roms.o removed - probe_roms was empty stub
 obj-$(CONFIG_X86_32)	+= sys_ia32.o
 obj-$(CONFIG_IA32_EMULATION)	+= sys_ia32.o
 obj-$(CONFIG_X86_64)	+= sys_x86_64.o
 obj-$(CONFIG_X86_ESPFIX64)	+= espfix_64.o
 obj-$(CONFIG_SYSFS)	+= ksysfs.o
 obj-y			+= e820.o
-obj-y			+= pci-dma.o quirks.o
+obj-y			+= pci-dma.o
+# quirks.o removed - early_platform_quirks was empty stub
 obj-y			+= alternative.o i8253.o hw_breakpoint.o
 # tsc_msr.o removed - cpu_khz_from_msr was stub returning 0
 obj-y			+= tsc.o io_delay.o rtc.o

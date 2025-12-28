@@ -572,25 +572,17 @@ int may_linkat(struct user_namespace *mnt_userns, struct path *link)
 	return 0;
 }
 
-static int __traverse_mounts(struct path *path, unsigned flags, bool *jumped,
-			     int *count, unsigned lookup_flags)
-{
-	*jumped = false;
-	return 0; /* Stub */
-}
+/* Removed: __traverse_mounts - inlined into traverse_mounts */
 
 static inline int traverse_mounts(struct path *path, bool *jumped, int *count,
 				  unsigned lookup_flags)
 {
 	unsigned flags = smp_load_acquire(&path->dentry->d_flags);
 
-	if (likely(!(flags & DCACHE_MANAGED_DENTRY))) {
-		*jumped = false;
-		if (unlikely(d_flags_negative(flags)))
-			return -ENOENT;
-		return 0;
-	}
-	return __traverse_mounts(path, flags, jumped, count, lookup_flags);
+	*jumped = false;
+	if (unlikely(d_flags_negative(flags)))
+		return -ENOENT;
+	return 0;
 }
 
 static bool __follow_mount_rcu(struct nameidata *nd, struct path *path,
@@ -1406,11 +1398,7 @@ static inline int may_create(struct user_namespace *mnt_userns,
 	return inode_permission(mnt_userns, dir, MAY_WRITE | MAY_EXEC);
 }
 
-static bool may_open_dev(const struct path *path)
-{
-	/* Stub: device opening check not used in minimal kernel */
-	return true;
-}
+/* Removed: may_open_dev - always returned true */
 
 static int may_open(struct user_namespace *mnt_userns, const struct path *path,
 		    int acc_mode, int flag)
@@ -1433,8 +1421,6 @@ static int may_open(struct user_namespace *mnt_userns, const struct path *path,
 		break;
 	case S_IFBLK:
 	case S_IFCHR:
-		if (!may_open_dev(path))
-			return -EACCES;
 		fallthrough;
 	case S_IFIFO:
 	case S_IFSOCK:
@@ -1724,11 +1710,7 @@ static int do_open(struct nameidata *nd, struct file *file,
 	return error;
 }
 
-static int do_tmpfile(struct nameidata *nd, unsigned flags,
-		      const struct open_flags *op, struct file *file)
-{
-	return -EOPNOTSUPP;
-}
+/* Removed: do_tmpfile - always returned -EOPNOTSUPP */
 
 static int do_o_path(struct nameidata *nd, unsigned flags, struct file *file)
 {
@@ -1753,7 +1735,7 @@ static struct file *path_openat(struct nameidata *nd,
 		return file;
 
 	if (unlikely(file->f_flags & __O_TMPFILE)) {
-		error = do_tmpfile(nd, flags, op, file);
+		error = -EOPNOTSUPP;
 	} else if (unlikely(file->f_flags & O_PATH)) {
 		error = do_o_path(nd, flags, file);
 	} else {

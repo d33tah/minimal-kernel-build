@@ -1,5 +1,4 @@
- 
-#define TIMER_RETRY 1
+/* TIMER_RETRY removed - unused */
 
 struct k_clock {
 	int	(*clock_getres)(const clockid_t which_clock,

@@ -208,10 +208,9 @@ extern void __disable_irq(struct irq_desc *desc);
 extern void __enable_irq(struct irq_desc *desc);
 
 #define IRQ_RESEND	true
-#define IRQ_NORESEND	false
-
 #define IRQ_START_FORCE	true
 #define IRQ_START_COND	false
+/* IRQ_NORESEND removed - unused */
 
 extern int irq_activate(struct irq_desc *desc);
 extern int irq_activate_and_startup(struct irq_desc *desc, bool resend);

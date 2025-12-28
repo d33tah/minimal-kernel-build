@@ -133,7 +133,4 @@ pgprot_t pgprot_writecombine(pgprot_t prot)
 	return pgprot_noncached(prot);
 }
 
-pgprot_t pgprot_writethrough(pgprot_t prot)
-{
-	return pgprot_noncached(prot);
-}
+/* pgprot_writethrough removed - never called */

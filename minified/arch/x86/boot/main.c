@@ -94,7 +94,7 @@ void main(void)
 
 	copy_boot_params();
 
-	console_init();
+	/* console_init removed - was empty stub (no serial console) */
 	if (cmdline_find_option_bool("debug"))
 		puts("early console in setup code\n");
 

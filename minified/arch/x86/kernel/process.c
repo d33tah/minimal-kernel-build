@@ -377,7 +377,7 @@ static inline void play_dead(void)
 
 void arch_cpu_idle_enter(void)
 {
-	tsc_verify_tsc_adjust(false);
+	/* tsc_verify_tsc_adjust removed - was empty stub */
 	local_touch_nmi();
 }
 

@@ -552,7 +552,7 @@ static void __init detect_art(void)
 
 static void tsc_resume(struct clocksource *cs)
 {
-	tsc_verify_tsc_adjust(true);
+	/* tsc_verify_tsc_adjust removed - was empty stub */
 }
 
 static u64 read_tsc(struct clocksource *cs)
@@ -734,7 +734,7 @@ static void __init tsc_enable_sched_clock(void)
 	loops_per_jiffy = get_loops_per_jiffy();
 	use_tsc_delay();
 
-	tsc_store_and_check_tsc_adjust(true);
+	/* tsc_store_and_check_tsc_adjust removed - was empty stub */
 	cyc2ns_init_boot_cpu();
 	static_branch_enable(&__use_tsc);
 }

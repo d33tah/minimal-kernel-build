@@ -85,7 +85,7 @@ apm-y				:= apm_32.o
 obj-$(CONFIG_APM)		+= apm.o
 obj-$(CONFIG_SMP)		+= smp.o
 obj-$(CONFIG_SMP)		+= smpboot.o
-obj-$(CONFIG_X86_TSC)		+= tsc_sync.o
+# tsc_sync.o removed - tsc_verify_tsc_adjust/tsc_store_and_check_tsc_adjust were empty stubs
 obj-$(CONFIG_SMP)		+= setup_percpu.o
 obj-$(CONFIG_X86_MPPARSE)	+= mpparse.o
 obj-y				+= apic/

@@ -221,42 +221,6 @@ static inline bool __cmpxchg_double_slab(struct kmem_cache *s,
 	return false;
 }
 
-static inline bool
-cmpxchg_double_slab(struct kmem_cache *s, struct slab *slab, void *freelist_old,
-		    unsigned long counters_old, void *freelist_new,
-		    unsigned long counters_new, const char *n)
-{
-#if defined(CONFIG_HAVE_CMPXCHG_DOUBLE) && \
-	defined(CONFIG_HAVE_ALIGNED_STRUCT_PAGE)
-	if (s->flags & __CMPXCHG_DOUBLE) {
-		if (cmpxchg_double(&slab->freelist, &slab->counters,
-				   freelist_old, counters_old, freelist_new,
-				   counters_new))
-			return true;
-	} else
-#endif
-	{
-		unsigned long flags;
-
-		local_irq_save(flags);
-		__slab_lock(slab);
-		if (slab->freelist == freelist_old &&
-		    slab->counters == counters_old) {
-			slab->freelist = freelist_new;
-			slab->counters = counters_new;
-			__slab_unlock(slab);
-			local_irq_restore(flags);
-			return true;
-		}
-		__slab_unlock(slab);
-		local_irq_restore(flags);
-	}
-
-	cpu_relax();
-	stat(s, CMPXCHG_DOUBLE_FAIL);
-	return false;
-}
-
 static inline void setup_object_debug(struct kmem_cache *s, void *object)
 {
 }

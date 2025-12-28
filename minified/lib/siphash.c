@@ -3,9 +3,14 @@
  * Original: 358 LOC, Stubbed to simple hash
  */
 
-#include <linux/siphash.h>
+#include <linux/types.h>
 #include <asm/unaligned.h>
 #include <linux/bug.h>
+
+/* Inlined from linux/siphash.h - only user of that header */
+typedef struct {
+	u64 key[2];
+} siphash_key_t;
 
 /* Simplified hash - not cryptographically secure but sufficient
  * for pointer obfuscation in vsprintf

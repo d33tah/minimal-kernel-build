@@ -59,11 +59,9 @@ struct clone_args {
 
 #include <linux/pid.h>
 #include <linux/mutex.h>
-#include <linux/plist.h>
+/* plist.h, irqflags.h, nodemask.h removed - unused in sched.h */
 #include <linux/hrtimer.h>
-#include <linux/irqflags.h>
 #include <linux/seccomp.h>
-#include <linux/nodemask.h>
 #include <linux/rcupdate.h>
 #include <linux/refcount.h>
 #include <linux/resource.h>

@@ -21,18 +21,6 @@
 
 #define __attribute_const__             __attribute__((__const__))
 
-#if __has_attribute(__copy__)
-# define __copy(symbol)                 __attribute__((__copy__(symbol)))
-#else
-# define __copy(symbol)
-#endif
-
-#if __has_attribute(__diagnose_as_builtin__)
-# define __diagnose_as(builtin...)	__attribute__((__diagnose_as_builtin__(builtin)))
-#else
-# define __diagnose_as(builtin...)
-#endif
-
 #define __deprecated
 
 #if __has_attribute(__designated_init__)
@@ -62,12 +50,6 @@
 
 #define __mode(x)                       __attribute__((__mode__(x)))
 
-#if __has_attribute(__no_caller_saved_registers__)
-# define __no_caller_saved_registers	__attribute__((__no_caller_saved_registers__))
-#else
-# define __no_caller_saved_registers
-#endif
-
 #if __has_attribute(__noclone__)
 # define __noclone                      __attribute__((__noclone__))
 #else
@@ -84,12 +66,6 @@
 
 #define   noinline                      __attribute__((__noinline__))
 
-#if __has_attribute(__nonstring__)
-# define __nonstring                    __attribute__((__nonstring__))
-#else
-# define __nonstring
-#endif
-
 #if __has_attribute(__no_profile_instrument_function__)
 # define __no_profile                  __attribute__((__no_profile_instrument_function__))
 #else
@@ -98,19 +74,7 @@
 
 #define __noreturn                      __attribute__((__noreturn__))
 
-#if __has_attribute(__overloadable__)
-# define __overloadable			__attribute__((__overloadable__))
-#else
-# define __overloadable
-#endif
-
 #define __packed                        __attribute__((__packed__))
-
-#if __has_attribute(__pass_object_size__)
-# define __pass_object_size(type)	__attribute__((__pass_object_size__(type)))
-#else
-# define __pass_object_size(type)
-#endif
 
 #define __pure                          __attribute__((__pure__))
 
@@ -122,19 +86,6 @@
 #define __used                          __attribute__((__used__))
 
 #define __must_check                    __attribute__((__warn_unused_result__))
-
-#if __has_attribute(__warning__)
-# define __compiletime_warning(msg)     __attribute__((__warning__(msg)))
-#else
-# define __compiletime_warning(msg)
-#endif
-
-#if __has_attribute(disable_sanitizer_instrumentation)
-# define __disable_sanitizer_instrumentation \
-	 __attribute__((disable_sanitizer_instrumentation))
-#else
-# define __disable_sanitizer_instrumentation
-#endif
 
 #define __weak                          __attribute__((__weak__))
 

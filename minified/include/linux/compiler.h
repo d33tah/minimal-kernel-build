@@ -21,27 +21,10 @@
 # define barrier_data(ptr) __asm__ __volatile__("": :"r"(ptr) :"memory")
 #endif
 
-#ifndef barrier_before_unreachable
-# define barrier_before_unreachable() do { } while (0)
-#endif
-
-#define annotate_unreachable()
-#define __annotate_jump_table  
-
 #ifndef unreachable
 # define unreachable() do {		\
-	annotate_unreachable();		\
 	__builtin_unreachable();	\
 } while (0)
-#endif
-
-#ifndef KENTRY
-# define KENTRY(sym)						\
-	extern typeof(sym) sym;					\
-	static const unsigned long __kentry_##sym		\
-	__used							\
-	__attribute__((__section__("___kentry+" #sym)))		\
-	= (unsigned long)&sym;
 #endif
 
 #ifndef RELOC_HIDE

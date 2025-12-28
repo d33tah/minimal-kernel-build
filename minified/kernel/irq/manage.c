@@ -21,28 +21,7 @@ bool noirqdebug __read_mostly;
 
 DEFINE_STATIC_KEY_FALSE(force_irqthreads_key);
 
-static void __synchronize_hardirq(struct irq_desc *desc, bool sync_chip)
-{
-	struct irq_data *irqd = irq_desc_get_irq_data(desc);
-	bool inprogress;
-
-	do {
-		unsigned long flags;
-
-		while (irqd_irq_inprogress(&desc->irq_data))
-			cpu_relax();
-
-		raw_spin_lock_irqsave(&desc->lock, flags);
-		inprogress = irqd_irq_inprogress(&desc->irq_data);
-
-		if (!inprogress && sync_chip) {
-			__irq_get_irqchip_state(irqd, IRQCHIP_STATE_ACTIVE,
-						&inprogress);
-		}
-		raw_spin_unlock_irqrestore(&desc->lock, flags);
-
-	} while (inprogress);
-}
+/* __synchronize_hardirq removed - only caller was __free_irq which was removed */
 
 void __disable_irq(struct irq_desc *desc)
 {

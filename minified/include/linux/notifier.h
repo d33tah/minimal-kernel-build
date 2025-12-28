@@ -82,8 +82,5 @@ extern bool atomic_notifier_call_chain_is_empty(struct atomic_notifier_head *nh)
 
 
 
-
-extern struct blocking_notifier_head reboot_notifier_list;
-
-#endif  
-#endif  
+#endif
+#endif

@@ -98,7 +98,6 @@ typedef int rwf_t;
 struct backing_dev_info;
 struct bdi_writeback;
 struct bio;
-struct export_operations;
 struct iovec;
 struct kiocb;
 struct kobject;
@@ -342,8 +341,6 @@ struct posix_acl;
 #define IOP_LOOKUP	0x0002
 #define IOP_NOFOLLOW	0x0004
 #define IOP_XATTR	0x0008
-
-struct fsnotify_mark_connector;
 
 struct inode {
 	umode_t			i_mode;

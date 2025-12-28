@@ -190,9 +190,6 @@ struct load_weight {
 	u32				inv_weight;
 };
 
-struct util_est;
-struct sched_avg;
-
 struct sched_statistics {
 } ____cacheline_aligned;
 

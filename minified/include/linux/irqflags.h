@@ -32,9 +32,7 @@ static inline bool is_ftrace_trampoline(unsigned long addr)
 # define trace_hardirqs_on()			do { } while (0)
 # define trace_hardirqs_off()			do { } while (0)
 # define lockdep_hardirq_context()		0
-# define lockdep_softirq_context(p)		0
 # define lockdep_hardirqs_enabled()		0
-# define lockdep_softirqs_enabled(p)		0
 # define lockdep_hardirq_enter()		do { } while (0)
 # define lockdep_hardirq_threaded()		do { } while (0)
 # define lockdep_hardirq_exit()			do { } while (0)
@@ -42,10 +40,6 @@ static inline bool is_ftrace_trampoline(unsigned long addr)
 # define lockdep_softirq_exit()			do { } while (0)
 # define lockdep_hrtimer_enter(__hrtimer)	false
 # define lockdep_hrtimer_exit(__context)	do { } while (0)
-# define lockdep_posixtimer_enter()		do { } while (0)
-# define lockdep_posixtimer_exit()		do { } while (0)
-# define lockdep_irq_work_enter(__work)		do { } while (0)
-# define lockdep_irq_work_exit(__work)		do { } while (0)
 
 /* IRQSOFF_TRACER/PREEMPT_TRACER not defined */
 # define stop_critical_timings() do { } while (0)

@@ -52,7 +52,7 @@ lib-$(CONFIG_RETPOLINE) += retpoline.o
 
 # msr.o, msr-reg.o removed - MSR helper functions not used
 obj-y += hweight.o
-obj-y += iomem.o
+# iomem.o removed - memcpy_fromio/memcpy_toio/memset_io never called
 
 ifeq ($(CONFIG_X86_32),y)
         lib-y += atomic64_cx8_32.o

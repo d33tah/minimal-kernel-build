@@ -16,6 +16,9 @@
 
 #include "internals.h"
 
+/* noirqdebug moved from spurious.c */
+bool noirqdebug __read_mostly;
+
 DEFINE_STATIC_KEY_FALSE(force_irqthreads_key);
 
 static void __synchronize_hardirq(struct irq_desc *desc, bool sync_chip)

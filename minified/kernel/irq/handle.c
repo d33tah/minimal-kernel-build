@@ -99,9 +99,7 @@ irqreturn_t handle_irq_event_percpu(struct irq_desc *desc)
 	retval = __handle_irq_event_percpu(desc);
 
 	/* Removed: add_interrupt_randomness - not needed for minimal kernel */
-
-	if (!irq_settings_no_debug(desc))
-		note_interrupt(desc, retval);
+	/* note_interrupt removed - was empty stub */
 	return retval;
 }
 

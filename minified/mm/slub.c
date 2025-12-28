@@ -16,7 +16,6 @@
 #include <linux/ctype.h>
 #include <linux/stackdepot.h>
 #include <linux/kallsyms.h>
-#include <linux/memory.h>
 #include <linux/math64.h>
 #include <linux/stacktrace.h>
 

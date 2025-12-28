@@ -1,7 +1,9 @@
 #include <linux/acpi.h>
 #include <linux/console.h>
 #include <linux/dma-map-ops.h>
-static inline void dmi_setup(void) {}
+static inline void dmi_setup(void)
+{
+}
 #include <linux/efi.h>
 
 #include <linux/initrd.h>
@@ -29,7 +31,7 @@ extern bool crash_kexec_post_notifiers;
 #include <asm/cpu.h>
 #include <asm/efi.h>
 #include <asm/gart.h>
-#include <asm/hypervisor.h>
+static inline void init_hypervisor_platform(void) { }
 #include <asm/io_apic.h>
 /* --- 2025-12-07 20:48 --- Inlined kasan.h */
 #include <linux/const.h>

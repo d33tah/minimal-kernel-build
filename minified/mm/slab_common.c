@@ -3,7 +3,6 @@
 #include <linux/mm.h>
 #include <linux/poison.h>
 #include <linux/interrupt.h>
-#include <linux/memory.h>
 #include <linux/cache.h>
 #include <linux/compiler.h>
 #include <linux/kfence.h>

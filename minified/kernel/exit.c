@@ -72,7 +72,7 @@ static inline void task_io_accounting_add(struct task_io_accounting *dst,
 #include <linux/fs_struct.h>
 #include <linux/init_task.h>
 #include <linux/perf_event.h>
-#include <linux/hw_breakpoint.h>
+extern void flush_ptrace_hw_breakpoint(struct task_struct *tsk);
 #include <linux/oom.h>
 #include <linux/writeback.h>
 static inline void exit_shm(struct task_struct *task)

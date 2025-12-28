@@ -21,7 +21,6 @@ static inline void kernel_randomize_memory(void)
 {
 }
 /* end kaslr.h */
-#include <asm/hypervisor.h>
 #include <asm/cpufeature.h>
 static inline void pti_check_boottime_disable(void)
 {

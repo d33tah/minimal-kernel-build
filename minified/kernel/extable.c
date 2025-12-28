@@ -1,5 +1,4 @@
 #include <linux/elf.h>
-#include <linux/memory.h>
 #include <linux/extable.h>
 #include <linux/module.h>
 #include <linux/mutex.h>

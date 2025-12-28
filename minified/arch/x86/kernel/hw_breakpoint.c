@@ -1,5 +1,4 @@
 /* Stub hardware breakpoints */
-#include <linux/hw_breakpoint.h>
 #include <linux/percpu.h>
 
 DEFINE_PER_CPU(unsigned long, cpu_dr7);

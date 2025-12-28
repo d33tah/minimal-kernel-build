@@ -9,7 +9,6 @@
 #include <linux/highmem.h>
 #include <linux/mm.h>
 #include <linux/vmalloc.h>
-#include <linux/memory.h>
 #include <linux/stop_machine.h>
 #include <linux/slab.h>
 #include <linux/kdebug.h>

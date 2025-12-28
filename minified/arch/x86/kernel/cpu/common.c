@@ -28,7 +28,6 @@ static inline void x86_init_rdrand(struct cpuinfo_x86 *c)
 
 /* Inlined from asm/doublefault.h */
 extern void doublefault_init_cpu_tss(void);
-#include <asm/hypervisor.h>
 #include <asm/processor.h>
 #include <asm/tlbflush.h>
 #include <asm/debugreg.h>

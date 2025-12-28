@@ -14,7 +14,6 @@
 #include <linux/seccomp.h>
 #include <linux/signal.h>
 #include <linux/perf_event.h>
-#include <linux/hw_breakpoint.h>
 #include <linux/rcupdate.h>
 #include <linux/export.h>
 #include <linux/context_tracking.h>

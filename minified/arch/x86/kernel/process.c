@@ -36,7 +36,7 @@ static inline void boot_init_stack_canary(void)
 /* end stackprotector.h */
 #include <linux/cpuidle.h>
 #include <linux/acpi.h>
-#include <linux/hw_breakpoint.h>
+extern void flush_ptrace_hw_breakpoint(struct task_struct *tsk);
 #include <asm/cpu.h>
 #include <asm/apic.h>
 #include <linux/uaccess.h>

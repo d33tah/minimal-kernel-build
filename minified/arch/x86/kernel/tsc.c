@@ -31,7 +31,6 @@ static inline int is_hpet_enabled(void)
 #include <asm/vgtod.h>
 #include <asm/time.h>
 #include <asm/delay.h>
-#include <asm/hypervisor.h>
 #include <asm/nmi.h>
 #include <asm/x86_init.h>
 #include <asm/apic.h>

@@ -31,7 +31,6 @@ static inline void acct_update_integrals(struct task_struct *tsk)
 }
 #include <linux/file.h>
 #include <linux/fdtable.h>
-#include <linux/freezer.h>
 #include <linux/binfmts.h>
 #include <linux/nsproxy.h>
 #include <linux/pid_namespace.h>

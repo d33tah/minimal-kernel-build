@@ -1203,7 +1203,6 @@ static noinline void __init build_all_zonelists_init(void)
 				   &per_cpu(boot_zonestats, cpu));
 
 	mminit_verify_zonelist();
-	cpuset_init_current_mems_allowed();
 }
 
 void __ref build_all_zonelists(pg_data_t *pgdat)

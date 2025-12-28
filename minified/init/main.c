@@ -589,8 +589,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	vfs_caches_init();
 	pagecache_init();
 	signals_init();
-	/* seq_file_init removed - was empty stub */
-	proc_root_init();
 	cpuset_init();
 	cgroup_init();
 	/* taskstats_init_early, delayacct_init removed - empty stubs */
@@ -719,7 +717,6 @@ static void __init do_initcalls(void)
 
 static void __init do_basic_setup(void)
 {
-	cpuset_init_smp();
 	driver_init();
 	init_irq_proc();
 	do_ctors();
@@ -844,8 +841,6 @@ void __init console_on_rootfs(void)
 static noinline void __init kernel_init_freeable(void)
 {
 	gfp_allowed_mask = __GFP_BITS_MASK;
-
-	set_mems_allowed(node_states[N_MEMORY]);
 
 	/* cad_pid removed - only set, never read */
 

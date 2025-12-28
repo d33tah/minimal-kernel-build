@@ -27,8 +27,7 @@ enum {
 	PROC_TIME_INIT_INO	= 0xEFFFFFFAU,
 };
 static inline int proc_alloc_inum(unsigned int *inum) { *inum = 1; return 0; }
-static inline void proc_free_inum(unsigned int inum) {}
 static inline int ns_alloc_inum(struct ns_common *ns) { atomic_long_set(&ns->stashed, 0); return proc_alloc_inum(&ns->inum); }
-#define ns_free_inum(ns) proc_free_inum((ns)->inum)
+#define ns_free_inum(ns) ((void)(ns)->inum)
 #define get_proc_ns(inode) ((struct ns_common *)(inode)->i_private)
 #endif

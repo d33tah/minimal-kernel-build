@@ -19,10 +19,6 @@ enum vm_event_item {
 #include <linux/jump_label.h>
 #include <linux/mmdebug.h>
 
-
-
-struct reclaim_stat;
-
 enum writeback_stat_item { NR_VM_WRITEBACK_STAT_ITEMS };
 
 /* count_vm_event, count_vm_events, __count_vm_event, __count_vm_events,

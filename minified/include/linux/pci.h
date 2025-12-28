@@ -28,10 +28,9 @@
 #endif
 #define PCI_DEVID(bus, devfn)	((((u16)(bus)) << 8) | (devfn))
 #define PCI_BUS_NUM(x) (((x) >> 8) & 0xff)
-/* struct pci_slot, pci_driver, pci_ops, pci_host_bridge removed - unused */
+/* struct pci_slot, pci_driver, pci_ops, pci_host_bridge, hotplug_slot removed - unused */
 struct pci_bus;
 struct pci_dev;
-struct hotplug_slot;
 struct pci_device_id;
 enum pci_mmap_state { pci_mmap_io, pci_mmap_mem };
 enum pci_bus_speed { PCI_SPEED_UNKNOWN = 0, };

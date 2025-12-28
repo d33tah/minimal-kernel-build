@@ -529,9 +529,7 @@ struct file {
 	struct address_space	*f_mapping;
 	errseq_t		f_wb_err;
 } __randomize_layout
-  __attribute__((aligned(4)));	
-
-struct file_handle;
+  __attribute__((aligned(4)));
 
 static inline struct file *get_file(struct file *f)
 {

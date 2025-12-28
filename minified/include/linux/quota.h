@@ -29,7 +29,4 @@ struct quota_info {
 	const struct quota_format_ops *ops[MAXQUOTAS];
 };
 
-struct dquot_operations;
-struct quotactl_ops;
-
 #endif /* _LINUX_QUOTA_ */

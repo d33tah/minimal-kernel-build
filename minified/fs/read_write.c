@@ -1,21 +1,6 @@
-
 #include <linux/slab.h>
 #include <linux/stat.h>
 #include <linux/fcntl.h>
-
-/* Inlined from sched/xacct.h - all stubs */
-static inline void add_rchar(struct task_struct *tsk, ssize_t amt)
-{
-}
-static inline void add_wchar(struct task_struct *tsk, ssize_t amt)
-{
-}
-static inline void inc_syscr(struct task_struct *tsk)
-{
-}
-static inline void inc_syscw(struct task_struct *tsk)
-{
-}
 #include <linux/file.h>
 #include <linux/uio.h>
 #include <linux/fsnotify.h>
@@ -167,9 +152,7 @@ ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
 		if (pos)
 			*pos = kiocb.ki_pos;
 		fsnotify_access(file);
-		add_rchar(current, ret);
 	}
-	inc_syscr(current);
 	return ret;
 }
 
@@ -229,9 +212,7 @@ ssize_t __kernel_write(struct file *file, const void *buf, size_t count,
 		if (pos)
 			*pos = kiocb.ki_pos;
 		fsnotify_modify(file);
-		add_wchar(current, ret);
 	}
-	inc_syscw(current);
 	return ret;
 }
 
@@ -274,11 +255,8 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count,
 		ret = new_sync_write(file, buf, count, pos);
 	else
 		ret = -EINVAL;
-	if (ret > 0) {
+	if (ret > 0)
 		fsnotify_modify(file);
-		add_wchar(current, ret);
-	}
-	inc_syscw(current);
 	file_end_write(file);
 	return ret;
 }

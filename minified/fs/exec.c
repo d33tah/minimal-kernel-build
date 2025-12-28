@@ -13,10 +13,6 @@
 #include <linux/sched/mm.h>
 #include <linux/sched/coredump.h>
 #include <linux/sched/signal.h>
-static inline void task_numa_free(struct task_struct *p, bool final)
-{
-}
-/* end numa_balancing.h */
 #include <linux/sched/task.h>
 #include <linux/pagemap.h>
 #include <linux/perf_event.h>
@@ -32,12 +28,6 @@ static inline void task_numa_free(struct task_struct *p, bool final)
 #include <linux/mount.h>
 #include <linux/security.h>
 #include <linux/syscalls.h>
-static inline void acct_update_integrals(struct task_struct *tsk)
-{
-}
-static inline void proc_exec_connector(struct task_struct *task)
-{
-}
 #include <linux/audit.h>
 #include <linux/kmod.h>
 #include <linux/fsnotify.h>
@@ -118,10 +108,6 @@ static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos,
 static void put_arg_page(struct page *page)
 {
 	put_page(page);
-}
-
-static void free_arg_pages(struct linux_binprm *bprm)
-{
 }
 
 static void flush_arg_page(struct linux_binprm *bprm, unsigned long pos,
@@ -794,7 +780,6 @@ static void free_bprm(struct linux_binprm *bprm)
 		acct_arg_size(bprm, 0);
 		mmput(bprm->mm);
 	}
-	free_arg_pages(bprm);
 	if (bprm->cred) {
 		mutex_unlock(&current->signal->cred_guard_mutex);
 		abort_creds(bprm->cred);
@@ -991,7 +976,6 @@ static int exec_binprm(struct linux_binprm *bprm)
 	audit_bprm(bprm);
 
 	ptrace_event(PTRACE_EVENT_EXEC, old_vpid);
-	proc_exec_connector(current);
 	return 0;
 }
 
@@ -1031,8 +1015,6 @@ static int bprm_execve(struct linux_binprm *bprm, int fd,
 	current->fs->in_exec = 0;
 	current->in_execve = 0;
 	rseq_execve(current);
-	acct_update_integrals(current);
-	task_numa_free(current, false);
 	return retval;
 
 out:

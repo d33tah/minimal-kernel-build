@@ -3,6 +3,4 @@
 __printf(2, 3) void seq_printf(struct seq_file *m, const char *fmt, ...)
 {
 }
-void seq_file_init(void)
-{
-}
+/* seq_file_init removed - was empty stub, call removed from init/main.c */

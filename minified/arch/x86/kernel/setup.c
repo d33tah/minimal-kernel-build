@@ -608,7 +608,7 @@ void __init setup_arch(char **cmdline_p)
 
 	acpi_boot_table_init();
 
-	vsmp_init();
+	/* vsmp_init removed - was empty inline stub */
 
 	/* io_delay_init removed - was empty stub */
 

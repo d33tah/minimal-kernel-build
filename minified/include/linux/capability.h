@@ -34,7 +34,6 @@ typedef struct __user_cap_data_struct {
 #define CAP_MKNOD            27
 #define CAP_CHECKPOINT_RESTORE	40
 #define CAP_LAST_CAP         CAP_CHECKPOINT_RESTORE
-#define CAP_TO_INDEX(x)     ((x) >> 5)
 #define CAP_TO_MASK(x)      (1 << ((x) & 31))
 
 #define _KERNEL_CAPABILITY_VERSION _LINUX_CAPABILITY_VERSION_3

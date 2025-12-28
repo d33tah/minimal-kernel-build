@@ -1158,8 +1158,7 @@ void __init kmem_cache_init(void)
 	if (debug_guardpage_minorder())
 		slub_max_order = 0;
 
-	if (__slub_debug_enabled())
-		no_hash_pointers_enable(NULL);
+	/* no_hash_pointers_enable call removed - slub debug disabled */
 
 	kmem_cache_node = &boot_kmem_cache_node;
 	kmem_cache = &boot_kmem_cache;

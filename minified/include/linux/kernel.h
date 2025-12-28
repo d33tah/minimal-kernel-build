@@ -101,7 +101,6 @@ int sscanf(const char *, const char *, ...);
 extern __scanf(2, 0)
 int vsscanf(const char *, const char *, va_list);
 
-extern int no_hash_pointers_enable(char *str);
 extern char *next_arg(char *args, char **param, char **val);
 
 extern int __kernel_text_address(unsigned long addr);

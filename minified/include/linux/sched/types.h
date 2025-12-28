@@ -13,9 +13,6 @@ struct sched_param {
 	int sched_priority;
 };
 
-#define SCHED_ATTR_SIZE_VER0	48
-#define SCHED_ATTR_SIZE_VER1	56
-
 struct sched_attr {
 	__u32 size;
 	__u32 sched_policy;

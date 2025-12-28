@@ -27,17 +27,6 @@ void register_shrinker_prepared(struct shrinker *shrinker)
 {
 }
 
-unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
-				gfp_t gfp_mask, nodemask_t *nodemask)
-{
-	return 0;
-}
-
-void wakeup_kswapd(struct zone *zone, gfp_t gfp_flags, int order,
-		   enum zone_type highest_zoneidx)
-{
-}
-
 void __acct_reclaim_writeback(pg_data_t *pgdat, struct folio *folio,
 			      int nr_throttled)
 {

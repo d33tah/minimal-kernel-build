@@ -62,8 +62,6 @@ extern void lru_add_drain_cpu(int cpu);
 extern void lru_cache_add_inactive_or_unevictable(struct page *page,
 						struct vm_area_struct *vma);
 
-extern unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
-					gfp_t gfp_mask, nodemask_t *mask);
 long remove_mapping(struct address_space *mapping, struct folio *folio);
 
 #define total_swap_pages			0L

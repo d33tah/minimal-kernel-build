@@ -164,10 +164,9 @@ struct device {
 	const char		*init_name;  
 	const struct device_type *type;
 
-	struct bus_type	*bus;		 
-	struct device_driver *driver;	 
-	void		*platform_data;	 
-	void		*driver_data;	 
+	struct bus_type	*bus;
+	struct device_driver *driver;
+	void		*driver_data;
 	struct mutex		mutex;	 
 
 	struct dev_links_info	links;
@@ -181,12 +180,7 @@ struct device {
 	u64		bus_dma_limit;	 
 	const struct bus_dma_region *dma_range_map;
 
-	struct device_dma_parameters *dma_parms;
-
-	struct list_head	dma_pools;	 
-
-	 
-	struct dev_archdata	archdata;
+	struct list_head	dma_pools;
 
 	struct device_node	*of_node;  
 	struct fwnode_handle	*fwnode;  
@@ -201,23 +195,10 @@ struct device {
 	const struct attribute_group **groups;	 
 
 	void	(*release)(struct device *dev);
-	struct iommu_group	*iommu_group;
-	struct dev_iommu	*iommu;
 
 	struct device_physical_location *physical_location;
 
-	enum device_removable	removable;
-
-	bool			offline_disabled:1;
-	bool			offline:1;
-	bool			of_node_reused:1;
-	bool			state_synced:1;
 	bool			can_match:1;
-#if defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_DEVICE) || \
-    defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU) || \
-    defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU_ALL)
-	bool			dma_coherent:1;
-#endif
 };
 
 struct device_link {

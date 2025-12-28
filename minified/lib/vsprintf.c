@@ -27,7 +27,6 @@ static inline const char *errname(int err)
 #define IPV6_FLOWINFO_MASK cpu_to_be32(0x0FFFFFFF)
 
 #include <linux/compiler.h>
-#include <linux/property.h>
 
 #include "../mm/internal.h"
 

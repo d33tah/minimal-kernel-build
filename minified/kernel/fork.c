@@ -51,7 +51,7 @@ static inline void task_io_accounting_init(struct task_io_accounting *ioac)
 #include <linux/memcontrol.h>
 #include <linux/proc_fs.h>
 #include <linux/rmap.h>
-#include <linux/ksm.h>
+static inline void ksm_exit(struct mm_struct *mm) { }
 #define acct_collect(x, y) \
 	do {               \
 	} while (0)
@@ -99,7 +99,9 @@ static inline void clear_user_return_notifier(struct task_struct *p)
 }
 #endif
 #include <linux/oom.h>
-static inline void khugepaged_exit(struct mm_struct *mm) {}
+static inline void khugepaged_exit(struct mm_struct *mm)
+{
+}
 #include <linux/uprobes.h>
 #include <linux/compiler.h>
 #include <linux/sysctl.h>

@@ -9,7 +9,7 @@
 #include <linux/mutex.h>
 #include <linux/backing-dev.h>
 #include <linux/rculist_bl.h>
-#include <linux/fscrypt.h>
+static inline void fscrypt_sb_free(struct super_block *sb) { }
 #include <linux/fsnotify.h>
 #include <linux/lockdep.h>
 #include <linux/user_namespace.h>

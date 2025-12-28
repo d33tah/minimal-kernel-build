@@ -1,10 +1,10 @@
 #ifndef _LINUX_CPU_H_
 #define _LINUX_CPU_H_
 
-#include <linux/node.h>
 #include <linux/compiler.h>
 #include <linux/cpumask.h>
 #include <linux/types.h>
+#include <linux/device.h>
 
 enum cpuhp_state {
 	CPUHP_INVALID = -1,

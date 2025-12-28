@@ -4,6 +4,7 @@
 #include <linux/of.h>
 #include <linux/backing-dev.h>
 #include "base.h"
+static inline void node_dev_init(void) { }
 void __init driver_init(void)
 {
 	bdi_init(&noop_backing_dev_info);

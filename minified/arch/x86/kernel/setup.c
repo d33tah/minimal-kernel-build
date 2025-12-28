@@ -1,7 +1,7 @@
 #include <linux/acpi.h>
 #include <linux/console.h>
 #include <linux/dma-map-ops.h>
-#include <linux/dmi.h>
+static inline void dmi_setup(void) {}
 #include <linux/efi.h>
 
 #include <linux/initrd.h>

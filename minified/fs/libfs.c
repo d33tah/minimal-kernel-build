@@ -13,7 +13,6 @@
 #include <linux/fs_context.h>
 #include <linux/fsnotify.h>
 
-#include <linux/fscrypt.h>
 
 #include <linux/uaccess.h>
 

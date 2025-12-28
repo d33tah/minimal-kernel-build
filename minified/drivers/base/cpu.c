@@ -6,7 +6,6 @@
 #include <linux/cpu.h>
 #include <linux/topology.h>
 #include <linux/device.h>
-#include <linux/node.h>
 #include <linux/gfp.h>
 #include <linux/slab.h>
 #include <linux/percpu.h>

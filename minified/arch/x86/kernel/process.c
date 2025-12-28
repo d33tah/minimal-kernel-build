@@ -29,7 +29,6 @@ static inline void clear_user_return_notifier(struct task_struct *p)
 {
 }
 #endif
-#include <linux/dmi.h>
 #include <linux/utsname.h>
 static inline void boot_init_stack_canary(void)
 {

@@ -476,9 +476,6 @@ void page_remove_rmap(struct page *page, struct vm_area_struct *vma,
 
 	__dec_lruvec_page_state(page, NR_ANON_MAPPED);
 
-	if (PageTransCompound(page))
-		deferred_split_huge_page(compound_head(page));
-
 out:
 	unlock_page_memcg(page);
 

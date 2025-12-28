@@ -83,6 +83,3 @@ struct notifier_block;
 
 #endif
 
-/* Minimal trace stubs - only those actually called from code */
-static inline void trace_sys_exit(struct pt_regs *regs, long ret) {}
-static inline void trace_writeback_lazytime_iput(struct inode *inode) {}

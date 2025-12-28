@@ -1045,9 +1045,6 @@ struct folio *__folio_alloc(gfp_t gfp, unsigned int order, int preferred_nid,
 {
 	struct page *page =
 		__alloc_pages(gfp | __GFP_COMP, order, preferred_nid, nodemask);
-
-	if (page && order > 1)
-		prep_transhuge_page(page);
 	return (struct folio *)page;
 }
 

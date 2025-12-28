@@ -30,15 +30,12 @@ static inline bool transparent_hugepage_active(struct vm_area_struct *vma)
 }
 
 
-static inline void prep_transhuge_page(struct page *page) {}
-
 #define thp_get_unmapped_area	NULL
 
 static inline int split_huge_page(struct page *page)
 {
 	return 0;
 }
-static inline void deferred_split_huge_page(struct page *page) {}
 #define split_huge_pmd(__vma, __pmd, __address)	\
 	do { } while (0)
 

@@ -90,15 +90,7 @@ static inline void softirq_handle_end(void)
 	WARN_ON_ONCE(in_interrupt());
 }
 
-static inline void ksoftirqd_run_begin(void)
-{
-	local_irq_disable();
-}
-
-static inline void ksoftirqd_run_end(void)
-{
-	local_irq_enable();
-}
+/* ksoftirqd_run_begin/end removed - only caller was run_ksoftirqd */
 
 static inline bool should_wake_ksoftirqd(void)
 {
@@ -279,38 +271,14 @@ void __init softirq_init(void)
 	/* No tasklets needed in minimal kernel */
 }
 
-static int ksoftirqd_should_run(unsigned int cpu)
-{
-	return local_softirq_pending();
-}
-
-static void run_ksoftirqd(unsigned int cpu)
-{
-	ksoftirqd_run_begin();
-	if (local_softirq_pending()) {
-		__do_softirq();
-		ksoftirqd_run_end();
-		cond_resched();
-		return;
-	}
-	ksoftirqd_run_end();
-}
+/* ksoftirqd_should_run, run_ksoftirqd removed - only referenced by softirq_threads which was removed */
 
 #define takeover_tasklets NULL
-
-static struct smp_hotplug_thread softirq_threads = {
-	.store = &ksoftirqd,
-	.thread_should_run = ksoftirqd_should_run,
-	.thread_fn = run_ksoftirqd,
-	.thread_comm = "ksoftirqd/%u",
-};
 
 static __init int spawn_ksoftirqd(void)
 {
 	cpuhp_setup_state_nocalls(CPUHP_SOFTIRQ_DEAD, "softirq:dead", NULL,
 				  takeover_tasklets);
-	/* smpboot_register_percpu_thread removed - was stub returning 0 */
-
 	return 0;
 }
 early_initcall(spawn_ksoftirqd);

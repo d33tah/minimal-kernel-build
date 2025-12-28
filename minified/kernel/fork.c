@@ -561,9 +561,6 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 
 	return tsk;
 
-free_stack:
-	exit_task_stack_account(tsk);
-	free_thread_stack(tsk);
 free_tsk:
 	free_task_struct(tsk);
 	return NULL;

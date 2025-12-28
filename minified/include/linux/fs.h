@@ -524,13 +524,10 @@ struct file {
 	const struct cred	*f_cred;
 	struct file_ra_state	f_ra;
 
-	u64			f_version;
-	
 	void			*private_data;
 
 	struct address_space	*f_mapping;
 	errseq_t		f_wb_err;
-	errseq_t		f_sb_err; 
 } __randomize_layout
   __attribute__((aligned(4)));	
 

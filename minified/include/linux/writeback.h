@@ -16,8 +16,7 @@ DECLARE_PER_CPU(int, dirty_throttle_leaks);
 struct backing_dev_info;
 
 enum writeback_sync_modes {
-	WB_SYNC_NONE,	 
-	WB_SYNC_ALL,	 
+	WB_SYNC_ALL,	/* WB_SYNC_NONE removed - unused */
 };
 
 struct writeback_control {

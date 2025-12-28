@@ -19,8 +19,7 @@ struct dentry;
 
 enum wb_state {
 	WB_registered,
-	WB_writeback_running,
-	WB_has_dirty_io,
+	/* WB_writeback_running, WB_has_dirty_io removed - unused */
 };
 
 enum wb_stat_item {

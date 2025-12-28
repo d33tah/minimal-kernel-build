@@ -179,13 +179,7 @@ static void init_one_lru(struct list_lru_one *l)
 	l->nr_items = 0;
 }
 
-static inline void memcg_init_list_lru(struct list_lru *lru, bool memcg_aware)
-{
-}
-
-static void memcg_destroy_list_lru(struct list_lru *lru)
-{
-}
+/* memcg_init_list_lru, memcg_destroy_list_lru removed - empty stubs */
 
 int __list_lru_init(struct list_lru *lru, bool memcg_aware,
 		    struct lock_class_key *key, struct shrinker *shrinker)
@@ -203,7 +197,7 @@ int __list_lru_init(struct list_lru *lru, bool memcg_aware,
 		init_one_lru(&lru->node[i].lru);
 	}
 
-	memcg_init_list_lru(lru, memcg_aware);
+	/* memcg_init_list_lru removed - empty stub */
 	list_lru_register(lru);
 
 	return 0;
@@ -215,8 +209,7 @@ void list_lru_destroy(struct list_lru *lru)
 		return;
 
 	list_lru_unregister(lru);
-
-	memcg_destroy_list_lru(lru);
+	/* memcg_destroy_list_lru removed - empty stub */
 	kfree(lru->node);
 	lru->node = NULL;
 }

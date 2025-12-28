@@ -162,9 +162,7 @@ static void __folio_activate(struct folio *folio, struct lruvec *lruvec)
 	}
 }
 
-static inline void activate_page_drain(int cpu)
-{
-}
+/* activate_page_drain removed - empty stub */
 
 static void folio_activate(struct folio *folio)
 {
@@ -314,8 +312,7 @@ void lru_add_drain_cpu(int cpu)
 	pvec = &per_cpu(lru_pvecs.lru_lazyfree, cpu);
 	if (pagevec_count(pvec))
 		pagevec_lru_move_fn(pvec, lru_lazyfree_fn);
-
-	activate_page_drain(cpu);
+	/* activate_page_drain removed - empty stub */
 }
 
 void deactivate_file_folio(struct folio *folio)

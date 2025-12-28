@@ -1016,36 +1016,12 @@ vm_fault_t finish_fault(struct vm_fault *vmf)
 	return ret;
 }
 
-static unsigned long fault_around_bytes __read_mostly =
-	rounddown_pow_of_two(65536);
-
-static vm_fault_t do_fault_around(struct vm_fault *vmf)
-{
-	return 0; /* Stub: optimization not needed for minimal boot */
-}
-
-static inline bool should_fault_around(struct vm_fault *vmf)
-{
-	if (!vmf->vma->vm_ops->map_pages)
-		return false;
-
-	if (uffd_disable_fault_around(vmf->vma))
-		return false;
-
-	return fault_around_bytes >> PAGE_SHIFT > 1;
-}
+/* Removed: fault_around_bytes, do_fault_around, should_fault_around
+ * - Optimization path always returned 0 for minimal kernel */
 
 static vm_fault_t do_read_fault(struct vm_fault *vmf)
 {
-	vm_fault_t ret = 0;
-
-	if (should_fault_around(vmf)) {
-		ret = do_fault_around(vmf);
-		if (ret)
-			return ret;
-	}
-
-	ret = __do_fault(vmf);
+	vm_fault_t ret = __do_fault(vmf);
 	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE | VM_FAULT_RETRY)))
 		return ret;
 

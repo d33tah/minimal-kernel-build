@@ -67,7 +67,7 @@ int dma_mmap_attrs(struct device *dev, struct vm_area_struct *vma,
 bool dma_can_mmap(struct device *dev);
 int dma_supported(struct device *dev, u64 mask);
 int dma_set_mask(struct device *dev, u64 mask);
-int dma_set_coherent_mask(struct device *dev, u64 mask);
+/* dma_set_coherent_mask removed - never called */
 u64 dma_get_required_mask(struct device *dev);
 /* dma_max_mapping_size, dma_need_sync, dma_get_merge_boundary,
    dma_alloc/free/vmap/vunmap/mmap_noncontiguous, dma_alloc/free/mmap_pages removed - unused */

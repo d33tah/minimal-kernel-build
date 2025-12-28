@@ -221,31 +221,7 @@ void class_dev_iter_exit(struct class_dev_iter *iter)
 	klist_iter_exit(&iter->ki);
 }
 
-int class_for_each_device(struct class *class, struct device *start, void *data,
-			  int (*fn)(struct device *, void *))
-{
-	struct class_dev_iter iter;
-	struct device *dev;
-	int error = 0;
-
-	if (!class)
-		return -EINVAL;
-	if (!class->p) {
-		WARN(1, "%s called for class '%s' before it was initialized",
-		     __func__, class->name);
-		return -EINVAL;
-	}
-
-	class_dev_iter_init(&iter, class, start, NULL);
-	while ((dev = class_dev_iter_next(&iter))) {
-		error = fn(dev, data);
-		if (error)
-			break;
-	}
-	class_dev_iter_exit(&iter);
-
-	return error;
-}
+/* class_for_each_device removed - never called */
 
 struct device *class_find_device(struct class *class, struct device *start,
 				 const void *data,

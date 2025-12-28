@@ -83,7 +83,7 @@ request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
 	return request_threaded_irq(irq, handler, NULL, flags, name, dev);
 }
 
-extern const void *free_irq(unsigned int, void *);
+/* free_irq removed - never called */
 
 struct device;
 

@@ -49,10 +49,7 @@ int __set_page_dirty_nobuffers(struct page *page)
 	return filemap_dirty_folio(page_mapping(page), page_folio(page));
 }
 
-bool clear_page_dirty_for_io(struct page *page)
-{
-	return folio_clear_dirty_for_io(page_folio(page));
-}
+/* clear_page_dirty_for_io removed - never called */
 
 void lru_cache_add(struct page *page)
 {

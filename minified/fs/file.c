@@ -509,11 +509,7 @@ int close_fd(unsigned fd)
 	return filp_close(file, files);
 }
 
-/* Stub: close_range not needed for minimal kernel */
-int __close_range(unsigned fd, unsigned max_fd, unsigned int flags)
-{
-	return -ENOSYS;
-}
+/* __close_range removed - never called */
 
 void do_close_on_exec(struct files_struct *files)
 {

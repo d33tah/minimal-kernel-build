@@ -735,24 +735,7 @@ static struct irqaction *__free_irq(struct irq_desc *desc, void *dev_id)
 	return action;
 }
 
-const void *free_irq(unsigned int irq, void *dev_id)
-{
-	struct irq_desc *desc = irq_to_desc(irq);
-	struct irqaction *action;
-	const char *devname;
-
-	if (!desc || WARN_ON(irq_settings_is_per_cpu_devid(desc)))
-		return NULL;
-
-	action = __free_irq(desc, dev_id);
-
-	if (!action)
-		return NULL;
-
-	devname = action->name;
-	kfree(action);
-	return devname;
-}
+/* free_irq removed - never called */
 
 int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 			 irq_handler_t thread_fn, unsigned long irqflags,

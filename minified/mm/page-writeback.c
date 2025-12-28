@@ -48,11 +48,7 @@ bool filemap_dirty_folio(struct address_space *mapping, struct folio *folio)
 {
 	return true;
 }
-bool folio_redirty_for_writepage(struct writeback_control *wbc,
-				 struct folio *folio)
-{
-	return true;
-}
+/* folio_redirty_for_writepage removed - never called */
 bool folio_mark_dirty(struct folio *folio)
 {
 	return true;

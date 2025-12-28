@@ -7,9 +7,7 @@
 #include <linux/percpu_counter.h>
 #include <linux/xattr.h>
 #include <linux/fs_parser.h>
-extern const struct fs_parameter_spec shmem_fs_parameters[];
 extern void shmem_init(void);
-/* shmem_init_fs_context removed - declared but never implemented */
 extern struct file *shmem_file_setup(const char *name, loff_t size, unsigned long flags);
 extern struct file *shmem_kernel_file_setup(const char *name, loff_t size, unsigned long flags);
 extern int shmem_zero_setup(struct vm_area_struct *);

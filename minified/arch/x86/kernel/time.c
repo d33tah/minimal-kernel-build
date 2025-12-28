@@ -29,22 +29,17 @@ static irqreturn_t timer_interrupt(int irq, void *dev_id)
 	return IRQ_HANDLED;
 }
 
-static void __init setup_default_timer_irq(void)
+void __init hpet_time_init(void)
 {
 	unsigned long flags = IRQF_NOBALANCING | IRQF_IRQPOLL | IRQF_TIMER;
 
-	if (request_irq(0, timer_interrupt, flags, "timer", NULL))
-		pr_info("Failed to register legacy timer interrupt\n");
-}
-
-void __init hpet_time_init(void)
-{
 	if (!hpet_enable()) {
 		if (!pit_timer_init())
 			return;
 	}
 
-	setup_default_timer_irq();
+	if (request_irq(0, timer_interrupt, flags, "timer", NULL))
+		pr_info("Failed to register legacy timer interrupt\n");
 }
 
 static __init void x86_late_time_init(void)

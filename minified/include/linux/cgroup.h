@@ -18,9 +18,6 @@
 struct kernel_clone_args;
 struct cgroup_subsys_state;
 struct cgroup;
-static inline int cgroup_can_fork(struct task_struct *p, struct kernel_clone_args *kargs) { return 0; }
-static inline int cgroup_init_early(void) { return 0; }
-static inline int cgroup_init(void) { return 0; }
 struct cgroup_namespace { struct ns_common ns; struct user_namespace *user_ns; struct ucounts *ucounts; struct css_set *root_cset; };
 static inline void free_cgroup_ns(struct cgroup_namespace *ns) { }
 static inline struct cgroup_namespace *copy_cgroup_ns(unsigned long flags, struct user_namespace *user_ns, struct cgroup_namespace *old_ns) { return old_ns; }

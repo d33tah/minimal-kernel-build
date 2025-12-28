@@ -506,10 +506,6 @@ void __init setup_arch(char **cmdline_p)
 
 	x86_report_nx();
 
-	if (acpi_mps_check()) {
-		setup_clear_cpu_cap(X86_FEATURE_APIC);
-	}
-
 	e820__reserve_setup_data();
 	e820__finish_early_params();
 
@@ -597,8 +593,6 @@ void __init setup_arch(char **cmdline_p)
 
 	/* early_platform_quirks removed - was empty stub */
 
-	early_acpi_boot_init();
-
 	initmem_init();
 
 	/* dma_contiguous_reserve, hugetlb_cma_reserve, reserve_crashkernel - stubs */
@@ -613,7 +607,6 @@ void __init setup_arch(char **cmdline_p)
 
 	generic_apic_probe();
 
-	acpi_boot_init();
 	x86_dtb_init();
 
 	get_smp_config();

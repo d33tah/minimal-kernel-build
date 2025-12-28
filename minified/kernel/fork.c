@@ -1233,10 +1233,6 @@ copy_process(struct pid *pid, int trace, int node,
 	p->task_works = NULL;
 	clear_posix_cputimers_work(p);
 
-	retval = cgroup_can_fork(p, args);
-	if (retval)
-		goto bad_fork_put_pidfd;
-
 	sched_cgroup_fork(p, args);
 
 	/* Simplified for minimal kernel - no accurate time needed */

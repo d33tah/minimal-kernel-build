@@ -468,8 +468,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	set_task_stack_end_magic(&init_task);
 	smp_setup_processor_id();
-	/* init_vmlinux_build_id removed - empty stub */
-	cgroup_init_early();
 
 	local_irq_disable();
 	early_boot_irqs_disabled = true;
@@ -588,8 +586,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	pagecache_init();
 	signals_init();
 	cpuset_init();
-	cgroup_init();
-	/* taskstats_init_early, delayacct_init removed - empty stubs */
 	poking_init();
 	check_bugs();
 

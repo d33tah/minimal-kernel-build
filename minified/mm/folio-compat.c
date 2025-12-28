@@ -34,11 +34,6 @@ void mark_page_accessed(struct page *page)
 	folio_mark_accessed(page_folio(page));
 }
 
-bool set_page_writeback(struct page *page)
-{
-	return folio_start_writeback(page_folio(page));
-}
-
 bool set_page_dirty(struct page *page)
 {
 	return folio_mark_dirty(page_folio(page));

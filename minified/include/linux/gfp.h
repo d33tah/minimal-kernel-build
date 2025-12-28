@@ -34,10 +34,7 @@ struct vm_area_struct;
 #define ___GFP_HARDWALL		0x100000u
 #define ___GFP_THISNODE		0x200000u
 #define ___GFP_ACCOUNT		0x400000u
-#define ___GFP_SKIP_ZERO		0
-#define ___GFP_SKIP_KASAN_UNPOISON	0
-#define ___GFP_SKIP_KASAN_POISON	0
-#define ___GFP_NOLOCKDEP	0
+/* ___GFP_SKIP_ZERO, ___GFP_SKIP_KASAN_*, ___GFP_NOLOCKDEP removed - always 0 and unused */
 
 #define __GFP_DMA	((__force gfp_t)___GFP_DMA)
 #define __GFP_HIGHMEM	((__force gfp_t)___GFP_HIGHMEM)
@@ -68,10 +65,7 @@ struct vm_area_struct;
 #define __GFP_NOWARN	((__force gfp_t)___GFP_NOWARN)
 #define __GFP_COMP	((__force gfp_t)___GFP_COMP)
 #define __GFP_ZERO	((__force gfp_t)___GFP_ZERO)
-#define __GFP_SKIP_ZERO ((__force gfp_t)___GFP_SKIP_ZERO)
-#define __GFP_SKIP_KASAN_UNPOISON ((__force gfp_t)___GFP_SKIP_KASAN_UNPOISON)
-#define __GFP_SKIP_KASAN_POISON   ((__force gfp_t)___GFP_SKIP_KASAN_POISON)
-#define __GFP_NOLOCKDEP ((__force gfp_t)___GFP_NOLOCKDEP)
+/* __GFP_SKIP_ZERO, __GFP_SKIP_KASAN_*, __GFP_NOLOCKDEP removed - always 0 and unused */
 
 /* CONFIG_LOCKDEP not enabled */
 #define __GFP_BITS_SHIFT 27
@@ -85,8 +79,7 @@ struct vm_area_struct;
 #define GFP_DMA		__GFP_DMA
 #define GFP_DMA32	__GFP_DMA32
 #define GFP_HIGHUSER	(GFP_USER | __GFP_HIGHMEM)
-#define GFP_HIGHUSER_MOVABLE	(GFP_HIGHUSER | __GFP_MOVABLE | \
-			 __GFP_SKIP_KASAN_POISON)
+#define GFP_HIGHUSER_MOVABLE	(GFP_HIGHUSER | __GFP_MOVABLE)
 
 #define GFP_MOVABLE_MASK (__GFP_RECLAIMABLE|__GFP_MOVABLE)
 #define GFP_MOVABLE_SHIFT 3
@@ -203,14 +196,7 @@ __alloc_pages_node(int nid, gfp_t gfp_mask, unsigned int order)
 	return __alloc_pages(gfp_mask, order, nid, NULL);
 }
 
-static inline
-struct folio *__folio_alloc_node(gfp_t gfp, unsigned int order, int nid)
-{
-	VM_BUG_ON(nid < 0 || nid >= MAX_NUMNODES);
-	VM_WARN_ON((gfp & __GFP_THISNODE) && !node_online(nid));
-
-	return __folio_alloc(gfp, order, nid, NULL);
-}
+/* __folio_alloc_node removed - never called */
 
 static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
 						unsigned int order)
@@ -227,7 +213,7 @@ static inline struct page *alloc_pages(gfp_t gfp_mask, unsigned int order)
 }
 static inline struct folio *folio_alloc(gfp_t gfp, unsigned int order)
 {
-	return __folio_alloc_node(gfp, order, numa_node_id());
+	return __folio_alloc(gfp, order, numa_node_id(), NULL);
 }
 #define vma_alloc_folio(gfp, order, vma, addr, hugepage)		\
 	folio_alloc(gfp, order)

@@ -9,7 +9,6 @@
 
 #include <linux/cpuset.h>
 #include <linux/ctype.h>
-#include <linux/debugfs.h>
 
 #include <linux/irq.h>
 

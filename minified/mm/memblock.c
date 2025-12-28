@@ -5,7 +5,6 @@
 #include <linux/bitops.h>
 #include <linux/poison.h>
 #include <linux/pfn.h>
-#include <linux/debugfs.h>
 #include <linux/seq_file.h>
 #include <linux/memblock.h>
 

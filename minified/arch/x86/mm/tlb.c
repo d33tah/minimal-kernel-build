@@ -6,7 +6,6 @@
 #include <linux/interrupt.h>
 #include <linux/export.h>
 #include <linux/cpu.h>
-#include <linux/debugfs.h>
 #include <linux/task_work.h>
 
 #include <asm/tlbflush.h>

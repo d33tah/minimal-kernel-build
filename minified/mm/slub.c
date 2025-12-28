@@ -23,8 +23,6 @@
 #include <linux/memcontrol.h>
 #include <linux/sort.h>
 
-#include <linux/debugfs.h>
-
 #include "internal.h"
 
 #define slub_get_cpu_ptr(var) get_cpu_ptr(var)

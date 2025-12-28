@@ -161,13 +161,7 @@ void update_rq_clock(struct rq *rq)
 	update_rq_clock_task(rq, delta);
 }
 
-static inline void hrtick_clear(struct rq *rq)
-{
-}
-
-static inline void hrtick_rq_init(struct rq *rq)
-{
-}
+/* hrtick_clear, hrtick_rq_init removed - empty stubs */
 
 #define fetch_or(ptr, mask)                                       \
 	({                                                        \
@@ -284,25 +278,7 @@ static void set_load_weight(struct task_struct *p, bool update_load)
 	}
 }
 
-static inline void uclamp_rq_inc(struct rq *rq, struct task_struct *p)
-{
-}
-static inline void uclamp_rq_dec(struct rq *rq, struct task_struct *p)
-{
-}
-static void __setscheduler_uclamp(struct task_struct *p,
-				  const struct sched_attr *attr)
-{
-}
-static inline void uclamp_fork(struct task_struct *p)
-{
-}
-static inline void uclamp_post_fork(struct task_struct *p)
-{
-}
-static inline void init_uclamp(void)
-{
-}
+/* uclamp_rq_inc, uclamp_rq_dec, __setscheduler_uclamp, uclamp_fork, uclamp_post_fork, init_uclamp removed - empty stubs */
 
 static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 {
@@ -313,8 +289,7 @@ static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 		sched_info_enqueue(rq, p);
 		psi_enqueue(p, flags & ENQUEUE_WAKEUP);
 	}
-
-	uclamp_rq_inc(rq, p);
+	/* uclamp_rq_inc removed - empty stub */
 	p->sched_class->enqueue_task(rq, p, flags);
 }
 
@@ -327,8 +302,7 @@ static inline void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
 		sched_info_dequeue(rq, p);
 		psi_dequeue(p, flags & DEQUEUE_SLEEP);
 	}
-
-	uclamp_rq_dec(rq, p);
+	/* uclamp_rq_dec removed - empty stub */
 	p->sched_class->dequeue_task(rq, p, flags);
 }
 
@@ -549,9 +523,7 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
 	p->__state = TASK_NEW;
 
 	p->prio = current->normal_prio;
-
-	uclamp_fork(p);
-
+	/* uclamp_fork removed - empty stub */
 	if (unlikely(p->sched_reset_on_fork)) {
 		if (task_has_dl_policy(p) || task_has_rt_policy(p)) {
 			p->policy = SCHED_NORMAL;
@@ -594,7 +566,7 @@ void sched_cgroup_fork(struct task_struct *p, struct kernel_clone_args *kargs)
 
 void sched_post_fork(struct task_struct *p)
 {
-	uclamp_post_fork(p);
+	/* uclamp_post_fork removed - empty stub */
 }
 
 void wake_up_new_task(struct task_struct *p)
@@ -940,10 +912,7 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 	prev = rq->curr;
 
 	schedule_debug(prev, !!sched_mode);
-
-	if (sched_feat(HRTICK) || sched_feat(HRTICK_DL))
-		hrtick_clear(rq);
-
+	/* hrtick_clear removed - empty stub */
 	local_irq_disable();
 	rcu_note_context_switch(!!sched_mode);
 
@@ -1203,8 +1172,7 @@ static int __sched_setscheduler(struct task_struct *p,
 		__setscheduler_params(p, attr);
 		__setscheduler_prio(p, newprio);
 	}
-	__setscheduler_uclamp(p, attr);
-
+	/* __setscheduler_uclamp removed - empty stub */
 	if (queued) {
 		if (oldprio < p->prio)
 			queue_flags |= ENQUEUE_HEAD;
@@ -1469,7 +1437,7 @@ void __init sched_init(void)
 		init_dl_rq(&rq->dl);
 
 		rq->rt.rt_runtime = def_rt_bandwidth.rt_runtime;
-		hrtick_rq_init(rq);
+		/* hrtick_rq_init removed - empty stub */
 		atomic_set(&rq->nr_iowait, 0);
 	}
 
@@ -1485,7 +1453,7 @@ void __init sched_init(void)
 	calc_load_update = jiffies + LOAD_FREQ;
 
 	init_sched_fair_class();
-	init_uclamp();
+	/* init_uclamp removed - empty stub */
 
 	preempt_dynamic_init();
 

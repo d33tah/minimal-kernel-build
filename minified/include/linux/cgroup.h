@@ -15,7 +15,9 @@
 #include <linux/user_namespace.h>
 #include <linux/refcount.h>
 #include <linux/kernel_stat.h>
-#include <linux/cgroup-defs.h>
+/* Inlined from linux/cgroup-defs.h */
+static inline void cgroup_threadgroup_change_begin(struct task_struct *tsk) {}
+static inline void cgroup_threadgroup_change_end(struct task_struct *tsk) {}
 struct kernel_clone_args;
 struct cgroup_subsys_state;
 struct cgroup;

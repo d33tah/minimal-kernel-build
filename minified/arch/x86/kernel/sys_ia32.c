@@ -22,7 +22,6 @@ struct tms {
 #include <linux/compat.h>
 #include <linux/statfs.h> /* vfs.h redirect */
 #include <linux/ptrace.h>
-#include <linux/highuid.h>
 #include <linux/sysctl.h>
 #include <linux/slab.h>
 #include <linux/sched/task.h>

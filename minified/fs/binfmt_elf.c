@@ -14,7 +14,6 @@
 #include <linux/personality.h>
 #include <linux/ptrace.h>
 #include <linux/init.h>
-#include <linux/highuid.h>
 #include <linux/compiler.h>
 #include <linux/highmem.h>
 #include <linux/hugetlb.h>

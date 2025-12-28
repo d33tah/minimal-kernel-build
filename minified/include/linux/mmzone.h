@@ -293,36 +293,20 @@ struct zone {
 	 
 	unsigned long		flags;
 
-	 
+
 	spinlock_t		lock;
 
-	 
+
 	ZONE_PADDING(_pad2_)
-
-	 
-	unsigned long percpu_drift_mark;
-
-
-
 
 	bool			contiguous;
 
 	ZONE_PADDING(_pad3_)
-	 
+
 	atomic_long_t		vm_stat[NR_VM_ZONE_STAT_ITEMS];
-	atomic_long_t		vm_numa_event[NR_VM_NUMA_EVENT_ITEMS];
 } ____cacheline_internodealigned_in_smp;
 
-enum pgdat_flags {
-	PGDAT_DIRTY,			 
-	PGDAT_WRITEBACK,		 
-	PGDAT_RECLAIM_LOCKED,		 
-};
-
-enum zone_flags {
-	ZONE_BOOSTED_WATERMARK,		 
-	ZONE_RECLAIM_ACTIVE,		 
-};
+/* pgdat_flags and zone_flags enums removed - unused */
 
 static inline unsigned long zone_managed_pages(struct zone *zone)
 {
@@ -377,15 +361,11 @@ typedef struct pglist_data {
 	 
 	wait_queue_head_t reclaim_wait[NR_VMSCAN_THROTTLE];
 
-	atomic_t nr_writeback_throttled; 
-	unsigned long nr_reclaim_start;	 
-	struct task_struct *kswapd;	 
+	atomic_t nr_writeback_throttled;
+	struct task_struct *kswapd;
 	int kswapd_order;
 	enum zone_type kswapd_highest_zoneidx;
 
-	int kswapd_failures;		 
-
-	 
 	unsigned long		totalreserve_pages;
 
 

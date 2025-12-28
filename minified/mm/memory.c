@@ -938,7 +938,6 @@ void do_set_pte(struct vm_fault *vmf, struct page *page, unsigned long addr)
 	struct vm_area_struct *vma = vmf->vma;
 	bool uffd_wp = pte_marker_uffd_wp(vmf->orig_pte);
 	bool write = vmf->flags & FAULT_FLAG_WRITE;
-	bool prefault = vmf->address != addr;
 	pte_t entry;
 
 	flush_icache_page(vma, page);

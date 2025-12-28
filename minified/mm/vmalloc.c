@@ -895,7 +895,6 @@ alloc_vmap_area(unsigned long size, unsigned long align, unsigned long vstart,
 	unsigned long freed;
 	unsigned long addr;
 	int purged = 0;
-	int ret;
 
 	BUG_ON(!size);
 	BUG_ON(offset_in_page(size));
@@ -1189,7 +1188,6 @@ __get_vm_area_node(unsigned long size, unsigned long align, unsigned long shift,
 {
 	struct vmap_area *va;
 	struct vm_struct *area;
-	unsigned long requested_size = size;
 
 	BUG_ON(in_interrupt());
 	size = ALIGN(size, 1ul << shift);

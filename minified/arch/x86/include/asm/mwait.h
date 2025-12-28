@@ -3,7 +3,6 @@
 #define _ASM_X86_MWAIT_H
 
 #include <linux/sched.h>
-#include <linux/sched/idle.h>
 
 #include <asm/cpufeature.h>
 #include <asm/nospec-branch.h>

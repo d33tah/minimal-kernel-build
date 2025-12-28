@@ -239,8 +239,6 @@ int __cpuhp_state_add_instance_cpuslocked(enum cpuhp_state state,
 	int cpu;
 	int ret;
 
-	lockdep_assert_cpus_held();
-
 	sp = cpuhp_get_step(state);
 	if (sp->multi_instance == false)
 		return -EINVAL;
@@ -277,9 +275,7 @@ int __cpuhp_state_add_instance(enum cpuhp_state state, struct hlist_node *node,
 {
 	int ret;
 
-	cpus_read_lock();
 	ret = __cpuhp_state_add_instance_cpuslocked(state, node, invoke);
-	cpus_read_unlock();
 	return ret;
 }
 
@@ -291,8 +287,6 @@ int __cpuhp_setup_state_cpuslocked(enum cpuhp_state state, const char *name,
 {
 	int cpu, ret = 0;
 	bool dynstate;
-
-	lockdep_assert_cpus_held();
 
 	if (cpuhp_cb_check(state) || !name)
 		return -EINVAL;
@@ -338,13 +332,8 @@ int __cpuhp_setup_state(enum cpuhp_state state, const char *name, bool invoke,
 			int (*startup)(unsigned int cpu),
 			int (*teardown)(unsigned int cpu), bool multi_instance)
 {
-	int ret;
-
-	cpus_read_lock();
-	ret = __cpuhp_setup_state_cpuslocked(state, name, invoke, startup,
-					     teardown, multi_instance);
-	cpus_read_unlock();
-	return ret;
+	return __cpuhp_setup_state_cpuslocked(state, name, invoke, startup,
+					      teardown, multi_instance);
 }
 
 #define MASK_DECLARE_1(x) [x + 1][0] = (1UL << (x))

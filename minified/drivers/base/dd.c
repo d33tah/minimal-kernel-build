@@ -336,7 +336,6 @@ static int __driver_probe_device(struct device_driver *drv, struct device *dev)
 
 	dev->can_match = true;
 
-	pm_runtime_get_suppliers(dev);
 	if (dev->parent)
 		pm_runtime_get_sync(dev->parent);
 
@@ -347,7 +346,6 @@ static int __driver_probe_device(struct device_driver *drv, struct device *dev)
 	if (dev->parent)
 		pm_runtime_put(dev->parent);
 
-	pm_runtime_put_suppliers(dev);
 	return ret;
 }
 

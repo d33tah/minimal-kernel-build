@@ -76,11 +76,6 @@ static void device_link_release_fn(struct work_struct *work)
 
 	device_link_synchronize_removal();
 
-	pm_runtime_release_supplier(link);
-
-	if (link->supplier_preactivated)
-		pm_runtime_put_noidle(link->supplier);
-
 	pm_request_idle(link->supplier);
 
 	put_device(link->consumer);

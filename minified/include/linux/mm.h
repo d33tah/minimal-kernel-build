@@ -169,8 +169,7 @@ extern int mmap_rnd_bits __read_mostly;
 /* BITS_PER_LONG == 32 */
 #define mm_zero_struct_page(pp)  ((void)memset((pp), 0, sizeof(struct page)))
 
-#define MAPCOUNT_ELF_CORE_MARGIN	(5)
-#define DEFAULT_MAX_MAP_COUNT	(USHRT_MAX - MAPCOUNT_ELF_CORE_MARGIN)
+#define DEFAULT_MAX_MAP_COUNT	(USHRT_MAX - 5)
 
 extern int sysctl_max_map_count;
 
@@ -1064,10 +1063,6 @@ anon_vma_interval_tree_iter_first(struct rb_root_cached *root,
 struct anon_vma_chain *anon_vma_interval_tree_iter_next(
 	struct anon_vma_chain *node, unsigned long start, unsigned long last);
 
-#define anon_vma_interval_tree_foreach(avc, root, start, last)		 \
-	for (avc = anon_vma_interval_tree_iter_first(root, start, last); \
-	     avc; avc = anon_vma_interval_tree_iter_next(avc, start, last))
-
 extern int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin);
 extern int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
 	unsigned long end, pgoff_t pgoff, struct vm_area_struct *insert,
@@ -1162,8 +1157,6 @@ extern int expand_stack(struct vm_area_struct *vma, unsigned long address);
 
 extern int expand_downwards(struct vm_area_struct *vma,
 		unsigned long address);
-/* expand_upwards is always a stub since VM_GROWSUP=VM_NONE */
-#define expand_upwards(vma, address) (0)
 
 extern struct vm_area_struct * find_vma(struct mm_struct * mm, unsigned long addr);
 extern struct vm_area_struct * find_vma_prev(struct mm_struct * mm, unsigned long addr,

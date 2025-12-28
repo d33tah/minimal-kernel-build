@@ -935,7 +935,6 @@ struct super_operations {
 #define S_APPEND	(1 << 2)
 #define S_IMMUTABLE	(1 << 3)
 #define S_DEAD		(1 << 4)
-#define S_NOCMTIME	(1 << 7)
 #define S_SWAPFILE	(1 << 8)
 #define S_PRIVATE	(1 << 9)
 #define S_AUTOMOUNT	(1 << 11)

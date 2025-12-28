@@ -51,9 +51,8 @@ static __always_inline pte_t pte_swp_clear_uffd_wp(pte_t pte) { return pte; }
    pte_swp_mkuffd_wp, pmd_swp_* removed - never called */
 
 extern pgd_t early_top_pgt[PTRS_PER_PGD];
-bool __init __early_make_pgtable(unsigned long address, pmdval_t pmd);
 
-/* ptdump_walk_* declarations removed - unused */
+/* __early_make_pgtable, ptdump_walk_* declarations removed - unused */
 
  
 #define pgprot_encrypted(prot)	__pgprot(cc_mkenc(pgprot_val(prot)))

@@ -444,11 +444,6 @@ extern pgprot_t pgprot_writethrough(pgprot_t prot);
 
 #define __HAVE_PFNMAP_TRACKING
 
-#define __HAVE_PHYS_MEM_ACCESS_PROT
-struct file;
-pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
-                              unsigned long size, pgprot_t vma_prot);
-
 void set_pte_vaddr(unsigned long vaddr, pte_t pte);
 
 extern void native_pagetable_init(void);

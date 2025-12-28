@@ -478,7 +478,6 @@ extern void free_kernel_image_pages(const char *what, void *begin, void *end);
 void default_idle(void);
 
 void __noreturn stop_this_cpu(void *dummy);
-void microcode_check(void);
 
 enum mds_mitigations {
 	MDS_MITIGATION_OFF,

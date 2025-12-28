@@ -84,17 +84,7 @@ static inline pg_data_t *slab_pgdat(const struct slab *slab)
 	return folio_pgdat(slab_folio(slab));
 }
 
-static inline struct slab *virt_to_slab(const void *addr)
-{
-	struct folio *folio = virt_to_folio(addr);
-
-	if (!folio_test_slab(folio))
-		return NULL;
-
-	return folio_slab(folio);
-}
-
-/* slab_order, slab_size removed - unused */
+/* virt_to_slab, slab_order, slab_size removed - unused */
 
 
 

@@ -42,19 +42,12 @@ enum xstate_copy_mode {
 	XSTATE_COPY_XSAVE,
 };
 
-struct membuf;
-extern void __copy_xstate_to_uabi_buf(struct membuf to, struct fpstate *fpstate,
-				      u32 pkru_val, enum xstate_copy_mode copy_mode);
-extern void copy_xstate_to_uabi_buf(struct membuf to, struct task_struct *tsk,
-				    enum xstate_copy_mode mode);
-extern int copy_uabi_from_kernel_to_xstate(struct fpstate *fpstate, const void *kbuf);
+/* struct membuf, __copy_xstate_to_uabi_buf, copy_xstate_to_uabi_buf,
+ * copy_uabi_from_kernel_to_xstate, get_xsave_addr removed - unused */
 extern int copy_sigframe_from_user_to_xstate(struct fpstate *fpstate, const void __user *ubuf);
-
 
 extern void fpu__init_cpu_xstate(void);
 extern void fpu__init_system_xstate(unsigned int legacy_size);
-
-extern void *get_xsave_addr(struct xregs_state *xsave, int xfeature_nr);
 
 static inline u64 xfeatures_mask_supervisor(void)
 {

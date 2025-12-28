@@ -8,8 +8,6 @@ extern void ntp_clear(void);
 extern u64 ntp_tick_length(void);
 extern ktime_t ntp_get_next_leap(void);
 extern int second_overflow(time64_t secs);
-extern void __hardpps(const struct timespec64 *phase_ts, const struct timespec64 *raw_ts);
+/* __hardpps, ntp_notify_cmos_timer removed - unused */
 
-extern void ntp_notify_cmos_timer(void);
-
-#endif  
+#endif

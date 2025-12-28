@@ -4,69 +4,12 @@
 #ifndef __LINUX_RCU_H
 #define __LINUX_RCU_H
 
-#define RCU_SEQ_CTR_SHIFT	2
-#define RCU_SEQ_STATE_MASK	((1 << RCU_SEQ_CTR_SHIFT) - 1)
+/* RCU sequence functions removed - unused:
+ * rcu_seq_ctr, rcu_seq_state, rcu_seq_set_state, rcu_seq_start,
+ * rcu_seq_endval, rcu_seq_end, rcu_seq_snap, rcu_seq_current,
+ * rcu_seq_started, rcu_seq_done, rcu_seq_completed_gp, rcu_seq_new_gp, rcu_seq_diff */
 
 extern int sysctl_sched_rt_runtime;
-
- 
-static inline unsigned long rcu_seq_ctr(unsigned long s)
-{
-	return s >> RCU_SEQ_CTR_SHIFT;
-}
-
- 
-static inline int rcu_seq_state(unsigned long s)
-{
-	return s & RCU_SEQ_STATE_MASK;
-}
-
- 
-static inline void rcu_seq_set_state(unsigned long *sp, int newstate)
-{
-	WARN_ON_ONCE(newstate & ~RCU_SEQ_STATE_MASK);
-	WRITE_ONCE(*sp, (*sp & ~RCU_SEQ_STATE_MASK) + newstate);
-}
-
- 
-static inline void rcu_seq_start(unsigned long *sp)
-{
-	WRITE_ONCE(*sp, *sp + 1);
-	smp_mb();  
-	WARN_ON_ONCE(rcu_seq_state(*sp) != 1);
-}
-
- 
-static inline unsigned long rcu_seq_endval(unsigned long *sp)
-{
-	return (*sp | RCU_SEQ_STATE_MASK) + 1;
-}
-
- 
-static inline void rcu_seq_end(unsigned long *sp)
-{
-	smp_mb();  
-	WARN_ON_ONCE(!rcu_seq_state(*sp));
-	WRITE_ONCE(*sp, rcu_seq_endval(sp));
-}
-
- 
-static inline unsigned long rcu_seq_snap(unsigned long *sp)
-{
-	unsigned long s;
-
-	s = (READ_ONCE(*sp) + 2 * RCU_SEQ_STATE_MASK + 1) & ~RCU_SEQ_STATE_MASK;
-	smp_mb();  
-	return s;
-}
-
- 
-static inline unsigned long rcu_seq_current(unsigned long *sp)
-{
-	return READ_ONCE(*sp);
-}
-
-/* rcu_seq_started, rcu_seq_done, rcu_seq_completed_gp, rcu_seq_new_gp, rcu_seq_diff removed - unused */
 
 static inline int debug_rcu_head_queue(struct rcu_head *head)
 {
@@ -117,11 +60,9 @@ extern int rcu_num_lvls;
 extern int num_rcu_lvl[];
 extern int rcu_num_nodes;
 
-/* rcu_init_levelspread removed - unused */
+/* rcu_init_levelspread, rcu_init_geometry removed - unused */
 
-extern void rcu_init_geometry(void);
 
- 
 #define rcu_first_leaf_node() (rcu_state.level[rcu_num_lvls - 1])
 
  

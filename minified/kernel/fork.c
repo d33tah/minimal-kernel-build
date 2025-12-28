@@ -99,7 +99,7 @@ static inline void clear_user_return_notifier(struct task_struct *p)
 }
 #endif
 #include <linux/oom.h>
-#include <linux/khugepaged.h>
+static inline void khugepaged_exit(struct mm_struct *mm) {}
 #include <linux/uprobes.h>
 #include <linux/compiler.h>
 #include <linux/sysctl.h>

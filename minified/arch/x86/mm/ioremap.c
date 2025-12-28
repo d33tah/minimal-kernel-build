@@ -25,7 +25,7 @@ static inline void mmiotrace_iounmap(volatile void __iomem *addr)
 #include <asm/memtype.h>
 #include <asm/setup.h>
 
-#include "physaddr.h"
+static inline int phys_addr_valid(resource_size_t addr) { return 1; }
 
 struct ioremap_desc {
 	unsigned int flags;

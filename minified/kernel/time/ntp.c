@@ -1,7 +1,11 @@
 /* NTP stubs - minimal includes */
 #include <linux/timex.h>
 #include <linux/ktime.h>
-#include "ntp_internal.h"
+extern void ntp_init(void);
+extern void ntp_clear(void);
+extern u64 ntp_tick_length(void);
+extern ktime_t ntp_get_next_leap(void);
+extern int second_overflow(time64_t secs);
 
 static u64 tick_length_stub = ((u64)TICK_NSEC << 32);
 

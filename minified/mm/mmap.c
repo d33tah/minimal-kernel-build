@@ -27,7 +27,7 @@
 #include <linux/mmdebug.h>
 #include <linux/perf_event.h>
 #include <linux/audit.h>
-#include <linux/khugepaged.h>
+static inline void khugepaged_enter_vma(struct vm_area_struct *vma, unsigned long vm_flags) {}
 #include <linux/uprobes.h>
 #include <linux/rbtree_augmented.h>
 #include <linux/notifier.h>

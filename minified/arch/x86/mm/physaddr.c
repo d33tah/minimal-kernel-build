@@ -2,7 +2,7 @@
 #include <linux/mm.h>
 #include <linux/vmalloc.h>
 #include <asm/page.h>
-#include "physaddr.h"
+static inline int phys_addr_valid(resource_size_t addr) { return 1; }
 
 bool __virt_addr_valid(unsigned long x)
 {

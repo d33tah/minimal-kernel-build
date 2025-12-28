@@ -20,7 +20,11 @@
 #include <linux/audit.h>
 
 #include "tick-internal.h"
-#include "ntp_internal.h"
+extern void ntp_init(void);
+extern void ntp_clear(void);
+extern u64 ntp_tick_length(void);
+extern ktime_t ntp_get_next_leap(void);
+extern int second_overflow(time64_t secs);
 #include "timekeeping_internal.h"
 
 #define TK_CLEAR_NTP (1 << 0)

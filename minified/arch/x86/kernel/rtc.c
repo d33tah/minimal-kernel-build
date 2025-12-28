@@ -5,7 +5,10 @@
 #define bcd2bin(x) \
 	(__builtin_constant_p((u8)(x)) ? const_bcd2bin(x) : _bcd2bin(x))
 #define const_bcd2bin(x) (((x) & 0x0f) + ((x) >> 4) * 10)
-unsigned _bcd2bin(unsigned char val);
+static unsigned _bcd2bin(unsigned char val)
+{
+	return (val & 0x0f) + (val >> 4) * 10;
+}
 #include <linux/export.h>
 
 #include <linux/of.h>

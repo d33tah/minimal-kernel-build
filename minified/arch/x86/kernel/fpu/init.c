@@ -93,13 +93,6 @@ static void __init fpu__init_system_mxcsr(void)
 	mxcsr_feature_mask &= mask;
 }
 
-static void __init fpu__init_system_generic(void)
-{
-	fpstate_init_user(&init_fpstate);
-
-	fpu__init_system_mxcsr();
-}
-
 #define TYPE_ALIGN(TYPE)           \
 	offsetof(                  \
 		struct {           \
@@ -148,12 +141,6 @@ static void __init fpu__init_system_xstate_size_legacy(void)
 	fpstate_reset(&current->thread.fpu);
 }
 
-static void __init fpu__init_init_fpstate(void)
-{
-	init_fpstate.size = fpu_kernel_cfg.max_size;
-	init_fpstate.xfeatures = fpu_kernel_cfg.max_features;
-}
-
 void __init fpu__init_system(struct cpuinfo_x86 *c)
 {
 	fpstate_reset(&current->thread.fpu);
@@ -161,9 +148,11 @@ void __init fpu__init_system(struct cpuinfo_x86 *c)
 
 	fpu__init_cpu();
 
-	fpu__init_system_generic();
+	fpstate_init_user(&init_fpstate);
+	fpu__init_system_mxcsr();
 	fpu__init_system_xstate_size_legacy();
 	fpu__init_system_xstate(fpu_kernel_cfg.max_size);
 	fpu__init_task_struct_size();
-	fpu__init_init_fpstate();
+	init_fpstate.size = fpu_kernel_cfg.max_size;
+	init_fpstate.xfeatures = fpu_kernel_cfg.max_features;
 }

@@ -20,7 +20,8 @@ KCSAN_SANITIZE_common.o := n
 CFLAGS_common.o		:= -fno-stack-protector
 
 # cacheinfo.o removed - only had type defs, no functions
-obj-y			:= topology.o
+# topology.o removed - __max_die_per_package never actually used
+obj-y			:=
 # scattered.o removed - was empty stub
 obj-y			+= common.o
 # match.o removed - x86_match_cpu was never called

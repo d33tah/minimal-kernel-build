@@ -285,14 +285,11 @@ PAGEFLAG(Mlocked, mlocked, PF_NO_TAIL)
 
 
 PAGEFLAG_FALSE(HWPoison, hwpoison)
-#define __PG_HWPOISON 0
-
 
 __PAGEFLAG(Reported, reported, PF_NO_COMPOUND)
 
 #define PAGE_MAPPING_ANON	0x1
-#define PAGE_MAPPING_MOVABLE	0x2
-#define PAGE_MAPPING_FLAGS	(PAGE_MAPPING_ANON | PAGE_MAPPING_MOVABLE)
+#define PAGE_MAPPING_FLAGS	0x3
 
 static __always_inline int PageMappingFlags(struct page *page)
 {
@@ -358,8 +355,6 @@ bool set_page_writeback(struct page *page);
 
 #define folio_start_writeback(folio)			\
 	__folio_start_writeback(folio, false)
-#define folio_start_writeback_keepwrite(folio)	\
-	__folio_start_writeback(folio, true)
 
 static __always_inline bool folio_test_head(struct folio *folio)
 {
@@ -443,8 +438,7 @@ static __always_inline void SetPageAnonExclusive(struct page *page)
 	set_bit(PG_anon_exclusive, &PF_ANY(page, 1)->flags);
 }
 
-#define PAGE_FLAGS_CHECK_AT_PREP	\
-	(PAGEFLAGS_MASK & ~__PG_HWPOISON)
+#define PAGE_FLAGS_CHECK_AT_PREP	PAGEFLAGS_MASK
 
 #define PAGE_FLAGS_PRIVATE				\
 	(1UL << PG_private | 1UL << PG_private_2)

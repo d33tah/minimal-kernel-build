@@ -164,8 +164,6 @@ static void __fput(struct file *file)
 
 	might_sleep();
 
-	fsnotify_close(file);
-
 	eventpoll_release(file);
 	locks_remove_file(file);
 

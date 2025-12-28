@@ -148,11 +148,8 @@ ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
 	kiocb.ki_pos = pos ? *pos : 0;
 	iov_iter_kvec(&iter, READ, &iov, 1, iov.iov_len);
 	ret = file->f_op->read_iter(&kiocb, &iter);
-	if (ret > 0) {
-		if (pos)
-			*pos = kiocb.ki_pos;
-		fsnotify_access(file);
-	}
+	if (ret > 0 && pos)
+		*pos = kiocb.ki_pos;
 	return ret;
 }
 
@@ -208,11 +205,8 @@ ssize_t __kernel_write(struct file *file, const void *buf, size_t count,
 	kiocb.ki_pos = pos ? *pos : 0;
 	iov_iter_kvec(&iter, WRITE, &iov, 1, iov.iov_len);
 	ret = file->f_op->write_iter(&kiocb, &iter);
-	if (ret > 0) {
-		if (pos)
-			*pos = kiocb.ki_pos;
-		fsnotify_modify(file);
-	}
+	if (ret > 0 && pos)
+		*pos = kiocb.ki_pos;
 	return ret;
 }
 
@@ -255,8 +249,6 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count,
 		ret = new_sync_write(file, buf, count, pos);
 	else
 		ret = -EINVAL;
-	if (ret > 0)
-		fsnotify_modify(file);
 	file_end_write(file);
 	return ret;
 }

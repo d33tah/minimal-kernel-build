@@ -431,9 +431,6 @@ static struct file *do_open_execat(int fd, struct filename *name, int flags)
 	if (err)
 		goto exit;
 
-	if (name->name[0] != '\0')
-		fsnotify_open(file);
-
 out:
 	return file;
 

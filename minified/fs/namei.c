@@ -1631,8 +1631,6 @@ static const char *open_last_lookups(struct nameidata *nd, struct file *file,
 	else
 		inode_lock_shared(dir->d_inode);
 	dentry = lookup_open(nd, file, op, got_write);
-	if (!IS_ERR(dentry) && (file->f_mode & FMODE_CREATED))
-		fsnotify_create(dir->d_inode, dentry);
 	if (open_flag & O_CREAT)
 		inode_unlock(dir->d_inode);
 	else
@@ -1872,10 +1870,7 @@ int vfs_mknod(struct user_namespace *mnt_userns, struct inode *dir,
 	if (error)
 		return error;
 
-	error = dir->i_op->mknod(mnt_userns, dir, dentry, mode, dev);
-	if (!error)
-		fsnotify_create(dir, dentry);
-	return error;
+	return dir->i_op->mknod(mnt_userns, dir, dentry, mode, dev);
 }
 
 /* Stub: mknod syscalls not needed for Hello World */
@@ -1911,10 +1906,7 @@ int vfs_mkdir(struct user_namespace *mnt_userns, struct inode *dir,
 	if (max_links && dir->i_nlink >= max_links)
 		return -EMLINK;
 
-	error = dir->i_op->mkdir(mnt_userns, dir, dentry, mode);
-	if (!error)
-		fsnotify_mkdir(dir, dentry);
-	return error;
+	return dir->i_op->mkdir(mnt_userns, dir, dentry, mode);
 }
 
 /* Stub: mkdir syscalls not needed for Hello World */

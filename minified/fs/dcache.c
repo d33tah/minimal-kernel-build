@@ -174,8 +174,6 @@ static void dentry_unlink_inode(struct dentry *dentry)
 	raw_write_seqcount_end(&dentry->d_seq);
 	spin_unlock(&dentry->d_lock);
 	spin_unlock(&inode->i_lock);
-	if (!inode->i_nlink)
-		fsnotify_inoderemove(inode);
 	if (dentry->d_op && dentry->d_op->d_iput)
 		dentry->d_op->d_iput(dentry, inode);
 	else
@@ -884,7 +882,6 @@ static void __d_instantiate(struct dentry *dentry, struct inode *inode)
 	raw_write_seqcount_begin(&dentry->d_seq);
 	__d_set_inode_and_type(dentry, inode, add_flags);
 	raw_write_seqcount_end(&dentry->d_seq);
-	fsnotify_update_flags(dentry);
 	spin_unlock(&dentry->d_lock);
 }
 
@@ -1201,7 +1198,6 @@ static inline void __d_add(struct dentry *dentry, struct inode *inode)
 		raw_write_seqcount_begin(&dentry->d_seq);
 		__d_set_inode_and_type(dentry, inode, add_flags);
 		raw_write_seqcount_end(&dentry->d_seq);
-		fsnotify_update_flags(dentry);
 	}
 	__d_rehash(dentry);
 	if (dir)

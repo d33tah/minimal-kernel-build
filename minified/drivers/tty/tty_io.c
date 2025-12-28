@@ -145,18 +145,7 @@ const char *tty_driver_name(const struct tty_struct *tty)
 	return tty->driver->name;
 }
 
-static int tty_paranoia_check(struct tty_struct *tty, struct inode *inode,
-			      const char *routine)
-{
-	/* TTY_PARANOIA_CHECK not defined */
-	return 0;
-}
-
-/* CHECK_TTY_COUNT not defined */
-static int check_tty_count(struct tty_struct *tty, const char *routine)
-{
-	return 0;
-}
+/* Removed: tty_paranoia_check, check_tty_count - always returned 0 */
 
 static struct tty_driver *get_tty_driver(dev_t device, int *index)
 {
@@ -347,8 +336,6 @@ static ssize_t tty_read(struct kiocb *iocb, struct iov_iter *to)
 	struct tty_struct *tty = file_tty(file);
 	struct tty_ldisc *ld;
 
-	if (tty_paranoia_check(tty, inode, "tty_read"))
-		return -EIO;
 	if (!tty || tty_io_error(tty))
 		return -EIO;
 
@@ -463,8 +450,6 @@ static ssize_t file_tty_write(struct file *file, struct kiocb *iocb,
 	struct tty_ldisc *ld;
 	ssize_t ret;
 
-	if (tty_paranoia_check(tty, file_inode(file), "tty_write"))
-		return -EIO;
 	if (!tty || !tty->ops->write || tty_io_error(tty))
 		return -EIO;
 
@@ -792,9 +777,6 @@ int tty_release(struct inode *inode, struct file *filp)
 	struct tty_struct *tty = file_tty(filp);
 	int idx;
 
-	if (tty_paranoia_check(tty, inode, __func__))
-		return 0;
-
 	tty_lock(tty);
 	idx = tty->index;
 
@@ -957,8 +939,6 @@ retry_open:
 	}
 
 	tty_add_file(tty, filp);
-
-	check_tty_count(tty, __func__);
 	tty_debug_hangup(tty, "opening (count=%d)\n", tty->count);
 
 	if (tty->ops->open)
@@ -1003,9 +983,6 @@ static __poll_t tty_poll(struct file *filp, poll_table *wait)
 	struct tty_ldisc *ld;
 	__poll_t ret = 0;
 
-	if (tty_paranoia_check(tty, file_inode(filp), "tty_poll"))
-		return 0;
-
 	ld = tty_ldisc_ref_wait(tty);
 	if (!ld)
 		return hung_up_tty_poll(filp, wait);
@@ -1020,9 +997,6 @@ static int __tty_fasync(int fd, struct file *filp, int on)
 	struct tty_struct *tty = file_tty(filp);
 	unsigned long flags;
 	int retval = 0;
-
-	if (tty_paranoia_check(tty, file_inode(filp), "tty_fasync"))
-		goto out;
 
 	retval = fasync_helper(fd, filp, on, &tty->fasync);
 	if (retval <= 0)
@@ -1121,9 +1095,6 @@ long tty_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	struct tty_struct *real_tty;
 	void __user *p = (void __user *)arg;
 	int retval;
-
-	if (tty_paranoia_check(tty, file_inode(file), "tty_ioctl"))
-		return -EINVAL;
 
 	real_tty = tty_pair_get_tty(tty);
 

@@ -1135,14 +1135,6 @@ error:
 	return error;
 }
 
-static int filemap_readahead(struct kiocb *iocb, struct file *file,
-			     struct address_space *mapping, struct folio *folio,
-			     pgoff_t last_index)
-{
-	/* Stub: readahead optimization not needed */
-	return 0;
-}
-
 static int filemap_get_pages(struct kiocb *iocb, struct iov_iter *iter,
 			     struct folio_batch *fbatch)
 {
@@ -1178,11 +1170,7 @@ retry:
 	}
 
 	folio = fbatch->folios[folio_batch_count(fbatch) - 1];
-	if (folio_test_readahead(folio)) {
-		err = filemap_readahead(iocb, filp, mapping, folio, last_index);
-		if (err)
-			goto err;
-	}
+	/* Removed: filemap_readahead - stub always returned 0 */
 	if (!folio_test_uptodate(folio)) {
 		if ((iocb->ki_flags & IOCB_WAITQ) &&
 		    folio_batch_count(fbatch) > 1)
@@ -1652,12 +1640,6 @@ struct page *read_cache_page_gfp(struct address_space *mapping, pgoff_t index,
 	return do_read_cache_page(mapping, index, NULL, NULL, gfp);
 }
 
-static void dio_warn_stale_pagecache(struct file *filp)
-{
-	/* Stub: direct I/O warning not needed for minimal kernel */
-	errseq_set(&filp->f_mapping->wb_err, -EIO);
-}
-
 ssize_t generic_file_direct_write(struct kiocb *iocb, struct iov_iter *from)
 {
 	struct file *file = iocb->ki_filp;
@@ -1691,7 +1673,7 @@ ssize_t generic_file_direct_write(struct kiocb *iocb, struct iov_iter *from)
 
 	if (written > 0 && mapping->nrpages &&
 	    invalidate_inode_pages2_range(mapping, pos >> PAGE_SHIFT, end))
-		dio_warn_stale_pagecache(file);
+		errseq_set(&file->f_mapping->wb_err, -EIO);
 
 	if (written > 0) {
 		pos += written;

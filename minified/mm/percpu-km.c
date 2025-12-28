@@ -38,8 +38,7 @@ static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp)
 	pcpu_chunk_populated(chunk, 0, nr_pages);
 	spin_unlock_irqrestore(&pcpu_lock, flags);
 
-	pcpu_stats_chunk_alloc();
-
+	/* pcpu_stats_chunk_alloc removed - stats stub */
 	return chunk;
 }
 

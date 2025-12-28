@@ -632,17 +632,6 @@ static void __init tsc_disable_clocksource_watchdog(void)
 	clocksource_tsc.flags &= ~CLOCK_SOURCE_MUST_VERIFY;
 }
 
-static void __init check_system_tsc_reliable(void)
-{
-	if (boot_cpu_has(X86_FEATURE_TSC_RELIABLE))
-		tsc_clocksource_reliable = 1;
-
-	if (boot_cpu_has(X86_FEATURE_CONSTANT_TSC) &&
-	    boot_cpu_has(X86_FEATURE_NONSTOP_TSC) &&
-	    boot_cpu_has(X86_FEATURE_TSC_ADJUST) && nr_online_nodes <= 2)
-		tsc_disable_clocksource_watchdog();
-}
-
 /* Stubbed - minimal single-CPU kernel assumes synchronized TSC */
 int unsynchronized_tsc(void)
 {
@@ -771,7 +760,13 @@ void __init tsc_init(void)
 
 	/* lpj_fine assignment removed - never read */
 
-	check_system_tsc_reliable();
+	if (boot_cpu_has(X86_FEATURE_TSC_RELIABLE))
+		tsc_clocksource_reliable = 1;
+
+	if (boot_cpu_has(X86_FEATURE_CONSTANT_TSC) &&
+	    boot_cpu_has(X86_FEATURE_NONSTOP_TSC) &&
+	    boot_cpu_has(X86_FEATURE_TSC_ADJUST) && nr_online_nodes <= 2)
+		tsc_disable_clocksource_watchdog();
 
 	if (unsynchronized_tsc()) {
 		mark_tsc_unstable("TSCs unsynchronized");

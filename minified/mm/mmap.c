@@ -1412,7 +1412,7 @@ void exit_mmap(struct mm_struct *mm)
 	mmu_notifier_release(mm);
 
 	if (unlikely(mm_is_oom_victim(mm))) {
-		(void)__oom_reap_task_mm(mm);
+		/* __oom_reap_task_mm inlined - always returns true */
 		set_bit(MMF_OOM_SKIP, &mm->flags);
 	}
 

@@ -25,7 +25,6 @@ struct fs_parameter;
 enum lockdown_reason {
 	LOCKDOWN_NONE,
 	LOCKDOWN_MODULE_PARAMETERS, /* Used by kernel/params.c */
-	LOCKDOWN_CONFIDENTIALITY_MAX,
 };
 
 extern int cap_capable(const struct cred *cred, struct user_namespace *ns,

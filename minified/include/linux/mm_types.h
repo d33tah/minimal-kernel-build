@@ -269,10 +269,8 @@ struct vm_area_struct {
 
 	 
 	unsigned long vm_pgoff;		 
-	struct file * vm_file;		 
-	void * vm_private_data;		 
-
-	struct vm_userfaultfd_ctx vm_userfaultfd_ctx;
+	struct file * vm_file;
+	void * vm_private_data;
 } __randomize_layout;
 
 struct mm_struct {
@@ -309,12 +307,10 @@ struct mm_struct {
 		unsigned long hiwater_rss;  
 		unsigned long hiwater_vm;   
 
-		unsigned long total_vm;	    
-		unsigned long locked_vm;    
-		atomic64_t    pinned_vm;    
-		unsigned long data_vm;	    
-		unsigned long exec_vm;	    
-		unsigned long stack_vm;	    
+		unsigned long total_vm;
+		unsigned long locked_vm;
+		unsigned long data_vm;
+		unsigned long stack_vm;
 		unsigned long def_flags;
 
 		 
@@ -344,9 +340,8 @@ struct mm_struct {
 		struct file __rcu *exe_file;
 		 
 		atomic_t tlb_flush_pending;
-		 
+
 		atomic_t tlb_flush_batched;
-		struct uprobes_state uprobes_state;
 		struct work_struct async_put_work;
 
 	} __randomize_layout;

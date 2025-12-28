@@ -20,10 +20,7 @@ int bdi_set_min_ratio(struct backing_dev_info *bdi, unsigned int min_ratio)
 {
 	return 0;
 }
-int bdi_set_max_ratio(struct backing_dev_info *bdi, unsigned max_ratio)
-{
-	return 0;
-}
+/* bdi_set_max_ratio removed - never called */
 void wb_update_bandwidth(struct bdi_writeback *wb)
 {
 }

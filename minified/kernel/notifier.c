@@ -77,31 +77,10 @@ int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 }
 NOKPROBE_SYMBOL(atomic_notifier_call_chain);
 
-bool atomic_notifier_call_chain_is_empty(struct atomic_notifier_head *nh)
-{
-	return !rcu_access_pointer(nh->head);
-}
+/* atomic_notifier_call_chain_is_empty removed - never called */
 
-static int __blocking_notifier_chain_register(struct blocking_notifier_head *nh,
-					      struct notifier_block *n,
-					      bool unique_priority)
-{
-	int ret;
-
-	if (unlikely(system_state == SYSTEM_BOOTING))
-		return notifier_chain_register(&nh->head, n, unique_priority);
-
-	down_write(&nh->rwsem);
-	ret = notifier_chain_register(&nh->head, n, unique_priority);
-	up_write(&nh->rwsem);
-	return ret;
-}
-
-int blocking_notifier_chain_register(struct blocking_notifier_head *nh,
-				     struct notifier_block *n)
-{
-	return __blocking_notifier_chain_register(nh, n, false);
-}
+/* __blocking_notifier_chain_register removed - only caller was blocking_notifier_chain_register */
+/* blocking_notifier_chain_register removed - never called */
 
 int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
 				 unsigned long val, void *v)

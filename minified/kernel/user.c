@@ -75,19 +75,7 @@ static void uid_hash_remove(struct user_struct *up)
 	hlist_del_init(&up->uidhash_node);
 }
 
-static struct user_struct *uid_hash_find(kuid_t uid, struct hlist_head *hashent)
-{
-	struct user_struct *user;
-
-	hlist_for_each_entry(user, hashent, uidhash_node) {
-		if (uid_eq(user->uid, uid)) {
-			refcount_inc(&user->__count);
-			return user;
-		}
-	}
-
-	return NULL;
-}
+/* uid_hash_find removed - only caller was alloc_uid */
 
 static int user_epoll_alloc(struct user_struct *up)
 {
@@ -118,43 +106,7 @@ void free_uid(struct user_struct *up)
 		free_user(up, flags);
 }
 
-struct user_struct *alloc_uid(kuid_t uid)
-{
-	struct hlist_head *hashent = uidhashentry(uid);
-	struct user_struct *up, *new;
-
-	spin_lock_irq(&uidhash_lock);
-	up = uid_hash_find(uid, hashent);
-	spin_unlock_irq(&uidhash_lock);
-
-	if (!up) {
-		new = kmem_cache_zalloc(uid_cachep, GFP_KERNEL);
-		if (!new)
-			return NULL;
-
-		new->uid = uid;
-		refcount_set(&new->__count, 1);
-		if (user_epoll_alloc(new)) {
-			kmem_cache_free(uid_cachep, new);
-			return NULL;
-		}
-		ratelimit_state_init(&new->ratelimit, HZ, 100);
-		ratelimit_set_flags(&new->ratelimit, RATELIMIT_MSG_ON_RELEASE);
-
-		spin_lock_irq(&uidhash_lock);
-		up = uid_hash_find(uid, hashent);
-		if (up) {
-			user_epoll_free(new);
-			kmem_cache_free(uid_cachep, new);
-		} else {
-			uid_hash_insert(new, hashent);
-			up = new;
-		}
-		spin_unlock_irq(&uidhash_lock);
-	}
-
-	return up;
-}
+/* alloc_uid removed - never called in minimal kernel */
 
 static int __init uid_cache_init(void)
 {

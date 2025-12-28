@@ -13,7 +13,7 @@ struct backing_dev_info *bdi_alloc(int node_id);
 void wb_start_background_writeback(struct bdi_writeback *wb);
 void wb_workfn(struct work_struct *work);
 int bdi_set_min_ratio(struct backing_dev_info *bdi, unsigned int min_ratio);
-int bdi_set_max_ratio(struct backing_dev_info *bdi, unsigned int max_ratio);
+/* bdi_set_max_ratio removed - never called */
 #define BDI_CAP_WRITEBACK		(1 << 0)
 #define BDI_CAP_WRITEBACK_ACCT		(1 << 1)
 extern struct backing_dev_info noop_backing_dev_info;

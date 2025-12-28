@@ -494,10 +494,7 @@ static void __init mm_init(void)
 	init_espfix_bsp();
 }
 
-void __init __weak arch_call_rest_init(void)
-{
-	rest_init();
-}
+/* arch_call_rest_init inlined into start_kernel - single caller */
 
 static void __init print_unknown_bootoptions(void)
 {
@@ -650,7 +647,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	acpi_subsystem_init();
 	arch_post_acpi_subsys_init();
 
-	arch_call_rest_init();
+	rest_init(); /* was arch_call_rest_init() */
 
 	prevent_tail_call_optimization();
 }

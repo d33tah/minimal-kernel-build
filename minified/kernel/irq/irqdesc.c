@@ -12,19 +12,6 @@
 
 static struct lock_class_key irq_desc_lock_class;
 
-static void __init init_irq_default_affinity(void)
-{
-}
-
-static inline int alloc_masks(struct irq_desc *desc, int node)
-{
-	return 0;
-}
-static inline void desc_smp_init(struct irq_desc *desc, int node,
-				 const struct cpumask *affinity)
-{
-}
-
 static void desc_set_defaults(unsigned int irq, struct irq_desc *desc, int node,
 			      const struct cpumask *affinity,
 			      struct module *owner)
@@ -50,7 +37,6 @@ static void desc_set_defaults(unsigned int irq, struct irq_desc *desc, int node,
 	desc->owner = owner;
 	for_each_possible_cpu(cpu)
 		*per_cpu_ptr(desc->kstat_irqs, cpu) = 0;
-	desc_smp_init(desc, node, affinity);
 }
 
 int nr_irqs = NR_IRQS;
@@ -63,13 +49,6 @@ static void irq_kobj_release(struct kobject *kobj);
 static struct kobj_type irq_kobj_type = {
 	.release = irq_kobj_release,
 };
-
-static void irq_sysfs_add(int irq, struct irq_desc *desc)
-{
-}
-static void irq_sysfs_del(struct irq_desc *desc)
-{
-}
 
 static RADIX_TREE(irq_desc_tree, GFP_KERNEL);
 
@@ -88,10 +67,6 @@ static void delete_irq_desc(unsigned int irq)
 	radix_tree_delete(&irq_desc_tree, irq);
 }
 
-static inline void free_masks(struct irq_desc *desc)
-{
-}
-
 static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
 				   const struct cpumask *affinity,
 				   struct module *owner)
@@ -106,9 +81,6 @@ static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
 	if (!desc->kstat_irqs)
 		goto err_desc;
 
-	if (alloc_masks(desc, node))
-		goto err_kstat;
-
 	raw_spin_lock_init(&desc->lock);
 	lockdep_set_class(&desc->lock, &irq_desc_lock_class);
 	mutex_init(&desc->request_mutex);
@@ -121,8 +93,6 @@ static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
 
 	return desc;
 
-err_kstat:
-	free_percpu(desc->kstat_irqs);
 err_desc:
 	kfree(desc);
 	return NULL;
@@ -132,7 +102,6 @@ static void irq_kobj_release(struct kobject *kobj)
 {
 	struct irq_desc *desc = container_of(kobj, struct irq_desc, kobj);
 
-	free_masks(desc);
 	free_percpu(desc->kstat_irqs);
 	kfree(desc);
 }
@@ -151,7 +120,6 @@ static void free_desc(unsigned int irq)
 	irq_remove_debugfs_entry(desc);
 	unregister_irq_proc(irq, desc);
 
-	irq_sysfs_del(desc);
 	delete_irq_desc(irq);
 
 	call_rcu(&desc->rcu, delayed_free_desc);
@@ -189,7 +157,6 @@ static int alloc_descs(unsigned int start, unsigned int cnt, int node,
 		if (!desc)
 			goto err;
 		irq_insert_desc(start + i, desc);
-		irq_sysfs_add(start + i, desc);
 		irq_add_debugfs_entry(start + i, desc);
 	}
 	bitmap_set(allocated_irqs, start, cnt);
@@ -213,8 +180,6 @@ int __init early_irq_init(void)
 {
 	int i, initcnt, node = first_online_node;
 	struct irq_desc *desc;
-
-	init_irq_default_affinity();
 
 	initcnt = arch_probe_nr_irqs();
 	printk(KERN_INFO "NR_IRQS: %d, nr_irqs: %d, preallocated irqs: %d\n",

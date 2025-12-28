@@ -17,18 +17,7 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <linux/iocontext.h>
 #include <linux/key.h>
 #include <linux/cpu.h>
-#define acct_collect(x, y) \
-	do {               \
-	} while (0)
-#define acct_process() \
-	do {           \
-	} while (0)
-#define acct_exit_ns(ns) \
-	do {             \
-	} while (0)
-static inline void acct_update_integrals(struct task_struct *tsk)
-{
-}
+/* acct_*, acct_update_integrals removed - empty stubs */
 #include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/binfmts.h>
@@ -39,54 +28,27 @@ static inline void acct_update_integrals(struct task_struct *tsk)
 #include <linux/proc_fs.h>
 #include <linux/kthread.h>
 #include <linux/mempolicy.h>
-static inline void taskstats_exit(struct task_struct *tsk, int group_dead)
-{
-}
+/* taskstats_exit, proc_exit_connector, task_io_*, exit_shm, exit_sem, rethook_flush_task removed - empty stubs */
 #include <linux/cgroup.h>
 #include <linux/syscalls.h>
 #include <linux/signal.h>
 #include <linux/posix-timers.h>
-static inline void proc_exit_connector(struct task_struct *task)
-{
-}
 #include <linux/mutex.h>
 #include <linux/futex.h>
 #include <linux/pipe_fs_i.h>
 #include <linux/audit.h>
 #include <linux/resource.h>
-static inline unsigned long task_io_get_inblock(const struct task_struct *p)
-{
-	return 0;
-}
-static inline unsigned long task_io_get_oublock(const struct task_struct *p)
-{
-	return 0;
-}
-static inline void task_io_accounting_add(struct task_io_accounting *dst,
-					  struct task_io_accounting *src)
-{
-}
 #include <linux/blkdev.h>
 #include <linux/task_work.h>
 #include <linux/fs_struct.h>
 #include <linux/init_task.h>
 #include <linux/perf_event.h>
-/* flush_ptrace_hw_breakpoint removed - was empty stub */
 #include <linux/oom.h>
 #include <linux/writeback.h>
-static inline void exit_shm(struct task_struct *task)
-{
-}
-static inline void exit_sem(struct task_struct *tsk)
-{
-}
 #include <linux/rcuwait.h>
 #include <linux/compat.h>
 #include <linux/io_uring.h>
 #include <linux/kprobes.h>
-#define rethook_flush_task(tsk) \
-	do {                    \
-	} while (0)
 
 #include <linux/uaccess.h>
 #include <asm/unistd.h>
@@ -143,9 +105,7 @@ static void __exit_signal(struct task_struct *tsk)
 	sig->maj_flt += tsk->maj_flt;
 	sig->nvcsw += tsk->nvcsw;
 	sig->nivcsw += tsk->nivcsw;
-	sig->inblock += task_io_get_inblock(tsk);
-	sig->oublock += task_io_get_oublock(tsk);
-	task_io_accounting_add(&sig->ioac, &tsk->ioac);
+	/* task_io_get_inblock, task_io_get_oublock, task_io_accounting_add removed - empty stubs */
 	sig->sum_sched_runtime += tsk->se.sum_exec_runtime;
 	sig->nr_threads--;
 	__unhash_process(tsk, group_dead);
@@ -168,7 +128,7 @@ static void delayed_put_task_struct(struct rcu_head *rhp)
 	struct task_struct *tsk = container_of(rhp, struct task_struct, rcu);
 
 	kprobe_flush_task(tsk);
-	rethook_flush_task(tsk);
+	/* rethook_flush_task removed - empty stub */
 	perf_event_delayed_put(tsk);
 
 	put_task_struct(tsk);
@@ -459,7 +419,7 @@ void __noreturn do_exit(long code)
 
 	if (tsk->mm)
 		sync_mm_rss(tsk->mm);
-	acct_update_integrals(tsk);
+	/* acct_update_integrals removed - empty stub */
 	group_dead = atomic_dec_and_test(&tsk->signal->live);
 	if (group_dead) {
 		if (unlikely(is_global_init(tsk)))
@@ -469,21 +429,16 @@ void __noreturn do_exit(long code)
 		if (tsk->mm)
 			setmax_mm_hiwater_rss(&tsk->signal->maxrss, tsk->mm);
 	}
-	acct_collect(code, group_dead);
+	/* acct_collect removed - empty stub */
 	if (group_dead)
 		tty_audit_exit();
 	audit_free(tsk);
 
 	tsk->exit_code = code;
-	taskstats_exit(tsk, group_dead);
+	/* taskstats_exit removed - empty stub */
 
 	exit_mm();
-
-	if (group_dead)
-		acct_process();
-
-	exit_sem(tsk);
-	exit_shm(tsk);
+	/* acct_process, exit_sem, exit_shm removed - empty stubs */
 	exit_files(tsk);
 	exit_fs(tsk);
 	if (group_dead)
@@ -501,7 +456,7 @@ void __noreturn do_exit(long code)
 
 	exit_tasks_rcu_start();
 	exit_notify(tsk, group_dead);
-	proc_exit_connector(tsk);
+	/* proc_exit_connector removed - empty stub */
 	mpol_put_task_policy(tsk);
 
 	debug_check_no_locks_held();

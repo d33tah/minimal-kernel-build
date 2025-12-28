@@ -121,11 +121,6 @@ static inline struct folio *filemap_alloc_folio(gfp_t gfp, unsigned int order)
 
 typedef int filler_t(struct file *, struct folio *);
 
-pgoff_t page_cache_next_miss(struct address_space *mapping,
-			     pgoff_t index, unsigned long max_scan);
-pgoff_t page_cache_prev_miss(struct address_space *mapping,
-			     pgoff_t index, unsigned long max_scan);
-
 #define FGP_ACCESSED		0x00000001
 #define FGP_LOCK		0x00000002
 #define FGP_CREAT		0x00000004
@@ -315,7 +310,6 @@ static inline int folio_wait_locked_killable(struct folio *folio)
 int folio_put_wait_locked(struct folio *folio, int state);
 void wait_on_page_writeback(struct page *page);
 void folio_wait_writeback(struct folio *folio);
-int folio_wait_writeback_killable(struct folio *folio);
 void end_page_writeback(struct page *page);
 void folio_end_writeback(struct folio *folio);
 void folio_wait_stable(struct folio *folio);
@@ -330,17 +324,8 @@ static inline void folio_cancel_dirty(struct folio *folio)
 bool folio_clear_dirty_for_io(struct folio *folio);
 /* clear_page_dirty_for_io removed - never called */
 void folio_invalidate(struct folio *folio, size_t offset, size_t length);
-int __must_check folio_write_one(struct folio *folio);
 int __set_page_dirty_nobuffers(struct page *page);
 bool noop_dirty_folio(struct address_space *mapping, struct folio *folio);
-
-void page_endio(struct page *page, bool is_write, int err);
-
-void folio_end_private_2(struct folio *folio);
-void folio_wait_private_2(struct folio *folio);
-int folio_wait_private_2_killable(struct folio *folio);
-
-void folio_add_wait_queue(struct folio *folio, wait_queue_entry_t *waiter);
 
 size_t fault_in_readable(const char __user *uaddr, size_t size);
 
@@ -351,12 +336,9 @@ int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
 int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 		pgoff_t index, gfp_t gfp);
 void filemap_remove_folio(struct folio *folio);
-void delete_from_page_cache(struct page *page);
 void __filemap_remove_folio(struct folio *folio, void *shadow);
-void replace_page_cache_page(struct page *old, struct page *new);
 void delete_from_page_cache_batch(struct address_space *mapping,
 				  struct folio_batch *fbatch);
-int try_to_release_page(struct page *page, gfp_t gfp);
 bool filemap_release_folio(struct folio *folio, gfp_t gfp);
 
 int __filemap_add_folio(struct address_space *mapping, struct folio *folio,
@@ -395,8 +377,6 @@ struct readahead_control {
 #define VM_READAHEAD_PAGES	(SZ_128K / PAGE_SIZE)
 
 void page_cache_sync_ra(struct readahead_control *, unsigned long req_count);
-void page_cache_async_ra(struct readahead_control *, struct folio *,
-		unsigned long req_count);
 
 static inline
 void page_cache_sync_readahead(struct address_space *mapping,

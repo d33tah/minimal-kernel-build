@@ -56,10 +56,6 @@ bool folio_mark_dirty(struct folio *folio)
 void __folio_cancel_dirty(struct folio *folio)
 {
 }
-bool folio_clear_dirty_for_io(struct folio *folio)
-{
-	return true;
-}
 void folio_wait_writeback(struct folio *folio)
 {
 }

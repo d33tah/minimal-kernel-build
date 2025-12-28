@@ -428,13 +428,6 @@ error:
 }
 ALLOW_ERROR_INJECTION(__filemap_add_folio, ERRNO);
 
-int add_to_page_cache_locked(struct page *page, struct address_space *mapping,
-			     pgoff_t offset, gfp_t gfp_mask)
-{
-	return __filemap_add_folio(mapping, page_folio(page), offset, gfp_mask,
-				   NULL);
-}
-
 int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 		      pgoff_t index, gfp_t gfp)
 {

@@ -310,7 +310,6 @@ static inline int folio_wait_locked_killable(struct folio *folio)
 int folio_put_wait_locked(struct folio *folio, int state);
 void wait_on_page_writeback(struct page *page);
 void folio_wait_writeback(struct folio *folio);
-void end_page_writeback(struct page *page);
 void folio_end_writeback(struct folio *folio);
 void folio_wait_stable(struct folio *folio);
 void folio_account_cleaned(struct folio *folio, struct bdi_writeback *wb);
@@ -321,18 +320,12 @@ static inline void folio_cancel_dirty(struct folio *folio)
 	if (folio_test_dirty(folio))
 		__folio_cancel_dirty(folio);
 }
-bool folio_clear_dirty_for_io(struct folio *folio);
-/* clear_page_dirty_for_io removed - never called */
 void folio_invalidate(struct folio *folio, size_t offset, size_t length);
 int __set_page_dirty_nobuffers(struct page *page);
 bool noop_dirty_folio(struct address_space *mapping, struct folio *folio);
 
 size_t fault_in_readable(const char __user *uaddr, size_t size);
 
-int add_to_page_cache_locked(struct page *page, struct address_space *mapping,
-		pgoff_t index, gfp_t gfp);
-int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
-		pgoff_t index, gfp_t gfp);
 int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 		pgoff_t index, gfp_t gfp);
 void filemap_remove_folio(struct folio *folio);

@@ -107,14 +107,6 @@ unsigned long list_lru_count_one(struct list_lru *lru, int nid,
 	return count;
 }
 
-unsigned long list_lru_count_node(struct list_lru *lru, int nid)
-{
-	struct list_lru_node *nlru;
-
-	nlru = &lru->node[nid];
-	return nlru->nr_items;
-}
-
 static unsigned long __list_lru_walk_one(struct list_lru *lru, int nid,
 					 int memcg_idx,
 					 list_lru_walk_cb isolate, void *cb_arg,
@@ -179,33 +171,6 @@ unsigned long list_lru_walk_one(struct list_lru *lru, int nid,
 				  cb_arg, nr_to_walk);
 	spin_unlock(&nlru->lock);
 	return ret;
-}
-
-unsigned long list_lru_walk_one_irq(struct list_lru *lru, int nid,
-				    struct mem_cgroup *memcg,
-				    list_lru_walk_cb isolate, void *cb_arg,
-				    unsigned long *nr_to_walk)
-{
-	struct list_lru_node *nlru = &lru->node[nid];
-	unsigned long ret;
-
-	spin_lock_irq(&nlru->lock);
-	ret = __list_lru_walk_one(lru, nid, memcg_kmem_id(memcg), isolate,
-				  cb_arg, nr_to_walk);
-	spin_unlock_irq(&nlru->lock);
-	return ret;
-}
-
-unsigned long list_lru_walk_node(struct list_lru *lru, int nid,
-				 list_lru_walk_cb isolate, void *cb_arg,
-				 unsigned long *nr_to_walk)
-{
-	long isolated = 0;
-
-	isolated +=
-		list_lru_walk_one(lru, nid, NULL, isolate, cb_arg, nr_to_walk);
-
-	return isolated;
 }
 
 static void init_one_lru(struct list_lru_one *l)

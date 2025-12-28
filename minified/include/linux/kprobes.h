@@ -10,7 +10,7 @@
 #define __kprobes
 #define nokprobe_inline	inline
 
-struct kprobe;
+/* struct kprobe removed - unused */
 struct task_struct;
 
 /* Removed uncalled: kprobe_fault_handler, kprobe_running */

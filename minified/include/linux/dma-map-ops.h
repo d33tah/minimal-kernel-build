@@ -4,7 +4,7 @@
 #include <linux/dma-mapping.h>
 #include <linux/pgtable.h>
 
-struct cma;
+/* struct cma removed - unused */
 
 struct dma_map_ops {
 	void *(*alloc)(struct device *dev, size_t size,

@@ -4,7 +4,7 @@
 #include <linux/types.h>
 
 struct task_struct;
-struct smpboot_thread_data;
+/* struct smpboot_thread_data removed - unused */
 
 struct smp_hotplug_thread {
 	struct task_struct		* __percpu *store;

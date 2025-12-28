@@ -72,7 +72,7 @@ typedef s64			int64_t;
 #define aligned_le64		__aligned_le64
 
 typedef u64 sector_t;
-typedef u64 blkcnt_t;
+/* blkcnt_t removed - unused */
 
 #define pgoff_t unsigned long
 

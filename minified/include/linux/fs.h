@@ -332,8 +332,7 @@ static inline void mapping_allow_writable(struct address_space *mapping)
 
 #define i_size_ordered_init(inode) do { } while (0)
 
-struct posix_acl;
-
+/* struct posix_acl removed - unused */
 
 #define IOP_FASTPERM	0x0001
 #define IOP_LOOKUP	0x0002

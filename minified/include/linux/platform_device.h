@@ -9,7 +9,7 @@
 
 struct irq_affinity;
 struct mfd_cell;
-struct property_entry;
+/* struct property_entry removed - unused */
 struct platform_device_id;
 
 struct platform_device {

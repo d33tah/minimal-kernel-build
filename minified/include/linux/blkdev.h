@@ -14,10 +14,8 @@
 #include <linux/sched.h>
 
 struct module;
-struct request_queue;
 struct kiocb;
-
-struct gendisk;
+/* struct request_queue, gendisk removed - unused */
 
 struct blk_plug {
 };

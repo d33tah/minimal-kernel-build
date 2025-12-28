@@ -8,7 +8,7 @@
 #include <linux/mm.h>
 #include <linux/freezer.h>
 #include <asm/errno.h>
-typedef int __bitwise suspend_state_t;
+/* suspend_state_t removed - unused */
 struct pbe { void *address; void *orig_address; struct pbe *next; };
 extern struct mutex system_transition_mutex;
 #endif

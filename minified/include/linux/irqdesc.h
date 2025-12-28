@@ -3,7 +3,7 @@
 #include <linux/rcupdate.h>
 #include <linux/kobject.h>
 #include <linux/mutex.h>
-struct irq_affinity_notify;
+/* struct irq_affinity_notify removed - unused */
 struct proc_dir_entry;
 struct module;
 struct irq_desc;

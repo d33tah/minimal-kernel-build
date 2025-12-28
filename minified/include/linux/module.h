@@ -66,7 +66,7 @@ struct module_attribute {
 	void (*free)(struct module *);
 };
 
-struct module_version_attribute;
+/* struct module_version_attribute removed - unused */
 
 extern int init_module(void);
 

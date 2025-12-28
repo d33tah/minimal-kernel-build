@@ -8,7 +8,7 @@
 #include <linux/srcu.h>
 #include <linux/rbtree.h>
 
-struct mmu_notifier_subscriptions;
+/* struct mmu_notifier_subscriptions removed - unused */
 struct mmu_notifier;
 struct mmu_notifier_range;
 struct mmu_interval_notifier;

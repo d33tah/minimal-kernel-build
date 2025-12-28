@@ -17,7 +17,7 @@ struct sysinfo;
 struct __kernel_old_timeval;
 struct __kernel_timex;
 struct timeval;
-struct mq_attr;
+/* struct mq_attr removed - unused */
 struct clone_args;
 struct utimbuf;
 struct getcpu_cache;

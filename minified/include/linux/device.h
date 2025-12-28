@@ -38,7 +38,7 @@ struct dev_printk_info {
 #include <linux/device/bus.h>
 #include <linux/device/class.h>
 #include <linux/device/driver.h>
-struct dev_archdata { };
+/* struct dev_archdata removed - unused */
 struct pdev_archdata { };
 
 struct device;

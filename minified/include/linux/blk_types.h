@@ -5,13 +5,11 @@
 #include <linux/bvec.h>
 #include <linux/device.h>
 
-struct bio_set;
 struct bio;
-struct bio_integrity_payload;
 struct page;
 struct io_context;
 struct cgroup_subsys_state;
-struct bio_crypt_ctx;
+/* struct bio_set, bio_integrity_payload, bio_crypt_ctx removed - unused */
 
 /* Minimal block_device struct - only pointers used, never instantiated */
 struct block_device {

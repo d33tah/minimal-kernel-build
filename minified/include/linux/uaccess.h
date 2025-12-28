@@ -32,16 +32,6 @@ __copy_from_user(void *to, const void __user *from, unsigned long n)
 }
 
 static __always_inline __must_check unsigned long
-__copy_to_user_inatomic(void __user *to, const void *from, unsigned long n)
-{
-	if (should_fail_usercopy())
-		return n;
-	instrument_copy_to_user(to, from, n);
-	check_object_size(from, n, true);
-	return raw_copy_to_user(to, from, n);
-}
-
-static __always_inline __must_check unsigned long
 __copy_to_user(void __user *to, const void *from, unsigned long n)
 {
 	might_fault();
@@ -74,15 +64,6 @@ copy_to_user(void __user *to, const void *from, unsigned long n)
 	return n;
 }
 
-#ifndef copy_mc_to_kernel
-static inline unsigned long __must_check
-copy_mc_to_kernel(void *dst, const void *src, size_t cnt)
-{
-	memcpy(dst, src, cnt);
-	return 0;
-}
-#endif
-
 static __always_inline void pagefault_disabled_inc(void)
 {
 	current->pagefault_disabled++;
@@ -114,31 +95,6 @@ static inline bool pagefault_disabled(void)
 
 #define faulthandler_disabled() (pagefault_disabled() || in_atomic())
 
-
-/* __copy_from_user_inatomic_nocache fallback removed - ARCH_HAS_NOCACHE_UACCESS defined and never called */
-
-static inline __must_check int check_zeroed_user(const void __user *from, size_t size) { return 1; }
-
-static __always_inline __must_check int
-copy_struct_from_user(void *dst, size_t ksize, const void __user *src,
-		      size_t usize)
-{
-	size_t size = min(ksize, usize);
-	size_t rest = max(ksize, usize) - size;
-
-	 
-	if (usize < ksize) {
-		memset(dst + size, 0, rest);
-	} else if (usize > ksize) {
-		int ret = check_zeroed_user(src + size, rest);
-		if (ret <= 0)
-			return ret ?: -E2BIG;
-	}
-	 
-	if (copy_from_user(dst, src, size))
-		return -EFAULT;
-	return 0;
-}
 
 bool copy_from_kernel_nofault_allowed(const void *unsafe_src, size_t size);
 

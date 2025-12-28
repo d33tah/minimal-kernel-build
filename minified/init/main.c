@@ -350,7 +350,6 @@ noinline void __ref rest_init(void)
 	set_cpus_allowed_ptr(tsk, cpumask_of(smp_processor_id()));
 	rcu_read_unlock();
 
-	numa_default_policy();
 	pid = kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);
 	rcu_read_lock();
 	kthreadd_task = find_task_by_pid_ns(pid, &init_pid_ns);
@@ -572,7 +571,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 		initrd_start = 0;
 	}
 	setup_per_cpu_pageset();
-	numa_policy_init();
 	acpi_early_init();
 	if (late_time_init)
 		late_time_init();
@@ -789,7 +787,6 @@ static int __ref kernel_init(void *unused)
 	mark_readonly();
 
 	system_state = SYSTEM_RUNNING;
-	numa_default_policy();
 
 	rcu_end_inkernel_boot();
 

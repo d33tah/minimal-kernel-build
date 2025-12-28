@@ -1382,7 +1382,6 @@ bad_fork_cleanup_audit:
 	audit_free(p);
 	perf_event_free_task(p);
 bad_fork_cleanup_policy:
-	lockdep_free_task(p);
 bad_fork_cleanup_delayacct:
 	/* delayacct_tsk_free removed - empty stub */
 bad_fork_cleanup_count:

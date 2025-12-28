@@ -60,9 +60,6 @@ extern int lockdep_is_held(const void *);
 #define STATIC_LOCKDEP_MAP_INIT(_name, _key) \
 	{ .name = (_name), .key = (void *)(_key), }
 
-static inline void lockdep_free_task(struct task_struct *task) {}
-
-
 #define lock_contended(lockdep_map, ip) do {} while (0)
 #define lock_acquired(lockdep_map, ip) do {} while (0)
 

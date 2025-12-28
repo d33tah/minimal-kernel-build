@@ -454,10 +454,6 @@ void __noreturn do_exit(long code)
 
 	exit_tasks_rcu_start();
 	exit_notify(tsk, group_dead);
-	/* proc_exit_connector removed - empty stub */
-	mpol_put_task_policy(tsk);
-
-	debug_check_no_locks_held();
 
 	if (tsk->io_context)
 		exit_io_context(tsk);
@@ -477,7 +473,6 @@ void __noreturn do_exit(long code)
 	exit_rcu();
 	exit_tasks_rcu_finish();
 
-	lockdep_free_task(tsk);
 	do_task_dead();
 }
 

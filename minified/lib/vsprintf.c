@@ -495,13 +495,7 @@ static char *default_pointer(char *buf, char *end, const void *ptr,
 	return ptr_to_id(buf, end, ptr, spec);
 }
 
-static noinline_for_stack char *restricted_pointer(char *buf, char *end,
-						   const void *ptr,
-						   struct printf_spec spec)
-{
-	/* Stub: pointer restriction not needed for minimal kernel */
-	return pointer_string(buf, end, ptr, spec);
-}
+/* restricted_pointer removed - never called */
 
 static noinline_for_stack char *dentry_name(char *buf, char *end,
 					    const struct dentry *d,

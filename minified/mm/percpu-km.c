@@ -43,12 +43,7 @@ static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp)
 	return chunk;
 }
 
-/* Removed: pcpu_destroy_chunk - dead code since pcpu_balance_free is a no-op */
-
-static struct page *pcpu_addr_to_page(void *addr)
-{
-	return virt_to_page(addr);
-}
+/* Removed: pcpu_destroy_chunk, pcpu_addr_to_page - never called */
 
 static int __init pcpu_verify_alloc_info(const struct pcpu_alloc_info *ai)
 {

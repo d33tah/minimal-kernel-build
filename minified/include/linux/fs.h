@@ -662,14 +662,11 @@ struct super_block {
 	int			s_count;
 	atomic_t		s_active;
 	const struct xattr_handler **s_xattr;
-	struct hlist_bl_head	s_roots;	
-	struct list_head	s_mounts;	
-	struct block_device	*s_bdev;
+	struct hlist_bl_head	s_roots;
+	struct list_head	s_mounts;
 	struct backing_dev_info *s_bdi;
-	struct mtd_info		*s_mtd;
 	struct hlist_node	s_instances;
-	unsigned int		s_quota_types;	
-	struct quota_info	s_dquot;	
+	struct quota_info	s_dquot;
 
 	struct sb_writers	s_writers;
 
@@ -682,13 +679,10 @@ struct super_block {
 	time64_t		   s_time_min;
 	time64_t		   s_time_max;
 
-	char			s_id[32];	
-	uuid_t			s_uuid;		
+	char			s_id[32];
 
 	unsigned int		s_max_links;
-	fmode_t			s_mode;
 
-	
 	struct mutex s_vfs_rename_mutex;	
 
 	
@@ -698,13 +692,9 @@ struct super_block {
 
 	struct shrinker s_shrink;	
 
-	
+
 	atomic_long_t s_remove_count;
 
-	
-	atomic_long_t s_fsnotify_connectors;
-
-	
 	int s_readonly_remount;
 
 	
@@ -723,12 +713,8 @@ struct super_block {
 	struct rcu_head		rcu;
 	struct work_struct	destroy_work;
 
-	struct mutex		s_sync_lock;	
+	struct mutex		s_sync_lock;
 
-	
-	int s_stack_depth;
-
-	
 	spinlock_t		s_inode_list_lock ____cacheline_aligned_in_smp;
 	struct list_head	s_inodes;	
 

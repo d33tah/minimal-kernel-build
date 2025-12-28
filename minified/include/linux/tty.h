@@ -241,7 +241,6 @@ int tty_standard_install(struct tty_driver *driver,
 
 extern struct mutex tty_mutex;
 
-void n_tty_inherit_ops(struct tty_ldisc_ops *ops);
 void __init n_tty_init(void);
 
 static inline void tty_audit_exit(void)
@@ -255,9 +254,6 @@ int n_tty_ioctl_helper(struct tty_struct *tty, unsigned int cmd,
 
 
 int vt_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg);
-
-long vt_compat_ioctl(struct tty_struct *tty, unsigned int cmd,
-		unsigned long arg);
 
 void tty_lock(struct tty_struct *tty);
 int  tty_lock_interruptible(struct tty_struct *tty);

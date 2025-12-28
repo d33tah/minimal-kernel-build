@@ -110,10 +110,7 @@ static bool recalc_sigpending_tsk(struct task_struct *t)
 	return false;
 }
 
-/* Stubbed - only used internally */
-static void recalc_sigpending_and_wake(struct task_struct *t)
-{
-}
+/* Removed: recalc_sigpending_and_wake - empty stub */
 
 void recalc_sigpending(void)
 {
@@ -133,10 +130,7 @@ void calculate_sigpending(void)
 	(sigmask(SIGSEGV) | sigmask(SIGBUS) | sigmask(SIGILL) | \
 	 sigmask(SIGTRAP) | sigmask(SIGFPE) | sigmask(SIGSYS))
 
-static inline void print_dropped_signal(int sig)
-{
-	/* Stub: skip signal drop reporting for minimal kernel */
-}
+/* Removed: print_dropped_signal - empty stub */
 
 /* Stubbed - not used externally */
 bool task_set_jobctl_pending(struct task_struct *task, unsigned long mask)
@@ -170,11 +164,8 @@ static struct sigqueue *__sigqueue_alloc(int sig, struct task_struct *t,
 		return NULL;
 
 	if (override_rlimit ||
-	    likely(sigpending <= task_rlimit(t, RLIMIT_SIGPENDING))) {
+	    likely(sigpending <= task_rlimit(t, RLIMIT_SIGPENDING)))
 		q = kmem_cache_alloc(sigqueue_cachep, gfp_flags);
-	} else {
-		print_dropped_signal(sig);
-	}
 
 	if (unlikely(q == NULL)) {
 		dec_rlimit_put_ucounts(ucounts, UCOUNT_RLIMIT_SIGPENDING);
@@ -377,10 +368,8 @@ static int force_sig_info_to_task(struct kernel_siginfo *info,
 		action->sa.sa_handler = SIG_DFL;
 		if (handler == HANDLER_EXIT)
 			action->sa.sa_flags |= SA_IMMUTABLE;
-		if (blocked) {
+		if (blocked)
 			sigdelset(&t->blocked, sig);
-			recalc_sigpending_and_wake(t);
-		}
 	}
 
 	if (action->sa.sa_handler == SIG_DFL &&
@@ -524,10 +513,7 @@ void force_exit_sig(int sig)
 	force_sig_info_to_task(&info, current, HANDLER_EXIT);
 }
 
-/* Stubbed - now static, only used internally */
-static void force_sigsegv(int sig)
-{
-}
+/* Removed: force_sigsegv - empty stub */
 
 int force_sig_fault(int sig, int code, void __user *addr)
 {
@@ -630,9 +616,7 @@ static void signal_delivered(struct ksignal *ksig, int stepping)
 
 void signal_setup_done(int failed, struct ksignal *ksig, int stepping)
 {
-	if (failed)
-		force_sigsegv(ksig->sig);
-	else
+	if (!failed)
 		signal_delivered(ksig, stepping);
 }
 

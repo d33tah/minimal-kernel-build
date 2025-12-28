@@ -1,7 +1,8 @@
 #include <linux/io.h>
 #include <linux/slab.h>
 #include <linux/memblock.h>
-#include <linux/cc_platform.h>
+enum cc_attr { CC_ATTR_HOST_MEM_ENCRYPT, CC_ATTR_GUEST_MEM_ENCRYPT, CC_ATTR_GUEST_UNROLL_STRING_IO };
+static inline bool cc_platform_has(enum cc_attr attr) { return false; }
 #include <linux/pgtable.h>
 
 #include <asm/set_memory.h>

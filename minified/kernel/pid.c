@@ -10,7 +10,6 @@
 #include <linux/syscalls.h>
 #include <linux/proc_ns.h>
 #include <linux/refcount.h>
-#include <linux/anon_inodes.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/task.h>
 #include <linux/ptrace.h>

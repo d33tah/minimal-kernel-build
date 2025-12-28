@@ -1,5 +1,6 @@
 
-#include <linux/anon_inodes.h>
+struct file_operations;
+struct file *anon_inode_getfile(const char *name, const struct file_operations *fops, void *priv, int flags);
 #include <linux/slab.h>
 #include <linux/sched/mm.h>
 #include <linux/sched/coredump.h>
@@ -51,7 +52,9 @@ static inline void task_io_accounting_init(struct task_io_accounting *ioac)
 #include <linux/memcontrol.h>
 #include <linux/proc_fs.h>
 #include <linux/rmap.h>
-static inline void ksm_exit(struct mm_struct *mm) { }
+static inline void ksm_exit(struct mm_struct *mm)
+{
+}
 #define acct_collect(x, y) \
 	do {               \
 	} while (0)

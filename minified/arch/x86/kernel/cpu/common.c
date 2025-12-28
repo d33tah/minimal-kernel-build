@@ -591,7 +591,7 @@ void get_cpu_cap(struct cpuinfo_x86 *c)
 	if (c->extended_cpuid_level >= 0x8000001f)
 		c->x86_capability[CPUID_8000_001F_EAX] = cpuid_eax(0x8000001f);
 
-	init_scattered_cpuid_features(c);
+	/* init_scattered_cpuid_features removed - was empty stub */
 	init_speculation_control(c);
 
 	apply_forced_caps(c);
@@ -846,8 +846,7 @@ void __init identify_boot_cpu(void)
 	enable_sep_cpu();
 	/* cpu_detect_tlb removed - TLB info never used */
 	setup_cr_pinning();
-
-	tsx_init();
+	/* tsx_init removed - was empty stub */
 }
 
 DEFINE_PER_CPU(struct task_struct *, current_task) = &init_task;

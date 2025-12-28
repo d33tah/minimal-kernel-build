@@ -19,7 +19,8 @@ KCSAN_SANITIZE_common.o := n
 # Make sure load_percpu_segment has no stackprotector
 CFLAGS_common.o		:= -fno-stack-protector
 
-obj-y			:= cacheinfo.o scattered.o topology.o
+obj-y			:= cacheinfo.o topology.o
+# scattered.o removed - was empty stub
 obj-y			+= common.o
 obj-y			+= match.o
 obj-y			+= bugs.o
@@ -31,7 +32,8 @@ obj-$(CONFIG_X86_FEATURE_NAMES) += capflags.o powerflags.o
 
 # feat_ctl.o removed - empty file
 ifdef CONFIG_CPU_SUP_INTEL
-obj-y			+= intel.o tsx.o
+obj-y			+= intel.o
+# tsx.o removed - was empty stub
 obj-$(CONFIG_PM)	+= intel_epb.o
 endif
 obj-$(CONFIG_CPU_SUP_AMD)		+= amd.o

@@ -20,11 +20,8 @@
 #include <linux/audit.h>
 
 #include "tick-internal.h"
-extern void ntp_init(void);
-extern void ntp_clear(void);
-extern u64 ntp_tick_length(void);
-extern ktime_t ntp_get_next_leap(void);
-extern int second_overflow(time64_t secs);
+/* ntp.c functions inlined - ntp_init/ntp_clear are empty, others return constants */
+#define NTP_TICK_LENGTH ((u64)TICK_NSEC << 32)
 #include "timekeeping_internal.h"
 
 #define TK_CLEAR_NTP (1 << 0)
@@ -246,11 +243,8 @@ static void update_pvclock_gtod(struct timekeeper *tk, bool was_set)
 
 static inline void tk_update_leap_state(struct timekeeper *tk)
 {
-	tk->next_leap_ktime = ntp_get_next_leap();
-	if (tk->next_leap_ktime != KTIME_MAX)
-
-		tk->next_leap_ktime =
-			ktime_sub(tk->next_leap_ktime, tk->offs_real);
+	/* ntp_get_next_leap always returns KTIME_MAX - no leap second handling */
+	tk->next_leap_ktime = KTIME_MAX;
 }
 
 static inline void tk_update_ktime_data(struct timekeeper *tk)
@@ -274,7 +268,7 @@ static void timekeeping_update(struct timekeeper *tk, unsigned int action)
 {
 	if (action & TK_CLEAR_NTP) {
 		tk->ntp_error = 0;
-		ntp_clear();
+		/* ntp_clear removed - was empty stub */
 	}
 
 	tk_update_leap_state(tk);
@@ -438,11 +432,7 @@ time64_t ktime_get_real_seconds(void)
 	return seconds;
 }
 
-static void __timekeeping_set_tai_offset(struct timekeeper *tk, s32 tai_offset)
-{
-	tk->tai_offset = tai_offset;
-	tk->offs_tai = ktime_add(tk->offs_real, ktime_set(tai_offset, 0));
-}
+/* __timekeeping_set_tai_offset removed - unused after second_overflow removal */
 
 static int change_clocksource(void *data)
 {
@@ -546,7 +536,7 @@ void __init timekeeping_init(void)
 
 	raw_spin_lock_irqsave(&timekeeper_lock, flags);
 	write_seqcount_begin(&tk_core.seq);
-	ntp_init();
+	/* ntp_init removed - was empty stub */
 
 	clock = clocksource_default_clock();
 	if (clock->enable)
@@ -593,10 +583,10 @@ static void timekeeping_adjust(struct timekeeper *tk, s64 offset)
 {
 	u32 mult;
 
-	if (likely(tk->ntp_tick == ntp_tick_length())) {
+	if (likely(tk->ntp_tick == NTP_TICK_LENGTH)) {
 		mult = tk->tkr_mono.mult - tk->ntp_err_mult;
 	} else {
-		tk->ntp_tick = ntp_tick_length();
+		tk->ntp_tick = NTP_TICK_LENGTH;
 		mult = div64_u64((tk->ntp_tick >> tk->ntp_error_shift) -
 					 tk->xtime_remainder,
 				 tk->cycle_interval);
@@ -631,8 +621,6 @@ static inline unsigned int accumulate_nsecs_to_secs(struct timekeeper *tk)
 	unsigned int clock_set = 0;
 
 	while (tk->tkr_mono.xtime_nsec >= nsecps) {
-		int leap;
-
 		tk->tkr_mono.xtime_nsec -= nsecps;
 		tk->xtime_sec++;
 
@@ -640,22 +628,7 @@ static inline unsigned int accumulate_nsecs_to_secs(struct timekeeper *tk)
 			tk->skip_second_overflow = 0;
 			continue;
 		}
-
-		leap = second_overflow(tk->xtime_sec);
-		if (unlikely(leap)) {
-			struct timespec64 ts;
-
-			tk->xtime_sec += leap;
-
-			ts.tv_sec = leap;
-			ts.tv_nsec = 0;
-			tk_set_wall_to_mono(
-				tk, timespec64_sub(tk->wall_to_monotonic, ts));
-
-			__timekeeping_set_tai_offset(tk, tk->tai_offset - leap);
-
-			clock_set = TK_CLOCK_WAS_SET;
-		}
+		/* second_overflow removed - always returned 0, no leap handling */
 	}
 	return clock_set;
 }
@@ -715,7 +688,7 @@ static bool timekeeping_advance(enum timekeeping_adv_mode mode)
 	shift = ilog2(offset) - ilog2(tk->cycle_interval);
 	shift = max(0, shift);
 
-	maxshift = (64 - (ilog2(ntp_tick_length()) + 1)) - 1;
+	maxshift = (64 - (ilog2(NTP_TICK_LENGTH) + 1)) - 1;
 	shift = min(shift, maxshift);
 	while (offset >= tk->cycle_interval) {
 		offset =

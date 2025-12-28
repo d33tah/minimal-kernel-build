@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0
 obj-y += time.o timer.o hrtimer.o
-obj-y += timekeeping.o ntp.o clocksource.o jiffies.o
+obj-y += timekeeping.o clocksource.o jiffies.o
+# ntp.o removed - functions inlined into timekeeping.c
 # timeconv.o removed
 
 ifeq ($(CONFIG_POSIX_TIMERS),y)

@@ -126,10 +126,6 @@ static inline bool xa_marked(const struct xarray *xa, xa_mark_t mark)
 #define xa_unlock_irqrestore(xa, flags) \
 				spin_unlock_irqrestore(&(xa)->xa_lock, flags)
 
-int __must_check __xa_alloc(struct xarray *, u32 *id, void *entry,
-		struct xa_limit, gfp_t);
-
-
 #ifndef XA_CHUNK_SHIFT
 #define XA_CHUNK_SHIFT		(CONFIG_BASE_SMALL ? 4 : 6)
 #endif
@@ -238,8 +234,6 @@ static inline bool xa_is_retry(const void *entry)
 }
 
 typedef void (*xa_update_node_t)(struct xa_node *node);
-
-void xa_delete_node(struct xa_node *, xa_update_node_t);
 
 struct xa_state {
 	struct xarray *xa;

@@ -13,10 +13,6 @@ int tty_check_change(struct tty_struct *tty)
 	return 0;
 }
 
-void proc_clear_tty(struct task_struct *p)
-{
-}
-
 void tty_open_proc_set_tty(struct file *filp, struct tty_struct *tty)
 {
 }
@@ -26,20 +22,12 @@ struct tty_struct *get_current_tty(void)
 	return NULL;
 }
 
-void session_clear_tty(struct pid *session)
-{
-}
-
 int tty_signal_session_leader(struct tty_struct *tty, int exit_session)
 {
 	return 0;
 }
 
 void disassociate_ctty(int on_exit)
-{
-}
-
-void no_tty(void)
 {
 }
 

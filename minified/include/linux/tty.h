@@ -198,7 +198,6 @@ static inline bool tty_io_error(struct tty_struct *tty)
 void tty_kref_put(struct tty_struct *tty);
 struct pid *tty_get_pgrp(struct tty_struct *tty);
 void disassociate_ctty(int priv);
-void proc_clear_tty(struct task_struct *p);
 struct tty_struct *get_current_tty(void);
 int __init tty_init(void);
 const char *tty_name(const struct tty_struct *tty);
@@ -224,7 +223,6 @@ void tty_driver_flush_buffer(struct tty_struct *tty);
 void tty_unthrottle(struct tty_struct *tty);
 void tty_hangup(struct tty_struct *tty);
 int tty_hung_up_p(struct file *filp);
-void no_tty(void);
 speed_t tty_termios_baud_rate(struct ktermios *termios);
 
 unsigned char tty_get_char_size(unsigned int cflag);

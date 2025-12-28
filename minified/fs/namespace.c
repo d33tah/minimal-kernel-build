@@ -1272,12 +1272,6 @@ SYSCALL_DEFINE3(open_tree, int, dfd, const char __user *, filename, unsigned,
 	return -ENOSYS;
 }
 
-static void mnt_warn_timestamp_expiry(struct path *mountpoint,
-				      struct vfsmount *mnt)
-{
-	/* Stub: timestamp expiry warning not needed for minimal kernel */
-}
-
 static int do_reconfigure_mnt(struct path *path, unsigned int mnt_flags)
 {
 	return -ENOSYS;
@@ -1363,8 +1357,6 @@ static int do_new_mount_fc(struct fs_context *fc, struct path *mountpoint,
 	mnt = vfs_create_mount(fc);
 	if (IS_ERR(mnt))
 		return PTR_ERR(mnt);
-
-	mnt_warn_timestamp_expiry(mountpoint, mnt);
 
 	mp = lock_mount(mountpoint);
 	if (IS_ERR(mp)) {

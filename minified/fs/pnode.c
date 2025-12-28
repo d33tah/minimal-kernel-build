@@ -9,10 +9,7 @@ int propagate_mnt(struct mount *dest_mnt, struct mountpoint *dest_mp,
 {
 	return 0;
 }
-int propagate_mount_busy(struct mount *mnt, int refcnt)
-{
-	return 0;
-}
+/* propagate_mount_busy removed - never called */
 void propagate_mount_unlock(struct mount *mnt)
 {
 }

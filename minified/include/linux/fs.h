@@ -216,8 +216,6 @@ struct address_space;
 struct writeback_control;
 struct readahead_control;
 
-enum rw_hint { WRITE_LIFE_NOT_SET = 0 };
-
 #define IOCB_NOWAIT		(__force int) RWF_NOWAIT
 #define IOCB_DIRECT		(1 << 17)
 #define IOCB_WAITQ		(1 << 19)

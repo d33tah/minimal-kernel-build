@@ -138,10 +138,6 @@ enum dl_dev_state {
 	DL_DEV_PROBING,
 };
 
-enum device_removable {
-	DEVICE_REMOVABLE_NOT_SUPPORTED = 0,
-};
-
 struct dev_links_info {
 	struct list_head suppliers;
 	struct list_head consumers;

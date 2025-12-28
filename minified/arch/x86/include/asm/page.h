@@ -72,7 +72,7 @@ static inline void copy_user_page(void *to, void *from, unsigned long vaddr,
 /* __boot_va, __boot_pa removed - unused */
 
 #define virt_to_page(kaddr)	pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
-#define pfn_to_kaddr(pfn)      __va((pfn) << PAGE_SHIFT)
+/* pfn_to_kaddr removed - unused */
 extern bool __virt_addr_valid(unsigned long kaddr);
 #define virt_addr_valid(kaddr)	__virt_addr_valid((unsigned long) (kaddr))
 
@@ -86,14 +86,11 @@ extern bool __virt_addr_valid(unsigned long kaddr);
 #define __pfn_to_page(pfn)	(mem_map + ((pfn) - ARCH_PFN_OFFSET))
 #define __page_to_pfn(page)	((unsigned long)((page) - mem_map) + \
 				 ARCH_PFN_OFFSET)
-#define	__phys_to_pfn(paddr)	PHYS_PFN(paddr)
-#define	__pfn_to_phys(pfn)	PFN_PHYS(pfn)
 #define page_to_pfn __page_to_pfn
 #define pfn_to_page __pfn_to_page
+/* __phys_to_pfn, __pfn_to_phys, HAVE_ARCH_HUGETLB_UNMAPPED_AREA removed - unused */
 
 #include <asm-generic/getorder.h>
 
-#define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
-
-#endif	 
+#endif
 #endif  

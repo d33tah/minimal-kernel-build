@@ -12,7 +12,7 @@
 #include <linux/list.h>
 #include <linux/list_lru.h>
 #include <linux/llist.h>
-#include <linux/radix-tree.h>
+/* radix-tree.h removed - unused */
 #include <linux/xarray.h>
 #include <linux/rbtree.h>
 #include <linux/init.h>
@@ -21,7 +21,7 @@
 #include <linux/mutex.h>
 #include <linux/rwsem.h>
 #include <linux/mm_types.h>
-#include <linux/capability.h>
+/* capability.h removed - unused */
 #include <linux/semaphore.h>
 #include <linux/fcntl.h>
 #include <linux/rculist_bl.h>
@@ -54,7 +54,7 @@ static inline void clear_delayed_call(struct delayed_call *call)
 	call->fn = NULL;
 }
 
-#include <linux/uuid.h>
+/* uuid.h removed - unused */
 #include <linux/ioprio.h>
 
 /* Inlined from errseq.h */
@@ -72,9 +72,8 @@ int errseq_check_and_advance(errseq_t *eseq, errseq_t *since);
 #include <linux/mnt_idmapping.h>
 #include <linux/slab.h>
 
-#include <asm/byteorder.h>
+/* byteorder.h, ioctl.h removed - unused */
 #include <linux/limits.h>
-#include <linux/ioctl.h>
 #define INR_OPEN_CUR 1024
 #define INR_OPEN_MAX 4096
 #define NR_FILE  8192

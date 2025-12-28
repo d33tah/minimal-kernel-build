@@ -96,11 +96,6 @@ static inline void mapping_set_gfp_mask(struct address_space *m, gfp_t mask)
 }
 
 
-static inline bool mapping_large_folio_support(struct address_space *mapping)
-{
-	return false;
-}
-
 static inline int filemap_nr_thps(struct address_space *mapping)
 {
 	return 0;
@@ -108,7 +103,8 @@ static inline int filemap_nr_thps(struct address_space *mapping)
 
 static inline void filemap_nr_thps_dec(struct address_space *mapping)
 {
-	WARN_ON_ONCE(mapping_large_folio_support(mapping) == 0);
+	/* mapping_large_folio_support always false, so always warns */
+	WARN_ON_ONCE(1);
 }
 
 void release_pages(struct page **pages, int nr);
@@ -206,24 +202,19 @@ static inline struct page *read_mapping_page(struct address_space *mapping,
 	return read_cache_page(mapping, index, NULL, file);
 }
 
-static inline pgoff_t page_to_index(struct page *page)
-{
-	struct page *head;
-
-	if (likely(!PageTransTail(page)))
-		return page->index;
-
-	head = compound_head(page);
-	return head->index + page - head;
-}
-
 extern pgoff_t hugetlb_basepage_index(struct page *page);
 
 static inline pgoff_t page_to_pgoff(struct page *page)
 {
+	struct page *head;
+
 	if (unlikely(PageHuge(page)))
 		return hugetlb_basepage_index(page);
-	return page_to_index(page);
+	/* Inlined page_to_index */
+	if (likely(!PageTransTail(page)))
+		return page->index;
+	head = compound_head(page);
+	return head->index + page - head;
 }
 
 static inline loff_t page_offset(struct page *page)

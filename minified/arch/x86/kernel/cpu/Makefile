@@ -32,7 +32,7 @@ obj-$(CONFIG_X86_FEATURE_NAMES) += capflags.o powerflags.o
 
 # feat_ctl.o removed - empty file
 ifdef CONFIG_CPU_SUP_INTEL
-obj-y			+= intel.o
+# intel.o removed - sld_setup/handle_bus_lock were empty stubs
 # tsx.o removed - was empty stub
 obj-$(CONFIG_PM)	+= intel_epb.o
 endif

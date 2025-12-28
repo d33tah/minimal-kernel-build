@@ -683,7 +683,7 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c)
 
 	cpu_set_bug_bits(c);
 
-	sld_setup(c);
+	/* sld_setup removed - was empty stub in intel.c */
 
 	fpu__init_system(c);
 

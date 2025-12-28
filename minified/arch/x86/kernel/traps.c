@@ -472,8 +472,7 @@ static __always_inline void exc_debug_user(struct pt_regs *regs,
 		goto out_irq;
 	}
 
-	if (dr6 & DR_BUS_LOCK)
-		handle_bus_lock(regs);
+	/* handle_bus_lock removed - was empty stub in intel.c */
 
 	dr6 |= current->thread.virtual_dr6;
 	if (dr6 & (DR_STEP | DR_TRAP_BITS) || icebp)

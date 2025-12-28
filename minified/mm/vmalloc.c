@@ -70,13 +70,7 @@ static int vmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
 	return 0;
 }
 
-static int vmap_try_huge_pmd(pmd_t *pmd, unsigned long addr, unsigned long end,
-			     phys_addr_t phys_addr, pgprot_t prot,
-			     unsigned int max_page_shift)
-{
-	/* Stub: huge pages disabled (vmap_allow_huge = false) */
-	return 0;
-}
+/* Removed: vmap_try_huge_pmd - stub always returned 0 */
 
 static int vmap_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
 			  phys_addr_t phys_addr, pgprot_t prot,
@@ -90,13 +84,6 @@ static int vmap_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
 		return -ENOMEM;
 	do {
 		next = pmd_addr_end(addr, end);
-
-		if (vmap_try_huge_pmd(pmd, addr, next, phys_addr, prot,
-				      max_page_shift)) {
-			*mask |= PGTBL_PMD_MODIFIED;
-			continue;
-		}
-
 		if (vmap_pte_range(pmd, addr, next, phys_addr, prot,
 				   max_page_shift, mask))
 			return -ENOMEM;
@@ -104,13 +91,7 @@ static int vmap_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
 	return 0;
 }
 
-static int vmap_try_huge_pud(pud_t *pud, unsigned long addr, unsigned long end,
-			     phys_addr_t phys_addr, pgprot_t prot,
-			     unsigned int max_page_shift)
-{
-	/* Stub: huge pages disabled (vmap_allow_huge = false) */
-	return 0;
-}
+/* Removed: vmap_try_huge_pud - stub always returned 0 */
 
 static int vmap_pud_range(p4d_t *p4d, unsigned long addr, unsigned long end,
 			  phys_addr_t phys_addr, pgprot_t prot,
@@ -124,13 +105,6 @@ static int vmap_pud_range(p4d_t *p4d, unsigned long addr, unsigned long end,
 		return -ENOMEM;
 	do {
 		next = pud_addr_end(addr, end);
-
-		if (vmap_try_huge_pud(pud, addr, next, phys_addr, prot,
-				      max_page_shift)) {
-			*mask |= PGTBL_PUD_MODIFIED;
-			continue;
-		}
-
 		if (vmap_pmd_range(pud, addr, next, phys_addr, prot,
 				   max_page_shift, mask))
 			return -ENOMEM;
@@ -138,13 +112,7 @@ static int vmap_pud_range(p4d_t *p4d, unsigned long addr, unsigned long end,
 	return 0;
 }
 
-static int vmap_try_huge_p4d(p4d_t *p4d, unsigned long addr, unsigned long end,
-			     phys_addr_t phys_addr, pgprot_t prot,
-			     unsigned int max_page_shift)
-{
-	/* Stub: huge pages disabled (vmap_allow_huge = false) */
-	return 0;
-}
+/* Removed: vmap_try_huge_p4d - stub always returned 0 */
 
 static int vmap_p4d_range(pgd_t *pgd, unsigned long addr, unsigned long end,
 			  phys_addr_t phys_addr, pgprot_t prot,
@@ -158,13 +126,6 @@ static int vmap_p4d_range(pgd_t *pgd, unsigned long addr, unsigned long end,
 		return -ENOMEM;
 	do {
 		next = p4d_addr_end(addr, end);
-
-		if (vmap_try_huge_p4d(p4d, addr, next, phys_addr, prot,
-				      max_page_shift)) {
-			*mask |= PGTBL_P4D_MODIFIED;
-			continue;
-		}
-
 		if (vmap_pud_range(p4d, addr, next, phys_addr, prot,
 				   max_page_shift, mask))
 			return -ENOMEM;

@@ -207,8 +207,6 @@ static inline atomic_t *compound_pincount_ptr(struct page *page)
 	return &page[1].compound_pincount;
 }
 
-#define STRUCT_PAGE_MAX_SHIFT	(order_base_2(sizeof(struct page)))
-
 #define page_private(page)		((page)->private)
 
 static inline void set_page_private(struct page *page, unsigned long private)

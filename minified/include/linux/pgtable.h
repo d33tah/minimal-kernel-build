@@ -572,18 +572,6 @@ typedef unsigned int pgtbl_mod_mask;
 
 #endif  
 
-#if !defined(MAX_POSSIBLE_PHYSMEM_BITS) && !defined(CONFIG_64BIT)
-#define MAX_POSSIBLE_PHYSMEM_BITS 32
-#endif
-
-#ifndef mm_pud_folded
-#define mm_pud_folded(mm)	__is_defined(__PAGETABLE_PUD_FOLDED)
-#endif
-
-#ifndef mm_pmd_folded
-#define mm_pmd_folded(mm)	__is_defined(__PAGETABLE_PMD_FOLDED)
-#endif
-
 #ifndef pgd_leaf
 #define pgd_leaf(x)	0
 #endif

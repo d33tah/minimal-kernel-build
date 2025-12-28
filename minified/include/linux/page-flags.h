@@ -220,10 +220,6 @@ static inline void SetPage##uname(struct page *page) {  }
 static inline void folio_clear_##lname(struct folio *folio) { }		\
 static inline void ClearPage##uname(struct page *page) {  }
 
-#define __CLEARPAGEFLAG_NOOP(uname, lname)				\
-static inline void __folio_clear_##lname(struct folio *folio) { }	\
-static inline void __ClearPage##uname(struct page *page) {  }
-
 #define TESTSETFLAG_FALSE(uname, lname)					\
 static inline bool folio_test_set_##lname(struct folio *folio)		\
 { return 0; }								\

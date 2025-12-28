@@ -6,7 +6,7 @@
 #include <linux/compiler.h>
 
 #define GOLDEN_RATIO_32 0x61C88647
-#define GOLDEN_RATIO_PRIME GOLDEN_RATIO_32
+/* GOLDEN_RATIO_PRIME removed - unused */
 #define hash_long(val, bits) hash_32(val, bits)
 
 #ifndef HAVE_ARCH__HASH_32

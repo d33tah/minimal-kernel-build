@@ -30,7 +30,7 @@ struct dev_pagemap_ops {
 	vm_fault_t (*migrate_to_ram)(struct vm_fault *vmf);
 };
 
-#define PGMAP_ALTMAP_VALID	(1 << 0)
+/* PGMAP_ALTMAP_VALID removed - unused */
 
 struct dev_pagemap {
 	struct vmem_altmap altmap;

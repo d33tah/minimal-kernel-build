@@ -2,8 +2,7 @@
 #ifndef __LINUX_INITRD_H
 #define __LINUX_INITRD_H
 
-#define INITRD_MINOR 250
-
+/* INITRD_MINOR removed - unused */
 
 extern int initrd_below_start_ok;
 

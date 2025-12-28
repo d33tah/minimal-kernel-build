@@ -3,7 +3,7 @@
 
 #include <linux/types.h>
 
-#define MAX_LOCKDEP_SUBCLASSES		8UL
+/* MAX_LOCKDEP_SUBCLASSES removed - unused */
 
 enum lockdep_wait_type {
 	LD_WAIT_INV = 0,	 

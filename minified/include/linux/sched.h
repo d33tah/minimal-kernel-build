@@ -220,31 +220,6 @@ struct sched_rt_entity {
 
 struct sched_dl_entity {
 	struct rb_node			rb_node;
-
-	 
-	u64				dl_runtime;	 
-	u64				dl_deadline;	 
-	u64				dl_period;	 
-	u64				dl_bw;		 
-	u64				dl_density;	 
-
-	 
-	s64				runtime;	 
-	u64				deadline;	 
-	unsigned int			flags;		 
-
-	 
-	unsigned int			dl_throttled      : 1;
-	unsigned int			dl_yielded        : 1;
-	unsigned int			dl_non_contending : 1;
-	unsigned int			dl_overrun	  : 1;
-
-	 
-	struct hrtimer			dl_timer;
-
-	 
-	struct hrtimer inactive_timer;
-
 };
 
 
@@ -452,7 +427,6 @@ struct task_struct {
 
 	struct callback_head		*task_works;
 
-	struct seccomp			seccomp;
 	struct syscall_user_dispatch	syscall_dispatch;
 
 	 

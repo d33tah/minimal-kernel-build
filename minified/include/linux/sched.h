@@ -88,7 +88,6 @@ struct task_io_accounting { };
 
 struct audit_context;
 struct backing_dev_info;
-struct bio_list;
 struct blk_plug;
 struct cfs_rq;
 struct fs_struct;
@@ -311,8 +310,6 @@ struct task_struct {
 	const cpumask_t			*cpus_ptr;
 	cpumask_t			*user_cpus_ptr;
 	cpumask_t			cpus_mask;
-	void				*migration_pending;
-	unsigned short			migration_flags;
 
 	struct list_head		tasks;
 
@@ -478,33 +475,21 @@ struct task_struct {
 
 
 
-	 
-	void				*journal_info;
 
-	 
-	struct bio_list			*bio_list;
-
-	 
 	struct blk_plug			*plug;
 
-	 
+
 	struct reclaim_state		*reclaim_state;
 
 	struct backing_dev_info		*backing_dev_info;
 
 	struct io_context		*io_context;
-
-	 
-	unsigned long			ptrace_message;
 	kernel_siginfo_t		*last_siginfo;
 
 	struct task_io_accounting	ioac;
 	struct perf_event_context	*perf_event_ctxp[perf_nr_task_contexts];
 	struct mutex			perf_event_mutex;
 	struct list_head		perf_event_list;
-
-
-	struct tlbflush_unmap_batch	tlb_ubc;
 
 	union {
 		refcount_t		rcu_users;
@@ -532,9 +517,7 @@ struct task_struct {
 
 	struct kmap_ctrl		kmap_ctrl;
 	int				pagefault_disabled;
-	struct task_struct		*oom_reaper_list;
-	struct timer_list		oom_reaper_timer;
-	 
+
 	refcount_t			stack_refcount;
 
 

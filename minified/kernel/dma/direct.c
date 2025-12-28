@@ -5,7 +5,7 @@
 #include <linux/scatterlist.h>
 #include <linux/pfn.h>
 #include <linux/vmalloc.h>
-#include <linux/set_memory.h>
+#include <asm/set_memory.h>
 #include <linux/slab.h>
 #include "direct.h"
 

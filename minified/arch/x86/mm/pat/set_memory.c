@@ -16,7 +16,7 @@
 #include <linux/vmalloc.h>
 #include <linux/vmstat.h>
 #include <linux/kernel.h>
-#include <linux/set_memory.h>
+#include <asm/set_memory.h>
 #include <asm/e820/api.h>
 #include <asm/processor.h>
 #include <asm/tlbflush.h>

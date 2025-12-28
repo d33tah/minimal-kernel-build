@@ -9,7 +9,7 @@
 #include <linux/interrupt.h>
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
-#include <linux/set_memory.h>
+#include <asm/set_memory.h>
 #include <linux/kallsyms.h>
 #include <linux/list.h>
 #include <linux/notifier.h>

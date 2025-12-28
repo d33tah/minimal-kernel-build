@@ -610,7 +610,7 @@ void __init setup_arch(char **cmdline_p)
 
 	vsmp_init();
 
-	io_delay_init();
+	/* io_delay_init removed - was empty stub */
 
 	/* early_platform_quirks removed - was empty stub */
 

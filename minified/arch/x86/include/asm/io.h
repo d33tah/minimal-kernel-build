@@ -84,7 +84,7 @@ void memset_io(volatile void __iomem *, int, size_t);
 #endif  
 
 extern void native_io_delay(void);
-extern void io_delay_init(void);
+/* io_delay_init removed - was empty stub */
 
 
 static inline void slow_down_io(void)

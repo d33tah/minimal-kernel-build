@@ -137,24 +137,12 @@ static inline void __init_work(struct work_struct *work, int onstack) { }
 	work_pending(&(w)->work)
 
 enum {
-	WQ_UNBOUND		= 1 << 1,  
-	WQ_FREEZABLE		= 1 << 2,  
-	WQ_MEM_RECLAIM		= 1 << 3,  
-	WQ_HIGHPRI		= 1 << 4,  
-	WQ_CPU_INTENSIVE	= 1 << 5,  
-	WQ_SYSFS		= 1 << 6,  
-
-	 
-	WQ_POWER_EFFICIENT	= 1 << 7,
-
-	__WQ_DRAINING		= 1 << 16,  
-	__WQ_ORDERED		= 1 << 17,  
-	__WQ_LEGACY		= 1 << 18,  
-	__WQ_ORDERED_EXPLICIT	= 1 << 19,  
-
-	WQ_MAX_ACTIVE		= 512,	   
-	WQ_MAX_UNBOUND_PER_CPU	= 4,	   
-	WQ_DFL_ACTIVE		= WQ_MAX_ACTIVE / 2,
+	WQ_UNBOUND		= 1 << 1,
+	WQ_MEM_RECLAIM		= 1 << 3,
+	WQ_SYSFS		= 1 << 6,
+	/* WQ_FREEZABLE, WQ_HIGHPRI, WQ_CPU_INTENSIVE, WQ_POWER_EFFICIENT,
+	   __WQ_DRAINING, __WQ_ORDERED, __WQ_LEGACY, __WQ_ORDERED_EXPLICIT,
+	   WQ_MAX_ACTIVE, WQ_MAX_UNBOUND_PER_CPU, WQ_DFL_ACTIVE removed - unused */
 };
 
 extern struct workqueue_struct *system_wq;

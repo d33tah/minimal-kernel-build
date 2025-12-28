@@ -15,5 +15,4 @@ struct workqueue_struct *mm_percpu_wq;
 void __init init_mm_internals(void)
 {
 	mm_percpu_wq = alloc_workqueue("mm_percpu_wq", WQ_MEM_RECLAIM, 0);
-	migrate_on_reclaim_init();
 }

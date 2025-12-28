@@ -164,7 +164,6 @@ static void __fput(struct file *file)
 
 	might_sleep();
 
-	eventpoll_release(file);
 	locks_remove_file(file);
 
 	if (unlikely(file->f_flags & FASYNC)) {

@@ -593,10 +593,6 @@ void __init setup_arch(char **cmdline_p)
 
 	acpi_table_upgrade();
 
-	acpi_boot_table_init();
-
-	/* vsmp_init removed - was empty inline stub */
-
 	/* io_delay_init removed - was empty stub */
 
 	/* early_platform_quirks removed - was empty stub */
@@ -616,8 +612,6 @@ void __init setup_arch(char **cmdline_p)
 	tboot_probe();
 
 	generic_apic_probe();
-
-	early_quirks();
 
 	acpi_boot_init();
 	x86_dtb_init();

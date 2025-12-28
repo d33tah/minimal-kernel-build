@@ -7,6 +7,4 @@
 #define EPOLLHUP	(__force __poll_t)0x00000010
 #define EPOLLRDNORM	(__force __poll_t)0x00000040
 #define EPOLLWRNORM	(__force __poll_t)0x00000100
-struct file;
-static inline void eventpoll_release(struct file *file) {}
 #endif

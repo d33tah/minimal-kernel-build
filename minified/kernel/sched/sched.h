@@ -4,8 +4,11 @@
 #define _KERNEL_SCHED_SCHED_H
 
 #define SCHED_CPUFREQ_IOWAIT	(1U << 0)
-#include <linux/sched/deadline.h>
 #include <linux/sched.h>
+/* Inlined from linux/sched/deadline.h */
+#define MAX_DL_PRIO 0
+static inline int dl_prio(int prio) { return unlikely(prio < MAX_DL_PRIO); }
+static inline int dl_task(struct task_struct *p) { return dl_prio(p->prio); }
 #include <linux/sched/loadavg.h>
 #include <linux/sched/mm.h>
 
@@ -21,7 +24,10 @@ extern unsigned int nr_iowait_cpu(int cpu);
 #include <linux/sched/sysctl.h>
 
 #include <linux/sched/task.h>
-#include <linux/sched/topology.h>
+/* Inlined from linux/sched/topology.h */
+#ifndef arch_scale_thermal_pressure
+static __always_inline unsigned long arch_scale_thermal_pressure(int cpu) { return 0; }
+#endif
 
 #include <linux/atomic.h>
 #include <linux/bitmap.h>

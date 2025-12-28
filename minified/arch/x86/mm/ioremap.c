@@ -12,8 +12,15 @@ static inline void mmiotrace_ioremap(resource_size_t off, unsigned long size,
 static inline void mmiotrace_iounmap(volatile void __iomem *addr)
 {
 }
-enum cc_attr { CC_ATTR_HOST_MEM_ENCRYPT, CC_ATTR_GUEST_MEM_ENCRYPT, CC_ATTR_GUEST_UNROLL_STRING_IO };
-static inline bool cc_platform_has(enum cc_attr attr) { return false; }
+enum cc_attr {
+	CC_ATTR_HOST_MEM_ENCRYPT,
+	CC_ATTR_GUEST_MEM_ENCRYPT,
+	CC_ATTR_GUEST_UNROLL_STRING_IO
+};
+static inline bool cc_platform_has(enum cc_attr attr)
+{
+	return false;
+}
 #include <linux/efi.h>
 #include <linux/pgtable.h>
 

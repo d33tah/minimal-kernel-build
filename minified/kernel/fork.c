@@ -1,6 +1,8 @@
 
 struct file_operations;
-struct file *anon_inode_getfile(const char *name, const struct file_operations *fops, void *priv, int flags);
+struct file *anon_inode_getfile(const char *name,
+				const struct file_operations *fops, void *priv,
+				int flags);
 #include <linux/slab.h>
 #include <linux/sched/mm.h>
 #include <linux/sched/coredump.h>

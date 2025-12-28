@@ -53,13 +53,6 @@ static inline bool efi_enabled(int feature)
 	return false;
 }
 
-static inline void efi_init(void) {}
-static inline void efi_enter_virtual_mode(void) {}
-static inline void efi_fake_memmap(void) {}
-static inline void efi_find_mirror(void) {}
-static inline void efi_esrt_init(void) {}
-static inline void efi_mokvar_table_init(void) {}
-static inline void efi_reserve_boot_services(void) {}
 static inline int efi_memblock_x86_reserve_range(void) { return 0; }
 
 static inline int efi_mem_type(unsigned long phys_addr)
@@ -67,6 +60,4 @@ static inline int efi_mem_type(unsigned long phys_addr)
 	return 0;
 }
 
-static inline void parse_efi_setup(u64 phys_addr, u32 data_len) {}
-
-#endif  
+#endif

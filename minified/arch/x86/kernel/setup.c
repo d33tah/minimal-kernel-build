@@ -279,9 +279,6 @@ static void __init parse_setup_data(void)
 		case SETUP_DTB:
 			add_dtb(pa_data);
 			break;
-		case SETUP_EFI:
-			parse_efi_setup(pa_data, data_len);
-			break;
 		default:
 			break;
 		}
@@ -516,9 +513,6 @@ void __init setup_arch(char **cmdline_p)
 	e820__reserve_setup_data();
 	e820__finish_early_params();
 
-	if (efi_enabled(EFI_BOOT))
-		efi_init();
-
 	dmi_setup();
 
 	init_hypervisor_platform();
@@ -563,13 +557,6 @@ void __init setup_arch(char **cmdline_p)
 	e820__memblock_setup();
 
 	sev_setup_arch();
-
-	efi_fake_memmap();
-	efi_find_mirror();
-	efi_esrt_init();
-	efi_mokvar_table_init();
-
-	efi_reserve_boot_services();
 
 	e820__memblock_alloc_reserved_mpc_new();
 

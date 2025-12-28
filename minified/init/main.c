@@ -580,8 +580,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	calibrate_delay();
 	pid_idr_init();
 	anon_vma_init();
-	if (efi_enabled(EFI_RUNTIME_SERVICES))
-		efi_enter_virtual_mode();
 	thread_stack_cache_init();
 	cred_init();
 	fork_init();

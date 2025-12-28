@@ -368,8 +368,6 @@ struct inode {
 	unsigned long		i_state;
 	struct rw_semaphore	i_rwsem;
 
-	unsigned long		dirtied_when;
-
 	struct hlist_node	i_hash;
 	struct list_head	i_io_list;	
 	struct list_head	i_lru;		
@@ -647,9 +645,6 @@ struct super_block {
 	loff_t			s_maxbytes;	
 	struct file_system_type	*s_type;
 	const struct super_operations	*s_op;
-	const struct dquot_operations	*dq_op;
-	const struct quotactl_ops	*s_qcop;
-	const struct export_operations *s_export_op;
 	unsigned long		s_flags;
 	unsigned long		s_iflags;	
 	unsigned long		s_magic;

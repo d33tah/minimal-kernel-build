@@ -78,9 +78,7 @@ static inline void debugfs_slab_add(struct kmem_cache *s)
 {
 }
 
-static inline void stat(const struct kmem_cache *s, enum stat_item si)
-{
-}
+/* Removed: stat - empty stub */
 
 static nodemask_t slab_nodes;
 
@@ -217,17 +215,10 @@ static inline bool __cmpxchg_double_slab(struct kmem_cache *s,
 	}
 
 	cpu_relax();
-	stat(s, CMPXCHG_DOUBLE_FAIL);
 	return false;
 }
 
-static inline void setup_object_debug(struct kmem_cache *s, void *object)
-{
-}
-static inline void setup_slab_debug(struct kmem_cache *s, struct slab *slab,
-				    void *addr)
-{
-}
+/* Removed: setup_object_debug, setup_slab_debug - empty stubs */
 
 slab_flags_t kmem_cache_flags(unsigned int object_size, slab_flags_t flags,
 			      const char *name)
@@ -250,7 +241,6 @@ static inline void inc_slabs_node(struct kmem_cache *s, int node, int objects)
 
 static void *setup_object(struct kmem_cache *s, void *object)
 {
-	setup_object_debug(s, object);
 	if (unlikely(s->ctor))
 		s->ctor(object);
 	return object;
@@ -306,7 +296,6 @@ static struct slab *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 		slab = alloc_slab_page(alloc_gfp, node, oo);
 		if (unlikely(!slab))
 			goto out;
-		stat(s, ORDER_FALLBACK);
 	}
 
 	slab->objects = oo_objects(oo);
@@ -316,9 +305,6 @@ static struct slab *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 	slab->slab_cache = s;
 
 	start = slab_address(slab);
-
-	setup_slab_debug(s, slab, start);
-
 	start = fixup_red_left(s, start);
 	start = setup_object(s, start);
 	slab->freelist = start;
@@ -434,11 +420,9 @@ static void *get_partial_node(struct kmem_cache *s, struct kmem_cache_node *n,
 
 		if (!object) {
 			*ret_slab = slab;
-			stat(s, ALLOC_FROM_PARTIAL);
 			object = t;
 		} else {
 			put_cpu_partial(s, slab, 0);
-			stat(s, CPU_PARTIAL_NODE);
 			partial_slabs++;
 		}
 		break;
@@ -485,7 +469,6 @@ static inline void note_cmpxchg_failure(const char *n,
 					const struct kmem_cache *s,
 					unsigned long tid)
 {
-	stat(s, CMPXCHG_DOUBLE_CPU_FAIL);
 }
 
 static void init_kmem_cache_cpus(struct kmem_cache *s)
@@ -725,7 +708,6 @@ redo:
 			goto redo;
 		}
 		prefetch_freepointer(s, next_object);
-		stat(s, ALLOC_FASTPATH);
 	}
 
 	maybe_wipe_obj_freeptr(s, object);

@@ -61,28 +61,17 @@ struct alloc_context;
 #include <linux/memcontrol.h>
 #include <linux/lockdep.h>
 #include <linux/nmi.h>
-static inline void khugepaged_min_free_kbytes_update(void)
-{
-}
-static inline void buffer_init(void)
-{
-}
 #include <asm/sections.h>
 #include <asm/tlbflush.h>
 #include <asm/div64.h>
 #include "internal.h"
 #define page_reported(_page) false
-static inline void page_reporting_notify_free(unsigned int order)
-{
-}
 /* end page_reporting.h */
 struct swap_iocb;
 
 typedef int __bitwise fpi_t;
 
 #define FPI_NONE ((__force fpi_t)0)
-
-#define FPI_SKIP_REPORT_NOTIFY ((__force fpi_t)BIT(0))
 
 #define FPI_TO_TAIL ((__force fpi_t)BIT(1))
 
@@ -356,9 +345,6 @@ static inline void __free_one_page(struct page *page, unsigned long pfn,
 		add_to_free_list_tail(page, zone, order, migratetype);
 	else
 		add_to_free_list(page, zone, order, migratetype);
-
-	if (!(fpi_flags & FPI_SKIP_REPORT_NOTIFY))
-		page_reporting_notify_free(order);
 }
 
 static __always_inline bool free_pages_prepare(struct page *page,
@@ -393,10 +379,6 @@ static void __meminit __init_single_page(struct page *page, unsigned long pfn,
 	/* WANT_PAGE_VIRTUAL not defined */
 }
 
-static inline void init_reserved_page(unsigned long pfn)
-{
-}
-
 void __meminit reserve_bootmem_region(phys_addr_t start, phys_addr_t end)
 {
 	unsigned long start_pfn = PFN_DOWN(start);
@@ -405,8 +387,6 @@ void __meminit reserve_bootmem_region(phys_addr_t start, phys_addr_t end)
 	for (; start_pfn < end_pfn; start_pfn++) {
 		if (pfn_valid(start_pfn)) {
 			struct page *page = pfn_to_page(start_pfn);
-
-			init_reserved_page(start_pfn);
 
 			INIT_LIST_HEAD(&page->lru);
 
@@ -469,7 +449,6 @@ void __init page_alloc_init_late(void)
 {
 	struct zone *zone;
 
-	buffer_init();
 	memblock_discard();
 
 	/* Stub: skip memory shuffling for minimal system */
@@ -686,12 +665,7 @@ static int rmqueue_bulk(struct zone *zone, unsigned int order,
 	return allocated;
 }
 
-static void drain_pages(unsigned int cpu)
-{
-	/* Stub: skip per-CPU page draining for minimal kernel */
-}
-
-/* Removed: free_unref_page_prepare, nr_pcp_free, nr_pcp_high, free_unref_page_commit
+/* Removed: free_unref_page_prepare, nr_pcp_free, nr_pcp_high, free_unref_page_commit, drain_pages
  * - Dead code since free_unref_page is now a no-op (~55 lines) */
 
 void free_unref_page(struct page *page, unsigned int order)
@@ -1696,23 +1670,11 @@ static unsigned long __init calc_memmap_size(unsigned long spanned_pages,
 	return PAGE_ALIGN(spanned_pages * sizeof(struct page)) >> PAGE_SHIFT;
 }
 
-static void pgdat_init_split_queue(struct pglist_data *pgdat)
-{
-}
-
-static void pgdat_init_kcompactd(struct pglist_data *pgdat)
-{
-}
-
 static void __meminit pgdat_init_internals(struct pglist_data *pgdat)
 {
 	int i;
 
 	pgdat_resize_init(pgdat);
-
-	pgdat_init_split_queue(pgdat);
-	pgdat_init_kcompactd(pgdat);
-
 	init_waitqueue_head(&pgdat->kswapd_wait);
 	init_waitqueue_head(&pgdat->pfmemalloc_wait);
 
@@ -1804,10 +1766,6 @@ static void __init alloc_node_mem_map(struct pglist_data *pgdat)
 	}
 }
 
-static inline void pgdat_set_deferred_range(pg_data_t *pgdat)
-{
-}
-
 static void __init free_area_init_node(int nid)
 {
 	pg_data_t *pgdat = NODE_DATA(nid);
@@ -1825,8 +1783,6 @@ static void __init free_area_init_node(int nid)
 	calculate_node_totalpages(pgdat, start_pfn, end_pfn);
 
 	alloc_node_mem_map(pgdat);
-	pgdat_set_deferred_range(pgdat);
-
 	free_area_init_core(pgdat);
 }
 
@@ -1900,8 +1856,6 @@ static int page_alloc_cpu_dead(unsigned int cpu)
 {
 	lru_add_drain_cpu(cpu);
 	mlock_page_drain_remote(cpu);
-	drain_pages(cpu);
-
 	vm_events_fold_cpu(cpu);
 
 	cpu_vm_stats_fold(cpu);
@@ -1985,9 +1939,6 @@ int __meminit init_per_zone_wmark_min(void)
 	setup_per_zone_wmarks();
 	refresh_zone_stat_thresholds();
 	setup_per_zone_lowmem_reserve();
-
-	khugepaged_min_free_kbytes_update();
-
 	return 0;
 }
 postcore_initcall(init_per_zone_wmark_min)

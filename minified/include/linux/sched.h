@@ -130,10 +130,6 @@ struct task_group;
 #define task_is_running(task)		(READ_ONCE((task)->__state) == TASK_RUNNING)
 
 #define task_is_traced(task)		((READ_ONCE(task->jobctl) & JOBCTL_TRACED) != 0)
-/* task_is_stopped, task_is_stopped_or_traced removed - unused */
-
-#define is_special_task_state(state)				\
-	((state) & (__TASK_STOPPED | __TASK_TRACED | TASK_PARKED | TASK_DEAD))
 
 # define debug_normal_state_change(cond)	do { } while (0)
 # define debug_special_state_change(cond)	do { } while (0)
@@ -159,8 +155,6 @@ struct task_group;
 		WRITE_ONCE(current->__state, (state_value));		\
 		raw_spin_unlock_irqrestore(&current->pi_lock, flags);	\
 	} while (0)
-
-#define get_current_state()	READ_ONCE(current->__state)
 
 enum {
 	TASK_COMM_LEN = 16,
@@ -780,12 +774,6 @@ static inline unsigned int task_cpu(const struct task_struct *p)
 
 extern long sched_setaffinity(pid_t pid, const struct cpumask *new_mask);
 extern long sched_getaffinity(pid_t pid, struct cpumask *mask);
-
-#ifndef TASK_SIZE_OF
-#define TASK_SIZE_OF(tsk)	TASK_SIZE
-#endif
-
-
 
 static inline void rseq_handle_notify_resume(struct ksignal *ksig,
 					     struct pt_regs *regs)

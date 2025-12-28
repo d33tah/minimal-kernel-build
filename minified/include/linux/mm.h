@@ -267,10 +267,6 @@ void vm_area_free(struct vm_area_struct *);
 
 #define VM_LOCKED_CLEAR_MASK	(~(VM_LOCKED | VM_LOCKONFAULT))
 
-#ifndef VM_ARCH_CLEAR
-# define VM_ARCH_CLEAR	VM_NONE
-#endif
-
 extern pgprot_t protection_map[16];
 
 #define FAULT_FLAG_DEFAULT  (FAULT_FLAG_ALLOW_RETRY | \
@@ -410,10 +406,6 @@ static inline int folio_put_testzero(struct folio *folio)
 
 
 struct page *vmalloc_to_page(const void *addr);
-
-#ifndef is_ioremap_addr
-#define is_ioremap_addr(x) is_vmalloc_addr(x)
-#endif
 
 extern bool is_vmalloc_addr(const void *x);
 

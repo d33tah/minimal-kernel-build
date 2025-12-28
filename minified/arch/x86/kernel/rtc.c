@@ -1,7 +1,11 @@
 #include <linux/platform_device.h>
 #include <linux/mc146818rtc.h>
 #include <linux/acpi.h>
-#include <linux/bcd.h>
+/* Inlined from linux/bcd.h */
+#define bcd2bin(x) \
+	(__builtin_constant_p((u8)(x)) ? const_bcd2bin(x) : _bcd2bin(x))
+#define const_bcd2bin(x) (((x) & 0x0f) + ((x) >> 4) * 10)
+unsigned _bcd2bin(unsigned char val);
 #include <linux/export.h>
 
 #include <linux/of.h>

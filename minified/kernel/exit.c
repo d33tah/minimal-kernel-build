@@ -398,9 +398,7 @@ static void exit_notify(struct task_struct *tsk, int group_dead)
 	}
 }
 
-static inline void check_stack_usage(void)
-{
-}
+/* check_stack_usage removed - empty stub */
 
 void __noreturn do_exit(long code)
 {
@@ -472,8 +470,7 @@ void __noreturn do_exit(long code)
 
 	validate_creds_for_do_exit(tsk);
 	exit_task_stack_account(tsk);
-
-	check_stack_usage();
+	/* check_stack_usage removed - empty stub */
 	preempt_disable();
 	if (tsk->nr_dirtied)
 		__this_cpu_add(dirty_throttle_leaks, tsk->nr_dirtied);

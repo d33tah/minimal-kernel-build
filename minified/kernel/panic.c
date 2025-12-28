@@ -4,9 +4,7 @@
 #include <linux/printk.h>
 #include <linux/kallsyms.h>
 #include <linux/kmsg_dump.h>
-static inline void kgdb_panic(const char *msg)
-{
-}
+/* kgdb_panic removed - empty stub */
 #include <linux/notifier.h>
 #include <linux/vt_kern.h>
 #include <linux/module.h>
@@ -132,9 +130,7 @@ void panic(const char *fmt, ...)
 		buf[len - 1] = '\0';
 
 	pr_emerg("Kernel panic - not syncing: %s\n", buf);
-
-	kgdb_panic(buf);
-
+	/* kgdb_panic removed - empty stub */
 	if (!_crash_kexec_post_notifiers) {
 		__crash_kexec(NULL);
 

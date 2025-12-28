@@ -1173,13 +1173,9 @@ int __split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
 		new->vm_pgoff += ((addr - vma->vm_start) >> PAGE_SHIFT);
 	}
 
-	err = vma_dup_policy(vma, new);
-	if (err)
-		goto out_free_vma;
-
 	err = anon_vma_clone(new, vma);
 	if (err)
-		goto out_free_mpol;
+		goto out_free_vma;
 
 	if (new->vm_file)
 		get_file(new->vm_file);
@@ -1203,8 +1199,6 @@ int __split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
 	if (new->vm_file)
 		fput(new->vm_file);
 	unlink_anon_vmas(new);
-out_free_mpol:
-	mpol_put(vma_policy(new));
 out_free_vma:
 	vm_area_free(new);
 	return err;

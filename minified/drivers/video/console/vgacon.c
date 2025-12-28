@@ -283,9 +283,6 @@ static void vgacon_init(struct vc_data *c, int init)
 		c->vc_uni_pagedir_loc = &vgacon_uni_pagedir;
 		vgacon_refcount++;
 	}
-	if (!vgacon_uni_pagedir && p)
-		con_set_default_unimap(c);
-
 	if (global_cursor_default == -1)
 		global_cursor_default =
 			!(screen_info.flags & VIDEO_FLAGS_NOCURSOR);
@@ -301,7 +298,6 @@ static void vgacon_deinit(struct vc_data *c)
 	if (!--vgacon_refcount)
 		con_free_unimap(c);
 	c->vc_uni_pagedir_loc = &c->vc_uni_pagedir;
-	con_set_default_unimap(c);
 }
 
 static u8 vgacon_build_attr(struct vc_data *c, u8 color,

@@ -466,9 +466,6 @@ int vc_allocate(unsigned int currcons)
 
 	visual_init(vc, currcons, 1);
 
-	if (!*vc->vc_uni_pagedir_loc)
-		con_set_default_unimap(vc);
-
 	err = -EINVAL;
 	if (vc->vc_cols > VC_MAXCOL || vc->vc_rows > VC_MAXROW ||
 	    vc->vc_screenbuf_size > KMALLOC_MAX_SIZE || !vc->vc_screenbuf_size)

@@ -1172,12 +1172,9 @@ copy_process(struct pid *pid, int trace, int node,
 	retval = copy_namespaces(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_mm;
-	retval = copy_io(clone_flags, p);
-	if (retval)
-		goto bad_fork_cleanup_namespaces;
 	retval = copy_thread(p, args);
 	if (retval)
-		goto bad_fork_cleanup_io;
+		goto bad_fork_cleanup_namespaces;
 
 	if (pid != &init_struct_pid) {
 		pid = alloc_pid(p->nsproxy->pid_ns_for_children, args->set_tid,
@@ -1338,9 +1335,6 @@ bad_fork_free_pid:
 		free_pid(pid);
 bad_fork_cleanup_thread:
 	exit_thread(p);
-bad_fork_cleanup_io:
-	if (p->io_context)
-		exit_io_context(p);
 bad_fork_cleanup_namespaces:
 	exit_task_namespaces(p);
 bad_fork_cleanup_mm:

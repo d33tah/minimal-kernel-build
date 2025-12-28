@@ -65,20 +65,7 @@ struct track {
 
 enum track_item { TRACK_ALLOC, TRACK_FREE };
 
-static inline int sysfs_slab_add(struct kmem_cache *s)
-{
-	return 0;
-}
-static inline int sysfs_slab_alias(struct kmem_cache *s, const char *p)
-{
-	return 0;
-}
-
-static inline void debugfs_slab_add(struct kmem_cache *s)
-{
-}
-
-/* Removed: stat - empty stub */
+/* Removed: sysfs_slab_add, sysfs_slab_alias, debugfs_slab_add - empty stubs */
 
 static nodemask_t slab_nodes;
 
@@ -1153,10 +1140,7 @@ struct kmem_cache *__kmem_cache_alias(const char *name, unsigned int size,
 		s->object_size = max(s->object_size, size);
 		s->inuse = max(s->inuse, ALIGN(size, sizeof(void *)));
 
-		if (sysfs_slab_alias(s, name)) {
-			s->refcount--;
-			s = NULL;
-		}
+		/* sysfs_slab_alias removed - always succeeded */
 	}
 
 	return s;
@@ -1170,18 +1154,7 @@ int __kmem_cache_create(struct kmem_cache *s, slab_flags_t flags)
 	if (err)
 		return err;
 
-	if (slab_state <= UP)
-		return 0;
-
-	err = sysfs_slab_add(s);
-	if (err) {
-		__kmem_cache_release(s);
-		return err;
-	}
-
-	if (s->flags & SLAB_STORE_USER)
-		debugfs_slab_add(s);
-
+	/* sysfs_slab_add, debugfs_slab_add removed - empty stubs */
 	return 0;
 }
 

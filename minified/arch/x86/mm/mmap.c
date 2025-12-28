@@ -8,7 +8,10 @@
 #include <asm/elf.h>
 #include <asm/io.h>
 
-static inline int phys_addr_valid(resource_size_t addr) { return 1; }
+static inline int phys_addr_valid(resource_size_t addr)
+{
+	return 1;
+}
 
 unsigned long task_size_32bit(void)
 {

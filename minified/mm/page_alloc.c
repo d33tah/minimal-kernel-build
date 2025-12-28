@@ -61,7 +61,9 @@ struct alloc_context;
 #include <linux/memcontrol.h>
 #include <linux/lockdep.h>
 #include <linux/nmi.h>
-static inline void khugepaged_min_free_kbytes_update(void) {}
+static inline void khugepaged_min_free_kbytes_update(void)
+{
+}
 static inline void buffer_init(void)
 {
 }

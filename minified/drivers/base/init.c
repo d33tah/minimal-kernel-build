@@ -1,6 +1,8 @@
 #include <linux/device.h>
 #include <linux/init.h>
-static inline void memory_dev_init(void) { }
+static inline void memory_dev_init(void)
+{
+}
 #include <linux/of.h>
 #include <linux/backing-dev.h>
 #include "base.h"

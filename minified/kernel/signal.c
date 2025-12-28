@@ -650,10 +650,7 @@ static void retarget_shared_pending(struct task_struct *tsk, sigset_t *which)
 
 void exit_signals(struct task_struct *tsk)
 {
-	/* Minimal stub: just mark as exiting */
-	cgroup_threadgroup_change_begin(tsk);
 	tsk->flags |= PF_EXITING;
-	cgroup_threadgroup_change_end(tsk);
 }
 
 /* Stub: restart_syscall not needed for Hello World */

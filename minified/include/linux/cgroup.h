@@ -15,24 +15,12 @@
 #include <linux/user_namespace.h>
 #include <linux/refcount.h>
 #include <linux/kernel_stat.h>
-/* Inlined from linux/cgroup-defs.h */
-static inline void cgroup_threadgroup_change_begin(struct task_struct *tsk) {}
-static inline void cgroup_threadgroup_change_end(struct task_struct *tsk) {}
 struct kernel_clone_args;
 struct cgroup_subsys_state;
 struct cgroup;
-static inline void cgroup_fork(struct task_struct *p) {}
 static inline int cgroup_can_fork(struct task_struct *p, struct kernel_clone_args *kargs) { return 0; }
-static inline void cgroup_cancel_fork(struct task_struct *p, struct kernel_clone_args *kargs) {}
-static inline void cgroup_post_fork(struct task_struct *p, struct kernel_clone_args *kargs) {}
-static inline void cgroup_exit(struct task_struct *p) {}
-static inline void cgroup_release(struct task_struct *p) {}
-static inline void cgroup_free(struct task_struct *p) {}
 static inline int cgroup_init_early(void) { return 0; }
 static inline int cgroup_init(void) { return 0; }
-static inline void cgroup_init_kthreadd(void) {}
-static inline void cgroup_kthread_ready(void) {}
-static inline void cgroup_account_cputime(struct task_struct *task, u64 delta_exec) {}
 struct cgroup_namespace { struct ns_common ns; struct user_namespace *user_ns; struct ucounts *ucounts; struct css_set *root_cset; };
 static inline void free_cgroup_ns(struct cgroup_namespace *ns) { }
 static inline struct cgroup_namespace *copy_cgroup_ns(unsigned long flags, struct user_namespace *user_ns, struct cgroup_namespace *old_ns) { return old_ns; }

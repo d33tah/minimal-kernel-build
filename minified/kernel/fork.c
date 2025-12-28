@@ -419,7 +419,6 @@ void __put_task_struct(struct task_struct *tsk)
 	WARN_ON(tsk == current);
 
 	io_uring_free(tsk);
-	cgroup_free(tsk);
 	security_task_free(tsk);
 
 	exit_creds(tsk);
@@ -1141,7 +1140,6 @@ copy_process(struct pid *pid, int trace, int node,
 
 	p->io_context = NULL;
 	audit_set_context(p, NULL);
-	cgroup_fork(p);
 	if (args->kthread) {
 		if (!set_kthread_struct(p))
 			goto bad_fork_cleanup_delayacct;
@@ -1323,14 +1321,11 @@ copy_process(struct pid *pid, int trace, int node,
 	total_forks++;
 	hlist_del_init(&delayed.node);
 	spin_unlock(&current->sighand->siglock);
-	syscall_tracepoint_update(p);
 	write_unlock_irq(&tasklist_lock);
 
 	if (pidfile)
 		fd_install(pidfd, pidfile);
-	/* proc_fork_connector removed - empty stub */
 	sched_post_fork(p);
-	cgroup_post_fork(p, args);
 	perf_event_fork(p);
 	copy_oom_score_adj(clone_flags, p);
 
@@ -1340,7 +1335,6 @@ bad_fork_cancel_cgroup:
 	sched_core_free(p);
 	spin_unlock(&current->sighand->siglock);
 	write_unlock_irq(&tasklist_lock);
-	cgroup_cancel_fork(p, args);
 bad_fork_put_pidfd:
 	if (clone_flags & CLONE_PIDFD) {
 		fput(pidfile);

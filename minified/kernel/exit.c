@@ -151,8 +151,6 @@ repeat:
 	dec_rlimit_ucounts(task_ucounts(p), UCOUNT_RLIMIT_NPROC, 1);
 	rcu_read_unlock();
 
-	cgroup_release(p);
-
 	write_lock_irq(&tasklist_lock);
 	ptrace_release_task(p);
 	thread_pid = get_pid(p->thread_pid);
@@ -446,11 +444,6 @@ void __noreturn do_exit(long code)
 	exit_thread(tsk);
 
 	perf_event_exit_task(tsk);
-
-	/* sched_autogroup_exit_task - stubbed */
-	cgroup_exit(tsk);
-
-	/* flush_ptrace_hw_breakpoint removed - was empty stub */
 
 	exit_tasks_rcu_start();
 	exit_notify(tsk, group_dead);

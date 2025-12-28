@@ -15,7 +15,7 @@
 
 #include <asm/syscall.h>
 
-#include "common.h"
+bool syscall_user_dispatch(struct pt_regs *regs);
 
 static void trigger_sigsys(struct pt_regs *regs)
 {

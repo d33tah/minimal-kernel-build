@@ -14,7 +14,6 @@
 #include <linux/sched/types.h>
 
 #include "sched.h"
-#include "smp.h"
 
 #include "autogroup.h"
 #include "stats.h"

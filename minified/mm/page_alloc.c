@@ -74,7 +74,7 @@ static inline void page_reporting_notify_free(unsigned int order)
 {
 }
 /* end page_reporting.h */
-#include "swap.h"
+struct swap_iocb;
 
 typedef int __bitwise fpi_t;
 

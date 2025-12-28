@@ -9,7 +9,7 @@
 #include <linux/tick.h>
 #include <linux/tracepoint.h>
 
-#include "common.h"
+bool syscall_user_dispatch(struct pt_regs *regs);
 
 static __always_inline void __enter_from_user_mode(struct pt_regs *regs)
 {

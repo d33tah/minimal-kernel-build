@@ -15,7 +15,7 @@
 #include <linux/fs_context.h>
 #include <linux/fs_parser.h>
 #include <linux/seq_file.h>
-#include "internal.h"
+extern const struct inode_operations ramfs_file_inode_operations;
 
 struct ramfs_mount_opts {
 	umode_t mode;

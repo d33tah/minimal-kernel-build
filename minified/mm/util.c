@@ -25,7 +25,7 @@
 #include <linux/uaccess.h>
 
 #include "internal.h"
-#include "swap.h"
+struct swap_iocb;
 
 void kfree_const(const void *x)
 {

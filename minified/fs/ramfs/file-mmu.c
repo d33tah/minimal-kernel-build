@@ -5,7 +5,7 @@
 #include <linux/ramfs.h>
 #include <linux/sched.h>
 
-#include "internal.h"
+extern const struct inode_operations ramfs_file_inode_operations;
 
 static unsigned long ramfs_mmu_get_unmapped_area(struct file *file,
 						 unsigned long addr,

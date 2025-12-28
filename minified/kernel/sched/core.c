@@ -30,12 +30,7 @@ extern void sched_init_smp(void);
 #include <linux/blkdev.h>
 #include <linux/context_tracking.h>
 #include <linux/cpuset.h>
-static inline void delayacct_blkio_start(void)
-{
-}
-static inline void delayacct_blkio_end(struct task_struct *p)
-{
-}
+/* Removed: delayacct_blkio_start/end - empty stubs */
 #include <linux/init_task.h>
 #include <linux/interrupt.h>
 #include <linux/ioprio.h>
@@ -47,10 +42,7 @@ static inline void delayacct_blkio_end(struct task_struct *p)
 
 #include <linux/nmi.h>
 #include <linux/nospec.h>
-static inline void psi_init(void)
-{
-}
-
+/* Removed: psi_init - empty stub */
 #include <linux/sched/wake_q.h>
 #include <linux/slab.h>
 #include <linux/syscalls.h>
@@ -67,25 +59,11 @@ static inline void psi_init(void)
 #include "../workqueue_internal.h"
 #include "../smpboot.h"
 
-/* --- 2025-12-07 23:42 --- Inlined from fs/io-wq.h (stubs only, CONFIG_IO_WQ not set) */
-static inline void io_wq_worker_sleeping(struct task_struct *tsk)
-{
-}
-static inline void io_wq_worker_running(struct task_struct *tsk)
-{
-}
+/* Removed: io_wq_worker_sleeping/running, sched_core_enqueue/dequeue - empty stubs */
 
 DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
 
 __read_mostly int scheduler_running;
-
-static inline void sched_core_enqueue(struct rq *rq, struct task_struct *p)
-{
-}
-static inline void sched_core_dequeue(struct rq *rq, struct task_struct *p,
-				      int flags)
-{
-}
 
 void raw_spin_rq_lock_nested(struct rq *rq, int subclass)
 {
@@ -338,16 +316,10 @@ static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 
 	uclamp_rq_inc(rq, p);
 	p->sched_class->enqueue_task(rq, p, flags);
-
-	if (sched_core_enabled(rq))
-		sched_core_enqueue(rq, p);
 }
 
 static inline void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
 {
-	if (sched_core_enabled(rq))
-		sched_core_dequeue(rq, p, flags);
-
 	if (!(flags & DEQUEUE_NOCLOCK))
 		update_rq_clock(rq);
 
@@ -444,10 +416,8 @@ static void ttwu_do_activate(struct rq *rq, struct task_struct *p,
 	if (p->sched_contributes_to_load)
 		rq->nr_uninterruptible--;
 
-	if (p->in_iowait) {
-		delayacct_blkio_end(p);
+	if (p->in_iowait)
 		atomic_dec(&task_rq(p)->nr_iowait);
-	}
 
 	activate_task(rq, p, en_flags);
 	ttwu_do_wakeup(rq, p, wake_flags, rf);
@@ -1001,10 +971,8 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 			deactivate_task(rq, prev,
 					DEQUEUE_SLEEP | DEQUEUE_NOCLOCK);
 
-			if (prev->in_iowait) {
+			if (prev->in_iowait)
 				atomic_inc(&rq->nr_iowait);
-				delayacct_blkio_start();
-			}
 		}
 		switch_count = &prev->nvcsw;
 	}
@@ -1055,12 +1023,8 @@ static inline void sched_submit_work(struct task_struct *tsk)
 
 	task_flags = tsk->flags;
 
-	if (task_flags & (PF_WQ_WORKER | PF_IO_WORKER)) {
-		if (task_flags & PF_WQ_WORKER)
-			wq_worker_sleeping(tsk);
-		else
-			io_wq_worker_sleeping(tsk);
-	}
+	if (task_flags & PF_WQ_WORKER)
+		wq_worker_sleeping(tsk);
 
 	if (tsk_is_pi_blocked(tsk))
 		return;
@@ -1070,12 +1034,8 @@ static inline void sched_submit_work(struct task_struct *tsk)
 
 static void sched_update_worker(struct task_struct *tsk)
 {
-	if (tsk->flags & (PF_WQ_WORKER | PF_IO_WORKER)) {
-		if (tsk->flags & PF_WQ_WORKER)
-			wq_worker_running(tsk);
-		else
-			io_wq_worker_running(tsk);
-	}
+	if (tsk->flags & PF_WQ_WORKER)
+		wq_worker_running(tsk);
 }
 
 asmlinkage __visible void __sched schedule(void)
@@ -1525,9 +1485,6 @@ void __init sched_init(void)
 	calc_load_update = jiffies + LOAD_FREQ;
 
 	init_sched_fair_class();
-
-	psi_init();
-
 	init_uclamp();
 
 	preempt_dynamic_init();

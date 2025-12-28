@@ -6,15 +6,7 @@
 
 struct pt_regs;
 
-struct machine_ops {
-	void (*restart)(char *cmd);
-	void (*halt)(void);
-	void (*power_off)(void);
-	void (*shutdown)(void);
-	void (*crash_shutdown)(struct pt_regs *);
-	void (*emergency_restart)(void);
-};
-
+/* struct machine_ops removed - unused */
 
 /* native_machine_crash_shutdown removed - declared but never implemented */
 void native_machine_shutdown(void);

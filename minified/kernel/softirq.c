@@ -138,20 +138,11 @@ asmlinkage __visible void do_softirq(void)
 /* Simplified for minimal kernel - no time-based limiting */
 #define MAX_SOFTIRQ_RESTART 10
 
-static inline bool lockdep_softirq_start(void)
-{
-	return false;
-}
-static inline void lockdep_softirq_end(bool in_hardirq)
-{
-}
-
 asmlinkage __visible void __softirq_entry __do_softirq(void)
 {
 	unsigned long old_flags = current->flags;
 	int max_restart = MAX_SOFTIRQ_RESTART;
 	struct softirq_action *h;
-	bool in_hardirq;
 	__u32 pending;
 	int softirq_bit;
 
@@ -160,7 +151,6 @@ asmlinkage __visible void __softirq_entry __do_softirq(void)
 	pending = local_softirq_pending();
 
 	softirq_handle_begin();
-	in_hardirq = lockdep_softirq_start();
 	account_softirq_enter(current);
 
 restart:
@@ -210,7 +200,6 @@ restart:
 	}
 
 	account_softirq_exit(current);
-	lockdep_softirq_end(in_hardirq);
 	softirq_handle_end();
 	current_restore_flags(old_flags, PF_MEMALLOC);
 }
@@ -231,10 +220,6 @@ void irq_enter(void)
 	irq_enter_rcu();
 }
 
-static inline void tick_irq_exit(void)
-{
-}
-
 static inline void __irq_exit_rcu(void)
 {
 	/* __ARCH_IRQ_EXIT_IRQS_DISABLED not defined for x86 */
@@ -243,8 +228,6 @@ static inline void __irq_exit_rcu(void)
 	preempt_count_sub(HARDIRQ_OFFSET);
 	if (!in_interrupt() && local_softirq_pending())
 		invoke_softirq();
-
-	tick_irq_exit();
 }
 
 void irq_exit_rcu(void)

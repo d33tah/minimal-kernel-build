@@ -130,27 +130,3 @@ u32 iter_div_u64_rem(u64 dividend, u32 divisor, u64 *remainder)
 {
 	return __iter_div_u64_rem(dividend, divisor, remainder);
 }
-
-#ifndef mul_u64_u64_div_u64
-u64 mul_u64_u64_div_u64(u64 a, u64 b, u64 c)
-{
-	u64 res = 0, div, rem;
-	int shift;
-
-	if (ilog2(a) + ilog2(b) > 62) {
-		div = div64_u64_rem(b, c, &rem);
-		res = div * a;
-		b = rem;
-
-		shift = ilog2(a) + ilog2(b) - 62;
-		if (shift > 0) {
-			b >>= shift;
-			c >>= shift;
-			if (!c)
-				return res;
-		}
-	}
-
-	return res + div64_u64(a * b, c);
-}
-#endif

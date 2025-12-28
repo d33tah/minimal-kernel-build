@@ -63,7 +63,6 @@ static inline void psi_init(void)
 
 #include "sched.h"
 #include "stats.h"
-#include "autogroup.h"
 #include "pelt.h"
 #include "../workqueue_internal.h"
 #include "../smpboot.h"

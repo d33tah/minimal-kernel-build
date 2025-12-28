@@ -37,7 +37,6 @@ static const u32 runnable_avg_yN_inv[] __maybe_unused = {
 #define LOAD_AVG_MAX 47742
 /* end sched-pelt.h */
 #include "stats.h"
-#include "autogroup.h"
 
 #include "clock.c"
 

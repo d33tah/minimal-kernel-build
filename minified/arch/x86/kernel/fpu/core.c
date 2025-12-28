@@ -9,7 +9,6 @@
 /* Removed: #include <uapi/asm/kvm.h> - not needed for minimal kernel */
 
 #include <linux/hardirq.h>
-#include <linux/pkeys.h>
 #include <linux/vmalloc.h>
 
 #include "context.h"

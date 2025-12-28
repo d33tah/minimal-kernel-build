@@ -19,7 +19,6 @@
 
 #include "sched.h"
 #include "stats.h"
-#include "autogroup.h"
 
 unsigned int sysctl_sched_latency = 6000000ULL;
 static unsigned int normalized_sysctl_sched_latency = 6000000ULL;

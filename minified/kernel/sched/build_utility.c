@@ -40,7 +40,11 @@ static const u32 runnable_avg_yN_inv[] __maybe_unused = {
 
 #include "clock.c"
 
-#include "loadavg.c"
+/* loadavg.c removed - calc_global_load/calc_global_load_tick calls removed */
+/* Keep variable definitions needed by core.c */
+atomic_long_t calc_load_tasks;
+unsigned long calc_load_update;
+
 #include "completion.c"
 #include "swait.c"
 #include "wait_bit.c"

@@ -869,7 +869,7 @@ void scheduler_tick(void)
 	curr->sched_class->task_tick(rq, curr, 0);
 	if (sched_feat(LATENCY_WARN))
 		resched_latency = cpu_resched_latency(rq);
-	calc_global_load_tick(rq);
+	/* calc_global_load_tick removed - was empty stub */
 	sched_core_tick(rq);
 
 	rq_unlock(rq, &rf);

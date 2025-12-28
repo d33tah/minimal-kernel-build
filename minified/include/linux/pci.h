@@ -23,8 +23,13 @@
 #define PCIIOC_MMAP_IS_IO	(PCIIOC_BASE | 0x01)
 #define PCIIOC_MMAP_IS_MEM	(PCIIOC_BASE | 0x02)
 #define PCIIOC_WRITE_COMBINE	(PCIIOC_BASE | 0x03)
+/* Inlined from asm/pci.h */
 #ifdef CONFIG_X86
-#include <asm/pci.h>
+struct pci_bus;
+struct pci_dev;
+extern unsigned long pci_mem_start;
+static inline void early_quirks(void) {}
+extern void pci_iommu_alloc(void);
 #endif
 #define PCI_DEVID(bus, devfn)	((((u16)(bus)) << 8) | (devfn))
 #define PCI_BUS_NUM(x) (((x) >> 8) & 0xff)

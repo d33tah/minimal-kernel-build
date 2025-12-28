@@ -73,7 +73,7 @@ obj-y				+= fpu/
 obj-y				+= ptrace.o
 obj-$(CONFIG_X86_32)		+= tls.o
 obj-$(CONFIG_IA32_EMULATION)	+= tls.o
-obj-y				+= step.o
+# step.o removed - user_disable_single_step was empty stub
 obj-$(CONFIG_INTEL_TXT)		+= tboot.o
 # i8237.o removed - empty stub
 # obj-y				+= stacktrace.o

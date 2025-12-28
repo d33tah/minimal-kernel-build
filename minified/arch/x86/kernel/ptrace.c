@@ -231,7 +231,7 @@ static int ioperm_get(struct task_struct *target,
 
 void ptrace_disable(struct task_struct *child)
 {
-	user_disable_single_step(child);
+	/* user_disable_single_step removed - was empty stub */
 }
 
 static const struct user_regset_view user_x86_32_view;

@@ -1301,7 +1301,7 @@ copy_process(struct pid *pid, int trace, int node,
 	if ((clone_flags & (CLONE_VM | CLONE_VFORK)) == CLONE_VM)
 		sas_ss_reset(p);
 
-	user_disable_single_step(p);
+	/* user_disable_single_step removed - was empty stub */
 	clear_task_syscall_work(p, SYSCALL_TRACE);
 	clear_task_syscall_work(p, SYSCALL_EMU);
 	clear_tsk_latency_tracing(p);

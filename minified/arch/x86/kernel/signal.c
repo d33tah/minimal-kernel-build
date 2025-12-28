@@ -352,8 +352,7 @@ static void handle_signal(struct ksignal *ksig, struct pt_regs *regs)
 	}
 
 	stepping = test_thread_flag(TIF_SINGLESTEP);
-	if (stepping)
-		user_disable_single_step(current);
+	/* user_disable_single_step removed - was empty stub */
 
 	failed = (setup_rt_frame(ksig, regs) < 0);
 	if (!failed) {

@@ -27,10 +27,6 @@
 #include <linux/mmdebug.h>
 #include <linux/perf_event.h>
 #include <linux/audit.h>
-static inline void khugepaged_enter_vma(struct vm_area_struct *vma,
-					unsigned long vm_flags)
-{
-}
 #include <linux/uprobes.h>
 #include <linux/rbtree_augmented.h>
 #include <linux/notifier.h>
@@ -431,7 +427,6 @@ vma_merge(struct mm_struct *mm, struct vm_area_struct *prev, unsigned long addr,
 					   prev->vm_pgoff, NULL, prev);
 		if (err)
 			return NULL;
-		khugepaged_enter_vma(prev, vm_flags);
 		return prev;
 	}
 
@@ -450,7 +445,6 @@ vma_merge(struct mm_struct *mm, struct vm_area_struct *prev, unsigned long addr,
 		}
 		if (err)
 			return NULL;
-		khugepaged_enter_vma(area, vm_flags);
 		return area;
 	}
 
@@ -1056,7 +1050,6 @@ int expand_downwards(struct vm_area_struct *vma, unsigned long address)
 		}
 	}
 	anon_vma_unlock_write(vma->anon_vma);
-	khugepaged_enter_vma(vma, vma->vm_flags);
 	validate_mm(mm);
 	return error;
 }

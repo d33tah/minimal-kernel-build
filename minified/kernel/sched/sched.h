@@ -251,9 +251,7 @@ struct dl_rq {
 };
 
 #define entity_is_task(se)	1
-
-static inline void se_update_runnable(struct sched_entity *se) {}
-
+/* se_update_runnable removed - empty stub */
 struct rq {
 	 
 	raw_spinlock_t		__lock;
@@ -380,9 +378,7 @@ static inline void raw_spin_rq_unlock_irqrestore(struct rq *rq, unsigned long fl
 do {						\
 	flags = _raw_spin_rq_lock_irqsave(rq);	\
 } while (0)
-
-static inline void update_idle_core(struct rq *rq) { }
-
+/* update_idle_core removed - empty stub */
 DECLARE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
 
 #define cpu_rq(cpu)		(&per_cpu(runqueues, (cpu)))
@@ -575,11 +571,7 @@ init_numa_balancing(unsigned long clone_flags, struct task_struct *p)
 
 /* sched_core_account_forceidle removed - unused */
 
-static inline void sched_core_tick(struct rq *rq) {}
-
-
-
-static inline void set_task_rq(struct task_struct *p, unsigned int cpu) { }
+/* sched_core_tick, set_task_rq removed - empty stubs */
 static inline struct task_group *task_group(struct task_struct *p)
 {
 	return NULL;
@@ -588,7 +580,7 @@ static inline struct task_group *task_group(struct task_struct *p)
 
 static inline void __set_task_cpu(struct task_struct *p, unsigned int cpu)
 {
-	set_task_rq(p, cpu);
+	/* set_task_rq removed - empty stub */
 }
 
  

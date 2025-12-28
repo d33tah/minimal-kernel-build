@@ -98,7 +98,7 @@ static void put_prev_task_idle(struct rq *rq, struct task_struct *prev)
 static void set_next_task_idle(struct rq *rq, struct task_struct *next,
 			       bool first)
 {
-	update_idle_core(rq);
+	/* update_idle_core removed - empty stub */
 	schedstat_inc(rq->sched_goidle);
 }
 

@@ -610,7 +610,7 @@ static void enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 		se->vruntime += cfs_rq->min_vruntime;
 
 	update_load_avg(cfs_rq, se, UPDATE_TG | DO_ATTACH);
-	se_update_runnable(se);
+	/* se_update_runnable removed - empty stub */
 	/* update_cfs_group removed - empty stub */
 	account_entity_enqueue(cfs_rq, se);
 
@@ -686,7 +686,7 @@ static void dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 	update_curr(cfs_rq);
 
 	update_load_avg(cfs_rq, se, UPDATE_TG);
-	se_update_runnable(se);
+	/* se_update_runnable removed - empty stub */
 
 	update_stats_dequeue_fair(cfs_rq, se, flags);
 
@@ -904,7 +904,7 @@ static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		cfs_rq = cfs_rq_of(se);
 
 		update_load_avg(cfs_rq, se, UPDATE_TG);
-		se_update_runnable(se);
+		/* se_update_runnable removed - empty stub */
 		/* update_cfs_group removed - empty stub */
 		cfs_rq->h_nr_running++;
 		cfs_rq->idle_h_nr_running += idle_h_nr_running;
@@ -965,7 +965,7 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		cfs_rq = cfs_rq_of(se);
 
 		update_load_avg(cfs_rq, se, UPDATE_TG);
-		se_update_runnable(se);
+		/* se_update_runnable removed - empty stub */
 		/* update_cfs_group removed - empty stub */
 		cfs_rq->h_nr_running--;
 		cfs_rq->idle_h_nr_running -= idle_h_nr_running;

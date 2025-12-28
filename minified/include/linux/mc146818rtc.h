@@ -24,8 +24,6 @@ extern spinlock_t rtc_lock;
 #define RTC_CONTROL	RTC_REG_B
 #define RTC_DM_BINARY 0x04
 
-int mc146818_get_time(struct rtc_time *time);
-int mc146818_set_time(struct rtc_time *time);
-bool mc146818_avoid_UIP(void (*callback)(unsigned char seconds, void *param), void *param);
+/* mc146818_get_time/set_time/avoid_UIP removed - never called */
 
 #endif  

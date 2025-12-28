@@ -14,20 +14,6 @@
 #include <linux/pm.h>
 #include <linux/tick.h>
 #include <linux/random.h>
-#ifndef _URN_INLINE
-#define _URN_INLINE
-struct user_return_notifier {};
-static inline void propagate_user_return_notify(struct task_struct *prev,
-						struct task_struct *next)
-{
-}
-static inline void fire_user_return_notifiers(void)
-{
-}
-static inline void clear_user_return_notifier(struct task_struct *p)
-{
-}
-#endif
 #include <linux/utsname.h>
 static inline void boot_init_stack_canary(void)
 {
@@ -338,8 +324,6 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
 	tifp = read_task_thread_flags(prev_p);
 
 	switch_to_bitmap(tifp);
-
-	propagate_user_return_notify(prev_p, next_p);
 
 	if ((tifp & _TIF_BLOCKSTEP || tifn & _TIF_BLOCKSTEP) &&
 	    arch_has_block_step()) {

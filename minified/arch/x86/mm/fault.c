@@ -3,7 +3,6 @@
 #include <linux/kdebug.h>
 #include <linux/extable.h>
 #include <linux/memblock.h>
-#include <linux/kfence.h>
 #include <linux/kprobes.h>
 #include <linux/perf_event.h>
 #include <linux/hugetlb.h>

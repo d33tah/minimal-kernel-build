@@ -88,7 +88,6 @@ static inline pg_data_t *slab_pgdat(const struct slab *slab)
 
 
 
-#include <linux/kfence.h>
 #include <linux/kobject.h>
 #include <linux/reciprocal_div.h>
 #include <linux/local_lock.h>

@@ -32,7 +32,13 @@ static inline int profile_init(void)
 {
 	return 0;
 }
-#include <linux/kfence.h>
+/* Inlined from linux/kfence.h */
+static inline void kfence_alloc_pool(void)
+{
+}
+static inline void kfence_init(void)
+{
+}
 #include <linux/rcupdate.h>
 #include <linux/srcu.h>
 #include <linux/moduleparam.h>

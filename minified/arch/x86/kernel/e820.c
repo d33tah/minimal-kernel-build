@@ -490,12 +490,6 @@ unsigned long __init e820__end_of_low_ram_pfn(void)
 	return e820_end_pfn(1UL << (32 - PAGE_SHIFT), E820_TYPE_RAM);
 }
 
-static void __init early_panic(char *msg)
-{
-	early_printk(msg);
-	panic(msg);
-}
-
 static int userdef __initdata;
 
 void __init e820__reserve_setup_data(void)
@@ -554,7 +548,7 @@ void __init e820__finish_early_params(void)
 {
 	if (userdef) {
 		if (e820__update_table(e820_table) < 0)
-			early_panic("Invalid user supplied memory map");
+			panic("Invalid user supplied memory map");
 
 		pr_info("user-defined physical RAM map:\n");
 		e820__print_table("user");

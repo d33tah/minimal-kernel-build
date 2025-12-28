@@ -34,9 +34,6 @@ struct zone;
 
 #define SWAP_CLUSTER_MAX 32UL
 
-void workingset_refault(struct folio *folio, void *shadow);
-void workingset_activation(struct folio *folio);
-
 void workingset_update_node(struct xa_node *node);
 extern struct list_lru shadow_nodes;
 #define mapping_set_update(xas, mapping) do {				\

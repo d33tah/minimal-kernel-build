@@ -96,17 +96,7 @@ enum {
 
 static struct device *tty0dev;
 
-static ATOMIC_NOTIFIER_HEAD(vt_notifier_list);
-
-static void notify_write(struct vc_data *vc, unsigned int unicode)
-{
-	/* Stub: skip VT notifications for minimal kernel */
-}
-
-static void notify_update(struct vc_data *vc)
-{
-	/* Stub: skip VT notifications for minimal kernel */
-}
+/* Removed: vt_notifier_list, notify_write, notify_update - empty stubs */
 
 static inline bool con_is_fg(const struct vc_data *vc)
 {
@@ -133,23 +123,7 @@ struct uni_screen {
 	char32_t *lines[0];
 };
 
-static void vc_uniscr_clear_line(struct vc_data *vc, unsigned int x,
-				 unsigned int nr)
-{
-	/* Stub: skip unicode screen buffer clear for minimal kernel */
-}
-
-static void vc_uniscr_clear_lines(struct vc_data *vc, unsigned int y,
-				  unsigned int nr)
-{
-	/* Stub: skip unicode screen buffer clear for minimal kernel */
-}
-
-static void vc_uniscr_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
-			     enum con_scroll dir, unsigned int nr)
-{
-	/* Stub: skip unicode screen buffer scroll for minimal kernel */
-}
+/* Removed: vc_uniscr_clear_line, vc_uniscr_clear_lines, vc_uniscr_scroll - empty stubs */
 
 static void con_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
 		       enum con_scroll dir, unsigned int nr)
@@ -160,7 +134,6 @@ static void con_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
 		nr = b - t - 1;
 	if (b > vc->vc_rows || t >= b || nr < 1)
 		return;
-	vc_uniscr_scroll(vc, t, b, dir, nr);
 	if (con_is_visible(vc) && vc->vc_sw->con_scroll(vc, t, b, dir, nr))
 		return;
 
@@ -411,10 +384,8 @@ static void redraw_screen(struct vc_data *vc, int is_switch)
 					 vc->vc_screenbuf_size / 2);
 	}
 	set_cursor(vc);
-	if (is_switch) {
+	if (is_switch)
 		vt_set_leds_compute_shiftstate();
-		notify_update(vc);
-	}
 }
 
 int vc_cons_allocated(unsigned int i)
@@ -512,7 +483,6 @@ int vc_allocate(unsigned int currcons)
 
 	vc_init(vc, vc->vc_rows, vc->vc_cols, 1);
 	vcs_make_sysfs(currcons);
-	atomic_notifier_call_chain(&vt_notifier_list, VT_ALLOCATE, &param);
 
 	return 0;
 err_free:
@@ -603,14 +573,12 @@ static void lf(struct vc_data *vc)
 		vc->vc_pos += vc->vc_size_row;
 	}
 	vc->vc_need_wrap = 0;
-	notify_write(vc, '\n');
 }
 
 static inline void cr(struct vc_data *vc)
 {
 	vc->vc_pos -= vc->state.x << 1;
 	vc->vc_need_wrap = vc->state.x = 0;
-	notify_write(vc, '\r');
 }
 
 static void csi_J(struct vc_data *vc, int vpar)
@@ -620,16 +588,10 @@ static void csi_J(struct vc_data *vc, int vpar)
 
 	switch (vpar) {
 	case 0:
-		vc_uniscr_clear_line(vc, vc->state.x,
-				     vc->vc_cols - vc->state.x);
-		vc_uniscr_clear_lines(vc, vc->state.y + 1,
-				      vc->vc_rows - vc->state.y - 1);
 		count = (vc->vc_scr_end - vc->vc_pos) >> 1;
 		start = (unsigned short *)vc->vc_pos;
 		break;
 	case 1:
-		vc_uniscr_clear_line(vc, 0, vc->state.x + 1);
-		vc_uniscr_clear_lines(vc, 0, vc->state.y);
 		count = ((vc->vc_pos - vc->vc_origin) >> 1) + 1;
 		start = (unsigned short *)vc->vc_origin;
 		break;
@@ -637,7 +599,6 @@ static void csi_J(struct vc_data *vc, int vpar)
 		flush_scrollback(vc);
 		fallthrough;
 	case 2:
-		vc_uniscr_clear_lines(vc, 0, vc->vc_rows);
 		count = vc->vc_cols * vc->vc_rows;
 		start = (unsigned short *)vc->vc_origin;
 		break;
@@ -890,8 +851,6 @@ static int vc_con_write_normal(struct vc_data *vc, int tc, int c,
 		vc->state.x++;
 		draw->to = (vc->vc_pos += 2);
 	}
-
-	notify_write(vc, c);
 	return 0;
 }
 

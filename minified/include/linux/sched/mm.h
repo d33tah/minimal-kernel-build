@@ -151,7 +151,4 @@ static inline void membarrier_update_current_mm(struct mm_struct *next_mm)
 {
 }
 
-static inline void mm_pasid_init(struct mm_struct *mm) {}
-static inline void mm_pasid_drop(struct mm_struct *mm) {}
-
-#endif  
+#endif

@@ -1669,7 +1669,6 @@ static void __meminit pgdat_init_internals(struct pglist_data *pgdat)
 {
 	int i;
 
-	pgdat_resize_init(pgdat);
 	init_waitqueue_head(&pgdat->kswapd_wait);
 	init_waitqueue_head(&pgdat->pfmemalloc_wait);
 
@@ -1685,11 +1684,9 @@ static void __meminit zone_init_internals(struct zone *zone, enum zone_type idx,
 					  unsigned long remaining_pages)
 {
 	atomic_long_set(&zone->managed_pages, remaining_pages);
-	zone_set_nid(zone, nid);
 	zone->name = zone_names[idx];
 	zone->zone_pgdat = NODE_DATA(nid);
 	spin_lock_init(&zone->lock);
-	zone_seqlock_init(zone);
 	zone_pcp_init(zone);
 }
 

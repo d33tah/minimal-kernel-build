@@ -435,8 +435,6 @@ static inline int zone_to_nid(struct zone *zone)
 	return 0;
 }
 
-static inline void zone_set_nid(struct zone *zone, int nid) {}
-
 extern int movable_zone;
 
 static inline int is_highmem_idx(enum zone_type idx)

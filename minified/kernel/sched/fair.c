@@ -136,21 +136,13 @@ static inline bool list_add_leaf_cfs_rq(struct cfs_rq *cfs_rq)
 	return true;
 }
 
-static inline void assert_list_leaf_cfs_rq(struct rq *rq)
-{
-}
-
+/* assert_list_leaf_cfs_rq, find_matching_se removed - empty stubs */
 #define for_each_leaf_cfs_rq_safe(rq, cfs_rq, pos) \
 	for (cfs_rq = &rq->cfs, pos = NULL; cfs_rq; cfs_rq = pos)
 
 static inline struct sched_entity *parent_entity(struct sched_entity *se)
 {
 	return NULL;
-}
-
-static inline void find_matching_se(struct sched_entity **se,
-				    struct sched_entity **pse)
-{
 }
 
 static int cfs_rq_is_idle(struct cfs_rq *cfs_rq)
@@ -519,14 +511,7 @@ static void account_entity_dequeue(struct cfs_rq *cfs_rq,
 		*ptr -= min_t(typeof(*ptr), *ptr, _val); \
 	} while (0)
 
-static inline void enqueue_load_avg(struct cfs_rq *cfs_rq,
-				    struct sched_entity *se)
-{
-}
-static inline void dequeue_load_avg(struct cfs_rq *cfs_rq,
-				    struct sched_entity *se)
-{
-}
+/* enqueue_load_avg, dequeue_load_avg removed - empty stubs */
 
 static void reweight_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 			    unsigned long weight)
@@ -536,11 +521,9 @@ static void reweight_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 			update_curr(cfs_rq);
 		update_load_sub(&cfs_rq->load, se->load.weight);
 	}
-	dequeue_load_avg(cfs_rq, se);
-
+	/* dequeue_load_avg removed - empty stub */
 	update_load_set(&se->load, weight);
-
-	enqueue_load_avg(cfs_rq, se);
+	/* enqueue_load_avg removed - empty stub */
 	if (se->on_rq)
 		update_load_add(&cfs_rq->load, se->load.weight);
 }
@@ -556,9 +539,7 @@ void reweight_task(struct task_struct *p, int prio)
 	load->inv_weight = sched_prio_to_wmult[prio];
 }
 
-static inline void update_cfs_group(struct sched_entity *se)
-{
-}
+/* update_cfs_group removed - empty stub */
 
 static inline void cfs_rq_util_change(struct cfs_rq *cfs_rq, int flags)
 {
@@ -579,33 +560,12 @@ static inline void update_load_avg(struct cfs_rq *cfs_rq,
 	cfs_rq_util_change(cfs_rq, 0);
 }
 
-static inline void attach_entity_load_avg(struct cfs_rq *cfs_rq,
-					  struct sched_entity *se)
-{
-}
-static inline void detach_entity_load_avg(struct cfs_rq *cfs_rq,
-					  struct sched_entity *se)
-{
-}
+/* attach_entity_load_avg, detach_entity_load_avg removed - stubs */
+/* util_est_enqueue, util_est_dequeue, util_est_update removed - empty stubs */
 
 static inline int newidle_balance(struct rq *rq, struct rq_flags *rf)
 {
 	return 0;
-}
-
-static inline void util_est_enqueue(struct cfs_rq *cfs_rq,
-				    struct task_struct *p)
-{
-}
-
-static inline void util_est_dequeue(struct cfs_rq *cfs_rq,
-				    struct task_struct *p)
-{
-}
-
-static inline void util_est_update(struct cfs_rq *cfs_rq, struct task_struct *p,
-				   bool task_sleep)
-{
 }
 
 static void place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
@@ -651,7 +611,7 @@ static void enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 
 	update_load_avg(cfs_rq, se, UPDATE_TG | DO_ATTACH);
 	se_update_runnable(se);
-	update_cfs_group(se);
+	/* update_cfs_group removed - empty stub */
 	account_entity_enqueue(cfs_rq, se);
 
 	if (flags & ENQUEUE_WAKEUP)
@@ -741,9 +701,7 @@ static void dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 		se->vruntime -= cfs_rq->min_vruntime;
 
 	return_cfs_rq_runtime(cfs_rq);
-
-	update_cfs_group(se);
-
+	/* update_cfs_group removed - empty stub */
 	if ((flags & (DEQUEUE_SAVE | DEQUEUE_MOVE)) != DEQUEUE_SAVE)
 		update_min_vruntime(cfs_rq);
 }
@@ -867,8 +825,7 @@ static void entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr,
 	update_curr(cfs_rq);
 
 	update_load_avg(cfs_rq, curr, UPDATE_TG);
-	update_cfs_group(curr);
-
+	/* update_cfs_group removed - empty stub */
 	if (cfs_rq->nr_running > 1)
 		check_preempt_tick(cfs_rq, curr);
 }
@@ -919,8 +876,7 @@ static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	struct sched_entity *se = &p->se;
 	int idle_h_nr_running = task_has_idle_policy(p);
 
-	util_est_enqueue(&rq->cfs, p);
-
+	/* util_est_enqueue removed - empty stub */
 	if (p->in_iowait)
 		cpufreq_update_util(rq, SCHED_CPUFREQ_IOWAIT);
 
@@ -949,8 +905,7 @@ static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 
 		update_load_avg(cfs_rq, se, UPDATE_TG);
 		se_update_runnable(se);
-		update_cfs_group(se);
-
+		/* update_cfs_group removed - empty stub */
 		cfs_rq->h_nr_running++;
 		cfs_rq->idle_h_nr_running += idle_h_nr_running;
 
@@ -967,7 +922,7 @@ static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	add_nr_running(rq, 1);
 
 enqueue_throttle:
-	assert_list_leaf_cfs_rq(rq);
+	/* assert_list_leaf_cfs_rq removed - empty stub */
 }
 
 static void set_next_buddy(struct sched_entity *se);
@@ -980,8 +935,7 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	int idle_h_nr_running = task_has_idle_policy(p);
 	bool was_sched_idle = sched_idle_rq(rq);
 
-	util_est_dequeue(&rq->cfs, p);
-
+	/* util_est_dequeue removed - empty stub */
 	for_each_sched_entity(se)
 	{
 		cfs_rq = cfs_rq_of(se);
@@ -1012,8 +966,7 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 
 		update_load_avg(cfs_rq, se, UPDATE_TG);
 		se_update_runnable(se);
-		update_cfs_group(se);
-
+		/* update_cfs_group removed - empty stub */
 		cfs_rq->h_nr_running--;
 		cfs_rq->idle_h_nr_running -= idle_h_nr_running;
 
@@ -1030,7 +983,7 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		rq->next_balance = jiffies;
 
 dequeue_throttle:
-	util_est_update(&rq->cfs, p, task_sleep);
+	/* util_est_update removed - empty stub */
 }
 
 static unsigned long wakeup_gran(struct sched_entity *se)
@@ -1116,7 +1069,7 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p,
 	    !sched_feat(WAKEUP_PREEMPTION))
 		return;
 
-	find_matching_se(&se, &pse);
+	/* find_matching_se removed - empty stub */
 	BUG_ON(!pse);
 
 	cse_is_idle = se_is_idle(se);
@@ -1324,7 +1277,7 @@ static void detach_entity_cfs_rq(struct sched_entity *se)
 	struct cfs_rq *cfs_rq = cfs_rq_of(se);
 
 	update_load_avg(cfs_rq, se, 0);
-	detach_entity_load_avg(cfs_rq, se);
+	/* detach_entity_load_avg removed - empty stub */
 	update_tg_load_avg(cfs_rq);
 	propagate_entity_cfs_rq(se);
 }
@@ -1335,7 +1288,7 @@ static void attach_entity_cfs_rq(struct sched_entity *se)
 
 	update_load_avg(cfs_rq, se,
 			sched_feat(ATTACH_AGE_LOAD) ? 0 : SKIP_AGE_LOAD);
-	attach_entity_load_avg(cfs_rq, se);
+	/* attach_entity_load_avg removed - empty stub */
 	update_tg_load_avg(cfs_rq);
 	propagate_entity_cfs_rq(se);
 }

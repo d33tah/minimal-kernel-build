@@ -365,15 +365,8 @@ struct inode {
 	struct timespec64	i_atime;
 	struct timespec64	i_mtime;
 	struct timespec64	i_ctime;
-	spinlock_t		i_lock;	
-	unsigned short          i_bytes;
+	spinlock_t		i_lock;
 	u8			i_blkbits;
-	u8			i_write_hint;
-	blkcnt_t		i_blocks;
-
-#ifdef __NEED_I_SIZE_ORDERED
-	seqcount_t		i_size_seqcount;
-#endif
 
 	
 	unsigned long		i_state;
@@ -390,8 +383,6 @@ struct inode {
 		struct hlist_head	i_dentry;
 		struct rcu_head		i_rcu;
 	};
-	atomic64_t		i_version;
-	atomic64_t		i_sequence; 
 	atomic_t		i_count;
 	/* i_dio_count removed - only initialized, never used */
 	atomic_t		i_writecount;

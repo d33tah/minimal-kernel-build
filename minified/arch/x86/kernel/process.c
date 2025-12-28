@@ -34,7 +34,7 @@ static inline void boot_init_stack_canary(void)
 }
 /* end stackprotector.h */
 #include <linux/acpi.h>
-extern void flush_ptrace_hw_breakpoint(struct task_struct *tsk);
+/* flush_ptrace_hw_breakpoint removed - was empty stub */
 #include <asm/cpu.h>
 #include <asm/apic.h>
 #include <linux/uaccess.h>
@@ -183,7 +183,7 @@ void flush_thread(void)
 {
 	struct task_struct *tsk = current;
 
-	flush_ptrace_hw_breakpoint(tsk);
+	/* flush_ptrace_hw_breakpoint removed - was empty stub */
 	memset(tsk->thread.tls_array, 0, sizeof(tsk->thread.tls_array));
 
 	fpu_flush_thread();

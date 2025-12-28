@@ -71,7 +71,7 @@ static inline void task_io_accounting_add(struct task_io_accounting *dst,
 #include <linux/fs_struct.h>
 #include <linux/init_task.h>
 #include <linux/perf_event.h>
-extern void flush_ptrace_hw_breakpoint(struct task_struct *tsk);
+/* flush_ptrace_hw_breakpoint removed - was empty stub */
 #include <linux/oom.h>
 #include <linux/writeback.h>
 static inline void exit_shm(struct task_struct *task)
@@ -498,7 +498,7 @@ void __noreturn do_exit(long code)
 	/* sched_autogroup_exit_task - stubbed */
 	cgroup_exit(tsk);
 
-	flush_ptrace_hw_breakpoint(tsk);
+	/* flush_ptrace_hw_breakpoint removed - was empty stub */
 
 	exit_tasks_rcu_start();
 	exit_notify(tsk, group_dead);

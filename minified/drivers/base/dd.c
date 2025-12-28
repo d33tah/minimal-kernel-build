@@ -339,7 +339,6 @@ static int __driver_probe_device(struct device_driver *drv, struct device *dev)
 	if (dev->parent)
 		pm_runtime_get_sync(dev->parent);
 
-	pm_runtime_barrier(dev);
 	ret = really_probe(dev, drv);
 	pm_request_idle(dev);
 

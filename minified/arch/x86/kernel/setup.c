@@ -458,7 +458,6 @@ void __init setup_arch(char **cmdline_p)
 	idt_setup_early_traps();
 	early_cpu_init();
 	jump_label_init();
-	static_call_init();
 	early_ioremap_init();
 
 	setup_olpc_ofw_pgd();

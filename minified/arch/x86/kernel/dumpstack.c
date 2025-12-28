@@ -101,9 +101,6 @@ void __noreturn rewind_stack_and_make_dead(int signr);
 
 void oops_end(unsigned long flags, struct pt_regs *regs, int signr)
 {
-	if (regs && kexec_should_crash(current))
-		crash_kexec(regs);
-
 	bust_spinlocks(0);
 	die_owner = -1;
 	add_taint(TAINT_DIE, LOCKDEP_NOW_UNRELIABLE);

@@ -32,11 +32,6 @@
 #include <asm/tlbflush.h>
 #include "internal.h"
 
-static inline bool try_to_free_buffers(struct folio *folio)
-{
-	return true;
-}
-
 #include <asm/mman.h>
 
 static void page_cache_delete(struct address_space *mapping,
@@ -984,11 +979,6 @@ out:
 	return ret;
 }
 
-static void shrink_readahead_size_eio(struct file_ra_state *ra)
-{
-	/* Stub: readahead optimization not needed */
-}
-
 static void filemap_get_read_batch(struct address_space *mapping, pgoff_t index,
 				   pgoff_t max, struct folio_batch *fbatch)
 {
@@ -1041,7 +1031,6 @@ static int filemap_read_folio(struct file *file, struct address_space *mapping,
 		return error;
 	if (folio_test_uptodate(folio))
 		return 0;
-	shrink_readahead_size_eio(&file->f_ra);
 	return -EIO;
 }
 
@@ -1826,5 +1815,5 @@ bool filemap_release_folio(struct folio *folio, gfp_t gfp)
 
 	if (mapping && mapping->a_ops->release_folio)
 		return mapping->a_ops->release_folio(folio, gfp);
-	return try_to_free_buffers(folio);
+	return true;
 }

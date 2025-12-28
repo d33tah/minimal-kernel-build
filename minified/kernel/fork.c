@@ -501,9 +501,7 @@ void __init fork_init(void)
 			      RLIM_INFINITY);
 	set_rlimit_ucount_max(&init_user_ns, UCOUNT_RLIMIT_MEMLOCK,
 			      RLIM_INFINITY);
-	/* scs_init removed - empty stub */
 	lockdep_init_task(&init_task);
-	uprobes_init();
 }
 
 /* arch_dup_task_struct provided by arch/x86/kernel/process.c */
@@ -656,8 +654,6 @@ static inline void __mmput(struct mm_struct *mm)
 {
 	VM_BUG_ON(atomic_read(&mm->mm_users));
 
-	uprobe_clear_state(mm);
-	/* ksm_exit, khugepaged_exit removed - empty stubs */
 	exit_mmap(mm);
 	mm_put_huge_zero_page(mm);
 	set_mm_exe_file(mm, NULL);
@@ -740,8 +736,6 @@ static int wait_for_vfork_done(struct task_struct *child,
 
 static void mm_release(struct task_struct *tsk, struct mm_struct *mm)
 {
-	uprobe_free_utask(tsk);
-
 	deactivate_mm(tsk, mm);
 
 	if (tsk->clear_child_tid) {
@@ -1346,9 +1340,6 @@ copy_process(struct pid *pid, int trace, int node,
 	sched_post_fork(p);
 	cgroup_post_fork(p, args);
 	perf_event_fork(p);
-
-	uprobe_copy_process(p, clone_flags);
-
 	copy_oom_score_adj(clone_flags, p);
 
 	return p;

@@ -812,8 +812,6 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 
 	ppin_init(c);
 
-	mcheck_cpu_init(c);
-
 	select_idle_routine(c);
 }
 

@@ -126,9 +126,6 @@ static unsigned long exit_to_user_mode_loop(struct pt_regs *regs,
 		if (ti_work & _TIF_NEED_RESCHED)
 			schedule();
 
-		if (ti_work & _TIF_UPROBE)
-			uprobe_notify_resume(regs);
-
 		if (ti_work & _TIF_PATCH_PENDING)
 			klp_update_patch_state(current);
 

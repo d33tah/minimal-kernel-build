@@ -386,7 +386,6 @@ void __noreturn stop_this_cpu(void *dummy)
 
 	set_cpu_online(smp_processor_id(), false);
 	disable_local_APIC();
-	mcheck_cpu_clear(this_cpu_ptr(&cpu_info));
 
 	if (cpuid_eax(0x8000001f) & BIT(0))
 		native_wbinvd();

@@ -235,7 +235,6 @@ extern struct kmem_cache *sighand_cachep;
 
 void signals_init(void);
 
-int restore_altstack(const stack_t __user *);
 int __save_altstack(stack_t __user *, unsigned long);
 
 #define unsafe_save_altstack(uss, sp, label) do { \

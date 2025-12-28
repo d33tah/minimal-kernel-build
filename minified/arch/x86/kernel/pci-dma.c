@@ -1,6 +1,5 @@
 #include <linux/dma-map-ops.h>
 #include <linux/dma-direct.h>
-#include <linux/iommu.h>
 static inline void detect_intel_iommu(void)
 {
 }

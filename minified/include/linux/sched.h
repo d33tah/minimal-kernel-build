@@ -126,8 +126,6 @@ struct task_group;
 
 #define task_is_running(task)		(READ_ONCE((task)->__state) == TASK_RUNNING)
 
-#define task_is_traced(task)		((READ_ONCE(task->jobctl) & JOBCTL_TRACED) != 0)
-
 # define debug_normal_state_change(cond)	do { } while (0)
 # define debug_special_state_change(cond)	do { } while (0)
 

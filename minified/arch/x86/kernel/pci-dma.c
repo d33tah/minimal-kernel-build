@@ -14,7 +14,10 @@ static inline int amd_iommu_detect(void)
 
 #include <asm/proto.h>
 #define x86_swiotlb_enable false
-#include <asm/gart.h>
+/* Inlined from asm/gart.h */
+static inline void gart_iommu_hole_init(void)
+{
+}
 #include <asm/x86_init.h>
 
 const struct dma_map_ops *dma_ops;

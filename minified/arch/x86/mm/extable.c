@@ -50,7 +50,8 @@
 #include <asm/sev.h>
 #include <asm/traps.h>
 #include <asm/kdebug.h>
-#include <asm/insn-eval.h>
+/* Inlined from asm/insn-eval.h */
+int pt_regs_offset(struct pt_regs *regs, int regno);
 
 /* Inlined from asm/sgx.h */
 #define SGX_ENCLS_FAULT_FLAG 0x40000000

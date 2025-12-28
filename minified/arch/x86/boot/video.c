@@ -1,7 +1,6 @@
 #include <uapi/asm/boot.h>
 #include "boot.h"
 #include "video.h"
-#include "vesa.h"
 
 static u16 video_segment;
 

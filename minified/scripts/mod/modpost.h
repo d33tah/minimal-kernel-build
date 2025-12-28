@@ -12,9 +12,12 @@
 #include <elf.h>
 
 #include "list.h"
-#include "elfconfig.h"
 
- 
+#define KERNEL_ELFCLASS ELFCLASS32
+#define KERNEL_ELFDATA ELFDATA2LSB
+#define HOST_ELFCLASS ELFCLASS64
+#define HOST_ELFDATA ELFDATA2LSB
+
 #undef ELF_ST_BIND
 #undef ELF_ST_TYPE
 #undef ELF_R_SYM

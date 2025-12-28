@@ -22,7 +22,7 @@
 #include <asm/bootparam.h>
 #include <asm/desc_defs.h>
 
-#include "tdx.h"
+static inline void early_tdx_detect(void) { }
 
 #define BOOT_CTYPE_H
 #include <linux/acpi.h>

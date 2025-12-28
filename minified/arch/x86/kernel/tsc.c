@@ -544,12 +544,6 @@ void tsc_restore_sched_clock_state(void)
 	/* Stub: suspend/resume not needed for minimal kernel */
 }
 
-/* detect_art stubbed out - ART feature not needed for minimal kernel
-   (convert_art_to_tsc was removed) */
-static void __init detect_art(void)
-{
-}
-
 static void tsc_resume(struct clocksource *cs)
 {
 	/* tsc_verify_tsc_adjust removed - was empty stub */
@@ -788,5 +782,4 @@ void __init tsc_init(void)
 		tsc_disable_clocksource_watchdog();
 
 	clocksource_register_khz(&clocksource_tsc_early, tsc_khz);
-	detect_art();
 }

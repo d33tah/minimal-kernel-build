@@ -121,13 +121,6 @@ void __init idt_setup_traps(void)
 	idt_setup_from_table(idt_table, def_idts, ARRAY_SIZE(def_idts), true);
 }
 
-static void __init idt_map_in_cea(void)
-{
-	cea_set_pte(CPU_ENTRY_AREA_RO_IDT_VADDR, __pa_symbol(idt_table),
-		    PAGE_KERNEL_RO);
-	idt_descr.address = CPU_ENTRY_AREA_RO_IDT;
-}
-
 void __init idt_setup_apic_and_irq_gates(void)
 {
 	int i = FIRST_EXTERNAL_VECTOR;
@@ -141,7 +134,9 @@ void __init idt_setup_apic_and_irq_gates(void)
 		set_intr_gate(i, entry);
 	}
 
-	idt_map_in_cea();
+	cea_set_pte(CPU_ENTRY_AREA_RO_IDT_VADDR, __pa_symbol(idt_table),
+		    PAGE_KERNEL_RO);
+	idt_descr.address = CPU_ENTRY_AREA_RO_IDT;
 	load_idt(&idt_descr);
 
 	set_memory_ro((unsigned long)&idt_table, 1);

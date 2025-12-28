@@ -201,8 +201,8 @@ struct kobject *sysfs_dev_block_kobj;
 
 static void device_platform_notify_remove(struct device *dev)
 {
-	acpi_device_notify_remove(dev);
-	software_node_notify_remove(dev);
+	/* acpi_device_notify_remove - inline empty stub */
+	/* software_node_notify_remove removed - was empty stub */
 	/* platform_notify_remove call removed - never assigned */
 }
 

@@ -1316,8 +1316,6 @@ copy_process(struct pid *pid, int trace, int node,
 	}
 
 	p->nr_dirtied = 0;
-	p->nr_dirtied_pause = 128 >> (PAGE_SHIFT - 10);
-	p->dirty_paused_when = 0;
 
 	p->pdeath_signal = 0;
 	INIT_LIST_HEAD(&p->thread_group);

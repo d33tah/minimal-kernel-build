@@ -474,13 +474,9 @@ struct task_struct {
 	struct page_frag		task_frag;
 
 
-	 
-	int				nr_dirtied;
-	int				nr_dirtied_pause;
-	 
-	unsigned long			dirty_paused_when;
 
-	 
+	int				nr_dirtied;
+
 	u64				timer_slack_ns;
 	u64				default_timer_slack_ns;
 

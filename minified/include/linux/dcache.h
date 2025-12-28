@@ -315,13 +315,4 @@ static inline struct inode *d_backing_inode(const struct dentry *upper)
 	return inode;
 }
 
-static inline struct dentry *d_real(struct dentry *dentry,
-				    const struct inode *inode)
-{
-	if (unlikely(dentry->d_flags & DCACHE_OP_REAL))
-		return dentry->d_op->d_real(dentry, inode);
-	else
-		return dentry;
-}
-
 #endif

@@ -21,11 +21,6 @@ struct timespec64 {
 	long		tv_nsec;		 
 };
 
-struct itimerspec64 {
-	struct timespec64 it_interval;
-	struct timespec64 it_value;
-};
-
 #define TIME64_MAX			((s64)~((u64)1 << 63))
 #define TIME64_MIN			(-TIME64_MAX - 1)
 

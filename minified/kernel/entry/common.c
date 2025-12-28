@@ -286,7 +286,6 @@ irqentry_state_t noinstr irqentry_nmi_enter(struct pt_regs *regs)
 
 	__nmi_enter();
 	lockdep_hardirqs_off(CALLER_ADDR0);
-	lockdep_hardirq_enter();
 	rcu_nmi_enter();
 
 	return irq_state;

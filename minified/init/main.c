@@ -559,8 +559,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	lockdep_init();
 
-	locking_selftest();
-
 	mem_encrypt_init();
 
 	if (initrd_start && !initrd_below_start_ok &&

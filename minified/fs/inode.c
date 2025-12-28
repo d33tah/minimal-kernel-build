@@ -208,7 +208,6 @@ void inode_init_once(struct inode *inode)
 	INIT_LIST_HEAD(&inode->i_wb_list);
 	INIT_LIST_HEAD(&inode->i_lru);
 	__address_space_init_once(&inode->i_data);
-	i_size_ordered_init(inode);
 }
 
 static void init_once(void *foo)

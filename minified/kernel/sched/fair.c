@@ -470,10 +470,6 @@ static inline void update_stats_curr_start(struct cfs_rq *cfs_rq,
 	se->exec_start = rq_clock_task(rq_of(cfs_rq));
 }
 
-static void task_tick_numa(struct rq *rq, struct task_struct *curr)
-{
-}
-
 static void account_entity_enqueue(struct cfs_rq *cfs_rq,
 				   struct sched_entity *se)
 {
@@ -611,13 +607,6 @@ static inline void util_est_update(struct cfs_rq *cfs_rq, struct task_struct *p,
 				   bool task_sleep)
 {
 }
-static inline void update_misfit_status(struct task_struct *p, struct rq *rq)
-{
-}
-
-static void check_spread(struct cfs_rq *cfs_rq, struct sched_entity *se)
-{
-}
 
 static void place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 			 int initial)
@@ -670,7 +659,6 @@ static void enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 
 	check_schedstat_required();
 	update_stats_enqueue_fair(cfs_rq, se, flags);
-	check_spread(cfs_rq, se);
 	if (!curr)
 		__enqueue_entity(cfs_rq, se);
 	se->on_rq = 1;
@@ -863,8 +851,6 @@ static void put_prev_entity(struct cfs_rq *cfs_rq, struct sched_entity *prev)
 
 	check_cfs_rq_runtime(cfs_rq);
 
-	check_spread(cfs_rq, prev);
-
 	if (prev->on_rq) {
 		update_stats_wait_start_fair(cfs_rq, prev);
 
@@ -912,14 +898,6 @@ static inline int throttled_hierarchy(struct cfs_rq *cfs_rq)
 }
 
 static inline void hrtick_start_fair(struct rq *rq, struct task_struct *p)
-{
-}
-
-static inline void hrtick_update(struct rq *rq)
-{
-}
-
-static inline void update_overutilized_status(struct rq *rq)
 {
 }
 
@@ -989,13 +967,8 @@ static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 
 	add_nr_running(rq, 1);
 
-	if (!task_new)
-		update_overutilized_status(rq);
-
 enqueue_throttle:
 	assert_list_leaf_cfs_rq(rq);
-
-	hrtick_update(rq);
 }
 
 static void set_next_buddy(struct sched_entity *se);
@@ -1059,7 +1032,6 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 
 dequeue_throttle:
 	util_est_update(&rq->cfs, p, task_sleep);
-	hrtick_update(rq);
 }
 
 static unsigned long wakeup_gran(struct sched_entity *se)
@@ -1204,8 +1176,6 @@ done:
 	if (hrtick_enabled_fair(rq))
 		hrtick_start_fair(rq, p);
 
-	update_misfit_status(p, rq);
-
 	return p;
 
 idle:
@@ -1278,10 +1248,6 @@ static bool yield_to_task_fair(struct rq *rq, struct task_struct *p)
 	return true;
 }
 
-static inline void task_tick_core(struct rq *rq, struct task_struct *curr)
-{
-}
-
 static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
 {
 	struct cfs_rq *cfs_rq;
@@ -1292,14 +1258,6 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
 		cfs_rq = cfs_rq_of(se);
 		entity_tick(cfs_rq, se, queued);
 	}
-
-	if (static_branch_unlikely(&sched_numa_balancing))
-		task_tick_numa(rq, curr);
-
-	update_misfit_status(curr, rq);
-	update_overutilized_status(task_rq(curr));
-
-	task_tick_core(rq, curr);
 }
 
 static void task_fork_fair(struct task_struct *p)

@@ -342,9 +342,6 @@ int folio_wait_private_2_killable(struct folio *folio);
 
 void folio_add_wait_queue(struct folio *folio, wait_queue_entry_t *waiter);
 
-size_t fault_in_writeable(char __user *uaddr, size_t size);
-size_t fault_in_subpage_writeable(char __user *uaddr, size_t size);
-size_t fault_in_safe_writeable(const char __user *uaddr, size_t size);
 size_t fault_in_readable(const char __user *uaddr, size_t size);
 
 int add_to_page_cache_locked(struct page *page, struct address_space *mapping,

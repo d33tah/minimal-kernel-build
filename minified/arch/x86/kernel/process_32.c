@@ -8,7 +8,6 @@
 #include <linux/fs.h>
 #include <linux/kernel.h>
 #include <linux/mm.h>
-#include <linux/elfcore.h>
 #include <linux/smp.h>
 #include <linux/stddef.h>
 #include <linux/slab.h>

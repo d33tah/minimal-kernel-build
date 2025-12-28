@@ -15,7 +15,6 @@
 #include <asm/tlbflush.h>
 #include <asm/tlb.h>
 #include <asm/proto.h>
-#include <asm/microcode.h>
 unsigned long kaslr_get_random_long(const char *purpose);
 static inline void kernel_randomize_memory(void)
 {

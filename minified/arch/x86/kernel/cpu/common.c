@@ -50,8 +50,10 @@ extern void doublefault_init_cpu_tss(void);
 #include <asm/mce.h>
 #include <asm/msr.h>
 #include <asm/memtype.h>
-#include <asm/microcode.h>
-#include <asm/microcode_intel.h>
+/* Inlined from asm/microcode_intel.h - microcode support disabled */
+static inline void show_ucode_info_early(void)
+{
+}
 #include <asm/intel-family.h>
 #include <asm/cpu_device_id.h>
 #include <asm/sigframe.h>

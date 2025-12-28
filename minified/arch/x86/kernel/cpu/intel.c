@@ -3,7 +3,6 @@
 
 #include <asm/cpu.h>
 #include <asm/bugs.h>
-#include <asm/microcode_intel.h>
 
 void handle_bus_lock(struct pt_regs *regs)
 {

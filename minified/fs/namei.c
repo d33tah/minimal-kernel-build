@@ -133,12 +133,6 @@ void putname(struct filename *name)
 		__putname(name);
 }
 
-static int check_acl(struct user_namespace *mnt_userns, struct inode *inode,
-		     int mask)
-{
-	return -EAGAIN;
-}
-
 static int acl_permission_check(struct user_namespace *mnt_userns,
 				struct inode *inode, int mask)
 {
@@ -150,12 +144,6 @@ static int acl_permission_check(struct user_namespace *mnt_userns,
 		mask &= 7;
 		mode >>= 6;
 		return (mask & ~mode) ? -EACCES : 0;
-	}
-
-	if (IS_POSIXACL(inode) && (mode & S_IRWXG)) {
-		int error = check_acl(mnt_userns, inode, mask);
-		if (error != -EAGAIN)
-			return error;
 	}
 
 	mask &= 7;
@@ -578,37 +566,10 @@ static inline void put_link(struct nameidata *nd)
 		path_put(&last->link);
 }
 
-static inline int may_follow_link(struct nameidata *nd,
-				  const struct inode *inode)
-{
-	/* Stub: allow following links */
-	return 0;
-}
-
 int may_linkat(struct user_namespace *mnt_userns, struct path *link)
 {
 	/* Stub: allow hardlinks */
 	return 0;
-}
-
-static int may_create_in_sticky(struct user_namespace *mnt_userns,
-				struct nameidata *nd, struct inode *const inode)
-{
-	return 0;
-}
-
-static bool choose_mountpoint_rcu(struct mount *m, const struct path *root,
-				  struct path *path, unsigned *seqp)
-{
-	/* Stub: minimal system doesn't need mountpoint selection */
-	return false;
-}
-
-static bool choose_mountpoint(struct mount *m, const struct path *root,
-			      struct path *path)
-{
-	/* Stub: minimal system doesn't need mountpoint selection */
-	return false;
 }
 
 static int __traverse_mounts(struct path *path, unsigned flags, bool *jumped,
@@ -898,12 +859,6 @@ static const char *pick_link(struct nameidata *nd, struct path *link,
 	clear_delayed_call(&last->done);
 	last->seq = seq;
 
-	if (flags & WALK_TRAILING) {
-		error = may_follow_link(nd, inode);
-		if (unlikely(error))
-			return ERR_PTR(error);
-	}
-
 	if (unlikely(nd->flags & LOOKUP_NO_SYMLINKS) ||
 	    unlikely(link->mnt->mnt_flags & MNT_NOSYMFOLLOW))
 		return ERR_PTR(-ELOOP);
@@ -992,20 +947,8 @@ static struct dentry *follow_dotdot_rcu(struct nameidata *nd,
 
 	if (path_equal(&nd->path, &nd->root))
 		goto in_root;
-	if (unlikely(nd->path.dentry == nd->path.mnt->mnt_root)) {
-		struct path path;
-		unsigned seq;
-		if (!choose_mountpoint_rcu(real_mount(nd->path.mnt), &nd->root,
-					   &path, &seq))
-			goto in_root;
-		if (unlikely(nd->flags & LOOKUP_NO_XDEV))
-			return ERR_PTR(-ECHILD);
-		nd->path = path;
-		nd->inode = path.dentry->d_inode;
-		nd->seq = seq;
-		if (unlikely(read_seqretry(&mount_lock, nd->m_seq)))
-			return ERR_PTR(-ECHILD);
-	}
+	if (unlikely(nd->path.dentry == nd->path.mnt->mnt_root))
+		goto in_root;
 	old = nd->path.dentry;
 	parent = old->d_parent;
 	*inodep = parent->d_inode;
@@ -1030,18 +973,8 @@ static struct dentry *follow_dotdot(struct nameidata *nd, struct inode **inodep,
 
 	if (path_equal(&nd->path, &nd->root))
 		goto in_root;
-	if (unlikely(nd->path.dentry == nd->path.mnt->mnt_root)) {
-		struct path path;
-
-		if (!choose_mountpoint(real_mount(nd->path.mnt), &nd->root,
-				       &path))
-			goto in_root;
-		path_put(&nd->path);
-		nd->path = path;
-		nd->inode = path.dentry->d_inode;
-		if (unlikely(nd->flags & LOOKUP_NO_XDEV))
-			return ERR_PTR(-EXDEV);
-	}
+	if (unlikely(nd->path.dentry == nd->path.mnt->mnt_root))
+		goto in_root;
 
 	parent = dget_parent(nd->path.dentry);
 	if (unlikely(!path_connected(nd->path.mnt, parent))) {
@@ -1762,10 +1695,6 @@ static int do_open(struct nameidata *nd, struct file *file,
 			return -EEXIST;
 		if (d_is_dir(nd->path.dentry))
 			return -EISDIR;
-		error = may_create_in_sticky(mnt_userns, nd,
-					     d_backing_inode(nd->path.dentry));
-		if (unlikely(error))
-			return error;
 	}
 	if ((nd->flags & LOOKUP_DIRECTORY) && !d_can_lookup(nd->path.dentry))
 		return -ENOTDIR;

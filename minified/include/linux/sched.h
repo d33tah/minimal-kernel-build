@@ -530,14 +530,9 @@ static inline pid_t task_pid_vnr(struct task_struct *tsk)
 }
 
 
-static inline pid_t task_tgid_nr(struct task_struct *tsk)
-{
-	return tsk->tgid;
-}
-
 static inline int is_global_init(struct task_struct *tsk)
 {
-	return task_tgid_nr(tsk) == 1;
+	return tsk->tgid == 1;
 }
 
 
@@ -699,17 +694,9 @@ static inline int test_tsk_need_resched(struct task_struct *tsk)
 
 extern int __cond_resched(void);
 
-
-static inline int _cond_resched(void)
-{
-	return __cond_resched();
-}
-
-
-
 #define cond_resched() ({			\
 	__might_resched(__FILE__, __LINE__, 0);	\
-	_cond_resched();			\
+	__cond_resched();			\
 })
 
 

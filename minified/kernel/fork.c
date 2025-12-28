@@ -44,9 +44,7 @@ struct file *anon_inode_getfile(const char *name,
 #include <linux/futex.h>
 #include <linux/compat.h>
 #include <linux/kthread.h>
-static inline void task_io_accounting_init(struct task_io_accounting *ioac)
-{
-}
+/* task_io_accounting_init removed - empty stub */
 #include <linux/rcupdate.h>
 #include <linux/ptrace.h>
 #include <linux/mount.h>
@@ -54,76 +52,23 @@ static inline void task_io_accounting_init(struct task_io_accounting *ioac)
 #include <linux/memcontrol.h>
 #include <linux/proc_fs.h>
 #include <linux/rmap.h>
-static inline void ksm_exit(struct mm_struct *mm)
-{
-}
-#define acct_collect(x, y) \
-	do {               \
-	} while (0)
-#define acct_process() \
-	do {           \
-	} while (0)
-#define acct_exit_ns(ns) \
-	do {             \
-	} while (0)
+/* ksm_exit, acct_*, proc_fork_connector, delayacct_*, taskstats_tgid_free removed - empty stubs */
 #include <linux/userfaultfd_k.h>
-static inline void acct_clear_integrals(struct task_struct *tsk)
-{
-}
-static inline void proc_fork_connector(struct task_struct *task)
-{
-}
 #include <linux/freezer.h>
-static inline void delayacct_tsk_init(struct task_struct *tsk)
-{
-}
-static inline void delayacct_tsk_free(struct task_struct *tsk)
-{
-}
-static inline void taskstats_tgid_free(struct signal_struct *sig)
-{
-}
 #include <linux/random.h>
 #include <linux/tty.h>
 #include <linux/fs_struct.h>
 #include <linux/magic.h>
 #include <linux/perf_event.h>
 #include <linux/posix-timers.h>
-#ifndef _URN_INLINE
-#define _URN_INLINE
-struct user_return_notifier {};
-static inline void propagate_user_return_notify(struct task_struct *prev,
-						struct task_struct *next)
-{
-}
-static inline void fire_user_return_notifiers(void)
-{
-}
-static inline void clear_user_return_notifier(struct task_struct *p)
-{
-}
-#endif
+/* user_return_notifier stubs, khugepaged_exit, scs_* removed - empty stubs */
 #include <linux/oom.h>
-static inline void khugepaged_exit(struct mm_struct *mm)
-{
-}
 #include <linux/uprobes.h>
 #include <linux/compiler.h>
 #include <linux/sysctl.h>
 #include <linux/init_task.h>
 #include <linux/thread_info.h>
 #include <linux/io_uring.h>
-static inline void scs_init(void)
-{
-}
-static inline int scs_prepare(struct task_struct *tsk, int node)
-{
-	return 0;
-}
-static inline void scs_release(struct task_struct *tsk)
-{
-}
-/* end scs.h */
 
 #include <asm/pgalloc.h>
 #include <linux/uaccess.h>
@@ -331,8 +276,7 @@ void put_task_stack(struct task_struct *tsk)
 void free_task(struct task_struct *tsk)
 {
 	release_user_cpus_ptr(tsk);
-	scs_release(tsk);
-
+	/* scs_release removed - empty stub */
 	WARN_ON_ONCE(refcount_read(&tsk->stack_refcount) != 0);
 	arch_release_task_struct(tsk);
 	if (tsk->flags & PF_KTHREAD)
@@ -457,8 +401,7 @@ static void mmdrop_async(struct mm_struct *mm)
 
 static inline void free_signal_struct(struct signal_struct *sig)
 {
-	taskstats_tgid_free(sig);
-	/* sched_autogroup_exit - stubbed */
+	/* taskstats_tgid_free, sched_autogroup_exit - removed stubs */
 	if (sig->oom_mm)
 		mmdrop_async(sig->oom_mm);
 	kmem_cache_free(signal_cachep, sig);
@@ -481,7 +424,7 @@ void __put_task_struct(struct task_struct *tsk)
 	security_task_free(tsk);
 
 	exit_creds(tsk);
-	delayacct_tsk_free(tsk);
+	/* delayacct_tsk_free removed - empty stub */
 	put_signal_struct(tsk->signal);
 	sched_core_free(tsk);
 	free_task(tsk);
@@ -558,9 +501,7 @@ void __init fork_init(void)
 			      RLIM_INFINITY);
 	set_rlimit_ucount_max(&init_user_ns, UCOUNT_RLIMIT_MEMLOCK,
 			      RLIM_INFINITY);
-
-	scs_init();
-
+	/* scs_init removed - empty stub */
 	lockdep_init_task(&init_task);
 	uprobes_init();
 }
@@ -596,13 +537,8 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 
 	refcount_set(&tsk->stack_refcount, 1);
 	account_kernel_stack(tsk, 1);
-
-	err = scs_prepare(tsk, node);
-	if (err)
-		goto free_stack;
-
+	/* scs_prepare, clear_user_return_notifier removed - empty stubs */
 	setup_thread_stack(tsk, orig);
-	clear_user_return_notifier(tsk);
 	clear_tsk_need_resched(tsk);
 	set_task_stack_end_magic(tsk);
 	clear_syscall_work_syscall_user_dispatch(tsk);
@@ -724,8 +660,7 @@ static inline void __mmput(struct mm_struct *mm)
 	VM_BUG_ON(atomic_read(&mm->mm_users));
 
 	uprobe_clear_state(mm);
-	ksm_exit(mm);
-	khugepaged_exit(mm);
+	/* ksm_exit, khugepaged_exit removed - empty stubs */
 	exit_mmap(mm);
 	mm_put_huge_zero_page(mm);
 	set_mm_exe_file(mm, NULL);
@@ -1198,8 +1133,7 @@ copy_process(struct pid *pid, int trace, int node,
 	retval = -EAGAIN;
 	if (data_race(nr_threads >= max_threads))
 		goto bad_fork_cleanup_count;
-
-	delayacct_tsk_init(p);
+	/* delayacct_tsk_init removed - empty stub */
 	p->flags &=
 		~(PF_SUPERPRIV | PF_WQ_WORKER | PF_IDLE | PF_NO_SETAFFINITY);
 	p->flags |= PF_FORKNOEXEC;
@@ -1215,10 +1149,7 @@ copy_process(struct pid *pid, int trace, int node,
 	prev_cputime_init(&p->prev_cputime);
 
 	p->default_timer_slack_ns = current->timer_slack_ns;
-
-	task_io_accounting_init(&p->ioac);
-	acct_clear_integrals(p);
-
+	/* task_io_accounting_init, acct_clear_integrals removed - empty stubs */
 	posix_cputimers_init(&p->posix_cputimers);
 
 	p->io_context = NULL;
@@ -1414,8 +1345,7 @@ copy_process(struct pid *pid, int trace, int node,
 
 	if (pidfile)
 		fd_install(pidfd, pidfile);
-
-	proc_fork_connector(p);
+	/* proc_fork_connector removed - empty stub */
 	sched_post_fork(p);
 	cgroup_post_fork(p, args);
 	perf_event_fork(p);
@@ -1468,7 +1398,7 @@ bad_fork_cleanup_audit:
 bad_fork_cleanup_policy:
 	lockdep_free_task(p);
 bad_fork_cleanup_delayacct:
-	delayacct_tsk_free(p);
+	/* delayacct_tsk_free removed - empty stub */
 bad_fork_cleanup_count:
 	dec_rlimit_ucounts(task_ucounts(p), UCOUNT_RLIMIT_NPROC, 1);
 	exit_creds(p);

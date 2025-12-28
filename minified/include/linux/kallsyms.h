@@ -2,7 +2,7 @@
 #define _LINUX_KALLSYMS_H
 
 #include <linux/errno.h>
-#define BUILD_ID_SIZE_MAX 20
+/* BUILD_ID_SIZE_MAX removed - unused */
 #include <linux/kernel.h>
 #include <linux/stddef.h>
 #include <linux/mm.h>
@@ -10,7 +10,7 @@
 
 #include <asm/sections.h>
 
-#define KSYM_NAME_LEN 128
+/* KSYM_NAME_LEN removed - unused */
 
 struct cred;
 struct module;

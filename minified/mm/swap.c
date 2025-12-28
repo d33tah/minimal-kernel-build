@@ -209,7 +209,7 @@ void folio_mark_accessed(struct folio *folio)
 		else
 			__lru_cache_activate_folio(folio);
 		folio_clear_referenced(folio);
-		workingset_activation(folio);
+		/* workingset_activation removed - was empty stub */
 	}
 	if (folio_test_idle(folio))
 		folio_clear_idle(folio);

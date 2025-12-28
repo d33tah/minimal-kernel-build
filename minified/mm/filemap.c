@@ -447,8 +447,7 @@ int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 		__folio_clear_locked(folio);
 	else {
 		WARN_ON_ONCE(folio_test_active(folio));
-		if (!(gfp & __GFP_WRITE) && shadow)
-			workingset_refault(folio, shadow);
+		/* workingset_refault removed - was empty stub */
 		folio_add_lru(folio);
 	}
 	return ret;

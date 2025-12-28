@@ -1,14 +1,9 @@
-/* Minimal includes for workingset stubs */
+/* Minimal workingset - only keeping callback and init */
 #include <linux/mm.h>
 #include <linux/module.h>
 #include <linux/list_lru.h>
 #include <linux/xarray.h>
-void workingset_refault(struct folio *folio, void *shadow)
-{
-}
-void workingset_activation(struct folio *folio)
-{
-}
+/* workingset_refault/workingset_activation removed - calls removed */
 void workingset_update_node(struct xa_node *node)
 {
 }

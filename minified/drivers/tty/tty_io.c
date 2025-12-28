@@ -1351,7 +1351,6 @@ static void destruct_tty_driver(struct kref *kref)
 			if (!(driver->flags & TTY_DRIVER_DYNAMIC_DEV))
 				tty_unregister_device(driver, i);
 		}
-		proc_tty_unregister_driver(driver);
 		if (driver->flags & TTY_DRIVER_DYNAMIC_ALLOC)
 			cdev_del(driver->cdevs[0]);
 	}
@@ -1407,7 +1406,6 @@ int tty_register_driver(struct tty_driver *driver)
 			}
 		}
 	}
-	proc_tty_register_driver(driver);
 	driver->flags |= TTY_DRIVER_INSTALLED;
 	return 0;
 

@@ -7,7 +7,6 @@
 struct device;
 struct page;
 struct scatterlist;
-static inline void swiotlb_init(bool addressing_limited, unsigned int flags) {}
 static inline bool is_swiotlb_buffer(struct device *dev, phys_addr_t paddr) { return false; }
 static inline bool is_swiotlb_force_bounce(struct device *dev) { return false; }
 static inline size_t swiotlb_max_mapping_size(struct device *dev) { return SIZE_MAX; }

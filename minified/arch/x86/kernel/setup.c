@@ -615,8 +615,6 @@ void __init setup_arch(char **cmdline_p)
 
 	tboot_probe();
 
-	map_vsyscall();
-
 	generic_apic_probe();
 
 	early_quirks();
@@ -627,8 +625,6 @@ void __init setup_arch(char **cmdline_p)
 	get_smp_config();
 
 	init_apic_mappings();
-
-	prefill_possible_map();
 
 	init_cpu_to_node();
 	init_gi_nodes();
@@ -652,8 +648,6 @@ void __init setup_arch(char **cmdline_p)
 	x86_init.timers.wallclock_init();
 
 	register_refined_jiffies(CLOCK_TICK_RATE);
-
-	unwind_init();
 }
 
 static struct resource video_ram_resource = { .name = "Video RAM area",

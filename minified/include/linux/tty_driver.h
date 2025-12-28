@@ -123,7 +123,4 @@ struct device *tty_register_device_attr(struct tty_driver *driver,
 		unsigned index, struct device *device, void *drvdata,
 		const struct attribute_group **attr_grp);
 
-static inline void proc_tty_register_driver(struct tty_driver *d) {}
-static inline void proc_tty_unregister_driver(struct tty_driver *d) {}
-
 #endif  

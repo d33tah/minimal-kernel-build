@@ -549,13 +549,6 @@ typedef void *fl_owner_t;
 
 struct file_lock;
 struct net;
-/* file_lock_*, lock_manager_* forward declarations removed - unused */
-
-#ifndef OFFSET_MAX
-#define INT_LIMIT(x)	(~((x)1 << (sizeof(x)*8 - 1)))
-#define OFFSET_MAX	INT_LIMIT(loff_t)
-#endif
-
 
 #define locks_inode(f) file_inode(f)
 

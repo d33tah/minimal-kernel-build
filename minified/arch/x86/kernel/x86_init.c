@@ -22,7 +22,6 @@ static inline int hpet_enable(void)
 #define default_setup_hpet_msi NULL
 #include <asm/memtype.h>
 #include <asm/tsc.h>
-#include <asm/iommu.h>
 #include <asm/mach_traps.h>
 #define native_create_pci_msi_domain NULL
 

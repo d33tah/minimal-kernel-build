@@ -19,7 +19,6 @@
 #include <asm/vsyscall.h>
 #include <asm/vm86.h>
 #include <asm/mmu_context.h>
-#include <asm/efi.h>
 #include <asm/desc.h>
 #include <asm/cpu_entry_area.h>
 #include <asm/pgtable_areas.h>

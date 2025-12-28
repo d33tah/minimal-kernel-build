@@ -18,7 +18,6 @@ static inline void mmiotrace_iounmap(volatile void __iomem *addr)
 
 #include <asm/set_memory.h>
 #include <asm/e820/api.h>
-#include <asm/efi.h>
 #include <asm/fixmap.h>
 #include <asm/tlbflush.h>
 #include <asm/pgalloc.h>

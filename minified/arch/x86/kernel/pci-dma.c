@@ -13,7 +13,7 @@ static inline int amd_iommu_detect(void)
 }
 
 #include <asm/proto.h>
-#include <asm/iommu.h>
+#define x86_swiotlb_enable false
 #include <asm/gart.h>
 #include <asm/x86_init.h>
 

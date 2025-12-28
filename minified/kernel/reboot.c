@@ -11,7 +11,6 @@
 #include <linux/reboot.h>
 #include <linux/suspend.h>
 #include <linux/syscalls.h>
-#include <linux/syscore_ops.h>
 #include <linux/uaccess.h>
 
 /* Removed: C_A_D, cad_pid - only set but never read */

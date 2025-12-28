@@ -29,8 +29,8 @@ extern bool crash_kexec_post_notifiers;
 #include <asm/bios_ebda.h>
 #include <asm/bugs.h>
 #include <asm/cpu.h>
-#include <asm/efi.h>
 #include <asm/gart.h>
+#include <asm/tlbflush.h>
 static inline void init_hypervisor_platform(void) { }
 #include <asm/io_apic.h>
 /* --- 2025-12-07 20:48 --- Inlined kasan.h */

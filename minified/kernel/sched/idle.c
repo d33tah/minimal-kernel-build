@@ -1,7 +1,7 @@
 /* Simplified idle scheduler for minimal kernel */
 
 #include <linux/sched/idle.h>
-#include <linux/cpuidle.h>
+extern void default_idle_call(void);
 #include <linux/tick.h>
 
 #include "sched.h"

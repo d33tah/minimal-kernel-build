@@ -28,8 +28,7 @@
 # define raw_spin_lock_init(lock)				\
 	do { *(lock) = __RAW_SPIN_LOCK_UNLOCKED(lock); } while (0)
 
-#define raw_spin_is_locked(lock)	arch_spin_is_locked(&(lock)->raw_lock)
-
+/* raw_spin_is_locked removed - unused */
 
 #ifndef smp_mb__after_spinlock
 #define smp_mb__after_spinlock()	do { } while (0)

@@ -163,12 +163,10 @@ static ssize_t bind_store(struct device_driver *drv, const char *buf,
 }
 static DRIVER_ATTR_IGNORE_LOCKDEP(bind, 0200, NULL, bind_store);
 
-/* Stub: drivers_autoprobe simplified for minimal kernel */
 static ssize_t drivers_autoprobe_show(struct bus_type *bus, char *buf)
 {
 	return sysfs_emit(buf, "1\n");
 }
-
 static ssize_t drivers_autoprobe_store(struct bus_type *bus, const char *buf,
 				       size_t count)
 {

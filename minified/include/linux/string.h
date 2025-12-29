@@ -7,9 +7,7 @@
 #include <linux/errno.h>	 
 #include <linux/stdarg.h>
 
-
-extern void *memdup_user(const void __user *, size_t);
-
+/* memdup_user removed - never called */
 #include <asm/string_32.h>
 
 #ifndef __HAVE_ARCH_STRCPY

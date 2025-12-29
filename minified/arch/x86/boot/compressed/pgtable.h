@@ -11,10 +11,7 @@
 #define TRAMPOLINE_32BIT_STACK_END	TRAMPOLINE_32BIT_SIZE
 
 #ifndef __ASSEMBLER__
-
 extern unsigned long *trampoline_32bit;
-
-extern void trampoline_32bit_src(void *return_ptr);
-
-#endif  
+/* trampoline_32bit_src removed - never called */
+#endif
 #endif  

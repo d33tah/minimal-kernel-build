@@ -438,9 +438,7 @@ extern pteval_t __default_kernel_pte_mask;
 
 #define pgprot_writecombine	pgprot_writecombine
 extern pgprot_t pgprot_writecombine(pgprot_t prot);
-
-#define pgprot_writethrough	pgprot_writethrough
-extern pgprot_t pgprot_writethrough(pgprot_t prot);
+/* pgprot_writethrough removed - never called (fallback in linux/pgtable.h) */
 
 #define __HAVE_PFNMAP_TRACKING
 

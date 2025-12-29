@@ -92,9 +92,7 @@ extern unsigned long calc_load_update;
 extern atomic_long_t calc_load_tasks;
 
 extern unsigned int sysctl_sched_child_runs_first;
-
-extern void calc_global_load_tick(struct rq *this_rq);
-/* calc_load_fold_active removed - never called */
+/* calc_global_load_tick, calc_load_fold_active removed - never called */
 
 /* call_trace_sched_update_nr_running removed - unused */
 

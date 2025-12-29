@@ -280,11 +280,7 @@ static void hrtimer_force_reprogram(struct hrtimer_cpu_base *cpu_base,
 	__hrtimer_reprogram(cpu_base, cpu_base->next_timer, expires_next);
 }
 
-static inline int hrtimer_is_hres_enabled(void)
-{
-	return 0;
-}
-
+/* hrtimer_is_hres_enabled removed - never called */
 static void hrtimer_reprogram(struct hrtimer *timer, bool reprogram)
 {
 	struct hrtimer_cpu_base *cpu_base = this_cpu_ptr(&hrtimer_bases);

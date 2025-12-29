@@ -479,23 +479,7 @@ void fd_install(unsigned int fd, struct file *file)
 	rcu_read_unlock_sched();
 }
 
-static struct file *pick_file(struct files_struct *files, unsigned fd)
-{
-	struct fdtable *fdt = files_fdtable(files);
-	struct file *file;
-
-	if (fd >= fdt->max_fds)
-		return NULL;
-
-	file = fdt->fd[fd];
-	if (file) {
-		rcu_assign_pointer(fdt->fd[fd], NULL);
-		__put_unused_fd(files, fd);
-	}
-	return file;
-}
-
-/* close_fd, __close_range removed - never called */
+/* pick_file, close_fd, __close_range removed - never called */
 
 void do_close_on_exec(struct files_struct *files)
 {

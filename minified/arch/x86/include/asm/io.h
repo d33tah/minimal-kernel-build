@@ -56,9 +56,7 @@ static inline void *phys_to_virt(phys_addr_t address)
 
 #define page_to_phys(page)    ((dma_addr_t)page_to_pfn(page) << PAGE_SHIFT)
 
-extern void __iomem *ioremap_prot(resource_size_t offset, unsigned long size, unsigned long prot_val);
-#define ioremap_prot ioremap_prot
-/* ioremap_uc, ioremap_cache, ioremap_encrypted declarations removed - no callers */
+/* ioremap_prot, ioremap_uc, ioremap_cache, ioremap_encrypted declarations removed - no callers */
 
 void __iomem *ioremap(resource_size_t offset, unsigned long size);
 #define ioremap ioremap

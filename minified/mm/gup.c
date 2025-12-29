@@ -26,25 +26,7 @@ struct follow_page_context {
 	unsigned int page_mask;
 };
 
-static inline struct folio *try_get_folio(struct page *page, int refs)
-{
-	struct folio *folio;
-
-retry:
-	folio = page_folio(page);
-	if (WARN_ON_ONCE(folio_ref_count(folio) < 0))
-		return NULL;
-	if (unlikely(!folio_ref_try_add_rcu(folio, refs)))
-		return NULL;
-
-	if (unlikely(page_folio(page) != folio)) {
-		folio_put_refs(folio, refs);
-		goto retry;
-	}
-
-	return folio;
-}
-
+/* try_get_folio removed - never called */
 bool __must_check try_grab_page(struct page *page, unsigned int flags)
 {
 	struct folio *folio = page_folio(page);

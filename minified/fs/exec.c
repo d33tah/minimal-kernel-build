@@ -642,9 +642,7 @@ int begin_new_exec(struct linux_binprm *bprm)
 	retval = de_thread(me);
 	if (retval)
 		goto out;
-
-	io_uring_task_cancel();
-
+	/* io_uring_task_cancel() - empty stub */
 	retval = unshare_files();
 	if (retval)
 		goto out;

@@ -123,7 +123,7 @@ static void destroy_unused_super(struct super_block *s)
 	up_write(&s->s_umount);
 	list_lru_destroy(&s->s_dentry_lru);
 	list_lru_destroy(&s->s_inode_lru);
-	security_sb_free(s);
+	/* security_sb_free() - empty stub */
 	put_user_ns(s->s_user_ns);
 	kfree(s->s_subtype);
 	free_prealloced_shrinker(&s->s_shrink);
@@ -203,8 +203,7 @@ static void __put_super(struct super_block *s)
 		WARN_ON(s->s_dentry_lru.node);
 		WARN_ON(s->s_inode_lru.node);
 		WARN_ON(!list_empty(&s->s_mounts));
-		security_sb_free(s);
-		fscrypt_sb_free(s);
+		/* security_sb_free(), fscrypt_sb_free() - empty stubs */
 		put_user_ns(s->s_user_ns);
 		kfree(s->s_subtype);
 		call_rcu(&s->rcu, destroy_super_rcu);
@@ -271,13 +270,9 @@ void generic_shutdown_super(struct super_block *sb)
 		shrink_dcache_for_umount(sb);
 		sync_filesystem(sb);
 		sb->s_flags &= ~SB_ACTIVE;
-
-		cgroup_writeback_umount();
-
+		/* cgroup_writeback_umount() - empty stub */
 		evict_inodes(sb);
-
-		security_sb_delete(sb);
-
+		/* security_sb_delete() - empty stub */
 		if (sb->s_dio_done_wq) {
 			destroy_workqueue(sb->s_dio_done_wq);
 			sb->s_dio_done_wq = NULL;

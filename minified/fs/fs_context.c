@@ -142,11 +142,7 @@ int generic_parse_monolithic(struct fs_context *fc, void *data)
 
 	if (!options)
 		return 0;
-
-	ret = security_sb_eat_lsm_opts(options, &fc->security);
-	if (ret)
-		return ret;
-
+	/* security_sb_eat_lsm_opts always returns 0 */
 	while ((key = strsep(&options, ",")) != NULL) {
 		if (*key) {
 			size_t v_len = 0;
@@ -439,9 +435,8 @@ static int legacy_parse_monolithic(struct fs_context *fc, void *data)
 	if (!ctx->legacy_data)
 		return 0;
 
-	if (fc->fs_type->fs_flags & FS_BINARY_MOUNTDATA)
-		return 0;
-	return security_sb_eat_lsm_opts(ctx->legacy_data, &fc->security);
+	/* security_sb_eat_lsm_opts always returns 0 */
+	return 0;
 }
 
 static int legacy_get_tree(struct fs_context *fc)

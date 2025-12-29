@@ -98,9 +98,7 @@ struct cred *prepare_creds(void)
 	struct task_struct *task = current;
 	const struct cred *old;
 	struct cred *new;
-
-	validate_process_creds();
-
+	/* validate_process_creds() - empty stub */
 	new = kmem_cache_alloc(cred_jar, GFP_KERNEL);
 	if (!new)
 		return NULL;

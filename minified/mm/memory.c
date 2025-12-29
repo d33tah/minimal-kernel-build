@@ -880,7 +880,6 @@ vm_fault_t do_set_pmd(struct vm_fault *vmf, struct page *page)
 void do_set_pte(struct vm_fault *vmf, struct page *page, unsigned long addr)
 {
 	struct vm_area_struct *vma = vmf->vma;
-	bool uffd_wp = pte_marker_uffd_wp(vmf->orig_pte);
 	bool write = vmf->flags & FAULT_FLAG_WRITE;
 	pte_t entry;
 
@@ -891,8 +890,7 @@ void do_set_pte(struct vm_fault *vmf, struct page *page, unsigned long addr)
 
 	if (write)
 		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
-	if (unlikely(uffd_wp))
-		entry = pte_mkuffd_wp(pte_wrprotect(entry));
+	/* pte_marker_uffd_wp() always false - userfaultfd disabled */
 
 	if (write && !(vma->vm_flags & VM_SHARED)) {
 		inc_mm_counter_fast(vma->vm_mm, MM_ANONPAGES);
@@ -924,11 +922,7 @@ vm_fault_t finish_fault(struct vm_fault *vmf)
 	else
 		page = vmf->page;
 
-	if (!(vma->vm_flags & VM_SHARED)) {
-		ret = check_stable_address_space(vma->vm_mm);
-		if (ret)
-			return ret;
-	}
+	/* check_stable_address_space always 0 - MMF_UNSTABLE never set */
 
 	if (pmd_none(*vmf->pmd)) {
 		/* PageTransCompound always returns false */

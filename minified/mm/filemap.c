@@ -215,9 +215,8 @@ int filemap_fdatawrite_wbc(struct address_space *mapping,
 	    !mapping_tagged(mapping, PAGECACHE_TAG_DIRTY))
 		return 0;
 
-	wbc_attach_fdatawrite_inode(wbc, mapping->host);
+	/* wbc_attach/detach_inode are empty stubs */
 	ret = do_writepages(mapping, wbc);
-	wbc_detach_inode(wbc);
 	return ret;
 }
 

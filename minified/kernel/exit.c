@@ -404,9 +404,7 @@ void __noreturn do_exit(long code)
 	coredump_task_exit(tsk);
 	ptrace_event(PTRACE_EVENT_EXIT, code);
 
-	validate_creds_for_do_exit(tsk);
-
-	io_uring_files_cancel();
+	/* validate_creds_for_do_exit(), io_uring_files_cancel() - empty stubs */
 	exit_signals(tsk);
 
 	if (tsk->mm)

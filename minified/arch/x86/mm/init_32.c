@@ -424,7 +424,7 @@ void __init mem_init(void)
 
 	BUG_ON(!mem_map);
 
-	set_highmem_pages_init();
+	/* set_highmem_pages_init removed - empty stub */
 
 	memblock_free_all();
 

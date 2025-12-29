@@ -111,15 +111,8 @@ restart:
 
 		pmde = READ_ONCE(*pvmw->pmd);
 
-		/* pmd_trans_huge/is_pmd_migration_entry/pmd_devmap always return 0 */
+		/* pmd_trans_huge/migration_entry/devmap/transparent_hugepage_active return 0 */
 		if (!pmd_present(pmde)) {
-			if ((pvmw->flags & PVMW_SYNC) &&
-			    transparent_hugepage_active(vma) &&
-			    (pvmw->nr_pages >= HPAGE_PMD_NR)) {
-				spinlock_t *ptl = pmd_lock(mm, pvmw->pmd);
-
-				spin_unlock(ptl);
-			}
 			step_forward(pvmw, PMD_SIZE);
 			continue;
 		}

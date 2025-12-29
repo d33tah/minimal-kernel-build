@@ -129,8 +129,6 @@ static void do_error_trap(struct pt_regs *regs, long error_code, char *str,
 			  unsigned long trapnr, int signr, int sicode,
 			  void __user *addr)
 {
-	RCU_LOCKDEP_WARN(!rcu_is_watching(), "entry code didn't wake RCU");
-
 	if (notify_die(DIE_TRAP, str, regs, error_code, trapnr, signr) !=
 	    NOTIFY_STOP) {
 		cond_local_irq_enable(regs);

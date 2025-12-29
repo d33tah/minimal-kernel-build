@@ -288,9 +288,6 @@ static bool irq_may_run(struct irq_desc *desc)
 	if (!irqd_has_set(&desc->irq_data, mask))
 		return true;
 
-	if (irq_pm_check_wakeup(desc))
-		return false;
-
 	return irq_check_poll(desc);
 }
 

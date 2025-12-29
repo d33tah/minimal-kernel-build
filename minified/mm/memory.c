@@ -1001,13 +1001,7 @@ static vm_fault_t do_cow_fault(struct vm_fault *vmf)
 	vmf->cow_page = alloc_page_vma(GFP_HIGHUSER_MOVABLE, vma, vmf->address);
 	if (!vmf->cow_page)
 		return VM_FAULT_OOM;
-
-	if (mem_cgroup_charge(page_folio(vmf->cow_page), vma->vm_mm,
-			      GFP_KERNEL)) {
-		put_page(vmf->cow_page);
-		return VM_FAULT_OOM;
-	}
-	cgroup_throttle_swaprate(vmf->cow_page, GFP_KERNEL);
+	/* mem_cgroup_charge always returns 0, cgroup_throttle_swaprate is empty */
 
 	ret = __do_fault(vmf);
 	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE | VM_FAULT_RETRY)))

@@ -76,10 +76,9 @@ static int follow_pfn_pte(struct vm_area_struct *vma, unsigned long address,
 			entry = pte_mkdirty(entry);
 		entry = pte_mkyoung(entry);
 
-		if (!pte_same(*pte, entry)) {
+		if (!pte_same(*pte, entry))
 			set_pte_at(vma->vm_mm, address, pte, entry);
-			update_mmu_cache(vma, address, pte);
-		}
+		/* update_mmu_cache - empty stub on x86 */
 	}
 
 	return -EEXIST;

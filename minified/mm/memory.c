@@ -544,8 +544,8 @@ static vm_fault_t insert_pfn(struct vm_area_struct *vma, unsigned long addr,
 			}
 			entry = pte_mkyoung(*pte);
 			entry = maybe_mkwrite(pte_mkdirty(entry), vma);
-			if (ptep_set_access_flags(vma, addr, pte, entry, 1))
-				update_mmu_cache(vma, addr, pte);
+			ptep_set_access_flags(vma, addr, pte, entry, 1);
+			/* update_mmu_cache - empty stub on x86 */
 		}
 		goto out_unlock;
 	}
@@ -561,8 +561,7 @@ static vm_fault_t insert_pfn(struct vm_area_struct *vma, unsigned long addr,
 	}
 
 	set_pte_at(mm, addr, pte, entry);
-	update_mmu_cache(vma, addr, pte);
-
+	/* update_mmu_cache - empty stub on x86 */
 out_unlock:
 	pte_unmap_unlock(pte, ptl);
 	return VM_FAULT_NOPAGE;
@@ -677,12 +676,11 @@ static inline void wp_page_reuse(struct vm_fault *vmf) __releases(vmf->ptl)
 
 	if (page)
 		page_cpupid_xchg_last(page, (1 << LAST_CPUPID_SHIFT) - 1);
-
-	flush_cache_page(vma, vmf->address, pte_pfn(vmf->orig_pte));
+	/* flush_cache_page - empty stub on x86 */
 	entry = pte_mkyoung(vmf->orig_pte);
 	entry = maybe_mkwrite(pte_mkdirty(entry), vma);
-	if (ptep_set_access_flags(vma, vmf->address, vmf->pte, entry, 1))
-		update_mmu_cache(vma, vmf->address, vmf->pte);
+	ptep_set_access_flags(vma, vmf->address, vmf->pte, entry, 1);
+	/* update_mmu_cache - empty stub on x86 */
 	pte_unmap_unlock(vmf->pte, vmf->ptl);
 }
 
@@ -839,8 +837,7 @@ static vm_fault_t do_anonymous_page(struct vm_fault *vmf)
 	page_add_new_anon_rmap(page, vma, vmf->address);
 	lru_cache_add_inactive_or_unevictable(page, vma);
 	set_pte_at(vma->vm_mm, vmf->address, vmf->pte, entry);
-	update_mmu_cache(vma, vmf->address, vmf->pte);
-
+	/* update_mmu_cache - empty stub on x86 */
 unlock:
 	pte_unmap_unlock(vmf->pte, vmf->ptl);
 	return 0;
@@ -883,7 +880,7 @@ void do_set_pte(struct vm_fault *vmf, struct page *page, unsigned long addr)
 	bool write = vmf->flags & FAULT_FLAG_WRITE;
 	pte_t entry;
 
-	flush_icache_page(vma, page);
+	/* flush_icache_page - empty stub on x86 */
 	entry = mk_pte(page, vma->vm_page_prot);
 
 	entry = pte_sw_mkyoung(entry);

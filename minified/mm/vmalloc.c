@@ -169,7 +169,7 @@ int ioremap_page_range(unsigned long addr, unsigned long end,
 
 	err = vmap_range_noflush(addr, end, phys_addr, pgprot_nx(prot),
 				 ioremap_max_page_shift);
-	flush_cache_vmap(addr, end);
+	/* flush_cache_vmap - empty stub on x86 */
 	return err;
 }
 
@@ -408,7 +408,7 @@ static int vmap_pages_range(unsigned long addr, unsigned long end,
 	int err;
 
 	err = vmap_pages_range_noflush(addr, end, prot, pages, page_shift);
-	flush_cache_vmap(addr, end);
+	/* flush_cache_vmap - empty stub on x86 */
 	return err;
 }
 
@@ -979,7 +979,7 @@ static void free_vmap_area_noflush(struct vmap_area *va)
 
 static void free_unmap_vmap_area(struct vmap_area *va)
 {
-	flush_cache_vunmap(va->va_start, va->va_end);
+	/* flush_cache_vunmap - empty stub on x86 */
 	vunmap_range_noflush(va->va_start, va->va_end);
 	if (debug_pagealloc_enabled_static())
 		flush_tlb_kernel_range(va->va_start, va->va_end);

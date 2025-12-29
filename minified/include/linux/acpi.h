@@ -11,8 +11,6 @@
 #endif
 #define acpi_disabled 1
 struct fwnode_handle;
-static inline void acpi_early_init(void) { }
-static inline void acpi_subsystem_init(void) { }
-static inline void acpi_table_upgrade(void) { }
-static inline void acpi_device_notify_remove(struct device *dev) { }
+/* acpi_early_init, acpi_subsystem_init, acpi_table_upgrade,
+   acpi_device_notify_remove removed - call sites removed */
 #endif

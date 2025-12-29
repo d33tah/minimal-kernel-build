@@ -10,12 +10,6 @@
 #define __kprobes
 #define nokprobe_inline	inline
 
-/* struct kprobe removed - unused */
-struct task_struct;
-
-/* Removed uncalled: kprobe_fault_handler, kprobe_running */
-static inline void kprobe_flush_task(struct task_struct *tk) { }
-static inline void kprobe_free_init_mem(void) { }
-/* Removed uncalled: is_kprobe_insn_slot, is_kprobe_optinsn_slot, kprobe_page_fault */
+/* All kprobe stubs removed - call sites removed */
 
 #endif

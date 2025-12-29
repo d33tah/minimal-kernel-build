@@ -273,22 +273,11 @@ void unmask_threaded_irq(struct irq_desc *desc)
 	unmask_irq(desc);
 }
 
-static bool irq_check_poll(struct irq_desc *desc)
-{
-	if (!(desc->istate & IRQS_POLL_INPROGRESS))
-		return false;
-	/* irq_wait_for_poll removed - was stub returning false */
-	return false;
-}
-
 static bool irq_may_run(struct irq_desc *desc)
 {
 	unsigned int mask = IRQD_IRQ_INPROGRESS | IRQD_WAKEUP_ARMED;
 
-	if (!irqd_has_set(&desc->irq_data, mask))
-		return true;
-
-	return irq_check_poll(desc);
+	return !irqd_has_set(&desc->irq_data, mask);
 }
 
 static void cond_unmask_irq(struct irq_desc *desc)

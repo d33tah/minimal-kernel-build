@@ -593,7 +593,7 @@ void __init setup_arch(char **cmdline_p)
 	init_cpu_to_node();
 	init_gi_nodes();
 
-	io_apic_init_mappings();
+	/* io_apic_init_mappings removed - empty stub */
 
 	/* x86_init.hyper.guest_late_init removed - is x86_init_noop */
 

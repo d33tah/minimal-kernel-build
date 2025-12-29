@@ -242,7 +242,7 @@ DEFINE_IDTENTRY_RAW(exc_nmi)
 {
 	irqentry_state_t irq_state;
 
-	sev_es_nmi_complete();
+	/* sev_es_nmi_complete removed - empty stub */
 
 	if (this_cpu_read(nmi_state) != NMI_NOT_RUNNING) {
 		this_cpu_write(nmi_state, NMI_LATCHED);
@@ -252,7 +252,7 @@ DEFINE_IDTENTRY_RAW(exc_nmi)
 	this_cpu_write(nmi_cr2, read_cr2());
 nmi_restart:
 
-	sev_es_ist_enter(regs);
+	/* sev_es_ist_enter removed - empty stub */
 
 	this_cpu_write(nmi_dr7, local_db_save());
 
@@ -267,7 +267,7 @@ nmi_restart:
 
 	local_db_restore(this_cpu_read(nmi_dr7));
 
-	sev_es_ist_exit();
+	/* sev_es_ist_exit removed - empty stub */
 
 	if (unlikely(this_cpu_read(nmi_cr2) != read_cr2()))
 		write_cr2(this_cpu_read(nmi_cr2));

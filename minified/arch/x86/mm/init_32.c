@@ -238,8 +238,7 @@ repeat:
 		}
 	}
 	if (mapping_iter == 1) {
-		update_page_count(PG_LEVEL_2M, pages_2m);
-		update_page_count(PG_LEVEL_4K, pages_4k);
+		/* update_page_count removed - empty stub */
 
 		__flush_tlb_all();
 

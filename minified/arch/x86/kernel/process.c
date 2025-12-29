@@ -83,8 +83,7 @@ void exit_thread(struct task_struct *tsk)
 	struct thread_struct *t = &tsk->thread;
 	struct fpu *fpu = &t->fpu;
 
-	if (test_thread_flag(TIF_IO_BITMAP))
-		io_bitmap_exit(tsk);
+	/* io_bitmap_exit removed - empty stub */
 
 	free_vm86(t);
 
@@ -154,8 +153,7 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 	if (clone_flags & CLONE_SETTLS)
 		ret = set_new_tls(p, tls);
 
-	if (!ret && unlikely(test_tsk_thread_flag(current, TIF_IO_BITMAP)))
-		io_bitmap_share(p);
+	/* io_bitmap_share removed - empty stub */
 
 	return ret;
 }

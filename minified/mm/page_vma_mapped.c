@@ -99,24 +99,6 @@ bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw)
 	if (pvmw->pmd && !pvmw->pte)
 		return not_found(pvmw);
 
-	if (unlikely(is_vm_hugetlb_page(vma))) {
-		struct hstate *hstate = hstate_vma(vma);
-		unsigned long size = huge_page_size(hstate);
-
-		if (pvmw->pte)
-			return not_found(pvmw);
-
-		pvmw->pte = huge_pte_offset(mm, pvmw->address, size);
-		if (!pvmw->pte)
-			return false;
-
-		pvmw->ptl = huge_pte_lockptr(hstate, mm, pvmw->pte);
-		spin_lock(pvmw->ptl);
-		if (!check_pte(pvmw))
-			return not_found(pvmw);
-		return true;
-	}
-
 	end = vma_address_end(pvmw);
 	if (pvmw->pte)
 		goto next_pte;

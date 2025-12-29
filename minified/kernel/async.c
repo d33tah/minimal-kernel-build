@@ -13,10 +13,6 @@ async_cookie_t async_schedule_node(async_func_t func, void *data, int node)
 {
 	return async_schedule_node_domain(func, data, node, &async_dfl_domain);
 }
-void async_synchronize_full(void)
-{
-}
-void async_synchronize_cookie_domain(async_cookie_t cookie,
-				     struct async_domain *domain)
-{
-}
+
+/* async_synchronize_full and async_synchronize_cookie_domain removed -
+   runs synchronously so no sync needed */

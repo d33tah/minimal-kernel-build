@@ -603,8 +603,7 @@ void wait_for_initramfs(void)
 			"wait_for_initramfs() called before rootfs_initcalls\n");
 		return;
 	}
-	async_synchronize_cookie_domain(initramfs_cookie + 1,
-					&initramfs_domain);
+	/* async_synchronize_cookie_domain removed - empty stub */
 }
 
 static int __init populate_rootfs(void)

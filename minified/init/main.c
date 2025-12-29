@@ -704,7 +704,7 @@ static int __ref kernel_init(void *unused)
 
 	kernel_init_freeable();
 
-	async_synchronize_full();
+	/* async_synchronize_full removed - empty stub (runs synchronously) */
 
 	system_state = SYSTEM_FREEING_INITMEM;
 	/* kprobe_free_init_mem, kgdb_free_init_mem removed - empty stubs */

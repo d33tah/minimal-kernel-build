@@ -322,7 +322,7 @@ void wait_for_device_probe(void)
 	flush_work(&deferred_probe_work);
 
 	wait_event(probe_waitqueue, atomic_read(&probe_count) == 0);
-	async_synchronize_full();
+	/* async_synchronize_full removed - empty stub */
 }
 
 static int __driver_probe_device(struct device_driver *drv, struct device *dev)
@@ -648,8 +648,7 @@ void driver_detach(struct device_driver *drv)
 	struct device_private *dev_prv;
 	struct device *dev;
 
-	if (driver_allows_async_probing(drv))
-		async_synchronize_full();
+	/* async_synchronize_full removed - empty stub */
 
 	for (;;) {
 		spin_lock(&drv->p->klist_devices.k_lock);

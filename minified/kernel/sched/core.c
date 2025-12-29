@@ -786,7 +786,7 @@ static inline void schedule_debug(struct task_struct *prev, bool preempt)
 		__schedule_bug(prev);
 		preempt_count_set(PREEMPT_DISABLED);
 	}
-	rcu_sleep_check();
+	/* rcu_sleep_check is empty do{}while(0) */
 	/* SCHED_WARN_ON removed - ct_state() always returns CONTEXT_DISABLED, never CONTEXT_USER */
 	schedstat_inc(this_rq()->sched_count);
 }

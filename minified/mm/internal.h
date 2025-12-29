@@ -338,8 +338,6 @@ int vmap_pages_range_noflush(unsigned long addr, unsigned long end,
 
 void vunmap_range_noflush(unsigned long start, unsigned long end);
 
-void free_zone_device_page(struct page *page);
-
 DECLARE_PER_CPU(struct per_cpu_nodestat, boot_nodestats);
 
 #endif	 

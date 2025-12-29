@@ -518,17 +518,6 @@ static inline enum zone_type folio_zonenum(const struct folio *folio)
 	return page_zonenum(&folio->page);
 }
 
-static inline bool is_zone_device_page(const struct page *page)
-{
-	return false;
-}
-
-
-static inline bool put_devmap_managed_page(struct page *page)
-{
-	return false;
-}
-
 #define folio_ref_zero_or_close_to_overflow(folio) \
 	((unsigned int) folio_ref_count(folio) + 127u <= 127u)
 
@@ -559,12 +548,8 @@ static inline void folio_put_refs(struct folio *folio, int refs)
 
 static inline void put_page(struct page *page)
 {
-	struct folio *folio = page_folio(page);
-
-	
-	if (put_devmap_managed_page(&folio->page))
-		return;
-	folio_put(folio);
+	/* put_devmap_managed_page always returns false */
+	folio_put(page_folio(page));
 }
 
 #define GUP_PIN_COUNTING_BIAS (1U << 10)

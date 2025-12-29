@@ -11,11 +11,10 @@
 
 unsigned int zone_dma_bits __ro_after_init = 24;
 
+/* force_dma_unencrypted always returns false */
 static inline dma_addr_t phys_to_dma_direct(struct device *dev,
 					    phys_addr_t phys)
 {
-	if (force_dma_unencrypted(dev))
-		return phys_to_dma_unencrypted(dev, phys);
 	return phys_to_dma(dev, phys);
 }
 
@@ -56,24 +55,15 @@ static bool dma_coherent_ok(struct device *dev, phys_addr_t phys, size_t size)
 	       min_not_zero(dev->coherent_dma_mask, dev->bus_dma_limit);
 }
 
+/* force_dma_unencrypted always returns false */
 static int dma_set_decrypted(struct device *dev, void *vaddr, size_t size)
 {
-	if (!force_dma_unencrypted(dev))
-		return 0;
-	return set_memory_decrypted((unsigned long)vaddr, PFN_UP(size));
+	return 0;
 }
 
 static int dma_set_encrypted(struct device *dev, void *vaddr, size_t size)
 {
-	int ret;
-
-	if (!force_dma_unencrypted(dev))
-		return 0;
-	ret = set_memory_encrypted((unsigned long)vaddr, PFN_UP(size));
-	if (ret)
-		pr_warn_ratelimited(
-			"leaking DMA memory that can't be re-encrypted\n");
-	return ret;
+	return 0;
 }
 
 static void __dma_direct_free_pages(struct device *dev, struct page *page,
@@ -150,11 +140,9 @@ void *dma_direct_alloc(struct device *dev, size_t size, dma_addr_t *dma_handle,
 	if (attrs & DMA_ATTR_NO_WARN)
 		gfp |= __GFP_NOWARN;
 
-	if ((attrs & DMA_ATTR_NO_KERNEL_MAPPING) && !force_dma_unencrypted(dev))
+	/* force_dma_unencrypted always returns false */
+	if (attrs & DMA_ATTR_NO_KERNEL_MAPPING)
 		return dma_direct_alloc_no_mapping(dev, size, dma_handle, gfp);
-	/* dev_is_dma_coherent always returns true */
-	if (force_dma_unencrypted(dev) && dma_direct_use_pool(dev, gfp))
-		return dma_direct_alloc_from_pool(dev, size, dma_handle, gfp);
 
 	page = __dma_direct_alloc_pages(dev, size, gfp & ~__GFP_ZERO, true);
 	if (!page)
@@ -166,21 +154,16 @@ void *dma_direct_alloc(struct device *dev, size_t size, dma_addr_t *dma_handle,
 	}
 
 	if (remap) {
-		pgprot_t prot = dma_pgprot(dev, PAGE_KERNEL, attrs);
-
-		if (force_dma_unencrypted(dev))
-			prot = pgprot_decrypted(prot);
-
 		arch_dma_prep_coherent(page, size);
-
-		ret = dma_common_contiguous_remap(page, size, prot,
-						  __builtin_return_address(0));
+		/* force_dma_unencrypted always returns false, so no pgprot_decrypted */
+		ret = dma_common_contiguous_remap(
+			page, size, dma_pgprot(dev, PAGE_KERNEL, attrs),
+			__builtin_return_address(0));
 		if (!ret)
 			goto out_free_pages;
 	} else {
 		ret = page_address(page);
-		if (dma_set_decrypted(dev, ret, size))
-			goto out_free_pages;
+		/* dma_set_decrypted now always returns 0 */
 	}
 
 	memset(ret, 0, size);
@@ -203,48 +186,34 @@ out_free_pages:
 	return NULL;
 }
 
+/* force_dma_unencrypted always returns false */
 void dma_direct_free(struct device *dev, size_t size, void *cpu_addr,
 		     dma_addr_t dma_addr, unsigned long attrs)
 {
-	if ((attrs & DMA_ATTR_NO_KERNEL_MAPPING) &&
-	    !force_dma_unencrypted(dev)) {
+	if (attrs & DMA_ATTR_NO_KERNEL_MAPPING) {
 		dma_free_contiguous(dev, cpu_addr, size);
 		return;
 	}
-	/* dev_is_dma_coherent always returns true */
-	if (is_vmalloc_addr(cpu_addr)) {
+	if (is_vmalloc_addr(cpu_addr))
 		vunmap(cpu_addr);
-	} else {
-		if (dma_set_encrypted(dev, cpu_addr, size))
-			return;
-	}
-
+	/* dma_set_encrypted now always returns 0, no need to call */
 	__dma_direct_free_pages(dev, dma_direct_to_page(dev, dma_addr), size);
 }
 
+/* force_dma_unencrypted always returns false */
 struct page *dma_direct_alloc_pages(struct device *dev, size_t size,
 				    dma_addr_t *dma_handle,
 				    enum dma_data_direction dir, gfp_t gfp)
 {
 	struct page *page;
-	void *ret;
-
-	if (force_dma_unencrypted(dev) && dma_direct_use_pool(dev, gfp))
-		return dma_direct_alloc_from_pool(dev, size, dma_handle, gfp);
 
 	page = __dma_direct_alloc_pages(dev, size, gfp, false);
 	if (!page)
 		return NULL;
-
-	ret = page_address(page);
-	if (dma_set_decrypted(dev, ret, size))
-		goto out_free_pages;
-	memset(ret, 0, size);
+	/* dma_set_decrypted now always returns 0 */
+	memset(page_address(page), 0, size);
 	*dma_handle = phys_to_dma_direct(dev, page_to_phys(page));
 	return page;
-out_free_pages:
-	__dma_direct_free_pages(dev, page, size);
-	return NULL;
 }
 
 void dma_direct_free_pages(struct device *dev, size_t size, struct page *page,

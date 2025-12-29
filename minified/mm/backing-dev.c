@@ -25,12 +25,7 @@ struct workqueue_struct *bdi_wq;
 
 #define K(x) ((x) << (PAGE_SHIFT - 10))
 
-static inline void bdi_debug_init(void)
-{
-}
-static inline void bdi_debug_unregister(struct backing_dev_info *bdi)
-{
-}
+/* Removed: bdi_debug_init, bdi_debug_unregister - empty stubs (~6 LOC) */
 
 /* Stub: BDI sysfs attributes - all return 0 */
 static ssize_t bdi_stub_store(struct device *d, struct device_attribute *a,
@@ -71,8 +66,6 @@ static __init int bdi_class_init(void)
 		return PTR_ERR(bdi_class);
 
 	bdi_class->dev_groups = bdi_dev_groups;
-	bdi_debug_init();
-
 	return 0;
 }
 postcore_initcall(bdi_class_init);
@@ -177,9 +170,7 @@ static int cgwb_bdi_init(struct backing_dev_info *bdi)
 	return wb_init(&bdi->wb, bdi, GFP_KERNEL);
 }
 
-static void cgwb_bdi_unregister(struct backing_dev_info *bdi)
-{
-}
+/* Removed: cgwb_bdi_unregister - empty stub (~3 LOC) */
 
 static void cgwb_remove_from_bdi_list(struct bdi_writeback *wb)
 {
@@ -240,13 +231,11 @@ void bdi_unregister(struct backing_dev_info *bdi)
 
 	bdi_remove_from_list(bdi);
 	wb_shutdown(&bdi->wb);
-	cgwb_bdi_unregister(bdi);
 
 	if (bdi->min_ratio)
 		bdi_set_min_ratio(bdi, 0);
 
 	if (bdi->dev) {
-		bdi_debug_unregister(bdi);
 		device_unregister(bdi->dev);
 		bdi->dev = NULL;
 	}

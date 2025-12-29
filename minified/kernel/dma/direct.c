@@ -92,12 +92,7 @@ static struct page *__dma_direct_alloc_pages(struct device *dev, size_t size,
 	return page;
 }
 
-<<<<<<< HEAD
-/* dma_direct_use_pool, dma_direct_alloc_from_pool removed - never called
-   (CONFIG_DMA_COHERENT_POOL not enabled) */
-=======
 /* Removed: dma_direct_use_pool, dma_direct_alloc_from_pool - never called (~10 LOC) */
->>>>>>> 20ecfc59 (Remove unused static functions (~40 LOC))
 
 static void *dma_direct_alloc_no_mapping(struct device *dev, size_t size,
 					 dma_addr_t *dma_handle, gfp_t gfp)

@@ -18,7 +18,6 @@ int mwait_usable(const struct cpuinfo_x86 *);
 unsigned int x86_family(unsigned int sig);
 unsigned int x86_model(unsigned int sig);
 unsigned int x86_stepping(unsigned int sig);
-extern void __init sld_setup(struct cpuinfo_x86 *c);
-extern void handle_bus_lock(struct pt_regs *regs);
+/* sld_setup, handle_bus_lock removed - implementations were removed */
 
 #endif

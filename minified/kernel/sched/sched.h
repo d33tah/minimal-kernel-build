@@ -24,10 +24,7 @@ extern unsigned int nr_iowait_cpu(int cpu);
 #include <linux/sched/sysctl.h>
 
 #include <linux/sched/task.h>
-/* Inlined from linux/sched/topology.h */
-#ifndef arch_scale_thermal_pressure
-static __always_inline unsigned long arch_scale_thermal_pressure(int cpu) { return 0; }
-#endif
+/* arch_scale_thermal_pressure removed - unused */
 
 #include <linux/atomic.h>
 #include <linux/bitmap.h>
@@ -440,13 +437,7 @@ static inline u64 rq_clock_task(struct rq *rq)
 	return rq->clock_task;
 }
 
- 
-extern int sched_thermal_decay_shift;
-
-static inline u64 rq_clock_thermal(struct rq *rq)
-{
-	return rq_clock_task(rq) >> sched_thermal_decay_shift;
-}
+/* rq_clock_thermal removed - unused */
 
 static inline void rq_clock_skip_update(struct rq *rq)
 {

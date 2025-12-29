@@ -37,7 +37,7 @@ unsigned int sysctl_sched_child_runs_first __read_mostly;
 unsigned int sysctl_sched_wakeup_granularity = 1000000UL;
 static unsigned int normalized_sysctl_sched_wakeup_granularity = 1000000UL;
 
-int sched_thermal_decay_shift;
+/* sched_thermal_decay_shift removed - unused */
 
 static inline void update_load_add(struct load_weight *lw, unsigned long inc)
 {

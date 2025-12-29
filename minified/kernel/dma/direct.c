@@ -79,21 +79,7 @@ static int dma_set_encrypted(struct device *dev, void *vaddr, size_t size)
 static void __dma_direct_free_pages(struct device *dev, struct page *page,
 				    size_t size)
 {
-	if (swiotlb_free(dev, page, size))
-		return;
 	dma_free_contiguous(dev, page, size);
-}
-
-static struct page *dma_direct_alloc_swiotlb(struct device *dev, size_t size)
-{
-	struct page *page = swiotlb_alloc(dev, size);
-
-	if (page && !dma_coherent_ok(dev, page_to_phys(page), size)) {
-		swiotlb_free(dev, page, size);
-		return NULL;
-	}
-
-	return page;
 }
 
 static struct page *__dma_direct_alloc_pages(struct device *dev, size_t size,
@@ -104,9 +90,6 @@ static struct page *__dma_direct_alloc_pages(struct device *dev, size_t size,
 	u64 phys_limit;
 
 	WARN_ON_ONCE(!PAGE_ALIGNED(size));
-
-	if (is_swiotlb_for_alloc(dev))
-		return dma_direct_alloc_swiotlb(dev, size);
 
 	gfp |= dma_direct_optimal_gfp_mask(dev, dev->coherent_dma_mask,
 					   &phys_limit);
@@ -130,7 +113,7 @@ static struct page *__dma_direct_alloc_pages(struct device *dev, size_t size,
 
 static bool dma_direct_use_pool(struct device *dev, gfp_t gfp)
 {
-	return !gfpflags_allow_blocking(gfp) && !is_swiotlb_for_alloc(dev);
+	return !gfpflags_allow_blocking(gfp);
 }
 
 static void *dma_direct_alloc_from_pool(struct device *dev, size_t size,
@@ -167,16 +150,11 @@ void *dma_direct_alloc(struct device *dev, size_t size, dma_addr_t *dma_handle,
 	if (attrs & DMA_ATTR_NO_WARN)
 		gfp |= __GFP_NOWARN;
 
-	if ((attrs & DMA_ATTR_NO_KERNEL_MAPPING) &&
-	    !force_dma_unencrypted(dev) && !is_swiotlb_for_alloc(dev))
+	if ((attrs & DMA_ATTR_NO_KERNEL_MAPPING) && !force_dma_unencrypted(dev))
 		return dma_direct_alloc_no_mapping(dev, size, dma_handle, gfp);
 
-	if (!dev_is_dma_coherent(dev)) {
-		/* None of the DMA advanced options enabled, call arch_dma_alloc */
-		if (!is_swiotlb_for_alloc(dev))
-			return arch_dma_alloc(dev, size, dma_handle, gfp,
-					      attrs);
-	}
+	if (!dev_is_dma_coherent(dev))
+		return arch_dma_alloc(dev, size, dma_handle, gfp, attrs);
 
 	if (force_dma_unencrypted(dev) && dma_direct_use_pool(dev, gfp))
 		return dma_direct_alloc_from_pool(dev, size, dma_handle, gfp);
@@ -232,12 +210,12 @@ void dma_direct_free(struct device *dev, size_t size, void *cpu_addr,
 		     dma_addr_t dma_addr, unsigned long attrs)
 {
 	if ((attrs & DMA_ATTR_NO_KERNEL_MAPPING) &&
-	    !force_dma_unencrypted(dev) && !is_swiotlb_for_alloc(dev)) {
+	    !force_dma_unencrypted(dev)) {
 		dma_free_contiguous(dev, cpu_addr, size);
 		return;
 	}
 
-	if (!dev_is_dma_coherent(dev) && !is_swiotlb_for_alloc(dev)) {
+	if (!dev_is_dma_coherent(dev)) {
 		arch_dma_free(dev, size, cpu_addr, dma_addr, attrs);
 		return;
 	}
@@ -298,10 +276,6 @@ void dma_direct_sync_sg_for_device(struct device *dev, struct scatterlist *sgl,
 	for_each_sg(sgl, sg, nents, i) {
 		phys_addr_t paddr = dma_to_phys(dev, sg_dma_address(sg));
 
-		if (unlikely(is_swiotlb_buffer(dev, paddr)))
-			swiotlb_sync_single_for_device(dev, paddr, sg->length,
-						       dir);
-
 		if (!dev_is_dma_coherent(dev))
 			arch_sync_dma_for_device(paddr, sg->length, dir);
 	}
@@ -322,10 +296,6 @@ void dma_direct_sync_sg_for_cpu(struct device *dev, struct scatterlist *sgl,
 
 		if (!dev_is_dma_coherent(dev))
 			arch_sync_dma_for_cpu(paddr, sg->length, dir);
-
-		if (unlikely(is_swiotlb_buffer(dev, paddr)))
-			swiotlb_sync_single_for_cpu(dev, paddr, sg->length,
-						    dir);
 
 		if (dir == DMA_FROM_DEVICE)
 			arch_dma_mark_clean(paddr, sg->length);
@@ -398,8 +368,5 @@ int dma_direct_supported(struct device *dev, u64 mask)
 
 size_t dma_direct_max_mapping_size(struct device *dev)
 {
-	if (is_swiotlb_active(dev) &&
-	    (dma_addressing_limited(dev) || is_swiotlb_force_bounce(dev)))
-		return swiotlb_max_mapping_size(dev);
 	return SIZE_MAX;
 }

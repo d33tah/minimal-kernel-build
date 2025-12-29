@@ -49,10 +49,7 @@ void kernel_halt(void)
 void do_kernel_power_off(void)
 {
 }
-bool kernel_can_power_off(void)
-{
-	return false;
-}
+/* kernel_can_power_off removed - never called */
 void kernel_power_off(void)
 {
 	machine_power_off();

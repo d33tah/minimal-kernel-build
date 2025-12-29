@@ -516,8 +516,7 @@ static inline int pmd_protnone(pmd_t pmd)
 
 
 /* p4d_set_huge, pud_set_huge, pmd_set_huge, p4d_free_pud_page, pud_free_pmd_page,
-   pmd_free_pte_page removed - unused */
-static inline void p4d_clear_huge(p4d_t *p4d) { }
+   pmd_free_pte_page, p4d_clear_huge removed - unused */
 static inline int pud_clear_huge(pud_t *pud)
 {
 	return 0;
@@ -529,7 +528,7 @@ static inline int pmd_clear_huge(pmd_t *pmd)
 
 
 
-static inline void init_espfix_bsp(void) { }
+/* init_espfix_bsp removed - call site removed */
 
 extern void __init pgtable_cache_init(void);
 

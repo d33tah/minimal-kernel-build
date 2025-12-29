@@ -128,10 +128,7 @@ struct old_linux_dirent;
 #define SYSCALL32_DEFINE5 SYSCALL_DEFINE5
 #define SYSCALL32_DEFINE6 SYSCALL_DEFINE6
 
-/* TIF_FSCHECK not defined - addr_limit_user_check is empty */
-static inline void addr_limit_user_check(void) { }
-
-
+/* addr_limit_user_check removed - call site removed */
 
 void ksys_sync(void);
 int ksys_sync_file_range(int fd, loff_t offset, loff_t nbytes,

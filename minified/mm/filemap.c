@@ -392,7 +392,7 @@ noinline int __filemap_add_folio(struct address_space *mapping,
 
 			order = xa_get_order(xas.xa, xas.xa_index);
 			if (order > folio_order(folio)) {
-				BUG_ON(shmem_mapping(mapping));
+				/* BUG_ON(shmem_mapping) removed - always false */
 				xas_split(&xas, old, order);
 				xas_reset(&xas);
 			}

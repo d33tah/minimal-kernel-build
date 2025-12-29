@@ -97,11 +97,8 @@ noinstr void syscall_enter_from_user_mode_prepare(struct pt_regs *regs)
 
 static __always_inline void __exit_to_user_mode(void)
 {
-	lockdep_hardirqs_on_prepare();
-
 	user_enter_irqoff();
 	arch_exit_to_user_mode();
-	lockdep_hardirqs_on(CALLER_ADDR0);
 }
 
 void noinstr exit_to_user_mode(void)
@@ -258,12 +255,9 @@ noinstr void irqentry_exit(struct pt_regs *regs, irqentry_state_t state)
 		irqentry_exit_to_user_mode(regs);
 	} else if (!regs_irqs_disabled(regs)) {
 		if (state.exit_rcu) {
-			lockdep_hardirqs_on_prepare();
 			rcu_irq_exit();
-			lockdep_hardirqs_on(CALLER_ADDR0);
 			return;
 		}
-
 	} else {
 		if (state.exit_rcu)
 			rcu_irq_exit();
@@ -285,13 +279,6 @@ irqentry_state_t noinstr irqentry_nmi_enter(struct pt_regs *regs)
 
 void noinstr irqentry_nmi_exit(struct pt_regs *regs, irqentry_state_t irq_state)
 {
-	if (irq_state.lockdep) {
-		lockdep_hardirqs_on_prepare();
-	}
-
 	rcu_nmi_exit();
-	lockdep_hardirq_exit();
-	if (irq_state.lockdep)
-		lockdep_hardirqs_on(CALLER_ADDR0);
 	__nmi_exit();
 }

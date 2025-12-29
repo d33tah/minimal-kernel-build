@@ -177,7 +177,6 @@ static size_t copy_page_to_iter_iovec(struct page *page, size_t offset,
 	if (unlikely(!bytes))
 		return 0;
 
-	might_fault();
 	wanted = bytes;
 	iov = i->iov;
 	skip = i->iov_offset;
@@ -381,8 +380,6 @@ size_t _copy_to_iter(const void *addr, size_t bytes, struct iov_iter *i)
 {
 	if (unlikely(iov_iter_is_pipe(i)))
 		return copy_pipe_to_iter(addr, bytes, i);
-	if (iter_is_iovec(i))
-		might_fault();
 	iterate_and_advance(i, bytes, base, len, off,
 			    copyout(base, addr + off, len),
 			    memcpy(base, addr + off, len))
@@ -396,8 +393,6 @@ size_t _copy_from_iter(void *addr, size_t bytes, struct iov_iter *i)
 		WARN_ON(1);
 		return 0;
 	}
-	if (iter_is_iovec(i))
-		might_fault();
 	iterate_and_advance(i, bytes, base, len, off,
 			    copyin(addr + off, base, len),
 			    memcpy(addr + off, base, len))

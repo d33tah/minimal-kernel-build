@@ -470,8 +470,6 @@ static inline void do_user_addr_fault(struct pt_regs *regs,
 			local_irq_enable();
 	}
 
-	perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS, 1, regs, address);
-
 	if (error_code & X86_PF_WRITE)
 		flags |= FAULT_FLAG_WRITE;
 	if (error_code & X86_PF_INSTR)

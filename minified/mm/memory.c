@@ -1192,14 +1192,6 @@ static inline void mm_account_fault(struct pt_regs *regs, unsigned long address,
 		current->maj_flt++;
 	else
 		current->min_flt++;
-
-	if (!regs)
-		return;
-
-	if (major)
-		perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS_MAJ, 1, regs, address);
-	else
-		perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS_MIN, 1, regs, address);
 }
 
 vm_fault_t handle_mm_fault(struct vm_area_struct *vma, unsigned long address,

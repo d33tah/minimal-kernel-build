@@ -248,8 +248,6 @@ static void do_oops_enter_exit(void)
 
 void oops_enter(void)
 {
-	tracing_off();
-
 	debug_locks_off();
 	do_oops_enter_exit();
 }

@@ -15,7 +15,6 @@ static inline int __movsl_is_ok(unsigned long a1, unsigned long a2,
 #define __do_clear_user(addr,size)					\
 do {									\
 	int __d0;							\
-	might_fault();							\
 	__asm__ __volatile__(						\
 		ASM_STAC "\n"						\
 		"0:	rep; stosl\n"					\
@@ -31,7 +30,6 @@ do {									\
 
 unsigned long clear_user(void __user *to, unsigned long n)
 {
-	might_fault();
 	if (access_ok(to, n))
 		__do_clear_user(to, n);
 	return n;

@@ -128,8 +128,6 @@ static __always_inline unsigned long usecs_to_jiffies(const unsigned int u)
 	}
 }
 
-extern unsigned long timespec64_to_jiffies(const struct timespec64 *value);
-extern u64 nsecs_to_jiffies64(u64 n);
-extern unsigned long nsecs_to_jiffies(u64 n);
+/* timespec64_to_jiffies, nsecs_to_jiffies64, nsecs_to_jiffies removed - never called */
 
 #endif

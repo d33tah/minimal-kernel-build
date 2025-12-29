@@ -146,37 +146,5 @@ unsigned long __usecs_to_jiffies(const unsigned int u)
 	return _usecs_to_jiffies(u);
 }
 
-unsigned long timespec64_to_jiffies(const struct timespec64 *value)
-{
-	u64 sec = value->tv_sec;
-	long nsec = value->tv_nsec + TICK_NSEC - 1;
-
-	if (sec >= MAX_SEC_IN_JIFFIES) {
-		sec = MAX_SEC_IN_JIFFIES;
-		nsec = 0;
-	}
-	return ((sec * SEC_CONVERSION) + (((u64)nsec * NSEC_CONVERSION) >>
-					  (NSEC_JIFFIE_SC - SEC_JIFFIE_SC))) >>
-	       SEC_JIFFIE_SC;
-}
-
-u64 nsecs_to_jiffies64(u64 n)
-{
-#if (NSEC_PER_SEC % HZ) == 0
-
-	return div_u64(n, NSEC_PER_SEC / HZ);
-#elif (HZ % 512) == 0
-
-	return div_u64(n * HZ / 512, NSEC_PER_SEC / 512);
-#else
-
-	return div_u64(n * 9, (9ull * NSEC_PER_SEC + HZ / 2) / HZ);
-#endif
-}
-
-unsigned long nsecs_to_jiffies(u64 n)
-{
-	return (unsigned long)nsecs_to_jiffies64(n);
-}
-
-/* Removed: get_timespec64, put_timespec64 - dead code */
+/* Removed: timespec64_to_jiffies, nsecs_to_jiffies64, nsecs_to_jiffies,
+   get_timespec64, put_timespec64 - dead code */

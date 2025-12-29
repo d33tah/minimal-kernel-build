@@ -513,28 +513,19 @@ static inline u16 pte_flags_pkey(unsigned long pte_flags)
 
 static inline bool __pkru_allows_pkey(u16 pkey, bool write)
 {
-	u32 pkru = read_pkru();
-
-	if (!__pkru_allows_read(pkru, pkey))
-		return false;
-	if (write && !__pkru_allows_write(pkru, pkey))
-		return false;
-
+	/* OSPKE disabled, read_pkru returns 0, always allows */
 	return true;
 }
 
  
 static inline bool __pte_access_permitted(unsigned long pteval, bool write)
 {
-	unsigned long need_pte_bits = _PAGE_PRESENT|_PAGE_USER;
+	unsigned long need_pte_bits = _PAGE_PRESENT | _PAGE_USER;
 
 	if (write)
 		need_pte_bits |= _PAGE_RW;
-
-	if ((pteval & need_pte_bits) != need_pte_bits)
-		return 0;
-
-	return __pkru_allows_pkey(pte_flags_pkey(pteval), write);
+	/* __pkru_allows_pkey always returns true */
+	return (pteval & need_pte_bits) == need_pte_bits;
 }
 
 #define pte_access_permitted pte_access_permitted

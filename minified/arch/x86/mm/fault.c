@@ -361,11 +361,7 @@ static inline int access_error(unsigned long error_code,
 
 	if (unlikely(error_code & X86_PF_SGX))
 		return 1;
-
-	if (!arch_vma_access_permitted(vma, (error_code & X86_PF_WRITE),
-				       (error_code & X86_PF_INSTR), foreign))
-		return 1;
-
+	/* arch_vma_access_permitted always returns true (OSPKE disabled) */
 	if (error_code & X86_PF_WRITE) {
 		if (unlikely(!(vma->vm_flags & VM_WRITE)))
 			return 1;

@@ -1173,12 +1173,7 @@ vm_fault_t handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
 	vm_fault_t ret;
 
 	__set_current_state(TASK_RUNNING);
-
-	if (!arch_vma_access_permitted(vma, flags & FAULT_FLAG_WRITE,
-				       flags & FAULT_FLAG_INSTRUCTION,
-				       flags & FAULT_FLAG_REMOTE))
-		return VM_FAULT_SIGSEGV;
-
+	/* arch_vma_access_permitted always returns true (OSPKE disabled) */
 	/* mem_cgroup_enter_user_fault removed - empty stub */
 	ret = __handle_mm_fault(vma, address, flags);
 	/* mem_cgroup_exit_user_fault, task_in_memcg_oom (always false),

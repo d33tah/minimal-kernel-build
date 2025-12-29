@@ -358,8 +358,7 @@ static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
 			return -EFAULT;
 	}
 
-	if (!arch_vma_access_permitted(vma, write, false, foreign))
-		return -EFAULT;
+	/* arch_vma_access_permitted always returns true (OSPKE disabled) */
 	return 0;
 }
 

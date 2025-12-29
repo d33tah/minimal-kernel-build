@@ -37,8 +37,7 @@ void __init pci_iommu_alloc(void)
 
 static int __init pci_iommu_init(void)
 {
-	x86_init.iommu.iommu_init();
-
+	/* x86_init.iommu.iommu_init removed - iommu_init_noop returns 0 */
 	return 0;
 }
 rootfs_initcall(pci_iommu_init);

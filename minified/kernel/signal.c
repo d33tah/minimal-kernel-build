@@ -252,10 +252,7 @@ static bool prepare_signal(int sig, struct task_struct *p, bool force)
 	return !sig_ignored(p, sig, force);
 }
 
-static void complete_signal(int sig, struct task_struct *p, enum pid_type type)
-{
-	return;
-}
+/* complete_signal was empty stub - removed */
 
 static inline bool legacy_queue(struct sigpending *signals, int sig)
 {
@@ -297,7 +294,7 @@ static int __send_signal_locked(int sig, struct kernel_siginfo *info,
 
 out_set:
 	sigaddset(&pending->signal, sig);
-	complete_signal(sig, t, type);
+	/* complete_signal was empty stub - call removed */
 	return 0;
 }
 
@@ -848,14 +845,8 @@ SYSCALL_DEFINE3(sigsuspend, int, unused1, int, unused2, old_sigset_t, mask)
 	return -ENOSYS;
 }
 
-static inline void siginfo_buildtime_checks(void)
-{
-	/* Stub: buildtime checks not needed for minimal kernel */
-}
-
 void __init signals_init(void)
 {
-	siginfo_buildtime_checks();
-
+	/* siginfo_buildtime_checks was empty stub - removed */
 	sigqueue_cachep = KMEM_CACHE(sigqueue, SLAB_PANIC | SLAB_ACCOUNT);
 }

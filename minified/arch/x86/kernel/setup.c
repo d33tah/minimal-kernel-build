@@ -499,10 +499,7 @@ void __init setup_arch(char **cmdline_p)
 	x86_configure_nx();
 
 	parse_early_param();
-
-	if (efi_enabled(EFI_BOOT))
-		efi_memblock_x86_reserve_range();
-
+	/* efi_enabled(EFI_BOOT) always false - efi_memblock_x86_reserve_range call removed */
 	x86_report_nx();
 
 	e820__reserve_setup_data();
@@ -569,21 +566,7 @@ void __init setup_arch(char **cmdline_p)
 	memblock_set_current_limit(get_max_mapped());
 
 	setup_log_buf(1);
-
-	if (efi_enabled(EFI_BOOT)) {
-		switch (boot_params.secure_boot) {
-		case efi_secureboot_mode_disabled:
-			pr_info("Secure boot disabled\n");
-			break;
-		case efi_secureboot_mode_enabled:
-			pr_info("Secure boot enabled\n");
-			break;
-		default:
-			pr_info("Secure boot could not be determined\n");
-			break;
-		}
-	}
-
+	/* efi_enabled always false - secure boot switch removed */
 	reserve_initrd();
 
 	acpi_table_upgrade();
@@ -625,10 +608,8 @@ void __init setup_arch(char **cmdline_p)
 	x86_init.resources.reserve_resources();
 
 	e820__setup_pci_gap();
-
-	if (!efi_enabled(EFI_BOOT) ||
-	    (efi_mem_type(0xa0000) != EFI_CONVENTIONAL_MEMORY))
-		conswitchp = &vga_con;
+	/* efi_enabled always false - condition simplified */
+	conswitchp = &vga_con;
 	x86_init.oem.banner();
 
 	x86_init.timers.wallclock_init();

@@ -581,7 +581,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	vfs_caches_init();
 	pagecache_init();
 	signals_init();
-	cpuset_init();
+	/* cpuset_init removed - empty stub returning 0 */
 	poking_init();
 	check_bugs();
 

@@ -146,7 +146,7 @@ static void io_check_error(unsigned char reason, struct pt_regs *regs)
 
 	i = 20000;
 	while (--i) {
-		touch_nmi_watchdog();
+		/* touch_nmi_watchdog removed - empty stub */
 		udelay(100);
 	}
 

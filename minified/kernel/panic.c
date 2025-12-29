@@ -141,7 +141,7 @@ void panic(const char *fmt, ...)
 		pr_emerg("Rebooting in %d seconds..\n", panic_timeout);
 
 		for (i = 0; i < panic_timeout * 1000; i += PANIC_TIMER_STEP) {
-			touch_nmi_watchdog();
+			/* touch_nmi_watchdog removed - empty stub */
 			if (i >= i_next) {
 				i += panic_blink(state ^= 1);
 				i_next = i + 3600 / PANIC_BLINK_SPD;
@@ -159,7 +159,7 @@ void panic(const char *fmt, ...)
 
 	local_irq_enable();
 	for (i = 0;; i += PANIC_TIMER_STEP) {
-		touch_softlockup_watchdog();
+		/* touch_softlockup_watchdog removed - empty stub */
 		if (i >= i_next) {
 			i += panic_blink(state ^= 1);
 			i_next = i + 3600 / PANIC_BLINK_SPD;
@@ -186,7 +186,7 @@ static void spin_msec(int msecs)
 	int i;
 
 	for (i = 0; i < msecs; i++) {
-		touch_nmi_watchdog();
+		/* touch_nmi_watchdog removed - empty stub */
 		mdelay(1);
 	}
 }

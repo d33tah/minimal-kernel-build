@@ -41,12 +41,10 @@ static inline void dma_direct_sync_sg_for_cpu(struct device *dev,
 }
 #endif
 
-/* dev_is_dma_coherent always returns true */
+/* dev_is_dma_coherent always returns true, arch_dma_mark_clean is empty stub */
 static inline void dma_direct_sync_single_for_cpu(struct device *dev,
 		dma_addr_t addr, size_t size, enum dma_data_direction dir)
 {
-	if (dir == DMA_FROM_DEVICE)
-		arch_dma_mark_clean(dma_to_phys(dev, addr), size);
 }
 
 /* is_swiotlb stubs return false, dev_is_dma_coherent always returns true */

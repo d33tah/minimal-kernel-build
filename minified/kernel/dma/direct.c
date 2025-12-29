@@ -118,13 +118,10 @@ static void *dma_direct_alloc_no_mapping(struct device *dev, size_t size,
 {
 	struct page *page;
 
+	/* arch_dma_prep_coherent is an empty stub */
 	page = __dma_direct_alloc_pages(dev, size, gfp & ~__GFP_ZERO, true);
 	if (!page)
 		return NULL;
-
-	if (!PageHighMem(page))
-		arch_dma_prep_coherent(page, size);
-
 	*dma_handle = phys_to_dma_direct(dev, page_to_phys(page));
 	return page;
 }
@@ -153,9 +150,8 @@ void *dma_direct_alloc(struct device *dev, size_t size, dma_addr_t *dma_handle,
 		set_uncached = false;
 	}
 
+	/* arch_dma_prep_coherent is an empty stub */
 	if (remap) {
-		arch_dma_prep_coherent(page, size);
-		/* force_dma_unencrypted always returns false, so no pgprot_decrypted */
 		ret = dma_common_contiguous_remap(
 			page, size, dma_pgprot(dev, PAGE_KERNEL, attrs),
 			__builtin_return_address(0));
@@ -163,13 +159,11 @@ void *dma_direct_alloc(struct device *dev, size_t size, dma_addr_t *dma_handle,
 			goto out_free_pages;
 	} else {
 		ret = page_address(page);
-		/* dma_set_decrypted now always returns 0 */
 	}
 
 	memset(ret, 0, size);
 
 	if (set_uncached) {
-		arch_dma_prep_coherent(page, size);
 		ret = arch_dma_set_uncached(ret, size);
 		if (IS_ERR(ret))
 			goto out_encrypt_pages;
@@ -238,19 +232,10 @@ void dma_direct_sync_sg_for_device(struct device *dev, struct scatterlist *sgl,
 #if defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU) ||         \
 	defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU_ALL) || \
 	defined(CONFIG_SWIOTLB)
-/* dev_is_dma_coherent always returns true */
+/* dev_is_dma_coherent always returns true, arch_dma_mark_clean is empty stub */
 void dma_direct_sync_sg_for_cpu(struct device *dev, struct scatterlist *sgl,
 				int nents, enum dma_data_direction dir)
 {
-	struct scatterlist *sg;
-	int i;
-
-	if (dir == DMA_FROM_DEVICE) {
-		for_each_sg(sgl, sg, nents, i)
-			arch_dma_mark_clean(dma_to_phys(dev,
-							sg_dma_address(sg)),
-					    sg->length);
-	}
 }
 
 void dma_direct_unmap_sg(struct device *dev, struct scatterlist *sgl, int nents,

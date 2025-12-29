@@ -1266,16 +1266,11 @@ static inline bool vruntime_normalized(struct task_struct *p)
 	return false;
 }
 
-static void propagate_entity_cfs_rq(struct sched_entity *se)
-{
-}
-
 static void detach_entity_cfs_rq(struct sched_entity *se)
 {
 	struct cfs_rq *cfs_rq = cfs_rq_of(se);
 
 	update_load_avg(cfs_rq, se, 0);
-	propagate_entity_cfs_rq(se);
 }
 
 static void attach_entity_cfs_rq(struct sched_entity *se)
@@ -1284,7 +1279,6 @@ static void attach_entity_cfs_rq(struct sched_entity *se)
 
 	update_load_avg(cfs_rq, se,
 			sched_feat(ATTACH_AGE_LOAD) ? 0 : SKIP_AGE_LOAD);
-	propagate_entity_cfs_rq(se);
 }
 
 static void detach_task_cfs_rq(struct task_struct *p)

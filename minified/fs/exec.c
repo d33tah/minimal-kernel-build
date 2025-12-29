@@ -698,12 +698,10 @@ int begin_new_exec(struct linux_binprm *bprm)
 	if (retval < 0)
 		goto out_unlock;
 
-	security_bprm_committing_creds(bprm);
-
+	/* security_bprm_committing_creds - empty stub */
 	commit_creds(bprm->cred);
 	bprm->cred = NULL;
-	/* perf_event_exec, perf_event_exit_task removed - empty stubs */
-	security_bprm_committed_creds(bprm);
+	/* security_bprm_committed_creds, perf_event_exec/exit_task - stubs */
 
 	if (bprm->have_execfd) {
 		retval = get_unused_fd_flags(0);

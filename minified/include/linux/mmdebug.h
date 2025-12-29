@@ -8,10 +8,6 @@ struct page;
 struct vm_area_struct;
 struct mm_struct;
 
-static inline void dump_page(struct page *page, const char *reason) { }
-void dump_vma(const struct vm_area_struct *vma);
-void dump_mm(const struct mm_struct *mm);
-
 #define VM_BUG_ON(cond) BUILD_BUG_ON_INVALID(cond)
 #define VM_BUG_ON_PAGE(cond, page) VM_BUG_ON(cond)
 #define VM_BUG_ON_FOLIO(cond, folio) VM_BUG_ON(cond)

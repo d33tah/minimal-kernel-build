@@ -1245,8 +1245,6 @@ copy_process(struct pid *pid, int trace, int node,
 		p->exit_signal = args->exit_signal;
 	}
 
-	sched_core_fork(p);
-
 	spin_lock(&current->sighand->siglock);
 
 	copy_seccomp(p);

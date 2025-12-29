@@ -364,10 +364,6 @@ void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 		rq_clock_skip_update(rq);
 }
 
-static inline void migrate_disable_switch(struct rq *rq, struct task_struct *p)
-{
-}
-
 static void ttwu_stat(struct task_struct *p, int cpu, int wake_flags)
 {
 	/* Stub: wake-up statistics not needed for minimal kernel */
@@ -924,9 +920,6 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 		RCU_INIT_POINTER(rq->curr, next);
 
 		++*switch_count;
-
-		migrate_disable_switch(rq, prev);
-		psi_sched_switch(prev, next, !task_on_rq_queued(prev));
 
 		rq = context_switch(rq, prev, next, &rf);
 	} else {

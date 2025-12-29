@@ -7,8 +7,7 @@
 #define SWP_OFFSET_MASK	((1UL << SWP_TYPE_SHIFT) - 1)
 static inline pte_t pte_swp_clear_flags(pte_t pte) {
 	if (pte_swp_exclusive(pte)) pte = pte_swp_clear_exclusive(pte);
-	if (pte_swp_soft_dirty(pte)) pte = pte_swp_clear_soft_dirty(pte);
-	if (pte_swp_uffd_wp(pte)) pte = pte_swp_clear_uffd_wp(pte);
+	/* pte_swp_soft_dirty, pte_swp_uffd_wp always return 0 */
 	return pte;
 }
 static inline swp_entry_t swp_entry(unsigned long type, pgoff_t offset) { swp_entry_t ret; ret.val = (type << SWP_TYPE_SHIFT) | (offset & SWP_OFFSET_MASK); return ret; }

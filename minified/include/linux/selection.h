@@ -30,11 +30,8 @@ static inline void scr_memmovew(u16 *d, const u16 *s, unsigned int count)
 struct tty_struct;
 struct vc_data;
 
-static inline void clear_selection(void) { }
-/* set_selection_user, set_selection_kernel, paste_selection, sel_loadlut,
+/* clear_selection, vc_is_sel, set_selection_*, paste_selection, sel_loadlut,
  * mouse_reporting, mouse_report removed - never called */
-
-static inline bool vc_is_sel(struct vc_data *vc) { return false; }
 
 extern int console_blanked;
 

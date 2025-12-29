@@ -281,23 +281,11 @@ static void __init setup_cr_pinning(void)
 	static_key_enable(&cr_pinning.key);
 }
 
-static bool pku_disabled;
+/* pku_disabled variable removed - PKU feature disabled */
 
 static __always_inline void setup_pku(struct cpuinfo_x86 *c)
 {
-	if (c == &boot_cpu_data) {
-		if (pku_disabled || !cpu_feature_enabled(X86_FEATURE_PKU))
-			return;
-
-		setup_force_cpu_cap(X86_FEATURE_OSPKE);
-
-	} else if (!cpu_feature_enabled(X86_FEATURE_OSPKE)) {
-		return;
-	}
-
-	cr4_set_bits(X86_CR4_PKE);
-
-	pkru_write_default();
+	/* X86_FEATURE_PKU and X86_FEATURE_OSPKE are disabled */
 }
 
 static __always_inline void setup_cet(struct cpuinfo_x86 *c)

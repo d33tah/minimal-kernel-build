@@ -118,9 +118,7 @@ struct cred *prepare_creds(void)
 	if (!new->ucounts)
 		goto error;
 
-	if (security_prepare_creds(new, old, GFP_KERNEL_ACCOUNT) < 0)
-		goto error;
-
+	/* security_prepare_creds always returns 0 */
 	validate_creds(new);
 	return new;
 

@@ -148,9 +148,7 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags,
 
 	down_write_nested(&s->s_umount, SINGLE_DEPTH_NESTING);
 
-	if (security_sb_alloc(s))
-		goto fail;
-
+	/* security_sb_alloc always returns 0 */
 	for (i = 0; i < SB_FREEZE_LEVELS; i++) {
 		if (__percpu_init_rwsem(&s->s_writers.rw_sem[i],
 					sb_writers_name[i],

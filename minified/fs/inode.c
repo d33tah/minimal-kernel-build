@@ -64,8 +64,7 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 	inode->i_dir_seq = 0;
 	inode->i_rdev = 0;
 
-	if (security_inode_alloc(inode))
-		goto out;
+	/* security_inode_alloc always returns 0 */
 	spin_lock_init(&inode->i_lock);
 	lockdep_set_class(&inode->i_lock, &sb->s_type->i_lock_key);
 

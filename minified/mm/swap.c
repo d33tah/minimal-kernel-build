@@ -266,12 +266,11 @@ static void lru_deactivate_fn(struct page *page, struct lruvec *lruvec)
 
 static void lru_lazyfree_fn(struct page *page, struct lruvec *lruvec)
 {
-	if (PageAnon(page) && PageSwapBacked(page) && !PageSwapCache(page) &&
-	    !PageUnevictable(page)) {
+	/* PageSwapCache always returns false */
+	if (PageAnon(page) && PageSwapBacked(page) && !PageUnevictable(page)) {
 		del_page_from_lru_list(page, lruvec);
 		ClearPageActive(page);
 		ClearPageReferenced(page);
-
 		ClearPageSwapBacked(page);
 		add_page_to_lru_list(page, lruvec);
 	}

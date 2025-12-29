@@ -262,9 +262,8 @@ int __page_mapcount(struct page *page)
 	if (!PageAnon(page))
 		return ret;
 	page = compound_head(page);
+	/* PageDoubleMap always returns false */
 	ret += atomic_read(compound_mapcount_ptr(page)) + 1;
-	if (PageDoubleMap(page))
-		ret--;
 	return ret;
 }
 

@@ -1423,9 +1423,7 @@ vm_fault_t filemap_map_pages(struct vm_fault *vmf, pgoff_t start_pgoff,
 	do {
 again:
 		page = folio_file_page(folio, xas.xa_index);
-		if (PageHWPoison(page))
-			goto unlock;
-
+		/* PageHWPoison always returns false */
 		if (mmap_miss > 0)
 			mmap_miss--;
 

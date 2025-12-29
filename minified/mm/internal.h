@@ -237,7 +237,7 @@ vma_pgoff_address(pgoff_t pgoff, unsigned long nr_pages,
 static inline unsigned long
 vma_address(struct page *page, struct vm_area_struct *vma)
 {
-	VM_BUG_ON_PAGE(PageKsm(page), page);	 
+	/* PageKsm always returns false */
 	return vma_pgoff_address(page_to_pgoff(page), compound_nr(page), vma);
 }
 

@@ -425,15 +425,15 @@ PAGEFLAG(Isolated, isolated, PF_ANY);
 
 static __always_inline int PageAnonExclusive(struct page *page)
 {
+	/* PageHuge always returns false */
 	VM_BUG_ON_PGFLAGS(!PageAnon(page), page);
-	VM_BUG_ON_PGFLAGS(PageHuge(page) && !PageHead(page), page);
 	return test_bit(PG_anon_exclusive, &PF_ANY(page, 1)->flags);
 }
 
 static __always_inline void SetPageAnonExclusive(struct page *page)
 {
-	VM_BUG_ON_PGFLAGS(!PageAnon(page) || PageKsm(page), page);
-	VM_BUG_ON_PGFLAGS(PageHuge(page) && !PageHead(page), page);
+	/* PageKsm and PageHuge always return false */
+	VM_BUG_ON_PGFLAGS(!PageAnon(page), page);
 	set_bit(PG_anon_exclusive, &PF_ANY(page, 1)->flags);
 }
 

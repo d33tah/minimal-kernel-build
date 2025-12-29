@@ -307,22 +307,20 @@ void page_add_anon_rmap(struct page *page, struct vm_area_struct *vma,
 {
 	bool first;
 
-	if (!unlikely(PageKsm(page)))
-		VM_BUG_ON_PAGE(!PageLocked(page), page);
+	/* PageKsm always returns false */
+	VM_BUG_ON_PAGE(!PageLocked(page), page);
 
-	/* THP not enabled - compound path is dead code */
 	first = atomic_inc_and_test(&page->_mapcount);
 	VM_BUG_ON_PAGE(!first && (flags & RMAP_EXCLUSIVE), page);
 	VM_BUG_ON_PAGE(!first && PageAnonExclusive(page), page);
 
-	if (first)
+	if (first) {
 		__mod_lruvec_page_state(page, NR_ANON_MAPPED, 1);
-
-	if (first && !unlikely(PageKsm(page)))
 		__page_set_anon_rmap(page, vma, address,
 				     !!(flags & RMAP_EXCLUSIVE));
-	else
+	} else {
 		__page_check_anon_rmap(page, vma, address);
+	}
 }
 
 void page_add_new_anon_rmap(struct page *page, struct vm_area_struct *vma,

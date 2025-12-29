@@ -75,12 +75,10 @@ static struct page *__dma_direct_alloc_pages(struct device *dev, size_t size,
 	gfp |= dma_direct_optimal_gfp_mask(dev, dev->coherent_dma_mask,
 					   &phys_limit);
 	page = dma_alloc_contiguous(dev, size, gfp);
-	if (page) {
-		if (!dma_coherent_ok(dev, page_to_phys(page), size) ||
-		    (!allow_highmem && PageHighMem(page))) {
-			dma_free_contiguous(dev, page, size);
-			page = NULL;
-		}
+	/* PageHighMem always returns false */
+	if (page && !dma_coherent_ok(dev, page_to_phys(page), size)) {
+		dma_free_contiguous(dev, page, size);
+		page = NULL;
 	}
 	if (!page)
 		page = alloc_pages_node(node, gfp, get_order(size));
@@ -110,7 +108,6 @@ static void *dma_direct_alloc_no_mapping(struct device *dev, size_t size,
 void *dma_direct_alloc(struct device *dev, size_t size, dma_addr_t *dma_handle,
 		       gfp_t gfp, unsigned long attrs)
 {
-	bool remap = false, set_uncached = false;
 	struct page *page;
 	void *ret;
 
@@ -118,7 +115,6 @@ void *dma_direct_alloc(struct device *dev, size_t size, dma_addr_t *dma_handle,
 	if (attrs & DMA_ATTR_NO_WARN)
 		gfp |= __GFP_NOWARN;
 
-	/* force_dma_unencrypted always returns false */
 	if (attrs & DMA_ATTR_NO_KERNEL_MAPPING)
 		return dma_direct_alloc_no_mapping(dev, size, dma_handle, gfp);
 
@@ -126,36 +122,12 @@ void *dma_direct_alloc(struct device *dev, size_t size, dma_addr_t *dma_handle,
 	if (!page)
 		return NULL;
 
-	if (PageHighMem(page)) {
-		remap = true;
-		set_uncached = false;
-	}
-
-	/* arch_dma_prep_coherent is an empty stub */
-	if (remap) {
-		ret = dma_common_contiguous_remap(
-			page, size, dma_pgprot(dev, PAGE_KERNEL, attrs),
-			__builtin_return_address(0));
-		if (!ret)
-			goto out_free_pages;
-	} else {
-		ret = page_address(page);
-	}
-
+	/* PageHighMem always returns false */
+	ret = page_address(page);
 	memset(ret, 0, size);
-
-	if (set_uncached) {
-		ret = arch_dma_set_uncached(ret, size);
-		if (IS_ERR(ret))
-			goto out_free_pages;
-	}
 
 	*dma_handle = phys_to_dma_direct(dev, page_to_phys(page));
 	return ret;
-
-out_free_pages:
-	__dma_direct_free_pages(dev, page, size);
-	return NULL;
 }
 
 /* force_dma_unencrypted always returns false */

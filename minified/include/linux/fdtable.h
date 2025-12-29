@@ -80,8 +80,7 @@ int iterate_fd(struct files_struct *, unsigned,
 		int (*)(const void *, struct file *, unsigned),
 		const void *);
 
-extern int close_fd(unsigned int fd);
-/* __close_range removed - never called */
+/* close_fd, __close_range removed - never called */
 
 extern struct kmem_cache *files_cachep;
 

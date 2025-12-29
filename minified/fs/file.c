@@ -495,21 +495,7 @@ static struct file *pick_file(struct files_struct *files, unsigned fd)
 	return file;
 }
 
-int close_fd(unsigned fd)
-{
-	struct files_struct *files = current->files;
-	struct file *file;
-
-	spin_lock(&files->file_lock);
-	file = pick_file(files, fd);
-	spin_unlock(&files->file_lock);
-	if (!file)
-		return -EBADF;
-
-	return filp_close(file, files);
-}
-
-/* __close_range removed - never called */
+/* close_fd, __close_range removed - never called */
 
 void do_close_on_exec(struct files_struct *files)
 {

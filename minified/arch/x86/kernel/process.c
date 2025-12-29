@@ -15,9 +15,7 @@
 #include <linux/tick.h>
 #include <linux/random.h>
 #include <linux/utsname.h>
-static inline void boot_init_stack_canary(void)
-{
-}
+/* boot_init_stack_canary removed - empty stub, never called */
 /* end stackprotector.h */
 #include <linux/acpi.h>
 /* flush_ptrace_hw_breakpoint removed - was empty stub */

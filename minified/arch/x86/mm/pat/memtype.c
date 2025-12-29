@@ -40,26 +40,7 @@ struct memtype {
 	struct rb_node rb;
 };
 
-static inline char *cattr_name(enum page_cache_mode pcm)
-{
-	switch (pcm) {
-	case _PAGE_CACHE_MODE_UC:
-		return "uncached";
-	case _PAGE_CACHE_MODE_UC_MINUS:
-		return "uncached-minus";
-	case _PAGE_CACHE_MODE_WB:
-		return "write-back";
-	case _PAGE_CACHE_MODE_WC:
-		return "write-combining";
-	case _PAGE_CACHE_MODE_WT:
-		return "write-through";
-	case _PAGE_CACHE_MODE_WP:
-		return "write-protected";
-	default:
-		return "broken";
-	}
-}
-
+/* cattr_name removed - never called */
 #include "../mm_internal.h"
 
 #undef pr_fmt

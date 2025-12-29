@@ -14,8 +14,7 @@ bool syscall_user_dispatch(struct pt_regs *regs);
 static __always_inline void __enter_from_user_mode(struct pt_regs *regs)
 {
 	arch_enter_from_user_mode(regs);
-	/* lockdep_hardirqs_off is empty stub */
-	CT_WARN_ON(ct_state() != CONTEXT_USER);
+	/* lockdep_hardirqs_off is empty, CT_WARN_ON is dead - context_tracking_enabled always false */
 }
 
 void noinstr enter_from_user_mode(struct pt_regs *regs)
@@ -168,8 +167,7 @@ static void syscall_exit_work(struct pt_regs *regs, unsigned long work)
 static void syscall_exit_to_user_mode_prepare(struct pt_regs *regs)
 {
 	unsigned long work = READ_ONCE(current_thread_info()->syscall_work);
-
-	CT_WARN_ON(ct_state() != CONTEXT_KERNEL);
+	/* CT_WARN_ON removed - context_tracking_enabled always false */
 
 	if (unlikely(work & SYSCALL_WORK_EXIT))
 		syscall_exit_work(regs, work);

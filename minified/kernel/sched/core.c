@@ -787,8 +787,7 @@ static inline void schedule_debug(struct task_struct *prev, bool preempt)
 		preempt_count_set(PREEMPT_DISABLED);
 	}
 	rcu_sleep_check();
-	SCHED_WARN_ON(ct_state() == CONTEXT_USER);
-
+	/* SCHED_WARN_ON removed - ct_state() always returns CONTEXT_DISABLED, never CONTEXT_USER */
 	schedstat_inc(this_rq()->sched_count);
 }
 

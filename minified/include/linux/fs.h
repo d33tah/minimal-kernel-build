@@ -1336,11 +1336,7 @@ void setattr_copy(struct user_namespace *, struct inode *inode,
 
 extern int file_update_time(struct file *file);
 
-/* CONFIG_FS_DAX not enabled */
-static inline bool vma_is_fsdax(struct vm_area_struct *vma)
-{
-	return false;
-}
+/* vma_is_fsdax removed - never called */
 
 static inline int iocb_flags(struct file *file)
 {

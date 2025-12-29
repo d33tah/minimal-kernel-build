@@ -706,32 +706,10 @@ static inline unsigned int task_cpu(const struct task_struct *p)
 extern long sched_setaffinity(pid_t pid, const struct cpumask *new_mask);
 extern long sched_getaffinity(pid_t pid, struct cpumask *mask);
 
-static inline void rseq_handle_notify_resume(struct ksignal *ksig,
-					     struct pt_regs *regs)
-{
-}
-static inline void rseq_signal_deliver(struct ksignal *ksig,
-				       struct pt_regs *regs)
-{
-}
-static inline void rseq_preempt(struct task_struct *t)
-{
-}
-static inline void rseq_migrate(struct task_struct *t)
-{
-}
-static inline void rseq_fork(struct task_struct *t, unsigned long clone_flags)
-{
-}
 static inline void rseq_execve(struct task_struct *t)
 {
 }
-
-
-
-static inline void rseq_syscall(struct pt_regs *regs)
-{
-}
-/* sched_core_free, sched_core_fork removed - unused */
+/* rseq_handle_notify_resume, rseq_signal_deliver, rseq_preempt, rseq_migrate,
+   rseq_fork, rseq_syscall, sched_core_free, sched_core_fork removed - unused */
 
 #endif

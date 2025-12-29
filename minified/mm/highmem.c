@@ -99,19 +99,7 @@ void *__kmap_local_pfn_prot(unsigned long pfn, pgprot_t prot)
 	return (void *)vaddr;
 }
 
-void *__kmap_local_page_prot(struct page *page, pgprot_t prot)
-{
-	void *kmap;
-
-	if (!PageHighMem(page))
-		return page_address(page);
-
-	kmap = arch_kmap_local_high_get(page);
-	if (kmap)
-		return kmap;
-
-	return __kmap_local_pfn_prot(page_to_pfn(page), prot);
-}
+/* __kmap_local_page_prot removed - never called */
 
 void __kmap_local_sched_out(void)
 {

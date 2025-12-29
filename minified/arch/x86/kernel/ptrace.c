@@ -300,10 +300,7 @@ static const struct user_regset_view user_x86_32_view = {
 
 u64 xstate_fx_sw_bytes[USER_XSTATE_FX_SW_WORDS];
 
-const struct user_regset_view *task_user_regset_view(struct task_struct *task)
-{
-	return &user_x86_32_view;
-}
+/* task_user_regset_view removed - never called */
 
 void send_sigtrap(struct pt_regs *regs, int error_code, int si_code)
 {

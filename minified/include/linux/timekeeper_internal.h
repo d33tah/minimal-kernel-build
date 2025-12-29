@@ -44,11 +44,10 @@ struct timekeeper {
 	s64			ntp_error;
 	u32			ntp_error_shift;
 	u32			ntp_err_mult;
-	 
+
 	u32			skip_second_overflow;
 };
 
-
-extern void update_vsyscall(struct timekeeper *tk);
+/* update_vsyscall removed - declared but never called */
 
 #endif  

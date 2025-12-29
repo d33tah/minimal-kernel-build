@@ -130,8 +130,8 @@ static inline void ptrace_release_task(struct task_struct *task)
 
 /* x86 defines arch_has_single_step, arch_has_block_step,
  * and ARCH_HAS_USER_SINGLE_STEP_REPORT */
-/* user_enable_single_step, user_enable_block_step removed - declared but never implemented */
-extern void user_disable_single_step(struct task_struct *);
+/* user_enable_single_step, user_enable_block_step,
+   user_disable_single_step removed - declared but never called */
 extern void user_single_step_report(struct pt_regs *regs);
 
 #ifndef arch_ptrace_stop_needed

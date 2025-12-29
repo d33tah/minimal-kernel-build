@@ -222,9 +222,7 @@ static inline loff_t folio_pos(struct folio *folio)
 	return page_offset(&folio->page);
 }
 
-
-extern pgoff_t linear_hugepage_index(struct vm_area_struct *vma,
-				     unsigned long address);
+/* linear_hugepage_index removed - declared but never called */
 
 static inline pgoff_t linear_page_index(struct vm_area_struct *vma,
 					unsigned long address)

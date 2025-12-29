@@ -18,9 +18,7 @@ struct rtc_time {
 	int tm_isdst;
 };
 
-extern int rtc_month_days(unsigned int month, unsigned int year);
-extern int rtc_valid_tm(struct rtc_time *tm);
-extern void rtc_time64_to_tm(time64_t time, struct rtc_time *tm);
+/* rtc_month_days, rtc_valid_tm, rtc_time64_to_tm removed - declared but never called */
 
 #define rtc_hctosys_ret -ENODEV
 

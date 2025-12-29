@@ -7,11 +7,8 @@
 #include <linux/static_call.h>
 #include <asm/stacktrace.h>
 
-/* struct perf_guest_switch_msr removed - unused */
-
-extern void perf_clear_dirty_counters(void);
-
-/* perf_guest_get_msrs, perf_misc_flags removed - unused */
+/* struct perf_guest_switch_msr, perf_clear_dirty_counters,
+   perf_guest_get_msrs, perf_misc_flags removed - unused */
 
 #define perf_arch_fetch_caller_regs(regs, __ip) do { \
 	(regs)->ip = (__ip); \

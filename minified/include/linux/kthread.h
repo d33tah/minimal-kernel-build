@@ -101,7 +101,7 @@ struct kthread_delayed_work {
 			     TIMER_IRQSAFE);				\
 	} while (0)
 
-int kthread_worker_fn(void *worker_ptr);
+/* kthread_worker_fn removed - declared but never defined or called */
 
 __printf(2, 3)
 struct kthread_worker *

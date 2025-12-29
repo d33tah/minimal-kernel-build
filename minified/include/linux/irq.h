@@ -258,8 +258,7 @@ extern void handle_bad_irq(struct irq_desc *desc);
 extern int irq_chip_pm_get(struct irq_data *data);
 extern int irq_chip_pm_put(struct irq_data *data);
 
-extern void note_interrupt(struct irq_desc *desc, irqreturn_t action_ret);
-
+/* note_interrupt removed - declared but never called */
 
 extern struct irq_chip no_irq_chip;
 extern struct irq_chip dummy_irq_chip;

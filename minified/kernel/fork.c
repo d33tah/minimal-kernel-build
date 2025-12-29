@@ -1277,7 +1277,7 @@ copy_process(struct pid *pid, int trace, int node,
 			current->signal->nr_threads++;
 			atomic_inc(&current->signal->live);
 			refcount_inc(&current->signal->sigcnt);
-			task_join_group_stop(p);
+			/* task_join_group_stop removed - empty stub */
 			list_add_tail_rcu(&p->thread_group,
 					  &p->group_leader->thread_group);
 			list_add_tail_rcu(&p->thread_node,

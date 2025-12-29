@@ -137,15 +137,7 @@ bool task_set_jobctl_pending(struct task_struct *task, unsigned long mask)
 	return false;
 }
 
-/* Stubbed - not used externally */
-void task_clear_jobctl_pending(struct task_struct *task, unsigned long mask)
-{
-}
-
-/* Stubbed - not used externally */
-void task_join_group_stop(struct task_struct *task)
-{
-}
+/* task_clear_jobctl_pending, task_join_group_stop removed - empty stubs */
 
 static struct sigqueue *__sigqueue_alloc(int sig, struct task_struct *t,
 					 gfp_t gfp_flags, int override_rlimit,
@@ -388,7 +380,7 @@ int zap_other_threads(struct task_struct *p)
 
 	while_each_thread(p, t)
 	{
-		task_clear_jobctl_pending(t, JOBCTL_PENDING_MASK);
+		/* task_clear_jobctl_pending removed - empty stub */
 		count++;
 
 		if (t->exit_state)

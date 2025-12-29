@@ -993,7 +993,7 @@ static int __tty_fasync(int fd, struct file *filp, int on)
 		}
 		get_pid(pid);
 		spin_unlock_irqrestore(&tty->ctrl.lock, flags);
-		__f_setown(filp, pid, type, 0);
+		/* __f_setown removed - empty stub */
 		put_pid(pid);
 		retval = 0;
 	}

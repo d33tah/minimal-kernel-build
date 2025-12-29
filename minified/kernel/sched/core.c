@@ -749,7 +749,7 @@ void scheduler_tick(void)
 	u64 resched_latency;
 
 	arch_scale_freq_tick();
-	sched_clock_tick();
+	/* sched_clock_tick removed - empty stub */
 
 	rq_lock(rq, &rf);
 

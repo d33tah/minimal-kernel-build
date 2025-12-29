@@ -33,14 +33,5 @@ notrace u64 sched_clock_cpu(int cpu)
 	return sched_clock();
 }
 
-notrace void sched_clock_tick(void)
-{
-}
-
-notrace void sched_clock_tick_stable(void)
-{
-}
-
-notrace void clear_sched_clock_stable(void)
-{
-}
+/* sched_clock_tick, sched_clock_tick_stable, clear_sched_clock_stable removed -
+   empty stubs not needed */

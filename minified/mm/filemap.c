@@ -88,12 +88,9 @@ static void filemap_unaccount_folio(struct address_space *mapping,
 	__lruvec_stat_mod_folio(folio, NR_FILE_PAGES, -nr);
 	if (folio_test_swapbacked(folio)) {
 		__lruvec_stat_mod_folio(folio, NR_SHMEM, -nr);
-		if (folio_test_pmd_mappable(folio))
-			__lruvec_stat_mod_folio(folio, NR_SHMEM_THPS, -nr);
-	} else if (folio_test_pmd_mappable(folio)) {
-		__lruvec_stat_mod_folio(folio, NR_FILE_THPS, -nr);
-		filemap_nr_thps_dec(mapping);
+		/* folio_test_pmd_mappable always returns false */
 	}
+	/* else if folio_test_pmd_mappable block removed - always false */
 
 	if (WARN_ON_ONCE(folio_test_dirty(folio) &&
 			 mapping_can_writeback(mapping)))
@@ -405,9 +402,7 @@ noinline int __filemap_add_folio(struct address_space *mapping,
 
 		if (!huge) {
 			__lruvec_stat_mod_folio(folio, NR_FILE_PAGES, nr);
-			if (folio_test_pmd_mappable(folio))
-				__lruvec_stat_mod_folio(folio, NR_FILE_THPS,
-							nr);
+			/* folio_test_pmd_mappable always returns false */
 		}
 unlock:
 		xas_unlock_irq(&xas);

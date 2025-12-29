@@ -271,15 +271,11 @@ retry_locked:
 	if (flags & FOLL_SPLIT_PMD) {
 		int ret;
 		page = pmd_page(*pmd);
+		spin_unlock(ptl);
+		/* split_huge_pmd is empty, pmd_trans_unstable returns 0 */
 		if (is_huge_zero_page(page)) {
-			spin_unlock(ptl);
 			ret = 0;
-			split_huge_pmd(vma, pmd, address);
-			if (pmd_trans_unstable(pmd))
-				ret = -EBUSY;
 		} else {
-			spin_unlock(ptl);
-			split_huge_pmd(vma, pmd, address);
 			ret = pte_alloc(mm, pmd) ? -ENOMEM : 0;
 		}
 

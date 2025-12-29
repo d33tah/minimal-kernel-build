@@ -712,9 +712,7 @@ static int wait_for_vfork_done(struct task_struct *child,
 {
 	int killed;
 
-	cgroup_enter_frozen();
 	killed = wait_for_completion_killable(vfork);
-	cgroup_leave_frozen(false);
 
 	if (killed) {
 		task_lock(child);

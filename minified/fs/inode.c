@@ -296,12 +296,9 @@ static void evict(struct inode *inode)
 	BUG_ON(!(inode->i_state & I_FREEING));
 	BUG_ON(!list_empty(&inode->i_lru));
 
-	if (!list_empty(&inode->i_io_list))
-		inode_io_list_del(inode);
+	/* inode_io_list_del, inode_wait_for_writeback removed - empty stubs */
 
 	inode_sb_list_del(inode);
-
-	inode_wait_for_writeback(inode);
 
 	if (op->evict_inode) {
 		op->evict_inode(inode);

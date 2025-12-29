@@ -402,25 +402,12 @@ void __init parse_early_param(void)
 
 void __init arch_post_acpi_subsys_init(void); /* in arch/x86/kernel/process.c */
 
-void __init __weak smp_setup_processor_id(void)
-{
-}
-
-#if THREAD_SIZE >= PAGE_SIZE
-void __init __weak thread_stack_cache_init(void)
-{
-}
-#endif
-
-void __init __weak mem_encrypt_init(void)
-{
-}
-
 void __init poking_init(void); /* in arch/x86/mm/init.c */
 
+/* smp_setup_processor_id, thread_stack_cache_init, mem_encrypt_init removed - empty weak stubs */
 void __init __weak pgtable_cache_init(void)
 {
-}
+} /* called from mm.h */
 
 void __init trap_init(void); /* in arch/x86/kernel/traps.c */
 
@@ -447,7 +434,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	char *after_dashes;
 
 	set_task_stack_end_magic(&init_task);
-	smp_setup_processor_id();
+	/* smp_setup_processor_id removed - empty weak stub */
 
 	local_irq_disable();
 	early_boot_irqs_disabled = true;
@@ -543,7 +530,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	calibrate_delay();
 	pid_idr_init();
 	anon_vma_init();
-	thread_stack_cache_init();
+	/* thread_stack_cache_init removed - empty weak stub */
 	cred_init();
 	fork_init();
 	proc_caches_init();

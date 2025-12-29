@@ -424,10 +424,6 @@ void __put_task_struct(struct task_struct *tsk)
 	free_task(tsk);
 }
 
-void __init __weak arch_task_cache_init(void)
-{
-}
-
 static void set_max_threads(unsigned int max_threads_suggested)
 {
 	u64 threads;
@@ -475,7 +471,7 @@ void __init fork_init(void)
 		SLAB_PANIC | SLAB_ACCOUNT, useroffset, usersize, NULL);
 #endif
 
-	arch_task_cache_init();
+	/* arch_task_cache_init removed - empty weak stub */
 
 	set_max_threads(MAX_THREADS);
 

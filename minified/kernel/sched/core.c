@@ -681,7 +681,6 @@ static struct rq *finish_task_switch(struct task_struct *prev)
 	rq->prev_mm = NULL;
 
 	prev_state = READ_ONCE(prev->__state);
-	vtime_task_switch(prev);
 
 	finish_task(prev);
 	tick_nohz_task_switch();
@@ -1393,7 +1392,6 @@ void __init init_idle(struct task_struct *idle, int cpu)
 	init_idle_preempt_count(idle, cpu);
 
 	idle->sched_class = &idle_sched_class;
-	vtime_init_idle(idle, cpu);
 }
 
 void __init sched_init_smp(void)

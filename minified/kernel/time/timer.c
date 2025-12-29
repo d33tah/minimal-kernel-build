@@ -622,8 +622,6 @@ signed long __sched schedule_timeout(signed long timeout)
 	schedule();
 	del_singleshot_timer_sync(&timer.timer);
 
-	destroy_timer_on_stack(&timer.timer);
-
 	timeout = expire - jiffies;
 
 out:

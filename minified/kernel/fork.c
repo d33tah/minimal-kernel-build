@@ -743,13 +743,11 @@ static void mm_release(struct task_struct *tsk, struct mm_struct *mm)
 
 void exit_mm_release(struct task_struct *tsk, struct mm_struct *mm)
 {
-	futex_exit_release(tsk);
 	mm_release(tsk, mm);
 }
 
 void exec_mm_release(struct task_struct *tsk, struct mm_struct *mm)
 {
-	futex_exec_release(tsk);
 	mm_release(tsk, mm);
 }
 
@@ -1203,8 +1201,6 @@ copy_process(struct pid *pid, int trace, int node,
 		if (retval)
 			goto bad_fork_put_pidfd;
 	}
-
-	futex_init_task(p);
 
 	if ((clone_flags & (CLONE_VM | CLONE_VFORK)) == CLONE_VM)
 		sas_ss_reset(p);

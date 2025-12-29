@@ -474,7 +474,6 @@ int vc_allocate(unsigned int currcons)
 		global_cursor_default = 1;
 
 	vc_init(vc, vc->vc_rows, vc->vc_cols, 1);
-	vcs_make_sysfs(currcons);
 
 	return 0;
 err_free:
@@ -1218,7 +1217,6 @@ int __init vty_init(const struct file_operations *console_fops)
 	if (tty_register_driver(console_driver))
 		panic("Couldn't register console driver\n");
 	kbd_init();
-	console_map_init();
 	return 0;
 }
 

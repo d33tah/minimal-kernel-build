@@ -96,10 +96,8 @@ struct file_system_type *get_fs_type(const char *name)
 	const char *dot = strchr(name, '.');
 	int len = dot ? dot - name : strlen(name);
 
+	/* request_module always returns -ENOSYS, so module loading is dead */
 	fs = __get_fs_type(name, len);
-	if (!fs && (request_module("fs-%.*s", len, name) == 0)) {
-		fs = __get_fs_type(name, len);
-	}
 
 	if (dot && fs && !(fs->fs_flags & FS_HAS_SUBTYPE)) {
 		put_filesystem(fs);

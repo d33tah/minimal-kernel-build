@@ -84,14 +84,9 @@ static struct tty_ldisc *tty_ldisc_get(struct tty_struct *tty, int disc)
 		return ERR_PTR(-EINVAL);
 
 	ldops = get_ldops(disc);
-	if (IS_ERR(ldops)) {
-		if (!capable(CAP_SYS_MODULE) && !tty_ldisc_autoload)
-			return ERR_PTR(-EPERM);
-		request_module("tty-ldisc-%d", disc);
-		ldops = get_ldops(disc);
-		if (IS_ERR(ldops))
-			return ERR_CAST(ldops);
-	}
+	/* capable() always true, request_module returns -ENOSYS - module code dead */
+	if (IS_ERR(ldops))
+		return ERR_CAST(ldops);
 
 	ld = kmalloc(sizeof(struct tty_ldisc), GFP_KERNEL | __GFP_NOFAIL);
 	ld->ops = ldops;

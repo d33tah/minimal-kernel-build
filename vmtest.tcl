@@ -1,15 +1,7 @@
-#!/usr/bin/expect -f
-
-set timeout 10
+#!/usr/bin/env tclsh
+package require Expect
 spawn qemu-system-x86_64 -kernel minified/arch/x86/boot/bzImage -display curses -m 18M
-
-# When we see "Hello, World", test succeeded.
-# The simple init doesn't support interactivity.
-
 expect {
-	"Hello, World!" { exit 0 }
-	timeout {
-		exec reset >@ stdout
-		send_error "\nTest failed\n"
-	}
+    "Hello, World!" { exit 0 }
+    timeout { exit 1 }
 }

@@ -714,7 +714,7 @@ static int __ref kernel_init(void *unused)
 
 	system_state = SYSTEM_RUNNING;
 
-	rcu_end_inkernel_boot();
+	/* rcu_end_inkernel_boot removed - empty stub */
 
 	do_sysctl_args();
 

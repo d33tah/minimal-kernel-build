@@ -437,8 +437,7 @@ void __noreturn do_exit(long code)
 	exit_task_namespaces(tsk);
 	exit_task_work(tsk);
 	exit_thread(tsk);
-	/* perf_event_exit_task removed - empty stub */
-	exit_tasks_rcu_start();
+	/* perf_event_exit_task, exit_tasks_rcu_start removed - empty stubs */
 	exit_notify(tsk, group_dead);
 
 	if (tsk->splice_pipe)
@@ -453,7 +452,7 @@ void __noreturn do_exit(long code)
 	preempt_disable();
 	if (tsk->nr_dirtied)
 		__this_cpu_add(dirty_throttle_leaks, tsk->nr_dirtied);
-	exit_tasks_rcu_finish();
+	/* exit_tasks_rcu_finish removed - empty stub */
 
 	do_task_dead();
 }

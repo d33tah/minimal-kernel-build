@@ -40,7 +40,7 @@ static int __init rcu_set_runtime_mode(void)
 {
 	rcu_test_sync_prims();
 	rcu_scheduler_active = RCU_SCHEDULER_RUNNING;
-	kfree_rcu_scheduler_running();
+	/* kfree_rcu_scheduler_running removed - empty stub */
 	rcu_test_sync_prims();
 	return 0;
 }

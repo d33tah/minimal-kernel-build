@@ -597,7 +597,7 @@ static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 	wake_up_and_wait_for_irq_thread_ready(desc, new);
 	wake_up_and_wait_for_irq_thread_ready(desc, new->secondary);
 
-	register_irq_proc(irq, desc);
+	/* register_irq_proc removed - empty stub */
 	new->dir = NULL;
 	register_handler_proc(irq, new);
 	return 0;

@@ -495,9 +495,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 		local_irq_disable();
 	radix_tree_init();
 
-	/* housekeeping_init removed - empty stub */
-
-	workqueue_init_early();
+	/* housekeeping_init, workqueue_init_early removed - empty stubs */
 
 	rcu_init();
 
@@ -766,8 +764,7 @@ static noinline void __init kernel_init_freeable(void)
 
 	/* cad_pid removed - only set, never read */
 
-	/* smp_prepare_cpus removed - empty stub */
-	workqueue_init();
+	/* smp_prepare_cpus, workqueue_init removed - empty stubs */
 
 	init_mm_internals();
 

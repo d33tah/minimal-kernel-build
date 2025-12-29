@@ -13,10 +13,7 @@ struct io_bitmap {
 	unsigned long	bitmap[IO_BITMAP_LONGS];
 };
 
-struct task_struct;
-
-static inline void io_bitmap_share(struct task_struct *tsk) { }
-static inline void io_bitmap_exit(struct task_struct *tsk) { }
+/* io_bitmap_share, io_bitmap_exit call sites removed */
 static inline void tss_update_io_bitmap(void) { }
 
 #endif

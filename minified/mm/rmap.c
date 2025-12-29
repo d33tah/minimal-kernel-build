@@ -341,8 +341,6 @@ void page_add_anon_rmap(struct page *page, struct vm_area_struct *vma,
 				     !!(flags & RMAP_EXCLUSIVE));
 	else
 		__page_check_anon_rmap(page, vma, address);
-
-	mlock_vma_page(page, vma, compound);
 }
 
 void page_add_new_anon_rmap(struct page *page, struct vm_area_struct *vma,
@@ -406,8 +404,6 @@ out:
 	if (nr)
 		__mod_lruvec_page_state(page, NR_FILE_MAPPED, nr);
 	unlock_page_memcg(page);
-
-	mlock_vma_page(page, vma, compound);
 }
 
 static void page_remove_file_rmap(struct page *page, bool compound)
@@ -478,8 +474,6 @@ void page_remove_rmap(struct page *page, struct vm_area_struct *vma,
 
 out:
 	unlock_page_memcg(page);
-
-	munlock_vma_page(page, vma, compound);
 }
 
 void __put_anon_vma(struct anon_vma *anon_vma)

@@ -570,9 +570,7 @@ static void run_local_timers(void)
 
 void update_process_times(int user_tick)
 {
-	struct task_struct *p = current;
-
-	account_process_tick(p, user_tick);
+	/* account_process_tick removed - empty stub */
 	run_local_timers();
 	rcu_sched_clock_irq(user_tick);
 	scheduler_tick();

@@ -610,7 +610,7 @@ static int __init populate_rootfs(void)
 {
 	initramfs_cookie = async_schedule_domain(do_populate_rootfs, NULL,
 						 &initramfs_domain);
-	usermodehelper_enable();
+	/* usermodehelper_enable is empty stub - removed */
 	if (!initramfs_async)
 		wait_for_initramfs();
 	return 0;

@@ -1126,9 +1126,7 @@ copy_process(struct pid *pid, int trace, int node,
 	if (retval)
 		goto bad_fork_cleanup_policy;
 	/* perf_event_init_task removed - empty stub that always returns 0 */
-	retval = security_task_alloc(p, clone_flags);
-	if (retval)
-		goto bad_fork_cleanup_audit;
+	/* security_task_alloc always returns 0 - dead code removed */
 	retval = copy_files(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_security;
@@ -1317,8 +1315,8 @@ bad_fork_cleanup_files:
 	exit_files(p);
 bad_fork_cleanup_security:
 	security_task_free(p);
-bad_fork_cleanup_audit:
 	audit_free(p);
+	/* bad_fork_cleanup_audit label removed - no longer used */
 bad_fork_cleanup_policy:
 bad_fork_cleanup_delayacct:
 	/* delayacct_tsk_free removed - empty stub */

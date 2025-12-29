@@ -489,7 +489,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	boot_cpu_init();
 	page_address_init();
 	pr_notice("%s", linux_banner);
-	early_security_init();
+	/* early_security_init removed - returns 0 */
 	setup_arch(&command_line);
 	setup_boot_config();
 	setup_command_line(command_line);
@@ -616,9 +616,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	dbg_out("start_kernel: before vfs_caches_init\n");
 	proc_caches_init();
 	uts_ns_init();
-	key_init();
-	security_init();
-	/* dbg_late_init removed - empty stub */
+	/* key_init, security_init, dbg_late_init - empty stubs returning 0 */
 	vfs_caches_init();
 	dbg_out("start_kernel: after vfs_caches_init\n");
 	pagecache_init();

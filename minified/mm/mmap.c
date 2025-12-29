@@ -335,8 +335,7 @@ static inline int is_mergeable_vma(struct vm_area_struct *vma,
 	if (vma->vm_ops && vma->vm_ops->close)
 		return 0;
 	/* is_mergeable_vm_userfaultfd_ctx always returns true - dead code removed */
-	if (!anon_vma_name_eq(anon_vma_name(vma), anon_name))
-		return 0;
+	/* anon_vma_name_eq always returns true - dead code removed */
 	return 1;
 }
 

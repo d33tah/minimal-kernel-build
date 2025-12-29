@@ -5,9 +5,6 @@
 #include <linux/device.h>
 #include <linux/mod_devicetable.h>
 #include <linux/pm.h>
-/* of_find_device_by_node removed - unused */
-static inline void of_platform_register_reconfig_notifier(void) { }
 #include <linux/of.h>
-struct device;
-static inline int of_driver_match_device(struct device *dev, const struct device_driver *drv) { return 0; }
+/* of_platform_register_reconfig_notifier, of_driver_match_device removed - unused */
 #endif

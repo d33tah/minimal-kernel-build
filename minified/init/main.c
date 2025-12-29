@@ -534,7 +534,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	cred_init();
 	fork_init();
 	proc_caches_init();
-	uts_ns_init();
+	/* uts_ns_init removed - empty stub */
 	/* key_init, security_init, dbg_late_init - empty stubs returning 0 */
 	vfs_caches_init();
 	pagecache_init();

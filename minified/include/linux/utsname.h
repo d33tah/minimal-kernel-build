@@ -59,10 +59,6 @@ static inline struct uts_namespace *copy_utsname(unsigned long flags,
 	return old_ns;
 }
 
-static inline void uts_ns_init(void)
-{
-}
-
 static inline struct new_utsname *utsname(void)
 {
 	return &current->nsproxy->uts_ns->name;

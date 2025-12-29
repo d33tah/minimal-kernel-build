@@ -34,6 +34,4 @@ struct kernfs_node {
 	void			*iattr;
 };
 
-static inline void kernfs_init(void) { }
-
 #endif /* __LINUX_KERNFS_H */

@@ -130,8 +130,7 @@ void tick_install_replacement(struct clock_event_device *newdev)
 
 	clockevents_exchange_device(td->evtdev, newdev);
 	tick_setup_device(td, newdev, cpu, cpumask_of(cpu));
-	if (newdev->features & CLOCK_EVT_FEAT_ONESHOT)
-		tick_oneshot_notify();
+	/* tick_oneshot_notify removed - empty stub */
 }
 
 static bool tick_check_percpu(struct clock_event_device *curdev,
@@ -189,17 +188,14 @@ void tick_check_new_device(struct clock_event_device *newdev)
 
 	clockevents_exchange_device(curdev, newdev);
 	tick_setup_device(td, newdev, cpu, cpumask_of(cpu));
-	if (newdev->features & CLOCK_EVT_FEAT_ONESHOT)
-		tick_oneshot_notify();
+	/* tick_oneshot_notify removed - empty stub */
 	return;
 
 out_bc:
-
-	tick_install_broadcast_device(newdev, cpu);
+	/* tick_install_broadcast_device removed - empty stub */
 }
 
 void __init tick_init(void)
 {
-	tick_broadcast_init();
-	tick_nohz_init();
+	/* tick_broadcast_init, tick_nohz_init removed - empty stubs */
 }

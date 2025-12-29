@@ -34,7 +34,6 @@ enum {
 	MEMREMAP_DEC = 1 << 4,
 };
 
-void *memremap(resource_size_t offset, size_t size, unsigned long flags);
-void memunmap(void *addr);
+/* memremap, memunmap removed - declared but never called */
 
 #endif  

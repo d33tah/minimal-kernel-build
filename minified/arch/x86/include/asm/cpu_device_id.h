@@ -56,9 +56,6 @@
 	X86_MATCH_VENDOR_FAM_MODEL_STEPPINGS_FEATURE(INTEL, 6, INTEL_FAM6_##model, \
 						     steppings, X86_FEATURE_ANY, data)
 
- 
-
-extern const struct x86_cpu_id *x86_match_cpu(const struct x86_cpu_id *match);
-/* x86_cpu_has_min_microcode_rev removed - never called */
+/* x86_match_cpu, x86_cpu_has_min_microcode_rev removed - never called */
 
 #endif  

@@ -401,57 +401,7 @@ static struct page *follow_page_mask(struct vm_area_struct *vma,
 	return follow_p4d_mask(vma, address, pgd, flags, ctx);
 }
 
-static int get_gate_page(struct mm_struct *mm, unsigned long address,
-			 unsigned int gup_flags, struct vm_area_struct **vma,
-			 struct page **page)
-{
-	pgd_t *pgd;
-	p4d_t *p4d;
-	pud_t *pud;
-	pmd_t *pmd;
-	pte_t *pte;
-	int ret = -EFAULT;
-
-	if (gup_flags & FOLL_WRITE)
-		return -EFAULT;
-	if (address > TASK_SIZE)
-		pgd = pgd_offset_k(address);
-	else
-		pgd = pgd_offset_gate(mm, address);
-	if (pgd_none(*pgd))
-		return -EFAULT;
-	p4d = p4d_offset(pgd, address);
-	if (p4d_none(*p4d))
-		return -EFAULT;
-	pud = pud_offset(p4d, address);
-	if (pud_none(*pud))
-		return -EFAULT;
-	pmd = pmd_offset(pud, address);
-	if (!pmd_present(*pmd))
-		return -EFAULT;
-	VM_BUG_ON(pmd_trans_huge(*pmd));
-	pte = pte_offset_map(pmd, address);
-	if (pte_none(*pte))
-		goto unmap;
-	*vma = get_gate_vma(mm);
-	if (!page)
-		goto out;
-	*page = vm_normal_page(*vma, address, *pte);
-	if (!*page) {
-		if ((gup_flags & FOLL_DUMP) || !is_zero_pfn(pte_pfn(*pte)))
-			goto unmap;
-		*page = pte_page(*pte);
-	}
-	if (unlikely(!try_grab_page(*page, gup_flags))) {
-		ret = -ENOMEM;
-		goto unmap;
-	}
-out:
-	ret = 0;
-unmap:
-	pte_unmap(pte);
-	return ret;
-}
+/* get_gate_page removed - in_gate_area always returns 0 */
 
 static int faultin_page(struct vm_area_struct *vma, unsigned long address,
 			unsigned int *flags, bool unshare, int *locked)
@@ -560,16 +510,7 @@ static long __get_user_pages(struct mm_struct *mm, unsigned long start,
 
 		if (!vma || start >= vma->vm_end) {
 			vma = find_extend_vma(mm, start);
-			if (!vma && in_gate_area(mm, start)) {
-				ret = get_gate_page(mm, start & PAGE_MASK,
-						    gup_flags, &vma,
-						    pages ? &pages[i] : NULL);
-				if (ret)
-					goto out;
-				ctx.page_mask = 0;
-				goto next_page;
-			}
-
+			/* in_gate_area always returns 0, gate page code removed */
 			if (!vma) {
 				ret = -EFAULT;
 				goto out;

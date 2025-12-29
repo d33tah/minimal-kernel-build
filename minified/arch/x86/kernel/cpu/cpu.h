@@ -43,16 +43,17 @@ enum tsx_ctrl_states {
 
 extern __ro_after_init enum tsx_ctrl_states tsx_ctrl_state;
 
-extern void __init tsx_init(void);
-/* tsx_ap_init, init_spectral_chicken removed - no callers */
+/* tsx_init, tsx_ap_init, init_spectral_chicken removed - no callers */
 
 extern void get_cpu_cap(struct cpuinfo_x86 *c);
 extern void get_cpu_address_sizes(struct cpuinfo_x86 *c);
 extern void cpu_detect_cache_sizes(struct cpuinfo_x86 *c);
-extern void init_scattered_cpuid_features(struct cpuinfo_x86 *c);
-/* init_intel_cacheinfo, init_amd_cacheinfo, init_hygon_cacheinfo removed - no callers */
+/* init_scattered_cpuid_features, init_intel_cacheinfo, init_amd_cacheinfo,
+   init_hygon_cacheinfo removed - no callers */
 
 extern void detect_num_cpu_cores(struct cpuinfo_x86 *c);
-/* detect_extended_topology_early, detect_extended_topology, detect_ht_early, detect_ht, check_null_seg_clears_base, x86_read_arch_cap_msr, aperfmperf_get_khz removed - no callers */
+/* detect_extended_topology_early, detect_extended_topology, detect_ht_early,
+   detect_ht, check_null_seg_clears_base, x86_read_arch_cap_msr,
+   aperfmperf_get_khz removed - no callers */
 
 #endif  

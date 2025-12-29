@@ -662,9 +662,7 @@ unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len,
 	if (flags & MAP_NORESERVE) {
 		if (sysctl_overcommit_memory != OVERCOMMIT_NEVER)
 			vm_flags |= VM_NORESERVE;
-
-		if (file && is_file_hugepages(file))
-			vm_flags |= VM_NORESERVE;
+		/* is_file_hugepages always returns false - hugetlb disabled */
 	}
 
 	addr = mmap_region(file, addr, len, vm_flags, pgoff, uf);

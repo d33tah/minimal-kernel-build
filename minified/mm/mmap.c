@@ -986,9 +986,7 @@ static int acct_stack_growth(struct vm_area_struct *vma, unsigned long size,
 
 	new_start = (vma->vm_flags & VM_GROWSUP) ? vma->vm_start :
 						   vma->vm_end - size;
-	if (is_hugepage_only_range(vma->vm_mm, new_start, size))
-		return -EFAULT;
-
+	/* is_hugepage_only_range always returns 0 - dead code removed */
 	if (security_vm_enough_memory_mm(mm, grow))
 		return -ENOMEM;
 
@@ -1238,12 +1236,7 @@ int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 	}
 	vma = vma_next(mm, prev);
 
-	if (unlikely(uf)) {
-		int error = userfaultfd_unmap_prep(vma, start, end, uf);
-		if (error)
-			return error;
-	}
-
+	/* userfaultfd_unmap_prep always returns 0 - dead code removed */
 	if (!detach_vmas_to_be_unmapped(mm, vma, prev, end))
 		downgrade = false;
 

@@ -966,13 +966,7 @@ retry_open:
 	}
 	clear_bit(TTY_HUPPED, &tty->flags);
 
-	noctty = (filp->f_flags & O_NOCTTY) ||
-		 (IS_ENABLED(CONFIG_VT) && device == MKDEV(TTY_MAJOR, 0)) ||
-		 device == MKDEV(TTYAUX_MAJOR, 1) ||
-		 (tty->driver->type == TTY_DRIVER_TYPE_PTY &&
-		  tty->driver->subtype == PTY_TYPE_MASTER);
-	if (!noctty)
-		tty_open_proc_set_tty(filp, tty);
+	/* tty_open_proc_set_tty removed - empty stub (and noctty logic no longer needed) */
 	tty_unlock(tty);
 	return 0;
 }

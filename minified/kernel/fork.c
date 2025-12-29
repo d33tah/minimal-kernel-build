@@ -1214,7 +1214,6 @@ copy_process(struct pid *pid, int trace, int node,
 	p->pdeath_signal = 0;
 	INIT_LIST_HEAD(&p->thread_group);
 	p->task_works = NULL;
-	clear_posix_cputimers_work(p);
 
 	sched_cgroup_fork(p, args);
 

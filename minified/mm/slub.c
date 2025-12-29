@@ -1079,10 +1079,7 @@ void __init kmem_cache_init(void)
 	static __initdata struct kmem_cache boot_kmem_cache,
 		boot_kmem_cache_node;
 	int node;
-
-	if (debug_guardpage_minorder())
-		slub_max_order = 0;
-
+	/* debug_guardpage_minorder always returns 0 */
 	/* no_hash_pointers_enable call removed - slub debug disabled */
 
 	kmem_cache_node = &boot_kmem_cache_node;

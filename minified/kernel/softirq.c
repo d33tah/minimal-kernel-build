@@ -215,8 +215,7 @@ void irq_exit_rcu(void)
 void irq_exit(void)
 {
 	__irq_exit_rcu();
-	rcu_irq_exit();
-
+	/* rcu_irq_exit is empty stub */
 	lockdep_hardirq_exit();
 }
 

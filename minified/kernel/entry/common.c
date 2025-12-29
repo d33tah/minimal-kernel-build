@@ -136,7 +136,7 @@ static void exit_to_user_mode_prepare(struct pt_regs *regs)
 	addr_limit_user_check();
 	kmap_assert_nomap();
 	lockdep_assert_irqs_disabled();
-	lockdep_sys_exit();
+	/* lockdep_sys_exit is empty do{}while(0) */
 }
 
 static inline bool report_single_step(unsigned long work)
@@ -226,7 +226,7 @@ noinstr irqentry_state_t irqentry_enter(struct pt_regs *regs)
 void raw_irqentry_exit_cond_resched(void)
 {
 	if (!preempt_count()) {
-		rcu_irq_exit_check_preempt();
+		/* rcu_irq_exit_check_preempt is empty stub */
 		if (need_resched())
 			preempt_schedule_irq();
 	}
@@ -238,15 +238,8 @@ noinstr void irqentry_exit(struct pt_regs *regs, irqentry_state_t state)
 
 	if (user_mode(regs)) {
 		irqentry_exit_to_user_mode(regs);
-	} else if (!regs_irqs_disabled(regs)) {
-		if (state.exit_rcu) {
-			rcu_irq_exit();
-			return;
-		}
-	} else {
-		if (state.exit_rcu)
-			rcu_irq_exit();
 	}
+	/* rcu_irq_exit is empty - state.exit_rcu branches removed */
 }
 
 irqentry_state_t noinstr irqentry_nmi_enter(struct pt_regs *regs)

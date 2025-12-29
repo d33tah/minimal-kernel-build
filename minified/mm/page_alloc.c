@@ -1837,11 +1837,7 @@ void __init mem_init_print_info(void)
 static int page_alloc_cpu_dead(unsigned int cpu)
 {
 	lru_add_drain_cpu(cpu);
-	vm_events_fold_cpu(cpu);
-	cpu_vm_stats_fold(cpu);
-
-	/* zone_pcp_update removed - not needed for single CPU minimal kernel */
-
+	/* vm_events_fold_cpu, cpu_vm_stats_fold, zone_pcp_update removed - stubs or unused */
 	return 0;
 }
 

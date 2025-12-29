@@ -932,8 +932,7 @@ static inline void sched_submit_work(struct task_struct *tsk)
 
 	task_flags = tsk->flags;
 
-	if (task_flags & PF_WQ_WORKER)
-		wq_worker_sleeping(tsk);
+	/* wq_worker_sleeping removed - empty stub */
 
 	if (tsk_is_pi_blocked(tsk))
 		return;
@@ -943,8 +942,7 @@ static inline void sched_submit_work(struct task_struct *tsk)
 
 static void sched_update_worker(struct task_struct *tsk)
 {
-	if (tsk->flags & PF_WQ_WORKER)
-		wq_worker_running(tsk);
+	/* wq_worker_running removed - empty stub */
 }
 
 asmlinkage __visible void __sched schedule(void)

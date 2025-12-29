@@ -90,12 +90,7 @@ void __init workqueue_init(void)
 {
 }
 
-void wq_worker_running(struct task_struct *task)
-{
-}
-void wq_worker_sleeping(struct task_struct *task)
-{
-}
+/* wq_worker_running and wq_worker_sleeping removed - empty stubs */
 
 void delayed_work_timer_fn(struct timer_list *t)
 {

@@ -782,12 +782,6 @@ failed:
 	return NULL;
 }
 
-noinline bool should_fail_alloc_page(gfp_t gfp_mask, unsigned int order)
-{
-	return false;
-}
-ALLOW_ERROR_INJECTION(should_fail_alloc_page, TRUE);
-
 bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 			 int highest_zoneidx, unsigned int alloc_flags,
 			 long free_pages)

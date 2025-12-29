@@ -25,7 +25,5 @@ struct oom_control {
 static inline bool tsk_is_oom_victim(struct task_struct *tsk) { return tsk->signal->oom_mm; }
 static inline bool mm_is_oom_victim(struct mm_struct *mm) { return test_bit(MMF_OOM_VICTIM, &mm->flags); }
 static inline vm_fault_t check_stable_address_space(struct mm_struct *mm) { if (unlikely(test_bit(MMF_UNSTABLE, &mm->flags))) return VM_FAULT_SIGBUS; return 0; }
-bool __oom_reap_task_mm(struct mm_struct *mm);
-extern bool out_of_memory(struct oom_control *oc);
-extern void exit_oom_victim(void);
+/* __oom_reap_task_mm, out_of_memory, exit_oom_victim removed - no definitions or call sites */
 #endif

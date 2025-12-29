@@ -127,9 +127,7 @@ static void delayed_put_task_struct(struct rcu_head *rhp)
 {
 	struct task_struct *tsk = container_of(rhp, struct task_struct, rcu);
 
-	kprobe_flush_task(tsk);
-	/* rethook_flush_task removed - empty stub */
-	perf_event_delayed_put(tsk);
+	/* kprobe_flush_task, rethook_flush_task, perf_event_delayed_put removed - empty stubs */
 
 	put_task_struct(tsk);
 }
@@ -441,9 +439,7 @@ void __noreturn do_exit(long code)
 	exit_task_namespaces(tsk);
 	exit_task_work(tsk);
 	exit_thread(tsk);
-
-	perf_event_exit_task(tsk);
-
+	/* perf_event_exit_task removed - empty stub */
 	exit_tasks_rcu_start();
 	exit_notify(tsk, group_dead);
 

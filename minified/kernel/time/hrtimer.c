@@ -334,7 +334,6 @@ static void hrtimer_reprogram(struct hrtimer *timer, bool reprogram)
 /* Stub: clock_was_set simplified for minimal kernel */
 void clock_was_set(unsigned int bases)
 {
-	timerfd_clock_was_set();
 }
 
 static void clock_was_set_work(struct work_struct *work)

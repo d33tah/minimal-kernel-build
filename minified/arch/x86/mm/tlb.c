@@ -229,10 +229,9 @@ static inline void cr4_update_pce_mm(struct mm_struct *mm)
 {
 	if (static_branch_unlikely(&rdpmc_always_available_key) ||
 	    (!static_branch_unlikely(&rdpmc_never_available_key) &&
-	     atomic_read(&mm->context.perf_rdpmc_allowed))) {
-		perf_clear_dirty_counters();
+	     atomic_read(&mm->context.perf_rdpmc_allowed)))
 		cr4_set_bits_irqsoff(X86_CR4_PCE);
-	} else
+	else
 		cr4_clear_bits_irqsoff(X86_CR4_PCE);
 }
 

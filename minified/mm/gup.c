@@ -140,7 +140,6 @@ retry:
 		if (!is_migration_entry(entry))
 			goto no_page;
 		pte_unmap_unlock(ptep, ptl);
-		migration_entry_wait(mm, pmd, address);
 		goto retry;
 	}
 	if ((flags & FOLL_NUMA) && pte_protnone(pte))
@@ -240,7 +239,6 @@ retry:
 		if (likely(!(flags & FOLL_MIGRATION)))
 			return no_page_table(vma, flags);
 
-		pmd_migration_entry_wait(mm, pmd);
 		pmdval = READ_ONCE(*pmd);
 
 		if (pmd_none(pmdval))
@@ -270,7 +268,6 @@ retry_locked:
 		spin_unlock(ptl);
 		if (likely(!(flags & FOLL_MIGRATION)))
 			return no_page_table(vma, flags);
-		pmd_migration_entry_wait(mm, pmd);
 		goto retry_locked;
 	}
 	if (unlikely(!pmd_trans_huge(*pmd))) {

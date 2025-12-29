@@ -538,9 +538,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	time_init();
 
 	random_init(command_line);
-	/* boot_init_stack_canary removed - empty stub */
-	perf_event_init();
-	/* profile_init removed - empty stub */
+	/* boot_init_stack_canary, perf_event_init, profile_init removed - empty stubs */
 	WARN(!irqs_disabled(), "Interrupts were enabled early\n");
 
 	early_boot_irqs_disabled = false;
@@ -646,7 +644,6 @@ int __init_or_module do_one_initcall(initcall_t fn)
 	}
 	WARN(msgbuf[0], "initcall %pS returned with %s\n", fn, msgbuf);
 
-	add_latent_entropy();
 	return ret;
 }
 

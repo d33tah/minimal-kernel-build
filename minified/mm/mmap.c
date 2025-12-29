@@ -1044,8 +1044,6 @@ int expand_downwards(struct vm_area_struct *vma, unsigned long address)
 				anon_vma_interval_tree_post_update_vma(vma);
 				vma_gap_update(vma);
 				spin_unlock(&mm->page_table_lock);
-
-				perf_event_mmap(vma);
 			}
 		}
 	}
@@ -1362,7 +1360,6 @@ static int do_brk_flags(unsigned long addr, unsigned long len,
 	vma->vm_page_prot = vm_get_page_prot(flags);
 	vma_link(mm, vma, prev, rb_link, rb_parent);
 out:
-	perf_event_mmap(vma);
 	mm->total_vm += len >> PAGE_SHIFT;
 	mm->data_vm += len >> PAGE_SHIFT;
 	if (flags & VM_LOCKED)
@@ -1571,8 +1568,6 @@ __install_special_mapping(struct mm_struct *mm, unsigned long addr,
 		goto out;
 
 	vm_stat_account(mm, vma->vm_flags, len >> PAGE_SHIFT);
-
-	perf_event_mmap(vma);
 
 	return vma;
 

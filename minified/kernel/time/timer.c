@@ -575,8 +575,6 @@ void update_process_times(int user_tick)
 	account_process_tick(p, user_tick);
 	run_local_timers();
 	rcu_sched_clock_irq(user_tick);
-	if (in_irq())
-		irq_work_tick();
 	scheduler_tick();
 }
 

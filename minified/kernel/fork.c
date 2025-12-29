@@ -1139,10 +1139,7 @@ copy_process(struct pid *pid, int trace, int node,
 	retval = sched_fork(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_policy;
-
-	retval = perf_event_init_task(p, clone_flags);
-	if (retval)
-		goto bad_fork_cleanup_policy;
+	/* perf_event_init_task removed - empty stub that always returns 0 */
 	retval = security_task_alloc(p, clone_flags);
 	if (retval)
 		goto bad_fork_cleanup_audit;
@@ -1300,7 +1297,6 @@ copy_process(struct pid *pid, int trace, int node,
 	if (pidfile)
 		fd_install(pidfd, pidfile);
 	sched_post_fork(p);
-	perf_event_fork(p);
 	copy_oom_score_adj(clone_flags, p);
 
 	return p;
@@ -1339,7 +1335,6 @@ bad_fork_cleanup_security:
 	security_task_free(p);
 bad_fork_cleanup_audit:
 	audit_free(p);
-	perf_event_free_task(p);
 bad_fork_cleanup_policy:
 bad_fork_cleanup_delayacct:
 	/* delayacct_tsk_free removed - empty stub */
@@ -1390,7 +1385,6 @@ pid_t kernel_clone(struct kernel_clone_args *args)
 	}
 
 	p = copy_process(NULL, trace, NUMA_NO_NODE, args);
-	add_latent_entropy();
 
 	if (IS_ERR(p))
 		return PTR_ERR(p);

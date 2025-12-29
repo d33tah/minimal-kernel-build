@@ -240,7 +240,8 @@ int copy_string_kernel(const char *arg, struct linux_binprm *bprm)
 
 	arg += len;
 	bprm->p -= len;
-	if (IS_ENABLED(CONFIG_MMU) && bprm->p < bprm->argmin)
+	/* CONFIG_MMU=y, so IS_ENABLED is always true */
+	if (bprm->p < bprm->argmin)
 		return -E2BIG;
 
 	while (len > 0) {

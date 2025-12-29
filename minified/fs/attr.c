@@ -51,12 +51,7 @@ int setattr_prepare(struct user_namespace *mnt_userns, struct dentry *dentry,
 	struct inode *inode = d_inode(dentry);
 	unsigned int ia_valid = attr->ia_valid;
 
-	if (ia_valid & ATTR_SIZE) {
-		int error = inode_newsize_ok(inode, attr->ia_size);
-		if (error)
-			return error;
-	}
-
+	/* inode_newsize_ok always returns 0 - dead code removed */
 	if (ia_valid & ATTR_FORCE)
 		goto kill_priv;
 
@@ -93,12 +88,6 @@ kill_priv:
 	return 0;
 }
 
-/* inode_newsize_ok used internally by setattr_prepare */
-int inode_newsize_ok(const struct inode *inode, loff_t offset)
-{
-	return 0;
-}
-
 void setattr_copy(struct user_namespace *mnt_userns, struct inode *inode,
 		  const struct iattr *attr)
 {
@@ -124,13 +113,6 @@ void setattr_copy(struct user_namespace *mnt_userns, struct inode *inode,
 	}
 }
 
-/* may_setattr used internally by notify_change */
-int may_setattr(struct user_namespace *mnt_userns, struct inode *inode,
-		unsigned int ia_valid)
-{
-	return 0;
-}
-
 int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 		  struct iattr *attr, struct inode **delegated_inode)
 {
@@ -141,11 +123,7 @@ int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 	unsigned int ia_valid = attr->ia_valid;
 
 	WARN_ON_ONCE(!inode_is_locked(inode));
-
-	error = may_setattr(mnt_userns, inode, ia_valid);
-	if (error)
-		return error;
-
+	/* may_setattr always returns 0 - removed */
 	if ((ia_valid & ATTR_MODE)) {
 		umode_t amode = attr->ia_mode;
 
@@ -206,10 +184,7 @@ int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 		return -EOVERFLOW;
 
 	/* security_inode_setattr always returns 0 - dead code check removed */
-	error = try_break_deleg(inode, delegated_inode);
-	if (error)
-		return error;
-
+	/* try_break_deleg always returns 0 - dead code removed */
 	if (inode->i_op->setattr)
 		error = inode->i_op->setattr(mnt_userns, dentry, attr);
 	else

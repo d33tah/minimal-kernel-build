@@ -112,10 +112,7 @@ long vfs_truncate(const struct path *path, loff_t length)
 	if (error)
 		goto mnt_drop_write_and_out;
 
-	error = break_lease(inode, O_WRONLY);
-	if (error)
-		goto put_write_and_out;
-
+	/* break_lease always returns 0 - dead code removed */
 	/* security_path_truncate always returns 0 - simplified */
 	error = do_truncate(mnt_userns, path->dentry, length, 0, NULL);
 
@@ -302,10 +299,7 @@ static int do_dentry_open(struct file *f, struct inode *inode,
 	}
 
 	/* security_file_open always returns 0 - dead code removed */
-	error = break_lease(locks_inode(f), f->f_flags);
-	if (error)
-		goto cleanup_all;
-
+	/* break_lease always returns 0 - dead code removed */
 	f->f_mode |= FMODE_LSEEK | FMODE_PREAD | FMODE_PWRITE;
 	if (!open)
 		open = f->f_op->open;

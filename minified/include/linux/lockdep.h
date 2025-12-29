@@ -41,8 +41,10 @@ static inline void lockdep_on(void)
 
 # define lockdep_sys_exit() 			do { } while (0)
 
-extern int lock_is_held(const void *);
-extern int lockdep_is_held(const void *);
+/* lock_is_held, lockdep_is_held are never defined but used in
+   RCU_LOCKDEP_WARN conditions (which are no-ops but still need valid syntax) */
+#define lock_is_held(l)			(1)
+#define lockdep_is_held(l)		(1)
 #define lockdep_is_held_type(l, r)		(1)
 
 #define lockdep_assert(c)			do { } while (0)

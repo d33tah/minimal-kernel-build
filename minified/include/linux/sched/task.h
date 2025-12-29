@@ -38,7 +38,9 @@ extern spinlock_t mmlist_lock;
 extern union thread_union init_thread_union;
 extern struct task_struct init_task;
 
-extern int lockdep_tasklist_lock_is_held(void);
+/* lockdep_tasklist_lock_is_held is never defined but used in
+   rcu_dereference_check conditions (which use RCU_LOCKDEP_WARN, a no-op) */
+#define lockdep_tasklist_lock_is_held() (1)
 
 extern asmlinkage void schedule_tail(struct task_struct *prev);
 extern void init_idle(struct task_struct *idle, int cpu);

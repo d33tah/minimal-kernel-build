@@ -79,26 +79,14 @@ static struct file *__alloc_file(int flags, const struct cred *cred)
 
 struct file *alloc_empty_file(int flags, const struct cred *cred)
 {
-	static long old_max;
 	struct file *f;
 
-	if (get_nr_files() >= files_stat.max_files && !capable(CAP_SYS_ADMIN)) {
-		if (percpu_counter_sum_positive(&nr_files) >=
-		    files_stat.max_files)
-			goto over;
-	}
-
+	/* capable() always returns true - file limit check removed */
 	f = __alloc_file(flags, cred);
 	if (!IS_ERR(f))
 		percpu_counter_inc(&nr_files);
 
 	return f;
-
-over:
-	if (get_nr_files() > old_max) {
-		old_max = get_nr_files();
-	}
-	return ERR_PTR(-ENFILE);
 }
 
 static struct file *alloc_file(const struct path *path, int flags,

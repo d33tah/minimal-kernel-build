@@ -274,9 +274,6 @@ static void hide_softcursor(struct vc_data *vc)
 
 static void hide_cursor(struct vc_data *vc)
 {
-	if (vc_is_sel(vc))
-		clear_selection();
-
 	vc->vc_sw->con_cursor(vc, CM_ERASE);
 	hide_softcursor(vc);
 }
@@ -286,8 +283,6 @@ static void set_cursor(struct vc_data *vc)
 	if (!con_is_fg(vc) || console_blanked || vc->vc_mode == KD_GRAPHICS)
 		return;
 	if (vc->vc_deccm) {
-		if (vc_is_sel(vc))
-			clear_selection();
 		add_softcursor(vc);
 		if (CUR_SIZE(vc->vc_cursor_type) != CUR_NONE)
 			vc->vc_sw->con_cursor(vc, CM_DRAW);

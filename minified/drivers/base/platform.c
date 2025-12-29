@@ -128,9 +128,6 @@ static int platform_match(struct device *dev, struct device_driver *drv)
 	if (of_driver_match_device(dev, drv))
 		return 1;
 
-	if (acpi_driver_match_device(dev, drv))
-		return 1;
-
 	if (pdrv->id_table)
 		return platform_match_id(pdrv->id_table, pdev) != NULL;
 

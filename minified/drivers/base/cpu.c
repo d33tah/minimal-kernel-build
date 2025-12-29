@@ -40,9 +40,6 @@
 
 static int cpu_subsys_match(struct device *dev, struct device_driver *drv)
 {
-	if (acpi_driver_match_device(dev, drv))
-		return 1;
-
 	return 0;
 }
 

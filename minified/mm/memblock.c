@@ -547,10 +547,6 @@ static bool should_skip_region(struct memblock_type *type,
 	if (nid != NUMA_NO_NODE && nid != m_nid)
 		return true;
 
-	if (movable_node_is_enabled() && memblock_is_hotpluggable(m) &&
-	    !(flags & MEMBLOCK_HOTPLUG))
-		return true;
-
 	if ((flags & MEMBLOCK_MIRROR) && !memblock_is_mirror(m))
 		return true;
 

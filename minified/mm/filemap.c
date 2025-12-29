@@ -803,10 +803,6 @@ repeat:
 
 	if (fgp_flags & FGP_ACCESSED)
 		folio_mark_accessed(folio);
-	else if (fgp_flags & FGP_WRITE) {
-		if (folio_test_idle(folio))
-			folio_clear_idle(folio);
-	}
 
 	if (fgp_flags & FGP_STABLE)
 		folio_wait_stable(folio);

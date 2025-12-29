@@ -630,8 +630,6 @@ static inline void kmap_local_sched_in(void)
 static inline void prepare_task_switch(struct rq *rq, struct task_struct *prev,
 				       struct task_struct *next)
 {
-	sched_info_switch(rq, prev, next);
-
 	kmap_local_sched_out();
 	prepare_arch_switch(next);
 }

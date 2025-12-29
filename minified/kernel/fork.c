@@ -944,10 +944,6 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 	return 0;
 }
 
-static void copy_seccomp(struct task_struct *p)
-{
-}
-
 /* Stub: set_tid_address not needed for Hello World */
 SYSCALL_DEFINE1(set_tid_address, int __user *, tidptr)
 {
@@ -1246,8 +1242,6 @@ copy_process(struct pid *pid, int trace, int node,
 	}
 
 	spin_lock(&current->sighand->siglock);
-
-	copy_seccomp(p);
 
 	if (unlikely(!(ns_of_pid(pid)->pid_allocated & PIDNS_ADDING))) {
 		retval = -ENOMEM;

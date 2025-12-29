@@ -978,19 +978,8 @@ static int __init pcpu_verify_alloc_info(const struct pcpu_alloc_info *ai);
 
 #include "percpu-km.c"
 
-/* Removed: pcpu_chunk_addr_search - dead code since free_percpu is a no-op */
-
-static bool pcpu_memcg_pre_alloc_hook(size_t size, gfp_t gfp,
-				      struct obj_cgroup **objcgp)
-{
-	return true;
-}
-
-static void pcpu_memcg_post_alloc_hook(struct obj_cgroup *objcg,
-				       struct pcpu_chunk *chunk, int off,
-				       size_t size)
-{
-}
+/* Removed: pcpu_chunk_addr_search, pcpu_memcg_pre_alloc_hook,
+ * pcpu_memcg_post_alloc_hook - dead code */
 
 static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved,
 				 gfp_t gfp)
@@ -998,7 +987,6 @@ static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved,
 	gfp_t pcpu_gfp;
 	bool is_atomic;
 	bool do_warn;
-	struct obj_cgroup *objcg = NULL;
 	static int warn_limit = 10;
 	struct pcpu_chunk *chunk, *next;
 	const char *err;
@@ -1028,14 +1016,12 @@ static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved,
 		return NULL;
 	}
 
-	if (unlikely(!pcpu_memcg_pre_alloc_hook(size, gfp, &objcg)))
-		return NULL;
+	/* pcpu_memcg_pre_alloc_hook always returns true, post_alloc_hook is empty */
 
 	if (!is_atomic) {
 		if (gfp & __GFP_NOFAIL) {
 			mutex_lock(&pcpu_alloc_mutex);
 		} else if (mutex_lock_killable(&pcpu_alloc_mutex)) {
-			pcpu_memcg_post_alloc_hook(objcg, NULL, 0, size);
 			return NULL;
 		}
 	}
@@ -1138,9 +1124,7 @@ area_found:
 		memset((void *)pcpu_chunk_addr(chunk, cpu, 0) + off, 0, size);
 
 	ptr = __addr_to_pcpu_ptr(chunk->base_addr + off);
-
-	pcpu_memcg_post_alloc_hook(objcg, chunk, off, size);
-
+	/* pcpu_memcg_post_alloc_hook is empty */
 	return ptr;
 
 fail_unlock:
@@ -1160,9 +1144,6 @@ fail:
 	} else {
 		mutex_unlock(&pcpu_alloc_mutex);
 	}
-
-	pcpu_memcg_post_alloc_hook(objcg, NULL, 0, size);
-
 	return NULL;
 }
 

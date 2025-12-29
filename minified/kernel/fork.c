@@ -886,14 +886,7 @@ void __cleanup_sighand(struct sighand_struct *sighand)
 	}
 }
 
-static void posix_cpu_timers_init_group(struct signal_struct *sig)
-{
-	struct posix_cputimers *pct = &sig->posix_cputimers;
-	unsigned long cpu_limit;
-
-	cpu_limit = READ_ONCE(sig->rlim[RLIMIT_CPU].rlim_cur);
-	posix_cputimers_group_init(pct, cpu_limit);
-}
+/* posix_cpu_timers_init_group removed - was empty stub */
 
 static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 {
@@ -925,7 +918,7 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 	memcpy(sig->rlim, current->signal->rlim, sizeof sig->rlim);
 	task_unlock(current->group_leader);
 
-	posix_cpu_timers_init_group(sig);
+	/* posix_cpu_timers_init_group removed - empty stub */
 
 	tty_audit_fork(sig);
 	/* sched_autogroup_fork - stubbed */

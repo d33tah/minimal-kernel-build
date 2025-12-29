@@ -864,12 +864,7 @@ static inline unsigned int gfp_to_alloc_flags(gfp_t gfp_mask)
 	return alloc_flags;
 }
 
-/* CONFIG_MMU is always enabled on x86, simplified OOM check */
-static bool oom_reserves_allowed(struct task_struct *tsk)
-{
-	return tsk_is_oom_victim(tsk);
-}
-
+/* tsk_is_oom_victim always false - oom_mm never set */
 static inline int __gfp_pfmemalloc_flags(gfp_t gfp_mask)
 {
 	if (unlikely(gfp_mask & __GFP_NOMEMALLOC))
@@ -878,13 +873,8 @@ static inline int __gfp_pfmemalloc_flags(gfp_t gfp_mask)
 		return ALLOC_NO_WATERMARKS;
 	if (in_serving_softirq() && (current->flags & PF_MEMALLOC))
 		return ALLOC_NO_WATERMARKS;
-	if (!in_interrupt()) {
-		if (current->flags & PF_MEMALLOC)
-			return ALLOC_NO_WATERMARKS;
-		else if (oom_reserves_allowed(current))
-			return ALLOC_OOM;
-	}
-
+	if (!in_interrupt() && (current->flags & PF_MEMALLOC))
+		return ALLOC_NO_WATERMARKS;
 	return 0;
 }
 

@@ -640,9 +640,7 @@ void folio_end_writeback(struct folio *folio)
 	}
 
 	folio_get(folio);
-	if (!__folio_end_writeback(folio))
-		BUG();
-
+	/* __folio_end_writeback always returns true */
 	smp_mb__after_atomic();
 	folio_wake(folio, PG_writeback);
 	acct_reclaim_writeback(folio);

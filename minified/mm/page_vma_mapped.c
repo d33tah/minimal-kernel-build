@@ -111,33 +111,8 @@ restart:
 
 		pmde = READ_ONCE(*pvmw->pmd);
 
-		if (pmd_trans_huge(pmde) || is_pmd_migration_entry(pmde) ||
-		    (pmd_present(pmde) && pmd_devmap(pmde))) {
-			pvmw->ptl = pmd_lock(mm, pvmw->pmd);
-			pmde = *pvmw->pmd;
-			if (!pmd_present(pmde)) {
-				swp_entry_t entry;
-
-				if (!thp_migration_supported() ||
-				    !(pvmw->flags & PVMW_MIGRATION))
-					return not_found(pvmw);
-				entry = pmd_to_swp_entry(pmde);
-				if (!is_migration_entry(entry) ||
-				    !check_pmd(swp_offset(entry), pvmw))
-					return not_found(pvmw);
-				return true;
-			}
-			if (likely(pmd_trans_huge(pmde) || pmd_devmap(pmde))) {
-				if (pvmw->flags & PVMW_MIGRATION)
-					return not_found(pvmw);
-				if (!check_pmd(pmd_pfn(pmde), pvmw))
-					return not_found(pvmw);
-				return true;
-			}
-
-			spin_unlock(pvmw->ptl);
-			pvmw->ptl = NULL;
-		} else if (!pmd_present(pmde)) {
+		/* pmd_trans_huge/is_pmd_migration_entry/pmd_devmap always return 0 */
+		if (!pmd_present(pmde)) {
 			if ((pvmw->flags & PVMW_SYNC) &&
 			    transparent_hugepage_active(vma) &&
 			    (pvmw->nr_pages >= HPAGE_PMD_NR)) {

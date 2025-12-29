@@ -121,7 +121,7 @@ static inline s64 hrtimer_get_softexpires_tv64(const struct hrtimer *timer)
 #define hrtimer_resolution	(unsigned int)LOW_RES_NSEC
 
 
-static inline void timerfd_clock_was_set(void) { }
+/* timerfd_clock_was_set removed - unused */
 
 DECLARE_PER_CPU(struct tick_device, tick_cpu_device);
 

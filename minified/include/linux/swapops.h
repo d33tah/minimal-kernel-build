@@ -20,8 +20,6 @@ static inline swp_entry_t pte_to_swp_entry(pte_t pte) {
 }
 /* Unused stubs removed: is_device_private_entry, is_device_exclusive_entry,
    is_migration_entry, migration_entry_wait, pmd_migration_entry_wait,
-   pmd_to_swp_entry, is_pmd_migration_entry */
-typedef unsigned long pte_marker;
-#define PTE_MARKER_UFFD_WP  BIT(0)
-#define PTE_MARKER_MASK     (PTE_MARKER_UFFD_WP)
+   pmd_to_swp_entry, is_pmd_migration_entry, pte_marker typedef,
+   PTE_MARKER_UFFD_WP, PTE_MARKER_MASK */
 #endif

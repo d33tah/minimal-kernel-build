@@ -175,8 +175,6 @@ static inline bool __cmpxchg_double_slab(struct kmem_cache *s,
 					 unsigned long counters_new,
 					 const char *n)
 {
-	/* CONFIG_PREEMPT_RT not enabled */
-	lockdep_assert_irqs_disabled();
 #if defined(CONFIG_HAVE_CMPXCHG_DOUBLE) && \
 	defined(CONFIG_HAVE_ALIGNED_STRUCT_PAGE)
 	if (s->flags & __CMPXCHG_DOUBLE) {
@@ -340,7 +338,6 @@ static inline void __add_partial(struct kmem_cache_node *n, struct slab *slab,
 
 static inline void remove_partial(struct kmem_cache_node *n, struct slab *slab)
 {
-	lockdep_assert_held(&n->list_lock);
 	list_del(&slab->slab_list);
 	n->nr_partial--;
 }
@@ -352,8 +349,6 @@ static inline void *acquire_slab(struct kmem_cache *s,
 	void *freelist;
 	unsigned long counters;
 	struct slab new;
-
-	lockdep_assert_held(&n->list_lock);
 
 	freelist = slab->freelist;
 	counters = slab->counters;
@@ -592,8 +587,6 @@ static inline void *get_freelist(struct kmem_cache *s, struct slab *slab)
 	struct slab new;
 	unsigned long counters;
 	void *freelist;
-
-	lockdep_assert_held(this_cpu_ptr(&s->cpu_slab->lock));
 
 	do {
 		freelist = slab->freelist;

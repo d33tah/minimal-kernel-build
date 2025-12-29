@@ -445,8 +445,7 @@ static inline void dbg_out(const char *s)
 static void __init mm_init(void)
 {
 	dbg_out("mm_init: start\n");
-	page_ext_init_flatmem();
-	dbg_out("mm_init: after page_ext_init_flatmem\n");
+	/* page_ext_init_flatmem removed - empty stub */
 	init_mem_debugging_and_hardening();
 	dbg_out("mm_init: after init_mem_debugging_and_hardening\n");
 	report_meminit();
@@ -458,8 +457,7 @@ static void __init mm_init(void)
 	kmem_cache_init();
 	dbg_out("mm_init: after kmem_cache_init\n");
 
-	page_ext_init_flatmem_late();
-	dbg_out("mm_init: after page_ext_init_flatmem_late\n");
+	/* page_ext_init_flatmem_late removed - empty stub */
 	pgtable_init();
 	dbg_out("mm_init: after pgtable_init\n");
 	vmalloc_init();
@@ -534,7 +532,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 		local_irq_disable();
 	radix_tree_init();
 
-	housekeeping_init();
+	/* housekeeping_init removed - empty stub */
 
 	workqueue_init_early();
 
@@ -545,7 +543,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	early_irq_init();
 	init_IRQ();
 	tick_init();
-	rcu_init_nohz();
+	/* rcu_init_nohz removed - empty stub */
 	init_timers();
 	srcu_init();
 	hrtimers_init();
@@ -871,16 +869,16 @@ static noinline void __init kernel_init_freeable(void)
 
 	init_mm_internals();
 
-	rcu_init_tasks_generic();
+	/* rcu_init_tasks_generic removed - empty stub */
 	do_pre_smp_initcalls();
-	lockup_detector_init();
+	/* lockup_detector_init removed - empty stub */
 	/* smp_init removed - empty stub */
 	sched_init_smp();
 
 	/* padata_init removed - empty stub */
 	page_alloc_init_late();
 
-	page_ext_init();
+	/* page_ext_init removed - empty stub */
 
 	do_basic_setup();
 

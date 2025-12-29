@@ -950,8 +950,7 @@ static inline bool prepare_alloc_pages(gfp_t gfp_mask, unsigned int order,
 	ac->nodemask = nodemask;
 	ac->migratetype = gfp_migratetype(gfp_mask);
 
-	fs_reclaim_acquire(gfp_mask);
-	fs_reclaim_release(gfp_mask);
+	/* fs_reclaim_acquire/release removed - empty stubs */
 
 	might_sleep_if(gfp_mask & __GFP_DIRECT_RECLAIM);
 

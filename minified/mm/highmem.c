@@ -84,7 +84,7 @@ void *__kmap_local_pfn_prot(unsigned long pfn, pgprot_t prot)
 	unsigned long vaddr;
 	int idx;
 
-	migrate_disable();
+	/* migrate_disable removed - empty stub */
 	preempt_disable();
 	idx = arch_kmap_local_map_idx(kmap_local_idx_push(), pfn);
 	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);

@@ -351,10 +351,7 @@ static void update_curr(struct cfs_rq *cfs_rq)
 	curr->vruntime += calc_delta_fair(delta_exec, curr);
 	update_min_vruntime(cfs_rq);
 
-	if (entity_is_task(curr)) {
-		struct task_struct *curtask = task_of(curr);
-		account_group_exec_runtime(curtask, delta_exec);
-	}
+	/* account_group_exec_runtime removed - empty stub */
 
 	account_cfs_rq_runtime(cfs_rq, delta_exec);
 }

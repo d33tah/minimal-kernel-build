@@ -76,7 +76,6 @@ static inline s64 clocksource_cyc2ns(u64 cycles, u32 mult, u32 shift)
 
 extern int clocksource_unregister(struct clocksource*);
 extern struct clocksource * __init clocksource_default_clock(void);
-extern void clocksource_mark_unstable(struct clocksource *cs);
 
 extern u64
 clocks_calc_max_nsecs(u32 mult, u32 shift, u32 maxadj, u64 mask, u64 *max_cycles);

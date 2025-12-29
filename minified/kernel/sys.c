@@ -3,6 +3,7 @@
 #include <linux/utsname.h>
 #include <linux/resource.h>
 #include <linux/sched.h>
+#include <linux/personality.h>
 
 struct tms {
 	__kernel_clock_t tms_utime;
@@ -148,4 +149,8 @@ SYSCALL_DEFINE3(getcpu, unsigned __user *, cpup, unsigned __user *, nodep,
 SYSCALL_DEFINE1(sysinfo, struct sysinfo __user *, info)
 {
 	return -ENOSYS;
+}
+SYSCALL_DEFINE1(personality, unsigned int, personality)
+{
+	return 0;
 }

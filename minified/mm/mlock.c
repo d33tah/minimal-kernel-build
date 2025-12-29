@@ -46,3 +46,13 @@ void munlock_page(struct page *page)
 void mlock_new_page(struct page *page)
 {
 }
+
+SYSCALL_DEFINE3(readahead, int, fd, loff_t, offset, size_t, count)
+{
+	return -ENOSYS;
+}
+
+SYSCALL_DEFINE3(mprotect, unsigned long, start, size_t, len, unsigned long, prot)
+{
+	return 0;
+}

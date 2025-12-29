@@ -38,7 +38,7 @@ CFLAGS_init-mm.o += $(call cc-disable-warning, initializer-overrides)
 
 mmu-y			:= nommu.o
 mmu-$(CONFIG_MMU)	:= highmem.o memory.o \
-			   mlock.o mmap.o mmu_gather.o mprotect.o mremap.o \
+			   mlock.o mmap.o mmu_gather.o mremap.o \
 			   page_vma_mapped.o \
 			   pgtable-generic.o rmap.o vmalloc.o
 
@@ -49,7 +49,7 @@ endif
 
 obj-y			:= filemap.o \
 			   maccess.o page-writeback.o folio-compat.o \
-			   readahead.o swap.o truncate.o vmscan.o shmem.o \
+			   swap.o truncate.o vmscan.o shmem.o \
 			   util.o mmzone.o vmstat.o backing-dev.o \
 			   percpu.o slab_common.o \
 			   vmacache.o \

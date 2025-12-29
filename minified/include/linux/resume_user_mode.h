@@ -16,15 +16,10 @@ static inline void set_notify_resume(struct task_struct *task)
 static inline void resume_user_mode_work(struct pt_regs *regs)
 {
 	clear_thread_flag(TIF_NOTIFY_RESUME);
-	 
 	smp_mb__after_atomic();
 	if (unlikely(task_work_pending(current)))
 		task_work_run();
-
-
-	mem_cgroup_handle_over_high();
-	/* blkcg_maybe_throttle_current removed - empty stub */
-	rseq_handle_notify_resume(NULL, regs);
+	/* mem_cgroup_handle_over_high, blkcg_maybe_throttle_current, rseq_handle_notify_resume - empty stubs */
 }
 
 #endif  

@@ -224,13 +224,7 @@ static struct page *follow_pmd_mask(struct vm_area_struct *vma,
 	pmdval = READ_ONCE(*pmd);
 	if (pmd_none(pmdval))
 		return no_page_table(vma, flags);
-	if (is_hugepd(__hugepd(pmd_val(pmdval)))) {
-		page = follow_huge_pd(vma, address, __hugepd(pmd_val(pmdval)),
-				      flags, PMD_SHIFT);
-		if (page)
-			return page;
-		return no_page_table(vma, flags);
-	}
+	/* is_hugepd always returns 0 - hugepd code removed */
 retry:
 	if (!pmd_present(pmdval)) {
 		VM_BUG_ON(!thp_migration_supported() ||
@@ -312,19 +306,7 @@ static struct page *follow_pud_mask(struct vm_area_struct *vma,
 	pud = pud_offset(p4dp, address);
 	if (pud_none(*pud))
 		return no_page_table(vma, flags);
-	if (pud_huge(*pud) && is_vm_hugetlb_page(vma)) {
-		page = follow_huge_pud(mm, address, pud, flags);
-		if (page)
-			return page;
-		return no_page_table(vma, flags);
-	}
-	if (is_hugepd(__hugepd(pud_val(*pud)))) {
-		page = follow_huge_pd(vma, address, __hugepd(pud_val(*pud)),
-				      flags, PUD_SHIFT);
-		if (page)
-			return page;
-		return no_page_table(vma, flags);
-	}
+	/* hugetlb code removed - is_vm_hugetlb_page/is_hugepd always return false */
 	if (pud_devmap(*pud)) {
 		ptl = pud_lock(mm, pud);
 		page = follow_devmap_pud(vma, address, pud, flags, &ctx->pgmap);
@@ -352,14 +334,7 @@ static struct page *follow_p4d_mask(struct vm_area_struct *vma,
 	BUILD_BUG_ON(p4d_huge(*p4d));
 	if (unlikely(p4d_bad(*p4d)))
 		return no_page_table(vma, flags);
-
-	if (is_hugepd(__hugepd(p4d_val(*p4d)))) {
-		page = follow_huge_pd(vma, address, __hugepd(p4d_val(*p4d)),
-				      flags, P4D_SHIFT);
-		if (page)
-			return page;
-		return no_page_table(vma, flags);
-	}
+	/* is_hugepd always returns 0 - code removed */
 	return follow_pud_mask(vma, address, p4d, flags, ctx);
 }
 
@@ -384,19 +359,7 @@ static struct page *follow_page_mask(struct vm_area_struct *vma,
 	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
 		return no_page_table(vma, flags);
 
-	if (pgd_huge(*pgd)) {
-		page = follow_huge_pgd(mm, address, pgd, flags);
-		if (page)
-			return page;
-		return no_page_table(vma, flags);
-	}
-	if (is_hugepd(__hugepd(pgd_val(*pgd)))) {
-		page = follow_huge_pd(vma, address, __hugepd(pgd_val(*pgd)),
-				      flags, PGDIR_SHIFT);
-		if (page)
-			return page;
-		return no_page_table(vma, flags);
-	}
+	/* pgd_huge and is_hugepd always return 0 - code removed */
 
 	return follow_p4d_mask(vma, address, pgd, flags, ctx);
 }
@@ -518,17 +481,7 @@ static long __get_user_pages(struct mm_struct *mm, unsigned long start,
 			ret = check_vma_flags(vma, gup_flags);
 			if (ret)
 				goto out;
-
-			if (is_vm_hugetlb_page(vma)) {
-				i = follow_hugetlb_page(mm, vma, pages, vmas,
-							&start, &nr_pages, i,
-							gup_flags, locked);
-				if (locked && *locked == 0) {
-					BUG_ON(gup_flags & FOLL_NOWAIT);
-					goto out;
-				}
-				continue;
-			}
+			/* hugetlb page handling removed - is_vm_hugetlb_page always returns false */
 		}
 retry:
 

@@ -632,8 +632,7 @@ static void __init do_initcalls(void)
 static void __init do_basic_setup(void)
 {
 	driver_init();
-	init_irq_proc();
-	/* do_ctors removed - empty stub */
+	/* init_irq_proc, do_ctors removed - empty stubs */
 	do_initcalls();
 }
 
@@ -699,10 +698,7 @@ static int __ref kernel_init(void *unused)
 
 	system_state = SYSTEM_RUNNING;
 
-	/* rcu_end_inkernel_boot removed - empty stub */
-
-	do_sysctl_args();
-
+	/* rcu_end_inkernel_boot, do_sysctl_args removed - empty stubs */
 	if (ramdisk_execute_command) {
 		ret = run_init_process(ramdisk_execute_command);
 		if (!ret)

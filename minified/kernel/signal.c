@@ -421,12 +421,7 @@ int group_send_sig_info(int sig, struct kernel_siginfo *info,
 	return ret;
 }
 
-/* Stubbed - only used internally */
-static int __kill_pgrp_info(int sig, struct kernel_siginfo *info,
-			    struct pid *pgrp)
-{
-	return -ESRCH;
-}
+/* __kill_pgrp_info removed - only used by kill_pgrp which is never called */
 
 int kill_pid_info(int sig, struct kernel_siginfo *info, struct pid *pid)
 {
@@ -521,16 +516,7 @@ int force_sig_pkuerr(void __user *addr, u32 pkey)
 }
 #endif
 
-int kill_pgrp(struct pid *pid, int sig, int priv)
-{
-	int ret;
-
-	read_lock(&tasklist_lock);
-	ret = __kill_pgrp_info(sig, __si_special(priv), pid);
-	read_unlock(&tasklist_lock);
-
-	return ret;
-}
+/* kill_pgrp removed - never called */
 
 bool do_notify_parent(struct task_struct *tsk, int sig)
 {

@@ -8,18 +8,8 @@
 #include <linux/fsnotify.h>
 #include <linux/fcntl.h>
 #include <linux/security.h>
-static inline void ima_inode_post_setattr(struct user_namespace *mnt_userns,
-					  struct dentry *dentry)
-{
-}
-
 #include <linux/xattr.h>
-
-/* Only evm_inode_post_setattr is used (from notify_change) */
-static inline void evm_inode_post_setattr(struct dentry *dentry, int ia_valid)
-{
-}
-
+/* ima_inode_post_setattr, evm_inode_post_setattr removed - empty stubs, never needed */
 static bool chown_ok(struct user_namespace *mnt_userns,
 		     const struct inode *inode, kuid_t uid)
 {
@@ -239,10 +229,6 @@ int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 	else
 		error = simple_setattr(mnt_userns, dentry, attr);
 
-	if (!error) {
-		ima_inode_post_setattr(mnt_userns, dentry);
-		evm_inode_post_setattr(dentry, ia_valid);
-	}
-
+	/* ima_inode_post_setattr, evm_inode_post_setattr calls removed - empty stubs */
 	return error;
 }

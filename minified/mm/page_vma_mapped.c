@@ -16,15 +16,10 @@ static bool map_pte(struct page_vma_mapped_walk *pvmw)
 {
 	pvmw->pte = pte_offset_map(pvmw->pmd, pvmw->address);
 	if (!(pvmw->flags & PVMW_SYNC)) {
-		if (pvmw->flags & PVMW_MIGRATION) {
-			if (!is_swap_pte(*pvmw->pte))
-				return false;
-		} else {
-			if (is_swap_pte(*pvmw->pte))
-				return false;
-			else if (!pte_present(*pvmw->pte))
-				return false;
-		}
+		if (is_swap_pte(*pvmw->pte))
+			return false;
+		if (!pte_present(*pvmw->pte))
+			return false;
 	}
 	pvmw->ptl = pte_lockptr(pvmw->vma->vm_mm, pvmw->pmd);
 	spin_lock(pvmw->ptl);
@@ -35,25 +30,12 @@ static bool check_pte(struct page_vma_mapped_walk *pvmw)
 {
 	unsigned long pfn;
 
-	if (pvmw->flags & PVMW_MIGRATION) {
-		swp_entry_t entry;
-		if (!is_swap_pte(*pvmw->pte))
-			return false;
-		entry = pte_to_swp_entry(*pvmw->pte);
-
-		if (!is_migration_entry(entry))
-			return false;
-
-		pfn = swp_offset(entry);
-	} else if (is_swap_pte(*pvmw->pte)) {
+	if (is_swap_pte(*pvmw->pte))
 		return false;
-	} else {
-		if (!pte_present(*pvmw->pte))
-			return false;
+	if (!pte_present(*pvmw->pte))
+		return false;
 
-		pfn = pte_pfn(*pvmw->pte);
-	}
-
+	pfn = pte_pfn(*pvmw->pte);
 	return (pfn - pvmw->pfn) < pvmw->nr_pages;
 }
 

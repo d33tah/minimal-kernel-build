@@ -284,9 +284,6 @@ static inline int hrtimer_is_hres_enabled(void)
 {
 	return 0;
 }
-static inline void hrtimer_switch_to_hres(void)
-{
-}
 
 static void hrtimer_reprogram(struct hrtimer *timer, bool reprogram)
 {
@@ -678,11 +675,6 @@ void hrtimer_run_queues(void)
 
 	if (__hrtimer_hres_active(cpu_base))
 		return;
-
-	if (tick_check_oneshot_change(!hrtimer_is_hres_enabled())) {
-		hrtimer_switch_to_hres();
-		return;
-	}
 
 	raw_spin_lock_irqsave(&cpu_base->lock, flags);
 	now = hrtimer_update_base(cpu_base);

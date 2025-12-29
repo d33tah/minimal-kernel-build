@@ -1202,17 +1202,16 @@ vm_fault_t vmf_insert_pfn_prot(struct vm_area_struct *vma, unsigned long addr,
 #define FOLL_GET	0x04	
 #define FOLL_DUMP	0x08	
 #define FOLL_FORCE	0x10	
-#define FOLL_NOWAIT	0x20	
-#define FOLL_NOFAULT	0x80	
-#define FOLL_HWPOISON	0x100	
-#define FOLL_NUMA	0x200	
-#define FOLL_MIGRATION	0x400	
-#define FOLL_TRIED	0x800	
-#define FOLL_REMOTE	0x2000	
-#define FOLL_COW	0x4000	
-#define FOLL_ANON	0x8000	
-#define FOLL_LONGTERM	0x10000	
-#define FOLL_SPLIT_PMD	0x20000	
+#define FOLL_NOWAIT	0x20
+#define FOLL_NOFAULT	0x80
+#define FOLL_HWPOISON	0x100
+#define FOLL_NUMA	0x200
+#define FOLL_TRIED	0x800
+#define FOLL_REMOTE	0x2000
+#define FOLL_COW	0x4000
+#define FOLL_ANON	0x8000
+#define FOLL_LONGTERM	0x10000
+#define FOLL_SPLIT_PMD	0x20000
 #define FOLL_PIN	0x40000
 
 static inline int vm_fault_to_errno(vm_fault_t vm_fault, int foll_flags)

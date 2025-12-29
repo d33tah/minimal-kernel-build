@@ -90,7 +90,6 @@ void page_remove_rmap(struct page *, struct vm_area_struct *,
 		bool compound);
 
 #define PVMW_SYNC		(1 << 0)
-#define PVMW_MIGRATION		(1 << 1)
 
 struct page_vma_mapped_walk {
 	unsigned long pfn;

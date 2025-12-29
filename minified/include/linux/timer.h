@@ -63,7 +63,7 @@ static inline void init_timer_on_stack_key(struct timer_list *timer,
 #define timer_setup_on_stack(timer, callback, flags)		\
 	__init_timer_on_stack((timer), (callback), (flags))
 
-static inline void destroy_timer_on_stack(struct timer_list *timer) { }
+/* destroy_timer_on_stack removed - unused */
 
 #define from_timer(var, callback_timer, timer_fieldname) \
 	container_of(callback_timer, typeof(*var), timer_fieldname)

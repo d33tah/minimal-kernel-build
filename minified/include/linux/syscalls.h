@@ -36,8 +36,7 @@ struct old_linux_dirent;
 #include <linux/personality.h>
 #include <linux/fcntl.h>
 
-/* Inlined from trace/syscall.h */
-static inline void syscall_tracepoint_update(struct task_struct *p) {}
+/* syscall_tracepoint_update removed - unused */
 
 #include <asm/syscall_wrapper.h>
 #include <asm/syscall.h>

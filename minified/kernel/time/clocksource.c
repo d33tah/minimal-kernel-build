@@ -54,9 +54,7 @@ static inline void clocksource_watchdog_unlock(unsigned long *flags)
 	spin_unlock_irqrestore(&watchdog_lock, *flags);
 }
 
-void clocksource_mark_unstable(struct clocksource *cs)
-{
-}
+/* clocksource_mark_unstable removed - empty stub */
 
 static u32 clocksource_max_adjustment(struct clocksource *cs)
 {

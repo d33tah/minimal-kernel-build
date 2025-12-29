@@ -623,11 +623,8 @@ void mark_tsc_unstable(char *reason)
 		return;
 
 	tsc_unstable = 1;
-	/* clear_sched_clock_stable removed - empty stub */
+	/* clear_sched_clock_stable, clocksource_mark_unstable removed - empty stubs */
 	pr_info("Marking TSC unstable due to %s\n", reason);
-
-	clocksource_mark_unstable(&clocksource_tsc_early);
-	clocksource_mark_unstable(&clocksource_tsc);
 }
 
 static void __init tsc_disable_clocksource_watchdog(void)

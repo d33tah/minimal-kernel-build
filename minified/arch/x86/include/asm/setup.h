@@ -26,9 +26,6 @@
 
 extern u64 relocated_ramdisk;
 
- 
-static inline void vsmp_init(void) { }
-
 struct pt_regs;
 
 void setup_bios_corruption_check(void);

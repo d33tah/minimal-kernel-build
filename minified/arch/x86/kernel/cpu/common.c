@@ -290,19 +290,7 @@ static __always_inline void setup_pku(struct cpuinfo_x86 *c)
 
 static __always_inline void setup_cet(struct cpuinfo_x86 *c)
 {
-	u64 msr = CET_ENDBR_EN;
-
-	if (!HAS_KERNEL_IBT || !cpu_feature_enabled(X86_FEATURE_IBT))
-		return;
-
-	wrmsrl(MSR_IA32_S_CET, msr);
-	cr4_set_bits(X86_CR4_CET);
-
-	if (!ibt_selftest()) {
-		pr_err("IBT selftest: Failed!\n");
-		setup_clear_cpu_cap(X86_FEATURE_IBT);
-		return;
-	}
+	/* HAS_KERNEL_IBT is 0 */
 }
 
 struct cpuid_dependent_feature {
@@ -812,8 +800,7 @@ void enable_sep_cpu(void)
 void __init identify_boot_cpu(void)
 {
 	identify_cpu(&boot_cpu_data);
-	if (HAS_KERNEL_IBT && cpu_feature_enabled(X86_FEATURE_IBT))
-		pr_info("CET detected: Indirect Branch Tracking enabled\n");
+	/* HAS_KERNEL_IBT is 0 */
 	sysenter_setup();
 	enable_sep_cpu();
 	/* cpu_detect_tlb removed - TLB info never used */

@@ -242,8 +242,7 @@ void resched_curr(struct rq *rq)
 		return;
 	}
 
-	if (set_nr_and_not_polling(curr))
-		smp_send_reschedule(cpu);
+	/* smp_send_reschedule removed - empty stub in UP config */
 }
 
 void resched_cpu(int cpu)

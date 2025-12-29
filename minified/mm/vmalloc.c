@@ -244,7 +244,7 @@ static void vunmap_p4d_range(pgd_t *pgd, unsigned long addr, unsigned long end,
 	do {
 		next = p4d_addr_end(addr, end);
 
-		p4d_clear_huge(p4d);
+		/* p4d_clear_huge removed - empty stub */
 		if (p4d_bad(*p4d))
 			*mask |= PGTBL_P4D_MODIFIED;
 

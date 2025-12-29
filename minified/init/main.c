@@ -559,7 +559,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 		initrd_start = 0;
 	}
 	setup_per_cpu_pageset();
-	acpi_early_init();
+	/* acpi_early_init is empty stub */
 	if (late_time_init)
 		late_time_init();
 	sched_clock_init();
@@ -580,8 +580,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	/* cpuset_init removed - empty stub returning 0 */
 	poking_init();
 	check_bugs();
-
-	acpi_subsystem_init();
+	/* acpi_subsystem_init is empty stub */
 	arch_post_acpi_subsys_init();
 
 	rest_init(); /* was arch_call_rest_init() */

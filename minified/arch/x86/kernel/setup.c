@@ -567,9 +567,7 @@ void __init setup_arch(char **cmdline_p)
 	setup_log_buf(1);
 	/* efi_enabled always false - secure boot switch removed */
 	reserve_initrd();
-
-	acpi_table_upgrade();
-
+	/* acpi_table_upgrade is empty stub */
 	/* io_delay_init removed - was empty stub */
 
 	/* early_platform_quirks removed - was empty stub */

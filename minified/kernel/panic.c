@@ -252,9 +252,6 @@ void oops_enter(void)
 
 	debug_locks_off();
 	do_oops_enter_exit();
-
-	if (sysctl_oops_all_cpu_backtrace)
-		trigger_all_cpu_backtrace();
 }
 
 static void print_oops_end_marker(void)

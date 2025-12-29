@@ -952,15 +952,6 @@ static inline bool prepare_alloc_pages(gfp_t gfp_mask, unsigned int order,
 	ac->nodemask = nodemask;
 	ac->migratetype = gfp_migratetype(gfp_mask);
 
-	if (cpusets_enabled()) {
-		*alloc_gfp |= __GFP_HARDWALL;
-
-		if (in_task() && !ac->nodemask)
-			ac->nodemask = &cpuset_current_mems_allowed;
-		else
-			*alloc_flags |= ALLOC_CPUSET;
-	}
-
 	fs_reclaim_acquire(gfp_mask);
 	fs_reclaim_release(gfp_mask);
 

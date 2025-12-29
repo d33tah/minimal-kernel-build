@@ -23,16 +23,7 @@ void noinstr enter_from_user_mode(struct pt_regs *regs)
 	__enter_from_user_mode(regs);
 }
 
-static inline void syscall_enter_audit(struct pt_regs *regs, long syscall)
-{
-	if (unlikely(audit_context())) {
-		unsigned long args[6];
-
-		syscall_get_arguments(current, regs, args);
-		audit_syscall_entry(syscall, args[0], args[1], args[2],
-				    args[3]);
-	}
-}
+/* syscall_enter_audit removed - audit_context always returns NULL */
 
 static long syscall_trace_enter(struct pt_regs *regs, long syscall,
 				unsigned long work)
@@ -52,9 +43,8 @@ static long syscall_trace_enter(struct pt_regs *regs, long syscall,
 
 	syscall = syscall_get_nr(current, regs);
 
-	if (unlikely(work & SYSCALL_WORK_SYSCALL_TRACEPOINT))
-
-		syscall_enter_audit(regs, syscall);
+	/* syscall_enter_audit removed - audit_context always returns NULL */
+	(void)work;
 
 	return ret ?: syscall;
 }

@@ -132,7 +132,7 @@ static void exit_to_user_mode_prepare(struct pt_regs *regs)
 
 	arch_exit_to_user_mode_prepare(regs, ti_work);
 
-	addr_limit_user_check();
+	/* addr_limit_user_check removed - empty stub */
 	kmap_assert_nomap();
 	lockdep_assert_irqs_disabled();
 	/* lockdep_sys_exit is empty do{}while(0) */

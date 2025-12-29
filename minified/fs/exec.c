@@ -735,7 +735,7 @@ void setup_new_exec(struct linux_binprm *bprm)
 
 	arch_pick_mmap_layout(me->mm, &bprm->rlim_stack);
 
-	arch_setup_new_exec();
+	/* arch_setup_new_exec removed - empty stub */
 
 	me->mm->task_size = TASK_SIZE;
 	up_write(&me->signal->exec_update_lock);

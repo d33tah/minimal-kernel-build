@@ -8,26 +8,8 @@
 #include <linux/screen_info.h>
 #include <asm/page.h>
 
-#define EFI_CONVENTIONAL_MEMORY		 7
-
-typedef struct {
-	u32 type;
-	u32 pad;
-	u64 phys_addr;
-	u64 virt_addr;
-	u64 num_pages;
-	u64 attribute;
-} efi_memory_desc_t;
-
-#define EFI_BOOT		0
-#define EFI_RUNTIME_SERVICES	3
-
-enum efi_secureboot_mode {
-	efi_secureboot_mode_unset,
-	efi_secureboot_mode_unknown,
-	efi_secureboot_mode_disabled,
-	efi_secureboot_mode_enabled,
-};
+/* EFI_CONVENTIONAL_MEMORY, efi_memory_desc_t, EFI_BOOT, EFI_RUNTIME_SERVICES,
+   efi_secureboot_mode enum removed - never used */
 
 typedef struct {
 	u32 get_time;

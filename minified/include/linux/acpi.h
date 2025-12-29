@@ -9,7 +9,7 @@
 #ifndef _LINUX
 #define _LINUX
 #endif
-#define acpi_disabled 1
+/* acpi_disabled removed - never used */
 struct fwnode_handle;
 /* acpi_early_init, acpi_subsystem_init, acpi_table_upgrade,
    acpi_device_notify_remove removed - call sites removed */

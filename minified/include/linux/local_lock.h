@@ -14,16 +14,8 @@ static inline void local_lock_debug_init(local_lock_t *l) { }
 
 #define INIT_LOCAL_LOCK(lockname)	{ LOCAL_LOCK_DEBUG_INIT(lockname) }
 
-#define __local_lock_init(lock)					\
-do {								\
-	static struct lock_class_key __key;			\
-								\
-	debug_check_no_locks_freed((void *)lock, sizeof(*lock));\
-	lockdep_init_map_type(&(lock)->dep_map, #lock, &__key,  \
-			      0, LD_WAIT_CONFIG, LD_WAIT_INV,	\
-			      LD_LOCK_PERCPU);			\
-	local_lock_debug_init(lock);				\
-} while (0)
+/* __local_lock_init simplified - all components are empty stubs */
+#define __local_lock_init(lock)	do { } while (0)
 
 /* local_lock_acquire/release are empty stubs - simplified macros */
 #define __local_lock(lock)		preempt_disable()

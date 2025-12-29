@@ -536,7 +536,7 @@ void __init setup_arch(char **cmdline_p)
 
 	find_low_pfn_range();
 
-	find_smp_config();
+	/* find_smp_config removed - default_find_smp_config is x86_init_noop */
 
 	early_alloc_pgt_buf();
 
@@ -588,7 +588,7 @@ void __init setup_arch(char **cmdline_p)
 
 	x86_dtb_init();
 
-	get_smp_config();
+	/* get_smp_config removed - default_get_smp_config is x86_init_uint_noop */
 
 	init_apic_mappings();
 
@@ -597,7 +597,7 @@ void __init setup_arch(char **cmdline_p)
 
 	io_apic_init_mappings();
 
-	x86_init.hyper.guest_late_init();
+	/* x86_init.hyper.guest_late_init removed - is x86_init_noop */
 
 	e820__reserve_resources();
 	e820__register_nosave_regions(max_pfn);

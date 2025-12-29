@@ -15,9 +15,7 @@ static __always_inline void __enter_from_user_mode(struct pt_regs *regs)
 {
 	arch_enter_from_user_mode(regs);
 	lockdep_hardirqs_off(CALLER_ADDR0);
-
 	CT_WARN_ON(ct_state() != CONTEXT_USER);
-	user_exit_irqoff();
 }
 
 void noinstr enter_from_user_mode(struct pt_regs *regs)
@@ -97,7 +95,6 @@ noinstr void syscall_enter_from_user_mode_prepare(struct pt_regs *regs)
 
 static __always_inline void __exit_to_user_mode(void)
 {
-	user_enter_irqoff();
 	arch_exit_to_user_mode();
 }
 
@@ -272,13 +269,11 @@ irqentry_state_t noinstr irqentry_nmi_enter(struct pt_regs *regs)
 
 	__nmi_enter();
 	lockdep_hardirqs_off(CALLER_ADDR0);
-	rcu_nmi_enter();
 
 	return irq_state;
 }
 
 void noinstr irqentry_nmi_exit(struct pt_regs *regs, irqentry_state_t irq_state)
 {
-	rcu_nmi_exit();
 	__nmi_exit();
 }

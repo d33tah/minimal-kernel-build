@@ -992,11 +992,7 @@ static void __sched notrace preempt_schedule_common(void)
 
 asmlinkage __visible void __sched preempt_schedule_irq(void)
 {
-	enum ctx_state prev_state;
-
 	BUG_ON(preempt_count() || !irqs_disabled());
-
-	prev_state = exception_enter();
 
 	do {
 		preempt_disable();
@@ -1005,8 +1001,6 @@ asmlinkage __visible void __sched preempt_schedule_irq(void)
 		local_irq_disable();
 		sched_preempt_enable_no_resched();
 	} while (need_resched());
-
-	exception_exit(prev_state);
 }
 
 int default_wake_function(wait_queue_entry_t *curr, unsigned mode,

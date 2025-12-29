@@ -521,9 +521,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	if (initcall_debug)
 		initcall_debug_enable();
-
-	context_tracking_init();
-
 	early_irq_init();
 	init_IRQ();
 	tick_init();

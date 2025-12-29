@@ -41,27 +41,20 @@ static inline void dma_direct_sync_sg_for_cpu(struct device *dev,
 }
 #endif
 
+/* dev_is_dma_coherent always returns true */
 static inline void dma_direct_sync_single_for_cpu(struct device *dev,
 		dma_addr_t addr, size_t size, enum dma_data_direction dir)
 {
-	phys_addr_t paddr = dma_to_phys(dev, addr);
-
-	if (!dev_is_dma_coherent(dev)) {
-		arch_sync_dma_for_cpu(paddr, size, dir);
-		arch_sync_dma_for_cpu_all();
-	}
-	/* is_swiotlb_buffer always returns false */
 	if (dir == DMA_FROM_DEVICE)
-		arch_dma_mark_clean(paddr, size);
+		arch_dma_mark_clean(dma_to_phys(dev, addr), size);
 }
 
-/* is_swiotlb_force_bounce, is_swiotlb_active always return false */
+/* is_swiotlb stubs return false, dev_is_dma_coherent always returns true */
 static inline dma_addr_t dma_direct_map_page(struct device *dev,
 		struct page *page, unsigned long offset, size_t size,
 		enum dma_data_direction dir, unsigned long attrs)
 {
-	phys_addr_t phys = page_to_phys(page) + offset;
-	dma_addr_t dma_addr = phys_to_dma(dev, phys);
+	dma_addr_t dma_addr = phys_to_dma(dev, page_to_phys(page) + offset);
 
 	if (unlikely(!dma_capable(dev, dma_addr, size, true))) {
 		dev_WARN_ONCE(dev, 1,
@@ -69,9 +62,6 @@ static inline dma_addr_t dma_direct_map_page(struct device *dev,
 			     &dma_addr, size, *dev->dma_mask, dev->bus_dma_limit);
 		return DMA_MAPPING_ERROR;
 	}
-
-	if (!dev_is_dma_coherent(dev) && !(attrs & DMA_ATTR_SKIP_CPU_SYNC))
-		arch_sync_dma_for_device(phys, size, dir);
 	return dma_addr;
 }
 

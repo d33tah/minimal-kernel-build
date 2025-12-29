@@ -152,10 +152,7 @@ void *dma_direct_alloc(struct device *dev, size_t size, dma_addr_t *dma_handle,
 
 	if ((attrs & DMA_ATTR_NO_KERNEL_MAPPING) && !force_dma_unencrypted(dev))
 		return dma_direct_alloc_no_mapping(dev, size, dma_handle, gfp);
-
-	if (!dev_is_dma_coherent(dev))
-		return arch_dma_alloc(dev, size, dma_handle, gfp, attrs);
-
+	/* dev_is_dma_coherent always returns true */
 	if (force_dma_unencrypted(dev) && dma_direct_use_pool(dev, gfp))
 		return dma_direct_alloc_from_pool(dev, size, dma_handle, gfp);
 
@@ -214,12 +211,7 @@ void dma_direct_free(struct device *dev, size_t size, void *cpu_addr,
 		dma_free_contiguous(dev, cpu_addr, size);
 		return;
 	}
-
-	if (!dev_is_dma_coherent(dev)) {
-		arch_dma_free(dev, size, cpu_addr, dma_addr, attrs);
-		return;
-	}
-
+	/* dev_is_dma_coherent always returns true */
 	if (is_vmalloc_addr(cpu_addr)) {
 		vunmap(cpu_addr);
 	} else {
@@ -267,42 +259,29 @@ void dma_direct_free_pages(struct device *dev, size_t size, struct page *page,
 }
 
 #if defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_DEVICE) || defined(CONFIG_SWIOTLB)
+/* dev_is_dma_coherent always returns true, so this function is empty */
 void dma_direct_sync_sg_for_device(struct device *dev, struct scatterlist *sgl,
 				   int nents, enum dma_data_direction dir)
 {
-	struct scatterlist *sg;
-	int i;
-
-	for_each_sg(sgl, sg, nents, i) {
-		phys_addr_t paddr = dma_to_phys(dev, sg_dma_address(sg));
-
-		if (!dev_is_dma_coherent(dev))
-			arch_sync_dma_for_device(paddr, sg->length, dir);
-	}
 }
 #endif
 
 #if defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU) ||         \
 	defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU_ALL) || \
 	defined(CONFIG_SWIOTLB)
+/* dev_is_dma_coherent always returns true */
 void dma_direct_sync_sg_for_cpu(struct device *dev, struct scatterlist *sgl,
 				int nents, enum dma_data_direction dir)
 {
 	struct scatterlist *sg;
 	int i;
 
-	for_each_sg(sgl, sg, nents, i) {
-		phys_addr_t paddr = dma_to_phys(dev, sg_dma_address(sg));
-
-		if (!dev_is_dma_coherent(dev))
-			arch_sync_dma_for_cpu(paddr, sg->length, dir);
-
-		if (dir == DMA_FROM_DEVICE)
-			arch_dma_mark_clean(paddr, sg->length);
+	if (dir == DMA_FROM_DEVICE) {
+		for_each_sg(sgl, sg, nents, i)
+			arch_dma_mark_clean(dma_to_phys(dev,
+							sg_dma_address(sg)),
+					    sg->length);
 	}
-
-	if (!dev_is_dma_coherent(dev))
-		arch_sync_dma_for_cpu_all();
 }
 
 void dma_direct_unmap_sg(struct device *dev, struct scatterlist *sgl, int nents,

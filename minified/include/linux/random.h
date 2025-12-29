@@ -14,9 +14,6 @@ struct notifier_block;
 void add_device_randomness(const void *buf, size_t len);
 void add_interrupt_randomness(int irq) __latent_entropy;
 
-static inline void add_latent_entropy(void) { }
-
-
 void get_random_bytes(void *buf, size_t len);
 u32 get_random_u32(void);
 u64 get_random_u64(void);

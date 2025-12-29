@@ -123,10 +123,6 @@ extern enum system_states {
 } system_state;
 
 extern const char hex_asc_upper[];
-/* Removed: hex_to_bin, hex2bin, bin2hex, mac_pton - never called */
-
-
-static inline void tracing_off(void) { }
 
 #define VERIFY_OCTAL_PERMISSIONS(perms)						\
 	(BUILD_BUG_ON_ZERO((perms) < 0) +					\

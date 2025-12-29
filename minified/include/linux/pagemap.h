@@ -369,17 +369,11 @@ struct readahead_control {
 #define VM_READAHEAD_PAGES	(SZ_128K / PAGE_SIZE)
 
 /* Readahead disabled for minimal kernel */
-static inline void page_cache_sync_ra(struct readahead_control *rc, unsigned long req_count) { }
-
 static inline
 void page_cache_sync_readahead(struct address_space *mapping,
 		struct file_ra_state *ra, struct file *file, pgoff_t index,
 		unsigned long req_count)
 {
 }
-
-/* Folio idle tracking stubs - page_idle feature disabled */
-static inline bool folio_test_idle(struct folio *folio) { return false; }
-static inline void folio_clear_idle(struct folio *folio) { }
 
 #endif

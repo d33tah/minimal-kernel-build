@@ -9,10 +9,7 @@
 typedef struct {
 } local_lock_t;
 
-# define LOCAL_LOCK_DEBUG_INIT(lockname)
-static inline void local_lock_debug_init(local_lock_t *l) { }
-
-#define INIT_LOCAL_LOCK(lockname)	{ LOCAL_LOCK_DEBUG_INIT(lockname) }
+#define INIT_LOCAL_LOCK(lockname)	{ }
 
 /* __local_lock_init simplified - all components are empty stubs */
 #define __local_lock_init(lock)	do { } while (0)

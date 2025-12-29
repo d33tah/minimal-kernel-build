@@ -79,10 +79,6 @@ static inline void kfree_rcu_scheduler_running(void) { }
 
 static inline void rcu_all_qs(void) { barrier(); }
 
-static inline void init_rcu_head(struct rcu_head *head) { }
-static inline void init_rcu_head_on_stack(struct rcu_head *head) { }
-static inline void destroy_rcu_head_on_stack(struct rcu_head *head) { }
-
 extern struct lockdep_map rcu_lock_map;
 extern struct lockdep_map rcu_bh_lock_map;
 extern struct lockdep_map rcu_sched_lock_map;

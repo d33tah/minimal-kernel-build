@@ -84,14 +84,7 @@ struct kthread_delayed_work {
 				     TIMER_IRQSAFE),			\
 	}
 
-extern void __kthread_init_worker(struct kthread_worker *worker,
-			const char *name, struct lock_class_key *key);
-
-#define kthread_init_worker(worker)					\
-	do {								\
-		static struct lock_class_key __key;			\
-		__kthread_init_worker((worker), "("#worker")->lock", &__key); \
-	} while (0)
+/* __kthread_init_worker, kthread_init_worker removed - never called */
 
 #define kthread_init_work(work, fn)					\
 	do {								\

@@ -211,7 +211,7 @@ static void exit_mm(void)
 	exit_mm_release(current, mm);
 	if (!mm)
 		return;
-	sync_mm_rss(mm);
+	/* sync_mm_rss() - empty stub */
 	mmap_read_lock(mm);
 	mmgrab(mm);
 	BUG_ON(mm != current->active_mm);
@@ -221,14 +221,13 @@ static void exit_mm(void)
 	smp_mb__after_spinlock();
 	local_irq_disable();
 	current->mm = NULL;
-	membarrier_update_current_mm(NULL);
+	/* membarrier_update_current_mm - empty stub */
 	enter_lazy_tlb(mm, current);
 	local_irq_enable();
 	task_unlock(current);
 	mmap_read_unlock(mm);
-	mm_update_next_owner(mm);
+	/* mm_update_next_owner, exit_oom_victim - empty stubs */
 	mmput(mm);
-	/* exit_oom_victim removed - was empty stub */
 }
 
 static struct task_struct *find_alive_thread(struct task_struct *p)
@@ -407,9 +406,7 @@ void __noreturn do_exit(long code)
 	/* validate_creds_for_do_exit(), io_uring_files_cancel() - empty stubs */
 	exit_signals(tsk);
 
-	if (tsk->mm)
-		sync_mm_rss(tsk->mm);
-	/* acct_update_integrals removed - empty stub */
+	/* sync_mm_rss(), acct_update_integrals removed - empty stubs */
 	group_dead = atomic_dec_and_test(&tsk->signal->live);
 	if (group_dead) {
 		if (unlikely(is_global_init(tsk)))
@@ -419,11 +416,7 @@ void __noreturn do_exit(long code)
 		if (tsk->mm)
 			setmax_mm_hiwater_rss(&tsk->signal->maxrss, tsk->mm);
 	}
-	/* acct_collect removed - empty stub */
-	if (group_dead)
-		tty_audit_exit();
-	audit_free(tsk);
-
+	/* acct_collect, tty_audit_exit, audit_free removed - empty stubs */
 	tsk->exit_code = code;
 	/* taskstats_exit removed - empty stub */
 

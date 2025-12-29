@@ -918,10 +918,7 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 	memcpy(sig->rlim, current->signal->rlim, sizeof sig->rlim);
 	task_unlock(current->group_leader);
 
-	/* posix_cpu_timers_init_group removed - empty stub */
-
-	tty_audit_fork(sig);
-	/* sched_autogroup_fork - stubbed */
+	/* posix_cpu_timers_init_group, tty_audit_fork, sched_autogroup_fork - stubs */
 	sig->oom_score_adj = current->signal->oom_score_adj;
 	sig->oom_score_adj_min = current->signal->oom_score_adj_min;
 

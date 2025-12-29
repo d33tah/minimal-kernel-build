@@ -461,9 +461,7 @@ static int exec_mmap(struct mm_struct *mm)
 	tsk = current;
 	old_mm = current->mm;
 	exec_mm_release(tsk, old_mm);
-	if (old_mm)
-		sync_mm_rss(old_mm);
-
+	/* sync_mm_rss() - empty stub */
 	ret = down_write_killable(&tsk->signal->exec_update_lock);
 	if (ret)
 		return ret;
@@ -493,7 +491,7 @@ static int exec_mmap(struct mm_struct *mm)
 		mmap_read_unlock(old_mm);
 		BUG_ON(active_mm != old_mm);
 		setmax_mm_hiwater_rss(&tsk->signal->maxrss, old_mm);
-		mm_update_next_owner(old_mm);
+		/* mm_update_next_owner - empty stub */
 		mmput(old_mm);
 		return 0;
 	}

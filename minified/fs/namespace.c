@@ -874,8 +874,7 @@ static void umount_tree(struct mount *mnt, enum umount_tree_flags how)
 	LIST_HEAD(tmp_list);
 	struct mount *p;
 
-	if (how & UMOUNT_PROPAGATE)
-		propagate_mount_unlock(mnt);
+	/* propagate_mount_unlock removed - empty stub */
 
 	for (p = mnt; p; p = next_mnt(p, mnt)) {
 		p->mnt.mnt_flags |= MNT_UMOUNT;
@@ -914,7 +913,7 @@ static void umount_tree(struct mount *mnt, enum umount_tree_flags how)
 				umount_mnt(p);
 			}
 		}
-		change_mnt_propagation(p, MS_PRIVATE);
+		/* change_mnt_propagation removed - empty stub */
 		if (disconnect)
 			hlist_add_head(&p->mnt_umount, &unmounted);
 	}
@@ -1249,8 +1248,7 @@ static int do_change_type(struct path *path, int ms_flags)
 	}
 
 	lock_mount_hash();
-	for (m = mnt; m; m = (recurse ? next_mnt(m, mnt) : NULL))
-		change_mnt_propagation(m, type);
+	/* change_mnt_propagation removed - empty stub */
 	unlock_mount_hash();
 
 out_unlock:

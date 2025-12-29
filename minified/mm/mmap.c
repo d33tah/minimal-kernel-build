@@ -108,7 +108,7 @@ static struct vm_area_struct *remove_vma(struct vm_area_struct *vma)
 		vma->vm_ops->close(vma);
 	if (vma->vm_file)
 		fput(vma->vm_file);
-	mpol_put(vma_policy(vma));
+	/* mpol_put removed - empty stub */
 	vm_area_free(vma);
 	return next;
 }

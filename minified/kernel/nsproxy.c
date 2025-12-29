@@ -118,8 +118,7 @@ out_time:
 out_net:
 	put_cgroup_ns(new_nsp->cgroup_ns);
 out_cgroup:
-	if (new_nsp->pid_ns_for_children)
-		put_pid_ns(new_nsp->pid_ns_for_children);
+	/* put_pid_ns removed - empty stub */
 out_pid:
 	if (new_nsp->ipc_ns)
 		put_ipc_ns(new_nsp->ipc_ns);
@@ -172,8 +171,7 @@ void free_nsproxy(struct nsproxy *ns)
 		put_uts_ns(ns->uts_ns);
 	if (ns->ipc_ns)
 		put_ipc_ns(ns->ipc_ns);
-	if (ns->pid_ns_for_children)
-		put_pid_ns(ns->pid_ns_for_children);
+	/* put_pid_ns removed - empty stub */
 	if (ns->time_ns)
 		put_time_ns(ns->time_ns);
 	if (ns->time_ns_for_children)

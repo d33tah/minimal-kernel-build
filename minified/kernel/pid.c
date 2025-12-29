@@ -59,7 +59,7 @@ void put_pid(struct pid *pid)
 	ns = pid->numbers[pid->level].ns;
 	if (refcount_dec_and_test(&pid->count)) {
 		kmem_cache_free(ns->pid_cachep, pid);
-		put_pid_ns(ns);
+		/* put_pid_ns removed - empty stub */
 	}
 }
 
@@ -192,7 +192,7 @@ struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 
 out_unlock:
 	spin_unlock_irq(&pidmap_lock);
-	put_pid_ns(ns);
+	/* put_pid_ns removed - empty stub */
 
 out_free:
 	spin_lock_irq(&pidmap_lock);

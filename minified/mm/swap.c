@@ -385,8 +385,7 @@ void release_pages(struct page **pages, int nr)
 	}
 	if (lruvec)
 		unlock_page_lruvec_irqrestore(lruvec, flags);
-
-	mem_cgroup_uncharge_list(&pages_to_free);
+	/* mem_cgroup_uncharge_list is empty stub */
 	free_unref_page_list(&pages_to_free);
 }
 

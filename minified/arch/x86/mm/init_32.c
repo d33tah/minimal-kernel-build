@@ -430,7 +430,7 @@ void __init mem_init(void)
 	memblock_free_all();
 
 	after_bootmem = 1;
-	x86_init.hyper.init_after_bootmem();
+	/* x86_init.hyper.init_after_bootmem removed - is x86_init_noop */
 
 #define __FIXADDR_TOP (-PAGE_SIZE)
 #define high_memory (-128UL << 20)

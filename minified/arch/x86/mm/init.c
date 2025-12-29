@@ -468,8 +468,7 @@ void __init init_mem_mapping(void)
 	load_cr3(swapper_pg_dir);
 	__flush_tlb_all();
 
-	x86_init.hyper.init_mem_mapping();
-
+	/* x86_init.hyper.init_mem_mapping removed - is x86_init_noop */
 	early_memtest(0, max_pfn_mapped << PAGE_SHIFT);
 }
 

@@ -195,21 +195,7 @@ static __always_inline void setup_smap(struct cpuinfo_x86 *c)
 
 static __always_inline void setup_umip(struct cpuinfo_x86 *c)
 {
-	if (!cpu_feature_enabled(X86_FEATURE_UMIP))
-		goto out;
-
-	if (!cpu_has(c, X86_FEATURE_UMIP))
-		goto out;
-
-	cr4_set_bits(X86_CR4_UMIP);
-
-	pr_info_once(
-		"x86/cpu: User Mode Instruction Prevention (UMIP) activated\n");
-
-	return;
-
-out:
-
+	/* X86_FEATURE_UMIP is disabled */
 	cr4_clear_bits(X86_CR4_UMIP);
 }
 

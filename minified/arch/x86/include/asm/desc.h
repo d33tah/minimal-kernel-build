@@ -204,10 +204,6 @@ extern void idt_setup_early_handler(void);
 extern void idt_setup_early_traps(void);
 extern void idt_setup_traps(void);
 extern void idt_setup_apic_and_irq_gates(void);
-/* idt_is_f00f_address declaration removed - no implementation */
-
-static inline void idt_setup_early_pf(void) { }
-
-/* idt_invalidate removed - unused */
+/* idt_is_f00f_address, idt_setup_early_pf, idt_invalidate removed - unused */
 
 #endif  

@@ -440,7 +440,6 @@ void bus_remove_driver(struct device_driver *drv)
 	driver_remove_file(drv, &driver_attr_uevent);
 	klist_remove(&drv->p->knode_bus);
 	driver_detach(drv);
-	module_remove_driver(drv);
 	kobject_put(&drv->p->kobj);
 	bus_put(drv->bus);
 }

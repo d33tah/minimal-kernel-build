@@ -574,13 +574,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 		panic("Too many boot %s vars at `%s'", panic_later,
 		      panic_param);
 
-	dbg_out("start_kernel: before lockdep_init\n");
-	lockdep_init();
-
-	dbg_out("start_kernel: before mem_encrypt_init\n");
-	mem_encrypt_init();
-
-	dbg_out("start_kernel: after mem_encrypt_init\n");
+	/* lockdep_init, mem_encrypt_init removed - empty stubs */
 
 	dbg_out("start_kernel: before initrd check\n");
 	if (initrd_start && !initrd_below_start_ok &&

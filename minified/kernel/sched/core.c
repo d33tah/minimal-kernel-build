@@ -176,11 +176,7 @@ void update_rq_clock(struct rq *rq)
 		_old;                                             \
 	})
 
-static bool set_nr_and_not_polling(struct task_struct *p)
-{
-	set_tsk_need_resched(p);
-	return true;
-}
+/* Removed: set_nr_and_not_polling - never called (~5 LOC) */
 
 static bool __wake_q_add(struct wake_q_head *head, struct task_struct *task)
 {

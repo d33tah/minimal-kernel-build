@@ -39,7 +39,7 @@ static bool check_pte(struct page_vma_mapped_walk *pvmw)
 	return (pfn - pvmw->pfn) < pvmw->nr_pages;
 }
 
-/* check_pmd removed - defined but never called */
+/* Removed: check_pmd - never called (~8 LOC) */
 
 static void step_forward(struct page_vma_mapped_walk *pvmw, unsigned long size)
 {

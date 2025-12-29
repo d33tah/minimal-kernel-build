@@ -318,9 +318,7 @@ void init_entity_runnable_average(struct sched_entity *se)
 void post_init_entity_util_avg(struct task_struct *p)
 {
 }
-static void update_tg_load_avg(struct cfs_rq *cfs_rq)
-{
-}
+/* Removed: update_tg_load_avg - empty stub, never called (~3 LOC) */
 
 static void update_curr(struct cfs_rq *cfs_rq)
 {

@@ -55,12 +55,7 @@ static bool dma_coherent_ok(struct device *dev, phys_addr_t phys, size_t size)
 	       min_not_zero(dev->coherent_dma_mask, dev->bus_dma_limit);
 }
 
-/* dma_set_decrypted removed - never called (force_dma_unencrypted always returns false) */
-
-static int dma_set_encrypted(struct device *dev, void *vaddr, size_t size)
-{
-	return 0;
-}
+/* Removed: dma_set_decrypted, dma_set_encrypted - always return 0 (~8 LOC) */
 
 static void __dma_direct_free_pages(struct device *dev, struct page *page,
 				    size_t size)
@@ -97,8 +92,12 @@ static struct page *__dma_direct_alloc_pages(struct device *dev, size_t size,
 	return page;
 }
 
+<<<<<<< HEAD
 /* dma_direct_use_pool, dma_direct_alloc_from_pool removed - never called
    (CONFIG_DMA_COHERENT_POOL not enabled) */
+=======
+/* Removed: dma_direct_use_pool, dma_direct_alloc_from_pool - never called (~10 LOC) */
+>>>>>>> 20ecfc59 (Remove unused static functions (~40 LOC))
 
 static void *dma_direct_alloc_no_mapping(struct device *dev, size_t size,
 					 dma_addr_t *dma_handle, gfp_t gfp)
@@ -153,15 +152,12 @@ void *dma_direct_alloc(struct device *dev, size_t size, dma_addr_t *dma_handle,
 	if (set_uncached) {
 		ret = arch_dma_set_uncached(ret, size);
 		if (IS_ERR(ret))
-			goto out_encrypt_pages;
+			goto out_free_pages;
 	}
 
 	*dma_handle = phys_to_dma_direct(dev, page_to_phys(page));
 	return ret;
 
-out_encrypt_pages:
-	if (dma_set_encrypted(dev, page_address(page), size))
-		return NULL;
 out_free_pages:
 	__dma_direct_free_pages(dev, page, size);
 	return NULL;
@@ -200,11 +196,6 @@ struct page *dma_direct_alloc_pages(struct device *dev, size_t size,
 void dma_direct_free_pages(struct device *dev, size_t size, struct page *page,
 			   dma_addr_t dma_addr, enum dma_data_direction dir)
 {
-	void *vaddr = page_address(page);
-
-	/* DMA_COHERENT_POOL disabled */
-	if (dma_set_encrypted(dev, vaddr, size))
-		return;
 	__dma_direct_free_pages(dev, page, size);
 }
 

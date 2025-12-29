@@ -53,19 +53,8 @@ static __init void get_rtc_noop(struct timespec64 *now)
 {
 }
 
-static __initconst const struct of_device_id of_cmos_match[] = {
-	{ .compatible = "motorola,mc146818" },
-	{}
-};
-
 static __init void x86_wallclock_init(void)
 {
-	struct device_node *node = of_find_matching_node(NULL, of_cmos_match);
-
-	if (node && !of_device_is_available(node)) {
-		x86_platform.get_wallclock = get_rtc_noop;
-		x86_platform.set_wallclock = set_rtc_noop;
-	}
 }
 
 struct x86_init_ops x86_init __initdata = {

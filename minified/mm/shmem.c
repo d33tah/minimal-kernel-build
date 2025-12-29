@@ -74,10 +74,8 @@ static struct file *__shmem_file_setup(struct vfsmount *mnt, const char *name,
 	inode->i_flags |= i_flags;
 	inode->i_size = size;
 	clear_nlink(inode);
-	res = ERR_PTR(ramfs_nommu_expand_for_mapping(inode, size));
-	if (!IS_ERR(res))
-		res = alloc_file_pseudo(inode, mnt, name, O_RDWR,
-					&shmem_file_operations);
+	res = alloc_file_pseudo(inode, mnt, name, O_RDWR,
+				&shmem_file_operations);
 	if (IS_ERR(res))
 		iput(inode);
 	return res;

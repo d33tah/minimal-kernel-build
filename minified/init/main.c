@@ -440,9 +440,7 @@ static void __init mm_init(void)
 {
 	page_ext_init_flatmem();
 	init_mem_debugging_and_hardening();
-	/* kfence_alloc_pool removed - empty stub */
 	report_meminit();
-	stack_depot_early_init();
 	mem_init();
 	mem_init_print_info();
 	kmem_cache_init();

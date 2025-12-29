@@ -1318,21 +1318,9 @@ static bool filemap_map_pmd(struct vm_fault *vmf, struct page *page)
 {
 	struct mm_struct *mm = vmf->vma->vm_mm;
 
-	if (pmd_trans_huge(*vmf->pmd)) {
-		unlock_page(page);
-		put_page(page);
-		return true;
-	}
-
-	/* PageTransHuge always returns false */
+	/* pmd_trans_huge and pmd_devmap_trans_unstable always return 0 */
 	if (pmd_none(*vmf->pmd))
 		pmd_install(mm, vmf->pmd, &vmf->prealloc_pte);
-
-	if (pmd_devmap_trans_unstable(vmf->pmd)) {
-		unlock_page(page);
-		put_page(page);
-		return true;
-	}
 
 	return false;
 }

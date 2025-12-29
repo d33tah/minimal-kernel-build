@@ -541,8 +541,6 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
 	else
 		p->sched_class = &fair_sched_class;
 
-	init_entity_runnable_average(&p->se);
-
 	init_task_preempt_count(p);
 	return 0;
 }
@@ -573,7 +571,6 @@ void wake_up_new_task(struct task_struct *p)
 	WRITE_ONCE(p->__state, TASK_RUNNING);
 	rq = __task_rq_lock(p, &rf);
 	update_rq_clock(rq);
-	post_init_entity_util_avg(p);
 
 	activate_task(rq, p, ENQUEUE_NOCLOCK);
 
@@ -656,10 +653,8 @@ static struct rq *finish_task_switch(struct task_struct *prev)
 
 	kmap_local_sched_in();
 
-	if (mm) {
-		membarrier_mm_sync_core_before_usermode(mm);
+	if (mm)
 		mmdrop_sched(mm);
-	}
 	if (unlikely(prev_state == TASK_DEAD)) {
 		if (prev->sched_class->task_dead)
 			prev->sched_class->task_dead(prev);

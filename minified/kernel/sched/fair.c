@@ -1275,8 +1275,6 @@ static void detach_entity_cfs_rq(struct sched_entity *se)
 	struct cfs_rq *cfs_rq = cfs_rq_of(se);
 
 	update_load_avg(cfs_rq, se, 0);
-	/* detach_entity_load_avg removed - empty stub */
-	update_tg_load_avg(cfs_rq);
 	propagate_entity_cfs_rq(se);
 }
 
@@ -1286,8 +1284,6 @@ static void attach_entity_cfs_rq(struct sched_entity *se)
 
 	update_load_avg(cfs_rq, se,
 			sched_feat(ATTACH_AGE_LOAD) ? 0 : SKIP_AGE_LOAD);
-	/* attach_entity_load_avg removed - empty stub */
-	update_tg_load_avg(cfs_rq);
 	propagate_entity_cfs_rq(se);
 }
 

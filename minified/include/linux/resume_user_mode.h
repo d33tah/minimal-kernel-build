@@ -6,9 +6,6 @@
 #include <linux/task_work.h>
 #include <linux/memcontrol.h>
 
-/* Inlined from blk-cgroup.h */
-static inline void blkcg_maybe_throttle_current(void) { }
-
 static inline void set_notify_resume(struct task_struct *task)
 {
 	if (!test_and_set_tsk_thread_flag(task, TIF_NOTIFY_RESUME))
@@ -26,8 +23,7 @@ static inline void resume_user_mode_work(struct pt_regs *regs)
 
 
 	mem_cgroup_handle_over_high();
-	blkcg_maybe_throttle_current();
-
+	/* blkcg_maybe_throttle_current removed - empty stub */
 	rseq_handle_notify_resume(NULL, regs);
 }
 

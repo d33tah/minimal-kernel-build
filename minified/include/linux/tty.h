@@ -196,10 +196,7 @@ static inline bool tty_io_error(struct tty_struct *tty)
 }
 
 void tty_kref_put(struct tty_struct *tty);
-/* Job control stubs - no session/pgrp management in minimal kernel */
-static inline struct pid *tty_get_pgrp(struct tty_struct *tty) { return NULL; }
 static inline void disassociate_ctty(int priv) { }
-static inline struct tty_struct *get_current_tty(void) { return NULL; }
 int __init tty_init(void);
 const char *tty_name(const struct tty_struct *tty);
 

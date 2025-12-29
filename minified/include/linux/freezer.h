@@ -2,6 +2,5 @@
 #define FREEZER_H_INCLUDED
 struct task_struct;
 static inline bool frozen(struct task_struct *p) { return false; }
-static inline bool freezing(struct task_struct *p) { return false; }
 #define freezable_schedule() schedule()
 #endif

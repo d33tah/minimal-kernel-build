@@ -1144,8 +1144,7 @@ extern int register_chrdev_region(dev_t, unsigned, const char *);
 extern int __register_chrdev(unsigned int major, unsigned int baseminor,
 			     unsigned int count, const char *name,
 			     const struct file_operations *fops);
-extern void __unregister_chrdev(unsigned int major, unsigned int baseminor,
-				unsigned int count, const char *name);
+/* __unregister_chrdev removed - never called */
 extern void unregister_chrdev_region(dev_t, unsigned);
 
 static inline int register_chrdev(unsigned int major, const char *name,
@@ -1157,9 +1156,7 @@ static inline int register_chrdev(unsigned int major, const char *name,
 extern void init_special_inode(struct inode *, umode_t, dev_t);
 
 extern int __must_check file_check_and_advance_wb_err(struct file *file);
-extern int __must_check file_write_and_wait_range(struct file *file,
-						loff_t start, loff_t end);
-
+/* file_write_and_wait_range removed - never called */
 static inline ssize_t generic_write_sync(struct kiocb *iocb, ssize_t count)
 {
 	return count;
@@ -1223,9 +1220,7 @@ extern ssize_t __kernel_write(struct file *, const void *, size_t, loff_t *);
 extern struct file * open_exec(const char *);
 
 extern bool is_subdir(struct dentry *, struct dentry *);
-
-extern loff_t vfs_llseek(struct file *file, loff_t offset, int whence);
-
+/* vfs_llseek removed - never called */
 extern int inode_init_always(struct super_block *, struct inode *);
 extern void inode_init_once(struct inode *);
 extern int generic_delete_inode(struct inode *inode);

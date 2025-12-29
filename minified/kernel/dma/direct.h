@@ -50,14 +50,12 @@ static inline void dma_direct_sync_single_for_cpu(struct device *dev,
 		arch_sync_dma_for_cpu(paddr, size, dir);
 		arch_sync_dma_for_cpu_all();
 	}
-
-	if (unlikely(is_swiotlb_buffer(dev, paddr)))
-		swiotlb_sync_single_for_cpu(dev, paddr, size, dir);
-
+	/* is_swiotlb_buffer always returns false */
 	if (dir == DMA_FROM_DEVICE)
 		arch_dma_mark_clean(paddr, size);
 }
 
+/* is_swiotlb_force_bounce, is_swiotlb_active always return false */
 static inline dma_addr_t dma_direct_map_page(struct device *dev,
 		struct page *page, unsigned long offset, size_t size,
 		enum dma_data_direction dir, unsigned long attrs)
@@ -65,13 +63,7 @@ static inline dma_addr_t dma_direct_map_page(struct device *dev,
 	phys_addr_t phys = page_to_phys(page) + offset;
 	dma_addr_t dma_addr = phys_to_dma(dev, phys);
 
-	if (is_swiotlb_force_bounce(dev))
-		return swiotlb_map(dev, phys, size, dir, attrs);
-
 	if (unlikely(!dma_capable(dev, dma_addr, size, true))) {
-		if (is_swiotlb_active(dev))
-			return swiotlb_map(dev, phys, size, dir, attrs);
-
 		dev_WARN_ONCE(dev, 1,
 			     "DMA addr %pad+%zu overflow (mask %llx, bus limit %llx).\n",
 			     &dma_addr, size, *dev->dma_mask, dev->bus_dma_limit);
@@ -83,16 +75,11 @@ static inline dma_addr_t dma_direct_map_page(struct device *dev,
 	return dma_addr;
 }
 
+/* is_swiotlb_buffer always returns false */
 static inline void dma_direct_unmap_page(struct device *dev, dma_addr_t addr,
 		size_t size, enum dma_data_direction dir, unsigned long attrs)
 {
-	phys_addr_t phys = dma_to_phys(dev, addr);
-
 	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
 		dma_direct_sync_single_for_cpu(dev, addr, size, dir);
-
-	if (unlikely(is_swiotlb_buffer(dev, phys)))
-		swiotlb_tbl_unmap_single(dev, phys, size, dir,
-					 attrs | DMA_ATTR_SKIP_CPU_SYNC);
 }
 #endif  

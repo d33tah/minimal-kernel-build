@@ -9,9 +9,7 @@ struct real_mode_header;
 struct boot_params;
 
 /* Stub functions - SEV not enabled */
-static inline void sev_es_ist_enter(struct pt_regs *regs) { }
-static inline void sev_es_ist_exit(void) { }
-static inline void sev_es_nmi_complete(void) { }
+/* sev_es_ist_enter, sev_es_ist_exit, sev_es_nmi_complete call sites removed */
 static inline void setup_ghcb(void) { }
 
 #endif

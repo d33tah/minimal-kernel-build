@@ -104,7 +104,7 @@ extern struct kset *devices_kset;
 
 static inline void module_add_driver(struct module *mod,
 				     struct device_driver *drv) { }
-static inline void module_remove_driver(struct device_driver *drv) { }
+/* module_remove_driver - never called */
 
 static inline int devtmpfs_init(void) { return 0; }
 

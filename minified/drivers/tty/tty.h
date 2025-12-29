@@ -30,9 +30,8 @@ void tty_ldisc_unlock(struct tty_struct *tty);
 /* Job control stubs - all return 0/NULL or are empty */
 static inline int __tty_check_change(struct tty_struct *tty, int sig) { return 0; }
 static inline int tty_check_change(struct tty_struct *tty) { return 0; }
-/* __stop_tty, __start_tty removed - unused */
+/* __stop_tty, __start_tty, tty_open_proc_set_tty call sites removed */
 void tty_vhangup_session(struct tty_struct *tty);
-static inline void tty_open_proc_set_tty(struct file *filp, struct tty_struct *tty) { }
 static inline int tty_signal_session_leader(struct tty_struct *tty, int exit_session) { return 0; }
 void tty_buffer_free_all(struct tty_port *port);
 void tty_buffer_flush(struct tty_struct *tty, struct tty_ldisc *ld);

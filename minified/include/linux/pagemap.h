@@ -197,19 +197,10 @@ static inline struct page *read_mapping_page(struct address_space *mapping,
 	return read_cache_page(mapping, index, NULL, file);
 }
 
-extern pgoff_t hugetlb_basepage_index(struct page *page);
-
 static inline pgoff_t page_to_pgoff(struct page *page)
 {
-	struct page *head;
-
-	if (unlikely(PageHuge(page)))
-		return hugetlb_basepage_index(page);
-	/* Inlined page_to_index */
-	if (likely(!PageTransTail(page)))
-		return page->index;
-	head = compound_head(page);
-	return head->index + page - head;
+	/* PageHuge and PageTransTail always return false */
+	return page->index;
 }
 
 static inline loff_t page_offset(struct page *page)

@@ -200,8 +200,8 @@ void munlock_page(struct page *page);
 static inline void munlock_vma_page(struct page *page,
 			struct vm_area_struct *vma, bool compound)
 {
-	if (unlikely(vma->vm_flags & VM_LOCKED) &&
-	    (compound || !PageTransCompound(page)))
+	/* PageTransCompound always returns false */
+	if (unlikely(vma->vm_flags & VM_LOCKED))
 		munlock_page(page);
 }
 void mlock_new_page(struct page *page);

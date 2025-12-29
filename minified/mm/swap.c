@@ -74,8 +74,8 @@ static void __put_single_page(struct page *page)
 
 static void __put_compound_page(struct page *page)
 {
-	if (!PageHuge(page))
-		__page_cache_release(page);
+	/* PageHuge is always false */
+	__page_cache_release(page);
 	destroy_compound_page(page);
 }
 

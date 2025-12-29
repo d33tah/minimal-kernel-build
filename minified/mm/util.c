@@ -258,7 +258,8 @@ int __page_mapcount(struct page *page)
 
 	ret = atomic_read(&page->_mapcount) + 1;
 
-	if (!PageAnon(page) && !PageHuge(page))
+	/* PageHuge always returns false */
+	if (!PageAnon(page))
 		return ret;
 	page = compound_head(page);
 	ret += atomic_read(compound_mapcount_ptr(page)) + 1;

@@ -946,12 +946,7 @@ vm_fault_t finish_fault(struct vm_fault *vmf)
 	}
 
 	if (pmd_none(*vmf->pmd)) {
-		if (PageTransCompound(page)) {
-			ret = do_set_pmd(vmf, page);
-			if (ret != VM_FAULT_FALLBACK)
-				return ret;
-		}
-
+		/* PageTransCompound always returns false */
 		if (vmf->prealloc_pte)
 			pmd_install(vma->vm_mm, vmf->pmd, &vmf->prealloc_pte);
 		else if (unlikely(pte_alloc(vma->vm_mm, vmf->pmd)))

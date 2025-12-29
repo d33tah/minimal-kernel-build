@@ -110,12 +110,11 @@ static unsigned long exit_to_user_mode_loop(struct pt_regs *regs,
 		if (ti_work & _TIF_NOTIFY_RESUME)
 			resume_user_mode_work(regs);
 
-		arch_exit_to_user_mode_work(regs, ti_work);
+		/* arch_exit_to_user_mode_work is empty on x86 */
 
 		local_irq_disable_exit_to_user();
 
-		tick_nohz_user_enter_prepare();
-
+		/* tick_nohz_user_enter_prepare is empty stub */
 		ti_work = read_thread_flags();
 	}
 
@@ -127,8 +126,7 @@ static void exit_to_user_mode_prepare(struct pt_regs *regs)
 	unsigned long ti_work = read_thread_flags();
 
 	lockdep_assert_irqs_disabled();
-
-	tick_nohz_user_enter_prepare();
+	/* tick_nohz_user_enter_prepare is empty stub */
 
 	if (unlikely(ti_work & EXIT_TO_USER_MODE_WORK))
 		ti_work = exit_to_user_mode_loop(regs, ti_work);

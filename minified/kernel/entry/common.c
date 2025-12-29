@@ -160,7 +160,7 @@ static void syscall_exit_work(struct pt_regs *regs, unsigned long work)
 		}
 	}
 
-	audit_syscall_exit(regs);
+	/* audit_syscall_exit is empty stub */
 
 	step = report_single_step(work);
 	if (step || work & SYSCALL_WORK_SYSCALL_TRACE)

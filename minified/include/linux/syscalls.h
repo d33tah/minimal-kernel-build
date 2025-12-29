@@ -129,17 +129,8 @@ static inline void syscall_tracepoint_update(struct task_struct *p) {}
 #define SYSCALL32_DEFINE5 SYSCALL_DEFINE5
 #define SYSCALL32_DEFINE6 SYSCALL_DEFINE6
 
-static inline void addr_limit_user_check(void)
-{
-#ifdef TIF_FSCHECK
-	if (!test_thread_flag(TIF_FSCHECK))
-		return;
-#endif
-
-#ifdef TIF_FSCHECK
-	clear_thread_flag(TIF_FSCHECK);
-#endif
-}
+/* TIF_FSCHECK not defined - addr_limit_user_check is empty */
+static inline void addr_limit_user_check(void) { }
 
 
 

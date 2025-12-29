@@ -558,7 +558,7 @@ void __init setup_arch(char **cmdline_p)
 
 	init_mem_mapping();
 
-	idt_setup_early_pf();
+	/* idt_setup_early_pf removed - empty stub */
 
 	mmu_cr4_features = __read_cr4() & ~X86_CR4_PCIDE;
 

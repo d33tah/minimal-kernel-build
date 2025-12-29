@@ -225,8 +225,6 @@ void flush_signal_handlers(struct task_struct *t, int force_default)
 
 void signal_wake_up_state(struct task_struct *t, unsigned int state)
 {
-	lockdep_assert_held(&t->sighand->siglock);
-
 	set_tsk_thread_flag(t, TIF_SIGPENDING);
 
 	if (!wake_up_state(t, state | TASK_INTERRUPTIBLE))
@@ -280,8 +278,6 @@ static int __send_signal_locked(int sig, struct kernel_siginfo *info,
 	/* Minimal stub: simplified signal delivery */
 	struct sigpending *pending;
 	struct sigqueue *q;
-
-	lockdep_assert_held(&t->sighand->siglock);
 
 	if (!prepare_signal(sig, t, force))
 		return 0;

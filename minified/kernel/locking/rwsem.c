@@ -184,14 +184,12 @@ enum rwsem_wake_type {
 static inline void rwsem_add_waiter(struct rw_semaphore *sem,
 				    struct rwsem_waiter *waiter)
 {
-	lockdep_assert_held(&sem->wait_lock);
 	list_add_tail(&waiter->list, &sem->wait_list);
 }
 
 static inline bool rwsem_del_waiter(struct rw_semaphore *sem,
 				    struct rwsem_waiter *waiter)
 {
-	lockdep_assert_held(&sem->wait_lock);
 	list_del(&waiter->list);
 	if (likely(!list_empty(&sem->wait_list)))
 		return true;
@@ -208,8 +206,6 @@ static void rwsem_mark_wake(struct rw_semaphore *sem,
 	struct rwsem_waiter *waiter, *tmp;
 	long oldcount, woken = 0, adjustment = 0;
 	struct list_head wlist;
-
-	lockdep_assert_held(&sem->wait_lock);
 
 	waiter = rwsem_first_waiter(sem);
 
@@ -306,8 +302,6 @@ static inline bool rwsem_try_write_lock(struct rw_semaphore *sem,
 {
 	bool first = rwsem_first_waiter(sem) == waiter;
 	long count, new;
-
-	lockdep_assert_held(&sem->wait_lock);
 
 	count = atomic_long_read(&sem->count);
 	do {

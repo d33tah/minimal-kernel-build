@@ -595,8 +595,6 @@ static void __run_hrtimer(struct hrtimer_cpu_base *cpu_base,
 	bool expires_in_hardirq;
 	int restart;
 
-	lockdep_assert_held(&cpu_base->lock);
-
 	debug_deactivate(timer);
 	base->running = timer;
 

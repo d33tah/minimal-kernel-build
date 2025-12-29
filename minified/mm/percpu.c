@@ -357,8 +357,6 @@ static void pcpu_chunk_relocate(struct pcpu_chunk *chunk, int oslot)
 
 static void pcpu_reintegrate_chunk(struct pcpu_chunk *chunk)
 {
-	lockdep_assert_held(&pcpu_lock);
-
 	if (chunk->isolated) {
 		chunk->isolated = false;
 		pcpu_nr_empty_pop_pages += chunk->nr_empty_pop_pages;
@@ -735,8 +733,6 @@ static int pcpu_alloc_area(struct pcpu_chunk *chunk, int alloc_bits,
 	unsigned long area_off = 0, area_bits = 0;
 	int bit_off, end, oslot;
 
-	lockdep_assert_held(&pcpu_lock);
-
 	oslot = pcpu_chunk_slot(chunk);
 
 	end = min_t(int, start + alloc_bits + PCPU_BITMAP_BLOCK_BITS,
@@ -774,7 +770,6 @@ static int pcpu_free_area(struct pcpu_chunk *chunk, int off)
 	struct pcpu_block_md *chunk_md = &chunk->chunk_md;
 	int bit_off, bits, end, oslot, freed;
 
-	lockdep_assert_held(&pcpu_lock);
 	/* pcpu_stats_area_dealloc removed - stats stub */
 	oslot = pcpu_chunk_slot(chunk);
 
@@ -966,8 +961,6 @@ static void pcpu_chunk_populated(struct pcpu_chunk *chunk, int page_start,
 				 int page_end)
 {
 	int nr = page_end - page_start;
-
-	lockdep_assert_held(&pcpu_lock);
 
 	bitmap_set(chunk->populated, page_start, nr);
 	chunk->nr_populated += nr;
@@ -1194,8 +1187,6 @@ static void pcpu_balance_populated(void)
 	struct pcpu_chunk *chunk;
 	int slot, nr_to_pop, ret;
 
-	lockdep_assert_held(&pcpu_lock);
-
 retry_pop:
 	if (pcpu_atomic_alloc_failed) {
 		nr_to_pop = PCPU_EMPTY_POP_PAGES_HIGH;
@@ -1258,8 +1249,6 @@ retry_pop:
 static void pcpu_reclaim_populated(void)
 {
 	struct pcpu_chunk *chunk;
-
-	lockdep_assert_held(&pcpu_lock);
 
 	/* No-op for reclaim - just reintegrate chunks back to active lists */
 	while (!list_empty(&pcpu_chunk_lists[pcpu_to_depopulate_slot])) {

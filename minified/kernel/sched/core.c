@@ -98,8 +98,6 @@ struct rq *__task_rq_lock(struct task_struct *p, struct rq_flags *rf)
 {
 	struct rq *rq;
 
-	lockdep_assert_held(&p->pi_lock);
-
 	for (;;) {
 		rq = task_rq(p);
 		raw_spin_rq_lock(rq);

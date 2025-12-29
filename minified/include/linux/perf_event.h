@@ -19,7 +19,6 @@ typedef void (*perf_overflow_handler_t)(struct perf_event *,
 struct perf_event { int state; };
 struct perf_event_context { int dummy; };
 
-/* All perf_event functions are empty stubs - no callers remain */
-static inline void perf_sw_event(u32 event_id, u64 nr, struct pt_regs *regs, u64 addr) { }
+/* perf_sw_event removed - never called */
 
 #endif  

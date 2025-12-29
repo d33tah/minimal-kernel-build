@@ -7,7 +7,6 @@
 #define SWP_OFFSET_MASK	((1UL << SWP_TYPE_SHIFT) - 1)
 static inline pte_t pte_swp_clear_flags(pte_t pte) {
 	if (pte_swp_exclusive(pte)) pte = pte_swp_clear_exclusive(pte);
-	/* pte_swp_soft_dirty, pte_swp_uffd_wp always return 0 */
 	return pte;
 }
 static inline swp_entry_t swp_entry(unsigned long type, pgoff_t offset) { swp_entry_t ret; ret.val = (type << SWP_TYPE_SHIFT) | (offset & SWP_OFFSET_MASK); return ret; }
@@ -19,14 +18,10 @@ static inline swp_entry_t pte_to_swp_entry(pte_t pte) {
 	arch_entry = __pte_to_swp_entry(pte);
 	return swp_entry(__swp_type(arch_entry), __swp_offset(arch_entry));
 }
-static inline bool is_device_private_entry(swp_entry_t entry) { return false; }
-static inline bool is_device_exclusive_entry(swp_entry_t entry) { return false; }
-static inline int is_migration_entry(swp_entry_t swp) { return 0; }
-static inline void migration_entry_wait(struct mm_struct *mm, pmd_t *pmd, unsigned long address) { }
+/* Unused stubs removed: is_device_private_entry, is_device_exclusive_entry,
+   is_migration_entry, migration_entry_wait, pmd_migration_entry_wait,
+   pmd_to_swp_entry, is_pmd_migration_entry */
 typedef unsigned long pte_marker;
 #define PTE_MARKER_UFFD_WP  BIT(0)
 #define PTE_MARKER_MASK     (PTE_MARKER_UFFD_WP)
-static inline void pmd_migration_entry_wait(struct mm_struct *m, pmd_t *p) { }
-static inline swp_entry_t pmd_to_swp_entry(pmd_t pmd) { return swp_entry(0, 0); }
-static inline int is_pmd_migration_entry(pmd_t pmd) { return 0; }
 #endif

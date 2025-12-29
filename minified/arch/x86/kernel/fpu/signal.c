@@ -211,7 +211,6 @@ static bool restore_fpregs_from_user(void __user *buf, u64 xrestore,
 retry:
 	fpregs_lock();
 
-	xfd_update_state(fpu->fpstate);
 	pagefault_disable();
 	ret = __restore_fpregs_from_user(buf, fpu->fpstate->user_xfeatures,
 					 xrestore, fx_only);

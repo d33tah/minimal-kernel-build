@@ -588,9 +588,7 @@ void __init setup_arch(char **cmdline_p)
 
 	x86_dtb_init();
 
-	/* get_smp_config removed - default_get_smp_config is x86_init_uint_noop */
-
-	init_apic_mappings();
+	/* get_smp_config, init_apic_mappings removed - empty stubs */
 
 	init_cpu_to_node();
 	init_gi_nodes();

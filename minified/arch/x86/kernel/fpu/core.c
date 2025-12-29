@@ -78,8 +78,6 @@ void restore_fpregs_from_fpstate(struct fpstate *fpstate, u64 mask)
 	}
 
 	if (use_xsave()) {
-		xfd_update_state(fpstate);
-
 		mask = fpu_kernel_cfg.max_features & mask;
 
 		os_xrstor(fpstate, mask);

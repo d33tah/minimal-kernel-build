@@ -61,13 +61,12 @@ static inline void time_dbg(const char *s)
 static __init void x86_late_time_init(void)
 {
 	time_dbg("x86_late_time_init: start\n");
-	x86_init.irqs.intr_mode_select();
+	/* intr_mode_select removed - apic_intr_mode_select is empty stub */
 
 	time_dbg("x86_late_time_init: calling timer_init\n");
 	x86_init.timers.timer_init();
 
-	time_dbg("x86_late_time_init: calling intr_mode_init\n");
-	x86_init.irqs.intr_mode_init();
+	/* intr_mode_init removed - apic_intr_mode_init is empty stub */
 
 	time_dbg("x86_late_time_init: calling tsc_init\n");
 	tsc_init();

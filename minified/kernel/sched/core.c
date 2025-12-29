@@ -748,8 +748,7 @@ void scheduler_tick(void)
 	struct rq_flags rf;
 	u64 resched_latency;
 
-	arch_scale_freq_tick();
-	/* sched_clock_tick removed - empty stub */
+	/* arch_scale_freq_tick, sched_clock_tick removed - empty stubs */
 
 	rq_lock(rq, &rf);
 

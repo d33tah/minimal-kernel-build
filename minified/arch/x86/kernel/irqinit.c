@@ -62,7 +62,7 @@ void __init native_init_IRQ(void)
 	x86_init.irqs.pre_vector_init();
 
 	idt_setup_apic_and_irq_gates();
-	lapic_assign_system_vectors();
+	/* lapic_assign_system_vectors removed - empty stub */
 
 	if (!acpi_ioapic && !of_ioapic && nr_legacy_irqs()) {
 		if (request_irq(2, no_action, IRQF_NO_THREAD, "cascade", NULL))

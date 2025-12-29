@@ -70,8 +70,7 @@ void tick_setup_periodic(struct clock_event_device *dev, int broadcast)
 	if (!tick_device_is_functional(dev))
 		return;
 
-	if ((dev->features & CLOCK_EVT_FEAT_PERIODIC) &&
-	    !tick_broadcast_oneshot_active()) {
+	if (dev->features & CLOCK_EVT_FEAT_PERIODIC) {
 		clockevents_switch_state(dev, CLOCK_EVT_STATE_PERIODIC);
 	} else {
 		unsigned int seq;
@@ -117,9 +116,6 @@ static void tick_setup_device(struct tick_device *td,
 
 	if (!cpumask_equal(newdev->cpumask, cpumask))
 		irq_set_affinity(newdev->irq, cpumask);
-
-	if (tick_device_uses_broadcast(newdev, cpu))
-		return;
 
 	if (td->mode == TICKDEV_MODE_PERIODIC)
 		tick_setup_periodic(newdev, 0);
@@ -191,10 +187,6 @@ void tick_check_new_device(struct clock_event_device *newdev)
 	if (!try_module_get(newdev->owner))
 		return;
 
-	if (tick_is_broadcast_device(curdev)) {
-		clockevents_shutdown(curdev);
-		curdev = NULL;
-	}
 	clockevents_exchange_device(curdev, newdev);
 	tick_setup_device(td, newdev, cpu, cpumask_of(cpu));
 	if (newdev->features & CLOCK_EVT_FEAT_ONESHOT)

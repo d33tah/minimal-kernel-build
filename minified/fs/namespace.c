@@ -1658,8 +1658,6 @@ void __init mnt_init(void)
 	if (!mount_hashtable || !mountpoint_hashtable)
 		panic("Failed to allocate mount hash table\n");
 
-	kernfs_init();
-
 	err = sysfs_init();
 	if (err)
 		printk(KERN_WARNING "%s: sysfs_init error: %d\n", __func__,

@@ -12,7 +12,6 @@
 #include <linux/delay.h>
 #include <linux/kexec.h>
 extern struct atomic_notifier_head panic_notifier_list;
-extern bool crash_kexec_post_notifiers;
 #include <linux/sched.h>
 
 #include <linux/init.h>
@@ -32,7 +31,6 @@ static unsigned long tainted_mask = 0;
 static int pause_on_oops;
 static int pause_on_oops_flag;
 static DEFINE_SPINLOCK(pause_on_oops_lock);
-bool crash_kexec_post_notifiers;
 int panic_on_warn __read_mostly;
 unsigned long panic_on_taint;
 
@@ -67,16 +65,7 @@ void __weak nmi_panic_self_stop(struct pt_regs *regs)
 	panic_smp_self_stop();
 }
 
-void __weak crash_smp_send_stop(void)
-{
-	static int cpus_stopped;
-
-	if (cpus_stopped)
-		return;
-
-	smp_send_stop();
-	cpus_stopped = 1;
-}
+/* crash_smp_send_stop removed - stub that only called smp_send_stop() which is empty */
 
 atomic_t panic_cpu = ATOMIC_INIT(PANIC_CPU_INVALID);
 
@@ -105,7 +94,6 @@ void panic(const char *fmt, ...)
 	long i, i_next = 0, len;
 	int state = 0;
 	int old_cpu, this_cpu;
-	bool _crash_kexec_post_notifiers = crash_kexec_post_notifiers;
 
 	if (panic_on_warn) {
 		panic_on_warn = 0;
@@ -130,23 +118,13 @@ void panic(const char *fmt, ...)
 		buf[len - 1] = '\0';
 
 	pr_emerg("Kernel panic - not syncing: %s\n", buf);
-	/* kgdb_panic removed - empty stub */
-	if (!_crash_kexec_post_notifiers) {
-		__crash_kexec(NULL);
-
-		smp_send_stop();
-	} else {
-		crash_smp_send_stop();
-	}
+	/* __crash_kexec, smp_send_stop, crash_smp_send_stop removed - stubs */
 
 	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
 
 	panic_print_sys_info(false);
 
 	kmsg_dump(KMSG_DUMP_PANIC);
-
-	if (_crash_kexec_post_notifiers)
-		__crash_kexec(NULL);
 
 	unblank_screen();
 	console_unblank();

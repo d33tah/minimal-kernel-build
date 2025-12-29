@@ -24,8 +24,7 @@ extern int panic_on_warn;
 extern unsigned long panic_on_taint;
 /* Removed: panic_on_taint_nousertaint, sysctl_panic_on_rcu_stall,
    sysctl_max_rcu_stall_to_panic, sysctl_panic_on_stackoverflow - never defined/used */
-
-extern bool crash_kexec_post_notifiers;
+/* Removed: crash_kexec_post_notifiers - kexec stubs removed */
 
 extern atomic_t panic_cpu;
 #define PANIC_CPU_INVALID	-1

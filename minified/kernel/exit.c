@@ -443,9 +443,6 @@ void __noreturn do_exit(long code)
 	exit_tasks_rcu_start();
 	exit_notify(tsk, group_dead);
 
-	if (tsk->io_context)
-		exit_io_context(tsk);
-
 	if (tsk->splice_pipe)
 		free_pipe_info(tsk->splice_pipe);
 

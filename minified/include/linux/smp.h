@@ -17,7 +17,7 @@ void on_each_cpu_cond_mask(smp_cond_func_t cond_func, smp_call_func_t func,
 
 void panic_smp_self_stop(void);
 void nmi_panic_self_stop(struct pt_regs *regs);
-void crash_smp_send_stop(void);
+/* crash_smp_send_stop removed - stub */
 
 static inline void on_each_cpu(smp_call_func_t func, void *info, int wait)
 {

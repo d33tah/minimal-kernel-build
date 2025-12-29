@@ -42,10 +42,9 @@ void __cpuidle default_idle_call(void)
 	if (current_clr_polling_and_test()) {
 		local_irq_enable();
 	} else {
-		rcu_idle_enter();
+		/* rcu_idle_enter/exit removed - empty stubs */
 		arch_cpu_idle();
 		raw_local_irq_disable();
-		rcu_idle_exit();
 		raw_local_irq_enable();
 	}
 }

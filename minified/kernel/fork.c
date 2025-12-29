@@ -1122,8 +1122,7 @@ copy_process(struct pid *pid, int trace, int node,
 	prev_cputime_init(&p->prev_cputime);
 
 	p->default_timer_slack_ns = current->timer_slack_ns;
-	/* task_io_accounting_init, acct_clear_integrals removed - empty stubs */
-	posix_cputimers_init(&p->posix_cputimers);
+	/* task_io_accounting_init, acct_clear_integrals, posix_cputimers_init removed - empty stubs */
 
 	p->io_context = NULL;
 	audit_set_context(p, NULL);

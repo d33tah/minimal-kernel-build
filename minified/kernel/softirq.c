@@ -192,7 +192,7 @@ void irq_enter_rcu(void)
 
 void irq_enter(void)
 {
-	rcu_irq_enter();
+	/* rcu_irq_enter removed - empty stub */
 	irq_enter_rcu();
 }
 

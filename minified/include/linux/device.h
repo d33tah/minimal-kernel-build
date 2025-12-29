@@ -93,20 +93,7 @@ struct device_attribute {
 void device_remove_file(struct device *dev,
 			const struct device_attribute *attr);
 
-typedef void (*dr_release_t)(struct device *dev, void *res);
-typedef int (*dr_match_t)(struct device *dev, void *res, void *match_data);
-
-/* devres stub - always returns NULL (no resource tracking) */
-static inline void *__devres_alloc_node(dr_release_t release, size_t size, gfp_t gfp,
-			  int nid, const char *name) { return NULL; }
-#define devres_alloc(release, size, gfp) \
-	__devres_alloc_node(release, size, gfp, NUMA_NO_NODE, #release)
-#define devres_alloc_node(release, size, gfp, nid) \
-	__devres_alloc_node(release, size, gfp, nid, #release)
-
-/* devres_for_each_res, devres_find, devres_get, devres_remove, devres_destroy,
-   devres_release, devres_free, devres_add, devm_kasprintf, devm_kstrdup
-   removed - never called */
+/* devres functions removed - never called */
 
 struct device_dma_parameters {
 	 

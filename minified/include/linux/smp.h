@@ -30,12 +30,10 @@ static inline void on_each_cpu_mask(const struct cpumask *mask,
 	on_each_cpu_cond_mask(NULL, func, info, wait, mask);
 }
 
-static inline void smp_send_stop(void) { }
+/* smp_send_stop, smp_send_reschedule, smp_init removed - unused stubs */
 
 #define raw_smp_processor_id()			0
-static inline void smp_send_reschedule(int cpu) { }
 #define smp_prepare_boot_cpu()			do {} while (0)
-static inline void smp_init(void) { }
 
 
 #ifndef __smp_processor_id

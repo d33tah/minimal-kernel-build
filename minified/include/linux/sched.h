@@ -732,9 +732,6 @@ static inline void rseq_execve(struct task_struct *t)
 static inline void rseq_syscall(struct pt_regs *regs)
 {
 }
-
-
-static inline void sched_core_free(struct task_struct *tsk) { }
-static inline void sched_core_fork(struct task_struct *p) { }
+/* sched_core_free, sched_core_fork removed - unused */
 
 #endif

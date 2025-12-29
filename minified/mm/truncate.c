@@ -43,9 +43,6 @@ static void truncate_folio_batch_exceptionals(struct address_space *mapping,
 	int i, j;
 	bool dax;
 
-	if (shmem_mapping(mapping))
-		return;
-
 	for (j = 0; j < folio_batch_count(fbatch); j++)
 		if (xa_is_value(fbatch->folios[j]))
 			break;
@@ -88,7 +85,7 @@ static void truncate_folio_batch_exceptionals(struct address_space *mapping,
 static int invalidate_exceptional_entry(struct address_space *mapping,
 					pgoff_t index, void *entry)
 {
-	if (shmem_mapping(mapping) || dax_mapping(mapping))
+	if (dax_mapping(mapping))
 		return 1;
 	clear_shadow_entry(mapping, index, entry);
 	return 1;
@@ -97,8 +94,6 @@ static int invalidate_exceptional_entry(struct address_space *mapping,
 static int invalidate_exceptional_entry2(struct address_space *mapping,
 					 pgoff_t index, void *entry)
 {
-	if (shmem_mapping(mapping))
-		return 1;
 	if (dax_mapping(mapping))
 		return dax_invalidate_mapping_entry_sync(mapping, index);
 	clear_shadow_entry(mapping, index, entry);

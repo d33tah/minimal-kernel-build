@@ -65,11 +65,5 @@ int __kernel_text_address(unsigned long addr)
 
 int kernel_text_address(unsigned long addr)
 {
-	if (core_kernel_text(addr))
-		return 1;
-	if (is_module_text_address(addr))
-		return 1;
-	if (is_ftrace_trampoline(addr))
-		return 1;
-	return 0;
+	return core_kernel_text(addr);
 }

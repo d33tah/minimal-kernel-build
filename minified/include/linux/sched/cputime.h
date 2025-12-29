@@ -5,11 +5,6 @@ static inline bool task_cputime(struct task_struct *t, u64 *utime, u64 *stime) {
 static inline u64 task_gtime(struct task_struct *t) { return t->gtime; }
 extern void thread_group_cputime_adjusted(struct task_struct *p, u64 *ut, u64 *st);
 void thread_group_sample_cputime(struct task_struct *tsk, u64 *samples);
-static inline struct thread_group_cputimer *get_running_cputimer(struct task_struct *tsk) { return NULL; }
-static inline void account_group_exec_runtime(struct task_struct *tsk, unsigned long long ns) {
-	struct thread_group_cputimer *cputimer = get_running_cputimer(tsk);
-	if (!cputimer) return;
-	atomic64_add(ns, &cputimer->cputime_atomic.sum_exec_runtime);
-}
+static inline void account_group_exec_runtime(struct task_struct *tsk, unsigned long long ns) { }
 static inline void prev_cputime_init(struct prev_cputime *prev) { prev->utime = prev->stime = 0; raw_spin_lock_init(&prev->lock); }
 #endif

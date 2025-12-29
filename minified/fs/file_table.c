@@ -54,19 +54,13 @@ static long get_nr_files(void)
 static struct file *__alloc_file(int flags, const struct cred *cred)
 {
 	struct file *f;
-	int error;
 
 	f = kmem_cache_zalloc(filp_cachep, GFP_KERNEL);
 	if (unlikely(!f))
 		return ERR_PTR(-ENOMEM);
 
 	f->f_cred = get_cred(cred);
-	error = security_file_alloc(f);
-	if (unlikely(error)) {
-		file_free_rcu(&f->f_u.fu_rcuhead);
-		return ERR_PTR(error);
-	}
-
+	/* security_file_alloc always returns 0 - dead code removed */
 	atomic_long_set(&f->f_count, 1);
 	rwlock_init(&f->f_owner.lock);
 	spin_lock_init(&f->f_lock);

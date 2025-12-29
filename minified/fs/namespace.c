@@ -921,10 +921,8 @@ static void umount_tree(struct mount *mnt, enum umount_tree_flags how)
 
 static int do_umount(struct mount *mnt, int flags)
 {
-	int retval = security_sb_umount(&mnt->mnt, flags);
-	if (retval)
-		return retval;
-
+	int retval;
+	/* security_sb_umount always returns 0 - dead code removed */
 	if (&mnt->mnt == current->fs->root.mnt)
 		return (flags & MNT_DETACH) ? 0 : -EINVAL;
 
@@ -1339,13 +1337,10 @@ static int do_new_mount_fc(struct fs_context *fc, struct path *mountpoint,
 	struct super_block *sb = fc->root->d_sb;
 	int error;
 
-	error = security_sb_kern_mount(sb);
-	if (!error && mount_too_revealing(sb, &mnt_flags))
-		error = -EPERM;
-
-	if (unlikely(error)) {
+	/* security_sb_kern_mount always returns 0 - simplified */
+	if (mount_too_revealing(sb, &mnt_flags)) {
 		fc_drop_locked(fc);
-		return error;
+		return -EPERM;
 	}
 
 	up_write(&sb->s_umount);
@@ -1432,9 +1427,7 @@ int path_mount(const char *dev_name, struct path *path, const char *type_page,
 	if (flags & MS_NOUSER)
 		return -EINVAL;
 
-	ret = security_sb_mount(dev_name, path, type_page, flags, data_page);
-	if (ret)
-		return ret;
+	/* security_sb_mount always returns 0 - dead code removed */
 	if (!may_mount())
 		return -EPERM;
 	/* warn_mandlock call removed - was empty function */

@@ -568,12 +568,7 @@ int vfs_get_tree(struct fs_context *fc)
 	smp_wmb();
 	sb->s_flags |= SB_BORN;
 
-	error = security_sb_set_mnt_opts(sb, fc->security, 0, NULL);
-	if (unlikely(error)) {
-		fc_drop_locked(fc);
-		return error;
-	}
-
+	/* security_sb_set_mnt_opts always returns 0 - dead code removed */
 	WARN((sb->s_maxbytes < 0),
 	     "%s set sb->s_maxbytes to "
 	     "negative value (%lld)\n",

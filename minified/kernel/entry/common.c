@@ -189,8 +189,6 @@ static void syscall_exit_to_user_mode_prepare(struct pt_regs *regs)
 
 	CT_WARN_ON(ct_state() != CONTEXT_KERNEL);
 
-	rseq_syscall(regs);
-
 	if (unlikely(work & SYSCALL_WORK_EXIT))
 		syscall_exit_work(regs, work);
 }

@@ -1251,8 +1251,6 @@ copy_process(struct pid *pid, int trace, int node,
 
 	copy_seccomp(p);
 
-	rseq_fork(p, clone_flags);
-
 	if (unlikely(!(ns_of_pid(pid)->pid_allocated & PIDNS_ADDING))) {
 		retval = -ENOMEM;
 		goto bad_fork_cancel_cgroup;

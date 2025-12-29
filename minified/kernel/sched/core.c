@@ -556,7 +556,6 @@ void sched_cgroup_fork(struct task_struct *p, struct kernel_clone_args *kargs)
 	unsigned long flags;
 
 	raw_spin_lock_irqsave(&p->pi_lock, flags);
-	rseq_migrate(p);
 
 	__set_task_cpu(p, smp_processor_id());
 	if (p->sched_class->task_fork)
@@ -637,7 +636,6 @@ static inline void prepare_task_switch(struct rq *rq, struct task_struct *prev,
 {
 	sched_info_switch(rq, prev, next);
 
-	rseq_preempt(prev);
 	kmap_local_sched_out();
 	prepare_arch_switch(next);
 }

@@ -300,8 +300,6 @@ static int setup_rt_frame(struct ksignal *ksig, struct pt_regs *regs)
 	sigset_t *set = sigmask_to_save();
 	compat_sigset_t *cset = (compat_sigset_t *)set;
 
-	rseq_signal_deliver(ksig, regs);
-
 	/* X86_32: always ia32 frame */
 	if (ksig->ka.sa.sa_flags & SA_SIGINFO)
 		return ia32_setup_rt_frame(usig, ksig, cset, regs);

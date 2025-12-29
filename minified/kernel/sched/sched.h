@@ -749,27 +749,16 @@ extern void init_dl_inactive_task_timer(struct sched_dl_entity *dl_se);
 extern void init_entity_runnable_average(struct sched_entity *se);
 extern void post_init_entity_util_avg(struct task_struct *p);
 
-/* sched_tick_offload_init removed - unused */
-static inline void sched_update_tick_dependency(struct rq *rq) { }
+/* sched_tick_offload_init, sched_update_tick_dependency removed - unused */
 
 static inline void add_nr_running(struct rq *rq, unsigned count)
 {
-	unsigned prev_nr = rq->nr_running;
-
-	rq->nr_running = prev_nr + count;
-	 
-
-
-	sched_update_tick_dependency(rq);
+	rq->nr_running += count;
 }
 
 static inline void sub_nr_running(struct rq *rq, unsigned count)
 {
 	rq->nr_running -= count;
-	 
-
-	 
-	sched_update_tick_dependency(rq);
 }
 
 extern void activate_task(struct rq *rq, struct task_struct *p, int flags);

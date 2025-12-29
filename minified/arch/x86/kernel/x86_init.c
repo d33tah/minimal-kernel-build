@@ -49,10 +49,7 @@ static __init int set_rtc_noop(const struct timespec64 *now)
 {
 	return -EINVAL;
 }
-static __init void get_rtc_noop(struct timespec64 *now)
-{
-}
-
+/* get_rtc_noop removed - defined but never used */
 static __init void x86_wallclock_init(void)
 {
 }

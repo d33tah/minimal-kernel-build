@@ -354,9 +354,7 @@ static __always_inline bool free_pages_prepare(struct page *page,
 	/* Stub: minimal page freeing for simple system */
 	if (PageMappingFlags(page))
 		page->mapping = NULL;
-	if (memcg_kmem_enabled() && PageMemcgKmem(page))
-		__memcg_kmem_uncharge_page(page, order);
-
+	/* memcg_kmem_enabled always returns false */
 	page->flags &= ~PAGE_FLAGS_CHECK_AT_PREP;
 	return true;
 }
@@ -1022,12 +1020,7 @@ struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid,
 	page = __alloc_pages_slowpath(alloc_gfp, order, &ac);
 
 out:
-	if (memcg_kmem_enabled() && (gfp & __GFP_ACCOUNT) && page &&
-	    unlikely(__memcg_kmem_charge_page(page, gfp, order) != 0)) {
-		__free_pages(page, order);
-		page = NULL;
-	}
-
+	/* memcg_kmem_enabled always returns false */
 	return page;
 }
 

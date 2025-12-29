@@ -279,14 +279,7 @@ static inline bool kmem_cache_debug_flags(struct kmem_cache *s, slab_flags_t fla
 	return false;
 }
 
-/* slab_objcgs, memcg_from_slab_obj removed - unused */
-
-static inline int memcg_alloc_slab_cgroups(struct slab *slab,
-					       struct kmem_cache *s, gfp_t gfp,
-					       bool new_slab)
-{
-	return 0;
-}
+/* slab_objcgs, memcg_from_slab_obj, memcg_alloc_slab_cgroups removed - unused */
 
 static inline void memcg_free_slab_cgroups(struct slab *slab)
 {
@@ -312,9 +305,7 @@ static inline void memcg_slab_post_alloc_hook(struct kmem_cache *s,
 static __always_inline void account_slab(struct slab *slab, int order,
 					 struct kmem_cache *s, gfp_t gfp)
 {
-	if (memcg_kmem_enabled() && (s->flags & SLAB_ACCOUNT))
-		memcg_alloc_slab_cgroups(slab, s, gfp, true);
-
+	/* memcg_kmem_enabled always returns false */
 	mod_node_page_state(slab_pgdat(slab), cache_vmstat_idx(s),
 			    PAGE_SIZE << order);
 }

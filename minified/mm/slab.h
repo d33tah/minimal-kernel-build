@@ -350,15 +350,12 @@ static inline void slab_post_alloc_hook(struct kmem_cache *s,
 	flags &= gfp_allowed_mask;
 
 	 
+	/* kasan_has_integrated_init always returns false, kmemleak/memcg stubs are empty */
 	for (i = 0; i < size; i++) {
 		p[i] = kasan_slab_alloc(s, p[i], flags, init);
-		if (p[i] && init && !kasan_has_integrated_init())
+		if (p[i] && init)
 			memset(p[i], 0, s->object_size);
-		kmemleak_alloc_recursive(p[i], s->object_size, 1,
-					 s->flags, flags);
 	}
-
-	memcg_slab_post_alloc_hook(s, objcg, flags, size, p);
 }
 
  

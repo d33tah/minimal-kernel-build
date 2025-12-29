@@ -20,14 +20,9 @@ static bool map_pte(struct page_vma_mapped_walk *pvmw)
 			if (!is_swap_pte(*pvmw->pte))
 				return false;
 		} else {
-			if (is_swap_pte(*pvmw->pte)) {
-				swp_entry_t entry;
-
-				entry = pte_to_swp_entry(*pvmw->pte);
-				if (!is_device_private_entry(entry) &&
-				    !is_device_exclusive_entry(entry))
-					return false;
-			} else if (!pte_present(*pvmw->pte))
+			if (is_swap_pte(*pvmw->pte))
+				return false;
+			else if (!pte_present(*pvmw->pte))
 				return false;
 		}
 	}
@@ -46,20 +41,12 @@ static bool check_pte(struct page_vma_mapped_walk *pvmw)
 			return false;
 		entry = pte_to_swp_entry(*pvmw->pte);
 
-		if (!is_migration_entry(entry) &&
-		    !is_device_exclusive_entry(entry))
+		if (!is_migration_entry(entry))
 			return false;
 
 		pfn = swp_offset(entry);
 	} else if (is_swap_pte(*pvmw->pte)) {
-		swp_entry_t entry;
-
-		entry = pte_to_swp_entry(*pvmw->pte);
-		if (!is_device_private_entry(entry) &&
-		    !is_device_exclusive_entry(entry))
-			return false;
-
-		pfn = swp_offset(entry);
+		return false;
 	} else {
 		if (!pte_present(*pvmw->pte))
 			return false;

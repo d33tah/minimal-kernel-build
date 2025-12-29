@@ -104,10 +104,10 @@ struct page_vma_mapped_walk {
 	unsigned int flags;
 };
 
+/* is_vm_hugetlb_page always returns false */
 static inline void page_vma_mapped_walk_done(struct page_vma_mapped_walk *pvmw)
 {
-	 
-	if (pvmw->pte && !is_vm_hugetlb_page(pvmw->vma))
+	if (pvmw->pte)
 		pte_unmap(pvmw->pte);
 	if (pvmw->ptl)
 		spin_unlock(pvmw->ptl);

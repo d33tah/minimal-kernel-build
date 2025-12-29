@@ -88,10 +88,11 @@ static inline void __tlb_reset_range(struct mmu_gather *tlb)
 	tlb->cleared_p4ds = 0;
 }
 
+/* is_vm_hugetlb_page always returns false */
 static inline void
 tlb_update_vma_flags(struct mmu_gather *tlb, struct vm_area_struct *vma)
 {
-	tlb->vma_huge = is_vm_hugetlb_page(vma);
+	tlb->vma_huge = false;
 	tlb->vma_exec = !!(vma->vm_flags & VM_EXEC);
 	tlb->vma_pfn  = !!(vma->vm_flags & (VM_PFNMAP|VM_MIXEDMAP));
 }

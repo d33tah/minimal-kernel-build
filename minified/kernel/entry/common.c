@@ -14,7 +14,7 @@ bool syscall_user_dispatch(struct pt_regs *regs);
 static __always_inline void __enter_from_user_mode(struct pt_regs *regs)
 {
 	arch_enter_from_user_mode(regs);
-	lockdep_hardirqs_off(CALLER_ADDR0);
+	/* lockdep_hardirqs_off is empty stub */
 	CT_WARN_ON(ct_state() != CONTEXT_USER);
 }
 
@@ -216,10 +216,7 @@ noinstr irqentry_state_t irqentry_enter(struct pt_regs *regs)
 		return ret;
 	}
 
-	/* TINY_RCU is enabled, simplified path */
-	lockdep_hardirqs_off(CALLER_ADDR0);
-	rcu_irq_enter_check_tick();
-
+	/* TINY_RCU, lockdep disabled - simplified path */
 	return ret;
 }
 
@@ -249,8 +246,7 @@ irqentry_state_t noinstr irqentry_nmi_enter(struct pt_regs *regs)
 	irq_state.lockdep = lockdep_hardirqs_enabled();
 
 	__nmi_enter();
-	lockdep_hardirqs_off(CALLER_ADDR0);
-
+	/* lockdep_hardirqs_off is empty stub */
 	return irq_state;
 }
 

@@ -344,7 +344,6 @@ noinline int __filemap_add_folio(struct address_space *mapping,
 {
 	XA_STATE(xas, &mapping->i_pages, index);
 	int huge = folio_test_hugetlb(folio);
-	bool charged = false;
 	long nr = 1;
 
 	VM_BUG_ON_FOLIO(!folio_test_locked(folio), folio);
@@ -354,7 +353,6 @@ noinline int __filemap_add_folio(struct address_space *mapping,
 	if (!huge) {
 		/* mem_cgroup_charge always returns 0 */
 		VM_BUG_ON_FOLIO(index & (folio_nr_pages(folio) - 1), folio);
-		charged = true;
 		xas_set_order(&xas, index, folio_order(folio));
 		nr = folio_nr_pages(folio);
 	}
@@ -411,8 +409,7 @@ unlock:
 
 	return 0;
 error:
-	if (charged)
-		mem_cgroup_uncharge(folio);
+	/* mem_cgroup_uncharge is empty stub */
 	folio->mapping = NULL;
 
 	folio_put_refs(folio, nr);

@@ -94,7 +94,8 @@ void device_driver_detach(struct device *dev);
 
 /* make_class_name removed - unused */
 
-extern int devres_release_all(struct device *dev);
+/* devres stub - no resource tracking */
+static inline int devres_release_all(struct device *dev) { return 0; }
 /* device_block_probing, device_unblock_probing removed - unused */
 extern void deferred_probe_extend_timeout(void);
 

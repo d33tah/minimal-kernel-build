@@ -279,7 +279,6 @@ static void vgacon_init(struct vc_data *c, int init)
 		c->vc_hi_font_mask = 0x0800;
 	p = *c->vc_uni_pagedir_loc;
 	if (c->vc_uni_pagedir_loc != &vgacon_uni_pagedir) {
-		con_free_unimap(c);
 		c->vc_uni_pagedir_loc = &vgacon_uni_pagedir;
 		vgacon_refcount++;
 	}
@@ -295,8 +294,7 @@ static void vgacon_deinit(struct vc_data *c)
 		vga_set_mem_top(c);
 	}
 
-	if (!--vgacon_refcount)
-		con_free_unimap(c);
+	--vgacon_refcount;
 	c->vc_uni_pagedir_loc = &c->vc_uni_pagedir;
 }
 

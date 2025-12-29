@@ -80,7 +80,6 @@ bool cpu_in_idle(unsigned long pc)
 void cpu_startup_entry(enum cpuhp_state state)
 {
 	arch_cpu_idle_prepare();
-	cpuhp_online_idle(state);
 	while (1)
 		do_idle();
 }

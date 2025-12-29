@@ -55,11 +55,7 @@ static bool dma_coherent_ok(struct device *dev, phys_addr_t phys, size_t size)
 	       min_not_zero(dev->coherent_dma_mask, dev->bus_dma_limit);
 }
 
-/* force_dma_unencrypted always returns false */
-static int dma_set_decrypted(struct device *dev, void *vaddr, size_t size)
-{
-	return 0;
-}
+/* dma_set_decrypted removed - never called (force_dma_unencrypted always returns false) */
 
 static int dma_set_encrypted(struct device *dev, void *vaddr, size_t size)
 {
@@ -101,17 +97,8 @@ static struct page *__dma_direct_alloc_pages(struct device *dev, size_t size,
 	return page;
 }
 
-static bool dma_direct_use_pool(struct device *dev, gfp_t gfp)
-{
-	return !gfpflags_allow_blocking(gfp);
-}
-
-static void *dma_direct_alloc_from_pool(struct device *dev, size_t size,
-					dma_addr_t *dma_handle, gfp_t gfp)
-{
-	/* CONFIG_DMA_COHERENT_POOL not enabled */
-	return NULL;
-}
+/* dma_direct_use_pool, dma_direct_alloc_from_pool removed - never called
+   (CONFIG_DMA_COHERENT_POOL not enabled) */
 
 static void *dma_direct_alloc_no_mapping(struct device *dev, size_t size,
 					 dma_addr_t *dma_handle, gfp_t gfp)

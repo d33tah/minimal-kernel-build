@@ -113,8 +113,7 @@ static struct vm_area_struct *remove_vma(struct vm_area_struct *vma)
 	return next;
 }
 
-static int do_brk_flags(unsigned long addr, unsigned long request,
-			unsigned long flags, struct list_head *uf);
+/* do_brk_flags forward declaration removed - not needed */
 
 /* Stub: brk syscall */
 SYSCALL_DEFINE1(brk, unsigned long, brk)

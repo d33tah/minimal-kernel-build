@@ -30,14 +30,10 @@ void rcu_sched_clock_irq(int user);
 void rcu_report_dead(unsigned int cpu);
 void rcutree_migrate_callbacks(int cpu);
 
-static inline void rcu_init_tasks_generic(void) { }
-
-static inline void rcu_init_nohz(void) { }
-/* rcu_nocb_flush_deferred_wakeup removed - unused */
+/* rcu_init_tasks_generic, rcu_init_nohz, exit_tasks_rcu_start,
+   exit_tasks_rcu_finish removed - call sites removed */
 
 #define rcu_tasks_qs(t, preempt) do { } while (0)
-static inline void exit_tasks_rcu_start(void) { }
-static inline void exit_tasks_rcu_finish(void) { }
 
 
 /* TINY_RCU only */
@@ -66,16 +62,11 @@ static inline void rcu_softirq_qs(void)
 		rcu_tasks_qs(current, (preempt)); \
 	} while (0)
 
-static inline void rcu_idle_enter(void) { }
-static inline void rcu_idle_exit(void) { }
-static inline void rcu_irq_enter(void) { }
-static inline void rcu_irq_exit(void) { }
-static inline void rcu_irq_exit_check_preempt(void) { }
-static inline void exit_rcu(void) { }
+/* rcu_idle_enter, rcu_idle_exit, rcu_irq_enter, rcu_irq_exit,
+   rcu_irq_exit_check_preempt, exit_rcu, rcu_end_inkernel_boot,
+   kfree_rcu_scheduler_running removed - call sites removed */
 void rcu_scheduler_starting(void);
-static inline void rcu_end_inkernel_boot(void) { }
 static inline bool rcu_is_watching(void) { return true; }
-static inline void kfree_rcu_scheduler_running(void) { }
 
 static inline void rcu_all_qs(void) { barrier(); }
 

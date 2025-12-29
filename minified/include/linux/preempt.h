@@ -95,9 +95,6 @@ do { \
 		set_preempt_need_resched(); \
 } while (0)
 
-
-
-static inline void migrate_disable(void) { }
-
+/* migrate_disable removed - call site removed */
 
 #endif  

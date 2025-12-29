@@ -1367,13 +1367,7 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 					     area->pages);
 
 	atomic_long_add(area->nr_pages, &nr_vmalloc_pages);
-	if (gfp_mask & __GFP_ACCOUNT) {
-		int i;
-
-		for (i = 0; i < area->nr_pages; i++)
-			mod_memcg_page_state(area->pages[i], MEMCG_VMALLOC, 1);
-	}
-
+	/* mod_memcg_page_state is empty stub */
 	if (area->nr_pages != nr_small_pages) {
 		warn_alloc(
 			gfp_mask, NULL,

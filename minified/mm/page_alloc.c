@@ -472,21 +472,7 @@ static inline void expand(struct zone *zone, struct page *page, int low,
 	}
 }
 
-static bool check_new_pages(struct page *page, unsigned int order)
-{
-	/* Stub: skip page checking for minimal kernel */
-	return false;
-}
-
-static inline bool check_pcp_refill(struct page *page, unsigned int order)
-{
-	return check_new_pages(page, order);
-}
-static inline bool check_new_pcp(struct page *page, unsigned int order)
-{
-	/* Stub: skip page checking for minimal kernel */
-	return false;
-}
+/* check_new_pages, check_pcp_refill, check_new_pcp always return false - removed */
 
 inline void post_alloc_hook(struct page *page, unsigned int order,
 			    gfp_t gfp_flags)
@@ -647,10 +633,7 @@ static int rmqueue_bulk(struct zone *zone, unsigned int order,
 			__rmqueue(zone, order, migratetype, alloc_flags);
 		if (unlikely(page == NULL))
 			break;
-
-		if (unlikely(check_pcp_refill(page, order)))
-			continue;
-
+		/* check_pcp_refill always returns false - removed */
 		list_add_tail(&page->lru, list);
 		allocated++;
 		if (is_migrate_cma(get_pcppage_migratetype(page)))
@@ -696,26 +679,24 @@ __rmqueue_pcplist(struct zone *zone, unsigned int order, int migratetype,
 {
 	struct page *page;
 
-	do {
-		if (list_empty(list)) {
-			int batch = READ_ONCE(pcp->batch);
-			int alloced;
+	if (list_empty(list)) {
+		int batch = READ_ONCE(pcp->batch);
+		int alloced;
 
-			if (batch > 1)
-				batch = max(batch >> order, 2);
-			alloced = rmqueue_bulk(zone, order, batch, list,
-					       migratetype, alloc_flags);
+		if (batch > 1)
+			batch = max(batch >> order, 2);
+		alloced = rmqueue_bulk(zone, order, batch, list, migratetype,
+				       alloc_flags);
 
-			pcp->count += alloced << order;
-			if (unlikely(list_empty(list)))
-				return NULL;
-		}
+		pcp->count += alloced << order;
+		if (unlikely(list_empty(list)))
+			return NULL;
+	}
 
-		page = list_first_entry(list, struct page, lru);
-		list_del(&page->lru);
-		pcp->count -= 1 << order;
-	} while (check_new_pcp(page, order));
-
+	page = list_first_entry(list, struct page, lru);
+	list_del(&page->lru);
+	pcp->count -= 1 << order;
+	/* check_new_pcp always returns false - loop removed */
 	return page;
 }
 
@@ -756,23 +737,20 @@ static inline struct page *rmqueue(struct zone *preferred_zone,
 
 	WARN_ON_ONCE((gfp_flags & __GFP_NOFAIL) && (order > 1));
 
-	do {
-		page = NULL;
-		spin_lock_irqsave(&zone->lock, flags);
+	page = NULL;
+	spin_lock_irqsave(&zone->lock, flags);
 
-		if (order > 0 && alloc_flags & ALLOC_HARDER)
-			page = __rmqueue_smallest(zone, order,
-						  MIGRATE_HIGHATOMIC);
-		if (!page) {
-			page = __rmqueue(zone, order, migratetype, alloc_flags);
-			if (!page)
-				goto failed;
-		}
-		__mod_zone_freepage_state(zone, -(1 << order),
-					  get_pcppage_migratetype(page));
-		spin_unlock_irqrestore(&zone->lock, flags);
-	} while (check_new_pages(page, order));
-
+	if (order > 0 && alloc_flags & ALLOC_HARDER)
+		page = __rmqueue_smallest(zone, order, MIGRATE_HIGHATOMIC);
+	if (!page) {
+		page = __rmqueue(zone, order, migratetype, alloc_flags);
+		if (!page)
+			goto failed;
+	}
+	__mod_zone_freepage_state(zone, -(1 << order),
+				  get_pcppage_migratetype(page));
+	spin_unlock_irqrestore(&zone->lock, flags);
+	/* check_new_pages always returns false - loop removed */
 out:
 	VM_BUG_ON_PAGE(page && bad_range(zone, page), page);
 	return page;

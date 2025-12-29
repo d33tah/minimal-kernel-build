@@ -241,7 +241,7 @@ static void device_release(struct kobject *kobj)
 	struct device *dev = kobj_to_dev(kobj);
 	struct device_private *p = dev->p;
 
-	devres_release_all(dev);
+	/* devres_release_all removed - empty stub */
 
 	kfree(dev->dma_range_map);
 
@@ -583,7 +583,7 @@ void device_del(struct device *dev)
 	if (parent)
 		klist_del(&dev->p->knode_parent);
 	if (MAJOR(dev->devt)) {
-		devtmpfs_delete_node(dev);
+		/* devtmpfs_delete_node removed - empty stub */
 		device_remove_sys_dev_entry(dev);
 		device_remove_file(dev, &dev_attr_dev);
 	}

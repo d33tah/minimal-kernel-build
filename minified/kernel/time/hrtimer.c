@@ -264,7 +264,7 @@ static void __hrtimer_reprogram(struct hrtimer_cpu_base *cpu_base,
 	if (!__hrtimer_hres_active(cpu_base) || cpu_base->hang_detected)
 		return;
 
-	tick_program_event(expires_next, 1);
+	/* tick_program_event removed - empty stub returning 0 */
 }
 
 static void hrtimer_force_reprogram(struct hrtimer_cpu_base *cpu_base,

@@ -6,12 +6,11 @@
 void __init driver_init(void)
 {
 	bdi_init(&noop_backing_dev_info);
-	devtmpfs_init();
+	/* devtmpfs_init removed - empty stub */
 	devices_init();
 	buses_init();
 	classes_init();
-	firmware_init();
-	hypervisor_init();
+	/* firmware_init, hypervisor_init removed - empty stubs */
 	of_core_init();
 	platform_bus_init();
 	cpu_dev_init();

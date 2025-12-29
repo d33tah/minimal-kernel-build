@@ -178,7 +178,7 @@ static DECLARE_WAIT_QUEUE_HEAD(probe_waitqueue);
 
 static void device_unbind_cleanup(struct device *dev)
 {
-	devres_release_all(dev);
+	/* devres_release_all removed - empty stub */
 	arch_teardown_dma_ops(dev);
 	kfree(dev->dma_range_map);
 	dev->dma_range_map = NULL;

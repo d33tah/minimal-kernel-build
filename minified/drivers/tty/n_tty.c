@@ -93,11 +93,7 @@ static ssize_t n_tty_write(struct tty_struct *tty, struct file *file,
 	ssize_t retval = 0;
 	int c;
 
-	if (L_TOSTOP(tty) && file->f_op->write_iter != redirected_tty_write) {
-		retval = tty_check_change(tty);
-		if (retval)
-			return retval;
-	}
+	/* tty_check_change always returns 0 - removed dead code */
 
 	down_read(&tty->termios_rwsem);
 

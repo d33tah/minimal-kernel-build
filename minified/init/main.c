@@ -448,8 +448,7 @@ static void __init mm_init(void)
 	page_ext_init_flatmem_late();
 	pgtable_init();
 	vmalloc_init();
-
-	init_espfix_bsp();
+	/* init_espfix_bsp removed - empty stub */
 }
 
 /* arch_call_rest_init inlined into start_kernel - single caller */
@@ -841,8 +840,7 @@ static noinline void __init kernel_init_freeable(void)
 	rcu_init_tasks_generic();
 	do_pre_smp_initcalls();
 	lockup_detector_init();
-
-	smp_init();
+	/* smp_init removed - empty stub */
 	sched_init_smp();
 
 	/* padata_init removed - empty stub */

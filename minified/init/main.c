@@ -790,14 +790,7 @@ static int __ref kernel_init(void *unused)
 		      ret);
 	}
 
-	if (CONFIG_DEFAULT_INIT[0] != '\0') {
-		ret = run_init_process(CONFIG_DEFAULT_INIT);
-		if (ret)
-			pr_err("Default init %s failed (error %d)\n",
-			       CONFIG_DEFAULT_INIT, ret);
-		else
-			return 0;
-	}
+	/* CONFIG_DEFAULT_INIT="" - dead code removed */
 
 	if (!try_to_run_init_process("/sbin/init") ||
 	    !try_to_run_init_process("/etc/init") ||

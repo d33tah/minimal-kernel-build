@@ -429,7 +429,19 @@ static unsigned long pit_hpet_ptimer_calibrate_cpu(void)
 	u64 tsc1, tsc2, delta, ref1, ref2;
 	unsigned long tsc_pit_min = ULONG_MAX, tsc_ref_min = ULONG_MAX;
 	unsigned long flags, latch, ms;
-	int hpet = is_hpet_enabled(), i, loopmin;
+	int hpet, i, loopmin;
+
+#ifndef CONFIG_MMU
+	/* For NOMMU, skip complex calibration and use default ~1GHz */
+	{
+		const char *s = "pit_calibrate: NOMMU stub, returning 1GHz\n";
+		while (*s)
+			asm volatile("outb %0, $0xe9" : : "a"(*s++));
+	}
+	return 1000000; /* 1 GHz in kHz */
+#endif
+
+	hpet = is_hpet_enabled();
 
 	latch = CAL_LATCH;
 	ms = CAL_MS;
@@ -668,19 +680,30 @@ unreg:
 }
 device_initcall(init_tsc_clocksource);
 
+static inline void tsc_dbg(const char *s)
+{
+	while (*s)
+		asm volatile("outb %0, $0xe9" : : "a"(*s++));
+}
+
 static bool __init determine_cpu_tsc_frequencies(bool early)
 {
+	tsc_dbg("determine_cpu_tsc_frequencies: start\n");
 	WARN_ON(cpu_khz || tsc_khz);
 
 	if (early) {
+		tsc_dbg("determine_cpu_tsc_frequencies: early path\n");
 		cpu_khz = x86_platform.calibrate_cpu();
 		if (tsc_early_khz)
 			tsc_khz = tsc_early_khz;
 		else
 			tsc_khz = x86_platform.calibrate_tsc();
 	} else {
+		tsc_dbg("determine_cpu_tsc_frequencies: late path\n");
 		WARN_ON(x86_platform.calibrate_cpu != native_calibrate_cpu);
+		tsc_dbg("determine_cpu_tsc_frequencies: calling pit_hpet_ptimer_calibrate_cpu\n");
 		cpu_khz = pit_hpet_ptimer_calibrate_cpu();
+		tsc_dbg("determine_cpu_tsc_frequencies: pit_hpet_ptimer returned\n");
 	}
 
 	if (tsc_khz == 0)
@@ -734,24 +757,36 @@ void __init tsc_early_init(void)
 
 void __init tsc_init(void)
 {
+	tsc_dbg("tsc_init: start\n");
+
 	if (x86_platform.calibrate_cpu == native_calibrate_cpu_early)
 		x86_platform.calibrate_cpu = native_calibrate_cpu;
 
+	tsc_dbg("tsc_init: checking TSC feature\n");
+
 	if (!boot_cpu_has(X86_FEATURE_TSC)) {
+		tsc_dbg("tsc_init: no TSC, returning\n");
 		setup_clear_cpu_cap(X86_FEATURE_TSC_DEADLINE_TIMER);
 		return;
 	}
 
+	tsc_dbg("tsc_init: has TSC\n");
+
 	if (!tsc_khz) {
+		tsc_dbg("tsc_init: calling determine_cpu_tsc_frequencies\n");
 		if (!determine_cpu_tsc_frequencies(false)) {
+			tsc_dbg("tsc_init: tsc freq failed, returning\n");
 			mark_tsc_unstable("could not calculate TSC khz");
 			setup_clear_cpu_cap(X86_FEATURE_TSC_DEADLINE_TIMER);
 			return;
 		}
+		tsc_dbg("tsc_init: calling tsc_enable_sched_clock\n");
 		tsc_enable_sched_clock();
 	}
 
+	tsc_dbg("tsc_init: calling cyc2ns_init_secondary_cpus\n");
 	cyc2ns_init_secondary_cpus();
+	tsc_dbg("tsc_init: after cyc2ns_init\n");
 
 	/* lpj_fine assignment removed - never read */
 

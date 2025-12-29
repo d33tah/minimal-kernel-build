@@ -33,6 +33,16 @@ void __init hpet_time_init(void)
 {
 	unsigned long flags = IRQF_NOBALANCING | IRQF_IRQPOLL | IRQF_TIMER;
 
+#ifndef CONFIG_MMU
+	/* For NOMMU, skip hardware timer init */
+	{
+		const char *s = "hpet_time_init: NOMMU stub\n";
+		while (*s)
+			asm volatile("outb %0, $0xe9" : : "a"(*s++));
+	}
+	return;
+#endif
+
 	if (!hpet_enable()) {
 		if (!pit_timer_init())
 			return;
@@ -42,15 +52,27 @@ void __init hpet_time_init(void)
 		pr_info("Failed to register legacy timer interrupt\n");
 }
 
+static inline void time_dbg(const char *s)
+{
+	while (*s)
+		asm volatile("outb %0, $0xe9" : : "a"(*s++));
+}
+
 static __init void x86_late_time_init(void)
 {
+	time_dbg("x86_late_time_init: start\n");
 	x86_init.irqs.intr_mode_select();
 
+	time_dbg("x86_late_time_init: calling timer_init\n");
 	x86_init.timers.timer_init();
 
+	time_dbg("x86_late_time_init: calling intr_mode_init\n");
 	x86_init.irqs.intr_mode_init();
+
+	time_dbg("x86_late_time_init: calling tsc_init\n");
 	tsc_init();
 
+	time_dbg("x86_late_time_init: done\n");
 	if (static_cpu_has(X86_FEATURE_WAITPKG))
 		use_tpause_delay();
 }

@@ -304,6 +304,9 @@ config STACKTRACE_SUPPORT
 
 config MMU
 	def_bool y
+	help
+	  MMU support. Required for normal operation.
+	  EXPERIMENTAL: Can be disabled for x86 NOMMU mode with bump allocator.
 
 config ARCH_MMAP_RND_BITS_MIN
 	default 28 if 64BIT

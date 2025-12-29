@@ -436,19 +436,36 @@ static void __init report_meminit(void)
 	/* Stub: mem auto-init reporting not needed for minimal kernel */
 }
 
+static inline void dbg_out(const char *s)
+{
+	while (*s)
+		asm volatile("outb %0, $0xe9" : : "a"(*s++));
+}
+
 static void __init mm_init(void)
 {
+	dbg_out("mm_init: start\n");
 	page_ext_init_flatmem();
+	dbg_out("mm_init: after page_ext_init_flatmem\n");
 	init_mem_debugging_and_hardening();
+	dbg_out("mm_init: after init_mem_debugging_and_hardening\n");
 	report_meminit();
+	dbg_out("mm_init: after report_meminit\n");
 	mem_init();
+	dbg_out("mm_init: after mem_init\n");
 	mem_init_print_info();
+	dbg_out("mm_init: after mem_init_print_info\n");
 	kmem_cache_init();
+	dbg_out("mm_init: after kmem_cache_init\n");
 
 	page_ext_init_flatmem_late();
+	dbg_out("mm_init: after page_ext_init_flatmem_late\n");
 	pgtable_init();
+	dbg_out("mm_init: after pgtable_init\n");
 	vmalloc_init();
+	dbg_out("mm_init: after vmalloc_init\n");
 	/* init_espfix_bsp removed - empty stub */
+	dbg_out("mm_init: done\n");
 }
 
 /* arch_call_rest_init inlined into start_kernel - single caller */
@@ -506,7 +523,11 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	trap_init();
 	mm_init();
 
+	dbg_out("start_kernel: after mm_init\n");
+
 	sched_init();
+
+	dbg_out("start_kernel: after sched_init\n");
 
 	if (WARN(!irqs_disabled(),
 		 "Interrupts were enabled *very* early, fixing it\n"))
@@ -540,17 +561,28 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	early_boot_irqs_disabled = false;
 	local_irq_enable();
 
+	dbg_out("start_kernel: before kmem_cache_init_late\n");
+
 	kmem_cache_init_late();
 
+	dbg_out("start_kernel: before console_init\n");
+
 	console_init();
+
+	dbg_out("start_kernel: after console_init\n");
 	if (panic_later)
 		panic("Too many boot %s vars at `%s'", panic_later,
 		      panic_param);
 
+	dbg_out("start_kernel: before lockdep_init\n");
 	lockdep_init();
 
+	dbg_out("start_kernel: before mem_encrypt_init\n");
 	mem_encrypt_init();
 
+	dbg_out("start_kernel: after mem_encrypt_init\n");
+
+	dbg_out("start_kernel: before initrd check\n");
 	if (initrd_start && !initrd_below_start_ok &&
 	    page_to_pfn(virt_to_page((void *)initrd_start)) < min_low_pfn) {
 		pr_crit("initrd overwritten (0x%08lx < 0x%08lx) - disabling it.\n",
@@ -558,32 +590,53 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 			min_low_pfn);
 		initrd_start = 0;
 	}
+	dbg_out("start_kernel: after initrd check\n");
+	dbg_out("start_kernel: before setup_per_cpu_pageset\n");
 	setup_per_cpu_pageset();
-	/* acpi_early_init is empty stub */
-	if (late_time_init)
+	dbg_out("start_kernel: before acpi_early_init\n");
+	acpi_early_init();
+	dbg_out("start_kernel: after acpi_early_init\n");
+	if (late_time_init) {
+		dbg_out("start_kernel: calling late_time_init\n");
 		late_time_init();
+	}
+	dbg_out("start_kernel: before sched_clock_init\n");
 	sched_clock_init();
+	dbg_out("start_kernel: before calibrate_delay\n");
 	calibrate_delay();
+	dbg_out("start_kernel: after calibrate_delay\n");
+	dbg_out("start_kernel: before pid_idr_init\n");
 	pid_idr_init();
+	dbg_out("start_kernel: before anon_vma_init\n");
 	anon_vma_init();
+	dbg_out("start_kernel: before fork_init\n");
 	thread_stack_cache_init();
 	cred_init();
 	fork_init();
+	dbg_out("start_kernel: before vfs_caches_init\n");
 	proc_caches_init();
 	uts_ns_init();
 	key_init();
 	security_init();
 	/* dbg_late_init removed - empty stub */
 	vfs_caches_init();
+	dbg_out("start_kernel: after vfs_caches_init\n");
 	pagecache_init();
 	signals_init();
 	/* cpuset_init removed - empty stub returning 0 */
 	poking_init();
 	check_bugs();
-	/* acpi_subsystem_init is empty stub */
+	dbg_out("start_kernel: after check_bugs\n");
+
+	dbg_out("start_kernel: before acpi_subsystem_init\n");
+	acpi_subsystem_init();
 	arch_post_acpi_subsys_init();
 
+	dbg_out("start_kernel: calling rest_init\n");
+
 	rest_init(); /* was arch_call_rest_init() */
+
+	dbg_out("start_kernel: after rest_init\n");
 
 	prevent_tail_call_optimization();
 }

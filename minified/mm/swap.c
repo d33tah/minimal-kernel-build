@@ -352,9 +352,7 @@ void release_pages(struct page **pages, int nr)
 		}
 
 		page = &folio->page;
-		if (is_huge_zero_page(page))
-			continue;
-
+		/* is_huge_zero_page always returns false */
 		if (is_zone_device_page(page)) {
 			if (lruvec) {
 				unlock_page_lruvec_irqrestore(lruvec, flags);

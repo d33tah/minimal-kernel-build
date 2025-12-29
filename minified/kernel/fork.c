@@ -648,7 +648,6 @@ static inline void __mmput(struct mm_struct *mm)
 	VM_BUG_ON(atomic_read(&mm->mm_users));
 
 	exit_mmap(mm);
-	mm_put_huge_zero_page(mm);
 	set_mm_exe_file(mm, NULL);
 	if (!list_empty(&mm->mmlist)) {
 		spin_lock(&mmlist_lock);

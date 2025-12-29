@@ -426,21 +426,10 @@ void __init trap_init(void); /* in arch/x86/kernel/traps.c */
 
 bool initcall_debug;
 
-/* TRACEPOINTS_ENABLED not defined - stub */
-static inline void initcall_debug_enable(void)
-{
-}
-
-static void __init report_meminit(void)
-{
-	/* Stub: mem auto-init reporting not needed for minimal kernel */
-}
-
 static void __init mm_init(void)
 {
-	/* page_ext_init_flatmem removed - empty stub */
+	/* page_ext_init_flatmem, report_meminit removed - empty stubs */
 	init_mem_debugging_and_hardening();
-	report_meminit();
 	mem_init();
 	mem_init_print_info();
 	kmem_cache_init();
@@ -451,11 +440,6 @@ static void __init mm_init(void)
 }
 
 /* arch_call_rest_init inlined into start_kernel - single caller */
-
-static void __init print_unknown_bootoptions(void)
-{
-	/* Stub: boot option reporting not needed for minimal kernel */
-}
 
 asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 {
@@ -491,7 +475,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 				  __start___param,
 				  __stop___param - __start___param, -1, -1,
 				  NULL, &unknown_bootoption);
-	print_unknown_bootoptions();
+	/* print_unknown_bootoptions removed - empty stub */
 	if (!IS_ERR_OR_NULL(after_dashes))
 		parse_args("Setting init args", after_dashes, NULL, 0, -1, -1,
 			   NULL, set_init_arg);
@@ -517,8 +501,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	rcu_init();
 
-	if (initcall_debug)
-		initcall_debug_enable();
+	/* initcall_debug_enable removed - empty stub */
 	early_irq_init();
 	init_IRQ();
 	tick_init();
@@ -580,34 +563,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	prevent_tail_call_optimization();
 }
 
-static void __init do_ctors(void)
-{
-}
-
-/* trace_initcall_start_cb and trace_initcall_finish_cb - stub only */
-static __init_or_module void trace_initcall_start_cb(void *data, initcall_t fn)
-{
-}
-static __init_or_module void trace_initcall_finish_cb(void *data, initcall_t fn,
-						      int ret)
-{
-}
-
-static ktime_t initcall_calltime;
-
-/* TRACEPOINTS_ENABLED not defined */
-static inline void do_trace_initcall_start(initcall_t fn)
-{
-	if (!initcall_debug)
-		return;
-	trace_initcall_start_cb(&initcall_calltime, fn);
-}
-static inline void do_trace_initcall_finish(initcall_t fn, int ret)
-{
-	if (!initcall_debug)
-		return;
-	trace_initcall_finish_cb(&initcall_calltime, fn, ret);
-}
+/* do_ctors, trace_initcall_start_cb, trace_initcall_finish_cb - empty stubs removed */
 
 int __init_or_module do_one_initcall(initcall_t fn)
 {
@@ -615,10 +571,7 @@ int __init_or_module do_one_initcall(initcall_t fn)
 	char msgbuf[64];
 	int ret;
 
-	do_trace_initcall_start(fn);
 	ret = fn();
-	do_trace_initcall_finish(fn, ret);
-
 	msgbuf[0] = 0;
 
 	if (preempt_count() != count) {
@@ -695,7 +648,7 @@ static void __init do_basic_setup(void)
 {
 	driver_init();
 	init_irq_proc();
-	do_ctors();
+	/* do_ctors removed - empty stub */
 	do_initcalls();
 }
 

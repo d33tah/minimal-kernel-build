@@ -7,9 +7,6 @@
 #include <linux/vtime.h>
 #include <asm/hardirq.h>
 
-
-static __always_inline void rcu_irq_enter_check_tick(void) { }
-
 #define __irq_enter()	preempt_count_add(HARDIRQ_OFFSET)
 #define __irq_enter_raw() __irq_enter()
 

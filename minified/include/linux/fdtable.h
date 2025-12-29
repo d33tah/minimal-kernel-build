@@ -76,11 +76,8 @@ void put_files_struct(struct files_struct *fs);
 int unshare_files(void);
 struct files_struct *dup_fd(struct files_struct *, unsigned, int *) __latent_entropy;
 void do_close_on_exec(struct files_struct *);
-int iterate_fd(struct files_struct *, unsigned,
-		int (*)(const void *, struct file *, unsigned),
-		const void *);
 
-/* close_fd, __close_range removed - never called */
+/* close_fd, __close_range, iterate_fd removed - never called */
 
 extern struct kmem_cache *files_cachep;
 

@@ -412,8 +412,7 @@ static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
 	if (gup_flags & FOLL_ANON && !vma_is_anonymous(vma))
 		return -EFAULT;
 
-	if ((gup_flags & FOLL_LONGTERM) && vma_is_fsdax(vma))
-		return -EOPNOTSUPP;
+	/* vma_is_fsdax always returns false */
 
 	if (write) {
 		if (!(vm_flags & VM_WRITE)) {

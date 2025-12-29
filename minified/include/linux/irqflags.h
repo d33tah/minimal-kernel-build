@@ -10,22 +10,8 @@
 #endif
 #define CALLER_ADDR0 ((unsigned long)ftrace_return_address0)
 
-struct task_struct;
-static inline unsigned long ftrace_graph_ret_addr(struct task_struct *task, int *idx,
-						  unsigned long ret, unsigned long *retp)
-{
-	return ret;
-}
-static inline bool is_ftrace_trampoline(unsigned long addr)
-{
-	return false;
-}
-
-  static inline void lockdep_softirqs_on(unsigned long ip) { }
-  /* lockdep_softirqs_off removed - unused */
-  static inline void lockdep_hardirqs_on_prepare(void) { }
-  static inline void lockdep_hardirqs_on(unsigned long ip) { }
-  static inline void lockdep_hardirqs_off(unsigned long ip) { }
+/* ftrace_graph_ret_addr, is_ftrace_trampoline - removed, unused */
+/* lockdep_softirqs_on, lockdep_hardirqs_* - removed, unused */
 
 # define trace_hardirqs_on_prepare()		do { } while (0)
 # define trace_hardirqs_off_finish()		do { } while (0)

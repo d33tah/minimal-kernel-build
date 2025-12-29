@@ -409,12 +409,11 @@ vma_merge(struct mm_struct *mm, struct vm_area_struct *prev, unsigned long addr,
 	VM_WARN_ON(area && end > area->vm_end);
 	VM_WARN_ON(addr >= end);
 
+	/* mpol_equal always returns true - mempolicy disabled */
 	if (prev && prev->vm_end == addr &&
-	    mpol_equal(vma_policy(prev), policy) &&
 	    can_vma_merge_after(prev, vm_flags, anon_vma, file, pgoff,
 				vm_userfaultfd_ctx, anon_name)) {
 		if (next && end == next->vm_start &&
-		    mpol_equal(policy, vma_policy(next)) &&
 		    can_vma_merge_before(next, vm_flags, anon_vma, file,
 					 pgoff + pglen, vm_userfaultfd_ctx,
 					 anon_name) &&
@@ -431,7 +430,6 @@ vma_merge(struct mm_struct *mm, struct vm_area_struct *prev, unsigned long addr,
 	}
 
 	if (next && end == next->vm_start &&
-	    mpol_equal(policy, vma_policy(next)) &&
 	    can_vma_merge_before(next, vm_flags, anon_vma, file, pgoff + pglen,
 				 vm_userfaultfd_ctx, anon_name)) {
 		if (prev && addr < prev->vm_end)
@@ -454,9 +452,8 @@ vma_merge(struct mm_struct *mm, struct vm_area_struct *prev, unsigned long addr,
 static int anon_vma_compatible(struct vm_area_struct *a,
 			       struct vm_area_struct *b)
 {
-	return a->vm_end == b->vm_start &&
-	       mpol_equal(vma_policy(a), vma_policy(b)) &&
-	       a->vm_file == b->vm_file &&
+	/* mpol_equal always returns true - mempolicy disabled */
+	return a->vm_end == b->vm_start && a->vm_file == b->vm_file &&
 	       !((a->vm_flags ^ b->vm_flags) &
 		 ~(VM_ACCESS_FLAGS | VM_SOFTDIRTY)) &&
 	       b->vm_pgoff == a->vm_pgoff + ((b->vm_start - a->vm_start) >>

@@ -306,14 +306,7 @@ static struct page *follow_pud_mask(struct vm_area_struct *vma,
 	pud = pud_offset(p4dp, address);
 	if (pud_none(*pud))
 		return no_page_table(vma, flags);
-	/* hugetlb code removed - is_vm_hugetlb_page/is_hugepd always return false */
-	if (pud_devmap(*pud)) {
-		ptl = pud_lock(mm, pud);
-		page = follow_devmap_pud(vma, address, pud, flags, &ctx->pgmap);
-		spin_unlock(ptl);
-		if (page)
-			return page;
-	}
+	/* pud_devmap always returns 0, hugetlb code already removed */
 	if (unlikely(pud_bad(*pud)))
 		return no_page_table(vma, flags);
 

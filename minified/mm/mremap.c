@@ -342,16 +342,8 @@ unsigned long move_page_tables(struct vm_area_struct *vma,
 		new_pud = alloc_new_pud(vma->vm_mm, vma, new_addr);
 		if (!new_pud)
 			break;
-		if (pud_trans_huge(*old_pud) || pud_devmap(*old_pud)) {
-			if (extent == HPAGE_PUD_SIZE) {
-				move_pgt_entry(HPAGE_PUD, vma, old_addr,
-					       new_addr, old_pud, new_pud,
-					       need_rmap_locks);
-
-				continue;
-			}
-		} else if (IS_ENABLED(CONFIG_HAVE_MOVE_PUD) &&
-			   extent == PUD_SIZE) {
+		/* pud_trans_huge and pud_devmap always return 0 */
+		if (IS_ENABLED(CONFIG_HAVE_MOVE_PUD) && extent == PUD_SIZE) {
 			if (move_pgt_entry(NORMAL_PUD, vma, old_addr, new_addr,
 					   old_pud, new_pud, true))
 				continue;

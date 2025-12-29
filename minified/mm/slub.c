@@ -27,11 +27,9 @@
 #define slub_get_cpu_ptr(var) get_cpu_ptr(var)
 #define slub_put_cpu_ptr(var) put_cpu_ptr(var)
 
+/* kmem_cache_debug_flags always returns false */
 void *fixup_red_left(struct kmem_cache *s, void *p)
 {
-	if (kmem_cache_debug_flags(s, SLAB_RED_ZONE))
-		p += s->red_left_pad;
-
 	return p;
 }
 

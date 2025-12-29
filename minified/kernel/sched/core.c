@@ -606,12 +606,6 @@ static inline void finish_lock_switch(struct rq *rq)
 	} while (0)
 #endif
 
-#ifndef finish_arch_post_lock_switch
-#define finish_arch_post_lock_switch() \
-	do {                           \
-	} while (0)
-#endif
-
 static inline void kmap_local_sched_out(void)
 {
 	if (unlikely(current->kmap_ctrl.idx))
@@ -647,9 +641,7 @@ static struct rq *finish_task_switch(struct task_struct *prev)
 
 	prev_state = READ_ONCE(prev->__state);
 
-	tick_nohz_task_switch();
 	finish_lock_switch(rq);
-	finish_arch_post_lock_switch();
 
 	kmap_local_sched_in();
 

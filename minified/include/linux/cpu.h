@@ -40,7 +40,7 @@ static inline int cpuhp_setup_state_nocalls(enum cpuhp_state state,
 }
 
 
-static inline void cpuhp_online_idle(enum cpuhp_state state) { }
+/* cpuhp_online_idle removed - unused */
 
 struct device;
 struct device_node;

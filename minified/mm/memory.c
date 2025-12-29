@@ -1206,18 +1206,10 @@ vm_fault_t handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
 				       flags & FAULT_FLAG_REMOTE))
 		return VM_FAULT_SIGSEGV;
 
-	if (flags & FAULT_FLAG_USER)
-		mem_cgroup_enter_user_fault();
-
+	/* mem_cgroup_enter_user_fault removed - empty stub */
 	ret = __handle_mm_fault(vma, address, flags);
-
-	if (flags & FAULT_FLAG_USER) {
-		mem_cgroup_exit_user_fault();
-
-		if (task_in_memcg_oom(current) && !(ret & VM_FAULT_OOM))
-			mem_cgroup_oom_synchronize(false);
-	}
-
+	/* mem_cgroup_exit_user_fault, task_in_memcg_oom (always false),
+	 * mem_cgroup_oom_synchronize removed - all stubs */
 	mm_account_fault(regs, address, flags, ret);
 
 	return ret;

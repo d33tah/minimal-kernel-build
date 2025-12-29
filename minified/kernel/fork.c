@@ -419,9 +419,8 @@ void __put_task_struct(struct task_struct *tsk)
 	security_task_free(tsk);
 
 	exit_creds(tsk);
-	/* delayacct_tsk_free removed - empty stub */
+	/* delayacct_tsk_free, sched_core_free removed - empty stubs */
 	put_signal_struct(tsk->signal);
-	sched_core_free(tsk);
 	free_task(tsk);
 }
 
@@ -1302,7 +1301,6 @@ copy_process(struct pid *pid, int trace, int node,
 	return p;
 
 bad_fork_cancel_cgroup:
-	sched_core_free(p);
 	spin_unlock(&current->sighand->siglock);
 	write_unlock_irq(&tasklist_lock);
 bad_fork_put_pidfd:

@@ -187,9 +187,7 @@ restart:
 void irq_enter_rcu(void)
 {
 	__irq_enter_raw();
-
-	if (is_idle_task(current) && (irq_count() == HARDIRQ_OFFSET))
-		tick_irq_enter();
+	/* tick_irq_enter removed - empty stub */
 }
 
 void irq_enter(void)

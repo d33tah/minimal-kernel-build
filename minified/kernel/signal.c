@@ -226,9 +226,7 @@ void flush_signal_handlers(struct task_struct *t, int force_default)
 void signal_wake_up_state(struct task_struct *t, unsigned int state)
 {
 	set_tsk_thread_flag(t, TIF_SIGPENDING);
-
-	if (!wake_up_state(t, state | TASK_INTERRUPTIBLE))
-		kick_process(t);
+	wake_up_state(t, state | TASK_INTERRUPTIBLE);
 }
 
 static inline int is_si_special(const struct kernel_siginfo *info)

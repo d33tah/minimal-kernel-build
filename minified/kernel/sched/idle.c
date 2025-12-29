@@ -53,7 +53,7 @@ void __cpuidle default_idle_call(void)
 static void do_idle(void)
 {
 	__current_set_polling();
-	tick_nohz_idle_enter();
+	/* tick_nohz_idle_enter/exit removed - empty stubs */
 
 	while (!need_resched()) {
 		rmb();
@@ -65,7 +65,6 @@ static void do_idle(void)
 		arch_cpu_idle_exit();
 	}
 
-	tick_nohz_idle_exit();
 	__current_clr_polling();
 	smp_mb__after_atomic();
 	schedule_idle();

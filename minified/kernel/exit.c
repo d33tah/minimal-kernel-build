@@ -164,7 +164,6 @@ repeat:
 	}
 
 	write_unlock_irq(&tasklist_lock);
-	seccomp_filter_release(p);
 	put_pid(thread_pid);
 	release_thread(p);
 	put_task_struct_rcu_user(p);

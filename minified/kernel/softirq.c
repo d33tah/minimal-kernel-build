@@ -208,15 +208,13 @@ static inline void __irq_exit_rcu(void)
 void irq_exit_rcu(void)
 {
 	__irq_exit_rcu();
-
-	lockdep_hardirq_exit();
+	/* lockdep_hardirq_exit is empty do{}while(0) */
 }
 
 void irq_exit(void)
 {
 	__irq_exit_rcu();
-	/* rcu_irq_exit is empty stub */
-	lockdep_hardirq_exit();
+	/* rcu_irq_exit, lockdep_hardirq_exit are empty stubs */
 }
 
 inline void raise_softirq_irqoff(unsigned int nr)

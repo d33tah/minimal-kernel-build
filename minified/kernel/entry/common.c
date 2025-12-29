@@ -241,12 +241,9 @@ noinstr void irqentry_exit(struct pt_regs *regs, irqentry_state_t state)
 
 irqentry_state_t noinstr irqentry_nmi_enter(struct pt_regs *regs)
 {
-	irqentry_state_t irq_state;
-
-	irq_state.lockdep = lockdep_hardirqs_enabled();
-
+	irqentry_state_t irq_state = {};
+	/* lockdep_hardirqs_enabled always 0, lockdep_hardirqs_off is empty */
 	__nmi_enter();
-	/* lockdep_hardirqs_off is empty stub */
 	return irq_state;
 }
 

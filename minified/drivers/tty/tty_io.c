@@ -802,27 +802,10 @@ int tty_release(struct inode *inode, struct file *filp)
 
 static struct tty_struct *tty_open_current_tty(dev_t device, struct file *filp)
 {
-	struct tty_struct *tty;
-	int retval;
-
 	if (device != MKDEV(TTYAUX_MAJOR, 0))
 		return NULL;
-
-	tty = get_current_tty();
-	if (!tty)
-		return ERR_PTR(-ENXIO);
-
-	filp->f_flags |= O_NONBLOCK;
-
-	tty_lock(tty);
-	tty_kref_put(tty);
-
-	retval = tty_reopen(tty);
-	if (retval < 0) {
-		tty_unlock(tty);
-		tty = ERR_PTR(retval);
-	}
-	return tty;
+	/* get_current_tty() always returns NULL */
+	return ERR_PTR(-ENXIO);
 }
 
 static struct tty_driver *tty_lookup_driver(dev_t device, struct file *filp,
@@ -1044,19 +1027,9 @@ static int tiocgwinsz(struct tty_struct *tty, struct winsize __user *arg)
 
 static int tty_do_resize(struct tty_struct *tty, struct winsize *ws)
 {
-	struct pid *pgrp;
-
 	mutex_lock(&tty->winsize_mutex);
-	if (!memcmp(ws, &tty->winsize, sizeof(*ws)))
-		goto done;
-
-	pgrp = tty_get_pgrp(tty);
-	if (pgrp)
-		kill_pgrp(pgrp, SIGWINCH, 1);
-	put_pid(pgrp);
-
-	tty->winsize = *ws;
-done:
+	if (memcmp(ws, &tty->winsize, sizeof(*ws)))
+		tty->winsize = *ws;
 	mutex_unlock(&tty->winsize_mutex);
 	return 0;
 }

@@ -15,7 +15,7 @@ struct shrinker {
 #define SHRINKER_NONSLAB (1 << 3)
 extern int prealloc_shrinker(struct shrinker *shrinker);
 extern void register_shrinker_prepared(struct shrinker *shrinker);
-extern int register_shrinker(struct shrinker *shrinker);
+/* register_shrinker removed - never called */
 extern void unregister_shrinker(struct shrinker *shrinker);
 extern void free_prealloced_shrinker(struct shrinker *shrinker);
 /* synchronize_shrinkers removed - declared but never implemented */

@@ -4,12 +4,7 @@
 #include <linux/gfp.h>
 #include <linux/swap.h>
 #include <linux/pagemap.h>
-
-int register_shrinker(struct shrinker *shrinker)
-{
-	return 0;
-}
-
+/* register_shrinker removed - never called */
 void unregister_shrinker(struct shrinker *shrinker)
 {
 }

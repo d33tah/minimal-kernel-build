@@ -433,8 +433,7 @@ void __noreturn do_exit(long code)
 	/* acct_process, exit_sem, exit_shm removed - empty stubs */
 	exit_files(tsk);
 	exit_fs(tsk);
-	if (group_dead)
-		disassociate_ctty(1);
+	/* disassociate_ctty removed - empty stub */
 	exit_task_namespaces(tsk);
 	exit_task_work(tsk);
 	exit_thread(tsk);

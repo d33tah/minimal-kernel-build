@@ -1913,7 +1913,7 @@ int __meminit init_per_zone_wmark_min(void)
 {
 	calculate_min_free_kbytes();
 	setup_per_zone_wmarks();
-	refresh_zone_stat_thresholds();
+	/* refresh_zone_stat_thresholds removed - empty stub */
 	setup_per_zone_lowmem_reserve();
 	return 0;
 }

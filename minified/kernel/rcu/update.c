@@ -69,7 +69,6 @@ void __wait_rcu_gp(bool checktiny, int n, call_rcu_func_t *crcu_array,
 			if (crcu_array[j] == crcu_array[i])
 				break;
 		if (j == i) {
-			init_rcu_head_on_stack(&rs_array[i].head);
 			init_completion(&rs_array[i].completion);
 			(crcu_array[i])(&rs_array[i].head, wakeme_after_rcu);
 		}
@@ -83,7 +82,6 @@ void __wait_rcu_gp(bool checktiny, int n, call_rcu_func_t *crcu_array,
 				break;
 		if (j == i) {
 			wait_for_completion(&rs_array[i].completion);
-			destroy_rcu_head_on_stack(&rs_array[i].head);
 		}
 	}
 }

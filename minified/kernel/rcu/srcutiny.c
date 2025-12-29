@@ -128,11 +128,9 @@ void synchronize_srcu(struct srcu_struct *ssp)
 {
 	struct rcu_synchronize rs;
 
-	init_rcu_head_on_stack(&rs.head);
 	init_completion(&rs.completion);
 	call_srcu(ssp, &rs.head, wakeme_after_rcu);
 	wait_for_completion(&rs.completion);
-	destroy_rcu_head_on_stack(&rs.head);
 }
 
 unsigned long get_state_synchronize_srcu(struct srcu_struct *ssp)

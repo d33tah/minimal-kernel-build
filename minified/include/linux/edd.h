@@ -43,7 +43,6 @@ struct edd {
 	unsigned char mbr_signature_nr;
 	unsigned char edd_info_nr;
 };
-
-extern struct edd edd;
+/* extern struct edd edd - removed, never referenced */
 #endif
 #endif

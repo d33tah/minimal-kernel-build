@@ -74,22 +74,8 @@ void inode_wait_for_writeback(struct inode *inode);
 void inode_io_list_del(struct inode *inode);
 
 
-static inline void inode_detach_wb(struct inode *inode)
-{
-}
-
-static inline void wbc_attach_fdatawrite_inode(struct writeback_control *wbc,
-					       struct inode *inode)
-{
-}
-
-static inline void wbc_detach_inode(struct writeback_control *wbc)
-{
-}
-
-static inline void cgroup_writeback_umount(void)
-{
-}
+static inline void inode_detach_wb(struct inode *inode) { }
+/* wbc_attach_fdatawrite_inode, wbc_detach_inode, cgroup_writeback_umount removed - no callers */
 
 
 void laptop_mode_timer_fn(struct timer_list *t);

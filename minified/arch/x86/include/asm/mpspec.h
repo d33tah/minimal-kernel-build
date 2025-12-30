@@ -23,8 +23,7 @@ static inline void find_smp_config(void)
 {
 	x86_init.mpparse.find_smp_config();
 }
-
-static inline void e820__memblock_alloc_reserved_mpc_new(void) { }
+/* e820__memblock_alloc_reserved_mpc_new removed - no callers */
 
 #define default_find_smp_config x86_init_noop
 #define default_get_smp_config x86_init_uint_noop

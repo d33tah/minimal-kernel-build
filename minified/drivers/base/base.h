@@ -91,9 +91,7 @@ extern void driver_remove_groups(struct device_driver *drv,
 
 /* make_class_name removed - unused */
 
-/* devres stub - no resource tracking */
-static inline int devres_release_all(struct device *dev) { return 0; }
-/* device_block_probing, device_unblock_probing removed - unused */
+/* devres_release_all, device_block_probing, device_unblock_probing removed - unused */
 extern void deferred_probe_extend_timeout(void);
 
 /* devices_kset_move_last removed - unused */

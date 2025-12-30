@@ -1080,13 +1080,7 @@ copy_process(struct pid *pid, int trace, int node,
 	if (retval < 0)
 		goto bad_fork_free;
 
-	retval = -EAGAIN;
-	if (is_ucounts_overlimit(task_ucounts(p), UCOUNT_RLIMIT_NPROC,
-				 rlimit(RLIMIT_NPROC))) {
-		if (p->real_cred->user != INIT_USER &&
-		    !capable(CAP_SYS_RESOURCE) && !capable(CAP_SYS_ADMIN))
-			goto bad_fork_cleanup_count;
-	}
+	/* capable() always returns true - removed NPROC limit dead code */
 	current->flags &= ~PF_NPROC_EXCEEDED;
 
 	retval = -EAGAIN;

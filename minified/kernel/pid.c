@@ -130,9 +130,7 @@ struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 
 			if (tid != 1 && !tmp->child_reaper)
 				goto out_free;
-			retval = -EPERM;
-			if (!checkpoint_restore_ns_capable(tmp->user_ns))
-				goto out_free;
+			/* checkpoint_restore_ns_capable always true - removed check */
 			set_tid_size--;
 		}
 

@@ -146,8 +146,8 @@ int copy_namespaces(unsigned long flags, struct task_struct *tsk)
 			get_nsproxy(old_ns);
 			return 0;
 		}
-	} else if (!ns_capable(user_ns, CAP_SYS_ADMIN))
-		return -EPERM;
+	}
+	/* ns_capable always returns true - removed dead capability check */
 
 	if ((flags & (CLONE_NEWIPC | CLONE_SYSVSEM)) ==
 	    (CLONE_NEWIPC | CLONE_SYSVSEM))

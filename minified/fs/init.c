@@ -63,10 +63,9 @@ int __init init_chroot(const char *filename)
 	error = path_permission(&path, MAY_EXEC | MAY_CHDIR);
 	if (error)
 		goto dput_and_out;
-	error = -EPERM;
-	if (!ns_capable(current_user_ns(), CAP_SYS_CHROOT))
-		goto dput_and_out;
+	/* ns_capable always returns true - removed dead capability check */
 	/* security_path_chroot always returns 0 - dead code removed */
+	error = 0;
 	set_fs_root(current->fs, &path);
 dput_and_out:
 	path_put(&path);

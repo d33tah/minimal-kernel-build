@@ -51,14 +51,14 @@ static inline int init_new_context(struct task_struct *tsk,
 	mm->context.ctx_id = atomic64_inc_return(&last_mm_ctx_id);
 	atomic64_set(&mm->context.tlb_gen, 0);
 
-	init_new_context_ldt(mm);
+	/* init_new_context_ldt - empty stub */
 	return 0;
 }
 
 #define destroy_context destroy_context
 static inline void destroy_context(struct mm_struct *mm)
 {
-	destroy_context_ldt(mm);
+	/* destroy_context_ldt - empty stub */
 }
 
 extern void switch_mm(struct mm_struct *prev, struct mm_struct *next,
@@ -84,7 +84,7 @@ do {						\
 static inline void arch_exit_mmap(struct mm_struct *mm)
 {
 	paravirt_arch_exit_mmap(mm);
-	ldt_arch_exit_mmap(mm);
+	/* ldt_arch_exit_mmap - empty stub */
 }
 
 /* is_64bit_mm removed - unused */

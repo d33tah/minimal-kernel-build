@@ -309,10 +309,7 @@ static inline int cpu_of(struct rq *rq)
 
 struct sched_group;
 
-static inline bool sched_core_enabled(struct rq *rq)
-{
-	return false;
-}
+/* sched_core_enabled removed - unused */
 
 static inline bool sched_core_disabled(void)
 {
@@ -535,17 +532,7 @@ rq_unlock(struct rq *rq, struct rq_flags *rf)
 	raw_spin_rq_unlock(rq);
 }
 
-static inline struct rq *
-this_rq_lock_irq(struct rq_flags *rf)
-	__acquires(rq->lock)
-{
-	struct rq *rq;
-
-	local_irq_disable();
-	rq = this_rq();
-	rq_lock(rq, rf);
-	return rq;
-}
+/* this_rq_lock_irq removed - unused */
 
 /* sched_init_numa, sched_update_numa, sched_domains_numa_masks_set/clear, sched_numa_find_closest removed - unused */
 
@@ -560,12 +547,7 @@ init_numa_balancing(unsigned long clone_flags, struct task_struct *p)
 
 /* sched_core_account_forceidle removed - unused */
 
-/* sched_core_tick, set_task_rq removed - empty stubs */
-static inline struct task_group *task_group(struct task_struct *p)
-{
-	return NULL;
-}
-
+/* sched_core_tick, set_task_rq, task_group removed - unused/empty stubs */
 
 static inline void __set_task_cpu(struct task_struct *p, unsigned int cpu)
 {

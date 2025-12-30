@@ -177,14 +177,7 @@ void tty_port_hangup(struct tty_port *port)
 {
 }
 
-void tty_port_tty_hangup(struct tty_port *port, bool check_clocal)
-{
-	struct tty_struct *tty = tty_port_tty_get(port);
-
-	if (tty && (!check_clocal || !C_CLOCAL(tty)))
-		tty_hangup(tty);
-	tty_kref_put(tty);
-}
+/* tty_port_tty_hangup removed - never called (~8 LOC) */
 
 void tty_port_tty_wakeup(struct tty_port *port)
 {

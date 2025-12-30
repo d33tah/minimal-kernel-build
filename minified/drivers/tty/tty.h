@@ -35,7 +35,7 @@ static inline int tty_signal_session_leader(struct tty_struct *tty, int exit_ses
 void tty_buffer_free_all(struct tty_port *port);
 void tty_buffer_flush(struct tty_struct *tty, struct tty_ldisc *ld);
 void tty_buffer_init(struct tty_port *port);
-void tty_buffer_set_lock_subclass(struct tty_port *port);
+/* tty_buffer_set_lock_subclass removed - never implemented or called */
 bool tty_buffer_restart_work(struct tty_port *port);
 bool tty_buffer_cancel_work(struct tty_port *port);
 /* tty_buffer_flush_work, tty_ldisc_hangup removed - unused */

@@ -101,11 +101,8 @@ extern struct kset *devices_kset;
 
 static inline void module_add_driver(struct module *mod,
 				     struct device_driver *drv) { }
-/* module_remove_driver - never called */
+/* module_remove_driver, devtmpfs_init - never called */
 
-static inline int devtmpfs_init(void) { return 0; }
-
- 
 /* device_links_read_lock, device_links_read_unlock now static in core.c */
 /* device_links_read_lock_held removed - unused */
 extern int device_links_check_suppliers(struct device *dev);
@@ -119,7 +116,4 @@ extern void fw_devlink_drivers_done(void);
  
 void device_pm_move_to_tail(struct device *dev);
 
-/* devtmpfs_create_node removed - unused */
-static inline int devtmpfs_delete_node(struct device *dev) { return 0; }
-
-/* software_node_notify, software_node_notify_remove removed - unused */
+/* devtmpfs_create_node, devtmpfs_delete_node, software_node_notify, software_node_notify_remove removed - never called */

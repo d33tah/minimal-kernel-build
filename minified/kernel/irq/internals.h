@@ -216,9 +216,7 @@ extern void mask_irq(struct irq_desc *desc);
 extern void unmask_irq(struct irq_desc *desc);
 extern void unmask_threaded_irq(struct irq_desc *desc);
 
-static inline void irq_mark_irq(unsigned int irq) { }
-
-/* __irq_get_irqchip_state, init_kstat_irqs removed - unused */
+/* irq_mark_irq, __irq_get_irqchip_state, init_kstat_irqs removed - never called */
 
 irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc);
 irqreturn_t handle_irq_event_percpu(struct irq_desc *desc);
@@ -232,8 +230,7 @@ static inline int check_irq_resend(struct irq_desc *desc, bool inject)
 bool irq_wait_for_poll(struct irq_desc *desc);
 void __irq_wake_thread(struct irq_desc *desc, struct irqaction *action);
 
-static inline void register_irq_proc(unsigned int irq, struct irq_desc *desc) { }
-static inline void unregister_irq_proc(unsigned int irq, struct irq_desc *desc) { }
+/* register_irq_proc, unregister_irq_proc removed - never called */
 static inline void register_handler_proc(unsigned int irq,
 					 struct irqaction *action) { }
 static inline void unregister_handler_proc(unsigned int irq,

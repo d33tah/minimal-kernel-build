@@ -299,8 +299,6 @@ static int do_dentry_open(struct file *f, struct inode *inode,
 			goto cleanup_all;
 	}
 	f->f_mode |= FMODE_OPENED;
-	if ((f->f_mode & (FMODE_READ | FMODE_WRITE)) == FMODE_READ)
-		i_readcount_inc(inode);
 	if ((f->f_mode & FMODE_READ) &&
 	    likely(f->f_op->read || f->f_op->read_iter))
 		f->f_mode |= FMODE_CAN_READ;
@@ -449,8 +447,6 @@ int filp_close(struct file *filp, fl_owner_t id)
 	if (filp->f_op->flush)
 		retval = filp->f_op->flush(filp, id);
 
-	if (likely(!(filp->f_mode & FMODE_PATH)))
-		locks_remove_posix(filp, id);
 	fput(filp);
 	return retval;
 }

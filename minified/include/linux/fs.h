@@ -548,21 +548,6 @@ struct net;
 
 #define locks_inode(f) file_inode(f)
 
-static inline void
-locks_free_lock_context(struct inode *inode)
-{
-}
-
-static inline void locks_remove_posix(struct file *filp, fl_owner_t owner)
-{
-	return;
-}
-
-static inline void locks_remove_file(struct file *filp)
-{
-	return;
-}
-
 struct files_struct;
 static inline struct inode *file_inode(const struct file *f)
 {
@@ -1195,14 +1180,6 @@ static inline void allow_write_access(struct file *file)
 {
 	if (file)
 		atomic_inc(&file_inode(file)->i_writecount);
-}
-static inline void i_readcount_dec(struct inode *inode)
-{
-	return;
-}
-static inline void i_readcount_inc(struct inode *inode)
-{
-	return;
 }
 extern ssize_t kernel_read(struct file *, void *, size_t, loff_t *);
 ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos);

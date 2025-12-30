@@ -34,39 +34,7 @@ int irq_set_chip(unsigned int irq, const struct irq_chip *chip)
 	return 0;
 }
 
-int irq_set_irq_type(unsigned int irq, unsigned int type)
-{
-	unsigned long flags;
-	struct irq_desc *desc =
-		irq_get_desc_buslock(irq, &flags, IRQ_GET_DESC_CHECK_GLOBAL);
-	int ret = 0;
-
-	if (!desc)
-		return -EINVAL;
-
-	ret = __irq_set_trigger(desc, type);
-	irq_put_desc_busunlock(desc, flags);
-	return ret;
-}
-
-int irq_set_chip_data(unsigned int irq, void *data)
-{
-	unsigned long flags;
-	struct irq_desc *desc = irq_get_desc_lock(irq, &flags, 0);
-
-	if (!desc)
-		return -EINVAL;
-	desc->irq_data.chip_data = data;
-	irq_put_desc_unlock(desc, flags);
-	return 0;
-}
-
-struct irq_data *irq_get_irq_data(unsigned int irq)
-{
-	struct irq_desc *desc = irq_to_desc(irq);
-
-	return desc ? &desc->irq_data : NULL;
-}
+/* irq_set_irq_type, irq_set_chip_data, irq_get_irq_data removed - never called */
 
 static void irq_state_clr_disabled(struct irq_desc *desc)
 {

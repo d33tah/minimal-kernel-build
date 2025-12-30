@@ -56,12 +56,10 @@ struct device_private {
 extern int devices_init(void);
 extern int buses_init(void);
 extern int classes_init(void);
-static inline int firmware_init(void) { return 0; }
-static inline int hypervisor_init(void) { return 0; }
+/* firmware_init, hypervisor_init removed - never called */
 extern int platform_bus_init(void);
 extern void cpu_dev_init(void);
-static inline void container_dev_init(void) { }
-static inline void auxiliary_bus_init(void) { }
+/* container_dev_init, auxiliary_bus_init removed - never called */
 
 /* virtual_device_parent removed - unused */
 

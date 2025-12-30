@@ -65,12 +65,9 @@ extern int clockevents_program_event(struct clock_event_device *dev,
 				     ktime_t expires, bool force);
 extern void clockevents_handle_noop(struct clock_event_device *dev);
 
-static inline void tick_install_broadcast_device(struct clock_event_device *dev, int cpu) { }
-static inline int tick_is_broadcast_device(struct clock_event_device *dev) { return 0; }
-static inline int tick_device_uses_broadcast(struct clock_event_device *dev, int cpu) { return 0; }
-/* Removed uncalled: tick_do_periodic_broadcast, tick_suspend_broadcast,
- * tick_resume_broadcast, tick_resume_check_broadcast, tick_broadcast_update_freq */
-static inline void tick_broadcast_init(void) { }
+/* tick_install_broadcast_device, tick_is_broadcast_device, tick_device_uses_broadcast,
+ * tick_do_periodic_broadcast, tick_suspend_broadcast, tick_resume_broadcast,
+ * tick_resume_check_broadcast, tick_broadcast_update_freq, tick_broadcast_init removed - never called */
 
  
 static inline void tick_set_periodic_handler(struct clock_event_device *dev, int broadcast)
@@ -84,21 +81,11 @@ static inline
 void tick_setup_oneshot(struct clock_event_device *newdev,
 			void (*handler)(struct clock_event_device *),
 			ktime_t nextevt) { BUG(); }
-/* Removed uncalled: tick_resume_oneshot */
-static inline int tick_program_event(ktime_t expires, int force) { return 0; }
-static inline void tick_oneshot_notify(void) { }
-/* Removed uncalled: tick_oneshot_possible */
-static inline int tick_oneshot_mode_active(void) { return 0; }
-static inline void tick_clock_notify(void) { }
-static inline int tick_check_oneshot_change(int allow_nohz) { return 0; }
-
-/* Removed uncalled: tick_broadcast_switch_to_oneshot, tick_check_oneshot_broadcast_this_cpu,
- * tick_broadcast_oneshot_available, tick_broadcast_offline */
-static inline int tick_broadcast_oneshot_active(void) { return 0; }
-
-static inline void tick_nohz_init(void) { }
-/* Removed uncalled: timers_update_nohz */
-#define tick_nohz_active (0)
+/* tick_resume_oneshot, tick_program_event, tick_oneshot_notify, tick_oneshot_possible,
+ * tick_oneshot_mode_active, tick_clock_notify, tick_check_oneshot_change,
+ * tick_broadcast_switch_to_oneshot, tick_check_oneshot_broadcast_this_cpu,
+ * tick_broadcast_oneshot_available, tick_broadcast_offline, tick_broadcast_oneshot_active,
+ * tick_nohz_init, timers_update_nohz, tick_nohz_active removed - never called */
 
 DECLARE_PER_CPU(struct hrtimer_cpu_base, hrtimer_bases);
 

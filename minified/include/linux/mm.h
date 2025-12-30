@@ -814,10 +814,6 @@ static inline void setmax_mm_hiwater_rss(unsigned long *maxrss,
 		*maxrss = hiwater_rss;
 }
 
-static inline void sync_mm_rss(struct mm_struct *mm)
-{
-}
-
 /* pte_devmap removed - callers removed */
 
 /* Removed: vma_wants_writenotify - never called */

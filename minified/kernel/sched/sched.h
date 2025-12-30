@@ -776,15 +776,6 @@ extern void init_dl_rq(struct dl_rq *dl_rq);
 
 static inline void cpufreq_update_util(struct rq *rq, unsigned int flags) {}
 
-#ifdef arch_scale_freq_capacity
-# ifndef arch_scale_freq_invariant
-#  define arch_scale_freq_invariant()	true
-# endif
-#else
-# define arch_scale_freq_invariant()	false
-#endif
-
-
 /* uclamp_rq_util_with removed - unused */
 
 #define perf_domain_span(pd) NULL

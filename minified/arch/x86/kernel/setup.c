@@ -111,7 +111,7 @@ struct cpuinfo_x86 new_cpu_data;
 
 struct cpuinfo_x86 boot_cpu_data __read_mostly;
 
-unsigned int def_to_bigsmp;
+/* def_to_bigsmp removed - set but never read */
 
 struct apm_info apm_info;
 
@@ -124,7 +124,7 @@ struct edid_info edid_info;
 
 extern int root_mountflags;
 
-unsigned long saved_video_mode;
+/* saved_video_mode removed - set but never read */
 
 #define RAMDISK_IMAGE_START_MASK 0x07FF
 #define RAMDISK_PROMPT_FLAG 0x8000
@@ -466,8 +466,7 @@ void __init setup_arch(char **cmdline_p)
 	edid_info = boot_params.edid_info;
 	apm_info.bios = boot_params.apm_bios_info;
 	ist_info = boot_params.ist_info;
-	saved_video_mode = boot_params.hdr.vid_mode;
-	/* bootloader_type/version setup removed - never read */
+	/* saved_video_mode, bootloader_type/version setup removed - never read */
 
 	/* x86_init.oem.arch_setup removed - is x86_init_noop */
 

@@ -100,12 +100,6 @@ static inline int filemap_nr_thps(struct address_space *mapping)
 	return 0;
 }
 
-static inline void filemap_nr_thps_dec(struct address_space *mapping)
-{
-	/* mapping_large_folio_support always false, so always warns */
-	WARN_ON_ONCE(1);
-}
-
 void release_pages(struct page **pages, int nr);
 
 struct address_space *page_mapping(struct page *);

@@ -475,16 +475,7 @@ static inline int pmd_none_or_trans_huge_or_clear_bad(pmd_t *pmd)
 	return 0;
 }
 
-static inline int pmd_trans_unstable(pmd_t *pmd)
-{
-	return 0;
-}
-
-static inline int pmd_devmap_trans_unstable(pmd_t *pmd)
-{
-	/* pmd_devmap and pmd_trans_unstable both return 0 */
-	return 0;
-}
+/* pmd_trans_unstable, pmd_devmap_trans_unstable removed - unused */
 
 /* pte_protnone, pmd_protnone removed - unused */
 

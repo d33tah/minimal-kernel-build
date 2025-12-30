@@ -13,15 +13,7 @@
 #include <linux/delay.h>
 #include <linux/module.h>
 
-struct tty_port;
-struct tty_driver;
-static inline struct device *serdev_tty_port_register(struct tty_port *port,
-						      struct device *parent,
-						      struct tty_driver *drv,
-						      int idx)
-{
-	return ERR_PTR(-ENODEV);
-}
+/* serdev_tty_port_register removed - never called */
 #include "tty.h"
 
 static int tty_port_default_receive_buf(struct tty_port *port,

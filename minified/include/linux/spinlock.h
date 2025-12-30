@@ -63,12 +63,7 @@
 #define raw_spin_unlock_bh(lock)	_raw_spin_unlock_bh(lock)
 
 
-#define raw_spin_trylock_irqsave(lock, flags) \
-({ \
-	local_irq_save(flags); \
-	raw_spin_trylock(lock) ? \
-	1 : ({ local_irq_restore(flags); 0; }); \
-})
+/* raw_spin_trylock_irqsave removed - unused */
 
 /* Inlined from rwlock.h */
 # define rwlock_init(lock)					\
@@ -77,17 +72,12 @@
 /* do_raw_read_lock, do_raw_read_trylock, do_raw_read_unlock,
    do_raw_write_lock, do_raw_write_trylock, do_raw_write_unlock removed - unused */
 
-#define read_trylock(lock)	__cond_lock(lock, _raw_read_trylock(lock))
-#define write_trylock(lock)	__cond_lock(lock, _raw_write_trylock(lock))
+/* read_trylock, write_trylock removed - unused */
 
 #define write_lock(lock)	_raw_write_lock(lock)
 #define read_lock(lock)		_raw_read_lock(lock)
 
-#define write_lock_irqsave(lock, flags)			\
-	do {						\
-		typecheck(unsigned long, flags);	\
-		_raw_write_lock_irqsave(lock, flags);	\
-	} while (0)
+/* write_lock_irqsave removed - unused */
 
 
 #define write_lock_irq(lock)		_raw_write_lock_irq(lock)
@@ -118,10 +108,9 @@
 #define _raw_read_lock_irq(lock)		__LOCK_IRQ(lock)
 #define _raw_write_lock_irq(lock)		__LOCK_IRQ(lock)
 #define _raw_spin_lock_irqsave(lock, flags)	__LOCK_IRQSAVE(lock, flags)
-#define _raw_write_lock_irqsave(lock, flags)	__LOCK_IRQSAVE(lock, flags)
+/* _raw_write_lock_irqsave removed - unused */
 #define _raw_spin_trylock(lock)			({ __LOCK(lock); 1; })
-#define _raw_read_trylock(lock)			({ __LOCK(lock); 1; })
-#define _raw_write_trylock(lock)		({ __LOCK(lock); 1; })
+/* _raw_read_trylock, _raw_write_trylock removed - unused */
 #define _raw_spin_unlock(lock)			__UNLOCK(lock)
 #define _raw_read_unlock(lock)			__UNLOCK(lock)
 #define _raw_write_unlock(lock)			__UNLOCK(lock)
@@ -130,7 +119,7 @@
 #define _raw_read_unlock_irq(lock)		__UNLOCK_IRQ(lock)
 #define _raw_write_unlock_irq(lock)		__UNLOCK_IRQ(lock)
 #define _raw_spin_unlock_irqrestore(lock, flags) __UNLOCK_IRQRESTORE(lock, flags)
-#define _raw_write_unlock_irqrestore(lock, flags) __UNLOCK_IRQRESTORE(lock, flags)
+/* _raw_write_unlock_irqrestore removed - unused */
 /* End of spinlock_api_up.h */
 
 
@@ -198,10 +187,7 @@ static __always_inline void spin_unlock_irqrestore(spinlock_t *lock, unsigned lo
 	raw_spin_unlock_irqrestore(&lock->rlock, flags);
 }
 
-#define spin_trylock_irqsave(lock, flags)			\
-({								\
-	raw_spin_trylock_irqsave(spinlock_check(lock), flags); \
-})
+/* spin_trylock_irqsave removed - unused */
 
 #define assert_spin_locked(lock)	assert_raw_spin_locked(&(lock)->rlock)
 

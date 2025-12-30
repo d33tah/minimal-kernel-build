@@ -40,9 +40,7 @@ int do_linkat(int olddfd, struct filename *old, int newdfd,
 
  
 extern struct vfsmount *lookup_mnt(const struct path *);
-/* finish_automount removed - unused */
-
-extern int sb_prepare_remount_readonly(struct super_block *);
+/* finish_automount, sb_prepare_remount_readonly removed - unused */
 
 extern void __init mnt_init(void);
 

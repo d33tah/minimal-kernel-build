@@ -278,14 +278,7 @@ void mnt_drop_write_file(struct file *file)
 	sb_end_write(file_inode(file)->i_sb);
 }
 
-int sb_prepare_remount_readonly(struct super_block *sb)
-{
-	/* Stub: minimal remount handling for simple system */
-	if (atomic_long_read(&sb->s_remove_count))
-		return -EBUSY;
-	sb->s_readonly_remount = 1;
-	return 0;
-}
+/* sb_prepare_remount_readonly removed - defined but never called */
 
 static void free_vfsmnt(struct mount *mnt)
 {

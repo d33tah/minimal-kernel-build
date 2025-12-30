@@ -45,11 +45,7 @@ bool __init bool_x86_init_noop(void)
 void x86_op_int_noop(int cpu)
 {
 }
-static __init int set_rtc_noop(const struct timespec64 *now)
-{
-	return -EINVAL;
-}
-/* get_rtc_noop removed - defined but never used */
+/* set_rtc_noop, get_rtc_noop removed - defined but never used */
 static __init void x86_wallclock_init(void)
 {
 }

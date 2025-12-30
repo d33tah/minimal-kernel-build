@@ -281,7 +281,6 @@ struct mm_struct {
 				unsigned long pgoff, unsigned long flags);
 		unsigned long mmap_base;	 
 		unsigned long mmap_legacy_base;	 
-		unsigned long task_size;	 
 		unsigned long highest_vm_end;	 
 		pgd_t * pgd;
 
@@ -306,9 +305,6 @@ struct mm_struct {
 		unsigned long hiwater_vm;   
 
 		unsigned long total_vm;
-		unsigned long locked_vm;
-		unsigned long data_vm;
-		unsigned long stack_vm;
 		unsigned long def_flags;
 
 		 

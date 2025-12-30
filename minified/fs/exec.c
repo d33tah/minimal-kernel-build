@@ -143,7 +143,7 @@ static int __bprm_mm_init(struct linux_binprm *bprm)
 	if (err)
 		goto err;
 
-	mm->stack_vm = mm->total_vm = 1;
+	mm->total_vm = 1;
 	mmap_write_unlock(mm);
 	bprm->p = vma->vm_end - sizeof(void *);
 	return 0;
@@ -731,7 +731,6 @@ void setup_new_exec(struct linux_binprm *bprm)
 
 	/* arch_setup_new_exec removed - empty stub */
 
-	me->mm->task_size = TASK_SIZE;
 	up_write(&me->signal->exec_update_lock);
 	mutex_unlock(&me->signal->cred_guard_mutex);
 }

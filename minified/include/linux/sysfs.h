@@ -94,7 +94,7 @@ struct bin_attribute {
 		    struct vm_area_struct *vma);
 };
 
-#define sysfs_bin_attr_init(bin_attr) sysfs_attr_init(&(bin_attr)->attr)
+/* sysfs_bin_attr_init removed - unused */
 
 struct sysfs_ops {
 	ssize_t	(*show)(struct kobject *, struct attribute *, char *);

@@ -30,8 +30,7 @@ void tty_ldisc_unlock(struct tty_struct *tty);
 /* Job control stubs - all return 0/NULL or are empty */
 static inline int __tty_check_change(struct tty_struct *tty, int sig) { return 0; }
 static inline int tty_check_change(struct tty_struct *tty) { return 0; }
-/* __stop_tty, __start_tty, tty_open_proc_set_tty call sites removed */
-void tty_vhangup_session(struct tty_struct *tty);
+/* __stop_tty, __start_tty, tty_open_proc_set_tty, tty_vhangup_session removed - unused */
 static inline int tty_signal_session_leader(struct tty_struct *tty, int exit_session) { return 0; }
 void tty_buffer_free_all(struct tty_port *port);
 void tty_buffer_flush(struct tty_struct *tty, struct tty_ldisc *ld);
@@ -39,9 +38,8 @@ void tty_buffer_init(struct tty_port *port);
 void tty_buffer_set_lock_subclass(struct tty_port *port);
 bool tty_buffer_restart_work(struct tty_port *port);
 bool tty_buffer_cancel_work(struct tty_port *port);
-/* tty_buffer_flush_work removed - unused */
+/* tty_buffer_flush_work, tty_ldisc_hangup removed - unused */
 speed_t tty_termios_input_baud_rate(struct ktermios *termios);
-void tty_ldisc_hangup(struct tty_struct *tty, bool reset);
 int tty_ldisc_reinit(struct tty_struct *tty, int disc);
 long tty_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
 static inline long tty_jobctrl_ioctl(struct tty_struct *tty, struct tty_struct *real_tty,

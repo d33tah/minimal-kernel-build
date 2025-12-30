@@ -311,43 +311,7 @@ int tty_ldisc_reinit(struct tty_struct *tty, int disc)
 	return retval;
 }
 
-void tty_ldisc_hangup(struct tty_struct *tty, bool reinit)
-{
-	struct tty_ldisc *ld;
-
-	tty_ldisc_debug(tty, "%p: hangup\n", tty->ldisc);
-
-	ld = tty_ldisc_ref(tty);
-	if (ld != NULL) {
-		if (ld->ops->flush_buffer)
-			ld->ops->flush_buffer(tty);
-		tty_driver_flush_buffer(tty);
-		if ((test_bit(TTY_DO_WRITE_WAKEUP, &tty->flags)) &&
-		    ld->ops->write_wakeup)
-			ld->ops->write_wakeup(tty);
-		if (ld->ops->hangup)
-			ld->ops->hangup(tty);
-		tty_ldisc_deref(ld);
-	}
-
-	wake_up_interruptible_poll(&tty->write_wait, EPOLLOUT);
-	wake_up_interruptible_poll(&tty->read_wait, EPOLLIN);
-
-	tty_ldisc_lock(tty, MAX_SCHEDULE_TIMEOUT);
-
-	if (tty->driver->flags & TTY_DRIVER_RESET_TERMIOS)
-		tty_reset_termios(tty);
-
-	if (tty->ldisc) {
-		if (reinit) {
-			if (tty_ldisc_reinit(tty, tty->termios.c_line) < 0 &&
-			    tty_ldisc_reinit(tty, N_TTY) < 0)
-				WARN_ON(tty_ldisc_reinit(tty, N_NULL) < 0);
-		} else
-			tty_ldisc_kill(tty);
-	}
-	tty_ldisc_unlock(tty);
-}
+/* tty_ldisc_hangup removed - never called (~36 LOC) */
 
 int tty_ldisc_setup(struct tty_struct *tty, struct tty_struct *o_tty)
 {

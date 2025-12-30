@@ -243,10 +243,8 @@ static inline void unregister_handler_proc(unsigned int irq,
 
 extern int irq_do_set_affinity(struct irq_data *data,
 			       const struct cpumask *dest, bool force);
+/* irq_setup_affinity removed - never called (always returns 0) */
 
-static inline int irq_setup_affinity(struct irq_desc *desc) { return 0; }
-
- 
 static inline void chip_bus_lock(struct irq_desc *desc)
 {
 	if (unlikely(desc->irq_data.chip->irq_bus_lock))

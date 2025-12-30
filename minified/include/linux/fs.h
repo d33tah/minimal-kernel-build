@@ -329,8 +329,7 @@ static inline void mapping_allow_writable(struct address_space *mapping)
 	atomic_inc(&mapping->i_mmap_writable);
 }
 
-#define i_size_ordered_init(inode) do { } while (0)
-
+/* i_size_ordered_init removed - never called */
 /* struct posix_acl removed - unused */
 
 #define IOP_FASTPERM	0x0001

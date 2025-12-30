@@ -127,9 +127,7 @@ DECLARE_STATIC_KEY_FALSE(force_irqthreads_key);
 
 #endif  
 
-#ifndef hard_irq_disable
-#define hard_irq_disable()	do { } while(0)
-#endif
+/* hard_irq_disable removed - never called */
 
 
 enum

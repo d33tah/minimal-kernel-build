@@ -169,8 +169,7 @@ int should_failslab(struct kmem_cache *s, gfp_t gfpflags);
 static inline bool __should_failslab(struct kmem_cache *s, gfp_t gfpflags)
 { return false; }
 /* end fault-inject.h */
-/* kmemleak_alloc_recursive inlined - only call site */
-static inline void kmemleak_alloc_recursive(const void *ptr, size_t size, int min_count, slab_flags_t flags, gfp_t gfp) {}
+/* kmemleak_alloc_recursive removed - unused */
 #include <linux/random.h>
 #include <linux/sched/mm.h>
 #include <linux/list_lru.h>
@@ -266,23 +265,8 @@ static inline enum node_stat_item cache_vmstat_idx(struct kmem_cache *s)
 		NR_SLAB_RECLAIMABLE_B : NR_SLAB_UNRECLAIMABLE_B;
 }
 
-/* print_tracking removed - unused */
-static inline bool __slub_debug_enabled(void)
-{
-	return false;
-}
-
- 
-static inline bool kmem_cache_debug_flags(struct kmem_cache *s, slab_flags_t flags)
-{
-	return false;
-}
-
-/* slab_objcgs, memcg_from_slab_obj, memcg_alloc_slab_cgroups removed - unused */
-
-static inline void memcg_free_slab_cgroups(struct slab *slab)
-{
-}
+/* print_tracking, __slub_debug_enabled, kmem_cache_debug_flags,
+   slab_objcgs, memcg_from_slab_obj, memcg_alloc_slab_cgroups, memcg_free_slab_cgroups removed - unused */
 
 static inline bool memcg_slab_pre_alloc_hook(struct kmem_cache *s,
 					     struct list_lru *lru,
@@ -292,14 +276,7 @@ static inline bool memcg_slab_pre_alloc_hook(struct kmem_cache *s,
 	return true;
 }
 
-static inline void memcg_slab_post_alloc_hook(struct kmem_cache *s,
-					      struct obj_cgroup *objcg,
-					      gfp_t flags, size_t size,
-					      void **p)
-{
-}
-
-/* memcg_slab_free_hook, virt_to_cache removed - unused */
+/* memcg_slab_post_alloc_hook, memcg_slab_free_hook, virt_to_cache removed - unused */
 
 static __always_inline void account_slab(struct slab *slab, int order,
 					 struct kmem_cache *s, gfp_t gfp)

@@ -32,12 +32,10 @@ asmlinkage __visible void __init i386_start_kernel(void)
 
 	x86_early_init_platform_quirks();
 
+	/* x86_intel_mid_early_setup and x86_ce4100_early_setup are empty stubs */
 	switch (boot_params.hdr.hardware_subarch) {
 	case X86_SUBARCH_INTEL_MID:
-		x86_intel_mid_early_setup();
-		break;
 	case X86_SUBARCH_CE4100:
-		x86_ce4100_early_setup();
 		break;
 	default:
 		i386_default_early_setup();

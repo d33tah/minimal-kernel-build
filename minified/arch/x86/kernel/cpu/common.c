@@ -864,7 +864,7 @@ void cpu_init_exception_handling(void)
 
 	load_TR_desc();
 
-	setup_ghcb();
+	/* setup_ghcb - empty stub */
 
 	load_current_idt();
 }

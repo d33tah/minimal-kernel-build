@@ -276,7 +276,7 @@ static void __init parse_setup_data(void)
 			e820__memory_setup_extended(pa_data, data_len);
 			break;
 		case SETUP_DTB:
-			add_dtb(pa_data);
+			/* add_dtb - empty stub */
 			break;
 		default:
 			break;
@@ -549,7 +549,7 @@ void __init setup_arch(char **cmdline_p)
 
 	sev_setup_arch();
 
-	e820__memblock_alloc_reserved_mpc_new();
+	/* e820__memblock_alloc_reserved_mpc_new - empty stub */
 
 	printk(KERN_DEBUG "initial memory mapped: [mem 0x00000000-%#010lx]\n",
 	       (max_pfn_mapped << PAGE_SHIFT) - 1);
@@ -586,12 +586,9 @@ void __init setup_arch(char **cmdline_p)
 
 	generic_apic_probe();
 
-	x86_dtb_init();
+	/* x86_dtb_init, get_smp_config, init_apic_mappings - empty stubs */
 
-	/* get_smp_config, init_apic_mappings removed - empty stubs */
-
-	init_cpu_to_node();
-	init_gi_nodes();
+	/* init_cpu_to_node and init_gi_nodes - empty stubs */
 
 	/* io_apic_init_mappings removed - empty stub */
 

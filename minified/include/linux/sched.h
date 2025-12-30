@@ -100,7 +100,6 @@ struct sched_param;
 struct seq_file;
 struct sighand_struct;
 struct signal_struct;
-struct task_group;
 
 
 #define TASK_RUNNING			0x0000

@@ -6,7 +6,6 @@
 #include <linux/types.h>
 
 struct vc_data;
-struct console_font_op;
 struct console_font;
 struct module;
 struct tty_struct;

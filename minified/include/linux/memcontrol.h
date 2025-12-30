@@ -21,8 +21,6 @@ enum memcg_stat_item {
 
 enum memcg_memory_event { MEMCG_NR_MEMORY_EVENTS };
 
-struct mem_cgroup_reclaim_cookie;
-
 static inline struct mem_cgroup *folio_memcg(struct folio *folio)
 {
 	return NULL;

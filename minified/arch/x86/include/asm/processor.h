@@ -153,23 +153,8 @@ static inline void native_cpuid(unsigned int *eax, unsigned int *ebx,
 	    : "memory");
 }
 
-#define native_cpuid_reg(reg)					\
-static inline unsigned int native_cpuid_##reg(unsigned int op)	\
-{								\
-	unsigned int eax = op, ebx, ecx = 0, edx;		\
-								\
-	native_cpuid(&eax, &ebx, &ecx, &edx);			\
-								\
-	return reg;						\
-}
+/* native_cpuid_reg macro and native_cpuid_eax/ebx/ecx/edx removed - unused */
 
- 
-native_cpuid_reg(eax)
-native_cpuid_reg(ebx)
-native_cpuid_reg(ecx)
-native_cpuid_reg(edx)
-
- 
 static inline unsigned long read_cr3_pa(void)
 {
 	return __read_cr3() & CR3_ADDR_MASK;
@@ -319,15 +304,8 @@ static inline void arch_thread_struct_whitelist(unsigned long *offset,
 	fpu_thread_struct_whitelist(offset, size);
 }
 
-static inline void
-native_load_sp0(unsigned long sp0)
-{
-	this_cpu_write(cpu_tss_rw.x86_tss.sp0, sp0);
-}
-
 static __always_inline unsigned long current_top_of_stack(void)
 {
-	 
 	return this_cpu_read_stable(cpu_current_top_of_stack);
 }
 
@@ -337,7 +315,7 @@ static __always_inline unsigned long current_top_of_stack(void)
 
 static inline void load_sp0(unsigned long sp0)
 {
-	native_load_sp0(sp0);
+	this_cpu_write(cpu_tss_rw.x86_tss.sp0, sp0);
 }
 
 

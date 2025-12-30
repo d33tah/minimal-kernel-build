@@ -212,12 +212,6 @@ void folio_mark_accessed(struct folio *folio)
 void folio_add_lru(struct folio *folio)
 {
 	struct pagevec *pvec;
-
-	VM_BUG_ON_FOLIO(folio_test_active(folio) &&
-				folio_test_unevictable(folio),
-			folio);
-	VM_BUG_ON_FOLIO(folio_test_lru(folio), folio);
-
 	folio_get(folio);
 	local_lock(&lru_pvecs.lock);
 	pvec = this_cpu_ptr(&lru_pvecs.lru_add);
@@ -229,7 +223,6 @@ void folio_add_lru(struct folio *folio)
 void lru_cache_add_inactive_or_unevictable(struct page *page,
 					   struct vm_area_struct *vma)
 {
-	VM_BUG_ON_PAGE(PageLRU(page), page);
 	/* mlock_new_page removed - empty stub */
 	lru_cache_add(page);
 }
@@ -401,9 +394,6 @@ void __pagevec_release(struct pagevec *pvec)
 static void __pagevec_lru_add_fn(struct folio *folio, struct lruvec *lruvec)
 {
 	(void)folio_test_clear_unevictable(folio); /* side effect needed */
-
-	VM_BUG_ON_FOLIO(folio_test_lru(folio), folio);
-
 	folio_set_lru(folio);
 
 	if (!folio_evictable(folio)) {

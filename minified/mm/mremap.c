@@ -84,8 +84,6 @@ static pmd_t *alloc_new_pmd(struct mm_struct *mm, struct vm_area_struct *vma,
 	if (!pmd)
 		return NULL;
 
-	VM_BUG_ON(pmd_trans_huge(*pmd));
-
 	return pmd;
 }
 
@@ -187,9 +185,6 @@ static bool move_normal_pmd(struct vm_area_struct *vma, unsigned long old_addr,
 
 	pmd = *old_pmd;
 	pmd_clear(old_pmd);
-
-	VM_BUG_ON(!pmd_none(*new_pmd));
-
 	pmd_populate(mm, new_pmd, pmd_pgtable(pmd));
 	flush_tlb_range(vma, old_addr, old_addr + PMD_SIZE);
 	if (new_ptl != old_ptl)
@@ -221,9 +216,6 @@ static bool move_normal_pud(struct vm_area_struct *vma, unsigned long old_addr,
 
 	pud = *old_pud;
 	pud_clear(old_pud);
-
-	VM_BUG_ON(!pud_none(*new_pud));
-
 	pud_populate(mm, new_pud, pud_pgtable(pud));
 	flush_tlb_range(vma, old_addr, old_addr + PUD_SIZE);
 	if (new_ptl != old_ptl)

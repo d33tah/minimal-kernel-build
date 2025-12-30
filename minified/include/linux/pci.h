@@ -36,10 +36,6 @@ extern void pci_iommu_alloc(void);
 struct pci_bus;
 struct pci_dev;
 struct pci_device_id;
-enum pci_mmap_state { pci_mmap_io, pci_mmap_mem };
-enum pci_bus_speed { PCI_SPEED_UNKNOWN = 0, };
-enum pcie_link_width { PCIE_LNK_WIDTH_UNKNOWN = 0, };
-/* pci_power_t removed - unused */
 #include <linux/dma-mapping.h>
 #define pci_printk(level, pdev, fmt, arg...) dev_printk(level, &(pdev)->dev, fmt, ##arg)
 #define pci_emerg(pdev, fmt, arg...)	dev_emerg(&(pdev)->dev, fmt, ##arg)

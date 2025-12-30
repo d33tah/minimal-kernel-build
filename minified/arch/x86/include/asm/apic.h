@@ -18,8 +18,6 @@ static inline void generic_apic_probe(void)
 {
 }
 
-/* Only keeping APIC functions that are actually called */
-#define local_apic_timer_c2_ok		1
 static inline void init_apic_mappings(void) { }
 static inline void disable_local_APIC(void) { }
 # define setup_boot_APIC_clock x86_init_noop
@@ -31,8 +29,6 @@ static inline void lapic_assign_system_vectors(void) { }
 /* lapic_assign_legacy_vector removed - unused */
 static inline bool apic_needs_pit(void) { return true; }
 
-#define x2apic_mode		(0)
-#define	x2apic_supported()	(0)
 
 struct irq_data;
 

@@ -400,10 +400,6 @@ vma_merge(struct mm_struct *mm, struct vm_area_struct *prev, unsigned long addr,
 	if (area && area->vm_end == end)
 		next = next->vm_next;
 
-	VM_WARN_ON(prev && addr <= prev->vm_start);
-	VM_WARN_ON(area && end > area->vm_end);
-	VM_WARN_ON(addr >= end);
-
 	/* mpol_equal always returns true - mempolicy disabled */
 	if (prev && prev->vm_end == addr &&
 	    can_vma_merge_after(prev, vm_flags, anon_vma, file, pgoff,
@@ -860,7 +856,6 @@ unsigned long generic_get_unmapped_area_topdown(struct file *filp,
 	addr = vm_unmapped_area(&info);
 
 	if (offset_in_page(addr)) {
-		VM_BUG_ON(addr != -ENOMEM);
 		info.flags = 0;
 		info.low_limit = TASK_UNMAPPED_BASE;
 		info.high_limit = mmap_end;
@@ -1558,8 +1553,5 @@ _install_special_mapping(struct mm_struct *mm, unsigned long addr,
 
 void __init mmap_init(void)
 {
-	int ret;
-
-	ret = percpu_counter_init(&vm_committed_as, 0, GFP_KERNEL);
-	VM_BUG_ON(ret);
+	percpu_counter_init(&vm_committed_as, 0, GFP_KERNEL);
 }

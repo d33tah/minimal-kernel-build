@@ -1,8 +1,5 @@
 /* Minimal deadline scheduler stub */
-
-static unsigned int sysctl_sched_dl_period_max = 1 << 22;
-static unsigned int sysctl_sched_dl_period_min = 100;
-
+/* sysctl_sched_dl_period_max, sysctl_sched_dl_period_min removed - unused */
 /* __dl_update, __dl_sub, __dl_add, add_rq_bw, sub_rq_bw, add_running_bw, sub_running_bw,
    init_dl_bandwidth, init_dl_bw removed - unused */
 

@@ -83,7 +83,7 @@ struct task_io_accounting { };
 #include <linux/seqlock.h>
 #include <asm/kmap_size.h>
 
-struct audit_context;
+/* struct audit_context removed - unused */
 struct backing_dev_info;
 struct blk_plug;
 struct cfs_rq;
@@ -91,7 +91,7 @@ struct fs_struct;
 struct mempolicy;
 struct nameidata;
 struct nsproxy;
-struct perf_event_context;
+/* struct perf_event_context removed - unused forward declaration */
 struct pid_namespace;
 struct pipe_inode_info;
 struct reclaim_state;

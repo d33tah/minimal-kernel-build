@@ -20,7 +20,5 @@ static inline const struct cpumask *housekeeping_cpumask(enum hk_type type)
 {
 	return cpu_possible_mask;
 }
-
-static inline void housekeeping_init(void) { }
-
+/* housekeeping_init removed - never called */
 #endif  

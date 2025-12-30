@@ -415,9 +415,7 @@ void __put_task_struct(struct task_struct *tsk)
 	WARN_ON(refcount_read(&tsk->usage));
 	WARN_ON(tsk == current);
 
-	io_uring_free(tsk);
-	security_task_free(tsk);
-
+	/* io_uring_free, security_task_free - empty stubs */
 	exit_creds(tsk);
 	/* delayacct_tsk_free, sched_core_free removed - empty stubs */
 	put_signal_struct(tsk->signal);
@@ -1305,7 +1303,7 @@ bad_fork_cleanup_fs:
 bad_fork_cleanup_files:
 	exit_files(p);
 bad_fork_cleanup_security:
-	security_task_free(p);
+	/* security_task_free - empty stub */
 	audit_free(p);
 	/* bad_fork_cleanup_audit label removed - no longer used */
 bad_fork_cleanup_policy:

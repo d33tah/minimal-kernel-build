@@ -52,7 +52,7 @@ static void put_cred_rcu(struct rcu_head *rcu)
 		panic("CRED: put_cred_rcu() sees %p with usage %d\n", cred,
 		      atomic_read(&cred->usage));
 
-	security_cred_free(cred);
+	/* security_cred_free - empty stub */
 	key_put(cred->session_keyring);
 	key_put(cred->process_keyring);
 	key_put(cred->thread_keyring);

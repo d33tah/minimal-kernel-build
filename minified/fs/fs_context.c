@@ -93,10 +93,7 @@ int vfs_parse_fs_param(struct fs_context *fc, struct fs_parameter *param)
 	if (ret != -ENOPARAM)
 		return ret;
 
-	ret = security_fs_context_parse_param(fc, param);
-	if (ret != -ENOPARAM)
-
-		return ret;
+	/* security_fs_context_parse_param always returns -ENOPARAM */
 
 	if (fc->ops->parse_param) {
 		ret = fc->ops->parse_param(fc, param);
@@ -319,7 +316,7 @@ void put_fs_context(struct fs_context *fc)
 	if (fc->need_free && fc->ops && fc->ops->free)
 		fc->ops->free(fc);
 
-	security_free_mnt_opts(&fc->security);
+	/* security_free_mnt_opts - empty stub */
 	put_net(fc->net_ns);
 	put_user_ns(fc->user_ns);
 	put_cred(fc->cred);

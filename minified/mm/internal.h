@@ -181,29 +181,8 @@ extern int mlock_future_check(struct mm_struct *mm, unsigned long flags,
 			      unsigned long len);
  
 void mlock_folio(struct folio *folio);
-static inline void mlock_vma_folio(struct folio *folio,
-			struct vm_area_struct *vma, bool compound)
-{
-	 
-	if (unlikely((vma->vm_flags & (VM_LOCKED|VM_SPECIAL)) == VM_LOCKED) &&
-	    (compound || !folio_test_large(folio)))
-		mlock_folio(folio);
-}
-
-static inline void mlock_vma_page(struct page *page,
-			struct vm_area_struct *vma, bool compound)
-{
-	mlock_vma_folio(page_folio(page), vma, compound);
-}
-
 void munlock_page(struct page *page);
-static inline void munlock_vma_page(struct page *page,
-			struct vm_area_struct *vma, bool compound)
-{
-	/* PageTransCompound always returns false */
-	if (unlikely(vma->vm_flags & VM_LOCKED))
-		munlock_page(page);
-}
+/* mlock_vma_folio, mlock_vma_page, munlock_vma_page removed - unused */
 void mlock_new_page(struct page *page);
 bool need_mlock_page_drain(int cpu);
 void mlock_page_drain_local(void);
@@ -260,22 +239,7 @@ static inline unsigned long vma_address_end(struct page_vma_mapped_walk *pvmw)
 	return address;
 }
 
-static inline struct file *maybe_unlock_mmap_for_io(struct vm_fault *vmf,
-						    struct file *fpin)
-{
-	int flags = vmf->flags;
-
-	if (fpin)
-		return fpin;
-
-	 
-	if (fault_flag_allow_retry_first(flags) &&
-	    !(flags & FAULT_FLAG_RETRY_NOWAIT)) {
-		fpin = get_file(vmf->vma->vm_file);
-		mmap_read_unlock(vmf->vma->vm_mm);
-	}
-	return fpin;
-}
+/* maybe_unlock_mmap_for_io removed - unused */
 
 enum mminit_level {
 	MMINIT_WARNING,

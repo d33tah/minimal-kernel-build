@@ -14,7 +14,6 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <linux/completion.h>
 #include <linux/personality.h>
 #include <linux/tty.h>
-#include <linux/iocontext.h>
 #include <linux/key.h>
 #include <linux/cpu.h>
 /* acct_*, acct_update_integrals removed - empty stubs */

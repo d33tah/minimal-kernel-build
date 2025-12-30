@@ -7,7 +7,6 @@
 
 struct bio;
 struct page;
-struct io_context;
 struct cgroup_subsys_state;
 /* struct bio_set, bio_integrity_payload, bio_crypt_ctx removed - unused */
 

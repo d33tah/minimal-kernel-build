@@ -22,7 +22,6 @@ struct file *anon_inode_getfile(const char *name,
 #include <linux/mempolicy.h>
 #include <linux/file.h>
 #include <linux/fdtable.h>
-#include <linux/iocontext.h>
 #include <linux/key.h>
 #include <linux/binfmts.h>
 #include <linux/mman.h>
@@ -1102,7 +1101,6 @@ copy_process(struct pid *pid, int trace, int node,
 	p->default_timer_slack_ns = current->timer_slack_ns;
 	/* task_io_accounting_init, acct_clear_integrals, posix_cputimers_init removed - empty stubs */
 
-	p->io_context = NULL;
 	audit_set_context(p, NULL);
 	if (args->kthread) {
 		if (!set_kthread_struct(p))

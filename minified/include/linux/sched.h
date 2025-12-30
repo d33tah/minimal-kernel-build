@@ -88,7 +88,6 @@ struct backing_dev_info;
 struct blk_plug;
 struct cfs_rq;
 struct fs_struct;
-struct io_context;
 struct mempolicy;
 struct nameidata;
 struct nsproxy;
@@ -452,7 +451,6 @@ struct task_struct {
 
 	struct backing_dev_info		*backing_dev_info;
 
-	struct io_context		*io_context;
 	kernel_siginfo_t		*last_siginfo;
 
 	struct task_io_accounting	ioac;

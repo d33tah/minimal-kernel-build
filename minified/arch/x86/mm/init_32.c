@@ -443,8 +443,6 @@ void __init mem_init(void)
 	test_wp_bit();
 }
 
-int kernel_set_to_readonly __read_mostly;
-
 static void mark_nxdata_nx(void)
 {
 	unsigned long start = PFN_ALIGN(_etext);
@@ -466,8 +464,6 @@ void mark_rodata_ro(void)
 	set_pages_ro(virt_to_page(start), size >> PAGE_SHIFT);
 	pr_info("Write protecting kernel text and read-only data: %luk\n",
 		size >> 10);
-
-	kernel_set_to_readonly = 1;
 
 	mark_nxdata_nx();
 	if (__supported_pte_mask & _PAGE_NX)

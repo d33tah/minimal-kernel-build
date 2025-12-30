@@ -22,8 +22,6 @@ int set_pages_ro(struct page *page, int numpages);
 
 int set_direct_map_invalid_noflush(struct page *page);
 int set_direct_map_default_noflush(struct page *page);
-/* kernel_page_present removed - never called */
-
-extern int kernel_set_to_readonly;
+/* kernel_page_present, kernel_set_to_readonly removed - never called/read */
 
 #endif  

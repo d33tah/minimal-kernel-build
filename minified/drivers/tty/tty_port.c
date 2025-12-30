@@ -123,37 +123,7 @@ tty_port_register_device_attr_serdev(struct tty_port *port,
 					attr_grp);
 }
 
-struct device *tty_port_register_device_serdev(struct tty_port *port,
-					       struct tty_driver *driver,
-					       unsigned index,
-					       struct device *device)
-{
-	return tty_port_register_device_attr_serdev(port, driver, index, device,
-						    NULL, NULL);
-}
-
-int tty_port_alloc_xmit_buf(struct tty_port *port)
-{
-	mutex_lock(&port->buf_mutex);
-	if (port->xmit_buf == NULL) {
-		port->xmit_buf = (unsigned char *)get_zeroed_page(GFP_KERNEL);
-		if (port->xmit_buf)
-			kfifo_init(&port->xmit_fifo, port->xmit_buf, PAGE_SIZE);
-	}
-	mutex_unlock(&port->buf_mutex);
-	if (port->xmit_buf == NULL)
-		return -ENOMEM;
-	return 0;
-}
-
-void tty_port_free_xmit_buf(struct tty_port *port)
-{
-	mutex_lock(&port->buf_mutex);
-	free_page((unsigned long)port->xmit_buf);
-	port->xmit_buf = NULL;
-	INIT_KFIFO(port->xmit_fifo);
-	mutex_unlock(&port->buf_mutex);
-}
+/* tty_port_register_device_serdev, tty_port_alloc_xmit_buf, tty_port_free_xmit_buf removed - never called */
 
 void tty_port_destroy(struct tty_port *port)
 {

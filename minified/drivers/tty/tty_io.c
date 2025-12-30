@@ -270,11 +270,7 @@ static void do_tty_hangup(struct work_struct *work)
 	__tty_hangup(tty, 0);
 }
 
-void tty_hangup(struct tty_struct *tty)
-{
-	tty_debug_hangup(tty, "hangup\n");
-	schedule_work(&tty->hangup_work);
-}
+/* tty_hangup removed - never called */
 
 int tty_hung_up_p(struct file *filp)
 {

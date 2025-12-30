@@ -1066,7 +1066,6 @@ copy_process(struct pid *pid, int trace, int node,
 	p->utime = p->stime = p->gtime = 0;
 	prev_cputime_init(&p->prev_cputime);
 
-	p->default_timer_slack_ns = current->timer_slack_ns;
 	/* task_io_accounting_init, acct_clear_integrals, posix_cputimers_init, audit_set_context removed - empty stubs */
 	if (args->kthread) {
 		if (!set_kthread_struct(p))

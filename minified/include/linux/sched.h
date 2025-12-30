@@ -196,9 +196,6 @@ struct sched_entity {
 	u64				vruntime;
 	u64				prev_sum_exec_runtime;
 
-	u64				nr_migrations;
-
-
 };
 
 struct sched_rt_entity {
@@ -454,7 +451,6 @@ struct task_struct {
 	int				nr_dirtied;
 
 	u64				timer_slack_ns;
-	u64				default_timer_slack_ns;
 
 
 

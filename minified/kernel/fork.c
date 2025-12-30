@@ -1099,9 +1099,7 @@ copy_process(struct pid *pid, int trace, int node,
 	prev_cputime_init(&p->prev_cputime);
 
 	p->default_timer_slack_ns = current->timer_slack_ns;
-	/* task_io_accounting_init, acct_clear_integrals, posix_cputimers_init removed - empty stubs */
-
-	audit_set_context(p, NULL);
+	/* task_io_accounting_init, acct_clear_integrals, posix_cputimers_init, audit_set_context removed - empty stubs */
 	if (args->kthread) {
 		if (!set_kthread_struct(p))
 			goto bad_fork_cleanup_delayacct;
@@ -1301,9 +1299,7 @@ bad_fork_cleanup_fs:
 bad_fork_cleanup_files:
 	exit_files(p);
 bad_fork_cleanup_security:
-	/* security_task_free - empty stub */
-	audit_free(p);
-	/* bad_fork_cleanup_audit label removed - no longer used */
+	/* security_task_free, audit_free - empty stubs */
 bad_fork_cleanup_policy:
 bad_fork_cleanup_delayacct:
 	/* delayacct_tsk_free removed - empty stub */

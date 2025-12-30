@@ -953,8 +953,7 @@ static int exec_binprm(struct linux_binprm *bprm)
 			fput(exec);
 	}
 
-	audit_bprm(bprm);
-
+	/* audit_bprm - empty stub */
 	ptrace_event(PTRACE_EVENT_EXEC, old_vpid);
 	return 0;
 }

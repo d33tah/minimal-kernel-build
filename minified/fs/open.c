@@ -194,7 +194,7 @@ int chmod_common(const struct path *path, umode_t mode)
 
 int vfs_fchmod(struct file *file, umode_t mode)
 {
-	audit_file(file);
+	/* audit_file - empty stub */
 	return chmod_common(&file->f_path, mode);
 }
 

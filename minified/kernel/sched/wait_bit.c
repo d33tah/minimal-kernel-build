@@ -1,6 +1,7 @@
 
 
-#define WAIT_TABLE_BITS 8
+/* Reduced for minimal kernel */
+#define WAIT_TABLE_BITS 4
 #define WAIT_TABLE_SIZE (1 << WAIT_TABLE_BITS)
 
 static wait_queue_head_t bit_wait_table[WAIT_TABLE_SIZE] __cacheline_aligned;

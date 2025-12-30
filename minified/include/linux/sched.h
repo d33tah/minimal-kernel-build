@@ -94,7 +94,6 @@ struct nsproxy;
 /* struct perf_event_context removed - unused forward declaration */
 struct pid_namespace;
 struct pipe_inode_info;
-struct reclaim_state;
 struct rq;
 struct sched_attr;
 struct sched_param;
@@ -446,12 +445,7 @@ struct task_struct {
 
 	struct blk_plug			*plug;
 
-
-	struct reclaim_state		*reclaim_state;
-
 	struct backing_dev_info		*backing_dev_info;
-
-	kernel_siginfo_t		*last_siginfo;
 
 	struct task_io_accounting	ioac;
 	/* perf_event_* fields removed - PERF_EVENTS disabled, never used */

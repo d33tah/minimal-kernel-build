@@ -21,9 +21,6 @@ struct pagevec;
 
 #define MAX_SWAPFILES_SHIFT	5
 #define SWP_SWAPIN_ERROR_NUM 1
-struct reclaim_state {
-	unsigned long reclaimed_slab;
-};
 
 #ifdef __KERNEL__
 

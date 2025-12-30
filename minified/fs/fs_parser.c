@@ -6,16 +6,6 @@
 #include <linux/namei.h>
 #include "internal.h"
 
-static const struct constant_table bool_names[] = {
-	{ "0", false },
-	{ "1", true },
-	{ "false", false },
-	{ "no", false },
-	{ "true", true },
-	{ "yes", true },
-	{},
-};
-
 static const struct constant_table *
 __lookup_constant(const struct constant_table *tbl, const char *name)
 {

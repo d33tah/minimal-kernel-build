@@ -104,7 +104,6 @@ void release_pages(struct page **pages, int nr);
 
 struct address_space *page_mapping(struct page *);
 struct address_space *folio_mapping(struct folio *);
-struct address_space *swapcache_mapping(struct folio *);
 
 
 static inline struct folio *filemap_alloc_folio(gfp_t gfp, unsigned int order)

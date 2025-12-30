@@ -544,8 +544,6 @@ static inline void put_page(struct page *page)
 
 #define GUP_PIN_COUNTING_BIAS (1U << 10)
 
-void unpin_user_page(struct page *page);
-
 static inline bool is_cow_mapping(vm_flags_t flags)
 {
 	return (flags & (VM_SHARED | VM_MAYWRITE)) == VM_MAYWRITE;

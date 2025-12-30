@@ -149,14 +149,7 @@ retry:
 		goto out;
 	}
 
-	if (flags & FOLL_PIN) {
-		ret = arch_make_page_accessible(page);
-		if (ret) {
-			unpin_user_page(page);
-			page = ERR_PTR(ret);
-			goto out;
-		}
-	}
+	/* arch_make_page_accessible always returns 0, FOLL_PIN dead code removed */
 	if (flags & FOLL_TOUCH) {
 		if ((flags & FOLL_WRITE) && !pte_dirty(pte) && !PageDirty(page))
 			set_page_dirty(page);

@@ -492,12 +492,7 @@ static inline unsigned long round_hint_to_min(unsigned long hint)
 	return hint;
 }
 
-/* Used internally by acct_stack_growth */
-int mlock_future_check(struct mm_struct *mm, unsigned long flags,
-		       unsigned long len)
-{
-	return 0;
-}
+/* mlock_future_check removed - always returned 0 */
 
 static inline u64 file_mmap_size_max(struct file *file, struct inode *inode)
 {
@@ -583,9 +578,6 @@ unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len,
 
 	if (flags & MAP_LOCKED)
 		return -EPERM;
-
-	if (mlock_future_check(mm, vm_flags, len))
-		return -EAGAIN;
 
 	if (file) {
 		struct inode *inode = file_inode(file);
@@ -977,9 +969,6 @@ static int acct_stack_growth(struct vm_area_struct *vma, unsigned long size,
 	if (size > rlimit(RLIMIT_STACK))
 		return -ENOMEM;
 
-	if (mlock_future_check(mm, vma->vm_flags, grow << PAGE_SHIFT))
-		return -ENOMEM;
-
 	new_start = (vma->vm_flags & VM_GROWSUP) ? vma->vm_start :
 						   vma->vm_end - size;
 	/* is_hugepage_only_range always returns 0 - dead code removed */
@@ -1307,10 +1296,6 @@ static int do_brk_flags(unsigned long addr, unsigned long len,
 	mapped_addr = get_unmapped_area(NULL, addr, len, 0, MAP_FIXED);
 	if (IS_ERR_VALUE(mapped_addr))
 		return mapped_addr;
-
-	error = mlock_future_check(mm, mm->def_flags, len);
-	if (error)
-		return error;
 
 	if (munmap_vma_range(mm, addr, len, &prev, &rb_link, &rb_parent, uf))
 		return -ENOMEM;

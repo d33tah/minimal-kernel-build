@@ -176,10 +176,8 @@ struct anon_vma *folio_anon_vma(struct folio *folio);
 void unmap_mapping_folio(struct folio *folio);
 extern long populate_vma_page_range(struct vm_area_struct *vma,
 		unsigned long start, unsigned long end, int *locked);
-/* faultin_vma_page_range removed - unused */
-extern int mlock_future_check(struct mm_struct *mm, unsigned long flags,
-			      unsigned long len);
- 
+/* faultin_vma_page_range, mlock_future_check removed - unused */
+
 void mlock_folio(struct folio *folio);
 void munlock_page(struct page *page);
 /* mlock_vma_folio, mlock_vma_page, munlock_vma_page removed - unused */

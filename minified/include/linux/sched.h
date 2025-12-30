@@ -454,9 +454,7 @@ struct task_struct {
 	kernel_siginfo_t		*last_siginfo;
 
 	struct task_io_accounting	ioac;
-	struct perf_event_context	*perf_event_ctxp[perf_nr_task_contexts];
-	struct mutex			perf_event_mutex;
-	struct list_head		perf_event_list;
+	/* perf_event_* fields removed - PERF_EVENTS disabled, never used */
 
 	union {
 		refcount_t		rcu_users;

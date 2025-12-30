@@ -356,15 +356,6 @@ static inline bool vma_is_anonymous(struct vm_area_struct *vma)
 	return !vma->vm_ops;
 }
 
-static inline bool vma_is_foreign(struct vm_area_struct *vma)
-{
-	if (!current->mm)
-		return true;
-	if (current->mm != vma->vm_mm)
-		return true;
-	return false;
-}
-
 static inline bool vma_is_accessible(struct vm_area_struct *vma)
 {
 	return vma->vm_flags & VM_ACCESS_FLAGS;
@@ -607,12 +598,6 @@ static inline unsigned long folio_pfn(struct folio *folio)
 static inline atomic_t *folio_pincount_ptr(struct folio *folio)
 {
 	return &folio_page(folio, 1)->compound_pincount;
-}
-
-
-static inline bool is_pinnable_page(struct page *page)
-{
-	return true;
 }
 
 static inline void set_page_zone(struct page *page, enum zone_type zone)
@@ -1249,15 +1234,6 @@ static inline bool debug_pagealloc_enabled(void)
 static inline bool debug_pagealloc_enabled_static(void)
 {
 	return false;
-}
-
-static inline struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
-{
-	return NULL;
-}
-static inline int in_gate_area(struct mm_struct *mm, unsigned long addr)
-{
-	return 0;
 }
 
 extern int randomize_va_space;

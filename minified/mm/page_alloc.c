@@ -797,12 +797,6 @@ static inline unsigned int alloc_flags_nofragment(struct zone *zone,
 	return alloc_flags;
 }
 
-static inline unsigned int gfp_to_alloc_flags_cma(gfp_t gfp_mask,
-						  unsigned int alloc_flags)
-{
-	return alloc_flags;
-}
-
 static struct page *get_page_from_freelist(gfp_t gfp_mask, unsigned int order,
 					   int alloc_flags,
 					   const struct alloc_context *ac)
@@ -859,8 +853,6 @@ static inline unsigned int gfp_to_alloc_flags(gfp_t gfp_mask)
 	} else if (unlikely(rt_task(current)) && in_task())
 		alloc_flags |= ALLOC_HARDER;
 
-	alloc_flags = gfp_to_alloc_flags_cma(gfp_mask, alloc_flags);
-
 	return alloc_flags;
 }
 
@@ -915,8 +907,6 @@ static inline bool prepare_alloc_pages(gfp_t gfp_mask, unsigned int order,
 	/* fs_reclaim_acquire/release removed - empty stubs */
 
 	might_sleep_if(gfp_mask & __GFP_DIRECT_RECLAIM);
-
-	*alloc_flags = gfp_to_alloc_flags_cma(gfp_mask, *alloc_flags);
 
 	ac->spread_dirty_pages = (gfp_mask & __GFP_WRITE);
 

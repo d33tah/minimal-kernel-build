@@ -498,11 +498,7 @@ void iput(struct inode *inode)
 		iput_final(inode);
 }
 
-/* Stub: timestamps not needed for Hello World */
-int inode_update_time(struct inode *inode, struct timespec64 *time, int flags)
-{
-	return 0;
-}
+/* inode_update_time removed - never called */
 
 bool atime_needs_update(const struct path *path, struct inode *inode)
 {

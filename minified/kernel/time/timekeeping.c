@@ -343,21 +343,7 @@ ktime_t ktime_get(void)
 	return ktime_add_ns(base, nsecs);
 }
 
-u32 ktime_get_resolution_ns(void)
-{
-	struct timekeeper *tk = &tk_core.timekeeper;
-	unsigned int seq;
-	u32 nsecs;
-
-	WARN_ON(timekeeping_suspended);
-
-	do {
-		seq = read_seqcount_begin(&tk_core.seq);
-		nsecs = tk->tkr_mono.mult >> tk->tkr_mono.shift;
-	} while (read_seqcount_retry(&tk_core.seq, seq));
-
-	return nsecs;
-}
+/* ktime_get_resolution_ns removed - never called (~15 LOC) */
 
 static ktime_t *offsets[TK_OFFS_MAX] = {
 	[TK_OFFS_REAL] = &tk_core.timekeeper.offs_real,

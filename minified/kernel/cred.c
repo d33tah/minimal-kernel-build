@@ -53,10 +53,7 @@ static void put_cred_rcu(struct rcu_head *rcu)
 		      atomic_read(&cred->usage));
 
 	/* security_cred_free - empty stub */
-	key_put(cred->session_keyring);
-	key_put(cred->process_keyring);
-	key_put(cred->thread_keyring);
-	key_put(cred->request_key_auth);
+	/* key_put calls removed - empty stubs */
 	if (cred->group_info)
 		put_group_info(cred->group_info);
 	free_uid(cred->user);
@@ -211,10 +208,7 @@ int commit_creds(struct cred *new)
 		smp_wmb();
 	}
 
-	if (!uid_eq(new->fsuid, old->fsuid))
-		key_fsuid_changed(new);
-	if (!gid_eq(new->fsgid, old->fsgid))
-		key_fsgid_changed(new);
+	/* key_fsuid_changed, key_fsgid_changed removed - empty stubs */
 
 	if (new->user != old->user || new->user_ns != old->user_ns)
 		inc_rlimit_ucounts(new->ucounts, UCOUNT_RLIMIT_NPROC, 1);

@@ -24,9 +24,7 @@ int bdi_set_min_ratio(struct backing_dev_info *bdi, unsigned int min_ratio)
 void wb_update_bandwidth(struct bdi_writeback *wb)
 {
 }
-void balance_dirty_pages_ratelimited(struct address_space *mapping)
-{
-}
+/* balance_dirty_pages_ratelimited removed - never called */
 void __init page_writeback_init(void)
 {
 }

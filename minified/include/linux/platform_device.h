@@ -67,37 +67,10 @@ struct platform_driver {
 extern int __platform_driver_register(struct platform_driver *,
 					struct module *);
 
-#define platform_driver_probe(drv, probe) \
-	__platform_driver_probe(drv, probe, THIS_MODULE)
-extern int __platform_driver_probe(struct platform_driver *driver,
-		int (*probe)(struct platform_device *), struct module *module);
-
 #define builtin_platform_driver(__platform_driver) \
 	builtin_driver(__platform_driver, platform_driver_register)
 
-
-#define builtin_platform_driver_probe(__platform_driver, __platform_probe) \
-static int __init __platform_driver##_init(void) \
-{ \
-	return platform_driver_probe(&(__platform_driver), \
-				     __platform_probe);    \
-} \
-device_initcall(__platform_driver##_init); \
-
-#define platform_create_bundle(driver, probe, res, n_res, data, size) \
-	__platform_create_bundle(driver, probe, res, n_res, data, size, THIS_MODULE)
-extern struct platform_device *__platform_create_bundle(
-	struct platform_driver *driver, int (*probe)(struct platform_device *),
-	struct resource *res, unsigned int n_res,
-	const void *data, size_t size, struct module *module);
-
-int __platform_register_drivers(struct platform_driver * const *drivers,
-				unsigned int count, struct module *owner);
-void platform_unregister_drivers(struct platform_driver * const *drivers,
-				 unsigned int count);
-
-#define platform_register_drivers(drivers, count) \
-	__platform_register_drivers(drivers, count, THIS_MODULE)
+/* platform_create_bundle, platform_register_drivers, platform_unregister_drivers removed - never called */
 
 #define platform_pm_suspend		NULL
 #define platform_pm_resume		NULL

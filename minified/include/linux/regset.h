@@ -80,12 +80,6 @@ struct user_regset_view {
 	u8 ei_osabi;
 };
 
-/* task_user_regset_view removed - declared but never called */
-
-extern int regset_get(struct task_struct *target,
-		      const struct user_regset *regset,
-		      unsigned int size, void *data);
-
-/* regset_get_alloc, copy_regset_to_user removed - declared but never implemented */
+/* regset_get, regset_get_alloc, copy_regset_to_user, task_user_regset_view removed - never called/defined */
 
 #endif	 

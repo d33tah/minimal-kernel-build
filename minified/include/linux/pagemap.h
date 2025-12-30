@@ -11,8 +11,7 @@
 #include <linux/bitops.h>
 #include <linux/hardirq.h>
 
-/* Inlined from hugetlb_inline.h */
-static inline bool is_vm_hugetlb_page(struct vm_area_struct *vma) { return false; }
+/* is_vm_hugetlb_page removed - callers removed */
 
 struct folio_batch;
 

@@ -101,8 +101,6 @@ void setattr_copy(struct user_namespace *mnt_userns, struct inode *inode,
 		inode->i_atime = attr->ia_atime;
 	if (ia_valid & ATTR_MTIME)
 		inode->i_mtime = attr->ia_mtime;
-	if (ia_valid & ATTR_CTIME)
-		inode->i_ctime = attr->ia_ctime;
 	if (ia_valid & ATTR_MODE) {
 		umode_t mode = attr->ia_mode;
 		kgid_t kgid = i_gid_into_mnt(mnt_userns, inode);

@@ -356,7 +356,6 @@ struct inode {
 	loff_t			i_size;
 	struct timespec64	i_atime;
 	struct timespec64	i_mtime;
-	struct timespec64	i_ctime;
 	spinlock_t		i_lock;
 	u8			i_blkbits;
 
@@ -365,7 +364,6 @@ struct inode {
 	struct rw_semaphore	i_rwsem;
 
 	struct hlist_node	i_hash;
-	struct list_head	i_io_list;	
 	struct list_head	i_lru;		
 	struct list_head	i_sb_list;
 	struct list_head	i_wb_list;	
@@ -384,7 +382,6 @@ struct inode {
 	struct address_space	i_data;
 	struct list_head	i_devices;
 	union {
-		struct pipe_inode_info	*i_pipe;
 		struct cdev		*i_cdev;
 		char			*i_link;
 		unsigned		i_dir_seq;

@@ -41,8 +41,7 @@ struct inode *ramfs_get_inode(struct super_block *sb, const struct inode *dir,
 		inode->i_mapping->a_ops = &ram_aops;
 		mapping_set_gfp_mask(inode->i_mapping, GFP_HIGHUSER);
 		mapping_set_unevictable(inode->i_mapping);
-		inode->i_atime = inode->i_mtime = inode->i_ctime =
-			current_time(inode);
+		inode->i_atime = inode->i_mtime = current_time(inode);
 		switch (mode & S_IFMT) {
 		default:
 			init_special_inode(inode, mode, dev);
@@ -76,7 +75,7 @@ static int ramfs_mknod(struct user_namespace *mnt_userns, struct inode *dir,
 		d_instantiate(dentry, inode);
 		dget(dentry);
 		error = 0;
-		dir->i_mtime = dir->i_ctime = current_time(dir);
+		dir->i_mtime = current_time(dir);
 	}
 	return error;
 }
@@ -109,7 +108,7 @@ static int ramfs_symlink(struct user_namespace *mnt_userns, struct inode *dir,
 		if (!error) {
 			d_instantiate(dentry, inode);
 			dget(dentry);
-			dir->i_mtime = dir->i_ctime = current_time(dir);
+			dir->i_mtime = current_time(dir);
 		} else
 			iput(inode);
 	}

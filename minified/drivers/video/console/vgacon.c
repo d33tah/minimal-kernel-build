@@ -581,9 +581,7 @@ static int vgacon_blank(struct vc_data *c, int blank, int mode_switch)
 	}
 }
 
-#define colourmap 0xa0000
-#define blackwmap 0xa0000
-#define cmapsz 8192
+/* colourmap, blackwmap, cmapsz removed - unused */
 
 static int vgacon_resize(struct vc_data *c, unsigned int width,
 			 unsigned int height, unsigned int user)

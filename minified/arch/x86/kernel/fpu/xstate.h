@@ -6,7 +6,7 @@
 #include <asm/fpu/xstate.h>
 
 /* Inlined from asm/fpu/xcr.h */
-#define XCR_XFEATURE_ENABLED_MASK	0x00000000
+/* XCR_XFEATURE_ENABLED_MASK removed - unused */
 #define XCR_XFEATURE_IN_USE_MASK	0x00000001
 
 static inline u64 xgetbv(u32 index)

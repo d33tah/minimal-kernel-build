@@ -34,7 +34,7 @@ struct miscdevice {
 #include <linux/uaccess.h>
 #include <linux/security.h>
 
-#define DEVMEM_MINOR 1
+/* DEVMEM_MINOR removed - unused */
 #define DEVPORT_MINOR 4
 
 static ssize_t read_null(struct file *file, char __user *buf, size_t count,

@@ -9,8 +9,7 @@
 #include <asm/desc.h>
 #include <asm/traps.h>
 
-#define ptr_ok(x) ((x) > PAGE_OFFSET && (x) < PAGE_OFFSET + MAXMEM)
-
+/* ptr_ok removed - unused */
 #define TSS(x) this_cpu_read(cpu_tss_rw.x86_tss.x)
 
 static void set_df_gdt_entry(unsigned int cpu);

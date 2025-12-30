@@ -13,7 +13,7 @@ static inline int amd_iommu_detect(void)
 }
 
 #include <asm/proto.h>
-#define x86_swiotlb_enable false
+/* x86_swiotlb_enable removed - unused */
 /* Inlined from asm/gart.h */
 static inline void gart_iommu_hole_init(void)
 {
@@ -25,7 +25,7 @@ const struct dma_map_ops *dma_ops;
 static inline void __init pci_swiotlb_detect(void)
 {
 }
-#define x86_swiotlb_flags 0
+/* x86_swiotlb_flags removed - unused */
 
 void __init pci_iommu_alloc(void)
 {

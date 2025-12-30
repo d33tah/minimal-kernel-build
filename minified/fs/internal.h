@@ -13,8 +13,7 @@ struct fs_context;
 struct user_namespace;
 struct pipe_inode_info;
 
-int __block_write_begin_int(struct folio *folio, loff_t pos, unsigned len,
-		get_block_t *get_block, const struct iomap *iomap);
+/* __block_write_begin_int removed - never defined or called */
 
  
 extern void __init chrdev_init(void);

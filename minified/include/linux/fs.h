@@ -119,10 +119,7 @@ extern void __init files_maxfiles_init(void);
 extern unsigned int sysctl_nr_open;
 
 /* rwf_t defined earlier */
-
-struct buffer_head;
-typedef int (get_block_t)(struct inode *inode, sector_t iblock,
-			struct buffer_head *bh_result, int create);
+/* struct buffer_head, get_block_t removed - only used by block device code */
 
 #define MAY_EXEC		0x00000001
 #define MAY_WRITE		0x00000002

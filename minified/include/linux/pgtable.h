@@ -486,27 +486,11 @@ static inline int pmd_devmap_trans_unstable(pmd_t *pmd)
 	return 0;
 }
 
-static inline int pte_protnone(pte_t pte)
-{
-	return 0;
-}
-
-static inline int pmd_protnone(pmd_t pmd)
-{
-	return 0;
-}
+/* pte_protnone, pmd_protnone removed - unused */
 
 
 /* p4d_set_huge, pud_set_huge, pmd_set_huge, p4d_free_pud_page, pud_free_pmd_page,
-   pmd_free_pte_page, p4d_clear_huge removed - unused */
-static inline int pud_clear_huge(pud_t *pud)
-{
-	return 0;
-}
-static inline int pmd_clear_huge(pmd_t *pmd)
-{
-	return 0;
-}
+   pmd_free_pte_page, p4d_clear_huge, pud_clear_huge, pmd_clear_huge removed - unused */
 
 
 

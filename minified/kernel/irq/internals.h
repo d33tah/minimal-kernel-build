@@ -186,22 +186,14 @@ static inline bool irq_settings_disable_unlazy(struct irq_desc *desc)
 	return desc->status_use_accessors & _IRQ_DISABLE_UNLAZY;
 }
 
-static inline void irq_settings_clr_disable_unlazy(struct irq_desc *desc)
-{
-	desc->status_use_accessors &= ~_IRQ_DISABLE_UNLAZY;
-}
-
-/* irq_settings_is_hidden removed - unused */
+/* irq_settings_clr_disable_unlazy, irq_settings_is_hidden removed - unused */
 
 static inline void irq_settings_set_no_debug(struct irq_desc *desc)
 {
 	desc->status_use_accessors |= _IRQ_NO_DEBUG;
 }
 
-static inline bool irq_settings_no_debug(struct irq_desc *desc)
-{
-	return desc->status_use_accessors & _IRQ_NO_DEBUG;
-}
+/* irq_settings_no_debug removed - unused */
 
 extern int __irq_set_trigger(struct irq_desc *desc, unsigned long flags);
 extern void __disable_irq(struct irq_desc *desc);
@@ -342,25 +334,19 @@ static inline void irq_state_set_masked(struct irq_desc *desc)
 
 #undef __irqd_to_state
 
-static inline void __kstat_incr_irqs_this_cpu(struct irq_desc *desc)
-{
-	__this_cpu_inc(*desc->kstat_irqs);
-	__this_cpu_inc(kstat.irqs_sum);
-}
+/* __kstat_incr_irqs_this_cpu inlined into kstat_incr_irqs_this_cpu */
 
 static inline void kstat_incr_irqs_this_cpu(struct irq_desc *desc)
 {
-	__kstat_incr_irqs_this_cpu(desc);
+	__this_cpu_inc(*desc->kstat_irqs);
+	__this_cpu_inc(kstat.irqs_sum);
 	desc->tot_count++;
 }
 
-/* irq_desc_get_node and irq_desc_is_chained removed - unused */
+/* irq_desc_get_node, irq_desc_is_chained, irq_pm_check_wakeup, irq_pm_remove_action removed - unused */
 
-static inline bool irq_pm_check_wakeup(struct irq_desc *desc) { return false; }
 static inline void
 irq_pm_install_action(struct irq_desc *desc, struct irqaction *action) { }
-static inline void
-irq_pm_remove_action(struct irq_desc *desc, struct irqaction *action) { }
 
 static inline void irq_remove_timings(struct irq_desc *desc) {}
 static inline void irq_setup_timings(struct irq_desc *desc,

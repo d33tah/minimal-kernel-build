@@ -108,9 +108,7 @@ void __wake_up_locked(struct wait_queue_head *wq_head, unsigned int mode, int nr
 #define wake_up_interruptible_all(x)	__wake_up(x, TASK_INTERRUPTIBLE, 0, NULL)
 
 #define poll_to_key(m) ((void *)(__force uintptr_t)(__poll_t)(m))
-#define key_to_poll(m) ((__force __poll_t)(uintptr_t)(void *)(m))
-#define wake_up_poll(x, m)							\
-	__wake_up(x, TASK_NORMAL, 1, poll_to_key(m))
+/* key_to_poll, wake_up_poll removed - unused */
 #define wake_up_interruptible_poll(x, m)					\
 	__wake_up(x, TASK_INTERRUPTIBLE, 1, poll_to_key(m))
 
@@ -181,8 +179,7 @@ int autoremove_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, i
 		.func		= function,					\
 		.entry		= LIST_HEAD_INIT((name).entry),			\
 	}
-
-#define DEFINE_WAIT(name) DEFINE_WAIT_FUNC(name, autoremove_wake_function)
+/* DEFINE_WAIT removed - unused */
 
 #define init_wait(wait)								\
 	do {									\

@@ -90,7 +90,7 @@ extern int driver_add_groups(struct device_driver *drv,
 			     const struct attribute_group **groups);
 extern void driver_remove_groups(struct device_driver *drv,
 				 const struct attribute_group **groups);
-void device_driver_detach(struct device *dev);
+/* device_driver_detach removed - unused */
 
 /* make_class_name removed - unused */
 

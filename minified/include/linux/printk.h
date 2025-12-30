@@ -6,7 +6,7 @@
 #include <linux/linkage.h>
 
 #define KERN_SOH	"\001"
-#define KERN_SOH_ASCII	'\001'
+/* KERN_SOH_ASCII removed - unused */
 #define KERN_EMERG	KERN_SOH "0"
 #define KERN_ALERT	KERN_SOH "1"
 #define KERN_CRIT	KERN_SOH "2"
@@ -36,9 +36,7 @@ extern int oops_in_progress;
 extern int console_printk[];
 
 #define console_loglevel (console_printk[0])
-#define default_message_loglevel (console_printk[1])
-#define minimum_console_loglevel (console_printk[2])
-#define default_console_loglevel (console_printk[3])
+/* default_message_loglevel, minimum_console_loglevel, default_console_loglevel removed - unused */
 
 extern void console_verbose(void);
 
@@ -104,9 +102,7 @@ static inline void dump_stack(void)
 struct module;
 
 #define __printk_index_emit(...) do {} while (0)
-
-#define printk_index_subsys_emit(subsys_fmt_prefix, level, fmt, ...) \
-	__printk_index_emit(fmt, level, subsys_fmt_prefix)
+/* printk_index_subsys_emit removed - unused */
 
 #define printk_index_wrap(_p_func, _fmt, ...)				\
 	({								\
@@ -137,10 +133,7 @@ struct module;
 #define pr_cont(fmt, ...) \
 	printk(KERN_CONT fmt, ##__VA_ARGS__)
 
-/* DEBUG and CONFIG_DYNAMIC_DEBUG not defined */
-#define pr_devel(fmt, ...) \
-	no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
-
+/* pr_devel removed - unused */
 #define pr_debug(fmt, ...) \
 	no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
 
@@ -154,8 +147,7 @@ struct module;
 	printk_once(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
 #define pr_warn_once(fmt, ...)					\
 	printk_once(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)
-#define pr_info_once(fmt, ...)					\
-	printk_once(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
+/* pr_info_once removed - unused */
 
 
 #define printk_ratelimited(fmt, ...)					\
@@ -163,12 +155,11 @@ struct module;
 
 #define pr_emerg_ratelimited(fmt, ...)					\
 	printk_ratelimited(KERN_EMERG pr_fmt(fmt), ##__VA_ARGS__)
-#define pr_err_ratelimited(fmt, ...)					\
-	printk_ratelimited(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
 #define pr_warn_ratelimited(fmt, ...)					\
 	printk_ratelimited(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)
 #define pr_info_ratelimited(fmt, ...)					\
 	printk_ratelimited(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
+/* pr_err_ratelimited removed - unused */
 
 
 #endif

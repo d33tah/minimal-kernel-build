@@ -83,24 +83,10 @@ extern int init_module(void);
 
 #define MODULE_INFO(tag, info) __MODULE_INFO(tag, tag, info)
 
-#define MODULE_ALIAS(_alias) MODULE_INFO(alias, _alias)
-
-#define MODULE_SOFTDEP(_softdep) MODULE_INFO(softdep, _softdep)
-
-/* Built-in kernel, not MODULE */
+/* MODULE_ALIAS, MODULE_SOFTDEP, MODULE_AUTHOR, MODULE_DESCRIPTION, MODULE_VERSION, MODULE_FIRMWARE, MODULE_IMPORT_NS removed - unused */
 #define MODULE_FILE	MODULE_INFO(file, KBUILD_MODFILE);
-
 #define MODULE_LICENSE(_license) MODULE_FILE MODULE_INFO(license, _license)
-#define MODULE_AUTHOR(_author) MODULE_INFO(author, _author)
-#define MODULE_DESCRIPTION(_description) MODULE_INFO(description, _description)
 #define MODULE_DEVICE_TABLE(type, name)
-
-
-#define MODULE_VERSION(_version) MODULE_INFO(version, _version)
-
-#define MODULE_FIRMWARE(_firmware) MODULE_INFO(firmware, _firmware)
-
-#define MODULE_IMPORT_NS(ns)	MODULE_INFO(import_ns, __stringify(ns))
 
 struct notifier_block;
 

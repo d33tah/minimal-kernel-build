@@ -124,11 +124,6 @@ out:
 	return error;
 }
 
-long do_sys_truncate(const char __user *pathname, loff_t length)
-{
-	return -ENOSYS;
-}
-
 /* Stub: truncate not needed for Hello World kernel */
 SYSCALL_DEFINE2(truncate, const char __user *, path, long, length)
 {
@@ -136,11 +131,6 @@ SYSCALL_DEFINE2(truncate, const char __user *, path, long, length)
 }
 
 /* Stub: ftruncate not needed for Hello World kernel */
-long do_sys_ftruncate(unsigned int fd, loff_t length, int small)
-{
-	return -ENOSYS;
-}
-
 SYSCALL_DEFINE2(ftruncate, unsigned int, fd, unsigned long, length)
 {
 	return -ENOSYS;

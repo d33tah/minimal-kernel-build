@@ -80,7 +80,6 @@ extern struct file *do_filp_open(int dfd, struct filename *pathname,
 extern struct open_how build_open_how(int flags, umode_t mode);
 extern int build_open_flags(const struct open_how *how, struct open_flags *op);
 
-long do_sys_ftruncate(unsigned int fd, loff_t length, int small);
 int chmod_common(const struct path *path, umode_t mode);
 /* do_fchownat declaration removed - made static */
 int chown_common(const struct path *path, uid_t user, gid_t group);

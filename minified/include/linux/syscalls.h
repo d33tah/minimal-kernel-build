@@ -144,6 +144,4 @@ unsigned long ksys_mmap_pgoff(unsigned long addr, unsigned long len,
 ssize_t ksys_readahead(int fd, loff_t offset, size_t count);
 
 
-extern long do_sys_ftruncate(unsigned int fd, loff_t length, int small);
-
 #endif

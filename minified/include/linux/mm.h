@@ -833,10 +833,7 @@ static inline void sync_mm_rss(struct mm_struct *mm)
 {
 }
 
-static inline int pte_devmap(pte_t pte)
-{
-	return 0;
-}
+/* pte_devmap removed - callers removed */
 
 /* Removed: vma_wants_writenotify - never called */
 
@@ -1265,8 +1262,7 @@ static inline int in_gate_area(struct mm_struct *mm, unsigned long addr)
 
 extern int randomize_va_space;
 
-
-static inline unsigned int debug_guardpage_minorder(void) { return 0; }
+/* debug_guardpage_minorder removed - callers removed */
 
 /* MAX_NUMNODES == 1, always inline */
 /* Removed: setup_nr_node_ids - never called */

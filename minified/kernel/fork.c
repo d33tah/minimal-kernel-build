@@ -271,7 +271,6 @@ void put_task_stack(struct task_struct *tsk)
 
 void free_task(struct task_struct *tsk)
 {
-	release_user_cpus_ptr(tsk);
 	/* scs_release removed - empty stub */
 	WARN_ON_ONCE(refcount_read(&tsk->stack_refcount) != 0);
 	arch_release_task_struct(tsk);
@@ -524,7 +523,6 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 
 	if (orig->cpus_ptr == &orig->cpus_mask)
 		tsk->cpus_ptr = &tsk->cpus_mask;
-	dup_user_cpus_ptr(tsk, orig, node);
 
 	refcount_set(&tsk->rcu_users, 2);
 

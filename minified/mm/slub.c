@@ -148,16 +148,12 @@ static inline unsigned int oo_objects(struct kmem_cache_order_objects x)
 static __always_inline void __slab_lock(struct slab *slab)
 {
 	struct page *page = slab_page(slab);
-
-	VM_BUG_ON_PAGE(PageTail(page), page);
 	bit_spin_lock(PG_locked, &page->flags);
 }
 
 static __always_inline void __slab_unlock(struct slab *slab)
 {
 	struct page *page = slab_page(slab);
-
-	VM_BUG_ON_PAGE(PageTail(page), page);
 	__bit_spin_unlock(PG_locked, &page->flags);
 }
 
@@ -365,7 +361,6 @@ static inline void *acquire_slab(struct kmem_cache *s,
 		new.freelist = freelist;
 	}
 
-	VM_BUG_ON(new.frozen);
 	new.frozen = 1;
 
 	if (!__cmpxchg_double_slab(s, slab, freelist, counters, new.freelist,
@@ -598,8 +593,6 @@ static inline void *get_freelist(struct kmem_cache *s, struct slab *slab)
 		counters = slab->counters;
 
 		new.counters = counters;
-		VM_BUG_ON(!new.frozen);
-
 		new.inuse = slab->objects;
 		new.frozen = freelist != NULL;
 

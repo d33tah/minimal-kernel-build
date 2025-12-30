@@ -268,7 +268,6 @@ void truncate_inode_pages_range(struct address_space *mapping, loff_t lstart,
 				continue;
 
 			folio_lock(folio);
-			VM_BUG_ON_FOLIO(!folio_contains(folio, index), folio);
 			folio_wait_writeback(folio);
 			truncate_inode_folio(mapping, folio);
 			folio_unlock(folio);
@@ -422,7 +421,6 @@ int invalidate_inode_pages2_range(struct address_space *mapping, pgoff_t start,
 			}
 
 			folio_lock(folio);
-			VM_BUG_ON_FOLIO(!folio_contains(folio, index), folio);
 			if (folio->mapping != mapping) {
 				folio_unlock(folio);
 				continue;

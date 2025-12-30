@@ -103,7 +103,6 @@ int vsscanf(const char *, const char *, va_list);
 
 extern char *next_arg(char *args, char **param, char **val);
 
-extern int __kernel_text_address(unsigned long addr);
 extern int kernel_text_address(unsigned long addr);
 
 extern void bust_spinlocks(int yes);

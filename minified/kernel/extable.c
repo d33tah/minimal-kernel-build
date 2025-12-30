@@ -53,15 +53,7 @@ int notrace core_kernel_text(unsigned long addr)
 	return 0;
 }
 
-int __kernel_text_address(unsigned long addr)
-{
-	if (kernel_text_address(addr))
-		return 1;
-
-	if (is_kernel_inittext(addr))
-		return 1;
-	return 0;
-}
+/* __kernel_text_address removed - never called */
 
 int kernel_text_address(unsigned long addr)
 {

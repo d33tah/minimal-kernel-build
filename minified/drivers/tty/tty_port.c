@@ -196,41 +196,11 @@ void tty_port_lower_dtr_rts(struct tty_port *port)
 {
 }
 
-/* Stub: block_til_ready not needed for Hello World console */
-int tty_port_block_til_ready(struct tty_port *port, struct tty_struct *tty,
-			     struct file *filp)
-{
-	tty_port_set_active(port, 1);
-	return 0;
-}
-
-/* Stub: close functions not needed for Hello World console */
-int tty_port_close_start(struct tty_port *port, struct tty_struct *tty,
-			 struct file *filp)
-{
-	return 0;
-}
-
-void tty_port_close_end(struct tty_port *port, struct tty_struct *tty)
-{
-}
-
-void tty_port_close(struct tty_port *port, struct tty_struct *tty,
-		    struct file *filp)
-{
-}
+/* tty_port_block_til_ready, tty_port_close_start/end, tty_port_close, tty_port_open removed - never called */
 
 int tty_port_install(struct tty_port *port, struct tty_driver *driver,
 		     struct tty_struct *tty)
 {
 	tty->port = port;
 	return tty_standard_install(driver, tty);
-}
-
-/* Stub: tty_port_open not needed for Hello World console */
-int tty_port_open(struct tty_port *port, struct tty_struct *tty,
-		  struct file *filp)
-{
-	tty_port_set_active(port, 1);
-	return 0;
 }

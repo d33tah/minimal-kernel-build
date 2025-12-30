@@ -148,17 +148,9 @@ void tty_port_lower_dtr_rts(struct tty_port *port);
 void tty_port_hangup(struct tty_port *port);
 /* tty_port_tty_hangup removed - never called */
 void tty_port_tty_wakeup(struct tty_port *port);
-int tty_port_block_til_ready(struct tty_port *port, struct tty_struct *tty,
-		struct file *filp);
-int tty_port_close_start(struct tty_port *port, struct tty_struct *tty,
-		struct file *filp);
-void tty_port_close_end(struct tty_port *port, struct tty_struct *tty);
-void tty_port_close(struct tty_port *port, struct tty_struct *tty,
-		struct file *filp);
+/* tty_port_block_til_ready, tty_port_close_start/end, tty_port_close, tty_port_open removed */
 int tty_port_install(struct tty_port *port, struct tty_driver *driver,
 		struct tty_struct *tty);
-int tty_port_open(struct tty_port *port, struct tty_struct *tty,
-		struct file *filp);
 
 
 #endif

@@ -24,7 +24,7 @@
 #define	ENOTDIR		20
 #define	EISDIR		21
 #define	EINVAL		22
-#define	ENFILE		23
+/* ENFILE removed - unused */
 #define	EMFILE		24
 #define	ENOTTY		25
 #define	ETXTBSY		26
@@ -39,7 +39,7 @@
 #define	ENOSYS		38
 #define	ENOTEMPTY	39
 #define	ELOOP		40
-#define	EWOULDBLOCK	EAGAIN
+/* EWOULDBLOCK removed - unused (aliased to EAGAIN) */
 #define	ETIME		62
 #define	EOVERFLOW	75
 #define	ELIBBAD		80

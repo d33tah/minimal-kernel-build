@@ -219,10 +219,7 @@ int oops_in_progress;
 
 static DEFINE_SEMAPHORE(console_sem);
 struct console *console_drivers;
-
-static int __read_mostly suppress_panic_printk;
-
-static int nr_ext_console_drivers;
+/* suppress_panic_printk, nr_ext_console_drivers removed - write-only */
 
 #define down_console_sem()                                            \
 	do {                                                          \
@@ -393,7 +390,6 @@ static bool console_emit_next_record(struct console *con, char *text,
 				     char *ext_text, char *dropped_text,
 				     bool *handover)
 {
-	static int panic_console_dropped;
 	struct printk_info info;
 	struct printk_record r;
 	unsigned long flags;
@@ -410,9 +406,6 @@ static bool console_emit_next_record(struct console *con, char *text,
 	if (con->seq != r.info->seq) {
 		con->dropped += r.info->seq - con->seq;
 		con->seq = r.info->seq;
-		if (panic_in_progress() && panic_console_dropped++ > 10) {
-			suppress_panic_printk = 1;
-		}
 	}
 
 	if (suppress_message_printing(r.info->level)) {
@@ -701,9 +694,6 @@ void register_console(struct console *newcon)
 		newcon->next = console_drivers->next;
 		console_drivers->next = newcon;
 	}
-
-	if (newcon->flags & CON_EXTENDED)
-		nr_ext_console_drivers++;
 
 	newcon->dropped = 0;
 	if (newcon->flags & CON_PRINTBUFFER) {

@@ -508,7 +508,6 @@ static pmd_t *walk_to_pmd(struct mm_struct *mm, unsigned long addr)
 	if (!pmd)
 		return NULL;
 
-	VM_BUG_ON(pmd_trans_huge(*pmd));
 	return pmd;
 }
 
@@ -623,8 +622,7 @@ static vm_fault_t do_page_mkwrite(struct vm_fault *vmf)
 			return 0;
 		}
 		ret |= VM_FAULT_LOCKED;
-	} else
-		VM_BUG_ON_PAGE(!PageLocked(page), page);
+	}
 	return ret;
 }
 
@@ -637,7 +635,6 @@ static vm_fault_t fault_dirty_shared_page(struct vm_fault *vmf)
 	bool page_mkwrite = vma->vm_ops && vma->vm_ops->page_mkwrite;
 
 	dirtied = set_page_dirty(page);
-	VM_BUG_ON_PAGE(PageAnon(page), page);
 
 	mapping = page_rmapping(page);
 	unlock_page(page);
@@ -654,9 +651,6 @@ static inline void wp_page_reuse(struct vm_fault *vmf) __releases(vmf->ptl)
 	struct vm_area_struct *vma = vmf->vma;
 	struct page *page = vmf->page;
 	pte_t entry;
-
-	VM_BUG_ON(!(vmf->flags & FAULT_FLAG_WRITE));
-	VM_BUG_ON(PageAnon(page) && !PageAnonExclusive(page));
 
 	if (page)
 		page_cpupid_xchg_last(page, (1 << LAST_CPUPID_SHIFT) - 1);
@@ -728,8 +722,6 @@ void unmap_mapping_folio(struct folio *folio)
 	struct zap_details details = {};
 	pgoff_t first_index;
 	pgoff_t last_index;
-
-	VM_BUG_ON(!folio_test_locked(folio));
 
 	first_index = folio->index;
 	last_index = folio->index + folio_nr_pages(folio) - 1;
@@ -847,8 +839,6 @@ static vm_fault_t __do_fault(struct vm_fault *vmf)
 
 	if (unlikely(!(ret & VM_FAULT_LOCKED)))
 		lock_page(vmf->page);
-	else
-		VM_BUG_ON_PAGE(!PageLocked(vmf->page), vmf->page);
 
 	return ret;
 }

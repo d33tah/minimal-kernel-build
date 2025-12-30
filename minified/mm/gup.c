@@ -140,10 +140,6 @@ retry:
 		goto out;
 	}
 
-	VM_BUG_ON_PAGE((flags & FOLL_PIN) && PageAnon(page) &&
-			       !PageAnonExclusive(page),
-		       page);
-
 	if (unlikely(!try_grab_page(page, flags))) {
 		page = ERR_PTR(-ENOMEM);
 		goto out;
@@ -259,11 +255,8 @@ static int faultin_page(struct vm_area_struct *vma, unsigned long address,
 	if (*flags & FOLL_TRIED) {
 		fault_flags |= FAULT_FLAG_TRIED;
 	}
-	if (unshare) {
+	if (unshare)
 		fault_flags |= FAULT_FLAG_UNSHARE;
-
-		VM_BUG_ON(fault_flags & FAULT_FLAG_WRITE);
-	}
 
 	ret = handle_mm_fault(vma, address, fault_flags, NULL);
 	if (ret & VM_FAULT_ERROR) {
@@ -332,8 +325,6 @@ static long __get_user_pages(struct mm_struct *mm, unsigned long start,
 		return 0;
 
 	start = untagged_addr(start);
-
-	VM_BUG_ON(!!pages != !!(gup_flags & (FOLL_GET | FOLL_PIN)));
 
 	if (!(gup_flags & FOLL_FORCE))
 		gup_flags |= FOLL_NUMA;
@@ -517,10 +508,6 @@ long populate_vma_page_range(struct vm_area_struct *vma, unsigned long start,
 	int gup_flags;
 	long ret;
 
-	VM_BUG_ON(!PAGE_ALIGNED(start));
-	VM_BUG_ON(!PAGE_ALIGNED(end));
-	VM_BUG_ON_VMA(start < vma->vm_start, vma);
-	VM_BUG_ON_VMA(end > vma->vm_end, vma);
 	mmap_assert_locked(mm);
 
 	if (vma->vm_flags & VM_LOCKONFAULT)

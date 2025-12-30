@@ -47,8 +47,6 @@ static void page_cache_delete(struct address_space *mapping,
 		nr = folio_nr_pages(folio);
 	}
 
-	VM_BUG_ON_FOLIO(!folio_test_locked(folio), folio);
-
 	xas_store(&xas, shadow);
 	xas_init_marks(&xas);
 
@@ -62,7 +60,6 @@ static void filemap_unaccount_folio(struct address_space *mapping,
 {
 	long nr;
 
-	VM_BUG_ON_FOLIO(folio_mapped(folio), folio);
 	/* DEBUG_VM disabled - always check */
 	if (unlikely(folio_mapped(folio))) {
 		pr_alert("BUG: Bad page cache in process %s  pfn:%05lx\n",
@@ -151,11 +148,8 @@ static void page_cache_delete_batch(struct address_space *mapping,
 		if (xa_is_value(folio))
 			continue;
 
-		if (folio != fbatch->folios[i]) {
-			VM_BUG_ON_FOLIO(folio->index > fbatch->folios[i]->index,
-					folio);
+		if (folio != fbatch->folios[i])
 			continue;
-		}
 
 		WARN_ON_ONCE(!folio_test_locked(folio));
 
@@ -328,13 +322,10 @@ noinline int __filemap_add_folio(struct address_space *mapping,
 	int huge = folio_test_hugetlb(folio);
 	long nr = 1;
 
-	VM_BUG_ON_FOLIO(!folio_test_locked(folio), folio);
-	VM_BUG_ON_FOLIO(folio_test_swapbacked(folio), folio);
 	mapping_set_update(&xas, mapping);
 
 	if (!huge) {
 		/* mem_cgroup_charge always returns 0 */
-		VM_BUG_ON_FOLIO(index & (folio_nr_pages(folio) - 1), folio);
 		xas_set_order(&xas, index, folio_order(folio));
 		nr = folio_nr_pages(folio);
 	}
@@ -627,7 +618,6 @@ void folio_unlock(struct folio *folio)
 {
 	BUILD_BUG_ON(PG_waiters != 7);
 	BUILD_BUG_ON(PG_locked > 7);
-	VM_BUG_ON_FOLIO(!folio_test_locked(folio), folio);
 	if (clear_bit_unlock_is_negative_byte(PG_locked, folio_flags(folio, 0)))
 		folio_wake_bit(folio, PG_locked);
 }
@@ -767,7 +757,6 @@ repeat:
 			folio_put(folio);
 			goto repeat;
 		}
-		VM_BUG_ON_FOLIO(!folio_contains(folio, index), folio);
 	}
 
 	if (fgp_flags & FGP_ACCESSED)
@@ -876,8 +865,6 @@ unsigned find_lock_entries(struct address_space *mapping, pgoff_t start,
 			if (folio->mapping != mapping ||
 			    folio_test_writeback(folio))
 				goto unlock;
-			VM_BUG_ON_FOLIO(!folio_contains(folio, xas.xa_index),
-					folio);
 		}
 		indices[fbatch->nr] = xas.xa_index;
 		if (!folio_batch_add(fbatch, folio))

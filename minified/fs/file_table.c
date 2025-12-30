@@ -46,10 +46,7 @@ static inline void file_free(struct file *f)
 	call_rcu(&f->f_u.fu_rcuhead, file_free_rcu);
 }
 
-static long get_nr_files(void)
-{
-	return percpu_counter_read_positive(&nr_files);
-}
+/* get_nr_files removed - unused */
 
 static struct file *__alloc_file(int flags, const struct cred *cred)
 {

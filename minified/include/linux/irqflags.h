@@ -5,29 +5,13 @@
 #include <asm/irqflags.h>
 #include <asm/percpu.h>
 
-#ifndef ftrace_return_address0
-# define ftrace_return_address0 __builtin_return_address(0)
-#endif
-#define CALLER_ADDR0 ((unsigned long)ftrace_return_address0)
-
-/* ftrace_graph_ret_addr, is_ftrace_trampoline - removed, unused */
-/* lockdep_softirqs_on, lockdep_hardirqs_* - removed, unused */
-
-# define trace_hardirqs_on_prepare()		do { } while (0)
-# define trace_hardirqs_off_finish()		do { } while (0)
-# define trace_hardirqs_on()			do { } while (0)
-# define trace_hardirqs_off()			do { } while (0)
-# define lockdep_hardirq_context()		0
+/* ftrace/lockdep stubs removed - unused */
 # define lockdep_hardirqs_enabled()		0
-# define lockdep_hardirq_enter()		do { } while (0)
 # define lockdep_hardirq_threaded()		do { } while (0)
 # define lockdep_hardirq_exit()			do { } while (0)
-# define lockdep_softirq_enter()		do { } while (0)
-# define lockdep_softirq_exit()			do { } while (0)
 # define lockdep_hrtimer_enter(__hrtimer)	false
 # define lockdep_hrtimer_exit(__context)	do { } while (0)
 
-/* IRQSOFF_TRACER/PREEMPT_TRACER not defined */
 # define stop_critical_timings() do { } while (0)
 # define start_critical_timings() do { } while (0)
 

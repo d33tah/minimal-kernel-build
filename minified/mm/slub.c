@@ -1091,8 +1091,7 @@ void __init kmem_cache_init(void)
 
 	slub_dbg("SLUB: kmem_cache_init start\n");
 
-	if (debug_guardpage_minorder())
-		slub_max_order = 0;
+	/* debug_guardpage_minorder() always returns 0 - removed check */
 
 	/* no_hash_pointers_enable call removed - slub debug disabled */
 

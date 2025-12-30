@@ -82,9 +82,8 @@ static void __remove_shared_vm_struct(struct vm_area_struct *vma,
 	if (vma->vm_flags & VM_SHARED)
 		mapping_unmap_writable(mapping);
 
-	flush_dcache_mmap_lock(mapping);
+	/* flush_dcache_mmap_lock/unlock - empty stubs on x86 */
 	vma_interval_tree_remove(vma, &mapping->i_mmap);
-	flush_dcache_mmap_unlock(mapping);
 }
 
 void unlink_file_vma(struct vm_area_struct *vma)
@@ -277,9 +276,8 @@ static void __vma_link_file(struct vm_area_struct *vma)
 		if (vma->vm_flags & VM_SHARED)
 			mapping_allow_writable(mapping);
 
-		flush_dcache_mmap_lock(mapping);
+		/* flush_dcache_mmap_lock/unlock - empty stubs on x86 */
 		vma_interval_tree_insert(vma, &mapping->i_mmap);
-		flush_dcache_mmap_unlock(mapping);
 	}
 }
 
@@ -1397,7 +1395,7 @@ void exit_mmap(struct mm_struct *mm)
 	}
 
 	lru_add_drain();
-	flush_cache_mm(mm);
+	/* flush_cache_mm - empty stub on x86 */
 	tlb_gather_mmu_fullmm(&tlb, mm);
 
 	unmap_vmas(&tlb, vma, 0, -1);

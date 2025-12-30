@@ -405,8 +405,7 @@ retry:
 		}
 		if (pages) {
 			pages[i] = page;
-			flush_anon_page(vma, page, start);
-			flush_dcache_page(page);
+			/* flush_anon_page and flush_dcache_page - empty stubs on x86 */
 			ctx.page_mask = 0;
 		}
 next_page:

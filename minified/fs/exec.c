@@ -261,7 +261,7 @@ int copy_string_kernel(const char *arg, struct linux_binprm *bprm)
 		kaddr = kmap_atomic(page);
 		flush_arg_page(bprm, pos & PAGE_MASK, page);
 		memcpy(kaddr + offset_in_page(pos), arg, bytes_to_copy);
-		flush_dcache_page(page);
+		/* flush_dcache_page - empty stub on x86 */
 		kunmap_atomic(kaddr);
 		put_arg_page(page);
 	}

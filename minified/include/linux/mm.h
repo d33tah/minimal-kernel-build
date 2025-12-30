@@ -297,40 +297,22 @@ struct vm_fault {
 	pgtable_t prealloc_pte;		
 };
 
-/* page_entry_size - reduced for minimal kernel */
-enum page_entry_size { PE_SIZE_LAST };
-
 struct vm_operations_struct {
 	void (*open)(struct vm_area_struct * area);
-	
+
 	void (*close)(struct vm_area_struct * area);
-	
+
 	int (*may_split)(struct vm_area_struct *area, unsigned long addr);
 	int (*mremap)(struct vm_area_struct *area);
-	
+
 	int (*mprotect)(struct vm_area_struct *vma, unsigned long start,
 			unsigned long end, unsigned long newflags);
 	vm_fault_t (*fault)(struct vm_fault *vmf);
-	vm_fault_t (*huge_fault)(struct vm_fault *vmf,
-			enum page_entry_size pe_size);
 	vm_fault_t (*map_pages)(struct vm_fault *vmf,
 			pgoff_t start_pgoff, pgoff_t end_pgoff);
-	unsigned long (*pagesize)(struct vm_area_struct * area);
 
-	
 	vm_fault_t (*page_mkwrite)(struct vm_fault *vmf);
 
-	
-	vm_fault_t (*pfn_mkwrite)(struct vm_fault *vmf);
-
-	
-	int (*access)(struct vm_area_struct *vma, unsigned long addr,
-		      void *buf, int len, int write);
-
-	
-	const char *(*name)(struct vm_area_struct *vma);
-
-	
 	struct page *(*find_special_page)(struct vm_area_struct *vma,
 					  unsigned long addr);
 };

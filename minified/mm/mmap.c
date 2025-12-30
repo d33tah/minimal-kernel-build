@@ -1431,11 +1431,6 @@ static void special_mapping_close(struct vm_area_struct *vma)
 {
 }
 
-static const char *special_mapping_name(struct vm_area_struct *vma)
-{
-	return ((struct vm_special_mapping *)vma->vm_private_data)->name;
-}
-
 static int special_mapping_mremap(struct vm_area_struct *new_vma)
 {
 	struct vm_special_mapping *sm = new_vma->vm_private_data;
@@ -1458,9 +1453,6 @@ static const struct vm_operations_struct special_mapping_vmops = {
 	.close = special_mapping_close,
 	.fault = special_mapping_fault,
 	.mremap = special_mapping_mremap,
-	.name = special_mapping_name,
-
-	.access = NULL,
 	.may_split = special_mapping_split,
 };
 

@@ -75,10 +75,7 @@ void unmap_page_range(struct mmu_gather *tlb,
 			     unsigned long addr, unsigned long end,
 			     struct zap_details *details);
 
-void page_cache_ra_order(struct readahead_control *, struct file_ra_state *,
-		unsigned int order);
-void force_page_cache_ra(struct readahead_control *, unsigned long nr);
-/* force_page_cache_readahead removed - unused */
+/* page_cache_ra_order, force_page_cache_ra removed - unused */
 
 unsigned find_lock_entries(struct address_space *mapping, pgoff_t start,
 		pgoff_t end, struct folio_batch *fbatch, pgoff_t *indices);
@@ -182,7 +179,7 @@ void mlock_folio(struct folio *folio);
 void munlock_page(struct page *page);
 /* mlock_vma_folio, mlock_vma_page, munlock_vma_page removed - unused */
 void mlock_new_page(struct page *page);
-bool need_mlock_page_drain(int cpu);
+/* need_mlock_page_drain removed - never defined or called */
 void mlock_page_drain_local(void);
 void mlock_page_drain_remote(int cpu);
 
@@ -262,9 +259,8 @@ extern unsigned long  __must_check vm_mmap_pgoff(struct file *, unsigned long,
         unsigned long, unsigned long);
 
 extern void set_pageblock_order(void);
-unsigned int reclaim_clean_pages_from_list(struct zone *zone,
-					    struct list_head *page_list);
- 
+/* reclaim_clean_pages_from_list removed - unused */
+
 #define ALLOC_WMARK_MIN		WMARK_MIN
 #define ALLOC_WMARK_LOW		WMARK_LOW
 #define ALLOC_WMARK_HIGH	WMARK_HIGH

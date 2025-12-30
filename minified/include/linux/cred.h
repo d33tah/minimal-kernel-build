@@ -84,10 +84,7 @@ static inline void validate_creds(const struct cred *cred)
 static inline void validate_creds_for_do_exit(struct task_struct *tsk)
 {
 }
-static inline void validate_process_creds(void)
-{
-}
-
+/* validate_process_creds removed - unused */
 
 static inline struct cred *get_new_cred(struct cred *cred)
 {

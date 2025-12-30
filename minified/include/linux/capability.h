@@ -124,10 +124,6 @@ static inline bool ns_capable(struct user_namespace *ns, int cap)
 bool capable_wrt_inode_uidgid(struct user_namespace *mnt_userns,
 			      const struct inode *inode, int cap);
 
-static inline bool checkpoint_restore_ns_capable(struct user_namespace *ns)
-{
-	return ns_capable(ns, CAP_CHECKPOINT_RESTORE) ||
-		ns_capable(ns, CAP_SYS_ADMIN);
-}
+/* checkpoint_restore_ns_capable removed - unused */
 
 #endif

@@ -118,11 +118,7 @@ static inline void ptrace_release_task(struct task_struct *task)
 	ptrace_unlink(task);
 	BUG_ON(!list_empty(&task->ptrace_entry));
 }
-
-#ifndef force_successful_syscall_return
-#define force_successful_syscall_return() do { } while (0)
-#endif
-
+/* force_successful_syscall_return removed - never called */
 #ifndef is_syscall_success
 #define is_syscall_success(regs) (!IS_ERR_VALUE((unsigned long)(regs_return_value(regs))))
 #endif
@@ -131,16 +127,9 @@ static inline void ptrace_release_task(struct task_struct *task)
 /* x86 defines arch_has_single_step, arch_has_block_step,
  * and ARCH_HAS_USER_SINGLE_STEP_REPORT */
 /* user_enable_single_step, user_enable_block_step,
-   user_disable_single_step removed - declared but never called */
+   user_disable_single_step, arch_ptrace_stop_needed, arch_ptrace_stop
+   removed - declared but never called */
 extern void user_single_step_report(struct pt_regs *regs);
-
-#ifndef arch_ptrace_stop_needed
-#define arch_ptrace_stop_needed()	(0)
-#endif
-
-#ifndef arch_ptrace_stop
-#define arch_ptrace_stop()		do { } while (0)
-#endif
 
 #ifndef current_pt_regs
 #define current_pt_regs() task_pt_regs(current)

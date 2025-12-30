@@ -466,6 +466,4 @@ void mark_rodata_ro(void)
 		size >> 10);
 
 	mark_nxdata_nx();
-	if (__supported_pte_mask & _PAGE_NX)
-		debug_checkwx();
 }

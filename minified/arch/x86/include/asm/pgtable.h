@@ -57,11 +57,8 @@ extern pgd_t early_top_pgt[PTRS_PER_PGD];
  
 #define pgprot_encrypted(prot)	__pgprot(cc_mkenc(pgprot_val(prot)))
 #define pgprot_decrypted(prot)	__pgprot(cc_mkdec(pgprot_val(prot)))
+/* debug_checkwx, debug_checkwx_user removed - no-op stubs never used */
 
-#define debug_checkwx()		do { } while (0)
-#define debug_checkwx_user()	do { } while (0)
-
- 
 extern unsigned long empty_zero_page[PAGE_SIZE / sizeof(unsigned long)]
 	__visible;
 #define ZERO_PAGE(vaddr) ((void)(vaddr),virt_to_page(empty_zero_page))

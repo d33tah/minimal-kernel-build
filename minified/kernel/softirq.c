@@ -66,7 +66,6 @@ void __local_bh_enable_ip(unsigned long ip, unsigned int cnt)
 	}
 
 	preempt_count_dec();
-	preempt_check_resched();
 }
 
 static inline void softirq_handle_begin(void)

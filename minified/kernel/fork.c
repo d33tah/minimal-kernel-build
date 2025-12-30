@@ -357,11 +357,6 @@ static inline void mm_free_pgd(struct mm_struct *mm)
 	pgd_free(mm, mm->pgd);
 }
 
-static void check_mm(struct mm_struct *mm)
-{
-	/* Stub: mm validation not needed for minimal kernel */
-}
-
 #define allocate_mm() (kmem_cache_alloc(mm_cachep, GFP_KERNEL))
 #define free_mm(mm) (kmem_cache_free(mm_cachep, (mm)))
 
@@ -373,7 +368,6 @@ void __mmdrop(struct mm_struct *mm)
 	mm_free_pgd(mm);
 	destroy_context(mm);
 	mmu_notifier_subscriptions_destroy(mm);
-	check_mm(mm);
 	put_user_ns(mm->user_ns);
 	free_mm(mm);
 }
@@ -971,10 +965,7 @@ static __always_inline void delayed_free_task(struct task_struct *tsk)
 	free_task(tsk);
 }
 
-static void copy_oom_score_adj(u64 clone_flags, struct task_struct *tsk)
-{
-	/* Stub: OOM score adjustment not needed for minimal kernel */
-}
+/* copy_oom_score_adj removed - empty stub */
 
 static __latent_entropy struct task_struct *
 copy_process(struct pid *pid, int trace, int node,
@@ -1246,7 +1237,6 @@ copy_process(struct pid *pid, int trace, int node,
 	if (pidfile)
 		fd_install(pidfd, pidfile);
 	sched_post_fork(p);
-	copy_oom_score_adj(clone_flags, p);
 
 	return p;
 

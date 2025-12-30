@@ -17,7 +17,7 @@ struct irq_work {
 	.irqwait = __RCUWAIT_INITIALIZER(irqwait),		\
 }
 
-#define IRQ_WORK_INIT(_func) __IRQ_WORK_INIT(_func, 0)
+/* IRQ_WORK_INIT removed - unused */
 bool irq_work_queue(struct irq_work *work);
 bool irq_work_queue_on(struct irq_work *work, int cpu);
 

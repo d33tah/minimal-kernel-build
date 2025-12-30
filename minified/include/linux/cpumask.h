@@ -111,8 +111,7 @@ static inline bool cpumask_empty(const struct cpumask *srcp)
 }
 
 
-#define cpumask_any(srcp) cpumask_first(srcp)
-
+/* cpumask_any removed - unused */
 #define cpumask_of(cpu) (get_cpu_mask(cpu))
 
 
@@ -202,7 +201,7 @@ static inline bool cpu_possible(unsigned int cpu)
 	return cpu == 0;
 }
 
-#define cpu_is_offline(cpu)	unlikely(!cpu_online(cpu))
+/* cpu_is_offline removed - unused */
 
 /* NR_CPUS <= BITS_PER_LONG always true */
 #define CPU_BITS_ALL						\

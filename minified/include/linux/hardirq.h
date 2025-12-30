@@ -4,7 +4,6 @@
 #include <linux/preempt.h>
 #include <linux/lockdep.h>
 #include <linux/sched.h>
-#include <linux/vtime.h>
 #include <asm/hardirq.h>
 
 #define __irq_enter()	preempt_count_add(HARDIRQ_OFFSET)

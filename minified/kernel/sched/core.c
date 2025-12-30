@@ -46,7 +46,6 @@ extern void sched_init_smp(void);
 #include <linux/sched/wake_q.h>
 #include <linux/slab.h>
 #include <linux/syscalls.h>
-#include <linux/vtime.h>
 
 #include <linux/sched/types.h>
 

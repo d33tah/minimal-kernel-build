@@ -31,8 +31,7 @@
 #include <linux/pfn.h>
 #include <linux/backing-dev.h>
 
-#define MEMORY_OFFLINE 0x1
-#define REPORT_FAILURE 0x2
+/* MEMORY_OFFLINE, REPORT_FAILURE removed - unused */
 
 void set_pageblock_migratetype(struct page *page, int migratetype);
 /* end page-isolation.h */
@@ -69,14 +68,10 @@ struct alloc_context;
 struct swap_iocb;
 
 typedef int __bitwise fpi_t;
-
-#define FPI_NONE ((__force fpi_t)0)
-
+/* FPI_NONE removed - unused */
 #define FPI_TO_TAIL ((__force fpi_t)BIT(1))
-
 #define FPI_SKIP_KASAN_POISON ((__force fpi_t)BIT(2))
-
-#define MIN_PERCPU_PAGELIST_HIGH_FRACTION (8)
+/* MIN_PERCPU_PAGELIST_HIGH_FRACTION removed - unused */
 
 struct pagesets {
 	local_lock_t lock;

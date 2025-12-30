@@ -1276,8 +1276,7 @@ ssize_t generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 
 	return filemap_read(iocb, iter, retval);
 }
-
-#define MMAP_LOTSAMISS (100)
+/* MMAP_LOTSAMISS removed - unused */
 
 vm_fault_t filemap_fault(struct vm_fault *vmf)
 {

@@ -419,23 +419,7 @@ int group_send_sig_info(int sig, struct kernel_siginfo *info,
 	return ret;
 }
 
-/* __kill_pgrp_info removed - only used by kill_pgrp which is never called */
-
-int kill_pid_info(int sig, struct kernel_siginfo *info, struct pid *pid)
-{
-	struct task_struct *p;
-	int error;
-
-	rcu_read_lock();
-	p = pid_task(pid, PIDTYPE_PID);
-	if (p)
-		error = group_send_sig_info(sig, info, p, PIDTYPE_TGID);
-	else
-		error = -ESRCH;
-	rcu_read_unlock();
-
-	return error;
-}
+/* __kill_pgrp_info, kill_pid_info removed - never called */
 
 int send_sig_info(int sig, struct kernel_siginfo *info, struct task_struct *p)
 {

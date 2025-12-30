@@ -1851,9 +1851,7 @@ int vfs_mknod(struct user_namespace *mnt_userns, struct inode *dir,
 	if (error)
 		return error;
 
-	if ((S_ISCHR(mode) || S_ISBLK(mode)) && !is_whiteout &&
-	    !capable(CAP_MKNOD))
-		return -EPERM;
+	/* capable() always returns true - removed CAP_MKNOD check */
 
 	if (!dir->i_op->mknod)
 		return -EPERM;

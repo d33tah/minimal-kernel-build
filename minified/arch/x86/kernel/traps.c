@@ -21,7 +21,6 @@
 #include <linux/timer.h>
 #include <linux/init.h>
 #include <linux/bug.h>
-#include <linux/nmi.h>
 #include <linux/mm.h>
 #include <linux/smp.h>
 #include <linux/io.h>

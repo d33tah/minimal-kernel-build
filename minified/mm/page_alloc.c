@@ -60,7 +60,6 @@ struct alloc_context;
 #include <linux/kthread.h>
 #include <linux/memcontrol.h>
 #include <linux/lockdep.h>
-#include <linux/nmi.h>
 #include <asm/sections.h>
 #include <asm/tlbflush.h>
 #include <asm/div64.h>

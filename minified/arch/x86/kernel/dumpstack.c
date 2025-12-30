@@ -9,7 +9,6 @@
 #include <linux/sched/debug.h>
 #include <linux/sched/task_stack.h>
 #include <linux/bug.h>
-#include <linux/nmi.h>
 #include <linux/sysfs.h>
 
 #include <asm/cpu_entry_area.h>

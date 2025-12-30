@@ -2,7 +2,6 @@
 #include <linux/kernel.h>
 #include <linux/errno.h>
 #include <linux/mm.h>
-#include <linux/nmi.h>
 #include <linux/swap.h>
 #include <linux/smp.h>
 #include <linux/highmem.h>

@@ -2,7 +2,6 @@
 #include <linux/err.h>
 #include <linux/hrtimer.h>
 #include <linux/interrupt.h>
-#include <linux/nmi.h>
 #include <linux/percpu.h>
 #define CPU_PROFILING 1
 static inline void profile_tick(int type)

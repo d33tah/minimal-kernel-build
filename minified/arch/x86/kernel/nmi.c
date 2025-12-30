@@ -3,7 +3,6 @@
 #include <linux/kprobes.h>
 #include <linux/kdebug.h>
 #include <linux/sched/debug.h>
-#include <linux/nmi.h>
 #include <linux/delay.h>
 #include <linux/hardirq.h>
 #include <linux/ratelimit.h>

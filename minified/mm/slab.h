@@ -169,7 +169,6 @@ int should_failslab(struct kmem_cache *s, gfp_t gfpflags);
 static inline bool __should_failslab(struct kmem_cache *s, gfp_t gfpflags)
 { return false; }
 /* end fault-inject.h */
-#include <linux/kasan.h>
 /* kmemleak_alloc_recursive inlined - only call site */
 static inline void kmemleak_alloc_recursive(const void *ptr, size_t size, int min_count, slab_flags_t flags, gfp_t gfp) {}
 #include <linux/random.h>

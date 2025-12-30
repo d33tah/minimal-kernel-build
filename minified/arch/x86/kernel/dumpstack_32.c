@@ -8,7 +8,6 @@
 #include <linux/ptrace.h>
 #include <linux/sysfs.h>
 #include <linux/bug.h>
-#include <linux/nmi.h>
 
 #include <asm/stacktrace.h>
 

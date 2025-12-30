@@ -21,7 +21,6 @@
 #define BOOTCONFIG_MAGIC "#BOOTCONFIG\n"
 #define BOOTCONFIG_MAGIC_LEN 12
 #include <linux/console.h>
-#include <linux/nmi.h>
 #include <linux/percpu.h>
 #include <linux/security.h>
 #include <linux/smp.h>

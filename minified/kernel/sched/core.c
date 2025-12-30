@@ -40,7 +40,6 @@ extern void sched_init_smp(void);
 #include <linux/mmu_context.h>
 #include <linux/mmzone.h>
 
-#include <linux/nmi.h>
 #include <linux/nospec.h>
 /* Removed: psi_init - empty stub */
 #include <linux/sched/wake_q.h>

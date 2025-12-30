@@ -63,7 +63,6 @@ struct kmem_cache *kmem_cache_create_usercopy(const char *name,
 
 void kfree(const void *objp);
 size_t __ksize(const void *objp);
-size_t ksize(const void *objp);
 
 #if defined(ARCH_DMA_MINALIGN) && ARCH_DMA_MINALIGN > 8
 #define ARCH_KMALLOC_MINALIGN ARCH_DMA_MINALIGN

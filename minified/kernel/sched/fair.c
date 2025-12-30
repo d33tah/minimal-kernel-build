@@ -290,13 +290,7 @@ static u64 sched_vslice(struct cfs_rq *cfs_rq, struct sched_entity *se)
 }
 
 #include "pelt.h"
-void init_entity_runnable_average(struct sched_entity *se)
-{
-}
-void post_init_entity_util_avg(struct task_struct *p)
-{
-}
-/* Removed: update_tg_load_avg - empty stub, never called (~3 LOC) */
+/* init_entity_runnable_average, post_init_entity_util_avg, update_tg_load_avg removed - never called */
 
 static void update_curr(struct cfs_rq *cfs_rq)
 {

@@ -726,9 +726,7 @@ extern void init_rt_bandwidth(struct rt_bandwidth *rt_b, u64 period, u64 runtime
 extern void init_dl_task_timer(struct sched_dl_entity *dl_se);
 extern void init_dl_inactive_task_timer(struct sched_dl_entity *dl_se);
 
-extern void init_entity_runnable_average(struct sched_entity *se);
-extern void post_init_entity_util_avg(struct task_struct *p);
-
+/* init_entity_runnable_average, post_init_entity_util_avg removed - never called */
 /* sched_tick_offload_init, sched_update_tick_dependency removed - unused */
 
 static inline void add_nr_running(struct rq *rq, unsigned count)

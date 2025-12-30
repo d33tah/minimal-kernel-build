@@ -193,8 +193,6 @@ void set_pfnblock_flags_mask(struct page *page, unsigned long flags,
 	word_bitidx = bitidx / BITS_PER_LONG;
 	bitidx &= (BITS_PER_LONG - 1);
 
-	VM_BUG_ON_PAGE(!zone_spans_pfn(page_zone(page), pfn), page);
-
 	mask <<= bitidx;
 	flags <<= bitidx;
 
@@ -223,9 +221,6 @@ void set_pageblock_migratetype(struct page *page, int migratetype)
 static inline unsigned int order_to_pindex(int migratetype, int order)
 {
 	int base = order;
-
-	VM_BUG_ON(order > PAGE_ALLOC_COSTLY_ORDER);
-
 	return (MIGRATE_PCPTYPES * base) + migratetype;
 }
 
@@ -657,10 +652,6 @@ void free_unref_page_list(struct list_head *list)
 void split_page(struct page *page, unsigned int order)
 {
 	int i;
-
-	VM_BUG_ON_PAGE(PageCompound(page), page);
-	VM_BUG_ON_PAGE(!page_count(page), page);
-
 	for (i = 1; i < (1 << order); i++)
 		set_page_refcounted(page + i);
 }

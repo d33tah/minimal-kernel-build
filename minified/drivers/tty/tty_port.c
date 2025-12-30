@@ -172,28 +172,12 @@ void tty_port_tty_set(struct tty_port *port, struct tty_struct *tty)
 	spin_unlock_irqrestore(&port->lock, flags);
 }
 
-/* Stub: tty_port_hangup not needed for Hello World console */
-void tty_port_hangup(struct tty_port *port)
-{
-}
-
-/* tty_port_tty_hangup removed - never called (~8 LOC) */
+/* tty_port_hangup, tty_port_carrier_raised, tty_port_raise_dtr_rts,
+   tty_port_lower_dtr_rts removed - never called */
 
 void tty_port_tty_wakeup(struct tty_port *port)
 {
 	port->client_ops->write_wakeup(port);
-}
-
-/* Stub: carrier/dtr_rts not needed for Hello World console */
-int tty_port_carrier_raised(struct tty_port *port)
-{
-	return 1;
-}
-void tty_port_raise_dtr_rts(struct tty_port *port)
-{
-}
-void tty_port_lower_dtr_rts(struct tty_port *port)
-{
 }
 
 /* tty_port_block_til_ready, tty_port_close_start/end, tty_port_close, tty_port_open removed - never called */

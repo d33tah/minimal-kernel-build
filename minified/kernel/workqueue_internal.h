@@ -1,52 +1,5 @@
- 
- 
 #ifndef _KERNEL_WORKQUEUE_INTERNAL_H
 #define _KERNEL_WORKQUEUE_INTERNAL_H
-
+/* struct worker and wq_worker_last_func removed - unused */
 #include <linux/workqueue.h>
-#include <linux/kthread.h>
-#include <linux/preempt.h>
-
-struct worker_pool;
-
- 
-struct worker {
-	 
-	union {
-		struct list_head	entry;	 
-		struct hlist_node	hentry;	 
-	};
-
-	struct work_struct	*current_work;	 
-	work_func_t		current_func;	 
-	struct pool_workqueue	*current_pwq;	 
-	unsigned int		current_color;	 
-	struct list_head	scheduled;	 
-
-	 
-
-	struct task_struct	*task;		 
-	struct worker_pool	*pool;		 
-						 
-	struct list_head	node;		 
-						 
-
-	unsigned long		last_active;	 
-	unsigned int		flags;		 
-	int			id;		 
-	int			sleeping;	 
-
-	 
-	char			desc[WORKER_DESC_LEN];
-
-	 
-	struct workqueue_struct	*rescue_wq;	 
-
-	 
-	work_func_t		last_func;
-};
-
-/* wq_worker_running, wq_worker_sleeping removed - empty stubs */
-work_func_t wq_worker_last_func(struct task_struct *task);
-
-#endif  
+#endif

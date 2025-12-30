@@ -296,12 +296,9 @@ struct task_struct {
 	 
 	unsigned int			personality;
 
-	 
 	unsigned			sched_reset_on_fork:1;
 	unsigned			sched_contributes_to_load:1;
-	unsigned			sched_migrated:1;
 
-	 
 	unsigned			:0;
 
 	 
@@ -313,7 +310,6 @@ struct task_struct {
 	unsigned			in_execve:1;
 	unsigned			in_iowait:1;
 	unsigned			restore_sigmask:1;
-	unsigned			reported_split_lock:1;
 
 	unsigned long			atomic_flags;  
 
@@ -368,10 +364,6 @@ struct task_struct {
 	 
 	u64				start_time;
 
-	 
-	u64				start_boottime;
-
-	 
 	unsigned long			min_flt;
 	unsigned long			maj_flt;
 

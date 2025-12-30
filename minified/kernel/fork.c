@@ -536,8 +536,6 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 
 	kmap_local_fork(tsk);
 
-	tsk->reported_split_lock = 0;
-
 	return tsk;
 
 free_tsk:
@@ -1161,7 +1159,6 @@ copy_process(struct pid *pid, int trace, int node,
 
 	/* Simplified for minimal kernel - no accurate time needed */
 	p->start_time = 0;
-	p->start_boottime = 0;
 
 	write_lock_irq(&tasklist_lock);
 

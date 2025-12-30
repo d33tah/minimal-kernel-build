@@ -546,7 +546,6 @@ static int de_thread(struct task_struct *tsk)
 		}
 
 		tsk->start_time = leader->start_time;
-		tsk->start_boottime = leader->start_boottime;
 
 		BUG_ON(!same_thread_group(leader, tsk));
 

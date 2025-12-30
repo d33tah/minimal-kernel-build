@@ -1,7 +1,6 @@
 /* VM statistics - minimal */
 #include <linux/mm.h>
 #include <linux/vmstat.h>
-#include <linux/workqueue.h>
 #include <linux/migrate.h>
 atomic_long_t vm_zone_stat[NR_VM_ZONE_STAT_ITEMS] __cacheline_aligned_in_smp;
 atomic_long_t vm_node_stat[NR_VM_NODE_STAT_ITEMS] __cacheline_aligned_in_smp;
@@ -11,8 +10,7 @@ const char *const vmstat_text[] = {
 	"nr_free_pages",
 };
 #endif
-struct workqueue_struct *mm_percpu_wq;
+/* mm_percpu_wq workqueue removed - was allocated but never used */
 void __init init_mm_internals(void)
 {
-	mm_percpu_wq = alloc_workqueue("mm_percpu_wq", WQ_MEM_RECLAIM, 0);
 }

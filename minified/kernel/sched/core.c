@@ -501,7 +501,7 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 	init_numa_balancing(clone_flags, p);
 }
 
-DEFINE_STATIC_KEY_FALSE(sched_numa_balancing);
+/* sched_numa_balancing removed - defined but never used */
 
 int sched_fork(unsigned long clone_flags, struct task_struct *p)
 {

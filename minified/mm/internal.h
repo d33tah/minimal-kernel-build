@@ -277,7 +277,7 @@ struct tlbflush_unmap_batch;
 
 
  
-extern struct workqueue_struct *mm_percpu_wq;
+/* mm_percpu_wq removed - was allocated but never used */
 
 void flush_tlb_batched_pending(struct mm_struct *mm);
 

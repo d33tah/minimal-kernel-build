@@ -45,8 +45,6 @@ static inline struct anon_vma *anon_vma_alloc(void)
 
 static inline void anon_vma_free(struct anon_vma *anon_vma)
 {
-	VM_BUG_ON(atomic_read(&anon_vma->refcount));
-
 	might_sleep();
 	if (rwsem_is_locked(&anon_vma->root->rwsem)) {
 		anon_vma_lock_write(anon_vma);
@@ -209,10 +207,7 @@ void unlink_anon_vmas(struct vm_area_struct *vma)
 
 	list_for_each_entry_safe(avc, next, &vma->anon_vma_chain, same_vma) {
 		struct anon_vma *anon_vma = avc->anon_vma;
-
-		VM_WARN_ON(anon_vma->degree);
 		put_anon_vma(anon_vma);
-
 		list_del(&avc->same_vma);
 		anon_vma_chain_free(avc);
 	}
@@ -294,26 +289,14 @@ static void __page_check_anon_rmap(struct page *page,
 				   struct vm_area_struct *vma,
 				   unsigned long address)
 {
-	struct folio *folio = page_folio(page);
-
-	VM_BUG_ON_FOLIO(folio_anon_vma(folio)->root != vma->anon_vma->root,
-			folio);
-	VM_BUG_ON_PAGE(page_to_pgoff(page) != linear_page_index(vma, address),
-		       page);
+	(void)page_folio(page);
 }
 
 void page_add_anon_rmap(struct page *page, struct vm_area_struct *vma,
 			unsigned long address, rmap_t flags)
 {
 	bool first;
-
-	/* PageKsm always returns false */
-	VM_BUG_ON_PAGE(!PageLocked(page), page);
-
 	first = atomic_inc_and_test(&page->_mapcount);
-	VM_BUG_ON_PAGE(!first && (flags & RMAP_EXCLUSIVE), page);
-	VM_BUG_ON_PAGE(!first && PageAnonExclusive(page), page);
-
 	if (first) {
 		__mod_lruvec_page_state(page, NR_ANON_MAPPED, 1);
 		__page_set_anon_rmap(page, vma, address,
@@ -327,7 +310,6 @@ void page_add_new_anon_rmap(struct page *page, struct vm_area_struct *vma,
 			    unsigned long address)
 {
 	/* THP not enabled - PageCompound always false for anon pages */
-	VM_BUG_ON_VMA(address < vma->vm_start || address >= vma->vm_end, vma);
 	__SetPageSwapBacked(page);
 	atomic_set(&page->_mapcount, 0);
 	__mod_lruvec_page_state(page, NR_ANON_MAPPED, 1);
@@ -349,9 +331,6 @@ void page_add_file_rmap(struct page *page, struct vm_area_struct *vma,
 static void page_remove_file_rmap(struct page *page, bool compound)
 {
 	int nr = 0;
-
-	VM_BUG_ON_PAGE(compound && !PageHead(page), page);
-
 	/* PageHuge and PageTransHuge always return false */
 	if (atomic_add_negative(-1, &page->_mapcount))
 		nr++;

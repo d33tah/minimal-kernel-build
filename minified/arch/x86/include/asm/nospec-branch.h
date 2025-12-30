@@ -53,10 +53,6 @@
 	.popsection
 .endm
 
- 
-#define ANNOTATE_UNRET_SAFE ANNOTATE_RETPOLINE_SAFE
-
- 
 .macro ANNOTATE_UNRET_END
 .endm
 

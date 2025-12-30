@@ -14,10 +14,7 @@
 
 
 
-#define acpi_lapic 0
 #define acpi_ioapic 0
-#define acpi_disable_cmcff 0
-/* acpi_noirq_set, acpi_disable_pci, disable_acpi removed - unused */
 
 static inline void acpi_generic_reduced_hw_init(void) { }
 

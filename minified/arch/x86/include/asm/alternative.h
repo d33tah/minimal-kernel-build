@@ -142,21 +142,6 @@ extern void apply_alternatives(struct alt_instr *start, struct alt_instr *end);
 	asm_inline volatile (ALTERNATIVE(oldinstr, newinstr, feature)	\
 		: output : "i" (0), ## input)
 
- 
-#define alternative_call(oldfunc, newfunc, feature, output, input...)	\
-	asm_inline volatile (ALTERNATIVE("call %P[old]", "call %P[new]", feature) \
-		: output : [old] "i" (oldfunc), [new] "i" (newfunc), ## input)
-
- 
-#define alternative_call_2(oldfunc, newfunc1, feature1, newfunc2, feature2,   \
-			   output, input...)				      \
-	asm_inline volatile (ALTERNATIVE_2("call %P[old]", "call %P[new1]", feature1,\
-		"call %P[new2]", feature2)				      \
-		: output, ASM_CALL_CONSTRAINT				      \
-		: [old] "i" (oldfunc), [new1] "i" (newfunc1),		      \
-		  [new2] "i" (newfunc2), ## input)
-
- 
 #define ASM_OUTPUT2(a...) a
 
  

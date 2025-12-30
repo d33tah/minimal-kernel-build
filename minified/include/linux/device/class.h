@@ -85,12 +85,6 @@ struct class_attribute {
 			const char *buf, size_t count);
 };
 
-#define CLASS_ATTR_RW(_name) \
-	struct class_attribute class_attr_##_name = __ATTR_RW(_name)
-#define CLASS_ATTR_RO(_name) \
-	struct class_attribute class_attr_##_name = __ATTR_RO(_name)
-#define CLASS_ATTR_WO(_name) \
-	struct class_attribute class_attr_##_name = __ATTR_WO(_name)
 
 
 struct class_interface {

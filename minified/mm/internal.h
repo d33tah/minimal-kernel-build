@@ -270,13 +270,10 @@ extern void set_pageblock_order(void);
 #define ALLOC_HARDER		 0x10
 #define ALLOC_HIGH		 0x20
 #define ALLOC_CPUSET		 0x40
-#define ALLOC_KSWAPD		0x800  
+#define ALLOC_KSWAPD		0x800
 
-enum ttu_flags;
-struct tlbflush_unmap_batch;
+/* enum ttu_flags, struct tlbflush_unmap_batch forward declarations removed - unused */
 
-
- 
 /* mm_percpu_wq removed - was allocated but never used */
 
 void flush_tlb_batched_pending(struct mm_struct *mm);

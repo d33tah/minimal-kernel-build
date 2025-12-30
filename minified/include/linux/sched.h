@@ -225,10 +225,9 @@ union rcu_special {
 		u8			exp_hint;  
 		u8			need_mb;  
 	} b;  
-	u32 s;  
+	u32 s;
 };
-
-enum perf_event_task_context { perf_nr_task_contexts };
+/* enum perf_event_task_context removed - PERF_EVENTS disabled */
 
 struct wake_q_node {
 	struct wake_q_node *next;

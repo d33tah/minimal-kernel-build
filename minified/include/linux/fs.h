@@ -544,7 +544,7 @@ static inline struct file *get_file(struct file *f)
 typedef void *fl_owner_t;
 
 struct file_lock;
-struct net;
+/* struct net forward declaration removed - unused in fs.h */
 
 #define locks_inode(f) file_inode(f)
 

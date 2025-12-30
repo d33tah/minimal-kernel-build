@@ -101,6 +101,7 @@ do {						\
 #endif
 
  
-#define LOWMEM_PAGES ((((_ULL(2)<<31) - __PAGE_OFFSET) >> PAGE_SHIFT))
+/* Reduced for minimal kernel - support max 16MB instead of 1GB */
+#define LOWMEM_PAGES ((16 * 1024 * 1024) >> PAGE_SHIFT)
 
 #endif  

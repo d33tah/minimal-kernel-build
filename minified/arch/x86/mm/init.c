@@ -124,7 +124,8 @@ __ref void *alloc_low_pages(unsigned int num)
 	return __va(pfn << PAGE_SHIFT);
 }
 
-#define INIT_PGD_PAGE_TABLES 3
+/* Reduced for minimal kernel with max 16MB RAM */
+#define INIT_PGD_PAGE_TABLES 1
 
 #define INIT_PGD_PAGE_COUNT (2 * INIT_PGD_PAGE_TABLES)
 

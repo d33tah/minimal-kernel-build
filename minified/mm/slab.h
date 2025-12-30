@@ -354,9 +354,7 @@ static inline struct kmem_cache_node *get_node(struct kmem_cache *s, int node)
 		 if ((__n = get_node(__s, __node)))
 
 
-/* dump_unreclaimable_slab removed - unused */
-
-void ___cache_free(struct kmem_cache *cache, void *x, unsigned long addr);
+/* dump_unreclaimable_slab, ___cache_free removed - unused */
 
 /* cache_random_seq_create, cache_random_seq_destroy removed - unused */
 
@@ -382,9 +380,6 @@ static inline bool slab_want_init_on_free(struct kmem_cache *c)
 	return false;
 }
 
-/* debugfs_slab_release removed - unused */
-
-void __check_heap_object(const void *ptr, unsigned long n,
-			 const struct slab *slab, bool to_user);
+/* debugfs_slab_release, __check_heap_object removed - unused */
 
 #endif  

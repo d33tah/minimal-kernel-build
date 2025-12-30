@@ -84,13 +84,11 @@ static inline int __srcu_read_lock(struct srcu_struct *ssp)
 
 void call_srcu(struct srcu_struct *ssp, struct rcu_head *head,
 		void (*func)(struct rcu_head *head));
-void cleanup_srcu_struct(struct srcu_struct *ssp);
+/* cleanup_srcu_struct, start_poll_synchronize_srcu, poll_state_synchronize_srcu removed - never called */
 int __srcu_read_lock(struct srcu_struct *ssp) __acquires(ssp);
 void __srcu_read_unlock(struct srcu_struct *ssp, int idx) __releases(ssp);
 void synchronize_srcu(struct srcu_struct *ssp);
 unsigned long get_state_synchronize_srcu(struct srcu_struct *ssp);
-unsigned long start_poll_synchronize_srcu(struct srcu_struct *ssp);
-bool poll_state_synchronize_srcu(struct srcu_struct *ssp, unsigned long cookie);
 
 void srcu_init(void);
 

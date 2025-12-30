@@ -34,17 +34,7 @@ int init_srcu_struct(struct srcu_struct *ssp)
 	return init_srcu_struct_fields(ssp);
 }
 
-void cleanup_srcu_struct(struct srcu_struct *ssp)
-{
-	WARN_ON(ssp->srcu_lock_nesting[0] || ssp->srcu_lock_nesting[1]);
-	flush_work(&ssp->srcu_work);
-	WARN_ON(ssp->srcu_gp_running);
-	WARN_ON(ssp->srcu_gp_waiting);
-	WARN_ON(ssp->srcu_cb_head);
-	WARN_ON(&ssp->srcu_cb_head != ssp->srcu_cb_tail);
-	WARN_ON(ssp->srcu_idx != ssp->srcu_idx_max);
-	WARN_ON(ssp->srcu_idx & 0x1);
-}
+/* cleanup_srcu_struct removed - never called */
 
 void __srcu_read_unlock(struct srcu_struct *ssp, int idx)
 {
@@ -143,21 +133,7 @@ unsigned long get_state_synchronize_srcu(struct srcu_struct *ssp)
 	return ret & USHRT_MAX;
 }
 
-unsigned long start_poll_synchronize_srcu(struct srcu_struct *ssp)
-{
-	unsigned long ret = get_state_synchronize_srcu(ssp);
-
-	srcu_gp_start_if_needed(ssp);
-	return ret;
-}
-
-bool poll_state_synchronize_srcu(struct srcu_struct *ssp, unsigned long cookie)
-{
-	bool ret = USHORT_CMP_GE(READ_ONCE(ssp->srcu_idx), cookie);
-
-	barrier();
-	return ret;
-}
+/* start_poll_synchronize_srcu, poll_state_synchronize_srcu removed - never called */
 
 void __init rcu_scheduler_starting(void)
 {

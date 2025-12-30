@@ -7,7 +7,7 @@
 #define PLATFORM_DEVID_NONE	(-1)
 #define PLATFORM_DEVID_AUTO	(-2)
 
-struct irq_affinity;
+/* struct irq_affinity removed - unused */
 struct mfd_cell;
 /* struct property_entry removed - unused */
 struct platform_device_id;

@@ -6,7 +6,7 @@
 #include <linux/stddef.h>
 #include <asm/ptrace.h>
 
-struct paravirt_patch_site;
+/* struct paravirt_patch_site removed - unused */
 #define __parainstructions	NULL
 #define __parainstructions_end	NULL
 

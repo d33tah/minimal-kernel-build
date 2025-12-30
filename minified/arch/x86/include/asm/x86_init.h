@@ -5,10 +5,8 @@
 #include <asm/bootparam.h>
 
 struct ghcb;
-struct mpc_bus;
-struct mpc_cpu;
+/* struct mpc_bus, mpc_cpu, mpc_table removed - unused */
 struct pt_regs;
-struct mpc_table;
 struct cpuinfo_x86;
 struct irq_domain;
 

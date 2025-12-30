@@ -100,19 +100,7 @@ void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 		next->vm_prev = vma;
 }
 
-void __vma_unlink_list(struct mm_struct *mm, struct vm_area_struct *vma)
-{
-	struct vm_area_struct *prev, *next;
-
-	next = vma->vm_next;
-	prev = vma->vm_prev;
-	if (prev)
-		prev->vm_next = next;
-	else
-		mm->mmap = next;
-	if (next)
-		next->vm_prev = prev;
-}
+/* __vma_unlink_list removed - never called */
 
 /* Randomization disabled for minimal kernel - no ASLR needed */
 unsigned long randomize_stack_top(unsigned long stack_top)

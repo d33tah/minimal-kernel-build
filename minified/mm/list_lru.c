@@ -16,10 +16,7 @@ static void list_lru_unregister(struct list_lru *lru)
 {
 }
 
-static int lru_shrinker_id(struct list_lru *lru)
-{
-	return -1;
-}
+/* lru_shrinker_id removed - set_shrinker_bit is empty stub */
 
 static inline struct list_lru_one *list_lru_from_memcg_idx(struct list_lru *lru,
 							   int nid, int idx)
@@ -47,9 +44,8 @@ bool list_lru_add(struct list_lru *lru, struct list_head *item)
 	if (list_empty(item)) {
 		l = list_lru_from_kmem(lru, nid, item, &memcg);
 		list_add_tail(item, &l->list);
-
-		if (!l->nr_items++)
-			set_shrinker_bit(memcg, nid, lru_shrinker_id(lru));
+		l->nr_items++;
+		/* set_shrinker_bit call removed - empty stub */
 		nlru->nr_items++;
 		spin_unlock(&nlru->lock);
 		return true;

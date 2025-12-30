@@ -126,8 +126,7 @@ static void destroy_unused_super(struct super_block *s)
 	/* security_sb_free() - empty stub */
 	put_user_ns(s->s_user_ns);
 	kfree(s->s_subtype);
-	free_prealloced_shrinker(&s->s_shrink);
-
+	/* free_prealloced_shrinker is empty stub - call removed */
 	destroy_super_work(&s->destroy_work);
 }
 

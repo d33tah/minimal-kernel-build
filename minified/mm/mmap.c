@@ -921,8 +921,8 @@ unsigned long get_unmapped_area(struct file *file, unsigned long addr,
 	if (offset_in_page(addr))
 		return -EINVAL;
 
-	error = security_mmap_addr(addr);
-	return error ? error : addr;
+	/* security_mmap_addr always returns 0 */
+	return addr;
 }
 
 struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)

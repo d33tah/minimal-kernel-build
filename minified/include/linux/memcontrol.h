@@ -29,24 +29,8 @@ static inline struct mem_cgroup *folio_memcg(struct folio *folio)
 }
 
 
-static inline bool PageMemcgKmem(struct page *page)
-{
-	return false;
-}
-
-static inline int mem_cgroup_charge(struct folio *folio,
-		struct mm_struct *mm, gfp_t gfp)
-{
-	return 0;
-}
-
-static inline void mem_cgroup_uncharge(struct folio *folio)
-{
-}
-
-static inline void mem_cgroup_uncharge_list(struct list_head *page_list)
-{
-}
+/* PageMemcgKmem, mem_cgroup_charge, mem_cgroup_uncharge,
+   mem_cgroup_uncharge_list removed - callers already removed */
 
 
 static inline struct lruvec *folio_lruvec_lock_irq(struct folio *folio)
@@ -84,34 +68,9 @@ unsigned long mem_cgroup_get_zone_lru_size(struct lruvec *lruvec,
 	return 0;
 }
 
-static inline void lock_page_memcg(struct page *page)
-{
-}
-
-static inline void unlock_page_memcg(struct page *page)
-{
-}
-
-static inline void mem_cgroup_handle_over_high(void)
-{
-}
-
-static inline void mem_cgroup_enter_user_fault(void)
-{
-}
-
-static inline void mem_cgroup_exit_user_fault(void)
-{
-}
-
-static inline bool mem_cgroup_oom_synchronize(bool wait)
-{
-	return false;
-}
-
-static inline void mod_memcg_page_state(struct page *page, int idx, int val)
-{
-}
+/* lock_page_memcg, unlock_page_memcg, mem_cgroup_handle_over_high,
+   mem_cgroup_enter_user_fault, mem_cgroup_exit_user_fault,
+   mem_cgroup_oom_synchronize, mod_memcg_page_state removed - callers removed */
 
 
 static inline void mod_lruvec_kmem_state(void *p, enum node_stat_item idx,
@@ -151,36 +110,12 @@ static inline struct lruvec *folio_lruvec_relock_irqsave(struct folio *folio,
 	return folio_lruvec_lock_irqsave(folio, flags);
 }
 
-static inline void set_shrinker_bit(struct mem_cgroup *memcg,
-				    int nid, int shrinker_id)
-{
-}
-
-static inline int __memcg_kmem_charge_page(struct page *page, gfp_t gfp,
-					   int order)
-{
-	return 0;
-}
-
-static inline void __memcg_kmem_uncharge_page(struct page *page, int order)
-{
-}
-
-
-static inline bool memcg_kmem_enabled(void)
-{
-	return false;
-}
+/* set_shrinker_bit, __memcg_kmem_charge_page, __memcg_kmem_uncharge_page,
+   memcg_kmem_enabled, task_in_memcg_oom removed - callers already removed */
 
 static inline int memcg_kmem_id(struct mem_cgroup *memcg)
 {
 	return -1;
 }
-
-static inline bool task_in_memcg_oom(struct task_struct *p)
-{
-	return false;
-}
-
 
 #endif /* _LINUX_MEMCONTROL_H */

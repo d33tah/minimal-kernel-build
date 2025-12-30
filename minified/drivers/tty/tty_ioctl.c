@@ -33,23 +33,9 @@ unsigned int tty_write_room(struct tty_struct *tty)
 	return 2048;
 }
 
-void tty_driver_flush_buffer(struct tty_struct *tty)
-{
-	if (tty->ops->flush_buffer)
-		tty->ops->flush_buffer(tty);
-}
-
-void tty_unthrottle(struct tty_struct *tty)
-{
-	down_write(&tty->termios_rwsem);
-	if (test_and_clear_bit(TTY_THROTTLED, &tty->flags) &&
-	    tty->ops->unthrottle)
-		tty->ops->unthrottle(tty);
-	tty->flow_change = 0;
-	up_write(&tty->termios_rwsem);
-}
-
-/* tty_wait_until_sent, tty_termios_copy_hw, tty_termios_hw_change, tty_get_char_size, tty_get_frame_size removed - no callers */
+/* tty_driver_flush_buffer, tty_unthrottle, tty_wait_until_sent,
+   tty_termios_copy_hw, tty_termios_hw_change, tty_get_char_size,
+   tty_get_frame_size removed - no callers */
 int tty_mode_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg)
 {
 	return -ENOIOCTLCMD;

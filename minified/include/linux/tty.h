@@ -217,9 +217,7 @@ const char *tty_driver_name(const struct tty_struct *tty);
 /* tty_wait_until_sent removed - never called */
 unsigned int tty_chars_in_buffer(struct tty_struct *tty);
 unsigned int tty_write_room(struct tty_struct *tty);
-void tty_driver_flush_buffer(struct tty_struct *tty);
-void tty_unthrottle(struct tty_struct *tty);
-/* tty_hangup removed - never called */
+/* tty_driver_flush_buffer, tty_unthrottle, tty_hangup removed - never called */
 int tty_hung_up_p(struct file *filp);
 speed_t tty_termios_baud_rate(struct ktermios *termios);
 /* tty_get_char_size, tty_get_frame_size, tty_termios_copy_hw, tty_termios_hw_change removed - never called */

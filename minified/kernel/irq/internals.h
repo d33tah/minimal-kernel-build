@@ -226,11 +226,7 @@ extern void unmask_threaded_irq(struct irq_desc *desc);
 
 static inline void irq_mark_irq(unsigned int irq) { }
 
-extern int __irq_get_irqchip_state(struct irq_data *data,
-				   enum irqchip_irq_state which,
-				   bool *state);
-
-/* init_kstat_irqs removed - unused */
+/* __irq_get_irqchip_state, init_kstat_irqs removed - unused */
 
 irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc);
 irqreturn_t handle_irq_event_percpu(struct irq_desc *desc);

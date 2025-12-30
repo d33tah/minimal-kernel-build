@@ -29,23 +29,7 @@ void __disable_irq(struct irq_desc *desc)
 		irq_disable(desc);
 }
 
-static int __disable_irq_nosync(unsigned int irq)
-{
-	unsigned long flags;
-	struct irq_desc *desc =
-		irq_get_desc_buslock(irq, &flags, IRQ_GET_DESC_CHECK_GLOBAL);
-
-	if (!desc)
-		return -EINVAL;
-	__disable_irq(desc);
-	irq_put_desc_busunlock(desc, flags);
-	return 0;
-}
-
-void disable_irq_nosync(unsigned int irq)
-{
-	__disable_irq_nosync(irq);
-}
+/* __disable_irq_nosync, disable_irq_nosync removed - never called */
 
 void __enable_irq(struct irq_desc *desc)
 {
@@ -698,25 +682,5 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 	return retval;
 }
 
-int __irq_get_irqchip_state(struct irq_data *data, enum irqchip_irq_state which,
-			    bool *state)
-{
-	struct irq_chip *chip;
-	int err = -EINVAL;
-
-	do {
-		chip = irq_data_get_irq_chip(data);
-		if (WARN_ON_ONCE(!chip))
-			return -ENODEV;
-		if (chip->irq_get_irqchip_state)
-			break;
-		data = NULL;
-	} while (data);
-
-	if (data)
-		err = chip->irq_get_irqchip_state(data, which, state);
-	return err;
-}
-
-/* irq_get_irqchip_state, irq_set_irqchip_state, irq_has_action,
- * irq_check_status_bit removed - not called */
+/* __irq_get_irqchip_state, irq_get_irqchip_state, irq_set_irqchip_state,
+ * irq_has_action, irq_check_status_bit removed - not called */

@@ -83,11 +83,10 @@ request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
 	return request_threaded_irq(irq, handler, NULL, flags, name, dev);
 }
 
-/* free_irq removed - never called */
+/* free_irq, disable_irq_nosync removed - never called */
 
 struct device;
 
-extern void disable_irq_nosync(unsigned int irq);
 extern void enable_irq(unsigned int irq);
 
 struct irq_affinity_desc {

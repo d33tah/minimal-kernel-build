@@ -284,13 +284,7 @@ void irq_modify_status(unsigned int irq, unsigned long clr, unsigned long set);
 
 
 extern int irq_set_chip(unsigned int irq, const struct irq_chip *chip);
-/* irq_set_chip_data, irq_set_irq_type, irq_get_irq_data removed - never called */
-
-static inline struct irq_chip *irq_data_get_irq_chip(struct irq_data *d)
-{
-	return d->chip;
-}
-
+/* irq_set_chip_data, irq_set_irq_type, irq_get_irq_data, irq_data_get_irq_chip removed - unused */
 
 static inline struct cpumask *irq_data_get_affinity_mask(struct irq_data *d)
 {

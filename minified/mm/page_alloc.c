@@ -218,10 +218,7 @@ void set_pageblock_migratetype(struct page *page, int migratetype)
 				page_to_pfn(page), MIGRATETYPE_MASK);
 }
 
-static inline int __maybe_unused bad_range(struct zone *zone, struct page *page)
-{
-	return 0;
-}
+/* bad_range removed - only used in VM_BUG_ON which are no-ops */
 
 static inline unsigned int order_to_pindex(int migratetype, int order)
 {
@@ -461,7 +458,6 @@ static inline void expand(struct zone *zone, struct page *page, int low,
 	while (high > low) {
 		high--;
 		size >>= 1;
-		VM_BUG_ON_PAGE(bad_range(zone, &page[size]), &page[size]);
 
 		if (set_page_guard(zone, &page[size], high, migratetype))
 			continue;
@@ -751,7 +747,6 @@ static inline struct page *rmqueue(struct zone *preferred_zone,
 	spin_unlock_irqrestore(&zone->lock, flags);
 	/* check_new_pages always returns false - loop removed */
 out:
-	VM_BUG_ON_PAGE(page && bad_range(zone, page), page);
 	return page;
 
 failed:

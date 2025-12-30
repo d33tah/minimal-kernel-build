@@ -21,21 +21,15 @@
 #include "stats.h"
 
 unsigned int sysctl_sched_latency = 6000000ULL;
-static unsigned int normalized_sysctl_sched_latency = 6000000ULL;
-
+/* normalized_sysctl_sched_latency removed - unused */
 unsigned int sysctl_sched_tunable_scaling = SCHED_TUNABLESCALING_LOG;
-
 unsigned int sysctl_sched_min_granularity = 750000ULL;
-static unsigned int normalized_sysctl_sched_min_granularity = 750000ULL;
-
+/* normalized_sysctl_sched_min_granularity removed - unused */
 unsigned int sysctl_sched_idle_min_granularity = 750000ULL;
-
 static unsigned int sched_nr_latency = 8;
-
 unsigned int sysctl_sched_child_runs_first __read_mostly;
-
 unsigned int sysctl_sched_wakeup_granularity = 1000000UL;
-static unsigned int normalized_sysctl_sched_wakeup_granularity = 1000000UL;
+/* normalized_sysctl_sched_wakeup_granularity removed - unused */
 
 /* sched_thermal_decay_shift removed - unused */
 
@@ -57,26 +51,10 @@ static inline void update_load_set(struct load_weight *lw, unsigned long w)
 	lw->inv_weight = 0;
 }
 
-static unsigned int get_update_sysctl_factor(void)
-{
-	/* Stub: single CPU in minimal system, factor = 1 */
-	return 1;
-}
-
-static void update_sysctl(void)
-{
-	unsigned int factor = get_update_sysctl_factor();
-
-#define SET_SYSCTL(name) (sysctl_##name = (factor) * normalized_sysctl_##name)
-	SET_SYSCTL(sched_min_granularity);
-	SET_SYSCTL(sched_latency);
-	SET_SYSCTL(sched_wakeup_granularity);
-#undef SET_SYSCTL
-}
-
+/* get_update_sysctl_factor, update_sysctl, normalized_sysctl_* removed - factor always 1 */
 void __init sched_init_granularity(void)
 {
-	update_sysctl();
+	/* Stub: sysctl values already set to correct values at compile time */
 }
 
 #define WMULT_CONST (~0U)

@@ -190,20 +190,34 @@ static __always_inline int ffs(int x)
 {
 	int r;
 
+#ifdef CONFIG_X86_CMOV
 	asm("bsfl %1,%0\n\t"
 	    "cmovzl %2,%0"
 	    : "=&r" (r) : "rm" (x), "r" (-1));
+#else
+	asm("bsfl %1,%0\n\t"
+	    "jnz 1f\n\t"
+	    "movl $-1,%0\n"
+	    "1:" : "=r" (r) : "rm" (x));
+#endif
 	return r + 1;
 }
 
- 
+
 static __always_inline int fls(unsigned int x)
 {
 	int r;
 
+#ifdef CONFIG_X86_CMOV
 	asm("bsrl %1,%0\n\t"
 	    "cmovzl %2,%0"
 	    : "=&r" (r) : "rm" (x), "rm" (-1));
+#else
+	asm("bsrl %1,%0\n\t"
+	    "jnz 1f\n\t"
+	    "movl $-1,%0\n"
+	    "1:" : "=r" (r) : "rm" (x));
+#endif
 	return r + 1;
 }
 

@@ -77,8 +77,7 @@ extern void device_release_driver_internal(struct device *dev,
 
 extern void driver_detach(struct device_driver *drv);
 extern void driver_deferred_probe_del(struct device *dev);
-extern void device_set_deferred_probe_reason(const struct device *dev,
-					     struct va_format *vaf);
+/* device_set_deferred_probe_reason removed - orphan extern declaration */
 static inline int driver_match_device(struct device_driver *drv,
 				      struct device *dev)
 {
@@ -125,5 +124,4 @@ void device_pm_move_to_tail(struct device *dev);
 /* devtmpfs_create_node removed - unused */
 static inline int devtmpfs_delete_node(struct device *dev) { return 0; }
 
-/* software_node_notify removed - unused */
-void software_node_notify_remove(struct device *dev);
+/* software_node_notify, software_node_notify_remove removed - unused */

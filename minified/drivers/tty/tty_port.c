@@ -77,34 +77,8 @@ void tty_port_init(struct tty_port *port)
 	kref_init(&port->kref);
 }
 
-void tty_port_link_device(struct tty_port *port, struct tty_driver *driver,
-			  unsigned index)
-{
-	if (WARN_ON(index >= driver->num))
-		return;
-	driver->ports[index] = port;
-}
-
-struct device *tty_port_register_device(struct tty_port *port,
-					struct tty_driver *driver,
-					unsigned index, struct device *device)
-{
-	return tty_port_register_device_attr(port, driver, index, device, NULL,
-					     NULL);
-}
-
-struct device *
-tty_port_register_device_attr(struct tty_port *port, struct tty_driver *driver,
-			      unsigned index, struct device *device,
-			      void *drvdata,
-			      const struct attribute_group **attr_grp)
-{
-	tty_port_link_device(port, driver, index);
-	return tty_register_device_attr(driver, index, device, drvdata,
-					attr_grp);
-}
-
-/* tty_port_register_device_attr_serdev, tty_port_register_device_serdev,
+/* tty_port_link_device, tty_port_register_device, tty_port_register_device_attr,
+   tty_port_register_device_attr_serdev, tty_port_register_device_serdev,
    tty_port_alloc_xmit_buf, tty_port_free_xmit_buf removed - never called */
 
 void tty_port_destroy(struct tty_port *port)

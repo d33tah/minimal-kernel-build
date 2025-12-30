@@ -67,7 +67,7 @@ void arch_cpu_idle(void);
 void arch_cpu_idle_prepare(void);
 void arch_cpu_idle_enter(void);
 void arch_cpu_idle_exit(void);
-void arch_cpu_idle_dead(void);
+/* arch_cpu_idle_dead removed - never called */
 
 
 #endif  

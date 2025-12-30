@@ -361,10 +361,7 @@ void arch_cpu_idle_enter(void)
 	local_touch_nmi();
 }
 
-void arch_cpu_idle_dead(void)
-{
-	play_dead();
-}
+/* arch_cpu_idle_dead removed - declared but never called */
 
 void arch_cpu_idle(void)
 {

@@ -24,9 +24,7 @@ enum writeback_stat_item { NR_VM_WRITEBACK_STAT_ITEMS };
 /* count_vm_event, count_vm_events, __count_vm_event, __count_vm_events,
    __count_zid_vm_events removed - unused */
 
-static inline void vm_events_fold_cpu(int cpu)
-{
-}
+/* vm_events_fold_cpu removed - unused */
 
 #define count_vm_tlb_event(x)     do {} while (0)
 #define count_vm_tlb_events(x, y) do { (void)(y); } while (0)

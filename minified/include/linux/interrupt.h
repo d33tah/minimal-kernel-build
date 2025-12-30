@@ -165,10 +165,7 @@ DECLARE_PER_CPU(struct task_struct *, ksoftirqd);
 
 
 
-static inline void init_irq_proc(void)
-{
-}
-
+/* init_irq_proc removed - unused */
 
 extern int early_irq_init(void);
 extern int arch_probe_nr_irqs(void);

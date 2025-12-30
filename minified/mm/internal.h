@@ -175,13 +175,8 @@ extern long populate_vma_page_range(struct vm_area_struct *vma,
 		unsigned long start, unsigned long end, int *locked);
 /* faultin_vma_page_range, mlock_future_check removed - unused */
 
-void mlock_folio(struct folio *folio);
-void munlock_page(struct page *page);
-/* mlock_vma_folio, mlock_vma_page, munlock_vma_page removed - unused */
-void mlock_new_page(struct page *page);
-/* need_mlock_page_drain removed - never defined or called */
-void mlock_page_drain_local(void);
-void mlock_page_drain_remote(int cpu);
+/* mlock_folio, munlock_page, mlock_new_page, mlock_page_drain_local,
+   mlock_page_drain_remote removed - never called */
 
 /* maybe_pmd_mkwrite removed - unused */
 

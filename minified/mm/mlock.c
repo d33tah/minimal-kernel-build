@@ -27,25 +27,8 @@ SYSCALL_DEFINE0(munlockall)
 	return -ENOSYS;
 }
 
-void mlock_page_drain_local(void)
-{
-}
-
-void mlock_page_drain_remote(int cpu)
-{
-}
-
-void mlock_folio(struct folio *folio)
-{
-}
-
-void munlock_page(struct page *page)
-{
-}
-
-void mlock_new_page(struct page *page)
-{
-}
+/* mlock_page_drain_local, mlock_page_drain_remote, mlock_folio,
+   munlock_page, mlock_new_page removed - never called */
 
 SYSCALL_DEFINE3(readahead, int, fd, loff_t, offset, size_t, count)
 {

@@ -5,7 +5,6 @@
 #include <linux/cpu.h>
 #include <linux/ctype.h>
 #include <linux/export.h>
-#include <linux/kexec.h>
 #include <linux/kmod.h>
 #include <linux/kmsg_dump.h>
 #include <linux/reboot.h>

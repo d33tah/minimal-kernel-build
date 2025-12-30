@@ -516,7 +516,6 @@ static bool __initdata initramfs_async = true;
 extern char __initramfs_start[];
 extern unsigned long __initramfs_size;
 #include <linux/initrd.h>
-#include <linux/kexec.h>
 
 void __init reserve_initrd_mem(void)
 {

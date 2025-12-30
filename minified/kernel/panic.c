@@ -10,7 +10,6 @@
 #include <linux/module.h>
 #include <linux/reboot.h>
 #include <linux/delay.h>
-#include <linux/kexec.h>
 extern struct atomic_notifier_head panic_notifier_list;
 #include <linux/sched.h>
 

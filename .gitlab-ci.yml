@@ -8,7 +8,7 @@ build:
   before_script:
     - apt-get update && apt-get install -y build-essential flex bison bc libelf-dev libssl-dev clang lld llvm xz-utils expect qemu-system-x86
   script:
-    - cd minified && make LLVM=1 tinyconfig && yes "" | make LLVM=1 olddefconfig && make LLVM=1 -j$(nproc)
+    - cd minified && make LLVM=1 tinyconfig && sed -i 's/CONFIG_M686=y/# CONFIG_M686 is not set/' .config && sed -i 's/# CONFIG_M486 is not set/CONFIG_M486=y/' .config && yes "" | make LLVM=1 olddefconfig && make LLVM=1 -j$(nproc)
   artifacts:
     paths:
       - minified/arch/x86/boot/bzImage

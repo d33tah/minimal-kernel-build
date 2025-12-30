@@ -104,26 +104,8 @@ tty_port_register_device_attr(struct tty_port *port, struct tty_driver *driver,
 					attr_grp);
 }
 
-struct device *
-tty_port_register_device_attr_serdev(struct tty_port *port,
-				     struct tty_driver *driver, unsigned index,
-				     struct device *device, void *drvdata,
-				     const struct attribute_group **attr_grp)
-{
-	struct device *dev;
-
-	tty_port_link_device(port, driver, index);
-
-	dev = serdev_tty_port_register(port, device, driver, index);
-	if (PTR_ERR(dev) != -ENODEV) {
-		return dev;
-	}
-
-	return tty_register_device_attr(driver, index, device, drvdata,
-					attr_grp);
-}
-
-/* tty_port_register_device_serdev, tty_port_alloc_xmit_buf, tty_port_free_xmit_buf removed - never called */
+/* tty_port_register_device_attr_serdev, tty_port_register_device_serdev,
+   tty_port_alloc_xmit_buf, tty_port_free_xmit_buf removed - never called */
 
 void tty_port_destroy(struct tty_port *port)
 {

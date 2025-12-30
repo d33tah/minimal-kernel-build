@@ -359,28 +359,8 @@ static inline pgprot_t pgprot_modify(pgprot_t oldprot, pgprot_t newprot)
 #define arch_start_context_switch(prev)	do {} while (0)
 #endif
 
-#ifndef __HAVE_ARCH_PTE_SWP_EXCLUSIVE
-static inline int pte_swp_exclusive(pte_t pte)
-{
-	return false;
-}
-
-static inline pte_t pte_swp_clear_exclusive(pte_t pte)
-{
-	return pte;
-}
-#endif
-
-
-static inline int pte_swp_soft_dirty(pte_t pte)
-{
-	return 0;
-}
-
-static inline pte_t pte_swp_clear_soft_dirty(pte_t pte)
-{
-	return pte;
-}
+/* pte_swp_exclusive, pte_swp_clear_exclusive,
+   pte_swp_soft_dirty, pte_swp_clear_soft_dirty removed - unused */
 
 #ifndef __HAVE_PFNMAP_TRACKING
 

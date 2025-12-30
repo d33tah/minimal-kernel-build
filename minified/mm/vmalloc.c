@@ -191,18 +191,13 @@ static void vunmap_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
 {
 	pmd_t *pmd;
 	unsigned long next;
-	int cleared;
 
 	pmd = pmd_offset(pud, addr);
 	do {
 		next = pmd_addr_end(addr, end);
-
-		cleared = pmd_clear_huge(pmd);
-		if (cleared || pmd_bad(*pmd))
+		/* pmd_clear_huge always returns 0, cleared logic removed */
+		if (pmd_bad(*pmd))
 			*mask |= PGTBL_PMD_MODIFIED;
-
-		if (cleared)
-			continue;
 		if (pmd_none_or_clear_bad(pmd))
 			continue;
 		vunmap_pte_range(pmd, addr, next, mask);
@@ -216,18 +211,13 @@ static void vunmap_pud_range(p4d_t *p4d, unsigned long addr, unsigned long end,
 {
 	pud_t *pud;
 	unsigned long next;
-	int cleared;
 
 	pud = pud_offset(p4d, addr);
 	do {
 		next = pud_addr_end(addr, end);
-
-		cleared = pud_clear_huge(pud);
-		if (cleared || pud_bad(*pud))
+		/* pud_clear_huge always returns 0, cleared logic removed */
+		if (pud_bad(*pud))
 			*mask |= PGTBL_PUD_MODIFIED;
-
-		if (cleared)
-			continue;
 		if (pud_none_or_clear_bad(pud))
 			continue;
 		vunmap_pmd_range(pud, addr, next, mask);

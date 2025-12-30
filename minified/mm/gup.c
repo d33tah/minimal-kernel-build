@@ -112,21 +112,15 @@ retry:
 	pte = *ptep;
 	if (!pte_present(pte))
 		goto no_page;
-	if ((flags & FOLL_NUMA) && pte_protnone(pte))
-		goto no_page;
+	/* pte_protnone always returns 0, FOLL_NUMA check removed */
 	if ((flags & FOLL_WRITE) && !can_follow_write_pte(pte, flags)) {
 		pte_unmap_unlock(ptep, ptl);
 		return NULL;
 	}
 
 	page = vm_normal_page(vma, address, pte);
-	if (!page && pte_devmap(pte) && (flags & (FOLL_GET | FOLL_PIN))) {
-		*pgmap = get_dev_pagemap(pte_pfn(pte), *pgmap);
-		if (*pgmap)
-			page = pte_page(pte);
-		else
-			goto no_page;
-	} else if (unlikely(!page)) {
+	/* pte_devmap always returns 0, devmap branch removed */
+	if (unlikely(!page)) {
 		if (flags & FOLL_DUMP) {
 			page = ERR_PTR(-EFAULT);
 			goto out;

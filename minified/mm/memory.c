@@ -294,8 +294,7 @@ struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 			return NULL;
 		if (is_zero_pfn(pfn))
 			return NULL;
-		if (pte_devmap(pte))
-			return NULL;
+		/* pte_devmap always returns 0, check removed */
 		return NULL;
 	}
 
@@ -450,10 +449,7 @@ static void unmap_single_vma(struct mmu_gather *tlb, struct vm_area_struct *vma,
 	end = min(vma->vm_end, end_addr);
 	if (end <= vma->vm_start)
 		return;
-
-	if (unlikely(vma->vm_flags & VM_PFNMAP))
-		untrack_pfn(vma, 0, 0);
-
+	/* untrack_pfn is empty stub, call removed */
 	if (start != end)
 		unmap_page_range(tlb, vma, start, end, details);
 }
@@ -581,9 +577,7 @@ vm_fault_t vmf_insert_pfn_prot(struct vm_area_struct *vma, unsigned long addr,
 
 	if (!pfn_modify_allowed(pfn, pgprot))
 		return VM_FAULT_SIGBUS;
-
-	track_pfn_insert(vma, &pgprot, __pfn_to_pfn_t(pfn, PFN_DEV));
-
+	/* track_pfn_insert is empty stub, call removed */
 	return insert_pfn(vma, addr, __pfn_to_pfn_t(pfn, PFN_DEV), pgprot,
 			  false);
 }

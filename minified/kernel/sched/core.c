@@ -886,8 +886,6 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 	clear_preempt_need_resched();
 
 	if (likely(prev != next)) {
-		rq->nr_switches++;
-
 		RCU_INIT_POINTER(rq->curr, next);
 
 		++*switch_count;
@@ -1352,8 +1350,6 @@ void __init sched_init(void)
 		rq = cpu_rq(i);
 		raw_spin_lock_init(&rq->__lock);
 		rq->nr_running = 0;
-		rq->calc_load_active = 0;
-		rq->calc_load_update = jiffies + LOAD_FREQ;
 		init_cfs_rq(&rq->cfs);
 		init_rt_rq(&rq->rt);
 		init_dl_rq(&rq->dl);

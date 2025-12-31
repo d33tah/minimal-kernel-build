@@ -2,10 +2,7 @@
 #include <linux/mm.h>
 #include <linux/vmalloc.h>
 #include <asm/page.h>
-static inline int phys_addr_valid(resource_size_t addr)
-{
-	return 1;
-}
+/* phys_addr_valid removed - never called in this file */
 
 bool __virt_addr_valid(unsigned long x)
 {

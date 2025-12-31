@@ -99,11 +99,7 @@ static inline int irq_set_affinity(unsigned int irq, const struct cpumask *m)
 	return -EINVAL;
 }
 
-static inline int irq_can_set_affinity(unsigned int irq)
-{
-	return 0;
-}
-
+/* irq_can_set_affinity removed - never called */
 
 enum irqchip_irq_state {
 	IRQCHIP_STATE_PENDING,

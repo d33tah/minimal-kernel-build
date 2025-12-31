@@ -6,30 +6,16 @@
 
 void __init x86_early_init_platform_quirks(void)
 {
-	x86_platform.legacy.i8042 = X86_LEGACY_I8042_EXPECTED_PRESENT;
-	x86_platform.legacy.rtc = 1;
-	x86_platform.legacy.warm_reset = 1;
+	/* i8042, rtc, warm_reset, devices.pnpbios removed - never read */
 	x86_platform.legacy.reserve_bios_regions = 0;
-	x86_platform.legacy.devices.pnpbios = 1;
 
 	switch (boot_params.hdr.hardware_subarch) {
 	case X86_SUBARCH_PC:
 		x86_platform.legacy.reserve_bios_regions = 1;
 		break;
-	case X86_SUBARCH_XEN:
-		x86_platform.legacy.devices.pnpbios = 0;
-		x86_platform.legacy.rtc = 0;
-		break;
-	case X86_SUBARCH_INTEL_MID:
-	case X86_SUBARCH_CE4100:
-		x86_platform.legacy.devices.pnpbios = 0;
-		x86_platform.legacy.rtc = 0;
-		x86_platform.legacy.i8042 = X86_LEGACY_I8042_PLATFORM_ABSENT;
-		break;
+		/* XEN, INTEL_MID, CE4100 cases removed - only set unused fields */
 	}
-
-	if (x86_platform.set_legacy_features)
-		x86_platform.set_legacy_features();
+	/* set_legacy_features call removed - always NULL */
 }
 
 /* x86_pnpbios_disabled removed - never called */

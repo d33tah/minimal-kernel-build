@@ -57,25 +57,9 @@ struct x86_init_ops {
 struct timespec64;
 
  
-struct x86_legacy_devices {
-	int pnpbios;
-};
-
- 
-enum x86_legacy_i8042_state {
-	X86_LEGACY_I8042_PLATFORM_ABSENT,
-	X86_LEGACY_I8042_FIRMWARE_ABSENT,
-	X86_LEGACY_I8042_EXPECTED_PRESENT,
-};
-
- 
+/* x86_legacy_devices, x86_legacy_i8042_state, most x86_legacy_features fields removed - never read */
 struct x86_legacy_features {
-	enum x86_legacy_i8042_state i8042;
-	int rtc;
-	int warm_reset;
-	int no_vga;
 	int reserve_bios_regions;
-	struct x86_legacy_devices devices;
 };
 
 /* x86_hyper_runtime removed - never called */
@@ -90,8 +74,7 @@ struct x86_platform_ops {
 	unsigned char (*get_nmi_reason)(void);
 	/* save/restore_sched_clock_state, apic_post_init removed - never called */
 	struct x86_legacy_features legacy;
-	void (*set_legacy_features)(void);
-	/* hyper removed - never called */
+	/* set_legacy_features, hyper removed - never called */
 	/* guest removed - never called */
 };
 

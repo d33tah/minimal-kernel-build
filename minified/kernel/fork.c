@@ -1160,14 +1160,14 @@ copy_process(struct pid *pid, int trace, int node,
 
 	if (clone_flags & (CLONE_PARENT | CLONE_THREAD)) {
 		p->real_parent = current->real_parent;
-		p->parent_exec_id = current->parent_exec_id;
+		/* parent_exec_id removed - write-only field */
 		if (clone_flags & CLONE_THREAD)
 			p->exit_signal = -1;
 		else
 			p->exit_signal = current->group_leader->exit_signal;
 	} else {
 		p->real_parent = current;
-		p->parent_exec_id = current->self_exec_id;
+		/* parent_exec_id removed - write-only field */
 		p->exit_signal = args->exit_signal;
 	}
 

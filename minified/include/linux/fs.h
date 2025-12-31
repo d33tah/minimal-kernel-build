@@ -225,7 +225,7 @@ struct kiocb {
 	void (*ki_complete)(struct kiocb *iocb, long ret);
 	void			*private;
 	int			ki_flags;
-	u16			ki_ioprio; 
+	/* ki_ioprio removed - write-only field */
 	struct wait_page_queue	*ki_waitq; 
 	randomized_struct_fields_end
 };
@@ -900,7 +900,7 @@ static inline void init_sync_kiocb(struct kiocb *kiocb, struct file *filp)
 	*kiocb = (struct kiocb) {
 		.ki_filp = filp,
 		.ki_flags = iocb_flags(filp),
-		.ki_ioprio = get_current_ioprio(),
+		/* ki_ioprio removed - write-only field */
 	};
 }
 

@@ -30,11 +30,6 @@ static inline int folio_ref_count(const struct folio *folio)
 	return page_ref_count(&folio->page);
 }
 
-static inline int page_count(const struct page *page)
-{
-	return folio_ref_count(page_folio(page));
-}
-
 static inline void set_page_count(struct page *page, int v)
 {
 	atomic_set(&page->_refcount, v);

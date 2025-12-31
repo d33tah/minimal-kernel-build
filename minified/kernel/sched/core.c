@@ -664,14 +664,10 @@ static __always_inline struct rq *context_switch(struct rq *rq,
 	return finish_task_switch(prev);
 }
 
+/* nr_running simplified - single CPU */
 unsigned int nr_running(void)
 {
-	unsigned int i, sum = 0;
-
-	for_each_online_cpu(i)
-		sum += cpu_rq(i)->nr_running;
-
-	return sum;
+	return cpu_rq(0)->nr_running;
 }
 
 unsigned int nr_iowait_cpu(int cpu)
@@ -679,14 +675,10 @@ unsigned int nr_iowait_cpu(int cpu)
 	return atomic_read(&cpu_rq(cpu)->nr_iowait);
 }
 
+/* nr_iowait simplified - single CPU */
 unsigned int nr_iowait(void)
 {
-	unsigned int i, sum = 0;
-
-	for_each_possible_cpu(i)
-		sum += nr_iowait_cpu(i);
-
-	return sum;
+	return nr_iowait_cpu(0);
 }
 
 DEFINE_PER_CPU(struct kernel_stat, kstat);

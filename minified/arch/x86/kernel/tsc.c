@@ -139,20 +139,11 @@ static void __init cyc2ns_init_boot_cpu(void)
 	__set_cyc2ns_scale(tsc_khz, smp_processor_id(), rdtsc());
 }
 
+/* cyc2ns_init_secondary_cpus - single CPU, loop body is dead code */
 static void __init cyc2ns_init_secondary_cpus(void)
 {
-	unsigned int cpu, this_cpu = smp_processor_id();
-	struct cyc2ns *c2n = this_cpu_ptr(&cyc2ns);
-	struct cyc2ns_data *data = c2n->data;
-
-	for_each_possible_cpu(cpu) {
-		if (cpu != this_cpu) {
-			seqcount_latch_init(&c2n->seq);
-			c2n = per_cpu_ptr(&cyc2ns, cpu);
-			c2n->data[0] = data[0];
-			c2n->data[1] = data[1];
-		}
-	}
+	/* NR_CPUS=1, so for_each_possible_cpu only yields cpu=0 which equals
+	 * smp_processor_id(), making the (cpu != this_cpu) condition always false */
 }
 
 u64 native_sched_clock(void)

@@ -304,9 +304,8 @@ static void __init_memblock memblock_merge_regions(struct memblock_type *type)
 		struct memblock_region *this = &type->regions[i];
 		struct memblock_region *next = &type->regions[i + 1];
 
+		/* memblock_get_region_node comparison removed - always returns 0 */
 		if (this->base + this->size != next->base ||
-		    memblock_get_region_node(this) !=
-			    memblock_get_region_node(next) ||
 		    this->flags != next->flags) {
 			BUG_ON(this->base + this->size > next->base);
 			i++;
@@ -459,20 +458,19 @@ static int __init_memblock memblock_isolate_range(struct memblock_type *type,
 		if (rend <= base)
 			continue;
 
+		/* memblock_get_region_node always returns 0 - simplified to pass 0 */
 		if (rbase < base) {
 			rgn->base = base;
 			rgn->size -= base - rbase;
 			type->total_size -= base - rbase;
 			memblock_insert_region(type, idx, rbase, base - rbase,
-					       memblock_get_region_node(rgn),
-					       rgn->flags);
+					       0, rgn->flags);
 		} else if (rend > end) {
 			rgn->base = end;
 			rgn->size -= end - rbase;
 			type->total_size -= end - rbase;
 			memblock_insert_region(type, idx--, rbase, end - rbase,
-					       memblock_get_region_node(rgn),
-					       rgn->flags);
+					       0, rgn->flags);
 		} else {
 			if (!*end_rgn)
 				*start_rgn = idx;
@@ -539,12 +537,11 @@ int __init_memblock memblock_reserve(phys_addr_t base, phys_addr_t size)
 static bool should_skip_region(struct memblock_type *type,
 			       struct memblock_region *m, int nid, int flags)
 {
-	int m_nid = memblock_get_region_node(m);
-
+	/* memblock_get_region_node always returns 0 - inlined */
 	if (type != memblock_memory)
 		return false;
 
-	if (nid != NUMA_NO_NODE && nid != m_nid)
+	if (nid != NUMA_NO_NODE && nid != 0)
 		return true;
 
 	if ((flags & MEMBLOCK_MIRROR) && !memblock_is_mirror(m))
@@ -577,7 +574,7 @@ void __next_mem_range(u64 *idx, int nid, enum memblock_flags flags,
 
 		phys_addr_t m_start = m->base;
 		phys_addr_t m_end = m->base + m->size;
-		int m_nid = memblock_get_region_node(m);
+		/* memblock_get_region_node always returns 0 */
 
 		if (should_skip_region(type_a, m, nid, flags))
 			continue;
@@ -588,7 +585,7 @@ void __next_mem_range(u64 *idx, int nid, enum memblock_flags flags,
 			if (out_end)
 				*out_end = m_end;
 			if (out_nid)
-				*out_nid = m_nid;
+				*out_nid = 0;
 			idx_a++;
 			*idx = (u32)idx_a | (u64)idx_b << 32;
 			return;
@@ -612,7 +609,7 @@ void __next_mem_range(u64 *idx, int nid, enum memblock_flags flags,
 				if (out_end)
 					*out_end = min(m_end, r_end);
 				if (out_nid)
-					*out_nid = m_nid;
+					*out_nid = 0;
 
 				if (m_end <= r_end)
 					idx_a++;
@@ -655,7 +652,7 @@ void __init_memblock __next_mem_range_rev(u64 *idx, int nid,
 
 		phys_addr_t m_start = m->base;
 		phys_addr_t m_end = m->base + m->size;
-		int m_nid = memblock_get_region_node(m);
+		/* memblock_get_region_node always returns 0 */
 
 		if (should_skip_region(type_a, m, nid, flags))
 			continue;
@@ -666,7 +663,7 @@ void __init_memblock __next_mem_range_rev(u64 *idx, int nid,
 			if (out_end)
 				*out_end = m_end;
 			if (out_nid)
-				*out_nid = m_nid;
+				*out_nid = 0;
 			idx_a--;
 			*idx = (u32)idx_a | (u64)idx_b << 32;
 			return;
@@ -690,7 +687,7 @@ void __init_memblock __next_mem_range_rev(u64 *idx, int nid,
 				if (out_end)
 					*out_end = min(m_end, r_end);
 				if (out_nid)
-					*out_nid = m_nid;
+					*out_nid = 0;
 				if (m_start >= r_start)
 					idx_a--;
 				else
@@ -711,15 +708,14 @@ void __init_memblock __next_mem_pfn_range(int *idx, int nid,
 {
 	struct memblock_type *type = &memblock.memory;
 	struct memblock_region *r;
-	int r_nid;
+	/* memblock_get_region_node always returns 0 */
 
 	while (++*idx < type->cnt) {
 		r = &type->regions[*idx];
-		r_nid = memblock_get_region_node(r);
 
 		if (PFN_UP(r->base) >= PFN_DOWN(r->base + r->size))
 			continue;
-		if (nid == MAX_NUMNODES || nid == r_nid)
+		if (nid == MAX_NUMNODES || nid == 0)
 			break;
 	}
 	if (*idx >= type->cnt) {
@@ -732,7 +728,7 @@ void __init_memblock __next_mem_pfn_range(int *idx, int nid,
 	if (out_end_pfn)
 		*out_end_pfn = PFN_DOWN(r->base + r->size);
 	if (out_nid)
-		*out_nid = r_nid;
+		*out_nid = 0;
 }
 
 int __init_memblock memblock_set_node(phys_addr_t base, phys_addr_t size,

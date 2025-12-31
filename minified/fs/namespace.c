@@ -14,9 +14,8 @@
 #include <linux/file.h>
 #include <linux/uaccess.h>
 #include <linux/proc_ns.h>
-#include <linux/magic.h>
+/* magic.h, proc_fs.h removed - unused */
 #include <linux/memblock.h>
-#include <linux/proc_fs.h>
 #include <linux/task_work.h>
 #include <linux/sched/task.h>
 #include <uapi/linux/mount.h>

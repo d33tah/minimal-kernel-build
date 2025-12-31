@@ -47,19 +47,18 @@ struct file *anon_inode_getfile(const char *name,
 #include <linux/rcupdate.h>
 #include <linux/ptrace.h>
 #include <linux/mount.h>
-#include <linux/audit.h>
+/* audit.h removed - unused */
 #include <linux/memcontrol.h>
 #include <linux/proc_fs.h>
 #include <linux/rmap.h>
 /* ksm_exit, acct_*, proc_fork_connector, delayacct_*, taskstats_tgid_free removed - empty stubs */
 #include <linux/userfaultfd_k.h>
-#include <linux/freezer.h>
+/* freezer.h removed - unused */
 #include <linux/random.h>
 #include <linux/tty.h>
 #include <linux/fs_struct.h>
 #include <linux/magic.h>
-#include <linux/perf_event.h>
-#include <linux/posix-timers.h>
+/* perf_event.h, posix-timers.h removed - unused */
 /* user_return_notifier stubs, khugepaged_exit, scs_* removed - empty stubs */
 #include <linux/oom.h>
 /* uprobes.h removed - unused */
@@ -67,7 +66,7 @@ struct file *anon_inode_getfile(const char *name,
 #include <linux/sysctl.h>
 #include <linux/init_task.h>
 #include <linux/thread_info.h>
-#include <linux/io_uring.h>
+/* io_uring.h removed - unused */
 
 #include <asm/pgalloc.h>
 #include <linux/uaccess.h>

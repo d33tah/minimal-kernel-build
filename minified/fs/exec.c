@@ -15,7 +15,7 @@
 #include <linux/sched/signal.h>
 #include <linux/sched/task.h>
 #include <linux/pagemap.h>
-#include <linux/perf_event.h>
+/* perf_event.h removed - unused */
 #include <linux/highmem.h>
 #include <linux/spinlock.h>
 #include <linux/key.h>
@@ -28,15 +28,16 @@
 #include <linux/mount.h>
 #include <linux/security.h>
 #include <linux/syscalls.h>
-#include <linux/audit.h>
+/* audit.h removed - unused */
 #include <linux/kmod.h>
 #include <linux/fsnotify.h>
 #include <linux/fs_struct.h>
 #include <linux/oom.h>
 #include <linux/compat.h>
 #include <linux/vmalloc.h>
-#include <linux/io_uring.h>
+/* io_uring.h removed - unused */
 #include <linux/syscall_user_dispatch.h>
+#include <linux/ptrace.h>
 
 #include <linux/uaccess.h>
 #include <asm/mmu_context.h>

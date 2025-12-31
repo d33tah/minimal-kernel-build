@@ -35,18 +35,18 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <linux/mutex.h>
 #include <linux/futex.h>
 #include <linux/pipe_fs_i.h>
-#include <linux/audit.h>
+/* audit.h removed - unused */
 #include <linux/resource.h>
 #include <linux/blkdev.h>
 #include <linux/task_work.h>
 #include <linux/fs_struct.h>
 #include <linux/init_task.h>
-#include <linux/perf_event.h>
+/* perf_event.h removed - unused */
 #include <linux/oom.h>
 #include <linux/writeback.h>
 #include <linux/rcuwait.h>
 #include <linux/compat.h>
-#include <linux/io_uring.h>
+/* io_uring.h removed - unused */
 #include <linux/kprobes.h>
 
 #include <linux/uaccess.h>

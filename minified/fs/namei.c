@@ -850,10 +850,8 @@ static const char *pick_link(struct nameidata *nd, struct path *link,
 	if (!(nd->flags & LOOKUP_RCU)) {
 		/* touch_atime removed - empty stub */
 		cond_resched();
-	} else if (atime_needs_update(&last->link, inode)) {
-		if (!try_to_unlazy(nd))
-			return ERR_PTR(-ECHILD);
 	}
+	/* atime_needs_update always returns false - dead else-if block removed */
 
 	/* security_inode_follow_link always returns 0 - dead code removed */
 	res = READ_ONCE(inode->i_link);

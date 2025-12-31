@@ -489,12 +489,7 @@ void iput(struct inode *inode)
 		iput_final(inode);
 }
 
-/* inode_update_time removed - never called */
-
-bool atime_needs_update(const struct path *path, struct inode *inode)
-{
-	return false;
-}
+/* inode_update_time, atime_needs_update removed - never called */
 
 void touch_atime(const struct path *path)
 {

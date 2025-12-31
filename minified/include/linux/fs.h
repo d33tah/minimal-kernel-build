@@ -938,7 +938,6 @@ static inline void inode_dec_link_count(struct inode *inode)
 	mark_inode_dirty(inode);
 }
 
-extern bool atime_needs_update(const struct path *, struct inode *);
 extern void touch_atime(const struct path *);
 
 static inline void file_accessed(struct file *file)

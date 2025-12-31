@@ -80,12 +80,7 @@ static inline u64 dma_get_mask(struct device *dev)
 }
 
 
-static inline bool dma_addressing_limited(struct device *dev)
-{
-	return min_not_zero(dma_get_mask(dev), dev->bus_dma_limit) <
-			    dma_get_required_mask(dev);
-}
-
+/* dma_addressing_limited removed - never called */
 
 #define DEFINE_DMA_UNMAP_ADDR(ADDR_NAME)
 #define DEFINE_DMA_UNMAP_LEN(LEN_NAME)

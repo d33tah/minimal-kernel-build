@@ -108,10 +108,7 @@ void memblock_free_late(phys_addr_t base, phys_addr_t size);
 	__for_each_mem_range(i, &memblock.reserved, NULL, NUMA_NO_NODE,	\
 			     MEMBLOCK_NONE, p_start, p_end, NULL)
 
-static inline bool memblock_is_hotpluggable(struct memblock_region *m)
-{
-	return m->flags & MEMBLOCK_HOTPLUG;
-}
+/* memblock_is_hotpluggable removed - never called */
 
 static inline bool memblock_is_mirror(struct memblock_region *m)
 {

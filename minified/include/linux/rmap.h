@@ -35,10 +35,7 @@ struct anon_vma_chain {
 	unsigned long rb_subtree_last;
 };
 
-static inline void get_anon_vma(struct anon_vma *anon_vma)
-{
-	atomic_inc(&anon_vma->refcount);
-}
+/* get_anon_vma removed - never called */
 
 void __put_anon_vma(struct anon_vma *anon_vma);
 

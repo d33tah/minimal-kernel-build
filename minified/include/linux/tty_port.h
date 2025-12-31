@@ -32,15 +32,7 @@ struct __STRUCT_KFIFO_PTR(type, 0, type) fifo
 #define INIT_KFIFO(fifo) \
 	(void)sizeof(&(fifo))
 
-static inline void kfifo_init(void *fifo, void *buffer, unsigned int size)
-{
-	struct __kfifo *kf = fifo;
-	kf->in = 0;
-	kf->out = 0;
-	kf->mask = size - 1;
-	kf->esize = 1;
-	kf->data = buffer;
-}
+/* kfifo_init removed - never called */
 
 #include <linux/kref.h>
 #include <linux/mutex.h>
@@ -115,11 +107,7 @@ static inline struct tty_port *tty_port_get(struct tty_port *port)
 }
 
 
-static inline void tty_port_set_active(struct tty_port *port, bool val)
-{
-	assign_bit(TTY_PORT_ACTIVE, &port->iflags, val);
-}
-
+/* tty_port_set_active removed - never called */
 
 static inline bool tty_port_kopened(const struct tty_port *port)
 {

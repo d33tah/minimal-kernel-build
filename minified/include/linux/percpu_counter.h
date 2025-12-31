@@ -45,11 +45,7 @@ static inline s64 percpu_counter_read_positive(struct percpu_counter *fbc)
 	return fbc->count;
 }
 
-static inline s64 percpu_counter_sum_positive(struct percpu_counter *fbc)
-{
-	return percpu_counter_read_positive(fbc);
-}
-
+/* percpu_counter_sum_positive removed - never called */
 
 static inline void percpu_counter_inc(struct percpu_counter *fbc)
 {

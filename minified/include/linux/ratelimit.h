@@ -5,15 +5,7 @@
 #include <linux/sched.h>
 #include <linux/spinlock.h>
 
-static inline void ratelimit_state_init(struct ratelimit_state *rs,
-					int interval, int burst)
-{
-	memset(rs, 0, sizeof(*rs));
-
-	raw_spin_lock_init(&rs->lock);
-	rs->interval	= interval;
-	rs->burst	= burst;
-}
+/* ratelimit_state_init removed - never called */
 
 static inline void
 ratelimit_set_flags(struct ratelimit_state *rs, unsigned long flags)

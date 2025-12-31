@@ -318,10 +318,7 @@ static inline unsigned long zone_end_pfn(const struct zone *zone)
 	return zone->zone_start_pfn + zone->spanned_pages;
 }
 
-static inline bool zone_spans_pfn(const struct zone *zone, unsigned long pfn)
-{
-	return zone->zone_start_pfn <= pfn && pfn < zone_end_pfn(zone);
-}
+/* zone_spans_pfn removed - never called */
 
 #define MAX_ZONES_PER_ZONELIST (MAX_NUMNODES * MAX_NR_ZONES)
 

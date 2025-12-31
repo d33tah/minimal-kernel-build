@@ -102,19 +102,7 @@ void arch_dma_free(struct device *dev, size_t size, void *cpu_addr,
 
 pgprot_t dma_pgprot(struct device *dev, pgprot_t prot, unsigned long attrs);
 
-static inline void arch_sync_dma_for_device(phys_addr_t paddr, size_t size,
-		enum dma_data_direction dir)
-{
-}
-
-static inline void arch_sync_dma_for_cpu(phys_addr_t paddr, size_t size,
-		enum dma_data_direction dir)
-{
-}
-
-static inline void arch_sync_dma_for_cpu_all(void)
-{
-}
+/* arch_sync_dma_for_device, arch_sync_dma_for_cpu, arch_sync_dma_for_cpu_all removed - never called */
 
 static inline void arch_dma_prep_coherent(struct page *page, size_t size)
 {

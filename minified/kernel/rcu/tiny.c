@@ -98,7 +98,7 @@ rcu_process_callbacks(struct softirq_action *unused)
 	while (list) {
 		next = list->next;
 		prefetch(next);
-		debug_rcu_head_unqueue(list);
+		/* debug_rcu_head_unqueue removed - empty stub */
 		local_bh_disable();
 		rcu_reclaim_tiny(list);
 		local_bh_enable();
@@ -118,7 +118,7 @@ void call_rcu(struct rcu_head *head, rcu_callback_t func)
 {
 	unsigned long flags;
 
-	debug_rcu_head_queue(head);
+	/* debug_rcu_head_queue removed - empty stub */
 	head->func = func;
 	head->next = NULL;
 

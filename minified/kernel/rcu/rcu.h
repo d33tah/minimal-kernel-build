@@ -11,15 +11,7 @@
 
 extern int sysctl_sched_rt_runtime;
 
-static inline int debug_rcu_head_queue(struct rcu_head *head)
-{
-	return 0;
-}
-
-static inline void debug_rcu_head_unqueue(struct rcu_head *head)
-{
-}
-
+/* debug_rcu_head_queue, debug_rcu_head_unqueue removed - never called */
 /* rcu_stall_is_suppressed_at_boot and rcu_stall_is_suppressed removed - unused */
 #define rcu_ftrace_dump_stall_suppress()
 #define rcu_ftrace_dump_stall_unsuppress()

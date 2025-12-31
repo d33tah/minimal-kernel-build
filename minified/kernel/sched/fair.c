@@ -772,11 +772,7 @@ static inline int cfs_rq_throttled(struct cfs_rq *cfs_rq)
 	return 0;
 }
 
-static inline int throttled_hierarchy(struct cfs_rq *cfs_rq)
-{
-	return 0;
-}
-/* hrtick_start_fair removed - never called (hrtick_enabled_fair always returns 0) */
+/* throttled_hierarchy, hrtick_start_fair removed - never called */
 
 static int sched_idle_rq(struct rq *rq)
 {
@@ -1073,7 +1069,7 @@ static bool yield_to_task_fair(struct rq *rq, struct task_struct *p)
 {
 	struct sched_entity *se = &p->se;
 
-	if (!se->on_rq || throttled_hierarchy(cfs_rq_of(se)))
+	if (!se->on_rq) /* throttled_hierarchy always 0, removed */
 		return false;
 
 	set_next_buddy(se);

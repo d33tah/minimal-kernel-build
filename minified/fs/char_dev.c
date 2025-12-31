@@ -254,8 +254,7 @@ static struct kobject *cdev_get(struct cdev *p)
 	struct module *owner = p->owner;
 	struct kobject *kobj;
 
-	if (owner && !try_module_get(owner))
-		return NULL;
+	/* try_module_get always returns true - dead check removed */
 	kobj = kobject_get_unless_zero(&p->kobj);
 	if (!kobj)
 		module_put(owner);

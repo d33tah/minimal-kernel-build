@@ -182,8 +182,7 @@ void tick_check_new_device(struct clock_event_device *newdev)
 	if (!tick_check_replacement(curdev, newdev))
 		goto out_bc;
 
-	if (!try_module_get(newdev->owner))
-		return;
+	/* try_module_get always returns true - dead check removed */
 
 	clockevents_exchange_device(curdev, newdev);
 	tick_setup_device(td, newdev, cpu, cpumask_of(cpu));

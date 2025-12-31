@@ -608,8 +608,7 @@ struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx)
 	struct tty_struct *tty;
 	int retval;
 
-	if (!try_module_get(driver->owner))
-		return ERR_PTR(-ENODEV);
+	/* try_module_get always returns true - dead check removed */
 
 	tty = alloc_tty_struct(driver, idx);
 	if (!tty) {

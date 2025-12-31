@@ -403,8 +403,7 @@ static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 
 	if (desc->irq_data.chip == &no_irq_chip)
 		return -ENOSYS;
-	if (!try_module_get(desc->owner))
-		return -ENODEV;
+	/* try_module_get always returns true - dead check removed */
 
 	new->irq = irq;
 

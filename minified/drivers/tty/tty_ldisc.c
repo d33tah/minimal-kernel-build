@@ -56,9 +56,8 @@ static struct tty_ldisc_ops *get_ldops(int disc)
 	ret = ERR_PTR(-EINVAL);
 	ldops = tty_ldiscs[disc];
 	if (ldops) {
-		ret = ERR_PTR(-EAGAIN);
-		if (try_module_get(ldops->owner))
-			ret = ldops;
+		/* try_module_get always returns true - simplified */
+		ret = ldops;
 	}
 	raw_spin_unlock_irqrestore(&tty_ldiscs_lock, flags);
 	return ret;

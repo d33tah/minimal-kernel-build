@@ -891,11 +891,10 @@ static int search_binary_handler(struct linux_binprm *bprm)
 		return retval;
 
 	/* security_bprm_check always returns 0 - dead code removed */
+	/* try_module_get always returns true - dead check removed */
 	retval = -ENOENT;
 	read_lock(&binfmt_lock);
 	list_for_each_entry(fmt, &formats, lh) {
-		if (!try_module_get(fmt->module))
-			continue;
 		read_unlock(&binfmt_lock);
 
 		retval = fmt->load_binary(bprm);

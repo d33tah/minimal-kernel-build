@@ -84,8 +84,7 @@ static struct file_system_type *__get_fs_type(const char *name, int len)
 
 	read_lock(&file_systems_lock);
 	fs = *(find_filesystem(name, len));
-	if (fs && !try_module_get(fs->owner))
-		fs = NULL;
+	/* try_module_get always returns true - dead check removed */
 	read_unlock(&file_systems_lock);
 	return fs;
 }

@@ -49,8 +49,7 @@ static struct file *__anon_inode_getfile(const char *name,
 	struct inode *inode;
 	struct file *file;
 
-	if (fops->owner && !try_module_get(fops->owner))
-		return ERR_PTR(-ENOENT);
+	/* try_module_get always returns true - dead check removed */
 
 	inode = anon_inode_inode;
 	if (IS_ERR(inode)) {

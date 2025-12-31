@@ -28,9 +28,7 @@ struct x86_init_resources {
 struct x86_init_irqs {
 	void (*pre_vector_init)(void);
 	void (*intr_init)(void);
-	void (*intr_mode_select)(void);
-	void (*intr_mode_init)(void);
-	struct irq_domain *(*create_pci_msi_domain)(void);
+	/* intr_mode_select, intr_mode_init, create_pci_msi_domain removed - never called */
 };
 
 /* x86_init_oem removed - never accessed */

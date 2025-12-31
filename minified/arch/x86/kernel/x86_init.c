@@ -62,9 +62,7 @@ struct x86_init_ops x86_init __initdata = {
 	.irqs = {
 		.pre_vector_init	= init_ISA_irqs,
 		.intr_init		= native_init_IRQ,
-		.intr_mode_select	= x86_init_noop,
-		.intr_mode_init		= x86_init_noop,
-		.create_pci_msi_domain	= native_create_pci_msi_domain,
+		/* intr_mode_select, intr_mode_init, create_pci_msi_domain removed - never called */
 	},
 
 	/* .oem removed - never accessed (arch_setup, banner commented out in setup.c) */

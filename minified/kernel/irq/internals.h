@@ -343,7 +343,7 @@ static inline void kstat_incr_irqs_this_cpu(struct irq_desc *desc)
 static inline void
 irq_pm_install_action(struct irq_desc *desc, struct irqaction *action) { }
 
-static inline void irq_remove_timings(struct irq_desc *desc) {}
+/* irq_remove_timings removed - never called */
 static inline void irq_setup_timings(struct irq_desc *desc,
 				     struct irqaction *act) {};
 static inline void record_irq_time(struct irq_desc *desc) {}

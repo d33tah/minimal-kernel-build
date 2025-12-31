@@ -5,13 +5,7 @@
 #include <linux/sched.h>
 #include <linux/spinlock.h>
 
-/* ratelimit_state_init removed - never called */
-
-static inline void
-ratelimit_set_flags(struct ratelimit_state *rs, unsigned long flags)
-{
-	rs->flags = flags;
-}
+/* ratelimit_state_init, ratelimit_set_flags removed - never called */
 
 #define WARN_RATELIMIT(condition, format, ...)			\
 ({								\

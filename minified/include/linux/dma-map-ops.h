@@ -102,15 +102,8 @@ void arch_dma_free(struct device *dev, size_t size, void *cpu_addr,
 
 pgprot_t dma_pgprot(struct device *dev, pgprot_t prot, unsigned long attrs);
 
-/* arch_sync_dma_for_device, arch_sync_dma_for_cpu, arch_sync_dma_for_cpu_all removed - never called */
-
-static inline void arch_dma_prep_coherent(struct page *page, size_t size)
-{
-}
-
-static inline void arch_dma_mark_clean(phys_addr_t paddr, size_t size)
-{
-}
+/* arch_sync_dma_for_device, arch_sync_dma_for_cpu, arch_sync_dma_for_cpu_all,
+   arch_dma_prep_coherent, arch_dma_mark_clean removed - never called */
 
 void *arch_dma_set_uncached(void *addr, size_t size);
 void arch_dma_clear_uncached(void *addr, size_t size);

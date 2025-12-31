@@ -2,26 +2,21 @@
 #include <linux/vmalloc.h>
 #include <linux/mm.h>
 #include <linux/module.h>
-#include <linux/highmem.h>
+/* highmem.h removed - unused */
 #include <linux/sched/signal.h>
 #include <linux/slab.h>
 #include <linux/spinlock.h>
 #include <linux/interrupt.h>
-#include <linux/proc_fs.h>
-#include <linux/seq_file.h>
+/* proc_fs.h, seq_file.h, kallsyms.h, io.h, memcontrol.h, llist.h removed - unused */
 #include <asm/set_memory.h>
-#include <linux/kallsyms.h>
 #include <linux/list.h>
 #include <linux/notifier.h>
 #include <linux/rbtree.h>
 #include <linux/xarray.h>
-#include <linux/io.h>
 #include <linux/rcupdate.h>
 #include <linux/pfn.h>
 #include <linux/atomic.h>
 #include <linux/compiler.h>
-#include <linux/memcontrol.h>
-#include <linux/llist.h>
 #include <linux/bitops.h>
 #include <linux/rbtree_augmented.h>
 #include <linux/overflow.h>

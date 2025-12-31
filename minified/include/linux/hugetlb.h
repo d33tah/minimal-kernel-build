@@ -5,11 +5,7 @@
 #include <linux/mm_types.h>
 #include <linux/err.h>
 
-#ifndef is_hugepd
-typedef struct { unsigned long pd; } hugepd_t;
-#define is_hugepd(hugepd) (0)
-#define __hugepd(x) ((hugepd_t) { (x) })
-#endif
+/* is_hugepd, hugepd_t, __hugepd removed - never used */
 
 #ifndef pgd_huge
 #define pgd_huge(x)	0

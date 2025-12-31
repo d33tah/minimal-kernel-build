@@ -548,24 +548,6 @@ long prune_dcache_sb(struct super_block *sb, struct shrink_control *sc)
 	return freed;
 }
 
-enum d_walk_ret {
-	D_WALK_CONTINUE,
-	D_WALK_QUIT,
-	D_WALK_NORETRY,
-	D_WALK_SKIP,
-};
-
-static void d_walk(struct dentry *parent, void *data,
-		   enum d_walk_ret (*enter)(void *, struct dentry *))
-{
-	/* Stub: not needed for minimal boot */
-}
-
-struct check_mount {
-	struct vfsmount *mnt;
-	unsigned int mounted;
-};
-
 int d_set_mounted(struct dentry *dentry)
 {
 	/* Stub: simplified mount point marking for minimal kernel */
@@ -579,63 +561,14 @@ int d_set_mounted(struct dentry *dentry)
 	return -EBUSY;
 }
 
-struct select_data {
-	struct dentry *start;
-	union {
-		long found;
-		struct dentry *victim;
-	};
-	struct list_head dispose;
-};
-
-static enum d_walk_ret select_collect(void *_data, struct dentry *dentry)
-{
-	/* Stub: simplified dentry collection for minimal kernel */
-	struct select_data *data = _data;
-
-	if (data->start == dentry)
-		return D_WALK_CONTINUE;
-
-	if (!(dentry->d_flags & DCACHE_SHRINK_LIST) &&
-	    !dentry->d_lockref.count) {
-		d_shrink_add(dentry, &data->dispose);
-		data->found++;
-	}
-	return D_WALK_CONTINUE;
-}
-
 void shrink_dcache_parent(struct dentry *parent)
 {
-	/* Stub: minimal dcache shrinking for simple kernel */
-	struct select_data data = { .start = parent };
-
-	INIT_LIST_HEAD(&data.dispose);
-	d_walk(parent, &data, select_collect);
-	if (!list_empty(&data.dispose))
-		shrink_dentry_list(&data.dispose);
-}
-
-static enum d_walk_ret umount_check(void *_data, struct dentry *dentry)
-{
-	if (!list_empty(&dentry->d_subdirs))
-		return D_WALK_CONTINUE;
-
-	if (dentry == _data && dentry->d_lockref.count == 1)
-		return D_WALK_CONTINUE;
-
-	printk(KERN_ERR "BUG: Dentry %p{i=%lx,n=%pd} "
-			" still in use (%d) [unmount of %s %s]\n",
-	       dentry, dentry->d_inode ? dentry->d_inode->i_ino : 0UL, dentry,
-	       dentry->d_lockref.count, dentry->d_sb->s_type->name,
-	       dentry->d_sb->s_id);
-	WARN_ON(1);
-	return D_WALK_CONTINUE;
+	/* Stub: d_walk is empty, so this is a no-op */
 }
 
 static void do_one_tree(struct dentry *dentry)
 {
-	shrink_dcache_parent(dentry);
-	d_walk(dentry, dentry, umount_check);
+	/* d_walk is empty stub - just drop and put */
 	d_drop(dentry);
 	dput(dentry);
 }
@@ -658,20 +591,9 @@ void shrink_dcache_for_umount(struct super_block *sb)
 	}
 }
 
-static enum d_walk_ret find_submount(void *_data, struct dentry *dentry)
-{
-	struct dentry **victim = _data;
-	if (d_mountpoint(dentry)) {
-		__dget_dlock(dentry);
-		*victim = dentry;
-		return D_WALK_QUIT;
-	}
-	return D_WALK_CONTINUE;
-}
-
 void d_invalidate(struct dentry *dentry)
 {
-	bool had_submounts = false;
+	/* d_walk is empty stub - simplify to just drop */
 	spin_lock(&dentry->d_lock);
 	if (d_unhashed(dentry)) {
 		spin_unlock(&dentry->d_lock);
@@ -679,23 +601,6 @@ void d_invalidate(struct dentry *dentry)
 	}
 	__d_drop(dentry);
 	spin_unlock(&dentry->d_lock);
-
-	if (!dentry->d_inode)
-		return;
-
-	shrink_dcache_parent(dentry);
-	for (;;) {
-		struct dentry *victim = NULL;
-		d_walk(dentry, &victim, find_submount);
-		if (!victim) {
-			if (had_submounts)
-				shrink_dcache_parent(dentry);
-			return;
-		}
-		had_submounts = true;
-		detach_mounts(victim);
-		dput(victim);
-	}
 }
 
 static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)

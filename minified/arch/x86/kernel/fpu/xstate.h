@@ -102,12 +102,8 @@ static inline u64 xfeatures_mask_supervisor(void)
 		     : "D" (st), "m" (*st), "a" (lmask), "d" (hmask)	\
 		     : "memory")
 
-static inline void xfd_validate_state(struct fpstate *fpstate, u64 mask, bool rstor) { }
+/* xfd_validate_state, xfd_update_state removed - empty stubs */
 
-static inline void xfd_update_state(struct fpstate *fpstate) { }
-
-
- 
 static inline void os_xsave(struct fpstate *fpstate)
 {
 	u64 mask = fpstate->xfeatures;
@@ -116,21 +112,16 @@ static inline void os_xsave(struct fpstate *fpstate)
 	int err;
 
 	WARN_ON_FPU(!alternatives_patched);
-	xfd_validate_state(fpstate, mask, false);
-
+	/* xfd_validate_state removed - empty stub */
 	XSTATE_XSAVE(&fpstate->regs.xsave, lmask, hmask, err);
-
-	 
 	WARN_ON_FPU(err);
 }
 
- 
 static inline void os_xrstor(struct fpstate *fpstate, u64 mask)
 {
 	u32 lmask = mask;
 	u32 hmask = mask >> 32;
-
-	xfd_validate_state(fpstate, mask, true);
+	/* xfd_validate_state removed - empty stub */
 	XSTATE_XRESTORE(&fpstate->regs.xsave, lmask, hmask);
 }
 
@@ -175,8 +166,7 @@ static inline int xsave_to_user_sigframe(struct xregs_state __user *buf)
 
 	lmask = mask;
 	hmask = mask >> 32;
-	xfd_validate_state(fpstate, mask, false);
-
+	/* xfd_validate_state removed - empty stub */
 	stac();
 	XSTATE_OP(XSAVE, buf, lmask, hmask, err);
 	clac();
@@ -191,9 +181,7 @@ static inline int xrstor_from_user_sigframe(struct xregs_state __user *buf, u64 
 	u32 lmask = mask;
 	u32 hmask = mask >> 32;
 	int err;
-
-	xfd_validate_state(current->thread.fpu.fpstate, mask, true);
-
+	/* xfd_validate_state removed - empty stub */
 	stac();
 	XSTATE_OP(XRSTOR, xstate, lmask, hmask, err);
 	clac();
@@ -208,10 +196,7 @@ static inline int os_xrstor_safe(struct fpstate *fpstate, u64 mask)
 	u32 lmask = mask;
 	u32 hmask = mask >> 32;
 	int err;
-
-	 
-	xfd_update_state(fpstate);
-
+	/* xfd_update_state removed - empty stub */
 	if (cpu_feature_enabled(X86_FEATURE_XSAVES))
 		XSTATE_OP(XRSTORS, xstate, lmask, hmask, err);
 	else

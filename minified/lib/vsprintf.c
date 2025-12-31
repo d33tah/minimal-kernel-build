@@ -12,7 +12,7 @@ static inline const char *errname(int err)
 #include <linux/ctype.h>
 #include <linux/kernel.h>
 #include <linux/kallsyms.h>
-#include <linux/math64.h>
+/* math64.h removed - unused */
 #include <linux/uaccess.h>
 /* ioport.h, dcache.h, cred.h, rtc.h removed - unused */
 #include <linux/time.h>
@@ -31,7 +31,7 @@ static inline const char *errname(int err)
 #include <asm/byteorder.h>
 #include <asm/unaligned.h>
 
-#include <linux/string_helpers.h>
+/* string_helpers.h removed - unused */
 #include "kstrtox.h"
 
 bool no_hash_pointers __ro_after_init;

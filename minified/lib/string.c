@@ -8,7 +8,7 @@
 #include <linux/export.h>
 #include <linux/bug.h>
 #include <linux/errno.h>
-#include <linux/slab.h>
+/* slab.h removed - unused */
 
 #include <asm/unaligned.h>
 #include <asm/byteorder.h>

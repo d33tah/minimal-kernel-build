@@ -18,7 +18,7 @@
 #define	APIC_SPIV	0xF0
 /* APIC_SPIV_APIC_ENABLED removed - unused */
 #define	APIC_ISR	0x100
-#define	APIC_ISR_NR     0x8
+/* APIC_ISR_NR removed - unused */
 #define	APIC_TMR	0x180
 #define	APIC_IRR	0x200
 #define	APIC_ESR	0x280

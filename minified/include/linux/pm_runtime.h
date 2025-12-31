@@ -6,8 +6,7 @@
 #include <linux/jiffies.h>
 #define RPM_ASYNC		0x01
 #define RPM_GET_PUT		0x04
-static inline int pm_generic_runtime_suspend(struct device *dev) { return 0; }
-static inline int pm_generic_runtime_resume(struct device *dev) { return 0; }
+/* pm_generic_runtime_suspend/resume removed - SET_RUNTIME_PM_OPS is empty */
 static inline int __pm_runtime_idle(struct device *dev, int rpmflags) { return -ENOSYS; }
 static inline int __pm_runtime_resume(struct device *dev, int rpmflags) { return 1; }
 /* pm_runtime_barrier removed - unused */

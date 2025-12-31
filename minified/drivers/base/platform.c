@@ -206,8 +206,7 @@ static void platform_dma_cleanup(struct device *dev)
 }
 
 static const struct dev_pm_ops platform_dev_pm_ops = { SET_RUNTIME_PM_OPS(
-	pm_generic_runtime_suspend, pm_generic_runtime_resume,
-	NULL) USE_PLATFORM_PM_SLEEP_OPS };
+	NULL, NULL, NULL) USE_PLATFORM_PM_SLEEP_OPS };
 
 struct bus_type platform_bus_type = {
 	.name = "platform",

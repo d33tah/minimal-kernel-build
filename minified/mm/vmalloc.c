@@ -893,10 +893,7 @@ overflow:
 		goto retry;
 	}
 
-	if (!(gfp_mask & __GFP_NOWARN) && printk_ratelimit())
-		pr_warn("vmap allocation for size %lu failed: use vmalloc=<size> to increase size\n",
-			size);
-
+	/* printk_ratelimit() always returns 0 */
 	kmem_cache_free(vmap_area_cachep, va);
 	return ERR_PTR(-EBUSY);
 }
@@ -966,9 +963,7 @@ static void free_unmap_vmap_area(struct vmap_area *va)
 {
 	/* flush_cache_vunmap - empty stub on x86 */
 	vunmap_range_noflush(va->va_start, va->va_end);
-	if (debug_pagealloc_enabled_static())
-		flush_tlb_kernel_range(va->va_start, va->va_end);
-
+	/* debug_pagealloc_enabled_static() always returns false */
 	free_vmap_area_noflush(va);
 }
 

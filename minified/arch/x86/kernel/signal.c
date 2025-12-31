@@ -124,10 +124,7 @@ static void __user *get_sigframe(struct k_sigaction *ka, struct pt_regs *regs,
 
 	if (unlikely((nested_altstack || entering_altstack) &&
 		     !__on_sig_stack(sp))) {
-		if (show_unhandled_signals && printk_ratelimit())
-			pr_info("%s[%d] overflowed sigaltstack\n",
-				current->comm, task_pid_nr(current));
-
+		/* printk_ratelimit() always returns 0 */
 		return (void __user *)-1L;
 	}
 

@@ -23,9 +23,7 @@ atomic_t irq_err_count;
 
 void ack_bad_irq(unsigned int irq)
 {
-	if (printk_ratelimit())
-		pr_err("unexpected IRQ trap at vector %02x\n", irq);
-	/* ack_APIC_irq removed - empty stub */
+	/* printk_ratelimit() always returns 0, ack_APIC_irq is empty stub */
 }
 
 static __always_inline void handle_irq(struct irq_desc *desc,

@@ -28,9 +28,7 @@ extern u64 relocated_ramdisk;
 
 struct pt_regs;
 
-void early_platform_quirks(void);
-
-/* saved_video_mode removed - set but never read */
+/* early_platform_quirks, saved_video_mode removed - unused */
 
 extern void reserve_standard_io_resources(void);
 extern void i386_reserve_resources(void);
@@ -55,9 +53,7 @@ void *extend_brk(size_t size, size_t align);
 	__section(".bss..brk") __aligned(1) __used	\
 	static char __brk_##name[size]
 
-/* probe_roms removed - never called */
-
-void clear_bss(void);
+/* probe_roms, clear_bss removed - never called */
 
 /* 32-bit only kernel */
 asmlinkage void __init i386_start_kernel(void);

@@ -35,10 +35,7 @@ static inline void fpregs_unlock(void)
 {
 	local_bh_enable();
 }
-
-static inline void fpregs_assert_state_consistent(void) { }
-
- 
+/* fpregs_assert_state_consistent removed - empty stub */
 extern void switch_fpu_return(void);
 
  

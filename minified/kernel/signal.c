@@ -5,10 +5,9 @@
 #include <linux/sched/task_stack.h>
 #include <linux/sched/cputime.h>
 #include <linux/file.h>
-#include <linux/freezer.h>
+/* freezer.h, audit.h removed - unused */
 #include <linux/pid_namespace.h>
 #include <linux/cgroup.h>
-#include <linux/audit.h>
 #include <linux/task_work.h>
 #include <linux/tty.h>
 #include <linux/proc_fs.h>

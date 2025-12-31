@@ -345,10 +345,6 @@ static inline void *acquire_slab(struct kmem_cache *s,
 	return freelist;
 }
 
-static inline void put_cpu_partial(struct kmem_cache *s, struct slab *slab,
-				   int drain)
-{
-}
 static inline bool pfmemalloc_match(struct slab *slab, gfp_t gfpflags);
 
 static void *get_partial_node(struct kmem_cache *s, struct kmem_cache_node *n,
@@ -357,7 +353,6 @@ static void *get_partial_node(struct kmem_cache *s, struct kmem_cache_node *n,
 	struct slab *slab, *slab2;
 	void *object = NULL;
 	unsigned long flags;
-	unsigned int partial_slabs = 0;
 
 	if (!n || !n->nr_partial)
 		return NULL;
@@ -369,43 +364,30 @@ static void *get_partial_node(struct kmem_cache *s, struct kmem_cache_node *n,
 		if (!pfmemalloc_match(slab, gfpflags))
 			continue;
 
-		t = acquire_slab(s, n, slab, object == NULL);
+		t = acquire_slab(s, n, slab, true);
 		if (!t)
 			break;
 
-		if (!object) {
-			*ret_slab = slab;
-			object = t;
-		} else {
-			put_cpu_partial(s, slab, 0);
-			partial_slabs++;
-		}
+		*ret_slab = slab;
+		object = t;
 		break;
 	}
 	spin_unlock_irqrestore(&n->list_lock, flags);
 	return object;
 }
 
-static void *get_any_partial(struct kmem_cache *s, gfp_t flags,
-			     struct slab **ret_slab)
-{
-	return NULL;
-}
+/* get_any_partial removed - always returned NULL */
 
 static void *get_partial(struct kmem_cache *s, gfp_t flags, int node,
 			 struct slab **ret_slab)
 {
-	void *object;
 	int searchnode = node;
 
 	if (node == NUMA_NO_NODE)
 		searchnode = numa_mem_id();
 
-	object = get_partial_node(s, get_node(s, searchnode), ret_slab, flags);
-	if (object || node != NUMA_NO_NODE)
-		return object;
-
-	return get_any_partial(s, flags, ret_slab);
+	/* get_any_partial was stub returning NULL, so just return result */
+	return get_partial_node(s, get_node(s, searchnode), ret_slab, flags);
 }
 
 #define TID_STEP 1
@@ -439,10 +421,6 @@ static void init_kmem_cache_cpus(struct kmem_cache *s)
 }
 
 /* Removed: deactivate_slab - dead code since flush_slab simplified (~80 LOC) */
-
-static inline void unfreeze_partials(struct kmem_cache *s)
-{
-}
 
 static inline void flush_slab(struct kmem_cache *s, struct kmem_cache_cpu *c)
 {
@@ -483,8 +461,7 @@ static void flush_cpu_slab(struct work_struct *w)
 
 	if (c->slab)
 		flush_slab(s, c);
-
-	unfreeze_partials(s);
+	/* unfreeze_partials removed - was empty stub */
 }
 
 static bool has_cpu_slab(int cpu, struct kmem_cache *s)

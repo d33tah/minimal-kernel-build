@@ -14,10 +14,7 @@ static inline const char *errname(int err)
 #include <linux/kallsyms.h>
 #include <linux/math64.h>
 #include <linux/uaccess.h>
-#include <linux/ioport.h>
-#include <linux/dcache.h>
-#include <linux/cred.h>
-#include <linux/rtc.h>
+/* ioport.h, dcache.h, cred.h, rtc.h removed - unused */
 #include <linux/time.h>
 #include <linux/uuid.h>
 #include <linux/of.h>

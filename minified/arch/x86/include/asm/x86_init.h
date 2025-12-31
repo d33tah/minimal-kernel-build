@@ -87,11 +87,7 @@ struct x86_init_ops {
 };
 
  
-struct x86_cpuinit_ops {
-	void (*setup_percpu_clockev)(void);
-	void (*early_percpu_clock_init)(void);
-	void (*fixup_cpu_id)(struct cpuinfo_x86 *c, int node);
-};
+/* x86_cpuinit_ops removed - never accessed */
 
 struct timespec64;
 
@@ -137,7 +133,7 @@ struct x86_platform_ops {
 /* x86_apic_ops removed - never accessed */
 
 extern struct x86_init_ops x86_init;
-extern struct x86_cpuinit_ops x86_cpuinit;
+/* x86_cpuinit removed - never accessed */
 extern struct x86_platform_ops x86_platform;
 
 extern void x86_early_init_platform_quirks(void);

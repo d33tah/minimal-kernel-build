@@ -377,43 +377,8 @@ static inline int is_zero_pfn(unsigned long pfn)
 #endif
 
 
-static inline int pmd_trans_huge(pmd_t pmd)
-{
-	return 0;
-}
-#ifndef pmd_write
-static inline int pmd_write(pmd_t pmd)
-{
-	BUG();
-	return 0;
-}
-#endif  
-
-#ifndef pud_write
-static inline int pud_write(pud_t pud)
-{
-	BUG();
-	return 0;
-}
-#endif  
-
-static inline int pmd_devmap(pmd_t pmd)
-{
-	return 0;
-}
-static inline int pud_devmap(pud_t pud)
-{
-	return 0;
-}
-
-#if !defined(CONFIG_TRANSPARENT_HUGEPAGE) || \
-	(defined(CONFIG_TRANSPARENT_HUGEPAGE) && \
-	 !defined(CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD))
-static inline int pud_trans_huge(pud_t pud)
-{
-	return 0;
-}
-#endif
+/* pmd_trans_huge, pmd_write, pud_write removed - never called */
+/* pmd_devmap, pud_devmap, pud_trans_huge removed - never called */
 
 
 #ifndef pmd_read_atomic

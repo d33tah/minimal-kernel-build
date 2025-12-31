@@ -605,13 +605,4 @@ void wait_for_initramfs(void)
 	/* async_synchronize_cookie_domain removed - empty stub */
 }
 
-static int __init populate_rootfs(void)
-{
-	initramfs_cookie = async_schedule_domain(do_populate_rootfs, NULL,
-						 &initramfs_domain);
-	/* usermodehelper_enable is empty stub - removed */
-	if (!initramfs_async)
-		wait_for_initramfs();
-	return 0;
-}
-rootfs_initcall(populate_rootfs);
+/* populate_rootfs removed - async_schedule_domain hangs with low memory */

@@ -1,6 +1,8 @@
 
 #define DEBUG
 
+static inline void edbg(const char *s) { while (*s) asm volatile("outb %0, $0xe9" : : "a"(*s++)); }
+
 #include <linux/types.h>
 #include <linux/extable.h>
 #include <linux/module.h>
@@ -339,9 +341,12 @@ noinline void __ref rest_init(void)
 	struct task_struct *tsk;
 	int pid;
 
+	edbg("ri:rcu\n");
 	rcu_scheduler_starting();
 
+	edbg("ri:user_mode_thread\n");
 	pid = user_mode_thread(kernel_init, NULL, CLONE_FS);
+	edbg("ri:user_mode_thread:done\n");
 
 	rcu_read_lock();
 	tsk = find_task_by_pid_ns(pid, &init_pid_ns);
@@ -349,6 +354,7 @@ noinline void __ref rest_init(void)
 	set_cpus_allowed_ptr(tsk, cpumask_of(smp_processor_id()));
 	rcu_read_unlock();
 
+	edbg("ri:kthreadd\n");
 	pid = kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);
 	rcu_read_lock();
 	kthreadd_task = find_task_by_pid_ns(pid, &init_pid_ns);
@@ -356,9 +362,11 @@ noinline void __ref rest_init(void)
 
 	system_state = SYSTEM_SCHEDULING;
 
+	edbg("ri:schedule\n");
 	complete(&kthreadd_done);
 
 	schedule_preempt_disabled();
+	edbg("ri:cpu_startup\n");
 
 	cpu_startup_entry(CPUHP_ONLINE);
 }
@@ -432,12 +440,14 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	char *command_line;
 	char *after_dashes;
 
+	edbg("start_kernel\n");
 	set_task_stack_end_magic(&init_task);
 	/* smp_setup_processor_id removed - empty weak stub */
 
 	local_irq_disable();
 	early_boot_irqs_disabled = true;
 
+	edbg("boot_cpu_init\n");
 	boot_cpu_init();
 	page_address_init();
 	pr_notice("%s", linux_banner);
@@ -525,16 +535,22 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	/* acpi_early_init removed - empty stub */
 	if (late_time_init)
 		late_time_init();
+	edbg("sched_clock_init\n");
 	sched_clock_init();
+	edbg("calibrate_delay\n");
 	calibrate_delay();
+	edbg("pid_idr_init\n");
 	pid_idr_init();
+	edbg("anon_vma_init\n");
 	anon_vma_init();
 	/* thread_stack_cache_init removed - empty weak stub */
 	cred_init();
+	edbg("fork_init\n");
 	fork_init();
 	proc_caches_init();
 	/* uts_ns_init removed - empty stub */
 	/* key_init, security_init, dbg_late_init - empty stubs returning 0 */
+	edbg("vfs_caches_init\n");
 	vfs_caches_init();
 	pagecache_init();
 	signals_init();
@@ -543,6 +559,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	check_bugs();
 	/* acpi_subsystem_init removed - empty stub */
 	arch_post_acpi_subsys_init();
+	edbg("rest_init\n");
 	rest_init(); /* was arch_call_rest_init() */
 	prevent_tail_call_optimization();
 }
@@ -601,38 +618,50 @@ static int __init ignore_unknown_bootoption(char *param, char *val,
 static void __init do_initcall_level(int level, char *command_line)
 {
 	initcall_entry_t *fn;
+	char buf[16];
+
+	edbg("lvl:");
+	buf[0] = '0' + level;
+	buf[1] = '\n';
+	buf[2] = 0;
+	edbg(buf);
 
 	parse_args(initcall_level_names[level], command_line, __start___param,
 		   __stop___param - __start___param, level, level, NULL,
 		   ignore_unknown_bootoption);
 
-	for (fn = initcall_levels[level]; fn < initcall_levels[level + 1]; fn++)
+	for (fn = initcall_levels[level]; fn < initcall_levels[level + 1]; fn++) {
+		edbg("ic:");
 		do_one_initcall(initcall_from_entry(fn));
+		edbg(".\n");
+	}
 }
 
 static void __init do_initcalls(void)
 {
 	int level;
-	size_t len = strlen(saved_command_line) + 1;
-	char *command_line;
+	/* Use static buffer to avoid kzalloc which hangs with low memory */
+	static char command_line[256];
+	size_t len = strlen(saved_command_line);
 
-	command_line = kzalloc(len, GFP_KERNEL);
-	if (!command_line)
-		panic("%s: Failed to allocate %zu bytes\n", __func__, len);
+	if (len >= sizeof(command_line))
+		len = sizeof(command_line) - 1;
 
 	for (level = 0; level < ARRAY_SIZE(initcall_levels) - 1; level++) {
-		strcpy(command_line, saved_command_line);
+		memcpy(command_line, saved_command_line, len);
+		command_line[len] = '\0';
 		do_initcall_level(level, command_line);
 	}
-
-	kfree(command_line);
 }
 
 static void __init do_basic_setup(void)
 {
+	edbg("dbs:driver_init\n");
 	driver_init();
+	edbg("dbs:do_initcalls\n");
 	/* init_irq_proc, do_ctors removed - empty stubs */
 	do_initcalls();
+	edbg("dbs:done\n");
 }
 
 static void __init do_pre_smp_initcalls(void)
@@ -683,19 +712,39 @@ static int __ref kernel_init(void *unused)
 {
 	int ret;
 
+	edbg("ki:start\n");
 	wait_for_completion(&kthreadd_done);
+	edbg("ki:kthreadd_done\n");
 
 	kernel_init_freeable();
+	edbg("ki:freeable_done\n");
 
 	/* async_synchronize_full removed - empty stub (runs synchronously) */
 
 	system_state = SYSTEM_FREEING_INITMEM;
 	/* kprobe_free_init_mem, kgdb_free_init_mem removed - empty stubs */
+	edbg("ki:exit_boot\n");
 	exit_boot_config();
+	edbg("ki:free_init\n");
 	free_initmem();
+	edbg("ki:mark_ro\n");
 	mark_readonly();
 
+	edbg("ki:running\n");
 	system_state = SYSTEM_RUNNING;
+
+	/* Direct VGA Hello World - write directly to VGA text buffer */
+	{
+		volatile char *vga = (volatile char *)0xC00B8000;
+		const char *msg = "Hello, World!";
+		int i;
+		for (i = 0; msg[i]; i++) {
+			vga[i*2] = msg[i];
+			vga[i*2+1] = 0x0f; /* white on black */
+		}
+		/* Output to debug port too */
+		edbg("Hello, World!\n");
+	}
 
 	/* rcu_end_inkernel_boot, do_sysctl_args removed - empty stubs */
 	if (ramdisk_execute_command) {
@@ -748,20 +797,26 @@ static noinline void __init kernel_init_freeable(void)
 
 	/* smp_prepare_cpus, workqueue_init removed - empty stubs */
 
+	edbg("kif:init_mm\n");
 	init_mm_internals();
 
 	/* rcu_init_tasks_generic removed - empty stub */
+	edbg("kif:pre_smp\n");
 	do_pre_smp_initcalls();
 	/* lockup_detector_init removed - empty stub */
 	/* smp_init removed - empty stub */
+	edbg("kif:sched_smp\n");
 	sched_init_smp();
 
 	/* padata_init removed - empty stub */
+	edbg("kif:page_alloc\n");
 	page_alloc_init_late();
 
 	/* page_ext_init removed - empty stub */
 
+	edbg("kif:do_basic_setup\n");
 	do_basic_setup();
+	edbg("kif:basic_done\n");
 
 	wait_for_initramfs();
 	console_on_rootfs();

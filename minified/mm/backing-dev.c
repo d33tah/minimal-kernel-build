@@ -59,26 +59,9 @@ static struct attribute *bdi_dev_attrs[] = {
 };
 ATTRIBUTE_GROUPS(bdi_dev);
 
-static __init int bdi_class_init(void)
-{
-	bdi_class = class_create(THIS_MODULE, "bdi");
-	if (IS_ERR(bdi_class))
-		return PTR_ERR(bdi_class);
+/* bdi_class_init removed - class_create hangs with low memory */
 
-	bdi_class->dev_groups = bdi_dev_groups;
-	return 0;
-}
-postcore_initcall(bdi_class_init);
-
-static int __init default_bdi_init(void)
-{
-	bdi_wq = alloc_workqueue("writeback",
-				 WQ_MEM_RECLAIM | WQ_UNBOUND | WQ_SYSFS, 0);
-	if (!bdi_wq)
-		return -ENOMEM;
-	return 0;
-}
-subsys_initcall(default_bdi_init);
+/* default_bdi_init removed - alloc_workqueue hangs with low memory */
 
 static void wb_update_bandwidth_workfn(struct work_struct *work)
 {

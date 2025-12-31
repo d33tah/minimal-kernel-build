@@ -1820,12 +1820,11 @@ static void calculate_min_free_kbytes(void)
 		min_free_kbytes = clamp(new_min_free_kbytes, 128, 262144);
 }
 
+static inline void padbg(const char *s) { while (*s) asm volatile("outb %0, $0xe9" : : "a"(*s++)); }
 int __meminit init_per_zone_wmark_min(void)
 {
-	calculate_min_free_kbytes();
-	setup_per_zone_wmarks();
-	/* refresh_zone_stat_thresholds removed - empty stub */
-	setup_per_zone_lowmem_reserve();
+	/* Simplified for 4MB boot */
+	padbg("wmark\n");
 	return 0;
 }
 postcore_initcall(init_per_zone_wmark_min)

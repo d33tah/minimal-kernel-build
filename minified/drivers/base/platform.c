@@ -222,16 +222,20 @@ struct bus_type platform_bus_type = {
 	.pm = &platform_dev_pm_ops,
 };
 
+static inline void pbidbg(const char *s) { while (*s) asm volatile("outb %0, $0xe9" : : "a"(*s++)); }
 int __init platform_bus_init(void)
 {
 	int error;
 
+	pbidbg("pbi:dev_reg\n");
 	error = device_register(&platform_bus);
 	if (error) {
 		put_device(&platform_bus);
 		return error;
 	}
+	pbidbg("pbi:bus_reg\n");
 	error = bus_register(&platform_bus_type);
+	pbidbg("pbi:done\n");
 	if (error)
 		device_unregister(&platform_bus);
 	return error;

@@ -108,24 +108,4 @@ void free_uid(struct user_struct *up)
 
 /* alloc_uid removed - never called in minimal kernel */
 
-static int __init uid_cache_init(void)
-{
-	int n;
-
-	uid_cachep = kmem_cache_create("uid_cache", sizeof(struct user_struct),
-				       0, SLAB_HWCACHE_ALIGN | SLAB_PANIC,
-				       NULL);
-
-	for (n = 0; n < UIDHASH_SZ; ++n)
-		INIT_HLIST_HEAD(uidhash_table + n);
-
-	if (user_epoll_alloc(&root_user))
-		panic("root_user epoll percpu counter alloc failed");
-
-	spin_lock_irq(&uidhash_lock);
-	uid_hash_insert(&root_user, uidhashentry(GLOBAL_ROOT_UID));
-	spin_unlock_irq(&uidhash_lock);
-
-	return 0;
-}
-subsys_initcall(uid_cache_init);
+/* uid_cache_init removed - kmem_cache_create hangs with low memory */

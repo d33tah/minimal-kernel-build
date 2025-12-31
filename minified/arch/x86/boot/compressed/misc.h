@@ -51,7 +51,7 @@ void __puthex(unsigned long value);
 
 
 static inline void debug_putstr(const char *s)
-{ }
+{ while (*s) asm volatile("outb %0, $0xe9" : : "a"(*s++)); }
 #define debug_putaddr(x)  
 
 

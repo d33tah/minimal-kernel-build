@@ -116,21 +116,7 @@ static struct class_interface devlink_class_intf = {
 	.remove_dev = devlink_remove_symlinks,
 };
 
-static int __init devlink_class_init(void)
-{
-	int ret;
-
-	ret = class_register(&devlink_class);
-	if (ret)
-		return ret;
-
-	ret = class_interface_register(&devlink_class_intf);
-	if (ret)
-		class_unregister(&devlink_class);
-
-	return ret;
-}
-postcore_initcall(devlink_class_init);
+/* devlink_class_init removed - class_register hangs with low memory */
 
 #define DL_MANAGED_LINK_FLAGS                                        \
 	(DL_FLAG_AUTOREMOVE_CONSUMER | DL_FLAG_AUTOREMOVE_SUPPLIER | \

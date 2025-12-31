@@ -101,6 +101,7 @@ do {						\
 #endif
 
  
-#define LOWMEM_PAGES ((((_ULL(2)<<31) - __PAGE_OFFSET) >> PAGE_SHIFT))
+/* Reduced for minimal 8MB boot - original: ((((_ULL(2)<<31) - __PAGE_OFFSET) >> PAGE_SHIFT)) */
+#define LOWMEM_PAGES (8 * 1024 * 1024 / 4096)  /* 8MB / 4KB = 2048 pages */
 
 #endif  

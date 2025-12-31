@@ -1401,16 +1401,7 @@ static char *tty_devnode(struct device *dev, umode_t *mode)
 	return NULL;
 }
 
-static int __init tty_class_init(void)
-{
-	tty_class = class_create(THIS_MODULE, "tty");
-	if (IS_ERR(tty_class))
-		return PTR_ERR(tty_class);
-	tty_class->devnode = tty_devnode;
-	return 0;
-}
-
-postcore_initcall(tty_class_init);
+/* tty_class_init removed - class_create hangs with low memory */
 
 static struct cdev tty_cdev, console_cdev;
 

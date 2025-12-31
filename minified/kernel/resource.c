@@ -434,30 +434,4 @@ static struct file_system_type iomem_fs_type = {
 	.kill_sb = kill_anon_super,
 };
 
-static int __init iomem_init_inode(void)
-{
-	static struct vfsmount *iomem_vfs_mount;
-	static int iomem_fs_cnt;
-	struct inode *inode;
-	int rc;
-
-	rc = simple_pin_fs(&iomem_fs_type, &iomem_vfs_mount, &iomem_fs_cnt);
-	if (rc < 0) {
-		pr_err("Cannot mount iomem pseudo filesystem: %d\n", rc);
-		return rc;
-	}
-
-	inode = alloc_anon_inode(iomem_vfs_mount->mnt_sb);
-	if (IS_ERR(inode)) {
-		rc = PTR_ERR(inode);
-		pr_err("Cannot allocate inode for iomem: %d\n", rc);
-		simple_release_fs(&iomem_vfs_mount, &iomem_fs_cnt);
-		return rc;
-	}
-
-	smp_store_release(&iomem_inode, inode);
-
-	return 0;
-}
-
-fs_initcall(iomem_init_inode);
+/* iomem_init_inode removed - simple_pin_fs hangs with low memory */

@@ -8,8 +8,4 @@ void workingset_update_node(struct xa_node *node)
 {
 }
 struct list_lru shadow_nodes;
-static int __init workingset_init(void)
-{
-	return list_lru_init(&shadow_nodes);
-}
-module_init(workingset_init);
+/* workingset_init removed - list_lru_init hangs with low memory */

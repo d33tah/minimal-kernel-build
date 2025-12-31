@@ -80,7 +80,7 @@ extern void sched_init_smp(void);
 #include <linux/jump_label.h>
 #include <linux/mem_encrypt.h>
 #include <linux/init_syscalls.h>
-#include <linux/stackdepot.h>
+/* stackdepot.h removed - unused */
 
 #include <asm/io.h>
 #include <asm/bugs.h>

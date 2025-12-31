@@ -14,7 +14,7 @@
 #include <linux/cpuset.h>
 #include <linux/mempolicy.h>
 #include <linux/ctype.h>
-#include <linux/stackdepot.h>
+/* stackdepot.h removed - unused */
 #include <linux/kallsyms.h>
 #include <linux/math64.h>
 #include <linux/stacktrace.h>

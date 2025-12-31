@@ -503,12 +503,7 @@ static inline void update_load_avg(struct cfs_rq *cfs_rq,
 }
 
 /* attach_entity_load_avg, detach_entity_load_avg removed - stubs */
-/* util_est_enqueue, util_est_dequeue, util_est_update removed - empty stubs */
-
-static inline int newidle_balance(struct rq *rq, struct rq_flags *rf)
-{
-	return 0;
-}
+/* util_est_enqueue, util_est_dequeue, util_est_update, newidle_balance removed - empty stubs */
 
 static void place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 			 int initial)
@@ -836,9 +831,8 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 {
 	struct cfs_rq *cfs_rq;
 	struct sched_entity *se = &p->se;
-	int task_sleep = flags & DEQUEUE_SLEEP;
+	/* task_sleep, was_sched_idle removed - write-only variables */
 	int idle_h_nr_running = task_has_idle_policy(p);
-	bool was_sched_idle = sched_idle_rq(rq);
 
 	/* util_est_dequeue removed - empty stub */
 	for_each_sched_entity(se)
@@ -987,7 +981,7 @@ struct task_struct *pick_next_task_fair(struct rq *rq, struct task_struct *prev,
 	struct cfs_rq *cfs_rq = &rq->cfs;
 	struct sched_entity *se;
 	struct task_struct *p;
-	int new_tasks;
+	/* new_tasks removed - newidle_balance always returns 0 */
 
 again:
 	if (!sched_fair_runnable(rq))
@@ -1012,17 +1006,8 @@ done:
 idle:
 	if (!rf)
 		return NULL;
-
-	new_tasks = newidle_balance(rq, rf);
-
-	if (new_tasks < 0)
-		return RETRY_TASK;
-
-	if (new_tasks > 0)
-		goto again;
-
+	/* newidle_balance always returns 0, dead branches removed */
 	update_idle_rq_clock_pelt(rq);
-
 	return NULL;
 }
 

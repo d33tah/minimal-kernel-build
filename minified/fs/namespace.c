@@ -1489,7 +1489,6 @@ static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns,
 {
 	struct mnt_namespace *new_ns;
 	struct ucounts *ucounts;
-	int ret;
 
 	ucounts = inc_mnt_namespaces(user_ns);
 	if (!ucounts)
@@ -1500,14 +1499,8 @@ static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns,
 		dec_mnt_namespaces(ucounts);
 		return ERR_PTR(-ENOMEM);
 	}
-	if (!anon) {
-		ret = ns_alloc_inum(&new_ns->ns);
-		if (ret) {
-			kfree(new_ns);
-			dec_mnt_namespaces(ucounts);
-			return ERR_PTR(ret);
-		}
-	}
+	if (!anon)
+		ns_alloc_inum(&new_ns->ns);
 	new_ns->ns.ops = &mntns_operations;
 	if (!anon)
 		new_ns->seq = atomic64_add_return(1, &mnt_ns_seq);

@@ -622,7 +622,6 @@ struct super_block {
 	struct list_head	s_mounts;
 	struct backing_dev_info *s_bdi;
 	struct hlist_node	s_instances;
-	struct quota_info	s_dquot;
 
 	struct sb_writers	s_writers;
 
@@ -653,10 +652,6 @@ struct super_block {
 
 	int s_readonly_remount;
 
-	
-	errseq_t s_wb_err;
-
-	
 	struct workqueue_struct *s_dio_done_wq;
 	struct hlist_head s_pins;
 

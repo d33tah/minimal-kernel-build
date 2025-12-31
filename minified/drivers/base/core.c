@@ -1,5 +1,5 @@
 
-#include <linux/acpi.h>
+/* acpi.h removed - unused */
 #include <linux/device.h>
 #include <linux/err.h>
 #include <linux/init.h>
@@ -17,7 +17,7 @@
 #include <linux/sched/mm.h>
 #include <linux/swiotlb.h>
 #include <linux/sysfs.h>
-#include <linux/delay.h>
+/* delay.h removed - unused */
 #include <linux/dma-map-ops.h>
 
 #include "base.h"

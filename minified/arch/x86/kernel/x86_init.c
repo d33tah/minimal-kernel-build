@@ -75,11 +75,7 @@ struct x86_init_ops x86_init __initdata = {
 };
 
 /* x86_cpuinit removed - never accessed */
-
-static void default_nmi_init(void)
-{
-}
-/* enc_*_noop functions removed - x86_platform.guest never called */
+/* default_nmi_init, enc_*_noop functions removed - never called */
 
 struct x86_platform_ops x86_platform __ro_after_init = {
 	.calibrate_cpu = native_calibrate_cpu_early,
@@ -87,7 +83,7 @@ struct x86_platform_ops x86_platform __ro_after_init = {
 	.get_wallclock = mach_get_cmos_time,
 	/* .set_wallclock, .iommu_shutdown, .save/restore_sched_clock_state removed - never called */
 	.is_untracked_pat_range = is_ISA_range,
-	.nmi_init = default_nmi_init,
+	/* .nmi_init removed - never called */
 	.get_nmi_reason = default_get_nmi_reason,
 	/* .hyper, .guest removed - never called */
 };

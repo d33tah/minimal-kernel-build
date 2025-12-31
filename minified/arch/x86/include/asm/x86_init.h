@@ -86,7 +86,7 @@ struct x86_platform_ops {
 	void (*get_wallclock)(struct timespec64 *ts);
 	/* set_wallclock, iommu_shutdown removed - never called */
 	bool (*is_untracked_pat_range)(u64 start, u64 end);
-	void (*nmi_init)(void);
+	/* nmi_init removed - never called */
 	unsigned char (*get_nmi_reason)(void);
 	/* save/restore_sched_clock_state, apic_post_init removed - never called */
 	struct x86_legacy_features legacy;

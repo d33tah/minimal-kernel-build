@@ -53,8 +53,7 @@ irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc)
 	unsigned int irq = desc->irq_data.irq;
 	struct irqaction *action;
 
-	record_irq_time(desc);
-
+	/* record_irq_time removed - empty stub */
 	for_each_action_of_desc(desc, action)
 	{
 		irqreturn_t res;

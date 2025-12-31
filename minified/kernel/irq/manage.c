@@ -576,8 +576,7 @@ static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 	chip_bus_sync_unlock(desc);
 	mutex_unlock(&desc->request_mutex);
 
-	irq_setup_timings(desc, new);
-
+	/* irq_setup_timings removed - empty stub */
 	wake_up_and_wait_for_irq_thread_ready(desc, new);
 	wake_up_and_wait_for_irq_thread_ready(desc, new->secondary);
 

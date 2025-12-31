@@ -20,13 +20,7 @@ static inline u32 acpi_pm_read_early(void)
 #include <linux/jump_label.h>
 #include <linux/static_call.h>
 
-static inline int is_hpet_enabled(void)
-{
-	return 0;
-}
-#define hpet_readl(a) 0
-#define HPET_COUNTER 0
-#define HPET_PERIOD 0
+/* is_hpet_enabled, hpet_readl, HPET_COUNTER, HPET_PERIOD removed - hpet disabled */
 #include <asm/timer.h>
 #include <asm/vgtod.h>
 #include <asm/time.h>
@@ -36,10 +30,7 @@ static inline int is_hpet_enabled(void)
 #include <asm/apic.h>
 #include <asm/intel-family.h>
 #include <asm/i8259.h>
-static inline bool is_early_uv_system(void)
-{
-	return 0;
-}
+/* is_early_uv_system removed - always returned false */
 
 unsigned int __read_mostly cpu_khz;
 
@@ -182,12 +173,10 @@ static u64 tsc_read_refs(u64 *p, int hpet)
 	u64 thresh = tsc_khz ? tsc_khz >> 5 : TSC_DEFAULT_THRESHOLD;
 	int i;
 
+	/* hpet always 0 - hpet_readl branch removed */
 	for (i = 0; i < MAX_RETRIES; i++) {
 		t1 = get_cycles();
-		if (hpet)
-			*p = hpet_readl(HPET_COUNTER) & 0xFFFFFFFF;
-		else
-			*p = acpi_pm_read_early();
+		*p = acpi_pm_read_early();
 		t2 = get_cycles();
 		if ((t2 - t1) < thresh)
 			return t2;
@@ -195,19 +184,7 @@ static u64 tsc_read_refs(u64 *p, int hpet)
 	return ULLONG_MAX;
 }
 
-static unsigned long calc_hpet_ref(u64 deltatsc, u64 hpet1, u64 hpet2)
-{
-	u64 tmp;
-
-	if (hpet2 < hpet1)
-		hpet2 += 0x100000000ULL;
-	hpet2 -= hpet1;
-	tmp = ((u64)hpet2 * hpet_readl(HPET_PERIOD));
-	do_div(tmp, 1000000);
-	deltatsc = div64_u64(deltatsc, tmp);
-
-	return (unsigned long)deltatsc;
-}
+/* calc_hpet_ref removed - is_hpet_enabled always 0, never called */
 
 static unsigned long calc_pmtimer_ref(u64 deltatsc, u64 pm1, u64 pm2)
 {
@@ -432,7 +409,7 @@ static unsigned long pit_hpet_ptimer_calibrate_cpu(void)
 	return 1000000; /* 1 GHz in kHz */
 #endif
 
-	hpet = is_hpet_enabled();
+	hpet = 0; /* is_hpet_enabled always 0 */
 
 	latch = CAL_LATCH;
 	ms = CAL_MS;
@@ -456,10 +433,8 @@ static unsigned long pit_hpet_ptimer_calibrate_cpu(void)
 			continue;
 
 		tsc2 = (tsc2 - tsc1) * 1000000LL;
-		if (hpet)
-			tsc2 = calc_hpet_ref(tsc2, ref1, ref2);
-		else
-			tsc2 = calc_pmtimer_ref(tsc2, ref1, ref2);
+		/* hpet always 0, so calc_hpet_ref never called */
+		tsc2 = calc_pmtimer_ref(tsc2, ref1, ref2);
 
 		tsc_ref_min = min(tsc_ref_min, (unsigned long)tsc2);
 
@@ -467,8 +442,8 @@ static unsigned long pit_hpet_ptimer_calibrate_cpu(void)
 		do_div(delta, tsc_ref_min);
 
 		if (delta >= 90 && delta <= 110) {
-			pr_info("PIT calibration matches %s. %d loops\n",
-				hpet ? "HPET" : "PMTIMER", i + 1);
+			pr_info("PIT calibration matches PMTIMER. %d loops\n",
+				i + 1);
 			return tsc_ref_min;
 		}
 
@@ -482,18 +457,18 @@ static unsigned long pit_hpet_ptimer_calibrate_cpu(void)
 	if (tsc_pit_min == ULONG_MAX) {
 		pr_warn("Unable to calibrate against PIT\n");
 
-		if (!hpet && !ref1 && !ref2) {
-			pr_notice("No reference (HPET/PMTIMER) available\n");
+		/* hpet always 0 */
+		if (!ref1 && !ref2) {
+			pr_notice("No reference (PMTIMER) available\n");
 			return 0;
 		}
 
 		if (tsc_ref_min == ULONG_MAX) {
-			pr_warn("HPET/PMTIMER calibration failed\n");
+			pr_warn("PMTIMER calibration failed\n");
 			return 0;
 		}
 
-		pr_info("using %s reference calibration\n",
-			hpet ? "HPET" : "PMTIMER");
+		pr_info("using PMTIMER reference calibration\n");
 
 		return tsc_ref_min;
 	}
@@ -730,8 +705,7 @@ void __init tsc_early_init(void)
 	if (!boot_cpu_has(X86_FEATURE_TSC))
 		return;
 
-	if (is_early_uv_system())
-		return;
+	/* is_early_uv_system always false - check removed */
 	if (!determine_cpu_tsc_frequencies(true))
 		return;
 	tsc_enable_sched_clock();

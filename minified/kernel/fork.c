@@ -22,7 +22,7 @@ struct file *anon_inode_getfile(const char *name,
 #include <linux/mempolicy.h>
 #include <linux/file.h>
 #include <linux/fdtable.h>
-#include <linux/key.h>
+/* key.h removed - unused */
 #include <linux/binfmts.h>
 #include <linux/mman.h>
 #include <linux/mmu_notifier.h>
@@ -41,7 +41,7 @@ struct file *anon_inode_getfile(const char *name,
 #include <linux/swap.h>
 #include <linux/syscalls.h>
 #include <linux/futex.h>
-#include <linux/compat.h>
+/* compat.h removed - unused */
 #include <linux/kthread.h>
 /* task_io_accounting_init removed - empty stub */
 #include <linux/rcupdate.h>

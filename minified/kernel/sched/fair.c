@@ -1,8 +1,6 @@
 
-#include <linux/mmap_lock.h>
+/* mmap_lock.h, highmem.h, mempolicy.h, ratelimit.h, task_work.h removed - unused */
 #include <linux/jiffies.h>
-
-#include <linux/highmem.h>
 
 #include <linux/topology.h>
 #include <linux/sched/clock.h>
@@ -11,9 +9,6 @@
 #include <linux/sched/isolation.h>
 
 #include <linux/interrupt.h>
-#include <linux/mempolicy.h>
-#include <linux/ratelimit.h>
-#include <linux/task_work.h>
 
 #include <asm/switch_to.h>
 

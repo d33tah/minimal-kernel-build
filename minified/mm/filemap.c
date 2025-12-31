@@ -6,7 +6,7 @@
 #include <linux/sched/signal.h>
 #include <linux/uaccess.h>
 #include <linux/capability.h>
-#include <linux/kernel_stat.h>
+/* kernel_stat.h removed - unused */
 #include <linux/gfp.h>
 #include <linux/mm.h>
 #include <linux/swap.h>
@@ -25,9 +25,7 @@
 #include <linux/hugetlb.h>
 /* memcontrol.h removed - unused */
 #include <linux/shmem_fs.h>
-#include <linux/rmap.h>
-#include <linux/ramfs.h>
-/* migrate.h removed - unused */
+/* rmap.h, ramfs.h, migrate.h removed - unused */
 #include <asm/pgalloc.h>
 #include <asm/tlbflush.h>
 #include "internal.h"

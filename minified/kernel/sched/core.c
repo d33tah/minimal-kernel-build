@@ -29,16 +29,13 @@ extern void sched_init_smp(void);
 
 #include <linux/blkdev.h>
 #include <linux/context_tracking.h>
-#include <linux/cpuset.h>
+/* cpuset.h removed - unused */
 /* Removed: delayacct_blkio_start/end - empty stubs */
 #include <linux/init_task.h>
 #include <linux/interrupt.h>
-/* ioprio.h removed - unused */
-#include <linux/kallsyms.h>
-#include <linux/kprobes.h>
+/* ioprio.h, kallsyms.h, kprobes.h, mmzone.h removed - unused */
 
 #include <linux/mmu_context.h>
-#include <linux/mmzone.h>
 
 #include <linux/nospec.h>
 /* Removed: psi_init - empty stub */

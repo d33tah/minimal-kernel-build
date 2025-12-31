@@ -8,7 +8,6 @@
 #include <linux/pagemap.h>
 #include <linux/sched/mm.h>
 #include <linux/fsnotify.h>
-#include <linux/personality.h>
 #include <linux/security.h>
 /* Removed: ima_file_check, devcgroup_inode_permission, devcgroup_inode_mknod
  * - Always returned 0 (no-op stubs) */
@@ -22,7 +21,6 @@
 
 #include <linux/hash.h>
 #include <linux/bitops.h>
-#include <linux/init_task.h>
 #include <linux/uaccess.h>
 
 #include "internal.h"

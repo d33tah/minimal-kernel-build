@@ -25,8 +25,7 @@
 #include <linux/rmap.h>
 #include <linux/mmu_notifier.h>
 #include <linux/mmdebug.h>
-#include <linux/perf_event.h>
-/* audit.h, uprobes.h removed - unused */
+/* perf_event.h, audit.h, uprobes.h removed - unused */
 #include <linux/rbtree_augmented.h>
 #include <linux/notifier.h>
 #include <linux/printk.h>

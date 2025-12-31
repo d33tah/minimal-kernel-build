@@ -16,7 +16,7 @@
 #include <linux/init.h>
 #include <linux/pfn_t.h>
 #include <linux/writeback.h>
-#include <linux/memcontrol.h>
+/* memcontrol.h removed - unused */
 #include <linux/mmu_notifier.h>
 #include <linux/swapops.h>
 #include <linux/elf.h>
@@ -26,8 +26,7 @@
 #include <linux/userfaultfd_k.h>
 #include <linux/oom.h>
 #include <linux/file.h>
-#include <linux/numa.h>
-#include <linux/perf_event.h>
+/* numa.h, perf_event.h removed - unused */
 #include <linux/ptrace.h>
 #include <linux/vmalloc.h>
 

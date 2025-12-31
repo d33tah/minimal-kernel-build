@@ -17,7 +17,7 @@
 #include <linux/cpu.h>
 #include <linux/notifier.h>
 #include <linux/backing-dev.h>
-#include <linux/memcontrol.h>
+/* memcontrol.h removed - unused */
 #include <linux/gfp.h>
 #include <linux/uio.h>
 /* hugetlb.h removed - unused */

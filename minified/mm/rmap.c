@@ -10,7 +10,7 @@
 #include <linux/rmap.h>
 #include <linux/rcupdate.h>
 #include <linux/export.h>
-#include <linux/memcontrol.h>
+/* memcontrol.h removed - unused */
 #include <linux/mmu_notifier.h>
 #include <linux/migrate.h>
 /* hugetlb.h removed - unused */

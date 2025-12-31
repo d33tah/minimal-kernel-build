@@ -351,16 +351,7 @@ static inline int xa_get_order(struct xarray *xa, unsigned long index)
 	return 0;
 }
 
-static inline void xas_split(struct xa_state *xas, void *entry,
-		unsigned int order)
-{
-	xas_store(xas, entry);
-}
-
-static inline void xas_split_alloc(struct xa_state *xas, void *entry,
-		unsigned int order, gfp_t gfp)
-{
-}
+/* xas_split, xas_split_alloc removed - xa_get_order always 0, never called */
 
 static inline void *xas_reload(struct xa_state *xas)
 {

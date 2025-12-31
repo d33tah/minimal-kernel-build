@@ -333,12 +333,9 @@ noinline int __filemap_add_folio(struct address_space *mapping,
 	folio->index = xas.xa_index;
 
 	do {
-		unsigned int order = xa_get_order(xas.xa, xas.xa_index);
 		void *entry, *old = NULL;
 
-		if (order > folio_order(folio))
-			xas_split_alloc(&xas, xa_load(xas.xa, xas.xa_index),
-					order, gfp);
+		/* xa_get_order always returns 0, so split_alloc never needed */
 		xas_lock_irq(&xas);
 		xas_for_each_conflict(&xas, entry) {
 			old = entry;
@@ -352,12 +349,7 @@ noinline int __filemap_add_folio(struct address_space *mapping,
 			if (shadowp)
 				*shadowp = old;
 
-			order = xa_get_order(xas.xa, xas.xa_index);
-			if (order > folio_order(folio)) {
-				/* BUG_ON(shmem_mapping) removed - always false */
-				xas_split(&xas, old, order);
-				xas_reset(&xas);
-			}
+			/* xa_get_order always returns 0, so split never needed */
 		}
 
 		xas_store(&xas, folio);

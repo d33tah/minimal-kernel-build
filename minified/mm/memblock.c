@@ -13,7 +13,7 @@
 
 #include "internal.h"
 
-#define INIT_MEMBLOCK_REGIONS 128
+#define INIT_MEMBLOCK_REGIONS 16  /* Reduced from 128 for minimal boot */
 #define INIT_PHYSMEM_REGIONS 4
 
 #ifndef INIT_MEMBLOCK_RESERVED_REGIONS

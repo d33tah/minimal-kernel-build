@@ -710,9 +710,7 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 	c->x86_model = c->x86_stepping = 0;
 	c->x86_vendor_id[0] = '\0';
 	c->x86_model_id[0] = '\0';
-	/* c->x86_max_cores removed - never read */
-	c->x86_coreid_bits = 0;
-	c->cu_id = 0xff;
+	/* c->x86_max_cores, c->x86_coreid_bits, c->cu_id removed - never read */
 	c->cpuid_level = -1;
 	c->x86_clflush_size = 32;
 	c->x86_phys_bits = 32;

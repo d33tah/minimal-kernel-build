@@ -58,8 +58,7 @@ struct cpuinfo_x86 {
 	__u8			x86_virt_bits;
 	__u8			x86_phys_bits;
 	 
-	__u8			x86_coreid_bits;
-	__u8			cu_id;
+	/* x86_coreid_bits, cu_id removed - never read */
 	 
 	__u32			extended_cpuid_level;
 	 

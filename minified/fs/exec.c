@@ -45,7 +45,7 @@
 
 #include "internal.h"
 
-static int bprm_creds_from_file(struct linux_binprm *bprm);
+static void bprm_creds_from_file(struct linux_binprm *bprm);
 
 int suid_dumpable = 0;
 
@@ -626,10 +626,8 @@ int begin_new_exec(struct linux_binprm *bprm)
 	struct task_struct *me = current;
 	int retval;
 
-	retval = bprm_creds_from_file(bprm);
-	if (retval)
-		return retval;
-
+	/* bprm_creds_from_file now returns void (security check removed) */
+	bprm_creds_from_file(bprm);
 	bprm->point_of_no_return = true;
 
 	retval = de_thread(me);
@@ -865,12 +863,11 @@ static void bprm_fill_uid(struct linux_binprm *bprm, struct file *file)
 	}
 }
 
-static int bprm_creds_from_file(struct linux_binprm *bprm)
+/* security_bprm_creds_from_file always returns 0 - simplified */
+static void bprm_creds_from_file(struct linux_binprm *bprm)
 {
 	struct file *file = bprm->execfd_creds ? bprm->executable : bprm->file;
-
 	bprm_fill_uid(bprm, file);
-	return security_bprm_creds_from_file(bprm, file);
 }
 
 static int prepare_binprm(struct linux_binprm *bprm)

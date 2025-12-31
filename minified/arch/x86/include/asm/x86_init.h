@@ -33,13 +33,8 @@ struct x86_init_irqs {
 	struct irq_domain *(*create_pci_msi_domain)(void);
 };
 
- 
-struct x86_init_oem {
-	void (*arch_setup)(void);
-	void (*banner)(void);
-};
+/* x86_init_oem removed - never accessed */
 
- 
 struct x86_init_paging {
 	void (*pagetable_init)(void);
 };
@@ -77,7 +72,7 @@ struct x86_init_ops {
 	struct x86_init_resources	resources;
 	struct x86_init_mpparse		mpparse;
 	struct x86_init_irqs		irqs;
-	struct x86_init_oem		oem;
+	/* oem field removed - never accessed */
 	struct x86_init_paging		paging;
 	struct x86_init_timers		timers;
 	/* iommu field removed - never used */

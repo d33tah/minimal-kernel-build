@@ -67,10 +67,7 @@ struct x86_init_ops x86_init __initdata = {
 		.create_pci_msi_domain	= native_create_pci_msi_domain,
 	},
 
-	.oem = {
-		.arch_setup		= x86_init_noop,
-		.banner			= default_banner,
-	},
+	/* .oem removed - never accessed (arch_setup, banner commented out in setup.c) */
 
 	.paging = {
 		.pagetable_init		= native_pagetable_init,

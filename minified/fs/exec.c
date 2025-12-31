@@ -561,9 +561,6 @@ static int de_thread(struct task_struct *tsk)
 
 		BUG_ON(leader->exit_state != EXIT_ZOMBIE);
 		leader->exit_state = EXIT_DEAD;
-
-		if (unlikely(leader->ptrace))
-			__wake_up_parent(leader, leader->parent);
 		write_unlock_irq(&tasklist_lock);
 
 		release_task(leader);

@@ -372,7 +372,6 @@ int simple_setattr(struct user_namespace *mnt_userns, struct dentry *dentry,
 static int simple_read_folio(struct file *file, struct folio *folio)
 {
 	folio_zero_range(folio, 0, folio_size(folio));
-	flush_dcache_folio(folio);
 	folio_mark_uptodate(folio);
 	folio_unlock(folio);
 	return 0;

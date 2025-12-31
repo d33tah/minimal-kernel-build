@@ -1146,7 +1146,6 @@ ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
 	struct inode *inode = mapping->host;
 	struct folio_batch fbatch;
 	int i, error = 0;
-	bool writably_mapped;
 	loff_t isize, end_offset;
 
 	if (unlikely(iocb->ki_pos >= inode->i_sb->s_maxbytes))
@@ -1175,8 +1174,6 @@ ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
 			goto put_folios;
 		end_offset = min_t(loff_t, isize, iocb->ki_pos + iter->count);
 
-		writably_mapped = mapping_writably_mapped(mapping);
-
 		if (!pos_same_folio(iocb->ki_pos, ra->prev_pos - 1,
 				    fbatch.folios[0]))
 			folio_mark_accessed(fbatch.folios[0]);
@@ -1193,9 +1190,6 @@ ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
 				break;
 			if (i > 0)
 				folio_mark_accessed(folio);
-
-			if (writably_mapped)
-				flush_dcache_folio(folio);
 
 			copied = copy_folio_to_iter(folio, offset, bytes, iter);
 

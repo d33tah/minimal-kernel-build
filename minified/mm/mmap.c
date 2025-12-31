@@ -954,9 +954,6 @@ static int acct_stack_growth(struct vm_area_struct *vma, unsigned long size,
 	struct mm_struct *mm = vma->vm_mm;
 	unsigned long new_start;
 
-	if (!may_expand_vm(mm, vma->vm_flags, grow))
-		return -ENOMEM;
-
 	if (size > rlimit(RLIMIT_STACK))
 		return -ENOMEM;
 
@@ -1003,7 +1000,6 @@ int expand_downwards(struct vm_area_struct *vma, unsigned long address)
 			error = acct_stack_growth(vma, size, grow);
 			if (!error) {
 				spin_lock(&mm->page_table_lock);
-				vm_stat_account(mm, vma->vm_flags, grow);
 				anon_vma_interval_tree_pre_update_vma(vma);
 				vma->vm_start = address;
 				vma->vm_pgoff -= grow;
@@ -1056,7 +1052,6 @@ static void remove_vma_list(struct mm_struct *mm, struct vm_area_struct *vma)
 
 		if (vma->vm_flags & VM_ACCOUNT)
 			nr_accounted += nrpages;
-		vm_stat_account(mm, vma->vm_flags, -nrpages);
 		vma = remove_vma(vma);
 	} while (vma);
 	vm_unacct_memory(nr_accounted);
@@ -1287,9 +1282,6 @@ static int do_brk_flags(unsigned long addr, unsigned long len,
 	if (munmap_vma_range(mm, addr, len, &prev, &rb_link, &rb_parent, uf))
 		return -ENOMEM;
 
-	if (!may_expand_vm(mm, flags, len >> PAGE_SHIFT))
-		return -ENOMEM;
-
 	if (mm->map_count > sysctl_max_map_count)
 		return -ENOMEM;
 
@@ -1403,17 +1395,6 @@ int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)
 	return 0;
 }
 
-/* Stub: may_expand_vm not used externally */
-bool may_expand_vm(struct mm_struct *mm, vm_flags_t flags, unsigned long npages)
-{
-	return true;
-}
-
-/* Stub: vm_stat_account not used externally */
-void vm_stat_account(struct mm_struct *mm, vm_flags_t flags, long npages)
-{
-}
-
 static vm_fault_t special_mapping_fault(struct vm_fault *vmf);
 
 static void special_mapping_close(struct vm_area_struct *vma)
@@ -1505,8 +1486,6 @@ __install_special_mapping(struct mm_struct *mm, unsigned long addr,
 	ret = insert_vm_struct(mm, vma);
 	if (ret)
 		goto out;
-
-	vm_stat_account(mm, vma->vm_flags, len >> PAGE_SHIFT);
 
 	return vma;
 

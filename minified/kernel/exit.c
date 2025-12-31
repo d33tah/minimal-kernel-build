@@ -480,12 +480,6 @@ SYSCALL_DEFINE1(exit_group, int, error_code)
 	return 0;
 }
 
-/* Stub: wake up parent when child exec's - used by exec code */
-void __wake_up_parent(struct task_struct *p, struct task_struct *parent)
-{
-	/* Stub: no wait functionality needed for minimal kernel */
-}
-
 /* Stub: wait syscalls not needed for minimal Hello World kernel */
 SYSCALL_DEFINE5(waitid, int, which, pid_t, upid, struct siginfo __user *, infop,
 		int, options, struct rusage __user *, ru)

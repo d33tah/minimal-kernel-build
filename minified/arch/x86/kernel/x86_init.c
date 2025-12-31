@@ -105,12 +105,7 @@ struct x86_init_ops x86_init __initdata = {
 		.init_mem_mapping	= x86_init_noop,
 		.init_after_bootmem	= x86_init_noop,
 	},
-
-	.acpi = {
-		.set_root_pointer	= x86_default_set_root_pointer,
-		.get_root_pointer	= x86_default_get_root_pointer,
-		.reduced_hw_early_init	= acpi_generic_reduced_hw_init,
-	},
+	/* .acpi removed - never used */
 };
 
 struct x86_cpuinit_ops x86_cpuinit = {

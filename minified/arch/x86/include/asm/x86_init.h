@@ -74,14 +74,9 @@ struct x86_hyper_init {
 	void (*init_after_bootmem)(void);
 };
 
- 
-struct x86_init_acpi {
-	void (*set_root_pointer)(u64 addr);
-	u64 (*get_root_pointer)(void);
-	void (*reduced_hw_early_init)(void);
-};
+/* x86_init_acpi removed - never used */
 
- 
+
 struct x86_guest {
 	void (*enc_status_change_prepare)(unsigned long vaddr, int npages, bool enc);
 	bool (*enc_status_change_finish)(unsigned long vaddr, int npages, bool enc);
@@ -100,7 +95,7 @@ struct x86_init_ops {
 	struct x86_init_iommu		iommu;
 	struct x86_init_pci		pci;
 	struct x86_hyper_init		hyper;
-	struct x86_init_acpi		acpi;
+	/* acpi field removed - never used */
 };
 
  

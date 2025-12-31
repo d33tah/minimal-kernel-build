@@ -476,8 +476,7 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 	p->rt.time_slice = sched_rr_timeslice;
 	p->rt.on_rq = 0;
 	p->rt.on_list = 0;
-
-	init_numa_balancing(clone_flags, p);
+	/* init_numa_balancing - empty stub removed */
 }
 
 /* sched_numa_balancing removed - defined but never used */

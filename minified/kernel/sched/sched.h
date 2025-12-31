@@ -508,13 +508,7 @@ rq_unlock(struct rq *rq, struct rq_flags *rf)
 
 /* this_rq_lock_irq removed - unused */
 
-/* sched_init_numa, sched_update_numa, sched_domains_numa_masks_set/clear, sched_numa_find_closest removed - unused */
-
-static inline void
-init_numa_balancing(unsigned long clone_flags, struct task_struct *p)
-{
-}
-
+/* sched_init_numa, sched_update_numa, sched_domains_numa_masks_set/clear, sched_numa_find_closest, init_numa_balancing removed - unused */
 
 #include "stats.h"
 
@@ -716,12 +710,7 @@ extern void activate_task(struct rq *rq, struct task_struct *p, int flags);
 extern void deactivate_task(struct rq *rq, struct task_struct *p, int flags);
 
 extern void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags);
-
-static inline int hrtick_enabled_fair(struct rq *rq)
-{
-	return 0;
-}
-
+/* hrtick_enabled_fair removed - always returns 0, no callers */
 
 #ifndef arch_scale_freq_tick
 static __always_inline

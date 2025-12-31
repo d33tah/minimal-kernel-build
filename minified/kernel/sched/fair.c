@@ -776,10 +776,7 @@ static inline int throttled_hierarchy(struct cfs_rq *cfs_rq)
 {
 	return 0;
 }
-
-static inline void hrtick_start_fair(struct rq *rq, struct task_struct *p)
-{
-}
+/* hrtick_start_fair removed - never called (hrtick_enabled_fair always returns 0) */
 
 static int sched_idle_rq(struct rq *rq)
 {
@@ -1013,10 +1010,7 @@ again:
 
 done:
 	__maybe_unused;
-
-	if (hrtick_enabled_fair(rq))
-		hrtick_start_fair(rq, p);
-
+	/* hrtick_enabled_fair always returns 0, dead if block removed */
 	return p;
 
 idle:

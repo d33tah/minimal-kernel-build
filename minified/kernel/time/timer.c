@@ -100,7 +100,9 @@ signed long __sched schedule_timeout(signed long timeout)
 		goto out;
 	default:
 		if (timeout < 0) {
-			printk(KERN_ERR "schedule_timeout: wrong timeout value %lx\n", timeout);
+			printk(KERN_ERR
+			       "schedule_timeout: wrong timeout value %lx\n",
+			       timeout);
 			__set_current_state(TASK_RUNNING);
 			goto out;
 		}

@@ -19,8 +19,7 @@ unsigned int sysctl_sched_latency = 6000000ULL;
 /* normalized_sysctl_sched_latency removed - unused */
 unsigned int sysctl_sched_tunable_scaling = SCHED_TUNABLESCALING_LOG;
 unsigned int sysctl_sched_min_granularity = 750000ULL;
-/* normalized_sysctl_sched_min_granularity removed - unused */
-unsigned int sysctl_sched_idle_min_granularity = 750000ULL;
+/* normalized_sysctl_sched_min_granularity, sysctl_sched_idle_min_granularity removed - unused */
 static unsigned int sched_nr_latency = 8;
 unsigned int sysctl_sched_child_runs_first __read_mostly;
 unsigned int sysctl_sched_wakeup_granularity = 1000000UL;
@@ -113,20 +112,7 @@ static inline bool list_add_leaf_cfs_rq(struct cfs_rq *cfs_rq)
 #define for_each_leaf_cfs_rq_safe(rq, cfs_rq, pos) \
 	for (cfs_rq = &rq->cfs, pos = NULL; cfs_rq; cfs_rq = pos)
 
-static inline struct sched_entity *parent_entity(struct sched_entity *se)
-{
-	return NULL;
-}
-
-static int cfs_rq_is_idle(struct cfs_rq *cfs_rq)
-{
-	return 0;
-}
-
-static int se_is_idle(struct sched_entity *se)
-{
-	return 0;
-}
+/* parent_entity, cfs_rq_is_idle, se_is_idle removed - always return constants */
 
 /* account_cfs_rq_runtime forward decl removed - empty stub */
 
@@ -265,11 +251,8 @@ static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
 	}
 
 	if (sched_feat(BASE_SLICE)) {
-		if (se_is_idle(init_se) && !sched_idle_cfs_rq(cfs_rq))
-			min_gran = sysctl_sched_idle_min_granularity;
-		else
-			min_gran = sysctl_sched_min_granularity;
-
+		/* se_is_idle always 0 - use min_granularity directly */
+		min_gran = sysctl_sched_min_granularity;
 		slice = max_t(u64, slice, min_gran);
 	}
 
@@ -762,18 +745,7 @@ static void entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr,
 
 /* account_cfs_rq_runtime, check_cfs_rq_runtime, check_enqueue_throttle, return_cfs_rq_runtime removed - stubs */
 
-static inline int cfs_rq_throttled(struct cfs_rq *cfs_rq)
-{
-	return 0;
-}
-
-/* throttled_hierarchy, hrtick_start_fair removed - never called */
-
-static int sched_idle_rq(struct rq *rq)
-{
-	return unlikely(rq->nr_running == rq->cfs.idle_h_nr_running &&
-			rq->nr_running);
-}
+/* cfs_rq_throttled, sched_idle_rq, throttled_hierarchy, hrtick_start_fair removed - unused */
 
 static bool sched_idle_cfs_rq(struct cfs_rq *cfs_rq)
 {
@@ -797,10 +769,7 @@ static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 
 		cfs_rq->h_nr_running++;
 		cfs_rq->idle_h_nr_running += idle_h_nr_running;
-		/* cfs_rq_is_idle() always 0 - skip */
-		if (cfs_rq_throttled(cfs_rq))
-			goto enqueue_throttle;
-
+		/* cfs_rq_is_idle, cfs_rq_throttled always 0 - checks removed */
 		flags = ENQUEUE_WAKEUP;
 	}
 
@@ -809,20 +778,14 @@ static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		cfs_rq = cfs_rq_of(se);
 
 		update_load_avg(cfs_rq, se, UPDATE_TG);
-		/* se_update_runnable removed - empty stub */
-		/* update_cfs_group removed - empty stub */
+		/* se_update_runnable, update_cfs_group removed - empty stubs */
 		cfs_rq->h_nr_running++;
 		cfs_rq->idle_h_nr_running += idle_h_nr_running;
-		/* cfs_rq_is_idle() always 0 - skip */
-		if (cfs_rq_throttled(cfs_rq))
-			goto enqueue_throttle;
-		/* throttled_hierarchy() always 0 - skip list_add_leaf_cfs_rq */
+		/* cfs_rq_is_idle, cfs_rq_throttled, throttled_hierarchy always 0 */
 	}
 
 	add_nr_running(rq, 1);
-
-enqueue_throttle:
-	/* assert_list_leaf_cfs_rq removed - empty stub */
+	/* enqueue_throttle label and assert_list_leaf_cfs_rq removed */
 }
 
 static void set_next_buddy(struct sched_entity *se);
@@ -842,13 +805,10 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 
 		cfs_rq->h_nr_running--;
 		cfs_rq->idle_h_nr_running -= idle_h_nr_running;
-		/* cfs_rq_is_idle() always 0 - skip */
-		if (cfs_rq_throttled(cfs_rq))
-			goto dequeue_throttle;
+		/* cfs_rq_is_idle, cfs_rq_throttled always 0 - checks removed */
 
 		if (cfs_rq->load.weight) {
-			se = parent_entity(se);
-			/* parent_entity always NULL, throttled_hierarchy always 0 */
+			/* parent_entity always NULL - break is always taken */
 			break;
 		}
 		flags |= DEQUEUE_SLEEP;
@@ -859,19 +819,14 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		cfs_rq = cfs_rq_of(se);
 
 		update_load_avg(cfs_rq, se, UPDATE_TG);
-		/* se_update_runnable removed - empty stub */
-		/* update_cfs_group removed - empty stub */
+		/* se_update_runnable, update_cfs_group removed - empty stubs */
 		cfs_rq->h_nr_running--;
 		cfs_rq->idle_h_nr_running -= idle_h_nr_running;
-		/* cfs_rq_is_idle() always 0 - skip */
-		if (cfs_rq_throttled(cfs_rq))
-			goto dequeue_throttle;
+		/* cfs_rq_is_idle, cfs_rq_throttled always 0 */
 	}
 
 	sub_nr_running(rq, 1);
-
-dequeue_throttle:
-	/* util_est_update removed - empty stub */
+	/* dequeue_throttle label and util_est_update removed */
 }
 
 static unsigned long wakeup_gran(struct sched_entity *se)
@@ -902,8 +857,7 @@ static void set_last_buddy(struct sched_entity *se)
 	{
 		if (SCHED_WARN_ON(!se->on_rq))
 			return;
-		if (se_is_idle(se))
-			return;
+		/* se_is_idle() always 0 - skip */
 		cfs_rq_of(se)->last = se;
 	}
 }

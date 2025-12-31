@@ -55,18 +55,7 @@ struct x86_init_pci {
 	void (*fixup_irqs)(void);
 };
 
- 
-struct x86_hyper_init {
-	void (*init_platform)(void);
-	void (*guest_late_init)(void);
-	bool (*x2apic_available)(void);
-	bool (*msi_ext_dest_id)(void);
-	void (*init_mem_mapping)(void);
-	void (*init_after_bootmem)(void);
-};
-
-/* x86_init_acpi removed - never used */
-/* x86_guest removed - never called */
+/* x86_hyper_init, x86_init_acpi, x86_guest removed - never used */
 
 struct x86_init_ops {
 	struct x86_init_resources	resources;
@@ -75,10 +64,8 @@ struct x86_init_ops {
 	/* oem field removed - never accessed */
 	struct x86_init_paging		paging;
 	struct x86_init_timers		timers;
-	/* iommu field removed - never used */
+	/* iommu, hyper, acpi fields removed - never used */
 	struct x86_init_pci		pci;
-	struct x86_hyper_init		hyper;
-	/* acpi field removed - never used */
 };
 
  

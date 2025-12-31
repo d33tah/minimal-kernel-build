@@ -40,10 +40,7 @@ extern void mmput(struct mm_struct *);
 
 extern void exit_mm_release(struct task_struct *, struct mm_struct *);
 extern void exec_mm_release(struct task_struct *, struct mm_struct *);
-
-static inline void mm_update_next_owner(struct mm_struct *mm)
-{
-}
+/* mm_update_next_owner removed - empty stub, no callers */
 
 #ifndef arch_get_mmap_end
 #define arch_get_mmap_end(addr, len, flags)	(TASK_SIZE)

@@ -235,8 +235,7 @@ static inline int pgd_present(pgd_t pgd)	{ return 1; }
 static inline void pgd_clear(pgd_t *pgd)	{ }
 #define p4d_ERROR(p4d)				(pgd_ERROR((p4d).pgd))
 
-#define pgd_populate(mm, pgd, p4d)		do { } while (0)
-#define pgd_populate_safe(mm, pgd, p4d)		do { } while (0)
+/* pgd_populate, pgd_populate_safe removed - no callers */
 #define set_pgd(pgdptr, pgdval)	set_p4d((p4d_t *)(pgdptr), (p4d_t) { pgdval })
 
 static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
@@ -250,7 +249,7 @@ static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
 #define pgd_page(pgd)				(p4d_page((p4d_t){ pgd }))
 #define pgd_page_vaddr(pgd)			((unsigned long)(p4d_pgtable((p4d_t){ pgd })))
 
-#define p4d_alloc_one(mm, address)		NULL
+/* p4d_alloc_one removed - no callers */
 #define p4d_free(mm, x)				do { } while (0)
 #define p4d_free_tlb(tlb, x, a)			do { } while (0)
 
@@ -278,8 +277,7 @@ static inline int p4d_present(p4d_t p4d)	{ return 1; }
 static inline void p4d_clear(p4d_t *p4d)	{ }
 #define pud_ERROR(pud)				(p4d_ERROR((pud).p4d))
 
-#define p4d_populate(mm, p4d, pud)		do { } while (0)
-#define p4d_populate_safe(mm, p4d, pud)		do { } while (0)
+/* p4d_populate, p4d_populate_safe removed - no callers */
 #define set_p4d(p4dptr, p4dval)	set_pud((pud_t *)(p4dptr), (pud_t) { p4dval })
 
 static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
@@ -294,7 +292,7 @@ static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
 #define p4d_page(p4d)				(pud_page((pud_t){ p4d }))
 #define p4d_pgtable(p4d)			((pud_t *)(pud_pgtable((pud_t){ p4d })))
 
-#define pud_alloc_one(mm, address)		NULL
+/* pud_alloc_one removed - no callers */
 #define pud_free(mm, x)				do { } while (0)
 #define pud_free_tlb(tlb, x, a)		        do { } while (0)
 
@@ -342,7 +340,7 @@ static inline pmd_t * pmd_offset(pud_t * pud, unsigned long address)
 #define pud_page(pud)				(pmd_page((pmd_t){ pud }))
 #define pud_pgtable(pud)			((pmd_t *)(pmd_page_vaddr((pmd_t){ pud })))
 
-#define pmd_alloc_one(mm, address)		NULL
+/* pmd_alloc_one removed - no callers */
 #define pmd_free_tlb(tlb, x, a)		do { } while (0)
 
 #undef  pmd_addr_end

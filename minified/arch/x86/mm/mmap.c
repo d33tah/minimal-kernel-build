@@ -108,13 +108,8 @@ void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
 
 /* get_mmap_base, mmap_address_hint_valid removed - never called */
 
+/* pfn_modify_allowed simplified - always returns true (capable check removed) */
 bool pfn_modify_allowed(unsigned long pfn, pgprot_t prot)
 {
-	if (!boot_cpu_has_bug(X86_BUG_L1TF))
-		return true;
-	if (!__pte_needs_invert(pgprot_val(prot)))
-		return true;
-
-	/* capable() always returns true - L1TF check removed */
 	return true;
 }

@@ -2,7 +2,7 @@
 #define _LINUX_VT_H
 
 #define MIN_NR_CONSOLES 1
-#define MAX_NR_CONSOLES	63
+#define MAX_NR_CONSOLES	2  /* Reduced from 63 for minimal boot */
 
 struct vt_mode {
 	char mode;

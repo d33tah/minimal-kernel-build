@@ -34,7 +34,7 @@ static inline struct hlist_bl_head *d_hash(unsigned int hash)
 	return dentry_hashtable + (hash >> d_hash_shift);
 }
 
-#define IN_LOOKUP_SHIFT 10
+#define IN_LOOKUP_SHIFT 4  /* Reduced from 10 for minimal boot */
 static struct hlist_bl_head in_lookup_hashtable[1 << IN_LOOKUP_SHIFT];
 
 static inline struct hlist_bl_head *in_lookup_hash(const struct dentry *parent,

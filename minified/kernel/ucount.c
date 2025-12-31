@@ -12,7 +12,7 @@ struct ucounts init_ucounts = {
 	.count = ATOMIC_INIT(1),
 };
 
-#define UCOUNTS_HASHTABLE_BITS 10
+#define UCOUNTS_HASHTABLE_BITS 4  /* Reduced from 10 for minimal boot */
 static struct hlist_head ucounts_hashtable[(1 << UCOUNTS_HASHTABLE_BITS)];
 static DEFINE_SPINLOCK(ucounts_lock);
 

@@ -36,13 +36,7 @@
 void set_pageblock_migratetype(struct page *page, int migratetype);
 /* end page-isolation.h */
 
-enum compact_priority {
-	COMPACT_PRIO_SYNC_FULL,
-};
-
-enum compact_result {
-	COMPACT_SKIPPED,
-};
+/* compact_priority, compact_result enums removed - never used */
 
 struct alloc_context;
 

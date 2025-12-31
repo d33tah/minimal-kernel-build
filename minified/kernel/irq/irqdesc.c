@@ -200,15 +200,10 @@ int __init early_irq_init(void)
 
 int handle_irq_desc(struct irq_desc *desc)
 {
-	struct irq_data *data;
-
 	if (!desc)
 		return -EINVAL;
 
-	data = irq_desc_get_irq_data(desc);
-	if (WARN_ON_ONCE(!in_hardirq() && handle_enforce_irqctx(data)))
-		return -EPERM;
-
+	/* handle_enforce_irqctx always returns false - check removed */
 	generic_handle_irq_desc(desc);
 	return 0;
 }

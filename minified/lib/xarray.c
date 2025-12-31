@@ -139,13 +139,7 @@ static void *xas_descend(struct xa_state *xas, struct xa_node *node)
 	void *entry = xa_entry(xas->xa, node, offset);
 
 	xas->xa_node = node;
-	if (xa_is_sibling(entry)) {
-		offset = xa_to_sibling(entry);
-		entry = xa_entry(xas->xa, node, offset);
-		if (node->shift && xa_is_node(entry))
-			entry = XA_RETRY_ENTRY;
-	}
-
+	/* xa_is_sibling always returns false - sibling block removed */
 	xas->xa_offset = offset;
 	return entry;
 }
@@ -554,18 +548,17 @@ void *xas_store(struct xa_state *xas, void *entry)
 		if (entry) {
 			if (offset == max)
 				break;
-			if (!xa_is_sibling(entry))
-				entry = xa_mk_sibling(xas->xa_offset);
+			/* xa_is_sibling always returns false */
+			entry = xa_mk_sibling(xas->xa_offset);
 		} else {
 			if (offset == XA_CHUNK_MASK)
 				break;
 		}
 		next = xa_entry_locked(xas->xa, node, ++offset);
-		if (!xa_is_sibling(next)) {
-			if (!entry && (offset > max))
-				break;
-			first = next;
-		}
+		/* xa_is_sibling always returns false */
+		if (!entry && (offset > max))
+			break;
+		first = next;
 		slot++;
 	}
 
@@ -696,7 +689,8 @@ void *xas_find(struct xa_state *xas, unsigned long max)
 			xas->xa_offset = 0;
 			continue;
 		}
-		if (entry && !xa_is_sibling(entry))
+		/* xa_is_sibling always returns false */
+		if (entry)
 			return entry;
 
 		xas_next_offset(xas);
@@ -747,13 +741,7 @@ void *xas_find_marked(struct xa_state *xas, unsigned long max, xa_mark_t mark)
 			continue;
 		}
 
-		if (!advance) {
-			entry = xa_entry(xas->xa, xas->xa_node, xas->xa_offset);
-			if (xa_is_sibling(entry)) {
-				xas->xa_offset = xa_to_sibling(entry);
-				xas_move_index(xas, xas->xa_offset);
-			}
-		}
+		/* xa_is_sibling always returns false - sibling block removed */
 
 		offset = xas_find_chunk(xas, advance, mark);
 		if (offset > xas->xa_offset) {

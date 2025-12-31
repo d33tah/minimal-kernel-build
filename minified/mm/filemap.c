@@ -932,8 +932,7 @@ static void filemap_get_read_batch(struct address_space *mapping, pgoff_t index,
 			continue;
 		if (xas.xa_index > max || xa_is_value(folio))
 			break;
-		if (xa_is_sibling(folio))
-			break;
+		/* xa_is_sibling always returns false - check removed */
 		if (!folio_try_get_rcu(folio))
 			goto retry;
 

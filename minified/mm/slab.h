@@ -308,8 +308,7 @@ static inline struct kmem_cache *slab_pre_alloc_hook(struct kmem_cache *s,
 
 	might_alloc(flags);
 
-	if (should_failslab(s, flags))
-		return NULL;
+	/* should_failslab always returns 0 - check removed */
 
 	if (!memcg_slab_pre_alloc_hook(s, lru, objcgp, size, flags))
 		return NULL;

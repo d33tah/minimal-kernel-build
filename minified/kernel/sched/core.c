@@ -872,8 +872,7 @@ static inline void sched_submit_work(struct task_struct *tsk)
 
 	/* wq_worker_sleeping removed - empty stub */
 
-	if (tsk_is_pi_blocked(tsk))
-		return;
+	/* tsk_is_pi_blocked always returns false - check removed */
 
 	/* blk_flush_plug call removed - plug field removed, stub was empty */
 }

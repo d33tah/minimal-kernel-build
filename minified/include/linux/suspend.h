@@ -6,7 +6,7 @@
 #include <linux/init.h>
 #include <linux/pm.h>
 #include <linux/mm.h>
-#include <linux/freezer.h>
+/* linux/freezer.h removed - empty header */
 #include <asm/errno.h>
 /* suspend_state_t removed - unused */
 struct pbe { void *address; void *orig_address; struct pbe *next; };

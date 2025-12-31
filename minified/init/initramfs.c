@@ -13,7 +13,7 @@
 #include <linux/namei.h>
 #include <linux/init_syscalls.h>
 #include <linux/task_work.h>
-#include <linux/umh.h>
+/* linux/umh.h removed - empty header */
 
 static __initdata bool csum_present;
 static __initdata u32 io_csum;

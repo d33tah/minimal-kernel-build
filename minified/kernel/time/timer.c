@@ -43,16 +43,12 @@ __visible u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
 
 #define LVL_START(n) ((LVL_SIZE - 1) << (((n) - 1) * LVL_CLK_SHIFT))
 
-#define LVL_BITS 6
+#define LVL_BITS 4  /* Reduced from 6 for minimal boot */
 #define LVL_SIZE (1UL << LVL_BITS)
 #define LVL_MASK (LVL_SIZE - 1)
 #define LVL_OFFS(n) ((n) * LVL_SIZE)
 
-#if HZ > 100
-#define LVL_DEPTH 9
-#else
-#define LVL_DEPTH 8
-#endif
+#define LVL_DEPTH 4  /* Reduced from 8-9 for minimal boot */
 
 #define WHEEL_TIMEOUT_CUTOFF (LVL_START(LVL_DEPTH))
 #define WHEEL_TIMEOUT_MAX (WHEEL_TIMEOUT_CUTOFF - LVL_GRAN(LVL_DEPTH - 1))

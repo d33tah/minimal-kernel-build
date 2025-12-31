@@ -2,7 +2,7 @@
 #include <linux/kobject.h>
 #include <linux/string.h>
 #include <linux/export.h>
-#include <linux/stat.h>
+/* stat.h removed - unused */
 #include <linux/slab.h>
 
 static void kobject_get_ownership(struct kobject *kobj, kuid_t *uid,

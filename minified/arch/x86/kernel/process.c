@@ -378,8 +378,7 @@ void __noreturn stop_this_cpu(void *dummy)
 	local_irq_disable();
 
 	set_cpu_online(smp_processor_id(), false);
-	disable_local_APIC();
-
+	/* disable_local_APIC removed - empty stub */
 	if (cpuid_eax(0x8000001f) & BIT(0))
 		native_wbinvd();
 	for (;;) {

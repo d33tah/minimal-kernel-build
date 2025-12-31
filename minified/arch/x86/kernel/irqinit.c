@@ -37,8 +37,7 @@ void __init init_ISA_irqs(void)
 	struct irq_chip *chip = legacy_pic->chip;
 	int i;
 
-	init_bsp_APIC();
-
+	/* init_bsp_APIC removed - empty stub */
 	legacy_pic->init(0);
 
 	for (i = 0; i < nr_legacy_irqs(); i++)

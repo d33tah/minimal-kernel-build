@@ -18,15 +18,10 @@ static inline void generic_apic_probe(void)
 {
 }
 
-static inline void init_apic_mappings(void) { }
-static inline void disable_local_APIC(void) { }
 # define setup_boot_APIC_clock x86_init_noop
 # define setup_secondary_APIC_clock x86_init_noop
-static inline void init_bsp_APIC(void) { }
-static inline void apic_intr_mode_select(void) { }
-static inline void apic_intr_mode_init(void) { }
-static inline void lapic_assign_system_vectors(void) { }
-/* lapic_assign_legacy_vector removed - unused */
+/* init_apic_mappings, disable_local_APIC, init_bsp_APIC, apic_intr_mode_select,
+   apic_intr_mode_init, lapic_assign_system_vectors, lapic_assign_legacy_vector removed */
 static inline bool apic_needs_pit(void) { return true; }
 
 

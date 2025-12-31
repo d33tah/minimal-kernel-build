@@ -542,11 +542,7 @@ static inline int page_cpupid_xchg_last(struct page *page, int cpupid)
 	return page_to_nid(page);
 }
 
-static inline void page_cpupid_reset_last(struct page *page)
-{
-}
-
-/* page_kasan_tag_reset removed - unused */
+/* page_cpupid_reset_last, page_kasan_tag_reset removed - unused */
 
 static inline struct zone *page_zone(const struct page *page)
 {

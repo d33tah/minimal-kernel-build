@@ -17,11 +17,7 @@ static inline int hpet_enable(void)
 }
 #include <asm/time.h>
 
-/* profile_pc stubbed - never called */
-unsigned long profile_pc(struct pt_regs *regs)
-{
-	return instruction_pointer(regs);
-}
+/* profile_pc removed - never called */
 
 static irqreturn_t timer_interrupt(int irq, void *dev_id)
 {

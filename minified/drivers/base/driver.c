@@ -8,14 +8,7 @@
 #include <linux/sysfs.h>
 #include "base.h"
 
-/* driver_find_device stubbed - never called */
-struct device *driver_find_device(struct device_driver *drv,
-				  struct device *start, const void *data,
-				  int (*match)(struct device *dev,
-					       const void *data))
-{
-	return NULL;
-}
+/* driver_find_device removed - never called */
 
 /* Stub: sysfs functions are stubs - minimal driver file/group management */
 int driver_create_file(struct device_driver *drv,

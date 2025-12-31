@@ -128,9 +128,7 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
 	if (preallocate_pmds(mm, u_pmds, PREALLOCATED_USER_PMDS) != 0)
 		goto out_free_pmds;
 
-	if (paravirt_pgd_alloc(mm) != 0)
-		goto out_free_user_pmds;
-
+	/* paravirt_pgd_alloc always returns 0 - check removed */
 	spin_lock(&pgd_lock);
 
 	pgd_ctor(mm, pgd);
@@ -141,8 +139,6 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
 
 	return pgd;
 
-out_free_user_pmds:
-	free_pmds(mm, u_pmds, PREALLOCATED_USER_PMDS);
 out_free_pmds:
 	free_pmds(mm, pmds, PREALLOCATED_PMDS);
 out_free_pgd:
@@ -155,7 +151,7 @@ void pgd_free(struct mm_struct *mm, pgd_t *pgd)
 {
 	pgd_mop_up_pmds(mm, pgd);
 	pgd_dtor(pgd);
-	paravirt_pgd_free(mm, pgd);
+	/* paravirt_pgd_free is empty stub - call removed */
 	_pgd_free(pgd);
 }
 

@@ -10,7 +10,5 @@ SYSCALL_DEFINE1(pipe, int __user *, fildes)
 {
 	return -ENOSYS;
 }
-void free_pipe_info(struct pipe_inode_info *pipe)
-{
-}
+/* free_pipe_info removed - empty stub, call removed from exit.c */
 const struct file_operations pipefifo_fops = {};

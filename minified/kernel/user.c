@@ -50,9 +50,7 @@ struct user_namespace init_user_ns = {
 
 #define UIDHASH_BITS (CONFIG_BASE_SMALL ? 3 : 7)
 #define UIDHASH_SZ (1 << UIDHASH_BITS)
-#define UIDHASH_MASK (UIDHASH_SZ - 1)
-#define __uidhashfn(uid) (((uid >> UIDHASH_BITS) + uid) & UIDHASH_MASK)
-#define uidhashentry(uid) (uidhash_table + __uidhashfn((__kuid_val(uid))))
+/* __uidhashfn, uidhashentry macros removed - never used */
 
 static struct kmem_cache *uid_cachep;
 static struct hlist_head uidhash_table[UIDHASH_SZ];
@@ -65,10 +63,7 @@ struct user_struct root_user = {
 	.ratelimit = RATELIMIT_STATE_INIT(root_user.ratelimit, 0, 0),
 };
 
-static void uid_hash_insert(struct user_struct *up, struct hlist_head *hashent)
-{
-	hlist_add_head(&up->uidhash_node, hashent);
-}
+/* uid_hash_insert removed - never called */
 
 static void uid_hash_remove(struct user_struct *up)
 {
@@ -76,11 +71,7 @@ static void uid_hash_remove(struct user_struct *up)
 }
 
 /* uid_hash_find removed - only caller was alloc_uid */
-
-static int user_epoll_alloc(struct user_struct *up)
-{
-	return 0;
-}
+/* user_epoll_alloc removed - never called */
 
 static void user_epoll_free(struct user_struct *up)
 {

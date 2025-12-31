@@ -429,8 +429,7 @@ void __noreturn do_exit(long code)
 	/* perf_event_exit_task, exit_tasks_rcu_start removed - empty stubs */
 	exit_notify(tsk, group_dead);
 
-	if (tsk->splice_pipe)
-		free_pipe_info(tsk->splice_pipe);
+	/* free_pipe_info call removed - empty stub */
 
 	if (tsk->task_frag.page)
 		put_page(tsk->task_frag.page);

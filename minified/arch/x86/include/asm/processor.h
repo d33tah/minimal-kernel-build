@@ -80,10 +80,7 @@ struct cpuinfo_x86 {
 	int			x86_cache_mbm_width_offset;
 	int			x86_power;
 	unsigned long		loops_per_jiffy;
-	 
-	u64			ppin;
-	 
-	/* x86_max_cores removed - never read */
+	/* ppin, x86_max_cores removed - never read */
 	u16			apicid;
 	u16			initial_apicid;
 	u16			x86_clflush_size;

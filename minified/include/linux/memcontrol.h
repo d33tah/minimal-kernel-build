@@ -18,8 +18,7 @@ enum memcg_stat_item {
 	MEMCG_VMALLOC = NR_VM_NODE_STAT_ITEMS,
 	MEMCG_NR_STAT,
 };
-
-enum memcg_memory_event { MEMCG_NR_MEMORY_EVENTS };
+/* enum memcg_memory_event removed - unused */
 
 static inline struct mem_cgroup *folio_memcg(struct folio *folio)
 {

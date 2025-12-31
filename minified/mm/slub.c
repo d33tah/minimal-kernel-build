@@ -17,7 +17,7 @@
 /* stackdepot.h removed - unused */
 #include <linux/kallsyms.h>
 #include <linux/math64.h>
-#include <linux/stacktrace.h>
+/* stacktrace.h removed - unused */
 
 #include <linux/memcontrol.h>
 #include <linux/sort.h>

@@ -372,11 +372,7 @@ static inline struct cfs_rq *cfs_rq_of(struct sched_entity *se)
 	return &rq->cfs;
 }
 
- 
-static inline struct cfs_rq *group_cfs_rq(struct sched_entity *grp)
-{
-	return NULL;
-}
+/* group_cfs_rq removed - always returned NULL, no callers */
 
 extern void update_rq_clock(struct rq *rq);
 

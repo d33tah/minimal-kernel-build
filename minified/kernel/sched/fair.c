@@ -944,11 +944,9 @@ again:
 	if (prev)
 		put_prev_task(rq, prev);
 
-	do {
-		se = pick_next_entity(cfs_rq, NULL);
-		set_next_entity(cfs_rq, se);
-		cfs_rq = group_cfs_rq(se);
-	} while (cfs_rq);
+	/* group_cfs_rq always returns NULL, loop simplified */
+	se = pick_next_entity(cfs_rq, NULL);
+	set_next_entity(cfs_rq, se);
 
 	p = task_of(se);
 

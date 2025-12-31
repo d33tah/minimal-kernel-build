@@ -230,11 +230,8 @@ static inline int check_irq_resend(struct irq_desc *desc, bool inject)
 bool irq_wait_for_poll(struct irq_desc *desc);
 void __irq_wake_thread(struct irq_desc *desc, struct irqaction *action);
 
-/* register_irq_proc, unregister_irq_proc removed - never called */
-static inline void register_handler_proc(unsigned int irq,
-					 struct irqaction *action) { }
-static inline void unregister_handler_proc(unsigned int irq,
-					   struct irqaction *action) { }
+/* register_irq_proc, unregister_irq_proc, register_handler_proc,
+   unregister_handler_proc removed - never called */
 
 /* irq_can_set_affinity_usr, irq_set_thread_affinity removed - unused */
 
@@ -340,8 +337,7 @@ static inline void kstat_incr_irqs_this_cpu(struct irq_desc *desc)
 
 /* irq_desc_get_node, irq_desc_is_chained, irq_pm_check_wakeup, irq_pm_remove_action removed - unused */
 
-static inline void
-irq_pm_install_action(struct irq_desc *desc, struct irqaction *action) { }
+/* irq_pm_install_action removed - never called */
 
 /* irq_remove_timings, irq_setup_timings, record_irq_time removed - never called */
 
@@ -367,10 +363,5 @@ static inline void irq_domain_deactivate_irq(struct irq_data *data)
 
 /* irqd_get_parent_data removed - unused */
 
-static inline void irq_add_debugfs_entry(unsigned int irq, struct irq_desc *d)
-{
-}
-static inline void irq_remove_debugfs_entry(struct irq_desc *d)
-{
-}
-/* irq_debugfs_copy_devname removed - unused */
+/* irq_add_debugfs_entry, irq_remove_debugfs_entry,
+   irq_debugfs_copy_devname removed - unused */

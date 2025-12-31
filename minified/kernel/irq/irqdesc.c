@@ -116,11 +116,8 @@ static void free_desc(unsigned int irq)
 {
 	struct irq_desc *desc = irq_to_desc(irq);
 
-	irq_remove_debugfs_entry(desc);
-	/* unregister_irq_proc removed - empty stub */
-
+	/* irq_remove_debugfs_entry, unregister_irq_proc removed - empty stubs */
 	delete_irq_desc(irq);
-
 	call_rcu(&desc->rcu, delayed_free_desc);
 }
 
@@ -156,7 +153,7 @@ static int alloc_descs(unsigned int start, unsigned int cnt, int node,
 		if (!desc)
 			goto err;
 		irq_insert_desc(start + i, desc);
-		irq_add_debugfs_entry(start + i, desc);
+		/* irq_add_debugfs_entry removed - empty stub */
 	}
 	bitmap_set(allocated_irqs, start, cnt);
 	return start;

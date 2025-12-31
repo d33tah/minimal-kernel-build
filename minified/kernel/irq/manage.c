@@ -561,8 +561,7 @@ static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 
 	*old_ptr = new;
 
-	irq_pm_install_action(desc, new);
-
+	/* irq_pm_install_action removed - empty stub */
 	desc->irq_count = 0;
 	desc->irqs_unhandled = 0;
 
@@ -579,9 +578,8 @@ static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 	wake_up_and_wait_for_irq_thread_ready(desc, new);
 	wake_up_and_wait_for_irq_thread_ready(desc, new->secondary);
 
-	/* register_irq_proc removed - empty stub */
+	/* register_irq_proc, register_handler_proc removed - empty stubs */
 	new->dir = NULL;
-	register_handler_proc(irq, new);
 	return 0;
 
 mismatch:

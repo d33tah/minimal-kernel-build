@@ -382,20 +382,13 @@ static int ttwu_runnable(struct task_struct *p, int wake_flags)
 	return ret;
 }
 
-static inline bool ttwu_queue_wakelist(struct task_struct *p, int cpu,
-				       int wake_flags)
-{
-	return false;
-}
+/* ttwu_queue_wakelist removed - always returned false */
 
 static void ttwu_queue(struct task_struct *p, int cpu, int wake_flags)
 {
 	struct rq *rq = cpu_rq(cpu);
 	struct rq_flags rf;
-
-	if (ttwu_queue_wakelist(p, cpu, wake_flags))
-		return;
-
+	/* ttwu_queue_wakelist always false - dead branch removed */
 	rq_lock(rq, &rf);
 	update_rq_clock(rq);
 	ttwu_do_activate(rq, p, wake_flags, &rf);

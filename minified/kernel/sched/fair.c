@@ -133,8 +133,7 @@ static int se_is_idle(struct sched_entity *se)
 	return 0;
 }
 
-static __always_inline void account_cfs_rq_runtime(struct cfs_rq *cfs_rq,
-						   u64 delta_exec);
+/* account_cfs_rq_runtime forward decl removed - empty stub */
 
 static inline u64 max_vruntime(u64 max_vruntime, u64 vruntime)
 {
@@ -317,9 +316,7 @@ static void update_curr(struct cfs_rq *cfs_rq)
 	curr->vruntime += calc_delta_fair(delta_exec, curr);
 	update_min_vruntime(cfs_rq);
 
-	/* account_group_exec_runtime removed - empty stub */
-
-	account_cfs_rq_runtime(cfs_rq, delta_exec);
+	/* account_group_exec_runtime, account_cfs_rq_runtime removed - stubs */
 }
 
 static void update_curr_fair(struct rq *rq)
@@ -554,7 +551,7 @@ static void place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 	se->vruntime = max_vruntime(se->vruntime, vruntime);
 }
 
-static void check_enqueue_throttle(struct cfs_rq *cfs_rq);
+/* check_enqueue_throttle forward decl removed - stub removed */
 
 static void enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 			   int flags)
@@ -586,9 +583,7 @@ static void enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 
 	if (cfs_rq->nr_running == 1)
 		list_add_leaf_cfs_rq(cfs_rq);
-
-	if (cfs_rq->nr_running == 1)
-		check_enqueue_throttle(cfs_rq);
+	/* check_enqueue_throttle() removed - was empty stub */
 }
 
 static void __clear_buddies_last(struct sched_entity *se)
@@ -639,7 +634,7 @@ static void clear_buddies(struct cfs_rq *cfs_rq, struct sched_entity *se)
 		__clear_buddies_skip(se);
 }
 
-static __always_inline void return_cfs_rq_runtime(struct cfs_rq *cfs_rq);
+/* return_cfs_rq_runtime forward decl removed - stub removed */
 
 static void dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 			   int flags)
@@ -661,7 +656,7 @@ static void dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 	if (!(flags & DEQUEUE_SLEEP))
 		se->vruntime -= cfs_rq->min_vruntime;
 
-	return_cfs_rq_runtime(cfs_rq);
+	/* return_cfs_rq_runtime() removed - empty stub */
 	/* update_cfs_group removed - empty stub */
 	if ((flags & (DEQUEUE_SAVE | DEQUEUE_MOVE)) != DEQUEUE_SAVE)
 		update_min_vruntime(cfs_rq);
@@ -761,15 +756,13 @@ static struct sched_entity *pick_next_entity(struct cfs_rq *cfs_rq,
 	return se;
 }
 
-static bool check_cfs_rq_runtime(struct cfs_rq *cfs_rq);
+/* check_cfs_rq_runtime forward decl removed - stub always returns false */
 
 static void put_prev_entity(struct cfs_rq *cfs_rq, struct sched_entity *prev)
 {
 	if (prev->on_rq)
 		update_curr(cfs_rq);
-
-	check_cfs_rq_runtime(cfs_rq);
-
+	/* check_cfs_rq_runtime() call removed - always returns false */
 	if (prev->on_rq) {
 		update_stats_wait_start_fair(cfs_rq, prev);
 
@@ -791,19 +784,7 @@ static void entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr,
 		check_preempt_tick(cfs_rq, curr);
 }
 
-static void account_cfs_rq_runtime(struct cfs_rq *cfs_rq, u64 delta_exec)
-{
-}
-static bool check_cfs_rq_runtime(struct cfs_rq *cfs_rq)
-{
-	return false;
-}
-static void check_enqueue_throttle(struct cfs_rq *cfs_rq)
-{
-}
-static __always_inline void return_cfs_rq_runtime(struct cfs_rq *cfs_rq)
-{
-}
+/* account_cfs_rq_runtime, check_cfs_rq_runtime, check_enqueue_throttle, return_cfs_rq_runtime removed - stubs */
 
 static inline int cfs_rq_throttled(struct cfs_rq *cfs_rq)
 {
@@ -1291,8 +1272,7 @@ static void set_next_task_fair(struct rq *rq, struct task_struct *p, bool first)
 		struct cfs_rq *cfs_rq = cfs_rq_of(se);
 
 		set_next_entity(cfs_rq, se);
-
-		account_cfs_rq_runtime(cfs_rq, 0);
+		/* account_cfs_rq_runtime removed - empty stub */
 	}
 }
 

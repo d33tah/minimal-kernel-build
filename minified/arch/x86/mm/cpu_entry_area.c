@@ -126,12 +126,10 @@ static __init void setup_cpu_entry_area_ptes(void)
 
 void __init setup_cpu_entry_areas(void)
 {
-	unsigned int cpu;
-
 	setup_cpu_entry_area_ptes();
 
-	for_each_possible_cpu(cpu)
-		setup_cpu_entry_area(cpu);
+	/* for_each_possible_cpu simplified - single CPU */
+	setup_cpu_entry_area(0);
 
 	sync_initial_page_table();
 }

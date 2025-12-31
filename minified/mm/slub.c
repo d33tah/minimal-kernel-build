@@ -514,15 +514,8 @@ static int slub_cpu_dead(unsigned int cpu)
 	return 0;
 }
 
-static inline int node_match(struct slab *slab, int node)
-{
-	return 1;
-}
-
-static noinline void slab_out_of_memory(struct kmem_cache *s, gfp_t gfpflags,
-					int nid)
-{
-}
+/* node_match removed - always returned 1 */
+/* slab_out_of_memory removed - was empty stub */
 
 static inline bool pfmemalloc_match(struct slab *slab, gfp_t gfpflags)
 {
@@ -572,10 +565,8 @@ static void *___slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node,
 	slab = new_slab(s, gfpflags, node);
 	slub_get_cpu_ptr(s->cpu_slab);
 
-	if (!slab) {
-		slab_out_of_memory(s, gfpflags, node);
-		return NULL;
-	}
+	if (!slab)
+		return NULL; /* slab_out_of_memory removed - was empty stub */
 
 	freelist = slab->freelist;
 	slab->freelist = NULL;
@@ -622,8 +613,8 @@ redo:
 
 	object = c->freelist;
 	slab = c->slab;
-	/* CONFIG_PREEMPT_RT not enabled */
-	if (unlikely(!object || !slab || !node_match(slab, node))) {
+	/* CONFIG_PREEMPT_RT not enabled, node_match always returns 1 */
+	if (unlikely(!object || !slab)) {
 		object = __slab_alloc(s, gfpflags, node, addr, c);
 	} else {
 		void *next_object = get_freepointer_safe(s, object);
@@ -846,9 +837,7 @@ static int init_kmem_cache_nodes(struct kmem_cache *s)
 	return 1;
 }
 
-static void set_cpu_partial(struct kmem_cache *s)
-{
-}
+/* set_cpu_partial removed - was empty stub */
 
 static int calculate_sizes(struct kmem_cache *s)
 {
@@ -922,8 +911,7 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 	s->min_partial = min_t(unsigned long, MAX_PARTIAL, ilog2(s->size) / 2);
 	s->min_partial = max_t(unsigned long, MIN_PARTIAL, s->min_partial);
 
-	set_cpu_partial(s);
-
+	/* set_cpu_partial removed - was empty stub */
 	if (!init_kmem_cache_nodes(s))
 		goto error;
 

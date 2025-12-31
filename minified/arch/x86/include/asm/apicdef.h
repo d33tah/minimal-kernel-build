@@ -10,17 +10,13 @@
 #define	APIC_ID		0x20
 #define	APIC_LVR	0x30
 #define		APIC_LVR_DIRECTED_EOI	(1 << 24)
-#define		GET_APIC_VERSION(x)	((x) & 0xFFu)
-#define		GET_APIC_MAXLVT(x)	(((x) >> 16) & 0xFFu)
-#define		APIC_INTEGRATED(x)	((x) & 0xF0u)
-#define		APIC_XAPIC(x)		((x) >= 0x14)
-#define		APIC_EXT_SPACE(x)	((x) & 0x80000000)
+/* GET_APIC_VERSION, GET_APIC_MAXLVT, APIC_INTEGRATED, APIC_XAPIC, APIC_EXT_SPACE removed - unused */
 
 #define	APIC_TASKPRI	0x80
 #define	APIC_EOI	0xB0
 #define	APIC_LDR	0xD0
 #define	APIC_SPIV	0xF0
-#define		APIC_SPIV_APIC_ENABLED		(1 << 8)
+/* APIC_SPIV_APIC_ENABLED removed - unused */
 #define	APIC_ISR	0x100
 #define	APIC_ISR_NR     0x8
 #define	APIC_TMR	0x180
@@ -31,13 +27,10 @@
 #define	APIC_ICR2	0x310
 #define	APIC_LVTT	0x320
 #define	APIC_LVTTHMR	0x330
-#define	APIC_LVTPC	0x340
+/* APIC_LVTPC removed - unused */
 #define	APIC_LVT0	0x350
 #define	APIC_LVT1	0x360
-#define	APIC_LVTERR	0x370
-#define	APIC_TMICT	0x380
-#define	APIC_TMCCT	0x390
-#define	APIC_TDCR	0x3E0
+/* APIC_LVTERR, APIC_TMICT, APIC_TMCCT, APIC_TDCR removed - unused */
 #define	APIC_EFEAT	0x400
 
 #define MAX_LOCAL_APIC 256

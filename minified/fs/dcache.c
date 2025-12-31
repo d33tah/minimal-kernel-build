@@ -1,9 +1,8 @@
 
-#include <linux/ratelimit.h>
+/* ratelimit.h, fsnotify.h removed - unused */
 #include <linux/string.h>
 #include <linux/mm.h>
 #include <linux/fs.h>
-#include <linux/fsnotify.h>
 #include <linux/slab.h>
 #include <linux/init.h>
 #include <linux/hash.h>

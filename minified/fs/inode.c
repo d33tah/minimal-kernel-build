@@ -5,18 +5,16 @@
 #include <linux/backing-dev.h>
 #include <linux/hash.h>
 #include <linux/swap.h>
+/* fsnotify.h, tracepoint.h, ratelimit.h removed - unused */
 #include <linux/security.h>
 #include <linux/cdev.h>
 #include <linux/memblock.h>
-#include <linux/fsnotify.h>
 #include <linux/mount.h>
-#include <linux/tracepoint.h>
 
 static inline int inode_has_buffers(struct inode *inode)
 {
 	return 0;
 }
-#include <linux/ratelimit.h>
 #include <linux/list_lru.h>
 #include "internal.h"
 

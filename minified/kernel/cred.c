@@ -10,12 +10,7 @@
 #include <linux/binfmts.h>
 #include <linux/uidgid.h>
 
-#define kdebug(FMT, ...)                                                  \
-	do {                                                              \
-		if (0)                                                    \
-			no_printk("[%-5.5s%5u] " FMT "\n", current->comm, \
-				  current->pid, ##__VA_ARGS__);           \
-	} while (0)
+/* kdebug macro removed - was always no-op (if (0)) */
 
 static struct kmem_cache *cred_jar;
 
@@ -45,8 +40,6 @@ struct cred init_cred = {
 static void put_cred_rcu(struct rcu_head *rcu)
 {
 	struct cred *cred = container_of(rcu, struct cred, rcu);
-
-	kdebug("put_cred_rcu(%p)", cred);
 
 	if (atomic_read(&cred->usage) != 0)
 		panic("CRED: put_cred_rcu() sees %p with usage %d\n", cred,

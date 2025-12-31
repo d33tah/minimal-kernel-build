@@ -1075,11 +1075,8 @@ static void __build_all_zonelists(void *data)
 	if (self && !node_online(self->node_id)) {
 		build_zonelists(self);
 	} else {
-		for_each_node(nid) {
-			pg_data_t *pgdat = NODE_DATA(nid);
-
-			build_zonelists(pgdat);
-		}
+		/* for_each_node simplified - single node */
+		build_zonelists(NODE_DATA(0));
 	}
 
 	spin_unlock(&lock);
@@ -1698,12 +1695,9 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 		start_pfn = end_pfn;
 	}
 
-	/* Basic node initialization */
-	for_each_node(nid) {
-		if (node_online(nid)) {
-			free_area_init_node(nid);
-		}
-	}
+	/* Basic node initialization - single node */
+	if (node_online(0))
+		free_area_init_node(0);
 
 	memmap_init();
 }

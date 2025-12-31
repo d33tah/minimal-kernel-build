@@ -1030,8 +1030,8 @@ void __init kmem_cache_init(void)
 	kmem_cache_node = &boot_kmem_cache_node;
 	kmem_cache = &boot_kmem_cache;
 
-	for_each_node_state(node, N_NORMAL_MEMORY)
-		node_set(node, slab_nodes);
+	/* for_each_node_state simplified - single node */
+	node_set(0, slab_nodes);
 
 	create_boot_cache(kmem_cache_node, "kmem_cache_node",
 			  sizeof(struct kmem_cache_node), SLAB_HWCACHE_ALIGN, 0,

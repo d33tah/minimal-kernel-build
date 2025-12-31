@@ -3,10 +3,7 @@
 
 #include <linux/sched/signal.h>
 
-#include <linux/debug_locks.h>
-
-#include <linux/capability.h>
-#include <linux/security.h>
+/* debug_locks.h, capability.h, security.h removed - unused */
 
 #include <linux/wait_bit.h>
 #include <linux/jiffies.h>
@@ -27,18 +24,14 @@ extern void sched_init_smp(void);
 
 #include <linux/sched/rt.h>
 
-#include <linux/blkdev.h>
-#include <linux/context_tracking.h>
-/* cpuset.h removed - unused */
+/* blkdev.h, context_tracking.h, cpuset.h removed - unused */
 /* Removed: delayacct_blkio_start/end - empty stubs */
 #include <linux/init_task.h>
 #include <linux/interrupt.h>
 /* ioprio.h, kallsyms.h, kprobes.h, mmzone.h removed - unused */
 
 #include <linux/mmu_context.h>
-
-#include <linux/nospec.h>
-/* Removed: psi_init - empty stub */
+/* nospec.h removed - unused, psi_init stub removed */
 #include <linux/sched/wake_q.h>
 #include <linux/slab.h>
 #include <linux/syscalls.h>

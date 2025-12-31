@@ -377,7 +377,11 @@ void __init find_low_pfn_range(void)
 		highmem_pfn_init();
 }
 
-static inline void imdbg(const char *s) { while (*s) asm volatile("outb %0, $0xe9" : : "a"(*s++)); }
+static inline void imdbg(const char *s)
+{
+	while (*s)
+		asm volatile("outb %0, $0xe9" : : "a"(*s++));
+}
 void __init initmem_init(void)
 {
 	imdbg("im:1\n");
@@ -399,7 +403,11 @@ void __init setup_bootmem_allocator(void)
 {
 }
 
-static inline void pidbg(const char *s) { while (*s) asm volatile("outb %0, $0xe9" : : "a"(*s++)); }
+static inline void pidbg(const char *s)
+{
+	while (*s)
+		asm volatile("outb %0, $0xe9" : : "a"(*s++));
+}
 void __init paging_init(void)
 {
 	pidbg("pi:1\n");

@@ -460,8 +460,8 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 		const char *msg = "Hello, World!";
 		int i;
 		for (i = 0; msg[i]; i++) {
-			vga[i*2] = msg[i];
-			vga[i*2+1] = 0x0f;
+			vga[i * 2] = msg[i];
+			vga[i * 2 + 1] = 0x0f;
 		}
 		edbg("Hello, World!\n");
 	}

@@ -205,8 +205,8 @@ asmlinkage __visible void *extract_kernel(void *rmode, memptr heap,
 		const char *msg = "Hello, World!";
 		int i;
 		for (i = 0; msg[i]; i++) {
-			vga[i*2] = msg[i];
-			vga[i*2+1] = 0x0f;
+			vga[i * 2] = msg[i];
+			vga[i * 2 + 1] = 0x0f;
 		}
 	}
 

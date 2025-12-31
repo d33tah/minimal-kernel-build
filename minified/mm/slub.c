@@ -410,14 +410,10 @@ static inline void note_cmpxchg_failure(const char *n,
 
 static void init_kmem_cache_cpus(struct kmem_cache *s)
 {
-	int cpu;
-	struct kmem_cache_cpu *c;
-
-	for_each_possible_cpu(cpu) {
-		c = per_cpu_ptr(s->cpu_slab, cpu);
-		local_lock_init(&c->lock);
-		c->tid = init_tid(cpu);
-	}
+	/* for_each_possible_cpu simplified - single CPU */
+	struct kmem_cache_cpu *c = per_cpu_ptr(s->cpu_slab, 0);
+	local_lock_init(&c->lock);
+	c->tid = init_tid(0);
 }
 
 /* Removed: deactivate_slab - dead code since flush_slab simplified (~80 LOC) */
@@ -481,22 +477,13 @@ static void flush_all_cpus_locked(struct kmem_cache *s)
 
 	mutex_lock(&flush_lock);
 
-	for_each_online_cpu(cpu) {
-		sfw = &per_cpu(slub_flush, cpu);
-		if (!has_cpu_slab(cpu, s)) {
-			sfw->skip = true;
-			continue;
-		}
+	/* for_each_online_cpu simplified - single CPU */
+	sfw = &per_cpu(slub_flush, 0);
+	if (has_cpu_slab(0, s)) {
 		INIT_WORK(&sfw->work, flush_cpu_slab);
 		sfw->skip = false;
 		sfw->s = s;
-		schedule_work_on(cpu, &sfw->work);
-	}
-
-	for_each_online_cpu(cpu) {
-		sfw = &per_cpu(slub_flush, cpu);
-		if (sfw->skip)
-			continue;
+		schedule_work_on(0, &sfw->work);
 		flush_work(&sfw->work);
 	}
 
@@ -815,24 +802,18 @@ void __kmem_cache_release(struct kmem_cache *s)
 
 static int init_kmem_cache_nodes(struct kmem_cache *s)
 {
-	int node;
-
-	for_each_node_mask(node, slab_nodes) {
-		struct kmem_cache_node *n;
-
-		if (slab_state == DOWN) {
-			early_kmem_cache_node_alloc(node);
-			continue;
-		}
-		n = kmem_cache_alloc_node(kmem_cache_node, GFP_KERNEL, node);
-
+	/* for_each_node_mask simplified - single node */
+	if (slab_state == DOWN) {
+		early_kmem_cache_node_alloc(0);
+	} else {
+		struct kmem_cache_node *n =
+			kmem_cache_alloc_node(kmem_cache_node, GFP_KERNEL, 0);
 		if (!n) {
 			free_kmem_cache_nodes(s);
 			return 0;
 		}
-
 		init_kmem_cache_node(n);
-		s->node[node] = n;
+		s->node[0] = n;
 	}
 	return 1;
 }

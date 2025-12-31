@@ -11,10 +11,7 @@
 #include <linux/memblock.h>
 #include <linux/mount.h>
 
-static inline int inode_has_buffers(struct inode *inode)
-{
-	return 0;
-}
+/* inode_has_buffers removed - always returned 0 */
 #include <linux/list_lru.h>
 #include "internal.h"
 
@@ -132,8 +129,7 @@ static struct inode *alloc_inode(struct super_block *sb)
 
 void __destroy_inode(struct inode *inode)
 {
-	BUG_ON(inode_has_buffers(inode));
-	/* inode_detach_wb removed - empty stub */
+	/* BUG_ON(inode_has_buffers) removed - always 0 */
 	if (!inode->i_nlink) {
 		WARN_ON(atomic_long_read(&inode->i_sb->s_remove_count) == 0);
 		atomic_long_dec(&inode->i_sb->s_remove_count);

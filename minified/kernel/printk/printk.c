@@ -186,12 +186,7 @@ struct console_cmdline {
 	char *options;
 };
 /* end console_cmdline.h */
-static inline int _braille_register_console(struct console *console,
-					    struct console_cmdline *c)
-{
-	return 0;
-}
-/* end braille.h */
+/* _braille_register_console removed - always returned 0 */
 #include "internal.h"
 
 int console_printk[4] = {
@@ -588,9 +583,7 @@ static int try_enable_preferred_console(struct console *newcon,
 			if (newcon->index < 0)
 				newcon->index = c->index;
 
-			if (_braille_register_console(newcon, c))
-				return 0;
-
+			/* _braille_register_console always 0 - check removed */
 			if (newcon->setup &&
 			    (err = newcon->setup(newcon, c->options)) != 0)
 				return err;

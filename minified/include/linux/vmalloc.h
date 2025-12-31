@@ -61,13 +61,7 @@ static inline bool arch_vmap_pmd_supported(pgprot_t prot)
 }
 #endif
 
-
-#ifndef arch_vmap_pte_supported_shift
-static inline int arch_vmap_pte_supported_shift(unsigned long size)
-{
-	return PAGE_SHIFT;
-}
-#endif
+/* arch_vmap_pte_supported_shift removed - only caller was dead code */
 
 extern void __init vmalloc_init(void);
 

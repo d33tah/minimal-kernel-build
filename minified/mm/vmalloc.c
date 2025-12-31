@@ -30,8 +30,7 @@
 #include "pgalloc-track.h"
 
 static const unsigned int ioremap_max_page_shift = PAGE_SHIFT;
-
-static const bool vmap_allow_huge = false;
+/* vmap_allow_huge removed - was always false, huge vmap code removed */
 
 bool is_vmalloc_addr(const void *x)
 {
@@ -1392,18 +1391,7 @@ void *__vmalloc_node_range(unsigned long size, unsigned long align,
 		return NULL;
 	}
 
-	if (vmap_allow_huge && (vm_flags & VM_ALLOW_HUGE_VMAP)) {
-		unsigned long size_per_node;
-
-		size_per_node = size;
-		if (node == NUMA_NO_NODE)
-			size_per_node /= num_online_nodes();
-		/* arch_vmap_pmd_supported always returns false */
-		shift = arch_vmap_pte_supported_shift(size_per_node);
-
-		align = max(real_align, 1UL << shift);
-		size = ALIGN(real_size, 1UL << shift);
-	}
+	/* vmap_allow_huge is false - huge vmap block removed */
 
 again:
 	area = __get_vm_area_node(real_size, align, shift,

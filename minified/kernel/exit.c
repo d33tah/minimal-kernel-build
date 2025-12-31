@@ -396,8 +396,7 @@ void __noreturn do_exit(long code)
 {
 	struct task_struct *tsk = current;
 	int group_dead;
-
-	WARN_ON(tsk->plug);
+	/* WARN_ON(tsk->plug) removed - plug field removed */
 
 	coredump_task_exit(tsk);
 	ptrace_event(PTRACE_EVENT_EXIT, code);

@@ -83,9 +83,7 @@ struct task_io_accounting { };
 #include <linux/seqlock.h>
 #include <asm/kmap_size.h>
 
-/* struct audit_context removed - unused */
-struct backing_dev_info;
-struct blk_plug;
+/* struct audit_context, backing_dev_info, blk_plug removed - unused */
 struct cfs_rq;
 struct fs_struct;
 struct mempolicy;
@@ -429,9 +427,7 @@ struct task_struct {
 
 
 
-	struct blk_plug			*plug;
-
-	struct backing_dev_info		*backing_dev_info;
+	/* plug, backing_dev_info removed - write-only, never read */
 
 	struct task_io_accounting	ioac;
 	/* perf_event_* fields removed - PERF_EVENTS disabled, never used */
@@ -449,8 +445,7 @@ struct task_struct {
 
 
 	int				nr_dirtied;
-
-	u64				timer_slack_ns;
+	/* timer_slack_ns removed - initialized but never read */
 
 
 

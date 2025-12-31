@@ -1647,7 +1647,7 @@ ssize_t __generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 	ssize_t err;
 	ssize_t status;
 
-	current->backing_dev_info = inode_to_bdi(inode);
+	/* current->backing_dev_info removed - field removed from task_struct */
 	err = file_remove_privs(file);
 	if (err)
 		goto out;
@@ -1687,7 +1687,7 @@ ssize_t __generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 			iocb->ki_pos += written;
 	}
 out:
-	current->backing_dev_info = NULL;
+	/* current->backing_dev_info = NULL removed - field removed */
 	return written ? written : err;
 }
 

@@ -926,7 +926,7 @@ static inline void sched_submit_work(struct task_struct *tsk)
 	if (tsk_is_pi_blocked(tsk))
 		return;
 
-	blk_flush_plug(tsk->plug, true);
+	/* blk_flush_plug call removed - plug field removed, stub was empty */
 }
 
 static void sched_update_worker(struct task_struct *tsk)
@@ -1250,7 +1250,7 @@ static int io_schedule_prepare(void)
 	int old_iowait = current->in_iowait;
 
 	current->in_iowait = 1;
-	blk_flush_plug(current->plug, true);
+	/* blk_flush_plug removed - plug field removed */
 	return old_iowait;
 }
 

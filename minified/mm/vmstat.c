@@ -10,7 +10,4 @@ const char *const vmstat_text[] = {
 	"nr_free_pages",
 };
 #endif
-/* mm_percpu_wq workqueue removed - was allocated but never used */
-void __init init_mm_internals(void)
-{
-}
+/* mm_percpu_wq workqueue, init_mm_internals removed - empty stubs */

@@ -823,10 +823,7 @@ static noinline void __init kernel_init_freeable(void)
 
 	/* cad_pid removed - only set, never read */
 
-	/* smp_prepare_cpus, workqueue_init removed - empty stubs */
-
-	edbg("kif:init_mm\n");
-	init_mm_internals();
+	/* smp_prepare_cpus, workqueue_init, init_mm_internals removed - empty stubs */
 
 	/* rcu_init_tasks_generic removed - empty stub */
 	edbg("kif:pre_smp\n");

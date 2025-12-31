@@ -5,11 +5,7 @@
 #include <linux/mm_inline.h>
 #include <asm/tlb.h>
 
-void pgd_clear_bad(pgd_t *pgd)
-{
-	pgd_ERROR(*pgd);
-	pgd_clear(pgd);
-}
+/* pgd_clear_bad removed - never called */
 
 void pmd_clear_bad(pmd_t *pmd)
 {

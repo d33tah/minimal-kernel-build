@@ -248,17 +248,14 @@ static inline int pte_same(pte_t pte_a, pte_t pte_b)
 })
 #endif
 
-void pgd_clear_bad(pgd_t *);
+/* pgd_clear_bad declaration removed - never called */
 
 #define p4d_clear_bad(p4d)        do { } while (0)
 #define pud_clear_bad(p4d)        do { } while (0)
 
 void pmd_clear_bad(pmd_t *);
 
-/* pgd_none/pgd_bad/p4d_none/p4d_bad/pud_none/pud_bad all return 0 */
-static inline int pgd_none_or_clear_bad(pgd_t *pgd) { return 0; }
-static inline int p4d_none_or_clear_bad(p4d_t *p4d) { return 0; }
-static inline int pud_none_or_clear_bad(pud_t *pud) { return 0; }
+/* pgd/p4d/pud_none_or_clear_bad stubs removed - never called */
 
 static inline int pmd_none_or_clear_bad(pmd_t *pmd)
 {

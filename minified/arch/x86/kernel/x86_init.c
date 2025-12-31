@@ -31,10 +31,7 @@ void x86_init_noop(void)
 void __init x86_init_uint_noop(unsigned int unused)
 {
 }
-static int __init iommu_init_noop(void)
-{
-	return 0;
-}
+/* iommu_init_noop removed - x86_init.iommu never used */
 static void iommu_shutdown_noop(void)
 {
 }
@@ -87,9 +84,7 @@ struct x86_init_ops x86_init __initdata = {
 		.wallclock_init		= x86_wallclock_init,
 	},
 
-	.iommu = {
-		.iommu_init		= iommu_init_noop,
-	},
+	/* .iommu removed - never used */
 
 	.pci = {
 		.init			= x86_default_pci_init,

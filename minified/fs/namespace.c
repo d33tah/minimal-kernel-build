@@ -10,7 +10,7 @@
 #include <linux/idr.h>
 #include <linux/init.h>
 #include <linux/fs_struct.h>
-#include <linux/fsnotify.h>
+/* fsnotify.h removed - unused */
 #include <linux/file.h>
 #include <linux/uaccess.h>
 #include <linux/proc_ns.h>

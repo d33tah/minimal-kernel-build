@@ -14,7 +14,7 @@
  * - Always returned 0 (no-op stubs) */
 #include <linux/syscalls.h>
 #include <linux/mount.h>
-#include <linux/audit.h>
+/* audit.h removed - unused */
 #include <linux/capability.h>
 #include <linux/file.h>
 #include <linux/fcntl.h>

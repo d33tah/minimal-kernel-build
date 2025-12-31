@@ -20,7 +20,7 @@
 #include <linux/pagemap.h>
 #include <linux/syscalls.h>
 #include <linux/rcupdate.h>
-#include <linux/audit.h>
+/* audit.h removed - unused */
 
 #define FALLOC_FL_KEEP_SIZE 0x01
 #define FALLOC_FL_PUNCH_HOLE 0x02

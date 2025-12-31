@@ -30,7 +30,7 @@
 #include <linux/syscalls.h>
 /* audit.h removed - unused */
 #include <linux/kmod.h>
-#include <linux/fsnotify.h>
+/* fsnotify.h removed - unused */
 #include <linux/fs_struct.h>
 #include <linux/oom.h>
 #include <linux/compat.h>

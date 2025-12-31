@@ -122,7 +122,4 @@ struct x86_platform_ops x86_platform __ro_after_init = {
 	/* .hyper, .guest removed - never called */
 };
 
-struct x86_apic_ops x86_apic_ops __ro_after_init = {
-	.io_apic_read = native_io_apic_read,
-	.restore = native_restore_boot_irq_mode,
-};
+/* x86_apic_ops removed - never accessed */

@@ -16,10 +16,9 @@
 #include <linux/ctype.h>
 /* stackdepot.h removed - unused */
 #include <linux/kallsyms.h>
-/* math64.h, stacktrace.h removed - unused */
+/* math64.h, stacktrace.h, sort.h removed - unused */
 
 #include <linux/memcontrol.h>
-#include <linux/sort.h>
 
 #include "internal.h"
 

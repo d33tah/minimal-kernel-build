@@ -198,13 +198,7 @@ slab_flags_t kmem_cache_flags(unsigned int object_size, slab_flags_t flags,
 
 #define disable_higher_order_debug 0
 
-static inline unsigned long slabs_node(struct kmem_cache *s, int node)
-{
-	return 0;
-}
-static inline void inc_slabs_node(struct kmem_cache *s, int node, int objects)
-{
-}
+/* slabs_node and inc_slabs_node removed - always return 0 / do nothing */
 /* Removed: kfree_hook, slab_free_hook, slab_free_freelist_hook
  * - No longer needed since kfree/kmem_cache_free are no-ops */
 
@@ -289,11 +283,7 @@ static struct slab *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 	slab->frozen = 1;
 
 out:
-	if (!slab)
-		return NULL;
-
-	inc_slabs_node(s, slab_nid(slab), slab->objects);
-
+	/* inc_slabs_node removed - empty stub */
 	return slab;
 }
 
@@ -832,7 +822,7 @@ static void early_kmem_cache_node_alloc(int node)
 	kmem_cache_node->node[node] = n;
 
 	init_kmem_cache_node(n);
-	inc_slabs_node(kmem_cache_node, node, slab->objects);
+	/* inc_slabs_node removed - empty stub */
 
 	__add_partial(n, slab, DEACTIVATE_TO_HEAD);
 }
@@ -989,7 +979,8 @@ int __kmem_cache_shutdown(struct kmem_cache *s)
 	for_each_kmem_cache_node(s, node, n)
 	{
 		free_partial(s, n);
-		if (n->nr_partial || slabs_node(s, node))
+		/* slabs_node always 0 - simplified condition */
+		if (n->nr_partial)
 			return 1;
 	}
 	return 0;

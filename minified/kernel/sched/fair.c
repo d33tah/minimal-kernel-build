@@ -809,10 +809,7 @@ static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 
 		cfs_rq->h_nr_running++;
 		cfs_rq->idle_h_nr_running += idle_h_nr_running;
-
-		if (cfs_rq_is_idle(cfs_rq))
-			idle_h_nr_running = 1;
-
+		/* cfs_rq_is_idle() always 0 - skip */
 		if (cfs_rq_throttled(cfs_rq))
 			goto enqueue_throttle;
 
@@ -858,18 +855,13 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 
 		cfs_rq->h_nr_running--;
 		cfs_rq->idle_h_nr_running -= idle_h_nr_running;
-
-		if (cfs_rq_is_idle(cfs_rq))
-			idle_h_nr_running = 1;
-
+		/* cfs_rq_is_idle() always 0 - skip */
 		if (cfs_rq_throttled(cfs_rq))
 			goto dequeue_throttle;
 
 		if (cfs_rq->load.weight) {
 			se = parent_entity(se);
-
-			if (task_sleep && se && !throttled_hierarchy(cfs_rq))
-				set_next_buddy(se);
+			/* parent_entity always NULL, throttled_hierarchy always 0 */
 			break;
 		}
 		flags |= DEQUEUE_SLEEP;
@@ -884,10 +876,7 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		/* update_cfs_group removed - empty stub */
 		cfs_rq->h_nr_running--;
 		cfs_rq->idle_h_nr_running -= idle_h_nr_running;
-
-		if (cfs_rq_is_idle(cfs_rq))
-			idle_h_nr_running = 1;
-
+		/* cfs_rq_is_idle() always 0 - skip */
 		if (cfs_rq_throttled(cfs_rq))
 			goto dequeue_throttle;
 	}
@@ -938,8 +927,7 @@ static void set_next_buddy(struct sched_entity *se)
 	{
 		if (SCHED_WARN_ON(!se->on_rq))
 			return;
-		if (se_is_idle(se))
-			return;
+		/* se_is_idle() always 0 - skip */
 		cfs_rq_of(se)->next = se;
 	}
 }
@@ -957,14 +945,11 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p,
 	struct cfs_rq *cfs_rq = task_cfs_rq(curr);
 	int scale = cfs_rq->nr_running >= sched_nr_latency;
 	int next_buddy_marked = 0;
-	int cse_is_idle, pse_is_idle;
+	/* cse_is_idle, pse_is_idle removed - se_is_idle always 0 */
 
 	if (unlikely(se == pse))
 		return;
-
-	if (unlikely(throttled_hierarchy(cfs_rq_of(pse))))
-		return;
-
+	/* throttled_hierarchy() always 0 - skip */
 	if (sched_feat(NEXT_BUDDY) && scale && !(wake_flags & WF_FORK)) {
 		set_next_buddy(pse);
 		next_buddy_marked = 1;
@@ -983,15 +968,7 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p,
 
 	/* find_matching_se removed - empty stub */
 	BUG_ON(!pse);
-
-	cse_is_idle = se_is_idle(se);
-	pse_is_idle = se_is_idle(pse);
-
-	if (cse_is_idle && !pse_is_idle)
-		goto preempt;
-	if (cse_is_idle != pse_is_idle)
-		return;
-
+	/* se_is_idle always 0 - both cse_is_idle/pse_is_idle are 0, conditions skipped */
 	update_curr(cfs_rq_of(se));
 	if (wakeup_preempt_entity(se, pse) == 1) {
 		if (!next_buddy_marked)

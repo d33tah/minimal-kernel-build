@@ -469,7 +469,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 		parse_args("Setting extra init args", extra_init_args, NULL, 0,
 			   -1, -1, NULL, set_init_arg);
 
-	setup_log_buf(0);
+	/* setup_log_buf removed - empty stub */
 	vfs_caches_init_early();
 	sort_main_extable();
 	trap_init();

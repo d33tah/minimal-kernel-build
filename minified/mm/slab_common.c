@@ -212,7 +212,6 @@ out_unlock:
 		else {
 			pr_warn("%s(%s) failed with error %d\n", __func__, name,
 				err);
-			dump_stack();
 		}
 		return NULL;
 	}
@@ -400,7 +399,6 @@ gfp_t kmalloc_fix_flags(gfp_t flags)
 	flags &= ~GFP_SLAB_BUG_MASK;
 	pr_warn("Unexpected gfp: %#x (%pGg). Fixing up to gfp: %#x (%pGg). Fix your code!\n",
 		invalid_mask, &invalid_mask, flags, &flags);
-	dump_stack();
 
 	return flags;
 }

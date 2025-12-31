@@ -87,14 +87,6 @@ static inline void wake_up_klogd(void)
 {
 }
 
-static inline void setup_log_buf(int early)
-{
-}
-
-static inline void dump_stack(void)
-{
-}
-
 #ifndef pr_fmt
 #define pr_fmt(fmt) fmt
 #endif

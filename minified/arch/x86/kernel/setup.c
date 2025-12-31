@@ -560,7 +560,7 @@ void __init setup_arch(char **cmdline_p)
 
 	memblock_set_current_limit(get_max_mapped());
 
-	setup_log_buf(1);
+	/* setup_log_buf removed - empty stub */
 	/* efi_enabled always false - secure boot switch removed */
 	reserve_initrd();
 	/* acpi_table_upgrade is empty stub */

@@ -254,7 +254,6 @@ void iounmap(volatile void __iomem *addr)
 
 	if (!p) {
 		printk(KERN_ERR "iounmap: bad address %p\n", addr);
-		dump_stack();
 		return;
 	}
 

@@ -753,10 +753,8 @@ phys_addr_t __init memblock_alloc_range_nid(phys_addr_t size, phys_addr_t align,
 		    "Usage of MAX_NUMNODES is deprecated. Use NUMA_NO_NODE instead\n"))
 		nid = NUMA_NO_NODE;
 
-	if (!align) {
-		dump_stack();
+	if (!align)
 		align = SMP_CACHE_BYTES;
-	}
 
 again:
 	found = memblock_find_in_range_node(size, align, start, end, nid,

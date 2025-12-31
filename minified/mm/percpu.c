@@ -1134,7 +1134,6 @@ fail:
 	if (!is_atomic && do_warn && warn_limit) {
 		pr_warn("allocation failed, size=%zu align=%zu atomic=%d, %s\n",
 			size, align, is_atomic, err);
-		dump_stack();
 		if (!--warn_limit)
 			pr_info("limit reached, disable warning\n");
 	}

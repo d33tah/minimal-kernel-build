@@ -151,7 +151,6 @@ void kobject_init(struct kobject *kobj, const struct kobj_type *ktype)
 	if (kobj->state_initialized) {
 		pr_err("kobject (%p): tried to init an initialized object, something is seriously wrong.\n",
 		       kobj);
-		dump_stack();
 	}
 
 	kobject_init_internal(kobj);
@@ -160,7 +159,6 @@ void kobject_init(struct kobject *kobj, const struct kobj_type *ktype)
 
 error:
 	pr_err("kobject (%p): %s\n", kobj, err_str);
-	dump_stack();
 }
 
 static __printf(3, 0) int kobject_add_varg(struct kobject *kobj,
@@ -190,7 +188,6 @@ int kobject_add(struct kobject *kobj, struct kobject *parent, const char *fmt,
 	if (!kobj->state_initialized) {
 		pr_err("kobject '%s' (%p): tried to add an uninitialized object, something is seriously wrong.\n",
 		       kobject_name(kobj), kobj);
-		dump_stack();
 		return -EINVAL;
 	}
 	va_start(args, fmt);

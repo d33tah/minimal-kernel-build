@@ -604,7 +604,6 @@ signed long __sched schedule_timeout(signed long timeout)
 			printk(KERN_ERR "schedule_timeout: wrong timeout "
 					"value %lx\n",
 			       timeout);
-			dump_stack();
 			__set_current_state(TASK_RUNNING);
 			goto out;
 		}

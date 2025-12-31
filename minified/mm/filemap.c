@@ -5,7 +5,7 @@
 #include <linux/fs.h>
 #include <linux/sched/signal.h>
 #include <linux/uaccess.h>
-#include <linux/capability.h>
+/* capability.h removed - unused */
 /* kernel_stat.h removed - unused */
 #include <linux/gfp.h>
 #include <linux/mm.h>

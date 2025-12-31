@@ -24,10 +24,7 @@ int bdi_set_min_ratio(struct backing_dev_info *bdi, unsigned int min_ratio)
 void wb_update_bandwidth(struct bdi_writeback *wb)
 {
 }
-/* balance_dirty_pages_ratelimited removed - never called */
-void __init page_writeback_init(void)
-{
-}
+/* balance_dirty_pages_ratelimited, page_writeback_init removed - empty stubs */
 void laptop_mode_timer_fn(struct timer_list *t)
 {
 }

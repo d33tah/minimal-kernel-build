@@ -413,8 +413,7 @@ void __init pagecache_init(void)
 
 	for (i = 0; i < PAGE_WAIT_TABLE_SIZE; i++)
 		init_waitqueue_head(&folio_wait_table[i]);
-
-	page_writeback_init();
+	/* page_writeback_init removed - empty stub */
 }
 
 static int wake_page_function(wait_queue_entry_t *wait, unsigned mode, int sync,

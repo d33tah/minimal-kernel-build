@@ -34,12 +34,7 @@ bool set_page_dirty(struct page *page)
 	return folio_mark_dirty(page_folio(page));
 }
 
-int __set_page_dirty_nobuffers(struct page *page)
-{
-	return filemap_dirty_folio(page_mapping(page), page_folio(page));
-}
-
-/* clear_page_dirty_for_io removed - never called */
+/* __set_page_dirty_nobuffers removed - never called */
 
 void lru_cache_add(struct page *page)
 {

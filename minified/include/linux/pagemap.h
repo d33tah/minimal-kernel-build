@@ -301,9 +301,7 @@ static inline void folio_cancel_dirty(struct folio *folio)
 		__folio_cancel_dirty(folio);
 }
 void folio_invalidate(struct folio *folio, size_t offset, size_t length);
-int __set_page_dirty_nobuffers(struct page *page);
-bool noop_dirty_folio(struct address_space *mapping, struct folio *folio);
-
+/* __set_page_dirty_nobuffers, noop_dirty_folio removed - unused */
 size_t fault_in_readable(const char __user *uaddr, size_t size);
 
 int filemap_add_folio(struct address_space *mapping, struct folio *folio,

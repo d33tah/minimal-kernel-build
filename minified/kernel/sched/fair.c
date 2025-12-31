@@ -185,8 +185,6 @@ static void update_min_vruntime(struct cfs_rq *cfs_rq)
 	}
 
 	cfs_rq->min_vruntime = max_vruntime(cfs_rq->min_vruntime, vruntime);
-	smp_wmb();
-	cfs_rq->min_vruntime_copy = cfs_rq->min_vruntime;
 }
 
 static inline bool __entity_less(struct rb_node *a, const struct rb_node *b)
@@ -316,8 +314,6 @@ static void update_curr(struct cfs_rq *cfs_rq)
 	}
 
 	curr->sum_exec_runtime += delta_exec;
-	schedstat_add(cfs_rq->exec_clock, delta_exec);
-
 	curr->vruntime += calc_delta_fair(delta_exec, curr);
 	update_min_vruntime(cfs_rq);
 
@@ -1304,7 +1300,6 @@ void init_cfs_rq(struct cfs_rq *cfs_rq)
 {
 	cfs_rq->tasks_timeline = RB_ROOT_CACHED;
 	cfs_rq->min_vruntime = (u64)(-(1LL << 20));
-	cfs_rq->min_vruntime_copy = cfs_rq->min_vruntime;
 }
 
 static unsigned int get_rr_interval_fair(struct rq *rq,

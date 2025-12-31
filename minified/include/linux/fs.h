@@ -233,31 +233,18 @@ struct kiocb {
 };
 
 struct address_space_operations {
-	int (*writepage)(struct page *page, struct writeback_control *wbc);
+	/* writepage, writepages, dirty_folio, readahead, bmap removed - unused */
 	int (*read_folio)(struct file *, struct folio *);
-
-	
-	int (*writepages)(struct address_space *, struct writeback_control *);
-
-	
-	bool (*dirty_folio)(struct address_space *, struct folio *);
-
-	void (*readahead)(struct readahead_control *);
-
 	int (*write_begin)(struct file *, struct address_space *mapping,
 				loff_t pos, unsigned len,
 				struct page **pagep, void **fsdata);
 	int (*write_end)(struct file *, struct address_space *mapping,
 				loff_t pos, unsigned len, unsigned copied,
 				struct page *page, void *fsdata);
-
-	
-	sector_t (*bmap)(struct address_space *, sector_t);
 	void (*invalidate_folio) (struct folio *, size_t offset, size_t len);
 	bool (*release_folio)(struct folio *, gfp_t);
 	void (*free_folio)(struct folio *folio);
 	ssize_t (*direct_IO)(struct kiocb *, struct iov_iter *iter);
-	/* migratepage, isolate_page, putback_page, is_dirty_writeback, error_remove_page, swap_* removed - unused */
 	int (*launder_folio)(struct folio *);
 	bool (*is_partially_uptodate) (struct folio *, size_t from,
 			size_t count);
@@ -799,8 +786,7 @@ struct file_operations {
 	ssize_t (*write) (struct file *, const char __user *, size_t, loff_t *);
 	ssize_t (*read_iter) (struct kiocb *, struct iov_iter *);
 	ssize_t (*write_iter) (struct kiocb *, struct iov_iter *);
-	/* iopoll removed - unused */
-	int (*iterate) (struct file *, struct dir_context *);
+	/* iterate, sendpage, flock, fallocate, show_fdinfo, copy_file_range removed - unused */
 	int (*iterate_shared) (struct file *, struct dir_context *);
 	__poll_t (*poll) (struct file *, struct poll_table_struct *);
 	long (*unlocked_ioctl) (struct file *, unsigned int, unsigned long);
@@ -813,18 +799,9 @@ struct file_operations {
 	int (*fsync) (struct file *, loff_t, loff_t, int datasync);
 	int (*fasync) (int, struct file *, int);
 	int (*lock) (struct file *, int, struct file_lock *);
-	ssize_t (*sendpage) (struct file *, struct page *, int, size_t, loff_t *, int);
 	unsigned long (*get_unmapped_area)(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
-	/* check_flags removed - unused */
-	int (*flock) (struct file *, int, struct file_lock *);
 	ssize_t (*splice_write)(struct pipe_inode_info *, struct file *, loff_t *, size_t, unsigned int);
 	ssize_t (*splice_read)(struct file *, loff_t *, struct pipe_inode_info *, size_t, unsigned int);
-	/* setlease, remap_file_range, fadvise, uring_cmd removed - unused */
-	long (*fallocate)(struct file *file, int mode, loff_t offset,
-			  loff_t len);
-	void (*show_fdinfo)(struct seq_file *m, struct file *f);
-	ssize_t (*copy_file_range)(struct file *, loff_t, struct file *,
-			loff_t, size_t, unsigned int);
 } __randomize_layout;
 
 struct inode_operations {

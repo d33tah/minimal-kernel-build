@@ -1071,12 +1071,7 @@ extern int __register_chrdev(unsigned int major, unsigned int baseminor,
 			     const struct file_operations *fops);
 /* __unregister_chrdev removed - never called */
 extern void unregister_chrdev_region(dev_t, unsigned);
-
-static inline int register_chrdev(unsigned int major, const char *name,
-				  const struct file_operations *fops)
-{
-	return __register_chrdev(major, 0, 256, name, fops);
-}
+/* register_chrdev removed - never called */
 
 extern void init_special_inode(struct inode *, umode_t, dev_t);
 

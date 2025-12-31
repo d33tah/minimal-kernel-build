@@ -21,13 +21,13 @@
 #include <linux/writeback.h>
 #include <linux/backing-dev.h>
 #include <linux/pagevec.h>
-#include <linux/cpuset.h>
+/* cpuset.h removed - unused */
 #include <linux/hugetlb.h>
-#include <linux/memcontrol.h>
+/* memcontrol.h removed - unused */
 #include <linux/shmem_fs.h>
 #include <linux/rmap.h>
 #include <linux/ramfs.h>
-#include <linux/migrate.h>
+/* migrate.h removed - unused */
 #include <asm/pgalloc.h>
 #include <asm/tlbflush.h>
 #include "internal.h"

@@ -19,12 +19,12 @@
 #include <linux/topology.h>
 #include <linux/sysctl.h>
 #include <linux/cpu.h>
-#include <linux/cpuset.h>
+/* cpuset.h removed - unused */
 #include <linux/memory_hotplug.h>
 #include <linux/nodemask.h>
 #include <linux/vmalloc.h>
 #include <linux/vmstat.h>
-#include <linux/mempolicy.h>
+/* mempolicy.h removed - unused */
 #include <linux/memremap.h>
 /* stop_machine.h removed - unused */
 /* sort.h removed - unused */
@@ -51,7 +51,7 @@ struct alloc_context;
  * - Dead code: page_owner tracking not needed for minimal kernel (~9 LOC) */
 #include <linux/page_table_check.h>
 #include <linux/kthread.h>
-#include <linux/memcontrol.h>
+/* memcontrol.h removed - unused */
 #include <linux/lockdep.h>
 #include <asm/sections.h>
 #include <asm/tlbflush.h>

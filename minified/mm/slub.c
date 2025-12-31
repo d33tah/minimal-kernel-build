@@ -11,14 +11,11 @@
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
 #include <linux/cpu.h>
-#include <linux/cpuset.h>
-#include <linux/mempolicy.h>
+/* cpuset.h, mempolicy.h removed - unused */
 #include <linux/ctype.h>
 /* stackdepot.h removed - unused */
 #include <linux/kallsyms.h>
-/* math64.h, stacktrace.h, sort.h removed - unused */
-
-#include <linux/memcontrol.h>
+/* math64.h, stacktrace.h, sort.h, memcontrol.h removed - unused */
 
 #include "internal.h"
 

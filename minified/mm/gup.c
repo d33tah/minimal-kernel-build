@@ -179,17 +179,13 @@ static struct page *follow_pmd_mask(struct vm_area_struct *vma,
 	return follow_page_pte(vma, address, pmd, flags, &ctx->pgmap);
 }
 
+/* pud_none/pud_bad/p4d_none/p4d_bad always return 0 - folded paging */
 static struct page *follow_pud_mask(struct vm_area_struct *vma,
 				    unsigned long address, p4d_t *p4dp,
 				    unsigned int flags,
 				    struct follow_page_context *ctx)
 {
 	pud_t *pud = pud_offset(p4dp, address);
-
-	if (pud_none(*pud))
-		return no_page_table(vma, flags);
-	if (unlikely(pud_bad(*pud)))
-		return no_page_table(vma, flags);
 	return follow_pmd_mask(vma, address, pud, flags, ctx);
 }
 
@@ -199,12 +195,7 @@ static struct page *follow_p4d_mask(struct vm_area_struct *vma,
 				    struct follow_page_context *ctx)
 {
 	p4d_t *p4d = p4d_offset(pgdp, address);
-
-	if (p4d_none(*p4d))
-		return no_page_table(vma, flags);
 	BUILD_BUG_ON(p4d_huge(*p4d));
-	if (unlikely(p4d_bad(*p4d)))
-		return no_page_table(vma, flags);
 	return follow_pud_mask(vma, address, p4d, flags, ctx);
 }
 
@@ -224,13 +215,8 @@ static struct page *follow_page_mask(struct vm_area_struct *vma,
 		return page;
 	}
 
+	/* pgd_none/pgd_bad always return 0 - folded paging */
 	pgd = pgd_offset(mm, address);
-
-	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
-		return no_page_table(vma, flags);
-
-	/* pgd_huge and is_hugepd always return 0 - code removed */
-
 	return follow_p4d_mask(vma, address, pgd, flags, ctx);
 }
 

@@ -8,13 +8,7 @@
 #include "slab.h"
 #include "internal.h"
 
-static void list_lru_register(struct list_lru *lru)
-{
-}
-
-static void list_lru_unregister(struct list_lru *lru)
-{
-}
+/* list_lru_register/unregister removed - empty stubs */
 
 /* lru_shrinker_id removed - set_shrinker_bit is empty stub */
 
@@ -193,9 +187,7 @@ int __list_lru_init(struct list_lru *lru, bool memcg_aware,
 		init_one_lru(&lru->node[i].lru);
 	}
 
-	/* memcg_init_list_lru removed - empty stub */
-	list_lru_register(lru);
-
+	/* memcg_init_list_lru, list_lru_register removed - empty stubs */
 	return 0;
 }
 
@@ -203,9 +195,7 @@ void list_lru_destroy(struct list_lru *lru)
 {
 	if (!lru->node)
 		return;
-
-	list_lru_unregister(lru);
-	/* memcg_destroy_list_lru removed - empty stub */
+	/* list_lru_unregister, memcg_destroy_list_lru removed - empty stubs */
 	kfree(lru->node);
 	lru->node = NULL;
 }

@@ -268,7 +268,7 @@ static void __kthread_bind_mask(struct task_struct *p,
 	}
 
 	raw_spin_lock_irqsave(&p->pi_lock, flags);
-	do_set_cpus_allowed(p, mask);
+	/* do_set_cpus_allowed removed - empty stub */
 	p->flags |= PF_NO_SETAFFINITY;
 	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
 }

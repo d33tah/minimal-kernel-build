@@ -989,7 +989,7 @@ static int bprm_execve(struct linux_binprm *bprm, int fd,
 
 	current->fs->in_exec = 0;
 	current->in_execve = 0;
-	rseq_execve(current);
+	/* rseq_execve removed - empty stub */
 	return retval;
 
 out:

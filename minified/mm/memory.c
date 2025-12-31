@@ -913,7 +913,7 @@ vm_fault_t finish_fault(struct vm_fault *vmf)
 	else
 		ret = VM_FAULT_NOPAGE;
 
-	update_mmu_tlb(vma, vmf->address, vmf->pte);
+	/* update_mmu_tlb removed - empty stub */
 	pte_unmap_unlock(vmf->pte, vmf->ptl);
 	return ret;
 }

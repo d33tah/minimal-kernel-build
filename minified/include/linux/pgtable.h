@@ -151,13 +151,7 @@ static inline pte_t ptep_get_and_clear(struct mm_struct *mm,
 
 
 
-#ifndef __HAVE_ARCH_UPDATE_MMU_TLB
-static inline void update_mmu_tlb(struct vm_area_struct *vma,
-				unsigned long address, pte_t *ptep)
-{
-}
-#define __HAVE_ARCH_UPDATE_MMU_TLB
-#endif
+/* update_mmu_tlb removed - empty stub, call site removed */
 
 #ifndef __HAVE_ARCH_PTEP_CLEAR_FLUSH
 extern pte_t ptep_clear_flush(struct vm_area_struct *vma,

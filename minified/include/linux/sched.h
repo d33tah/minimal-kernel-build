@@ -545,9 +545,7 @@ current_restore_flags(unsigned long orig_flags, unsigned long flags)
 	current->flags |= orig_flags & flags;
 }
 
-static inline void do_set_cpus_allowed(struct task_struct *p, const struct cpumask *new_mask)
-{
-}
+/* do_set_cpus_allowed removed - empty stub, call site removed */
 static inline int set_cpus_allowed_ptr(struct task_struct *p, const struct cpumask *new_mask)
 {
 	if (!cpumask_test_cpu(0, new_mask))
@@ -663,10 +661,7 @@ static inline unsigned int task_cpu(const struct task_struct *p)
 extern long sched_setaffinity(pid_t pid, const struct cpumask *new_mask);
 extern long sched_getaffinity(pid_t pid, struct cpumask *mask);
 
-static inline void rseq_execve(struct task_struct *t)
-{
-}
-/* rseq_handle_notify_resume, rseq_signal_deliver, rseq_preempt, rseq_migrate,
+/* rseq_execve, rseq_handle_notify_resume, rseq_signal_deliver, rseq_preempt, rseq_migrate,
    rseq_fork, rseq_syscall, sched_core_free, sched_core_fork removed - unused */
 
 #endif

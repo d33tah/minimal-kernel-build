@@ -35,10 +35,7 @@ static inline int numa_node_id(void)
 /* __max_die_per_package removed - never used */
 
 #define topology_max_packages()			(1)
-static inline int
-topology_update_package_map(unsigned int apicid, unsigned int cpu) { return 0; }
-static inline int
-topology_update_die_map(unsigned int dieid, unsigned int cpu) { return 0; }
+/* topology_update_package_map, topology_update_die_map removed - never called */
 
 struct pci_bus;
 int x86_pci_root_bus_node(int bus);

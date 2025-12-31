@@ -210,7 +210,8 @@ asmlinkage __visible void *extract_kernel(void *rmode, memptr heap,
 		}
 	}
 
-	boot_params->acpi_rsdp_addr = get_rsdp_addr();
+	/* get_rsdp_addr always returns 0 */
+	boot_params->acpi_rsdp_addr = 0;
 
 	debug_putstr("early console in extract_kernel\n");
 

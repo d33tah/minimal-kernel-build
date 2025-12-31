@@ -43,12 +43,7 @@ static inline u64 cc_mkdec(u64 val)
 }
 #include <linux/page_table_check.h>
 
-/* uffd stubs - only keep functions used in .c files and headers */
-static __always_inline pte_t pte_mkuffd_wp(pte_t pte) { return pte; }
-static __always_inline int pte_swp_uffd_wp(pte_t pte) { return 0; }
-static __always_inline pte_t pte_swp_clear_uffd_wp(pte_t pte) { return pte; }
-/* pte_uffd_wp, pmd_uffd_wp, pmd_mkuffd_wp, pte_clear_uffd_wp, pmd_clear_uffd_wp,
-   pte_swp_mkuffd_wp, pmd_swp_* removed - never called */
+/* uffd stubs all removed - never called in any .c file */
 
 extern pgd_t early_top_pgt[PTRS_PER_PGD];
 
@@ -500,16 +495,7 @@ static inline void update_mmu_cache(struct vm_area_struct *vma,
 
 
 
-static inline u16 pte_flags_pkey(unsigned long pte_flags)
-{
-	return 0;
-}
-
-static inline bool __pkru_allows_pkey(u16 pkey, bool write)
-{
-	/* OSPKE disabled, read_pkru returns 0, always allows */
-	return true;
-}
+/* pte_flags_pkey, __pkru_allows_pkey removed - never called */
 
  
 static inline bool __pte_access_permitted(unsigned long pteval, bool write)

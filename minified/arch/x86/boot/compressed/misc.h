@@ -78,8 +78,7 @@ static inline void console_init(void)
 
 
  
-typedef u64 acpi_physical_address;
-static inline acpi_physical_address get_rsdp_addr(void) { return 0; }
+/* get_rsdp_addr removed - replaced with inline 0 */
 
 
  

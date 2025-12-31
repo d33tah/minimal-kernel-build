@@ -13,7 +13,7 @@
 #include <linux/kthread.h>
 #include <linux/rcupdate.h>
 #include <linux/smp.h>
-#include <linux/smpboot.h>
+/* smpboot.h removed - unused */
 #include <linux/tick.h>
 #include <linux/irq.h>
 #include <linux/wait_bit.h>

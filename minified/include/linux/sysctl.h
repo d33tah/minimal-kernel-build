@@ -82,10 +82,6 @@ struct ctl_table_root {
 			      kuid_t *uid, kgid_t *gid);
 	int (*permissions)(struct ctl_table_header *head, struct ctl_table *table);
 };
-
-static inline void do_sysctl_args(void)
-{
-}
-
+/* do_sysctl_args removed - unused */
 
 #endif  

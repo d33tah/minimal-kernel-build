@@ -494,11 +494,7 @@ static int fallbacks[MIGRATE_TYPES][3] = {
 				  MIGRATE_TYPES },
 };
 
-static bool can_steal_fallback(unsigned int order, int start_mt)
-{
-	/* Stub: always allow fallback for minimal kernel */
-	return true;
-}
+/* can_steal_fallback always returned true - inlined */
 
 static void steal_suitable_fallback(struct zone *zone, struct page *page,
 				    unsigned int alloc_flags, int start_type,
@@ -519,7 +515,7 @@ static int find_suitable_fallback(struct free_area *area, unsigned int order,
 	if (area->nr_free == 0)
 		return -1;
 
-	*can_steal = false;
+	*can_steal = true; /* can_steal_fallback always true */
 	for (i = 0;; i++) {
 		fallback_mt = fallbacks[migratetype][i];
 		if (fallback_mt == MIGRATE_TYPES)
@@ -528,14 +524,7 @@ static int find_suitable_fallback(struct free_area *area, unsigned int order,
 		if (free_area_empty(area, fallback_mt))
 			continue;
 
-		if (can_steal_fallback(order, migratetype))
-			*can_steal = true;
-
-		if (!only_stealable)
-			return fallback_mt;
-
-		if (*can_steal)
-			return fallback_mt;
+		return fallback_mt;
 	}
 
 	return -1;

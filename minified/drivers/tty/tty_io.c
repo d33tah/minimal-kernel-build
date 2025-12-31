@@ -277,10 +277,7 @@ int tty_hung_up_p(struct file *filp)
 	return (filp && filp->f_op == &hung_up_tty_fops);
 }
 
-/* Simplified for minimal kernel - no time update needed */
-static void tty_update_time(struct timespec64 *time)
-{
-}
+/* tty_update_time removed - empty stub */
 
 static int iterate_tty_read(struct tty_ldisc *ld, struct tty_struct *tty,
 			    struct file *file, struct iov_iter *to)
@@ -343,9 +340,7 @@ static ssize_t tty_read(struct kiocb *iocb, struct iov_iter *to)
 		i = iterate_tty_read(ld, tty, file, to);
 	tty_ldisc_deref(ld);
 
-	if (i > 0)
-		tty_update_time(&inode->i_atime);
-
+	/* tty_update_time removed - empty stub */
 	return i;
 }
 
@@ -430,10 +425,9 @@ do_tty_write(ssize_t (*write)(struct tty_struct *, struct file *,
 			break;
 		cond_resched();
 	}
-	if (written) {
-		tty_update_time(&file_inode(file)->i_mtime);
+	if (written)
 		ret = written;
-	}
+	/* tty_update_time removed - empty stub */
 out:
 	tty_write_unlock(tty);
 	return ret;

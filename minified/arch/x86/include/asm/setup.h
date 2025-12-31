@@ -34,11 +34,7 @@ void early_platform_quirks(void);
 
 extern void reserve_standard_io_resources(void);
 extern void i386_reserve_resources(void);
-
-static inline void x86_intel_mid_early_setup(void) { }
-
-static inline void x86_ce4100_early_setup(void) { }
-
+/* x86_intel_mid_early_setup, x86_ce4100_early_setup removed - empty stubs */
 #ifndef _SETUP
 
 #include <linux/kernel.h>

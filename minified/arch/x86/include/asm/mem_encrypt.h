@@ -13,9 +13,7 @@
 
 #define sme_me_mask	0ULL
 
-/* Only keeping sev_setup_arch which is still called */
-static inline void __init sev_setup_arch(void) { }
-/* sev_es_init_vc_handling, mem_encrypt_free_decrypted_mem call sites removed */
+/* sev_setup_arch, sev_es_init_vc_handling, mem_encrypt_free_decrypted_mem removed */
 
 #define __bss_decrypted
 

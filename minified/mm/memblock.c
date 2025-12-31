@@ -194,7 +194,7 @@ static void __init_memblock memblock_remove_region(struct memblock_type *type,
 		type->regions[0].base = 0;
 		type->regions[0].size = 0;
 		type->regions[0].flags = 0;
-		memblock_set_region_node(&type->regions[0], MAX_NUMNODES);
+		/* memblock_set_region_node removed - empty stub */
 	}
 }
 
@@ -332,7 +332,7 @@ static void __init_memblock memblock_insert_region(struct memblock_type *type,
 	rgn->base = base;
 	rgn->size = size;
 	rgn->flags = flags;
-	memblock_set_region_node(rgn, nid);
+	/* memblock_set_region_node removed - empty stub */
 	type->cnt++;
 	type->total_size += size;
 }
@@ -356,7 +356,7 @@ static int __init_memblock memblock_add_range(struct memblock_type *type,
 		type->regions[0].base = base;
 		type->regions[0].size = size;
 		type->regions[0].flags = flags;
-		memblock_set_region_node(&type->regions[0], nid);
+		/* memblock_set_region_node removed - empty stub */
 		type->total_size = size;
 		return 0;
 	}

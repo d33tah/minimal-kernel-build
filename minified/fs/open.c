@@ -315,18 +315,7 @@ static int do_dentry_open(struct file *f, struct inode *inode,
 	if ((f->f_flags & O_DIRECT) && !(f->f_mode & FMODE_CAN_ODIRECT))
 		return -EINVAL;
 
-	if (f->f_mode & FMODE_WRITE) {
-		smp_mb();
-		if (filemap_nr_thps(inode->i_mapping)) {
-			struct address_space *mapping = inode->i_mapping;
-
-			filemap_invalidate_lock(inode->i_mapping);
-
-			unmap_mapping_range(mapping, 0, 0, 0);
-			truncate_inode_pages(mapping, 0);
-			filemap_invalidate_unlock(inode->i_mapping);
-		}
-	}
+	/* filemap_nr_thps always returns 0 - THP handling removed */
 
 	return 0;
 

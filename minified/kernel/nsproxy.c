@@ -123,8 +123,7 @@ out_pid:
 	if (new_nsp->ipc_ns)
 		put_ipc_ns(new_nsp->ipc_ns);
 out_ipc:
-	if (new_nsp->uts_ns)
-		put_uts_ns(new_nsp->uts_ns);
+	/* put_uts_ns removed - empty stub */
 out_uts:
 	if (new_nsp->mnt_ns)
 		put_mnt_ns(new_nsp->mnt_ns);
@@ -167,8 +166,7 @@ void free_nsproxy(struct nsproxy *ns)
 {
 	if (ns->mnt_ns)
 		put_mnt_ns(ns->mnt_ns);
-	if (ns->uts_ns)
-		put_uts_ns(ns->uts_ns);
+	/* put_uts_ns removed - empty stub */
 	if (ns->ipc_ns)
 		put_ipc_ns(ns->ipc_ns);
 	/* put_pid_ns removed - empty stub */

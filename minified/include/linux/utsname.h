@@ -46,10 +46,6 @@ struct uts_namespace {
 } __randomize_layout;
 extern struct uts_namespace init_uts_ns;
 
-static inline void put_uts_ns(struct uts_namespace *ns)
-{
-}
-
 static inline struct uts_namespace *copy_utsname(unsigned long flags,
 	struct user_namespace *user_ns, struct uts_namespace *old_ns)
 {

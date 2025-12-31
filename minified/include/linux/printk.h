@@ -83,10 +83,6 @@ static inline int printk_ratelimit(void)
 	return 0;
 }
 
-static inline void wake_up_klogd(void)
-{
-}
-
 #ifndef pr_fmt
 #define pr_fmt(fmt) fmt
 #endif

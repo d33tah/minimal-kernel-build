@@ -1,6 +1,6 @@
 #include <linux/device.h>
 #include <linux/init.h>
-#include <linux/of.h>
+/* of.h removed - unused */
 #include <linux/backing-dev.h>
 #include "base.h"
 void __init driver_init(void)

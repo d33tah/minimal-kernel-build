@@ -9,9 +9,7 @@
 #include <linux/gfp.h>
 #include <linux/slab.h>
 #include <linux/percpu.h>
-#include <linux/acpi.h>
-#include <linux/of.h>
-#include <linux/tick.h>
+/* acpi.h, of.h, tick.h removed - unused */
 
 #include <linux/mod_devicetable.h>
 #include <asm/cpufeature.h>

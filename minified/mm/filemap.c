@@ -1629,14 +1629,7 @@ ssize_t __generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 	ssize_t err;
 	ssize_t status;
 
-	/* current->backing_dev_info removed - field removed from task_struct */
-	err = file_remove_privs(file);
-	if (err)
-		goto out;
-
-	err = file_update_time(file);
-	if (err)
-		goto out;
+	/* file_remove_privs and file_update_time always return 0 - dead code removed */
 
 	if (iocb->ki_flags & IOCB_DIRECT) {
 		loff_t pos, endbyte;

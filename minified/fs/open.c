@@ -69,11 +69,7 @@ int do_truncate(struct user_namespace *mnt_userns, struct dentry *dentry,
 		newattrs.ia_valid |= ATTR_FILE;
 	}
 
-	ret = dentry_needs_remove_privs(dentry);
-	if (ret < 0)
-		return ret;
-	if (ret)
-		newattrs.ia_valid |= ret | ATTR_FORCE;
+	/* dentry_needs_remove_privs always returns 0 - dead code removed */
 
 	inode_lock(dentry->d_inode);
 

@@ -126,12 +126,7 @@ const struct dev_pm_ops __maybe_unused name = { \
 
 #define PMSG_INVALID	((struct pm_message){ .event = PM_EVENT_INVALID, })
 #define PMSG_ON		((struct pm_message){ .event = PM_EVENT_ON, })
-/* Unused PMSG_*, rpm_status, DPM_FLAG_* macros removed */
-
-struct pm_subsys_data {
-	spinlock_t lock;
-	unsigned int refcount;
-};
+/* Unused PMSG_*, rpm_status, DPM_FLAG_* macros, pm_subsys_data struct removed */
 
 struct dev_pm_info {
 	pm_message_t		power_state;
@@ -148,9 +143,7 @@ struct dev_pm_info {
 	u32			driver_flags;
 	spinlock_t		lock;
 	unsigned int		should_wakeup:1;
-	struct pm_subsys_data	*subsys_data;   
-	void (*set_latency_tolerance)(struct device *, s32);
-	struct dev_pm_qos	*qos;
+	/* subsys_data, set_latency_tolerance, qos removed - unused fields */
 };
 
 

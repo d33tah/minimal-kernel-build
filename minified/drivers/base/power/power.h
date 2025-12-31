@@ -5,7 +5,7 @@ static inline void device_pm_init_common(struct device *dev)
 {
 	if (!dev->power.early_init) {
 		spin_lock_init(&dev->power.lock);
-		dev->power.qos = NULL;
+		/* dev->power.qos removed - write-only field */
 		dev->power.early_init = true;
 	}
 }

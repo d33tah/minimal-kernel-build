@@ -25,15 +25,7 @@ static inline int numa_node_id(void)
     #define cpumask_of_node(node)	((void)(node), cpu_online_mask)
 #endif
 
-/* topology_* macros removed - never used */
-
-struct pci_bus;
-int x86_pci_root_bus_node(int bus);
-void x86_pci_root_bus_resources(int bus, struct list_head *resources);
-
-#define sysctl_sched_itmt_enabled	0
-
-/* arch_scale_freq_tick removed - never called */
+/* topology_* macros, x86_pci_root_bus_*, sysctl_sched_itmt_enabled removed - never used */
 
 
 #endif

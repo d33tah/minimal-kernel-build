@@ -2,31 +2,19 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/kernel.h>
-#include <linux/mm.h>
+/* mm.h removed - unused */
 #include <linux/tty.h>
 #include <linux/tty_driver.h>
 #include <linux/console.h>
 #include <linux/init.h>
 #include <linux/module.h>
-#include <linux/moduleparam.h>
-#include <linux/delay.h>
+/* moduleparam.h, delay.h, memblock.h, ratelimit.h, kmsg_dump.h removed - unused */
 #include <linux/smp.h>
-#include <linux/memblock.h>
 #include <linux/syscalls.h>
-#include <linux/ratelimit.h>
-#include <linux/kmsg_dump.h>
 
 #include <linux/cpu.h>
-#include <linux/rculist.h>
-#include <linux/poll.h>
-#include <linux/irq_work.h>
-#include <linux/ctype.h>
-#include <linux/uio.h>
-#include <linux/sched/clock.h>
-#include <linux/sched/debug.h>
-#include <linux/sched/task_stack.h>
-
-#include <linux/uaccess.h>
+/* rculist.h, poll.h, irq_work.h, ctype.h, uio.h removed - unused */
+/* sched/clock.h, sched/debug.h, sched/task_stack.h, uaccess.h removed - unused */
 #include <asm/sections.h>
 
 /* --- 2025-12-07 23:45 --- Inlined from printk_ringbuffer.h */

@@ -108,7 +108,7 @@ compound_page_dtor *const compound_page_dtors[NR_COMPOUND_DTORS] = {
 };
 
 int min_free_kbytes = 1024;
-int user_min_free_kbytes = -1;
+/* user_min_free_kbytes removed - unused */
 
 static unsigned long arch_zone_lowest_possible_pfn[MAX_NR_ZONES] __initdata;
 static unsigned long arch_zone_highest_possible_pfn[MAX_NR_ZONES] __initdata;

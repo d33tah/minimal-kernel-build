@@ -8,8 +8,6 @@
 #include <asm/topology.h>
 #include <asm/apicdef.h>
 
-/* set_highmem_pages_init call site removed */
-static inline void init_cpu_to_node(void)		{ }
-static inline void init_gi_nodes(void)			{ }
+/* set_highmem_pages_init, init_cpu_to_node, init_gi_nodes removed - never called */
 
 #endif

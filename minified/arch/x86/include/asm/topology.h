@@ -43,8 +43,7 @@ void x86_pci_root_bus_resources(int bus, struct list_head *resources);
 
 #define sysctl_sched_itmt_enabled	0
 
-static inline void arch_scale_freq_tick(void) { }
-#define arch_scale_freq_tick arch_scale_freq_tick
+/* arch_scale_freq_tick removed - never called */
 
 
 #endif

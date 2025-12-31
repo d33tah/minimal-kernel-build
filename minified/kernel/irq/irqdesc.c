@@ -35,8 +35,8 @@ static void desc_set_defaults(unsigned int irq, struct irq_desc *desc, int node,
 	desc->tot_count = 0;
 	desc->name = NULL;
 	desc->owner = owner;
-	for_each_possible_cpu(cpu)
-		*per_cpu_ptr(desc->kstat_irqs, cpu) = 0;
+	/* for_each_possible_cpu simplified - single CPU */
+	*per_cpu_ptr(desc->kstat_irqs, 0) = 0;
 }
 
 int nr_irqs = NR_IRQS;

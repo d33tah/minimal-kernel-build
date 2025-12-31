@@ -1120,8 +1120,8 @@ area_found:
 	if (pcpu_nr_empty_pop_pages < PCPU_EMPTY_POP_PAGES_LOW)
 		pcpu_schedule_balance_work();
 
-	for_each_possible_cpu(cpu)
-		memset((void *)pcpu_chunk_addr(chunk, cpu, 0) + off, 0, size);
+	/* for_each_possible_cpu simplified - single CPU */
+	memset((void *)pcpu_chunk_addr(chunk, 0, 0) + off, 0, size);
 
 	ptr = __addr_to_pcpu_ptr(chunk->base_addr + off);
 	/* pcpu_memcg_post_alloc_hook is empty */
@@ -1403,8 +1403,8 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	}
 	pcpu_nr_units = unit;
 
-	for_each_possible_cpu(cpu)
-		PCPU_SETUP_BUG_ON(unit_map[cpu] == UINT_MAX);
+	/* for_each_possible_cpu simplified - single CPU */
+	PCPU_SETUP_BUG_ON(unit_map[0] == UINT_MAX);
 
 #undef PCPU_SETUP_BUG_ON
 	pcpu_dump_alloc_info(KERN_DEBUG, ai);

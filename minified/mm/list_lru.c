@@ -180,12 +180,11 @@ int __list_lru_init(struct list_lru *lru, bool memcg_aware,
 	if (!lru->node)
 		return -ENOMEM;
 
-	for_each_node(i) {
-		spin_lock_init(&lru->node[i].lock);
-		if (key)
-			lockdep_set_class(&lru->node[i].lock, key);
-		init_one_lru(&lru->node[i].lru);
-	}
+	/* for_each_node simplified - single node */
+	spin_lock_init(&lru->node[0].lock);
+	if (key)
+		lockdep_set_class(&lru->node[0].lock, key);
+	init_one_lru(&lru->node[0].lru);
 
 	/* memcg_init_list_lru, list_lru_register removed - empty stubs */
 	return 0;

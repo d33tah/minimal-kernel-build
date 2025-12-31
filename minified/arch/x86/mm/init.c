@@ -470,7 +470,7 @@ void __init init_mem_mapping(void)
 	__flush_tlb_all();
 
 	/* x86_init.hyper.init_mem_mapping removed - is x86_init_noop */
-	early_memtest(0, max_pfn_mapped << PAGE_SHIFT);
+	/* early_memtest removed - empty stub */
 }
 
 void __init poking_init(void)

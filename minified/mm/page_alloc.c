@@ -1598,11 +1598,9 @@ static void __init free_area_init_core(struct pglist_data *pgdat)
 		freesize = zone->present_pages;
 
 		memmap_pages = calc_memmap_size(size, freesize);
-		if (!is_highmem_idx(j)) {
-			if (freesize >= memmap_pages) {
-				freesize -= memmap_pages;
-			}
-		}
+		/* is_highmem_idx always returns 0, so !is_highmem_idx is always true */
+		if (freesize >= memmap_pages)
+			freesize -= memmap_pages;
 
 		/* dma_reserve, nr_kernel_pages, nr_all_pages removed - never read */
 

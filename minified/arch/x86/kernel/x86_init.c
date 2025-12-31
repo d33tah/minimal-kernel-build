@@ -34,7 +34,7 @@ void x86_init_noop(void)
 struct x86_init_ops x86_init __initdata = {
 
 	.resources = {
-		.probe_roms		= x86_init_noop,
+		/* .probe_roms removed - never called */
 		.reserve_resources	= reserve_standard_io_resources,
 		.memory_setup		= e820__memory_setup_default,
 	},

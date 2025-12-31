@@ -14,7 +14,7 @@ struct irq_domain;
 
  
 struct x86_init_resources {
-	void (*probe_roms)(void);
+	/* probe_roms removed - never called */
 	void (*reserve_resources)(void);
 	char *(*memory_setup)(void);
 };

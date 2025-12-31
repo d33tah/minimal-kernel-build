@@ -98,8 +98,7 @@ static inline int rcu_read_lock_any_held(void)
 
 
 #define RCU_LOCKDEP_WARN(c, s) do { } while (0 && (c))
-#define rcu_sleep_check() do { } while (0)
-
+/* rcu_sleep_check removed - unused */
 
 
 #ifdef __CHECKER__
@@ -220,8 +219,6 @@ static inline void rcu_read_unlock_sched(void)
 		.p = RCU_INITIALIZER(v)
 
 #define __is_kvfree_rcu_offset(offset) ((offset) < 4096)
-
-
-#define smp_mb__after_unlock_lock()	do { } while (0)
+/* smp_mb__after_unlock_lock removed - unused */
 
 #endif

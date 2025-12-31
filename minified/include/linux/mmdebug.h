@@ -20,7 +20,7 @@ struct mm_struct;
 #define VM_WARN_ONCE(cond, format...) BUILD_BUG_ON_INVALID(cond)
 #define VM_WARN(cond, format...) BUILD_BUG_ON_INVALID(cond)
 
-#define VIRTUAL_BUG_ON(cond) do { } while (0)
+/* VIRTUAL_BUG_ON removed - unused */
 
 #define VM_BUG_ON_PGFLAGS(cond, page) BUILD_BUG_ON_INVALID(cond)
 

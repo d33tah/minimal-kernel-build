@@ -169,7 +169,6 @@ struct dev_pm_domain {
 
 #define device_pm_lock() do {} while (0)
 #define device_pm_unlock() do {} while (0)
-
-#define suspend_report_result(dev, fn, ret)	do {} while (0)
+/* suspend_report_result removed - unused */
 
 #endif  

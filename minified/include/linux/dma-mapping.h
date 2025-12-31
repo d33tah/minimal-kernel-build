@@ -82,11 +82,6 @@ static inline u64 dma_get_mask(struct device *dev)
 
 /* dma_addressing_limited removed - never called */
 
-#define DEFINE_DMA_UNMAP_ADDR(ADDR_NAME)
-#define DEFINE_DMA_UNMAP_LEN(LEN_NAME)
-#define dma_unmap_addr(PTR, ADDR_NAME)           (0)
-#define dma_unmap_addr_set(PTR, ADDR_NAME, VAL)  do { } while (0)
-#define dma_unmap_len(PTR, LEN_NAME)             (0)
-#define dma_unmap_len_set(PTR, LEN_NAME, VAL)    do { } while (0)
+/* DEFINE_DMA_UNMAP_ADDR/LEN, dma_unmap_addr/len/set removed - unused */
 
 #endif  

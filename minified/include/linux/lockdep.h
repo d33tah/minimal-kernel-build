@@ -34,7 +34,7 @@ static inline void lockdep_on(void)
 # define lockdep_set_class(lock, key)		do { (void)(key); } while (0)
 # define lockdep_set_class_and_name(lock, key, name) \
 		do { (void)(key); (void)(name); } while (0)
-#define lockdep_set_subclass(lock, sub)		do { } while (0)
+/* lockdep_set_subclass removed - unused */
 
 #define lockdep_set_novalidate_class(lock) do { } while (0)
 
@@ -47,7 +47,7 @@ static inline void lockdep_on(void)
 #define lockdep_is_held(l)		(1)
 #define lockdep_is_held_type(l, r)		(1)
 
-#define lockdep_assert(c)			do { } while (0)
+/* lockdep_assert removed - unused */
 
 #define lockdep_assert_held(l)			do { (void)(l); } while (0)
 #define lockdep_assert_not_held(l)		do { (void)(l); } while (0)

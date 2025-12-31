@@ -21,7 +21,7 @@ struct attribute {
 	umode_t			mode;
 };
 
-#define sysfs_attr_init(attr) do {} while (0)
+/* sysfs_attr_init removed - unused */
 
 struct attribute_group {
 	const char		*name;

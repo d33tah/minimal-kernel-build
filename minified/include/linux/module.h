@@ -100,7 +100,7 @@ static inline bool is_module_text_address(unsigned long addr)
 }
 
 #define symbol_get(x) ({ extern typeof(x) x __attribute__((weak,visibility("hidden"))); &(x); })
-#define symbol_put(x) do { } while (0)
+/* symbol_put removed - unused */
 
 static inline void __module_get(struct module *module)
 {

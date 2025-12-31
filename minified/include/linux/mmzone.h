@@ -514,9 +514,7 @@ static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
 #define for_each_zone_zonelist(zone, z, zlist, highidx) \
 	for_each_zone_zonelist_nodemask(zone, z, zlist, highidx, NULL)
 
-
-#define pfn_to_nid(pfn)		(0)
-
+/* pfn_to_nid removed - unused */
 #define sparse_init()	do {} while (0)
 
 #endif  

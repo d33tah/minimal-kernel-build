@@ -797,27 +797,7 @@ static inline pte_t *get_locked_pte(struct mm_struct *mm, unsigned long addr,
 	return ptep;
 }
 
-/* __PAGETABLE_P4D_FOLDED=1, __PAGETABLE_PUD_FOLDED=1 - 2-level paging */
-static inline int __p4d_alloc(struct mm_struct *mm, pgd_t *pgd,
-						unsigned long address)
-{
-	return 0;
-}
-static inline int __pud_alloc(struct mm_struct *mm, p4d_t *p4d,
-						unsigned long address)
-{
-	return 0;
-}
-/* Removed: mm_dec_nr_puds - never called */
-
-/* __PAGETABLE_PMD_FOLDED=1 - 2-level paging, PMD folded */
-static inline int __pmd_alloc(struct mm_struct *mm, pud_t *pud,
-						unsigned long address)
-{
-	return 0;
-}
-
-/* Removed: mm_dec_nr_pmds - never called */
+/* __p4d_alloc, __pud_alloc, __pmd_alloc removed - never called (folded) */
 
 static inline void mm_pgtables_bytes_init(struct mm_struct *mm)
 {

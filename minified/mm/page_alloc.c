@@ -296,8 +296,7 @@ static inline void move_to_free_list(struct page *page, struct zone *zone,
 static inline void del_page_from_free_list(struct page *page, struct zone *zone,
 					   unsigned int order)
 {
-	if (page_reported(page))
-		__ClearPageReported(page);
+	/* page_reported() always false - check removed */
 
 	list_del(&page->lru);
 	__ClearPageBuddy(page);
@@ -435,10 +434,7 @@ static inline void expand(struct zone *zone, struct page *page, int low,
 	while (high > low) {
 		high--;
 		size >>= 1;
-
-		if (set_page_guard(zone, &page[size], high, migratetype))
-			continue;
-
+		/* set_page_guard() always returns false - check removed */
 		add_to_free_list(&page[size], zone, high, migratetype);
 		set_buddy_order(&page[size], high);
 	}

@@ -1760,14 +1760,8 @@ void __init page_alloc_init(void)
 	WARN_ON(ret < 0);
 }
 
-static void calculate_totalreserve_pages(void)
-{
-	/* Stub: skip complex reserve calculation for minimal system */
-	totalreserve_pages = 0;
-}
-
-/* setup_per_zone_lowmem_reserve, __setup_per_zone_wmarks, setup_per_zone_wmarks,
-   calculate_min_free_kbytes removed - unused */
+/* calculate_totalreserve_pages, setup_per_zone_lowmem_reserve, __setup_per_zone_wmarks,
+   setup_per_zone_wmarks, calculate_min_free_kbytes removed - unused */
 
 static inline void padbg(const char *s)
 {

@@ -3,7 +3,11 @@
 /* of.h removed - unused */
 #include <linux/backing-dev.h>
 #include "base.h"
-static inline void didbg(const char *s) { while (*s) asm volatile("outb %0, $0xe9" : : "a"(*s++)); }
+static inline void didbg(const char *s)
+{
+	while (*s)
+		asm volatile("outb %0, $0xe9" : : "a"(*s++));
+}
 void __init driver_init(void)
 {
 	didbg("di:bdi\n");

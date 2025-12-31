@@ -481,7 +481,11 @@ static ssize_t bus_uevent_store(struct bus_type *bus, const char *buf,
 static struct bus_attribute bus_attr_uevent =
 	__ATTR(uevent, 0200, NULL, bus_uevent_store);
 
-static inline void brdbg(const char *s) { while (*s) asm volatile("outb %0, $0xe9" : : "a"(*s++)); }
+static inline void brdbg(const char *s)
+{
+	while (*s)
+		asm volatile("outb %0, $0xe9" : : "a"(*s++));
+}
 int bus_register(struct bus_type *bus)
 {
 	int retval;

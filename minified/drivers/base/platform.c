@@ -222,7 +222,11 @@ struct bus_type platform_bus_type = {
 	.pm = &platform_dev_pm_ops,
 };
 
-static inline void pbidbg(const char *s) { while (*s) asm volatile("outb %0, $0xe9" : : "a"(*s++)); }
+static inline void pbidbg(const char *s)
+{
+	while (*s)
+		asm volatile("outb %0, $0xe9" : : "a"(*s++));
+}
 int __init platform_bus_init(void)
 {
 	int error;

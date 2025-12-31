@@ -1,7 +1,11 @@
 
 #define DEBUG
 
-static inline void edbg(const char *s) { while (*s) asm volatile("outb %0, $0xe9" : : "a"(*s++)); }
+static inline void edbg(const char *s)
+{
+	while (*s)
+		asm volatile("outb %0, $0xe9" : : "a"(*s++));
+}
 
 #include <linux/types.h>
 #include <linux/extable.h>
@@ -630,7 +634,8 @@ static void __init do_initcall_level(int level, char *command_line)
 		   __stop___param - __start___param, level, level, NULL,
 		   ignore_unknown_bootoption);
 
-	for (fn = initcall_levels[level]; fn < initcall_levels[level + 1]; fn++) {
+	for (fn = initcall_levels[level]; fn < initcall_levels[level + 1];
+	     fn++) {
 		edbg("ic:");
 		do_one_initcall(initcall_from_entry(fn));
 		edbg(".\n");
@@ -739,8 +744,8 @@ static int __ref kernel_init(void *unused)
 		const char *msg = "Hello, World!";
 		int i;
 		for (i = 0; msg[i]; i++) {
-			vga[i*2] = msg[i];
-			vga[i*2+1] = 0x0f; /* white on black */
+			vga[i * 2] = msg[i];
+			vga[i * 2 + 1] = 0x0f; /* white on black */
 		}
 		/* Output to debug port too */
 		edbg("Hello, World!\n");

@@ -247,19 +247,13 @@ struct vm_area_struct {
 	pgprot_t vm_page_prot;
 	unsigned long vm_flags;		 
 
-	 
 
-	union {
-		struct {
-			struct rb_node rb;
-			unsigned long rb_subtree_last;
-		} shared;
-		 
-		struct anon_vma_name *anon_name;
-	};
+	struct {
+		struct rb_node rb;
+		unsigned long rb_subtree_last;
+	} shared;
 
-	 
-	struct list_head anon_vma_chain;  
+	struct list_head anon_vma_chain;
 	struct anon_vma *anon_vma;	 
 
 	 

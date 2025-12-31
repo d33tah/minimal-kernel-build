@@ -1265,7 +1265,8 @@ ssize_t generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 		if (retval != -EIOCBQUEUED)
 			iov_iter_revert(iter, count - iov_iter_count(iter));
 
-		if (retval < 0 || !count || IS_DAX(inode))
+		/* IS_DAX always false - S_DAX is 0 */
+		if (retval < 0 || !count)
 			return retval;
 		if (iocb->ki_pos >= i_size_read(inode))
 			return retval;
@@ -1658,7 +1659,8 @@ ssize_t __generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 
 		written = generic_file_direct_write(iocb, from);
 
-		if (written < 0 || !iov_iter_count(from) || IS_DAX(inode))
+		/* IS_DAX always false - S_DAX is 0 */
+		if (written < 0 || !iov_iter_count(from))
 			goto out;
 
 		pos = iocb->ki_pos;

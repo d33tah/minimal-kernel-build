@@ -41,7 +41,6 @@ static void truncate_folio_batch_exceptionals(struct address_space *mapping,
 					      pgoff_t *indices)
 {
 	int i, j;
-	bool dax;
 
 	for (j = 0; j < folio_batch_count(fbatch); j++)
 		if (xa_is_value(fbatch->folios[j]))
@@ -50,11 +49,9 @@ static void truncate_folio_batch_exceptionals(struct address_space *mapping,
 	if (j == folio_batch_count(fbatch))
 		return;
 
-	dax = dax_mapping(mapping);
-	if (!dax) {
-		spin_lock(&mapping->host->i_lock);
-		xa_lock_irq(&mapping->i_pages);
-	}
+	/* dax_mapping() always returns false - S_DAX is 0 */
+	spin_lock(&mapping->host->i_lock);
+	xa_lock_irq(&mapping->i_pages);
 
 	for (i = j; i < folio_batch_count(fbatch); i++) {
 		struct folio *folio = fbatch->folios[i];
@@ -65,28 +62,20 @@ static void truncate_folio_batch_exceptionals(struct address_space *mapping,
 			continue;
 		}
 
-		if (unlikely(dax)) {
-			dax_delete_mapping_entry(mapping, index);
-			continue;
-		}
-
 		__clear_shadow_entry(mapping, index, folio);
 	}
 
-	if (!dax) {
-		xa_unlock_irq(&mapping->i_pages);
-		if (mapping_shrinkable(mapping))
-			inode_add_lru(mapping->host);
-		spin_unlock(&mapping->host->i_lock);
-	}
+	xa_unlock_irq(&mapping->i_pages);
+	if (mapping_shrinkable(mapping))
+		inode_add_lru(mapping->host);
+	spin_unlock(&mapping->host->i_lock);
 	fbatch->nr = j;
 }
 
 static int invalidate_exceptional_entry(struct address_space *mapping,
 					pgoff_t index, void *entry)
 {
-	if (dax_mapping(mapping))
-		return 1;
+	/* dax_mapping() always returns false */
 	clear_shadow_entry(mapping, index, entry);
 	return 1;
 }
@@ -94,8 +83,7 @@ static int invalidate_exceptional_entry(struct address_space *mapping,
 static int invalidate_exceptional_entry2(struct address_space *mapping,
 					 pgoff_t index, void *entry)
 {
-	if (dax_mapping(mapping))
-		return dax_invalidate_mapping_entry_sync(mapping, index);
+	/* dax_mapping() always returns false */
 	clear_shadow_entry(mapping, index, entry);
 	return 1;
 }
@@ -446,9 +434,7 @@ int invalidate_inode_pages2_range(struct address_space *mapping, pgoff_t start,
 		index++;
 	}
 
-	if (dax_mapping(mapping)) {
-		unmap_mapping_pages(mapping, start, end - start + 1, false);
-	}
+	/* dax_mapping() always returns false */
 	return ret;
 }
 

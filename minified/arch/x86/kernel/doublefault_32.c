@@ -56,24 +56,8 @@ asmlinkage noinstr void __noreturn doublefault_shim(void)
 	panic("cannot return from double fault\n");
 }
 
-DEFINE_PER_CPU_PAGE_ALIGNED(struct doublefault_stack, doublefault_stack) = {
-	.tss = {
-                 
-		.ldt		= 0,
-	.io_bitmap_base	= IO_BITMAP_OFFSET_INVALID,
-
-		.ip		= (unsigned long) asm_exc_double_fault,
-		.flags		= X86_EFLAGS_FIXED,
-		.es		= __USER_DS,
-		.cs		= __KERNEL_CS,
-		.ss		= __KERNEL_DS,
-		.ds		= __USER_DS,
-		.fs		= __KERNEL_PERCPU,
-		.gs		= 0,
-
-		.__cr3		= __pa_nodebug(swapper_pg_dir),
-	},
-};
+/* Stubbed - doublefault_stack not needed for Hello World */
+DEFINE_PER_CPU_PAGE_ALIGNED(struct doublefault_stack, doublefault_stack) = {};
 
 static void set_df_gdt_entry(unsigned int cpu)
 {
@@ -83,12 +67,5 @@ static void set_df_gdt_entry(unsigned int cpu)
 
 void doublefault_init_cpu_tss(void)
 {
-	unsigned int cpu = smp_processor_id();
-	struct cpu_entry_area *cea = get_cpu_entry_area(cpu);
-
-	this_cpu_write(doublefault_stack.tss.sp,
-		       (unsigned long)&cea->doublefault_stack.stack +
-			       sizeof(doublefault_stack.stack));
-
-	set_df_gdt_entry(cpu);
+	/* Stubbed - double fault handling not needed for Hello World */
 }

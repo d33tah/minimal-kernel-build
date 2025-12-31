@@ -58,20 +58,8 @@ static bool fpu__probe_without_cpuid(void)
 
 static void fpu__init_system_early_generic(struct cpuinfo_x86 *c)
 {
-	if (!boot_cpu_has(X86_FEATURE_CPUID) &&
-	    !test_bit(X86_FEATURE_FPU, (unsigned long *)cpu_caps_cleared)) {
-		if (fpu__probe_without_cpuid())
-			setup_force_cpu_cap(X86_FEATURE_FPU);
-		else
-			setup_clear_cpu_cap(X86_FEATURE_FPU);
-	}
-
-	if (!test_cpu_cap(&boot_cpu_data, X86_FEATURE_FPU)) {
-		pr_emerg(
-			"x86/fpu: Giving up, no FPU found and no math emulation present\n");
-		for (;;)
-			asm volatile("hlt");
-	}
+	/* Stubbed - force FPU capability for minimal boot */
+	setup_force_cpu_cap(X86_FEATURE_FPU);
 }
 
 unsigned int mxcsr_feature_mask __ro_after_init = 0xffffffffu;

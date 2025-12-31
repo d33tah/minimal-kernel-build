@@ -38,7 +38,7 @@ static inline void edbg(const char *s)
 /* init_vmlinux_build_id removed - empty stub */
 #include <linux/writeback.h>
 #include <linux/cpu.h>
-#include <linux/cpuset.h>
+/* linux/cpuset.h removed - empty header */
 #include <linux/cgroup.h>
 #include <linux/efi.h>
 #include <linux/tick.h>

@@ -7,7 +7,7 @@
 
 #include <linux/sched/task_stack.h>
 
-#include <linux/cpuset.h>
+/* linux/cpuset.h removed - empty header */
 #include <linux/ctype.h>
 
 #include <linux/irq.h>

@@ -63,7 +63,9 @@ static void __init percpu_setup_debug_store(unsigned int cpu)
 		cea_set_pte(cea, 0, PAGE_NONE);
 }
 #else
-static inline void percpu_setup_debug_store(unsigned int cpu) {}
+static inline void percpu_setup_debug_store(unsigned int cpu)
+{
+}
 #endif
 
 static inline void percpu_setup_exception_stacks(unsigned int cpu)

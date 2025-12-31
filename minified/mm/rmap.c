@@ -12,7 +12,7 @@
 #include <linux/export.h>
 /* memcontrol.h removed - unused */
 #include <linux/mmu_notifier.h>
-#include <linux/migrate.h>
+/* linux/migrate.h removed - empty header */
 /* hugetlb.h removed - unused */
 #include <linux/huge_mm.h>
 #include <linux/backing-dev.h>

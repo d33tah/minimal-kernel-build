@@ -16,8 +16,7 @@
 #include <linux/range.h>
 #include <linux/pfn.h>
 /* percpu-refcount.h, bit_spinlock.h, shrinker.h, resource.h,
-   err.h, tracepoint-defs.h, overflow.h removed - unused in mm.h */
-#include <linux/page_ext.h>
+   err.h, tracepoint-defs.h, overflow.h, page_ext.h removed - unused */
 #include <linux/page-flags.h>
 
 static inline int page_ref_count(const struct page *page)

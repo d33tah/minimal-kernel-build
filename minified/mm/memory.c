@@ -21,7 +21,7 @@
 #include <linux/swapops.h>
 #include <linux/elf.h>
 #include <linux/gfp.h>
-#include <linux/migrate.h>
+/* linux/migrate.h removed - empty header */
 #include <linux/string.h>
 #include <linux/userfaultfd_k.h>
 #include <linux/oom.h>

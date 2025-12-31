@@ -1,5 +1,4 @@
-
-#include <linux/migrate.h>
+/* linux/migrate.h removed - empty header */
 #include <linux/pagemap.h>
 #include <linux/swap.h>
 #include "internal.h"

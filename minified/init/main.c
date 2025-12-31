@@ -50,7 +50,7 @@ static inline void edbg(const char *s)
 #include <linux/rmap.h>
 #include <linux/mempolicy.h>
 #include <linux/key.h>
-#include <linux/page_ext.h>
+/* linux/page_ext.h removed - empty header */
 #include <linux/debug_locks.h>
 #include <linux/lockdep.h>
 #include <linux/pid_namespace.h>

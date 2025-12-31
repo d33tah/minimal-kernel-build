@@ -1058,13 +1058,11 @@ void __init vmalloc_init(void)
 
 	vmap_area_cachep = KMEM_CACHE(vmap_area, SLAB_PANIC);
 
-	for_each_possible_cpu(i) {
-		struct vmap_block_queue *vbq;
-
-		vbq = &per_cpu(vmap_block_queue, i);
+	/* for_each_possible_cpu simplified - single CPU */
+	{
+		struct vmap_block_queue *vbq = &per_cpu(vmap_block_queue, 0);
 		spin_lock_init(&vbq->lock);
 		INIT_LIST_HEAD(&vbq->free);
-		/* Removed vfree_deferred initialization - vfree is a no-op */
 	}
 
 	for (tmp = vmlist; tmp; tmp = tmp->next) {

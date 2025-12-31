@@ -1088,9 +1088,9 @@ static noinline void __init build_all_zonelists_init(void)
 
 	__build_all_zonelists(NULL);
 
-	for_each_possible_cpu(cpu)
-		per_cpu_pages_init(&per_cpu(boot_pageset, cpu),
-				   &per_cpu(boot_zonestats, cpu));
+	/* for_each_possible_cpu simplified - single CPU */
+	per_cpu_pages_init(&per_cpu(boot_pageset, 0),
+			   &per_cpu(boot_zonestats, 0));
 
 	mminit_verify_zonelist();
 }
@@ -1289,10 +1289,9 @@ static void __zone_set_pageset_high_and_batch(struct zone *zone,
 	struct per_cpu_pages *pcp;
 	int cpu;
 
-	for_each_possible_cpu(cpu) {
-		pcp = per_cpu_ptr(zone->per_cpu_pageset, cpu);
-		pageset_update(pcp, high, batch);
-	}
+	/* for_each_possible_cpu simplified - single CPU */
+	pcp = per_cpu_ptr(zone->per_cpu_pageset, 0);
+	pageset_update(pcp, high, batch);
 }
 
 static void zone_set_pageset_high_and_batch(struct zone *zone, int cpu_online)
@@ -1319,12 +1318,12 @@ void __meminit setup_zone_pageset(struct zone *zone)
 		zone->per_cpu_zonestats = alloc_percpu(struct per_cpu_zonestat);
 
 	zone->per_cpu_pageset = alloc_percpu(struct per_cpu_pages);
-	for_each_possible_cpu(cpu) {
-		struct per_cpu_pages *pcp;
-		struct per_cpu_zonestat *pzstats;
-
-		pcp = per_cpu_ptr(zone->per_cpu_pageset, cpu);
-		pzstats = per_cpu_ptr(zone->per_cpu_zonestats, cpu);
+	/* for_each_possible_cpu simplified - single CPU */
+	{
+		struct per_cpu_pages *pcp =
+			per_cpu_ptr(zone->per_cpu_pageset, 0);
+		struct per_cpu_zonestat *pzstats =
+			per_cpu_ptr(zone->per_cpu_zonestats, 0);
 		per_cpu_pages_init(pcp, pzstats);
 	}
 

@@ -1286,18 +1286,15 @@ void __init sched_init(void)
 	init_rt_bandwidth(&def_rt_bandwidth, global_rt_period(),
 			  global_rt_runtime());
 
-	for_each_possible_cpu(i) {
-		struct rq *rq;
-
-		rq = cpu_rq(i);
+	/* for_each_possible_cpu simplified - single CPU */
+	{
+		struct rq *rq = cpu_rq(0);
 		raw_spin_lock_init(&rq->__lock);
 		rq->nr_running = 0;
 		init_cfs_rq(&rq->cfs);
 		init_rt_rq(&rq->rt);
 		init_dl_rq(&rq->dl);
-
 		rq->rt.rt_runtime = def_rt_bandwidth.rt_runtime;
-		/* hrtick_rq_init removed - empty stub */
 		atomic_set(&rq->nr_iowait, 0);
 	}
 

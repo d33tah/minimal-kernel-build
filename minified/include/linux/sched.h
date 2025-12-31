@@ -408,8 +408,7 @@ struct task_struct {
 
 	struct syscall_user_dispatch	syscall_dispatch;
 
-	/* parent_exec_id removed - write-only field */
-	u64				self_exec_id;
+	/* parent_exec_id, self_exec_id removed - write-only fields */
 
 	 
 	spinlock_t			alloc_lock;

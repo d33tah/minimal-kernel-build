@@ -49,12 +49,7 @@ struct dev_pagemap {
 };
 
 
-static inline struct dev_pagemap *get_dev_pagemap(unsigned long pfn,
-		struct dev_pagemap *pgmap)
-{
-	return NULL;
-}
-
+/* get_dev_pagemap removed - never called */
 
 static inline void put_dev_pagemap(struct dev_pagemap *pgmap)
 {

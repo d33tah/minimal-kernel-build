@@ -95,10 +95,7 @@ static inline void mapping_set_gfp_mask(struct address_space *m, gfp_t mask)
 }
 
 
-static inline int filemap_nr_thps(struct address_space *mapping)
-{
-	return 0;
-}
+/* filemap_nr_thps removed - never called */
 
 void release_pages(struct page **pages, int nr);
 

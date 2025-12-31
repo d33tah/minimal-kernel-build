@@ -1208,7 +1208,7 @@ put_folios:
 		folio_batch_init(&fbatch);
 	} while (iov_iter_count(iter) && iocb->ki_pos < isize && !error);
 
-	file_accessed(filp);
+	/* file_accessed removed - touch_atime is empty stub */
 
 	return already_read ? already_read : error;
 }
@@ -1239,7 +1239,7 @@ ssize_t generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 				return retval;
 		}
 
-		file_accessed(file);
+		/* file_accessed removed - touch_atime is empty stub */
 
 		retval = mapping->a_ops->direct_IO(iocb, iter);
 		if (retval >= 0) {
@@ -1448,7 +1448,7 @@ int generic_file_mmap(struct file *file, struct vm_area_struct *vma)
 
 	if (!mapping->a_ops->read_folio)
 		return -ENOEXEC;
-	file_accessed(file);
+	/* file_accessed removed - touch_atime is empty stub */
 	vma->vm_ops = &generic_file_vm_ops;
 	return 0;
 }

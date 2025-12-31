@@ -86,9 +86,6 @@ extern struct x86_platform_ops x86_platform;
 
 extern void x86_early_init_platform_quirks(void);
 extern void x86_init_noop(void);
-extern void x86_init_uint_noop(unsigned int unused);
-extern bool bool_x86_init_noop(void);
-extern void x86_op_int_noop(int cpu);
-/* x86_pnpbios_disabled removed - never called */
+/* x86_init_uint_noop, bool_x86_init_noop, x86_op_int_noop, x86_pnpbios_disabled removed - never called */
 
 #endif

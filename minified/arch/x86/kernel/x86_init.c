@@ -28,19 +28,7 @@ static inline int hpet_enable(void)
 void x86_init_noop(void)
 {
 }
-void __init x86_init_uint_noop(unsigned int unused)
-{
-}
-/* iommu_init_noop removed - x86_init.iommu never used */
-/* iommu_shutdown_noop removed - never called */
-bool __init bool_x86_init_noop(void)
-{
-	return false;
-}
-void x86_op_int_noop(int cpu)
-{
-}
-/* set_rtc_noop, get_rtc_noop removed - defined but never used */
+/* x86_init_uint_noop, bool_x86_init_noop, x86_op_int_noop, etc removed - never used */
 /* x86_wallclock_init removed - never called */
 
 struct x86_init_ops x86_init __initdata = {

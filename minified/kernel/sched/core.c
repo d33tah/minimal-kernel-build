@@ -276,11 +276,9 @@ static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 	if (!(flags & ENQUEUE_NOCLOCK))
 		update_rq_clock(rq);
 
-	if (!(flags & ENQUEUE_RESTORE)) {
+	if (!(flags & ENQUEUE_RESTORE))
 		sched_info_enqueue(rq, p);
-		psi_enqueue(p, flags & ENQUEUE_WAKEUP);
-	}
-	/* uclamp_rq_inc removed - empty stub */
+	/* psi_enqueue, uclamp_rq_inc removed - empty stubs */
 	p->sched_class->enqueue_task(rq, p, flags);
 }
 
@@ -289,11 +287,9 @@ static inline void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
 	if (!(flags & DEQUEUE_NOCLOCK))
 		update_rq_clock(rq);
 
-	if (!(flags & DEQUEUE_SAVE)) {
+	if (!(flags & DEQUEUE_SAVE))
 		sched_info_dequeue(rq, p);
-		psi_dequeue(p, flags & DEQUEUE_SLEEP);
-	}
-	/* uclamp_rq_dec removed - empty stub */
+	/* psi_dequeue, uclamp_rq_dec removed - empty stubs */
 	p->sched_class->dequeue_task(rq, p, flags);
 }
 
@@ -727,10 +723,7 @@ unsigned int nr_iowait(void)
 DEFINE_PER_CPU(struct kernel_stat, kstat);
 DEFINE_PER_CPU(struct kernel_cpustat, kernel_cpustat);
 
-static inline u64 cpu_resched_latency(struct rq *rq)
-{
-	return 0;
-}
+/* cpu_resched_latency removed - always returned 0, only used by removed code */
 
 void scheduler_tick(void)
 {
@@ -738,7 +731,6 @@ void scheduler_tick(void)
 	struct rq *rq = cpu_rq(cpu);
 	struct task_struct *curr = rq->curr;
 	struct rq_flags rf;
-	u64 resched_latency;
 
 	/* arch_scale_freq_tick, sched_clock_tick removed - empty stubs */
 
@@ -747,13 +739,9 @@ void scheduler_tick(void)
 	update_rq_clock(rq);
 	/* thermal_pressure/update_thermal_load_avg removed - always 0 */
 	curr->sched_class->task_tick(rq, curr, 0);
-	if (sched_feat(LATENCY_WARN))
-		resched_latency = cpu_resched_latency(rq);
 	/* calc_global_load_tick, sched_core_tick removed - empty stubs */
+	/* resched_latency_warn and related removed - empty stub */
 	rq_unlock(rq, &rf);
-
-	if (sched_feat(LATENCY_WARN) && resched_latency)
-		resched_latency_warn(cpu, resched_latency);
 }
 
 /* CONFIG_PREEMPTION not set - no preempt tracing */

@@ -26,10 +26,7 @@ __schedstats_from_se(struct sched_entity *se)
 {
 	return &task_of(se)->stats;
 }
-
-static inline void psi_enqueue(struct task_struct *p, bool wakeup) {}
-static inline void psi_dequeue(struct task_struct *p, bool sleep) {}
-
+/* psi_enqueue, psi_dequeue removed - empty stubs */
 # define sched_info_enqueue(rq, t)	do { } while (0)
 # define sched_info_dequeue(rq, t)	do { } while (0)
 # define sched_info_switch(rq, t, next)	do { } while (0)

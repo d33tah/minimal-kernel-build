@@ -740,17 +740,11 @@ unsigned long arch_scale_freq_capacity(int cpu)
 #endif
 
 extern struct sched_entity *__pick_first_entity(struct cfs_rq *cfs_rq);
-
-static inline void resched_latency_warn(int cpu, u64 latency) {}
-
+/* resched_latency_warn removed - empty stub, never called */
 extern void init_cfs_rq(struct cfs_rq *cfs_rq);
 extern void init_rt_rq(struct rt_rq *rt_rq);
 extern void init_dl_rq(struct dl_rq *dl_rq);
-
-static inline void cpufreq_update_util(struct rq *rq, unsigned int flags) {}
-
-/* uclamp_rq_util_with removed - unused */
-
+/* cpufreq_update_util, uclamp_rq_util_with removed - unused stubs */
 #define perf_domain_span(pd) NULL
 
 

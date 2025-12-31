@@ -497,16 +497,7 @@ void reweight_task(struct task_struct *p, int prio)
 	load->inv_weight = sched_prio_to_wmult[prio];
 }
 
-/* update_cfs_group removed - empty stub */
-
-static inline void cfs_rq_util_change(struct cfs_rq *cfs_rq, int flags)
-{
-	struct rq *rq = rq_of(cfs_rq);
-
-	if (&rq->cfs == cfs_rq) {
-		cpufreq_update_util(rq, flags);
-	}
-}
+/* update_cfs_group, cfs_rq_util_change, cpufreq_update_util removed - empty stubs */
 
 #define UPDATE_TG 0x0
 #define SKIP_AGE_LOAD 0x0
@@ -515,7 +506,7 @@ static inline void cfs_rq_util_change(struct cfs_rq *cfs_rq, int flags)
 static inline void update_load_avg(struct cfs_rq *cfs_rq,
 				   struct sched_entity *se, int not_used1)
 {
-	cfs_rq_util_change(cfs_rq, 0);
+	/* cfs_rq_util_change removed - was empty stub chain */
 }
 
 /* attach_entity_load_avg, detach_entity_load_avg removed - stubs */
@@ -818,10 +809,7 @@ static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	struct sched_entity *se = &p->se;
 	int idle_h_nr_running = task_has_idle_policy(p);
 
-	/* util_est_enqueue removed - empty stub */
-	if (p->in_iowait)
-		cpufreq_update_util(rq, SCHED_CPUFREQ_IOWAIT);
-
+	/* util_est_enqueue, cpufreq_update_util removed - empty stubs */
 	for_each_sched_entity(se)
 	{
 		if (se->on_rq)

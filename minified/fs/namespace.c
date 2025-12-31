@@ -519,11 +519,7 @@ static void attach_mnt(struct mount *mnt, struct mount *parent,
 	__attach_mnt(mnt, parent);
 }
 
-/* Stub: mnt_change_mountpoint not used externally */
-void mnt_change_mountpoint(struct mount *parent, struct mountpoint *mp,
-			   struct mount *mnt)
-{
-}
+/* mnt_change_mountpoint removed - empty stub */
 
 static void commit_tree(struct mount *mnt)
 {
@@ -933,10 +929,7 @@ static int do_umount(struct mount *mnt, int flags)
 	return retval;
 }
 
-/* Stub: __detach_mounts not used externally */
-void __detach_mounts(struct dentry *dentry)
-{
-}
+/* __detach_mounts removed - empty stub moved inline to mount.h */
 
 bool may_mount(void)
 {
@@ -1116,13 +1109,8 @@ static int attach_recursive_mnt(struct mount *source_mnt,
 	}
 
 	hlist_for_each_entry_safe(child, n, &tree_list, mnt_hash) {
-		struct mount *q;
 		hlist_del_init(&child->mnt_hash);
-		q = __lookup_mnt(&child->mnt_parent->mnt,
-				 child->mnt_mountpoint);
-		if (q)
-			mnt_change_mountpoint(child, smp, q);
-
+		/* mnt_change_mountpoint call removed - was empty stub */
 		if (child->mnt_parent->mnt_ns->user_ns != user_ns)
 			lock_mnt_tree(child);
 		child->mnt.mnt_flags &= ~MNT_LOCKED;

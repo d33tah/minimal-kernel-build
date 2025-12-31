@@ -41,8 +41,7 @@ void propagate_mount_unlock(struct mount *);
 int mnt_get_count(struct mount *mnt);
 void mnt_set_mountpoint(struct mount *, struct mountpoint *,
 			struct mount *);
-void mnt_change_mountpoint(struct mount *parent, struct mountpoint *mp,
-			   struct mount *mnt);
+/* mnt_change_mountpoint removed - empty stub */
 struct mount *copy_tree(struct mount *, struct dentry *, int);
 /* is_path_reachable, count_mounts removed - unused */
 #endif  

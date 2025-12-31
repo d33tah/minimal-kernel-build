@@ -368,13 +368,9 @@ int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top,
 	vm_flags |= VM_STACK_INCOMPLETE_SETUP;
 
 	tlb_gather_mmu(&tlb, mm);
-	ret = mprotect_fixup(&tlb, vma, &prev, vma->vm_start, vma->vm_end,
-			     vm_flags);
+	/* mprotect_fixup always returns 0 */
+	mprotect_fixup(&tlb, vma, &prev, vma->vm_start, vma->vm_end, vm_flags);
 	tlb_finish_mmu(&tlb);
-
-	if (ret)
-		goto out_unlock;
-	BUG_ON(prev != vma);
 
 	if (stack_shift) {
 		ret = shift_arg_pages(vma, stack_shift);

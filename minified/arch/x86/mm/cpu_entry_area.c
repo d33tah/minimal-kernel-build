@@ -41,6 +41,7 @@ static void __init cea_map_percpu_pages(void *cea_vaddr, void *ptr, int pages,
 		cea_set_pte(cea_vaddr, per_cpu_ptr_to_phys(ptr), prot);
 }
 
+#ifdef CONFIG_PERF_EVENTS
 static void __init percpu_setup_debug_store(unsigned int cpu)
 {
 	unsigned int npages;
@@ -61,6 +62,9 @@ static void __init percpu_setup_debug_store(unsigned int cpu)
 	for (; npages; npages--, cea += PAGE_SIZE)
 		cea_set_pte(cea, 0, PAGE_NONE);
 }
+#else
+static inline void percpu_setup_debug_store(unsigned int cpu) {}
+#endif
 
 static inline void percpu_setup_exception_stacks(unsigned int cpu)
 {

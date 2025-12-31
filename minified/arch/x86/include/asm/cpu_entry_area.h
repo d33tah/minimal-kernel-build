@@ -5,10 +5,10 @@
 
 #include <linux/percpu-defs.h>
 #include <asm/processor.h>
-/* --- 2025-12-07 20:38 --- Inlined intel_ds.h */
+/* Debug store only needed with PERF_EVENTS */
+#ifdef CONFIG_PERF_EVENTS
 #define BTS_BUFFER_SIZE		(PAGE_SIZE << 4)
 #define PEBS_BUFFER_SIZE	(PAGE_SIZE << 4)
-#define MAX_PEBS_EVENTS_FMT4	8
 #define MAX_PEBS_EVENTS		32
 #define MAX_FIXED_PEBS_EVENTS	16
 struct debug_store {
@@ -27,6 +27,7 @@ struct debug_store_buffers {
 	char	bts_buffer[BTS_BUFFER_SIZE];
 	char	pebs_buffer[PEBS_BUFFER_SIZE];
 };
+#endif
 #include <asm/pgtable_areas.h>
 
 
@@ -39,20 +40,18 @@ struct doublefault_stack {
 struct cpu_entry_area {
 	char gdt[PAGE_SIZE];
 
-	 
 	char guard_entry_stack[PAGE_SIZE];
 	struct entry_stack_page entry_stack_page;
 
 	char guard_doublefault_stack[PAGE_SIZE];
 	struct doublefault_stack doublefault_stack;
 
-	 
 	struct tss_struct tss;
 
-	 
+#ifdef CONFIG_PERF_EVENTS
 	struct debug_store cpu_debug_store;
-	 
 	struct debug_store_buffers cpu_debug_buffers;
+#endif
 };
 
 #define CPU_ENTRY_AREA_SIZE		(sizeof(struct cpu_entry_area))

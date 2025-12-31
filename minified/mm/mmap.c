@@ -11,7 +11,7 @@
 #include <linux/pagemap.h>
 #include <linux/swap.h>
 #include <linux/syscalls.h>
-#include <linux/capability.h>
+/* capability.h removed - unused */
 #include <linux/init.h>
 #include <linux/file.h>
 #include <linux/fs.h>
@@ -19,15 +19,14 @@
 #include <linux/security.h>
 #include <linux/hugetlb.h>
 #include <linux/shmem_fs.h>
-#include <linux/export.h>
-#include <linux/mount.h>
+/* export.h, mount.h removed - unused */
 #include <linux/mempolicy.h>
 #include <linux/rmap.h>
 #include <linux/mmu_notifier.h>
 #include <linux/mmdebug.h>
 /* perf_event.h, audit.h, uprobes.h removed - unused */
 #include <linux/rbtree_augmented.h>
-#include <linux/notifier.h>
+/* notifier.h removed - unused */
 #include <linux/printk.h>
 #include <linux/userfaultfd_k.h>
 /* moduleparam.h, pkeys.h removed - unused */

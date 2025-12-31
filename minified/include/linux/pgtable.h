@@ -255,38 +255,10 @@ void pgd_clear_bad(pgd_t *);
 
 void pmd_clear_bad(pmd_t *);
 
-static inline int pgd_none_or_clear_bad(pgd_t *pgd)
-{
-	if (pgd_none(*pgd))
-		return 1;
-	if (unlikely(pgd_bad(*pgd))) {
-		pgd_clear_bad(pgd);
-		return 1;
-	}
-	return 0;
-}
-
-static inline int p4d_none_or_clear_bad(p4d_t *p4d)
-{
-	if (p4d_none(*p4d))
-		return 1;
-	if (unlikely(p4d_bad(*p4d))) {
-		p4d_clear_bad(p4d);
-		return 1;
-	}
-	return 0;
-}
-
-static inline int pud_none_or_clear_bad(pud_t *pud)
-{
-	if (pud_none(*pud))
-		return 1;
-	if (unlikely(pud_bad(*pud))) {
-		pud_clear_bad(pud);
-		return 1;
-	}
-	return 0;
-}
+/* pgd_none/pgd_bad/p4d_none/p4d_bad/pud_none/pud_bad all return 0 */
+static inline int pgd_none_or_clear_bad(pgd_t *pgd) { return 0; }
+static inline int p4d_none_or_clear_bad(p4d_t *p4d) { return 0; }
+static inline int pud_none_or_clear_bad(pud_t *pud) { return 0; }
 
 static inline int pmd_none_or_clear_bad(pmd_t *pmd)
 {

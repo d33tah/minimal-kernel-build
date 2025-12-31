@@ -209,7 +209,6 @@ enum positive_aop_returns { AOP_TRUNCATED_PAGE = 0x80001 };
 struct page;
 struct address_space;
 struct writeback_control;
-struct readahead_control;
 
 #define IOCB_NOWAIT		(__force int) RWF_NOWAIT
 #define IOCB_DIRECT		(1 << 17)
@@ -774,9 +773,6 @@ struct dir_context {
 	filldir_t actor;
 	loff_t pos;
 };
-
-
-struct iov_iter;
 
 struct file_operations {
 	struct module *owner;

@@ -465,11 +465,9 @@ static inline unsigned iminor(const struct inode *inode)
 
 
 struct fown_struct {
-	rwlock_t lock;          
-	struct pid *pid;	
-	enum pid_type pid_type;	
-	kuid_t uid, euid;	
-	int signum;		
+	rwlock_t lock;
+	struct pid *pid;
+	/* pid_type, uid, euid, signum removed - never accessed */
 };
 
 struct file_ra_state {

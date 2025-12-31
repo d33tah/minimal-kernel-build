@@ -16,7 +16,7 @@
 /* ratelimit.h removed - unused */
 #include <linux/oom.h>
 #include <linux/topology.h>
-#include <linux/sysctl.h>
+/* sysctl.h removed - unused */
 #include <linux/cpu.h>
 /* cpuset.h, memory_hotplug.h removed - unused */
 #include <linux/nodemask.h>
@@ -24,7 +24,7 @@
 /* stop_machine.h removed - unused */
 /* sort.h removed - unused */
 #include <linux/pfn.h>
-#include <linux/backing-dev.h>
+/* backing-dev.h removed - unused */
 
 /* MEMORY_OFFLINE, REPORT_FAILURE removed - unused */
 

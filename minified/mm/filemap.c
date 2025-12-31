@@ -405,7 +405,7 @@ int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 	return ret;
 }
 
-#define PAGE_WAIT_TABLE_BITS 4  /* Reduced from 8 for minimal boot */
+#define PAGE_WAIT_TABLE_BITS 4 /* Reduced from 8 for minimal boot */
 #define PAGE_WAIT_TABLE_SIZE (1 << PAGE_WAIT_TABLE_BITS)
 static wait_queue_head_t
 	folio_wait_table[PAGE_WAIT_TABLE_SIZE] __cacheline_aligned;

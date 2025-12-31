@@ -77,14 +77,7 @@ struct x86_init_ops x86_init __initdata = {
 		.wallclock_init		= x86_wallclock_init,
 	},
 
-	/* .iommu removed - never used */
-
-	.pci = {
-		.init			= x86_default_pci_init,
-		.init_irq		= x86_default_pci_init_irq,
-		.fixup_irqs		= x86_default_pci_fixup_irqs,
-	},
-	/* .hyper, .acpi removed - never accessed */
+	/* .iommu, .pci, .hyper, .acpi removed - never accessed */
 };
 
 /* x86_cpuinit removed - never accessed */

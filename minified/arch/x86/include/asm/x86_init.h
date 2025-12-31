@@ -44,16 +44,7 @@ struct x86_init_timers {
 	void (*wallclock_init)(void);
 };
 
-/* x86_init_iommu removed - never used */
-
-struct x86_init_pci {
-	int (*arch_init)(void);
-	int (*init)(void);
-	void (*init_irq)(void);
-	void (*fixup_irqs)(void);
-};
-
-/* x86_hyper_init, x86_init_acpi, x86_guest removed - never used */
+/* x86_init_iommu, x86_init_pci, x86_hyper_init, x86_init_acpi, x86_guest removed - never used */
 
 struct x86_init_ops {
 	struct x86_init_resources	resources;
@@ -62,8 +53,7 @@ struct x86_init_ops {
 	/* oem field removed - never accessed */
 	struct x86_init_paging		paging;
 	struct x86_init_timers		timers;
-	/* iommu, hyper, acpi fields removed - never used */
-	struct x86_init_pci		pci;
+	/* iommu, pci, hyper, acpi fields removed - never accessed */
 };
 
  

@@ -1774,53 +1774,14 @@ static void calculate_totalreserve_pages(void)
 	totalreserve_pages = 0;
 }
 
-static void setup_per_zone_lowmem_reserve(void)
+/* setup_per_zone_lowmem_reserve, __setup_per_zone_wmarks, setup_per_zone_wmarks,
+   calculate_min_free_kbytes removed - unused */
+
+static inline void padbg(const char *s)
 {
-	/* Stub: skip lowmem reserve setup for minimal system */
-	calculate_totalreserve_pages();
+	while (*s)
+		asm volatile("outb %0, $0xe9" : : "a"(*s++));
 }
-
-static void __setup_per_zone_wmarks(void)
-{
-	/* Minimal stub: set basic watermarks without complex calculations */
-	struct zone *zone;
-	unsigned long flags;
-
-	for_each_zone(zone) {
-		spin_lock_irqsave(&zone->lock, flags);
-		zone->_watermark[WMARK_MIN] = 128;
-		zone->_watermark[WMARK_LOW] = 256;
-		zone->_watermark[WMARK_HIGH] = 512;
-		zone->_watermark[WMARK_PROMO] = 768;
-		zone->watermark_boost = 0;
-		spin_unlock_irqrestore(&zone->lock, flags);
-	}
-	calculate_totalreserve_pages();
-}
-
-static void setup_per_zone_wmarks(void)
-{
-	static DEFINE_SPINLOCK(lock);
-
-	spin_lock(&lock);
-	__setup_per_zone_wmarks();
-	spin_unlock(&lock);
-	/* zone_pcp_update removed - not needed for single CPU minimal kernel */
-}
-
-static void calculate_min_free_kbytes(void)
-{
-	unsigned long lowmem_kbytes;
-	int new_min_free_kbytes;
-
-	lowmem_kbytes = nr_free_buffer_pages() * (PAGE_SIZE >> 10);
-	new_min_free_kbytes = int_sqrt(lowmem_kbytes * 16);
-
-	if (new_min_free_kbytes > user_min_free_kbytes)
-		min_free_kbytes = clamp(new_min_free_kbytes, 128, 262144);
-}
-
-static inline void padbg(const char *s) { while (*s) asm volatile("outb %0, $0xe9" : : "a"(*s++)); }
 int __meminit init_per_zone_wmark_min(void)
 {
 	/* Simplified for 4MB boot */

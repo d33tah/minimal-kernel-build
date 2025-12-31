@@ -20,7 +20,7 @@
 # error "Invalid value for CONFIG_PHYSICAL_ALIGN"
 #endif
 
-# define BOOT_HEAP_SIZE		 0x10000
+# define BOOT_HEAP_SIZE		 0x4000  /* Reduced from 64KB to 16KB */
 
 # define BOOT_STACK_SIZE	0x1000
 

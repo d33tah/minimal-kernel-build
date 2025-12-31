@@ -199,6 +199,17 @@ asmlinkage __visible void *extract_kernel(void *rmode, memptr heap,
 
 	console_init();
 
+	/* Ultra-early VGA Hello World - in decompressor */
+	{
+		volatile char *vga = (volatile char *)0xB8000;
+		const char *msg = "Hello, World!";
+		int i;
+		for (i = 0; msg[i]; i++) {
+			vga[i*2] = msg[i];
+			vga[i*2+1] = 0x0f;
+		}
+	}
+
 	boot_params->acpi_rsdp_addr = get_rsdp_addr();
 
 	debug_putstr("early console in extract_kernel\n");

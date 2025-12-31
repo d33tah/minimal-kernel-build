@@ -453,18 +453,41 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	edbg("boot_cpu_init\n");
 	boot_cpu_init();
+
+	/* Early VGA Hello World - before memory-hungry init */
+	{
+		volatile char *vga = (volatile char *)0xC00B8000;
+		const char *msg = "Hello, World!";
+		int i;
+		for (i = 0; msg[i]; i++) {
+			vga[i*2] = msg[i];
+			vga[i*2+1] = 0x0f;
+		}
+		edbg("Hello, World!\n");
+	}
+
+	edbg("page_addr\n");
 	page_address_init();
+	edbg("banner\n");
 	pr_notice("%s", linux_banner);
 	/* early_security_init removed - returns 0 */
+	edbg("setup_arch\n");
 	setup_arch(&command_line);
+	edbg("boot_config\n");
 	setup_boot_config();
+	edbg("cmd_line\n");
 	setup_command_line(command_line);
 	/* setup_nr_cpu_ids removed - empty stub */
+	edbg("per_cpu\n");
 	setup_per_cpu_areas();
+	edbg("smp_prep\n");
 	smp_prepare_boot_cpu();
+	edbg("hotplug\n");
 	boot_cpu_hotplug_init();
 
+	edbg("zonelists\n");
 	build_all_zonelists(NULL);
+	edbg("page_init\n");
 	page_alloc_init();
 
 	pr_notice("Kernel command line: %s\n", saved_command_line);

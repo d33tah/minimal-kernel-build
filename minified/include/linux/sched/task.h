@@ -74,8 +74,7 @@ extern pid_t user_mode_thread(int (*fn)(void *), void *arg, unsigned long flags)
 /* kernel_wait4 now static in exit.c */
 
 extern void free_task(struct task_struct *tsk);
-
-#define sched_exec()   {}
+/* sched_exec() macro removed - no callers */
 
 static inline struct task_struct *get_task_struct(struct task_struct *t)
 {

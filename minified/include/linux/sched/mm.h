@@ -90,15 +90,11 @@ static inline gfp_t current_gfp_context(gfp_t flags)
 	return flags;
 }
 
-static inline void fs_reclaim_acquire(gfp_t gfp_mask) { }
-static inline void fs_reclaim_release(gfp_t gfp_mask) { }
-
+/* fs_reclaim_acquire/release removed - empty stubs */
 
 static inline void might_alloc(gfp_t gfp_mask)
 {
-	fs_reclaim_acquire(gfp_mask);
-	fs_reclaim_release(gfp_mask);
-
+	/* fs_reclaim_acquire/release calls removed - empty stubs */
 	might_sleep_if(gfpflags_allow_blocking(gfp_mask));
 }
 
@@ -141,11 +137,6 @@ static inline void memalloc_pin_restore(unsigned int flags)
 }
 
 
-static inline void membarrier_exec_mmap(struct mm_struct *mm)
-{
-}
-static inline void membarrier_update_current_mm(struct mm_struct *next_mm)
-{
-}
+/* membarrier stubs removed - no callers */
 
 #endif

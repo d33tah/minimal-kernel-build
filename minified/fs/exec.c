@@ -472,8 +472,7 @@ static int exec_mmap(struct mm_struct *mm)
 	}
 
 	task_lock(tsk);
-	membarrier_exec_mmap(mm);
-
+	/* membarrier_exec_mmap - empty stub removed */
 	local_irq_disable();
 	active_mm = tsk->active_mm;
 	tsk->active_mm = mm;
@@ -971,8 +970,7 @@ static int bprm_execve(struct linux_binprm *bprm, int fd,
 	if (IS_ERR(file))
 		goto out_unmark;
 
-	sched_exec();
-
+	/* sched_exec() - empty stub removed */
 	bprm->file = file;
 
 	if (bprm->fdpath && get_close_on_exec(fd))

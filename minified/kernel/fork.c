@@ -514,8 +514,7 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 
 	refcount_set(&tsk->stack_refcount, 1);
 	account_kernel_stack(tsk, 1);
-	/* scs_prepare, clear_user_return_notifier removed - empty stubs */
-	setup_thread_stack(tsk, orig);
+	/* scs_prepare, clear_user_return_notifier, setup_thread_stack removed - empty stubs */
 	clear_tsk_need_resched(tsk);
 	set_task_stack_end_magic(tsk);
 	clear_syscall_work_syscall_user_dispatch(tsk);

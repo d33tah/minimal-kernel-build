@@ -632,7 +632,7 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c)
 		if (this_cpu->c_early_init)
 			this_cpu->c_early_init(c);
 
-		c->cpu_index = 0;
+		/* c->cpu_index removed - never read */
 		filter_cpuid_features(c, false);
 
 		if (this_cpu->c_bsp_init)
@@ -696,7 +696,7 @@ static void generic_identify(struct cpuinfo_x86 *c)
 	if (c->cpuid_level >= 0x00000001) {
 		c->initial_apicid = (cpuid_ebx(1) >> 24) & 0xFF;
 		c->apicid = c->initial_apicid;
-		c->phys_proc_id = c->initial_apicid;
+		/* c->phys_proc_id removed - never read */
 	}
 
 	get_model_name(c);

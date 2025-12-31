@@ -87,19 +87,7 @@ struct cpuinfo_x86 {
 	u16			apicid;
 	u16			initial_apicid;
 	u16			x86_clflush_size;
-	 
-	u16			booted_cores;
-	 
-	u16			phys_proc_id;
-	 
-	u16			logical_proc_id;
-	 
-	u16			cpu_core_id;
-	u16			cpu_die_id;
-	u16			logical_die_id;
-	 
-	u16			cpu_index;
-	 
+	/* booted_cores, phys_proc_id, logical_proc_id, cpu_core_id, cpu_die_id, logical_die_id, cpu_index removed - never read */
 	bool			smt_active;
 	u32			microcode;
 	 

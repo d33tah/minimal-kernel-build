@@ -27,7 +27,7 @@
 #include <linux/mempolicy.h>
 #include <linux/memremap.h>
 #include <linux/stop_machine.h>
-#include <linux/sort.h>
+/* sort.h removed - unused */
 #include <linux/pfn.h>
 #include <linux/backing-dev.h>
 

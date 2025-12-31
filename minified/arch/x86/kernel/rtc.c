@@ -24,11 +24,7 @@ volatile unsigned long cmos_lock;
 
 DEFINE_SPINLOCK(rtc_lock);
 
-/* mach_set_rtc_mmss stubbed - x86_platform.set_wallclock is never called */
-int mach_set_rtc_mmss(const struct timespec64 *now)
-{
-	return -EINVAL;
-}
+/* mach_set_rtc_mmss removed - x86_platform.set_wallclock never called */
 
 void mach_get_cmos_time(struct timespec64 *now)
 {

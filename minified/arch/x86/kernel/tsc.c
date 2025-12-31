@@ -512,15 +512,7 @@ static unsigned long native_calibrate_cpu(void)
 	return tsc_freq;
 }
 
-void tsc_save_sched_clock_state(void)
-{
-	/* Stub: suspend/resume not needed for minimal kernel */
-}
-
-void tsc_restore_sched_clock_state(void)
-{
-	/* Stub: suspend/resume not needed for minimal kernel */
-}
+/* tsc_save/restore_sched_clock_state removed - never called */
 
 static void tsc_resume(struct clocksource *cs)
 {

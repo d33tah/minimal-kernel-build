@@ -40,8 +40,7 @@ extern bool tsc_store_and_check_tsc_adjust(bool bootcpu);
 extern void tsc_verify_tsc_adjust(bool resume);
 /* check_tsc_sync_source, check_tsc_sync_target removed - unused (SMP) */
 
-extern void tsc_save_sched_clock_state(void);
-extern void tsc_restore_sched_clock_state(void);
+/* tsc_save/restore_sched_clock_state removed - never called */
 
 unsigned long cpu_khz_from_msr(void);
 

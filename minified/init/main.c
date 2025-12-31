@@ -426,10 +426,9 @@ bool initcall_debug;
 
 static void __init mm_init(void)
 {
-	/* page_ext_init_flatmem, report_meminit removed - empty stubs */
+	/* page_ext_init_flatmem, report_meminit, mem_init_print_info removed - empty stubs */
 	init_mem_debugging_and_hardening();
 	mem_init();
-	mem_init_print_info();
 	kmem_cache_init();
 	/* page_ext_init_flatmem_late removed - empty stub */
 	pgtable_init();

@@ -1712,9 +1712,7 @@ unsigned long free_reserved_area(void *start, void *end, int poison,
 	return pages;
 }
 
-void __init mem_init_print_info(void)
-{
-}
+/* mem_init_print_info removed - empty stub */
 
 static int page_alloc_cpu_dead(unsigned int cpu)
 {

@@ -536,10 +536,8 @@ static vm_fault_t insert_pfn(struct vm_area_struct *vma, unsigned long addr,
 		goto out_unlock;
 	}
 
-	if (pfn_t_devmap(pfn))
-		entry = pte_mkdevmap(pfn_t_pte(pfn, prot));
-	else
-		entry = pte_mkspecial(pfn_t_pte(pfn, prot));
+	/* pfn_t_devmap always returns false */
+	entry = pte_mkspecial(pfn_t_pte(pfn, prot));
 
 	if (mkwrite) {
 		entry = pte_mkyoung(entry);

@@ -213,10 +213,7 @@ static inline pte_t pte_mkspecial(pte_t pte)
 	return pte_set_flags(pte, _PAGE_SPECIAL);
 }
 
-static inline pte_t pte_mkdevmap(pte_t pte)
-{
-	return pte_set_flags(pte, _PAGE_SPECIAL|_PAGE_DEVMAP);
-}
+/* pte_mkdevmap removed - pfn_t_devmap always returns false */
 
 /* pmd_set_flags, pmd_mkdevmap removed - never called */
 /* pmd_mkold, pmd_mkclean, pmd_wrprotect, pmd_mkdirty, pmd_mkhuge, pmd_mkyoung, pmd_mkwrite removed - unused */

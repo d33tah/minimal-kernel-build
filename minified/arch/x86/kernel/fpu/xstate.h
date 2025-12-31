@@ -160,9 +160,8 @@ static inline int xsave_to_user_sigframe(struct xregs_state __user *buf)
 	u32 hmask;
 	int err;
 
-	 
-	if (fpu_state_size_dynamic())
-		mask &= xfeatures_need_sigframe_write();
+
+	/* fpu_state_size_dynamic always returns false - check removed */
 
 	lmask = mask;
 	hmask = mask >> 32;

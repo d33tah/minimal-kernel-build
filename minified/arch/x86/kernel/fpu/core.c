@@ -197,15 +197,7 @@ void fpstate_reset(struct fpu *fpu)
 
 static inline void fpu_inherit_perms(struct fpu *dst_fpu)
 {
-	if (fpu_state_size_dynamic()) {
-		struct fpu *src_fpu = &current->group_leader->thread.fpu;
-
-		spin_lock_irq(&current->sighand->siglock);
-
-		dst_fpu->perm = src_fpu->perm;
-		dst_fpu->guest_perm = src_fpu->guest_perm;
-		spin_unlock_irq(&current->sighand->siglock);
-	}
+	/* fpu_state_size_dynamic always returns false - function body removed */
 }
 
 int fpu_clone(struct task_struct *dst, unsigned long clone_flags, bool minimal)

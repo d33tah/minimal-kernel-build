@@ -81,13 +81,7 @@ static inline void inode_detach_wb(struct inode *inode) { }
 void laptop_mode_timer_fn(struct timer_list *t);
 
 void wb_update_bandwidth(struct bdi_writeback *wb);
-/* balance_dirty_pages_ratelimited removed - never called */
+/* balance_dirty_pages_ratelimited, filemap_dirty_folio removed - never called */
 int do_writepages(struct address_space *mapping, struct writeback_control *wbc);
-
-bool filemap_dirty_folio(struct address_space *mapping, struct folio *folio);
-/* folio_redirty_for_writepage removed - never called */
-
-
-
 
 #endif		 

@@ -35,15 +35,10 @@ int do_writepages(struct address_space *mapping, struct writeback_control *wbc)
 {
 	return 0;
 }
-/* noop_dirty_folio removed - unused */
+/* noop_dirty_folio, filemap_dirty_folio removed - unused */
 void folio_account_cleaned(struct folio *folio, struct bdi_writeback *wb)
 {
 }
-bool filemap_dirty_folio(struct address_space *mapping, struct folio *folio)
-{
-	return true;
-}
-/* folio_redirty_for_writepage removed - never called */
 bool folio_mark_dirty(struct folio *folio)
 {
 	return true;

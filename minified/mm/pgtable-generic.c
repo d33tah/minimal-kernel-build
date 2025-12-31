@@ -1,6 +1,6 @@
 
 #include <linux/pagemap.h>
-#include <linux/hugetlb.h>
+/* hugetlb.h removed - unused */
 #include <linux/pgtable.h>
 #include <linux/mm_inline.h>
 #include <asm/tlb.h>

@@ -26,7 +26,7 @@
 #include <linux/vmstat.h>
 #include <linux/mempolicy.h>
 #include <linux/memremap.h>
-#include <linux/stop_machine.h>
+/* stop_machine.h removed - unused */
 /* sort.h removed - unused */
 #include <linux/pfn.h>
 #include <linux/backing-dev.h>
@@ -41,9 +41,9 @@ void set_pageblock_migratetype(struct page *page, int migratetype);
 struct alloc_context;
 
 #include <linux/mm_inline.h>
-#include <linux/mmu_notifier.h>
+/* mmu_notifier.h removed - unused */
 #include <linux/migrate.h>
-#include <linux/hugetlb.h>
+/* hugetlb.h removed - unused */
 #include <linux/sched/rt.h>
 #include <linux/sched/mm.h>
 

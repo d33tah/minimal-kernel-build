@@ -62,7 +62,7 @@ struct file *anon_inode_getfile(const char *name,
 #include <linux/posix-timers.h>
 /* user_return_notifier stubs, khugepaged_exit, scs_* removed - empty stubs */
 #include <linux/oom.h>
-#include <linux/uprobes.h>
+/* uprobes.h removed - unused */
 #include <linux/compiler.h>
 #include <linux/sysctl.h>
 #include <linux/init_task.h>

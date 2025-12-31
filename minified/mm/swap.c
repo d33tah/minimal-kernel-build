@@ -20,7 +20,7 @@
 #include <linux/memcontrol.h>
 #include <linux/gfp.h>
 #include <linux/uio.h>
-#include <linux/hugetlb.h>
+/* hugetlb.h removed - unused */
 #include <linux/local_lock.h>
 
 #include "internal.h"

@@ -26,14 +26,12 @@
 #include <linux/mmu_notifier.h>
 #include <linux/mmdebug.h>
 #include <linux/perf_event.h>
-#include <linux/audit.h>
-#include <linux/uprobes.h>
+/* audit.h, uprobes.h removed - unused */
 #include <linux/rbtree_augmented.h>
 #include <linux/notifier.h>
 #include <linux/printk.h>
 #include <linux/userfaultfd_k.h>
-#include <linux/moduleparam.h>
-#include <linux/pkeys.h>
+/* moduleparam.h, pkeys.h removed - unused */
 #include <linux/oom.h>
 #include <linux/sched/mm.h>
 

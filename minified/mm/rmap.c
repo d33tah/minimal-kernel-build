@@ -13,7 +13,7 @@
 #include <linux/memcontrol.h>
 #include <linux/mmu_notifier.h>
 #include <linux/migrate.h>
-#include <linux/hugetlb.h>
+/* hugetlb.h removed - unused */
 #include <linux/huge_mm.h>
 #include <linux/backing-dev.h>
 #include <linux/memremap.h>

@@ -11,7 +11,7 @@
 #include <linux/export.h>
 #include <linux/swap.h>
 #include <linux/uio.h>
-#include <linux/hugetlb.h>
+/* hugetlb.h removed - unused */
 #include <linux/fs_parser.h>
 struct swap_iocb;
 

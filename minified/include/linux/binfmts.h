@@ -69,7 +69,6 @@ static inline void register_binfmt(struct linux_binfmt *fmt)
 extern int begin_new_exec(struct linux_binprm * bprm);
 extern void setup_new_exec(struct linux_binprm * bprm);
 extern void finalize_exec(struct linux_binprm *bprm);
-extern void would_dump(struct linux_binprm *, struct file *);
 
 extern int suid_dumpable;
 

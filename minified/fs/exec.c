@@ -639,9 +639,7 @@ int begin_new_exec(struct linux_binprm *bprm)
 	if (retval)
 		goto out;
 
-	would_dump(bprm, bprm->file);
-	if (bprm->have_execfd)
-		would_dump(bprm, bprm->executable);
+	/* would_dump calls removed - empty stub */
 
 	acct_arg_size(bprm, 0);
 	retval = exec_mmap(bprm->mm);
@@ -709,10 +707,7 @@ out:
 	return retval;
 }
 
-void would_dump(struct linux_binprm *bprm, struct file *file)
-{
-	/* Stub: coredump security checks not needed for minimal kernel */
-}
+/* would_dump removed - empty stub with no callers */
 
 void setup_new_exec(struct linux_binprm *bprm)
 {

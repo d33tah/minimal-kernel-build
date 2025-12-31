@@ -589,7 +589,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		if (IS_ERR(interpreter))
 			goto out_free_ph;
 
-		would_dump(bprm, interpreter);
+		/* would_dump removed - empty stub */
 
 		interp_elf_ex = kmalloc(sizeof(*interp_elf_ex), GFP_KERNEL);
 		if (!interp_elf_ex) {

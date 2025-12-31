@@ -25,17 +25,7 @@ static inline int numa_node_id(void)
     #define cpumask_of_node(node)	((void)(node), cpu_online_mask)
 #endif
 
-#define topology_logical_package_id(cpu)	(cpu_data(cpu).logical_proc_id)
-#define topology_physical_package_id(cpu)	(cpu_data(cpu).phys_proc_id)
-#define topology_logical_die_id(cpu)		(cpu_data(cpu).logical_die_id)
-#define topology_die_id(cpu)			(cpu_data(cpu).cpu_die_id)
-#define topology_core_id(cpu)			(cpu_data(cpu).cpu_core_id)
-#define topology_ppin(cpu)			(cpu_data(cpu).ppin)
-
-/* __max_die_per_package removed - never used */
-
-#define topology_max_packages()			(1)
-/* topology_update_package_map, topology_update_die_map removed - never called */
+/* topology_* macros removed - never used */
 
 struct pci_bus;
 int x86_pci_root_bus_node(int bus);

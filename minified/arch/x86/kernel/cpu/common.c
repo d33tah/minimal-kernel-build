@@ -535,7 +535,7 @@ void get_cpu_cap(struct cpuinfo_x86 *c)
 		cpuid(0x80000007, &eax, &ebx, &ecx, &edx);
 
 		c->x86_capability[CPUID_8000_0007_EBX] = ebx;
-		c->x86_power = edx;
+		/* c->x86_power removed - never read */
 	}
 
 	if (c->extended_cpuid_level >= 0x80000008) {

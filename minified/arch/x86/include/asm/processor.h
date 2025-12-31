@@ -75,10 +75,7 @@ struct cpuinfo_x86 {
 	unsigned int		x86_cache_size;
 	int			x86_cache_alignment;	 
 	 
-	int			x86_cache_max_rmid;	 
-	int			x86_cache_occ_scale;	 
-	int			x86_cache_mbm_width_offset;
-	int			x86_power;
+	/* x86_cache_max_rmid, x86_cache_occ_scale, x86_cache_mbm_width_offset, x86_power removed - never read */
 	unsigned long		loops_per_jiffy;
 	/* ppin, x86_max_cores removed - never read */
 	u16			apicid;

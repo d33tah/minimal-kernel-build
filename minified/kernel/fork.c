@@ -544,7 +544,7 @@ __cacheline_aligned_in_smp DEFINE_SPINLOCK(mmlist_lock);
 
 static unsigned long default_dump_filter = MMF_DUMP_FILTER_DEFAULT;
 
-#include <linux/init_task.h>
+/* duplicate init_task.h include removed - already included at line 67 */
 
 /* mm_init_aio, mm_clear_owner, mm_init_owner, mm_init_uprobes_state removed - empty stubs */
 

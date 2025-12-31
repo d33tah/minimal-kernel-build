@@ -2,7 +2,7 @@
 #include <linux/export.h>
 #include <linux/fs.h>
 #include <linux/mm.h>
-#include <linux/backing-dev.h>
+/* backing-dev.h removed - unused */
 #include <linux/hash.h>
 #include <linux/swap.h>
 /* fsnotify.h, tracepoint.h, ratelimit.h removed - unused */

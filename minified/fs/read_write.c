@@ -8,7 +8,7 @@
 #include <linux/syscalls.h>
 #include <linux/pagemap.h>
 #include <linux/splice.h>
-#include <linux/compat.h>
+/* compat.h removed - unused */
 #include <linux/mount.h>
 #include <linux/fs.h>
 #include "internal.h"

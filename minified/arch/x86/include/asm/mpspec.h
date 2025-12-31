@@ -13,20 +13,7 @@
 extern unsigned int boot_cpu_physical_apicid;
 
 #define smp_found_config 0
-
-static inline void get_smp_config(void)
-{
-	x86_init.mpparse.get_smp_config(0);
-}
-
-static inline void find_smp_config(void)
-{
-	x86_init.mpparse.find_smp_config();
-}
-/* e820__memblock_alloc_reserved_mpc_new removed - no callers */
-
-#define default_find_smp_config x86_init_noop
-#define default_get_smp_config x86_init_uint_noop
+/* get_smp_config, find_smp_config, default_*_smp_config removed - never called */
 
 /* physid_mask_t needed by struct apic */
 #define PHYSID_ARRAY_SIZE	BITS_TO_LONGS(MAX_LOCAL_APIC)

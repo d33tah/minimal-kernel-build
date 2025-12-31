@@ -10,12 +10,7 @@ struct pt_regs;
 struct cpuinfo_x86;
 struct irq_domain;
 
- 
-struct x86_init_mpparse {
-	void (*setup_ioapic_ids)(void);
-	void (*find_smp_config)(void);
-	void (*get_smp_config)(unsigned int early);
-};
+/* x86_init_mpparse removed - never called */
 
  
 struct x86_init_resources {
@@ -48,7 +43,7 @@ struct x86_init_timers {
 
 struct x86_init_ops {
 	struct x86_init_resources	resources;
-	struct x86_init_mpparse		mpparse;
+	/* mpparse field removed - never called */
 	struct x86_init_irqs		irqs;
 	/* oem field removed - never accessed */
 	struct x86_init_paging		paging;

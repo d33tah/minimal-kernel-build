@@ -53,11 +53,7 @@ struct x86_init_ops x86_init __initdata = {
 		.memory_setup		= e820__memory_setup_default,
 	},
 
-	.mpparse = {
-		.setup_ioapic_ids	= x86_init_noop,
-		.find_smp_config	= default_find_smp_config,
-		.get_smp_config		= default_get_smp_config,
-	},
+	/* .mpparse removed - never called */
 
 	.irqs = {
 		.pre_vector_init	= init_ISA_irqs,

@@ -7,7 +7,7 @@
 #include <linux/vmalloc.h>
 #include <linux/splice.h>
 #include <linux/compat.h>
-#include <linux/scatterlist.h>
+/* scatterlist.h removed - unused */
 
 /* Inlined from net/checksum.h */
 typedef __u16 __sum16;

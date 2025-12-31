@@ -341,11 +341,6 @@ void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 		rq_clock_skip_update(rq);
 }
 
-static void ttwu_stat(struct task_struct *p, int cpu, int wake_flags)
-{
-	/* Stub: wake-up statistics not needed for minimal kernel */
-}
-
 static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags,
 			   struct rq_flags *rf)
 {
@@ -444,8 +439,7 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state,
 
 	ttwu_queue(p, cpu, wake_flags);
 out:
-	if (success)
-		ttwu_stat(p, task_cpu(p), wake_flags);
+	/* ttwu_stat removed - empty stub */
 	preempt_enable();
 
 	return success;
@@ -554,14 +548,7 @@ void wake_up_new_task(struct task_struct *p)
 	task_rq_unlock(rq, p, &rf);
 }
 
-static inline struct callback_head *splice_balance_callbacks(struct rq *rq)
-{
-	return NULL;
-}
-
-static inline void balance_callbacks(struct rq *rq, struct callback_head *head)
-{
-}
+/* splice_balance_callbacks and balance_callbacks removed - empty stubs */
 
 static inline void prepare_lock_switch(struct rq *rq, struct task_struct *next,
 				       struct rq_flags *rf)
@@ -1023,7 +1010,6 @@ static int __sched_setscheduler(struct task_struct *p,
 	int policy = attr->sched_policy;
 	int retval, oldprio, newprio, queued, running;
 	const struct sched_class *prev_class;
-	struct callback_head *head;
 	struct rq_flags rf;
 	int queue_flags = DEQUEUE_SAVE | DEQUEUE_MOVE | DEQUEUE_NOCLOCK;
 	struct rq *rq;
@@ -1082,12 +1068,8 @@ static int __sched_setscheduler(struct task_struct *p,
 
 	check_class_changed(rq, p, prev_class, oldprio);
 
-	preempt_disable();
-	head = splice_balance_callbacks(rq);
+	/* splice_balance_callbacks/balance_callbacks removed - empty stubs */
 	task_rq_unlock(rq, p, &rf);
-
-	balance_callbacks(rq, head);
-	preempt_enable();
 
 	return 0;
 
@@ -1219,9 +1201,7 @@ int __sched __cond_resched(void)
 	return 0;
 }
 
-static inline void preempt_dynamic_init(void)
-{
-}
+/* preempt_dynamic_init removed - empty stub */
 
 static int io_schedule_prepare(void)
 {
@@ -1349,9 +1329,7 @@ void __init sched_init(void)
 	calc_load_update = jiffies + LOAD_FREQ;
 
 	init_sched_fair_class();
-	/* init_uclamp removed - empty stub */
-
-	preempt_dynamic_init();
+	/* init_uclamp, preempt_dynamic_init removed - empty stubs */
 
 	scheduler_running = 1;
 }

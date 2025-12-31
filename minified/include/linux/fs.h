@@ -54,7 +54,7 @@ static inline void clear_delayed_call(struct delayed_call *call)
 }
 
 /* uuid.h removed - unused */
-#include <linux/ioprio.h>
+/* ioprio.h removed - unused after ki_ioprio removal */
 
 /* Inlined from errseq.h */
 typedef u32	errseq_t;

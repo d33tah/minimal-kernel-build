@@ -33,7 +33,7 @@ extern void sched_init_smp(void);
 /* Removed: delayacct_blkio_start/end - empty stubs */
 #include <linux/init_task.h>
 #include <linux/interrupt.h>
-#include <linux/ioprio.h>
+/* ioprio.h removed - unused */
 #include <linux/kallsyms.h>
 #include <linux/kprobes.h>
 

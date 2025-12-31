@@ -144,9 +144,6 @@ static inline void memalloc_pin_restore(unsigned int flags)
 static inline void membarrier_exec_mmap(struct mm_struct *mm)
 {
 }
-static inline void membarrier_mm_sync_core_before_usermode(struct mm_struct *mm)
-{
-}
 static inline void membarrier_update_current_mm(struct mm_struct *next_mm)
 {
 }

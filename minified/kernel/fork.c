@@ -1061,7 +1061,7 @@ copy_process(struct pid *pid, int trace, int node,
 
 	init_sigpending(&p->pending);
 
-	p->utime = p->stime = p->gtime = 0;
+	p->utime = p->stime = 0; /* gtime removed - write-only */
 	prev_cputime_init(&p->prev_cputime);
 
 	/* task_io_accounting_init, acct_clear_integrals, posix_cputimers_init, audit_set_context removed - empty stubs */
@@ -1151,9 +1151,7 @@ copy_process(struct pid *pid, int trace, int node,
 	p->task_works = NULL;
 
 	sched_cgroup_fork(p, args);
-
-	/* Simplified for minimal kernel - no accurate time needed */
-	p->start_time = 0;
+	/* start_time removed - write-only field */
 
 	write_lock_irq(&tasklist_lock);
 

@@ -94,7 +94,7 @@ struct signal_struct {
 
 	seqlock_t stats_lock;
 	u64 utime, stime;
-	u64 gtime;
+	/* gtime removed - write-only field */
 	struct prev_cputime prev_cputime;
 	unsigned long nvcsw, nivcsw;
 	unsigned long min_flt, maj_flt;

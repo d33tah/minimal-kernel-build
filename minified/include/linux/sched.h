@@ -348,15 +348,14 @@ struct task_struct {
 
 	u64				utime;
 	u64				stime;
-	u64				gtime;
+	/* gtime removed - write-only field (never actually read) */
 	struct prev_cputime		prev_cputime;
 
-	 
+
 	unsigned long			nvcsw;
 	unsigned long			nivcsw;
 
-	 
-	u64				start_time;
+	/* start_time removed - write-only field */
 
 	unsigned long			min_flt;
 	unsigned long			maj_flt;
@@ -591,12 +590,6 @@ extern void __set_task_comm(struct task_struct *tsk, const char *from, bool exec
 static inline void set_task_comm(struct task_struct *tsk, const char *from)
 {
 	__set_task_comm(tsk, from, false);
-}
-
-
-static inline unsigned long wait_task_inactive(struct task_struct *p, unsigned int match_state)
-{
-	return 1;
 }
 
 static inline void set_tsk_thread_flag(struct task_struct *tsk, int flag)

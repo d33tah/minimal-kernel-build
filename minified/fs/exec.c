@@ -542,7 +542,7 @@ static int de_thread(struct task_struct *tsk)
 				goto killed;
 		}
 
-		tsk->start_time = leader->start_time;
+		/* start_time removed - write-only field */
 
 		BUG_ON(!same_thread_group(leader, tsk));
 

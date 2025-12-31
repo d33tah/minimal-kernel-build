@@ -262,11 +262,7 @@ static void __kthread_bind_mask(struct task_struct *p,
 {
 	unsigned long flags;
 
-	if (!wait_task_inactive(p, state)) {
-		WARN_ON(1);
-		return;
-	}
-
+	/* wait_task_inactive always returns 1, dead check removed */
 	raw_spin_lock_irqsave(&p->pi_lock, flags);
 	/* do_set_cpus_allowed removed - empty stub */
 	p->flags |= PF_NO_SETAFFINITY;

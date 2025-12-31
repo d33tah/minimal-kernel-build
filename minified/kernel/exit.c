@@ -99,7 +99,7 @@ static void __exit_signal(struct task_struct *tsk)
 	write_seqlock(&sig->stats_lock);
 	sig->utime += utime;
 	sig->stime += stime;
-	sig->gtime += task_gtime(tsk);
+	/* sig->gtime removed - write-only field */
 	sig->min_flt += tsk->min_flt;
 	sig->maj_flt += tsk->maj_flt;
 	sig->nvcsw += tsk->nvcsw;

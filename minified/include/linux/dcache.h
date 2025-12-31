@@ -59,8 +59,6 @@ struct dentry {
 	struct lockref d_lockref;
 	const struct dentry_operations *d_op;
 	struct super_block *d_sb;
-	/* d_time removed - unused */
-	void *d_fsdata;
 
 	union {
 		struct list_head d_lru;		 

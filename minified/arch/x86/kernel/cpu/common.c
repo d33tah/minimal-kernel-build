@@ -414,11 +414,7 @@ static void get_model_name(struct cpuinfo_x86 *c)
 	*(s + 1) = '\0';
 }
 
-/* Stub: detect_num_cpu_cores not called in minimal kernel */
-void detect_num_cpu_cores(struct cpuinfo_x86 *c)
-{
-	c->x86_max_cores = 1;
-}
+/* detect_num_cpu_cores removed - x86_max_cores never read */
 
 /* Stub: cpu_detect_cache_sizes not called in minimal kernel */
 void cpu_detect_cache_sizes(struct cpuinfo_x86 *c)
@@ -714,7 +710,7 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 	c->x86_model = c->x86_stepping = 0;
 	c->x86_vendor_id[0] = '\0';
 	c->x86_model_id[0] = '\0';
-	c->x86_max_cores = 1;
+	/* c->x86_max_cores removed - never read */
 	c->x86_coreid_bits = 0;
 	c->cu_id = 0xff;
 	c->cpuid_level = -1;

@@ -83,13 +83,13 @@ struct cpuinfo_x86 {
 	 
 	u64			ppin;
 	 
-	u16			x86_max_cores;
+	/* x86_max_cores removed - never read */
 	u16			apicid;
 	u16			initial_apicid;
 	u16			x86_clflush_size;
 	/* booted_cores, phys_proc_id, logical_proc_id, cpu_core_id, cpu_die_id, logical_die_id, cpu_index removed - never read */
 	bool			smt_active;
-	u32			microcode;
+	/* microcode removed - never read */
 	 
 	u8			x86_cache_bits;
 	unsigned		initialized : 1;

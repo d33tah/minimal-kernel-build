@@ -55,17 +55,6 @@ struct multiprocess_signals {
 	struct hlist_node node;
 };
 
-struct core_thread {
-	struct task_struct *task;
-	struct core_thread *next;
-};
-
-struct core_state {
-	atomic_t nr_threads;
-	struct core_thread dumper;
-	struct completion startup;
-};
-
 struct signal_struct {
 	refcount_t		sigcnt;
 	atomic_t		live;
@@ -93,37 +82,23 @@ struct signal_struct {
 	int			group_stop_count;
 	unsigned int		flags;  
 
-	struct core_state *core_state;  
 
-	 
 	unsigned int		is_child_subreaper:1;
 	unsigned int		has_child_subreaper:1;
 
-	 
-	struct posix_cputimers posix_cputimers;
 
-	 
 	struct pid *pids[PIDTYPE_MAX];
-
-
-	struct pid *tty_old_pgrp;
-
-	 
-	int leader;
 
 	struct tty_struct *tty;  
 
-	 
+
 	seqlock_t stats_lock;
-	u64 utime, stime, cutime, cstime;
+	u64 utime, stime;
 	u64 gtime;
-	u64 cgtime;
 	struct prev_cputime prev_cputime;
-	unsigned long nvcsw, nivcsw, cnvcsw, cnivcsw;
-	unsigned long min_flt, maj_flt, cmin_flt, cmaj_flt;
-	unsigned long inblock, oublock, cinblock, coublock;
-	unsigned long maxrss, cmaxrss;
-	struct task_io_accounting ioac;
+	unsigned long nvcsw, nivcsw;
+	unsigned long min_flt, maj_flt;
+	unsigned long maxrss;
 
 	 
 	unsigned long long sum_sched_runtime;

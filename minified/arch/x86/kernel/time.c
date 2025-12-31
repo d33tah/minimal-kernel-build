@@ -74,7 +74,7 @@ static __init void x86_late_time_init(void)
 
 void __init time_init(void)
 {
-	late_time_init = x86_late_time_init;
+	/* Stubbed for minimal Hello World - skip late time init */
 }
 
 void clocksource_arch_init(struct clocksource *cs)

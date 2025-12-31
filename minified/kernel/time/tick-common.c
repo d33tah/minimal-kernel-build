@@ -3,10 +3,6 @@
 #include <linux/hrtimer.h>
 #include <linux/interrupt.h>
 #include <linux/percpu.h>
-#define CPU_PROFILING 1
-static inline void profile_tick(int type)
-{
-}
 #include <linux/sched.h>
 #include <linux/module.h>
 
@@ -16,7 +12,6 @@ static inline void profile_tick(int type)
 
 DEFINE_PER_CPU(struct tick_device, tick_cpu_device);
 ktime_t tick_next_period;
-
 int tick_do_timer_cpu __read_mostly = TICK_DO_TIMER_BOOT;
 
 struct tick_device *tick_get_device(int cpu)
@@ -29,17 +24,13 @@ static void tick_periodic(int cpu)
 	if (tick_do_timer_cpu == cpu) {
 		raw_spin_lock(&jiffies_lock);
 		write_seqcount_begin(&jiffies_seq);
-
 		tick_next_period = ktime_add_ns(tick_next_period, TICK_NSEC);
-
 		do_timer(1);
 		write_seqcount_end(&jiffies_seq);
 		raw_spin_unlock(&jiffies_lock);
 		update_wall_time();
 	}
-
 	update_process_times(user_mode(get_irq_regs()));
-	profile_tick(CPU_PROFILING);
 }
 
 void tick_handle_periodic(struct clock_event_device *dev)
@@ -53,10 +44,8 @@ void tick_handle_periodic(struct clock_event_device *dev)
 		return;
 	for (;;) {
 		next = ktime_add_ns(next, TICK_NSEC);
-
 		if (!clockevents_program_event(dev, next, false))
 			return;
-
 		if (timekeeping_valid_for_hres())
 			tick_periodic(cpu);
 	}
@@ -94,20 +83,13 @@ static void tick_setup_device(struct tick_device *td,
 			      struct clock_event_device *newdev, int cpu,
 			      const struct cpumask *cpumask)
 {
-	void (*handler)(struct clock_event_device *) = NULL;
-	ktime_t next_event = 0;
-
 	if (!td->evtdev) {
 		if (tick_do_timer_cpu == TICK_DO_TIMER_BOOT) {
 			tick_do_timer_cpu = cpu;
-
 			tick_next_period = ktime_get();
 		}
-
 		td->mode = TICKDEV_MODE_PERIODIC;
 	} else {
-		handler = td->evtdev->event_handler;
-		next_event = td->evtdev->next_event;
 		td->evtdev->event_handler = clockevents_handle_noop;
 	}
 
@@ -118,55 +100,6 @@ static void tick_setup_device(struct tick_device *td,
 
 	if (td->mode == TICKDEV_MODE_PERIODIC)
 		tick_setup_periodic(newdev, 0);
-	else
-		tick_setup_oneshot(newdev, handler, next_event);
-}
-
-void tick_install_replacement(struct clock_event_device *newdev)
-{
-	struct tick_device *td = this_cpu_ptr(&tick_cpu_device);
-	int cpu = smp_processor_id();
-
-	clockevents_exchange_device(td->evtdev, newdev);
-	tick_setup_device(td, newdev, cpu, cpumask_of(cpu));
-	/* tick_oneshot_notify removed - empty stub */
-}
-
-static bool tick_check_percpu(struct clock_event_device *curdev,
-			      struct clock_event_device *newdev, int cpu)
-{
-	if (!cpumask_test_cpu(cpu, newdev->cpumask))
-		return false;
-	if (cpumask_equal(newdev->cpumask, cpumask_of(cpu)))
-		return true;
-
-	if (newdev->irq >= 0 && !irq_can_set_affinity(newdev->irq))
-		return false;
-
-	if (curdev && cpumask_equal(curdev->cpumask, cpumask_of(cpu)))
-		return false;
-	return true;
-}
-
-static bool tick_check_preferred(struct clock_event_device *curdev,
-				 struct clock_event_device *newdev)
-{
-	if (!(newdev->features & CLOCK_EVT_FEAT_ONESHOT)) {
-		if (curdev && (curdev->features & CLOCK_EVT_FEAT_ONESHOT))
-			return false;
-	}
-
-	return !curdev || newdev->rating > curdev->rating ||
-	       !cpumask_equal(curdev->cpumask, newdev->cpumask);
-}
-
-bool tick_check_replacement(struct clock_event_device *curdev,
-			    struct clock_event_device *newdev)
-{
-	if (!tick_check_percpu(curdev, newdev, smp_processor_id()))
-		return false;
-
-	return tick_check_preferred(curdev, newdev);
 }
 
 void tick_check_new_device(struct clock_event_device *newdev)
@@ -179,21 +112,17 @@ void tick_check_new_device(struct clock_event_device *newdev)
 	td = &per_cpu(tick_cpu_device, cpu);
 	curdev = td->evtdev;
 
-	if (!tick_check_replacement(curdev, newdev))
-		goto out_bc;
+	/* Simplified: just accept new device */
+	if (!cpumask_test_cpu(cpu, newdev->cpumask))
+		return;
 
 	/* try_module_get always returns true - dead check removed */
 
 	clockevents_exchange_device(curdev, newdev);
 	tick_setup_device(td, newdev, cpu, cpumask_of(cpu));
-	/* tick_oneshot_notify removed - empty stub */
-	return;
-
-out_bc:
-	/* tick_install_broadcast_device removed - empty stub */
 }
 
 void __init tick_init(void)
 {
-	/* tick_broadcast_init, tick_nohz_init removed - empty stubs */
+	/* Stubbed for minimal Hello World */
 }

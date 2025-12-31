@@ -500,40 +500,16 @@ static bool persistent_clock_exists;
 
 void __init timekeeping_init(void)
 {
-	struct timespec64 wall_time, boot_offset, wall_to_mono;
+	/* Minimal init for Hello World - just setup basic jiffies clock */
 	struct timekeeper *tk = &tk_core.timekeeper;
 	struct clocksource *clock;
 	unsigned long flags;
 
-	read_persistent_wall_and_boot_offset(&wall_time, &boot_offset);
-	if (timespec64_valid_settod(&wall_time) &&
-	    timespec64_to_ns(&wall_time) > 0) {
-		persistent_clock_exists = true;
-	} else if (timespec64_to_ns(&wall_time) != 0) {
-		pr_warn("Persistent clock returned invalid value");
-		wall_time = (struct timespec64){ 0 };
-	}
-
-	if (timespec64_compare(&wall_time, &boot_offset) < 0)
-		boot_offset = (struct timespec64){ 0 };
-
-	wall_to_mono = timespec64_sub(boot_offset, wall_time);
-
 	raw_spin_lock_irqsave(&timekeeper_lock, flags);
 	write_seqcount_begin(&tk_core.seq);
-	/* ntp_init removed - was empty stub */
 
 	clock = clocksource_default_clock();
-	if (clock->enable)
-		clock->enable(clock);
 	tk_setup_internals(tk, clock);
-
-	tk_set_xtime(tk, &wall_time);
-	tk->raw_sec = 0;
-
-	tk_set_wall_to_mono(tk, wall_to_mono);
-
-	timekeeping_update(tk, TK_MIRROR | TK_CLOCK_WAS_SET);
 
 	write_seqcount_end(&tk_core.seq);
 	raw_spin_unlock_irqrestore(&timekeeper_lock, flags);

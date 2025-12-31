@@ -24,11 +24,7 @@ bool unwind_next_frame(struct unwind_state *state);
 unsigned long unwind_get_return_address(struct unwind_state *state);
 unsigned long *unwind_get_return_address_ptr(struct unwind_state *state);
 
-static inline bool unwind_done(struct unwind_state *state)
-{
-	return state->stack_info.type == STACK_TYPE_UNKNOWN;
-}
-
+/* unwind_done removed - never called */
 
 static inline
 void unwind_start(struct unwind_state *state, struct task_struct *task,
@@ -39,11 +35,7 @@ void unwind_start(struct unwind_state *state, struct task_struct *task,
 	__unwind_start(state, task, regs, first_frame);
 }
 
-static inline
-void unwind_module_init(struct module *mod, void *orc_ip, size_t orc_ip_size,
-			void *orc, size_t orc_size) {}
-
-/* unwind_recover_rethook, unwind_recover_ret_addr removed - unused */
+/* unwind_module_init, unwind_recover_rethook, unwind_recover_ret_addr removed - unused */
 
  
 #define READ_ONCE_TASK_STACK(task, x)			\

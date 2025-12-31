@@ -309,12 +309,4 @@ error:
 	return -ENOMEM;
 }
 
-#ifndef ARCH_IMPLEMENTS_FLUSH_DCACHE_FOLIO
-void flush_dcache_folio(struct folio *folio)
-{
-	long i, nr = folio_nr_pages(folio);
-
-	for (i = 0; i < nr; i++)
-		flush_dcache_page(folio_page(folio, i));
-}
-#endif
+/* flush_dcache_folio - already defined as empty stub in highmem.h */

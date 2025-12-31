@@ -85,7 +85,6 @@ extern int mod_timer(struct timer_list *timer, unsigned long expires);
 #define del_singleshot_timer_sync(t) del_timer_sync(t)
 
 extern void init_timers(void);
-struct hrtimer;
 
 #define timers_prepare_cpu	NULL
 #define timers_dead_cpu		NULL

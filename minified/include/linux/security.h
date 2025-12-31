@@ -9,7 +9,6 @@
 #include <linux/mm.h>
 
 struct linux_binprm;
-struct mm_struct;
 
 /* Reduced lockdown enum for minimal kernel */
 enum lockdown_reason {

@@ -122,12 +122,11 @@ static inline void free_pud_range(struct mmu_gather *tlb, p4d_t *p4d,
 	unsigned long next;
 	unsigned long start;
 
+	/* pud_none_or_clear_bad always returns 0 - folded paging */
 	start = addr;
 	pud = pud_offset(p4d, addr);
 	do {
 		next = pud_addr_end(addr, end);
-		if (pud_none_or_clear_bad(pud))
-			continue;
 		free_pmd_range(tlb, pud, addr, next, floor, ceiling);
 	} while (pud++, addr = next, addr != end);
 
@@ -155,12 +154,11 @@ static inline void free_p4d_range(struct mmu_gather *tlb, pgd_t *pgd,
 	unsigned long next;
 	unsigned long start;
 
+	/* p4d_none_or_clear_bad always returns 0 - folded paging */
 	start = addr;
 	p4d = p4d_offset(pgd, addr);
 	do {
 		next = p4d_addr_end(addr, end);
-		if (p4d_none_or_clear_bad(p4d))
-			continue;
 		free_pud_range(tlb, p4d, addr, next, floor, ceiling);
 	} while (p4d++, addr = next, addr != end);
 
@@ -203,12 +201,11 @@ void free_pgd_range(struct mmu_gather *tlb, unsigned long addr,
 	if (addr > end - 1)
 		return;
 
+	/* pgd_none_or_clear_bad always returns 0 - folded paging */
 	tlb_change_page_size(tlb, PAGE_SIZE);
 	pgd = pgd_offset(tlb->mm, addr);
 	do {
 		next = pgd_addr_end(addr, end);
-		if (pgd_none_or_clear_bad(pgd))
-			continue;
 		free_p4d_range(tlb, pgd, addr, next, floor, ceiling);
 	} while (pgd++, addr = next, addr != end);
 }
@@ -383,14 +380,11 @@ static inline unsigned long zap_pud_range(struct mmu_gather *tlb,
 	pud_t *pud;
 	unsigned long next;
 
+	/* pud_none_or_clear_bad always returns 0 - folded paging */
 	pud = pud_offset(p4d, addr);
 	do {
 		next = pud_addr_end(addr, end);
-		/* pud_trans_huge/pud_devmap always return 0 - huge pud code removed */
-		if (pud_none_or_clear_bad(pud))
-			continue;
 		next = zap_pmd_range(tlb, vma, pud, addr, next, details);
-next:
 		cond_resched();
 	} while (pud++, addr = next, addr != end);
 
@@ -406,11 +400,10 @@ static inline unsigned long zap_p4d_range(struct mmu_gather *tlb,
 	p4d_t *p4d;
 	unsigned long next;
 
+	/* p4d_none_or_clear_bad always returns 0 - folded paging */
 	p4d = p4d_offset(pgd, addr);
 	do {
 		next = p4d_addr_end(addr, end);
-		if (p4d_none_or_clear_bad(p4d))
-			continue;
 		next = zap_pud_range(tlb, vma, p4d, addr, next, details);
 	} while (p4d++, addr = next, addr != end);
 
@@ -424,13 +417,12 @@ void unmap_page_range(struct mmu_gather *tlb, struct vm_area_struct *vma,
 	pgd_t *pgd;
 	unsigned long next;
 
+	/* pgd_none_or_clear_bad always returns 0 - folded paging */
 	BUG_ON(addr >= end);
 	tlb_start_vma(tlb, vma);
 	pgd = pgd_offset(vma->vm_mm, addr);
 	do {
 		next = pgd_addr_end(addr, end);
-		if (pgd_none_or_clear_bad(pgd))
-			continue;
 		next = zap_p4d_range(tlb, vma, pgd, addr, next, details);
 	} while (pgd++, addr = next, addr != end);
 	tlb_end_vma(tlb, vma);

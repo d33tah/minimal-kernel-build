@@ -207,14 +207,10 @@ static void vunmap_pud_range(p4d_t *p4d, unsigned long addr, unsigned long end,
 	pud_t *pud;
 	unsigned long next;
 
+	/* pud_none_or_clear_bad, pud_bad always return 0 - folded paging */
 	pud = pud_offset(p4d, addr);
 	do {
 		next = pud_addr_end(addr, end);
-		/* pud_clear_huge always returns 0, cleared logic removed */
-		if (pud_bad(*pud))
-			*mask |= PGTBL_PUD_MODIFIED;
-		if (pud_none_or_clear_bad(pud))
-			continue;
 		vunmap_pmd_range(pud, addr, next, mask);
 	} while (pud++, addr = next, addr != end);
 }
@@ -225,16 +221,10 @@ static void vunmap_p4d_range(pgd_t *pgd, unsigned long addr, unsigned long end,
 	p4d_t *p4d;
 	unsigned long next;
 
+	/* p4d_none_or_clear_bad, p4d_bad always return 0 - folded paging */
 	p4d = p4d_offset(pgd, addr);
 	do {
 		next = p4d_addr_end(addr, end);
-
-		/* p4d_clear_huge removed - empty stub */
-		if (p4d_bad(*p4d))
-			*mask |= PGTBL_P4D_MODIFIED;
-
-		if (p4d_none_or_clear_bad(p4d))
-			continue;
 		vunmap_pud_range(p4d, addr, next, mask);
 	} while (p4d++, addr = next, addr != end);
 }
@@ -247,13 +237,10 @@ void vunmap_range_noflush(unsigned long start, unsigned long end)
 	pgtbl_mod_mask mask = 0;
 
 	BUG_ON(addr >= end);
+	/* pgd_none_or_clear_bad, pgd_bad always return 0 - folded paging */
 	pgd = pgd_offset_k(addr);
 	do {
 		next = pgd_addr_end(addr, end);
-		if (pgd_bad(*pgd))
-			mask |= PGTBL_PGD_MODIFIED;
-		if (pgd_none_or_clear_bad(pgd))
-			continue;
 		vunmap_p4d_range(pgd, addr, next, &mask);
 	} while (pgd++, addr = next, addr != end);
 

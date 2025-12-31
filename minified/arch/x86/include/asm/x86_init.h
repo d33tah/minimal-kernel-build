@@ -117,14 +117,8 @@ struct x86_legacy_features {
 	struct x86_legacy_devices devices;
 };
 
- 
-struct x86_hyper_runtime {
-	void (*pin_vcpu)(int cpu);
-	void (*sev_es_hcall_prepare)(struct ghcb *ghcb, struct pt_regs *regs);
-	bool (*sev_es_hcall_finish)(struct ghcb *ghcb, struct pt_regs *regs);
-};
+/* x86_hyper_runtime removed - never called */
 
- 
 struct x86_platform_ops {
 	unsigned long (*calibrate_cpu)(void);
 	unsigned long (*calibrate_tsc)(void);
@@ -136,7 +130,7 @@ struct x86_platform_ops {
 	/* save/restore_sched_clock_state, apic_post_init removed - never called */
 	struct x86_legacy_features legacy;
 	void (*set_legacy_features)(void);
-	struct x86_hyper_runtime hyper;
+	/* hyper removed - never called */
 	/* guest removed - never called */
 };
 

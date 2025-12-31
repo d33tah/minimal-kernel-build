@@ -119,8 +119,7 @@ struct x86_platform_ops x86_platform __ro_after_init = {
 	.is_untracked_pat_range = is_ISA_range,
 	.nmi_init = default_nmi_init,
 	.get_nmi_reason = default_get_nmi_reason,
-	.hyper.pin_vcpu = x86_op_int_noop,
-	/* .guest removed - never called */
+	/* .hyper, .guest removed - never called */
 };
 
 struct x86_apic_ops x86_apic_ops __ro_after_init = {

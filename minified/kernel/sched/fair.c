@@ -420,8 +420,7 @@ static void account_entity_enqueue(struct cfs_rq *cfs_rq,
 {
 	update_load_add(&cfs_rq->load, se->load.weight);
 	cfs_rq->nr_running++;
-	if (se_is_idle(se))
-		cfs_rq->idle_nr_running++;
+	/* se_is_idle() always 0, idle_nr_running++ removed */
 }
 
 static void account_entity_dequeue(struct cfs_rq *cfs_rq,
@@ -429,8 +428,7 @@ static void account_entity_dequeue(struct cfs_rq *cfs_rq,
 {
 	update_load_sub(&cfs_rq->load, se->load.weight);
 	cfs_rq->nr_running--;
-	if (se_is_idle(se))
-		cfs_rq->idle_nr_running--;
+	/* se_is_idle() always 0, idle_nr_running-- removed */
 }
 
 #define add_positive(_ptr, _val)                         \
@@ -522,11 +520,8 @@ static void place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 
 	if (!initial) {
 		unsigned long thresh;
-
-		if (se_is_idle(se))
-			thresh = sysctl_sched_min_granularity;
-		else
-			thresh = sysctl_sched_latency;
+		/* se_is_idle() always 0 - use sysctl_sched_latency */
+		thresh = sysctl_sched_latency;
 
 		if (sched_feat(GENTLE_FAIR_SLEEPERS))
 			thresh >>= 1;
@@ -833,15 +828,10 @@ static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		/* update_cfs_group removed - empty stub */
 		cfs_rq->h_nr_running++;
 		cfs_rq->idle_h_nr_running += idle_h_nr_running;
-
-		if (cfs_rq_is_idle(cfs_rq))
-			idle_h_nr_running = 1;
-
+		/* cfs_rq_is_idle() always 0 - skip */
 		if (cfs_rq_throttled(cfs_rq))
 			goto enqueue_throttle;
-
-		if (throttled_hierarchy(cfs_rq))
-			list_add_leaf_cfs_rq(cfs_rq);
+		/* throttled_hierarchy() always 0 - skip list_add_leaf_cfs_rq */
 	}
 
 	add_nr_running(rq, 1);

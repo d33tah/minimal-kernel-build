@@ -1146,7 +1146,6 @@ extern void clear_inode(struct inode *);
 extern void __destroy_inode(struct inode *);
 extern struct inode *new_inode_pseudo(struct super_block *sb);
 extern struct inode *new_inode(struct super_block *sb);
-extern int file_remove_privs(struct file *);
 
 static inline void *
 alloc_inode_sb(struct super_block *sb, struct kmem_cache *cache, gfp_t gfp)

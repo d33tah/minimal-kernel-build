@@ -500,15 +500,7 @@ void touch_atime(const struct path *path)
 {
 }
 
-int dentry_needs_remove_privs(struct dentry *dentry)
-{
-	return 0;
-}
-
-int file_remove_privs(struct file *file)
-{
-	return 0;
-}
+/* dentry_needs_remove_privs, file_remove_privs removed - no callers */
 
 int file_update_time(struct file *file)
 {

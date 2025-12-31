@@ -84,9 +84,8 @@ extern int vfs_open(const struct path *, struct file *);
 
  
 extern long prune_icache_sb(struct super_block *sb, struct shrink_control *sc);
-extern int dentry_needs_remove_privs(struct dentry *dentry);
 
-/* get_nr_dirty_inodes, invalidate_inodes removed - unused */
+/* dentry_needs_remove_privs, get_nr_dirty_inodes, invalidate_inodes removed - unused */
 
  
 extern int d_set_mounted(struct dentry *dentry);

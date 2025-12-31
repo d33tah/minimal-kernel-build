@@ -13,8 +13,6 @@ static inline ktime_t ktime_set(const s64 secs, const unsigned long nsecs) { if 
 static inline ktime_t timespec64_to_ktime(struct timespec64 ts) { return ktime_set(ts.tv_sec, ts.tv_nsec); }
 #define ktime_to_timespec64(kt)		ns_to_timespec64((kt))
 static inline s64 ktime_to_ns(const ktime_t kt) { return kt; }
-static inline int ktime_compare(const ktime_t cmp1, const ktime_t cmp2) { if (cmp1 < cmp2) return -1; if (cmp1 > cmp2) return 1; return 0; }
-static inline bool ktime_before(const ktime_t cmp1, const ktime_t cmp2) { return ktime_compare(cmp1, cmp2) < 0; }
 extern ktime_t ktime_add_safe(const ktime_t lhs, const ktime_t rhs);
 #define LOW_RES_NSEC		TICK_NSEC
 static inline ktime_t ns_to_ktime(u64 ns) { return ns; }

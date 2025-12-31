@@ -191,10 +191,8 @@ extern void __setparam_dl(struct task_struct *p, const struct sched_attr *attr);
 struct cfs_rq {
 	struct load_weight	load;
 	unsigned int		nr_running;
-	unsigned int		h_nr_running;       
-	unsigned int		idle_nr_running;
-	unsigned int		idle_h_nr_running;
-	/* exec_clock, min_vruntime_copy removed - write-only */
+	unsigned int		h_nr_running;
+	/* idle_nr_running, idle_h_nr_running, exec_clock, min_vruntime_copy removed - write-only */
 	u64			min_vruntime;
 	struct rb_root_cached	tasks_timeline;
 

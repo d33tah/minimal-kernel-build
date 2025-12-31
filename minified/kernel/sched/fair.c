@@ -218,7 +218,7 @@ static u64 __sched_period(unsigned long nr_running)
 		return sysctl_sched_latency;
 }
 
-static bool sched_idle_cfs_rq(struct cfs_rq *cfs_rq);
+/* sched_idle_cfs_rq removed - always returns false (idle_nr_running never set) */
 
 static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
@@ -744,20 +744,12 @@ static void entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr,
 }
 
 /* account_cfs_rq_runtime, check_cfs_rq_runtime, check_enqueue_throttle, return_cfs_rq_runtime removed - stubs */
-
-/* cfs_rq_throttled, sched_idle_rq, throttled_hierarchy, hrtick_start_fair removed - unused */
-
-static bool sched_idle_cfs_rq(struct cfs_rq *cfs_rq)
-{
-	return cfs_rq->nr_running &&
-	       cfs_rq->nr_running == cfs_rq->idle_nr_running;
-}
+/* cfs_rq_throttled, sched_idle_rq, throttled_hierarchy, hrtick_start_fair, sched_idle_cfs_rq removed - unused */
 
 static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 {
 	struct cfs_rq *cfs_rq;
 	struct sched_entity *se = &p->se;
-	int idle_h_nr_running = task_has_idle_policy(p);
 
 	/* util_est_enqueue, cpufreq_update_util removed - empty stubs */
 	for_each_sched_entity(se)
@@ -768,8 +760,7 @@ static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		enqueue_entity(cfs_rq, se, flags);
 
 		cfs_rq->h_nr_running++;
-		cfs_rq->idle_h_nr_running += idle_h_nr_running;
-		/* cfs_rq_is_idle, cfs_rq_throttled always 0 - checks removed */
+		/* idle_h_nr_running, cfs_rq_is_idle, cfs_rq_throttled always 0 - removed */
 		flags = ENQUEUE_WAKEUP;
 	}
 
@@ -780,8 +771,7 @@ static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		update_load_avg(cfs_rq, se, UPDATE_TG);
 		/* se_update_runnable, update_cfs_group removed - empty stubs */
 		cfs_rq->h_nr_running++;
-		cfs_rq->idle_h_nr_running += idle_h_nr_running;
-		/* cfs_rq_is_idle, cfs_rq_throttled, throttled_hierarchy always 0 */
+		/* idle_h_nr_running, cfs_rq_is_idle, cfs_rq_throttled always 0 - removed */
 	}
 
 	add_nr_running(rq, 1);
@@ -794,8 +784,7 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 {
 	struct cfs_rq *cfs_rq;
 	struct sched_entity *se = &p->se;
-	/* task_sleep, was_sched_idle removed - write-only variables */
-	int idle_h_nr_running = task_has_idle_policy(p);
+	/* task_sleep, was_sched_idle, idle_h_nr_running removed - write-only */
 
 	/* util_est_dequeue removed - empty stub */
 	for_each_sched_entity(se)
@@ -804,8 +793,7 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		dequeue_entity(cfs_rq, se, flags);
 
 		cfs_rq->h_nr_running--;
-		cfs_rq->idle_h_nr_running -= idle_h_nr_running;
-		/* cfs_rq_is_idle, cfs_rq_throttled always 0 - checks removed */
+		/* idle_h_nr_running, cfs_rq_is_idle, cfs_rq_throttled always 0 - removed */
 
 		if (cfs_rq->load.weight) {
 			/* parent_entity always NULL - break is always taken */
@@ -821,8 +809,7 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		update_load_avg(cfs_rq, se, UPDATE_TG);
 		/* se_update_runnable, update_cfs_group removed - empty stubs */
 		cfs_rq->h_nr_running--;
-		cfs_rq->idle_h_nr_running -= idle_h_nr_running;
-		/* cfs_rq_is_idle, cfs_rq_throttled always 0 */
+		/* idle_h_nr_running, cfs_rq_is_idle, cfs_rq_throttled always 0 - removed */
 	}
 
 	sub_nr_running(rq, 1);

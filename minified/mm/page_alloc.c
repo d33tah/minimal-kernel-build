@@ -10,21 +10,17 @@
 #include <linux/compiler.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
-#include <linux/suspend.h>
-#include <linux/pagevec.h>
+/* suspend.h, pagevec.h removed - unused */
 #include <linux/blkdev.h>
 #include <linux/slab.h>
-#include <linux/ratelimit.h>
+/* ratelimit.h removed - unused */
 #include <linux/oom.h>
 #include <linux/topology.h>
 #include <linux/sysctl.h>
 #include <linux/cpu.h>
 /* cpuset.h, memory_hotplug.h removed - unused */
 #include <linux/nodemask.h>
-#include <linux/vmalloc.h>
-#include <linux/vmstat.h>
-/* mempolicy.h removed - unused */
-#include <linux/memremap.h>
+/* vmalloc.h, vmstat.h, mempolicy.h, memremap.h removed - unused */
 /* stop_machine.h removed - unused */
 /* sort.h removed - unused */
 #include <linux/pfn.h>

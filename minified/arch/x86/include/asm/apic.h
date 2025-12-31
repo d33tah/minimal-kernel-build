@@ -106,13 +106,6 @@ extern struct apic *__apicdrivers[], *__apicdrivers_end[];
  
 
 
-/* apic_read removed - unused */
-static inline void apic_eoi(void) { }
-
-static inline void ack_APIC_irq(void)
-{
-
-	apic_eoi();
-}
+/* apic_read, apic_eoi, ack_APIC_irq removed - unused stubs */
 
 #endif

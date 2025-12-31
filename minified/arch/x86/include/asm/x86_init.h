@@ -36,7 +36,7 @@ struct x86_init_paging {
 struct x86_init_timers {
 	void (*setup_percpu_clockev)(void);
 	void (*timer_init)(void);
-	void (*wallclock_init)(void);
+	/* wallclock_init removed - never called */
 };
 
 /* x86_init_iommu, x86_init_pci, x86_hyper_init, x86_init_acpi, x86_guest removed - never used */

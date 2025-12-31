@@ -41,9 +41,7 @@ void x86_op_int_noop(int cpu)
 {
 }
 /* set_rtc_noop, get_rtc_noop removed - defined but never used */
-static __init void x86_wallclock_init(void)
-{
-}
+/* x86_wallclock_init removed - never called */
 
 struct x86_init_ops x86_init __initdata = {
 
@@ -70,7 +68,7 @@ struct x86_init_ops x86_init __initdata = {
 	.timers = {
 		.setup_percpu_clockev	= setup_boot_APIC_clock,
 		.timer_init		= hpet_time_init,
-		.wallclock_init		= x86_wallclock_init,
+		/* .wallclock_init removed - never called */
 	},
 
 	/* .iommu, .pci, .hyper, .acpi removed - never accessed */

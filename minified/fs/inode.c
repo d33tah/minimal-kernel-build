@@ -197,7 +197,7 @@ void inode_init_once(struct inode *inode)
 	memset(inode, 0, sizeof(*inode));
 	INIT_HLIST_NODE(&inode->i_hash);
 	INIT_LIST_HEAD(&inode->i_devices);
-	INIT_LIST_HEAD(&inode->i_wb_list);
+	/* i_wb_list removed - unused */
 	INIT_LIST_HEAD(&inode->i_lru);
 	__address_space_init_once(&inode->i_data);
 }
@@ -276,7 +276,7 @@ void clear_inode(struct inode *inode)
 	BUG_ON(!list_empty(&inode->i_data.private_list));
 	BUG_ON(!(inode->i_state & I_FREEING));
 	BUG_ON(inode->i_state & I_CLEAR);
-	BUG_ON(!list_empty(&inode->i_wb_list));
+	/* i_wb_list BUG_ON removed - field unused */
 
 	inode->i_state = I_FREEING | I_CLEAR;
 }

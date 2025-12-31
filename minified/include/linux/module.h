@@ -92,12 +92,7 @@ struct notifier_block;
 
 
 /* __module_address, __module_text_address, is_module_address,
-   is_module_percpu_address removed - unused (only is_module_text_address kept) */
-
-static inline bool is_module_text_address(unsigned long addr)
-{
-	return false;
-}
+   is_module_percpu_address, is_module_text_address removed - unused */
 
 #define symbol_get(x) ({ extern typeof(x) x __attribute__((weak,visibility("hidden"))); &(x); })
 /* symbol_put removed - unused */

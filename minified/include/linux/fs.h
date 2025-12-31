@@ -348,9 +348,9 @@ struct inode {
 	struct rw_semaphore	i_rwsem;
 
 	struct hlist_node	i_hash;
-	struct list_head	i_lru;		
+	struct list_head	i_lru;
 	struct list_head	i_sb_list;
-	struct list_head	i_wb_list;	
+	/* i_wb_list removed - only initialized, never used */
 	union {
 		struct hlist_head	i_dentry;
 		struct rcu_head		i_rcu;

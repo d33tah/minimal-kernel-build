@@ -148,9 +148,8 @@ struct tty_struct {
 		unsigned long unused[0];
 	} __aligned(sizeof(unsigned long)) ctrl;
 
-	int hw_stopped;
+	/* hw_stopped, flow_change removed - unused */
 	unsigned int receive_room;
-	int flow_change;
 
 	struct tty_struct *link;
 	struct fasync_struct *fasync;

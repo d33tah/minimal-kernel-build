@@ -4,11 +4,7 @@
 
 #include <asm/bootparam.h>
 
-struct ghcb;
-/* struct mpc_bus, mpc_cpu, mpc_table removed - unused */
-struct pt_regs;
-struct cpuinfo_x86;
-struct irq_domain;
+/* struct ghcb, mpc_bus, mpc_cpu, mpc_table, pt_regs, cpuinfo_x86, irq_domain forward decls removed - unused in this header */
 
 /* x86_init_mpparse removed - never called */
 

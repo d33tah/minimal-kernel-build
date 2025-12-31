@@ -1,4 +1,4 @@
-#include <linux/unistd.h>
+/* unistd.h removed - unused */
 #include <linux/kernel.h>
 #include <linux/fs.h>
 #include <linux/initrd.h>

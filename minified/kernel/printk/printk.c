@@ -238,10 +238,7 @@ static void __up_console_sem(unsigned long ip)
 }
 #define up_console_sem() __up_console_sem(_RET_IP_)
 
-static bool panic_in_progress(void)
-{
-	return unlikely(atomic_read(&panic_cpu) != PANIC_CPU_INVALID);
-}
+/* panic_in_progress inlined into console_trylock */
 
 static int console_locked, console_suspended;
 
@@ -343,7 +340,8 @@ int is_console_locked(void)
 
 static bool abandon_console_lock_in_panic(void)
 {
-	if (!panic_in_progress())
+	/* Inlined panic_in_progress */
+	if (likely(atomic_read(&panic_cpu) == PANIC_CPU_INVALID))
 		return false;
 
 	return atomic_read(&panic_cpu) != raw_smp_processor_id();

@@ -406,40 +406,13 @@ void __put_task_struct(struct task_struct *tsk)
 	free_task(tsk);
 }
 
-static void set_max_threads(unsigned int max_threads_suggested)
-{
-	u64 threads;
-	unsigned long nr_pages = totalram_pages();
-
-	if (fls64(nr_pages) + fls64(PAGE_SIZE) > 64)
-		threads = MAX_THREADS;
-	else
-		threads = div64_u64((u64)nr_pages * (u64)PAGE_SIZE,
-				    (u64)THREAD_SIZE * 8UL);
-
-	if (threads > max_threads_suggested)
-		threads = max_threads_suggested;
-
-	max_threads = clamp_t(u64, threads, MIN_THREADS, MAX_THREADS);
-}
-
 int arch_task_struct_size __read_mostly;
-
-#ifndef CONFIG_ARCH_TASK_STRUCT_ALLOCATOR
-static void task_struct_whitelist(unsigned long *offset, unsigned long *size)
-{
-	arch_thread_struct_whitelist(offset, size);
-
-	if (unlikely(*size == 0))
-		*offset = 0;
-	else
-		*offset += offsetof(struct task_struct, thread);
-}
-#endif
 
 void __init fork_init(void)
 {
 	int i;
+	u64 threads;
+	unsigned long nr_pages = totalram_pages();
 #ifndef CONFIG_ARCH_TASK_STRUCT_ALLOCATOR
 #ifndef ARCH_MIN_TASKALIGN
 #define ARCH_MIN_TASKALIGN 0
@@ -447,15 +420,26 @@ void __init fork_init(void)
 	int align = max_t(int, L1_CACHE_BYTES, ARCH_MIN_TASKALIGN);
 	unsigned long useroffset, usersize;
 
-	task_struct_whitelist(&useroffset, &usersize);
+	/* Inlined task_struct_whitelist */
+	arch_thread_struct_whitelist(&useroffset, &usersize);
+	if (unlikely(usersize == 0))
+		useroffset = 0;
+	else
+		useroffset += offsetof(struct task_struct, thread);
 	task_struct_cachep = kmem_cache_create_usercopy(
 		"task_struct", arch_task_struct_size, align,
 		SLAB_PANIC | SLAB_ACCOUNT, useroffset, usersize, NULL);
 #endif
 
-	/* arch_task_cache_init removed - empty weak stub */
-
-	set_max_threads(MAX_THREADS);
+	/* Inlined set_max_threads */
+	if (fls64(nr_pages) + fls64(PAGE_SIZE) > 64)
+		threads = MAX_THREADS;
+	else
+		threads = div64_u64((u64)nr_pages * (u64)PAGE_SIZE,
+				    (u64)THREAD_SIZE * 8UL);
+	if (threads > MAX_THREADS)
+		threads = MAX_THREADS;
+	max_threads = clamp_t(u64, threads, MIN_THREADS, MAX_THREADS);
 
 	init_task.signal->rlim[RLIMIT_NPROC].rlim_cur = max_threads / 2;
 	init_task.signal->rlim[RLIMIT_NPROC].rlim_max = max_threads / 2;

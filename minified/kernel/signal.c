@@ -25,9 +25,15 @@ static void __user *sig_handler(struct task_struct *t, int sig)
 	return t->sighand->action[sig - 1].sa.sa_handler;
 }
 
-static bool sig_task_ignored(struct task_struct *t, int sig, bool force)
+static bool sig_ignored(struct task_struct *t, int sig, bool force)
 {
 	void __user *handler;
+
+	if (sigismember(&t->blocked, sig) || sigismember(&t->real_blocked, sig))
+		return false;
+
+	if (t->ptrace && sig != SIGKILL)
+		return false;
 
 	handler = sig_handler(t, sig);
 
@@ -44,17 +50,6 @@ static bool sig_task_ignored(struct task_struct *t, int sig, bool force)
 
 	return handler == SIG_IGN ||
 	       (handler == SIG_DFL && sig_kernel_ignore(sig));
-}
-
-static bool sig_ignored(struct task_struct *t, int sig, bool force)
-{
-	if (sigismember(&t->blocked, sig) || sigismember(&t->real_blocked, sig))
-		return false;
-
-	if (t->ptrace && sig != SIGKILL)
-		return false;
-
-	return sig_task_ignored(t, sig, force);
 }
 
 static inline bool has_pending_signals(sigset_t *signal, sigset_t *blocked)
@@ -226,11 +221,6 @@ static bool prepare_signal(int sig, struct task_struct *p, bool force)
 
 /* complete_signal was empty stub - removed */
 
-static inline bool legacy_queue(struct sigpending *signals, int sig)
-{
-	return (sig < SIGRTMIN) && sigismember(&signals->signal, sig);
-}
-
 static int __send_signal_locked(int sig, struct kernel_siginfo *info,
 				struct task_struct *t, enum pid_type type,
 				bool force)
@@ -245,7 +235,7 @@ static int __send_signal_locked(int sig, struct kernel_siginfo *info,
 	pending = (type != PIDTYPE_PID) ? &t->signal->shared_pending :
 					  &t->pending;
 
-	if (legacy_queue(pending, sig))
+	if ((sig < SIGRTMIN) && sigismember(&pending->signal, sig))
 		return 0;
 
 	/* For SIGKILL or kernel threads, just set the signal */

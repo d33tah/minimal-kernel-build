@@ -855,17 +855,7 @@ int default_wake_function(wait_queue_entry_t *curr, unsigned mode,
 	return try_to_wake_up(curr->private, mode, wake_flags);
 }
 
-static void __setscheduler_prio(struct task_struct *p, int prio)
-{
-	if (dl_prio(prio))
-		p->sched_class = &dl_sched_class;
-	else if (rt_prio(prio))
-		p->sched_class = &rt_sched_class;
-	else
-		p->sched_class = &fair_sched_class;
-
-	p->prio = prio;
-}
+/* __setscheduler_prio inlined into __sched_setscheduler */
 
 #ifdef __ARCH_WANT_SYS_NICE
 
@@ -953,7 +943,14 @@ static int __sched_setscheduler(struct task_struct *p,
 
 	if (!(attr->sched_flags & SCHED_FLAG_KEEP_PARAMS)) {
 		__setscheduler_params(p, attr);
-		__setscheduler_prio(p, newprio);
+		/* Inlined __setscheduler_prio */
+		if (dl_prio(newprio))
+			p->sched_class = &dl_sched_class;
+		else if (rt_prio(newprio))
+			p->sched_class = &rt_sched_class;
+		else
+			p->sched_class = &fair_sched_class;
+		p->prio = newprio;
 	}
 	/* __setscheduler_uclamp removed - empty stub */
 	if (queued) {

@@ -438,26 +438,19 @@ static void flush_cpu_slab(struct work_struct *w)
 	/* unfreeze_partials removed - was empty stub */
 }
 
-static bool has_cpu_slab(int cpu, struct kmem_cache *s)
-{
-	struct kmem_cache_cpu *c = per_cpu_ptr(s->cpu_slab, cpu);
-
-	return c->slab || slub_percpu_partial(c);
-}
-
 static DEFINE_MUTEX(flush_lock);
 static DEFINE_PER_CPU(struct slub_flush_work, slub_flush);
 
 static void flush_all_cpus_locked(struct kmem_cache *s)
 {
 	struct slub_flush_work *sfw;
-	unsigned int cpu;
+	struct kmem_cache_cpu *c = per_cpu_ptr(s->cpu_slab, 0);
 
 	mutex_lock(&flush_lock);
 
 	/* for_each_online_cpu simplified - single CPU */
 	sfw = &per_cpu(slub_flush, 0);
-	if (has_cpu_slab(0, s)) {
+	if (c->slab || slub_percpu_partial(c)) {
 		INIT_WORK(&sfw->work, flush_cpu_slab);
 		sfw->skip = false;
 		sfw->s = s;

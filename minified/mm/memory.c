@@ -371,25 +371,7 @@ next:
 	return addr;
 }
 
-static inline unsigned long zap_pud_range(struct mmu_gather *tlb,
-					  struct vm_area_struct *vma,
-					  p4d_t *p4d, unsigned long addr,
-					  unsigned long end,
-					  struct zap_details *details)
-{
-	pud_t *pud;
-	unsigned long next;
-
-	/* pud_none_or_clear_bad always returns 0 - folded paging */
-	pud = pud_offset(p4d, addr);
-	do {
-		next = pud_addr_end(addr, end);
-		next = zap_pmd_range(tlb, vma, pud, addr, next, details);
-		cond_resched();
-	} while (pud++, addr = next, addr != end);
-
-	return addr;
-}
+/* zap_pud_range inlined into zap_p4d_range */
 
 static inline unsigned long zap_p4d_range(struct mmu_gather *tlb,
 					  struct vm_area_struct *vma,
@@ -404,7 +386,21 @@ static inline unsigned long zap_p4d_range(struct mmu_gather *tlb,
 	p4d = p4d_offset(pgd, addr);
 	do {
 		next = p4d_addr_end(addr, end);
-		next = zap_pud_range(tlb, vma, p4d, addr, next, details);
+		/* Inlined zap_pud_range */
+		{
+			pud_t *pud;
+			unsigned long pud_next;
+			unsigned long pud_addr = addr;
+			pud = pud_offset(p4d, pud_addr);
+			do {
+				pud_next = pud_addr_end(pud_addr, next);
+				pud_next = zap_pmd_range(tlb, vma, pud,
+							 pud_addr, pud_next,
+							 details);
+				cond_resched();
+			} while (pud++, pud_addr = pud_next, pud_addr != next);
+			next = pud_addr;
+		}
 	} while (p4d++, addr = next, addr != end);
 
 	return addr;

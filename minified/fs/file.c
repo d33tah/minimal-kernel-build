@@ -170,25 +170,6 @@ repeat:
 	return expanded;
 }
 
-static inline void __set_close_on_exec(unsigned int fd, struct fdtable *fdt)
-{
-	__set_bit(fd, fdt->close_on_exec);
-}
-
-static inline void __clear_close_on_exec(unsigned int fd, struct fdtable *fdt)
-{
-	if (test_bit(fd, fdt->close_on_exec))
-		__clear_bit(fd, fdt->close_on_exec);
-}
-
-static inline void __set_open_fd(unsigned int fd, struct fdtable *fdt)
-{
-	__set_bit(fd, fdt->open_fds);
-	fd /= BITS_PER_LONG;
-	if (!~fdt->open_fds[fd])
-		__set_bit(fd, fdt->full_fds_bits);
-}
-
 static inline void __clear_open_fd(unsigned int fd, struct fdtable *fdt)
 {
 	__clear_bit(fd, fdt->open_fds);
@@ -401,11 +382,16 @@ repeat:
 	if (start <= files->next_fd)
 		files->next_fd = fd + 1;
 
-	__set_open_fd(fd, fdt);
+	__set_bit(fd, fdt->open_fds);
+	{
+		unsigned int fd_idx = fd / BITS_PER_LONG;
+		if (!~fdt->open_fds[fd_idx])
+			__set_bit(fd_idx, fdt->full_fds_bits);
+	}
 	if (flags & O_CLOEXEC)
-		__set_close_on_exec(fd, fdt);
-	else
-		__clear_close_on_exec(fd, fdt);
+		__set_bit(fd, fdt->close_on_exec);
+	else if (test_bit(fd, fdt->close_on_exec))
+		__clear_bit(fd, fdt->close_on_exec);
 	error = fd;
 	/* Debug #if 1 check removed - slot should never be non-NULL here */
 

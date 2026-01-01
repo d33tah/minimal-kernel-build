@@ -1397,28 +1397,6 @@ static int may_open(struct user_namespace *mnt_userns, const struct path *path,
 	return 0;
 }
 
-static int handle_truncate(struct user_namespace *mnt_userns, struct file *filp)
-{
-	const struct path *path = &filp->f_path;
-	struct inode *inode = path->dentry->d_inode;
-	int error = get_write_access(inode);
-	if (error)
-		return error;
-
-	/* security_path_truncate always returns 0 - simplified */
-	error = do_truncate(mnt_userns, path->dentry, 0,
-			    ATTR_MTIME | ATTR_CTIME | ATTR_OPEN, filp);
-	put_write_access(inode);
-	return error;
-}
-
-static inline int open_to_namei_flags(int flag)
-{
-	if ((flag & O_ACCMODE) == 3)
-		flag--;
-	return flag;
-}
-
 static struct dentry *atomic_open(struct nameidata *nd, struct dentry *dentry,
 				  struct file *file, int open_flag,
 				  umode_t mode)
@@ -1429,11 +1407,12 @@ static struct dentry *atomic_open(struct nameidata *nd, struct dentry *dentry,
 
 	if (nd->flags & LOOKUP_DIRECTORY)
 		open_flag |= O_DIRECTORY;
+	if ((open_flag & O_ACCMODE) == 3)
+		open_flag--;
 
 	file->f_path.dentry = DENTRY_NOT_SET;
 	file->f_path.mnt = nd->path.mnt;
-	error = dir->i_op->atomic_open(dir, dentry, file,
-				       open_to_namei_flags(open_flag), mode);
+	error = dir->i_op->atomic_open(dir, dentry, file, open_flag, mode);
 	d_lookup_done(dentry);
 	if (!error) {
 		if (file->f_mode & FMODE_OPENED) {
@@ -1605,7 +1584,7 @@ static int do_open(struct nameidata *nd, struct file *file,
 {
 	struct user_namespace *mnt_userns;
 	int open_flag = op->open_flag;
-	bool do_truncate;
+	bool need_truncate;
 	int acc_mode;
 	int error;
 
@@ -1625,7 +1604,7 @@ static int do_open(struct nameidata *nd, struct file *file,
 	if ((nd->flags & LOOKUP_DIRECTORY) && !d_can_lookup(nd->path.dentry))
 		return -ENOTDIR;
 
-	do_truncate = false;
+	need_truncate = false;
 	acc_mode = op->acc_mode;
 	if (file->f_mode & FMODE_CREATED) {
 		open_flag &= ~O_TRUNC;
@@ -1634,18 +1613,26 @@ static int do_open(struct nameidata *nd, struct file *file,
 		error = mnt_want_write(nd->path.mnt);
 		if (error)
 			return error;
-		do_truncate = true;
+		need_truncate = true;
 	}
 	error = may_open(mnt_userns, &nd->path, acc_mode, open_flag);
 	if (!error && !(file->f_mode & FMODE_OPENED))
 		error = vfs_open(&nd->path, file);
-	if (!error && do_truncate)
-		error = handle_truncate(mnt_userns, file);
+	if (!error && need_truncate) {
+		struct inode *inode = file->f_path.dentry->d_inode;
+		error = get_write_access(inode);
+		if (!error) {
+			error = do_truncate(mnt_userns, file->f_path.dentry, 0,
+					    ATTR_MTIME | ATTR_CTIME | ATTR_OPEN,
+					    file);
+			put_write_access(inode);
+		}
+	}
 	if (unlikely(error > 0)) {
 		WARN_ON(1);
 		error = -EINVAL;
 	}
-	if (do_truncate)
+	if (need_truncate)
 		mnt_drop_write(nd->path.mnt);
 	return error;
 }

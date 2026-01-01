@@ -81,19 +81,7 @@ static inline void softirq_handle_end(void)
 
 /* ksoftirqd_run_begin/end removed - only caller was run_ksoftirqd */
 
-/* should_wake_ksoftirqd removed - always returned true */
-
-static inline void invoke_softirq(void)
-{
-	if (ksoftirqd_running(local_softirq_pending()))
-		return;
-
-	if (!force_irqthreads() || !__this_cpu_read(ksoftirqd)) {
-		do_softirq_own_stack();
-	} else {
-		wakeup_softirqd();
-	}
-}
+/* should_wake_ksoftirqd, invoke_softirq - inlined/removed */
 
 asmlinkage __visible void do_softirq(void)
 {
@@ -197,8 +185,17 @@ static inline void __irq_exit_rcu(void)
 	/* __ARCH_IRQ_EXIT_IRQS_DISABLED not defined for x86 */
 	local_irq_disable();
 	preempt_count_sub(HARDIRQ_OFFSET);
-	if (!in_interrupt() && local_softirq_pending())
-		invoke_softirq();
+	if (!in_interrupt() && local_softirq_pending()) {
+		/* inlined invoke_softirq */
+		if (!ksoftirqd_running(local_softirq_pending())) {
+			if (!force_irqthreads() ||
+			    !__this_cpu_read(ksoftirqd)) {
+				do_softirq_own_stack();
+			} else {
+				wakeup_softirqd();
+			}
+		}
+	}
 }
 
 void irq_exit_rcu(void)

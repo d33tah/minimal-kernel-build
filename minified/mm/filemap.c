@@ -129,40 +129,13 @@ void filemap_remove_folio(struct folio *folio)
 	filemap_free_folio(mapping, folio);
 }
 
-static void page_cache_delete_batch(struct address_space *mapping,
-				    struct folio_batch *fbatch)
+void delete_from_page_cache_batch(struct address_space *mapping,
+				  struct folio_batch *fbatch)
 {
 	XA_STATE(xas, &mapping->i_pages, fbatch->folios[0]->index);
 	long total_pages = 0;
 	int i = 0;
 	struct folio *folio;
-
-	mapping_set_update(&xas, mapping);
-	xas_for_each(&xas, folio, ULONG_MAX) {
-		if (i >= folio_batch_count(fbatch))
-			break;
-
-		if (xa_is_value(folio))
-			continue;
-
-		if (folio != fbatch->folios[i])
-			continue;
-
-		WARN_ON_ONCE(!folio_test_locked(folio));
-
-		folio->mapping = NULL;
-
-		i++;
-		xas_store(&xas, NULL);
-		total_pages += folio_nr_pages(folio);
-	}
-	mapping->nrpages -= total_pages;
-}
-
-void delete_from_page_cache_batch(struct address_space *mapping,
-				  struct folio_batch *fbatch)
-{
-	int i;
 
 	if (!folio_batch_count(fbatch))
 		return;
@@ -170,11 +143,26 @@ void delete_from_page_cache_batch(struct address_space *mapping,
 	spin_lock(&mapping->host->i_lock);
 	xa_lock_irq(&mapping->i_pages);
 	for (i = 0; i < folio_batch_count(fbatch); i++) {
-		struct folio *folio = fbatch->folios[i];
-
+		folio = fbatch->folios[i];
 		filemap_unaccount_folio(mapping, folio);
 	}
-	page_cache_delete_batch(mapping, fbatch);
+	/* Inline page_cache_delete_batch */
+	i = 0;
+	mapping_set_update(&xas, mapping);
+	xas_for_each(&xas, folio, ULONG_MAX) {
+		if (i >= folio_batch_count(fbatch))
+			break;
+		if (xa_is_value(folio))
+			continue;
+		if (folio != fbatch->folios[i])
+			continue;
+		WARN_ON_ONCE(!folio_test_locked(folio));
+		folio->mapping = NULL;
+		i++;
+		xas_store(&xas, NULL);
+		total_pages += folio_nr_pages(folio);
+	}
+	mapping->nrpages -= total_pages;
 	xa_unlock_irq(&mapping->i_pages);
 	if (mapping_shrinkable(mapping))
 		inode_add_lru(mapping->host);

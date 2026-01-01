@@ -303,18 +303,7 @@ static inline int __normal_prio(int policy, int rt_prio, int nice)
 	return prio;
 }
 
-static inline void check_class_changed(struct rq *rq, struct task_struct *p,
-				       const struct sched_class *prev_class,
-				       int oldprio)
-{
-	if (prev_class != p->sched_class) {
-		if (prev_class->switched_from)
-			prev_class->switched_from(rq, p);
-
-		p->sched_class->switched_to(rq, p);
-	} else if (oldprio != p->prio || dl_task(p))
-		p->sched_class->prio_changed(rq, p, oldprio);
-}
+/* check_class_changed inlined into __sched_setscheduler */
 
 void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 {
@@ -975,7 +964,13 @@ static int __sched_setscheduler(struct task_struct *p,
 	if (running)
 		set_next_task(rq, p);
 
-	check_class_changed(rq, p, prev_class, oldprio);
+	/* Inlined check_class_changed */
+	if (prev_class != p->sched_class) {
+		if (prev_class->switched_from)
+			prev_class->switched_from(rq, p);
+		p->sched_class->switched_to(rq, p);
+	} else if (oldprio != p->prio || dl_task(p))
+		p->sched_class->prio_changed(rq, p, oldprio);
 
 	/* splice_balance_callbacks/balance_callbacks removed - empty stubs */
 	task_rq_unlock(rq, p, &rf);

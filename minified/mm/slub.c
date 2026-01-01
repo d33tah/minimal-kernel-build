@@ -82,17 +82,6 @@ static inline void *get_freepointer(struct kmem_cache *s, void *object)
 	return freelist_dereference(s, object + s->offset);
 }
 
-static void prefetch_freepointer(const struct kmem_cache *s, void *object)
-{
-	prefetchw(object + s->offset);
-}
-
-/* debug_pagealloc_enabled_static() always returns false */
-static inline void *get_freepointer_safe(struct kmem_cache *s, void *object)
-{
-	return get_freepointer(s, object);
-}
-
 static inline void set_freepointer(struct kmem_cache *s, void *object, void *fp)
 {
 	unsigned long freeptr_addr = (unsigned long)object + s->offset;
@@ -397,12 +386,6 @@ static inline unsigned int init_tid(int cpu)
 	return cpu;
 }
 
-static inline void note_cmpxchg_failure(const char *n,
-					const struct kmem_cache *s,
-					unsigned long tid)
-{
-}
-
 static void init_kmem_cache_cpus(struct kmem_cache *s)
 {
 	/* for_each_possible_cpu simplified - single CPU */
@@ -599,15 +582,13 @@ redo:
 	if (unlikely(!object || !slab)) {
 		object = __slab_alloc(s, gfpflags, node, addr, c);
 	} else {
-		void *next_object = get_freepointer_safe(s, object);
+		void *next_object = get_freepointer(s, object);
 
 		if (unlikely(!this_cpu_cmpxchg_double(
 			    s->cpu_slab->freelist, s->cpu_slab->tid, object,
-			    tid, next_object, next_tid(tid)))) {
-			note_cmpxchg_failure("slab_alloc", s, tid);
+			    tid, next_object, next_tid(tid))))
 			goto redo;
-		}
-		prefetch_freepointer(s, next_object);
+		prefetchw(next_object + s->offset);
 	}
 
 	maybe_wipe_obj_freeptr(s, object);

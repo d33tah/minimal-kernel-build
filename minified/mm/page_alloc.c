@@ -447,30 +447,7 @@ static void steal_suitable_fallback(struct zone *zone, struct page *page,
 	move_to_free_list(page, zone, current_order, start_type);
 }
 
-static int find_suitable_fallback(struct free_area *area, unsigned int order,
-				  int migratetype, bool only_stealable,
-				  bool *can_steal)
-{
-	int i;
-	int fallback_mt;
-
-	if (area->nr_free == 0)
-		return -1;
-
-	*can_steal = true; /* can_steal_fallback always true */
-	for (i = 0;; i++) {
-		fallback_mt = fallbacks[migratetype][i];
-		if (fallback_mt == MIGRATE_TYPES)
-			break;
-
-		if (free_area_empty(area, fallback_mt))
-			continue;
-
-		return fallback_mt;
-	}
-
-	return -1;
-}
+/* find_suitable_fallback inlined into __rmqueue_fallback */
 
 static __always_inline bool __rmqueue_fallback(struct zone *zone, int order,
 					       int start_migratetype,
@@ -486,9 +463,21 @@ static __always_inline bool __rmqueue_fallback(struct zone *zone, int order,
 	for (current_order = MAX_ORDER - 1; current_order >= order;
 	     --current_order) {
 		area = &(zone->free_area[current_order]);
-		fallback_mt = find_suitable_fallback(area, current_order,
-						     start_migratetype, false,
-						     &can_steal);
+		/* Inlined find_suitable_fallback */
+		fallback_mt = -1;
+		if (area->nr_free != 0) {
+			int i;
+			can_steal = true;
+			for (i = 0;; i++) {
+				int mt = fallbacks[start_migratetype][i];
+				if (mt == MIGRATE_TYPES)
+					break;
+				if (!free_area_empty(area, mt)) {
+					fallback_mt = mt;
+					break;
+				}
+			}
+		}
 		if (fallback_mt == -1)
 			continue;
 

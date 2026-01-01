@@ -214,11 +214,6 @@ static int check_kill_permission(int sig, struct kernel_siginfo *info,
 	return 0;
 }
 
-static bool prepare_signal(int sig, struct task_struct *p, bool force)
-{
-	return !sig_ignored(p, sig, force);
-}
-
 /* complete_signal was empty stub - removed */
 
 static int __send_signal_locked(int sig, struct kernel_siginfo *info,
@@ -229,7 +224,7 @@ static int __send_signal_locked(int sig, struct kernel_siginfo *info,
 	struct sigpending *pending;
 	struct sigqueue *q;
 
-	if (!prepare_signal(sig, t, force))
+	if (sig_ignored(t, sig, force))
 		return 0;
 
 	pending = (type != PIDTYPE_PID) ? &t->signal->shared_pending :
@@ -513,26 +508,21 @@ bool get_signal(struct ksignal *ksig)
 	return false;
 }
 
-static void signal_delivered(struct ksignal *ksig, int stepping)
-{
-	sigset_t blocked;
-
-	clear_restore_sigmask();
-
-	sigorsets(&blocked, &current->blocked, &ksig->ka.sa.sa_mask);
-	if (!(ksig->ka.sa.sa_flags & SA_NODEFER))
-		sigaddset(&blocked, ksig->sig);
-	set_current_blocked(&blocked);
-	if (current->sas_ss_flags & SS_AUTODISARM)
-		sas_ss_reset(current);
-	if (stepping)
-		ptrace_notify(SIGTRAP, 0);
-}
-
 void signal_setup_done(int failed, struct ksignal *ksig, int stepping)
 {
-	if (!failed)
-		signal_delivered(ksig, stepping);
+	if (!failed) {
+		/* Inlined signal_delivered */
+		sigset_t blocked;
+		clear_restore_sigmask();
+		sigorsets(&blocked, &current->blocked, &ksig->ka.sa.sa_mask);
+		if (!(ksig->ka.sa.sa_flags & SA_NODEFER))
+			sigaddset(&blocked, ksig->sig);
+		set_current_blocked(&blocked);
+		if (current->sas_ss_flags & SS_AUTODISARM)
+			sas_ss_reset(current);
+		if (stepping)
+			ptrace_notify(SIGTRAP, 0);
+	}
 }
 
 static void retarget_shared_pending(struct task_struct *tsk, sigset_t *which)

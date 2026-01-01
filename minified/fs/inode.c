@@ -133,21 +133,6 @@ void __destroy_inode(struct inode *inode)
 	this_cpu_dec(nr_inodes);
 }
 
-static void destroy_inode(struct inode *inode)
-{
-	const struct super_operations *ops = inode->i_sb->s_op;
-
-	BUG_ON(!list_empty(&inode->i_lru));
-	__destroy_inode(inode);
-	if (ops->destroy_inode) {
-		ops->destroy_inode(inode);
-		if (!ops->free_inode)
-			return;
-	}
-	inode->free_inode = ops->free_inode;
-	call_rcu(&inode->i_rcu, i_callback);
-}
-
 void drop_nlink(struct inode *inode)
 {
 	WARN_ON(inode->i_nlink == 0);
@@ -293,7 +278,19 @@ static void evict(struct inode *inode)
 	BUG_ON(inode->i_state != (I_FREEING | I_CLEAR));
 	spin_unlock(&inode->i_lock);
 
-	destroy_inode(inode);
+	/* Inlined destroy_inode */
+	BUG_ON(!list_empty(&inode->i_lru));
+	__destroy_inode(inode);
+	if (op->destroy_inode) {
+		op->destroy_inode(inode);
+		if (op->free_inode) {
+			inode->free_inode = op->free_inode;
+			call_rcu(&inode->i_rcu, i_callback);
+		}
+	} else {
+		inode->free_inode = op->free_inode;
+		call_rcu(&inode->i_rcu, i_callback);
+	}
 }
 
 static void dispose_list(struct list_head *head)

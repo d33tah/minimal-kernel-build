@@ -191,32 +191,6 @@ static void kill_orphaned_pgrp(struct task_struct *tsk,
 
 /* coredump_task_exit inlined into do_exit */
 
-static void exit_mm(void)
-{
-	struct mm_struct *mm = current->mm;
-
-	exit_mm_release(current, mm);
-	if (!mm)
-		return;
-	/* sync_mm_rss() - empty stub */
-	mmap_read_lock(mm);
-	mmgrab(mm);
-	BUG_ON(mm != current->active_mm);
-
-	task_lock(current);
-
-	smp_mb__after_spinlock();
-	local_irq_disable();
-	current->mm = NULL;
-	/* membarrier_update_current_mm - empty stub */
-	enter_lazy_tlb(mm, current);
-	local_irq_enable();
-	task_unlock(current);
-	mmap_read_unlock(mm);
-	/* mm_update_next_owner, exit_oom_victim - empty stubs */
-	mmput(mm);
-}
-
 static struct task_struct *find_alive_thread(struct task_struct *p)
 {
 	struct task_struct *t;
@@ -409,7 +383,25 @@ void __noreturn do_exit(long code)
 	tsk->exit_code = code;
 	/* taskstats_exit removed - empty stub */
 
-	exit_mm();
+	/* Inlined exit_mm */
+	{
+		struct mm_struct *mm = current->mm;
+		exit_mm_release(current, mm);
+		if (mm) {
+			mmap_read_lock(mm);
+			mmgrab(mm);
+			BUG_ON(mm != current->active_mm);
+			task_lock(current);
+			smp_mb__after_spinlock();
+			local_irq_disable();
+			current->mm = NULL;
+			enter_lazy_tlb(mm, current);
+			local_irq_enable();
+			task_unlock(current);
+			mmap_read_unlock(mm);
+			mmput(mm);
+		}
+	}
 	/* acct_process, exit_sem, exit_shm removed - empty stubs */
 	exit_files(tsk);
 	exit_fs(tsk);

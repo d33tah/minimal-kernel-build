@@ -576,26 +576,6 @@ static vm_fault_t do_page_mkwrite(struct vm_fault *vmf)
 	return ret;
 }
 
-static vm_fault_t fault_dirty_shared_page(struct vm_fault *vmf)
-{
-	struct vm_area_struct *vma = vmf->vma;
-	struct address_space *mapping;
-	struct page *page = vmf->page;
-	bool dirtied;
-	bool page_mkwrite = vma->vm_ops && vma->vm_ops->page_mkwrite;
-
-	dirtied = set_page_dirty(page);
-
-	mapping = page_rmapping(page);
-	unlock_page(page);
-
-	if (!page_mkwrite)
-		file_update_time(vma->vm_file);
-
-	/* balance_dirty_pages_ratelimited - empty stub */
-	return 0;
-}
-
 /* wp_page_reuse inlined into do_wp_page */
 
 static vm_fault_t wp_page_copy(struct vm_fault *vmf)
@@ -938,7 +918,15 @@ static vm_fault_t do_shared_fault(struct vm_fault *vmf)
 		return ret;
 	}
 
-	ret |= fault_dirty_shared_page(vmf);
+	/* Inlined fault_dirty_shared_page */
+	{
+		bool page_mkwrite = vma->vm_ops && vma->vm_ops->page_mkwrite;
+		set_page_dirty(vmf->page);
+		page_rmapping(vmf->page);
+		unlock_page(vmf->page);
+		if (!page_mkwrite)
+			file_update_time(vma->vm_file);
+	}
 	return ret;
 }
 

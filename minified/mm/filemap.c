@@ -199,54 +199,35 @@ int filemap_fdatawrite_wbc(struct address_space *mapping,
 	return ret;
 }
 
-static int __filemap_fdatawrite_range(struct address_space *mapping,
-				      loff_t start, loff_t end, int sync_mode)
-{
-	struct writeback_control wbc = {
-		.sync_mode = sync_mode,
-		.nr_to_write = LONG_MAX,
-		.range_start = start,
-		.range_end = end,
-	};
-
-	return filemap_fdatawrite_wbc(mapping, &wbc);
-}
-
-static void __filemap_fdatawait_range(struct address_space *mapping,
-				      loff_t start_byte, loff_t end_byte)
+int filemap_fdatawait_range(struct address_space *mapping, loff_t start_byte,
+			    loff_t end_byte)
 {
 	pgoff_t index = start_byte >> PAGE_SHIFT;
 	pgoff_t end = end_byte >> PAGE_SHIFT;
 	struct pagevec pvec;
 	int nr_pages;
 
-	if (end_byte < start_byte)
-		return;
+	if (end_byte >= start_byte) {
+		pagevec_init(&pvec);
+		while (index <= end) {
+			unsigned i;
 
-	pagevec_init(&pvec);
-	while (index <= end) {
-		unsigned i;
+			nr_pages = pagevec_lookup_range_tag(
+				&pvec, mapping, &index, end,
+				PAGECACHE_TAG_WRITEBACK);
+			if (!nr_pages)
+				break;
 
-		nr_pages = pagevec_lookup_range_tag(&pvec, mapping, &index, end,
-						    PAGECACHE_TAG_WRITEBACK);
-		if (!nr_pages)
-			break;
+			for (i = 0; i < nr_pages; i++) {
+				struct page *page = pvec.pages[i];
 
-		for (i = 0; i < nr_pages; i++) {
-			struct page *page = pvec.pages[i];
-
-			wait_on_page_writeback(page);
-			ClearPageError(page);
+				wait_on_page_writeback(page);
+				ClearPageError(page);
+			}
+			pagevec_release(&pvec);
+			cond_resched();
 		}
-		pagevec_release(&pvec);
-		cond_resched();
 	}
-}
-
-int filemap_fdatawait_range(struct address_space *mapping, loff_t start_byte,
-			    loff_t end_byte)
-{
-	__filemap_fdatawait_range(mapping, start_byte, end_byte);
 	return filemap_check_errors(mapping);
 }
 
@@ -256,8 +237,14 @@ int filemap_write_and_wait_range(struct address_space *mapping, loff_t lstart,
 	int err = 0;
 
 	if (mapping->nrpages) {
-		err = __filemap_fdatawrite_range(mapping, lstart, lend,
-						 WB_SYNC_ALL);
+		struct writeback_control wbc = {
+			.sync_mode = WB_SYNC_ALL,
+			.nr_to_write = LONG_MAX,
+			.range_start = lstart,
+			.range_end = lend,
+		};
+
+		err = filemap_fdatawrite_wbc(mapping, &wbc);
 
 		if (err != -EIO) {
 			int err2 =

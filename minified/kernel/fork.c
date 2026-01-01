@@ -673,31 +673,7 @@ fail_nomem:
 	return NULL;
 }
 
-/* copy_mm, copy_fs and copy_files inlined into copy_process */
-
-static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk)
-{
-	struct sighand_struct *sig;
-
-	if (clone_flags & CLONE_SIGHAND) {
-		refcount_inc(&current->sighand->count);
-		return 0;
-	}
-	sig = kmem_cache_alloc(sighand_cachep, GFP_KERNEL);
-	RCU_INIT_POINTER(tsk->sighand, sig);
-	if (!sig)
-		return -ENOMEM;
-
-	refcount_set(&sig->count, 1);
-	spin_lock_irq(&current->sighand->siglock);
-	memcpy(sig->action, current->sighand->action, sizeof(sig->action));
-	spin_unlock_irq(&current->sighand->siglock);
-
-	if (clone_flags & CLONE_CLEAR_SIGHAND)
-		flush_signal_handlers(tsk, 0);
-
-	return 0;
-}
+/* copy_mm, copy_fs, copy_files and copy_sighand inlined into copy_process */
 
 void __cleanup_sighand(struct sighand_struct *sighand)
 {
@@ -951,9 +927,25 @@ copy_process(struct pid *pid, int trace, int node,
 			}
 		}
 	}
-	retval = copy_sighand(clone_flags, p);
-	if (retval)
-		goto bad_fork_cleanup_fs;
+	/* Inlined copy_sighand */
+	if (clone_flags & CLONE_SIGHAND) {
+		refcount_inc(&current->sighand->count);
+	} else {
+		struct sighand_struct *sig;
+		sig = kmem_cache_alloc(sighand_cachep, GFP_KERNEL);
+		RCU_INIT_POINTER(p->sighand, sig);
+		if (!sig) {
+			retval = -ENOMEM;
+			goto bad_fork_cleanup_fs;
+		}
+		refcount_set(&sig->count, 1);
+		spin_lock_irq(&current->sighand->siglock);
+		memcpy(sig->action, current->sighand->action,
+		       sizeof(sig->action));
+		spin_unlock_irq(&current->sighand->siglock);
+		if (clone_flags & CLONE_CLEAR_SIGHAND)
+			flush_signal_handlers(p, 0);
+	}
 	retval = copy_signal(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_sighand;

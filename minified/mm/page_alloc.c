@@ -734,23 +734,18 @@ void warn_alloc(gfp_t gfp_mask, nodemask_t *nodemask, const char *fmt, ...)
 	/* Stub: allocation warning not needed for minimal kernel */
 }
 
-/* tsk_is_oom_victim always false - oom_mm never set */
-static inline int __gfp_pfmemalloc_flags(gfp_t gfp_mask)
-{
-	if (unlikely(gfp_mask & __GFP_NOMEMALLOC))
-		return 0;
-	if (gfp_mask & __GFP_MEMALLOC)
-		return ALLOC_NO_WATERMARKS;
-	if (in_serving_softirq() && (current->flags & PF_MEMALLOC))
-		return ALLOC_NO_WATERMARKS;
-	if (!in_interrupt() && (current->flags & PF_MEMALLOC))
-		return ALLOC_NO_WATERMARKS;
-	return 0;
-}
-
 bool gfp_pfmemalloc_allowed(gfp_t gfp_mask)
 {
-	return !!__gfp_pfmemalloc_flags(gfp_mask);
+	/* Inlined __gfp_pfmemalloc_flags */
+	if (unlikely(gfp_mask & __GFP_NOMEMALLOC))
+		return false;
+	if (gfp_mask & __GFP_MEMALLOC)
+		return true;
+	if (in_serving_softirq() && (current->flags & PF_MEMALLOC))
+		return true;
+	if (!in_interrupt() && (current->flags & PF_MEMALLOC))
+		return true;
+	return false;
 }
 
 static inline struct page *__alloc_pages_slowpath(gfp_t gfp_mask,

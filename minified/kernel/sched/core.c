@@ -561,22 +561,11 @@ static inline void finish_lock_switch(struct rq *rq)
 	} while (0)
 #endif
 
-static inline void kmap_local_sched_out(void)
-{
-	if (unlikely(current->kmap_ctrl.idx))
-		__kmap_local_sched_out();
-}
-
-static inline void kmap_local_sched_in(void)
-{
-	if (unlikely(current->kmap_ctrl.idx))
-		__kmap_local_sched_in();
-}
-
 static inline void prepare_task_switch(struct rq *rq, struct task_struct *prev,
 				       struct task_struct *next)
 {
-	kmap_local_sched_out();
+	if (unlikely(current->kmap_ctrl.idx))
+		__kmap_local_sched_out();
 	prepare_arch_switch(next);
 }
 
@@ -598,7 +587,8 @@ static struct rq *finish_task_switch(struct task_struct *prev)
 
 	finish_lock_switch(rq);
 
-	kmap_local_sched_in();
+	if (unlikely(current->kmap_ctrl.idx))
+		__kmap_local_sched_in();
 
 	if (mm)
 		mmdrop_sched(mm);

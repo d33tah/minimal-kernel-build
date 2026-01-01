@@ -27,26 +27,14 @@ struct cpu_dev {
 extern const struct cpu_dev *const __x86_cpu_dev_start[],
 			    *const __x86_cpu_dev_end[];
 
-enum tsx_ctrl_states {
-	TSX_CTRL_ENABLE,
-	TSX_CTRL_DISABLE,
-	TSX_CTRL_RTM_ALWAYS_ABORT,
-	TSX_CTRL_NOT_SUPPORTED,
-};
-
-extern __ro_after_init enum tsx_ctrl_states tsx_ctrl_state;
-
-/* tsx_init, tsx_ap_init, init_spectral_chicken removed - no callers */
+/* enum tsx_ctrl_states and tsx_ctrl_state removed - never used */
 
 extern void get_cpu_cap(struct cpuinfo_x86 *c);
 extern void get_cpu_address_sizes(struct cpuinfo_x86 *c);
 extern void cpu_detect_cache_sizes(struct cpuinfo_x86 *c);
 /* init_scattered_cpuid_features, init_intel_cacheinfo, init_amd_cacheinfo,
-   init_hygon_cacheinfo removed - no callers */
-
-extern void detect_num_cpu_cores(struct cpuinfo_x86 *c);
-/* detect_extended_topology_early, detect_extended_topology, detect_ht_early,
-   detect_ht, check_null_seg_clears_base, x86_read_arch_cap_msr,
-   aperfmperf_get_khz removed - no callers */
+   init_hygon_cacheinfo, detect_num_cpu_cores, detect_extended_topology_early,
+   detect_extended_topology, detect_ht_early, detect_ht, check_null_seg_clears_base,
+   x86_read_arch_cap_msr, aperfmperf_get_khz removed - no callers */
 
 #endif  

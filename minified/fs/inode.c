@@ -86,18 +86,13 @@ out:
 	return -ENOMEM;
 }
 
-static void free_inode_nonrcu(struct inode *inode)
-{
-	kmem_cache_free(inode_cachep, inode);
-}
-
 static void i_callback(struct rcu_head *head)
 {
 	struct inode *inode = container_of(head, struct inode, i_rcu);
 	if (inode->free_inode)
 		inode->free_inode(inode);
 	else
-		free_inode_nonrcu(inode);
+		kmem_cache_free(inode_cachep, inode);
 }
 
 static struct inode *alloc_inode(struct super_block *sb)

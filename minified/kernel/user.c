@@ -48,12 +48,9 @@ struct user_namespace init_user_ns = {
 	.flags = USERNS_INIT_FLAGS,
 };
 
-#define UIDHASH_BITS (CONFIG_BASE_SMALL ? 3 : 7)
-#define UIDHASH_SZ (1 << UIDHASH_BITS)
-/* __uidhashfn, uidhashentry macros removed - never used */
+/* UIDHASH_BITS, UIDHASH_SZ, __uidhashfn, uidhashentry, uidhash_table removed - never used */
 
 static struct kmem_cache *uid_cachep;
-static struct hlist_head uidhash_table[UIDHASH_SZ];
 
 static DEFINE_SPINLOCK(uidhash_lock);
 

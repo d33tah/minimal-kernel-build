@@ -188,19 +188,6 @@ void set_pageblock_migratetype(struct page *page, int migratetype)
 
 /* bad_range removed - only used in VM_BUG_ON which are no-ops */
 
-static inline unsigned int order_to_pindex(int migratetype, int order)
-{
-	int base = order;
-	return (MIGRATE_PCPTYPES * base) + migratetype;
-}
-
-static inline bool pcp_allowed_order(unsigned int order)
-{
-	if (order <= PAGE_ALLOC_COSTLY_ORDER)
-		return true;
-	return false;
-}
-
 /* free_the_page removed - unused stub */
 
 void free_compound_page(struct page *page)
@@ -225,12 +212,6 @@ void prep_compound_page(struct page *page, unsigned int order)
 	set_compound_order(page, order);
 	atomic_set(compound_mapcount_ptr(page), -1);
 	atomic_set(compound_pincount_ptr(page), 0);
-}
-
-static inline bool set_page_guard(struct zone *zone, struct page *page,
-				  unsigned int order, int migratetype)
-{
-	return false;
 }
 
 void init_mem_debugging_and_hardening(void)
@@ -626,7 +607,7 @@ static struct page *rmqueue_pcplist(struct zone *preferred_zone,
 	/* Stub: simplified PCP allocation for minimal kernel */
 	local_lock_irqsave(&pagesets.lock, flags);
 	pcp = this_cpu_ptr(zone->per_cpu_pageset);
-	list = &pcp->lists[order_to_pindex(migratetype, order)];
+	list = &pcp->lists[(MIGRATE_PCPTYPES * order) + migratetype];
 	page = __rmqueue_pcplist(zone, order, migratetype, alloc_flags, pcp,
 				 list);
 	local_unlock_irqrestore(&pagesets.lock, flags);
@@ -641,7 +622,7 @@ static inline struct page *rmqueue(struct zone *preferred_zone,
 	unsigned long flags;
 	struct page *page;
 
-	if (likely(pcp_allowed_order(order))) {
+	if (likely(order <= PAGE_ALLOC_COSTLY_ORDER)) {
 		/* CONFIG_CMA not enabled - always take this path */
 		page = rmqueue_pcplist(preferred_zone, zone, order, gfp_flags,
 				       migratetype, alloc_flags);

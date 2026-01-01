@@ -467,14 +467,6 @@ struct anon_vma *find_mergeable_anon_vma(struct vm_area_struct *vma)
 	return anon_vma;
 }
 
-static inline unsigned long round_hint_to_min(unsigned long hint)
-{
-	hint &= PAGE_MASK;
-	if (((void *)hint != NULL) && (hint < mmap_min_addr))
-		return PAGE_ALIGN(mmap_min_addr);
-	return hint;
-}
-
 /* mlock_future_check removed - always returned 0 */
 
 static inline u64 file_mmap_size_max(struct file *file, struct inode *inode)
@@ -528,8 +520,11 @@ unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len,
 	if (flags & MAP_FIXED_NOREPLACE)
 		flags |= MAP_FIXED;
 
-	if (!(flags & MAP_FIXED))
-		addr = round_hint_to_min(addr);
+	if (!(flags & MAP_FIXED)) {
+		addr &= PAGE_MASK;
+		if (((void *)addr != NULL) && (addr < mmap_min_addr))
+			addr = PAGE_ALIGN(mmap_min_addr);
+	}
 
 	len = PAGE_ALIGN(len);
 	if (!len)

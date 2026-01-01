@@ -186,14 +186,6 @@ static void d_lru_del(struct dentry *dentry)
 		!list_lru_del(&dentry->d_sb->s_dentry_lru, &dentry->d_lru));
 }
 
-static void d_shrink_add(struct dentry *dentry, struct list_head *list)
-{
-	D_FLAG_VERIFY(dentry, 0);
-	list_add(&dentry->d_lru, list);
-	dentry->d_flags |= DCACHE_SHRINK_LIST | DCACHE_LRU_LIST;
-	this_cpu_inc(nr_dentry_unused);
-}
-
 void __d_drop(struct dentry *dentry)
 {
 	if (!d_unhashed(dentry)) {
@@ -458,8 +450,12 @@ static void __dput_to_list(struct dentry *dentry, struct list_head *list)
 	} else {
 		if (dentry->d_flags & DCACHE_LRU_LIST)
 			d_lru_del(dentry);
-		if (!--dentry->d_lockref.count)
-			d_shrink_add(dentry, list);
+		if (!--dentry->d_lockref.count) {
+			D_FLAG_VERIFY(dentry, 0);
+			list_add(&dentry->d_lru, list);
+			dentry->d_flags |= DCACHE_SHRINK_LIST | DCACHE_LRU_LIST;
+			this_cpu_inc(nr_dentry_unused);
+		}
 	}
 }
 

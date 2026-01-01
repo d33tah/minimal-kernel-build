@@ -335,19 +335,6 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
 	return retval;
 }
 
-static inline int mm_alloc_pgd(struct mm_struct *mm)
-{
-	mm->pgd = pgd_alloc(mm);
-	if (unlikely(!mm->pgd))
-		return -ENOMEM;
-	return 0;
-}
-
-static inline void mm_free_pgd(struct mm_struct *mm)
-{
-	pgd_free(mm, mm->pgd);
-}
-
 #define allocate_mm() (kmem_cache_alloc(mm_cachep, GFP_KERNEL))
 #define free_mm(mm) (kmem_cache_free(mm_cachep, (mm)))
 
@@ -356,7 +343,7 @@ void __mmdrop(struct mm_struct *mm)
 	BUG_ON(mm == &init_mm);
 	WARN_ON_ONCE(mm == current->mm);
 	WARN_ON_ONCE(mm == current->active_mm);
-	mm_free_pgd(mm);
+	pgd_free(mm, mm->pgd);
 	destroy_context(mm);
 	mmu_notifier_subscriptions_destroy(mm);
 	put_user_ns(mm->user_ns);
@@ -554,7 +541,8 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 		mm->def_flags = 0;
 	}
 
-	if (mm_alloc_pgd(mm))
+	mm->pgd = pgd_alloc(mm);
+	if (unlikely(!mm->pgd))
 		goto fail_nopgd;
 
 	if (init_new_context(p, mm))
@@ -564,7 +552,7 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	return mm;
 
 fail_nocontext:
-	mm_free_pgd(mm);
+	pgd_free(mm, mm->pgd);
 fail_nopgd:
 	free_mm(mm);
 	return NULL;

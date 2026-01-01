@@ -703,24 +703,7 @@ static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
 	return 0;
 }
 
-static int copy_fs(unsigned long clone_flags, struct task_struct *tsk)
-{
-	struct fs_struct *fs = current->fs;
-	if (clone_flags & CLONE_FS) {
-		spin_lock(&fs->lock);
-		if (fs->in_exec) {
-			spin_unlock(&fs->lock);
-			return -EAGAIN;
-		}
-		fs->users++;
-		spin_unlock(&fs->lock);
-		return 0;
-	}
-	tsk->fs = copy_fs_struct(fs);
-	if (!tsk->fs)
-		return -ENOMEM;
-	return 0;
-}
+/* copy_fs inlined into copy_process */
 
 static int copy_files(unsigned long clone_flags, struct task_struct *tsk)
 {
@@ -990,9 +973,26 @@ copy_process(struct pid *pid, int trace, int node,
 	retval = copy_files(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_security;
-	retval = copy_fs(clone_flags, p);
-	if (retval)
-		goto bad_fork_cleanup_files;
+	/* Inlined copy_fs */
+	{
+		struct fs_struct *fs = current->fs;
+		if (clone_flags & CLONE_FS) {
+			spin_lock(&fs->lock);
+			if (fs->in_exec) {
+				spin_unlock(&fs->lock);
+				retval = -EAGAIN;
+				goto bad_fork_cleanup_files;
+			}
+			fs->users++;
+			spin_unlock(&fs->lock);
+		} else {
+			p->fs = copy_fs_struct(fs);
+			if (!p->fs) {
+				retval = -ENOMEM;
+				goto bad_fork_cleanup_files;
+			}
+		}
+	}
 	retval = copy_sighand(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_fs;

@@ -638,11 +638,7 @@ static void generic_identify(struct cpuinfo_x86 *c)
 
 	get_cpu_address_sizes(c);
 
-	if (c->cpuid_level >= 0x00000001) {
-		c->initial_apicid = (cpuid_ebx(1) >> 24) & 0xFF;
-		c->apicid = c->initial_apicid;
-		/* c->phys_proc_id removed - never read */
-	}
+	/* c->initial_apicid, c->apicid, c->phys_proc_id removed - never read */
 
 	/* get_model_name removed - x86_model_id is never read */
 

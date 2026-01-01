@@ -76,9 +76,7 @@ struct cpuinfo_x86 {
 
 	/* x86_cache_max_rmid, x86_cache_occ_scale, x86_cache_mbm_width_offset, x86_power removed - never read */
 	unsigned long		loops_per_jiffy;
-	/* ppin, x86_max_cores removed - never read */
-	u16			apicid;
-	u16			initial_apicid;
+	/* ppin, x86_max_cores, apicid, initial_apicid removed - never read */
 	u16			x86_clflush_size;
 	/* booted_cores, phys_proc_id, logical_proc_id, cpu_core_id, cpu_die_id, logical_die_id, cpu_index removed - never read */
 	bool			smt_active;

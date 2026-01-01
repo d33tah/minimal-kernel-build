@@ -374,12 +374,6 @@ static inline void free_signal_struct(struct signal_struct *sig)
 	kmem_cache_free(signal_cachep, sig);
 }
 
-static inline void put_signal_struct(struct signal_struct *sig)
-{
-	if (refcount_dec_and_test(&sig->sigcnt))
-		free_signal_struct(sig);
-}
-
 void __put_task_struct(struct task_struct *tsk)
 {
 	WARN_ON(!tsk->exit_state);
@@ -389,7 +383,8 @@ void __put_task_struct(struct task_struct *tsk)
 	/* io_uring_free, security_task_free - empty stubs */
 	exit_creds(tsk);
 	/* delayacct_tsk_free, sched_core_free removed - empty stubs */
-	put_signal_struct(tsk->signal);
+	if (refcount_dec_and_test(&tsk->signal->sigcnt))
+		free_signal_struct(tsk->signal);
 	free_task(tsk);
 }
 

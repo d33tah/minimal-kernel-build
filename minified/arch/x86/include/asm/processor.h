@@ -69,7 +69,7 @@ struct cpuinfo_x86 {
 		unsigned long	x86_capability_alignment;
 	};
 	char			x86_vendor_id[16];
-	char			x86_model_id[64];
+	/* x86_model_id[64] removed - only written, never read */
 
 	/* x86_cache_size removed - only written, never read */
 	int			x86_cache_alignment;

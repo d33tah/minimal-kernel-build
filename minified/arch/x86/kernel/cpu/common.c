@@ -85,12 +85,7 @@ void __init setup_cpu_local_masks(void)
 
 static void default_init(struct cpuinfo_x86 *c)
 {
-	if (c->cpuid_level == -1) {
-		if (c->x86 == 4)
-			strcpy(c->x86_model_id, "486");
-		else if (c->x86 == 3)
-			strcpy(c->x86_model_id, "386");
-	}
+	/* x86_model_id writes removed - field is never read */
 }
 
 static const struct cpu_dev default_cpu = {
@@ -328,25 +323,7 @@ static void filter_cpuid_features(struct cpuinfo_x86 *c, bool warn)
 	}
 }
 
-static const char *table_lookup_model(struct cpuinfo_x86 *c)
-{
-	const struct legacy_cpu_model_info *info;
-
-	if (c->x86_model >= 16)
-		return NULL;
-
-	if (!this_cpu)
-		return NULL;
-
-	info = this_cpu->legacy_models;
-
-	while (info->family) {
-		if (info->family == c->x86)
-			return info->model_names[c->x86_model];
-		info++;
-	}
-	return NULL;
-}
+/* table_lookup_model removed - x86_model_id is never read */
 
 __u32 cpu_caps_cleared[NCAPINTS + NBUGINTS] __aligned(sizeof(unsigned long));
 __u32 cpu_caps_set[NCAPINTS + NBUGINTS] __aligned(sizeof(unsigned long));
@@ -385,34 +362,7 @@ void switch_to_new_gdt(int cpu)
 
 static const struct cpu_dev *cpu_devs[X86_VENDOR_NUM] = {};
 
-static void get_model_name(struct cpuinfo_x86 *c)
-{
-	unsigned int *v;
-	char *p, *q, *s;
-
-	if (c->extended_cpuid_level < 0x80000004)
-		return;
-
-	v = (unsigned int *)c->x86_model_id;
-	cpuid(0x80000002, &v[0], &v[1], &v[2], &v[3]);
-	cpuid(0x80000003, &v[4], &v[5], &v[6], &v[7]);
-	cpuid(0x80000004, &v[8], &v[9], &v[10], &v[11]);
-	c->x86_model_id[48] = 0;
-
-	p = q = s = &c->x86_model_id[0];
-
-	while (*p == ' ')
-		p++;
-
-	while (*p) {
-		if (!isspace(*p))
-			s = q;
-
-		*q++ = *p++;
-	}
-
-	*(s + 1) = '\0';
-}
+/* get_model_name removed - x86_model_id is never read */
 
 /* detect_num_cpu_cores removed - x86_max_cores never read */
 
@@ -694,7 +644,7 @@ static void generic_identify(struct cpuinfo_x86 *c)
 		/* c->phys_proc_id removed - never read */
 	}
 
-	get_model_name(c);
+	/* get_model_name removed - x86_model_id is never read */
 
 	set_cpu_bug(c, X86_BUG_ESPFIX);
 }
@@ -708,8 +658,7 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 	c->x86_vendor = X86_VENDOR_UNKNOWN;
 	c->x86_model = c->x86_stepping = 0;
 	c->x86_vendor_id[0] = '\0';
-	c->x86_model_id[0] = '\0';
-	/* c->x86_max_cores, c->x86_coreid_bits, c->cu_id removed - never read */
+	/* c->x86_model_id, c->x86_max_cores, c->x86_coreid_bits, c->cu_id removed - never read */
 	c->cpuid_level = -1;
 	c->x86_clflush_size = 32;
 	c->x86_phys_bits = 32;
@@ -740,16 +689,7 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 
 	filter_cpuid_features(c, true);
 
-	if (!c->x86_model_id[0]) {
-		const char *p;
-		p = table_lookup_model(c);
-		if (p)
-			strcpy(c->x86_model_id, p);
-		else
-
-			sprintf(c->x86_model_id, "%02x/%02x", c->x86,
-				c->x86_model);
-	}
+	/* x86_model_id population removed - field is never read */
 
 	x86_init_rdrand(c);
 	setup_pku(c);

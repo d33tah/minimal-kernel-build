@@ -15,15 +15,8 @@ struct cpu_dev {
 	void		(*c_identify)(struct cpuinfo_x86 *);
 	void		(*c_detect_tlb)(struct cpuinfo_x86 *);
 	int		c_x86_vendor;
-	 
-	unsigned int	(*legacy_cache_size)(struct cpuinfo_x86 *,
-					     unsigned int);
-
-	 
-	struct legacy_cpu_model_info {
-		int		family;
-		const char	*model_names[16];
-	}		legacy_models[5];
+	/* legacy_cache_size removed - never used */
+	/* legacy_cpu_model_info removed - x86_model_id never read */
 };
 
 #define cpu_dev_register(cpu_devX) \

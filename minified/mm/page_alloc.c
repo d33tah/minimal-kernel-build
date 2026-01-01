@@ -496,32 +496,8 @@ retry:
 	return page;
 }
 
-static int rmqueue_bulk(struct zone *zone, unsigned int order,
-			unsigned long count, struct list_head *list,
-			int migratetype, unsigned int alloc_flags)
-{
-	int i, allocated = 0;
-
-	spin_lock(&zone->lock);
-	for (i = 0; i < count; ++i) {
-		struct page *page =
-			__rmqueue(zone, order, migratetype, alloc_flags);
-		if (unlikely(page == NULL))
-			break;
-		/* check_pcp_refill always returns false - removed */
-		list_add_tail(&page->lru, list);
-		allocated++;
-		if (is_migrate_cma(get_pcppage_migratetype(page)))
-			__mod_zone_page_state(zone, NR_FREE_CMA_PAGES,
-					      -(1 << order));
-	}
-
-	__mod_zone_page_state(zone, NR_FREE_PAGES, -(i << order));
-	spin_unlock(&zone->lock);
-	return allocated;
-}
-
-/* Removed: free_unref_page_prepare, nr_pcp_free, nr_pcp_high, free_unref_page_commit, drain_pages
+/* Removed: rmqueue_bulk inlined into __rmqueue_pcplist
+ * free_unref_page_prepare, nr_pcp_free, nr_pcp_high, free_unref_page_commit, drain_pages
  * - Dead code since free_unref_page is now a no-op (~55 lines) */
 
 void free_unref_page(struct page *page, unsigned int order)
@@ -552,12 +528,29 @@ __rmqueue_pcplist(struct zone *zone, unsigned int order, int migratetype,
 
 	if (list_empty(list)) {
 		int batch = READ_ONCE(pcp->batch);
-		int alloced;
+		int alloced = 0;
 
 		if (batch > 1)
 			batch = max(batch >> order, 2);
-		alloced = rmqueue_bulk(zone, order, batch, list, migratetype,
-				       alloc_flags);
+		{
+			int i;
+			spin_lock(&zone->lock);
+			for (i = 0; i < batch; ++i) {
+				struct page *pg = __rmqueue(
+					zone, order, migratetype, alloc_flags);
+				if (unlikely(pg == NULL))
+					break;
+				list_add_tail(&pg->lru, list);
+				alloced++;
+				if (is_migrate_cma(get_pcppage_migratetype(pg)))
+					__mod_zone_page_state(zone,
+							      NR_FREE_CMA_PAGES,
+							      -(1 << order));
+			}
+			__mod_zone_page_state(zone, NR_FREE_PAGES,
+					      -(i << order));
+			spin_unlock(&zone->lock);
+		}
 
 		pcp->count += alloced << order;
 		if (unlikely(list_empty(list)))

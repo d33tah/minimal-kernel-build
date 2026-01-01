@@ -38,20 +38,13 @@ static void file_free_rcu(struct rcu_head *head)
 	kmem_cache_free(filp_cachep, f);
 }
 
-static inline void file_free(struct file *f)
-{
-	/* security_file_free - empty stub */
-	if (!(f->f_mode & FMODE_NOACCOUNT))
-		percpu_counter_dec(&nr_files);
-	call_rcu(&f->f_u.fu_rcuhead, file_free_rcu);
-}
-
 /* get_nr_files removed - unused */
 
-static struct file *__alloc_file(int flags, const struct cred *cred)
+struct file *alloc_empty_file(int flags, const struct cred *cred)
 {
 	struct file *f;
 
+	/* capable() always returns true - file limit check removed */
 	f = kmem_cache_zalloc(filp_cachep, GFP_KERNEL);
 	if (unlikely(!f))
 		return ERR_PTR(-ENOMEM);
@@ -64,18 +57,7 @@ static struct file *__alloc_file(int flags, const struct cred *cred)
 	mutex_init(&f->f_pos_lock);
 	f->f_flags = flags;
 	f->f_mode = OPEN_FMODE(flags);
-
-	return f;
-}
-
-struct file *alloc_empty_file(int flags, const struct cred *cred)
-{
-	struct file *f;
-
-	/* capable() always returns true - file limit check removed */
-	f = __alloc_file(flags, cred);
-	if (!IS_ERR(f))
-		percpu_counter_inc(&nr_files);
+	percpu_counter_inc(&nr_files);
 
 	return f;
 }
@@ -162,7 +144,10 @@ static void __fput(struct file *file)
 		dissolve_on_fput(mnt);
 	mntput(mnt);
 out:
-	file_free(file);
+	/* security_file_free - empty stub */
+	if (!(file->f_mode & FMODE_NOACCOUNT))
+		percpu_counter_dec(&nr_files);
+	call_rcu(&file->f_u.fu_rcuhead, file_free_rcu);
 }
 
 static LLIST_HEAD(delayed_fput_list);

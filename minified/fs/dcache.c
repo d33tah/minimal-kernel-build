@@ -734,29 +734,24 @@ type_determined:
 	return add_flags;
 }
 
-static void __d_instantiate(struct dentry *dentry, struct inode *inode)
-{
-	unsigned add_flags = d_flags_for_inode(inode);
-	WARN_ON(d_in_lookup(dentry));
-
-	spin_lock(&dentry->d_lock);
-
-	if (dentry->d_flags & DCACHE_LRU_LIST)
-		this_cpu_dec(nr_dentry_negative);
-	hlist_add_head(&dentry->d_u.d_alias, &inode->i_dentry);
-	raw_write_seqcount_begin(&dentry->d_seq);
-	__d_set_inode_and_type(dentry, inode, add_flags);
-	raw_write_seqcount_end(&dentry->d_seq);
-	spin_unlock(&dentry->d_lock);
-}
-
 void d_instantiate(struct dentry *entry, struct inode *inode)
 {
 	BUG_ON(!hlist_unhashed(&entry->d_u.d_alias));
 	if (inode) {
+		unsigned add_flags = d_flags_for_inode(inode);
+		WARN_ON(d_in_lookup(entry));
+
 		/* security_d_instantiate - empty stub */
 		spin_lock(&inode->i_lock);
-		__d_instantiate(entry, inode);
+		spin_lock(&entry->d_lock);
+
+		if (entry->d_flags & DCACHE_LRU_LIST)
+			this_cpu_dec(nr_dentry_negative);
+		hlist_add_head(&entry->d_u.d_alias, &inode->i_dentry);
+		raw_write_seqcount_begin(&entry->d_seq);
+		__d_set_inode_and_type(entry, inode, add_flags);
+		raw_write_seqcount_end(&entry->d_seq);
+		spin_unlock(&entry->d_lock);
 		spin_unlock(&inode->i_lock);
 	}
 }

@@ -161,7 +161,7 @@ bool using_native_sched_clock(void)
 	return true;
 }
 
-static int no_sched_irq_time;
+/* no_sched_irq_time removed - never used */
 static int no_tsc_watchdog;
 
 #define MAX_RETRIES 5

@@ -731,12 +731,6 @@ static inline void schedule_debug(struct task_struct *prev, bool preempt)
 	schedstat_inc(this_rq()->sched_count);
 }
 
-static void put_prev_task_balance(struct rq *rq, struct task_struct *prev,
-				  struct rq_flags *rf)
-{
-	put_prev_task(rq, prev);
-}
-
 static inline struct task_struct *
 __pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 {
@@ -758,7 +752,7 @@ __pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 	}
 
 restart:
-	put_prev_task_balance(rq, prev, rf);
+	put_prev_task(rq, prev);
 
 	for_each_class(class)
 	{
@@ -877,11 +871,6 @@ static inline void sched_submit_work(struct task_struct *tsk)
 	/* blk_flush_plug call removed - plug field removed, stub was empty */
 }
 
-static void sched_update_worker(struct task_struct *tsk)
-{
-	/* wq_worker_running removed - empty stub */
-}
-
 asmlinkage __visible void __sched schedule(void)
 {
 	struct task_struct *tsk = current;
@@ -892,7 +881,6 @@ asmlinkage __visible void __sched schedule(void)
 		__schedule(SM_NONE);
 		sched_preempt_enable_no_resched();
 	} while (need_resched());
-	sched_update_worker(tsk);
 }
 
 void __sched schedule_idle(void)
@@ -1186,27 +1174,13 @@ int __sched __cond_resched(void)
 
 /* preempt_dynamic_init removed - empty stub */
 
-static int io_schedule_prepare(void)
+void __sched io_schedule(void)
 {
 	int old_iowait = current->in_iowait;
 
 	current->in_iowait = 1;
-	/* blk_flush_plug removed - plug field removed */
-	return old_iowait;
-}
-
-static void io_schedule_finish(int token)
-{
-	current->in_iowait = token;
-}
-
-void __sched io_schedule(void)
-{
-	int token;
-
-	token = io_schedule_prepare();
 	schedule();
-	io_schedule_finish(token);
+	current->in_iowait = old_iowait;
 }
 
 SYSCALL_DEFINE1(sched_get_priority_max, int, policy)

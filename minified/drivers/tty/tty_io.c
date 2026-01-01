@@ -344,23 +344,6 @@ static ssize_t tty_read(struct kiocb *iocb, struct iov_iter *to)
 	return i;
 }
 
-static void tty_write_unlock(struct tty_struct *tty)
-{
-	mutex_unlock(&tty->atomic_write_lock);
-	wake_up_interruptible_poll(&tty->write_wait, EPOLLOUT);
-}
-
-static int tty_write_lock(struct tty_struct *tty, int ndelay)
-{
-	if (!mutex_trylock(&tty->atomic_write_lock)) {
-		if (ndelay)
-			return -EAGAIN;
-		if (mutex_lock_interruptible(&tty->atomic_write_lock))
-			return -ERESTARTSYS;
-	}
-	return 0;
-}
-
 static inline ssize_t
 do_tty_write(ssize_t (*write)(struct tty_struct *, struct file *,
 			      const unsigned char *, size_t),
@@ -369,10 +352,14 @@ do_tty_write(ssize_t (*write)(struct tty_struct *, struct file *,
 	size_t count = iov_iter_count(from);
 	ssize_t ret, written = 0;
 	unsigned int chunk;
+	int ndelay = file->f_flags & O_NDELAY;
 
-	ret = tty_write_lock(tty, file->f_flags & O_NDELAY);
-	if (ret < 0)
-		return ret;
+	if (!mutex_trylock(&tty->atomic_write_lock)) {
+		if (ndelay)
+			return -EAGAIN;
+		if (mutex_lock_interruptible(&tty->atomic_write_lock))
+			return -ERESTARTSYS;
+	}
 
 	chunk = 2048;
 	if (test_bit(TTY_NO_WRITE_SPLIT, &tty->flags))
@@ -429,7 +416,8 @@ do_tty_write(ssize_t (*write)(struct tty_struct *, struct file *,
 		ret = written;
 	/* tty_update_time removed - empty stub */
 out:
-	tty_write_unlock(tty);
+	mutex_unlock(&tty->atomic_write_lock);
+	wake_up_interruptible_poll(&tty->write_wait, EPOLLOUT);
 	return ret;
 }
 

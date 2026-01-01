@@ -148,12 +148,6 @@ unsigned long get_pfnblock_flags_mask(const struct page *page,
 	return __get_pfnblock_flags_mask(page, pfn, mask);
 }
 
-static __always_inline int get_pfnblock_migratetype(const struct page *page,
-						    unsigned long pfn)
-{
-	return __get_pfnblock_flags_mask(page, pfn, MIGRATETYPE_MASK);
-}
-
 void set_pfnblock_flags_mask(struct page *page, unsigned long flags,
 			     unsigned long pfn, unsigned long mask)
 {
@@ -361,7 +355,7 @@ static void __free_pages_ok(struct page *page, unsigned int order,
 	if (!free_pages_prepare(page, order, true, fpi_flags))
 		return;
 
-	migratetype = get_pfnblock_migratetype(page, pfn);
+	migratetype = __get_pfnblock_flags_mask(page, pfn, MIGRATETYPE_MASK);
 
 	spin_lock_irqsave(&zone->lock, flags);
 	__free_one_page(page, pfn, zone, order, migratetype, fpi_flags);

@@ -70,10 +70,10 @@ struct cpuinfo_x86 {
 	};
 	char			x86_vendor_id[16];
 	char			x86_model_id[64];
-	 
-	unsigned int		x86_cache_size;
-	int			x86_cache_alignment;	 
-	 
+
+	/* x86_cache_size removed - only written, never read */
+	int			x86_cache_alignment;
+
 	/* x86_cache_max_rmid, x86_cache_occ_scale, x86_cache_mbm_width_offset, x86_power removed - never read */
 	unsigned long		loops_per_jiffy;
 	/* ppin, x86_max_cores removed - never read */

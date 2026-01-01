@@ -416,10 +416,9 @@ static void get_model_name(struct cpuinfo_x86 *c)
 
 /* detect_num_cpu_cores removed - x86_max_cores never read */
 
-/* Stub: cpu_detect_cache_sizes not called in minimal kernel */
+/* cpu_detect_cache_sizes stub - x86_cache_size removed */
 void cpu_detect_cache_sizes(struct cpuinfo_x86 *c)
 {
-	c->x86_cache_size = 0;
 }
 
 static void get_cpu_vendor(struct cpuinfo_x86 *c)
@@ -705,7 +704,7 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 	int i;
 
 	c->loops_per_jiffy = loops_per_jiffy;
-	c->x86_cache_size = 0;
+	/* c->x86_cache_size removed - never read */
 	c->x86_vendor = X86_VENDOR_UNKNOWN;
 	c->x86_model = c->x86_stepping = 0;
 	c->x86_vendor_id[0] = '\0';

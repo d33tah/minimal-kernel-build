@@ -241,14 +241,7 @@ void inode_sb_list_add(struct inode *inode)
 	spin_unlock(&inode->i_sb->s_inode_list_lock);
 }
 
-static inline void inode_sb_list_del(struct inode *inode)
-{
-	if (!list_empty(&inode->i_sb_list)) {
-		spin_lock(&inode->i_sb->s_inode_list_lock);
-		list_del_init(&inode->i_sb_list);
-		spin_unlock(&inode->i_sb->s_inode_list_lock);
-	}
-}
+/* inode_sb_list_del inlined into evict() */
 
 void __remove_inode_hash(struct inode *inode)
 {
@@ -282,7 +275,12 @@ static void evict(struct inode *inode)
 
 	/* inode_io_list_del, inode_wait_for_writeback removed - empty stubs */
 
-	inode_sb_list_del(inode);
+	/* Inlined inode_sb_list_del */
+	if (!list_empty(&inode->i_sb_list)) {
+		spin_lock(&inode->i_sb->s_inode_list_lock);
+		list_del_init(&inode->i_sb_list);
+		spin_unlock(&inode->i_sb->s_inode_list_lock);
+	}
 
 	if (op->evict_inode) {
 		op->evict_inode(inode);

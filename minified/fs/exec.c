@@ -103,20 +103,28 @@ static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos,
 
 /* put_arg_page and flush_arg_page inlined - trivial stubs */
 
-static int __bprm_mm_init(struct linux_binprm *bprm)
+static int bprm_mm_init(struct linux_binprm *bprm)
 {
 	int err;
 	struct vm_area_struct *vma = NULL;
-	struct mm_struct *mm = bprm->mm;
+	struct mm_struct *mm = NULL;
+
+	bprm->mm = mm = mm_alloc();
+	if (!mm)
+		return -ENOMEM;
+
+	task_lock(current->group_leader);
+	bprm->rlim_stack = current->signal->rlim[RLIMIT_STACK];
+	task_unlock(current->group_leader);
 
 	bprm->vma = vma = vm_area_alloc(mm);
 	if (!vma)
-		return -ENOMEM;
+		goto err_mm;
 	vma_set_anonymous(vma);
 
 	if (mmap_write_lock_killable(mm)) {
 		err = -EINTR;
-		goto err_free;
+		goto err_vma;
 	}
 
 	BUILD_BUG_ON(VM_STACK_FLAGS & VM_STACK_INCOMPLETE_SETUP);
@@ -128,46 +136,21 @@ static int __bprm_mm_init(struct linux_binprm *bprm)
 
 	err = insert_vm_struct(mm, vma);
 	if (err)
-		goto err;
+		goto err_unlock;
 
 	mm->total_vm = 1;
 	mmap_write_unlock(mm);
 	bprm->p = vma->vm_end - sizeof(void *);
 	return 0;
-err:
+
+err_unlock:
 	mmap_write_unlock(mm);
-err_free:
+err_vma:
 	bprm->vma = NULL;
 	vm_area_free(vma);
-	return err;
-}
-
-static int bprm_mm_init(struct linux_binprm *bprm)
-{
-	int err;
-	struct mm_struct *mm = NULL;
-
-	bprm->mm = mm = mm_alloc();
-	err = -ENOMEM;
-	if (!mm)
-		goto err;
-
-	task_lock(current->group_leader);
-	bprm->rlim_stack = current->signal->rlim[RLIMIT_STACK];
-	task_unlock(current->group_leader);
-
-	err = __bprm_mm_init(bprm);
-	if (err)
-		goto err;
-
-	return 0;
-
-err:
-	if (mm) {
-		bprm->mm = NULL;
-		mmdrop(mm);
-	}
-
+err_mm:
+	bprm->mm = NULL;
+	mmdrop(mm);
 	return err;
 }
 

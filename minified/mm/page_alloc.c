@@ -436,18 +436,7 @@ static int fallbacks[MIGRATE_TYPES][3] = {
 				  MIGRATE_TYPES },
 };
 
-/* can_steal_fallback always returned true - inlined */
-
-static void steal_suitable_fallback(struct zone *zone, struct page *page,
-				    unsigned int alloc_flags, int start_type,
-				    bool whole_block)
-{
-	/* Minimal stub: just move page to target type */
-	unsigned int current_order = buddy_order(page);
-	move_to_free_list(page, zone, current_order, start_type);
-}
-
-/* find_suitable_fallback inlined into __rmqueue_fallback */
+/* steal_suitable_fallback and find_suitable_fallback inlined into __rmqueue_fallback */
 
 static __always_inline bool __rmqueue_fallback(struct zone *zone, int order,
 					       int start_migratetype,
@@ -457,7 +446,6 @@ static __always_inline bool __rmqueue_fallback(struct zone *zone, int order,
 	struct free_area *area;
 	int current_order;
 	int fallback_mt;
-	bool can_steal;
 	struct page *page;
 
 	for (current_order = MAX_ORDER - 1; current_order >= order;
@@ -467,7 +455,6 @@ static __always_inline bool __rmqueue_fallback(struct zone *zone, int order,
 		fallback_mt = -1;
 		if (area->nr_free != 0) {
 			int i;
-			can_steal = true;
 			for (i = 0;; i++) {
 				int mt = fallbacks[start_migratetype][i];
 				if (mt == MIGRATE_TYPES)
@@ -482,8 +469,9 @@ static __always_inline bool __rmqueue_fallback(struct zone *zone, int order,
 			continue;
 
 		page = get_page_from_free_area(area, fallback_mt);
-		steal_suitable_fallback(zone, page, alloc_flags,
-					start_migratetype, can_steal);
+		/* Inlined steal_suitable_fallback */
+		move_to_free_list(page, zone, buddy_order(page),
+				  start_migratetype);
 		return true;
 	}
 

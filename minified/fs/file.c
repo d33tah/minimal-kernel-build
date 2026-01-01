@@ -364,21 +364,6 @@ struct files_struct init_files = {
 	.resize_wait	= __WAIT_QUEUE_HEAD_INITIALIZER(init_files.resize_wait),
 };
 
-static unsigned int find_next_fd(struct fdtable *fdt, unsigned int start)
-{
-	unsigned int maxfd = fdt->max_fds;
-	unsigned int maxbit = maxfd / BITS_PER_LONG;
-	unsigned int bitbit = start / BITS_PER_LONG;
-
-	bitbit = find_next_zero_bit(fdt->full_fds_bits, maxbit, bitbit) *
-		 BITS_PER_LONG;
-	if (bitbit > maxfd)
-		return maxfd;
-	if (bitbit > start)
-		start = bitbit;
-	return find_next_zero_bit(fdt->open_fds, maxfd, start);
-}
-
 static int alloc_fd(unsigned start, unsigned end, unsigned flags)
 {
 	struct files_struct *files = current->files;
@@ -393,8 +378,22 @@ repeat:
 	if (fd < files->next_fd)
 		fd = files->next_fd;
 
-	if (fd < fdt->max_fds)
-		fd = find_next_fd(fdt, fd);
+	if (fd < fdt->max_fds) {
+		unsigned int maxfd = fdt->max_fds;
+		unsigned int maxbit = maxfd / BITS_PER_LONG;
+		unsigned int bitbit = fd / BITS_PER_LONG;
+
+		bitbit =
+			find_next_zero_bit(fdt->full_fds_bits, maxbit, bitbit) *
+			BITS_PER_LONG;
+		if (bitbit <= maxfd) {
+			if (bitbit > fd)
+				fd = bitbit;
+			fd = find_next_zero_bit(fdt->open_fds, maxfd, fd);
+		} else {
+			fd = maxfd;
+		}
+	}
 
 	error = -EMFILE;
 	if (fd >= end)
@@ -423,14 +422,9 @@ out:
 	return error;
 }
 
-static int __get_unused_fd_flags(unsigned flags, unsigned long nofile)
-{
-	return alloc_fd(0, nofile, flags);
-}
-
 int get_unused_fd_flags(unsigned flags)
 {
-	return __get_unused_fd_flags(flags, rlimit(RLIMIT_NOFILE));
+	return alloc_fd(0, rlimit(RLIMIT_NOFILE), flags);
 }
 
 static void __put_unused_fd(struct files_struct *files, unsigned int fd)

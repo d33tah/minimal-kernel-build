@@ -35,11 +35,6 @@ struct kmem_cache *kmem_cache;
 
 static bool slab_nomerge = !IS_ENABLED(CONFIG_SLAB_MERGE_DEFAULT);
 
-static inline int kmem_cache_sanity_check(const char *name, unsigned int size)
-{
-	return 0;
-}
-
 static unsigned int calculate_alignment(slab_flags_t flags, unsigned int align,
 					unsigned int size)
 {
@@ -55,23 +50,6 @@ static unsigned int calculate_alignment(slab_flags_t flags, unsigned int align,
 	align = max(align, arch_slab_minalign());
 
 	return ALIGN(align, sizeof(void *));
-}
-
-static int slab_unmergeable(struct kmem_cache *s)
-{
-	if (slab_nomerge || (s->flags & SLAB_NEVER_MERGE))
-		return 1;
-
-	if (s->ctor)
-		return 1;
-
-	if (s->usersize)
-		return 1;
-
-	if (s->refcount < 0)
-		return 1;
-
-	return 0;
 }
 
 struct kmem_cache *find_mergeable(unsigned int size, unsigned int align,
@@ -95,7 +73,8 @@ struct kmem_cache *find_mergeable(unsigned int size, unsigned int align,
 		return NULL;
 
 	list_for_each_entry_reverse(s, &slab_caches, list) {
-		if (slab_unmergeable(s))
+		if (slab_nomerge || (s->flags & SLAB_NEVER_MERGE) || s->ctor ||
+		    s->usersize || s->refcount < 0)
 			continue;
 
 		if (size > s->size)
@@ -167,10 +146,7 @@ kmem_cache_create_usercopy(const char *name, unsigned int size,
 
 	mutex_lock(&slab_mutex);
 
-	err = kmem_cache_sanity_check(name, size);
-	if (err) {
-		goto out_unlock;
-	}
+	/* kmem_cache_sanity_check removed - always returned 0 */
 
 	if (flags & ~SLAB_FLAGS_PERMITTED) {
 		err = -EINVAL;

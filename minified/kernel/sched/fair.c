@@ -389,11 +389,7 @@ static inline void update_stats_dequeue_fair(struct cfs_rq *cfs_rq,
 	}
 }
 
-static inline void update_stats_curr_start(struct cfs_rq *cfs_rq,
-					   struct sched_entity *se)
-{
-	se->exec_start = rq_clock_task(rq_of(cfs_rq));
-}
+/* update_stats_curr_start inlined into set_next_entity */
 
 static void account_entity_enqueue(struct cfs_rq *cfs_rq,
 				   struct sched_entity *se)
@@ -657,7 +653,8 @@ static void set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 		update_load_avg(cfs_rq, se, UPDATE_TG);
 	}
 
-	update_stats_curr_start(cfs_rq, se);
+	/* Inlined update_stats_curr_start */
+	se->exec_start = rq_clock_task(rq_of(cfs_rq));
 	cfs_rq->curr = se;
 
 	if (schedstat_enabled() &&

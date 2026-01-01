@@ -898,11 +898,6 @@ SYSCALL_DEFINE1(set_tid_address, int __user *, tidptr)
 	return 1;
 }
 
-static void rt_mutex_init_task(struct task_struct *p)
-{
-	raw_spin_lock_init(&p->pi_lock);
-}
-
 static inline void init_task_pid_links(struct task_struct *task)
 {
 	enum pid_type type;
@@ -918,10 +913,6 @@ static inline void init_task_pid(struct task_struct *task, enum pid_type type,
 		task->thread_pid = pid;
 	else
 		task->signal->pids[type] = pid;
-}
-
-static inline void rcu_copy_process(struct task_struct *p)
-{
 }
 
 struct pid *pidfd_pid(const struct file *file)
@@ -1034,7 +1025,7 @@ copy_process(struct pid *pid, int trace, int node,
 	p->clear_child_tid =
 		(clone_flags & CLONE_CHILD_CLEARTID) ? args->child_tid : NULL;
 
-	rt_mutex_init_task(p);
+	raw_spin_lock_init(&p->pi_lock);
 
 	lockdep_assert_irqs_enabled();
 	retval = copy_creds(p, clone_flags);
@@ -1053,7 +1044,6 @@ copy_process(struct pid *pid, int trace, int node,
 	p->flags |= PF_FORKNOEXEC;
 	INIT_LIST_HEAD(&p->children);
 	INIT_LIST_HEAD(&p->sibling);
-	rcu_copy_process(p);
 	p->vfork_done = NULL;
 	spin_lock_init(&p->alloc_lock);
 

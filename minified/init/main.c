@@ -423,18 +423,6 @@ void __init trap_init(void); /* in arch/x86/kernel/traps.c */
 
 bool initcall_debug;
 
-static void __init mm_init(void)
-{
-	/* page_ext_init_flatmem, report_meminit, mem_init_print_info removed - empty stubs */
-	init_mem_debugging_and_hardening();
-	mem_init();
-	kmem_cache_init();
-	/* page_ext_init_flatmem_late removed - empty stub */
-	pgtable_init();
-	vmalloc_init();
-	/* init_espfix_bsp removed - empty stub */
-}
-
 /* arch_call_rest_init inlined into start_kernel - single caller */
 
 asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
@@ -508,7 +496,12 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	vfs_caches_init_early();
 	sort_main_extable();
 	trap_init();
-	mm_init();
+	/* Inlined mm_init */
+	init_mem_debugging_and_hardening();
+	mem_init();
+	kmem_cache_init();
+	pgtable_init();
+	vmalloc_init();
 	sched_init();
 
 	if (WARN(!irqs_disabled(),

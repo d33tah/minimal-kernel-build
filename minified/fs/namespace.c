@@ -357,21 +357,6 @@ struct vfsmount *lookup_mnt(const struct path *path)
 	return m;
 }
 
-static inline void lock_ns_list(struct mnt_namespace *ns)
-{
-	spin_lock(&ns->ns_lock);
-}
-
-static inline void unlock_ns_list(struct mnt_namespace *ns)
-{
-	spin_unlock(&ns->ns_lock);
-}
-
-static inline bool mnt_is_cursor(struct mount *mnt)
-{
-	return mnt->mnt.mnt_flags & MNT_CURSOR;
-}
-
 static struct mountpoint *lookup_mountpoint(struct dentry *dentry)
 {
 	struct hlist_head *chain = mp_hash(dentry);
@@ -1639,12 +1624,12 @@ static bool mnt_already_visible(struct mnt_namespace *ns,
 	bool visible = false;
 
 	down_read(&namespace_sem);
-	lock_ns_list(ns);
+	spin_lock(&ns->ns_lock);
 	list_for_each_entry(mnt, &ns->list, mnt_list) {
 		struct mount *child;
 		int mnt_flags;
 
-		if (mnt_is_cursor(mnt))
+		if (mnt->mnt.mnt_flags & MNT_CURSOR)
 			continue;
 
 		if (mnt->mnt.mnt_sb->s_type != sb->s_type)
@@ -1683,7 +1668,7 @@ static bool mnt_already_visible(struct mnt_namespace *ns,
 next:;
 	}
 found:
-	unlock_ns_list(ns);
+	spin_unlock(&ns->ns_lock);
 	up_read(&namespace_sem);
 	return visible;
 }

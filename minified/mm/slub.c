@@ -386,14 +386,6 @@ static inline unsigned int init_tid(int cpu)
 	return cpu;
 }
 
-static void init_kmem_cache_cpus(struct kmem_cache *s)
-{
-	/* for_each_possible_cpu simplified - single CPU */
-	struct kmem_cache_cpu *c = per_cpu_ptr(s->cpu_slab, 0);
-	local_lock_init(&c->lock);
-	c->tid = init_tid(0);
-}
-
 /* Removed: deactivate_slab - dead code since flush_slab simplified (~80 LOC) */
 
 static inline void flush_slab(struct kmem_cache *s, struct kmem_cache_cpu *c)
@@ -716,7 +708,12 @@ static inline int alloc_kmem_cache_cpus(struct kmem_cache *s)
 	if (!s->cpu_slab)
 		return 0;
 
-	init_kmem_cache_cpus(s);
+	/* Inlined init_kmem_cache_cpus */
+	{
+		struct kmem_cache_cpu *c = per_cpu_ptr(s->cpu_slab, 0);
+		local_lock_init(&c->lock);
+		c->tid = init_tid(0);
+	}
 
 	return 1;
 }

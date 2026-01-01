@@ -52,9 +52,10 @@ static DEFINE_PER_CPU(long, nr_dentry_negative);
 
 #include <asm/word-at-a-time.h>
 
-static inline int dentry_string_cmp(const unsigned char *cs,
-				    const unsigned char *ct, unsigned tcount)
+static inline int dentry_cmp(const struct dentry *dentry,
+			     const unsigned char *ct, unsigned tcount)
 {
+	const unsigned char *cs = READ_ONCE(dentry->d_name.name);
 	unsigned long a, b, mask;
 
 	for (;;) {
@@ -72,14 +73,6 @@ static inline int dentry_string_cmp(const unsigned char *cs,
 	}
 	mask = bytemask_from_count(tcount);
 	return unlikely(!!((a ^ b) & mask));
-}
-
-static inline int dentry_cmp(const struct dentry *dentry,
-			     const unsigned char *ct, unsigned tcount)
-{
-	const unsigned char *cs = READ_ONCE(dentry->d_name.name);
-
-	return dentry_string_cmp(cs, ct, tcount);
 }
 
 struct external_name {
@@ -127,17 +120,6 @@ static inline void __d_set_inode_and_type(struct dentry *dentry,
 	smp_store_release(&dentry->d_flags, flags);
 }
 
-static inline void __d_clear_type_and_inode(struct dentry *dentry)
-{
-	unsigned flags = READ_ONCE(dentry->d_flags);
-
-	flags &= ~(DCACHE_ENTRY_TYPE | DCACHE_FALLTHRU);
-	WRITE_ONCE(dentry->d_flags, flags);
-	dentry->d_inode = NULL;
-	if (dentry->d_flags & DCACHE_LRU_LIST)
-		this_cpu_inc(nr_dentry_negative);
-}
-
 static void dentry_free(struct dentry *dentry)
 {
 	WARN_ON(!hlist_unhashed(&dentry->d_u.d_alias));
@@ -159,9 +141,15 @@ static void dentry_unlink_inode(struct dentry *dentry)
 	__releases(dentry->d_lock) __releases(dentry->d_inode->i_lock)
 {
 	struct inode *inode = dentry->d_inode;
+	unsigned flags;
 
 	raw_write_seqcount_begin(&dentry->d_seq);
-	__d_clear_type_and_inode(dentry);
+	flags = READ_ONCE(dentry->d_flags);
+	flags &= ~(DCACHE_ENTRY_TYPE | DCACHE_FALLTHRU);
+	WRITE_ONCE(dentry->d_flags, flags);
+	dentry->d_inode = NULL;
+	if (dentry->d_flags & DCACHE_LRU_LIST)
+		this_cpu_inc(nr_dentry_negative);
 	hlist_del_init(&dentry->d_u.d_alias);
 	raw_write_seqcount_end(&dentry->d_seq);
 	spin_unlock(&dentry->d_lock);

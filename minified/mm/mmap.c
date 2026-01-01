@@ -925,24 +925,6 @@ struct vm_area_struct *find_vma_prev(struct mm_struct *mm, unsigned long addr,
 	return find_vma(mm, addr);
 }
 
-static int acct_stack_growth(struct vm_area_struct *vma, unsigned long size,
-			     unsigned long grow)
-{
-	struct mm_struct *mm = vma->vm_mm;
-	unsigned long new_start;
-
-	if (size > rlimit(RLIMIT_STACK))
-		return -ENOMEM;
-
-	new_start = (vma->vm_flags & VM_GROWSUP) ? vma->vm_start :
-						   vma->vm_end - size;
-	/* is_hugepage_only_range always returns 0 - dead code removed */
-	if (security_vm_enough_memory_mm(mm, grow))
-		return -ENOMEM;
-
-	return 0;
-}
-
 int expand_downwards(struct vm_area_struct *vma, unsigned long address)
 {
 	struct mm_struct *mm = vma->vm_mm;
@@ -973,17 +955,16 @@ int expand_downwards(struct vm_area_struct *vma, unsigned long address)
 		grow = (vma->vm_start - address) >> PAGE_SHIFT;
 
 		error = -ENOMEM;
-		if (grow <= vma->vm_pgoff) {
-			error = acct_stack_growth(vma, size, grow);
-			if (!error) {
-				spin_lock(&mm->page_table_lock);
-				anon_vma_interval_tree_pre_update_vma(vma);
-				vma->vm_start = address;
-				vma->vm_pgoff -= grow;
-				anon_vma_interval_tree_post_update_vma(vma);
-				vma_gap_update(vma);
-				spin_unlock(&mm->page_table_lock);
-			}
+		if (grow <= vma->vm_pgoff && size <= rlimit(RLIMIT_STACK) &&
+		    !security_vm_enough_memory_mm(mm, grow)) {
+			error = 0;
+			spin_lock(&mm->page_table_lock);
+			anon_vma_interval_tree_pre_update_vma(vma);
+			vma->vm_start = address;
+			vma->vm_pgoff -= grow;
+			anon_vma_interval_tree_post_update_vma(vma);
+			vma_gap_update(vma);
+			spin_unlock(&mm->page_table_lock);
 		}
 	}
 	anon_vma_unlock_write(vma->anon_vma);

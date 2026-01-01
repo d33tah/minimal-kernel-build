@@ -167,19 +167,9 @@ static bool __mnt_is_readonly(struct vfsmount *mnt)
 	return (mnt->mnt_flags & MNT_READONLY) || sb_rdonly(mnt->mnt_sb);
 }
 
-static inline void mnt_inc_writers(struct mount *mnt)
-{
-	mnt->mnt_writers++;
-}
-
 static inline void mnt_dec_writers(struct mount *mnt)
 {
 	mnt->mnt_writers--;
-}
-
-static unsigned int mnt_get_writers(struct mount *mnt)
-{
-	return mnt->mnt_writers;
 }
 
 static int mnt_is_readonly(struct vfsmount *mnt)
@@ -197,7 +187,7 @@ int __mnt_want_write(struct vfsmount *m)
 	int ret = 0;
 
 	preempt_disable();
-	mnt_inc_writers(mnt);
+	mnt->mnt_writers++;
 
 	smp_mb();
 	might_lock(&mount_lock.lock);
@@ -677,7 +667,7 @@ static void cleanup_mnt(struct mount *mnt)
 	struct hlist_node *p;
 	struct mount *m;
 
-	WARN_ON(mnt_get_writers(mnt));
+	WARN_ON(mnt->mnt_writers);
 	if (unlikely(mnt->mnt_pins.first))
 		mnt_pin_kill(mnt);
 	hlist_for_each_entry_safe(m, p, &mnt->mnt_stuck_children, mnt_umount) {

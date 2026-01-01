@@ -1077,11 +1077,10 @@ static void do_SAK_work(struct work_struct *work)
 	/* Stub: SAK_work never scheduled in minimal kernel */
 }
 
-static dev_t tty_devnum(struct tty_struct *tty);
-
 static struct device *tty_get_device(struct tty_struct *tty)
 {
-	dev_t devt = tty_devnum(tty);
+	dev_t devt = MKDEV(tty->driver->major, tty->driver->minor_start) +
+		     tty->index;
 
 	return class_find_device_by_devt(tty_class, devt);
 }
@@ -1375,11 +1374,6 @@ err_unreg_char:
 	unregister_chrdev_region(dev, driver->num);
 err:
 	return error;
-}
-
-static dev_t tty_devnum(struct tty_struct *tty)
-{
-	return MKDEV(tty->driver->major, tty->driver->minor_start) + tty->index;
 }
 
 static char *tty_devnode(struct device *dev, umode_t *mode)

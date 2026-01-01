@@ -427,12 +427,21 @@ int generic_delete_inode(struct inode *inode)
 	return 1;
 }
 
-static void iput_final(struct inode *inode)
+void iput(struct inode *inode)
 {
-	struct super_block *sb = inode->i_sb;
-	const struct super_operations *op = inode->i_sb->s_op;
+	struct super_block *sb;
+	const struct super_operations *op;
 	unsigned long state;
 	int drop;
+
+	if (!inode)
+		return;
+	BUG_ON(inode->i_state & I_CLEAR);
+	if (!atomic_dec_and_lock(&inode->i_count, &inode->i_lock))
+		return;
+
+	sb = inode->i_sb;
+	op = inode->i_sb->s_op;
 
 	WARN_ON(inode->i_state & I_NEW);
 
@@ -467,15 +476,6 @@ static void iput_final(struct inode *inode)
 	spin_unlock(&inode->i_lock);
 
 	evict(inode);
-}
-
-void iput(struct inode *inode)
-{
-	if (!inode)
-		return;
-	BUG_ON(inode->i_state & I_CLEAR);
-	if (atomic_dec_and_lock(&inode->i_count, &inode->i_lock))
-		iput_final(inode);
 }
 
 /* inode_update_time, atime_needs_update removed - never called */

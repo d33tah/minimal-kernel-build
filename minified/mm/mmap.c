@@ -646,64 +646,36 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 	return addr;
 }
 
-static unsigned long unmapped_area(struct vm_unmapped_area_info *info)
-{
-	/* Simplified: use simple linear search from low_limit */
-	struct mm_struct *mm = current->mm;
-	unsigned long gap_start;
-
-	/* Basic bounds checking */
-	if (info->high_limit < info->length)
-		return -ENOMEM;
-	if (info->low_limit > info->high_limit - info->length)
-		return -ENOMEM;
-
-	/* Simple allocation from highest_vm_end or low_limit */
-	gap_start = max(mm->highest_vm_end, info->low_limit);
-	gap_start += (info->align_offset - gap_start) & info->align_mask;
-
-	if (gap_start + info->length > info->high_limit)
-		return -ENOMEM;
-
-	return gap_start;
-}
-
-static unsigned long unmapped_area_topdown(struct vm_unmapped_area_info *info)
-{
-	/* Simplified: allocate from top of address space */
-	struct mm_struct *mm = current->mm;
-	unsigned long gap_end;
-
-	/* Basic bounds checking */
-	if (info->high_limit < info->length)
-		return -ENOMEM;
-	if (info->low_limit > info->high_limit - info->length)
-		return -ENOMEM;
-
-	/* Simple top-down allocation */
-	gap_end = info->high_limit;
-	if (mm->highest_vm_end <= info->high_limit)
-		gap_end = mm->highest_vm_end;
-
-	gap_end -= info->length;
-	gap_end -= (gap_end - info->align_offset) & info->align_mask;
-
-	if (gap_end < info->low_limit)
-		return -ENOMEM;
-
-	return gap_end;
-}
-
 unsigned long vm_unmapped_area(struct vm_unmapped_area_info *info)
 {
-	unsigned long addr;
+	struct mm_struct *mm = current->mm;
 
-	if (info->flags & VM_UNMAPPED_AREA_TOPDOWN)
-		addr = unmapped_area_topdown(info);
-	else
-		addr = unmapped_area(info);
+	/* Basic bounds checking */
+	if (info->high_limit < info->length)
+		return -ENOMEM;
+	if (info->low_limit > info->high_limit - info->length)
+		return -ENOMEM;
 
-	return addr;
+	if (info->flags & VM_UNMAPPED_AREA_TOPDOWN) {
+		/* Inlined unmapped_area_topdown */
+		unsigned long gap_end = info->high_limit;
+		if (mm->highest_vm_end <= info->high_limit)
+			gap_end = mm->highest_vm_end;
+		gap_end -= info->length;
+		gap_end -= (gap_end - info->align_offset) & info->align_mask;
+		if (gap_end < info->low_limit)
+			return -ENOMEM;
+		return gap_end;
+	} else {
+		/* Inlined unmapped_area */
+		unsigned long gap_start =
+			max(mm->highest_vm_end, info->low_limit);
+		gap_start += (info->align_offset - gap_start) &
+			     info->align_mask;
+		if (gap_start + info->length > info->high_limit)
+			return -ENOMEM;
+		return gap_start;
+	}
 }
 
 unsigned long generic_get_unmapped_area(struct file *filp, unsigned long addr,

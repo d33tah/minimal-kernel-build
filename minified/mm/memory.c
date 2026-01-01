@@ -481,7 +481,8 @@ static void zap_page_range_single(struct vm_area_struct *vma,
 	tlb_finish_mmu(&tlb);
 }
 
-static pmd_t *walk_to_pmd(struct mm_struct *mm, unsigned long addr)
+pte_t *__get_locked_pte(struct mm_struct *mm, unsigned long addr,
+			spinlock_t **ptl)
 {
 	pgd_t *pgd;
 	p4d_t *p4d;
@@ -496,17 +497,6 @@ static pmd_t *walk_to_pmd(struct mm_struct *mm, unsigned long addr)
 	if (!pud)
 		return NULL;
 	pmd = pmd_alloc(mm, pud, addr);
-	if (!pmd)
-		return NULL;
-
-	return pmd;
-}
-
-pte_t *__get_locked_pte(struct mm_struct *mm, unsigned long addr,
-			spinlock_t **ptl)
-{
-	pmd_t *pmd = walk_to_pmd(mm, addr);
-
 	if (!pmd)
 		return NULL;
 	return pte_alloc_map_lock(mm, pmd, addr, ptl);

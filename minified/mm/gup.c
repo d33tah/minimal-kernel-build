@@ -615,16 +615,7 @@ static long __gup_longterm_locked(struct mm_struct *mm, unsigned long start,
 	return rc;
 }
 
-static bool is_valid_gup_flags(unsigned int gup_flags)
-{
-	if (WARN_ON_ONCE(gup_flags & FOLL_PIN))
-		return false;
-
-	if (WARN_ON_ONCE(gup_flags & FOLL_LONGTERM))
-		return false;
-
-	return true;
-}
+/* is_valid_gup_flags inlined into get_user_pages_remote */
 
 static long __get_user_pages_remote(struct mm_struct *mm, unsigned long start,
 				    unsigned long nr_pages,
@@ -649,7 +640,10 @@ long get_user_pages_remote(struct mm_struct *mm, unsigned long start,
 			   struct page **pages, struct vm_area_struct **vmas,
 			   int *locked)
 {
-	if (!is_valid_gup_flags(gup_flags))
+	/* is_valid_gup_flags inlined */
+	if (WARN_ON_ONCE(gup_flags & FOLL_PIN))
+		return -EINVAL;
+	if (WARN_ON_ONCE(gup_flags & FOLL_LONGTERM))
 		return -EINVAL;
 
 	return __get_user_pages_remote(mm, start, nr_pages, gup_flags, pages,

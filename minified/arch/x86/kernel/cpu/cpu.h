@@ -13,7 +13,7 @@ struct cpu_dev {
 	void		(*c_bsp_init)(struct cpuinfo_x86 *);
 	void		(*c_init)(struct cpuinfo_x86 *);
 	void		(*c_identify)(struct cpuinfo_x86 *);
-	void		(*c_detect_tlb)(struct cpuinfo_x86 *);
+	/* c_detect_tlb removed - never called */
 	int		c_x86_vendor;
 	/* legacy_cache_size removed - never used */
 	/* legacy_cpu_model_info removed - x86_model_id never read */

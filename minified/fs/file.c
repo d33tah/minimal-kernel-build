@@ -535,26 +535,22 @@ struct file *fget(unsigned int fd)
 	return __fget(fd, FMODE_PATH);
 }
 
-static unsigned long __fget_light(unsigned int fd, fmode_t mask)
+unsigned long __fdget(unsigned int fd)
 {
 	struct files_struct *files = current->files;
 	struct file *file;
 
 	if (atomic_read(&files->count) == 1) {
 		file = files_lookup_fd_raw(files, fd);
-		if (!file || unlikely(file->f_mode & mask))
+		if (!file || unlikely(file->f_mode & FMODE_PATH))
 			return 0;
 		return (unsigned long)file;
 	} else {
-		file = __fget(fd, mask);
+		file = __fget(fd, FMODE_PATH);
 		if (!file)
 			return 0;
 		return FDPUT_FPUT | (unsigned long)file;
 	}
-}
-unsigned long __fdget(unsigned int fd)
-{
-	return __fget_light(fd, FMODE_PATH);
 }
 
 /* Stub: __fdget_raw not called in minimal kernel */

@@ -195,13 +195,7 @@ static void kill_orphaned_pgrp(struct task_struct *tsk,
 {
 }
 
-static void coredump_task_exit(struct task_struct *tsk)
-{
-	/* Stub: coredumps not needed for minimal kernel */
-	spin_lock_irq(&tsk->sighand->siglock);
-	tsk->flags |= PF_POSTCOREDUMP;
-	spin_unlock_irq(&tsk->sighand->siglock);
-}
+/* coredump_task_exit inlined into do_exit */
 
 static void exit_mm(void)
 {
@@ -398,7 +392,10 @@ void __noreturn do_exit(long code)
 	int group_dead;
 	/* WARN_ON(tsk->plug) removed - plug field removed */
 
-	coredump_task_exit(tsk);
+	/* Inlined coredump_task_exit - coredumps not needed */
+	spin_lock_irq(&tsk->sighand->siglock);
+	tsk->flags |= PF_POSTCOREDUMP;
+	spin_unlock_irq(&tsk->sighand->siglock);
 	ptrace_event(PTRACE_EVENT_EXIT, code);
 
 	/* validate_creds_for_do_exit(), io_uring_files_cancel() - empty stubs */

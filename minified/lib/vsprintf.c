@@ -543,13 +543,7 @@ static noinline_for_stack char *address_val(char *buf, char *end,
 	return error_string(buf, end, "(addr)", spec);
 }
 
-static noinline_for_stack char *flags_string(char *buf, char *end,
-					     void *flags_ptr,
-					     struct printf_spec spec,
-					     const char *fmt)
-{
-	return error_string(buf, end, "(flags)", spec);
-}
+/* flags_string inlined - was just a wrapper for error_string */
 
 static noinline_for_stack char *pointer(const char *fmt, char *buf, char *end,
 					void *ptr, struct printf_spec spec)
@@ -570,7 +564,8 @@ static noinline_for_stack char *pointer(const char *fmt, char *buf, char *end,
 	case 'D':
 		return file_dentry_name(buf, end, ptr, spec, fmt);
 	case 'G':
-		return flags_string(buf, end, ptr, spec, fmt);
+		/* flags_string inlined - was just error_string */
+		return error_string(buf, end, "(flags)", spec);
 	case 'x':
 		return pointer_string(buf, end, ptr, spec);
 	default:

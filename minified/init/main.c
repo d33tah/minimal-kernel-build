@@ -292,8 +292,7 @@ static int __init rdinit_setup(char *str)
 }
 __setup("rdinit=", rdinit_setup);
 
-static const unsigned int setup_max_cpus = NR_CPUS;
-/* setup_nr_cpu_ids, smp_prepare_cpus removed - empty stubs */
+/* setup_max_cpus, setup_nr_cpu_ids, smp_prepare_cpus removed - unused */
 
 static void __init setup_command_line(char *command_line)
 {

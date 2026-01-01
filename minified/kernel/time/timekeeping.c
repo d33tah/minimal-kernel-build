@@ -110,24 +110,7 @@ static inline struct timespec64 tk_xtime(const struct timekeeper *tk)
 	return ts;
 }
 
-static void tk_set_xtime(struct timekeeper *tk, const struct timespec64 *ts)
-{
-	tk->xtime_sec = ts->tv_sec;
-	tk->tkr_mono.xtime_nsec = (u64)ts->tv_nsec << tk->tkr_mono.shift;
-}
-
-static void tk_set_wall_to_mono(struct timekeeper *tk, struct timespec64 wtm)
-{
-	struct timespec64 tmp;
-
-	set_normalized_timespec64(&tmp, -tk->wall_to_monotonic.tv_sec,
-				  -tk->wall_to_monotonic.tv_nsec);
-	WARN_ON_ONCE(tk->offs_real != timespec64_to_ktime(tmp));
-	tk->wall_to_monotonic = wtm;
-	set_normalized_timespec64(&tmp, -wtm.tv_sec, -wtm.tv_nsec);
-	tk->offs_real = timespec64_to_ktime(tmp);
-	tk->offs_tai = ktime_add(tk->offs_real, ktime_set(tk->tai_offset, 0));
-}
+/* tk_set_xtime, tk_set_wall_to_mono removed - never called */
 
 static inline u64 tk_clock_read(const struct tk_read_base *tkr)
 {

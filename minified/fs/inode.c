@@ -179,23 +179,19 @@ void inc_nlink(struct inode *inode)
 	inode->__i_nlink++;
 }
 
-static void __address_space_init_once(struct address_space *mapping)
+void inode_init_once(struct inode *inode)
 {
+	struct address_space *mapping = &inode->i_data;
+	memset(inode, 0, sizeof(*inode));
+	INIT_HLIST_NODE(&inode->i_hash);
+	INIT_LIST_HEAD(&inode->i_devices);
+	INIT_LIST_HEAD(&inode->i_lru);
+	/* Inlined __address_space_init_once */
 	xa_init_flags(&mapping->i_pages, XA_FLAGS_LOCK_IRQ | XA_FLAGS_ACCOUNT);
 	init_rwsem(&mapping->i_mmap_rwsem);
 	INIT_LIST_HEAD(&mapping->private_list);
 	spin_lock_init(&mapping->private_lock);
 	mapping->i_mmap = RB_ROOT_CACHED;
-}
-
-void inode_init_once(struct inode *inode)
-{
-	memset(inode, 0, sizeof(*inode));
-	INIT_HLIST_NODE(&inode->i_hash);
-	INIT_LIST_HEAD(&inode->i_devices);
-	/* i_wb_list removed - unused */
-	INIT_LIST_HEAD(&inode->i_lru);
-	__address_space_init_once(&inode->i_data);
 }
 
 static void init_once(void *foo)

@@ -815,18 +815,7 @@ vm_fault_t finish_fault(struct vm_fault *vmf)
 /* Removed: fault_around_bytes, do_fault_around, should_fault_around
  * - Optimization path always returned 0 for minimal kernel */
 
-static vm_fault_t do_read_fault(struct vm_fault *vmf)
-{
-	vm_fault_t ret = __do_fault(vmf);
-	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE | VM_FAULT_RETRY)))
-		return ret;
-
-	ret |= finish_fault(vmf);
-	unlock_page(vmf->page);
-	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE | VM_FAULT_RETRY)))
-		put_page(vmf->page);
-	return ret;
-}
+/* do_read_fault inlined into do_fault */
 
 static vm_fault_t do_cow_fault(struct vm_fault *vmf)
 {
@@ -938,9 +927,18 @@ static vm_fault_t do_fault(struct vm_fault *vmf)
 
 			pte_unmap_unlock(vmf->pte, vmf->ptl);
 		}
-	} else if (!(vmf->flags & FAULT_FLAG_WRITE))
-		ret = do_read_fault(vmf);
-	else if (!(vma->vm_flags & VM_SHARED))
+	} else if (!(vmf->flags & FAULT_FLAG_WRITE)) {
+		/* Inlined do_read_fault */
+		ret = __do_fault(vmf);
+		if (likely(!(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE |
+				    VM_FAULT_RETRY)))) {
+			ret |= finish_fault(vmf);
+			unlock_page(vmf->page);
+			if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE |
+					    VM_FAULT_RETRY)))
+				put_page(vmf->page);
+		}
+	} else if (!(vma->vm_flags & VM_SHARED))
 		ret = do_cow_fault(vmf);
 	else
 		ret = do_shared_fault(vmf);

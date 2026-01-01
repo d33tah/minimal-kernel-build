@@ -82,26 +82,7 @@ static int vmap_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
 
 /* Removed: vmap_try_huge_pud - stub always returned 0 */
 
-static int vmap_pud_range(p4d_t *p4d, unsigned long addr, unsigned long end,
-			  phys_addr_t phys_addr, pgprot_t prot,
-			  unsigned int max_page_shift, pgtbl_mod_mask *mask)
-{
-	pud_t *pud;
-	unsigned long next;
-
-	pud = pud_alloc_track(&init_mm, p4d, addr, mask);
-	if (!pud)
-		return -ENOMEM;
-	do {
-		next = pud_addr_end(addr, end);
-		if (vmap_pmd_range(pud, addr, next, phys_addr, prot,
-				   max_page_shift, mask))
-			return -ENOMEM;
-	} while (pud++, phys_addr += (next - addr), addr = next, addr != end);
-	return 0;
-}
-
-/* Removed: vmap_try_huge_p4d - stub always returned 0 */
+/* vmap_pud_range inlined into vmap_p4d_range */
 
 static int vmap_p4d_range(pgd_t *pgd, unsigned long addr, unsigned long end,
 			  phys_addr_t phys_addr, pgprot_t prot,
@@ -115,9 +96,25 @@ static int vmap_p4d_range(pgd_t *pgd, unsigned long addr, unsigned long end,
 		return -ENOMEM;
 	do {
 		next = p4d_addr_end(addr, end);
-		if (vmap_pud_range(p4d, addr, next, phys_addr, prot,
-				   max_page_shift, mask))
-			return -ENOMEM;
+		/* Inlined vmap_pud_range */
+		{
+			pud_t *pud;
+			unsigned long pud_next;
+			unsigned long pud_addr = addr;
+			phys_addr_t pud_phys = phys_addr;
+
+			pud = pud_alloc_track(&init_mm, p4d, pud_addr, mask);
+			if (!pud)
+				return -ENOMEM;
+			do {
+				pud_next = pud_addr_end(pud_addr, next);
+				if (vmap_pmd_range(pud, pud_addr, pud_next,
+						   pud_phys, prot,
+						   max_page_shift, mask))
+					return -ENOMEM;
+			} while (pud++, pud_phys += (pud_next - pud_addr),
+				 pud_addr = pud_next, pud_addr != next);
+		}
 	} while (p4d++, phys_addr += (next - addr), addr = next, addr != end);
 	return 0;
 }

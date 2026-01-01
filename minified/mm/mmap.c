@@ -1209,7 +1209,7 @@ int do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 	return __do_munmap(mm, start, len, uf, false);
 }
 
-static int __vm_munmap(unsigned long start, size_t len, bool downgrade)
+int vm_munmap(unsigned long start, size_t len)
 {
 	int ret;
 	struct mm_struct *mm = current->mm;
@@ -1218,21 +1218,10 @@ static int __vm_munmap(unsigned long start, size_t len, bool downgrade)
 	if (mmap_write_lock_killable(mm))
 		return -EINTR;
 
-	ret = __do_munmap(mm, start, len, &uf, downgrade);
-
-	if (ret == 1) {
-		mmap_read_unlock(mm);
-		ret = 0;
-	} else
-		mmap_write_unlock(mm);
-
+	ret = __do_munmap(mm, start, len, &uf, false);
+	mmap_write_unlock(mm);
 	userfaultfd_unmap_complete(mm, &uf);
 	return ret;
-}
-
-int vm_munmap(unsigned long start, size_t len)
-{
-	return __vm_munmap(start, len, false);
 }
 
 /* Stub: munmap syscall */

@@ -673,37 +673,7 @@ fail_nomem:
 	return NULL;
 }
 
-static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
-{
-	struct mm_struct *mm, *oldmm;
-
-	tsk->min_flt = tsk->maj_flt = 0;
-	tsk->nvcsw = tsk->nivcsw = 0;
-
-	tsk->mm = NULL;
-	tsk->active_mm = NULL;
-
-	oldmm = current->mm;
-	if (!oldmm)
-		return 0;
-
-	vmacache_flush(tsk);
-
-	if (clone_flags & CLONE_VM) {
-		mmget(oldmm);
-		mm = oldmm;
-	} else {
-		mm = dup_mm(tsk, current->mm);
-		if (!mm)
-			return -ENOMEM;
-	}
-
-	tsk->mm = mm;
-	tsk->active_mm = mm;
-	return 0;
-}
-
-/* copy_fs and copy_files inlined into copy_process */
+/* copy_mm, copy_fs and copy_files inlined into copy_process */
 
 static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk)
 {
@@ -987,9 +957,30 @@ copy_process(struct pid *pid, int trace, int node,
 	retval = copy_signal(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_sighand;
-	retval = copy_mm(clone_flags, p);
-	if (retval)
-		goto bad_fork_cleanup_signal;
+	/* Inlined copy_mm */
+	{
+		struct mm_struct *mm, *oldmm;
+		p->min_flt = p->maj_flt = 0;
+		p->nvcsw = p->nivcsw = 0;
+		p->mm = NULL;
+		p->active_mm = NULL;
+		oldmm = current->mm;
+		if (oldmm) {
+			vmacache_flush(p);
+			if (clone_flags & CLONE_VM) {
+				mmget(oldmm);
+				mm = oldmm;
+			} else {
+				mm = dup_mm(p, current->mm);
+				if (!mm) {
+					retval = -ENOMEM;
+					goto bad_fork_cleanup_signal;
+				}
+			}
+			p->mm = mm;
+			p->active_mm = mm;
+		}
+	}
 	retval = copy_namespaces(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_mm;

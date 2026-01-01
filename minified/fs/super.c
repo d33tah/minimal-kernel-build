@@ -194,24 +194,18 @@ fail:
 	return NULL;
 }
 
-static void __put_super(struct super_block *s)
-{
-	if (!--s->s_count) {
-		list_del_init(&s->s_list);
-		WARN_ON(s->s_dentry_lru.node);
-		WARN_ON(s->s_inode_lru.node);
-		WARN_ON(!list_empty(&s->s_mounts));
-		/* security_sb_free(), fscrypt_sb_free() - empty stubs */
-		put_user_ns(s->s_user_ns);
-		kfree(s->s_subtype);
-		call_rcu(&s->rcu, destroy_super_rcu);
-	}
-}
-
 void put_super(struct super_block *sb)
 {
 	spin_lock(&sb_lock);
-	__put_super(sb);
+	if (!--sb->s_count) {
+		list_del_init(&sb->s_list);
+		WARN_ON(sb->s_dentry_lru.node);
+		WARN_ON(sb->s_inode_lru.node);
+		WARN_ON(!list_empty(&sb->s_mounts));
+		put_user_ns(sb->s_user_ns);
+		kfree(sb->s_subtype);
+		call_rcu(&sb->rcu, destroy_super_rcu);
+	}
 	spin_unlock(&sb_lock);
 }
 

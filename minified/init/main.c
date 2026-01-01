@@ -663,13 +663,19 @@ static void __init do_initcall_level(int level, char *command_line)
 	}
 }
 
-static void __init do_initcalls(void)
+static void __init do_basic_setup(void)
 {
 	int level;
 	/* Use static buffer to avoid kzalloc which hangs with low memory */
 	static char command_line[256];
 	size_t len = strlen(saved_command_line);
 
+	edbg("dbs:driver_init\n");
+	driver_init();
+	edbg("dbs:do_initcalls\n");
+	/* init_irq_proc, do_ctors removed - empty stubs */
+
+	/* Inlined do_initcalls */
 	if (len >= sizeof(command_line))
 		len = sizeof(command_line) - 1;
 
@@ -678,15 +684,6 @@ static void __init do_initcalls(void)
 		command_line[len] = '\0';
 		do_initcall_level(level, command_line);
 	}
-}
-
-static void __init do_basic_setup(void)
-{
-	edbg("dbs:driver_init\n");
-	driver_init();
-	edbg("dbs:do_initcalls\n");
-	/* init_irq_proc, do_ctors removed - empty stubs */
-	do_initcalls();
 	edbg("dbs:done\n");
 }
 

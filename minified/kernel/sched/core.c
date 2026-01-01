@@ -303,12 +303,6 @@ static inline int __normal_prio(int policy, int rt_prio, int nice)
 	return prio;
 }
 
-static inline int normal_prio(struct task_struct *p)
-{
-	return __normal_prio(p->policy, p->rt_priority,
-			     PRIO_TO_NICE(p->static_prio));
-}
-
 static inline void check_class_changed(struct rq *rq, struct task_struct *p,
 				       const struct sched_class *prev_class,
 				       int oldprio)
@@ -924,7 +918,8 @@ static void __setscheduler_params(struct task_struct *p,
 		p->static_prio = NICE_TO_PRIO(attr->sched_nice);
 
 	p->rt_priority = attr->sched_priority;
-	p->normal_prio = normal_prio(p);
+	p->normal_prio = __normal_prio(p->policy, p->rt_priority,
+				       PRIO_TO_NICE(p->static_prio));
 	set_load_weight(p, true);
 }
 

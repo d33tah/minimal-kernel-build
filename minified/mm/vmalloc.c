@@ -147,19 +147,6 @@ int ioremap_page_range(unsigned long addr, unsigned long end,
 	return err;
 }
 
-static void vunmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
-			     pgtbl_mod_mask *mask)
-{
-	pte_t *pte;
-
-	pte = pte_offset_kernel(pmd, addr);
-	do {
-		pte_t ptent = ptep_get_and_clear(&init_mm, addr, pte);
-		WARN_ON(!pte_none(ptent) && !pte_present(ptent));
-	} while (pte++, addr += PAGE_SIZE, addr != end);
-	*mask |= PGTBL_PTE_MODIFIED;
-}
-
 static void vunmap_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
 			     pgtbl_mod_mask *mask)
 {
@@ -174,8 +161,19 @@ static void vunmap_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
 			*mask |= PGTBL_PMD_MODIFIED;
 		if (pmd_none_or_clear_bad(pmd))
 			continue;
-		vunmap_pte_range(pmd, addr, next, mask);
-
+		/* Inlined vunmap_pte_range */
+		{
+			pte_t *pte = pte_offset_kernel(pmd, addr);
+			unsigned long pte_addr = addr;
+			do {
+				pte_t ptent = ptep_get_and_clear(&init_mm,
+								 pte_addr, pte);
+				WARN_ON(!pte_none(ptent) &&
+					!pte_present(ptent));
+			} while (pte++, pte_addr += PAGE_SIZE,
+				 pte_addr != next);
+			*mask |= PGTBL_PTE_MODIFIED;
+		}
 		cond_resched();
 	} while (pmd++, addr = next, addr != end);
 }

@@ -1243,17 +1243,6 @@ vm_fault_t filemap_fault(struct vm_fault *vmf)
 	return VM_FAULT_LOCKED;
 }
 
-static bool filemap_map_pmd(struct vm_fault *vmf, struct page *page)
-{
-	struct mm_struct *mm = vmf->vma->vm_mm;
-
-	/* pmd_trans_huge and pmd_devmap_trans_unstable always return 0 */
-	if (pmd_none(*vmf->pmd))
-		pmd_install(mm, vmf->pmd, &vmf->prealloc_pte);
-
-	return false;
-}
-
 static struct folio *next_uptodate_page(struct folio *folio,
 					struct address_space *mapping,
 					struct xa_state *xas, pgoff_t end_pgoff)
@@ -1315,10 +1304,9 @@ vm_fault_t filemap_map_pages(struct vm_fault *vmf, pgoff_t start_pgoff,
 	if (!folio)
 		goto out;
 
-	if (filemap_map_pmd(vmf, &folio->page)) {
-		ret = VM_FAULT_NOPAGE;
-		goto out;
-	}
+	/* pmd_trans_huge and pmd_devmap_trans_unstable always return 0 */
+	if (pmd_none(*vmf->pmd))
+		pmd_install(vma->vm_mm, vmf->pmd, &vmf->prealloc_pte);
 
 	addr = vma->vm_start + ((start_pgoff - vma->vm_pgoff) << PAGE_SHIFT);
 	vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd, addr, &vmf->ptl);

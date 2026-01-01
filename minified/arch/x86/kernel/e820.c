@@ -363,42 +363,27 @@ void __init e820__update_table_print(void)
 
 #define MAX_GAP_END 0x100000000ull
 
-static int __init e820_search_gap(unsigned long *gapstart,
-				  unsigned long *gapsize)
+__init void e820__setup_pci_gap(void)
 {
+	unsigned long gapstart = 0x10000000;
+	unsigned long gapsize = 0x400000;
 	unsigned long long last = MAX_GAP_END;
 	int i = e820_table->nr_entries;
-	int found = 0;
 
+	/* Inlined e820_search_gap */
 	while (--i >= 0) {
 		unsigned long long start = e820_table->entries[i].addr;
 		unsigned long long end = start + e820_table->entries[i].size;
 
 		if (last > end) {
 			unsigned long gap = last - end;
-
-			if (gap >= *gapsize) {
-				*gapsize = gap;
-				*gapstart = end;
-				found = 1;
+			if (gap >= gapsize) {
+				gapsize = gap;
+				gapstart = end;
 			}
 		}
 		if (start < last)
 			last = start;
-	}
-	return found;
-}
-
-__init void e820__setup_pci_gap(void)
-{
-	unsigned long gapstart, gapsize;
-	int found;
-
-	gapsize = 0x400000;
-	found = e820_search_gap(&gapstart, &gapsize);
-
-	if (!found) {
-		gapstart = 0x10000000;
 	}
 
 	pci_mem_start = gapstart;

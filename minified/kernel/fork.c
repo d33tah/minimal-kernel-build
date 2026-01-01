@@ -278,23 +278,13 @@ void free_task(struct task_struct *tsk)
 	free_task_struct(tsk);
 }
 
-static void dup_mm_exe_file(struct mm_struct *mm, struct mm_struct *oldmm)
-{
-	struct file *exe_file;
-
-	exe_file = get_mm_exe_file(oldmm);
-	RCU_INIT_POINTER(mm->exe_file, exe_file);
-
-	if (exe_file)
-		deny_write_access(exe_file);
-}
-
 static __latent_entropy int dup_mmap(struct mm_struct *mm,
 				     struct mm_struct *oldmm)
 {
 	/* Minimal stub: simplified VMA duplication for fork */
 	struct vm_area_struct *mpnt, *tmp, *prev, **pprev;
 	struct rb_node **rb_link, *rb_parent;
+	struct file *exe_file;
 	int retval = 0;
 
 	if (mmap_write_lock_killable(oldmm))
@@ -302,7 +292,10 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
 
 	mmap_write_lock_nested(mm, SINGLE_DEPTH_NESTING);
 
-	dup_mm_exe_file(mm, oldmm);
+	exe_file = get_mm_exe_file(oldmm);
+	RCU_INIT_POINTER(mm->exe_file, exe_file);
+	if (exe_file)
+		deny_write_access(exe_file);
 	mm->total_vm = oldmm->total_vm;
 
 	rb_link = &mm->mm_rb.rb_node;

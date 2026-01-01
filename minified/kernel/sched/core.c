@@ -705,14 +705,6 @@ void scheduler_tick(void)
 	rq_unlock(rq, &rf);
 }
 
-/* CONFIG_PREEMPTION not set - no preempt tracing */
-static inline void preempt_latency_start(int val)
-{
-}
-static inline void preempt_latency_stop(int val)
-{
-}
-
 static noinline void __schedule_bug(struct task_struct *prev)
 {
 	/* Stub: skip detailed scheduling bug reporting for minimal kernel */
@@ -902,9 +894,7 @@ static void __sched notrace preempt_schedule_common(void)
 {
 	do {
 		preempt_disable_notrace();
-		preempt_latency_start(1);
 		__schedule(SM_PREEMPT);
-		preempt_latency_stop(1);
 		preempt_enable_no_resched_notrace();
 
 	} while (need_resched());

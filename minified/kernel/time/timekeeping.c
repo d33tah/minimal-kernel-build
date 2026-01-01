@@ -479,7 +479,7 @@ void __weak __init read_persistent_wall_and_boot_offset(
 	*boot_offset = ns_to_timespec64(local_clock());
 }
 
-static bool persistent_clock_exists;
+/* persistent_clock_exists removed - unused */
 
 void __init timekeeping_init(void)
 {

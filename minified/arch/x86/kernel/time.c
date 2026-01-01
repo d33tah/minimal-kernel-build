@@ -54,23 +54,7 @@ static inline void time_dbg(const char *s)
 		asm volatile("outb %0, $0xe9" : : "a"(*s++));
 }
 
-static __init void x86_late_time_init(void)
-{
-	time_dbg("x86_late_time_init: start\n");
-	/* intr_mode_select removed - apic_intr_mode_select is empty stub */
-
-	time_dbg("x86_late_time_init: calling timer_init\n");
-	x86_init.timers.timer_init();
-
-	/* intr_mode_init removed - apic_intr_mode_init is empty stub */
-
-	time_dbg("x86_late_time_init: calling tsc_init\n");
-	tsc_init();
-
-	time_dbg("x86_late_time_init: done\n");
-	if (static_cpu_has(X86_FEATURE_WAITPKG))
-		use_tpause_delay();
-}
+/* x86_late_time_init removed - never assigned to late_time_init pointer */
 
 void __init time_init(void)
 {

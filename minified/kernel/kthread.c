@@ -109,20 +109,7 @@ void *kthread_data(struct task_struct *task)
 	return to_kthread(task)->data;
 }
 
-static void __kthread_parkme(struct kthread *self)
-{
-	for (;;) {
-		set_special_state(TASK_PARKED);
-		if (!test_bit(KTHREAD_SHOULD_PARK, &self->flags))
-			break;
-
-		preempt_disable();
-		complete(&self->parked);
-		schedule_preempt_disabled();
-		preempt_enable();
-	}
-	__set_current_state(TASK_RUNNING);
-}
+/* __kthread_parkme inlined into kthread */
 
 void __noreturn kthread_exit(long result)
 {
@@ -166,7 +153,17 @@ static int kthread(void *_create)
 
 	ret = -EINTR;
 	if (!test_bit(KTHREAD_SHOULD_STOP, &self->flags)) {
-		__kthread_parkme(self);
+		/* Inlined __kthread_parkme */
+		for (;;) {
+			set_special_state(TASK_PARKED);
+			if (!test_bit(KTHREAD_SHOULD_PARK, &self->flags))
+				break;
+			preempt_disable();
+			complete(&self->parked);
+			schedule_preempt_disabled();
+			preempt_enable();
+		}
+		__set_current_state(TASK_RUNNING);
 		ret = threadfn(data);
 	}
 	kthread_exit(ret);

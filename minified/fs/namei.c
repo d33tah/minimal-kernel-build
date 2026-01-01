@@ -1023,11 +1023,6 @@ static const char *walk_component(struct nameidata *nd, int flags)
 #define HASH_MIX(x, y, a) \
 	(x ^= (a), y ^= x, x = rol32(x, 7), x += y, y = rol32(y, 20), y *= 9)
 
-static inline unsigned int fold_hash(unsigned long x, unsigned long y)
-{
-	return __hash_32(y ^ __hash_32(x));
-}
-
 static inline u64 hash_name(const void *salt, const char *name)
 {
 	unsigned long a = 0, b, x = 0, y = (unsigned long)salt;
@@ -1051,7 +1046,8 @@ inside:
 	mask = create_zero_mask(adata | bdata);
 	x ^= a & zero_bytemask(mask);
 
-	return hashlen_create(fold_hash(x, y), len + find_zero(mask));
+	return hashlen_create(__hash_32(y ^ __hash_32(x)),
+			      len + find_zero(mask));
 }
 
 static int link_path_walk(const char *name, struct nameidata *nd)

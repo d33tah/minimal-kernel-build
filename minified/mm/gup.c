@@ -84,11 +84,7 @@ static int follow_pfn_pte(struct vm_area_struct *vma, unsigned long address,
 	return -EEXIST;
 }
 
-static inline bool can_follow_write_pte(pte_t pte, unsigned int flags)
-{
-	return pte_write(pte) ||
-	       ((flags & FOLL_FORCE) && (flags & FOLL_COW) && pte_dirty(pte));
-}
+/* can_follow_write_pte inlined into follow_page_pte */
 
 static struct page *follow_page_pte(struct vm_area_struct *vma,
 				    unsigned long address, pmd_t *pmd,
@@ -113,7 +109,10 @@ retry:
 	if (!pte_present(pte))
 		goto no_page;
 	/* pte_protnone always returns 0, FOLL_NUMA check removed */
-	if ((flags & FOLL_WRITE) && !can_follow_write_pte(pte, flags)) {
+	/* Inlined can_follow_write_pte */
+	if ((flags & FOLL_WRITE) &&
+	    !(pte_write(pte) ||
+	      ((flags & FOLL_FORCE) && (flags & FOLL_COW) && pte_dirty(pte)))) {
 		pte_unmap_unlock(ptep, ptl);
 		return NULL;
 	}

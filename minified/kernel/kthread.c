@@ -249,12 +249,6 @@ static void __kthread_bind_mask(struct task_struct *p,
 	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
 }
 
-static void __kthread_bind(struct task_struct *p, unsigned int cpu,
-			   unsigned int state)
-{
-	__kthread_bind_mask(p, cpumask_of(cpu), state);
-}
-
 void kthread_set_per_cpu(struct task_struct *k, int cpu)
 {
 	struct kthread *kthread = to_kthread(k);
@@ -277,7 +271,7 @@ void kthread_unpark(struct task_struct *k)
 	struct kthread *kthread = to_kthread(k);
 
 	if (test_bit(KTHREAD_IS_PER_CPU, &kthread->flags))
-		__kthread_bind(k, kthread->cpu, TASK_PARKED);
+		__kthread_bind_mask(k, cpumask_of(kthread->cpu), TASK_PARKED);
 
 	clear_bit(KTHREAD_SHOULD_PARK, &kthread->flags);
 

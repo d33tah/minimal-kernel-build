@@ -687,14 +687,6 @@ static void __init do_basic_setup(void)
 	edbg("dbs:done\n");
 }
 
-static void __init do_pre_smp_initcalls(void)
-{
-	initcall_entry_t *fn;
-
-	for (fn = __initcall_start; fn < __initcall0_start; fn++)
-		do_one_initcall(initcall_from_entry(fn));
-}
-
 static int run_init_process(const char *init_filename)
 {
 	argv_init[0] = init_filename;
@@ -822,7 +814,12 @@ static noinline void __init kernel_init_freeable(void)
 
 	/* rcu_init_tasks_generic removed - empty stub */
 	edbg("kif:pre_smp\n");
-	do_pre_smp_initcalls();
+	/* Inlined do_pre_smp_initcalls */
+	{
+		initcall_entry_t *fn;
+		for (fn = __initcall_start; fn < __initcall0_start; fn++)
+			do_one_initcall(initcall_from_entry(fn));
+	}
 	/* lockup_detector_init removed - empty stub */
 	/* smp_init removed - empty stub */
 	edbg("kif:sched_smp\n");

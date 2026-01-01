@@ -173,24 +173,6 @@ static int count_strings_kernel(const char *const *argv)
 	return i;
 }
 
-static int bprm_stack_limits(struct linux_binprm *bprm)
-{
-	unsigned long limit, ptr_size;
-
-	limit = _STK_LIM / 4 * 3;
-	limit = min(limit, bprm->rlim_stack.rlim_cur / 4);
-
-	limit = max_t(unsigned long, limit, ARG_MAX);
-
-	ptr_size = (max(bprm->argc, 1) + bprm->envc) * sizeof(void *);
-	if (limit <= ptr_size)
-		return -E2BIG;
-	limit -= ptr_size;
-
-	bprm->argmin = bprm->p - limit;
-	return 0;
-}
-
 /* Removed: copy_strings() - only used by removed do_execveat_common */
 
 int copy_string_kernel(const char *arg, struct linux_binprm *bprm)
@@ -977,9 +959,19 @@ int kernel_execve(const char *kernel_filename, const char *const *argv,
 		goto out_free;
 	bprm->envc = retval;
 
-	retval = bprm_stack_limits(bprm);
-	if (retval < 0)
-		goto out_free;
+	/* Inlined bprm_stack_limits */
+	{
+		unsigned long limit = _STK_LIM / 4 * 3;
+		unsigned long ptr_size;
+		limit = min(limit, bprm->rlim_stack.rlim_cur / 4);
+		limit = max_t(unsigned long, limit, ARG_MAX);
+		ptr_size = (max(bprm->argc, 1) + bprm->envc) * sizeof(void *);
+		if (limit <= ptr_size) {
+			retval = -E2BIG;
+			goto out_free;
+		}
+		bprm->argmin = bprm->p - (limit - ptr_size);
+	}
 
 	retval = copy_string_kernel(bprm->filename, bprm);
 	if (retval < 0)

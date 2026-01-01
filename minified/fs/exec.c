@@ -60,11 +60,6 @@ void __register_binfmt(struct linux_binfmt *fmt, int insert)
 	write_unlock(&binfmt_lock);
 }
 
-static inline void put_binfmt(struct linux_binfmt *fmt)
-{
-	module_put(fmt->module);
-}
-
 bool path_noexec(const struct path *path)
 {
 	return (path->mnt->mnt_flags & MNT_NOEXEC) ||
@@ -147,11 +142,6 @@ err_free:
 	return err;
 }
 
-static bool valid_arg_len(struct linux_binprm *bprm, long len)
-{
-	return len <= MAX_ARG_STRLEN;
-}
-
 static int bprm_mm_init(struct linux_binprm *bprm)
 {
 	int err;
@@ -227,7 +217,7 @@ int copy_string_kernel(const char *arg, struct linux_binprm *bprm)
 
 	if (len == 0)
 		return -EFAULT;
-	if (!valid_arg_len(bprm, len))
+	if (len > MAX_ARG_STRLEN)
 		return -E2BIG;
 
 	arg += len;
@@ -878,7 +868,7 @@ static int search_binary_handler(struct linux_binprm *bprm)
 		retval = fmt->load_binary(bprm);
 
 		read_lock(&binfmt_lock);
-		put_binfmt(fmt);
+		module_put(fmt->module);
 		if (bprm->point_of_no_return || (retval != -ENOEXEC)) {
 			read_unlock(&binfmt_lock);
 			return retval;

@@ -703,31 +703,7 @@ static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
 	return 0;
 }
 
-/* copy_fs inlined into copy_process */
-
-static int copy_files(unsigned long clone_flags, struct task_struct *tsk)
-{
-	struct files_struct *oldf, *newf;
-	int error = 0;
-
-	oldf = current->files;
-	if (!oldf)
-		goto out;
-
-	if (clone_flags & CLONE_FILES) {
-		atomic_inc(&oldf->count);
-		goto out;
-	}
-
-	newf = dup_fd(oldf, NR_OPEN_MAX, &error);
-	if (!newf)
-		goto out;
-
-	tsk->files = newf;
-	error = 0;
-out:
-	return error;
-}
+/* copy_fs and copy_files inlined into copy_process */
 
 static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk)
 {
@@ -970,9 +946,21 @@ copy_process(struct pid *pid, int trace, int node,
 		goto bad_fork_cleanup_policy;
 	/* perf_event_init_task removed - empty stub that always returns 0 */
 	/* security_task_alloc always returns 0 - dead code removed */
-	retval = copy_files(clone_flags, p);
-	if (retval)
-		goto bad_fork_cleanup_security;
+	/* Inlined copy_files */
+	{
+		struct files_struct *oldf = current->files;
+		if (oldf) {
+			if (clone_flags & CLONE_FILES) {
+				atomic_inc(&oldf->count);
+			} else {
+				struct files_struct *newf =
+					dup_fd(oldf, NR_OPEN_MAX, &retval);
+				if (!newf)
+					goto bad_fork_cleanup_security;
+				p->files = newf;
+			}
+		}
+	}
 	/* Inlined copy_fs */
 	{
 		struct fs_struct *fs = current->fs;

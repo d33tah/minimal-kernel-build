@@ -887,11 +887,6 @@ const struct file_operations pidfd_fops = {
 	.poll = pidfd_poll,
 };
 
-static __always_inline void delayed_free_task(struct task_struct *tsk)
-{
-	free_task(tsk);
-}
-
 /* copy_oom_score_adj removed - empty stub */
 
 static __latent_entropy struct task_struct *
@@ -1201,7 +1196,7 @@ bad_fork_free:
 	WRITE_ONCE(p->__state, TASK_DEAD);
 	exit_task_stack_account(p);
 	put_task_stack(p);
-	delayed_free_task(p);
+	free_task(p);
 fork_out:
 	spin_lock_irq(&current->sighand->siglock);
 	hlist_del_init(&delayed.node);

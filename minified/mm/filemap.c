@@ -1295,22 +1295,6 @@ skip:
 	return NULL;
 }
 
-static inline struct folio *first_map_page(struct address_space *mapping,
-					   struct xa_state *xas,
-					   pgoff_t end_pgoff)
-{
-	return next_uptodate_page(xas_find(xas, end_pgoff), mapping, xas,
-				  end_pgoff);
-}
-
-static inline struct folio *next_map_page(struct address_space *mapping,
-					  struct xa_state *xas,
-					  pgoff_t end_pgoff)
-{
-	return next_uptodate_page(xas_next_entry(xas, end_pgoff), mapping, xas,
-				  end_pgoff);
-}
-
 vm_fault_t filemap_map_pages(struct vm_fault *vmf, pgoff_t start_pgoff,
 			     pgoff_t end_pgoff)
 {
@@ -1326,7 +1310,8 @@ vm_fault_t filemap_map_pages(struct vm_fault *vmf, pgoff_t start_pgoff,
 	vm_fault_t ret = 0;
 
 	rcu_read_lock();
-	folio = first_map_page(mapping, &xas, end_pgoff);
+	folio = next_uptodate_page(xas_find(&xas, end_pgoff), mapping, &xas,
+				   end_pgoff);
 	if (!folio)
 		goto out;
 
@@ -1370,7 +1355,9 @@ unlock:
 		}
 		folio_unlock(folio);
 		folio_put(folio);
-	} while ((folio = next_map_page(mapping, &xas, end_pgoff)) != NULL);
+	} while ((folio = next_uptodate_page(xas_next_entry(&xas, end_pgoff),
+					     mapping, &xas, end_pgoff)) !=
+		 NULL);
 	pte_unmap_unlock(vmf->pte, vmf->ptl);
 out:
 	rcu_read_unlock();

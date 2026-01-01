@@ -16,14 +16,9 @@
 #include <linux/uaccess.h>
 #include <asm/unistd.h>
 
-static inline bool unsigned_offsets(struct file *file)
-{
-	return file->f_mode & FMODE_UNSIGNED_OFFSET;
-}
-
 loff_t vfs_setpos(struct file *file, loff_t offset, loff_t maxsize)
 {
-	if (offset < 0 && !unsigned_offsets(file))
+	if (offset < 0 && !(file->f_mode & FMODE_UNSIGNED_OFFSET))
 		return -EINVAL;
 	if (offset > maxsize)
 		return -EINVAL;

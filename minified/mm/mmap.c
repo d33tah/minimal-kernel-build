@@ -224,43 +224,30 @@ void __vma_link_rb(struct mm_struct *mm, struct vm_area_struct *vma,
 	rb_insert_augmented(&vma->vm_rb, &mm->mm_rb, &vma_gap_callbacks);
 }
 
-static void __vma_link_file(struct vm_area_struct *vma)
-{
-	struct file *file;
-
-	file = vma->vm_file;
-	if (file) {
-		struct address_space *mapping = file->f_mapping;
-
-		if (vma->vm_flags & VM_SHARED)
-			mapping_allow_writable(mapping);
-
-		/* flush_dcache_mmap_lock/unlock - empty stubs on x86 */
-		vma_interval_tree_insert(vma, &mapping->i_mmap);
-	}
-}
-
-static void __vma_link(struct mm_struct *mm, struct vm_area_struct *vma,
-		       struct vm_area_struct *prev, struct rb_node **rb_link,
-		       struct rb_node *rb_parent)
-{
-	__vma_link_list(mm, vma, prev);
-	__vma_link_rb(mm, vma, rb_link, rb_parent);
-}
-
 static void vma_link(struct mm_struct *mm, struct vm_area_struct *vma,
 		     struct vm_area_struct *prev, struct rb_node **rb_link,
 		     struct rb_node *rb_parent)
 {
 	struct address_space *mapping = NULL;
+	struct file *file;
 
 	if (vma->vm_file) {
 		mapping = vma->vm_file->f_mapping;
 		i_mmap_lock_write(mapping);
 	}
 
-	__vma_link(mm, vma, prev, rb_link, rb_parent);
-	__vma_link_file(vma);
+	__vma_link_list(mm, vma, prev);
+	__vma_link_rb(mm, vma, rb_link, rb_parent);
+
+	file = vma->vm_file;
+	if (file) {
+		struct address_space *file_mapping = file->f_mapping;
+
+		if (vma->vm_flags & VM_SHARED)
+			mapping_allow_writable(file_mapping);
+
+		vma_interval_tree_insert(vma, &file_mapping->i_mmap);
+	}
 
 	if (mapping)
 		i_mmap_unlock_write(mapping);

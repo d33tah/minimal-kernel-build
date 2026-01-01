@@ -120,17 +120,6 @@ void tty_free_file(struct file *file)
 	kfree(priv);
 }
 
-static void tty_del_file(struct file *file)
-{
-	struct tty_file_private *priv = file->private_data;
-	struct tty_struct *tty = priv->tty;
-
-	spin_lock(&tty->files_lock);
-	list_del(&priv->list);
-	spin_unlock(&tty->files_lock);
-	tty_free_file(file);
-}
-
 const char *tty_name(const struct tty_struct *tty)
 {
 	if (!tty)
@@ -766,7 +755,14 @@ int tty_release(struct inode *inode, struct file *filp)
 	if (--tty->count < 0)
 		tty->count = 0;
 
-	tty_del_file(filp);
+	/* Inlined tty_del_file */
+	{
+		struct tty_file_private *priv = filp->private_data;
+		spin_lock(&tty->files_lock);
+		list_del(&priv->list);
+		spin_unlock(&tty->files_lock);
+		tty_free_file(filp);
+	}
 	tty_unlock(tty);
 
 	if (!tty->count)

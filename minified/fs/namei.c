@@ -199,26 +199,18 @@ static inline int do_inode_permission(struct user_namespace *mnt_userns,
 	return generic_permission(mnt_userns, inode, mask);
 }
 
-static int sb_permission(struct super_block *sb, struct inode *inode, int mask)
-{
-	if (unlikely(mask & MAY_WRITE)) {
-		umode_t mode = inode->i_mode;
-
-		if (sb_rdonly(sb) &&
-		    (S_ISREG(mode) || S_ISDIR(mode) || S_ISLNK(mode)))
-			return -EROFS;
-	}
-	return 0;
-}
-
 int inode_permission(struct user_namespace *mnt_userns, struct inode *inode,
 		     int mask)
 {
 	int retval;
 
-	retval = sb_permission(inode->i_sb, inode, mask);
-	if (retval)
-		return retval;
+	if (unlikely(mask & MAY_WRITE)) {
+		umode_t mode = inode->i_mode;
+
+		if (sb_rdonly(inode->i_sb) &&
+		    (S_ISREG(mode) || S_ISDIR(mode) || S_ISLNK(mode)))
+			return -EROFS;
+	}
 
 	if (unlikely(mask & MAY_WRITE)) {
 		if (IS_IMMUTABLE(inode))
@@ -777,17 +769,6 @@ again:
 	return dentry;
 }
 
-static struct dentry *lookup_slow(const struct qstr *name, struct dentry *dir,
-				  unsigned int flags)
-{
-	struct inode *inode = dir->d_inode;
-	struct dentry *res;
-	inode_lock_shared(inode);
-	res = __lookup_slow(name, dir, flags);
-	inode_unlock_shared(inode);
-	return res;
-}
-
 static inline int may_lookup(struct user_namespace *mnt_userns,
 			     struct nameidata *nd)
 {
@@ -1025,7 +1006,10 @@ static const char *walk_component(struct nameidata *nd, int flags)
 	if (IS_ERR(dentry))
 		return ERR_CAST(dentry);
 	if (unlikely(!dentry)) {
-		dentry = lookup_slow(&nd->last, nd->path.dentry, nd->flags);
+		struct inode *dir_inode = nd->path.dentry->d_inode;
+		inode_lock_shared(dir_inode);
+		dentry = __lookup_slow(&nd->last, nd->path.dentry, nd->flags);
+		inode_unlock_shared(dir_inode);
 		if (IS_ERR(dentry))
 			return ERR_CAST(dentry);
 	}
@@ -1689,18 +1673,6 @@ static int do_open(struct nameidata *nd, struct file *file,
 
 /* Removed: do_tmpfile - always returned -EOPNOTSUPP */
 
-static int do_o_path(struct nameidata *nd, unsigned flags, struct file *file)
-{
-	struct path path;
-	int error = path_lookupat(nd, flags, &path);
-	if (!error) {
-		/* audit_inode - empty stub */
-		error = vfs_open(&path, file);
-		path_put(&path);
-	}
-	return error;
-}
-
 static struct file *path_openat(struct nameidata *nd,
 				const struct open_flags *op, unsigned flags)
 {
@@ -1714,7 +1686,12 @@ static struct file *path_openat(struct nameidata *nd,
 	if (unlikely(file->f_flags & __O_TMPFILE)) {
 		error = -EOPNOTSUPP;
 	} else if (unlikely(file->f_flags & O_PATH)) {
-		error = do_o_path(nd, flags, file);
+		struct path path;
+		error = path_lookupat(nd, flags, &path);
+		if (!error) {
+			error = vfs_open(&path, file);
+			path_put(&path);
+		}
 	} else {
 		const char *s = path_init(nd, flags);
 		while (!(error = link_path_walk(s, nd)) &&

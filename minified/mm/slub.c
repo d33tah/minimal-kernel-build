@@ -386,18 +386,7 @@ static inline unsigned int init_tid(int cpu)
 	return cpu;
 }
 
-/* Removed: deactivate_slab - dead code since flush_slab simplified (~80 LOC) */
-
-static inline void flush_slab(struct kmem_cache *s, struct kmem_cache_cpu *c)
-{
-	/* Simplified: just clear the cpu slab */
-	unsigned long flags;
-	local_lock_irqsave(&s->cpu_slab->lock, flags);
-	c->slab = NULL;
-	c->freelist = NULL;
-	c->tid = next_tid(c->tid);
-	local_unlock_irqrestore(&s->cpu_slab->lock, flags);
-}
+/* Removed: deactivate_slab, flush_slab - dead/inlined code */
 
 static inline void __flush_cpu_slab(struct kmem_cache *s, int cpu)
 {
@@ -425,8 +414,14 @@ static void flush_cpu_slab(struct work_struct *w)
 	s = sfw->s;
 	c = this_cpu_ptr(s->cpu_slab);
 
-	if (c->slab)
-		flush_slab(s, c);
+	if (c->slab) {
+		unsigned long flags;
+		local_lock_irqsave(&s->cpu_slab->lock, flags);
+		c->slab = NULL;
+		c->freelist = NULL;
+		c->tid = next_tid(c->tid);
+		local_unlock_irqrestore(&s->cpu_slab->lock, flags);
+	}
 	/* unfreeze_partials removed - was empty stub */
 }
 

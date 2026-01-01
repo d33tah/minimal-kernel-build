@@ -42,28 +42,6 @@ bool is_vmalloc_addr(const void *x)
 /* Removed: struct vfree_deferred, vfree_deferred, free_work
  * - Dead code since vfree is a no-op (~17 lines) */
 
-static int vmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
-			  phys_addr_t phys_addr, pgprot_t prot,
-			  unsigned int max_page_shift, pgtbl_mod_mask *mask)
-{
-	pte_t *pte;
-	u64 pfn;
-	unsigned long size = PAGE_SIZE;
-
-	pfn = phys_addr >> PAGE_SHIFT;
-	pte = pte_alloc_kernel_track(pmd, addr, mask);
-	if (!pte)
-		return -ENOMEM;
-	do {
-		BUG_ON(!pte_none(*pte));
-
-		set_pte_at(&init_mm, addr, pte, pfn_pte(pfn, prot));
-		pfn++;
-	} while (pte += PFN_DOWN(size), addr += size, addr != end);
-	*mask |= PGTBL_PTE_MODIFIED;
-	return 0;
-}
-
 /* Removed: vmap_try_huge_pmd - stub always returned 0 */
 
 static int vmap_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
@@ -78,9 +56,26 @@ static int vmap_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
 		return -ENOMEM;
 	do {
 		next = pmd_addr_end(addr, end);
-		if (vmap_pte_range(pmd, addr, next, phys_addr, prot,
-				   max_page_shift, mask))
-			return -ENOMEM;
+		/* Inlined vmap_pte_range */
+		{
+			pte_t *pte;
+			u64 pfn;
+			unsigned long size = PAGE_SIZE;
+			unsigned long pte_addr = addr;
+
+			pfn = phys_addr >> PAGE_SHIFT;
+			pte = pte_alloc_kernel_track(pmd, pte_addr, mask);
+			if (!pte)
+				return -ENOMEM;
+			do {
+				BUG_ON(!pte_none(*pte));
+				set_pte_at(&init_mm, pte_addr, pte,
+					   pfn_pte(pfn, prot));
+				pfn++;
+			} while (pte += PFN_DOWN(size), pte_addr += size,
+				 pte_addr != next);
+			*mask |= PGTBL_PTE_MODIFIED;
+		}
 	} while (pmd++, phys_addr += (next - addr), addr = next, addr != end);
 	return 0;
 }

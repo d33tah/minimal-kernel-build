@@ -259,10 +259,7 @@ static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
 	return slice;
 }
 
-static u64 sched_vslice(struct cfs_rq *cfs_rq, struct sched_entity *se)
-{
-	return calc_delta_fair(sched_slice(cfs_rq, se), se);
-}
+/* sched_vslice inlined into place_entity */
 
 #include "pelt.h"
 /* init_entity_runnable_average, post_init_entity_util_avg, update_tg_load_avg removed - never called */
@@ -494,7 +491,8 @@ static void place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 	u64 vruntime = cfs_rq->min_vruntime;
 
 	if (initial && sched_feat(START_DEBIT))
-		vruntime += sched_vslice(cfs_rq, se);
+		/* sched_vslice inlined */
+		vruntime += calc_delta_fair(sched_slice(cfs_rq, se), se);
 
 	if (!initial) {
 		unsigned long thresh;

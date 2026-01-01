@@ -624,21 +624,7 @@ static vm_fault_t fault_dirty_shared_page(struct vm_fault *vmf)
 	return 0;
 }
 
-static inline void wp_page_reuse(struct vm_fault *vmf) __releases(vmf->ptl)
-{
-	struct vm_area_struct *vma = vmf->vma;
-	struct page *page = vmf->page;
-	pte_t entry;
-
-	if (page)
-		page_cpupid_xchg_last(page, (1 << LAST_CPUPID_SHIFT) - 1);
-	/* flush_cache_page - empty stub on x86 */
-	entry = pte_mkyoung(vmf->orig_pte);
-	entry = maybe_mkwrite(pte_mkdirty(entry), vma);
-	ptep_set_access_flags(vma, vmf->address, vmf->pte, entry, 1);
-	/* update_mmu_cache - empty stub on x86 */
-	pte_unmap_unlock(vmf->pte, vmf->ptl);
-}
+/* wp_page_reuse inlined into do_wp_page */
 
 static vm_fault_t wp_page_copy(struct vm_fault *vmf)
 {
@@ -655,7 +641,15 @@ static vm_fault_t do_wp_page(struct vm_fault *vmf) __releases(vmf->ptl)
 	}
 
 	if (PageAnon(vmf->page) && PageAnonExclusive(vmf->page)) {
-		wp_page_reuse(vmf);
+		pte_t entry;
+		if (vmf->page)
+			page_cpupid_xchg_last(vmf->page,
+					      (1 << LAST_CPUPID_SHIFT) - 1);
+		entry = pte_mkyoung(vmf->orig_pte);
+		entry = maybe_mkwrite(pte_mkdirty(entry), vmf->vma);
+		ptep_set_access_flags(vmf->vma, vmf->address, vmf->pte, entry,
+				      1);
+		pte_unmap_unlock(vmf->pte, vmf->ptl);
 		return VM_FAULT_WRITE;
 	}
 

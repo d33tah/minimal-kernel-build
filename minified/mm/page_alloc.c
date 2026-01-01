@@ -734,27 +734,6 @@ void warn_alloc(gfp_t gfp_mask, nodemask_t *nodemask, const char *fmt, ...)
 	/* Stub: allocation warning not needed for minimal kernel */
 }
 
-static inline unsigned int gfp_to_alloc_flags(gfp_t gfp_mask)
-{
-	unsigned int alloc_flags = ALLOC_WMARK_MIN | ALLOC_CPUSET;
-
-	BUILD_BUG_ON(__GFP_HIGH != (__force gfp_t)ALLOC_HIGH);
-	BUILD_BUG_ON(__GFP_KSWAPD_RECLAIM != (__force gfp_t)ALLOC_KSWAPD);
-
-	alloc_flags |=
-		(__force int)(gfp_mask & (__GFP_HIGH | __GFP_KSWAPD_RECLAIM));
-
-	if (gfp_mask & __GFP_ATOMIC) {
-		if (!(gfp_mask & __GFP_NOMEMALLOC))
-			alloc_flags |= ALLOC_HARDER;
-
-		alloc_flags &= ~ALLOC_CPUSET;
-	} else if (unlikely(rt_task(current)) && in_task())
-		alloc_flags |= ALLOC_HARDER;
-
-	return alloc_flags;
-}
-
 /* tsk_is_oom_victim always false - oom_mm never set */
 static inline int __gfp_pfmemalloc_flags(gfp_t gfp_mask)
 {
@@ -780,7 +759,22 @@ static inline struct page *__alloc_pages_slowpath(gfp_t gfp_mask,
 {
 	/* Minimal stub: skip complex OOM/reclaim/compaction logic */
 	struct page *page;
-	unsigned int alloc_flags = gfp_to_alloc_flags(gfp_mask);
+	/* Inlined gfp_to_alloc_flags */
+	unsigned int alloc_flags = ALLOC_WMARK_MIN | ALLOC_CPUSET;
+
+	BUILD_BUG_ON(__GFP_HIGH != (__force gfp_t)ALLOC_HIGH);
+	BUILD_BUG_ON(__GFP_KSWAPD_RECLAIM != (__force gfp_t)ALLOC_KSWAPD);
+
+	alloc_flags |=
+		(__force int)(gfp_mask & (__GFP_HIGH | __GFP_KSWAPD_RECLAIM));
+
+	if (gfp_mask & __GFP_ATOMIC) {
+		if (!(gfp_mask & __GFP_NOMEMALLOC))
+			alloc_flags |= ALLOC_HARDER;
+
+		alloc_flags &= ~ALLOC_CPUSET;
+	} else if (unlikely(rt_task(current)) && in_task())
+		alloc_flags |= ALLOC_HARDER;
 
 	/* Try basic allocation once */
 	ac->preferred_zoneref = first_zones_zonelist(

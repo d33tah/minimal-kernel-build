@@ -174,23 +174,6 @@ int tsk_fork_get_node(struct task_struct *tsk)
 	return NUMA_NO_NODE;
 }
 
-static void create_kthread(struct kthread_create_info *create)
-{
-	int pid;
-
-	pid = kernel_thread(kthread, create, CLONE_FS | CLONE_FILES | SIGCHLD);
-	if (pid < 0) {
-		struct completion *done = xchg(&create->done, NULL);
-
-		if (!done) {
-			kfree(create);
-			return;
-		}
-		create->result = ERR_PTR(pid);
-		complete(done);
-	}
-}
-
 static __printf(4, 0) struct task_struct *__kthread_create_on_node(
 	int (*threadfn)(void *data), void *data, int node, const char namefmt[],
 	va_list args)
@@ -343,7 +326,22 @@ int kthreadd(void *unused)
 			list_del_init(&create->list);
 			spin_unlock(&kthread_create_lock);
 
-			create_kthread(create);
+			{
+				int pid;
+				pid = kernel_thread(kthread, create,
+						    CLONE_FS | CLONE_FILES |
+							    SIGCHLD);
+				if (pid < 0) {
+					struct completion *done =
+						xchg(&create->done, NULL);
+					if (!done) {
+						kfree(create);
+					} else {
+						create->result = ERR_PTR(pid);
+						complete(done);
+					}
+				}
+			}
 
 			spin_lock(&kthread_create_lock);
 		}

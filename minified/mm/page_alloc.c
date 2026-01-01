@@ -84,11 +84,6 @@ static inline int get_pcppage_migratetype(struct page *page)
 	return page->index;
 }
 
-static inline void set_pcppage_migratetype(struct page *page, int migratetype)
-{
-	page->index = migratetype;
-}
-
 static void __free_pages_ok(struct page *page, unsigned int order,
 			    fpi_t fpi_flags);
 
@@ -450,7 +445,7 @@ __rmqueue_smallest(struct zone *zone, unsigned int order, int migratetype)
 			continue;
 		del_page_from_free_list(page, zone, current_order);
 		expand(zone, page, order, current_order, migratetype);
-		set_pcppage_migratetype(page, migratetype);
+		page->index = migratetype;
 		return page;
 	}
 

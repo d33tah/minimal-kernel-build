@@ -137,26 +137,6 @@ static void vma_gap_update(struct vm_area_struct *vma)
 	vma_gap_callbacks_propagate(&vma->vm_rb, NULL);
 }
 
-static void __vma_rb_erase(struct vm_area_struct *vma, struct rb_root *root)
-{
-	rb_erase_augmented(&vma->vm_rb, root, &vma_gap_callbacks);
-}
-
-static __always_inline void vma_rb_erase_ignore(struct vm_area_struct *vma,
-						struct rb_root *root,
-						struct vm_area_struct *ignore)
-{
-	validate_mm_rb(root, ignore);
-
-	__vma_rb_erase(vma, root);
-}
-
-static __always_inline void vma_rb_erase(struct vm_area_struct *vma,
-					 struct rb_root *root)
-{
-	vma_rb_erase_ignore(vma, root, vma);
-}
-
 static inline void
 anon_vma_interval_tree_pre_update_vma(struct vm_area_struct *vma)
 {
@@ -1035,7 +1015,7 @@ static bool detach_vmas_to_be_unmapped(struct mm_struct *mm,
 	insertion_point = (prev ? &prev->vm_next : &mm->mmap);
 	vma->vm_prev = NULL;
 	do {
-		vma_rb_erase(vma, &mm->mm_rb);
+		rb_erase_augmented(&vma->vm_rb, &mm->mm_rb, &vma_gap_callbacks);
 		mm->map_count--;
 		tail_vma = vma;
 		vma = vma->vm_next;

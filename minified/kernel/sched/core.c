@@ -664,18 +664,6 @@ void scheduler_tick(void)
 	rq_unlock(rq, &rf);
 }
 
-static inline void schedule_debug(struct task_struct *prev, bool preempt)
-{
-	if (unlikely(in_atomic_preempt_off())) {
-		if (panic_on_warn)
-			panic("scheduling while atomic\n");
-		preempt_count_set(PREEMPT_DISABLED);
-	}
-	/* rcu_sleep_check is empty do{}while(0) */
-	/* SCHED_WARN_ON removed - ct_state() always returns CONTEXT_DISABLED, never CONTEXT_USER */
-	schedstat_inc(this_rq()->sched_count);
-}
-
 static inline struct task_struct *
 __pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 {
@@ -734,7 +722,13 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 	rq = cpu_rq(cpu);
 	prev = rq->curr;
 
-	schedule_debug(prev, !!sched_mode);
+	/* Inlined schedule_debug */
+	if (unlikely(in_atomic_preempt_off())) {
+		if (panic_on_warn)
+			panic("scheduling while atomic\n");
+		preempt_count_set(PREEMPT_DISABLED);
+	}
+	schedstat_inc(this_rq()->sched_count);
 	/* hrtick_clear removed - empty stub */
 	local_irq_disable();
 	rcu_note_context_switch(!!sched_mode);

@@ -137,14 +137,6 @@ static void vma_gap_update(struct vm_area_struct *vma)
 	vma_gap_callbacks_propagate(&vma->vm_rb, NULL);
 }
 
-static inline void vma_rb_insert(struct vm_area_struct *vma,
-				 struct rb_root *root)
-{
-	validate_mm_rb(root, NULL);
-
-	rb_insert_augmented(&vma->vm_rb, root, &vma_gap_callbacks);
-}
-
 static void __vma_rb_erase(struct vm_area_struct *vma, struct rb_root *root)
 {
 	rb_erase_augmented(&vma->vm_rb, root, &vma_gap_callbacks);
@@ -249,7 +241,7 @@ void __vma_link_rb(struct mm_struct *mm, struct vm_area_struct *vma,
 	rb_link_node(&vma->vm_rb, rb_parent, rb_link);
 	vma->rb_subtree_gap = 0;
 	vma_gap_update(vma);
-	vma_rb_insert(vma, &mm->mm_rb);
+	rb_insert_augmented(&vma->vm_rb, &mm->mm_rb, &vma_gap_callbacks);
 }
 
 static void __vma_link_file(struct vm_area_struct *vma)

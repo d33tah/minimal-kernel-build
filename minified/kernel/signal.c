@@ -25,12 +25,6 @@ static void __user *sig_handler(struct task_struct *t, int sig)
 	return t->sighand->action[sig - 1].sa.sa_handler;
 }
 
-static inline bool sig_handler_ignored(void __user *handler, int sig)
-{
-	return handler == SIG_IGN ||
-	       (handler == SIG_DFL && sig_kernel_ignore(sig));
-}
-
 static bool sig_task_ignored(struct task_struct *t, int sig, bool force)
 {
 	void __user *handler;
@@ -48,7 +42,8 @@ static bool sig_task_ignored(struct task_struct *t, int sig, bool force)
 		     (handler == SIG_KTHREAD_KERNEL) && !force))
 		return true;
 
-	return sig_handler_ignored(handler, sig);
+	return handler == SIG_IGN ||
+	       (handler == SIG_DFL && sig_kernel_ignore(sig));
 }
 
 static bool sig_ignored(struct task_struct *t, int sig, bool force)

@@ -27,38 +27,15 @@
 
 DEFINE_STATIC_SRCU(device_links_srcu);
 
-static int device_links_read_lock(void) __acquires(&device_links_srcu)
-{
-	return srcu_read_lock(&device_links_srcu);
-}
-
-static void device_links_read_unlock(int idx) __releases(&device_links_srcu)
-{
-	srcu_read_unlock(&device_links_srcu, idx);
-}
-
-static void device_link_synchronize_removal(void)
-{
-	synchronize_srcu(&device_links_srcu);
-}
-
-static int device_reorder_to_tail(struct device *dev, void *not_used)
-{
-	/* Minimal stub */
-	(void)dev;
-	(void)not_used;
-	return 0;
-}
-
 void device_pm_move_to_tail(struct device *dev)
 {
 	int idx;
 
-	idx = device_links_read_lock();
+	idx = srcu_read_lock(&device_links_srcu);
 	device_pm_lock();
-	device_reorder_to_tail(dev, NULL);
+	/* device_reorder_to_tail - minimal stub */
 	device_pm_unlock();
-	device_links_read_unlock(idx);
+	srcu_read_unlock(&device_links_srcu, idx);
 }
 
 #define to_devlink(dev) container_of((dev), struct device_link, link_dev)
@@ -72,7 +49,7 @@ static void device_link_release_fn(struct work_struct *work)
 	struct device_link *link =
 		container_of(work, struct device_link, rm_work);
 
-	device_link_synchronize_removal();
+	synchronize_srcu(&device_links_srcu);
 
 	pm_request_idle(link->supplier);
 

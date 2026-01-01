@@ -640,25 +640,8 @@ bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 	return free_pages > min + z->lowmem_reserve[highest_zoneidx];
 }
 
-static inline bool zone_watermark_fast(struct zone *z, unsigned int order,
-				       unsigned long mark, int highest_zoneidx,
-				       unsigned int alloc_flags, gfp_t gfp_mask)
-{
-	/* Simplified fast watermark check for minimal kernel */
-	long free_pages = zone_page_state(z, NR_FREE_PAGES);
-	return __zone_watermark_ok(z, order, mark, highest_zoneidx, alloc_flags,
-				   free_pages);
-}
-
-static inline unsigned int alloc_flags_nofragment(struct zone *zone,
-						  gfp_t gfp_mask)
-{
-	unsigned int alloc_flags;
-
-	alloc_flags = (__force int)(gfp_mask & __GFP_KSWAPD_RECLAIM);
-
-	return alloc_flags;
-}
+/* zone_watermark_fast inlined into get_page_from_freelist */
+/* alloc_flags_nofragment inlined into __alloc_pages */
 
 static struct page *get_page_from_freelist(gfp_t gfp_mask, unsigned int order,
 					   int alloc_flags,
@@ -677,9 +660,11 @@ static struct page *get_page_from_freelist(gfp_t gfp_mask, unsigned int order,
 			wmark_pages(zone, alloc_flags & ALLOC_WMARK_MASK);
 
 		/* Skip watermark check if NO_WATERMARKS flag set */
+		/* Inlined zone_watermark_fast */
 		if (!(alloc_flags & ALLOC_NO_WATERMARKS) &&
-		    !zone_watermark_fast(zone, order, mark, ac->highest_zoneidx,
-					 alloc_flags, gfp_mask))
+		    !__zone_watermark_ok(zone, order, mark, ac->highest_zoneidx,
+					 alloc_flags,
+					 zone_page_state(zone, NR_FREE_PAGES)))
 			continue;
 
 		page = rmqueue(ac->preferred_zoneref->zone, zone, order,
@@ -815,7 +800,8 @@ struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid,
 				 &alloc_gfp, &alloc_flags))
 		return NULL;
 
-	alloc_flags |= alloc_flags_nofragment(ac.preferred_zoneref->zone, gfp);
+	/* Inlined alloc_flags_nofragment */
+	alloc_flags |= (__force int)(gfp & __GFP_KSWAPD_RECLAIM);
 
 	page = get_page_from_freelist(alloc_gfp, order, alloc_flags, &ac);
 	if (likely(page))

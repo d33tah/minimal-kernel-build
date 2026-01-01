@@ -348,23 +348,6 @@ static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags,
 	WRITE_ONCE(p->__state, TASK_RUNNING);
 }
 
-static void ttwu_do_activate(struct rq *rq, struct task_struct *p,
-			     int wake_flags, struct rq_flags *rf)
-{
-	int en_flags = ENQUEUE_WAKEUP | ENQUEUE_NOCLOCK;
-
-	lockdep_assert_rq_held(rq);
-
-	if (p->sched_contributes_to_load)
-		rq->nr_uninterruptible--;
-
-	if (p->in_iowait)
-		atomic_dec(&task_rq(p)->nr_iowait);
-
-	activate_task(rq, p, en_flags);
-	ttwu_do_wakeup(rq, p, wake_flags, rf);
-}
-
 static int ttwu_runnable(struct task_struct *p, int wake_flags)
 {
 	struct rq_flags rf;
@@ -391,7 +374,13 @@ static void ttwu_queue(struct task_struct *p, int cpu, int wake_flags)
 	/* ttwu_queue_wakelist always false - dead branch removed */
 	rq_lock(rq, &rf);
 	update_rq_clock(rq);
-	ttwu_do_activate(rq, p, wake_flags, &rf);
+	/* Inlined ttwu_do_activate */
+	if (p->sched_contributes_to_load)
+		rq->nr_uninterruptible--;
+	if (p->in_iowait)
+		atomic_dec(&task_rq(p)->nr_iowait);
+	activate_task(rq, p, ENQUEUE_WAKEUP | ENQUEUE_NOCLOCK);
+	ttwu_do_wakeup(rq, p, wake_flags, &rf);
 	rq_unlock(rq, &rf);
 }
 
@@ -695,17 +684,11 @@ void scheduler_tick(void)
 	rq_unlock(rq, &rf);
 }
 
-static noinline void __schedule_bug(struct task_struct *prev)
-{
-	/* Stub: skip detailed scheduling bug reporting for minimal kernel */
-	if (panic_on_warn)
-		panic("scheduling while atomic\n");
-}
-
 static inline void schedule_debug(struct task_struct *prev, bool preempt)
 {
 	if (unlikely(in_atomic_preempt_off())) {
-		__schedule_bug(prev);
+		if (panic_on_warn)
+			panic("scheduling while atomic\n");
 		preempt_count_set(PREEMPT_DISABLED);
 	}
 	/* rcu_sleep_check is empty do{}while(0) */

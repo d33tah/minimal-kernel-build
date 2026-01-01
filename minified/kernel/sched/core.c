@@ -122,15 +122,6 @@ struct rq *task_rq_lock(struct task_struct *p, struct rq_flags *rf)
 	}
 }
 
-static void update_rq_clock_task(struct rq *rq, s64 delta)
-{
-	s64 __maybe_unused steal = 0, irq_delta = 0;
-
-	rq->clock_task += delta;
-
-	update_rq_clock_pelt(rq, delta);
-}
-
 void update_rq_clock(struct rq *rq)
 {
 	s64 delta;
@@ -144,7 +135,8 @@ void update_rq_clock(struct rq *rq)
 	if (delta < 0)
 		return;
 	rq->clock += delta;
-	update_rq_clock_task(rq, delta);
+	rq->clock_task += delta;
+	update_rq_clock_pelt(rq, delta);
 }
 
 /* hrtick_clear, hrtick_rq_init removed - empty stubs */

@@ -164,17 +164,6 @@ static struct sigqueue *__sigqueue_alloc(int sig, struct task_struct *t,
 	return q;
 }
 
-static void __sigqueue_free(struct sigqueue *q)
-{
-	if (q->flags & SIGQUEUE_PREALLOC)
-		return;
-	if (q->ucounts) {
-		dec_rlimit_put_ucounts(q->ucounts, UCOUNT_RLIMIT_SIGPENDING);
-		q->ucounts = NULL;
-	}
-	kmem_cache_free(sigqueue_cachep, q);
-}
-
 void flush_sigqueue(struct sigpending *queue)
 {
 	struct sigqueue *q;
@@ -183,7 +172,15 @@ void flush_sigqueue(struct sigpending *queue)
 	while (!list_empty(&queue->list)) {
 		q = list_entry(queue->list.next, struct sigqueue, list);
 		list_del_init(&q->list);
-		__sigqueue_free(q);
+		/* Inlined __sigqueue_free */
+		if (!(q->flags & SIGQUEUE_PREALLOC)) {
+			if (q->ucounts) {
+				dec_rlimit_put_ucounts(
+					q->ucounts, UCOUNT_RLIMIT_SIGPENDING);
+				q->ucounts = NULL;
+			}
+			kmem_cache_free(sigqueue_cachep, q);
+		}
 	}
 }
 

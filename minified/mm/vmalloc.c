@@ -945,14 +945,6 @@ static void free_vmap_area_noflush(struct vmap_area *va)
 		schedule_work(&drain_vmap_work);
 }
 
-static void free_unmap_vmap_area(struct vmap_area *va)
-{
-	/* flush_cache_vunmap - empty stub on x86 */
-	vunmap_range_noflush(va->va_start, va->va_end);
-	/* debug_pagealloc_enabled_static() always returns false */
-	free_vmap_area_noflush(va);
-}
-
 static struct vmap_area *find_vmap_area(unsigned long addr)
 {
 	struct vmap_area *va;
@@ -1099,12 +1091,6 @@ static void setup_vmalloc_vm(struct vm_struct *vm, struct vmap_area *va,
 	spin_unlock(&vmap_area_lock);
 }
 
-static void clear_vm_uninitialized_flag(struct vm_struct *vm)
-{
-	smp_wmb();
-	vm->flags &= ~VM_UNINITIALIZED;
-}
-
 static struct vm_struct *
 __get_vm_area_node(unsigned long size, unsigned long align, unsigned long shift,
 		   unsigned long flags, unsigned long start, unsigned long end,
@@ -1173,7 +1159,8 @@ struct vm_struct *remove_vm_area(const void *addr)
 		va->vm = NULL;
 		spin_unlock(&vmap_area_lock);
 
-		free_unmap_vmap_area(va);
+		vunmap_range_noflush(va->va_start, va->va_end);
+		free_vmap_area_noflush(va);
 
 		return vm;
 	}
@@ -1414,7 +1401,8 @@ again:
 	if (!ret)
 		goto fail;
 
-	clear_vm_uninitialized_flag(area);
+	smp_wmb();
+	area->flags &= ~VM_UNINITIALIZED;
 
 	return area->addr;
 

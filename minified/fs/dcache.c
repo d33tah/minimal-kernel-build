@@ -175,17 +175,6 @@ static void dentry_unlink_inode(struct dentry *dentry)
 #define D_FLAG_VERIFY(dentry, x)          \
 	WARN_ON_ONCE(((dentry)->d_flags & \
 		      (DCACHE_LRU_LIST | DCACHE_SHRINK_LIST)) != (x))
-static void d_lru_add(struct dentry *dentry)
-{
-	D_FLAG_VERIFY(dentry, 0);
-	dentry->d_flags |= DCACHE_LRU_LIST;
-	this_cpu_inc(nr_dentry_unused);
-	if (d_is_negative(dentry))
-		this_cpu_inc(nr_dentry_negative);
-	WARN_ON_ONCE(
-		!list_lru_add(&dentry->d_sb->s_dentry_lru, &dentry->d_lru));
-}
-
 static void d_lru_del(struct dentry *dentry)
 {
 	D_FLAG_VERIFY(dentry, DCACHE_LRU_LIST);
@@ -337,9 +326,15 @@ static inline bool retain_dentry(struct dentry *dentry)
 		return false;
 
 	dentry->d_lockref.count--;
-	if (unlikely(!(dentry->d_flags & DCACHE_LRU_LIST)))
-		d_lru_add(dentry);
-	else if (unlikely(!(dentry->d_flags & DCACHE_REFERENCED)))
+	if (unlikely(!(dentry->d_flags & DCACHE_LRU_LIST))) {
+		D_FLAG_VERIFY(dentry, 0);
+		dentry->d_flags |= DCACHE_LRU_LIST;
+		this_cpu_inc(nr_dentry_unused);
+		if (d_is_negative(dentry))
+			this_cpu_inc(nr_dentry_negative);
+		WARN_ON_ONCE(!list_lru_add(&dentry->d_sb->s_dentry_lru,
+					   &dentry->d_lru));
+	} else if (unlikely(!(dentry->d_flags & DCACHE_REFERENCED)))
 		dentry->d_flags |= DCACHE_REFERENCED;
 	return true;
 }

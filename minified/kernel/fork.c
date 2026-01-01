@@ -602,23 +602,6 @@ struct file *get_mm_exe_file(struct mm_struct *mm)
 	return NULL;
 }
 
-static int wait_for_vfork_done(struct task_struct *child,
-			       struct completion *vfork)
-{
-	int killed;
-
-	killed = wait_for_completion_killable(vfork);
-
-	if (killed) {
-		task_lock(child);
-		child->vfork_done = NULL;
-		task_unlock(child);
-	}
-
-	put_task_struct(child);
-	return killed;
-}
-
 static void mm_release(struct task_struct *tsk, struct mm_struct *mm)
 {
 	deactivate_mm(tsk, mm);
@@ -1258,7 +1241,15 @@ pid_t kernel_clone(struct kernel_clone_args *args)
 		ptrace_event_pid(trace, pid);
 
 	if (clone_flags & CLONE_VFORK) {
-		if (!wait_for_vfork_done(p, &vfork))
+		/* Inlined wait_for_vfork_done */
+		int killed = wait_for_completion_killable(&vfork);
+		if (killed) {
+			task_lock(p);
+			p->vfork_done = NULL;
+			task_unlock(p);
+		}
+		put_task_struct(p);
+		if (!killed)
 			ptrace_event_pid(PTRACE_EVENT_VFORK_DONE, pid);
 	}
 

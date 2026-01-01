@@ -959,22 +959,6 @@ struct vm_area_struct *find_extend_vma(struct mm_struct *mm, unsigned long addr)
 	return vma;
 }
 
-static void remove_vma_list(struct mm_struct *mm, struct vm_area_struct *vma)
-{
-	unsigned long nr_accounted = 0;
-
-	update_hiwater_vm(mm);
-	do {
-		long nrpages = vma_pages(vma);
-
-		if (vma->vm_flags & VM_ACCOUNT)
-			nr_accounted += nrpages;
-		vma = remove_vma(vma);
-	} while (vma);
-	vm_unacct_memory(nr_accounted);
-	validate_mm(mm);
-}
-
 static void unmap_region(struct mm_struct *mm, struct vm_area_struct *vma,
 			 struct vm_area_struct *prev, unsigned long start,
 			 unsigned long end)
@@ -1129,7 +1113,20 @@ int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 
 	unmap_region(mm, vma, prev, start, end);
 
-	remove_vma_list(mm, vma);
+	/* Inlined remove_vma_list */
+	{
+		unsigned long nr_accounted = 0;
+		struct vm_area_struct *tmp_vma = vma;
+		update_hiwater_vm(mm);
+		do {
+			long nrpages = vma_pages(tmp_vma);
+			if (tmp_vma->vm_flags & VM_ACCOUNT)
+				nr_accounted += nrpages;
+			tmp_vma = remove_vma(tmp_vma);
+		} while (tmp_vma);
+		vm_unacct_memory(nr_accounted);
+		validate_mm(mm);
+	}
 
 	return downgrade ? 1 : 0;
 }

@@ -509,9 +509,7 @@ static char *__init unpack_to_rootfs(char *buf, unsigned long len)
 	return message;
 }
 
-static int __initdata do_retain_initrd;
-
-static bool __initdata initramfs_async = true;
+/* do_retain_initrd, initramfs_async removed - unused */
 
 extern char __initramfs_start[];
 extern unsigned long __initramfs_size;
@@ -558,51 +556,12 @@ disable:
 
 /* free_initrd_mem provided by arch/x86/mm/init.c */
 
-static inline bool kexec_free_initrd(void)
-{
-	return false;
-}
-
-static void __init do_populate_rootfs(void *unused, async_cookie_t cookie)
-{
-	char *err = unpack_to_rootfs(__initramfs_start, __initramfs_size);
-	if (err)
-		panic_show_mem("%s", err);
-
-	/* INITRAMFS_FORCE not defined */
-	if (!initrd_start)
-		goto done;
-
-	/* BLK_DEV_RAM not defined */
-	printk(KERN_INFO "Unpacking initramfs...\n");
-
-	err = unpack_to_rootfs((char *)initrd_start, initrd_end - initrd_start);
-	if (err) {
-		printk(KERN_EMERG "Initramfs unpacking failed: %s\n", err);
-	}
-
-done:
-
-	if (!do_retain_initrd && initrd_start && !kexec_free_initrd())
-		free_initrd_mem(initrd_start, initrd_end);
-	initrd_start = 0;
-	initrd_end = 0;
-
-	flush_delayed_fput();
-	task_work_run();
-}
-
-static ASYNC_DOMAIN_EXCLUSIVE(initramfs_domain);
-static async_cookie_t initramfs_cookie;
+/* kexec_free_initrd, do_populate_rootfs, initramfs_domain, initramfs_cookie
+   removed - no callers after populate_rootfs removal */
 
 void wait_for_initramfs(void)
 {
-	if (!initramfs_cookie) {
-		pr_warn_once(
-			"wait_for_initramfs() called before rootfs_initcalls\n");
-		return;
-	}
-	/* async_synchronize_cookie_domain removed - empty stub */
+	/* Function is now a no-op since populate_rootfs was removed */
 }
 
 /* populate_rootfs removed - async_schedule_domain hangs with low memory */

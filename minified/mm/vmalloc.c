@@ -127,12 +127,11 @@ static int vmap_p4d_range(pgd_t *pgd, unsigned long addr, unsigned long end,
 	return 0;
 }
 
-static int vmap_range_noflush(unsigned long addr, unsigned long end,
-			      phys_addr_t phys_addr, pgprot_t prot,
-			      unsigned int max_page_shift)
+int ioremap_page_range(unsigned long addr, unsigned long end,
+		       phys_addr_t phys_addr, pgprot_t prot)
 {
 	pgd_t *pgd;
-	unsigned long start;
+	unsigned long start = addr;
 	unsigned long next;
 	int err;
 	pgtbl_mod_mask mask = 0;
@@ -140,29 +139,18 @@ static int vmap_range_noflush(unsigned long addr, unsigned long end,
 	might_sleep();
 	BUG_ON(addr >= end);
 
-	start = addr;
+	prot = pgprot_nx(prot);
 	pgd = pgd_offset_k(addr);
 	do {
 		next = pgd_addr_end(addr, end);
 		err = vmap_p4d_range(pgd, addr, next, phys_addr, prot,
-				     max_page_shift, &mask);
+				     ioremap_max_page_shift, &mask);
 		if (err)
 			break;
 	} while (pgd++, phys_addr += (next - addr), addr = next, addr != end);
 
 	if (mask & ARCH_PAGE_TABLE_SYNC_MASK)
 		arch_sync_kernel_mappings(start, end);
-
-	return err;
-}
-
-int ioremap_page_range(unsigned long addr, unsigned long end,
-		       phys_addr_t phys_addr, pgprot_t prot)
-{
-	int err;
-
-	err = vmap_range_noflush(addr, end, phys_addr, pgprot_nx(prot),
-				 ioremap_max_page_shift);
 	/* flush_cache_vmap - empty stub on x86 */
 	return err;
 }

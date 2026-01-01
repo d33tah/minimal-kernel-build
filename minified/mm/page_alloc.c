@@ -955,12 +955,15 @@ unsigned long nr_free_buffer_pages(void)
 	return nr_free_zone_pages(gfp_zone(GFP_USER));
 }
 
-static int build_zonerefs_node(pg_data_t *pgdat, struct zoneref *zonerefs)
+static void build_zonelists(pg_data_t *pgdat)
 {
+	struct zoneref *zonerefs;
 	struct zone *zone;
 	enum zone_type zone_type = MAX_NR_ZONES;
 	int nr_zones = 0;
 
+	/* Simplified: single-node system, just build local node zonelist */
+	zonerefs = pgdat->node_zonelists[ZONELIST_FALLBACK]._zonerefs;
 	do {
 		zone_type--;
 		zone = pgdat->node_zones + zone_type;
@@ -970,18 +973,6 @@ static int build_zonerefs_node(pg_data_t *pgdat, struct zoneref *zonerefs)
 			nr_zones++;
 		}
 	} while (zone_type);
-
-	return nr_zones;
-}
-
-static void build_zonelists(pg_data_t *pgdat)
-{
-	struct zoneref *zonerefs;
-	int nr_zones;
-
-	/* Simplified: single-node system, just build local node zonelist */
-	zonerefs = pgdat->node_zonelists[ZONELIST_FALLBACK]._zonerefs;
-	nr_zones = build_zonerefs_node(pgdat, zonerefs);
 	zonerefs += nr_zones;
 
 	zonerefs->zone = NULL;
@@ -1178,18 +1169,6 @@ void __init *memmap_alloc(phys_addr_t size, phys_addr_t align,
 	return ptr;
 }
 
-static int zone_batchsize(struct zone *zone)
-{
-	/* Stub: simplified batch size for minimal kernel */
-	return 1;
-}
-
-static int zone_highsize(struct zone *zone, int batch, int cpu_online)
-{
-	/* Stub: simplified high watermark for minimal kernel */
-	return batch << 2;
-}
-
 static void per_cpu_pages_init(struct per_cpu_pages *pcp,
 			       struct per_cpu_zonestat *pzstats)
 {
@@ -1221,18 +1200,14 @@ static void __zone_set_pageset_high_and_batch(struct zone *zone,
 
 static void zone_set_pageset_high_and_batch(struct zone *zone, int cpu_online)
 {
-	int new_high, new_batch;
-
-	new_batch = max(1, zone_batchsize(zone));
-	new_high = zone_highsize(zone, new_batch, cpu_online);
-
-	if (zone->pageset_high == new_high && zone->pageset_batch == new_batch)
+	/* Simplified: batch=1, high=4 for minimal kernel */
+	if (zone->pageset_high == 4 && zone->pageset_batch == 1)
 		return;
 
-	zone->pageset_high = new_high;
-	zone->pageset_batch = new_batch;
+	zone->pageset_high = 4;
+	zone->pageset_batch = 1;
 
-	__zone_set_pageset_high_and_batch(zone, new_high, new_batch);
+	__zone_set_pageset_high_and_batch(zone, 4, 1);
 }
 
 void __meminit setup_zone_pageset(struct zone *zone)

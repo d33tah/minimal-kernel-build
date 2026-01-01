@@ -338,31 +338,28 @@ struct vfsmount *lookup_mnt(const struct path *path)
 	return m;
 }
 
-static struct mountpoint *lookup_mountpoint(struct dentry *dentry)
-{
-	struct hlist_head *chain = mp_hash(dentry);
-	struct mountpoint *mp;
-
-	hlist_for_each_entry(mp, chain, m_hash) {
-		if (mp->m_dentry == dentry) {
-			mp->m_count++;
-			return mp;
-		}
-	}
-	return NULL;
-}
-
 static struct mountpoint *get_mountpoint(struct dentry *dentry)
 {
 	struct mountpoint *mp, *new = NULL;
 	int ret;
 
 	if (d_mountpoint(dentry)) {
+		struct hlist_head *chain;
+
 		if (d_unlinked(dentry))
 			return ERR_PTR(-ENOENT);
 mountpoint:
 		read_seqlock_excl(&mount_lock);
-		mp = lookup_mountpoint(dentry);
+		mp = NULL;
+		chain = mp_hash(dentry);
+		hlist_for_each_entry(mp, chain, m_hash) {
+			if (mp->m_dentry == dentry) {
+				mp->m_count++;
+				break;
+			}
+		}
+		if (mp && mp->m_dentry != dentry)
+			mp = NULL;
 		read_sequnlock_excl(&mount_lock);
 		if (mp)
 			goto done;

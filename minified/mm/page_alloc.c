@@ -433,19 +433,7 @@ inline void post_alloc_hook(struct page *page, unsigned int order,
 	set_page_refcounted(page);
 }
 
-static void prep_new_page(struct page *page, unsigned int order,
-			  gfp_t gfp_flags, unsigned int alloc_flags)
-{
-	post_alloc_hook(page, order, gfp_flags);
-
-	if (order && (gfp_flags & __GFP_COMP))
-		prep_compound_page(page, order);
-
-	if (alloc_flags & ALLOC_NO_WATERMARKS)
-		set_page_pfmemalloc(page);
-	else
-		clear_page_pfmemalloc(page);
-}
+/* prep_new_page inlined into get_page_from_freelist */
 
 static __always_inline struct page *
 __rmqueue_smallest(struct zone *zone, unsigned int order, int migratetype)
@@ -757,7 +745,13 @@ static struct page *get_page_from_freelist(gfp_t gfp_mask, unsigned int order,
 		page = rmqueue(ac->preferred_zoneref->zone, zone, order,
 			       gfp_mask, alloc_flags, ac->migratetype);
 		if (page) {
-			prep_new_page(page, order, gfp_mask, alloc_flags);
+			post_alloc_hook(page, order, gfp_mask);
+			if (order && (gfp_mask & __GFP_COMP))
+				prep_compound_page(page, order);
+			if (alloc_flags & ALLOC_NO_WATERMARKS)
+				set_page_pfmemalloc(page);
+			else
+				clear_page_pfmemalloc(page);
 			return page;
 		}
 	}
@@ -991,12 +985,6 @@ unsigned long nr_free_buffer_pages(void)
 	return nr_free_zone_pages(gfp_zone(GFP_USER));
 }
 
-static void zoneref_set_zone(struct zone *zone, struct zoneref *zoneref)
-{
-	zoneref->zone = zone;
-	zoneref->zone_idx = zone_idx(zone);
-}
-
 static int build_zonerefs_node(pg_data_t *pgdat, struct zoneref *zonerefs)
 {
 	struct zone *zone;
@@ -1006,8 +994,11 @@ static int build_zonerefs_node(pg_data_t *pgdat, struct zoneref *zonerefs)
 	do {
 		zone_type--;
 		zone = pgdat->node_zones + zone_type;
-		if (populated_zone(zone))
-			zoneref_set_zone(zone, &zonerefs[nr_zones++]);
+		if (populated_zone(zone)) {
+			zonerefs[nr_zones].zone = zone;
+			zonerefs[nr_zones].zone_idx = zone_idx(zone);
+			nr_zones++;
+		}
 	} while (zone_type);
 
 	return nr_zones;

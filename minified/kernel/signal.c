@@ -569,18 +569,6 @@ long do_no_restart_syscall(struct restart_block *param)
 	return -EINTR;
 }
 
-static void __set_task_blocked(struct task_struct *tsk, const sigset_t *newset)
-{
-	if (task_sigpending(tsk) && !thread_group_empty(tsk)) {
-		sigset_t newblocked;
-
-		sigandnsets(&newblocked, newset, &current->blocked);
-		retarget_shared_pending(tsk, &newblocked);
-	}
-	tsk->blocked = *newset;
-	recalc_sigpending();
-}
-
 void set_current_blocked(sigset_t *newset)
 {
 	sigdelsetmask(newset, sigmask(SIGKILL) | sigmask(SIGSTOP));
@@ -595,7 +583,15 @@ void __set_current_blocked(const sigset_t *newset)
 		return;
 
 	spin_lock_irq(&tsk->sighand->siglock);
-	__set_task_blocked(tsk, newset);
+	/* Inlined __set_task_blocked */
+	if (task_sigpending(tsk) && !thread_group_empty(tsk)) {
+		sigset_t newblocked;
+
+		sigandnsets(&newblocked, newset, &current->blocked);
+		retarget_shared_pending(tsk, &newblocked);
+	}
+	tsk->blocked = *newset;
+	recalc_sigpending();
 	spin_unlock_irq(&tsk->sighand->siglock);
 }
 

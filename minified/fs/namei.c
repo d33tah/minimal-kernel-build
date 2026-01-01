@@ -758,29 +758,7 @@ static inline int may_lookup(struct user_namespace *mnt_userns,
 	return inode_permission(mnt_userns, nd->inode, MAY_EXEC);
 }
 
-static int reserve_stack(struct nameidata *nd, struct path *link, unsigned seq)
-{
-	if (unlikely(nd->total_link_count++ >= MAXSYMLINKS))
-		return -ELOOP;
-
-	if (likely(nd->depth != EMBEDDED_LEVELS))
-		return 0;
-	if (likely(nd->stack != nd->internal))
-		return 0;
-	if (likely(nd_alloc_stack(nd)))
-		return 0;
-
-	if (nd->flags & LOOKUP_RCU) {
-		bool grabbed_link = legitimize_path(nd, link, seq);
-
-		if (!try_to_unlazy(nd) || !grabbed_link)
-			return -ECHILD;
-
-		if (nd_alloc_stack(nd))
-			return 0;
-	}
-	return -ENOMEM;
-}
+/* reserve_stack inlined into pick_link */
 
 enum { WALK_TRAILING = 1, WALK_MORE = 2, WALK_NOFOLLOW = 4 };
 
@@ -789,7 +767,27 @@ static const char *pick_link(struct nameidata *nd, struct path *link,
 {
 	struct saved *last;
 	const char *res;
-	int error = reserve_stack(nd, link, seq);
+	int error;
+
+	/* inlined reserve_stack */
+	if (unlikely(nd->total_link_count++ >= MAXSYMLINKS))
+		error = -ELOOP;
+	else if (likely(nd->depth != EMBEDDED_LEVELS))
+		error = 0;
+	else if (likely(nd->stack != nd->internal))
+		error = 0;
+	else if (likely(nd_alloc_stack(nd)))
+		error = 0;
+	else if (nd->flags & LOOKUP_RCU) {
+		bool grabbed_link = legitimize_path(nd, link, seq);
+		if (!try_to_unlazy(nd) || !grabbed_link)
+			error = -ECHILD;
+		else if (nd_alloc_stack(nd))
+			error = 0;
+		else
+			error = -ENOMEM;
+	} else
+		error = -ENOMEM;
 
 	if (unlikely(error)) {
 		if (!(nd->flags & LOOKUP_RCU))

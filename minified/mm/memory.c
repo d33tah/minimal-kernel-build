@@ -576,17 +576,6 @@ vm_fault_t vmf_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
 	return vmf_insert_pfn_prot(vma, addr, pfn, vma->vm_page_prot);
 }
 
-static gfp_t __get_fault_gfp_mask(struct vm_area_struct *vma)
-{
-	struct file *vm_file = vma->vm_file;
-
-	if (vm_file)
-		return mapping_gfp_mask(vm_file->f_mapping) | __GFP_FS |
-		       __GFP_IO;
-
-	return GFP_KERNEL;
-}
-
 static vm_fault_t do_page_mkwrite(struct vm_fault *vmf)
 {
 	vm_fault_t ret;
@@ -863,14 +852,6 @@ void do_set_pte(struct vm_fault *vmf, struct page *page, unsigned long addr)
 	set_pte_at(vma->vm_mm, addr, vmf->pte, entry);
 }
 
-static bool vmf_pte_changed(struct vm_fault *vmf)
-{
-	if (vmf->flags & FAULT_FLAG_ORIG_PTE_VALID)
-		return !pte_same(*vmf->pte, vmf->orig_pte);
-
-	return !pte_none(*vmf->pte);
-}
-
 vm_fault_t finish_fault(struct vm_fault *vmf)
 {
 	struct vm_area_struct *vma = vmf->vma;
@@ -898,7 +879,9 @@ vm_fault_t finish_fault(struct vm_fault *vmf)
 				       &vmf->ptl);
 	ret = 0;
 
-	if (likely(!vmf_pte_changed(vmf)))
+	if (likely((vmf->flags & FAULT_FLAG_ORIG_PTE_VALID) ?
+			   pte_same(*vmf->pte, vmf->orig_pte) :
+			   pte_none(*vmf->pte)))
 		do_set_pte(vmf, page, vmf->address);
 	else
 		ret = VM_FAULT_NOPAGE;
@@ -1063,7 +1046,10 @@ static vm_fault_t __handle_mm_fault(struct vm_area_struct *vma,
 		.real_address = address,
 		.flags = flags,
 		.pgoff = linear_page_index(vma, address),
-		.gfp_mask = __get_fault_gfp_mask(vma),
+		.gfp_mask = vma->vm_file ?
+				    (mapping_gfp_mask(vma->vm_file->f_mapping) |
+				     __GFP_FS | __GFP_IO) :
+				    GFP_KERNEL,
 	};
 	struct mm_struct *mm = vma->vm_mm;
 	pgd_t *pgd;

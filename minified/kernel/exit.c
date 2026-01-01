@@ -53,23 +53,6 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <asm/unistd.h>
 #include <asm/mmu_context.h>
 
-static void __unhash_process(struct task_struct *p, bool group_dead)
-{
-	nr_threads--;
-	detach_pid(p, PIDTYPE_PID);
-	if (group_dead) {
-		detach_pid(p, PIDTYPE_TGID);
-		detach_pid(p, PIDTYPE_PGID);
-		detach_pid(p, PIDTYPE_SID);
-
-		list_del_rcu(&p->tasks);
-		list_del_init(&p->sibling);
-		__this_cpu_dec(process_counts);
-	}
-	list_del_rcu(&p->thread_group);
-	list_del_rcu(&p->thread_node);
-}
-
 static void __exit_signal(struct task_struct *tsk)
 {
 	struct signal_struct *sig = tsk->signal;
@@ -107,7 +90,18 @@ static void __exit_signal(struct task_struct *tsk)
 	/* task_io_get_inblock, task_io_get_oublock, task_io_accounting_add removed - empty stubs */
 	sig->sum_sched_runtime += tsk->se.sum_exec_runtime;
 	sig->nr_threads--;
-	__unhash_process(tsk, group_dead);
+	nr_threads--;
+	detach_pid(tsk, PIDTYPE_PID);
+	if (group_dead) {
+		detach_pid(tsk, PIDTYPE_TGID);
+		detach_pid(tsk, PIDTYPE_PGID);
+		detach_pid(tsk, PIDTYPE_SID);
+		list_del_rcu(&tsk->tasks);
+		list_del_init(&tsk->sibling);
+		__this_cpu_dec(process_counts);
+	}
+	list_del_rcu(&tsk->thread_group);
+	list_del_rcu(&tsk->thread_node);
 	write_sequnlock(&sig->stats_lock);
 
 	flush_sigqueue(&tsk->pending);

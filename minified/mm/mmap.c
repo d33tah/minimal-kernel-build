@@ -469,27 +469,18 @@ struct anon_vma *find_mergeable_anon_vma(struct vm_area_struct *vma)
 
 /* mlock_future_check removed - always returned 0 */
 
-static inline u64 file_mmap_size_max(struct file *file, struct inode *inode)
-{
-	if (S_ISREG(inode->i_mode))
-		return MAX_LFS_FILESIZE;
-
-	if (S_ISBLK(inode->i_mode))
-		return MAX_LFS_FILESIZE;
-
-	if (S_ISSOCK(inode->i_mode))
-		return MAX_LFS_FILESIZE;
-
-	if (file->f_mode & FMODE_UNSIGNED_OFFSET)
-		return 0;
-
-	return ULONG_MAX;
-}
-
 static inline bool file_mmap_ok(struct file *file, struct inode *inode,
 				unsigned long pgoff, unsigned long len)
 {
-	u64 maxsize = file_mmap_size_max(file, inode);
+	u64 maxsize;
+
+	if (S_ISREG(inode->i_mode) || S_ISBLK(inode->i_mode) ||
+	    S_ISSOCK(inode->i_mode))
+		maxsize = MAX_LFS_FILESIZE;
+	else if (file->f_mode & FMODE_UNSIGNED_OFFSET)
+		maxsize = 0;
+	else
+		maxsize = ULONG_MAX;
 
 	if (maxsize && len > maxsize)
 		return false;

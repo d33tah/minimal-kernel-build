@@ -249,18 +249,13 @@ void exit_task_stack_account(struct task_struct *tsk)
 	account_kernel_stack(tsk, -1);
 }
 
-static void release_task_stack(struct task_struct *tsk)
-{
-	if (WARN_ON(READ_ONCE(tsk->__state) != TASK_DEAD))
-		return;
-
-	free_thread_stack(tsk);
-}
-
 void put_task_stack(struct task_struct *tsk)
 {
-	if (refcount_dec_and_test(&tsk->stack_refcount))
-		release_task_stack(tsk);
+	if (refcount_dec_and_test(&tsk->stack_refcount)) {
+		if (WARN_ON(READ_ONCE(tsk->__state) != TASK_DEAD))
+			return;
+		free_thread_stack(tsk);
+	}
 }
 
 void free_task(struct task_struct *tsk)

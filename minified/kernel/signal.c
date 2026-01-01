@@ -203,17 +203,6 @@ void signal_wake_up_state(struct task_struct *t, unsigned int state)
 	wake_up_state(t, state | TASK_INTERRUPTIBLE);
 }
 
-static inline int is_si_special(const struct kernel_siginfo *info)
-{
-	return info <= SEND_SIG_PRIV;
-}
-
-static inline bool si_fromuser(const struct kernel_siginfo *info)
-{
-	return info == SEND_SIG_NOINFO ||
-	       (!is_si_special(info) && SI_FROMUSER(info));
-}
-
 static int check_kill_permission(int sig, struct kernel_siginfo *info,
 				 struct task_struct *t)
 {
@@ -221,7 +210,8 @@ static int check_kill_permission(int sig, struct kernel_siginfo *info,
 	if (!valid_signal(sig))
 		return -EINVAL;
 
-	if (!si_fromuser(info))
+	if (!(info == SEND_SIG_NOINFO ||
+	      (!(info <= SEND_SIG_PRIV) && SI_FROMUSER(info))))
 		return 0;
 
 	/* Skip session/cred checks for minimal kernel */

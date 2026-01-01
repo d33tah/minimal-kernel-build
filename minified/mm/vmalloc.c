@@ -223,33 +223,6 @@ void vunmap_range_noflush(unsigned long start, unsigned long end)
 		arch_sync_kernel_mappings(start, end);
 }
 
-static int vmap_pages_pte_range(pmd_t *pmd, unsigned long addr,
-				unsigned long end, pgprot_t prot,
-				struct page **pages, int *nr,
-				pgtbl_mod_mask *mask)
-{
-	pte_t *pte;
-
-	pte = pte_alloc_kernel_track(pmd, addr, mask);
-	if (!pte)
-		return -ENOMEM;
-	do {
-		struct page *page = pages[*nr];
-
-		if (WARN_ON(!pte_none(*pte)))
-			return -EBUSY;
-		if (WARN_ON(!page))
-			return -ENOMEM;
-		if (WARN_ON(!pfn_valid(page_to_pfn(page))))
-			return -EINVAL;
-
-		set_pte_at(&init_mm, addr, pte, mk_pte(page, prot));
-		(*nr)++;
-	} while (pte++, addr += PAGE_SIZE, addr != end);
-	*mask |= PGTBL_PTE_MODIFIED;
-	return 0;
-}
-
 static int vmap_pages_pmd_range(pud_t *pud, unsigned long addr,
 				unsigned long end, pgprot_t prot,
 				struct page **pages, int *nr,
@@ -263,9 +236,28 @@ static int vmap_pages_pmd_range(pud_t *pud, unsigned long addr,
 		return -ENOMEM;
 	do {
 		next = pmd_addr_end(addr, end);
-		if (vmap_pages_pte_range(pmd, addr, next, prot, pages, nr,
-					 mask))
-			return -ENOMEM;
+		/* Inlined vmap_pages_pte_range */
+		{
+			pte_t *pte;
+			unsigned long pte_addr = addr;
+			pte = pte_alloc_kernel_track(pmd, pte_addr, mask);
+			if (!pte)
+				return -ENOMEM;
+			do {
+				struct page *page = pages[*nr];
+				if (WARN_ON(!pte_none(*pte)))
+					return -EBUSY;
+				if (WARN_ON(!page))
+					return -ENOMEM;
+				if (WARN_ON(!pfn_valid(page_to_pfn(page))))
+					return -EINVAL;
+				set_pte_at(&init_mm, pte_addr, pte,
+					   mk_pte(page, prot));
+				(*nr)++;
+			} while (pte++, pte_addr += PAGE_SIZE,
+				 pte_addr != next);
+			*mask |= PGTBL_PTE_MODIFIED;
+		}
 	} while (pmd++, addr = next, addr != end);
 	return 0;
 }

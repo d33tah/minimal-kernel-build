@@ -790,9 +790,10 @@ static void check_unsafe_exec(struct linux_binprm *bprm)
 	spin_unlock(&p->fs->lock);
 }
 
-static void bprm_fill_uid(struct linux_binprm *bprm, struct file *file)
+/* security_bprm_creds_from_file always returns 0 - simplified */
+static void bprm_creds_from_file(struct linux_binprm *bprm)
 {
-	/* Stub: simplified setuid/setgid handling for minimal kernel */
+	struct file *file = bprm->execfd_creds ? bprm->executable : bprm->file;
 	struct inode *inode;
 	unsigned int mode;
 
@@ -815,13 +816,6 @@ static void bprm_fill_uid(struct linux_binprm *bprm, struct file *file)
 		bprm->cred->egid =
 			i_gid_into_mnt(file_mnt_user_ns(file), inode);
 	}
-}
-
-/* security_bprm_creds_from_file always returns 0 - simplified */
-static void bprm_creds_from_file(struct linux_binprm *bprm)
-{
-	struct file *file = bprm->execfd_creds ? bprm->executable : bprm->file;
-	bprm_fill_uid(bprm, file);
 }
 
 static int prepare_binprm(struct linux_binprm *bprm)

@@ -262,17 +262,12 @@ int filemap_fdatawait_range(struct address_space *mapping, loff_t start_byte,
 	return filemap_check_errors(mapping);
 }
 
-static bool mapping_needs_writeback(struct address_space *mapping)
-{
-	return mapping->nrpages;
-}
-
 int filemap_write_and_wait_range(struct address_space *mapping, loff_t lstart,
 				 loff_t lend)
 {
 	int err = 0;
 
-	if (mapping_needs_writeback(mapping)) {
+	if (mapping->nrpages) {
 		err = __filemap_fdatawrite_range(mapping, lstart, lend,
 						 WB_SYNC_ALL);
 

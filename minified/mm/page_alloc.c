@@ -219,32 +219,23 @@ void free_compound_page(struct page *page)
 	/* No-op: bump allocator style - no deallocation */
 }
 
-static void prep_compound_head(struct page *page, unsigned int order)
-{
-	set_compound_page_dtor(page, COMPOUND_PAGE_DTOR);
-	set_compound_order(page, order);
-	atomic_set(compound_mapcount_ptr(page), -1);
-	atomic_set(compound_pincount_ptr(page), 0);
-}
-
-static void prep_compound_tail(struct page *head, int tail_idx)
-{
-	struct page *p = head + tail_idx;
-
-	p->mapping = TAIL_MAPPING;
-	set_compound_head(p, head);
-}
-
 void prep_compound_page(struct page *page, unsigned int order)
 {
 	int i;
 	int nr_pages = 1 << order;
+	struct page *p;
 
 	__SetPageHead(page);
-	for (i = 1; i < nr_pages; i++)
-		prep_compound_tail(page, i);
+	for (i = 1; i < nr_pages; i++) {
+		p = page + i;
+		p->mapping = TAIL_MAPPING;
+		set_compound_head(p, page);
+	}
 
-	prep_compound_head(page, order);
+	set_compound_page_dtor(page, COMPOUND_PAGE_DTOR);
+	set_compound_order(page, order);
+	atomic_set(compound_mapcount_ptr(page), -1);
+	atomic_set(compound_pincount_ptr(page), 0);
 }
 
 static inline bool set_page_guard(struct zone *zone, struct page *page,

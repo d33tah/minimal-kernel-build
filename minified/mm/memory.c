@@ -544,33 +544,7 @@ vm_fault_t vmf_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
 	return vmf_insert_pfn_prot(vma, addr, pfn, vma->vm_page_prot);
 }
 
-static vm_fault_t do_page_mkwrite(struct vm_fault *vmf)
-{
-	vm_fault_t ret;
-	struct page *page = vmf->page;
-	unsigned int old_flags = vmf->flags;
-
-	vmf->flags = FAULT_FLAG_WRITE | FAULT_FLAG_MKWRITE;
-
-	if (vmf->vma->vm_file &&
-	    IS_SWAPFILE(vmf->vma->vm_file->f_mapping->host))
-		return VM_FAULT_SIGBUS;
-
-	ret = vmf->vma->vm_ops->page_mkwrite(vmf);
-
-	vmf->flags = old_flags;
-	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE)))
-		return ret;
-	if (unlikely(!(ret & VM_FAULT_LOCKED))) {
-		lock_page(page);
-		if (!page->mapping) {
-			unlock_page(page);
-			return 0;
-		}
-		ret |= VM_FAULT_LOCKED;
-	}
-	return ret;
-}
+/* do_page_mkwrite inlined into do_shared_fault */
 
 /* wp_page_reuse inlined into do_wp_page */
 
@@ -897,12 +871,29 @@ static vm_fault_t do_shared_fault(struct vm_fault *vmf)
 		return ret;
 
 	if (vma->vm_ops->page_mkwrite) {
-		unlock_page(vmf->page);
-		tmp = do_page_mkwrite(vmf);
-		if (unlikely(!tmp ||
-			     (tmp & (VM_FAULT_ERROR | VM_FAULT_NOPAGE)))) {
-			put_page(vmf->page);
+		/* Inlined do_page_mkwrite */
+		struct page *page = vmf->page;
+		unsigned int old_flags = vmf->flags;
+		unlock_page(page);
+		vmf->flags = FAULT_FLAG_WRITE | FAULT_FLAG_MKWRITE;
+		if (vmf->vma->vm_file &&
+		    IS_SWAPFILE(vmf->vma->vm_file->f_mapping->host)) {
+			put_page(page);
+			return VM_FAULT_SIGBUS;
+		}
+		tmp = vmf->vma->vm_ops->page_mkwrite(vmf);
+		vmf->flags = old_flags;
+		if (unlikely(tmp & (VM_FAULT_ERROR | VM_FAULT_NOPAGE))) {
+			put_page(page);
 			return tmp;
+		}
+		if (unlikely(!(tmp & VM_FAULT_LOCKED))) {
+			lock_page(page);
+			if (!page->mapping) {
+				unlock_page(page);
+				put_page(page);
+				return 0;
+			}
 		}
 	}
 

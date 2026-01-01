@@ -106,16 +106,7 @@ static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos,
 	return page;
 }
 
-static void put_arg_page(struct page *page)
-{
-	put_page(page);
-}
-
-static void flush_arg_page(struct linux_binprm *bprm, unsigned long pos,
-			   struct page *page)
-{
-	/* flush_cache_page - empty stub on x86 */
-}
+/* put_arg_page and flush_arg_page inlined - trivial stubs */
 
 static int __bprm_mm_init(struct linux_binprm *bprm)
 {
@@ -260,11 +251,9 @@ int copy_string_kernel(const char *arg, struct linux_binprm *bprm)
 		if (!page)
 			return -E2BIG;
 		kaddr = kmap_atomic(page);
-		flush_arg_page(bprm, pos & PAGE_MASK, page);
 		memcpy(kaddr + offset_in_page(pos), arg, bytes_to_copy);
-		/* flush_dcache_page - empty stub on x86 */
 		kunmap_atomic(kaddr);
-		put_arg_page(page);
+		put_page(page);
 	}
 
 	return 0;

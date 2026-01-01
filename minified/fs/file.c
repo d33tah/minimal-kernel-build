@@ -95,44 +95,7 @@ out:
 	return NULL;
 }
 
-static int expand_fdtable(struct files_struct *files, unsigned int nr)
-	__releases(files->file_lock) __acquires(files->file_lock)
-{
-	struct fdtable *new_fdt, *cur_fdt;
-
-	spin_unlock(&files->file_lock);
-	new_fdt = alloc_fdtable(nr);
-
-	if (atomic_read(&files->count) > 1)
-		synchronize_rcu();
-
-	spin_lock(&files->file_lock);
-	if (!new_fdt)
-		return -ENOMEM;
-
-	if (unlikely(new_fdt->max_fds <= nr)) {
-		__free_fdtable(new_fdt);
-		return -EMFILE;
-	}
-	cur_fdt = files_fdtable(files);
-	BUG_ON(nr < cur_fdt->max_fds);
-	/* Inlined copy_fdtable */
-	{
-		size_t cpy = cur_fdt->max_fds * sizeof(struct file *);
-		size_t set = (new_fdt->max_fds - cur_fdt->max_fds) *
-			     sizeof(struct file *);
-		BUG_ON(new_fdt->max_fds < cur_fdt->max_fds);
-		memcpy(new_fdt->fd, cur_fdt->fd, cpy);
-		memset((char *)new_fdt->fd + cpy, 0, set);
-		copy_fd_bitmaps(new_fdt, cur_fdt, cur_fdt->max_fds);
-	}
-	rcu_assign_pointer(files->fdt, new_fdt);
-	if (cur_fdt != &files->fdtab)
-		call_rcu(&cur_fdt->rcu, free_fdtable_rcu);
-
-	smp_wmb();
-	return 1;
-}
+/* expand_fdtable inlined into expand_files */
 
 static int expand_files(struct files_struct *files, unsigned int nr)
 	__releases(files->file_lock) __acquires(files->file_lock)
@@ -158,7 +121,44 @@ repeat:
 	}
 
 	files->resize_in_progress = true;
-	expanded = expand_fdtable(files, nr);
+	/* Inlined expand_fdtable */
+	{
+		struct fdtable *new_fdt, *cur_fdt;
+
+		spin_unlock(&files->file_lock);
+		new_fdt = alloc_fdtable(nr);
+
+		if (atomic_read(&files->count) > 1)
+			synchronize_rcu();
+
+		spin_lock(&files->file_lock);
+		if (!new_fdt) {
+			expanded = -ENOMEM;
+		} else if (unlikely(new_fdt->max_fds <= nr)) {
+			__free_fdtable(new_fdt);
+			expanded = -EMFILE;
+		} else {
+			cur_fdt = files_fdtable(files);
+			BUG_ON(nr < cur_fdt->max_fds);
+			{
+				size_t cpy = cur_fdt->max_fds *
+					     sizeof(struct file *);
+				size_t set =
+					(new_fdt->max_fds - cur_fdt->max_fds) *
+					sizeof(struct file *);
+				BUG_ON(new_fdt->max_fds < cur_fdt->max_fds);
+				memcpy(new_fdt->fd, cur_fdt->fd, cpy);
+				memset((char *)new_fdt->fd + cpy, 0, set);
+				copy_fd_bitmaps(new_fdt, cur_fdt,
+						cur_fdt->max_fds);
+			}
+			rcu_assign_pointer(files->fdt, new_fdt);
+			if (cur_fdt != &files->fdtab)
+				call_rcu(&cur_fdt->rcu, free_fdtable_rcu);
+			smp_wmb();
+			expanded = 1;
+		}
+	}
 	files->resize_in_progress = false;
 
 	wake_up_all(&files->resize_wait);

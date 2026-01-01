@@ -282,22 +282,6 @@ static inline bool allocated(struct pipe_buffer *buf)
 	return buf->ops == &default_pipe_buf_ops;
 }
 
-static inline void data_start(const struct iov_iter *i,
-			      unsigned int *iter_headp, size_t *offp)
-{
-	unsigned int p_mask = i->pipe->ring_size - 1;
-	unsigned int iter_head = i->head;
-	size_t off = i->iov_offset;
-
-	if (off && (!allocated(&i->pipe->bufs[iter_head & p_mask]) ||
-		    off == PAGE_SIZE)) {
-		iter_head++;
-		off = 0;
-	}
-	*iter_headp = iter_head;
-	*offp = off;
-}
-
 static size_t push_pipe(struct iov_iter *i, size_t size, int *iter_headp,
 			size_t *offp)
 {
@@ -314,7 +298,14 @@ static size_t push_pipe(struct iov_iter *i, size_t size, int *iter_headp,
 		return 0;
 
 	left = size;
-	data_start(i, &iter_head, &off);
+	/* Inlined data_start */
+	iter_head = i->head;
+	off = i->iov_offset;
+	if (off &&
+	    (!allocated(&pipe->bufs[iter_head & p_mask]) || off == PAGE_SIZE)) {
+		iter_head++;
+		off = 0;
+	}
 	*iter_headp = iter_head;
 	*offp = off;
 	if (off) {

@@ -334,23 +334,6 @@ static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags,
 	WRITE_ONCE(p->__state, TASK_RUNNING);
 }
 
-static int ttwu_runnable(struct task_struct *p, int wake_flags)
-{
-	struct rq_flags rf;
-	struct rq *rq;
-	int ret = 0;
-
-	rq = __task_rq_lock(p, &rf);
-	if (task_on_rq_queued(p)) {
-		update_rq_clock(rq);
-		ttwu_do_wakeup(rq, p, wake_flags, &rf);
-		ret = 1;
-	}
-	__task_rq_unlock(rq, &rf);
-
-	return ret;
-}
-
 /* ttwu_queue_wakelist removed - always returned false */
 
 static void ttwu_queue(struct task_struct *p, int cpu, int wake_flags)
@@ -385,6 +368,8 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state,
 			  int wake_flags)
 {
 	int cpu, success = 0;
+	struct rq_flags rf;
+	struct rq *rq;
 
 	preempt_disable();
 	if (p == current) {
@@ -400,8 +385,17 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state,
 		goto out;
 
 	smp_rmb();
-	if (READ_ONCE(p->on_rq) && ttwu_runnable(p, wake_flags))
-		goto out;
+	/* Inlined ttwu_runnable */
+	if (READ_ONCE(p->on_rq)) {
+		rq = __task_rq_lock(p, &rf);
+		if (task_on_rq_queued(p)) {
+			update_rq_clock(rq);
+			ttwu_do_wakeup(rq, p, wake_flags, &rf);
+			__task_rq_unlock(rq, &rf);
+			goto out;
+		}
+		__task_rq_unlock(rq, &rf);
+	}
 
 	cpu = task_cpu(p);
 

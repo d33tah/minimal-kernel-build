@@ -266,7 +266,8 @@ struct nameidata {
 #define ND_ROOT_GRABBED 2
 #define ND_JUMPED 4
 
-static void __set_nameidata(struct nameidata *p, int dfd, struct filename *name)
+static inline void set_nameidata(struct nameidata *p, int dfd,
+				 struct filename *name, const struct path *root)
 {
 	struct nameidata *old = current->nameidata;
 	p->stack = p->internal;
@@ -278,12 +279,6 @@ static void __set_nameidata(struct nameidata *p, int dfd, struct filename *name)
 	p->total_link_count = old ? old->total_link_count : 0;
 	p->saved = old;
 	current->nameidata = p;
-}
-
-static inline void set_nameidata(struct nameidata *p, int dfd,
-				 struct filename *name, const struct path *root)
-{
-	__set_nameidata(p, dfd, name);
 	p->state = 0;
 	if (unlikely(root)) {
 		p->state = ND_ROOT_PRESET;
@@ -356,9 +351,10 @@ static void terminate_walk(struct nameidata *nd)
 	nd->path.dentry = NULL;
 }
 
-static bool __legitimize_path(struct path *path, unsigned seq, unsigned mseq)
+static inline bool legitimize_path(struct nameidata *nd, struct path *path,
+				   unsigned seq)
 {
-	int res = __legitimize_mnt(path->mnt, mseq);
+	int res = __legitimize_mnt(path->mnt, nd->m_seq);
 	if (unlikely(res)) {
 		if (res > 0)
 			path->mnt = NULL;
@@ -370,12 +366,6 @@ static bool __legitimize_path(struct path *path, unsigned seq, unsigned mseq)
 		return false;
 	}
 	return !read_seqcount_retry(&path->dentry->d_seq, seq);
-}
-
-static inline bool legitimize_path(struct nameidata *nd, struct path *path,
-				   unsigned seq)
-{
-	return __legitimize_path(path, seq, nd->m_seq);
 }
 
 static bool legitimize_links(struct nameidata *nd)

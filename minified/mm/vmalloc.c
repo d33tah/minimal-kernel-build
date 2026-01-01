@@ -180,19 +180,7 @@ static void vunmap_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
 	} while (pmd++, addr = next, addr != end);
 }
 
-static void vunmap_pud_range(p4d_t *p4d, unsigned long addr, unsigned long end,
-			     pgtbl_mod_mask *mask)
-{
-	pud_t *pud;
-	unsigned long next;
-
-	/* pud_none_or_clear_bad, pud_bad always return 0 - folded paging */
-	pud = pud_offset(p4d, addr);
-	do {
-		next = pud_addr_end(addr, end);
-		vunmap_pmd_range(pud, addr, next, mask);
-	} while (pud++, addr = next, addr != end);
-}
+/* vunmap_pud_range inlined into vunmap_p4d_range */
 
 static void vunmap_p4d_range(pgd_t *pgd, unsigned long addr, unsigned long end,
 			     pgtbl_mod_mask *mask)
@@ -204,7 +192,17 @@ static void vunmap_p4d_range(pgd_t *pgd, unsigned long addr, unsigned long end,
 	p4d = p4d_offset(pgd, addr);
 	do {
 		next = p4d_addr_end(addr, end);
-		vunmap_pud_range(p4d, addr, next, mask);
+		/* Inlined vunmap_pud_range */
+		{
+			pud_t *pud;
+			unsigned long pud_next;
+			unsigned long pud_addr = addr;
+			pud = pud_offset(p4d, pud_addr);
+			do {
+				pud_next = pud_addr_end(pud_addr, next);
+				vunmap_pmd_range(pud, pud_addr, pud_next, mask);
+			} while (pud++, pud_addr = pud_next, pud_addr != next);
+		}
 	} while (p4d++, addr = next, addr != end);
 }
 

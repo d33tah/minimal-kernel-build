@@ -152,24 +152,7 @@ ssize_t kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
 	return __kernel_read(file, buf, count, pos);
 }
 
-static ssize_t new_sync_write(struct file *filp, const char __user *buf,
-			      size_t len, loff_t *ppos)
-{
-	struct iovec iov = { .iov_base = (void __user *)buf, .iov_len = len };
-	struct kiocb kiocb;
-	struct iov_iter iter;
-	ssize_t ret;
-
-	init_sync_kiocb(&kiocb, filp);
-	kiocb.ki_pos = (ppos ? *ppos : 0);
-	iov_iter_init(&iter, WRITE, &iov, 1, len);
-
-	ret = call_write_iter(filp, &kiocb, &iter);
-	BUG_ON(ret == -EIOCBQUEUED);
-	if (ret > 0 && ppos)
-		*ppos = kiocb.ki_pos;
-	return ret;
-}
+/* new_sync_write inlined into vfs_write */
 
 ssize_t __kernel_write(struct file *file, const void *buf, size_t count,
 		       loff_t *pos)
@@ -234,9 +217,20 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count,
 	file_start_write(file);
 	if (file->f_op->write)
 		ret = file->f_op->write(file, buf, count, pos);
-	else if (file->f_op->write_iter)
-		ret = new_sync_write(file, buf, count, pos);
-	else
+	else if (file->f_op->write_iter) {
+		/* Inlined new_sync_write */
+		struct iovec iov = { .iov_base = (void __user *)buf,
+				     .iov_len = count };
+		struct kiocb kiocb;
+		struct iov_iter iter;
+		init_sync_kiocb(&kiocb, file);
+		kiocb.ki_pos = (pos ? *pos : 0);
+		iov_iter_init(&iter, WRITE, &iov, 1, count);
+		ret = call_write_iter(file, &kiocb, &iter);
+		BUG_ON(ret == -EIOCBQUEUED);
+		if (ret > 0 && pos)
+			*pos = kiocb.ki_pos;
+	} else
 		ret = -EINVAL;
 	file_end_write(file);
 	return ret;

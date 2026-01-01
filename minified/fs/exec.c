@@ -797,20 +797,15 @@ static void bprm_creds_from_file(struct linux_binprm *bprm)
 	}
 }
 
-static int prepare_binprm(struct linux_binprm *bprm)
-{
-	loff_t pos = 0;
-
-	memset(bprm->buf, 0, BINPRM_BUF_SIZE);
-	return kernel_read(bprm->file, bprm->buf, BINPRM_BUF_SIZE, &pos);
-}
-
 static int search_binary_handler(struct linux_binprm *bprm)
 {
 	struct linux_binfmt *fmt;
 	int retval;
+	loff_t pos = 0;
 
-	retval = prepare_binprm(bprm);
+	/* Inlined prepare_binprm */
+	memset(bprm->buf, 0, BINPRM_BUF_SIZE);
+	retval = kernel_read(bprm->file, bprm->buf, BINPRM_BUF_SIZE, &pos);
 	if (retval < 0)
 		return retval;
 

@@ -120,23 +120,6 @@ static inline void __d_set_inode_and_type(struct dentry *dentry,
 	smp_store_release(&dentry->d_flags, flags);
 }
 
-static void dentry_free(struct dentry *dentry)
-{
-	WARN_ON(!hlist_unhashed(&dentry->d_u.d_alias));
-	if (unlikely(dname_external(dentry))) {
-		struct external_name *p = external_name(dentry);
-		if (likely(atomic_dec_and_test(&p->u.count))) {
-			call_rcu(&dentry->d_u.d_rcu, __d_free_external);
-			return;
-		}
-	}
-
-	if (dentry->d_flags & DCACHE_NORCU)
-		__d_free(&dentry->d_u.d_rcu);
-	else
-		call_rcu(&dentry->d_u.d_rcu, __d_free);
-}
-
 static void dentry_unlink_inode(struct dentry *dentry)
 	__releases(dentry->d_lock) __releases(dentry->d_inode->i_lock)
 {
@@ -251,8 +234,22 @@ static void __dentry_kill(struct dentry *dentry)
 		can_free = false;
 	}
 	spin_unlock(&dentry->d_lock);
-	if (likely(can_free))
-		dentry_free(dentry);
+	if (likely(can_free)) {
+		/* Inlined dentry_free */
+		WARN_ON(!hlist_unhashed(&dentry->d_u.d_alias));
+		if (unlikely(dname_external(dentry))) {
+			struct external_name *p = external_name(dentry);
+			if (likely(atomic_dec_and_test(&p->u.count))) {
+				call_rcu(&dentry->d_u.d_rcu, __d_free_external);
+				goto skip_rcu;
+			}
+		}
+		if (dentry->d_flags & DCACHE_NORCU)
+			__d_free(&dentry->d_u.d_rcu);
+		else
+			call_rcu(&dentry->d_u.d_rcu, __d_free);
+skip_rcu:;
+	}
 	cond_resched();
 }
 

@@ -81,10 +81,7 @@ static inline void softirq_handle_end(void)
 
 /* ksoftirqd_run_begin/end removed - only caller was run_ksoftirqd */
 
-static inline bool should_wake_ksoftirqd(void)
-{
-	return true;
-}
+/* should_wake_ksoftirqd removed - always returned true */
 
 static inline void invoke_softirq(void)
 {
@@ -220,7 +217,8 @@ inline void raise_softirq_irqoff(unsigned int nr)
 {
 	__raise_softirq_irqoff(nr);
 
-	if (!in_interrupt() && should_wake_ksoftirqd())
+	/* should_wake_ksoftirqd always returns true */
+	if (!in_interrupt())
 		wakeup_softirqd();
 }
 

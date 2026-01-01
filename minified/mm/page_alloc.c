@@ -1190,13 +1190,6 @@ static int zone_highsize(struct zone *zone, int batch, int cpu_online)
 	return batch << 2;
 }
 
-static void pageset_update(struct per_cpu_pages *pcp, unsigned long high,
-			   unsigned long batch)
-{
-	WRITE_ONCE(pcp->batch, batch);
-	WRITE_ONCE(pcp->high, high);
-}
-
 static void per_cpu_pages_init(struct per_cpu_pages *pcp,
 			       struct per_cpu_zonestat *pzstats)
 {
@@ -1222,7 +1215,8 @@ static void __zone_set_pageset_high_and_batch(struct zone *zone,
 
 	/* for_each_possible_cpu simplified - single CPU */
 	pcp = per_cpu_ptr(zone->per_cpu_pageset, 0);
-	pageset_update(pcp, high, batch);
+	WRITE_ONCE(pcp->batch, batch);
+	WRITE_ONCE(pcp->high, high);
 }
 
 static void zone_set_pageset_high_and_batch(struct zone *zone, int cpu_online)
@@ -1682,15 +1676,9 @@ void __init page_alloc_init(void)
 /* calculate_totalreserve_pages, setup_per_zone_lowmem_reserve, __setup_per_zone_wmarks,
    setup_per_zone_wmarks, calculate_min_free_kbytes removed - unused */
 
-static inline void padbg(const char *s)
-{
-	while (*s)
-		asm volatile("outb %0, $0xe9" : : "a"(*s++));
-}
 int __meminit init_per_zone_wmark_min(void)
 {
 	/* Simplified for 4MB boot */
-	padbg("wmark\n");
 	return 0;
 }
 postcore_initcall(init_per_zone_wmark_min)

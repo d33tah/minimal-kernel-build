@@ -1094,12 +1094,7 @@ err:
 	return err;
 }
 
-static inline bool pos_same_folio(loff_t pos1, loff_t pos2, struct folio *folio)
-{
-	unsigned int shift = folio_shift(folio);
-
-	return (pos1 >> shift == pos2 >> shift);
-}
+/* pos_same_folio inlined into filemap_read */
 
 ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
 		     ssize_t already_read)
@@ -1138,9 +1133,13 @@ ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
 			goto put_folios;
 		end_offset = min_t(loff_t, isize, iocb->ki_pos + iter->count);
 
-		if (!pos_same_folio(iocb->ki_pos, ra->prev_pos - 1,
-				    fbatch.folios[0]))
-			folio_mark_accessed(fbatch.folios[0]);
+		/* pos_same_folio inlined */
+		{
+			unsigned int shift = folio_shift(fbatch.folios[0]);
+			if (!(iocb->ki_pos >> shift ==
+			      (ra->prev_pos - 1) >> shift))
+				folio_mark_accessed(fbatch.folios[0]);
+		}
 
 		for (i = 0; i < folio_batch_count(&fbatch); i++) {
 			struct folio *folio = fbatch.folios[i];

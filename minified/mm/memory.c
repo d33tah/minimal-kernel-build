@@ -658,14 +658,6 @@ static vm_fault_t do_wp_page(struct vm_fault *vmf) __releases(vmf->ptl)
 	return wp_page_copy(vmf);
 }
 
-static void unmap_mapping_range_vma(struct vm_area_struct *vma,
-				    unsigned long start_addr,
-				    unsigned long end_addr,
-				    struct zap_details *details)
-{
-	zap_page_range_single(vma, start_addr, end_addr - start_addr, details);
-}
-
 static inline void unmap_mapping_range_tree(struct rb_root_cached *root,
 					    pgoff_t first_index,
 					    pgoff_t last_index,
@@ -673,6 +665,7 @@ static inline void unmap_mapping_range_tree(struct rb_root_cached *root,
 {
 	struct vm_area_struct *vma;
 	pgoff_t vba, vea, zba, zea;
+	unsigned long start_addr, end_addr;
 
 	vma_interval_tree_foreach(vma, root, first_index, last_index)
 	{
@@ -681,10 +674,10 @@ static inline void unmap_mapping_range_tree(struct rb_root_cached *root,
 		zba = max(first_index, vba);
 		zea = min(last_index, vea);
 
-		unmap_mapping_range_vma(
-			vma, ((zba - vba) << PAGE_SHIFT) + vma->vm_start,
-			((zea - vba + 1) << PAGE_SHIFT) + vma->vm_start,
-			details);
+		start_addr = ((zba - vba) << PAGE_SHIFT) + vma->vm_start;
+		end_addr = ((zea - vba + 1) << PAGE_SHIFT) + vma->vm_start;
+		zap_page_range_single(vma, start_addr, end_addr - start_addr,
+				      details);
 	}
 }
 

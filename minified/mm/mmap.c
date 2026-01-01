@@ -71,17 +71,6 @@ pgprot_t protection_map[16] __ro_after_init = {
 
 /* Removed: vm_pgprot_modify, vma_set_page_prot - never called */
 
-static void __remove_shared_vm_struct(struct vm_area_struct *vma,
-				      struct file *file,
-				      struct address_space *mapping)
-{
-	if (vma->vm_flags & VM_SHARED)
-		mapping_unmap_writable(mapping);
-
-	/* flush_dcache_mmap_lock/unlock - empty stubs on x86 */
-	vma_interval_tree_remove(vma, &mapping->i_mmap);
-}
-
 void unlink_file_vma(struct vm_area_struct *vma)
 {
 	struct file *file = vma->vm_file;
@@ -89,7 +78,9 @@ void unlink_file_vma(struct vm_area_struct *vma)
 	if (file) {
 		struct address_space *mapping = file->f_mapping;
 		i_mmap_lock_write(mapping);
-		__remove_shared_vm_struct(vma, file, mapping);
+		if (vma->vm_flags & VM_SHARED)
+			mapping_unmap_writable(mapping);
+		vma_interval_tree_remove(vma, &mapping->i_mmap);
 		i_mmap_unlock_write(mapping);
 	}
 }

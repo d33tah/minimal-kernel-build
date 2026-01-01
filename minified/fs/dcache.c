@@ -472,11 +472,6 @@ void dput_to_list(struct dentry *dentry, struct list_head *list)
 	spin_unlock(&dentry->d_lock);
 }
 
-static inline void __dget_dlock(struct dentry *dentry)
-{
-	dentry->d_lockref.count++;
-}
-
 struct dentry *dget_parent(struct dentry *dentry)
 {
 	int gotref;
@@ -663,7 +658,7 @@ struct dentry *d_alloc(struct dentry *parent, const struct qstr *name)
 		return NULL;
 	spin_lock(&parent->d_lock);
 
-	__dget_dlock(parent);
+	parent->d_lockref.count++;
 	dentry->d_parent = parent;
 	list_add(&dentry->d_child, &parent->d_subdirs);
 	spin_unlock(&parent->d_lock);

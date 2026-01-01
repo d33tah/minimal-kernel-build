@@ -630,10 +630,15 @@ static inline int handle_mounts(struct nameidata *nd, struct dentry *dentry,
 	return ret;
 }
 
-static struct dentry *lookup_dcache(const struct qstr *name, struct dentry *dir,
-				    unsigned int flags)
+static struct dentry *__lookup_hash(const struct qstr *name,
+				    struct dentry *base, unsigned int flags)
 {
-	struct dentry *dentry = d_lookup(dir, name);
+	struct dentry *dentry;
+	struct dentry *old;
+	struct inode *dir = base->d_inode;
+
+	/* Inlined lookup_dcache */
+	dentry = d_lookup(base, name);
 	if (dentry) {
 		int error = d_revalidate(dentry, flags);
 		if (unlikely(error <= 0)) {
@@ -642,19 +647,8 @@ static struct dentry *lookup_dcache(const struct qstr *name, struct dentry *dir,
 			dput(dentry);
 			return ERR_PTR(error);
 		}
-	}
-	return dentry;
-}
-
-static struct dentry *__lookup_hash(const struct qstr *name,
-				    struct dentry *base, unsigned int flags)
-{
-	struct dentry *dentry = lookup_dcache(name, base, flags);
-	struct dentry *old;
-	struct inode *dir = base->d_inode;
-
-	if (dentry)
 		return dentry;
+	}
 
 	if (unlikely(IS_DEADDIR(dir)))
 		return ERR_PTR(-ENOENT);

@@ -83,16 +83,6 @@ static inline struct hlist_head *mp_hash(struct dentry *dentry)
 	return &mountpoint_hashtable[tmp & mp_hash_mask];
 }
 
-static int mnt_alloc_id(struct mount *mnt)
-{
-	int res = ida_alloc(&mnt_id_ida, GFP_KERNEL);
-
-	if (res < 0)
-		return res;
-	mnt->mnt_id = res;
-	return 0;
-}
-
 static void mnt_free_id(struct mount *mnt)
 {
 	ida_free(&mnt_id_ida, mnt->mnt_id);
@@ -124,11 +114,12 @@ static struct mount *alloc_vfsmnt(const char *name)
 {
 	struct mount *mnt = kmem_cache_zalloc(mnt_cache, GFP_KERNEL);
 	if (mnt) {
-		int err;
+		int res;
 
-		err = mnt_alloc_id(mnt);
-		if (err)
+		res = ida_alloc(&mnt_id_ida, GFP_KERNEL);
+		if (res < 0)
 			goto out_free_cache;
+		mnt->mnt_id = res;
 
 		if (name) {
 			mnt->mnt_devname =

@@ -903,9 +903,16 @@ void free_pages(unsigned long addr, unsigned int order)
 	/* No-op: bump allocator style - no deallocation */
 }
 
-static void *make_alloc_exact(unsigned long addr, unsigned int order,
-			      size_t size)
+void *alloc_pages_exact(size_t size, gfp_t gfp_mask)
 {
+	unsigned int order = get_order(size);
+	unsigned long addr;
+
+	if (WARN_ON_ONCE(gfp_mask & (__GFP_COMP | __GFP_HIGHMEM)))
+		gfp_mask &= ~(__GFP_COMP | __GFP_HIGHMEM);
+
+	addr = __get_free_pages(gfp_mask, order);
+	/* Inlined make_alloc_exact */
 	if (addr) {
 		unsigned long alloc_end = addr + (PAGE_SIZE << order);
 		unsigned long used = addr + PAGE_ALIGN(size);
@@ -917,18 +924,6 @@ static void *make_alloc_exact(unsigned long addr, unsigned int order,
 		}
 	}
 	return (void *)addr;
-}
-
-void *alloc_pages_exact(size_t size, gfp_t gfp_mask)
-{
-	unsigned int order = get_order(size);
-	unsigned long addr;
-
-	if (WARN_ON_ONCE(gfp_mask & (__GFP_COMP | __GFP_HIGHMEM)))
-		gfp_mask &= ~(__GFP_COMP | __GFP_HIGHMEM);
-
-	addr = __get_free_pages(gfp_mask, order);
-	return make_alloc_exact(addr, order, size);
 }
 
 static unsigned long nr_free_zone_pages(int offset)

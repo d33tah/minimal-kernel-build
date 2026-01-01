@@ -52,20 +52,6 @@ static void copy_fd_bitmaps(struct fdtable *nfdt, struct fdtable *ofdt,
 	memset((char *)nfdt->full_fds_bits + cpy, 0, set);
 }
 
-static void copy_fdtable(struct fdtable *nfdt, struct fdtable *ofdt)
-{
-	size_t cpy, set;
-
-	BUG_ON(nfdt->max_fds < ofdt->max_fds);
-
-	cpy = ofdt->max_fds * sizeof(struct file *);
-	set = (nfdt->max_fds - ofdt->max_fds) * sizeof(struct file *);
-	memcpy(nfdt->fd, ofdt->fd, cpy);
-	memset((char *)nfdt->fd + cpy, 0, set);
-
-	copy_fd_bitmaps(nfdt, ofdt, ofdt->max_fds);
-}
-
 static struct fdtable *alloc_fdtable(unsigned int nr)
 {
 	struct fdtable *fdt;
@@ -130,7 +116,16 @@ static int expand_fdtable(struct files_struct *files, unsigned int nr)
 	}
 	cur_fdt = files_fdtable(files);
 	BUG_ON(nr < cur_fdt->max_fds);
-	copy_fdtable(new_fdt, cur_fdt);
+	/* Inlined copy_fdtable */
+	{
+		size_t cpy = cur_fdt->max_fds * sizeof(struct file *);
+		size_t set = (new_fdt->max_fds - cur_fdt->max_fds) *
+			     sizeof(struct file *);
+		BUG_ON(new_fdt->max_fds < cur_fdt->max_fds);
+		memcpy(new_fdt->fd, cur_fdt->fd, cpy);
+		memset((char *)new_fdt->fd + cpy, 0, set);
+		copy_fd_bitmaps(new_fdt, cur_fdt, cur_fdt->max_fds);
+	}
 	rcu_assign_pointer(files->fdt, new_fdt);
 	if (cur_fdt != &files->fdtab)
 		call_rcu(&cur_fdt->rcu, free_fdtable_rcu);

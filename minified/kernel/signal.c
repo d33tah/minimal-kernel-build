@@ -198,22 +198,7 @@ void signal_wake_up_state(struct task_struct *t, unsigned int state)
 	wake_up_state(t, state | TASK_INTERRUPTIBLE);
 }
 
-static int check_kill_permission(int sig, struct kernel_siginfo *info,
-				 struct task_struct *t)
-{
-	/* Minimal stub: simplified signal permission checking */
-	if (!valid_signal(sig))
-		return -EINVAL;
-
-	if (!(info == SEND_SIG_NOINFO ||
-	      (!(info <= SEND_SIG_PRIV) && SI_FROMUSER(info))))
-		return 0;
-
-	/* Skip session/cred checks for minimal kernel */
-	/* security_task_kill always returns 0 - simplified */
-	return 0;
-}
-
+/* check_kill_permission inlined into kill_something_info caller */
 /* complete_signal was empty stub - removed */
 
 static int __send_signal_locked(int sig, struct kernel_siginfo *info,
@@ -367,7 +352,13 @@ int group_send_sig_info(int sig, struct kernel_siginfo *info,
 	int ret;
 
 	rcu_read_lock();
-	ret = check_kill_permission(sig, info, p);
+	if (!valid_signal(sig))
+		ret = -EINVAL;
+	else if (!(info == SEND_SIG_NOINFO ||
+		   (!(info <= SEND_SIG_PRIV) && SI_FROMUSER(info))))
+		ret = 0;
+	else
+		ret = 0;
 	rcu_read_unlock();
 
 	if (!ret && sig)

@@ -602,19 +602,6 @@ struct file *get_mm_exe_file(struct mm_struct *mm)
 	return NULL;
 }
 
-static void complete_vfork_done(struct task_struct *tsk)
-{
-	struct completion *vfork;
-
-	task_lock(tsk);
-	vfork = tsk->vfork_done;
-	if (likely(vfork)) {
-		tsk->vfork_done = NULL;
-		complete(vfork);
-	}
-	task_unlock(tsk);
-}
-
 static int wait_for_vfork_done(struct task_struct *child,
 			       struct completion *vfork)
 {
@@ -645,8 +632,17 @@ static void mm_release(struct task_struct *tsk, struct mm_struct *mm)
 		tsk->clear_child_tid = NULL;
 	}
 
-	if (tsk->vfork_done)
-		complete_vfork_done(tsk);
+	if (tsk->vfork_done) {
+		struct completion *vfork;
+
+		task_lock(tsk);
+		vfork = tsk->vfork_done;
+		if (likely(vfork)) {
+			tsk->vfork_done = NULL;
+			complete(vfork);
+		}
+		task_unlock(tsk);
+	}
 }
 
 void exit_mm_release(struct task_struct *tsk, struct mm_struct *mm)

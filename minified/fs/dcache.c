@@ -205,24 +205,19 @@ static void d_shrink_add(struct dentry *dentry, struct list_head *list)
 	this_cpu_inc(nr_dentry_unused);
 }
 
-static void ___d_drop(struct dentry *dentry)
-{
-	struct hlist_bl_head *b;
-
-	if (unlikely(IS_ROOT(dentry)))
-		b = &dentry->d_sb->s_roots;
-	else
-		b = d_hash(dentry->d_name.hash);
-
-	hlist_bl_lock(b);
-	__hlist_bl_del(&dentry->d_hash);
-	hlist_bl_unlock(b);
-}
-
 void __d_drop(struct dentry *dentry)
 {
 	if (!d_unhashed(dentry)) {
-		___d_drop(dentry);
+		struct hlist_bl_head *b;
+
+		if (unlikely(IS_ROOT(dentry)))
+			b = &dentry->d_sb->s_roots;
+		else
+			b = d_hash(dentry->d_name.hash);
+
+		hlist_bl_lock(b);
+		__hlist_bl_del(&dentry->d_hash);
+		hlist_bl_unlock(b);
 		dentry->d_hash.pprev = NULL;
 		write_seqcount_invalidate(&dentry->d_seq);
 	}
@@ -932,15 +927,6 @@ void d_delete(struct dentry *dentry)
 	}
 }
 
-static void __d_rehash(struct dentry *entry)
-{
-	struct hlist_bl_head *b = d_hash(entry->d_name.hash);
-
-	hlist_bl_lock(b);
-	hlist_bl_add_head_rcu(&entry->d_hash, b);
-	hlist_bl_unlock(b);
-}
-
 static inline unsigned start_dir_add(struct inode *dir)
 {
 	for (;;) {
@@ -1095,7 +1081,12 @@ static inline void __d_add(struct dentry *dentry, struct inode *inode)
 		__d_set_inode_and_type(dentry, inode, add_flags);
 		raw_write_seqcount_end(&dentry->d_seq);
 	}
-	__d_rehash(dentry);
+	{
+		struct hlist_bl_head *b = d_hash(dentry->d_name.hash);
+		hlist_bl_lock(b);
+		hlist_bl_add_head_rcu(&dentry->d_hash, b);
+		hlist_bl_unlock(b);
+	}
 	if (dir)
 		end_dir_add(dir, n);
 	spin_unlock(&dentry->d_lock);

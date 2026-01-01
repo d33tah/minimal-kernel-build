@@ -669,18 +669,7 @@ void finalize_exec(struct linux_binprm *bprm)
 	task_unlock(current->group_leader);
 }
 
-static int prepare_bprm_creds(struct linux_binprm *bprm)
-{
-	if (mutex_lock_interruptible(&current->signal->cred_guard_mutex))
-		return -ERESTARTNOINTR;
-
-	bprm->cred = prepare_exec_creds();
-	if (likely(bprm->cred))
-		return 0;
-
-	mutex_unlock(&current->signal->cred_guard_mutex);
-	return -ENOMEM;
-}
+/* prepare_bprm_creds inlined into bprm_execve */
 
 static void free_bprm(struct linux_binprm *bprm)
 {
@@ -849,9 +838,14 @@ static int bprm_execve(struct linux_binprm *bprm, int fd,
 	struct file *file;
 	int retval;
 
-	retval = prepare_bprm_creds(bprm);
-	if (retval)
-		return retval;
+	/* Inlined prepare_bprm_creds */
+	if (mutex_lock_interruptible(&current->signal->cred_guard_mutex))
+		return -ERESTARTNOINTR;
+	bprm->cred = prepare_exec_creds();
+	if (unlikely(!bprm->cred)) {
+		mutex_unlock(&current->signal->cred_guard_mutex);
+		return -ENOMEM;
+	}
 
 	/* inlined check_unsafe_exec */
 	{

@@ -328,33 +328,20 @@ void page_add_file_rmap(struct page *page, struct vm_area_struct *vma,
 		__mod_lruvec_page_state(page, NR_FILE_MAPPED, nr);
 }
 
-static void page_remove_file_rmap(struct page *page, bool compound)
-{
-	int nr = 0;
-	/* PageHuge and PageTransHuge always return false */
-	if (atomic_add_negative(-1, &page->_mapcount))
-		nr++;
-	if (nr)
-		__mod_lruvec_page_state(page, NR_FILE_MAPPED, -nr);
-}
-
-static void page_remove_anon_compound_rmap(struct page *page)
-{
-	/* PageHuge always returns false, THP not enabled - just decrement */
-	atomic_add_negative(-1, compound_mapcount_ptr(page));
-}
-
 void page_remove_rmap(struct page *page, struct vm_area_struct *vma,
 		      bool compound)
 {
 	/* lock_page_memcg/unlock_page_memcg are empty stubs */
 	if (!PageAnon(page)) {
-		page_remove_file_rmap(page, compound);
+		/* Inlined page_remove_file_rmap - PageHuge/PageTransHuge always false */
+		if (atomic_add_negative(-1, &page->_mapcount))
+			__mod_lruvec_page_state(page, NR_FILE_MAPPED, -1);
 		return;
 	}
 
 	if (compound) {
-		page_remove_anon_compound_rmap(page);
+		/* Inlined page_remove_anon_compound_rmap - PageHuge always false */
+		atomic_add_negative(-1, compound_mapcount_ptr(page));
 		return;
 	}
 

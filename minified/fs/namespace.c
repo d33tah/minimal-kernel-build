@@ -108,11 +108,6 @@ static int mnt_alloc_group_id(struct mount *mnt)
 	return 0;
 }
 
-/* Stub: mnt_release_group_id not used externally */
-static void mnt_release_group_id(struct mount *mnt)
-{
-}
-
 static inline void mnt_add_count(struct mount *mnt, int n)
 {
 	preempt_disable();
@@ -1037,16 +1032,6 @@ static void lock_mnt_tree(struct mount *mnt)
 	}
 }
 
-static void cleanup_group_ids(struct mount *mnt, struct mount *end)
-{
-	struct mount *p;
-
-	for (p = mnt; p != end; p = next_mnt(p, mnt)) {
-		if (p->mnt_group_id && !IS_MNT_SHARED(p))
-			mnt_release_group_id(p);
-	}
-}
-
 static int invent_group_ids(struct mount *mnt, bool recurse)
 {
 	struct mount *p;
@@ -1054,10 +1039,8 @@ static int invent_group_ids(struct mount *mnt, bool recurse)
 	for (p = mnt; p; p = recurse ? next_mnt(p, mnt) : NULL) {
 		if (!p->mnt_group_id && !IS_MNT_SHARED(p)) {
 			int err = mnt_alloc_group_id(p);
-			if (err) {
-				cleanup_group_ids(mnt, p);
+			if (err)
 				return err;
-			}
 		}
 	}
 
@@ -1127,7 +1110,6 @@ out_cleanup_ids:
 		umount_tree(child, UMOUNT_SYNC);
 	}
 	unlock_mount_hash();
-	cleanup_group_ids(source_mnt, NULL);
 out:
 	ns->pending_mounts = 0;
 

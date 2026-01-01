@@ -308,13 +308,7 @@ static inline void __add_partial(struct kmem_cache_node *n, struct slab *slab,
 		list_add(&slab->slab_list, &n->partial);
 }
 
-/* add_partial removed - unused, callers use __add_partial directly */
-
-static inline void remove_partial(struct kmem_cache_node *n, struct slab *slab)
-{
-	list_del(&slab->slab_list);
-	n->nr_partial--;
-}
+/* add_partial and remove_partial inlined into callers */
 
 static inline void *acquire_slab(struct kmem_cache *s,
 				 struct kmem_cache_node *n, struct slab *slab,
@@ -340,7 +334,8 @@ static inline void *acquire_slab(struct kmem_cache *s,
 				   new.counters, "acquire_slab"))
 		return NULL;
 
-	remove_partial(n, slab);
+	list_del(&slab->slab_list);
+	n->nr_partial--;
 	WARN_ON(!freelist);
 	return freelist;
 }

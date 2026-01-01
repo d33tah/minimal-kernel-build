@@ -463,24 +463,6 @@ void unmap_vmas(struct mmu_gather *tlb, struct vm_area_struct *vma,
 	mmu_notifier_invalidate_range_end(&range);
 }
 
-static void zap_page_range_single(struct vm_area_struct *vma,
-				  unsigned long address, unsigned long size,
-				  struct zap_details *details)
-{
-	struct mmu_notifier_range range;
-	struct mmu_gather tlb;
-
-	lru_add_drain();
-	mmu_notifier_range_init(&range, MMU_NOTIFY_CLEAR, 0, vma, vma->vm_mm,
-				address, address + size);
-	tlb_gather_mmu(&tlb, vma->vm_mm);
-	update_hiwater_rss(vma->vm_mm);
-	mmu_notifier_invalidate_range_start(&range);
-	unmap_single_vma(&tlb, vma, address, range.end, details);
-	mmu_notifier_invalidate_range_end(&range);
-	tlb_finish_mmu(&tlb);
-}
-
 pte_t *__get_locked_pte(struct mm_struct *mm, unsigned long addr,
 			spinlock_t **ptl)
 {
@@ -659,6 +641,9 @@ static inline void unmap_mapping_range_tree(struct rb_root_cached *root,
 
 	vma_interval_tree_foreach(vma, root, first_index, last_index)
 	{
+		struct mmu_notifier_range range;
+		struct mmu_gather tlb;
+
 		vba = vma->vm_pgoff;
 		vea = vba + vma_pages(vma) - 1;
 		zba = max(first_index, vba);
@@ -666,8 +651,17 @@ static inline void unmap_mapping_range_tree(struct rb_root_cached *root,
 
 		start_addr = ((zba - vba) << PAGE_SHIFT) + vma->vm_start;
 		end_addr = ((zea - vba + 1) << PAGE_SHIFT) + vma->vm_start;
-		zap_page_range_single(vma, start_addr, end_addr - start_addr,
-				      details);
+
+		/* Inlined zap_page_range_single */
+		lru_add_drain();
+		mmu_notifier_range_init(&range, MMU_NOTIFY_CLEAR, 0, vma,
+					vma->vm_mm, start_addr, end_addr);
+		tlb_gather_mmu(&tlb, vma->vm_mm);
+		update_hiwater_rss(vma->vm_mm);
+		mmu_notifier_invalidate_range_start(&range);
+		unmap_single_vma(&tlb, vma, start_addr, range.end, details);
+		mmu_notifier_invalidate_range_end(&range);
+		tlb_finish_mmu(&tlb);
 	}
 }
 

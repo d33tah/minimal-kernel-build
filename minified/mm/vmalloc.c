@@ -322,8 +322,9 @@ static int vmap_pages_p4d_range(pgd_t *pgd, unsigned long addr,
 	return 0;
 }
 
-static int vmap_small_pages_range_noflush(unsigned long addr, unsigned long end,
-					  pgprot_t prot, struct page **pages)
+int vmap_pages_range_noflush(unsigned long addr, unsigned long end,
+			     pgprot_t prot, struct page **pages,
+			     unsigned int page_shift)
 {
 	unsigned long start = addr;
 	pgd_t *pgd;
@@ -331,6 +332,8 @@ static int vmap_small_pages_range_noflush(unsigned long addr, unsigned long end,
 	int err = 0;
 	int nr = 0;
 	pgtbl_mod_mask mask = 0;
+
+	WARN_ON(page_shift < PAGE_SHIFT);
 
 	BUG_ON(addr >= end);
 	pgd = pgd_offset_k(addr);
@@ -350,25 +353,12 @@ static int vmap_small_pages_range_noflush(unsigned long addr, unsigned long end,
 	return 0;
 }
 
-int vmap_pages_range_noflush(unsigned long addr, unsigned long end,
-			     pgprot_t prot, struct page **pages,
-			     unsigned int page_shift)
-{
-	WARN_ON(page_shift < PAGE_SHIFT);
-
-	/* CONFIG_HAVE_ARCH_HUGE_VMALLOC not enabled */
-	return vmap_small_pages_range_noflush(addr, end, prot, pages);
-}
-
 static int vmap_pages_range(unsigned long addr, unsigned long end,
 			    pgprot_t prot, struct page **pages,
 			    unsigned int page_shift)
 {
-	int err;
-
-	err = vmap_pages_range_noflush(addr, end, prot, pages, page_shift);
 	/* flush_cache_vmap - empty stub on x86 */
-	return err;
+	return vmap_pages_range_noflush(addr, end, prot, pages, page_shift);
 }
 
 struct page *vmalloc_to_page(const void *vmalloc_addr)

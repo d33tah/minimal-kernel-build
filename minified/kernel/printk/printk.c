@@ -549,19 +549,7 @@ static int try_enable_preferred_console(struct console *newcon,
 	return -ENOENT;
 }
 
-static void try_enable_default_console(struct console *newcon)
-{
-	if (newcon->index < 0)
-		newcon->index = 0;
-
-	if (newcon->setup && newcon->setup(newcon, NULL) != 0)
-		return;
-
-	newcon->flags |= CON_ENABLED;
-
-	if (newcon->device)
-		newcon->flags |= CON_CONSDEV;
-}
+/* try_enable_default_console inlined into register_console */
 
 #define con_printk(lvl, con, fmt, ...)                                       \
 	printk(lvl pr_fmt("%sconsole [%s%d] " fmt),                          \
@@ -595,7 +583,15 @@ void register_console(struct console *newcon)
 	if (preferred_console < 0) {
 		if (!console_drivers || !console_drivers->device ||
 		    console_drivers->flags & CON_BOOT) {
-			try_enable_default_console(newcon);
+			/* inlined try_enable_default_console */
+			if (newcon->index < 0)
+				newcon->index = 0;
+			if (!newcon->setup ||
+			    newcon->setup(newcon, NULL) == 0) {
+				newcon->flags |= CON_ENABLED;
+				if (newcon->device)
+					newcon->flags |= CON_CONSDEV;
+			}
 		}
 	}
 

@@ -142,10 +142,7 @@ static const struct inode_operations ramfs_dir_inode_operations = {
 
 static int ramfs_show_options(struct seq_file *m, struct dentry *root)
 {
-	struct ramfs_fs_info *fsi = root->d_sb->s_fs_info;
-
-	if (fsi->mount_opts.mode != RAMFS_DEFAULT_MODE)
-		seq_printf(m, ",mode=%o", fsi->mount_opts.mode);
+	/* seq_printf call and fsi variable removed - seq_printf was empty stub */
 	return 0;
 }
 

@@ -61,25 +61,14 @@ struct user_struct root_user = {
 };
 
 /* uid_hash_insert removed - never called */
-
-static void uid_hash_remove(struct user_struct *up)
-{
-	hlist_del_init(&up->uidhash_node);
-}
-
 /* uid_hash_find removed - only caller was alloc_uid */
 /* user_epoll_alloc removed - never called */
-
-static void user_epoll_free(struct user_struct *up)
-{
-}
 
 static void free_user(struct user_struct *up, unsigned long flags)
 	__releases(&uidhash_lock)
 {
-	uid_hash_remove(up);
+	hlist_del_init(&up->uidhash_node);
 	spin_unlock_irqrestore(&uidhash_lock, flags);
-	user_epoll_free(up);
 	kmem_cache_free(uid_cachep, up);
 }
 

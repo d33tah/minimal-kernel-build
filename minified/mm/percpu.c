@@ -159,12 +159,8 @@ static int pcpu_chunk_slot(const struct pcpu_chunk *chunk)
 	return pcpu_size_to_slot(chunk_md->contig_hint * PCPU_MIN_ALLOC_SIZE);
 }
 
-static void pcpu_set_page_chunk(struct page *page, struct pcpu_chunk *pcpu)
-{
-	page->index = (unsigned long)pcpu;
-}
-
-/* pcpu_unit_page_offset inlined into pcpu_chunk_addr */
+/* pcpu_set_page_chunk inlined into pcpu_create_chunk
+ * pcpu_unit_page_offset inlined into pcpu_chunk_addr */
 static unsigned long pcpu_chunk_addr(struct pcpu_chunk *chunk, unsigned int cpu,
 				     int page_idx)
 {

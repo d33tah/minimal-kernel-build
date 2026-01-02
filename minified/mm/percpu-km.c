@@ -29,7 +29,7 @@ static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp)
 	}
 
 	for (i = 0; i < nr_pages; i++)
-		pcpu_set_page_chunk(nth_page(pages, i), chunk);
+		nth_page(pages, i)->index = (unsigned long)chunk;
 
 	chunk->data = pages;
 	chunk->base_addr = page_address(pages);

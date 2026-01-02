@@ -10,16 +10,6 @@
 #include <linux/pm_runtime.h>
 #include <linux/slab.h>
 
-/* Inlined from pinctrl/devinfo.h - stubs for no PINCTRL */
-static inline int pinctrl_bind_pins(struct device *dev)
-{
-	return 0;
-}
-static inline int pinctrl_init_done(struct device *dev)
-{
-	return 0;
-}
-
 #include "base.h"
 #include "power/power.h"
 
@@ -238,10 +228,6 @@ static int really_probe(struct device *dev, struct device_driver *drv)
 
 	dev->driver = drv;
 
-	ret = pinctrl_bind_pins(dev);
-	if (ret)
-		goto pinctrl_bind_failed;
-
 	if (dev->bus->dma_configure) {
 		ret = dev->bus->dma_configure(dev);
 		if (ret)
@@ -272,10 +258,6 @@ static int really_probe(struct device *dev, struct device_driver *drv)
 		dev_err(dev, "device_add_groups() failed\n");
 		goto dev_groups_failed;
 	}
-
-	/* Stub: state_synced sysfs attribute not created for minimal kernel */
-
-	pinctrl_init_done(dev);
 
 	if (dev->pm_domain && dev->pm_domain->sync)
 		dev->pm_domain->sync(dev);

@@ -325,23 +325,6 @@ static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags,
 
 /* ttwu_queue_wakelist removed - always returned false */
 
-static void ttwu_queue(struct task_struct *p, int cpu, int wake_flags)
-{
-	struct rq *rq = cpu_rq(cpu);
-	struct rq_flags rf;
-	/* ttwu_queue_wakelist always false - dead branch removed */
-	rq_lock(rq, &rf);
-	update_rq_clock(rq);
-	/* Inlined ttwu_do_activate */
-	if (p->sched_contributes_to_load)
-		rq->nr_uninterruptible--;
-	if (p->in_iowait)
-		atomic_dec(&task_rq(p)->nr_iowait);
-	activate_task(rq, p, ENQUEUE_WAKEUP | ENQUEUE_NOCLOCK);
-	ttwu_do_wakeup(rq, p, wake_flags, &rf);
-	rq_unlock(rq, &rf);
-}
-
 static __always_inline bool ttwu_state_match(struct task_struct *p,
 					     unsigned int state, int *success)
 {
@@ -388,7 +371,19 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state,
 
 	cpu = task_cpu(p);
 
-	ttwu_queue(p, cpu, wake_flags);
+	/* Inlined ttwu_queue */
+	{
+		struct rq *rq = cpu_rq(cpu);
+		rq_lock(rq, &rf);
+		update_rq_clock(rq);
+		if (p->sched_contributes_to_load)
+			rq->nr_uninterruptible--;
+		if (p->in_iowait)
+			atomic_dec(&task_rq(p)->nr_iowait);
+		activate_task(rq, p, ENQUEUE_WAKEUP | ENQUEUE_NOCLOCK);
+		ttwu_do_wakeup(rq, p, wake_flags, &rf);
+		rq_unlock(rq, &rf);
+	}
 out:
 	/* ttwu_stat removed - empty stub */
 	preempt_enable();
@@ -854,27 +849,6 @@ SYSCALL_DEFINE1(nice, int, increment)
 
 #define SETPARAM_POLICY -1
 
-static void __setscheduler_params(struct task_struct *p,
-				  const struct sched_attr *attr)
-{
-	int policy = attr->sched_policy;
-
-	if (policy == SETPARAM_POLICY)
-		policy = p->policy;
-
-	p->policy = policy;
-
-	if (dl_policy(policy))
-		__setparam_dl(p, attr);
-	else if (fair_policy(policy))
-		p->static_prio = NICE_TO_PRIO(attr->sched_nice);
-
-	p->rt_priority = attr->sched_priority;
-	p->normal_prio = __normal_prio(p->policy, p->rt_priority,
-				       PRIO_TO_NICE(p->static_prio));
-	set_load_weight(p, true);
-}
-
 static int __sched_setscheduler(struct task_struct *p,
 				const struct sched_attr *attr, bool user,
 				bool pi)
@@ -927,7 +901,19 @@ static int __sched_setscheduler(struct task_struct *p,
 	prev_class = p->sched_class;
 
 	if (!(attr->sched_flags & SCHED_FLAG_KEEP_PARAMS)) {
-		__setscheduler_params(p, attr);
+		/* Inlined __setscheduler_params */
+		int sched_policy = attr->sched_policy;
+		if (sched_policy == SETPARAM_POLICY)
+			sched_policy = p->policy;
+		p->policy = sched_policy;
+		if (dl_policy(sched_policy))
+			__setparam_dl(p, attr);
+		else if (fair_policy(sched_policy))
+			p->static_prio = NICE_TO_PRIO(attr->sched_nice);
+		p->rt_priority = attr->sched_priority;
+		p->normal_prio = __normal_prio(p->policy, p->rt_priority,
+					       PRIO_TO_NICE(p->static_prio));
+		set_load_weight(p, true);
 		/* Inlined __setscheduler_prio */
 		if (dl_prio(newprio))
 			p->sched_class = &dl_sched_class;

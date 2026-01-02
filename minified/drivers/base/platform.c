@@ -15,20 +15,6 @@
 #include <linux/slab.h>
 #include <linux/pm_runtime.h>
 
-static inline int dev_pm_domain_attach(struct device *dev, bool power_on)
-{
-	return 0;
-}
-static inline void dev_pm_domain_detach(struct device *dev, bool power_off)
-{
-}
-#include <linux/idr.h>
-#include <linux/acpi.h>
-static inline int of_clk_set_defaults(struct device_node *node,
-				      bool clk_supplier)
-{
-	return 0;
-}
 #include <linux/limits.h>
 #include <linux/types.h>
 #include <linux/dma-map-ops.h>
@@ -136,23 +122,11 @@ static int platform_probe(struct device *_dev)
 {
 	struct platform_driver *drv = to_platform_driver(_dev->driver);
 	struct platform_device *dev = to_platform_device(_dev);
-	int ret;
+	int ret = 0;
 
-	ret = of_clk_set_defaults(_dev->of_node, false);
-	if (ret < 0)
-		return ret;
-
-	ret = dev_pm_domain_attach(_dev, true);
-	if (ret)
-		goto out;
-
-	if (drv->probe) {
+	if (drv->probe)
 		ret = drv->probe(dev);
-		if (ret)
-			dev_pm_domain_detach(_dev, true);
-	}
 
-out:
 	if (drv->prevent_deferred_probe && ret == -EPROBE_DEFER) {
 		dev_warn(_dev, "probe deferral not supported\n");
 		ret = -ENXIO;
@@ -174,7 +148,6 @@ static void platform_remove(struct device *_dev)
 				_dev,
 				"remove callback returned a non-zero value. This will be ignored.\n");
 	}
-	dev_pm_domain_detach(_dev, true);
 }
 
 static void platform_shutdown(struct device *_dev)

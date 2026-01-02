@@ -1171,51 +1171,10 @@ out_unlock:
 	return err;
 }
 
-static int do_loopback(struct path *path, const char *old_name, int recurse)
-{
-	/* Stubbed: loopback mounts not needed for minimal boot */
-	return -EINVAL;
-}
-
 SYSCALL_DEFINE3(open_tree, int, dfd, const char __user *, filename, unsigned,
 		flags)
 {
-	/* Stubbed: open_tree not needed for minimal kernel */
 	return -ENOSYS;
-}
-
-static int do_reconfigure_mnt(struct path *path, unsigned int mnt_flags)
-{
-	return -ENOSYS;
-}
-
-static int do_remount(struct path *path, int ms_flags, int sb_flags,
-		      int mnt_flags, void *data)
-{
-	return -ENOSYS;
-}
-
-static int do_move_mount(struct path *old_path, struct path *new_path)
-{
-	/* Stub: mount movement not needed for minimal kernel */
-	return -EINVAL;
-}
-
-static int do_move_mount_old(struct path *path, const char *old_name)
-{
-	struct path old_path;
-	int err;
-
-	if (!old_name || !*old_name)
-		return -EINVAL;
-
-	err = kern_path(old_name, LOOKUP_FOLLOW, &old_path);
-	if (err)
-		return err;
-
-	err = do_move_mount(&old_path, path);
-	path_put(&old_path);
-	return err;
 }
 
 static int do_add_mount(struct mount *newmnt, struct mountpoint *mp,
@@ -1381,15 +1340,15 @@ int path_mount(const char *dev_name, struct path *path, const char *type_page,
 		    SB_SILENT | SB_POSIXACL | SB_LAZYTIME | SB_I_VERSION);
 
 	if ((flags & (MS_REMOUNT | MS_BIND)) == (MS_REMOUNT | MS_BIND))
-		return do_reconfigure_mnt(path, mnt_flags);
+		return -ENOSYS;
 	if (flags & MS_REMOUNT)
-		return do_remount(path, flags, sb_flags, mnt_flags, data_page);
+		return -ENOSYS;
 	if (flags & MS_BIND)
-		return do_loopback(path, dev_name, flags & MS_REC);
+		return -EINVAL;
 	if (flags & (MS_SHARED | MS_PRIVATE | MS_SLAVE | MS_UNBINDABLE))
 		return do_change_type(path, flags);
 	if (flags & MS_MOVE)
-		return do_move_mount_old(path, dev_name);
+		return -EINVAL;
 
 	return do_new_mount(path, type_page, sb_flags, mnt_flags, dev_name,
 			    data_page);

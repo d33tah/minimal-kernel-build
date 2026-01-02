@@ -218,11 +218,6 @@ static void update_fast_timekeeper(const struct tk_read_base *tkr,
 
 static RAW_NOTIFIER_HEAD(pvclock_gtod_chain);
 
-static void update_pvclock_gtod(struct timekeeper *tk, bool was_set)
-{
-	raw_notifier_call_chain(&pvclock_gtod_chain, was_set, tk);
-}
-
 static inline void tk_update_leap_state(struct timekeeper *tk)
 {
 	/* ntp_get_next_leap always returns KTIME_MAX - no leap second handling */
@@ -257,7 +252,8 @@ static void timekeeping_update(struct timekeeper *tk, unsigned int action)
 	tk_update_ktime_data(tk);
 
 	/* update_vsyscall removed - was empty stub */
-	update_pvclock_gtod(tk, action & TK_CLOCK_WAS_SET);
+	raw_notifier_call_chain(&pvclock_gtod_chain, action & TK_CLOCK_WAS_SET,
+				tk);
 
 	tk->tkr_mono.base_real = tk->tkr_mono.base + tk->offs_real;
 	update_fast_timekeeper(&tk->tkr_mono, &tk_fast_mono);

@@ -30,12 +30,8 @@ static inline void set_mnt_shared(struct mount *mnt)
 	mnt->mnt.mnt_flags |= MNT_SHARED;
 }
 
-void change_mnt_propagation(struct mount *, int);
-int propagate_mnt(struct mount *, struct mountpoint *, struct mount *,
-		struct hlist_head *);
-int propagate_umount(struct list_head *);
+/* change_mnt_propagation, propagate_mnt, propagate_umount removed - stubs that returned 0 */
 int propagate_mount_busy(struct mount *, int);
-void propagate_mount_unlock(struct mount *);
 /* get_dominating_id removed - unused */
 int mnt_get_count(struct mount *mnt);
 void mnt_set_mountpoint(struct mount *, struct mountpoint *,

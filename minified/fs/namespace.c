@@ -820,8 +820,7 @@ static void umount_tree(struct mount *mnt, enum umount_tree_flags how)
 		list_del_init(&p->mnt_child);
 	}
 
-	if (how & UMOUNT_PROPAGATE)
-		propagate_umount(&tmp_list);
+	/* propagate_umount call removed - always returns 0, no side effects */
 
 	while (!list_empty(&tmp_list)) {
 		struct mnt_namespace *ns;
@@ -1025,10 +1024,8 @@ static int attach_recursive_mnt(struct mount *source_mnt,
 		err = invent_group_ids(source_mnt, true);
 		if (err)
 			goto out;
-		err = propagate_mnt(dest_mnt, dest_mp, source_mnt, &tree_list);
+		/* propagate_mnt call removed - always returns 0 */
 		lock_mount_hash();
-		if (err)
-			goto out_cleanup_ids;
 		for (p = source_mnt; p; p = next_mnt(p, source_mnt))
 			set_mnt_shared(p);
 	} else {
@@ -1059,14 +1056,8 @@ static int attach_recursive_mnt(struct mount *source_mnt,
 
 	return 0;
 
-out_cleanup_ids:
-	while (!hlist_empty(&tree_list)) {
-		child = hlist_entry(tree_list.first, struct mount, mnt_hash);
-		child->mnt_parent->mnt_ns->pending_mounts = 0;
-		umount_tree(child, UMOUNT_SYNC);
-	}
-	unlock_mount_hash();
 out:
+	/* out_cleanup_ids unreachable now (propagate_mnt always returned 0) */
 	ns->pending_mounts = 0;
 
 	read_seqlock_excl(&mount_lock);

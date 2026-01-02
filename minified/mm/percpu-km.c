@@ -24,7 +24,10 @@ static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp)
 
 	pages = alloc_pages(gfp, order_base_2(nr_pages));
 	if (!pages) {
-		pcpu_free_chunk(chunk);
+		pcpu_mem_free(chunk->md_blocks);
+		pcpu_mem_free(chunk->bound_map);
+		pcpu_mem_free(chunk->alloc_map);
+		pcpu_mem_free(chunk);
 		return NULL;
 	}
 

@@ -130,22 +130,12 @@ found:
 	}
 }
 
-static void clocksource_select(void)
-{
-	__clocksource_select(false);
-}
-
-static void clocksource_select_fallback(void)
-{
-	__clocksource_select(true);
-}
-
 static int __init clocksource_done_booting(void)
 {
 	mutex_lock(&clocksource_mutex);
 	curr_clocksource = clocksource_default_clock();
 	finished_booting = 1;
-	clocksource_select();
+	__clocksource_select(false);
 	mutex_unlock(&clocksource_mutex);
 	return 0;
 }
@@ -231,7 +221,7 @@ int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq)
 	clocksource_enqueue_watchdog(cs);
 	clocksource_watchdog_unlock(&flags);
 
-	clocksource_select();
+	__clocksource_select(false);
 	mutex_unlock(&clocksource_mutex);
 	return 0;
 }
@@ -247,7 +237,7 @@ int clocksource_unregister(struct clocksource *cs)
 		unsigned long flags;
 
 		if (cs == curr_clocksource) {
-			clocksource_select_fallback();
+			__clocksource_select(true);
 			if (curr_clocksource == cs)
 				ret = -EBUSY;
 		}

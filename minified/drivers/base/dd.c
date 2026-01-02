@@ -410,13 +410,8 @@ static int __device_attach(struct device *dev, bool allow_async)
 			ret = 1;
 			goto out_unlock;
 		}
-		ret = device_bind_driver(dev);
-		if (ret == 0)
-			ret = 1;
-		else {
-			dev->driver = NULL;
-			ret = 0;
-		}
+		device_bind_driver(dev);
+		ret = 1;
 	} else {
 		struct device_attach_data data = {
 			.dev = dev,

@@ -61,11 +61,6 @@ static void free_resource(struct resource *res)
 		kfree(res);
 }
 
-static struct resource *alloc_resource(gfp_t flags)
-{
-	return kzalloc(sizeof(struct resource), flags);
-}
-
 static struct resource *__request_resource(struct resource *root,
 					   struct resource *new)
 {
@@ -347,7 +342,8 @@ struct resource *__request_region(struct resource *parent,
 				  resource_size_t start, resource_size_t n,
 				  const char *name, int flags)
 {
-	struct resource *res = alloc_resource(GFP_KERNEL);
+	/* Inlined alloc_resource */
+	struct resource *res = kzalloc(sizeof(struct resource), GFP_KERNEL);
 	int ret;
 
 	if (!res)

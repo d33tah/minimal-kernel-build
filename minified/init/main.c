@@ -705,15 +705,6 @@ static noinline void __init kernel_init_freeable(void);
 
 bool rodata_enabled __ro_after_init = true;
 
-static void mark_readonly(void)
-{
-	if (rodata_enabled) {
-		rcu_barrier();
-		mark_rodata_ro();
-	} else
-		pr_info("Kernel memory protection disabled.\n");
-}
-
 /* free_initmem provided by arch/x86/mm/init.c */
 
 static int __ref kernel_init(void *unused)
@@ -736,7 +727,12 @@ static int __ref kernel_init(void *unused)
 	edbg("ki:free_init\n");
 	free_initmem();
 	edbg("ki:mark_ro\n");
-	mark_readonly();
+	/* Inlined mark_readonly */
+	if (rodata_enabled) {
+		rcu_barrier();
+		mark_rodata_ro();
+	} else
+		pr_info("Kernel memory protection disabled.\n");
 
 	edbg("ki:running\n");
 	system_state = SYSTEM_RUNNING;

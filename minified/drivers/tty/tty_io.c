@@ -716,11 +716,7 @@ static void release_tty(struct tty_struct *tty, int idx)
 	tty_kref_put(tty);
 }
 
-/* TTY_PARANOIA_CHECK not defined */
-static int tty_release_checks(struct tty_struct *tty, int idx)
-{
-	return 0;
-}
+/* tty_release_checks removed - always returned 0 */
 
 static void tty_release_struct(struct tty_struct *tty, int idx)
 {
@@ -743,11 +739,7 @@ int tty_release(struct inode *inode, struct file *filp)
 
 	tty_lock(tty);
 	idx = tty->index;
-
-	if (tty_release_checks(tty, idx)) {
-		tty_unlock(tty);
-		return 0;
-	}
+	/* tty_release_checks always returned 0 - removed dead branch */
 
 	if (tty->ops->close)
 		tty->ops->close(tty, filp);

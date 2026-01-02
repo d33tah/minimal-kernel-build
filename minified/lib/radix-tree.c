@@ -438,20 +438,6 @@ static int __radix_tree_create(struct radix_tree_root *root,
 	return 0;
 }
 
-static inline int insert_entries(struct radix_tree_node *node,
-				 void __rcu **slot, void *item, bool replace)
-{
-	if (*slot)
-		return -EEXIST;
-	rcu_assign_pointer(*slot, item);
-	if (node) {
-		node->count++;
-		if (xa_is_value(item))
-			node->nr_values++;
-	}
-	return 1;
-}
-
 int radix_tree_insert(struct radix_tree_root *root, unsigned long index,
 		      void *item)
 {
@@ -465,9 +451,15 @@ int radix_tree_insert(struct radix_tree_root *root, unsigned long index,
 	if (error)
 		return error;
 
-	error = insert_entries(node, slot, item, false);
-	if (error < 0)
-		return error;
+	/* Inlined insert_entries */
+	if (*slot)
+		return -EEXIST;
+	rcu_assign_pointer(*slot, item);
+	if (node) {
+		node->count++;
+		if (xa_is_value(item))
+			node->nr_values++;
+	}
 
 	if (node) {
 		unsigned offset = get_slot_offset(node, slot);

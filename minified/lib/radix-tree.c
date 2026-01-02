@@ -110,17 +110,6 @@ static inline bool is_idr(const struct radix_tree_root *root)
 	return !!(root->xa_flags & ROOT_IS_IDR);
 }
 
-static inline int any_tag_set(const struct radix_tree_node *node,
-			      unsigned int tag)
-{
-	unsigned idx;
-	for (idx = 0; idx < RADIX_TREE_TAG_LONGS; idx++) {
-		if (node->tags[tag][idx])
-			return 1;
-	}
-	return 0;
-}
-
 static inline void all_tag_set(struct radix_tree_node *node, unsigned int tag)
 {
 	bitmap_fill(node->tags[tag], RADIX_TREE_MAP_SIZE);
@@ -612,10 +601,21 @@ static void node_tag_clear(struct radix_tree_root *root,
 			   unsigned int offset)
 {
 	while (node) {
+		unsigned idx;
+		bool any_set;
+
 		if (!tag_get(node, tag, offset))
 			return;
 		tag_clear(node, tag, offset);
-		if (any_tag_set(node, tag))
+		/* Inlined any_tag_set */
+		any_set = false;
+		for (idx = 0; idx < RADIX_TREE_TAG_LONGS; idx++) {
+			if (node->tags[tag][idx]) {
+				any_set = true;
+				break;
+			}
+		}
+		if (any_set)
 			return;
 
 		offset = node->offset;

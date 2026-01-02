@@ -519,21 +519,18 @@ int bus_register(struct bus_type *bus)
 	add_probe_files(bus);
 	/* error check removed - add_probe_files now returns void */
 
-	retval = bus_add_groups(bus, bus->bus_groups);
-	if (retval)
-		goto bus_groups_fail;
+	bus_add_groups(bus, bus->bus_groups);
+	/* error check removed - bus_add_groups always returns 0 */
 
 	return 0;
 
-bus_groups_fail:
-	remove_probe_files(bus);
-bus_probe_files_fail:
-	kset_unregister(bus->p->drivers_kset);
+/* bus_groups_fail, bus_probe_files_fail labels removed - no longer used */
 bus_drivers_fail:
-	kset_unregister(bus->p->devices_kset);
+	kset_unregister(bus->p->drivers_kset);
 bus_devices_fail:
-	bus_remove_file(bus, &bus_attr_uevent);
+	kset_unregister(bus->p->devices_kset);
 bus_uevent_fail:
+	bus_remove_file(bus, &bus_attr_uevent);
 	kset_unregister(&bus->p->subsys);
 out:
 	kfree(bus->p);

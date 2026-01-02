@@ -310,15 +310,6 @@ int simple_rmdir(struct inode *dir, struct dentry *dentry)
 	return 0;
 }
 
-/* Stub: simple_rename_exchange only used internally */
-static int simple_rename_exchange(struct inode *old_dir,
-				  struct dentry *old_dentry,
-				  struct inode *new_dir,
-				  struct dentry *new_dentry)
-{
-	return -EINVAL;
-}
-
 int simple_rename(struct user_namespace *mnt_userns, struct inode *old_dir,
 		  struct dentry *old_dentry, struct inode *new_dir,
 		  struct dentry *new_dentry, unsigned int flags)
@@ -326,12 +317,8 @@ int simple_rename(struct user_namespace *mnt_userns, struct inode *old_dir,
 	struct inode *inode = d_inode(old_dentry);
 	int they_are_dirs = d_is_dir(old_dentry);
 
-	if (flags & ~(RENAME_NOREPLACE | RENAME_EXCHANGE))
+	if (flags & ~RENAME_NOREPLACE)
 		return -EINVAL;
-
-	if (flags & RENAME_EXCHANGE)
-		return simple_rename_exchange(old_dir, old_dentry, new_dir,
-					      new_dentry);
 
 	if (!simple_empty(new_dentry))
 		return -ENOTEMPTY;

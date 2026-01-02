@@ -975,35 +975,27 @@ static void __init free_unused_memmap(void)
 	/* CONFIG_HAVE_ARCH_PFN_VALID not enabled - early return */
 }
 
-static void __init __free_pages_memory(unsigned long start, unsigned long end)
-{
-	int order;
-
-	while (start < end) {
-		order = min(MAX_ORDER - 1UL, __ffs(start));
-
-		while (start + (1UL << order) > end)
-			order--;
-
-		memblock_free_pages(pfn_to_page(start), start, order);
-
-		start += (1UL << order);
-	}
-}
-
+/* __free_pages_memory inlined into __free_memory_core */
 static unsigned long __init __free_memory_core(phys_addr_t start,
 					       phys_addr_t end)
 {
 	unsigned long start_pfn = PFN_UP(start);
 	unsigned long end_pfn =
 		min_t(unsigned long, PFN_DOWN(end), max_low_pfn);
+	int order;
 
 	if (start_pfn >= end_pfn)
 		return 0;
 
-	__free_pages_memory(start_pfn, end_pfn);
+	while (start_pfn < end_pfn) {
+		order = min(MAX_ORDER - 1UL, __ffs(start_pfn));
+		while (start_pfn + (1UL << order) > end_pfn)
+			order--;
+		memblock_free_pages(pfn_to_page(start_pfn), start_pfn, order);
+		start_pfn += (1UL << order);
+	}
 
-	return end_pfn - start_pfn;
+	return end_pfn - PFN_UP(start);
 }
 
 static void __init memmap_init_reserved_pages(void)

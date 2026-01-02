@@ -8,20 +8,7 @@ enum cpu_idle_type {
 	CPU_NEWLY_IDLE,
 	CPU_MAX_IDLE_TYPES
 };
-static inline void __current_set_polling(void)
-{
-	set_thread_flag(TIF_POLLING_NRFLAG);
-}
-static inline void __current_clr_polling(void)
-{
-	clear_thread_flag(TIF_POLLING_NRFLAG);
-}
-static inline bool __must_check current_clr_polling_and_test(void)
-{
-	__current_clr_polling();
-	smp_mb__after_atomic();
-	return unlikely(tif_need_resched());
-}
+/* __current_set_polling, __current_clr_polling, current_clr_polling_and_test inlined */
 extern void default_idle_call(void);
 #include <linux/tick.h>
 
@@ -39,7 +26,10 @@ void __weak arch_cpu_idle_exit(void)
 
 void __cpuidle default_idle_call(void)
 {
-	if (current_clr_polling_and_test()) {
+	/* inlined current_clr_polling_and_test */
+	clear_thread_flag(TIF_POLLING_NRFLAG);
+	smp_mb__after_atomic();
+	if (unlikely(tif_need_resched())) {
 		local_irq_enable();
 	} else {
 		/* rcu_idle_enter/exit removed - empty stubs */
@@ -51,7 +41,7 @@ void __cpuidle default_idle_call(void)
 
 static void do_idle(void)
 {
-	__current_set_polling();
+	set_thread_flag(TIF_POLLING_NRFLAG); /* inlined __current_set_polling */
 	/* tick_nohz_idle_enter/exit removed - empty stubs */
 
 	while (!need_resched()) {
@@ -64,7 +54,8 @@ static void do_idle(void)
 		arch_cpu_idle_exit();
 	}
 
-	__current_clr_polling();
+	clear_thread_flag(
+		TIF_POLLING_NRFLAG); /* inlined __current_clr_polling */
 	smp_mb__after_atomic();
 	schedule_idle();
 }

@@ -46,16 +46,6 @@ static void irq_state_clr_masked(struct irq_desc *desc)
 	irqd_clear(&desc->irq_data, IRQD_IRQ_MASKED);
 }
 
-static void irq_state_clr_started(struct irq_desc *desc)
-{
-	irqd_clear(&desc->irq_data, IRQD_IRQ_STARTED);
-}
-
-static void irq_state_set_started(struct irq_desc *desc)
-{
-	irqd_set(&desc->irq_data, IRQD_IRQ_STARTED);
-}
-
 enum {
 	IRQ_STARTUP_NORMAL,
 	IRQ_STARTUP_MANAGED,
@@ -82,7 +72,7 @@ static int __irq_startup(struct irq_desc *desc)
 	} else {
 		irq_enable(desc);
 	}
-	irq_state_set_started(desc);
+	irqd_set(&desc->irq_data, IRQD_IRQ_STARTED);
 	return ret;
 }
 
@@ -146,7 +136,7 @@ void irq_shutdown(struct irq_desc *desc)
 		} else {
 			__irq_disable(desc, true);
 		}
-		irq_state_clr_started(desc);
+		irqd_clear(&desc->irq_data, IRQD_IRQ_STARTED);
 	}
 }
 

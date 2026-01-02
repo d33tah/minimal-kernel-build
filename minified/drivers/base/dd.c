@@ -157,10 +157,6 @@ static int driver_sysfs_add(struct device *dev)
 	return 0;
 }
 
-static void driver_sysfs_remove(struct device *dev)
-{
-}
-
 /* Stub: device_bind_driver not used externally */
 int device_bind_driver(struct device *dev)
 {
@@ -289,7 +285,7 @@ static int really_probe(struct device *dev, struct device_driver *drv)
 dev_groups_failed:
 	device_remove(dev);
 probe_failed:
-	driver_sysfs_remove(dev);
+	/* driver_sysfs_remove removed - empty stub */
 sysfs_failed:
 	if (dev->bus)
 		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
@@ -594,8 +590,7 @@ static void __device_release_driver(struct device *dev, struct device *parent)
 			}
 		}
 
-		driver_sysfs_remove(dev);
-
+		/* driver_sysfs_remove removed - empty stub */
 		if (dev->bus)
 			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
 						     BUS_NOTIFY_UNBIND_DRIVER,

@@ -20,19 +20,15 @@ extern enum reboot_type reboot_type;
 extern int reboot_default;
 extern int reboot_cpu;
 
-extern void migrate_to_reboot_cpu(void);
 extern void machine_restart(char *cmd);
 extern void machine_halt(void);
 extern void machine_power_off(void);
 extern void machine_shutdown(void);
 
-void do_kernel_power_off(void);
-
-extern void kernel_restart_prepare(char *cmd);
+/* migrate_to_reboot_cpu, do_kernel_power_off, kernel_restart_prepare removed - never called */
 extern void kernel_restart(char *cmd);
 extern void kernel_halt(void);
 extern void kernel_power_off(void);
-/* kernel_can_power_off removed - never called */
 
 extern void emergency_restart(void);
 extern void machine_emergency_restart(void);

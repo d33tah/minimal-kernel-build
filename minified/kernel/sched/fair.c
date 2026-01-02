@@ -181,16 +181,6 @@ struct sched_entity *__pick_first_entity(struct cfs_rq *cfs_rq)
 	return __node_2_se(left);
 }
 
-static struct sched_entity *__pick_next_entity(struct sched_entity *se)
-{
-	struct rb_node *next = rb_next(&se->run_node);
-
-	if (!next)
-		return NULL;
-
-	return __node_2_se(next);
-}
-
 static inline u64 calc_delta_fair(u64 delta, struct sched_entity *se)
 {
 	if (unlikely(se->load.weight != NICE_0_LOAD))
@@ -660,11 +650,14 @@ static struct sched_entity *pick_next_entity(struct cfs_rq *cfs_rq,
 
 	if (cfs_rq->skip && cfs_rq->skip == se) {
 		struct sched_entity *second;
+		struct rb_node *next;
 
 		if (se == curr) {
 			second = __pick_first_entity(cfs_rq);
 		} else {
-			second = __pick_next_entity(se);
+			/* Inlined __pick_next_entity */
+			next = rb_next(&se->run_node);
+			second = next ? __node_2_se(next) : NULL;
 			if (!second || (curr && entity_before(curr, second)))
 				second = curr;
 		}
@@ -784,13 +777,6 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	/* dequeue_throttle label and util_est_update removed */
 }
 
-static unsigned long wakeup_gran(struct sched_entity *se)
-{
-	unsigned long gran = sysctl_sched_wakeup_granularity;
-
-	return calc_delta_fair(gran, se);
-}
-
 static int wakeup_preempt_entity(struct sched_entity *curr,
 				 struct sched_entity *se)
 {
@@ -799,7 +785,8 @@ static int wakeup_preempt_entity(struct sched_entity *curr,
 	if (vdiff <= 0)
 		return -1;
 
-	gran = wakeup_gran(se);
+	/* Inlined wakeup_gran */
+	gran = calc_delta_fair(sysctl_sched_wakeup_granularity, se);
 	if (vdiff > gran)
 		return 1;
 

@@ -1481,11 +1481,6 @@ static void __init free_area_init_node(int nid)
 
 /* MAX_NUMNODES == 1, setup_nr_node_ids removed - inline stub in mm.h */
 
-static unsigned long __init find_min_pfn_with_active_regions(void)
-{
-	return PHYS_PFN(memblock_start_of_DRAM());
-}
-
 void __init free_area_init(unsigned long *max_zone_pfn)
 {
 	unsigned long start_pfn, end_pfn;
@@ -1497,7 +1492,8 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 	memset(arch_zone_highest_possible_pfn, 0,
 	       sizeof(arch_zone_highest_possible_pfn));
 
-	start_pfn = find_min_pfn_with_active_regions();
+	/* Inlined find_min_pfn_with_active_regions */
+	start_pfn = PHYS_PFN(memblock_start_of_DRAM());
 
 	/* Simple linear zone setup without movable zones */
 	for (i = 0; i < MAX_NR_ZONES; i++) {

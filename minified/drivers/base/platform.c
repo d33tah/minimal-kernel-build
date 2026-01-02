@@ -57,7 +57,7 @@ struct resource *platform_get_resource(struct platform_device *dev,
 /* platform_get_mem_or_io, devm_platform_get_and_ioremap_resource,
    devm_platform_ioremap_resource, devm_platform_ioremap_resource_byname removed - unused */
 
-/* Stub: platform_get_irq_optional not used externally */
+/* Stub: platform_get_irq_optional always returns -ENXIO */
 int platform_get_irq_optional(struct platform_device *dev, unsigned int num)
 {
 	return -ENXIO;
@@ -65,14 +65,9 @@ int platform_get_irq_optional(struct platform_device *dev, unsigned int num)
 
 int platform_get_irq(struct platform_device *dev, unsigned int num)
 {
-	int ret;
-
-	ret = platform_get_irq_optional(dev, num);
-	if (ret < 0)
-		return dev_err_probe(&dev->dev, ret, "IRQ index %u not found\n",
-				     num);
-
-	return ret;
+	/* Always returns error since platform_get_irq_optional is stubbed */
+	return dev_err_probe(&dev->dev, -ENXIO, "IRQ index %u not found\n",
+			     num);
 }
 
 struct platform_object {

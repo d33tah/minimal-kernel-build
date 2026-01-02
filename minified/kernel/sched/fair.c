@@ -855,11 +855,6 @@ static void set_next_buddy(struct sched_entity *se)
 	}
 }
 
-static void set_skip_buddy(struct sched_entity *se)
-{
-	for_each_sched_entity(se) cfs_rq_of(se)->skip = se;
-}
-
 static void check_preempt_wakeup(struct rq *rq, struct task_struct *p,
 				 int wake_flags)
 {
@@ -981,7 +976,7 @@ static void yield_task_fair(struct rq *rq)
 		rq_clock_skip_update(rq);
 	}
 
-	set_skip_buddy(se);
+	for_each_sched_entity(se) cfs_rq_of(se)->skip = se;
 }
 
 static bool yield_to_task_fair(struct rq *rq, struct task_struct *p)

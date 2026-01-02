@@ -60,16 +60,7 @@ static void tlb_batch_pages_flush(struct mmu_gather *tlb)
 	tlb->active = &tlb->local;
 }
 
-static void tlb_batch_list_free(struct mmu_gather *tlb)
-{
-	struct mmu_gather_batch *batch, *next;
-
-	for (batch = tlb->local.next; batch; batch = next) {
-		next = batch->next;
-		free_pages((unsigned long)batch, 0);
-	}
-	tlb->local.next = NULL;
-}
+/* tlb_batch_list_free inlined into tlb_finish_mmu */
 
 bool __tlb_remove_page_size(struct mmu_gather *tlb, struct page *page,
 			    int page_size)
@@ -123,6 +114,8 @@ void tlb_gather_mmu_fullmm(struct mmu_gather *tlb, struct mm_struct *mm)
 
 void tlb_finish_mmu(struct mmu_gather *tlb)
 {
+	struct mmu_gather_batch *batch, *next;
+
 	if (mm_tlb_flush_nested(tlb->mm)) {
 		tlb->fullmm = 1;
 		__tlb_reset_range(tlb);
@@ -131,6 +124,10 @@ void tlb_finish_mmu(struct mmu_gather *tlb)
 
 	tlb_flush_mmu(tlb);
 
-	tlb_batch_list_free(tlb);
+	for (batch = tlb->local.next; batch; batch = next) {
+		next = batch->next;
+		free_pages((unsigned long)batch, 0);
+	}
+	tlb->local.next = NULL;
 	dec_tlb_flush_pending(tlb->mm);
 }

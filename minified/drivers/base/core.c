@@ -74,26 +74,7 @@ static struct class devlink_class = {
 	.dev_release = devlink_dev_release,
 };
 
-static int devlink_add_symlinks(struct device *dev,
-				struct class_interface *class_intf)
-{
-	/* Stubbed: device link symlinks not needed for minimal boot */
-	return 0;
-}
-
-static void devlink_remove_symlinks(struct device *dev,
-				    struct class_interface *class_intf)
-{
-	/* Stubbed: device link symlinks removal not needed (add is stubbed) */
-}
-
-static struct class_interface devlink_class_intf = {
-	.class = &devlink_class,
-	.add_dev = devlink_add_symlinks,
-	.remove_dev = devlink_remove_symlinks,
-};
-
-/* devlink_class_init removed - class_register hangs with low memory */
+/* devlink_add_symlinks, devlink_remove_symlinks, devlink_class_intf removed - never used */
 
 #define DL_MANAGED_LINK_FLAGS                                        \
 	(DL_FLAG_AUTOREMOVE_CONSUMER | DL_FLAG_AUTOREMOVE_SUPPLIER | \

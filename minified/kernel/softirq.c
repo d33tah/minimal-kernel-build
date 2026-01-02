@@ -63,20 +63,9 @@ void __local_bh_enable_ip(unsigned long ip, unsigned int cnt)
 	preempt_count_dec();
 }
 
-static inline void softirq_handle_begin(void)
-{
-	__local_bh_disable_ip(_RET_IP_, SOFTIRQ_OFFSET);
-}
-
-static inline void softirq_handle_end(void)
-{
-	__preempt_count_sub(SOFTIRQ_OFFSET);
-	WARN_ON_ONCE(in_interrupt());
-}
-
 /* ksoftirqd_run_begin/end removed - only caller was run_ksoftirqd */
-
 /* should_wake_ksoftirqd, invoke_softirq - inlined/removed */
+/* softirq_handle_begin/end inlined into __do_softirq */
 
 asmlinkage __visible void do_softirq(void)
 {
@@ -111,7 +100,7 @@ asmlinkage __visible void __softirq_entry __do_softirq(void)
 
 	pending = local_softirq_pending();
 
-	softirq_handle_begin();
+	__local_bh_disable_ip(_RET_IP_, SOFTIRQ_OFFSET);
 
 restart:
 
@@ -159,7 +148,8 @@ restart:
 		wakeup_softirqd();
 	}
 
-	softirq_handle_end();
+	__preempt_count_sub(SOFTIRQ_OFFSET);
+	WARN_ON_ONCE(in_interrupt());
 	current_restore_flags(old_flags, PF_MEMALLOC);
 }
 

@@ -261,8 +261,10 @@ static void add_softcursor(struct vc_data *vc)
 		vc->vc_sw->con_putc(vc, i, vc->state.y, vc->state.x);
 }
 
-static void hide_softcursor(struct vc_data *vc)
+static void hide_cursor(struct vc_data *vc)
 {
+	vc->vc_sw->con_cursor(vc, CM_ERASE);
+	/* Inlined hide_softcursor */
 	if (softcursor_original != -1) {
 		scr_writew(softcursor_original, (u16 *)vc->vc_pos);
 		if (con_should_update(vc))
@@ -270,12 +272,6 @@ static void hide_softcursor(struct vc_data *vc)
 					    vc->state.y, vc->state.x);
 		softcursor_original = -1;
 	}
-}
-
-static void hide_cursor(struct vc_data *vc)
-{
-	vc->vc_sw->con_cursor(vc, CM_ERASE);
-	hide_softcursor(vc);
 }
 
 static void set_cursor(struct vc_data *vc)
@@ -596,16 +592,6 @@ static void csi_J(struct vc_data *vc, int vpar)
 	vc->vc_need_wrap = 0;
 }
 
-static void default_attr(struct vc_data *vc)
-{
-	vc->state.intensity = VCI_NORMAL;
-	vc->state.italic = false;
-	vc->state.underline = false;
-	vc->state.reverse = false;
-	vc->state.blink = false;
-	vc->state.color = vc->vc_def_color;
-}
-
 static void save_cur(struct vc_data *vc)
 {
 	memcpy(&vc->saved_state, &vc->state, sizeof(vc->state));
@@ -661,7 +647,13 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 	vc->vc_cursor_type = cur_default;
 	vc->vc_complement_mask = vc->vc_s_complement_mask;
 
-	default_attr(vc);
+	/* Inlined default_attr */
+	vc->state.intensity = VCI_NORMAL;
+	vc->state.italic = false;
+	vc->state.underline = false;
+	vc->state.reverse = false;
+	vc->state.blink = false;
+	vc->state.color = vc->vc_def_color;
 	update_attr(vc);
 
 	bitmap_zero(vc->vc_tab_stop, VC_TABSTOPS_COUNT);

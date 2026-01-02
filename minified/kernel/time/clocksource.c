@@ -83,12 +83,6 @@ u64 clocks_calc_max_nsecs(u32 mult, u32 shift, u32 maxadj, u64 mask,
 	return max_nsecs;
 }
 
-static inline void clocksource_update_max_deferment(struct clocksource *cs)
-{
-	cs->max_idle_ns = clocks_calc_max_nsecs(cs->mult, cs->shift, cs->maxadj,
-						cs->mask, &cs->max_cycles);
-}
-
 static struct clocksource *clocksource_find_best(bool skipcur)
 {
 	struct clocksource *cs;
@@ -196,7 +190,9 @@ void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale,
 		cs->maxadj = clocksource_max_adjustment(cs);
 	}
 
-	clocksource_update_max_deferment(cs);
+	/* Inlined clocksource_update_max_deferment */
+	cs->max_idle_ns = clocks_calc_max_nsecs(cs->mult, cs->shift, cs->maxadj,
+						cs->mask, &cs->max_cycles);
 }
 
 int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq)

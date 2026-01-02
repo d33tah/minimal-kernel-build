@@ -67,15 +67,9 @@ enum pageflags {
 
 #ifndef __GENERATING_BOUNDS_H
 
-static inline const struct page *page_fixed_fake_head(const struct page *page)
-{
-	return page;
-}
-
-
 static __always_inline int page_is_fake_head(struct page *page)
 {
-	return page_fixed_fake_head(page) != page;
+	return 0;
 }
 
 static inline unsigned long _compound_head(const struct page *page)
@@ -84,7 +78,7 @@ static inline unsigned long _compound_head(const struct page *page)
 
 	if (unlikely(head & 1))
 		return head - 1;
-	return (unsigned long)page_fixed_fake_head(page);
+	return (unsigned long)page;
 }
 
 #define compound_head(page)	((typeof(page))_compound_head(page))

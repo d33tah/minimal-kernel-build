@@ -526,52 +526,38 @@ static void enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 	/* list_add_leaf_cfs_rq, check_enqueue_throttle removed - empty stubs */
 }
 
-static void __clear_buddies_last(struct sched_entity *se)
-{
-	for_each_sched_entity(se)
-	{
-		struct cfs_rq *cfs_rq = cfs_rq_of(se);
-		if (cfs_rq->last != se)
-			break;
-
-		cfs_rq->last = NULL;
-	}
-}
-
-static void __clear_buddies_next(struct sched_entity *se)
-{
-	for_each_sched_entity(se)
-	{
-		struct cfs_rq *cfs_rq = cfs_rq_of(se);
-		if (cfs_rq->next != se)
-			break;
-
-		cfs_rq->next = NULL;
-	}
-}
-
-static void __clear_buddies_skip(struct sched_entity *se)
-{
-	for_each_sched_entity(se)
-	{
-		struct cfs_rq *cfs_rq = cfs_rq_of(se);
-		if (cfs_rq->skip != se)
-			break;
-
-		cfs_rq->skip = NULL;
-	}
-}
-
+/* __clear_buddies_last/next/skip inlined into clear_buddies */
 static void clear_buddies(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
-	if (cfs_rq->last == se)
-		__clear_buddies_last(se);
+	struct sched_entity *tmp;
 
-	if (cfs_rq->next == se)
-		__clear_buddies_next(se);
-
-	if (cfs_rq->skip == se)
-		__clear_buddies_skip(se);
+	if (cfs_rq->last == se) {
+		for_each_sched_entity(tmp = se)
+		{
+			struct cfs_rq *c = cfs_rq_of(tmp);
+			if (c->last != tmp)
+				break;
+			c->last = NULL;
+		}
+	}
+	if (cfs_rq->next == se) {
+		for_each_sched_entity(tmp = se)
+		{
+			struct cfs_rq *c = cfs_rq_of(tmp);
+			if (c->next != tmp)
+				break;
+			c->next = NULL;
+		}
+	}
+	if (cfs_rq->skip == se) {
+		for_each_sched_entity(tmp = se)
+		{
+			struct cfs_rq *c = cfs_rq_of(tmp);
+			if (c->skip != tmp)
+				break;
+			c->skip = NULL;
+		}
+	}
 }
 
 /* return_cfs_rq_runtime forward decl removed - stub removed */

@@ -4,14 +4,19 @@
 #include <linux/smp.h>
 
 extern unsigned long long notrace sched_clock(void);
-extern u64 sched_clock_cpu(int cpu);
 extern int sched_clock_stable(void);
-/* sched_clock_init, clear_sched_clock_stable, sched_clock_tick, sched_clock_tick_stable
-   removed - declared but never called */
+/* sched_clock_init, sched_clock_cpu, clear_sched_clock_stable, sched_clock_tick, sched_clock_tick_stable
+   - removed or inlined */
+
+/* sched_clock_cpu just calls sched_clock(), inlined here */
+static inline u64 sched_clock_cpu(int cpu)
+{
+	return sched_clock();
+}
 
 static inline u64 local_clock(void)
 {
-	return sched_clock_cpu(raw_smp_processor_id());
+	return sched_clock();
 }
 
 #endif

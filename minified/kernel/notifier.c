@@ -77,25 +77,7 @@ int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 }
 NOKPROBE_SYMBOL(atomic_notifier_call_chain);
 
-/* atomic_notifier_call_chain_is_empty removed - never called */
-
-/* __blocking_notifier_chain_register removed - only caller was blocking_notifier_chain_register */
-/* blocking_notifier_chain_register removed - never called */
-
-int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
-				 unsigned long val, void *v)
-{
-	int ret = NOTIFY_DONE;
-
-	if (rcu_access_pointer(nh->head)) {
-		down_read(&nh->rwsem);
-		ret = notifier_call_chain(&nh->head, val, v, -1, NULL);
-		up_read(&nh->rwsem);
-	}
-	return ret;
-}
-
-/* raw_notifier_call_chain removed - no callers */
+/* atomic_notifier_call_chain_is_empty, blocking_notifier*, raw_notifier_call_chain removed - no callers */
 
 static ATOMIC_NOTIFIER_HEAD(die_chain);
 

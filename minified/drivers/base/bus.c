@@ -396,18 +396,6 @@ void bus_remove_driver(struct device_driver *drv)
 	bus_put(drv->bus);
 }
 
-/* Stub: sysfs functions are stubs */
-static int bus_add_groups(struct bus_type *bus,
-			  const struct attribute_group **groups)
-{
-	return 0;
-}
-
-static void bus_remove_groups(struct bus_type *bus,
-			      const struct attribute_group **groups)
-{
-}
-
 static void klist_devices_get(struct klist_node *n)
 {
 	struct device_private *dev_prv = to_device_private_bus(n);
@@ -488,8 +476,6 @@ int bus_register(struct bus_type *bus)
 	klist_init(&priv->klist_devices, klist_devices_get, klist_devices_put);
 	klist_init(&priv->klist_drivers, NULL, NULL);
 
-	bus_add_groups(bus, bus->bus_groups);
-
 	return 0;
 
 bus_drivers_fail:
@@ -507,7 +493,6 @@ void bus_unregister(struct bus_type *bus)
 {
 	if (bus->dev_root)
 		device_unregister(bus->dev_root);
-	bus_remove_groups(bus, bus->bus_groups);
 	kset_unregister(bus->p->drivers_kset);
 	kset_unregister(bus->p->devices_kset);
 	kset_unregister(&bus->p->subsys);

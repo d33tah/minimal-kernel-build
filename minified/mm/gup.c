@@ -51,11 +51,7 @@ bool __must_check try_grab_page(struct page *page, unsigned int flags)
 	return true;
 }
 
-static inline void mm_set_has_pinned_flag(unsigned long *mm_flags)
-{
-	if (!test_bit(MMF_HAS_PINNED, mm_flags))
-		set_bit(MMF_HAS_PINNED, mm_flags);
-}
+/* mm_set_has_pinned_flag inlined into __get_user_pages_locked */
 
 static struct page *no_page_table(struct vm_area_struct *vma,
 				  unsigned int flags)
@@ -404,8 +400,10 @@ __get_user_pages_locked(struct mm_struct *mm, unsigned long start,
 		BUG_ON(*locked != 1);
 	}
 
-	if (flags & FOLL_PIN)
-		mm_set_has_pinned_flag(&mm->flags);
+	if (flags & FOLL_PIN) {
+		if (!test_bit(MMF_HAS_PINNED, &mm->flags))
+			set_bit(MMF_HAS_PINNED, &mm->flags);
+	}
 
 	if (pages && !(flags & FOLL_PIN))
 		flags |= FOLL_GET;

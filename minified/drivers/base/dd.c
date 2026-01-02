@@ -141,12 +141,6 @@ bool device_is_bound(struct device *dev)
 	return dev->p && klist_node_attached(&dev->p->knode_driver);
 }
 
-/* Stub: driver_sysfs_add/remove not needed for minimal kernel (no sysfs browsing) */
-static int driver_sysfs_add(struct device *dev)
-{
-	return 0;
-}
-
 /* Stub: device_bind_driver not used externally */
 int device_bind_driver(struct device *dev)
 {
@@ -234,13 +228,6 @@ static int really_probe(struct device *dev, struct device_driver *drv)
 			goto pinctrl_bind_failed;
 	}
 
-	ret = driver_sysfs_add(dev);
-	if (ret) {
-		pr_err("%s: driver_sysfs_add(%s) failed\n", __func__,
-		       dev_name(dev));
-		goto sysfs_failed;
-	}
-
 	if (dev->pm_domain && dev->pm_domain->activate) {
 		ret = dev->pm_domain->activate(dev);
 		if (ret)
@@ -253,22 +240,13 @@ static int really_probe(struct device *dev, struct device_driver *drv)
 		goto probe_failed;
 	}
 
-	ret = device_add_groups(dev, drv->dev_groups);
-	if (ret) {
-		dev_err(dev, "device_add_groups() failed\n");
-		goto dev_groups_failed;
-	}
+	device_add_groups(dev, drv->dev_groups);
 
 	if (dev->pm_domain && dev->pm_domain->sync)
 		dev->pm_domain->sync(dev);
-	/* driver_bound removed - empty stub */
 	goto done;
 
-dev_groups_failed:
-	device_remove(dev);
 probe_failed:
-	/* driver_sysfs_remove removed - empty stub */
-sysfs_failed:
 	if (dev->bus)
 		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
 					     BUS_NOTIFY_DRIVER_NOT_BOUND, dev);

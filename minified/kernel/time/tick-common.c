@@ -94,9 +94,7 @@ static void tick_setup_device(struct tick_device *td,
 	}
 
 	td->evtdev = newdev;
-
-	if (!cpumask_equal(newdev->cpumask, cpumask))
-		irq_set_affinity(newdev->irq, cpumask);
+	/* cpumask_equal stub always returns false, irq_set_affinity is no-op */
 
 	if (td->mode == TICKDEV_MODE_PERIODIC)
 		tick_setup_periodic(newdev, 0);

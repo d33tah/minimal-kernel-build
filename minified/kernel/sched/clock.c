@@ -2,8 +2,4 @@
 
 #include <linux/sched/clock.h>
 
-notrace int sched_clock_stable(void)
-{
-	return 1;
-}
-/* sched_clock_init, sched_clock_cpu - removed, inlined in header */
+/* sched_clock_stable, sched_clock_init, sched_clock_cpu - all removed, unused or inlined */

@@ -4,9 +4,7 @@
 #include <linux/smp.h>
 
 extern unsigned long long notrace sched_clock(void);
-extern int sched_clock_stable(void);
-/* sched_clock_init, sched_clock_cpu, clear_sched_clock_stable, sched_clock_tick, sched_clock_tick_stable
-   - removed or inlined */
+/* sched_clock_stable, sched_clock_init, sched_clock_cpu, etc. - all removed or inlined */
 
 /* sched_clock_cpu just calls sched_clock(), inlined here */
 static inline u64 sched_clock_cpu(int cpu)

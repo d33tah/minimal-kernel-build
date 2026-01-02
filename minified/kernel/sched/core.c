@@ -783,27 +783,12 @@ void __noreturn do_task_dead(void)
 		cpu_relax();
 }
 
-static inline void sched_submit_work(struct task_struct *tsk)
-{
-	unsigned int task_flags;
-
-	if (task_is_running(tsk))
-		return;
-
-	task_flags = tsk->flags;
-
-	/* wq_worker_sleeping removed - empty stub */
-
-	/* tsk_is_pi_blocked always returns false - check removed */
-
-	/* blk_flush_plug call removed - plug field removed, stub was empty */
-}
+/* sched_submit_work inlined - now essentially empty after stubs removed */
 
 asmlinkage __visible void __sched schedule(void)
 {
-	struct task_struct *tsk = current;
-
-	sched_submit_work(tsk);
+	/* sched_submit_work inlined: wq_worker_sleeping, tsk_is_pi_blocked,
+	 * blk_flush_plug all removed as stubs; remaining check is no-op */
 	do {
 		preempt_disable();
 		__schedule(SM_NONE);

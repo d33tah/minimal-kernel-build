@@ -113,10 +113,7 @@ static inline void set_page_refcounted(struct page *page)
 
 extern unsigned long highest_memmap_pfn;
 
-pgprot_t __init early_memremap_pgprot_adjust(resource_size_t phys_addr,
-					unsigned long size, pgprot_t prot);
-
-
+/* early_memremap_pgprot_adjust removed - inlined */
 /* isolate_lru_page, putback_lru_page removed - never called */
 
  

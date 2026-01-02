@@ -13,13 +13,6 @@ static int early_ioremap_debug __initdata;
 
 static int after_paging_init __initdata;
 
-pgprot_t __init __weak early_memremap_pgprot_adjust(resource_size_t phys_addr,
-						    unsigned long size,
-						    pgprot_t prot)
-{
-	return prot;
-}
-
 void __init early_ioremap_reset(void)
 {
 	after_paging_init = 1;
@@ -166,10 +159,9 @@ void __init __iomem *early_ioremap(resource_size_t phys_addr,
 
 void __init *early_memremap(resource_size_t phys_addr, unsigned long size)
 {
-	pgprot_t prot = early_memremap_pgprot_adjust(phys_addr, size,
-						     FIXMAP_PAGE_NORMAL);
-
-	return (__force void *)__early_ioremap(phys_addr, size, prot);
+	/* early_memremap_pgprot_adjust inlined - returns prot unchanged */
+	return (__force void *)__early_ioremap(phys_addr, size,
+					       FIXMAP_PAGE_NORMAL);
 }
 
 #define MAX_MAP_CHUNK (NR_FIX_BTMAPS << PAGE_SHIFT)

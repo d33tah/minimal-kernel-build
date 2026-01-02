@@ -210,9 +210,8 @@ static int really_probe(struct device *dev, struct device_driver *drv)
 		return -EPROBE_DEFER;
 	}
 
-	ret = device_links_check_suppliers(dev);
-	if (ret)
-		return ret;
+	/* device_links_check_suppliers always returns 0 - inlined side effect */
+	dev->links.status = DL_DEV_PROBING;
 
 	if (!list_empty(&dev->devres_head)) {
 		dev_crit(dev, "Resources present before probing\n");
@@ -507,19 +506,7 @@ static void __device_release_driver(struct device *dev, struct device *parent)
 	drv = dev->driver;
 	if (drv) {
 		pm_runtime_get_sync(dev);
-
-		while (device_links_busy(dev)) {
-			__device_driver_unlock(dev, parent);
-
-			device_links_unbind_consumers(dev);
-
-			__device_driver_lock(dev, parent);
-
-			if (dev->driver != drv) {
-				pm_runtime_put(dev);
-				return;
-			}
-		}
+		/* device_links_busy always false - removed dead while loop */
 
 		/* driver_sysfs_remove removed - empty stub */
 		if (dev->bus)

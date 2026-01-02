@@ -100,14 +100,9 @@ static inline void module_add_driver(struct module *mod,
 				     struct device_driver *drv) { }
 /* module_remove_driver, devtmpfs_init - never called */
 
-/* device_links_read_lock, device_links_read_unlock now static in core.c */
-/* device_links_read_lock_held removed - unused */
-extern int device_links_check_suppliers(struct device *dev);
-/* device_links_force_bind, device_links_driver_bound removed - unused */
+/* device_links_check_suppliers, device_links_busy, device_links_unbind_consumers removed - inlined/dead */
 extern void device_links_driver_cleanup(struct device *dev);
 extern void device_links_no_driver(struct device *dev);
-extern bool device_links_busy(struct device *dev);
-extern void device_links_unbind_consumers(struct device *dev);
 extern void fw_devlink_drivers_done(void);
 
  

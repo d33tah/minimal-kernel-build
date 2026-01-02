@@ -337,11 +337,6 @@ static void __pcpu_chunk_move(struct pcpu_chunk *chunk, int slot,
 	}
 }
 
-static void pcpu_chunk_move(struct pcpu_chunk *chunk, int slot)
-{
-	__pcpu_chunk_move(chunk, slot, true);
-}
-
 static void pcpu_chunk_relocate(struct pcpu_chunk *chunk, int oslot)
 {
 	int nslot = pcpu_chunk_slot(chunk);
@@ -1054,7 +1049,7 @@ restart:
 						  is_atomic);
 			if (off < 0) {
 				if (slot < PCPU_SLOT_FAIL_THRESHOLD)
-					pcpu_chunk_move(chunk, 0);
+					__pcpu_chunk_move(chunk, 0, true);
 				continue;
 			}
 

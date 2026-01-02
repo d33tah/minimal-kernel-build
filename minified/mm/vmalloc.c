@@ -378,7 +378,7 @@ RB_DECLARE_CALLBACKS_MAX(static, free_vmap_area_rb_augment_cb, struct vmap_area,
 			 rb_node, unsigned long, subtree_max_size, va_size)
 
 static void purge_vmap_area_lazy(void);
-static BLOCKING_NOTIFIER_HEAD(vmap_notify_list);
+/* vmap_notify_list removed - no registrations */
 static void drain_vmap_area_work(struct work_struct *work);
 static DECLARE_WORK(drain_vmap_work, drain_vmap_area_work);
 
@@ -825,13 +825,7 @@ overflow:
 		goto retry;
 	}
 
-	freed = 0;
-	blocking_notifier_call_chain(&vmap_notify_list, 0, &freed);
-
-	if (freed > 0) {
-		purged = 0;
-		goto retry;
-	}
+	/* vmap_notify_list call removed - no registrations, freed always 0 */
 
 	/* printk_ratelimit() always returns 0 */
 	kmem_cache_free(vmap_area_cachep, va);

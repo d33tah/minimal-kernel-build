@@ -246,9 +246,7 @@ static int really_probe(struct device *dev, struct device_driver *drv)
 	goto done;
 
 probe_failed:
-	if (dev->bus)
-		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
-					     BUS_NOTIFY_DRIVER_NOT_BOUND, dev);
+	/* bus_notifier call removed - no registrations */
 	if (dev->bus && dev->bus->dma_cleanup)
 		dev->bus->dma_cleanup(dev);
 pinctrl_bind_failed:
@@ -508,11 +506,7 @@ static void __device_release_driver(struct device *dev, struct device *parent)
 		pm_runtime_get_sync(dev);
 		/* device_links_busy always false - removed dead while loop */
 
-		/* driver_sysfs_remove removed - empty stub */
-		if (dev->bus)
-			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
-						     BUS_NOTIFY_UNBIND_DRIVER,
-						     dev);
+		/* driver_sysfs_remove, bus_notifier calls removed - no registrations */
 
 		pm_runtime_put_sync(dev);
 
@@ -525,10 +519,7 @@ static void __device_release_driver(struct device *dev, struct device *parent)
 		device_unbind_cleanup(dev);
 
 		klist_remove(&dev->p->knode_driver);
-		if (dev->bus)
-			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
-						     BUS_NOTIFY_UNBOUND_DRIVER,
-						     dev);
+		/* bus_notifier call removed - no registrations */
 
 		kobject_uevent(&dev->kobj, KOBJ_UNBIND);
 	}

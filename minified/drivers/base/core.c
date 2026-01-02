@@ -492,9 +492,7 @@ void device_del(struct device *dev)
 		dev->fwnode->dev = NULL;
 
 	noio_flag = memalloc_noio_save();
-	if (dev->bus)
-		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
-					     BUS_NOTIFY_DEL_DEVICE, dev);
+	/* bus_notifier call removed - no registrations */
 
 	if (parent)
 		klist_del(&dev->p->knode_parent);
@@ -519,11 +517,7 @@ void device_del(struct device *dev)
 	device_remove_attrs(dev);
 	bus_remove_device(dev);
 	driver_deferred_probe_del(dev);
-	/* device_platform_notify_remove and device_links_purge removed - were empty stubs */
-
-	if (dev->bus)
-		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
-					     BUS_NOTIFY_REMOVED_DEVICE, dev);
+	/* device_platform_notify_remove, device_links_purge, bus_notifier calls removed */
 	kobject_uevent(&dev->kobj, KOBJ_REMOVE);
 	glue_dir = get_glue_dir(dev);
 	kobject_del(&dev->kobj);

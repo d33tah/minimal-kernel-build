@@ -442,8 +442,7 @@ int bus_register(struct bus_type *bus)
 
 	priv->bus = bus;
 	bus->p = priv;
-
-	BLOCKING_INIT_NOTIFIER_HEAD(&priv->bus_notifier);
+	/* BLOCKING_INIT_NOTIFIER_HEAD(&priv->bus_notifier) removed - never used */
 
 	retval = kobject_set_name(&priv->subsys.kobj, "%s", bus->name);
 	if (retval)

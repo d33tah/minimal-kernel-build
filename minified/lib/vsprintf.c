@@ -132,22 +132,14 @@ out_r:
 
 /* BITS_PER_LONG == 32 on x86-32, use 32-bit optimized put_dec */
 
-static void put_dec_full4(char *buf, unsigned r)
-{
-	unsigned q;
-
-	q = (r * 0x147b) >> 19;
-	*((u16 *)buf) = decpair[r - 100 * q];
-	buf += 2;
-
-	*((u16 *)buf) = decpair[q];
-}
-
 static noinline_for_stack unsigned put_dec_helper4(char *buf, unsigned x)
 {
 	uint32_t q = (x * (uint64_t)0x346DC5D7) >> 43;
-
-	put_dec_full4(buf, x - q * 10000);
+	/* Inlined put_dec_full4 */
+	unsigned r = x - q * 10000;
+	unsigned rq = (r * 0x147b) >> 19;
+	*((u16 *)buf) = decpair[r - 100 * rq];
+	*((u16 *)(buf + 2)) = decpair[rq];
 	return q;
 }
 
@@ -425,23 +417,16 @@ static char *error_string(char *buf, char *end, const char *s,
 	return string_nocheck(buf, end, s, spec);
 }
 
-static const char *check_pointer_msg(const void *ptr)
-{
-	if (!ptr)
-		return "(null)";
-
-	if ((unsigned long)ptr < PAGE_SIZE || IS_ERR_VALUE(ptr))
-		return "(efault)";
-
-	return NULL;
-}
-
 static int check_pointer(char **buf, char *end, const void *ptr,
 			 struct printf_spec spec)
 {
-	const char *err_msg;
+	/* Inlined check_pointer_msg */
+	const char *err_msg = NULL;
+	if (!ptr)
+		err_msg = "(null)";
+	else if ((unsigned long)ptr < PAGE_SIZE || IS_ERR_VALUE(ptr))
+		err_msg = "(efault)";
 
-	err_msg = check_pointer_msg(ptr);
 	if (err_msg) {
 		*buf = error_string(*buf, end, err_msg, spec);
 		return -EFAULT;

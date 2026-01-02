@@ -425,11 +425,6 @@ int dev_set_name(struct device *dev, const char *fmt, ...)
 	return err;
 }
 
-/* Stub: device_to_dev_kobj and device_remove_sys_dev_entry not needed */
-static void device_remove_sys_dev_entry(struct device *dev)
-{
-}
-
 static int device_private_init(struct device *dev)
 {
 	dev->p = kzalloc(sizeof(*dev->p), GFP_KERNEL);
@@ -544,8 +539,7 @@ void device_del(struct device *dev)
 	if (parent)
 		klist_del(&dev->p->knode_parent);
 	if (MAJOR(dev->devt)) {
-		/* devtmpfs_delete_node removed - empty stub */
-		device_remove_sys_dev_entry(dev);
+		/* devtmpfs_delete_node, device_remove_sys_dev_entry removed - empty stubs */
 		device_remove_file(dev, &dev_attr_dev);
 	}
 	if (dev->class) {

@@ -151,10 +151,6 @@ bool device_is_bound(struct device *dev)
 	return dev->p && klist_node_attached(&dev->p->knode_driver);
 }
 
-static void driver_bound(struct device *dev)
-{
-}
-
 /* Stub: driver_sysfs_add/remove not needed for minimal kernel (no sysfs browsing) */
 static int driver_sysfs_add(struct device *dev)
 {
@@ -287,8 +283,7 @@ static int really_probe(struct device *dev, struct device_driver *drv)
 
 	if (dev->pm_domain && dev->pm_domain->sync)
 		dev->pm_domain->sync(dev);
-
-	driver_bound(dev);
+	/* driver_bound removed - empty stub */
 	goto done;
 
 dev_groups_failed:

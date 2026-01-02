@@ -324,10 +324,6 @@ static void flush_scrollback(struct vc_data *vc)
 	}
 }
 
-static void clear_buffer_attributes(struct vc_data *vc)
-{
-}
-
 #define update_screen(x) redraw_screen(x, 0)
 #define switch_screen(x) redraw_screen(x, 1)
 
@@ -371,7 +367,7 @@ static void redraw_screen(struct vc_data *vc, int is_switch)
 
 		if (old_was_color != vc->vc_can_do_color) {
 			update_attr(vc);
-			clear_buffer_attributes(vc);
+			/* clear_buffer_attributes removed - empty stub */
 		}
 
 		if (update && vc->vc_mode != KD_GRAPHICS)

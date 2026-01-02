@@ -1039,17 +1039,12 @@ static unsigned long __init free_low_memory_core_early(void)
 	return count;
 }
 
-/* Used internally by memblock_free_all */
-static void __init reset_all_zones_managed_pages(void)
-{
-}
-
 void __init memblock_free_all(void)
 {
 	unsigned long pages;
 
 	free_unused_memmap();
-	reset_all_zones_managed_pages();
+	/* reset_all_zones_managed_pages removed - empty stub */
 
 	pages = free_low_memory_core_early();
 	totalram_pages_add(pages);

@@ -297,12 +297,6 @@ int insert_resource(struct resource *parent, struct resource *new)
 
 static DECLARE_WAIT_QUEUE_HEAD(muxed_resource_wait);
 
-static struct inode *iomem_inode;
-
-static void revoke_iomem(struct resource *res)
-{
-}
-
 static int __request_region_locked(struct resource *res,
 				   struct resource *parent,
 				   resource_size_t start, resource_size_t n,
@@ -368,8 +362,7 @@ struct resource *__request_region(struct resource *parent,
 		return NULL;
 	}
 
-	if (parent == &iomem_resource)
-		revoke_iomem(res);
+	/* revoke_iomem removed - empty stub */
 
 	return res;
 }

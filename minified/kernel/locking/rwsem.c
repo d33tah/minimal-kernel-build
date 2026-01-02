@@ -89,10 +89,6 @@ static inline bool is_rwsem_reader_owned(struct rw_semaphore *sem)
 	return rwsem_test_oflags(sem, RWSEM_READER_OWNED);
 }
 
-static inline void rwsem_clear_reader_owned(struct rw_semaphore *sem)
-{
-}
-
 static inline void rwsem_set_nonspinnable(struct rw_semaphore *sem)
 {
 	unsigned long owner = atomic_long_read(&sem->owner);
@@ -639,8 +635,7 @@ static inline void __up_read(struct rw_semaphore *sem)
 
 	DEBUG_RWSEMS_WARN_ON(sem->magic != sem, sem);
 	DEBUG_RWSEMS_WARN_ON(!is_rwsem_reader_owned(sem), sem);
-
-	rwsem_clear_reader_owned(sem);
+	/* rwsem_clear_reader_owned removed - empty stub */
 	tmp = atomic_long_add_return_release(-RWSEM_READER_BIAS, &sem->count);
 	DEBUG_RWSEMS_WARN_ON(tmp < 0, sem);
 	if (unlikely((tmp & (RWSEM_LOCK_MASK | RWSEM_FLAG_WAITERS)) ==

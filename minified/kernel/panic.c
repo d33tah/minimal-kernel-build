@@ -228,14 +228,10 @@ void oops_enter(void)
 	do_oops_enter_exit();
 }
 
-static void print_oops_end_marker(void)
-{
-}
-
 void oops_exit(void)
 {
 	do_oops_enter_exit();
-	print_oops_end_marker();
+	/* print_oops_end_marker removed - empty stub */
 	kmsg_dump(KMSG_DUMP_OOPS);
 }
 

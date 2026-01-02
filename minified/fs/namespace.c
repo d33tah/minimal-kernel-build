@@ -425,14 +425,6 @@ static void touch_mnt_namespace(struct mnt_namespace *ns)
 	}
 }
 
-static void __touch_mnt_namespace(struct mnt_namespace *ns)
-{
-	if (ns && ns->event != event) {
-		ns->event = event;
-		wake_up_interruptible(&ns->poll);
-	}
-}
-
 static struct mountpoint *unhash_mnt(struct mount *mnt)
 {
 	struct mountpoint *mp;
@@ -843,7 +835,10 @@ static void umount_tree(struct mount *mnt, enum umount_tree_flags how)
 		ns = p->mnt_ns;
 		if (ns) {
 			ns->mounts--;
-			__touch_mnt_namespace(ns);
+			if (ns && ns->event != event) {
+				ns->event = event;
+				wake_up_interruptible(&ns->poll);
+			}
 		}
 		p->mnt_ns = NULL;
 		if (how & UMOUNT_SYNC)

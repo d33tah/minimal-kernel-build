@@ -148,11 +148,6 @@ static void wb_exit(struct bdi_writeback *wb)
 	fprop_local_destroy_percpu(&wb->completions);
 }
 
-static int cgwb_bdi_init(struct backing_dev_info *bdi)
-{
-	return wb_init(&bdi->wb, bdi, GFP_KERNEL);
-}
-
 /* Removed: cgwb_bdi_unregister - empty stub (~3 LOC) */
 
 static void cgwb_remove_from_bdi_list(struct bdi_writeback *wb)
@@ -162,8 +157,6 @@ static void cgwb_remove_from_bdi_list(struct bdi_writeback *wb)
 
 int bdi_init(struct backing_dev_info *bdi)
 {
-	int ret;
-
 	bdi->dev = NULL;
 
 	kref_init(&bdi->refcnt);
@@ -174,9 +167,7 @@ int bdi_init(struct backing_dev_info *bdi)
 	INIT_LIST_HEAD(&bdi->wb_list);
 	init_waitqueue_head(&bdi->wb_waitq);
 
-	ret = cgwb_bdi_init(bdi);
-
-	return ret;
+	return wb_init(&bdi->wb, bdi, GFP_KERNEL);
 }
 
 struct backing_dev_info *bdi_alloc(int node_id)

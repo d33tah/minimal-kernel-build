@@ -136,10 +136,7 @@ void device_links_unbind_consumers(struct device *dev)
 	(void)dev;
 }
 
-static void device_links_purge(struct device *dev)
-{
-	/* Stub: no device links to purge since device_link_add returns NULL */
-}
+/* device_links_purge removed - was empty stub */
 
 #define FW_DEVLINK_FLAGS_PERMISSIVE (DL_FLAG_INFERRED | DL_FLAG_SYNC_STATE_ONLY)
 #define FW_DEVLINK_FLAGS_ON (DL_FLAG_INFERRED | DL_FLAG_AUTOPROBE_CONSUMER)
@@ -560,7 +557,7 @@ void device_del(struct device *dev)
 	bus_remove_device(dev);
 	driver_deferred_probe_del(dev);
 	device_platform_notify_remove(dev);
-	device_links_purge(dev);
+	/* device_links_purge removed - was empty stub */
 
 	if (dev->bus)
 		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,

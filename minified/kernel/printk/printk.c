@@ -268,10 +268,7 @@ static DEFINE_MUTEX(syslog_lock);
 #define prb_next_seq(rb) 0
 
 static u64 syslog_seq;
-static void call_console_driver(struct console *con, const char *text,
-				size_t len, char *dropped_text)
-{
-}
+/* call_console_driver removed - was empty stub */
 
 static bool printk_console_no_auto_verbose;
 
@@ -353,7 +350,7 @@ static bool console_emit_next_record(struct console *con, char *text,
 	printk_safe_enter_irqsave(flags);
 
 	stop_critical_timings();
-	call_console_driver(con, write_text, len, dropped_text);
+	/* call_console_driver was empty stub - removed */
 	start_critical_timings();
 
 	con->seq++;

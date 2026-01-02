@@ -1151,11 +1151,6 @@ void __percpu *__alloc_percpu(size_t size, size_t align)
 	return pcpu_alloc(size, align, false, GFP_KERNEL);
 }
 
-static void pcpu_balance_free(bool empty_only)
-{
-	/* No-op: bump allocator style - no deallocation */
-}
-
 static void pcpu_balance_populated(void)
 {
 	const gfp_t gfp = GFP_KERNEL | __GFP_NORETRY | __GFP_NOWARN;
@@ -1239,10 +1234,9 @@ static void pcpu_balance_workfn(struct work_struct *work)
 	mutex_lock(&pcpu_alloc_mutex);
 	spin_lock_irq(&pcpu_lock);
 
-	pcpu_balance_free(false);
+	/* pcpu_balance_free removed - no-op bump allocator */
 	pcpu_reclaim_populated();
 	pcpu_balance_populated();
-	pcpu_balance_free(true);
 
 	spin_unlock_irq(&pcpu_lock);
 	mutex_unlock(&pcpu_alloc_mutex);
@@ -1293,12 +1287,6 @@ void __init pcpu_free_alloc_info(struct pcpu_alloc_info *ai)
 	memblock_free(ai, ai->__ai_size);
 }
 
-static void pcpu_dump_alloc_info(const char *lvl,
-				 const struct pcpu_alloc_info *ai)
-{
-	/* Stub: per-CPU allocation info dump not needed for minimal kernel */
-}
-
 void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 				   void *base_addr)
 {
@@ -1321,7 +1309,7 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 			pr_emerg("failed to initialize, %s\n", #cond); \
 			pr_emerg("cpu_possible_mask=%*pb\n",           \
 				 cpumask_pr_args(cpu_possible_mask));  \
-			pcpu_dump_alloc_info(KERN_EMERG, ai);          \
+			/* pcpu_dump_alloc_info removed */             \
 			BUG();                                         \
 		}                                                      \
 	} while (0)
@@ -1402,7 +1390,7 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	PCPU_SETUP_BUG_ON(unit_map[0] == UINT_MAX);
 
 #undef PCPU_SETUP_BUG_ON
-	pcpu_dump_alloc_info(KERN_DEBUG, ai);
+	/* pcpu_dump_alloc_info removed */
 
 	pcpu_nr_groups = ai->nr_groups;
 	pcpu_group_offsets = group_offsets;

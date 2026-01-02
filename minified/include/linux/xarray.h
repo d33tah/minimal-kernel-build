@@ -216,15 +216,7 @@ static inline void *xa_mk_sibling(unsigned int offset)
 	return xa_mk_internal(offset);
 }
 
-static inline unsigned long xa_to_sibling(const void *entry)
-{
-	return xa_to_internal(entry);
-}
-
-static inline bool xa_is_sibling(const void *entry)
-{
-	return false;
-}
+/* xa_to_sibling, xa_is_sibling removed - unused/always false */
 
 #define XA_RETRY_ENTRY		xa_mk_internal(256)
 

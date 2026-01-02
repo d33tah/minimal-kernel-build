@@ -274,7 +274,6 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
 	/* Minimal stub: simplified VMA duplication for fork */
 	struct vm_area_struct *mpnt, *tmp, *prev, **pprev;
 	struct rb_node **rb_link, *rb_parent;
-	struct file *exe_file;
 	int retval = 0;
 
 	if (mmap_write_lock_killable(oldmm))
@@ -282,10 +281,8 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
 
 	mmap_write_lock_nested(mm, SINGLE_DEPTH_NESTING);
 
-	exe_file = get_mm_exe_file(oldmm);
-	RCU_INIT_POINTER(mm->exe_file, exe_file);
-	if (exe_file)
-		deny_write_access(exe_file);
+	/* get_mm_exe_file returns NULL, no exe_file handling needed */
+	RCU_INIT_POINTER(mm->exe_file, NULL);
 	mm->total_vm = oldmm->total_vm;
 
 	rb_link = &mm->mm_rb.rb_node;

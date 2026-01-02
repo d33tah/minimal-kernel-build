@@ -72,14 +72,10 @@ static inline int pcpu_chunk_nr_blocks(struct pcpu_chunk *chunk)
 	return chunk->nr_pages * PAGE_SIZE / PCPU_BITMAP_BLOCK_SIZE;
 }
 
-static inline int pcpu_nr_pages_to_map_bits(int pages)
-{
-	return pages * PAGE_SIZE / PCPU_MIN_ALLOC_SIZE;
-}
-
+/* pcpu_nr_pages_to_map_bits inlined */
 static inline int pcpu_chunk_map_bits(struct pcpu_chunk *chunk)
 {
-	return pcpu_nr_pages_to_map_bits(chunk->nr_pages);
+	return chunk->nr_pages * PAGE_SIZE / PCPU_MIN_ALLOC_SIZE;
 }
 
 /* pcpu_stats_* stubs removed - statistics tracking disabled */
@@ -168,16 +164,12 @@ static void pcpu_set_page_chunk(struct page *page, struct pcpu_chunk *pcpu)
 	page->index = (unsigned long)pcpu;
 }
 
-static unsigned long pcpu_unit_page_offset(unsigned int cpu, int page_idx)
-{
-	return pcpu_unit_offsets[cpu] + (page_idx << PAGE_SHIFT);
-}
-
+/* pcpu_unit_page_offset inlined into pcpu_chunk_addr */
 static unsigned long pcpu_chunk_addr(struct pcpu_chunk *chunk, unsigned int cpu,
 				     int page_idx)
 {
-	return (unsigned long)chunk->base_addr +
-	       pcpu_unit_page_offset(cpu, page_idx);
+	return (unsigned long)chunk->base_addr + pcpu_unit_offsets[cpu] +
+	       (page_idx << PAGE_SHIFT);
 }
 
 static unsigned long *pcpu_index_alloc_map(struct pcpu_chunk *chunk, int index)

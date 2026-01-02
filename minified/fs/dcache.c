@@ -1062,32 +1062,16 @@ void d_add(struct dentry *entry, struct inode *inode)
 	__d_add(entry, inode);
 }
 
-/* Stubbed - not used in minimal kernel */
+/* Stubbed - d_ancestor always returns NULL in minimal kernel */
 struct dentry *d_ancestor(struct dentry *p1, struct dentry *p2)
 {
 	return NULL;
 }
 
+/* Simplified - d_ancestor always returns NULL, so only equality check matters */
 bool is_subdir(struct dentry *new_dentry, struct dentry *old_dentry)
 {
-	bool result;
-	unsigned seq;
-
-	if (new_dentry == old_dentry)
-		return true;
-
-	do {
-		seq = read_seqbegin(&rename_lock);
-
-		rcu_read_lock();
-		if (d_ancestor(old_dentry, new_dentry))
-			result = true;
-		else
-			result = false;
-		rcu_read_unlock();
-	} while (read_seqretry(&rename_lock, seq));
-
-	return result;
+	return new_dentry == old_dentry;
 }
 
 void d_tmpfile(struct dentry *dentry, struct inode *inode)

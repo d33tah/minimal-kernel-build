@@ -140,11 +140,7 @@ bool device_is_bound(struct device *dev)
 	return dev->p && klist_node_attached(&dev->p->knode_driver);
 }
 
-/* Stub: device_bind_driver not used externally */
-int device_bind_driver(struct device *dev)
-{
-	return 0;
-}
+/* device_bind_driver removed - empty stub */
 
 static atomic_t probe_count = ATOMIC_INIT(0);
 static DECLARE_WAIT_QUEUE_HEAD(probe_waitqueue);
@@ -394,7 +390,7 @@ static int __device_attach(struct device *dev, bool allow_async)
 			ret = 1;
 			goto out_unlock;
 		}
-		device_bind_driver(dev);
+		/* device_bind_driver call removed - always returns 0 and does nothing */
 		ret = 1;
 	} else {
 		struct device_attach_data data = {

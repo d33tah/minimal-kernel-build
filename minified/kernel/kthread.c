@@ -237,18 +237,6 @@ struct task_struct *kthread_create_on_node(int (*threadfn)(void *data),
 	return task;
 }
 
-static void __kthread_bind_mask(struct task_struct *p,
-				const struct cpumask *mask, unsigned int state)
-{
-	unsigned long flags;
-
-	/* wait_task_inactive always returns 1, dead check removed */
-	raw_spin_lock_irqsave(&p->pi_lock, flags);
-	/* do_set_cpus_allowed removed - empty stub */
-	p->flags |= PF_NO_SETAFFINITY;
-	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
-}
-
 void kthread_set_per_cpu(struct task_struct *k, int cpu)
 {
 	struct kthread *kthread = to_kthread(k);
@@ -270,8 +258,13 @@ void kthread_unpark(struct task_struct *k)
 {
 	struct kthread *kthread = to_kthread(k);
 
-	if (test_bit(KTHREAD_IS_PER_CPU, &kthread->flags))
-		__kthread_bind_mask(k, cpumask_of(kthread->cpu), TASK_PARKED);
+	/* Inlined __kthread_bind_mask */
+	if (test_bit(KTHREAD_IS_PER_CPU, &kthread->flags)) {
+		unsigned long flags;
+		raw_spin_lock_irqsave(&k->pi_lock, flags);
+		k->flags |= PF_NO_SETAFFINITY;
+		raw_spin_unlock_irqrestore(&k->pi_lock, flags);
+	}
 
 	clear_bit(KTHREAD_SHOULD_PARK, &kthread->flags);
 

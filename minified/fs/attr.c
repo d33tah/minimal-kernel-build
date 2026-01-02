@@ -10,20 +10,6 @@
 #include <linux/security.h>
 #include <linux/xattr.h>
 /* ima_inode_post_setattr, evm_inode_post_setattr removed - empty stubs, never needed */
-static bool chown_ok(struct user_namespace *mnt_userns,
-		     const struct inode *inode, kuid_t uid)
-{
-	kuid_t kuid = i_uid_into_mnt(mnt_userns, inode);
-	if (uid_eq(current_fsuid(), kuid) && uid_eq(uid, inode->i_uid))
-		return true;
-	if (capable_wrt_inode_uidgid(mnt_userns, inode, CAP_CHOWN))
-		return true;
-	if (uid_eq(kuid, INVALID_UID) &&
-	    ns_capable(inode->i_sb->s_user_ns, CAP_CHOWN))
-		return true;
-	return false;
-}
-
 static bool chgrp_ok(struct user_namespace *mnt_userns,
 		     const struct inode *inode, kgid_t gid)
 {
@@ -55,8 +41,21 @@ int setattr_prepare(struct user_namespace *mnt_userns, struct dentry *dentry,
 	if (ia_valid & ATTR_FORCE)
 		goto kill_priv;
 
-	if ((ia_valid & ATTR_UID) && !chown_ok(mnt_userns, inode, attr->ia_uid))
-		return -EPERM;
+	/* Inlined chown_ok */
+	if (ia_valid & ATTR_UID) {
+		kuid_t kuid = i_uid_into_mnt(mnt_userns, inode);
+		kuid_t uid = attr->ia_uid;
+		bool ok = false;
+		if (uid_eq(current_fsuid(), kuid) && uid_eq(uid, inode->i_uid))
+			ok = true;
+		else if (capable_wrt_inode_uidgid(mnt_userns, inode, CAP_CHOWN))
+			ok = true;
+		else if (uid_eq(kuid, INVALID_UID) &&
+			 ns_capable(inode->i_sb->s_user_ns, CAP_CHOWN))
+			ok = true;
+		if (!ok)
+			return -EPERM;
+	}
 
 	if ((ia_valid & ATTR_GID) && !chgrp_ok(mnt_userns, inode, attr->ia_gid))
 		return -EPERM;

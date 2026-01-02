@@ -51,11 +51,6 @@ static bool ksoftirqd_running(unsigned long pending)
 	return tsk && task_is_running(tsk) && !__kthread_should_park(tsk);
 }
 
-static void __local_bh_enable(unsigned int cnt)
-{
-	__preempt_count_sub(cnt);
-}
-
 void __local_bh_enable_ip(unsigned long ip, unsigned int cnt)
 {
 	WARN_ON_ONCE(in_hardirq());
@@ -75,7 +70,7 @@ static inline void softirq_handle_begin(void)
 
 static inline void softirq_handle_end(void)
 {
-	__local_bh_enable(SOFTIRQ_OFFSET);
+	__preempt_count_sub(SOFTIRQ_OFFSET);
 	WARN_ON_ONCE(in_interrupt());
 }
 

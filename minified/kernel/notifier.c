@@ -78,20 +78,11 @@ int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 NOKPROBE_SYMBOL(atomic_notifier_call_chain);
 
 /* atomic_notifier_call_chain_is_empty, blocking_notifier*, raw_notifier_call_chain removed - no callers */
-
-static ATOMIC_NOTIFIER_HEAD(die_chain);
+/* die_chain removed - no registrations, notify_die always returns NOTIFY_DONE */
 
 int notrace notify_die(enum die_val val, const char *str, struct pt_regs *regs,
 		       long err, int trap, int sig)
 {
-	struct die_args args = {
-		.regs = regs,
-		.str = str,
-		.err = err,
-		.trapnr = trap,
-		.signr = sig,
-
-	};
-	return atomic_notifier_call_chain(&die_chain, val, &args);
+	return NOTIFY_DONE;
 }
 NOKPROBE_SYMBOL(notify_die);

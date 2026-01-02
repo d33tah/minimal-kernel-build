@@ -266,13 +266,6 @@ static void irq_wake_secondary(struct irq_desc *desc, struct irqaction *action)
 	raw_spin_unlock_irq(&desc->lock);
 }
 
-static void irq_thread_set_ready(struct irq_desc *desc,
-				 struct irqaction *action)
-{
-	set_bit(IRQTF_READY, &action->thread_flags);
-	wake_up(&desc->wait_for_threads);
-}
-
 static void wake_up_and_wait_for_irq_thread_ready(struct irq_desc *desc,
 						  struct irqaction *action)
 {
@@ -292,7 +285,9 @@ static int irq_thread(void *data)
 	irqreturn_t (*handler_fn)(struct irq_desc *desc,
 				  struct irqaction *action);
 
-	irq_thread_set_ready(desc, action);
+	/* irq_thread_set_ready inlined */
+	set_bit(IRQTF_READY, &action->thread_flags);
+	wake_up(&desc->wait_for_threads);
 
 	sched_set_fifo(current);
 

@@ -236,22 +236,7 @@ static inline void add_to_free_list(struct page *page, struct zone *zone,
 	area->nr_free++;
 }
 
-static inline void add_to_free_list_tail(struct page *page, struct zone *zone,
-					 unsigned int order, int migratetype)
-{
-	struct free_area *area = &zone->free_area[order];
-
-	list_add_tail(&page->lru, &area->free_list[migratetype]);
-	area->nr_free++;
-}
-
-static inline void move_to_free_list(struct page *page, struct zone *zone,
-				     unsigned int order, int migratetype)
-{
-	struct free_area *area = &zone->free_area[order];
-
-	list_move_tail(&page->lru, &area->free_list[migratetype]);
-}
+/* add_to_free_list_tail and move_to_free_list inlined into callers */
 
 static inline void del_page_from_free_list(struct page *page, struct zone *zone,
 					   unsigned int order)
@@ -273,9 +258,11 @@ static inline void __free_one_page(struct page *page, unsigned long pfn,
 
 	set_buddy_order(page, order);
 
-	if (fpi_flags & FPI_TO_TAIL)
-		add_to_free_list_tail(page, zone, order, migratetype);
-	else
+	if (fpi_flags & FPI_TO_TAIL) {
+		struct free_area *area = &zone->free_area[order];
+		list_add_tail(&page->lru, &area->free_list[migratetype]);
+		area->nr_free++;
+	} else
 		add_to_free_list(page, zone, order, migratetype);
 }
 
@@ -469,9 +456,10 @@ static __always_inline bool __rmqueue_fallback(struct zone *zone, int order,
 			continue;
 
 		page = get_page_from_free_area(area, fallback_mt);
-		/* Inlined steal_suitable_fallback */
-		move_to_free_list(page, zone, buddy_order(page),
-				  start_migratetype);
+		/* Inlined steal_suitable_fallback and move_to_free_list */
+		list_move_tail(&page->lru,
+			       &zone->free_area[buddy_order(page)]
+					.free_list[start_migratetype]);
 		return true;
 	}
 

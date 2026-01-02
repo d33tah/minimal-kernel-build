@@ -93,11 +93,6 @@ static void drop_rmap_locks(struct vm_area_struct *vma)
 		i_mmap_unlock_write(vma->vm_file->f_mapping);
 }
 
-static pte_t move_soft_dirty_pte(pte_t pte)
-{
-	return pte;
-}
-
 static void move_ptes(struct vm_area_struct *vma, pmd_t *old_pmd,
 		      unsigned long old_addr, unsigned long old_end,
 		      struct vm_area_struct *new_vma, pmd_t *new_pmd,
@@ -130,7 +125,6 @@ static void move_ptes(struct vm_area_struct *vma, pmd_t *old_pmd,
 		if (pte_present(pte))
 			force_flush = true;
 		pte = move_pte(pte, new_vma->vm_page_prot, old_addr, new_addr);
-		pte = move_soft_dirty_pte(pte);
 		set_pte_at(mm, new_addr, new_pte, pte);
 	}
 

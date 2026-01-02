@@ -310,17 +310,11 @@ void bus_remove_device(struct device *dev)
 	bus_put(dev->bus);
 }
 
-static int __must_check add_bind_files(struct device_driver *drv)
+static void add_bind_files(struct device_driver *drv)
 {
-	int ret;
-
-	ret = driver_create_file(drv, &driver_attr_unbind);
-	if (ret == 0) {
-		ret = driver_create_file(drv, &driver_attr_bind);
-		if (ret)
-			driver_remove_file(drv, &driver_attr_unbind);
-	}
-	return ret;
+	/* driver_create_file always returns 0 for non-null drv */
+	driver_create_file(drv, &driver_attr_unbind);
+	driver_create_file(drv, &driver_attr_bind);
 }
 
 static void remove_bind_files(struct device_driver *drv)
@@ -403,13 +397,8 @@ int bus_add_driver(struct device_driver *drv)
 	driver_add_groups(drv, bus->drv_groups);
 	/* error check removed - driver_add_groups always returns 0 */
 
-	if (!drv->suppress_bind_attrs) {
-		error = add_bind_files(drv);
-		if (error) {
-			printk(KERN_ERR "%s: add_bind_files(%s) failed\n",
-			       __func__, drv->name);
-		}
-	}
+	if (!drv->suppress_bind_attrs)
+		add_bind_files(drv);
 
 	return 0;
 

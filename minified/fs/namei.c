@@ -1192,14 +1192,6 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
 	return s;
 }
 
-static inline const char *lookup_last(struct nameidata *nd)
-{
-	if (nd->last_type == LAST_NORM && nd->last.name[nd->last.len])
-		nd->flags |= LOOKUP_FOLLOW | LOOKUP_DIRECTORY;
-
-	return walk_component(nd, WALK_TRAILING);
-}
-
 static int handle_lookup_down(struct nameidata *nd)
 {
 	if (!(nd->flags & LOOKUP_RCU))
@@ -1220,8 +1212,14 @@ static int path_lookupat(struct nameidata *nd, unsigned flags,
 			s = ERR_PTR(err);
 	}
 
-	while (!(err = link_path_walk(s, nd)) && (s = lookup_last(nd)) != NULL)
-		;
+	/* Inlined lookup_last into loop */
+	while (!(err = link_path_walk(s, nd))) {
+		if (nd->last_type == LAST_NORM && nd->last.name[nd->last.len])
+			nd->flags |= LOOKUP_FOLLOW | LOOKUP_DIRECTORY;
+		s = walk_component(nd, WALK_TRAILING);
+		if (s == NULL)
+			break;
+	}
 	if (!err && unlikely(nd->flags & LOOKUP_MOUNTPOINT)) {
 		err = handle_lookup_down(nd);
 		nd->state &= ~ND_JUMPED;

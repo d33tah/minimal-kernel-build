@@ -893,17 +893,7 @@ void d_delete(struct dentry *dentry)
 	}
 }
 
-static inline unsigned start_dir_add(struct inode *dir)
-{
-	for (;;) {
-		unsigned n = dir->i_dir_seq;
-		if (!(n & 1) && cmpxchg(&dir->i_dir_seq, n, n + 1) == n)
-			return n;
-		cpu_relax();
-	}
-}
-
-/* end_dir_add inlined into __d_lookup_unhash_wake */
+/* end_dir_add and start_dir_add inlined into callers */
 
 static void d_wait_lookup(struct dentry *dentry)
 {
@@ -1034,7 +1024,13 @@ static inline void __d_add(struct dentry *dentry, struct inode *inode)
 	spin_lock(&dentry->d_lock);
 	if (unlikely(d_in_lookup(dentry))) {
 		dir = dentry->d_parent->d_inode;
-		n = start_dir_add(dir);
+		/* Inlined start_dir_add */
+		for (;;) {
+			n = dir->i_dir_seq;
+			if (!(n & 1) && cmpxchg(&dir->i_dir_seq, n, n + 1) == n)
+				break;
+			cpu_relax();
+		}
 		__d_lookup_done(dentry);
 	}
 	if (inode) {

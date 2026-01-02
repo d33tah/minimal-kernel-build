@@ -224,10 +224,7 @@ static inline void signal_wake_up(struct task_struct *t, bool fatal)
 void task_join_group_stop(struct task_struct *task);
 
 /* x86 doesn't define TIF_RESTORE_SIGMASK, use current->restore_sigmask */
-static inline void set_restore_sigmask(void)
-{
-	current->restore_sigmask = true;
-}
+/* set_restore_sigmask removed - not called */
 static inline void clear_restore_sigmask(void)
 {
 	current->restore_sigmask = false;

@@ -1159,15 +1159,7 @@ extern void init_mem_debugging_and_hardening(void);
 DECLARE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_ALLOC_DEFAULT_ON, init_on_alloc);
 DECLARE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_FREE_DEFAULT_ON, init_on_free);
 
-static inline bool debug_pagealloc_enabled(void)
-{
-	return false;
-}
-
-static inline bool debug_pagealloc_enabled_static(void)
-{
-	return false;
-}
+/* debug_pagealloc_enabled[_static] removed - always false, not called */
 
 extern int randomize_va_space;
 

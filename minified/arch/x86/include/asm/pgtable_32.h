@@ -59,16 +59,7 @@ static inline void native_pte_clear(struct mm_struct *mm,
 #define native_ptep_get_and_clear(xp) native_local_ptep_get_and_clear(xp)
 #define native_pmdp_get_and_clear(xp) native_local_pmdp_get_and_clear(xp)
 #define native_pudp_get_and_clear(xp) native_local_pudp_get_and_clear(xp)
-/* Swap macros (SWP_*, __swp_*, __pte_to_swp_entry, __swp_entry_to_pte) removed - unused */
-static inline u64 protnone_mask(u64 val)
-{
-	return 0;
-}
-/* flip_protnone_guard removed - unused */
-static inline bool __pte_needs_invert(u64 val)
-{
-	return false;
-}
+/* Swap/protnone/invert macros removed - unused */
 
  
 #define kpte_clear_flush(ptep, vaddr)		\

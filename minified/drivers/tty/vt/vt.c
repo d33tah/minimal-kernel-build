@@ -691,14 +691,6 @@ static inline int vc_translate_ascii(const struct vc_data *vc, int c)
 	return c;
 }
 
-static inline int vc_sanitize_unicode(const int c)
-{
-	if ((c >= 0xd800 && c <= 0xdfff) || c == 0xfffe || c == 0xffff)
-		return 0xfffd;
-
-	return c;
-}
-
 static int vc_translate_unicode(struct vc_data *vc, int c, bool *rescan)
 {
 	static const u32 utf8_length_changes[] = { 0x0000007f, 0x000007ff,
@@ -720,7 +712,10 @@ static int vc_translate_unicode(struct vc_data *vc, int c, bool *rescan)
 		    c > utf8_length_changes[vc->vc_npar])
 			return 0xfffd;
 
-		return vc_sanitize_unicode(c);
+		/* Inlined vc_sanitize_unicode */
+		if ((c >= 0xd800 && c <= 0xdfff) || c == 0xfffe || c == 0xffff)
+			return 0xfffd;
+		return c;
 	}
 
 	if (vc->vc_utf_count) {

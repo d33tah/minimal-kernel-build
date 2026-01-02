@@ -357,15 +357,6 @@ failed:
 	return 0;
 }
 
-static int folio_launder(struct address_space *mapping, struct folio *folio)
-{
-	if (!folio_test_dirty(folio))
-		return 0;
-	if (folio->mapping != mapping || mapping->a_ops->launder_folio == NULL)
-		return 0;
-	return mapping->a_ops->launder_folio(folio);
-}
-
 int invalidate_inode_pages2_range(struct address_space *mapping, pgoff_t start,
 				  pgoff_t end)
 {
@@ -412,7 +403,12 @@ int invalidate_inode_pages2_range(struct address_space *mapping, pgoff_t start,
 				unmap_mapping_folio(folio);
 			BUG_ON(folio_mapped(folio));
 
-			ret2 = folio_launder(mapping, folio);
+			/* Inlined folio_launder */
+			ret2 = 0;
+			if (folio_test_dirty(folio) &&
+			    folio->mapping == mapping &&
+			    mapping->a_ops->launder_folio != NULL)
+				ret2 = mapping->a_ops->launder_folio(folio);
 			if (ret2 == 0) {
 				if (!invalidate_complete_folio2(mapping, folio))
 					ret2 = -EBUSY;

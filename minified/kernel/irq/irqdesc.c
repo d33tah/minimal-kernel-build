@@ -62,11 +62,6 @@ struct irq_desc *irq_to_desc(unsigned int irq)
 	return radix_tree_lookup(&irq_desc_tree, irq);
 }
 
-static void delete_irq_desc(unsigned int irq)
-{
-	radix_tree_delete(&irq_desc_tree, irq);
-}
-
 static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
 				   const struct cpumask *affinity,
 				   struct module *owner)
@@ -117,7 +112,7 @@ static void free_desc(unsigned int irq)
 	struct irq_desc *desc = irq_to_desc(irq);
 
 	/* irq_remove_debugfs_entry, unregister_irq_proc removed - empty stubs */
-	delete_irq_desc(irq);
+	radix_tree_delete(&irq_desc_tree, irq);
 	call_rcu(&desc->rcu, delayed_free_desc);
 }
 

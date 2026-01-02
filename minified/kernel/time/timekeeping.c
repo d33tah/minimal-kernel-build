@@ -213,7 +213,7 @@ static void update_fast_timekeeper(const struct tk_read_base *tkr,
 /* Removed: ktime_get_boot_fast_ns, ktime_get_tai_fast_ns, ktime_get_real_fast_ns,
    ktime_get_fast_timestamps - no callers */
 
-static RAW_NOTIFIER_HEAD(pvclock_gtod_chain);
+/* pvclock_gtod_chain removed - no registrations */
 
 static inline void tk_update_ktime_data(struct timekeeper *tk)
 {
@@ -242,9 +242,7 @@ static void timekeeping_update(struct timekeeper *tk, unsigned int action)
 	tk->next_leap_ktime = KTIME_MAX; /* tk_update_leap_state inlined */
 	tk_update_ktime_data(tk);
 
-	/* update_vsyscall removed - was empty stub */
-	raw_notifier_call_chain(&pvclock_gtod_chain, action & TK_CLOCK_WAS_SET,
-				tk);
+	/* update_vsyscall, raw_notifier_call_chain(pvclock_gtod_chain) removed - empty stubs */
 
 	tk->tkr_mono.base_real = tk->tkr_mono.base + tk->offs_real;
 	update_fast_timekeeper(&tk->tkr_mono, &tk_fast_mono);

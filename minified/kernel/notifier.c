@@ -95,11 +95,7 @@ int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
 	return ret;
 }
 
-int raw_notifier_call_chain(struct raw_notifier_head *nh, unsigned long val,
-			    void *v)
-{
-	return notifier_call_chain(&nh->head, val, v, -1, NULL);
-}
+/* raw_notifier_call_chain removed - no callers */
 
 static ATOMIC_NOTIFIER_HEAD(die_chain);
 

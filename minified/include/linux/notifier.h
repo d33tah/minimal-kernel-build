@@ -68,9 +68,7 @@ extern int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 		unsigned long val, void *v);
 extern int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
 		unsigned long val, void *v);
-extern int raw_notifier_call_chain(struct raw_notifier_head *nh,
-		unsigned long val, void *v);
-
+/* raw_notifier_call_chain removed - never called */
 
 /* atomic_notifier_call_chain_is_empty removed - never called */
 

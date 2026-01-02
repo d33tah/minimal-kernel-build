@@ -65,27 +65,17 @@ static void __page_cache_release(struct page *page)
 	}
 }
 
-static void __put_single_page(struct page *page)
-{
-	__page_cache_release(page);
-	/* mem_cgroup_uncharge is empty stub */
-	free_unref_page(page, 0);
-}
-
-static void __put_compound_page(struct page *page)
-{
-	/* PageHuge is always false */
-	__page_cache_release(page);
-	destroy_compound_page(page);
-}
-
 void __put_page(struct page *page)
 {
 	/* is_zone_device_page always returns false */
-	if (unlikely(PageCompound(page)))
-		__put_compound_page(page);
-	else
-		__put_single_page(page);
+	__page_cache_release(page);
+	if (unlikely(PageCompound(page))) {
+		/* PageHuge is always false */
+		destroy_compound_page(page);
+	} else {
+		/* mem_cgroup_uncharge is empty stub */
+		free_unref_page(page, 0);
+	}
 }
 
 static void pagevec_lru_move_fn(struct pagevec *pvec,
@@ -352,7 +342,8 @@ void release_pages(struct page **pages, int nr)
 				unlock_page_lruvec_irqrestore(lruvec, flags);
 				lruvec = NULL;
 			}
-			__put_compound_page(page);
+			__page_cache_release(page);
+			destroy_compound_page(page);
 			continue;
 		}
 

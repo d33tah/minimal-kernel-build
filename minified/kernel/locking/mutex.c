@@ -116,16 +116,6 @@ static __always_inline bool __mutex_unlock_fast(struct mutex *lock)
 	return atomic_long_try_cmpxchg_release(&lock->owner, &curr, 0UL);
 }
 
-static inline void __mutex_set_flag(struct mutex *lock, unsigned long flag)
-{
-	atomic_long_or(flag, &lock->owner);
-}
-
-static inline void __mutex_clear_flag(struct mutex *lock, unsigned long flag)
-{
-	atomic_long_andnot(flag, &lock->owner);
-}
-
 static inline bool __mutex_waiter_is_first(struct mutex *lock,
 					   struct mutex_waiter *waiter)
 {
@@ -140,7 +130,7 @@ static void __mutex_add_waiter(struct mutex *lock, struct mutex_waiter *waiter,
 
 	list_add_tail(&waiter->list, list);
 	if (__mutex_waiter_is_first(lock, waiter))
-		__mutex_set_flag(lock, MUTEX_FLAG_WAITERS);
+		atomic_long_or(MUTEX_FLAG_WAITERS, &lock->owner);
 }
 
 static void __mutex_remove_waiter(struct mutex *lock,
@@ -148,7 +138,7 @@ static void __mutex_remove_waiter(struct mutex *lock,
 {
 	list_del(&waiter->list);
 	if (likely(list_empty(&lock->wait_list)))
-		__mutex_clear_flag(lock, MUTEX_FLAGS);
+		atomic_long_andnot(MUTEX_FLAGS, &lock->owner);
 
 	debug_mutex_remove_waiter(lock, waiter, current);
 }

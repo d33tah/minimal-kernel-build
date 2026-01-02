@@ -59,11 +59,6 @@ static inline void rwsem_set_owner(struct rw_semaphore *sem)
 	atomic_long_set(&sem->owner, (long)current);
 }
 
-static inline void rwsem_clear_owner(struct rw_semaphore *sem)
-{
-	atomic_long_set(&sem->owner, 0);
-}
-
 static inline bool rwsem_test_oflags(struct rw_semaphore *sem, long flags)
 {
 	return atomic_long_read(&sem->owner) & flags;
@@ -338,16 +333,6 @@ enum owner_state {
 	OWNER_NONSPINNABLE = 1 << 3,
 };
 
-static inline bool rwsem_can_spin_on_owner(struct rw_semaphore *sem)
-{
-	return false;
-}
-
-static inline bool rwsem_optimistic_spin(struct rw_semaphore *sem)
-{
-	return false;
-}
-
 static inline void clear_nonspinnable(struct rw_semaphore *sem)
 {
 }
@@ -464,9 +449,7 @@ rwsem_down_write_slowpath(struct rw_semaphore *sem, int state)
 	struct rwsem_waiter waiter;
 	DEFINE_WAKE_Q(wake_q);
 
-	if (rwsem_can_spin_on_owner(sem) && rwsem_optimistic_spin(sem)) {
-		return sem;
-	}
+	/* rwsem_can_spin_on_owner and rwsem_optimistic_spin always return false - removed */
 
 	waiter.task = current;
 	waiter.type = RWSEM_WAITING_FOR_WRITE;
@@ -656,7 +639,7 @@ static inline void __up_write(struct rw_semaphore *sem)
 							RWSEM_NONSPINNABLE),
 			     sem);
 
-	rwsem_clear_owner(sem);
+	atomic_long_set(&sem->owner, 0); /* rwsem_clear_owner inlined */
 	tmp = atomic_long_fetch_add_release(-RWSEM_WRITER_LOCKED, &sem->count);
 	if (unlikely(tmp & RWSEM_FLAG_WAITERS))
 		rwsem_wake(sem);

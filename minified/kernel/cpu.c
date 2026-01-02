@@ -141,13 +141,6 @@ static struct cpuhp_step cpuhp_hp_states[] = {
 	},
 };
 
-static int cpuhp_cb_check(enum cpuhp_state state)
-{
-	if (state <= CPUHP_OFFLINE || state >= CPUHP_ONLINE)
-		return -EINVAL;
-	return 0;
-}
-
 static int cpuhp_reserve_state(enum cpuhp_state state)
 {
 	enum cpuhp_state i, end;
@@ -288,7 +281,8 @@ int __cpuhp_setup_state_cpuslocked(enum cpuhp_state state, const char *name,
 	int cpu, ret = 0;
 	bool dynstate;
 
-	if (cpuhp_cb_check(state) || !name)
+	/* cpuhp_cb_check inlined */
+	if (state <= CPUHP_OFFLINE || state >= CPUHP_ONLINE || !name)
 		return -EINVAL;
 
 	mutex_lock(&cpuhp_state_mutex);

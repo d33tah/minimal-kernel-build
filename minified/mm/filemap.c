@@ -303,24 +303,8 @@ noinline int __filemap_add_folio(struct address_space *mapping,
 	folio->index = xas.xa_index;
 
 	do {
-		void *entry, *old = NULL;
-
-		/* xa_get_order always returns 0, so split_alloc never needed */
+		/* xas_find_conflict returns NULL, so loop never iterates */
 		xas_lock_irq(&xas);
-		xas_for_each_conflict(&xas, entry) {
-			old = entry;
-			if (!xa_is_value(entry)) {
-				xas_set_err(&xas, -EEXIST);
-				goto unlock;
-			}
-		}
-
-		if (old) {
-			if (shadowp)
-				*shadowp = old;
-
-			/* xa_get_order always returns 0, so split never needed */
-		}
 
 		xas_store(&xas, folio);
 		if (xas_error(&xas))
@@ -328,10 +312,8 @@ noinline int __filemap_add_folio(struct address_space *mapping,
 
 		mapping->nrpages += nr;
 
-		if (!huge) {
+		if (!huge)
 			__lruvec_stat_mod_folio(folio, NR_FILE_PAGES, nr);
-			/* folio_test_pmd_mappable always returns false */
-		}
 unlock:
 		xas_unlock_irq(&xas);
 	} while (xas_nomem(&xas, gfp));

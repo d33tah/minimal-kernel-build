@@ -285,13 +285,6 @@ out:
 		SetPageAnonExclusive(page);
 }
 
-static void __page_check_anon_rmap(struct page *page,
-				   struct vm_area_struct *vma,
-				   unsigned long address)
-{
-	(void)page_folio(page);
-}
-
 void page_add_anon_rmap(struct page *page, struct vm_area_struct *vma,
 			unsigned long address, rmap_t flags)
 {
@@ -302,7 +295,7 @@ void page_add_anon_rmap(struct page *page, struct vm_area_struct *vma,
 		__page_set_anon_rmap(page, vma, address,
 				     !!(flags & RMAP_EXCLUSIVE));
 	} else {
-		__page_check_anon_rmap(page, vma, address);
+		(void)page_folio(page);
 	}
 }
 

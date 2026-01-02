@@ -61,8 +61,7 @@ int kobject_init_and_add(struct kobject *kobj,
 
 extern void kobject_del(struct kobject *kobj);
 
-extern struct kobject * __must_check kobject_create_and_add(const char *name,
-						struct kobject *parent);
+/* kobject_create_and_add removed - never called */
 
 extern struct kobject *kobject_get(struct kobject *kobj);
 extern struct kobject * __must_check kobject_get_unless_zero(

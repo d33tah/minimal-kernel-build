@@ -903,10 +903,7 @@ static inline unsigned start_dir_add(struct inode *dir)
 	}
 }
 
-static inline void end_dir_add(struct inode *dir, unsigned n)
-{
-	smp_store_release(&dir->i_dir_seq, n + 2);
-}
+/* end_dir_add inlined into __d_lookup_unhash_wake */
 
 static void d_wait_lookup(struct dentry *dentry)
 {
@@ -1054,7 +1051,7 @@ static inline void __d_add(struct dentry *dentry, struct inode *inode)
 		hlist_bl_unlock(b);
 	}
 	if (dir)
-		end_dir_add(dir, n);
+		smp_store_release(&dir->i_dir_seq, n + 2);
 	spin_unlock(&dentry->d_lock);
 	if (inode)
 		spin_unlock(&inode->i_lock);

@@ -77,12 +77,6 @@ static unsigned int __ioremap_check_encrypted(struct resource *res)
 	return 0;
 }
 
-static void __ioremap_check_other(resource_size_t addr,
-				  struct ioremap_desc *desc)
-{
-	/* CONFIG_EFI not enabled */
-}
-
 static int __ioremap_collect_map_flags(struct resource *res, void *arg)
 {
 	struct ioremap_desc *desc = arg;
@@ -107,8 +101,6 @@ static void __ioremap_check_mem(resource_size_t addr, unsigned long size,
 	memset(desc, 0, sizeof(struct ioremap_desc));
 
 	walk_mem_res(start, end, desc, __ioremap_collect_map_flags);
-
-	__ioremap_check_other(addr, desc);
 }
 
 static void __iomem *__ioremap_caller(resource_size_t phys_addr,

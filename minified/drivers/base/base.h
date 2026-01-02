@@ -100,10 +100,8 @@ static inline void module_add_driver(struct module *mod,
 				     struct device_driver *drv) { }
 /* module_remove_driver, devtmpfs_init - never called */
 
-/* device_links_* functions removed - empty stubs or inlined */
-extern void fw_devlink_drivers_done(void);
+/* device_links_*, fw_devlink_drivers_done removed - empty stubs or inlined */
 
- 
 void device_pm_move_to_tail(struct device *dev);
 
 /* devtmpfs_create_node, devtmpfs_delete_node, software_node_notify, software_node_notify_remove removed - never called */

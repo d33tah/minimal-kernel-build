@@ -110,11 +110,7 @@ static struct class_interface devlink_class_intf = {
 #define FW_DEVLINK_FLAGS_ON (DL_FLAG_INFERRED | DL_FLAG_AUTOPROBE_CONSUMER)
 #define FW_DEVLINK_FLAGS_RPM (FW_DEVLINK_FLAGS_ON | DL_FLAG_PM_RUNTIME)
 
-/* Stub: firmware device link functions not needed for minimal kernel */
-void fw_devlink_drivers_done(void)
-{
-	/* fw_devlink_drv_reg_done assignment removed - never read */
-}
+/* fw_devlink_drivers_done removed - empty stub */
 
 static struct kobject *dev_kobj;
 struct kobject *sysfs_dev_char_kobj;

@@ -103,8 +103,7 @@ int driver_deferred_probe_timeout;
 static void deferred_probe_timeout_work_func(struct work_struct *work)
 {
 	struct device_private *p;
-
-	fw_devlink_drivers_done();
+	/* fw_devlink_drivers_done call removed - empty stub */
 
 	driver_deferred_probe_timeout = 0;
 	driver_deferred_probe_trigger();
@@ -131,7 +130,7 @@ static int deferred_probe_initcall(void)
 {
 	driver_deferred_probe_enable = true;
 	initcalls_done = true;
-	fw_devlink_drivers_done();
+	/* fw_devlink_drivers_done call removed - empty stub */
 	return 0;
 }
 late_initcall(deferred_probe_initcall);

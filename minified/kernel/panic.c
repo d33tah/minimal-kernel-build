@@ -49,8 +49,7 @@ static long no_blink(int state)
 {
 	return 0;
 }
-
-long (*panic_blink)(int state);
+long (*panic_blink)(int state) = no_blink;
 
 void __weak panic_smp_self_stop(void)
 {
@@ -123,9 +122,6 @@ void panic(const char *fmt, ...)
 
 	debug_locks_off();
 	console_flush_on_panic(CONSOLE_FLUSH_PENDING);
-
-	if (!panic_blink)
-		panic_blink = no_blink;
 
 	if (panic_timeout > 0) {
 		pr_emerg("Rebooting in %d seconds..\n", panic_timeout);

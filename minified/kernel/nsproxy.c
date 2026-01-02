@@ -170,7 +170,9 @@ void free_nsproxy(struct nsproxy *ns)
 	kmem_cache_free(nsproxy_cachep, ns);
 }
 
-static void switch_task_namespaces(struct task_struct *p, struct nsproxy *new)
+/* switch_task_namespaces inlined into exit_task_namespaces */
+
+void exit_task_namespaces(struct task_struct *p)
 {
 	struct nsproxy *ns;
 
@@ -178,16 +180,11 @@ static void switch_task_namespaces(struct task_struct *p, struct nsproxy *new)
 
 	task_lock(p);
 	ns = p->nsproxy;
-	p->nsproxy = new;
+	p->nsproxy = NULL;
 	task_unlock(p);
 
 	if (ns)
 		put_nsproxy(ns);
-}
-
-void exit_task_namespaces(struct task_struct *p)
-{
-	switch_task_namespaces(p, NULL);
 }
 
 SYSCALL_DEFINE2(setns, int, fd, int, flags)

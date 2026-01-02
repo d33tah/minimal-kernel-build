@@ -970,11 +970,6 @@ void __init memblock_allow_resize(void)
 	memblock_can_resize = 1;
 }
 
-static void __init free_unused_memmap(void)
-{
-	/* CONFIG_HAVE_ARCH_PFN_VALID not enabled - early return */
-}
-
 /* __free_pages_memory inlined into __free_memory_core */
 static unsigned long __init __free_memory_core(phys_addr_t start,
 					       phys_addr_t end)
@@ -1034,9 +1029,6 @@ static unsigned long __init free_low_memory_core_early(void)
 void __init memblock_free_all(void)
 {
 	unsigned long pages;
-
-	free_unused_memmap();
-	/* reset_all_zones_managed_pages removed - empty stub */
 
 	pages = free_low_memory_core_early();
 	totalram_pages_add(pages);

@@ -272,10 +272,6 @@ static void call_console_driver(struct console *con, const char *text,
 				size_t len, char *dropped_text)
 {
 }
-static bool suppress_message_printing(int level)
-{
-	return false;
-}
 
 static bool printk_console_no_auto_verbose;
 
@@ -365,11 +361,7 @@ static bool console_emit_next_record(struct console *con, char *text,
 		con->seq = r.info->seq;
 	}
 
-	if (suppress_message_printing(r.info->level)) {
-		con->seq++;
-		goto skip;
-	}
-
+	/* suppress_message_printing always returns false - removed branch */
 	write_text = ext_text ? ext_text : text;
 	len = 0;
 

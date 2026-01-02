@@ -1267,10 +1267,6 @@ int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)
 
 static vm_fault_t special_mapping_fault(struct vm_fault *vmf);
 
-static void special_mapping_close(struct vm_area_struct *vma)
-{
-}
-
 static int special_mapping_mremap(struct vm_area_struct *new_vma)
 {
 	struct vm_special_mapping *sm = new_vma->vm_private_data;
@@ -1290,14 +1286,12 @@ static int special_mapping_split(struct vm_area_struct *vma, unsigned long addr)
 }
 
 static const struct vm_operations_struct special_mapping_vmops = {
-	.close = special_mapping_close,
 	.fault = special_mapping_fault,
 	.mremap = special_mapping_mremap,
 	.may_split = special_mapping_split,
 };
 
 static const struct vm_operations_struct legacy_special_mapping_vmops = {
-	.close = special_mapping_close,
 	.fault = special_mapping_fault,
 };
 

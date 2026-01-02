@@ -380,14 +380,9 @@ int cdev_add(struct cdev *p, dev_t dev, unsigned count)
 	return 0;
 }
 
-static void cdev_unmap(dev_t dev, unsigned count)
-{
-	kobj_unmap(cdev_map, dev, count);
-}
-
 void cdev_del(struct cdev *p)
 {
-	cdev_unmap(p->dev, p->count);
+	kobj_unmap(cdev_map, p->dev, p->count);
 	kobject_put(&p->kobj);
 }
 

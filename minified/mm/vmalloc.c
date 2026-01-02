@@ -1123,13 +1123,8 @@ struct vm_struct *remove_vm_area(const void *addr)
 	return NULL;
 }
 
-/* Removed: set_area_direct_map, vm_remove_mappings, __vunmap, __vfree_deferred
- * - Dead code since vfree is a no-op (~80 lines) */
-
-static void __vfree(const void *addr)
-{
-	/* No-op: bump allocator style - no deallocation */
-}
+/* Removed: set_area_direct_map, vm_remove_mappings, __vunmap, __vfree_deferred,
+ * __vfree - Dead code since vfree is a no-op (~80 lines) */
 
 void vfree(const void *addr)
 {
@@ -1307,7 +1302,7 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 	return area->addr;
 
 fail:
-	__vfree(area->addr);
+	/* __vfree was no-op */
 	return NULL;
 }
 

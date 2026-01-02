@@ -183,11 +183,7 @@ int rcuwait_wake_up(struct rcuwait *w)
 	return ret;
 }
 
-/* Stub: orphaned pgrp handling not needed for minimal kernel */
-static void kill_orphaned_pgrp(struct task_struct *tsk,
-			       struct task_struct *parent)
-{
-}
+/* kill_orphaned_pgrp removed - was empty stub */
 
 /* coredump_task_exit inlined into do_exit */
 
@@ -299,7 +295,7 @@ static void forget_original_parent(struct task_struct *father,
 					list_add(&p->ptrace_entry, dead);
 				}
 			}
-			kill_orphaned_pgrp(p, father);
+			/* kill_orphaned_pgrp(p, father) removed - was empty stub */
 		}
 	}
 	list_splice_tail_init(&father->children, &reaper->children);
@@ -314,8 +310,7 @@ static void exit_notify(struct task_struct *tsk, int group_dead)
 	write_lock_irq(&tasklist_lock);
 	forget_original_parent(tsk, &dead);
 
-	if (group_dead)
-		kill_orphaned_pgrp(tsk->group_leader, NULL);
+	/* kill_orphaned_pgrp removed - was empty stub */
 
 	tsk->exit_state = EXIT_ZOMBIE;
 	if (unlikely(tsk->ptrace)) {

@@ -583,13 +583,6 @@ out:
 	return 0;
 }
 
-static long check_and_migrate_movable_pages(unsigned long nr_pages,
-					    struct page **pages,
-					    unsigned int gup_flags)
-{
-	return nr_pages;
-}
-
 static long __gup_longterm_locked(struct mm_struct *mm, unsigned long start,
 				  unsigned long nr_pages, struct page **pages,
 				  struct vm_area_struct **vmas,
@@ -602,13 +595,8 @@ static long __gup_longterm_locked(struct mm_struct *mm, unsigned long start,
 		return __get_user_pages_locked(mm, start, nr_pages, pages, vmas,
 					       NULL, gup_flags);
 	flags = memalloc_pin_save();
-	do {
-		rc = __get_user_pages_locked(mm, start, nr_pages, pages, vmas,
-					     NULL, gup_flags);
-		if (rc <= 0)
-			break;
-		rc = check_and_migrate_movable_pages(rc, pages, gup_flags);
-	} while (!rc);
+	rc = __get_user_pages_locked(mm, start, nr_pages, pages, vmas, NULL,
+				     gup_flags);
 	memalloc_pin_restore(flags);
 
 	return rc;

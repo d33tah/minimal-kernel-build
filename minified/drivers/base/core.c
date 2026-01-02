@@ -152,12 +152,7 @@ static struct kobject *dev_kobj;
 struct kobject *sysfs_dev_char_kobj;
 struct kobject *sysfs_dev_block_kobj;
 
-static void device_platform_notify_remove(struct device *dev)
-{
-	/* acpi_device_notify_remove - inline empty stub */
-	/* software_node_notify_remove removed - was empty stub */
-	/* platform_notify_remove call removed - never assigned */
-}
+/* device_platform_notify_remove removed - was empty stub */
 
 #define to_dev_attr(_attr) container_of(_attr, struct device_attribute, attr)
 
@@ -556,8 +551,7 @@ void device_del(struct device *dev)
 	device_remove_attrs(dev);
 	bus_remove_device(dev);
 	driver_deferred_probe_del(dev);
-	device_platform_notify_remove(dev);
-	/* device_links_purge removed - was empty stub */
+	/* device_platform_notify_remove and device_links_purge removed - were empty stubs */
 
 	if (dev->bus)
 		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,

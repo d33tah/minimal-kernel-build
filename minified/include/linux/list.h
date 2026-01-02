@@ -284,12 +284,6 @@ static inline bool hlist_fake(struct hlist_node *h)
 	return h->pprev == &h->next;
 }
 
-static inline bool
-hlist_is_singular_node(struct hlist_node *n, struct hlist_head *h)
-{
-	return !n->next && n->pprev == &h->first;
-}
-
 static inline void hlist_move_list(struct hlist_head *old,
 				   struct hlist_head *new)
 {

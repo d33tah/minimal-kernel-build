@@ -38,43 +38,7 @@ void device_pm_move_to_tail(struct device *dev)
 	srcu_read_unlock(&device_links_srcu, idx);
 }
 
-#define to_devlink(dev) container_of((dev), struct device_link, link_dev)
-
-/* Stub: device link sysfs attributes not needed for minimal kernel */
-static struct attribute *devlink_attrs[] = { NULL };
-ATTRIBUTE_GROUPS(devlink);
-
-static void device_link_release_fn(struct work_struct *work)
-{
-	struct device_link *link =
-		container_of(work, struct device_link, rm_work);
-
-	synchronize_srcu(&device_links_srcu);
-
-	pm_request_idle(link->supplier);
-
-	put_device(link->consumer);
-	put_device(link->supplier);
-	kfree(link);
-}
-
-static void devlink_dev_release(struct device *dev)
-{
-	struct device_link *link = to_devlink(dev);
-
-	INIT_WORK(&link->rm_work, device_link_release_fn);
-
-	queue_work(system_long_wq, &link->rm_work);
-}
-
-static struct class devlink_class = {
-	.name = "devlink",
-	.owner = THIS_MODULE,
-	.dev_groups = devlink_groups,
-	.dev_release = devlink_dev_release,
-};
-
-/* devlink_add_symlinks, devlink_remove_symlinks, devlink_class_intf removed - never used */
+/* devlink_class and related functions removed - devlink_class_init was removed so class is never registered */
 
 #define DL_MANAGED_LINK_FLAGS                                        \
 	(DL_FLAG_AUTOREMOVE_CONSUMER | DL_FLAG_AUTOREMOVE_SUPPLIER | \

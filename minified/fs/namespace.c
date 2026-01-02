@@ -438,10 +438,7 @@ static struct mountpoint *unhash_mnt(struct mount *mnt)
 	return mp;
 }
 
-static void umount_mnt(struct mount *mnt)
-{
-	put_mountpoint(unhash_mnt(mnt));
-}
+/* umount_mnt inlined into do_umount - put_mountpoint(unhash_mnt(mnt)) */
 
 void mnt_set_mountpoint(struct mount *mnt, struct mountpoint *mp,
 			struct mount *child_mnt)
@@ -851,7 +848,8 @@ static void umount_tree(struct mount *mnt, enum umount_tree_flags how)
 				list_add_tail(&p->mnt_child,
 					      &p->mnt_parent->mnt_mounts);
 			} else {
-				umount_mnt(p);
+				put_mountpoint(
+					unhash_mnt(p)); /* inlined umount_mnt */
 			}
 		}
 		/* change_mnt_propagation removed - empty stub */

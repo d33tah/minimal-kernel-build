@@ -935,33 +935,9 @@ static __poll_t tty_poll(struct file *filp, poll_table *wait)
 static int __tty_fasync(int fd, struct file *filp, int on)
 {
 	struct tty_struct *tty = file_tty(filp);
-	unsigned long flags;
-	int retval = 0;
-
-	retval = fasync_helper(fd, filp, on, &tty->fasync);
-	if (retval <= 0)
-		goto out;
-
-	if (on) {
-		enum pid_type type;
-		struct pid *pid;
-
-		spin_lock_irqsave(&tty->ctrl.lock, flags);
-		if (tty->ctrl.pgrp) {
-			pid = tty->ctrl.pgrp;
-			type = PIDTYPE_PGID;
-		} else {
-			pid = task_pid(current);
-			type = PIDTYPE_TGID;
-		}
-		get_pid(pid);
-		spin_unlock_irqrestore(&tty->ctrl.lock, flags);
-		/* __f_setown removed - empty stub */
-		put_pid(pid);
-		retval = 0;
-	}
-out:
-	return retval;
+	/* fasync_helper always returns 0, so the body below is dead code removed */
+	fasync_helper(fd, filp, on, &tty->fasync);
+	return 0;
 }
 
 static int tty_fasync(int fd, struct file *filp, int on)

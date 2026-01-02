@@ -163,19 +163,11 @@ unsigned long list_lru_walk_one(struct list_lru *lru, int nid,
 	return ret;
 }
 
-static void init_one_lru(struct list_lru_one *l)
-{
-	INIT_LIST_HEAD(&l->list);
-	l->nr_items = 0;
-}
-
 /* memcg_init_list_lru, memcg_destroy_list_lru removed - empty stubs */
 
 int __list_lru_init(struct list_lru *lru, bool memcg_aware,
 		    struct lock_class_key *key, struct shrinker *shrinker)
 {
-	int i;
-
 	lru->node = kcalloc(nr_node_ids, sizeof(*lru->node), GFP_KERNEL);
 	if (!lru->node)
 		return -ENOMEM;
@@ -184,7 +176,8 @@ int __list_lru_init(struct list_lru *lru, bool memcg_aware,
 	spin_lock_init(&lru->node[0].lock);
 	if (key)
 		lockdep_set_class(&lru->node[0].lock, key);
-	init_one_lru(&lru->node[0].lru);
+	INIT_LIST_HEAD(&lru->node[0].lru.list);
+	lru->node[0].lru.nr_items = 0;
 
 	/* memcg_init_list_lru, list_lru_register removed - empty stubs */
 	return 0;

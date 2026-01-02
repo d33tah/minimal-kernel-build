@@ -326,19 +326,11 @@ static void remove_bind_files(struct device_driver *drv)
 static BUS_ATTR_WO(drivers_probe);
 static BUS_ATTR_RW(drivers_autoprobe);
 
-static int add_probe_files(struct bus_type *bus)
+static void add_probe_files(struct bus_type *bus)
 {
-	int retval;
-
-	retval = bus_create_file(bus, &bus_attr_drivers_probe);
-	if (retval)
-		goto out;
-
-	retval = bus_create_file(bus, &bus_attr_drivers_autoprobe);
-	if (retval)
-		bus_remove_file(bus, &bus_attr_drivers_probe);
-out:
-	return retval;
+	/* bus_create_file always returns 0 */
+	bus_create_file(bus, &bus_attr_drivers_probe);
+	bus_create_file(bus, &bus_attr_drivers_autoprobe);
 }
 
 static void remove_probe_files(struct bus_type *bus)
@@ -524,9 +516,8 @@ int bus_register(struct bus_type *bus)
 	klist_init(&priv->klist_devices, klist_devices_get, klist_devices_put);
 	klist_init(&priv->klist_drivers, NULL, NULL);
 
-	retval = add_probe_files(bus);
-	if (retval)
-		goto bus_probe_files_fail;
+	add_probe_files(bus);
+	/* error check removed - add_probe_files now returns void */
 
 	retval = bus_add_groups(bus, bus->bus_groups);
 	if (retval)

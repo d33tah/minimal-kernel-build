@@ -553,8 +553,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	/* acpi_early_init removed - empty stub */
 	if (late_time_init)
 		late_time_init();
-	edbg("sched_clock_init\n");
-	sched_clock_init();
+	/* sched_clock_init call removed - empty stub */
 	edbg("calibrate_delay\n");
 	calibrate_delay();
 	edbg("pid_idr_init\n");

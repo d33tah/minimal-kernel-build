@@ -5,9 +5,8 @@
 
 extern unsigned long long notrace sched_clock(void);
 extern u64 sched_clock_cpu(int cpu);
-extern void sched_clock_init(void);
 extern int sched_clock_stable(void);
-/* clear_sched_clock_stable, sched_clock_tick, sched_clock_tick_stable
+/* sched_clock_init, clear_sched_clock_stable, sched_clock_tick, sched_clock_tick_stable
    removed - declared but never called */
 
 static inline u64 local_clock(void)

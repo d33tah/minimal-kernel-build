@@ -107,17 +107,6 @@ static const struct sysfs_ops bus_sysfs_ops = {
 	.store = bus_attr_store,
 };
 
-/* Static: bus_create_file only used internally */
-static int bus_create_file(struct bus_type *bus, struct bus_attribute *attr)
-{
-	return 0;
-}
-
-/* Static: bus_remove_file only used internally */
-static void bus_remove_file(struct bus_type *bus, struct bus_attribute *attr)
-{
-}
-
 static void bus_release(struct kobject *kobj)
 {
 	struct subsys_private *priv = to_subsys_private(kobj);
@@ -326,19 +315,6 @@ static void remove_bind_files(struct device_driver *drv)
 static BUS_ATTR_WO(drivers_probe);
 static BUS_ATTR_RW(drivers_autoprobe);
 
-static void add_probe_files(struct bus_type *bus)
-{
-	/* bus_create_file always returns 0 */
-	bus_create_file(bus, &bus_attr_drivers_probe);
-	bus_create_file(bus, &bus_attr_drivers_autoprobe);
-}
-
-static void remove_probe_files(struct bus_type *bus)
-{
-	bus_remove_file(bus, &bus_attr_drivers_autoprobe);
-	bus_remove_file(bus, &bus_attr_drivers_probe);
-}
-
 static ssize_t uevent_store(struct device_driver *drv, const char *buf,
 			    size_t count)
 {
@@ -493,10 +469,6 @@ int bus_register(struct bus_type *bus)
 	if (retval)
 		goto out;
 
-	retval = bus_create_file(bus, &bus_attr_uevent);
-	if (retval)
-		goto bus_uevent_fail;
-
 	priv->devices_kset =
 		kset_create_and_add("devices", NULL, &priv->subsys.kobj);
 	if (!priv->devices_kset) {
@@ -516,21 +488,14 @@ int bus_register(struct bus_type *bus)
 	klist_init(&priv->klist_devices, klist_devices_get, klist_devices_put);
 	klist_init(&priv->klist_drivers, NULL, NULL);
 
-	add_probe_files(bus);
-	/* error check removed - add_probe_files now returns void */
-
 	bus_add_groups(bus, bus->bus_groups);
-	/* error check removed - bus_add_groups always returns 0 */
 
 	return 0;
 
-/* bus_groups_fail, bus_probe_files_fail labels removed - no longer used */
 bus_drivers_fail:
 	kset_unregister(bus->p->drivers_kset);
 bus_devices_fail:
 	kset_unregister(bus->p->devices_kset);
-bus_uevent_fail:
-	bus_remove_file(bus, &bus_attr_uevent);
 	kset_unregister(&bus->p->subsys);
 out:
 	kfree(bus->p);
@@ -543,10 +508,8 @@ void bus_unregister(struct bus_type *bus)
 	if (bus->dev_root)
 		device_unregister(bus->dev_root);
 	bus_remove_groups(bus, bus->bus_groups);
-	remove_probe_files(bus);
 	kset_unregister(bus->p->drivers_kset);
 	kset_unregister(bus->p->devices_kset);
-	bus_remove_file(bus, &bus_attr_uevent);
 	kset_unregister(&bus->p->subsys);
 }
 

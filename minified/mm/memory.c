@@ -72,15 +72,6 @@ early_initcall(init_zero_pfn);
 
 /* Removed: check_sync_rss_stat - empty stub */
 
-static void free_pte_range(struct mmu_gather *tlb, pmd_t *pmd,
-			   unsigned long addr)
-{
-	pgtable_t token = pmd_pgtable(*pmd);
-	pmd_clear(pmd);
-	pte_free_tlb(tlb, token, addr);
-	mm_dec_nr_ptes(tlb->mm);
-}
-
 static inline void free_pmd_range(struct mmu_gather *tlb, pud_t *pud,
 				  unsigned long addr, unsigned long end,
 				  unsigned long floor, unsigned long ceiling)
@@ -95,7 +86,13 @@ static inline void free_pmd_range(struct mmu_gather *tlb, pud_t *pud,
 		next = pmd_addr_end(addr, end);
 		if (pmd_none_or_clear_bad(pmd))
 			continue;
-		free_pte_range(tlb, pmd, addr);
+		/* Inlined free_pte_range */
+		{
+			pgtable_t token = pmd_pgtable(*pmd);
+			pmd_clear(pmd);
+			pte_free_tlb(tlb, token, addr);
+			mm_dec_nr_ptes(tlb->mm);
+		}
 	} while (pmd++, addr = next, addr != end);
 
 	start &= PUD_MASK;

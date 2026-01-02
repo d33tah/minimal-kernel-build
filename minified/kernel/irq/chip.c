@@ -203,26 +203,14 @@ void unmask_threaded_irq(struct irq_desc *desc)
 	unmask_irq(desc);
 }
 
-static bool irq_may_run(struct irq_desc *desc)
-{
-	unsigned int mask = IRQD_IRQ_INPROGRESS | IRQD_WAKEUP_ARMED;
-
-	return !irqd_has_set(&desc->irq_data, mask);
-}
-
-static void cond_unmask_irq(struct irq_desc *desc)
-{
-	if (!irqd_irq_disabled(&desc->irq_data) &&
-	    irqd_irq_masked(&desc->irq_data) && !desc->threads_oneshot)
-		unmask_irq(desc);
-}
-
 void handle_level_irq(struct irq_desc *desc)
 {
 	raw_spin_lock(&desc->lock);
 	mask_ack_irq(desc);
 
-	if (!irq_may_run(desc))
+	/* irq_may_run inlined */
+	if (irqd_has_set(&desc->irq_data,
+			 IRQD_IRQ_INPROGRESS | IRQD_WAKEUP_ARMED))
 		goto out_unlock;
 
 	desc->istate &= ~(IRQS_REPLAY | IRQS_WAITING);
@@ -235,7 +223,10 @@ void handle_level_irq(struct irq_desc *desc)
 	kstat_incr_irqs_this_cpu(desc);
 	handle_irq_event(desc);
 
-	cond_unmask_irq(desc);
+	/* cond_unmask_irq inlined */
+	if (!irqd_irq_disabled(&desc->irq_data) &&
+	    irqd_irq_masked(&desc->irq_data) && !desc->threads_oneshot)
+		unmask_irq(desc);
 
 out_unlock:
 	raw_spin_unlock(&desc->lock);

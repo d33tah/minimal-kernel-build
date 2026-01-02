@@ -333,15 +333,6 @@ enum owner_state {
 	OWNER_NONSPINNABLE = 1 << 3,
 };
 
-static inline void clear_nonspinnable(struct rw_semaphore *sem)
-{
-}
-
-static inline enum owner_state rwsem_spin_on_owner(struct rw_semaphore *sem)
-{
-	return OWNER_NONSPINNABLE;
-}
-
 static inline void rwsem_cond_wake_waiter(struct rw_semaphore *sem, long count,
 					  struct wake_q_head *wake_q)
 {
@@ -354,7 +345,7 @@ static inline void rwsem_cond_wake_waiter(struct rw_semaphore *sem, long count,
 		wake_type = RWSEM_WAKE_READERS;
 	} else {
 		wake_type = RWSEM_WAKE_ANY;
-		clear_nonspinnable(sem);
+		/* clear_nonspinnable removed - empty stub */
 	}
 	rwsem_mark_wake(sem, wake_type, wake_q);
 }
@@ -483,16 +474,7 @@ rwsem_down_write_slowpath(struct rw_semaphore *sem, int state)
 		if (signal_pending_state(state, current))
 			goto out_nolock;
 
-		if (waiter.handoff_set) {
-			enum owner_state owner_state;
-
-			preempt_disable();
-			owner_state = rwsem_spin_on_owner(sem);
-			preempt_enable();
-
-			if (owner_state == OWNER_NULL)
-				goto trylock_again;
-		}
+		/* waiter.handoff_set spin code removed - rwsem_spin_on_owner was stub */
 
 		schedule();
 		lockevent_inc(rwsem_sleep_writer);
@@ -623,7 +605,7 @@ static inline void __up_read(struct rw_semaphore *sem)
 	DEBUG_RWSEMS_WARN_ON(tmp < 0, sem);
 	if (unlikely((tmp & (RWSEM_LOCK_MASK | RWSEM_FLAG_WAITERS)) ==
 		     RWSEM_FLAG_WAITERS)) {
-		clear_nonspinnable(sem);
+		/* clear_nonspinnable removed - empty stub */
 		rwsem_wake(sem);
 	}
 }

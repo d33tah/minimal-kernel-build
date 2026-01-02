@@ -1381,37 +1381,19 @@ static unsigned long __init calc_memmap_size(unsigned long spanned_pages,
 	return PAGE_ALIGN(spanned_pages * sizeof(struct page)) >> PAGE_SHIFT;
 }
 
-static void __meminit pgdat_init_internals(struct pglist_data *pgdat)
-{
-	int i;
-
-	init_waitqueue_head(&pgdat->kswapd_wait);
-	init_waitqueue_head(&pgdat->pfmemalloc_wait);
-
-	for (i = 0; i < NR_VMSCAN_THROTTLE; i++)
-		init_waitqueue_head(&pgdat->reclaim_wait[i]);
-
-	/* pgdat_page_ext_init removed - empty stub */
-	lruvec_init(&pgdat->__lruvec);
-}
-
-static void __meminit zone_init_internals(struct zone *zone, enum zone_type idx,
-					  int nid,
-					  unsigned long remaining_pages)
-{
-	atomic_long_set(&zone->managed_pages, remaining_pages);
-	zone->name = zone_names[idx];
-	zone->zone_pgdat = NODE_DATA(nid);
-	spin_lock_init(&zone->lock);
-	zone_pcp_init(zone);
-}
-
 static void __init free_area_init_core(struct pglist_data *pgdat)
 {
 	enum zone_type j;
 	int nid = pgdat->node_id;
+	int i;
 
-	pgdat_init_internals(pgdat);
+	/* Inlined pgdat_init_internals */
+	init_waitqueue_head(&pgdat->kswapd_wait);
+	init_waitqueue_head(&pgdat->pfmemalloc_wait);
+	for (i = 0; i < NR_VMSCAN_THROTTLE; i++)
+		init_waitqueue_head(&pgdat->reclaim_wait[i]);
+	lruvec_init(&pgdat->__lruvec);
+
 	pgdat->per_cpu_nodestats = &boot_nodestats;
 
 	for (j = 0; j < MAX_NR_ZONES; j++) {
@@ -1428,7 +1410,12 @@ static void __init free_area_init_core(struct pglist_data *pgdat)
 
 		/* dma_reserve, nr_kernel_pages, nr_all_pages removed - never read */
 
-		zone_init_internals(zone, j, nid, freesize);
+		/* Inlined zone_init_internals */
+		atomic_long_set(&zone->managed_pages, freesize);
+		zone->name = zone_names[j];
+		zone->zone_pgdat = NODE_DATA(nid);
+		spin_lock_init(&zone->lock);
+		zone_pcp_init(zone);
 
 		if (!size)
 			continue;

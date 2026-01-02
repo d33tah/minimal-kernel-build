@@ -854,15 +854,6 @@ error:
 	return -EINVAL;
 }
 
-static void free_partial(struct kmem_cache *s, struct kmem_cache_node *n)
-{
-	/* Simplified: just clear the partial list, no actual freeing */
-	spin_lock_irq(&n->list_lock);
-	INIT_LIST_HEAD(&n->partial);
-	n->nr_partial = 0;
-	spin_unlock_irq(&n->list_lock);
-}
-
 int __kmem_cache_shutdown(struct kmem_cache *s)
 {
 	int node;
@@ -872,7 +863,11 @@ int __kmem_cache_shutdown(struct kmem_cache *s)
 
 	for_each_kmem_cache_node(s, node, n)
 	{
-		free_partial(s, n);
+		/* Inlined free_partial */
+		spin_lock_irq(&n->list_lock);
+		INIT_LIST_HEAD(&n->partial);
+		n->nr_partial = 0;
+		spin_unlock_irq(&n->list_lock);
 		/* slabs_node always 0 - simplified condition */
 		if (n->nr_partial)
 			return 1;

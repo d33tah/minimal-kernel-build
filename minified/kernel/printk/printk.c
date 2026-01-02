@@ -333,12 +333,6 @@ static inline bool console_is_usable(struct console *con)
 	return true;
 }
 
-static void __console_unlock(void)
-{
-	console_locked = 0;
-	up_console_sem();
-}
-
 static bool console_emit_next_record(struct console *con, char *text,
 				     char *ext_text, char *dropped_text,
 				     bool *handover)
@@ -451,8 +445,10 @@ void console_unlock(void)
 
 		flushed = console_flush_all(do_cond_resched, &next_seq,
 					    &handover);
-		if (!handover)
-			__console_unlock();
+		if (!handover) {
+			console_locked = 0;
+			up_console_sem();
+		}
 
 		if (!flushed)
 			break;

@@ -39,12 +39,6 @@ static inline void update_load_sub(struct load_weight *lw, unsigned long dec)
 	lw->inv_weight = 0;
 }
 
-static inline void update_load_set(struct load_weight *lw, unsigned long w)
-{
-	lw->weight = w;
-	lw->inv_weight = 0;
-}
-
 /* get_update_sysctl_factor, update_sysctl, normalized_sysctl_* removed - factor always 1 */
 void __init sched_init_granularity(void)
 {
@@ -103,12 +97,7 @@ const struct sched_class fair_sched_class;
 
 #define for_each_sched_entity(se) for (; se; se = NULL)
 
-static inline bool list_add_leaf_cfs_rq(struct cfs_rq *cfs_rq)
-{
-	return true;
-}
-
-/* assert_list_leaf_cfs_rq, find_matching_se removed - empty stubs */
+/* list_add_leaf_cfs_rq, assert_list_leaf_cfs_rq, find_matching_se removed - empty stubs */
 #define for_each_leaf_cfs_rq_safe(rq, cfs_rq, pos) \
 	for (cfs_rq = &rq->cfs, pos = NULL; cfs_rq; cfs_rq = pos)
 
@@ -448,9 +437,9 @@ static void reweight_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 			update_curr(cfs_rq);
 		update_load_sub(&cfs_rq->load, se->load.weight);
 	}
-	/* dequeue_load_avg removed - empty stub */
-	update_load_set(&se->load, weight);
-	/* enqueue_load_avg removed - empty stub */
+	/* dequeue_load_avg, update_load_set inlined, enqueue_load_avg removed */
+	se->load.weight = weight;
+	se->load.inv_weight = 0;
 	if (se->on_rq)
 		update_load_add(&cfs_rq->load, se->load.weight);
 }
@@ -534,9 +523,7 @@ static void enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 		__enqueue_entity(cfs_rq, se);
 	se->on_rq = 1;
 
-	if (cfs_rq->nr_running == 1)
-		list_add_leaf_cfs_rq(cfs_rq);
-	/* check_enqueue_throttle() removed - was empty stub */
+	/* list_add_leaf_cfs_rq, check_enqueue_throttle removed - empty stubs */
 }
 
 static void __clear_buddies_last(struct sched_entity *se)

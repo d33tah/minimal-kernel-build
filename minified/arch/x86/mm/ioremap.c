@@ -204,9 +204,7 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
 	ret_addr = (void __iomem *)(vaddr + offset);
 	mmiotrace_ioremap(unaligned_phys_addr, unaligned_size, ret_addr);
 
-	if (iomem_map_sanity_check(unaligned_phys_addr, unaligned_size))
-		pr_warn("caller %pS mapping multiple BARs\n", caller);
-
+	/* iomem_map_sanity_check removed - always returned 0 */
 	return ret_addr;
 err_free_area:
 	free_vm_area(area);

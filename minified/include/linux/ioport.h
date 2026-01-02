@@ -84,7 +84,7 @@ extern void __release_region(struct resource *, resource_size_t,
 
 struct device;
 
-extern int iomem_map_sanity_check(resource_size_t addr, unsigned long size);
+/* iomem_map_sanity_check removed - was stub returning 0 */
 
 extern int
 walk_mem_res(u64 start, u64 end, void *arg,

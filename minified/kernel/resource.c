@@ -405,11 +405,7 @@ void __release_region(struct resource *parent, resource_size_t start,
 
 #define MAXRESERVE 4
 
-int iomem_map_sanity_check(resource_size_t addr, unsigned long size)
-{
-	/* Stub: sanity check not needed for minimal kernel */
-	return 0;
-}
+/* iomem_map_sanity_check removed - caller site simplified */
 
 static int iomem_fs_init_fs_context(struct fs_context *fc)
 {

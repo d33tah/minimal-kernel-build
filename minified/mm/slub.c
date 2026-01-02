@@ -117,27 +117,17 @@ static inline unsigned int oo_objects(struct kmem_cache_order_objects x)
 	return x.x & OO_MASK;
 }
 
-static __always_inline void __slab_lock(struct slab *slab)
-{
-	struct page *page = slab_page(slab);
-	bit_spin_lock(PG_locked, &page->flags);
-}
-
-static __always_inline void __slab_unlock(struct slab *slab)
-{
-	struct page *page = slab_page(slab);
-	__bit_spin_unlock(PG_locked, &page->flags);
-}
+/* __slab_lock/__slab_unlock inlined into slab_lock/slab_unlock */
 
 static __always_inline void slab_lock(struct slab *slab, unsigned long *flags)
 {
 	/* CONFIG_PREEMPT_RT not enabled - no irq save */
-	__slab_lock(slab);
+	bit_spin_lock(PG_locked, &slab_page(slab)->flags);
 }
 
 static __always_inline void slab_unlock(struct slab *slab, unsigned long *flags)
 {
-	__slab_unlock(slab);
+	__bit_spin_unlock(PG_locked, &slab_page(slab)->flags);
 	/* CONFIG_PREEMPT_RT not enabled - no irq restore */
 }
 

@@ -88,19 +88,10 @@ interrupted:
 	return -EINTR;
 }
 
-static inline int __sched __down_common(struct semaphore *sem, long state,
-					long timeout)
-{
-	int ret;
-
-	ret = ___down_common(sem, state, timeout);
-
-	return ret;
-}
-
 static noinline void __sched __down(struct semaphore *sem)
 {
-	__down_common(sem, TASK_UNINTERRUPTIBLE, MAX_SCHEDULE_TIMEOUT);
+	/* __down_common inlined */
+	___down_common(sem, TASK_UNINTERRUPTIBLE, MAX_SCHEDULE_TIMEOUT);
 }
 
 static noinline void __sched __up(struct semaphore *sem)

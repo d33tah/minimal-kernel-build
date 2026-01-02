@@ -310,15 +310,6 @@ int is_console_locked(void)
 	return console_locked;
 }
 
-static bool abandon_console_lock_in_panic(void)
-{
-	/* Inlined panic_in_progress */
-	if (likely(atomic_read(&panic_cpu) == PANIC_CPU_INVALID))
-		return false;
-
-	return atomic_read(&panic_cpu) != raw_smp_processor_id();
-}
-
 static inline bool console_is_usable(struct console *con)
 {
 	if (!(con->flags & CON_ENABLED))
@@ -415,7 +406,10 @@ static bool console_flush_all(bool do_cond_resched, u64 *next_seq,
 				continue;
 			any_progress = true;
 
-			if (abandon_console_lock_in_panic())
+			/* Inlined abandon_console_lock_in_panic */
+			if (unlikely(atomic_read(&panic_cpu) !=
+				     PANIC_CPU_INVALID) &&
+			    atomic_read(&panic_cpu) != raw_smp_processor_id())
 				return false;
 
 			if (do_cond_resched)

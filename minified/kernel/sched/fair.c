@@ -793,17 +793,6 @@ static int wakeup_preempt_entity(struct sched_entity *curr,
 	return 0;
 }
 
-static void set_last_buddy(struct sched_entity *se)
-{
-	for_each_sched_entity(se)
-	{
-		if (SCHED_WARN_ON(!se->on_rq))
-			return;
-		/* se_is_idle() always 0 - skip */
-		cfs_rq_of(se)->last = se;
-	}
-}
-
 static void set_next_buddy(struct sched_entity *se)
 {
 	for_each_sched_entity(se)
@@ -862,8 +851,15 @@ preempt:
 	if (unlikely(!se->on_rq || curr == rq->idle))
 		return;
 
-	if (sched_feat(LAST_BUDDY) && scale && entity_is_task(se))
-		set_last_buddy(se);
+	/* Inlined set_last_buddy */
+	if (sched_feat(LAST_BUDDY) && scale && entity_is_task(se)) {
+		for_each_sched_entity(se)
+		{
+			if (SCHED_WARN_ON(!se->on_rq))
+				break;
+			cfs_rq_of(se)->last = se;
+		}
+	}
 }
 
 struct task_struct *pick_next_task_fair(struct rq *rq, struct task_struct *prev,

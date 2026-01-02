@@ -473,30 +473,11 @@ void device_unregister(struct device *dev)
 	put_device(dev);
 }
 
+/* Simplified - kobject_create_and_add returns NULL (stub), return ignored */
 int __init devices_init(void)
 {
 	devices_kset = kset_create_and_add("devices", &device_uevent_ops, NULL);
-	if (!devices_kset)
-		return -ENOMEM;
-	dev_kobj = kobject_create_and_add("dev", NULL);
-	if (!dev_kobj)
-		goto dev_kobj_err;
-	sysfs_dev_block_kobj = kobject_create_and_add("block", dev_kobj);
-	if (!sysfs_dev_block_kobj)
-		goto block_kobj_err;
-	sysfs_dev_char_kobj = kobject_create_and_add("char", dev_kobj);
-	if (!sysfs_dev_char_kobj)
-		goto char_kobj_err;
-
 	return 0;
-
-char_kobj_err:
-	kobject_put(sysfs_dev_block_kobj);
-block_kobj_err:
-	kobject_put(dev_kobj);
-dev_kobj_err:
-	kset_unregister(devices_kset);
-	return -ENOMEM;
 }
 
 struct root_device {

@@ -42,16 +42,6 @@ struct nsproxy init_nsproxy = {
 	.pid_ns_for_children = &init_pid_ns,
 };
 
-static inline struct nsproxy *create_nsproxy(void)
-{
-	struct nsproxy *nsproxy;
-
-	nsproxy = kmem_cache_alloc(nsproxy_cachep, GFP_KERNEL);
-	if (nsproxy)
-		atomic_set(&nsproxy->count, 1);
-	return nsproxy;
-}
-
 static struct nsproxy *create_new_namespaces(unsigned long flags,
 					     struct task_struct *tsk,
 					     struct user_namespace *user_ns,
@@ -60,9 +50,10 @@ static struct nsproxy *create_new_namespaces(unsigned long flags,
 	struct nsproxy *new_nsp;
 	int err;
 
-	new_nsp = create_nsproxy();
+	new_nsp = kmem_cache_alloc(nsproxy_cachep, GFP_KERNEL);
 	if (!new_nsp)
 		return ERR_PTR(-ENOMEM);
+	atomic_set(&new_nsp->count, 1);
 
 	new_nsp->mnt_ns =
 		copy_mnt_ns(flags, tsk->nsproxy->mnt_ns, user_ns, new_fs);

@@ -823,8 +823,7 @@ static noinline void __init kernel_init_freeable(void)
 	edbg("kif:do_basic_setup\n");
 	do_basic_setup();
 	edbg("kif:basic_done\n");
-
-	wait_for_initramfs();
+	/* wait_for_initramfs call removed - it's a no-op */
 	console_on_rootfs();
 
 	if (init_eaccess(ramdisk_execute_command) != 0) {

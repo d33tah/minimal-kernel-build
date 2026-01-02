@@ -556,12 +556,5 @@ disable:
 
 /* free_initrd_mem provided by arch/x86/mm/init.c */
 
-/* kexec_free_initrd, do_populate_rootfs, initramfs_domain, initramfs_cookie
-   removed - no callers after populate_rootfs removal */
-
-void wait_for_initramfs(void)
-{
-	/* Function is now a no-op since populate_rootfs was removed */
-}
-
-/* populate_rootfs removed - async_schedule_domain hangs with low memory */
+/* kexec_free_initrd, do_populate_rootfs, initramfs_domain, initramfs_cookie,
+   wait_for_initramfs, populate_rootfs removed */

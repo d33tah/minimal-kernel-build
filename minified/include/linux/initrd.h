@@ -10,7 +10,7 @@ extern unsigned long initrd_start, initrd_end;
 extern void free_initrd_mem(unsigned long, unsigned long);
 
 extern void __init reserve_initrd_mem(void);
-extern void wait_for_initramfs(void);
+/* wait_for_initramfs removed - was a no-op */
 
 extern phys_addr_t phys_initrd_start;
 extern unsigned long phys_initrd_size;

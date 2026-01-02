@@ -16,9 +16,6 @@
 #include <asm/tlb.h>
 #include <asm/proto.h>
 unsigned long kaslr_get_random_long(const char *purpose);
-static inline void kernel_randomize_memory(void)
-{
-}
 /* end kaslr.h */
 #include <asm/cpufeature.h>
 static inline void pti_check_boottime_disable(void)

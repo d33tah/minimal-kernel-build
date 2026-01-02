@@ -6,15 +6,9 @@ static inline void sadbg(const char *s)
 #include <linux/acpi.h>
 #include <linux/console.h>
 #include <linux/dma-map-ops.h>
-static inline void dmi_setup(void)
-{
-}
 #include <linux/efi.h>
 
 #include <linux/initrd.h>
-static inline void reserve_ibft_region(void)
-{
-}
 #include <linux/memblock.h>
 extern struct atomic_notifier_head panic_notifier_list;
 #include <linux/pci.h>
@@ -35,9 +29,6 @@ extern struct atomic_notifier_head panic_notifier_list;
 #include <asm/cpu.h>
 #include <asm/e820/api.h>
 #include <asm/tlbflush.h>
-static inline void init_hypervisor_platform(void)
-{
-}
 #include <asm/io_apic.h>
 /* --- 2025-12-07 20:48 --- Inlined kasan.h */
 #include <linux/const.h>
@@ -49,22 +40,10 @@ static inline void init_hypervisor_platform(void)
 #define KASAN_SHADOW_END      \
 	(KASAN_SHADOW_START + \
 	 (1ULL << (__VIRTUAL_MASK_SHIFT - KASAN_SHADOW_SCALE_SHIFT)))
-static inline void kasan_init(void)
-{
-}
-static inline void kernel_randomize_memory(void)
-{
-}
 #include <asm/mce.h>
 #include <asm/memtype.h>
 #include <asm/mtrr.h>
 #include <asm/realmode.h>
-static inline void olpc_ofw_detect(void)
-{
-}
-static inline void setup_olpc_ofw_pgd(void)
-{
-}
 /* --- 2025-12-07 20:54 --- Inlined pci-direct.h */
 #include <linux/types.h>
 extern u32 read_pci_config(u8 bus, u8 slot, u8 func, u8 offset);
@@ -137,10 +116,6 @@ extern int root_mountflags;
 
 static char __initdata command_line[COMMAND_LINE_SIZE];
 
-static inline void __init copy_edd(void)
-{
-}
-
 void *__init extend_brk(size_t size, size_t align)
 {
 	size_t mask = align - 1;
@@ -158,10 +133,6 @@ void *__init extend_brk(size_t size, size_t align)
 	memset(ret, 0, size);
 
 	return ret;
-}
-
-static void __init cleanup_highmap(void)
-{
 }
 
 static void __init reserve_brk(void)
@@ -424,9 +395,7 @@ static void __init early_reserve_memory(void)
 	sadbg("erm:4\n");
 	memblock_x86_reserve_range_setup_data();
 
-	sadbg("erm:5\n");
-	reserve_ibft_region();
-	sadbg("erm:6\n");
+	/* reserve_ibft_region removed - empty stub */
 	reserve_bios_regions();
 	sadbg("erm:7\n");
 	trim_snb_memory();
@@ -468,15 +437,13 @@ void __init setup_arch(char **cmdline_p)
 	__flush_tlb_all();
 
 	sadbg("sa:3\n");
-	olpc_ofw_detect();
-
+	/* olpc_ofw_detect removed - empty stub */
 	idt_setup_early_traps();
 	early_cpu_init();
 	jump_label_init();
 	sadbg("sa:4\n");
 	early_ioremap_init();
-
-	setup_olpc_ofw_pgd();
+	/* setup_olpc_ofw_pgd removed - empty stub */
 
 	ROOT_DEV = old_decode_dev(boot_params.hdr.root_dev);
 	screen_info = boot_params.screen_info;
@@ -495,8 +462,7 @@ void __init setup_arch(char **cmdline_p)
 	e820__memory_setup();
 	sadbg("sa:7\n");
 	parse_setup_data();
-
-	copy_edd();
+	/* copy_edd removed - empty stub */
 
 	sadbg("sa:8\n");
 	if (!boot_params.hdr.root_flags)
@@ -527,9 +493,7 @@ void __init setup_arch(char **cmdline_p)
 	e820__reserve_setup_data();
 	e820__finish_early_params();
 
-	dmi_setup();
-
-	init_hypervisor_platform();
+	/* dmi_setup, init_hypervisor_platform removed - empty stubs */
 
 	sadbg("sa:12\n");
 	tsc_early_init();
@@ -557,8 +521,7 @@ void __init setup_arch(char **cmdline_p)
 	/* max_possible_pfn assignment removed - never read */
 
 	init_cache_modes();
-
-	kernel_randomize_memory();
+	/* kernel_randomize_memory removed - empty stub */
 
 	sadbg("sa:16\n");
 	find_low_pfn_range();
@@ -570,8 +533,7 @@ void __init setup_arch(char **cmdline_p)
 
 	sadbg("sa:18\n");
 	reserve_brk();
-
-	cleanup_highmap();
+	/* cleanup_highmap removed - empty stub */
 
 	sadbg("sa:19\n");
 	memblock_set_current_limit(ISA_END_ADDRESS);
@@ -612,9 +574,7 @@ void __init setup_arch(char **cmdline_p)
 	sadbg("sa:26\n");
 	x86_init.paging.pagetable_init();
 
-	sadbg("sa:27\n");
-	kasan_init();
-
+	/* kasan_init removed - empty stub */
 	sadbg("sa:28\n");
 	sync_initial_page_table();
 

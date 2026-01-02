@@ -80,14 +80,9 @@ int del_timer(struct timer_list *timer)
 	return 0;
 }
 
-static void run_local_timers(void)
-{
-	hrtimer_run_queues();
-}
-
 void update_process_times(int user_tick)
 {
-	run_local_timers();
+	hrtimer_run_queues();
 	rcu_sched_clock_irq(user_tick);
 	scheduler_tick();
 }

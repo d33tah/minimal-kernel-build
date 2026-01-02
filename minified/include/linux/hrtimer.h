@@ -97,38 +97,12 @@ struct hrtimer_cpu_base {
 } ____cacheline_aligned;
 
 
-static inline void hrtimer_set_expires_range_ns(struct hrtimer *timer, ktime_t time, u64 delta)
-{
-	timer->_softexpires = time;
-	timer->node.expires = ktime_add_safe(time, ns_to_ktime(delta));
-}
-
-static inline ktime_t hrtimer_get_expires(const struct hrtimer *timer)
-{
-	return timer->node.expires;
-}
-
-static inline s64 hrtimer_get_expires_tv64(const struct hrtimer *timer)
-{
-	return timer->node.expires;
-}
-static inline s64 hrtimer_get_softexpires_tv64(const struct hrtimer *timer)
-{
-	return timer->_softexpires;
-}
-
+/* hrtimer_set_expires_range_ns, hrtimer_get_expires, hrtimer_get_expires_tv64,
+   hrtimer_get_softexpires_tv64, hrtimer_cancel_wait_running removed - unused */
 
 #define hrtimer_resolution	(unsigned int)LOW_RES_NSEC
 
-
-/* timerfd_clock_was_set removed - unused */
-
 DECLARE_PER_CPU(struct tick_device, tick_cpu_device);
-
-static inline void hrtimer_cancel_wait_running(struct hrtimer *timer)
-{
-	cpu_relax();
-}
 
 
 extern void hrtimer_init(struct hrtimer *timer, clockid_t which_clock,

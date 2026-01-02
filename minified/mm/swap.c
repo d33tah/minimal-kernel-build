@@ -142,15 +142,7 @@ void folio_rotate_reclaimable(struct folio *folio)
 	}
 }
 
-static void __folio_activate(struct folio *folio, struct lruvec *lruvec)
-{
-	if (!folio_test_active(folio) && !folio_test_unevictable(folio)) {
-		lruvec_del_folio(lruvec, folio);
-		folio_set_active(folio);
-		lruvec_add_folio(lruvec, folio);
-	}
-}
-
+/* __folio_activate inlined into folio_activate */
 /* activate_page_drain removed - empty stub */
 
 static void folio_activate(struct folio *folio)
@@ -159,7 +151,12 @@ static void folio_activate(struct folio *folio)
 
 	if (folio_test_clear_lru(folio)) {
 		lruvec = folio_lruvec_lock_irq(folio);
-		__folio_activate(folio, lruvec);
+		if (!folio_test_active(folio) &&
+		    !folio_test_unevictable(folio)) {
+			lruvec_del_folio(lruvec, folio);
+			folio_set_active(folio);
+			lruvec_add_folio(lruvec, folio);
+		}
 		unlock_page_lruvec_irq(lruvec);
 		folio_set_lru(folio);
 	}

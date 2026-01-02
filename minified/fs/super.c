@@ -260,7 +260,6 @@ void generic_shutdown_super(struct super_block *sb)
 
 	if (sb->s_root) {
 		shrink_dcache_for_umount(sb);
-		sync_filesystem(sb);
 		sb->s_flags &= ~SB_ACTIVE;
 		/* cgroup_writeback_umount() - empty stub */
 		evict_inodes(sb);

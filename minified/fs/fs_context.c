@@ -286,21 +286,7 @@ void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt,
 	va_end(va);
 }
 
-static void put_fc_log(struct fs_context *fc)
-{
-	struct fc_log *log = fc->log.log;
-	int i;
-
-	if (log) {
-		if (refcount_dec_and_test(&log->usage)) {
-			fc->log.log = NULL;
-			for (i = 0; i <= 7; i++)
-				if (log->need_free & (1 << i))
-					kfree(log->buffer[i]);
-			kfree(log);
-		}
-	}
-}
+/* put_fc_log inlined into put_fs_context */
 
 void put_fs_context(struct fs_context *fc)
 {
@@ -320,7 +306,18 @@ void put_fs_context(struct fs_context *fc)
 	put_net(fc->net_ns);
 	put_user_ns(fc->user_ns);
 	put_cred(fc->cred);
-	put_fc_log(fc);
+	/* inlined put_fc_log */
+	{
+		struct fc_log *log = fc->log.log;
+		if (log && refcount_dec_and_test(&log->usage)) {
+			int i;
+			fc->log.log = NULL;
+			for (i = 0; i <= 7; i++)
+				if (log->need_free & (1 << i))
+					kfree(log->buffer[i]);
+			kfree(log);
+		}
+	}
 	put_filesystem(fc->fs_type);
 	kfree(fc->source);
 	kfree(fc);

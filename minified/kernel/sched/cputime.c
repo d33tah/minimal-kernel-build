@@ -7,10 +7,4 @@
 
 #include "sched.h"
 
-/* All account_* functions removed - empty stubs not called */
-
-void thread_group_cputime_adjusted(struct task_struct *p, u64 *ut, u64 *st)
-{
-	*ut = 0;
-	*st = 0;
-}
+/* All account_* functions and thread_group_cputime_adjusted removed - never called */

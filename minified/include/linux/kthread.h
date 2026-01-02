@@ -41,7 +41,7 @@ void kthread_exit(long result) __noreturn;
 
 int kthreadd(void *unused);
 extern struct task_struct *kthreadd_task;
-extern int tsk_fork_get_node(struct task_struct *tsk);
+/* tsk_fork_get_node removed - always returned NUMA_NO_NODE */
 
 struct kthread_work;
 typedef void (*kthread_work_func_t)(struct kthread_work *work);

@@ -169,10 +169,7 @@ static int kthread(void *_create)
 	kthread_exit(ret);
 }
 
-int tsk_fork_get_node(struct task_struct *tsk)
-{
-	return NUMA_NO_NODE;
-}
+/* tsk_fork_get_node removed - always returned NUMA_NO_NODE, call site updated */
 
 static __printf(4, 0) struct task_struct *__kthread_create_on_node(
 	int (*threadfn)(void *data), void *data, int node, const char namefmt[],

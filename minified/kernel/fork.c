@@ -444,8 +444,7 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	struct task_struct *tsk;
 	int err;
 
-	if (node == NUMA_NO_NODE)
-		node = tsk_fork_get_node(orig);
+	/* tsk_fork_get_node call removed - always returns NUMA_NO_NODE, so this is a no-op */
 	tsk = kmem_cache_alloc_node(task_struct_cachep, GFP_KERNEL, node);
 	if (!tsk)
 		return NULL;

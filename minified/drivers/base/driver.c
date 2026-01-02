@@ -55,11 +55,8 @@ int driver_register(struct device_driver *drv)
 	ret = bus_add_driver(drv);
 	if (ret)
 		return ret;
-	ret = driver_add_groups(drv, drv->groups);
-	if (ret) {
-		bus_remove_driver(drv);
-		return ret;
-	}
+	driver_add_groups(drv, drv->groups);
+	/* error check removed - driver_add_groups always returns 0 */
 	kobject_uevent(&drv->p->kobj, KOBJ_ADD);
 	deferred_probe_extend_timeout();
 

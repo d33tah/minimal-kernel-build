@@ -103,18 +103,6 @@ static void klist_class_dev_put(struct klist_node *n)
 	put_device(dev);
 }
 
-/* Stub: sysfs functions are stubs */
-static int class_add_groups(struct class *cls,
-			    const struct attribute_group **groups)
-{
-	return 0;
-}
-
-static void class_remove_groups(struct class *cls,
-				const struct attribute_group **groups)
-{
-}
-
 int __class_register(struct class *cls, struct lock_class_key *key)
 {
 	struct subsys_private *cp;
@@ -143,18 +131,13 @@ int __class_register(struct class *cls, struct lock_class_key *key)
 	cls->p = cp;
 
 	error = kset_register(&cp->subsys);
-	if (error) {
+	if (error)
 		kfree(cp);
-		return error;
-	}
-	error = class_add_groups(class_get(cls), cls->class_groups);
-	class_put(cls);
 	return error;
 }
 
 void class_unregister(struct class *cls)
 {
-	class_remove_groups(cls, cls->class_groups);
 	kset_unregister(&cls->p->subsys);
 }
 

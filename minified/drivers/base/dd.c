@@ -252,7 +252,7 @@ probe_failed:
 	if (dev->bus && dev->bus->dma_cleanup)
 		dev->bus->dma_cleanup(dev);
 pinctrl_bind_failed:
-	device_links_no_driver(dev);
+	/* device_links_no_driver removed - empty stub */
 	device_unbind_cleanup(dev);
 done:
 	return ret;
@@ -521,7 +521,7 @@ static void __device_release_driver(struct device *dev, struct device *parent)
 		if (dev->bus && dev->bus->dma_cleanup)
 			dev->bus->dma_cleanup(dev);
 
-		device_links_driver_cleanup(dev);
+		/* device_links_driver_cleanup removed - empty stub */
 		device_unbind_cleanup(dev);
 
 		klist_remove(&dev->p->knode_driver);

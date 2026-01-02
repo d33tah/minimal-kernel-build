@@ -104,17 +104,7 @@ static struct class_interface devlink_class_intf = {
 	(DL_MANAGED_LINK_FLAGS | DL_FLAG_STATELESS | DL_FLAG_PM_RUNTIME | \
 	 DL_FLAG_RPM_ACTIVE)
 
-void device_links_no_driver(struct device *dev)
-{
-	/* Minimal stub */
-	(void)dev;
-}
-
-void device_links_driver_cleanup(struct device *dev)
-{
-	/* Minimal stub */
-	(void)dev;
-}
+/* device_links_no_driver, device_links_driver_cleanup removed - empty stubs */
 
 #define FW_DEVLINK_FLAGS_PERMISSIVE (DL_FLAG_INFERRED | DL_FLAG_SYNC_STATE_ONLY)
 #define FW_DEVLINK_FLAGS_ON (DL_FLAG_INFERRED | DL_FLAG_AUTOPROBE_CONSUMER)

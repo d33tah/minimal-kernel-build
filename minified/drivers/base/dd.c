@@ -318,12 +318,6 @@ static int driver_probe_device(struct device_driver *drv, struct device *dev)
 	return ret;
 }
 
-/* Stub: driver_allows_async_probing not used in minimal kernel */
-bool driver_allows_async_probing(struct device_driver *drv)
-{
-	return false;
-}
-
 struct device_attach_data {
 	struct device *dev;
 
@@ -338,7 +332,6 @@ static int __device_attach_driver(struct device_driver *drv, void *_data)
 {
 	struct device_attach_data *data = _data;
 	struct device *dev = data->dev;
-	bool async_allowed;
 	int ret;
 
 	ret = driver_match_device(drv, dev);
@@ -353,12 +346,7 @@ static int __device_attach_driver(struct device_driver *drv, void *_data)
 		return ret;
 	}
 
-	async_allowed = driver_allows_async_probing(drv);
-
-	if (async_allowed)
-		data->have_async = true;
-
-	if (data->check_async && async_allowed != data->want_async)
+	if (data->check_async && data->want_async)
 		return 0;
 
 	ret = driver_probe_device(drv, dev);
@@ -498,18 +486,6 @@ static int __driver_attach(struct device *dev, void *data)
 	} else if (ret < 0) {
 		dev_dbg(dev, "Bus failed to match device: %d\n", ret);
 		return ret;
-	}
-
-	if (driver_allows_async_probing(drv)) {
-		dev_dbg(dev, "probing driver %s asynchronously\n", drv->name);
-		device_lock(dev);
-		if (!dev->driver && !dev->p->async_driver) {
-			get_device(dev);
-			dev->p->async_driver = drv;
-			async_schedule_dev(__driver_attach_async_helper, dev);
-		}
-		device_unlock(dev);
-		return 0;
 	}
 
 	__device_driver_lock(dev, dev->parent);

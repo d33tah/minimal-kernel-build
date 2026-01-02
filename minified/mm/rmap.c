@@ -27,21 +27,7 @@
 static struct kmem_cache *anon_vma_cachep;
 static struct kmem_cache *anon_vma_chain_cachep;
 
-static inline struct anon_vma *anon_vma_alloc(void)
-{
-	struct anon_vma *anon_vma;
-
-	anon_vma = kmem_cache_alloc(anon_vma_cachep, GFP_KERNEL);
-	if (anon_vma) {
-		atomic_set(&anon_vma->refcount, 1);
-		anon_vma->degree = 1;
-		anon_vma->parent = anon_vma;
-
-		anon_vma->root = anon_vma;
-	}
-
-	return anon_vma;
-}
+/* anon_vma_alloc inlined into anon_vma_prepare */
 
 static inline void anon_vma_free(struct anon_vma *anon_vma)
 {
@@ -89,9 +75,14 @@ int __anon_vma_prepare(struct vm_area_struct *vma)
 	anon_vma = find_mergeable_anon_vma(vma);
 	allocated = NULL;
 	if (!anon_vma) {
-		anon_vma = anon_vma_alloc();
+		/* inlined anon_vma_alloc */
+		anon_vma = kmem_cache_alloc(anon_vma_cachep, GFP_KERNEL);
 		if (unlikely(!anon_vma))
 			goto out_enomem_free_avc;
+		atomic_set(&anon_vma->refcount, 1);
+		anon_vma->degree = 1;
+		anon_vma->parent = anon_vma;
+		anon_vma->root = anon_vma;
 		allocated = anon_vma;
 	}
 

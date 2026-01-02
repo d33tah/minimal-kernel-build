@@ -159,14 +159,6 @@ err:
 	return -ENOMEM;
 }
 
-static int irq_expand_nr_irqs(unsigned int nr)
-{
-	if (nr > IRQ_BITMAP_BITS)
-		return -ENOMEM;
-	nr_irqs = nr;
-	return 0;
-}
-
 int __init early_irq_init(void)
 {
 	int i, initcnt, node = first_online_node;
@@ -259,10 +251,13 @@ int __ref __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt,
 	if (irq >= 0 && start != irq)
 		goto unlock;
 
+	/* Inlined irq_expand_nr_irqs */
 	if (start + cnt > nr_irqs) {
-		ret = irq_expand_nr_irqs(start + cnt);
-		if (ret)
+		if (start + cnt > IRQ_BITMAP_BITS) {
+			ret = -ENOMEM;
 			goto unlock;
+		}
+		nr_irqs = start + cnt;
 	}
 	ret = alloc_descs(start, cnt, node, affinity, owner);
 unlock:

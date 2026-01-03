@@ -40,12 +40,7 @@ struct folio_batch;
 
 void page_writeback_init(void);
 
-static inline void *folio_raw_mapping(struct folio *folio)
-{
-	unsigned long mapping = (unsigned long)folio->mapping;
-
-	return (void *)(mapping & ~PAGE_MAPPING_FLAGS);
-}
+/* folio_raw_mapping removed - only caller (page_rmapping) removed */
 
 void __acct_reclaim_writeback(pg_data_t *pgdat, struct folio *folio,
 						int nr_throttled);

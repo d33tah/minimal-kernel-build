@@ -199,12 +199,11 @@ struct sched_entity {
 struct sched_rt_entity {
 	struct list_head		run_list;
 	unsigned long			timeout;
-	unsigned long			watchdog_stamp;
+	/* watchdog_stamp removed - unused */
 	unsigned int			time_slice;
 	unsigned short			on_rq;
 	unsigned short			on_list;
-
-	struct sched_rt_entity		*back;
+	/* back removed - unused */
 } __randomize_layout;
 
 struct sched_dl_entity {

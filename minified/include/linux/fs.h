@@ -542,8 +542,7 @@ struct fasync_struct {
 	struct rcu_head		fa_rcu;
 };
 
-extern int fasync_helper(int, struct file *, int, struct fasync_struct **);
-/* kill_fasync, __f_setown removed - empty stubs */
+/* fasync_helper, kill_fasync, __f_setown removed - empty stubs */
 
 #define SB_RDONLY	 1
 #define SB_SYNCHRONOUS	16

@@ -15,13 +15,7 @@
 #include <linux/jump_label.h>
 #include <linux/export.h>
 
-enum {
-	EI_ETYPE_NONE,
-	EI_ETYPE_NULL,
-	EI_ETYPE_ERRNO,
-	EI_ETYPE_ERRNO_NULL,
-	EI_ETYPE_TRUE,
-};
+/* EI_ETYPE enum removed - unused */
 #define ALLOW_ERROR_INJECTION(fname, _etype)
 /* end error-injection.h */
 #include <linux/tracepoint-defs.h>
@@ -94,8 +88,7 @@ struct notifier_block;
 /* __module_address, __module_text_address, is_module_address,
    is_module_percpu_address, is_module_text_address removed - unused */
 
-#define symbol_get(x) ({ extern typeof(x) x __attribute__((weak,visibility("hidden"))); &(x); })
-/* symbol_put removed - unused */
+/* symbol_get, symbol_put removed - unused */
 
 static inline void __module_get(struct module *module)
 {
@@ -112,9 +105,6 @@ static inline void module_put(struct module *module)
 
 #define module_name(mod) "kernel"
 
-#define module_put_and_kthread_exit(code) kthread_exit(code)
-
-
-#define __MODULE_STRING(x) __stringify(x)
+/* module_put_and_kthread_exit, __MODULE_STRING removed - unused */
 
 #endif  

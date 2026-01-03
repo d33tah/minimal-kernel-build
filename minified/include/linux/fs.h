@@ -1070,8 +1070,7 @@ extern void unregister_chrdev_region(dev_t, unsigned);
 
 extern void init_special_inode(struct inode *, umode_t, dev_t);
 
-extern int __must_check file_check_and_advance_wb_err(struct file *file);
-/* file_write_and_wait_range removed - never called */
+/* file_check_and_advance_wb_err, file_write_and_wait_range removed - never called */
 static inline ssize_t generic_write_sync(struct kiocb *iocb, ssize_t count)
 {
 	return count;

@@ -66,12 +66,7 @@ void __init_or_module text_poke_early(void *addr, const void *opcode,
 	sync_core();
 }
 
-void *text_poke(void *addr, const void *opcode, size_t len)
-{
-	return NULL;
-}
-
-/* text_poke_kgdb, text_poke_copy, text_poke_set, text_poke_sync,
+/* text_poke, text_poke_kgdb, text_poke_copy, text_poke_set, text_poke_sync,
    text_poke_queue, text_poke_finish, int3_exception_notify removed - unused */
 
 void __ref text_poke_bp(void *addr, const void *opcode, size_t len,

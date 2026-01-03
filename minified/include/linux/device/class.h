@@ -45,7 +45,7 @@ struct class_dev_iter {
 extern struct kobject *sysfs_dev_char_kobj;
 extern int __must_check __class_register(struct class *class,
 					 struct lock_class_key *key);
-extern void class_unregister(struct class *class);
+/* class_unregister removed - never called */
 
 #define class_register(class)			\
 ({						\

@@ -132,10 +132,7 @@ int __class_register(struct class *cls, struct lock_class_key *key)
 	return error;
 }
 
-void class_unregister(struct class *cls)
-{
-	kset_unregister(&cls->p->subsys);
-}
+/* class_unregister removed - never called */
 
 static void class_create_release(struct class *cls)
 {

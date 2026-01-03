@@ -58,8 +58,7 @@ extern int buses_init(void);
 extern int classes_init(void);
 /* firmware_init, hypervisor_init removed - never called */
 extern int platform_bus_init(void);
-extern void cpu_dev_init(void);
-/* container_dev_init, auxiliary_bus_init removed - never called */
+/* cpu_dev_init, container_dev_init, auxiliary_bus_init removed - never called */
 
 /* virtual_device_parent removed - unused */
 

@@ -133,8 +133,4 @@ static const struct attribute_group *cpu_root_attr_groups[] = {
 	NULL,
 };
 
-void __init cpu_dev_init(void)
-{
-	if (subsys_system_register(&cpu_subsys, cpu_root_attr_groups))
-		panic("Failed to register CPU subsystem");
-}
+/* cpu_dev_init removed - never called */

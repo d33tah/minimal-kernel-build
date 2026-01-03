@@ -129,9 +129,7 @@ static void __init do_utime_path(const struct path *path, time64_t mtime)
 static void __init dir_add(const char *name, time64_t mtime)
 {
 }
-static void __init dir_utime(void)
-{
-}
+/* dir_utime removed - never called */
 
 static __initdata time64_t mtime;
 
@@ -448,50 +446,10 @@ static decompress_fn decompress_method(const unsigned char *inbuf, long len,
 }
 /* end decompress/generic.h */
 
-/* unpack_to_rootfs, do_retain_initrd, initramfs_async removed - unused */
+/* unpack_to_rootfs, do_retain_initrd, initramfs_async, reserve_initrd_mem removed - unused */
 
 extern char __initramfs_start[];
 extern unsigned long __initramfs_size;
-#include <linux/initrd.h>
-
-void __init reserve_initrd_mem(void)
-{
-	phys_addr_t start;
-	unsigned long size;
-
-	initrd_start = initrd_end = 0;
-
-	if (!phys_initrd_size)
-		return;
-
-	start = round_down(phys_initrd_start, PAGE_SIZE);
-	size = phys_initrd_size + (phys_initrd_start - start);
-	size = round_up(size, PAGE_SIZE);
-
-	if (!memblock_is_region_memory(start, size)) {
-		pr_err("INITRD: 0x%08llx+0x%08lx is not a memory region",
-		       (u64)start, size);
-		goto disable;
-	}
-
-	if (memblock_is_region_reserved(start, size)) {
-		pr_err("INITRD: 0x%08llx+0x%08lx overlaps in-use memory region\n",
-		       (u64)start, size);
-		goto disable;
-	}
-
-	memblock_reserve(start, size);
-
-	initrd_start = (unsigned long)__va(phys_initrd_start);
-	initrd_end = initrd_start + phys_initrd_size;
-	initrd_below_start_ok = 1;
-
-	return;
-disable:
-	pr_cont(" - disabling initrd\n");
-	initrd_start = 0;
-	initrd_end = 0;
-}
 
 /* free_initrd_mem provided by arch/x86/mm/init.c */
 

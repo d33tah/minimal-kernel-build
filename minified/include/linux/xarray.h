@@ -327,7 +327,7 @@ static inline bool xas_retry(struct xa_state *xas, const void *entry)
 void *xas_load(struct xa_state *);
 void *xas_store(struct xa_state *, void *entry);
 void *xas_find(struct xa_state *, unsigned long max);
-void *xas_find_conflict(struct xa_state *);
+/* xas_find_conflict removed - no callers */
 
 void xas_set_mark(const struct xa_state *, xa_mark_t);
 void xas_clear_mark(const struct xa_state *, xa_mark_t);
@@ -437,8 +437,7 @@ enum {
 	for (entry = xas_find(xas, max); entry; \
 	     entry = xas_next_entry(xas, max))
 
-#define xas_for_each_conflict(xas, entry) \
-	while ((entry = xas_find_conflict(xas)))
+/* xas_for_each_conflict removed - xas_find_conflict removed */
 
 void *__xas_next(struct xa_state *);
 

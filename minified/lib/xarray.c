@@ -773,10 +773,7 @@ max:
 	return NULL;
 }
 
-void *xas_find_conflict(struct xa_state *xas)
-{
-	return NULL;
-}
+/* xas_find_conflict removed - no callers after filemap simplification */
 
 void *xa_load(struct xarray *xa, unsigned long index)
 {

@@ -587,11 +587,7 @@ int set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file)
 	return 0;
 }
 
-/* get_mm_exe_file stubbed - used by dup_mm */
-struct file *get_mm_exe_file(struct mm_struct *mm)
-{
-	return NULL;
-}
+/* get_mm_exe_file removed - no callers after dup_mmap simplification */
 
 static void mm_release(struct task_struct *tsk, struct mm_struct *mm)
 {

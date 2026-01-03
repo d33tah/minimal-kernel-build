@@ -143,11 +143,7 @@ void __next_mem_pfn_range(int *idx, int nid, unsigned long *out_start_pfn,
 int memblock_set_node(phys_addr_t base, phys_addr_t size,
 		      struct memblock_type *type, int nid);
 
-static inline void memblock_set_region_node(struct memblock_region *r, int nid)
-{
-}
-
-/* memblock_get_region_node removed - never called */
+/* memblock_set_region_node, memblock_get_region_node removed - never called */
 
 #define MEMBLOCK_ALLOC_ANYWHERE	(~(phys_addr_t)0)
 #define MEMBLOCK_ALLOC_ACCESSIBLE	0

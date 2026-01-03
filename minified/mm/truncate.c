@@ -142,21 +142,7 @@ bool truncate_inode_partial_folio(struct folio *folio, loff_t start, loff_t end)
 	return true;
 }
 
-static long mapping_evict_folio(struct address_space *mapping,
-				struct folio *folio)
-{
-	if (folio_test_dirty(folio) || folio_test_writeback(folio))
-		return 0;
-
-	if (folio_ref_count(folio) >
-	    folio_nr_pages(folio) + folio_has_private(folio) + 1)
-		return 0;
-	if (folio_has_private(folio) && !filemap_release_folio(folio, 0))
-		return 0;
-
-	return 0; /* remove_mapping inlined - always returns 0 */
-}
-
+/* mapping_evict_folio removed - always returned 0, caller simplified */
 /* invalidate_inode_page removed - no callers */
 
 void truncate_inode_pages_range(struct address_space *mapping, loff_t lstart,
@@ -294,16 +280,11 @@ unsigned long invalidate_mapping_pagevec(struct address_space *mapping,
 			}
 			index += folio_nr_pages(folio) - 1;
 
-			ret = mapping_evict_folio(mapping, folio);
+			/* mapping_evict_folio always returns 0 - simplified */
 			folio_unlock(folio);
-
-			if (!ret) {
-				deactivate_file_folio(folio);
-
-				if (nr_pagevec)
-					(*nr_pagevec)++;
-			}
-			count += ret;
+			deactivate_file_folio(folio);
+			if (nr_pagevec)
+				(*nr_pagevec)++;
 		}
 		folio_batch_remove_exceptionals(&fbatch);
 		folio_batch_release(&fbatch);

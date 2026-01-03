@@ -26,10 +26,7 @@ struct class {
 
 	int (*shutdown_pre)(struct device *dev);
 
-	const struct kobj_ns_type_operations *ns_type;
-	const void *(*namespace)(struct device *dev);
-
-	void (*get_ownership)(struct device *dev, kuid_t *uid, kgid_t *gid);
+	/* ns_type, namespace, get_ownership removed - never set */
 
 	const struct dev_pm_ops *pm;
 

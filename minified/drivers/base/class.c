@@ -48,14 +48,7 @@ static void class_release(struct kobject *kobj)
 	kfree(cp);
 }
 
-static const struct kobj_ns_type_operations *
-class_child_ns_type(struct kobject *kobj)
-{
-	struct subsys_private *cp = to_subsys_private(kobj);
-	struct class *class = cp->class;
-
-	return class->ns_type;
-}
+/* class_child_ns_type removed - child_ns_type never called */
 
 static const struct sysfs_ops class_sysfs_ops = {
 	.show = class_attr_show,
@@ -65,19 +58,12 @@ static const struct sysfs_ops class_sysfs_ops = {
 static struct kobj_type class_ktype = {
 	.sysfs_ops = &class_sysfs_ops,
 	.release = class_release,
-	.child_ns_type = class_child_ns_type,
+	/* .child_ns_type removed - never called */
 };
 
 static struct kset *class_kset;
 
-static struct class *class_get(struct class *cls)
-{
-	if (cls)
-		kset_get(&cls->p->subsys);
-	return cls;
-}
-
-/* class_put removed - never called */
+/* class_get, class_put removed - never called */
 
 static struct device *klist_class_to_dev(struct klist_node *n)
 {

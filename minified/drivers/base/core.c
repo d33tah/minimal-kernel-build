@@ -123,21 +123,13 @@ static void device_release(struct kobject *kobj)
 
 static const void *device_namespace(struct kobject *kobj)
 {
-	struct device *dev = kobj_to_dev(kobj);
-	const void *ns = NULL;
-
-	if (dev->class && dev->class->ns_type)
-		ns = dev->class->namespace(dev);
-
-	return ns;
+	/* ns_type is never set, so namespace() is never called */
+	return NULL;
 }
 
 static void device_get_ownership(struct kobject *kobj, kuid_t *uid, kgid_t *gid)
 {
-	struct device *dev = kobj_to_dev(kobj);
-
-	if (dev->class && dev->class->get_ownership)
-		dev->class->get_ownership(dev, uid, gid);
+	/* class->get_ownership is never set */
 }
 
 static struct kobj_type device_ktype = {

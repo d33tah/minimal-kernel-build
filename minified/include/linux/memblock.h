@@ -51,10 +51,8 @@ extern struct memblock memblock;
 void memblock_discard(void);
 
 void memblock_allow_resize(void);
-int memblock_add_node(phys_addr_t base, phys_addr_t size, int nid,
-		      enum memblock_flags flags);
+/* memblock_add_node, memblock_remove removed - never called */
 int memblock_add(phys_addr_t base, phys_addr_t size);
-int memblock_remove(phys_addr_t base, phys_addr_t size);
 int memblock_phys_free(phys_addr_t base, phys_addr_t size);
 int memblock_reserve(phys_addr_t base, phys_addr_t size);
 void memblock_trim_memory(phys_addr_t align);
@@ -207,16 +205,11 @@ static inline __init_memblock bool memblock_bottom_up(void)
 }
 
 phys_addr_t memblock_start_of_DRAM(void);
-phys_addr_t memblock_end_of_DRAM(void);
+/* memblock_end_of_DRAM, memblock_is_region_reserved, memblock_get_current_limit removed */
 bool memblock_is_region_memory(phys_addr_t base, phys_addr_t size);
-bool memblock_is_region_reserved(phys_addr_t base, phys_addr_t size);
 
 void memblock_dump_all(void);
-
 void memblock_set_current_limit(phys_addr_t limit);
-
-
-phys_addr_t memblock_get_current_limit(void);
 
 
 

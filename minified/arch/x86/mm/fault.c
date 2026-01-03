@@ -26,12 +26,7 @@
 
 #include <asm/irq_stack.h>
 
-/* kvm_handle_async_pf, trace_page_fault_user, trace_page_fault_kernel removed - unused */
-
-static nokprobe_inline int kmmio_fault(struct pt_regs *regs, unsigned long addr)
-{
-	return 0;
-}
+/* kvm_handle_async_pf, trace_page_fault_*, kmmio_fault removed - unused */
 
 DEFINE_SPINLOCK(pgd_lock);
 LIST_HEAD(pgd_list);
@@ -169,15 +164,10 @@ static noinline void kernelmode_fixup_or_oops(struct pt_regs *regs,
 
 		if (current->thread.sig_on_uaccess_err && signal) {
 			sanitize_error_code(address, &error_code);
-
 			set_signal_archinfo(address, error_code);
-
-			if (si_code == SEGV_PKUERR) {
-				force_sig_pkuerr((void __user *)address, pkey);
-			} else {
-				force_sig_fault(signal, si_code,
-						(void __user *)address);
-			}
+			/* SEGV_PKUERR never occurs - PKU disabled */
+			force_sig_fault(signal, si_code,
+					(void __user *)address);
 		}
 
 		return;
@@ -186,20 +176,12 @@ static noinline void kernelmode_fixup_or_oops(struct pt_regs *regs,
 	page_fault_oops(regs, error_code, address);
 }
 
-static inline void show_signal_msg(struct pt_regs *regs,
-				   unsigned long error_code,
-				   unsigned long address,
-				   struct task_struct *tsk)
-{
-	/* Stub: verbose segfault messages not needed for minimal kernel */
-}
+/* show_signal_msg removed - empty stub */
 
 static void __bad_area_nosemaphore(struct pt_regs *regs,
 				   unsigned long error_code,
 				   unsigned long address, u32 pkey, int si_code)
 {
-	struct task_struct *tsk = current;
-
 	if (!user_mode(regs)) {
 		kernelmode_fixup_or_oops(regs, error_code, address, SIGSEGV,
 					 si_code, pkey);
@@ -218,15 +200,12 @@ static void __bad_area_nosemaphore(struct pt_regs *regs,
 	if (fixup_vdso_exception(regs, X86_TRAP_PF, error_code, address))
 		return;
 
-	if (likely(show_unhandled_signals))
-		show_signal_msg(regs, error_code, address, tsk);
+	/* show_signal_msg call removed - was empty */
 
 	set_signal_archinfo(address, error_code);
 
-	if (si_code == SEGV_PKUERR)
-		force_sig_pkuerr((void __user *)address, pkey);
-	else
-		force_sig_fault(SIGSEGV, si_code, (void __user *)address);
+	/* SEGV_PKUERR can never occur - PKU disabled, use force_sig_fault */
+	force_sig_fault(SIGSEGV, si_code, (void __user *)address);
 
 	local_irq_disable();
 }
@@ -349,12 +328,12 @@ static noinline int spurious_kernel_fault(unsigned long error_code,
 }
 NOKPROBE_SYMBOL(spurious_kernel_fault);
 
-int show_unhandled_signals = 1;
+/* show_unhandled_signals removed - never used */
 
 static inline int access_error(unsigned long error_code,
 			       struct vm_area_struct *vma)
 {
-	bool foreign = false;
+	/* foreign variable removed - PKU disabled */
 
 	if (error_code & X86_PF_PK)
 		return 1;
@@ -531,20 +510,13 @@ good_area:
 }
 NOKPROBE_SYMBOL(do_user_addr_fault);
 
-static __always_inline void trace_page_fault_entries(struct pt_regs *regs,
-						     unsigned long error_code,
-						     unsigned long address)
-{
-}
+/* trace_page_fault_entries removed - empty stub */
 
 static __always_inline void handle_page_fault(struct pt_regs *regs,
 					      unsigned long error_code,
 					      unsigned long address)
 {
-	trace_page_fault_entries(regs, error_code, address);
-
-	if (unlikely(kmmio_fault(regs, address)))
-		return;
+	/* kmmio_fault always returns 0, removed */
 
 	if (unlikely(fault_in_kernel_space(address))) {
 		do_kern_addr_fault(regs, error_code, address);

@@ -118,11 +118,7 @@ void __wake_up_locked_key_bookmark(struct wait_queue_head *wq_head,
 	__wake_up_common(wq_head, mode, 1, 0, key, bookmark);
 }
 
-/* Used by begin_new_exec */
-void __wake_up_sync_key(struct wait_queue_head *wq_head, unsigned int mode,
-			void *key)
-{
-}
+/* __wake_up_sync_key removed - no callers */
 
 void prepare_to_wait(struct wait_queue_head *wq_head,
 		     struct wait_queue_entry *wq_entry, int state)

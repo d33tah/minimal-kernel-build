@@ -30,9 +30,7 @@ struct sighand_struct {
 	struct k_sigaction	action[_NSIG];
 };
 
-struct pacct_struct;
-
-struct cpu_itimer;
+/* pacct_struct, cpu_itimer removed - never used */
 
 struct task_cputime_atomic {
 	atomic64_t utime;

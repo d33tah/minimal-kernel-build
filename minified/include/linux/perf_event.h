@@ -10,11 +10,7 @@ struct task_struct;
 struct pt_regs;
 struct vm_area_struct;
 
-/* Minimal structs - never actually used */
-struct perf_sample_data;
-typedef void (*perf_overflow_handler_t)(struct perf_event *,
-					 struct perf_sample_data *,
-					 struct pt_regs *regs);
+/* perf_sample_data, perf_overflow_handler_t removed - never used */
 
 struct perf_event { int state; };
 struct perf_event_context { int dummy; };

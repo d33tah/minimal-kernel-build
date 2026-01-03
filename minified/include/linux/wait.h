@@ -112,13 +112,7 @@ void __wake_up_locked(struct wait_queue_head *wq_head, unsigned int mode, int nr
 #define wake_up_interruptible_poll(x, m)					\
 	__wake_up(x, TASK_INTERRUPTIBLE, 1, poll_to_key(m))
 
-#define ___wait_cond_timeout(condition)						\
-({										\
-	bool __cond = (condition);						\
-	if (__cond && !__ret)							\
-		__ret = 1;							\
-	__cond || !__ret;							\
-})
+/* ___wait_cond_timeout removed - never used */
 
 #define ___wait_is_interruptible(state)						\
 	(!__builtin_constant_p(state) ||					\

@@ -124,26 +124,7 @@ _SIG_SET_BINOP(sigandnsets, _sig_andn)
 #undef _sig_and
 #undef _sig_andn
 
-#define _SIG_SET_OP(name, op)						\
-static inline void name(sigset_t *set)					\
-{									\
-	switch (_NSIG_WORDS) {						\
-	case 4:	set->sig[3] = op(set->sig[3]);				\
-		set->sig[2] = op(set->sig[2]);				\
-		fallthrough;						\
-	case 2:	set->sig[1] = op(set->sig[1]);				\
-		fallthrough;						\
-	case 1:	set->sig[0] = op(set->sig[0]);				\
-		    break;						\
-	default:							\
-		BUILD_BUG();						\
-	}								\
-}
-
-#define _sig_not(x)	(~(x))
-
-#undef _SIG_SET_OP
-#undef _sig_not
+/* _SIG_SET_OP and _sig_not macros removed - never used to generate functions */
 
 static inline void sigemptyset(sigset_t *set)
 {

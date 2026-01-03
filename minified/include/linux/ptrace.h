@@ -103,10 +103,8 @@ static inline void ptrace_init_task(struct task_struct *child, bool ptrace)
 		child->ptrace = current->ptrace;
 		__ptrace_link(child, current->parent, current->ptracer_cred);
 
-		if (child->ptrace & PT_SEIZED)
-			task_set_jobctl_pending(child, JOBCTL_TRAP_STOP);
-		else
-			sigaddset(&child->pending.signal, SIGSTOP);
+		/* task_set_jobctl_pending removed - always returns false */
+		sigaddset(&child->pending.signal, SIGSTOP);
 	}
 	else
 		child->ptracer_cred = NULL;

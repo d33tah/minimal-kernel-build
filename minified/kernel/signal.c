@@ -110,13 +110,7 @@ void calculate_sigpending(void)
 	 sigmask(SIGTRAP) | sigmask(SIGFPE) | sigmask(SIGSYS))
 
 /* Removed: print_dropped_signal - empty stub */
-
-/* Stubbed - not used externally */
-bool task_set_jobctl_pending(struct task_struct *task, unsigned long mask)
-{
-	return false;
-}
-
+/* task_set_jobctl_pending removed - always returned false, callers simplified */
 /* task_clear_jobctl_pending, task_join_group_stop removed - empty stubs */
 
 static struct sigqueue *__sigqueue_alloc(int sig, struct task_struct *t,

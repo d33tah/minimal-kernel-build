@@ -15,7 +15,7 @@
 #define JOBCTL_TRAP_FREEZE	(1UL << JOBCTL_TRAP_FREEZE_BIT)
 #define JOBCTL_TRAP_MASK	(JOBCTL_TRAP_STOP)
 #define JOBCTL_PENDING_MASK	(JOBCTL_STOP_PENDING | JOBCTL_TRAP_MASK)
-extern bool task_set_jobctl_pending(struct task_struct *task, unsigned long mask);
+/* task_set_jobctl_pending removed - always returned false, callers simplified */
 #include <linux/cred.h>
 #include <linux/refcount.h>
 #include <linux/posix-timers.h>

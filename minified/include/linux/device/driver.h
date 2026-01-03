@@ -63,9 +63,7 @@ struct driver_attribute {
 
 extern int __must_check driver_create_file(struct device_driver *driver,
 					const struct driver_attribute *attr);
-extern void driver_remove_file(struct device_driver *driver,
-			       const struct driver_attribute *attr);
-/* driver_find_device declaration removed - never called */
+/* driver_remove_file, driver_find_device removed - never called */
 
 extern int driver_deferred_probe_timeout;
 void driver_deferred_probe_add(struct device *dev);

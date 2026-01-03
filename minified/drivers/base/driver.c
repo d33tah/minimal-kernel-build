@@ -17,10 +17,7 @@ int driver_create_file(struct device_driver *drv,
 	return drv ? 0 : -EINVAL;
 }
 
-void driver_remove_file(struct device_driver *drv,
-			const struct driver_attribute *attr)
-{
-}
+/* driver_remove_file removed - only called from remove_bind_files which was removed */
 
 int driver_add_groups(struct device_driver *drv,
 		      const struct attribute_group **groups)

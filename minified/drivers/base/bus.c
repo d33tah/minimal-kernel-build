@@ -296,11 +296,7 @@ static void add_bind_files(struct device_driver *drv)
 	driver_create_file(drv, &driver_attr_bind);
 }
 
-static void remove_bind_files(struct device_driver *drv)
-{
-	driver_remove_file(drv, &driver_attr_bind);
-	driver_remove_file(drv, &driver_attr_unbind);
-}
+/* remove_bind_files removed - only called from bus_remove_driver which was removed */
 
 static BUS_ATTR_WO(drivers_probe);
 static BUS_ATTR_RW(drivers_autoprobe);

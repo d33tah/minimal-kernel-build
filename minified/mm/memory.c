@@ -895,7 +895,7 @@ static vm_fault_t do_shared_fault(struct vm_fault *vmf)
 	{
 		bool page_mkwrite = vma->vm_ops && vma->vm_ops->page_mkwrite;
 		set_page_dirty(vmf->page);
-		page_rmapping(vmf->page);
+		/* page_rmapping call removed - result was unused */
 		unlock_page(vmf->page);
 		if (!page_mkwrite)
 			file_update_time(vma->vm_file);

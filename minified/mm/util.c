@@ -190,10 +190,7 @@ void kvfree(const void *addr)
 		kfree(addr);
 }
 
-void *page_rmapping(struct page *page)
-{
-	return folio_raw_mapping(page_folio(page));
-}
+/* page_rmapping removed - only caller discarded result */
 
 bool folio_mapped(struct folio *folio)
 {

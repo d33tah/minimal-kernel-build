@@ -643,7 +643,7 @@ static inline void *folio_address(const struct folio *folio)
 	return page_address(&folio->page);
 }
 
-extern void *page_rmapping(struct page *page);
+/* page_rmapping removed - only caller discarded result */
 
 bool page_mapped(struct page *page);
 bool folio_mapped(struct folio *folio);

@@ -475,12 +475,7 @@ void iput(struct inode *inode)
 	evict(inode);
 }
 
-/* inode_update_time, atime_needs_update removed - never called */
-
-void touch_atime(const struct path *path)
-{
-}
-
+/* inode_update_time, atime_needs_update, touch_atime removed - never called / empty stubs */
 /* dentry_needs_remove_privs, file_remove_privs removed - no callers */
 
 int file_update_time(struct file *file)

@@ -937,12 +937,11 @@ static inline void inode_dec_link_count(struct inode *inode)
 	mark_inode_dirty(inode);
 }
 
-extern void touch_atime(const struct path *);
+/* touch_atime removed - empty stub */
 
 static inline void file_accessed(struct file *file)
 {
-	if (!(file->f_flags & O_NOATIME))
-		touch_atime(&file->f_path);
+	/* touch_atime is empty stub */
 }
 
 

@@ -7,9 +7,7 @@
 #define PLATFORM_DEVID_NONE	(-1)
 #define PLATFORM_DEVID_AUTO	(-2)
 
-/* struct irq_affinity removed - unused */
-struct mfd_cell;
-/* struct property_entry removed - unused */
+/* struct irq_affinity, mfd_cell, property_entry removed - unused */
 struct platform_device_id;
 
 struct platform_device {
@@ -23,13 +21,8 @@ struct platform_device {
 	struct resource	*resource;
 
 	const struct platform_device_id	*id_entry;
-	 
 	const char *driver_override;
-
-	 
-	struct mfd_cell *mfd_cell;
-
-	 
+	/* mfd_cell field removed - never accessed */
 	struct pdev_archdata	archdata;
 };
 

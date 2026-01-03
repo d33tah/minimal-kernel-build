@@ -8,15 +8,12 @@
 #include <linux/err.h>
 #include <linux/mm.h>
 
-struct linux_binprm;
-
 /* Reduced lockdown enum for minimal kernel */
 enum lockdown_reason {
 	LOCKDOWN_NONE,
 	LOCKDOWN_MODULE_PARAMETERS, /* Used by kernel/params.c */
 };
 
-extern int cap_bprm_creds_from_file(struct linux_binprm *bprm, struct file *file);
 extern unsigned long mmap_min_addr;
 
 #define LSM_UNSAFE_SHARE	1
@@ -34,12 +31,6 @@ enum kernel_load_data_id {
 static inline int security_vm_enough_memory_mm(struct mm_struct *mm, long pages)
 {
 	return __vm_enough_memory(mm, pages, 1);  /* Stub: always assume capability present */
-}
-
-static inline int security_bprm_creds_from_file(struct linux_binprm *bprm,
-						struct file *file)
-{
-	return cap_bprm_creds_from_file(bprm, file);
 }
 
 /* All other security_* functions removed - never called */

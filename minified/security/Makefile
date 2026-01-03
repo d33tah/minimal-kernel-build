@@ -3,8 +3,7 @@
 # Makefile for the kernel security code
 #
 
-# always enable default capabilities
-obj-y					+= commoncap.o
+# commoncap.o removed - all functions were stubs never called
 obj-$(CONFIG_MMU)			+= min_addr.o
 
 # Object file lists

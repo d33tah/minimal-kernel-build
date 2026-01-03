@@ -15,11 +15,6 @@ static void kobject_get_ownership(struct kobject *kobj, kuid_t *uid,
 		kobj->ktype->get_ownership(kobj, uid, gid);
 }
 
-static int create_dir(struct kobject *kobj)
-{
-	return 0;
-}
-
 static void kobj_kset_join(struct kobject *kobj)
 {
 	if (!kobj->kset)
@@ -56,7 +51,6 @@ static void kobject_init_internal(struct kobject *kobj)
 
 static int kobject_add_internal(struct kobject *kobj)
 {
-	int error = 0;
 	struct kobject *parent;
 
 	if (!kobj)
@@ -78,23 +72,10 @@ static int kobject_add_internal(struct kobject *kobj)
 		kobj->parent = parent;
 	}
 
-	error = create_dir(kobj);
-	if (error) {
-		kobj_kset_leave(kobj);
-		kobject_put(parent);
-		kobj->parent = NULL;
+	/* create_dir always returned 0 - simplified */
+	kobj->state_in_sysfs = 1;
 
-		if (error == -EEXIST)
-			pr_err("%s failed for %s with -EEXIST, don't try to register things with the same name in the same directory.\n",
-			       __func__, kobject_name(kobj));
-		else
-			pr_err("%s failed for %s (error: %d parent: %s)\n",
-			       __func__, kobject_name(kobj), error,
-			       parent ? kobject_name(parent) : "'none'");
-	} else
-		kobj->state_in_sysfs = 1;
-
-	return error;
+	return 0;
 }
 
 int kobject_set_name_vargs(struct kobject *kobj, const char *fmt, va_list vargs)

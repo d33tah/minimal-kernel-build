@@ -20,12 +20,12 @@
 #define EX_REG_DS			EX_DATA_REG(8)
 #define EX_REG_ES			EX_DATA_REG(9)
 #define EX_REG_FS			EX_DATA_REG(10)
-#define EX_REG_GS			EX_DATA_REG(11)
+/* EX_REG_GS removed - never used */
 
  
 #define EX_FLAG_CLEAR_AX		EX_DATA_FLAG(1)
 #define EX_FLAG_CLEAR_DX		EX_DATA_FLAG(2)
-#define EX_FLAG_CLEAR_AX_DX		EX_DATA_FLAG(3)
+/* EX_FLAG_CLEAR_AX_DX removed - never used */
 
  
 #define	EX_TYPE_NONE			 0
@@ -50,7 +50,7 @@
 #define	EX_TYPE_IMM_REG			17  
 #define	EX_TYPE_EFAULT_REG		(EX_TYPE_IMM_REG | EX_DATA_IMM(-EFAULT))
 #define	EX_TYPE_ZERO_REG		(EX_TYPE_IMM_REG | EX_DATA_IMM(0))
-#define	EX_TYPE_ONE_REG			(EX_TYPE_IMM_REG | EX_DATA_IMM(1))
+/* EX_TYPE_ONE_REG removed - never used */
 
 /* EX_TYPE_FAULT_SGX (18) removed - no SGX in minimal kernel */
 

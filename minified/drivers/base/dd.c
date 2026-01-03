@@ -520,26 +520,4 @@ void device_release_driver(struct device *dev)
 	device_release_driver_internal(dev, NULL, NULL);
 }
 
-void driver_detach(struct device_driver *drv)
-{
-	struct device_private *dev_prv;
-	struct device *dev;
-
-	/* async_synchronize_full removed - empty stub */
-
-	for (;;) {
-		spin_lock(&drv->p->klist_devices.k_lock);
-		if (list_empty(&drv->p->klist_devices.k_list)) {
-			spin_unlock(&drv->p->klist_devices.k_lock);
-			break;
-		}
-		dev_prv = list_last_entry(&drv->p->klist_devices.k_list,
-					  struct device_private,
-					  knode_driver.n_node);
-		dev = dev_prv->device;
-		get_device(dev);
-		spin_unlock(&drv->p->klist_devices.k_lock);
-		device_release_driver_internal(dev, drv, dev->parent);
-		put_device(dev);
-	}
-}
+/* driver_detach removed - only called from bus_remove_driver which is never called (~22 LOC) */

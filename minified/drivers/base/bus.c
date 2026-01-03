@@ -381,20 +381,7 @@ out_put_bus:
 	return error;
 }
 
-void bus_remove_driver(struct device_driver *drv)
-{
-	if (!drv->bus)
-		return;
-
-	if (!drv->suppress_bind_attrs)
-		remove_bind_files(drv);
-	driver_remove_groups(drv, drv->bus->drv_groups);
-	driver_remove_file(drv, &driver_attr_uevent);
-	klist_remove(&drv->p->knode_bus);
-	driver_detach(drv);
-	kobject_put(&drv->p->kobj);
-	bus_put(drv->bus);
-}
+/* bus_remove_driver removed - never called (~14 LOC) */
 
 static void klist_devices_get(struct klist_node *n)
 {

@@ -4,12 +4,7 @@
 #include <linux/export.h>
 
 /* generic_fillattr removed - empty stub, callers simplified */
-
-int vfs_getattr(const struct path *path, struct kstat *stat, u32 request_mask,
-		unsigned int query_flags)
-{
-	return 0;
-}
+/* vfs_getattr removed - always returned 0, caller simplified */
 
 SYSCALL_DEFINE2(stat, const char __user *, filename,
 		struct __old_kernel_stat __user *, statbuf)

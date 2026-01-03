@@ -24,8 +24,7 @@ struct pipe_inode_info {
 	unsigned int w_counter;
 	bool poll_usage;
 	struct page *tmp_page;
-	struct fasync_struct *fasync_readers;
-	struct fasync_struct *fasync_writers;
+	/* fasync_readers, fasync_writers removed - never accessed */
 	struct pipe_buffer *bufs;
 	struct user_struct *user;
 };

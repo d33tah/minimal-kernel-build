@@ -234,17 +234,4 @@ dma_addr_t dma_direct_map_resource(struct device *dev, phys_addr_t paddr,
 	return dma_addr;
 }
 
-int dma_direct_supported(struct device *dev, u64 mask)
-{
-	u64 min_mask = (max_pfn - 1) << PAGE_SHIFT;
-
-	if (mask >= DMA_BIT_MASK(32))
-		return 1;
-
-	return mask >= phys_to_dma_unencrypted(dev, min_mask);
-}
-
-size_t dma_direct_max_mapping_size(struct device *dev)
-{
-	return SIZE_MAX;
-}
+/* dma_direct_supported, dma_direct_max_mapping_size removed - no callers */

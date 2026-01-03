@@ -6,10 +6,9 @@
 #include <linux/dma-direct.h>
 
 /* dma_direct_get_sgtable, dma_direct_can_mmap, dma_direct_mmap,
- * dma_direct_need_sync declarations removed - never defined or called */
+ * dma_direct_need_sync, dma_direct_max_mapping_size declarations removed */
 int dma_direct_map_sg(struct device *dev, struct scatterlist *sgl, int nents,
 		enum dma_data_direction dir, unsigned long attrs);
-size_t dma_direct_max_mapping_size(struct device *dev);
 
 #if defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_DEVICE) || \
     defined(CONFIG_SWIOTLB)

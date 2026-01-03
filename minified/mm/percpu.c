@@ -1024,10 +1024,7 @@ fail:
 	return NULL;
 }
 
-void __percpu *__alloc_percpu_gfp(size_t size, size_t align, gfp_t gfp)
-{
-	return pcpu_alloc(size, align, false, gfp);
-}
+/* __alloc_percpu_gfp removed - only used by alloc_percpu_gfp macro which was unused */
 
 void __percpu *__alloc_percpu(size_t size, size_t align)
 {

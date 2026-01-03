@@ -64,14 +64,11 @@ extern void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 
 extern void __init setup_per_cpu_areas(void);
 
-extern void __percpu *__alloc_percpu_gfp(size_t size, size_t align, gfp_t gfp) __alloc_size(1);
 extern void __percpu *__alloc_percpu(size_t size, size_t align) __alloc_size(1);
 extern void free_percpu(void __percpu *__pdata);
 extern phys_addr_t per_cpu_ptr_to_phys(void *addr);
 
-#define alloc_percpu_gfp(type, gfp)					\
-	(typeof(type) __percpu *)__alloc_percpu_gfp(sizeof(type),	\
-						__alignof__(type), gfp)
+/* alloc_percpu_gfp removed - unused */
 #define alloc_percpu(type)						\
 	(typeof(type) __percpu *)__alloc_percpu(sizeof(type),		\
 						__alignof__(type))

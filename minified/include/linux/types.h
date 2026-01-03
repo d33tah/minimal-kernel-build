@@ -65,9 +65,7 @@ typedef u64			uint64_t;
 typedef s64			int64_t;
 #endif
 
-#define aligned_u64		__aligned_u64
-#define aligned_be64		__aligned_be64
-#define aligned_le64		__aligned_le64
+/* aligned_u64/be64/le64 removed - unused */
 
 typedef u64 sector_t;
 /* blkcnt_t removed - unused */

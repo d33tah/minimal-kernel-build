@@ -78,11 +78,6 @@ struct device *bus_find_device(struct bus_type *bus, struct device *start,
 int bus_for_each_drv(struct bus_type *bus, struct device_driver *start,
 		     void *data, int (*fn)(struct device_driver *, void *));
 
-#define BUS_NOTIFY_DEL_DEVICE		0x00000002
-#define BUS_NOTIFY_REMOVED_DEVICE	0x00000003
-#define BUS_NOTIFY_UNBIND_DRIVER	0x00000006
-#define BUS_NOTIFY_UNBOUND_DRIVER	0x00000007
-#define BUS_NOTIFY_DRIVER_NOT_BOUND	0x00000008  
-
+/* BUS_NOTIFY_* macros removed - unused */
 
 #endif

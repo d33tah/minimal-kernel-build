@@ -17,9 +17,7 @@ enum dma_data_direction {
 #include <linux/mem_encrypt.h>
 
 
-#define DMA_ATTR_NO_KERNEL_MAPPING	(1UL << 4)
-#define DMA_ATTR_SKIP_CPU_SYNC		(1UL << 5)
-#define DMA_ATTR_NO_WARN	(1UL << 8)
+/* DMA_ATTR_* removed - unused */
 
 #define DMA_MAPPING_ERROR		(~(dma_addr_t)0)
 

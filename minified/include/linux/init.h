@@ -116,24 +116,20 @@ extern void (*late_time_init)(void);
 #define __define_initcall(fn, id) ___define_initcall(fn, id, .initcall##id)
 
 #define early_initcall(fn)		__define_initcall(fn, early)
-
-#define pure_initcall(fn)		__define_initcall(fn, 0)
-
+/* pure_initcall removed - unused */
 #define core_initcall(fn)		__define_initcall(fn, 1)
-#define core_initcall_sync(fn)		__define_initcall(fn, 1s)
+/* core_initcall_sync removed - unused */
 #define postcore_initcall(fn)		__define_initcall(fn, 2)
-#define postcore_initcall_sync(fn)	__define_initcall(fn, 2s)
-#define arch_initcall(fn)		__define_initcall(fn, 3)
-#define arch_initcall_sync(fn)		__define_initcall(fn, 3s)
+/* postcore_initcall_sync, arch_initcall, arch_initcall_sync removed - unused */
 #define subsys_initcall(fn)		__define_initcall(fn, 4)
-#define subsys_initcall_sync(fn)	__define_initcall(fn, 4s)
+/* subsys_initcall_sync removed - unused */
 #define fs_initcall(fn)			__define_initcall(fn, 5)
-#define fs_initcall_sync(fn)		__define_initcall(fn, 5s)
+/* fs_initcall_sync removed - unused */
 #define rootfs_initcall(fn)		__define_initcall(fn, rootfs)
 #define device_initcall(fn)		__define_initcall(fn, 6)
-#define device_initcall_sync(fn)	__define_initcall(fn, 6s)
+/* device_initcall_sync removed - unused */
 #define late_initcall(fn)		__define_initcall(fn, 7)
-#define late_initcall_sync(fn)		__define_initcall(fn, 7s)
+/* late_initcall_sync removed - unused */
 
 #define __initcall(fn) device_initcall(fn)
 

@@ -417,30 +417,7 @@ const struct address_space_operations ram_aops = {
 	.write_end = simple_write_end,
 };
 
-static DEFINE_SPINLOCK(pin_fs_lock);
-
-int simple_pin_fs(struct file_system_type *type, struct vfsmount **mount,
-		  int *count)
-{
-	struct vfsmount *mnt = NULL;
-	spin_lock(&pin_fs_lock);
-	if (unlikely(!*mount)) {
-		spin_unlock(&pin_fs_lock);
-		mnt = vfs_kern_mount(type, SB_KERNMOUNT, type->name, NULL);
-		if (IS_ERR(mnt))
-			return PTR_ERR(mnt);
-		spin_lock(&pin_fs_lock);
-		if (!*mount)
-			*mount = mnt;
-	}
-	mntget(*mount);
-	++*count;
-	spin_unlock(&pin_fs_lock);
-	mntput(mnt);
-	return 0;
-}
-
-/* simple_release_fs removed - never called */
+/* simple_pin_fs, simple_release_fs removed - never called */
 /* simple_read_from_buffer, __generic_file_fsync, generic_file_fsync,
  * generic_check_addressable removed - unused */
 

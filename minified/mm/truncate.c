@@ -72,15 +72,6 @@ static void truncate_folio_batch_exceptionals(struct address_space *mapping,
 	fbatch->nr = j;
 }
 
-/* invalidate_exceptional_entry and invalidate_exceptional_entry2 merged - identical */
-static int invalidate_exceptional_entry(struct address_space *mapping,
-					pgoff_t index, void *entry)
-{
-	/* dax_mapping() always returns false */
-	clear_shadow_entry(mapping, index, entry);
-	return 1;
-}
-
 void folio_invalidate(struct folio *folio, size_t offset, size_t length)
 {
 	const struct address_space_operations *aops = folio->mapping->a_ops;
@@ -274,8 +265,8 @@ unsigned long invalidate_mapping_pagevec(struct address_space *mapping,
 			index = indices[i];
 
 			if (xa_is_value(folio)) {
-				count += invalidate_exceptional_entry(
-					mapping, index, folio);
+				clear_shadow_entry(mapping, index, folio);
+				count++;
 				continue;
 			}
 			index += folio_nr_pages(folio) - 1;
@@ -353,9 +344,7 @@ int invalidate_inode_pages2_range(struct address_space *mapping, pgoff_t start,
 			index = indices[i];
 
 			if (xa_is_value(folio)) {
-				if (!invalidate_exceptional_entry(mapping,
-								  index, folio))
-					ret = -EBUSY;
+				clear_shadow_entry(mapping, index, folio);
 				continue;
 			}
 

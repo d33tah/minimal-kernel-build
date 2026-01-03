@@ -365,7 +365,7 @@ static inline int folio_put_testzero(struct folio *folio)
 }
 
 
-struct page *vmalloc_to_page(const void *addr);
+/* vmalloc_to_page removed - no callers */
 
 extern bool is_vmalloc_addr(const void *x);
 

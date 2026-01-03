@@ -337,10 +337,7 @@ static int vmap_pages_range(unsigned long addr, unsigned long end,
 	return vmap_pages_range_noflush(addr, end, prot, pages, page_shift);
 }
 
-struct page *vmalloc_to_page(const void *vmalloc_addr)
-{
-	return NULL;
-}
+/* vmalloc_to_page removed - no callers */
 
 static DEFINE_SPINLOCK(vmap_area_lock);
 static DEFINE_SPINLOCK(free_vmap_area_lock);

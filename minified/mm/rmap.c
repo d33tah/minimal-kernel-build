@@ -249,11 +249,7 @@ struct folio_referenced_arg {
 	struct mem_cgroup *memcg;
 };
 
-/* Stubbed: folio_mkclean used by truncate.c */
-int folio_mkclean(struct folio *folio)
-{
-	return 0;
-}
+/* folio_mkclean removed - always returned 0, inlined into page_mkclean */
 
 static void __page_set_anon_rmap(struct page *page, struct vm_area_struct *vma,
 				 unsigned long address, int exclusive)

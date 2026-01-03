@@ -53,8 +53,7 @@
 /* Inlined from asm/insn-eval.h */
 int pt_regs_offset(struct pt_regs *regs, int regno);
 
-/* Inlined from asm/sgx.h */
-#define SGX_ENCLS_FAULT_FLAG 0x40000000
+/* SGX_ENCLS_FAULT_FLAG removed - no SGX in minimal kernel */
 
 static inline unsigned long *pt_regs_nr(struct pt_regs *regs, int nr)
 {
@@ -91,12 +90,7 @@ static bool ex_handler_fault(const struct exception_table_entry *fixup,
 	return ex_handler_default(fixup, regs);
 }
 
-static bool ex_handler_sgx(const struct exception_table_entry *fixup,
-			   struct pt_regs *regs, int trapnr)
-{
-	regs->ax = trapnr | SGX_ENCLS_FAULT_FLAG;
-	return ex_handler_default(fixup, regs);
-}
+/* ex_handler_sgx removed - no SGX in minimal kernel */
 
 static bool ex_handler_fprestore(const struct exception_table_entry *fixup,
 				 struct pt_regs *regs)
@@ -217,8 +211,7 @@ int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code,
 		return ex_handler_clear_fs(e, regs);
 	case EX_TYPE_FPU_RESTORE:
 		return ex_handler_fprestore(e, regs);
-	case EX_TYPE_BPF:
-		return ex_handler_bpf(e, regs);
+	/* EX_TYPE_BPF removed - never used in this minimal kernel */
 	case EX_TYPE_WRMSR:
 		return ex_handler_msr(e, regs, true, false, reg);
 	case EX_TYPE_RDMSR:
@@ -227,19 +220,13 @@ int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code,
 		return ex_handler_msr(e, regs, true, true, reg);
 	case EX_TYPE_RDMSR_SAFE:
 		return ex_handler_msr(e, regs, false, true, reg);
-	case EX_TYPE_WRMSR_IN_MCE:
-		ex_handler_msr_mce(regs, true);
-		break;
-	case EX_TYPE_RDMSR_IN_MCE:
-		ex_handler_msr_mce(regs, false);
-		break;
+	/* EX_TYPE_WRMSR_IN_MCE, EX_TYPE_RDMSR_IN_MCE removed - never used */
 	case EX_TYPE_POP_REG:
 		regs->sp += sizeof(long);
 		fallthrough;
 	case EX_TYPE_IMM_REG:
 		return ex_handler_imm_reg(e, regs, reg, imm);
-	case EX_TYPE_FAULT_SGX:
-		return ex_handler_sgx(e, regs, trapnr);
+	/* EX_TYPE_FAULT_SGX removed - no SGX in minimal kernel */
 	case EX_TYPE_UCOPY_LEN:
 		return ex_handler_ucopy_len(e, regs, trapnr, reg, imm);
 	}

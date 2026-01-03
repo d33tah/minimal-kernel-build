@@ -35,13 +35,12 @@
 #define	EX_TYPE_COPY			 4
 #define	EX_TYPE_CLEAR_FS		 5
 #define	EX_TYPE_FPU_RESTORE		 6
-#define	EX_TYPE_BPF			 7
+/* EX_TYPE_BPF (7) removed - never used in minimal kernel */
 #define	EX_TYPE_WRMSR			 8
 #define	EX_TYPE_RDMSR			 9
 #define	EX_TYPE_WRMSR_SAFE		10  
-#define	EX_TYPE_RDMSR_SAFE		11  
-#define	EX_TYPE_WRMSR_IN_MCE		12
-#define	EX_TYPE_RDMSR_IN_MCE		13
+#define	EX_TYPE_RDMSR_SAFE		11
+/* EX_TYPE_WRMSR_IN_MCE (12), EX_TYPE_RDMSR_IN_MCE (13) removed - never used */
 #define	EX_TYPE_DEFAULT_MCE_SAFE	14
 #define	EX_TYPE_FAULT_MCE_SAFE		15
 
@@ -53,7 +52,7 @@
 #define	EX_TYPE_ZERO_REG		(EX_TYPE_IMM_REG | EX_DATA_IMM(0))
 #define	EX_TYPE_ONE_REG			(EX_TYPE_IMM_REG | EX_DATA_IMM(1))
 
-#define	EX_TYPE_FAULT_SGX		18
+/* EX_TYPE_FAULT_SGX (18) removed - no SGX in minimal kernel */
 
 #define	EX_TYPE_UCOPY_LEN		19  
 #define	EX_TYPE_UCOPY_LEN1		(EX_TYPE_UCOPY_LEN | EX_DATA_IMM(1))

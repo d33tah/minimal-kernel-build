@@ -945,9 +945,8 @@ static void pcpu_chunk_populated(struct pcpu_chunk *chunk, int page_start,
 }
 
 /* Removed: pcpu_chunk_depopulated - dead code since no chunk depopulation */
+/* Removed: pcpu_populate_chunk - always returned 0, call sites simplified */
 
-static int pcpu_populate_chunk(struct pcpu_chunk *chunk, int page_start,
-			       int page_end, gfp_t gfp);
 static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp);
 static int __init pcpu_verify_alloc_info(const struct pcpu_alloc_info *ai);
 
@@ -1077,14 +1076,8 @@ area_found:
 					     page_end) {
 			WARN_ON(chunk->immutable);
 
-			ret = pcpu_populate_chunk(chunk, rs, re, pcpu_gfp);
-
+			/* pcpu_populate_chunk always returns 0 - dead error path removed */
 			spin_lock_irqsave(&pcpu_lock, flags);
-			if (ret) {
-				pcpu_free_area(chunk, off);
-				err = "failed to populate";
-				goto fail_unlock;
-			}
 			pcpu_chunk_populated(chunk, rs, re);
 			spin_unlock_irqrestore(&pcpu_lock, flags);
 		}
@@ -1169,15 +1162,11 @@ retry_pop:
 			int nr = min_t(int, re - rs, nr_to_pop);
 
 			spin_unlock_irq(&pcpu_lock);
-			ret = pcpu_populate_chunk(chunk, rs, rs + nr, gfp);
+			/* pcpu_populate_chunk always returns 0 */
 			cond_resched();
 			spin_lock_irq(&pcpu_lock);
-			if (!ret) {
-				nr_to_pop -= nr;
-				pcpu_chunk_populated(chunk, rs, rs + nr);
-			} else {
-				nr_to_pop = 0;
-			}
+			nr_to_pop -= nr;
+			pcpu_chunk_populated(chunk, rs, rs + nr);
 
 			if (!nr_to_pop)
 				break;

@@ -3,12 +3,7 @@
 
 /* Removed: pcpu_post_unmap_tlb_flush, pcpu_depopulate_chunk
  * - Dead code since no chunk depopulation (~10 LOC) */
-
-static int pcpu_populate_chunk(struct pcpu_chunk *chunk, int page_start,
-			       int page_end, gfp_t gfp)
-{
-	return 0;
-}
+/* Removed: pcpu_populate_chunk - always returned 0, call sites simplified */
 
 static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp)
 {

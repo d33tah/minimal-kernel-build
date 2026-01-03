@@ -748,33 +748,7 @@ static int pcpu_alloc_area(struct pcpu_chunk *chunk, int alloc_bits,
 	return bit_off * PCPU_MIN_ALLOC_SIZE;
 }
 
-static int pcpu_free_area(struct pcpu_chunk *chunk, int off)
-{
-	struct pcpu_block_md *chunk_md = &chunk->chunk_md;
-	int bit_off, bits, end, oslot, freed;
-
-	/* pcpu_stats_area_dealloc removed - stats stub */
-	oslot = pcpu_chunk_slot(chunk);
-
-	bit_off = off / PCPU_MIN_ALLOC_SIZE;
-
-	end = find_next_bit(chunk->bound_map, pcpu_chunk_map_bits(chunk),
-			    bit_off + 1);
-	bits = end - bit_off;
-	bitmap_clear(chunk->alloc_map, bit_off, bits);
-
-	freed = bits * PCPU_MIN_ALLOC_SIZE;
-
-	chunk->free_bytes += freed;
-
-	chunk_md->first_free = min(chunk_md->first_free, bit_off);
-
-	pcpu_block_update_hint_free(chunk, bit_off, bits);
-
-	pcpu_chunk_relocate(chunk, oslot);
-
-	return freed;
-}
+/* pcpu_free_area removed - never called */
 
 static void pcpu_init_md_block(struct pcpu_block_md *block, int nr_bits)
 {

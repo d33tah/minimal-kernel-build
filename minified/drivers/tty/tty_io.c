@@ -1326,16 +1326,7 @@ err:
 	return error;
 }
 
-static char *tty_devnode(struct device *dev, umode_t *mode)
-{
-	if (!mode)
-		return NULL;
-	if (dev->devt == MKDEV(TTYAUX_MAJOR, 0) ||
-	    dev->devt == MKDEV(TTYAUX_MAJOR, 2))
-		*mode = 0666;
-	return NULL;
-}
-
+/* tty_devnode removed - never called */
 /* tty_class_init removed - class_create hangs with low memory */
 
 static struct cdev tty_cdev, console_cdev;

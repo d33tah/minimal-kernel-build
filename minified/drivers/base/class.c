@@ -77,11 +77,7 @@ static struct class *class_get(struct class *cls)
 	return cls;
 }
 
-static void class_put(struct class *cls)
-{
-	if (cls)
-		kset_put(&cls->p->subsys);
-}
+/* class_put removed - never called */
 
 static struct device *klist_class_to_dev(struct klist_node *n)
 {

@@ -24,7 +24,7 @@ static inline cycles_t get_cycles(void)
 /* convert_art_to_tsc, convert_art_ns_to_tsc removed - unused */
 
 extern void tsc_early_init(void);
-extern void tsc_init(void);
+/* tsc_init removed - never called */
 extern void mark_tsc_unstable(char *reason);
 extern int unsynchronized_tsc(void);
 /* check_tsc_unstable, mark_tsc_async_resets removed - unused */

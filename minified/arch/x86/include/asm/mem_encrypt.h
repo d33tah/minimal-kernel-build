@@ -18,10 +18,8 @@
 #define __bss_decrypted
 
 
- 
-void __init mem_encrypt_init(void);
+/* mem_encrypt_init removed - never called */
 
- 
 #define __sme_pa(x)		(__pa(x) | sme_me_mask)
 #define __sme_pa_nodebug(x)	(__pa_nodebug(x) | sme_me_mask)
 

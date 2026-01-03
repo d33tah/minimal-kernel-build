@@ -99,11 +99,7 @@ void __init use_tsc_delay(void)
 		delay_fn = delay_tsc;
 }
 
-void __init use_tpause_delay(void)
-{
-	delay_halt_fn = delay_halt_tpause;
-	delay_fn = delay_halt;
-}
+/* use_tpause_delay removed - never called */
 
 void __delay(unsigned long loops)
 {

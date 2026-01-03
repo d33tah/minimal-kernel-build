@@ -31,67 +31,16 @@
 	(X86_EFLAGS_AC | X86_EFLAGS_OF | X86_EFLAGS_DF | X86_EFLAGS_TF | \
 	 X86_EFLAGS_SF | X86_EFLAGS_ZF | X86_EFLAGS_AF | X86_EFLAGS_PF | \
 	 X86_EFLAGS_CF | X86_EFLAGS_RF)
-void signal_fault(struct pt_regs *regs, void __user *frame, char *where);
-
 #include <asm/syscall.h>
 #include <asm/sigframe.h>
 #include <asm/signal.h>
 
-#define CONTEXT_COPY_SIZE sizeof(struct sigcontext)
-
-static __always_inline int
-__unsafe_setup_sigcontext(struct sigcontext __user *sc, void __user *fpstate,
-			  struct pt_regs *regs, unsigned long mask)
-{
-	unsigned int gs;
-	savesegment(gs, gs);
-
-	unsafe_put_user(gs, (unsigned int __user *)&sc->gs, Efault);
-	unsafe_put_user(regs->fs, (unsigned int __user *)&sc->fs, Efault);
-	unsafe_put_user(regs->es, (unsigned int __user *)&sc->es, Efault);
-	unsafe_put_user(regs->ds, (unsigned int __user *)&sc->ds, Efault);
-
-	unsafe_put_user(regs->di, &sc->di, Efault);
-	unsafe_put_user(regs->si, &sc->si, Efault);
-	unsafe_put_user(regs->bp, &sc->bp, Efault);
-	unsafe_put_user(regs->sp, &sc->sp, Efault);
-	unsafe_put_user(regs->bx, &sc->bx, Efault);
-	unsafe_put_user(regs->dx, &sc->dx, Efault);
-	unsafe_put_user(regs->cx, &sc->cx, Efault);
-	unsafe_put_user(regs->ax, &sc->ax, Efault);
-
-	unsafe_put_user(current->thread.trap_nr, &sc->trapno, Efault);
-	unsafe_put_user(current->thread.error_code, &sc->err, Efault);
-	unsafe_put_user(regs->ip, &sc->ip, Efault);
-	unsafe_put_user(regs->cs, (unsigned int __user *)&sc->cs, Efault);
-	unsafe_put_user(regs->flags, &sc->flags, Efault);
-	unsafe_put_user(regs->sp, &sc->sp_at_signal, Efault);
-	unsafe_put_user(regs->ss, (unsigned int __user *)&sc->ss, Efault);
-
-	unsafe_put_user(fpstate, (unsigned long __user *)&sc->fpstate, Efault);
-
-	unsafe_put_user(mask, &sc->oldmask, Efault);
-	unsafe_put_user(current->thread.cr2, &sc->cr2, Efault);
-	return 0;
-Efault:
-	return -EFAULT;
-}
-
-#define unsafe_put_sigcontext(sc, fp, regs, set, label)                   \
-	do {                                                              \
-		if (__unsafe_setup_sigcontext(sc, fp, regs, set->sig[0])) \
-			goto label;                                       \
-	} while (0);
-
-#define unsafe_put_sigmask(set, frame, label) \
-	unsafe_put_user(*(__u64 *)(set),      \
-			(__u64 __user *)&(frame)->uc.uc_sigmask, label)
+/* signal_fault, __unsafe_setup_sigcontext, unsafe_put_sigcontext,
+ * unsafe_put_sigmask, align_sigframe, get_sigframe, retcode, rt_retcode,
+ * __setup_frame, __setup_rt_frame removed - get_signal returns false */
 
 #define FRAME_ALIGNMENT 16UL
 #define MAX_FRAME_PADDING (FRAME_ALIGNMENT - 1)
-
-/* align_sigframe, get_sigframe, retcode, rt_retcode, __setup_frame,
- * __setup_rt_frame removed - never called (get_signal returns false) */
 
 /* Stub: sigreturn not needed for Hello World */
 SYSCALL_DEFINE0(sigreturn)
@@ -160,8 +109,4 @@ void arch_do_signal_or_restart(struct pt_regs *regs)
 	restore_saved_sigmask();
 }
 
-/* Stub: signal_fault not used externally */
-void signal_fault(struct pt_regs *regs, void __user *frame, char *where)
-{
-	force_sig(SIGSEGV);
-}
+/* signal_fault removed - never called */

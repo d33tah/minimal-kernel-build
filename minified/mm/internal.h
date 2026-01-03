@@ -41,18 +41,7 @@ struct folio_batch;
 void page_writeback_init(void);
 
 /* folio_raw_mapping removed - only caller (page_rmapping) removed */
-
-void __acct_reclaim_writeback(pg_data_t *pgdat, struct folio *folio,
-						int nr_throttled);
-static inline void acct_reclaim_writeback(struct folio *folio)
-{
-	pg_data_t *pgdat = folio_pgdat(folio);
-	int nr_throttled = atomic_read(&pgdat->nr_writeback_throttled);
-
-	if (nr_throttled)
-		__acct_reclaim_writeback(pgdat, folio, nr_throttled);
-}
-
+/* __acct_reclaim_writeback, acct_reclaim_writeback removed - no callers/definition */
 /* wake_throttle_isolated removed - unused */
 
 vm_fault_t do_swap_page(struct vm_fault *vmf);

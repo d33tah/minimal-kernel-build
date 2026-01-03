@@ -31,8 +31,7 @@ static inline void set_mnt_shared(struct mount *mnt)
 }
 
 /* change_mnt_propagation, propagate_mnt, propagate_umount removed - stubs that returned 0 */
-int propagate_mount_busy(struct mount *, int);
-/* get_dominating_id removed - unused */
+/* propagate_mount_busy, get_dominating_id removed - unused */
 int mnt_get_count(struct mount *mnt);
 void mnt_set_mountpoint(struct mount *, struct mountpoint *,
 			struct mount *);

@@ -168,8 +168,7 @@ extern void d_tmpfile(struct dentry *, struct inode *);
 
 
 extern void d_add(struct dentry *, struct inode *);
-extern struct dentry *d_ancestor(struct dentry *, struct dentry *);
-
+/* d_ancestor removed - never called */
 extern struct dentry *d_lookup(const struct dentry *, const struct qstr *);
 extern struct dentry *__d_lookup(const struct dentry *, const struct qstr *);
 extern struct dentry *__d_lookup_rcu(const struct dentry *parent,

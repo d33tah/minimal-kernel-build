@@ -1062,13 +1062,8 @@ void d_add(struct dentry *entry, struct inode *inode)
 	__d_add(entry, inode);
 }
 
-/* Stubbed - d_ancestor always returns NULL in minimal kernel */
-struct dentry *d_ancestor(struct dentry *p1, struct dentry *p2)
-{
-	return NULL;
-}
-
-/* Simplified - d_ancestor always returns NULL, so only equality check matters */
+/* d_ancestor removed - never called */
+/* Simplified - d_ancestor always returned NULL, so only equality check matters */
 bool is_subdir(struct dentry *new_dentry, struct dentry *old_dentry)
 {
 	return new_dentry == old_dentry;

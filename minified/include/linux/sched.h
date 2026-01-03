@@ -211,15 +211,7 @@ struct sched_dl_entity {
 };
 
 
-union rcu_special {
-	struct {
-		u8			blocked;
-		u8			need_qs;
-		u8			exp_hint;  
-		u8			need_mb;  
-	} b;  
-	u32 s;
-};
+/* union rcu_special removed - never used */
 /* enum perf_event_task_context removed - PERF_EVENTS disabled */
 
 struct wake_q_node {

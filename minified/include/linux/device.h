@@ -50,14 +50,7 @@ struct device_node;
 struct fwnode_handle;
 struct iommu_ops;
 
-struct subsys_interface {
-	const char *name;
-	struct bus_type *subsys;
-	struct list_head node;
-	int (*add_dev)(struct device *dev, struct subsys_interface *sif);
-	void (*remove_dev)(struct device *dev, struct subsys_interface *sif);
-};
-
+/* struct subsys_interface removed - never instantiated after subsys_interface_register removal */
 
 /* subsys_system_register removed - never called */
 

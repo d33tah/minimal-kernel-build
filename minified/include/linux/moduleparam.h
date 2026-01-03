@@ -166,15 +166,7 @@ extern char *parse_args(const char *name,
 #define param_check_uint(name, p) __param_check(name, p, unsigned int)
 /* param_check_byte, short, ushort, long, ulong, ullong, hexint removed - unused */
 
-extern const struct kernel_param_ops param_ops_charp;
-extern int param_set_charp(const char *val, const struct kernel_param *kp);
-extern int param_get_charp(char *buffer, const struct kernel_param *kp);
-#define param_check_charp(name, p) __param_check(name, p, char *)
-
-extern const struct kernel_param_ops param_ops_bool;
-extern int param_set_bool(const char *val, const struct kernel_param *kp);
-extern int param_get_bool(char *buffer, const struct kernel_param *kp);
-#define param_check_bool(name, p) __param_check(name, p, bool)
+/* param_ops_charp, param_ops_bool removed - never used */
 
 
 struct module;

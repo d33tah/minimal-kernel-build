@@ -120,52 +120,7 @@ parse_args(const char *doing, char *args, const struct kernel_param *params,
 	return err;
 }
 
-/* Stub: module parameters not needed for Hello World kernel */
-#define STANDARD_PARAM_DEF(name, type, format, strtolfn)                     \
-	int param_set_##name(const char *val, const struct kernel_param *kp) \
-	{                                                                    \
-		return 0;                                                    \
-	}                                                                    \
-	int param_get_##name(char *buffer, const struct kernel_param *kp)    \
-	{                                                                    \
-		return 0;                                                    \
-	}                                                                    \
-	const struct kernel_param_ops param_ops_##name = {                   \
-		.set = param_set_##name,                                     \
-		.get = param_get_##name,                                     \
-	}
-
-STANDARD_PARAM_DEF(byte, unsigned char, "%hhu", kstrtou8);
-STANDARD_PARAM_DEF(short, short, "%hi", kstrtos16);
-STANDARD_PARAM_DEF(ushort, unsigned short, "%hu", kstrtou16);
-STANDARD_PARAM_DEF(int, int, "%i", kstrtoint);
-STANDARD_PARAM_DEF(uint, unsigned int, "%u", kstrtouint);
-STANDARD_PARAM_DEF(long, long, "%li", kstrtol);
-STANDARD_PARAM_DEF(ulong, unsigned long, "%lu", kstrtoul);
-STANDARD_PARAM_DEF(ullong, unsigned long long, "%llu", kstrtoull);
-STANDARD_PARAM_DEF(hexint, unsigned int, "%#08x", kstrtouint);
-
-int param_set_charp(const char *val, const struct kernel_param *kp)
-{
-	return 0;
-}
-int param_get_charp(char *buffer, const struct kernel_param *kp)
-{
-	return 0;
-}
-const struct kernel_param_ops param_ops_charp = { .set = param_set_charp,
-						  .get = param_get_charp };
-
-int param_set_bool(const char *val, const struct kernel_param *kp)
-{
-	return 0;
-}
-int param_get_bool(char *buffer, const struct kernel_param *kp)
-{
-	return 0;
-}
-const struct kernel_param_ops param_ops_bool = { .set = param_set_bool,
-						 .get = param_get_bool };
+/* param_ops_* removed - module parameter types never used */
 
 #define to_module_attr(n) container_of(n, struct module_attribute, attr)
 #define to_module_kobject(n) container_of(n, struct module_kobject, kobj)

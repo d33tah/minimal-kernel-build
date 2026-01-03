@@ -1192,7 +1192,7 @@ extern const char *page_get_link(struct dentry *, struct inode *,
 extern void page_put_link(void *);
 extern int page_symlink(struct inode *inode, const char *symname, int len);
 extern const struct inode_operations page_symlink_inode_operations;
-void generic_fillattr(struct user_namespace *, struct inode *, struct kstat *);
+/* generic_fillattr removed - empty stub, callers simplified */
 extern int vfs_getattr(const struct path *, struct kstat *, u32, unsigned int);
 
 extern struct file_system_type *get_filesystem(struct file_system_type *fs);

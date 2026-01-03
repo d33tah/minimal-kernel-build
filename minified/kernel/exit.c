@@ -133,10 +133,7 @@ void put_task_struct_rcu_user(struct task_struct *task)
 
 void release_task(struct task_struct *p)
 {
-	struct task_struct *leader;
 	struct pid *thread_pid;
-	int zap_leader;
-repeat:
 
 	rcu_read_lock();
 	dec_rlimit_ucounts(task_ucounts(p), UCOUNT_RLIMIT_NPROC, 1);
@@ -147,23 +144,12 @@ repeat:
 	thread_pid = get_pid(p->thread_pid);
 	__exit_signal(p);
 
-	zap_leader = 0;
-	leader = p->group_leader;
-	if (leader != p && thread_group_empty(leader) &&
-	    leader->exit_state == EXIT_ZOMBIE) {
-		zap_leader = do_notify_parent(leader, leader->exit_signal);
-		if (zap_leader)
-			leader->exit_state = EXIT_DEAD;
-	}
+	/* do_notify_parent always returns false, so zap_leader logic removed */
 
 	write_unlock_irq(&tasklist_lock);
 	put_pid(thread_pid);
 	release_thread(p);
 	put_task_struct_rcu_user(p);
-
-	p = leader;
-	if (unlikely(zap_leader))
-		goto repeat;
 }
 
 int rcuwait_wake_up(struct rcuwait *w)
@@ -288,14 +274,7 @@ static void forget_original_parent(struct task_struct *father,
 		if (!same_thread_group(reaper, father) &&
 		    likely(p->exit_state != EXIT_DEAD)) {
 			p->exit_signal = SIGCHLD;
-			if (!p->ptrace && p->exit_state == EXIT_ZOMBIE &&
-			    thread_group_empty(p)) {
-				if (do_notify_parent(p, p->exit_signal)) {
-					p->exit_state = EXIT_DEAD;
-					list_add(&p->ptrace_entry, dead);
-				}
-			}
-			/* kill_orphaned_pgrp(p, father) removed - was empty stub */
+			/* do_notify_parent always returns false - dead code removed */
 		}
 	}
 	list_splice_tail_init(&father->children, &reaper->children);
@@ -313,18 +292,9 @@ static void exit_notify(struct task_struct *tsk, int group_dead)
 	/* kill_orphaned_pgrp removed - was empty stub */
 
 	tsk->exit_state = EXIT_ZOMBIE;
-	if (unlikely(tsk->ptrace)) {
-		int sig = thread_group_leader(tsk) && thread_group_empty(tsk) &&
-					  !ptrace_reparented(tsk) ?
-				  tsk->exit_signal :
-				  SIGCHLD;
-		autoreap = do_notify_parent(tsk, sig);
-	} else if (thread_group_leader(tsk)) {
-		autoreap = thread_group_empty(tsk) &&
-			   do_notify_parent(tsk, tsk->exit_signal);
-	} else {
-		autoreap = true;
-	}
+	/* do_notify_parent always returns false, so simplified:
+	 * autoreap = !tsk->ptrace && !thread_group_leader(tsk) */
+	autoreap = !tsk->ptrace && !thread_group_leader(tsk);
 
 	if (autoreap) {
 		tsk->exit_state = EXIT_DEAD;

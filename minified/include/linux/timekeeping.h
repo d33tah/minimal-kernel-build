@@ -17,8 +17,7 @@ extern void ktime_get_ts64(struct timespec64 *ts);
 extern void ktime_get_real_ts64(struct timespec64 *tv);
 /* ktime_get_coarse_real_ts64 removed - never called */
 
-extern time64_t ktime_get_seconds(void);
-extern time64_t ktime_get_real_seconds(void);
+/* ktime_get_seconds, ktime_get_real_seconds removed - never called */
 
 
 enum tk_offsets {

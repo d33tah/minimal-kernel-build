@@ -340,28 +340,7 @@ void ktime_get_ts64(struct timespec64 *ts)
 	timespec64_add_ns(ts, nsec + tomono.tv_nsec);
 }
 
-time64_t ktime_get_seconds(void)
-{
-	struct timekeeper *tk = &tk_core.timekeeper;
-
-	WARN_ON(timekeeping_suspended);
-	return tk->ktime_sec;
-}
-
-time64_t ktime_get_real_seconds(void)
-{
-	struct timekeeper *tk = &tk_core.timekeeper;
-	time64_t seconds;
-	unsigned int seq;
-
-	/* 32-bit: need seqlock to read xtime_sec atomically */
-	do {
-		seq = read_seqcount_begin(&tk_core.seq);
-		seconds = tk->xtime_sec;
-	} while (read_seqcount_retry(&tk_core.seq, seq));
-
-	return seconds;
-}
+/* ktime_get_seconds, ktime_get_real_seconds removed - never called (~20 LOC) */
 
 /* __timekeeping_set_tai_offset removed - unused after second_overflow removal */
 

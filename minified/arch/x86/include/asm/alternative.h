@@ -119,28 +119,13 @@ extern void apply_alternatives(struct alt_instr *start, struct alt_instr *end);
 #define alternative(oldinstr, newinstr, feature)			\
 	asm_inline volatile (ALTERNATIVE(oldinstr, newinstr, feature) : : : "memory")
 
-#define alternative_2(oldinstr, newinstr1, feature1, newinstr2, feature2) \
-	asm_inline volatile(ALTERNATIVE_2(oldinstr, newinstr1, feature1, newinstr2, feature2) ::: "memory")
+/* alternative_2, alternative_ternary removed - never used */
 
-#define alternative_ternary(oldinstr, feature, newinstr_yes, newinstr_no) \
-	asm_inline volatile(ALTERNATIVE_TERNARY(oldinstr, feature, newinstr_yes, newinstr_no) ::: "memory")
-
- 
 #define alternative_input(oldinstr, newinstr, feature, input...)	\
 	asm_inline volatile (ALTERNATIVE(oldinstr, newinstr, feature)	\
 		: : "i" (0), ## input)
 
- 
-#define alternative_input_2(oldinstr, newinstr1, feature1, newinstr2,	     \
-			   feature2, input...)				     \
-	asm_inline volatile(ALTERNATIVE_2(oldinstr, newinstr1, feature1,     \
-		newinstr2, feature2)					     \
-		: : "i" (0), ## input)
-
- 
-#define alternative_io(oldinstr, newinstr, feature, output, input...)	\
-	asm_inline volatile (ALTERNATIVE(oldinstr, newinstr, feature)	\
-		: output : "i" (0), ## input)
+/* alternative_input_2, alternative_io removed - never used */
 
 #define ASM_OUTPUT2(a...) a
 

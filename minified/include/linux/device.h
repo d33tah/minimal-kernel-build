@@ -151,9 +151,8 @@ struct device {
 
 
 	struct dev_msi_info	msi;
-	u64		*dma_mask;	 
-	u64		coherent_dma_mask; 
-	u64		bus_dma_limit;	 
+	u64		*dma_mask;
+	/* coherent_dma_mask, bus_dma_limit removed - never accessed */
 	const struct bus_dma_region *dma_range_map;
 
 	struct list_head	dma_pools;

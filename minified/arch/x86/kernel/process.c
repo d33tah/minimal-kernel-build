@@ -350,10 +350,7 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
 
 static void (*x86_idle)(void);
 
-static inline void play_dead(void)
-{
-	BUG();
-}
+/* play_dead removed - never called */
 
 void arch_cpu_idle_enter(void)
 {

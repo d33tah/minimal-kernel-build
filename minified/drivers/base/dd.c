@@ -446,23 +446,6 @@ static void __device_driver_unlock(struct device *dev, struct device *parent)
 		device_unlock(parent);
 }
 
-static void __driver_attach_async_helper(void *_dev, async_cookie_t cookie)
-{
-	struct device *dev = _dev;
-	struct device_driver *drv;
-	int ret;
-
-	__device_driver_lock(dev, dev->parent);
-	drv = dev->p->async_driver;
-	dev->p->async_driver = NULL;
-	ret = driver_probe_device(drv, dev);
-	__device_driver_unlock(dev, dev->parent);
-
-	dev_dbg(dev, "driver %s async attach completed: %d\n", drv->name, ret);
-
-	put_device(dev);
-}
-
 static int __driver_attach(struct device *dev, void *data)
 {
 	struct device_driver *drv = data;

@@ -440,17 +440,7 @@ int simple_pin_fs(struct file_system_type *type, struct vfsmount **mount,
 	return 0;
 }
 
-void simple_release_fs(struct vfsmount **mount, int *count)
-{
-	struct vfsmount *mnt;
-	spin_lock(&pin_fs_lock);
-	mnt = *mount;
-	if (!--*count)
-		*mount = NULL;
-	spin_unlock(&pin_fs_lock);
-	mntput(mnt);
-}
-
+/* simple_release_fs removed - never called */
 /* simple_read_from_buffer, __generic_file_fsync, generic_file_fsync,
  * generic_check_addressable removed - unused */
 

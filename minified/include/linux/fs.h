@@ -1231,8 +1231,7 @@ extern ssize_t generic_read_dir(struct file *, char __user *, size_t, loff_t *);
 extern const struct file_operations simple_dir_operations;
 extern bool is_empty_dir_inode(struct inode *inode);
 extern int simple_pin_fs(struct file_system_type *, struct vfsmount **mount, int *count);
-extern void simple_release_fs(struct vfsmount **mount, int *count);
-
+/* simple_release_fs removed - never called */
 /* may_setattr, inode_newsize_ok removed - always returned 0 */
 int setattr_prepare(struct user_namespace *, struct dentry *, struct iattr *);
 void setattr_copy(struct user_namespace *, struct inode *inode,

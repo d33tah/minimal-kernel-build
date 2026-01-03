@@ -459,7 +459,7 @@ void iput(struct inode *inode)
 		WRITE_ONCE(inode->i_state, state | I_WILL_FREE);
 		spin_unlock(&inode->i_lock);
 
-		write_inode_now(inode, 1);
+		/* write_inode_now removed - returns 0 stub */
 
 		spin_lock(&inode->i_lock);
 		state = inode->i_state;

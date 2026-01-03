@@ -4,10 +4,7 @@
 
 /* inode_io_list_del, inode_wait_for_writeback removed - empty stubs */
 /* __mark_inode_dirty removed - inlined as empty into fs.h */
-int write_inode_now(struct inode *inode, int sync)
-{
-	return 0;
-}
+/* write_inode_now removed - returns 0 stub, caller simplified */
 void wb_workfn(struct work_struct *work)
 {
 }

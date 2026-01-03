@@ -20,7 +20,7 @@ unsigned long invalidate_mapping_pages(struct address_space *mapping,
 
 int invalidate_inode_pages2_range(struct address_space *mapping,
 		pgoff_t start, pgoff_t end);
-int write_inode_now(struct inode *, int sync);
+/* write_inode_now removed - returns 0 stub, caller simplified */
 int filemap_fdatawait_range(struct address_space *, loff_t lstart, loff_t lend);
 int filemap_write_and_wait_range(struct address_space *mapping,
 		loff_t lstart, loff_t lend);

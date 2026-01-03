@@ -132,39 +132,7 @@ int __class_register(struct class *cls, struct lock_class_key *key)
 	return error;
 }
 
-/* class_unregister removed - never called */
-
-static void class_create_release(struct class *cls)
-{
-	kfree(cls);
-}
-
-struct class *__class_create(struct module *owner, const char *name,
-			     struct lock_class_key *key)
-{
-	struct class *cls;
-	int retval;
-
-	cls = kzalloc(sizeof(*cls), GFP_KERNEL);
-	if (!cls) {
-		retval = -ENOMEM;
-		goto error;
-	}
-
-	cls->name = name;
-	cls->owner = owner;
-	cls->class_release = class_create_release;
-
-	retval = __class_register(cls, key);
-	if (retval)
-		goto error;
-
-	return cls;
-
-error:
-	kfree(cls);
-	return ERR_PTR(retval);
-}
+/* class_unregister, class_create_release, __class_create removed - never called */
 
 void class_dev_iter_init(struct class_dev_iter *iter, struct class *class,
 			 struct device *start, const struct device_type *type)

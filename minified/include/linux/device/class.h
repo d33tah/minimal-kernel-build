@@ -95,17 +95,6 @@ struct class_interface {
 	void (*remove_dev)	(struct device *, struct class_interface *);
 };
 
-/* class_interface_register removed - never called */
-
-extern struct class * __must_check __class_create(struct module *owner,
-						  const char *name,
-						  struct lock_class_key *key);
-
-#define class_create(owner, name)		\
-({						\
-	static struct lock_class_key __key;	\
-	__class_create(owner, name, &__key);	\
-})
-
+/* class_interface_register, __class_create, class_create macro removed - never called */
 
 #endif	 

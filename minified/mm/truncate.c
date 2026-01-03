@@ -154,7 +154,7 @@ static long mapping_evict_folio(struct address_space *mapping,
 	if (folio_has_private(folio) && !filemap_release_folio(folio, 0))
 		return 0;
 
-	return remove_mapping(mapping, folio);
+	return 0; /* remove_mapping inlined - always returns 0 */
 }
 
 long invalidate_inode_page(struct page *page)

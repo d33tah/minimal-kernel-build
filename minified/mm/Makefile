@@ -49,7 +49,7 @@ endif
 
 obj-y			:= filemap.o \
 			   maccess.o page-writeback.o folio-compat.o \
-			   swap.o truncate.o vmscan.o shmem.o \
+			   swap.o truncate.o shmem.o \
 			   util.o mmzone.o vmstat.o backing-dev.o \
 			   percpu.o slab_common.o \
 			   vmacache.o \

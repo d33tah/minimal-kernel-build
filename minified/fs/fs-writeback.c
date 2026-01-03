@@ -3,10 +3,7 @@
 #include <linux/backing-dev.h>
 
 /* inode_io_list_del, inode_wait_for_writeback removed - empty stubs */
-
-void __mark_inode_dirty(struct inode *inode, int flags)
-{
-}
+/* __mark_inode_dirty removed - inlined as empty into fs.h */
 int write_inode_now(struct inode *inode, int sync)
 {
 	return 0;

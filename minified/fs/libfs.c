@@ -350,7 +350,7 @@ int simple_setattr(struct user_namespace *mnt_userns, struct dentry *dentry,
 	if (iattr->ia_valid & ATTR_SIZE)
 		truncate_setsize(inode, iattr->ia_size);
 	setattr_copy(mnt_userns, inode, iattr);
-	mark_inode_dirty(inode);
+	/* mark_inode_dirty removed - __mark_inode_dirty is empty stub */
 	return 0;
 }
 

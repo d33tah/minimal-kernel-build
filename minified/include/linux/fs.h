@@ -921,10 +921,10 @@ static inline void init_sync_kiocb(struct kiocb *kiocb, struct file *filp)
 #define I_DIRTY (I_DIRTY_INODE | I_DIRTY_PAGES)
 #define I_DIRTY_ALL (I_DIRTY | I_DIRTY_TIME)
 
-extern void __mark_inode_dirty(struct inode *, int);
+/* __mark_inode_dirty removed - empty stub */
 static inline void mark_inode_dirty(struct inode *inode)
 {
-	__mark_inode_dirty(inode, I_DIRTY);
+	/* __mark_inode_dirty was empty stub */
 }
 
 extern void inc_nlink(struct inode *inode);
@@ -934,7 +934,7 @@ extern void clear_nlink(struct inode *inode);
 static inline void inode_dec_link_count(struct inode *inode)
 {
 	drop_nlink(inode);
-	mark_inode_dirty(inode);
+	/* mark_inode_dirty removed - __mark_inode_dirty is empty stub */
 }
 
 /* touch_atime removed - empty stub */

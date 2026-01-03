@@ -1511,7 +1511,7 @@ ssize_t generic_file_direct_write(struct kiocb *iocb, struct iov_iter *from)
 		write_len -= written;
 		if (pos > i_size_read(inode) && !S_ISBLK(inode->i_mode)) {
 			i_size_write(inode, pos);
-			mark_inode_dirty(inode);
+			/* mark_inode_dirty removed - __mark_inode_dirty is empty stub */
 		}
 		iocb->ki_pos = pos;
 	}

@@ -229,33 +229,7 @@ struct device *class_find_device(struct class *class, struct device *start,
 	return dev;
 }
 
-int class_interface_register(struct class_interface *class_intf)
-{
-	struct class *parent;
-	struct class_dev_iter iter;
-	struct device *dev;
-
-	if (!class_intf || !class_intf->class)
-		return -ENODEV;
-
-	parent = class_get(class_intf->class);
-	if (!parent)
-		return -EINVAL;
-
-	mutex_lock(&parent->p->mutex);
-	list_add_tail(&class_intf->node, &parent->p->interfaces);
-	if (class_intf->add_dev) {
-		class_dev_iter_init(&iter, parent, NULL, NULL);
-		while ((dev = class_dev_iter_next(&iter)))
-			class_intf->add_dev(dev, class_intf);
-		class_dev_iter_exit(&iter);
-	}
-	mutex_unlock(&parent->p->mutex);
-
-	return 0;
-}
-
-/* class_interface_unregister, show_class_attr_string, class_compat_register,
+/* class_interface_register, class_interface_unregister, show_class_attr_string, class_compat_register,
    class_compat_unregister, class_compat_create_link, class_compat_remove_link removed - unused */
 
 int __init classes_init(void)

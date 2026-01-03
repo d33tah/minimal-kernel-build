@@ -19,13 +19,4 @@ bool timerqueue_del(struct timerqueue_head *head, struct timerqueue_node *node)
 	RB_CLEAR_NODE(&node->node);
 	return !RB_EMPTY_ROOT(&head->rb_root.rb_root);
 }
-struct timerqueue_node *timerqueue_iterate_next(struct timerqueue_node *node)
-{
-	struct rb_node *next;
-	if (!node)
-		return NULL;
-	next = rb_next(&node->node);
-	if (!next)
-		return NULL;
-	return container_of(next, struct timerqueue_node, node);
-}
+/* timerqueue_iterate_next removed - never called */

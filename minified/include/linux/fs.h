@@ -295,10 +295,7 @@ static inline void i_mmap_unlock_read(struct address_space *mapping)
 	up_read(&mapping->i_mmap_rwsem);
 }
 
-static inline int mapping_writably_mapped(struct address_space *mapping)
-{
-	return atomic_read(&mapping->i_mmap_writable) > 0;
-}
+/* mapping_writably_mapped removed - never called */
 
 static inline void mapping_unmap_writable(struct address_space *mapping)
 {

@@ -593,12 +593,7 @@ SYSCALL_DEFINE2(rt_sigpending, sigset_t __user *, uset, size_t, sigsetsize)
 	return 0;
 }
 
-int copy_siginfo_to_user(siginfo_t __user *to, const kernel_siginfo_t *from)
-{
-	if (copy_to_user(to, from, sizeof(struct kernel_siginfo)))
-		return -EFAULT;
-	return 0;
-}
+/* copy_siginfo_to_user removed - never called */
 
 SYSCALL_DEFINE4(rt_sigtimedwait, const sigset_t __user *, uthese,
 		siginfo_t __user *, uinfo,

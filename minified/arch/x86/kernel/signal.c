@@ -88,71 +88,10 @@ Efault:
 			(__u64 __user *)&(frame)->uc.uc_sigmask, label)
 
 #define FRAME_ALIGNMENT 16UL
-
 #define MAX_FRAME_PADDING (FRAME_ALIGNMENT - 1)
 
-static unsigned long align_sigframe(unsigned long sp)
-{
-	sp = ((sp + 4) & -FRAME_ALIGNMENT) - 4;
-	return sp;
-}
-
-static void __user *get_sigframe(struct k_sigaction *ka, struct pt_regs *regs,
-				 size_t frame_size, void __user **fpstate)
-{
-	bool nested_altstack = on_sig_stack(regs->sp);
-	bool entering_altstack = false;
-	unsigned long math_size = 0;
-	unsigned long sp = regs->sp;
-	unsigned long buf_fx = 0;
-
-	if (ka->sa.sa_flags & SA_ONSTACK) {
-		if (sas_ss_flags(sp) == 0) {
-			sp = current->sas_ss_sp + current->sas_ss_size;
-			entering_altstack = true;
-		}
-	} else if (!nested_altstack && regs->ss != __USER_DS &&
-		   !(ka->sa.sa_flags & SA_RESTORER) && ka->sa.sa_restorer) {
-		sp = (unsigned long)ka->sa.sa_restorer;
-		entering_altstack = true;
-	}
-
-	sp = fpu__alloc_mathframe(sp, true, &buf_fx, &math_size);
-	*fpstate = (void __user *)sp;
-
-	sp = align_sigframe(sp - frame_size);
-
-	if (unlikely((nested_altstack || entering_altstack) &&
-		     !__on_sig_stack(sp))) {
-		/* printk_ratelimit() always returns 0 */
-		return (void __user *)-1L;
-	}
-
-	if (!copy_fpstate_to_sigframe(*fpstate, (void __user *)buf_fx,
-				      math_size))
-		return (void __user *)-1L;
-
-	return (void __user *)sp;
-}
-
-static const struct {
-	u16 poplmovl;
-	u32 val;
-	u16 int80;
-} __attribute__((packed)) retcode = {
-	0xb858,
-	__NR_sigreturn,
-	0x80cd,
-};
-
-static const struct {
-	u8 movl;
-	u32 val;
-	u16 int80;
-	u8 pad;
-} __attribute__((packed)) rt_retcode = { 0xb8, __NR_rt_sigreturn, 0x80cd, 0 };
-
-/* __setup_frame, __setup_rt_frame removed - never called (get_signal returns false) */
+/* align_sigframe, get_sigframe, retcode, rt_retcode, __setup_frame,
+ * __setup_rt_frame removed - never called (get_signal returns false) */
 
 /* Stub: sigreturn not needed for Hello World */
 SYSCALL_DEFINE0(sigreturn)

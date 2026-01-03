@@ -137,8 +137,7 @@ extern void flush_signal_handlers(struct task_struct *, int force_default);
 int force_sig_fault(int sig, int code, void __user *addr);
 /* send_sig_fault, force_sig_mceerr, send_sig_mceerr, force_sig_bnderr, send_sig_perf,
    force_sig_ptrace_errno_trap, force_sig_fault_trapno, send_sig_fault_trapno,
-   force_sig_seccomp removed - unused */
-int force_sig_pkuerr(void __user *addr, u32 pkey);
+   force_sig_seccomp, force_sig_pkuerr removed - unused */
 
 extern int send_sig_info(int, struct kernel_siginfo *, struct task_struct *);
 /* kill_pid_info removed - never called */

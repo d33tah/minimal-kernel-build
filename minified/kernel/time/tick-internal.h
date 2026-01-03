@@ -38,8 +38,8 @@ extern bool tick_check_replacement(struct clock_event_device *curdev,
 extern void tick_install_replacement(struct clock_event_device *dev);
 extern struct tick_device *tick_get_device(int cpu);
 
-extern int clockevents_tick_resume(struct clock_event_device *dev);
- 
+/* clockevents_tick_resume removed - never called */
+
 static inline int tick_device_is_functional(struct clock_event_device *dev)
 {
 	return !(dev->features & CLOCK_EVT_FEAT_DUMMY);

@@ -181,13 +181,12 @@ struct device_link {
 	struct list_head s_node;
 	struct device *consumer;
 	struct list_head c_node;
-	struct device link_dev;
+	/* link_dev removed - never accessed */
 	enum device_link_state status;
 	u32 flags;
-	refcount_t rpm_active;
+	/* rpm_active removed - never accessed */
 	struct kref kref;
-	struct work_struct rm_work;
-	bool supplier_preactivated;  
+	/* rm_work, supplier_preactivated removed - never accessed */
 };
 
 static inline struct device *kobj_to_dev(struct kobject *kobj)

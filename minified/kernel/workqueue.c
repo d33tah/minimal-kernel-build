@@ -82,15 +82,7 @@ struct workqueue_struct *system_wq = &system_wq_storage;
 struct workqueue_struct *system_long_wq = &system_long_wq_storage;
 struct workqueue_struct *system_unbound_wq = &system_unbound_wq_storage;
 
-void __init workqueue_init_early(void)
-{
-}
-
-void __init workqueue_init(void)
-{
-}
-
-/* wq_worker_running and wq_worker_sleeping removed - empty stubs */
+/* workqueue_init_early, workqueue_init, wq_worker_running, wq_worker_sleeping removed - unused */
 
 void delayed_work_timer_fn(struct timer_list *t)
 {

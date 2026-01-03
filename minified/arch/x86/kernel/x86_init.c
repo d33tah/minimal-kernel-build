@@ -14,10 +14,7 @@
 #include <asm/time.h>
 #include <asm/irq.h>
 #include <asm/io_apic.h>
-static inline int hpet_enable(void)
-{
-	return 0;
-}
+/* hpet_enable duplicate removed - already defined in time.c */
 #define hpet_readl(a) 0
 #define default_setup_hpet_msi NULL
 #include <asm/memtype.h>

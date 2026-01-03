@@ -96,11 +96,7 @@ SYSCALL_DEFINE5(llseek, unsigned int, fd, unsigned long, offset_high,
 }
 #endif
 
-int rw_verify_area(int read_write, struct file *file, const loff_t *ppos,
-		   size_t count)
-{
-	return 0;
-}
+/* rw_verify_area removed - always returns 0, all callers already removed checks */
 
 static int warn_unsupported(struct file *file, const char *op)
 {

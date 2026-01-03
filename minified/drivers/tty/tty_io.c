@@ -932,11 +932,9 @@ static __poll_t tty_poll(struct file *filp, poll_table *wait)
 	return ret;
 }
 
+/* __tty_fasync simplified - fasync_helper is stubbed to no-op */
 static int __tty_fasync(int fd, struct file *filp, int on)
 {
-	struct tty_struct *tty = file_tty(filp);
-	/* fasync_helper always returns 0, so the body below is dead code removed */
-	fasync_helper(fd, filp, on, &tty->fasync);
 	return 0;
 }
 

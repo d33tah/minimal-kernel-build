@@ -313,30 +313,8 @@ ktime_t ktime_get(void)
 
 /* ktime_get_resolution_ns removed - never called (~15 LOC) */
 
-static ktime_t *offsets[TK_OFFS_MAX] = {
-	[TK_OFFS_REAL] = &tk_core.timekeeper.offs_real,
-	[TK_OFFS_BOOT] = &tk_core.timekeeper.offs_boot,
-	[TK_OFFS_TAI] = &tk_core.timekeeper.offs_tai,
-};
-
-ktime_t ktime_get_with_offset(enum tk_offsets offs)
-{
-	struct timekeeper *tk = &tk_core.timekeeper;
-	unsigned int seq;
-	ktime_t base, *offset = offsets[offs];
-	u64 nsecs;
-
-	WARN_ON(timekeeping_suspended);
-
-	do {
-		seq = read_seqcount_begin(&tk_core.seq);
-		base = ktime_add(tk->tkr_mono.base, *offset);
-		nsecs = timekeeping_get_ns(&tk->tkr_mono);
-
-	} while (read_seqcount_retry(&tk_core.seq, seq));
-
-	return ktime_add_ns(base, nsecs);
-}
+/* offsets array removed - only used by ktime_get_with_offset */
+/* ktime_get_with_offset removed - never called (~17 LOC) */
 
 /* Removed: ktime_get_coarse_with_offset, ktime_mono_to_any, ktime_get_raw - no callers */
 
@@ -648,17 +626,7 @@ void update_wall_time(void)
 		clock_was_set_delayed();
 }
 
-void ktime_get_coarse_real_ts64(struct timespec64 *ts)
-{
-	struct timekeeper *tk = &tk_core.timekeeper;
-	unsigned int seq;
-
-	do {
-		seq = read_seqcount_begin(&tk_core.seq);
-
-		*ts = tk_xtime(tk);
-	} while (read_seqcount_retry(&tk_core.seq, seq));
-}
+/* ktime_get_coarse_real_ts64 removed - never called (~11 LOC) */
 
 void do_timer(unsigned long ticks)
 {

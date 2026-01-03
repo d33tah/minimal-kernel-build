@@ -15,8 +15,7 @@ void timekeeping_init(void);
 
 extern void ktime_get_ts64(struct timespec64 *ts);
 extern void ktime_get_real_ts64(struct timespec64 *tv);
-extern void ktime_get_coarse_real_ts64(struct timespec64 *ts);
-
+/* ktime_get_coarse_real_ts64 removed - never called */
 
 extern time64_t ktime_get_seconds(void);
 extern time64_t ktime_get_real_seconds(void);
@@ -30,7 +29,7 @@ enum tk_offsets {
 };
 
 extern ktime_t ktime_get(void);
-extern ktime_t ktime_get_with_offset(enum tk_offsets offs);
+/* ktime_get_with_offset removed - never called */
 
 /* ktime_get_real, ktime_get_boottime, ktime_get_clocktai removed - unused */
 extern void read_persistent_clock64(struct timespec64 *ts);

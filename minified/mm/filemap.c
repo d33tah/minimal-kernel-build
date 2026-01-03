@@ -1465,11 +1465,7 @@ struct page *read_cache_page(struct address_space *mapping, pgoff_t index,
 				  mapping_gfp_mask(mapping));
 }
 
-struct page *read_cache_page_gfp(struct address_space *mapping, pgoff_t index,
-				 gfp_t gfp)
-{
-	return do_read_cache_page(mapping, index, NULL, NULL, gfp);
-}
+/* read_cache_page_gfp removed - never called */
 
 ssize_t generic_file_direct_write(struct kiocb *iocb, struct iov_iter *from)
 {

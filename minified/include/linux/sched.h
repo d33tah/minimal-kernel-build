@@ -103,7 +103,7 @@ struct signal_struct;
 #define TASK_RUNNING			0x0000
 #define TASK_INTERRUPTIBLE		0x0001
 #define TASK_UNINTERRUPTIBLE		0x0002
-#define __TASK_STOPPED			0x0004
+/* __TASK_STOPPED removed - unused */
 #define __TASK_TRACED			0x0008
 #define EXIT_DEAD			0x0010
 #define EXIT_ZOMBIE			0x0020

@@ -26,9 +26,7 @@ bool setup_userns_sysctls(struct user_namespace *ns)
 	return true;
 }
 
-void retire_userns_sysctls(struct user_namespace *ns)
-{
-}
+/* retire_userns_sysctls removed - no callers */
 
 static struct ucounts *find_ucounts(struct user_namespace *ns, kuid_t uid,
 				    struct hlist_head *hashent)

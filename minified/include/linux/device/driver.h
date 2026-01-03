@@ -25,7 +25,7 @@ struct device_driver {
 	enum probe_type probe_type;
 
 	const struct of_device_id	*of_match_table;
-	const struct acpi_device_id	*acpi_match_table;
+	/* acpi_match_table removed - unused */
 
 	int (*probe) (struct device *dev);
 	void (*sync_state)(struct device *dev);

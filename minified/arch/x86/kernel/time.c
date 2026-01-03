@@ -48,12 +48,6 @@ void __init hpet_time_init(void)
 		pr_info("Failed to register legacy timer interrupt\n");
 }
 
-static inline void time_dbg(const char *s)
-{
-	while (*s)
-		asm volatile("outb %0, $0xe9" : : "a"(*s++));
-}
-
 /* x86_late_time_init removed - never assigned to late_time_init pointer */
 
 void __init time_init(void)

@@ -77,11 +77,7 @@ static void ppin_init(struct cpuinfo_x86 *c)
 {
 }
 
-void __init setup_cpu_local_masks(void)
-{
-	alloc_bootmem_cpumask_var(&cpu_initialized_mask);
-	/* cpu_callin_mask, cpu_callout_mask, cpu_sibling_setup_mask allocations removed - unused */
-}
+/* setup_cpu_local_masks removed - never called */
 
 static void default_init(struct cpuinfo_x86 *c)
 {

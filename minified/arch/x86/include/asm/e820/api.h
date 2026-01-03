@@ -51,7 +51,7 @@ extern u64  e820__range_remove(u64 start, u64 size, enum e820_type old_type, boo
 
 extern void e820__print_table(char *who);
 extern int  e820__update_table(struct e820_table *table);
-extern void e820__update_table_print(void);
+/* e820__update_table_print removed - never called */
 
 extern unsigned long e820__end_of_ram_pfn(void);
 extern unsigned long e820__end_of_low_ram_pfn(void);

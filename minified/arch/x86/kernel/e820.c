@@ -355,11 +355,7 @@ u64 __init e820__range_remove(u64 start, u64 size, enum e820_type old_type,
 	return real_removed_size;
 }
 
-void __init e820__update_table_print(void)
-{
-	/* Stub: e820 table update printing not needed for minimal kernel */
-	e820__update_table(e820_table);
-}
+/* e820__update_table_print removed - never called */
 
 #define MAX_GAP_END 0x100000000ull
 

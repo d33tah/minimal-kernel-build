@@ -64,16 +64,7 @@ u64 dma_get_required_mask(struct device *dev)
 	return DMA_BIT_MASK(32);
 }
 
-void *dma_alloc_attrs(struct device *dev, size_t size, dma_addr_t *dma_handle,
-		      gfp_t flag, unsigned long attrs)
-{
-	return NULL;
-}
-
-void dma_free_attrs(struct device *dev, size_t size, void *cpu_addr,
-		    dma_addr_t dma_handle, unsigned long attrs)
-{
-}
+/* dma_alloc_attrs, dma_free_attrs removed - no callers */
 
 int dma_supported(struct device *dev, u64 mask)
 {

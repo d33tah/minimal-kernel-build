@@ -14,11 +14,7 @@
 #define MAP_PRIVATE	0x02
 #define MAP_SHARED_VALIDATE 0x03
 
-/* hugetlb encoding constants - only shift/mask used */
-#define HUGETLB_FLAG_ENCODE_SHIFT	26
-#define HUGETLB_FLAG_ENCODE_MASK	0x3f
-#define MAP_HUGE_SHIFT	HUGETLB_FLAG_ENCODE_SHIFT
-#define MAP_HUGE_MASK	HUGETLB_FLAG_ENCODE_MASK
+/* hugetlb encoding constants removed - never used */
 
 #ifndef MAP_32BIT
 #define MAP_32BIT 0

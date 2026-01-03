@@ -59,7 +59,7 @@ void device_pm_move_to_tail(struct device *dev)
 
 static struct kobject *dev_kobj;
 struct kobject *sysfs_dev_char_kobj;
-struct kobject *sysfs_dev_block_kobj;
+/* sysfs_dev_block_kobj removed - unused */
 
 /* device_platform_notify_remove removed - was empty stub */
 

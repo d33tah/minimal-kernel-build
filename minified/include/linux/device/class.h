@@ -41,7 +41,7 @@ struct class_dev_iter {
 	const struct device_type	*type;
 };
 
-extern struct kobject *sysfs_dev_block_kobj;
+/* sysfs_dev_block_kobj removed - unused */
 extern struct kobject *sysfs_dev_char_kobj;
 extern int __must_check __class_register(struct class *class,
 					 struct lock_class_key *key);

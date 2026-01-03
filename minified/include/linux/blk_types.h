@@ -7,8 +7,7 @@
 
 struct bio;
 struct page;
-struct cgroup_subsys_state;
-/* struct bio_set, bio_integrity_payload, bio_crypt_ctx removed - unused */
+/* cgroup_subsys_state, bio_set, bio_integrity_payload, bio_crypt_ctx removed - unused */
 
 /* Minimal block_device struct - only pointers used, never instantiated */
 struct block_device {

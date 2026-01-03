@@ -162,8 +162,7 @@ struct tty_struct {
 	struct list_head tty_files;
 
 #define N_TTY_BUF_SIZE 4096
-
-	int closing;
+	/* closing removed - never accessed */
 	unsigned char *write_buf;
 	int write_cnt;
 	struct work_struct SAK_work;

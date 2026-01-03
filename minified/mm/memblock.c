@@ -3,9 +3,8 @@
 #include <linux/slab.h>
 #include <linux/init.h>
 #include <linux/bitops.h>
-#include <linux/poison.h>
+/* poison.h, seq_file.h removed - unused */
 #include <linux/pfn.h>
-#include <linux/seq_file.h>
 #include <linux/memblock.h>
 
 #include <asm/sections.h>

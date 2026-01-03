@@ -477,11 +477,7 @@ void iput(struct inode *inode)
 
 /* inode_update_time, atime_needs_update, touch_atime removed - never called / empty stubs */
 /* dentry_needs_remove_privs, file_remove_privs removed - no callers */
-
-int file_update_time(struct file *file)
-{
-	return 0;
-}
+/* file_update_time removed - inlined into fs.h as 0 return stub */
 
 static __initdata unsigned long ihash_entries;
 

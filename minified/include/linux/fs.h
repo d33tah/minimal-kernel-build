@@ -1238,7 +1238,8 @@ int setattr_prepare(struct user_namespace *, struct dentry *, struct iattr *);
 void setattr_copy(struct user_namespace *, struct inode *inode,
 		  const struct iattr *attr);
 
-extern int file_update_time(struct file *file);
+/* file_update_time - inlined as 0 return stub */
+static inline int file_update_time(struct file *file) { return 0; }
 
 /* vma_is_fsdax removed - never called */
 

@@ -157,15 +157,7 @@ static long mapping_evict_folio(struct address_space *mapping,
 	return 0; /* remove_mapping inlined - always returns 0 */
 }
 
-long invalidate_inode_page(struct page *page)
-{
-	struct folio *folio = page_folio(page);
-	struct address_space *mapping = folio_mapping(folio);
-
-	if (!mapping)
-		return 0;
-	return mapping_evict_folio(mapping, folio);
-}
+/* invalidate_inode_page removed - no callers */
 
 void truncate_inode_pages_range(struct address_space *mapping, loff_t lstart,
 				loff_t lend)

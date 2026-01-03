@@ -420,16 +420,6 @@ static inline void inode_lock_nested(struct inode *inode, unsigned subclass)
 	down_write_nested(&inode->i_rwsem, subclass);
 }
 
-static inline void filemap_invalidate_lock(struct address_space *mapping)
-{
-	down_write(&mapping->invalidate_lock);
-}
-
-static inline void filemap_invalidate_unlock(struct address_space *mapping)
-{
-	up_write(&mapping->invalidate_lock);
-}
-
 static inline void filemap_invalidate_lock_shared(struct address_space *mapping)
 {
 	down_read(&mapping->invalidate_lock);

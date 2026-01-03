@@ -59,8 +59,7 @@ struct subsys_interface {
 };
 
 
-int subsys_system_register(struct bus_type *subsys,
-			   const struct attribute_group **groups);
+/* subsys_system_register removed - never called */
 
 struct device_type {
 	const char *name;

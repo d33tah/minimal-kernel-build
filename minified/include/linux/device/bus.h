@@ -46,8 +46,7 @@ struct bus_type {
 };
 
 extern int __must_check bus_register(struct bus_type *bus);
-
-extern void bus_unregister(struct bus_type *bus);
+/* bus_unregister removed - never called */
 
 struct bus_attribute {
 	struct attribute	attr;

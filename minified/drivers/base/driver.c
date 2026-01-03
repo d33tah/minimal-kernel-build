@@ -28,10 +28,7 @@ int driver_add_groups(struct device_driver *drv,
 	return 0;
 }
 
-void driver_remove_groups(struct device_driver *drv,
-			  const struct attribute_group **groups)
-{
-}
+/* driver_remove_groups removed - never called after bus_remove_driver removal */
 
 int driver_register(struct device_driver *drv)
 {

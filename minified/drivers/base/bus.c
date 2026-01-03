@@ -475,70 +475,7 @@ out:
 	return retval;
 }
 
-void bus_unregister(struct bus_type *bus)
-{
-	if (bus->dev_root)
-		device_unregister(bus->dev_root);
-	kset_unregister(bus->p->drivers_kset);
-	kset_unregister(bus->p->devices_kset);
-	kset_unregister(&bus->p->subsys);
-}
-
-/* Removed: bus_get_device_klist, bus_unregister_notifier, bus_get_kset, bus_sort_breadthfirst,
-   subsys_dev_iter_init/next/exit, subsys_interface_register/unregister - no external callers */
-
-static void system_root_device_release(struct device *dev)
-{
-	kfree(dev);
-}
-
-static int subsys_register(struct bus_type *subsys,
-			   const struct attribute_group **groups,
-			   struct kobject *parent_of_root)
-{
-	struct device *dev;
-	int err;
-
-	err = bus_register(subsys);
-	if (err < 0)
-		return err;
-
-	dev = kzalloc(sizeof(struct device), GFP_KERNEL);
-	if (!dev) {
-		err = -ENOMEM;
-		goto err_dev;
-	}
-
-	err = dev_set_name(dev, "%s", subsys->name);
-	if (err < 0)
-		goto err_name;
-
-	dev->kobj.parent = parent_of_root;
-	dev->groups = groups;
-	dev->release = system_root_device_release;
-
-	err = device_register(dev);
-	if (err < 0)
-		goto err_dev_reg;
-
-	subsys->dev_root = dev;
-	return 0;
-
-err_dev_reg:
-	put_device(dev);
-	dev = NULL;
-err_name:
-	kfree(dev);
-err_dev:
-	bus_unregister(subsys);
-	return err;
-}
-
-int subsys_system_register(struct bus_type *subsys,
-			   const struct attribute_group **groups)
-{
-	return subsys_register(subsys, groups, &system_kset->kobj);
-}
+/* bus_unregister, subsys_register, subsys_system_register removed - never called (~51 LOC) */
 
 int __init buses_init(void)
 {

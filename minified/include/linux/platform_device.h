@@ -22,8 +22,7 @@ struct platform_device {
 
 	const struct platform_device_id	*id_entry;
 	const char *driver_override;
-	/* mfd_cell field removed - never accessed */
-	struct pdev_archdata	archdata;
+	/* mfd_cell, pdev_archdata fields removed - never accessed */
 };
 
 #define platform_get_device_id(pdev)	((pdev)->id_entry)

@@ -18,8 +18,7 @@ struct dev_printk_info {
 #define dev_err(dev, fmt, ...) do { } while (0)
 #define dev_warn(dev, fmt, ...) do { } while (0)
 #define dev_dbg(dev, fmt, ...) do { } while (0)
-#define dev_err_once(dev, fmt, ...) do { } while (0)
-#define dev_WARN_ONCE(dev, condition, format, arg...) (0)
+/* dev_err_once, dev_WARN_ONCE removed - unused */
 /* end dev_printk.h */
 
 #include <linux/ioport.h>
@@ -38,8 +37,7 @@ struct dev_printk_info {
 #include <linux/device/bus.h>
 #include <linux/device/class.h>
 #include <linux/device/driver.h>
-/* struct dev_archdata removed - unused */
-struct pdev_archdata { };
+/* struct dev_archdata, pdev_archdata removed - unused */
 
 struct device;
 struct device_private;

@@ -170,25 +170,6 @@ int bdi_init(struct backing_dev_info *bdi)
 	return wb_init(&bdi->wb, bdi, GFP_KERNEL);
 }
 
-struct backing_dev_info *bdi_alloc(int node_id)
-{
-	struct backing_dev_info *bdi;
-
-	bdi = kzalloc_node(sizeof(*bdi), GFP_KERNEL, node_id);
-	if (!bdi)
-		return NULL;
-
-	if (bdi_init(bdi)) {
-		kfree(bdi);
-		return NULL;
-	}
-	bdi->capabilities = BDI_CAP_WRITEBACK | BDI_CAP_WRITEBACK_ACCT;
-	bdi->ra_pages = VM_READAHEAD_PAGES;
-	bdi->io_pages = VM_READAHEAD_PAGES;
-	timer_setup(&bdi->laptop_mode_wb_timer, laptop_mode_timer_fn, 0);
-	return bdi;
-}
-
 static void bdi_remove_from_list(struct backing_dev_info *bdi)
 {
 	spin_lock_bh(&bdi_lock);

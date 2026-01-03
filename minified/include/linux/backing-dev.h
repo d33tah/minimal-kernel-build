@@ -9,7 +9,6 @@
 #include <linux/slab.h>
 void bdi_put(struct backing_dev_info *bdi);
 void bdi_unregister(struct backing_dev_info *bdi);
-struct backing_dev_info *bdi_alloc(int node_id);
 void wb_workfn(struct work_struct *work);
 int bdi_set_min_ratio(struct backing_dev_info *bdi, unsigned int min_ratio);
 /* bdi_set_max_ratio removed - never called */

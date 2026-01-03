@@ -4,67 +4,10 @@
 
 bool dma_default_coherent;
 
-dma_addr_t dma_map_page_attrs(struct device *dev, struct page *page,
-			      size_t offset, size_t size,
-			      enum dma_data_direction dir, unsigned long attrs)
-{
-	return DMA_MAPPING_ERROR;
-}
-
-void dma_unmap_page_attrs(struct device *dev, dma_addr_t addr, size_t size,
-			  enum dma_data_direction dir, unsigned long attrs)
-{
-}
-
-unsigned int dma_map_sg_attrs(struct device *dev, struct scatterlist *sg,
-			      int nents, enum dma_data_direction dir,
-			      unsigned long attrs)
-{
-	return 0;
-}
-
-int dma_map_sgtable(struct device *dev, struct sg_table *sgt,
-		    enum dma_data_direction dir, unsigned long attrs)
-{
-	return -ENOMEM;
-}
-
-void dma_unmap_sg_attrs(struct device *dev, struct scatterlist *sg, int nents,
-			enum dma_data_direction dir, unsigned long attrs)
-{
-}
-
-void dma_sync_single_for_cpu(struct device *dev, dma_addr_t addr, size_t size,
-			     enum dma_data_direction dir)
-{
-}
-
-void dma_sync_single_for_device(struct device *dev, dma_addr_t addr,
-				size_t size, enum dma_data_direction dir)
-{
-}
-
-void dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg, int nelems,
-			 enum dma_data_direction dir)
-{
-}
-
-void dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
-			    int nelems, enum dma_data_direction dir)
-{
-}
-
-pgprot_t dma_pgprot(struct device *dev, pgprot_t prot, unsigned long attrs)
-{
-	return prot;
-}
-
-u64 dma_get_required_mask(struct device *dev)
-{
-	return DMA_BIT_MASK(32);
-}
-
-/* dma_alloc_attrs, dma_free_attrs removed - no callers */
+/* dma_map_page_attrs, dma_unmap_page_attrs, dma_map_sg_attrs, dma_map_sgtable,
+   dma_unmap_sg_attrs, dma_sync_single_for_cpu, dma_sync_single_for_device,
+   dma_sync_sg_for_cpu, dma_sync_sg_for_device, dma_pgprot, dma_get_required_mask,
+   dma_alloc_attrs, dma_free_attrs removed - no callers */
 
 int dma_supported(struct device *dev, u64 mask)
 {

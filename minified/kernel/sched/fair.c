@@ -275,95 +275,22 @@ static void update_curr_fair(struct rq *rq)
 	update_curr(cfs_rq_of(&rq->curr->se));
 }
 
-static inline void update_stats_wait_start_fair(struct cfs_rq *cfs_rq,
-						struct sched_entity *se)
-{
-	struct sched_statistics *stats;
-	struct task_struct *p = NULL;
-
-	if (!schedstat_enabled())
-		return;
-
-	stats = __schedstats_from_se(se);
-
-	if (entity_is_task(se))
-		p = task_of(se);
-
-	__update_stats_wait_start(rq_of(cfs_rq), p, stats);
-}
-
-static inline void update_stats_wait_end_fair(struct cfs_rq *cfs_rq,
-					      struct sched_entity *se)
-{
-	struct sched_statistics *stats;
-	struct task_struct *p = NULL;
-
-	if (!schedstat_enabled())
-		return;
-
-	stats = __schedstats_from_se(se);
-
-	if (unlikely(!schedstat_val(stats->wait_start)))
-		return;
-
-	if (entity_is_task(se))
-		p = task_of(se);
-
-	__update_stats_wait_end(rq_of(cfs_rq), p, stats);
-}
-
-static inline void update_stats_enqueue_sleeper_fair(struct cfs_rq *cfs_rq,
-						     struct sched_entity *se)
-{
-	struct sched_statistics *stats;
-	struct task_struct *tsk = NULL;
-
-	if (!schedstat_enabled())
-		return;
-
-	stats = __schedstats_from_se(se);
-
-	if (entity_is_task(se))
-		tsk = task_of(se);
-
-	__update_stats_enqueue_sleeper(rq_of(cfs_rq), tsk, stats);
-}
-
-static inline void update_stats_enqueue_fair(struct cfs_rq *cfs_rq,
-					     struct sched_entity *se, int flags)
-{
-	if (!schedstat_enabled())
-		return;
-
-	if (se != cfs_rq->curr)
-		update_stats_wait_start_fair(cfs_rq, se);
-
-	if (flags & ENQUEUE_WAKEUP)
-		update_stats_enqueue_sleeper_fair(cfs_rq, se);
-}
-
-static inline void update_stats_dequeue_fair(struct cfs_rq *cfs_rq,
-					     struct sched_entity *se, int flags)
-{
-	if (!schedstat_enabled())
-		return;
-
-	if (se != cfs_rq->curr)
-		update_stats_wait_end_fair(cfs_rq, se);
-
-	if ((flags & DEQUEUE_SLEEP) && entity_is_task(se)) {
-		struct task_struct *tsk = task_of(se);
-		unsigned int state;
-
-		state = READ_ONCE(tsk->__state);
-		if (state & TASK_INTERRUPTIBLE)
-			__schedstat_set(tsk->stats.sleep_start,
-					rq_clock(rq_of(cfs_rq)));
-		if (state & TASK_UNINTERRUPTIBLE)
-			__schedstat_set(tsk->stats.block_start,
-					rq_clock(rq_of(cfs_rq)));
-	}
-}
+/* update_stats functions removed - schedstat_enabled() is always 0 */
+#define update_stats_wait_start_fair(cfs_rq, se) \
+	do {                                     \
+	} while (0)
+#define update_stats_wait_end_fair(cfs_rq, se) \
+	do {                                   \
+	} while (0)
+#define update_stats_enqueue_sleeper_fair(cfs_rq, se) \
+	do {                                          \
+	} while (0)
+#define update_stats_enqueue_fair(cfs_rq, se, flags) \
+	do {                                         \
+	} while (0)
+#define update_stats_dequeue_fair(cfs_rq, se, flags) \
+	do {                                         \
+	} while (0)
 
 /* update_stats_curr_start inlined into set_next_entity */
 

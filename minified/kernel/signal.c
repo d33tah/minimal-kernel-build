@@ -432,12 +432,8 @@ int force_sig_fault(int sig, int code, void __user *addr)
 	return force_sig_info_to_task(&info, current, HANDLER_CURRENT);
 }
 
-/* force_sig_pkuerr, kill_pgrp removed - never called */
-
-bool do_notify_parent(struct task_struct *tsk, int sig)
-{
-	return false;
-}
+/* force_sig_pkuerr, kill_pgrp, do_notify_parent, get_signal,
+   signal_setup_done removed - never called */
 
 int ptrace_notify(int exit_code, unsigned long message)
 {
@@ -449,29 +445,6 @@ int ptrace_notify(int exit_code, unsigned long message)
 	/* Inlined ptrace_do_notify and ptrace_stop - just return exit_code */
 	spin_unlock_irq(&current->sighand->siglock);
 	return exit_code;
-}
-
-bool get_signal(struct ksignal *ksig)
-{
-	/* Minimal stub: init doesn't use signals */
-	return false;
-}
-
-void signal_setup_done(int failed, struct ksignal *ksig, int stepping)
-{
-	if (!failed) {
-		/* Inlined signal_delivered */
-		sigset_t blocked;
-		clear_restore_sigmask();
-		sigorsets(&blocked, &current->blocked, &ksig->ka.sa.sa_mask);
-		if (!(ksig->ka.sa.sa_flags & SA_NODEFER))
-			sigaddset(&blocked, ksig->sig);
-		set_current_blocked(&blocked);
-		if (current->sas_ss_flags & SS_AUTODISARM)
-			sas_ss_reset(current);
-		if (stepping)
-			ptrace_notify(SIGTRAP, 0);
-	}
 }
 
 static void retarget_shared_pending(struct task_struct *tsk, sigset_t *which)

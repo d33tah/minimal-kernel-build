@@ -189,8 +189,7 @@ extern void set_current_blocked(sigset_t *);
 extern void __set_current_blocked(const sigset_t *);
 extern int show_unhandled_signals;
 
-extern bool get_signal(struct ksignal *ksig);
-extern void signal_setup_done(int failed, struct ksignal *ksig, int stepping);
+/* get_signal, signal_setup_done removed - never called */
 extern void exit_signals(struct task_struct *tsk);
 
 #define SIG_KTHREAD_KERNEL ((__force __sighandler_t)3)

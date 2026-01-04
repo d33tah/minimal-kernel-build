@@ -893,12 +893,10 @@ static vm_fault_t do_shared_fault(struct vm_fault *vmf)
 
 	/* Inlined fault_dirty_shared_page */
 	{
-		bool page_mkwrite = vma->vm_ops && vma->vm_ops->page_mkwrite;
 		set_page_dirty(vmf->page);
 		/* page_rmapping call removed - result was unused */
 		unlock_page(vmf->page);
-		if (!page_mkwrite)
-			file_update_time(vma->vm_file);
+		/* file_update_time call removed - stub returns 0 */
 	}
 	return ret;
 }

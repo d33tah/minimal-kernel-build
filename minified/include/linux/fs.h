@@ -1201,8 +1201,7 @@ int setattr_prepare(struct user_namespace *, struct dentry *, struct iattr *);
 void setattr_copy(struct user_namespace *, struct inode *inode,
 		  const struct iattr *attr);
 
-/* file_update_time - inlined as 0 return stub */
-static inline int file_update_time(struct file *file) { return 0; }
+/* file_update_time removed - callers inlined */
 
 /* vma_is_fsdax removed - never called */
 

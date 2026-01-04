@@ -57,11 +57,7 @@ void early_printk(const char *s, ...) { }
 
 struct dev_printk_info;
 
-static inline __printf(1, 0)
-int vprintk(const char *s, va_list args)
-{
-	return 0;
-}
+/* vprintk removed - never called */
 static inline __printf(1, 2) __cold
 int _printk(const char *s, ...)
 {

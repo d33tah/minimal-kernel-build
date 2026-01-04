@@ -52,24 +52,7 @@ static inline void percpu_down_read(struct percpu_rw_semaphore *sem)
 	preempt_enable();
 }
 
-static inline bool percpu_down_read_trylock(struct percpu_rw_semaphore *sem)
-{
-	bool ret = true;
-
-	preempt_disable();
-	 
-	if (likely(rcu_sync_is_idle(&sem->rss)))
-		this_cpu_inc(*sem->read_count);
-	else
-		ret = __percpu_down_read(sem, true);  
-	preempt_enable();
-	 
-
-	if (ret)
-		rwsem_acquire_read(&sem->dep_map, 0, 1, _RET_IP_);
-
-	return ret;
-}
+/* percpu_down_read_trylock removed - never called */
 
 static inline void percpu_up_read(struct percpu_rw_semaphore *sem)
 {

@@ -17,12 +17,7 @@
 
 #include "kstrtox.h"
 
-/* Stub: __bitmap_equal not called externally */
-bool __bitmap_equal(const unsigned long *bitmap1, const unsigned long *bitmap2,
-		    unsigned int bits)
-{
-	return false;
-}
+/* __bitmap_equal removed - bitmap_equal never called */
 
 void __bitmap_set(unsigned long *map, unsigned int start, int len)
 {

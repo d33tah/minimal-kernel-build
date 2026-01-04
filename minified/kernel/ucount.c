@@ -21,12 +21,7 @@ static DEFINE_SPINLOCK(ucounts_lock);
 		  UCOUNTS_HASHTABLE_BITS)
 #define ucounts_hashentry(ns, uid) (ucounts_hashtable + ucounts_hashfn(ns, uid))
 
-bool setup_userns_sysctls(struct user_namespace *ns)
-{
-	return true;
-}
-
-/* retire_userns_sysctls removed - no callers */
+/* setup_userns_sysctls and retire_userns_sysctls removed - no callers */
 
 static struct ucounts *find_ucounts(struct user_namespace *ns, kuid_t uid,
 				    struct hlist_head *hashent)

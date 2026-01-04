@@ -128,8 +128,7 @@ struct device;
 
 
 
-bool __bitmap_equal(const unsigned long *bitmap1,
-		    const unsigned long *bitmap2, unsigned int nbits);
+/* __bitmap_equal removed - bitmap_equal never called */
 void __bitmap_set(unsigned long *map, unsigned int start, int len);
 void __bitmap_clear(unsigned long *map, unsigned int start, int len);
 
@@ -179,17 +178,7 @@ static inline void bitmap_fill(unsigned long *dst, unsigned int nbits)
 #define BITMAP_MEM_ALIGNMENT 8
 #define BITMAP_MEM_MASK (BITMAP_MEM_ALIGNMENT - 1)
 
-static inline bool bitmap_equal(const unsigned long *src1,
-				const unsigned long *src2, unsigned int nbits)
-{
-	if (small_const_nbits(nbits))
-		return !((*src1 ^ *src2) & BITMAP_LAST_WORD_MASK(nbits));
-	if (__builtin_constant_p(nbits & BITMAP_MEM_MASK) &&
-	    IS_ALIGNED(nbits, BITMAP_MEM_ALIGNMENT))
-		return !memcmp(src1, src2, nbits / 8);
-	return __bitmap_equal(src1, src2, nbits);
-}
-
+/* bitmap_equal removed - never called */
 
 static inline bool bitmap_empty(const unsigned long *src, unsigned nbits)
 {

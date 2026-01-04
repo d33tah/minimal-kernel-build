@@ -1047,12 +1047,8 @@ extern const struct file_operations def_chr_fops;
 
 extern int alloc_chrdev_region(dev_t *, unsigned, unsigned, const char *);
 extern int register_chrdev_region(dev_t, unsigned, const char *);
-extern int __register_chrdev(unsigned int major, unsigned int baseminor,
-			     unsigned int count, const char *name,
-			     const struct file_operations *fops);
-/* __unregister_chrdev removed - never called */
+/* __register_chrdev, __unregister_chrdev, register_chrdev removed - never called */
 extern void unregister_chrdev_region(dev_t, unsigned);
-/* register_chrdev removed - never called */
 
 extern void init_special_inode(struct inode *, umode_t, dev_t);
 

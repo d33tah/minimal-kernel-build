@@ -235,9 +235,6 @@ extern void *alloc_large_system_hash(const char *tablename,
 
 #define hashdist (0)
 
-static inline void early_memtest(phys_addr_t start, phys_addr_t end)
-{
-}
-
+/* early_memtest removed - empty stub, no callers */
 
 #endif  

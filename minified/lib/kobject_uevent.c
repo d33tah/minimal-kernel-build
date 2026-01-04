@@ -1,9 +1,6 @@
 /* Stubs for kobject uevent */
 #include <linux/kobject.h>
-int kobject_synth_uevent(struct kobject *kobj, const char *buf, size_t count)
-{
-	return 0;
-}
+/* kobject_synth_uevent removed - no callers */
 int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 		       char *envp_ext[])
 {

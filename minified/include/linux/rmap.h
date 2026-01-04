@@ -118,9 +118,5 @@ void remove_migration_ptes(struct folio *src, struct folio *dst, bool locked);
 
 int page_mapped_in_vma(struct page *page, struct vm_area_struct *vma);
 
-
-static inline int page_mkclean(struct page *page)
-{
-	return 0; /* folio_mkclean was a stub */
-}
+/* page_mkclean removed - stub, no callers */
 #endif	 

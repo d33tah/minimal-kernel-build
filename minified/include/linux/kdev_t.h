@@ -10,8 +10,7 @@
 #define MINOR(dev)	((unsigned int) ((dev) & MINORMASK))
 #define MKDEV(ma,mi)	(((ma) << MINORBITS) | (mi))
 
-#define print_dev_t(buffer, dev)					\
-	sprintf((buffer), "%u:%u\n", MAJOR(dev), MINOR(dev))
+/* print_dev_t removed - no callers */
 
 static __always_inline dev_t old_decode_dev(u16 val)
 {

@@ -325,16 +325,7 @@ static void klist_devices_put(struct klist_node *n)
 	put_device(dev);
 }
 
-static ssize_t bus_uevent_store(struct bus_type *bus, const char *buf,
-				size_t count)
-{
-	int rc;
-
-	rc = kobject_synth_uevent(&bus->p->subsys.kobj, buf, count);
-	return rc ? rc : count;
-}
-static struct bus_attribute bus_attr_uevent =
-	__ATTR(uevent, 0200, NULL, bus_uevent_store);
+/* bus_uevent_store, bus_attr_uevent removed - never referenced */
 
 /* brdbg debug helper removed - not needed */
 int bus_register(struct bus_type *bus)

@@ -907,11 +907,7 @@ static inline void init_sync_kiocb(struct kiocb *kiocb, struct file *filp)
 #define I_DIRTY (I_DIRTY_INODE | I_DIRTY_PAGES)
 #define I_DIRTY_ALL (I_DIRTY | I_DIRTY_TIME)
 
-/* __mark_inode_dirty removed - empty stub */
-static inline void mark_inode_dirty(struct inode *inode)
-{
-	/* __mark_inode_dirty was empty stub */
-}
+/* __mark_inode_dirty, mark_inode_dirty removed - empty stubs, no callers */
 
 extern void inc_nlink(struct inode *inode);
 extern void drop_nlink(struct inode *inode);
@@ -923,13 +919,7 @@ static inline void inode_dec_link_count(struct inode *inode)
 	/* mark_inode_dirty removed - __mark_inode_dirty is empty stub */
 }
 
-/* touch_atime removed - empty stub */
-
-static inline void file_accessed(struct file *file)
-{
-	/* touch_atime is empty stub */
-}
-
+/* touch_atime, file_accessed removed - empty stubs, no callers */
 
 struct file_system_type {
 	const char *name;

@@ -21,10 +21,7 @@ struct blk_plug {
 };
 
 
-static inline void blk_flush_plug(struct blk_plug *plug, bool async)
-{
-}
-
+/* blk_flush_plug removed - no callers */
 
 static inline void printk_all_partitions(void)
 {

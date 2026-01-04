@@ -114,11 +114,6 @@ static inline int __must_check sysfs_init(void)
 
 
 
-__printf(2, 3)
-static inline int sysfs_emit(char *buf, const char *fmt, ...)
-{
-	return 0;
-}
-
+/* sysfs_emit removed - no callers */
 
 #endif  

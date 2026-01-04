@@ -68,10 +68,7 @@ static inline void init_timer_on_stack_key(struct timer_list *timer,
 #define from_timer(var, callback_timer, timer_fieldname) \
 	container_of(callback_timer, typeof(*var), timer_fieldname)
 
-static inline int timer_pending(const struct timer_list * timer)
-{
-	return !hlist_unhashed_lockless(&timer->entry);
-}
+/* timer_pending removed - no callers */
 
 extern int del_timer(struct timer_list * timer);
 extern int mod_timer(struct timer_list *timer, unsigned long expires);

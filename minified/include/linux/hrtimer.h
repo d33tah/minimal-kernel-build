@@ -116,10 +116,7 @@ extern int hrtimer_cancel(struct hrtimer *timer);
 extern bool hrtimer_active(const struct hrtimer *timer);
 
 
-static inline int hrtimer_callback_running(struct hrtimer *timer)
-{
-	return timer->base->running == timer;
-}
+/* hrtimer_callback_running removed - no callers */
 
 extern void hrtimer_run_queues(void);
 

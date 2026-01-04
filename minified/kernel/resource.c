@@ -90,34 +90,7 @@ static struct resource *__request_resource(struct resource *root,
 	}
 }
 
-static int __release_resource(struct resource *old, bool release_child)
-{
-	struct resource *tmp, **p, *chd;
-
-	p = &old->parent->child;
-	for (;;) {
-		tmp = *p;
-		if (!tmp)
-			break;
-		if (tmp == old) {
-			if (release_child || !(tmp->child)) {
-				*p = tmp->sibling;
-			} else {
-				for (chd = tmp->child;; chd = chd->sibling) {
-					chd->parent = tmp->parent;
-					if (!(chd->sibling))
-						break;
-				}
-				*p = tmp->child;
-				chd->sibling = tmp->sibling;
-			}
-			old->parent = NULL;
-			return 0;
-		}
-		p = &tmp->sibling;
-	}
-	return -EINVAL;
-}
+/* __release_resource removed - no callers (~28 LOC) */
 
 struct resource *request_resource_conflict(struct resource *root,
 					   struct resource *new)
@@ -137,16 +110,7 @@ int request_resource(struct resource *root, struct resource *new)
 	conflict = request_resource_conflict(root, new);
 	return conflict ? -EBUSY : 0;
 }
-
-int release_resource(struct resource *old)
-{
-	int retval;
-
-	write_lock(&resource_lock);
-	retval = __release_resource(old, true);
-	write_unlock(&resource_lock);
-	return retval;
-}
+/* release_resource removed - never called (~9 LOC) */
 
 static int find_next_iomem_res(resource_size_t start, resource_size_t end,
 			       unsigned long flags, unsigned long desc,

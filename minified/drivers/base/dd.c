@@ -162,7 +162,7 @@ static void device_unbind_cleanup(struct device *dev)
 
 static void device_remove(struct device *dev)
 {
-	device_remove_groups(dev, dev->driver->dev_groups);
+	/* device_remove_groups call removed - stub function that does nothing */
 
 	if (dev->bus && dev->bus->remove)
 		dev->bus->remove(dev);
@@ -234,7 +234,7 @@ static int really_probe(struct device *dev, struct device_driver *drv)
 		goto probe_failed;
 	}
 
-	device_add_groups(dev, drv->dev_groups);
+	/* device_add_groups call removed - stub that always returns 0 */
 
 	if (dev->pm_domain && dev->pm_domain->sync)
 		dev->pm_domain->sync(dev);

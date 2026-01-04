@@ -202,18 +202,7 @@ out:
 	put_page(page);
 }
 
-static bool __init fs_is_nodev(char *fstype)
-{
-	struct file_system_type *fs = get_fs_type(fstype);
-	bool ret = false;
-
-	if (fs) {
-		ret = !(fs->fs_flags & FS_REQUIRES_DEV);
-		put_filesystem(fs);
-	}
-
-	return ret;
-}
+/* fs_is_nodev removed - FS_REQUIRES_DEV never set, all fs are nodev */
 
 static int __init mount_nodev_root(void)
 {
@@ -230,8 +219,7 @@ static int __init mount_nodev_root(void)
 	     i++, fstype += strlen(fstype) + 1) {
 		if (!*fstype)
 			continue;
-		if (!fs_is_nodev(fstype))
-			continue;
+		/* fs_is_nodev check removed - FS_REQUIRES_DEV never set */
 		err = do_mount_root(root_device_name, fstype, root_mountflags,
 				    root_mount_data);
 		if (!err)

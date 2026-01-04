@@ -69,8 +69,7 @@ cpumask_var_t cpu_initialized_mask;
 int smp_num_siblings = 1;
 
 DEFINE_PER_CPU_READ_MOSTLY(u16, cpu_llc_id) = BAD_APICID;
-
-DEFINE_PER_CPU_READ_MOSTLY(u16, cpu_l2c_id) = BAD_APICID;
+/* cpu_l2c_id removed - never used */
 
 /* Stub: PPIN (Protected Processor Inventory Number) not needed for minimal kernel */
 static void ppin_init(struct cpuinfo_x86 *c)

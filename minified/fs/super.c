@@ -289,11 +289,7 @@ void generic_shutdown_super(struct super_block *sb)
 	}
 }
 
-/* capable()/ns_capable() always return true */
-bool mount_capable(struct fs_context *fc)
-{
-	return true;
-}
+/* mount_capable removed - never called (capable()/ns_capable() always return true) */
 
 struct super_block *
 sget_fc(struct fs_context *fc,
@@ -354,65 +350,7 @@ share_extant_sb:
 	return old;
 }
 
-struct super_block *sget(struct file_system_type *type,
-			 int (*test)(struct super_block *, void *),
-			 int (*set)(struct super_block *, void *), int flags,
-			 void *data)
-{
-	struct user_namespace *user_ns = current_user_ns();
-	struct super_block *s = NULL;
-	struct super_block *old;
-	int err;
-
-	if (flags & SB_SUBMOUNT)
-		user_ns = &init_user_ns;
-
-retry:
-	spin_lock(&sb_lock);
-	if (test) {
-		hlist_for_each_entry(old, &type->fs_supers, s_instances) {
-			if (!test(old, data))
-				continue;
-			if (user_ns != old->s_user_ns) {
-				spin_unlock(&sb_lock);
-				destroy_unused_super(s);
-				return ERR_PTR(-EBUSY);
-			}
-			if (!grab_super(old))
-				goto retry;
-			destroy_unused_super(s);
-			return old;
-		}
-	}
-	if (!s) {
-		spin_unlock(&sb_lock);
-		s = alloc_super(type, (flags & ~SB_SUBMOUNT), user_ns);
-		if (!s)
-			return ERR_PTR(-ENOMEM);
-		goto retry;
-	}
-
-	err = set(s, data);
-	if (err) {
-		spin_unlock(&sb_lock);
-		destroy_unused_super(s);
-		return ERR_PTR(err);
-	}
-	s->s_type = type;
-	strlcpy(s->s_id, type->name, sizeof(s->s_id));
-	list_add_tail(&s->s_list, &super_blocks);
-	hlist_add_head(&s->s_instances, &type->fs_supers);
-	spin_unlock(&sb_lock);
-	get_filesystem(type);
-	/* register_shrinker_prepared is empty stub - call removed */
-	return s;
-}
-
-void drop_super(struct super_block *sb)
-{
-	up_read(&sb->s_umount);
-	put_super(sb);
-}
+/* sget, drop_super removed - never called */
 
 /* Removed: drop_super_exclusive, iterate_supers, iterate_supers_type,
    get_super, get_active_super, user_get_super - never called */

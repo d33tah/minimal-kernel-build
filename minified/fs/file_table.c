@@ -165,10 +165,7 @@ static void ____fput(struct callback_head *work)
 	__fput(container_of(work, struct file, f_u.fu_rcuhead));
 }
 
-void flush_delayed_fput(void)
-{
-	delayed_fput(NULL);
-}
+/* flush_delayed_fput removed - never called */
 
 static DECLARE_DELAYED_WORK(delayed_fput_work, delayed_fput);
 

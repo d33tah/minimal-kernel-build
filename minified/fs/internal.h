@@ -53,12 +53,11 @@ int path_umount(struct path *path, int flags);
  
 extern struct file *alloc_empty_file(int, const struct cred *);
 
-/* reconfigure_super, user_get_super removed - unused */
+/* reconfigure_super, user_get_super, mount_capable removed - unused */
 extern bool trylock_super(struct super_block *sb);
 void put_super(struct super_block *sb);
-extern bool mount_capable(struct fs_context *);
 
- 
+
 struct open_flags {
 	int open_flag;
 	umode_t mode;

@@ -84,7 +84,7 @@ int want_console = -1;
 
 static struct vc_data *master_display_fg;
 
-int (*console_blank_hook)(int);
+/* console_blank_hook removed - never assigned or used */
 
 static DEFINE_TIMER(console_timer, blank_screen_t);
 static int blank_state;

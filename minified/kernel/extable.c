@@ -9,7 +9,7 @@
 #include <asm/sections.h>
 #include <linux/uaccess.h>
 
-DEFINE_MUTEX(text_mutex);
+/* text_mutex removed - never used */
 
 extern struct exception_table_entry __start___ex_table[];
 extern struct exception_table_entry __stop___ex_table[];

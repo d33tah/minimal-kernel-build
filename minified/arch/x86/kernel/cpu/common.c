@@ -360,12 +360,7 @@ static const struct cpu_dev *cpu_devs[X86_VENDOR_NUM] = {};
 
 /* get_model_name removed - x86_model_id is never read */
 
-/* detect_num_cpu_cores removed - x86_max_cores never read */
-
-/* cpu_detect_cache_sizes stub - x86_cache_size removed */
-void cpu_detect_cache_sizes(struct cpuinfo_x86 *c)
-{
-}
+/* detect_num_cpu_cores, cpu_detect_cache_sizes removed - never called */
 
 static void get_cpu_vendor(struct cpuinfo_x86 *c)
 {

@@ -1136,7 +1136,7 @@ void __init init_idle(struct task_struct *idle, int cpu)
 
 void __init sched_init_smp(void)
 {
-	sched_init_granularity();
+	/* sched_init_granularity call removed - was empty function */
 }
 
 DECLARE_PER_CPU(cpumask_var_t, load_balance_mask);

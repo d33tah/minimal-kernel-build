@@ -39,11 +39,8 @@ static inline void update_load_sub(struct load_weight *lw, unsigned long dec)
 	lw->inv_weight = 0;
 }
 
-/* get_update_sysctl_factor, update_sysctl, normalized_sysctl_* removed - factor always 1 */
-void __init sched_init_granularity(void)
-{
-	/* Stub: sysctl values already set to correct values at compile time */
-}
+/* sched_init_granularity, get_update_sysctl_factor, update_sysctl, normalized_sysctl_* removed -
+   sysctl values already set to correct values at compile time */
 
 #define WMULT_CONST (~0U)
 #define WMULT_SHIFT 32

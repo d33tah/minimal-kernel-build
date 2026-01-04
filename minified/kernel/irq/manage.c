@@ -189,10 +189,7 @@ out_unlock:
 	chip_bus_sync_unlock(desc);
 }
 
-static inline void irq_thread_check_affinity(struct irq_desc *desc,
-					     struct irqaction *action)
-{
-}
+/* irq_thread_check_affinity removed - empty function, CONFIG_SMP not enabled */
 
 static irqreturn_t irq_forced_thread_fn(struct irq_desc *desc,
 					struct irqaction *action)
@@ -300,12 +297,10 @@ static int irq_thread(void *data)
 	init_task_work(&on_exit_work, irq_thread_dtor);
 	task_work_add(current, &on_exit_work, TWA_NONE);
 
-	irq_thread_check_affinity(desc, action);
+	/* irq_thread_check_affinity calls removed - empty function */
 
 	while (!irq_wait_for_interrupt(action)) {
 		irqreturn_t action_ret;
-
-		irq_thread_check_affinity(desc, action);
 
 		action_ret = handler_fn(desc, action);
 		if (action_ret == IRQ_WAKE_THREAD)

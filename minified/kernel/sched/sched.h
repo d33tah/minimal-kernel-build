@@ -672,7 +672,7 @@ extern struct task_struct *pick_next_task_idle(struct rq *rq);
 
 extern void schedule_idle(void);
 
-extern void sched_init_granularity(void);
+/* sched_init_granularity removed - empty function */
 
 extern void init_sched_fair_class(void);
 

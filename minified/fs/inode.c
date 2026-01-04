@@ -82,8 +82,6 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 	this_cpu_inc(nr_inodes);
 
 	return 0;
-out:
-	return -ENOMEM;
 }
 
 static void i_callback(struct rcu_head *head)

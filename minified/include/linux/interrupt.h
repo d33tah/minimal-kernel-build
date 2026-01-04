@@ -54,7 +54,6 @@ typedef irqreturn_t (*irq_handler_t)(int, void *);
 struct irqaction {
 	irq_handler_t		handler;
 	void			*dev_id;
-	void __percpu		*percpu_dev_id;
 	struct irqaction	*next;
 	irq_handler_t		thread_fn;
 	struct task_struct	*thread;
@@ -64,7 +63,6 @@ struct irqaction {
 	unsigned long		thread_flags;
 	unsigned long		thread_mask;
 	const char		*name;
-	struct proc_dir_entry	*dir;
 } ____cacheline_internodealigned_in_smp;
 
 extern irqreturn_t no_action(int cpl, void *dev_id);

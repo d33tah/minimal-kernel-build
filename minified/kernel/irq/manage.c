@@ -569,7 +569,6 @@ static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 	wake_up_and_wait_for_irq_thread_ready(desc, new->secondary);
 
 	/* register_irq_proc, register_handler_proc removed - empty stubs */
-	new->dir = NULL;
 	return 0;
 
 mismatch:

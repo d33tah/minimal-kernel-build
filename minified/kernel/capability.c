@@ -3,7 +3,7 @@
 #include <linux/export.h>
 #include <linux/user_namespace.h>
 #include <linux/fs.h>
-const kernel_cap_t __cap_empty_set = CAP_EMPTY_SET;
+/* __cap_empty_set removed - never used (cap_clear macro never called) */
 /* ns_capable always returns true - simplified */
 bool capable_wrt_inode_uidgid(struct user_namespace *mnt_userns,
 			      const struct inode *inode, int cap)

@@ -55,7 +55,7 @@ struct dentry;
 struct task_struct;
 struct user_namespace;
 
-extern const kernel_cap_t __cap_empty_set;
+/* __cap_empty_set extern removed - never used */
 
 #define CAP_FOR_EACH_U32(__capi)  \
 	for (__capi = 0; __capi < _KERNEL_CAPABILITY_U32S; ++__capi)
@@ -75,7 +75,7 @@ extern const kernel_cap_t __cap_empty_set;
 /* CAP_FS_SET, CAP_NFSD_SET removed - unused */
 #endif
 
-# define cap_clear(c)         do { (c) = __cap_empty_set; } while (0)
+/* cap_clear macro removed - never used */
 
 #define CAP_BOP_ALL(c, a, b, OP)                                    \
 do {                                                                \

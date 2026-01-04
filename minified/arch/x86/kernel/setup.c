@@ -44,15 +44,8 @@ extern struct atomic_notifier_head panic_notifier_list;
 #include <asm/memtype.h>
 #include <asm/mtrr.h>
 #include <asm/realmode.h>
-/* --- 2025-12-07 20:54 --- Inlined pci-direct.h */
+/* pci-direct.h inlined - extern declarations removed as never called */
 #include <linux/types.h>
-extern u32 read_pci_config(u8 bus, u8 slot, u8 func, u8 offset);
-extern u8 read_pci_config_byte(u8 bus, u8 slot, u8 func, u8 offset);
-extern u16 read_pci_config_16(u8 bus, u8 slot, u8 func, u8 offset);
-extern void write_pci_config(u8 bus, u8 slot, u8 func, u8 offset, u32 val);
-extern void write_pci_config_byte(u8 bus, u8 slot, u8 func, u8 offset, u8 val);
-extern void write_pci_config_16(u8 bus, u8 slot, u8 func, u8 offset, u16 val);
-extern int early_pci_allowed(void);
 #include <asm/prom.h>
 #include <asm/proto.h>
 #include <asm/unwind.h>

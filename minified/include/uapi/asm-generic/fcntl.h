@@ -66,7 +66,7 @@
 #endif
 
 #define O_TMPFILE (__O_TMPFILE | O_DIRECTORY)
-#define O_TMPFILE_MASK (__O_TMPFILE | O_DIRECTORY | O_CREAT)      
+/* O_TMPFILE_MASK removed - unused */
 
 #ifndef O_NDELAY
 #define O_NDELAY	O_NONBLOCK

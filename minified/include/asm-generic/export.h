@@ -5,7 +5,7 @@
 #ifndef KSYM_FUNC
 #define KSYM_FUNC(x) x
 #endif
-#define KSYM_ALIGN 4
+/* KSYM_ALIGN removed - unused */
 
 .macro __put, val, name
 	.long	\val - ., \name - ., 0

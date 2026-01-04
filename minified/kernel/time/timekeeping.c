@@ -101,16 +101,7 @@ static inline void tk_normalize_xtime(struct timekeeper *tk)
 	}
 }
 
-static inline struct timespec64 tk_xtime(const struct timekeeper *tk)
-{
-	struct timespec64 ts;
-
-	ts.tv_sec = tk->xtime_sec;
-	ts.tv_nsec = (long)(tk->tkr_mono.xtime_nsec >> tk->tkr_mono.shift);
-	return ts;
-}
-
-/* tk_set_xtime, tk_set_wall_to_mono removed - never called */
+/* tk_xtime, tk_set_xtime, tk_set_wall_to_mono removed - never called */
 
 static inline u64 tk_clock_read(const struct tk_read_base *tkr)
 {

@@ -363,45 +363,7 @@ struct resource *__request_region(struct resource *parent,
 	return res;
 }
 
-void __release_region(struct resource *parent, resource_size_t start,
-		      resource_size_t n)
-{
-	struct resource **p;
-	resource_size_t end;
-
-	p = &parent->child;
-	end = start + n - 1;
-
-	write_lock(&resource_lock);
-
-	for (;;) {
-		struct resource *res = *p;
-
-		if (!res)
-			break;
-		if (res->start <= start && res->end >= end) {
-			if (!(res->flags & IORESOURCE_BUSY)) {
-				p = &res->child;
-				continue;
-			}
-			if (res->start != start || res->end != end)
-				break;
-			*p = res->sibling;
-			write_unlock(&resource_lock);
-			if (res->flags & IORESOURCE_MUXED)
-				wake_up(&muxed_resource_wait);
-			free_resource(res);
-			return;
-		}
-		p = &res->sibling;
-	}
-
-	write_unlock(&resource_lock);
-
-	printk(KERN_WARNING "Trying to free nonexistent resource "
-			    "<%016llx-%016llx>\n",
-	       (unsigned long long)start, (unsigned long long)end);
-}
+/* __release_region removed - release_region/release_mem_region never called */
 
 #define MAXRESERVE 4
 

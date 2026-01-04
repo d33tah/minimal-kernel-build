@@ -86,49 +86,7 @@ int __fs_parse(struct p_log *log, const struct fs_parameter_spec *desc,
 	return p->opt;
 }
 
-int fs_lookup_param(struct fs_context *fc, struct fs_parameter *param,
-		    bool want_bdev, struct path *_path)
-{
-	struct filename *f;
-	unsigned int flags = 0;
-	bool put_f;
-	int ret;
-
-	switch (param->type) {
-	case fs_value_is_string:
-		f = getname_kernel(param->string);
-		if (IS_ERR(f))
-			return PTR_ERR(f);
-		put_f = true;
-		break;
-	case fs_value_is_filename:
-		f = param->name;
-		put_f = false;
-		break;
-	default:
-		return invalf(fc, "%s: not usable as path", param->key);
-	}
-
-	ret = filename_lookup(param->dirfd, f, flags, _path, NULL);
-	if (ret < 0) {
-		errorf(fc, "%s: Lookup failure for '%s'", param->key, f->name);
-		goto out;
-	}
-
-	if (want_bdev && !S_ISBLK(d_backing_inode(_path->dentry)->i_mode)) {
-		path_put(_path);
-		_path->dentry = NULL;
-		_path->mnt = NULL;
-		errorf(fc, "%s: Non-blockdev passed as '%s'", param->key,
-		       f->name);
-		ret = -ENOTBLK;
-	}
-
-out:
-	if (put_f)
-		putname(f);
-	return ret;
-}
+/* fs_lookup_param removed - never called */
 
 static int fs_param_bad_value(struct p_log *log, struct fs_parameter *param)
 {

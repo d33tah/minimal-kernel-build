@@ -152,22 +152,7 @@ static ssize_t bind_store(struct device_driver *drv, const char *buf,
 }
 static DRIVER_ATTR_IGNORE_LOCKDEP(bind, 0200, NULL, bind_store);
 
-static ssize_t drivers_autoprobe_show(struct bus_type *bus, char *buf)
-{
-	return sysfs_emit(buf, "1\n");
-}
-static ssize_t drivers_autoprobe_store(struct bus_type *bus, const char *buf,
-				       size_t count)
-{
-	return count;
-}
-
-/* Stubbed: drivers_probe_store relies on bus_rescan_devices_helper */
-static ssize_t drivers_probe_store(struct bus_type *bus, const char *buf,
-				   size_t count)
-{
-	return -ENOSYS;
-}
+/* drivers_autoprobe_show, drivers_autoprobe_store, drivers_probe_store removed - bus sysfs attrs never used */
 
 static struct device *next_device(struct klist_iter *i)
 {
@@ -297,9 +282,7 @@ static void add_bind_files(struct device_driver *drv)
 }
 
 /* remove_bind_files removed - only called from bus_remove_driver which was removed */
-
-static BUS_ATTR_WO(drivers_probe);
-static BUS_ATTR_RW(drivers_autoprobe);
+/* bus_attr_drivers_probe, bus_attr_drivers_autoprobe removed - never added to sysfs */
 
 static ssize_t uevent_store(struct device_driver *drv, const char *buf,
 			    size_t count)

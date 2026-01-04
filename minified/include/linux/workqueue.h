@@ -122,9 +122,9 @@ static inline void __init_work(struct work_struct *work, int onstack) { }
 #define __INIT_DELAYED_WORK(_work, _func, _tflags)			\
 	do {								\
 		INIT_WORK(&(_work)->work, (_func));			\
-		__init_timer(&(_work)->timer,				\
-			     delayed_work_timer_fn,			\
-			     (_tflags) | TIMER_IRQSAFE);		\
+		timer_setup(&(_work)->timer,				\
+			    delayed_work_timer_fn,			\
+			    (_tflags) | TIMER_IRQSAFE);			\
 	} while (0)
 
 #define INIT_DELAYED_WORK(_work, _func)					\

@@ -43,25 +43,8 @@ void init_timer_key(struct timer_list *timer,
 		    void (*func)(struct timer_list *), unsigned int flags,
 		    const char *name, struct lock_class_key *key);
 
-static inline void init_timer_on_stack_key(struct timer_list *timer,
-					   void (*func)(struct timer_list *),
-					   unsigned int flags,
-					   const char *name,
-					   struct lock_class_key *key)
-{
-	init_timer_key(timer, func, flags, name, key);
-}
-
-#define __init_timer(_timer, _fn, _flags)				\
-	init_timer_key((_timer), (_fn), (_flags), NULL, NULL)
-#define __init_timer_on_stack(_timer, _fn, _flags)			\
-	init_timer_on_stack_key((_timer), (_fn), (_flags), NULL, NULL)
-
 #define timer_setup(timer, callback, flags)			\
-	__init_timer((timer), (callback), (flags))
-
-#define timer_setup_on_stack(timer, callback, flags)		\
-	__init_timer_on_stack((timer), (callback), (flags))
+	init_timer_key((timer), (callback), (flags), NULL, NULL)
 
 /* destroy_timer_on_stack removed - unused */
 

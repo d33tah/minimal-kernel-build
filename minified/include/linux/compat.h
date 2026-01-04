@@ -17,9 +17,7 @@ struct cred;
 #include <asm/siginfo.h>
 #include <asm/signal.h>
 #include <asm/syscall_wrapper.h>
-#ifndef __SC_DELOUSE
-#define __SC_DELOUSE(t,v) ((__force t)(unsigned long)(v))
-#endif
+/* __SC_DELOUSE removed - unused */
 #ifndef compat_sigset_t
 typedef struct { compat_sigset_word sig[_COMPAT_NSIG_WORDS]; } compat_sigset_t;
 #endif

@@ -54,7 +54,7 @@ extern int  e820__update_table(struct e820_table *table);
 /* e820__update_table_print removed - never called */
 
 extern unsigned long e820__end_of_ram_pfn(void);
-extern unsigned long e820__end_of_low_ram_pfn(void);
+/* e820__end_of_low_ram_pfn removed - never called */
 
 extern void e820__memblock_setup(void);
 
@@ -67,7 +67,7 @@ extern void e820__memory_setup_extended(u64 phys_addr, u32 data_len);
 extern char *e820__memory_setup_default(void);
 extern void e820__setup_pci_gap(void);
 
-extern void e820__reallocate_tables(void);
+/* e820__reallocate_tables removed - never called */
 extern void e820__register_nosave_regions(unsigned long limit_pfn);
 
 static inline bool is_ISA_range(u64 start, u64 end)

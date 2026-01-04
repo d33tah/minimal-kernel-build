@@ -290,14 +290,7 @@ irq_put_desc_unlock(struct irq_desc *desc, unsigned long flags)
 
 #define __irqd_to_state(d) ACCESS_PRIVATE((d)->common, state_use_accessors)
 
-/* irqd_get, irqd_set_move_pending, irqd_clr_move_pending removed - unused */
-
-static inline void irqd_set_managed_shutdown(struct irq_data *d)
-{
-	__irqd_to_state(d) |= IRQD_MANAGED_SHUTDOWN;
-}
-
-/* irqd_clr_managed_shutdown removed - unused */
+/* irqd_get, irqd_set_move_pending, irqd_clr_move_pending, irqd_set_managed_shutdown, irqd_clr_managed_shutdown removed - unused */
 
 static inline void irqd_clear(struct irq_data *d, unsigned int mask)
 {

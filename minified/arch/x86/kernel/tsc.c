@@ -585,11 +585,7 @@ void mark_tsc_unstable(char *reason)
 	pr_info("Marking TSC unstable due to %s\n", reason);
 }
 
-static void __init tsc_disable_clocksource_watchdog(void)
-{
-	clocksource_tsc_early.flags &= ~CLOCK_SOURCE_MUST_VERIFY;
-	clocksource_tsc.flags &= ~CLOCK_SOURCE_MUST_VERIFY;
-}
+/* tsc_disable_clocksource_watchdog removed - never called */
 
 /* Stubbed - minimal single-CPU kernel assumes synchronized TSC */
 int unsynchronized_tsc(void)

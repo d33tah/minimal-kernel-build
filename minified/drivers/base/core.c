@@ -176,20 +176,7 @@ static const struct kset_uevent_ops device_uevent_ops = {
 	.uevent = dev_uevent,
 };
 
-static ssize_t uevent_show(struct device *dev, struct device_attribute *attr,
-			   char *buf)
-{
-	/* Stub: sysfs uevent display not needed for minimal kernel */
-	return 0;
-}
-
-/* Stub: uevent_store simplified for minimal kernel */
-static ssize_t uevent_store(struct device *dev, struct device_attribute *attr,
-			    const char *buf, size_t count)
-{
-	return count;
-}
-static DEVICE_ATTR_RW(uevent);
+/* uevent_show, uevent_store, dev_attr_uevent removed - only caller was empty device_remove_file stub */
 
 /* Stub: online sysfs attributes simplified for minimal kernel */
 
@@ -202,12 +189,7 @@ static void device_remove_attrs(struct device *dev)
 		kfree(dev->physical_location);
 }
 
-static ssize_t dev_show(struct device *dev, struct device_attribute *attr,
-			char *buf)
-{
-	return print_dev_t(buf, dev->devt);
-}
-static DEVICE_ATTR_RO(dev);
+/* dev_show, dev_attr_dev removed - only caller was empty device_remove_file stub */
 
 struct kset *devices_kset;
 
@@ -420,10 +402,7 @@ void device_del(struct device *dev)
 
 	if (parent)
 		klist_del(&dev->p->knode_parent);
-	if (MAJOR(dev->devt)) {
-		/* devtmpfs_delete_node, device_remove_sys_dev_entry removed - empty stubs */
-		device_remove_file(dev, &dev_attr_dev);
-	}
+	/* MAJOR(dev->devt) check removed - device_remove_file is empty stub */
 	if (dev->class) {
 		device_remove_class_symlinks(dev);
 
@@ -437,7 +416,7 @@ void device_del(struct device *dev)
 		klist_del(&dev->p->knode_class);
 		mutex_unlock(&dev->class->p->mutex);
 	}
-	device_remove_file(dev, &dev_attr_uevent);
+	/* device_remove_file(dev, &dev_attr_uevent) removed - empty stub */
 	device_remove_attrs(dev);
 	bus_remove_device(dev);
 	driver_deferred_probe_del(dev);

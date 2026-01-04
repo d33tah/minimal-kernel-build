@@ -295,8 +295,7 @@ int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top,
 	bprm->p -= stack_shift;
 	mm->arg_start = bprm->p;
 
-	if (bprm->loader)
-		bprm->loader -= stack_shift;
+	/* bprm->loader check removed - never set (kzalloc zeros) */
 	bprm->exec -= stack_shift;
 
 	if (mmap_write_lock_killable(mm))
@@ -677,8 +676,7 @@ static void free_bprm(struct linux_binprm *bprm)
 		allow_write_access(bprm->file);
 		fput(bprm->file);
 	}
-	if (bprm->executable)
-		fput(bprm->executable);
+	/* bprm->executable check removed - never set (kzalloc zeros) */
 
 	if (bprm->interp != bprm->filename)
 		kfree(bprm->interp);
@@ -726,7 +724,8 @@ out:
 /* security_bprm_creds_from_file always returns 0 - simplified */
 static void bprm_creds_from_file(struct linux_binprm *bprm)
 {
-	struct file *file = bprm->execfd_creds ? bprm->executable : bprm->file;
+	/* bprm->execfd_creds is never set (kzalloc zeros), so always use bprm->file */
+	struct file *file = bprm->file;
 	struct inode *inode;
 	unsigned int mode;
 

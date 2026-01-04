@@ -35,11 +35,7 @@ static inline pte_t pfn_t_pte(pfn_t pfn, pgprot_t pgprot)
 }
 
 
-static inline bool pfn_t_devmap(pfn_t pfn)
-{
-	return false;
-}
-/* pte_mkdevmap declaration removed - pfn_t_devmap always returns false */
+/* pfn_t_devmap, pte_mkdevmap removed - never called */
 /* pmd_mkdevmap declaration removed - never called */
 /* CONFIG_TRANSPARENT_HUGEPAGE not defined */
 

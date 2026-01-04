@@ -94,12 +94,7 @@ struct irq_affinity_desc {
 	unsigned int	is_managed : 1;
 };
 
-static inline int irq_set_affinity(unsigned int irq, const struct cpumask *m)
-{
-	return -EINVAL;
-}
-
-/* irq_can_set_affinity removed - never called */
+/* irq_set_affinity, irq_can_set_affinity removed - never called */
 
 enum irqchip_irq_state {
 	IRQCHIP_STATE_PENDING,

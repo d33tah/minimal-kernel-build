@@ -92,38 +92,7 @@ static inline u64 mul_u64_u32_shr(u64 a, u32 mul, unsigned int shift)
 }
 #endif  
 
-#ifndef mul_u64_u64_shr
-static inline u64 mul_u64_u64_shr(u64 a, u64 b, unsigned int shift)
-{
-	union {
-		u64 ll;
-		struct {
-			u32 low, high;
-		} l;
-	} rl, rm, rn, rh, a0, b0;
-	u64 c;
-
-	a0.ll = a;
-	b0.ll = b;
-
-	rl.ll = mul_u32_u32(a0.l.low, b0.l.low);
-	rm.ll = mul_u32_u32(a0.l.low, b0.l.high);
-	rn.ll = mul_u32_u32(a0.l.high, b0.l.low);
-	rh.ll = mul_u32_u32(a0.l.high, b0.l.high);
-
-	 
-	rl.l.high = c = (u64)rl.l.high + rm.l.low + rn.l.low;
-	rh.l.low = c = (c >> 32) + rm.l.high + rn.l.high + rh.l.low;
-	rh.l.high = (c >> 32) + rh.l.high;
-
-	 
-	if (shift == 0)
-		return rl.ll;
-	if (shift < 64)
-		return (rl.ll >> shift) | (rh.ll << (64 - shift));
-	return rh.ll >> (shift & 63);
-}
-#endif
+/* mul_u64_u64_shr removed - no callers */
 
 u64 mul_u64_u64_div_u64(u64 a, u64 mul, u64 div);
 

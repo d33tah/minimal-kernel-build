@@ -82,27 +82,7 @@ static int nmi_handle(unsigned int type, struct pt_regs *regs)
 }
 NOKPROBE_SYMBOL(nmi_handle);
 
-int __register_nmi_handler(unsigned int type, struct nmiaction *action)
-{
-	struct nmi_desc *desc = nmi_to_desc(type);
-	unsigned long flags;
-
-	if (WARN_ON_ONCE(!action->handler || !list_empty(&action->list)))
-		return -EINVAL;
-
-	raw_spin_lock_irqsave(&desc->lock, flags);
-
-	WARN_ON_ONCE(type == NMI_SERR && !list_empty(&desc->head));
-	WARN_ON_ONCE(type == NMI_IO_CHECK && !list_empty(&desc->head));
-
-	if (action->flags & NMI_FLAG_FIRST)
-		list_add_rcu(&action->list, &desc->head);
-	else
-		list_add_tail_rcu(&action->list, &desc->head);
-
-	raw_spin_unlock_irqrestore(&desc->lock, flags);
-	return 0;
-}
+/* __register_nmi_handler removed - never called (~21 LOC) */
 
 static void pci_serr_error(unsigned char reason, struct pt_regs *regs)
 {

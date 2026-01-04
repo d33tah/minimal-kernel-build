@@ -35,11 +35,11 @@
 #define S_IXOTH 00001
 #endif
 struct statx;
-#define STATX_BASIC_STATS	0x000007ffU
+/* STATX_BASIC_STATS removed - unused */
 #define S_IRWXUGO	(S_IRWXU|S_IRWXG|S_IRWXO)
 #define S_IALLUGO	(S_ISUID|S_ISGID|S_ISVTX|S_IRWXUGO)
 #define S_IRUGO		(S_IRUSR|S_IRGRP|S_IROTH)
-#define S_IWUGO		(S_IWUSR|S_IWGRP|S_IWOTH)
+/* S_IWUGO removed - unused */
 #define S_IXUGO		(S_IXUSR|S_IXGRP|S_IXOTH)
 #include <linux/time.h>
 #include <linux/uidgid.h>

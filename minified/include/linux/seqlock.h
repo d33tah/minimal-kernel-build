@@ -239,15 +239,7 @@ static inline void do_write_seqcount_end(seqcount_t *s)
 	do_raw_write_seqcount_end(s);
 }
 
-#define raw_write_seqcount_barrier(s)					\
-	do_raw_write_seqcount_barrier(seqprop_ptr(s))
-
-static inline void do_raw_write_seqcount_barrier(seqcount_t *s)
-{
-	s->sequence++;
-	smp_wmb();
-	s->sequence++;
-}
+/* raw_write_seqcount_barrier and do_raw_write_seqcount_barrier removed - unused */
 
 #define write_seqcount_invalidate(s)					\
 	do_write_seqcount_invalidate(seqprop_ptr(s))

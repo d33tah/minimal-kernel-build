@@ -364,11 +364,7 @@ static inline bool legitimize_path(struct nameidata *nd, struct path *path,
 static bool legitimize_links(struct nameidata *nd)
 {
 	int i;
-	if (unlikely(nd->flags & LOOKUP_CACHED)) {
-		drop_links(nd);
-		nd->depth = 0;
-		return false;
-	}
+	/* LOOKUP_CACHED check removed - flag never set */
 	for (i = 0; i < nd->depth; i++) {
 		struct saved *last = nd->stack + i;
 		if (unlikely(!legitimize_path(nd, &last->link, last->seq))) {
@@ -462,9 +458,8 @@ static int complete_walk(struct nameidata *nd)
 	/* Stub: simplified walk completion for minimal kernel */
 	if (nd->flags & LOOKUP_RCU) {
 		if (!(nd->state & ND_ROOT_PRESET))
-			if (!(nd->flags & LOOKUP_IS_SCOPED))
-				nd->root.mnt = NULL;
-		nd->flags &= ~LOOKUP_CACHED;
+			nd->root.mnt = NULL;
+		/* nd->flags &= ~LOOKUP_CACHED removed - never set */
 		if (!try_to_unlazy(nd))
 			return -ECHILD;
 	}
@@ -475,8 +470,7 @@ static int set_root(struct nameidata *nd)
 {
 	struct fs_struct *fs = current->fs;
 
-	if (WARN_ON(nd->flags & LOOKUP_IS_SCOPED))
-		return -ENOTRECOVERABLE;
+	/* WARN_ON for LOOKUP_IS_SCOPED removed - never set */
 
 	if (nd->flags & LOOKUP_RCU) {
 		unsigned seq;
@@ -496,8 +490,7 @@ static int set_root(struct nameidata *nd)
 
 static int nd_jump_root(struct nameidata *nd)
 {
-	if (unlikely(nd->flags & LOOKUP_BENEATH))
-		return -EXDEV;
+	/* LOOKUP_BENEATH check removed - never set */
 	if (unlikely(nd->flags & LOOKUP_NO_XDEV)) {
 		if (nd->path.mnt != NULL && nd->path.mnt != nd->root.mnt)
 			return -EXDEV;
@@ -894,8 +887,7 @@ static struct dentry *follow_dotdot_rcu(struct nameidata *nd,
 in_root:
 	if (unlikely(read_seqretry(&mount_lock, nd->m_seq)))
 		return ERR_PTR(-ECHILD);
-	if (unlikely(nd->flags & LOOKUP_BENEATH))
-		return ERR_PTR(-ECHILD);
+	/* LOOKUP_BENEATH check removed - never set */
 	return NULL;
 }
 
@@ -919,8 +911,7 @@ static struct dentry *follow_dotdot(struct nameidata *nd, struct inode **inodep,
 	return parent;
 
 in_root:
-	if (unlikely(nd->flags & LOOKUP_BENEATH))
-		return ERR_PTR(-EXDEV);
+	/* LOOKUP_BENEATH check removed - never set */
 	dget(nd->path.dentry);
 	return NULL;
 }
@@ -953,15 +944,7 @@ static const char *handle_dots(struct nameidata *nd, int type)
 		if (unlikely(error))
 			return error;
 
-		if (unlikely(nd->flags & LOOKUP_IS_SCOPED)) {
-			smp_rmb();
-			if (unlikely(__read_seqcount_retry(&mount_lock.seqcount,
-							   nd->m_seq)))
-				return ERR_PTR(-EAGAIN);
-			if (unlikely(__read_seqcount_retry(
-				    &rename_lock.seqcount, nd->r_seq)))
-				return ERR_PTR(-EAGAIN);
-		}
+		/* LOOKUP_IS_SCOPED check removed - flags never set */
 	}
 	return NULL;
 }
@@ -1130,8 +1113,7 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
 	int error;
 	const char *s = nd->name->name;
 
-	if ((flags & (LOOKUP_RCU | LOOKUP_CACHED)) == LOOKUP_CACHED)
-		return ERR_PTR(-EAGAIN);
+	/* LOOKUP_CACHED check removed - never set */
 
 	if (!*s)
 		flags &= ~LOOKUP_RCU;
@@ -1157,8 +1139,8 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
 
 	nd->root.mnt = NULL;
 
-	/* Simplified: handle absolute/relative paths without seqcount retries */
-	if (*s == '/' && !(flags & LOOKUP_IN_ROOT)) {
+	/* Simplified: handle absolute/relative paths - LOOKUP_IN_ROOT never set */
+	if (*s == '/') {
 		error = nd_jump_root(nd);
 		if (unlikely(error))
 			return ERR_PTR(error);

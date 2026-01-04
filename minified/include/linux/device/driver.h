@@ -61,9 +61,7 @@ struct driver_attribute {
 #define DRIVER_ATTR_WO(_name) \
 	struct driver_attribute driver_attr_##_name = __ATTR_WO(_name)
 
-extern int __must_check driver_create_file(struct device_driver *driver,
-					const struct driver_attribute *attr);
-/* driver_remove_file, driver_find_device removed - never called */
+/* driver_create_file, driver_remove_file, driver_find_device removed - never called */
 
 extern int driver_deferred_probe_timeout;
 void driver_deferred_probe_add(struct device *dev);

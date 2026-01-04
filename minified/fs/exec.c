@@ -631,15 +631,7 @@ int begin_new_exec(struct linux_binprm *bprm)
 	commit_creds(bprm->cred);
 	bprm->cred = NULL;
 	/* security_bprm_committed_creds, perf_event_exec/exit_task - stubs */
-
-	if (bprm->have_execfd) {
-		retval = get_unused_fd_flags(0);
-		if (retval < 0)
-			goto out_unlock;
-		fd_install(retval, bprm->executable);
-		bprm->executable = NULL;
-		bprm->execfd = retval;
-	}
+	/* bprm->have_execfd check removed - never set (kzalloc zeros) */
 	return 0;
 
 out_unlock:
@@ -817,14 +809,8 @@ static int exec_binprm(struct linux_binprm *bprm)
 		bprm->interpreter = NULL;
 
 		allow_write_access(exec);
-		if (unlikely(bprm->have_execfd)) {
-			if (bprm->executable) {
-				fput(exec);
-				return -ENOEXEC;
-			}
-			bprm->executable = exec;
-		} else
-			fput(exec);
+		/* bprm->have_execfd check removed - never set */
+		fput(exec);
 	}
 
 	/* audit_bprm - empty stub */

@@ -197,9 +197,7 @@ static int create_elf_tables(struct linux_binprm *bprm,
 		NEW_AUX_ENT(AT_BASE_PLATFORM,
 			    (elf_addr_t)(unsigned long)u_base_platform);
 	}
-	if (bprm->have_execfd) {
-		NEW_AUX_ENT(AT_EXECFD, bprm->execfd);
-	}
+	/* bprm->have_execfd check removed - never set */
 #undef NEW_AUX_ENT
 
 	memset(elf_info, 0,

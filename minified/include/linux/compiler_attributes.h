@@ -21,7 +21,7 @@
 
 #define __attribute_const__             __attribute__((__const__))
 
-#define __deprecated
+/* __deprecated removed - never used */
 
 #if __has_attribute(__designated_init__)
 # define __designated_init              __attribute__((__designated_init__))

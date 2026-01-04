@@ -54,14 +54,7 @@ struct vmap_area {
 };
 
 
-#ifndef arch_vmap_pmd_supported
-static inline bool arch_vmap_pmd_supported(pgprot_t prot)
-{
-	return false;
-}
-#endif
-
-/* arch_vmap_pte_supported_shift removed - only caller was dead code */
+/* arch_vmap_pmd_supported, arch_vmap_pte_supported_shift removed - no callers */
 
 extern void __init vmalloc_init(void);
 

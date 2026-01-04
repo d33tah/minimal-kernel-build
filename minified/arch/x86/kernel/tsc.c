@@ -148,10 +148,7 @@ u64 native_sched_clock(void)
 	return (jiffies_64 - INITIAL_JIFFIES) * (1000000000 / HZ);
 }
 
-u64 native_sched_clock_from_tsc(u64 tsc)
-{
-	return cycles_2_ns(tsc);
-}
+/* native_sched_clock_from_tsc removed - never called */
 
 unsigned long long sched_clock(void)
 	__attribute__((alias("native_sched_clock")));
@@ -581,13 +578,7 @@ void mark_tsc_unstable(char *reason)
 	pr_info("Marking TSC unstable due to %s\n", reason);
 }
 
-/* tsc_disable_clocksource_watchdog removed - never called */
-
-/* Stubbed - minimal single-CPU kernel assumes synchronized TSC */
-int unsynchronized_tsc(void)
-{
-	return 0;
-}
+/* tsc_disable_clocksource_watchdog, unsynchronized_tsc removed - never called */
 
 static void tsc_refine_calibration_work(struct work_struct *work);
 static DECLARE_DELAYED_WORK(tsc_irqwork, tsc_refine_calibration_work);

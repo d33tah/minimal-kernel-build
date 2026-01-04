@@ -388,18 +388,7 @@ __init void e820__setup_pci_gap(void)
 		gapstart + gapsize - 1);
 }
 
-__init void e820__reallocate_tables(void)
-{
-	struct e820_table *n;
-	int size;
-
-	size = offsetof(struct e820_table, entries) +
-	       sizeof(struct e820_entry) * e820_table->nr_entries;
-	n = kmemdup(e820_table, size, GFP_KERNEL);
-	BUG_ON(!n);
-	e820_table = n;
-	/* kexec/firmware table reallocation removed - unused in minimal kernel */
-}
+/* e820__reallocate_tables removed - never called */
 
 void __init e820__memory_setup_extended(u64 phys_addr, u32 data_len)
 {
@@ -466,10 +455,7 @@ unsigned long __init e820__end_of_ram_pfn(void)
 	return e820_end_pfn(MAX_ARCH_PFN, E820_TYPE_RAM);
 }
 
-unsigned long __init e820__end_of_low_ram_pfn(void)
-{
-	return e820_end_pfn(1UL << (32 - PAGE_SHIFT), E820_TYPE_RAM);
-}
+/* e820__end_of_low_ram_pfn removed - never called */
 
 static int userdef __initdata;
 

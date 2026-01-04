@@ -97,8 +97,7 @@ compound_page_dtor *const compound_page_dtors[NR_COMPOUND_DTORS] = {
 	[COMPOUND_PAGE_DTOR] = free_compound_page,
 };
 
-int min_free_kbytes = 1024;
-/* user_min_free_kbytes removed - unused */
+/* min_free_kbytes, user_min_free_kbytes removed - unused */
 
 static unsigned long arch_zone_lowest_possible_pfn[MAX_NR_ZONES] __initdata;
 static unsigned long arch_zone_highest_possible_pfn[MAX_NR_ZONES] __initdata;
@@ -863,9 +862,7 @@ static unsigned long nr_free_zone_pages(int offset)
 {
 	struct zoneref *z;
 	struct zone *zone;
-
 	unsigned long sum = 0;
-
 	struct zonelist *zonelist = node_zonelist(numa_node_id(), GFP_KERNEL);
 
 	for_each_zone_zonelist(zone, z, zonelist, offset) {
@@ -874,14 +871,10 @@ static unsigned long nr_free_zone_pages(int offset)
 		if (size > high)
 			sum += size - high;
 	}
-
 	return sum;
 }
 
-unsigned long nr_free_buffer_pages(void)
-{
-	return nr_free_zone_pages(gfp_zone(GFP_USER));
-}
+/* nr_free_buffer_pages removed - never called */
 
 static void build_zonelists(pg_data_t *pgdat)
 {

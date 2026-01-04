@@ -402,7 +402,7 @@ void __put_page(struct page *page);
 
 void split_page(struct page *page, unsigned int order);
 
-unsigned long nr_free_buffer_pages(void);
+/* nr_free_buffer_pages removed - never called */
 
 typedef void compound_page_dtor(struct page *);
 
@@ -938,7 +938,7 @@ void warn_alloc(gfp_t gfp_mask, nodemask_t *nodemask, const char *fmt, ...);
 
 extern void setup_per_cpu_pageset(void);
 
-extern int min_free_kbytes;
+/* min_free_kbytes removed - unused */
 
 void vma_interval_tree_insert(struct vm_area_struct *node,
 			      struct rb_root_cached *root);

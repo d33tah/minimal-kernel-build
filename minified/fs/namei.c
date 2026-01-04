@@ -490,11 +490,7 @@ static int set_root(struct nameidata *nd)
 
 static int nd_jump_root(struct nameidata *nd)
 {
-	/* LOOKUP_BENEATH check removed - never set */
-	if (unlikely(nd->flags & LOOKUP_NO_XDEV)) {
-		if (nd->path.mnt != NULL && nd->path.mnt != nd->root.mnt)
-			return -EXDEV;
-	}
+	/* LOOKUP_BENEATH, LOOKUP_NO_XDEV checks removed - never set */
 	if (!nd->root.mnt) {
 		int error = set_root(nd);
 		if (error)
@@ -554,8 +550,7 @@ static bool __follow_mount_rcu(struct nameidata *nd, struct path *path,
 	if (likely(!(flags & DCACHE_MANAGED_DENTRY)))
 		return true;
 
-	if (unlikely(nd->flags & LOOKUP_NO_XDEV))
-		return false;
+	/* LOOKUP_NO_XDEV check removed - never set */
 
 	for (;;) {
 		if (unlikely(flags & DCACHE_MANAGE_TRANSIT)) {
@@ -606,12 +601,9 @@ static inline int handle_mounts(struct nameidata *nd, struct dentry *dentry,
 		path->dentry = dentry;
 	}
 	ret = traverse_mounts(path, &jumped, &nd->total_link_count, nd->flags);
-	if (jumped) {
-		if (unlikely(nd->flags & LOOKUP_NO_XDEV))
-			ret = -EXDEV;
-		else
-			nd->state |= ND_JUMPED;
-	}
+	if (jumped)
+		nd->state |= ND_JUMPED;
+	/* LOOKUP_NO_XDEV check removed - never set */
 	if (unlikely(ret)) {
 		dput(path->dentry);
 		if (path->mnt != nd->path.mnt)
@@ -792,8 +784,8 @@ static const char *pick_link(struct nameidata *nd, struct path *link,
 	clear_delayed_call(&last->done);
 	last->seq = seq;
 
-	if (unlikely(nd->flags & LOOKUP_NO_SYMLINKS) ||
-	    unlikely(link->mnt->mnt_flags & MNT_NOSYMFOLLOW))
+	/* LOOKUP_NO_SYMLINKS check removed - never set */
+	if (unlikely(link->mnt->mnt_flags & MNT_NOSYMFOLLOW))
 		return ERR_PTR(-ELOOP);
 
 	if (!(nd->flags & LOOKUP_RCU)) {
@@ -1166,11 +1158,7 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
 		fdput(f);
 	}
 
-	if (flags & LOOKUP_IS_SCOPED) {
-		nd->root = nd->path;
-		path_get(&nd->root);
-		nd->state |= ND_ROOT_GRABBED;
-	}
+	/* LOOKUP_IS_SCOPED check removed - never set */
 	return s;
 }
 

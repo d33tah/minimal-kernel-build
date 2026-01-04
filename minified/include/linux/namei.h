@@ -19,12 +19,7 @@ enum {LAST_NORM, LAST_ROOT, LAST_DOT, LAST_DOTDOT};
 #define LOOKUP_CREATE		0x0200
 #define LOOKUP_EXCL		0x0400
 #define LOOKUP_PARENT		0x0010
-#define LOOKUP_NO_SYMLINKS	0x010000
-#define LOOKUP_NO_XDEV		0x040000
-#define LOOKUP_BENEATH		0x080000
-#define LOOKUP_IN_ROOT		0x100000
-#define LOOKUP_CACHED		0x200000
-#define LOOKUP_IS_SCOPED (LOOKUP_BENEATH | LOOKUP_IN_ROOT)
+/* LOOKUP_NO_SYMLINKS, LOOKUP_NO_XDEV, LOOKUP_BENEATH, LOOKUP_IN_ROOT, LOOKUP_CACHED, LOOKUP_IS_SCOPED removed - never set */
 extern int kern_path(const char *, unsigned, struct path *);
 extern struct dentry *kern_path_create(int, const char *, struct path *, unsigned int);
 extern void done_path_create(struct path *, struct dentry *);

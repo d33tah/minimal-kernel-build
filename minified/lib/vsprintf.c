@@ -950,10 +950,7 @@ int sprintf(char *buf, const char *fmt, ...)
 	return i;
 }
 
-int vsscanf(const char *buf, const char *fmt, va_list args)
-{
-	return 0;
-}
+/* vsscanf removed - never called */
 
 int sscanf(const char *buf, const char *fmt, ...)
 {

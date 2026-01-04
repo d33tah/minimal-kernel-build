@@ -13,7 +13,7 @@ struct ipc_namespace {
 	struct user_namespace *user_ns;
 	struct ns_common ns;
 };
-extern struct ipc_namespace init_ipc_ns;
+/* init_ipc_ns extern removed - never used */
 static inline struct ipc_namespace *copy_ipcs(unsigned long flags,
 					      struct user_namespace *user_ns,
 					      struct ipc_namespace *ns)

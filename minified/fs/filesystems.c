@@ -91,16 +91,6 @@ static struct file_system_type *__get_fs_type(const char *name, int len)
 
 struct file_system_type *get_fs_type(const char *name)
 {
-	struct file_system_type *fs;
-	const char *dot = strchr(name, '.');
-	int len = dot ? dot - name : strlen(name);
-
-	/* request_module always returns -ENOSYS, so module loading is dead */
-	fs = __get_fs_type(name, len);
-
-	if (dot && fs && !(fs->fs_flags & FS_HAS_SUBTYPE)) {
-		put_filesystem(fs);
-		fs = NULL;
-	}
-	return fs;
+	/* request_module & FS_HAS_SUBTYPE handling removed - dead code */
+	return __get_fs_type(name, strlen(name));
 }

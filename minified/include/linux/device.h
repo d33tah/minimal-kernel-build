@@ -80,10 +80,7 @@ struct device_attribute {
 #define DEVICE_ATTR_RO(_name) \
 	struct device_attribute dev_attr_##_name = __ATTR_RO(_name)
 
-void device_remove_file(struct device *dev,
-			const struct device_attribute *attr);
-
-/* devres functions removed - never called */
+/* device_remove_file, devres functions removed - never called */
 
 struct device_dma_parameters {
 	 

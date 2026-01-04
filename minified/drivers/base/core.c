@@ -189,16 +189,10 @@ static void device_remove_attrs(struct device *dev)
 		kfree(dev->physical_location);
 }
 
-/* dev_show, dev_attr_dev removed - only caller was empty device_remove_file stub */
+/* dev_show, dev_attr_dev, device_remove_file removed - never called */
+/* device_remove_file_self, device_create_bin_file, device_remove_bin_file - no callers */
 
 struct kset *devices_kset;
-
-/* Stub: device_remove_file not needed for minimal kernel */
-void device_remove_file(struct device *dev, const struct device_attribute *attr)
-{
-}
-
-/* Removed: device_remove_file_self, device_create_bin_file, device_remove_bin_file - no callers */
 
 static void klist_children_get(struct klist_node *n)
 {

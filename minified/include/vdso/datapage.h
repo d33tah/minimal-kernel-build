@@ -59,7 +59,6 @@ struct vdso_data {
 };
 
 extern struct vdso_data _vdso_data[CS_BASES] __attribute__((visibility("hidden")));
-extern struct vdso_data _timens_data[CS_BASES] __attribute__((visibility("hidden")));
 
 #include <asm/vdso/gettimeofday.h>
 

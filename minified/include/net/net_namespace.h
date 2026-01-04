@@ -30,6 +30,4 @@ static inline struct net *copy_net_ns(unsigned long flags,
 	return old_ns;
 }
 
-extern struct net init_net;
-
-#endif  
+#endif

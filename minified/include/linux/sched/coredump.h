@@ -10,15 +10,7 @@
 #define MMF_DUMPABLE_MASK ((1 << MMF_DUMPABLE_BITS) - 1)
 
 extern void set_dumpable(struct mm_struct *mm, int value);
-static inline int __get_dumpable(unsigned long mm_flags)
-{
-	return mm_flags & MMF_DUMPABLE_MASK;
-}
-
-static inline int get_dumpable(struct mm_struct *mm)
-{
-	return __get_dumpable(mm->flags);
-}
+/* __get_dumpable and get_dumpable removed - never called */
 
 #define MMF_DUMP_ANON_PRIVATE	2
 #define MMF_DUMP_ANON_SHARED	3

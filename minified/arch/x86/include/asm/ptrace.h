@@ -39,13 +39,8 @@ struct pt_regs {
 struct cpuinfo_x86;
 struct task_struct;
 
-/* profile_pc declaration removed - never called */
+/* profile_pc, regs_return_value removed - never called */
 extern void send_sigtrap(struct pt_regs *regs, int error_code, int si_code);
-
-static inline unsigned long regs_return_value(struct pt_regs *regs)
-{
-	return regs->ax;
-}
 
 static __always_inline int user_mode(struct pt_regs *regs)
 {
@@ -62,10 +57,7 @@ static inline unsigned long instruction_pointer(struct pt_regs *regs)
 	return regs->ip;
 }
 
-static inline unsigned long user_stack_pointer(struct pt_regs *regs)
-{
-	return regs->sp;
-}
+/* user_stack_pointer removed - never used */
 
 static __always_inline bool regs_irqs_disabled(struct pt_regs *regs)
 {

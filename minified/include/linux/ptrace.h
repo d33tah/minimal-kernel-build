@@ -111,11 +111,7 @@ static inline void ptrace_release_task(struct task_struct *task)
 	ptrace_unlink(task);
 	BUG_ON(!list_empty(&task->ptrace_entry));
 }
-/* force_successful_syscall_return removed - never called */
-#ifndef is_syscall_success
-#define is_syscall_success(regs) (!IS_ERR_VALUE((unsigned long)(regs_return_value(regs))))
-#endif
-
+/* force_successful_syscall_return, is_syscall_success removed - never called */
 
 /* x86 defines arch_has_single_step, arch_has_block_step,
  * and ARCH_HAS_USER_SINGLE_STEP_REPORT */
@@ -132,9 +128,7 @@ extern void user_single_step_report(struct pt_regs *regs);
 #define signal_pt_regs() task_pt_regs(current)
 #endif
 
-#ifndef current_user_stack_pointer
-#define current_user_stack_pointer() user_stack_pointer(current_pt_regs())
-#endif
+/* current_user_stack_pointer removed - never used */
 
 
 static inline int ptrace_report_syscall(unsigned long message)

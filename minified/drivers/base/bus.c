@@ -257,18 +257,8 @@ void bus_remove_device(struct device *dev)
 	bus_put(dev->bus);
 }
 
-/* add_bind_files, remove_bind_files, bus_attr_drivers_probe, bus_attr_drivers_autoprobe removed -
-   driver_create_file is a stub that doesn't actually create files */
-
-static ssize_t uevent_store(struct device_driver *drv, const char *buf,
-			    size_t count)
-{
-	int rc;
-
-	rc = kobject_synth_uevent(&drv->p->kobj, buf, count);
-	return rc ? rc : count;
-}
-static DRIVER_ATTR_WO(uevent);
+/* uevent_store, driver_attr_uevent, add_bind_files, remove_bind_files removed -
+   driver_create_file was removed so these attributes are never used */
 
 int bus_add_driver(struct device_driver *drv)
 {

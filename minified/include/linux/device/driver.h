@@ -57,11 +57,7 @@ struct driver_attribute {
 			 size_t count);
 };
 
-/* DRIVER_ATTR_RW, DRIVER_ATTR_RO removed - unused */
-#define DRIVER_ATTR_WO(_name) \
-	struct driver_attribute driver_attr_##_name = __ATTR_WO(_name)
-
-/* driver_create_file, driver_remove_file, driver_find_device removed - never called */
+/* DRIVER_ATTR_RW, DRIVER_ATTR_RO, DRIVER_ATTR_WO, driver_create_file, driver_remove_file, driver_find_device removed - unused */
 
 extern int driver_deferred_probe_timeout;
 void driver_deferred_probe_add(struct device *dev);

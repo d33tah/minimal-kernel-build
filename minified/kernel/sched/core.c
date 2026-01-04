@@ -55,25 +55,10 @@ __read_mostly int scheduler_running;
 
 void raw_spin_rq_lock_nested(struct rq *rq, int subclass)
 {
-	raw_spinlock_t *lock;
-
+	/* sched_core_disabled() always true - dead loop removed */
 	preempt_disable();
-	if (sched_core_disabled()) {
-		raw_spin_lock_nested(&rq->__lock, subclass);
-
-		preempt_enable_no_resched();
-		return;
-	}
-
-	for (;;) {
-		lock = __rq_lockp(rq);
-		raw_spin_lock_nested(lock, subclass);
-		if (likely(lock == __rq_lockp(rq))) {
-			preempt_enable_no_resched();
-			return;
-		}
-		raw_spin_unlock(lock);
-	}
+	raw_spin_lock_nested(&rq->__lock, subclass);
+	preempt_enable_no_resched();
 }
 
 void raw_spin_rq_unlock(struct rq *rq)
@@ -1144,8 +1129,7 @@ DECLARE_PER_CPU(cpumask_var_t, select_idle_mask);
 
 void __init sched_init(void)
 {
-	unsigned long ptr = 0;
-	int i;
+	/* ptr, i variables removed - never used */
 
 	BUG_ON(&idle_sched_class != &fair_sched_class + 1 ||
 	       &fair_sched_class != &rt_sched_class + 1 ||
@@ -1153,9 +1137,7 @@ void __init sched_init(void)
 
 	wait_bit_init();
 
-	if (ptr) {
-		ptr = (unsigned long)kzalloc(ptr, GFP_NOWAIT);
-	}
+	/* dead if (ptr) block removed - ptr was always 0 */
 
 	init_rt_bandwidth(&def_rt_bandwidth, global_rt_period(),
 			  global_rt_runtime());

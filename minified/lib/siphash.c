@@ -29,12 +29,7 @@ u64 __siphash_unaligned(const void *data, size_t len, const siphash_key_t *key)
 }
 
 /* Removed: __siphash_aligned, siphash_1u64, siphash_2u64, siphash_3u64,
-   siphash_4u64, siphash_3u32 - no external callers */
-
-u64 siphash_1u32(const u32 first, const siphash_key_t *key)
-{
-	return __siphash_unaligned(&first, sizeof(first), key);
-}
+   siphash_4u64, siphash_3u32, siphash_1u32 - no external callers */
 
 /* Removed: __hsiphash_unaligned, __hsiphash_aligned, hsiphash_1u32,
    hsiphash_2u32, hsiphash_3u32, hsiphash_4u32 - no external callers */

@@ -47,12 +47,6 @@ void hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim, u64 delta_ns,
 	/* Stubbed for minimal Hello World */
 }
 
-int hrtimer_try_to_cancel(struct hrtimer *timer)
-{
-	/* Stubbed for minimal Hello World */
-	return 0;
-}
-
 int hrtimer_cancel(struct hrtimer *timer)
 {
 	/* Stubbed for minimal Hello World */

@@ -155,11 +155,7 @@ u64 native_sched_clock_from_tsc(u64 tsc)
 
 unsigned long long sched_clock(void)
 	__attribute__((alias("native_sched_clock")));
-
-bool using_native_sched_clock(void)
-{
-	return true;
-}
+/* using_native_sched_clock removed - never called (~5 LOC) */
 
 /* no_sched_irq_time removed - never used */
 static int no_tsc_watchdog;

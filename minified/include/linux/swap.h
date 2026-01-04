@@ -67,9 +67,7 @@ extern void lru_cache_add_inactive_or_unevictable(struct page *page,
 #define free_pages_and_swap_cache(pages, nr) \
 	release_pages((pages), (nr));
 
-static inline void cgroup_throttle_swaprate(struct page *page, gfp_t gfp_mask)
-{
-}
+/* cgroup_throttle_swaprate removed - empty stub, no callers */
 
 #endif /* __KERNEL__ */
 #endif /* _LINUX_SWAP_H */

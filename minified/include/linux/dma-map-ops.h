@@ -54,20 +54,7 @@ struct dma_map_ops {
 	unsigned long (*get_merge_boundary)(struct device *dev);
 };
 
-static inline void dma_contiguous_reserve(phys_addr_t limit)
-{
-}
-static inline struct page *dma_alloc_contiguous(struct device *dev, size_t size,
-		gfp_t gfp)
-{
-	return NULL;
-}
-static inline void dma_free_contiguous(struct device *dev, struct page *page,
-		size_t size)
-{
-	__free_pages(page, get_order(size));
-}
-
+/* dma_contiguous_reserve, dma_alloc_contiguous, dma_free_contiguous removed - no callers */
 /* dma_alloc_from_dev_coherent, dma_release_from_dev_coherent, dma_mmap_from_dev_coherent removed - unused */
 
 /* Only keeping functions actually used in kernel/dma/ */
@@ -83,11 +70,7 @@ struct page *dma_alloc_from_pool(struct device *dev, size_t size,
 		bool (*phys_addr_ok)(struct device *, phys_addr_t, size_t));
 bool dma_free_from_pool(struct device *dev, void *start, size_t size);
 
-/* SYNC_DMA_FOR_* not defined */
-static inline bool dev_is_dma_coherent(struct device *dev)
-{
-	return true;
-}
+/* dev_is_dma_coherent removed - no callers */
 
 void *arch_dma_alloc(struct device *dev, size_t size, dma_addr_t *dma_handle,
 		gfp_t gfp, unsigned long attrs);

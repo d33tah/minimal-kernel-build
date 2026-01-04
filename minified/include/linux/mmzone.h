@@ -313,12 +313,7 @@ static inline unsigned long zone_managed_pages(struct zone *zone)
 	return (unsigned long)atomic_long_read(&zone->managed_pages);
 }
 
-static inline unsigned long zone_end_pfn(const struct zone *zone)
-{
-	return zone->zone_start_pfn + zone->spanned_pages;
-}
-
-/* zone_spans_pfn removed - never called */
+/* zone_end_pfn, zone_spans_pfn removed - never called */
 
 #define MAX_ZONES_PER_ZONELIST (MAX_NUMNODES * MAX_NR_ZONES)
 
@@ -434,10 +429,7 @@ static inline int zone_to_nid(struct zone *zone)
 
 extern int movable_zone;
 
-static inline int is_highmem_idx(enum zone_type idx)
-{
-	return 0;
-}
+/* is_highmem_idx removed - never called */
 
 extern struct pglist_data contig_page_data;
 static inline struct pglist_data *NODE_DATA(int nid)

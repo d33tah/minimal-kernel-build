@@ -76,21 +76,7 @@ static inline void vm_unacct_memory(long pages)
 #define arch_calc_vm_flag_bits(flags) 0
 #endif
 
-#ifndef arch_validate_prot
-static inline bool arch_validate_prot(unsigned long prot, unsigned long addr)
-{
-	return (prot & ~(PROT_READ | PROT_WRITE | PROT_EXEC | PROT_SEM)) == 0;
-}
-#define arch_validate_prot arch_validate_prot
-#endif
-
-#ifndef arch_validate_flags
-static inline bool arch_validate_flags(unsigned long flags)
-{
-	return true;
-}
-#define arch_validate_flags arch_validate_flags
-#endif
+/* arch_validate_prot, arch_validate_flags removed - no callers */
 
 #define _calc_vm_trans(x, bit1, bit2) \
   ((!(bit1) || !(bit2)) ? 0 : \

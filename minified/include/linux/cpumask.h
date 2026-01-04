@@ -124,9 +124,7 @@ typedef struct cpumask cpumask_var_t[1];
 
 #define __cpumask_var_read_mostly
 
-static inline void alloc_bootmem_cpumask_var(cpumask_var_t *mask)
-{
-}
+/* alloc_bootmem_cpumask_var removed - no callers */
 
 extern const DECLARE_BITMAP(cpu_all_bits, NR_CPUS);
 #define cpu_all_mask to_cpumask(cpu_all_bits)

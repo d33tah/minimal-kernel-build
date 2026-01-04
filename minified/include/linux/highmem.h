@@ -6,8 +6,7 @@
 #include <linux/bug.h>
 #include <asm/cacheflush.h>
 struct folio;
-/* x86: ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE is 0 */
-static inline void flush_dcache_folio(struct folio *folio) {}
+/* flush_dcache_folio removed - empty stub, no callers */
 #define ARCH_IMPLEMENTS_FLUSH_DCACHE_FOLIO 0
 #include <linux/mm.h>
 #include <linux/uaccess.h>

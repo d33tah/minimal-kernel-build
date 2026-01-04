@@ -9,8 +9,7 @@
 #include <asm/fpu/api.h>
 #include <asm/user.h>
 
- 
-#define XFEATURE_MASK_EXTEND	(~(XFEATURE_MASK_FPSSE | (1ULL << 63)))
+/* XFEATURE_MASK_EXTEND removed - unused */
 
 #define FXSAVE_SIZE	512
 

@@ -19,11 +19,9 @@ struct pvclock_wall_clock {
 	u32   sec;
 	u32   nsec;
 } __attribute__((__packed__));
-#define PVCLOCK_TSC_STABLE_BIT	(1 << 0)
-#define PVCLOCK_GUEST_STOPPED	(1 << 1)
-#define PVCLOCK_COUNTS_FROM_ZERO (1 << 2)
+/* PVCLOCK_TSC_STABLE_BIT, PVCLOCK_GUEST_STOPPED, PVCLOCK_COUNTS_FROM_ZERO removed - unused */
 
- 
+
 u64 pvclock_clocksource_read(struct pvclock_vcpu_time_info *src);
 u8 pvclock_read_flags(struct pvclock_vcpu_time_info *src);
 void pvclock_set_flags(u8 flags);

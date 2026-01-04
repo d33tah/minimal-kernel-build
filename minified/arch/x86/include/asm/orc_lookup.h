@@ -3,18 +3,11 @@
 #ifndef _ORC_LOOKUP_H
 #define _ORC_LOOKUP_H
 
- 
-#define LOOKUP_BLOCK_ORDER	8
-#define LOOKUP_BLOCK_SIZE	(1 << LOOKUP_BLOCK_ORDER)
+/* LOOKUP_BLOCK_ORDER, LOOKUP_BLOCK_SIZE, LOOKUP_START_IP, LOOKUP_STOP_IP removed - unused */
 
 #ifndef LINKER_SCRIPT
-
 extern unsigned int orc_lookup[];
 extern unsigned int orc_lookup_end[];
-
-#define LOOKUP_START_IP		(unsigned long)_stext
-#define LOOKUP_STOP_IP		(unsigned long)_etext
-
 #endif  
 
 #endif  

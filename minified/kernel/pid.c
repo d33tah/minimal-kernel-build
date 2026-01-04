@@ -213,10 +213,7 @@ struct pid *find_pid_ns(int nr, struct pid_namespace *ns)
 	return idr_find(&ns->idr, nr);
 }
 
-struct pid *find_vpid(int nr)
-{
-	return find_pid_ns(nr, task_active_pid_ns(current));
-}
+/* find_vpid removed - only used by find_get_pid which is also unused */
 
 static struct pid **task_pid_ptr(struct task_struct *task, enum pid_type type)
 {
@@ -310,27 +307,7 @@ struct pid *get_task_pid(struct task_struct *task, enum pid_type type)
 	return pid;
 }
 
-struct task_struct *get_pid_task(struct pid *pid, enum pid_type type)
-{
-	struct task_struct *result;
-	rcu_read_lock();
-	result = pid_task(pid, type);
-	if (result)
-		get_task_struct(result);
-	rcu_read_unlock();
-	return result;
-}
-
-struct pid *find_get_pid(pid_t nr)
-{
-	struct pid *pid;
-
-	rcu_read_lock();
-	pid = get_pid(find_vpid(nr));
-	rcu_read_unlock();
-
-	return pid;
-}
+/* get_pid_task and find_get_pid removed - never called */
 
 pid_t pid_nr_ns(struct pid *pid, struct pid_namespace *ns)
 {
@@ -369,24 +346,7 @@ struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
 	return ns_of_pid(task_pid(tsk));
 }
 
-struct pid *pidfd_get_pid(unsigned int fd, unsigned int *flags)
-{
-	struct fd f;
-	struct pid *pid;
-
-	f = fdget(fd);
-	if (!f.file)
-		return ERR_PTR(-EBADF);
-
-	pid = pidfd_pid(f.file);
-	if (!IS_ERR(pid)) {
-		get_pid(pid);
-		*flags = f.file->f_flags;
-	}
-
-	fdput(f);
-	return pid;
-}
+/* pidfd_get_pid removed - never called */
 
 SYSCALL_DEFINE2(pidfd_open, pid_t, pid, unsigned int, flags)
 {

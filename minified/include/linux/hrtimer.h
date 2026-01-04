@@ -50,9 +50,7 @@ struct hrtimer {
 	enum hrtimer_restart		(*function)(struct hrtimer *);
 	struct hrtimer_clock_base	*base;
 	u8				state;
-	u8				is_rel;
-	u8				is_soft;
-	u8				is_hard;
+	/* is_rel, is_soft, is_hard removed - never accessed */
 };
 
 # define __hrtimer_clock_base_align
@@ -83,16 +81,13 @@ enum  hrtimer_base_type {
 struct hrtimer_cpu_base {
 	raw_spinlock_t			lock;
 	unsigned int			cpu;
-	unsigned int			active_bases;
-	unsigned int			clock_was_set_seq;
+	/* active_bases, clock_was_set_seq removed - never accessed */
 	unsigned int			hres_active		: 1,
-					in_hrtirq		: 1,
-					hang_detected		: 1,
-					softirq_activated       : 1;
+					in_hrtirq		: 1;
+					/* hang_detected, softirq_activated removed - never accessed */
 	ktime_t				expires_next;
 	struct hrtimer			*next_timer;
-	ktime_t				softirq_expires_next;
-	struct hrtimer			*softirq_next_timer;
+	/* softirq_expires_next, softirq_next_timer removed - never accessed */
 	struct hrtimer_clock_base	clock_base[HRTIMER_MAX_CLOCK_BASES];
 } ____cacheline_aligned;
 

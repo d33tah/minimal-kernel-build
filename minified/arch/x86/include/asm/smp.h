@@ -10,19 +10,12 @@
 
 extern int smp_num_siblings;
 
-DECLARE_PER_CPU_READ_MOSTLY(cpumask_var_t, cpu_sibling_map);
-DECLARE_PER_CPU_READ_MOSTLY(cpumask_var_t, cpu_core_map);
-DECLARE_PER_CPU_READ_MOSTLY(cpumask_var_t, cpu_die_map);
- 
-DECLARE_PER_CPU_READ_MOSTLY(cpumask_var_t, cpu_llc_shared_map);
-DECLARE_PER_CPU_READ_MOSTLY(cpumask_var_t, cpu_l2c_shared_map);
+/* cpu_sibling_map, cpu_core_map, cpu_die_map, cpu_llc_shared_map, cpu_l2c_shared_map removed - never used */
 DECLARE_PER_CPU_READ_MOSTLY(u16, cpu_llc_id);
 /* cpu_l2c_id removed - never used */
 DECLARE_PER_CPU_READ_MOSTLY(int, cpu_number);
 
-DECLARE_EARLY_PER_CPU_READ_MOSTLY(u16, x86_cpu_to_apicid);
-DECLARE_EARLY_PER_CPU_READ_MOSTLY(u32, x86_cpu_to_acpiid);
-DECLARE_EARLY_PER_CPU_READ_MOSTLY(u16, x86_bios_cpu_apicid);
+/* x86_cpu_to_apicid, x86_cpu_to_acpiid, x86_bios_cpu_apicid removed - never used */
 
 struct task_struct;
 

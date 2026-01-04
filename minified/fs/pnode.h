@@ -8,12 +8,9 @@
 
 #define IS_MNT_SHARED(m) ((m)->mnt.mnt_flags & MNT_SHARED)
 #define IS_MNT_SLAVE(m) ((m)->mnt_master)
-#define IS_MNT_NEW(m)  (!(m)->mnt_ns || is_anon_ns((m)->mnt_ns))
+/* IS_MNT_NEW removed - unused */
 #define CLEAR_MNT_SHARED(m) ((m)->mnt.mnt_flags &= ~MNT_SHARED)
-#define IS_MNT_UNBINDABLE(m) ((m)->mnt.mnt_flags & MNT_UNBINDABLE)
-#define IS_MNT_MARKED(m) ((m)->mnt.mnt_flags & MNT_MARKED)
-#define SET_MNT_MARK(m) ((m)->mnt.mnt_flags |= MNT_MARKED)
-#define CLEAR_MNT_MARK(m) ((m)->mnt.mnt_flags &= ~MNT_MARKED)
+/* IS_MNT_UNBINDABLE, IS_MNT_MARKED, SET_MNT_MARK, CLEAR_MNT_MARK removed - unused */
 #define IS_MNT_LOCKED(m) ((m)->mnt.mnt_flags & MNT_LOCKED)
 
 #define CL_EXPIRE    		0x01

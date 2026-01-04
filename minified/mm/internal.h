@@ -239,7 +239,7 @@ extern void set_pageblock_order(void);
 
 #define ALLOC_WMARK_MIN		WMARK_MIN
 #define ALLOC_WMARK_LOW		WMARK_LOW
-#define ALLOC_WMARK_HIGH	WMARK_HIGH
+/* ALLOC_WMARK_HIGH removed - unused */
 #define ALLOC_NO_WATERMARKS	0x04  
 
  

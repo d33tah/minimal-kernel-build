@@ -48,12 +48,8 @@ static_assert(sizeof(struct slab) <= sizeof(struct page));
 	const struct slab *:	(const struct folio *)s,		\
 	struct slab *:		(struct folio *)s))
 
- 
-#define page_slab(p)		(_Generic((p),				\
-	const struct page *:	(const struct slab *)(p),		\
-	struct page *:		(struct slab *)(p)))
+/* page_slab removed - unused */
 
- 
 #define slab_page(s) folio_page(slab_folio(s), 0)
 
  

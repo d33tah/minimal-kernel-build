@@ -130,12 +130,7 @@ static void __init cyc2ns_init_boot_cpu(void)
 	__set_cyc2ns_scale(tsc_khz, smp_processor_id(), rdtsc());
 }
 
-/* cyc2ns_init_secondary_cpus - single CPU, loop body is dead code */
-static void __init cyc2ns_init_secondary_cpus(void)
-{
-	/* NR_CPUS=1, so for_each_possible_cpu only yields cpu=0 which equals
-	 * smp_processor_id(), making the (cpu != this_cpu) condition always false */
-}
+/* cyc2ns_init_secondary_cpus removed - never called */
 
 u64 native_sched_clock(void)
 {

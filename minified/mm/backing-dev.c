@@ -25,41 +25,7 @@ struct workqueue_struct *bdi_wq;
 
 #define K(x) ((x) << (PAGE_SHIFT - 10))
 
-/* Removed: bdi_debug_init, bdi_debug_unregister - empty stubs (~6 LOC) */
-
-/* Stub: BDI sysfs attributes - all return 0 */
-static ssize_t bdi_stub_store(struct device *d, struct device_attribute *a,
-			      const char *b, size_t c)
-{
-	return c;
-}
-static ssize_t bdi_stub_show(struct device *d, struct device_attribute *a,
-			     char *b)
-{
-	return sysfs_emit(b, "0\n");
-}
-#define read_ahead_kb_store bdi_stub_store
-#define read_ahead_kb_show bdi_stub_show
-static DEVICE_ATTR_RW(read_ahead_kb);
-#define min_ratio_store bdi_stub_store
-#define min_ratio_show bdi_stub_show
-static DEVICE_ATTR_RW(min_ratio);
-#define max_ratio_store bdi_stub_store
-#define max_ratio_show bdi_stub_show
-static DEVICE_ATTR_RW(max_ratio);
-#define stable_pages_required_show bdi_stub_show
-static DEVICE_ATTR_RO(stable_pages_required);
-
-static struct attribute *bdi_dev_attrs[] = {
-	&dev_attr_read_ahead_kb.attr,
-	&dev_attr_min_ratio.attr,
-	&dev_attr_max_ratio.attr,
-	&dev_attr_stable_pages_required.attr,
-	NULL,
-};
-ATTRIBUTE_GROUPS(bdi_dev);
-
-/* bdi_class_init removed - class_create hangs with low memory */
+/* bdi_debug_init, bdi_debug_unregister, bdi sysfs attrs, bdi_class_init removed - unused */
 
 /* default_bdi_init removed - alloc_workqueue hangs with low memory */
 

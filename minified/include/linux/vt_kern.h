@@ -169,9 +169,7 @@ struct vt_notifier_param {
 
 int vt_reset_unicode(unsigned int console);
 void vt_reset_keyboard(unsigned int console);
-int vt_get_kbd_mode_bit(unsigned int console, int bit);
-void vt_set_kbd_mode_bit(unsigned int console, int bit);
-void vt_clr_kbd_mode_bit(unsigned int console, int bit);
+/* vt_get_kbd_mode_bit, vt_set_kbd_mode_bit, vt_clr_kbd_mode_bit removed - never called */
 void vt_kbd_con_start(unsigned int console);
 void vt_kbd_con_stop(unsigned int console);
 

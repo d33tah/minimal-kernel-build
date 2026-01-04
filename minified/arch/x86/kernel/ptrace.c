@@ -298,9 +298,7 @@ static const struct user_regset_view user_x86_32_view = {
 	.n = ARRAY_SIZE(x86_32_regsets)
 };
 
-u64 xstate_fx_sw_bytes[USER_XSTATE_FX_SW_WORDS];
-
-/* task_user_regset_view removed - never called */
+/* xstate_fx_sw_bytes, task_user_regset_view removed - never used */
 
 void send_sigtrap(struct pt_regs *regs, int error_code, int si_code)
 {

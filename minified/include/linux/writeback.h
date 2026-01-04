@@ -77,7 +77,7 @@ void inode_io_list_del(struct inode *inode);
 /* inode_detach_wb, wbc_attach_fdatawrite_inode, wbc_detach_inode, cgroup_writeback_umount removed */
 
 
-void laptop_mode_timer_fn(struct timer_list *t);
+/* laptop_mode_timer_fn removed - never called */
 
 void wb_update_bandwidth(struct bdi_writeback *wb);
 /* balance_dirty_pages_ratelimited, filemap_dirty_folio removed - never called */

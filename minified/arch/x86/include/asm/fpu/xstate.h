@@ -58,7 +58,7 @@
 #define XFEATURE_MASK_SIGFRAME_INITOPT	(XFEATURE_MASK_XTILE | \
 					 XFEATURE_MASK_USER_DYNAMIC)
 
-extern u64 xstate_fx_sw_bytes[USER_XSTATE_FX_SW_WORDS];
+/* xstate_fx_sw_bytes removed - never used */
 
 int xfeature_size(int xfeature_nr);
 

@@ -336,20 +336,14 @@ static ssize_t bus_uevent_store(struct bus_type *bus, const char *buf,
 static struct bus_attribute bus_attr_uevent =
 	__ATTR(uevent, 0200, NULL, bus_uevent_store);
 
-static inline void brdbg(const char *s)
-{
-	while (*s)
-		asm volatile("outb %0, $0xe9" : : "a"(*s++));
-}
+/* brdbg debug helper removed - not needed */
 int bus_register(struct bus_type *bus)
 {
 	int retval;
 	struct subsys_private *priv;
 	struct lock_class_key *key = &bus->lock_key;
 
-	brdbg("br:kzalloc\n");
 	priv = kzalloc(sizeof(struct subsys_private), GFP_KERNEL);
-	brdbg("br:kzalloc:done\n");
 	if (!priv)
 		return -ENOMEM;
 

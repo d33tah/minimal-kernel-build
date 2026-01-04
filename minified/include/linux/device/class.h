@@ -40,18 +40,9 @@ struct class_dev_iter {
 
 /* sysfs_dev_block_kobj removed - unused */
 extern struct kobject *sysfs_dev_char_kobj;
-extern int __must_check __class_register(struct class *class,
-					 struct lock_class_key *key);
-/* class_unregister removed - never called */
-
-#define class_register(class)			\
-({						\
-	static struct lock_class_key __key;	\
-	__class_register(class, &__key);	\
-})
-
-/* struct class_compat, class_compat_register, class_compat_unregister,
-   class_compat_create_link, class_compat_remove_link removed - unused */
+/* __class_register, class_register, class_unregister, struct class_compat,
+   class_compat_register, class_compat_unregister, class_compat_create_link,
+   class_compat_remove_link removed - never called */
 
 extern void class_dev_iter_init(struct class_dev_iter *iter,
 				struct class *class,

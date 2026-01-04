@@ -85,40 +85,7 @@ static void klist_class_dev_put(struct klist_node *n)
 	put_device(dev);
 }
 
-int __class_register(struct class *cls, struct lock_class_key *key)
-{
-	struct subsys_private *cp;
-	int error;
-
-	cp = kzalloc(sizeof(*cp), GFP_KERNEL);
-	if (!cp)
-		return -ENOMEM;
-	klist_init(&cp->klist_devices, klist_class_dev_get,
-		   klist_class_dev_put);
-	INIT_LIST_HEAD(&cp->interfaces);
-	kset_init(&cp->glue_dirs);
-	__mutex_init(&cp->mutex, "subsys mutex", key);
-	error = kobject_set_name(&cp->subsys.kobj, "%s", cls->name);
-	if (error) {
-		kfree(cp);
-		return error;
-	}
-
-	if (!cls->dev_kobj)
-		cls->dev_kobj = sysfs_dev_char_kobj;
-
-	cp->subsys.kobj.kset = class_kset;
-	cp->subsys.kobj.ktype = &class_ktype;
-	cp->class = cls;
-	cls->p = cp;
-
-	error = kset_register(&cp->subsys);
-	if (error)
-		kfree(cp);
-	return error;
-}
-
-/* class_unregister, class_create_release, __class_create removed - never called */
+/* __class_register, class_unregister, class_create_release, __class_create removed - never called */
 
 void class_dev_iter_init(struct class_dev_iter *iter, struct class *class,
 			 struct device *start, const struct device_type *type)

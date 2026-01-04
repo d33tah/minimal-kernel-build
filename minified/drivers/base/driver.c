@@ -17,15 +17,7 @@ int driver_create_file(struct device_driver *drv,
 	return drv ? 0 : -EINVAL;
 }
 
-/* driver_remove_file removed - only called from remove_bind_files which was removed */
-
-int driver_add_groups(struct device_driver *drv,
-		      const struct attribute_group **groups)
-{
-	return 0;
-}
-
-/* driver_remove_groups removed - never called after bus_remove_driver removal */
+/* driver_remove_file, driver_add_groups, driver_remove_groups removed - stubs that do nothing */
 
 int driver_register(struct device_driver *drv)
 {
@@ -42,8 +34,7 @@ int driver_register(struct device_driver *drv)
 	ret = bus_add_driver(drv);
 	if (ret)
 		return ret;
-	driver_add_groups(drv, drv->groups);
-	/* error check removed - driver_add_groups always returns 0 */
+	/* driver_add_groups call removed - was a stub returning 0 */
 	kobject_uevent(&drv->p->kobj, KOBJ_ADD);
 	deferred_probe_extend_timeout();
 

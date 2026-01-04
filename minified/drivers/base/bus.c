@@ -307,9 +307,7 @@ int bus_add_driver(struct device_driver *drv)
 		printk(KERN_ERR "%s: uevent attr (%s) failed\n", __func__,
 		       drv->name);
 	}
-	driver_add_groups(drv, bus->drv_groups);
-	/* error check removed - driver_add_groups always returns 0 */
-	/* add_bind_files call removed - driver_create_file is a stub */
+	/* driver_add_groups, add_bind_files calls removed - stubs that do nothing */
 
 	return 0;
 

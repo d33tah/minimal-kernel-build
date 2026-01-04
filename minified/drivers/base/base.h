@@ -80,10 +80,7 @@ static inline int driver_match_device(struct device_driver *drv,
 	return drv->bus->match ? drv->bus->match(dev, drv) : 1;
 }
 
-extern int driver_add_groups(struct device_driver *drv,
-			     const struct attribute_group **groups);
-/* driver_remove_groups removed - never called */
-/* device_driver_detach removed - unused */
+/* driver_add_groups, driver_remove_groups, device_driver_detach removed - unused */
 
 /* make_class_name removed - unused */
 

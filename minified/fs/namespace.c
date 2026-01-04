@@ -882,15 +882,15 @@ static int do_umount(struct mount *mnt, int flags)
 
 bool may_mount(void)
 {
-	return ns_capable(current->nsproxy->mnt_ns->user_ns, CAP_SYS_ADMIN);
+	/* ns_capable always returns true - simplified */
+	return true;
 }
 
 static int can_umount(const struct path *path, int flags)
 {
 	struct mount *mnt = real_mount(path->mnt);
 
-	if (!may_mount())
-		return -EPERM;
+	/* may_mount() always true - check removed */
 	if (path->dentry != path->mnt->mnt_root)
 		return -EINVAL;
 	if (!check_mnt(mnt))
@@ -1281,9 +1281,7 @@ int path_mount(const char *dev_name, struct path *path, const char *type_page,
 	if (flags & MS_NOUSER)
 		return -EINVAL;
 
-	/* security_sb_mount always returns 0 - dead code removed */
-	if (!may_mount())
-		return -EPERM;
+	/* security_sb_mount/may_mount checks removed - always pass */
 	/* warn_mandlock call removed - was empty function */
 
 	if (!(flags & MS_NOATIME))

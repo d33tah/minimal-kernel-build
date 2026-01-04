@@ -18,9 +18,7 @@ static struct kset *system_kset;
 
 #define to_drv_attr(_attr) container_of(_attr, struct driver_attribute, attr)
 
-#define DRIVER_ATTR_IGNORE_LOCKDEP(_name, _mode, _show, _store) \
-	struct driver_attribute driver_attr_##_name =           \
-		__ATTR_IGNORE_LOCKDEP(_name, _mode, _show, _store)
+/* DRIVER_ATTR_IGNORE_LOCKDEP removed - only used for bind/unbind which were removed */
 
 static struct bus_type *bus_get(struct bus_type *bus)
 {
@@ -136,23 +134,8 @@ static const struct kset_uevent_ops bus_uevent_ops = {
 
 static struct kset *bus_kset;
 
-static ssize_t unbind_store(struct device_driver *drv, const char *buf,
-			    size_t count)
-{
-	/* Stub: sysfs driver unbind not needed for minimal kernel */
-	return -ENOSYS;
-}
-static DRIVER_ATTR_IGNORE_LOCKDEP(unbind, 0200, NULL, unbind_store);
-
-static ssize_t bind_store(struct device_driver *drv, const char *buf,
-			  size_t count)
-{
-	/* Stub: sysfs driver bind not needed for minimal kernel */
-	return -ENOSYS;
-}
-static DRIVER_ATTR_IGNORE_LOCKDEP(bind, 0200, NULL, bind_store);
-
-/* drivers_autoprobe_show, drivers_autoprobe_store, drivers_probe_store removed - bus sysfs attrs never used */
+/* unbind_store, bind_store, driver_attr_unbind, driver_attr_bind removed -
+   driver_create_file is a stub that doesn't actually create files */
 
 static struct device *next_device(struct klist_iter *i)
 {
@@ -274,15 +257,8 @@ void bus_remove_device(struct device *dev)
 	bus_put(dev->bus);
 }
 
-static void add_bind_files(struct device_driver *drv)
-{
-	/* driver_create_file always returns 0 for non-null drv */
-	driver_create_file(drv, &driver_attr_unbind);
-	driver_create_file(drv, &driver_attr_bind);
-}
-
-/* remove_bind_files removed - only called from bus_remove_driver which was removed */
-/* bus_attr_drivers_probe, bus_attr_drivers_autoprobe removed - never added to sysfs */
+/* add_bind_files, remove_bind_files, bus_attr_drivers_probe, bus_attr_drivers_autoprobe removed -
+   driver_create_file is a stub that doesn't actually create files */
 
 static ssize_t uevent_store(struct device_driver *drv, const char *buf,
 			    size_t count)
@@ -333,9 +309,7 @@ int bus_add_driver(struct device_driver *drv)
 	}
 	driver_add_groups(drv, bus->drv_groups);
 	/* error check removed - driver_add_groups always returns 0 */
-
-	if (!drv->suppress_bind_attrs)
-		add_bind_files(drv);
+	/* add_bind_files call removed - driver_create_file is a stub */
 
 	return 0;
 

@@ -45,12 +45,7 @@ extern void exit_ptrace(struct task_struct *tracer, struct list_head *dead);
 #define PTRACE_MODE_READ	0x01
 #define PTRACE_MODE_ATTACH	0x02
 
-/* ptrace_may_access removed - declared but never implemented */
-
-static inline int ptrace_reparented(struct task_struct *child)
-{
-	return !same_thread_group(child->real_parent, child->parent);
-}
+/* ptrace_may_access, ptrace_reparented removed - never called */
 
 static inline void ptrace_unlink(struct task_struct *child)
 {

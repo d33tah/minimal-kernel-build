@@ -109,19 +109,7 @@ static __always_inline void del_page_from_lru_list(struct page *page,
 	lruvec_del_folio(lruvec, page_folio(page));
 }
 
-static inline struct anon_vma_name *anon_vma_name(struct vm_area_struct *vma)
-{
-	return NULL;
-}
-
-/* dup_anon_vma_name, free_anon_vma_name removed - never called */
-
-static inline bool anon_vma_name_eq(struct anon_vma_name *anon_name1,
-				    struct anon_vma_name *anon_name2)
-{
-	return true;
-}
-
+/* anon_vma_name, anon_vma_name_eq, dup_anon_vma_name, free_anon_vma_name removed - never called */
 
 static inline void init_tlb_flush_pending(struct mm_struct *mm)
 {

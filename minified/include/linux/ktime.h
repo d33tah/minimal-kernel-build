@@ -10,7 +10,7 @@ static inline ktime_t ktime_set(const s64 secs, const unsigned long nsecs) { if 
 #define ktime_add_unsafe(lhs, rhs)	((u64) (lhs) + (rhs))
 #define ktime_add_ns(kt, nsval)		((kt) + (nsval))
 #define ktime_sub_ns(kt, nsval)		((kt) - (nsval))
-static inline ktime_t timespec64_to_ktime(struct timespec64 ts) { return ktime_set(ts.tv_sec, ts.tv_nsec); }
+/* timespec64_to_ktime removed - no callers */
 #define ktime_to_timespec64(kt)		ns_to_timespec64((kt))
 static inline s64 ktime_to_ns(const ktime_t kt) { return kt; }
 extern ktime_t ktime_add_safe(const ktime_t lhs, const ktime_t rhs);

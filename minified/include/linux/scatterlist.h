@@ -67,10 +67,7 @@ static inline void sg_set_page(struct scatterlist *sg, struct page *page,
 	sg->length = len;
 }
 
-static inline struct page *sg_page(struct scatterlist *sg)
-{
-	return (struct page *)((sg)->page_link & ~SG_PAGE_LINK_MASK);
-}
+/* sg_page removed - no callers */
 
 static inline void sg_set_buf(struct scatterlist *sg, const void *buf,
 			      unsigned int buflen)

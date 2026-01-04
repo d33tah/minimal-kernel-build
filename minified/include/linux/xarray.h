@@ -35,10 +35,7 @@ static inline void *xa_mk_internal(unsigned long v)
 	return (void *)((v << 2) | 2);
 }
 
-static inline unsigned long xa_to_internal(const void *entry)
-{
-	return (unsigned long)entry >> 2;
-}
+/* xa_to_internal removed - no callers */
 
 static inline bool xa_is_internal(const void *entry)
 {
@@ -338,12 +335,7 @@ bool xas_nomem(struct xa_state *, gfp_t);
 void xas_destroy(struct xa_state *);
 
 
-static inline int xa_get_order(struct xarray *xa, unsigned long index)
-{
-	return 0;
-}
-
-/* xas_split, xas_split_alloc removed - xa_get_order always 0, never called */
+/* xa_get_order, xas_split, xas_split_alloc removed - never called */
 
 static inline void *xas_reload(struct xa_state *xas)
 {

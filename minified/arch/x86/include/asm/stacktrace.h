@@ -35,46 +35,10 @@ int get_stack_info(unsigned long *stack, struct task_struct *task,
 bool get_stack_info_noinstr(unsigned long *stack, struct task_struct *task,
 			    struct stack_info *info);
 
-static __always_inline
-bool get_stack_guard_info(unsigned long *stack, struct stack_info *info)
-{
-	 
-	if (get_stack_info_noinstr(stack, current, info))
-		return false;
-	 
-	return get_stack_info_noinstr((void *)stack + PAGE_SIZE, current, info);
-}
+/* get_stack_guard_info, on_stack, get_frame_pointer, get_stack_pointer removed - never used */
 
 const char *stack_type_name(enum stack_type type);
 
-static inline bool on_stack(struct stack_info *info, void *addr, size_t len)
-{
-	void *begin = info->begin;
-	void *end   = info->end;
-
-	return (info->type != STACK_TYPE_UNKNOWN &&
-		addr >= begin && addr < end &&
-		addr + len > begin && addr + len <= end);
-}
-
 #define STACKSLOTS_PER_LINE 8
-
-static inline unsigned long *
-get_frame_pointer(struct task_struct *task, struct pt_regs *regs)
-{
-	return NULL;
-}
-
-static inline unsigned long *
-get_stack_pointer(struct task_struct *task, struct pt_regs *regs)
-{
-	if (regs)
-		return (unsigned long *)regs->sp;
-
-	if (task == current)
-		return __builtin_frame_address(0);
-
-	return (unsigned long *)task->thread.sp;
-}
 
 #endif  

@@ -17,22 +17,6 @@ struct bus_dma_region {
 	u64 offset;
 };
 
-static inline dma_addr_t phys_to_dma_unencrypted(struct device *dev,
-						 phys_addr_t paddr)
-{
-	return paddr;
-}
-
-static inline dma_addr_t phys_to_dma(struct device *dev, phys_addr_t paddr)
-{
-	return __sme_set(phys_to_dma_unencrypted(dev, paddr));
-}
-
-static inline phys_addr_t dma_to_phys(struct device *dev, dma_addr_t dma_addr)
-{
-	return __sme_clr(dma_addr);
-}
-
-/* All dma_direct_* function declarations removed - no callers */
+/* phys_to_dma_unencrypted, phys_to_dma, dma_to_phys, dma_direct_* removed - no callers */
 
 #endif

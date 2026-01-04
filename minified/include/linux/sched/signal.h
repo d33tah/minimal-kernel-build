@@ -244,39 +244,12 @@ static inline void restore_saved_sigmask(void)
 		__set_current_blocked(&current->saved_sigmask);
 }
 
-static inline sigset_t *sigmask_to_save(void)
-{
-	sigset_t *res = &current->blocked;
-	if (unlikely(test_restore_sigmask()))
-		res = &current->saved_sigmask;
-	return res;
-}
+/* sigmask_to_save removed - never called */
 
 #define SEND_SIG_NOINFO ((struct kernel_siginfo *) 0)
 #define SEND_SIG_PRIV	((struct kernel_siginfo *) 1)
 
-static inline int __on_sig_stack(unsigned long sp)
-{
-	return sp > current->sas_ss_sp &&
-		sp - current->sas_ss_sp <= current->sas_ss_size;
-}
-
-static inline int on_sig_stack(unsigned long sp)
-{
-	 
-	if (current->sas_ss_flags & SS_AUTODISARM)
-		return 0;
-
-	return __on_sig_stack(sp);
-}
-
-static inline int sas_ss_flags(unsigned long sp)
-{
-	if (!current->sas_ss_size)
-		return SS_DISABLE;
-
-	return on_sig_stack(sp) ? SS_ONSTACK : 0;
-}
+/* __on_sig_stack, on_sig_stack, sas_ss_flags removed - never called */
 
 static inline void sas_ss_reset(struct task_struct *p)
 {

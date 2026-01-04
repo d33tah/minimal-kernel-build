@@ -3,7 +3,7 @@
 #ifndef _KERNEL_SCHED_SCHED_H
 #define _KERNEL_SCHED_SCHED_H
 
-#define SCHED_CPUFREQ_IOWAIT	(1U << 0)
+/* SCHED_CPUFREQ_IOWAIT removed - unused */
 #include <linux/sched.h>
 /* Inlined from linux/sched/deadline.h */
 #define MAX_DL_PRIO 0
@@ -152,10 +152,7 @@ static inline int task_has_dl_policy(struct task_struct *p)
 	return dl_policy(p->policy);
 }
 
-#define cap_scale(v, s) ((v)*(s) >> SCHED_CAPACITY_SHIFT)
-
-#define shr_bound(val, shift)							\
-	(val >> min_t(typeof(shift), shift, BITS_PER_TYPE(typeof(val)) - 1))
+/* cap_scale, shr_bound removed - unused */
 
 struct rt_prio_array {
 	DECLARE_BITMAP(bitmap, MAX_RT_PRIO+1);  
@@ -571,8 +568,7 @@ static inline int task_on_rq_migrating(struct task_struct *p)
 }
 
 #define WF_FORK     0x04
-#define WF_SYNC     0x10
-
+/* WF_SYNC removed - unused */
 
 #define WEIGHT_IDLEPRIO		3
 #define WMULT_IDLEPRIO		1431655765
@@ -727,8 +723,7 @@ extern struct sched_entity *__pick_first_entity(struct cfs_rq *cfs_rq);
 extern void init_cfs_rq(struct cfs_rq *cfs_rq);
 extern void init_rt_rq(struct rt_rq *rt_rq);
 extern void init_dl_rq(struct dl_rq *dl_rq);
-/* cpufreq_update_util, uclamp_rq_util_with removed - unused stubs */
-#define perf_domain_span(pd) NULL
+/* cpufreq_update_util, uclamp_rq_util_with, perf_domain_span removed - unused stubs */
 
 
 static inline void membarrier_switch_mm(struct rq *rq,

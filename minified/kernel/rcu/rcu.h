@@ -13,8 +13,7 @@ extern int sysctl_sched_rt_runtime;
 
 /* debug_rcu_head_queue, debug_rcu_head_unqueue removed - never called */
 /* rcu_stall_is_suppressed_at_boot and rcu_stall_is_suppressed removed - unused */
-#define rcu_ftrace_dump_stall_suppress()
-#define rcu_ftrace_dump_stall_unsuppress()
+/* rcu_ftrace_dump_stall_suppress, rcu_ftrace_dump_stall_unsuppress removed - unused */
 
 void rcu_early_boot_tests(void);
 void rcu_test_sync_prims(void);

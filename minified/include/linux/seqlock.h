@@ -97,8 +97,6 @@ static inline void __seqprop_assert(const seqcount_t *s)
 
 SEQCOUNT_LOCKNAME(raw_spinlock, raw_spinlock_t,  false,    s->lock,        raw_spin, raw_spin_lock(s->lock))
 SEQCOUNT_LOCKNAME(spinlock,     spinlock_t,      __SEQ_RT, s->lock,        spin,     spin_lock(s->lock))
-SEQCOUNT_LOCKNAME(rwlock,       rwlock_t,        __SEQ_RT, s->lock,        read,     read_lock(s->lock))
-SEQCOUNT_LOCKNAME(mutex,        struct mutex,    true,     s->lock,        mutex,    mutex_lock(s->lock))
 
 
 #define SEQCOUNT_LOCKNAME_ZERO(seq_name, assoc_lock) {			\
@@ -115,9 +113,7 @@ SEQCOUNT_LOCKNAME(mutex,        struct mutex,    true,     s->lock,        mutex
 #define __seqprop(s, prop) _Generic(*(s),				\
 	seqcount_t:		__seqprop_##prop((void *)(s)),		\
 	__seqprop_case((s),	raw_spinlock,	prop),			\
-	__seqprop_case((s),	spinlock,	prop),			\
-	__seqprop_case((s),	rwlock,		prop),			\
-	__seqprop_case((s),	mutex,		prop))
+	__seqprop_case((s),	spinlock,	prop))
 
 #define seqprop_ptr(s)			__seqprop(s, ptr)
 #define seqprop_sequence(s)		__seqprop(s, sequence)

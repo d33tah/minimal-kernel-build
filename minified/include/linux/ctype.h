@@ -35,22 +35,7 @@ static inline int isdigit(int c)
 }
 #endif
 
-static inline unsigned char __tolower(unsigned char c)
-{
-	if (isupper(c))
-		c -= 'A'-'a';
-	return c;
-}
-
-static inline unsigned char __toupper(unsigned char c)
-{
-	if (islower(c))
-		c -= 'a'-'A';
-	return c;
-}
-
-#define tolower(c) __tolower(c)
-#define toupper(c) __toupper(c)
+/* __tolower, __toupper, tolower, toupper removed - unused */
 
 static inline char _tolower(const char c)
 {

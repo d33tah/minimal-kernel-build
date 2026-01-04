@@ -10,5 +10,5 @@
 #include <asm/errno.h>
 /* suspend_state_t removed - unused */
 struct pbe { void *address; void *orig_address; struct pbe *next; };
-extern struct mutex system_transition_mutex;
+/* system_transition_mutex extern removed - never used */
 #endif

@@ -45,7 +45,7 @@ void kernel_power_off(void)
 	machine_power_off();
 }
 
-DEFINE_MUTEX(system_transition_mutex);
+/* system_transition_mutex removed - never used */
 
 /* Stub: reboot syscall not needed for Hello World */
 SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,

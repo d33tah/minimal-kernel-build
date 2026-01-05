@@ -5,10 +5,8 @@
 #include <linux/mm.h>
 
 /* Inlined from asm-generic/cacheflush.h */
-struct mm_struct;
 struct vm_area_struct;
 struct page;
-struct address_space;
 
 /* flush_cache_all, flush_cache_mm, flush_cache_page removed - unused */
 /* flush_dcache_mmap_lock, flush_dcache_mmap_unlock removed - unused */

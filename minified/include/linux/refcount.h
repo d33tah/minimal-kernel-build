@@ -8,8 +8,6 @@
 #include <linux/limits.h>
 #include <linux/spinlock_types.h>
 
-struct mutex;
-
 typedef struct refcount_struct {
 	atomic_t refs;
 } refcount_t;

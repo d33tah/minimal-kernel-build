@@ -25,9 +25,6 @@ static inline void generic_apic_probe(void)
 static inline bool apic_needs_pit(void) { return true; }
 
 
-struct irq_data;
-
- 
 struct apic {
 	 
 	void	(*eoi_write)(u32 reg, u32 v);

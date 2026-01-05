@@ -98,8 +98,6 @@ struct kobj_attribute {
 
 extern const struct sysfs_ops kobj_sysfs_ops;
 
-struct sock;
-
 struct kset {
 	struct list_head list;
 	spinlock_t list_lock;

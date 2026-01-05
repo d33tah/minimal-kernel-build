@@ -107,11 +107,6 @@ extern __u32			cpu_caps_set[NCAPINTS + NBUGINTS];
 
 extern void cpu_detect(struct cpuinfo_x86 *c);
 
-static inline unsigned long long l1tf_pfn_limit(void)
-{
-	return BIT_ULL(boot_cpu_data.x86_cache_bits - 1 - PAGE_SHIFT);
-}
-
 extern void early_cpu_init(void);
 extern void identify_boot_cpu(void);
 /* identify_secondary_cpu, print_cpu_info, print_cpu_msr removed - never called */
@@ -321,15 +316,6 @@ static inline unsigned int cpuid_eax(unsigned int op)
 	cpuid(op, &eax, &ebx, &ecx, &edx);
 
 	return eax;
-}
-
-static inline unsigned int cpuid_ebx(unsigned int op)
-{
-	unsigned int eax, ebx, ecx, edx;
-
-	cpuid(op, &eax, &ebx, &ecx, &edx);
-
-	return ebx;
 }
 
 static inline unsigned int cpuid_edx(unsigned int op)

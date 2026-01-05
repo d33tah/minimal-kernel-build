@@ -22,11 +22,8 @@
 #include <asm/cpufeature.h>
 #define PKRU_AD_BIT 0x1u
 #define PKRU_WD_BIT 0x2u
-#define PKRU_BITS_PER_PKEY 2
 #define init_pkru_value	0
 #define pkru_get_init_value()	0
-static inline bool __pkru_allows_read(u32 pkru, u16 pkey) { int pkru_pkey_bits = pkey * PKRU_BITS_PER_PKEY; return !(pkru & (PKRU_AD_BIT << pkru_pkey_bits)); }
-static inline bool __pkru_allows_write(u32 pkru, u16 pkey) { int pkru_pkey_bits = pkey * PKRU_BITS_PER_PKEY; return !(pkru & ((PKRU_AD_BIT|PKRU_WD_BIT) << pkru_pkey_bits)); }
 static inline u32 read_pkru(void) { if (cpu_feature_enabled(X86_FEATURE_OSPKE)) return rdpkru(); return 0; }
 static inline void pkru_write_default(void) { if (!cpu_feature_enabled(X86_FEATURE_OSPKE)) return; wrpkru(pkru_get_init_value()); }
 /* End of pkru.h */
@@ -179,12 +176,7 @@ static inline pte_t pte_mkold(pte_t pte)
 	return pte_clear_flags(pte, _PAGE_ACCESSED);
 }
 
-static inline pte_t pte_wrprotect(pte_t pte)
-{
-	return pte_clear_flags(pte, _PAGE_RW);
-}
-
-/* pte_mkexec removed - unused */
+/* pte_wrprotect, pte_mkexec removed - unused */
 
 static inline pte_t pte_mkdirty(pte_t pte)
 {

@@ -201,15 +201,6 @@ extern struct kmem_cache *sighand_cachep;
 
 void signals_init(void);
 
-int __save_altstack(stack_t __user *, unsigned long);
-
-#define unsafe_save_altstack(uss, sp, label) do { \
-	stack_t __user *__uss = uss; \
-	struct task_struct *t = current; \
-	unsafe_put_user((void __user *)t->sas_ss_sp, &__uss->ss_sp, label); \
-	unsafe_put_user(t->sas_ss_flags, &__uss->ss_flags, label); \
-	unsafe_put_user(t->sas_ss_size, &__uss->ss_size, label); \
-} while (0);
-
+/* __save_altstack and unsafe_save_altstack removed - never called */
 
 #endif  

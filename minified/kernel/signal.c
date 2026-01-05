@@ -609,14 +609,7 @@ SYSCALL_DEFINE2(sigaltstack, const stack_t __user *, uss, stack_t __user *,
 	return -ENOSYS;
 }
 
-int __save_altstack(stack_t __user *uss, unsigned long sp)
-{
-	struct task_struct *t = current;
-	int err = __put_user((void __user *)t->sas_ss_sp, &uss->ss_sp) |
-		  __put_user(t->sas_ss_flags, &uss->ss_flags) |
-		  __put_user(t->sas_ss_size, &uss->ss_size);
-	return err;
-}
+/* __save_altstack removed - never called */
 
 /* Stub: sigpending not needed for Hello World */
 #ifdef __ARCH_WANT_SYS_SIGPENDING

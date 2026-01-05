@@ -11,8 +11,7 @@
 #include <linux/bitops.h>
 #include <linux/spinlock.h>
 #include <linux/rcupdate.h>
-#define CLOSE_RANGE_UNSHARE (1U << 1)
-#define CLOSE_RANGE_CLOEXEC (1U << 2)
+/* CLOSE_RANGE_UNSHARE, CLOSE_RANGE_CLOEXEC removed - unused */
 #include <linux/security.h>
 
 #include "internal.h"

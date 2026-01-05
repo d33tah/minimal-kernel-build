@@ -45,8 +45,7 @@
 	do {                              \
 	} while (0)
 
-#define TTY_PARANOIA_CHECK 1
-#define CHECK_TTY_COUNT 1
+/* TTY_PARANOIA_CHECK, CHECK_TTY_COUNT removed - unused */
 
 struct ktermios tty_std_termios = {
 	.c_iflag = ICRNL | IXON,

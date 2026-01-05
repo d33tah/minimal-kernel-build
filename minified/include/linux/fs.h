@@ -537,7 +537,7 @@ struct fasync_struct {
 #define SB_KERNMOUNT	(1<<22)
 #define SB_I_VERSION	(1<<23)
 #define SB_LAZYTIME	(1<<25)
-#define SB_SUBMOUNT     (1<<26)
+/* SB_SUBMOUNT removed - unused */
 #define SB_BORN		(1<<29)
 #define SB_ACTIVE	(1<<30)
 #define SB_NOUSER	(1<<31)
@@ -923,7 +923,7 @@ struct file_system_type {
 	const char *name;
 	int fs_flags;
 #define FS_REQUIRES_DEV		1
-#define FS_BINARY_MOUNTDATA	2
+/* FS_BINARY_MOUNTDATA removed - unused */
 #define FS_HAS_SUBTYPE		4
 #define FS_USERNS_MOUNT		8
 	int (*init_fs_context)(struct fs_context *);

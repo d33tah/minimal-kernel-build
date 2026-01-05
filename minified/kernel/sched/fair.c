@@ -310,36 +310,7 @@ static void account_entity_dequeue(struct cfs_rq *cfs_rq,
 	/* se_is_idle() always 0, idle_nr_running-- removed */
 }
 
-#define add_positive(_ptr, _val)                         \
-	do {                                             \
-		typeof(_ptr) ptr = (_ptr);               \
-		typeof(_val) val = (_val);               \
-		typeof(*ptr) res, var = READ_ONCE(*ptr); \
-                                                         \
-		res = var + val;                         \
-                                                         \
-		if (val < 0 && res > var)                \
-			res = 0;                         \
-                                                         \
-		WRITE_ONCE(*ptr, res);                   \
-	} while (0)
-
-#define sub_positive(_ptr, _val)                         \
-	do {                                             \
-		typeof(_ptr) ptr = (_ptr);               \
-		typeof(*ptr) val = (_val);               \
-		typeof(*ptr) res, var = READ_ONCE(*ptr); \
-		res = var - val;                         \
-		if (res > var)                           \
-			res = 0;                         \
-		WRITE_ONCE(*ptr, res);                   \
-	} while (0)
-
-#define lsub_positive(_ptr, _val)                        \
-	do {                                             \
-		typeof(_ptr) ptr = (_ptr);               \
-		*ptr -= min_t(typeof(*ptr), *ptr, _val); \
-	} while (0)
+/* add_positive, sub_positive, lsub_positive removed - unused macros */
 
 /* enqueue_load_avg, dequeue_load_avg removed - empty stubs */
 

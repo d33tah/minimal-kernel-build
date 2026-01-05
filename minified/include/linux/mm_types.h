@@ -216,11 +216,8 @@ typedef unsigned long vm_flags_t;
 #define NULL_VM_UFFD_CTX ((struct vm_userfaultfd_ctx) {})
 struct vm_userfaultfd_ctx {};
 
-struct anon_vma_name {
-	struct kref kref;
-	 
-	char name[];
-};
+/* anon_vma_name fields removed - only used as opaque pointer */
+struct anon_vma_name;
 
 struct vm_area_struct {
 	 

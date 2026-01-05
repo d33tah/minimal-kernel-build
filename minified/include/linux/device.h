@@ -79,7 +79,7 @@ struct device_attribute {
 /* device_remove_file, devres functions removed - never called */
 
 struct device_dma_parameters {
-	 
+	/* fields kept for struct completeness - embedded in platform_device */
 	unsigned int max_segment_size;
 	unsigned int min_align_mask;
 	unsigned long segment_boundary_mask;

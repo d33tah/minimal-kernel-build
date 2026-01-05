@@ -99,7 +99,7 @@ static inline void mapping_set_gfp_mask(struct address_space *m, gfp_t mask)
 
 void release_pages(struct page **pages, int nr);
 
-struct address_space *page_mapping(struct page *);
+/* page_mapping removed - never called */
 struct address_space *folio_mapping(struct folio *);
 
 

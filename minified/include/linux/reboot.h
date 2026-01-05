@@ -17,8 +17,7 @@ enum reboot_type {
 };
 extern enum reboot_type reboot_type;
 
-/* reboot_default removed - never read */
-extern int reboot_cpu;
+/* reboot_default, reboot_cpu removed - never used */
 
 extern void machine_restart(char *cmd);
 extern void machine_halt(void);

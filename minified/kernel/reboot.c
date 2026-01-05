@@ -18,11 +18,10 @@
 enum reboot_mode reboot_mode DEFAULT_REBOOT_MODE;
 enum reboot_mode panic_reboot_mode = REBOOT_UNDEFINED;
 
-/* reboot_default removed - never read */
-int reboot_cpu;
+/* reboot_default, reboot_cpu removed - never used */
 enum reboot_type reboot_type = BOOT_ACPI;
 
-void __weak (*pm_power_off)(void);
+/* pm_power_off removed - never called */
 
 void emergency_restart(void)
 {

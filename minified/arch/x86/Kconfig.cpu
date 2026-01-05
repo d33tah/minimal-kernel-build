@@ -2,7 +2,7 @@
 # Put here option for CPU selection and depending optimization
 choice
 	prompt "Processor family"
-	default M686 if X86_32
+	default M486 if X86_32
 	default GENERIC_CPU if X86_64
 	help
 	  This is the processor type of your CPU. This information is

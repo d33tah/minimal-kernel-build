@@ -13,8 +13,7 @@ void timekeeping_init(void);
 /* timekeeping_suspended now static in timekeeping.c */
 
 
-extern void ktime_get_ts64(struct timespec64 *ts);
-extern void ktime_get_real_ts64(struct timespec64 *tv);
+/* ktime_get_ts64, ktime_get_real_ts64 removed - never called */
 /* ktime_get_coarse_real_ts64 removed - never called */
 
 /* ktime_get_seconds, ktime_get_real_seconds removed - never called */

@@ -99,9 +99,7 @@ struct fs_context_operations {
 
 extern struct fs_context *fs_context_for_mount(struct file_system_type *fs_type,
 						unsigned int sb_flags);
-extern struct fs_context *fs_context_for_reconfigure(struct dentry *dentry,
-						unsigned int sb_flags,
-						unsigned int sb_flags_mask);
+/* fs_context_for_reconfigure removed - never called */
 
 extern int vfs_parse_fs_param(struct fs_context *fc, struct fs_parameter *param);
 extern int vfs_parse_fs_string(struct fs_context *fc, const char *key,

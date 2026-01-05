@@ -15,10 +15,7 @@ struct timerqueue_head {
 };
 
 
-extern bool timerqueue_add(struct timerqueue_head *head,
-			   struct timerqueue_node *node);
-extern bool timerqueue_del(struct timerqueue_head *head,
-			   struct timerqueue_node *node);
+/* timerqueue_add, timerqueue_del removed - never called */
 /* timerqueue_iterate_next, timerqueue_getnext, timerqueue_init removed - never called */
 
 

@@ -263,25 +263,7 @@ static void timekeeping_forward_now(struct timekeeper *tk)
 	tk_normalize_xtime(tk);
 }
 
-void ktime_get_real_ts64(struct timespec64 *ts)
-{
-	struct timekeeper *tk = &tk_core.timekeeper;
-	unsigned int seq;
-	u64 nsecs;
-
-	WARN_ON(timekeeping_suspended);
-
-	do {
-		seq = read_seqcount_begin(&tk_core.seq);
-
-		ts->tv_sec = tk->xtime_sec;
-		nsecs = timekeeping_get_ns(&tk->tkr_mono);
-
-	} while (read_seqcount_retry(&tk_core.seq, seq));
-
-	ts->tv_nsec = 0;
-	timespec64_add_ns(ts, nsecs);
-}
+/* ktime_get_real_ts64 removed - never called */
 
 ktime_t ktime_get(void)
 {
@@ -309,27 +291,7 @@ ktime_t ktime_get(void)
 
 /* Removed: ktime_get_coarse_with_offset, ktime_mono_to_any, ktime_get_raw - no callers */
 
-void ktime_get_ts64(struct timespec64 *ts)
-{
-	struct timekeeper *tk = &tk_core.timekeeper;
-	struct timespec64 tomono;
-	unsigned int seq;
-	u64 nsec;
-
-	WARN_ON(timekeeping_suspended);
-
-	do {
-		seq = read_seqcount_begin(&tk_core.seq);
-		ts->tv_sec = tk->xtime_sec;
-		nsec = timekeeping_get_ns(&tk->tkr_mono);
-		tomono = tk->wall_to_monotonic;
-
-	} while (read_seqcount_retry(&tk_core.seq, seq));
-
-	ts->tv_sec += tomono.tv_sec;
-	ts->tv_nsec = 0;
-	timespec64_add_ns(ts, nsec + tomono.tv_nsec);
-}
+/* ktime_get_ts64 removed - never called */
 
 /* ktime_get_seconds, ktime_get_real_seconds removed - never called (~20 LOC) */
 

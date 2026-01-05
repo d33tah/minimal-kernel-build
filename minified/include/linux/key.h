@@ -1,5 +1,4 @@
-/* Minimal key.h stub - CONFIG_KEYS is disabled */
+/* Stub - CONFIG_KEYS disabled */
 #ifndef _LINUX_KEY_H
 #define _LINUX_KEY_H
-
-#endif  
+#endif

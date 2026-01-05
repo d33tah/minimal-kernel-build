@@ -121,12 +121,7 @@ struct old_linux_dirent;
 #define SC_ARG64(name) u32, name##_lo, u32, name##_hi
 #define SC_VAL64(type, name) ((type) name##_hi << 32 | name##_lo)
 
-#define SYSCALL32_DEFINE1 SYSCALL_DEFINE1
-#define SYSCALL32_DEFINE2 SYSCALL_DEFINE2
-#define SYSCALL32_DEFINE3 SYSCALL_DEFINE3
-#define SYSCALL32_DEFINE4 SYSCALL_DEFINE4
-#define SYSCALL32_DEFINE5 SYSCALL_DEFINE5
-#define SYSCALL32_DEFINE6 SYSCALL_DEFINE6
+/* SYSCALL32_DEFINEx removed - never used */
 
 /* addr_limit_user_check removed - call site removed */
 

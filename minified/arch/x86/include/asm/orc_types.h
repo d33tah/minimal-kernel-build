@@ -7,18 +7,15 @@
 #include <linux/types.h>
 #include <linux/compiler.h>
 
- 
-#define ORC_REG_UNDEFINED		0
-#define ORC_REG_PREV_SP			1
+/* ORC_REG_UNDEFINED, ORC_REG_PREV_SP removed - unused */
 #define ORC_REG_DX			2
 #define ORC_REG_DI			3
 #define ORC_REG_BP			4
 #define ORC_REG_SP			5
 #define ORC_REG_R10			6
-#define ORC_REG_R13			7
-#define ORC_REG_BP_INDIRECT		8
+/* ORC_REG_R13, ORC_REG_BP_INDIRECT removed - unused */
 #define ORC_REG_SP_INDIRECT		9
-#define ORC_REG_MAX			15
+/* ORC_REG_MAX removed - unused */
 
 #ifndef __ASSEMBLY__
 #include <asm/byteorder.h>

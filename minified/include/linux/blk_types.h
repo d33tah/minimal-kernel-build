@@ -14,8 +14,7 @@ struct block_device {
 	int dummy;
 };
 
-/* blk_status_t, blk_short_t, blk_qc_t removed - unused */
-#define	BLK_STS_OK 0
+/* blk_status_t, blk_short_t, blk_qc_t, BLK_STS_OK removed - unused */
 
 /* Minimal struct bio - only forward declaration needed */
 struct bio {

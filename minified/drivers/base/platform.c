@@ -26,29 +26,11 @@ struct device platform_bus = {
 	.init_name = "platform",
 };
 
-struct resource *platform_get_resource(struct platform_device *dev,
-				       unsigned int type, unsigned int num)
-{
-	u32 i;
-
-	for (i = 0; i < dev->num_resources; i++) {
-		struct resource *r = &dev->resource[i];
-
-		if (type == resource_type(r) && num-- == 0)
-			return r;
-	}
-	return NULL;
-}
+/* platform_get_resource, platform_get_irq removed - never called */
 
 /* platform_get_mem_or_io, devm_platform_get_and_ioremap_resource,
    devm_platform_ioremap_resource, devm_platform_ioremap_resource_byname,
    platform_get_irq_optional removed - no external callers */
-
-int platform_get_irq(struct platform_device *dev, unsigned int num)
-{
-	return dev_err_probe(&dev->dev, -ENXIO, "IRQ index %u not found\n",
-			     num);
-}
 
 struct platform_object {
 	struct platform_device pdev;

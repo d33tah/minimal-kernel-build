@@ -31,9 +31,7 @@
 #define PT_EVENT_FLAG(event)	(1 << (PT_OPT_FLAG_SHIFT + (event)))
 #define PT_TRACESYSGOOD		PT_EVENT_FLAG(0)
 
-extern long arch_ptrace(struct task_struct *child, long request,
-			unsigned long addr, unsigned long data);
-extern void ptrace_disable(struct task_struct *);
+/* arch_ptrace, ptrace_disable removed - never called */
 extern int ptrace_request(struct task_struct *child, long request,
 			  unsigned long addr, unsigned long data);
 extern int ptrace_notify(int exit_code, unsigned long message);

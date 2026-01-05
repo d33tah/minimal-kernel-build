@@ -229,19 +229,9 @@ static int ioperm_get(struct task_struct *target,
 	return membuf_write(&to, iobm->bitmap, IO_BITMAP_BYTES);
 }
 
-void ptrace_disable(struct task_struct *child)
-{
-	/* user_disable_single_step removed - was empty stub */
-}
+/* ptrace_disable, arch_ptrace removed - never called */
 
 static const struct user_regset_view user_x86_32_view;
-
-long arch_ptrace(struct task_struct *child, long request, unsigned long addr,
-		 unsigned long data)
-{
-	/* Stub: ptrace operations not needed for minimal kernel */
-	return ptrace_request(child, request, addr, data);
-}
 
 #define user_regs_struct32 user_regs_struct
 #define genregs32_get genregs_get

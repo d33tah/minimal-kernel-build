@@ -460,9 +460,7 @@ long populate_vma_page_range(struct vm_area_struct *vma, unsigned long start,
 	long ret;
 
 	mmap_assert_locked(mm);
-
-	if (vma->vm_flags & VM_LOCKONFAULT)
-		return nr_pages;
+	/* VM_LOCKONFAULT check removed - never set */
 
 	gup_flags = FOLL_TOUCH;
 

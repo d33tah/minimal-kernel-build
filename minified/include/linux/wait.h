@@ -157,10 +157,7 @@ do {										\
 	__wait_event(wq_head, condition);					\
 } while (0)
 
-#define __wait_event_interruptible(wq_head, condition)				\
-	___wait_event(wq_head, condition, TASK_INTERRUPTIBLE, 0, 0,		\
-		      schedule())
-
+/* __wait_event_interruptible removed - unused */
 
 void prepare_to_wait(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry, int state);
 long prepare_to_wait_event(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry, int state);

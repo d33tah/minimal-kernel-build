@@ -17,9 +17,7 @@ struct timer_list {
 
 #define __TIMER_LOCKDEP_MAP_INITIALIZER(_kn)
 
-#define TIMER_CPUMASK		0x0003FFFF
-#define TIMER_MIGRATING		0x00040000
-#define TIMER_DEFERRABLE	0x00080000
+/* TIMER_CPUMASK, TIMER_MIGRATING, TIMER_DEFERRABLE removed - unused */
 #define TIMER_IRQSAFE		0x00200000
 
 
@@ -53,12 +51,11 @@ extern int del_timer(struct timer_list * timer);
 extern int mod_timer(struct timer_list *timer, unsigned long expires);
 
 
-#define NEXT_TIMER_MAX_DELTA	((1UL << 30) - 1)
-
+/* NEXT_TIMER_MAX_DELTA removed - unused */
 
 # define del_timer_sync(t)		del_timer(t)
 
-#define del_singleshot_timer_sync(t) del_timer_sync(t)
+/* del_singleshot_timer_sync removed - unused */
 
 extern void init_timers(void);
 

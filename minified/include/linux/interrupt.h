@@ -43,10 +43,7 @@ typedef enum irqreturn irqreturn_t;
 
 #define IRQF_TIMER		(__IRQF_TIMER | IRQF_NO_SUSPEND | IRQF_NO_THREAD)
 
-enum {
-	IRQC_IS_HARDIRQ	= 0,
-	IRQC_IS_NESTED,
-};
+/* IRQC_IS_HARDIRQ, IRQC_IS_NESTED enum removed - unused */
 
 typedef irqreturn_t (*irq_handler_t)(int, void *);
 
@@ -93,10 +90,7 @@ struct irq_affinity_desc {
 
 /* irq_set_affinity, irq_can_set_affinity removed - never called */
 
-enum irqchip_irq_state {
-	IRQCHIP_STATE_PENDING,
-	IRQCHIP_STATE_ACTIVE,
-};
+/* irqchip_irq_state enum removed - unused */
 
 
 DECLARE_STATIC_KEY_FALSE(force_irqthreads_key);

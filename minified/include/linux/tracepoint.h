@@ -19,17 +19,13 @@ struct notifier_block;
 #define PARAMS(args...) args
 #endif
 
-#define TRACE_DEFINE_ENUM(x)
-#define TRACE_DEFINE_SIZEOF(x)
-
-#endif  
+#endif
 
 
 #ifndef DECLARE_TRACE
 
 #define TP_PROTO(args...)	args
 #define TP_ARGS(args...)	args
-#define TP_CONDITION(args...)	args
 
 
 /* TRACEPOINTS_ENABLED is not defined - use stub implementations */
@@ -58,9 +54,6 @@ struct notifier_block;
 	{								\
 		return false;						\
 	}
-
-#define DEFINE_TRACE_FN(name, reg, unreg, proto, args)
-#define DEFINE_TRACE(name, proto, args)
 
 # define tracepoint_string(str) str
 # define __tracepoint_string

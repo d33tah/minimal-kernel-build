@@ -21,6 +21,4 @@ struct vt_stat {
 #define VT_GETSTATE	0x5603
 #define VT_GETHIFONTMASK 0x560D
 
-#define VT_ALLOCATE	0x0001
-
 #endif

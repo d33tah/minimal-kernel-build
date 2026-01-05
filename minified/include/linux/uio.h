@@ -6,8 +6,6 @@
 #include <linux/compiler.h>
 #include <linux/types.h>
 struct iovec { void __user *iov_base; __kernel_size_t iov_len; };
-#define UIO_FASTIOV	8
-#define UIO_MAXIOV	1024
 struct page;
 struct pipe_inode_info;
 struct kvec { void *iov_base; size_t iov_len; };

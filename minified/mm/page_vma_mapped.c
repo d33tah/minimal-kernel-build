@@ -128,20 +128,4 @@ next_pte:
 	return false;
 }
 
-int page_mapped_in_vma(struct page *page, struct vm_area_struct *vma)
-{
-	struct page_vma_mapped_walk pvmw = {
-		.pfn = page_to_pfn(page),
-		.nr_pages = 1,
-		.vma = vma,
-		.flags = PVMW_SYNC,
-	};
-
-	pvmw.address = vma_address(page, vma);
-	if (pvmw.address == -EFAULT)
-		return 0;
-	if (!page_vma_mapped_walk(&pvmw))
-		return 0;
-	page_vma_mapped_walk_done(&pvmw);
-	return 1;
-}
+/* page_mapped_in_vma removed - never called */

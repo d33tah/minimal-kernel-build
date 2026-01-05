@@ -116,7 +116,5 @@ bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw);
 
 void remove_migration_ptes(struct folio *src, struct folio *dst, bool locked);
 
-int page_mapped_in_vma(struct page *page, struct vm_area_struct *vma);
-
-/* page_mkclean removed - stub, no callers */
+/* page_mapped_in_vma, page_mkclean removed - never called */
 #endif	 

@@ -217,16 +217,7 @@ int __mnt_want_write_file(struct file *file)
 	return __mnt_want_write(file->f_path.mnt);
 }
 
-int mnt_want_write_file(struct file *file)
-{
-	int ret;
-
-	sb_start_write(file_inode(file)->i_sb);
-	ret = __mnt_want_write_file(file);
-	if (ret)
-		sb_end_write(file_inode(file)->i_sb);
-	return ret;
-}
+/* mnt_want_write_file removed - never called */
 
 void __mnt_drop_write(struct vfsmount *mnt)
 {
@@ -241,17 +232,7 @@ void mnt_drop_write(struct vfsmount *mnt)
 	sb_end_write(mnt->mnt_sb);
 }
 
-void __mnt_drop_write_file(struct file *file)
-{
-	if (!(file->f_mode & FMODE_WRITER))
-		__mnt_drop_write(file->f_path.mnt);
-}
-
-void mnt_drop_write_file(struct file *file)
-{
-	__mnt_drop_write_file(file);
-	sb_end_write(file_inode(file)->i_sb);
-}
+/* __mnt_drop_write_file, mnt_drop_write_file removed - never called */
 
 /* sb_prepare_remount_readonly removed - defined but never called */
 

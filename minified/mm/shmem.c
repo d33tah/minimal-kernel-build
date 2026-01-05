@@ -87,11 +87,7 @@ struct file *shmem_kernel_file_setup(const char *name, loff_t size,
 	return __shmem_file_setup(shm_mnt, name, size, flags, S_PRIVATE);
 }
 
-struct file *shmem_file_setup(const char *name, loff_t size,
-			      unsigned long flags)
-{
-	return __shmem_file_setup(shm_mnt, name, size, flags, 0);
-}
+/* shmem_file_setup removed - never called */
 
 int shmem_zero_setup(struct vm_area_struct *vma)
 {

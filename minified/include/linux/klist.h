@@ -37,7 +37,7 @@ struct klist_iter {
 };
 
 
-extern void klist_iter_init(struct klist *k, struct klist_iter *i);
+/* klist_iter_init removed - never called */
 extern void klist_iter_init_node(struct klist *k, struct klist_iter *i,
 				 struct klist_node *n);
 extern void klist_iter_exit(struct klist_iter *i);

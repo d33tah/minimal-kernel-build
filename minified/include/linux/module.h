@@ -35,8 +35,7 @@
 #define ELF_R_TYPE(X)	ELF32_R_TYPE(X)
 #define ELF_R_SYM(X)	ELF32_R_SYM(X)
 #include <asm/orc_types.h>
-/* struct mod_arch_specific removed - unused */
-#define MODULE_NAME_LEN MAX_PARAM_PREFIX_LEN
+/* struct mod_arch_specific, MODULE_NAME_LEN removed - unused */
 
 struct module;
 struct exception_table_entry;
@@ -69,8 +68,7 @@ extern int init_module(void);
 #define module_exit(x)	__exitcall(x);
 
 #define __init_or_module __init
-#define __initdata_or_module __initdata
-#define __initconst_or_module __initconst
+/* __initdata_or_module, __initconst_or_module removed - unused */
 
 #define MODULE_INFO(tag, info) __MODULE_INFO(tag, tag, info)
 

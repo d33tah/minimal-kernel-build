@@ -32,7 +32,7 @@ static inline size_t copy_folio_to_iter(struct folio *folio, size_t offset, size
 static __always_inline __must_check size_t copy_to_iter(const void *addr, size_t bytes, struct iov_iter *i) { if (unlikely(!check_copy_size(addr, bytes, true))) return 0; else return _copy_to_iter(addr, bytes, i); }
 static __always_inline __must_check size_t copy_from_iter(void *addr, size_t bytes, struct iov_iter *i) { if (unlikely(!check_copy_size(addr, bytes, false))) return 0; else return _copy_from_iter(addr, bytes, i); }
 static __always_inline __must_check bool copy_from_iter_full(void *addr, size_t bytes, struct iov_iter *i) { size_t copied = copy_from_iter(addr, bytes, i); if (likely(copied == bytes)) return true; iov_iter_revert(i, copied); return false; }
-#define _copy_mc_to_iter _copy_to_iter
+/* _copy_mc_to_iter removed - unused */
 size_t iov_iter_zero(size_t bytes, struct iov_iter *);
 unsigned long iov_iter_alignment(const struct iov_iter *i);
 unsigned long iov_iter_gap_alignment(const struct iov_iter *i);

@@ -61,7 +61,7 @@
 
 #define inline inline __gnu_inline __inline_maybe_unused notrace
 
-#define __inline__ inline
+/* __inline__ removed - unused */
 
 #define __inline_maybe_unused __maybe_unused
 #define noinline_for_stack noinline

@@ -32,7 +32,7 @@ typedef struct __user_cap_data_struct {
 #define CAP_LAST_CAP         CAP_CHECKPOINT_RESTORE
 #define CAP_TO_MASK(x)      (1 << ((x) & 31))
 
-#define _KERNEL_CAPABILITY_VERSION _LINUX_CAPABILITY_VERSION_3
+/* _KERNEL_CAPABILITY_VERSION removed - unused */
 #define _KERNEL_CAPABILITY_U32S    _LINUX_CAPABILITY_U32S_3
 
 
@@ -42,7 +42,7 @@ typedef struct kernel_cap_struct {
 
 
 #define _USER_CAP_HEADER_SIZE  (sizeof(struct __user_cap_header_struct))
-#define _KERNEL_CAP_T_SIZE     (sizeof(kernel_cap_t))
+/* _KERNEL_CAP_T_SIZE removed - unused */
 
 
 struct file;

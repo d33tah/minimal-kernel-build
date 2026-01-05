@@ -5,7 +5,7 @@
 #define __alias(symbol)                 __attribute__((__alias__(#symbol)))
 
 #define __aligned(x)                    __attribute__((__aligned__(x)))
-#define __aligned_largest               __attribute__((__aligned__))
+/* __aligned_largest removed - unused */
 
 #define __alloc_size__(x, ...)		__attribute__((__alloc_size__(x, ## __VA_ARGS__)))
 

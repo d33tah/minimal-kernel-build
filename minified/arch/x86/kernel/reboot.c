@@ -6,16 +6,7 @@
 #include <asm/io.h>
 
 void (*pm_power_off)(void);
-
-bool port_cf9_safe = false;
-
-void __noreturn machine_real_restart(unsigned int type)
-{
-	while (1)
-		halt();
-}
-
-/* native_machine_shutdown, machine_shutdown removed - never called */
+/* port_cf9_safe, machine_real_restart removed - never called */
 
 void machine_emergency_restart(void)
 {

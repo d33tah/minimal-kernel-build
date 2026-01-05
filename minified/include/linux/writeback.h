@@ -47,40 +47,12 @@ struct writeback_control {
 
 };
 
-struct wb_domain {
-	spinlock_t lock;
-
-	 
-	struct fprop_global completions;
-	struct timer_list period_timer;	 
-	unsigned long period_time;
-
-	 
-	unsigned long dirty_limit_tstamp;
-	unsigned long dirty_limit;
-};
-
+/* wb_domain struct removed - never used */
+/* writeback_inodes_sb, try_to_writeback_inodes_sb, sync_inodes_sb removed - never called */
+/* wakeup_flusher_threads, inode_wait_for_writeback, inode_io_list_del removed - never called */
 
 struct bdi_writeback;
-void writeback_inodes_sb(struct super_block *, enum wb_reason reason);
-void writeback_inodes_sb_nr(struct super_block *, unsigned long nr,
-							enum wb_reason reason);
-void try_to_writeback_inodes_sb(struct super_block *sb, enum wb_reason reason);
-void sync_inodes_sb(struct super_block *);
-void wakeup_flusher_threads(enum wb_reason reason);
-void wakeup_flusher_threads_bdi(struct backing_dev_info *bdi,
-				enum wb_reason reason);
-void inode_wait_for_writeback(struct inode *inode);
-void inode_io_list_del(struct inode *inode);
-
-
-/* inode_detach_wb, wbc_attach_fdatawrite_inode, wbc_detach_inode, cgroup_writeback_umount removed */
-
-
-/* laptop_mode_timer_fn removed - never called */
-
 void wb_update_bandwidth(struct bdi_writeback *wb);
-/* balance_dirty_pages_ratelimited, filemap_dirty_folio removed - never called */
 int do_writepages(struct address_space *mapping, struct writeback_control *wbc);
 
 #endif		 

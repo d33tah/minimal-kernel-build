@@ -3,8 +3,8 @@
 #include <linux/backing-dev.h>
 #include <linux/percpu.h>
 
-struct wb_domain global_wb_domain;
 DEFINE_PER_CPU(int, dirty_throttle_leaks);
+/* global_wb_domain removed - never used */
 
 bool __folio_end_writeback(struct folio *folio)
 {

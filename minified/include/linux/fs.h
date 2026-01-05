@@ -517,14 +517,8 @@ static inline struct inode *file_inode(const struct file *f)
 	return f->f_inode;
 }
 
-struct fasync_struct {
-	rwlock_t		fa_lock;
-	int			magic;
-	int			fa_fd;
-	struct fasync_struct	*fa_next; 
-	struct file		*fa_file;
-	struct rcu_head		fa_rcu;
-};
+/* fasync_struct fields reduced - only forward declaration needed for pointer */
+struct fasync_struct;
 
 /* fasync_helper, kill_fasync, __f_setown removed - empty stubs */
 

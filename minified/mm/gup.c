@@ -30,23 +30,13 @@ struct follow_page_context {
 bool __must_check try_grab_page(struct page *page, unsigned int flags)
 {
 	struct folio *folio = page_folio(page);
-
-	WARN_ON_ONCE((flags & (FOLL_GET | FOLL_PIN)) == (FOLL_GET | FOLL_PIN));
+	/* FOLL_PIN never set, simplified */
 	if (WARN_ON_ONCE(folio_ref_count(folio) <= 0))
 		return false;
 
 	if (flags & FOLL_GET)
 		folio_ref_inc(folio);
-	else if (flags & FOLL_PIN) {
-		if (folio_test_large(folio)) {
-			folio_ref_add(folio, 1);
-			atomic_add(1, folio_pincount_ptr(folio));
-		} else {
-			folio_ref_add(folio, GUP_PIN_COUNTING_BIAS);
-		}
-
-		node_stat_mod_folio(folio, NR_FOLL_PIN_ACQUIRED, 1);
-	}
+	/* FOLL_PIN branch removed - never set */
 
 	return true;
 }
@@ -56,9 +46,7 @@ bool __must_check try_grab_page(struct page *page, unsigned int flags)
 static struct page *no_page_table(struct vm_area_struct *vma,
 				  unsigned int flags)
 {
-	if ((flags & FOLL_DUMP) &&
-	    (vma_is_anonymous(vma) || !vma->vm_ops->fault))
-		return ERR_PTR(-EFAULT);
+	/* FOLL_DUMP check removed - never set */
 	return NULL;
 }
 
@@ -93,9 +81,7 @@ static struct page *follow_page_pte(struct vm_area_struct *vma,
 	pte_t *ptep, pte;
 	int ret;
 
-	if (WARN_ON_ONCE((flags & (FOLL_PIN | FOLL_GET)) ==
-			 (FOLL_PIN | FOLL_GET)))
-		return ERR_PTR(-EINVAL);
+	/* FOLL_PIN|FOLL_GET check removed - FOLL_PIN never set */
 retry:
 	if (unlikely(pmd_bad(*pmd)))
 		return no_page_table(vma, flags);
@@ -116,11 +102,7 @@ retry:
 	page = vm_normal_page(vma, address, pte);
 	/* pte_devmap always returns 0, devmap branch removed */
 	if (unlikely(!page)) {
-		if (flags & FOLL_DUMP) {
-			page = ERR_PTR(-EFAULT);
-			goto out;
-		}
-
+		/* FOLL_DUMP check removed - never set */
 		if (is_zero_pfn(pte_pfn(pte))) {
 			page = pte_page(pte);
 		} else {
@@ -130,10 +112,7 @@ retry:
 		}
 	}
 
-	if (!pte_write(pte) && gup_must_unshare(flags, page)) {
-		page = ERR_PTR(-EMLINK);
-		goto out;
-	}
+	/* gup_must_unshare always returns false - FOLL_PIN never set */
 
 	if (unlikely(!try_grab_page(page, flags))) {
 		page = ERR_PTR(-ENOMEM);
@@ -206,7 +185,7 @@ static struct page *follow_page_mask(struct vm_area_struct *vma,
 
 	page = follow_huge_addr(mm, address, flags & FOLL_WRITE);
 	if (!IS_ERR(page)) {
-		WARN_ON_ONCE(flags & (FOLL_GET | FOLL_PIN));
+		/* WARN removed - FOLL_PIN never set */
 		return page;
 	}
 
@@ -222,17 +201,14 @@ static int faultin_page(struct vm_area_struct *vma, unsigned long address,
 {
 	unsigned int fault_flags = 0;
 	vm_fault_t ret;
-
-	if (*flags & FOLL_NOFAULT)
-		return -EFAULT;
+	/* FOLL_NOFAULT check removed - never set */
 	if (*flags & FOLL_WRITE)
 		fault_flags |= FAULT_FLAG_WRITE;
 	if (*flags & FOLL_REMOTE)
 		fault_flags |= FAULT_FLAG_REMOTE;
 	if (locked)
 		fault_flags |= FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_KILLABLE;
-	if (*flags & FOLL_NOWAIT)
-		fault_flags |= FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_RETRY_NOWAIT;
+	/* FOLL_NOWAIT check removed - never set */
 	if (*flags & FOLL_TRIED) {
 		fault_flags |= FAULT_FLAG_TRIED;
 	}
@@ -306,9 +282,7 @@ static long __get_user_pages(struct mm_struct *mm, unsigned long start,
 		return 0;
 
 	start = untagged_addr(start);
-
-	if (!(gup_flags & FOLL_FORCE))
-		gup_flags |= FOLL_NUMA;
+	/* FOLL_NUMA setting removed - never tested */
 
 	do {
 		struct page *page;
@@ -400,12 +374,9 @@ __get_user_pages_locked(struct mm_struct *mm, unsigned long start,
 		BUG_ON(*locked != 1);
 	}
 
-	if (flags & FOLL_PIN) {
-		if (!test_bit(MMF_HAS_PINNED, &mm->flags))
-			set_bit(MMF_HAS_PINNED, &mm->flags);
-	}
+	/* FOLL_PIN MMF_HAS_PINNED check removed - FOLL_PIN never set */
 
-	if (pages && !(flags & FOLL_PIN))
+	if (pages)
 		flags |= FOLL_GET;
 
 	pages_done = 0;
@@ -581,41 +552,16 @@ out:
 	return 0;
 }
 
-static long __gup_longterm_locked(struct mm_struct *mm, unsigned long start,
-				  unsigned long nr_pages, struct page **pages,
-				  struct vm_area_struct **vmas,
-				  unsigned int gup_flags)
-{
-	unsigned int flags;
-	long rc;
-
-	if (!(gup_flags & FOLL_LONGTERM))
-		return __get_user_pages_locked(mm, start, nr_pages, pages, vmas,
-					       NULL, gup_flags);
-	flags = memalloc_pin_save();
-	rc = __get_user_pages_locked(mm, start, nr_pages, pages, vmas, NULL,
-				     gup_flags);
-	memalloc_pin_restore(flags);
-
-	return rc;
-}
+/* __gup_longterm_locked removed - FOLL_LONGTERM never set, function never called */
 
 /* is_valid_gup_flags inlined into get_user_pages_remote */
 
+/* __get_user_pages_remote simplified - FOLL_LONGTERM branch removed (never set) */
 static long __get_user_pages_remote(struct mm_struct *mm, unsigned long start,
 				    unsigned long nr_pages,
 				    unsigned int gup_flags, struct page **pages,
 				    struct vm_area_struct **vmas, int *locked)
 {
-	if (gup_flags & FOLL_LONGTERM) {
-		if (WARN_ON_ONCE(locked))
-			return -EINVAL;
-
-		return __gup_longterm_locked(mm, start, nr_pages, pages, vmas,
-					     gup_flags | FOLL_TOUCH |
-						     FOLL_REMOTE);
-	}
-
 	return __get_user_pages_locked(mm, start, nr_pages, pages, vmas, locked,
 				       gup_flags | FOLL_TOUCH | FOLL_REMOTE);
 }
@@ -625,12 +571,7 @@ long get_user_pages_remote(struct mm_struct *mm, unsigned long start,
 			   struct page **pages, struct vm_area_struct **vmas,
 			   int *locked)
 {
-	/* is_valid_gup_flags inlined */
-	if (WARN_ON_ONCE(gup_flags & FOLL_PIN))
-		return -EINVAL;
-	if (WARN_ON_ONCE(gup_flags & FOLL_LONGTERM))
-		return -EINVAL;
-
+	/* FOLL_PIN and FOLL_LONGTERM checks removed - never set */
 	return __get_user_pages_remote(mm, start, nr_pages, gup_flags, pages,
 				       vmas, locked);
 }

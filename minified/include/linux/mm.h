@@ -517,8 +517,7 @@ static inline void put_page(struct page *page)
 	/* put_devmap_managed_page always returns false */
 	folio_put(page_folio(page));
 }
-
-#define GUP_PIN_COUNTING_BIAS (1U << 10)
+/* GUP_PIN_COUNTING_BIAS removed - FOLL_PIN never set */
 
 static inline bool is_cow_mapping(vm_flags_t flags)
 {
@@ -1105,21 +1104,19 @@ vm_fault_t vmf_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
 vm_fault_t vmf_insert_pfn_prot(struct vm_area_struct *vma, unsigned long addr,
 			unsigned long pfn, pgprot_t pgprot);
 
-#define FOLL_WRITE	0x01	
-#define FOLL_TOUCH	0x02	
-#define FOLL_GET	0x04	
-#define FOLL_DUMP	0x08	
-#define FOLL_FORCE	0x10	
-#define FOLL_NOWAIT	0x20
-#define FOLL_NOFAULT	0x80
+#define FOLL_WRITE	0x01
+#define FOLL_TOUCH	0x02
+#define FOLL_GET	0x04
+/* FOLL_DUMP removed - never set */
+#define FOLL_FORCE	0x10
+/* FOLL_NOWAIT, FOLL_NOFAULT removed - never set */
 #define FOLL_HWPOISON	0x100
-#define FOLL_NUMA	0x200
+/* FOLL_NUMA removed - never tested */
 #define FOLL_TRIED	0x800
 #define FOLL_REMOTE	0x2000
 #define FOLL_COW	0x4000
 #define FOLL_ANON	0x8000
-#define FOLL_LONGTERM	0x10000
-#define FOLL_PIN	0x40000
+/* FOLL_LONGTERM, FOLL_PIN removed - never set */
 
 static inline int vm_fault_to_errno(vm_fault_t vm_fault, int foll_flags)
 {
@@ -1134,14 +1131,8 @@ static inline int vm_fault_to_errno(vm_fault_t vm_fault, int foll_flags)
 
 static inline bool gup_must_unshare(unsigned int flags, struct page *page)
 {
-	
-	if ((flags & (FOLL_WRITE | FOLL_PIN)) != FOLL_PIN)
-		return false;
-	
-	if (!PageAnon(page))
-		return false;
-	
-	return !PageAnonExclusive(page);
+	/* FOLL_PIN never set, always returns false */
+	return false;
 }
 
 typedef int (*pte_fn_t)(pte_t *pte, unsigned long addr, void *data);

@@ -45,7 +45,4 @@ enum {
 #define struct_group_tagged(TAG, NAME, MEMBERS...) \
 	__struct_group(TAG, NAME,  , MEMBERS)
 
-#define DECLARE_FLEX_ARRAY(TYPE, NAME) \
-	__DECLARE_FLEX_ARRAY(TYPE, NAME)
-
 #endif

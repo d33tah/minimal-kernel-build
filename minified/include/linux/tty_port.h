@@ -84,12 +84,6 @@ struct tty_port {
 	void			*client_data;
 };
 
-#define TTY_PORT_INITIALIZED	0	 
-#define TTY_PORT_SUSPENDED	1	 
-#define TTY_PORT_ACTIVE		2	 
-
-#define TTY_PORT_CTS_FLOW	3	 
-#define TTY_PORT_CHECK_CD	4	 
 #define TTY_PORT_KOPENED	5	 
 
 void tty_port_init(struct tty_port *port);

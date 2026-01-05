@@ -40,18 +40,12 @@ struct raw_notifier_head {
 #define ATOMIC_NOTIFIER_INIT(name) {				\
 		.lock = __SPIN_LOCK_UNLOCKED(name.lock),	\
 		.head = NULL }
-#define BLOCKING_NOTIFIER_INIT(name) {				\
-		.rwsem = __RWSEM_INITIALIZER((name).rwsem),	\
-		.head = NULL }
 #define RAW_NOTIFIER_INIT(name)	{				\
 		.head = NULL }
 
 #define ATOMIC_NOTIFIER_HEAD(name)				\
 	struct atomic_notifier_head name =			\
 		ATOMIC_NOTIFIER_INIT(name)
-#define BLOCKING_NOTIFIER_HEAD(name)				\
-	struct blocking_notifier_head name =			\
-		BLOCKING_NOTIFIER_INIT(name)
 #define RAW_NOTIFIER_HEAD(name)					\
 	struct raw_notifier_head name =				\
 		RAW_NOTIFIER_INIT(name)

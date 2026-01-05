@@ -18,22 +18,6 @@ struct percpu_rw_semaphore {
 
 #define __PERCPU_RWSEM_DEP_MAP_INIT(lockname)
 
-#define __DEFINE_PERCPU_RWSEM(name, is_static)				\
-static DEFINE_PER_CPU(unsigned int, __percpu_rwsem_rc_##name);		\
-is_static struct percpu_rw_semaphore name = {				\
-	.rss = __RCU_SYNC_INITIALIZER(name.rss),			\
-	.read_count = &__percpu_rwsem_rc_##name,			\
-	.writer = __RCUWAIT_INITIALIZER(name.writer),			\
-	.waiters = __WAIT_QUEUE_HEAD_INITIALIZER(name.waiters),		\
-	.block = ATOMIC_INIT(0),					\
-	__PERCPU_RWSEM_DEP_MAP_INIT(name)				\
-}
-
-#define DEFINE_PERCPU_RWSEM(name)		\
-	__DEFINE_PERCPU_RWSEM(name,  )
-#define DEFINE_STATIC_PERCPU_RWSEM(name)	\
-	__DEFINE_PERCPU_RWSEM(name, static)
-
 extern bool __percpu_down_read(struct percpu_rw_semaphore *, bool);
 
 static inline void percpu_down_read(struct percpu_rw_semaphore *sem)

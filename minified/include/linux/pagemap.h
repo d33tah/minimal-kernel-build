@@ -327,14 +327,6 @@ struct readahead_control {
 	unsigned int _batch_count;
 };
 
-#define DEFINE_READAHEAD(ractl, f, r, m, i)				\
-	struct readahead_control ractl = {				\
-		.file = f,						\
-		.mapping = m,						\
-		.ra = r,						\
-		._index = i,						\
-	}
-
 #define VM_READAHEAD_PAGES	(SZ_128K / PAGE_SIZE)
 
 /* Readahead disabled for minimal kernel */

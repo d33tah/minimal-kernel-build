@@ -41,9 +41,6 @@ enum hrtimer_restart {
 	HRTIMER_RESTART,	 
 };
 
-#define HRTIMER_STATE_INACTIVE	0x00
-#define HRTIMER_STATE_ENQUEUED	0x01
-
 struct hrtimer {
 	struct timerqueue_node		node;
 	ktime_t				_softexpires;

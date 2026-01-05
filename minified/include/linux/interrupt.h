@@ -12,7 +12,6 @@ enum irqreturn {
 	IRQ_WAKE_THREAD		= (1 << 1),
 };
 typedef enum irqreturn irqreturn_t;
-#define IRQ_RETVAL(x)	((x) ? IRQ_HANDLED : IRQ_NONE)
 
 #include <linux/irqnr.h>
 #include <linux/hardirq.h>

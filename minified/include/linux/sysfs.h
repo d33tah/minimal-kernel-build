@@ -34,18 +34,9 @@ struct attribute_group {
 };
 
 
-#define SYSFS_PREALLOC 010000
-
 #define __ATTR(_name, _mode, _show, _store) {				\
 	.attr = {.name = __stringify(_name),				\
 		 .mode = VERIFY_OCTAL_PERMISSIONS(_mode) },		\
-	.show	= _show,						\
-	.store	= _store,						\
-}
-
-#define __ATTR_PREALLOC(_name, _mode, _show, _store) {			\
-	.attr = {.name = __stringify(_name),				\
-		 .mode = SYSFS_PREALLOC | VERIFY_OCTAL_PERMISSIONS(_mode) },\
 	.show	= _show,						\
 	.store	= _store,						\
 }
@@ -61,8 +52,6 @@ struct attribute_group {
 }
 
 #define __ATTR_RW(_name) __ATTR(_name, 0644, _name##_show, _name##_store)
-/* __ATTR_NULL removed - unused */
-#define __ATTR_IGNORE_LOCKDEP	__ATTR
 
 #define __ATTRIBUTE_GROUPS(_name)				\
 static const struct attribute_group *_name##_groups[] = {	\

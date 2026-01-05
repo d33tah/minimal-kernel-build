@@ -17,13 +17,6 @@ enum dma_data_direction {
 #include <linux/mem_encrypt.h>
 
 
-/* DMA_ATTR_* removed - unused */
-
-#define DMA_MAPPING_ERROR		(~(dma_addr_t)0)
-
-#define DMA_BIT_MASK(n)	(((n) == 64) ? ~0ULL : ((1ULL<<(n))-1))
-
-
-/* All DMA mapping functions and inline helpers removed - no callers */
+/* DMA_ATTR_*, DMA_MAPPING_ERROR, DMA_BIT_MASK removed - unused */
 
 #endif

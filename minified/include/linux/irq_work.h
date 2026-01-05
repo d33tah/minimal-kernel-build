@@ -11,13 +11,6 @@ struct irq_work {
 	struct rcuwait irqwait;
 };
 
-#define __IRQ_WORK_INIT(_func, _flags) (struct irq_work){	\
-	.node = { .u_flags = (_flags), },			\
-	.func = (_func),					\
-	.irqwait = __RCUWAIT_INITIALIZER(irqwait),		\
-}
-
-/* IRQ_WORK_INIT removed - unused */
 bool irq_work_queue(struct irq_work *work);
 bool irq_work_queue_on(struct irq_work *work, int cpu);
 

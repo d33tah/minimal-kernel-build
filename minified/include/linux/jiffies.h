@@ -40,8 +40,6 @@
 # error Invalid value of HZ.
 #endif
 
-#define LATCH ((CLOCK_TICK_RATE + HZ/2) / HZ)
-
 extern int register_refined_jiffies(long clock_tick_rate);
 
 #ifndef __jiffy_arch_data
@@ -85,9 +83,6 @@ extern unsigned long preset_lpj;
 
 #define NSEC_CONVERSION ((unsigned long)((((u64)1 << NSEC_JIFFIE_SC) +\
                                         TICK_NSEC -1) / (u64)TICK_NSEC))
-/* BITS_PER_LONG == 32 */
-#define MAX_SEC_IN_JIFFIES \
-	(long)((u64)((u64)MAX_JIFFY_OFFSET * TICK_NSEC) / NSEC_PER_SEC)
 
 extern unsigned int jiffies_to_msecs(const unsigned long j);
 extern unsigned int jiffies_to_usecs(const unsigned long j);

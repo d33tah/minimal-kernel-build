@@ -7,7 +7,6 @@
 #include <linux/compiler.h>
 #include <linux/workqueue.h>
 #include <linux/sysctl.h>
-#define KMOD_PATH_LEN 256
 /* request_module removed - never called, always returned -ENOSYS */
 #define try_then_request_module(x, mod...) (x)
 #endif  

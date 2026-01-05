@@ -58,9 +58,4 @@ static inline void mmu_notifier_subscriptions_destroy(struct mm_struct *mm)
 {
 }
 
-#define ptep_clear_flush_young_notify ptep_clear_flush_young
-#define ptep_clear_young_notify ptep_test_and_clear_young
-#define	ptep_clear_flush_notify ptep_clear_flush
-#define set_pte_at_notify set_pte_at
-
 #endif  

@@ -15,14 +15,7 @@ void __noreturn machine_real_restart(unsigned int type)
 		halt();
 }
 
-void native_machine_shutdown(void)
-{
-}
-
-void machine_shutdown(void)
-{
-	native_machine_shutdown();
-}
+/* native_machine_shutdown, machine_shutdown removed - never called */
 
 void machine_emergency_restart(void)
 {

@@ -9,7 +9,7 @@ struct pt_regs;
 /* struct machine_ops removed - unused */
 
 /* native_machine_crash_shutdown removed - declared but never implemented */
-void native_machine_shutdown(void);
+/* native_machine_shutdown removed - never called */
 void __noreturn machine_real_restart(unsigned int type);
  
 #define MRR_BIOS	0

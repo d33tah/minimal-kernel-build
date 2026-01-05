@@ -63,22 +63,7 @@ void rcu_sync_enter(struct rcu_sync *rsp)
 	wait_event(rsp->gp_wait, READ_ONCE(rsp->gp_state) >= GP_PASSED);
 }
 
-void rcu_sync_exit(struct rcu_sync *rsp)
-{
-	WARN_ON_ONCE(READ_ONCE(rsp->gp_state) == GP_IDLE);
-	WARN_ON_ONCE(READ_ONCE(rsp->gp_count) == 0);
-
-	spin_lock_irq(&rsp->rss_lock);
-	if (!--rsp->gp_count) {
-		if (rsp->gp_state == GP_PASSED) {
-			WRITE_ONCE(rsp->gp_state, GP_EXIT);
-			rcu_sync_call(rsp);
-		} else if (rsp->gp_state == GP_EXIT) {
-			WRITE_ONCE(rsp->gp_state, GP_REPLAY);
-		}
-	}
-	spin_unlock_irq(&rsp->rss_lock);
-}
+/* rcu_sync_exit removed - never called */
 
 void rcu_sync_dtor(struct rcu_sync *rsp)
 {

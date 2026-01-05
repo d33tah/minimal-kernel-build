@@ -35,16 +35,7 @@ void __prepare_to_swait(struct swait_queue_head *q, struct swait_queue *wait)
 		list_add_tail(&wait->task_list, &q->task_list);
 }
 
-void prepare_to_swait_exclusive(struct swait_queue_head *q,
-				struct swait_queue *wait, int state)
-{
-	unsigned long flags;
-
-	raw_spin_lock_irqsave(&q->lock, flags);
-	__prepare_to_swait(q, wait);
-	set_current_state(state);
-	raw_spin_unlock_irqrestore(&q->lock, flags);
-}
+/* prepare_to_swait_exclusive removed - never called */
 
 long prepare_to_swait_event(struct swait_queue_head *q,
 			    struct swait_queue *wait, int state)
@@ -65,12 +56,7 @@ long prepare_to_swait_event(struct swait_queue_head *q,
 	return ret;
 }
 
-void __finish_swait(struct swait_queue_head *q, struct swait_queue *wait)
-{
-	__set_current_state(TASK_RUNNING);
-	if (!list_empty(&wait->task_list))
-		list_del_init(&wait->task_list);
-}
+/* __finish_swait removed - never called */
 
 void finish_swait(struct swait_queue_head *q, struct swait_queue *wait)
 {

@@ -42,7 +42,7 @@ extern const struct file_operations pidfd_fops;
 
 struct file;
 
-extern struct pid *pidfd_pid(const struct file *file);
+/* pidfd_pid removed - never called */
 /* pidfd_get_pid removed - never called */
 
 static inline struct pid *get_pid(struct pid *pid)

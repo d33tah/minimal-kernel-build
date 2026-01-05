@@ -728,13 +728,7 @@ static inline void init_task_pid(struct task_struct *task, enum pid_type type,
 		task->signal->pids[type] = pid;
 }
 
-struct pid *pidfd_pid(const struct file *file)
-{
-	if (file->f_op == &pidfd_fops)
-		return file->private_data;
-
-	return ERR_PTR(-EBADF);
-}
+/* pidfd_pid removed - never called */
 
 static int pidfd_release(struct inode *inode, struct file *file)
 {

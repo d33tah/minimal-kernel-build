@@ -97,16 +97,7 @@ struct hrtimer_cpu_base {
 DECLARE_PER_CPU(struct tick_device, tick_cpu_device);
 
 
-extern void hrtimer_init(struct hrtimer *timer, clockid_t which_clock,
-			 enum hrtimer_mode mode);
-extern void hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
-				   u64 range_ns, const enum hrtimer_mode mode);
-
-
-extern int hrtimer_cancel(struct hrtimer *timer);
-
-extern bool hrtimer_active(const struct hrtimer *timer);
-
+/* hrtimer_init, hrtimer_start_range_ns, hrtimer_cancel, hrtimer_active removed - never called */
 
 /* hrtimer_callback_running removed - no callers */
 

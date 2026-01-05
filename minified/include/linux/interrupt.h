@@ -140,7 +140,7 @@ extern void softirq_init(void);
 extern void __raise_softirq_irqoff(unsigned int nr);
 
 extern void raise_softirq_irqoff(unsigned int nr);
-extern void raise_softirq(unsigned int nr);
+/* raise_softirq removed - never called */
 
 DECLARE_PER_CPU(struct task_struct *, ksoftirqd);
 

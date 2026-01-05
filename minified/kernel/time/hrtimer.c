@@ -41,31 +41,7 @@ void clock_was_set_delayed(void)
 	/* Stubbed for minimal Hello World */
 }
 
-void hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim, u64 delta_ns,
-			    const enum hrtimer_mode mode)
-{
-	/* Stubbed for minimal Hello World */
-}
-
-int hrtimer_cancel(struct hrtimer *timer)
-{
-	/* Stubbed for minimal Hello World */
-	return 0;
-}
-
-void hrtimer_init(struct hrtimer *timer, clockid_t clock_id,
-		  enum hrtimer_mode mode)
-{
-	/* Minimal init - just zero the structure */
-	memset(timer, 0, sizeof(struct hrtimer));
-	timer->base = &raw_cpu_ptr(&hrtimer_bases)->clock_base[0];
-}
-
-bool hrtimer_active(const struct hrtimer *timer)
-{
-	/* Stubbed for minimal Hello World */
-	return false;
-}
+/* hrtimer_start_range_ns, hrtimer_cancel, hrtimer_init, hrtimer_active removed - never called */
 
 void hrtimer_run_queues(void)
 {

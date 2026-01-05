@@ -8,8 +8,6 @@
 #include <linux/mem_encrypt.h>
 #include <linux/swiotlb.h>
 
-extern unsigned int zone_dma_bits;
-
 struct bus_dma_region {
 	phys_addr_t cpu_start;
 	dma_addr_t dma_start;

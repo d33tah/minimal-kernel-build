@@ -27,7 +27,7 @@
 #ifdef CONFIG_X86
 struct pci_bus;
 struct pci_dev;
-extern unsigned long pci_mem_start;
+/* pci_mem_start removed - never read */
 extern void pci_iommu_alloc(void);
 #endif
 #define PCI_DEVID(bus, devfn)	((((u16)(bus)) << 8) | (devfn))

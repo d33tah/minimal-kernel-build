@@ -12,12 +12,7 @@ enum reboot_mode {
 extern enum reboot_mode reboot_mode;
 extern enum reboot_mode panic_reboot_mode;
 
-enum reboot_type {
-	BOOT_ACPI	= 'a',
-};
-extern enum reboot_type reboot_type;
-
-/* reboot_default, reboot_cpu removed - never used */
+/* reboot_type enum and extern removed - never used */
 
 extern void machine_restart(char *cmd);
 extern void machine_halt(void);

@@ -173,7 +173,7 @@ extern int send_signal_locked(int sig, struct kernel_siginfo *info,
 extern int sigprocmask(int, sigset_t *, sigset_t *);
 extern void set_current_blocked(sigset_t *);
 extern void __set_current_blocked(const sigset_t *);
-extern int show_unhandled_signals;
+/* show_unhandled_signals removed - never used */
 
 /* get_signal, signal_setup_done removed - never called */
 extern void exit_signals(struct task_struct *tsk);

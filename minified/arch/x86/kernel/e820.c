@@ -13,8 +13,6 @@ static struct e820_table e820_table_init __initdata;
 
 struct e820_table *e820_table __refdata = &e820_table_init;
 
-unsigned long pci_mem_start = 0xaeedbabe;
-
 static struct e820_entry *__e820__mapped_all(u64 start, u64 end,
 					     enum e820_type type)
 {
@@ -382,7 +380,7 @@ __init void e820__setup_pci_gap(void)
 			last = start;
 	}
 
-	pci_mem_start = gapstart;
+	/* pci_mem_start removed - never read */
 
 	pr_info("[mem %#010lx-%#010lx] available for PCI devices\n", gapstart,
 		gapstart + gapsize - 1);

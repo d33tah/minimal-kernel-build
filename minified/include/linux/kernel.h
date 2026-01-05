@@ -102,7 +102,7 @@ int sscanf(const char *, const char *, ...);
 
 extern char *next_arg(char *args, char **param, char **val);
 
-extern int kernel_text_address(unsigned long addr);
+/* kernel_text_address removed - never called */
 
 extern void bust_spinlocks(int yes);
 

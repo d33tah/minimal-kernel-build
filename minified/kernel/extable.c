@@ -43,19 +43,4 @@ const struct exception_table_entry *search_exception_tables(unsigned long addr)
 	return e;
 }
 
-int notrace core_kernel_text(unsigned long addr)
-{
-	if (is_kernel_text(addr))
-		return 1;
-
-	if (system_state < SYSTEM_FREEING_INITMEM && is_kernel_inittext(addr))
-		return 1;
-	return 0;
-}
-
-/* __kernel_text_address removed - never called */
-
-int kernel_text_address(unsigned long addr)
-{
-	return core_kernel_text(addr);
-}
+/* core_kernel_text, __kernel_text_address, kernel_text_address removed - never called */

@@ -19,13 +19,7 @@ struct scatterlist *sg_next(struct scatterlist *sg)
 	return sg;
 }
 
-int sg_nents(struct scatterlist *sg)
-{
-	int nents;
-	for (nents = 0; sg; sg = sg_next(sg))
-		nents++;
-	return nents;
-}
+/* sg_nents removed - never called */
 
 /* Initialize scatterlist table */
 void sg_init_table(struct scatterlist *sgl, unsigned int nents)

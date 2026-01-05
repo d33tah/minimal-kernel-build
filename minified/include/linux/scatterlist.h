@@ -99,8 +99,8 @@ static inline void sg_init_marker(struct scatterlist *sgl,
 	sg_mark_end(&sgl[nents - 1]);
 }
 
-/* Basic functions - only sg_nents, sg_next, sg_init_table, sg_init_one used */
-int sg_nents(struct scatterlist *sg);
+/* Basic functions - sg_next, sg_init_table, sg_init_one used */
+/* sg_nents removed - never called */
 struct scatterlist *sg_next(struct scatterlist *);
 void sg_init_table(struct scatterlist *, unsigned int);
 void sg_init_one(struct scatterlist *, const void *, unsigned int);

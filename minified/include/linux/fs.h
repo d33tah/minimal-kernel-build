@@ -997,12 +997,11 @@ extern struct file *filp_open(const char *, int, umode_t);
 extern int filp_close(struct file *, fl_owner_t id);
 
 extern struct filename *getname_flags(const char __user *, int, int *);
-extern struct filename *getname(const char __user *);
+/* getname removed - never called */
 extern struct filename *getname_kernel(const char *);
 extern void putname(struct filename *name);
 
-extern int finish_open(struct file *file, struct dentry *dentry,
-			int (*open)(struct inode *, struct file *));
+/* finish_open removed - never called */
 
 extern void __init vfs_caches_init_early(void);
 extern void __init vfs_caches_init(void);

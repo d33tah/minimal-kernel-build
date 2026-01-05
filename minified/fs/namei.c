@@ -71,10 +71,7 @@ struct filename *getname_flags(const char __user *filename, int flags,
 	return result;
 }
 
-struct filename *getname(const char __user *filename)
-{
-	return getname_flags(filename, 0, NULL);
-}
+/* getname removed - never called */
 
 struct filename *getname_kernel(const char *filename)
 {

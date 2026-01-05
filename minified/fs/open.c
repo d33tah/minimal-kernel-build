@@ -331,14 +331,7 @@ cleanup_file:
 	return error;
 }
 
-int finish_open(struct file *file, struct dentry *dentry,
-		int (*open)(struct inode *, struct file *))
-{
-	BUG_ON(file->f_mode & FMODE_OPENED);
-
-	file->f_path.dentry = dentry;
-	return do_dentry_open(file, d_backing_inode(dentry), open);
-}
+/* finish_open removed - never called */
 
 int vfs_open(const struct path *path, struct file *file)
 {

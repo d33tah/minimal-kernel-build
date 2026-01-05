@@ -43,7 +43,7 @@ static unsigned int __initdata tsc_early_khz;
 
 static DEFINE_STATIC_KEY_FALSE(__use_tsc);
 
-int tsc_clocksource_reliable;
+/* tsc_clocksource_reliable removed - never used */
 
 /* art_to_tsc_numerator, art_to_tsc_denominator, art_to_tsc_offset,
    art_related_clocksource removed - unused after convert_art_to_tsc removal */

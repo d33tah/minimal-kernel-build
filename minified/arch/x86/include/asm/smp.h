@@ -8,7 +8,7 @@
 #include <asm/thread_info.h>
 #include <asm/cpumask.h>
 
-extern int smp_num_siblings;
+/* smp_num_siblings removed - never used */
 
 /* cpu_sibling_map, cpu_core_map, cpu_die_map, cpu_llc_shared_map, cpu_l2c_shared_map removed - never used */
 DECLARE_PER_CPU_READ_MOSTLY(u16, cpu_llc_id);

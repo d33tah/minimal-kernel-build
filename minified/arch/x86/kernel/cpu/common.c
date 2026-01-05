@@ -64,9 +64,7 @@ static inline void show_ucode_info_early(void)
 
 u32 elf_hwcap2 __read_mostly;
 
-/* cpu_initialized_mask removed - never used */
-
-int smp_num_siblings = 1;
+/* cpu_initialized_mask, smp_num_siblings removed - never used */
 
 DEFINE_PER_CPU_READ_MOSTLY(u16, cpu_llc_id) = BAD_APICID;
 /* cpu_l2c_id removed - never used */

@@ -30,10 +30,9 @@ extern void mark_tsc_unstable(char *reason);
 extern unsigned long native_calibrate_cpu_early(void);
 extern unsigned long native_calibrate_tsc(void);
 /* native_sched_clock_from_tsc removed - never called */
+/* tsc_clocksource_reliable removed - never used */
 
-extern int tsc_clocksource_reliable;
 
- 
 extern bool tsc_store_and_check_tsc_adjust(bool bootcpu);
 extern void tsc_verify_tsc_adjust(bool resume);
 /* check_tsc_sync_source, check_tsc_sync_target removed - unused (SMP) */

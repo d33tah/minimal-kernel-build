@@ -59,9 +59,8 @@ static inline unsigned char current_lock_cmos_reg(void)
 
  
 #define CMOS_READ(addr) rtc_cmos_read(addr)
-#define CMOS_WRITE(val, addr) rtc_cmos_write(val, addr)
+/* CMOS_WRITE, rtc_cmos_write declaration removed - unused */
 unsigned char rtc_cmos_read(unsigned char addr);
-void rtc_cmos_write(unsigned char val, unsigned char addr);
 
 /* mach_set_rtc_mmss removed - x86_platform.set_wallclock never called */
 extern void mach_get_cmos_time(struct timespec64 *now);

@@ -4,7 +4,7 @@
 
 #include <linux/ns_common.h>
 
-typedef struct net *possible_net_t;
+/* possible_net_t removed - unused */
 
 /* Minimal struct net - only fields needed for namespace stubs */
 struct net {

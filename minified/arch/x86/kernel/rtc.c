@@ -79,10 +79,7 @@ unsigned char rtc_cmos_read(unsigned char addr)
 	return val;
 }
 
-/* rtc_cmos_write stubbed - mc146818_set_time (only caller) is now a stub */
-void rtc_cmos_write(unsigned char val, unsigned char addr)
-{
-}
+/* rtc_cmos_write removed - mc146818_set_time (only caller) is now a stub */
 
 void read_persistent_clock64(struct timespec64 *ts)
 {

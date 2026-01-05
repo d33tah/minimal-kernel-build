@@ -54,13 +54,7 @@ struct bus_attribute {
 	ssize_t (*store)(struct bus_type *bus, const char *buf, size_t count);
 };
 
-#define BUS_ATTR_RW(_name) \
-	struct bus_attribute bus_attr_##_name = __ATTR_RW(_name)
-#define BUS_ATTR_WO(_name) \
-	struct bus_attribute bus_attr_##_name = __ATTR_WO(_name)
-
-
-/* device_match_name, device_match_of_node, device_match_fwnode,
+/* BUS_ATTR_RW, BUS_ATTR_WO, device_match_name, device_match_of_node, device_match_fwnode,
    device_match_acpi_dev, device_match_acpi_handle, device_match_any removed - unused */
 int device_match_devt(struct device *dev, const void *pdevt);
 

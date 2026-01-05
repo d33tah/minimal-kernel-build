@@ -15,7 +15,7 @@ typedef __u32	Elf32_Word;
 
 typedef __u64	Elf64_Addr;
 typedef __u16	Elf64_Half;
-typedef __s16	Elf64_SHalf;
+/* Elf64_SHalf removed - unused */
 typedef __u64	Elf64_Off;
 typedef __s32	Elf64_Sword;
 typedef __u32	Elf64_Word;

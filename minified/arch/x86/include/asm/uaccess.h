@@ -293,7 +293,7 @@ unsigned long __must_check __clear_user(void __user *mem, unsigned long len);
 
  
 
-#define ARCH_HAS_NOCACHE_UACCESS 1
+/* ARCH_HAS_NOCACHE_UACCESS removed - unused */
 
 /* --- 2025-12-07 20:27 --- Inlined uaccess_32.h */
 unsigned long __must_check __copy_user_ll

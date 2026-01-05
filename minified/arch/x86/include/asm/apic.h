@@ -88,12 +88,7 @@ struct apic {
 extern struct apic *apic;
 
  
-#define apic_driver(sym)					\
-	static const struct apic *__apicdrivers_##sym __used		\
-	__aligned(sizeof(struct apic *))			\
-	__section(".apicdrivers") = { &sym }
-
-/* apic_drivers macro removed - unused */
+/* apic_driver, apic_drivers macros removed - unused */
 
 extern struct apic *__apicdrivers[], *__apicdrivers_end[];
 

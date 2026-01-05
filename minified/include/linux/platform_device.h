@@ -59,10 +59,7 @@ struct platform_driver {
 extern int __platform_driver_register(struct platform_driver *,
 					struct module *);
 
-#define builtin_platform_driver(__platform_driver) \
-	builtin_driver(__platform_driver, platform_driver_register)
-
-/* platform_create_bundle, platform_register_drivers, platform_unregister_drivers removed - never called */
+/* builtin_platform_driver, platform_create_bundle, platform_register_drivers, platform_unregister_drivers removed - never called */
 
 #define platform_pm_suspend		NULL
 #define platform_pm_resume		NULL

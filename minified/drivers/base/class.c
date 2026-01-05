@@ -71,21 +71,7 @@ static struct device *klist_class_to_dev(struct klist_node *n)
 	return p->device;
 }
 
-static void klist_class_dev_get(struct klist_node *n)
-{
-	struct device *dev = klist_class_to_dev(n);
-
-	get_device(dev);
-}
-
-static void klist_class_dev_put(struct klist_node *n)
-{
-	struct device *dev = klist_class_to_dev(n);
-
-	put_device(dev);
-}
-
-/* __class_register, class_unregister, class_create_release, __class_create removed - never called */
+/* klist_class_dev_get, klist_class_dev_put, __class_register, class_unregister, class_create_release, __class_create removed - never called */
 
 void class_dev_iter_init(struct class_dev_iter *iter, struct class *class,
 			 struct device *start, const struct device_type *type)

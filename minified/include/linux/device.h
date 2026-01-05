@@ -159,18 +159,8 @@ struct device {
 	bool			can_match:1;
 };
 
-struct device_link {
-	struct device *supplier;
-	struct list_head s_node;
-	struct device *consumer;
-	struct list_head c_node;
-	/* link_dev removed - never accessed */
-	enum device_link_state status;
-	u32 flags;
-	/* rpm_active removed - never accessed */
-	struct kref kref;
-	/* rm_work, supplier_preactivated removed - never accessed */
-};
+/* device_link fields removed - only used as type definition, never instantiated */
+struct device_link;
 
 static inline struct device *kobj_to_dev(struct kobject *kobj)
 {

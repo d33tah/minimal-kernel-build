@@ -79,13 +79,8 @@ struct kobj_type {
 	void (*get_ownership)(struct kobject *kobj, kuid_t *uid, kgid_t *gid);
 };
 
-struct kobj_uevent_env {
-	char *argv[3];
-	char *envp[UEVENT_NUM_ENVP];
-	int envp_idx;
-	char buf[UEVENT_BUFFER_SIZE];
-	int buflen;
-};
+/* kobj_uevent_env fields removed - only used as pointer type */
+struct kobj_uevent_env;
 
 struct kset_uevent_ops {
 	int (* const filter)(struct kobject *kobj);

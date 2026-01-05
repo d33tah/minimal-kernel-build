@@ -8,15 +8,7 @@
 #include <asm/stacktrace.h>
 
 /* struct perf_guest_switch_msr, perf_clear_dirty_counters,
-   perf_guest_get_msrs, perf_misc_flags removed - unused */
-
-#define perf_arch_fetch_caller_regs(regs, __ip) do { \
-	(regs)->ip = (__ip); \
-	(regs)->sp = (unsigned long)__builtin_frame_address(0); \
-	(regs)->cs = __KERNEL_CS; \
-	(regs)->flags = 0; \
-} while (0)
-
-#define arch_perf_out_copy_user copy_from_user_nmi
+   perf_guest_get_msrs, perf_misc_flags, perf_arch_fetch_caller_regs,
+   arch_perf_out_copy_user removed - unused */
 
 #endif  

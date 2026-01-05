@@ -121,14 +121,8 @@ void tty_port_tty_set(struct tty_port *port, struct tty_struct *tty)
 }
 
 /* tty_port_hangup, tty_port_carrier_raised, tty_port_raise_dtr_rts,
-   tty_port_lower_dtr_rts removed - never called */
-
-void tty_port_tty_wakeup(struct tty_port *port)
-{
-	port->client_ops->write_wakeup(port);
-}
-
-/* tty_port_block_til_ready, tty_port_close_start/end, tty_port_close, tty_port_open removed - never called */
+   tty_port_lower_dtr_rts, tty_port_tty_wakeup,
+   tty_port_block_til_ready, tty_port_close_start/end, tty_port_close, tty_port_open removed - never called */
 
 int tty_port_install(struct tty_port *port, struct tty_driver *driver,
 		     struct tty_struct *tty)

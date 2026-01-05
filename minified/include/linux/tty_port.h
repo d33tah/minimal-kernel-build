@@ -107,9 +107,8 @@ static inline bool tty_port_kopened(const struct tty_port *port)
 struct tty_struct *tty_port_tty_get(struct tty_port *port);
 void tty_port_tty_set(struct tty_port *port, struct tty_struct *tty);
 /* tty_port_carrier_raised, tty_port_raise_dtr_rts, tty_port_lower_dtr_rts,
-   tty_port_hangup removed - never called */
-void tty_port_tty_wakeup(struct tty_port *port);
-/* tty_port_block_til_ready, tty_port_close_start/end, tty_port_close, tty_port_open removed */
+   tty_port_hangup, tty_port_tty_wakeup,
+   tty_port_block_til_ready, tty_port_close_start/end, tty_port_close, tty_port_open removed */
 int tty_port_install(struct tty_port *port, struct tty_driver *driver,
 		struct tty_struct *tty);
 

@@ -64,7 +64,7 @@ static inline void show_ucode_info_early(void)
 
 u32 elf_hwcap2 __read_mostly;
 
-cpumask_var_t cpu_initialized_mask;
+/* cpu_initialized_mask removed - never used */
 
 int smp_num_siblings = 1;
 

@@ -88,10 +88,7 @@ extern void entry_ibpb(void);
 # define THUNK_TARGET(addr) [thunk_target] "rm" (addr)
 
 /* Removed unused spectre_v2_mitigation, spectre_v2_user_mitigation,
-   ssb_mitigation enums */
-
-extern char __indirect_thunk_start[];
-extern char __indirect_thunk_end[];
+   ssb_mitigation enums, __indirect_thunk_start/end */
 
 static __always_inline
 void alternative_msr_write(unsigned int msr, u64 val, unsigned int feature)

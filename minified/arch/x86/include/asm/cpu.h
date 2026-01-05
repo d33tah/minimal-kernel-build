@@ -9,7 +9,7 @@
 #include <linux/percpu.h>
 #include <asm/ibt.h>
 
-#define cpu_physical_id(cpu)			boot_cpu_physical_apicid
+/* cpu_physical_id removed - never used */
 #define cpu_acpi_id(cpu)			0
 #define safe_smp_processor_id()			0
 

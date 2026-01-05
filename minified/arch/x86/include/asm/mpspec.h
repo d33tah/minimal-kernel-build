@@ -6,9 +6,8 @@
 #include <asm/apicdef.h>
 
 /* pic_mode, mp_bus_not_pci, phys_cpu_present_map,
-   generic_processor_info, MAX_MP_BUSSES, smp_found_config removed - unused */
-
-extern unsigned int boot_cpu_physical_apicid;
+   generic_processor_info, MAX_MP_BUSSES, smp_found_config,
+   boot_cpu_physical_apicid removed - unused */
 
 /* physid_mask_t needed by struct apic */
 #define PHYSID_ARRAY_SIZE	BITS_TO_LONGS(MAX_LOCAL_APIC)

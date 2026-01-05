@@ -41,17 +41,7 @@ struct attribute_group {
 	.store	= _store,						\
 }
 
-#define __ATTR_RO(_name) {						\
-	.attr	= { .name = __stringify(_name), .mode = 0444 },		\
-	.show	= _name##_show,						\
-}
-/* __ATTR_RO_MODE, __ATTR_RW_MODE removed - unused */
-#define __ATTR_WO(_name) {						\
-	.attr	= { .name = __stringify(_name), .mode = 0200 },		\
-	.store	= _name##_store,					\
-}
-
-#define __ATTR_RW(_name) __ATTR(_name, 0644, _name##_show, _name##_store)
+/* __ATTR_RO, __ATTR_WO, __ATTR_RW removed - unused */
 
 #define __ATTRIBUTE_GROUPS(_name)				\
 static const struct attribute_group *_name##_groups[] = {	\

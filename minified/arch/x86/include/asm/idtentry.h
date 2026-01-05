@@ -101,39 +101,9 @@ static noinline void __##func(struct pt_regs *regs, u32 vector)
 #define DECLARE_IDTENTRY_SYSVEC(vector, func)				\
 	DECLARE_IDTENTRY(vector, func)
 
- 
-#define DEFINE_IDTENTRY_SYSVEC(func)					\
-static void __##func(struct pt_regs *regs);				\
-									\
-__visible noinstr void func(struct pt_regs *regs)			\
-{									\
-	irqentry_state_t state = irqentry_enter(regs);			\
-									\
-	kvm_set_cpu_l1tf_flush_l1d();					\
-	run_sysvec_on_irqstack_cond(__##func, regs);			\
-	irqentry_exit(regs, state);					\
-}									\
-									\
-static noinline void __##func(struct pt_regs *regs)
+/* DEFINE_IDTENTRY_SYSVEC and DEFINE_IDTENTRY_SYSVEC_SIMPLE removed - unused */
 
- 
-#define DEFINE_IDTENTRY_SYSVEC_SIMPLE(func)				\
-static __always_inline void __##func(struct pt_regs *regs);		\
-									\
-__visible noinstr void func(struct pt_regs *regs)			\
-{									\
-	irqentry_state_t state = irqentry_enter(regs);			\
-									\
-	__irq_enter_raw();						\
-	kvm_set_cpu_l1tf_flush_l1d();					\
-	__##func (regs);						\
-	__irq_exit_raw();						\
-	irqentry_exit(regs, state);					\
-}									\
-									\
-static __always_inline void __##func(struct pt_regs *regs)
 
- 
 #define DECLARE_IDTENTRY_XENCB(vector, func)				\
 	DECLARE_IDTENTRY(vector, func)
 

@@ -19,13 +19,9 @@
 
 #define __percpu_arg(x)		__percpu_prefix "%" #x
 
- 
-#define DECLARE_INIT_PER_CPU(var) \
-       extern typeof(var) init_per_cpu_var(var)
+/* DECLARE_INIT_PER_CPU and init_per_cpu_var removed - unused */
 
-#define init_per_cpu_var(var)  var
 
- 
 
 #define __pcpu_type_1 u8
 #define __pcpu_type_2 u16
@@ -278,23 +274,7 @@ DECLARE_PER_CPU_READ_MOSTLY(unsigned long, this_cpu_off);
 
 #endif  
 
-#define	DEFINE_EARLY_PER_CPU(_type, _name, _initvalue)		\
-	DEFINE_PER_CPU(_type, _name) = _initvalue
-
-#define DEFINE_EARLY_PER_CPU_READ_MOSTLY(_type, _name, _initvalue)	\
-	DEFINE_PER_CPU_READ_MOSTLY(_type, _name) = _initvalue
-
-#define EXPORT_EARLY_PER_CPU_SYMBOL(_name)			\
-	EXPORT_PER_CPU_SYMBOL(_name)
-
-#define DECLARE_EARLY_PER_CPU(_type, _name)			\
-	DECLARE_PER_CPU(_type, _name)
-
-#define DECLARE_EARLY_PER_CPU_READ_MOSTLY(_type, _name)		\
-	DECLARE_PER_CPU_READ_MOSTLY(_type, _name)
-
-#define	early_per_cpu(_name, _cpu) per_cpu(_name, _cpu)
-#define	early_per_cpu_ptr(_name) NULL
+/* EARLY_PER_CPU macros removed - unused */
  
 
 

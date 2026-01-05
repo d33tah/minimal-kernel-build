@@ -14,11 +14,7 @@
 		struct TAG { MEMBERS } ATTRS NAME; \
 	}
 
-#define __DECLARE_FLEX_ARRAY(TYPE, NAME)	\
-	struct { \
-		struct { } __empty_ ## NAME; \
-		TYPE NAME[]; \
-	}
+/* __DECLARE_FLEX_ARRAY removed - unused */
 
 #undef NULL
 #define NULL ((void *)0)

@@ -8,21 +8,17 @@
 #include <linux/device/bus.h>
 #include <linux/module.h>
 
-enum probe_type {
-	PROBE_DEFAULT_STRATEGY,
-	PROBE_PREFER_ASYNCHRONOUS,
-	PROBE_FORCE_SYNCHRONOUS,
-};
+/* probe_type enum removed - never read */
 
 struct device_driver {
 	const char		*name;
 	struct bus_type		*bus;
 
 	struct module		*owner;
-	const char		*mod_name;	 
+	const char		*mod_name;
 
-	bool suppress_bind_attrs;	 
-	enum probe_type probe_type;
+	bool suppress_bind_attrs;
+	/* probe_type field removed - never read */
 
 	const struct of_device_id	*of_match_table;
 	/* acpi_match_table removed - unused */

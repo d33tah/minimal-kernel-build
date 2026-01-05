@@ -38,17 +38,9 @@ typedef u32 __compat_uid_t;
 typedef u32 __compat_gid_t;
 #endif
 
-#ifndef __compat_uid32_t
-typedef u32 __compat_uid32_t;
-typedef u32 __compat_gid32_t;
-#endif
-
 #ifndef compat_mode_t
 typedef u32 compat_mode_t;
 #endif
-
-typedef s64 compat_s64;
-typedef u64 compat_u64;
 
 #ifndef _COMPAT_NSIG
 typedef u32 compat_sigset_word;

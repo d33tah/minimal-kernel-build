@@ -26,13 +26,12 @@ static inline cycles_t get_cycles(void)
 extern void tsc_early_init(void);
 /* tsc_init removed - never called */
 extern void mark_tsc_unstable(char *reason);
-/* unsynchronized_tsc, check_tsc_unstable, mark_tsc_async_resets removed - unused */
+/* unsynchronized_tsc, check_tsc_unstable, mark_tsc_async_resets, tsc_async_resets removed - unused */
 extern unsigned long native_calibrate_cpu_early(void);
 extern unsigned long native_calibrate_tsc(void);
 /* native_sched_clock_from_tsc removed - never called */
 
 extern int tsc_clocksource_reliable;
-extern bool tsc_async_resets;
 
  
 extern bool tsc_store_and_check_tsc_adjust(bool bootcpu);

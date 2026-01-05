@@ -19,9 +19,7 @@ void rcu_early_boot_tests(void);
 void rcu_test_sync_prims(void);
 
 extern void resched_cpu(int cpu);
-extern int rcu_num_lvls;
-extern int num_rcu_lvl[];
-extern int rcu_num_nodes;
+/* rcu_num_lvls, num_rcu_lvl, rcu_num_nodes removed - unused */
 
 #define RCU_SCHEDULER_INACTIVE	0
 #define RCU_SCHEDULER_INIT	1

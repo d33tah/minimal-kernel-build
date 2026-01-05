@@ -233,11 +233,7 @@ void __irq_wake_thread(struct irq_desc *desc, struct irqaction *action);
 /* register_irq_proc, unregister_irq_proc, register_handler_proc,
    unregister_handler_proc removed - never called */
 
-/* irq_can_set_affinity_usr, irq_set_thread_affinity removed - unused */
-
-extern int irq_do_set_affinity(struct irq_data *data,
-			       const struct cpumask *dest, bool force);
-/* irq_setup_affinity removed - never called (always returns 0) */
+/* irq_can_set_affinity_usr, irq_set_thread_affinity, irq_do_set_affinity, irq_setup_affinity removed - unused */
 
 static inline void chip_bus_lock(struct irq_desc *desc)
 {

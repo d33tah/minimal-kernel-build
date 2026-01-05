@@ -996,7 +996,7 @@ int do_truncate(struct user_namespace *, struct dentry *, loff_t start,
 extern struct file *filp_open(const char *, int, umode_t);
 extern int filp_close(struct file *, fl_owner_t id);
 
-extern struct filename *getname_flags(const char __user *, int, int *);
+/* getname_flags removed - never called */
 /* getname removed - never called */
 extern struct filename *getname_kernel(const char *);
 extern void putname(struct filename *name);

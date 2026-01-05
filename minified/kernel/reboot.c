@@ -31,19 +31,7 @@ void emergency_restart(void)
 }
 
 /* kernel_restart_prepare, migrate_to_reboot_cpu removed - never called */
-void kernel_restart(char *cmd)
-{
-	machine_restart(cmd);
-}
-void kernel_halt(void)
-{
-	machine_halt();
-}
-/* do_kernel_power_off, kernel_can_power_off removed - never called */
-void kernel_power_off(void)
-{
-	machine_power_off();
-}
+/* kernel_restart, kernel_halt, kernel_power_off removed - never called */
 
 /* system_transition_mutex removed - never used */
 

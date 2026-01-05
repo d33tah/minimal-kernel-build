@@ -26,9 +26,7 @@ extern void machine_power_off(void);
 extern void machine_shutdown(void);
 
 /* migrate_to_reboot_cpu, do_kernel_power_off, kernel_restart_prepare removed - never called */
-extern void kernel_restart(char *cmd);
-extern void kernel_halt(void);
-extern void kernel_power_off(void);
+/* kernel_restart, kernel_halt, kernel_power_off removed - never called */
 
 extern void emergency_restart(void);
 extern void machine_emergency_restart(void);

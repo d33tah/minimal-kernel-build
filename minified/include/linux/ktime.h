@@ -13,7 +13,7 @@ static inline ktime_t ktime_set(const s64 secs, const unsigned long nsecs) { if 
 /* timespec64_to_ktime removed - no callers */
 #define ktime_to_timespec64(kt)		ns_to_timespec64((kt))
 static inline s64 ktime_to_ns(const ktime_t kt) { return kt; }
-extern ktime_t ktime_add_safe(const ktime_t lhs, const ktime_t rhs);
+/* ktime_add_safe removed - never called */
 #define LOW_RES_NSEC		TICK_NSEC
 static inline ktime_t ns_to_ktime(u64 ns) { return ns; }
 #include <linux/timekeeping.h>

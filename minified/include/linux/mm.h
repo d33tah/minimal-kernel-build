@@ -257,8 +257,8 @@ void vm_area_free(struct vm_area_struct *);
 extern pgprot_t protection_map[16];
 
 #define FAULT_FLAG_DEFAULT  (FAULT_FLAG_ALLOW_RETRY | \
-			     FAULT_FLAG_KILLABLE | \
-			     FAULT_FLAG_INTERRUPTIBLE)
+			     FAULT_FLAG_KILLABLE)
+/* FAULT_FLAG_INTERRUPTIBLE removed from default - never tested */
 
 static inline bool fault_flag_allow_retry_first(enum fault_flag flags)
 {

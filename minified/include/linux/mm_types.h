@@ -407,14 +407,14 @@ enum fault_flag {
 	FAULT_FLAG_WRITE =		1 << 0,
 	FAULT_FLAG_MKWRITE =		1 << 1,
 	FAULT_FLAG_ALLOW_RETRY =	1 << 2,
-	FAULT_FLAG_RETRY_NOWAIT = 	1 << 3,
+	/* FAULT_FLAG_RETRY_NOWAIT removed - never set */
 	FAULT_FLAG_KILLABLE =		1 << 4,
-	FAULT_FLAG_TRIED = 		1 << 5,
-	FAULT_FLAG_USER =		1 << 6,
+	FAULT_FLAG_TRIED =		1 << 5,
+	/* FAULT_FLAG_USER removed - never tested */
 	FAULT_FLAG_REMOTE =		1 << 7,
-	FAULT_FLAG_INSTRUCTION =	1 << 8,
-	FAULT_FLAG_INTERRUPTIBLE =	1 << 9,
-	FAULT_FLAG_UNSHARE =		1 << 10,
+	/* FAULT_FLAG_INSTRUCTION removed - never tested */
+	/* FAULT_FLAG_INTERRUPTIBLE removed - never tested */
+	/* FAULT_FLAG_UNSHARE removed - never set */
 	FAULT_FLAG_ORIG_PTE_VALID =	1 << 11,
 };
 

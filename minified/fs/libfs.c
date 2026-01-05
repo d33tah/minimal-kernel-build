@@ -426,23 +426,7 @@ int noop_fsync(struct file *file, loff_t start, loff_t end, int datasync)
 	return 0;
 }
 
-struct inode *alloc_anon_inode(struct super_block *s)
-{
-	struct inode *inode = new_inode_pseudo(s);
-
-	if (!inode)
-		return ERR_PTR(-ENOMEM);
-
-	inode->i_ino = get_next_ino();
-
-	inode->i_state = I_DIRTY;
-	inode->i_mode = S_IRUSR | S_IWUSR;
-	inode->i_uid = current_fsuid();
-	inode->i_gid = current_fsgid();
-	inode->i_flags |= S_PRIVATE;
-	inode->i_atime = inode->i_mtime = current_time(inode);
-	return inode;
-}
+/* alloc_anon_inode removed - never called */
 
 static struct dentry *empty_dir_lookup(struct inode *dir, struct dentry *dentry,
 				       unsigned int flags)

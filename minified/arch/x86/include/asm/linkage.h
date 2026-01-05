@@ -16,11 +16,11 @@
 
 #define RET	ret
 
-#else  
+#else
 
-#define ASM_RET	"ret\n\t"
+/* ASM_RET removed - unused */
 
-#endif  
+#endif
 
  
 #define SYM_FUNC_START(name)				\

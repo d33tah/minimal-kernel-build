@@ -20,7 +20,7 @@ static inline void flush_cache_range(struct vm_area_struct *vma,
 
 /* flush_dcache_page called but is empty stub - keeping */
 static inline void flush_dcache_page(struct page *page) { }
-#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 0
+/* ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE removed - unused */
 
 #include <asm/special_insns.h>
 

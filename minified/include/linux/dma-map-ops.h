@@ -89,10 +89,7 @@ pgprot_t dma_pgprot(struct device *dev, pgprot_t prot, unsigned long attrs);
 void *arch_dma_set_uncached(void *addr, size_t size);
 void arch_dma_clear_uncached(void *addr, size_t size);
 
-#define arch_dma_map_page_direct(d, a)		(false)
-#define arch_dma_unmap_page_direct(d, a)	(false)
-#define arch_dma_map_sg_direct(d, s, n)		(false)
-#define arch_dma_unmap_sg_direct(d, s, n)	(false)
+/* arch_dma_*_direct macros removed - unused */
 
 static inline void arch_teardown_dma_ops(struct device *dev)
 {

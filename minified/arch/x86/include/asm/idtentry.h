@@ -246,9 +246,7 @@ DECLARE_IDTENTRY_RAW(X86_TRAP_BP,		exc_int3);
 DECLARE_IDTENTRY_RAW_ERRORCODE(X86_TRAP_PF,	exc_page_fault);
 
 
- 
-
-#define asm_exc_nmi_noist		asm_exc_nmi
+/* asm_exc_nmi_noist removed - unused */
 
 DECLARE_IDTENTRY_NMI(X86_TRAP_NMI,	exc_nmi);
 

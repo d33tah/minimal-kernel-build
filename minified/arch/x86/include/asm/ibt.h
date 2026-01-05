@@ -9,7 +9,7 @@
 
 #ifndef __ASSEMBLY__
 
-#define ASM_ENDBR
+/* ASM_ENDBR removed - unused */
 
 #define __noendbr
 

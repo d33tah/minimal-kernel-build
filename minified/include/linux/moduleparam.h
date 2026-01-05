@@ -84,23 +84,7 @@ extern const struct kernel_param __start___param[], __stop___param[];
 #define core_param_cb(name, ops, arg, perm)		\
 	__level_param_cb(name, ops, arg, perm, 1)
 
-#define postcore_param_cb(name, ops, arg, perm)		\
-	__level_param_cb(name, ops, arg, perm, 2)
-
-#define arch_param_cb(name, ops, arg, perm)		\
-	__level_param_cb(name, ops, arg, perm, 3)
-
-#define subsys_param_cb(name, ops, arg, perm)		\
-	__level_param_cb(name, ops, arg, perm, 4)
-
-#define fs_param_cb(name, ops, arg, perm)		\
-	__level_param_cb(name, ops, arg, perm, 5)
-
-#define device_param_cb(name, ops, arg, perm)		\
-	__level_param_cb(name, ops, arg, perm, 6)
-
-#define late_param_cb(name, ops, arg, perm)		\
-	__level_param_cb(name, ops, arg, perm, 7)
+/* postcore_param_cb, arch_param_cb, subsys_param_cb, fs_param_cb, device_param_cb, late_param_cb removed - unused */
 
 /* x86 only - alpha/ia64/ppc64 version removed */
 #define __moduleparam_const const

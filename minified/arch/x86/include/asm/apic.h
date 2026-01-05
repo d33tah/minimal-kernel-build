@@ -96,10 +96,7 @@ extern struct apic *apic;
 	__aligned(sizeof(struct apic *))			\
 	__section(".apicdrivers") = { &sym }
 
-#define apic_drivers(sym1, sym2)					\
-	static struct apic *__apicdrivers_##sym1##sym2[2] __used	\
-	__aligned(sizeof(struct apic *))				\
-	__section(".apicdrivers") = { &sym1, &sym2 }
+/* apic_drivers macro removed - unused */
 
 extern struct apic *__apicdrivers[], *__apicdrivers_end[];
 

@@ -18,7 +18,7 @@
 enum reboot_mode reboot_mode DEFAULT_REBOOT_MODE;
 enum reboot_mode panic_reboot_mode = REBOOT_UNDEFINED;
 
-int reboot_default = 1;
+/* reboot_default removed - never read */
 int reboot_cpu;
 enum reboot_type reboot_type = BOOT_ACPI;
 

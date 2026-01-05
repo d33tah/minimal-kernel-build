@@ -146,7 +146,7 @@ enum {
 };
 
 extern struct workqueue_struct *system_wq;
-extern struct workqueue_struct *system_long_wq;
+/* system_long_wq removed - never used */
 extern struct workqueue_struct *system_unbound_wq;
 
 __printf(1, 4) struct workqueue_struct *

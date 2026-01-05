@@ -80,7 +80,7 @@ static int blankinterval;
 
 int fg_console;
 int last_console;
-int want_console = -1;
+/* want_console removed - never read */
 
 static struct vc_data *master_display_fg;
 

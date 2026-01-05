@@ -71,15 +71,13 @@ void destroy_workqueue(struct workqueue_struct *wq)
 }
 
 static struct workqueue_struct system_wq_storage = { .name = "events" };
-static struct workqueue_struct system_long_wq_storage = {
-	.name = "events_long"
-};
+/* system_long_wq_storage removed - never used */
 static struct workqueue_struct system_unbound_wq_storage = {
 	.name = "events_unbound"
 };
 
 struct workqueue_struct *system_wq = &system_wq_storage;
-struct workqueue_struct *system_long_wq = &system_long_wq_storage;
+/* system_long_wq removed - never used */
 struct workqueue_struct *system_unbound_wq = &system_unbound_wq_storage;
 
 /* workqueue_init_early, workqueue_init, wq_worker_running, wq_worker_sleeping removed - unused */

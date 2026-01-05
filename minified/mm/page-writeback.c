@@ -5,16 +5,12 @@
 
 struct wb_domain global_wb_domain;
 DEFINE_PER_CPU(int, dirty_throttle_leaks);
-unsigned int dirty_writeback_interval = 5 * 100;
 
 bool __folio_end_writeback(struct folio *folio)
 {
 	return true;
 }
-bool __folio_start_writeback(struct folio *folio, bool keep_write)
-{
-	return true;
-}
+/* __folio_start_writeback removed - never called */
 
 int bdi_set_min_ratio(struct backing_dev_info *bdi, unsigned int min_ratio)
 {

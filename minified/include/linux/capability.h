@@ -25,12 +25,8 @@ typedef struct __user_cap_data_struct {
 #define CAP_CHOWN            0
 #define CAP_DAC_OVERRIDE     1
 #define CAP_DAC_READ_SEARCH  2
-#define CAP_FOWNER           3
+/* CAP_FOWNER, CAP_SYS_MODULE, CAP_SYS_CHROOT, CAP_SYS_ADMIN, CAP_SYS_RESOURCE removed - unused */
 #define CAP_FSETID           4
-#define CAP_SYS_MODULE       16
-#define CAP_SYS_CHROOT       18
-#define CAP_SYS_ADMIN        21
-#define CAP_SYS_RESOURCE     24
 #define CAP_MKNOD            27
 #define CAP_CHECKPOINT_RESTORE	40
 #define CAP_LAST_CAP         CAP_CHECKPOINT_RESTORE

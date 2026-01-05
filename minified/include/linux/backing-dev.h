@@ -13,7 +13,7 @@ void wb_workfn(struct work_struct *work);
 int bdi_set_min_ratio(struct backing_dev_info *bdi, unsigned int min_ratio);
 /* bdi_set_max_ratio removed - never called */
 #define BDI_CAP_WRITEBACK		(1 << 0)
-#define BDI_CAP_WRITEBACK_ACCT		(1 << 1)
+/* BDI_CAP_WRITEBACK_ACCT removed - unused */
 extern struct backing_dev_info noop_backing_dev_info;
 int bdi_init(struct backing_dev_info *bdi);
 struct backing_dev_info *inode_to_bdi(struct inode *inode);

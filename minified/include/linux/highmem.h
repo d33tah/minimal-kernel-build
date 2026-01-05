@@ -6,8 +6,7 @@
 #include <linux/bug.h>
 #include <asm/cacheflush.h>
 struct folio;
-/* flush_dcache_folio removed - empty stub, no callers */
-#define ARCH_IMPLEMENTS_FLUSH_DCACHE_FOLIO 0
+/* flush_dcache_folio, ARCH_IMPLEMENTS_FLUSH_DCACHE_FOLIO removed - unused */
 #include <linux/mm.h>
 #include <linux/uaccess.h>
 #include <linux/hardirq.h>

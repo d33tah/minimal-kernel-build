@@ -111,11 +111,7 @@ static inline void __dec_zone_state(struct zone *zone, enum zone_stat_item item)
 	atomic_long_dec(&vm_zone_stat[item]);
 }
 
-static inline void __dec_node_state(struct pglist_data *pgdat, enum node_stat_item item)
-{
-	atomic_long_dec(&pgdat->vm_stat[item]);
-	atomic_long_dec(&vm_node_stat[item]);
-}
+/* __dec_node_state removed - never called */
 
 /* __inc_zone_page_state, __inc_node_page_state removed - never called */
 

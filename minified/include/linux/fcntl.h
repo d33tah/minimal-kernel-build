@@ -14,7 +14,7 @@ struct open_how {
 /* Inlined from uapi/linux/fcntl.h */
 #define AT_FDCWD		-100
 #define AT_SYMLINK_NOFOLLOW	0x100
-#define AT_NO_AUTOMOUNT		0x800
+/* AT_NO_AUTOMOUNT removed - unused */
 #define AT_EMPTY_PATH		0x1000
 
 #define VALID_OPEN_FLAGS \

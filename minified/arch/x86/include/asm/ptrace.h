@@ -57,14 +57,7 @@ static inline unsigned long instruction_pointer(struct pt_regs *regs)
 	return regs->ip;
 }
 
-/* user_stack_pointer removed - never used */
-
-static __always_inline bool regs_irqs_disabled(struct pt_regs *regs)
-{
-	return !(regs->flags & X86_EFLAGS_IF);
-}
-
-/* MAX_REG_OFFSET removed - unused */
+/* user_stack_pointer, regs_irqs_disabled removed - never used */
 
 #define arch_has_single_step()	(1)
 #define arch_has_block_step()	(1)

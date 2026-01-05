@@ -135,22 +135,9 @@ static inline void os_xrstor_supervisor(struct fpstate *fpstate)
 	XSTATE_XRESTORE(&fpstate->regs.xsave, lmask, hmask);
 }
 
- 
-static inline u64 xfeatures_need_sigframe_write(void)
-{
-	u64 xfeaures_to_write;
+/* xfeatures_need_sigframe_write removed - never called */
 
-	 
-	xfeaures_to_write = xfeatures_in_use();
 
-	 
-	xfeaures_to_write |= XFEATURE_MASK_USER_SUPPORTED &
-			     ~XFEATURE_MASK_SIGFRAME_INITOPT;
-
-	return xfeaures_to_write;
-}
-
- 
 static inline int xsave_to_user_sigframe(struct xregs_state __user *buf)
 {
 	 

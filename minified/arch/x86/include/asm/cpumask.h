@@ -9,11 +9,7 @@ extern cpumask_var_t cpu_initialized_mask;
 
 /* setup_cpu_local_masks removed - never called */
 
-/* NR_CPUS == 1, simplified for single CPU */
-static __always_inline bool arch_cpu_online(int cpu)
-{
-	return cpu == 0;
-}
+/* arch_cpu_online removed - never called */
 
 #endif
 #endif

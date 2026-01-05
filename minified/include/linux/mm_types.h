@@ -4,7 +4,7 @@
 #include <linux/mm_types_task.h>
 
 #include <asm/auxvec.h>
-#define AT_EXECFD 2
+/* AT_EXECFD removed - unused */
 #define AT_PHDR   3
 #define AT_PHENT  4
 #define AT_PHNUM  5

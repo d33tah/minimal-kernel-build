@@ -45,8 +45,7 @@ struct mm_rss_stat {
 /* 32-bit x86: BITS_PER_LONG=32, PAGE_SIZE=4096 */
 struct page_frag {
 	struct page *page;
-	__u16 offset;
-	__u16 size;
+	/* offset, size removed - never accessed */
 };
 
 struct tlbflush_unmap_batch {

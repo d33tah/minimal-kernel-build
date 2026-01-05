@@ -456,9 +456,7 @@ struct fown_struct {
 };
 
 struct file_ra_state {
-	pgoff_t start;
-	unsigned int size;
-	/* async_size, ra_pages removed - never accessed */
+	/* start, size, async_size, ra_pages removed - never accessed */
 	unsigned int mmap_miss;
 	loff_t prev_pos;
 };

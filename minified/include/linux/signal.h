@@ -51,9 +51,6 @@ static inline void sigdelset(sigset_t *set, int _sig)
 static inline int sigisemptyset(sigset_t *set)
 {
 	switch (_NSIG_WORDS) {
-	case 4:
-		return (set->sig[3] | set->sig[2] |
-			set->sig[1] | set->sig[0]) == 0;
 	case 2:
 		return (set->sig[1] | set->sig[0]) == 0;
 	case 1:
@@ -67,11 +64,6 @@ static inline int sigisemptyset(sigset_t *set)
 static inline int sigequalsets(const sigset_t *set1, const sigset_t *set2)
 {
 	switch (_NSIG_WORDS) {
-	case 4:
-		return	(set1->sig[3] == set2->sig[3]) &&
-			(set1->sig[2] == set2->sig[2]) &&
-			(set1->sig[1] == set2->sig[1]) &&
-			(set1->sig[0] == set2->sig[0]);
 	case 2:
 		return	(set1->sig[1] == set2->sig[1]) &&
 			(set1->sig[0] == set2->sig[0]);
@@ -88,15 +80,9 @@ static inline int sigequalsets(const sigset_t *set1, const sigset_t *set2)
 #define _SIG_SET_BINOP(name, op)					\
 static inline void name(sigset_t *r, const sigset_t *a, const sigset_t *b) \
 {									\
-	unsigned long a0, a1, a2, a3, b0, b1, b2, b3;			\
+	unsigned long a0, a1, b0, b1;					\
 									\
 	switch (_NSIG_WORDS) {						\
-	case 4:								\
-		a3 = a->sig[3]; a2 = a->sig[2];				\
-		b3 = b->sig[3]; b2 = b->sig[2];				\
-		r->sig[3] = op(a3, b3);					\
-		r->sig[2] = op(a2, b2);					\
-		fallthrough;						\
 	case 2:								\
 		a1 = a->sig[1]; b1 = b->sig[1];				\
 		r->sig[1] = op(a1, b1);					\

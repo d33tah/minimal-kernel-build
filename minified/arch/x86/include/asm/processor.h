@@ -41,10 +41,8 @@ struct math_emu_info {
 #include <linux/irqflags.h>
 #include <linux/mem_encrypt.h>
 
-/* NET_IP_ALIGN removed - unused */
 #define HBP_NUM 4
 
- 
 # define ARCH_MIN_TASKALIGN		__alignof__(union fpregs_state)
 # define ARCH_MIN_MMSTRUCT_ALIGN	0
 
@@ -407,9 +405,6 @@ static inline void spin_lock_prefetch(const void *x)
 	.sp0			= TOP_OF_INIT_STACK,			  \
 	.sysenter_cs		= __KERNEL_CS,				  \
 }
-
-#define KSTK_ESP(task)		(task_pt_regs(task)->sp)
-
 
 extern void start_thread(struct pt_regs *regs, unsigned long new_ip,
 					       unsigned long new_sp);

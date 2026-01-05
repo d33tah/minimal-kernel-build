@@ -527,10 +527,7 @@ int d_set_mounted(struct dentry *dentry)
 	return -EBUSY;
 }
 
-void shrink_dcache_parent(struct dentry *parent)
-{
-	/* Stub: d_walk is empty, so this is a no-op */
-}
+/* shrink_dcache_parent removed - never called */
 
 static void do_one_tree(struct dentry *dentry)
 {

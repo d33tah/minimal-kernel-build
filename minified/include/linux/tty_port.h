@@ -29,11 +29,6 @@ struct __kfifo {
 #define DECLARE_KFIFO_PTR(fifo, type)	\
 struct __STRUCT_KFIFO_PTR(type, 0, type) fifo
 
-#define INIT_KFIFO(fifo) \
-	(void)sizeof(&(fifo))
-
-/* kfifo_init removed - never called */
-
 #include <linux/kref.h>
 #include <linux/mutex.h>
 #include <linux/tty_buffer.h>

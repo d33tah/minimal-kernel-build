@@ -21,11 +21,6 @@
 #define STATIC_CALL_SITE_INIT 2UL	 
 #define STATIC_CALL_SITE_FLAGS 3UL
 
-#define DECLARE_STATIC_CALL(name, func)					\
-	extern struct static_call_key STATIC_CALL_KEY(name);		\
-	extern typeof(func) STATIC_CALL_TRAMP(name);
-
-
 #define __raw_static_call(name)	(&STATIC_CALL_TRAMP(name))
 
 

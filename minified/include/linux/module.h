@@ -71,9 +71,6 @@ extern int init_module(void);
 #define __init_or_module __init
 #define __initdata_or_module __initdata
 #define __initconst_or_module __initconst
-#define __INIT_OR_MODULE __INIT
-#define __INITDATA_OR_MODULE __INITDATA
-#define __INITRODATA_OR_MODULE __INITRODATA
 
 #define MODULE_INFO(tag, info) __MODULE_INFO(tag, tag, info)
 

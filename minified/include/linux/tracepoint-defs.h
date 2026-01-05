@@ -14,6 +14,5 @@ struct tracepoint {
 	void (*unregfunc)(void);
 	struct tracepoint_func __rcu *funcs;
 };
-#define DECLARE_TRACEPOINT(tp) extern struct tracepoint __tracepoint_##tp
 #define tracepoint_enabled(tracepoint) false
 #endif

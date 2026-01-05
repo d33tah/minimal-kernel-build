@@ -48,7 +48,6 @@
 	_ELFNOTE(size, name, __LINE__, type, desc)
 
 #define ELFNOTE32(name, type, desc) ELFNOTE(32, name, type, desc)
-#define ELFNOTE64(name, type, desc) ELFNOTE(64, name, type, desc)
 #endif	 
 
 #endif  

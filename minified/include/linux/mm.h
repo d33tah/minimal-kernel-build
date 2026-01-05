@@ -563,10 +563,7 @@ static inline unsigned long folio_pfn(struct folio *folio)
 	return page_to_pfn(&folio->page);
 }
 
-static inline atomic_t *folio_pincount_ptr(struct folio *folio)
-{
-	return &folio_page(folio, 1)->compound_pincount;
-}
+/* folio_pincount_ptr removed - unused */
 
 static inline void set_page_zone(struct page *page, enum zone_type zone)
 {
@@ -612,24 +609,10 @@ static __always_inline void *lowmem_page_address(const struct page *page)
 	return page_to_virt(page);
 }
 
-#if defined(WANT_PAGE_VIRTUAL)
-static inline void *page_address(const struct page *page)
-{
-	return page->virtual;
-}
-static inline void set_page_address(struct page *page, void *address)
-{
-	page->virtual = address;
-}
-#define page_address_init()  do { } while(0)
-#endif
-
-/* HASHED_PAGE_VIRTUAL block removed - never defined */
-#if !defined(HASHED_PAGE_VIRTUAL) && !defined(WANT_PAGE_VIRTUAL)
+/* WANT_PAGE_VIRTUAL and HASHED_PAGE_VIRTUAL blocks removed - never defined */
 #define page_address(page) lowmem_page_address(page)
 #define set_page_address(page, address)  do { } while(0)
 #define page_address_init()  do { } while(0)
-#endif
 
 static inline void *folio_address(const struct folio *folio)
 {

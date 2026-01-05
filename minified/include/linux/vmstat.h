@@ -70,8 +70,7 @@ static inline unsigned long zone_page_state(struct zone *zone,
 }
 
 
-#define sum_zone_node_page_state(node, item) global_zone_page_state(item)
-#define node_page_state_pages(node, item) global_node_page_state_pages(item)
+/* sum_zone_node_page_state, node_page_state_pages removed - unused */
 
 
 
@@ -131,7 +130,7 @@ static inline void __dec_zone_page_state(struct page *page,
 #define inc_node_state __inc_node_state
 #define dec_zone_state __dec_zone_state
 
-#define set_pgdat_percpu_threshold(pgdat, callback) { }
+/* set_pgdat_percpu_threshold removed - unused */
 /* refresh_zone_stat_thresholds, cpu_vm_stats_fold removed - unused */
 
 static inline void node_stat_mod_folio(struct folio *folio,

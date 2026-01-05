@@ -588,9 +588,7 @@ bool __folio_lock_or_retry(struct folio *folio, struct mm_struct *mm,
 			   unsigned int flags)
 {
 	if (fault_flag_allow_retry_first(flags)) {
-		if (flags & FAULT_FLAG_RETRY_NOWAIT)
-			return false;
-
+		/* FAULT_FLAG_RETRY_NOWAIT check removed - never set */
 		mmap_read_unlock(mm);
 		if (flags & FAULT_FLAG_KILLABLE)
 			folio_wait_locked_killable(folio);

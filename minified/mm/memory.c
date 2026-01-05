@@ -967,8 +967,8 @@ static vm_fault_t handle_pte_fault(struct vm_fault *vmf)
 
 	vmf->ptl = pte_lockptr(vmf->vma->vm_mm, vmf->pmd);
 	spin_lock(vmf->ptl);
-	if ((vmf->flags & (FAULT_FLAG_WRITE | FAULT_FLAG_UNSHARE)) &&
-	    !pte_write(vmf->orig_pte))
+	/* FAULT_FLAG_UNSHARE never set */
+	if ((vmf->flags & FAULT_FLAG_WRITE) && !pte_write(vmf->orig_pte))
 		return do_wp_page(vmf);
 
 	pte_unmap_unlock(vmf->pte, vmf->ptl);

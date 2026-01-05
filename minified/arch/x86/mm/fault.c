@@ -420,7 +420,7 @@ static inline void do_user_addr_fault(struct pt_regs *regs,
 
 	if (user_mode(regs)) {
 		local_irq_enable();
-		flags |= FAULT_FLAG_USER;
+		/* FAULT_FLAG_USER removed - never tested */
 	} else {
 		if (regs->flags & X86_EFLAGS_IF)
 			local_irq_enable();
@@ -428,8 +428,7 @@ static inline void do_user_addr_fault(struct pt_regs *regs,
 
 	if (error_code & X86_PF_WRITE)
 		flags |= FAULT_FLAG_WRITE;
-	if (error_code & X86_PF_INSTR)
-		flags |= FAULT_FLAG_INSTRUCTION;
+	/* FAULT_FLAG_INSTRUCTION removed - never tested */
 
 	if (unlikely(!mmap_read_trylock(mm))) {
 		if (!user_mode(regs) && !search_exception_tables(regs->ip)) {

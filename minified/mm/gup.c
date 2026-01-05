@@ -197,23 +197,19 @@ static struct page *follow_page_mask(struct vm_area_struct *vma,
 /* get_gate_page removed - in_gate_area always returns 0 */
 
 static int faultin_page(struct vm_area_struct *vma, unsigned long address,
-			unsigned int *flags, bool unshare, int *locked)
+			unsigned int *flags, int *locked)
 {
 	unsigned int fault_flags = 0;
 	vm_fault_t ret;
-	/* FOLL_NOFAULT check removed - never set */
+	/* FOLL_NOFAULT, FOLL_NOWAIT, FAULT_FLAG_UNSHARE checks removed - never set */
 	if (*flags & FOLL_WRITE)
 		fault_flags |= FAULT_FLAG_WRITE;
 	if (*flags & FOLL_REMOTE)
 		fault_flags |= FAULT_FLAG_REMOTE;
 	if (locked)
 		fault_flags |= FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_KILLABLE;
-	/* FOLL_NOWAIT check removed - never set */
-	if (*flags & FOLL_TRIED) {
+	if (*flags & FOLL_TRIED)
 		fault_flags |= FAULT_FLAG_TRIED;
-	}
-	if (unshare)
-		fault_flags |= FAULT_FLAG_UNSHARE;
 
 	ret = handle_mm_fault(vma, address, fault_flags, NULL);
 	if (ret & VM_FAULT_ERROR) {
@@ -225,7 +221,8 @@ static int faultin_page(struct vm_area_struct *vma, unsigned long address,
 	}
 
 	if (ret & VM_FAULT_RETRY) {
-		if (locked && !(fault_flags & FAULT_FLAG_RETRY_NOWAIT))
+		/* FAULT_FLAG_RETRY_NOWAIT never set */
+		if (locked)
 			*locked = 0;
 		return -EBUSY;
 	}
@@ -310,9 +307,9 @@ retry:
 		cond_resched();
 
 		page = follow_page_mask(vma, start, foll_flags, &ctx);
-		if (!page || PTR_ERR(page) == -EMLINK) {
-			ret = faultin_page(vma, start, &foll_flags,
-					   PTR_ERR(page) == -EMLINK, locked);
+		/* -EMLINK check removed - gup_must_unshare always false */
+		if (!page) {
+			ret = faultin_page(vma, start, &foll_flags, locked);
 			switch (ret) {
 			case 0:
 				goto retry;

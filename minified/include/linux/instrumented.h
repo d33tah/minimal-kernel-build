@@ -6,11 +6,6 @@
 #include <linux/kasan-checks.h>
 #include <linux/types.h>
 
-static __always_inline void instrument_read(const volatile void *v, size_t size)
-{
-	kasan_check_read(v, size);
-}
-
 static __always_inline void instrument_write(const volatile void *v, size_t size)
 {
 	kasan_check_write(v, size);

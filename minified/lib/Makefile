@@ -230,7 +230,7 @@ obj-$(CONFIG_SIGNATURE) += digsig.o
 lib-$(CONFIG_CLZ_TAB) += clz_tab.o
 lib-$(CONFIG_LIB_MEMNEQ) += memneq.o
 
-obj-$(CONFIG_GENERIC_STRNCPY_FROM_USER) += strncpy_from_user.o
+# strncpy_from_user.o removed - never called
 obj-$(CONFIG_GENERIC_STRNLEN_USER) += strnlen_user.o
 
 obj-$(CONFIG_GENERIC_NET_UTILS) += net_utils.o

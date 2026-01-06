@@ -8,9 +8,7 @@
 #include <asm/tlbflush.h>
 #include <asm/cacheflush.h>
 
-#ifndef nmi_uaccess_okay
-# define nmi_uaccess_okay() true
-#endif
+/* nmi_uaccess_okay macro removed - no callers */
 
 #define tlb_remove_table(tlb, page) tlb_remove_page((tlb), (page))
 

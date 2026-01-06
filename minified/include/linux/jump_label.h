@@ -55,8 +55,7 @@ static inline void static_key_slow_dec(struct static_key *key)
 	atomic_dec(&key->enabled);
 }
 
-#define static_key_slow_inc_cpuslocked(key) static_key_slow_inc(key)
-#define static_key_slow_dec_cpuslocked(key) static_key_slow_dec(key)
+/* static_key_slow_inc_cpuslocked, static_key_slow_dec_cpuslocked removed - never used */
 
 
 static inline void static_key_enable(struct static_key *key)
@@ -81,8 +80,7 @@ static inline void static_key_disable(struct static_key *key)
 	atomic_set(&key->enabled, 0);
 }
 
-#define static_key_enable_cpuslocked(k)		static_key_enable((k))
-#define static_key_disable_cpuslocked(k)	static_key_disable((k))
+/* static_key_enable_cpuslocked, static_key_disable_cpuslocked removed - never used */
 
 #define STATIC_KEY_INIT_TRUE	{ .enabled = ATOMIC_INIT(1) }
 #define STATIC_KEY_INIT_FALSE	{ .enabled = ATOMIC_INIT(0) }
@@ -158,14 +156,12 @@ extern bool ____wrong_branch_error(void);
 
 #define static_branch_inc(x)		static_key_slow_inc(&(x)->key)
 #define static_branch_dec(x)		static_key_slow_dec(&(x)->key)
-#define static_branch_inc_cpuslocked(x)	static_key_slow_inc_cpuslocked(&(x)->key)
-#define static_branch_dec_cpuslocked(x)	static_key_slow_dec_cpuslocked(&(x)->key)
+/* static_branch_inc_cpuslocked, static_branch_dec_cpuslocked removed - never used */
 
 
 #define static_branch_enable(x)			static_key_enable(&(x)->key)
 #define static_branch_disable(x)		static_key_disable(&(x)->key)
-#define static_branch_enable_cpuslocked(x)	static_key_enable_cpuslocked(&(x)->key)
-#define static_branch_disable_cpuslocked(x)	static_key_disable_cpuslocked(&(x)->key)
+/* static_branch_enable_cpuslocked, static_branch_disable_cpuslocked removed - never used */
 
 #endif  
 

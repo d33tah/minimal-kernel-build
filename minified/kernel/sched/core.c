@@ -610,7 +610,7 @@ unsigned int nr_iowait(void)
 }
 
 DEFINE_PER_CPU(struct kernel_stat, kstat);
-DEFINE_PER_CPU(struct kernel_cpustat, kernel_cpustat);
+/* kernel_cpustat removed - never used */
 
 /* cpu_resched_latency removed - always returned 0, only used by removed code */
 

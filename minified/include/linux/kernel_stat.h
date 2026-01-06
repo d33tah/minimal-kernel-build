@@ -2,31 +2,10 @@
 #define _LINUX_KERNEL_STAT_H
 
 #include <linux/smp.h>
-#include <linux/threads.h>
 #include <linux/percpu.h>
-#include <linux/cpumask.h>
 #include <linux/interrupt.h>
-#include <linux/sched.h>
-#include <asm/irq.h>
 
-
-enum cpu_usage_stat {
-	CPUTIME_USER,
-	CPUTIME_NICE,
-	CPUTIME_SYSTEM,
-	CPUTIME_SOFTIRQ,
-	CPUTIME_IRQ,
-	CPUTIME_IDLE,
-	CPUTIME_IOWAIT,
-	CPUTIME_STEAL,
-	CPUTIME_GUEST,
-	CPUTIME_GUEST_NICE,
-	NR_STATS,
-};
-
-struct kernel_cpustat {
-	u64 cpustat[NR_STATS];
-};
+/* enum cpu_usage_stat, struct kernel_cpustat removed - never used (~16 LOC) */
 
 struct kernel_stat {
 	unsigned long irqs_sum;
@@ -34,7 +13,6 @@ struct kernel_stat {
 };
 
 DECLARE_PER_CPU(struct kernel_stat, kstat);
-DECLARE_PER_CPU(struct kernel_cpustat, kernel_cpustat);
 
 /* kstat_this_cpu, kcpustat_this_cpu, kstat_cpu, kcpustat_cpu removed - unused */
 

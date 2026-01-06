@@ -911,8 +911,7 @@ DEFINE_PER_CPU(struct per_cpu_nodestat, boot_nodestats);
 
 static void __build_all_zonelists(void *data)
 {
-	int nid;
-	int __maybe_unused cpu;
+	/* nid, cpu variables removed - unused in single-node/CPU config */
 	pg_data_t *self = data;
 	static DEFINE_SPINLOCK(lock);
 
@@ -1155,7 +1154,7 @@ void __init setup_per_cpu_pageset(void)
 {
 	struct pglist_data *pgdat;
 	struct zone *zone;
-	int __maybe_unused cpu;
+	/* cpu variable removed - unused in single-CPU config */
 
 	for_each_populated_zone(zone)
 		setup_zone_pageset(zone);
@@ -1421,8 +1420,8 @@ static void __init free_area_init_core(struct pglist_data *pgdat)
 
 static void __init alloc_node_mem_map(struct pglist_data *pgdat)
 {
-	unsigned long __maybe_unused start = 0;
-	unsigned long __maybe_unused offset = 0;
+	unsigned long start = 0;
+	unsigned long offset = 0;
 
 	if (!pgdat->node_spanned_pages)
 		return;

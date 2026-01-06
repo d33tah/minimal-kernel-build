@@ -60,6 +60,6 @@
 		raw_irqs_disabled_flags(_flags);	\
 	})
 
-#define irqs_disabled_flags(flags) raw_irqs_disabled_flags(flags)
+/* irqs_disabled_flags removed - never used */
 
 #endif

@@ -6,20 +6,11 @@
 #include <linux/mmzone.h>
 #include <linux/atomic.h>
 
-/* Inlined from vm_event_item.h */
-#define FOR_ALL_ZONES(xx) xx##_NORMAL, xx##_MOVABLE
-
-enum vm_event_item {
-	FOR_ALL_ZONES(PGALLOC),
-	PGFREE, PGACTIVATE, PGDEACTIVATE, PGLAZYFREE,
-	PGFAULT, PGREUSE, PGROTATED,
-	UNEVICTABLE_PGCULLED, UNEVICTABLE_PGRESCUED, UNEVICTABLE_PGCLEARED,
-	NR_VM_EVENT_ITEMS
-};
+/* enum vm_event_item removed - none of the values were used */
 #include <linux/jump_label.h>
 #include <linux/mmdebug.h>
 
-enum writeback_stat_item { NR_VM_WRITEBACK_STAT_ITEMS };
+/* enum writeback_stat_item removed - NR_VM_WRITEBACK_STAT_ITEMS was unused */
 
 /* count_vm_event, count_vm_events, __count_vm_event, __count_vm_events,
    __count_zid_vm_events removed - unused */

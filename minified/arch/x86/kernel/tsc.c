@@ -149,8 +149,7 @@ unsigned long long sched_clock(void)
 	__attribute__((alias("native_sched_clock")));
 /* using_native_sched_clock removed - never called (~5 LOC) */
 
-/* no_sched_irq_time removed - never used */
-static int no_tsc_watchdog;
+/* no_sched_irq_time, no_tsc_watchdog removed - never used */
 
 #define MAX_RETRIES 5
 #define TSC_DEFAULT_THRESHOLD 0x20000

@@ -68,19 +68,9 @@ static int wb_init(struct bdi_writeback *wb, struct backing_dev_info *bdi,
 	if (err)
 		return err;
 
-	for (i = 0; i < NR_WB_STAT_ITEMS; i++) {
-		err = percpu_counter_init(&wb->stat[i], 0, gfp);
-		if (err)
-			goto out_destroy_stat;
-	}
+	/* stat init loop removed - NR_WB_STAT_ITEMS is 0 */
 
 	return 0;
-
-out_destroy_stat:
-	while (i--)
-		percpu_counter_destroy(&wb->stat[i]);
-	fprop_local_destroy_percpu(&wb->completions);
-	return err;
 }
 
 static void cgwb_remove_from_bdi_list(struct bdi_writeback *wb);
@@ -104,13 +94,8 @@ static void wb_shutdown(struct bdi_writeback *wb)
 
 static void wb_exit(struct bdi_writeback *wb)
 {
-	int i;
-
 	WARN_ON(delayed_work_pending(&wb->dwork));
-
-	for (i = 0; i < NR_WB_STAT_ITEMS; i++)
-		percpu_counter_destroy(&wb->stat[i]);
-
+	/* stat destroy loop removed - NR_WB_STAT_ITEMS was 0 */
 	fprop_local_destroy_percpu(&wb->completions);
 }
 

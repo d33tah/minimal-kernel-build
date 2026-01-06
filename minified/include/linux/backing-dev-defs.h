@@ -22,10 +22,7 @@ enum wb_state {
 	/* WB_writeback_running, WB_has_dirty_io removed - unused */
 };
 
-enum wb_stat_item {
-	NR_WB_STAT_ITEMS
-};
-
+/* enum wb_stat_item removed - NR_WB_STAT_ITEMS was 0, stat array unused */
 
 enum wb_reason {
 	WB_REASON_BACKGROUND,
@@ -44,8 +41,8 @@ struct bdi_writeback {
 	struct list_head b_dirty_time;	 
 	spinlock_t list_lock;		 
 
-	atomic_t writeback_inodes;	 
-	struct percpu_counter stat[NR_WB_STAT_ITEMS];
+	atomic_t writeback_inodes;
+	/* stat[NR_WB_STAT_ITEMS] removed - array was zero-sized */
 
 	unsigned long congested;	 
 

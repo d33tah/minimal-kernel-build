@@ -9,9 +9,7 @@
 #include <linux/percpu.h>
 #include <asm/ibt.h>
 
-/* cpu_physical_id removed - never used */
-#define cpu_acpi_id(cpu)			0
-#define safe_smp_processor_id()			0
+/* cpu_physical_id, cpu_acpi_id, safe_smp_processor_id removed - never used */
 
 int mwait_usable(const struct cpuinfo_x86 *);
 

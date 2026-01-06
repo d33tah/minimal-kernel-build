@@ -6,8 +6,7 @@
 /* Most APIC register definitions removed - not used in minimal kernel */
 
 #define MAX_LOCAL_APIC 256
-
-#define BAD_APICID 0xFFu
+/* BAD_APICID removed - never used */
 
 enum apic_delivery_modes {
 	APIC_DELIVERY_MODE_FIXED	= 0,

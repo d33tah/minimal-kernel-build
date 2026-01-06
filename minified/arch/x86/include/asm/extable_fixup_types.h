@@ -2,10 +2,9 @@
 #ifndef _ASM_X86_EXTABLE_FIXUP_TYPES_H
 #define _ASM_X86_EXTABLE_FIXUP_TYPES_H
 
- 
 #define EX_DATA_TYPE_MASK		((int)0x000000FF)
 #define EX_DATA_REG_MASK		((int)0x00000F00)
-#define EX_DATA_FLAG_MASK		((int)0x0000F000)
+/* EX_DATA_FLAG_MASK removed - never used */
 #define EX_DATA_IMM_MASK		((int)0xFFFF0000)
 
 #define EX_DATA_REG_SHIFT		8

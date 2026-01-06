@@ -14,7 +14,7 @@ extern unsigned int cached_irq_mask;
  
 #define PIC_MASTER_CMD		0x20
 #define PIC_MASTER_IMR		0x21
-#define PIC_MASTER_ISR		PIC_MASTER_CMD
+/* PIC_MASTER_ISR removed - never used */
 #define PIC_SLAVE_CMD		0xa0
 #define PIC_SLAVE_IMR		0xa1
 

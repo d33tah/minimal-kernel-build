@@ -29,8 +29,7 @@ typedef elf_greg_t elf_gregset_t[ELF_NGREG];
 /* R_386_NUM removed - unused */
 
 #define ELF_CLASS	ELFCLASS32
-#define ELF_DATA	ELFDATA2LSB
-#define ELF_ARCH	EM_386
+/* ELF_DATA, ELF_ARCH removed - never used */
 
 #include <asm/vdso.h>
 

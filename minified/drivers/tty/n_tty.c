@@ -22,7 +22,7 @@
 #include <linux/vmalloc.h>
 #include "tty.h"
 
-#define WAKEUP_CHARS 256
+/* WAKEUP_CHARS removed - unused */
 
 struct n_tty_data {
 	size_t read_head;

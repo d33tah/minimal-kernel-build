@@ -39,23 +39,8 @@ void device_pm_move_to_tail(struct device *dev)
 }
 
 /* devlink_class and related functions removed - devlink_class_init was removed so class is never registered */
-
-#define DL_MANAGED_LINK_FLAGS                                        \
-	(DL_FLAG_AUTOREMOVE_CONSUMER | DL_FLAG_AUTOREMOVE_SUPPLIER | \
-	 DL_FLAG_AUTOPROBE_CONSUMER | DL_FLAG_SYNC_STATE_ONLY |      \
-	 DL_FLAG_INFERRED)
-
-#define DL_ADD_VALID_FLAGS                                                \
-	(DL_MANAGED_LINK_FLAGS | DL_FLAG_STATELESS | DL_FLAG_PM_RUNTIME | \
-	 DL_FLAG_RPM_ACTIVE)
-
-/* device_links_no_driver, device_links_driver_cleanup removed - empty stubs */
-
-#define FW_DEVLINK_FLAGS_PERMISSIVE (DL_FLAG_INFERRED | DL_FLAG_SYNC_STATE_ONLY)
-#define FW_DEVLINK_FLAGS_ON (DL_FLAG_INFERRED | DL_FLAG_AUTOPROBE_CONSUMER)
-#define FW_DEVLINK_FLAGS_RPM (FW_DEVLINK_FLAGS_ON | DL_FLAG_PM_RUNTIME)
-
-/* fw_devlink_drivers_done removed - empty stub */
+/* DL_MANAGED_LINK_FLAGS, DL_ADD_VALID_FLAGS, FW_DEVLINK_FLAGS_* removed - unused */
+/* device_links_no_driver, device_links_driver_cleanup, fw_devlink_drivers_done removed - empty stubs */
 
 static struct kobject *dev_kobj;
 struct kobject *sysfs_dev_char_kobj;

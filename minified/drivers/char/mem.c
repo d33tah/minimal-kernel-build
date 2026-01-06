@@ -3,7 +3,7 @@
 #include <linux/slab.h>
 
 #include <linux/major.h>
-#define MISC_DYNAMIC_MINOR 255
+/* MISC_DYNAMIC_MINOR removed - unused */
 struct miscdevice {
 	int minor;
 	const char *name;
@@ -34,8 +34,7 @@ struct miscdevice {
 #include <linux/uaccess.h>
 #include <linux/security.h>
 
-/* DEVMEM_MINOR removed - unused */
-#define DEVPORT_MINOR 4
+/* DEVMEM_MINOR, DEVPORT_MINOR removed - unused */
 
 static ssize_t read_null(struct file *file, char __user *buf, size_t count,
 			 loff_t *ppos)

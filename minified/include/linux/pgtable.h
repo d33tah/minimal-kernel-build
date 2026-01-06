@@ -165,10 +165,7 @@ static inline pte_t pte_sw_mkyoung(pte_t pte)
 #endif
 
 
-#ifndef __HAVE_ARCH_PMDP_SET_WRPROTECT
-#endif
-#ifndef __HAVE_ARCH_PUDP_SET_WRPROTECT
-#endif
+/* Empty __HAVE_ARCH_PMDP_SET_WRPROTECT, __HAVE_ARCH_PUDP_SET_WRPROTECT removed */
 
 
 

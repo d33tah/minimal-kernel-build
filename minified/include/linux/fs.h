@@ -80,7 +80,7 @@ errseq_t errseq_sample(errseq_t *eseq);
 #define SEEK_DATA	3
 #define SEEK_HOLE	4
 #define RENAME_NOREPLACE	(1 << 0)
-#define RENAME_EXCHANGE		(1 << 1)
+/* RENAME_EXCHANGE removed - unused */
 struct files_stat_struct {
 	unsigned long nr_files;
 	unsigned long nr_free_files;

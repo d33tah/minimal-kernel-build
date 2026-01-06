@@ -16,8 +16,7 @@
 #include <linux/of.h>
 
 /* Removed: linux/random.h, linux/siphash.h - ptr hashing disabled */
-
-#define IPV6_FLOWINFO_MASK cpu_to_be32(0x0FFFFFFF)
+/* IPV6_FLOWINFO_MASK removed - unused */
 
 #include <linux/compiler.h>
 

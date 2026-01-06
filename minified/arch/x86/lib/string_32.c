@@ -38,22 +38,7 @@ char *strncpy(char *dest, const char *src, size_t count)
 }
 #endif
 
-/* Stub: strcat not used in kernel proper (only in scripts/) */
-#ifdef __HAVE_ARCH_STRCAT
-#include <linux/bug.h>
-char *strcat(char *dest, const char *src)
-{
-	BUG();
-}
-#endif
-
-/* Stub: strncat not used in kernel proper (only in scripts/) */
-#ifdef __HAVE_ARCH_STRNCAT
-char *strncat(char *dest, const char *src, size_t count)
-{
-	BUG();
-}
-#endif
+/* strcat, strncat removed - never used in kernel proper */
 
 #ifdef __HAVE_ARCH_STRCMP
 int strcmp(const char *cs, const char *ct)

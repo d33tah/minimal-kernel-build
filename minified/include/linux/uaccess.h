@@ -91,24 +91,15 @@ static inline bool pagefault_disabled(void)
 #define faulthandler_disabled() (pagefault_disabled() || in_atomic())
 
 
-bool copy_from_kernel_nofault_allowed(const void *unsafe_src, size_t size);
-
-long copy_from_kernel_nofault(void *dst, const void *src, size_t size);
+/* copy_from_kernel_nofault_allowed, copy_from_kernel_nofault removed - never called */
 long notrace copy_to_kernel_nofault(void *dst, const void *src, size_t size);
 
 /* Removed uncalled: copy_from_user_nofault, copy_to_user_nofault,
  * strncpy_from_kernel_nofault, strncpy_from_user_nofault, strnlen_user_nofault */
 
-#ifndef __get_kernel_nofault
-#define __get_kernel_nofault(dst, src, type, label)	\
-do {							\
-	type __user *p = (type __force __user *)(src);	\
-	type data;					\
-	if (__get_user(data, p))			\
-		goto label;				\
-	*(type *)dst = data;				\
-} while (0)
+/* __get_kernel_nofault, get_kernel_nofault removed - never called */
 
+#ifndef __put_kernel_nofault
 #define __put_kernel_nofault(dst, src, type, label)	\
 do {							\
 	type __user *p = (type __force __user *)(dst);	\
@@ -117,11 +108,6 @@ do {							\
 		goto label;				\
 } while (0)
 #endif
-
-#define get_kernel_nofault(val, ptr) ({				\
-	const typeof(val) *__gk_ptr = (ptr);			\
-	copy_from_kernel_nofault(&(val), __gk_ptr, sizeof(val));\
-})
 
 #ifndef user_access_begin
 #define user_access_begin(ptr,len) access_ok(ptr, len)

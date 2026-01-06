@@ -15,7 +15,7 @@ extern void oops_exit(void);
 /* Removed: oops_may_print - never called */
 
 extern int panic_timeout;
-extern unsigned long panic_print;
+/* panic_print removed - only defined, never read */
 extern int panic_on_oops;
 extern int panic_on_unrecovered_nmi;
 extern int panic_on_io_nmi;

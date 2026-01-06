@@ -54,7 +54,7 @@ struct apm_info {
 };
 
 /* All APM_FUNC_* and APM_DEVICE_* macros removed - APM driver not included */
-extern struct apm_info	apm_info;
+/* apm_info extern removed - variable removed, only struct definition needed for boot_params */
 
 struct ist_info {
 	__u32 signature;
@@ -62,13 +62,13 @@ struct ist_info {
 	__u32 event;
 	__u32 perf_level;
 };
-extern struct ist_info ist_info;
+/* ist_info extern removed - variable removed, only struct definition needed for boot_params */
 
 /* Inlined from video/edid.h */
 struct edid_info {
 	unsigned char dummy[128];
 };
-extern struct edid_info edid_info;
+/* edid_info extern removed - variable removed, only struct definition needed for boot_params */
 
 struct setup_data {
 	__u64 next;

@@ -88,16 +88,11 @@ struct cpuinfo_x86 new_cpu_data;
 
 struct cpuinfo_x86 boot_cpu_data __read_mostly;
 
-/* def_to_bigsmp removed - set but never read */
-
-struct apm_info apm_info;
-
-struct ist_info ist_info;
+/* def_to_bigsmp, apm_info, ist_info, edid_info removed - set but never read */
 
 __visible unsigned long mmu_cr4_features __ro_after_init;
 
 struct screen_info screen_info;
-struct edid_info edid_info;
 
 extern int root_mountflags;
 
@@ -440,10 +435,7 @@ void __init setup_arch(char **cmdline_p)
 
 	ROOT_DEV = old_decode_dev(boot_params.hdr.root_dev);
 	screen_info = boot_params.screen_info;
-	edid_info = boot_params.edid_info;
-	apm_info.bios = boot_params.apm_bios_info;
-	ist_info = boot_params.ist_info;
-	/* saved_video_mode, bootloader_type/version setup removed - never read */
+	/* edid_info, apm_info, ist_info, saved_video_mode, bootloader_type/version removed - never read */
 
 	/* x86_init.oem.arch_setup removed - is x86_init_noop */
 

@@ -5,8 +5,7 @@
 #include <asm/reboot.h>
 #include <asm/io.h>
 
-void (*pm_power_off)(void);
-/* port_cf9_safe, machine_real_restart removed - never called */
+/* pm_power_off, port_cf9_safe, machine_real_restart removed - never called */
 
 void machine_emergency_restart(void)
 {

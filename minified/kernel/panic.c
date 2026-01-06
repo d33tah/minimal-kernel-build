@@ -34,14 +34,7 @@ unsigned long panic_on_taint;
 
 int panic_timeout = CONFIG_PANIC_TIMEOUT;
 
-#define PANIC_PRINT_TASK_INFO 0x00000001
-#define PANIC_PRINT_MEM_INFO 0x00000002
-#define PANIC_PRINT_TIMER_INFO 0x00000004
-#define PANIC_PRINT_LOCK_INFO 0x00000008
-#define PANIC_PRINT_FTRACE_INFO 0x00000010
-#define PANIC_PRINT_ALL_PRINTK_MSG 0x00000020
-#define PANIC_PRINT_ALL_CPU_BT 0x00000040
-unsigned long panic_print;
+/* PANIC_PRINT_* macros and panic_print variable removed - never used */
 
 ATOMIC_NOTIFIER_HEAD(panic_notifier_list);
 

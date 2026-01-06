@@ -11,7 +11,7 @@
 #include <linux/hrtimer.h>
 #include <linux/completion.h>
 
-extern void (*pm_power_off)(void);
+/* pm_power_off removed - defined but never called */
 
 struct device;
 

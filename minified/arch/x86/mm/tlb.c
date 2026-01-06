@@ -617,19 +617,6 @@ void __flush_tlb_all(void)
 	}
 }
 
-bool nmi_uaccess_okay(void)
-{
-	struct mm_struct *loaded_mm = this_cpu_read(cpu_tlbstate.loaded_mm);
-	struct mm_struct *current_mm = current->mm;
-
-	VM_WARN_ON_ONCE(!loaded_mm);
-
-	if (loaded_mm != current_mm)
-		return false;
-
-	VM_WARN_ON_ONCE(current_mm->pgd != __va(read_cr3_pa()));
-
-	return true;
-}
+/* nmi_uaccess_okay removed - only caller was copy_from_user_nmi */
 
 /* Stub: TLB flush debugfs tuning not needed for minimal kernel */

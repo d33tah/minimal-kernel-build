@@ -13,7 +13,6 @@
 static void delay_loop(u64 __loops);
 
 static void (*delay_fn)(u64) __ro_after_init = delay_loop;
-static void (*delay_halt_fn)(u64 start, u64 cycles) __ro_after_init;
 
 static void delay_loop(u64 __loops)
 {
@@ -61,45 +60,11 @@ static void delay_tsc(u64 cycles)
 	preempt_enable();
 }
 
-static void delay_halt_tpause(u64 start, u64 cycles)
-{
-	u64 until = start + cycles;
-	u32 eax, edx;
-
-	eax = lower_32_bits(until);
-	edx = upper_32_bits(until);
-
-	__tpause(TPAUSE_C02_STATE, edx, eax);
-}
-
-static void delay_halt(u64 __cycles)
-{
-	u64 start, end, cycles = __cycles;
-
-	if (!cycles)
-		return;
-
-	start = rdtsc_ordered();
-
-	for (;;) {
-		delay_halt_fn(start, cycles);
-		end = rdtsc_ordered();
-
-		if (cycles <= end - start)
-			break;
-
-		cycles -= end - start;
-		start = end;
-	}
-}
-
 void __init use_tsc_delay(void)
 {
 	if (delay_fn == delay_loop)
 		delay_fn = delay_tsc;
 }
-
-/* use_tpause_delay removed - never called */
 
 void __delay(unsigned long loops)
 {

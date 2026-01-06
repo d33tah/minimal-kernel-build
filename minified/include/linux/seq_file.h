@@ -18,7 +18,7 @@ struct seq_file {
 	size_t size;
 	size_t from;
 	size_t count;
-	size_t pad_until;
+	/* pad_until removed - never accessed */
 	loff_t index;
 	loff_t read_pos;
 	struct mutex lock;

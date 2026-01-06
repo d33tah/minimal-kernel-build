@@ -91,8 +91,7 @@ struct console {
 	short	flags;
 	short	index;
 	int	cflag;
-	uint	ispeed;
-	uint	ospeed;
+	/* ispeed, ospeed removed - never accessed */
 	u64	seq;
 	unsigned long dropped;
 	void	*data;

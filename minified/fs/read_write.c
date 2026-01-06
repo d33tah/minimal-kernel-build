@@ -139,47 +139,7 @@ ssize_t kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
 	return __kernel_read(file, buf, count, pos);
 }
 
-/* new_sync_write inlined into vfs_write */
-
-ssize_t __kernel_write(struct file *file, const void *buf, size_t count,
-		       loff_t *pos)
-{
-	struct kvec iov = {
-		.iov_base = (void *)buf,
-		.iov_len = min_t(size_t, count, MAX_RW_COUNT),
-	};
-	struct kiocb kiocb;
-	struct iov_iter iter;
-	ssize_t ret;
-
-	if (WARN_ON_ONCE(!(file->f_mode & FMODE_WRITE)))
-		return -EBADF;
-	if (!(file->f_mode & FMODE_CAN_WRITE))
-		return -EINVAL;
-
-	if (unlikely(!file->f_op->write_iter || file->f_op->write))
-		return warn_unsupported(file, "write");
-
-	init_sync_kiocb(&kiocb, file);
-	kiocb.ki_pos = pos ? *pos : 0;
-	iov_iter_kvec(&iter, WRITE, &iov, 1, iov.iov_len);
-	ret = file->f_op->write_iter(&kiocb, &iter);
-	if (ret > 0 && pos)
-		*pos = kiocb.ki_pos;
-	return ret;
-}
-
-ssize_t kernel_write(struct file *file, const void *buf, size_t count,
-		     loff_t *pos)
-{
-	ssize_t ret;
-	/* rw_verify_area always returns 0 - check removed */
-
-	file_start_write(file);
-	ret = __kernel_write(file, buf, count, pos);
-	file_end_write(file);
-	return ret;
-}
+/* kernel_write and __kernel_write removed - never called */
 
 ssize_t vfs_write(struct file *file, const char __user *buf, size_t count,
 		  loff_t *pos)

@@ -963,7 +963,7 @@ static inline struct user_namespace *file_mnt_user_ns(struct file *file)
 	return mnt_user_ns(file->f_path.mnt);
 }
 
-extern long vfs_truncate(const struct path *, loff_t);
+/* vfs_truncate removed - never called */
 int do_truncate(struct user_namespace *, struct dentry *, loff_t start,
 		unsigned int time_attrs, struct file *filp);
 /* vfs_fallocate, do_sys_open, file_open_name, file_open_root, dentry_open,
@@ -1054,8 +1054,7 @@ static inline void allow_write_access(struct file *file)
 }
 extern ssize_t kernel_read(struct file *, void *, size_t, loff_t *);
 ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos);
-extern ssize_t kernel_write(struct file *, const void *, size_t, loff_t *);
-extern ssize_t __kernel_write(struct file *, const void *, size_t, loff_t *);
+/* kernel_write and __kernel_write removed - never called */
 extern struct file * open_exec(const char *);
 
 extern bool is_subdir(struct dentry *, struct dentry *);

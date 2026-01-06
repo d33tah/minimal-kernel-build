@@ -78,47 +78,7 @@ int do_truncate(struct user_namespace *mnt_userns, struct dentry *dentry,
 	return ret;
 }
 
-long vfs_truncate(const struct path *path, loff_t length)
-{
-	struct user_namespace *mnt_userns;
-	struct inode *inode;
-	long error;
-
-	inode = path->dentry->d_inode;
-
-	if (S_ISDIR(inode->i_mode))
-		return -EISDIR;
-	if (!S_ISREG(inode->i_mode))
-		return -EINVAL;
-
-	error = mnt_want_write(path->mnt);
-	if (error)
-		goto out;
-
-	mnt_userns = mnt_user_ns(path->mnt);
-	error = inode_permission(mnt_userns, inode, MAY_WRITE);
-	if (error)
-		goto mnt_drop_write_and_out;
-
-	error = -EPERM;
-	if (IS_APPEND(inode))
-		goto mnt_drop_write_and_out;
-
-	error = get_write_access(inode);
-	if (error)
-		goto mnt_drop_write_and_out;
-
-	/* break_lease always returns 0 - dead code removed */
-	/* security_path_truncate always returns 0 - simplified */
-	error = do_truncate(mnt_userns, path->dentry, length, 0, NULL);
-
-put_write_and_out:
-	put_write_access(inode);
-mnt_drop_write_and_out:
-	mnt_drop_write(path->mnt);
-out:
-	return error;
-}
+/* vfs_truncate removed - never called */
 
 /* Stub: truncate not needed for Hello World kernel */
 SYSCALL_DEFINE2(truncate, const char __user *, path, long, length)

@@ -43,8 +43,7 @@ void device_pm_move_to_tail(struct device *dev)
 /* device_links_no_driver, device_links_driver_cleanup, fw_devlink_drivers_done removed - empty stubs */
 
 static struct kobject *dev_kobj;
-struct kobject *sysfs_dev_char_kobj;
-/* sysfs_dev_block_kobj removed - unused */
+/* sysfs_dev_char_kobj, sysfs_dev_block_kobj removed - unused */
 
 /* device_platform_notify_remove removed - was empty stub */
 

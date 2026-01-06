@@ -38,8 +38,7 @@ struct class_dev_iter {
 	const struct device_type	*type;
 };
 
-/* sysfs_dev_block_kobj removed - unused */
-extern struct kobject *sysfs_dev_char_kobj;
+/* sysfs_dev_block_kobj, sysfs_dev_char_kobj removed - unused */
 /* __class_register, class_register, class_unregister, struct class_compat,
    class_compat_register, class_compat_unregister, class_compat_create_link,
    class_compat_remove_link removed - never called */

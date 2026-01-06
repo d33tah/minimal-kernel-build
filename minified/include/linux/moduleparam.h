@@ -81,10 +81,7 @@ extern const struct kernel_param __start___param[], __stop___param[];
 
 #define __level_param_cb(name, ops, arg, perm, level)			\
 	__module_param_call(MODULE_PARAM_PREFIX, name, ops, arg, perm, level, 0)
-#define core_param_cb(name, ops, arg, perm)		\
-	__level_param_cb(name, ops, arg, perm, 1)
-
-/* postcore_param_cb, arch_param_cb, subsys_param_cb, fs_param_cb, device_param_cb, late_param_cb removed - unused */
+/* core_param_cb, postcore_param_cb, arch_param_cb, subsys_param_cb, fs_param_cb, device_param_cb, late_param_cb removed - unused */
 
 /* x86 only - alpha/ia64/ppc64 version removed */
 #define __moduleparam_const const
@@ -111,14 +108,7 @@ static inline void kernel_param_unlock(struct module *mod)
 {
 }
 
-#define core_param(name, var, type, perm)				\
-	param_check_##type(name, &(var));				\
-	__module_param_call("", name, &param_ops_##type, &var, perm, -1, 0)
-
-#define core_param_unsafe(name, var, type, perm)		\
-	param_check_##type(name, &(var));				\
-	__module_param_call("", name, &param_ops_##type, &var, perm,	\
-			    -1, KERNEL_PARAM_FL_UNSAFE)  
+/* core_param, core_param_unsafe removed - never used */  
 
 #define module_param_string(name, string, len, perm)			\
 	static const struct kparam_string __param_string_##name		\

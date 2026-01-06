@@ -63,7 +63,7 @@ struct user_namespace;
 # error Fix up hand-coded capability macro initializers
 #else
 
-#define CAP_LAST_U32			((_KERNEL_CAPABILITY_U32S) - 1)
+/* CAP_LAST_U32 removed - never used */
 #define CAP_LAST_U32_VALID_MASK		(CAP_TO_MASK(CAP_LAST_CAP + 1) -1)
 
 # define CAP_EMPTY_SET    ((kernel_cap_t){{ 0, 0 }})

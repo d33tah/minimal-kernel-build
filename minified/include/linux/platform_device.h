@@ -27,7 +27,7 @@ struct platform_device {
 
 #define platform_get_device_id(pdev)	((pdev)->id_entry)
 
-#define dev_is_platform(dev) ((dev)->bus == &platform_bus_type)
+/* dev_is_platform removed - never used */
 #define to_platform_device(x) container_of((x), struct platform_device, dev)
 
 extern struct bus_type platform_bus_type;

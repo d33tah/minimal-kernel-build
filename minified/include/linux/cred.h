@@ -116,8 +116,7 @@ static inline void put_cred(const struct cred *_cred)
 #define current_cred() \
 	rcu_dereference_protected(current->cred, 1)
 
-#define current_real_cred() \
-	rcu_dereference_protected(current->real_cred, 1)
+/* current_real_cred removed - never used */
 
 #define __task_cred(task)	\
 	rcu_dereference((task)->real_cred)
@@ -147,7 +146,7 @@ static inline void put_cred(const struct cred *_cred)
 #define current_egid()		(current_cred_xxx(egid))
 #define current_fsuid() 	(current_cred_xxx(fsuid))
 #define current_fsgid() 	(current_cred_xxx(fsgid))
-#define current_ucounts()	(current_cred_xxx(ucounts))
+/* current_ucounts removed - never used */
 
 extern struct user_namespace init_user_ns;
 static inline struct user_namespace *current_user_ns(void)

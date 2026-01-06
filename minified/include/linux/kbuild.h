@@ -9,7 +9,6 @@
 #define OFFSET(sym, str, mem) \
 	DEFINE(sym, offsetof(struct str, mem))
 
-#define COMMENT(x) \
-	asm volatile("\n.ascii \"->#" x "\"")
+/* COMMENT removed - never used */
 
 #endif

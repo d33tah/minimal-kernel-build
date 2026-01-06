@@ -382,8 +382,7 @@ static inline int inode_unhashed(struct inode *inode)
 	return hlist_unhashed(&inode->i_hash);
 }
 
-/* I_MUTEX_NORMAL removed - never used */
-enum inode_i_mutex_lock_class { I_MUTEX_PARENT };
+/* enum inode_i_mutex_lock_class (I_MUTEX_NORMAL, I_MUTEX_PARENT) removed - never used */
 
 static inline void inode_lock(struct inode *inode)
 {

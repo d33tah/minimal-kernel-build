@@ -36,17 +36,13 @@ static inline u64 div_u64_rem(u64 dividend, u32 divisor, u32 *remainder)
 extern s64 div_s64_rem(s64 dividend, s32 divisor, s32 *remainder);
 #endif
 
-#ifndef div64_u64_rem
-extern u64 div64_u64_rem(u64 dividend, u64 divisor, u64 *remainder);
-#endif
+/* div64_u64_rem removed - never called */
 
 #ifndef div64_u64
 extern u64 div64_u64(u64 dividend, u64 divisor);
 #endif
 
-#ifndef div64_s64
-extern s64 div64_s64(s64 dividend, s64 divisor);
-#endif
+/* div64_s64 removed - never called */
 
 #ifndef div_u64
 static inline u64 div_u64(u64 dividend, u32 divisor)
@@ -64,7 +60,7 @@ static inline s64 div_s64(s64 dividend, s32 divisor)
 }
 #endif
 
-u32 iter_div_u64_rem(u64 dividend, u32 divisor, u64 *remainder);
+/* iter_div_u64_rem declaration removed - inline version used */
 
 #ifndef mul_u32_u32
 static inline u64 mul_u32_u32(u32 a, u32 b)

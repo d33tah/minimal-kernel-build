@@ -958,12 +958,7 @@ void __ref build_all_zonelists(pg_data_t *pgdat)
 		page_group_by_mobility_disabled = 0;
 }
 
-static bool __meminit overlap_memmap_init(unsigned long zone,
-					  unsigned long *pfn)
-{
-	/* Stub: no mirrored kernel core support */
-	return false;
-}
+/* overlap_memmap_init removed - stub returning false, call site removed */
 
 static void __meminit memmap_init_range(unsigned long size, int nid,
 					unsigned long zone,
@@ -980,10 +975,7 @@ static void __meminit memmap_init_range(unsigned long size, int nid,
 		highest_memmap_pfn = end_pfn - 1;
 
 	for (pfn = start_pfn; pfn < end_pfn;) {
-		if (context == MEMINIT_EARLY) {
-			if (overlap_memmap_init(zone, &pfn))
-				continue;
-		}
+		/* overlap_memmap_init call removed - stub always returned false */
 
 		page = pfn_to_page(pfn);
 		__init_single_page(page, pfn, zone, nid);

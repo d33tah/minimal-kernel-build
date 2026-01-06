@@ -22,7 +22,7 @@ enum vc_intensity {
 	VCI_HALF_BRIGHT,
 	VCI_NORMAL,
 	VCI_BOLD,
-	VCI_MASK = 0x3,
+	/* VCI_MASK removed - never used */
 };
 
 struct vc_state {

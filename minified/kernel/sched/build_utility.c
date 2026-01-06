@@ -31,9 +31,8 @@
 #include "clock.c"
 
 /* loadavg.c removed - calc_global_load/calc_global_load_tick calls removed */
-/* Keep variable definitions needed by core.c */
-atomic_long_t calc_load_tasks;
 unsigned long calc_load_update;
+/* calc_load_tasks removed - never used */
 
 #include "completion.c"
 #include "swait.c"

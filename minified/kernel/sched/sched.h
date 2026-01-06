@@ -87,9 +87,8 @@ struct cpuidle_state;
 #define TASK_ON_RQ_MIGRATING	2
 
 extern __read_mostly int scheduler_running;
-
 extern unsigned long calc_load_update;
-extern atomic_long_t calc_load_tasks;
+/* calc_load_tasks removed - never used */
 
 extern unsigned int sysctl_sched_child_runs_first;
 /* calc_global_load_tick, calc_load_fold_active removed - never called */

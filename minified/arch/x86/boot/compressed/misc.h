@@ -87,9 +87,9 @@ extern void kernel_add_identity_map(unsigned long start, unsigned long end);
  
 extern pteval_t __default_kernel_pte_mask;
 
- 
+
 extern gate_desc boot_idt[BOOT_IDT_ENTRIES];
-extern struct desc_ptr boot_idt_desc;
+/* boot_idt_desc removed - never used */
 
 static inline void cleanup_exception_handling(void) { }
 

@@ -1118,7 +1118,7 @@ static inline bool gup_must_unshare(unsigned int flags, struct page *page)
 	return false;
 }
 
-typedef int (*pte_fn_t)(pte_t *pte, unsigned long addr, void *data);
+/* typedef pte_fn_t removed - never used */
 
 extern void init_mem_debugging_and_hardening(void);
 

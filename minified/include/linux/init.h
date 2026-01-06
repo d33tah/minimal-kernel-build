@@ -50,7 +50,7 @@ static inline initcall_t initcall_from_entry(initcall_entry_t *entry)
 
 extern initcall_entry_t __con_initcall_start[], __con_initcall_end[];
 
-typedef void (*ctor_fn_t)(void);
+/* typedef ctor_fn_t removed - never used */
 
 struct file_system_type;
 

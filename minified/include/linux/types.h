@@ -48,8 +48,7 @@ typedef __kernel_ptrdiff_t	ptrdiff_t;
 /* clock_t removed - unused */
 
 typedef unsigned short		ushort;
-typedef unsigned int		uint;
-typedef unsigned long		ulong;
+/* typedef uint, ulong removed - never used */
 
 #ifndef __BIT_TYPES_DEFINED__
 #define __BIT_TYPES_DEFINED__

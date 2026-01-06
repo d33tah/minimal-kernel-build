@@ -15,9 +15,7 @@
 #include <linux/jump_label.h>
 #include <linux/export.h>
 
-/* EI_ETYPE enum removed - unused */
-#define ALLOW_ERROR_INJECTION(fname, _etype)
-/* end error-injection.h */
+/* error-injection.h macros removed - unused */
 #include <linux/tracepoint-defs.h>
 #include <linux/srcu.h>
 #include <linux/static_call_types.h>

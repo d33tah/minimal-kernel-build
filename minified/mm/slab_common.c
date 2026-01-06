@@ -398,4 +398,3 @@ int should_failslab(struct kmem_cache *s, gfp_t gfpflags)
 	/* __should_failslab always returns false */
 	return 0;
 }
-ALLOW_ERROR_INJECTION(should_failslab, ERRNO);

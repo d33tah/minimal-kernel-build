@@ -15,8 +15,7 @@
 #include <linux/pagemap.h>
 #include <linux/file.h>
 #include <linux/uio.h>
-/* error-injection.h - only need ALLOW_ERROR_INJECTION macro */
-#define ALLOW_ERROR_INJECTION(fname, _etype)
+/* error-injection.h removed - unused */
 #include <linux/hash.h>
 #include <linux/writeback.h>
 #include <linux/backing-dev.h>
@@ -309,7 +308,6 @@ error:
 	folio_put_refs(folio, nr);
 	return xas_error(&xas);
 }
-ALLOW_ERROR_INJECTION(__filemap_add_folio, ERRNO);
 
 int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 		      pgoff_t index, gfp_t gfp)

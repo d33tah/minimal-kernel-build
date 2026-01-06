@@ -78,7 +78,6 @@ struct old_linux_dirent;
 #define SYSCALL_DEFINE0(sname)					\
 	SYSCALL_METADATA(_##sname, 0);				\
 	asmlinkage long sys_##sname(void);			\
-	ALLOW_ERROR_INJECTION(sys_##sname, ERRNO);		\
 	asmlinkage long sys_##sname(void)
 #endif  
 
@@ -104,7 +103,6 @@ struct old_linux_dirent;
 		      "Type aliasing is used to sanitize syscall arguments");\
 	asmlinkage long sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))	\
 		__attribute__((alias(__stringify(__se_sys##name))));	\
-	ALLOW_ERROR_INJECTION(sys##name, ERRNO);			\
 	static inline long __do_sys##name(__MAP(x,__SC_DECL,__VA_ARGS__));\
 	asmlinkage long __se_sys##name(__MAP(x,__SC_LONG,__VA_ARGS__));	\
 	asmlinkage long __se_sys##name(__MAP(x,__SC_LONG,__VA_ARGS__))	\

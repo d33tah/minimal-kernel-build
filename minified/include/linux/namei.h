@@ -21,7 +21,6 @@ enum {LAST_NORM, LAST_ROOT, LAST_DOT, LAST_DOTDOT};
 #define LOOKUP_PARENT		0x0010
 /* LOOKUP_NO_SYMLINKS, LOOKUP_NO_XDEV, LOOKUP_BENEATH, LOOKUP_IN_ROOT, LOOKUP_CACHED, LOOKUP_IS_SCOPED removed - never set */
 extern int kern_path(const char *, unsigned, struct path *);
-extern struct dentry *kern_path_create(int, const char *, struct path *, unsigned int);
-extern void done_path_create(struct path *, struct dentry *);
+/* kern_path_create and done_path_create removed - never called */
 static inline void nd_terminate_link(void *name, size_t len, size_t maxlen) { ((char *) name)[min(len, maxlen)] = '\0'; }
 #endif

@@ -1179,44 +1179,7 @@ int filename_lookup(int dfd, struct filename *name, unsigned flags,
 	return retval;
 }
 
-static int path_parentat(struct nameidata *nd, unsigned flags,
-			 struct path *parent)
-{
-	const char *s = path_init(nd, flags);
-	int err = link_path_walk(s, nd);
-	if (!err)
-		err = complete_walk(nd);
-	if (!err) {
-		*parent = nd->path;
-		nd->path.mnt = NULL;
-		nd->path.dentry = NULL;
-	}
-	terminate_walk(nd);
-	return err;
-}
-
-static int filename_parentat(int dfd, struct filename *name, unsigned int flags,
-			     struct path *parent, struct qstr *last, int *type)
-{
-	int retval;
-	struct nameidata nd;
-
-	if (IS_ERR(name))
-		return PTR_ERR(name);
-	set_nameidata(&nd, dfd, name, NULL);
-	retval = path_parentat(&nd, flags | LOOKUP_RCU, parent);
-	if (unlikely(retval == -ECHILD))
-		retval = path_parentat(&nd, flags, parent);
-	if (unlikely(retval == -ESTALE))
-		retval = path_parentat(&nd, flags | LOOKUP_REVAL, parent);
-	if (likely(!retval)) {
-		*last = nd.last;
-		*type = nd.last_type;
-		/* audit_inode - empty stub */
-	}
-	restore_nameidata();
-	return retval;
-}
+/* path_parentat, filename_parentat removed - only caller was filename_create */
 
 int kern_path(const char *name, unsigned int flags, struct path *path)
 {
@@ -1611,77 +1574,7 @@ struct file *do_filp_open(int dfd, struct filename *pathname,
 	return filp;
 }
 
-static struct dentry *filename_create(int dfd, struct filename *name,
-				      struct path *path,
-				      unsigned int lookup_flags)
-{
-	struct dentry *dentry = ERR_PTR(-EEXIST);
-	struct qstr last;
-	bool want_dir = lookup_flags & LOOKUP_DIRECTORY;
-	unsigned int reval_flag = lookup_flags & LOOKUP_REVAL;
-	unsigned int create_flags = LOOKUP_CREATE | LOOKUP_EXCL;
-	int type;
-	int err2;
-	int error;
-
-	error = filename_parentat(dfd, name, reval_flag, path, &last, &type);
-	if (error)
-		return ERR_PTR(error);
-
-	if (unlikely(type != LAST_NORM))
-		goto out;
-
-	err2 = mnt_want_write(path->mnt);
-
-	if (last.name[last.len] && !want_dir)
-		create_flags = 0;
-	inode_lock_nested(path->dentry->d_inode, I_MUTEX_PARENT);
-	dentry = __lookup_hash(&last, path->dentry, reval_flag | create_flags);
-	if (IS_ERR(dentry))
-		goto unlock;
-
-	error = -EEXIST;
-	if (d_is_positive(dentry))
-		goto fail;
-
-	if (unlikely(!create_flags)) {
-		error = -ENOENT;
-		goto fail;
-	}
-	if (unlikely(err2)) {
-		error = err2;
-		goto fail;
-	}
-	return dentry;
-fail:
-	dput(dentry);
-	dentry = ERR_PTR(error);
-unlock:
-	inode_unlock(path->dentry->d_inode);
-	if (!err2)
-		mnt_drop_write(path->mnt);
-out:
-	path_put(path);
-	return dentry;
-}
-
-struct dentry *kern_path_create(int dfd, const char *pathname,
-				struct path *path, unsigned int lookup_flags)
-{
-	struct filename *filename = getname_kernel(pathname);
-	struct dentry *res = filename_create(dfd, filename, path, lookup_flags);
-
-	putname(filename);
-	return res;
-}
-
-void done_path_create(struct path *path, struct dentry *dentry)
-{
-	dput(dentry);
-	inode_unlock(path->dentry->d_inode);
-	mnt_drop_write(path->mnt);
-	path_put(path);
-}
+/* filename_create, kern_path_create and done_path_create removed - never called */
 
 /* vfs_mknod removed - only caller was init_mknod which was removed */
 

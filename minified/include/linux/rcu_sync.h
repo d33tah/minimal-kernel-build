@@ -14,7 +14,7 @@ static inline bool rcu_sync_is_idle(struct rcu_sync *rsp)
 	return !READ_ONCE(rsp->gp_state);
 }
 extern void rcu_sync_init(struct rcu_sync *);
-extern void rcu_sync_enter(struct rcu_sync *);
+/* rcu_sync_enter removed - never called */
 /* rcu_sync_exit removed - never called */
 extern void rcu_sync_dtor(struct rcu_sync *);
 #define __RCU_SYNC_INITIALIZER(name)                                                               \

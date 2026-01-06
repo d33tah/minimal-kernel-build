@@ -566,40 +566,7 @@ static inline int handle_mounts(struct nameidata *nd, struct dentry *dentry,
 	return ret;
 }
 
-static struct dentry *__lookup_hash(const struct qstr *name,
-				    struct dentry *base, unsigned int flags)
-{
-	struct dentry *dentry;
-	struct dentry *old;
-	struct inode *dir = base->d_inode;
-
-	/* Inlined lookup_dcache */
-	dentry = d_lookup(base, name);
-	if (dentry) {
-		int error = d_revalidate(dentry, flags);
-		if (unlikely(error <= 0)) {
-			if (!error)
-				d_invalidate(dentry);
-			dput(dentry);
-			return ERR_PTR(error);
-		}
-		return dentry;
-	}
-
-	if (unlikely(IS_DEADDIR(dir)))
-		return ERR_PTR(-ENOENT);
-
-	dentry = d_alloc(base, name);
-	if (unlikely(!dentry))
-		return ERR_PTR(-ENOMEM);
-
-	old = dir->i_op->lookup(dir, dentry, flags);
-	if (unlikely(old)) {
-		dput(dentry);
-		dentry = old;
-	}
-	return dentry;
-}
+/* __lookup_hash removed - only caller was filename_create */
 
 static struct dentry *lookup_fast(struct nameidata *nd, struct inode **inode,
 				  unsigned *seqp)
@@ -1204,19 +1171,7 @@ int vfs_path_lookup(struct dentry *dentry, struct vfsmount *mnt,
 	return ret;
 }
 
-static inline int may_create(struct user_namespace *mnt_userns,
-			     struct inode *dir, struct dentry *child)
-{
-	/* audit_inode_child - empty stub */
-	if (child->d_inode)
-		return -EEXIST;
-	if (IS_DEADDIR(dir))
-		return -ENOENT;
-	if (!fsuidgid_has_mapping(dir->i_sb, mnt_userns))
-		return -EOVERFLOW;
-
-	return inode_permission(mnt_userns, dir, MAY_WRITE | MAY_EXEC);
-}
+/* may_create removed - never called (only callers vfs_mknod, vfs_mkdir, etc were removed) */
 
 /* Removed: may_open_dev - always returned true */
 

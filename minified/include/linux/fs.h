@@ -666,22 +666,7 @@ static inline void inode_fsgid_set(struct inode *inode,
 	inode->i_gid = mapped_fsgid(mnt_userns, i_user_ns(inode));
 }
 
-static inline bool fsuidgid_has_mapping(struct super_block *sb,
-					struct user_namespace *mnt_userns)
-{
-	struct user_namespace *fs_userns = sb->s_user_ns;
-	kuid_t kuid;
-	kgid_t kgid;
-
-	kuid = mapped_fsuid(mnt_userns, fs_userns);
-	if (!uid_valid(kuid))
-		return false;
-	kgid = mapped_fsgid(mnt_userns, fs_userns);
-	if (!gid_valid(kgid))
-		return false;
-	return kuid_has_mapping(fs_userns, kuid) &&
-	       kgid_has_mapping(fs_userns, kgid);
-}
+/* fsuidgid_has_mapping removed - only caller was may_create */
 
 extern struct timespec64 current_time(struct inode *inode);
 

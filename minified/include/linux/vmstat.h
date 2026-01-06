@@ -54,13 +54,7 @@ static inline unsigned long global_zone_page_state(enum zone_stat_item item)
 	return x;
 }
 
-static inline
-unsigned long global_node_page_state_pages(enum node_stat_item item)
-{
-	long x = atomic_long_read(&vm_node_stat[item]);
-	return x;
-}
-
+/* global_node_page_state_pages removed - never used */
 
 static inline unsigned long zone_page_state(struct zone *zone,
 					enum zone_stat_item item)
@@ -92,17 +86,7 @@ static inline void __mod_node_page_state(struct pglist_data *pgdat,
 	node_page_state_add(delta, pgdat, item);
 }
 
-static inline void __inc_zone_state(struct zone *zone, enum zone_stat_item item)
-{
-	atomic_long_inc(&zone->vm_stat[item]);
-	atomic_long_inc(&vm_zone_stat[item]);
-}
-
-static inline void __inc_node_state(struct pglist_data *pgdat, enum node_stat_item item)
-{
-	atomic_long_inc(&pgdat->vm_stat[item]);
-	atomic_long_inc(&vm_node_stat[item]);
-}
+/* __inc_zone_state, __inc_node_state removed - never called */
 
 static inline void __dec_zone_state(struct zone *zone, enum zone_stat_item item)
 {
@@ -130,13 +114,7 @@ static inline void __dec_zone_page_state(struct page *page,
 
 /* set_pgdat_percpu_threshold removed - unused */
 /* refresh_zone_stat_thresholds, cpu_vm_stats_fold removed - unused */
-
-static inline void node_stat_mod_folio(struct folio *folio,
-		enum node_stat_item item, long nr)
-{
-	mod_node_page_state(folio_pgdat(folio), item, nr);
-}
-
+/* node_stat_mod_folio removed - never called */
 
 static inline void __mod_zone_freepage_state(struct zone *zone, int nr_pages,
 					     int migratetype)

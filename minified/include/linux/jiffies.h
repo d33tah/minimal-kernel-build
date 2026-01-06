@@ -111,18 +111,7 @@ static inline unsigned long _usecs_to_jiffies(const unsigned int u)
 {
 	return (u + (USEC_PER_SEC / HZ) - 1) / (USEC_PER_SEC / HZ);
 }
-
-static __always_inline unsigned long usecs_to_jiffies(const unsigned int u)
-{
-	if (__builtin_constant_p(u)) {
-		if (u > jiffies_to_usecs(MAX_JIFFY_OFFSET))
-			return MAX_JIFFY_OFFSET;
-		return _usecs_to_jiffies(u);
-	} else {
-		return __usecs_to_jiffies(u);
-	}
-}
-
+/* usecs_to_jiffies removed - never called */
 /* timespec64_to_jiffies, nsecs_to_jiffies64, nsecs_to_jiffies removed - never called */
 
 #endif

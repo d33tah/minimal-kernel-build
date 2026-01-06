@@ -15,11 +15,7 @@
 struct cred;
 struct module;
 
-/* in_gate_area_no_mm always returns 0 */
-static inline int is_kernel_text(unsigned long addr)
-{
-	return __is_kernel_text(addr);
-}
+/* is_kernel_text removed - never called */
 
 static inline void *dereference_symbol_descriptor(void *ptr)
 {

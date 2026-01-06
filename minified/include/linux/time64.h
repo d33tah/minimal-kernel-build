@@ -30,15 +30,8 @@ struct timespec64 {
 #define KTIME_SEC_MIN			(KTIME_MIN / NSEC_PER_SEC)
 
 /* timespec64_compare, timespec64_sub, timespec64_valid, timespec64_valid_settod,
-   timespec64_to_ns, set_normalized_timespec64 removed - unused */
+   timespec64_to_ns, set_normalized_timespec64, timespec64_add_ns removed - unused */
 
 extern struct timespec64 ns_to_timespec64(const s64 nsec);
-
-static __always_inline void timespec64_add_ns(struct timespec64 *a, u64 ns)
-{
-	a->tv_sec += __iter_div_u64_rem(a->tv_nsec + ns, NSEC_PER_SEC, &ns);
-	a->tv_nsec = ns;
-}
-
 
 #endif  

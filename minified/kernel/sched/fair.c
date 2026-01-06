@@ -779,7 +779,6 @@ again:
 	p = task_of(se);
 
 done:
-	__maybe_unused;
 	/* hrtick_enabled_fair always returns 0, dead if block removed */
 	return p;
 

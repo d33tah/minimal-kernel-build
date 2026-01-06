@@ -9,7 +9,7 @@
 /* perf_sample_data, perf_overflow_handler_t removed - never used */
 
 struct perf_event { int state; };
-struct perf_event_context { int dummy; };
+/* struct perf_event_context removed - never used */
 
 /* perf_sw_event removed - never called */
 

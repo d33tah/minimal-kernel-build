@@ -28,10 +28,7 @@ extern int filename_lookup(int dfd, struct filename *name, unsigned flags,
 			   struct path *path, struct path *root);
 extern int vfs_path_lookup(struct dentry *, struct vfsmount *,
 			   const char *, unsigned int, struct path *);
-int do_rmdir(int dfd, struct filename *name);
-int do_unlinkat(int dfd, struct filename *name);
-int may_linkat(struct user_namespace *mnt_userns, struct path *link);
-/* do_renameat2, do_mkdirat, do_symlinkat, do_linkat removed - no definition */
+/* do_rmdir, do_unlinkat, may_linkat, do_renameat2, do_mkdirat, do_symlinkat, do_linkat removed */
 
 extern struct vfsmount *lookup_mnt(const struct path *);
 /* finish_automount, sb_prepare_remount_readonly removed - unused */
@@ -71,8 +68,7 @@ extern struct open_how build_open_how(int flags, umode_t mode);
 extern int build_open_flags(const struct open_how *how, struct open_flags *op);
 
 int chmod_common(const struct path *path, umode_t mode);
-/* do_fchownat declaration removed - made static */
-int chown_common(const struct path *path, uid_t user, gid_t group);
+/* do_fchownat, chown_common removed - never called after init_chown removal */
 extern int vfs_open(const struct path *, struct file *);
 
  

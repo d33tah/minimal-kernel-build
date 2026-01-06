@@ -212,11 +212,7 @@ SYSCALL_DEFINE2(chmod, const char __user *, filename, umode_t, mode)
 	return -ENOSYS;
 }
 
-int chown_common(const struct path *path, uid_t user, gid_t group)
-{
-	/* Stub: chown not needed for minimal kernel */
-	return -EOPNOTSUPP;
-}
+/* chown_common removed - only caller was init_chown which was removed */
 
 /* Stub: chown syscalls not needed for Hello World */
 SYSCALL_DEFINE5(fchownat, int, dfd, const char __user *, filename, uid_t, user,

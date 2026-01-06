@@ -718,14 +718,7 @@ static inline void sb_start_pagefault(struct super_block *sb)
 bool inode_owner_or_capable(struct user_namespace *mnt_userns,
 			    const struct inode *inode);
 
-int vfs_mkdir(struct user_namespace *, struct inode *,
-	      struct dentry *, umode_t);
-int vfs_mknod(struct user_namespace *, struct inode *, struct dentry *,
-              umode_t, dev_t);
-int vfs_symlink(struct user_namespace *, struct inode *,
-		struct dentry *, const char *);
-int vfs_link(struct dentry *, struct user_namespace *, struct inode *,
-	     struct dentry *, struct inode **);
+/* vfs_mkdir, vfs_mknod, vfs_symlink, vfs_link removed - only callers were init_* */
 
 int vfs_fchown(struct file *file, uid_t user, gid_t group);
 int vfs_fchmod(struct file *file, umode_t mode);

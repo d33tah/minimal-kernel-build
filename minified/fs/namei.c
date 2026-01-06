@@ -477,11 +477,7 @@ static inline void put_link(struct nameidata *nd)
 		path_put(&last->link);
 }
 
-int may_linkat(struct user_namespace *mnt_userns, struct path *link)
-{
-	/* Stub: allow hardlinks */
-	return 0;
-}
+/* may_linkat removed - only caller was init_link which was removed */
 
 /* Removed: __traverse_mounts - inlined into traverse_mounts */
 
@@ -1687,23 +1683,7 @@ void done_path_create(struct path *path, struct dentry *dentry)
 	path_put(path);
 }
 
-int vfs_mknod(struct user_namespace *mnt_userns, struct inode *dir,
-	      struct dentry *dentry, umode_t mode, dev_t dev)
-{
-	bool is_whiteout = S_ISCHR(mode) && dev == WHITEOUT_DEV;
-	int error = may_create(mnt_userns, dir, dentry);
-
-	if (error)
-		return error;
-
-	/* capable() always returns true - removed CAP_MKNOD check */
-
-	if (!dir->i_op->mknod)
-		return -EPERM;
-
-	/* security_inode_mknod always returns 0 - dead code removed */
-	return dir->i_op->mknod(mnt_userns, dir, dentry, mode, dev);
-}
+/* vfs_mknod removed - only caller was init_mknod which was removed */
 
 /* Stub: mknod syscalls not needed for Hello World */
 SYSCALL_DEFINE4(mknodat, int, dfd, const char __user *, filename, umode_t, mode,
@@ -1718,25 +1698,7 @@ SYSCALL_DEFINE3(mknod, const char __user *, filename, umode_t, mode, unsigned,
 	return -ENOSYS;
 }
 
-int vfs_mkdir(struct user_namespace *mnt_userns, struct inode *dir,
-	      struct dentry *dentry, umode_t mode)
-{
-	int error = may_create(mnt_userns, dir, dentry);
-	unsigned max_links = dir->i_sb->s_max_links;
-
-	if (error)
-		return error;
-
-	if (!dir->i_op->mkdir)
-		return -EPERM;
-
-	mode &= (S_IRWXUGO | S_ISVTX);
-	/* security_inode_mkdir always returns 0 - dead code removed */
-	if (max_links && dir->i_nlink >= max_links)
-		return -EMLINK;
-
-	return dir->i_op->mkdir(mnt_userns, dir, dentry, mode);
-}
+/* vfs_mkdir, do_rmdir, do_unlinkat removed - only callers were init_* functions */
 
 /* Stub: mkdir syscalls not needed for Hello World */
 SYSCALL_DEFINE3(mkdirat, int, dfd, const char __user *, pathname, umode_t, mode)
@@ -1749,21 +1711,9 @@ SYSCALL_DEFINE2(mkdir, const char __user *, pathname, umode_t, mode)
 	return -ENOSYS;
 }
 
-int do_rmdir(int dfd, struct filename *name)
-{
-	putname(name);
-	return -ENOSYS;
-}
-
 /* Stub: rmdir not needed for Hello World */
 SYSCALL_DEFINE1(rmdir, const char __user *, pathname)
 {
-	return -ENOSYS;
-}
-
-int do_unlinkat(int dfd, struct filename *name)
-{
-	putname(name);
 	return -ENOSYS;
 }
 
@@ -1779,12 +1729,7 @@ SYSCALL_DEFINE1(unlink, const char __user *, pathname)
 	return -ENOSYS;
 }
 
-int vfs_symlink(struct user_namespace *mnt_userns, struct inode *dir,
-		struct dentry *dentry, const char *oldname)
-{
-	/* Stub: symlink creation not needed for minimal kernel */
-	return -EPERM;
-}
+/* vfs_symlink removed - only caller was init_symlink which was removed */
 
 /* Stub: symlink syscalls not needed for Hello World */
 SYSCALL_DEFINE3(symlinkat, const char __user *, oldname, int, newdfd,
@@ -1799,13 +1744,7 @@ SYSCALL_DEFINE2(symlink, const char __user *, oldname, const char __user *,
 	return -ENOSYS;
 }
 
-int vfs_link(struct dentry *old_dentry, struct user_namespace *mnt_userns,
-	     struct inode *dir, struct dentry *new_dentry,
-	     struct inode **delegated_inode)
-{
-	/* Stub: hard link creation not needed for minimal kernel */
-	return -EPERM;
-}
+/* vfs_link removed - only caller was init_link which was removed */
 
 /* Stub: linkat not needed for Hello World */
 SYSCALL_DEFINE5(linkat, int, olddfd, const char __user *, oldname, int, newdfd,

@@ -175,8 +175,6 @@ void __init parse_early_param(void);
 void __init parse_early_options(char *cmdline);
 #endif  /* __ASSEMBLY__ */
 
-#define __nosavedata __section(".data..nosave")
-
-#define __exit_p(x) NULL
+/* __nosavedata, __exit_p removed - never used */
 
 #endif  /* _LINUX_INIT_H */

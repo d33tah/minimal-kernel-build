@@ -350,14 +350,8 @@ struct task_struct {
 
 	unsigned long			min_flt;
 	unsigned long			maj_flt;
+	/* posix_cputimers removed - empty struct, never used */
 
-	 
-	struct posix_cputimers		posix_cputimers;
-
-
-	 
-
-	 
 	const struct cred __rcu		*ptracer_cred;
 
 	 

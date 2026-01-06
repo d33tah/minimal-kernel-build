@@ -162,8 +162,7 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags,
 	mutex_init(&s->s_sync_lock);
 	INIT_LIST_HEAD(&s->s_inodes);
 	spin_lock_init(&s->s_inode_list_lock);
-	INIT_LIST_HEAD(&s->s_inodes_wb);
-	spin_lock_init(&s->s_inode_wblist_lock);
+	/* s_inodes_wb, s_inode_wblist_lock init removed - fields removed */
 
 	s->s_count = 1;
 	atomic_set(&s->s_active, 1);

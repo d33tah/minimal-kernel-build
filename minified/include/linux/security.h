@@ -2,17 +2,12 @@
 #ifndef __LINUX_SECURITY_H
 #define __LINUX_SECURITY_H
 
-#include <linux/kernel_read_file.h>
 #include <linux/capability.h>
 #include <linux/fs.h>
 #include <linux/err.h>
 #include <linux/mm.h>
 
-/* Reduced lockdown enum for minimal kernel */
-enum lockdown_reason {
-	LOCKDOWN_NONE,
-	LOCKDOWN_MODULE_PARAMETERS, /* Used by kernel/params.c */
-};
+/* lockdown_reason enum removed - never used */
 
 extern unsigned long mmap_min_addr;
 
@@ -20,12 +15,7 @@ extern unsigned long mmap_min_addr;
 #define LSM_UNSAFE_PTRACE	2
 #define LSM_UNSAFE_NO_NEW_PRIVS	4
 
-#define __data_id_enumify(ENUM, dummy) LOADING_ ## ENUM,
-#define __data_id_stringify(dummy, str) #str,
-
-enum kernel_load_data_id {
-	__kernel_read_file_id(__data_id_enumify)
-};
+/* kernel_load_data_id enum removed - never used */
 
 /* Only two security functions are actually called */
 static inline int security_vm_enough_memory_mm(struct mm_struct *mm, long pages)

@@ -82,17 +82,7 @@
 #define preempt_enable_notrace()		barrier()
 #define preemptible()				0
 
-
-
-#define preempt_set_need_resched() \
-do { \
-	set_preempt_need_resched(); \
-} while (0)
-#define preempt_fold_need_resched() \
-do { \
-	if (tif_need_resched()) \
-		set_preempt_need_resched(); \
-} while (0)
+/* preempt_set_need_resched, preempt_fold_need_resched removed - never called */
 
 /* migrate_disable removed - call site removed */
 

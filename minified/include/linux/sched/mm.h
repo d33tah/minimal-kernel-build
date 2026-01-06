@@ -119,21 +119,7 @@ static inline void memalloc_nofs_restore(unsigned int flags)
 	current->flags = (current->flags & ~PF_MEMALLOC_NOFS) | flags;
 }
 
-
-static inline unsigned int memalloc_pin_save(void)
-{
-	unsigned int flags = current->flags & PF_MEMALLOC_PIN;
-
-	current->flags |= PF_MEMALLOC_PIN;
-	return flags;
-}
-
-static inline void memalloc_pin_restore(unsigned int flags)
-{
-	current->flags = (current->flags & ~PF_MEMALLOC_PIN) | flags;
-}
-
-
+/* memalloc_pin_save, memalloc_pin_restore removed - no callers */
 /* membarrier stubs removed - no callers */
 
 #endif

@@ -7,14 +7,14 @@
 #include <linux/errno.h>
 #include <linux/list.h>
 #include <linux/lockdep.h>
-#include <linux/kobject_ns.h>
+/* kobject_ns.h removed - never used */
 #include <linux/stat.h>
 #include <linux/atomic.h>
 
 struct kobject;
 struct module;
 struct bin_attribute;
-enum kobj_ns_type;
+/* enum kobj_ns_type forward declaration removed - never used */
 
 struct attribute {
 	const char		*name;

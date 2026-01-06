@@ -534,7 +534,7 @@ struct fasync_struct;
 
 #define MNT_FORCE	0x00000001
 #define MNT_DETACH	0x00000002
-#define UMOUNT_NOFOLLOW	0x00000008	
+/* UMOUNT_NOFOLLOW removed - never used */
 
 #define SB_I_NOEXEC	0x00000002
 #define SB_I_NODEV	0x00000004

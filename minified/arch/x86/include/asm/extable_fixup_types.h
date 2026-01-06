@@ -53,9 +53,9 @@
 
 /* EX_TYPE_FAULT_SGX (18) removed - no SGX in minimal kernel */
 
-#define	EX_TYPE_UCOPY_LEN		19  
+#define	EX_TYPE_UCOPY_LEN		19
 #define	EX_TYPE_UCOPY_LEN1		(EX_TYPE_UCOPY_LEN | EX_DATA_IMM(1))
 #define	EX_TYPE_UCOPY_LEN4		(EX_TYPE_UCOPY_LEN | EX_DATA_IMM(4))
-#define	EX_TYPE_UCOPY_LEN8		(EX_TYPE_UCOPY_LEN | EX_DATA_IMM(8))
+/* EX_TYPE_UCOPY_LEN8 removed - never used */
 
 #endif

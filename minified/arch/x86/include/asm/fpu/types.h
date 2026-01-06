@@ -56,13 +56,10 @@ struct fxregs_state {
 
 } __attribute__((aligned(16)));
 
- 
+
 #define MXCSR_DEFAULT		0x1f80
+/* MXCSR_AND_FLAGS_SIZE removed - never used */
 
- 
-#define MXCSR_AND_FLAGS_SIZE sizeof(u64)
-
- 
 struct swregs_state {
 	u32			cwd;
 	u32			swd;
@@ -125,13 +122,9 @@ enum xfeature {
 #define XFEATURE_MASK_XTILE_DATA	(1 << XFEATURE_XTILE_DATA)
 
 #define XFEATURE_MASK_FPSSE		(XFEATURE_MASK_FP | XFEATURE_MASK_SSE)
-#define XFEATURE_MASK_AVX512		(XFEATURE_MASK_OPMASK \
-					 | XFEATURE_MASK_ZMM_Hi256 \
-					 | XFEATURE_MASK_Hi16_ZMM)
+/* XFEATURE_MASK_AVX512, FIRST_EXTENDED_XFEATURE removed - never used */
 
 # define XFEATURE_MASK_XTILE		(0)
-
-#define FIRST_EXTENDED_XFEATURE	XFEATURE_YMM
 
 struct xstate_header {
 	u64				xfeatures;
@@ -189,10 +182,10 @@ struct fpstate {
 	 
 	union fpregs_state	regs;
 
-	 
+
 } __aligned(64);
 
-#define FPU_GUEST_PERM_LOCKED		BIT_ULL(63)
+/* FPU_GUEST_PERM_LOCKED removed - never used */
 
 struct fpu_state_perm {
 	 

@@ -29,7 +29,7 @@ typedef u16		compat_dev_t;
 #define compat_ipc_pid_t compat_ipc_pid_t
 typedef u16		 compat_ipc_pid_t;
 
-#define compat_statfs	compat_statfs
+/* compat_statfs removed - never used */
 
 /* --- 2025-12-07 10:28 --- Inlined asm-generic/compat.h content */
 

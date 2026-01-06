@@ -89,11 +89,7 @@ enum device_link_state {
 	DL_STATE_NONE = -1,
 };
 
-#define DL_FLAG_PM_RUNTIME		BIT(2)
-#define DL_FLAG_RPM_ACTIVE		BIT(3)
-/* DL_FLAG_AUTOREMOVE_SUPPLIER, DL_FLAG_AUTOPROBE_CONSUMER removed - never used */
-#define DL_FLAG_SYNC_STATE_ONLY		BIT(7)
-#define DL_FLAG_INFERRED		BIT(8)
+/* DL_FLAG_PM_RUNTIME, DL_FLAG_RPM_ACTIVE, DL_FLAG_SYNC_STATE_ONLY, DL_FLAG_INFERRED removed - never used */
 
 enum dl_dev_state {
 	DL_DEV_NO_DRIVER = 0,

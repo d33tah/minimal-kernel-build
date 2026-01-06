@@ -22,9 +22,7 @@ __iter_div_u64_rem(u64 dividend, u32 divisor, u64 *remainder)
 	return ret;
 }
 
-/* BITS_PER_LONG == 32 (i386) */
-#define div64_long(x, y) div_s64((x), (y))
-#define div64_ul(x, y)   div_u64((x), (y))
+/* div64_long, div64_ul removed - never used */
 
 #ifndef div_u64_rem
 static inline u64 div_u64_rem(u64 dividend, u32 divisor, u32 *remainder)

@@ -55,9 +55,7 @@
 #define DECLARE_PER_CPU_READ_MOSTLY(type, name)			\
 	DECLARE_PER_CPU_SECTION(type, name, "..read_mostly")
 
-#define DEFINE_PER_CPU_READ_MOSTLY(type, name)				\
-	DEFINE_PER_CPU_SECTION(type, name, "..read_mostly")
-
+/* DEFINE_PER_CPU_READ_MOSTLY removed - never used */
 
 #ifndef __ASSEMBLY__
 

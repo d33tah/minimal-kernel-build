@@ -128,10 +128,7 @@ struct static_key_false {
 #define DEFINE_STATIC_KEY_MAYBE(cfg, name)			\
 	__PASTE(_DEFINE_STATIC_KEY_, IS_ENABLED(cfg))(name)
 
-#define _DEFINE_STATIC_KEY_RO_1(name)	DEFINE_STATIC_KEY_TRUE_RO(name)
-#define _DEFINE_STATIC_KEY_RO_0(name)	DEFINE_STATIC_KEY_FALSE_RO(name)
-#define DEFINE_STATIC_KEY_MAYBE_RO(cfg, name)			\
-	__PASTE(_DEFINE_STATIC_KEY_RO_, IS_ENABLED(cfg))(name)
+/* DEFINE_STATIC_KEY_MAYBE_RO, _DEFINE_STATIC_KEY_RO_* removed - never used */
 
 #define _DECLARE_STATIC_KEY_1(name)	DECLARE_STATIC_KEY_TRUE(name)
 #define _DECLARE_STATIC_KEY_0(name)	DECLARE_STATIC_KEY_FALSE(name)

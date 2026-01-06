@@ -27,8 +27,9 @@ KASAN_SANITIZE_string.o := n
 CFLAGS_string.o += -fno-stack-protector
 endif
 
+# timerqueue.o - Removed: all functions were stubbed out
 lib-y := ctype.o string.o vsprintf.o cmdline.o \
-	 rbtree.o radix-tree.o timerqueue.o xarray.o \
+	 rbtree.o radix-tree.o xarray.o \
 	 idr.o extable.o irq_regs.o \
 	 flex_proportions.o ratelimit.o \
 	 kobject_uevent.o \

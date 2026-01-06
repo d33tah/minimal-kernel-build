@@ -406,46 +406,7 @@ static long __init write_buffer(char *buf, unsigned long len)
 	return len - byte_count;
 }
 
-static long __init flush_buffer(void *bufv, unsigned long len)
-{
-	char *buf = (char *)bufv;
-	long written;
-	long origLen = len;
-	if (message)
-		return -1;
-	while ((written = write_buffer(buf, len)) < len && !message) {
-		char c = buf[written];
-		if (c == '0') {
-			buf += written;
-			len -= written;
-			state = Start;
-		} else if (c == 0) {
-			buf += written;
-			len -= written;
-			state = Reset;
-		} else
-			error("junk within compressed archive");
-	}
-	return origLen;
-}
-
-static unsigned long my_inptr;
-
-typedef int (*decompress_fn)(unsigned char *inbuf, long len,
-			     long (*fill)(void *, unsigned long),
-			     long (*flush)(void *, unsigned long),
-			     unsigned char *outbuf, long *posp,
-			     void (*error)(char *x));
-/* Stub for uncompressed initramfs - no decompressor needed */
-static decompress_fn decompress_method(const unsigned char *inbuf, long len,
-				       const char **name)
-{
-	if (name)
-		*name = NULL;
-	return NULL;
-}
-/* end decompress/generic.h */
-
+/* flush_buffer, my_inptr, decompress_fn typedef, decompress_method removed - unused */
 /* unpack_to_rootfs, do_retain_initrd, initramfs_async, reserve_initrd_mem removed - unused */
 
 extern char __initramfs_start[];

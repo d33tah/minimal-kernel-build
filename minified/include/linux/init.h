@@ -15,14 +15,12 @@
 #define __init		__section(".init.text") __cold  __latent_entropy __noinitretpoline __nocfi
 #define __initdata	__section(".init.data")
 #define __initconst	__section(".init.rodata")
-#define __exitdata	__section(".exit.data")
-#define __exit_call	__used __section(".exitcall.exit")
+/* __exitdata, __exit_call removed - never used (no modules) */
 
 #define __ref            __section(".ref.text") noinline
 #define __refdata        __section(".ref.data")
-#define __exitused  __used
 
-#define __exit          __section(".exit.text") __exitused __cold notrace
+#define __exit          __section(".exit.text") __used __cold notrace
 
 #define __meminit        __section(".meminit.text") __cold notrace \
 						  __latent_entropy
@@ -34,7 +32,7 @@
 #define __INITDATA	.section	".init.data","aw",%progbits
 #define __INITRODATA	.section	".init.rodata","a",%progbits
 
-#define __REF            .section       ".ref.text", "ax"
+/* __REF removed - never used */
 #define __REFDATA        .section       ".ref.data", "aw"
 
 #ifndef __ASSEMBLY__

@@ -88,9 +88,7 @@ struct cpuidle_state;
 
 extern __read_mostly int scheduler_running;
 extern unsigned long calc_load_update;
-/* calc_load_tasks removed - never used */
-
-extern unsigned int sysctl_sched_child_runs_first;
+/* calc_load_tasks, sysctl_sched_child_runs_first removed - never used */
 /* calc_global_load_tick, calc_load_fold_active removed - never called */
 
 /* call_trace_sched_update_nr_running removed - unused */

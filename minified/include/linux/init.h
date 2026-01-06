@@ -27,7 +27,7 @@
 #define __INIT		.section	".init.text","ax"
 
 #define __INITDATA	.section	".init.data","aw",%progbits
-#define __INITRODATA	.section	".init.rodata","a",%progbits
+/* __INITRODATA removed - never used */
 
 /* __REF removed - never used */
 #define __REFDATA        .section       ".ref.data", "aw"

@@ -9,9 +9,9 @@ struct shrinker {
 	long batch; int seeks; unsigned flags; struct list_head list; atomic_long_t *nr_deferred;
 };
 #define DEFAULT_SEEKS 2
-#define SHRINKER_REGISTERED (1 << 0)
+/* SHRINKER_REGISTERED removed - never used */
 #define SHRINKER_NUMA_AWARE (1 << 1)
 #define SHRINKER_MEMCG_AWARE (1 << 2)
-#define SHRINKER_NONSLAB (1 << 3)
+/* SHRINKER_NONSLAB removed - never used */
 /* shrinker functions removed - never called/defined */
 #endif

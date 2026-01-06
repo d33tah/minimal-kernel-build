@@ -1,6 +1,5 @@
 /* Minimal workingset - only keeping callback and init */
 #include <linux/mm.h>
-#include <linux/module.h>
 #include <linux/list_lru.h>
 #include <linux/xarray.h>
 /* workingset_refault/workingset_activation removed - calls removed */

@@ -104,8 +104,7 @@ static inline int srcu_read_lock_held(const struct srcu_struct *ssp)
 				(c) || srcu_read_lock_held(ssp), __rcu)
 
 #define srcu_dereference(p, ssp) srcu_dereference_check((p), (ssp), 0)
-
-#define srcu_dereference_notrace(p, ssp) srcu_dereference_check((p), (ssp), 1)
+/* srcu_dereference_notrace removed - never used */
 
 static inline int srcu_read_lock(struct srcu_struct *ssp) __acquires(ssp)
 {

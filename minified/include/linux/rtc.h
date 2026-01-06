@@ -19,7 +19,6 @@ struct rtc_time {
 };
 
 /* rtc_month_days, rtc_valid_tm, rtc_time64_to_tm removed - declared but never called */
-
-#define rtc_hctosys_ret -ENODEV
+/* rtc_hctosys_ret removed - never used */
 
 #endif

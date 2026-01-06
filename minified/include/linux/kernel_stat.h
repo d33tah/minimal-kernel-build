@@ -36,9 +36,7 @@ struct kernel_stat {
 DECLARE_PER_CPU(struct kernel_stat, kstat);
 DECLARE_PER_CPU(struct kernel_cpustat, kernel_cpustat);
 
-/* kstat_this_cpu, kcpustat_this_cpu removed - unused */
-#define kstat_cpu(cpu) per_cpu(kstat, cpu)
-#define kcpustat_cpu(cpu) per_cpu(kernel_cpustat, cpu)
+/* kstat_this_cpu, kcpustat_this_cpu, kstat_cpu, kcpustat_cpu removed - unused */
 
 
 

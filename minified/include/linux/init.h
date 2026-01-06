@@ -5,11 +5,8 @@
 #include <linux/types.h>
 
 /* MODULE is never defined (CONFIG_MODULES=n) */
-#ifdef __noretpoline
-#define __noinitretpoline __noretpoline
-#else
+/* __noretpoline is never defined, so __noinitretpoline is always empty */
 #define __noinitretpoline
-#endif
 
 
 #define __init		__section(".init.text") __cold  __latent_entropy __noinitretpoline __nocfi

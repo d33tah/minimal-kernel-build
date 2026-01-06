@@ -39,7 +39,7 @@
 
 #ifndef __ASSEMBLY__
 typedef int (*initcall_t)(void);
-typedef void (*exitcall_t)(void);
+/* exitcall_t removed - never used (no modules) */
 
 typedef int initcall_entry_t;
 
@@ -131,8 +131,7 @@ extern void (*late_time_init)(void);
 
 #define __initcall(fn) device_initcall(fn)
 
-#define __exitcall(fn)						\
-	static exitcall_t __exitcall_##fn __exit_call = fn
+/* __exitcall removed - never used (no modules) */
 
 #define console_initcall(fn)	___define_initcall(fn, con, .con_initcall)
 

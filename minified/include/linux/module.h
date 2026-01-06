@@ -65,7 +65,7 @@ extern int init_module(void);
 
 /* Built-in kernel, not building as module */
 #define module_init(x)	__initcall(x);
-#define module_exit(x)	__exitcall(x);
+/* module_exit removed - never used (no modules) */
 
 #define __init_or_module __init
 /* __initdata_or_module, __initconst_or_module removed - unused */

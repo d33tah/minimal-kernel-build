@@ -16,8 +16,7 @@
 #include "stats.h"
 
 unsigned int sysctl_sched_latency = 6000000ULL;
-/* normalized_sysctl_sched_latency removed - unused */
-unsigned int sysctl_sched_tunable_scaling = SCHED_TUNABLESCALING_LOG;
+/* normalized_sysctl_sched_latency, sysctl_sched_tunable_scaling removed - unused */
 unsigned int sysctl_sched_min_granularity = 750000ULL;
 /* normalized_sysctl_sched_min_granularity, sysctl_sched_idle_min_granularity removed - unused */
 static unsigned int sched_nr_latency = 8;

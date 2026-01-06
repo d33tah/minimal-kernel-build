@@ -53,21 +53,7 @@ struct dev_pm_ops {
 	.poweroff = pm_sleep_ptr(suspend_fn), \
 	.restore = pm_sleep_ptr(resume_fn),
 
-#define LATE_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
-	.suspend_late = pm_sleep_ptr(suspend_fn), \
-	.resume_early = pm_sleep_ptr(resume_fn), \
-	.freeze_late = pm_sleep_ptr(suspend_fn), \
-	.thaw_early = pm_sleep_ptr(resume_fn), \
-	.poweroff_late = pm_sleep_ptr(suspend_fn), \
-	.restore_early = pm_sleep_ptr(resume_fn),
-
-#define NOIRQ_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
-	.suspend_noirq = pm_sleep_ptr(suspend_fn), \
-	.resume_noirq = pm_sleep_ptr(resume_fn), \
-	.freeze_noirq = pm_sleep_ptr(suspend_fn), \
-	.thaw_noirq = pm_sleep_ptr(resume_fn), \
-	.poweroff_noirq = pm_sleep_ptr(suspend_fn), \
-	.restore_noirq = pm_sleep_ptr(resume_fn),
+/* LATE_SYSTEM_SLEEP_PM_OPS, NOIRQ_SYSTEM_SLEEP_PM_OPS removed - never used */
 
 #define RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
 	.runtime_suspend = suspend_fn, \

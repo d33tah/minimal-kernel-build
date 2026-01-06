@@ -26,14 +26,7 @@ struct rcu_segcblist {
 	u8 flags;
 };
 
-#define RCU_SEGCBLIST_INITIALIZER(n) \
-{ \
-	.head = NULL, \
-	.tails[RCU_DONE_TAIL] = &n.head, \
-	.tails[RCU_WAIT_TAIL] = &n.head, \
-	.tails[RCU_NEXT_READY_TAIL] = &n.head, \
-	.tails[RCU_NEXT_TAIL] = &n.head, \
-}
+/* RCU_SEGCBLIST_INITIALIZER removed - never used */
 
 struct srcu_struct;
 

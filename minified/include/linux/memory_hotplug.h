@@ -9,12 +9,6 @@ struct vmem_altmap;
 /* Unused forward declarations and functions removed:
    arch_alloc_nodedata, generic_alloc_nodedata, arch_refresh_nodedata */
 
-#define pfn_to_online_page(pfn)			\
-({						\
-	struct page *___page = NULL;		\
-	if (pfn_valid(pfn))			\
-		___page = pfn_to_page(pfn);	\
-	___page;				\
- })
+/* pfn_to_online_page removed - never called */
 
 #endif

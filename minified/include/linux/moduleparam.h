@@ -110,13 +110,7 @@ static inline void kernel_param_unlock(struct module *mod)
 
 /* core_param, core_param_unsafe removed - never used */  
 
-#define module_param_string(name, string, len, perm)			\
-	static const struct kparam_string __param_string_##name		\
-		= { len, string };					\
-	__module_param_call(MODULE_PARAM_PREFIX, name,			\
-			    &param_ops_string,				\
-			    .str = &__param_string_##name, perm, -1, 0);\
-	__MODULE_PARM_TYPE(name, "string")
+/* module_param_string removed - never called */
 
 extern bool parameq(const char *name1, const char *name2);
 

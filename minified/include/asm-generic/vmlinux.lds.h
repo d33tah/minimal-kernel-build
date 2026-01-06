@@ -639,18 +639,7 @@
 
 
 
-#define RW_DATA(cacheline, pagealigned, inittask)			\
-	. = ALIGN(PAGE_SIZE);						\
-	.data : AT(ADDR(.data) - LOAD_OFFSET) {				\
-		INIT_TASK_DATA(inittask)				\
-		NOSAVE_DATA						\
-		PAGE_ALIGNED_DATA(pagealigned)				\
-		CACHELINE_ALIGNED_DATA(cacheline)			\
-		READ_MOSTLY_DATA(cacheline)				\
-		DATA_DATA						\
-		CONSTRUCTORS						\
-	}								\
-	BUG_TABLE							\
+/* RW_DATA removed - never used */
 
 #define INIT_TEXT_SECTION(inittext_align)				\
 	. = ALIGN(inittext_align);					\
@@ -669,10 +658,4 @@
 		INIT_RAM_FS						\
 	}
 
-#define BSS_SECTION(sbss_align, bss_align, stop_align)			\
-	. = ALIGN(sbss_align);						\
-	__bss_start = .;						\
-	SBSS(sbss_align)						\
-	BSS(bss_align)							\
-	. = ALIGN(stop_align);						\
-	__bss_stop = .;
+/* BSS_SECTION removed - never used */

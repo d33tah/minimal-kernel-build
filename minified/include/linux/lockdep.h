@@ -87,14 +87,7 @@ static inline void lockdep_on(void)
 #define spin_release(l, i)			lock_release(l, i)
 
 #define rwlock_acquire(l, s, t, i)		lock_acquire_exclusive(l, s, t, NULL, i)
-#define rwlock_acquire_read(l, s, t, i)					\
-do {									\
-	if (read_lock_is_recursive())					\
-		lock_acquire_shared_recursive(l, s, t, NULL, i);	\
-	else								\
-		lock_acquire_shared(l, s, t, NULL, i);			\
-} while (0)
-
+/* rwlock_acquire_read removed - never called */
 #define rwlock_release(l, i)			lock_release(l, i)
 
 #define seqcount_acquire(l, s, t, i)		lock_acquire_exclusive(l, s, t, NULL, i)

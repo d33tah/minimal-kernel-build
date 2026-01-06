@@ -20,15 +20,7 @@ bool set_kthread_struct(struct task_struct *p);
 
 void kthread_set_per_cpu(struct task_struct *k, int cpu);
 
-#define kthread_run(threadfn, data, namefmt, ...)			   \
-({									   \
-	struct task_struct *__k						   \
-		= kthread_create(threadfn, data, namefmt, ## __VA_ARGS__); \
-	if (!IS_ERR(__k))						   \
-		wake_up_process(__k);					   \
-	__k;								   \
-})
-
+/* kthread_run removed - never called */
 
 void free_kthread_struct(struct task_struct *k);
 int kthread_stop(struct task_struct *k);
@@ -93,13 +85,7 @@ struct kthread_delayed_work {
 		(work)->func = (fn);					\
 	} while (0)
 
-#define kthread_init_delayed_work(dwork, fn)				\
-	do {								\
-		kthread_init_work(&(dwork)->work, (fn));		\
-		timer_setup(&(dwork)->timer,				\
-			     kthread_delayed_work_timer_fn,		\
-			     TIMER_IRQSAFE);				\
-	} while (0)
+/* kthread_init_delayed_work removed - never called */
 
 /* kthread_worker_fn removed - declared but never defined or called */
 

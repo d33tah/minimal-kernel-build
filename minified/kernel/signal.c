@@ -513,33 +513,7 @@ void __set_current_blocked(const sigset_t *newset)
 	spin_unlock_irq(&tsk->sighand->siglock);
 }
 
-int sigprocmask(int how, sigset_t *set, sigset_t *oldset)
-{
-	struct task_struct *tsk = current;
-	sigset_t newset;
-
-	if (oldset)
-		*oldset = tsk->blocked;
-
-	switch (how) {
-	case SIG_BLOCK:
-		sigorsets(&newset, &tsk->blocked, set);
-		break;
-	case SIG_UNBLOCK:
-		sigandnsets(&newset, &tsk->blocked, set);
-		break;
-	case SIG_SETMASK:
-		newset = *set;
-		break;
-	default:
-		return -EINVAL;
-	}
-
-	__set_current_blocked(&newset);
-	return 0;
-}
-
-/* set_user_sigmask removed - never called (~17 LOC) */
+/* sigprocmask, set_user_sigmask removed - never called */
 
 /* Stub: rt_sigprocmask not needed for Hello World */
 SYSCALL_DEFINE4(rt_sigprocmask, int, how, sigset_t __user *, nset,

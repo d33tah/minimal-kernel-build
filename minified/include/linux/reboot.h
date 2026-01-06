@@ -16,8 +16,7 @@ extern enum reboot_mode panic_reboot_mode;
 
 extern void machine_restart(char *cmd);
 extern void machine_halt(void);
-extern void machine_power_off(void);
-/* machine_shutdown removed - never called */
+/* machine_power_off, machine_shutdown removed - never called */
 
 /* migrate_to_reboot_cpu, do_kernel_power_off, kernel_restart_prepare removed - never called */
 /* kernel_restart, kernel_halt, kernel_power_off removed - never called */

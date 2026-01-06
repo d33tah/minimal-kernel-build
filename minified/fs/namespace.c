@@ -1311,12 +1311,6 @@ int path_mount(const char *dev_name, struct path *path, const char *type_page,
 			    data_page);
 }
 
-long do_mount(const char *dev_name, const char __user *dir_name,
-	      const char *type_page, unsigned long flags, void *data_page)
-{
-	return -ENOSYS;
-}
-
 static struct ucounts *inc_mnt_namespaces(struct user_namespace *ns)
 {
 	return inc_ucount(ns, current_euid(), UCOUNT_MNT_NAMESPACES);

@@ -67,15 +67,6 @@ void wake_up_bit(void *word, int bit)
 	__wake_up_bit(bit_waitqueue(word, bit), word, bit);
 }
 
-__sched int bit_wait(struct wait_bit_key *word, int mode)
-{
-	schedule();
-	if (signal_pending_state(mode, current))
-		return -EINTR;
-
-	return 0;
-}
-
 void __init wait_bit_init(void)
 {
 	int i;

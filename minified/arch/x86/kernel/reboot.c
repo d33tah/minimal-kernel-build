@@ -25,11 +25,6 @@ void machine_halt(void)
 		halt();
 }
 
-void machine_power_off(void)
-{
-	machine_halt();
-}
-
 void run_crash_ipi_callback(struct pt_regs *regs)
 {
 }

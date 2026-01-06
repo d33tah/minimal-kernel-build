@@ -32,8 +32,7 @@
 #define PT_TRACESYSGOOD		PT_EVENT_FLAG(0)
 
 /* arch_ptrace, ptrace_disable removed - never called */
-extern int ptrace_request(struct task_struct *child, long request,
-			  unsigned long addr, unsigned long data);
+/* ptrace_request removed - never called */
 extern int ptrace_notify(int exit_code, unsigned long message);
 extern void __ptrace_link(struct task_struct *child,
 			  struct task_struct *new_parent,

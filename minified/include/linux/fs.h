@@ -506,8 +506,7 @@ typedef void *fl_owner_t;
 
 struct file_lock;
 /* struct net forward declaration removed - unused in fs.h */
-
-#define locks_inode(f) file_inode(f)
+/* locks_inode macro removed - unused */
 
 struct files_struct;
 static inline struct inode *file_inode(const struct file *f)

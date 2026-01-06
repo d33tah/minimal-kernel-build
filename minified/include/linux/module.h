@@ -73,7 +73,7 @@ extern int init_module(void);
 /* MODULE_ALIAS, MODULE_SOFTDEP, MODULE_AUTHOR, MODULE_DESCRIPTION, MODULE_VERSION, MODULE_FIRMWARE, MODULE_IMPORT_NS removed - unused */
 #define MODULE_FILE	MODULE_INFO(file, KBUILD_MODFILE);
 #define MODULE_LICENSE(_license) MODULE_FILE MODULE_INFO(license, _license)
-#define MODULE_DEVICE_TABLE(type, name)
+/* MODULE_DEVICE_TABLE removed - never called */
 
 struct notifier_block;
 
@@ -96,8 +96,6 @@ static inline void module_put(struct module *module)
 {
 }
 
-#define module_name(mod) "kernel"
-
-/* module_put_and_kthread_exit, __MODULE_STRING removed - unused */
+/* module_name, module_put_and_kthread_exit, __MODULE_STRING removed - unused */
 
 #endif  

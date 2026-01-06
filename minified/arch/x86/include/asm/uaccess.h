@@ -280,9 +280,7 @@ struct __large_struct { unsigned long buf[100]; };
 		: : ltype(x), "m" (__m(addr))				\
 		: : label)
 
-extern unsigned long
-copy_from_user_nmi(void *to, const void __user *from, unsigned long n);
-/* strncpy_from_user removed - never called */
+/* copy_from_user_nmi, strncpy_from_user removed - never called */
 
 extern __must_check long strnlen_user(const char __user *str, long n);
 

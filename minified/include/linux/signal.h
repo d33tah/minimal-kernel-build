@@ -127,10 +127,7 @@ static inline void sigemptyset(sigset_t *set)
 
 
 
-static inline void sigdelsetmask(sigset_t *set, unsigned long mask)
-{
-	set->sig[0] &= ~mask;
-}
+/* sigdelsetmask removed - never called */
 
 static inline void siginitsetinv(sigset_t *set, unsigned long mask)
 {

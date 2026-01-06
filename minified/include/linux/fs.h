@@ -409,10 +409,7 @@ static inline int inode_is_locked(struct inode *inode)
 	return rwsem_is_locked(&inode->i_rwsem);
 }
 
-static inline void inode_lock_nested(struct inode *inode, unsigned subclass)
-{
-	down_write_nested(&inode->i_rwsem, subclass);
-}
+/* inode_lock_nested removed - never called */
 
 static inline void filemap_invalidate_lock_shared(struct address_space *mapping)
 {

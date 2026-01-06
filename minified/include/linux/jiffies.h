@@ -105,13 +105,7 @@ static __always_inline unsigned long msecs_to_jiffies(const unsigned int m)
 	}
 }
 
-extern unsigned long __usecs_to_jiffies(const unsigned int u);
-/* HZ=250: !(USEC_PER_SEC % HZ) is true */
-static inline unsigned long _usecs_to_jiffies(const unsigned int u)
-{
-	return (u + (USEC_PER_SEC / HZ) - 1) / (USEC_PER_SEC / HZ);
-}
-/* usecs_to_jiffies removed - never called */
+/* __usecs_to_jiffies, usecs_to_jiffies removed - never called */
 /* timespec64_to_jiffies, nsecs_to_jiffies64, nsecs_to_jiffies removed - never called */
 
 #endif

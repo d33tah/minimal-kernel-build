@@ -123,12 +123,5 @@ unsigned long __msecs_to_jiffies(const unsigned int m)
 	return _msecs_to_jiffies(m);
 }
 
-unsigned long __usecs_to_jiffies(const unsigned int u)
-{
-	if (u > jiffies_to_usecs(MAX_JIFFY_OFFSET))
-		return MAX_JIFFY_OFFSET;
-	return _usecs_to_jiffies(u);
-}
-
-/* Removed: timespec64_to_jiffies, nsecs_to_jiffies64, nsecs_to_jiffies,
-   get_timespec64, put_timespec64 - dead code */
+/* Removed: __usecs_to_jiffies, timespec64_to_jiffies, nsecs_to_jiffies64,
+   nsecs_to_jiffies, get_timespec64, put_timespec64 - dead code */

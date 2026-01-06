@@ -491,11 +491,7 @@ long do_no_restart_syscall(struct restart_block *param)
 	return -EINTR;
 }
 
-void set_current_blocked(sigset_t *newset)
-{
-	sigdelsetmask(newset, sigmask(SIGKILL) | sigmask(SIGSTOP));
-	__set_current_blocked(newset);
-}
+/* set_current_blocked removed - never called */
 
 void __set_current_blocked(const sigset_t *newset)
 {

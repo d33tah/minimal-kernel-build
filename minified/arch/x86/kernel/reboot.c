@@ -18,11 +18,7 @@ void machine_restart(char *cmd)
 		halt();
 }
 
-void machine_halt(void)
-{
-	while (1)
-		halt();
-}
+/* machine_halt removed - never called */
 
 void run_crash_ipi_callback(struct pt_regs *regs)
 {

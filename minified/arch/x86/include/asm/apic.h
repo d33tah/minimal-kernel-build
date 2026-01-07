@@ -19,7 +19,6 @@ static inline void generic_apic_probe(void)
 }
 
 # define setup_boot_APIC_clock x86_init_noop
-# define setup_secondary_APIC_clock x86_init_noop
 /* init_apic_mappings, disable_local_APIC, init_bsp_APIC, apic_intr_mode_select,
    apic_intr_mode_init, lapic_assign_system_vectors, lapic_assign_legacy_vector removed */
 static inline bool apic_needs_pit(void) { return true; }

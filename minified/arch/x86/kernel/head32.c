@@ -19,7 +19,6 @@ extern asmlinkage void __init start_kernel(void);
 static void __init i386_default_early_setup(void)
 {
 	x86_init.resources.reserve_resources = i386_reserve_resources;
-	/* setup_ioapic_ids assignment removed - setup_ioapic_ids_from_mpc is x86_init_noop, never called */
 }
 
 /* vdbg debug function removed */

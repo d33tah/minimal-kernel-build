@@ -45,7 +45,7 @@ obj-y	+= lockref.o
 
 # bcd.o removed - inlined into rtc.c
 obj-y += sort.o debug_locks.o \
-	 bust_spinlocks.o kasprintf.o bitmap.o scatterlist.o \
+	 bust_spinlocks.o kasprintf.o bitmap.o \
 	 iov_iter.o \
 	 bsearch.o find_bit.o llist.o \
 	 refcount.o usercopy.o errseq.o

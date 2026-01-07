@@ -479,7 +479,7 @@ rwsem_down_write_slowpath(struct rw_semaphore *sem, int state)
 		schedule();
 		lockevent_inc(rwsem_sleep_writer);
 		set_current_state(state);
-trylock_again:
+		/* trylock_again: label removed - unused */
 		raw_spin_lock_irq(&sem->wait_lock);
 	}
 	__set_current_state(TASK_RUNNING);

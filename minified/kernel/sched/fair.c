@@ -197,7 +197,7 @@ static u64 __sched_period(unsigned long nr_running)
 static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
 	unsigned int nr_running = cfs_rq->nr_running;
-	struct sched_entity *init_se = se;
+	/* init_se removed - was unused */
 	unsigned int min_gran;
 	u64 slice;
 
@@ -763,7 +763,7 @@ struct task_struct *pick_next_task_fair(struct rq *rq, struct task_struct *prev,
 	struct task_struct *p;
 	/* new_tasks removed - newidle_balance always returns 0 */
 
-again:
+	/* again: label removed - unused */
 	if (!sched_fair_runnable(rq))
 		goto idle;
 
@@ -776,7 +776,7 @@ again:
 
 	p = task_of(se);
 
-done:
+	/* done: label removed - unused */
 	/* hrtick_enabled_fair always returns 0, dead if block removed */
 	return p;
 

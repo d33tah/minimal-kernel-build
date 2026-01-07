@@ -250,12 +250,7 @@ static int preferred_console = -1;
 
 static int console_may_schedule;
 
-enum con_msg_format_flags {
-	MSG_FORMAT_DEFAULT = 0,
-	MSG_FORMAT_SYSLOG = (1 << 0),
-};
-
-static int console_msg_format = MSG_FORMAT_DEFAULT;
+/* console_msg_format, enum con_msg_format_flags removed - unused */
 
 static DEFINE_MUTEX(syslog_lock);
 
@@ -357,7 +352,7 @@ static bool console_emit_next_record(struct console *con, char *text,
 
 	*handover = 0;
 	printk_safe_exit_irqrestore(flags);
-skip:
+	/* skip: label removed - unused */
 	return true;
 }
 

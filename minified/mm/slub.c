@@ -983,9 +983,7 @@ void __init kmem_cache_init(void)
 	slub_dbg("SLUB: kmem_cache_init done\n");
 }
 
-void __init kmem_cache_init_late(void)
-{
-}
+/* kmem_cache_init_late removed - empty function */
 
 struct kmem_cache *__kmem_cache_alias(const char *name, unsigned int size,
 				      unsigned int align, slab_flags_t flags,

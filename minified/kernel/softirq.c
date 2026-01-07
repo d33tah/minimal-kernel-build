@@ -28,10 +28,7 @@ static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp
 
 DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
 
-const char *const softirq_to_name[NR_SOFTIRQS] = {
-	"HI",	    "TIMER",   "NET_TX", "NET_RX",  "BLOCK",
-	"IRQ_POLL", "TASKLET", "SCHED",	 "HRTIMER", "RCU"
-};
+/* softirq_to_name array removed - only used for debug output */
 
 static void wakeup_softirqd(void)
 {
@@ -123,12 +120,8 @@ restart:
 
 		h->action(h);
 
-		if (unlikely(prev_count != preempt_count())) {
-			pr_err("huh, entered softirq %u %s %p with preempt_count %08x, exited with %08x?\n",
-			       vec_nr, softirq_to_name[vec_nr], h->action,
-			       prev_count, preempt_count());
+		if (unlikely(prev_count != preempt_count()))
 			preempt_count_set(prev_count);
-		}
 		h++;
 		pending >>= softirq_bit;
 	}

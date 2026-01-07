@@ -16,10 +16,6 @@ static char *cpu_name(int level)
 	}
 }
 
-static void show_cap_strs(u32 *err_flags)
-{
-}
-
 int validate_cpu(void)
 {
 	u32 *err_flags;
@@ -36,7 +32,7 @@ int validate_cpu(void)
 	if (err_flags) {
 		puts("This kernel requires the following features "
 		     "not present on the CPU:\n");
-		show_cap_strs(err_flags);
+		/* show_cap_strs removed - was empty stub */
 		putchar('\n');
 		return -1;
 	} else if (check_knl_erratum()) {

@@ -1112,11 +1112,7 @@ static inline int vm_fault_to_errno(vm_fault_t vm_fault, int foll_flags)
 	return 0;
 }
 
-static inline bool gup_must_unshare(unsigned int flags, struct page *page)
-{
-	/* FOLL_PIN never set, always returns false */
-	return false;
-}
+/* gup_must_unshare removed - FOLL_PIN never set, always false, never called */
 
 /* typedef pte_fn_t removed - never used */
 

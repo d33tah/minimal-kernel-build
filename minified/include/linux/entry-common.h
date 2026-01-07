@@ -130,7 +130,6 @@ typedef struct irqentry_state {
 irqentry_state_t noinstr irqentry_enter(struct pt_regs *regs);
 
 void raw_irqentry_exit_cond_resched(void);
-#define irqentry_exit_cond_resched()	raw_irqentry_exit_cond_resched()
 
 void noinstr irqentry_exit(struct pt_regs *regs, irqentry_state_t state);
 

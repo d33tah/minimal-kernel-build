@@ -33,7 +33,8 @@ lib-y := ctype.o string.o vsprintf.o cmdline.o \
 	 idr.o extable.o irq_regs.o \
 	 flex_proportions.o ratelimit.o \
 	 kobject_uevent.o \
-	 siphash.o dec_and_lock.o
+	 dec_and_lock.o
+	 # siphash.o - Removed: ptr hashing disabled in vsprintf.c
 	 # argv_split.o - Removed: not used
 	 # buildid.o - Removed: Not needed (stub functions)
 

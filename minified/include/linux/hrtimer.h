@@ -84,6 +84,6 @@ extern void __init hrtimers_init(void);
 
 
 int hrtimers_prepare_cpu(unsigned int cpu);
-#define hrtimers_dead_cpu	NULL
+/* hrtimers_dead_cpu removed - unused */
 
 #endif

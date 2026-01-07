@@ -60,6 +60,6 @@ extern int mod_timer(struct timer_list *timer, unsigned long expires);
 extern void init_timers(void);
 
 #define timers_prepare_cpu	NULL
-#define timers_dead_cpu		NULL
+/* timers_dead_cpu removed - unused */
 
 #endif

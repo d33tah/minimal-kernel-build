@@ -110,12 +110,9 @@ do {							\
 #define unsafe_get_user(x,p,e) unsafe_op_wrap(__get_user(x,p),e)
 #define unsafe_put_user(x,p,e) unsafe_op_wrap(__put_user(x,p),e)
 #define unsafe_copy_to_user(d,s,l,e) unsafe_op_wrap(__copy_to_user(d,s,l),e)
-#define unsafe_copy_from_user(d,s,l,e) unsafe_op_wrap(__copy_from_user(d,s,l),e)
+/* unsafe_copy_from_user removed - unused */
 #endif
-#ifndef user_write_access_begin
-#define user_write_access_begin user_access_begin
-#define user_write_access_end user_access_end
-#endif
+/* user_write_access_begin/end removed - unused */
 #ifndef user_read_access_begin
 #define user_read_access_begin user_access_begin
 #define user_read_access_end user_access_end

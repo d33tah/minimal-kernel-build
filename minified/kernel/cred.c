@@ -3,7 +3,6 @@
 #include <linux/slab.h>
 #include <linux/sched.h>
 #include <linux/sched/coredump.h>
-#include <linux/key.h>
 
 #include <linux/init_task.h>
 #include <linux/security.h>

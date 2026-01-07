@@ -42,8 +42,7 @@
 #include <linux/utsname.h>
 #include <linux/rmap.h>
 #include <linux/mempolicy.h>
-#include <linux/key.h>
-/* linux/page_ext.h removed - empty header */
+/* linux/page_ext.h, linux/key.h removed - empty stubs */
 #include <linux/debug_locks.h>
 #include <linux/lockdep.h>
 #include <linux/pid_namespace.h>

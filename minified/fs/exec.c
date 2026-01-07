@@ -17,7 +17,6 @@
 /* perf_event.h removed - unused */
 #include <linux/highmem.h>
 #include <linux/spinlock.h>
-#include <linux/key.h>
 #include <linux/personality.h>
 #include <linux/binfmts.h>
 #include <linux/utsname.h>

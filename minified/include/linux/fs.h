@@ -199,7 +199,7 @@ struct iattr {
 	struct file	*ia_file;
 };
 
-#include <linux/quota.h>
+/* linux/quota.h removed - empty stub */
 
 /* Reduced positive_aop_returns - only AOP_TRUNCATED_PAGE used */
 enum positive_aop_returns { AOP_TRUNCATED_PAGE = 0x80001 };

@@ -13,7 +13,6 @@
 #include <linux/mount.h>
 #include <linux/capability.h>
 #include <linux/cdev.h>
-#include <linux/fsnotify.h>
 #include <linux/sysctl.h>
 #include <linux/percpu_counter.h>
 #include <linux/percpu.h>

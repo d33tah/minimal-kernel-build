@@ -10,7 +10,6 @@
 #include <linux/backing-dev.h>
 #include <linux/rculist_bl.h>
 /* fscrypt_sb_free removed - never called */
-#include <linux/fsnotify.h>
 #include <linux/lockdep.h>
 #include <linux/user_namespace.h>
 #include <linux/fs_context.h>

@@ -11,7 +11,6 @@
 #include <linux/namei.h>
 #include <linux/writeback.h>
 #include <linux/fs_context.h>
-#include <linux/fsnotify.h>
 
 #include <linux/uaccess.h>
 

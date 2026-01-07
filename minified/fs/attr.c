@@ -5,7 +5,6 @@
 #include <linux/string.h>
 #include <linux/sched/signal.h>
 #include <linux/capability.h>
-#include <linux/fsnotify.h>
 #include <linux/fcntl.h>
 #include <linux/security.h>
 #include <linux/xattr.h>

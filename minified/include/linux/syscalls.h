@@ -31,8 +31,6 @@ struct old_linux_dirent;
 #include <linux/bug.h>
 #include <asm/siginfo.h>
 #include <linux/unistd.h>
-#include <linux/quota.h>
-#include <linux/key.h>
 #include <linux/personality.h>
 #include <linux/fcntl.h>
 

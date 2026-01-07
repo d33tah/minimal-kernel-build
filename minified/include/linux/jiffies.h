@@ -72,17 +72,7 @@ extern unsigned long preset_lpj;
 
 
 
-#define SEC_JIFFIE_SC (31 - SHIFT_HZ)
-#if !((((NSEC_PER_SEC << 2) / TICK_NSEC) << (SEC_JIFFIE_SC - 2)) & 0x80000000)
-#undef SEC_JIFFIE_SC
-#define SEC_JIFFIE_SC (32 - SHIFT_HZ)
-#endif
-#define NSEC_JIFFIE_SC (SEC_JIFFIE_SC + 29)
-#define SEC_CONVERSION ((unsigned long)((((u64)NSEC_PER_SEC << SEC_JIFFIE_SC) +\
-                                TICK_NSEC -1) / (u64)TICK_NSEC))
-
-#define NSEC_CONVERSION ((unsigned long)((((u64)1 << NSEC_JIFFIE_SC) +\
-                                        TICK_NSEC -1) / (u64)TICK_NSEC))
+/* SEC_JIFFIE_SC, NSEC_JIFFIE_SC, SEC_CONVERSION, NSEC_CONVERSION removed - unused */
 
 extern unsigned int jiffies_to_msecs(const unsigned long j);
 /* jiffies_to_usecs removed - never called */

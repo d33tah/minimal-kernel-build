@@ -7,8 +7,7 @@
 
 #define is_signed_type(type)       (((type)(-1)) < (type)1)
 #define __type_half_max(type) ((type)1 << (8*sizeof(type) - 1 - is_signed_type(type)))
-#define type_max(T) ((T)((__type_half_max(T) - 1) + __type_half_max(T)))
-/* type_min, is_non_negative, is_negative removed - unused */
+/* type_max, type_min, is_non_negative, is_negative removed - unused */
 
 static inline bool __must_check __must_check_overflow(bool overflow)
 {

@@ -56,9 +56,7 @@ struct sysinfo {
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
 
-
-#define upper_32_bits(n) ((u32)(((n) >> 16) >> 16))
-
+/* upper_32_bits removed - unused */
 #define lower_32_bits(n) ((u32)((n) & 0xffffffff))
 
 

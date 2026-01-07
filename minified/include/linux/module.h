@@ -26,7 +26,7 @@
 #define Elf_Shdr	Elf32_Shdr
 #define Elf_Phdr	Elf32_Phdr
 #define Elf_Sym		Elf32_Sym
-#define Elf_Dyn		Elf32_Dyn
+/* Elf_Dyn removed - unused */
 #define Elf_Ehdr	Elf32_Ehdr
 #define Elf_Addr	Elf32_Addr
 #define Elf_Rel		Elf32_Rel
@@ -61,9 +61,7 @@ struct module_attribute {
 
 extern int init_module(void);
 
-/* Built-in kernel, not building as module */
-#define module_init(x)	__initcall(x);
-/* module_exit removed - never used (no modules) */
+/* module_init, module_exit removed - never used (no modules) */
 
 #define __init_or_module __init
 /* __initdata_or_module, __initconst_or_module removed - unused */

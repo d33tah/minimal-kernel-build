@@ -60,11 +60,7 @@ static void do_idle(void)
 	schedule_idle();
 }
 
-bool cpu_in_idle(unsigned long pc)
-{
-	return pc >= (unsigned long)__cpuidle_text_start &&
-	       pc < (unsigned long)__cpuidle_text_end;
-}
+/* cpu_in_idle removed - never called */
 
 void cpu_startup_entry(enum cpuhp_state state)
 {

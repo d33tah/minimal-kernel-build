@@ -57,13 +57,8 @@ struct dma_map_ops {
 /* dma_contiguous_reserve, dma_alloc_contiguous, dma_free_contiguous removed - no callers */
 /* dma_alloc_from_dev_coherent, dma_release_from_dev_coherent, dma_mmap_from_dev_coherent removed - unused */
 
-/* Only keeping functions actually used in kernel/dma/ */
-void *dma_common_contiguous_remap(struct page *page, size_t size, pgprot_t prot,
-		const void *caller);
-void *dma_common_pages_remap(struct page **pages, size_t size, pgprot_t prot,
-		const void *caller);
-void dma_common_free_remap(void *cpu_addr, size_t size);
-struct page **dma_common_find_pages(void *cpu_addr);
+/* dma_common_contiguous_remap, dma_common_pages_remap, dma_common_free_remap,
+   dma_common_find_pages removed - never called */
 
 struct page *dma_alloc_from_pool(struct device *dev, size_t size,
 		void **cpu_addr, gfp_t flags,

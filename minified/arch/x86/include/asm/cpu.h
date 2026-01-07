@@ -10,8 +10,7 @@
 #include <asm/ibt.h>
 
 /* cpu_physical_id, cpu_acpi_id, safe_smp_processor_id removed - never used */
-
-int mwait_usable(const struct cpuinfo_x86 *);
+/* mwait_usable removed - never defined or called */
 
 unsigned int x86_family(unsigned int sig);
 unsigned int x86_model(unsigned int sig);

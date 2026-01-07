@@ -16,7 +16,5 @@
 /* add_dtb, x86_of_pci_init, x86_dtb_init removed - unused */
 #define of_ioapic 0
 
-extern char cmd_line[COMMAND_LINE_SIZE];
-
 #endif  
 #endif

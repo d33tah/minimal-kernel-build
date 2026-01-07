@@ -112,11 +112,7 @@ void (*__initdata late_time_init)(void);
 char __initdata boot_command_line[COMMAND_LINE_SIZE];
 char *saved_command_line;
 static char *static_command_line;
-static char *extra_command_line;
-static char *extra_init_args;
-
-#define bootconfig_found false
-#define initargs_offs 0
+/* extra_command_line, extra_init_args removed - never assigned */
 
 static char *execute_command;
 static char *ramdisk_execute_command = "/init";
@@ -296,45 +292,18 @@ __setup("rdinit=", rdinit_setup);
 
 static void __init setup_command_line(char *command_line)
 {
-	size_t len, xlen = 0, ilen = 0;
+	size_t len = strlen(boot_command_line) + 1;
 
-	if (extra_command_line)
-		xlen = strlen(extra_command_line);
-	if (extra_init_args)
-		ilen = strlen(extra_init_args) + 4;
-
-	len = xlen + strlen(boot_command_line) + 1;
-
-	saved_command_line = memblock_alloc(len + ilen, SMP_CACHE_BYTES);
+	saved_command_line = memblock_alloc(len, SMP_CACHE_BYTES);
 	if (!saved_command_line)
-		panic("%s: Failed to allocate %zu bytes\n", __func__,
-		      len + ilen);
+		panic("%s: Failed to allocate %zu bytes\n", __func__, len);
 
 	static_command_line = memblock_alloc(len, SMP_CACHE_BYTES);
 	if (!static_command_line)
 		panic("%s: Failed to allocate %zu bytes\n", __func__, len);
 
-	if (xlen) {
-		strcpy(saved_command_line, extra_command_line);
-		strcpy(static_command_line, extra_command_line);
-	}
-	strcpy(saved_command_line + xlen, boot_command_line);
-	strcpy(static_command_line + xlen, command_line);
-
-	if (ilen) {
-		if (initargs_offs) {
-			len = xlen + initargs_offs;
-			strcpy(saved_command_line + len, extra_init_args);
-			len += ilen - 4;
-			strcpy(saved_command_line + len,
-			       boot_command_line + initargs_offs - 1);
-		} else {
-			len = strlen(saved_command_line);
-			strcpy(saved_command_line + len, " -- ");
-			len += 4;
-			strcpy(saved_command_line + len, extra_init_args);
-		}
-	}
+	strcpy(saved_command_line, boot_command_line);
+	strcpy(static_command_line, command_line);
 }
 
 static __initdata DECLARE_COMPLETION(kthreadd_done);
@@ -488,9 +457,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	if (!IS_ERR_OR_NULL(after_dashes))
 		parse_args("Setting init args", after_dashes, NULL, 0, -1, -1,
 			   NULL, set_init_arg);
-	if (extra_init_args)
-		parse_args("Setting extra init args", extra_init_args, NULL, 0,
-			   -1, -1, NULL, set_init_arg);
 
 	/* setup_log_buf removed - empty stub */
 	vfs_caches_init_early();

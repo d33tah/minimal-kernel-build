@@ -7,7 +7,7 @@
 #define MODULE_PARAM_PREFIX KBUILD_MODNAME "."
 #define __MODULE_INFO_PREFIX KBUILD_MODNAME "."
 
-#define MAX_PARAM_PREFIX_LEN (64 - sizeof(unsigned long))
+/* MAX_PARAM_PREFIX_LEN removed - unused */
 
 #define __MODULE_INFO(tag, name, info)					  \
 	static const char __UNIQUE_ID(name)[]				  \
@@ -131,8 +131,7 @@ extern char *parse_args(const char *name,
 	static inline type __always_unused *__check_##name(void) { return(p); }
 
 #define param_check_int(name, p) __param_check(name, p, int)
-#define param_check_uint(name, p) __param_check(name, p, unsigned int)
-/* param_check_byte, short, ushort, long, ulong, ullong, hexint removed - unused */
+/* param_check_uint, byte, short, ushort, long, ulong, ullong, hexint removed - unused */
 
 /* param_ops_charp, param_ops_bool removed - never used */
 

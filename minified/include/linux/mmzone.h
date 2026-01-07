@@ -68,8 +68,7 @@ extern int page_group_by_mobility_disabled;
 
 #define MIGRATETYPE_MASK ((1UL << PB_migratetype_bits) - 1)
 
-#define get_pageblock_migratetype(page)					\
-	get_pfnblock_flags_mask(page, page_to_pfn(page), MIGRATETYPE_MASK)
+/* get_pageblock_migratetype removed - unused */
 
 struct free_area {
 	struct list_head	free_list[MIGRATE_TYPES];
@@ -92,7 +91,7 @@ struct pglist_data;
 
 #define ZONE_PADDING(name)
 
-#define NR_VM_NUMA_EVENT_ITEMS 0
+/* NR_VM_NUMA_EVENT_ITEMS removed - unused */
 
 enum zone_stat_item {
 	 

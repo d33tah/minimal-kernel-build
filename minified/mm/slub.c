@@ -19,12 +19,7 @@
 
 #include "internal.h"
 
-/* Debug output to QEMU port 0xe9 */
-static inline void slub_dbg(const char *s)
-{
-	while (*s)
-		asm volatile("outb %0, $0xe9" : : "a"(*s++));
-}
+/* slub_dbg debug function removed - not needed for production */
 
 #define slub_get_cpu_ptr(var) get_cpu_ptr(var)
 #define slub_put_cpu_ptr(var) put_cpu_ptr(var)
@@ -847,8 +842,6 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 	if (alloc_kmem_cache_cpus(s))
 		return 0;
 
-	slub_dbg("kmem_cache_open: alloc_kmem_cache_cpus failed\n");
-
 error:
 	__kmem_cache_release(s);
 	return -EINVAL;
@@ -945,8 +938,6 @@ void __init kmem_cache_init(void)
 		boot_kmem_cache_node;
 	int node;
 
-	slub_dbg("SLUB: kmem_cache_init start\n");
-
 	/* debug_guardpage_minorder() always returns 0 - removed check */
 
 	/* no_hash_pointers_enable call removed - slub debug disabled */
@@ -979,8 +970,6 @@ void __init kmem_cache_init(void)
 
 	cpuhp_setup_state_nocalls(CPUHP_SLUB_DEAD, "slub:dead", NULL,
 				  slub_cpu_dead);
-
-	slub_dbg("SLUB: kmem_cache_init done\n");
 }
 
 /* kmem_cache_init_late removed - empty function */

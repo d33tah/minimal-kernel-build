@@ -70,13 +70,7 @@ struct kthread_delayed_work {
 	.func = (fn),							\
 	}
 
-#define KTHREAD_DELAYED_WORK_INIT(dwork, fn) {				\
-	.work = KTHREAD_WORK_INIT((dwork).work, (fn)),			\
-	.timer = __TIMER_INITIALIZER(kthread_delayed_work_timer_fn,\
-				     TIMER_IRQSAFE),			\
-	}
-
-/* __kthread_init_worker, kthread_init_worker removed - never called */
+/* KTHREAD_DELAYED_WORK_INIT, __kthread_init_worker, kthread_init_worker removed - never called */
 
 #define kthread_init_work(work, fn)					\
 	do {								\

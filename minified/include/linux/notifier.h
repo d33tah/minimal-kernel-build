@@ -46,9 +46,7 @@ struct raw_notifier_head {
 #define ATOMIC_NOTIFIER_HEAD(name)				\
 	struct atomic_notifier_head name =			\
 		ATOMIC_NOTIFIER_INIT(name)
-#define RAW_NOTIFIER_HEAD(name)					\
-	struct raw_notifier_head name =				\
-		RAW_NOTIFIER_INIT(name)
+/* RAW_NOTIFIER_HEAD removed - never used */
 
 
 #ifdef __KERNEL__

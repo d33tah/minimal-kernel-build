@@ -148,8 +148,7 @@ extern void *memmap_alloc(phys_addr_t size, phys_addr_t align,
 
 void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 		struct vm_area_struct *prev);
-/* __vma_unlink_list removed - never called */
-struct anon_vma *folio_anon_vma(struct folio *folio);
+/* __vma_unlink_list, folio_anon_vma removed - never called */
 
 void unmap_mapping_folio(struct folio *folio);
 extern long populate_vma_page_range(struct vm_area_struct *vma,

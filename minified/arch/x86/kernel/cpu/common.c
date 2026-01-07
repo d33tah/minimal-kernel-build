@@ -52,7 +52,6 @@ extern void doublefault_init_cpu_tss(void);
 #include <asm/memtype.h>
 /* show_ucode_info_early removed - microcode support disabled */
 #include <asm/intel-family.h>
-#include <asm/cpu_device_id.h>
 #include <asm/sigframe.h>
 #include <asm/traps.h>
 #include <asm/sev.h>

@@ -27,25 +27,6 @@ struct of_device_id {
 	const void *data;
 };
 
-/* x86 CPU */
-#define x86cpu_device_id x86_cpu_id
-struct x86_cpu_id {
-	__u16 vendor;
-	__u16 family;
-	__u16 model;
-	__u16 steppings;
-	__u16 feature;
-	kernel_ulong_t driver_data;
-};
-
-#define X86_VENDOR_ANY 0xffff
-#define X86_FAMILY_ANY 0
-#define X86_MODEL_ANY  0
-#define X86_STEPPING_ANY 0
-#define X86_FEATURE_ANY 0
-
-struct cpu_feature {
-	__u16 feature;
-};
+/* x86 CPU - x86_cpu_id struct and X86_MATCH macros removed - never used */
 
 #endif /* LINUX_MOD_DEVICETABLE_H */

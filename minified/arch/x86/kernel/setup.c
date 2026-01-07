@@ -1,8 +1,4 @@
-static inline void sadbg(const char *s)
-{
-	while (*s)
-		asm volatile("outb %0, $0xe9" : : "a"(*s++));
-}
+/* sadbg debug function removed */
 #include <linux/acpi.h>
 #include <linux/console.h>
 #include <linux/dma-map-ops.h>
@@ -369,25 +365,19 @@ static void __init e820_add_kernel_range(void)
 
 static void __init early_reserve_memory(void)
 {
-	sadbg("erm:1\n");
 	memblock_reserve(__pa_symbol(_text),
 			 (unsigned long)__end_of_kernel_reserve -
 				 (unsigned long)_text);
 
-	sadbg("erm:2\n");
 	memblock_reserve(0, SZ_64K);
 
-	sadbg("erm:3\n");
 	early_reserve_initrd();
 
-	sadbg("erm:4\n");
 	memblock_x86_reserve_range_setup_data();
 
 	/* reserve_ibft_region removed - empty stub */
 	reserve_bios_regions();
-	sadbg("erm:7\n");
 	trim_snb_memory();
-	sadbg("erm:done\n");
 }
 
 static int dump_kernel_offset(struct notifier_block *self, unsigned long v,
@@ -412,10 +402,8 @@ static void __init x86_report_nx(void)
 
 void __init setup_arch(char **cmdline_p)
 {
-	sadbg("sa:1\n");
 	memcpy(&boot_cpu_data, &new_cpu_data, sizeof(new_cpu_data));
 
-	sadbg("sa:2\n");
 	clone_pgd_range(swapper_pg_dir + KERNEL_PGD_BOUNDARY,
 			initial_page_table + KERNEL_PGD_BOUNDARY,
 			KERNEL_PGD_PTRS);
@@ -424,12 +412,10 @@ void __init setup_arch(char **cmdline_p)
 
 	__flush_tlb_all();
 
-	sadbg("sa:3\n");
 	/* olpc_ofw_detect removed - empty stub */
 	idt_setup_early_traps();
 	early_cpu_init();
 	jump_label_init();
-	sadbg("sa:4\n");
 	early_ioremap_init();
 	/* setup_olpc_ofw_pgd removed - empty stub */
 
@@ -439,22 +425,17 @@ void __init setup_arch(char **cmdline_p)
 
 	/* x86_init.oem.arch_setup removed - is x86_init_noop */
 
-	sadbg("sa:5\n");
 	early_reserve_memory();
 
-	sadbg("sa:6\n");
 	iomem_resource.end = (1ULL << boot_cpu_data.x86_phys_bits) - 1;
 	e820__memory_setup();
-	sadbg("sa:7\n");
 	parse_setup_data();
 	/* copy_edd removed - empty stub */
 
-	sadbg("sa:8\n");
 	if (!boot_params.hdr.root_flags)
 		root_mountflags &= ~MS_RDONLY;
 	setup_initial_init_mm(_text, _etext, _edata, (void *)_brk_end);
 
-	sadbg("sa:9\n");
 	code_resource.start = __pa_symbol(_text);
 	code_resource.end = __pa_symbol(_etext) - 1;
 	rodata_resource.start = __pa_symbol(__start_rodata);
@@ -467,20 +448,17 @@ void __init setup_arch(char **cmdline_p)
 	strscpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
 	*cmdline_p = command_line;
 
-	sadbg("sa:10\n");
 	x86_configure_nx();
 
 	parse_early_param();
 	/* efi_enabled(EFI_BOOT) always false - efi_memblock_x86_reserve_range call removed */
 	x86_report_nx();
 
-	sadbg("sa:11\n");
 	e820__reserve_setup_data();
 	e820__finish_early_params();
 
 	/* dmi_setup, init_hypervisor_platform removed - empty stubs */
 
-	sadbg("sa:12\n");
 	tsc_early_init();
 	/* x86_init.resources.probe_roms removed - was empty stub */
 
@@ -489,18 +467,15 @@ void __init setup_arch(char **cmdline_p)
 	insert_resource(&iomem_resource, &data_resource);
 	insert_resource(&iomem_resource, &bss_resource);
 
-	sadbg("sa:13\n");
 	e820_add_kernel_range();
 	trim_bios_range();
 
-	sadbg("sa:14\n");
 	max_pfn = e820__end_of_ram_pfn();
 
 	/* MTRR disabled */
 	pat_disable(
 		"PAT support disabled because CONFIG_MTRR is disabled in the kernel.");
 
-	sadbg("sa:15\n");
 	/* mtrr_trim_uncached_memory always returns 0 - check removed */
 
 	/* max_possible_pfn assignment removed - never read */
@@ -508,34 +483,26 @@ void __init setup_arch(char **cmdline_p)
 	init_cache_modes();
 	/* kernel_randomize_memory removed - empty stub */
 
-	sadbg("sa:16\n");
 	find_low_pfn_range();
 
 	/* find_smp_config removed - default_find_smp_config is x86_init_noop */
 
-	sadbg("sa:17\n");
 	early_alloc_pgt_buf();
 
-	sadbg("sa:18\n");
 	reserve_brk();
 	/* cleanup_highmap removed - empty stub */
 
-	sadbg("sa:19\n");
 	memblock_set_current_limit(ISA_END_ADDRESS);
 	e820__memblock_setup();
-	sadbg("sa:20\n");
 	/* sev_setup_arch, e820__memblock_alloc_reserved_mpc_new - empty stubs */
 
 	printk(KERN_DEBUG "initial memory mapped: [mem 0x00000000-%#010lx]\n",
 	       (max_pfn_mapped << PAGE_SHIFT) - 1);
 
-	sadbg("sa:21\n");
 	reserve_real_mode();
 
-	sadbg("sa:22\n");
 	init_mem_mapping();
 
-	sadbg("sa:23\n");
 	/* idt_setup_early_pf removed - empty stub */
 
 	mmu_cr4_features = __read_cr4() & ~X86_CR4_PCIDE;
@@ -544,23 +511,19 @@ void __init setup_arch(char **cmdline_p)
 
 	/* setup_log_buf removed - empty stub */
 	/* efi_enabled always false - secure boot switch removed */
-	sadbg("sa:24\n");
 	reserve_initrd();
 	/* acpi_table_upgrade is empty stub */
 	/* io_delay_init removed - was empty stub */
 
 	/* early_platform_quirks removed - was empty stub */
 
-	sadbg("sa:25\n");
 	initmem_init();
 
 	/* dma_contiguous_reserve, hugetlb_cma_reserve, reserve_crashkernel - stubs */
 
-	sadbg("sa:26\n");
 	x86_init.paging.pagetable_init();
 
 	/* kasan_init removed - empty stub */
-	sadbg("sa:28\n");
 	sync_initial_page_table();
 
 	tboot_probe();

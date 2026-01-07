@@ -377,52 +377,33 @@ void __init find_low_pfn_range(void)
 		highmem_pfn_init();
 }
 
-static inline void imdbg(const char *s)
-{
-	while (*s)
-		asm volatile("outb %0, $0xe9" : : "a"(*s++));
-}
+/* imdbg debug function removed */
 void __init initmem_init(void)
 {
-	imdbg("im:1\n");
 	high_memory = (void *)__va(max_low_pfn * PAGE_SIZE - 1) + 1;
 
-	imdbg("im:2\n");
 	memblock_set_node(0, PHYS_ADDR_MAX, &memblock.memory, 0);
 
-	imdbg("im:3\n");
 	max_mapnr = max_low_pfn; /* !HIGHMEM */
 	__vmalloc_start_set = true;
 
-	imdbg("im:4\n");
 	setup_bootmem_allocator();
-	imdbg("im:done\n");
 }
 
 void __init setup_bootmem_allocator(void)
 {
 }
 
-static inline void pidbg(const char *s)
-{
-	while (*s)
-		asm volatile("outb %0, $0xe9" : : "a"(*s++));
-}
+/* pidbg debug function removed */
 void __init paging_init(void)
 {
-	pidbg("pi:1\n");
 	pagetable_init();
 
-	pidbg("pi:2\n");
 	__flush_tlb_all();
 
-	pidbg("pi:3\n");
 	olpc_dt_build_devicetree();
-	pidbg("pi:4\n");
 	sparse_init();
-	pidbg("pi:5\n");
 	zone_sizes_init();
-	pidbg("pi:done\n");
 }
 
 static void __init test_wp_bit(void)

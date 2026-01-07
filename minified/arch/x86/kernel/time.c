@@ -31,11 +31,6 @@ void __init hpet_time_init(void)
 
 #ifndef CONFIG_MMU
 	/* For NOMMU, skip hardware timer init */
-	{
-		const char *s = "hpet_time_init: NOMMU stub\n";
-		while (*s)
-			asm volatile("outb %0, $0xe9" : : "a"(*s++));
-	}
 	return;
 #endif
 

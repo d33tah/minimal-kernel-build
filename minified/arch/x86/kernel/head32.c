@@ -22,15 +22,10 @@ static void __init i386_default_early_setup(void)
 	/* setup_ioapic_ids assignment removed - setup_ioapic_ids_from_mpc is x86_init_noop, never called */
 }
 
-static inline void vdbg(const char *s)
-{
-	while (*s)
-		asm volatile("outb %0, $0xe9" : : "a"(*s++));
-}
+/* vdbg debug function removed */
 
 asmlinkage __visible void __init i386_start_kernel(void)
 {
-	vdbg("i386_start_kernel\n");
 	idt_setup_early_handler();
 
 	cr4_init_shadow();

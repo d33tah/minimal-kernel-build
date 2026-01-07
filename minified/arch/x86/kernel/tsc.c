@@ -388,11 +388,6 @@ static unsigned long pit_hpet_ptimer_calibrate_cpu(void)
 
 #ifndef CONFIG_MMU
 	/* For NOMMU, skip complex calibration and use default ~1GHz */
-	{
-		const char *s = "pit_calibrate: NOMMU stub, returning 1GHz\n";
-		while (*s)
-			asm volatile("outb %0, $0xe9" : : "a"(*s++));
-	}
 	return 1000000; /* 1 GHz in kHz */
 #endif
 
@@ -606,30 +601,21 @@ unreg:
 }
 device_initcall(init_tsc_clocksource);
 
-static inline void tsc_dbg(const char *s)
-{
-	while (*s)
-		asm volatile("outb %0, $0xe9" : : "a"(*s++));
-}
+/* tsc_dbg debug function removed */
 
 static bool __init determine_cpu_tsc_frequencies(bool early)
 {
-	tsc_dbg("determine_cpu_tsc_frequencies: start\n");
 	WARN_ON(cpu_khz || tsc_khz);
 
 	if (early) {
-		tsc_dbg("determine_cpu_tsc_frequencies: early path\n");
 		cpu_khz = x86_platform.calibrate_cpu();
 		if (tsc_early_khz)
 			tsc_khz = tsc_early_khz;
 		else
 			tsc_khz = x86_platform.calibrate_tsc();
 	} else {
-		tsc_dbg("determine_cpu_tsc_frequencies: late path\n");
 		WARN_ON(x86_platform.calibrate_cpu != native_calibrate_cpu);
-		tsc_dbg("determine_cpu_tsc_frequencies: calling pit_hpet_ptimer_calibrate_cpu\n");
 		cpu_khz = pit_hpet_ptimer_calibrate_cpu();
-		tsc_dbg("determine_cpu_tsc_frequencies: pit_hpet_ptimer returned\n");
 	}
 
 	if (tsc_khz == 0)

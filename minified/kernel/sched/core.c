@@ -44,8 +44,7 @@ extern void sched_init_smp(void);
 #include "sched.h"
 #include "stats.h"
 #include "pelt.h"
-#include "../workqueue_internal.h"
-/* smpboot.h removed - empty header */
+/* workqueue_internal.h and smpboot.h removed - empty headers */
 
 /* Removed: io_wq_worker_sleeping/running, sched_core_enqueue/dequeue - empty stubs */
 

@@ -70,10 +70,7 @@ extern unsigned int nr_iowait_cpu(int cpu);
 
 
 
-#include "../workqueue_internal.h"
-
-
-
+/* workqueue_internal.h removed - empty header */
 
 /* cpupri.h and cpudeadline.h removed - unused structs and macros */
 

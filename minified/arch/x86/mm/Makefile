@@ -20,7 +20,7 @@ CFLAGS_REMOVE_mem_encrypt_identity.o	= -pg
 endif
 
 # Common files for both MMU and NOMMU
-obj-y				:= fault.o ioremap.o extable.o maccess.o pgprot.o
+obj-y				:= fault.o ioremap.o extable.o pgprot.o
 
 # MMU-specific files (replaced by NOMMU stubs when CONFIG_MMU=n)
 mmu-y				:= nommu-stubs.o

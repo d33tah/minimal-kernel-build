@@ -4,8 +4,6 @@
 
 #include <uapi/asm/mtrr.h>
 
-void mtrr_bp_init(void);
-
 /* mtrr_type_lookup, mtrr_add, mtrr_add_page, mtrr_del, mtrr_del_page,
    mtrr_centaur_report_mcr removed - unused */
 static inline int mtrr_trim_uncached_memory(unsigned long end_pfn)

@@ -22,7 +22,6 @@ static inline void paravirt_activate_mm(struct mm_struct *prev,
 
 DECLARE_STATIC_KEY_FALSE(rdpmc_never_available_key);
 DECLARE_STATIC_KEY_FALSE(rdpmc_always_available_key);
-void cr4_update_pce(void *ignored);
 
 /* init_new_context_ldt, ldt_dup_context, destroy_context_ldt, ldt_arch_exit_mmap removed - unused */
 

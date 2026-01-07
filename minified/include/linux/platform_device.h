@@ -69,6 +69,4 @@ extern int __platform_driver_register(struct platform_driver *,
 
 #define USE_PLATFORM_PM_SLEEP_OPS
 
-void early_platform_cleanup(void);
-
 #endif  

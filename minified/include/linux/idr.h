@@ -85,7 +85,6 @@ struct ida {
 
 int ida_alloc_range(struct ida *, unsigned int min, unsigned int max, gfp_t);
 void ida_free(struct ida *, unsigned int id);
-void ida_destroy(struct ida *ida);
 
 static inline int ida_alloc(struct ida *ida, gfp_t gfp)
 {

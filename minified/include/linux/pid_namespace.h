@@ -23,6 +23,5 @@ static inline struct pid_namespace *copy_pid_ns(unsigned long flags, struct user
 /* put_pid_ns removed - unused */
 static inline void zap_pid_ns_processes(struct pid_namespace *ns) { BUG(); }
 extern struct pid_namespace *task_active_pid_ns(struct task_struct *tsk);
-void pidhash_init(void);
 void pid_idr_init(void);
 #endif

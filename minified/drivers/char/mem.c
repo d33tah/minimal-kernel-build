@@ -223,9 +223,7 @@ static const struct file_operations memory_fops = {
 	.llseek = noop_llseek,
 };
 
-/* mem_devnode removed - unused */
-
-static struct class *mem_class;
+/* mem_devnode, mem_class removed - unused */
 
 /* chr_dev_init removed - tty_init hangs with low memory */
 /* Hello World uses direct VGA writes, doesn't need TTY */

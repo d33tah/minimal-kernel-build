@@ -13,9 +13,7 @@
 #include <asm/unwind_hints.h>
 #include <asm/percpu.h>
 
-#define RETPOLINE_THUNK_SIZE	32
 
- 
 
 #define RSB_CLEAR_LOOPS		32	 
 
@@ -72,11 +70,6 @@
 .endm
 
 #else  
-
-typedef u8 retpoline_thunk_t[RETPOLINE_THUNK_SIZE];
-extern retpoline_thunk_t __x86_indirect_thunk_array[];
-
-extern void entry_ibpb(void);
 
 # define CALL_NOSPEC "call *%[thunk_target]\n"
 # define THUNK_TARGET(addr) [thunk_target] "rm" (addr)

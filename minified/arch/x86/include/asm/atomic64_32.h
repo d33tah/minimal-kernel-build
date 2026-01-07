@@ -22,17 +22,11 @@ typedef struct {
 	ATOMIC64_EXPORT(atomic64_##sym)
 #endif
 
-#ifdef CONFIG_X86_CMPXCHG64
-#define __alternative_atomic64(f, g, out, in...) \
-	asm volatile("call %P[func]" \
-		     : out : [func] "i" (atomic64_##g##_cx8), ## in)
-#define ATOMIC64_DECL(sym) ATOMIC64_DECL_ONE(sym##_cx8)
-#else
+/* CONFIG_X86_CMPXCHG64 not set - using _386 versions */
 #define __alternative_atomic64(f, g, out, in...) \
 	asm volatile("call %P[func]" \
 		     : out : [func] "i" (atomic64_##f##_386), ## in)
 #define ATOMIC64_DECL(sym) ATOMIC64_DECL_ONE(sym##_386)
-#endif
 
 #define alternative_atomic64(f, out, in...) \
 	__alternative_atomic64(f, f, ASM_OUTPUT2(out), ## in)

@@ -327,8 +327,6 @@ struct readahead_control {
 	unsigned int _batch_count;
 };
 
-#define VM_READAHEAD_PAGES	(SZ_128K / PAGE_SIZE)
-
 /* Readahead disabled for minimal kernel */
 static inline
 void page_cache_sync_readahead(struct address_space *mapping,

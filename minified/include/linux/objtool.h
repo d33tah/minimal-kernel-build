@@ -19,7 +19,6 @@
 
 #define UNWIND_HINT(sp_reg, sp_offset, type, end) "\n\t"
 #define STACK_FRAME_NON_STANDARD(func)
-#define STACK_FRAME_NON_STANDARD_FP(func)
 #define ANNOTATE_NOENDBR
 #else
 #define ANNOTATE_INTRA_FUNCTION_CALL

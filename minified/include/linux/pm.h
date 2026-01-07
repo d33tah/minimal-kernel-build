@@ -62,10 +62,6 @@ struct dev_pm_ops {
 
 #define SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
 
-#define SET_LATE_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
-
-#define SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
-
 #define SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn)
 
 #define _DEFINE_DEV_PM_OPS(name, \
@@ -78,11 +74,7 @@ const struct dev_pm_ops name = { \
 
 /* _EXPORT_DEV_PM_OPS, SIMPLE_DEV_PM_OPS removed - never used */
 
-#define PM_EVENT_INVALID	(-1)
 #define PM_EVENT_ON		0x0000
-
-#define PMSG_INVALID	((struct pm_message){ .event = PM_EVENT_INVALID, })
-#define PMSG_ON		((struct pm_message){ .event = PM_EVENT_ON, })
 /* Unused PMSG_*, rpm_status, DPM_FLAG_* macros, pm_subsys_data struct removed */
 
 struct dev_pm_info {

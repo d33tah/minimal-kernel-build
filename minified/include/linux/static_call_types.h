@@ -5,11 +5,6 @@
 #include <linux/stringify.h>
 #include <linux/compiler.h>
 
-#define STATIC_CALL_KEY_PREFIX		__SCK__
-/* STATIC_CALL_KEY_PREFIX_STR, STATIC_CALL_KEY_PREFIX_LEN removed - never used */
-#define STATIC_CALL_KEY(name)		__PASTE(STATIC_CALL_KEY_PREFIX, name)
-/* STATIC_CALL_KEY_STR removed - never used */
-
 #define STATIC_CALL_TRAMP_PREFIX	__SCT__
 /* STATIC_CALL_TRAMP_PREFIX_STR, STATIC_CALL_TRAMP_PREFIX_LEN removed - never used */
 #define STATIC_CALL_TRAMP(name)		__PASTE(STATIC_CALL_TRAMP_PREFIX, name)

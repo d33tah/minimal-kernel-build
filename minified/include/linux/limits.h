@@ -17,7 +17,6 @@
 #define LONG_MAX	((long)(~0UL >> 1))
 /* LONG_MIN removed - unused */
 #define ULONG_MAX	(~0UL)
-#define LLONG_MAX	((long long)(~0ULL >> 1))
 #define ULLONG_MAX	(~0ULL)
 
 #define SIZE_MAX	(~(size_t)0)
@@ -25,7 +24,6 @@
 
 /* U8_MAX, U16_MAX removed - unused */
 #define U32_MAX		((u32)~0U)
-#define S32_MAX		((s32)(U32_MAX >> 1))
 /* S32_MIN removed - unused */
 #define U64_MAX		((u64)~0ULL)
 

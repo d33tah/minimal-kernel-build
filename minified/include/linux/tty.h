@@ -90,7 +90,6 @@ int tty_register_ldisc(struct tty_ldisc_ops *new_ldisc);
 
 /* From uapi/linux/tty.h - reduced to only used values */
 #define N_TTY		0
-#define N_NULL		27
 #define NR_LDISCS	31
 #include <linux/llist.h>
 

@@ -18,8 +18,6 @@
 
 #define ZONES_WIDTH		ZONES_SHIFT
 
-#define SECTIONS_SHIFT	0
-
 #ifndef BUILD_VDSO32_64
 #define SECTIONS_WIDTH		0
 

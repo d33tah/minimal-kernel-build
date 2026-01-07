@@ -13,26 +13,13 @@
 #include <linux/interrupt.h>
 #include <linux/io.h>
 #include <linux/acpi.h>
-#define PCI_CFG_SPACE_SIZE	256
-#define PCI_CFG_SPACE_EXP_SIZE	4096
-#define PCI_DEVFN(slot, func)	((((slot) & 0x1f) << 3) | ((func) & 0x07))
-#define PCI_SLOT(devfn)		(((devfn) >> 3) & 0x1f)
-#define PCI_FUNC(devfn)		((devfn) & 0x07)
-#define PCIIOC_BASE		('P' << 24 | 'C' << 16 | 'I' << 8)
-#define PCIIOC_CONTROLLER	(PCIIOC_BASE | 0x00)
-#define PCIIOC_MMAP_IS_IO	(PCIIOC_BASE | 0x01)
-#define PCIIOC_MMAP_IS_MEM	(PCIIOC_BASE | 0x02)
-#define PCIIOC_WRITE_COMBINE	(PCIIOC_BASE | 0x03)
 /* Inlined from asm/pci.h */
 #ifdef CONFIG_X86
 struct pci_bus;
 struct pci_dev;
-/* pci_mem_start removed - never read */
 extern void pci_iommu_alloc(void);
 #endif
-#define PCI_DEVID(bus, devfn)	((((u16)(bus)) << 8) | (devfn))
-#define PCI_BUS_NUM(x) (((x) >> 8) & 0xff)
-/* struct pci_slot, pci_driver, pci_ops, pci_host_bridge, hotplug_slot removed - unused */
+/* PCI macros, structs removed - unused */
 struct pci_bus;
 struct pci_dev;
 /* pci_device_id removed - unused */

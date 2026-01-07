@@ -86,8 +86,6 @@ struct old_linux_dirent;
 #define SYSCALL_DEFINE5(name, ...) SYSCALL_DEFINEx(5, _##name, __VA_ARGS__)
 #define SYSCALL_DEFINE6(name, ...) SYSCALL_DEFINEx(6, _##name, __VA_ARGS__)
 
-#define SYSCALL_DEFINE_MAXARGS	6
-
 #define SYSCALL_DEFINEx(x, sname, ...)				\
 	SYSCALL_METADATA(sname, x, __VA_ARGS__)			\
 	__SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
@@ -115,9 +113,8 @@ struct old_linux_dirent;
 #endif  
 
 #define SC_ARG64(name) u32, name##_lo, u32, name##_hi
-#define SC_VAL64(type, name) ((type) name##_hi << 32 | name##_lo)
 
-/* SYSCALL32_DEFINEx removed - never used */
+/* SC_VAL64, SYSCALL32_DEFINEx removed - never used */
 
 /* addr_limit_user_check, ksys_* declarations removed - never called */
 

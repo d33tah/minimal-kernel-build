@@ -15,9 +15,6 @@
 #include <linux/workqueue.h>
 #include <linux/uidgid.h>
 
-#define UEVENT_NUM_ENVP			64
-#define UEVENT_BUFFER_SIZE		2048
-
 enum kobject_action {
 	KOBJ_ADD,
 	KOBJ_REMOVE,

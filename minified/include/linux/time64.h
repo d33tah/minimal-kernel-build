@@ -8,7 +8,6 @@
 #define USEC_PER_MSEC	1000L
 #define NSEC_PER_USEC	1000L
 #define NSEC_PER_MSEC	1000000L
-#define USEC_PER_SEC	1000000L
 #define NSEC_PER_SEC	1000000000L
 
 typedef __s64 time64_t;
@@ -27,7 +26,6 @@ struct timespec64 {
 #define KTIME_MAX			((s64)~((u64)1 << 63))
 #define KTIME_MIN			(-KTIME_MAX - 1)
 #define KTIME_SEC_MAX			(KTIME_MAX / NSEC_PER_SEC)
-#define KTIME_SEC_MIN			(KTIME_MIN / NSEC_PER_SEC)
 
 /* timespec64_compare, timespec64_sub, timespec64_valid, timespec64_valid_settod,
    timespec64_to_ns, set_normalized_timespec64, timespec64_add_ns removed - unused */

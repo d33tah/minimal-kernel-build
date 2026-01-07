@@ -71,11 +71,7 @@ static inline int anon_vma_prepare(struct vm_area_struct *vma)
 
 typedef int __bitwise rmap_t;
 
-#define RMAP_NONE		((__force rmap_t)0)
-
 #define RMAP_EXCLUSIVE		((__force rmap_t)BIT(0))
-
-#define RMAP_COMPOUND		((__force rmap_t)BIT(1))
 
 void page_add_anon_rmap(struct page *, struct vm_area_struct *,
 		unsigned long address, rmap_t flags);

@@ -11,10 +11,6 @@
 #include <linux/atomic.h>
 
 
-#define RCU_DONE_TAIL		0
-#define RCU_WAIT_TAIL		1
-#define RCU_NEXT_READY_TAIL	2
-#define RCU_NEXT_TAIL		3
 #define RCU_CBLIST_NSEGS	4
 
 struct rcu_segcblist {

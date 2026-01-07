@@ -68,8 +68,6 @@ static inline void pipe_buf_release(struct pipe_inode_info *pipe,
 	ops->release(pipe, buf);
 }
 
-#define PIPE_SIZE		PAGE_SIZE
-
 /* free_pipe_info removed - empty stub never called */
 
 #endif

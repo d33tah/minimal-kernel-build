@@ -39,10 +39,8 @@ extern void __ptrace_link(struct task_struct *child,
 			  const struct cred *ptracer_cred);
 extern void __ptrace_unlink(struct task_struct *child);
 extern void exit_ptrace(struct task_struct *tracer, struct list_head *dead);
-#define PTRACE_MODE_READ	0x01
-#define PTRACE_MODE_ATTACH	0x02
 
-/* ptrace_may_access, ptrace_reparented removed - never called */
+/* PTRACE_MODE_*, ptrace_may_access, ptrace_reparented removed - never called */
 
 static inline void ptrace_unlink(struct task_struct *child)
 {

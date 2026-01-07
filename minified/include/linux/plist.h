@@ -17,9 +17,4 @@ struct plist_node {
 	struct list_head	node_list;
 };
 
-#define PLIST_HEAD_INIT(head)				\
-{							\
-	.node_list = LIST_HEAD_INIT((head).node_list)	\
-}
-
 #endif

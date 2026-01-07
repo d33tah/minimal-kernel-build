@@ -12,7 +12,6 @@ typedef unsigned long kernel_ulong_t;
 
 /* Platform */
 #define PLATFORM_NAME_SIZE	20
-#define PLATFORM_MODULE_PREFIX	"platform:"
 
 struct platform_device_id {
 	char name[PLATFORM_NAME_SIZE];

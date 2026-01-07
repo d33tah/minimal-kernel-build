@@ -266,17 +266,7 @@ static void __init setup_cr_pinning(void)
 	static_key_enable(&cr_pinning.key);
 }
 
-/* pku_disabled variable removed - PKU feature disabled */
-
-static __always_inline void setup_pku(struct cpuinfo_x86 *c)
-{
-	/* X86_FEATURE_PKU and X86_FEATURE_OSPKE are disabled */
-}
-
-static __always_inline void setup_cet(struct cpuinfo_x86 *c)
-{
-	/* HAS_KERNEL_IBT is 0 */
-}
+/* setup_pku, setup_cet removed - empty functions, features disabled */
 
 struct cpuid_dependent_feature {
 	u32 feature;
@@ -673,9 +663,6 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 	/* x86_model_id population removed - field is never read */
 
 	x86_init_rdrand(c);
-	setup_pku(c);
-	setup_cet(c);
-
 	apply_forced_caps(c);
 
 	if (c != &boot_cpu_data) {

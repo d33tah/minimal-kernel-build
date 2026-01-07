@@ -85,7 +85,7 @@ extern unsigned long preset_lpj;
                                         TICK_NSEC -1) / (u64)TICK_NSEC))
 
 extern unsigned int jiffies_to_msecs(const unsigned long j);
-extern unsigned int jiffies_to_usecs(const unsigned long j);
+/* jiffies_to_usecs removed - never called */
 
 
 extern unsigned long __msecs_to_jiffies(const unsigned int m);

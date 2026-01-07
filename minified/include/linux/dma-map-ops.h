@@ -68,9 +68,8 @@ struct page **dma_common_find_pages(void *cpu_addr);
 struct page *dma_alloc_from_pool(struct device *dev, size_t size,
 		void **cpu_addr, gfp_t flags,
 		bool (*phys_addr_ok)(struct device *, phys_addr_t, size_t));
-bool dma_free_from_pool(struct device *dev, void *start, size_t size);
 
-/* dev_is_dma_coherent removed - no callers */
+/* dma_free_from_pool, dev_is_dma_coherent removed - no callers */
 
 void *arch_dma_alloc(struct device *dev, size_t size, dma_addr_t *dma_handle,
 		gfp_t gfp, unsigned long attrs);
@@ -81,13 +80,10 @@ void arch_dma_free(struct device *dev, size_t size, void *cpu_addr,
 #define pgprot_dmacoherent(prot)	pgprot_noncached(prot)
 #endif
 
-pgprot_t dma_pgprot(struct device *dev, pgprot_t prot, unsigned long attrs);
-
-/* arch_sync_dma_for_device, arch_sync_dma_for_cpu, arch_sync_dma_for_cpu_all,
+/* dma_pgprot, arch_sync_dma_for_device, arch_sync_dma_for_cpu, arch_sync_dma_for_cpu_all,
    arch_dma_prep_coherent, arch_dma_mark_clean removed - never called */
 
 void *arch_dma_set_uncached(void *addr, size_t size);
-void arch_dma_clear_uncached(void *addr, size_t size);
 
 /* arch_dma_*_direct macros removed - unused */
 

@@ -104,6 +104,6 @@ bool kthread_queue_delayed_work(struct kthread_worker *worker,
 				struct kthread_delayed_work *dwork,
 				unsigned long delay);
 
-void kthread_destroy_worker(struct kthread_worker *worker);
+/* kthread_destroy_worker removed - never called */
 
 #endif  

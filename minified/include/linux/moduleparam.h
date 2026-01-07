@@ -79,9 +79,7 @@ extern const struct kernel_param __start___param[], __stop___param[];
 	__module_param_call(MODULE_PARAM_PREFIX, name, ops, arg, perm, -1,    \
 			    KERNEL_PARAM_FL_UNSAFE)
 
-#define __level_param_cb(name, ops, arg, perm, level)			\
-	__module_param_call(MODULE_PARAM_PREFIX, name, ops, arg, perm, level, 0)
-/* core_param_cb, postcore_param_cb, arch_param_cb, subsys_param_cb, fs_param_cb, device_param_cb, late_param_cb removed - unused */
+/* __level_param_cb, core_param_cb, postcore_param_cb, arch_param_cb, subsys_param_cb, fs_param_cb, device_param_cb, late_param_cb removed - unused */
 
 /* x86 only - alpha/ia64/ppc64 version removed */
 #define __moduleparam_const const
@@ -130,8 +128,7 @@ extern char *parse_args(const char *name,
 #define __param_check(name, p, type) \
 	static inline type __always_unused *__check_##name(void) { return(p); }
 
-#define param_check_int(name, p) __param_check(name, p, int)
-/* param_check_uint, byte, short, ushort, long, ulong, ullong, hexint removed - unused */
+/* param_check_int, param_check_uint, byte, short, ushort, long, ulong, ullong, hexint removed - unused */
 
 /* param_ops_charp, param_ops_bool removed - never used */
 

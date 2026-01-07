@@ -16,8 +16,6 @@ struct percpu_rw_semaphore {
 	atomic_t		block;
 };
 
-#define __PERCPU_RWSEM_DEP_MAP_INIT(lockname)
-
 extern bool __percpu_down_read(struct percpu_rw_semaphore *, bool);
 
 static inline void percpu_down_read(struct percpu_rw_semaphore *sem)

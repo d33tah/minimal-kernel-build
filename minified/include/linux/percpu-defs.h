@@ -11,10 +11,7 @@
 	__percpu __attribute__((section(PER_CPU_BASE_SECTION sec)))	\
 	PER_CPU_ATTRIBUTES
 
-#define __PCPU_DUMMY_ATTRS						\
-	__section(".discard") __attribute__((unused))
-
-/* WEAK_PER_CPU not needed */
+/* __PCPU_DUMMY_ATTRS, WEAK_PER_CPU not needed */
 #define DECLARE_PER_CPU_SECTION(type, name, sec)			\
 	extern __PCPU_ATTRS(sec) __typeof__(type) name
 

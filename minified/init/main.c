@@ -1,11 +1,4 @@
-
-#define DEBUG
-
-static inline void edbg(const char *s)
-{
-	while (*s)
-		asm volatile("outb %0, $0xe9" : : "a"(*s++));
-}
+/* edbg debug function removed - not needed for production */
 
 #include <linux/types.h>
 #include <linux/extable.h>
@@ -313,12 +306,9 @@ noinline void __ref rest_init(void)
 	struct task_struct *tsk;
 	int pid;
 
-	edbg("ri:rcu\n");
 	rcu_scheduler_starting();
 
-	edbg("ri:user_mode_thread\n");
 	pid = user_mode_thread(kernel_init, NULL, CLONE_FS);
-	edbg("ri:user_mode_thread:done\n");
 
 	rcu_read_lock();
 	tsk = find_task_by_pid_ns(pid, &init_pid_ns);
@@ -326,7 +316,6 @@ noinline void __ref rest_init(void)
 	set_cpus_allowed_ptr(tsk, cpumask_of(smp_processor_id()));
 	rcu_read_unlock();
 
-	edbg("ri:kthreadd\n");
 	pid = kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);
 	rcu_read_lock();
 	kthreadd_task = find_task_by_pid_ns(pid, &init_pid_ns);
@@ -334,11 +323,9 @@ noinline void __ref rest_init(void)
 
 	system_state = SYSTEM_SCHEDULING;
 
-	edbg("ri:schedule\n");
 	complete(&kthreadd_done);
 
 	schedule_preempt_disabled();
-	edbg("ri:cpu_startup\n");
 
 	cpu_startup_entry(CPUHP_ONLINE);
 }
@@ -399,14 +386,12 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	char *command_line;
 	char *after_dashes;
 
-	edbg("start_kernel\n");
 	set_task_stack_end_magic(&init_task);
 	/* smp_setup_processor_id removed - empty weak stub */
 
 	local_irq_disable();
 	early_boot_irqs_disabled = true;
 
-	edbg("boot_cpu_init\n");
 	boot_cpu_init();
 
 	/* Early VGA Hello World - before memory-hungry init */
@@ -418,31 +403,20 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 			vga[i * 2] = msg[i];
 			vga[i * 2 + 1] = 0x0f;
 		}
-		edbg("Hello, World!\n");
 	}
 
-	edbg("page_addr\n");
 	page_address_init();
-	edbg("banner\n");
 	pr_notice("%s", linux_banner);
 	/* early_security_init removed - returns 0 */
-	edbg("setup_arch\n");
 	setup_arch(&command_line);
-	edbg("boot_config\n");
 	setup_boot_config();
-	edbg("cmd_line\n");
 	setup_command_line(command_line);
 	/* setup_nr_cpu_ids removed - empty stub */
-	edbg("per_cpu\n");
 	setup_per_cpu_areas();
-	edbg("smp_prep\n");
 	smp_prepare_boot_cpu();
-	edbg("hotplug\n");
 	boot_cpu_hotplug_init();
 
-	edbg("zonelists\n");
 	build_all_zonelists(NULL);
-	edbg("page_init\n");
 	page_alloc_init();
 
 	pr_notice("Kernel command line: %s\n", saved_command_line);
@@ -518,20 +492,15 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	if (late_time_init)
 		late_time_init();
 	/* sched_clock_init call removed - empty stub */
-	edbg("calibrate_delay\n");
 	calibrate_delay();
-	edbg("pid_idr_init\n");
 	pid_idr_init();
-	edbg("anon_vma_init\n");
 	anon_vma_init();
 	/* thread_stack_cache_init removed - empty weak stub */
 	cred_init();
-	edbg("fork_init\n");
 	fork_init();
 	proc_caches_init();
 	/* uts_ns_init removed - empty stub */
 	/* key_init, security_init, dbg_late_init - empty stubs returning 0 */
-	edbg("vfs_caches_init\n");
 	vfs_caches_init();
 	pagecache_init();
 	signals_init();
@@ -540,7 +509,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	check_bugs();
 	/* acpi_subsystem_init removed - empty stub */
 	arch_post_acpi_subsys_init();
-	edbg("rest_init\n");
 	rest_init(); /* was arch_call_rest_init() */
 	prevent_tail_call_optimization();
 }
@@ -601,22 +569,16 @@ static void __init do_initcall_level(int level, char *command_line)
 	initcall_entry_t *fn;
 	char buf[16];
 
-	edbg("lvl:");
 	buf[0] = '0' + level;
 	buf[1] = '\n';
 	buf[2] = 0;
-	edbg(buf);
 
 	parse_args(initcall_level_names[level], command_line, __start___param,
 		   __stop___param - __start___param, level, level, NULL,
 		   ignore_unknown_bootoption);
 
-	for (fn = initcall_levels[level]; fn < initcall_levels[level + 1];
-	     fn++) {
-		edbg("ic:");
+	for (fn = initcall_levels[level]; fn < initcall_levels[level + 1]; fn++)
 		do_one_initcall(initcall_from_entry(fn));
-		edbg(".\n");
-	}
 }
 
 static void __init do_basic_setup(void)
@@ -626,9 +588,7 @@ static void __init do_basic_setup(void)
 	static char command_line[256];
 	size_t len = strlen(saved_command_line);
 
-	edbg("dbs:driver_init\n");
 	driver_init();
-	edbg("dbs:do_initcalls\n");
 	/* init_irq_proc, do_ctors removed - empty stubs */
 
 	/* Inlined do_initcalls */
@@ -640,7 +600,6 @@ static void __init do_basic_setup(void)
 		command_line[len] = '\0';
 		do_initcall_level(level, command_line);
 	}
-	edbg("dbs:done\n");
 }
 
 static int run_init_process(const char *init_filename)
@@ -674,22 +633,16 @@ static int __ref kernel_init(void *unused)
 {
 	int ret;
 
-	edbg("ki:start\n");
 	wait_for_completion(&kthreadd_done);
-	edbg("ki:kthreadd_done\n");
 
 	kernel_init_freeable();
-	edbg("ki:freeable_done\n");
 
 	/* async_synchronize_full removed - empty stub (runs synchronously) */
 
 	system_state = SYSTEM_FREEING_INITMEM;
 	/* kprobe_free_init_mem, kgdb_free_init_mem removed - empty stubs */
-	edbg("ki:exit_boot\n");
 	exit_boot_config();
-	edbg("ki:free_init\n");
 	free_initmem();
-	edbg("ki:mark_ro\n");
 	/* Inlined mark_readonly */
 	if (rodata_enabled) {
 		rcu_barrier();
@@ -697,7 +650,6 @@ static int __ref kernel_init(void *unused)
 	} else
 		pr_info("Kernel memory protection disabled.\n");
 
-	edbg("ki:running\n");
 	system_state = SYSTEM_RUNNING;
 
 	/* Direct VGA Hello World - write directly to VGA text buffer */
@@ -709,8 +661,6 @@ static int __ref kernel_init(void *unused)
 			vga[i * 2] = msg[i];
 			vga[i * 2 + 1] = 0x0f; /* white on black */
 		}
-		/* Output to debug port too */
-		edbg("Hello, World!\n");
 	}
 
 	/* rcu_end_inkernel_boot, do_sysctl_args removed - empty stubs */
@@ -765,7 +715,6 @@ static noinline void __init kernel_init_freeable(void)
 	/* smp_prepare_cpus, workqueue_init, init_mm_internals removed - empty stubs */
 
 	/* rcu_init_tasks_generic removed - empty stub */
-	edbg("kif:pre_smp\n");
 	/* Inlined do_pre_smp_initcalls */
 	{
 		initcall_entry_t *fn;
@@ -774,18 +723,14 @@ static noinline void __init kernel_init_freeable(void)
 	}
 	/* lockup_detector_init removed - empty stub */
 	/* smp_init removed - empty stub */
-	edbg("kif:sched_smp\n");
 	sched_init_smp();
 
 	/* padata_init removed - empty stub */
-	edbg("kif:page_alloc\n");
 	page_alloc_init_late();
 
 	/* page_ext_init removed - empty stub */
 
-	edbg("kif:do_basic_setup\n");
 	do_basic_setup();
-	edbg("kif:basic_done\n");
 	/* wait_for_initramfs call removed - it's a no-op */
 	console_on_rootfs();
 

@@ -15,8 +15,7 @@ static __always_inline void __node_set(int node, volatile nodemask_t *dstp)
 	set_bit(node, dstp->bits);
 }
 
-
-#define node_isset(node, nodemask) test_bit((node), (nodemask).bits)
+/* node_isset removed - unused */
 
 /* node_test_and_set, nodes_and, nodes_or, nodes_andnot, nodes_equal,
  * nodes_intersects, nodes_subset removed - unused */
@@ -80,9 +79,8 @@ static inline int num_node_state(enum node_states state)
 #define nr_online_nodes		1U
 
 
-#define num_online_nodes()	num_node_state(N_ONLINE)
+/* num_online_nodes, node_possible removed - unused */
 #define node_online(node)	node_state((node), N_ONLINE)
-#define node_possible(node)	node_state((node), N_POSSIBLE)
 
 #define for_each_node(node)	   for_each_node_state(node, N_POSSIBLE)
 

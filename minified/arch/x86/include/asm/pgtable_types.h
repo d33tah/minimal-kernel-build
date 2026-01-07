@@ -40,10 +40,7 @@
 #define _PAGE_PAT	(_AT(pteval_t, 1) << _PAGE_BIT_PAT)
 #define _PAGE_PAT_LARGE (_AT(pteval_t, 1) << _PAGE_BIT_PAT_LARGE)
 #define _PAGE_SPECIAL	(_AT(pteval_t, 1) << _PAGE_BIT_SPECIAL)
-#define _PAGE_PKEY_BIT0	(_AT(pteval_t, 0))
-#define _PAGE_PKEY_BIT1	(_AT(pteval_t, 0))
-#define _PAGE_PKEY_BIT2	(_AT(pteval_t, 0))
-#define _PAGE_PKEY_BIT3	(_AT(pteval_t, 0))
+/* _PAGE_PKEY_BIT0-3 removed - unused */
 
 #define _PAGE_KNL_ERRATUM_MASK 0
 

@@ -8,15 +8,8 @@ struct pt_regs;
 
 extern long __ia32_sys_ni_syscall(const struct pt_regs *regs);
 
- 
+/* SC_X86_64_REGS_TO_ARGS removed - unused (this is 32-bit kernel) */
 
- 
-#define SC_X86_64_REGS_TO_ARGS(x, ...)					\
-	__MAP(x,__SC_ARGS						\
-		,,regs->di,,regs->si,,regs->dx				\
-		,,regs->r10,,regs->r8,,regs->r9)			\
-
- 
 #define SC_IA32_REGS_TO_ARGS(x, ...)					\
 	__MAP(x,__SC_ARGS						\
 	      ,,(unsigned int)regs->bx,,(unsigned int)regs->cx		\

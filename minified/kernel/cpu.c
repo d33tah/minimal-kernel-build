@@ -8,7 +8,7 @@
 #include <linux/bug.h>
 #include <linux/list.h>
 
-#include "smpboot.h"
+/* smpboot.h removed - empty header */
 
 struct cpuhp_cpu_state {
 	enum cpuhp_state state;

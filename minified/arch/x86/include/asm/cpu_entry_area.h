@@ -5,29 +5,7 @@
 
 #include <linux/percpu-defs.h>
 #include <asm/processor.h>
-/* Debug store only needed with PERF_EVENTS */
-#ifdef CONFIG_PERF_EVENTS
-#define BTS_BUFFER_SIZE		(PAGE_SIZE << 4)
-#define PEBS_BUFFER_SIZE	(PAGE_SIZE << 4)
-#define MAX_PEBS_EVENTS		32
-#define MAX_FIXED_PEBS_EVENTS	16
-struct debug_store {
-	u64	bts_buffer_base;
-	u64	bts_index;
-	u64	bts_absolute_maximum;
-	u64	bts_interrupt_threshold;
-	u64	pebs_buffer_base;
-	u64	pebs_index;
-	u64	pebs_absolute_maximum;
-	u64	pebs_interrupt_threshold;
-	u64	pebs_event_reset[MAX_PEBS_EVENTS + MAX_FIXED_PEBS_EVENTS];
-} __aligned(PAGE_SIZE);
-DECLARE_PER_CPU_PAGE_ALIGNED(struct debug_store, cpu_debug_store);
-struct debug_store_buffers {
-	char	bts_buffer[BTS_BUFFER_SIZE];
-	char	pebs_buffer[PEBS_BUFFER_SIZE];
-};
-#endif
+/* CONFIG_PERF_EVENTS debug store structs removed - not set */
 #include <asm/pgtable_areas.h>
 
 
@@ -47,11 +25,7 @@ struct cpu_entry_area {
 	struct doublefault_stack doublefault_stack;
 
 	struct tss_struct tss;
-
-#ifdef CONFIG_PERF_EVENTS
-	struct debug_store cpu_debug_store;
-	struct debug_store_buffers cpu_debug_buffers;
-#endif
+	/* CONFIG_PERF_EVENTS debug_store members removed - not set */
 };
 
 #define CPU_ENTRY_AREA_SIZE		(sizeof(struct cpu_entry_area))

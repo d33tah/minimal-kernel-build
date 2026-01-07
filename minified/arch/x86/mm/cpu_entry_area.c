@@ -41,32 +41,10 @@ static void __init cea_map_percpu_pages(void *cea_vaddr, void *ptr, int pages,
 		cea_set_pte(cea_vaddr, per_cpu_ptr_to_phys(ptr), prot);
 }
 
-#ifdef CONFIG_PERF_EVENTS
-static void __init percpu_setup_debug_store(unsigned int cpu)
-{
-	unsigned int npages;
-	void *cea;
-
-	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL)
-		return;
-
-	cea = &get_cpu_entry_area(cpu)->cpu_debug_store;
-	npages = sizeof(struct debug_store) / PAGE_SIZE;
-	BUILD_BUG_ON(sizeof(struct debug_store) % PAGE_SIZE != 0);
-	cea_map_percpu_pages(cea, &per_cpu(cpu_debug_store, cpu), npages,
-			     PAGE_KERNEL);
-
-	cea = &get_cpu_entry_area(cpu)->cpu_debug_buffers;
-
-	npages = sizeof(struct debug_store_buffers) / PAGE_SIZE;
-	for (; npages; npages--, cea += PAGE_SIZE)
-		cea_set_pte(cea, 0, PAGE_NONE);
-}
-#else
+/* CONFIG_PERF_EVENTS is not set - only empty stub compiled */
 static inline void percpu_setup_debug_store(unsigned int cpu)
 {
 }
-#endif
 
 static inline void percpu_setup_exception_stacks(unsigned int cpu)
 {

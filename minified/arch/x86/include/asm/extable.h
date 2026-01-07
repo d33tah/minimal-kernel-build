@@ -23,7 +23,7 @@ struct pt_regs;
 
 extern int fixup_exception(struct pt_regs *regs, int trapnr,
 			   unsigned long error_code, unsigned long fault_addr);
-extern int ex_get_fixup_type(unsigned long ip);
+/* ex_get_fixup_type removed - never called */
 extern void early_fixup_exception(struct pt_regs *regs, int trapnr);
 
 /* ex_handler_msr_mce, ex_handler_bpf removed - never used in minimal kernel */

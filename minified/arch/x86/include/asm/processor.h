@@ -194,20 +194,11 @@ struct entry_stack_page {
 	struct entry_stack stack;
 } __aligned(PAGE_SIZE);
 
-#ifdef CONFIG_X86_IOPL_IOPERM
-struct x86_io_bitmap {
-	u64			prev_sequence;
-	unsigned int		prev_max;
-	unsigned long		bitmap[IO_BITMAP_LONGS + 1];
-	unsigned long		mapall[IO_BITMAP_LONGS + 1];
-};
-#endif
+/* CONFIG_X86_IOPL_IOPERM not set - x86_io_bitmap struct removed */
 
 struct tss_struct {
 	struct x86_hw_tss	x86_tss;
-#ifdef CONFIG_X86_IOPL_IOPERM
-	struct x86_io_bitmap	io_bitmap;
-#endif
+	/* CONFIG_X86_IOPL_IOPERM not set - io_bitmap removed */
 } __aligned(PAGE_SIZE);
 
 DECLARE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw);

@@ -100,11 +100,10 @@ static inline void sg_init_marker(struct scatterlist *sgl,
 }
 
 /* Basic functions - sg_next, sg_init_table, sg_init_one used */
-/* sg_nents removed - never called */
+/* sg_nents, sg_alloc_table removed - never called */
 struct scatterlist *sg_next(struct scatterlist *);
 void sg_init_table(struct scatterlist *, unsigned int);
 void sg_init_one(struct scatterlist *, const void *, unsigned int);
-int sg_alloc_table(struct sg_table *, unsigned int, gfp_t);
 
 #define SG_MAX_SINGLE_ALLOC		(PAGE_SIZE / sizeof(struct scatterlist))
 

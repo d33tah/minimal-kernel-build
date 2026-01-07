@@ -88,6 +88,4 @@ static inline u64 mul_u64_u32_shr(u64 a, u32 mul, unsigned int shift)
 
 /* mul_u64_u64_shr removed - no callers */
 
-u64 mul_u64_u64_div_u64(u64 a, u64 mul, u64 div);
-
 #endif  

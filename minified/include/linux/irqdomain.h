@@ -16,7 +16,6 @@ struct seq_file;
 struct irq_affinity_desc;
 #define IRQ_DOMAIN_IRQ_SPEC_PARAMS 16
 struct irq_fwspec { struct fwnode_handle *fwnode; int param_count; u32 param[IRQ_DOMAIN_IRQ_SPEC_PARAMS]; };
-void of_phandle_args_to_fwspec(struct device_node *np, const u32 *args, unsigned int count, struct irq_fwspec *fwspec);
 enum irq_domain_bus_token { DOMAIN_BUS_ANY = 0, };
 struct irq_domain_ops {
 	int (*match)(struct irq_domain *d, struct device_node *node, enum irq_domain_bus_token bus_token);

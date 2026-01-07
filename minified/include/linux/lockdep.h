@@ -59,8 +59,7 @@ static inline void lockdep_on(void)
 #define lockdep_repin_lock(l, c)		do { (void)(l); (void)(c); } while (0)
 #define lockdep_unpin_lock(l, c)		do { (void)(l); (void)(c); } while (0)
 
-#define STATIC_LOCKDEP_MAP_INIT(_name, _key) \
-	{ .name = (_name), .key = (void *)(_key), }
+/* STATIC_LOCKDEP_MAP_INIT removed - unused */
 
 #define lock_contended(lockdep_map, ip) do {} while (0)
 #define lock_acquired(lockdep_map, ip) do {} while (0)
@@ -86,12 +85,10 @@ static inline void lockdep_on(void)
 #define spin_acquire_nest(l, s, t, n, i)	lock_acquire_exclusive(l, s, t, n, i)
 #define spin_release(l, i)			lock_release(l, i)
 
-#define rwlock_acquire(l, s, t, i)		lock_acquire_exclusive(l, s, t, NULL, i)
-/* rwlock_acquire_read removed - never called */
-#define rwlock_release(l, i)			lock_release(l, i)
+/* rwlock_acquire, rwlock_acquire_read, rwlock_release removed - never called */
 
 #define seqcount_acquire(l, s, t, i)		lock_acquire_exclusive(l, s, t, NULL, i)
-#define seqcount_acquire_read(l, s, t, i)	lock_acquire_shared_recursive(l, s, t, NULL, i)
+/* seqcount_acquire_read removed - never called */
 #define seqcount_release(l, i)			lock_release(l, i)
 
 #define mutex_acquire(l, s, t, i)		lock_acquire_exclusive(l, s, t, NULL, i)
@@ -99,13 +96,11 @@ static inline void lockdep_on(void)
 #define mutex_release(l, i)			lock_release(l, i)
 
 #define rwsem_acquire(l, s, t, i)		lock_acquire_exclusive(l, s, t, NULL, i)
-#define rwsem_acquire_nest(l, s, t, n, i)	lock_acquire_exclusive(l, s, t, n, i)
+/* rwsem_acquire_nest removed - never called */
 #define rwsem_acquire_read(l, s, t, i)		lock_acquire_shared(l, s, t, NULL, i)
 #define rwsem_release(l, i)			lock_release(l, i)
 
-#define lock_map_acquire(l)			lock_acquire_exclusive(l, 0, 0, NULL, _THIS_IP_)
-#define lock_map_acquire_read(l)		lock_acquire_shared_recursive(l, 0, 0, NULL, _THIS_IP_)
-#define lock_map_release(l)			lock_release(l, _THIS_IP_)
+/* lock_map_acquire, lock_map_acquire_read, lock_map_release removed - never called */
 
 # define might_lock(lock) do { } while (0)
 

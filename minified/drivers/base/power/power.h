@@ -1,6 +1,4 @@
 
-#include <linux/pm_qos.h>
-
 static inline void device_pm_init_common(struct device *dev)
 {
 	if (!dev->power.early_init) {

@@ -12,8 +12,7 @@
 /* acpi.h, of.h, tick.h removed - unused */
 
 #include <linux/mod_devicetable.h>
-/* module_cpu_feature_match macro removed - never used */
-#include <linux/pm_qos.h>
+/* module_cpu_feature_match macro, pm_qos.h removed - never used */
 #include <linux/sched/isolation.h>
 
 #include "base.h"

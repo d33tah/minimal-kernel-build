@@ -20,7 +20,7 @@ CFLAGS_REMOVE_mem_encrypt_identity.o	= -pg
 endif
 
 # Common files for both MMU and NOMMU
-obj-y				:= fault.o ioremap.o extable.o physaddr.o maccess.o pgprot.o
+obj-y				:= fault.o ioremap.o extable.o maccess.o pgprot.o
 
 # MMU-specific files (replaced by NOMMU stubs when CONFIG_MMU=n)
 mmu-y				:= nommu-stubs.o
@@ -30,8 +30,7 @@ obj-y				+= $(mmu-y)
 
 obj-y				+= pat/
 
-# Make sure __phys_addr has no stackprotector
-CFLAGS_physaddr.o		:= -fno-stack-protector
+# Make sure mem_encrypt_identity has no stackprotector
 CFLAGS_mem_encrypt_identity.o	:= -fno-stack-protector
 
 CFLAGS_fault.o := -I $(srctree)/$(src)/../include/asm/trace

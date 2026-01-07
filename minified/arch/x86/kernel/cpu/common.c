@@ -50,10 +50,7 @@ extern void doublefault_init_cpu_tss(void);
 #include <asm/mce.h>
 #include <asm/msr.h>
 #include <asm/memtype.h>
-/* Inlined from asm/microcode_intel.h - microcode support disabled */
-static inline void show_ucode_info_early(void)
-{
-}
+/* show_ucode_info_early removed - microcode support disabled */
 #include <asm/intel-family.h>
 #include <asm/cpu_device_id.h>
 #include <asm/sigframe.h>
@@ -730,22 +727,7 @@ static void clear_all_debug_regs(void)
 
 #define dbg_restore_debug_regs()
 
-static void wait_for_master_cpu(int cpu)
-{
-}
-
-static inline void setup_getcpu(int cpu)
-{
-}
-
-static inline void ucode_cpu_init(int cpu)
-{
-	show_ucode_info_early();
-}
-
-static inline void tss_setup_ist(struct tss_struct *tss)
-{
-}
+/* wait_for_master_cpu, setup_getcpu, ucode_cpu_init, tss_setup_ist removed - empty */
 
 static inline void tss_setup_io_bitmap(struct tss_struct *tss)
 {
@@ -757,16 +739,10 @@ void cpu_init_exception_handling(void)
 	struct tss_struct *tss = this_cpu_ptr(&cpu_tss_rw);
 	int cpu = raw_smp_processor_id();
 
-	setup_getcpu(cpu);
-
-	tss_setup_ist(tss);
 	tss_setup_io_bitmap(tss);
 	set_tss_desc(cpu, &get_cpu_entry_area(cpu)->tss.x86_tss);
 
 	load_TR_desc();
-
-	/* setup_ghcb - empty stub */
-
 	load_current_idt();
 }
 
@@ -774,10 +750,6 @@ void cpu_init(void)
 {
 	struct task_struct *cur = current;
 	int cpu = raw_smp_processor_id();
-
-	wait_for_master_cpu(cpu);
-
-	ucode_cpu_init(cpu);
 
 	/* X86_32: check VME/TSC/DE features */
 	if (cpu_feature_enabled(X86_FEATURE_VME) ||

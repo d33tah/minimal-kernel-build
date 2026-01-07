@@ -16,7 +16,6 @@
 #include <linux/stop_machine.h>
 
 #include <linux/compiler.h>
-#include <linux/audit.h>
 
 #include "tick-internal.h"
 /* ntp.c functions inlined - ntp_init/ntp_clear are empty, others return constants */

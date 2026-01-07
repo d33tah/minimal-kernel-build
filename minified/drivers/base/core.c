@@ -15,7 +15,6 @@
 #include <linux/pm_runtime.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/mm.h>
-#include <linux/swiotlb.h>
 #include <linux/sysfs.h>
 /* delay.h removed - unused */
 #include <linux/dma-map-ops.h>

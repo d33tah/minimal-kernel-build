@@ -14,7 +14,6 @@
 #include <linux/personality.h>
 #include <linux/uaccess.h>
 #include <linux/uprobes.h>
-#include <linux/context_tracking.h>
 #include <linux/entry-common.h>
 #include <linux/syscalls.h>
 

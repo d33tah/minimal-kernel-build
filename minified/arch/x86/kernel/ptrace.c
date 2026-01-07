@@ -10,13 +10,11 @@
 #include <asm/user.h> /* linux/user.h redirect */
 #include <linux/elf.h>
 #include <linux/security.h>
-#include <linux/audit.h>
 #include <linux/seccomp.h>
 #include <linux/signal.h>
 #include <linux/perf_event.h>
 #include <linux/rcupdate.h>
 #include <linux/export.h>
-#include <linux/context_tracking.h>
 #include <linux/nospec.h>
 
 #include <linux/uaccess.h>

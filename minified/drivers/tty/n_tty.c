@@ -14,7 +14,6 @@
 #include <linux/slab.h>
 #include <linux/poll.h>
 #include <linux/bitops.h>
-#include <linux/audit.h>
 #include <linux/file.h>
 #include <linux/uaccess.h>
 #include <linux/module.h>

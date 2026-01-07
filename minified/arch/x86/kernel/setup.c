@@ -14,7 +14,6 @@ extern struct atomic_notifier_head panic_notifier_list;
 	do {          \
 	} while (0)
 #include <linux/static_call.h>
-#include <linux/swiotlb.h>
 
 #include <uapi/linux/mount.h>
 

@@ -6,7 +6,6 @@
 #include <linux/dma-map-ops.h>
 #include <linux/memblock.h>
 #include <linux/mem_encrypt.h>
-#include <linux/swiotlb.h>
 
 struct bus_dma_region {
 	phys_addr_t cpu_start;

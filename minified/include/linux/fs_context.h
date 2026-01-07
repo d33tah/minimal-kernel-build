@@ -145,9 +145,6 @@ void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt, 
 					l, fmt, ## __VA_ARGS__)
 #define __plog(p, l, fmt, ...) logfc((p)->log, (p)->prefix, \
 					l, fmt, ## __VA_ARGS__)
-#define infof(fc, fmt, ...) __logfc(fc, 'i', fmt, ## __VA_ARGS__)
-#define info_plog(p, fmt, ...) __plog(p, 'i', fmt, ## __VA_ARGS__)
-#define infofc(p, fmt, ...) __plog((&(fc)->log), 'i', fmt, ## __VA_ARGS__)
 
 #define warnf(fc, fmt, ...) __logfc(fc, 'w', fmt, ## __VA_ARGS__)
 #define warn_plog(p, fmt, ...) __plog(p, 'w', fmt, ## __VA_ARGS__)
@@ -159,7 +156,6 @@ void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt, 
 
 #define invalf(fc, fmt, ...) (errorf(fc, fmt, ## __VA_ARGS__), -EINVAL)
 #define inval_plog(p, fmt, ...) (error_plog(p, fmt, ## __VA_ARGS__), -EINVAL)
-#define invalfc(fc, fmt, ...) (errorfc(fc, fmt, ## __VA_ARGS__), -EINVAL)
 
 /* Inlined from pseudo_fs.h */
 struct pseudo_fs_context {

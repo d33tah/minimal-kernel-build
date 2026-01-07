@@ -69,7 +69,4 @@ extern void percpu_free_rwsem(struct percpu_rw_semaphore *);
 	__percpu_init_rwsem(sem, #sem, &rwsem_key);		\
 })
 
-#define percpu_rwsem_is_held(sem)	lockdep_is_held(sem)
-#define percpu_rwsem_assert_held(sem)	lockdep_assert_held(sem)
-
 #endif

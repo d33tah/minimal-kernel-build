@@ -240,10 +240,7 @@ static inline int pte_same(pte_t pte_a, pte_t pte_b)
 })
 #endif
 
-/* pgd_clear_bad declaration removed - never called */
-
-#define p4d_clear_bad(p4d)        do { } while (0)
-#define pud_clear_bad(p4d)        do { } while (0)
+/* pgd_clear_bad, p4d_clear_bad, pud_clear_bad removed - never called */
 
 void pmd_clear_bad(pmd_t *);
 
@@ -325,9 +322,6 @@ static inline int is_zero_pfn(unsigned long pfn)
 	unsigned long offset_from_zero_pfn = pfn - zero_pfn;
 	return offset_from_zero_pfn <= (zero_page_mask >> PAGE_SHIFT);
 }
-
-#define my_zero_pfn(addr)	page_to_pfn(ZERO_PAGE(addr))
-
 #else
 static inline int is_zero_pfn(unsigned long pfn)
 {

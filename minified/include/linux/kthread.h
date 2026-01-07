@@ -65,21 +65,7 @@ struct kthread_delayed_work {
 	struct timer_list timer;
 };
 
-#define KTHREAD_WORK_INIT(work, fn)	{				\
-	.node = LIST_HEAD_INIT((work).node),				\
-	.func = (fn),							\
-	}
-
-/* KTHREAD_DELAYED_WORK_INIT, __kthread_init_worker, kthread_init_worker removed - never called */
-
-#define kthread_init_work(work, fn)					\
-	do {								\
-		memset((work), 0, sizeof(struct kthread_work));		\
-		INIT_LIST_HEAD(&(work)->node);				\
-		(work)->func = (fn);					\
-	} while (0)
-
-/* kthread_init_delayed_work removed - never called */
+/* KTHREAD_WORK_INIT, KTHREAD_DELAYED_WORK_INIT, kthread_init_work, kthread_init_delayed_work removed - never called */
 
 /* kthread_worker_fn removed - declared but never defined or called */
 

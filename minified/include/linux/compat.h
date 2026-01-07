@@ -7,9 +7,6 @@
 #include <linux/param.h>
 #include <linux/uio.h>
 #include <linux/compiler.h>
-struct file;
-struct pid;
-struct cred;
 #include <linux/fs.h>
 #include <linux/uaccess.h>
 #include <linux/unistd.h>

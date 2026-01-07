@@ -55,8 +55,6 @@ struct va_format {
 static inline __printf(1, 2) __cold
 void early_printk(const char *s, ...) { }
 
-struct dev_printk_info;
-
 /* vprintk removed - never called */
 static inline __printf(1, 2) __cold
 int _printk(const char *s, ...)
@@ -82,8 +80,6 @@ static inline int printk_ratelimit(void)
 #ifndef pr_fmt
 #define pr_fmt(fmt) fmt
 #endif
-
-struct module;
 
 #define __printk_index_emit(...) do {} while (0)
 /* printk_index_subsys_emit removed - unused */

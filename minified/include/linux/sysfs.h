@@ -12,7 +12,6 @@
 #include <linux/atomic.h>
 
 struct kobject;
-struct module;
 struct bin_attribute;
 /* enum kobj_ns_type forward declaration removed - never used */
 

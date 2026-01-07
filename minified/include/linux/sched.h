@@ -78,7 +78,7 @@ struct clone_args {
 #include <linux/signal_types.h>
 #include <linux/syscall_user_dispatch.h>
 #include <linux/mm_types_task.h>
-struct task_io_accounting { };
+/* struct task_io_accounting and ioac field removed - empty struct, field never used */
 #include <linux/posix-timers.h>
 #include <linux/seqlock.h>
 #include <asm/kmap_size.h>
@@ -409,9 +409,7 @@ struct task_struct {
 
 
 
-	/* plug, backing_dev_info removed - write-only, never read */
-
-	struct task_io_accounting	ioac;
+	/* plug, backing_dev_info, ioac (empty struct) removed - write-only, never read */
 	/* perf_event_* fields removed - PERF_EVENTS disabled, never used */
 
 	union {

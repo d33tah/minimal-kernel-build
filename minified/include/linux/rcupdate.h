@@ -70,12 +70,7 @@ static inline bool rcu_is_watching(void) { return true; }
 
 static inline void rcu_all_qs(void) { barrier(); }
 
-extern struct lockdep_map rcu_lock_map;
-extern struct lockdep_map rcu_bh_lock_map;
-extern struct lockdep_map rcu_sched_lock_map;
-extern struct lockdep_map rcu_callback_map;
-
-
+/* rcu_*_lock_map externs removed - never defined, rcu_lock_acquire/release are empty */
 # define rcu_lock_acquire(a)		do { } while (0)
 # define rcu_lock_release(a)		do { } while (0)
 

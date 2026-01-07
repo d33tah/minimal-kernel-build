@@ -31,31 +31,6 @@ typedef u16		 compat_ipc_pid_t;
 
 /* compat_statfs removed - never used */
 
-/* --- 2025-12-07 10:28 --- Inlined asm-generic/compat.h content */
-
-#ifndef __compat_uid_t
-typedef u32 __compat_uid_t;
-typedef u32 __compat_gid_t;
-#endif
-
-#ifndef compat_mode_t
-typedef u32 compat_mode_t;
-#endif
-
-#ifndef _COMPAT_NSIG
-typedef u32 compat_sigset_word;
-#define _COMPAT_NSIG _NSIG
-#define _COMPAT_NSIG_BPW 32
-#endif
-
-#ifndef compat_dev_t
-typedef u32 compat_dev_t;
-#endif
-
-#ifndef compat_ipc_pid_t
-typedef s32 compat_ipc_pid_t;
-#endif
-
-/* end asm-generic/compat.h */
+/* asm-generic/compat.h content all dead - x86 defines its own types above */
 
 #endif  

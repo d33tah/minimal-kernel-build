@@ -21,7 +21,7 @@ enum clock_event_state {
 # define CLOCK_EVT_FEAT_PERIODIC	0x000001
 # define CLOCK_EVT_FEAT_ONESHOT		0x000002
 # define CLOCK_EVT_FEAT_KTIME		0x000004
-# define CLOCK_EVT_FEAT_C3STOP		0x000008
+/* CLOCK_EVT_FEAT_C3STOP removed - unused */
 # define CLOCK_EVT_FEAT_DUMMY		0x000010
 
 struct clock_event_device {

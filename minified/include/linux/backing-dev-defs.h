@@ -23,11 +23,7 @@ enum wb_state {
 };
 
 /* enum wb_stat_item removed - NR_WB_STAT_ITEMS was 0, stat array unused */
-
-enum wb_reason {
-	WB_REASON_BACKGROUND,
-};
-
+/* enum wb_reason removed - only used in unused field start_all_reason */
 
 struct bdi_writeback {
 	struct backing_dev_info *bdi;	 
@@ -58,9 +54,9 @@ struct bdi_writeback {
 
 	struct fprop_local_percpu completions;
 	int dirty_exceeded;
-	enum wb_reason start_all_reason;
+	/* start_all_reason field removed - never used */
 
-	spinlock_t work_lock;		 
+	spinlock_t work_lock;
 	struct list_head work_list;
 	struct delayed_work dwork;	 
 	struct delayed_work bw_dwork;	 

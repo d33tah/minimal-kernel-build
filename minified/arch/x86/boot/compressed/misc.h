@@ -81,10 +81,7 @@ static inline void console_init(void)
 /* get_rsdp_addr removed - replaced with inline 0 */
 
 
- 
-extern void kernel_add_identity_map(unsigned long start, unsigned long end);
-
- 
+/* kernel_add_identity_map removed - never defined */
 extern pteval_t __default_kernel_pte_mask;
 
 

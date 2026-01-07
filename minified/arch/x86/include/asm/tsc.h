@@ -34,8 +34,7 @@ extern unsigned long native_calibrate_tsc(void);
 
 
 extern bool tsc_store_and_check_tsc_adjust(bool bootcpu);
-extern void tsc_verify_tsc_adjust(bool resume);
-/* check_tsc_sync_source, check_tsc_sync_target removed - unused (SMP) */
+/* tsc_verify_tsc_adjust, check_tsc_sync_source, check_tsc_sync_target removed - unused */
 
 /* tsc_save/restore_sched_clock_state removed - never called */
 

@@ -6,7 +6,6 @@
 
 struct pt_regs;
 
-extern long __x64_sys_ni_syscall(const struct pt_regs *regs);
 extern long __ia32_sys_ni_syscall(const struct pt_regs *regs);
 
  

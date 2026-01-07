@@ -20,7 +20,7 @@ struct bio;
 struct pagevec;
 
 #define MAX_SWAPFILES_SHIFT	5
-#define SWP_SWAPIN_ERROR_NUM 1
+/* SWP_SWAPIN_ERROR_NUM removed - unused */
 
 #ifdef __KERNEL__
 
@@ -62,8 +62,7 @@ extern void lru_cache_add_inactive_or_unevictable(struct page *page,
 
 #define total_swap_pages			0L
 
-#define free_page_and_swap_cache(page) \
-	put_page(page)
+/* free_page_and_swap_cache removed - unused */
 #define free_pages_and_swap_cache(pages, nr) \
 	release_pages((pages), (nr));
 

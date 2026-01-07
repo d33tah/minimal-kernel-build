@@ -6,7 +6,7 @@
 #include <linux/stddef.h>
 
 /* Inlined from uapi/linux/capability.h - only v3 kept, older versions unused */
-#define _LINUX_CAPABILITY_VERSION_3  0x20080522
+/* _LINUX_CAPABILITY_VERSION_3 removed - unused */
 #define _LINUX_CAPABILITY_U32S_3     2
 
 typedef struct __user_cap_header_struct {
@@ -41,8 +41,7 @@ typedef struct kernel_cap_struct {
 } kernel_cap_t;
 
 
-#define _USER_CAP_HEADER_SIZE  (sizeof(struct __user_cap_header_struct))
-/* _KERNEL_CAP_T_SIZE removed - unused */
+/* _USER_CAP_HEADER_SIZE, _KERNEL_CAP_T_SIZE removed - unused */
 
 
 struct file;

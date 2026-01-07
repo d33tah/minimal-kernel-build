@@ -14,8 +14,7 @@
 #include <linux/device.h>
 
 struct backing_dev_info noop_backing_dev_info;
-
-static struct class *bdi_class;
+/* bdi_class removed - never used */
 
 DEFINE_SPINLOCK(bdi_lock);
 static struct rb_root bdi_tree = RB_ROOT;

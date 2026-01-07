@@ -13,7 +13,6 @@
 extern void text_poke_early(void *addr, const void *opcode, size_t len);
 /* text_poke removed - no callers */
 extern int poke_int3_handler(struct pt_regs *regs);
-extern void text_poke_bp(void *addr, const void *opcode, size_t len, const void *emulate);
 /* POKE_MAX_OPCODE_SIZE, INSN macros, text_opcode_size, text_gen_insn removed - unused */
 
 extern int after_bootmem;

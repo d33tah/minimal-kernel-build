@@ -78,13 +78,6 @@ static inline void sg_set_buf(struct scatterlist *sg, const void *buf,
 #define for_each_sg(sglist, sg, nr, __i)	\
 	for (__i = 0, sg = (sglist); __i < (nr); __i++, sg = sg_next(sg))
 
-#define for_each_sgtable_sg(sgt, sg, i)		\
-	for_each_sg((sgt)->sgl, sg, (sgt)->orig_nents, i)
-
-#define for_each_sgtable_dma_sg(sgt, sg, i)	\
-	for_each_sg((sgt)->sgl, sg, (sgt)->nents, i)
-
-
 static inline void sg_mark_end(struct scatterlist *sg)
 {
 	 

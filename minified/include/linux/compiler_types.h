@@ -46,8 +46,6 @@
 #define __diag_clang(version, severity, s) \
 	__diag_clang_ ## version(__diag_clang_ ## severity s)
 #define __diag_clang_ignore	ignored
-#define __diag_clang_warn	warning
-#define __diag_clang_error	error
 #define __diag_str1(s)		#s
 #define __diag_str(s)		__diag_str1(s)
 #define __diag(s)		_Pragma(__diag_str(clang diagnostic s))
@@ -56,8 +54,6 @@
 	__diag_clang(11, ignore, option)
 
 #define notrace			__attribute__((__no_instrument_function__))
-
-#define __naked			__attribute__((__naked__)) notrace
 
 #define inline inline __gnu_inline __inline_maybe_unused notrace
 
@@ -133,9 +129,5 @@
 
 #define __diag_ignore(compiler, version, option, comment) \
 	__diag_ ## compiler(version, ignore, option)
-#define __diag_warn(compiler, version, option, comment) \
-	__diag_ ## compiler(version, warn, option)
-#define __diag_error(compiler, version, option, comment) \
-	__diag_ ## compiler(version, error, option)
 
 #endif  

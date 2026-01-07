@@ -47,8 +47,6 @@
 #define in_serving_softirq()	(softirq_count() & SOFTIRQ_OFFSET)
 #define in_task()		(!(in_nmi() | in_hardirq() | in_serving_softirq()))
 
-#define in_irq()		(hardirq_count())
-#define in_softirq()		(softirq_count())
 #define in_interrupt()		(irq_count())
 
 # define PREEMPT_DISABLE_OFFSET	0

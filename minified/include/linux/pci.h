@@ -22,15 +22,6 @@ extern void pci_iommu_alloc(void);
 /* PCI macros, structs removed - unused */
 struct pci_bus;
 struct pci_dev;
-/* pci_device_id removed - unused */
+/* pci_device_id, pci_printk/err/warn/etc removed - unused */
 #include <linux/dma-mapping.h>
-#define pci_printk(level, pdev, fmt, arg...) dev_printk(level, &(pdev)->dev, fmt, ##arg)
-#define pci_emerg(pdev, fmt, arg...)	dev_emerg(&(pdev)->dev, fmt, ##arg)
-#define pci_alert(pdev, fmt, arg...)	dev_alert(&(pdev)->dev, fmt, ##arg)
-#define pci_crit(pdev, fmt, arg...)	dev_crit(&(pdev)->dev, fmt, ##arg)
-#define pci_err(pdev, fmt, arg...)	dev_err(&(pdev)->dev, fmt, ##arg)
-#define pci_warn(pdev, fmt, arg...)	dev_warn(&(pdev)->dev, fmt, ##arg)
-#define pci_notice(pdev, fmt, arg...)	dev_notice(&(pdev)->dev, fmt, ##arg)
-#define pci_info(pdev, fmt, arg...)	dev_info(&(pdev)->dev, fmt, ##arg)
-#define pci_dbg(pdev, fmt, arg...)	dev_dbg(&(pdev)->dev, fmt, ##arg)
 #endif

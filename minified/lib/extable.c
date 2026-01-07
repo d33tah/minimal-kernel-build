@@ -6,18 +6,12 @@
 #include <linux/uaccess.h>
 #include <linux/extable.h>
 
-#ifndef ARCH_HAS_RELATIVE_EXTABLE
-#define ex_to_insn(x) ((x)->insn)
-#else
+/* ARCH_HAS_RELATIVE_EXTABLE is defined on x86 - using relative extable versions */
 static inline unsigned long ex_to_insn(const struct exception_table_entry *x)
 {
 	return (unsigned long)&x->insn + x->insn;
 }
-#endif
 
-#ifndef ARCH_HAS_RELATIVE_EXTABLE
-#define swap_ex NULL
-#else
 static void swap_ex(void *a, void *b, int size)
 {
 	struct exception_table_entry *x = a, *y = b, tmp;
@@ -27,14 +21,8 @@ static void swap_ex(void *a, void *b, int size)
 	x->insn = y->insn + delta;
 	y->insn = tmp.insn - delta;
 
-#ifdef swap_ex_entry_fixup
 	swap_ex_entry_fixup(x, y, tmp, delta);
-#else
-	x->fixup = y->fixup + delta;
-	y->fixup = tmp.fixup - delta;
-#endif
 }
-#endif
 
 static int cmp_ex_sort(const void *a, const void *b)
 {

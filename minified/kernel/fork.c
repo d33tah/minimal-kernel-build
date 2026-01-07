@@ -134,44 +134,8 @@ static void free_thread_stack(struct task_struct *tsk)
 	tsk->stack = NULL;
 }
 
-#else
-
-static struct kmem_cache *thread_stack_cache;
-
-static void thread_stack_free_rcu(struct rcu_head *rh)
-{
-	kmem_cache_free(thread_stack_cache, rh);
-}
-
-static void thread_stack_delayed_free(struct task_struct *tsk)
-{
-	struct rcu_head *rh = tsk->stack;
-
-	call_rcu(rh, thread_stack_free_rcu);
-}
-
-static int alloc_thread_stack_node(struct task_struct *tsk, int node)
-{
-	unsigned long *stack;
-	stack = kmem_cache_alloc_node(thread_stack_cache, THREADINFO_GFP, node);
-	tsk->stack = stack;
-	return stack ? 0 : -ENOMEM;
-}
-
-static void free_thread_stack(struct task_struct *tsk)
-{
-	thread_stack_delayed_free(tsk);
-	tsk->stack = NULL;
-}
-
-void thread_stack_cache_init(void)
-{
-	thread_stack_cache = kmem_cache_create_usercopy("thread_stack",
-							THREAD_SIZE,
-							THREAD_SIZE, 0, 0,
-							THREAD_SIZE, NULL);
-	BUG_ON(thread_stack_cache == NULL);
-}
+/* #else block removed - dead code since THREAD_SIZE >= PAGE_SIZE on x86 */
+/* thread_stack_cache_init removed - never called */
 
 #endif
 #else

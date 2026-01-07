@@ -62,17 +62,10 @@ extern void doublefault_init_cpu_tss(void);
 u32 elf_hwcap2 __read_mostly;
 
 /* cpu_initialized_mask, smp_num_siblings, cpu_llc_id, cpu_l2c_id removed - never used */
-
-/* Stub: PPIN (Protected Processor Inventory Number) not needed for minimal kernel */
-static void ppin_init(struct cpuinfo_x86 *c)
-{
-}
-
-/* setup_cpu_local_masks removed - never called */
+/* ppin_init removed - empty function */
 
 static void default_init(struct cpuinfo_x86 *c)
 {
-	/* x86_model_id writes removed - field is never read */
 }
 
 static const struct cpu_dev default_cpu = {
@@ -669,8 +662,6 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 		for (i = NCAPINTS; i < NCAPINTS + NBUGINTS; i++)
 			c->x86_capability[i] |= boot_cpu_data.x86_capability[i];
 	}
-
-	ppin_init(c);
 
 	select_idle_routine(c);
 }

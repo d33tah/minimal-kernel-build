@@ -67,13 +67,8 @@
 #define CALL_ZEN_UNTRAIN_RET	""
 
  
+/* CONFIG_CPU_UNRET_ENTRY and CONFIG_CPU_IBPB_ENTRY not set - empty macro */
 .macro UNTRAIN_RET
-#if defined(CONFIG_CPU_UNRET_ENTRY) || defined(CONFIG_CPU_IBPB_ENTRY)
-	ANNOTATE_UNRET_END
-	ALTERNATIVE_2 "",						\
-	              CALL_ZEN_UNTRAIN_RET, X86_FEATURE_UNRET,		\
-		      "call entry_ibpb", X86_FEATURE_ENTRY_IBPB
-#endif
 .endm
 
 #else  

@@ -64,11 +64,7 @@ static inline int node_state(int node, enum node_states state)
 	return node == 0;
 }
 
-
-static inline int num_node_state(enum node_states state)
-{
-	return 1;
-}
+/* num_node_state removed - unused */
 
 #define for_each_node_state(node, __state) \
 	for ( (node) = 0; (node) == 0; (node) = 1)

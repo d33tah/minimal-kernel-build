@@ -15,30 +15,8 @@
 .macro ___EXPORT_SYMBOL name,val,sec
 .endm
 
-#if defined(CONFIG_TRIM_UNUSED_KSYMS)
-
-#include <linux/kconfig.h>
-#include <generated/autoksyms.h>
-
-.macro __ksym_marker sym
-	.section ".discard.ksym","a"
-__ksym_marker_\sym:
-	 .previous
-.endm
-
-#define __EXPORT_SYMBOL(sym, val, sec)				\
-	__ksym_marker sym;					\
-	__cond_export_sym(sym, val, sec, __is_defined(__KSYM_##sym))
-#define __cond_export_sym(sym, val, sec, conf)			\
-	___cond_export_sym(sym, val, sec, conf)
-#define ___cond_export_sym(sym, val, sec, enabled)		\
-	__cond_export_sym_##enabled(sym, val, sec)
-#define __cond_export_sym_1(sym, val, sec) ___EXPORT_SYMBOL sym, val, sec
-#define __cond_export_sym_0(sym, val, sec)  
-
-#else
+/* CONFIG_TRIM_UNUSED_KSYMS not set - using simple export */
 #define __EXPORT_SYMBOL(sym, val, sec) ___EXPORT_SYMBOL sym, val, sec
-#endif
 
 #define EXPORT_SYMBOL(name)					\
 	__EXPORT_SYMBOL(name, KSYM_FUNC(name),)

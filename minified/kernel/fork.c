@@ -138,23 +138,7 @@ static void free_thread_stack(struct task_struct *tsk)
 /* thread_stack_cache_init removed - never called */
 
 #endif
-#else
-
-static int alloc_thread_stack_node(struct task_struct *tsk, int node)
-{
-	unsigned long *stack;
-
-	stack = arch_alloc_thread_stack_node(tsk, node);
-	tsk->stack = stack;
-	return stack ? 0 : -ENOMEM;
-}
-
-static void free_thread_stack(struct task_struct *tsk)
-{
-	arch_free_thread_stack(tsk);
-	tsk->stack = NULL;
-}
-
+/* CONFIG_ARCH_THREAD_STACK_ALLOCATOR #else block removed - not set on x86 */
 #endif
 
 static struct kmem_cache *signal_cachep;

@@ -316,39 +316,7 @@ static inline pgprot_t pgprot_modify(pgprot_t oldprot, pgprot_t newprot)
 /* pte_swp_exclusive, pte_swp_clear_exclusive,
    pte_swp_soft_dirty, pte_swp_clear_soft_dirty removed - unused */
 
-#ifndef __HAVE_PFNMAP_TRACKING
-
-static inline int track_pfn_remap(struct vm_area_struct *vma, pgprot_t *prot,
-				  unsigned long pfn, unsigned long addr,
-				  unsigned long size)
-{
-	return 0;
-}
-
-static inline void track_pfn_insert(struct vm_area_struct *vma, pgprot_t *prot,
-				    pfn_t pfn)
-{
-}
-
-static inline int track_pfn_copy(struct vm_area_struct *vma)
-{
-	return 0;
-}
-
-static inline void untrack_pfn(struct vm_area_struct *vma,
-			       unsigned long pfn, unsigned long size)
-{
-}
-#else
-extern int track_pfn_remap(struct vm_area_struct *vma, pgprot_t *prot,
-			   unsigned long pfn, unsigned long addr,
-			   unsigned long size);
-extern void track_pfn_insert(struct vm_area_struct *vma, pgprot_t *prot,
-			     pfn_t pfn);
-extern int track_pfn_copy(struct vm_area_struct *vma);
-extern void untrack_pfn(struct vm_area_struct *vma, unsigned long pfn,
-			unsigned long size);
-#endif
+/* track_pfn_remap, track_pfn_insert, track_pfn_copy, untrack_pfn removed - never called */
 
 #ifdef __HAVE_COLOR_ZERO_PAGE
 static inline int is_zero_pfn(unsigned long pfn)

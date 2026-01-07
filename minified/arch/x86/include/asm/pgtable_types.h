@@ -438,7 +438,7 @@ extern pteval_t __default_kernel_pte_mask;
 extern pgprot_t pgprot_writecombine(pgprot_t prot);
 /* pgprot_writethrough removed - never called (fallback in linux/pgtable.h) */
 
-#define __HAVE_PFNMAP_TRACKING
+/* __HAVE_PFNMAP_TRACKING removed - track_pfn_* functions never called */
 
 void set_pte_vaddr(unsigned long vaddr, pte_t pte);
 

@@ -76,7 +76,7 @@ int default_utf8 = true;
 int global_cursor_default = -1;
 static int cur_default = CUR_UNDERLINE;
 int console_blanked;
-static int blankinterval;
+/* blankinterval removed - never set to non-zero */
 
 int fg_console;
 int last_console;
@@ -87,7 +87,7 @@ static struct vc_data *master_display_fg;
 /* console_blank_hook removed - never assigned or used */
 
 static DEFINE_TIMER(console_timer, blank_screen_t);
-static int blank_state;
+/* blank_state removed - was never read */
 enum {
 	blank_off = 0,
 	blank_normal_wait,
@@ -1084,10 +1084,7 @@ static int __init con_init(void)
 	for (i = 0; i < MAX_NR_CONSOLES; i++)
 		con_driver_map[i] = conswitchp;
 
-	if (blankinterval) {
-		blank_state = blank_normal_wait;
-		mod_timer(&console_timer, jiffies + (blankinterval * HZ));
-	}
+	/* blankinterval check removed - always 0 */
 
 	for (currcons = 0; currcons < MIN_NR_CONSOLES; currcons++) {
 		vc_cons[currcons].d = vc =

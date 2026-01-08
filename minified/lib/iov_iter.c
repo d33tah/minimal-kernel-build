@@ -14,8 +14,6 @@ typedef __u16 __sum16;
 typedef __u32 __wsum;
 #include <linux/instrumented.h>
 
-#define PIPE_PARANOIA
-
 #define iterate_iovec(i, n, base, len, off, __p, STEP)       \
 	{                                                    \
 		size_t off = 0;                              \

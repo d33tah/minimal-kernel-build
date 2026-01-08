@@ -184,8 +184,6 @@ int ptep_clear_flush_young(struct vm_area_struct *vma, unsigned long address,
 	return ptep_test_and_clear_young(vma, address, ptep);
 }
 
-int fixmaps_set;
-
 void __native_set_fixmap(enum fixed_addresses idx, pte_t pte)
 {
 	unsigned long address = __fix_to_virt(idx);
@@ -195,7 +193,6 @@ void __native_set_fixmap(enum fixed_addresses idx, pte_t pte)
 		return;
 	}
 	set_pte_vaddr(address, pte);
-	fixmaps_set++;
 }
 
 void native_set_fixmap(unsigned idx, phys_addr_t phys, pgprot_t flags)

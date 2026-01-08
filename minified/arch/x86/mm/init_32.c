@@ -49,10 +49,6 @@ static inline void olpc_dt_build_devicetree(void)
 
 #include "mm_internal.h"
 
-unsigned long highstart_pfn, highend_pfn;
-
-bool __read_mostly __vmalloc_start_set = false;
-
 static pmd_t *__init one_md_table_init(pgd_t *pgd)
 {
 	p4d_t *p4d;
@@ -385,7 +381,6 @@ void __init initmem_init(void)
 	memblock_set_node(0, PHYS_ADDR_MAX, &memblock.memory, 0);
 
 	max_mapnr = max_low_pfn; /* !HIGHMEM */
-	__vmalloc_start_set = true;
 
 	setup_bootmem_allocator();
 }

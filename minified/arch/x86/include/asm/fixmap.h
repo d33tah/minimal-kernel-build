@@ -54,8 +54,6 @@ enum fixed_addresses {
 #define FIXADDR_TOT_SIZE	(__end_of_fixed_addresses << PAGE_SHIFT)
 #define FIXADDR_TOT_START	(FIXADDR_TOP - FIXADDR_TOT_SIZE)
 
-extern int fixmaps_set;
-
 void __native_set_fixmap(enum fixed_addresses idx, pte_t pte);
 void native_set_fixmap(unsigned   idx,
 		       phys_addr_t phys, pgprot_t flags);

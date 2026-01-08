@@ -31,10 +31,7 @@ extern unsigned long native_calibrate_cpu_early(void);
 extern unsigned long native_calibrate_tsc(void);
 /* native_sched_clock_from_tsc removed - never called */
 /* tsc_clocksource_reliable removed - never used */
-
-
-extern bool tsc_store_and_check_tsc_adjust(bool bootcpu);
-/* tsc_verify_tsc_adjust, check_tsc_sync_source, check_tsc_sync_target removed - unused */
+/* tsc_store_and_check_tsc_adjust, tsc_verify_tsc_adjust, check_tsc_sync_source, check_tsc_sync_target removed - unused */
 
 /* tsc_save/restore_sched_clock_state removed - never called */
 

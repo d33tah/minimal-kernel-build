@@ -14,9 +14,8 @@ struct irq_desc {
 	unsigned int __percpu *kstat_irqs; irq_flow_handler_t handle_irq;
 	struct irqaction *action; unsigned int status_use_accessors;
 	unsigned int core_internal_state__do_not_mess_with_it; unsigned int depth;
-	unsigned int wake_depth; unsigned int tot_count; unsigned int irq_count;
-	unsigned long last_unhandled; unsigned int irqs_unhandled;
-	atomic_t threads_handled; int threads_handled_last; raw_spinlock_t lock;
+	unsigned int irq_count; unsigned int irqs_unhandled;
+	atomic_t threads_handled; raw_spinlock_t lock;
 	struct cpumask *percpu_enabled; const struct cpumask *percpu_affinity;
 	unsigned long threads_oneshot; atomic_t threads_active;
 	wait_queue_head_t wait_for_threads; struct rcu_head rcu; struct kobject kobj;

@@ -828,26 +828,7 @@ static void umount_tree(struct mount *mnt, enum umount_tree_flags how)
 	}
 }
 
-static int do_umount(struct mount *mnt, int flags)
-{
-	int retval;
-	/* security_sb_umount always returns 0 - dead code removed */
-	if (&mnt->mnt == current->fs->root.mnt)
-		return (flags & MNT_DETACH) ? 0 : -EINVAL;
-
-	namespace_lock();
-	lock_mount_hash();
-	if (mnt->mnt.mnt_flags & MNT_LOCKED)
-		retval = -EINVAL;
-	else {
-		if (!list_empty(&mnt->mnt_list))
-			umount_tree(mnt, UMOUNT_PROPAGATE);
-		retval = 0;
-	}
-	unlock_mount_hash();
-	namespace_unlock();
-	return retval;
-}
+/* do_umount, can_umount, path_umount removed - cascading removal after path_umount's only caller removed */
 
 /* __detach_mounts removed - empty stub moved inline to mount.h */
 
@@ -856,23 +837,6 @@ bool may_mount(void)
 	/* ns_capable always returns true - simplified */
 	return true;
 }
-
-static int can_umount(const struct path *path, int flags)
-{
-	struct mount *mnt = real_mount(path->mnt);
-
-	/* may_mount() always true - check removed */
-	if (path->dentry != path->mnt->mnt_root)
-		return -EINVAL;
-	if (!check_mnt(mnt))
-		return -EINVAL;
-	if (mnt->mnt.mnt_flags & MNT_LOCKED)
-		return -EINVAL;
-	/* capable() always returns true - MNT_FORCE check removed */
-	return 0;
-}
-
-/* path_umount removed - never called */
 
 /* Stub: umount not needed for Hello World kernel */
 SYSCALL_DEFINE2(umount, char __user *, name, int, flags)

@@ -422,10 +422,7 @@ struct task_struct {
 
 	struct page_frag		task_frag;
 
-
-
-	int				nr_dirtied;
-	/* timer_slack_ns removed - initialized but never read */
+	/* nr_dirtied, timer_slack_ns removed - initialized but never read */
 
 
 

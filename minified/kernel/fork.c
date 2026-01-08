@@ -948,8 +948,7 @@ copy_process(struct pid *pid, int trace, int node,
 		p->tgid = p->pid;
 	}
 
-	p->nr_dirtied = 0;
-
+	/* p->nr_dirtied removed - write-only */
 	p->pdeath_signal = 0;
 	INIT_LIST_HEAD(&p->thread_group);
 	p->task_works = NULL;

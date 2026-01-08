@@ -53,7 +53,6 @@ static inline void lockdep_on(void)
 #define lockdep_assert_not_held(l)		do { (void)(l); } while (0)
 #define lockdep_assert_held_write(l)		do { (void)(l); } while (0)
 #define lockdep_assert_held_read(l)		do { (void)(l); } while (0)
-#define lockdep_assert_held_once(l)		do { (void)(l); } while (0)
 
 #define lockdep_pin_lock(l)			({ struct pin_cookie cookie = { }; cookie; })
 #define lockdep_repin_lock(l, c)		do { (void)(l); (void)(c); } while (0)
@@ -69,10 +68,6 @@ static inline void lockdep_on(void)
 
 #define LOCK_CONTENDED_RETURN(_lock, try, lock) \
 	lock(_lock)
-
-
-
-#define read_lock_is_recursive() 0
 
 #define SINGLE_DEPTH_NESTING			1
 

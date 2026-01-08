@@ -19,8 +19,7 @@ struct notifier_block;
 struct bio;
 struct pagevec;
 
-#define MAX_SWAPFILES_SHIFT	5
-/* SWP_SWAPIN_ERROR_NUM removed - unused */
+/* MAX_SWAPFILES_SHIFT, SWP_SWAPIN_ERROR_NUM removed - unused */
 
 #ifdef __KERNEL__
 

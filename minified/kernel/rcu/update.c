@@ -86,11 +86,7 @@ void __wait_rcu_gp(bool checktiny, int n, call_rcu_func_t *crcu_array,
 	}
 }
 
-void finish_rcuwait(struct rcuwait *w)
-{
-	rcu_assign_pointer(w->task, NULL);
-	__set_current_state(TASK_RUNNING);
-}
+/* finish_rcuwait removed - unused */
 
 int rcu_cpu_stall_suppress_at_boot __read_mostly;
 

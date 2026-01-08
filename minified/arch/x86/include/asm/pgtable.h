@@ -41,9 +41,7 @@ static inline u64 cc_mkdec(u64 val)
 #include <linux/page_table_check.h>
 
 /* uffd stubs all removed - never called in any .c file */
-
-extern pgd_t early_top_pgt[PTRS_PER_PGD];
-
+/* early_top_pgt removed - unused (only declaration, no usage in .c or .S) */
 /* __early_make_pgtable, ptdump_walk_* declarations removed - unused */
 
  

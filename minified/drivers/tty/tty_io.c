@@ -1329,12 +1329,7 @@ err:
 /* tty_class_init removed - class_create hangs with low memory */
 
 static struct cdev tty_cdev, console_cdev;
-
-/* Stub: sysfs notification not needed for minimal kernel */
-void console_sysfs_notify(void)
-{
-}
-
+/* console_sysfs_notify removed - empty stub, call removed from printk.c */
 int __init tty_init(void)
 {
 	tty_sysctl_init();

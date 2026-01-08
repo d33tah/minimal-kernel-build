@@ -616,8 +616,7 @@ void register_console(struct console *newcon)
 		newcon->seq = prb_next_seq(prb);
 	}
 	console_unlock();
-	console_sysfs_notify();
-
+	/* console_sysfs_notify call removed - empty stub */
 	con_printk(KERN_INFO, newcon, "enabled\n");
 	if (bootcon_enabled &&
 	    ((newcon->flags & (CON_CONSDEV | CON_BOOT)) == CON_CONSDEV) &&

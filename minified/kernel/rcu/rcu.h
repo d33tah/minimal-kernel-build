@@ -16,7 +16,7 @@ extern int sysctl_sched_rt_runtime;
 /* rcu_ftrace_dump_stall_suppress, rcu_ftrace_dump_stall_unsuppress removed - unused */
 
 void rcu_early_boot_tests(void);
-void rcu_test_sync_prims(void);
+/* rcu_test_sync_prims removed - PROVE_RCU disabled, was empty stub */
 
 extern void resched_cpu(int cpu);
 /* rcu_num_lvls, num_rcu_lvl, rcu_num_nodes removed - unused */

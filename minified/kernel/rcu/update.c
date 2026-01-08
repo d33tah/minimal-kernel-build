@@ -31,17 +31,12 @@
 #endif
 #define MODULE_PARAM_PREFIX "rcupdate."
 
-/* PROVE_RCU disabled */
-void rcu_test_sync_prims(void)
-{
-}
+/* rcu_test_sync_prims removed - PROVE_RCU disabled */
 
 static int __init rcu_set_runtime_mode(void)
 {
-	rcu_test_sync_prims();
 	rcu_scheduler_active = RCU_SCHEDULER_RUNNING;
-	/* kfree_rcu_scheduler_running removed - empty stub */
-	rcu_test_sync_prims();
+	/* kfree_rcu_scheduler_running, rcu_test_sync_prims removed - empty stubs */
 	return 0;
 }
 core_initcall(rcu_set_runtime_mode);

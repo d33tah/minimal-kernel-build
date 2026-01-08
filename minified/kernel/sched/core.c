@@ -673,7 +673,6 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 
 #define SM_NONE 0x0
 #define SM_PREEMPT 0x1
-#define SM_RTLOCK_WAIT 0x2
 
 #define SM_MASK_PREEMPT (~0U)
 

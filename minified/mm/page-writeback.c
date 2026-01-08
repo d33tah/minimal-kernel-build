@@ -3,13 +3,7 @@
 #include <linux/backing-dev.h>
 #include <linux/percpu.h>
 
-/* dirty_throttle_leaks, global_wb_domain removed - never used */
-
-bool __folio_end_writeback(struct folio *folio)
-{
-	return true;
-}
-/* __folio_start_writeback, bdi_set_min_ratio, bdi_set_max_ratio removed - never called */
+/* dirty_throttle_leaks, global_wb_domain, __folio_end_writeback, __folio_start_writeback, bdi_set_min_ratio, bdi_set_max_ratio removed - never called */
 void wb_update_bandwidth(struct bdi_writeback *wb)
 {
 }

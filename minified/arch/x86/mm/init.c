@@ -511,10 +511,7 @@ void free_init_pages(const char *what, unsigned long begin, unsigned long end)
 			   what);
 }
 
-/* Stub: free_kernel_image_pages not called in minimal kernel */
-void free_kernel_image_pages(const char *what, void *begin, void *end)
-{
-}
+/* free_kernel_image_pages removed - never called in minimal kernel */
 
 void __ref free_initmem(void)
 {

@@ -366,8 +366,7 @@ static void redraw_screen(struct vc_data *vc, int is_switch)
 					 vc->vc_screenbuf_size / 2);
 	}
 	set_cursor(vc);
-	if (is_switch)
-		vt_set_leds_compute_shiftstate();
+	/* vt_set_leds_compute_shiftstate call removed - empty stub */
 }
 
 int vc_cons_allocated(unsigned int i)
@@ -620,9 +619,7 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 	vc->vc_decawm = 1;
 	vc->vc_deccm = global_cursor_default;
 	vc->vc_decim = 0;
-
-	vt_reset_keyboard(vc->vc_num);
-
+	/* vt_reset_keyboard call removed - empty stub */
 	vc->vc_cursor_type = cur_default;
 	vc->vc_complement_mask = vc->vc_s_complement_mask;
 
@@ -926,7 +923,7 @@ static void con_stop(struct tty_struct *tty)
 	console_num = tty->index;
 	if (!vc_cons_allocated(console_num))
 		return;
-	vt_kbd_con_stop(console_num);
+	/* vt_kbd_con_stop call removed - empty stub */
 }
 
 static void con_start(struct tty_struct *tty)
@@ -937,7 +934,7 @@ static void con_start(struct tty_struct *tty)
 	console_num = tty->index;
 	if (!vc_cons_allocated(console_num))
 		return;
-	vt_kbd_con_start(console_num);
+	/* vt_kbd_con_start call removed - empty stub */
 }
 
 static void con_flush_chars(struct tty_struct *tty)

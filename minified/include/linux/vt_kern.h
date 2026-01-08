@@ -169,11 +169,8 @@ struct vt_notifier_param {
    vt_set_led_state removed - never called */
 
 int vt_reset_unicode(unsigned int console);
-void vt_reset_keyboard(unsigned int console);
-/* vt_get_kbd_mode_bit, vt_set_kbd_mode_bit, vt_clr_kbd_mode_bit removed - never called */
-void vt_kbd_con_start(unsigned int console);
-void vt_kbd_con_stop(unsigned int console);
-
+/* vt_reset_keyboard, vt_kbd_con_start, vt_kbd_con_stop, vt_get_kbd_mode_bit,
+   vt_set_kbd_mode_bit, vt_clr_kbd_mode_bit removed - empty stubs */
 void vc_scrolldelta_helper(struct vc_data *c, int lines,
 		unsigned int rolled_over, void *_base, unsigned int size);
 

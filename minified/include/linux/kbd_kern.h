@@ -5,6 +5,5 @@
 #include <linux/interrupt.h>
 
 extern int kbd_init(void);
-void vt_set_leds_compute_shiftstate(void);
-
+/* vt_set_leds_compute_shiftstate removed - empty stub */
 #endif

@@ -26,12 +26,7 @@ int filemap_write_and_wait_range(struct address_space *mapping,
 		loff_t lstart, loff_t lend);
 int filemap_fdatawrite_wbc(struct address_space *mapping,
 			   struct writeback_control *wbc);
-
-static inline errseq_t filemap_sample_wb_err(struct address_space *mapping)
-{
-	return errseq_sample(&mapping->wb_err);
-}
-
+/* filemap_sample_wb_err removed - never called */
 static inline bool mapping_empty(struct address_space *mapping)
 {
 	return xa_empty(&mapping->i_pages);

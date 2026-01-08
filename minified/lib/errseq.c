@@ -44,13 +44,4 @@ errseq_t errseq_set(errseq_t *eseq, int err)
 	}
 	return cur;
 }
-
-errseq_t errseq_sample(errseq_t *eseq)
-{
-	errseq_t old = READ_ONCE(*eseq);
-
-	if (!(old & ERRSEQ_SEEN))
-		old = 0;
-	return old;
-}
-/* errseq_check, errseq_check_and_advance removed - no callers */
+/* errseq_sample, errseq_check, errseq_check_and_advance removed - no callers */

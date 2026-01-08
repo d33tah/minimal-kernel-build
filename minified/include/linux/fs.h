@@ -59,7 +59,7 @@ static inline void clear_delayed_call(struct delayed_call *call)
 /* Inlined from errseq.h */
 typedef u32	errseq_t;
 errseq_t errseq_set(errseq_t *eseq, int err);
-errseq_t errseq_sample(errseq_t *eseq);
+/* errseq_sample removed - never called */
 #include <linux/build_bug.h>
 
 #define DT_DIR		4
@@ -474,7 +474,7 @@ struct file {
 	void			*private_data;
 
 	struct address_space	*f_mapping;
-	errseq_t		f_wb_err;
+	/* f_wb_err removed - only written, never read */
 } __randomize_layout
   __attribute__((aligned(4)));
 
@@ -522,11 +522,7 @@ struct fasync_struct;
 #define SB_BORN		(1<<29)
 #define SB_ACTIVE	(1<<30)
 #define SB_NOUSER	(1<<31)
-
-#define MNT_FORCE	0x00000001
-#define MNT_DETACH	0x00000002
-/* UMOUNT_NOFOLLOW removed - never used */
-
+/* MNT_FORCE, MNT_DETACH, UMOUNT_NOFOLLOW removed - never used */
 #define SB_I_NOEXEC	0x00000002
 #define SB_I_NODEV	0x00000004
 #define SB_I_USERNS_VISIBLE		0x00000010

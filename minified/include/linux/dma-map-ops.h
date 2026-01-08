@@ -21,31 +21,18 @@ struct dma_map_ops {
 	int (*mmap)(struct device *, struct vm_area_struct *,
 			void *, dma_addr_t, size_t, unsigned long attrs);
 
-	int (*get_sgtable)(struct device *dev, struct sg_table *sgt,
-			void *cpu_addr, dma_addr_t dma_addr, size_t size,
-			unsigned long attrs);
-
+	/* get_sgtable, map_sg, unmap_sg, sync_sg_* removed - scatterlist unused */
 	dma_addr_t (*map_page)(struct device *dev, struct page *page,
 			unsigned long offset, size_t size,
 			enum dma_data_direction dir, unsigned long attrs);
 	void (*unmap_page)(struct device *dev, dma_addr_t dma_handle,
 			size_t size, enum dma_data_direction dir,
 			unsigned long attrs);
-	 
-	int (*map_sg)(struct device *dev, struct scatterlist *sg, int nents,
-			enum dma_data_direction dir, unsigned long attrs);
-	void (*unmap_sg)(struct device *dev, struct scatterlist *sg, int nents,
-			enum dma_data_direction dir, unsigned long attrs);
-	/* map_resource, unmap_resource removed - unused */
 	void (*sync_single_for_cpu)(struct device *dev, dma_addr_t dma_handle,
 			size_t size, enum dma_data_direction dir);
 	void (*sync_single_for_device)(struct device *dev,
 			dma_addr_t dma_handle, size_t size,
 			enum dma_data_direction dir);
-	void (*sync_sg_for_cpu)(struct device *dev, struct scatterlist *sg,
-			int nents, enum dma_data_direction dir);
-	void (*sync_sg_for_device)(struct device *dev, struct scatterlist *sg,
-			int nents, enum dma_data_direction dir);
 	void (*cache_sync)(struct device *dev, void *vaddr, size_t size,
 			enum dma_data_direction direction);
 	int (*dma_supported)(struct device *dev, u64 mask);

@@ -12,7 +12,7 @@ enum dma_data_direction {
 	DMA_NONE = 3,
 };
 /* end dma-direction.h */
-#include <linux/scatterlist.h>
+/* scatterlist.h removed - unused */
 #include <linux/bug.h>
 #include <linux/mem_encrypt.h>
 

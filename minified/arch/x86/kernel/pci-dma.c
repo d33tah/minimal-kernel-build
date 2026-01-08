@@ -20,7 +20,7 @@ static inline void gart_iommu_hole_init(void)
 }
 #include <asm/x86_init.h>
 
-const struct dma_map_ops *dma_ops;
+/* dma_ops removed - never used */
 
 static inline void __init pci_swiotlb_detect(void)
 {

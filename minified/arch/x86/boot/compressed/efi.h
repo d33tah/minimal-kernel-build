@@ -13,10 +13,6 @@ typedef guid_t efi_guid_t __aligned(__alignof__(u32));
 	(b) & 0xff, ((b) >> 8) & 0xff,						\
 	(c) & 0xff, ((c) >> 8) & 0xff, d } }
 
-#define ACPI_TABLE_GUID				EFI_GUID(0xeb9d2d30, 0x2d88, 0x11d3,  0x9a, 0x16, 0x00, 0x90, 0x27, 0x3f, 0xc1, 0x4d)
-#define ACPI_20_TABLE_GUID			EFI_GUID(0x8868e871, 0xe4f1, 0x11d3,  0xbc, 0x22, 0x00, 0x80, 0xc7, 0x3c, 0x88, 0x81)
-#define EFI_CC_BLOB_GUID			EFI_GUID(0x067b1f5f, 0xcf26, 0x44c5, 0x85, 0x54, 0x93, 0xd7, 0x77, 0x91, 0x2d, 0x42)
-
 typedef	struct {
 	u64 signature;
 	u32 revision;
@@ -26,12 +22,6 @@ typedef	struct {
 } efi_table_hdr_t;
 
 #define EFI_CONVENTIONAL_MEMORY		 7
-
-#define EFI_MEMORY_MORE_RELIABLE \
-				((u64)0x0000000000010000ULL)	 
-#define EFI_MEMORY_SP		((u64)0x0000000000040000ULL)	 
-
-#define EFI_PAGE_SHIFT		12
 
 typedef struct {
 	u32 type;

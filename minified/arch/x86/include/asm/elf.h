@@ -59,7 +59,6 @@ extern unsigned int vdso32_enabled;
 #define set_personality_64bit()	do { } while (0)
 
 
-#define CORE_DUMP_USE_REGSET
 #define ELF_EXEC_PAGESIZE	4096
 
  

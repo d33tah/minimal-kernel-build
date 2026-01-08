@@ -62,9 +62,6 @@
 .Lskip_rsb_\@:
 .endm
 
-#define CALL_ZEN_UNTRAIN_RET	""
-
- 
 /* CONFIG_CPU_UNRET_ENTRY and CONFIG_CPU_IBPB_ENTRY not set - empty macro */
 .macro UNTRAIN_RET
 .endm

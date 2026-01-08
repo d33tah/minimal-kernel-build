@@ -177,9 +177,6 @@ typedef struct siginfo {
 #define TRAP_TRACE	2
 #define TRAP_HWBKPT     4
 
-/* CLD codes used by kernel/signal.c */
-#define CLD_TRAPPED	4
-
 /* POLL codes */
 #define POLL_OUT	2
 

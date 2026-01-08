@@ -31,11 +31,7 @@ struct raw_notifier_head {
 	struct notifier_block __rcu *head;
 };
 
-#define BLOCKING_INIT_NOTIFIER_HEAD(name) do {	\
-		init_rwsem(&(name)->rwsem);	\
-		(name)->head = NULL;		\
-	} while (0)
-
+/* BLOCKING_INIT_NOTIFIER_HEAD removed - never used */
 
 #define ATOMIC_NOTIFIER_INIT(name) {				\
 		.lock = __SPIN_LOCK_UNLOCKED(name.lock),	\

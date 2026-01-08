@@ -125,10 +125,7 @@ extern char *parse_args(const char *name,
 				     const char *doing, void *arg));
 
 
-#define __param_check(name, p, type) \
-	static inline type __always_unused *__check_##name(void) { return(p); }
-
-/* param_check_int, param_check_uint, byte, short, ushort, long, ulong, ullong, hexint removed - unused */
+/* __param_check, param_check_int, param_check_uint, etc. removed - unused */
 
 /* param_ops_charp, param_ops_bool removed - never used */
 

@@ -13,10 +13,7 @@
 # define ia32_setup_frame	__setup_frame
 # define ia32_setup_rt_frame	__setup_rt_frame
 
-extern void convert_from_fxsr(struct user_i387_ia32_struct *env,
-			      struct task_struct *tsk);
-extern void convert_to_fxsr(struct fxregs_state *fxsave,
-			    const struct user_i387_ia32_struct *env);
+/* convert_from_fxsr, convert_to_fxsr removed - only caller was signal.c which is now stubbed */
 
 /* fpu__alloc_mathframe removed - never called */
 

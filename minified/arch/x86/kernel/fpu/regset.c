@@ -46,14 +46,8 @@ int xstateregs_set(struct task_struct *target, const struct user_regset *regset,
 {
 	return -ENODEV;
 }
-void convert_from_fxsr(struct user_i387_ia32_struct *env,
-		       struct task_struct *tsk)
-{
-}
-void convert_to_fxsr(struct fxregs_state *fxsave,
-		     const struct user_i387_ia32_struct *env)
-{
-}
+/* convert_from_fxsr, convert_to_fxsr removed - only caller was signal.c which is now stubbed */
+
 int fpregs_get(struct task_struct *target, const struct user_regset *regset,
 	       struct membuf to)
 {

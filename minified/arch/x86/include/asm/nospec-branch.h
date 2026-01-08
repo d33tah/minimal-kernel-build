@@ -99,7 +99,7 @@ static inline void indirect_branch_prediction_barrier(void)
 extern u64 x86_spec_ctrl_base;
 DECLARE_PER_CPU(u64, x86_spec_ctrl_current);
 extern void write_spec_ctrl_current(u64 val, bool force);
-extern u64 spec_ctrl_current(void);
+/* spec_ctrl_current removed - never called */
 
 DECLARE_STATIC_KEY_FALSE(switch_to_cond_stibp);
 DECLARE_STATIC_KEY_FALSE(switch_mm_cond_ibpb);

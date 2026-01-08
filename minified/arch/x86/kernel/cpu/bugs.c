@@ -28,10 +28,7 @@ void write_spec_ctrl_current(u64 val, bool force)
 {
 }
 
-u64 spec_ctrl_current(void)
-{
-	return 0;
-}
+/* spec_ctrl_current removed - never called */
 
 void __init check_bugs(void)
 {

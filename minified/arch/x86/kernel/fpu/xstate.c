@@ -25,11 +25,7 @@
 #include "legacy.h"
 #include "xstate.h"
 
-// Stub: Check if CPU has xfeatures
-int cpu_has_xfeatures(u64 xfeatures_needed, const char **feature_name)
-{
-	return 1; // Always claim features are present
-}
+/* cpu_has_xfeatures removed - never called */
 
 // Stub: Initialize CPU xstate
 void fpu__init_cpu_xstate(void)
@@ -41,10 +37,7 @@ void __init fpu__init_system_xstate(unsigned int legacy_size)
 {
 }
 
-// Stub: Resume CPU FPU state
-void fpu__resume_cpu(void)
-{
-}
+/* fpu__resume_cpu removed - never called */
 
 int copy_sigframe_from_user_to_xstate(struct fpstate *fpstate,
 				      const void __user *ubuf)

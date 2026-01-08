@@ -361,8 +361,7 @@ struct inode {
 		unsigned		i_dir_seq;
 	};
 
-	/* i_generation removed - only initialized, never used */
-	void			*i_private; 
+	/* i_generation, i_private removed - only initialized, never used */
 } __randomize_layout;
 
 struct timespec64 timestamp_truncate(struct timespec64 t, struct inode *inode);
@@ -582,9 +581,7 @@ struct super_block {
 	time64_t		   s_time_max;
 
 	char			s_id[32];
-
-	unsigned int		s_max_links;
-
+	/* s_max_links removed - unused */
 	struct mutex s_vfs_rename_mutex;	
 
 	

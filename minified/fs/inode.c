@@ -76,7 +76,7 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 	lockdep_set_class_and_name(&mapping->invalidate_lock,
 				   &sb->s_type->invalidate_lock_key,
 				   "mapping.invalidate_lock");
-	inode->i_private = NULL;
+	/* inode->i_private removed - unused */
 	inode->i_mapping = mapping;
 	INIT_HLIST_HEAD(&inode->i_dentry);
 	this_cpu_inc(nr_inodes);

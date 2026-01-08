@@ -9,7 +9,7 @@ enum reboot_mode {
 	REBOOT_UNDEFINED = -1,
 	REBOOT_COLD = 0,
 };
-extern enum reboot_mode reboot_mode;
+/* reboot_mode extern removed - only set, never read */
 extern enum reboot_mode panic_reboot_mode;
 
 /* reboot_type enum and extern removed - never used */

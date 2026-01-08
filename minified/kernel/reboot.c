@@ -12,10 +12,7 @@
 #include <linux/syscalls.h>
 #include <linux/uaccess.h>
 
-/* Removed: C_A_D, cad_pid - only set but never read */
-
-#define DEFAULT_REBOOT_MODE
-enum reboot_mode reboot_mode DEFAULT_REBOOT_MODE;
+/* Removed: C_A_D, cad_pid, reboot_mode - only set but never read */
 enum reboot_mode panic_reboot_mode = REBOOT_UNDEFINED;
 
 /* reboot_default, reboot_cpu, reboot_type removed - never used */

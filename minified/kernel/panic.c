@@ -129,8 +129,7 @@ void panic(const char *fmt, ...)
 		}
 	}
 	if (panic_timeout != 0) {
-		if (panic_reboot_mode != REBOOT_UNDEFINED)
-			reboot_mode = panic_reboot_mode;
+		/* reboot_mode assignment removed - variable unused */
 		emergency_restart();
 	}
 	/* sparc-specific Stop-A handling removed - x86 only */

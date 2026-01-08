@@ -19,8 +19,7 @@ static inline bool cc_platform_has(enum cc_attr attr)
 
 struct real_mode_header *real_mode_header;
 u32 *trampoline_cr4_features;
-
-pgd_t trampoline_pgd_entry;
+/* trampoline_pgd_entry removed - unused */
 
 /* load_trampoline_pgtable removed - unused */
 

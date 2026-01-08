@@ -389,10 +389,7 @@ void x86_configure_nx(void)
 		__supported_pte_mask &= ~_PAGE_NX;
 }
 
-static void __init x86_report_nx(void)
-{
-	/* Stub: NX reporting not needed for minimal kernel */
-}
+/* x86_report_nx removed - empty stub */
 
 void __init setup_arch(char **cmdline_p)
 {
@@ -446,7 +443,7 @@ void __init setup_arch(char **cmdline_p)
 
 	parse_early_param();
 	/* efi_enabled(EFI_BOOT) always false - efi_memblock_x86_reserve_range call removed */
-	x86_report_nx();
+	/* x86_report_nx removed - was empty stub */
 
 	e820__reserve_setup_data();
 	e820__finish_early_params();

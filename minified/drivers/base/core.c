@@ -417,12 +417,7 @@ int __init devices_init(void)
 	return 0;
 }
 
-struct root_device {
-	struct device dev;
-	struct module *owner;
-};
-
-/* Removed: __root_device_register, root_device_unregister - no callers */
+/* Removed: root_device struct, __root_device_register, root_device_unregister - no callers */
 
 static void device_create_release(struct device *dev)
 {

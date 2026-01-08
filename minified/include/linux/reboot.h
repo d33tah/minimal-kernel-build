@@ -5,12 +5,7 @@
 
 struct device;
 
-enum reboot_mode {
-	REBOOT_UNDEFINED = -1,
-	REBOOT_COLD = 0,
-};
-/* reboot_mode extern removed - only set, never read */
-extern enum reboot_mode panic_reboot_mode;
+/* enum reboot_mode, reboot_mode, panic_reboot_mode removed - only set, never read */
 
 /* reboot_type enum and extern removed - never used */
 

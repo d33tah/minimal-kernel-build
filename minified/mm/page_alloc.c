@@ -475,11 +475,9 @@ static __always_inline struct page *__rmqueue(struct zone *zone,
 	/* CONFIG_CMA not enabled - CMA block removed */
 retry:
 	page = __rmqueue_smallest(zone, order, migratetype);
-	if (unlikely(!page)) {
-		if (!page &&
-		    __rmqueue_fallback(zone, order, migratetype, alloc_flags))
-			goto retry;
-	}
+	if (unlikely(!page) &&
+	    __rmqueue_fallback(zone, order, migratetype, alloc_flags))
+		goto retry;
 	return page;
 }
 
@@ -929,8 +927,7 @@ static void __build_all_zonelists(void *data)
 
 static noinline void __init build_all_zonelists_init(void)
 {
-	int cpu;
-
+	/* cpu variable removed - only single CPU used */
 	__build_all_zonelists(NULL);
 
 	/* for_each_possible_cpu simplified - single CPU */

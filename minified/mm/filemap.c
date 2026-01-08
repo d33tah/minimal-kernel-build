@@ -186,15 +186,8 @@ static int filemap_check_errors(struct address_space *mapping)
 int filemap_fdatawrite_wbc(struct address_space *mapping,
 			   struct writeback_control *wbc)
 {
-	int ret;
-
-	if (!mapping_can_writeback(mapping) ||
-	    !mapping_tagged(mapping, PAGECACHE_TAG_DIRTY))
-		return 0;
-
-	/* wbc_attach/detach_inode are empty stubs */
-	ret = do_writepages(mapping, wbc);
-	return ret;
+	/* do_writepages always returns 0, so simplified */
+	return 0;
 }
 
 int filemap_fdatawait_range(struct address_space *mapping, loff_t start_byte,

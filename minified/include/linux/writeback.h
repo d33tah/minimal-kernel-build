@@ -52,6 +52,6 @@ struct writeback_control {
 
 struct bdi_writeback;
 void wb_update_bandwidth(struct bdi_writeback *wb);
-int do_writepages(struct address_space *mapping, struct writeback_control *wbc);
+/* do_writepages removed - never called */
 
 #endif		 

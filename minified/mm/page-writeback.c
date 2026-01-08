@@ -19,12 +19,7 @@ int bdi_set_min_ratio(struct backing_dev_info *bdi, unsigned int min_ratio)
 void wb_update_bandwidth(struct bdi_writeback *wb)
 {
 }
-/* balance_dirty_pages_ratelimited, page_writeback_init, laptop_mode_timer_fn removed - empty stubs */
-int do_writepages(struct address_space *mapping, struct writeback_control *wbc)
-{
-	return 0;
-}
-/* noop_dirty_folio, filemap_dirty_folio removed - unused */
+/* balance_dirty_pages_ratelimited, page_writeback_init, laptop_mode_timer_fn, do_writepages, noop_dirty_folio, filemap_dirty_folio removed - unused */
 void folio_account_cleaned(struct folio *folio, struct bdi_writeback *wb)
 {
 }

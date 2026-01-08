@@ -59,18 +59,8 @@ struct user_struct root_user = {
 	.ratelimit = RATELIMIT_STATE_INIT(root_user.ratelimit, 0, 0),
 };
 
-/* uid_hash_insert removed - never called */
-/* uid_hash_find removed - only caller was alloc_uid */
-/* user_epoll_alloc removed - never called */
-
-static void free_user(struct user_struct *up, unsigned long flags)
-	__releases(&uidhash_lock)
-{
-	hlist_del_init(&up->uidhash_node);
-	spin_unlock_irqrestore(&uidhash_lock, flags);
-	kmem_cache_free(uid_cachep, up);
-}
-
+/* uid_hash_insert, uid_hash_find, user_epoll_alloc removed - never called */
+/* free_user inlined into free_uid */
 void free_uid(struct user_struct *up)
 {
 	unsigned long flags;
@@ -78,8 +68,11 @@ void free_uid(struct user_struct *up)
 	if (!up)
 		return;
 
-	if (refcount_dec_and_lock_irqsave(&up->__count, &uidhash_lock, &flags))
-		free_user(up, flags);
+	if (refcount_dec_and_lock_irqsave(&up->__count, &uidhash_lock, &flags)) {
+		hlist_del_init(&up->uidhash_node);
+		spin_unlock_irqrestore(&uidhash_lock, flags);
+		kmem_cache_free(uid_cachep, up);
+	}
 }
 
 /* alloc_uid removed - never called in minimal kernel */

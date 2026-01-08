@@ -379,12 +379,7 @@ static void __init early_reserve_memory(void)
 	trim_snb_memory();
 }
 
-static int dump_kernel_offset(struct notifier_block *self, unsigned long v,
-			      void *p)
-{
-	/* Stub: kernel offset dumping not needed for minimal kernel */
-	return 0;
-}
+/* dump_kernel_offset and kernel_offset_notifier removed - stub that did nothing */
 
 void x86_configure_nx(void)
 {
@@ -561,14 +556,4 @@ void __init i386_reserve_resources(void)
 	reserve_standard_io_resources();
 }
 
-static struct notifier_block kernel_offset_notifier = {
-	.notifier_call = dump_kernel_offset
-};
-
-static int __init register_kernel_offset_dumper(void)
-{
-	atomic_notifier_chain_register(&panic_notifier_list,
-				       &kernel_offset_notifier);
-	return 0;
-}
-__initcall(register_kernel_offset_dumper);
+/* register_kernel_offset_dumper initcall removed - callback was empty stub */

@@ -84,7 +84,7 @@ void __init *early_memremap_decrypted_wp(resource_size_t phys_addr,
 #include <linux/mm_types.h>
 
 #define __fix_to_virt(x)	(FIXADDR_TOP - ((x) << PAGE_SHIFT))
-#define __virt_to_fix(x)	((FIXADDR_TOP - ((x)&PAGE_MASK)) >> PAGE_SHIFT)
+/* __virt_to_fix removed - unused */
 
 static __always_inline unsigned long fix_to_virt(const unsigned int idx)
 {

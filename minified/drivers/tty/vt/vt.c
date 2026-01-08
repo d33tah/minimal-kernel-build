@@ -87,12 +87,7 @@ static struct vc_data *master_display_fg;
 /* console_blank_hook removed - never assigned or used */
 
 static DEFINE_TIMER(console_timer, blank_screen_t);
-/* blank_state removed - was never read */
-enum {
-	blank_off = 0,
-	blank_normal_wait,
-	blank_vesa_wait,
-};
+/* blank_state and blank_* enum removed - was never read */
 
 static struct device *tty0dev;
 

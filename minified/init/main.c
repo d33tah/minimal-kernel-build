@@ -375,8 +375,6 @@ void __init __weak pgtable_cache_init(void)
 
 void __init trap_init(void); /* in arch/x86/kernel/traps.c */
 
-bool initcall_debug;
-
 /* arch_call_rest_init inlined into start_kernel - single caller */
 
 asmlinkage __visible void __init __no_sanitize_address start_kernel(void)

@@ -110,7 +110,7 @@ int bdi_init(struct backing_dev_info *bdi)
 	bdi->dev = NULL;
 
 	kref_init(&bdi->refcnt);
-	bdi->min_ratio = 0;
+	/* bdi->min_ratio removed - always 0 */
 	bdi->max_ratio = 100;
 	bdi->max_prop_frac = FPROP_FRAC_BASE;
 	INIT_LIST_HEAD(&bdi->bdi_list);
@@ -136,10 +136,7 @@ void bdi_unregister(struct backing_dev_info *bdi)
 
 	bdi_remove_from_list(bdi);
 	wb_shutdown(&bdi->wb);
-
-	if (bdi->min_ratio)
-		bdi_set_min_ratio(bdi, 0);
-
+	/* bdi_set_min_ratio call removed - min_ratio always 0 */
 	if (bdi->dev) {
 		device_unregister(bdi->dev);
 		bdi->dev = NULL;

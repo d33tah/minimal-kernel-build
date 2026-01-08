@@ -9,13 +9,7 @@ bool __folio_end_writeback(struct folio *folio)
 {
 	return true;
 }
-/* __folio_start_writeback removed - never called */
-
-int bdi_set_min_ratio(struct backing_dev_info *bdi, unsigned int min_ratio)
-{
-	return 0;
-}
-/* bdi_set_max_ratio removed - never called */
+/* __folio_start_writeback, bdi_set_min_ratio, bdi_set_max_ratio removed - never called */
 void wb_update_bandwidth(struct bdi_writeback *wb)
 {
 }

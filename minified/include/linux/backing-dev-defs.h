@@ -74,9 +74,9 @@ struct backing_dev_info {
 	unsigned long ra_pages;	 
 	unsigned long io_pages;	 
 
-	struct kref refcnt;	 
-	unsigned int capabilities;  
-	unsigned int min_ratio;
+	struct kref refcnt;
+	unsigned int capabilities;
+	/* min_ratio removed - always 0 */
 	unsigned int max_ratio, max_prop_frac;
 
 	 

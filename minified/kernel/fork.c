@@ -805,14 +805,14 @@ copy_process(struct pid *pid, int trace, int node,
 	/* task_io_accounting_init, acct_clear_integrals, posix_cputimers_init, audit_set_context removed - empty stubs */
 	if (args->kthread) {
 		if (!set_kthread_struct(p))
-			goto bad_fork_cleanup_delayacct;
+			goto bad_fork_cleanup_count;
 	}
 
 	p->pagefault_disabled = 0;
 
 	retval = sched_fork(clone_flags, p);
 	if (retval)
-		goto bad_fork_cleanup_policy;
+		goto bad_fork_cleanup_count;
 	/* perf_event_init_task removed - empty stub that always returns 0 */
 	/* security_task_alloc always returns 0 - dead code removed */
 	/* Inlined copy_files */
@@ -825,7 +825,7 @@ copy_process(struct pid *pid, int trace, int node,
 				struct files_struct *newf =
 					dup_fd(oldf, NR_OPEN_MAX, &retval);
 				if (!newf)
-					goto bad_fork_cleanup_security;
+					goto bad_fork_cleanup_count;
 				p->files = newf;
 			}
 		}
@@ -1064,11 +1064,8 @@ bad_fork_cleanup_fs:
 	exit_fs(p);
 bad_fork_cleanup_files:
 	exit_files(p);
-bad_fork_cleanup_security:
-	/* security_task_free, audit_free - empty stubs */
-bad_fork_cleanup_policy:
-bad_fork_cleanup_delayacct:
-	/* delayacct_tsk_free removed - empty stub */
+	/* bad_fork_cleanup_security, bad_fork_cleanup_policy, bad_fork_cleanup_delayacct
+	 * labels consolidated here - they had no cleanup code */
 bad_fork_cleanup_count:
 	dec_rlimit_ucounts(task_ucounts(p), UCOUNT_RLIMIT_NPROC, 1);
 	exit_creds(p);

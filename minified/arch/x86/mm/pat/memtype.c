@@ -77,9 +77,7 @@ int memtype_reserve_io(resource_size_t start, resource_size_t end,
 	return 0;
 }
 
-void memtype_free_io(resource_size_t start, resource_size_t end)
-{
-}
+/* memtype_free_io removed - never called */
 
 int memtype_kernel_map_sync(u64 base, unsigned long size,
 			    enum page_cache_mode pcm)

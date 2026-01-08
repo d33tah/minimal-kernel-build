@@ -19,7 +19,7 @@ extern int memtype_kernel_map_sync(u64 base, unsigned long size,
 extern int memtype_reserve_io(resource_size_t start, resource_size_t end,
 			enum page_cache_mode *pcm);
 
-extern void memtype_free_io(resource_size_t start, resource_size_t end);
+/* memtype_free_io removed - never called */
 
 bool x86_has_pat_wp(void);
 enum page_cache_mode pgprot2cachemode(pgprot_t pgprot);

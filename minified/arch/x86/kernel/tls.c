@@ -13,11 +13,7 @@ SYSCALL_DEFINE1(get_thread_area, void __user *, u_info)
 	return -ENOSYS;
 }
 
-int do_get_thread_area(struct task_struct *p, int idx,
-		       struct user_desc __user *u_info)
-{
-	return -ENOSYS;
-}
+/* do_get_thread_area removed - never called */
 
 int do_set_thread_area(struct task_struct *p, int idx,
 		       struct user_desc __user *u_info, int can_allocate)

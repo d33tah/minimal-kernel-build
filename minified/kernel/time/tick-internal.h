@@ -32,8 +32,7 @@ extern int tick_do_timer_cpu __read_mostly;
 extern void tick_setup_periodic(struct clock_event_device *dev, int broadcast);
 extern void tick_handle_periodic(struct clock_event_device *dev);
 extern void tick_check_new_device(struct clock_event_device *dev);
-/* tick_shutdown, tick_suspend, tick_resume, tick_check_replacement, tick_install_replacement removed - unused */
-extern struct tick_device *tick_get_device(int cpu);
+/* tick_shutdown, tick_suspend, tick_resume, tick_check_replacement, tick_install_replacement, tick_get_device removed - unused */
 
 /* clockevents_tick_resume removed - never called */
 

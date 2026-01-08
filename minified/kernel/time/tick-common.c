@@ -14,10 +14,7 @@ DEFINE_PER_CPU(struct tick_device, tick_cpu_device);
 ktime_t tick_next_period;
 int tick_do_timer_cpu __read_mostly = TICK_DO_TIMER_BOOT;
 
-struct tick_device *tick_get_device(int cpu)
-{
-	return &per_cpu(tick_cpu_device, cpu);
-}
+/* tick_get_device removed - never called */
 
 static void tick_periodic(int cpu)
 {

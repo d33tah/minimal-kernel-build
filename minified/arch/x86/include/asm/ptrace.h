@@ -64,8 +64,7 @@ static inline unsigned long instruction_pointer(struct pt_regs *regs)
 #define ARCH_HAS_USER_SINGLE_STEP_REPORT
 
 struct user_desc;
-extern int do_get_thread_area(struct task_struct *p, int idx,
-			      struct user_desc __user *info);
+/* do_get_thread_area removed - never called */
 extern int do_set_thread_area(struct task_struct *p, int idx,
 			      struct user_desc __user *info, int can_allocate);
 

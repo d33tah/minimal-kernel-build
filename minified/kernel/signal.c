@@ -346,13 +346,8 @@ int group_send_sig_info(int sig, struct kernel_siginfo *info,
 	int ret;
 
 	rcu_read_lock();
-	if (!valid_signal(sig))
-		ret = -EINVAL;
-	else if (!(info == SEND_SIG_NOINFO ||
-		   (!(info <= SEND_SIG_PRIV) && SI_FROMUSER(info))))
-		ret = 0;
-	else
-		ret = 0;
+	/* Simplified: else branches both set ret=0 */
+	ret = valid_signal(sig) ? 0 : -EINVAL;
 	rcu_read_unlock();
 
 	if (!ret && sig)
@@ -441,9 +436,7 @@ int ptrace_notify(int exit_code, unsigned long message)
 	if (unlikely(task_work_pending(current)))
 		task_work_run();
 
-	spin_lock_irq(&current->sighand->siglock);
-	/* Inlined ptrace_do_notify and ptrace_stop - just return exit_code */
-	spin_unlock_irq(&current->sighand->siglock);
+	/* ptrace_do_notify and ptrace_stop inlined away - lock/unlock was empty */
 	return exit_code;
 }
 

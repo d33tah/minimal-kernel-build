@@ -46,14 +46,7 @@ static struct nmi_desc nmi_desc[NMI_MAX] = {
 
 };
 
-struct nmi_stats {
-	unsigned int normal;
-	unsigned int unknown;
-	unsigned int external;
-	unsigned int swallow;
-};
-
-static DEFINE_PER_CPU(struct nmi_stats, nmi_stats);
+/* nmi_stats struct removed - all fields were write-only, never read */
 
 static int ignore_nmis __read_mostly;
 
@@ -140,12 +133,10 @@ static void unknown_nmi_error(unsigned char reason, struct pt_regs *regs)
 
 	handled = nmi_handle(NMI_UNKNOWN, regs);
 	if (handled) {
-		__this_cpu_add(nmi_stats.unknown, handled);
+		/* nmi_stats.unknown increment removed */
 		return;
 	}
-
-	__this_cpu_add(nmi_stats.unknown, 1);
-
+	/* nmi_stats.unknown increment removed */
 	pr_emerg("Uhhuh. NMI received for unknown reason %02x on CPU %d.\n",
 		 reason, smp_processor_id());
 
@@ -173,7 +164,7 @@ static noinstr void default_do_nmi(struct pt_regs *regs)
 	__this_cpu_write(last_nmi_rip, regs->ip);
 
 	handled = nmi_handle(NMI_LOCAL, regs);
-	__this_cpu_add(nmi_stats.normal, handled);
+	/* nmi_stats.normal increment removed */
 	if (handled) {
 		if (handled > 1)
 			__this_cpu_write(swallow_nmi, true);
@@ -194,15 +185,15 @@ static noinstr void default_do_nmi(struct pt_regs *regs)
 			io_check_error(reason, regs);
 
 		reassert_nmi();
-		__this_cpu_add(nmi_stats.external, 1);
+		/* nmi_stats.external increment removed */
 		raw_spin_unlock(&nmi_reason_lock);
 		goto out;
 	}
 	raw_spin_unlock(&nmi_reason_lock);
 
-	if (b2b && __this_cpu_read(swallow_nmi))
-		__this_cpu_add(nmi_stats.swallow, 1);
-	else
+	if (b2b && __this_cpu_read(swallow_nmi)) {
+		/* nmi_stats.swallow increment removed */
+	} else
 		unknown_nmi_error(reason, regs);
 
 out:;
@@ -236,9 +227,7 @@ nmi_restart:
 	this_cpu_write(nmi_dr7, local_db_save());
 
 	irq_state = irqentry_nmi_enter(regs);
-
-	inc_irq_stat(__nmi_count);
-
+	/* inc_irq_stat(__nmi_count) removed - counter never read */
 	if (!ignore_nmis)
 		default_do_nmi(regs);
 

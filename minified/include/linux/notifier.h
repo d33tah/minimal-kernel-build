@@ -40,13 +40,11 @@ struct raw_notifier_head {
 #define ATOMIC_NOTIFIER_INIT(name) {				\
 		.lock = __SPIN_LOCK_UNLOCKED(name.lock),	\
 		.head = NULL }
-#define RAW_NOTIFIER_INIT(name)	{				\
-		.head = NULL }
+/* RAW_NOTIFIER_INIT removed - never used */
 
 #define ATOMIC_NOTIFIER_HEAD(name)				\
 	struct atomic_notifier_head name =			\
 		ATOMIC_NOTIFIER_INIT(name)
-/* RAW_NOTIFIER_HEAD removed - never used */
 
 
 #ifdef __KERNEL__

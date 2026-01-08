@@ -24,7 +24,7 @@ struct timespec64 {
 #define TIME64_MIN			(-TIME64_MAX - 1)
 
 #define KTIME_MAX			((s64)~((u64)1 << 63))
-#define KTIME_SEC_MAX			(KTIME_MAX / NSEC_PER_SEC)
+/* KTIME_SEC_MAX removed - never used */
 
 /* timespec64_compare, timespec64_sub, timespec64_valid, timespec64_valid_settod,
    timespec64_to_ns, set_normalized_timespec64, timespec64_add_ns removed - unused */

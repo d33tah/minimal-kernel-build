@@ -50,9 +50,7 @@
 		| MAP_HUGE_2MB \
 		| MAP_HUGE_1GB)
 
-extern int sysctl_overcommit_memory;
-extern int sysctl_overcommit_ratio;
-extern unsigned long sysctl_overcommit_kbytes;
+/* sysctl_overcommit_* externs already in mm.h */
 extern struct percpu_counter vm_committed_as;
 
 #define vm_committed_as_batch 0

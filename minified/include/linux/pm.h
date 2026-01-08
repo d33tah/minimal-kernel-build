@@ -60,8 +60,7 @@ struct dev_pm_ops {
 	.runtime_resume = resume_fn, \
 	.runtime_idle = idle_fn,
 
-#define SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
-
+/* SET_SYSTEM_SLEEP_PM_OPS removed - never used */
 #define SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn)
 
 #define _DEFINE_DEV_PM_OPS(name, \
@@ -72,10 +71,7 @@ const struct dev_pm_ops name = { \
 	RUNTIME_PM_OPS(runtime_suspend_fn, runtime_resume_fn, idle_fn) \
 }
 
-/* _EXPORT_DEV_PM_OPS, SIMPLE_DEV_PM_OPS removed - never used */
-
-#define PM_EVENT_ON		0x0000
-/* Unused PMSG_*, rpm_status, DPM_FLAG_* macros, pm_subsys_data struct removed */
+/* PM_EVENT_ON and other PMSG_*, rpm_status, DPM_FLAG_* macros removed - never used */
 
 struct dev_pm_info {
 	pm_message_t		power_state;

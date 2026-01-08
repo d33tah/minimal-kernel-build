@@ -4,8 +4,7 @@
 #include <linux/types.h>
 #include <linux/uidgid.h>
 
-struct user_namespace;
-extern struct user_namespace init_user_ns;
+/* init_user_ns extern from uidgid.h */
 
 static inline bool initial_idmapping(const struct user_namespace *ns)
 {

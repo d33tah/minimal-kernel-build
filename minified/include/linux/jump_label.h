@@ -81,10 +81,7 @@ static inline void static_key_disable(struct static_key *key)
 
 #define STATIC_KEY_INIT_TRUE	{ .enabled = ATOMIC_INIT(1) }
 #define STATIC_KEY_INIT_FALSE	{ .enabled = ATOMIC_INIT(0) }
-
-
-#define STATIC_KEY_INIT STATIC_KEY_INIT_FALSE
-/* jump_label_enabled removed - unused */
+/* STATIC_KEY_INIT removed - never used */
 
 
 

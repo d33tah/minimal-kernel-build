@@ -8,19 +8,7 @@
 /* Inlined from uapi/linux/capability.h - only v3 kept, older versions unused */
 /* _LINUX_CAPABILITY_VERSION_3 removed - unused */
 #define _LINUX_CAPABILITY_U32S_3     2
-
-typedef struct __user_cap_header_struct {
-	__u32 version;
-	int pid;
-} __user *cap_user_header_t;
-
-typedef struct __user_cap_data_struct {
-        __u32 effective;
-        __u32 permitted;
-        __u32 inheritable;
-} __user *cap_user_data_t;
-
-
+/* __user_cap_header_struct, __user_cap_data_struct removed - userspace API never used in kernel */
 /* Keep only capabilities actually used in the codebase */
 #define CAP_CHOWN            0
 #define CAP_DAC_OVERRIDE     1

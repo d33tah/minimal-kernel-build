@@ -160,18 +160,4 @@ struct bus_type platform_bus_type = {
 	.pm = &platform_dev_pm_ops,
 };
 
-/* pbidbg debug function removed */
-int __init platform_bus_init(void)
-{
-	int error;
-
-	error = device_register(&platform_bus);
-	if (error) {
-		put_device(&platform_bus);
-		return error;
-	}
-	error = bus_register(&platform_bus_type);
-	if (error)
-		device_unregister(&platform_bus);
-	return error;
-}
+/* platform_bus_init removed - never called */

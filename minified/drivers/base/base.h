@@ -57,12 +57,11 @@ extern int devices_init(void);
 extern int buses_init(void);
 extern int classes_init(void);
 /* firmware_init, hypervisor_init removed - never called */
-extern int platform_bus_init(void);
-/* cpu_dev_init, container_dev_init, auxiliary_bus_init removed - never called */
+/* platform_bus_init, cpu_dev_init, container_dev_init, auxiliary_bus_init removed - never called */
 
 /* virtual_device_parent removed - unused */
 
-extern int bus_add_device(struct device *dev);
+/* bus_add_device removed - never called */
 extern void bus_probe_device(struct device *dev);
 extern void bus_remove_device(struct device *dev);
 

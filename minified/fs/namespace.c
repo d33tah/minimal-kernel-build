@@ -207,17 +207,7 @@ int mnt_want_write(struct vfsmount *m)
 	return ret;
 }
 
-int __mnt_want_write_file(struct file *file)
-{
-	if (file->f_mode & FMODE_WRITER) {
-		if (__mnt_is_readonly(file->f_path.mnt))
-			return -EROFS;
-		return 0;
-	}
-	return __mnt_want_write(file->f_path.mnt);
-}
-
-/* mnt_want_write_file removed - never called */
+/* __mnt_want_write_file, mnt_want_write_file removed - never called */
 
 void __mnt_drop_write(struct vfsmount *mnt)
 {

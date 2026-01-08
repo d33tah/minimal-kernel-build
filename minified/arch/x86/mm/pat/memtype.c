@@ -54,9 +54,7 @@ void init_cache_modes(void)
 {
 }
 
-void pat_init(void)
-{
-}
+/* pat_init removed - never called */
 
 int memtype_reserve(u64 start, u64 end, enum page_cache_mode req_type,
 		    enum page_cache_mode *new_type)

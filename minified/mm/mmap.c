@@ -1358,13 +1358,7 @@ out:
 	return ERR_PTR(ret);
 }
 
-bool vma_is_special_mapping(const struct vm_area_struct *vma,
-			    const struct vm_special_mapping *sm)
-{
-	return vma->vm_private_data == sm &&
-	       (vma->vm_ops == &special_mapping_vmops ||
-		vma->vm_ops == &legacy_special_mapping_vmops);
-}
+/* vma_is_special_mapping removed - never called */
 
 struct vm_area_struct *
 _install_special_mapping(struct mm_struct *mm, unsigned long addr,

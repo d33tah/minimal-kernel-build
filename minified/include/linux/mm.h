@@ -964,8 +964,7 @@ extern void exit_mmap(struct mm_struct *);
 extern int set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file);
 /* get_mm_exe_file removed - no callers */
 
-extern bool vma_is_special_mapping(const struct vm_area_struct *vma,
-				   const struct vm_special_mapping *sm);
+/* vma_is_special_mapping removed - never called */
 extern struct vm_area_struct *_install_special_mapping(struct mm_struct *mm,
 				   unsigned long addr, unsigned long len,
 				   unsigned long flags,

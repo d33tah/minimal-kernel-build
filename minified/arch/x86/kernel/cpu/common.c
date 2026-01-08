@@ -235,19 +235,7 @@ unsigned long cr4_read_shadow(void)
 	return this_cpu_read(cpu_tlbstate.cr4);
 }
 
-void cr4_init(void)
-{
-	unsigned long cr4 = __read_cr4();
-
-	if (boot_cpu_has(X86_FEATURE_PCID))
-		cr4 |= X86_CR4_PCIDE;
-	if (static_branch_likely(&cr_pinning))
-		cr4 = (cr4 & ~cr4_pinned_mask) | cr4_pinned_bits;
-
-	__write_cr4(cr4);
-
-	this_cpu_write(cpu_tlbstate.cr4, cr4);
-}
+/* cr4_init removed - never called */
 
 static void __init setup_cr_pinning(void)
 {

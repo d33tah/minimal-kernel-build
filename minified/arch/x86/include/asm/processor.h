@@ -338,8 +338,7 @@ extern void load_percpu_segment(int);
 extern void cpu_init(void);
 /* cpu_init_secondary declaration removed - no implementation */
 extern void cpu_init_exception_handling(void);
-extern void cr4_init(void);
-/* set_task_blockstep, bootloader_type, bootloader_version removed - unused */
+/* cr4_init, set_task_blockstep, bootloader_type, bootloader_version removed - unused */
 
 #define HAVE_ARCH_PICK_MMAP_LAYOUT 1
 /* ARCH_HAS_PREFETCHW, ARCH_HAS_SPINLOCK_PREFETCH, ARCH_HAS_PREFETCH removed - unused */

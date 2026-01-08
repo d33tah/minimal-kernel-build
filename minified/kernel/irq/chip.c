@@ -116,12 +116,7 @@ void irq_shutdown(struct irq_desc *desc)
 	}
 }
 
-void irq_shutdown_and_deactivate(struct irq_desc *desc)
-{
-	irq_shutdown(desc);
-
-	irq_domain_deactivate_irq(&desc->irq_data);
-}
+/* irq_shutdown_and_deactivate removed - never called */
 
 void irq_enable(struct irq_desc *desc)
 {

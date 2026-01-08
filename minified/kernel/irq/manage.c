@@ -23,13 +23,7 @@ DEFINE_STATIC_KEY_FALSE(force_irqthreads_key);
 
 /* __synchronize_hardirq removed - only caller was __free_irq which was removed */
 
-void __disable_irq(struct irq_desc *desc)
-{
-	if (!desc->depth++)
-		irq_disable(desc);
-}
-
-/* __disable_irq_nosync, disable_irq_nosync removed - never called */
+/* __disable_irq, __disable_irq_nosync, disable_irq_nosync removed - never called */
 
 void __enable_irq(struct irq_desc *desc)
 {

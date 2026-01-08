@@ -6,7 +6,7 @@
 #include <asm/pgtable_types.h>
 
 extern void pat_disable(const char *reason);
-extern void pat_init(void);
+/* pat_init removed - never called */
 extern void init_cache_modes(void);
 
 extern int memtype_reserve(u64 start, u64 end,

@@ -177,7 +177,6 @@ struct tty_file_private {
 #define TTY_MAGIC		0x5401
 
 #define TTY_IO_ERROR		1
-#define TTY_EXCLUSIVE		3
 #define TTY_DO_WRITE_WAKEUP	5
 #define TTY_LDISC_OPEN		11
 #define TTY_NO_WRITE_SPLIT	17

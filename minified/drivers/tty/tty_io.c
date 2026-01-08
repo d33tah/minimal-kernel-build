@@ -551,7 +551,6 @@ static int tty_reopen(struct tty_struct *tty)
 	if (!tty->count)
 		return -EAGAIN;
 
-	/* capable() always returns true - TTY_EXCLUSIVE check removed */
 	ld = tty_ldisc_ref_wait(tty);
 	if (ld) {
 		tty_ldisc_deref(ld);

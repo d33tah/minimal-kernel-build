@@ -193,7 +193,4 @@ void __init files_init(void)
 	percpu_counter_init(&nr_files, 0, GFP_KERNEL);
 }
 
-void __init files_maxfiles_init(void)
-{
-	/* files_stat calculation removed - never read */
-}
+/* files_maxfiles_init removed entirely - was empty stub */

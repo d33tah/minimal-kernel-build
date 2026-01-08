@@ -1133,7 +1133,7 @@ void __init vfs_caches_init(void)
 	dcache_init();
 	inode_init();
 	files_init();
-	files_maxfiles_init();
+	/* files_maxfiles_init removed - was empty stub */
 	mnt_init();
 	chrdev_init();
 }

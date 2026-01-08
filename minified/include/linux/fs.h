@@ -107,7 +107,7 @@ struct fs_parameter_spec;
 extern void __init inode_init(void);
 extern void __init inode_init_early(void);
 extern void __init files_init(void);
-extern void __init files_maxfiles_init(void);
+/* files_maxfiles_init removed - was empty stub */
 extern unsigned int sysctl_nr_open;
 
 /* rwf_t defined earlier */

@@ -118,11 +118,7 @@ static inline void __write_cr4(unsigned long x)
 	native_write_cr4(x);
 }
 
-static inline void wbinvd(void)
-{
-	native_wbinvd();
-}
-
+/* wbinvd removed - unused wrapper, native_wbinvd called directly */
 /* load_gs_index, clflush removed - unused */
 
 #define nop() asm volatile ("nop")

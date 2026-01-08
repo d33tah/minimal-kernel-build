@@ -76,11 +76,7 @@ extern struct resource * __request_region(struct resource *,
 					resource_size_t n,
 					const char *name, int flags);
 
-#define release_region(start,n)	__release_region(&ioport_resource, (start), (n))
-#define release_mem_region(start,n)	__release_region(&iomem_resource, (start), (n))
-
-extern void __release_region(struct resource *, resource_size_t,
-				resource_size_t);
+/* release_region, release_mem_region, __release_region removed - never called */
 
 struct device;
 

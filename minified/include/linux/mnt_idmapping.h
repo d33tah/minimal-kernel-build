@@ -51,48 +51,18 @@ static inline kgid_t mapped_kgid_fs(struct user_namespace *mnt_userns,
 	return make_kgid(mnt_userns, gid);
 }
 
-static inline kuid_t mapped_kuid_user(struct user_namespace *mnt_userns,
-				      struct user_namespace *fs_userns,
-				      kuid_t kuid)
-{
-	uid_t uid;
-
-	if (no_idmapping(mnt_userns, fs_userns))
-		return kuid;
-	uid = from_kuid(mnt_userns, kuid);
-	if (uid == (uid_t)-1)
-		return INVALID_UID;
-	if (initial_idmapping(fs_userns))
-		return KUIDT_INIT(uid);
-	return make_kuid(fs_userns, uid);
-}
-
-static inline kgid_t mapped_kgid_user(struct user_namespace *mnt_userns,
-				      struct user_namespace *fs_userns,
-				      kgid_t kgid)
-{
-	gid_t gid;
-
-	if (no_idmapping(mnt_userns, fs_userns))
-		return kgid;
-	gid = from_kgid(mnt_userns, kgid);
-	if (gid == (gid_t)-1)
-		return INVALID_GID;
-	if (initial_idmapping(fs_userns))
-		return KGIDT_INIT(gid);
-	return make_kgid(fs_userns, gid);
-}
-
 static inline kuid_t mapped_fsuid(struct user_namespace *mnt_userns,
 				  struct user_namespace *fs_userns)
 {
-	return mapped_kuid_user(mnt_userns, fs_userns, current_fsuid());
+	return mapped_kuid_fs(mnt_userns, fs_userns, current_fsuid());
 }
 
 static inline kgid_t mapped_fsgid(struct user_namespace *mnt_userns,
 				  struct user_namespace *fs_userns)
 {
-	return mapped_kgid_user(mnt_userns, fs_userns, current_fsgid());
+	return mapped_kgid_fs(mnt_userns, fs_userns, current_fsgid());
 }
+
+/* mapped_kuid_user, mapped_kgid_user removed - never called */
 
 #endif  

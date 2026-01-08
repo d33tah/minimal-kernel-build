@@ -19,8 +19,7 @@
 
 unsigned long fpu__get_fpstate_size(void);
 
-/* copy_fpstate_to_sigframe, fpu__restore_sig removed - never called */
-extern void fpu__clear_user_states(struct fpu *fpu);
+/* copy_fpstate_to_sigframe, fpu__restore_sig, fpu__clear_user_states removed - never called */
 
 extern void restore_fpregs_from_fpstate(struct fpstate *fpstate, u64 mask);
 #endif  

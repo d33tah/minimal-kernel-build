@@ -287,27 +287,6 @@ static void fpu_reset_fpregs(void)
 	fpregs_unlock();
 }
 
-void fpu__clear_user_states(struct fpu *fpu)
-{
-	WARN_ON_FPU(fpu != &current->thread.fpu);
-
-	fpregs_lock();
-	if (!cpu_feature_enabled(X86_FEATURE_FPU)) {
-		fpu_reset_fpregs();
-		fpregs_unlock();
-		return;
-	}
-
-	if (xfeatures_mask_supervisor() &&
-	    !fpregs_state_valid(fpu, smp_processor_id()))
-		os_xrstor_supervisor(fpu->fpstate);
-
-	restore_fpregs_from_init_fpstate(XFEATURE_MASK_USER_RESTORE);
-
-	fpregs_mark_activate();
-	fpregs_unlock();
-}
-
 void fpu_flush_thread(void)
 {
 	fpstate_reset(&current->thread.fpu);

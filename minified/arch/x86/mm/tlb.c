@@ -501,33 +501,6 @@ void flush_tlb_all(void)
 	on_each_cpu(do_flush_tlb_all, NULL, 1);
 }
 
-static void do_kernel_range_flush(void *info)
-{
-	struct flush_tlb_info *f = info;
-	unsigned long addr;
-
-	for (addr = f->start; addr < f->end; addr += PAGE_SIZE)
-		flush_tlb_one_kernel(addr);
-}
-
-void flush_tlb_kernel_range(unsigned long start, unsigned long end)
-{
-	if (end == TLB_FLUSH_ALL ||
-	    (end - start) > tlb_single_page_flush_ceiling << PAGE_SHIFT) {
-		on_each_cpu(do_flush_tlb_all, NULL, 1);
-	} else {
-		struct flush_tlb_info *info;
-
-		preempt_disable();
-		info = get_flush_tlb_info(NULL, start, end, 0, false, 0);
-
-		on_each_cpu(do_kernel_range_flush, info, 1);
-
-		put_flush_tlb_info();
-		preempt_enable();
-	}
-}
-
 unsigned long __get_current_cr3_fast(void)
 {
 	unsigned long cr3 =

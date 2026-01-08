@@ -14,9 +14,5 @@
 #include <asm/siginfo.h>
 #include <asm/signal.h>
 #include <asm/syscall_wrapper.h>
-/* __SC_DELOUSE removed - unused */
-#ifndef compat_sigset_t
-typedef struct { compat_sigset_word sig[_COMPAT_NSIG_WORDS]; } compat_sigset_t;
-#endif
-#define _COMPAT_NSIG_WORDS	(_COMPAT_NSIG / _COMPAT_NSIG_BPW)
+/* __SC_DELOUSE, compat_sigset_t typedef, _COMPAT_NSIG_WORDS removed - unused */
 #endif

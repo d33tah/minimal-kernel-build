@@ -32,19 +32,15 @@ struct trampoline_header {
 };
 
 extern struct real_mode_header *real_mode_header;
-extern unsigned char real_mode_blob_end[];
+/* real_mode_blob_end, real_mode_blob, real_mode_relocs, startup_32_smp removed - unused */
 
 extern unsigned long initial_code;
 extern unsigned long initial_stack;
 
-extern unsigned char real_mode_blob[];
-extern unsigned char real_mode_relocs[];
-
-extern unsigned char startup_32_smp[];
 extern unsigned char boot_gdt[];
 
 void reserve_real_mode(void);
-void load_trampoline_pgtable(void);
+/* load_trampoline_pgtable removed - unused */
 
 #endif  
 

@@ -14,23 +14,13 @@ extern char _sinittext[], _einittext[];
 extern char __start_ro_after_init[], __end_ro_after_init[];
 extern char _end[];
 extern char __per_cpu_load[], __per_cpu_start[], __per_cpu_end[];
-extern char __kprobes_text_start[], __kprobes_text_end[];
-extern char __entry_text_start[], __entry_text_end[];
+/* __kprobes_text_*, __entry_text_*, __softirqentry_text_*, __start_once, __end_once, __noinstr_text_*, __nosave_* removed - unused */
 extern char __start_rodata[], __end_rodata[];
 extern char __irqentry_text_start[], __irqentry_text_end[];
-extern char __softirqentry_text_start[], __softirqentry_text_end[];
-extern char __start_once[], __end_once[];
-
-extern char __noinstr_text_start[], __noinstr_text_end[];
-
-extern __visible const void __nosave_begin, __nosave_end;
 
 #define dereference_function_descriptor(p) ((void *)(p))
 #define dereference_kernel_function_descriptor(p) ((void *)(p))
-
-typedef struct {
-	unsigned long addr;
-} func_desc_t;
+/* func_desc_t removed - unused */
 
 static inline bool is_kernel_rodata(unsigned long addr)
 {

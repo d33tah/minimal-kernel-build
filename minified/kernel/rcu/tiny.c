@@ -135,5 +135,5 @@ void call_rcu(struct rcu_head *head, rcu_callback_t func)
 void __init rcu_init(void)
 {
 	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
-	rcu_early_boot_tests();
+	/* rcu_early_boot_tests removed - empty stub */
 }

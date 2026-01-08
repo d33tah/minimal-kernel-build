@@ -85,6 +85,4 @@ void __wait_rcu_gp(bool checktiny, int n, call_rcu_func_t *crcu_array,
 
 int rcu_cpu_stall_suppress_at_boot __read_mostly;
 
-void rcu_early_boot_tests(void)
-{
-}
+/* rcu_early_boot_tests removed - empty stub */

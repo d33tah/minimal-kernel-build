@@ -88,13 +88,11 @@ parse_args(const char *doing, char *args, const struct kernel_param *params,
 	if (*args)
 		while (*args) {
 			int ret;
-			int irq_was_disabled;
 
 			args = next_arg(args, &param, &val);
 
 			if (!val && strcmp(param, "--") == 0)
 				return err ?: args;
-			irq_was_disabled = irqs_disabled();
 			ret = parse_one(param, val, doing, params, num,
 					min_level, max_level, arg, unknown);
 			switch (ret) {

@@ -313,7 +313,6 @@ static ssize_t tty_read(struct kiocb *iocb, struct iov_iter *to)
 {
 	int i;
 	struct file *file = iocb->ki_filp;
-	struct inode *inode = file_inode(file);
 	struct tty_struct *tty = file_tty(file);
 	struct tty_ldisc *ld;
 

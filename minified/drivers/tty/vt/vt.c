@@ -422,7 +422,6 @@ static const struct tty_port_operations vc_port_ops = {
 
 int vc_allocate(unsigned int currcons)
 {
-	struct vt_notifier_param param;
 	struct vc_data *vc;
 	int err;
 
@@ -434,7 +433,7 @@ int vc_allocate(unsigned int currcons)
 	if (vc_cons[currcons].d)
 		return 0;
 
-	param.vc = vc = kzalloc(sizeof(struct vc_data), GFP_KERNEL);
+	vc = kzalloc(sizeof(struct vc_data), GFP_KERNEL);
 	if (!vc)
 		return -ENOMEM;
 

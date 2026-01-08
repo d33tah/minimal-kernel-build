@@ -923,9 +923,7 @@ static unsigned int con_write_room(struct tty_struct *tty)
 	return 32768;
 }
 
-static void con_throttle(struct tty_struct *tty)
-{
-}
+/* con_throttle removed - empty stub, set to NULL in ops */
 
 static void con_unthrottle(struct tty_struct *tty)
 {
@@ -1014,9 +1012,7 @@ static int con_open(struct tty_struct *tty, struct file *filp)
 	return 0;
 }
 
-static void con_close(struct tty_struct *tty, struct file *filp)
-{
-}
+/* con_close removed - empty stub, set to NULL in ops */
 
 static void con_shutdown(struct tty_struct *tty)
 {
@@ -1132,7 +1128,7 @@ console_initcall(con_init);
 static const struct tty_operations con_ops = {
 	.install = con_install,
 	.open = con_open,
-	.close = con_close,
+	/* .close = NULL - con_close was empty */
 	.write = con_write,
 	.write_room = con_write_room,
 	.put_char = con_put_char,
@@ -1140,7 +1136,7 @@ static const struct tty_operations con_ops = {
 	.ioctl = vt_ioctl,
 	.stop = con_stop,
 	.start = con_start,
-	.throttle = con_throttle,
+	/* .throttle = NULL - con_throttle was empty */
 	.unthrottle = con_unthrottle,
 	.resize = vt_resize,
 	.shutdown = con_shutdown,
@@ -1223,7 +1219,7 @@ void do_unblank_screen(int leaving_gfx)
 
 void unblank_screen(void)
 {
-	do_unblank_screen(0);
+	/* inlined: do_unblank_screen was empty */
 }
 
 static void blank_screen_t(struct timer_list *unused)

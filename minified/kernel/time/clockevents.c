@@ -149,7 +149,6 @@ static int clockevents_program_min_delta(struct clock_event_device *dev)
 		if (clockevent_state_shutdown(dev))
 			return 0;
 
-		dev->retries++;
 		clc = ((unsigned long long)delta * dev->mult) >> dev->shift;
 		if (dev->set_next_event((unsigned long)clc, dev) == 0)
 			return 0;

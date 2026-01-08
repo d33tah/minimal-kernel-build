@@ -159,9 +159,7 @@ static inline struct page *folio_file_page(struct folio *folio, pgoff_t index)
 unsigned find_get_pages_range_tag(struct address_space *mapping, pgoff_t *index,
 			pgoff_t end, xa_mark_t tag, unsigned int nr_pages,
 			struct page **pages);
-struct page *grab_cache_page_write_begin(struct address_space *mapping,
-			pgoff_t index);
-
+/* grab_cache_page_write_begin removed - inlined into single caller */
 struct folio *read_cache_folio(struct address_space *, pgoff_t index,
 		filler_t *filler, struct file *file);
 struct page *read_cache_page(struct address_space *, pgoff_t index,

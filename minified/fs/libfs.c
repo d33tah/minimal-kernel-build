@@ -367,10 +367,12 @@ int simple_write_begin(struct file *file, struct address_space *mapping,
 {
 	struct page *page;
 	pgoff_t index;
+	unsigned fgp_flags = FGP_LOCK | FGP_WRITE | FGP_CREAT | FGP_STABLE;
 
 	index = pos >> PAGE_SHIFT;
 
-	page = grab_cache_page_write_begin(mapping, index);
+	/* grab_cache_page_write_begin inlined */
+	page = pagecache_get_page(mapping, index, fgp_flags, mapping_gfp_mask(mapping));
 	if (!page)
 		return -ENOMEM;
 

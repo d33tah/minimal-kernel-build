@@ -78,7 +78,7 @@ struct file *anon_inode_getfile(const char *name,
 
 #define MAX_THREADS FUTEX_TID_MASK
 
-unsigned long total_forks;
+/* total_forks removed - only incremented, never read */
 int nr_threads;
 
 static int max_threads;
@@ -1027,7 +1027,7 @@ copy_process(struct pid *pid, int trace, int node,
 		attach_pid(p, PIDTYPE_PID);
 		nr_threads++;
 	}
-	total_forks++;
+	/* total_forks++ removed */
 	hlist_del_init(&delayed.node);
 	spin_unlock(&current->sighand->siglock);
 	write_unlock_irq(&tasklist_lock);

@@ -2,7 +2,6 @@
 
 #include <linux/init.h>
 
-extern char __initramfs_start[];
-extern unsigned long __initramfs_size;
+/* __initramfs_start, __initramfs_size externs removed - declared but never used */
 
 /* free_initrd_mem provided by arch/x86/mm/init.c */

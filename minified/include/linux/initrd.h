@@ -14,8 +14,7 @@ extern void free_initrd_mem(unsigned long, unsigned long);
 extern phys_addr_t phys_initrd_start;
 extern unsigned long phys_initrd_size;
 
-extern char __initramfs_start[];
-extern unsigned long __initramfs_size;
+/* __initramfs_start, __initramfs_size removed - declared but never used */
 
 void console_on_rootfs(void);
 

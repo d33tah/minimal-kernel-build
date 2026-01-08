@@ -258,7 +258,7 @@ struct task_struct {
 
 
 	unsigned int			policy;
-	int				nr_cpus_allowed;
+	/* nr_cpus_allowed removed - only written, never read */
 	const cpumask_t			*cpus_ptr;
 	cpumask_t			cpus_mask;
 

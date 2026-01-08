@@ -55,7 +55,7 @@ struct task_struct init_task
 	.policy		= SCHED_NORMAL,
 	.cpus_ptr	= &init_task.cpus_mask,
 	.cpus_mask	= CPU_MASK_ALL,
-	.nr_cpus_allowed= NR_CPUS,
+	/* nr_cpus_allowed removed - never read */
 	.mm		= NULL,
 	.active_mm	= &init_mm,
 	.restart_block	= {

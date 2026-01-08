@@ -40,9 +40,7 @@ void device_pm_move_to_tail(struct device *dev)
 /* devlink_class and related functions removed - devlink_class_init was removed so class is never registered */
 /* DL_MANAGED_LINK_FLAGS, DL_ADD_VALID_FLAGS, FW_DEVLINK_FLAGS_* removed - unused */
 /* device_links_no_driver, device_links_driver_cleanup, fw_devlink_drivers_done removed - empty stubs */
-
-static struct kobject *dev_kobj;
-/* sysfs_dev_char_kobj, sysfs_dev_block_kobj removed - unused */
+/* dev_kobj, sysfs_dev_char_kobj, sysfs_dev_block_kobj removed - unused */
 
 /* device_platform_notify_remove removed - was empty stub */
 

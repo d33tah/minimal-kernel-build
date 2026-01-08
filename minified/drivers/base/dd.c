@@ -17,7 +17,6 @@ static DEFINE_MUTEX(deferred_probe_mutex);
 static LIST_HEAD(deferred_probe_pending_list);
 static LIST_HEAD(deferred_probe_active_list);
 static atomic_t deferred_trigger_count = ATOMIC_INIT(0);
-static bool initcalls_done;
 
 static bool defer_all_probes;
 
@@ -129,7 +128,6 @@ void deferred_probe_extend_timeout(void)
 static int deferred_probe_initcall(void)
 {
 	driver_deferred_probe_enable = true;
-	initcalls_done = true;
 	/* fw_devlink_drivers_done call removed - empty stub */
 	return 0;
 }

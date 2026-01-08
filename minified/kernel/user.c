@@ -68,7 +68,8 @@ void free_uid(struct user_struct *up)
 	if (!up)
 		return;
 
-	if (refcount_dec_and_lock_irqsave(&up->__count, &uidhash_lock, &flags)) {
+	if (refcount_dec_and_lock_irqsave(&up->__count, &uidhash_lock,
+					  &flags)) {
 		hlist_del_init(&up->uidhash_node);
 		spin_unlock_irqrestore(&uidhash_lock, flags);
 		kmem_cache_free(uid_cachep, up);

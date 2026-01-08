@@ -5,7 +5,7 @@
 #include <linux/elf.h>
 #include <linux/sched.h>
 
-#define __AUDIT_ARCH_64BIT 0x80000000
+/* __AUDIT_ARCH_64BIT removed - never used */
 #define __AUDIT_ARCH_LE	   0x40000000
 #define AUDIT_ARCH_I386		(EM_386|__AUDIT_ARCH_LE)
 #include <linux/err.h>

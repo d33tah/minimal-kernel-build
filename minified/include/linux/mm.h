@@ -864,7 +864,7 @@ static inline spinlock_t *pmd_lockptr(struct mm_struct *mm, pmd_t *pmd)
 	return &mm->page_table_lock;
 }
 
-#define pmd_huge_pte(mm, pmd) ((mm)->pmd_huge_pte)
+/* pmd_huge_pte macro removed - never used */
 
 static inline spinlock_t *pmd_lock(struct mm_struct *mm, pmd_t *pmd)
 {

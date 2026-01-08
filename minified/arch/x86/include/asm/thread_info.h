@@ -102,8 +102,7 @@ struct thread_info {
 
 #endif   
 
- 
-#define TS_COMPAT		0x0002	 
+/* TS_COMPAT removed - never used (IA32_EMULATION disabled) */
 
 #ifndef __ASSEMBLY__
 

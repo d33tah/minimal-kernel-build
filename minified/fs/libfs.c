@@ -311,7 +311,7 @@ int simple_rename(struct user_namespace *mnt_userns, struct inode *old_dir,
 		  struct dentry *old_dentry, struct inode *new_dir,
 		  struct dentry *new_dentry, unsigned int flags)
 {
-	struct inode *inode = d_inode(old_dentry);
+	/* struct inode *inode removed - was unused */
 	int they_are_dirs = d_is_dir(old_dentry);
 
 	if (flags & ~RENAME_NOREPLACE)
@@ -372,7 +372,8 @@ int simple_write_begin(struct file *file, struct address_space *mapping,
 	index = pos >> PAGE_SHIFT;
 
 	/* grab_cache_page_write_begin inlined */
-	page = pagecache_get_page(mapping, index, fgp_flags, mapping_gfp_mask(mapping));
+	page = pagecache_get_page(mapping, index, fgp_flags,
+				  mapping_gfp_mask(mapping));
 	if (!page)
 		return -ENOMEM;
 

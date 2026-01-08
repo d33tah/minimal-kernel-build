@@ -10,8 +10,7 @@
 
 struct bio;
 
-DECLARE_PER_CPU(int, dirty_throttle_leaks);
-
+/* dirty_throttle_leaks DECLARE removed - counter never read */
 
 struct backing_dev_info;
 

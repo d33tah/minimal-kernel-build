@@ -380,8 +380,7 @@ void __noreturn do_exit(long code)
 	exit_task_stack_account(tsk);
 	/* check_stack_usage, exit_rcu removed - empty stubs */
 	preempt_disable();
-	if (tsk->nr_dirtied)
-		__this_cpu_add(dirty_throttle_leaks, tsk->nr_dirtied);
+	/* dirty_throttle_leaks increment removed - counter never read */
 	/* exit_tasks_rcu_finish removed - empty stub */
 
 	do_task_dead();

@@ -80,12 +80,7 @@ errseq_t errseq_sample(errseq_t *eseq);
 #define SEEK_DATA	3
 #define SEEK_HOLE	4
 #define RENAME_NOREPLACE	(1 << 0)
-/* RENAME_EXCHANGE removed - unused */
-struct files_stat_struct {
-	unsigned long nr_files;
-	unsigned long nr_free_files;
-	unsigned long max_files;
-};
+/* RENAME_EXCHANGE, files_stat_struct removed - unused */
 /* RWF_* values needed for IOCB_* macros, rwf_t typedef */
 typedef int rwf_t;
 #define RWF_NOWAIT	0x00000008

@@ -30,7 +30,7 @@ void tty_ldisc_unlock(struct tty_struct *tty);
 /* __tty_check_change, tty_check_change, __stop_tty, __start_tty,
  * tty_open_proc_set_tty, tty_vhangup_session, tty_signal_session_leader removed - never called */
 void tty_buffer_free_all(struct tty_port *port);
-void tty_buffer_flush(struct tty_struct *tty, struct tty_ldisc *ld);
+/* tty_buffer_flush removed - empty stub */
 void tty_buffer_init(struct tty_port *port);
 /* tty_buffer_set_lock_subclass removed - never implemented or called */
 bool tty_buffer_restart_work(struct tty_port *port);
@@ -53,8 +53,7 @@ void tty_ldisc_release(struct tty_struct *tty);
 int __must_check tty_ldisc_init(struct tty_struct *tty);
 void tty_ldisc_deinit(struct tty_struct *tty);
 
-void tty_sysctl_init(void);
-
+/* tty_sysctl_init removed - empty stub */
 /* tty_audit_add_data, tty_audit_tiocsti removed - unused */
 
 ssize_t redirected_tty_write(struct kiocb *, struct iov_iter *);

@@ -69,7 +69,7 @@ static void con_flush_chars(struct tty_struct *tty);
 static void set_cursor(struct vc_data *vc);
 static void hide_cursor(struct vc_data *vc);
 static void blank_screen_t(struct timer_list *unused);
-static void set_palette(struct vc_data *vc);
+/* set_palette forward decl removed - stub inlined */
 
 static int printable;
 int default_utf8 = true;
@@ -354,7 +354,7 @@ static void redraw_screen(struct vc_data *vc, int is_switch)
 
 		set_origin(vc);
 		update = vc->vc_sw->con_switch(vc);
-		set_palette(vc);
+		/* set_palette was no-op stub - call removed */
 
 		if (old_was_color != vc->vc_can_do_color) {
 			update_attr(vc);
@@ -1207,10 +1207,7 @@ static void blank_screen_t(struct timer_list *unused)
 	/* Stub: no screen blanking in minimal kernel */
 }
 
-static void set_palette(struct vc_data *vc)
-{
-	/* Stub: no palette setting in minimal kernel */
-}
+/* set_palette stub inlined into reset_palette */
 
 void reset_palette(struct vc_data *vc)
 {
@@ -1220,7 +1217,7 @@ void reset_palette(struct vc_data *vc)
 		vc->vc_palette[k++] = default_grn[j];
 		vc->vc_palette[k++] = default_blu[j];
 	}
-	set_palette(vc);
+	/* set_palette was a no-op stub - inlined away */
 }
 
 void vc_scrolldelta_helper(struct vc_data *c, int lines,

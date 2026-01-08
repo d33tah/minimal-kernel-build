@@ -1332,7 +1332,7 @@ static struct cdev tty_cdev, console_cdev;
 /* console_sysfs_notify removed - empty stub, call removed from printk.c */
 int __init tty_init(void)
 {
-	tty_sysctl_init();
+	/* tty_sysctl_init call removed - empty stub */
 	cdev_init(&tty_cdev, &tty_fops);
 	if (cdev_add(&tty_cdev, MKDEV(TTYAUX_MAJOR, 0), 1) ||
 	    register_chrdev_region(MKDEV(TTYAUX_MAJOR, 0), 1, "/dev/tty") < 0)

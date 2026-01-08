@@ -221,8 +221,7 @@ static void tty_ldisc_unlock_pair(struct tty_struct *tty,
 void tty_ldisc_flush(struct tty_struct *tty)
 {
 	struct tty_ldisc *ld = tty_ldisc_ref(tty);
-
-	tty_buffer_flush(tty, ld);
+	/* tty_buffer_flush removed - empty stub */
 	if (ld)
 		tty_ldisc_deref(ld);
 }
@@ -348,7 +347,4 @@ void tty_ldisc_deinit(struct tty_struct *tty)
 	tty->ldisc = NULL;
 }
 
-/* Stub: tty sysctl entries not needed for minimal kernel */
-void tty_sysctl_init(void)
-{
-}
+/* tty_sysctl_init removed - empty stub, call removed from tty_io.c */

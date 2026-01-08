@@ -106,9 +106,7 @@ static void tty_buffer_free(struct tty_port *port, struct tty_buffer *b)
 		llist_add(&b->free, &buf->free);
 }
 
-void tty_buffer_flush(struct tty_struct *tty, struct tty_ldisc *ld)
-{
-}
+/* tty_buffer_flush removed - empty stub, call removed from tty_ldisc.c */
 
 static int __tty_buffer_request_room(struct tty_port *port, size_t size,
 				     int flags)

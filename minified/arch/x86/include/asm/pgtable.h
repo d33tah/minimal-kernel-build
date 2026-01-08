@@ -20,8 +20,7 @@
 
 /* Inlined from asm/pkru.h */
 #include <asm/cpufeature.h>
-#define PKRU_AD_BIT 0x1u
-#define PKRU_WD_BIT 0x2u
+/* PKRU_AD_BIT, PKRU_WD_BIT removed - never used */
 #define init_pkru_value	0
 #define pkru_get_init_value()	0
 static inline u32 read_pkru(void) { if (cpu_feature_enabled(X86_FEATURE_OSPKE)) return rdpkru(); return 0; }

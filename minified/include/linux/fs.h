@@ -73,7 +73,7 @@ errseq_t errseq_set(errseq_t *eseq, int err);
 #include <linux/limits.h>
 #define INR_OPEN_CUR 1024
 #define INR_OPEN_MAX 4096
-#define NR_FILE  8192
+/* NR_FILE removed - never used */
 #define SEEK_SET	0
 #define SEEK_CUR	1
 #define SEEK_END	2

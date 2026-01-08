@@ -1102,15 +1102,13 @@ static void __zone_set_pageset_high_and_batch(struct zone *zone,
 					      unsigned long batch)
 {
 	struct per_cpu_pages *pcp;
-	int cpu;
-
 	/* for_each_possible_cpu simplified - single CPU */
 	pcp = per_cpu_ptr(zone->per_cpu_pageset, 0);
 	WRITE_ONCE(pcp->batch, batch);
 	WRITE_ONCE(pcp->high, high);
 }
 
-static void zone_set_pageset_high_and_batch(struct zone *zone, int cpu_online)
+static void zone_set_pageset_high_and_batch(struct zone *zone)
 {
 	/* Simplified: batch=1, high=4 for minimal kernel */
 	if (zone->pageset_high == 4 && zone->pageset_batch == 1)
@@ -1124,8 +1122,6 @@ static void zone_set_pageset_high_and_batch(struct zone *zone, int cpu_online)
 
 void __meminit setup_zone_pageset(struct zone *zone)
 {
-	int cpu;
-
 	if (sizeof(struct per_cpu_zonestat) > 0)
 		zone->per_cpu_zonestats = alloc_percpu(struct per_cpu_zonestat);
 
@@ -1139,7 +1135,7 @@ void __meminit setup_zone_pageset(struct zone *zone)
 		per_cpu_pages_init(pcp, pzstats);
 	}
 
-	zone_set_pageset_high_and_batch(zone, 0);
+	zone_set_pageset_high_and_batch(zone);
 }
 
 void __init setup_per_cpu_pageset(void)

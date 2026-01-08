@@ -384,9 +384,7 @@ struct task_struct {
 	 
 	sigset_t			saved_sigmask;
 	struct sigpending		pending;
-	unsigned long			sas_ss_sp;
-	size_t				sas_ss_size;
-	unsigned int			sas_ss_flags;
+	/* sas_ss_sp, sas_ss_size, sas_ss_flags removed - write-only fields */
 
 	struct callback_head		*task_works;
 

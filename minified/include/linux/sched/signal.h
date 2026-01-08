@@ -244,9 +244,7 @@ static inline void restore_saved_sigmask(void)
 
 static inline void sas_ss_reset(struct task_struct *p)
 {
-	p->sas_ss_sp = 0;
-	p->sas_ss_size = 0;
-	p->sas_ss_flags = SS_DISABLE;
+	/* sas_ss_sp, sas_ss_size removed - write-only fields */
 }
 
 extern void __cleanup_sighand(struct sighand_struct *);

@@ -30,41 +30,10 @@ struct sg_table {
 
 #define SG_PAGE_LINK_MASK (SG_CHAIN | SG_END)
 
-static inline unsigned int __sg_flags(struct scatterlist *sg)
-{
-	return sg->page_link & SG_PAGE_LINK_MASK;
-}
-
-/* sg_chain_ptr, sg_is_chain, sg_is_last removed - unused */
-
-static inline void sg_assign_page(struct scatterlist *sg, struct page *page)
-{
-	unsigned long page_link = sg->page_link & (SG_CHAIN | SG_END);
-
-	 
-	BUG_ON((unsigned long)page & SG_PAGE_LINK_MASK);
-	sg->page_link = page_link | (unsigned long) page;
-}
-
-static inline void sg_set_page(struct scatterlist *sg, struct page *page,
-			       unsigned int len, unsigned int offset)
-{
-	sg_assign_page(sg, page);
-	sg->offset = offset;
-	sg->length = len;
-}
-
-/* sg_page, sg_set_buf removed - no callers */
+/* __sg_flags, sg_assign_page, sg_set_page, sg_mark_end removed - unused */
 
 #define for_each_sg(sglist, sg, nr, __i)	\
 	for (__i = 0, sg = (sglist); __i < (nr); __i++, sg = sg_next(sg))
-
-static inline void sg_mark_end(struct scatterlist *sg)
-{
-
-	sg->page_link |= SG_END;
-	sg->page_link &= ~SG_CHAIN;
-}
 
 /* sg_init_marker removed - unused */
 

@@ -1,9 +1,6 @@
- 
 #ifndef _ASM_X86_MTRR_H
 #define _ASM_X86_MTRR_H
-
-#include <uapi/asm/mtrr.h>
-
+/* uapi/asm/mtrr.h was empty stub, removed */
 /* mtrr_type_lookup, mtrr_add, mtrr_add_page, mtrr_del, mtrr_del_page,
    mtrr_centaur_report_mcr removed - unused */
 static inline int mtrr_trim_uncached_memory(unsigned long end_pfn)

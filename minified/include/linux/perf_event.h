@@ -2,7 +2,7 @@
 #define _LINUX_PERF_EVENT_H
 
 /* Minimal perf_event.h - perf events disabled, all functions are empty stubs */
-#include <uapi/linux/perf_event.h>
+/* uapi/linux/perf_event.h was empty stub, removed */
 #include <asm/perf_event.h>
 #include <asm/hw_breakpoint.h>
 

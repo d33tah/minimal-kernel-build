@@ -9,7 +9,7 @@
 #include <asm/asm.h>
 #include <asm/errno.h>
 #include <asm/cpumask.h>
-#include <uapi/asm/msr.h>
+/* uapi/asm/msr.h was empty stub, removed */
 #include <asm/shared/msr.h>
 
 /* msr_info, msr_regs_info, saved_msr structs removed - unused */

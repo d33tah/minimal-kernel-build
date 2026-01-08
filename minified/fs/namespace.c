@@ -872,19 +872,7 @@ static int can_umount(const struct path *path, int flags)
 	return 0;
 }
 
-int path_umount(struct path *path, int flags)
-{
-	struct mount *mnt = real_mount(path->mnt);
-	int ret;
-
-	ret = can_umount(path, flags);
-	if (!ret)
-		ret = do_umount(mnt, flags);
-
-	dput(path->dentry);
-	mntput_no_expire(mnt);
-	return ret;
-}
+/* path_umount removed - never called */
 
 /* Stub: umount not needed for Hello World kernel */
 SYSCALL_DEFINE2(umount, char __user *, name, int, flags)

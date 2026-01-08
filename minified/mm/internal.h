@@ -38,7 +38,7 @@ struct folio_batch;
 	unlikely(__ret_warn_once);					\
 })
 
-void page_writeback_init(void);
+/* page_writeback_init removed - empty stub that was never called */
 
 /* folio_raw_mapping removed - only caller (page_rmapping) removed */
 /* __acct_reclaim_writeback, acct_reclaim_writeback removed - no callers/definition */

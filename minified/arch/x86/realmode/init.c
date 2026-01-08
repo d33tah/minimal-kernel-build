@@ -15,7 +15,7 @@ static inline bool cc_platform_has(enum cc_attr attr)
 #include <asm/set_memory.h>
 #include <asm/realmode.h>
 #include <asm/tlbflush.h>
-#include <asm/sev.h>
+/* asm/sev.h include removed - file is stub, nothing used */
 
 struct real_mode_header *real_mode_header;
 u32 *trampoline_cr4_features;

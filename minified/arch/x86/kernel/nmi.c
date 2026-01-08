@@ -19,7 +19,7 @@
 #include <asm/reboot.h>
 #include <asm/cache.h>
 #include <asm/nospec-branch.h>
-#include <asm/sev.h>
+/* asm/sev.h include removed - file is stub, nothing used */
 
 struct nmi_desc {
 	raw_spinlock_t lock;

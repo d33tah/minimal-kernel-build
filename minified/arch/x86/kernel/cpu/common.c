@@ -54,7 +54,7 @@ extern void doublefault_init_cpu_tss(void);
 #include <asm/intel-family.h>
 #include <asm/sigframe.h>
 #include <asm/traps.h>
-#include <asm/sev.h>
+/* asm/sev.h include removed - file is stub, nothing used */
 
 #include "cpu.h"
 

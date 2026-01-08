@@ -47,7 +47,7 @@
 	})
 
 #include <asm/fpu/api.h>
-#include <asm/sev.h>
+/* asm/sev.h include removed - file is stub, nothing used */
 #include <asm/traps.h>
 #include <asm/kdebug.h>
 /* Inlined from asm/insn-eval.h */

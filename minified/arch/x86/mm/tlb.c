@@ -357,9 +357,7 @@ static void flush_tlb_func(void *info)
 	VM_WARN_ON(!irqs_disabled());
 
 	if (!local) {
-		/* inc_irq_stat(irq_tlb_count) removed - counter never read */
-		count_vm_tlb_event(NR_TLB_REMOTE_FLUSH_RECEIVED);
-
+		/* inc_irq_stat, count_vm_tlb_event removed - counters never read */
 		if (f->mm && f->mm != loaded_mm)
 			return;
 	}
@@ -399,8 +397,7 @@ static void flush_tlb_func(void *info)
 		nr_invalidate = TLB_FLUSH_ALL;
 
 		flush_tlb_local();
-		if (local)
-			count_vm_tlb_event(NR_TLB_LOCAL_FLUSH_ALL);
+		/* count_vm_tlb_event(NR_TLB_LOCAL_FLUSH_ALL) removed - empty stub */
 	}
 
 	this_cpu_write(cpu_tlbstate.ctxs[loaded_mm_asid].tlb_gen, mm_tlb_gen);
@@ -418,8 +415,7 @@ DEFINE_PER_CPU_SHARED_ALIGNED(struct tlb_state_shared, cpu_tlbstate_shared);
 STATIC_NOPV void native_flush_tlb_multi(const struct cpumask *cpumask,
 					const struct flush_tlb_info *info)
 {
-	count_vm_tlb_event(NR_TLB_REMOTE_FLUSH);
-
+	/* count_vm_tlb_event(NR_TLB_REMOTE_FLUSH) removed - empty stub */
 	if (info->freed_tables)
 		on_each_cpu_mask(cpumask, flush_tlb_func, (void *)info, true);
 	else
@@ -495,13 +491,13 @@ void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 
 static void do_flush_tlb_all(void *info)
 {
-	count_vm_tlb_event(NR_TLB_REMOTE_FLUSH_RECEIVED);
+	/* count_vm_tlb_event removed - empty stub */
 	__flush_tlb_all();
 }
 
 void flush_tlb_all(void)
 {
-	count_vm_tlb_event(NR_TLB_REMOTE_FLUSH);
+	/* count_vm_tlb_event removed - empty stub */
 	on_each_cpu(do_flush_tlb_all, NULL, 1);
 }
 
@@ -546,8 +542,7 @@ unsigned long __get_current_cr3_fast(void)
 
 void flush_tlb_one_kernel(unsigned long addr)
 {
-	count_vm_tlb_event(NR_TLB_LOCAL_FLUSH_ONE);
-
+	/* count_vm_tlb_event removed - empty stub */
 	flush_tlb_one_user(addr);
 
 	if (!static_cpu_has(X86_FEATURE_PTI))

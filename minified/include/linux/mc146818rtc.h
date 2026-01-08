@@ -2,7 +2,7 @@
 #define _MC146818RTC_H
 
 #include <asm/io.h>
-#include <linux/rtc.h>
+/* rtc.h removed - struct rtc_time never used */
 #include <asm/mc146818rtc.h>
 #include <linux/delay.h>
 

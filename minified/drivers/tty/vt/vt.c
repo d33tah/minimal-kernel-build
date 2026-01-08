@@ -473,27 +473,18 @@ err_free:
 	return err;
 }
 
-static int vc_do_resize(struct tty_struct *tty, struct vc_data *vc,
-			unsigned int cols, unsigned int lines)
+/* vc_do_resize inlined - was a stub returning 0 */
+
+int vc_resize(struct vc_data *vc, unsigned int cols, unsigned int rows)
 {
 	/* Minimal stub: static console doesn't need resize */
 	return 0;
 }
 
-int vc_resize(struct vc_data *vc, unsigned int cols, unsigned int rows)
-{
-	return vc_do_resize(vc->port.tty, vc, cols, rows);
-}
-
 static int vt_resize(struct tty_struct *tty, struct winsize *ws)
 {
-	struct vc_data *vc = tty->driver_data;
-	int ret;
-
-	console_lock();
-	ret = vc_do_resize(tty, vc, ws->ws_col, ws->ws_row);
-	console_unlock();
-	return ret;
+	/* Minimal stub: static console doesn't need resize */
+	return 0;
 }
 
 enum { EPecma = 0, EPdec, EPeq, EPgt, EPlt };

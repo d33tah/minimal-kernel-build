@@ -40,9 +40,7 @@ struct clock_event_device {
 	int			(*set_state_oneshot)(struct clock_event_device *);
 	int			(*set_state_oneshot_stopped)(struct clock_event_device *);
 	int			(*set_state_shutdown)(struct clock_event_device *);
-	int			(*tick_resume)(struct clock_event_device *);
-
-	void			(*broadcast)(const struct cpumask *mask);
+	/* tick_resume, broadcast removed - never called */
 	void			(*suspend)(struct clock_event_device *);
 	void			(*resume)(struct clock_event_device *);
 	unsigned long		min_delta_ticks;
@@ -51,7 +49,7 @@ struct clock_event_device {
 	const char		*name;
 	int			rating;
 	int			irq;
-	int			bound_on;
+	/* bound_on removed - never accessed */
 	const struct cpumask	*cpumask;
 	struct list_head	list;
 	struct module		*owner;

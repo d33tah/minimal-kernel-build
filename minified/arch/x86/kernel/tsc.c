@@ -6,13 +6,9 @@
 #include <linux/init.h>
 #include <linux/export.h>
 #include <linux/timer.h>
-/* Inlined from acpi_pmtmr.h */
+/* acpi_pmtmr.h inlined - acpi_pm_read_early always returns 0 */
 #define PMTMR_TICKS_PER_SEC 3579545
 #define ACPI_PM_OVRRUN (1 << 24)
-static inline u32 acpi_pm_read_early(void)
-{
-	return 0;
-}
 #include <linux/delay.h>
 #include <linux/clocksource.h>
 #include <linux/percpu.h>
@@ -160,10 +156,10 @@ static u64 tsc_read_refs(u64 *p, int hpet)
 	u64 thresh = tsc_khz ? tsc_khz >> 5 : TSC_DEFAULT_THRESHOLD;
 	int i;
 
-	/* hpet always 0 - hpet_readl branch removed */
+	/* hpet always 0 - hpet_readl branch removed, acpi_pm_read_early inlined */
 	for (i = 0; i < MAX_RETRIES; i++) {
 		t1 = get_cycles();
-		*p = acpi_pm_read_early();
+		*p = 0;
 		t2 = get_cycles();
 		if ((t2 - t1) < thresh)
 			return t2;

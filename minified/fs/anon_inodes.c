@@ -16,26 +16,8 @@
 static struct vfsmount *anon_inode_mnt __read_mostly;
 static struct inode *anon_inode_inode;
 
-static char *anon_inodefs_dname(struct dentry *dentry, char *buffer, int buflen)
-{
-	return dynamic_dname(dentry, buffer, buflen, "anon_inode:%s",
-			     dentry->d_name.name);
-}
-
-static const struct dentry_operations anon_inodefs_dentry_operations = {
-	.d_dname = anon_inodefs_dname,
-};
-
-static int anon_inodefs_init_fs_context(struct fs_context *fc)
-{
-	struct pseudo_fs_context *ctx = init_pseudo(fc, ANON_INODE_FS_MAGIC);
-	if (!ctx)
-		return -ENOMEM;
-	ctx->dops = &anon_inodefs_dentry_operations;
-	return 0;
-}
-
-/* anon_inode_fs_type removed - never registered (anon_inode_init removed) */
+/* anon_inodefs_dname, anon_inodefs_dentry_operations, anon_inodefs_init_fs_context,
+   anon_inode_fs_type removed - fs never registered (anon_inode_init removed) */
 
 /* Simplified: only non-secure anon inodes used */
 static struct file *__anon_inode_getfile(const char *name,

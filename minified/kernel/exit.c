@@ -3,7 +3,7 @@
 #include <linux/slab.h>
 #include <linux/sched/mm.h>
 extern int nr_threads;
-DECLARE_PER_CPU(unsigned long, process_counts);
+/* process_counts removed - never read */
 /* end sched/stat.h */
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
@@ -98,7 +98,7 @@ static void __exit_signal(struct task_struct *tsk)
 		detach_pid(tsk, PIDTYPE_SID);
 		list_del_rcu(&tsk->tasks);
 		list_del_init(&tsk->sibling);
-		__this_cpu_dec(process_counts);
+		/* process_counts decrement removed */
 	}
 	list_del_rcu(&tsk->thread_group);
 	list_del_rcu(&tsk->thread_node);

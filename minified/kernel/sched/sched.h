@@ -15,7 +15,7 @@ static inline int dl_task(struct task_struct *p) { return dl_prio(p->prio); }
 #include <linux/sched/signal.h>
 /* extern total_forks removed - only incremented, never read */
 extern int nr_threads;
-DECLARE_PER_CPU(unsigned long, process_counts);
+/* process_counts removed - never read */
 extern unsigned int nr_running(void);
 /* single_task_running removed - unused */
 extern unsigned int nr_iowait(void);

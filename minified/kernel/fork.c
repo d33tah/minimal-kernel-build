@@ -83,7 +83,7 @@ int nr_threads;
 
 static int max_threads;
 
-DEFINE_PER_CPU(unsigned long, process_counts) = 0;
+/* process_counts removed - only incremented/decremented, never read */
 
 __cacheline_aligned DEFINE_RWLOCK(tasklist_lock);
 
@@ -1012,7 +1012,7 @@ copy_process(struct pid *pid, int trace, int node,
 			attach_pid(p, PIDTYPE_TGID);
 			attach_pid(p, PIDTYPE_PGID);
 			attach_pid(p, PIDTYPE_SID);
-			__this_cpu_inc(process_counts);
+			/* process_counts increment removed */
 		} else {
 			current->signal->nr_threads++;
 			atomic_inc(&current->signal->live);

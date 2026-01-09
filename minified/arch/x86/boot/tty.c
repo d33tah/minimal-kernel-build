@@ -48,13 +48,4 @@ void __section(".inittext") puts(const char *str)
 		putchar(*str++);
 }
 
-int getchar(void)
-{
-	struct biosregs ireg, oreg;
-
-	initregs(&ireg);
-
-	intcall(0x16, &ireg, &oreg);
-
-	return oreg.al;
-}
+/* getchar removed - never called */

@@ -88,8 +88,7 @@ struct vc_data {
 	DECLARE_BITMAP(vc_tab_stop, VC_TABSTOPS_COUNT);
 	unsigned char   vc_palette[16*3];
 	unsigned short * vc_translate;
-	unsigned int    vc_resize_user;
-	/* vc_bell_pitch, vc_bell_duration, vc_cur_blink_ms removed - write-only */
+	/* vc_resize_user, vc_bell_pitch, vc_bell_duration, vc_cur_blink_ms removed - unused */
 	struct vc_data **vc_display_fg;
 	struct uni_pagedir *vc_uni_pagedir;
 	struct uni_pagedir **vc_uni_pagedir_loc;

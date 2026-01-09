@@ -302,9 +302,8 @@ typedef struct pglist_data {
 	wait_queue_head_t kswapd_wait;
 	wait_queue_head_t pfmemalloc_wait;
 
-	/* reclaim_wait, nr_writeback_throttled, kswapd_order removed - never used */
+	/* reclaim_wait, nr_writeback_throttled, kswapd_order, kswapd_highest_zoneidx removed */
 	struct task_struct *kswapd;
-	enum zone_type kswapd_highest_zoneidx;
 
 	unsigned long totalreserve_pages;
 

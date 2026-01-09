@@ -1426,7 +1426,8 @@ static void __init free_area_init_node(int nid)
 	unsigned long start_pfn = 0;
 	unsigned long end_pfn = 0;
 
-	WARN_ON(pgdat->nr_zones || pgdat->kswapd_highest_zoneidx);
+	WARN_ON(pgdat->nr_zones);
+	/* kswapd_highest_zoneidx check removed - field removed */
 
 	get_pfn_range_for_nid(nid, &start_pfn, &end_pfn);
 

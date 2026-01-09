@@ -86,9 +86,4 @@ void read_persistent_clock64(struct timespec64 *ts)
 	x86_platform.get_wallclock(ts);
 }
 
-/* Stub: RTC platform device registration not needed for minimal kernel */
-static __init int add_rtc_cmos(void)
-{
-	return 0;
-}
-device_initcall(add_rtc_cmos);
+/* add_rtc_cmos removed - was empty stub initcall */

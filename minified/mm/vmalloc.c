@@ -842,32 +842,16 @@ static atomic_long_t vmap_lazy_nr = ATOMIC_LONG_INIT(0);
 
 static DEFINE_MUTEX(vmap_purge_lock);
 
-static void purge_fragmented_blocks_allcpus(void);
-
-static bool __purge_vmap_area_lazy(unsigned long start, unsigned long end)
-{
-	return false;
-}
+/* purge_fragmented_blocks_allcpus, __purge_vmap_area_lazy removed - stubs */
 
 static void purge_vmap_area_lazy(void)
 {
-	mutex_lock(&vmap_purge_lock);
-	purge_fragmented_blocks_allcpus();
-	__purge_vmap_area_lazy(ULONG_MAX, 0);
-	mutex_unlock(&vmap_purge_lock);
+	/* Stub: no-op */
 }
 
 static void drain_vmap_area_work(struct work_struct *work)
 {
-	unsigned long nr_lazy;
-
-	do {
-		mutex_lock(&vmap_purge_lock);
-		__purge_vmap_area_lazy(ULONG_MAX, 0);
-		mutex_unlock(&vmap_purge_lock);
-
-		nr_lazy = atomic_long_read(&vmap_lazy_nr);
-	} while (nr_lazy > lazy_max_pages());
+	/* Stub: no-op */
 }
 
 static void free_vmap_area_noflush(struct vmap_area *va)
@@ -933,10 +917,7 @@ struct vmap_block {
 
 static DEFINE_PER_CPU(struct vmap_block_queue, vmap_block_queue);
 
-static void purge_fragmented_blocks_allcpus(void)
-{
-	/* Stub: calls purge_fragmented_blocks which is already stubbed */
-}
+/* purge_fragmented_blocks_allcpus definition removed - already inlined in stubs above */
 
 static struct vm_struct *vmlist __initdata;
 

@@ -378,8 +378,7 @@ static void purge_vmap_area_lazy(void);
 /* vmap_notify_list removed - no registrations */
 static void drain_vmap_area_work(struct work_struct *work);
 static DECLARE_WORK(drain_vmap_work, drain_vmap_area_work);
-
-static atomic_long_t nr_vmalloc_pages;
+/* nr_vmalloc_pages removed - only added to, never read */
 
 static struct vmap_area *__find_vmap_area(unsigned long addr)
 {
@@ -1237,7 +1236,7 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 					     page_order, nr_small_pages,
 					     area->pages);
 
-	atomic_long_add(area->nr_pages, &nr_vmalloc_pages);
+	/* nr_vmalloc_pages addition removed - counter never read */
 	/* mod_memcg_page_state is empty stub */
 	if (area->nr_pages != nr_small_pages) {
 		warn_alloc(

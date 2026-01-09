@@ -158,7 +158,7 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags,
 		s->s_iflags |= SB_I_NODEV;
 	INIT_HLIST_NODE(&s->s_instances);
 	INIT_HLIST_BL_HEAD(&s->s_roots);
-	mutex_init(&s->s_sync_lock);
+	/* s_sync_lock init removed - field removed */
 	INIT_LIST_HEAD(&s->s_inodes);
 	spin_lock_init(&s->s_inode_list_lock);
 	/* s_inodes_wb, s_inode_wblist_lock init removed - fields removed */

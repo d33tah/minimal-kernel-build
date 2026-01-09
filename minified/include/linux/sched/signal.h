@@ -43,9 +43,8 @@ struct signal_struct {
 	int			nr_threads;
 	struct list_head	thread_head;
 
-	wait_queue_head_t	wait_chldexit;	 
+	/* wait_chldexit removed - only initialized, never used */
 
-	 
 	struct task_struct	*curr_target;
 
 	 

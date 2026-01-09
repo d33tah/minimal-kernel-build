@@ -602,7 +602,7 @@ struct super_block {
 	struct rcu_head		rcu;
 	struct work_struct	destroy_work;
 
-	struct mutex		s_sync_lock;
+	/* s_sync_lock removed - init-only, never locked */
 
 	spinlock_t		s_inode_list_lock ____cacheline_aligned_in_smp;
 	struct list_head	s_inodes;

@@ -636,7 +636,7 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 	sig->thread_head = (struct list_head)LIST_HEAD_INIT(tsk->thread_node);
 	tsk->thread_node = (struct list_head)LIST_HEAD_INIT(sig->thread_head);
 
-	init_waitqueue_head(&sig->wait_chldexit);
+	/* init_waitqueue_head(&sig->wait_chldexit) removed - field removed */
 	sig->curr_target = tsk;
 	init_sigpending(&sig->shared_pending);
 	INIT_HLIST_HEAD(&sig->multiprocess);

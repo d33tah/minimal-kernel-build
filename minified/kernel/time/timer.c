@@ -35,29 +35,6 @@
 
 __visible u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
 
-/* Minimal timer_base - reduced wheel for Hello World */
-#define LVL_BITS 4
-#define LVL_SIZE (1UL << LVL_BITS)
-#define LVL_DEPTH 2
-#define WHEEL_SIZE (LVL_SIZE * LVL_DEPTH)
-#define NR_BASES 1
-#define BASE_STD 0
-
-struct timer_base {
-	raw_spinlock_t lock;
-	struct timer_list *running_timer;
-	unsigned long clk;
-	unsigned long next_expiry;
-	unsigned int cpu;
-	bool next_expiry_recalc;
-	bool is_idle;
-	bool timers_pending;
-	DECLARE_BITMAP(pending_map, WHEEL_SIZE);
-	struct hlist_head vectors[WHEEL_SIZE];
-} ____cacheline_aligned;
-
-static DEFINE_PER_CPU(struct timer_base, timer_bases[NR_BASES]);
-
 void init_timer_key(struct timer_list *timer, void (*func)(struct timer_list *),
 		    unsigned int flags, const char *name,
 		    struct lock_class_key *key)

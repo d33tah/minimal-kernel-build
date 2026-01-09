@@ -23,9 +23,7 @@ extern struct fs_struct init_fs;
 extern struct nsproxy init_nsproxy;
 extern struct cred init_cred;
 
-#define INIT_PREV_CPUTIME(x)	.prev_cputime = {			\
-	.lock = __RAW_SPIN_LOCK_UNLOCKED(x.prev_cputime.lock),		\
-},
+/* INIT_PREV_CPUTIME removed - prev_cputime removed from task_struct */
 
 #define INIT_TASK_COMM "swapper"
 

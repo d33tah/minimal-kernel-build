@@ -97,6 +97,5 @@ struct task_struct init_task
 	.thread_pid	= &init_struct_pid,
 	.thread_group	= LIST_HEAD_INIT(init_task.thread_group),
 	.thread_node	= LIST_HEAD_INIT(init_signals.thread_head),
-	/* perf_event_* initializers removed - fields no longer exist */
-	INIT_PREV_CPUTIME(init_task)
+	/* perf_event_*, prev_cputime initializers removed - fields no longer exist */
 };

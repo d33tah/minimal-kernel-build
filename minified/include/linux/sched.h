@@ -162,11 +162,7 @@ asmlinkage void preempt_schedule_irq(void);
 
 extern void io_schedule(void);
 
-struct prev_cputime {
-	u64				utime;
-	u64				stime;
-	raw_spinlock_t			lock;
-};
+/* struct prev_cputime removed - write-only (only initialized, never read) */
 
 # define SCHED_FIXEDPOINT_SHIFT		10
 # define SCHED_FIXEDPOINT_SCALE		(1L << SCHED_FIXEDPOINT_SHIFT)
@@ -339,8 +335,7 @@ struct task_struct {
 
 	u64				utime;
 	u64				stime;
-	/* gtime removed - write-only field (never actually read) */
-	struct prev_cputime		prev_cputime;
+	/* gtime, prev_cputime removed - write-only fields (never actually read) */
 
 	/* nvcsw, nivcsw removed - write-only fields (accumulation removed) */
 	/* min_flt, maj_flt removed - write-only fields (increments removed) */

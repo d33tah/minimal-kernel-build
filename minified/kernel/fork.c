@@ -799,10 +799,9 @@ copy_process(struct pid *pid, int trace, int node,
 
 	init_sigpending(&p->pending);
 
-	p->utime = p->stime = 0; /* gtime removed - write-only */
-	prev_cputime_init(&p->prev_cputime);
+	p->utime = p->stime = 0; /* gtime, prev_cputime removed - write-only */
 
-	/* task_io_accounting_init, acct_clear_integrals, posix_cputimers_init, audit_set_context removed - empty stubs */
+	/* prev_cputime_init, task_io_accounting_init, acct_clear_integrals, posix_cputimers_init, audit_set_context removed - empty stubs */
 	if (args->kthread) {
 		if (!set_kthread_struct(p))
 			goto bad_fork_cleanup_count;

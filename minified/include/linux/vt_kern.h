@@ -70,8 +70,7 @@ struct vc_data {
 	unsigned short	vc_video_erase_char;
 	unsigned int	vc_state;
 	unsigned int	vc_npar,vc_par[NPAR];
-	struct vt_mode	vt_mode;
-	/* vt_pid, vt_newvt, paste_wait removed - write-only (never read) */
+	/* vt_mode, vt_pid, vt_newvt, paste_wait removed - write-only (never read) */
 	unsigned int	vc_disp_ctrl	: 1;
 	unsigned int	vc_toggle_meta	: 1;
 	unsigned int	vc_decscnm	: 1;

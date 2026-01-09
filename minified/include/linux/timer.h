@@ -7,9 +7,9 @@
 #include <linux/stringify.h>
 
 struct timer_list {
-	 
+
 	struct hlist_node	entry;
-	unsigned long		expires;
+	/* expires removed - never accessed (timers are stubbed) */
 	void			(*function)(struct timer_list *);
 	u32			flags;
 

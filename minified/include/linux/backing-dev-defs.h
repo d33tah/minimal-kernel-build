@@ -38,9 +38,7 @@ struct bdi_writeback {
 	spinlock_t list_lock;		 
 
 	atomic_t writeback_inodes;
-	/* stat[NR_WB_STAT_ITEMS] removed - array was zero-sized */
-
-	unsigned long congested;
+	/* stat[NR_WB_STAT_ITEMS], congested removed - unused */
 
 	/* bw_time_stamp, dirtied_stamp, written_stamp, write_bandwidth,
 	   avg_write_bandwidth, dirty_ratelimit, balanced_dirty_ratelimit,

@@ -122,7 +122,7 @@ struct list_head *pcpu_chunk_lists __ro_after_init;
 
 int pcpu_nr_empty_pop_pages;
 
-static unsigned long pcpu_nr_populated;
+/* pcpu_nr_populated removed - only written, never read */
 
 static void pcpu_balance_workfn(struct work_struct *work);
 static DECLARE_WORK(pcpu_balance_work, pcpu_balance_workfn);
@@ -849,7 +849,6 @@ static void pcpu_chunk_populated(struct pcpu_chunk *chunk, int page_start,
 
 	bitmap_set(chunk->populated, page_start, nr);
 	chunk->nr_populated += nr;
-	pcpu_nr_populated += nr;
 
 	pcpu_update_empty_pages(chunk, nr);
 }
@@ -1312,8 +1311,6 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	pcpu_first_chunk = chunk;
 	pcpu_nr_empty_pop_pages = pcpu_first_chunk->nr_empty_pop_pages;
 	pcpu_chunk_relocate(pcpu_first_chunk, -1);
-
-	pcpu_nr_populated += PFN_DOWN(size_sum);
 
 	/* pcpu_stats_chunk_alloc removed - stats stub */
 }

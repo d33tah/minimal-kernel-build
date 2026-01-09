@@ -101,8 +101,7 @@ int pcpu_sidelined_slot __ro_after_init;
 int pcpu_to_depopulate_slot __ro_after_init;
 static size_t pcpu_chunk_struct_size __ro_after_init;
 
-static unsigned int pcpu_low_unit_cpu __ro_after_init;
-static unsigned int pcpu_high_unit_cpu __ro_after_init;
+/* pcpu_low_unit_cpu, pcpu_high_unit_cpu removed - only written, never read */
 
 static const int *pcpu_unit_map __ro_after_init;
 const unsigned long *pcpu_unit_offsets __ro_after_init;
@@ -1230,9 +1229,6 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	for (cpu = 0; cpu < nr_cpu_ids; cpu++)
 		unit_map[cpu] = UINT_MAX;
 
-	pcpu_low_unit_cpu = NR_CPUS;
-	pcpu_high_unit_cpu = NR_CPUS;
-
 	for (group = 0, unit = 0; group < ai->nr_groups; group++, unit += i) {
 		const struct pcpu_group_info *gi = &ai->groups[group];
 
@@ -1250,13 +1246,6 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 
 			unit_map[cpu] = unit + i;
 			unit_off[cpu] = gi->base_offset + i * ai->unit_size;
-
-			if (pcpu_low_unit_cpu == NR_CPUS ||
-			    unit_off[cpu] < unit_off[pcpu_low_unit_cpu])
-				pcpu_low_unit_cpu = cpu;
-			if (pcpu_high_unit_cpu == NR_CPUS ||
-			    unit_off[cpu] > unit_off[pcpu_high_unit_cpu])
-				pcpu_high_unit_cpu = cpu;
 		}
 	}
 	/* for_each_possible_cpu simplified - single CPU */

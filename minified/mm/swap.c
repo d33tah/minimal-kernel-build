@@ -310,7 +310,7 @@ void lru_add_drain(void)
 	local_unlock(&lru_pvecs.lock);
 }
 
-atomic_t lru_disable_count = ATOMIC_INIT(0);
+/* lru_disable_count removed - never modified, always 0 */
 
 void release_pages(struct page **pages, int nr)
 {

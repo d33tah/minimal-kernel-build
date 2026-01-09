@@ -299,11 +299,9 @@ typedef struct pglist_data {
 	unsigned long node_present_pages;
 	unsigned long node_spanned_pages;
 	int node_id;
-	wait_queue_head_t kswapd_wait;
-	wait_queue_head_t pfmemalloc_wait;
 
-	/* reclaim_wait, nr_writeback_throttled, kswapd_order, kswapd_highest_zoneidx,
-	   totalreserve_pages, kswapd removed - never used */
+	/* kswapd_wait, pfmemalloc_wait, reclaim_wait, nr_writeback_throttled,
+	   kswapd_order, kswapd_highest_zoneidx, totalreserve_pages, kswapd removed */
 
 	ZONE_PADDING(_pad1_)
 

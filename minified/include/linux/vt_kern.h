@@ -71,9 +71,7 @@ struct vc_data {
 	unsigned int	vc_state;
 	unsigned int	vc_npar,vc_par[NPAR];
 	struct vt_mode	vt_mode;
-	struct pid 	*vt_pid;
-	int		vt_newvt;
-	/* paste_wait removed - write-only (never waited on) */
+	/* vt_pid, vt_newvt, paste_wait removed - write-only (never read) */
 	unsigned int	vc_disp_ctrl	: 1;
 	unsigned int	vc_toggle_meta	: 1;
 	unsigned int	vc_decscnm	: 1;

@@ -62,9 +62,7 @@ void reset_vc(struct vc_data *vc)
 	vc->vt_mode.relsig = 0;
 	vc->vt_mode.acqsig = 0;
 	vc->vt_mode.frsig = 0;
-	put_pid(vc->vt_pid);
-	vc->vt_pid = NULL;
-	vc->vt_newvt = -1;
+	/* put_pid(vc->vt_pid), vt_pid, vt_newvt assignments removed - fields removed */
 	reset_palette(vc);
 }
 

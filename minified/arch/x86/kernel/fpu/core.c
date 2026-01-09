@@ -262,17 +262,7 @@ void fpu__drop(struct fpu *fpu)
 	preempt_enable();
 }
 
-static inline void restore_fpregs_from_init_fpstate(u64 features_mask)
-{
-	if (use_xsave())
-		os_xrstor(&init_fpstate, features_mask);
-	else if (use_fxsr())
-		fxrstor(&init_fpstate.regs.fxsave);
-	else
-		frstor(&init_fpstate.regs.fsave);
-
-	pkru_write_default();
-}
+/* restore_fpregs_from_init_fpstate removed - never called */
 
 static void fpu_reset_fpregs(void)
 {

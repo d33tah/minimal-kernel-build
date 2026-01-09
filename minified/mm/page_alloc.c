@@ -1102,12 +1102,6 @@ static void __zone_set_pageset_high_and_batch(struct zone *zone,
 static void zone_set_pageset_high_and_batch(struct zone *zone)
 {
 	/* Simplified: batch=1, high=4 for minimal kernel */
-	if (zone->pageset_high == 4 && zone->pageset_batch == 1)
-		return;
-
-	zone->pageset_high = 4;
-	zone->pageset_batch = 1;
-
 	__zone_set_pageset_high_and_batch(zone, 4, 1);
 }
 
@@ -1147,8 +1141,7 @@ static __meminit void zone_pcp_init(struct zone *zone)
 {
 	zone->per_cpu_pageset = &boot_pageset;
 	zone->per_cpu_zonestats = &boot_zonestats;
-	zone->pageset_high = BOOT_PAGESET_HIGH;
-	zone->pageset_batch = BOOT_PAGESET_BATCH;
+	/* pageset_high, pageset_batch fields removed */
 }
 
 void __meminit init_currently_empty_zone(struct zone *zone,

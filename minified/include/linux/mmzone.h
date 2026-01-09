@@ -237,8 +237,7 @@ struct zone {
 	struct per_cpu_pages __percpu *per_cpu_pageset;
 	struct per_cpu_zonestat __percpu *per_cpu_zonestats;
 
-	int pageset_high;
-	int pageset_batch;
+	/* pageset_high, pageset_batch removed - write-only cache fields */
 
 	unsigned long *pageblock_flags;
 

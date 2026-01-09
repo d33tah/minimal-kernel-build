@@ -396,7 +396,7 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 	p->se.vruntime = 0;
 	INIT_LIST_HEAD(&p->se.group_node);
 
-	RB_CLEAR_NODE(&p->dl.rb_node);
+	/* RB_CLEAR_NODE(&p->dl.rb_node) removed - field removed */
 	init_dl_task_timer(&p->dl);
 	init_dl_inactive_task_timer(&p->dl);
 	__dl_clear_params(p);

@@ -198,7 +198,7 @@ struct sched_rt_entity {
 } __randomize_layout;
 
 struct sched_dl_entity {
-	struct rb_node			rb_node;
+	/* rb_node removed - deadline scheduler stubbed, never used */
 };
 
 

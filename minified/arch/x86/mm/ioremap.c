@@ -5,13 +5,7 @@
 #include <linux/ioport.h>
 #include <linux/slab.h>
 #include <linux/vmalloc.h>
-static inline void mmiotrace_ioremap(resource_size_t off, unsigned long size,
-				     void __iomem *addr)
-{
-}
-static inline void mmiotrace_iounmap(volatile void __iomem *addr)
-{
-}
+/* mmiotrace_ioremap, mmiotrace_iounmap removed - empty stubs */
 enum cc_attr {
 	CC_ATTR_HOST_MEM_ENCRYPT,
 	CC_ATTR_GUEST_MEM_ENCRYPT,
@@ -202,9 +196,7 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
 		goto err_free_area;
 
 	ret_addr = (void __iomem *)(vaddr + offset);
-	mmiotrace_ioremap(unaligned_phys_addr, unaligned_size, ret_addr);
-
-	/* iomem_map_sanity_check removed - always returned 0 */
+	/* iomem_map_sanity_check, mmiotrace_ioremap removed */
 	return ret_addr;
 err_free_area:
 	free_vm_area(area);
@@ -235,8 +227,7 @@ void iounmap(volatile void __iomem *addr)
 		return;
 	}
 
-	mmiotrace_iounmap(addr);
-
+	/* mmiotrace_iounmap call removed */
 	addr = (volatile void __iomem *)(PAGE_MASK &
 					 (unsigned long __force)addr);
 

@@ -389,7 +389,7 @@ static void visual_init(struct vc_data *vc, int num, int init)
 	vc->vc_hi_font_mask = 0;
 	vc->vc_complement_mask = 0;
 	vc->vc_can_do_color = 0;
-	vc->vc_cur_blink_ms = DEFAULT_CURSOR_BLINK_MS;
+	/* vc->vc_cur_blink_ms removed - field removed */
 	vc->vc_sw->con_init(vc, init);
 	if (!vc->vc_complement_mask)
 		vc->vc_complement_mask = vc->vc_can_do_color ? 0x7700 : 0x0800;
@@ -633,9 +633,7 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 	for (i = 0; i < VC_TABSTOPS_COUNT; i += 8)
 		set_bit(i, vc->vc_tab_stop);
 
-	vc->vc_bell_pitch = DEFAULT_BELL_PITCH;
-	vc->vc_bell_duration = DEFAULT_BELL_DURATION;
-	vc->vc_cur_blink_ms = DEFAULT_CURSOR_BLINK_MS;
+	/* vc_bell_pitch, vc_bell_duration, vc_cur_blink_ms removed - fields removed */
 
 	gotoxy(vc, 0, 0);
 	save_cur(vc);

@@ -678,10 +678,7 @@ static inline void sb_start_pagefault(struct super_block *sb)
 bool inode_owner_or_capable(struct user_namespace *mnt_userns,
 			    const struct inode *inode);
 
-/* vfs_mkdir, vfs_mknod, vfs_symlink, vfs_link removed - only callers were init_* */
-
-int vfs_fchown(struct file *file, uid_t user, gid_t group);
-int vfs_fchmod(struct file *file, umode_t mode);
+/* vfs_mkdir, vfs_mknod, vfs_symlink, vfs_link, vfs_fchown, vfs_fchmod removed - never called */
 
 void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,
 		      const struct inode *dir, umode_t mode);

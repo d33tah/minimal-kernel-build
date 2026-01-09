@@ -64,8 +64,7 @@ extern struct file *do_filp_open(int dfd, struct filename *pathname,
 extern struct open_how build_open_how(int flags, umode_t mode);
 extern int build_open_flags(const struct open_how *how, struct open_flags *op);
 
-int chmod_common(const struct path *path, umode_t mode);
-/* do_fchownat, chown_common removed - never called after init_chown removal */
+/* chmod_common, do_fchownat, chown_common removed - never called */
 extern int vfs_open(const struct path *, struct file *);
 
  

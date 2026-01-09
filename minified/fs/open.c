@@ -117,17 +117,7 @@ SYSCALL_DEFINE1(chroot, const char __user *, filename)
 	return -ENOSYS;
 }
 
-int chmod_common(const struct path *path, umode_t mode)
-{
-	/* Stub: chmod not needed for minimal kernel */
-	return -EOPNOTSUPP;
-}
-
-int vfs_fchmod(struct file *file, umode_t mode)
-{
-	/* audit_file - empty stub */
-	return chmod_common(&file->f_path, mode);
-}
+/* chmod_common, vfs_fchmod removed - never called */
 
 /* Stub: fchmod not needed for Hello World */
 SYSCALL_DEFINE2(fchmod, unsigned int, fd, umode_t, mode)
@@ -167,10 +157,7 @@ SYSCALL_DEFINE3(lchown, const char __user *, filename, uid_t, user, gid_t,
 	return -ENOSYS;
 }
 
-int vfs_fchown(struct file *file, uid_t user, gid_t group)
-{
-	return -ENOSYS;
-}
+/* vfs_fchown removed - never called */
 
 SYSCALL_DEFINE3(fchown, unsigned int, fd, uid_t, user, gid_t, group)
 {

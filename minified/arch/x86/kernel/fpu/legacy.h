@@ -60,10 +60,7 @@ static inline void fxrstor(struct fxregs_state *fx)
 	kernel_insn(fxrstor %[fx], "=m" (*fx), [fx] "m" (*fx));
 }
 
-static inline int fxrstor_safe(struct fxregs_state *fx)
-{
-	return kernel_insn_err(fxrstor %[fx], "=m" (*fx), [fx] "m" (*fx));
-}
+/* fxrstor_safe removed - never called */
 
 static inline int fxrstor_from_user_sigframe(struct fxregs_state __user *fx)
 {

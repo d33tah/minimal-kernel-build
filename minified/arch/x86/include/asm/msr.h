@@ -103,23 +103,7 @@ native_write_msr(unsigned int msr, u32 low, u32 high)
 		do_trace_write_msr(msr, ((u64)high << 32 | low), 0);
 }
 
- 
-static inline int notrace
-native_write_msr_safe(unsigned int msr, u32 low, u32 high)
-{
-	int err;
-
-	asm volatile("1: wrmsr ; xor %[err],%[err]\n"
-		     "2:\n\t"
-		     _ASM_EXTABLE_TYPE_REG(1b, 2b, EX_TYPE_WRMSR_SAFE, %[err])
-		     : [err] "=a" (err)
-		     : "c" (msr), "0" (low), "d" (high)
-		     : "memory");
-	if (tracepoint_enabled(write_msr))
-		do_trace_write_msr(msr, ((u64)high << 32 | low), err);
-	return err;
-}
-/* rdmsr_safe_regs, wrmsr_safe_regs declarations removed - no implementation */
+/* native_write_msr_safe, rdmsr_safe_regs, wrmsr_safe_regs removed - never called */
 
 static __always_inline unsigned long long rdtsc(void)
 {

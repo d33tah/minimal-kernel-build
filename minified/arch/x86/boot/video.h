@@ -39,20 +39,10 @@ extern struct card_info video_cards[], video_cards_end[];
 #define ADAPTER_VGA	2
 
 extern int adapter;
-extern int force_x, force_y;	 
-extern int do_restore;		 
-extern int graphic_mode;	 
+extern int force_x, force_y;
+extern int do_restore;
+extern int graphic_mode;
 
- 
-static inline u8 in_idx(u16 port, u8 index)
-{
-	outb(index, port);
-	return inb(port+1);
-}
-
-static inline void out_idx(u8 v, u16 port, u8 index)
-{
-	outw(index+(v << 8), port);
-}
+/* in_idx, out_idx removed - never called */
 
 #endif

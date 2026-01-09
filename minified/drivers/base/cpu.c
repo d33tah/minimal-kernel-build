@@ -27,21 +27,7 @@ struct bus_type cpu_subsys = {
 	.dev_name = "cpu",
 	.match = cpu_subsys_match,
 };
-
-struct cpu_attr {
-	struct device_attribute attr;
-	const struct cpumask *const map;
-};
-
-static ssize_t show_cpus_attr(struct device *dev, struct device_attribute *attr,
-			      char *buf)
-{
-	struct cpu_attr *ca = container_of(attr, struct cpu_attr, attr);
-
-	return cpumap_print_to_pagebuf(true, buf, ca->map);
-}
-
-/* cpu_attrs, _CPU_ATTR removed - never used (cpu_root_attr_groups unused) */
+/* struct cpu_attr, show_cpus_attr removed - cpu_attrs removed */
 
 static void device_create_release(struct device *dev)
 {

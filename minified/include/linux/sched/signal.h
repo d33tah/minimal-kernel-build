@@ -30,23 +30,7 @@ struct sighand_struct {
 	struct k_sigaction	action[_NSIG];
 };
 
-/* pacct_struct, cpu_itimer removed - never used */
-
-struct task_cputime_atomic {
-	atomic64_t utime;
-	atomic64_t stime;
-	atomic64_t sum_exec_runtime;
-};
-
-#define INIT_CPUTIME_ATOMIC \
-	(struct task_cputime_atomic) {				\
-		.utime = ATOMIC64_INIT(0),			\
-		.stime = ATOMIC64_INIT(0),			\
-		.sum_exec_runtime = ATOMIC64_INIT(0),		\
-	}
-struct thread_group_cputimer {
-	struct task_cputime_atomic cputime_atomic;
-};
+/* pacct_struct, cpu_itimer, task_cputime_atomic, thread_group_cputimer removed - never used */
 
 struct multiprocess_signals {
 	sigset_t signal;

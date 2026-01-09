@@ -1087,7 +1087,6 @@ static void per_cpu_pages_init(struct per_cpu_pages *pcp,
 
 	pcp->high = BOOT_PAGESET_HIGH;
 	pcp->batch = BOOT_PAGESET_BATCH;
-	pcp->free_factor = 0;
 }
 
 static void __zone_set_pageset_high_and_batch(struct zone *zone,
@@ -1171,7 +1170,6 @@ void __meminit init_currently_empty_zone(struct zone *zone,
 		       zone_start_pfn, (zone_start_pfn + size));
 
 	zone_init_free_lists(zone);
-	zone->initialized = 1;
 }
 
 static void __init get_pfn_range_for_nid(unsigned int nid,

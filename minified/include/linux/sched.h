@@ -264,7 +264,7 @@ struct task_struct {
 	unsigned int			personality;
 
 	unsigned			sched_reset_on_fork:1;
-	unsigned			sched_contributes_to_load:1;
+	/* sched_contributes_to_load removed - write-only field */
 
 	unsigned			:0;
 

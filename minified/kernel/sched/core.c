@@ -360,8 +360,7 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state,
 		struct rq *rq = cpu_rq(cpu);
 		rq_lock(rq, &rf);
 		update_rq_clock(rq);
-		if (p->sched_contributes_to_load)
-			rq->nr_uninterruptible--;
+		/* nr_uninterruptible tracking removed - field removed */
 		if (p->in_iowait)
 			atomic_dec(&task_rq(p)->nr_iowait);
 		activate_task(rq, p, ENQUEUE_WAKEUP | ENQUEUE_NOCLOCK);
@@ -709,13 +708,7 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 		if (signal_pending_state(prev_state, prev)) {
 			WRITE_ONCE(prev->__state, TASK_RUNNING);
 		} else {
-			prev->sched_contributes_to_load =
-				(prev_state & TASK_UNINTERRUPTIBLE) &&
-				!(prev_state & TASK_NOLOAD) &&
-				!(prev->flags & PF_FROZEN);
-
-			if (prev->sched_contributes_to_load)
-				rq->nr_uninterruptible++;
+			/* sched_contributes_to_load and nr_uninterruptible removed - write-only */
 
 			deactivate_task(rq, prev,
 					DEQUEUE_SLEEP | DEQUEUE_NOCLOCK);

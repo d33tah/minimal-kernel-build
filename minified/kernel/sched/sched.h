@@ -244,8 +244,7 @@ struct rq {
 	struct dl_rq		dl;
 
 
-	 
-	unsigned int		nr_uninterruptible;
+	/* nr_uninterruptible removed - only modified, never read */
 
 	struct task_struct __rcu	*curr;
 	struct task_struct	*idle;

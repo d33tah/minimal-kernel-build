@@ -198,8 +198,7 @@ struct sched_rt_entity {
 	/* watchdog_stamp removed - unused */
 	unsigned int			time_slice;
 	unsigned short			on_rq;
-	unsigned short			on_list;
-	/* back removed - unused */
+	/* on_list, back removed - write-only/unused */
 } __randomize_layout;
 
 struct sched_dl_entity {

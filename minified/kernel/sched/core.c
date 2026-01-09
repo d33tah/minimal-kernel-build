@@ -405,7 +405,7 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 	p->rt.timeout = 0;
 	p->rt.time_slice = sched_rr_timeslice;
 	p->rt.on_rq = 0;
-	p->rt.on_list = 0;
+	/* p->rt.on_list removed - write-only field */
 	/* init_numa_balancing - empty stub removed */
 }
 

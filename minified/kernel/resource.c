@@ -322,19 +322,6 @@ struct resource *__request_region(struct resource *parent,
 }
 
 /* __release_region, MAXRESERVE removed - never used */
-
 /* iomem_map_sanity_check removed - caller site simplified */
-
-static int iomem_fs_init_fs_context(struct fs_context *fc)
-{
-	return init_pseudo(fc, DEVMEM_MAGIC) ? 0 : -ENOMEM;
-}
-
-static struct file_system_type iomem_fs_type = {
-	.name = "iomem",
-	.owner = THIS_MODULE,
-	.init_fs_context = iomem_fs_init_fs_context,
-	.kill_sb = kill_anon_super,
-};
-
+/* iomem_fs_type and iomem_fs_init_fs_context removed - never registered */
 /* iomem_init_inode removed - simple_pin_fs hangs with low memory */

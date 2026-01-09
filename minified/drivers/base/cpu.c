@@ -41,13 +41,7 @@ static ssize_t show_cpus_attr(struct device *dev, struct device_attribute *attr,
 	return cpumap_print_to_pagebuf(true, buf, ca->map);
 }
 
-#define _CPU_ATTR(name, map) { __ATTR(name, 0444, show_cpus_attr, NULL), map }
-
-static struct cpu_attr cpu_attrs[] = {
-	_CPU_ATTR(online, &__cpu_online_mask),
-	_CPU_ATTR(possible, &__cpu_possible_mask),
-	_CPU_ATTR(present, &__cpu_present_mask),
-};
+/* cpu_attrs, _CPU_ATTR removed - never used (cpu_root_attr_groups unused) */
 
 static void device_create_release(struct device *dev)
 {
@@ -100,18 +94,5 @@ struct device *cpu_device_create(struct device *parent, void *drvdata,
 	return dev;
 }
 
-/* Stub: CPU sysfs attributes minimized */
-static struct attribute *cpu_root_attrs[] = { &cpu_attrs[0].attr.attr,
-					      &cpu_attrs[1].attr.attr,
-					      &cpu_attrs[2].attr.attr, NULL };
-
-static const struct attribute_group cpu_root_attr_group = {
-	.attrs = cpu_root_attrs,
-};
-
-static const struct attribute_group *cpu_root_attr_groups[] = {
-	&cpu_root_attr_group,
-	NULL,
-};
-
+/* cpu_root_attrs, cpu_root_attr_group, cpu_root_attr_groups removed - never used */
 /* cpu_dev_init removed - never called */

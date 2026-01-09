@@ -68,7 +68,7 @@ static void reset_terminal(struct vc_data *vc, int do_clear);
 static void con_flush_chars(struct tty_struct *tty);
 static void set_cursor(struct vc_data *vc);
 static void hide_cursor(struct vc_data *vc);
-static void blank_screen_t(struct timer_list *unused);
+/* blank_screen_t forward decl removed - function unused */
 /* set_palette forward decl removed - stub inlined */
 
 static int printable;
@@ -1198,11 +1198,7 @@ void unblank_screen(void)
 {
 	/* inlined: do_unblank_screen was empty */
 }
-
-static void blank_screen_t(struct timer_list *unused)
-{
-	/* Stub: no screen blanking in minimal kernel */
-}
+/* blank_screen_t removed - never called */
 
 /* set_palette stub inlined into reset_palette */
 

@@ -9,8 +9,7 @@
 #include <asm/early_ioremap.h>
 #include "internal.h"
 
-static int early_ioremap_debug __initdata;
-
+/* early_ioremap_debug removed - never enabled */
 static int after_paging_init __initdata;
 
 void __init early_ioremap_reset(void)
@@ -97,9 +96,7 @@ static void __init __iomem *__early_ioremap(resource_size_t phys_addr,
 		--idx;
 		--nrpages;
 	}
-	WARN(early_ioremap_debug, "%s(%pa, %08lx) [%d] => %08lx + %08lx\n",
-	     __func__, &phys_addr, size, slot, offset, slot_virt[slot]);
-
+	/* early_ioremap_debug WARN removed - debug always 0 */
 	prev_map[slot] = (void __iomem *)(offset + slot_virt[slot]);
 	return prev_map[slot];
 }
@@ -129,9 +126,7 @@ void __init early_iounmap(void __iomem *addr, unsigned long size)
 		 addr, size, slot, prev_size[slot]))
 		return;
 
-	WARN(early_ioremap_debug, "%s(%p, %08lx) [%d]\n", __func__, addr, size,
-	     slot);
-
+	/* early_ioremap_debug WARN removed - debug always 0 */
 	virt_addr = (unsigned long)addr;
 	if (WARN_ON(virt_addr < fix_to_virt(FIX_BTMAP_BEGIN)))
 		return;

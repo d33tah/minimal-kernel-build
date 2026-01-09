@@ -49,9 +49,7 @@ struct con_driver {
 static struct con_driver registered_con_driver[MAX_NR_CON_DRIVER];
 const struct consw *conswitchp;
 
-#define DEFAULT_BELL_PITCH 750
-#define DEFAULT_BELL_DURATION (HZ / 8)
-#define DEFAULT_CURSOR_BLINK_MS 200
+/* DEFAULT_BELL_PITCH, DEFAULT_BELL_DURATION, DEFAULT_CURSOR_BLINK_MS removed - unused */
 
 struct vc vc_cons[MAX_NR_CONSOLES];
 

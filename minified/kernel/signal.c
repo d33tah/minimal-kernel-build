@@ -105,10 +105,7 @@ void calculate_sigpending(void)
 	spin_unlock_irq(&current->sighand->siglock);
 }
 
-#define SYNCHRONOUS_MASK                                        \
-	(sigmask(SIGSEGV) | sigmask(SIGBUS) | sigmask(SIGILL) | \
-	 sigmask(SIGTRAP) | sigmask(SIGFPE) | sigmask(SIGSYS))
-
+/* SYNCHRONOUS_MASK removed - never used */
 /* Removed: print_dropped_signal - empty stub */
 /* task_set_jobctl_pending removed - always returned false, callers simplified */
 /* task_clear_jobctl_pending, task_join_group_stop removed - empty stubs */

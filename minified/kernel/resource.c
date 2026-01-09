@@ -47,8 +47,7 @@ static struct resource *next_resource(struct resource *p)
 	return p->sibling;
 }
 
-#define for_each_resource(_root, _p, _skip_children) \
-	for ((_p) = (_root)->child; (_p); (_p) = next_resource(_p))
+/* for_each_resource removed - never used */
 
 static void free_resource(struct resource *res)
 {
@@ -322,9 +321,7 @@ struct resource *__request_region(struct resource *parent,
 	return res;
 }
 
-/* __release_region removed - release_region/release_mem_region never called */
-
-#define MAXRESERVE 4
+/* __release_region, MAXRESERVE removed - never used */
 
 /* iomem_map_sanity_check removed - caller site simplified */
 

@@ -118,20 +118,5 @@ parse_args(const char *doing, char *args, const struct kernel_param *params,
 	return err;
 }
 
-/* param_ops_* removed - module parameter types never used */
-
-#define to_module_attr(n) container_of(n, struct module_attribute, attr)
-#define to_module_kobject(n) container_of(n, struct module_kobject, kobj)
-
-struct param_attribute {
-	struct module_attribute mattr;
-	const struct kernel_param *param;
-};
-
-struct module_param_attrs {
-	unsigned int num;
-	struct attribute_group grp;
-	struct param_attribute attrs[];
-};
-
-#define __modinit __init
+/* param_ops_*, to_module_attr, to_module_kobject, param_attribute,
+   module_param_attrs, __modinit removed - module parameters never used */

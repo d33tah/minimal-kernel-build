@@ -35,11 +35,7 @@ static int anon_inodefs_init_fs_context(struct fs_context *fc)
 	return 0;
 }
 
-static struct file_system_type anon_inode_fs_type = {
-	.name = "anon_inodefs",
-	.init_fs_context = anon_inodefs_init_fs_context,
-	.kill_sb = kill_anon_super,
-};
+/* anon_inode_fs_type removed - never registered (anon_inode_init removed) */
 
 /* Simplified: only non-secure anon inodes used */
 static struct file *__anon_inode_getfile(const char *name,

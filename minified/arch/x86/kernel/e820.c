@@ -643,10 +643,8 @@ void __init e820__reserve_resources(void)
 		res++;
 	}
 
-	/* firmware_map_add_early loop removed - unused in minimal kernel */
+	/* firmware_map_add_early, MAX_RESOURCE_SIZE removed - unused */
 }
-
-#define MAX_RESOURCE_SIZE ((resource_size_t) - 1)
 
 char *__init e820__memory_setup_default(void)
 {

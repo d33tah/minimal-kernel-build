@@ -130,7 +130,7 @@ static void bdi_remove_from_list(struct backing_dev_info *bdi)
 
 void bdi_unregister(struct backing_dev_info *bdi)
 {
-	del_timer_sync(&bdi->laptop_mode_wb_timer);
+	/* del_timer_sync laptop_mode_wb_timer removed - field removed */
 
 	bdi_remove_from_list(bdi);
 	wb_shutdown(&bdi->wb);

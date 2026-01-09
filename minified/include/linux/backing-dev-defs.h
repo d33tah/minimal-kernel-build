@@ -79,7 +79,7 @@ struct backing_dev_info {
 	char dev_name[64];
 	struct device *owner;
 
-	struct timer_list laptop_mode_wb_timer;
+	/* laptop_mode_wb_timer removed - never set up, only deleted */
 
 };
 

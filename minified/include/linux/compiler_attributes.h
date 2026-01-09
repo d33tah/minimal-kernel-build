@@ -80,7 +80,7 @@
 
 #define __section(section)              __attribute__((__section__(section)))
 
-#define __always_unused                 __attribute__((__unused__))
+/* __always_unused removed - never used */
 #define __maybe_unused                  __attribute__((__unused__))
 
 #define __used                          __attribute__((__used__))

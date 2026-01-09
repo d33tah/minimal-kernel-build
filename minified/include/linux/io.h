@@ -17,14 +17,7 @@ int ioremap_page_range(unsigned long addr, unsigned long end,
 		       phys_addr_t phys_addr, pgprot_t prot);
 
 
-/* IOMEM_ERR_PTR removed - unused */
-
-
-
-
-#ifndef arch_has_dev_port
-#define arch_has_dev_port()     (1)
-#endif
+/* IOMEM_ERR_PTR, arch_has_dev_port removed - unused */
 
 enum {
 	MEMREMAP_WB = 1 << 0,

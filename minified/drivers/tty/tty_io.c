@@ -857,7 +857,8 @@ out:
 static int tty_open(struct inode *inode, struct file *filp)
 {
 	struct tty_struct *tty;
-	int noctty, retval;
+	int retval;
+	/* noctty removed - tty_open_proc_set_tty removed */
 	dev_t device = inode->i_rdev;
 	unsigned saved_flags = filp->f_flags;
 

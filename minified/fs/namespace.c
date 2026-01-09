@@ -1192,7 +1192,7 @@ int path_mount(const char *dev_name, struct path *path, const char *type_page,
 	       unsigned long flags, void *data_page)
 {
 	unsigned int mnt_flags = 0, sb_flags;
-	int ret;
+	/* ret removed - never used after security/may_mount simplifications */
 
 	if ((flags & MS_MGC_MSK) == MS_MGC_VAL)
 		flags &= ~MS_MGC_MSK;
@@ -1550,7 +1550,7 @@ static int mntns_install(struct nsset *nsset, struct ns_common *ns)
 	struct nsproxy *nsproxy = nsset->nsproxy;
 	struct fs_struct *fs = nsset->fs;
 	struct mnt_namespace *mnt_ns = to_mnt_ns(ns), *old_mnt_ns;
-	struct user_namespace *user_ns = nsset->cred->user_ns;
+	/* user_ns removed - ns_capable checks removed */
 	struct path root;
 	int err;
 

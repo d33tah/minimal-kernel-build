@@ -82,7 +82,7 @@ static struct page *follow_page_pte(struct vm_area_struct *vma,
 	int ret;
 
 	/* FOLL_PIN|FOLL_GET check removed - FOLL_PIN never set */
-retry:
+	/* retry label removed - never jumped to */
 	if (unlikely(pmd_bad(*pmd)))
 		return no_page_table(vma, flags);
 

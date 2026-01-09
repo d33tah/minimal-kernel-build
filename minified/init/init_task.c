@@ -65,8 +65,7 @@ struct task_struct init_task
 		/* .group_node removed - field removed from sched_entity */
 	},
 	.rt		= {
-		.run_list	= LIST_HEAD_INIT(init_task.rt.run_list),
-		/* .time_slice removed - field removed from sched_rt_entity */
+		/* .run_list, .time_slice removed - fields removed from sched_rt_entity */
 	},
 	.tasks		= LIST_HEAD_INIT(init_task.tasks),
 	.ptraced	= LIST_HEAD_INIT(init_task.ptraced),

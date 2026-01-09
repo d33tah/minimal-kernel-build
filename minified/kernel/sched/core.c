@@ -401,8 +401,7 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 	init_dl_inactive_task_timer(&p->dl);
 	__dl_clear_params(p);
 
-	INIT_LIST_HEAD(&p->rt.run_list);
-	/* p->rt.timeout, time_slice, on_rq, on_list removed - write-only fields */
+	/* p->rt.run_list, timeout, time_slice, on_rq, on_list removed - write-only fields */
 	/* init_numa_balancing - empty stub removed */
 }
 

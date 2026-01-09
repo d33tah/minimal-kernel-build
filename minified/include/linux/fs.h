@@ -439,11 +439,7 @@ static inline unsigned iminor(const struct inode *inode)
 }
 
 
-struct fown_struct {
-	rwlock_t lock;
-	struct pid *pid;
-	/* pid_type, uid, euid, signum removed - never accessed */
-};
+/* fown_struct removed - f_owner is never accessed */
 
 struct file_ra_state {
 	/* start, size, async_size, ra_pages removed - never accessed */
@@ -467,7 +463,7 @@ struct file {
 	fmode_t			f_mode;
 	struct mutex		f_pos_lock;
 	loff_t			f_pos;
-	struct fown_struct	f_owner;
+	/* f_owner field removed - never accessed */
 	const struct cred	*f_cred;
 	struct file_ra_state	f_ra;
 

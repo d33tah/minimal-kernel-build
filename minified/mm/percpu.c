@@ -93,7 +93,7 @@ static inline int pcpu_chunk_map_bits(struct pcpu_chunk *chunk)
 
 static int pcpu_unit_pages __ro_after_init;
 static int pcpu_unit_size __ro_after_init;
-static int pcpu_nr_units __ro_after_init;
+/* pcpu_nr_units removed - only written, never read */
 static int pcpu_atom_size __ro_after_init;
 int pcpu_nr_slots __ro_after_init;
 static int pcpu_free_slot __ro_after_init;
@@ -107,7 +107,7 @@ static unsigned int pcpu_high_unit_cpu __ro_after_init;
 static const int *pcpu_unit_map __ro_after_init;
 const unsigned long *pcpu_unit_offsets __ro_after_init;
 
-static int pcpu_nr_groups __ro_after_init;
+/* pcpu_nr_groups removed - only written, never read */
 static const unsigned long *pcpu_group_offsets __ro_after_init;
 static const size_t *pcpu_group_sizes __ro_after_init;
 
@@ -1259,15 +1259,12 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 				pcpu_high_unit_cpu = cpu;
 		}
 	}
-	pcpu_nr_units = unit;
-
 	/* for_each_possible_cpu simplified - single CPU */
 	PCPU_SETUP_BUG_ON(unit_map[0] == UINT_MAX);
 
 #undef PCPU_SETUP_BUG_ON
 	/* pcpu_dump_alloc_info removed */
 
-	pcpu_nr_groups = ai->nr_groups;
 	pcpu_group_offsets = group_offsets;
 	pcpu_group_sizes = group_sizes;
 	pcpu_unit_map = unit_map;

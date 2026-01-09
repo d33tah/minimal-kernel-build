@@ -61,10 +61,8 @@ struct tty_port {
 	const struct tty_port_operations *ops;
 	const struct tty_port_client_operations *client_ops;
 	spinlock_t		lock;
-	int			blocked_open;
+	/* blocked_open, open_wait, delta_msr_wait removed - never used */
 	int			count;
-	wait_queue_head_t	open_wait;
-	wait_queue_head_t	delta_msr_wait;
 	unsigned long		flags;
 	unsigned long		iflags;
 	unsigned char		console:1;
@@ -72,11 +70,8 @@ struct tty_port {
 	struct mutex		buf_mutex;
 	unsigned char		*xmit_buf;
 	DECLARE_KFIFO_PTR(xmit_fifo, unsigned char);
-	unsigned int		close_delay;
-	unsigned int		closing_wait;
-	int			drain_delay;
+	/* close_delay, closing_wait, drain_delay, client_data removed - never read */
 	struct kref		kref;
-	void			*client_data;
 };
 
 #define TTY_PORT_KOPENED	5	 

@@ -103,7 +103,7 @@ static size_t pcpu_chunk_struct_size __ro_after_init;
 
 /* pcpu_low_unit_cpu, pcpu_high_unit_cpu removed - only written, never read */
 
-static const int *pcpu_unit_map __ro_after_init;
+/* pcpu_unit_map removed - only written, never read */
 const unsigned long *pcpu_unit_offsets __ro_after_init;
 
 /* pcpu_nr_groups, pcpu_group_offsets removed - only written, never read */
@@ -1254,7 +1254,6 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	/* pcpu_dump_alloc_info removed */
 
 	pcpu_group_sizes = group_sizes;
-	pcpu_unit_map = unit_map;
 	pcpu_unit_offsets = unit_off;
 
 	pcpu_unit_pages = ai->unit_size >> PAGE_SHIFT;

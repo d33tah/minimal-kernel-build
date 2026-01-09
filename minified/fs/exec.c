@@ -976,12 +976,9 @@ void set_binfmt(struct linux_binfmt *new)
 		__module_get(new->module);
 }
 
+/* Stub: coredumps not supported in minimal kernel */
 void set_dumpable(struct mm_struct *mm, int value)
 {
-	if (WARN_ON((unsigned)value > SUID_DUMP_ROOT))
-		return;
-
-	set_mask_bits(&mm->flags, MMF_DUMPABLE_MASK, value);
 }
 
 /* Stub: execve syscall not needed - kernel uses kernel_execve for init */

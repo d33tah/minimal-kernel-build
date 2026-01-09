@@ -83,10 +83,7 @@ static void __exit_signal(struct task_struct *tsk)
 	sig->utime += utime;
 	sig->stime += stime;
 	/* sig->gtime removed - write-only field */
-	sig->min_flt += tsk->min_flt;
-	sig->maj_flt += tsk->maj_flt;
-	sig->nvcsw += tsk->nvcsw;
-	sig->nivcsw += tsk->nivcsw;
+	/* sig->min_flt/maj_flt/nvcsw/nivcsw accumulation removed - write-only fields */
 	/* task_io_get_inblock, task_io_get_oublock, task_io_accounting_add removed - empty stubs */
 	sig->sum_sched_runtime += tsk->se.sum_exec_runtime;
 	sig->nr_threads--;

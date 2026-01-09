@@ -875,8 +875,7 @@ copy_process(struct pid *pid, int trace, int node,
 	/* Inlined copy_mm */
 	{
 		struct mm_struct *mm, *oldmm;
-		p->min_flt = p->maj_flt = 0;
-		p->nvcsw = p->nivcsw = 0;
+		/* p->min_flt/maj_flt/nvcsw/nivcsw init removed - write-only fields */
 		p->mm = NULL;
 		p->active_mm = NULL;
 		oldmm = current->mm;

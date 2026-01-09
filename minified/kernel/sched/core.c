@@ -679,7 +679,7 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 static void __sched notrace __schedule(unsigned int sched_mode)
 {
 	struct task_struct *prev, *next;
-	unsigned long *switch_count;
+	/* switch_count removed - write-only field */
 	unsigned long prev_state;
 	struct rq_flags rf;
 	struct rq *rq;
@@ -706,7 +706,7 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 	rq->clock_update_flags <<= 1;
 	update_rq_clock(rq);
 
-	switch_count = &prev->nivcsw;
+	/* switch_count pointing to nivcsw/nvcsw removed - write-only fields */
 
 	prev_state = READ_ONCE(prev->__state);
 	if (!(sched_mode & SM_MASK_PREEMPT) && prev_state) {
@@ -727,7 +727,6 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 			if (prev->in_iowait)
 				atomic_inc(&rq->nr_iowait);
 		}
-		switch_count = &prev->nvcsw;
 	}
 
 	next = pick_next_task(rq, prev, &rf);
@@ -736,8 +735,7 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 
 	if (likely(prev != next)) {
 		RCU_INIT_POINTER(rq->curr, next);
-
-		++*switch_count;
+		/* ++*switch_count removed - write-only field */
 
 		rq = context_switch(rq, prev, next, &rf);
 	} else {

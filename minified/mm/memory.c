@@ -1021,12 +1021,7 @@ vm_fault_t handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
 	ret = __handle_mm_fault(vma, address, flags);
 	/* mem_cgroup_exit_user_fault, task_in_memcg_oom (always false),
 	 * mem_cgroup_oom_synchronize removed - all stubs */
-	if (!(ret & (VM_FAULT_ERROR | VM_FAULT_RETRY))) {
-		if ((ret & VM_FAULT_MAJOR) || (flags & FAULT_FLAG_TRIED))
-			current->maj_flt++;
-		else
-			current->min_flt++;
-	}
+	/* current->maj_flt/min_flt increments removed - write-only fields */
 
 	return ret;
 }

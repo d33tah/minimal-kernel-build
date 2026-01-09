@@ -302,10 +302,9 @@ typedef struct pglist_data {
 	wait_queue_head_t kswapd_wait;
 	wait_queue_head_t pfmemalloc_wait;
 
-	/* reclaim_wait, nr_writeback_throttled, kswapd_order, kswapd_highest_zoneidx removed */
+	/* reclaim_wait, nr_writeback_throttled, kswapd_order, kswapd_highest_zoneidx,
+	   totalreserve_pages removed - never used at pgdat level */
 	struct task_struct *kswapd;
-
-	unsigned long totalreserve_pages;
 
 	ZONE_PADDING(_pad1_)
 

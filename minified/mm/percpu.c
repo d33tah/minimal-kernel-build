@@ -94,7 +94,7 @@ static inline int pcpu_chunk_map_bits(struct pcpu_chunk *chunk)
 static int pcpu_unit_pages __ro_after_init;
 static int pcpu_unit_size __ro_after_init;
 /* pcpu_nr_units removed - only written, never read */
-static int pcpu_atom_size __ro_after_init;
+/* pcpu_atom_size removed - only written, never read */
 int pcpu_nr_slots __ro_after_init;
 static int pcpu_free_slot __ro_after_init;
 int pcpu_sidelined_slot __ro_after_init;
@@ -1258,7 +1258,6 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 
 	pcpu_unit_pages = ai->unit_size >> PAGE_SHIFT;
 	pcpu_unit_size = pcpu_unit_pages << PAGE_SHIFT;
-	pcpu_atom_size = ai->atom_size;
 	pcpu_chunk_struct_size =
 		struct_size(chunk, populated, BITS_TO_LONGS(pcpu_unit_pages));
 	/* pcpu_stats_save_ai removed - stats stub */

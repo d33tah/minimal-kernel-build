@@ -51,7 +51,7 @@ struct file *alloc_empty_file(int flags, const struct cred *cred)
 	f->f_cred = get_cred(cred);
 	/* security_file_alloc always returns 0 - dead code removed */
 	atomic_long_set(&f->f_count, 1);
-	rwlock_init(&f->f_owner.lock);
+	/* rwlock_init(&f->f_owner.lock) removed - lock never used */
 	spin_lock_init(&f->f_lock);
 	mutex_init(&f->f_pos_lock);
 	f->f_flags = flags;
@@ -130,7 +130,7 @@ static void __fput(struct file *file)
 		cdev_put(inode->i_cdev);
 	}
 	fops_put(file->f_op);
-	put_pid(file->f_owner.pid);
+	/* put_pid(file->f_owner.pid) removed - pid never set, always NULL */
 	if (mode & FMODE_WRITER) {
 		put_write_access(inode);
 		__mnt_drop_write(mnt);

@@ -779,8 +779,7 @@ copy_process(struct pid *pid, int trace, int node,
 	if (retval < 0)
 		goto bad_fork_free;
 
-	/* capable() always returns true - removed NPROC limit dead code */
-	current->flags &= ~PF_NPROC_EXCEEDED;
+	/* PF_NPROC_EXCEEDED clearing removed - flag never tested */
 
 	retval = -EAGAIN;
 	if (data_race(nr_threads >= max_threads))

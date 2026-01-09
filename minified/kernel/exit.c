@@ -311,10 +311,7 @@ void __noreturn do_exit(long code)
 	int group_dead;
 	/* WARN_ON(tsk->plug) removed - plug field removed */
 
-	/* Inlined coredump_task_exit - coredumps not needed */
-	spin_lock_irq(&tsk->sighand->siglock);
-	tsk->flags |= PF_POSTCOREDUMP;
-	spin_unlock_irq(&tsk->sighand->siglock);
+	/* coredump_task_exit removed - PF_POSTCOREDUMP never tested */
 	ptrace_event(PTRACE_EVENT_EXIT, code);
 
 	/* validate_creds_for_do_exit(), io_uring_files_cancel() - empty stubs */

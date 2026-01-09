@@ -85,17 +85,9 @@ struct signal_struct {
 	struct rw_semaphore exec_update_lock;	 
 } __randomize_layout;
 
-#define SIGNAL_STOP_STOPPED	0x00000001  
-#define SIGNAL_STOP_CONTINUED	0x00000002  
-#define SIGNAL_GROUP_EXIT	0x00000004  
-#define SIGNAL_CLD_STOPPED	0x00000010
-#define SIGNAL_CLD_CONTINUED	0x00000020
-#define SIGNAL_CLD_MASK		(SIGNAL_CLD_STOPPED|SIGNAL_CLD_CONTINUED)
-
-#define SIGNAL_UNKILLABLE	0x00000040  
-
-#define SIGNAL_STOP_MASK (SIGNAL_CLD_MASK | SIGNAL_STOP_STOPPED | \
-			  SIGNAL_STOP_CONTINUED)
+#define SIGNAL_GROUP_EXIT	0x00000004
+#define SIGNAL_UNKILLABLE	0x00000040
+/* SIGNAL_STOP_*, SIGNAL_CLD_*, SIGNAL_STOP_MASK removed - never used */
 
 
 extern void ignore_signals(struct task_struct *);

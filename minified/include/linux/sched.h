@@ -179,10 +179,9 @@ struct sched_statistics {
 } ____cacheline_aligned;
 
 struct sched_entity {
-	 
 	struct load_weight		load;
 	struct rb_node			run_node;
-	struct list_head		group_node;
+	/* group_node removed - write-only, only initialized */
 	unsigned int			on_rq;
 
 	u64				exec_start;

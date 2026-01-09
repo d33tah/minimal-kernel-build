@@ -70,7 +70,7 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 	mapping->wb_err = 0;
 	atomic_set(&mapping->i_mmap_writable, 0);
 	mapping_set_gfp_mask(mapping, GFP_HIGHUSER_MOVABLE);
-	mapping->private_data = NULL;
+	/* mapping->private_data removed - field removed */
 	init_rwsem(&mapping->invalidate_lock);
 	lockdep_set_class_and_name(&mapping->invalidate_lock,
 				   &sb->s_type->invalidate_lock_key,
@@ -165,7 +165,7 @@ void inode_init_once(struct inode *inode)
 	xa_init_flags(&mapping->i_pages, XA_FLAGS_LOCK_IRQ | XA_FLAGS_ACCOUNT);
 	init_rwsem(&mapping->i_mmap_rwsem);
 	INIT_LIST_HEAD(&mapping->private_list);
-	spin_lock_init(&mapping->private_lock);
+	/* spin_lock_init(&mapping->private_lock) removed - field removed */
 	mapping->i_mmap = RB_ROOT_CACHED;
 }
 

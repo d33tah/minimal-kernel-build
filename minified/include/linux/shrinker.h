@@ -6,8 +6,8 @@ struct shrink_control { gfp_t gfp_mask; int nid; unsigned long nr_to_scan; unsig
 struct shrinker {
 	unsigned long (*count_objects)(struct shrinker *, struct shrink_control *sc);
 	unsigned long (*scan_objects)(struct shrinker *, struct shrink_control *sc);
-	long batch; int seeks; unsigned flags; struct list_head list;
-	/* nr_deferred removed - never accessed */
+	long batch; int seeks; unsigned flags;
+	/* list, nr_deferred removed - never accessed */
 };
 #define DEFAULT_SEEKS 2
 /* SHRINKER_REGISTERED removed - never used */

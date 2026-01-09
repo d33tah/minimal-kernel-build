@@ -253,9 +253,9 @@ struct address_space {
 	const struct address_space_operations *a_ops;
 	unsigned long		flags;
 	errseq_t		wb_err;
-	spinlock_t		private_lock;
+	/* private_lock removed - only initialized, never used */
 	struct list_head	private_list;
-	void			*private_data;
+	/* private_data removed - only set to NULL, never used */
 } __attribute__((aligned(sizeof(long)))) __randomize_layout;
 	
 

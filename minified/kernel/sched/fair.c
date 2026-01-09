@@ -252,14 +252,7 @@ static void update_curr(struct cfs_rq *cfs_rq)
 		return;
 
 	curr->exec_start = now;
-
-	if (schedstat_enabled()) {
-		struct sched_statistics *stats;
-
-		stats = __schedstats_from_se(curr);
-		__schedstat_set(stats->exec_max,
-				max(delta_exec, stats->exec_max));
-	}
+	/* schedstat_enabled() always 0, block removed */
 
 	curr->sum_exec_runtime += delta_exec;
 	curr->vruntime += calc_delta_fair(delta_exec, curr);
@@ -512,17 +505,7 @@ static void set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 	/* Inlined update_stats_curr_start */
 	se->exec_start = rq_clock_task(rq_of(cfs_rq));
 	cfs_rq->curr = se;
-
-	if (schedstat_enabled() &&
-	    rq_of(cfs_rq)->cfs.load.weight >= 2 * se->load.weight) {
-		struct sched_statistics *stats;
-
-		stats = __schedstats_from_se(se);
-		__schedstat_set(
-			stats->slice_max,
-			max((u64)stats->slice_max,
-			    se->sum_exec_runtime - se->prev_sum_exec_runtime));
-	}
+	/* schedstat_enabled() always 0, block removed */
 
 	se->prev_sum_exec_runtime = se->sum_exec_runtime;
 }

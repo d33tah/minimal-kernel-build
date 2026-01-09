@@ -19,13 +19,7 @@
 # define __update_stats_enqueue_sleeper(rq, p, stats)  do { } while (0)
 # define check_schedstat_required()                    do { } while (0)
 
-
-
-static inline struct sched_statistics *
-__schedstats_from_se(struct sched_entity *se)
-{
-	return &task_of(se)->stats;
-}
+/* __schedstats_from_se removed - schedstat_enabled() always 0 */
 /* psi_enqueue, psi_dequeue removed - empty stubs */
 # define sched_info_enqueue(rq, t)	do { } while (0)
 # define sched_info_dequeue(rq, t)	do { } while (0)

@@ -175,8 +175,7 @@ struct load_weight {
 	u32				inv_weight;
 };
 
-struct sched_statistics {
-} ____cacheline_aligned;
+/* struct sched_statistics removed - schedstat_enabled() always 0 */
 
 struct sched_entity {
 	struct load_weight		load;
@@ -238,13 +237,7 @@ struct task_struct {
 	struct sched_rt_entity		rt;
 	struct sched_dl_entity		dl;
 	const struct sched_class	*sched_class;
-
-
-
-
-	struct sched_statistics         stats;
-
-
+	/* stats field removed - schedstat_enabled() always 0 */
 
 	unsigned int			policy;
 	/* nr_cpus_allowed removed - only written, never read */

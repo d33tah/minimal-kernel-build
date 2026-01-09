@@ -169,12 +169,11 @@ struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 
 	get_pid_ns(ns);
 	refcount_set(&pid->count, 1);
-	spin_lock_init(&pid->lock);
+	/* spin_lock_init(&pid->lock) removed - lock never used */
 	for (type = 0; type < PIDTYPE_MAX; ++type)
 		INIT_HLIST_HEAD(&pid->tasks[type]);
 
-	init_waitqueue_head(&pid->wait_pidfd);
-	INIT_HLIST_HEAD(&pid->inodes);
+	/* init_waitqueue_head(&pid->wait_pidfd), INIT_HLIST_HEAD(&pid->inodes) removed - never used */
 
 	upid = pid->numbers + ns->level;
 	spin_lock_irq(&pidmap_lock);

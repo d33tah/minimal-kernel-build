@@ -62,16 +62,11 @@ struct tty_driver {
 	short	subtype;
 	struct ktermios init_termios;
 	unsigned long	flags;
-	struct proc_dir_entry *proc_entry;
-	struct tty_driver *other;
+	/* proc_entry, other, driver_state removed - never used */
 
-	 
 	struct tty_struct **ttys;
 	struct tty_port **ports;
 	struct ktermios **termios;
-	void *driver_state;
-
-	 
 
 	const struct tty_operations *ops;
 	struct list_head tty_drivers;

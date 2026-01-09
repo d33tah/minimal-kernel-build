@@ -283,11 +283,8 @@ struct mm_struct {
 		 
 		struct rw_semaphore mmap_lock;
 
-		struct list_head mmlist;  
-
-
-		unsigned long hiwater_rss;  
-		unsigned long hiwater_vm;   
+		struct list_head mmlist;
+		/* hiwater_rss, hiwater_vm removed - write-only fields */
 
 		unsigned long total_vm;
 		unsigned long def_flags;

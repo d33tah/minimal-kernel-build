@@ -591,9 +591,7 @@ static struct mm_struct *dup_mm(struct task_struct *tsk,
 	err = dup_mmap(mm, oldmm);
 	if (err)
 		goto free_pt;
-
-	mm->hiwater_rss = get_mm_rss(mm);
-	mm->hiwater_vm = mm->total_vm;
+	/* hiwater_rss, hiwater_vm init removed - fields removed */
 
 	/* try_module_get always returns true - dead check removed */
 

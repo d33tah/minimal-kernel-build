@@ -731,24 +731,11 @@ static inline unsigned long get_mm_rss(struct mm_struct *mm)
 		get_mm_counter(mm, MM_SHMEMPAGES);
 }
 
-static inline unsigned long get_mm_hiwater_rss(struct mm_struct *mm)
-{
-	return max(mm->hiwater_rss, get_mm_rss(mm));
-}
-
-static inline void update_hiwater_rss(struct mm_struct *mm)
-{
-	unsigned long _rss = get_mm_rss(mm);
-
-	if ((mm)->hiwater_rss < _rss)
-		(mm)->hiwater_rss = _rss;
-}
-
-static inline void update_hiwater_vm(struct mm_struct *mm)
-{
-	if (mm->hiwater_vm < mm->total_vm)
-		mm->hiwater_vm = mm->total_vm;
-}
+/* get_mm_hiwater_rss removed - never called */
+/* update_hiwater_rss removed - hiwater_rss write-only */
+#define update_hiwater_rss(mm) do { } while (0)
+/* update_hiwater_vm removed - hiwater_vm write-only */
+#define update_hiwater_vm(mm) do { } while (0)
 
 /* setmax_mm_hiwater_rss removed - callers removed, maxrss unused */
 

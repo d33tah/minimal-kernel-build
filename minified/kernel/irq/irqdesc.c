@@ -16,8 +16,6 @@ static void desc_set_defaults(unsigned int irq, struct irq_desc *desc, int node,
 			      const struct cpumask *affinity,
 			      struct module *owner)
 {
-	int cpu;
-
 	desc->irq_common_data.handler_data = NULL;
 	desc->irq_common_data.msi_desc = NULL;
 

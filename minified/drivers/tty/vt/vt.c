@@ -84,9 +84,7 @@ int last_console;
 
 static struct vc_data *master_display_fg;
 
-/* console_blank_hook removed - never assigned or used */
-
-static DEFINE_TIMER(console_timer, blank_screen_t);
+/* console_blank_hook, console_timer removed - never used */
 /* blank_state and blank_* enum removed - was never read */
 
 static struct device *tty0dev;

@@ -104,8 +104,7 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
 {
 	unsigned long offset, vaddr;
 	resource_size_t last_addr;
-	const resource_size_t unaligned_phys_addr = phys_addr;
-	const unsigned long unaligned_size = size;
+	/* unaligned_phys_addr, unaligned_size removed - unused */
 	struct ioremap_desc io_desc;
 	struct vm_struct *area;
 	enum page_cache_mode new_pcm;

@@ -353,10 +353,7 @@ void __noreturn do_exit(long code)
 	/* perf_event_exit_task, exit_tasks_rcu_start removed - empty stubs */
 	exit_notify(tsk, group_dead);
 
-	/* free_pipe_info call removed - empty stub */
-
-	if (tsk->task_frag.page)
-		put_page(tsk->task_frag.page);
+	/* free_pipe_info, task_frag cleanup removed - never used */
 
 	validate_creds_for_do_exit(tsk);
 	exit_task_stack_account(tsk);

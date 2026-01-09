@@ -193,7 +193,7 @@ static inline void dev_set_drvdata(struct device *dev, void *data)
 
 static inline void dev_set_uevent_suppress(struct device *dev, int val)
 {
-	dev->kobj.uevent_suppress = val;
+	/* uevent_suppress field removed - never checked, just stub */
 }
 
 static inline int device_is_registered(struct device *dev)

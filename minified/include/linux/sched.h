@@ -383,10 +383,7 @@ struct task_struct {
 		struct rcu_head		rcu;
 	};
 
-	 
-	struct pipe_inode_info		*splice_pipe;
-
-	struct page_frag		task_frag;
+	/* splice_pipe, task_frag removed - only set to NULL, never used */
 
 	/* nr_dirtied, timer_slack_ns removed - initialized but never read */
 

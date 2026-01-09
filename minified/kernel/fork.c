@@ -402,8 +402,7 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	refcount_set(&tsk->rcu_users, 2);
 
 	refcount_set(&tsk->usage, 1);
-	tsk->splice_pipe = NULL;
-	tsk->task_frag.page = NULL;
+	/* splice_pipe, task_frag removed - never used */
 	tsk->wake_q.next = NULL;
 	tsk->worker_private = NULL;
 

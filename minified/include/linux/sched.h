@@ -345,10 +345,8 @@ struct task_struct {
 	/* nvcsw, nivcsw removed - write-only fields (accumulation removed) */
 	/* min_flt, maj_flt removed - write-only fields (increments removed) */
 	/* start_time, posix_cputimers removed - write-only fields */
+	/* ptracer_cred removed - write-only (passed to empty stubs, never read) */
 
-	const struct cred __rcu		*ptracer_cred;
-
-	 
 	const struct cred __rcu		*real_cred;
 
 	 

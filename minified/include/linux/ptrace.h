@@ -91,13 +91,12 @@ static inline void ptrace_init_task(struct task_struct *child, bool ptrace)
 
 	if (unlikely(ptrace) && current->ptrace) {
 		child->ptrace = current->ptrace;
-		__ptrace_link(child, current->parent, current->ptracer_cred);
+		__ptrace_link(child, current->parent, NULL);  /* ptracer_cred field removed */
 
 		/* task_set_jobctl_pending removed - always returns false */
 		sigaddset(&child->pending.signal, SIGSTOP);
 	}
-	else
-		child->ptracer_cred = NULL;
+	/* child->ptracer_cred = NULL removed - field removed from task_struct */
 }
 
 static inline void ptrace_release_task(struct task_struct *task)

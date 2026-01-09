@@ -577,11 +577,8 @@ struct super_block {
 	time64_t		   s_time_max;
 
 	char			s_id[32];
-	/* s_max_links removed - unused */
-	struct mutex s_vfs_rename_mutex;	
-
-	
-	const char *s_subtype;
+	/* s_max_links, s_subtype removed - unused */
+	struct mutex s_vfs_rename_mutex;
 
 	const struct dentry_operations *s_d_op; 
 

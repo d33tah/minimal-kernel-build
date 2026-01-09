@@ -122,7 +122,7 @@ static void destroy_unused_super(struct super_block *s)
 	list_lru_destroy(&s->s_inode_lru);
 	/* security_sb_free() - empty stub */
 	put_user_ns(s->s_user_ns);
-	kfree(s->s_subtype);
+	/* kfree(s->s_subtype) removed - field removed, always NULL */
 	/* free_prealloced_shrinker is empty stub - call removed */
 	destroy_super_work(&s->destroy_work);
 }
@@ -199,7 +199,7 @@ void put_super(struct super_block *sb)
 		WARN_ON(sb->s_inode_lru.node);
 		WARN_ON(!list_empty(&sb->s_mounts));
 		put_user_ns(sb->s_user_ns);
-		kfree(sb->s_subtype);
+		/* kfree(sb->s_subtype) removed - field removed */
 		call_rcu(&sb->rcu, destroy_super_rcu);
 	}
 	spin_unlock(&sb_lock);

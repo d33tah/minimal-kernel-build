@@ -260,10 +260,7 @@ void generic_shutdown_super(struct super_block *sb)
 		/* cgroup_writeback_umount() - empty stub */
 		evict_inodes(sb);
 		/* security_sb_delete() - empty stub */
-		if (sb->s_dio_done_wq) {
-			destroy_workqueue(sb->s_dio_done_wq);
-			sb->s_dio_done_wq = NULL;
-		}
+		/* s_dio_done_wq destroy removed - field removed */
 
 		if (sop->put_super)
 			sop->put_super(sb);

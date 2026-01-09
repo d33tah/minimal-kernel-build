@@ -592,7 +592,7 @@ struct super_block {
 
 	int s_readonly_remount;
 
-	struct workqueue_struct *s_dio_done_wq;
+	/* s_dio_done_wq removed - never created, only destroyed */
 	struct hlist_head s_pins;
 
 	

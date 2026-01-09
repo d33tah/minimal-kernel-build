@@ -27,7 +27,7 @@
 
 static struct kmem_cache *filp_cachep __read_mostly;
 
-static struct percpu_counter nr_files __cacheline_aligned_in_smp;
+/* nr_files counter removed - only written, never read */
 
 static void file_free_rcu(struct rcu_head *head)
 {
@@ -56,8 +56,6 @@ struct file *alloc_empty_file(int flags, const struct cred *cred)
 	mutex_init(&f->f_pos_lock);
 	f->f_flags = flags;
 	f->f_mode = OPEN_FMODE(flags);
-	percpu_counter_inc(&nr_files);
-
 	return f;
 }
 
@@ -142,9 +140,6 @@ static void __fput(struct file *file)
 		dissolve_on_fput(mnt);
 	mntput(mnt);
 out:
-	/* security_file_free - empty stub */
-	if (!(file->f_mode & FMODE_NOACCOUNT))
-		percpu_counter_dec(&nr_files);
 	call_rcu(&file->f_u.fu_rcuhead, file_free_rcu);
 }
 
@@ -189,7 +184,6 @@ void __init files_init(void)
 	filp_cachep = kmem_cache_create(
 		"filp", sizeof(struct file), 0,
 		SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT, NULL);
-	percpu_counter_init(&nr_files, 0, GFP_KERNEL);
 }
 
 /* files_maxfiles_init removed entirely - was empty stub */

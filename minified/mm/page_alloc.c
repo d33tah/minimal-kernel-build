@@ -1358,13 +1358,11 @@ static void __init free_area_init_core(struct pglist_data *pgdat)
 {
 	enum zone_type j;
 	int nid = pgdat->node_id;
-	int i;
 
 	/* Inlined pgdat_init_internals */
 	init_waitqueue_head(&pgdat->kswapd_wait);
 	init_waitqueue_head(&pgdat->pfmemalloc_wait);
-	for (i = 0; i < NR_VMSCAN_THROTTLE; i++)
-		init_waitqueue_head(&pgdat->reclaim_wait[i]);
+	/* reclaim_wait init removed - field removed */
 	lruvec_init(&pgdat->__lruvec);
 
 	pgdat->per_cpu_nodestats = &boot_nodestats;

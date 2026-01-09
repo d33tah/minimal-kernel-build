@@ -252,7 +252,7 @@ unsigned long invalidate_mapping_pagevec(struct address_space *mapping,
 	pgoff_t indices[PAGEVEC_SIZE];
 	struct folio_batch fbatch;
 	pgoff_t index = start;
-	unsigned long ret;
+	/* ret removed - unused after mapping_evict_folio simplification */
 	unsigned long count = 0;
 	int i;
 

@@ -604,7 +604,7 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 	vc->state.Gx_charset[1] = GRAF_MAP;
 	vc->state.charset = 0;
 	vc->vc_need_wrap = 0;
-	vc->vc_report_mouse = 0;
+	/* vc->vc_report_mouse = 0 removed - field removed */
 	vc->vc_utf = default_utf8;
 	vc->vc_utf_count = 0;
 

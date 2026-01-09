@@ -295,14 +295,7 @@ static void mmdrop_async_fn(struct work_struct *work)
 
 static inline void free_signal_struct(struct signal_struct *sig)
 {
-	/* taskstats_tgid_free, sched_autogroup_exit - removed stubs */
-	if (sig->oom_mm) {
-		struct mm_struct *mm = sig->oom_mm;
-		if (unlikely(atomic_dec_and_test(&mm->mm_count))) {
-			INIT_WORK(&mm->async_put_work, mmdrop_async_fn);
-			schedule_work(&mm->async_put_work);
-		}
-	}
+	/* taskstats_tgid_free, sched_autogroup_exit, oom_mm cleanup - removed */
 	kmem_cache_free(signal_cachep, sig);
 }
 

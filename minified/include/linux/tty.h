@@ -122,10 +122,11 @@ struct tty_struct {
 
 	struct mutex atomic_write_lock;
 	struct mutex legacy_mutex;
-	struct mutex throttle_mutex;
+	/* throttle_mutex removed - never locked */
 	struct rw_semaphore termios_rwsem;
 	struct mutex winsize_mutex;
-	struct ktermios termios, termios_locked;
+	struct ktermios termios;
+	/* termios_locked removed - never accessed */
 	char name[64];
 	unsigned long flags;
 	int count;

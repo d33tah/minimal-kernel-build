@@ -24,11 +24,9 @@
 /* WAKEUP_CHARS removed - unused */
 
 struct n_tty_data {
-	size_t read_head;
-	size_t read_tail;
-	struct mutex atomic_read_lock;
+	/* read_head, read_tail, read_buf removed - n_tty_read is stub that returns 0 */
+	/* atomic_read_lock removed - only initialized, never locked */
 	struct mutex output_lock;
-	char read_buf[N_TTY_BUF_SIZE];
 };
 
 static void n_tty_write_wakeup(struct tty_struct *tty)
@@ -38,11 +36,7 @@ static void n_tty_write_wakeup(struct tty_struct *tty)
 
 static void n_tty_flush_buffer(struct tty_struct *tty)
 {
-	struct n_tty_data *ldata = tty->disc_data;
-
-	if (ldata) {
-		ldata->read_head = ldata->read_tail = 0;
-	}
+	/* read_head, read_tail assignments removed - fields removed */
 	wake_up_interruptible(&tty->read_wait);
 	if (tty->link)
 		n_tty_flush_buffer(tty->link);
@@ -70,7 +64,7 @@ static int n_tty_open(struct tty_struct *tty)
 	if (!ldata)
 		return -ENOMEM;
 
-	mutex_init(&ldata->atomic_read_lock);
+	/* atomic_read_lock init removed - field removed */
 	mutex_init(&ldata->output_lock);
 	tty->disc_data = ldata;
 

@@ -774,7 +774,7 @@ alloc_vmap_area(unsigned long size, unsigned long align, unsigned long vstart,
 		unsigned long vend, int node, gfp_t gfp_mask)
 {
 	struct vmap_area *va;
-	unsigned long freed;
+	/* freed removed - vmap_notify_list call removed */
 	unsigned long addr;
 	int purged = 0;
 
@@ -970,7 +970,7 @@ void __init vmalloc_init(void)
 {
 	struct vmap_area *va;
 	struct vm_struct *tmp;
-	int i;
+	/* i removed - for_each_possible_cpu simplified to single CPU */
 
 	vmap_area_cachep = KMEM_CACHE(vmap_area, SLAB_PANIC);
 

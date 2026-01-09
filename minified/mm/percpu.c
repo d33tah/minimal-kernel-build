@@ -871,7 +871,8 @@ static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved,
 	static int warn_limit = 10;
 	struct pcpu_chunk *chunk, *next;
 	const char *err;
-	int slot, off, cpu, ret;
+	int slot, off;
+	/* cpu, ret removed - unused after pcpu simplifications */
 	unsigned long flags;
 	void __percpu *ptr;
 	size_t bits, bit_align;
@@ -1032,7 +1033,8 @@ static void pcpu_balance_populated(void)
 {
 	const gfp_t gfp = GFP_KERNEL | __GFP_NORETRY | __GFP_NOWARN;
 	struct pcpu_chunk *chunk;
-	int slot, nr_to_pop, ret;
+	int slot, nr_to_pop;
+	/* ret removed - pcpu_populate_chunk always returns 0 */
 
 retry_pop:
 	if (pcpu_atomic_alloc_failed) {

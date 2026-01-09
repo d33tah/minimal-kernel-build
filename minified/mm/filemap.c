@@ -1508,7 +1508,7 @@ ssize_t __generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 {
 	struct file *file = iocb->ki_filp;
 	struct address_space *mapping = file->f_mapping;
-	struct inode *inode = mapping->host;
+	/* inode removed - unused after file_update_time simplification */
 	ssize_t written = 0;
 	ssize_t err;
 	ssize_t status;

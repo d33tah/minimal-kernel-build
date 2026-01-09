@@ -1455,7 +1455,8 @@ static void __init free_area_init_node(int nid)
 void __init free_area_init(unsigned long *max_zone_pfn)
 {
 	unsigned long start_pfn, end_pfn;
-	int i, nid;
+	int i;
+	/* nid removed - single node config uses hardcoded 0 */
 
 	/* Minimal zone setup - just set up basic pfn ranges */
 	memset(arch_zone_lowest_possible_pfn, 0,

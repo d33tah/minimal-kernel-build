@@ -236,7 +236,7 @@ static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
 {
 	vm_flags_t vm_flags = vma->vm_flags;
 	int write = (gup_flags & FOLL_WRITE);
-	int foreign = (gup_flags & FOLL_REMOTE);
+	/* foreign removed - never used after FOLL_REMOTE simplification */
 
 	if (vm_flags & (VM_IO | VM_PFNMAP))
 		return -EFAULT;

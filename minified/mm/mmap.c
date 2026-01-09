@@ -1138,7 +1138,7 @@ static int do_brk_flags(unsigned long addr, unsigned long len,
 	struct vm_area_struct *vma, *prev;
 	struct rb_node **rb_link, *rb_parent;
 	pgoff_t pgoff = addr >> PAGE_SHIFT;
-	int error;
+	/* error removed - never used */
 	unsigned long mapped_addr;
 
 	if ((flags & (~VM_EXEC)) != 0)

@@ -38,7 +38,8 @@ static void wb_update_bandwidth_workfn(struct work_struct *work)
 static int wb_init(struct bdi_writeback *wb, struct backing_dev_info *bdi,
 		   gfp_t gfp)
 {
-	int i, err;
+	int err;
+	/* i removed - stat init loop removed */
 
 	memset(wb, 0, sizeof(*wb));
 

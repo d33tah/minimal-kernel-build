@@ -191,12 +191,7 @@ struct lruvec {
 
 	spinlock_t			lru_lock;
 
-	unsigned long			anon_cost;
-	unsigned long			file_cost;
-
-	atomic_long_t			nonresident_age;
-
-	unsigned long			flags;
+	/* anon_cost, file_cost, nonresident_age, flags removed - never used */
 };
 
 /* isolate_mode_t removed - unused */
@@ -254,9 +249,9 @@ struct zone {
 	unsigned long _watermark[NR_WMARK];
 	unsigned long watermark_boost;
 
-	unsigned long nr_reserved_highatomic;
+	/* nr_reserved_highatomic removed - never used */
 
-	 
+
 	long lowmem_reserve[MAX_NR_ZONES];
 
 	struct pglist_data	*zone_pgdat;
@@ -286,21 +281,16 @@ struct zone {
 	 
 	ZONE_PADDING(_pad1_)
 
-	 
+
 	struct free_area	free_area[MAX_ORDER];
 
-	 
-	unsigned long		flags;
-
+	/* flags removed - never used */
 
 	spinlock_t		lock;
 
+	/* contiguous removed - write-only */
 
 	ZONE_PADDING(_pad2_)
-
-	bool			contiguous;
-
-	ZONE_PADDING(_pad3_)
 
 	atomic_long_t		vm_stat[NR_VM_ZONE_STAT_ITEMS];
 } ____cacheline_internodealigned_in_smp;
@@ -349,10 +339,10 @@ typedef struct pglist_data {
 	wait_queue_head_t kswapd_wait;
 	wait_queue_head_t pfmemalloc_wait;
 
-	 
+
 	wait_queue_head_t reclaim_wait[NR_VMSCAN_THROTTLE];
 
-	atomic_t nr_writeback_throttled;
+	/* nr_writeback_throttled removed - never set */
 	struct task_struct *kswapd;
 	int kswapd_order;
 	enum zone_type kswapd_highest_zoneidx;
@@ -367,10 +357,10 @@ typedef struct pglist_data {
 
 	 
 
-	 
+
 	struct lruvec		__lruvec;
 
-	unsigned long		flags;
+	/* flags removed - never used */
 
 	ZONE_PADDING(_pad2_)
 

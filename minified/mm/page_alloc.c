@@ -357,12 +357,8 @@ void __init memblock_free_pages(struct page *page, unsigned long pfn,
 
 void __init page_alloc_init_late(void)
 {
-	struct zone *zone;
-
 	memblock_discard();
-
-	for_each_populated_zone(zone)
-		zone->contiguous = true;
+	/* contiguous removed - write-only */
 }
 
 static inline void expand(struct zone *zone, struct page *page, int low,

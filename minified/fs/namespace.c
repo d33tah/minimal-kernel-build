@@ -165,10 +165,7 @@ static inline void mnt_dec_writers(struct mount *mnt)
 
 static int mnt_is_readonly(struct vfsmount *mnt)
 {
-	if (mnt->mnt_sb->s_readonly_remount)
-		return 1;
-
-	smp_rmb();
+	/* s_readonly_remount check removed - field never written, always 0 */
 	return __mnt_is_readonly(mnt);
 }
 

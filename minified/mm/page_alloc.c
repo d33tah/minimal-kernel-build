@@ -897,7 +897,6 @@ static void build_zonelists(pg_data_t *pgdat)
 static void per_cpu_pages_init(struct per_cpu_pages *pcp,
 			       struct per_cpu_zonestat *pzstats);
 
-#define BOOT_PAGESET_HIGH 0
 #define BOOT_PAGESET_BATCH 1
 static DEFINE_PER_CPU(struct per_cpu_pages, boot_pageset);
 static DEFINE_PER_CPU(struct per_cpu_zonestat, boot_zonestats);
@@ -1084,7 +1083,6 @@ static void per_cpu_pages_init(struct per_cpu_pages *pcp,
 	for (pindex = 0; pindex < NR_PCP_LISTS; pindex++)
 		INIT_LIST_HEAD(&pcp->lists[pindex]);
 
-	pcp->high = BOOT_PAGESET_HIGH;
 	pcp->batch = BOOT_PAGESET_BATCH;
 }
 
@@ -1096,7 +1094,7 @@ static void __zone_set_pageset_high_and_batch(struct zone *zone,
 	/* for_each_possible_cpu simplified - single CPU */
 	pcp = per_cpu_ptr(zone->per_cpu_pageset, 0);
 	WRITE_ONCE(pcp->batch, batch);
-	WRITE_ONCE(pcp->high, high);
+	/* high removed - write-only, never read */
 }
 
 static void zone_set_pageset_high_and_batch(struct zone *zone)

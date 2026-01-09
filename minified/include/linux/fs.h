@@ -590,9 +590,7 @@ struct super_block {
 
 	atomic_long_t s_remove_count;
 
-	int s_readonly_remount;
-
-	/* s_dio_done_wq removed - never created, only destroyed */
+	/* s_readonly_remount, s_dio_done_wq removed - never written/created */
 	struct hlist_head s_pins;
 
 	

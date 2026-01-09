@@ -200,7 +200,7 @@ enum zone_watermarks {
 
 struct per_cpu_pages {
 	int count;
-	int high;
+	/* high removed - write-only, never read */
 	int batch;
 	struct list_head lists[NR_PCP_LISTS];
 };

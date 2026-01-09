@@ -26,10 +26,10 @@ enum wb_state {
 /* enum wb_reason removed - only used in unused field start_all_reason */
 
 struct bdi_writeback {
-	struct backing_dev_info *bdi;	 
+	struct backing_dev_info *bdi;
 
-	unsigned long state;		 
-	unsigned long last_old_flush;	 
+	unsigned long state;
+	/* last_old_flush removed - write-only field */
 
 	struct list_head b_dirty;	 
 	struct list_head b_io;		 

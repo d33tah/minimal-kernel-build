@@ -936,7 +936,6 @@ void __init kmem_cache_init(void)
 {
 	static __initdata struct kmem_cache boot_kmem_cache,
 		boot_kmem_cache_node;
-	int node;
 
 	/* debug_guardpage_minorder() always returns 0 - removed check */
 

@@ -40,28 +40,18 @@ struct bdi_writeback {
 	atomic_t writeback_inodes;
 	/* stat[NR_WB_STAT_ITEMS] removed - array was zero-sized */
 
-	unsigned long congested;	 
+	unsigned long congested;
 
-	unsigned long bw_time_stamp;	 
-	unsigned long dirtied_stamp;
-	unsigned long written_stamp;	 
-	unsigned long write_bandwidth;	 
-	unsigned long avg_write_bandwidth;  
-
-	 
-	unsigned long dirty_ratelimit;
-	unsigned long balanced_dirty_ratelimit;
+	/* bw_time_stamp, dirtied_stamp, written_stamp, write_bandwidth,
+	   avg_write_bandwidth, dirty_ratelimit, balanced_dirty_ratelimit,
+	   dirty_exceeded, dirty_sleep removed - write-only fields */
 
 	struct fprop_local_percpu completions;
-	int dirty_exceeded;
-	/* start_all_reason field removed - never used */
 
 	spinlock_t work_lock;
 	struct list_head work_list;
-	struct delayed_work dwork;	 
-	struct delayed_work bw_dwork;	 
-
-	unsigned long dirty_sleep;	 
+	struct delayed_work dwork;
+	struct delayed_work bw_dwork;
 
 	struct list_head bdi_node;	 
 
@@ -79,8 +69,7 @@ struct backing_dev_info {
 	/* min_ratio removed - always 0 */
 	unsigned int max_ratio, max_prop_frac;
 
-	 
-	atomic_long_t tot_write_bandwidth;
+	/* tot_write_bandwidth removed - never used */
 
 	struct bdi_writeback wb;   
 	struct list_head wb_list;  

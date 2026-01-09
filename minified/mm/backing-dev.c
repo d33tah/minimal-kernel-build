@@ -33,7 +33,7 @@ static void wb_update_bandwidth_workfn(struct work_struct *work)
 	/* Stub: bw_dwork never scheduled in minimal kernel */
 }
 
-#define INIT_BW (100 << (20 - PAGE_SHIFT))
+/* INIT_BW removed - no longer used after field removal */
 
 static int wb_init(struct bdi_writeback *wb, struct backing_dev_info *bdi,
 		   gfp_t gfp)
@@ -52,17 +52,14 @@ static int wb_init(struct bdi_writeback *wb, struct backing_dev_info *bdi,
 	spin_lock_init(&wb->list_lock);
 
 	atomic_set(&wb->writeback_inodes, 0);
-	wb->bw_time_stamp = 0; /* Simplified for minimal kernel */
-	wb->balanced_dirty_ratelimit = INIT_BW;
-	wb->dirty_ratelimit = INIT_BW;
-	wb->write_bandwidth = INIT_BW;
-	wb->avg_write_bandwidth = INIT_BW;
+	/* bw_time_stamp, balanced_dirty_ratelimit, dirty_ratelimit,
+	   write_bandwidth, avg_write_bandwidth, dirty_sleep inits removed
+	   - fields removed from struct */
 
 	spin_lock_init(&wb->work_lock);
 	INIT_LIST_HEAD(&wb->work_list);
 	INIT_DELAYED_WORK(&wb->dwork, wb_workfn);
 	INIT_DELAYED_WORK(&wb->bw_dwork, wb_update_bandwidth_workfn);
-	wb->dirty_sleep = 0; /* Simplified for minimal kernel */
 
 	err = fprop_local_init_percpu(&wb->completions, gfp);
 	if (err)

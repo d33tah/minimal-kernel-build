@@ -76,9 +76,8 @@ struct signal_struct {
 	int			notify_count;
 	struct task_struct	*group_exec_task;
 
-	 
-	int			group_stop_count;
-	unsigned int		flags;  
+	/* group_stop_count removed - write-only field, never read */
+	unsigned int		flags;
 
 
 	unsigned int		is_child_subreaper:1;

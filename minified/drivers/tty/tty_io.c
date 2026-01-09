@@ -1050,7 +1050,7 @@ struct tty_struct *alloc_tty_struct(struct tty_driver *driver, int idx)
 	tty->ctrl.session = NULL;
 	tty->ctrl.pgrp = NULL;
 	mutex_init(&tty->legacy_mutex);
-	mutex_init(&tty->throttle_mutex);
+	/* mutex_init(&tty->throttle_mutex) removed - never locked */
 	init_rwsem(&tty->termios_rwsem);
 	mutex_init(&tty->winsize_mutex);
 	init_ldsem(&tty->ldisc_sem);
@@ -1058,7 +1058,7 @@ struct tty_struct *alloc_tty_struct(struct tty_driver *driver, int idx)
 	init_waitqueue_head(&tty->read_wait);
 	INIT_WORK(&tty->hangup_work, do_tty_hangup);
 	mutex_init(&tty->atomic_write_lock);
-	spin_lock_init(&tty->ctrl.lock);
+	/* spin_lock_init(&tty->ctrl.lock) removed - never locked */
 	spin_lock_init(&tty->flow.lock);
 	spin_lock_init(&tty->files_lock);
 	INIT_LIST_HEAD(&tty->tty_files);

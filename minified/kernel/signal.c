@@ -306,8 +306,7 @@ int zap_other_threads(struct task_struct *p)
 {
 	struct task_struct *t = p;
 	int count = 0;
-
-	p->signal->group_stop_count = 0;
+	/* group_stop_count assignment removed - field is write-only */
 
 	while_each_thread(p, t)
 	{

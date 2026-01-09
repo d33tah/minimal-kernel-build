@@ -59,7 +59,6 @@ static void __exit_signal(struct task_struct *tsk)
 	bool group_dead = thread_group_leader(tsk);
 	struct sighand_struct *sighand;
 	struct tty_struct *tty;
-	u64 utime, stime;
 
 	sighand = rcu_dereference_check(tsk->sighand,
 					lockdep_tasklist_lock_is_held());
@@ -78,14 +77,10 @@ static void __exit_signal(struct task_struct *tsk)
 
 	/* Removed: add_device_randomness - not needed for minimal kernel */
 
-	task_cputime(tsk, &utime, &stime);
+	/* task_cputime, sig->utime/stime accumulation removed - write-only fields */
 	write_seqlock(&sig->stats_lock);
-	sig->utime += utime;
-	sig->stime += stime;
-	/* sig->gtime removed - write-only field */
-	/* sig->min_flt/maj_flt/nvcsw/nivcsw accumulation removed - write-only fields */
+	/* sig->min_flt/maj_flt/nvcsw/nivcsw/sum_sched_runtime accumulation removed - write-only fields */
 	/* task_io_get_inblock, task_io_get_oublock, task_io_accounting_add removed - empty stubs */
-	sig->sum_sched_runtime += tsk->se.sum_exec_runtime;
 	sig->nr_threads--;
 	nr_threads--;
 	detach_pid(tsk, PIDTYPE_PID);

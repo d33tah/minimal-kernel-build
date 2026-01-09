@@ -66,8 +66,7 @@ struct backing_dev_info {
 
 	struct kref refcnt;
 	unsigned int capabilities;
-	/* min_ratio removed - always 0 */
-	unsigned int max_ratio, max_prop_frac;
+	/* min_ratio, max_ratio, max_prop_frac removed - write-only */
 
 	/* tot_write_bandwidth removed - never used */
 

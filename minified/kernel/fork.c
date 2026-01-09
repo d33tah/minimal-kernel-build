@@ -285,13 +285,7 @@ void __mmdrop(struct mm_struct *mm)
 	free_mm(mm);
 }
 
-static void mmdrop_async_fn(struct work_struct *work)
-{
-	struct mm_struct *mm;
-
-	mm = container_of(work, struct mm_struct, async_put_work);
-	__mmdrop(mm);
-}
+/* mmdrop_async_fn removed - async_put_work is never scheduled */
 
 static inline void free_signal_struct(struct signal_struct *sig)
 {

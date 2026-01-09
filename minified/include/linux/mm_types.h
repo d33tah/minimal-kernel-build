@@ -317,7 +317,7 @@ struct mm_struct {
 		atomic_t tlb_flush_pending;
 
 		atomic_t tlb_flush_batched;
-		struct work_struct async_put_work;
+		/* async_put_work removed - never scheduled */
 
 	} __randomize_layout;
 

@@ -194,11 +194,7 @@ struct sched_entity {
 
 struct sched_rt_entity {
 	struct list_head		run_list;
-	unsigned long			timeout;
-	/* watchdog_stamp removed - unused */
-	unsigned int			time_slice;
-	unsigned short			on_rq;
-	/* on_list, back removed - write-only/unused */
+	/* timeout, watchdog_stamp, time_slice, on_rq, on_list, back removed - write-only/unused */
 } __randomize_layout;
 
 struct sched_dl_entity {

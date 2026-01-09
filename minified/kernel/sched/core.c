@@ -402,10 +402,7 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 	__dl_clear_params(p);
 
 	INIT_LIST_HEAD(&p->rt.run_list);
-	p->rt.timeout = 0;
-	p->rt.time_slice = sched_rr_timeslice;
-	p->rt.on_rq = 0;
-	/* p->rt.on_list removed - write-only field */
+	/* p->rt.timeout, time_slice, on_rq, on_list removed - write-only fields */
 	/* init_numa_balancing - empty stub removed */
 }
 

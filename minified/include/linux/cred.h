@@ -42,28 +42,24 @@ static inline int in_group_p(kgid_t grp)
 
 struct cred {
 	atomic_t	usage;
-	kuid_t		uid;		 
-	kgid_t		gid;		 
-	kuid_t		suid;		 
-	kgid_t		sgid;		 
-	kuid_t		euid;		 
-	kgid_t		egid;		 
-	kuid_t		fsuid;		 
-	kgid_t		fsgid;		 
-	unsigned	securebits;	 
-	kernel_cap_t	cap_inheritable;  
-	kernel_cap_t	cap_permitted;	 
-	kernel_cap_t	cap_effective;	 
-	kernel_cap_t	cap_bset;	 
-	kernel_cap_t	cap_ambient;	 
-	struct user_struct *user;	 
-	struct user_namespace *user_ns;  
+	kuid_t		uid;
+	kgid_t		gid;
+	kuid_t		suid;
+	kgid_t		sgid;
+	kuid_t		euid;
+	kgid_t		egid;
+	kuid_t		fsuid;
+	kgid_t		fsgid;
+	/* securebits, cap_inheritable, cap_effective, cap_bset, cap_ambient removed - never read */
+	kernel_cap_t	cap_permitted;
+	struct user_struct *user;
+	struct user_namespace *user_ns;
 	struct ucounts *ucounts;
-	struct group_info *group_info;	 
-	 
+	struct group_info *group_info;
+
 	union {
-		int non_rcu;			 
-		struct rcu_head	rcu;		 
+		int non_rcu;
+		struct rcu_head	rcu;
 	};
 } __randomize_layout;
 

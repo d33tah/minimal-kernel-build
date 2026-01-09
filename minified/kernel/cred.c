@@ -25,11 +25,8 @@ struct cred init_cred = {
 	.egid = GLOBAL_ROOT_GID,
 	.fsuid = GLOBAL_ROOT_UID,
 	.fsgid = GLOBAL_ROOT_GID,
-	.securebits = SECUREBITS_DEFAULT,
-	.cap_inheritable = CAP_EMPTY_SET,
+	/* securebits, cap_inheritable, cap_effective, cap_bset removed */
 	.cap_permitted = CAP_FULL_SET,
-	.cap_effective = CAP_FULL_SET,
-	.cap_bset = CAP_FULL_SET,
 	.user = INIT_USER,
 	.user_ns = &init_user_ns,
 	.group_info = &init_groups,

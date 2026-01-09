@@ -45,10 +45,7 @@ static inline struct hlist_bl_head *in_lookup_hash(const struct dentry *parent,
 }
 
 /* struct dentry_stat_t removed - never instantiated */
-
-static DEFINE_PER_CPU(long, nr_dentry);
-static DEFINE_PER_CPU(long, nr_dentry_unused);
-static DEFINE_PER_CPU(long, nr_dentry_negative);
+/* nr_dentry, nr_dentry_unused, nr_dentry_negative removed - only written, never read */
 
 #include <asm/word-at-a-time.h>
 
@@ -131,8 +128,7 @@ static void dentry_unlink_inode(struct dentry *dentry)
 	flags &= ~(DCACHE_ENTRY_TYPE | DCACHE_FALLTHRU);
 	WRITE_ONCE(dentry->d_flags, flags);
 	dentry->d_inode = NULL;
-	if (dentry->d_flags & DCACHE_LRU_LIST)
-		this_cpu_inc(nr_dentry_negative);
+	/* nr_dentry_negative increment removed - counter never read */
 	hlist_del_init(&dentry->d_u.d_alias);
 	raw_write_seqcount_end(&dentry->d_seq);
 	spin_unlock(&dentry->d_lock);
@@ -150,9 +146,7 @@ static void d_lru_del(struct dentry *dentry)
 {
 	D_FLAG_VERIFY(dentry, DCACHE_LRU_LIST);
 	dentry->d_flags &= ~DCACHE_LRU_LIST;
-	this_cpu_dec(nr_dentry_unused);
-	if (d_is_negative(dentry))
-		this_cpu_dec(nr_dentry_negative);
+	/* nr_dentry_unused, nr_dentry_negative counters removed - never read */
 	WARN_ON_ONCE(
 		!list_lru_del(&dentry->d_sb->s_dentry_lru, &dentry->d_lru));
 }
@@ -224,7 +218,7 @@ static void __dentry_kill(struct dentry *dentry)
 		dentry_unlink_inode(dentry);
 	else
 		spin_unlock(&dentry->d_lock);
-	this_cpu_dec(nr_dentry);
+	/* nr_dentry counter removed - never read */
 	if (dentry->d_op && dentry->d_op->d_release)
 		dentry->d_op->d_release(dentry);
 
@@ -306,9 +300,7 @@ static inline bool retain_dentry(struct dentry *dentry)
 	if (unlikely(!(dentry->d_flags & DCACHE_LRU_LIST))) {
 		D_FLAG_VERIFY(dentry, 0);
 		dentry->d_flags |= DCACHE_LRU_LIST;
-		this_cpu_inc(nr_dentry_unused);
-		if (d_is_negative(dentry))
-			this_cpu_inc(nr_dentry_negative);
+		/* nr_dentry_unused, nr_dentry_negative counters removed */
 		WARN_ON_ONCE(!list_lru_add(&dentry->d_sb->s_dentry_lru,
 					   &dentry->d_lru));
 	} else if (unlikely(!(dentry->d_flags & DCACHE_REFERENCED)))
@@ -439,7 +431,7 @@ static void __dput_to_list(struct dentry *dentry, struct list_head *list)
 			D_FLAG_VERIFY(dentry, 0);
 			list_add(&dentry->d_lru, list);
 			dentry->d_flags |= DCACHE_SHRINK_LIST | DCACHE_LRU_LIST;
-			this_cpu_inc(nr_dentry_unused);
+			/* nr_dentry_unused counter removed */
 		}
 	}
 }
@@ -627,9 +619,7 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 			return NULL;
 		}
 	}
-
-	this_cpu_inc(nr_dentry);
-
+	/* nr_dentry counter removed - never read */
 	return dentry;
 }
 
@@ -738,9 +728,7 @@ void d_instantiate(struct dentry *entry, struct inode *inode)
 		/* security_d_instantiate - empty stub */
 		spin_lock(&inode->i_lock);
 		spin_lock(&entry->d_lock);
-
-		if (entry->d_flags & DCACHE_LRU_LIST)
-			this_cpu_dec(nr_dentry_negative);
+		/* nr_dentry_negative counter removed - never read */
 		hlist_add_head(&entry->d_u.d_alias, &inode->i_dentry);
 		raw_write_seqcount_begin(&entry->d_seq);
 		__d_set_inode_and_type(entry, inode, add_flags);

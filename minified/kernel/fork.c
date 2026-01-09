@@ -795,8 +795,7 @@ copy_process(struct pid *pid, int trace, int node,
 	spin_lock_init(&p->alloc_lock);
 
 	init_sigpending(&p->pending);
-
-	p->utime = p->stime = 0; /* gtime, prev_cputime removed - write-only */
+	/* utime, stime init removed - fields removed */
 
 	/* prev_cputime_init, task_io_accounting_init, acct_clear_integrals, posix_cputimers_init, audit_set_context removed - empty stubs */
 	if (args->kthread) {

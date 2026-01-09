@@ -314,12 +314,9 @@ struct task_struct {
 	 
 	int __user			*clear_child_tid;
 
-	 
-	void				*worker_private;
 
-	u64				utime;
-	u64				stime;
-	/* gtime, prev_cputime removed - write-only fields (never actually read) */
+	void				*worker_private;
+	/* utime, stime removed - write-only, task_cputime() never called */
 
 	/* nvcsw, nivcsw removed - write-only fields (accumulation removed) */
 	/* min_flt, maj_flt removed - write-only fields (increments removed) */

@@ -310,7 +310,7 @@ typedef struct pglist_data {
 
 	ZONE_PADDING(_pad2_)
 
-	struct per_cpu_nodestat __percpu *per_cpu_nodestats;
+	/* per_cpu_nodestats removed - only assigned, never read */
 	atomic_long_t vm_stat[NR_VM_NODE_STAT_ITEMS];
 } pg_data_t;
 

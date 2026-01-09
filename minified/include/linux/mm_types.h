@@ -57,16 +57,15 @@ struct page {
 	unsigned long flags;		 
 	 
 	union {
-		struct {	 
-			 
+		struct {
+
 			union {
 				struct list_head lru;
-				 
+
 				struct {
-					 
+
 					void *__filler;
-					 
-					unsigned int mlock_count;
+					/* mlock_count removed - only written, never read */
 				};
 			};
 			 
@@ -155,14 +154,12 @@ struct folio {
 			unsigned long flags;
 			union {
 				struct list_head lru;
-	 
+
 				struct {
 					void *__filler;
-	 
-					unsigned int mlock_count;
-	 
+					/* mlock_count removed - write-only */
 				};
-	 
+
 			};
 			struct address_space *mapping;
 			pgoff_t index;

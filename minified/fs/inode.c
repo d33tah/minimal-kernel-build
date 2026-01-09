@@ -22,8 +22,7 @@ static __cacheline_aligned_in_smp DEFINE_SPINLOCK(inode_hash_lock);
 
 const struct address_space_operations empty_aops = {};
 
-static DEFINE_PER_CPU(unsigned long, nr_inodes);
-static DEFINE_PER_CPU(unsigned long, nr_unused);
+/* nr_inodes, nr_unused removed - only inc/dec, never read */
 
 static struct kmem_cache *inode_cachep __read_mostly;
 
@@ -79,8 +78,7 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 	/* inode->i_private removed - unused */
 	inode->i_mapping = mapping;
 	INIT_HLIST_HEAD(&inode->i_dentry);
-	this_cpu_inc(nr_inodes);
-
+	/* nr_inodes counter removed */
 	return 0;
 }
 
@@ -127,8 +125,7 @@ void __destroy_inode(struct inode *inode)
 		WARN_ON(atomic_long_read(&inode->i_sb->s_remove_count) == 0);
 		atomic_long_dec(&inode->i_sb->s_remove_count);
 	}
-
-	this_cpu_dec(nr_inodes);
+	/* nr_inodes counter removed */
 }
 
 void drop_nlink(struct inode *inode)
@@ -195,10 +192,9 @@ static void __inode_add_lru(struct inode *inode, bool rotate)
 	if (!mapping_shrinkable(&inode->i_data))
 		return;
 
-	if (list_lru_add(&inode->i_sb->s_inode_lru, &inode->i_lru))
-		this_cpu_inc(nr_unused);
-	else if (rotate)
+	if (!list_lru_add(&inode->i_sb->s_inode_lru, &inode->i_lru) && rotate)
 		inode->i_state |= I_REFERENCED;
+	/* nr_unused counter removed */
 }
 
 void inode_add_lru(struct inode *inode)
@@ -208,8 +204,8 @@ void inode_add_lru(struct inode *inode)
 
 static void inode_lru_list_del(struct inode *inode)
 {
-	if (list_lru_del(&inode->i_sb->s_inode_lru, &inode->i_lru))
-		this_cpu_dec(nr_unused);
+	list_lru_del(&inode->i_sb->s_inode_lru, &inode->i_lru);
+	/* nr_unused counter removed */
 }
 
 void inode_sb_list_add(struct inode *inode)
@@ -352,14 +348,14 @@ static enum lru_status inode_lru_isolate(struct list_head *item,
 	if (atomic_read(&inode->i_count) || (inode->i_state & ~I_REFERENCED)) {
 		list_lru_isolate(lru, &inode->i_lru);
 		spin_unlock(&inode->i_lock);
-		this_cpu_dec(nr_unused);
+		/* nr_unused counter removed */
 		return LRU_REMOVED;
 	}
 
 	inode->i_state |= I_FREEING;
 	list_lru_isolate_move(lru, &inode->i_lru, freeable);
 	spin_unlock(&inode->i_lock);
-	this_cpu_dec(nr_unused);
+	/* nr_unused counter removed */
 	return LRU_REMOVED;
 }
 

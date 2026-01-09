@@ -38,7 +38,7 @@ static void vgacon_scrolldelta(struct vc_data *c, int lines);
 static int vgacon_set_origin(struct vc_data *c);
 static void vgacon_save_screen(struct vc_data *c);
 static struct uni_pagedir *vgacon_uni_pagedir;
-static int vgacon_refcount;
+/* vgacon_refcount removed - only inc/dec, never read */
 
 static unsigned long vga_vram_base __read_mostly;
 static unsigned long vga_vram_end __read_mostly;
@@ -278,10 +278,9 @@ static void vgacon_init(struct vc_data *c, int init)
 	if (vga_512_chars)
 		c->vc_hi_font_mask = 0x0800;
 	p = *c->vc_uni_pagedir_loc;
-	if (c->vc_uni_pagedir_loc != &vgacon_uni_pagedir) {
+	if (c->vc_uni_pagedir_loc != &vgacon_uni_pagedir)
 		c->vc_uni_pagedir_loc = &vgacon_uni_pagedir;
-		vgacon_refcount++;
-	}
+	/* vgacon_refcount inc removed */
 	if (global_cursor_default == -1)
 		global_cursor_default =
 			!(screen_info.flags & VIDEO_FLAGS_NOCURSOR);
@@ -293,8 +292,7 @@ static void vgacon_deinit(struct vc_data *c)
 		c->vc_visible_origin = vga_vram_base;
 		vga_set_mem_top(c);
 	}
-
-	--vgacon_refcount;
+	/* vgacon_refcount dec removed */
 	c->vc_uni_pagedir_loc = &c->vc_uni_pagedir;
 }
 

@@ -81,11 +81,8 @@ struct signal_struct {
 	struct rlimit rlim[RLIM_NLIMITS];
 
 
-	 
-	bool oom_flag_origin;
-	short oom_score_adj;		 
-	short oom_score_adj_min;	 
-	struct mm_struct *oom_mm;	 
+	/* oom_flag_origin, oom_score_adj, oom_score_adj_min removed - write-only */
+	struct mm_struct *oom_mm;
 
 	struct mutex cred_guard_mutex;	 
 	struct rw_semaphore exec_update_lock;	 

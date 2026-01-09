@@ -648,8 +648,7 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 	task_unlock(current->group_leader);
 
 	/* posix_cpu_timers_init_group, tty_audit_fork, sched_autogroup_fork - stubs */
-	sig->oom_score_adj = current->signal->oom_score_adj;
-	sig->oom_score_adj_min = current->signal->oom_score_adj_min;
+	/* oom_score_adj init removed - fields removed */
 
 	mutex_init(&sig->cred_guard_mutex);
 	init_rwsem(&sig->exec_update_lock);

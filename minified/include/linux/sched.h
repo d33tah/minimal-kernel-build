@@ -342,15 +342,9 @@ struct task_struct {
 	/* gtime removed - write-only field (never actually read) */
 	struct prev_cputime		prev_cputime;
 
-
-	unsigned long			nvcsw;
-	unsigned long			nivcsw;
-
-	/* start_time removed - write-only field */
-
-	unsigned long			min_flt;
-	unsigned long			maj_flt;
-	/* posix_cputimers removed - empty struct, never used */
+	/* nvcsw, nivcsw removed - write-only fields (accumulation removed) */
+	/* min_flt, maj_flt removed - write-only fields (increments removed) */
+	/* start_time, posix_cputimers removed - write-only fields */
 
 	const struct cred __rcu		*ptracer_cred;
 

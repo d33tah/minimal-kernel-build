@@ -326,9 +326,7 @@ void __noreturn do_exit(long code)
 		if (unlikely(is_global_init(tsk)))
 			panic("Attempted to kill init! exitcode=0x%08x\n",
 			      tsk->signal->group_exit_code ?: (int)code);
-
-		if (tsk->mm)
-			setmax_mm_hiwater_rss(&tsk->signal->maxrss, tsk->mm);
+		/* setmax_mm_hiwater_rss removed - maxrss unused */
 	}
 	/* acct_collect, tty_audit_exit, audit_free removed - empty stubs */
 	tsk->exit_code = code;

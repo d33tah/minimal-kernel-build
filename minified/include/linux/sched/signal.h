@@ -91,15 +91,8 @@ struct signal_struct {
 
 
 	seqlock_t stats_lock;
-	u64 utime, stime;
-	/* gtime removed - write-only field */
-	struct prev_cputime prev_cputime;
-	unsigned long nvcsw, nivcsw;
-	unsigned long min_flt, maj_flt;
-	unsigned long maxrss;
-
-	 
-	unsigned long long sum_sched_runtime;
+	/* utime, stime, gtime, prev_cputime, nvcsw, nivcsw, min_flt, maj_flt,
+	 * maxrss, sum_sched_runtime all removed - write-only fields */
 
 	 
 	struct rlimit rlim[RLIM_NLIMITS];

@@ -839,7 +839,7 @@ static unsigned long lazy_max_pages(void)
 
 static atomic_long_t vmap_lazy_nr = ATOMIC_LONG_INIT(0);
 
-static DEFINE_MUTEX(vmap_purge_lock);
+/* vmap_purge_lock removed - never used */
 
 /* purge_fragmented_blocks_allcpus, __purge_vmap_area_lazy removed - stubs */
 

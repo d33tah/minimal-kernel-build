@@ -120,8 +120,7 @@ spurious_8259A_irq:
 					irq);
 			spurious_irq_mask |= irqmask;
 		}
-		atomic_inc(&irq_err_count);
-
+		/* irq_err_count increment removed */
 		goto handle_real_irq;
 	}
 }

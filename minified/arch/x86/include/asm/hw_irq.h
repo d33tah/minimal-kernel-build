@@ -19,8 +19,7 @@
 
 
  
-extern atomic_t irq_err_count;
-
+/* irq_err_count removed - only incremented, never read */
 extern char irq_entries_start[];
 
 #define VECTOR_UNUSED		NULL

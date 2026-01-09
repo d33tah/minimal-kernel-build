@@ -18,8 +18,7 @@
 #include <asm/traps.h>
 
 DEFINE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
-
-atomic_t irq_err_count;
+/* irq_err_count removed - only incremented, never read */
 
 void ack_bad_irq(unsigned int irq)
 {

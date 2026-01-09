@@ -26,12 +26,10 @@ struct pid
 {
 	refcount_t count;
 	unsigned int level;
-	spinlock_t lock;
-	 
+	/* spinlock_t lock removed - never used */
 	struct hlist_head tasks[PIDTYPE_MAX];
-	struct hlist_head inodes;
-	 
-	wait_queue_head_t wait_pidfd;
+	/* struct hlist_head inodes removed - never used */
+	/* wait_queue_head_t wait_pidfd removed - never used */
 	struct rcu_head rcu;
 	struct upid numbers[1];
 };

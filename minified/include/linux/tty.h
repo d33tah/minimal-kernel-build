@@ -135,7 +135,7 @@ struct tty_struct {
 	struct {
 		spinlock_t lock;
 		bool stopped;
-		bool tco_stopped;
+		/* tco_stopped removed - never accessed */
 		unsigned long unused[0];
 	} __aligned(sizeof(unsigned long)) flow;
 
@@ -143,8 +143,7 @@ struct tty_struct {
 		spinlock_t lock;
 		struct pid *pgrp;
 		struct pid *session;
-		unsigned char pktstatus;
-		bool packet;
+		/* pktstatus, packet removed - never accessed */
 		unsigned long unused[0];
 	} __aligned(sizeof(unsigned long)) ctrl;
 

@@ -75,12 +75,9 @@ static void __exit_signal(struct task_struct *tsk)
 			sig->curr_target = next_thread(tsk);
 	}
 
-	/* Removed: add_device_randomness - not needed for minimal kernel */
-
-	/* task_cputime, sig->utime/stime accumulation removed - write-only fields */
-	write_seqlock(&sig->stats_lock);
-	/* sig->min_flt/maj_flt/nvcsw/nivcsw/sum_sched_runtime accumulation removed - write-only fields */
-	/* task_io_get_inblock, task_io_get_oublock, task_io_accounting_add removed - empty stubs */
+	/* add_device_randomness, task_cputime, sig->utime/stime, min_flt/maj_flt/nvcsw/nivcsw,
+	 * sum_sched_runtime, io accounting all removed - write-only or empty stub fields
+	 * stats_lock also removed since it protected those removed fields */
 	sig->nr_threads--;
 	nr_threads--;
 	detach_pid(tsk, PIDTYPE_PID);
@@ -90,11 +87,9 @@ static void __exit_signal(struct task_struct *tsk)
 		detach_pid(tsk, PIDTYPE_SID);
 		list_del_rcu(&tsk->tasks);
 		list_del_init(&tsk->sibling);
-		/* process_counts decrement removed */
 	}
 	list_del_rcu(&tsk->thread_group);
 	list_del_rcu(&tsk->thread_node);
-	write_sequnlock(&sig->stats_lock);
 
 	flush_sigqueue(&tsk->pending);
 	tsk->sighand = NULL;

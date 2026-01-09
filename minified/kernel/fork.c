@@ -640,8 +640,7 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 	sig->curr_target = tsk;
 	init_sigpending(&sig->shared_pending);
 	INIT_HLIST_HEAD(&sig->multiprocess);
-	seqlock_init(&sig->stats_lock);
-	/* prev_cputime_init removed - prev_cputime removed from signal_struct */
+	/* stats_lock init removed - lock and fields it protected removed */
 
 	task_lock(current->group_leader);
 	memcpy(sig->rlim, current->signal->rlim, sizeof sig->rlim);

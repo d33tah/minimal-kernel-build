@@ -69,14 +69,13 @@ struct signal_struct {
 
 	struct pid *pids[PIDTYPE_MAX];
 
-	struct tty_struct *tty;  
+	struct tty_struct *tty;
 
-
-	seqlock_t stats_lock;
+	/* stats_lock removed - protected fields that no longer exist */
 	/* utime, stime, gtime, prev_cputime, nvcsw, nivcsw, min_flt, maj_flt,
 	 * maxrss, sum_sched_runtime all removed - write-only fields */
 
-	 
+
 	struct rlimit rlim[RLIM_NLIMITS];
 
 

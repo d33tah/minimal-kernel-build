@@ -857,7 +857,7 @@ static int bprm_execve(struct linux_binprm *bprm, int fd,
 			p->fs->in_exec = 1;
 		spin_unlock(&p->fs->lock);
 	}
-	current->in_execve = 1;
+	/* in_execve = 1 removed - field removed */
 
 	file = do_open_execat(fd, filename, flags);
 	retval = PTR_ERR(file);
@@ -876,7 +876,7 @@ static int bprm_execve(struct linux_binprm *bprm, int fd,
 		goto out;
 
 	current->fs->in_exec = 0;
-	current->in_execve = 0;
+	/* in_execve = 0 removed - field removed */
 	/* rseq_execve removed - empty stub */
 	return retval;
 
@@ -887,7 +887,7 @@ out:
 
 out_unmark:
 	current->fs->in_exec = 0;
-	current->in_execve = 0;
+	/* in_execve = 0 removed - field removed */
 
 	return retval;
 }

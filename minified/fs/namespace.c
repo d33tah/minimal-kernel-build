@@ -1056,7 +1056,6 @@ static int flags_to_propagation_type(int ms_flags)
 
 static int do_change_type(struct path *path, int ms_flags)
 {
-	struct mount *m;
 	struct mount *mnt = real_mount(path->mnt);
 	int recurse = ms_flags & MS_REC;
 	int type;

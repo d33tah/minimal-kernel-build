@@ -907,9 +907,7 @@ static unsigned int con_write_room(struct tty_struct *tty)
 
 static void con_unthrottle(struct tty_struct *tty)
 {
-	struct vc_data *vc = tty->driver_data;
-
-	wake_up_interruptible(&vc->paste_wait);
+	/* wake_up_interruptible(&vc->paste_wait) removed - field removed */
 }
 
 static void con_stop(struct tty_struct *tty)
@@ -1036,7 +1034,7 @@ static void vc_init(struct vc_data *vc, unsigned int rows, unsigned int cols,
 	vc->vc_ulcolor = default_underline_color;
 	vc->vc_itcolor = default_italic_color;
 	vc->vc_halfcolor = 0x08;
-	init_waitqueue_head(&vc->paste_wait);
+	/* init_waitqueue_head(&vc->paste_wait) removed - field removed */
 	reset_terminal(vc, do_clear);
 }
 

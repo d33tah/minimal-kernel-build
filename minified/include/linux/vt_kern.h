@@ -73,7 +73,7 @@ struct vc_data {
 	struct vt_mode	vt_mode;
 	struct pid 	*vt_pid;
 	int		vt_newvt;
-	wait_queue_head_t paste_wait;
+	/* paste_wait removed - write-only (never waited on) */
 	unsigned int	vc_disp_ctrl	: 1;
 	unsigned int	vc_toggle_meta	: 1;
 	unsigned int	vc_decscnm	: 1;

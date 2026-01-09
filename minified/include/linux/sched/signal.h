@@ -26,7 +26,7 @@
 struct sighand_struct {
 	spinlock_t		siglock;
 	refcount_t		count;
-	wait_queue_head_t	signalfd_wqh;
+	/* signalfd_wqh removed - only initialized, never used */
 	struct k_sigaction	action[_NSIG];
 };
 

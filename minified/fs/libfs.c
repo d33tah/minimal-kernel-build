@@ -16,15 +16,7 @@
 
 #include "internal.h"
 
-int simple_getattr(struct user_namespace *mnt_userns, const struct path *path,
-		   struct kstat *stat, u32 request_mask,
-		   unsigned int query_flags)
-{
-	struct inode *inode = d_inode(path->dentry);
-	/* generic_fillattr removed - empty stub */
-	stat->blocks = inode->i_mapping->nrpages << (PAGE_SHIFT - 9);
-	return 0;
-}
+/* simple_getattr removed - getattr callback removed from inode_operations */
 
 int simple_statfs(struct dentry *dentry, struct kstatfs *buf)
 {
@@ -146,88 +138,8 @@ struct pseudo_fs_context *init_pseudo(struct fs_context *fc,
 	return ctx;
 }
 
-int simple_link(struct dentry *old_dentry, struct inode *dir,
-		struct dentry *dentry)
-{
-	struct inode *inode = d_inode(old_dentry);
-
-	dir->i_mtime = current_time(inode);
-	inc_nlink(inode);
-	ihold(inode);
-	dget(dentry);
-	d_instantiate(dentry, inode);
-	return 0;
-}
-
-int simple_empty(struct dentry *dentry)
-{
-	struct dentry *child;
-	int ret = 0;
-
-	spin_lock(&dentry->d_lock);
-	list_for_each_entry(child, &dentry->d_subdirs, d_child) {
-		spin_lock_nested(&child->d_lock, DENTRY_D_LOCK_NESTED);
-		if (simple_positive(child)) {
-			spin_unlock(&child->d_lock);
-			goto out;
-		}
-		spin_unlock(&child->d_lock);
-	}
-	ret = 1;
-out:
-	spin_unlock(&dentry->d_lock);
-	return ret;
-}
-
-int simple_unlink(struct inode *dir, struct dentry *dentry)
-{
-	struct inode *inode = d_inode(dentry);
-
-	dir->i_mtime = current_time(inode);
-	drop_nlink(inode);
-	dput(dentry);
-	return 0;
-}
-
-int simple_rmdir(struct inode *dir, struct dentry *dentry)
-{
-	if (!simple_empty(dentry))
-		return -ENOTEMPTY;
-
-	drop_nlink(d_inode(dentry));
-	simple_unlink(dir, dentry);
-	drop_nlink(dir);
-	return 0;
-}
-
-int simple_rename(struct user_namespace *mnt_userns, struct inode *old_dir,
-		  struct dentry *old_dentry, struct inode *new_dir,
-		  struct dentry *new_dentry, unsigned int flags)
-{
-	/* struct inode *inode removed - was unused */
-	int they_are_dirs = d_is_dir(old_dentry);
-
-	if (flags & ~RENAME_NOREPLACE)
-		return -EINVAL;
-
-	if (!simple_empty(new_dentry))
-		return -ENOTEMPTY;
-
-	if (d_really_is_positive(new_dentry)) {
-		simple_unlink(new_dir, new_dentry);
-		if (they_are_dirs) {
-			drop_nlink(d_inode(new_dentry));
-			drop_nlink(old_dir);
-		}
-	} else if (they_are_dirs) {
-		drop_nlink(old_dir);
-		inc_nlink(new_dir);
-	}
-
-	old_dir->i_mtime = new_dir->i_mtime = current_time(old_dir);
-
-	return 0;
-}
+/* simple_link, simple_empty, simple_unlink, simple_rmdir, simple_rename removed
+   - link/unlink/rmdir/rename syscalls return ENOSYS */
 
 int simple_setattr(struct user_namespace *mnt_userns, struct dentry *dentry,
 		   struct iattr *iattr)
@@ -329,13 +241,7 @@ static struct dentry *empty_dir_lookup(struct inode *dir, struct dentry *dentry,
 	return ERR_PTR(-ENOENT);
 }
 
-static int empty_dir_getattr(struct user_namespace *mnt_userns,
-			     const struct path *path, struct kstat *stat,
-			     u32 request_mask, unsigned int query_flags)
-{
-	/* generic_fillattr removed - empty stub */
-	return 0;
-}
+/* empty_dir_getattr, empty_dir_listxattr removed - callbacks removed from inode_operations */
 
 static int empty_dir_setattr(struct user_namespace *mnt_userns,
 			     struct dentry *dentry, struct iattr *attr)
@@ -343,18 +249,11 @@ static int empty_dir_setattr(struct user_namespace *mnt_userns,
 	return -EPERM;
 }
 
-static ssize_t empty_dir_listxattr(struct dentry *dentry, char *list,
-				   size_t size)
-{
-	return -EOPNOTSUPP;
-}
-
 static const struct inode_operations empty_dir_inode_operations = {
 	.lookup = empty_dir_lookup,
 	.permission = generic_permission,
 	.setattr = empty_dir_setattr,
-	.getattr = empty_dir_getattr,
-	.listxattr = empty_dir_listxattr,
+	/* getattr, listxattr removed - callbacks removed from inode_operations */
 };
 
 /* empty_dir_llseek removed - llseek callback removed from file_operations */

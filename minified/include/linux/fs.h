@@ -708,27 +708,11 @@ struct inode_operations {
 
 	int (*create) (struct user_namespace *, struct inode *,struct dentry *,
 		       umode_t, bool);
-	int (*link) (struct dentry *,struct inode *,struct dentry *);
-	int (*unlink) (struct inode *,struct dentry *);
-	int (*symlink) (struct user_namespace *, struct inode *,struct dentry *,
-			const char *);
-	int (*mkdir) (struct user_namespace *, struct inode *,struct dentry *,
-		      umode_t);
-	int (*rmdir) (struct inode *,struct dentry *);
-	int (*mknod) (struct user_namespace *, struct inode *,struct dentry *,
-		      umode_t,dev_t);
-	int (*rename) (struct user_namespace *, struct inode *, struct dentry *,
-			struct inode *, struct dentry *, unsigned int);
+	/* link, unlink, symlink, mkdir, rmdir, mknod, rename removed - syscalls return ENOSYS */
 	int (*setattr) (struct user_namespace *, struct dentry *,
 			struct iattr *);
-	int (*getattr) (struct user_namespace *, const struct path *,
-			struct kstat *, u32, unsigned int);
-	ssize_t (*listxattr) (struct dentry *, char *, size_t);
-	/* fiemap removed - unused */
-	int (*update_time)(struct inode *, struct timespec64 *, int);
-	/* atomic_open removed - never set */
-	int (*tmpfile)(struct user_namespace *, struct inode *, struct dentry *, umode_t);
-	/* set_acl, fileattr_set, fileattr_get removed - unused */
+	/* getattr, listxattr, update_time, tmpfile removed - never called */
+	/* fiemap, atomic_open, set_acl, fileattr_set, fileattr_get removed - unused */
 } ____cacheline_aligned;
 static inline ssize_t call_write_iter(struct file *file, struct kiocb *kio, struct iov_iter *iter)
 {
@@ -1073,17 +1057,10 @@ extern int dcache_dir_close(struct inode *, struct file *);
 /* dcache_dir_lseek, dcache_readdir removed - iterate_shared removed */
 extern int simple_setattr(struct user_namespace *, struct dentry *,
 			  struct iattr *);
-extern int simple_getattr(struct user_namespace *, const struct path *,
-			  struct kstat *, u32, unsigned int);
+/* simple_getattr removed - getattr callback removed from inode_operations */
 extern int simple_statfs(struct dentry *, struct kstatfs *);
-extern int simple_link(struct dentry *, struct inode *, struct dentry *);
-extern int simple_unlink(struct inode *, struct dentry *);
-extern int simple_rmdir(struct inode *, struct dentry *);
-extern int simple_rename(struct user_namespace *, struct inode *,
-			 struct dentry *, struct inode *, struct dentry *,
-			 unsigned int);
+/* simple_link, simple_unlink, simple_rmdir, simple_rename removed - syscalls return ENOSYS */
 extern int noop_fsync(struct file *, loff_t, loff_t, int);
-/* simple_empty extern removed - only used internally in libfs.c */
 extern int simple_write_begin(struct file *file, struct address_space *mapping,
 			loff_t pos, unsigned len,
 			struct page **pagep, void **fsdata);

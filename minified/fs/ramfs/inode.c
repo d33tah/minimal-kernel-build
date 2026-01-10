@@ -65,79 +65,26 @@ struct inode *ramfs_get_inode(struct super_block *sb, const struct inode *dir,
 	return inode;
 }
 
-static int ramfs_mknod(struct user_namespace *mnt_userns, struct inode *dir,
-		       struct dentry *dentry, umode_t mode, dev_t dev)
-{
-	struct inode *inode = ramfs_get_inode(dir->i_sb, dir, mode, dev);
-	int error = -ENOSPC;
-
-	if (inode) {
-		d_instantiate(dentry, inode);
-		dget(dentry);
-		error = 0;
-		dir->i_mtime = current_time(dir);
-	}
-	return error;
-}
-
-static int ramfs_mkdir(struct user_namespace *mnt_userns, struct inode *dir,
-		       struct dentry *dentry, umode_t mode)
-{
-	int retval = ramfs_mknod(&init_user_ns, dir, dentry, mode | S_IFDIR, 0);
-	if (!retval)
-		inc_nlink(dir);
-	return retval;
-}
+/* ramfs_mkdir, ramfs_symlink, ramfs_tmpfile removed - syscalls return ENOSYS */
 
 static int ramfs_create(struct user_namespace *mnt_userns, struct inode *dir,
 			struct dentry *dentry, umode_t mode, bool excl)
 {
-	return ramfs_mknod(&init_user_ns, dir, dentry, mode | S_IFREG, 0);
-}
-
-static int ramfs_symlink(struct user_namespace *mnt_userns, struct inode *dir,
-			 struct dentry *dentry, const char *symname)
-{
-	struct inode *inode;
-	int error = -ENOSPC;
-
-	inode = ramfs_get_inode(dir->i_sb, dir, S_IFLNK | S_IRWXUGO, 0);
-	if (inode) {
-		int l = strlen(symname) + 1;
-		error = page_symlink(inode, symname, l);
-		if (!error) {
-			d_instantiate(dentry, inode);
-			dget(dentry);
-			dir->i_mtime = current_time(dir);
-		} else
-			iput(inode);
-	}
-	return error;
-}
-
-static int ramfs_tmpfile(struct user_namespace *mnt_userns, struct inode *dir,
-			 struct dentry *dentry, umode_t mode)
-{
-	struct inode *inode;
-
-	inode = ramfs_get_inode(dir->i_sb, dir, mode, 0);
+	/* ramfs_mknod inlined */
+	struct inode *inode =
+		ramfs_get_inode(dir->i_sb, dir, mode | S_IFREG, 0);
 	if (!inode)
 		return -ENOSPC;
-	d_tmpfile(dentry, inode);
+	d_instantiate(dentry, inode);
+	dget(dentry);
+	dir->i_mtime = current_time(dir);
 	return 0;
 }
 
 static const struct inode_operations ramfs_dir_inode_operations = {
 	.create = ramfs_create,
 	.lookup = simple_lookup,
-	.link = simple_link,
-	.unlink = simple_unlink,
-	.symlink = ramfs_symlink,
-	.mkdir = ramfs_mkdir,
-	.rmdir = simple_rmdir,
-	.mknod = ramfs_mknod,
-	.rename = simple_rename,
-	.tmpfile = ramfs_tmpfile,
+	/* link, unlink, symlink, mkdir, rmdir, mknod, rename, tmpfile removed - syscalls return ENOSYS */
 };
 
 static int ramfs_show_options(struct seq_file *m, struct dentry *root)

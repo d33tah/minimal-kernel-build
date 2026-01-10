@@ -307,16 +307,8 @@ static inline bool console_is_usable(struct console *con)
 	return true;
 }
 
-/* console_emit_next_record simplified - prb_read_valid is always false */
-static bool console_emit_next_record(struct console *con, char *text,
-				     char *ext_text, char *dropped_text,
-				     bool *handover)
-{
-	*handover = false;
-	return false;
-}
-
-/* console_flush_all simplified - console_emit_next_record always returns false */
+/* console_emit_next_record removed - never called (~8 LOC) */
+/* console_flush_all simplified - console_emit_next_record always returned false */
 static bool console_flush_all(bool do_cond_resched, u64 *next_seq,
 			      bool *handover)
 {

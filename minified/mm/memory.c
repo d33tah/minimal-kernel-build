@@ -297,7 +297,7 @@ check_pfn:
 	if (unlikely(pfn > highest_memmap_pfn))
 		return NULL;
 
-out:
+	/* 'out' label removed - unused */
 	return pfn_to_page(pfn);
 }
 

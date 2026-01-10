@@ -184,25 +184,7 @@ out_unlock:
 }
 
 /* irq_thread_check_affinity removed - empty function, CONFIG_SMP not enabled */
-
-static irqreturn_t irq_forced_thread_fn(struct irq_desc *desc,
-					struct irqaction *action)
-{
-	irqreturn_t ret;
-
-	local_bh_disable();
-	/* CONFIG_PREEMPT_RT not enabled */
-	local_irq_disable();
-	ret = action->thread_fn(action->irq, action->dev_id);
-	if (ret == IRQ_HANDLED)
-		atomic_inc(&desc->threads_handled);
-
-	irq_finalize_oneshot(desc, action);
-	/* CONFIG_PREEMPT_RT not enabled */
-	local_irq_enable();
-	local_bh_enable();
-	return ret;
-}
+/* irq_forced_thread_fn removed - never called (~16 LOC) */
 
 static irqreturn_t irq_thread_fn(struct irq_desc *desc,
 				 struct irqaction *action)

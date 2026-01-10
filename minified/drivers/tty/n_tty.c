@@ -130,17 +130,11 @@ static __poll_t n_tty_poll(struct tty_struct *tty, struct file *file,
 	return mask;
 }
 
+/* n_tty_ioctl simplified - ioctl syscall returns -ENOTTY directly */
 static int n_tty_ioctl(struct tty_struct *tty, unsigned int cmd,
 		       unsigned long arg)
 {
-	switch (cmd) {
-	case TIOCOUTQ:
-		return put_user(tty_chars_in_buffer(tty), (int __user *)arg);
-	case TIOCINQ:
-		return put_user(0, (unsigned int __user *)arg);
-	default:
-		return n_tty_ioctl_helper(tty, cmd, arg);
-	}
+	return -ENOTTY;
 }
 
 static void n_tty_receive_buf(struct tty_struct *tty, const unsigned char *cp,

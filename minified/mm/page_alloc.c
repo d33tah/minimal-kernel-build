@@ -1112,9 +1112,8 @@ void __meminit setup_zone_pageset(struct zone *zone)
 
 void __init setup_per_cpu_pageset(void)
 {
-	struct pglist_data *pgdat;
+	/* pgdat, cpu variables removed - unused in single-CPU config */
 	struct zone *zone;
-	/* cpu variable removed - unused in single-CPU config */
 
 	for_each_populated_zone(zone)
 		setup_zone_pageset(zone);

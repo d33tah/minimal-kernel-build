@@ -895,7 +895,7 @@ static int attach_recursive_mnt(struct mount *source_mnt,
 				struct mount *dest_mnt,
 				struct mountpoint *dest_mp, bool moving)
 {
-	struct user_namespace *user_ns = current->nsproxy->mnt_ns->user_ns;
+	/* user_ns removed - unused after capability checks removed */
 	struct mnt_namespace *ns = dest_mnt->mnt_ns;
 	struct mountpoint *smp;
 	struct mount *p;

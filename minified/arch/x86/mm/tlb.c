@@ -163,26 +163,7 @@ void switch_mm(struct mm_struct *prev, struct mm_struct *next,
 	local_irq_restore(flags);
 }
 
-static void l1d_flush_force_sigbus(struct callback_head *ch)
-{
-	force_sig(SIGBUS);
-}
-
-static void l1d_flush_evaluate(unsigned long prev_mm, unsigned long next_mm,
-			       struct task_struct *next)
-{
-	if (prev_mm & LAST_USER_MM_L1D_FLUSH)
-		wrmsrl(MSR_IA32_FLUSH_CMD, L1D_FLUSH);
-
-	if (likely(!(next_mm & LAST_USER_MM_L1D_FLUSH)))
-		return;
-
-	if (this_cpu_read(cpu_info.smt_active)) {
-		clear_ti_thread_flag(&next->thread_info, TIF_SPEC_L1D_FLUSH);
-		next->l1d_flush_kill.func = l1d_flush_force_sigbus;
-		task_work_add(next, &next->l1d_flush_kill, TWA_RESUME);
-	}
-}
+/* l1d_flush_force_sigbus, l1d_flush_evaluate removed - never called (~18 LOC) */
 
 static unsigned long mm_mangle_tif_spec_bits(struct task_struct *next)
 {

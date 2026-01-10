@@ -949,74 +949,12 @@ static int tty_fasync(int fd, struct file *filp, int on)
 	return retval;
 }
 
-static int tiocgwinsz(struct tty_struct *tty, struct winsize __user *arg)
-{
-	int err;
-
-	mutex_lock(&tty->winsize_mutex);
-	err = copy_to_user(arg, &tty->winsize, sizeof(*arg));
-	mutex_unlock(&tty->winsize_mutex);
-
-	return err ? -EFAULT : 0;
-}
-
-static int tty_do_resize(struct tty_struct *tty, struct winsize *ws)
-{
-	mutex_lock(&tty->winsize_mutex);
-	if (memcmp(ws, &tty->winsize, sizeof(*ws)))
-		tty->winsize = *ws;
-	mutex_unlock(&tty->winsize_mutex);
-	return 0;
-}
-
-static int tiocswinsz(struct tty_struct *tty, struct winsize __user *arg)
-{
-	struct winsize tmp_ws;
-
-	if (copy_from_user(&tmp_ws, arg, sizeof(*arg)))
-		return -EFAULT;
-
-	if (tty->ops->resize)
-		return tty->ops->resize(tty, &tmp_ws);
-	else
-		return tty_do_resize(tty, &tmp_ws);
-}
-
-static struct tty_struct *tty_pair_get_tty(struct tty_struct *tty)
-{
-	if (tty->driver->type == TTY_DRIVER_TYPE_PTY &&
-	    tty->driver->subtype == PTY_TYPE_MASTER)
-		tty = tty->link;
-	return tty;
-}
+/* tiocgwinsz, tty_do_resize, tiocswinsz, tty_pair_get_tty removed
+   ioctl syscall returns -ENOTTY directly (~50 LOC) */
 
 long tty_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
-	/* Minimal stub: handle only essential ioctl operations */
-	struct tty_struct *tty = file_tty(file);
-	struct tty_struct *real_tty;
-	void __user *p = (void __user *)arg;
-	int retval;
-
-	real_tty = tty_pair_get_tty(tty);
-
-	/* Handle minimal set of ioctls needed for basic console */
-	switch (cmd) {
-	case TIOCGWINSZ:
-		return tiocgwinsz(real_tty, p);
-	case TIOCSWINSZ:
-		return tiocswinsz(real_tty, p);
-	default:
-		break;
-	}
-
-	/* Delegate to driver-specific ioctl if available */
-	if (tty->ops->ioctl) {
-		retval = tty->ops->ioctl(tty, cmd, arg);
-		if (retval != -ENOIOCTLCMD)
-			return retval;
-	}
-
+	/* Never called - ioctl syscall returns -ENOTTY directly */
 	return -ENOTTY;
 }
 

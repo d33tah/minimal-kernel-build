@@ -89,9 +89,9 @@ struct dentry_operations {
 
 #define DCACHE_OP_HASH			0x00000001
 #define DCACHE_OP_COMPARE		0x00000002
-#define DCACHE_OP_REVALIDATE		0x00000004
+/* DCACHE_OP_REVALIDATE removed - unused */
 #define DCACHE_OP_DELETE		0x00000008
-#define DCACHE_OP_PRUNE			0x00000010
+/* DCACHE_OP_PRUNE removed - unused */
 
 #define	DCACHE_DISCONNECTED		0x00000020
       
@@ -102,10 +102,7 @@ struct dentry_operations {
 
 #define DCACHE_CANT_MOUNT		0x00000100
 #define DCACHE_SHRINK_LIST		0x00000400
-
-#define DCACHE_OP_WEAK_REVALIDATE	0x00000800
-
-
+/* DCACHE_OP_WEAK_REVALIDATE removed - unused */
 
 #define DCACHE_DENTRY_KILLED		0x00008000
 

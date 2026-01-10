@@ -694,27 +694,22 @@ struct dir_context {
 
 struct file_operations {
 	struct module *owner;
-	loff_t (*llseek) (struct file *, loff_t, int);
-	ssize_t (*read) (struct file *, char __user *, size_t, loff_t *);
-	ssize_t (*write) (struct file *, const char __user *, size_t, loff_t *);
-	ssize_t (*read_iter) (struct kiocb *, struct iov_iter *);
-	ssize_t (*write_iter) (struct kiocb *, struct iov_iter *);
-	/* iterate, sendpage, flock, fallocate, show_fdinfo, copy_file_range removed - unused */
-	int (*iterate_shared) (struct file *, struct dir_context *);
-	__poll_t (*poll) (struct file *, struct poll_table_struct *);
-	long (*unlocked_ioctl) (struct file *, unsigned int, unsigned long);
-	long (*compat_ioctl) (struct file *, unsigned int, unsigned long);
-	int (*mmap) (struct file *, struct vm_area_struct *);
+	loff_t (*llseek)(struct file *, loff_t, int);
+	ssize_t (*read)(struct file *, char __user *, size_t, loff_t *);
+	ssize_t (*write)(struct file *, const char __user *, size_t, loff_t *);
+	ssize_t (*read_iter)(struct kiocb *, struct iov_iter *);
+	ssize_t (*write_iter)(struct kiocb *, struct iov_iter *);
+	/* iterate, sendpage, flock, fallocate, show_fdinfo, copy_file_range removed */
+	int (*iterate_shared)(struct file *, struct dir_context *);
+	/* poll removed - syscall returns ENOSYS */
+	/* unlocked_ioctl, compat_ioctl removed - syscall returns ENOTTY */
+	int (*mmap)(struct file *, struct vm_area_struct *);
 	unsigned long mmap_supported_flags;
-	int (*open) (struct inode *, struct file *);
-	int (*flush) (struct file *, fl_owner_t id);
-	int (*release) (struct inode *, struct file *);
-	int (*fsync) (struct file *, loff_t, loff_t, int datasync);
-	/* fasync removed - fcntl returns EINVAL, FASYNC never set */
-	int (*lock) (struct file *, int, struct file_lock *);
+	int (*open)(struct inode *, struct file *);
+	/* flush, fsync, fasync, lock removed - never set/called */
+	int (*release)(struct inode *, struct file *);
 	unsigned long (*get_unmapped_area)(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
-	ssize_t (*splice_write)(struct pipe_inode_info *, struct file *, loff_t *, size_t, unsigned int);
-	ssize_t (*splice_read)(struct file *, loff_t *, struct pipe_inode_info *, size_t, unsigned int);
+	/* splice_write, splice_read removed - syscall returns ENOSYS */
 } __randomize_layout;
 
 struct inode_operations {

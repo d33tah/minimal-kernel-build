@@ -87,11 +87,7 @@ struct dentry_operations {
 	int (*d_compare)(const struct dentry *,
 			unsigned int, const char *, const struct qstr *);
 	int (*d_delete)(const struct dentry *);
-	int (*d_init)(struct dentry *);
-	void (*d_release)(struct dentry *);
-	void (*d_prune)(struct dentry *);
-	void (*d_iput)(struct dentry *, struct inode *);
-	/* d_dname, d_automount, d_manage, d_real removed - never called/set */
+	/* d_init, d_release, d_prune, d_iput, d_dname, d_automount, d_manage, d_real removed - never called/set */
 } ____cacheline_aligned;
 
 

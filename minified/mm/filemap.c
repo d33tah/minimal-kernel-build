@@ -99,12 +99,9 @@ void __filemap_remove_folio(struct folio *folio, void *shadow)
 
 void filemap_free_folio(struct address_space *mapping, struct folio *folio)
 {
-	void (*free_folio)(struct folio *);
 	int refs = 1;
 
-	free_folio = mapping->a_ops->free_folio;
-	if (free_folio)
-		free_folio(folio);
+	/* a_ops->free_folio check removed - never set */
 
 	if (folio_test_large(folio) && !folio_test_hugetlb(folio))
 		refs = folio_nr_pages(folio);
@@ -882,27 +879,11 @@ static int filemap_read_folio(struct file *file, struct address_space *mapping,
 static bool filemap_range_uptodate(struct address_space *mapping, loff_t pos,
 				   struct iov_iter *iter, struct folio *folio)
 {
-	int count;
-
 	if (folio_test_uptodate(folio))
 		return true;
 
-	if (iov_iter_is_pipe(iter))
-		return false;
-	if (!mapping->a_ops->is_partially_uptodate)
-		return false;
-	if (mapping->host->i_blkbits >= folio_shift(folio))
-		return false;
-
-	count = iter->count;
-	if (folio_pos(folio) > pos) {
-		count -= folio_pos(folio) - pos;
-		pos = 0;
-	} else {
-		pos -= folio_pos(folio);
-	}
-
-	return mapping->a_ops->is_partially_uptodate(folio, pos, count);
+	/* is_partially_uptodate check removed - never set (~14 LOC) */
+	return false;
 }
 
 static int filemap_update_page(struct kiocb *iocb,
@@ -1454,13 +1435,10 @@ ssize_t generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 
 bool filemap_release_folio(struct folio *folio, gfp_t gfp)
 {
-	struct address_space *const mapping = folio->mapping;
-
 	BUG_ON(!folio_test_locked(folio));
 	if (folio_test_writeback(folio))
 		return false;
 
-	if (mapping && mapping->a_ops->release_folio)
-		return mapping->a_ops->release_folio(folio, gfp);
+	/* a_ops->release_folio check removed - never set */
 	return true;
 }

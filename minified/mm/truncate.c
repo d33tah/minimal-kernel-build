@@ -364,16 +364,10 @@ int invalidate_inode_pages2_range(struct address_space *mapping, pgoff_t start,
 				unmap_mapping_folio(folio);
 			BUG_ON(folio_mapped(folio));
 
-			/* Inlined folio_launder */
+			/* launder_folio check removed - never set */
 			ret2 = 0;
-			if (folio_test_dirty(folio) &&
-			    folio->mapping == mapping &&
-			    mapping->a_ops->launder_folio != NULL)
-				ret2 = mapping->a_ops->launder_folio(folio);
-			if (ret2 == 0) {
-				if (!invalidate_complete_folio2(mapping, folio))
-					ret2 = -EBUSY;
-			}
+			if (!invalidate_complete_folio2(mapping, folio))
+				ret2 = -EBUSY;
 			if (ret2 < 0)
 				ret = ret2;
 			folio_unlock(folio);

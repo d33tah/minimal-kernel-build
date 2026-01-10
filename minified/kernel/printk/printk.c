@@ -316,44 +316,13 @@ static inline bool console_is_usable(struct console *con)
 	return true;
 }
 
+/* console_emit_next_record simplified - prb_read_valid is always false */
 static bool console_emit_next_record(struct console *con, char *text,
 				     char *ext_text, char *dropped_text,
 				     bool *handover)
 {
-	struct printk_info info;
-	struct printk_record r;
-	unsigned long flags;
-	char *write_text;
-	size_t len;
-
-	prb_rec_init_rd(&r, &info, text, CONSOLE_LOG_MAX);
-
 	*handover = false;
-
-	if (!prb_read_valid(prb, con->seq, &r))
-		return false;
-
-	if (con->seq != r.info->seq) {
-		con->dropped += r.info->seq - con->seq;
-		con->seq = r.info->seq;
-	}
-
-	/* suppress_message_printing always returns false - removed branch */
-	write_text = ext_text ? ext_text : text;
-	len = 0;
-
-	printk_safe_enter_irqsave(flags);
-
-	stop_critical_timings();
-	/* call_console_driver was empty stub - removed */
-	start_critical_timings();
-
-	con->seq++;
-
-	*handover = 0;
-	printk_safe_exit_irqrestore(flags);
-	/* skip: label removed - unused */
-	return true;
+	return false;
 }
 
 static bool console_flush_all(bool do_cond_resched, u64 *next_seq,

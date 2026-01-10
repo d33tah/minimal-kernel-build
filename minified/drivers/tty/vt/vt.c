@@ -461,11 +461,7 @@ int vc_resize(struct vc_data *vc, unsigned int cols, unsigned int rows)
 	return 0;
 }
 
-static int vt_resize(struct tty_struct *tty, struct winsize *ws)
-{
-	/* Minimal stub: static console doesn't need resize */
-	return 0;
-}
+/* vt_resize removed - ops->resize never called */
 
 enum { EPecma = 0, EPdec, EPeq, EPgt, EPlt };
 
@@ -878,10 +874,7 @@ static int con_write(struct tty_struct *tty, const unsigned char *buf,
 	return retval;
 }
 
-static int con_put_char(struct tty_struct *tty, unsigned char ch)
-{
-	return do_con_write(tty, &ch, 1);
-}
+/* con_put_char removed - ops->put_char never called */
 
 static unsigned int con_write_room(struct tty_struct *tty)
 {
@@ -1066,11 +1059,9 @@ static const struct tty_operations con_ops = {
 	/* .close = NULL - con_close was empty */
 	.write = con_write,
 	.write_room = con_write_room,
-	.put_char = con_put_char,
+	/* .put_char removed - never called */
 	.flush_chars = con_flush_chars,
-	/* .ioctl removed - never called */
-	/* .stop, .start, .throttle, .unthrottle removed - never called */
-	.resize = vt_resize,
+	/* .ioctl, .stop, .start, .throttle, .unthrottle, .resize removed */
 	.shutdown = con_shutdown,
 	.cleanup = con_cleanup,
 };

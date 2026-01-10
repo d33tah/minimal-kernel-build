@@ -382,7 +382,7 @@ static inline void __flush_cpu_slab(struct kmem_cache *s, int cpu)
 struct slub_flush_work {
 	struct work_struct work;
 	struct kmem_cache *s;
-	bool skip;
+	/* bool skip removed - never read */
 };
 
 static void flush_cpu_slab(struct work_struct *w)
@@ -421,7 +421,6 @@ static void flush_all_cpus_locked(struct kmem_cache *s)
 	sfw = &per_cpu(slub_flush, 0);
 	if (c->slab || slub_percpu_partial(c)) {
 		INIT_WORK(&sfw->work, flush_cpu_slab);
-		sfw->skip = false;
 		sfw->s = s;
 		schedule_work_on(0, &sfw->work);
 		flush_work(&sfw->work);

@@ -71,19 +71,13 @@ static void truncate_folio_batch_exceptionals(struct address_space *mapping,
 	fbatch->nr = j;
 }
 
-void folio_invalidate(struct folio *folio, size_t offset, size_t length)
-{
-	/* a_ops->invalidate_folio check removed - callback never set */
-}
+/* folio_invalidate removed - was empty (a_ops->invalidate_folio never set) */
 
 static void truncate_cleanup_folio(struct folio *folio)
 {
 	if (folio_mapped(folio))
 		unmap_mapping_folio(folio);
-
-	if (folio_has_private(folio))
-		folio_invalidate(folio, 0, folio_size(folio));
-
+	/* folio_invalidate call removed - was empty */
 	folio_cancel_dirty(folio);
 	folio_clear_mappedtodisk(folio);
 }
@@ -120,9 +114,7 @@ bool truncate_inode_partial_folio(struct folio *folio, loff_t start, loff_t end)
 	}
 
 	folio_zero_range(folio, offset, length);
-
-	if (folio_has_private(folio))
-		folio_invalidate(folio, offset, length);
+	/* folio_invalidate call removed - was empty */
 	if (!folio_test_large(folio))
 		return true;
 	/* split_huge_page always returns 0 - always true */

@@ -658,16 +658,7 @@ extern unsigned long move_page_tables(struct vm_area_struct *vma,
 		unsigned long old_addr, struct vm_area_struct *new_vma,
 		unsigned long new_addr, unsigned long len,
 		bool need_rmap_locks);
-
-/* mprotect_fixup stub - no actual memory protection changes */
-static inline int mprotect_fixup(struct mmu_gather *tlb, struct vm_area_struct *vma,
-			  struct vm_area_struct **pprev, unsigned long start,
-			  unsigned long end, unsigned long newflags)
-{
-	*pprev = vma;
-	return 0;
-}
-
+/* mprotect_fixup removed - was a no-op stub, call removed from exec.c */
 
 static inline unsigned long get_mm_counter(struct mm_struct *mm, int member)
 {

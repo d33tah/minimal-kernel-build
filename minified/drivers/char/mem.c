@@ -127,10 +127,7 @@ static ssize_t write_full(struct file *file, const char __user *buf,
 	return -ENOSPC;
 }
 
-static loff_t null_lseek(struct file *file, loff_t offset, int orig)
-{
-	return file->f_pos = 0;
-}
+/* null_lseek removed - never used */
 
 #define write_zero write_null
 #define write_iter_zero write_iter_null

@@ -273,13 +273,11 @@ int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top,
 	unsigned long stack_shift;
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *vma = bprm->vma;
-	struct vm_area_struct *prev = NULL;
 	unsigned long vm_flags;
 	unsigned long stack_base;
 	unsigned long stack_size;
 	unsigned long stack_expand;
 	unsigned long rlim_stack;
-	struct mmu_gather tlb;
 
 	stack_top = arch_align_stack(stack_top);
 	stack_top = PAGE_ALIGN(stack_top);
@@ -307,11 +305,7 @@ int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top,
 		vm_flags &= ~VM_EXEC;
 	vm_flags |= mm->def_flags;
 	vm_flags |= VM_STACK_INCOMPLETE_SETUP;
-
-	tlb_gather_mmu(&tlb, mm);
-	/* mprotect_fixup always returns 0 */
-	mprotect_fixup(&tlb, vma, &prev, vma->vm_start, vma->vm_end, vm_flags);
-	tlb_finish_mmu(&tlb);
+	/* mprotect_fixup removed - was a no-op stub */
 
 	if (stack_shift) {
 		ret = shift_arg_pages(vma, stack_shift);

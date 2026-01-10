@@ -64,34 +64,12 @@
 #ifndef __O_TMPFILE
 #define __O_TMPFILE	020000000
 #endif
-
-#define O_TMPFILE (__O_TMPFILE | O_DIRECTORY)
-/* O_TMPFILE_MASK removed - unused */
+/* O_TMPFILE, O_TMPFILE_MASK removed - unused */
 
 #ifndef O_NDELAY
 #define O_NDELAY	O_NONBLOCK
 #endif
 
-#define F_DUPFD		0	 
-#define F_GETFD		1	 
-#define F_SETFD		2	 
-#define F_GETFL		3	 
-#define F_SETFL		4
-#define FD_CLOEXEC	1
-
-struct flock {
-	short	l_type;
-	short	l_whence;
-	__kernel_off_t	l_start;
-	__kernel_off_t	l_len;
-	__kernel_pid_t	l_pid;
-#ifdef	__ARCH_FLOCK_EXTRA_SYSID
-	__ARCH_FLOCK_EXTRA_SYSID
-#endif
-#ifdef	__ARCH_FLOCK_PAD
-	__ARCH_FLOCK_PAD
-#endif
-};
-
+/* F_DUPFD, F_GETFD, F_SETFD, F_GETFL, F_SETFL, FD_CLOEXEC, struct flock removed - unused */
 
 #endif  

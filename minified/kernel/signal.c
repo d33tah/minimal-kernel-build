@@ -110,8 +110,9 @@ void calculate_sigpending(void)
 /* task_set_jobctl_pending removed - always returned false, callers simplified */
 /* task_clear_jobctl_pending, task_join_group_stop removed - empty stubs */
 
-static struct sigqueue *__sigqueue_alloc(int sig, struct task_struct *t,
-					 gfp_t gfp_flags, int override_rlimit,
+/* sig param removed - was unused */
+static struct sigqueue *__sigqueue_alloc(struct task_struct *t, gfp_t gfp_flags,
+					 int override_rlimit,
 					 const unsigned int sigqueue_flags)
 {
 	struct sigqueue *q = NULL;
@@ -213,7 +214,7 @@ static int __send_signal_locked(int sig, struct kernel_siginfo *info,
 	if ((sig == SIGKILL) || (t->flags & PF_KTHREAD))
 		goto out_set;
 
-	q = __sigqueue_alloc(sig, t, GFP_ATOMIC, 0, 0);
+	q = __sigqueue_alloc(t, GFP_ATOMIC, 0, 0);
 	if (q) {
 		list_add_tail(&q->list, &pending->list);
 		if (info == SEND_SIG_NOINFO) {

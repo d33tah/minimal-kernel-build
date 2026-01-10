@@ -261,12 +261,7 @@ static inline void arch_thread_struct_whitelist(unsigned long *offset,
 	fpu_thread_struct_whitelist(offset, size);
 }
 
-static __always_inline unsigned long current_top_of_stack(void)
-{
-	return this_cpu_read_stable(cpu_current_top_of_stack);
-}
-
-/* on_thread_stack removed - unused */
+/* current_top_of_stack removed - unused */
 
 #define __cpuid			native_cpuid
 

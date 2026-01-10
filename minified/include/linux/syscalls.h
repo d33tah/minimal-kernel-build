@@ -15,7 +15,7 @@ struct statfs;
 struct statfs64;
 struct sysinfo;
 struct __kernel_old_timeval;
-struct __kernel_timex;
+/* struct __kernel_timex forward decl removed - never used */
 struct timeval;
 /* struct mq_attr removed - unused */
 struct clone_args;

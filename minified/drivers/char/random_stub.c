@@ -31,20 +31,17 @@ static ssize_t random_write(struct file *file, const char __user *buffer,
 	return count;
 }
 /* random_poll removed - poll/select syscalls return ENOSYS */
-static long random_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
-{
-	return -ENOTTY;
-}
+/* random_ioctl removed - ioctl syscall returns ENOTTY */
 const struct file_operations random_fops = {
 	.read = random_read,
 	.write = random_write,
 	/* poll removed - syscall returns ENOSYS */
-	.unlocked_ioctl = random_ioctl,
+	/* unlocked_ioctl removed - ioctl returns ENOTTY */
 	.llseek = noop_llseek
 };
 const struct file_operations urandom_fops = { .read = random_read,
 					      .write = random_write,
-					      .unlocked_ioctl = random_ioctl,
+					      /* ioctl removed */
 					      .llseek = noop_llseek };
 SYSCALL_DEFINE3(getrandom, char __user *, buf, size_t, count, unsigned int,
 		flags)

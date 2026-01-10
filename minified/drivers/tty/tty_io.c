@@ -68,8 +68,7 @@ static ssize_t tty_write(struct kiocb *, struct iov_iter *);
 /* tty_poll removed - poll/select syscalls return ENOSYS */
 static int tty_open(struct inode *, struct file *);
 #define tty_compat_ioctl NULL
-static int __tty_fasync(int fd, struct file *filp, int on);
-static int tty_fasync(int fd, struct file *filp, int on);
+/* tty_fasync removed - fcntl returns EINVAL, FASYNC never set */
 static void release_tty(struct tty_struct *tty, int idx);
 
 static void free_tty_struct(struct tty_struct *tty)
@@ -171,10 +170,7 @@ static long hung_up_tty_ioctl(struct file *file, unsigned int cmd,
 /* hung_up_tty_compat_ioctl merged with hung_up_tty_ioctl - identical behavior */
 #define hung_up_tty_compat_ioctl hung_up_tty_ioctl
 
-static int hung_up_tty_fasync(int fd, struct file *file, int on)
-{
-	return -ENOTTY;
-}
+/* hung_up_tty_fasync removed - fcntl returns EINVAL, FASYNC never set */
 
 static const struct file_operations tty_fops = {
 	.llseek = no_llseek,
@@ -182,11 +178,10 @@ static const struct file_operations tty_fops = {
 	.write_iter = tty_write,
 	/* splice_read/write removed - splice syscall returns ENOSYS */
 	/* poll removed - poll/select syscalls return ENOSYS */
-	.unlocked_ioctl = tty_ioctl,
-	.compat_ioctl = tty_compat_ioctl,
+	/* unlocked_ioctl/compat_ioctl removed - ioctl returns ENOTTY */
 	.open = tty_open,
 	.release = tty_release,
-	.fasync = tty_fasync,
+	/* fasync removed - fcntl returns EINVAL, FASYNC never set */
 };
 
 static const struct file_operations console_fops = {
@@ -195,11 +190,10 @@ static const struct file_operations console_fops = {
 	.write_iter = redirected_tty_write,
 	/* splice_read/write removed - splice syscall returns ENOSYS */
 	/* poll removed - poll/select syscalls return ENOSYS */
-	.unlocked_ioctl = tty_ioctl,
-	.compat_ioctl = tty_compat_ioctl,
+	/* unlocked_ioctl/compat_ioctl removed - ioctl returns ENOTTY */
 	.open = tty_open,
 	.release = tty_release,
-	.fasync = tty_fasync,
+	/* fasync removed - fcntl returns EINVAL, FASYNC never set */
 };
 
 static const struct file_operations hung_up_tty_fops = {
@@ -207,10 +201,9 @@ static const struct file_operations hung_up_tty_fops = {
 	.read_iter = hung_up_tty_read,
 	.write_iter = hung_up_tty_write,
 	/* poll removed - poll/select syscalls return ENOSYS */
-	.unlocked_ioctl = hung_up_tty_ioctl,
-	.compat_ioctl = hung_up_tty_compat_ioctl,
+	/* unlocked_ioctl/compat_ioctl removed - ioctl returns ENOTTY */
 	.release = tty_release,
-	.fasync = hung_up_tty_fasync,
+	/* fasync removed - fcntl returns EINVAL, FASYNC never set */
 };
 
 static DEFINE_SPINLOCK(redirect_lock);
@@ -911,24 +904,7 @@ retry_open:
 
 /* tty_poll removed - poll/select syscalls return ENOSYS */
 
-/* __tty_fasync simplified - fasync_helper is stubbed to no-op */
-static int __tty_fasync(int fd, struct file *filp, int on)
-{
-	return 0;
-}
-
-static int tty_fasync(int fd, struct file *filp, int on)
-{
-	struct tty_struct *tty = file_tty(filp);
-	int retval = -ENOTTY;
-
-	tty_lock(tty);
-	if (!tty_hung_up_p(filp))
-		retval = __tty_fasync(fd, filp, on);
-	tty_unlock(tty);
-
-	return retval;
-}
+/* tty_fasync removed - fcntl returns EINVAL, FASYNC never set */
 
 /* tiocgwinsz, tty_do_resize, tiocswinsz, tty_pair_get_tty removed
    ioctl syscall returns -ENOTTY directly (~50 LOC) */

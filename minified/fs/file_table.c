@@ -119,10 +119,7 @@ static void __fput(struct file *file)
 
 	might_sleep();
 
-	if (unlikely(file->f_flags & FASYNC)) {
-		if (file->f_op->fasync)
-			file->f_op->fasync(-1, file, 0);
-	}
+	/* FASYNC handling removed - fcntl returns EINVAL, FASYNC never set */
 	if (file->f_op->release)
 		file->f_op->release(inode, file);
 	if (unlikely(S_ISCHR(inode->i_mode) && inode->i_cdev != NULL &&

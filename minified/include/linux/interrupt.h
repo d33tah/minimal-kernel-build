@@ -78,8 +78,7 @@ request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
 }
 
 /* free_irq, disable_irq_nosync removed - never called */
-
-struct device;
+/* struct device forward decl removed - unused */
 
 extern void enable_irq(unsigned int irq);
 

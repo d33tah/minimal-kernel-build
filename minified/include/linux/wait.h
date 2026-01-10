@@ -31,8 +31,7 @@ struct wait_queue_head {
 };
 typedef struct wait_queue_head wait_queue_head_t;
 
-struct task_struct;
-
+/* struct task_struct forward decl removed - unused */
 
 #define __WAITQUEUE_INITIALIZER(name, tsk) {					\
 	.private	= tsk,							\

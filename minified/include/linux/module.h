@@ -36,7 +36,7 @@
 /* struct mod_arch_specific, MODULE_NAME_LEN removed - unused */
 
 struct module;
-struct exception_table_entry;
+/* struct exception_table_entry forward decl removed - unused */
 
 struct module_kobject {
 	struct kobject kobj;
@@ -72,9 +72,7 @@ extern int init_module(void);
 #define MODULE_FILE	MODULE_INFO(file, KBUILD_MODFILE);
 #define MODULE_LICENSE(_license) MODULE_FILE MODULE_INFO(license, _license)
 /* MODULE_DEVICE_TABLE removed - never called */
-
-struct notifier_block;
-
+/* struct notifier_block forward decl removed - unused */
 
 /* __module_address, __module_text_address, is_module_address,
    is_module_percpu_address, is_module_text_address removed - unused */

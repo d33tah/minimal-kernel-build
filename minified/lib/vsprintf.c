@@ -13,7 +13,7 @@
 /* ioport.h, dcache.h, cred.h, rtc.h removed - unused */
 #include <linux/time.h>
 /* uuid.h removed - guid_t not used */
-#include <linux/of.h>
+/* of.h removed - device_node not used in vsprintf */
 
 /* Removed: linux/random.h, linux/siphash.h - ptr hashing disabled */
 /* IPV6_FLOWINFO_MASK removed - unused */

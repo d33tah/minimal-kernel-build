@@ -400,10 +400,8 @@ out_dput:
 
 static inline int d_revalidate(struct dentry *dentry, unsigned int flags)
 {
-	if (unlikely(dentry->d_flags & DCACHE_OP_REVALIDATE))
-		return dentry->d_op->d_revalidate(dentry, flags);
-	else
-		return 1;
+	/* d_revalidate removed - never set */
+	return 1;
 }
 
 static int complete_walk(struct nameidata *nd)
@@ -502,12 +500,7 @@ static bool __follow_mount_rcu(struct nameidata *nd, struct path *path,
 	/* LOOKUP_NO_XDEV check removed - never set */
 
 	for (;;) {
-		if (unlikely(flags & DCACHE_MANAGE_TRANSIT)) {
-			int res = dentry->d_op->d_manage(path, true);
-			if (res)
-				return res == -EISDIR;
-			flags = dentry->d_flags;
-		}
+		/* DCACHE_MANAGE_TRANSIT check removed - d_manage never set */
 
 		if (flags & DCACHE_MOUNTED) {
 			struct mount *mounted = __lookup_mnt(path->mnt, dentry);
@@ -956,17 +949,8 @@ static int link_path_walk(const char *name, struct nameidata *nd)
 				type = LAST_DOT;
 			}
 		if (likely(type == LAST_NORM)) {
-			struct dentry *parent = nd->path.dentry;
 			nd->state &= ~ND_JUMPED;
-			if (unlikely(parent->d_flags & DCACHE_OP_HASH)) {
-				struct qstr this = { { .hash_len = hash_len },
-						     .name = name };
-				err = parent->d_op->d_hash(parent, &this);
-				if (err < 0)
-					return err;
-				hash_len = this.hash_len;
-				name = this.name;
-			}
+			/* DCACHE_OP_HASH check removed - d_hash never set */
 		}
 
 		nd->last.hash_len = hash_len;

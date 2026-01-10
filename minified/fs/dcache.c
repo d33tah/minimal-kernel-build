@@ -133,10 +133,8 @@ static void dentry_unlink_inode(struct dentry *dentry)
 	raw_write_seqcount_end(&dentry->d_seq);
 	spin_unlock(&dentry->d_lock);
 	spin_unlock(&inode->i_lock);
-	if (dentry->d_op && dentry->d_op->d_iput)
-		dentry->d_op->d_iput(dentry, inode);
-	else
-		iput(inode);
+	/* d_iput removed - never set */
+	iput(inode);
 }
 
 #define D_FLAG_VERIFY(dentry, x)          \
@@ -187,8 +185,7 @@ static void __dentry_kill(struct dentry *dentry)
 
 	lockref_mark_dead(&dentry->d_lockref);
 
-	if (dentry->d_flags & DCACHE_OP_PRUNE)
-		dentry->d_op->d_prune(dentry);
+	/* d_prune removed - never set */
 
 	if (dentry->d_flags & DCACHE_LRU_LIST) {
 		if (!(dentry->d_flags & DCACHE_SHRINK_LIST))
@@ -219,8 +216,7 @@ static void __dentry_kill(struct dentry *dentry)
 	else
 		spin_unlock(&dentry->d_lock);
 	/* nr_dentry counter removed - never read */
-	if (dentry->d_op && dentry->d_op->d_release)
-		dentry->d_op->d_release(dentry);
+	/* d_release removed - never set */
 
 	spin_lock(&dentry->d_lock);
 	if (dentry->d_flags & DCACHE_SHRINK_LIST) {
@@ -610,15 +606,7 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 	INIT_LIST_HEAD(&dentry->d_child);
 	d_set_d_op(dentry, dentry->d_sb->s_d_op);
 
-	if (dentry->d_op && dentry->d_op->d_init) {
-		err = dentry->d_op->d_init(dentry);
-		if (err) {
-			if (dname_external(dentry))
-				kfree(external_name(dentry));
-			kmem_cache_free(dentry_cache, dentry);
-			return NULL;
-		}
-	}
+	/* d_init removed - never set */
 	/* nr_dentry counter removed - never read */
 	return dentry;
 }
@@ -660,27 +648,14 @@ struct dentry *d_alloc_pseudo(struct super_block *sb, const struct qstr *name)
 void d_set_d_op(struct dentry *dentry, const struct dentry_operations *op)
 {
 	WARN_ON_ONCE(dentry->d_op);
-	WARN_ON_ONCE(dentry->d_flags &
-		     (DCACHE_OP_HASH | DCACHE_OP_COMPARE |
-		      DCACHE_OP_REVALIDATE | DCACHE_OP_WEAK_REVALIDATE |
-		      DCACHE_OP_DELETE | DCACHE_OP_REAL));
+	WARN_ON_ONCE(dentry->d_flags & DCACHE_OP_DELETE);
 	dentry->d_op = op;
 	if (!op)
 		return;
-	if (op->d_hash)
-		dentry->d_flags |= DCACHE_OP_HASH;
-	if (op->d_compare)
-		dentry->d_flags |= DCACHE_OP_COMPARE;
-	if (op->d_revalidate)
-		dentry->d_flags |= DCACHE_OP_REVALIDATE;
-	if (op->d_weak_revalidate)
-		dentry->d_flags |= DCACHE_OP_WEAK_REVALIDATE;
+	/* d_hash, d_compare, d_revalidate, d_weak_revalidate, d_prune,
+	   d_real checks removed - never set */
 	if (op->d_delete)
 		dentry->d_flags |= DCACHE_OP_DELETE;
-	if (op->d_prune)
-		dentry->d_flags |= DCACHE_OP_PRUNE;
-	if (op->d_real)
-		dentry->d_flags |= DCACHE_OP_REAL;
 }
 
 static unsigned d_flags_for_inode(struct inode *inode)
@@ -756,13 +731,10 @@ static inline bool d_same_name(const struct dentry *dentry,
 			       const struct dentry *parent,
 			       const struct qstr *name)
 {
-	if (likely(!(parent->d_flags & DCACHE_OP_COMPARE))) {
-		if (dentry->d_name.len != name->len)
-			return false;
-		return dentry_cmp(dentry, name->name, name->len) == 0;
-	}
-	return parent->d_op->d_compare(dentry, dentry->d_name.len,
-				       dentry->d_name.name, name) == 0;
+	/* d_compare branch removed - never set */
+	if (dentry->d_name.len != name->len)
+		return false;
+	return dentry_cmp(dentry, name->name, name->len) == 0;
 }
 
 struct dentry *__d_lookup_rcu(const struct dentry *parent,
@@ -785,27 +757,11 @@ seqretry:
 		if (d_unhashed(dentry))
 			continue;
 
-		if (unlikely(parent->d_flags & DCACHE_OP_COMPARE)) {
-			int tlen;
-			const char *tname;
-			if (dentry->d_name.hash != hashlen_hash(hashlen))
-				continue;
-			tlen = dentry->d_name.len;
-			tname = dentry->d_name.name;
-
-			if (read_seqcount_retry(&dentry->d_seq, seq)) {
-				cpu_relax();
-				goto seqretry;
-			}
-			if (parent->d_op->d_compare(dentry, tlen, tname,
-						    name) != 0)
-				continue;
-		} else {
-			if (dentry->d_name.hash_len != hashlen)
-				continue;
-			if (dentry_cmp(dentry, str, hashlen_len(hashlen)) != 0)
-				continue;
-		}
+		/* DCACHE_OP_COMPARE branch removed - d_compare never set */
+		if (dentry->d_name.hash_len != hashlen)
+			continue;
+		if (dentry_cmp(dentry, str, hashlen_len(hashlen)) != 0)
+			continue;
 		*seqp = seq;
 		return dentry;
 	}

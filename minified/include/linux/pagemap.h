@@ -298,19 +298,6 @@ bool filemap_release_folio(struct folio *folio, gfp_t gfp);
 int __filemap_add_folio(struct address_space *mapping, struct folio *folio,
 		pgoff_t index, gfp_t gfp, void **shadowp);
 
-
-static inline bool filemap_range_needs_writeback(struct address_space *mapping,
-						 loff_t start_byte,
-						 loff_t end_byte)
-{
-	if (!mapping->nrpages)
-		return false;
-	if (!mapping_tagged(mapping, PAGECACHE_TAG_DIRTY) &&
-	    !mapping_tagged(mapping, PAGECACHE_TAG_WRITEBACK))
-		return false;
-	return false; /* simplified - no writeback in minimal kernel */
-}
-
 struct readahead_control {
 	struct file *file;
 	struct address_space *mapping;

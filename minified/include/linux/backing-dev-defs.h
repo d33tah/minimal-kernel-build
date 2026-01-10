@@ -57,7 +57,7 @@ struct bdi_writeback {
 
 struct backing_dev_info {
 	u64 id;
-	struct rb_node rb_node;  
+	/* rb_node removed - bdi_tree was never inserted into */
 	struct list_head bdi_list;
 	unsigned long ra_pages;	 
 	unsigned long io_pages;	 

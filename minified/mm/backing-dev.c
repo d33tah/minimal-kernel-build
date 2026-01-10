@@ -17,7 +17,7 @@ struct backing_dev_info noop_backing_dev_info;
 /* bdi_class removed - never used */
 
 DEFINE_SPINLOCK(bdi_lock);
-static struct rb_root bdi_tree = RB_ROOT;
+/* bdi_tree removed - never inserted into, only erased from */
 LIST_HEAD(bdi_list);
 
 struct workqueue_struct *bdi_wq;
@@ -118,7 +118,7 @@ int bdi_init(struct backing_dev_info *bdi)
 static void bdi_remove_from_list(struct backing_dev_info *bdi)
 {
 	spin_lock_bh(&bdi_lock);
-	rb_erase(&bdi->rb_node, &bdi_tree);
+	/* rb_erase removed - bdi_tree was never inserted into */
 	list_del_rcu(&bdi->bdi_list);
 	spin_unlock_bh(&bdi_lock);
 

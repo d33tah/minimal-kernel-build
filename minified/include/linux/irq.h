@@ -208,15 +208,7 @@ struct irq_chip {
 
 	int		(*irq_get_irqchip_state)(struct irq_data *data, enum irqchip_irq_state which, bool *state);
 	int		(*irq_set_irqchip_state)(struct irq_data *data, enum irqchip_irq_state which, bool state);
-
-	int		(*irq_set_vcpu_affinity)(struct irq_data *data, void *vcpu_info);
-
-	void		(*ipi_send_single)(struct irq_data *data, unsigned int cpu);
-	void		(*ipi_send_mask)(struct irq_data *data, const struct cpumask *dest);
-
-	int		(*irq_nmi_setup)(struct irq_data *data);
-	void		(*irq_nmi_teardown)(struct irq_data *data);
-
+	/* irq_set_vcpu_affinity, ipi_send_*, irq_nmi_* removed - never used */
 	unsigned long	flags;
 };
 

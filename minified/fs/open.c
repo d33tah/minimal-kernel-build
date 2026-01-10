@@ -333,8 +333,7 @@ int filp_close(struct file *filp, fl_owner_t id)
 		return 0;
 	}
 
-	if (filp->f_op->flush)
-		retval = filp->f_op->flush(filp, id);
+	/* f_op->flush check removed - never set */
 
 	fput(filp);
 	return retval;

@@ -43,28 +43,21 @@ static unsigned long super_cache_scan(struct shrinker *shrink,
 	if (!trylock_super(sb))
 		return SHRINK_STOP;
 
-	if (sb->s_op->nr_cached_objects)
-		fs_objects = sb->s_op->nr_cached_objects(sb, sc);
+	/* nr_cached_objects/free_cached_objects removed - never set */
 
 	inodes = list_lru_shrink_count(&sb->s_inode_lru, sc);
 	dentries = list_lru_shrink_count(&sb->s_dentry_lru, sc);
-	total_objects = dentries + inodes + fs_objects + 1;
+	total_objects = dentries + inodes + 1;
 	if (!total_objects)
 		total_objects = 1;
 
 	dentries = mult_frac(sc->nr_to_scan, dentries, total_objects);
 	inodes = mult_frac(sc->nr_to_scan, inodes, total_objects);
-	fs_objects = mult_frac(sc->nr_to_scan, fs_objects, total_objects);
 
 	sc->nr_to_scan = dentries + 1;
 	freed = prune_dcache_sb(sb, sc);
 	sc->nr_to_scan = inodes + 1;
 	freed += prune_icache_sb(sb, sc);
-
-	if (fs_objects) {
-		sc->nr_to_scan = fs_objects + 1;
-		freed += sb->s_op->free_cached_objects(sb, sc);
-	}
 
 	up_read(&sb->s_umount);
 	return freed;
@@ -82,8 +75,7 @@ static unsigned long super_cache_count(struct shrinker *shrink,
 		return 0;
 	smp_rmb();
 
-	if (sb->s_op && sb->s_op->nr_cached_objects)
-		total_objects = sb->s_op->nr_cached_objects(sb, sc);
+	/* nr_cached_objects check removed - never set */
 
 	total_objects += list_lru_shrink_count(&sb->s_dentry_lru, sc);
 	total_objects += list_lru_shrink_count(&sb->s_inode_lru, sc);

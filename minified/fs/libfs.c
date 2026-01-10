@@ -16,15 +16,7 @@
 
 #include "internal.h"
 
-/* simple_getattr removed - getattr callback removed from inode_operations */
-
-int simple_statfs(struct dentry *dentry, struct kstatfs *buf)
-{
-	buf->f_type = dentry->d_sb->s_magic;
-	buf->f_bsize = PAGE_SIZE;
-	buf->f_namelen = NAME_MAX;
-	return 0;
-}
+/* simple_getattr, simple_statfs removed - callbacks removed */
 
 int always_delete_dentry(const struct dentry *dentry)
 {
@@ -78,7 +70,7 @@ const struct file_operations simple_dir_operations = {
 };
 
 static const struct super_operations simple_super_operations = {
-	.statfs = simple_statfs,
+	/* statfs removed - statfs syscalls return ENOSYS */
 };
 
 static int pseudo_fs_fill_super(struct super_block *s, struct fs_context *fc)

@@ -87,16 +87,12 @@ static const struct inode_operations ramfs_dir_inode_operations = {
 	/* link, unlink, symlink, mkdir, rmdir, mknod, rename, tmpfile removed - syscalls return ENOSYS */
 };
 
-static int ramfs_show_options(struct seq_file *m, struct dentry *root)
-{
-	/* seq_printf call and fsi variable removed - seq_printf was empty stub */
-	return 0;
-}
+/* ramfs_show_options removed - show_options callback never called */
 
 static const struct super_operations ramfs_ops = {
-	.statfs = simple_statfs,
+	/* statfs removed - statfs syscalls return ENOSYS */
 	.drop_inode = generic_delete_inode,
-	.show_options = ramfs_show_options,
+	/* show_options removed - never called */
 };
 
 enum ramfs_param {

@@ -735,10 +735,8 @@ struct super_operations {
 	void (*evict_inode)(struct inode *);
 	void (*put_super)(struct super_block *);
 	/* sync_fs, freeze_super, freeze_fs, thaw_super, unfreeze_fs removed */
-	int (*statfs)(struct dentry *, struct kstatfs *);
-	/* remount_fs, umount_begin removed - never set/called */
-	int (*show_options)(struct seq_file *, struct dentry *);
-	/* show_devname, show_path, show_stats, nr_cached_objects, free_cached_objects removed */
+	/* statfs removed - statfs syscalls return ENOSYS */
+	/* remount_fs, umount_begin, show_options removed - never called */
 };
 
 #define S_APPEND	(1 << 2)
@@ -1057,8 +1055,7 @@ extern int dcache_dir_close(struct inode *, struct file *);
 /* dcache_dir_lseek, dcache_readdir removed - iterate_shared removed */
 extern int simple_setattr(struct user_namespace *, struct dentry *,
 			  struct iattr *);
-/* simple_getattr removed - getattr callback removed from inode_operations */
-extern int simple_statfs(struct dentry *, struct kstatfs *);
+/* simple_getattr, simple_statfs removed - callbacks removed */
 /* simple_link, simple_unlink, simple_rmdir, simple_rename removed - syscalls return ENOSYS */
 extern int noop_fsync(struct file *, loff_t, loff_t, int);
 extern int simple_write_begin(struct file *file, struct address_space *mapping,

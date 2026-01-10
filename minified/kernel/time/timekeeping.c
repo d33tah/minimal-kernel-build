@@ -325,15 +325,7 @@ int timekeeping_valid_for_hres(void)
 }
 
 /* read_persistent_clock64 provided by arch/x86/kernel/rtc.c */
-
-void __weak __init read_persistent_wall_and_boot_offset(
-	struct timespec64 *wall_time, struct timespec64 *boot_offset)
-{
-	read_persistent_clock64(wall_time);
-	*boot_offset = ns_to_timespec64(local_clock());
-}
-
-/* persistent_clock_exists removed - unused */
+/* read_persistent_wall_and_boot_offset removed - never called */
 
 void __init timekeeping_init(void)
 {

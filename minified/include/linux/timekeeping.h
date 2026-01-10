@@ -24,7 +24,6 @@ extern ktime_t ktime_get(void);
 
 /* ktime_get_real, ktime_get_boottime, ktime_get_clocktai removed - unused */
 extern void read_persistent_clock64(struct timespec64 *ts);
-void read_persistent_wall_and_boot_offset(struct timespec64 *wall_clock,
-					  struct timespec64 *boot_offset);
+/* read_persistent_wall_and_boot_offset removed - never called */
 
 #endif

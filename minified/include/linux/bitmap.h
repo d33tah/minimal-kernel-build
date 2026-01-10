@@ -123,9 +123,7 @@ unsigned long find_last_bit(const unsigned long *addr, unsigned long size)
 #include <linux/string.h>
 #include <linux/types.h>
 
-struct device;
-
-
+/* struct device forward decl removed - unused */
 
 
 /* __bitmap_equal removed - bitmap_equal never called */

@@ -6,7 +6,7 @@
 #include <linux/device.h>
 
 struct bio;
-struct page;
+/* struct page forward decl removed - unused */
 /* cgroup_subsys_state, bio_set, bio_integrity_payload, bio_crypt_ctx removed - unused */
 
 /* Minimal block_device struct - only pointers used, never instantiated */

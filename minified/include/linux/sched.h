@@ -441,7 +441,7 @@ static inline int is_global_init(struct task_struct *tsk)
 
 #define PF_IDLE			0x00000002
 #define PF_EXITING		0x00000004
-#define PF_POSTCOREDUMP		0x00000008
+/* PF_POSTCOREDUMP removed - never used */
 #define PF_IO_WORKER		0x00000010
 #define PF_WQ_WORKER		0x00000020
 #define PF_FORKNOEXEC		0x00000040

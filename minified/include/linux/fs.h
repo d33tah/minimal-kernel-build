@@ -700,7 +700,7 @@ struct file_operations {
 
 struct inode_operations {
 	struct dentry *(*lookup)(struct inode *, struct dentry *, unsigned int);
-	const char *(*get_link)(struct dentry *, struct inode *, struct delayed_call *);
+	/* get_link removed - symlinks never created */
 	int (*permission)(struct user_namespace *, struct inode *, int);
 	/* get_acl, readlink removed - never set/called */
 

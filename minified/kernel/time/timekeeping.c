@@ -46,13 +46,8 @@ static struct timekeeper shadow_timekeeper;
 
 static int __read_mostly timekeeping_suspended;
 
-struct tk_fast {
-	seqcount_latch_t seq;
-	struct tk_read_base base[2];
-};
-
-/* Removed: cycles_at_suspend, dummy_clock_read, dummy_clock, FAST_TK_INIT,
-   tk_fast_mono, tk_fast_raw - fast timekeeper path is stubbed out */
+/* struct tk_fast, cycles_at_suspend, dummy_clock_read, dummy_clock, FAST_TK_INIT,
+   tk_fast_mono, tk_fast_raw removed - fast timekeeper path is stubbed out */
 
 static inline void tk_normalize_xtime(struct timekeeper *tk)
 {

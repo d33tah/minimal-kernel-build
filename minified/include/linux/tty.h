@@ -142,7 +142,7 @@ struct tty_struct {
 	unsigned int receive_room;
 
 	struct tty_struct *link;
-	struct fasync_struct *fasync;
+	/* fasync removed - fcntl returns EINVAL, FASYNC never set */
 	wait_queue_head_t write_wait;
 	wait_queue_head_t read_wait;
 	struct work_struct hangup_work;

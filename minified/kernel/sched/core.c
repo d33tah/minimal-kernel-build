@@ -635,8 +635,7 @@ __pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 	if (likely(!sched_class_above(prev->sched_class, &fair_sched_class) &&
 		   rq->nr_running == rq->cfs.h_nr_running)) {
 		p = pick_next_task_fair(rq, prev, rf);
-		if (unlikely(p == RETRY_TASK))
-			goto restart;
+		/* RETRY_TASK check removed - pick_next_task_fair never returns it */
 
 		if (!p) {
 			put_prev_task(rq, prev);
@@ -646,7 +645,7 @@ __pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 		return p;
 	}
 
-restart:
+	/* restart label removed - RETRY_TASK never returned */
 	put_prev_task(rq, prev);
 
 	for_each_class(class)

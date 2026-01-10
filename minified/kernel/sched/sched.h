@@ -582,7 +582,7 @@ extern const u32		sched_prio_to_wmult[40];
 #define ENQUEUE_HEAD		0x10
 #define ENQUEUE_MIGRATED	0x00
 
-#define RETRY_TASK		((void *)-1UL)
+/* RETRY_TASK removed - never used */
 
 struct sched_class {
 

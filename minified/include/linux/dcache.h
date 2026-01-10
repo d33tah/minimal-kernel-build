@@ -81,11 +81,7 @@ enum dentry_d_lock_class
 };
 
 struct dentry_operations {
-	int (*d_revalidate)(struct dentry *, unsigned int);
-	int (*d_weak_revalidate)(struct dentry *, unsigned int);
-	int (*d_hash)(const struct dentry *, struct qstr *);
-	int (*d_compare)(const struct dentry *,
-			unsigned int, const char *, const struct qstr *);
+	/* d_revalidate, d_weak_revalidate, d_hash, d_compare removed - never called/set */
 	int (*d_delete)(const struct dentry *);
 	/* d_init, d_release, d_prune, d_iput, d_dname, d_automount, d_manage, d_real removed - never called/set */
 } ____cacheline_aligned;

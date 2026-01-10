@@ -98,14 +98,9 @@ DECLARE_PER_CPU(u64, x86_spec_ctrl_current);
 extern void write_spec_ctrl_current(u64 val, bool force);
 /* spec_ctrl_current removed - never called */
 
-/* switch_to_cond_stibp, switch_mm_cond_ibpb, switch_mm_always_ibpb declarations
-   kept for potential references, but keys are never enabled */
-DECLARE_STATIC_KEY_FALSE(switch_to_cond_stibp);
-DECLARE_STATIC_KEY_FALSE(switch_mm_cond_ibpb);
-DECLARE_STATIC_KEY_FALSE(switch_mm_always_ibpb);
-
-/* mds_user_clear, mds_idle_clear, switch_mm_cond_l1d_flush static keys
-   are DEFINE_STATIC_KEY_FALSE and never enabled - stubs simplified */
+/* switch_to_cond_stibp, switch_mm_cond_ibpb, switch_mm_always_ibpb,
+   mds_user_clear, mds_idle_clear, switch_mm_cond_l1d_flush static keys
+   are DEFINE_STATIC_KEY_FALSE and never enabled - declarations removed */
 
 /* mds_clear_cpu_buffers removed - never called since keys always false */
 static __always_inline void mds_user_clear_cpu_buffers(void) { }

@@ -16,13 +16,8 @@ DEFINE_PER_CPU(u64, x86_spec_ctrl_current);
 u64 __ro_after_init x86_amd_ls_cfg_base;
 u64 __ro_after_init x86_amd_ls_cfg_ssbd_mask;
 
-DEFINE_STATIC_KEY_FALSE(switch_to_cond_stibp);
-DEFINE_STATIC_KEY_FALSE(switch_mm_cond_ibpb);
-DEFINE_STATIC_KEY_FALSE(switch_mm_always_ibpb);
-
-DEFINE_STATIC_KEY_FALSE(mds_user_clear);
-
-DEFINE_STATIC_KEY_FALSE(mds_idle_clear);
+/* switch_to_cond_stibp, switch_mm_cond_ibpb, switch_mm_always_ibpb,
+   mds_user_clear, mds_idle_clear definitions removed - never enabled */
 
 void write_spec_ctrl_current(u64 val, bool force)
 {
@@ -57,5 +52,4 @@ int arch_prctl_spec_ctrl_set(struct task_struct *task, unsigned long which,
 {
 	return -ENODEV;
 }
-
-DEFINE_STATIC_KEY_FALSE(switch_mm_cond_l1d_flush);
+/* switch_mm_cond_l1d_flush definition removed - never enabled */

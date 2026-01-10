@@ -225,14 +225,11 @@ static void cond_mitigation(struct task_struct *next)
 	this_cpu_write(cpu_tlbstate.last_user_mm_spec, next_mm);
 }
 
+/* cr4_update_pce_mm simplified - perf_rdpmc_allowed removed (never written),
+   rdpmc_never_available_key is TRUE, so PCE is always cleared */
 static inline void cr4_update_pce_mm(struct mm_struct *mm)
 {
-	if (static_branch_unlikely(&rdpmc_always_available_key) ||
-	    (!static_branch_unlikely(&rdpmc_never_available_key) &&
-	     atomic_read(&mm->context.perf_rdpmc_allowed)))
-		cr4_set_bits_irqsoff(X86_CR4_PCE);
-	else
-		cr4_clear_bits_irqsoff(X86_CR4_PCE);
+	cr4_clear_bits_irqsoff(X86_CR4_PCE);
 }
 
 void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,

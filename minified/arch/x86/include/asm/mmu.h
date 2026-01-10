@@ -27,7 +27,7 @@ typedef struct {
 	void __user *vdso;			 
 	const struct vdso_image *vdso_image;	 
 
-	atomic_t perf_rdpmc_allowed;	 
+	/* perf_rdpmc_allowed removed - never written, rdpmc_never_available_key is TRUE */
 } mm_context_t;
 
 #define INIT_MM_CONTEXT(mm)						\

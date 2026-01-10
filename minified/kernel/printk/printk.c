@@ -388,19 +388,11 @@ void console_unblank(void)
 		pr_flush(1000, true);
 }
 
+/* console_flush_on_panic simplified - only called with CONSOLE_FLUSH_PENDING */
 void console_flush_on_panic(enum con_flush_mode mode)
 {
 	console_trylock();
 	console_may_schedule = 0;
-
-	if (mode == CONSOLE_REPLAY_ALL) {
-		struct console *c;
-		u64 seq;
-
-		seq = prb_first_valid_seq(prb);
-		for_each_console(c)
-			c->seq = seq;
-	}
 	console_unlock();
 }
 

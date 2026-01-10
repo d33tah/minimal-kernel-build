@@ -100,43 +100,7 @@ static struct dentry *scan_positives(struct dentry *cursor, struct list_head *p,
 	return found;
 }
 
-loff_t dcache_dir_lseek(struct file *file, loff_t offset, int whence)
-{
-	struct dentry *dentry = file->f_path.dentry;
-	switch (whence) {
-	case 1:
-		offset += file->f_pos;
-		fallthrough;
-	case 0:
-		if (offset >= 0)
-			break;
-		fallthrough;
-	default:
-		return -EINVAL;
-	}
-	if (offset != file->f_pos) {
-		struct dentry *cursor = file->private_data;
-		struct dentry *to = NULL;
-
-		inode_lock_shared(dentry->d_inode);
-
-		if (offset > 2)
-			to = scan_positives(cursor, &dentry->d_subdirs,
-					    offset - 2, NULL);
-		spin_lock(&dentry->d_lock);
-		if (to)
-			list_move(&cursor->d_child, &to->d_child);
-		else
-			list_del_init(&cursor->d_child);
-		spin_unlock(&dentry->d_lock);
-		dput(to);
-
-		file->f_pos = offset;
-
-		inode_unlock_shared(dentry->d_inode);
-	}
-	return offset;
-}
+/* dcache_dir_lseek removed - llseek callback removed from file_operations */
 
 /* dt_type inlined into dcache_readdir */
 
@@ -464,10 +428,7 @@ static const struct inode_operations empty_dir_inode_operations = {
 	.listxattr = empty_dir_listxattr,
 };
 
-static loff_t empty_dir_llseek(struct file *file, loff_t offset, int whence)
-{
-	return generic_file_llseek_size(file, offset, whence, 2, 2);
-}
+/* empty_dir_llseek removed - llseek callback removed from file_operations */
 
 static int empty_dir_readdir(struct file *file, struct dir_context *ctx)
 {

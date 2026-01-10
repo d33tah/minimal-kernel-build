@@ -16,70 +16,10 @@
 #include <linux/uaccess.h>
 #include <asm/unistd.h>
 
-loff_t vfs_setpos(struct file *file, loff_t offset, loff_t maxsize)
-{
-	if (offset < 0 && !(file->f_mode & FMODE_UNSIGNED_OFFSET))
-		return -EINVAL;
-	if (offset > maxsize)
-		return -EINVAL;
+/* vfs_setpos, generic_file_llseek_size, generic_file_llseek, noop_llseek,
+ * no_llseek, vfs_llseek removed - llseek callback removed from file_operations
+ */
 
-	if (offset != file->f_pos)
-		file->f_pos = offset;
-	return offset;
-}
-
-loff_t generic_file_llseek_size(struct file *file, loff_t offset, int whence,
-				loff_t maxsize, loff_t eof)
-{
-	switch (whence) {
-	case SEEK_END:
-		offset += eof;
-		break;
-	case SEEK_CUR:
-
-		if (offset == 0)
-			return file->f_pos;
-
-		spin_lock(&file->f_lock);
-		offset = vfs_setpos(file, file->f_pos + offset, maxsize);
-		spin_unlock(&file->f_lock);
-		return offset;
-	case SEEK_DATA:
-
-		if ((unsigned long long)offset >= eof)
-			return -ENXIO;
-		break;
-	case SEEK_HOLE:
-
-		if ((unsigned long long)offset >= eof)
-			return -ENXIO;
-		offset = eof;
-		break;
-	}
-
-	return vfs_setpos(file, offset, maxsize);
-}
-
-loff_t generic_file_llseek(struct file *file, loff_t offset, int whence)
-{
-	struct inode *inode = file->f_mapping->host;
-
-	return generic_file_llseek_size(file, offset, whence,
-					inode->i_sb->s_maxbytes,
-					i_size_read(inode));
-}
-
-loff_t noop_llseek(struct file *file, loff_t offset, int whence)
-{
-	return file->f_pos;
-}
-
-loff_t no_llseek(struct file *file, loff_t offset, int whence)
-{
-	return -ESPIPE;
-}
-
-/* vfs_llseek removed - never called */
 /* Stub: lseek syscalls not needed for Hello World */
 SYSCALL_DEFINE3(lseek, unsigned int, fd, off_t, offset, unsigned int, whence)
 {

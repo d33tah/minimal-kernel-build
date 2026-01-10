@@ -1054,12 +1054,7 @@ extern ssize_t generic_file_splice_read(struct file *, loff_t *,
 extern ssize_t iter_file_splice_write(struct pipe_inode_info *,
 		struct file *, loff_t *, size_t, unsigned int);
 
-extern loff_t noop_llseek(struct file *file, loff_t offset, int whence);
-extern loff_t no_llseek(struct file *file, loff_t offset, int whence);
-extern loff_t vfs_setpos(struct file *file, loff_t offset, loff_t maxsize);
-extern loff_t generic_file_llseek(struct file *file, loff_t offset, int whence);
-extern loff_t generic_file_llseek_size(struct file *file, loff_t offset,
-		int whence, loff_t maxsize, loff_t eof);
+/* llseek functions removed - llseek callback removed from file_operations */
 /* rw_verify_area removed - no callers */
 extern int nonseekable_open(struct inode * inode, struct file * filp);
 /* Removed: stream_open - never called */
@@ -1082,7 +1077,7 @@ extern struct file_system_type *get_fs_type(const char *name);
 
 extern int dcache_dir_open(struct inode *, struct file *);
 extern int dcache_dir_close(struct inode *, struct file *);
-extern loff_t dcache_dir_lseek(struct file *, loff_t, int);
+/* dcache_dir_lseek removed - llseek callback removed */
 extern int dcache_readdir(struct file *, struct dir_context *);
 extern int simple_setattr(struct user_namespace *, struct dentry *,
 			  struct iattr *);

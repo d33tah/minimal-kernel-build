@@ -197,17 +197,11 @@ struct irq_chip {
 	void		(*irq_resume)(struct irq_data *data);
 	void		(*irq_pm_shutdown)(struct irq_data *data);
 
-	void		(*irq_calc_mask)(struct irq_data *data);
-
-	void		(*irq_print_chip)(struct irq_data *data, struct seq_file *p);
+	/* irq_calc_mask, irq_print_chip removed - never used */
 	int		(*irq_request_resources)(struct irq_data *data);
 	void		(*irq_release_resources)(struct irq_data *data);
-
-	void		(*irq_compose_msi_msg)(struct irq_data *data, struct msi_msg *msg);
-	void		(*irq_write_msi_msg)(struct irq_data *data, struct msi_msg *msg);
-
-	int		(*irq_get_irqchip_state)(struct irq_data *data, enum irqchip_irq_state which, bool *state);
-	int		(*irq_set_irqchip_state)(struct irq_data *data, enum irqchip_irq_state which, bool state);
+	/* irq_compose_msi_msg, irq_write_msi_msg removed - never used */
+	/* irq_get_irqchip_state, irq_set_irqchip_state removed - never used */
 	/* irq_set_vcpu_affinity, ipi_send_*, irq_nmi_* removed - never used */
 	unsigned long	flags;
 };

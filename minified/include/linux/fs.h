@@ -694,8 +694,8 @@ struct file_operations {
 	ssize_t (*write)(struct file *, const char __user *, size_t, loff_t *);
 	ssize_t (*read_iter)(struct kiocb *, struct iov_iter *);
 	ssize_t (*write_iter)(struct kiocb *, struct iov_iter *);
-	/* iterate, sendpage, flock, fallocate, show_fdinfo, copy_file_range removed */
-	int (*iterate_shared)(struct file *, struct dir_context *);
+	/* iterate, iterate_shared, sendpage, flock, fallocate, show_fdinfo, copy_file_range removed */
+	/* iterate_shared removed - getdents syscalls return 0 */
 	/* poll removed - syscall returns ENOSYS */
 	/* unlocked_ioctl, compat_ioctl removed - syscall returns ENOTTY */
 	int (*mmap)(struct file *, struct vm_area_struct *);
@@ -1077,8 +1077,7 @@ extern struct file_system_type *get_fs_type(const char *name);
 
 extern int dcache_dir_open(struct inode *, struct file *);
 extern int dcache_dir_close(struct inode *, struct file *);
-/* dcache_dir_lseek removed - llseek callback removed */
-extern int dcache_readdir(struct file *, struct dir_context *);
+/* dcache_dir_lseek, dcache_readdir removed - iterate_shared removed */
 extern int simple_setattr(struct user_namespace *, struct dentry *,
 			  struct iattr *);
 extern int simple_getattr(struct user_namespace *, const struct path *,

@@ -67,79 +67,8 @@ int dcache_dir_close(struct inode *inode, struct file *file)
 	return 0;
 }
 
-static struct dentry *scan_positives(struct dentry *cursor, struct list_head *p,
-				     loff_t count, struct dentry *last)
-{
-	struct dentry *dentry = cursor->d_parent, *found = NULL;
-
-	spin_lock(&dentry->d_lock);
-	while ((p = p->next) != &dentry->d_subdirs) {
-		struct dentry *d = list_entry(p, struct dentry, d_child);
-
-		if (d->d_flags & DCACHE_DENTRY_CURSOR)
-			continue;
-		if (simple_positive(d) && !--count) {
-			spin_lock_nested(&d->d_lock, DENTRY_D_LOCK_NESTED);
-			if (simple_positive(d))
-				found = dget_dlock(d);
-			spin_unlock(&d->d_lock);
-			if (likely(found))
-				break;
-			count = 1;
-		}
-		if (need_resched()) {
-			list_move(&cursor->d_child, p);
-			p = &cursor->d_child;
-			spin_unlock(&dentry->d_lock);
-			cond_resched();
-			spin_lock(&dentry->d_lock);
-		}
-	}
-	spin_unlock(&dentry->d_lock);
-	dput(last);
-	return found;
-}
-
-/* dcache_dir_lseek removed - llseek callback removed from file_operations */
-
-/* dt_type inlined into dcache_readdir */
-
-int dcache_readdir(struct file *file, struct dir_context *ctx)
-{
-	struct dentry *dentry = file->f_path.dentry;
-	struct dentry *cursor = file->private_data;
-	struct list_head *anchor = &dentry->d_subdirs;
-	struct dentry *next = NULL;
-	struct list_head *p;
-
-	if (!dir_emit_dots(file, ctx))
-		return 0;
-
-	if (ctx->pos == 2)
-		p = anchor;
-	else if (!list_empty(&cursor->d_child))
-		p = &cursor->d_child;
-	else
-		return 0;
-
-	while ((next = scan_positives(cursor, p, 1, next)) != NULL) {
-		if (!dir_emit(ctx, next->d_name.name, next->d_name.len,
-			      d_inode(next)->i_ino,
-			      (d_inode(next)->i_mode >> 12) & 15))
-			break;
-		ctx->pos++;
-		p = &next->d_child;
-	}
-	spin_lock(&dentry->d_lock);
-	if (next)
-		list_move_tail(&cursor->d_child, &next->d_child);
-	else
-		list_del_init(&cursor->d_child);
-	spin_unlock(&dentry->d_lock);
-	dput(next);
-
-	return 0;
-}
+/* scan_positives, dcache_dir_lseek, dcache_readdir removed -
+   iterate_shared removed from file_operations */
 
 ssize_t generic_read_dir(struct file *filp, char __user *buf, size_t siz,
 			 loff_t *ppos)
@@ -152,7 +81,7 @@ const struct file_operations simple_dir_operations = {
 	.release = dcache_dir_close,
 	/* llseek removed - lseek syscall returns ENOSYS */
 	.read = generic_read_dir,
-	.iterate_shared = dcache_readdir,
+	/* iterate_shared removed - getdents syscalls return 0 */
 	/* fsync removed - fsync syscall returns ENOSYS */
 };
 
@@ -430,16 +359,12 @@ static const struct inode_operations empty_dir_inode_operations = {
 
 /* empty_dir_llseek removed - llseek callback removed from file_operations */
 
-static int empty_dir_readdir(struct file *file, struct dir_context *ctx)
-{
-	dir_emit_dots(file, ctx);
-	return 0;
-}
+/* empty_dir_readdir removed - iterate_shared removed from file_operations */
 
 static const struct file_operations empty_dir_operations = {
 	/* llseek removed - lseek syscall returns ENOSYS */
 	.read = generic_read_dir,
-	.iterate_shared = empty_dir_readdir,
+	/* iterate_shared removed - getdents syscalls return 0 */
 	/* fsync removed - fsync syscall returns ENOSYS */
 };
 

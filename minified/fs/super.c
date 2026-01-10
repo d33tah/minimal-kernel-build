@@ -161,9 +161,7 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags,
 	lockdep_set_class(&s->s_vfs_rename_mutex, &type->s_vfs_rename_key);
 	s->s_maxbytes = MAX_NON_LFS;
 	s->s_op = &default_op;
-	s->s_time_gran = 1000000000;
-	s->s_time_min = TIME64_MIN;
-	s->s_time_max = TIME64_MAX;
+	/* s_time_gran, s_time_min, s_time_max removed - fields removed */
 
 	s->s_shrink.seeks = DEFAULT_SEEKS;
 	s->s_shrink.scan_objects = super_cache_scan;

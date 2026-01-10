@@ -552,13 +552,9 @@ struct super_block {
 	struct sb_writers	s_writers;
 
 	
-	void			*s_fs_info;	
+	void			*s_fs_info;
 
-	
-	u32			s_time_gran;
-	
-	time64_t		   s_time_min;
-	time64_t		   s_time_max;
+	/* s_time_gran, s_time_min, s_time_max removed - timestamp_truncate gone */
 
 	char			s_id[32];
 	/* s_max_links, s_subtype removed - unused */

@@ -84,7 +84,7 @@ static int pseudo_fs_fill_super(struct super_block *s, struct fs_context *fc)
 	s->s_magic = ctx->magic;
 	s->s_op = ctx->ops ?: &simple_super_operations;
 	s->s_xattr = ctx->xattr;
-	s->s_time_gran = 1;
+	/* s_time_gran removed - field removed */
 	root = new_inode(s);
 	if (!root)
 		return -ENOMEM;

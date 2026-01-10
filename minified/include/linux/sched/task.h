@@ -6,7 +6,7 @@
 #include <linux/uaccess.h>
 
 struct task_struct;
-struct rusage;
+/* struct rusage forward decl removed - unused */
 union thread_union;
 struct css_set;
 

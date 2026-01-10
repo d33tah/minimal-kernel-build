@@ -98,7 +98,7 @@ int tty_register_ldisc(struct tty_ldisc_ops *new_ldisc);
 #define L_TOSTOP(tty)	_L_FLAG((tty), TOSTOP)
 
 struct device;
-struct signal_struct;
+/* struct signal_struct forward decl removed - unused */
 struct tty_operations;
 
 struct tty_struct {

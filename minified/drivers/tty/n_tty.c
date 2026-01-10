@@ -108,13 +108,7 @@ static ssize_t n_tty_write(struct tty_struct *tty, struct file *file,
 }
 
 /* n_tty_poll removed - poll/select syscalls return ENOSYS */
-
-/* n_tty_ioctl simplified - ioctl syscall returns -ENOTTY directly */
-static int n_tty_ioctl(struct tty_struct *tty, unsigned int cmd,
-		       unsigned long arg)
-{
-	return -ENOTTY;
-}
+/* n_tty_ioctl removed - ld->ops->ioctl never called */
 
 static void n_tty_receive_buf(struct tty_struct *tty, const unsigned char *cp,
 			      const char *fp, int count)
@@ -136,8 +130,7 @@ static struct tty_ldisc_ops n_tty_ops = {
 	/* .flush_buffer, .set_termios removed - ldisc ops never called */
 	.read = n_tty_read,
 	.write = n_tty_write,
-	.ioctl = n_tty_ioctl,
-	/* .poll removed - poll/select syscalls return ENOSYS */
+	/* .ioctl, .poll removed - never called */
 	.receive_buf = n_tty_receive_buf,
 	.write_wakeup = n_tty_write_wakeup,
 	.receive_buf2 = n_tty_receive_buf2,

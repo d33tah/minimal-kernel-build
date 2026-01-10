@@ -1068,7 +1068,7 @@ static const struct tty_operations con_ops = {
 	.write_room = con_write_room,
 	.put_char = con_put_char,
 	.flush_chars = con_flush_chars,
-	.ioctl = vt_ioctl,
+	/* .ioctl removed - never called */
 	/* .stop, .start, .throttle, .unthrottle removed - never called */
 	.resize = vt_resize,
 	.shutdown = con_shutdown,

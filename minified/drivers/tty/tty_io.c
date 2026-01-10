@@ -199,8 +199,7 @@ static const struct file_operations hung_up_tty_fops = {
 	/* fasync removed - fcntl returns EINVAL, FASYNC never set */
 };
 
-static DEFINE_SPINLOCK(redirect_lock);
-static struct file *redirect;
+/* redirect_lock and redirect removed - redirect never set */
 
 void tty_wakeup(struct tty_struct *tty)
 {
@@ -416,22 +415,9 @@ static ssize_t tty_write(struct kiocb *iocb, struct iov_iter *from)
 	return file_tty_write(iocb->ki_filp, iocb, from);
 }
 
+/* redirect is never set, so just call tty_write directly */
 ssize_t redirected_tty_write(struct kiocb *iocb, struct iov_iter *iter)
 {
-	struct file *p = NULL;
-
-	spin_lock(&redirect_lock);
-	if (redirect)
-		p = get_file(redirect);
-	spin_unlock(&redirect_lock);
-
-	if (p) {
-		ssize_t res;
-
-		res = file_tty_write(p, iocb, iter);
-		fput(p);
-		return res;
-	}
 	return tty_write(iocb, iter);
 }
 

@@ -56,10 +56,7 @@ struct inode *ramfs_get_inode(struct super_block *sb, const struct inode *dir,
 
 			inc_nlink(inode);
 			break;
-		case S_IFLNK:
-			inode->i_op = &page_symlink_inode_operations;
-			inode_nohighmem(inode);
-			break;
+			/* S_IFLNK case removed - symlinks never created */
 		}
 	}
 	return inode;

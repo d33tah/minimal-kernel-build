@@ -1034,11 +1034,8 @@ extern int nonseekable_open(struct inode * inode, struct file * filp);
 
 #define special_file(m) (S_ISCHR(m)||S_ISBLK(m)||S_ISFIFO(m)||S_ISSOCK(m))
 
-extern const char *page_get_link(struct dentry *, struct inode *,
-				 struct delayed_call *);
-extern void page_put_link(void *);
-extern int page_symlink(struct inode *inode, const char *symname, int len);
-extern const struct inode_operations page_symlink_inode_operations;
+/* page_get_link, page_put_link, page_symlink, page_symlink_inode_operations
+ * removed - symlinks never created */
 /* generic_fillattr removed - empty stub, callers simplified */
 /* vfs_getattr removed - always returned 0, caller simplified */
 

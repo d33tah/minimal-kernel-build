@@ -164,8 +164,7 @@ extern void d_invalidate(struct dentry *);
 
 extern struct dentry * d_make_root(struct inode *);
 
-extern void d_tmpfile(struct dentry *, struct inode *);
-
+/* d_tmpfile removed - tmpfile callback removed from inode_operations */
 
 extern void d_add(struct dentry *, struct inode *);
 /* d_ancestor removed - never called */

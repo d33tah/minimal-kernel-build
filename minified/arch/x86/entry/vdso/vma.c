@@ -62,21 +62,7 @@ static vm_fault_t vdso_fault(const struct vm_special_mapping *sm,
 	return 0;
 }
 
-static void vdso_fix_landing(const struct vdso_image *image,
-			     struct vm_area_struct *new_vma)
-{
-	if (in_ia32_syscall() && image == &vdso_image_32) {
-		struct pt_regs *regs = current_pt_regs();
-		unsigned long vdso_land = image->sym_int80_landing_pad;
-		unsigned long old_land_addr =
-			vdso_land + (unsigned long)current->mm->context.vdso;
-
-		if (regs->ip == old_land_addr)
-			regs->ip = new_vma->vm_start + vdso_land;
-	}
-}
-
-/* vdso_mremap removed - mremap syscall returns ENOSYS */
+/* vdso_fix_landing, vdso_mremap removed - mremap syscall returns ENOSYS */
 
 /* find_timens_vvar_page removed - always returns NULL, timens code simplified */
 

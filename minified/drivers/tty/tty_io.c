@@ -184,8 +184,7 @@ static const struct file_operations tty_fops = {
 	.llseek = no_llseek,
 	.read_iter = tty_read,
 	.write_iter = tty_write,
-	.splice_read = generic_file_splice_read,
-	.splice_write = iter_file_splice_write,
+	/* splice_read/write removed - splice syscall returns ENOSYS */
 	.poll = tty_poll,
 	.unlocked_ioctl = tty_ioctl,
 	.compat_ioctl = tty_compat_ioctl,
@@ -198,8 +197,7 @@ static const struct file_operations console_fops = {
 	.llseek = no_llseek,
 	.read_iter = tty_read,
 	.write_iter = redirected_tty_write,
-	.splice_read = generic_file_splice_read,
-	.splice_write = iter_file_splice_write,
+	/* splice_read/write removed - splice syscall returns ENOSYS */
 	.poll = tty_poll,
 	.unlocked_ioctl = tty_ioctl,
 	.compat_ioctl = tty_compat_ioctl,

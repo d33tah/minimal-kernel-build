@@ -60,17 +60,7 @@ static ssize_t write_iter_null(struct kiocb *iocb, struct iov_iter *from)
 	return count;
 }
 
-static int pipe_to_null(struct pipe_inode_info *info, struct pipe_buffer *buf,
-			struct splice_desc *sd)
-{
-	return sd->len;
-}
-
-static ssize_t splice_write_null(struct pipe_inode_info *pipe, struct file *out,
-				 loff_t *ppos, size_t len, unsigned int flags)
-{
-	return splice_from_pipe(pipe, out, ppos, len, flags, pipe_to_null);
-}
+/* pipe_to_null, splice_write_null removed - splice syscall returns ENOSYS */
 
 static ssize_t read_iter_zero(struct kiocb *iocb, struct iov_iter *iter)
 {
@@ -164,7 +154,7 @@ static const struct file_operations null_fops = {
 	.write = write_null,
 	.read_iter = read_iter_null,
 	.write_iter = write_iter_null,
-	.splice_write = splice_write_null,
+	/* splice_write removed - splice syscall returns ENOSYS */
 };
 
 static const struct file_operations zero_fops = {

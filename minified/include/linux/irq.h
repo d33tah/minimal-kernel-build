@@ -192,11 +192,7 @@ struct irq_chip {
 
 	void		(*irq_bus_lock)(struct irq_data *data);
 	void		(*irq_bus_sync_unlock)(struct irq_data *data);
-
-	void		(*irq_suspend)(struct irq_data *data);
-	void		(*irq_resume)(struct irq_data *data);
-	void		(*irq_pm_shutdown)(struct irq_data *data);
-
+	/* irq_suspend, irq_resume, irq_pm_shutdown removed - never used */
 	/* irq_calc_mask, irq_print_chip removed - never used */
 	int		(*irq_request_resources)(struct irq_data *data);
 	void		(*irq_release_resources)(struct irq_data *data);

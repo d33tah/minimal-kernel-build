@@ -101,17 +101,11 @@ int driver_deferred_probe_timeout;
 
 static void deferred_probe_timeout_work_func(struct work_struct *work)
 {
-	struct device_private *p;
 	/* fw_devlink_drivers_done call removed - empty stub */
-
 	driver_deferred_probe_timeout = 0;
 	driver_deferred_probe_trigger();
 	flush_work(&deferred_probe_work);
-
-	mutex_lock(&deferred_probe_mutex);
-	list_for_each_entry(p, &deferred_probe_pending_list, deferred_probe)
-		;
-	mutex_unlock(&deferred_probe_mutex);
+	/* deferred_probe_pending_list iteration removed - empty loop */
 }
 static DECLARE_DELAYED_WORK(deferred_probe_timeout_work,
 			    deferred_probe_timeout_work_func);
@@ -177,19 +171,8 @@ static int call_driver_probe(struct device *dev, struct device_driver *drv)
 	else if (drv->probe)
 		ret = drv->probe(dev);
 
-	switch (ret) {
-	case 0:
-		break;
-	case -EPROBE_DEFER:
-
+	if (ret == -EPROBE_DEFER)
 		dev_dbg(dev, "Driver %s requests probe deferral\n", drv->name);
-		break;
-	case -ENODEV:
-	case -ENXIO:
-		break;
-	default:
-		break;
-	}
 
 	return ret;
 }

@@ -5,8 +5,7 @@
 #include <linux/path.h>
 #include <linux/fcntl.h>
 #include <linux/errno.h>
-enum { MAX_NESTED_LINKS = 8 };
-#define MAXSYMLINKS 40
+/* MAX_NESTED_LINKS, MAXSYMLINKS removed - symlinks not supported */
 enum {LAST_NORM, LAST_ROOT, LAST_DOT, LAST_DOTDOT};
 #define LOOKUP_FOLLOW		0x0001
 #define LOOKUP_DIRECTORY	0x0002

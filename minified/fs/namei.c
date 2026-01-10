@@ -193,7 +193,7 @@ struct nameidata {
 	unsigned seq, m_seq, r_seq;
 	int last_type;
 	unsigned depth;
-	int total_link_count;
+	/* total_link_count removed - only used for symlink limits */
 	struct saved {
 		struct path link;
 		struct delayed_call done;
@@ -221,7 +221,6 @@ static inline void set_nameidata(struct nameidata *p, int dfd,
 	p->name = name;
 	p->path.mnt = NULL;
 	p->path.dentry = NULL;
-	p->total_link_count = old ? old->total_link_count : 0;
 	p->saved = old;
 	current->nameidata = p;
 	p->state = 0;
@@ -236,8 +235,6 @@ static void restore_nameidata(void)
 	struct nameidata *now = current->nameidata, *old = now->saved;
 
 	current->nameidata = old;
-	if (old)
-		old->total_link_count = now->total_link_count;
 	if (now->stack != now->internal)
 		kfree(now->stack);
 }
@@ -464,8 +461,9 @@ static inline void put_link(struct nameidata *nd)
 /* may_linkat removed - only caller was init_link which was removed */
 
 /* Removed: __traverse_mounts - inlined into traverse_mounts */
+/* count parameter removed - only used for symlink limits */
 
-static inline int traverse_mounts(struct path *path, bool *jumped, int *count,
+static inline int traverse_mounts(struct path *path, bool *jumped,
 				  unsigned lookup_flags)
 {
 	unsigned flags = smp_load_acquire(&path->dentry->d_flags);
@@ -530,7 +528,7 @@ static inline int handle_mounts(struct nameidata *nd, struct dentry *dentry,
 		path->mnt = nd->path.mnt;
 		path->dentry = dentry;
 	}
-	ret = traverse_mounts(path, &jumped, &nd->total_link_count, nd->flags);
+	ret = traverse_mounts(path, &jumped, nd->flags);
 	if (jumped)
 		nd->state |= ND_JUMPED;
 	/* LOOKUP_NO_XDEV check removed - never set */

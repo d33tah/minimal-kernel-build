@@ -146,17 +146,13 @@ extern unsigned int sysctl_nr_open;
 #define FMODE_CREATED		((__force fmode_t)0x100000)
 
 #define FMODE_STREAM		((__force fmode_t)0x200000)
-
-#define	FMODE_CAN_ODIRECT	((__force fmode_t)0x400000)
-
+/* FMODE_CAN_ODIRECT removed - never used */
 #define FMODE_NONOTIFY		((__force fmode_t)0x4000000)
 
 #define FMODE_NOWAIT		((__force fmode_t)0x8000000)
 
 #define FMODE_NEED_UNMOUNT	((__force fmode_t)0x10000000)
-
-#define FMODE_NOACCOUNT		((__force fmode_t)0x20000000)
-
+/* FMODE_NOACCOUNT removed - never used */
 
 #define ATTR_MODE	(1 << 0)
 #define ATTR_UID	(1 << 1)

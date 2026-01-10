@@ -73,14 +73,7 @@ struct device_attribute {
 #define DEVICE_ATTR(_name, _mode, _show, _store) \
 	struct device_attribute dev_attr_##_name = __ATTR(_name, _mode, _show, _store)
 
-/* device_remove_file, devres functions removed - never called */
-
-struct device_dma_parameters {
-	/* fields kept for struct completeness - embedded in platform_device */
-	unsigned int max_segment_size;
-	unsigned int min_align_mask;
-	unsigned long segment_boundary_mask;
-};
+/* device_remove_file, devres functions, struct device_dma_parameters removed - never called */
 
 enum device_link_state {
 	DL_STATE_NONE = -1,
@@ -100,8 +93,7 @@ struct dev_links_info {
 	enum dl_dev_state status;
 };
 
-struct dev_msi_info {
-};
+/* struct dev_msi_info removed - never accessed */
 
 /* device_physical_location - not used in minimal kernel */
 struct device_physical_location;
@@ -125,9 +117,7 @@ struct device {
 	struct dev_pm_domain	*pm_domain;
 
 
-	struct dev_msi_info	msi;
-	u64		*dma_mask;
-	/* coherent_dma_mask, bus_dma_limit removed - never accessed */
+	/* dev_msi_info msi, dma_mask, coherent_dma_mask, bus_dma_limit removed - never accessed */
 	const struct bus_dma_region *dma_range_map;
 
 	struct list_head	dma_pools;

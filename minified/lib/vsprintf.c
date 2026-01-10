@@ -467,21 +467,7 @@ static char *default_pointer(char *buf, char *end, const void *ptr,
 
 /* restricted_pointer removed - never called */
 
-static noinline_for_stack char *dentry_name(char *buf, char *end,
-					    const struct dentry *d,
-					    struct printf_spec spec,
-					    const char *fmt)
-{
-	return error_string(buf, end, "(dentry)", spec);
-}
-
-static noinline_for_stack char *file_dentry_name(char *buf, char *end,
-						 const struct file *f,
-						 struct printf_spec spec,
-						 const char *fmt)
-{
-	return error_string(buf, end, "(file)", spec);
-}
+/* dentry_name, file_dentry_name inlined into pointer() - just error_string stubs */
 
 static noinline_for_stack char *symbol_string(char *buf, char *end, void *ptr,
 					      struct printf_spec spec,
@@ -511,16 +497,7 @@ static char *va_format(char *buf, char *end, struct va_format *va_fmt,
 	return buf;
 }
 
-static noinline_for_stack char *address_val(char *buf, char *end,
-					    const void *addr,
-					    struct printf_spec spec,
-					    const char *fmt)
-{
-	/* Stub: address formatting not needed for minimal kernel */
-	return error_string(buf, end, "(addr)", spec);
-}
-
-/* flags_string inlined - was just a wrapper for error_string */
+/* address_val, flags_string inlined - were just error_string stubs */
 
 static noinline_for_stack char *pointer(const char *fmt, char *buf, char *end,
 					void *ptr, struct printf_spec spec)
@@ -535,13 +512,16 @@ static noinline_for_stack char *pointer(const char *fmt, char *buf, char *end,
 	case 'V':
 		return va_format(buf, end, ptr, spec, fmt);
 	case 'a':
-		return address_val(buf, end, ptr, spec, fmt);
+		/* address_val inlined - stub */
+		return error_string(buf, end, "(addr)", spec);
 	case 'd':
-		return dentry_name(buf, end, ptr, spec, fmt);
+		/* dentry_name inlined - stub */
+		return error_string(buf, end, "(dentry)", spec);
 	case 'D':
-		return file_dentry_name(buf, end, ptr, spec, fmt);
+		/* file_dentry_name inlined - stub */
+		return error_string(buf, end, "(file)", spec);
 	case 'G':
-		/* flags_string inlined - was just error_string */
+		/* flags_string inlined - stub */
 		return error_string(buf, end, "(flags)", spec);
 	case 'x':
 		return pointer_string(buf, end, ptr, spec);

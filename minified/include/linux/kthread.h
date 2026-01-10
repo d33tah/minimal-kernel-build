@@ -35,55 +35,9 @@ int kthreadd(void *unused);
 extern struct task_struct *kthreadd_task;
 /* tsk_fork_get_node removed - always returned NUMA_NO_NODE */
 
-struct kthread_work;
-typedef void (*kthread_work_func_t)(struct kthread_work *work);
-void kthread_delayed_work_timer_fn(struct timer_list *t);
-
-enum {
-	KTW_FREEZABLE		= 1 << 0,	 
-};
-
-struct kthread_worker {
-	unsigned int		flags;
-	raw_spinlock_t		lock;
-	struct list_head	work_list;
-	struct list_head	delayed_work_list;
-	struct task_struct	*task;
-	struct kthread_work	*current_work;
-};
-
-struct kthread_work {
-	struct list_head	node;
-	kthread_work_func_t	func;
-	struct kthread_worker	*worker;
-	 
-	int			canceling;
-};
-
-struct kthread_delayed_work {
-	struct kthread_work work;
-	struct timer_list timer;
-};
-
-/* KTHREAD_WORK_INIT, KTHREAD_DELAYED_WORK_INIT, kthread_init_work, kthread_init_delayed_work removed - never called */
-
-/* kthread_worker_fn removed - declared but never defined or called */
-
-__printf(2, 3)
-struct kthread_worker *
-kthread_create_worker(unsigned int flags, const char namefmt[], ...);
-
-__printf(3, 4) struct kthread_worker *
-kthread_create_worker_on_cpu(int cpu, unsigned int flags,
-			     const char namefmt[], ...);
-
-bool kthread_queue_work(struct kthread_worker *worker,
-			struct kthread_work *work);
-
-bool kthread_queue_delayed_work(struct kthread_worker *worker,
-				struct kthread_delayed_work *dwork,
-				unsigned long delay);
-
-/* kthread_destroy_worker removed - never called */
+/* kthread_worker, kthread_work, kthread_delayed_work structs and
+   kthread_create_worker, kthread_create_worker_on_cpu, kthread_queue_work,
+   kthread_queue_delayed_work, kthread_destroy_worker, kthread_delayed_work_timer_fn,
+   KTW_FREEZABLE all removed - never used */
 
 #endif  

@@ -6,38 +6,15 @@
 #include <linux/types.h>
 #include <linux/device.h>
 
+/* Simplified - only OFFLINE and ONLINE states needed, no hotplug callbacks */
 enum cpuhp_state {
 	CPUHP_INVALID = -1,
 	CPUHP_OFFLINE = 0,
-	CPUHP_SLUB_DEAD,
-	CPUHP_SOFTIRQ_DEAD,
-	CPUHP_RADIX_DEAD,
-	CPUHP_PAGE_ALLOC,
-	CPUHP_BP_PREPARE_DYN,
-	CPUHP_BP_PREPARE_DYN_END		= CPUHP_BP_PREPARE_DYN + 20,
-	CPUHP_AP_ONLINE_DYN,
-	CPUHP_AP_ONLINE_DYN_END		= CPUHP_AP_ONLINE_DYN + 30,
 	CPUHP_ONLINE,
 };
 
-int __cpuhp_setup_state(enum cpuhp_state state,	const char *name, bool invoke,
-			int (*startup)(unsigned int cpu),
-			int (*teardown)(unsigned int cpu), bool multi_instance);
-
-int __cpuhp_setup_state_cpuslocked(enum cpuhp_state state, const char *name,
-				   bool invoke,
-				   int (*startup)(unsigned int cpu),
-				   int (*teardown)(unsigned int cpu),
-				   bool multi_instance);
-
-static inline int cpuhp_setup_state_nocalls(enum cpuhp_state state,
-					    const char *name,
-					    int (*startup)(unsigned int cpu),
-					    int (*teardown)(unsigned int cpu))
-{
-	return __cpuhp_setup_state(state, name, false, startup, teardown,
-				   false);
-}
+/* __cpuhp_setup_state, __cpuhp_setup_state_cpuslocked,
+   cpuhp_setup_state_nocalls removed - CPU hotplug callbacks never called (~18 LOC) */
 
 
 /* cpuhp_online_idle removed - unused */

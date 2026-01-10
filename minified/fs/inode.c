@@ -574,9 +574,4 @@ struct timespec64 timestamp_truncate(struct timespec64 t, struct inode *inode)
 	return t;
 }
 
-/* Simplified for minimal kernel - fixed timestamp */
-struct timespec64 current_time(struct inode *inode)
-{
-	struct timespec64 now = { .tv_sec = 0, .tv_nsec = 0 };
-	return now;
-}
+/* current_time function removed - no timestamp fields in inode */

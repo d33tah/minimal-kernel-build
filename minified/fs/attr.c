@@ -119,8 +119,7 @@ int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 	/* may_setattr always returns 0 - removed */
 	/* ATTR_MODE check removed - S_NOSEC cleared but never tested */
 
-	/* ia_ctime, ia_atime, ia_mtime computation removed - i_atime, i_mtime, i_ctime don't exist */
-	(void)current_time(inode); /* Keep for side effects if any */
+	/* ia_ctime, ia_atime, ia_mtime computation removed - timestamps don't exist */
 
 	/* security_inode_need_killpriv always returns 0 - simplified */
 	if (ia_valid & ATTR_KILL_PRIV)

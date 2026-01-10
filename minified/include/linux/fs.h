@@ -629,9 +629,7 @@ static inline void inode_fsgid_set(struct inode *inode,
 	inode->i_gid = mapped_fsgid(mnt_userns, i_user_ns(inode));
 }
 
-/* fsuidgid_has_mapping removed - only caller was may_create */
-
-extern struct timespec64 current_time(struct inode *inode);
+/* fsuidgid_has_mapping, current_time removed - not called */
 
 static inline void __sb_end_write(struct super_block *sb, int level)
 {

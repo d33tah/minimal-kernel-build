@@ -90,8 +90,7 @@ static struct vm_area_struct *remove_vma(struct vm_area_struct *vma)
 	struct vm_area_struct *next = vma->vm_next;
 
 	might_sleep();
-	if (vma->vm_ops && vma->vm_ops->close)
-		vma->vm_ops->close(vma);
+	/* vm_ops->close removed - never set */
 	if (vma->vm_file)
 		fput(vma->vm_file);
 	/* mpol_put removed - empty stub */
@@ -276,8 +275,7 @@ static inline int is_mergeable_vma(struct vm_area_struct *vma,
 		return 0;
 	if (vma->vm_file != file)
 		return 0;
-	if (vma->vm_ops && vma->vm_ops->close)
-		return 0;
+	/* vm_ops->close check removed - never set */
 	/* is_mergeable_vm_userfaultfd_ctx always returns true - dead code removed */
 	/* anon_vma_name_eq always returns true - dead code removed */
 	return 1;

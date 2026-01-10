@@ -281,8 +281,7 @@ struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 	/* CONFIG_ARCH_HAS_PTE_SPECIAL is always enabled */
 	if (likely(!pte_special(pte)))
 		goto check_pfn;
-	if (vma->vm_ops && vma->vm_ops->find_special_page)
-		return vma->vm_ops->find_special_page(vma, addr);
+	/* find_special_page removed - never set */
 	if (vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP))
 		return NULL;
 	if (is_zero_pfn(pfn))

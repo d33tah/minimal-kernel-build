@@ -16,10 +16,8 @@
 #define	ENOMEM		12
 #define	EACCES		13
 #define	EFAULT		14
-#define	ENOTBLK		15
 #define	EBUSY		16
 #define	EEXIST		17
-#define	EXDEV		18
 #define	ENODEV		19
 #define	ENOTDIR		20
 #define	EISDIR		21
@@ -29,9 +27,7 @@
 #define	ENOTTY		25
 #define	ETXTBSY		26
 #define	ENOSPC		28
-#define	ESPIPE		29
 #define	EROFS		30
-#define	EMLINK		31
 #define	ERANGE		34
 /* end errno-base.h */
 
@@ -46,7 +42,6 @@
 #define	EOPNOTSUPP	95
 #define	ENOTCONN	107
 #define	ESTALE		116
-#define	ENOTRECOVERABLE	131
-#define EHWPOISON	133	 
+#define EHWPOISON	133
 
 #endif

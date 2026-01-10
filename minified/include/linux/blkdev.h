@@ -13,11 +13,7 @@
 #include <linux/rcupdate.h>
 #include <linux/sched.h>
 
-/* struct module, kiocb, request_queue, gendisk forward decls removed - unused */
-
-struct blk_plug {
-};
-
+/* struct module, kiocb, request_queue, gendisk, blk_plug removed - unused */
 
 /* blk_flush_plug removed - no callers */
 

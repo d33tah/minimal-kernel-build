@@ -21,4 +21,4 @@ struct bio {
 	int dummy;
 };
 
-#endif  
+#endif

@@ -91,10 +91,7 @@ struct dentry_operations {
 	void (*d_release)(struct dentry *);
 	void (*d_prune)(struct dentry *);
 	void (*d_iput)(struct dentry *, struct inode *);
-	/* d_dname removed - callback never called */
-	/* d_automount removed - unused */
-	int (*d_manage)(const struct path *, bool);
-	struct dentry *(*d_real)(struct dentry *, const struct inode *);
+	/* d_dname, d_automount, d_manage, d_real removed - never called/set */
 } ____cacheline_aligned;
 
 

@@ -1066,9 +1066,7 @@ static int do_add_mount(struct mount *newmnt, struct mountpoint *mp,
 	    path->mnt->mnt_root == path->dentry)
 		return -EBUSY;
 
-	if (d_is_symlink(newmnt->mnt.mnt_root))
-		return -EINVAL;
-
+	/* d_is_symlink check removed - always false, no symlinks created */
 	newmnt->mnt.mnt_flags = mnt_flags;
 	return graft_tree(newmnt, parent, mp);
 }

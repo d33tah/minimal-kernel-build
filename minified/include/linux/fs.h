@@ -350,7 +350,7 @@ struct inode {
 	struct list_head	i_devices;
 	union {
 		struct cdev		*i_cdev;
-		char			*i_link;
+		/* i_link removed - symlinks never created */
 		unsigned		i_dir_seq;
 	};
 

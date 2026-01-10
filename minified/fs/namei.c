@@ -153,9 +153,8 @@ int inode_permission(struct user_namespace *mnt_userns, struct inode *inode,
 
 	if (unlikely(mask & MAY_WRITE)) {
 		umode_t mode = inode->i_mode;
-
-		if (sb_rdonly(inode->i_sb) &&
-		    (S_ISREG(mode) || S_ISDIR(mode) || S_ISLNK(mode)))
+		/* S_ISLNK removed - symlinks never created */
+		if (sb_rdonly(inode->i_sb) && (S_ISREG(mode) || S_ISDIR(mode)))
 			return -EROFS;
 	}
 
@@ -1065,8 +1064,7 @@ static int may_open(struct user_namespace *mnt_userns, const struct path *path,
 		return -ENOENT;
 
 	switch (inode->i_mode & S_IFMT) {
-	case S_IFLNK:
-		return -ELOOP;
+	/* case S_IFLNK removed - symlinks never created */
 	case S_IFDIR:
 		if (acc_mode & MAY_WRITE)
 			return -EISDIR;

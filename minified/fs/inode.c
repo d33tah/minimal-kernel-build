@@ -53,7 +53,7 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 	atomic_set(&inode->i_writecount, 0);
 	inode->i_size = 0;
 	inode->i_cdev = NULL;
-	inode->i_link = NULL;
+	/* i_link init removed - field removed from union */
 	inode->i_dir_seq = 0;
 	inode->i_rdev = 0;
 

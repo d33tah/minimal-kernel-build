@@ -950,17 +950,7 @@ void init_cfs_rq(struct cfs_rq *cfs_rq)
 	cfs_rq->min_vruntime = (u64)(-(1LL << 20));
 }
 
-static unsigned int get_rr_interval_fair(struct rq *rq,
-					 struct task_struct *task)
-{
-	struct sched_entity *se = &task->se;
-	unsigned int rr_interval = 0;
-
-	if (rq->cfs.load.weight)
-		rr_interval = NS_TO_JIFFIES(sched_slice(cfs_rq_of(se), se));
-
-	return rr_interval;
-}
+/* get_rr_interval_fair removed - callback never called (~10 LOC) */
 
 DEFINE_SCHED_CLASS(fair) = {
 
@@ -982,7 +972,7 @@ DEFINE_SCHED_CLASS(fair) = {
 	.switched_from = switched_from_fair,
 	.switched_to = switched_to_fair,
 
-	.get_rr_interval = get_rr_interval_fair,
+	/* .get_rr_interval removed - callback never called */
 
 	.update_curr = update_curr_fair,
 

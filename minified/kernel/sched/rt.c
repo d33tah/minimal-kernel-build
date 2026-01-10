@@ -55,10 +55,7 @@ static void set_next_task_rt(struct rq *rq, struct task_struct *p, bool f)
 static void task_tick_rt(struct rq *rq, struct task_struct *p, int q)
 {
 }
-static unsigned int get_rr_interval_rt(struct rq *rq, struct task_struct *t)
-{
-	return 0;
-}
+/* get_rr_interval_rt removed - callback never called (~4 LOC) */
 static void prio_changed_rt(struct rq *rq, struct task_struct *p, int o)
 {
 }
@@ -78,7 +75,7 @@ DEFINE_SCHED_CLASS(rt) = {
 	.put_prev_task = put_prev_task_rt,
 	.set_next_task = set_next_task_rt,
 	.task_tick = task_tick_rt,
-	.get_rr_interval = get_rr_interval_rt,
+	/* .get_rr_interval removed - callback never called */
 	.prio_changed = prio_changed_rt,
 	.switched_to = switched_to_rt,
 	.update_curr = update_curr_rt,

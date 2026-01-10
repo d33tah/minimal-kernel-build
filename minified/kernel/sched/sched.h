@@ -610,8 +610,7 @@ struct sched_class {
 	void (*prio_changed) (struct rq *this_rq, struct task_struct *task,
 			      int oldprio);
 
-	unsigned int (*get_rr_interval)(struct rq *rq,
-					struct task_struct *task);
+	/* get_rr_interval removed - callback never called */
 
 	void (*update_curr)(struct rq *rq);
 };

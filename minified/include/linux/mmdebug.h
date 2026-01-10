@@ -4,9 +4,7 @@
 #include <linux/bug.h>
 #include <linux/stringify.h>
 
-struct page;
-struct vm_area_struct;
-struct mm_struct;
+/* struct page, vm_area_struct, mm_struct forward decls removed - unused */
 
 #define VM_BUG_ON(cond) BUILD_BUG_ON_INVALID(cond)
 #define VM_BUG_ON_PAGE(cond, page) VM_BUG_ON(cond)

@@ -3,7 +3,7 @@
 #include <linux/err.h>
 #include <linux/sched.h>
 
-struct mm_struct;
+/* struct mm_struct forward decl removed - unused */
 
 __printf(4, 5)
 struct task_struct *kthread_create_on_node(int (*threadfn)(void *data),

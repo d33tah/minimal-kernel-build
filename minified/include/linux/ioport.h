@@ -77,9 +77,7 @@ extern struct resource * __request_region(struct resource *,
 					const char *name, int flags);
 
 /* release_region, release_mem_region, __release_region removed - never called */
-
-struct device;
-
+/* struct device forward decl removed - unused */
 /* iomem_map_sanity_check removed - was stub returning 0 */
 
 extern int

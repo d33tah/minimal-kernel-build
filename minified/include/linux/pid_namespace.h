@@ -8,7 +8,7 @@
 #include <linux/nsproxy.h>
 #include <linux/ns_common.h>
 #include <linux/idr.h>
-struct fs_pin;
+/* struct fs_pin forward decl removed - unused */
 struct pid_namespace {
 	struct idr idr; struct rcu_head rcu; unsigned int pid_allocated;
 	struct task_struct *child_reaper; struct kmem_cache *pid_cachep;

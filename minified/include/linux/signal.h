@@ -157,8 +157,7 @@ static inline int valid_signal(unsigned long sig)
 	return sig <= _NSIG ? 1 : 0;
 }
 
-struct timespec;
-struct pt_regs;
+/* struct timespec, pt_regs forward decls removed - unused */
 enum pid_type;
 
 extern int do_send_sig_info(int sig, struct kernel_siginfo *info,

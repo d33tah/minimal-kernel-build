@@ -38,8 +38,7 @@ extern struct pid init_struct_pid;
 
 extern const struct file_operations pidfd_fops;
 
-struct file;
-
+/* struct file forward decl removed - unused */
 /* pidfd_pid removed - never called */
 /* pidfd_get_pid removed - never called */
 

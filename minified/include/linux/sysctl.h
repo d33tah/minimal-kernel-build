@@ -10,7 +10,7 @@
 
 struct completion;
 struct ctl_table;
-struct nsproxy;
+/* struct nsproxy forward decl removed - unused */
 struct ctl_table_root;
 struct ctl_table_header;
 struct ctl_dir;

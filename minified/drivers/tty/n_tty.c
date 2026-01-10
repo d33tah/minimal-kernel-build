@@ -34,17 +34,7 @@ static void n_tty_write_wakeup(struct tty_struct *tty)
 	/* kill_fasync removed - empty stub */
 }
 
-static void n_tty_flush_buffer(struct tty_struct *tty)
-{
-	/* read_head, read_tail assignments removed - fields removed */
-	wake_up_interruptible(&tty->read_wait);
-	if (tty->link)
-		n_tty_flush_buffer(tty->link);
-}
-
-static void n_tty_set_termios(struct tty_struct *tty, struct ktermios *old)
-{
-}
+/* n_tty_flush_buffer, n_tty_set_termios removed - ldisc ops never called */
 
 static void n_tty_close(struct tty_struct *tty)
 {
@@ -148,11 +138,10 @@ static struct tty_ldisc_ops n_tty_ops = {
 	.name = "n_tty",
 	.open = n_tty_open,
 	.close = n_tty_close,
-	.flush_buffer = n_tty_flush_buffer,
+	/* .flush_buffer, .set_termios removed - ldisc ops never called */
 	.read = n_tty_read,
 	.write = n_tty_write,
 	.ioctl = n_tty_ioctl,
-	.set_termios = n_tty_set_termios,
 	.poll = n_tty_poll,
 	.receive_buf = n_tty_receive_buf,
 	.write_wakeup = n_tty_write_wakeup,

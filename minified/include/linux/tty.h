@@ -49,7 +49,7 @@ struct tty_ldisc_ops {
 	int	num;
 	int	(*open)(struct tty_struct *tty);
 	void	(*close)(struct tty_struct *tty);
-	void	(*flush_buffer)(struct tty_struct *tty);
+	/* flush_buffer removed - ldisc op never called */
 	ssize_t	(*read)(struct tty_struct *tty, struct file *file,
 			unsigned char *buf, size_t nr,
 			void **cookie, unsigned long offset);
@@ -57,16 +57,13 @@ struct tty_ldisc_ops {
 			 const unsigned char *buf, size_t nr);
 	int	(*ioctl)(struct tty_struct *tty, unsigned int cmd,
 			unsigned long arg);
-	int	(*compat_ioctl)(struct tty_struct *tty, unsigned int cmd,
-			unsigned long arg);
-	void	(*set_termios)(struct tty_struct *tty, struct ktermios *old);
+	/* compat_ioctl, set_termios removed - ldisc ops never called */
 	__poll_t (*poll)(struct tty_struct *tty, struct file *file,
 			     struct poll_table_struct *wait);
-	void	(*hangup)(struct tty_struct *tty);
+	/* hangup, dcd_change removed - ldisc ops never called */
 	void	(*receive_buf)(struct tty_struct *tty, const unsigned char *cp,
 			       const char *fp, int count);
 	void	(*write_wakeup)(struct tty_struct *tty);
-	void	(*dcd_change)(struct tty_struct *tty, unsigned int status);
 	int	(*receive_buf2)(struct tty_struct *tty, const unsigned char *cp,
 				const char *fp, int count);
 	struct  module *owner;

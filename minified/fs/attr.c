@@ -120,12 +120,7 @@ int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 
 	WARN_ON_ONCE(!inode_is_locked(inode));
 	/* may_setattr always returns 0 - removed */
-	if ((ia_valid & ATTR_MODE)) {
-		umode_t amode = attr->ia_mode;
-
-		if (is_sxid(amode))
-			inode->i_flags &= ~S_NOSEC;
-	}
+	/* ATTR_MODE check removed - S_NOSEC cleared but never tested */
 
 	now = current_time(inode);
 

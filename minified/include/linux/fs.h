@@ -743,8 +743,8 @@ struct super_operations {
 #define S_SWAPFILE	(1 << 8)
 #define S_PRIVATE	(1 << 9)
 #define S_AUTOMOUNT	(1 << 11)
-#define S_NOSEC		(1 << 12)
-#define S_DAX		0 
+/* S_NOSEC removed - was cleared but never tested */
+#define S_DAX		0
 
 #define __IS_FLG(inode, flg)	((inode)->i_sb->s_flags & (flg))
 

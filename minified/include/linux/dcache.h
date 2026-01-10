@@ -165,13 +165,6 @@ char *dynamic_dname(struct dentry *, char *, int, const char *, ...);
 
 extern char *d_path(const struct path *, char *, int);
 
-static inline struct dentry *dget_dlock(struct dentry *dentry)
-{
-	if (dentry)
-		dentry->d_lockref.count++;
-	return dentry;
-}
-
 static inline struct dentry *dget(struct dentry *dentry)
 {
 	if (dentry)
@@ -252,12 +245,6 @@ static inline bool d_is_reg(const struct dentry *dentry)
 	return __d_entry_type(dentry) == DCACHE_REGULAR_TYPE;
 }
 
-static inline bool d_is_negative(const struct dentry *dentry)
-{
-	 
-	return d_is_miss(dentry);
-}
-
 static inline bool d_flags_negative(unsigned flags)
 {
 	return (flags & DCACHE_ENTRY_TYPE) == DCACHE_MISS_TYPE;
@@ -268,11 +255,6 @@ static inline bool d_flags_negative(unsigned flags)
 static inline bool d_really_is_positive(const struct dentry *dentry)
 {
 	return dentry->d_inode != NULL;
-}
-
-static inline int simple_positive(const struct dentry *dentry)
-{
-	return d_really_is_positive(dentry) && !d_unhashed(dentry);
 }
 
 extern int sysctl_vfs_cache_pressure;

@@ -38,11 +38,6 @@ struct delayed_call {
 	void (*fn)(void *);
 	void *arg;
 };
-static inline void set_delayed_call(struct delayed_call *call, void (*fn)(void *), void *arg)
-{
-	call->fn = fn;
-	call->arg = arg;
-}
 static inline void do_delayed_call(struct delayed_call *call)
 {
 	if (call->fn)

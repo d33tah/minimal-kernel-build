@@ -98,14 +98,9 @@ static inline bool folio_ref_add_unless(struct folio *folio, int nr, int u)
 }
 
 
-static inline bool folio_ref_try_add_rcu(struct folio *folio, int count)
-{
-	return folio_ref_add_unless(folio, count, 0);
-}
-
 static inline bool folio_try_get_rcu(struct folio *folio)
 {
-	return folio_ref_try_add_rcu(folio, 1);
+	return folio_ref_add_unless(folio, 1, 0);
 }
 #include <linux/sizes.h>
 #include <linux/sched.h>

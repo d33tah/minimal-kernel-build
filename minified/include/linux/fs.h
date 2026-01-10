@@ -186,11 +186,7 @@ struct iattr {
 	kuid_t		ia_uid;
 	kgid_t		ia_gid;
 	loff_t		ia_size;
-	struct timespec64 ia_atime;
-	struct timespec64 ia_mtime;
-	struct timespec64 ia_ctime;
-
-	
+	/* ia_atime, ia_mtime, ia_ctime removed - timestamps never read */
 	struct file	*ia_file;
 };
 

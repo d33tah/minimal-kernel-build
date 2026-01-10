@@ -112,24 +112,15 @@ int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 	struct inode *inode = dentry->d_inode;
 	umode_t mode = inode->i_mode;
 	int error;
-	struct timespec64 now;
+	/* struct timespec64 now removed - timestamps not used */
 	unsigned int ia_valid = attr->ia_valid;
 
 	WARN_ON_ONCE(!inode_is_locked(inode));
 	/* may_setattr always returns 0 - removed */
 	/* ATTR_MODE check removed - S_NOSEC cleared but never tested */
 
-	now = current_time(inode);
-
-	attr->ia_ctime = now;
-	if (!(ia_valid & ATTR_ATIME_SET))
-		attr->ia_atime = now;
-	else
-		attr->ia_atime = timestamp_truncate(attr->ia_atime, inode);
-	if (!(ia_valid & ATTR_MTIME_SET))
-		attr->ia_mtime = now;
-	else
-		attr->ia_mtime = timestamp_truncate(attr->ia_mtime, inode);
+	/* ia_ctime, ia_atime, ia_mtime computation removed - i_atime, i_mtime, i_ctime don't exist */
+	(void)current_time(inode); /* Keep for side effects if any */
 
 	/* security_inode_need_killpriv always returns 0 - simplified */
 	if (ia_valid & ATTR_KILL_PRIV)

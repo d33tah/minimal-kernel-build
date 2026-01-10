@@ -131,14 +131,11 @@ static inline void __init_work(struct work_struct *work, int onstack) { }
 #define delayed_work_pending(w) \
 	work_pending(&(w)->work)
 
-enum {
-	WQ_UNBOUND		= 1 << 1,
-	WQ_MEM_RECLAIM		= 1 << 3,
-	WQ_SYSFS		= 1 << 6,
-	/* WQ_FREEZABLE, WQ_HIGHPRI, WQ_CPU_INTENSIVE, WQ_POWER_EFFICIENT,
-	   __WQ_DRAINING, __WQ_ORDERED, __WQ_LEGACY, __WQ_ORDERED_EXPLICIT,
-	   WQ_MAX_ACTIVE, WQ_MAX_UNBOUND_PER_CPU, WQ_DFL_ACTIVE removed - unused */
-};
+/* All WQ_* flags removed - unused:
+   WQ_UNBOUND, WQ_MEM_RECLAIM, WQ_SYSFS, WQ_FREEZABLE, WQ_HIGHPRI,
+   WQ_CPU_INTENSIVE, WQ_POWER_EFFICIENT, __WQ_DRAINING, __WQ_ORDERED,
+   __WQ_LEGACY, __WQ_ORDERED_EXPLICIT, WQ_MAX_ACTIVE, WQ_MAX_UNBOUND_PER_CPU,
+   WQ_DFL_ACTIVE */
 
 extern struct workqueue_struct *system_wq;
 /* system_long_wq removed - never used */

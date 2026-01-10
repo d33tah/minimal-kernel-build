@@ -87,10 +87,7 @@ static int vdso_mremap(const struct vm_special_mapping *sm,
 	return 0;
 }
 
-static inline struct page *find_timens_vvar_page(struct vm_area_struct *vma)
-{
-	return NULL;
-}
+/* find_timens_vvar_page removed - always returns NULL, timens code simplified */
 
 static vm_fault_t vvar_fault(const struct vm_special_mapping *sm,
 			     struct vm_area_struct *vma, struct vm_fault *vmf)
@@ -108,23 +105,8 @@ static vm_fault_t vvar_fault(const struct vm_special_mapping *sm,
 		return VM_FAULT_SIGBUS;
 
 	if (sym_offset == image->sym_vvar_page) {
-		struct page *timens_page = find_timens_vvar_page(vma);
-
+		/* timens_page handling removed - always NULL */
 		pfn = __pa_symbol(&__vvar_page) >> PAGE_SHIFT;
-
-		if (timens_page) {
-			unsigned long addr;
-			vm_fault_t err;
-
-			addr = vmf->address +
-			       (image->sym_timens_page - sym_offset);
-			err = vmf_insert_pfn(vma, addr, pfn);
-			if (unlikely(err & VM_FAULT_ERROR))
-				return err;
-
-			pfn = page_to_pfn(timens_page);
-		}
-
 		return vmf_insert_pfn(vma, vmf->address, pfn);
 	} else if (sym_offset == image->sym_pvclock_page) {
 		struct pvclock_vsyscall_time_info *pvti =
@@ -141,15 +123,8 @@ static vm_fault_t vvar_fault(const struct vm_special_mapping *sm,
 			return vmf_insert_pfn(vma, vmf->address,
 					      virt_to_phys(tsc_pg) >>
 						      PAGE_SHIFT);
-	} else if (sym_offset == image->sym_timens_page) {
-		struct page *timens_page = find_timens_vvar_page(vma);
-
-		if (!timens_page)
-			return VM_FAULT_SIGBUS;
-
-		pfn = __pa_symbol(&__vvar_page) >> PAGE_SHIFT;
-		return vmf_insert_pfn(vma, vmf->address, pfn);
 	}
+	/* sym_timens_page branch removed - find_timens_vvar_page always returns NULL */
 
 	return VM_FAULT_SIGBUS;
 }

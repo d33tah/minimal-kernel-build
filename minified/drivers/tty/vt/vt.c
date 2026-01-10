@@ -874,14 +874,7 @@ static int con_write(struct tty_struct *tty, const unsigned char *buf,
 	return retval;
 }
 
-/* con_put_char removed - ops->put_char never called */
-
-static unsigned int con_write_room(struct tty_struct *tty)
-{
-	if (tty->flow.stopped)
-		return 0;
-	return 32768;
-}
+/* con_put_char, con_write_room removed - ops->put_char, ops->write_room never called */
 
 /* con_throttle, con_unthrottle, con_stop, con_start removed - ops callbacks never called */
 
@@ -1058,8 +1051,7 @@ static const struct tty_operations con_ops = {
 	.open = con_open,
 	/* .close = NULL - con_close was empty */
 	.write = con_write,
-	.write_room = con_write_room,
-	/* .put_char removed - never called */
+	/* .write_room, .put_char removed - never called */
 	.flush_chars = con_flush_chars,
 	/* .ioctl, .stop, .start, .throttle, .unthrottle, .resize removed */
 	.shutdown = con_shutdown,

@@ -24,9 +24,7 @@ struct tty_operations {
 	int (*write)(struct tty_struct *tty, const unsigned char *buf, int count);
 	/* put_char removed - never called */
 	void (*flush_chars)(struct tty_struct *tty);
-	unsigned int (*write_room)(struct tty_struct *tty);
-	/* chars_in_buffer, ioctl, compat_ioctl removed - never called */
-	void (*set_termios)(struct tty_struct *tty, struct ktermios *old);
+	/* write_room, chars_in_buffer, ioctl, compat_ioctl, set_termios removed - never called */
 	/* throttle, unthrottle, stop, start removed - never called */
 	void (*hangup)(struct tty_struct *tty);
 	/* break_ctl, flush_buffer, set_ldisc, wait_until_sent, send_xchar, resize removed */

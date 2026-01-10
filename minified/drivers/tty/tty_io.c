@@ -397,8 +397,7 @@ static ssize_t file_tty_write(struct file *file, struct kiocb *iocb,
 	if (!tty || !tty->ops->write || tty_io_error(tty))
 		return -EIO;
 
-	if (tty->ops->write_room == NULL)
-		tty_err(tty, "missing write_room method\n");
+	/* write_room check removed - ops->write_room callback removed */
 	ld = tty_ldisc_ref_wait(tty);
 	if (!ld)
 		return hung_up_tty_write(iocb, from);

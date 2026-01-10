@@ -876,13 +876,12 @@ out_free_interp:
 	mm->start_stack = bprm->p;
 
 	if ((current->flags & PF_RANDOMIZE) && (randomize_va_space > 1)) {
-		if (IS_ENABLED(CONFIG_ARCH_HAS_ELF_RANDOMIZE) &&
-		    elf_ex->e_type == ET_DYN && !interpreter) {
+		/* CONFIG_ARCH_HAS_ELF_RANDOMIZE is always enabled */
+		if (elf_ex->e_type == ET_DYN && !interpreter) {
 			mm->brk = mm->start_brk = ELF_ET_DYN_BASE;
 		}
 
 		mm->brk = mm->start_brk = arch_randomize_brk(mm);
-		/* compat_brk_randomized not defined */
 	}
 
 	if (current->personality & MMAP_PAGE_ZERO) {

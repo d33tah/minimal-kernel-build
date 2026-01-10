@@ -160,9 +160,7 @@ int check_knl_erratum(void)
 	    cpu.model != INTEL_FAM6_XEON_PHI_KNL)
 		return 0;
 
-	if (IS_ENABLED(CONFIG_X86_64) || IS_ENABLED(CONFIG_X86_PAE))
-		return 0;
-
+	/* CONFIG_X86_64 and CONFIG_X86_PAE are not set */
 	puts("This 32-bit kernel can not run on this Xeon Phi x200\n"
 	     "processor due to a processor erratum.  Use a 64-bit\n"
 	     "kernel, or enable PAE in this 32-bit kernel.\n\n");

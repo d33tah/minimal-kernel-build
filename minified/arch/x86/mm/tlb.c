@@ -197,30 +197,14 @@ static unsigned long mm_mangle_tif_spec_bits(struct task_struct *next)
 
 static void cond_mitigation(struct task_struct *next)
 {
-	unsigned long prev_mm, next_mm;
+	unsigned long next_mm;
 
 	if (!next || !next->mm)
 		return;
 
 	next_mm = mm_mangle_tif_spec_bits(next);
-	prev_mm = this_cpu_read(cpu_tlbstate.last_user_mm_spec);
-
-	if (static_branch_likely(&switch_mm_cond_ibpb)) {
-		if (next_mm != prev_mm &&
-		    (next_mm | prev_mm) & LAST_USER_MM_IBPB)
-			indirect_branch_prediction_barrier();
-	}
-
-	if (static_branch_unlikely(&switch_mm_always_ibpb)) {
-		if ((prev_mm & ~LAST_USER_MM_SPEC_MASK) !=
-		    (unsigned long)next->mm)
-			indirect_branch_prediction_barrier();
-	}
-
-	if (static_branch_unlikely(&switch_mm_cond_l1d_flush)) {
-		if (unlikely((prev_mm | next_mm) & LAST_USER_MM_L1D_FLUSH))
-			l1d_flush_evaluate(prev_mm, next_mm, next);
-	}
+	/* switch_mm_cond_ibpb, switch_mm_always_ibpb, switch_mm_cond_l1d_flush
+	   are all DEFINE_STATIC_KEY_FALSE and never enabled - dead code removed */
 
 	this_cpu_write(cpu_tlbstate.last_user_mm_spec, next_mm);
 }

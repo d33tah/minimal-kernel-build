@@ -282,11 +282,8 @@ static int irq_thread(void *data)
 
 	sched_set_fifo(current);
 
-	if (force_irqthreads() &&
-	    test_bit(IRQTF_FORCED_THREAD, &action->thread_flags))
-		handler_fn = irq_forced_thread_fn;
-	else
-		handler_fn = irq_thread_fn;
+	/* force_irqthreads() always false - simplified */
+	handler_fn = irq_thread_fn;
 
 	init_task_work(&on_exit_work, irq_thread_dtor);
 	task_work_add(current, &on_exit_work, TWA_NONE);
@@ -309,30 +306,7 @@ static int irq_thread(void *data)
 
 static int irq_setup_forced_threading(struct irqaction *new)
 {
-	if (!force_irqthreads())
-		return 0;
-	if (new->flags &(IRQF_NO_THREAD | IRQF_PERCPU | IRQF_ONESHOT))
-		return 0;
-
-	if (new->handler == irq_default_primary_handler)
-		return 0;
-
-	new->flags |= IRQF_ONESHOT;
-
-	if (new->handler &&new->thread_fn) {
-		new->secondary = kzalloc(sizeof(struct irqaction), GFP_KERNEL);
-		if (!new->secondary)
-			return -ENOMEM;
-		new->secondary->handler = irq_forced_secondary_handler;
-		new->secondary->thread_fn = new->thread_fn;
-		new->secondary->dev_id = new->dev_id;
-		new->secondary->irq = new->irq;
-		new->secondary->name = new->name;
-	}
-
-	set_bit(IRQTF_FORCED_THREAD, &new->thread_flags);
-	new->thread_fn = new->handler;
-	new->handler = irq_default_primary_handler;
+	/* force_irqthreads() always returns false (static key never enabled) */
 	return 0;
 }
 

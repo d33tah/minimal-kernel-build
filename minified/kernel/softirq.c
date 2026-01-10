@@ -166,12 +166,8 @@ static inline void __irq_exit_rcu(void)
 	if (!in_interrupt() && local_softirq_pending()) {
 		/* inlined invoke_softirq */
 		if (!ksoftirqd_running(local_softirq_pending())) {
-			if (!force_irqthreads() ||
-			    !__this_cpu_read(ksoftirqd)) {
-				do_softirq_own_stack();
-			} else {
-				wakeup_softirqd();
-			}
+			/* force_irqthreads() always false - else branch removed */
+			do_softirq_own_stack();
 		}
 	}
 }

@@ -76,16 +76,7 @@ static void vdso_fix_landing(const struct vdso_image *image,
 	}
 }
 
-static int vdso_mremap(const struct vm_special_mapping *sm,
-		       struct vm_area_struct *new_vma)
-{
-	const struct vdso_image *image = current->mm->context.vdso_image;
-
-	vdso_fix_landing(image, new_vma);
-	current->mm->context.vdso = (void __user *)new_vma->vm_start;
-
-	return 0;
-}
+/* vdso_mremap removed - mremap syscall returns ENOSYS */
 
 /* find_timens_vvar_page removed - always returns NULL, timens code simplified */
 
@@ -120,7 +111,7 @@ static vm_fault_t vvar_fault(const struct vm_special_mapping *sm,
 static const struct vm_special_mapping vdso_mapping = {
 	.name = "[vdso]",
 	.fault = vdso_fault,
-	.mremap = vdso_mremap,
+	/* mremap removed - mremap syscall returns ENOSYS */
 };
 static const struct vm_special_mapping vvar_mapping = {
 	.name = "[vvar]",

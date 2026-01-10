@@ -1265,18 +1265,7 @@ int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)
 
 static vm_fault_t special_mapping_fault(struct vm_fault *vmf);
 
-static int special_mapping_mremap(struct vm_area_struct *new_vma)
-{
-	struct vm_special_mapping *sm = new_vma->vm_private_data;
-
-	if (WARN_ON_ONCE(current->mm != new_vma->vm_mm))
-		return -EFAULT;
-
-	if (sm->mremap)
-		return sm->mremap(sm, new_vma);
-
-	return 0;
-}
+/* special_mapping_mremap removed - mremap syscall returns ENOSYS */
 
 static int special_mapping_split(struct vm_area_struct *vma, unsigned long addr)
 {
@@ -1285,7 +1274,7 @@ static int special_mapping_split(struct vm_area_struct *vma, unsigned long addr)
 
 static const struct vm_operations_struct special_mapping_vmops = {
 	.fault = special_mapping_fault,
-	.mremap = special_mapping_mremap,
+	/* mremap removed - mremap syscall returns ENOSYS */
 	.may_split = special_mapping_split,
 };
 

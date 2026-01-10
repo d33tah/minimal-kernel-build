@@ -558,7 +558,7 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 {
 	struct dentry *dentry;
 	char *dname;
-	int err;
+	/* int err; - removed, was unused */
 
 	dentry = kmem_cache_alloc_lru(dentry_cache, &sb->s_dentry_lru,
 				      GFP_KERNEL);
@@ -742,9 +742,7 @@ struct dentry *__d_lookup_rcu(const struct dentry *parent,
 
 	hlist_bl_for_each_entry_rcu(dentry, node, b, d_hash) {
 		unsigned seq;
-
-seqretry:
-
+		/* seqretry label removed - no goto to it */
 		seq = raw_seqcount_begin(&dentry->d_seq);
 		if (dentry->d_parent != parent)
 			continue;

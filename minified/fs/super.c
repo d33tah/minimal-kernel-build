@@ -29,7 +29,7 @@ static unsigned long super_cache_scan(struct shrinker *shrink,
 				      struct shrink_control *sc)
 {
 	struct super_block *sb;
-	long fs_objects = 0;
+	/* fs_objects removed - was unused */
 	long total_objects;
 	long freed = 0;
 	long dentries;

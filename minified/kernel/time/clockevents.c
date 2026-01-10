@@ -13,10 +13,7 @@ static LIST_HEAD(clockevents_released);
 static DEFINE_RAW_SPINLOCK(clockevents_lock);
 static DEFINE_MUTEX(clockevents_mutex);
 
-struct ce_unbind {
-	struct clock_event_device *ce;
-	int res;
-};
+/* struct ce_unbind removed - never instantiated */
 
 static u64 cev_delta2ns(unsigned long latch, struct clock_event_device *evt,
 			bool ismax)

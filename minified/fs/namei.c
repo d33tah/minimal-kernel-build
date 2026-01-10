@@ -205,8 +205,7 @@ struct nameidata {
 	struct nameidata *saved;
 	unsigned root_seq;
 	int dfd;
-	kuid_t dir_uid;
-	umode_t dir_mode;
+	/* dir_uid, dir_mode removed - never read */
 } __randomize_layout;
 
 #define ND_ROOT_PRESET 1
@@ -928,10 +927,8 @@ static int link_path_walk(const char *name, struct nameidata *nd)
 		return PTR_ERR(name);
 	while (*name == '/')
 		name++;
-	if (!*name) {
-		nd->dir_mode = 0;
+	if (!*name)
 		return 0;
-	}
 
 	for (;;) {
 		struct user_namespace *mnt_userns;
@@ -987,9 +984,6 @@ static int link_path_walk(const char *name, struct nameidata *nd)
 OK:
 
 			if (!depth) {
-				nd->dir_uid =
-					i_uid_into_mnt(mnt_userns, nd->inode);
-				nd->dir_mode = nd->inode->i_mode;
 				nd->flags &= ~LOOKUP_PARENT;
 				return 0;
 			}

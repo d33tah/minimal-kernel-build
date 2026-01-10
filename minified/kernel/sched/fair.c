@@ -810,19 +810,7 @@ static void yield_task_fair(struct rq *rq)
 	for_each_sched_entity(se) cfs_rq_of(se)->skip = se;
 }
 
-static bool yield_to_task_fair(struct rq *rq, struct task_struct *p)
-{
-	struct sched_entity *se = &p->se;
-
-	if (!se->on_rq) /* throttled_hierarchy always 0, removed */
-		return false;
-
-	set_next_buddy(se);
-
-	yield_task_fair(rq);
-
-	return true;
-}
+/* yield_to_task_fair removed - callback never called (~12 LOC) */
 
 static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
 {
@@ -979,7 +967,7 @@ DEFINE_SCHED_CLASS(fair) = {
 	.enqueue_task = enqueue_task_fair,
 	.dequeue_task = dequeue_task_fair,
 	.yield_task = yield_task_fair,
-	.yield_to_task = yield_to_task_fair,
+	/* .yield_to_task removed - callback never called */
 
 	.check_preempt_curr = check_preempt_wakeup,
 

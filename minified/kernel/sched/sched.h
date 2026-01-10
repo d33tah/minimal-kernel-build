@@ -590,7 +590,7 @@ struct sched_class {
 	void (*enqueue_task) (struct rq *rq, struct task_struct *p, int flags);
 	void (*dequeue_task) (struct rq *rq, struct task_struct *p, int flags);
 	void (*yield_task)   (struct rq *rq);
-	bool (*yield_to_task)(struct rq *rq, struct task_struct *p);
+	/* yield_to_task removed - callback never called */
 
 	void (*check_preempt_curr)(struct rq *rq, struct task_struct *p, int flags);
 

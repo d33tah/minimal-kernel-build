@@ -30,19 +30,11 @@ struct tty_operations {
 	unsigned int (*chars_in_buffer)(struct tty_struct *tty);
 	int  (*ioctl)(struct tty_struct *tty,
 		    unsigned int cmd, unsigned long arg);
-	long (*compat_ioctl)(struct tty_struct *tty,
-			     unsigned int cmd, unsigned long arg);
+	/* compat_ioctl removed - never called */
 	void (*set_termios)(struct tty_struct *tty, struct ktermios * old);
-	void (*throttle)(struct tty_struct * tty);
-	void (*unthrottle)(struct tty_struct * tty);
-	void (*stop)(struct tty_struct *tty);
-	void (*start)(struct tty_struct *tty);
+	/* throttle, unthrottle, stop, start removed - never called */
 	void (*hangup)(struct tty_struct *tty);
-	int (*break_ctl)(struct tty_struct *tty, int state);
-	void (*flush_buffer)(struct tty_struct *tty);
-	void (*set_ldisc)(struct tty_struct *tty);
-	void (*wait_until_sent)(struct tty_struct *tty, int timeout);
-	void (*send_xchar)(struct tty_struct *tty, char ch);
+	/* break_ctl, flush_buffer, set_ldisc, wait_until_sent, send_xchar removed - never called */
 	/* tiocmget, tiocmset, get_icount, get_serial, set_serial, show_fdinfo, proc_show removed - unused */
 	int (*resize)(struct tty_struct *tty, struct winsize *ws);
 } __randomize_layout;

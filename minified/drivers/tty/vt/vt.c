@@ -890,34 +890,7 @@ static unsigned int con_write_room(struct tty_struct *tty)
 	return 32768;
 }
 
-/* con_throttle removed - empty stub, set to NULL in ops */
-
-static void con_unthrottle(struct tty_struct *tty)
-{
-	/* wake_up_interruptible(&vc->paste_wait) removed - field removed */
-}
-
-static void con_stop(struct tty_struct *tty)
-{
-	int console_num;
-	if (!tty)
-		return;
-	console_num = tty->index;
-	if (!vc_cons_allocated(console_num))
-		return;
-	/* vt_kbd_con_stop call removed - empty stub */
-}
-
-static void con_start(struct tty_struct *tty)
-{
-	int console_num;
-	if (!tty)
-		return;
-	console_num = tty->index;
-	if (!vc_cons_allocated(console_num))
-		return;
-	/* vt_kbd_con_start call removed - empty stub */
-}
+/* con_throttle, con_unthrottle, con_stop, con_start removed - ops callbacks never called */
 
 static void con_flush_chars(struct tty_struct *tty)
 {
@@ -1096,10 +1069,7 @@ static const struct tty_operations con_ops = {
 	.put_char = con_put_char,
 	.flush_chars = con_flush_chars,
 	.ioctl = vt_ioctl,
-	.stop = con_stop,
-	.start = con_start,
-	/* .throttle = NULL - con_throttle was empty */
-	.unthrottle = con_unthrottle,
+	/* .stop, .start, .throttle, .unthrottle removed - never called */
 	.resize = vt_resize,
 	.shutdown = con_shutdown,
 	.cleanup = con_cleanup,

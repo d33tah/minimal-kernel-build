@@ -39,16 +39,13 @@ struct dev_printk_info {
 #include <linux/device/driver.h>
 /* struct dev_archdata, pdev_archdata removed - unused */
 
+/* Unused forward decls removed: driver_private, module, subsys_private, iommu_ops */
 struct device;
 struct device_private;
 struct device_driver;
-struct driver_private;
-struct module;
 struct class;
-struct subsys_private;
 struct device_node;
 struct fwnode_handle;
-struct iommu_ops;
 
 /* struct subsys_interface removed - never instantiated after subsys_interface_register removal */
 
@@ -154,8 +151,7 @@ struct device {
 	bool			can_match:1;
 };
 
-/* device_link fields removed - only used as type definition, never instantiated */
-struct device_link;
+/* struct device_link forward decl removed - never used */
 
 static inline struct device *kobj_to_dev(struct kobject *kobj)
 {

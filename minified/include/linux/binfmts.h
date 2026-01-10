@@ -5,13 +5,11 @@
 #include <linux/unistd.h>
 #include <linux/capability.h>
 
-struct pt_regs;
+/* struct pt_regs and filename forward decls removed - unused */
 #define MAX_ARG_STRLEN (PAGE_SIZE * 32)
 #define MAX_ARG_STRINGS 0x7FFFFFFF
 #define BINPRM_BUF_SIZE 256
 #define AT_FLAGS_PRESERVE_ARGV0 (1 << 0)
-
-struct filename;
 
 struct linux_binprm {
 	struct vm_area_struct *vma;

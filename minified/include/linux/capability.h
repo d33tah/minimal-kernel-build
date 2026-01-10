@@ -32,10 +32,8 @@ typedef struct kernel_cap_struct {
 /* _USER_CAP_HEADER_SIZE, _KERNEL_CAP_T_SIZE removed - unused */
 
 
-struct file;
+/* struct file, dentry, task_struct forward decls removed - unused */
 struct inode;
-struct dentry;
-struct task_struct;
 struct user_namespace;
 
 /* __cap_empty_set extern removed - never used */

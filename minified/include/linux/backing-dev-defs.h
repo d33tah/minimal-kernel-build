@@ -13,9 +13,8 @@
 #include <linux/kref.h>
 #include <linux/refcount.h>
 
-struct page;
+/* struct page, dentry forward decls removed - unused */
 struct device;
-struct dentry;
 
 enum wb_state {
 	WB_registered,

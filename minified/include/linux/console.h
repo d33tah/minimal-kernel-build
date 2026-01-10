@@ -6,10 +6,8 @@
 #include <linux/types.h>
 
 struct vc_data;
-struct console_font;
 struct module;
-struct tty_struct;
-struct notifier_block;
+/* struct console_font, tty_struct, notifier_block forward decls removed - unused */
 
 enum con_scroll {
 	SM_UP,

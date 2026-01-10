@@ -83,19 +83,12 @@ struct clone_args {
 #include <linux/seqlock.h>
 #include <asm/kmap_size.h>
 
-/* struct audit_context, backing_dev_info, blk_plug removed - unused */
-struct cfs_rq;
+/* Unused forward declarations removed: cfs_rq, mempolicy, pipe_inode_info, rq, sched_attr, seq_file */
 struct fs_struct;
-struct mempolicy;
 struct nameidata;
 struct nsproxy;
-/* struct perf_event_context removed - unused forward declaration */
 struct pid_namespace;
-struct pipe_inode_info;
-struct rq;
-struct sched_attr;
 struct sched_param;
-struct seq_file;
 struct sighand_struct;
 struct signal_struct;
 

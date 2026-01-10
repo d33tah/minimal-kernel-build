@@ -77,20 +77,13 @@ typedef int rwf_t;
 #define RWF_NOWAIT	0x00000008
 /* end uapi/linux/fs.h */
 
+/* Unused forward decls removed: bdi_writeback, bio, iovec, kobject,
+   poll_table_struct, kstatfs, vfsmount, seq_file, workqueue_struct */
 struct backing_dev_info;
-struct bdi_writeback;
-struct bio;
-struct iovec;
 struct kiocb;
-struct kobject;
 struct pipe_inode_info;
-struct poll_table_struct;
-struct kstatfs;
 struct vm_area_struct;
-struct vfsmount;
 struct cred;
-struct seq_file;
-struct workqueue_struct;
 struct iov_iter;
 struct fs_context;
 struct fs_parameter_spec;
@@ -184,7 +177,7 @@ enum positive_aop_returns { AOP_TRUNCATED_PAGE = 0x80001 };
 
 struct page;
 struct address_space;
-struct writeback_control;
+/* struct writeback_control forward decl removed - unused */
 
 #define IOCB_NOWAIT		(__force int) RWF_NOWAIT
 #define IOCB_DIRECT		(1 << 17)
@@ -457,18 +450,11 @@ static inline struct file *get_file(struct file *f)
 
 typedef void *fl_owner_t;
 
-struct file_lock;
-/* struct net forward declaration removed - unused in fs.h */
-/* locks_inode macro removed - unused */
-
-struct files_struct;
+/* struct file_lock, files_struct, fasync_struct forward decls removed - unused */
 static inline struct inode *file_inode(const struct file *f)
 {
 	return f->f_inode;
 }
-
-/* fasync_struct fields reduced - only forward declaration needed for pointer */
-struct fasync_struct;
 
 /* fasync_helper, kill_fasync, __f_setown removed - empty stubs */
 

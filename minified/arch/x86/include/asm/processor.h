@@ -6,7 +6,7 @@
 
  
 struct task_struct;
-struct mm_struct;
+/* struct mm_struct forward decl removed - unused */
 struct io_bitmap;
 struct vm86;
 

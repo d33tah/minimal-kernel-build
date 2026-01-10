@@ -10,7 +10,7 @@
 #include <linux/sched/user.h>
 
 struct cred;
-struct inode;
+/* struct inode forward decl removed - unused */
 
 struct group_info {
 	atomic_t	usage;

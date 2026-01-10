@@ -75,7 +75,6 @@ errseq_t errseq_set(errseq_t *eseq, int err);
 #define INR_OPEN_MAX 4096
 /* NR_FILE removed - never used */
 #define SEEK_SET	0
-#define SEEK_CUR	1
 #define SEEK_END	2
 /* SEEK_DATA, SEEK_HOLE, RENAME_NOREPLACE removed - unused */
 /* RWF_* values needed for IOCB_* macros, rwf_t typedef */

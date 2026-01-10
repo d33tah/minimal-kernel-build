@@ -9,7 +9,6 @@
 #define PROT_READ	0x1
 #define PROT_WRITE	0x2
 #define PROT_EXEC	0x4
-#define PROT_SEM	0x8
 
 #define MAP_TYPE	0x0f
 #define MAP_FIXED	0x10

@@ -9,7 +9,7 @@
 #include <linux/slab.h>
 #include "slab.h"
 #include <linux/proc_fs.h>
-#include <linux/seq_file.h>
+/* seq_file.h removed - header is empty */
 #include <linux/cpu.h>
 /* cpuset.h, mempolicy.h removed - unused */
 #include <linux/ctype.h>

@@ -2,7 +2,7 @@
 #include <linux/interrupt.h>
 #include <linux/kernel_stat.h>
 #include <linux/of.h>
-#include <linux/seq_file.h>
+/* seq_file.h removed - header is empty */
 #include <linux/smp.h>
 #include <linux/delay.h>
 #include <linux/export.h>

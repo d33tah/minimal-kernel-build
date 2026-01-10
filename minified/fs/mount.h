@@ -1,6 +1,6 @@
 
 #include <linux/mount.h>
-#include <linux/seq_file.h>
+/* seq_file.h removed - header is empty */
 #include <linux/poll.h>
 #include <linux/ns_common.h>
 

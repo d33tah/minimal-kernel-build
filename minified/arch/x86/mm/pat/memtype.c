@@ -1,7 +1,7 @@
 // Stubbed version of PAT (Page Attribute Table) memory type management
 // Original: 591 LOC
 
-#include <linux/seq_file.h>
+/* seq_file.h removed - header is empty */
 #include <linux/memblock.h>
 #include <linux/ioport.h>
 #include <linux/kernel.h>

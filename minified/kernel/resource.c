@@ -11,7 +11,7 @@
 #include <linux/fs_context.h>
 #include <linux/proc_fs.h>
 #include <linux/sched.h>
-#include <linux/seq_file.h>
+/* seq_file.h removed - header is empty */
 #include <linux/device.h>
 #include <linux/pfn.h>
 #include <linux/mm.h>

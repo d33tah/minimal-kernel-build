@@ -27,7 +27,7 @@
 #include <linux/wait.h>
 #include <linux/bitops.h>
 #include <linux/delay.h>
-#include <linux/seq_file.h>
+/* seq_file.h removed - header is empty */
 #include <linux/ratelimit.h>
 #include <linux/compat.h>
 

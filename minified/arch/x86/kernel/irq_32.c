@@ -1,5 +1,5 @@
 
-#include <linux/seq_file.h>
+/* seq_file.h removed - header is empty */
 #include <linux/interrupt.h>
 #include <linux/irq.h>
 #include <linux/kernel_stat.h>

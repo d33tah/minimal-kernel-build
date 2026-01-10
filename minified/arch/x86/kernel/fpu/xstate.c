@@ -8,7 +8,7 @@
 #include <linux/cpu.h>
 #include <linux/mman.h>
 #include <linux/nospec.h>
-#include <linux/seq_file.h>
+/* seq_file.h removed - header is empty */
 #include <linux/proc_fs.h>
 #include <linux/vmalloc.h>
 

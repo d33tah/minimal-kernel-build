@@ -10,7 +10,7 @@
 #include <asm/user.h> /* linux/user.h redirect */
 #include <linux/elf.h>
 #include <linux/security.h>
-#include <linux/seccomp.h>
+/* seccomp.h removed - header is empty */
 #include <linux/signal.h>
 #include <linux/perf_event.h>
 #include <linux/rcupdate.h>

@@ -4,7 +4,7 @@
 #include <linux/static_call_types.h>
 #include <linux/ptrace.h>
 #include <linux/syscalls.h>
-#include <linux/seccomp.h>
+/* seccomp.h removed - header is empty */
 #include <linux/sched.h>
 
 #include <asm/entry-common.h>

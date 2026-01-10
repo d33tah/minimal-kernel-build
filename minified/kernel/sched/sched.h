@@ -52,7 +52,7 @@ extern unsigned int nr_iowait_cpu(int cpu);
 #include <linux/poll.h>
 #include <linux/proc_fs.h>
 #include <linux/rcupdate.h>
-#include <linux/seq_file.h>
+/* seq_file.h removed - header is empty */
 #include <linux/seqlock.h>
 
 

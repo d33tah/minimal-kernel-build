@@ -6,7 +6,7 @@
 #include <linux/nodemask.h>
 #include <linux/rculist.h>
 #include <linux/fs.h>
-#include <linux/seq_file.h>
+/* seq_file.h removed - header is empty */
 #include <linux/kernfs.h>
 #include <linux/jump_label.h>
 #include <linux/types.h>

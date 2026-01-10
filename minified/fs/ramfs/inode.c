@@ -14,7 +14,7 @@
 #include <linux/uaccess.h>
 #include <linux/fs_context.h>
 #include <linux/fs_parser.h>
-#include <linux/seq_file.h>
+/* seq_file.h removed - header is empty */
 extern const struct inode_operations ramfs_file_inode_operations;
 
 struct ramfs_mount_opts {

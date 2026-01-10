@@ -14,7 +14,7 @@
 #include <linux/atomic.h>
 #include <linux/list.h>
 #include <linux/lockdep.h>
-#include <linux/seq_file.h>
+/* seq_file.h removed - header is empty */
 
 struct ld_semaphore {
 	atomic_long_t		count;

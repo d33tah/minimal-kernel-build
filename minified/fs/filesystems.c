@@ -2,7 +2,7 @@
 #include <linux/syscalls.h>
 #include <linux/fs.h>
 #include <linux/proc_fs.h>
-#include <linux/seq_file.h>
+/* seq_file.h removed - header is empty */
 #include <linux/kmod.h>
 #include <linux/init.h>
 #include <linux/module.h>

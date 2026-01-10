@@ -12,7 +12,7 @@ struct file *anon_inode_getfile(const char *name,
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
 #include <linux/sched/cputime.h>
-#include <linux/seq_file.h>
+/* seq_file.h removed - header is empty */
 #include <linux/init.h>
 #include <linux/unistd.h>
 #include <linux/module.h>
@@ -37,7 +37,7 @@ struct file *anon_inode_getfile(const char *name,
 #include <linux/cgroup.h>
 #include <linux/security.h>
 #include <linux/hugetlb.h>
-#include <linux/seccomp.h>
+/* seccomp.h removed - header is empty */
 #include <linux/swap.h>
 #include <linux/syscalls.h>
 #include <linux/futex.h>

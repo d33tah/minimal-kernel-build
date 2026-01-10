@@ -755,27 +755,18 @@ static inline int call_mmap(struct file *file, struct vm_area_struct *vma)
 extern ssize_t vfs_write(struct file *, const char __user *, size_t, loff_t *);
 
 struct super_operations {
-   	struct inode *(*alloc_inode)(struct super_block *sb);
+	struct inode *(*alloc_inode)(struct super_block *sb);
 	void (*destroy_inode)(struct inode *);
 	void (*free_inode)(struct inode *);
-
-   	void (*dirty_inode) (struct inode *, int flags);
-	int (*write_inode) (struct inode *, struct writeback_control *wbc);
-	int (*drop_inode) (struct inode *);
-	void (*evict_inode) (struct inode *);
-	void (*put_super) (struct super_block *);
-	int (*sync_fs)(struct super_block *sb, int wait);
-	/* freeze_super, freeze_fs, thaw_super, unfreeze_fs removed - unused */
-	int (*statfs) (struct dentry *, struct kstatfs *);
-	int (*remount_fs) (struct super_block *, int *, char *);
-	void (*umount_begin) (struct super_block *);
-
+	/* dirty_inode, write_inode removed - never set/called */
+	int (*drop_inode)(struct inode *);
+	void (*evict_inode)(struct inode *);
+	void (*put_super)(struct super_block *);
+	/* sync_fs, freeze_super, freeze_fs, thaw_super, unfreeze_fs removed */
+	int (*statfs)(struct dentry *, struct kstatfs *);
+	/* remount_fs, umount_begin removed - never set/called */
 	int (*show_options)(struct seq_file *, struct dentry *);
-	/* show_devname, show_path, show_stats removed - unused */
-	long (*nr_cached_objects)(struct super_block *,
-				  struct shrink_control *);
-	long (*free_cached_objects)(struct super_block *,
-				    struct shrink_control *);
+	/* show_devname, show_path, show_stats, nr_cached_objects, free_cached_objects removed */
 };
 
 #define S_APPEND	(1 << 2)

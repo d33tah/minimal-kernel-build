@@ -12,7 +12,7 @@
 #include <linux/uaccess.h>
 /* ioport.h, dcache.h, cred.h, rtc.h removed - unused */
 #include <linux/time.h>
-#include <linux/uuid.h>
+/* uuid.h removed - guid_t not used */
 #include <linux/of.h>
 
 /* Removed: linux/random.h, linux/siphash.h - ptr hashing disabled */

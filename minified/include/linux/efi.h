@@ -4,7 +4,7 @@
 
 #include <linux/init.h>
 #include <linux/types.h>
-#include <linux/uuid.h>
+/* uuid.h removed - guid_t not used */
 #include <linux/screen_info.h>
 #include <asm/page.h>
 

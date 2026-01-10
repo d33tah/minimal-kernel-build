@@ -1,10 +1,15 @@
- 
+
 #ifndef BOOT_COMPRESSED_EFI_H
 #define BOOT_COMPRESSED_EFI_H
 
 #if defined(_LINUX_EFI_H) || defined(_ASM_X86_EFI_H)
 #error Please do not include kernel proper namespace headers
 #endif
+
+/* Local guid_t definition - can't use uuid.h in boot/compressed */
+typedef struct {
+	__u8 b[16];
+} guid_t;
 
 typedef guid_t efi_guid_t __aligned(__alignof__(u32));
 

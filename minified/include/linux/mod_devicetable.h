@@ -4,7 +4,7 @@
 
 #ifdef __KERNEL__
 #include <linux/types.h>
-#include <linux/uuid.h>
+/* uuid.h removed - guid_t not used */
 typedef unsigned long kernel_ulong_t;
 #endif
 

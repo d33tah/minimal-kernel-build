@@ -178,16 +178,12 @@ static struct page *follow_page_mask(struct vm_area_struct *vma,
 				     struct follow_page_context *ctx)
 {
 	pgd_t *pgd;
-	struct page *page;
 	struct mm_struct *mm = vma->vm_mm;
+	/* page variable removed - follow_huge_addr call removed */
 
 	ctx->page_mask = 0;
 
-	page = follow_huge_addr(mm, address, flags & FOLL_WRITE);
-	if (!IS_ERR(page)) {
-		/* WARN removed - FOLL_PIN never set */
-		return page;
-	}
+	/* follow_huge_addr always returns ERR_PTR(-EINVAL) - call and check removed */
 
 	/* pgd_none/pgd_bad always return 0 - folded paging */
 	pgd = pgd_offset(mm, address);

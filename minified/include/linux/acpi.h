@@ -5,7 +5,7 @@
 #include <linux/irqdomain.h>
 #include <linux/device.h>
 #include <linux/list.h>
-#include <linux/uuid.h>
+/* uuid.h removed - guid_t not used */
 #ifndef _LINUX
 #define _LINUX
 #endif

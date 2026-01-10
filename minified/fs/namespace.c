@@ -874,32 +874,7 @@ void dissolve_on_fput(struct vfsmount *mnt)
 		free_mnt_ns(ns);
 }
 
-static void lock_mnt_tree(struct mount *mnt)
-{
-	struct mount *p;
-
-	for (p = mnt; p; p = next_mnt(p, mnt)) {
-		int flags = p->mnt.mnt_flags;
-
-		flags |= MNT_LOCK_ATIME;
-
-		if (flags & MNT_READONLY)
-			flags |= MNT_LOCK_READONLY;
-
-		if (flags & MNT_NODEV)
-			flags |= MNT_LOCK_NODEV;
-
-		if (flags & MNT_NOSUID)
-			flags |= MNT_LOCK_NOSUID;
-
-		if (flags & MNT_NOEXEC)
-			flags |= MNT_LOCK_NOEXEC;
-
-		if (list_empty(&p->mnt_expire))
-			flags |= MNT_LOCKED;
-		p->mnt.mnt_flags = flags;
-	}
-}
+/* lock_mnt_tree removed - only caller was in dead tree_list loop */
 
 static int invent_group_ids(struct mount *mnt, bool recurse)
 {
@@ -921,11 +896,9 @@ static int attach_recursive_mnt(struct mount *source_mnt,
 				struct mountpoint *dest_mp, bool moving)
 {
 	struct user_namespace *user_ns = current->nsproxy->mnt_ns->user_ns;
-	HLIST_HEAD(tree_list);
 	struct mnt_namespace *ns = dest_mnt->mnt_ns;
 	struct mountpoint *smp;
-	struct mount *child, *p;
-	struct hlist_node *n;
+	struct mount *p;
 	int err;
 
 	smp = get_mountpoint(source_mnt->mnt.mnt_root);
@@ -957,14 +930,7 @@ static int attach_recursive_mnt(struct mount *source_mnt,
 		commit_tree(source_mnt);
 	}
 
-	hlist_for_each_entry_safe(child, n, &tree_list, mnt_hash) {
-		hlist_del_init(&child->mnt_hash);
-		/* mnt_change_mountpoint call removed - was empty stub */
-		if (child->mnt_parent->mnt_ns->user_ns != user_ns)
-			lock_mnt_tree(child);
-		child->mnt.mnt_flags &= ~MNT_LOCKED;
-		commit_tree(child);
-	}
+	/* tree_list loop removed - list was never populated */
 	put_mountpoint(smp);
 	unlock_mount_hash();
 

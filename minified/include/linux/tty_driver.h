@@ -14,29 +14,23 @@ struct tty_struct;
 struct tty_driver;
 
 struct tty_operations {
-	struct tty_struct * (*lookup)(struct tty_driver *driver,
-			struct file *filp, int idx);
-	int  (*install)(struct tty_driver *driver, struct tty_struct *tty);
+	struct tty_struct *(*lookup)(struct tty_driver *driver, struct file *filp, int idx);
+	int (*install)(struct tty_driver *driver, struct tty_struct *tty);
 	void (*remove)(struct tty_driver *driver, struct tty_struct *tty);
-	int  (*open)(struct tty_struct * tty, struct file * filp);
-	void (*close)(struct tty_struct * tty, struct file * filp);
+	int (*open)(struct tty_struct *tty, struct file *filp);
+	void (*close)(struct tty_struct *tty, struct file *filp);
 	void (*shutdown)(struct tty_struct *tty);
 	void (*cleanup)(struct tty_struct *tty);
-	int  (*write)(struct tty_struct * tty,
-		      const unsigned char *buf, int count);
-	int  (*put_char)(struct tty_struct *tty, unsigned char ch);
+	int (*write)(struct tty_struct *tty, const unsigned char *buf, int count);
+	/* put_char removed - never called */
 	void (*flush_chars)(struct tty_struct *tty);
 	unsigned int (*write_room)(struct tty_struct *tty);
-	unsigned int (*chars_in_buffer)(struct tty_struct *tty);
-	int  (*ioctl)(struct tty_struct *tty,
-		    unsigned int cmd, unsigned long arg);
-	/* compat_ioctl removed - never called */
-	void (*set_termios)(struct tty_struct *tty, struct ktermios * old);
+	/* chars_in_buffer, ioctl, compat_ioctl removed - never called */
+	void (*set_termios)(struct tty_struct *tty, struct ktermios *old);
 	/* throttle, unthrottle, stop, start removed - never called */
 	void (*hangup)(struct tty_struct *tty);
-	/* break_ctl, flush_buffer, set_ldisc, wait_until_sent, send_xchar removed - never called */
-	/* tiocmget, tiocmset, get_icount, get_serial, set_serial, show_fdinfo, proc_show removed - unused */
-	int (*resize)(struct tty_struct *tty, struct winsize *ws);
+	/* break_ctl, flush_buffer, set_ldisc, wait_until_sent, send_xchar, resize removed */
+	/* tiocmget, tiocmset, get_icount, get_serial, set_serial, show_fdinfo, proc_show removed */
 } __randomize_layout;
 
 struct tty_driver {

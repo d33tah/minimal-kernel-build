@@ -77,10 +77,7 @@ errseq_t errseq_set(errseq_t *eseq, int err);
 #define SEEK_SET	0
 #define SEEK_CUR	1
 #define SEEK_END	2
-#define SEEK_DATA	3
-#define SEEK_HOLE	4
-#define RENAME_NOREPLACE	(1 << 0)
-/* RENAME_EXCHANGE, files_stat_struct removed - unused */
+/* SEEK_DATA, SEEK_HOLE, RENAME_NOREPLACE removed - unused */
 /* RWF_* values needed for IOCB_* macros, rwf_t typedef */
 typedef int rwf_t;
 #define RWF_NOWAIT	0x00000008

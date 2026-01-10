@@ -743,8 +743,7 @@ struct super_operations {
 #define S_SWAPFILE	(1 << 8)
 #define S_PRIVATE	(1 << 9)
 #define S_AUTOMOUNT	(1 << 11)
-/* S_NOSEC removed - was cleared but never tested */
-#define S_DAX		0
+/* S_NOSEC, S_DAX removed - never tested */
 
 #define __IS_FLG(inode, flg)	((inode)->i_sb->s_flags & (flg))
 
@@ -755,7 +754,7 @@ static inline bool sb_rdonly(const struct super_block *sb) { return sb->s_flags 
 #define IS_DEADDIR(inode)	((inode)->i_flags & S_DEAD)
 #define IS_SWAPFILE(inode)	((inode)->i_flags & S_SWAPFILE)
 #define IS_AUTOMOUNT(inode)	((inode)->i_flags & S_AUTOMOUNT)
-#define IS_DAX(inode)		((inode)->i_flags & S_DAX)
+/* IS_DAX removed - S_DAX was always 0 */
 
 static inline bool HAS_UNMAPPED_ID(struct user_namespace *mnt_userns,
 				   struct inode *inode)

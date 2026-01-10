@@ -71,14 +71,9 @@ static inline void folio_ref_inc(struct folio *folio)
 }
 
 
-static inline int page_ref_sub_and_test(struct page *page, int nr)
-{
-	return atomic_sub_and_test(nr, &page->_refcount);
-}
-
 static inline int folio_ref_sub_and_test(struct folio *folio, int nr)
 {
-	return page_ref_sub_and_test(&folio->page, nr);
+	return atomic_sub_and_test(nr, &folio->page._refcount);
 }
 
 static inline int page_ref_dec_and_test(struct page *page)
@@ -87,14 +82,9 @@ static inline int page_ref_dec_and_test(struct page *page)
 }
 
 
-static inline bool page_ref_add_unless(struct page *page, int nr, int u)
-{
-	return atomic_add_unless(&page->_refcount, nr, u);
-}
-
 static inline bool folio_ref_add_unless(struct folio *folio, int nr, int u)
 {
-	return page_ref_add_unless(&folio->page, nr, u);
+	return atomic_add_unless(&folio->page._refcount, nr, u);
 }
 
 
@@ -109,7 +99,7 @@ static inline bool folio_try_get_rcu(struct folio *folio)
 struct mempolicy;
 struct anon_vma;
 struct anon_vma_chain;
-struct user_struct;
+/* struct user_struct forward decl removed - unused */
 struct pt_regs;
 
 
@@ -635,7 +625,7 @@ struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 void unmap_vmas(struct mmu_gather *tlb, struct vm_area_struct *start_vma,
 		unsigned long start, unsigned long end);
 
-struct mmu_notifier_range;
+/* struct mmu_notifier_range forward decl removed - unused */
 
 void free_pgd_range(struct mmu_gather *tlb, unsigned long addr,
 		unsigned long end, unsigned long floor, unsigned long ceiling);

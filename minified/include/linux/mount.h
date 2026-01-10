@@ -9,8 +9,7 @@ struct dentry;
 struct user_namespace;
 struct file_system_type;
 struct fs_context;
-struct file;
-struct path;
+/* struct file, path forward decls removed - unused */
 
 #define MNT_NOSUID	0x01
 #define MNT_NODEV	0x02

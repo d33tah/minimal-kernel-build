@@ -38,7 +38,7 @@
 				(unsigned long)ZERO_SIZE_PTR)
 
 struct list_lru;
-struct mem_cgroup;
+/* struct mem_cgroup forward decl removed - unused */
 void __init kmem_cache_init(void);
 bool slab_is_available(void);
 

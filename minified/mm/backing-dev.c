@@ -22,8 +22,7 @@ LIST_HEAD(bdi_list);
 
 struct workqueue_struct *bdi_wq;
 
-#define K(x) ((x) << (PAGE_SHIFT - 10))
-
+/* K(x) macro removed - unused */
 /* bdi_debug_init, bdi_debug_unregister, bdi sysfs attrs, bdi_class_init removed - unused */
 
 /* default_bdi_init removed - alloc_workqueue hangs with low memory */

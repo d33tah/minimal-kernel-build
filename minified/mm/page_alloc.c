@@ -49,8 +49,7 @@ struct alloc_context;
 #include <asm/tlbflush.h>
 #include <asm/div64.h>
 #include "internal.h"
-#define page_reported(_page) false
-/* end page_reporting.h */
+/* page_reported macro removed - unused */
 struct swap_iocb;
 
 typedef int __bitwise fpi_t;

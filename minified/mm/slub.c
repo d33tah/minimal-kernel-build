@@ -45,16 +45,7 @@ void *fixup_red_left(struct kmem_cache *s, void *p)
 #define __OBJECT_POISON ((slab_flags_t __force)0x80000000U)
 
 #define __CMPXCHG_DOUBLE ((slab_flags_t __force)0x40000000U)
-/* TRACK_ADDRS_COUNT removed - unused */
-struct track {
-	unsigned long addr;
-	int cpu;
-	int pid;
-	unsigned long when;
-};
-
-enum track_item { TRACK_ALLOC, TRACK_FREE };
-
+/* TRACK_ADDRS_COUNT, struct track, enum track_item removed - unused */
 /* Removed: sysfs_slab_add, sysfs_slab_alias, debugfs_slab_add - empty stubs */
 
 static nodemask_t slab_nodes;

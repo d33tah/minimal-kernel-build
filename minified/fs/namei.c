@@ -190,7 +190,8 @@ struct nameidata {
 	struct path root;
 	struct inode *inode;
 	unsigned int flags, state;
-	unsigned seq, m_seq, r_seq;
+	unsigned seq, m_seq;
+	/* r_seq removed - only written, never read */
 	int last_type;
 	unsigned depth;
 	/* total_link_count removed - only used for symlink limits */
@@ -910,7 +911,7 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
 	nd->state |= ND_JUMPED;
 
 	nd->m_seq = __read_seqcount_begin(&mount_lock.seqcount);
-	nd->r_seq = __read_seqcount_begin(&rename_lock.seqcount);
+	/* r_seq assignment removed - was never read */
 	smp_rmb();
 
 	if (nd->state & ND_ROOT_PRESET) {

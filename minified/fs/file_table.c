@@ -95,8 +95,8 @@ struct file *alloc_file_pseudo(struct inode *inode, struct vfsmount *mnt,
 	path.dentry = d_alloc_pseudo(mnt->mnt_sb, &this);
 	if (!path.dentry)
 		return ERR_PTR(-ENOMEM);
-	if (!mnt->mnt_sb->s_d_op)
-		d_set_d_op(path.dentry, &anon_ops);
+	/* s_d_op check removed - always NULL (dops never set) */
+	d_set_d_op(path.dentry, &anon_ops);
 	path.mnt = mntget(mnt);
 	d_instantiate(path.dentry, inode);
 	file = alloc_file(&path, flags, fops);

@@ -604,8 +604,7 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 	INIT_LIST_HEAD(&dentry->d_subdirs);
 	INIT_HLIST_NODE(&dentry->d_u.d_alias);
 	INIT_LIST_HEAD(&dentry->d_child);
-	d_set_d_op(dentry, dentry->d_sb->s_d_op);
-
+	/* d_set_d_op call removed - s_d_op is always NULL (dops never set) */
 	/* d_init removed - never set */
 	/* nr_dentry counter removed - never read */
 	return dentry;

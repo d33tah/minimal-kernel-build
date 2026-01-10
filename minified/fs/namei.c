@@ -1219,46 +1219,7 @@ static int may_open(struct user_namespace *mnt_userns, const struct path *path,
 	return 0;
 }
 
-static struct dentry *atomic_open(struct nameidata *nd, struct dentry *dentry,
-				  struct file *file, int open_flag,
-				  umode_t mode)
-{
-	struct dentry *const DENTRY_NOT_SET = (void *)-1UL;
-	struct inode *dir = nd->path.dentry->d_inode;
-	int error;
-
-	if (nd->flags & LOOKUP_DIRECTORY)
-		open_flag |= O_DIRECTORY;
-	if ((open_flag & O_ACCMODE) == 3)
-		open_flag--;
-
-	file->f_path.dentry = DENTRY_NOT_SET;
-	file->f_path.mnt = nd->path.mnt;
-	error = dir->i_op->atomic_open(dir, dentry, file, open_flag, mode);
-	d_lookup_done(dentry);
-	if (!error) {
-		if (file->f_mode & FMODE_OPENED) {
-			if (unlikely(dentry != file->f_path.dentry)) {
-				dput(dentry);
-				dentry = dget(file->f_path.dentry);
-			}
-		} else if (WARN_ON(file->f_path.dentry == DENTRY_NOT_SET)) {
-			error = -EIO;
-		} else {
-			if (file->f_path.dentry) {
-				dput(dentry);
-				dentry = file->f_path.dentry;
-			}
-			if (unlikely(d_is_negative(dentry)))
-				error = -ENOENT;
-		}
-	}
-	if (error) {
-		dput(dentry);
-		dentry = ERR_PTR(error);
-	}
-	return dentry;
-}
+/* atomic_open removed - i_op->atomic_open is never set (~40 LOC) */
 
 static struct dentry *lookup_open(struct nameidata *nd, struct file *file,
 				  const struct open_flags *op, bool got_write)
@@ -1293,10 +1254,7 @@ static struct dentry *lookup_open(struct nameidata *nd, struct file *file,
 		if (!IS_POSIXACL(dir->d_inode))
 			mode &= ~current_umask();
 
-		if (dir_inode->i_op->atomic_open) {
-			dentry = atomic_open(nd, dentry, file, open_flag, mode);
-			return dentry;
-		}
+		/* atomic_open check removed - never set */
 
 		if (d_in_lookup(dentry)) {
 			struct dentry *res = dir_inode->i_op->lookup(

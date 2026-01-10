@@ -218,15 +218,9 @@ static int do_dentry_open(struct file *f, struct inode *inode,
 	if ((f->f_mode & FMODE_WRITE) &&
 	    likely(f->f_op->write || f->f_op->write_iter))
 		f->f_mode |= FMODE_CAN_WRITE;
-	if (f->f_mapping->a_ops && f->f_mapping->a_ops->direct_IO)
-		f->f_mode |= FMODE_CAN_ODIRECT;
+	/* direct_IO/O_DIRECT handling removed - direct_IO is never set */
 
 	f->f_flags &= ~(O_CREAT | O_EXCL | O_NOCTTY | O_TRUNC);
-
-	/* file_ra_state_init removed - was empty stub */
-
-	if ((f->f_flags & O_DIRECT) && !(f->f_mode & FMODE_CAN_ODIRECT))
-		return -EINVAL;
 
 	/* filemap_nr_thps always returns 0 - THP handling removed */
 

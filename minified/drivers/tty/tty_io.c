@@ -161,14 +161,7 @@ static ssize_t hung_up_tty_write(struct kiocb *iocb, struct iov_iter *from)
 
 /* hung_up_tty_poll removed - poll/select syscalls return ENOSYS */
 
-static long hung_up_tty_ioctl(struct file *file, unsigned int cmd,
-			      unsigned long arg)
-{
-	return -ENOTTY;
-}
-
-/* hung_up_tty_compat_ioctl merged with hung_up_tty_ioctl - identical behavior */
-#define hung_up_tty_compat_ioctl hung_up_tty_ioctl
+/* hung_up_tty_ioctl removed - ioctl syscall returns ENOTTY */
 
 /* hung_up_tty_fasync removed - fcntl returns EINVAL, FASYNC never set */
 
@@ -909,11 +902,7 @@ retry_open:
 /* tiocgwinsz, tty_do_resize, tiocswinsz, tty_pair_get_tty removed
    ioctl syscall returns -ENOTTY directly (~50 LOC) */
 
-long tty_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
-{
-	/* Never called - ioctl syscall returns -ENOTTY directly */
-	return -ENOTTY;
-}
+/* tty_ioctl removed - ioctl syscall returns ENOTTY */
 
 static void do_SAK_work(struct work_struct *work)
 {

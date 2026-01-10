@@ -223,10 +223,7 @@ extern struct mutex tty_mutex;
 
 void __init n_tty_init(void);
 
-/* tty_audit_exit, tty_audit_fork removed - unused */
-int n_tty_ioctl_helper(struct tty_struct *tty, unsigned int cmd,
-		unsigned long arg);
-
+/* tty_audit_exit, tty_audit_fork, n_tty_ioctl_helper removed - unused */
 
 int vt_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg);
 

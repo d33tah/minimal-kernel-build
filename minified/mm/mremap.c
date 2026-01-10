@@ -211,9 +211,7 @@ static bool move_normal_pud(struct vm_area_struct *vma, unsigned long old_addr,
 
 enum pgt_entry {
 	NORMAL_PMD,
-	HPAGE_PMD,
 	NORMAL_PUD,
-	HPAGE_PUD,
 };
 
 static __always_inline unsigned long get_extent(enum pgt_entry entry,
@@ -224,18 +222,13 @@ static __always_inline unsigned long get_extent(enum pgt_entry entry,
 	unsigned long next, extent, mask, size;
 
 	switch (entry) {
-	case HPAGE_PMD:
 	case NORMAL_PMD:
 		mask = PMD_MASK;
 		size = PMD_SIZE;
 		break;
-	case HPAGE_PUD:
 	case NORMAL_PUD:
 		mask = PUD_MASK;
 		size = PUD_SIZE;
-		break;
-	default:
-		BUILD_BUG();
 		break;
 	}
 
@@ -268,15 +261,6 @@ static bool move_pgt_entry(enum pgt_entry entry, struct vm_area_struct *vma,
 	case NORMAL_PUD:
 		moved = move_normal_pud(vma, old_addr, new_addr, old_entry,
 					new_entry);
-		break;
-	case HPAGE_PMD:
-	case HPAGE_PUD:
-		/* CONFIG_TRANSPARENT_HUGEPAGE not enabled */
-		moved = false;
-		break;
-
-	default:
-		WARN_ON_ONCE(1);
 		break;
 	}
 

@@ -713,11 +713,10 @@ struct file_operations {
 } __randomize_layout;
 
 struct inode_operations {
-	struct dentry * (*lookup) (struct inode *,struct dentry *, unsigned int);
-	const char * (*get_link) (struct dentry *, struct inode *, struct delayed_call *);
-	int (*permission) (struct user_namespace *, struct inode *, int);
-	/* get_acl removed - unused */
-	int (*readlink) (struct dentry *, char __user *,int);
+	struct dentry *(*lookup)(struct inode *, struct dentry *, unsigned int);
+	const char *(*get_link)(struct dentry *, struct inode *, struct delayed_call *);
+	int (*permission)(struct user_namespace *, struct inode *, int);
+	/* get_acl, readlink removed - never set/called */
 
 	int (*create) (struct user_namespace *, struct inode *,struct dentry *,
 		       umode_t, bool);
@@ -739,11 +738,8 @@ struct inode_operations {
 	ssize_t (*listxattr) (struct dentry *, char *, size_t);
 	/* fiemap removed - unused */
 	int (*update_time)(struct inode *, struct timespec64 *, int);
-	int (*atomic_open)(struct inode *, struct dentry *,
-			   struct file *, unsigned open_flag,
-			   umode_t create_mode);
-	int (*tmpfile) (struct user_namespace *, struct inode *,
-			struct dentry *, umode_t);
+	/* atomic_open removed - never set */
+	int (*tmpfile)(struct user_namespace *, struct inode *, struct dentry *, umode_t);
 	/* set_acl, fileattr_set, fileattr_get removed - unused */
 } ____cacheline_aligned;
 static inline ssize_t call_write_iter(struct file *file, struct kiocb *kio, struct iov_iter *iter)

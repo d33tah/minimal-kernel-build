@@ -325,58 +325,23 @@ static bool console_emit_next_record(struct console *con, char *text,
 	return false;
 }
 
+/* console_flush_all simplified - console_emit_next_record always returns false */
 static bool console_flush_all(bool do_cond_resched, u64 *next_seq,
 			      bool *handover)
 {
-	static char dropped_text[DROPPED_TEXT_MAX];
-	static char ext_text[CONSOLE_EXT_LOG_MAX];
-	static char text[CONSOLE_LOG_MAX];
 	bool any_usable = false;
 	struct console *con;
-	bool any_progress;
 
 	*next_seq = 0;
 	*handover = false;
 
-	do {
-		any_progress = false;
-
-		for_each_console(con) {
-			bool progress;
-
-			if (!console_is_usable(con))
-				continue;
-			any_usable = true;
-
-			if (con->flags & CON_EXTENDED) {
-				progress = console_emit_next_record(
-					con, &text[0], &ext_text[0], NULL,
-					handover);
-			} else {
-				progress = console_emit_next_record(
-					con, &text[0], NULL, &dropped_text[0],
-					handover);
-			}
-			if (*handover)
-				return false;
-
-			if (con->seq > *next_seq)
-				*next_seq = con->seq;
-
-			if (!progress)
-				continue;
-			any_progress = true;
-
-			/* Inlined abandon_console_lock_in_panic */
-			if (unlikely(atomic_read(&panic_cpu) !=
-				     PANIC_CPU_INVALID) &&
-			    atomic_read(&panic_cpu) != raw_smp_processor_id())
-				return false;
-
-			if (do_cond_resched)
-				cond_resched();
-		}
-	} while (any_progress);
+	for_each_console(con) {
+		if (!console_is_usable(con))
+			continue;
+		any_usable = true;
+		if (con->seq > *next_seq)
+			*next_seq = con->seq;
+	}
 
 	return any_usable;
 }

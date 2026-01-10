@@ -20,8 +20,7 @@ struct timespec64 {
 	long		tv_nsec;		 
 };
 
-#define TIME64_MAX			((s64)~((u64)1 << 63))
-#define TIME64_MIN			(-TIME64_MAX - 1)
+/* TIME64_MAX, TIME64_MIN removed - timestamp_truncate gone */
 
 #define KTIME_MAX			((s64)~((u64)1 << 63))
 /* KTIME_SEC_MAX removed - never used */

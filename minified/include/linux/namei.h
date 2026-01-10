@@ -22,5 +22,5 @@ enum {LAST_NORM, LAST_ROOT, LAST_DOT, LAST_DOTDOT};
 /* LOOKUP_NO_SYMLINKS, LOOKUP_NO_XDEV, LOOKUP_BENEATH, LOOKUP_IN_ROOT, LOOKUP_CACHED, LOOKUP_IS_SCOPED removed - never set */
 extern int kern_path(const char *, unsigned, struct path *);
 /* kern_path_create and done_path_create removed - never called */
-static inline void nd_terminate_link(void *name, size_t len, size_t maxlen) { ((char *) name)[min(len, maxlen)] = '\0'; }
+/* nd_terminate_link removed - only used by page_get_link which was removed */
 #endif

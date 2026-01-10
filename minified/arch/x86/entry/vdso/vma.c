@@ -108,23 +108,11 @@ static vm_fault_t vvar_fault(const struct vm_special_mapping *sm,
 		/* timens_page handling removed - always NULL */
 		pfn = __pa_symbol(&__vvar_page) >> PAGE_SHIFT;
 		return vmf_insert_pfn(vma, vmf->address, pfn);
-	} else if (sym_offset == image->sym_pvclock_page) {
-		struct pvclock_vsyscall_time_info *pvti =
-			pvclock_get_pvti_cpu0_va();
-		if (pvti && vclock_was_used(VDSO_CLOCKMODE_PVCLOCK)) {
-			return vmf_insert_pfn_prot(
-				vma, vmf->address, __pa(pvti) >> PAGE_SHIFT,
-				pgprot_decrypted(vma->vm_page_prot));
-		}
-	} else if (sym_offset == image->sym_hvclock_page) {
-		struct ms_hyperv_tsc_page *tsc_pg = hv_get_tsc_page();
-
-		if (tsc_pg && vclock_was_used(VDSO_CLOCKMODE_HVCLOCK))
-			return vmf_insert_pfn(vma, vmf->address,
-					      virt_to_phys(tsc_pg) >>
-						      PAGE_SHIFT);
 	}
-	/* sym_timens_page branch removed - find_timens_vvar_page always returns NULL */
+	/* pvclock, hvclock, timens branches removed:
+	 * - pvclock_get_pvti_cpu0_va always returns NULL
+	 * - hv_get_tsc_page always returns NULL
+	 * - find_timens_vvar_page always returns NULL */
 
 	return VM_FAULT_SIGBUS;
 }

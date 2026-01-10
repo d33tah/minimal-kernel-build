@@ -1129,47 +1129,13 @@ put_folios:
 ssize_t generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 {
 	size_t count = iov_iter_count(iter);
-	ssize_t retval = 0;
 
 	if (!count)
 		return 0;
 
-	if (iocb->ki_flags & IOCB_DIRECT) {
-		struct file *file = iocb->ki_filp;
-		struct address_space *mapping = file->f_mapping;
-		struct inode *inode = mapping->host;
+	/* IOCB_DIRECT block removed - a_ops->direct_IO is never set (~30 LOC) */
 
-		if (iocb->ki_flags & IOCB_NOWAIT) {
-			if (filemap_range_needs_writeback(mapping, iocb->ki_pos,
-							  iocb->ki_pos + count -
-								  1))
-				return -EAGAIN;
-		} else {
-			retval = filemap_write_and_wait_range(
-				mapping, iocb->ki_pos,
-				iocb->ki_pos + count - 1);
-			if (retval < 0)
-				return retval;
-		}
-
-		/* file_accessed removed - touch_atime is empty stub */
-
-		retval = mapping->a_ops->direct_IO(iocb, iter);
-		if (retval >= 0) {
-			iocb->ki_pos += retval;
-			count -= retval;
-		}
-		if (retval != -EIOCBQUEUED)
-			iov_iter_revert(iter, count - iov_iter_count(iter));
-
-		/* IS_DAX always false - S_DAX is 0 */
-		if (retval < 0 || !count)
-			return retval;
-		if (iocb->ki_pos >= i_size_read(inode))
-			return retval;
-	}
-
-	return filemap_read(iocb, iter, retval);
+	return filemap_read(iocb, iter, 0);
 }
 /* MMAP_LOTSAMISS removed - unused */
 
@@ -1433,57 +1399,7 @@ struct page *read_cache_page(struct address_space *mapping, pgoff_t index,
 				  mapping_gfp_mask(mapping));
 }
 
-/* read_cache_page_gfp removed - never called */
-
-ssize_t generic_file_direct_write(struct kiocb *iocb, struct iov_iter *from)
-{
-	struct file *file = iocb->ki_filp;
-	struct address_space *mapping = file->f_mapping;
-	struct inode *inode = mapping->host;
-	loff_t pos = iocb->ki_pos;
-	ssize_t written;
-	size_t write_len;
-	pgoff_t end;
-
-	write_len = iov_iter_count(from);
-	end = (pos + write_len - 1) >> PAGE_SHIFT;
-
-	if (!(iocb->ki_flags & IOCB_NOWAIT)) {
-		written = filemap_write_and_wait_range(mapping, pos,
-						       pos + write_len - 1);
-		if (written)
-			goto out;
-	}
-
-	written =
-		invalidate_inode_pages2_range(mapping, pos >> PAGE_SHIFT, end);
-
-	if (written) {
-		if (written == -EBUSY)
-			return 0;
-		goto out;
-	}
-
-	written = mapping->a_ops->direct_IO(iocb, from);
-
-	if (written > 0 && mapping->nrpages &&
-	    invalidate_inode_pages2_range(mapping, pos >> PAGE_SHIFT, end))
-		errseq_set(&file->f_mapping->wb_err, -EIO);
-
-	if (written > 0) {
-		pos += written;
-		write_len -= written;
-		if (pos > i_size_read(inode) && !S_ISBLK(inode->i_mode)) {
-			i_size_write(inode, pos);
-			/* mark_inode_dirty removed - __mark_inode_dirty is empty stub */
-		}
-		iocb->ki_pos = pos;
-	}
-	if (written != -EIOCBQUEUED)
-		iov_iter_revert(from, write_len - iov_iter_count(from));
-out:
-	return written;
-}
+/* read_cache_page_gfp, generic_file_direct_write removed - direct_IO never set */
 
 ssize_t generic_perform_write(struct kiocb *iocb, struct iov_iter *i)
 {
@@ -1506,49 +1422,17 @@ ssize_t generic_perform_write(struct kiocb *iocb, struct iov_iter *i)
 
 ssize_t __generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 {
-	struct file *file = iocb->ki_filp;
-	struct address_space *mapping = file->f_mapping;
-	/* inode removed - unused after file_update_time simplification */
-	ssize_t written = 0;
-	ssize_t err;
-	ssize_t status;
+	ssize_t written;
 
 	/* file_remove_privs and file_update_time always return 0 - dead code removed */
+	/* IOCB_DIRECT block removed - a_ops->direct_IO is never set (~25 LOC) */
 
-	if (iocb->ki_flags & IOCB_DIRECT) {
-		loff_t pos, endbyte;
+	written = generic_perform_write(iocb, from);
+	if (likely(written > 0))
+		iocb->ki_pos += written;
 
-		written = generic_file_direct_write(iocb, from);
-
-		/* IS_DAX always false - S_DAX is 0 */
-		if (written < 0 || !iov_iter_count(from))
-			goto out;
-
-		pos = iocb->ki_pos;
-		status = generic_perform_write(iocb, from);
-
-		if (unlikely(status < 0)) {
-			err = status;
-			goto out;
-		}
-
-		endbyte = pos + status - 1;
-		err = filemap_write_and_wait_range(mapping, pos, endbyte);
-		if (err == 0) {
-			iocb->ki_pos = endbyte + 1;
-			written += status;
-			invalidate_mapping_pages(mapping, pos >> PAGE_SHIFT,
-						 endbyte >> PAGE_SHIFT);
-		} else {
-		}
-	} else {
-		written = generic_perform_write(iocb, from);
-		if (likely(written > 0))
-			iocb->ki_pos += written;
-	}
-out:
 	/* current->backing_dev_info = NULL removed - field removed */
-	return written ? written : err;
+	return written;
 }
 
 ssize_t generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)

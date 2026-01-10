@@ -29,7 +29,7 @@
 /* string_helpers.h removed - unused */
 #include "kstrtox.h"
 
-bool no_hash_pointers __ro_after_init;
+/* no_hash_pointers removed - always false, never set */
 
 static noinline unsigned long long simple_strntoull(const char *startp,
 						    size_t max_chars,
@@ -457,19 +457,12 @@ static char *pointer_string(char *buf, char *end, const void *ptr,
 }
 
 /* Simplified for minimal kernel - no pointer hashing */
-static char *ptr_to_id(char *buf, char *end, const void *ptr,
-		       struct printf_spec spec)
-{
-	return pointer_string(buf, end, ptr, spec);
-}
-
+/* ptr_to_id removed - only called pointer_string */
+/* default_pointer simplified - no_hash_pointers always false */
 static char *default_pointer(char *buf, char *end, const void *ptr,
 			     struct printf_spec spec)
 {
-	if (unlikely(no_hash_pointers))
-		return pointer_string(buf, end, ptr, spec);
-
-	return ptr_to_id(buf, end, ptr, spec);
+	return pointer_string(buf, end, ptr, spec);
 }
 
 /* restricted_pointer removed - never called */

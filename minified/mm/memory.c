@@ -278,36 +278,20 @@ struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 {
 	unsigned long pfn = pte_pfn(pte);
 
-	if (IS_ENABLED(CONFIG_ARCH_HAS_PTE_SPECIAL)) {
-		if (likely(!pte_special(pte)))
-			goto check_pfn;
-		if (vma->vm_ops && vma->vm_ops->find_special_page)
-			return vma->vm_ops->find_special_page(vma, addr);
-		if (vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP))
-			return NULL;
-		if (is_zero_pfn(pfn))
-			return NULL;
-		/* pte_devmap always returns 0, check removed */
+	/* CONFIG_ARCH_HAS_PTE_SPECIAL is always enabled */
+	if (likely(!pte_special(pte)))
+		goto check_pfn;
+	if (vma->vm_ops && vma->vm_ops->find_special_page)
+		return vma->vm_ops->find_special_page(vma, addr);
+	if (vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP))
 		return NULL;
-	}
-
-	if (unlikely(vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP))) {
-		if (vma->vm_flags & VM_MIXEDMAP) {
-			if (!pfn_valid(pfn))
-				return NULL;
-			goto out;
-		} else {
-			unsigned long off;
-			off = (addr - vma->vm_start) >> PAGE_SHIFT;
-			if (pfn == vma->vm_pgoff + off)
-				return NULL;
-			if (!is_cow_mapping(vma->vm_flags))
-				return NULL;
-		}
-	}
-
 	if (is_zero_pfn(pfn))
 		return NULL;
+	/* pte_devmap always returns 0, check removed */
+	return NULL;
+
+	/* Dead code removed: the #else branch of CONFIG_ARCH_HAS_PTE_SPECIAL
+	   and is_zero_pfn check were unreachable since the config is always set */
 
 check_pfn:
 	if (unlikely(pfn > highest_memmap_pfn))

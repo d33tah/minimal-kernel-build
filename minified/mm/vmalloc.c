@@ -918,7 +918,7 @@ static DEFINE_PER_CPU(struct vmap_block_queue, vmap_block_queue);
 
 /* purge_fragmented_blocks_allcpus definition removed - already inlined in stubs above */
 
-static struct vm_struct *vmlist __initdata;
+/* vmlist removed - never assigned, always NULL */
 
 static inline unsigned int vm_area_page_order(struct vm_struct *vm)
 {
@@ -968,9 +968,7 @@ static void vmap_init_free_space(void)
 
 void __init vmalloc_init(void)
 {
-	struct vmap_area *va;
-	struct vm_struct *tmp;
-	/* i removed - for_each_possible_cpu simplified to single CPU */
+	/* va, tmp removed - vmlist loop removed (vmlist always NULL) */
 
 	vmap_area_cachep = KMEM_CACHE(vmap_area, SLAB_PANIC);
 
@@ -981,16 +979,7 @@ void __init vmalloc_init(void)
 		INIT_LIST_HEAD(&vbq->free);
 	}
 
-	for (tmp = vmlist; tmp; tmp = tmp->next) {
-		va = kmem_cache_zalloc(vmap_area_cachep, GFP_NOWAIT);
-		if (WARN_ON_ONCE(!va))
-			continue;
-
-		va->va_start = (unsigned long)tmp->addr;
-		va->va_end = va->va_start + tmp->size;
-		va->vm = tmp;
-		insert_vmap_area(va, &vmap_area_root, &vmap_area_list);
-	}
+	/* vmlist loop removed - vmlist was never assigned, always NULL */
 
 	vmap_init_free_space();
 	vmap_initialized = true;

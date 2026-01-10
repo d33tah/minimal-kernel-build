@@ -91,7 +91,7 @@ static int pseudo_fs_fill_super(struct super_block *s, struct fs_context *fc)
 
 	root->i_ino = 1;
 	root->i_mode = S_IFDIR | S_IRUSR | S_IWUSR;
-	root->i_atime = root->i_mtime = current_time(root);
+	/* i_atime, i_mtime assignment removed - never read */
 	s->s_root = d_make_root(root);
 	if (!s->s_root)
 		return -ENOMEM;

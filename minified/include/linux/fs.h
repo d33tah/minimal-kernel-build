@@ -321,8 +321,7 @@ struct inode {
 	};
 	dev_t			i_rdev;
 	loff_t			i_size;
-	struct timespec64	i_atime;
-	struct timespec64	i_mtime;
+	/* i_atime, i_mtime removed - only written, never read */
 	spinlock_t		i_lock;
 	u8			i_blkbits;
 

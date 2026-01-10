@@ -41,7 +41,7 @@ struct inode *ramfs_get_inode(struct super_block *sb, const struct inode *dir,
 		inode->i_mapping->a_ops = &ram_aops;
 		mapping_set_gfp_mask(inode->i_mapping, GFP_HIGHUSER);
 		mapping_set_unevictable(inode->i_mapping);
-		inode->i_atime = inode->i_mtime = current_time(inode);
+		/* i_atime, i_mtime assignment removed - never read */
 		switch (mode & S_IFMT) {
 		default:
 			init_special_inode(inode, mode, dev);
@@ -74,7 +74,7 @@ static int ramfs_create(struct user_namespace *mnt_userns, struct inode *dir,
 		return -ENOSPC;
 	d_instantiate(dentry, inode);
 	dget(dentry);
-	dir->i_mtime = current_time(dir);
+	/* dir->i_mtime assignment removed - never read */
 	return 0;
 }
 

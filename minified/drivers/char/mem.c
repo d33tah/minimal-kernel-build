@@ -143,13 +143,11 @@ static loff_t null_lseek(struct file *file, loff_t offset, int orig)
 	return file->f_pos = 0;
 }
 
-#define zero_lseek null_lseek
-#define full_lseek null_lseek
 #define write_zero write_null
 #define write_iter_zero write_iter_null
 
 static const struct file_operations null_fops = {
-	.llseek = null_lseek,
+	/* llseek removed - lseek syscall returns ENOSYS */
 	.read = read_null,
 	.write = write_null,
 	.read_iter = read_iter_null,
@@ -158,17 +156,14 @@ static const struct file_operations null_fops = {
 };
 
 static const struct file_operations zero_fops = {
-	.llseek = zero_lseek,
-	.write = write_zero,
-	.read_iter = read_iter_zero,
-	.read = read_zero,
-	.write_iter = write_iter_zero,
-	.mmap = mmap_zero,
-	.get_unmapped_area = get_unmapped_area_zero,
+	/* llseek removed - lseek syscall returns ENOSYS */
+	.write = write_zero, .read_iter = read_iter_zero,
+	.read = read_zero,   .write_iter = write_iter_zero,
+	.mmap = mmap_zero,   .get_unmapped_area = get_unmapped_area_zero,
 };
 
 static const struct file_operations full_fops = {
-	.llseek = full_lseek,
+	/* llseek removed - lseek syscall returns ENOSYS */
 	.read_iter = read_iter_zero,
 	.write = write_full,
 };
@@ -210,7 +205,7 @@ static int memory_open(struct inode *inode, struct file *filp)
 
 static const struct file_operations memory_fops = {
 	.open = memory_open,
-	.llseek = noop_llseek,
+	/* llseek removed - lseek syscall returns ENOSYS */
 };
 
 /* mem_devnode, mem_class removed - unused */

@@ -689,7 +689,7 @@ struct dir_context {
 
 struct file_operations {
 	struct module *owner;
-	loff_t (*llseek)(struct file *, loff_t, int);
+	/* llseek removed - lseek syscall returns ENOSYS */
 	ssize_t (*read)(struct file *, char __user *, size_t, loff_t *);
 	ssize_t (*write)(struct file *, const char __user *, size_t, loff_t *);
 	ssize_t (*read_iter)(struct kiocb *, struct iov_iter *);

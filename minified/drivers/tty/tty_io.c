@@ -166,7 +166,7 @@ static ssize_t hung_up_tty_write(struct kiocb *iocb, struct iov_iter *from)
 /* hung_up_tty_fasync removed - fcntl returns EINVAL, FASYNC never set */
 
 static const struct file_operations tty_fops = {
-	.llseek = no_llseek,
+	/* llseek removed - lseek syscall returns ENOSYS */
 	.read_iter = tty_read,
 	.write_iter = tty_write,
 	/* splice_read/write removed - splice syscall returns ENOSYS */
@@ -178,7 +178,7 @@ static const struct file_operations tty_fops = {
 };
 
 static const struct file_operations console_fops = {
-	.llseek = no_llseek,
+	/* llseek removed - lseek syscall returns ENOSYS */
 	.read_iter = tty_read,
 	.write_iter = redirected_tty_write,
 	/* splice_read/write removed - splice syscall returns ENOSYS */
@@ -190,7 +190,7 @@ static const struct file_operations console_fops = {
 };
 
 static const struct file_operations hung_up_tty_fops = {
-	.llseek = no_llseek,
+	/* llseek removed - lseek syscall returns ENOSYS */
 	.read_iter = hung_up_tty_read,
 	.write_iter = hung_up_tty_write,
 	/* poll removed - poll/select syscalls return ENOSYS */

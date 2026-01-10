@@ -37,12 +37,13 @@ const struct file_operations random_fops = {
 	.write = random_write,
 	/* poll removed - syscall returns ENOSYS */
 	/* unlocked_ioctl removed - ioctl returns ENOTTY */
-	.llseek = noop_llseek
+	/* llseek removed - lseek syscall returns ENOSYS */
 };
-const struct file_operations urandom_fops = { .read = random_read,
-					      .write = random_write,
-					      /* ioctl removed */
-					      .llseek = noop_llseek };
+const struct file_operations urandom_fops = {
+	.read = random_read,
+	.write = random_write,
+	/* ioctl, llseek removed */
+};
 SYSCALL_DEFINE3(getrandom, char __user *, buf, size_t, count, unsigned int,
 		flags)
 {

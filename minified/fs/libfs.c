@@ -186,7 +186,7 @@ ssize_t generic_read_dir(struct file *filp, char __user *buf, size_t siz,
 const struct file_operations simple_dir_operations = {
 	.open = dcache_dir_open,
 	.release = dcache_dir_close,
-	.llseek = dcache_dir_lseek,
+	/* llseek removed - lseek syscall returns ENOSYS */
 	.read = generic_read_dir,
 	.iterate_shared = dcache_readdir,
 	/* fsync removed - fsync syscall returns ENOSYS */
@@ -476,7 +476,7 @@ static int empty_dir_readdir(struct file *file, struct dir_context *ctx)
 }
 
 static const struct file_operations empty_dir_operations = {
-	.llseek = empty_dir_llseek,
+	/* llseek removed - lseek syscall returns ENOSYS */
 	.read = generic_read_dir,
 	.iterate_shared = empty_dir_readdir,
 	/* fsync removed - fsync syscall returns ENOSYS */

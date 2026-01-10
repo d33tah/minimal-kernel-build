@@ -22,7 +22,7 @@ const struct file_operations ramfs_file_operations = {
 	.mmap = generic_file_mmap,
 	/* fsync removed - fsync syscall returns ENOSYS */
 	/* splice_read/write removed - splice syscall returns ENOSYS */
-	.llseek = generic_file_llseek,
+	/* llseek removed - lseek syscall returns ENOSYS */
 	.get_unmapped_area = ramfs_mmu_get_unmapped_area,
 };
 

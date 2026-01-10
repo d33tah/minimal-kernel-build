@@ -86,7 +86,7 @@ struct file *alloc_file_pseudo(struct inode *inode, struct vfsmount *mnt,
 			       const struct file_operations *fops)
 {
 	static const struct dentry_operations anon_ops = {
-		.d_dname = simple_dname
+		/* d_dname assignment removed - callback never called */
 	};
 	struct qstr this = QSTR_INIT(name, strlen(name));
 	struct path path;

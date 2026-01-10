@@ -2,7 +2,7 @@
 #define __LINUX_DEBUG_LOCKING_H
 #include <linux/atomic.h>
 #include <linux/cache.h>
-struct task_struct;
+/* struct task_struct forward decl removed - unused */
 extern int debug_locks __read_mostly;
 extern int debug_locks_silent __read_mostly;
 static __always_inline int __debug_locks_off(void) { return xchg(&debug_locks, 0); }

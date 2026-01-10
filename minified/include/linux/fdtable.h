@@ -46,9 +46,7 @@ struct files_struct {
 	struct file __rcu * fd_array[NR_OPEN_DEFAULT];
 };
 
-struct file_operations;
-struct vfsmount;
-struct dentry;
+/* struct file_operations, vfsmount, dentry forward decls removed - unused */
 
 #define rcu_dereference_check_fdtable(files, fdtfd) \
 	rcu_dereference_check((fdtfd), lockdep_is_held(&(files)->file_lock))

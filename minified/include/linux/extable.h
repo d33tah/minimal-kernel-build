@@ -4,7 +4,7 @@
 #include <linux/stddef.h>	 
 #include <linux/types.h>
 
-struct module;
+/* struct module forward decl removed - unused */
 struct exception_table_entry;
 
 const struct exception_table_entry *

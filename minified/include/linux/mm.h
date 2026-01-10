@@ -295,12 +295,11 @@ struct vm_operations_struct {
 	void (*open)(struct vm_area_struct *area);
 	void (*close)(struct vm_area_struct *area);
 	int (*may_split)(struct vm_area_struct *area, unsigned long addr);
-	/* mremap removed - mremap syscall returns ENOSYS */
-	/* mprotect removed - vm_ops->mprotect never called */
+	/* mremap, mprotect removed - never called */
 	vm_fault_t (*fault)(struct vm_fault *vmf);
 	vm_fault_t (*map_pages)(struct vm_fault *vmf, pgoff_t start_pgoff, pgoff_t end_pgoff);
 	vm_fault_t (*page_mkwrite)(struct vm_fault *vmf);
-	struct page *(*find_special_page)(struct vm_area_struct *vma, unsigned long addr);
+	/* find_special_page removed - never set/called */
 };
 
 static inline void vma_init(struct vm_area_struct *vma, struct mm_struct *mm)

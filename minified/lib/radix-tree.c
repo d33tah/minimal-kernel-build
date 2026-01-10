@@ -812,32 +812,15 @@ static void radix_tree_node_ctor(void *arg)
 	INIT_LIST_HEAD(&node->private_list);
 }
 
-static int radix_tree_cpu_dead(unsigned int cpu)
-{
-	struct radix_tree_preload *rtp;
-	struct radix_tree_node *node;
-
-	rtp = &per_cpu(radix_tree_preloads, cpu);
-	while (rtp->nr) {
-		node = rtp->nodes;
-		rtp->nodes = node->parent;
-		kmem_cache_free(radix_tree_node_cachep, node);
-		rtp->nr--;
-	}
-	return 0;
-}
+/* radix_tree_cpu_dead removed - CPU never goes offline (~14 LOC) */
 
 void __init radix_tree_init(void)
 {
-	int ret;
-
 	BUILD_BUG_ON(RADIX_TREE_MAX_TAGS + __GFP_BITS_SHIFT > 32);
 	BUILD_BUG_ON(ROOT_IS_IDR & ~GFP_ZONEMASK);
 	BUILD_BUG_ON(XA_CHUNK_SIZE > 255);
 	radix_tree_node_cachep = kmem_cache_create(
 		"radix_tree_node", sizeof(struct radix_tree_node), 0,
 		SLAB_PANIC | SLAB_RECLAIM_ACCOUNT, radix_tree_node_ctor);
-	ret = cpuhp_setup_state_nocalls(CPUHP_RADIX_DEAD, "lib/radix:dead",
-					NULL, radix_tree_cpu_dead);
-	WARN_ON(ret < 0);
+	/* cpuhp_setup_state_nocalls for radix_tree_cpu_dead removed - CPU never goes offline */
 }

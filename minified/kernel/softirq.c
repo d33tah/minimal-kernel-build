@@ -212,17 +212,8 @@ void __init softirq_init(void)
 	/* No tasklets needed in minimal kernel */
 }
 
-/* ksoftirqd_should_run, run_ksoftirqd removed - only referenced by softirq_threads which was removed */
-
-#define takeover_tasklets NULL
-
-static __init int spawn_ksoftirqd(void)
-{
-	cpuhp_setup_state_nocalls(CPUHP_SOFTIRQ_DEAD, "softirq:dead", NULL,
-				  takeover_tasklets);
-	return 0;
-}
-early_initcall(spawn_ksoftirqd);
+/* ksoftirqd_should_run, run_ksoftirqd, spawn_ksoftirqd removed -
+   CPU never goes offline, so no takeover_tasklets needed (~8 LOC) */
 
 int __init __weak early_irq_init(void)
 {

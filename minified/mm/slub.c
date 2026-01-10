@@ -420,16 +420,7 @@ static void flush_all_cpus_locked(struct kmem_cache *s)
 	mutex_unlock(&flush_lock);
 }
 
-static int slub_cpu_dead(unsigned int cpu)
-{
-	struct kmem_cache *s;
-
-	mutex_lock(&slab_mutex);
-	list_for_each_entry(s, &slab_caches, list)
-		__flush_cpu_slab(s, cpu);
-	mutex_unlock(&slab_mutex);
-	return 0;
-}
+/* slub_cpu_dead removed - CPU never goes offline in single-CPU kernel (~10 LOC) */
 
 /* node_match removed - always returned 1 */
 /* slab_out_of_memory removed - was empty stub */
@@ -956,9 +947,7 @@ void __init kmem_cache_init(void)
 
 	setup_kmalloc_cache_index_table();
 	create_kmalloc_caches(0);
-
-	cpuhp_setup_state_nocalls(CPUHP_SLUB_DEAD, "slub:dead", NULL,
-				  slub_cpu_dead);
+	/* cpuhp_setup_state_nocalls for slub_cpu_dead removed - CPU never goes offline */
 }
 
 /* kmem_cache_init_late removed - empty function */

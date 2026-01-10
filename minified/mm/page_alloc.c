@@ -1479,27 +1479,11 @@ unsigned long free_reserved_area(void *start, void *end, int poison,
 
 /* mem_init_print_info removed - empty stub */
 
-static int page_alloc_cpu_dead(unsigned int cpu)
-{
-	lru_add_drain_cpu(cpu);
-	/* vm_events_fold_cpu, cpu_vm_stats_fold, zone_pcp_update removed - stubs or unused */
-	return 0;
-}
-
-static int page_alloc_cpu_online(unsigned int cpu)
-{
-	/* zone_pcp_update removed - not needed for single CPU minimal kernel */
-	return 0;
-}
+/* page_alloc_cpu_dead, page_alloc_cpu_online removed - CPU never goes offline (~12 LOC) */
 
 void __init page_alloc_init(void)
 {
-	int ret;
-
-	ret = cpuhp_setup_state_nocalls(CPUHP_PAGE_ALLOC, "mm/page_alloc:pcp",
-					page_alloc_cpu_online,
-					page_alloc_cpu_dead);
-	WARN_ON(ret < 0);
+	/* cpuhp_setup_state_nocalls removed - CPU never goes online/offline */
 }
 
 /* calculate_totalreserve_pages, setup_per_zone_lowmem_reserve, __setup_per_zone_wmarks,

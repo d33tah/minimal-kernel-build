@@ -111,7 +111,7 @@ struct signal_struct;
 #define TASK_DEAD			0x0080
 #define TASK_WAKEKILL			0x0100
 #define TASK_WAKING			0x0200
-#define TASK_NOLOAD			0x0400
+/* TASK_NOLOAD removed - never used */
 #define TASK_NEW			0x0800
 
 #define TASK_KILLABLE			(TASK_WAKEKILL | TASK_UNINTERRUPTIBLE)

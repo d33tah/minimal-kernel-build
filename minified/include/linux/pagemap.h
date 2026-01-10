@@ -128,11 +128,7 @@ static inline struct folio *filemap_get_folio(struct address_space *mapping,
 }
 
 
-static inline struct page *find_get_page(struct address_space *mapping,
-					pgoff_t offset)
-{
-	return pagecache_get_page(mapping, offset, 0, 0);
-}
+/* find_get_page removed - never called */
 
 static inline struct page *find_lock_page(struct address_space *mapping,
 					pgoff_t index)
@@ -164,13 +160,7 @@ struct folio *read_cache_folio(struct address_space *, pgoff_t index,
 		filler_t *filler, struct file *file);
 struct page *read_cache_page(struct address_space *, pgoff_t index,
 		filler_t *filler, struct file *file);
-/* read_cache_page_gfp removed - never called */
-
-static inline struct page *read_mapping_page(struct address_space *mapping,
-				pgoff_t index, struct file *file)
-{
-	return read_cache_page(mapping, index, NULL, file);
-}
+/* read_mapping_page removed - never called */
 
 static inline pgoff_t page_to_pgoff(struct page *page)
 {

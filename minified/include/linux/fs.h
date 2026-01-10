@@ -228,7 +228,7 @@ struct address_space {
 	unsigned long		nrpages;
 	const struct address_space_operations *a_ops;
 	unsigned long		flags;
-	errseq_t		wb_err;
+	/* wb_err removed - only written, never read */
 	/* private_lock removed - only initialized, never used */
 	struct list_head	private_list;
 	/* private_data removed - only set to NULL, never used */
@@ -424,8 +424,7 @@ struct file {
 	struct inode		*f_inode;	
 	const struct file_operations	*f_op;
 
-	
-	spinlock_t		f_lock;
+	/* f_lock removed - only initialized, never used */
 	atomic_long_t		f_count;
 	unsigned int 		f_flags;
 	fmode_t			f_mode;
@@ -768,13 +767,7 @@ extern void inc_nlink(struct inode *inode);
 extern void drop_nlink(struct inode *inode);
 extern void clear_nlink(struct inode *inode);
 
-static inline void inode_dec_link_count(struct inode *inode)
-{
-	drop_nlink(inode);
-	/* mark_inode_dirty removed - __mark_inode_dirty is empty stub */
-}
-
-/* touch_atime, file_accessed removed - empty stubs, no callers */
+/* inode_dec_link_count removed - never called */
 
 struct file_system_type {
 	const char *name;
@@ -1052,15 +1045,7 @@ static inline int iocb_flags(struct file *file)
 }
 
 
-static inline ino_t parent_ino(struct dentry *dentry)
-{
-	ino_t res;
-	spin_lock(&dentry->d_lock);
-	res = dentry->d_parent->d_inode->i_ino;
-	spin_unlock(&dentry->d_lock);
-	return res;
-}
-
+/* parent_ino removed - never called */
 
 int __init list_bdev_fs_names(char *buf, size_t size);
 
@@ -1071,11 +1056,7 @@ int __init list_bdev_fs_names(char *buf, size_t size);
 #define OPEN_FMODE(flag) ((__force fmode_t)(((flag + 1) & O_ACCMODE) | \
 					    (flag & __FMODE_NONOTIFY)))
 
-static inline bool is_sxid(umode_t mode)
-{
-	return (mode & S_ISUID) || ((mode & S_ISGID) && (mode & S_IXGRP));
-}
-/* dir_emit* functions removed - iterate_shared removed from file_operations */
+/* is_sxid removed - never called */
 extern bool path_noexec(const struct path *path);
 extern void inode_nohighmem(struct inode *inode);
 

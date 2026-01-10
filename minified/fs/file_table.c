@@ -52,7 +52,7 @@ struct file *alloc_empty_file(int flags, const struct cred *cred)
 	/* security_file_alloc always returns 0 - dead code removed */
 	atomic_long_set(&f->f_count, 1);
 	/* f_owner struct removed - never accessed */
-	spin_lock_init(&f->f_lock);
+	/* f_lock initialization removed - f_lock removed from struct file */
 	mutex_init(&f->f_pos_lock);
 	f->f_flags = flags;
 	f->f_mode = OPEN_FMODE(flags);

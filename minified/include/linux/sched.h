@@ -395,13 +395,8 @@ struct task_struct {
 
 	refcount_t			stack_refcount;
 
+	/* l1d_flush_kill removed - never used */
 
-
-
-	 
-	struct callback_head		l1d_flush_kill;
-
-	 
 	randomized_struct_fields_end
 
 	 

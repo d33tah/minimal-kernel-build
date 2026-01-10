@@ -710,14 +710,7 @@ static inline int mm_counter_file(struct page *page)
 }
 
 
-static inline unsigned long get_mm_rss(struct mm_struct *mm)
-{
-	return get_mm_counter(mm, MM_FILEPAGES) +
-		get_mm_counter(mm, MM_ANONPAGES) +
-		get_mm_counter(mm, MM_SHMEMPAGES);
-}
-
-/* get_mm_hiwater_rss removed - never called */
+/* get_mm_rss removed - never called */
 /* update_hiwater_rss removed - hiwater_rss write-only */
 #define update_hiwater_rss(mm) do { } while (0)
 /* update_hiwater_vm removed - hiwater_vm write-only */

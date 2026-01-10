@@ -218,10 +218,7 @@ static inline unsigned __d_entry_type(const struct dentry *dentry)
 	return dentry->d_flags & DCACHE_ENTRY_TYPE;
 }
 
-static inline bool d_is_miss(const struct dentry *dentry)
-{
-	return __d_entry_type(dentry) == DCACHE_MISS_TYPE;
-}
+/* d_is_miss removed - never called */
 
 static inline bool d_can_lookup(const struct dentry *dentry)
 {
@@ -250,12 +247,7 @@ static inline bool d_flags_negative(unsigned flags)
 	return (flags & DCACHE_ENTRY_TYPE) == DCACHE_MISS_TYPE;
 }
 
-/* d_is_positive removed - never called */
-
-static inline bool d_really_is_positive(const struct dentry *dentry)
-{
-	return dentry->d_inode != NULL;
-}
+/* d_really_is_positive removed - never called */
 
 extern int sysctl_vfs_cache_pressure;
 

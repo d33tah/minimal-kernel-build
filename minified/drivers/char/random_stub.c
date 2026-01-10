@@ -30,13 +30,14 @@ static ssize_t random_write(struct file *file, const char __user *buffer,
 {
 	return count;
 }
+/* random_poll/ioctl simplified - poll/ioctl syscalls return directly */
 static __poll_t random_poll(struct file *file, poll_table *wait)
 {
-	return EPOLLIN | EPOLLRDNORM | EPOLLOUT | EPOLLWRNORM;
+	return 0;
 }
 static long random_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
 {
-	return -EINVAL;
+	return -ENOTTY;
 }
 const struct file_operations random_fops = { .read = random_read,
 					     .write = random_write,

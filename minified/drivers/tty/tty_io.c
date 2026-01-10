@@ -160,16 +160,16 @@ static ssize_t hung_up_tty_write(struct kiocb *iocb, struct iov_iter *from)
 	return -EIO;
 }
 
+/* hung_up_tty_poll/ioctl simplified - syscalls return directly */
 static __poll_t hung_up_tty_poll(struct file *filp, poll_table *wait)
 {
-	return EPOLLIN | EPOLLOUT | EPOLLERR | EPOLLHUP | EPOLLRDNORM |
-	       EPOLLWRNORM;
+	return 0;
 }
 
 static long hung_up_tty_ioctl(struct file *file, unsigned int cmd,
 			      unsigned long arg)
 {
-	return cmd == TIOCSPGRP ? -ENOTTY : -EIO;
+	return -ENOTTY;
 }
 
 /* hung_up_tty_compat_ioctl merged with hung_up_tty_ioctl - identical behavior */
@@ -915,19 +915,10 @@ retry_open:
 	return 0;
 }
 
+/* tty_poll simplified - poll syscall returns -ENOSYS directly */
 static __poll_t tty_poll(struct file *filp, poll_table *wait)
 {
-	struct tty_struct *tty = file_tty(filp);
-	struct tty_ldisc *ld;
-	__poll_t ret = 0;
-
-	ld = tty_ldisc_ref_wait(tty);
-	if (!ld)
-		return hung_up_tty_poll(filp, wait);
-	if (ld->ops->poll)
-		ret = ld->ops->poll(tty, filp, wait);
-	tty_ldisc_deref(ld);
-	return ret;
+	return 0;
 }
 
 /* __tty_fasync simplified - fasync_helper is stubbed to no-op */

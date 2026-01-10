@@ -117,17 +117,11 @@ static ssize_t n_tty_write(struct tty_struct *tty, struct file *file,
 	return retval;
 }
 
+/* n_tty_poll simplified - poll syscall returns -ENOSYS directly */
 static __poll_t n_tty_poll(struct tty_struct *tty, struct file *file,
 			   poll_table *wait)
 {
-	__poll_t mask = 0;
-
-	poll_wait(file, &tty->read_wait, wait);
-	poll_wait(file, &tty->write_wait, wait);
-
-	mask |= EPOLLOUT | EPOLLWRNORM;
-
-	return mask;
+	return 0;
 }
 
 /* n_tty_ioctl simplified - ioctl syscall returns -ENOTTY directly */

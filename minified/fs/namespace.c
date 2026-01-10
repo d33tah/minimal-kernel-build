@@ -153,11 +153,6 @@ out_free_cache:
 	return NULL;
 }
 
-static bool __mnt_is_readonly(struct vfsmount *mnt)
-{
-	return (mnt->mnt_flags & MNT_READONLY) || sb_rdonly(mnt->mnt_sb);
-}
-
 static inline void mnt_dec_writers(struct mount *mnt)
 {
 	mnt->mnt_writers--;
@@ -165,8 +160,7 @@ static inline void mnt_dec_writers(struct mount *mnt)
 
 static int mnt_is_readonly(struct vfsmount *mnt)
 {
-	/* s_readonly_remount check removed - field never written, always 0 */
-	return __mnt_is_readonly(mnt);
+	return (mnt->mnt_flags & MNT_READONLY) || sb_rdonly(mnt->mnt_sb);
 }
 
 int __mnt_want_write(struct vfsmount *m)

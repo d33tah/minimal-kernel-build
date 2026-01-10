@@ -1086,21 +1086,11 @@ static void per_cpu_pages_init(struct per_cpu_pages *pcp,
 	pcp->batch = BOOT_PAGESET_BATCH;
 }
 
-static void __zone_set_pageset_high_and_batch(struct zone *zone,
-					      unsigned long high,
-					      unsigned long batch)
-{
-	struct per_cpu_pages *pcp;
-	/* for_each_possible_cpu simplified - single CPU */
-	pcp = per_cpu_ptr(zone->per_cpu_pageset, 0);
-	WRITE_ONCE(pcp->batch, batch);
-	/* high removed - write-only, never read */
-}
-
 static void zone_set_pageset_high_and_batch(struct zone *zone)
 {
-	/* Simplified: batch=1, high=4 for minimal kernel */
-	__zone_set_pageset_high_and_batch(zone, 4, 1);
+	struct per_cpu_pages *pcp;
+	pcp = per_cpu_ptr(zone->per_cpu_pageset, 0);
+	WRITE_ONCE(pcp->batch, 1);
 }
 
 void __meminit setup_zone_pageset(struct zone *zone)

@@ -10,8 +10,7 @@
 #include <asm/nospec-branch.h>
 
 u64 x86_spec_ctrl_base;
-
-DEFINE_PER_CPU(u64, x86_spec_ctrl_current);
+/* x86_spec_ctrl_current per-cpu var removed - never used */
 
 u64 __ro_after_init x86_amd_ls_cfg_base;
 u64 __ro_after_init x86_amd_ls_cfg_ssbd_mask;

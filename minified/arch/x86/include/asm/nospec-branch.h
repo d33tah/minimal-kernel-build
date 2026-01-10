@@ -94,9 +94,8 @@ static inline void indirect_branch_prediction_barrier(void)
 
  
 extern u64 x86_spec_ctrl_base;
-DECLARE_PER_CPU(u64, x86_spec_ctrl_current);
+/* x86_spec_ctrl_current per-cpu declaration removed - never used */
 extern void write_spec_ctrl_current(u64 val, bool force);
-/* spec_ctrl_current removed - never called */
 
 /* switch_to_cond_stibp, switch_mm_cond_ibpb, switch_mm_always_ibpb,
    mds_user_clear, mds_idle_clear, switch_mm_cond_l1d_flush static keys

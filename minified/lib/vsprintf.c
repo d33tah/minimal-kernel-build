@@ -7,7 +7,7 @@
 #include <linux/string.h>
 #include <linux/ctype.h>
 #include <linux/kernel.h>
-#include <linux/kallsyms.h>
+/* kallsyms.h removed - only dereference_symbol_descriptor was used (no-op) */
 /* math64.h removed - unused */
 #include <linux/uaccess.h>
 /* ioport.h, dcache.h, cred.h, rtc.h removed - unused */
@@ -505,7 +505,7 @@ static noinline_for_stack char *pointer(const char *fmt, char *buf, char *end,
 	switch (*fmt) {
 	case 'S':
 	case 's':
-		ptr = dereference_symbol_descriptor(ptr);
+		/* dereference_symbol_descriptor removed - was no-op (just returned ptr) */
 		fallthrough;
 	case 'B':
 		return symbol_string(buf, end, ptr, spec, fmt);

@@ -22,7 +22,7 @@
 #include <asm/fpu/signal.h>
 #include <asm/fpu/xstate.h>
 #include <asm/vdso.h>
-#include <asm/mce.h>
+/* mce.h removed - header is empty */
 #include <asm/vm86.h>
 
 /* Inlined from asm/sighandling.h */

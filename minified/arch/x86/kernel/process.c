@@ -29,7 +29,7 @@
 #include <asm/debugreg.h>
 #include <asm/nmi.h>
 #include <asm/tlbflush.h>
-#include <asm/mce.h>
+/* mce.h removed - header is empty */
 #include <asm/vm86.h>
 #include <asm/switch_to.h>
 #include <asm/desc.h>

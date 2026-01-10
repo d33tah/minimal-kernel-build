@@ -18,7 +18,7 @@
 #include <asm/text-patching.h>
 #include <asm/alternative.h>
 #include <asm/sections.h>
-#include <asm/mce.h>
+/* mce.h removed - header is empty */
 #include <asm/nmi.h>
 #include <asm/cacheflush.h>
 #include <asm/tlbflush.h>
@@ -30,7 +30,7 @@
 #include <linux/pgtable.h>
 #include <asm/string_32.h>
 #include <asm/page.h>
-#include <asm/mce.h>
+/* mce.h removed - header is empty */
 #include <asm/special_insns.h>
 #include <asm/preempt.h>
 #include <asm/asm.h>

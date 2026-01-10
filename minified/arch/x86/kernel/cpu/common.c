@@ -40,14 +40,14 @@ extern void doublefault_init_cpu_tss(void);
 #include <asm/apic.h>
 #include <asm/desc.h>
 #include <asm/fpu/api.h>
-#include <asm/mtrr.h>
+/* mtrr.h removed - header is empty */
 #include <asm/hwcap2.h>
 #include <linux/numa.h>
 #include <asm/numa.h>
 #include <asm/asm.h>
 #include <asm/bugs.h>
 #include <asm/cpu.h>
-#include <asm/mce.h>
+/* mce.h removed - header is empty */
 #include <asm/msr.h>
 #include <asm/memtype.h>
 /* show_ucode_info_early removed - microcode support disabled */

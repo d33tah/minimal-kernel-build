@@ -36,7 +36,7 @@
 #include <asm/fpu/api.h>
 #include <asm/cpu.h>
 #include <asm/cpu_entry_area.h>
-#include <asm/mce.h>
+/* mce.h removed - header is empty */
 #include <asm/fixmap.h>
 #include <asm/mach_traps.h>
 #include <asm/alternative.h>

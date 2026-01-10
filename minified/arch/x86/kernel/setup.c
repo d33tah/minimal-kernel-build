@@ -35,9 +35,9 @@ extern struct atomic_notifier_head panic_notifier_list;
 #define KASAN_SHADOW_END      \
 	(KASAN_SHADOW_START + \
 	 (1ULL << (__VIRTUAL_MASK_SHIFT - KASAN_SHADOW_SCALE_SHIFT)))
-#include <asm/mce.h>
+/* mce.h removed - header is empty */
 #include <asm/memtype.h>
-#include <asm/mtrr.h>
+/* mtrr.h removed - header is empty */
 #include <asm/realmode.h>
 /* pci-direct.h inlined - extern declarations removed as never called */
 #include <linux/types.h>

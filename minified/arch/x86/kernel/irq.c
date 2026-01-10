@@ -12,7 +12,7 @@
 #include <asm/apic.h>
 #include <asm/io_apic.h>
 #include <asm/irq.h>
-#include <asm/mce.h>
+/* mce.h removed - header is empty */
 #include <asm/hw_irq.h>
 #include <asm/desc.h>
 #include <asm/traps.h>

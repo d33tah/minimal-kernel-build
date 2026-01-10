@@ -30,20 +30,18 @@ static ssize_t random_write(struct file *file, const char __user *buffer,
 {
 	return count;
 }
-/* random_poll/ioctl simplified - poll/ioctl syscalls return directly */
-static __poll_t random_poll(struct file *file, poll_table *wait)
-{
-	return 0;
-}
+/* random_poll removed - poll/select syscalls return ENOSYS */
 static long random_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
 {
 	return -ENOTTY;
 }
-const struct file_operations random_fops = { .read = random_read,
-					     .write = random_write,
-					     .poll = random_poll,
-					     .unlocked_ioctl = random_ioctl,
-					     .llseek = noop_llseek };
+const struct file_operations random_fops = {
+	.read = random_read,
+	.write = random_write,
+	/* poll removed - syscall returns ENOSYS */
+	.unlocked_ioctl = random_ioctl,
+	.llseek = noop_llseek
+};
 const struct file_operations urandom_fops = { .read = random_read,
 					      .write = random_write,
 					      .unlocked_ioctl = random_ioctl,

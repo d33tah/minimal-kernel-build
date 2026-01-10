@@ -669,15 +669,11 @@ static int pidfd_release(struct inode *inode, struct file *file)
 	return 0;
 }
 
-static __poll_t pidfd_poll(struct file *file, struct poll_table_struct *pts)
-{
-	/* Stub: minimal pidfd polling */
-	return 0;
-}
+/* pidfd_poll removed - poll/select syscalls return ENOSYS */
 
 const struct file_operations pidfd_fops = {
 	.release = pidfd_release,
-	.poll = pidfd_poll,
+	/* poll removed - poll/select syscalls return ENOSYS */
 };
 
 /* copy_oom_score_adj removed - empty stub */

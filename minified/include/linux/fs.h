@@ -352,7 +352,7 @@ struct inode {
 	/* i_generation, i_private removed - only initialized, never used */
 } __randomize_layout;
 
-struct timespec64 timestamp_truncate(struct timespec64 t, struct inode *inode);
+/* timestamp_truncate removed - no longer called */
 
 static inline unsigned int i_blocksize(const struct inode *node)
 {

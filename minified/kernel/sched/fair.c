@@ -788,27 +788,7 @@ static void put_prev_task_fair(struct rq *rq, struct task_struct *prev)
 	}
 }
 
-static void yield_task_fair(struct rq *rq)
-{
-	struct task_struct *curr = rq->curr;
-	struct cfs_rq *cfs_rq = task_cfs_rq(curr);
-	struct sched_entity *se = &curr->se;
-
-	if (unlikely(rq->nr_running == 1))
-		return;
-
-	clear_buddies(cfs_rq, se);
-
-	if (curr->policy != SCHED_BATCH) {
-		update_rq_clock(rq);
-
-		update_curr(cfs_rq);
-
-		rq_clock_skip_update(rq);
-	}
-
-	for_each_sched_entity(se) cfs_rq_of(se)->skip = se;
-}
+/* yield_task_fair removed - callback never called (~20 LOC) */
 
 /* yield_to_task_fair removed - callback never called (~12 LOC) */
 
@@ -956,7 +936,7 @@ DEFINE_SCHED_CLASS(fair) = {
 
 	.enqueue_task = enqueue_task_fair,
 	.dequeue_task = dequeue_task_fair,
-	.yield_task = yield_task_fair,
+	/* .yield_task removed - callback never called */
 	/* .yield_to_task removed - callback never called */
 
 	.check_preempt_curr = check_preempt_wakeup,

@@ -21,9 +21,7 @@ static void enqueue_task_dl(struct rq *rq, struct task_struct *p, int flags)
 static void dequeue_task_dl(struct rq *rq, struct task_struct *p, int flags)
 {
 }
-static void yield_task_dl(struct rq *rq)
-{
-}
+/* yield_task_dl removed - callback never called */
 static void check_preempt_curr_dl(struct rq *rq, struct task_struct *p,
 				  int flags)
 {
@@ -60,7 +58,7 @@ static void update_curr_dl(struct rq *rq)
 DEFINE_SCHED_CLASS(dl) = {
 	.enqueue_task = enqueue_task_dl,
 	.dequeue_task = dequeue_task_dl,
-	.yield_task = yield_task_dl,
+	/* .yield_task removed - callback never called */
 	.check_preempt_curr = check_preempt_curr_dl,
 	.pick_next_task = pick_next_task_dl,
 	.put_prev_task = put_prev_task_dl,

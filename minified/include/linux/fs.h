@@ -226,19 +226,14 @@ struct kiocb {
 struct address_space_operations {
 	/* writepage, writepages, dirty_folio, readahead, bmap removed - unused */
 	int (*read_folio)(struct file *, struct folio *);
-	int (*write_begin)(struct file *, struct address_space *mapping,
-				loff_t pos, unsigned len,
-				struct page **pagep, void **fsdata);
-	int (*write_end)(struct file *, struct address_space *mapping,
-				loff_t pos, unsigned len, unsigned copied,
-				struct page *page, void *fsdata);
-	void (*invalidate_folio) (struct folio *, size_t offset, size_t len);
+	int (*write_begin)(struct file *, struct address_space *mapping, loff_t pos,
+			   unsigned len, struct page **pagep, void **fsdata);
+	int (*write_end)(struct file *, struct address_space *mapping, loff_t pos,
+			 unsigned len, unsigned copied, struct page *page, void *fsdata);
+	void (*invalidate_folio)(struct folio *, size_t offset, size_t len);
 	bool (*release_folio)(struct folio *, gfp_t);
 	void (*free_folio)(struct folio *folio);
-	ssize_t (*direct_IO)(struct kiocb *, struct iov_iter *iter);
-	int (*launder_folio)(struct folio *);
-	bool (*is_partially_uptodate) (struct folio *, size_t from,
-			size_t count);
+	/* direct_IO, launder_folio, is_partially_uptodate removed - never set */
 };
 
 struct address_space {

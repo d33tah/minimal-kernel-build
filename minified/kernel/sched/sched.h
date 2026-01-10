@@ -602,7 +602,7 @@ struct sched_class {
 
 	void (*task_tick)(struct rq *rq, struct task_struct *p, int queued);
 	void (*task_fork)(struct task_struct *p);
-	void (*task_dead)(struct task_struct *p);
+	/* task_dead removed - no sched class defines it */
 
 	 
 	void (*switched_from)(struct rq *this_rq, struct task_struct *task);

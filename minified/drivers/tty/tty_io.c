@@ -981,7 +981,7 @@ struct tty_struct *alloc_tty_struct(struct tty_driver *driver, int idx)
 	mutex_init(&tty->legacy_mutex);
 	/* mutex_init(&tty->throttle_mutex) removed - never locked */
 	init_rwsem(&tty->termios_rwsem);
-	mutex_init(&tty->winsize_mutex);
+	/* mutex_init(&tty->winsize_mutex) removed - never locked */
 	init_ldsem(&tty->ldisc_sem);
 	init_waitqueue_head(&tty->write_wait);
 	init_waitqueue_head(&tty->read_wait);

@@ -242,13 +242,7 @@ void flush_tlb_batched_pending(struct mm_struct *mm)
 	}
 }
 
-struct folio_referenced_arg {
-	int mapcount;
-	int referenced;
-	unsigned long vm_flags;
-	struct mem_cgroup *memcg;
-};
-
+/* folio_referenced_arg struct removed - never used */
 /* folio_mkclean removed - always returned 0, inlined into page_mkclean */
 
 static void __page_set_anon_rmap(struct page *page, struct vm_area_struct *vma,

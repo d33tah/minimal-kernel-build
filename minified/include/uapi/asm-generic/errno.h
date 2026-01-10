@@ -33,7 +33,7 @@
 
 #define	ENAMETOOLONG	36
 #define	ENOSYS		38
-#define	ENOTEMPTY	39
+/* ENOTEMPTY removed - unused */
 #define	ELOOP		40
 /* EWOULDBLOCK removed - unused (aliased to EAGAIN) */
 #define	ETIME		62

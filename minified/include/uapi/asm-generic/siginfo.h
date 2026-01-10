@@ -175,9 +175,6 @@ typedef struct siginfo {
 #define TRAP_TRACE	2
 #define TRAP_HWBKPT     4
 
-/* POLL codes */
-#define POLL_OUT	2
-
 /* SYS codes */
 #define SYS_USER_DISPATCH 2
 

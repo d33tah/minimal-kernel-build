@@ -20,7 +20,7 @@ const struct file_operations ramfs_file_operations = {
 	.read_iter = generic_file_read_iter,
 	.write_iter = generic_file_write_iter,
 	.mmap = generic_file_mmap,
-	.fsync = noop_fsync,
+	/* fsync removed - fsync syscall returns ENOSYS */
 	/* splice_read/write removed - splice syscall returns ENOSYS */
 	.llseek = generic_file_llseek,
 	.get_unmapped_area = ramfs_mmu_get_unmapped_area,

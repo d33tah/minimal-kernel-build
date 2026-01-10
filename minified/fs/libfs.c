@@ -189,7 +189,7 @@ const struct file_operations simple_dir_operations = {
 	.llseek = dcache_dir_lseek,
 	.read = generic_read_dir,
 	.iterate_shared = dcache_readdir,
-	.fsync = noop_fsync,
+	/* fsync removed - fsync syscall returns ENOSYS */
 };
 
 static const struct super_operations simple_super_operations = {
@@ -479,7 +479,7 @@ static const struct file_operations empty_dir_operations = {
 	.llseek = empty_dir_llseek,
 	.read = generic_read_dir,
 	.iterate_shared = empty_dir_readdir,
-	.fsync = noop_fsync,
+	/* fsync removed - fsync syscall returns ENOSYS */
 };
 
 bool is_empty_dir_inode(struct inode *inode)

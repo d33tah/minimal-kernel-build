@@ -179,13 +179,7 @@ bool prb_read_valid_info(struct printk_ringbuffer *rb, u64 seq,
 u64 prb_first_valid_seq(struct printk_ringbuffer *rb);
 u64 prb_next_seq(struct printk_ringbuffer *rb);
 /* end printk_ringbuffer.h */
-struct console_cmdline {
-	char name[16];
-	int index;
-	bool user_specified;
-	char *options;
-};
-/* end console_cmdline.h */
+/* struct console_cmdline removed - never populated */
 /* _braille_register_console removed - always returned 0 */
 #include "internal.h"
 
@@ -242,10 +236,7 @@ static void __up_console_sem(unsigned long ip)
 
 static int console_locked, console_suspended;
 
-#define MAX_CMDLINECONSOLES 8
-
-static struct console_cmdline console_cmdline[MAX_CMDLINECONSOLES];
-
+/* console_cmdline array removed - never populated */
 static int preferred_console = -1;
 
 static int console_may_schedule;
@@ -432,40 +423,13 @@ struct tty_driver *console_device(int *index)
 
 static int __read_mostly keep_bootcon;
 
+/* try_enable_preferred_console simplified - console_cmdline never populated */
 static int try_enable_preferred_console(struct console *newcon,
 					bool user_specified)
 {
-	struct console_cmdline *c;
-	int i, err;
-
-	for (i = 0, c = console_cmdline; i < MAX_CMDLINECONSOLES && c->name[0];
-	     i++, c++) {
-		if (c->user_specified != user_specified)
-			continue;
-		if (!newcon->match ||
-		    newcon->match(newcon, c->name, c->index, c->options) != 0) {
-			BUILD_BUG_ON(sizeof(c->name) != sizeof(newcon->name));
-			if (strcmp(c->name, newcon->name) != 0)
-				continue;
-			if (newcon->index >= 0 && newcon->index != c->index)
-				continue;
-			if (newcon->index < 0)
-				newcon->index = c->index;
-
-			/* _braille_register_console always 0 - check removed */
-			if (newcon->setup &&
-			    (err = newcon->setup(newcon, c->options)) != 0)
-				return err;
-		}
-		newcon->flags |= CON_ENABLED;
-		if (i == preferred_console)
-			newcon->flags |= CON_CONSDEV;
+	/* console_cmdline array is never populated, so loop never executes */
+	if (newcon->flags & CON_ENABLED)
 		return 0;
-	}
-
-	if (newcon->flags & CON_ENABLED && c->user_specified == user_specified)
-		return 0;
-
 	return -ENOENT;
 }
 

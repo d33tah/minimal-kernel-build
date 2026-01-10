@@ -678,14 +678,7 @@ bool inode_owner_or_capable(struct user_namespace *mnt_userns,
 void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,
 		      const struct inode *dir, umode_t mode);
 
-struct dir_context;
-typedef int (*filldir_t)(struct dir_context *, const char *, int, loff_t, u64,
-			 unsigned);
-
-struct dir_context {
-	filldir_t actor;
-	loff_t pos;
-};
+/* dir_context, filldir_t removed - iterate_shared removed from file_operations */
 
 struct file_operations {
 	struct module *owner;
@@ -1145,36 +1138,7 @@ static inline bool is_sxid(umode_t mode)
 {
 	return (mode & S_ISUID) || ((mode & S_ISGID) && (mode & S_IXGRP));
 }
-static inline bool dir_emit(struct dir_context *ctx,
-			    const char *name, int namelen,
-			    u64 ino, unsigned type)
-{
-	return ctx->actor(ctx, name, namelen, ctx->pos, ino, type) == 0;
-}
-static inline bool dir_emit_dot(struct file *file, struct dir_context *ctx)
-{
-	return ctx->actor(ctx, ".", 1, ctx->pos,
-			  file->f_path.dentry->d_inode->i_ino, DT_DIR) == 0;
-}
-static inline bool dir_emit_dotdot(struct file *file, struct dir_context *ctx)
-{
-	return ctx->actor(ctx, "..", 2, ctx->pos,
-			  parent_ino(file->f_path.dentry), DT_DIR) == 0;
-}
-static inline bool dir_emit_dots(struct file *file, struct dir_context *ctx)
-{
-	if (ctx->pos == 0) {
-		if (!dir_emit_dot(file, ctx))
-			return false;
-		ctx->pos = 1;
-	}
-	if (ctx->pos == 1) {
-		if (!dir_emit_dotdot(file, ctx))
-			return false;
-		ctx->pos = 2;
-	}
-	return true;
-}
+/* dir_emit* functions removed - iterate_shared removed from file_operations */
 extern bool path_noexec(const struct path *path);
 extern void inode_nohighmem(struct inode *inode);
 

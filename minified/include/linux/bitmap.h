@@ -152,10 +152,7 @@ int bitmap_parse(const char *buf, unsigned int buflen,
 			unsigned long *dst, int nbits);
 /* bitmap_parse_user, bitmap_parselist, bitmap_parselist_user, bitmap_remap,
  * bitmap_bitremap, bitmap_onto, bitmap_fold, bitmap_find_free_region,
- * bitmap_release_region, bitmap_allocate_region removed - unused */
-
-int bitmap_print_to_pagebuf(bool list, char *buf,
-				   const unsigned long *maskp, int nmaskbits);
+ * bitmap_release_region, bitmap_allocate_region, bitmap_print_to_pagebuf removed - never called */
 
 
 #define BITMAP_FIRST_WORD_MASK(start) (~0UL << ((start) & (BITS_PER_LONG - 1)))

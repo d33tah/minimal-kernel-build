@@ -1,5 +1,4 @@
 
-#include <linux/highmem.h>
 
 #include <linux/sched/signal.h>
 
@@ -10,7 +9,6 @@
 
 #include <linux/hardirq.h>
 
-#include <linux/topology.h>
 #include <linux/sched/clock.h>
 
 #include <linux/sched/cputime.h>
@@ -18,8 +16,6 @@
 
 extern void sched_init(void);
 extern void sched_init_smp(void);
-#include <linux/sched/isolation.h>
-#include <linux/sched/loadavg.h>
 #include <linux/sched/mm.h>
 
 #include <linux/sched/rt.h>
@@ -35,8 +31,6 @@ extern void sched_init_smp(void);
 #include <linux/sched/wake_q.h>
 #include <linux/slab.h>
 #include <linux/syscalls.h>
-
-#include <linux/sched/types.h>
 
 #include <asm/switch_to.h>
 #include <asm/tlb.h>

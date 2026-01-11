@@ -44,18 +44,14 @@ static void __used common(void)
 
 	BLANK();
 	OFFSET(BP_scratch, boot_params, scratch);
-	OFFSET(BP_secure_boot, boot_params, secure_boot);
-	OFFSET(BP_loadflags, boot_params, hdr.loadflags);
-	OFFSET(BP_hardware_subarch, boot_params, hdr.hardware_subarch);
-	OFFSET(BP_version, boot_params, hdr.version);
+	/* BP_secure_boot, BP_loadflags, BP_hardware_subarch, BP_version, BP_pref_address removed - not used in assembly */
 	OFFSET(BP_kernel_alignment, boot_params, hdr.kernel_alignment);
 	OFFSET(BP_init_size, boot_params, hdr.init_size);
-	OFFSET(BP_pref_address, boot_params, hdr.pref_address);
 
 	BLANK();
 	DEFINE(PTREGS_SIZE, sizeof(struct pt_regs));
 
-	OFFSET(TLB_STATE_user_pcid_flush_mask, tlb_state, user_pcid_flush_mask);
+	/* TLB_STATE_user_pcid_flush_mask removed - not used in assembly */
 
 	OFFSET(CPU_ENTRY_AREA_entry_stack, cpu_entry_area, entry_stack_page);
 	DEFINE(SIZEOF_entry_stack, sizeof(struct entry_stack));
@@ -63,5 +59,5 @@ static void __used common(void)
 
 	OFFSET(TSS_sp0, tss_struct, x86_tss.sp0);
 	OFFSET(TSS_sp1, tss_struct, x86_tss.sp1);
-	OFFSET(TSS_sp2, tss_struct, x86_tss.sp2);
+	/* TSS_sp2 removed - not used in assembly */
 }

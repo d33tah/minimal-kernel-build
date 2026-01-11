@@ -14,7 +14,7 @@ struct xattr_handler {
 	int (*set)(const struct xattr_handler *, struct user_namespace *mnt_userns, struct dentry *dentry, struct inode *inode, const char *name, const void *buffer, size_t size, int flags);
 };
 const char *xattr_full_name(const struct xattr_handler *, const char *);
-struct xattr { const char *name; void *value; size_t value_len; };
+/* struct xattr removed - never instantiated */
 ssize_t __vfs_getxattr(struct dentry *, struct inode *, const char *, void *, size_t);
 ssize_t vfs_getxattr(struct user_namespace *, struct dentry *, const char *, void *, size_t);
 ssize_t vfs_listxattr(struct dentry *d, char *list, size_t size);

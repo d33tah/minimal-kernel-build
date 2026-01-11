@@ -19,13 +19,7 @@ enum cpuhp_state {
 
 /* cpuhp_online_idle removed - unused */
 
-struct device;
-
-struct cpu {
-	int node_id;		 
-	int hotpluggable;	 
-	struct device dev;
-};
+/* struct cpu removed - never instantiated */
 
 extern void boot_cpu_init(void);
 extern void boot_cpu_hotplug_init(void);

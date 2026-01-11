@@ -12,11 +12,7 @@
 /* uapi/asm/msr.h was empty stub, removed */
 #include <asm/shared/msr.h>
 
-/* msr_info, msr_regs_info, saved_msr structs removed - unused */
-struct saved_msrs {
-	unsigned int num;
-	void *array;
-};
+/* msr_info, msr_regs_info, saved_msr, saved_msrs structs removed - unused */
 
  
 #define DECLARE_ARGS(val, low, high)	unsigned long long val

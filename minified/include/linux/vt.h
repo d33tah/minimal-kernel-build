@@ -7,11 +7,7 @@
 /* struct vt_mode removed - write-only (only initialized in reset_vc, never read) */
 #define VT_AUTO		0x00
 
-struct vt_stat {
-	unsigned short v_active;
-	unsigned short v_signal;
-	unsigned short v_state;
-};
+/* struct vt_stat removed - never used */
 #define VT_GETSTATE	0x5603
 #define VT_GETHIFONTMASK 0x560D
 

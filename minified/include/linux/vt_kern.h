@@ -143,10 +143,7 @@ extern int default_utf8;
 extern int global_cursor_default;
 
 
-struct vt_notifier_param {
-	struct vc_data *vc;	 
-	unsigned int c;
-};
+/* struct vt_notifier_param removed - never used */
 
 /* hide_boot_cursor, vt_do_diacrit, vt_do_kdskbmode, vt_do_kdskbmeta,
    vt_do_kbkeycode_ioctl, vt_do_kdsk_ioctl, vt_do_kdgkb_ioctl, vt_do_kdskled,

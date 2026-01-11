@@ -22,14 +22,7 @@ struct atomic_notifier_head {
 	struct notifier_block __rcu *head;
 };
 
-struct blocking_notifier_head {
-	struct rw_semaphore rwsem;
-	struct notifier_block __rcu *head;
-};
-
-struct raw_notifier_head {
-	struct notifier_block __rcu *head;
-};
+/* struct blocking_notifier_head, raw_notifier_head removed - never used */
 
 /* BLOCKING_INIT_NOTIFIER_HEAD removed - never used */
 

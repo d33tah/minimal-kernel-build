@@ -45,17 +45,15 @@ static inline void lockdep_on(void)
    RCU_LOCKDEP_WARN conditions (which are no-ops but still need valid syntax) */
 #define lock_is_held(l)			(1)
 #define lockdep_is_held(l)		(1)
-#define lockdep_is_held_type(l, r)		(1)
+/* lockdep_is_held_type removed - unused */
 
 /* lockdep_assert removed - unused */
 
 #define lockdep_assert_held(l)			do { (void)(l); } while (0)
-#define lockdep_assert_not_held(l)		do { (void)(l); } while (0)
-#define lockdep_assert_held_write(l)		do { (void)(l); } while (0)
-#define lockdep_assert_held_read(l)		do { (void)(l); } while (0)
+/* lockdep_assert_not_held, lockdep_assert_held_write, lockdep_assert_held_read removed - unused */
 
 #define lockdep_pin_lock(l)			({ struct pin_cookie cookie = { }; cookie; })
-#define lockdep_repin_lock(l, c)		do { (void)(l); (void)(c); } while (0)
+/* lockdep_repin_lock removed - unused */
 #define lockdep_unpin_lock(l, c)		do { (void)(l); (void)(c); } while (0)
 
 /* STATIC_LOCKDEP_MAP_INIT removed - unused */
@@ -77,7 +75,7 @@ static inline void lockdep_on(void)
 #define lock_acquire_shared_recursive(l, s, t, n, i)	lock_acquire(l, s, t, 2, 1, n, i)
 
 #define spin_acquire(l, s, t, i)		lock_acquire_exclusive(l, s, t, NULL, i)
-#define spin_acquire_nest(l, s, t, n, i)	lock_acquire_exclusive(l, s, t, n, i)
+/* spin_acquire_nest removed - unused */
 #define spin_release(l, i)			lock_release(l, i)
 
 /* rwlock_acquire, rwlock_acquire_read, rwlock_release removed - never called */

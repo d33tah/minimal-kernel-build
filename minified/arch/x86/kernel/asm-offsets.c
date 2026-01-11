@@ -13,8 +13,7 @@
 #include <asm/bootparam.h>
 /* struct saved_context removed - hibernation not used */
 #include <asm/desc.h>
-#include <asm/fpu/api.h>
-/* tlbflush.h removed - TLB_STATE offset no longer used */
+/* fpu/api.h, tlbflush.h removed - offsets no longer used */
 
 #include "asm-offsets_32.c"
 

@@ -1,6 +1,4 @@
-#include <linux/fs.h>
-#include <linux/xattr.h>
-#include <linux/export.h>
+/* All xattr syscalls are stubs - minimal includes */
 #include <linux/syscalls.h>
 SYSCALL_DEFINE5(setxattr, const char __user *, pathname, const char __user *,
 		name, const void __user *, value, size_t, size, int, flags)

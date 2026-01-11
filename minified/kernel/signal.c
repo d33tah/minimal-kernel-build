@@ -12,7 +12,6 @@
 
 /* asm/param.h, asm/cacheflush.h removed - unused */
 #include <linux/uaccess.h>
-#include <asm/unistd.h>
 #include <asm/siginfo.h>
 #include <asm/syscall.h>
 

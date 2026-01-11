@@ -847,12 +847,6 @@ static struct mnt_namespace *to_mnt_ns(struct ns_common *ns)
 	return container_of(ns, struct mnt_namespace, ns);
 }
 
-struct mount *copy_tree(struct mount *mnt, struct dentry *dentry, int flag)
-{
-	/* Stubbed: mount tree copying not needed for minimal boot */
-	return clone_mnt(mnt, dentry, flag);
-}
-
 static void free_mnt_ns(struct mnt_namespace *);
 static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *, bool);
 

@@ -33,6 +33,5 @@ int mnt_get_count(struct mount *mnt);
 void mnt_set_mountpoint(struct mount *, struct mountpoint *,
 			struct mount *);
 /* mnt_change_mountpoint removed - empty stub */
-struct mount *copy_tree(struct mount *, struct dentry *, int);
-/* is_path_reachable, count_mounts removed - unused */
+/* copy_tree, is_path_reachable, count_mounts removed - unused */
 #endif  

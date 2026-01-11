@@ -102,8 +102,7 @@ struct anon_vma_chain;
 /* struct user_struct forward decl removed - unused */
 struct pt_regs;
 
-
-void init_mm_internals(void);
+/* init_mm_internals declaration removed - function removed as empty stub */
 
 extern unsigned long max_mapnr;
 

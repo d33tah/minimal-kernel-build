@@ -143,20 +143,9 @@ enum desc_state {
 			__alignof__(unsigned long));                          \
 	_DEFINE_PRINTKRB(name, descbits, avgtextbits, &_##name##_text[0])
 
-bool prb_reserve(struct prb_reserved_entry *e, struct printk_ringbuffer *rb,
-		 struct printk_record *r);
-bool prb_reserve_in_last(struct prb_reserved_entry *e,
-			 struct printk_ringbuffer *rb, struct printk_record *r,
-			 u32 caller_id, unsigned int max_size);
-void prb_commit(struct prb_reserved_entry *e);
-void prb_final_commit(struct prb_reserved_entry *e);
-
-void prb_init(struct printk_ringbuffer *rb, char *text_buf,
-	      unsigned int text_buf_size, struct prb_desc *descs,
-	      unsigned int descs_count_bits, struct printk_info *infos);
-unsigned int prb_record_text_space(struct prb_reserved_entry *e);
-
-/* prb_rec_init_rd, prb_for_each_record, prb_for_each_info removed - never called */
+/* prb_reserve, prb_reserve_in_last, prb_commit, prb_final_commit,
+   prb_init, prb_record_text_space, prb_rec_init_rd, prb_for_each_record,
+   prb_for_each_info removed - never called, implementations stubbed */
 
 bool prb_read_valid(struct printk_ringbuffer *rb, u64 seq,
 		    struct printk_record *r);

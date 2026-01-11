@@ -8,7 +8,7 @@
 #include <linux/backing-dev-defs.h>
 #include <linux/blk_types.h>
 
-struct bio;
+/* struct bio forward decl removed - already in blk_types.h */
 
 /* dirty_throttle_leaks DECLARE removed - counter never read */
 
@@ -39,11 +39,9 @@ struct writeback_control {
 	 
 	unsigned no_cgroup_owner:1;
 
-	unsigned punt_to_cgroup:1;	 
+	unsigned punt_to_cgroup:1;
 
-	 
-	struct swap_iocb **swap_plug;
-
+	/* struct swap_iocb **swap_plug removed - never used */
 };
 
 /* wb_domain struct removed - never used */

@@ -25,7 +25,7 @@
 #include <linux/uaccess.h>
 
 #include "internal.h"
-struct swap_iocb;
+/* struct swap_iocb forward decl removed - unused */
 
 void kfree_const(const void *x)
 {

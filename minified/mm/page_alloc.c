@@ -45,7 +45,7 @@ struct alloc_context;
 #include <asm/div64.h>
 #include "internal.h"
 /* page_reported macro removed - unused */
-struct swap_iocb;
+/* struct swap_iocb forward decl removed - unused */
 
 typedef int __bitwise fpi_t;
 /* FPI_NONE removed - unused */

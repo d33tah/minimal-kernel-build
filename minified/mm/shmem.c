@@ -13,7 +13,7 @@
 #include <linux/uio.h>
 /* hugetlb.h removed - unused */
 #include <linux/fs_parser.h>
-struct swap_iocb;
+/* struct swap_iocb forward decl removed - unused */
 
 static struct vfsmount *shm_mnt;
 

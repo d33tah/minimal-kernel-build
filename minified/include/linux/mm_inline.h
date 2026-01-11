@@ -2,7 +2,7 @@
 #define LINUX_MM_INLINE_H
 
 #include <linux/atomic.h>
-#include <linux/huge_mm.h>
+/* huge_mm.h removed - was empty stub */
 #include <linux/swap.h>
 #include <linux/string.h>
 #include <linux/swapops.h>

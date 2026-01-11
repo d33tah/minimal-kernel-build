@@ -6,7 +6,7 @@
 #include <linux/ctype.h>
 #include <linux/errno.h>
 #include <linux/string.h>
-#include <linux/string_helpers.h>
+/* string_helpers.h removed - header was empty */
 
 ssize_t strscpy_pad(char *dest, const char *src, size_t count)
 {

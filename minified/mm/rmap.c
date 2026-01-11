@@ -13,8 +13,7 @@
 /* memcontrol.h removed - unused */
 #include <linux/mmu_notifier.h>
 /* linux/migrate.h removed - empty header */
-/* hugetlb.h removed - unused */
-#include <linux/huge_mm.h>
+/* hugetlb.h, huge_mm.h removed - unused */
 #include <linux/backing-dev.h>
 #include <linux/memremap.h>
 #include <linux/userfaultfd_k.h>

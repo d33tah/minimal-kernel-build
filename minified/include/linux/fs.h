@@ -53,8 +53,7 @@ static inline void clear_delayed_call(struct delayed_call *call)
 
 /* Inlined from errseq.h */
 typedef u32	errseq_t;
-errseq_t errseq_set(errseq_t *eseq, int err);
-/* errseq_sample removed - never called */
+/* errseq_set, errseq_sample removed - never called */
 #include <linux/build_bug.h>
 
 #define DT_DIR		4
@@ -989,8 +988,7 @@ extern int dcache_dir_close(struct inode *, struct file *);
 extern int simple_setattr(struct user_namespace *, struct dentry *,
 			  struct iattr *);
 /* simple_getattr, simple_statfs removed - callbacks removed */
-/* simple_link, simple_unlink, simple_rmdir, simple_rename removed - syscalls return ENOSYS */
-extern int noop_fsync(struct file *, loff_t, loff_t, int);
+/* simple_link, simple_unlink, simple_rmdir, simple_rename, noop_fsync removed - syscalls return ENOSYS */
 extern int simple_write_begin(struct file *file, struct address_space *mapping,
 			loff_t pos, unsigned len,
 			struct page **pagep, void **fsdata);

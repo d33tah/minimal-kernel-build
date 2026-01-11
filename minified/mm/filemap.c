@@ -1,6 +1,4 @@
 
-#include <linux/export.h>
-#include <linux/compiler.h>
 #include <linux/fs.h>
 #include <linux/sched/signal.h>
 #include <linux/uaccess.h>
@@ -9,7 +7,6 @@
 #include <linux/gfp.h>
 #include <linux/mm.h>
 #include <linux/swap.h>
-#include <linux/swapops.h>
 #include <linux/mman.h>
 #include <linux/pagemap.h>
 #include <linux/file.h>
@@ -22,10 +19,7 @@
 /* cpuset.h removed - unused */
 #include <linux/hugetlb.h>
 /* memcontrol.h removed - unused */
-#include <linux/shmem_fs.h>
 /* rmap.h, ramfs.h, migrate.h removed - unused */
-#include <asm/pgalloc.h>
-#include <asm/tlbflush.h>
 #include "internal.h"
 
 #include <asm/mman.h>

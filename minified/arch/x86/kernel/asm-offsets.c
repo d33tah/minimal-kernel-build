@@ -5,7 +5,7 @@
 #include <linux/sched.h>
 #include <linux/stddef.h>
 #include <linux/hardirq.h>
-#include <linux/suspend.h>
+/* suspend.h removed - only needed for pbe offsets */
 #include <linux/kbuild.h>
 #include <asm/processor.h>
 #include <asm/thread_info.h>
@@ -39,10 +39,7 @@ static void __used common(void)
 	BLANK();
 	OFFSET(TASK_threadsp, task_struct, thread.sp);
 
-	BLANK();
-	OFFSET(pbe_address, pbe, address);
-	OFFSET(pbe_orig_address, pbe, orig_address);
-	OFFSET(pbe_next, pbe, next);
+	/* pbe_address, pbe_orig_address, pbe_next removed - never used */
 
 	BLANK();
 	OFFSET(IA32_SIGCONTEXT_ax, sigcontext_32, ax);

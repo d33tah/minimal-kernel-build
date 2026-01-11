@@ -8,7 +8,5 @@
 #include <linux/mm.h>
 /* linux/freezer.h removed - empty header */
 #include <asm/errno.h>
-/* suspend_state_t removed - unused */
-struct pbe { void *address; void *orig_address; struct pbe *next; };
-/* system_transition_mutex extern removed - never used */
+/* suspend_state_t, struct pbe removed - never used */
 #endif

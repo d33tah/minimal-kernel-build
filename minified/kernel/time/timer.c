@@ -44,18 +44,7 @@ void init_timer_key(struct timer_list *timer, void (*func)(struct timer_list *),
 	timer->flags = flags | raw_smp_processor_id();
 	lockdep_init_map(&timer->lockdep_map, name, key, 0);
 }
-
-int mod_timer(struct timer_list *timer, unsigned long expires)
-{
-	/* Stubbed for minimal Hello World */
-	return 0;
-}
-
-int del_timer(struct timer_list *timer)
-{
-	/* Stubbed for minimal Hello World */
-	return 0;
-}
+/* mod_timer, del_timer removed - never called */
 
 void update_process_times(int user_tick)
 {

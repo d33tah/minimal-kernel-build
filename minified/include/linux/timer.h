@@ -45,17 +45,7 @@ void init_timer_key(struct timer_list *timer,
 #define from_timer(var, callback_timer, timer_fieldname) \
 	container_of(callback_timer, typeof(*var), timer_fieldname)
 
-/* timer_pending removed - no callers */
-
-extern int del_timer(struct timer_list * timer);
-extern int mod_timer(struct timer_list *timer, unsigned long expires);
-
-
-/* NEXT_TIMER_MAX_DELTA removed - unused */
-
-# define del_timer_sync(t)		del_timer(t)
-
-/* del_singleshot_timer_sync removed - unused */
+/* timer_pending, del_timer, mod_timer, del_timer_sync removed - no callers */
 
 extern void init_timers(void);
 

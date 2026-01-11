@@ -9,11 +9,7 @@
 # define lockdep_hardirqs_enabled()		0
 # define lockdep_hardirq_threaded()		do { } while (0)
 # define lockdep_hardirq_exit()			do { } while (0)
-# define lockdep_hrtimer_enter(__hrtimer)	false
-# define lockdep_hrtimer_exit(__context)	do { } while (0)
-
-# define stop_critical_timings() do { } while (0)
-# define start_critical_timings() do { } while (0)
+/* lockdep_hrtimer_enter, lockdep_hrtimer_exit, stop_critical_timings, start_critical_timings removed - unused */
 
 #define raw_check_bogus_irq_restore() do { } while (0)
 

@@ -28,8 +28,7 @@
 /* end sched-pelt.h */
 #include "stats.h"
 
-#include "clock.c"
-
+/* clock.c removed - was empty stub */
 /* loadavg.c removed - calc_global_load/calc_global_load_tick calls removed */
 unsigned long calc_load_update;
 /* calc_load_tasks removed - never used */

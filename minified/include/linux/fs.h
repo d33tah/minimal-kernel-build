@@ -969,10 +969,7 @@ extern ssize_t generic_file_write_iter(struct kiocb *, struct iov_iter *);
 extern ssize_t generic_file_direct_write(struct kiocb *, struct iov_iter *);
 ssize_t generic_perform_write(struct kiocb *, struct iov_iter *);
 
-extern ssize_t generic_file_splice_read(struct file *, loff_t *,
-		struct pipe_inode_info *, size_t, unsigned int);
-extern ssize_t iter_file_splice_write(struct pipe_inode_info *,
-		struct file *, loff_t *, size_t, unsigned int);
+/* generic_file_splice_read, iter_file_splice_write removed - never called */
 
 /* llseek functions removed - llseek callback removed from file_operations */
 /* rw_verify_area removed - no callers */

@@ -21,14 +21,7 @@ struct splice_desc {
 	bool need_wakeup;		 
 };
 
-typedef int (splice_actor)(struct pipe_inode_info *, struct pipe_buffer *,
-			   struct splice_desc *);
-
-extern ssize_t splice_from_pipe(struct pipe_inode_info *, struct file *,
-				loff_t *, size_t, unsigned int,
-				splice_actor *);
-/* do_splice only defined in splice.c, do_tee not called */
-/* splice_grow_spd, splice_shrink_spd not called */
+/* splice_actor typedef, splice_from_pipe removed - never called */
 
 extern const struct pipe_buf_operations page_cache_pipe_buf_ops;
 extern const struct pipe_buf_operations default_pipe_buf_ops;

@@ -9,16 +9,7 @@
 #define IRET_FRAME_OFFSET (offsetof(struct pt_regs, ip))
 /* IRET_FRAME_SIZE removed - unused */
 
-struct unwind_state {
-	struct stack_info stack_info;
-	unsigned long stack_mask;
-	struct task_struct *task;
-	int graph_idx;
-	bool error;
-	unsigned long *sp;
-};
-
-/* __unwind_start, unwind_next_frame, unwind_get_return_address,
+/* struct unwind_state, __unwind_start, unwind_next_frame, unwind_get_return_address,
    unwind_get_return_address_ptr, unwind_start, READ_ONCE_TASK_STACK removed - never used */
 
 

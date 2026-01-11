@@ -18,7 +18,6 @@
 #include <linux/personality.h>
 /* Removed: linux/random.h - randomization disabled */
 
-#include <linux/sizes.h>
 #include <linux/compat.h>
 
 #include <linux/uaccess.h>

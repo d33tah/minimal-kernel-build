@@ -16,7 +16,6 @@
 #include <linux/init.h>
 #include <linux/compiler.h>
 #include <linux/highmem.h>
-#include <linux/hugetlb.h>
 #include <linux/pagemap.h>
 #include <linux/vmalloc.h>
 #include <linux/elf.h>
@@ -25,7 +24,6 @@
 #include <linux/sched/coredump.h>
 #include <linux/sched/task_stack.h>
 #include <linux/sched/cputime.h>
-#include <linux/sizes.h>
 #include <linux/types.h>
 #include <linux/cred.h>
 #include <linux/uaccess.h>

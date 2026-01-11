@@ -16,20 +16,8 @@ struct user_regs_struct32 { __u32 ebx, ecx, edx, esi, edi, ebp, eax; unsigned sh
 struct user32 { struct user_regs_struct32 regs; int u_fpvalid; struct user_i387_ia32_struct i387; __u32 u_tsize; __u32 u_dsize; __u32 u_ssize; __u32 start_code; __u32 start_stack; __u32 signal; int reserved; __u32 u_ar0; __u32 u_fpstate; __u32 magic; char u_comm[32]; int u_debugreg[8]; };
 /* End of user32.h */
 
-#define compat_mode_t	compat_mode_t
-typedef u16		compat_mode_t;
-
-#define __compat_uid_t	__compat_uid_t
-typedef u16		__compat_uid_t;
-typedef u16		__compat_gid_t;
-
-#define compat_dev_t	compat_dev_t
-typedef u16		compat_dev_t;
-
-#define compat_ipc_pid_t compat_ipc_pid_t
-typedef u16		 compat_ipc_pid_t;
-
-/* compat_statfs removed - never used */
+/* compat_mode_t, __compat_uid_t, __compat_gid_t, compat_dev_t,
+   compat_ipc_pid_t, compat_statfs removed - never used */
 
 /* asm-generic/compat.h content all dead - x86 defines its own types above */
 

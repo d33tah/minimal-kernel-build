@@ -9,10 +9,7 @@
 #include <asm/user.h>
 #include <asm/auxvec.h>
 
-typedef unsigned long elf_greg_t;
-
-#define ELF_NGREG (sizeof(struct user_regs_struct) / sizeof(elf_greg_t))
-typedef elf_greg_t elf_gregset_t[ELF_NGREG];
+/* elf_greg_t, ELF_NGREG, elf_gregset_t removed - never used */
 
 /* 32-bit only kernel - removed x86_64 relocation types */
 #define R_386_NONE	0

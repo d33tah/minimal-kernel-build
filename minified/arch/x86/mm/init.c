@@ -3,7 +3,6 @@
 #include <linux/ioport.h>
 #include <linux/swap.h>
 #include <linux/memblock.h>
-#include <linux/swapops.h>
 #include <linux/sched/task.h>
 
 #include <asm/set_memory.h>
@@ -22,7 +21,6 @@ static inline void pti_check_boottime_disable(void)
 {
 }
 #include <asm/text-patching.h>
-#include <asm/memtype.h>
 
 #include "mm_internal.h"
 

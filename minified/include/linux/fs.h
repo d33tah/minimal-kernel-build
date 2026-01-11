@@ -750,7 +750,7 @@ static inline void init_sync_kiocb(struct kiocb *kiocb, struct file *filp)
 /* __mark_inode_dirty, mark_inode_dirty removed - empty stubs, no callers */
 
 extern void inc_nlink(struct inode *inode);
-extern void drop_nlink(struct inode *inode);
+/* drop_nlink removed - never called */
 extern void clear_nlink(struct inode *inode);
 
 /* inode_dec_link_count removed - never called */
@@ -1039,8 +1039,7 @@ int __init list_bdev_fs_names(char *buf, size_t size);
 #define OPEN_FMODE(flag) ((__force fmode_t)(((flag + 1) & O_ACCMODE) | \
 					    (flag & __FMODE_NONOTIFY)))
 
-/* is_sxid removed - never called */
+/* is_sxid, inode_nohighmem removed - never called */
 extern bool path_noexec(const struct path *path);
-extern void inode_nohighmem(struct inode *inode);
 
 #endif

@@ -13,13 +13,8 @@
 /* IS_MNT_UNBINDABLE, IS_MNT_MARKED, SET_MNT_MARK, CLEAR_MNT_MARK removed - unused */
 #define IS_MNT_LOCKED(m) ((m)->mnt.mnt_flags & MNT_LOCKED)
 
-#define CL_EXPIRE    		0x01
-#define CL_SLAVE     		0x02
-/* CL_COPY_UNBINDABLE removed - unused */
-#define CL_MAKE_SHARED 		0x08
-#define CL_PRIVATE 		0x10
-#define CL_SHARED_TO_SLAVE	0x20
-/* CL_COPY_MNT_NS_FILE, CL_COPY_ALL removed - unused */
+/* CL_EXPIRE, CL_SLAVE, CL_MAKE_SHARED, CL_PRIVATE, CL_SHARED_TO_SLAVE,
+   CL_COPY_UNBINDABLE, CL_COPY_MNT_NS_FILE, CL_COPY_ALL removed - only used by removed clone_mnt */
 
 static inline void set_mnt_shared(struct mount *mnt)
 {

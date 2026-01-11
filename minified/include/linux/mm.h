@@ -594,9 +594,8 @@ static inline void *folio_address(const struct folio *folio)
 	return page_address(&folio->page);
 }
 
-/* page_rmapping removed - only caller discarded result */
+/* page_rmapping, page_mapped removed - never called */
 
-bool page_mapped(struct page *page);
 bool folio_mapped(struct folio *folio);
 
 static inline bool page_is_pfmemalloc(const struct page *page)

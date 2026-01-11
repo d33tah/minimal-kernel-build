@@ -15,10 +15,7 @@ void wait_on_page_writeback(struct page *page)
 	return folio_wait_writeback(page_folio(page));
 }
 
-bool page_mapped(struct page *page)
-{
-	return folio_mapped(page_folio(page));
-}
+/* page_mapped removed - never called */
 
 void mark_page_accessed(struct page *page)
 {

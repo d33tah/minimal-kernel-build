@@ -1,6 +1,5 @@
 #include <linux/platform_device.h>
 #include <linux/mc146818rtc.h>
-#include <linux/acpi.h>
 /* Inlined from linux/bcd.h */
 #define bcd2bin(x) \
 	(__builtin_constant_p((u8)(x)) ? const_bcd2bin(x) : _bcd2bin(x))

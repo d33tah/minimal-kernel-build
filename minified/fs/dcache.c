@@ -7,9 +7,7 @@
 #include <linux/init.h>
 #include <linux/hash.h>
 #include <linux/cache.h>
-#include <linux/export.h>
 #include <linux/security.h>
-#include <linux/seqlock.h>
 #include <linux/memblock.h>
 #include <linux/bit_spinlock.h>
 #include <linux/rculist_bl.h>

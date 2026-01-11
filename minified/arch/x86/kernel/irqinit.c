@@ -21,12 +21,12 @@
 #include <asm/hw_irq.h>
 #include <asm/desc.h>
 #include <asm/io_apic.h>
-#include <asm/acpi.h>
+/* asm/acpi.h removed - unused */
 #include <asm/apic.h>
 #include <asm/setup.h>
 #include <asm/i8259.h>
 #include <asm/traps.h>
-#include <asm/prom.h>
+/* asm/prom.h removed - of_ioapic check simplified */
 
 DEFINE_PER_CPU(vector_irq_t, vector_irq) = {
 	[0 ... NR_VECTORS - 1] = VECTOR_UNUSED,
@@ -63,7 +63,8 @@ void __init native_init_IRQ(void)
 	idt_setup_apic_and_irq_gates();
 	/* lapic_assign_system_vectors removed - empty stub */
 
-	if (!acpi_ioapic && !of_ioapic && nr_legacy_irqs()) {
+	/* acpi_ioapic and of_ioapic are always 0, simplified condition */
+	if (nr_legacy_irqs()) {
 		if (request_irq(2, no_action, IRQF_NO_THREAD, "cascade", NULL))
 			pr_err("%s: request_irq() failed\n", "cascade");
 	}

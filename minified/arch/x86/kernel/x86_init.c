@@ -3,7 +3,7 @@
 #include <linux/export.h>
 #include <linux/pci.h>
 
-#include <asm/acpi.h>
+/* asm/acpi.h removed - unused */
 #include <asm/bios_ebda.h>
 #include <asm/paravirt.h>
 /* asm/pci_x86.h removed - file was empty stub */

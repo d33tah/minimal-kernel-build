@@ -64,15 +64,7 @@ static inline struct device *class_find_device_by_devt(struct class *class,
 	return class_find_device(class, NULL, &devt, device_match_devt);
 }
 
-struct class_attribute {
-	struct attribute attr;
-	ssize_t (*show)(struct class *class, struct class_attribute *attr,
-			char *buf);
-	ssize_t (*store)(struct class *class, struct class_attribute *attr,
-			const char *buf, size_t count);
-};
-
-
+/* struct class_attribute removed - never used */
 
 struct class_interface {
 	struct list_head	node;

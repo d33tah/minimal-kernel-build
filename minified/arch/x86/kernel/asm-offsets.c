@@ -14,8 +14,7 @@
 /* struct saved_context removed - hibernation not used */
 #include <asm/desc.h>
 #include <asm/fpu/api.h>
-#include <asm/tlbflush.h>
-/* TDX not used in minimal kernel */
+/* tlbflush.h removed - TLB_STATE offset no longer used */
 
 #include "asm-offsets_32.c"
 

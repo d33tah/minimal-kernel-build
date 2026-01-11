@@ -147,7 +147,7 @@ extern void scheduler_tick(void);
 #define	MAX_SCHEDULE_TIMEOUT		LONG_MAX
 
 extern long schedule_timeout(long timeout);
-extern long schedule_timeout_interruptible(long timeout);
+/* schedule_timeout_interruptible removed - never called */
 extern long schedule_timeout_uninterruptible(long timeout);
 asmlinkage void schedule(void);
 extern void schedule_preempt_disabled(void);

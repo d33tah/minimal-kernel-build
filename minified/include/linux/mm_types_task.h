@@ -42,11 +42,7 @@ struct mm_rss_stat {
 	atomic_long_t count[NR_MM_COUNTERS];
 };
 
-/* 32-bit x86: BITS_PER_LONG=32, PAGE_SIZE=4096 */
-struct page_frag {
-	struct page *page;
-	/* offset, size removed - never accessed */
-};
+/* struct page_frag removed - never instantiated */
 
 struct tlbflush_unmap_batch {
 	 

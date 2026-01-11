@@ -84,13 +84,6 @@ typedef struct {
 	u32 tables;
 } efi_system_table_32_t;
 
- 
-struct efi_setup_data {
-	u64 fw_vendor;
-	u64 __unused;
-	u64 tables;
-	u64 smbios;
-	u64 reserved[8];
-};
+/* struct efi_setup_data removed - never instantiated */
 
 #endif

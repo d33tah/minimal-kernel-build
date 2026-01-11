@@ -5,13 +5,7 @@
 /* --- 2025-12-07 23:58 --- Inlined from linux/dev_printk.h */
 #include <linux/compiler.h>
 
-#define PRINTK_INFO_SUBSYSTEM_LEN	16
-#define PRINTK_INFO_DEVICE_LEN		48
-
-struct dev_printk_info {
-	char subsystem[PRINTK_INFO_SUBSYSTEM_LEN];
-	char device[PRINTK_INFO_DEVICE_LEN];
-};
+/* PRINTK_INFO_*, struct dev_printk_info removed - never instantiated */
 
 /* dev_printk stubs - only defining those actually used */
 #define dev_crit(dev, fmt, ...) do { } while (0)

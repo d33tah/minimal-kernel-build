@@ -56,7 +56,7 @@ typedef u32	errseq_t;
 /* errseq_set, errseq_sample removed - never called */
 #include <linux/build_bug.h>
 
-#define DT_DIR		4
+/* DT_DIR removed - never used */
 #include <linux/stddef.h>
 #include <linux/mount.h>
 #include <linux/cred.h>

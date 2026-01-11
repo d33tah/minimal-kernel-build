@@ -64,11 +64,7 @@ __printf(1, 4) struct workqueue_struct *alloc_workqueue(const char *fmt,
 	return wq;
 }
 
-void destroy_workqueue(struct workqueue_struct *wq)
-{
-	if (wq)
-		kfree(wq);
-}
+/* destroy_workqueue removed - never called */
 
 static struct workqueue_struct system_wq_storage = { .name = "events" };
 /* system_long_wq_storage removed - never used */

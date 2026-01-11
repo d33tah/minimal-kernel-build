@@ -145,8 +145,7 @@ __printf(1, 4) struct workqueue_struct *
 alloc_workqueue(const char *fmt, unsigned int flags, int max_active, ...);
 
 
-extern void destroy_workqueue(struct workqueue_struct *wq);
-
+/* destroy_workqueue removed - never called */
 extern bool queue_work_on(int cpu, struct workqueue_struct *wq,
 			struct work_struct *work);
 extern bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,

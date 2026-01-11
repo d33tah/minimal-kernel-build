@@ -302,10 +302,8 @@ static void flush_scrollback(struct vc_data *vc)
 	}
 }
 
-#define update_screen(x) redraw_screen(x, 0)
-/* switch_screen removed - never used */
-
-static void redraw_screen(struct vc_data *vc, int is_switch)
+/* switch_screen/update_screen unified - is_switch parameter removed (always 0) */
+static void redraw_screen(struct vc_data *vc)
 {
 	int update;
 	int old_was_color;
@@ -315,7 +313,6 @@ static void redraw_screen(struct vc_data *vc, int is_switch)
 	if (!vc)
 		return;
 
-	/* is_switch branch removed - switch_screen never called, only update_screen(x,0) */
 	hide_cursor(vc);
 
 	old_was_color = vc->vc_can_do_color;
@@ -1015,7 +1012,7 @@ static int __init con_init(void)
 	save_screen(vc);
 	gotoxy(vc, vc->state.x, vc->state.y);
 	csi_J(vc, 0);
-	update_screen(vc);
+	redraw_screen(vc);
 	printable = 1;
 
 	console_unlock();

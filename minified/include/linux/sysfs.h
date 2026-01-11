@@ -79,11 +79,7 @@ struct sysfs_ops {
 	ssize_t	(*store)(struct kobject *, struct attribute *, const char *, size_t);
 };
 
-
-static inline void sysfs_notify(struct kobject *kobj, const char *dir,
-				const char *attr)
-{
-}
+/* sysfs_notify removed - unused */
 
 static inline int __must_check sysfs_init(void)
 {

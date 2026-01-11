@@ -4,43 +4,7 @@
 #include <linux/dma-mapping.h>
 #include <linux/pgtable.h>
 
-/* struct cma removed - unused */
-
-struct dma_map_ops {
-	void *(*alloc)(struct device *dev, size_t size,
-			dma_addr_t *dma_handle, gfp_t gfp,
-			unsigned long attrs);
-	void (*free)(struct device *dev, size_t size, void *vaddr,
-			dma_addr_t dma_handle, unsigned long attrs);
-	struct page *(*alloc_pages)(struct device *dev, size_t size,
-			dma_addr_t *dma_handle, enum dma_data_direction dir,
-			gfp_t gfp);
-	void (*free_pages)(struct device *dev, size_t size, struct page *vaddr,
-			dma_addr_t dma_handle, enum dma_data_direction dir);
-	/* alloc_noncontiguous, free_noncontiguous removed - unused */
-	int (*mmap)(struct device *, struct vm_area_struct *,
-			void *, dma_addr_t, size_t, unsigned long attrs);
-
-	/* get_sgtable, map_sg, unmap_sg, sync_sg_* removed - scatterlist unused */
-	dma_addr_t (*map_page)(struct device *dev, struct page *page,
-			unsigned long offset, size_t size,
-			enum dma_data_direction dir, unsigned long attrs);
-	void (*unmap_page)(struct device *dev, dma_addr_t dma_handle,
-			size_t size, enum dma_data_direction dir,
-			unsigned long attrs);
-	void (*sync_single_for_cpu)(struct device *dev, dma_addr_t dma_handle,
-			size_t size, enum dma_data_direction dir);
-	void (*sync_single_for_device)(struct device *dev,
-			dma_addr_t dma_handle, size_t size,
-			enum dma_data_direction dir);
-	void (*cache_sync)(struct device *dev, void *vaddr, size_t size,
-			enum dma_data_direction direction);
-	int (*dma_supported)(struct device *dev, u64 mask);
-	u64 (*get_required_mask)(struct device *dev);
-	size_t (*max_mapping_size)(struct device *dev);
-	unsigned long (*get_merge_boundary)(struct device *dev);
-};
-
+/* struct cma, struct dma_map_ops removed - unused */
 /* dma_contiguous_reserve, dma_alloc_contiguous, dma_free_contiguous removed - no callers */
 /* dma_alloc_from_dev_coherent, dma_release_from_dev_coherent, dma_mmap_from_dev_coherent removed - unused */
 

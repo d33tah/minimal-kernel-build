@@ -369,17 +369,11 @@ extern void update_rq_clock(struct rq *rq);
 
 static inline void assert_clock_updated(struct rq *rq)
 {
-	 
+
 	SCHED_WARN_ON(rq->clock_update_flags < RQCF_ACT_SKIP);
 }
 
-static inline u64 rq_clock(struct rq *rq)
-{
-	lockdep_assert_rq_held(rq);
-	assert_clock_updated(rq);
-
-	return rq->clock;
-}
+/* rq_clock removed - unused */
 
 static inline u64 rq_clock_task(struct rq *rq)
 {

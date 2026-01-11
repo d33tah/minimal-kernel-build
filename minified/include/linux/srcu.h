@@ -10,19 +10,7 @@
 #include <linux/types.h>
 #include <linux/atomic.h>
 
-
-#define RCU_CBLIST_NSEGS	4
-
-struct rcu_segcblist {
-	struct rcu_head *head;
-	struct rcu_head **tails[RCU_CBLIST_NSEGS];
-	unsigned long gp_seq[RCU_CBLIST_NSEGS];
-	long len;
-	long seglen[RCU_CBLIST_NSEGS];
-	u8 flags;
-};
-
-/* RCU_SEGCBLIST_INITIALIZER removed - never used */
+/* RCU_CBLIST_NSEGS, struct rcu_segcblist removed - unused */
 
 struct srcu_struct;
 
@@ -81,13 +69,7 @@ unsigned long get_state_synchronize_srcu(struct srcu_struct *ssp);
 
 void srcu_init(void);
 
-
-static inline int srcu_read_lock_held(const struct srcu_struct *ssp)
-{
-	return 1;
-}
-
-
+/* srcu_read_lock_held removed - unused */
 /* srcu_dereference_check, srcu_dereference, srcu_dereference_notrace removed - never used */
 
 static inline int srcu_read_lock(struct srcu_struct *ssp) __acquires(ssp)

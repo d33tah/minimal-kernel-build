@@ -5,7 +5,6 @@
 #include <linux/mm.h>
 #include <linux/vmacache.h>
 #include <linux/stat.h>
-#include <linux/fcntl.h>
 #include <linux/swap.h>
 #include <linux/string.h>
 #include <linux/init.h>
@@ -19,7 +18,6 @@
 #include <linux/spinlock.h>
 #include <linux/personality.h>
 #include <linux/binfmts.h>
-#include <linux/utsname.h>
 #include <linux/pid_namespace.h>
 #include <linux/module.h>
 #include <linux/namei.h>
@@ -27,10 +25,8 @@
 #include <linux/security.h>
 #include <linux/syscalls.h>
 /* audit.h removed - unused */
-#include <linux/kmod.h>
 /* fsnotify.h removed - unused */
 #include <linux/fs_struct.h>
-#include <linux/compat.h>
 #include <linux/vmalloc.h>
 /* io_uring.h removed - unused */
 #include <linux/syscall_user_dispatch.h>

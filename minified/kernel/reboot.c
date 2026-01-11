@@ -1,22 +1,6 @@
-
-#define pr_fmt(fmt) "reboot: " fmt
-
-#include <linux/atomic.h>
-#include <linux/cpu.h>
-#include <linux/ctype.h>
-#include <linux/export.h>
-#include <linux/kmod.h>
 #include <linux/kmsg_dump.h>
 #include <linux/reboot.h>
-#include <linux/suspend.h>
 #include <linux/syscalls.h>
-#include <linux/uaccess.h>
-
-/* Removed: C_A_D, cad_pid, reboot_mode, panic_reboot_mode - only set but never read */
-
-/* reboot_default, reboot_cpu, reboot_type removed - never used */
-
-/* pm_power_off removed - never called */
 
 void emergency_restart(void)
 {

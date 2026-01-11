@@ -256,11 +256,11 @@ static DEFINE_MUTEX(syslog_lock);
 static u64 syslog_seq;
 /* call_console_driver removed - was empty stub */
 
-static bool printk_console_no_auto_verbose;
+/* printk_console_no_auto_verbose removed - never set, condition simplified */
 
 void console_verbose(void)
 {
-	if (console_loglevel && !printk_console_no_auto_verbose)
+	if (console_loglevel)
 		console_loglevel = CONSOLE_LOGLEVEL_MOTORMOUTH;
 }
 
@@ -405,7 +405,7 @@ struct tty_driver *console_device(int *index)
 	return driver;
 }
 
-static int __read_mostly keep_bootcon;
+/* keep_bootcon removed - never set, always false */
 
 /* try_enable_preferred_console simplified - console_cmdline never populated */
 static int try_enable_preferred_console(struct console *newcon,
@@ -500,9 +500,9 @@ void register_console(struct console *newcon)
 	console_unlock();
 	/* console_sysfs_notify call removed - empty stub */
 	con_printk(KERN_INFO, newcon, "enabled\n");
+	/* keep_bootcon check removed - never set, always unregister boot consoles */
 	if (bootcon_enabled &&
-	    ((newcon->flags & (CON_CONSDEV | CON_BOOT)) == CON_CONSDEV) &&
-	    !keep_bootcon) {
+	    ((newcon->flags & (CON_CONSDEV | CON_BOOT)) == CON_CONSDEV)) {
 		for_each_console(con)
 			if (con->flags & CON_BOOT)
 				unregister_console(con);

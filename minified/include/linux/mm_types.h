@@ -236,8 +236,7 @@ struct vm_area_struct {
 
 	 
 	pgprot_t vm_page_prot;
-	unsigned long vm_flags;		 
-
+	unsigned long vm_flags;
 
 	struct {
 		struct rb_node rb;

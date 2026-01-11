@@ -12,7 +12,6 @@ struct irq_domain;
 struct irq_chip;
 struct irq_data;
 struct cpumask;
-struct seq_file;
 struct irq_affinity_desc;
 #define IRQ_DOMAIN_IRQ_SPEC_PARAMS 16
 struct irq_fwspec { struct fwnode_handle *fwnode; int param_count; u32 param[IRQ_DOMAIN_IRQ_SPEC_PARAMS]; };

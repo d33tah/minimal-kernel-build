@@ -17,11 +17,8 @@ typedef void (*irq_flow_handler_t)(struct irq_desc *desc);
 #include <asm/ptrace.h>
 #include <asm/irq_regs.h>
 
-struct seq_file;
 struct module;
-/* struct msi_msg forward decl removed - never defined or used */
 struct irq_affinity_desc;
-enum irqchip_irq_state;
 
 enum {
 	IRQ_TYPE_NONE		= 0x00000000,

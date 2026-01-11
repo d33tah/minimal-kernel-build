@@ -7,7 +7,6 @@
 #include <linux/sched.h>
 #include <linux/interrupt.h>
 #include <linux/tty.h>
-#include <linux/timer.h>
 #include <linux/ctype.h>
 #include <linux/mm.h>
 #include <linux/string.h>

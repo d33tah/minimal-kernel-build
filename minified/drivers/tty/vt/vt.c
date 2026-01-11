@@ -19,7 +19,6 @@
 #include <linux/selection.h> /* includes tiocl defines */
 #include <linux/kbd_kern.h>
 #include <linux/consolemap.h>
-#include <linux/timer.h>
 #include <linux/interrupt.h>
 #include <linux/workqueue.h>
 #include <linux/pm.h>

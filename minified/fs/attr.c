@@ -1,14 +1,7 @@
-
-#include <linux/export.h>
-#include <linux/time.h>
 #include <linux/mm.h>
-#include <linux/string.h>
 #include <linux/sched/signal.h>
 #include <linux/capability.h>
-#include <linux/fcntl.h>
 #include <linux/security.h>
-#include <linux/xattr.h>
-/* ima_inode_post_setattr, evm_inode_post_setattr removed - empty stubs, never needed */
 static bool chgrp_ok(struct user_namespace *mnt_userns,
 		     const struct inode *inode, kgid_t gid)
 {

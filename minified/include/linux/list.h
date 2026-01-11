@@ -290,8 +290,7 @@ static inline void hlist_move_list(struct hlist_head *old,
 
 #define hlist_entry(ptr, type, member) container_of(ptr,type,member)
 
-#define hlist_for_each(pos, head) \
-	for (pos = (head)->first; pos ; pos = pos->next)
+/* hlist_for_each removed - unused */
 
 #define hlist_entry_safe(ptr, type, member) \
 	({ typeof(ptr) ____ptr = (ptr); \

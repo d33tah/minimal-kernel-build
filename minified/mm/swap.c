@@ -36,8 +36,7 @@ static DEFINE_PER_CPU(struct lru_rotate, lru_rotate) = {
 struct lru_pvecs {
 	local_lock_t lock;
 	struct pagevec lru_add;
-	struct pagevec lru_deactivate_file;
-	/* lru_deactivate, lru_lazyfree removed - pvecs never populated */
+	/* lru_deactivate_file, lru_deactivate, lru_lazyfree removed - pvecs never populated */
 };
 static DEFINE_PER_CPU(struct lru_pvecs, lru_pvecs) = {
 	.lock = INIT_LOCAL_LOCK(lock),
@@ -213,27 +212,7 @@ void lru_cache_add_inactive_or_unevictable(struct page *page,
 	lru_cache_add(page);
 }
 
-static void lru_deactivate_file_fn(struct page *page, struct lruvec *lruvec)
-{
-	if (PageUnevictable(page))
-		return;
-
-	if (page_mapped(page))
-		return;
-
-	del_page_from_lru_list(page, lruvec);
-	ClearPageActive(page);
-	ClearPageReferenced(page);
-
-	if (PageWriteback(page) || PageDirty(page)) {
-		add_page_to_lru_list(page, lruvec);
-		SetPageReclaim(page);
-	} else {
-		add_page_to_lru_list_tail(page, lruvec);
-	}
-}
-
-/* lru_deactivate_fn, lru_lazyfree_fn removed - pvecs never populated */
+/* lru_deactivate_file_fn, lru_deactivate_fn, lru_lazyfree_fn removed - pvecs never populated */
 
 void lru_add_drain_cpu(int cpu)
 {
@@ -252,10 +231,7 @@ void lru_add_drain_cpu(int cpu)
 		local_unlock_irqrestore(&lru_rotate.lock, flags);
 	}
 
-	pvec = &per_cpu(lru_pvecs.lru_deactivate_file, cpu);
-	if (pagevec_count(pvec))
-		pagevec_lru_move_fn(pvec, lru_deactivate_file_fn);
-	/* lru_deactivate, lru_lazyfree, activate_page_drain removed - never populated */
+	/* lru_deactivate_file, lru_deactivate, lru_lazyfree, activate_page_drain removed - never populated */
 }
 
 /* deactivate_file_folio removed - never called */

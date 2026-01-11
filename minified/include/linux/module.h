@@ -6,7 +6,7 @@
 #include <linux/stat.h>
 #include <linux/compiler.h>
 #include <linux/cache.h>
-#include <linux/kmod.h>
+/* kmod.h removed - was just includes, content removed */
 #include <linux/init.h>
 #include <linux/elf.h>
 #include <linux/stringify.h>

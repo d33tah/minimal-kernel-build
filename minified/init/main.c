@@ -3,7 +3,6 @@
 #include <linux/types.h>
 #include <linux/extable.h>
 #include <linux/module.h>
-#include <linux/proc_fs.h>
 #include <linux/binfmts.h>
 #include <linux/kernel.h>
 #include <linux/syscalls.h>
@@ -26,24 +25,18 @@
 /* profile_init, kfence_alloc_pool, kfence_init removed - empty stubs */
 #include <linux/rcupdate.h>
 #include <linux/srcu.h>
-#include <linux/moduleparam.h>
 #include <linux/kallsyms.h>
 /* init_vmlinux_build_id removed - empty stub */
-#include <linux/writeback.h>
 #include <linux/cpu.h>
 /* linux/cpuset.h removed - empty header */
 #include <linux/cgroup.h>
 #include <linux/efi.h>
 #include <linux/tick.h>
-#include <linux/sched/isolation.h>
 #include <linux/interrupt.h>
 /* taskstats_init_early, delayacct_init removed - empty stubs */
-#include <linux/unistd.h>
-#include <linux/utsname.h>
 #include <linux/rmap.h>
 #include <linux/mempolicy.h>
 /* linux/page_ext.h, linux/key.h removed - empty stubs */
-#include <linux/debug_locks.h>
 #include <linux/lockdep.h>
 #include <linux/pid_namespace.h>
 #include <linux/vmalloc.h>
@@ -62,8 +55,6 @@ extern void sched_init_smp(void);
 #include <linux/slab.h>
 #include <linux/perf_event.h>
 
-#include <linux/ptrace.h>
-#include <linux/blkdev.h>
 #include <linux/sched/clock.h>
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>

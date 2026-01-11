@@ -22,7 +22,7 @@ extern struct atomic_notifier_head panic_notifier_list;
 #define PANIC_TIMER_STEP 100
 #define PANIC_BLINK_SPD 18
 
-#define sysctl_oops_all_cpu_backtrace 0
+/* sysctl_oops_all_cpu_backtrace macro removed - unused */
 
 int panic_on_oops = CONFIG_PANIC_ON_OOPS_VALUE;
 static unsigned long tainted_mask = 0;

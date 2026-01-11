@@ -78,8 +78,7 @@ struct clone_args {
 #include <linux/signal_types.h>
 #include <linux/syscall_user_dispatch.h>
 #include <linux/mm_types_task.h>
-/* struct task_io_accounting and ioac field removed - empty struct, field never used */
-#include <linux/posix-timers.h>
+/* struct task_io_accounting, posix-timers.h removed - empty structs no longer needed */
 #include <linux/seqlock.h>
 #include <asm/kmap_size.h>
 
@@ -437,7 +436,7 @@ static inline int is_global_init(struct task_struct *tsk)
 #define PF_MEMALLOC		0x00000800
 #define PF_NPROC_EXCEEDED	0x00001000
 #define PF_NOFREEZE		0x00008000
-#define PF_FROZEN		0x00010000
+/* PF_FROZEN removed - unused */
 #define PF_MEMALLOC_NOFS	0x00040000
 #define PF_MEMALLOC_NOIO	0x00080000
 #define PF_KTHREAD		0x00200000

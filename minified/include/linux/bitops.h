@@ -11,10 +11,5 @@
 static inline __u32 rol32(__u32 word, unsigned int shift) { return (word << (shift & 31)) | (word >> ((-shift) & 31)); }
 static inline unsigned fls_long(unsigned long l) { if (sizeof(l) == 4) return fls(l); return fls64(l); }
 static inline int get_count_order_long(unsigned long l) { if (l == 0UL) return -1; return (int)fls_long(--l); }
-/* assign_bit removed - unused */
-#ifdef __KERNEL__
-#ifndef set_mask_bits
-#define set_mask_bits(ptr, mask, bits) ({ const typeof(*(ptr)) mask__ = (mask), bits__ = (bits); typeof(*(ptr)) old__, new__; do { old__ = READ_ONCE(*(ptr)); new__ = (old__ & ~mask__) | bits__; } while (cmpxchg(ptr, old__, new__) != old__); old__; })
-#endif
-#endif
+/* assign_bit, set_mask_bits removed - unused */
 #endif

@@ -22,8 +22,7 @@ int invalidate_inode_pages2_range(struct address_space *mapping,
 		pgoff_t start, pgoff_t end);
 /* write_inode_now removed - returns 0 stub, caller simplified */
 int filemap_fdatawait_range(struct address_space *, loff_t lstart, loff_t lend);
-int filemap_write_and_wait_range(struct address_space *mapping,
-		loff_t lstart, loff_t lend);
+/* filemap_write_and_wait_range removed - never called */
 int filemap_fdatawrite_wbc(struct address_space *mapping,
 			   struct writeback_control *wbc);
 /* filemap_sample_wb_err removed - never called */

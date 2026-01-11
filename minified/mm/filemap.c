@@ -213,36 +213,7 @@ int filemap_fdatawait_range(struct address_space *mapping, loff_t start_byte,
 	return filemap_check_errors(mapping);
 }
 
-int filemap_write_and_wait_range(struct address_space *mapping, loff_t lstart,
-				 loff_t lend)
-{
-	int err = 0;
-
-	if (mapping->nrpages) {
-		struct writeback_control wbc = {
-			.sync_mode = WB_SYNC_ALL,
-			.nr_to_write = LONG_MAX,
-			.range_start = lstart,
-			.range_end = lend,
-		};
-
-		err = filemap_fdatawrite_wbc(mapping, &wbc);
-
-		if (err != -EIO) {
-			int err2 =
-				filemap_fdatawait_range(mapping, lstart, lend);
-			if (!err)
-				err = err2;
-		} else {
-			filemap_check_errors(mapping);
-		}
-	} else {
-		err = filemap_check_errors(mapping);
-	}
-	return err;
-}
-
-/* file_check_and_advance_wb_err, file_write_and_wait_range removed - never called */
+/* filemap_write_and_wait_range, file_check_and_advance_wb_err, file_write_and_wait_range removed - never called */
 noinline int __filemap_add_folio(struct address_space *mapping,
 				 struct folio *folio, pgoff_t index, gfp_t gfp,
 				 void **shadowp)

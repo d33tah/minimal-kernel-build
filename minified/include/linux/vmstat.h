@@ -6,16 +6,8 @@
 #include <linux/mmzone.h>
 #include <linux/atomic.h>
 
-/* enum vm_event_item removed - none of the values were used */
 #include <linux/jump_label.h>
 #include <linux/mmdebug.h>
-
-/* enum writeback_stat_item removed - NR_VM_WRITEBACK_STAT_ITEMS was unused */
-
-/* count_vm_event, count_vm_events, __count_vm_event, __count_vm_events,
-   __count_zid_vm_events removed - unused */
-
-/* vm_events_fold_cpu removed - unused */
 
 #define count_vm_tlb_event(x)     do {} while (0)
 #define count_vm_tlb_events(x, y) do { (void)(y); } while (0)
@@ -45,19 +37,12 @@ static inline unsigned long global_zone_page_state(enum zone_stat_item item)
 	return x;
 }
 
-/* global_node_page_state_pages removed - never used */
-
 static inline unsigned long zone_page_state(struct zone *zone,
 					enum zone_stat_item item)
 {
 	long x = atomic_long_read(&zone->vm_stat[item]);
 	return x;
 }
-
-
-/* sum_zone_node_page_state, node_page_state_pages removed - unused */
-
-
 
 static inline void __mod_zone_page_state(struct zone *zone,
 			enum zone_stat_item item, long delta)
@@ -77,17 +62,11 @@ static inline void __mod_node_page_state(struct pglist_data *pgdat,
 	node_page_state_add(delta, pgdat, item);
 }
 
-/* __inc_zone_state, __inc_node_state removed - never called */
-
 static inline void __dec_zone_state(struct zone *zone, enum zone_stat_item item)
 {
 	atomic_long_dec(&zone->vm_stat[item]);
 	atomic_long_dec(&vm_zone_stat[item]);
 }
-
-/* __dec_node_state removed - never called */
-
-/* __inc_zone_page_state, __inc_node_page_state removed - never called */
 
 static inline void __dec_zone_page_state(struct page *page,
 			enum zone_stat_item item)
@@ -95,17 +74,9 @@ static inline void __dec_zone_page_state(struct page *page,
 	__dec_zone_state(page_zone(page), item);
 }
 
-/* __dec_node_page_state removed - never called */
-
 #define dec_zone_page_state __dec_zone_page_state
 #define mod_zone_page_state __mod_zone_page_state
 #define mod_node_page_state __mod_node_page_state
-
-/* inc_zone_state, inc_node_state, dec_zone_state removed - unused */
-
-/* set_pgdat_percpu_threshold removed - unused */
-/* refresh_zone_stat_thresholds, cpu_vm_stats_fold removed - unused */
-/* node_stat_mod_folio removed - never called */
 
 static inline void __mod_zone_freepage_state(struct zone *zone, int nr_pages,
 					     int migratetype)
@@ -114,7 +85,6 @@ static inline void __mod_zone_freepage_state(struct zone *zone, int nr_pages,
 	if (is_migrate_cma(migratetype))
 		__mod_zone_page_state(zone, NR_FREE_CMA_PAGES, nr_pages);
 }
-
 
 static inline void __mod_lruvec_state(struct lruvec *lruvec,
 				      enum node_stat_item idx, int val)

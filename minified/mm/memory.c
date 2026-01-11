@@ -1,11 +1,9 @@
 
-#include <linux/kernel_stat.h>
 #include <linux/mm.h>
 #include <linux/mm_inline.h>
 #include <linux/sched/mm.h>
 #include <linux/sched/coredump.h>
 #include <linux/sched/task.h>
-#include <linux/hugetlb.h>
 #include <linux/mman.h>
 #include <linux/swap.h>
 #include <linux/highmem.h>
@@ -15,18 +13,15 @@
 #include <linux/export.h>
 #include <linux/init.h>
 #include <linux/pfn_t.h>
-#include <linux/writeback.h>
 /* memcontrol.h removed - unused */
 #include <linux/mmu_notifier.h>
 #include <linux/swapops.h>
-#include <linux/elf.h>
 #include <linux/gfp.h>
 /* linux/migrate.h removed - empty header */
 #include <linux/string.h>
 #include <linux/userfaultfd_k.h>
 #include <linux/file.h>
 /* numa.h, perf_event.h removed - unused */
-#include <linux/ptrace.h>
 #include <linux/vmalloc.h>
 
 #include <asm/io.h>

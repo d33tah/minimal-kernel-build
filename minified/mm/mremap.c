@@ -7,7 +7,6 @@
 #include <linux/fs.h>
 #include <linux/swapops.h>
 #include <linux/highmem.h>
-#include <linux/security.h>
 #include <linux/syscalls.h>
 #include <linux/mmu_notifier.h>
 #include <linux/uaccess.h>

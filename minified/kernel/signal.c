@@ -1,7 +1,6 @@
 
 #include <linux/slab.h>
 #include <linux/syscalls.h>
-#include <linux/security.h>
 #include <linux/sched/task_stack.h>
 #include <linux/sched/cputime.h>
 /* file.h, freezer.h, audit.h, proc_fs.h removed - unused */

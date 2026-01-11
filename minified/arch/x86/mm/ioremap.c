@@ -15,7 +15,6 @@ static inline bool cc_platform_has(enum cc_attr attr)
 {
 	return false;
 }
-#include <linux/efi.h>
 #include <linux/pgtable.h>
 
 #include <asm/set_memory.h>

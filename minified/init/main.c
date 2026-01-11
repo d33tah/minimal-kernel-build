@@ -30,7 +30,6 @@
 #include <linux/cpu.h>
 /* linux/cpuset.h removed - empty header */
 #include <linux/cgroup.h>
-#include <linux/efi.h>
 #include <linux/tick.h>
 #include <linux/interrupt.h>
 /* taskstats_init_early, delayacct_init removed - empty stubs */

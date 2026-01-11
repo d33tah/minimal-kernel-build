@@ -8,7 +8,6 @@
 #include <linux/hugetlb.h>
 
 #include <linux/uaccess.h>
-#include <linux/efi.h>
 #include <linux/mm_types.h>
 
 #include <asm/cpufeature.h>

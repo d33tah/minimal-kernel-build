@@ -35,17 +35,9 @@ SYSCALL_DEFINE5(llseek, unsigned int, fd, unsigned long, offset_high,
 }
 #endif
 
-/* rw_verify_area removed - always returns 0, all callers already removed checks */
+/* rw_verify_area, warn_unsupported removed - inlined */
 
-static int warn_unsupported(struct file *file, const char *op)
-{
-	pr_warn_ratelimited(
-		"kernel %s not supported for file %pD4 (pid: %d comm: %.20s)\n",
-		op, file, current->pid, current->comm);
-	return -EINVAL;
-}
-
-ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
+ssize_t kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
 {
 	struct kvec iov = {
 		.iov_base = buf,
@@ -60,8 +52,12 @@ ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
 	if (!(file->f_mode & FMODE_CAN_READ))
 		return -EINVAL;
 
-	if (unlikely(!file->f_op->read_iter || file->f_op->read))
-		return warn_unsupported(file, "read");
+	if (unlikely(!file->f_op->read_iter || file->f_op->read)) {
+		pr_warn_ratelimited(
+			"kernel read not supported for file %pD4 (pid: %d comm: %.20s)\n",
+			file, current->pid, current->comm);
+		return -EINVAL;
+	}
 
 	init_sync_kiocb(&kiocb, file);
 	kiocb.ki_pos = pos ? *pos : 0;
@@ -70,12 +66,6 @@ ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
 	if (ret > 0 && pos)
 		*pos = kiocb.ki_pos;
 	return ret;
-}
-
-ssize_t kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
-{
-	/* rw_verify_area always returns 0 - check removed */
-	return __kernel_read(file, buf, count, pos);
 }
 
 /* kernel_write and __kernel_write removed - never called */

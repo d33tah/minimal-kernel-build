@@ -4,9 +4,7 @@
 #include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/module.h>
-#include <linux/tty.h>
 #include <linux/namei.h>
-#include <linux/backing-dev.h>
 #include <linux/capability.h>
 #include <linux/init_task.h> /* for securebits defines */
 #include <linux/security.h>
@@ -16,7 +14,6 @@
 #include <linux/uaccess.h>
 #include <linux/fs.h>
 #include <linux/personality.h>
-#include <linux/pagemap.h>
 #include <linux/syscalls.h>
 #include <linux/rcupdate.h>
 /* audit.h removed - unused */

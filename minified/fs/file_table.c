@@ -8,16 +8,12 @@
 #include <linux/fs.h>
 #include <linux/security.h>
 #include <linux/cred.h>
-#include <linux/eventpoll.h>
 #include <linux/rcupdate.h>
 #include <linux/mount.h>
-#include <linux/capability.h>
 #include <linux/cdev.h>
-#include <linux/sysctl.h>
 #include <linux/percpu_counter.h>
 #include <linux/percpu.h>
 #include <linux/task_work.h>
-#include <linux/swap.h>
 
 #include <linux/atomic.h>
 

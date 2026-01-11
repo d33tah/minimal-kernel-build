@@ -89,8 +89,4 @@ void __udelay(unsigned long usecs)
 {
 	__const_udelay(usecs * 0x000010c7);
 }
-
-void __ndelay(unsigned long nsecs)
-{
-	__const_udelay(nsecs * 0x00005);
-}
+/* __ndelay removed - never called */

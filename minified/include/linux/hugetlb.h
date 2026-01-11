@@ -23,11 +23,7 @@ static inline void hugetlb_count_init(struct mm_struct *mm)
 {
 }
 
-static inline struct page *follow_huge_addr(struct mm_struct *mm,
-					unsigned long address, int write)
-{
-	return ERR_PTR(-EINVAL);
-}
+/* follow_huge_addr removed - call site in gup.c was removed */
 
 static inline struct hstate *hstate_vma(struct vm_area_struct *vma)
 {

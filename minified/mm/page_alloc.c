@@ -56,15 +56,7 @@ typedef int __bitwise fpi_t;
 /* FPI_NONE removed - unused */
 #define FPI_TO_TAIL ((__force fpi_t)BIT(1))
 #define FPI_SKIP_KASAN_POISON ((__force fpi_t)BIT(2))
-/* MIN_PERCPU_PAGELIST_HIGH_FRACTION removed - unused */
-
-struct pagesets {
-	local_lock_t lock;
-};
-static DEFINE_PER_CPU(struct pagesets, pagesets) = {
-	.lock = INIT_LOCAL_LOCK(lock),
-};
-
+/* pagesets struct removed - unused */
 nodemask_t node_states[NR_NODE_STATES] __read_mostly = {
 	[N_POSSIBLE] = NODE_MASK_ALL,	       [N_ONLINE] = { { [0] = 1UL } },
 	[N_NORMAL_MEMORY] = { { [0] = 1UL } }, [N_MEMORY] = { { [0] = 1UL } },

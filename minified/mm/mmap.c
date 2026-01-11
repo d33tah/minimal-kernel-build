@@ -3,7 +3,7 @@
 
 #include <linux/kernel.h>
 #include <linux/slab.h>
-#include <linux/backing-dev.h>
+/* backing-dev.h removed - unused */
 #include <linux/mm.h>
 #include <linux/mm_inline.h>
 #include <linux/vmacache.h>

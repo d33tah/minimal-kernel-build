@@ -1,11 +1,8 @@
 
-#include <linux/stddef.h>
+/* stddef.h, highmem.h, swapops.h, pagemap.h removed - unused */
 #include <linux/mm.h>
-#include <linux/highmem.h>
 #include <linux/swap.h>
-#include <linux/swapops.h>
 #include <linux/interrupt.h>
-#include <linux/pagemap.h>
 #include <linux/memblock.h>
 #include <linux/compiler.h>
 #include <linux/kernel.h>

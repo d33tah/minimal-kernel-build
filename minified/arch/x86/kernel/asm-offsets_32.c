@@ -1,11 +1,7 @@
 #ifndef __LINUX_KBUILD_H
 #error "Please do not build this file directly, build asm-offsets.c instead"
 #endif
-
-#include <linux/efi.h>
-
-#include <asm/ucontext.h>
-
+/* efi.h, ucontext.h removed - EFI_svam offset no longer used */
 void foo(void);
 
 void foo(void)

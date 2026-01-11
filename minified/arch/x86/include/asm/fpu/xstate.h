@@ -50,14 +50,7 @@
 					 XFEATURE_MASK_USER_DYNAMIC)
 
 /* xstate_fx_sw_bytes removed - never used */
-
-int xfeature_size(int xfeature_nr);
-
-void xsaves(struct xregs_state *xsave, u64 mask);
-void xrstors(struct xregs_state *xsave, u64 mask);
-
-int xfd_enable_feature(u64 xfd_err);
-
+/* xfeature_size, xsaves, xrstors, xfd_enable_feature declarations removed - no implementations */
 
 static __always_inline __pure bool fpu_state_size_dynamic(void)
 {

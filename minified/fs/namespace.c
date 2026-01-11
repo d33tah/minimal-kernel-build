@@ -47,8 +47,7 @@ static HLIST_HEAD(unmounted);
 static LIST_HEAD(ex_mountpoints);
 
 struct mount_kattr {
-	unsigned int attr_set;
-	unsigned int attr_clr;
+	/* attr_set, attr_clr removed - never accessed */
 	unsigned int propagation;
 	unsigned int lookup_flags;
 	bool recurse;
@@ -1206,20 +1205,11 @@ SYSCALL_DEFINE5(mount, char __user *, dev_name, char __user *, dir_name,
 	return -ENOSYS;
 }
 
-#define FSMOUNT_VALID_FLAGS                                              \
-	(MOUNT_ATTR_RDONLY | MOUNT_ATTR_NOSUID | MOUNT_ATTR_NODEV |      \
-	 MOUNT_ATTR_NOEXEC | MOUNT_ATTR__ATIME | MOUNT_ATTR_NODIRATIME | \
-	 MOUNT_ATTR_NOSYMFOLLOW)
-
-#define MOUNT_SETATTR_VALID_FLAGS (FSMOUNT_VALID_FLAGS | MOUNT_ATTR_IDMAP)
-
-#define MOUNT_SETATTR_PROPAGATION_FLAGS \
-	(MS_UNBINDABLE | MS_PRIVATE | MS_SLAVE | MS_SHARED)
+/* FSMOUNT_VALID_FLAGS, MOUNT_SETATTR_VALID_FLAGS, MOUNT_SETATTR_PROPAGATION_FLAGS removed - unused */
 
 SYSCALL_DEFINE3(fsmount, int, fs_fd, unsigned int, flags, unsigned int,
 		attr_flags)
 {
-	/* Stubbed: fsmount not needed for minimal kernel */
 	return -ENOSYS;
 }
 

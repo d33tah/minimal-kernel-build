@@ -5,7 +5,7 @@
 #include <linux/fs_struct.h>
 #include <linux/file.h>
 #include <linux/init_syscalls.h>
-#include <linux/security.h>
+/* security.h removed - unused */
 #include "internal.h"
 
 int __init init_mount(const char *dev_name, const char *dir_name,

@@ -156,13 +156,7 @@ void prb_init(struct printk_ringbuffer *rb, char *text_buf,
 	      unsigned int descs_count_bits, struct printk_info *infos);
 unsigned int prb_record_text_space(struct prb_reserved_entry *e);
 
-/* prb_rec_init_rd removed - never called */
-
-#define prb_for_each_record(from, rb, s, r) \
-	for ((s) = from; prb_read_valid(rb, s, r); (s) = (r)->info->seq + 1)
-
-#define prb_for_each_info(from, rb, s, i, lc) \
-	for ((s) = from; prb_read_valid_info(rb, s, i, lc); (s) = (i)->seq + 1)
+/* prb_rec_init_rd, prb_for_each_record, prb_for_each_info removed - never called */
 
 bool prb_read_valid(struct printk_ringbuffer *rb, u64 seq,
 		    struct printk_record *r);

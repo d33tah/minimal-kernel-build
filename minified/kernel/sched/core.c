@@ -118,23 +118,7 @@ void update_rq_clock(struct rq *rq)
 }
 
 /* hrtick_clear, hrtick_rq_init removed - empty stubs */
-
-#define fetch_or(ptr, mask)                                       \
-	({                                                        \
-		typeof(ptr) _ptr = (ptr);                         \
-		typeof(mask) _mask = (mask);                      \
-		typeof(*_ptr) _old, _val = *_ptr;                 \
-                                                                  \
-		for (;;) {                                        \
-			_old = cmpxchg(_ptr, _val, _val | _mask); \
-			if (_old == _val)                         \
-				break;                            \
-			_val = _old;                              \
-		}                                                 \
-		_old;                                             \
-	})
-
-/* Removed: set_nr_and_not_polling - never called (~5 LOC) */
+/* fetch_or macro removed - only used by removed set_nr_and_not_polling */
 
 static bool __wake_q_add(struct wake_q_head *head, struct task_struct *task)
 {

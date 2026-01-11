@@ -101,8 +101,6 @@ static inline struct folio *filemap_alloc_folio(gfp_t gfp, unsigned int order)
 	return folio_alloc(gfp, order);
 }
 
-typedef int filler_t(struct file *, struct folio *);
-
 #define FGP_ACCESSED		0x00000001
 #define FGP_LOCK		0x00000002
 #define FGP_CREAT		0x00000004

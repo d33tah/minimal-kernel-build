@@ -24,7 +24,6 @@
 /* linux/migrate.h removed - empty header */
 #include <linux/string.h>
 #include <linux/userfaultfd_k.h>
-#include <linux/oom.h>
 #include <linux/file.h>
 /* numa.h, perf_event.h removed - unused */
 #include <linux/ptrace.h>

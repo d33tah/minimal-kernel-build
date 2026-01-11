@@ -30,7 +30,6 @@
 #include <linux/kmod.h>
 /* fsnotify.h removed - unused */
 #include <linux/fs_struct.h>
-#include <linux/oom.h>
 #include <linux/compat.h>
 #include <linux/vmalloc.h>
 /* io_uring.h removed - unused */

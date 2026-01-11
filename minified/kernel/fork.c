@@ -60,7 +60,6 @@ struct file *anon_inode_getfile(const char *name,
 #include <linux/magic.h>
 /* perf_event.h, posix-timers.h removed - unused */
 /* user_return_notifier stubs, khugepaged_exit, scs_* removed - empty stubs */
-#include <linux/oom.h>
 /* uprobes.h removed - unused */
 #include <linux/compiler.h>
 #include <linux/sysctl.h>

@@ -42,7 +42,6 @@ extern int nr_threads;
 #include <linux/fs_struct.h>
 #include <linux/init_task.h>
 /* perf_event.h removed - unused */
-#include <linux/oom.h>
 #include <linux/writeback.h>
 #include <linux/rcuwait.h>
 #include <linux/compat.h>

@@ -30,7 +30,6 @@
 #include <linux/printk.h>
 #include <linux/userfaultfd_k.h>
 /* moduleparam.h, pkeys.h removed - unused */
-#include <linux/oom.h>
 #include <linux/sched/mm.h>
 
 #include <linux/uaccess.h>

@@ -14,7 +14,6 @@
 #include <linux/blkdev.h>
 #include <linux/slab.h>
 /* ratelimit.h removed - unused */
-#include <linux/oom.h>
 #include <linux/topology.h>
 /* sysctl.h removed - unused */
 #include <linux/cpu.h>

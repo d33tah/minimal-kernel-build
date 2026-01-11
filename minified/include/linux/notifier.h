@@ -45,9 +45,7 @@ struct raw_notifier_head {
 
 #ifdef __KERNEL__
 
-extern int atomic_notifier_chain_register(struct atomic_notifier_head *nh,
-		struct notifier_block *nb);
-/* blocking_notifier_chain_register removed - never called */
+/* atomic_notifier_chain_register, blocking_notifier_chain_register removed - never called */
 
 
 extern int atomic_notifier_call_chain(struct atomic_notifier_head *nh,

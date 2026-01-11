@@ -1,7 +1,6 @@
 
 #include <linux/vmalloc.h>
 #include <linux/mm.h>
-#include <linux/module.h>
 /* highmem.h removed - unused */
 #include <linux/sched/signal.h>
 #include <linux/slab.h>
@@ -10,14 +9,10 @@
 /* proc_fs.h, seq_file.h, kallsyms.h, io.h, memcontrol.h, llist.h removed - unused */
 #include <asm/set_memory.h>
 #include <linux/list.h>
-#include <linux/notifier.h>
 #include <linux/rbtree.h>
-#include <linux/xarray.h>
 #include <linux/rcupdate.h>
 #include <linux/pfn.h>
 #include <linux/atomic.h>
-#include <linux/compiler.h>
-#include <linux/bitops.h>
 #include <linux/rbtree_augmented.h>
 #include <linux/overflow.h>
 #include <linux/pgtable.h>

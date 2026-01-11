@@ -11,24 +11,9 @@
 #include <asm/thread_info.h>
 #include <asm/sigframe.h>
 #include <asm/bootparam.h>
-/* --- 2025-12-07 20:29 --- Inlined suspend_32.h */
+/* struct saved_context removed - hibernation not used */
 #include <asm/desc.h>
 #include <asm/fpu/api.h>
-struct saved_context {
-	u16 gs;
-	unsigned long cr0, cr2, cr3, cr4;
-	u64 misc_enable;
-	struct saved_msrs saved_msrs;
-	struct desc_ptr gdt_desc;
-	struct desc_ptr idt;
-	u16 ldt;
-	u16 tss;
-	unsigned long tr;
-	unsigned long safety;
-	unsigned long return_address;
-	bool misc_enable_saved;
-} __attribute__((packed));
-/* core_restore_code, restore_registers externs removed - never used */
 #include <asm/tlbflush.h>
 /* TDX not used in minimal kernel */
 

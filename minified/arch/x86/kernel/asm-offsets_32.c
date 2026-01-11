@@ -38,15 +38,12 @@ void foo(void)
 	OFFSET(PT_OLDSS, pt_regs, ss);
 	BLANK();
 
-	OFFSET(saved_context_gdt_desc, saved_context, gdt_desc);
-	BLANK();
+	/* saved_context_gdt_desc removed - not used in assembly */
 
 	DEFINE(TSS_entry2task_stack,
 	       offsetof(struct cpu_entry_area, tss.x86_tss.sp1) -
 		       offsetofend(struct cpu_entry_area,
 				   entry_stack_page.stack));
 
-	BLANK();
-	DEFINE(EFI_svam,
-	       offsetof(efi_runtime_services_t, set_virtual_address_map));
+	/* EFI_svam removed - not used */
 }

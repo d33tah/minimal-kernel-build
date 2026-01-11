@@ -56,10 +56,7 @@ static inline int xa_err(void *entry)
 	return 0;
 }
 
-struct xa_limit {
-	u32 max;
-	u32 min;
-};
+/* struct xa_limit removed - unused */
 
 typedef unsigned __bitwise xa_mark_t;
 #define XA_MARK_0		((__force xa_mark_t)0U)

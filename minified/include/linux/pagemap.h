@@ -281,16 +281,7 @@ bool filemap_release_folio(struct folio *folio, gfp_t gfp);
 int __filemap_add_folio(struct address_space *mapping, struct folio *folio,
 		pgoff_t index, gfp_t gfp, void **shadowp);
 
-struct readahead_control {
-	struct file *file;
-	struct address_space *mapping;
-	struct file_ra_state *ra;
-	pgoff_t _index;
-	unsigned int _nr_pages;
-	unsigned int _batch_count;
-};
-
-/* Readahead disabled for minimal kernel */
+/* struct readahead_control removed - readahead disabled for minimal kernel */
 static inline
 void page_cache_sync_readahead(struct address_space *mapping,
 		struct file_ra_state *ra, struct file *file, pgoff_t index,

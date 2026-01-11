@@ -58,11 +58,7 @@ struct old_sigaction {
 	__sigrestore_t sa_restorer;
 };
 
-struct ksignal {
-	struct k_sigaction ka;
-	kernel_siginfo_t info;
-	int sig;
-};
+/* struct ksignal removed - unused */
 
 #define SA_IMMUTABLE		0x00800000
 

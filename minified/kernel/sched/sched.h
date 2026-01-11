@@ -48,7 +48,7 @@ extern unsigned int nr_iowait_cpu(int cpu);
 #include <linux/mm.h>
 #include <linux/module.h>
 
-#include <linux/plist.h>
+/* plist.h removed - unused */
 #include <linux/poll.h>
 #include <linux/proc_fs.h>
 #include <linux/rcupdate.h>

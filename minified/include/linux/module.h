@@ -58,9 +58,7 @@ struct module_attribute {
 };
 
 /* struct module_version_attribute removed - unused */
-
-extern int init_module(void);
-
+/* extern int init_module(void) removed - never called */
 /* module_init, module_exit removed - never used (no modules) */
 
 #define __init_or_module __init

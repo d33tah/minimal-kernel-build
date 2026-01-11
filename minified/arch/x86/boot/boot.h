@@ -110,16 +110,10 @@ extern char _end[];
 extern char *HEAP;
 extern char *heap_end;
 #define RESET_HEAP() ((void *)( HEAP = _end ))
-#define GET_HEAP(type, n) \
-	((type *)(HEAP = (char *)(((size_t)HEAP+(__alignof__(type)-1)) & ~(__alignof__(type)-1)), \
-	          HEAP += sizeof(type)*(n), HEAP - sizeof(type)*(n)))
 
  
 
-void copy_to_fs(addr_t dst, void *src, size_t len);
-void *copy_from_fs(void *dst, addr_t src, size_t len);
-void copy_to_gs(addr_t dst, void *src, size_t len);
-void *copy_from_gs(void *dst, addr_t src, size_t len);
+/* copy_to/from_fs/gs removed - never called */
 
  
 int enable_a20(void);

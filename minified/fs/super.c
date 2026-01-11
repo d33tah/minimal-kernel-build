@@ -1,7 +1,5 @@
 
-#include <linux/export.h>
 #include <linux/slab.h>
-#include <linux/blkdev.h>
 #include <linux/mount.h>
 #include <linux/security.h>
 #include <linux/writeback.h>

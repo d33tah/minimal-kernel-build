@@ -44,13 +44,9 @@ extern int copy_sigframe_from_user_to_xstate(struct fpstate *fpstate, const void
 extern void fpu__init_cpu_xstate(void);
 extern void fpu__init_system_xstate(unsigned int legacy_size);
 
-static inline u64 xfeatures_mask_supervisor(void)
-{
-	return fpu_kernel_cfg.max_features & XFEATURE_MASK_SUPERVISOR_SUPPORTED;
-}
+/* xfeatures_mask_supervisor removed - never called */
 
 
- 
 
 #define REX_PREFIX
 

@@ -160,10 +160,7 @@ static inline void irqd_set_activated(struct irq_data *d)
 	__irqd_to_state(d) |= IRQD_ACTIVATED;
 }
 
-static inline void irqd_clr_activated(struct irq_data *d)
-{
-	__irqd_to_state(d) &= ~IRQD_ACTIVATED;
-}
+/* irqd_clr_activated removed - never called */
 
 static inline bool irqd_is_started(struct irq_data *d)
 {

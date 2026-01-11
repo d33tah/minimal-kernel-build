@@ -69,11 +69,7 @@ void lruvec_add_folio(struct lruvec *lruvec, struct folio *folio)
 		list_add(&folio->lru, &lruvec->lists[lru]);
 }
 
-static __always_inline void add_page_to_lru_list(struct page *page,
-				struct lruvec *lruvec)
-{
-	lruvec_add_folio(lruvec, page_folio(page));
-}
+/* add_page_to_lru_list removed - never called */
 
 static __always_inline
 void lruvec_add_folio_tail(struct lruvec *lruvec, struct folio *folio)
@@ -86,11 +82,7 @@ void lruvec_add_folio_tail(struct lruvec *lruvec, struct folio *folio)
 	list_add_tail(&folio->lru, &lruvec->lists[lru]);
 }
 
-static __always_inline void add_page_to_lru_list_tail(struct page *page,
-				struct lruvec *lruvec)
-{
-	lruvec_add_folio_tail(lruvec, page_folio(page));
-}
+/* add_page_to_lru_list_tail removed - never called */
 
 static __always_inline
 void lruvec_del_folio(struct lruvec *lruvec, struct folio *folio)

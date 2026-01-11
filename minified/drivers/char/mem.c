@@ -167,32 +167,7 @@ static const struct memdev {
 	[9] = { "urandom", 0666, &urandom_fops, 0 },
 };
 
-static int memory_open(struct inode *inode, struct file *filp)
-{
-	int minor;
-	const struct memdev *dev;
-
-	minor = iminor(inode);
-	if (minor >= ARRAY_SIZE(devlist))
-		return -ENXIO;
-
-	dev = &devlist[minor];
-	if (!dev->fops)
-		return -ENXIO;
-
-	filp->f_op = dev->fops;
-	filp->f_mode |= dev->fmode;
-
-	if (dev->fops->open)
-		return dev->fops->open(inode, filp);
-
-	return 0;
-}
-
-static const struct file_operations memory_fops = {
-	.open = memory_open,
-	/* llseek removed - lseek syscall returns ENOSYS */
-};
+/* memory_open, memory_fops removed - never called */
 
 /* mem_devnode, mem_class removed - unused */
 

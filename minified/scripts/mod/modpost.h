@@ -155,12 +155,7 @@ struct elf_info {
 	Elf32_Word   *symtab_shndx_stop;
 };
 
-static inline int is_shndx_special(unsigned int i)
-{
-	return i != SHN_XINDEX && i >= SHN_LORESERVE && i <= SHN_HIRESERVE;
-}
-
-/* SPECIAL macro and get_secindex removed - never used */
+/* is_shndx_special, SPECIAL macro and get_secindex removed - never used */
 
 void handle_moddevtable(struct module *mod, struct elf_info *info,
 			Elf_Sym *sym, const char *symname);

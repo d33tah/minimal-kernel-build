@@ -810,13 +810,13 @@ extern void iput(struct inode *);
 
 #define MAX_RW_COUNT (INT_MAX & PAGE_MASK)
 
-struct audit_names;
+/* struct audit_names forward decl removed - never defined or used */
 struct filename {
-	const char		*name;	
-	const __user char	*uptr;	
-	int			refcnt;
-	struct audit_names	*aname;
-	const char		iname[];
+	const char *name;
+	const __user char *uptr;
+	int refcnt;
+	/* aname field removed - only set to NULL, never read */
+	const char iname[];
 };
 static_assert(offsetof(struct filename, iname) % sizeof(long) == 0);
 

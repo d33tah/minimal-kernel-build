@@ -40,19 +40,7 @@ static __always_inline void jump_label_init(void)
 	static_key_initialized = true;
 }
 
-static inline void static_key_slow_inc(struct static_key *key)
-{
-	STATIC_KEY_CHECK_USE(key);
-	atomic_inc(&key->enabled);
-}
-
-static inline void static_key_slow_dec(struct static_key *key)
-{
-	STATIC_KEY_CHECK_USE(key);
-	atomic_dec(&key->enabled);
-}
-
-/* static_key_slow_inc_cpuslocked, static_key_slow_dec_cpuslocked removed - never used */
+/* static_key_slow_inc, static_key_slow_dec, static_key_slow_inc_cpuslocked, static_key_slow_dec_cpuslocked removed - never used */
 
 
 static inline void static_key_enable(struct static_key *key)
@@ -145,9 +133,7 @@ extern bool ____wrong_branch_error(void);
 			    : static_branch_unlikely(x))
 
 
-#define static_branch_inc(x)		static_key_slow_inc(&(x)->key)
-#define static_branch_dec(x)		static_key_slow_dec(&(x)->key)
-/* static_branch_inc_cpuslocked, static_branch_dec_cpuslocked removed - never used */
+/* static_branch_inc, static_branch_dec, static_branch_inc_cpuslocked, static_branch_dec_cpuslocked removed - never used */
 
 
 #define static_branch_enable(x)			static_key_enable(&(x)->key)

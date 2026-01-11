@@ -88,12 +88,7 @@ static inline int srcu_read_lock_held(const struct srcu_struct *ssp)
 }
 
 
-#define srcu_dereference_check(p, ssp, c) \
-	__rcu_dereference_check((p), __UNIQUE_ID(rcu), \
-				(c) || srcu_read_lock_held(ssp), __rcu)
-
-#define srcu_dereference(p, ssp) srcu_dereference_check((p), (ssp), 0)
-/* srcu_dereference_notrace removed - never used */
+/* srcu_dereference_check, srcu_dereference, srcu_dereference_notrace removed - never used */
 
 static inline int srcu_read_lock(struct srcu_struct *ssp) __acquires(ssp)
 {

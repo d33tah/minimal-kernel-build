@@ -9,7 +9,7 @@
 #include <linux/kdev_t.h>
 #include <linux/notifier.h>
 #include <linux/of.h>
-#include <linux/of_device.h>
+/* of_device.h removed - only has includes, no definitions used */
 #include <linux/blkdev.h>
 #include <linux/mutex.h>
 #include <linux/pm_runtime.h>

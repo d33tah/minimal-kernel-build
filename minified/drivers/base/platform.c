@@ -1,8 +1,7 @@
 
 #include <linux/string.h>
 #include <linux/platform_device.h>
-#include <linux/of_device.h>
-
+#include <linux/mod_devicetable.h>
 #include <linux/irqdomain.h>
 
 #include <linux/module.h>

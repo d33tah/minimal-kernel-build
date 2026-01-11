@@ -14,7 +14,6 @@
 #include <linux/memremap.h>
 #include <linux/percpu.h>
 #include <linux/cpu.h>
-#include <linux/notifier.h>
 #include <linux/backing-dev.h>
 /* memcontrol.h removed - unused */
 #include <linux/gfp.h>

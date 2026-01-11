@@ -21,7 +21,6 @@
 #include <linux/consolemap.h>
 #include <linux/interrupt.h>
 #include <linux/workqueue.h>
-#include <linux/pm.h>
 
 #include <linux/bitops.h>
 #include <linux/notifier.h>

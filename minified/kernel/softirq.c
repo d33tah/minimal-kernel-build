@@ -6,7 +6,6 @@
 #include <linux/init.h>
 #include <linux/local_lock.h>
 #include <linux/mm.h>
-#include <linux/notifier.h>
 #include <linux/percpu.h>
 #include <linux/cpu.h>
 #include <linux/kthread.h>

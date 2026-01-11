@@ -4,7 +4,7 @@
 #include <linux/kobject.h>
 #include <linux/mutex.h>
 /* struct irq_affinity_notify removed - unused */
-struct proc_dir_entry;
+/* struct proc_dir_entry forward decl removed - never defined or used */
 struct module;
 struct irq_desc;
 struct irq_domain;

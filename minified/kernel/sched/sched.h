@@ -77,7 +77,7 @@ extern unsigned int nr_iowait_cpu(int cpu);
 # define SCHED_WARN_ON(x)      ({ (void)(x), 0; })
 
 struct rq;
-struct cpuidle_state;
+/* struct cpuidle_state forward decl removed - never defined or used */
 
  
 #define TASK_ON_RQ_QUEUED	1
@@ -269,8 +269,7 @@ static inline int cpu_of(struct rq *rq)
 	return 0;
 }
 
-struct sched_group;
-
+/* struct sched_group forward decl removed - never defined or used */
 /* sched_core_enabled removed - unused */
 
 static inline bool sched_core_disabled(void)

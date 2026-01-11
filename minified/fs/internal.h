@@ -3,8 +3,7 @@
 
 struct super_block;
 struct file_system_type;
-struct iomap;
-struct iomap_ops;
+/* struct iomap and struct iomap_ops forward decls removed - never defined */
 struct linux_binprm;
 struct path;
 struct mount;

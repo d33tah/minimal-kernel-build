@@ -19,7 +19,7 @@ typedef void (*irq_flow_handler_t)(struct irq_desc *desc);
 
 struct seq_file;
 struct module;
-struct msi_msg;
+/* struct msi_msg forward decl removed - never defined or used */
 struct irq_affinity_desc;
 enum irqchip_irq_state;
 

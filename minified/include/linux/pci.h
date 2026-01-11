@@ -15,13 +15,10 @@
 #include <linux/acpi.h>
 /* Inlined from asm/pci.h */
 #ifdef CONFIG_X86
-struct pci_bus;
-struct pci_dev;
+/* struct pci_bus, pci_dev forward decls removed - never defined or used */
 extern void pci_iommu_alloc(void);
 #endif
 /* PCI macros, structs removed - unused */
-struct pci_bus;
-struct pci_dev;
 /* pci_device_id, pci_printk/err/warn/etc removed - unused */
 #include <linux/dma-mapping.h>
 #endif

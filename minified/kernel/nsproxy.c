@@ -1,6 +1,5 @@
 
 #include <linux/slab.h>
-#include <linux/export.h>
 #include <linux/nsproxy.h>
 #include <linux/init_task.h>
 #include <linux/mnt_namespace.h>

@@ -8,7 +8,6 @@
 #include <linux/file.h>
 #include <linux/mm.h>
 #include <linux/sched/signal.h>
-#include <linux/export.h>
 #include <linux/swap.h>
 #include <linux/uio.h>
 /* hugetlb.h removed - unused */

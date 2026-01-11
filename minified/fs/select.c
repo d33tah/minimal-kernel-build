@@ -1,5 +1,4 @@
 #include <linux/poll.h>
-#include <linux/export.h>
 #include <linux/syscalls.h>
 #include <linux/compat.h>
 struct sel_arg_struct {

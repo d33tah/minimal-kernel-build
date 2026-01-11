@@ -1,6 +1,5 @@
 
 #include <linux/mm.h>
-#include <linux/export.h>
 #include <linux/swap.h>
 #include <linux/pagemap.h>
 #include <linux/init.h>

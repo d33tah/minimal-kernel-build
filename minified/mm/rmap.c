@@ -9,7 +9,6 @@
 #include <linux/init.h>
 #include <linux/rmap.h>
 #include <linux/rcupdate.h>
-#include <linux/export.h>
 /* memcontrol.h removed - unused */
 #include <linux/mmu_notifier.h>
 /* linux/migrate.h removed - empty header */

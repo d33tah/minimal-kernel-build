@@ -1,5 +1,4 @@
 
-#include <linux/export.h>
 #include <linux/fs.h>
 #include <linux/mm.h>
 /* backing-dev.h removed - unused */

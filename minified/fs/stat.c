@@ -1,7 +1,6 @@
 #include <linux/fs.h>
 #include <linux/stat.h>
 #include <linux/syscalls.h>
-#include <linux/export.h>
 
 /* generic_fillattr removed - empty stub, callers simplified */
 /* vfs_getattr removed - always returned 0, caller simplified */

@@ -2,7 +2,6 @@
 #include <linux/slab.h>
 #include <linux/string.h>
 #include <linux/compiler.h>
-#include <linux/export.h>
 #include <linux/err.h>
 #include <linux/sched.h>
 #include <linux/sched/mm.h>

@@ -1,6 +1,5 @@
 #include <linux/interrupt.h>
 #include <linux/kernel.h>
-#include <linux/export.h>
 #include <linux/smp.h>
 void on_each_cpu_cond_mask(smp_cond_func_t cond_func, smp_call_func_t func,
 			   void *info, bool wait, const struct cpumask *mask)

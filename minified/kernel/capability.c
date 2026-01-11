@@ -1,6 +1,5 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 #include <linux/capability.h>
-#include <linux/export.h>
 #include <linux/user_namespace.h>
 #include <linux/fs.h>
 /* __cap_empty_set removed - never used (cap_clear macro never called) */

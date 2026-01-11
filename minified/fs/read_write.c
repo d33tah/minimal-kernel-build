@@ -4,7 +4,6 @@
 #include <linux/file.h>
 #include <linux/uio.h>
 /* fsnotify.h removed - unused */
-#include <linux/export.h>
 #include <linux/syscalls.h>
 #include <linux/pagemap.h>
 #include <linux/splice.h>

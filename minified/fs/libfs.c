@@ -1,6 +1,5 @@
 
 #include <linux/blkdev.h>
-#include <linux/export.h>
 #include <linux/pagemap.h>
 #include <linux/slab.h>
 #include <linux/cred.h>

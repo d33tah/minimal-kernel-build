@@ -234,50 +234,7 @@ void truncate_inode_pages_final(struct address_space *mapping)
 	truncate_inode_pages(mapping, 0);
 }
 
-unsigned long invalidate_mapping_pagevec(struct address_space *mapping,
-					 pgoff_t start, pgoff_t end,
-					 unsigned long *nr_pagevec)
-{
-	pgoff_t indices[PAGEVEC_SIZE];
-	struct folio_batch fbatch;
-	pgoff_t index = start;
-	/* ret removed - unused after mapping_evict_folio simplification */
-	unsigned long count = 0;
-	int i;
-
-	folio_batch_init(&fbatch);
-	while (find_lock_entries(mapping, index, end, &fbatch, indices)) {
-		for (i = 0; i < folio_batch_count(&fbatch); i++) {
-			struct folio *folio = fbatch.folios[i];
-
-			index = indices[i];
-
-			if (xa_is_value(folio)) {
-				clear_shadow_entry(mapping, index, folio);
-				count++;
-				continue;
-			}
-			index += folio_nr_pages(folio) - 1;
-
-			/* mapping_evict_folio always returns 0 - simplified */
-			folio_unlock(folio);
-			deactivate_file_folio(folio);
-			if (nr_pagevec)
-				(*nr_pagevec)++;
-		}
-		folio_batch_remove_exceptionals(&fbatch);
-		folio_batch_release(&fbatch);
-		cond_resched();
-		index++;
-	}
-	return count;
-}
-
-unsigned long invalidate_mapping_pages(struct address_space *mapping,
-				       pgoff_t start, pgoff_t end)
-{
-	return invalidate_mapping_pagevec(mapping, start, end, NULL);
-}
+/* invalidate_mapping_pagevec, invalidate_mapping_pages removed - never called */
 
 static int invalidate_complete_folio2(struct address_space *mapping,
 				      struct folio *folio)

@@ -120,8 +120,8 @@ extern void vc_SAK(struct work_struct *work);
 bool con_is_visible(const struct vc_data *vc);
 
 
-extern int fg_console, last_console;
-/* want_console removed - never read */
+extern int fg_console;
+/* last_console, want_console removed - never read */
 
 
 int vc_allocate(unsigned int console);

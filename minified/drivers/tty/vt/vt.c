@@ -77,7 +77,7 @@ int console_blanked;
 /* blankinterval removed - never set to non-zero */
 
 int fg_console;
-int last_console;
+/* last_console removed - never read or written */
 /* want_console removed - never read */
 
 static struct vc_data *master_display_fg;
@@ -303,7 +303,7 @@ static void flush_scrollback(struct vc_data *vc)
 }
 
 #define update_screen(x) redraw_screen(x, 0)
-#define switch_screen(x) redraw_screen(x, 1)
+/* switch_screen removed - never used */
 
 static void redraw_screen(struct vc_data *vc, int is_switch)
 {

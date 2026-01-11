@@ -250,7 +250,7 @@ PAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
 	__SETPAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
 
 PAGEFLAG(Private, private, PF_ANY)
-PAGEFLAG(Private2, private_2, PF_ANY) TESTSCFLAG(Private2, private_2, PF_ANY)
+/* Private2 removed - never used */
 
 TESTPAGEFLAG(Writeback, writeback, PF_NO_TAIL)
 	TESTSCFLAG(Writeback, writeback, PF_NO_TAIL)
@@ -261,9 +261,8 @@ PAGEFLAG(Reclaim, reclaim, PF_NO_TAIL)
 PAGEFLAG(Readahead, readahead, PF_NO_COMPOUND)
 	/* TESTCLEARFLAG(Readahead, ...) removed - never used */
 
-PAGEFLAG_FALSE(HighMem, highmem)
-
-PAGEFLAG_FALSE(SwapCache, swapcache)
+/* PAGEFLAG_FALSE(HighMem) removed - never used */
+/* PAGEFLAG_FALSE(SwapCache) removed - never used */
 
 PAGEFLAG(Unevictable, unevictable, PF_HEAD)
 	__CLEARPAGEFLAG(Unevictable, unevictable, PF_HEAD)
@@ -408,7 +407,7 @@ PAGE_TYPE_OPS(Table, table)
 
 
 
-PAGEFLAG(Isolated, isolated, PF_ANY);
+/* PAGEFLAG(Isolated) removed - never used */
 
 static __always_inline int PageAnonExclusive(struct page *page)
 {

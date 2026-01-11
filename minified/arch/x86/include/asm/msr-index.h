@@ -52,9 +52,7 @@
 #define MSR_MISC_FEATURES_ENABLES_CPUID_FAULT_BIT	0
 #define MSR_MISC_FEATURES_ENABLES_CPUID_FAULT		BIT_ULL(MSR_MISC_FEATURES_ENABLES_CPUID_FAULT_BIT)
 
-/* CET (Control-flow Enforcement Technology) */
-#define MSR_IA32_S_CET			0x000006a2
-#define CET_ENDBR_EN			BIT_ULL(2)
+/* CET (MSR_IA32_S_CET, CET_ENDBR_EN) removed - unused */
 
 /* AMD specific */
 #define MSR_AMD64_LS_CFG		0xc0011020

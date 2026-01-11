@@ -4,11 +4,6 @@
 #define MIN_NR_CONSOLES 1
 #define MAX_NR_CONSOLES	2  /* Reduced from 63 for minimal boot */
 
-/* struct vt_mode removed - write-only (only initialized in reset_vc, never read) */
-#define VT_AUTO		0x00
-
-/* struct vt_stat removed - never used */
-#define VT_GETSTATE	0x5603
-#define VT_GETHIFONTMASK 0x560D
+/* VT_AUTO, VT_GETSTATE, VT_GETHIFONTMASK removed - unused */
 
 #endif

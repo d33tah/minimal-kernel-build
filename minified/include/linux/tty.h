@@ -150,8 +150,6 @@ struct tty_struct {
 	void *driver_data;
 	spinlock_t files_lock;
 	struct list_head tty_files;
-
-#define N_TTY_BUF_SIZE 4096
 	/* closing removed - never accessed */
 	unsigned char *write_buf;
 	int write_cnt;

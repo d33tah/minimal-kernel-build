@@ -54,14 +54,7 @@ extern int __platform_driver_register(struct platform_driver *,
 					struct module *);
 
 /* builtin_platform_driver, platform_create_bundle, platform_register_drivers, platform_unregister_drivers removed - never called */
-
-#define platform_pm_suspend		NULL
-#define platform_pm_resume		NULL
-
-#define platform_pm_freeze		NULL
-#define platform_pm_thaw		NULL
-#define platform_pm_poweroff		NULL
-#define platform_pm_restore		NULL
+/* platform_pm_* macros removed - unused */
 
 #define USE_PLATFORM_PM_SLEEP_OPS
 

@@ -24,8 +24,6 @@ extern const char linux_banner[];
 
 extern int oops_in_progress;
 
-#define CONSOLE_EXT_LOG_MAX	8192
-
 #define MESSAGE_LOGLEVEL_DEFAULT CONFIG_MESSAGE_LOGLEVEL_DEFAULT
 
 #define CONSOLE_LOGLEVEL_MIN	 1

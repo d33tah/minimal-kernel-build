@@ -15,18 +15,9 @@
 #include <linux/mempolicy.h>
 #include <asm/page.h>
 
-struct notifier_block;
-struct bio;
-struct pagevec;
-
 /* MAX_SWAPFILES_SHIFT, SWP_SWAPIN_ERROR_NUM removed - unused */
 
 #ifdef __KERNEL__
-
-struct address_space;
-struct sysinfo;
-struct writeback_control;
-struct zone;
 
 #define SWAP_CLUSTER_MAX 32UL
 

@@ -6,8 +6,7 @@
 #include <asm/signal.h>
 #include <asm/siginfo.h>
 
-#define SS_DISABLE	2
-/* SS_ONSTACK, SS_AUTODISARM, SS_FLAG_BITS removed - unused */
+/* SS_DISABLE, SS_ONSTACK, SS_AUTODISARM, SS_FLAG_BITS removed - unused */
 
 typedef struct kernel_siginfo {
 	__SIGINFO;

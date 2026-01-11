@@ -1,6 +1,5 @@
+/* All utimes syscalls are stubs */
 #include <linux/syscalls.h>
-#include <linux/fs.h>
-/* vfs_utimes removed - no callers */
 SYSCALL_DEFINE4(utimensat, int, dfd, const char __user *, filename,
 		struct __kernel_timespec __user *, utimes, int, flags)
 {

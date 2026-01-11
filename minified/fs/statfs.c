@@ -1,7 +1,5 @@
 /* Stub: statfs syscalls not needed for minimal kernel */
 #include <linux/syscalls.h>
-#include <linux/fs.h>
-#include <linux/statfs.h>
 SYSCALL_DEFINE2(statfs, const char __user *, pathname, struct statfs __user *,
 		buf)
 {

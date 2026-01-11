@@ -1,6 +1,5 @@
 /* Stubbed new mount API syscalls - not needed for minimal boot */
 #include <linux/syscalls.h>
-#include <linux/errno.h>
 SYSCALL_DEFINE2(fsopen, const char __user *, _fs_name, unsigned int, flags)
 {
 	return -ENOSYS;

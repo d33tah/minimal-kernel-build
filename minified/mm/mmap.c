@@ -19,8 +19,7 @@
 #include <linux/security.h>
 /* hugetlb.h removed - unused */
 #include <linux/shmem_fs.h>
-/* export.h, mount.h removed - unused */
-#include <linux/mempolicy.h>
+/* export.h, mount.h, mempolicy.h removed - unused */
 #include <linux/rmap.h>
 #include <linux/mmu_notifier.h>
 #include <linux/mmdebug.h>

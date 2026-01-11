@@ -21,8 +21,7 @@ static inline void clear_siginfo(kernel_siginfo_t *info)
 }
 
 
-int copy_siginfo_to_user(siginfo_t __user *to, const kernel_siginfo_t *from);
-
+/* copy_siginfo_to_user removed - never called */
 
 #ifndef __HAVE_ARCH_SIG_BITOPS
 #include <linux/bitops.h>

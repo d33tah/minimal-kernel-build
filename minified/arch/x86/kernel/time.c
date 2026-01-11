@@ -7,7 +7,7 @@
 #include <linux/time.h>
 #include <linux/export.h>
 
-#include <asm/vsyscall.h>
+/* asm/vsyscall.h removed - empty */
 #include <asm/x86_init.h>
 #include <asm/i8259.h>
 #include <asm/timer.h>

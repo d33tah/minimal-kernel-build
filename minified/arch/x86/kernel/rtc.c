@@ -13,7 +13,7 @@ static unsigned _bcd2bin(unsigned char val)
 
 #include <linux/of.h>
 
-#include <asm/vsyscall.h>
+/* asm/vsyscall.h removed - empty */
 #include <asm/x86_init.h>
 #include <asm/time.h>
 #include <asm/setup.h>

@@ -31,7 +31,7 @@ extern void doublefault_init_cpu_tss(void);
 #include <asm/tlbflush.h>
 #include <asm/debugreg.h>
 #include <asm/sections.h>
-#include <asm/vsyscall.h>
+/* asm/vsyscall.h removed - empty */
 #include <linux/topology.h>
 #include <linux/cpumask.h>
 #include <linux/atomic.h>

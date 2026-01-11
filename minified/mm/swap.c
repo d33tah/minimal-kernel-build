@@ -287,21 +287,7 @@ void lru_add_drain_cpu(int cpu)
 	/* activate_page_drain removed - empty stub */
 }
 
-void deactivate_file_folio(struct folio *folio)
-{
-	struct pagevec *pvec;
-
-	if (folio_test_unevictable(folio))
-		return;
-
-	folio_get(folio);
-	local_lock(&lru_pvecs.lock);
-	pvec = this_cpu_ptr(&lru_pvecs.lru_deactivate_file);
-
-	if (pagevec_add_and_need_flush(pvec, &folio->page))
-		pagevec_lru_move_fn(pvec, lru_deactivate_file_fn);
-	local_unlock(&lru_pvecs.lock);
-}
+/* deactivate_file_folio removed - never called */
 
 void lru_add_drain(void)
 {

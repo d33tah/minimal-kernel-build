@@ -4,7 +4,7 @@
 #include <linux/mm_types.h>
 
 #define SUID_DUMP_USER		1
-#define SUID_DUMP_ROOT		2
+/* SUID_DUMP_ROOT removed - unused */
 
 #define MMF_DUMPABLE_BITS 2
 #define MMF_DUMPABLE_MASK ((1 << MMF_DUMPABLE_BITS) - 1)
@@ -29,11 +29,8 @@ extern void set_dumpable(struct mm_struct *mm, int value);
 
 # define MMF_DUMP_MASK_DEFAULT_ELF	0
 
-#define MMF_OOM_SKIP		21
-#define MMF_UNSTABLE		22
 #define MMF_DISABLE_THP		24
-#define MMF_OOM_VICTIM		25
-#define MMF_HAS_PINNED		28
+/* MMF_OOM_SKIP, MMF_UNSTABLE, MMF_OOM_VICTIM, MMF_HAS_PINNED removed - unused */
 #define MMF_DISABLE_THP_MASK	(1 << MMF_DISABLE_THP)
 
 #define MMF_INIT_MASK		(MMF_DUMPABLE_MASK | MMF_DUMP_FILTER_MASK |\

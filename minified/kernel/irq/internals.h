@@ -344,12 +344,7 @@ static inline int irq_domain_activate_irq(struct irq_data *data, bool reserve)
 	irqd_set_activated(data);
 	return 0;
 }
-static inline void irq_domain_deactivate_irq(struct irq_data *data)
-{
-	irqd_clr_activated(data);
-}
-
-/* irqd_get_parent_data removed - unused */
+/* irq_domain_deactivate_irq, irqd_get_parent_data removed - unused */
 
 /* irq_add_debugfs_entry, irq_remove_debugfs_entry,
    irq_debugfs_copy_devname removed - unused */

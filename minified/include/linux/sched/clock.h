@@ -12,9 +12,6 @@ static inline u64 sched_clock_cpu(int cpu)
 	return sched_clock();
 }
 
-static inline u64 local_clock(void)
-{
-	return sched_clock();
-}
+/* local_clock removed - unused */
 
 #endif

@@ -660,13 +660,7 @@ extern unsigned long move_page_tables(struct vm_area_struct *vma,
 		bool need_rmap_locks);
 /* mprotect_fixup removed - was a no-op stub, call removed from exec.c */
 
-static inline unsigned long get_mm_counter(struct mm_struct *mm, int member)
-{
-	long val = atomic_long_read(&mm->rss_stat.count[member]);
-	return (unsigned long)val;
-}
-
-/* Removed: mm_trace_rss_stat - tracing not needed for minimal kernel */
+/* get_mm_counter, mm_trace_rss_stat removed - unused */
 
 static inline void add_mm_counter(struct mm_struct *mm, int member, long value)
 {

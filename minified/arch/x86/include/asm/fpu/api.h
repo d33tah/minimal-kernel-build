@@ -18,12 +18,7 @@ extern void kernel_fpu_end(void);
 extern bool irq_fpu_usable(void);
 extern void fpregs_mark_activate(void);
 
- 
-static inline void kernel_fpu_begin(void)
-{
-	 
-	kernel_fpu_begin_mask(KFPU_387 | KFPU_MXCSR);
-}
+/* kernel_fpu_begin removed - never called */
 
 /* CONFIG_PREEMPT_RT not enabled */
 static inline void fpregs_lock(void)

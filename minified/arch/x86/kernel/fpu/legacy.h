@@ -11,71 +11,24 @@ static inline void ldmxcsr(u32 mxcsr)
 	asm volatile("ldmxcsr %0" :: "m" (mxcsr));
 }
 
- 
-#define user_insn(insn, output, input...)				\
-({									\
-	int err;							\
-									\
-	might_fault();							\
-									\
-	asm volatile(ASM_STAC "\n"					\
-		     "1: " #insn "\n"					\
-		     "2: " ASM_CLAC "\n"				\
-		     _ASM_EXTABLE_TYPE(1b, 2b, EX_TYPE_FAULT_MCE_SAFE)	\
-		     : [err] "=a" (err), output				\
-		     : "0"(0), input);					\
-	err;								\
-})
-
-#define kernel_insn_err(insn, output, input...)				\
-({									\
-	int err;							\
-	asm volatile("1:" #insn "\n\t"					\
-		     "2:\n"						\
-		     _ASM_EXTABLE_TYPE_REG(1b, 2b, EX_TYPE_EFAULT_REG, %[err]) \
-		     : [err] "=r" (err), output				\
-		     : "0"(0), input);					\
-	err;								\
-})
-
 #define kernel_insn(insn, output, input...)				\
 	asm volatile("1:" #insn "\n\t"					\
 		     "2:\n"						\
 		     _ASM_EXTABLE_TYPE(1b, 2b, EX_TYPE_FPU_RESTORE)	\
 		     : output : input)
 
-static inline int fnsave_to_user_sigframe(struct fregs_state __user *fx)
-{
-	return user_insn(fnsave %[fx]; fwait,  [fx] "=m" (*fx), "m" (*fx));
-}
-
-/* CONFIG_X86_32 is enabled, use 32-bit FPU instructions */
-static inline int fxsave_to_user_sigframe(struct fxregs_state __user *fx)
-{
-	return user_insn(fxsave %[fx], [fx] "=m" (*fx), "m" (*fx));
-}
+/* user_insn, kernel_insn_err macros removed - only used by removed sigframe functions */
+/* fnsave_to_user_sigframe, fxsave_to_user_sigframe, fxrstor_from_user_sigframe,
+   frstor_from_user_sigframe removed - never called */
 
 static inline void fxrstor(struct fxregs_state *fx)
 {
 	kernel_insn(fxrstor %[fx], "=m" (*fx), [fx] "m" (*fx));
 }
 
-/* fxrstor_safe removed - never called */
-
-static inline int fxrstor_from_user_sigframe(struct fxregs_state __user *fx)
-{
-	return user_insn(fxrstor %[fx], "=m" (*fx), [fx] "m" (*fx));
-}
-
 static inline void frstor(struct fregs_state *fx)
 {
 	kernel_insn(frstor %[fx], "=m" (*fx), [fx] "m" (*fx));
-}
-
-
-static inline int frstor_from_user_sigframe(struct fregs_state __user *fx)
-{
-	return user_insn(frstor %[fx], "=m" (*fx), [fx] "m" (*fx));
 }
 
 static inline void fxsave(struct fxregs_state *fx)

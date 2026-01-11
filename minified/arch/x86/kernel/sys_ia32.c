@@ -1,37 +1,7 @@
 
-#include <linux/kernel.h>
-#include <linux/sched.h>
-#include <linux/fs.h>
-#include <linux/file.h>
-#include <linux/signal.h>
+/* All IA32 compat syscalls are stubs, minimal includes needed */
 #include <linux/syscalls.h>
-#include <linux/utsname.h>
-
-struct tms {
-	__kernel_clock_t tms_utime;
-	__kernel_clock_t tms_stime;
-	__kernel_clock_t tms_cutime;
-	__kernel_clock_t tms_cstime;
-};
-#include <linux/mm.h>
-#include <linux/uio.h>
-
-#include <linux/personality.h>
-#include <linux/stat.h>
-#include <linux/rwsem.h>
 #include <linux/compat.h>
-#include <linux/statfs.h> /* vfs.h redirect */
-#include <linux/ptrace.h>
-#include <linux/sysctl.h>
-#include <linux/slab.h>
-#include <linux/sched/task.h>
-#include <asm/mman.h>
-#include <asm/types.h>
-#include <linux/uaccess.h>
-#include <linux/atomic.h>
-#include <asm/vgtod.h>
-
-#define AA(__x) ((unsigned long)(__x))
 
 SYSCALL_DEFINE3(ia32_truncate64, const char __user *, filename, unsigned long,
 		offset_low, unsigned long, offset_high)

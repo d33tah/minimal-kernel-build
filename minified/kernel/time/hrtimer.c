@@ -3,7 +3,6 @@
 #include <linux/export.h>
 #include <linux/percpu.h>
 #include <linux/hrtimer.h>
-#include <linux/notifier.h>
 #include <linux/syscalls.h>
 #include <linux/interrupt.h>
 #include <linux/err.h>

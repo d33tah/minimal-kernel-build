@@ -1,6 +1,5 @@
 #include <linux/completion.h>
 #include <linux/interrupt.h>
-#include <linux/notifier.h>
 #include <linux/rcupdate_wait.h>
 #include <linux/kernel.h>
 #include <linux/export.h>

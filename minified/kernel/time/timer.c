@@ -7,7 +7,6 @@
 #include <linux/mm.h>
 #include <linux/swap.h>
 #include <linux/pid_namespace.h>
-#include <linux/notifier.h>
 #include <linux/thread_info.h>
 #include <linux/time.h>
 #include <linux/jiffies.h>

@@ -7,7 +7,6 @@
 #include <linux/slab.h>
 #include <linux/string.h>
 #include <linux/kdev_t.h>
-#include <linux/notifier.h>
 #include <linux/of.h>
 /* of_device.h removed - only has includes, no definitions used */
 #include <linux/blkdev.h>

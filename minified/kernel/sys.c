@@ -1,9 +1,6 @@
-/* Minimal syscall stubs for Hello World - no copy_to_user needed */
+/* Minimal syscall stubs */
 #include <linux/syscalls.h>
 #include <linux/utsname.h>
-#include <linux/resource.h>
-#include <linux/sched.h>
-#include <linux/personality.h>
 
 struct tms {
 	__kernel_clock_t tms_utime;

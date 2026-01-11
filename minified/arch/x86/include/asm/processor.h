@@ -26,7 +26,7 @@ struct math_emu_info {
 #include <asm/percpu.h>
 #include <asm/msr.h>
 #include <asm/desc_defs.h>
-#include <asm/nops.h>
+#include <asm/asm.h>
 #include <asm/special_insns.h>
 #include <asm/fpu/types.h>
 #include <asm/unwind_hints.h>

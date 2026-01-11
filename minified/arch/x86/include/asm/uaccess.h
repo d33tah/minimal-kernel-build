@@ -8,7 +8,7 @@
 #include <asm/asm.h>
 #include <asm/page.h>
 /* --- 2025-12-07 20:15 --- Inlined smap.h */
-#include <asm/nops.h>
+#include <asm/asm.h>
 #include <asm/cpufeatures.h>
 #include <asm/alternative.h>
 

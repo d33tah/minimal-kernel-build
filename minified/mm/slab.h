@@ -161,9 +161,7 @@ void *fixup_red_left(struct kmem_cache *s, void *p);
 /* nearest_obj, __obj_to_index, obj_to_index, objs_per_slab removed - unused */
 
 #include <linux/memcontrol.h>
-int should_failslab(struct kmem_cache *s, gfp_t gfpflags);
-static inline bool __should_failslab(struct kmem_cache *s, gfp_t gfpflags)
-{ return false; }
+/* should_failslab, __should_failslab removed - always returns false */
 /* end fault-inject.h */
 /* kmemleak_alloc_recursive removed - unused */
 #include <linux/random.h>

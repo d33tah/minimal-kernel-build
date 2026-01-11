@@ -358,8 +358,4 @@ void *kmalloc_order(size_t size, gfp_t flags, unsigned int order)
 	return ret;
 }
 
-int should_failslab(struct kmem_cache *s, gfp_t gfpflags)
-{
-	/* __should_failslab always returns false */
-	return 0;
-}
+/* should_failslab removed - __should_failslab always returns false */

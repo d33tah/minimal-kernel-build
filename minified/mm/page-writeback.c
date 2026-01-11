@@ -3,11 +3,7 @@
 #include <linux/backing-dev.h>
 #include <linux/percpu.h>
 
-/* dirty_throttle_leaks, global_wb_domain, __folio_end_writeback, __folio_start_writeback, bdi_set_min_ratio, bdi_set_max_ratio removed - never called */
-void wb_update_bandwidth(struct bdi_writeback *wb)
-{
-}
-/* balance_dirty_pages_ratelimited, page_writeback_init, laptop_mode_timer_fn, do_writepages, noop_dirty_folio, filemap_dirty_folio removed - unused */
+/* dirty_throttle_leaks, global_wb_domain, __folio_end_writeback, __folio_start_writeback, bdi_set_min_ratio, bdi_set_max_ratio, wb_update_bandwidth, balance_dirty_pages_ratelimited, page_writeback_init, laptop_mode_timer_fn, do_writepages, noop_dirty_folio, filemap_dirty_folio removed - never called */
 void folio_account_cleaned(struct folio *folio, struct bdi_writeback *wb)
 {
 }

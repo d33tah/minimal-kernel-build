@@ -50,8 +50,6 @@ struct writeback_control {
 /* writeback_inodes_sb, try_to_writeback_inodes_sb, sync_inodes_sb removed - never called */
 /* wakeup_flusher_threads, inode_wait_for_writeback, inode_io_list_del removed - never called */
 
-struct bdi_writeback;
-void wb_update_bandwidth(struct bdi_writeback *wb);
-/* do_writepages removed - never called */
+/* wb_update_bandwidth, do_writepages removed - never called */
 
 #endif		 

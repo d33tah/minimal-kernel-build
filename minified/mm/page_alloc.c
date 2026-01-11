@@ -9,12 +9,9 @@
 #include <linux/memblock.h>
 #include <linux/compiler.h>
 #include <linux/kernel.h>
-#include <linux/module.h>
 /* suspend.h, pagevec.h removed - unused */
-#include <linux/blkdev.h>
 #include <linux/slab.h>
 /* ratelimit.h removed - unused */
-#include <linux/topology.h>
 /* sysctl.h removed - unused */
 #include <linux/cpu.h>
 /* cpuset.h, memory_hotplug.h removed - unused */
@@ -43,7 +40,6 @@ struct alloc_context;
 /* Removed: reset_page_owner, set_page_owner, split_page_owner
  * - Dead code: page_owner tracking not needed for minimal kernel (~9 LOC) */
 /* page_table_check.h, kthread.h, memcontrol.h removed - unused */
-#include <linux/lockdep.h>
 #include <asm/sections.h>
 #include <asm/tlbflush.h>
 #include <asm/div64.h>

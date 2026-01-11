@@ -17,7 +17,7 @@
 #include <linux/fs.h>
 #include <linux/personality.h>
 #include <linux/security.h>
-#include <linux/hugetlb.h>
+/* hugetlb.h removed - unused */
 #include <linux/shmem_fs.h>
 /* export.h, mount.h removed - unused */
 #include <linux/mempolicy.h>

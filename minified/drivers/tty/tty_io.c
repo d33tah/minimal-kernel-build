@@ -13,14 +13,12 @@
 #include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/console.h>
-#include <linux/timer.h>
 #include <linux/ctype.h>
 #include <linux/kd.h>
 #include <linux/mm.h>
 #include <linux/string.h>
 #include <linux/slab.h>
 #include <linux/poll.h>
-#include <linux/proc_fs.h>
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/device.h>
@@ -37,8 +35,6 @@
 #include <linux/vt_kern.h>
 #include <linux/selection.h>
 
-#include <linux/kmod.h>
-#include <linux/nsproxy.h>
 #include "tty.h"
 
 #define tty_debug_hangup(tty, f, args...) \

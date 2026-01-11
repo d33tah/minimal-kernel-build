@@ -314,10 +314,6 @@ static inline unsigned int cpuid_edx(unsigned int op)
 }
 
 extern void select_idle_routine(const struct cpuinfo_x86 *c);
-/* amd_e400_c1e_apic_setup declaration removed - implementation was removed */
-
-enum idle_boot_override {IDLE_NO_OVERRIDE=0, IDLE_HALT, IDLE_NOMWAIT,
-			 IDLE_POLL};
 
 extern void enable_sep_cpu(void);
 extern int sysenter_setup(void);
@@ -395,12 +391,5 @@ void free_init_pages(const char *what, unsigned long begin, unsigned long end);
 void default_idle(void);
 
 void __noreturn stop_this_cpu(void *dummy);
-
-enum mds_mitigations {
-	MDS_MITIGATION_OFF,
-	MDS_MITIGATION_FULL,
-	MDS_MITIGATION_VMWERV,
-};
-
 
 #endif  

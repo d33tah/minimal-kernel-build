@@ -75,12 +75,6 @@ struct device_attribute {
 
 /* device_remove_file, devres functions, struct device_dma_parameters removed - never called */
 
-enum device_link_state {
-	DL_STATE_NONE = -1,
-};
-
-/* DL_FLAG_PM_RUNTIME, DL_FLAG_RPM_ACTIVE, DL_FLAG_SYNC_STATE_ONLY, DL_FLAG_INFERRED removed - never used */
-
 enum dl_dev_state {
 	DL_DEV_NO_DRIVER = 0,
 	DL_DEV_PROBING,

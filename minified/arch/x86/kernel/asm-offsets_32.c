@@ -19,15 +19,8 @@ void foo(void)
 	OFFSET(CPUINFO_x86_vendor_id, cpuinfo_x86, x86_vendor_id);
 	BLANK();
 
-	OFFSET(PT_EBX, pt_regs, bx);
-	OFFSET(PT_ECX, pt_regs, cx);
-	OFFSET(PT_EDX, pt_regs, dx);
-	OFFSET(PT_ESI, pt_regs, si);
-	OFFSET(PT_EDI, pt_regs, di);
-	OFFSET(PT_EBP, pt_regs, bp);
+	/* PT_EBX, PT_ECX, PT_EDX, PT_ESI, PT_EDI, PT_EBP, PT_DS, PT_ES removed - not used in assembly */
 	OFFSET(PT_EAX, pt_regs, ax);
-	OFFSET(PT_DS, pt_regs, ds);
-	OFFSET(PT_ES, pt_regs, es);
 	OFFSET(PT_FS, pt_regs, fs);
 	OFFSET(PT_GS, pt_regs, gs);
 	OFFSET(PT_ORIG_EAX, pt_regs, orig_ax);

@@ -17,7 +17,6 @@
 #include <linux/delay.h>
 #include <linux/moduleparam.h>
 #include <linux/kthread.h>
-#include <linux/tick.h>
 #include <linux/rcupdate_wait.h>
 #include <linux/sched/isolation.h>
 #include <linux/kprobes.h>

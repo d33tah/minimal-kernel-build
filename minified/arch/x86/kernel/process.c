@@ -11,7 +11,6 @@
 #include <linux/sched/task_stack.h>
 #include <linux/init.h>
 #include <linux/export.h>
-#include <linux/tick.h>
 #include <linux/random.h>
 #include <linux/utsname.h>
 /* boot_init_stack_canary removed - empty stub, never called */

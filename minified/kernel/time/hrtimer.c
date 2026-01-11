@@ -6,7 +6,6 @@
 #include <linux/notifier.h>
 #include <linux/syscalls.h>
 #include <linux/interrupt.h>
-#include <linux/tick.h>
 #include <linux/err.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/sysctl.h>

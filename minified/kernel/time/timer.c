@@ -15,7 +15,6 @@
 #include <linux/cpu.h>
 #include <linux/syscalls.h>
 #include <linux/delay.h>
-#include <linux/tick.h>
 #include <linux/kallsyms.h>
 #include <linux/irq_work.h>
 #include <linux/sched/signal.h>

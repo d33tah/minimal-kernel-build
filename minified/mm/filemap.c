@@ -161,18 +161,7 @@ void delete_from_page_cache_batch(struct address_space *mapping,
 		filemap_free_folio(mapping, fbatch->folios[i]);
 }
 
-static int filemap_check_errors(struct address_space *mapping)
-{
-	int ret = 0;
-
-	if (test_bit(AS_ENOSPC, &mapping->flags) &&
-	    test_and_clear_bit(AS_ENOSPC, &mapping->flags))
-		ret = -ENOSPC;
-	if (test_bit(AS_EIO, &mapping->flags) &&
-	    test_and_clear_bit(AS_EIO, &mapping->flags))
-		ret = -EIO;
-	return ret;
-}
+/* filemap_check_errors inlined into filemap_fdatawait_range */
 
 int filemap_fdatawrite_wbc(struct address_space *mapping,
 			   struct writeback_control *wbc)
@@ -210,7 +199,17 @@ int filemap_fdatawait_range(struct address_space *mapping, loff_t start_byte,
 			cond_resched();
 		}
 	}
-	return filemap_check_errors(mapping);
+	/* Inlined filemap_check_errors */
+	{
+		int ret = 0;
+		if (test_bit(AS_ENOSPC, &mapping->flags) &&
+		    test_and_clear_bit(AS_ENOSPC, &mapping->flags))
+			ret = -ENOSPC;
+		if (test_bit(AS_EIO, &mapping->flags) &&
+		    test_and_clear_bit(AS_EIO, &mapping->flags))
+			ret = -EIO;
+		return ret;
+	}
 }
 
 /* filemap_write_and_wait_range, file_check_and_advance_wb_err, file_write_and_wait_range removed - never called */

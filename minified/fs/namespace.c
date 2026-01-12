@@ -80,15 +80,7 @@ static void mnt_free_id(struct mount *mnt)
 	ida_free(&mnt_id_ida, mnt->mnt_id);
 }
 
-static int mnt_alloc_group_id(struct mount *mnt)
-{
-	int res = ida_alloc_min(&mnt_group_ida, 1, GFP_KERNEL);
-
-	if (res < 0)
-		return res;
-	mnt->mnt_group_id = res;
-	return 0;
-}
+/* mnt_alloc_group_id inlined into invent_group_ids */
 
 static inline void mnt_add_count(struct mount *mnt, int n)
 {
@@ -796,9 +788,11 @@ static int invent_group_ids(struct mount *mnt, bool recurse)
 
 	for (p = mnt; p; p = recurse ? next_mnt(p, mnt) : NULL) {
 		if (!p->mnt_group_id && !IS_MNT_SHARED(p)) {
-			int err = mnt_alloc_group_id(p);
-			if (err)
-				return err;
+			/* mnt_alloc_group_id inlined */
+			int res = ida_alloc_min(&mnt_group_ida, 1, GFP_KERNEL);
+			if (res < 0)
+				return res;
+			p->mnt_group_id = res;
 		}
 	}
 

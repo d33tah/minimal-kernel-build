@@ -965,14 +965,7 @@ static void __meminit memmap_init_range(unsigned long size, int nid,
 	}
 }
 
-static void __meminit zone_init_free_lists(struct zone *zone)
-{
-	unsigned int order, t;
-	for_each_migratetype_order(order, t) {
-		INIT_LIST_HEAD(&zone->free_area[order].free_list[t]);
-		zone->free_area[order].nr_free = 0;
-	}
-}
+/* zone_init_free_lists inlined into free_area_init_core */
 
 static void __init init_unavailable_range(unsigned long spfn,
 					  unsigned long epfn, int zone,
@@ -1124,7 +1117,14 @@ void __meminit init_currently_empty_zone(struct zone *zone,
 		       pgdat->node_id, (unsigned long)zone_idx(zone),
 		       zone_start_pfn, (zone_start_pfn + size));
 
-	zone_init_free_lists(zone);
+	/* Inlined zone_init_free_lists */
+	{
+		unsigned int order, t;
+		for_each_migratetype_order(order, t) {
+			INIT_LIST_HEAD(&zone->free_area[order].free_list[t]);
+			zone->free_area[order].nr_free = 0;
+		}
+	}
 }
 
 static void __init get_pfn_range_for_nid(unsigned int nid,

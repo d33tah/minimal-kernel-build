@@ -598,43 +598,7 @@ void __cleanup_sighand(struct sighand_struct *sighand)
 
 /* posix_cpu_timers_init_group removed - was empty stub */
 
-static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
-{
-	struct signal_struct *sig;
-
-	if (clone_flags & CLONE_THREAD)
-		return 0;
-
-	sig = kmem_cache_zalloc(signal_cachep, GFP_KERNEL);
-	tsk->signal = sig;
-	if (!sig)
-		return -ENOMEM;
-
-	sig->nr_threads = 1;
-	atomic_set(&sig->live, 1);
-	refcount_set(&sig->sigcnt, 1);
-
-	sig->thread_head = (struct list_head)LIST_HEAD_INIT(tsk->thread_node);
-	tsk->thread_node = (struct list_head)LIST_HEAD_INIT(sig->thread_head);
-
-	/* init_waitqueue_head(&sig->wait_chldexit) removed - field removed */
-	sig->curr_target = tsk;
-	init_sigpending(&sig->shared_pending);
-	INIT_HLIST_HEAD(&sig->multiprocess);
-	/* stats_lock init removed - lock and fields it protected removed */
-
-	task_lock(current->group_leader);
-	memcpy(sig->rlim, current->signal->rlim, sizeof sig->rlim);
-	task_unlock(current->group_leader);
-
-	/* posix_cpu_timers_init_group, tty_audit_fork, sched_autogroup_fork - stubs */
-	/* oom_score_adj init removed - fields removed */
-
-	mutex_init(&sig->cred_guard_mutex);
-	init_rwsem(&sig->exec_update_lock);
-
-	return 0;
-}
+/* copy_signal inlined into copy_process */
 
 /* Stub: set_tid_address not needed for Hello World */
 SYSCALL_DEFINE1(set_tid_address, int __user *, tidptr)
@@ -839,9 +803,31 @@ copy_process(struct pid *pid, int trace, int node,
 		if (clone_flags & CLONE_CLEAR_SIGHAND)
 			flush_signal_handlers(p, 0);
 	}
-	retval = copy_signal(clone_flags, p);
-	if (retval)
-		goto bad_fork_cleanup_sighand;
+	/* Inlined copy_signal */
+	if (!(clone_flags & CLONE_THREAD)) {
+		struct signal_struct *sig;
+		sig = kmem_cache_zalloc(signal_cachep, GFP_KERNEL);
+		p->signal = sig;
+		if (!sig) {
+			retval = -ENOMEM;
+			goto bad_fork_cleanup_sighand;
+		}
+		sig->nr_threads = 1;
+		atomic_set(&sig->live, 1);
+		refcount_set(&sig->sigcnt, 1);
+		sig->thread_head =
+			(struct list_head)LIST_HEAD_INIT(p->thread_node);
+		p->thread_node =
+			(struct list_head)LIST_HEAD_INIT(sig->thread_head);
+		sig->curr_target = p;
+		init_sigpending(&sig->shared_pending);
+		INIT_HLIST_HEAD(&sig->multiprocess);
+		task_lock(current->group_leader);
+		memcpy(sig->rlim, current->signal->rlim, sizeof sig->rlim);
+		task_unlock(current->group_leader);
+		mutex_init(&sig->cred_guard_mutex);
+		init_rwsem(&sig->exec_update_lock);
+	}
 	/* Inlined copy_mm */
 	{
 		struct mm_struct *mm, *oldmm;

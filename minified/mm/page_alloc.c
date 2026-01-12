@@ -249,13 +249,12 @@ static inline void __free_one_page(struct page *page, unsigned long pfn,
 }
 
 static __always_inline bool free_pages_prepare(struct page *page,
-					       unsigned int order,
-					       bool check_free, fpi_t fpi_flags)
+					       unsigned int order)
 {
 	/* Stub: minimal page freeing for simple system */
+	/* check_free, fpi_flags params removed - never used */
 	if (PageMappingFlags(page))
 		page->mapping = NULL;
-	/* memcg_kmem_enabled always returns false */
 	page->flags &= ~PAGE_FLAGS_CHECK_AT_PREP;
 	return true;
 }
@@ -302,7 +301,7 @@ static void __free_pages_ok(struct page *page, unsigned int order,
 	unsigned long pfn = page_to_pfn(page);
 	struct zone *zone = page_zone(page);
 
-	if (!free_pages_prepare(page, order, true, fpi_flags))
+	if (!free_pages_prepare(page, order))
 		return;
 
 	migratetype = __get_pfnblock_flags_mask(page, pfn, MIGRATETYPE_MASK);
@@ -360,10 +359,10 @@ static inline void expand(struct zone *zone, struct page *page, int low,
 
 /* check_new_pages, check_pcp_refill, check_new_pcp always return false - removed */
 
-inline void post_alloc_hook(struct page *page, unsigned int order,
-			    gfp_t gfp_flags)
+inline void post_alloc_hook(struct page *page, unsigned int order)
 {
 	/* Stub: minimal post-allocation setup */
+	/* gfp_flags param removed - never used */
 	set_page_private(page, 0);
 	set_page_refcounted(page);
 }
@@ -634,7 +633,7 @@ static struct page *get_page_from_freelist(gfp_t gfp_mask, unsigned int order,
 		page = rmqueue(ac->preferred_zoneref->zone, zone, order,
 			       gfp_mask, alloc_flags, ac->migratetype);
 		if (page) {
-			post_alloc_hook(page, order, gfp_mask);
+			post_alloc_hook(page, order);
 			if (order && (gfp_mask & __GFP_COMP))
 				prep_compound_page(page, order);
 			if (alloc_flags & ALLOC_NO_WATERMARKS)

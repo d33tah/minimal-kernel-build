@@ -388,10 +388,7 @@ void __init e820__memory_setup_extended(u64 phys_addr, u32 data_len)
 	early_memunmap(sdata, data_len);
 }
 
-void __init e820__register_nosave_regions(unsigned long limit_pfn)
-{
-	/* Stub: hibernation nosave regions not needed for minimal kernel */
-}
+/* e820__register_nosave_regions removed - call site eliminated */
 
 #define MAX_ARCH_PFN (1ULL << (32 - PAGE_SHIFT))
 

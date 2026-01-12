@@ -530,7 +530,7 @@ void __init setup_arch(char **cmdline_p)
 	/* x86_init.hyper.guest_late_init removed - is x86_init_noop */
 
 	e820__reserve_resources();
-	e820__register_nosave_regions(max_pfn);
+	/* e820__register_nosave_regions call removed - stub function */
 
 	x86_init.resources.reserve_resources();
 

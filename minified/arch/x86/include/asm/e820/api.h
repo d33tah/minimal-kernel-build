@@ -67,7 +67,7 @@ extern char *e820__memory_setup_default(void);
 extern void e820__setup_pci_gap(void);
 
 /* e820__reallocate_tables removed - never called */
-extern void e820__register_nosave_regions(unsigned long limit_pfn);
+/* e820__register_nosave_regions removed - call site eliminated */
 
 static inline bool is_ISA_range(u64 start, u64 end)
 {

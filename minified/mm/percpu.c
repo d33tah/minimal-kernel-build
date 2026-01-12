@@ -855,7 +855,6 @@ static void pcpu_chunk_populated(struct pcpu_chunk *chunk, int page_start,
 /* Removed: pcpu_populate_chunk - always returned 0, call sites simplified */
 
 static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp);
-static int __init pcpu_verify_alloc_info(const struct pcpu_alloc_info *ai);
 
 #include "percpu-km.c"
 
@@ -1201,7 +1200,8 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	PCPU_SETUP_BUG_ON(!IS_ALIGNED(ai->reserved_size, PCPU_MIN_ALLOC_SIZE));
 	PCPU_SETUP_BUG_ON(!(IS_ALIGNED(PCPU_BITMAP_BLOCK_SIZE, PAGE_SIZE) ||
 			    IS_ALIGNED(PAGE_SIZE, PCPU_BITMAP_BLOCK_SIZE)));
-	PCPU_SETUP_BUG_ON(pcpu_verify_alloc_info(ai) < 0);
+	PCPU_SETUP_BUG_ON(ai->nr_groups !=
+			  1); /* pcpu_verify_alloc_info inlined */
 
 	alloc_size = ai->nr_groups * sizeof(group_offsets[0]);
 	group_offsets = memblock_alloc(alloc_size, SMP_CACHE_BYTES);

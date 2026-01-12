@@ -41,22 +41,4 @@ static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp)
 }
 
 /* Removed: pcpu_destroy_chunk, pcpu_addr_to_page - never called */
-
-static int __init pcpu_verify_alloc_info(const struct pcpu_alloc_info *ai)
-{
-	size_t nr_pages, alloc_pages;
-
-	if (ai->nr_groups != 1) {
-		pr_crit("can't handle more than one group\n");
-		return -EINVAL;
-	}
-
-	nr_pages = (ai->groups[0].nr_units * ai->unit_size) >> PAGE_SHIFT;
-	alloc_pages = roundup_pow_of_two(nr_pages);
-
-	if (alloc_pages > nr_pages)
-		pr_warn("wasting %zu pages per chunk\n",
-			alloc_pages - nr_pages);
-
-	return 0;
-}
+/* Removed: pcpu_verify_alloc_info - inlined into pcpu_setup_first_chunk */

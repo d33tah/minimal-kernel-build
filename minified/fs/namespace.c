@@ -916,16 +916,7 @@ static void unlock_mount(struct mountpoint *where)
 	inode_unlock(dentry->d_inode);
 }
 
-static int graft_tree(struct mount *mnt, struct mount *p, struct mountpoint *mp)
-{
-	if (mnt->mnt.mnt_sb->s_flags & SB_NOUSER)
-		return -EINVAL;
-
-	if (d_is_dir(mp->m_dentry) != d_is_dir(mnt->mnt.mnt_root))
-		return -ENOTDIR;
-
-	return attach_recursive_mnt(mnt, p, mp, false);
-}
+/* graft_tree inlined at call site - only called once */
 
 /* flags_to_propagation_type inlined - only called once */
 
@@ -987,7 +978,13 @@ static int do_add_mount(struct mount *newmnt, struct mountpoint *mp,
 
 	/* d_is_symlink check removed - always false, no symlinks created */
 	newmnt->mnt.mnt_flags = mnt_flags;
-	return graft_tree(newmnt, parent, mp);
+
+	/* Inline: graft_tree logic */
+	if (newmnt->mnt.mnt_sb->s_flags & SB_NOUSER)
+		return -EINVAL;
+	if (d_is_dir(mp->m_dentry) != d_is_dir(newmnt->mnt.mnt_root))
+		return -ENOTDIR;
+	return attach_recursive_mnt(newmnt, parent, mp, false);
 }
 
 static bool mount_too_revealing(const struct super_block *sb,

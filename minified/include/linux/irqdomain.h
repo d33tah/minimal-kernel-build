@@ -23,12 +23,12 @@ struct irq_domain_ops {
 	void (*unmap)(struct irq_domain *d, unsigned int virq);
 	int (*xlate)(struct irq_domain *d, struct device_node *node, const u32 *intspec, unsigned int intsize, unsigned long *out_hwirq, unsigned int *out_type);
 };
-struct irq_domain_chip_generic;
+/* struct irq_domain_chip_generic forward decl and gc field removed - never accessed */
 struct irq_domain {
 	struct list_head link; const char *name; const struct irq_domain_ops *ops;
 	void *host_data; unsigned int flags; unsigned int mapcount;
 	struct fwnode_handle *fwnode; enum irq_domain_bus_token bus_token;
-	struct irq_domain_chip_generic *gc; struct device *dev;
+	struct device *dev;
 	irq_hw_number_t hwirq_max; unsigned int revmap_size;
 	struct radix_tree_root revmap_tree; struct mutex revmap_mutex;
 	struct irq_data __rcu *revmap[];

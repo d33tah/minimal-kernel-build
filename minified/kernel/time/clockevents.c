@@ -192,17 +192,7 @@ int clockevents_program_event(struct clock_event_device *dev, ktime_t expires,
 	return (rc && force) ? clockevents_program_min_delta(dev) : rc;
 }
 
-static void clockevents_notify_released(void)
-{
-	struct clock_event_device *dev;
-
-	while (!list_empty(&clockevents_released)) {
-		dev = list_entry(clockevents_released.next,
-				 struct clock_event_device, list);
-		list_move(&dev->list, &clockevent_devices);
-		tick_check_new_device(dev);
-	}
-}
+/* clockevents_notify_released inlined into clockevents_register_device */
 
 void clockevents_register_device(struct clock_event_device *dev)
 {
@@ -226,7 +216,14 @@ void clockevents_register_device(struct clock_event_device *dev)
 
 	list_add(&dev->list, &clockevent_devices);
 	tick_check_new_device(dev);
-	clockevents_notify_released();
+	/* Inlined clockevents_notify_released */
+	while (!list_empty(&clockevents_released)) {
+		struct clock_event_device *released_dev;
+		released_dev = list_entry(clockevents_released.next,
+					  struct clock_event_device, list);
+		list_move(&released_dev->list, &clockevent_devices);
+		tick_check_new_device(released_dev);
+	}
 
 	raw_spin_unlock_irqrestore(&clockevents_lock, flags);
 }

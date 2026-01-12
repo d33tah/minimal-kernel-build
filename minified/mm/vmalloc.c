@@ -926,40 +926,7 @@ static inline void set_vm_area_page_order(struct vm_struct *vm,
 	BUG_ON(order != 0);
 }
 
-static void vmap_init_free_space(void)
-{
-	unsigned long vmap_start = 1;
-	const unsigned long vmap_end = ULONG_MAX;
-	struct vmap_area *busy, *free;
-
-	list_for_each_entry(busy, &vmap_area_list, list) {
-		if (busy->va_start - vmap_start > 0) {
-			free = kmem_cache_zalloc(vmap_area_cachep, GFP_NOWAIT);
-			if (!WARN_ON_ONCE(!free)) {
-				free->va_start = vmap_start;
-				free->va_end = busy->va_start;
-
-				insert_vmap_area_augment(free, NULL,
-							 &free_vmap_area_root,
-							 &free_vmap_area_list);
-			}
-		}
-
-		vmap_start = busy->va_end;
-	}
-
-	if (vmap_end - vmap_start > 0) {
-		free = kmem_cache_zalloc(vmap_area_cachep, GFP_NOWAIT);
-		if (!WARN_ON_ONCE(!free)) {
-			free->va_start = vmap_start;
-			free->va_end = vmap_end;
-
-			insert_vmap_area_augment(free, NULL,
-						 &free_vmap_area_root,
-						 &free_vmap_area_list);
-		}
-	}
-}
+/* vmap_init_free_space inlined into vmalloc_init */
 
 void __init vmalloc_init(void)
 {
@@ -976,7 +943,39 @@ void __init vmalloc_init(void)
 
 	/* vmlist loop removed - vmlist was never assigned, always NULL */
 
-	vmap_init_free_space();
+	/* Inlined vmap_init_free_space */
+	{
+		unsigned long vmap_start = 1;
+		const unsigned long vmap_end = ULONG_MAX;
+		struct vmap_area *busy, *free;
+
+		list_for_each_entry(busy, &vmap_area_list, list) {
+			if (busy->va_start - vmap_start > 0) {
+				free = kmem_cache_zalloc(vmap_area_cachep,
+							 GFP_NOWAIT);
+				if (!WARN_ON_ONCE(!free)) {
+					free->va_start = vmap_start;
+					free->va_end = busy->va_start;
+					insert_vmap_area_augment(
+						free, NULL,
+						&free_vmap_area_root,
+						&free_vmap_area_list);
+				}
+			}
+			vmap_start = busy->va_end;
+		}
+
+		if (vmap_end - vmap_start > 0) {
+			free = kmem_cache_zalloc(vmap_area_cachep, GFP_NOWAIT);
+			if (!WARN_ON_ONCE(!free)) {
+				free->va_start = vmap_start;
+				free->va_end = vmap_end;
+				insert_vmap_area_augment(free, NULL,
+							 &free_vmap_area_root,
+							 &free_vmap_area_list);
+			}
+		}
+	}
 	vmap_initialized = true;
 }
 

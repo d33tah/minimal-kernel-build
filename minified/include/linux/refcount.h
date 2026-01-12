@@ -20,7 +20,7 @@ enum refcount_saturation_type {
 	REFCOUNT_ADD_OVF,
 	REFCOUNT_ADD_UAF,
 	REFCOUNT_SUB_UAF,
-	REFCOUNT_DEC_LEAK,
+	/* REFCOUNT_DEC_LEAK removed - never used */
 };
 
 void refcount_warn_saturate(refcount_t *r, enum refcount_saturation_type t);

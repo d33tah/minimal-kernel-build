@@ -2,7 +2,7 @@
 #ifndef _UAPI_ASM_X86_VM86_H
 #define _UAPI_ASM_X86_VM86_H
 
-#define VM86_SIGNAL	0
+/* VM86_SIGNAL removed - unused */
 
 /* Minimal structs needed for asm/vm86.h struct vm86 definition */
 struct revectored_struct {

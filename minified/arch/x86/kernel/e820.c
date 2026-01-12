@@ -64,15 +64,7 @@ void __init e820__range_add(u64 start, u64 size, enum e820_type type)
 	__e820__range_add(e820_table, start, size, type);
 }
 
-static void __init e820_print_type(enum e820_type type)
-{
-	/* Stub: e820 type printing not needed for minimal kernel */
-}
-
-void __init e820__print_table(char *who)
-{
-	/* Stub: e820 memory map printing not needed for minimal kernel */
-}
+/* e820_print_type, e820__print_table stubs removed - never called */
 
 struct change_member {
 	struct e820_entry *entry;
@@ -239,12 +231,7 @@ static u64 __init __e820__range_update(struct e820_table *table, u64 start,
 		size = ULLONG_MAX - start;
 
 	end = start + size;
-	printk(KERN_DEBUG "e820: update [mem %#010Lx-%#010Lx] ", start,
-	       end - 1);
-	e820_print_type(old_type);
-	pr_cont(" ==> ");
-	e820_print_type(new_type);
-	pr_cont("\n");
+	/* Debug printk and e820_print_type calls removed - not needed */
 
 	for (i = 0; i < table->nr_entries; i++) {
 		struct e820_entry *entry = &table->entries[i];
@@ -308,11 +295,7 @@ u64 __init e820__range_remove(u64 start, u64 size, enum e820_type old_type,
 		size = ULLONG_MAX - start;
 
 	end = start + size;
-	printk(KERN_DEBUG "e820: remove [mem %#010Lx-%#010Lx] ", start,
-	       end - 1);
-	if (check_type)
-		e820_print_type(old_type);
-	pr_cont("\n");
+	/* Debug printk and e820_print_type calls removed - not needed */
 
 	for (i = 0; i < e820_table->nr_entries; i++) {
 		struct e820_entry *entry = &e820_table->entries[i];
@@ -455,7 +438,7 @@ unsigned long __init e820__end_of_ram_pfn(void)
 
 /* e820__end_of_low_ram_pfn removed - never called */
 
-static int userdef __initdata;
+/* userdef removed - never written, always 0 */
 
 void __init e820__reserve_setup_data(void)
 {
@@ -511,13 +494,7 @@ void __init e820__reserve_setup_data(void)
 
 void __init e820__finish_early_params(void)
 {
-	if (userdef) {
-		if (e820__update_table(e820_table) < 0)
-			panic("Invalid user supplied memory map");
-
-		pr_info("user-defined physical RAM map:\n");
-		e820__print_table("user");
-	}
+	/* Body removed - userdef always 0 (never written) */
 }
 
 static const char *__init e820_type_to_string(struct e820_entry *entry)

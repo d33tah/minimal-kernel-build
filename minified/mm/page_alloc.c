@@ -1069,29 +1069,24 @@ static void per_cpu_pages_init(struct per_cpu_pages *pcp,
 	pcp->batch = BOOT_PAGESET_BATCH;
 }
 
-static void zone_set_pageset_high_and_batch(struct zone *zone)
-{
-	struct per_cpu_pages *pcp;
-	pcp = per_cpu_ptr(zone->per_cpu_pageset, 0);
-	WRITE_ONCE(pcp->batch, 1);
-}
-
 void __meminit setup_zone_pageset(struct zone *zone)
 {
+	struct per_cpu_pages *pcp;
+
 	if (sizeof(struct per_cpu_zonestat) > 0)
 		zone->per_cpu_zonestats = alloc_percpu(struct per_cpu_zonestat);
 
 	zone->per_cpu_pageset = alloc_percpu(struct per_cpu_pages);
 	/* for_each_possible_cpu simplified - single CPU */
+	pcp = per_cpu_ptr(zone->per_cpu_pageset, 0);
 	{
-		struct per_cpu_pages *pcp =
-			per_cpu_ptr(zone->per_cpu_pageset, 0);
 		struct per_cpu_zonestat *pzstats =
 			per_cpu_ptr(zone->per_cpu_zonestats, 0);
 		per_cpu_pages_init(pcp, pzstats);
 	}
 
-	zone_set_pageset_high_and_batch(zone);
+	/* zone_set_pageset_high_and_batch inlined */
+	WRITE_ONCE(pcp->batch, 1);
 }
 
 void __init setup_per_cpu_pageset(void)

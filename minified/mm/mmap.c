@@ -305,23 +305,7 @@ static int can_vma_merge_before(struct vm_area_struct *vma,
 	return 0;
 }
 
-static int can_vma_merge_after(struct vm_area_struct *vma,
-			       unsigned long vm_flags,
-			       struct anon_vma *anon_vma, struct file *file,
-			       pgoff_t vm_pgoff,
-			       struct vm_userfaultfd_ctx vm_userfaultfd_ctx,
-			       struct anon_vma_name *anon_name)
-{
-	if (is_mergeable_vma(vma, file, vm_flags, vm_userfaultfd_ctx,
-			     anon_name) &&
-	    is_mergeable_anon_vma(anon_vma, vma->anon_vma, vma)) {
-		pgoff_t vm_pglen;
-		vm_pglen = vma_pages(vma);
-		if (vma->vm_pgoff + vm_pglen == vm_pgoff)
-			return 1;
-	}
-	return 0;
-}
+/* can_vma_merge_after inlined into vma_merge - only called once */
 
 struct vm_area_struct *
 vma_merge(struct mm_struct *mm, struct vm_area_struct *prev, unsigned long addr,
@@ -333,6 +317,7 @@ vma_merge(struct mm_struct *mm, struct vm_area_struct *prev, unsigned long addr,
 	pgoff_t pglen = (end - addr) >> PAGE_SHIFT;
 	struct vm_area_struct *area, *next;
 	int err;
+	int can_merge_after;
 
 	if (vm_flags & VM_SPECIAL)
 		return NULL;
@@ -342,10 +327,17 @@ vma_merge(struct mm_struct *mm, struct vm_area_struct *prev, unsigned long addr,
 	if (area && area->vm_end == end)
 		next = next->vm_next;
 
-	/* mpol_equal always returns true - mempolicy disabled */
+	/* Inlined can_vma_merge_after */
+	can_merge_after = 0;
 	if (prev && prev->vm_end == addr &&
-	    can_vma_merge_after(prev, vm_flags, anon_vma, file, pgoff,
-				vm_userfaultfd_ctx, anon_name)) {
+	    is_mergeable_vma(prev, file, vm_flags, vm_userfaultfd_ctx,
+			     anon_name) &&
+	    is_mergeable_anon_vma(anon_vma, prev->anon_vma, prev) &&
+	    prev->vm_pgoff + vma_pages(prev) == pgoff)
+		can_merge_after = 1;
+
+	/* mpol_equal always returns true - mempolicy disabled */
+	if (can_merge_after) {
 		if (next && end == next->vm_start &&
 		    can_vma_merge_before(next, vm_flags, anon_vma, file,
 					 pgoff + pglen, vm_userfaultfd_ctx,

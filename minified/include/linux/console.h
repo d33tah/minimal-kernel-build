@@ -61,9 +61,9 @@ extern const struct consw vga_con;
 #define CON_CONSDEV	(2)  
 #define CON_ENABLED	(4)
 #define CON_BOOT	(8)
-#define CON_ANYTIME	(16)  
-#define CON_BRL		(32)  
-#define CON_EXTENDED	(64)  
+#define CON_ANYTIME	(16)
+#define CON_BRL		(32)
+/* CON_EXTENDED removed - unused */
 
 struct console {
 	char	name[16];

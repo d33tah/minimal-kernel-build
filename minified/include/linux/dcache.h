@@ -124,7 +124,7 @@ struct dentry_operations {
 
 #define DCACHE_MAY_FREE			0x00800000
 #define DCACHE_FALLTHRU			0x01000000
-#define DCACHE_OP_REAL			0x04000000
+/* DCACHE_OP_REAL removed - unused */
 
 #define DCACHE_PAR_LOOKUP		0x10000000  
 #define DCACHE_DENTRY_CURSOR		0x20000000

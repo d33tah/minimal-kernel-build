@@ -835,21 +835,7 @@ void *alloc_pages_exact(size_t size, gfp_t gfp_mask)
 	return (void *)addr;
 }
 
-static unsigned long nr_free_zone_pages(int offset)
-{
-	struct zoneref *z;
-	struct zone *zone;
-	unsigned long sum = 0;
-	struct zonelist *zonelist = node_zonelist(numa_node_id(), GFP_KERNEL);
-
-	for_each_zone_zonelist(zone, z, zonelist, offset) {
-		unsigned long size = zone_managed_pages(zone);
-		unsigned long high = high_wmark_pages(zone);
-		if (size > high)
-			sum += size - high;
-	}
-	return sum;
-}
+/* nr_free_zone_pages inlined below - only called once */
 
 /* nr_free_buffer_pages removed - never called */
 
@@ -925,7 +911,21 @@ void __ref build_all_zonelists(pg_data_t *pgdat)
 		__build_all_zonelists(pgdat);
 	}
 
-	vm_total_pages = nr_free_zone_pages(gfp_zone(GFP_HIGHUSER_MOVABLE));
+	/* Inline: nr_free_zone_pages(gfp_zone(GFP_HIGHUSER_MOVABLE)) */
+	{
+		struct zoneref *z;
+		struct zone *zone;
+		struct zonelist *zonelist =
+			node_zonelist(numa_node_id(), GFP_KERNEL);
+		vm_total_pages = 0;
+		for_each_zone_zonelist(zone, z, zonelist,
+				       gfp_zone(GFP_HIGHUSER_MOVABLE)) {
+			unsigned long size = zone_managed_pages(zone);
+			unsigned long high = high_wmark_pages(zone);
+			if (size > high)
+				vm_total_pages += size - high;
+		}
+	}
 
 	if (vm_total_pages < (pageblock_nr_pages * MIGRATE_TYPES))
 		page_group_by_mobility_disabled = 1;

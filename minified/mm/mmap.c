@@ -906,39 +906,7 @@ struct vm_area_struct *find_extend_vma(struct mm_struct *mm, unsigned long addr)
 }
 
 /* Removed: unmap_region - inlined into __do_munmap */
-
-static bool detach_vmas_to_be_unmapped(struct mm_struct *mm,
-				       struct vm_area_struct *vma,
-				       struct vm_area_struct *prev,
-				       unsigned long end)
-{
-	struct vm_area_struct **insertion_point;
-	struct vm_area_struct *tail_vma = NULL;
-
-	insertion_point = (prev ? &prev->vm_next : &mm->mmap);
-	vma->vm_prev = NULL;
-	do {
-		rb_erase_augmented(&vma->vm_rb, &mm->mm_rb, &vma_gap_callbacks);
-		mm->map_count--;
-		tail_vma = vma;
-		vma = vma->vm_next;
-	} while (vma && vma->vm_start < end);
-	*insertion_point = vma;
-	if (vma) {
-		vma->vm_prev = prev;
-		vma_gap_update(vma);
-	} else
-		mm->highest_vm_end = prev ? vm_end_gap(prev) : 0;
-	tail_vma->vm_next = NULL;
-
-	vmacache_invalidate(mm);
-
-	if (vma && (vma->vm_flags & VM_GROWSDOWN))
-		return false;
-	if (prev && (prev->vm_flags & VM_GROWSUP))
-		return false;
-	return true;
-}
+/* Removed: detach_vmas_to_be_unmapped - inlined into __do_munmap */
 
 int __split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
 		unsigned long addr, int new_below)
@@ -1037,8 +1005,33 @@ int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 	vma = vma_next(mm, prev);
 
 	/* userfaultfd_unmap_prep always returns 0 - dead code removed */
-	if (!detach_vmas_to_be_unmapped(mm, vma, prev, end))
-		downgrade = false;
+	/* detach_vmas_to_be_unmapped inlined */
+	{
+		struct vm_area_struct **insertion_point;
+		struct vm_area_struct *tail_vma = NULL;
+		struct vm_area_struct *tmp_vma = vma;
+		insertion_point = (prev ? &prev->vm_next : &mm->mmap);
+		vma->vm_prev = NULL;
+		do {
+			rb_erase_augmented(&tmp_vma->vm_rb, &mm->mm_rb,
+					   &vma_gap_callbacks);
+			mm->map_count--;
+			tail_vma = tmp_vma;
+			tmp_vma = tmp_vma->vm_next;
+		} while (tmp_vma && tmp_vma->vm_start < end);
+		*insertion_point = tmp_vma;
+		if (tmp_vma) {
+			tmp_vma->vm_prev = prev;
+			vma_gap_update(tmp_vma);
+		} else
+			mm->highest_vm_end = prev ? vm_end_gap(prev) : 0;
+		tail_vma->vm_next = NULL;
+		vmacache_invalidate(mm);
+		if (tmp_vma && (tmp_vma->vm_flags & VM_GROWSDOWN))
+			downgrade = false;
+		if (prev && (prev->vm_flags & VM_GROWSUP))
+			downgrade = false;
+	}
 
 	if (downgrade)
 		mmap_write_downgrade(mm);

@@ -435,33 +435,7 @@ int ptrace_notify(int exit_code, unsigned long message)
 	return exit_code;
 }
 
-static void retarget_shared_pending(struct task_struct *tsk, sigset_t *which)
-{
-	sigset_t retarget;
-	struct task_struct *t;
-
-	sigandsets(&retarget, &tsk->signal->shared_pending.signal, which);
-	if (sigisemptyset(&retarget))
-		return;
-
-	t = tsk;
-	while_each_thread(tsk, t)
-	{
-		if (t->flags & PF_EXITING)
-			continue;
-
-		if (!has_pending_signals(&retarget, &t->blocked))
-			continue;
-
-		sigandsets(&retarget, &retarget, &t->blocked);
-
-		if (!task_sigpending(t))
-			signal_wake_up(t, 0);
-
-		if (sigisemptyset(&retarget))
-			break;
-	}
-}
+/* Removed: retarget_shared_pending - inlined into __set_current_blocked */
 
 void exit_signals(struct task_struct *tsk)
 {
@@ -489,12 +463,30 @@ void __set_current_blocked(const sigset_t *newset)
 		return;
 
 	spin_lock_irq(&tsk->sighand->siglock);
-	/* Inlined __set_task_blocked */
+	/* Inlined __set_task_blocked and retarget_shared_pending */
 	if (task_sigpending(tsk) && !thread_group_empty(tsk)) {
 		sigset_t newblocked;
-
+		sigset_t retarget;
+		struct task_struct *t;
 		sigandnsets(&newblocked, newset, &current->blocked);
-		retarget_shared_pending(tsk, &newblocked);
+		sigandsets(&retarget, &tsk->signal->shared_pending.signal,
+			   &newblocked);
+		if (!sigisemptyset(&retarget)) {
+			t = tsk;
+			while_each_thread(tsk, t)
+			{
+				if (t->flags & PF_EXITING)
+					continue;
+				if (!has_pending_signals(&retarget,
+							 &t->blocked))
+					continue;
+				sigandsets(&retarget, &retarget, &t->blocked);
+				if (!task_sigpending(t))
+					signal_wake_up(t, 0);
+				if (sigisemptyset(&retarget))
+					break;
+			}
+		}
 	}
 	tsk->blocked = *newset;
 	recalc_sigpending();

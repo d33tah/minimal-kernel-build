@@ -409,12 +409,7 @@ static void __attach_mnt(struct mount *mnt, struct mount *parent)
 	list_add_tail(&mnt->mnt_child, &parent->mnt_mounts);
 }
 
-static void attach_mnt(struct mount *mnt, struct mount *parent,
-		       struct mountpoint *mp)
-{
-	mnt_set_mountpoint(parent, mp, mnt);
-	__attach_mnt(mnt, parent);
-}
+/* attach_mnt inlined into do_move_mount - called only once */
 
 /* mnt_change_mountpoint removed - empty stub */
 
@@ -839,7 +834,9 @@ static int attach_recursive_mnt(struct mount *source_mnt,
 	}
 	if (moving) {
 		unhash_mnt(source_mnt);
-		attach_mnt(source_mnt, dest_mnt, dest_mp);
+		/* attach_mnt inlined */
+		mnt_set_mountpoint(dest_mnt, dest_mp, source_mnt);
+		__attach_mnt(source_mnt, dest_mnt);
 		touch_mnt_namespace(source_mnt->mnt_ns);
 	} else {
 		if (source_mnt->mnt_ns) {

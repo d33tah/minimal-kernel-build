@@ -45,13 +45,7 @@ static DECLARE_RWSEM(namespace_sem);
 static HLIST_HEAD(unmounted);
 static LIST_HEAD(ex_mountpoints);
 
-struct mount_kattr {
-	/* attr_set, attr_clr removed - never accessed */
-	unsigned int propagation;
-	unsigned int lookup_flags;
-	bool recurse;
-	struct user_namespace *mnt_userns;
-};
+/* Removed: struct mount_kattr - never used */
 
 __cacheline_aligned_in_smp DEFINE_SEQLOCK(mount_lock);
 

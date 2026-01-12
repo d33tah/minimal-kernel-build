@@ -927,30 +927,21 @@ static int graft_tree(struct mount *mnt, struct mount *p, struct mountpoint *mp)
 	return attach_recursive_mnt(mnt, p, mp, false);
 }
 
-static int flags_to_propagation_type(int ms_flags)
-{
-	int type = ms_flags & ~(MS_REC | MS_SILENT);
-
-	if (type & ~(MS_SHARED | MS_PRIVATE | MS_SLAVE | MS_UNBINDABLE))
-		return 0;
-
-	if (!is_power_of_2(type))
-		return 0;
-	return type;
-}
+/* flags_to_propagation_type inlined - only called once */
 
 static int do_change_type(struct path *path, int ms_flags)
 {
 	struct mount *mnt = real_mount(path->mnt);
 	int recurse = ms_flags & MS_REC;
-	int type;
+	int type = ms_flags & ~(MS_REC | MS_SILENT);
 	int err = 0;
 
 	if (path->dentry != path->mnt->mnt_root)
 		return -EINVAL;
 
-	type = flags_to_propagation_type(ms_flags);
-	if (!type)
+	/* Inline: flags_to_propagation_type logic */
+	if ((type & ~(MS_SHARED | MS_PRIVATE | MS_SLAVE | MS_UNBINDABLE)) ||
+	    !is_power_of_2(type))
 		return -EINVAL;
 
 	namespace_lock();

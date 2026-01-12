@@ -156,10 +156,7 @@ static inline void mnt_dec_writers(struct mount *mnt)
 	mnt->mnt_writers--;
 }
 
-static int mnt_is_readonly(struct vfsmount *mnt)
-{
-	return (mnt->mnt_flags & MNT_READONLY) || sb_rdonly(mnt->mnt_sb);
-}
+/* mnt_is_readonly inlined - only called once */
 
 int __mnt_want_write(struct vfsmount *m)
 {
@@ -176,7 +173,7 @@ int __mnt_want_write(struct vfsmount *m)
 		cpu_relax();
 
 	smp_rmb();
-	if (mnt_is_readonly(m)) {
+	if ((m->mnt_flags & MNT_READONLY) || sb_rdonly(m->mnt_sb)) {
 		mnt_dec_writers(mnt);
 		ret = -EROFS;
 	}

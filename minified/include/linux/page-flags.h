@@ -45,10 +45,7 @@ enum pageflags {
 
 #ifndef __GENERATING_BOUNDS_H
 
-static __always_inline int page_is_fake_head(struct page *page)
-{
-	return 0;
-}
+/* Removed: page_is_fake_head - always returned 0 */
 
 static inline unsigned long _compound_head(const struct page *page)
 {
@@ -69,7 +66,7 @@ static inline unsigned long _compound_head(const struct page *page)
 
 static __always_inline int PageTail(struct page *page)
 {
-	return READ_ONCE(page->compound_head) & 1 || page_is_fake_head(page);
+	return READ_ONCE(page->compound_head) & 1;
 }
 
 static __always_inline int PageCompound(struct page *page)
@@ -327,7 +324,7 @@ static __always_inline bool folio_test_head(struct folio *folio)
 static __always_inline int PageHead(struct page *page)
 {
 	PF_POISONED_CHECK(page);
-	return test_bit(PG_head, &page->flags) && !page_is_fake_head(page);
+	return test_bit(PG_head, &page->flags);
 }
 
 __SETPAGEFLAG(Head, head, PF_ANY)

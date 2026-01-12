@@ -314,23 +314,7 @@ static int elf_read(struct file *file, void *buf, size_t len, loff_t pos)
 	return 0;
 }
 
-static unsigned long maximum_alignment(struct elf_phdr *cmds, int nr)
-{
-	unsigned long alignment = 0;
-	int i;
-
-	for (i = 0; i < nr; i++) {
-		if (cmds[i].p_type == PT_LOAD) {
-			unsigned long p_align = cmds[i].p_align;
-
-			if (!is_power_of_2(p_align))
-				continue;
-			alignment = max(alignment, p_align);
-		}
-	}
-
-	return ELF_PAGEALIGN(alignment);
-}
+/* maximum_alignment inlined into load_elf_binary */
 
 static struct elf_phdr *load_elf_phdrs(const struct elfhdr *elf_ex,
 				       struct file *elf_file)
@@ -733,11 +717,26 @@ out_free_interp:
 			elf_flags |= MAP_FIXED_NOREPLACE;
 		} else if (elf_ex->e_type == ET_DYN) {
 			if (interpreter) {
+				int align_i;
 				load_bias = ELF_ET_DYN_BASE;
 				if (current->flags & PF_RANDOMIZE)
 					load_bias += arch_mmap_rnd();
-				alignment = maximum_alignment(elf_phdata,
-							      elf_ex->e_phnum);
+				/* Inlined maximum_alignment */
+				alignment = 0;
+				for (align_i = 0; align_i < elf_ex->e_phnum;
+				     align_i++) {
+					if (elf_phdata[align_i].p_type ==
+					    PT_LOAD) {
+						unsigned long p_align =
+							elf_phdata[align_i]
+								.p_align;
+						if (is_power_of_2(p_align))
+							alignment =
+								max(alignment,
+								    p_align);
+					}
+				}
+				alignment = ELF_PAGEALIGN(alignment);
 				if (alignment)
 					load_bias &= ~(alignment - 1);
 				elf_flags |= MAP_FIXED_NOREPLACE;

@@ -418,27 +418,7 @@ struct anon_vma *find_mergeable_anon_vma(struct vm_area_struct *vma)
 }
 
 /* mlock_future_check removed - always returned 0 */
-
-static inline bool file_mmap_ok(struct file *file, struct inode *inode,
-				unsigned long pgoff, unsigned long len)
-{
-	u64 maxsize;
-
-	if (S_ISREG(inode->i_mode) || S_ISBLK(inode->i_mode) ||
-	    S_ISSOCK(inode->i_mode))
-		maxsize = MAX_LFS_FILESIZE;
-	else if (file->f_mode & FMODE_UNSIGNED_OFFSET)
-		maxsize = 0;
-	else
-		maxsize = ULONG_MAX;
-
-	if (maxsize && len > maxsize)
-		return false;
-	maxsize -= len;
-	if (pgoff > maxsize >> PAGE_SHIFT)
-		return false;
-	return true;
-}
+/* file_mmap_ok inlined into do_mmap - only called once */
 
 unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len,
 		      unsigned long prot, unsigned long flags,
@@ -501,8 +481,21 @@ unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len,
 	if (file) {
 		struct inode *inode = file_inode(file);
 		unsigned long flags_mask;
+		u64 maxsize;
 
-		if (!file_mmap_ok(file, inode, pgoff, len))
+		/* Inlined file_mmap_ok */
+		if (S_ISREG(inode->i_mode) || S_ISBLK(inode->i_mode) ||
+		    S_ISSOCK(inode->i_mode))
+			maxsize = MAX_LFS_FILESIZE;
+		else if (file->f_mode & FMODE_UNSIGNED_OFFSET)
+			maxsize = 0;
+		else
+			maxsize = ULONG_MAX;
+
+		if (maxsize && len > maxsize)
+			return -EOVERFLOW;
+		maxsize -= len;
+		if (pgoff > maxsize >> PAGE_SHIFT)
 			return -EOVERFLOW;
 
 		flags_mask = LEGACY_MAP_MASK | file->f_op->mmap_supported_flags;

@@ -44,9 +44,7 @@
 
 int mmap_rnd_bits __read_mostly = CONFIG_ARCH_MMAP_RND_BITS;
 
-static void unmap_region(struct mm_struct *mm, struct vm_area_struct *vma,
-			 struct vm_area_struct *prev, unsigned long start,
-			 unsigned long end);
+/* unmap_region forward decl removed - function inlined */
 
 pgprot_t protection_map[16] __ro_after_init = {
 	[VM_NONE] = __P000,
@@ -907,21 +905,7 @@ struct vm_area_struct *find_extend_vma(struct mm_struct *mm, unsigned long addr)
 	return vma;
 }
 
-static void unmap_region(struct mm_struct *mm, struct vm_area_struct *vma,
-			 struct vm_area_struct *prev, unsigned long start,
-			 unsigned long end)
-{
-	struct vm_area_struct *next = vma_next(mm, prev);
-	struct mmu_gather tlb;
-
-	lru_add_drain();
-	tlb_gather_mmu(&tlb, mm);
-	update_hiwater_rss(mm);
-	unmap_vmas(&tlb, vma, start, end);
-	free_pgtables(&tlb, vma, prev ? prev->vm_end : FIRST_USER_ADDRESS,
-		      next ? next->vm_start : USER_PGTABLES_CEILING);
-	tlb_finish_mmu(&tlb);
-}
+/* Removed: unmap_region - inlined into __do_munmap */
 
 static bool detach_vmas_to_be_unmapped(struct mm_struct *mm,
 				       struct vm_area_struct *vma,
@@ -1059,7 +1043,19 @@ int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 	if (downgrade)
 		mmap_write_downgrade(mm);
 
-	unmap_region(mm, vma, prev, start, end);
+	/* unmap_region inlined */
+	{
+		struct vm_area_struct *next = vma_next(mm, prev);
+		struct mmu_gather tlb;
+		lru_add_drain();
+		tlb_gather_mmu(&tlb, mm);
+		update_hiwater_rss(mm);
+		unmap_vmas(&tlb, vma, start, end);
+		free_pgtables(&tlb, vma,
+			      prev ? prev->vm_end : FIRST_USER_ADDRESS,
+			      next ? next->vm_start : USER_PGTABLES_CEILING);
+		tlb_finish_mmu(&tlb);
+	}
 
 	/* Inlined remove_vma_list */
 	{

@@ -32,8 +32,7 @@
 void reset_vc(struct vc_data *vc)
 {
 	vc->vc_mode = KD_TEXT;
-	vt_reset_unicode(vc->vc_num);
-	/* vt_mode, vt_pid, vt_newvt initialization removed - struct/fields removed */
+	/* vt_reset_unicode, vt_mode, vt_pid, vt_newvt removed - empty stubs */
 	reset_palette(vc);
 }
 

@@ -8,14 +8,4 @@
 
 /* vt_do_diacrit, vt_do_kdskbmode, vt_do_kdskbmeta, vt_do_kbkeycode_ioctl,
    vt_do_kdsk_ioctl, vt_do_kdgkb_ioctl, vt_do_kdskled, vt_do_kdgkbmode,
-   vt_do_kdgkbmeta removed - unused (keyboard ioctls not needed) */
-
-int vt_reset_unicode(int console)
-{
-	return 0;
-}
-
-int __init kbd_init(void)
-{
-	return 0;
-}
+   vt_do_kdgkbmeta, vt_reset_unicode, kbd_init removed - empty stubs */

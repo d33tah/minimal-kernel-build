@@ -150,9 +150,8 @@ extern int global_cursor_default;
    vt_do_kdgkbmode, vt_do_kdgkbmeta, vt_get_shift_state, vt_get_leds,
    vt_set_led_state removed - never called */
 
-int vt_reset_unicode(unsigned int console);
-/* vt_reset_keyboard, vt_kbd_con_start, vt_kbd_con_stop, vt_get_kbd_mode_bit,
-   vt_set_kbd_mode_bit, vt_clr_kbd_mode_bit removed - empty stubs */
+/* vt_reset_unicode, vt_reset_keyboard, vt_kbd_con_start, vt_kbd_con_stop,
+   vt_get_kbd_mode_bit, vt_set_kbd_mode_bit, vt_clr_kbd_mode_bit removed */
 void vc_scrolldelta_helper(struct vc_data *c, int lines,
 		unsigned int rolled_over, void *_base, unsigned int size);
 

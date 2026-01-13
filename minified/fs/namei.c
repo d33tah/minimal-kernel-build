@@ -473,38 +473,7 @@ static inline int traverse_mounts(struct path *path, bool *jumped,
 	return 0;
 }
 
-static bool __follow_mount_rcu(struct nameidata *nd, struct path *path,
-			       struct inode **inode, unsigned *seqp)
-{
-	struct dentry *dentry = path->dentry;
-	unsigned int flags = dentry->d_flags;
-
-	if (likely(!(flags & DCACHE_MANAGED_DENTRY)))
-		return true;
-
-	/* LOOKUP_NO_XDEV check removed - never set */
-
-	for (;;) {
-		/* DCACHE_MANAGE_TRANSIT check removed - d_manage never set */
-
-		if (flags & DCACHE_MOUNTED) {
-			struct mount *mounted = __lookup_mnt(path->mnt, dentry);
-			if (mounted) {
-				path->mnt = &mounted->mnt;
-				dentry = path->dentry = mounted->mnt.mnt_root;
-				nd->state |= ND_JUMPED;
-				*seqp = read_seqcount_begin(&dentry->d_seq);
-				*inode = dentry->d_inode;
-
-				flags = dentry->d_flags;
-				continue;
-			}
-			if (read_seqretry(&mount_lock, nd->m_seq))
-				return false;
-		}
-		return !(flags & DCACHE_NEED_AUTOMOUNT);
-	}
-}
+/* __follow_mount_rcu inlined into handle_mounts */
 
 static inline int handle_mounts(struct nameidata *nd, struct dentry *dentry,
 				struct path *path, struct inode **inode,
@@ -519,8 +488,42 @@ static inline int handle_mounts(struct nameidata *nd, struct dentry *dentry,
 		unsigned int seq = *seqp;
 		if (unlikely(!*inode))
 			return -ENOENT;
-		if (likely(__follow_mount_rcu(nd, path, inode, seqp)))
-			return 0;
+		/* Inlined __follow_mount_rcu */
+		{
+			struct dentry *rcu_dentry = path->dentry;
+			unsigned int flags = rcu_dentry->d_flags;
+			bool rcu_ok = true;
+
+			if (likely(!(flags & DCACHE_MANAGED_DENTRY)))
+				goto rcu_done;
+			rcu_ok = false;
+			for (;;) {
+				if (flags & DCACHE_MOUNTED) {
+					struct mount *mounted = __lookup_mnt(
+						path->mnt, rcu_dentry);
+					if (mounted) {
+						path->mnt = &mounted->mnt;
+						rcu_dentry = path->dentry =
+							mounted->mnt.mnt_root;
+						nd->state |= ND_JUMPED;
+						*seqp = read_seqcount_begin(
+							&rcu_dentry->d_seq);
+						*inode = rcu_dentry->d_inode;
+						flags = rcu_dentry->d_flags;
+						continue;
+					}
+					if (read_seqretry(&mount_lock,
+							  nd->m_seq))
+						goto rcu_fail;
+				}
+				rcu_ok = !(flags & DCACHE_NEED_AUTOMOUNT);
+				break;
+			}
+rcu_done:
+			if (likely(rcu_ok))
+				return 0;
+rcu_fail:;
+		}
 		if (!try_to_unlazy_next(nd, dentry, seq))
 			return -ECHILD;
 

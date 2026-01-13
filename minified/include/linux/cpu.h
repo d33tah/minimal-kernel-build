@@ -33,10 +33,8 @@ void __noreturn cpu_startup_entry(enum cpuhp_state state);
 /* cpu_in_idle removed - never called */
 
 void arch_cpu_idle(void);
-void arch_cpu_idle_prepare(void);
 void arch_cpu_idle_enter(void);
-void arch_cpu_idle_exit(void);
-/* arch_cpu_idle_dead removed - never called */
+/* arch_cpu_idle_prepare, arch_cpu_idle_exit, arch_cpu_idle_dead removed - never called */
 
 
 #endif  

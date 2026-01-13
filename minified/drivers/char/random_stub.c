@@ -13,10 +13,7 @@ u32 get_random_u32(void)
 {
 	return 0;
 }
-int __init random_init(const char *command_line)
-{
-	return 0;
-}
+/* random_init removed - empty stub */
 
 static ssize_t random_read(struct file *file, char __user *buf, size_t nbytes,
 			   loff_t *ppos)

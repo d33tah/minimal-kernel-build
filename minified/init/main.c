@@ -446,8 +446,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	/* kfence_init removed - empty stub */
 	time_init();
 
-	random_init(command_line);
-	/* boot_init_stack_canary, perf_event_init, profile_init removed - empty stubs */
+	/* random_init, boot_init_stack_canary, perf_event_init, profile_init removed - empty stubs */
 	WARN(!irqs_disabled(), "Interrupts were enabled early\n");
 
 	early_boot_irqs_disabled = false;

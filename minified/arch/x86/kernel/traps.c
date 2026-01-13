@@ -99,11 +99,6 @@ static nokprobe_inline int do_trap_no_signal(struct task_struct *tsk,
 	return -1;
 }
 
-static void show_signal(struct task_struct *tsk, int signr, const char *type,
-			const char *desc, struct pt_regs *regs, long error_code)
-{
-}
-
 static void do_trap(int trapnr, int signr, char *str, struct pt_regs *regs,
 		    long error_code, int sicode, void __user *addr)
 {
@@ -111,8 +106,6 @@ static void do_trap(int trapnr, int signr, char *str, struct pt_regs *regs,
 
 	if (!do_trap_no_signal(tsk, trapnr, str, regs, error_code))
 		return;
-
-	show_signal(tsk, signr, "trap ", str, regs, error_code);
 
 	if (!sicode)
 		force_sig(signr);
@@ -291,7 +284,6 @@ static void gp_user_force_sig_segv(struct pt_regs *regs, int trapnr,
 {
 	current->thread.error_code = error_code;
 	current->thread.trap_nr = trapnr;
-	show_signal(current, SIGSEGV, "", str, regs, error_code);
 	force_sig(SIGSEGV);
 }
 

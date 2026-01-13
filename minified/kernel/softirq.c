@@ -213,10 +213,7 @@ void __init softirq_init(void)
 /* ksoftirqd_should_run, run_ksoftirqd, spawn_ksoftirqd removed -
    CPU never goes offline, so no takeover_tasklets needed (~8 LOC) */
 
-int __init __weak early_irq_init(void)
-{
-	return 0;
-}
+/* early_irq_init removed - non-weak version exists in kernel/irq/irqdesc.c */
 
 int __init __weak arch_probe_nr_irqs(void)
 {

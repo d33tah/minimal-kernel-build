@@ -198,10 +198,10 @@ static inline __init_memblock bool memblock_bottom_up(void)
 }
 
 phys_addr_t memblock_start_of_DRAM(void);
-/* memblock_end_of_DRAM, memblock_is_region_reserved, memblock_get_current_limit removed */
+/* memblock_end_of_DRAM, memblock_is_region_reserved, memblock_get_current_limit,
+   memblock_dump_all removed - never called */
 bool memblock_is_region_memory(phys_addr_t base, phys_addr_t size);
 
-void memblock_dump_all(void);
 void memblock_set_current_limit(phys_addr_t limit);
 
 

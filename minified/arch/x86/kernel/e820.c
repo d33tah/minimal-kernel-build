@@ -679,6 +679,5 @@ void __init e820__memblock_setup(void)
 	}
 
 	memblock_trim_memory(PAGE_SIZE);
-
-	memblock_dump_all();
+	/* memblock_dump_all removed - was empty stub */
 }

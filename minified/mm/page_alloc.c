@@ -1092,12 +1092,7 @@ void __init setup_per_cpu_pageset(void)
 	/* per_cpu_nodestats alloc removed - field removed */
 }
 
-static __meminit void zone_pcp_init(struct zone *zone)
-{
-	zone->per_cpu_pageset = &boot_pageset;
-	zone->per_cpu_zonestats = &boot_zonestats;
-	/* pageset_high, pageset_batch fields removed */
-}
+/* zone_pcp_init inlined into free_area_init_core */
 
 void __meminit init_currently_empty_zone(struct zone *zone,
 					 unsigned long zone_start_pfn,
@@ -1333,7 +1328,9 @@ static void __init free_area_init_core(struct pglist_data *pgdat)
 		zone->name = zone_names[j];
 		zone->zone_pgdat = NODE_DATA(nid);
 		spin_lock_init(&zone->lock);
-		zone_pcp_init(zone);
+		/* Inlined zone_pcp_init */
+		zone->per_cpu_pageset = &boot_pageset;
+		zone->per_cpu_zonestats = &boot_zonestats;
 
 		if (!size)
 			continue;

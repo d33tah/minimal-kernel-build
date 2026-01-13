@@ -104,12 +104,7 @@ static void thread_stack_free_rcu(struct rcu_head *rh)
 	__free_pages(virt_to_page(rh), THREAD_SIZE_ORDER);
 }
 
-static void thread_stack_delayed_free(struct task_struct *tsk)
-{
-	struct rcu_head *rh = tsk->stack;
-
-	call_rcu(rh, thread_stack_free_rcu);
-}
+/* thread_stack_delayed_free inlined into free_thread_stack */
 
 static int alloc_thread_stack_node(struct task_struct *tsk, int node)
 {
@@ -125,7 +120,8 @@ static int alloc_thread_stack_node(struct task_struct *tsk, int node)
 
 static void free_thread_stack(struct task_struct *tsk)
 {
-	thread_stack_delayed_free(tsk);
+	struct rcu_head *rh = tsk->stack;
+	call_rcu(rh, thread_stack_free_rcu);
 	tsk->stack = NULL;
 }
 

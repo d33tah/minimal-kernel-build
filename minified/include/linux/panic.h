@@ -6,7 +6,7 @@
 
 struct pt_regs;
 
-extern long (*panic_blink)(int state);
+/* panic_blink removed - no_blink always returned 0 */
 __printf(1, 2)
 void panic(const char *fmt, ...) __noreturn __cold;
 void nmi_panic(struct pt_regs *regs, const char *msg);

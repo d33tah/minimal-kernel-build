@@ -36,11 +36,7 @@ int panic_timeout = CONFIG_PANIC_TIMEOUT;
 
 ATOMIC_NOTIFIER_HEAD(panic_notifier_list);
 
-static long no_blink(int state)
-{
-	return 0;
-}
-long (*panic_blink)(int state) = no_blink;
+/* panic_blink removed - no_blink always returned 0 */
 
 void __weak panic_smp_self_stop(void)
 {
@@ -120,7 +116,7 @@ void panic(const char *fmt, ...)
 		for (i = 0; i < panic_timeout * 1000; i += PANIC_TIMER_STEP) {
 			/* touch_nmi_watchdog removed - empty stub */
 			if (i >= i_next) {
-				i += panic_blink(state ^= 1);
+				/* panic_blink call removed - always returned 0 */
 				i_next = i + 3600 / PANIC_BLINK_SPD;
 			}
 			mdelay(PANIC_TIMER_STEP);
@@ -137,7 +133,7 @@ void panic(const char *fmt, ...)
 	for (i = 0;; i += PANIC_TIMER_STEP) {
 		/* touch_softlockup_watchdog removed - empty stub */
 		if (i >= i_next) {
-			i += panic_blink(state ^= 1);
+			/* panic_blink call removed - always returned 0 */
 			i_next = i + 3600 / PANIC_BLINK_SPD;
 		}
 		mdelay(PANIC_TIMER_STEP);

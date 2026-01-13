@@ -27,7 +27,7 @@ DEFINE_SPINLOCK(rtc_lock);
 
 void mach_get_cmos_time(struct timespec64 *now)
 {
-	unsigned int status, year, mon, day, hour, min, sec, century = 0;
+	unsigned int status, year, mon, day, hour, min, sec;
 	unsigned long flags;
 
 	spin_lock_irqsave(&rtc_lock, flags);
@@ -56,11 +56,8 @@ void mach_get_cmos_time(struct timespec64 *now)
 		year = bcd2bin(year);
 	}
 
-	if (century) {
-		century = bcd2bin(century);
-		year += century * 100;
-	} else
-		year += CMOS_YEARS_OFFS;
+	/* century is always 0 - dead code removed */
+	year += CMOS_YEARS_OFFS;
 
 	now->tv_sec = mktime64(year, mon, day, hour, min, sec);
 	now->tv_nsec = 0;

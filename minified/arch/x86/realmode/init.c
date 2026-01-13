@@ -1,15 +1,7 @@
 #include <linux/io.h>
 #include <linux/slab.h>
 #include <linux/memblock.h>
-enum cc_attr {
-	CC_ATTR_HOST_MEM_ENCRYPT,
-	CC_ATTR_GUEST_MEM_ENCRYPT,
-	CC_ATTR_GUEST_UNROLL_STRING_IO
-};
-static inline bool cc_platform_has(enum cc_attr attr)
-{
-	return false;
-}
+/* cc_attr enum and cc_platform_has removed - unused now that init_real_mode is stubbed */
 #include <linux/pgtable.h>
 
 #include <asm/set_memory.h>

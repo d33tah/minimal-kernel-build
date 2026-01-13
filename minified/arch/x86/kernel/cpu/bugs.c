@@ -9,20 +9,14 @@
 #include <asm/alternative.h>
 #include <asm/nospec-branch.h>
 
-u64 x86_spec_ctrl_base;
-/* x86_spec_ctrl_current per-cpu var removed - never used */
+/* x86_spec_ctrl_base, x86_spec_ctrl_current removed - never used */
 
 u64 __ro_after_init x86_amd_ls_cfg_base;
 u64 __ro_after_init x86_amd_ls_cfg_ssbd_mask;
 
 /* switch_to_cond_stibp, switch_mm_cond_ibpb, switch_mm_always_ibpb,
-   mds_user_clear, mds_idle_clear definitions removed - never enabled */
-
-void write_spec_ctrl_current(u64 val, bool force)
-{
-}
-
-/* spec_ctrl_current removed - never called */
+   mds_user_clear, mds_idle_clear, write_spec_ctrl_current, spec_ctrl_current
+   removed - never enabled/never called */
 
 void __init check_bugs(void)
 {

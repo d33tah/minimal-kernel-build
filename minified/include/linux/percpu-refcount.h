@@ -19,16 +19,7 @@ enum {
 	__PERCPU_REF_FLAG_BITS	= 2,
 };
 
-enum {
-	 
-	PERCPU_REF_INIT_ATOMIC	= 1 << 0,
-
-	 
-	PERCPU_REF_INIT_DEAD	= 1 << 1,
-
-	 
-	PERCPU_REF_ALLOW_REINIT	= 1 << 2,
-};
+/* PERCPU_REF_INIT_* enum removed - never used */
 
 struct percpu_ref_data {
 	atomic_long_t		count;

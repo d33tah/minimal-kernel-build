@@ -28,22 +28,14 @@
 /* cpu_has_xfeatures removed - never called */
 
 // Stub: Initialize CPU xstate
-void fpu__init_cpu_xstate(void)
-{
-}
+/* fpu__init_cpu_xstate removed - empty stub */
 
 // Stub: Initialize system xstate
 void __init fpu__init_system_xstate(unsigned int legacy_size)
 {
 }
 
-/* fpu__resume_cpu removed - never called */
-
-int copy_sigframe_from_user_to_xstate(struct fpstate *fpstate,
-				      const void __user *ubuf)
-{
-	return 0;
-}
+/* fpu__resume_cpu, copy_sigframe_from_user_to_xstate removed - never called */
 
 // Stub: xstate prctl
 long fpu_xstate_prctl(int option, unsigned long arg2)

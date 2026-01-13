@@ -34,7 +34,7 @@ static void fpu__init_cpu_generic(void)
 void fpu__init_cpu(void)
 {
 	fpu__init_cpu_generic();
-	fpu__init_cpu_xstate();
+	/* fpu__init_cpu_xstate call removed - was empty stub */
 }
 
 /* fpu__probe_without_cpuid removed - never called */

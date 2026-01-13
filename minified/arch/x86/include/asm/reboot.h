@@ -13,7 +13,6 @@ struct pt_regs;
 /* machine_real_restart removed - never called */
 
 void nmi_panic_self_stop(struct pt_regs *regs);
-/* nmi_shootdown_cpus removed - stub never called */
-void run_crash_ipi_callback(struct pt_regs *regs);
+/* nmi_shootdown_cpus, run_crash_ipi_callback removed - stub never called */
 
 #endif  

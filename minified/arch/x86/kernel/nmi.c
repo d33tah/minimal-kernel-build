@@ -171,10 +171,8 @@ static noinstr void default_do_nmi(struct pt_regs *regs)
 		goto out;
 	}
 
-	while (!raw_spin_trylock(&nmi_reason_lock)) {
-		run_crash_ipi_callback(regs);
+	while (!raw_spin_trylock(&nmi_reason_lock))
 		cpu_relax();
-	}
 
 	reason = x86_platform.get_nmi_reason();
 

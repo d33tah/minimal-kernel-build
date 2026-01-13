@@ -18,8 +18,4 @@ void machine_restart(char *cmd)
 		halt();
 }
 
-/* machine_halt removed - never called */
-
-void run_crash_ipi_callback(struct pt_regs *regs)
-{
-}
+/* machine_halt, run_crash_ipi_callback removed - never called/empty stub */

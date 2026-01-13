@@ -358,10 +358,7 @@ void __init arch_post_acpi_subsys_init(void); /* in arch/x86/kernel/process.c */
 
 void __init poking_init(void); /* in arch/x86/mm/init.c */
 
-/* smp_setup_processor_id, thread_stack_cache_init, mem_encrypt_init removed - empty weak stubs */
-void __init __weak pgtable_cache_init(void)
-{
-} /* called from mm.h */
+/* smp_setup_processor_id, thread_stack_cache_init, mem_encrypt_init, pgtable_cache_init removed - empty weak stubs */
 
 void __init trap_init(void); /* in arch/x86/kernel/traps.c */
 

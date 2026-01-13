@@ -754,7 +754,7 @@ static inline spinlock_t *pte_lockptr(struct mm_struct *mm, pmd_t *pmd)
 
 static inline void pgtable_init(void)
 {
-	pgtable_cache_init();
+	/* pgtable_cache_init removed - empty weak stub */
 }
 
 static inline bool pgtable_pte_page_ctor(struct page *page)

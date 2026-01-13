@@ -366,9 +366,7 @@ static inline int pmd_none_or_trans_huge_or_clear_bad(pmd_t *pmd)
 
 
 
-/* init_espfix_bsp removed - call site removed */
-
-extern void __init pgtable_cache_init(void);
+/* init_espfix_bsp, pgtable_cache_init removed - call site removed / empty */
 
 #ifndef __HAVE_ARCH_PFN_MODIFY_ALLOWED
 static inline bool pfn_modify_allowed(unsigned long pfn, pgprot_t prot)

@@ -11,13 +11,10 @@ extern int memtype_reserve(u64 start, u64 end,
 		enum page_cache_mode req_pcm, enum page_cache_mode *ret_pcm);
 extern int memtype_free(u64 start, u64 end);
 
-extern int memtype_kernel_map_sync(u64 base, unsigned long size,
-		enum page_cache_mode pcm);
-
 extern int memtype_reserve_io(resource_size_t start, resource_size_t end,
 			enum page_cache_mode *pcm);
 
-/* memtype_free_io removed - never called */
+/* memtype_kernel_map_sync, memtype_free_io removed - never called */
 
 bool x86_has_pat_wp(void);
 enum page_cache_mode pgprot2cachemode(pgprot_t pgprot);

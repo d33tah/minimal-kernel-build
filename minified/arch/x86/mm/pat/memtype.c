@@ -69,15 +69,8 @@ int memtype_reserve_io(resource_size_t start, resource_size_t end,
 	return 0;
 }
 
-/* memtype_free_io removed - never called */
-
-int memtype_kernel_map_sync(u64 base, unsigned long size,
-			    enum page_cache_mode pcm)
-{
-	return 0;
-}
-
-/* track_pfn_copy, track_pfn_remap, track_pfn_insert, untrack_pfn removed - never called */
+/* memtype_free_io, memtype_kernel_map_sync, track_pfn_copy, track_pfn_remap,
+   track_pfn_insert, untrack_pfn removed - never called */
 
 pgprot_t pgprot_writecombine(pgprot_t prot)
 {

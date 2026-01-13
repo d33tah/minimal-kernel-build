@@ -186,9 +186,7 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
 		goto err_free_memtype;
 	area->phys_addr = phys_addr;
 	vaddr = (unsigned long)area->addr;
-
-	if (memtype_kernel_map_sync(phys_addr, size, pcm))
-		goto err_free_area;
+	/* memtype_kernel_map_sync check removed - always returns 0 */
 
 	if (ioremap_page_range(vaddr, vaddr + size, phys_addr, prot))
 		goto err_free_area;

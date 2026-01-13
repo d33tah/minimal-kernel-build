@@ -39,16 +39,5 @@ void __init check_bugs(void)
 }
 
 /* x86_virt_spec_ctrl, x86_spec_ctrl_setup_ap, itlb_multihit_kvm_mitigation,
- * l1tf_vmx_mitigation, vmx_l1d_flush_state removed - unused in minimal kernel */
-
-int arch_prctl_spec_ctrl_get(struct task_struct *task, unsigned long which)
-{
-	return -ENODEV;
-}
-
-int arch_prctl_spec_ctrl_set(struct task_struct *task, unsigned long which,
-			     unsigned long ctrl)
-{
-	return -ENODEV;
-}
-/* switch_mm_cond_l1d_flush definition removed - never enabled */
+ * l1tf_vmx_mitigation, vmx_l1d_flush_state, arch_prctl_spec_ctrl_get,
+ * arch_prctl_spec_ctrl_set, switch_mm_cond_l1d_flush removed - unused */

@@ -5,8 +5,4 @@ unsigned long lcm(unsigned long a, unsigned long b)
 {
 	return (a && b) ? (a / gcd(a, b)) * b : 0;
 }
-unsigned long lcm_not_zero(unsigned long a, unsigned long b)
-{
-	unsigned long l = lcm(a, b);
-	return l ? l : (b ? b : a);
-}
+/* lcm_not_zero removed - never called */

@@ -194,9 +194,7 @@ asmlinkage __visible void *extract_kernel(void *rmode, memptr heap,
 	cols = boot_params->screen_info.orig_video_cols;
 
 	init_default_io_ops();
-
-	early_tdx_detect();
-
+	/* early_tdx_detect removed - was empty stub */
 	console_init();
 
 	/* Ultra-early VGA Hello World - in decompressor */
@@ -246,9 +244,7 @@ asmlinkage __visible void *extract_kernel(void *rmode, memptr heap,
 	parse_elf(output);
 	handle_relocations(output, output_len, virt_addr);
 	debug_putstr("done.\nBooting the kernel.\n");
-
-	cleanup_exception_handling();
-
+	/* cleanup_exception_handling removed - was empty stub */
 	return output;
 }
 

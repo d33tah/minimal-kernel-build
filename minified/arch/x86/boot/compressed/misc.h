@@ -22,7 +22,7 @@
 #include <asm/bootparam.h>
 #include <asm/desc_defs.h>
 
-static inline void early_tdx_detect(void) { }
+/* early_tdx_detect removed - TDX not needed */
 
 #define BOOT_CTYPE_H
 #include <linux/acpi.h>
@@ -83,9 +83,7 @@ extern pteval_t __default_kernel_pte_mask;
 
 
 extern gate_desc boot_idt[BOOT_IDT_ENTRIES];
-/* boot_idt_desc removed - never used */
-
-static inline void cleanup_exception_handling(void) { }
+/* boot_idt_desc, cleanup_exception_handling removed - never used */
 
  
 void boot_page_fault(void);

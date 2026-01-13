@@ -63,12 +63,9 @@ u32 elf_hwcap2 __read_mostly;
 /* cpu_initialized_mask, smp_num_siblings, cpu_llc_id, cpu_l2c_id removed - never used */
 /* ppin_init removed - empty function */
 
-static void default_init(struct cpuinfo_x86 *c)
-{
-}
-
+/* default_init removed - was empty stub */
 static const struct cpu_dev default_cpu = {
-	.c_init = default_init,
+	.c_init = NULL,
 	.c_vendor = "Unknown",
 	.c_x86_vendor = X86_VENDOR_UNKNOWN,
 };

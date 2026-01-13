@@ -16,7 +16,7 @@ static inline void __clear_shadow_entry(struct address_space *mapping,
 {
 	XA_STATE(xas, &mapping->i_pages, index);
 
-	xas_set_update(&xas, workingset_update_node);
+	xas_set_update(&xas, NULL);
 	if (xas_load(&xas) != entry)
 		return;
 	xas_store(&xas, NULL);

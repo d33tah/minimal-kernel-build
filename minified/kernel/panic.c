@@ -70,8 +70,7 @@ void panic(const char *fmt, ...)
 {
 	static char buf[1024];
 	va_list args;
-	long i, i_next = 0, len;
-	int state = 0;
+	long i, len;
 	int old_cpu, this_cpu;
 
 	if (panic_on_warn) {
@@ -113,14 +112,8 @@ void panic(const char *fmt, ...)
 	if (panic_timeout > 0) {
 		pr_emerg("Rebooting in %d seconds..\n", panic_timeout);
 
-		for (i = 0; i < panic_timeout * 1000; i += PANIC_TIMER_STEP) {
-			/* touch_nmi_watchdog removed - empty stub */
-			if (i >= i_next) {
-				/* panic_blink call removed - always returned 0 */
-				i_next = i + 3600 / PANIC_BLINK_SPD;
-			}
+		for (i = 0; i < panic_timeout * 1000; i += PANIC_TIMER_STEP)
 			mdelay(PANIC_TIMER_STEP);
-		}
 	}
 	if (panic_timeout != 0) {
 		/* reboot_mode assignment removed - variable unused */
@@ -130,14 +123,8 @@ void panic(const char *fmt, ...)
 	pr_emerg("---[ end Kernel panic - not syncing: %s ]---\n", buf);
 
 	local_irq_enable();
-	for (i = 0;; i += PANIC_TIMER_STEP) {
-		/* touch_softlockup_watchdog removed - empty stub */
-		if (i >= i_next) {
-			/* panic_blink call removed - always returned 0 */
-			i_next = i + 3600 / PANIC_BLINK_SPD;
-		}
+	for (;;)
 		mdelay(PANIC_TIMER_STEP);
-	}
 }
 
 void add_taint(unsigned flag, enum lockdep_ok lockdep_ok)

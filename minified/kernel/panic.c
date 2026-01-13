@@ -20,7 +20,7 @@ extern struct atomic_notifier_head panic_notifier_list;
 #include <asm/sections.h>
 
 #define PANIC_TIMER_STEP 100
-#define PANIC_BLINK_SPD 18
+/* PANIC_BLINK_SPD removed - unused after panic_blink removal */
 
 /* sysctl_oops_all_cpu_backtrace macro removed - unused */
 

@@ -6,9 +6,7 @@
 #include <linux/init.h>
 #include <linux/export.h>
 #include <linux/timer.h>
-/* acpi_pmtmr.h inlined - acpi_pm_read_early always returns 0 */
-#define PMTMR_TICKS_PER_SEC 3579545
-#define ACPI_PM_OVRRUN (1 << 24)
+/* acpi_pmtmr.h - PMTMR constants removed with pit_hpet_ptimer_calibrate_cpu */
 #include <linux/delay.h>
 #include <linux/clocksource.h>
 #include <linux/percpu.h>
@@ -147,97 +145,8 @@ unsigned long long sched_clock(void)
 
 /* no_sched_irq_time, no_tsc_watchdog removed - never used */
 
-#define MAX_RETRIES 5
-#define TSC_DEFAULT_THRESHOLD 0x20000
-
-static u64 tsc_read_refs(u64 *p, int hpet)
-{
-	u64 t1, t2;
-	u64 thresh = tsc_khz ? tsc_khz >> 5 : TSC_DEFAULT_THRESHOLD;
-	int i;
-
-	/* hpet always 0 - hpet_readl branch removed, acpi_pm_read_early inlined */
-	for (i = 0; i < MAX_RETRIES; i++) {
-		t1 = get_cycles();
-		*p = 0;
-		t2 = get_cycles();
-		if ((t2 - t1) < thresh)
-			return t2;
-	}
-	return ULLONG_MAX;
-}
-
-/* calc_hpet_ref removed - is_hpet_enabled always 0, never called */
-
-static unsigned long calc_pmtimer_ref(u64 deltatsc, u64 pm1, u64 pm2)
-{
-	u64 tmp;
-
-	if (!pm1 && !pm2)
-		return ULONG_MAX;
-
-	if (pm2 < pm1)
-		pm2 += (u64)ACPI_PM_OVRRUN;
-	pm2 -= pm1;
-	tmp = pm2 * 1000000000LL;
-	do_div(tmp, PMTMR_TICKS_PER_SEC);
-	do_div(deltatsc, tmp);
-
-	return (unsigned long)deltatsc;
-}
-
-#define CAL_MS 10
-#define CAL_LATCH (PIT_TICK_RATE / (1000 / CAL_MS))
-#define CAL_PIT_LOOPS 1000
-
-#define CAL2_MS 50
-#define CAL2_LATCH (PIT_TICK_RATE / (1000 / CAL2_MS))
-#define CAL2_PIT_LOOPS 5000
-
-static unsigned long pit_calibrate_tsc(u32 latch, unsigned long ms, int loopmin)
-{
-	u64 tsc, t1, t2, delta;
-	unsigned long tscmin, tscmax;
-	int pitcnt;
-
-	if (!has_legacy_pic()) {
-		udelay(10 * USEC_PER_MSEC);
-		udelay(10 * USEC_PER_MSEC);
-		udelay(10 * USEC_PER_MSEC);
-		udelay(10 * USEC_PER_MSEC);
-		udelay(10 * USEC_PER_MSEC);
-		return ULONG_MAX;
-	}
-
-	outb((inb(0x61) & ~0x02) | 0x01, 0x61);
-
-	outb(0xb0, 0x43);
-	outb(latch & 0xff, 0x42);
-	outb(latch >> 8, 0x42);
-
-	tsc = t1 = t2 = get_cycles();
-
-	pitcnt = 0;
-	tscmax = 0;
-	tscmin = ULONG_MAX;
-	while ((inb(0x61) & 0x20) == 0) {
-		t2 = get_cycles();
-		delta = t2 - tsc;
-		tsc = t2;
-		if ((unsigned long)delta < tscmin)
-			tscmin = (unsigned int)delta;
-		if ((unsigned long)delta > tscmax)
-			tscmax = (unsigned int)delta;
-		pitcnt++;
-	}
-
-	if (pitcnt < loopmin || tscmax > 10 * tscmin)
-		return ULONG_MAX;
-
-	delta = t2 - t1;
-	do_div(delta, ms);
-	return delta;
-}
+/* tsc_read_refs, calc_pmtimer_ref, pit_calibrate_tsc removed with
+   pit_hpet_ptimer_calibrate_cpu (~90 LOC) - never called */
 
 static inline int pit_verify_msb(unsigned char val)
 {
@@ -375,97 +284,7 @@ static unsigned long cpu_khz_from_cpuid(void)
 	return eax_base_mhz * 1000;
 }
 
-static unsigned long pit_hpet_ptimer_calibrate_cpu(void)
-{
-	u64 tsc1, tsc2, delta, ref1, ref2;
-	unsigned long tsc_pit_min = ULONG_MAX, tsc_ref_min = ULONG_MAX;
-	unsigned long flags, latch, ms;
-	int hpet, i, loopmin;
-
-#ifndef CONFIG_MMU
-	/* For NOMMU, skip complex calibration and use default ~1GHz */
-	return 1000000; /* 1 GHz in kHz */
-#endif
-
-	hpet = 0; /* is_hpet_enabled always 0 */
-
-	latch = CAL_LATCH;
-	ms = CAL_MS;
-	loopmin = CAL_PIT_LOOPS;
-
-	for (i = 0; i < 3; i++) {
-		unsigned long tsc_pit_khz;
-
-		local_irq_save(flags);
-		tsc1 = tsc_read_refs(&ref1, hpet);
-		tsc_pit_khz = pit_calibrate_tsc(latch, ms, loopmin);
-		tsc2 = tsc_read_refs(&ref2, hpet);
-		local_irq_restore(flags);
-
-		tsc_pit_min = min(tsc_pit_min, tsc_pit_khz);
-
-		if (ref1 == ref2)
-			continue;
-
-		if (tsc1 == ULLONG_MAX || tsc2 == ULLONG_MAX)
-			continue;
-
-		tsc2 = (tsc2 - tsc1) * 1000000LL;
-		/* hpet always 0, so calc_hpet_ref never called */
-		tsc2 = calc_pmtimer_ref(tsc2, ref1, ref2);
-
-		tsc_ref_min = min(tsc_ref_min, (unsigned long)tsc2);
-
-		delta = ((u64)tsc_pit_min) * 100;
-		do_div(delta, tsc_ref_min);
-
-		if (delta >= 90 && delta <= 110) {
-			pr_info("PIT calibration matches PMTIMER. %d loops\n",
-				i + 1);
-			return tsc_ref_min;
-		}
-
-		if (i == 1 && tsc_pit_min == ULONG_MAX) {
-			latch = CAL2_LATCH;
-			ms = CAL2_MS;
-			loopmin = CAL2_PIT_LOOPS;
-		}
-	}
-
-	if (tsc_pit_min == ULONG_MAX) {
-		pr_warn("Unable to calibrate against PIT\n");
-
-		/* hpet always 0 */
-		if (!ref1 && !ref2) {
-			pr_notice("No reference (PMTIMER) available\n");
-			return 0;
-		}
-
-		if (tsc_ref_min == ULONG_MAX) {
-			pr_warn("PMTIMER calibration failed\n");
-			return 0;
-		}
-
-		pr_info("using PMTIMER reference calibration\n");
-
-		return tsc_ref_min;
-	}
-
-	if (!hpet && !ref1 && !ref2) {
-		pr_info("Using PIT calibration value\n");
-		return tsc_pit_min;
-	}
-
-	if (tsc_ref_min == ULONG_MAX) {
-		pr_warn("HPET/PMTIMER calibration failed. Using PIT calibration.\n");
-		return tsc_pit_min;
-	}
-
-	pr_warn("PIT calibration deviates from %s: %lu %lu\n",
-		hpet ? "HPET" : "PMTIMER", tsc_pit_min, tsc_ref_min);
-	pr_info("Using PIT calibration value\n");
-	return tsc_pit_min;
-}
+/* pit_hpet_ptimer_calibrate_cpu removed - never called (~91 LOC) */
 
 unsigned long native_calibrate_cpu_early(void)
 {

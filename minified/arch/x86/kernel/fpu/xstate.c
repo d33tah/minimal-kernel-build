@@ -35,10 +35,4 @@ void __init fpu__init_system_xstate(unsigned int legacy_size)
 {
 }
 
-/* fpu__resume_cpu, copy_sigframe_from_user_to_xstate removed - never called */
-
-// Stub: xstate prctl
-long fpu_xstate_prctl(int option, unsigned long arg2)
-{
-	return 0;
-}
+/* fpu__resume_cpu, copy_sigframe_from_user_to_xstate, fpu_xstate_prctl removed */

@@ -418,7 +418,7 @@ long do_arch_prctl_common(int option, unsigned long arg2)
 	case ARCH_REQ_XCOMP_PERM:
 	case ARCH_GET_XCOMP_GUEST_PERM:
 	case ARCH_REQ_XCOMP_GUEST_PERM:
-		return fpu_xstate_prctl(option, arg2);
+		return 0; /* fpu_xstate_prctl was empty stub */
 	}
 
 	return -EINVAL;

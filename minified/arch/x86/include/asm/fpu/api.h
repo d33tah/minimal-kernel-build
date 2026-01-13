@@ -53,9 +53,6 @@ DECLARE_PER_CPU(struct fpu *, fpu_fpregs_owner_ctx);
    fpstate_clear_xstate_component, xstate_get_guest_group_perm,
    fpu_alloc_guest_fpstate, fpu_free_guest_fpstate, fpu_swap_kvm_fpstate,
    fpu_enable_guest_xfd_features, fpu_copy_guest_fpstate_to_uabi,
-   fpu_copy_uabi_to_guest_fpstate */
-
- 
-extern long fpu_xstate_prctl(int option, unsigned long arg2);
+   fpu_copy_uabi_to_guest_fpstate, fpu_xstate_prctl */
 
 #endif  

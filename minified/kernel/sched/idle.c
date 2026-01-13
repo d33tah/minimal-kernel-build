@@ -16,13 +16,7 @@ extern void default_idle_call(void);
 
 extern char __cpuidle_text_start[], __cpuidle_text_end[];
 
-void __weak arch_cpu_idle_prepare(void)
-{
-}
-
-void __weak arch_cpu_idle_exit(void)
-{
-}
+/* arch_cpu_idle_prepare, arch_cpu_idle_exit removed - empty weak funcs, no overrides */
 
 void __cpuidle default_idle_call(void)
 {
@@ -42,16 +36,12 @@ void __cpuidle default_idle_call(void)
 static void do_idle(void)
 {
 	set_thread_flag(TIF_POLLING_NRFLAG); /* inlined __current_set_polling */
-	/* tick_nohz_idle_enter/exit removed - empty stubs */
 
 	while (!need_resched()) {
 		rmb();
 		local_irq_disable();
 		arch_cpu_idle_enter();
-
 		default_idle_call();
-
-		arch_cpu_idle_exit();
 	}
 
 	clear_thread_flag(
@@ -60,11 +50,8 @@ static void do_idle(void)
 	schedule_idle();
 }
 
-/* cpu_in_idle removed - never called */
-
 void cpu_startup_entry(enum cpuhp_state state)
 {
-	arch_cpu_idle_prepare();
 	while (1)
 		do_idle();
 }

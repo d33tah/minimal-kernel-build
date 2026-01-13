@@ -684,7 +684,7 @@ static void umount_tree(struct mount *mnt, enum umount_tree_flags how)
 		ns = p->mnt_ns;
 		if (ns) {
 			ns->mounts--;
-			if (ns && ns->event != event) {
+			if (ns->event != event) {
 				ns->event = event;
 				wake_up_interruptible(&ns->poll);
 			}

@@ -205,18 +205,8 @@ static int tty_ldisc_lock_pair_timeout(struct tty_struct *tty,
 	return 0;
 }
 
-static void tty_ldisc_lock_pair(struct tty_struct *tty, struct tty_struct *tty2)
-{
-	tty_ldisc_lock_pair_timeout(tty, tty2, MAX_SCHEDULE_TIMEOUT);
-}
-
-static void tty_ldisc_unlock_pair(struct tty_struct *tty,
-				  struct tty_struct *tty2)
-{
-	__tty_ldisc_unlock(tty);
-	if (tty2)
-		__tty_ldisc_unlock(tty2);
-}
+/* tty_ldisc_lock_pair inlined into tty_ldisc_release */
+/* tty_ldisc_unlock_pair inlined into tty_ldisc_release */
 
 void tty_ldisc_flush(struct tty_struct *tty)
 {
@@ -321,11 +311,13 @@ void tty_ldisc_release(struct tty_struct *tty)
 {
 	struct tty_struct *o_tty = tty->link;
 
-	tty_ldisc_lock_pair(tty, o_tty);
+	tty_ldisc_lock_pair_timeout(tty, o_tty, MAX_SCHEDULE_TIMEOUT);
 	tty_ldisc_kill(tty);
 	if (o_tty)
 		tty_ldisc_kill(o_tty);
-	tty_ldisc_unlock_pair(tty, o_tty);
+	__tty_ldisc_unlock(tty);
+	if (o_tty)
+		__tty_ldisc_unlock(o_tty);
 
 	tty_ldisc_debug(tty, "released\n");
 }

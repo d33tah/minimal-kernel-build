@@ -266,42 +266,7 @@ static unsigned long max_index(void *entry)
 	return (XA_CHUNK_SIZE << xa_to_node(entry)->shift) - 1;
 }
 
-static void xas_shrink(struct xa_state *xas)
-{
-	struct xarray *xa = xas->xa;
-	struct xa_node *node = xas->xa_node;
-
-	for (;;) {
-		void *entry;
-
-		XA_NODE_BUG_ON(node, node->count > XA_CHUNK_SIZE);
-		if (node->count != 1)
-			break;
-		entry = xa_entry_locked(xa, node, 0);
-		if (!entry)
-			break;
-		if (!xa_is_node(entry) && node->shift)
-			break;
-		if (xa_is_zero(entry) && xa_zero_busy(xa))
-			entry = NULL;
-		xas->xa_node = XAS_BOUNDS;
-
-		RCU_INIT_POINTER(xa->xa_head, entry);
-		if (xa_track_free(xa) && !node_get_mark(node, 0, XA_FREE_MARK))
-			xa_mark_clear(xa, XA_FREE_MARK);
-
-		node->count = 0;
-		node->nr_values = 0;
-		if (!xa_is_node(entry))
-			RCU_INIT_POINTER(node->slots[0], XA_RETRY_ENTRY);
-		xas_update(xas, node);
-		xa_node_free(node);
-		if (!xa_is_node(entry))
-			break;
-		node = xa_to_node(entry);
-		node->parent = NULL;
-	}
-}
+/* xas_shrink inlined into xas_delete_node */
 
 static void xas_delete_node(struct xa_state *xas)
 {
@@ -332,8 +297,42 @@ static void xas_delete_node(struct xa_state *xas)
 		xas_update(xas, node);
 	}
 
-	if (!node->parent)
-		xas_shrink(xas);
+	if (!node->parent) {
+		/* Inlined xas_shrink */
+		struct xarray *xa = xas->xa;
+		for (;;) {
+			void *entry;
+
+			XA_NODE_BUG_ON(node, node->count > XA_CHUNK_SIZE);
+			if (node->count != 1)
+				break;
+			entry = xa_entry_locked(xa, node, 0);
+			if (!entry)
+				break;
+			if (!xa_is_node(entry) && node->shift)
+				break;
+			if (xa_is_zero(entry) && xa_zero_busy(xa))
+				entry = NULL;
+			xas->xa_node = XAS_BOUNDS;
+
+			RCU_INIT_POINTER(xa->xa_head, entry);
+			if (xa_track_free(xa) &&
+			    !node_get_mark(node, 0, XA_FREE_MARK))
+				xa_mark_clear(xa, XA_FREE_MARK);
+
+			node->count = 0;
+			node->nr_values = 0;
+			if (!xa_is_node(entry))
+				RCU_INIT_POINTER(node->slots[0],
+						 XA_RETRY_ENTRY);
+			xas_update(xas, node);
+			xa_node_free(node);
+			if (!xa_is_node(entry))
+				break;
+			node = xa_to_node(entry);
+			node->parent = NULL;
+		}
+	}
 }
 
 static void xas_free_nodes(struct xa_state *xas, struct xa_node *top)

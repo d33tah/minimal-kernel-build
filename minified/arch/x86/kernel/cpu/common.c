@@ -495,10 +495,7 @@ static void __init cpu_set_bug_bits(struct cpuinfo_x86 *c)
 	/* Stub: CPU bug detection not needed for minimal kernel */
 }
 
-static void detect_nopl(void)
-{
-	setup_clear_cpu_cap(X86_FEATURE_NOPL);
-}
+/* detect_nopl inlined into early_identify_cpu */
 
 static void __init cpu_parse_early_param(void)
 {
@@ -553,7 +550,7 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c)
 	if (!pgtable_l5_enabled())
 		setup_clear_cpu_cap(X86_FEATURE_LA57);
 
-	detect_nopl();
+	setup_clear_cpu_cap(X86_FEATURE_NOPL);
 }
 
 void __init early_cpu_init(void)

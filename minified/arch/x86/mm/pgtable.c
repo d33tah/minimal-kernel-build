@@ -42,10 +42,7 @@ static inline void pgd_list_del(pgd_t *pgd)
 	list_del(&page->lru);
 }
 
-static void pgd_set_mm(pgd_t *pgd, struct mm_struct *mm)
-{
-	virt_to_page(pgd)->pt_mm = mm;
-}
+/* pgd_set_mm inlined into pgd_ctor */
 
 struct mm_struct *pgd_page_get_mm(struct page *page)
 {
@@ -59,7 +56,7 @@ static void pgd_ctor(struct mm_struct *mm, pgd_t *pgd)
 			swapper_pg_dir + KERNEL_PGD_BOUNDARY, KERNEL_PGD_PTRS);
 
 	/* SHARED_KERNEL_PMD == 0 */
-	pgd_set_mm(pgd, mm);
+	virt_to_page(pgd)->pt_mm = mm;
 	pgd_list_add(pgd);
 }
 

@@ -720,12 +720,7 @@ void *radix_tree_delete(struct radix_tree_root *root, unsigned long index)
 	return radix_tree_delete_item(root, index, NULL);
 }
 
-/* radix_tree_tagged used internally by idr_get_free */
-static int radix_tree_tagged(const struct radix_tree_root *root,
-			     unsigned int tag)
-{
-	return root_tag_get(root, tag);
-}
+/* radix_tree_tagged inlined into idr_get_free */
 
 void idr_preload(gfp_t gfp_mask)
 {
@@ -744,7 +739,7 @@ void __rcu **idr_get_free(struct radix_tree_root *root,
 
 grow:
 	shift = radix_tree_load_root(root, &child, &maxindex);
-	if (!radix_tree_tagged(root, IDR_FREE))
+	if (!root_tag_get(root, IDR_FREE))
 		start = max(start, maxindex + 1);
 	if (start > max)
 		return ERR_PTR(-ENOSPC);

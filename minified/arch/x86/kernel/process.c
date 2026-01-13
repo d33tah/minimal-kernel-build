@@ -154,10 +154,7 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 	return ret;
 }
 
-static void pkru_flush_thread(void)
-{
-	pkru_write_default();
-}
+/* pkru_flush_thread inlined into flush_thread */
 
 void flush_thread(void)
 {
@@ -167,7 +164,7 @@ void flush_thread(void)
 	memset(tsk->thread.tls_array, 0, sizeof(tsk->thread.tls_array));
 
 	fpu_flush_thread();
-	pkru_flush_thread();
+	pkru_write_default();
 }
 
 DEFINE_PER_CPU(u64, msr_misc_features_shadow);

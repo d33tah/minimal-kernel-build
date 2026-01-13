@@ -54,7 +54,7 @@ extern char __initdata boot_command_line[];
 
 void setup_arch(char **);
 void prepare_namespace(void);
-void __init init_rootfs(void);
+/* init_rootfs removed - was empty stub */
 extern struct file_system_type rootfs_fs_type;
 
 void mark_rodata_ro(void);

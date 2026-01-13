@@ -290,6 +290,4 @@ struct file_system_type rootfs_fs_type = {
 	.kill_sb = kill_litter_super,
 };
 
-void __init init_rootfs(void)
-{
-}
+/* init_rootfs removed - was empty */

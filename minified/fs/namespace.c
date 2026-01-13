@@ -1230,7 +1230,7 @@ void __init mnt_init(void)
 		       err);
 	/* Stub: fs_kobj not used in minimal kernel */
 	shmem_init();
-	init_rootfs();
+	/* init_rootfs removed - was empty */
 	/* Inlined init_mount_tree */
 	{
 		struct vfsmount *mnt;

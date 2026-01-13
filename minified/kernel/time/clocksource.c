@@ -38,7 +38,7 @@ void clocks_calc_mult_shift(u32 *mult, u32 *shift, u32 from, u32 to, u32 maxsec)
 static struct clocksource *curr_clocksource;
 static LIST_HEAD(clocksource_list);
 static DEFINE_MUTEX(clocksource_mutex);
-static char override_name[CS_NAME_LEN];
+/* override_name removed - always empty, never set */
 static int finished_booting;
 static DEFINE_SPINLOCK(watchdog_lock);
 
@@ -99,25 +99,13 @@ static struct clocksource *clocksource_find_best(bool skipcur)
 
 static void __clocksource_select(bool skipcur)
 {
-	struct clocksource *best, *cs;
+	struct clocksource *best;
 
 	best = clocksource_find_best(skipcur);
 	if (!best)
 		return;
 
-	if (!strlen(override_name))
-		goto found;
-
-	list_for_each_entry(cs, &clocksource_list, list) {
-		if (skipcur && cs == curr_clocksource)
-			continue;
-		if (strcmp(cs->name, override_name) != 0)
-			continue;
-		best = cs;
-		break;
-	}
-
-found:
+	/* override_name was always empty - override logic removed */
 	if (curr_clocksource != best && !timekeeping_notify(best)) {
 		curr_clocksource = best;
 	}

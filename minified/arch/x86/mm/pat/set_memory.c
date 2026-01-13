@@ -1,10 +1,7 @@
 #include <linux/types.h>
 #include <linux/mm_types.h>
 
-int set_memory_x(unsigned long addr, int numpages)
-{
-	return 0;
-}
+/* set_memory_x removed - never called */
 int set_memory_nx(unsigned long addr, int numpages)
 {
 	return 0;

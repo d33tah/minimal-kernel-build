@@ -7,7 +7,7 @@
 /* Inlined from asm-generic/set_memory.h */
 int set_memory_ro(unsigned long addr, int numpages);
 int set_memory_rw(unsigned long addr, int numpages);
-int set_memory_x(unsigned long addr, int numpages);
+/* set_memory_x removed - never called */
 int set_memory_nx(unsigned long addr, int numpages);
 
  

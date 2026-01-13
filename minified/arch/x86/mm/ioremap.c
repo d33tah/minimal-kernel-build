@@ -197,7 +197,7 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
 err_free_area:
 	free_vm_area(area);
 err_free_memtype:
-	memtype_free(phys_addr, phys_addr + size);
+	/* memtype_free removed - empty stub */
 	return NULL;
 }
 
@@ -234,8 +234,7 @@ void iounmap(volatile void __iomem *addr)
 		return;
 	}
 
-	memtype_free(p->phys_addr, p->phys_addr + get_vm_area_size(p));
-
+	/* memtype_free removed - empty stub */
 	o = remove_vm_area((void __force *)addr);
 	BUG_ON(p != o || o == NULL);
 	kfree(p);

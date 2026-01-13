@@ -56,10 +56,7 @@ int memtype_reserve(u64 start, u64 end, enum page_cache_mode req_type,
 	return 0;
 }
 
-int memtype_free(u64 start, u64 end)
-{
-	return 0;
-}
+/* memtype_free removed - empty stub */
 
 int memtype_reserve_io(resource_size_t start, resource_size_t end,
 		       enum page_cache_mode *pcm)

@@ -67,9 +67,7 @@ static void query_ist(void)
 	boot_params.ist_info.perf_level = oreg.edx;
 }
 
-static void set_bios_mode(void)
-{
-}
+/* set_bios_mode removed - was empty stub */
 
 static void init_heap(void)
 {
@@ -106,7 +104,7 @@ void main(void)
 		die();
 	}
 
-	set_bios_mode();
+	/* set_bios_mode removed - was empty stub */
 
 	detect_memory();
 

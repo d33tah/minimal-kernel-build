@@ -108,9 +108,8 @@ struct thread_info {
 
 #define in_ia32_syscall() true
 
-/* arch_task_cache_init removed - declared but never defined */
+/* arch_task_cache_init, arch_release_task_struct removed - declared but never defined/used */
 extern int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src);
-extern void arch_release_task_struct(struct task_struct *tsk);
 extern void arch_setup_new_exec(void);
 #define arch_setup_new_exec arch_setup_new_exec
 #endif	 

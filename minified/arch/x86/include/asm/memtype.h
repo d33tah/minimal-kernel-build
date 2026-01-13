@@ -5,9 +5,7 @@
 #include <linux/types.h>
 #include <asm/pgtable_types.h>
 
-extern void pat_disable(const char *reason);
-/* pat_init removed - never called */
-extern void init_cache_modes(void);
+/* pat_disable, pat_init, init_cache_modes removed - never called */
 
 extern int memtype_reserve(u64 start, u64 end,
 		enum page_cache_mode req_pcm, enum page_cache_mode *ret_pcm);

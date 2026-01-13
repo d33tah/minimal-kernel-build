@@ -446,16 +446,7 @@ void __init setup_arch(char **cmdline_p)
 
 	max_pfn = e820__end_of_ram_pfn();
 
-	/* MTRR disabled */
-	pat_disable(
-		"PAT support disabled because CONFIG_MTRR is disabled in the kernel.");
-
-	/* mtrr_trim_uncached_memory always returns 0 - check removed */
-
-	/* max_possible_pfn assignment removed - never read */
-
-	init_cache_modes();
-	/* kernel_randomize_memory removed - empty stub */
+	/* MTRR disabled - pat_disable, init_cache_modes removed (empty stubs) */
 
 	find_low_pfn_range();
 

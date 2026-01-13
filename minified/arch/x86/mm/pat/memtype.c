@@ -46,15 +46,7 @@ struct memtype {
 #undef pr_fmt
 #define pr_fmt(fmt) "" fmt
 
-void pat_disable(const char *msg_reason)
-{
-}
-
-void init_cache_modes(void)
-{
-}
-
-/* pat_init removed - never called */
+/* pat_disable, init_cache_modes, pat_init removed - never called/empty stubs */
 
 int memtype_reserve(u64 start, u64 end, enum page_cache_mode req_type,
 		    enum page_cache_mode *new_type)

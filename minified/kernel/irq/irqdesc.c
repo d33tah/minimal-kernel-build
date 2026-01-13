@@ -236,9 +236,8 @@ int __ref __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt,
 		if (from > irq)
 			return -EINVAL;
 		from = irq;
-	} else {
-		from = arch_dynirq_lower_bound(from);
 	}
+	/* arch_dynirq_lower_bound inlined - weak impl just returns from */
 
 	mutex_lock(&sparse_irq_lock);
 

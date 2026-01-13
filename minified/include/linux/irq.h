@@ -258,9 +258,7 @@ void irq_modify_status(unsigned int irq, unsigned long clr, unsigned long set);
 
 
 extern int irq_set_chip(unsigned int irq, const struct irq_chip *chip);
-/* irq_set_chip_data, irq_set_irq_type, irq_get_irq_data, irq_data_get_irq_chip, irq_data_get_affinity_mask removed - unused */
-
-unsigned int arch_dynirq_lower_bound(unsigned int from);
+/* irq_set_chip_data, irq_set_irq_type, irq_get_irq_data, irq_data_get_irq_chip, irq_data_get_affinity_mask, arch_dynirq_lower_bound removed - unused */
 
 int __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt, int node,
 		      struct module *owner,

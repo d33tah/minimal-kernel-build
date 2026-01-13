@@ -208,12 +208,10 @@ static inline unsigned long vma_address_end(struct page_vma_mapped_walk *pvmw)
 
 /* maybe_unlock_mmap_for_io removed - unused */
 
+/* MMINIT_WARNING, MMINIT_VERIFY removed - only MMINIT_TRACE is used */
 enum mminit_level {
-	MMINIT_WARNING,
-	MMINIT_VERIFY,
 	MMINIT_TRACE
 };
-
 
 static inline void mminit_dprintk(enum mminit_level level,
 				const char *prefix, const char *fmt, ...)

@@ -404,28 +404,7 @@ static void __attach_mnt(struct mount *mnt, struct mount *parent)
 /* attach_mnt inlined into do_move_mount - called only once */
 
 /* mnt_change_mountpoint removed - empty stub */
-
-static void commit_tree(struct mount *mnt)
-{
-	struct mount *parent = mnt->mnt_parent;
-	struct mount *m;
-	LIST_HEAD(head);
-	struct mnt_namespace *n = parent->mnt_ns;
-
-	BUG_ON(parent == mnt);
-
-	list_add_tail(&head, &mnt->mnt_list);
-	list_for_each_entry(m, &head, mnt_list)
-		m->mnt_ns = n;
-
-	list_splice(&head, n->list.prev);
-
-	n->mounts += n->pending_mounts;
-	n->pending_mounts = 0;
-
-	__attach_mnt(mnt, parent);
-	touch_mnt_namespace(n);
-}
+/* commit_tree inlined into graft_tree */
 
 static struct mount *next_mnt(struct mount *p, struct mount *root)
 {
@@ -837,7 +816,27 @@ static int attach_recursive_mnt(struct mount *source_mnt,
 			list_del_init(&source_mnt->mnt_ns->list);
 		}
 		mnt_set_mountpoint(dest_mnt, dest_mp, source_mnt);
-		commit_tree(source_mnt);
+		/* Inlined commit_tree */
+		{
+			struct mount *parent = source_mnt->mnt_parent;
+			struct mount *m;
+			LIST_HEAD(head);
+			struct mnt_namespace *n = parent->mnt_ns;
+
+			BUG_ON(parent == source_mnt);
+
+			list_add_tail(&head, &source_mnt->mnt_list);
+			list_for_each_entry(m, &head, mnt_list)
+				m->mnt_ns = n;
+
+			list_splice(&head, n->list.prev);
+
+			n->mounts += n->pending_mounts;
+			n->pending_mounts = 0;
+
+			__attach_mnt(source_mnt, parent);
+			touch_mnt_namespace(n);
+		}
 	}
 
 	/* tree_list loop removed - list was never populated */

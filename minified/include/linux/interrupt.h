@@ -148,8 +148,7 @@ DECLARE_PER_CPU(struct task_struct *, ksoftirqd);
 /* init_irq_proc removed - unused */
 
 extern int early_irq_init(void);
-extern int arch_probe_nr_irqs(void);
-extern int arch_early_irq_init(void);
+/* arch_probe_nr_irqs, arch_early_irq_init removed - inlined at call sites */
 
 #ifndef __irq_entry
 # define __irq_entry	 __section(".irqentry.text")

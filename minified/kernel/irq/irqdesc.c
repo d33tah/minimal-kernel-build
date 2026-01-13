@@ -158,10 +158,10 @@ err:
 
 int __init early_irq_init(void)
 {
-	int i, initcnt, node = first_online_node;
+	int i, node = first_online_node;
+	int initcnt = NR_IRQS_LEGACY; /* arch_probe_nr_irqs inlined */
 	struct irq_desc *desc;
 
-	initcnt = arch_probe_nr_irqs();
 	printk(KERN_INFO "NR_IRQS: %d, nr_irqs: %d, preallocated irqs: %d\n",
 	       NR_IRQS, nr_irqs, initcnt);
 
@@ -179,7 +179,7 @@ int __init early_irq_init(void)
 		set_bit(i, allocated_irqs);
 		irq_insert_desc(i, desc);
 	}
-	return arch_early_irq_init();
+	return 0; /* arch_early_irq_init inlined */
 }
 
 int handle_irq_desc(struct irq_desc *desc)

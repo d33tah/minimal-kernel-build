@@ -85,6 +85,6 @@ void set_video(void)
 	}
 
 	boot_params.hdr.vid_mode = mode;
-	vesa_store_edid();
+	/* vesa_store_edid removed - empty stub */
 	store_mode_params();
 }

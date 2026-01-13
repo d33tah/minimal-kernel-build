@@ -237,9 +237,7 @@ void set_video(void);
 
 int set_mode(u16 mode);
 void probe_cards(int unsafe);
-
- 
-void vesa_store_edid(void);
+/* vesa_store_edid removed - empty stub */
 
 #endif  
 

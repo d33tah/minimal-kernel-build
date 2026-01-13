@@ -15,11 +15,7 @@ static int vesa_set_mode(struct mode_info *mode)
 	return -1; /* VESA modes not supported */
 }
 
-#ifndef _WAKEUP
-void vesa_store_edid(void)
-{
-}
-#endif
+/* vesa_store_edid removed - empty stub */
 
 static __videocard video_vesa = {
 	.card_name = "VESA",

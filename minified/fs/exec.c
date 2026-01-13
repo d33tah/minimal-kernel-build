@@ -595,13 +595,7 @@ int begin_new_exec(struct linux_binprm *bprm)
 	}
 
 	/* me->sas_ss_sp = me->sas_ss_size = 0; removed - write-only fields */
-
-	if (bprm->interp_flags & BINPRM_FLAGS_ENFORCE_NONDUMP ||
-	    !(uid_eq(current_euid(), current_uid()) &&
-	      gid_eq(current_egid(), current_gid())))
-		set_dumpable(current->mm, suid_dumpable);
-	else
-		set_dumpable(current->mm, SUID_DUMP_USER);
+	/* set_dumpable calls removed - function was empty stub */
 
 	__set_task_comm(me, kbasename(bprm->filename), true);
 
@@ -965,10 +959,7 @@ void set_binfmt(struct linux_binfmt *new)
 		__module_get(new->module);
 }
 
-/* Stub: coredumps not supported in minimal kernel */
-void set_dumpable(struct mm_struct *mm, int value)
-{
-}
+/* set_dumpable removed - was empty stub, call sites also removed */
 
 /* Stub: execve syscall not needed - kernel uses kernel_execve for init */
 SYSCALL_DEFINE3(execve, const char __user *, filename,

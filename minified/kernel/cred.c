@@ -189,8 +189,7 @@ int commit_creds(struct cred *new)
 	if (!uid_eq(old->euid, new->euid) || !gid_eq(old->egid, new->egid) ||
 	    !uid_eq(old->fsuid, new->fsuid) ||
 	    !gid_eq(old->fsgid, new->fsgid) || !cred_cap_issubset(old, new)) {
-		if (task->mm)
-			set_dumpable(task->mm, suid_dumpable);
+		/* set_dumpable removed - was empty stub */
 		task->pdeath_signal = 0;
 
 		smp_wmb();

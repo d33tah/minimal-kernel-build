@@ -9,8 +9,7 @@
 #define MMF_DUMPABLE_BITS 2
 #define MMF_DUMPABLE_MASK ((1 << MMF_DUMPABLE_BITS) - 1)
 
-extern void set_dumpable(struct mm_struct *mm, int value);
-/* __get_dumpable and get_dumpable removed - never called */
+/* set_dumpable, __get_dumpable and get_dumpable removed - never called */
 
 #define MMF_DUMP_ANON_PRIVATE	2
 #define MMF_DUMP_ANON_SHARED	3

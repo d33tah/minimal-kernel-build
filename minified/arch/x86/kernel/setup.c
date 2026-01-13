@@ -118,14 +118,7 @@ void *__init extend_brk(size_t size, size_t align)
 	return ret;
 }
 
-static void __init reserve_brk(void)
-{
-	if (_brk_end > _brk_start)
-		memblock_reserve(__pa_symbol(_brk_start),
-				 _brk_end - _brk_start);
-
-	_brk_start = 0;
-}
+/* reserve_brk inlined into setup_arch */
 
 u64 relocated_ramdisk;
 
@@ -335,32 +328,10 @@ void __init reserve_standard_io_resources(void)
 		request_resource(&ioport_resource, &standard_io_resources[i]);
 }
 
-static void __init trim_snb_memory(void)
-{
-	/* Stub: Sandy Bridge graphics workaround not needed for minimal kernel */
-}
+/* trim_snb_memory removed - empty stub */
 
-static void __init trim_bios_range(void)
-{
-	e820__range_update(0, PAGE_SIZE, E820_TYPE_RAM, E820_TYPE_RESERVED);
-
-	e820__range_remove(BIOS_BEGIN, BIOS_END - BIOS_BEGIN, E820_TYPE_RAM, 1);
-
-	e820__update_table(e820_table);
-}
-
-static void __init e820_add_kernel_range(void)
-{
-	u64 start = __pa_symbol(_text);
-	u64 size = __pa_symbol(_end) - start;
-
-	if (e820__mapped_all(start, start + size, E820_TYPE_RAM))
-		return;
-
-	pr_warn(".text .data .bss are not marked as E820_TYPE_RAM!\n");
-	e820__range_remove(start, size, E820_TYPE_RAM, 0);
-	e820__range_add(start, size, E820_TYPE_RAM);
-}
+/* trim_bios_range inlined into setup_arch */
+/* e820_add_kernel_range inlined into setup_arch */
 
 static void __init early_reserve_memory(void)
 {
@@ -376,7 +347,7 @@ static void __init early_reserve_memory(void)
 
 	/* reserve_ibft_region removed - empty stub */
 	reserve_bios_regions();
-	trim_snb_memory();
+	/* trim_snb_memory removed - empty stub */
 }
 
 /* dump_kernel_offset and kernel_offset_notifier removed - stub that did nothing */
@@ -458,8 +429,20 @@ void __init setup_arch(char **cmdline_p)
 	insert_resource(&iomem_resource, &data_resource);
 	insert_resource(&iomem_resource, &bss_resource);
 
-	e820_add_kernel_range();
-	trim_bios_range();
+	/* Inlined e820_add_kernel_range */
+	{
+		u64 start = __pa_symbol(_text);
+		u64 size = __pa_symbol(_end) - start;
+		if (!e820__mapped_all(start, start + size, E820_TYPE_RAM)) {
+			pr_warn(".text .data .bss are not marked as E820_TYPE_RAM!\n");
+			e820__range_remove(start, size, E820_TYPE_RAM, 0);
+			e820__range_add(start, size, E820_TYPE_RAM);
+		}
+	}
+	/* Inlined trim_bios_range */
+	e820__range_update(0, PAGE_SIZE, E820_TYPE_RAM, E820_TYPE_RESERVED);
+	e820__range_remove(BIOS_BEGIN, BIOS_END - BIOS_BEGIN, E820_TYPE_RAM, 1);
+	e820__update_table(e820_table);
 
 	max_pfn = e820__end_of_ram_pfn();
 
@@ -480,7 +463,11 @@ void __init setup_arch(char **cmdline_p)
 
 	early_alloc_pgt_buf();
 
-	reserve_brk();
+	/* Inlined reserve_brk */
+	if (_brk_end > _brk_start)
+		memblock_reserve(__pa_symbol(_brk_start),
+				 _brk_end - _brk_start);
+	_brk_start = 0;
 	/* cleanup_highmap removed - empty stub */
 
 	memblock_set_current_limit(ISA_END_ADDRESS);

@@ -480,15 +480,7 @@ unsigned long native_calibrate_cpu_early(void)
 	return fast_calibrate;
 }
 
-static unsigned long native_calibrate_cpu(void)
-{
-	unsigned long tsc_freq = native_calibrate_cpu_early();
-
-	if (!tsc_freq)
-		tsc_freq = pit_hpet_ptimer_calibrate_cpu();
-
-	return tsc_freq;
-}
+/* native_calibrate_cpu removed - determine_cpu_tsc_frequencies always called with early=true */
 
 /* tsc_save/restore_sched_clock_state removed - never called */
 
@@ -599,20 +591,16 @@ device_initcall(init_tsc_clocksource);
 
 /* tsc_dbg debug function removed */
 
-static bool __init determine_cpu_tsc_frequencies(bool early)
+static bool __init determine_cpu_tsc_frequencies(void)
 {
 	WARN_ON(cpu_khz || tsc_khz);
 
-	if (early) {
-		cpu_khz = x86_platform.calibrate_cpu();
-		if (tsc_early_khz)
-			tsc_khz = tsc_early_khz;
-		else
-			tsc_khz = x86_platform.calibrate_tsc();
-	} else {
-		WARN_ON(x86_platform.calibrate_cpu != native_calibrate_cpu);
-		cpu_khz = pit_hpet_ptimer_calibrate_cpu();
-	}
+	/* Always called with early=true, so else branch removed */
+	cpu_khz = x86_platform.calibrate_cpu();
+	if (tsc_early_khz)
+		tsc_khz = tsc_early_khz;
+	else
+		tsc_khz = x86_platform.calibrate_tsc();
 
 	if (tsc_khz == 0)
 		tsc_khz = cpu_khz;
@@ -651,7 +639,7 @@ void __init tsc_early_init(void)
 		return;
 
 	/* is_early_uv_system always false - check removed */
-	if (!determine_cpu_tsc_frequencies(true))
+	if (!determine_cpu_tsc_frequencies())
 		return;
 	tsc_enable_sched_clock();
 }

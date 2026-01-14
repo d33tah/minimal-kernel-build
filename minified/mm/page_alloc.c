@@ -896,8 +896,7 @@ static noinline void __init build_all_zonelists_init(void)
 	/* for_each_possible_cpu simplified - single CPU */
 	per_cpu_pages_init(&per_cpu(boot_pageset, 0),
 			   &per_cpu(boot_zonestats, 0));
-
-	mminit_verify_zonelist();
+	/* mminit_verify_zonelist removed - empty inline */
 }
 
 void __ref build_all_zonelists(pg_data_t *pgdat)
@@ -1105,11 +1104,7 @@ void __meminit init_currently_empty_zone(struct zone *zone,
 		pgdat->nr_zones = zone_idx;
 
 	zone->zone_start_pfn = zone_start_pfn;
-
-	mminit_dprintk(MMINIT_TRACE, "memmap_init",
-		       "Initialising map node %d zone %lu pfns %lu -> %lu\n",
-		       pgdat->node_id, (unsigned long)zone_idx(zone),
-		       zone_start_pfn, (zone_start_pfn + size));
+	/* mminit_dprintk removed - empty inline */
 
 	/* Inlined zone_init_free_lists */
 	{

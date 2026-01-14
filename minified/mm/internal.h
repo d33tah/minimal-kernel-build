@@ -208,21 +208,7 @@ static inline unsigned long vma_address_end(struct page_vma_mapped_walk *pvmw)
 
 /* maybe_unlock_mmap_for_io removed - unused */
 
-/* MMINIT_WARNING, MMINIT_VERIFY removed - only MMINIT_TRACE is used */
-enum mminit_level {
-	MMINIT_TRACE
-};
-
-static inline void mminit_dprintk(enum mminit_level level,
-				const char *prefix, const char *fmt, ...)
-{
-}
-
-static inline void mminit_verify_zonelist(void)
-{
-}
-
-/* hwpoison_filter removed - unused */
+/* mminit_level enum, mminit_dprintk, mminit_verify_zonelist, hwpoison_filter removed - unused */
 
 extern unsigned long  __must_check vm_mmap_pgoff(struct file *, unsigned long,
         unsigned long, unsigned long,

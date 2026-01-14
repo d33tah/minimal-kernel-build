@@ -18,8 +18,6 @@ void __mutex_init(struct mutex *lock, const char *name,
 	atomic_long_set(&lock->owner, 0);
 	raw_spin_lock_init(&lock->wait_lock);
 	INIT_LIST_HEAD(&lock->wait_list);
-
-	debug_mutex_init(lock, name, key);
 }
 
 #define MUTEX_FLAG_WAITERS 0x01
@@ -126,8 +124,6 @@ static inline bool __mutex_waiter_is_first(struct mutex *lock,
 static void __mutex_add_waiter(struct mutex *lock, struct mutex_waiter *waiter,
 			       struct list_head *list)
 {
-	debug_mutex_add_waiter(lock, waiter, current);
-
 	list_add_tail(&waiter->list, list);
 	if (__mutex_waiter_is_first(lock, waiter))
 		atomic_long_or(MUTEX_FLAG_WAITERS, &lock->owner);
@@ -139,8 +135,6 @@ static void __mutex_remove_waiter(struct mutex *lock,
 	list_del(&waiter->list);
 	if (likely(list_empty(&lock->wait_list)))
 		atomic_long_andnot(MUTEX_FLAGS, &lock->owner);
-
-	debug_mutex_remove_waiter(lock, waiter, current);
 }
 
 static void __mutex_handoff(struct mutex *lock, struct task_struct *task)
@@ -212,7 +206,6 @@ static __always_inline int __sched __mutex_lock_common(
 	if (__mutex_trylock(lock))
 		goto skip_wait;
 
-	debug_mutex_lock_common(lock, &waiter);
 	waiter.task = current;
 
 	__mutex_add_waiter(lock, &waiter, &lock->wait_list);
@@ -251,8 +244,6 @@ acquired:
 
 	__mutex_remove_waiter(lock, &waiter);
 
-	debug_mutex_free_waiter(&waiter);
-
 skip_wait:
 	raw_spin_unlock(&lock->wait_lock);
 	preempt_enable();
@@ -262,7 +253,6 @@ err:
 	__set_current_state(TASK_RUNNING);
 	__mutex_remove_waiter(lock, &waiter);
 	raw_spin_unlock(&lock->wait_lock);
-	debug_mutex_free_waiter(&waiter);
 	mutex_release(&lock->dep_map, ip);
 	preempt_enable();
 	return ret;
@@ -302,14 +292,12 @@ static noinline void __sched __mutex_unlock_slowpath(struct mutex *lock,
 	}
 
 	raw_spin_lock(&lock->wait_lock);
-	debug_mutex_unlock(lock);
 	if (!list_empty(&lock->wait_list)) {
 		struct mutex_waiter *waiter = list_first_entry(
 			&lock->wait_list, struct mutex_waiter, list);
 
 		next = waiter->task;
 
-		debug_mutex_wake_waiter(lock, waiter);
 		wake_q_add(&wake_q, next);
 	}
 

@@ -30,9 +30,7 @@ void device_pm_move_to_tail(struct device *dev)
 	int idx;
 
 	idx = srcu_read_lock(&device_links_srcu);
-	device_pm_lock();
-	/* device_reorder_to_tail - minimal stub */
-	device_pm_unlock();
+	/* device_pm_lock/unlock removed - empty stubs */
 	srcu_read_unlock(&device_links_srcu, idx);
 }
 

@@ -105,8 +105,7 @@ struct dev_pm_domain {
 
 
 
-#define device_pm_lock() do {} while (0)
-#define device_pm_unlock() do {} while (0)
+/* device_pm_lock/unlock macros removed - were empty stubs, no callers */
 /* suspend_report_result removed - unused */
 
 #endif  

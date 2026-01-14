@@ -118,12 +118,7 @@ static inline void update_pecoff_text(unsigned int text_start,
 				      unsigned int init_sz)
 {
 }
-static inline void efi_stub_defaults(void)
-{
-}
-static inline void efi_stub_entry_update(void)
-{
-}
+/* efi_stub_defaults, efi_stub_entry_update removed - empty stubs */
 
 static inline int reserve_pecoff_reloc_section(int c)
 {
@@ -186,8 +181,7 @@ int main(int argc, char **argv)
 	void *kernel;
 	u32 crc = 0xffffffffUL;
 
-	efi_stub_defaults();
-
+	/* efi_stub_defaults removed - empty stub */
 	if (argc != 5)
 		usage();
 	parse_zoffset(argv[3]);
@@ -239,8 +233,7 @@ int main(int argc, char **argv)
 	init_sz = get_unaligned_le32(&buf[0x260]);
 	update_pecoff_text(setup_sectors * 512, i + (sys_size * 16), init_sz);
 
-	efi_stub_entry_update();
-
+	/* efi_stub_entry_update removed - empty stub */
 	put_unaligned_le32(kernel_info, &buf[0x268]);
 
 	crc = partial_crc32(buf, i, crc);

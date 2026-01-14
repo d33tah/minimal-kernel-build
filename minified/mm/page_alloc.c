@@ -1290,10 +1290,6 @@ static void __ref setup_usemap(struct zone *zone)
 	}
 }
 
-void __init set_pageblock_order(void)
-{
-}
-
 static unsigned long __init calc_memmap_size(unsigned long spanned_pages,
 					     unsigned long present_pages)
 {
@@ -1335,7 +1331,6 @@ static void __init free_area_init_core(struct pglist_data *pgdat)
 		if (!size)
 			continue;
 
-		set_pageblock_order();
 		setup_usemap(zone);
 		init_currently_empty_zone(zone, zone->zone_start_pfn, size);
 	}

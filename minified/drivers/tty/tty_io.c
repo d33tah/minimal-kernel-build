@@ -1001,9 +1001,7 @@ struct device *tty_register_device_attr(struct tty_driver *driver,
 	dev_set_name(dev, "%s", name);
 	dev->groups = attr_grp;
 	dev_set_drvdata(dev, drvdata);
-
-	dev_set_uevent_suppress(dev, 1);
-
+	/* dev_set_uevent_suppress removed - empty stub */
 	retval = device_register(dev);
 	if (retval)
 		goto err_put;
@@ -1020,7 +1018,6 @@ struct device *tty_register_device_attr(struct tty_driver *driver,
 			goto err_del;
 	}
 
-	dev_set_uevent_suppress(dev, 0);
 	kobject_uevent(&dev->kobj, KOBJ_ADD);
 
 	return dev;

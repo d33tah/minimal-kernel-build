@@ -3,7 +3,6 @@
 #include <linux/slab.h>
 #include <linux/init.h>
 #include <linux/bitops.h>
-/* poison.h, seq_file.h removed - unused */
 #include <linux/pfn.h>
 #include <linux/memblock.h>
 
@@ -13,7 +12,6 @@
 #include "internal.h"
 
 #define INIT_MEMBLOCK_REGIONS 16 /* Reduced from 128 for minimal boot */
-/* INIT_PHYSMEM_REGIONS removed - unused */
 
 #ifndef INIT_MEMBLOCK_RESERVED_REGIONS
 #define INIT_MEMBLOCK_RESERVED_REGIONS INIT_MEMBLOCK_REGIONS
@@ -189,7 +187,6 @@ static void __init_memblock memblock_remove_region(struct memblock_type *type,
 		type->regions[0].base = 0;
 		type->regions[0].size = 0;
 		type->regions[0].flags = 0;
-		/* memblock_set_region_node removed - empty stub */
 	}
 }
 
@@ -326,7 +323,6 @@ static void __init_memblock memblock_insert_region(struct memblock_type *type,
 	rgn->base = base;
 	rgn->size = size;
 	rgn->flags = flags;
-	/* memblock_set_region_node removed - empty stub */
 	type->cnt++;
 	type->total_size += size;
 }
@@ -350,7 +346,6 @@ static int __init_memblock memblock_add_range(struct memblock_type *type,
 		type->regions[0].base = base;
 		type->regions[0].size = size;
 		type->regions[0].flags = flags;
-		/* memblock_set_region_node removed - empty stub */
 		type->total_size = size;
 		return 0;
 	}
@@ -402,8 +397,6 @@ repeat:
 		return 0;
 	}
 }
-
-/* memblock_add_node removed - never called */
 
 int __init_memblock memblock_add(phys_addr_t base, phys_addr_t size)
 {
@@ -477,8 +470,6 @@ static int __init_memblock memblock_remove_range(struct memblock_type *type,
 		memblock_remove_region(type, i);
 	return 0;
 }
-
-/* memblock_remove removed - never called */
 
 void __init_memblock memblock_free(void *ptr, size_t size)
 {
@@ -839,8 +830,6 @@ phys_addr_t __init_memblock memblock_start_of_DRAM(void)
 	return memblock.memory.regions[0].base;
 }
 
-/* memblock_end_of_DRAM removed - never called */
-
 static int __init_memblock memblock_search(struct memblock_type *type,
 					   phys_addr_t addr)
 {
@@ -872,8 +861,6 @@ bool __init_memblock memblock_is_region_memory(phys_addr_t base,
 		memblock.memory.regions[idx].size) >= end;
 }
 
-/* memblock_is_region_reserved removed - never called */
-
 void __init_memblock memblock_trim_memory(phys_addr_t align)
 {
 	phys_addr_t start, end, orig_start, orig_end;
@@ -903,8 +890,6 @@ void __init_memblock memblock_set_current_limit(phys_addr_t limit)
 {
 	memblock.current_limit = limit;
 }
-
-/* memblock_get_current_limit, memblock_dump_all removed - never called */
 
 void __init memblock_allow_resize(void)
 {

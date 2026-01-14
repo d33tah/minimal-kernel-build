@@ -3,7 +3,6 @@
 
 #include <linux/kernel.h>
 #include <linux/slab.h>
-/* backing-dev.h removed - unused */
 #include <linux/mm.h>
 #include <linux/mm_inline.h>
 #include <linux/vmacache.h>
@@ -11,24 +10,18 @@
 #include <linux/pagemap.h>
 #include <linux/swap.h>
 #include <linux/syscalls.h>
-/* capability.h removed - unused */
 #include <linux/init.h>
 #include <linux/file.h>
 #include <linux/fs.h>
 #include <linux/personality.h>
 #include <linux/security.h>
-/* hugetlb.h removed - unused */
 #include <linux/shmem_fs.h>
-/* export.h, mount.h, mempolicy.h removed - unused */
 #include <linux/rmap.h>
 #include <linux/mmu_notifier.h>
 #include <linux/mmdebug.h>
-/* perf_event.h, audit.h, uprobes.h removed - unused */
 #include <linux/rbtree_augmented.h>
-/* notifier.h removed - unused */
 #include <linux/printk.h>
 #include <linux/userfaultfd_k.h>
-/* moduleparam.h, pkeys.h removed - unused */
 #include <linux/sched/mm.h>
 
 #include <linux/uaccess.h>
@@ -43,8 +36,6 @@
 #endif
 
 int mmap_rnd_bits __read_mostly = CONFIG_ARCH_MMAP_RND_BITS;
-
-/* unmap_region forward decl removed - function inlined */
 
 pgprot_t protection_map[16] __ro_after_init = {
 	[VM_NONE] = __P000,
@@ -84,15 +75,11 @@ void unlink_file_vma(struct vm_area_struct *vma)
 static struct vm_area_struct *remove_vma(struct vm_area_struct *vma)
 {
 	struct vm_area_struct *next = vma->vm_next;
-	/* vm_ops->close removed - never set */
 	if (vma->vm_file)
 		fput(vma->vm_file);
-	/* mpol_put removed - empty stub */
 	vm_area_free(vma);
 	return next;
 }
-
-/* do_brk_flags forward declaration removed - not needed */
 
 /* Stub: brk syscall */
 SYSCALL_DEFINE1(brk, unsigned long, brk)
@@ -269,7 +256,6 @@ static inline int is_mergeable_vma(struct vm_area_struct *vma,
 		return 0;
 	if (vma->vm_file != file)
 		return 0;
-	/* vm_ops->close check removed - never set */
 	/* is_mergeable_vm_userfaultfd_ctx always returns true - dead code removed */
 	/* anon_vma_name_eq always returns true - dead code removed */
 	return 1;
@@ -1104,7 +1090,6 @@ static int do_brk_flags(unsigned long addr, unsigned long len,
 	struct vm_area_struct *vma, *prev;
 	struct rb_node **rb_link, *rb_parent;
 	pgoff_t pgoff = addr >> PAGE_SHIFT;
-	/* error removed - never used */
 	unsigned long mapped_addr;
 
 	if ((flags & (~VM_EXEC)) != 0)
@@ -1312,8 +1297,6 @@ out:
 	vm_area_free(vma);
 	return ERR_PTR(ret);
 }
-
-/* vma_is_special_mapping removed - never called */
 
 struct vm_area_struct *
 _install_special_mapping(struct mm_struct *mm, unsigned long addr,

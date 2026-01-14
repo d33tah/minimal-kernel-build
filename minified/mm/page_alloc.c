@@ -1,54 +1,35 @@
 
-/* stddef.h, highmem.h, swapops.h, pagemap.h removed - unused */
 #include <linux/mm.h>
 #include <linux/swap.h>
 #include <linux/interrupt.h>
 #include <linux/memblock.h>
 #include <linux/compiler.h>
 #include <linux/kernel.h>
-/* suspend.h, pagevec.h removed - unused */
 #include <linux/slab.h>
-/* ratelimit.h removed - unused */
-/* sysctl.h removed - unused */
 #include <linux/cpu.h>
-/* cpuset.h, memory_hotplug.h removed - unused */
 #include <linux/nodemask.h>
-/* vmalloc.h, vmstat.h, mempolicy.h, memremap.h removed - unused */
-/* stop_machine.h removed - unused */
-/* sort.h removed - unused */
 #include <linux/pfn.h>
-/* backing-dev.h removed - unused */
-
-/* MEMORY_OFFLINE, REPORT_FAILURE removed - unused */
 
 void set_pageblock_migratetype(struct page *page, int migratetype);
 /* end page-isolation.h */
-
-/* compact_priority, compact_result enums removed - never used */
 
 struct alloc_context;
 
 #include <linux/mm_inline.h>
 /* mmu_notifier.h, linux/migrate.h removed - unused/empty */
-/* hugetlb.h removed - unused */
 #include <linux/sched/rt.h>
 #include <linux/sched/mm.h>
 
 /* Removed: reset_page_owner, set_page_owner, split_page_owner
  * - Dead code: page_owner tracking not needed for minimal kernel (~9 LOC) */
-/* page_table_check.h, kthread.h, memcontrol.h removed - unused */
 #include <asm/sections.h>
 #include <asm/tlbflush.h>
 #include <asm/div64.h>
 #include "internal.h"
-/* page_reported macro removed - unused */
-/* struct swap_iocb forward decl removed - unused */
 
 typedef int __bitwise fpi_t;
-/* FPI_NONE removed - unused */
 #define FPI_TO_TAIL ((__force fpi_t)BIT(1))
 #define FPI_SKIP_KASAN_POISON ((__force fpi_t)BIT(2))
-/* pagesets struct removed - unused */
 nodemask_t node_states[NR_NODE_STATES] __read_mostly = {
 	[N_POSSIBLE] = NODE_MASK_ALL,	       [N_ONLINE] = { { [0] = 1UL } },
 	[N_NORMAL_MEMORY] = { { [0] = 1UL } }, [N_MEMORY] = { { [0] = 1UL } },
@@ -80,8 +61,6 @@ compound_page_dtor *const compound_page_dtors[NR_COMPOUND_DTORS] = {
 	[COMPOUND_PAGE_DTOR] = free_compound_page,
 };
 
-/* min_free_kbytes, user_min_free_kbytes removed - unused */
-
 static unsigned long arch_zone_lowest_possible_pfn[MAX_NR_ZONES] __initdata;
 static unsigned long arch_zone_highest_possible_pfn[MAX_NR_ZONES] __initdata;
 static unsigned long zone_movable_pfn[MAX_NUMNODES] __initdata;
@@ -91,8 +70,6 @@ int movable_zone;
 /* MAX_NUMNODES == 1, removed unused nr_node_ids/nr_online_nodes */
 
 int page_group_by_mobility_disabled __read_mostly;
-
-/* defer_init removed - unused */
 
 static inline unsigned long *get_pageblock_bitmap(const struct page *page,
 						  unsigned long pfn)
@@ -169,8 +146,6 @@ void set_pageblock_migratetype(struct page *page, int migratetype)
 }
 
 /* bad_range removed - only used in VM_BUG_ON which are no-ops */
-
-/* free_the_page removed - unused stub */
 
 void free_compound_page(struct page *page)
 {
@@ -252,7 +227,6 @@ static __always_inline bool free_pages_prepare(struct page *page,
 					       unsigned int order)
 {
 	/* Stub: minimal page freeing for simple system */
-	/* check_free, fpi_flags params removed - never used */
 	if (PageMappingFlags(page))
 		page->mapping = NULL;
 	page->flags &= ~PAGE_FLAGS_CHECK_AT_PREP;
@@ -271,7 +245,6 @@ static void __meminit __init_single_page(struct page *page, unsigned long pfn,
 	set_page_links(page, zone, nid, pfn);
 	init_page_count(page);
 	page_mapcount_reset(page);
-	/* page_cpupid_reset_last removed - empty stub */
 
 	INIT_LIST_HEAD(&page->lru);
 	/* WANT_PAGE_VIRTUAL not defined */
@@ -362,7 +335,6 @@ static inline void expand(struct zone *zone, struct page *page, int low,
 inline void post_alloc_hook(struct page *page, unsigned int order)
 {
 	/* Stub: minimal post-allocation setup */
-	/* gfp_flags param removed - never used */
 	set_page_private(page, 0);
 	set_page_refcounted(page);
 }
@@ -795,7 +767,6 @@ unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order)
 		return 0;
 	return (unsigned long)page_address(page);
 }
-/* get_zeroed_page removed - never called */
 
 void __free_pages(struct page *page, unsigned int order)
 {
@@ -831,8 +802,6 @@ void *alloc_pages_exact(size_t size, gfp_t gfp_mask)
 }
 
 /* nr_free_zone_pages inlined below - only called once */
-
-/* nr_free_buffer_pages removed - never called */
 
 static void build_zonelists(pg_data_t *pgdat)
 {
@@ -892,7 +861,6 @@ static noinline void __init build_all_zonelists_init(void)
 	/* for_each_possible_cpu simplified - single CPU */
 	per_cpu_pages_init(&per_cpu(boot_pageset, 0),
 			   &per_cpu(boot_zonestats, 0));
-	/* mminit_verify_zonelist removed - empty inline */
 }
 
 void __ref build_all_zonelists(pg_data_t *pgdat)
@@ -944,8 +912,6 @@ static void __meminit memmap_init_range(unsigned long size, int nid,
 		highest_memmap_pfn = end_pfn - 1;
 
 	for (pfn = start_pfn; pfn < end_pfn;) {
-		/* overlap_memmap_init call removed - stub always returned false */
-
 		page = pfn_to_page(pfn);
 		__init_single_page(page, pfn, zone, nid);
 		if (context == MEMINIT_HOTPLUG)
@@ -1083,8 +1049,6 @@ void __init setup_per_cpu_pageset(void)
 
 	for_each_populated_zone(zone)
 		setup_zone_pageset(zone);
-
-	/* per_cpu_nodestats alloc removed - field removed */
 }
 
 /* zone_pcp_init inlined into free_area_init_core */
@@ -1100,7 +1064,6 @@ void __meminit init_currently_empty_zone(struct zone *zone,
 		pgdat->nr_zones = zone_idx;
 
 	zone->zone_start_pfn = zone_start_pfn;
-	/* mminit_dprintk removed - empty inline */
 
 	/* Inlined zone_init_free_lists */
 	{
@@ -1308,8 +1271,6 @@ static void __init free_area_init_core(struct pglist_data *pgdat)
 		if (freesize >= memmap_pages)
 			freesize -= memmap_pages;
 
-		/* dma_reserve, nr_kernel_pages, nr_all_pages removed - never read */
-
 		/* Inlined zone_init_internals */
 		atomic_long_set(&zone->managed_pages, freesize);
 		zone->name = zone_names[j];
@@ -1367,13 +1328,11 @@ static void __init free_area_init_node(int nid)
 	unsigned long end_pfn = 0;
 
 	WARN_ON(pgdat->nr_zones);
-	/* kswapd_highest_zoneidx check removed - field removed */
 
 	get_pfn_range_for_nid(nid, &start_pfn, &end_pfn);
 
 	pgdat->node_id = nid;
 	pgdat->node_start_pfn = start_pfn;
-	/* per_cpu_nodestats removed - field removed */
 
 	calculate_node_totalpages(pgdat, start_pfn, end_pfn);
 
@@ -1436,8 +1395,6 @@ unsigned long free_reserved_area(void *start, void *end, int poison,
 
 	return pages;
 }
-
-/* mem_init_print_info removed - empty stub */
 
 /* page_alloc_cpu_dead, page_alloc_cpu_online removed - CPU never goes offline (~12 LOC) */
 

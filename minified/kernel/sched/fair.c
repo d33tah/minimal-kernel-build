@@ -393,7 +393,7 @@ static void enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 	if (flags & ENQUEUE_WAKEUP)
 		place_entity(cfs_rq, se, 0);
 
-	check_schedstat_required();
+	/* check_schedstat_required removed - empty */
 	update_stats_enqueue_fair(cfs_rq, se, flags);
 	if (!curr)
 		__enqueue_entity(cfs_rq, se);

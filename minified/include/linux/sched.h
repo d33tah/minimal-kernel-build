@@ -556,10 +556,7 @@ static inline int test_tsk_need_resched(struct task_struct *tsk)
 
 extern int __cond_resched(void);
 
-#define cond_resched() ({			\
-	__might_resched(__FILE__, __LINE__, 0);	\
-	__cond_resched();			\
-})
+#define cond_resched() __cond_resched()
 
 
 static __always_inline bool need_resched(void)

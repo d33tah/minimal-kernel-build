@@ -62,17 +62,9 @@ struct sysinfo {
 
 struct completion;
 
-
-# define might_resched() do { } while (0)
-
-
-  static inline void __might_resched(const char *file, int line,
-				     unsigned int offsets) { }
-# define might_sleep() do { might_resched(); } while (0)
-
-#define might_sleep_if(cond) do { if (cond) might_sleep(); } while (0)
-
-/* PROVE_LOCKING/DEBUG_ATOMIC_SLEEP not enabled */
+#define might_resched() do { } while (0)
+#define might_sleep() do { } while (0)
+#define might_sleep_if(cond) do { } while (0)
 static inline void might_fault(void) { }
 
 void do_exit(long error_code) __noreturn;

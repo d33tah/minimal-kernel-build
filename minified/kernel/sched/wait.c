@@ -3,7 +3,6 @@ void __init_waitqueue_head(struct wait_queue_head *wq_head, const char *name,
 			   struct lock_class_key *key)
 {
 	spin_lock_init(&wq_head->lock);
-	/* lockdep_set_class_and_name removed - empty stub */
 	INIT_LIST_HEAD(&wq_head->head);
 }
 
@@ -117,8 +116,6 @@ void __wake_up_locked_key_bookmark(struct wait_queue_head *wq_head,
 {
 	__wake_up_common(wq_head, mode, 1, 0, key, bookmark);
 }
-
-/* __wake_up_sync_key removed - no callers */
 
 void prepare_to_wait(struct wait_queue_head *wq_head,
 		     struct wait_queue_entry *wq_entry, int state)

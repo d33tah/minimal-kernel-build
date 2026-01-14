@@ -16,15 +16,11 @@
 
 static struct kset *class_kset;
 
-/* class_get, class_put removed - never called */
-
 static struct device *klist_class_to_dev(struct klist_node *n)
 {
 	struct device_private *p = to_device_private_class(n);
 	return p->device;
 }
-
-/* klist_class_dev_get, klist_class_dev_put, __class_register, class_unregister, class_create_release, __class_create removed - never called */
 
 void class_dev_iter_init(struct class_dev_iter *iter, struct class *class,
 			 struct device *start, const struct device_type *type)
@@ -56,8 +52,6 @@ void class_dev_iter_exit(struct class_dev_iter *iter)
 {
 	klist_iter_exit(&iter->ki);
 }
-
-/* class_for_each_device removed - never called */
 
 struct device *class_find_device(struct class *class, struct device *start,
 				 const void *data,

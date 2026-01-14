@@ -9,8 +9,6 @@
 #include <asm/sections.h>
 #include <linux/uaccess.h>
 
-/* text_mutex removed - never used */
-
 extern struct exception_table_entry __start___ex_table[];
 extern struct exception_table_entry __stop___ex_table[];
 
@@ -36,5 +34,3 @@ const struct exception_table_entry *search_exception_tables(unsigned long addr)
 	/* search_module_extables and search_bpf_extables always return NULL */
 	return search_kernel_exception_table(addr);
 }
-
-/* core_kernel_text, __kernel_text_address, kernel_text_address removed - never called */

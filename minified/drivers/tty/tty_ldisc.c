@@ -1,6 +1,5 @@
 #include <linux/types.h>
 #include <linux/errno.h>
-/* kmod.h removed - empty header */
 #include <linux/sched.h>
 #include <linux/interrupt.h>
 #include <linux/tty.h>
@@ -15,7 +14,6 @@
 #include <linux/device.h>
 #include <linux/wait.h>
 #include <linux/bitops.h>
-/* seq_file.h removed - header is empty */
 #include <linux/uaccess.h>
 #include <linux/ratelimit.h>
 #include "tty.h"
@@ -211,7 +209,6 @@ static int tty_ldisc_lock_pair_timeout(struct tty_struct *tty,
 void tty_ldisc_flush(struct tty_struct *tty)
 {
 	struct tty_ldisc *ld = tty_ldisc_ref(tty);
-	/* tty_buffer_flush removed - empty stub */
 	if (ld)
 		tty_ldisc_deref(ld);
 }

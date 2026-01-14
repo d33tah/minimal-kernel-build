@@ -7,14 +7,12 @@
 #include <linux/kthread.h>
 #include <linux/completion.h>
 #include <linux/err.h>
-/* cgroup.h, cpuset.h removed - unused */
 #include <linux/unistd.h>
 #include <linux/file.h>
 #include <linux/mutex.h>
 #include <linux/slab.h>
 #include <linux/ptrace.h>
 #include <linux/uaccess.h>
-/* numa.h removed - unused */
 #include <linux/sched/isolation.h>
 
 static DEFINE_SPINLOCK(kthread_create_lock);

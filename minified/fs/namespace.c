@@ -9,11 +9,9 @@
 #include <linux/idr.h>
 #include <linux/init.h>
 #include <linux/fs_struct.h>
-/* fsnotify.h removed - unused */
 #include <linux/file.h>
 #include <linux/uaccess.h>
 #include <linux/proc_ns.h>
-/* magic.h, proc_fs.h removed - unused */
 #include <linux/memblock.h>
 #include <linux/task_work.h>
 #include <linux/sched/task.h>
@@ -178,8 +176,6 @@ int mnt_want_write(struct vfsmount *m)
 	return ret;
 }
 
-/* __mnt_want_write_file, mnt_want_write_file removed - never called */
-
 void __mnt_drop_write(struct vfsmount *mnt)
 {
 	preempt_disable();
@@ -192,10 +188,6 @@ void mnt_drop_write(struct vfsmount *mnt)
 	__mnt_drop_write(mnt);
 	sb_end_write(mnt->mnt_sb);
 }
-
-/* __mnt_drop_write_file, mnt_drop_write_file removed - never called */
-
-/* sb_prepare_remount_readonly removed - defined but never called */
 
 static void free_vfsmnt(struct mount *mnt)
 {
@@ -402,7 +394,6 @@ static void __attach_mnt(struct mount *mnt, struct mount *parent)
 
 /* attach_mnt inlined into do_move_mount - called only once */
 
-/* mnt_change_mountpoint removed - empty stub */
 /* commit_tree inlined into graft_tree */
 
 static struct mount *next_mnt(struct mount *p, struct mount *root)
@@ -488,8 +479,6 @@ struct vfsmount *vfs_kern_mount(struct file_system_type *type, int flags,
 	put_fs_context(fc);
 	return mnt;
 }
-
-/* clone_mnt removed - never called */
 
 static void cleanup_mnt(struct mount *mnt)
 {
@@ -661,8 +650,6 @@ static void umount_tree(struct mount *mnt, enum umount_tree_flags how)
 	LIST_HEAD(tmp_list);
 	struct mount *p;
 
-	/* propagate_mount_unlock removed - empty stub */
-
 	for (p = mnt; p; p = next_mnt(p, mnt)) {
 		p->mnt.mnt_flags |= MNT_UMOUNT;
 		list_move(&p->mnt_list, &tmp_list);
@@ -703,7 +690,6 @@ static void umount_tree(struct mount *mnt, enum umount_tree_flags how)
 					unhash_mnt(p)); /* inlined umount_mnt */
 			}
 		}
-		/* change_mnt_propagation removed - empty stub */
 		if (disconnect)
 			hlist_add_head(&p->mnt_umount, &unmounted);
 	}
@@ -781,7 +767,6 @@ static int attach_recursive_mnt(struct mount *source_mnt,
 				struct mount *dest_mnt,
 				struct mountpoint *dest_mp, bool moving)
 {
-	/* user_ns removed - unused after capability checks removed */
 	struct mnt_namespace *ns = dest_mnt->mnt_ns;
 	struct mountpoint *smp;
 	struct mount *p;
@@ -838,7 +823,6 @@ static int attach_recursive_mnt(struct mount *source_mnt,
 		}
 	}
 
-	/* tree_list loop removed - list was never populated */
 	put_mountpoint(smp);
 	unlock_mount_hash();
 
@@ -923,7 +907,6 @@ static int do_change_type(struct path *path, int ms_flags)
 	}
 
 	lock_mount_hash();
-	/* change_mnt_propagation removed - empty stub */
 	unlock_mount_hash();
 
 out_unlock:
@@ -1016,8 +999,6 @@ static int do_new_mount(struct path *path, const char *fstype, int sb_flags,
 	if (!type)
 		return -ENODEV;
 
-	/* FS_HAS_SUBTYPE check/subtype handling removed - no filesystem sets this flag */
-
 	fc = fs_context_for_mount(type, sb_flags);
 	put_filesystem(type);
 	if (IS_ERR(fc))
@@ -1053,9 +1034,6 @@ int path_mount(const char *dev_name, struct path *path, const char *type_page,
 
 	if (flags & MS_NOUSER)
 		return -EINVAL;
-
-	/* security_sb_mount/may_mount checks removed - always pass */
-	/* warn_mandlock call removed - was empty function */
 
 	if (!(flags & MS_NOATIME))
 		mnt_flags |= MNT_RELATIME;
@@ -1172,8 +1150,6 @@ SYSCALL_DEFINE5(mount, char __user *, dev_name, char __user *, dir_name,
 	return -ENOSYS;
 }
 
-/* FSMOUNT_VALID_FLAGS, MOUNT_SETATTR_VALID_FLAGS, MOUNT_SETATTR_PROPAGATION_FLAGS removed - unused */
-
 SYSCALL_DEFINE3(fsmount, int, fs_fd, unsigned int, flags, unsigned int,
 		attr_flags)
 {
@@ -1229,7 +1205,6 @@ void __init mnt_init(void)
 		       err);
 	/* Stub: fs_kobj not used in minimal kernel */
 	shmem_init();
-	/* init_rootfs removed - was empty */
 	/* Inlined init_mount_tree */
 	{
 		struct vfsmount *mnt;
@@ -1265,7 +1240,6 @@ void put_mnt_ns(struct mnt_namespace *ns)
 {
 	if (!refcount_dec_and_test(&ns->ns.count))
 		return;
-	/* drop_collected_mounts call removed - was empty function */
 	free_mnt_ns(ns);
 }
 

@@ -25,7 +25,6 @@
 #include <linux/wait.h>
 #include <linux/bitops.h>
 #include <linux/delay.h>
-/* seq_file.h removed - header is empty */
 #include <linux/ratelimit.h>
 #include <linux/compat.h>
 
@@ -40,8 +39,6 @@
 #define tty_debug_hangup(tty, f, args...) \
 	do {                              \
 	} while (0)
-
-/* TTY_PARANOIA_CHECK, CHECK_TTY_COUNT removed - unused */
 
 struct ktermios tty_std_termios = {
 	.c_iflag = ICRNL | IXON,
@@ -195,8 +192,6 @@ static const struct file_operations hung_up_tty_fops = {
 	/* fasync removed - fcntl returns EINVAL, FASYNC never set */
 };
 
-/* redirect_lock and redirect removed - redirect never set */
-
 void tty_wakeup(struct tty_struct *tty)
 {
 	struct tty_ldisc *ld;
@@ -233,14 +228,10 @@ static void do_tty_hangup(struct work_struct *work)
 	__tty_hangup(tty, 0);
 }
 
-/* tty_hangup removed - never called */
-
 int tty_hung_up_p(struct file *filp)
 {
 	return (filp && filp->f_op == &hung_up_tty_fops);
 }
-
-/* tty_update_time removed - empty stub */
 
 static int iterate_tty_read(struct tty_ldisc *ld, struct tty_struct *tty,
 			    struct file *file, struct iov_iter *to)
@@ -302,7 +293,6 @@ static ssize_t tty_read(struct kiocb *iocb, struct iov_iter *to)
 		i = iterate_tty_read(ld, tty, file, to);
 	tty_ldisc_deref(ld);
 
-	/* tty_update_time removed - empty stub */
 	return i;
 }
 
@@ -376,7 +366,6 @@ do_tty_write(ssize_t (*write)(struct tty_struct *, struct file *,
 	}
 	if (written)
 		ret = written;
-	/* tty_update_time removed - empty stub */
 out:
 	mutex_unlock(&tty->atomic_write_lock);
 	wake_up_interruptible_poll(&tty->write_wait, EPOLLOUT);
@@ -915,15 +904,12 @@ struct tty_struct *alloc_tty_struct(struct tty_driver *driver, int idx)
 	tty->ctrl.session = NULL;
 	tty->ctrl.pgrp = NULL;
 	mutex_init(&tty->legacy_mutex);
-	/* mutex_init(&tty->throttle_mutex) removed - never locked */
 	init_rwsem(&tty->termios_rwsem);
-	/* mutex_init(&tty->winsize_mutex) removed - never locked */
 	init_ldsem(&tty->ldisc_sem);
 	init_waitqueue_head(&tty->write_wait);
 	init_waitqueue_head(&tty->read_wait);
 	INIT_WORK(&tty->hangup_work, do_tty_hangup);
 	mutex_init(&tty->atomic_write_lock);
-	/* spin_lock_init(&tty->ctrl.lock) removed - never locked */
 	spin_lock_init(&tty->flow.lock);
 	spin_lock_init(&tty->files_lock);
 	INIT_LIST_HEAD(&tty->tty_files);
@@ -1000,7 +986,6 @@ struct device *tty_register_device_attr(struct tty_driver *driver,
 	dev_set_name(dev, "%s", name);
 	dev->groups = attr_grp;
 	dev_set_drvdata(dev, drvdata);
-	/* dev_set_uevent_suppress removed - empty stub */
 	retval = device_register(dev);
 	if (retval)
 		goto err_put;
@@ -1185,14 +1170,12 @@ err:
 	return error;
 }
 
-/* tty_devnode removed - never called */
 /* tty_class_init removed - class_create hangs with low memory */
 
 static struct cdev tty_cdev, console_cdev;
 /* console_sysfs_notify removed - empty stub, call removed from printk.c */
 int __init tty_init(void)
 {
-	/* tty_sysctl_init call removed - empty stub */
 	cdev_init(&tty_cdev, &tty_fops);
 	if (cdev_add(&tty_cdev, MKDEV(TTYAUX_MAJOR, 0), 1) ||
 	    register_chrdev_region(MKDEV(TTYAUX_MAJOR, 0), 1, "/dev/tty") < 0)

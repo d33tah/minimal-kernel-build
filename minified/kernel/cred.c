@@ -40,7 +40,6 @@ static void put_cred_rcu(struct rcu_head *rcu)
 		      atomic_read(&cred->usage));
 
 	/* security_cred_free - empty stub */
-	/* key_put calls removed - empty stubs */
 	if (cred->group_info)
 		put_group_info(cred->group_info);
 	free_uid(cred->user);
@@ -189,13 +188,10 @@ int commit_creds(struct cred *new)
 	if (!uid_eq(old->euid, new->euid) || !gid_eq(old->egid, new->egid) ||
 	    !uid_eq(old->fsuid, new->fsuid) ||
 	    !gid_eq(old->fsgid, new->fsgid) || !cred_cap_issubset(old, new)) {
-		/* set_dumpable removed - was empty stub */
 		task->pdeath_signal = 0;
 
 		smp_wmb();
 	}
-
-	/* key_fsuid_changed, key_fsgid_changed removed - empty stubs */
 
 	if (new->user != old->user || new->user_ns != old->user_ns)
 		inc_rlimit_ucounts(new->ucounts, UCOUNT_RLIMIT_NPROC, 1);

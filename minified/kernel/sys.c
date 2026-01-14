@@ -11,7 +11,6 @@ struct tms {
 
 int overflowuid = DEFAULT_OVERFLOWUID;
 int overflowgid = DEFAULT_OVERFLOWGID;
-/* uts_sem removed - never used */
 
 /* All syscalls stubbed to return simple values */
 SYSCALL_DEFINE3(setpriority, int, which, int, who, int, niceval)

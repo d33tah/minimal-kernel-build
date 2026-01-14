@@ -58,7 +58,6 @@ void put_pid(struct pid *pid)
 	ns = pid->numbers[pid->level].ns;
 	if (refcount_dec_and_test(&pid->count)) {
 		kmem_cache_free(ns->pid_cachep, pid);
-		/* put_pid_ns removed - empty stub */
 	}
 }
 
@@ -168,11 +167,8 @@ struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 
 	get_pid_ns(ns);
 	refcount_set(&pid->count, 1);
-	/* spin_lock_init(&pid->lock) removed - lock never used */
 	for (type = 0; type < PIDTYPE_MAX; ++type)
 		INIT_HLIST_HEAD(&pid->tasks[type]);
-
-	/* init_waitqueue_head(&pid->wait_pidfd), INIT_HLIST_HEAD(&pid->inodes) removed - never used */
 
 	upid = pid->numbers + ns->level;
 	spin_lock_irq(&pidmap_lock);
@@ -188,7 +184,6 @@ struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 
 out_unlock:
 	spin_unlock_irq(&pidmap_lock);
-	/* put_pid_ns removed - empty stub */
 
 out_free:
 	spin_lock_irq(&pidmap_lock);
@@ -302,8 +297,6 @@ struct pid *get_task_pid(struct task_struct *task, enum pid_type type)
 	return pid;
 }
 
-/* get_pid_task and find_get_pid removed - never called */
-
 pid_t pid_nr_ns(struct pid *pid, struct pid_namespace *ns)
 {
 	struct upid *upid;
@@ -340,8 +333,6 @@ struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
 {
 	return ns_of_pid(task_pid(tsk));
 }
-
-/* pidfd_get_pid removed - never called */
 
 SYSCALL_DEFINE2(pidfd_open, pid_t, pid, unsigned int, flags)
 {

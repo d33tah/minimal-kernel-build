@@ -12,7 +12,6 @@ struct ipc_namespace {
 	struct user_namespace *user_ns;
 	struct ns_common ns;
 };
-/* init_ipc_ns extern removed - never used */
 static inline struct ipc_namespace *copy_ipcs(unsigned long flags,
 					      struct user_namespace *user_ns,
 					      struct ipc_namespace *ns)
@@ -21,7 +20,6 @@ static inline struct ipc_namespace *copy_ipcs(unsigned long flags,
 		return ERR_PTR(-EINVAL);
 	return ns;
 }
-/* put_ipc_ns removed - empty stub */
 #include <linux/fs_struct.h>
 #include <linux/proc_fs.h>
 #include <linux/proc_ns.h>
@@ -106,11 +104,8 @@ out_time:
 out_net:
 	put_cgroup_ns(new_nsp->cgroup_ns);
 out_cgroup:
-	/* put_pid_ns removed - empty stub */
 out_pid:
-	/* put_ipc_ns call removed - empty stub */
 out_ipc:
-	/* put_uts_ns removed - empty stub */
 out_uts:
 	if (new_nsp->mnt_ns)
 		put_mnt_ns(new_nsp->mnt_ns);
@@ -153,7 +148,6 @@ void free_nsproxy(struct nsproxy *ns)
 {
 	if (ns->mnt_ns)
 		put_mnt_ns(ns->mnt_ns);
-	/* put_uts_ns, put_ipc_ns, put_pid_ns removed - empty stubs */
 	if (ns->time_ns)
 		put_time_ns(ns->time_ns);
 	if (ns->time_ns_for_children)

@@ -20,5 +20,4 @@
 
 #include "rt.c"
 
-/* cputime.c removed - was empty stub */
 #include "deadline.c"

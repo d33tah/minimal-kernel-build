@@ -26,7 +26,6 @@ void __cpuidle default_idle_call(void)
 	if (unlikely(tif_need_resched())) {
 		local_irq_enable();
 	} else {
-		/* rcu_idle_enter/exit removed - empty stubs */
 		arch_cpu_idle();
 		raw_local_irq_disable();
 		raw_local_irq_enable();
@@ -69,7 +68,6 @@ static void put_prev_task_idle(struct rq *rq, struct task_struct *prev)
 static void set_next_task_idle(struct rq *rq, struct task_struct *next,
 			       bool first)
 {
-	/* update_idle_core, schedstat_inc removed - empty stubs */
 }
 
 struct task_struct *pick_next_task_idle(struct rq *rq)

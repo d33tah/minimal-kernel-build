@@ -5,8 +5,6 @@
 #include <linux/vmalloc.h>
 #include <linux/reboot.h>
 
-/* notifier_chain_register, notifier_call_chain, atomic_notifier_chain_register removed - nothing ever registers */
-
 int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 			       unsigned long val, void *v)
 {
@@ -14,7 +12,6 @@ int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 }
 NOKPROBE_SYMBOL(atomic_notifier_call_chain);
 
-/* atomic_notifier_call_chain_is_empty, blocking_notifier*, raw_notifier_call_chain removed - no callers */
 /* die_chain removed - no registrations, notify_die always returns NOTIFY_DONE */
 
 int notrace notify_die(enum die_val val, const char *str, struct pt_regs *regs,

@@ -3,7 +3,6 @@
 #include <linux/slab.h>
 #include <linux/sched/mm.h>
 extern int nr_threads;
-/* process_counts removed - never read */
 /* end sched/stat.h */
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
@@ -14,9 +13,7 @@ extern int nr_threads;
 #include <linux/completion.h>
 #include <linux/personality.h>
 #include <linux/tty.h>
-/* key.h removed - unused */
 #include <linux/cpu.h>
-/* acct_*, acct_update_integrals removed - empty stubs */
 #include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/binfmts.h>
@@ -27,7 +24,6 @@ extern int nr_threads;
 #include <linux/proc_fs.h>
 #include <linux/kthread.h>
 #include <linux/mempolicy.h>
-/* taskstats_exit, proc_exit_connector, task_io_*, exit_shm, exit_sem, rethook_flush_task removed - empty stubs */
 #include <linux/cgroup.h>
 #include <linux/syscalls.h>
 #include <linux/signal.h>
@@ -35,17 +31,14 @@ extern int nr_threads;
 #include <linux/mutex.h>
 #include <linux/futex.h>
 #include <linux/pipe_fs_i.h>
-/* audit.h removed - unused */
 #include <linux/resource.h>
 #include <linux/blkdev.h>
 #include <linux/task_work.h>
 #include <linux/fs_struct.h>
 #include <linux/init_task.h>
-/* perf_event.h removed - unused */
 #include <linux/writeback.h>
 #include <linux/rcuwait.h>
 #include <linux/compat.h>
-/* io_uring.h removed - unused */
 #include <linux/kprobes.h>
 
 #include <linux/uaccess.h>
@@ -106,8 +99,6 @@ static void delayed_put_task_struct(struct rcu_head *rhp)
 {
 	struct task_struct *tsk = container_of(rhp, struct task_struct, rcu);
 
-	/* kprobe_flush_task, rethook_flush_task, perf_event_delayed_put removed - empty stubs */
-
 	put_task_struct(tsk);
 }
 
@@ -154,8 +145,6 @@ int rcuwait_wake_up(struct rcuwait *w)
 
 	return ret;
 }
-
-/* kill_orphaned_pgrp removed - was empty stub */
 
 /* coredump_task_exit inlined into do_exit */
 
@@ -275,8 +264,6 @@ static void exit_notify(struct task_struct *tsk, int group_dead)
 	write_lock_irq(&tasklist_lock);
 	forget_original_parent(tsk, &dead);
 
-	/* kill_orphaned_pgrp removed - was empty stub */
-
 	tsk->exit_state = EXIT_ZOMBIE;
 	/* do_notify_parent always returns false, so simplified:
 	 * autoreap = !tsk->ptrace && !thread_group_leader(tsk) */
@@ -297,13 +284,10 @@ static void exit_notify(struct task_struct *tsk, int group_dead)
 	}
 }
 
-/* check_stack_usage removed - empty stub */
-
 void __noreturn do_exit(long code)
 {
 	struct task_struct *tsk = current;
 	int group_dead;
-	/* WARN_ON(tsk->plug) removed - plug field removed */
 
 	/* coredump_task_exit removed - PF_POSTCOREDUMP never tested */
 	ptrace_event(PTRACE_EVENT_EXIT, code);
@@ -311,17 +295,13 @@ void __noreturn do_exit(long code)
 	/* validate_creds_for_do_exit(), io_uring_files_cancel() - empty stubs */
 	exit_signals(tsk);
 
-	/* sync_mm_rss(), acct_update_integrals removed - empty stubs */
 	group_dead = atomic_dec_and_test(&tsk->signal->live);
 	if (group_dead) {
 		if (unlikely(is_global_init(tsk)))
 			panic("Attempted to kill init! exitcode=0x%08x\n",
 			      tsk->signal->group_exit_code ?: (int)code);
-		/* setmax_mm_hiwater_rss removed - maxrss unused */
 	}
-	/* acct_collect, tty_audit_exit, audit_free removed - empty stubs */
 	tsk->exit_code = code;
-	/* taskstats_exit removed - empty stub */
 
 	/* Inlined exit_mm */
 	{
@@ -332,7 +312,6 @@ void __noreturn do_exit(long code)
 			mmgrab(mm);
 			BUG_ON(mm != current->active_mm);
 			task_lock(current);
-			/* smp_mb__after_spinlock removed - empty stub */
 			local_irq_disable();
 			current->mm = NULL;
 			enter_lazy_tlb(mm, current);
@@ -342,24 +321,16 @@ void __noreturn do_exit(long code)
 			mmput(mm);
 		}
 	}
-	/* acct_process, exit_sem, exit_shm removed - empty stubs */
 	exit_files(tsk);
 	exit_fs(tsk);
-	/* disassociate_ctty removed - empty stub */
 	exit_task_namespaces(tsk);
 	exit_task_work(tsk);
 	exit_thread(tsk);
-	/* perf_event_exit_task, exit_tasks_rcu_start removed - empty stubs */
 	exit_notify(tsk, group_dead);
-
-	/* free_pipe_info, task_frag cleanup removed - never used */
 
 	validate_creds_for_do_exit(tsk);
 	exit_task_stack_account(tsk);
-	/* check_stack_usage, exit_rcu removed - empty stubs */
 	preempt_disable();
-	/* dirty_throttle_leaks increment removed - counter never read */
-	/* exit_tasks_rcu_finish removed - empty stub */
 
 	do_task_dead();
 }

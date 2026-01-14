@@ -11,7 +11,6 @@
  * - Always returned 0 (no-op stubs) */
 #include <linux/syscalls.h>
 #include <linux/mount.h>
-/* audit.h removed - unused */
 #include <linux/capability.h>
 #include <linux/file.h>
 #include <linux/fcntl.h>
@@ -24,9 +23,6 @@
 #include "mount.h"
 
 #define EMBEDDED_NAME_MAX (PATH_MAX - offsetof(struct filename, iname))
-
-/* getname_flags removed - never called */
-/* getname removed - never called */
 
 struct filename *getname_kernel(const char *filename)
 {
@@ -56,7 +52,6 @@ struct filename *getname_kernel(const char *filename)
 	}
 	memcpy((char *)result->name, filename, len);
 	result->uptr = NULL;
-	/* aname assignment removed - field removed */
 	result->refcnt = 1;
 	/* audit_getname - empty stub */
 	return result;
@@ -151,7 +146,6 @@ int inode_permission(struct user_namespace *mnt_userns, struct inode *inode,
 
 	if (unlikely(mask & MAY_WRITE)) {
 		umode_t mode = inode->i_mode;
-		/* S_ISLNK removed - symlinks never created */
 		if (sb_rdonly(inode->i_sb) && (S_ISREG(mode) || S_ISDIR(mode)))
 			return -EROFS;
 	}
@@ -192,7 +186,6 @@ struct nameidata {
 	/* r_seq removed - only written, never read */
 	int last_type;
 	unsigned depth;
-	/* total_link_count removed - only used for symlink limits */
 	struct saved {
 		struct path link;
 		struct delayed_call done;
@@ -203,7 +196,6 @@ struct nameidata {
 	struct nameidata *saved;
 	unsigned root_seq;
 	int dfd;
-	/* dir_uid, dir_mode removed - never read */
 } __randomize_layout;
 
 #define ND_ROOT_PRESET 1
@@ -301,7 +293,6 @@ static inline bool legitimize_path(struct nameidata *nd, struct path *path,
 static bool legitimize_links(struct nameidata *nd)
 {
 	int i;
-	/* LOOKUP_CACHED check removed - flag never set */
 	for (i = 0; i < nd->depth; i++) {
 		struct saved *last = nd->stack + i;
 		if (unlikely(!legitimize_path(nd, &last->link, last->seq))) {
@@ -384,7 +375,6 @@ out_dput:
 
 static inline int d_revalidate(struct dentry *dentry, unsigned int flags)
 {
-	/* d_revalidate removed - never set */
 	return 1;
 }
 
@@ -394,7 +384,6 @@ static int complete_walk(struct nameidata *nd)
 	if (nd->flags & LOOKUP_RCU) {
 		if (!(nd->state & ND_ROOT_PRESET))
 			nd->root.mnt = NULL;
-		/* nd->flags &= ~LOOKUP_CACHED removed - never set */
 		if (!try_to_unlazy(nd))
 			return -ECHILD;
 	}
@@ -404,8 +393,6 @@ static int complete_walk(struct nameidata *nd)
 static int set_root(struct nameidata *nd)
 {
 	struct fs_struct *fs = current->fs;
-
-	/* WARN_ON for LOOKUP_IS_SCOPED removed - never set */
 
 	if (nd->flags & LOOKUP_RCU) {
 		unsigned seq;
@@ -425,7 +412,6 @@ static int set_root(struct nameidata *nd)
 
 static int nd_jump_root(struct nameidata *nd)
 {
-	/* LOOKUP_BENEATH, LOOKUP_NO_XDEV checks removed - never set */
 	if (!nd->root.mnt) {
 		int error = set_root(nd);
 		if (error)
@@ -460,7 +446,6 @@ static inline void put_link(struct nameidata *nd)
 /* may_linkat removed - only caller was init_link which was removed */
 
 /* Removed: __traverse_mounts - inlined into traverse_mounts */
-/* count parameter removed - only used for symlink limits */
 
 static inline int traverse_mounts(struct path *path, bool *jumped,
 				  unsigned lookup_flags)
@@ -533,7 +518,6 @@ rcu_fail:;
 	ret = traverse_mounts(path, &jumped, nd->flags);
 	if (jumped)
 		nd->state |= ND_JUMPED;
-	/* LOOKUP_NO_XDEV check removed - never set */
 	if (unlikely(ret)) {
 		dput(path->dentry);
 		if (path->mnt != nd->path.mnt)
@@ -689,7 +673,6 @@ static struct dentry *follow_dotdot_rcu(struct nameidata *nd,
 in_root:
 	if (unlikely(read_seqretry(&mount_lock, nd->m_seq)))
 		return ERR_PTR(-ECHILD);
-	/* LOOKUP_BENEATH check removed - never set */
 	return NULL;
 }
 
@@ -713,7 +696,6 @@ static struct dentry *follow_dotdot(struct nameidata *nd, struct inode **inodep,
 	return parent;
 
 in_root:
-	/* LOOKUP_BENEATH check removed - never set */
 	dget(nd->path.dentry);
 	return NULL;
 }
@@ -745,8 +727,6 @@ static const char *handle_dots(struct nameidata *nd, int type)
 					  seq);
 		if (unlikely(error))
 			return error;
-
-		/* LOOKUP_IS_SCOPED check removed - flags never set */
 	}
 	return NULL;
 }
@@ -901,8 +881,6 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
 	int error;
 	const char *s = nd->name->name;
 
-	/* LOOKUP_CACHED check removed - never set */
-
 	if (!*s)
 		flags &= ~LOOKUP_RCU;
 	if (flags & LOOKUP_RCU)
@@ -912,7 +890,6 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
 	nd->state |= ND_JUMPED;
 
 	nd->m_seq = __read_seqcount_begin(&mount_lock.seqcount);
-	/* r_seq assignment removed - was never read */
 	smp_rmb();
 
 	if (nd->state & ND_ROOT_PRESET) {
@@ -954,7 +931,6 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
 		fdput(f);
 	}
 
-	/* LOOKUP_IS_SCOPED check removed - never set */
 	return s;
 }
 
@@ -1064,7 +1040,6 @@ static int may_open(struct user_namespace *mnt_userns, const struct path *path,
 		return -ENOENT;
 
 	switch (inode->i_mode & S_IFMT) {
-	/* case S_IFLNK removed - symlinks never created */
 	case S_IFDIR:
 		if (acc_mode & MAY_WRITE)
 			return -EISDIR;
@@ -1137,8 +1112,6 @@ static struct dentry *lookup_open(struct nameidata *nd, struct file *file,
 	if (open_flag & O_CREAT) {
 		if (!IS_POSIXACL(dir->d_inode))
 			mode &= ~current_umask();
-
-		/* atomic_open check removed - never set */
 
 		if (d_in_lookup(dentry)) {
 			struct dentry *res = dir_inode->i_op->lookup(
@@ -1363,8 +1336,6 @@ struct file *do_filp_open(int dfd, struct filename *pathname,
 	restore_nameidata();
 	return filp;
 }
-
-/* filename_create, kern_path_create and done_path_create removed - never called */
 
 /* vfs_mknod removed - only caller was init_mknod which was removed */
 

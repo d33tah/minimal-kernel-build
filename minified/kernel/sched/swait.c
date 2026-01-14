@@ -3,7 +3,6 @@ void __init_swait_queue_head(struct swait_queue_head *q, const char *name,
 			     struct lock_class_key *key)
 {
 	raw_spin_lock_init(&q->lock);
-	/* lockdep_set_class_and_name removed - empty stub */
 	INIT_LIST_HEAD(&q->task_list);
 }
 
@@ -35,8 +34,6 @@ void __prepare_to_swait(struct swait_queue_head *q, struct swait_queue *wait)
 		list_add_tail(&wait->task_list, &q->task_list);
 }
 
-/* prepare_to_swait_exclusive removed - never called */
-
 long prepare_to_swait_event(struct swait_queue_head *q,
 			    struct swait_queue *wait, int state)
 {
@@ -55,8 +52,6 @@ long prepare_to_swait_event(struct swait_queue_head *q,
 
 	return ret;
 }
-
-/* __finish_swait removed - never called */
 
 void finish_swait(struct swait_queue_head *q, struct swait_queue *wait)
 {

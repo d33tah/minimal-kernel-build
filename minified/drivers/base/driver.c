@@ -8,8 +8,6 @@
 #include <linux/sysfs.h>
 #include "base.h"
 
-/* driver_find_device, driver_create_file, driver_remove_file, driver_add_groups, driver_remove_groups removed - all stubs */
-
 int driver_register(struct device_driver *drv)
 {
 	int ret;

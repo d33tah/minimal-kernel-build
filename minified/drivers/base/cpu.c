@@ -9,10 +9,8 @@
 #include <linux/gfp.h>
 #include <linux/slab.h>
 #include <linux/percpu.h>
-/* acpi.h, of.h, tick.h removed - unused */
 
 #include <linux/mod_devicetable.h>
-/* module_cpu_feature_match macro, pm_qos.h removed - never used */
 #include <linux/sched/isolation.h>
 
 #include "base.h"
@@ -79,6 +77,3 @@ struct device *cpu_device_create(struct device *parent, void *drvdata,
 	va_end(vargs);
 	return dev;
 }
-
-/* cpu_root_attrs, cpu_root_attr_group, cpu_root_attr_groups removed - never used */
-/* cpu_dev_init removed - never called */

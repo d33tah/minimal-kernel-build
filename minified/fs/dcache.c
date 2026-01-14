@@ -1,5 +1,4 @@
 
-/* ratelimit.h, fsnotify.h removed - unused */
 #include <linux/string.h>
 #include <linux/mm.h>
 #include <linux/fs.h>
@@ -42,7 +41,6 @@ static inline struct hlist_bl_head *in_lookup_hash(const struct dentry *parent,
 	return in_lookup_hashtable + hash_32(hash, IN_LOOKUP_SHIFT);
 }
 
-/* struct dentry_stat_t removed - never instantiated */
 /* nr_dentry, nr_dentry_unused, nr_dentry_negative removed - only written, never read */
 
 #include <asm/word-at-a-time.h>
@@ -126,12 +124,10 @@ static void dentry_unlink_inode(struct dentry *dentry)
 	flags &= ~(DCACHE_ENTRY_TYPE | DCACHE_FALLTHRU);
 	WRITE_ONCE(dentry->d_flags, flags);
 	dentry->d_inode = NULL;
-	/* nr_dentry_negative increment removed - counter never read */
 	hlist_del_init(&dentry->d_u.d_alias);
 	raw_write_seqcount_end(&dentry->d_seq);
 	spin_unlock(&dentry->d_lock);
 	spin_unlock(&inode->i_lock);
-	/* d_iput removed - never set */
 	iput(inode);
 }
 
@@ -142,7 +138,6 @@ static void d_lru_del(struct dentry *dentry)
 {
 	D_FLAG_VERIFY(dentry, DCACHE_LRU_LIST);
 	dentry->d_flags &= ~DCACHE_LRU_LIST;
-	/* nr_dentry_unused, nr_dentry_negative counters removed - never read */
 	WARN_ON_ONCE(
 		!list_lru_del(&dentry->d_sb->s_dentry_lru, &dentry->d_lru));
 }
@@ -183,8 +178,6 @@ static void __dentry_kill(struct dentry *dentry)
 
 	lockref_mark_dead(&dentry->d_lockref);
 
-	/* d_prune removed - never set */
-
 	if (dentry->d_flags & DCACHE_LRU_LIST) {
 		if (!(dentry->d_flags & DCACHE_SHRINK_LIST))
 			d_lru_del(dentry);
@@ -213,8 +206,6 @@ static void __dentry_kill(struct dentry *dentry)
 		dentry_unlink_inode(dentry);
 	else
 		spin_unlock(&dentry->d_lock);
-	/* nr_dentry counter removed - never read */
-	/* d_release removed - never set */
 
 	spin_lock(&dentry->d_lock);
 	if (dentry->d_flags & DCACHE_SHRINK_LIST) {
@@ -511,8 +502,6 @@ int d_set_mounted(struct dentry *dentry)
 	return -EBUSY;
 }
 
-/* shrink_dcache_parent removed - never called */
-
 static void do_one_tree(struct dentry *dentry)
 {
 	/* d_walk is empty stub - just drop and put */
@@ -601,8 +590,6 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 	INIT_HLIST_NODE(&dentry->d_u.d_alias);
 	INIT_LIST_HEAD(&dentry->d_child);
 	/* d_set_d_op call removed - s_d_op is always NULL (dops never set) */
-	/* d_init removed - never set */
-	/* nr_dentry counter removed - never read */
 	return dentry;
 }
 
@@ -693,7 +680,6 @@ void d_instantiate(struct dentry *entry, struct inode *inode)
 		/* security_d_instantiate - empty stub */
 		spin_lock(&inode->i_lock);
 		spin_lock(&entry->d_lock);
-		/* nr_dentry_negative counter removed - never read */
 		hlist_add_head(&entry->d_u.d_alias, &inode->i_dentry);
 		raw_write_seqcount_begin(&entry->d_seq);
 		__d_set_inode_and_type(entry, inode, add_flags);
@@ -721,7 +707,6 @@ static inline bool d_same_name(const struct dentry *dentry,
 			       const struct dentry *parent,
 			       const struct qstr *name)
 {
-	/* d_compare branch removed - never set */
 	if (dentry->d_name.len != name->len)
 		return false;
 	return dentry_cmp(dentry, name->name, name->len) == 0;
@@ -738,7 +723,6 @@ struct dentry *__d_lookup_rcu(const struct dentry *parent,
 
 	hlist_bl_for_each_entry_rcu(dentry, node, b, d_hash) {
 		unsigned seq;
-		/* seqretry label removed - no goto to it */
 		seq = raw_seqcount_begin(&dentry->d_seq);
 		if (dentry->d_parent != parent)
 			continue;
@@ -991,7 +975,6 @@ void d_add(struct dentry *entry, struct inode *inode)
 	__d_add(entry, inode);
 }
 
-/* d_ancestor removed - never called */
 /* Simplified - d_ancestor always returned NULL, so only equality check matters */
 bool is_subdir(struct dentry *new_dentry, struct dentry *old_dentry)
 {
@@ -1053,7 +1036,6 @@ void __init vfs_caches_init(void)
 	dcache_init();
 	inode_init();
 	files_init();
-	/* files_maxfiles_init removed - was empty stub */
 	mnt_init();
 	chrdev_init();
 }

@@ -25,8 +25,6 @@ struct device platform_bus = {
 	.init_name = "platform",
 };
 
-/* platform_get_resource, platform_get_irq removed - never called */
-
 /* platform_get_mem_or_io, devm_platform_get_and_ioremap_resource,
    devm_platform_ioremap_resource, devm_platform_ioremap_resource_byname,
    platform_get_irq_optional removed - no external callers */
@@ -150,5 +148,3 @@ struct bus_type platform_bus_type = {
 	.dma_configure = platform_dma_configure,
 	.pm = &platform_dev_pm_ops,
 };
-
-/* platform_bus_init removed - never called */

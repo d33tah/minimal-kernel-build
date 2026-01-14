@@ -4,7 +4,6 @@
 #include <linux/printk.h>
 #include <linux/kallsyms.h>
 #include <linux/kmsg_dump.h>
-/* kgdb_panic removed - empty stub */
 #include <linux/notifier.h>
 #include <linux/vt_kern.h>
 #include <linux/module.h>
@@ -22,8 +21,6 @@ extern struct atomic_notifier_head panic_notifier_list;
 #define PANIC_TIMER_STEP 100
 /* PANIC_BLINK_SPD removed - unused after panic_blink removal */
 
-/* sysctl_oops_all_cpu_backtrace macro removed - unused */
-
 int panic_on_oops = CONFIG_PANIC_ON_OOPS_VALUE;
 static unsigned long tainted_mask = 0;
 /* pause_on_oops removed - always 0, sysctl not available */
@@ -31,8 +28,6 @@ int panic_on_warn __read_mostly;
 unsigned long panic_on_taint;
 
 int panic_timeout = CONFIG_PANIC_TIMEOUT;
-
-/* PANIC_PRINT_* macros and panic_print variable removed - never used */
 
 ATOMIC_NOTIFIER_HEAD(panic_notifier_list);
 
@@ -96,10 +91,8 @@ void panic(const char *fmt, ...)
 		buf[len - 1] = '\0';
 
 	pr_emerg("Kernel panic - not syncing: %s\n", buf);
-	/* __crash_kexec, smp_send_stop, crash_smp_send_stop removed - stubs */
 
 	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
-	/* panic_print_sys_info removed - empty stub */
 
 	kmsg_dump(KMSG_DUMP_PANIC);
 
@@ -116,7 +109,6 @@ void panic(const char *fmt, ...)
 			mdelay(PANIC_TIMER_STEP);
 	}
 	if (panic_timeout != 0) {
-		/* reboot_mode assignment removed - variable unused */
 		emergency_restart();
 	}
 	/* sparc-specific Stop-A handling removed - x86 only */

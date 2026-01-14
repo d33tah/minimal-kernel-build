@@ -64,19 +64,13 @@ __printf(1, 4) struct workqueue_struct *alloc_workqueue(const char *fmt,
 	return wq;
 }
 
-/* destroy_workqueue removed - never called */
-
 static struct workqueue_struct system_wq_storage = { .name = "events" };
-/* system_long_wq_storage removed - never used */
 static struct workqueue_struct system_unbound_wq_storage = {
 	.name = "events_unbound"
 };
 
 struct workqueue_struct *system_wq = &system_wq_storage;
-/* system_long_wq removed - never used */
 struct workqueue_struct *system_unbound_wq = &system_unbound_wq_storage;
-
-/* workqueue_init_early, workqueue_init, wq_worker_running, wq_worker_sleeping removed - unused */
 
 void delayed_work_timer_fn(struct timer_list *t)
 {

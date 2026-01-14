@@ -1,5 +1,4 @@
 
-/* acpi.h removed - unused */
 #include <linux/device.h>
 #include <linux/err.h>
 #include <linux/init.h>
@@ -15,7 +14,6 @@
 #include <linux/sched/signal.h>
 #include <linux/sched/mm.h>
 #include <linux/sysfs.h>
-/* delay.h removed - unused */
 #include <linux/dma-map-ops.h>
 
 #include "base.h"
@@ -30,16 +28,10 @@ void device_pm_move_to_tail(struct device *dev)
 	int idx;
 
 	idx = srcu_read_lock(&device_links_srcu);
-	/* device_pm_lock/unlock removed - empty stubs */
 	srcu_read_unlock(&device_links_srcu, idx);
 }
 
 /* devlink_class and related functions removed - devlink_class_init was removed so class is never registered */
-/* DL_MANAGED_LINK_FLAGS, DL_ADD_VALID_FLAGS, FW_DEVLINK_FLAGS_* removed - unused */
-/* device_links_no_driver, device_links_driver_cleanup, fw_devlink_drivers_done removed - empty stubs */
-/* dev_kobj, sysfs_dev_char_kobj, sysfs_dev_block_kobj removed - unused */
-
-/* device_platform_notify_remove removed - was empty stub */
 
 #define to_dev_attr(_attr) container_of(_attr, struct device_attribute, attr)
 
@@ -80,8 +72,6 @@ static void device_release(struct kobject *kobj)
 {
 	struct device *dev = kobj_to_dev(kobj);
 	struct device_private *p = dev->p;
-
-	/* devres_release_all removed - empty stub */
 
 	kfree(dev->dma_range_map);
 
@@ -167,7 +157,6 @@ static void device_remove_attrs(struct device *dev)
 		kfree(dev->physical_location);
 }
 
-/* dev_show, dev_attr_dev, device_remove_file removed - never called */
 /* device_remove_file_self, device_create_bin_file, device_remove_bin_file - no callers */
 
 struct kset *devices_kset;
@@ -367,7 +356,6 @@ void device_del(struct device *dev)
 		dev->fwnode->dev = NULL;
 
 	noio_flag = memalloc_noio_save();
-	/* bus_notifier call removed - no registrations */
 
 	if (parent)
 		klist_del(&dev->p->knode_parent);
@@ -385,7 +373,6 @@ void device_del(struct device *dev)
 		klist_del(&dev->p->knode_class);
 		mutex_unlock(&dev->class->p->mutex);
 	}
-	/* device_remove_file(dev, &dev_attr_uevent) removed - empty stub */
 	device_remove_attrs(dev);
 	bus_remove_device(dev);
 	driver_deferred_probe_del(dev);

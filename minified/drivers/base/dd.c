@@ -98,11 +98,9 @@ int driver_deferred_probe_timeout;
 
 static void deferred_probe_timeout_work_func(struct work_struct *work)
 {
-	/* fw_devlink_drivers_done call removed - empty stub */
 	driver_deferred_probe_timeout = 0;
 	driver_deferred_probe_trigger();
 	flush_work(&deferred_probe_work);
-	/* deferred_probe_pending_list iteration removed - empty loop */
 }
 static DECLARE_DELAYED_WORK(deferred_probe_timeout_work,
 			    deferred_probe_timeout_work_func);
@@ -119,7 +117,6 @@ void deferred_probe_extend_timeout(void)
 static int deferred_probe_initcall(void)
 {
 	driver_deferred_probe_enable = true;
-	/* fw_devlink_drivers_done call removed - empty stub */
 	return 0;
 }
 late_initcall(deferred_probe_initcall);
@@ -129,8 +126,6 @@ bool device_is_bound(struct device *dev)
 	return dev->p && klist_node_attached(&dev->p->knode_driver);
 }
 
-/* device_bind_driver removed - empty stub */
-
 static atomic_t probe_count = ATOMIC_INIT(0);
 static DECLARE_WAIT_QUEUE_HEAD(probe_waitqueue);
 
@@ -138,7 +133,6 @@ static DECLARE_WAIT_QUEUE_HEAD(probe_waitqueue);
 
 static void device_unbind_cleanup(struct device *dev)
 {
-	/* devres_release_all removed - empty stub */
 	arch_teardown_dma_ops(dev);
 	kfree(dev->dma_range_map);
 	dev->dma_range_map = NULL;
@@ -151,8 +145,6 @@ static void device_unbind_cleanup(struct device *dev)
 
 static void device_remove(struct device *dev)
 {
-	/* device_remove_groups call removed - stub function that does nothing */
-
 	if (dev->bus && dev->bus->remove)
 		dev->bus->remove(dev);
 	else if (dev->driver->remove)
@@ -213,11 +205,9 @@ static int really_probe(struct device *dev, struct device_driver *drv)
 	goto done;
 
 probe_failed:
-	/* bus_notifier call removed - no registrations */
 	if (dev->bus && dev->bus->dma_cleanup)
 		dev->bus->dma_cleanup(dev);
 pinctrl_bind_failed:
-	/* device_links_no_driver removed - empty stub */
 	device_unbind_cleanup(dev);
 done:
 	return ret;
@@ -237,7 +227,6 @@ void wait_for_device_probe(void)
 	flush_work(&deferred_probe_work);
 
 	wait_event(probe_waitqueue, atomic_read(&probe_count) == 0);
-	/* async_synchronize_full removed - empty stub */
 }
 
 static int __driver_probe_device(struct device_driver *drv, struct device *dev)
@@ -445,8 +434,6 @@ static void __device_release_driver(struct device *dev, struct device *parent)
 		pm_runtime_get_sync(dev);
 		/* device_links_busy always false - removed dead while loop */
 
-		/* driver_sysfs_remove, bus_notifier calls removed - no registrations */
-
 		pm_runtime_put_sync(dev);
 
 		device_remove(dev);
@@ -454,11 +441,9 @@ static void __device_release_driver(struct device *dev, struct device *parent)
 		if (dev->bus && dev->bus->dma_cleanup)
 			dev->bus->dma_cleanup(dev);
 
-		/* device_links_driver_cleanup removed - empty stub */
 		device_unbind_cleanup(dev);
 
 		klist_remove(&dev->p->knode_driver);
-		/* bus_notifier call removed - no registrations */
 
 		kobject_uevent(&dev->kobj, KOBJ_UNBIND);
 	}

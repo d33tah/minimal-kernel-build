@@ -46,8 +46,6 @@ struct user_namespace init_user_ns = {
 	.flags = USERNS_INIT_FLAGS,
 };
 
-/* UIDHASH_BITS, UIDHASH_SZ, __uidhashfn, uidhashentry, uidhash_table removed - never used */
-
 static struct kmem_cache *uid_cachep;
 
 static DEFINE_SPINLOCK(uidhash_lock);
@@ -58,7 +56,6 @@ struct user_struct root_user = {
 	.ratelimit = RATELIMIT_STATE_INIT(root_user.ratelimit, 0, 0),
 };
 
-/* uid_hash_insert, uid_hash_find, user_epoll_alloc removed - never called */
 /* free_user inlined into free_uid */
 void free_uid(struct user_struct *up)
 {
@@ -74,7 +71,5 @@ void free_uid(struct user_struct *up)
 		kmem_cache_free(uid_cachep, up);
 	}
 }
-
-/* alloc_uid removed - never called in minimal kernel */
 
 /* uid_cache_init removed - kmem_cache_create hangs with low memory */

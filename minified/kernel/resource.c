@@ -10,7 +10,6 @@
 #include <linux/fs_context.h>
 #include <linux/proc_fs.h>
 #include <linux/sched.h>
-/* seq_file.h removed - header is empty */
 #include <linux/device.h>
 #include <linux/pfn.h>
 #include <linux/mm.h>
@@ -32,8 +31,6 @@ struct resource iomem_resource = {
 	.flags = IORESOURCE_MEM,
 };
 
-/* struct resource_constraint removed - never used */
-
 static DEFINE_RWLOCK(resource_lock);
 
 static struct resource *next_resource(struct resource *p)
@@ -44,8 +41,6 @@ static struct resource *next_resource(struct resource *p)
 		p = p->parent;
 	return p->sibling;
 }
-
-/* for_each_resource removed - never used */
 
 static void free_resource(struct resource *res)
 {
@@ -314,12 +309,7 @@ struct resource *__request_region(struct resource *parent,
 		return NULL;
 	}
 
-	/* revoke_iomem removed - empty stub */
-
 	return res;
 }
 
-/* __release_region, MAXRESERVE removed - never used */
-/* iomem_map_sanity_check removed - caller site simplified */
-/* iomem_fs_type and iomem_fs_init_fs_context removed - never registered */
 /* iomem_init_inode removed - simple_pin_fs hangs with low memory */

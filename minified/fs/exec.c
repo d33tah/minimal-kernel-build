@@ -13,7 +13,6 @@
 #include <linux/sched/signal.h>
 #include <linux/sched/task.h>
 #include <linux/pagemap.h>
-/* perf_event.h removed - unused */
 #include <linux/highmem.h>
 #include <linux/spinlock.h>
 #include <linux/personality.h>
@@ -24,11 +23,8 @@
 #include <linux/mount.h>
 #include <linux/security.h>
 #include <linux/syscalls.h>
-/* audit.h removed - unused */
-/* fsnotify.h removed - unused */
 #include <linux/fs_struct.h>
 #include <linux/vmalloc.h>
-/* io_uring.h removed - unused */
 #include <linux/syscall_user_dispatch.h>
 #include <linux/ptrace.h>
 
@@ -416,7 +412,6 @@ static int exec_mmap(struct mm_struct *mm)
 	if (old_mm) {
 		mmap_read_unlock(old_mm);
 		BUG_ON(active_mm != old_mm);
-		/* setmax_mm_hiwater_rss, mm_update_next_owner removed - maxrss unused */
 		mmput(old_mm);
 		return 0;
 	}
@@ -542,8 +537,6 @@ int begin_new_exec(struct linux_binprm *bprm)
 	if (retval)
 		goto out;
 
-	/* would_dump calls removed - empty stub */
-
 	acct_arg_size(bprm, 0);
 	retval = exec_mmap(bprm->mm);
 	if (retval)
@@ -595,7 +588,6 @@ int begin_new_exec(struct linux_binprm *bprm)
 	}
 
 	/* me->sas_ss_sp = me->sas_ss_size = 0; removed - write-only fields */
-	/* set_dumpable calls removed - function was empty stub */
 
 	__set_task_comm(me, kbasename(bprm->filename), true);
 
@@ -619,15 +611,11 @@ out:
 	return retval;
 }
 
-/* would_dump removed - empty stub with no callers */
-
 void setup_new_exec(struct linux_binprm *bprm)
 {
 	struct task_struct *me = current;
 
 	arch_pick_mmap_layout(me->mm, &bprm->rlim_stack);
-
-	/* arch_setup_new_exec removed - empty stub */
 
 	up_write(&me->signal->exec_update_lock);
 	mutex_unlock(&me->signal->cred_guard_mutex);
@@ -788,7 +776,6 @@ static int exec_binprm(struct linux_binprm *bprm)
 		bprm->interpreter = NULL;
 
 		allow_write_access(exec);
-		/* bprm->have_execfd check removed - never set */
 		fput(exec);
 	}
 
@@ -840,7 +827,6 @@ static int bprm_execve(struct linux_binprm *bprm, int fd,
 			p->fs->in_exec = 1;
 		spin_unlock(&p->fs->lock);
 	}
-	/* in_execve = 1 removed - field removed */
 
 	file = do_open_execat(fd, filename, flags);
 	retval = PTR_ERR(file);
@@ -859,8 +845,6 @@ static int bprm_execve(struct linux_binprm *bprm, int fd,
 		goto out;
 
 	current->fs->in_exec = 0;
-	/* in_execve = 0 removed - field removed */
-	/* rseq_execve removed - empty stub */
 	return retval;
 
 out:
@@ -870,7 +854,6 @@ out:
 
 out_unmark:
 	current->fs->in_exec = 0;
-	/* in_execve = 0 removed - field removed */
 
 	return retval;
 }

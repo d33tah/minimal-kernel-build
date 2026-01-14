@@ -217,8 +217,6 @@ int bus_for_each_drv(struct bus_type *bus, struct device_driver *start,
 	return error;
 }
 
-/* bus_add_device removed - never called */
-
 void bus_probe_device(struct device *dev)
 {
 	struct bus_type *bus = dev->bus;
@@ -315,9 +313,6 @@ static void klist_devices_put(struct klist_node *n)
 	put_device(dev);
 }
 
-/* bus_uevent_store, bus_attr_uevent removed - never referenced */
-
-/* brdbg debug helper removed - not needed */
 int bus_register(struct bus_type *bus)
 {
 	int retval;
@@ -330,7 +325,6 @@ int bus_register(struct bus_type *bus)
 
 	priv->bus = bus;
 	bus->p = priv;
-	/* BLOCKING_INIT_NOTIFIER_HEAD(&priv->bus_notifier) removed - never used */
 
 	retval = kobject_set_name(&priv->subsys.kobj, "%s", bus->name);
 	if (retval)

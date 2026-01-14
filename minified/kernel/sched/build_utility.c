@@ -7,7 +7,6 @@
 
 #include <linux/sched/task_stack.h>
 
-/* linux/cpuset.h removed - empty header */
 #include <linux/ctype.h>
 
 #include <linux/irq.h>
@@ -24,14 +23,11 @@
 #include <asm/switch_to.h>
 
 #include "sched.h"
-/* runnable_avg_yN_inv, LOAD_AVG_PERIOD, LOAD_AVG_MAX removed - unused */
 /* end sched-pelt.h */
 #include "stats.h"
 
-/* clock.c removed - was empty stub */
 /* loadavg.c removed - calc_global_load/calc_global_load_tick calls removed */
 unsigned long calc_load_update;
-/* calc_load_tasks removed - never used */
 
 #include "completion.c"
 #include "swait.c"

@@ -210,11 +210,9 @@ static int __ldsem_down_read_nested(struct ld_semaphore *sem, int subclass,
 {
 	long count;
 
-	/* rwsem_acquire_read removed - empty stub */
 	count = atomic_long_add_return(LDSEM_READ_BIAS, &sem->count);
 	if (count <= 0) {
 		if (!down_read_failed(sem, count, timeout)) {
-			/* rwsem_release removed - empty stub */
 			return 0;
 		}
 	}
@@ -226,11 +224,9 @@ static int __ldsem_down_write_nested(struct ld_semaphore *sem, int subclass,
 {
 	long count;
 
-	/* rwsem_acquire removed - empty stub */
 	count = atomic_long_add_return(LDSEM_WRITE_BIAS, &sem->count);
 	if ((count & LDSEM_ACTIVE_MASK) != LDSEM_ACTIVE_BIAS) {
 		if (!down_write_failed(sem, count, timeout)) {
-			/* rwsem_release removed - empty stub */
 			return 0;
 		}
 	}
@@ -249,7 +245,6 @@ int ldsem_down_read_trylock(struct ld_semaphore *sem)
 	while (count >= 0) {
 		if (atomic_long_try_cmpxchg(&sem->count, &count,
 					    count + LDSEM_READ_BIAS)) {
-			/* rwsem_acquire_read removed - empty stub */
 			return 1;
 		}
 	}
@@ -268,7 +263,6 @@ int ldsem_down_write_trylock(struct ld_semaphore *sem)
 	while ((count & LDSEM_ACTIVE_MASK) == 0) {
 		if (atomic_long_try_cmpxchg(&sem->count, &count,
 					    count + LDSEM_WRITE_BIAS)) {
-			/* rwsem_acquire removed - empty stub */
 			return 1;
 		}
 	}
@@ -279,7 +273,6 @@ void ldsem_up_read(struct ld_semaphore *sem)
 {
 	long count;
 
-	/* rwsem_release removed - empty stub */
 	count = atomic_long_add_return(-LDSEM_READ_BIAS, &sem->count);
 	if (count < 0 && (count & LDSEM_ACTIVE_MASK) == 0)
 		ldsem_wake(sem);
@@ -289,7 +282,6 @@ void ldsem_up_write(struct ld_semaphore *sem)
 {
 	long count;
 
-	/* rwsem_release removed - empty stub */
 	count = atomic_long_add_return(-LDSEM_WRITE_BIAS, &sem->count);
 	if (count < 0)
 		ldsem_wake(sem);

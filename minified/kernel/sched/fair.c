@@ -1,5 +1,4 @@
 
-/* mmap_lock.h, highmem.h, mempolicy.h, ratelimit.h, task_work.h removed - unused */
 #include <linux/jiffies.h>
 
 #include <linux/topology.h>
@@ -16,14 +15,9 @@
 #include "stats.h"
 
 unsigned int sysctl_sched_latency = 6000000ULL;
-/* normalized_sysctl_sched_latency, sysctl_sched_tunable_scaling removed - unused */
 unsigned int sysctl_sched_min_granularity = 750000ULL;
-/* normalized_sysctl_sched_min_granularity, sysctl_sched_idle_min_granularity, sysctl_sched_child_runs_first removed - unused */
 static unsigned int sched_nr_latency = 8;
 unsigned int sysctl_sched_wakeup_granularity = 1000000UL;
-/* normalized_sysctl_sched_wakeup_granularity removed - unused */
-
-/* sched_thermal_decay_shift removed - unused */
 
 static inline void update_load_add(struct load_weight *lw, unsigned long inc)
 {
@@ -92,13 +86,8 @@ const struct sched_class fair_sched_class;
 
 #define for_each_sched_entity(se) for (; se; se = NULL)
 
-/* list_add_leaf_cfs_rq, assert_list_leaf_cfs_rq, find_matching_se removed - empty stubs */
 #define for_each_leaf_cfs_rq_safe(rq, cfs_rq, pos) \
 	for (cfs_rq = &rq->cfs, pos = NULL; cfs_rq; cfs_rq = pos)
-
-/* parent_entity, cfs_rq_is_idle, se_is_idle removed - always return constants */
-
-/* account_cfs_rq_runtime forward decl removed - empty stub */
 
 static inline u64 max_vruntime(u64 max_vruntime, u64 vruntime)
 {
@@ -197,7 +186,6 @@ static u64 __sched_period(unsigned long nr_running)
 static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
 	unsigned int nr_running = cfs_rq->nr_running;
-	/* init_se removed - was unused */
 	unsigned int min_gran;
 	u64 slice;
 
@@ -236,7 +224,6 @@ static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
 /* sched_vslice inlined into place_entity */
 
 #include "pelt.h"
-/* init_entity_runnable_average, post_init_entity_util_avg, update_tg_load_avg removed - never called */
 
 static void update_curr(struct cfs_rq *cfs_rq)
 {
@@ -257,8 +244,6 @@ static void update_curr(struct cfs_rq *cfs_rq)
 	curr->sum_exec_runtime += delta_exec;
 	curr->vruntime += calc_delta_fair(delta_exec, curr);
 	update_min_vruntime(cfs_rq);
-
-	/* account_group_exec_runtime, account_cfs_rq_runtime removed - stubs */
 }
 
 static void update_curr_fair(struct rq *rq)
@@ -301,10 +286,6 @@ static void account_entity_dequeue(struct cfs_rq *cfs_rq,
 	/* se_is_idle() always 0, idle_nr_running-- removed */
 }
 
-/* add_positive, sub_positive, lsub_positive removed - unused macros */
-
-/* enqueue_load_avg, dequeue_load_avg removed - empty stubs */
-
 static void reweight_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 			    unsigned long weight)
 {
@@ -331,8 +312,6 @@ void reweight_task(struct task_struct *p, int prio)
 	load->inv_weight = sched_prio_to_wmult[prio];
 }
 
-/* update_cfs_group, cfs_rq_util_change, cpufreq_update_util removed - empty stubs */
-
 #define UPDATE_TG 0x0
 #define SKIP_AGE_LOAD 0x0
 #define DO_ATTACH 0x0
@@ -340,11 +319,7 @@ void reweight_task(struct task_struct *p, int prio)
 static inline void update_load_avg(struct cfs_rq *cfs_rq,
 				   struct sched_entity *se, int not_used1)
 {
-	/* cfs_rq_util_change removed - was empty stub chain */
 }
-
-/* attach_entity_load_avg, detach_entity_load_avg removed - stubs */
-/* util_est_enqueue, util_est_dequeue, util_est_update, newidle_balance removed - empty stubs */
 
 static void place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 			 int initial)
@@ -369,8 +344,6 @@ static void place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 	se->vruntime = max_vruntime(se->vruntime, vruntime);
 }
 
-/* check_enqueue_throttle forward decl removed - stub removed */
-
 static void enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 			   int flags)
 {
@@ -386,20 +359,15 @@ static void enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 		se->vruntime += cfs_rq->min_vruntime;
 
 	update_load_avg(cfs_rq, se, UPDATE_TG | DO_ATTACH);
-	/* se_update_runnable removed - empty stub */
-	/* update_cfs_group removed - empty stub */
 	account_entity_enqueue(cfs_rq, se);
 
 	if (flags & ENQUEUE_WAKEUP)
 		place_entity(cfs_rq, se, 0);
 
-	/* check_schedstat_required removed - empty */
 	update_stats_enqueue_fair(cfs_rq, se, flags);
 	if (!curr)
 		__enqueue_entity(cfs_rq, se);
 	se->on_rq = 1;
-
-	/* list_add_leaf_cfs_rq, check_enqueue_throttle removed - empty stubs */
 }
 
 /* __clear_buddies_last/next/skip inlined into clear_buddies */
@@ -436,15 +404,12 @@ static void clear_buddies(struct cfs_rq *cfs_rq, struct sched_entity *se)
 	}
 }
 
-/* return_cfs_rq_runtime forward decl removed - stub removed */
-
 static void dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 			   int flags)
 {
 	update_curr(cfs_rq);
 
 	update_load_avg(cfs_rq, se, UPDATE_TG);
-	/* se_update_runnable removed - empty stub */
 
 	update_stats_dequeue_fair(cfs_rq, se, flags);
 
@@ -458,8 +423,6 @@ static void dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 	if (!(flags & DEQUEUE_SLEEP))
 		se->vruntime -= cfs_rq->min_vruntime;
 
-	/* return_cfs_rq_runtime() removed - empty stub */
-	/* update_cfs_group removed - empty stub */
 	if ((flags & (DEQUEUE_SAVE | DEQUEUE_MOVE)) != DEQUEUE_SAVE)
 		update_min_vruntime(cfs_rq);
 }
@@ -552,13 +515,10 @@ static struct sched_entity *pick_next_entity(struct cfs_rq *cfs_rq,
 	return se;
 }
 
-/* check_cfs_rq_runtime forward decl removed - stub always returns false */
-
 static void put_prev_entity(struct cfs_rq *cfs_rq, struct sched_entity *prev)
 {
 	if (prev->on_rq)
 		update_curr(cfs_rq);
-	/* check_cfs_rq_runtime() call removed - always returns false */
 	if (prev->on_rq) {
 		update_stats_wait_start_fair(cfs_rq, prev);
 
@@ -575,20 +535,15 @@ static void entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr,
 	update_curr(cfs_rq);
 
 	update_load_avg(cfs_rq, curr, UPDATE_TG);
-	/* update_cfs_group removed - empty stub */
 	if (cfs_rq->nr_running > 1)
 		check_preempt_tick(cfs_rq, curr);
 }
-
-/* account_cfs_rq_runtime, check_cfs_rq_runtime, check_enqueue_throttle, return_cfs_rq_runtime removed - stubs */
-/* cfs_rq_throttled, sched_idle_rq, throttled_hierarchy, hrtick_start_fair, sched_idle_cfs_rq removed - unused */
 
 static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 {
 	struct cfs_rq *cfs_rq;
 	struct sched_entity *se = &p->se;
 
-	/* util_est_enqueue, cpufreq_update_util removed - empty stubs */
 	for_each_sched_entity(se)
 	{
 		if (se->on_rq)
@@ -606,7 +561,6 @@ static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		cfs_rq = cfs_rq_of(se);
 
 		update_load_avg(cfs_rq, se, UPDATE_TG);
-		/* se_update_runnable, update_cfs_group removed - empty stubs */
 		cfs_rq->h_nr_running++;
 		/* idle_h_nr_running, cfs_rq_is_idle, cfs_rq_throttled always 0 - removed */
 	}
@@ -623,7 +577,6 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	struct sched_entity *se = &p->se;
 	/* task_sleep, was_sched_idle, idle_h_nr_running removed - write-only */
 
-	/* util_est_dequeue removed - empty stub */
 	for_each_sched_entity(se)
 	{
 		cfs_rq = cfs_rq_of(se);
@@ -644,7 +597,6 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		cfs_rq = cfs_rq_of(se);
 
 		update_load_avg(cfs_rq, se, UPDATE_TG);
-		/* se_update_runnable, update_cfs_group removed - empty stubs */
 		cfs_rq->h_nr_running--;
 		/* idle_h_nr_running, cfs_rq_is_idle, cfs_rq_throttled always 0 - removed */
 	}
@@ -709,7 +661,6 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p,
 	    !sched_feat(WAKEUP_PREEMPTION))
 		return;
 
-	/* find_matching_se removed - empty stub */
 	BUG_ON(!pse);
 	/* se_is_idle always 0 - both cse_is_idle/pse_is_idle are 0, conditions skipped */
 	update_curr(cfs_rq_of(se));
@@ -746,7 +697,6 @@ struct task_struct *pick_next_task_fair(struct rq *rq, struct task_struct *prev,
 	struct task_struct *p;
 	/* new_tasks removed - newidle_balance always returns 0 */
 
-	/* again: label removed - unused */
 	if (!sched_fair_runnable(rq))
 		goto idle;
 
@@ -759,7 +709,6 @@ struct task_struct *pick_next_task_fair(struct rq *rq, struct task_struct *prev,
 
 	p = task_of(se);
 
-	/* done: label removed - unused */
 	/* hrtick_enabled_fair always returns 0, dead if block removed */
 	return p;
 
@@ -920,7 +869,6 @@ static void set_next_task_fair(struct rq *rq, struct task_struct *p, bool first)
 		struct cfs_rq *cfs_rq = cfs_rq_of(se);
 
 		set_next_entity(cfs_rq, se);
-		/* account_cfs_rq_runtime removed - empty stub */
 	}
 }
 
@@ -936,8 +884,6 @@ DEFINE_SCHED_CLASS(fair) = {
 
 	.enqueue_task = enqueue_task_fair,
 	.dequeue_task = dequeue_task_fair,
-	/* .yield_task removed - callback never called */
-	/* .yield_to_task removed - callback never called */
 
 	.check_preempt_curr = check_preempt_wakeup,
 
@@ -952,9 +898,6 @@ DEFINE_SCHED_CLASS(fair) = {
 	.switched_from = switched_from_fair,
 	.switched_to = switched_to_fair,
 
-	/* .get_rr_interval removed - callback never called */
-
 	.update_curr = update_curr_fair,
 
 };
-/* init_sched_fair_class removed - empty stub */

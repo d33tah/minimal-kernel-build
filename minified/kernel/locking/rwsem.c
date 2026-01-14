@@ -131,7 +131,6 @@ static inline struct task_struct *rwsem_owner(struct rw_semaphore *sem)
 				      ~RWSEM_OWNER_FLAGS_MASK);
 }
 
-/* rwsem_owner_flags removed - never called */
 void __init_rwsem(struct rw_semaphore *sem, const char *name,
 		  struct lock_class_key *key)
 {
@@ -345,7 +344,6 @@ static inline void rwsem_cond_wake_waiter(struct rw_semaphore *sem, long count,
 		wake_type = RWSEM_WAKE_READERS;
 	} else {
 		wake_type = RWSEM_WAKE_ANY;
-		/* clear_nonspinnable removed - empty stub */
 	}
 	rwsem_mark_wake(sem, wake_type, wake_q);
 }
@@ -479,7 +477,6 @@ rwsem_down_write_slowpath(struct rw_semaphore *sem, int state)
 		schedule();
 		lockevent_inc(rwsem_sleep_writer);
 		set_current_state(state);
-		/* trylock_again: label removed - unused */
 		raw_spin_lock_irq(&sem->wait_lock);
 	}
 	__set_current_state(TASK_RUNNING);
@@ -600,12 +597,10 @@ static inline void __up_read(struct rw_semaphore *sem)
 
 	DEBUG_RWSEMS_WARN_ON(sem->magic != sem, sem);
 	DEBUG_RWSEMS_WARN_ON(!is_rwsem_reader_owned(sem), sem);
-	/* rwsem_clear_reader_owned removed - empty stub */
 	tmp = atomic_long_add_return_release(-RWSEM_READER_BIAS, &sem->count);
 	DEBUG_RWSEMS_WARN_ON(tmp < 0, sem);
 	if (unlikely((tmp & (RWSEM_LOCK_MASK | RWSEM_FLAG_WAITERS)) ==
 		     RWSEM_FLAG_WAITERS)) {
-		/* clear_nonspinnable removed - empty stub */
 		rwsem_wake(sem);
 	}
 }
@@ -641,16 +636,13 @@ static inline void __downgrade_write(struct rw_semaphore *sem)
 
 void __sched down_read(struct rw_semaphore *sem)
 {
-	/* rwsem_acquire_read removed - empty stub */
 	LOCK_CONTENDED(sem, __down_read_trylock, __down_read);
 }
 
 int __sched down_read_killable(struct rw_semaphore *sem)
 {
-	/* rwsem_acquire_read removed - empty stub */
 	if (LOCK_CONTENDED_RETURN(sem, __down_read_trylock,
 				  __down_read_killable)) {
-		/* rwsem_release removed - empty stub */
 		return -EINTR;
 	}
 
@@ -660,38 +652,31 @@ int __sched down_read_killable(struct rw_semaphore *sem)
 int down_read_trylock(struct rw_semaphore *sem)
 {
 	int ret = __down_read_trylock(sem);
-	/* rwsem_acquire_read removed - empty stub */
 	return ret;
 }
 
 void __sched down_write(struct rw_semaphore *sem)
 {
-	/* rwsem_acquire removed - empty stub */
 	LOCK_CONTENDED(sem, __down_write_trylock, __down_write);
 }
 
 int __sched down_write_killable(struct rw_semaphore *sem)
 {
-	/* rwsem_acquire removed - empty stub */
 	if (LOCK_CONTENDED_RETURN(sem, __down_write_trylock,
 				  __down_write_killable)) {
-		/* rwsem_release removed - empty stub */
 		return -EINTR;
 	}
 
 	return 0;
 }
 
-/* down_write_trylock removed - never called */
 void up_read(struct rw_semaphore *sem)
 {
-	/* rwsem_release removed - empty stub */
 	__up_read(sem);
 }
 
 void up_write(struct rw_semaphore *sem)
 {
-	/* rwsem_release removed - empty stub */
 	__up_write(sem);
 }
 

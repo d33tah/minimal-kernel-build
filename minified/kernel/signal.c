@@ -3,13 +3,11 @@
 #include <linux/syscalls.h>
 #include <linux/sched/task_stack.h>
 #include <linux/sched/cputime.h>
-/* file.h, freezer.h, audit.h, proc_fs.h removed - unused */
 #include <linux/pid_namespace.h>
 #include <linux/cgroup.h>
 #include <linux/task_work.h>
 #include <linux/tty.h>
 
-/* asm/param.h, asm/cacheflush.h removed - unused */
 #include <linux/uaccess.h>
 #include <asm/siginfo.h>
 #include <asm/syscall.h>
@@ -103,12 +101,9 @@ void calculate_sigpending(void)
 	spin_unlock_irq(&current->sighand->siglock);
 }
 
-/* SYNCHRONOUS_MASK removed - never used */
 /* Removed: print_dropped_signal - empty stub */
 /* task_set_jobctl_pending removed - always returned false, callers simplified */
-/* task_clear_jobctl_pending, task_join_group_stop removed - empty stubs */
 
-/* sig param removed - was unused */
 static struct sigqueue *__sigqueue_alloc(struct task_struct *t, gfp_t gfp_flags,
 					 int override_rlimit,
 					 const unsigned int sigqueue_flags)
@@ -309,7 +304,6 @@ int zap_other_threads(struct task_struct *p)
 
 	while_each_thread(p, t)
 	{
-		/* task_clear_jobctl_pending removed - empty stub */
 		count++;
 
 		if (t->exit_state)
@@ -350,8 +344,6 @@ int group_send_sig_info(int sig, struct kernel_siginfo *info,
 
 	return ret;
 }
-
-/* __kill_pgrp_info, kill_pid_info removed - never called */
 
 int send_sig_info(int sig, struct kernel_siginfo *info, struct task_struct *p)
 {
@@ -453,8 +445,6 @@ long do_no_restart_syscall(struct restart_block *param)
 	return -EINTR;
 }
 
-/* set_current_blocked removed - never called */
-
 void __set_current_blocked(const sigset_t *newset)
 {
 	struct task_struct *tsk = current;
@@ -493,8 +483,6 @@ void __set_current_blocked(const sigset_t *newset)
 	spin_unlock_irq(&tsk->sighand->siglock);
 }
 
-/* sigprocmask, set_user_sigmask removed - never called */
-
 /* Stub: rt_sigprocmask not needed for Hello World */
 SYSCALL_DEFINE4(rt_sigprocmask, int, how, sigset_t __user *, nset,
 		sigset_t __user *, oset, size_t, sigsetsize)
@@ -507,8 +495,6 @@ SYSCALL_DEFINE2(rt_sigpending, sigset_t __user *, uset, size_t, sigsetsize)
 {
 	return 0;
 }
-
-/* copy_siginfo_to_user removed - never called */
 
 SYSCALL_DEFINE4(rt_sigtimedwait, const sigset_t __user *, uthese,
 		siginfo_t __user *, uinfo,
@@ -558,8 +544,6 @@ SYSCALL_DEFINE2(sigaltstack, const stack_t __user *, uss, stack_t __user *,
 {
 	return -ENOSYS;
 }
-
-/* __save_altstack removed - never called */
 
 /* Stub: sigpending not needed for Hello World */
 #ifdef __ARCH_WANT_SYS_SIGPENDING

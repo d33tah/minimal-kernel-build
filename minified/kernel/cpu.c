@@ -5,8 +5,6 @@
 #include <linux/cpumask.h>
 #include <linux/percpu.h>
 
-/* smpboot.h removed - empty header */
-
 /* cpuhp_cpu_state, cpuhp_step, cpuhp_hp_states array,
    cpuhp_get_step, cpuhp_step_empty, cpuhp_invoke_callback,
    cpuhp_reserve_state, cpuhp_store_callbacks, cpuhp_issue_call,

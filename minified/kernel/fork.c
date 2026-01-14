@@ -12,7 +12,6 @@ struct file *anon_inode_getfile(const char *name,
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
 #include <linux/sched/cputime.h>
-/* seq_file.h removed - header is empty */
 #include <linux/init.h>
 #include <linux/unistd.h>
 #include <linux/module.h>
@@ -22,7 +21,6 @@ struct file *anon_inode_getfile(const char *name,
 #include <linux/mempolicy.h>
 #include <linux/file.h>
 #include <linux/fdtable.h>
-/* key.h removed - unused */
 #include <linux/binfmts.h>
 #include <linux/mman.h>
 #include <linux/mmu_notifier.h>
@@ -36,32 +34,22 @@ struct file *anon_inode_getfile(const char *name,
 #include <linux/cgroup.h>
 #include <linux/security.h>
 #include <linux/hugetlb.h>
-/* seccomp.h removed - header is empty */
 #include <linux/swap.h>
 #include <linux/syscalls.h>
 #include <linux/futex.h>
-/* compat.h removed - unused */
 #include <linux/kthread.h>
-/* task_io_accounting_init removed - empty stub */
 #include <linux/rcupdate.h>
 #include <linux/ptrace.h>
 #include <linux/mount.h>
-/* audit.h removed - unused */
 #include <linux/proc_fs.h>
 #include <linux/rmap.h>
-/* ksm_exit, acct_*, proc_fork_connector, delayacct_*, taskstats_tgid_free removed - empty stubs */
 #include <linux/userfaultfd_k.h>
-/* freezer.h removed - unused */
 #include <linux/tty.h>
 #include <linux/fs_struct.h>
 #include <linux/magic.h>
-/* perf_event.h, posix-timers.h removed - unused */
-/* user_return_notifier stubs, khugepaged_exit, scs_* removed - empty stubs */
-/* uprobes.h removed - unused */
 #include <linux/compiler.h>
 #include <linux/init_task.h>
 #include <linux/thread_info.h>
-/* io_uring.h removed - unused */
 
 #include <asm/pgalloc.h>
 #include <linux/uaccess.h>
@@ -124,7 +112,6 @@ static void free_thread_stack(struct task_struct *tsk)
 }
 
 /* #else block removed - dead code since THREAD_SIZE >= PAGE_SIZE on x86 */
-/* thread_stack_cache_init removed - never called */
 
 #endif
 /* CONFIG_ARCH_THREAD_STACK_ALLOCATOR #else block removed - not set on x86 */
@@ -168,7 +155,6 @@ struct vm_area_struct *vm_area_dup(struct vm_area_struct *orig)
 
 void vm_area_free(struct vm_area_struct *vma)
 {
-	/* free_anon_vma_name removed - empty stub */
 	kmem_cache_free(vm_area_cachep, vma);
 }
 
@@ -288,7 +274,6 @@ void __put_task_struct(struct task_struct *tsk)
 
 	/* io_uring_free, security_task_free - empty stubs */
 	exit_creds(tsk);
-	/* delayacct_tsk_free, sched_core_free removed - empty stubs */
 	if (refcount_dec_and_test(&tsk->signal->sigcnt))
 		free_signal_struct(tsk->signal);
 	free_task(tsk);
@@ -345,7 +330,6 @@ void __init fork_init(void)
 			      RLIM_INFINITY);
 	set_rlimit_ucount_max(&init_user_ns, UCOUNT_RLIMIT_MEMLOCK,
 			      RLIM_INFINITY);
-	/* lockdep_init_task removed - empty stub */
 }
 
 /* arch_dup_task_struct provided by arch/x86/kernel/process.c */
@@ -378,7 +362,6 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 
 	refcount_set(&tsk->stack_refcount, 1);
 	account_kernel_stack(tsk, 1);
-	/* scs_prepare, clear_user_return_notifier, setup_thread_stack removed - empty stubs */
 	clear_tsk_need_resched(tsk);
 	set_task_stack_end_magic(tsk);
 	clear_syscall_work_syscall_user_dispatch(tsk);
@@ -389,7 +372,6 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	refcount_set(&tsk->rcu_users, 2);
 
 	refcount_set(&tsk->usage, 1);
-	/* splice_pipe, task_frag removed - never used */
 	tsk->wake_q.next = NULL;
 	tsk->worker_private = NULL;
 
@@ -408,8 +390,6 @@ static unsigned long default_dump_filter = MMF_DUMP_FILTER_DEFAULT;
 
 /* duplicate init_task.h include removed - already included at line 67 */
 
-/* mm_init_aio, mm_clear_owner, mm_init_owner, mm_init_uprobes_state removed - empty stubs */
-
 static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 				 struct user_namespace *user_ns)
 {
@@ -418,7 +398,6 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	mm->vmacache_seqnum = 0;
 	atomic_set(&mm->mm_users, 1);
 	atomic_set(&mm->mm_count, 1);
-	/* write_protect_seq init removed - field unused */
 	mmap_init_lock(mm);
 	INIT_LIST_HEAD(&mm->mmlist);
 	mm_pgtables_bytes_init(mm);
@@ -562,7 +541,6 @@ static struct mm_struct *dup_mm(struct task_struct *tsk,
 	err = dup_mmap(mm, oldmm);
 	if (err)
 		goto free_pt;
-	/* hiwater_rss, hiwater_vm init removed - fields removed */
 
 	/* try_module_get always returns true - dead check removed */
 
@@ -586,8 +564,6 @@ void __cleanup_sighand(struct sighand_struct *sighand)
 	}
 }
 
-/* posix_cpu_timers_init_group removed - was empty stub */
-
 /* copy_signal inlined into copy_process */
 
 /* Stub: set_tid_address not needed for Hello World */
@@ -607,8 +583,6 @@ static inline void init_task_pid(struct task_struct *task, enum pid_type type,
 		task->signal->pids[type] = pid;
 }
 
-/* pidfd_pid removed - never called */
-
 static int pidfd_release(struct inode *inode, struct file *file)
 {
 	struct pid *pid = file->private_data;
@@ -624,8 +598,6 @@ const struct file_operations pidfd_fops = {
 	.release = pidfd_release,
 	/* poll removed - poll/select syscalls return ENOSYS */
 };
-
-/* copy_oom_score_adj removed - empty stub */
 
 static __latent_entropy struct task_struct *
 copy_process(struct pid *pid, int trace, int node,
@@ -708,12 +680,9 @@ copy_process(struct pid *pid, int trace, int node,
 	if (retval < 0)
 		goto bad_fork_free;
 
-	/* PF_NPROC_EXCEEDED clearing removed - flag never tested */
-
 	retval = -EAGAIN;
 	if (data_race(nr_threads >= max_threads))
 		goto bad_fork_cleanup_count;
-	/* delayacct_tsk_init removed - empty stub */
 	p->flags &=
 		~(PF_SUPERPRIV | PF_WQ_WORKER | PF_IDLE | PF_NO_SETAFFINITY);
 	p->flags |= PF_FORKNOEXEC;
@@ -723,9 +692,7 @@ copy_process(struct pid *pid, int trace, int node,
 	spin_lock_init(&p->alloc_lock);
 
 	init_sigpending(&p->pending);
-	/* utime, stime init removed - fields removed */
 
-	/* prev_cputime_init, task_io_accounting_init, acct_clear_integrals, posix_cputimers_init, audit_set_context removed - empty stubs */
 	if (args->kthread) {
 		if (!set_kthread_struct(p))
 			goto bad_fork_cleanup_count;
@@ -961,7 +928,6 @@ copy_process(struct pid *pid, int trace, int node,
 			current->signal->nr_threads++;
 			atomic_inc(&current->signal->live);
 			refcount_inc(&current->signal->sigcnt);
-			/* task_join_group_stop removed - empty stub */
 			list_add_tail_rcu(&p->thread_group,
 					  &p->group_leader->thread_group);
 			list_add_tail_rcu(&p->thread_node,
@@ -1164,7 +1130,6 @@ static void sighand_ctor(void *data)
 	struct sighand_struct *sighand = data;
 
 	spin_lock_init(&sighand->siglock);
-	/* init_waitqueue_head(&sighand->signalfd_wqh) removed - field removed */
 }
 
 void __init proc_caches_init(void)

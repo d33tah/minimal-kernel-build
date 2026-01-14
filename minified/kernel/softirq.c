@@ -11,7 +11,6 @@
 #include <linux/kthread.h>
 #include <linux/rcupdate.h>
 #include <linux/smp.h>
-/* smpboot.h removed - unused */
 #include <linux/tick.h>
 #include <linux/irq.h>
 #include <linux/wait_bit.h>
@@ -25,8 +24,6 @@ DEFINE_PER_CPU_ALIGNED(irq_cpustat_t, irq_stat);
 static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp;
 
 DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
-
-/* softirq_to_name array removed - only used for debug output */
 
 static void wakeup_softirqd(void)
 {
@@ -147,12 +144,10 @@ restart:
 void irq_enter_rcu(void)
 {
 	__irq_enter_raw();
-	/* tick_irq_enter removed - empty stub */
 }
 
 void irq_enter(void)
 {
-	/* rcu_irq_enter removed - empty stub */
 	irq_enter_rcu();
 }
 
@@ -190,8 +185,6 @@ inline void raise_softirq_irqoff(unsigned int nr)
 	if (!in_interrupt())
 		wakeup_softirqd();
 }
-
-/* raise_softirq removed - never called */
 
 void __raise_softirq_irqoff(unsigned int nr)
 {

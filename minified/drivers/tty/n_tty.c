@@ -20,8 +20,6 @@
 #include <linux/vmalloc.h>
 #include "tty.h"
 
-/* WAKEUP_CHARS removed - unused */
-
 struct n_tty_data {
 	/* read_head, read_tail, read_buf removed - n_tty_read is stub that returns 0 */
 	/* atomic_read_lock removed - only initialized, never locked */
@@ -30,10 +28,7 @@ struct n_tty_data {
 
 static void n_tty_write_wakeup(struct tty_struct *tty)
 {
-	/* kill_fasync removed - empty stub */
 }
-
-/* n_tty_flush_buffer, n_tty_set_termios removed - ldisc ops never called */
 
 static void n_tty_close(struct tty_struct *tty)
 {
@@ -53,7 +48,6 @@ static int n_tty_open(struct tty_struct *tty)
 	if (!ldata)
 		return -ENOMEM;
 
-	/* atomic_read_lock init removed - field removed */
 	mutex_init(&ldata->output_lock);
 	tty->disc_data = ldata;
 
@@ -126,10 +120,8 @@ static struct tty_ldisc_ops n_tty_ops = {
 	.name = "n_tty",
 	.open = n_tty_open,
 	.close = n_tty_close,
-	/* .flush_buffer, .set_termios removed - ldisc ops never called */
 	.read = n_tty_read,
 	.write = n_tty_write,
-	/* .ioctl, .poll removed - never called */
 	.receive_buf = n_tty_receive_buf,
 	.write_wakeup = n_tty_write_wakeup,
 	.receive_buf2 = n_tty_receive_buf2,

@@ -445,12 +445,12 @@ static inline void prepare_lock_switch(struct rq *rq, struct task_struct *next,
 				       struct rq_flags *rf)
 {
 	rq_unpin_lock(rq, rf);
-	spin_release(&__rq_lockp(rq)->dep_map, _THIS_IP_);
+	/* spin_release removed - empty stub */
 }
 
 static inline void finish_lock_switch(struct rq *rq)
 {
-	spin_acquire(&__rq_lockp(rq)->dep_map, 0, 0, _THIS_IP_);
+	/* spin_acquire removed - empty stub */
 	raw_spin_rq_unlock_irq(rq);
 }
 

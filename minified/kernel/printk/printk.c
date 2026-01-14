@@ -39,11 +39,7 @@ static DEFINE_SEMAPHORE(console_sem);
 struct console *console_drivers;
 /* suppress_panic_printk, nr_ext_console_drivers removed - write-only */
 
-#define down_console_sem()                                            \
-	do {                                                          \
-		down(&console_sem);                                   \
-		mutex_acquire(&console_lock_dep_map, 0, 0, _RET_IP_); \
-	} while (0)
+#define down_console_sem() down(&console_sem)
 
 static int __down_trylock_console_sem(unsigned long ip)
 {
@@ -56,7 +52,7 @@ static int __down_trylock_console_sem(unsigned long ip)
 
 	if (lock_failed)
 		return 1;
-	mutex_acquire(&console_lock_dep_map, 0, 1, ip);
+	/* mutex_acquire removed - empty stub */
 	return 0;
 }
 #define down_trylock_console_sem() __down_trylock_console_sem(_RET_IP_)
@@ -65,7 +61,7 @@ static void __up_console_sem(unsigned long ip)
 {
 	unsigned long flags;
 
-	mutex_release(&console_lock_dep_map, ip);
+	/* mutex_release removed - empty stub */
 
 	printk_safe_enter_irqsave(flags);
 	up(&console_sem);

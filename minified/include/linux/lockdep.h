@@ -34,12 +34,7 @@ static inline void lockdep_on(void)
 # define lockdep_set_class(lock, key)		do { (void)(key); } while (0)
 # define lockdep_set_class_and_name(lock, key, name) \
 		do { (void)(key); (void)(name); } while (0)
-/* lockdep_set_subclass removed - unused */
-
-#define lockdep_set_novalidate_class(lock) do { } while (0)
-
-
-# define lockdep_sys_exit() 			do { } while (0)
+/* lockdep_set_subclass, lockdep_set_novalidate_class, lockdep_sys_exit removed - unused */
 
 /* lock_is_held, lockdep_is_held are never defined but used in
    RCU_LOCKDEP_WARN conditions (which are no-ops but still need valid syntax) */

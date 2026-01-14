@@ -82,7 +82,6 @@ static struct desc_ptr idt_descr __ro_after_init = {
 
 void load_current_idt(void)
 {
-	lockdep_assert_irqs_disabled();
 	load_idt(&idt_descr);
 }
 

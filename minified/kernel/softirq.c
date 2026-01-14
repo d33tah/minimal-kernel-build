@@ -195,8 +195,6 @@ inline void raise_softirq_irqoff(unsigned int nr)
 
 void __raise_softirq_irqoff(unsigned int nr)
 {
-	lockdep_assert_irqs_disabled();
-
 	or_softirq_pending(1UL << nr);
 }
 

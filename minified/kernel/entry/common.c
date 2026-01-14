@@ -122,7 +122,6 @@ static void exit_to_user_mode_prepare(struct pt_regs *regs)
 {
 	unsigned long ti_work = read_thread_flags();
 
-	lockdep_assert_irqs_disabled();
 	/* tick_nohz_user_enter_prepare is empty stub */
 
 	if (unlikely(ti_work & EXIT_TO_USER_MODE_WORK))
@@ -132,7 +131,6 @@ static void exit_to_user_mode_prepare(struct pt_regs *regs)
 
 	/* addr_limit_user_check removed - empty stub */
 	kmap_assert_nomap();
-	lockdep_assert_irqs_disabled();
 	/* lockdep_sys_exit is empty do{}while(0) */
 }
 
@@ -227,8 +225,6 @@ void raw_irqentry_exit_cond_resched(void)
 
 noinstr void irqentry_exit(struct pt_regs *regs, irqentry_state_t state)
 {
-	lockdep_assert_irqs_disabled();
-
 	if (user_mode(regs)) {
 		irqentry_exit_to_user_mode(regs);
 	}

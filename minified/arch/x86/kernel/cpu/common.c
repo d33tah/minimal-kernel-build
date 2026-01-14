@@ -218,8 +218,6 @@ void cr4_update_irqsoff(unsigned long set, unsigned long clear)
 {
 	unsigned long newval, cr4 = this_cpu_read(cpu_tlbstate.cr4);
 
-	lockdep_assert_irqs_disabled();
-
 	newval = (cr4 & ~clear) | set;
 	if (newval != cr4) {
 		this_cpu_write(cpu_tlbstate.cr4, newval);

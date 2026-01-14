@@ -90,7 +90,6 @@ static inline bool __seqprop_preemptible(const seqcount_t *s)
 
 static inline void __seqprop_assert(const seqcount_t *s)
 {
-	lockdep_assert_preemption_disabled();
 }
 
 #define __SEQ_RT	false

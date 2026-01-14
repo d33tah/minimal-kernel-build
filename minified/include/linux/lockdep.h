@@ -97,10 +97,8 @@ static inline void lockdep_on(void)
 
 # define might_lock(lock) do { } while (0)
 
-# define lockdep_assert_irqs_enabled() do { } while (0)
-# define lockdep_assert_irqs_disabled() do { } while (0)
+/* lockdep_assert_irqs_enabled/disabled removed - no callers */
 
-# define lockdep_assert_preemption_enabled() do { } while (0)
-# define lockdep_assert_preemption_disabled() do { } while (0)
+/* lockdep_assert_preemption_enabled/disabled removed - no callers */
 
 #endif  

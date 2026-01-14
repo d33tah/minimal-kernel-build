@@ -250,8 +250,6 @@ static __always_inline void __speculation_ctrl_update(unsigned long tifp,
 {
 	unsigned long tif_diff = tifp ^ tifn;
 
-	lockdep_assert_irqs_disabled();
-
 	if (static_cpu_has(X86_FEATURE_VIRT_SSBD)) {
 		if (tif_diff & _TIF_SSBD)
 			amd_set_ssb_virt_state(tifn);

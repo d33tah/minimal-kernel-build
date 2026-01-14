@@ -204,7 +204,6 @@ static __always_inline int __sched __mutex_lock_common(
 	mutex_acquire_nest(&lock->dep_map, subclass, 0, nest_lock, ip);
 
 	if (__mutex_trylock(lock) || mutex_optimistic_spin(lock, NULL)) {
-		lock_acquired(&lock->dep_map, ip);
 		preempt_enable();
 		return 0;
 	}
@@ -215,8 +214,6 @@ static __always_inline int __sched __mutex_lock_common(
 
 	debug_mutex_lock_common(lock, &waiter);
 	waiter.task = current;
-
-	lock_contended(&lock->dep_map, ip);
 
 	__mutex_add_waiter(lock, &waiter, &lock->wait_list);
 
@@ -257,8 +254,6 @@ acquired:
 	debug_mutex_free_waiter(&waiter);
 
 skip_wait:
-	lock_acquired(&lock->dep_map, ip);
-
 	raw_spin_unlock(&lock->wait_lock);
 	preempt_enable();
 	return 0;

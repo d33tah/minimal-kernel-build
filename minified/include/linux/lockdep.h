@@ -58,8 +58,7 @@ static inline void lockdep_on(void)
 
 /* STATIC_LOCKDEP_MAP_INIT removed - unused */
 
-#define lock_contended(lockdep_map, ip) do {} while (0)
-#define lock_acquired(lockdep_map, ip) do {} while (0)
+/* lock_contended/lock_acquired removed - no callers */
 
 #define LOCK_CONTENDED(_lock, try, lock) \
 	lock(_lock)

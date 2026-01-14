@@ -214,13 +214,11 @@ static int __ldsem_down_read_nested(struct ld_semaphore *sem, int subclass,
 
 	count = atomic_long_add_return(LDSEM_READ_BIAS, &sem->count);
 	if (count <= 0) {
-		lock_contended(&sem->dep_map, _RET_IP_);
 		if (!down_read_failed(sem, count, timeout)) {
 			rwsem_release(&sem->dep_map, _RET_IP_);
 			return 0;
 		}
 	}
-	lock_acquired(&sem->dep_map, _RET_IP_);
 	return 1;
 }
 
@@ -233,13 +231,11 @@ static int __ldsem_down_write_nested(struct ld_semaphore *sem, int subclass,
 
 	count = atomic_long_add_return(LDSEM_WRITE_BIAS, &sem->count);
 	if ((count & LDSEM_ACTIVE_MASK) != LDSEM_ACTIVE_BIAS) {
-		lock_contended(&sem->dep_map, _RET_IP_);
 		if (!down_write_failed(sem, count, timeout)) {
 			rwsem_release(&sem->dep_map, _RET_IP_);
 			return 0;
 		}
 	}
-	lock_acquired(&sem->dep_map, _RET_IP_);
 	return 1;
 }
 
@@ -257,7 +253,6 @@ int ldsem_down_read_trylock(struct ld_semaphore *sem)
 		if (atomic_long_try_cmpxchg(&sem->count, &count,
 					    count + LDSEM_READ_BIAS)) {
 			rwsem_acquire_read(&sem->dep_map, 0, 1, _RET_IP_);
-			lock_acquired(&sem->dep_map, _RET_IP_);
 			return 1;
 		}
 	}
@@ -278,7 +273,6 @@ int ldsem_down_write_trylock(struct ld_semaphore *sem)
 		if (atomic_long_try_cmpxchg(&sem->count, &count,
 					    count + LDSEM_WRITE_BIAS)) {
 			rwsem_acquire(&sem->dep_map, 0, 1, _RET_IP_);
-			lock_acquired(&sem->dep_map, _RET_IP_);
 			return 1;
 		}
 	}

@@ -413,9 +413,7 @@ get_flush_tlb_info(struct mm_struct *mm, unsigned long start, unsigned long end,
 	return info;
 }
 
-static void put_flush_tlb_info(void)
-{
-}
+/* put_flush_tlb_info removed - empty stub */
 
 void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 			unsigned long end, unsigned int stride_shift,
@@ -447,7 +445,7 @@ void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 		local_irq_enable();
 	}
 
-	put_flush_tlb_info();
+	/* put_flush_tlb_info removed - empty stub */
 	put_cpu();
 }
 

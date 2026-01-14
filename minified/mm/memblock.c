@@ -694,11 +694,7 @@ void __init_memblock __next_mem_pfn_range(int *idx, int nid,
 		*out_nid = 0;
 }
 
-int __init_memblock memblock_set_node(phys_addr_t base, phys_addr_t size,
-				      struct memblock_type *type, int nid)
-{
-	return 0;
-}
+/* memblock_set_node removed - always returns 0 */
 
 phys_addr_t __init memblock_alloc_range_nid(phys_addr_t size, phys_addr_t align,
 					    phys_addr_t start, phys_addr_t end,

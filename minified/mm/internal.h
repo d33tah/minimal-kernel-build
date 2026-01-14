@@ -179,15 +179,8 @@ vma_pgoff_address(pgoff_t pgoff, unsigned long nr_pages,
 	return address;
 }
 
- 
-static inline unsigned long
-vma_address(struct page *page, struct vm_area_struct *vma)
-{
-	/* PageKsm always returns false */
-	return vma_pgoff_address(page_to_pgoff(page), compound_nr(page), vma);
-}
+/* vma_address removed - never called */
 
- 
 static inline unsigned long vma_address_end(struct page_vma_mapped_walk *pvmw)
 {
 	struct vm_area_struct *vma = pvmw->vma;

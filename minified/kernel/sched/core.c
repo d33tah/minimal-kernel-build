@@ -524,8 +524,7 @@ static __always_inline struct rq *context_switch(struct rq *rq,
 						 struct rq_flags *rf)
 {
 	prepare_task_switch(rq, prev, next);
-
-	arch_start_context_switch(prev);
+	/* arch_start_context_switch removed - empty stub */
 
 	if (!next->mm) {
 		enter_lazy_tlb(prev->active_mm, next);

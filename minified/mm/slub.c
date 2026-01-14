@@ -669,7 +669,6 @@ static inline int alloc_kmem_cache_cpus(struct kmem_cache *s)
 	/* Inlined init_kmem_cache_cpus */
 	{
 		struct kmem_cache_cpu *c = per_cpu_ptr(s->cpu_slab, 0);
-		local_lock_init(&c->lock);
 		c->tid = 0; /* Inlined init_tid(0) */
 	}
 

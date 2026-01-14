@@ -195,7 +195,7 @@ static __always_inline int __sched __mutex_lock_common(
 	MUTEX_WARN_ON(lock->magic != lock);
 
 	preempt_disable();
-	mutex_acquire_nest(&lock->dep_map, subclass, 0, nest_lock, ip);
+	/* mutex_acquire_nest removed - empty stub */
 
 	if (__mutex_trylock(lock) || mutex_optimistic_spin(lock, NULL)) {
 		preempt_enable();
@@ -253,7 +253,7 @@ err:
 	__set_current_state(TASK_RUNNING);
 	__mutex_remove_waiter(lock, &waiter);
 	raw_spin_unlock(&lock->wait_lock);
-	mutex_release(&lock->dep_map, ip);
+	/* mutex_release removed - empty stub */
 	preempt_enable();
 	return ret;
 }
@@ -272,7 +272,7 @@ static noinline void __sched __mutex_unlock_slowpath(struct mutex *lock,
 	DEFINE_WAKE_Q(wake_q);
 	unsigned long owner;
 
-	mutex_release(&lock->dep_map, ip);
+	/* mutex_release removed - empty stub */
 
 	owner = atomic_long_read(&lock->owner);
 	for (;;) {
@@ -357,8 +357,6 @@ int __sched mutex_trylock(struct mutex *lock)
 	MUTEX_WARN_ON(lock->magic != lock);
 
 	locked = __mutex_trylock(lock);
-	if (locked)
-		mutex_acquire(&lock->dep_map, 0, 1, _RET_IP_);
-
+	/* mutex_acquire removed - empty stub */
 	return locked;
 }

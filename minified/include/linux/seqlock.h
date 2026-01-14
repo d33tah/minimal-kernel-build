@@ -205,7 +205,7 @@ static inline void do_raw_write_seqcount_end(seqcount_t *s)
 static inline void do_write_seqcount_begin_nested(seqcount_t *s, int subclass)
 {
 	do_raw_write_seqcount_begin(s);
-	seqcount_acquire(&s->dep_map, subclass, 0, _RET_IP_);
+	/* seqcount_acquire removed - empty stub */
 }
 
 #define write_seqcount_begin(s)						\
@@ -233,7 +233,7 @@ do {									\
 
 static inline void do_write_seqcount_end(seqcount_t *s)
 {
-	seqcount_release(&s->dep_map, _RET_IP_);
+	/* seqcount_release removed - empty stub */
 	do_raw_write_seqcount_end(s);
 }
 

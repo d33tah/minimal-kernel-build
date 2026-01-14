@@ -642,19 +642,17 @@ static inline void __downgrade_write(struct rw_semaphore *sem)
 void __sched down_read(struct rw_semaphore *sem)
 {
 	might_sleep();
-	rwsem_acquire_read(&sem->dep_map, 0, 0, _RET_IP_);
-
+	/* rwsem_acquire_read removed - empty stub */
 	LOCK_CONTENDED(sem, __down_read_trylock, __down_read);
 }
 
 int __sched down_read_killable(struct rw_semaphore *sem)
 {
 	might_sleep();
-	rwsem_acquire_read(&sem->dep_map, 0, 0, _RET_IP_);
-
+	/* rwsem_acquire_read removed - empty stub */
 	if (LOCK_CONTENDED_RETURN(sem, __down_read_trylock,
 				  __down_read_killable)) {
-		rwsem_release(&sem->dep_map, _RET_IP_);
+		/* rwsem_release removed - empty stub */
 		return -EINTR;
 	}
 
@@ -664,27 +662,24 @@ int __sched down_read_killable(struct rw_semaphore *sem)
 int down_read_trylock(struct rw_semaphore *sem)
 {
 	int ret = __down_read_trylock(sem);
-
-	if (ret == 1)
-		rwsem_acquire_read(&sem->dep_map, 0, 1, _RET_IP_);
+	/* rwsem_acquire_read removed - empty stub */
 	return ret;
 }
 
 void __sched down_write(struct rw_semaphore *sem)
 {
 	might_sleep();
-	rwsem_acquire(&sem->dep_map, 0, 0, _RET_IP_);
+	/* rwsem_acquire removed - empty stub */
 	LOCK_CONTENDED(sem, __down_write_trylock, __down_write);
 }
 
 int __sched down_write_killable(struct rw_semaphore *sem)
 {
 	might_sleep();
-	rwsem_acquire(&sem->dep_map, 0, 0, _RET_IP_);
-
+	/* rwsem_acquire removed - empty stub */
 	if (LOCK_CONTENDED_RETURN(sem, __down_write_trylock,
 				  __down_write_killable)) {
-		rwsem_release(&sem->dep_map, _RET_IP_);
+		/* rwsem_release removed - empty stub */
 		return -EINTR;
 	}
 
@@ -694,13 +689,13 @@ int __sched down_write_killable(struct rw_semaphore *sem)
 /* down_write_trylock removed - never called */
 void up_read(struct rw_semaphore *sem)
 {
-	rwsem_release(&sem->dep_map, _RET_IP_);
+	/* rwsem_release removed - empty stub */
 	__up_read(sem);
 }
 
 void up_write(struct rw_semaphore *sem)
 {
-	rwsem_release(&sem->dep_map, _RET_IP_);
+	/* rwsem_release removed - empty stub */
 	__up_write(sem);
 }
 

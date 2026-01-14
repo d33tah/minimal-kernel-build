@@ -404,9 +404,8 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
 		p->sched_reset_on_fork = 0;
 	}
 
-	if (dl_prio(p->prio))
-		return -EAGAIN;
-	else if (rt_prio(p->prio))
+	/* dl_prio always returns false since MAX_DL_PRIO=0 */
+	if (rt_prio(p->prio))
 		p->sched_class = &rt_sched_class;
 	else
 		p->sched_class = &fair_sched_class;
@@ -857,10 +856,8 @@ static int __sched_setscheduler(struct task_struct *p,
 		p->normal_prio = __normal_prio(p->policy, p->rt_priority,
 					       PRIO_TO_NICE(p->static_prio));
 		set_load_weight(p, true);
-		/* Inlined __setscheduler_prio */
-		if (dl_prio(newprio))
-			p->sched_class = &dl_sched_class;
-		else if (rt_prio(newprio))
+		/* Inlined __setscheduler_prio - dl_prio always false */
+		if (rt_prio(newprio))
 			p->sched_class = &rt_sched_class;
 		else
 			p->sched_class = &fair_sched_class;
@@ -880,7 +877,7 @@ static int __sched_setscheduler(struct task_struct *p,
 		if (prev_class->switched_from)
 			prev_class->switched_from(rq, p);
 		p->sched_class->switched_to(rq, p);
-	} else if (oldprio != p->prio || dl_task(p))
+	} else if (oldprio != p->prio) /* dl_task always false */
 		p->sched_class->prio_changed(rq, p, oldprio);
 
 	/* splice_balance_callbacks/balance_callbacks removed - empty stubs */

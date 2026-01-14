@@ -374,7 +374,7 @@ static void place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 static void enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 			   int flags)
 {
-	bool renorm = !(flags & ENQUEUE_WAKEUP) || (flags & ENQUEUE_MIGRATED);
+	bool renorm = !(flags & ENQUEUE_WAKEUP); /* ENQUEUE_MIGRATED=0 */
 	bool curr = cfs_rq->curr == se;
 
 	if (renorm && curr)

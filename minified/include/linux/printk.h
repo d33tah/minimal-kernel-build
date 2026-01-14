@@ -76,19 +76,10 @@ static inline int printk_ratelimit(void)
 #define pr_fmt(fmt) fmt
 #endif
 
-#define __printk_index_emit(...) do {} while (0)
-/* printk_index_subsys_emit removed - unused */
+/* printk_index_emit, printk_index_wrap removed - simplified direct calls */
 
-#define printk_index_wrap(_p_func, _fmt, ...)				\
-	({								\
-		__printk_index_emit(_fmt, NULL, NULL);			\
-		_p_func(_fmt, ##__VA_ARGS__);				\
-	})
-
-
-#define printk(fmt, ...) printk_index_wrap(_printk, fmt, ##__VA_ARGS__)
-#define printk_deferred(fmt, ...)					\
-	printk_index_wrap(_printk_deferred, fmt, ##__VA_ARGS__)
+#define printk(fmt, ...) _printk(fmt, ##__VA_ARGS__)
+#define printk_deferred(fmt, ...) _printk_deferred(fmt, ##__VA_ARGS__)
 
 #define pr_emerg(fmt, ...) \
 	printk(KERN_EMERG pr_fmt(fmt), ##__VA_ARGS__)

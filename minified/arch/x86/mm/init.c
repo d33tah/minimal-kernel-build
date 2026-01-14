@@ -17,9 +17,7 @@
 unsigned long kaslr_get_random_long(const char *purpose);
 /* end kaslr.h */
 #include <asm/cpufeature.h>
-static inline void pti_check_boottime_disable(void)
-{
-}
+/* pti_check_boottime_disable removed - empty stub */
 #include <asm/text-patching.h>
 
 #include "mm_internal.h"
@@ -437,8 +435,7 @@ static void __init memory_map_bottom_up(unsigned long map_start,
 void __init init_mem_mapping(void)
 {
 	unsigned long end;
-
-	pti_check_boottime_disable();
+	/* pti_check_boottime_disable removed - empty stub */
 	probe_page_size_mask();
 	setup_pcid();
 

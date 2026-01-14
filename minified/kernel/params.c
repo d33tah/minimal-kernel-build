@@ -59,12 +59,11 @@ static int parse_one(char *param, char *val, const char *doing,
 			if (!val &&
 			    !(params[i].ops->flags & KERNEL_PARAM_OPS_FL_NOARG))
 				return -EINVAL;
-			kernel_param_lock(params[i].mod);
+			/* kernel_param_lock/unlock removed - empty stubs */
 			if (param_check_unsafe(&params[i]))
 				err = params[i].ops->set(val, &params[i]);
 			else
 				err = -EPERM;
-			kernel_param_unlock(params[i].mod);
 			return err;
 		}
 	}

@@ -99,14 +99,7 @@ extern const struct kernel_param __start___param[], __stop___param[];
 	__module_param_call(MODULE_PARAM_PREFIX,			\
 			    name, &__param_ops_##name, arg, perm, -1, 0)
 
-static inline void kernel_param_lock(struct module *mod)
-{
-}
-static inline void kernel_param_unlock(struct module *mod)
-{
-}
-
-/* core_param, core_param_unsafe removed - never used */  
+/* kernel_param_lock/unlock, core_param, core_param_unsafe removed - empty/never used */  
 
 /* module_param_string removed - never called */
 

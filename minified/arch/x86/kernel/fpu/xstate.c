@@ -27,12 +27,5 @@
 
 /* cpu_has_xfeatures removed - never called */
 
-// Stub: Initialize CPU xstate
-/* fpu__init_cpu_xstate removed - empty stub */
-
-// Stub: Initialize system xstate
-void __init fpu__init_system_xstate(unsigned int legacy_size)
-{
-}
-
+/* fpu__init_cpu_xstate, fpu__init_system_xstate removed - empty stubs */
 /* fpu__resume_cpu, copy_sigframe_from_user_to_xstate, fpu_xstate_prctl removed */

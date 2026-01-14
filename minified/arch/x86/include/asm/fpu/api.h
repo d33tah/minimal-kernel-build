@@ -42,8 +42,7 @@ extern void fpu_reset_from_exception_fixup(void);
 
 extern void fpu__init_cpu(void);
 extern void fpu__init_system(struct cpuinfo_x86 *c);
-extern void fpu__init_check_bugs(void);
-/* fpu__resume_cpu removed - never called */
+/* fpu__init_check_bugs, fpu__resume_cpu removed - empty/never called */
 
 DECLARE_PER_CPU(struct fpu *, fpu_fpregs_owner_ctx);
 

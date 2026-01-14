@@ -38,7 +38,7 @@
 extern unsigned int __VMALLOC_RESERVE;
 
 extern void find_low_pfn_range(void);
-extern void setup_bootmem_allocator(void);
+/* setup_bootmem_allocator removed - empty stub */
 
 #endif	 
 

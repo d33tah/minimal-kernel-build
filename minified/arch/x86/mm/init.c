@@ -432,9 +432,7 @@ static void __init memory_map_bottom_up(unsigned long map_start,
 	}
 }
 
-static void __init init_trampoline(void)
-{
-}
+/* init_trampoline removed - empty stub */
 
 void __init init_mem_mapping(void)
 {
@@ -447,8 +445,6 @@ void __init init_mem_mapping(void)
 	end = max_low_pfn << PAGE_SHIFT;
 
 	init_memory_mapping(0, ISA_END_ADDRESS, PAGE_KERNEL);
-
-	init_trampoline();
 
 	if (memblock_bottom_up()) {
 		unsigned long kernel_end = __pa_symbol(_end);

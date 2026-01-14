@@ -39,11 +39,8 @@ enum xstate_copy_mode {
 
 /* struct membuf, __copy_xstate_to_uabi_buf, copy_xstate_to_uabi_buf,
  * copy_uabi_from_kernel_to_xstate, get_xsave_addr,
- * copy_sigframe_from_user_to_xstate, fpu__init_cpu_xstate removed - unused */
-
-extern void fpu__init_system_xstate(unsigned int legacy_size);
-
-/* xfeatures_mask_supervisor removed - never called */
+ * copy_sigframe_from_user_to_xstate, fpu__init_cpu_xstate,
+ * fpu__init_system_xstate, xfeatures_mask_supervisor removed - unused */
 
 
 

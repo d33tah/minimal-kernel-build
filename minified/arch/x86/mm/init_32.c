@@ -381,12 +381,7 @@ void __init initmem_init(void)
 	memblock_set_node(0, PHYS_ADDR_MAX, &memblock.memory, 0);
 
 	max_mapnr = max_low_pfn; /* !HIGHMEM */
-
-	setup_bootmem_allocator();
-}
-
-void __init setup_bootmem_allocator(void)
-{
+	/* setup_bootmem_allocator removed - empty stub */
 }
 
 /* pidbg debug function removed */

@@ -122,7 +122,7 @@ void __init fpu__init_system(struct cpuinfo_x86 *c)
 	fpstate_init_user(&init_fpstate);
 	fpu__init_system_mxcsr();
 	fpu__init_system_xstate_size_legacy();
-	fpu__init_system_xstate(fpu_kernel_cfg.max_size);
+	/* fpu__init_system_xstate removed - empty stub */
 	fpu__init_task_struct_size();
 	init_fpstate.size = fpu_kernel_cfg.max_size;
 	init_fpstate.xfeatures = fpu_kernel_cfg.max_features;

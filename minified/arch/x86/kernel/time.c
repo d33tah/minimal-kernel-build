@@ -29,11 +29,6 @@ void __init hpet_time_init(void)
 {
 	unsigned long flags = IRQF_NOBALANCING | IRQF_IRQPOLL | IRQF_TIMER;
 
-#ifndef CONFIG_MMU
-	/* For NOMMU, skip hardware timer init */
-	return;
-#endif
-
 	if (!hpet_enable()) {
 		if (!pit_timer_init())
 			return;

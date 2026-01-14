@@ -112,27 +112,19 @@ struct signal_struct;
 
 #define task_is_running(task)		(READ_ONCE((task)->__state) == TASK_RUNNING)
 
-# define debug_normal_state_change(cond)	do { } while (0)
-# define debug_special_state_change(cond)	do { } while (0)
+/* debug_normal/special_state_change removed - empty stubs */
 
 #define __set_current_state(state_value)				\
-	do {								\
-		debug_normal_state_change((state_value));		\
-		WRITE_ONCE(current->__state, (state_value));		\
-	} while (0)
+	WRITE_ONCE(current->__state, (state_value))
 
 #define set_current_state(state_value)					\
-	do {								\
-		debug_normal_state_change((state_value));		\
-		smp_store_mb(current->__state, (state_value));		\
-	} while (0)
+	smp_store_mb(current->__state, (state_value))
 
 #define set_special_state(state_value)					\
 	do {								\
 		unsigned long flags;  			\
 									\
 		raw_spin_lock_irqsave(&current->pi_lock, flags);	\
-		debug_special_state_change((state_value));		\
 		WRITE_ONCE(current->__state, (state_value));		\
 		raw_spin_unlock_irqrestore(&current->pi_lock, flags);	\
 	} while (0)

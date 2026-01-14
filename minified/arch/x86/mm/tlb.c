@@ -314,7 +314,6 @@ static void flush_tlb_func(void *info)
 	u64 local_tlb_gen =
 		this_cpu_read(cpu_tlbstate.ctxs[loaded_mm_asid].tlb_gen);
 	bool local = smp_processor_id() == f->initiating_cpu;
-	unsigned long nr_invalidate = 0;
 
 	VM_WARN_ON(!irqs_disabled());
 
@@ -346,18 +345,12 @@ static void flush_tlb_func(void *info)
 	    f->new_tlb_gen == mm_tlb_gen) {
 		unsigned long addr = f->start;
 
-		nr_invalidate = (f->end - f->start) >> f->stride_shift;
-
 		while (addr < f->end) {
 			flush_tlb_one_user(addr);
 			addr += 1UL << f->stride_shift;
 		}
-		if (local)
-			count_vm_tlb_events(NR_TLB_LOCAL_FLUSH_ONE,
-					    nr_invalidate);
+		/* count_vm_tlb_events removed - empty stub */
 	} else {
-		nr_invalidate = TLB_FLUSH_ALL;
-
 		flush_tlb_local();
 		/* count_vm_tlb_event(NR_TLB_LOCAL_FLUSH_ALL) removed - empty stub */
 	}

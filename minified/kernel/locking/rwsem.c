@@ -641,14 +641,12 @@ static inline void __downgrade_write(struct rw_semaphore *sem)
 
 void __sched down_read(struct rw_semaphore *sem)
 {
-	might_sleep();
 	/* rwsem_acquire_read removed - empty stub */
 	LOCK_CONTENDED(sem, __down_read_trylock, __down_read);
 }
 
 int __sched down_read_killable(struct rw_semaphore *sem)
 {
-	might_sleep();
 	/* rwsem_acquire_read removed - empty stub */
 	if (LOCK_CONTENDED_RETURN(sem, __down_read_trylock,
 				  __down_read_killable)) {
@@ -668,14 +666,12 @@ int down_read_trylock(struct rw_semaphore *sem)
 
 void __sched down_write(struct rw_semaphore *sem)
 {
-	might_sleep();
 	/* rwsem_acquire removed - empty stub */
 	LOCK_CONTENDED(sem, __down_write_trylock, __down_write);
 }
 
 int __sched down_write_killable(struct rw_semaphore *sem)
 {
-	might_sleep();
 	/* rwsem_acquire removed - empty stub */
 	if (LOCK_CONTENDED_RETURN(sem, __down_write_trylock,
 				  __down_write_killable)) {

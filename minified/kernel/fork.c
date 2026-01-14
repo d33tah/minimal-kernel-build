@@ -471,8 +471,6 @@ struct mm_struct *mm_alloc(void)
 
 void mmput(struct mm_struct *mm)
 {
-	might_sleep();
-
 	if (atomic_dec_and_test(&mm->mm_users)) {
 		VM_BUG_ON(atomic_read(&mm->mm_users));
 

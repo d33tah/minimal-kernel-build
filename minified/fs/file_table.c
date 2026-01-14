@@ -113,8 +113,6 @@ static void __fput(struct file *file)
 	if (unlikely(!(file->f_mode & FMODE_OPENED)))
 		goto out;
 
-	might_sleep();
-
 	/* FASYNC handling removed - fcntl returns EINVAL, FASYNC never set */
 	if (file->f_op->release)
 		file->f_op->release(inode, file);

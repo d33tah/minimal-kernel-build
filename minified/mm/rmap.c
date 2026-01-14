@@ -29,7 +29,6 @@ static struct kmem_cache *anon_vma_chain_cachep;
 
 static inline void anon_vma_free(struct anon_vma *anon_vma)
 {
-	might_sleep();
 	if (rwsem_is_locked(&anon_vma->root->rwsem)) {
 		anon_vma_lock_write(anon_vma);
 		anon_vma_unlock_write(anon_vma);
@@ -63,8 +62,6 @@ int __anon_vma_prepare(struct vm_area_struct *vma)
 	struct mm_struct *mm = vma->vm_mm;
 	struct anon_vma *anon_vma, *allocated;
 	struct anon_vma_chain *avc;
-
-	might_sleep();
 
 	avc = anon_vma_chain_alloc(GFP_KERNEL);
 	if (!avc)

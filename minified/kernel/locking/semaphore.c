@@ -16,7 +16,6 @@ void down(struct semaphore *sem)
 {
 	unsigned long flags;
 
-	might_sleep();
 	raw_spin_lock_irqsave(&sem->lock, flags);
 	if (likely(sem->count > 0))
 		sem->count--;

@@ -84,8 +84,6 @@ void unlink_file_vma(struct vm_area_struct *vma)
 static struct vm_area_struct *remove_vma(struct vm_area_struct *vma)
 {
 	struct vm_area_struct *next = vma->vm_next;
-
-	might_sleep();
 	/* vm_ops->close removed - never set */
 	if (vma->vm_file)
 		fput(vma->vm_file);

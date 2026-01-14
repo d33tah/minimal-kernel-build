@@ -161,8 +161,6 @@ static void __sched __mutex_lock_slowpath(struct mutex *lock);
 
 void __sched mutex_lock(struct mutex *lock)
 {
-	might_sleep();
-
 	if (!__mutex_trylock_fast(lock))
 		__mutex_lock_slowpath(lock);
 }
@@ -189,8 +187,6 @@ static __always_inline int __sched __mutex_lock_common(
 {
 	struct mutex_waiter waiter;
 	int ret;
-
-	might_sleep();
 
 	MUTEX_WARN_ON(lock->magic != lock);
 
@@ -316,8 +312,6 @@ __mutex_lock_interruptible_slowpath(struct mutex *lock);
 
 int __sched mutex_lock_interruptible(struct mutex *lock)
 {
-	might_sleep();
-
 	if (__mutex_trylock_fast(lock))
 		return 0;
 
@@ -326,8 +320,6 @@ int __sched mutex_lock_interruptible(struct mutex *lock)
 
 int __sched mutex_lock_killable(struct mutex *lock)
 {
-	might_sleep();
-
 	if (__mutex_trylock_fast(lock))
 		return 0;
 

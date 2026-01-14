@@ -436,7 +436,6 @@ static inline void do_user_addr_fault(struct pt_regs *regs,
 retry:
 		mmap_read_lock(mm);
 	} else {
-		might_sleep();
 	}
 
 	vma = find_vma(mm, address);

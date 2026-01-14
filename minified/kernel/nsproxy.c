@@ -169,8 +169,6 @@ void exit_task_namespaces(struct task_struct *p)
 {
 	struct nsproxy *ns;
 
-	might_sleep();
-
 	task_lock(p);
 	ns = p->nsproxy;
 	p->nsproxy = NULL;

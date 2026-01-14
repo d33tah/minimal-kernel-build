@@ -123,7 +123,6 @@ int ioremap_page_range(unsigned long addr, unsigned long end,
 	int err;
 	pgtbl_mod_mask mask = 0;
 
-	might_sleep();
 	BUG_ON(addr >= end);
 
 	prot = pgprot_nx(prot);
@@ -780,7 +779,6 @@ alloc_vmap_area(unsigned long size, unsigned long align, unsigned long vstart,
 	if (unlikely(!vmap_initialized))
 		return ERR_PTR(-EBUSY);
 
-	might_sleep();
 	gfp_mask = gfp_mask & GFP_RECLAIM_MASK;
 
 	va = kmem_cache_alloc_node(vmap_area_cachep, gfp_mask, node);
@@ -1046,8 +1044,6 @@ struct vm_struct *remove_vm_area(const void *addr)
 {
 	struct vmap_area *va;
 
-	might_sleep();
-
 	spin_lock(&vmap_area_lock);
 	va = __find_vmap_area((unsigned long)addr);
 	if (va && va->vm) {
@@ -1085,8 +1081,6 @@ void *vmap(struct page **pages, unsigned int count, unsigned long flags,
 	struct vm_struct *area;
 	unsigned long addr;
 	unsigned long size;
-
-	might_sleep();
 
 	if (WARN_ON_ONCE(flags & VM_NO_GUARD))
 		flags &= ~VM_NO_GUARD;

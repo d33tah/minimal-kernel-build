@@ -102,8 +102,6 @@ void console_verbose(void)
 
 void console_lock(void)
 {
-	might_sleep();
-
 	down_console_sem();
 	if (console_suspended)
 		return;

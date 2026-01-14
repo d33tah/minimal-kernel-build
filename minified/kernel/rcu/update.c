@@ -54,10 +54,8 @@ void __wait_rcu_gp(bool checktiny, int n, call_rcu_func_t *crcu_array,
 	int j;
 
 	for (i = 0; i < n; i++) {
-		if (checktiny && (crcu_array[i] == call_rcu)) {
-			might_sleep();
+		if (checktiny && (crcu_array[i] == call_rcu))
 			continue;
-		}
 		for (j = 0; j < i; j++)
 			if (crcu_array[j] == crcu_array[i])
 				break;

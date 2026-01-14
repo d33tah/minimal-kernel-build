@@ -345,7 +345,7 @@ void __init fork_init(void)
 			      RLIM_INFINITY);
 	set_rlimit_ucount_max(&init_user_ns, UCOUNT_RLIMIT_MEMLOCK,
 			      RLIM_INFINITY);
-	lockdep_init_task(&init_task);
+	/* lockdep_init_task removed - empty stub */
 }
 
 /* arch_dup_task_struct provided by arch/x86/kernel/process.c */

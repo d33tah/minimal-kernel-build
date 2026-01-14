@@ -4,37 +4,11 @@
 
 #include <linux/lockdep_types.h>
 
-struct task_struct;
+/* lockdep_init_task, lock_acquire, lock_release, lockdep_init,
+   lockdep_init_map*, lockdep_set_class* all removed - no callers */
 
-
-static inline void lockdep_init_task(struct task_struct *task)
-{
-}
-
-static inline void lockdep_off(void)
-{
-}
-
-static inline void lockdep_on(void)
-{
-}
-
-
-# define lock_acquire(l, s, t, r, c, n, i)	do { } while (0)
-# define lock_release(l, i)			do { } while (0)
-# define lockdep_init()				do { } while (0)
-# define lockdep_init_map_type(lock, name, key, sub, inner, outer, type) \
-		do { (void)(name); (void)(key); } while (0)
-# define lockdep_init_map_waits(lock, name, key, sub, inner, outer) \
-		do { (void)(name); (void)(key); } while (0)
-# define lockdep_init_map_wait(lock, name, key, sub, inner) \
-		do { (void)(name); (void)(key); } while (0)
-# define lockdep_init_map(lock, name, key, sub) \
-		do { (void)(name); (void)(key); } while (0)
-# define lockdep_set_class(lock, key)		do { (void)(key); } while (0)
-# define lockdep_set_class_and_name(lock, key, name) \
-		do { (void)(key); (void)(name); } while (0)
-/* lockdep_set_subclass, lockdep_set_novalidate_class, lockdep_sys_exit removed - unused */
+static inline void lockdep_off(void) { }
+static inline void lockdep_on(void) { }
 
 /* lock_is_held, lockdep_is_held are never defined but used in
    RCU_LOCKDEP_WARN conditions (which are no-ops but still need valid syntax) */

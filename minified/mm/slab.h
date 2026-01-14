@@ -262,15 +262,7 @@ static inline enum node_stat_item cache_vmstat_idx(struct kmem_cache *s)
 /* print_tracking, __slub_debug_enabled, kmem_cache_debug_flags,
    slab_objcgs, memcg_from_slab_obj, memcg_alloc_slab_cgroups, memcg_free_slab_cgroups removed - unused */
 
-static inline bool memcg_slab_pre_alloc_hook(struct kmem_cache *s,
-					     struct list_lru *lru,
-					     struct obj_cgroup **objcgp,
-					     size_t objects, gfp_t flags)
-{
-	return true;
-}
-
-/* memcg_slab_post_alloc_hook, memcg_slab_free_hook, virt_to_cache removed - unused */
+/* memcg_slab_pre_alloc_hook, memcg_slab_post_alloc_hook, memcg_slab_free_hook, virt_to_cache removed - unused */
 
 static __always_inline void account_slab(struct slab *slab, int order,
 					 struct kmem_cache *s, gfp_t gfp)
@@ -302,10 +294,7 @@ static inline struct kmem_cache *slab_pre_alloc_hook(struct kmem_cache *s,
 
 	might_alloc(flags);
 
-	/* should_failslab always returns 0 - check removed */
-
-	if (!memcg_slab_pre_alloc_hook(s, lru, objcgp, size, flags))
-		return NULL;
+	/* should_failslab, memcg_slab_pre_alloc_hook always return 0/true - checks removed */
 
 	return s;
 }

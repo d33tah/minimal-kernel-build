@@ -22,7 +22,7 @@ static inline void percpu_down_read(struct percpu_rw_semaphore *sem)
 {
 	might_sleep();
 
-	rwsem_acquire_read(&sem->dep_map, 0, 0, _RET_IP_);
+	/* rwsem_acquire_read removed - empty stub */
 
 	preempt_disable();
 	 
@@ -38,7 +38,7 @@ static inline void percpu_down_read(struct percpu_rw_semaphore *sem)
 
 static inline void percpu_up_read(struct percpu_rw_semaphore *sem)
 {
-	rwsem_release(&sem->dep_map, _RET_IP_);
+	/* rwsem_release removed - empty stub */
 
 	preempt_disable();
 	 

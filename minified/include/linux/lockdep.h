@@ -62,36 +62,7 @@ static inline void lockdep_on(void)
 
 #define SINGLE_DEPTH_NESTING			1
 
-
-#define lock_acquire_exclusive(l, s, t, n, i)		lock_acquire(l, s, t, 0, 1, n, i)
-#define lock_acquire_shared(l, s, t, n, i)		lock_acquire(l, s, t, 1, 1, n, i)
-#define lock_acquire_shared_recursive(l, s, t, n, i)	lock_acquire(l, s, t, 2, 1, n, i)
-
-#define spin_acquire(l, s, t, i)		lock_acquire_exclusive(l, s, t, NULL, i)
-/* spin_acquire_nest removed - unused */
-#define spin_release(l, i)			lock_release(l, i)
-
-/* rwlock_acquire, rwlock_acquire_read, rwlock_release removed - never called */
-
-#define seqcount_acquire(l, s, t, i)		lock_acquire_exclusive(l, s, t, NULL, i)
-/* seqcount_acquire_read removed - never called */
-#define seqcount_release(l, i)			lock_release(l, i)
-
-#define mutex_acquire(l, s, t, i)		lock_acquire_exclusive(l, s, t, NULL, i)
-#define mutex_acquire_nest(l, s, t, n, i)	lock_acquire_exclusive(l, s, t, n, i)
-#define mutex_release(l, i)			lock_release(l, i)
-
-#define rwsem_acquire(l, s, t, i)		lock_acquire_exclusive(l, s, t, NULL, i)
-/* rwsem_acquire_nest removed - never called */
-#define rwsem_acquire_read(l, s, t, i)		lock_acquire_shared(l, s, t, NULL, i)
-#define rwsem_release(l, i)			lock_release(l, i)
-
-/* lock_map_acquire, lock_map_acquire_read, lock_map_release removed - never called */
-
-/* might_lock removed - no callers */
-
-/* lockdep_assert_irqs_enabled/disabled removed - no callers */
-
-/* lockdep_assert_preemption_enabled/disabled removed - no callers */
+/* lock_acquire_*, spin_acquire/release, seqcount_acquire/release,
+   mutex_acquire/release, rwsem_acquire/release all removed - no callers */
 
 #endif  

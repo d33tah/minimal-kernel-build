@@ -43,10 +43,7 @@ unsigned long shmem_get_unmapped_area(struct file *file, unsigned long addr,
 #define shmem_file_operations ramfs_file_operations
 #define shmem_get_inode(sb, dir, mode, dev, flags) \
 	ramfs_get_inode(sb, dir, mode, dev)
-#define shmem_acct_size(flags, size) 0
-#define shmem_unacct_size(flags, size) \
-	do {                           \
-	} while (0)
+/* shmem_acct_size, shmem_unacct_size removed - always returned 0 / did nothing */
 
 static struct file *__shmem_file_setup(struct vfsmount *mnt, const char *name,
 				       loff_t size, unsigned long flags,
@@ -61,15 +58,10 @@ static struct file *__shmem_file_setup(struct vfsmount *mnt, const char *name,
 	if (size < 0 || size > MAX_LFS_FILESIZE)
 		return ERR_PTR(-EINVAL);
 
-	if (shmem_acct_size(flags, size))
-		return ERR_PTR(-ENOMEM);
-
 	inode = shmem_get_inode(mnt->mnt_sb, NULL, S_IFREG | S_IRWXUGO, 0,
 				flags);
-	if (unlikely(!inode)) {
-		shmem_unacct_size(flags, size);
+	if (unlikely(!inode))
 		return ERR_PTR(-ENOSPC);
-	}
 	inode->i_flags |= i_flags;
 	inode->i_size = size;
 	clear_nlink(inode);

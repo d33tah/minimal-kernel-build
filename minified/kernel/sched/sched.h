@@ -571,9 +571,8 @@ extern const u32		sched_prio_to_wmult[40];
 #define ENQUEUE_RESTORE		0x02
 #define ENQUEUE_NOCLOCK		0x08
 #define ENQUEUE_HEAD		0x10
-#define ENQUEUE_MIGRATED	0x00
 
-/* RETRY_TASK removed - never used */
+/* RETRY_TASK, ENQUEUE_MIGRATED removed - never used */
 
 struct sched_class {
 

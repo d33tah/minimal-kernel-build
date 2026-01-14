@@ -112,7 +112,7 @@ static void move_ptes(struct vm_area_struct *vma, pmd_t *old_pmd,
 	if (new_ptl != old_ptl)
 		spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
 	flush_tlb_batched_pending(vma->vm_mm);
-	arch_enter_lazy_mmu_mode();
+	/* arch_enter/leave_lazy_mmu_mode removed - empty stubs */
 
 	for (; old_addr < old_end; old_pte++, old_addr += PAGE_SIZE, new_pte++,
 				   new_addr += PAGE_SIZE) {
@@ -126,8 +126,6 @@ static void move_ptes(struct vm_area_struct *vma, pmd_t *old_pmd,
 		pte = move_pte(pte, new_vma->vm_page_prot, old_addr, new_addr);
 		set_pte_at(mm, new_addr, new_pte, pte);
 	}
-
-	arch_leave_lazy_mmu_mode();
 	if (force_flush)
 		flush_tlb_range(vma, old_end - len, old_end);
 	if (new_ptl != old_ptl)

@@ -314,10 +314,9 @@ static unsigned long zap_pte_range(struct mmu_gather *tlb,
 	pte_t *pte;
 
 	pte = pte_offset_map_lock(mm, pmd, addr, &ptl);
-	arch_enter_lazy_mmu_mode();
+	/* arch_enter/leave_lazy_mmu_mode removed - empty stubs */
 	/* Just clear the range without complex tracking */
 	pte_unmap_unlock(pte, ptl);
-	arch_leave_lazy_mmu_mode();
 	return addr;
 }
 

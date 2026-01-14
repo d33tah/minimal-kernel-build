@@ -1125,9 +1125,7 @@ void __init sched_init(void)
 	init_idle(current, smp_processor_id());
 
 	calc_load_update = jiffies + LOAD_FREQ;
-
-	init_sched_fair_class();
-	/* init_uclamp, preempt_dynamic_init removed - empty stubs */
+	/* init_sched_fair_class, init_uclamp, preempt_dynamic_init removed - empty stubs */
 
 	scheduler_running = 1;
 }

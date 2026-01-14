@@ -957,7 +957,4 @@ DEFINE_SCHED_CLASS(fair) = {
 	.update_curr = update_curr_fair,
 
 };
-
-__init void init_sched_fair_class(void)
-{
-}
+/* init_sched_fair_class removed - empty stub */

@@ -653,9 +653,7 @@ extern struct task_struct *pick_next_task_idle(struct rq *rq);
 
 extern void schedule_idle(void);
 
-/* sched_init_granularity removed - empty function */
-
-extern void init_sched_fair_class(void);
+/* sched_init_granularity, init_sched_fair_class removed - empty functions */
 
 extern void reweight_task(struct task_struct *p, int prio);
 

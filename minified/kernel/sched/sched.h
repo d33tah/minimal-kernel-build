@@ -162,8 +162,7 @@ struct rt_bandwidth {
 	unsigned int		rt_period_active;
 };
 
-void __dl_clear_params(struct task_struct *p);
-
+/* __dl_clear_params removed - empty stub */
 /* struct dl_bandwidth removed - unused */
 
 struct dl_bw {
@@ -173,9 +172,8 @@ struct dl_bw {
 };
 
 /* init_dl_bw, sched_dl_global_validate, sched_dl_do_global, sched_dl_overflow,
-   __getparam_dl, __checkparam_dl, dl_param_changed, dl_cpuset_cpumask_can_shrink,
+   __getparam_dl, __checkparam_dl, __setparam_dl, dl_param_changed, dl_cpuset_cpumask_can_shrink,
    dl_cpu_busy removed - never defined/called */
-extern void __setparam_dl(struct task_struct *p, const struct sched_attr *attr);
 
 /* struct cfs_bandwidth removed - unused */
 
@@ -663,9 +661,7 @@ extern void resched_cpu(int cpu);
 extern struct rt_bandwidth def_rt_bandwidth;
 extern void init_rt_bandwidth(struct rt_bandwidth *rt_b, u64 period, u64 runtime);
 
-extern void init_dl_task_timer(struct sched_dl_entity *dl_se);
-extern void init_dl_inactive_task_timer(struct sched_dl_entity *dl_se);
-
+/* init_dl_task_timer, init_dl_inactive_task_timer removed - empty stubs */
 /* init_entity_runnable_average, post_init_entity_util_avg removed - never called */
 /* sched_tick_offload_init, sched_update_tick_dependency removed - unused */
 

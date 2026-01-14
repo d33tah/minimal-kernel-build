@@ -374,9 +374,7 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 	/* INIT_LIST_HEAD(&p->se.group_node) removed - field removed */
 
 	/* RB_CLEAR_NODE(&p->dl.rb_node) removed - field removed */
-	init_dl_task_timer(&p->dl);
-	init_dl_inactive_task_timer(&p->dl);
-	__dl_clear_params(p);
+	/* init_dl_task_timer, init_dl_inactive_task_timer, __dl_clear_params removed - empty stubs */
 
 	/* p->rt.run_list, timeout, time_slice, on_rq, on_list removed - write-only fields */
 	/* init_numa_balancing - empty stub removed */
@@ -852,9 +850,8 @@ static int __sched_setscheduler(struct task_struct *p,
 		if (sched_policy == SETPARAM_POLICY)
 			sched_policy = p->policy;
 		p->policy = sched_policy;
-		if (dl_policy(sched_policy))
-			__setparam_dl(p, attr);
-		else if (fair_policy(sched_policy))
+		/* __setparam_dl removed - empty stub */
+		if (fair_policy(sched_policy))
 			p->static_prio = NICE_TO_PRIO(attr->sched_nice);
 		p->rt_priority = attr->sched_priority;
 		p->normal_prio = __normal_prio(p->policy, p->rt_priority,

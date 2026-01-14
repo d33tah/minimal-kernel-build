@@ -8,12 +8,7 @@ void init_dl_rq(struct dl_rq *dl_rq)
 	dl_rq->root = RB_ROOT_CACHED;
 }
 
-void init_dl_task_timer(struct sched_dl_entity *dl_se)
-{
-}
-void init_dl_inactive_task_timer(struct sched_dl_entity *dl_se)
-{
-}
+/* init_dl_task_timer, init_dl_inactive_task_timer removed - empty stubs */
 
 static void enqueue_task_dl(struct rq *rq, struct task_struct *p, int flags)
 {
@@ -71,11 +66,4 @@ DEFINE_SCHED_CLASS(dl) = {
 	.update_curr = update_curr_dl,
 };
 
-void __setparam_dl(struct task_struct *p, const struct sched_attr *attr)
-{
-}
-
-void __dl_clear_params(struct task_struct *p)
-{
-	/* Minimal stub - fields removed from sched_dl_entity */
-}
+/* __setparam_dl, __dl_clear_params removed - empty stubs */

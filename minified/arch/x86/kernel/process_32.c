@@ -41,10 +41,7 @@
 #include <asm/vm86.h>
 #include <asm/proto.h>
 
-/* Inlined from asm/resctrl.h */
-static inline void resctrl_sched_in(void)
-{
-}
+/* resctrl_sched_in removed - empty stub */
 
 #include "process.h"
 
@@ -103,9 +100,7 @@ __visible struct task_struct *__switch_to(struct task_struct *prev_p,
 	this_cpu_write(current_task, next_p);
 
 	switch_fpu_finish();
-
-	resctrl_sched_in();
-
+	/* resctrl_sched_in removed - empty stub */
 	return prev_p;
 }
 

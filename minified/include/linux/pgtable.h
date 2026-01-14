@@ -301,11 +301,7 @@ static inline pgprot_t pgprot_modify(pgprot_t oldprot, pgprot_t newprot)
 #define pgprot_decrypted(prot)	(prot)
 #endif
 
-/* arch_enter/leave_lazy_mmu_mode removed - no callers */
-
-#ifndef __HAVE_ARCH_START_CONTEXT_SWITCH
-#define arch_start_context_switch(prev)	do {} while (0)
-#endif
+/* arch_enter/leave_lazy_mmu_mode, arch_start_context_switch removed - no callers */
 
 /* pte_swp_exclusive, pte_swp_clear_exclusive,
    pte_swp_soft_dirty, pte_swp_clear_soft_dirty removed - unused */

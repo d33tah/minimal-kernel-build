@@ -385,7 +385,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 		}
 	}
 
-	page_address_init();
+	/* page_address_init removed - empty stub */
 	pr_notice("%s", linux_banner);
 	/* early_security_init removed - returns 0 */
 	setup_arch(&command_line);

@@ -389,9 +389,8 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	setup_arch(&command_line);
 	/* setup_boot_config removed - was empty stub */
 	setup_command_line(command_line);
-	/* setup_nr_cpu_ids removed - empty stub */
+	/* setup_nr_cpu_ids, smp_prepare_boot_cpu removed - empty stubs */
 	setup_per_cpu_areas();
-	smp_prepare_boot_cpu();
 	boot_cpu_hotplug_init();
 
 	build_all_zonelists(NULL);

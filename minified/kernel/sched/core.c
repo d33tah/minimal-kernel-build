@@ -220,9 +220,7 @@ static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 	if (!(flags & ENQUEUE_NOCLOCK))
 		update_rq_clock(rq);
 
-	if (!(flags & ENQUEUE_RESTORE))
-		sched_info_enqueue(rq, p);
-	/* psi_enqueue, uclamp_rq_inc removed - empty stubs */
+	/* sched_info_enqueue, psi_enqueue, uclamp_rq_inc removed - empty stubs */
 	p->sched_class->enqueue_task(rq, p, flags);
 }
 
@@ -231,9 +229,7 @@ static inline void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
 	if (!(flags & DEQUEUE_NOCLOCK))
 		update_rq_clock(rq);
 
-	if (!(flags & DEQUEUE_SAVE))
-		sched_info_dequeue(rq, p);
-	/* psi_dequeue, uclamp_rq_dec removed - empty stubs */
+	/* sched_info_dequeue, psi_dequeue, uclamp_rq_dec removed - empty stubs */
 	p->sched_class->dequeue_task(rq, p, flags);
 }
 
@@ -663,8 +659,7 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 			panic("scheduling while atomic\n");
 		preempt_count_set(PREEMPT_DISABLED);
 	}
-	schedstat_inc(this_rq()->sched_count);
-	/* hrtick_clear removed - empty stub */
+	/* schedstat_inc, hrtick_clear removed - empty stubs */
 	local_irq_disable();
 	rcu_note_context_switch(!!sched_mode);
 

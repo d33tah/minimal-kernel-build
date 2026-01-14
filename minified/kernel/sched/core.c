@@ -402,7 +402,7 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
 	else
 		p->sched_class = &fair_sched_class;
 
-	init_task_preempt_count(p);
+	/* init_task_preempt_count removed - empty stub */
 	return 0;
 }
 

@@ -79,9 +79,7 @@ void exit_thread(struct task_struct *tsk)
 	struct thread_struct *t = &tsk->thread;
 	struct fpu *fpu = &t->fpu;
 
-	/* io_bitmap_exit removed - empty stub */
-
-	free_vm86(t);
+	/* io_bitmap_exit, free_vm86 removed - empty stubs */
 
 	fpu__drop(fpu);
 }

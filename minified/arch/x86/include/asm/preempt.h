@@ -33,7 +33,7 @@ static __always_inline void preempt_count_set(int pc)
 }
 
  
-#define init_task_preempt_count(p) do { } while (0)
+/* init_task_preempt_count removed - no callers */
 
 #define init_idle_preempt_count(p, cpu) do { \
 	per_cpu(__preempt_count, (cpu)) = PREEMPT_DISABLED; \

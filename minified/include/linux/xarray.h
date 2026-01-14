@@ -146,7 +146,7 @@ struct xa_node {
 	};
 };
 
-#define XA_NODE_BUG_ON(node, x)	do { } while (0)
+/* XA_NODE_BUG_ON removed - no callers */
 
 static inline void *xa_head(const struct xarray *xa)
 {
@@ -163,7 +163,6 @@ static inline void *xa_head_locked(const struct xarray *xa)
 static inline void *xa_entry(const struct xarray *xa,
 				const struct xa_node *node, unsigned int offset)
 {
-	XA_NODE_BUG_ON(node, offset >= XA_CHUNK_SIZE);
 	return rcu_dereference_check(node->slots[offset],
 						lockdep_is_held(&xa->xa_lock));
 }
@@ -171,7 +170,6 @@ static inline void *xa_entry(const struct xarray *xa,
 static inline void *xa_entry_locked(const struct xarray *xa,
 				const struct xa_node *node, unsigned int offset)
 {
-	XA_NODE_BUG_ON(node, offset >= XA_CHUNK_SIZE);
 	return rcu_dereference_protected(node->slots[offset],
 						lockdep_is_held(&xa->xa_lock));
 }

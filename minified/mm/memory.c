@@ -579,7 +579,6 @@ static inline void unmap_mapping_range_tree(struct rb_root_cached *root,
 		mmu_notifier_range_init(&range, MMU_NOTIFY_CLEAR, 0, vma,
 					vma->vm_mm, start_addr, end_addr);
 		tlb_gather_mmu(&tlb, vma->vm_mm);
-		update_hiwater_rss(vma->vm_mm);
 		mmu_notifier_invalidate_range_start(&range);
 		unmap_single_vma(&tlb, vma, start_addr, range.end, details);
 		mmu_notifier_invalidate_range_end(&range);

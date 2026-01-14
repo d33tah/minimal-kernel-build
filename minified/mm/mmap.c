@@ -1042,7 +1042,6 @@ int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 		struct mmu_gather tlb;
 		lru_add_drain();
 		tlb_gather_mmu(&tlb, mm);
-		update_hiwater_rss(mm);
 		unmap_vmas(&tlb, vma, start, end);
 		free_pgtables(&tlb, vma,
 			      prev ? prev->vm_end : FIRST_USER_ADDRESS,
@@ -1054,7 +1053,6 @@ int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 	{
 		unsigned long nr_accounted = 0;
 		struct vm_area_struct *tmp_vma = vma;
-		update_hiwater_vm(mm);
 		do {
 			long nrpages = vma_pages(tmp_vma);
 			if (tmp_vma->vm_flags & VM_ACCOUNT)

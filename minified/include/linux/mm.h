@@ -683,10 +683,7 @@ static inline int mm_counter_file(struct page *page)
 
 
 /* get_mm_rss removed - never called */
-/* update_hiwater_rss removed - hiwater_rss write-only */
-#define update_hiwater_rss(mm) do { } while (0)
-/* update_hiwater_vm removed - hiwater_vm write-only */
-#define update_hiwater_vm(mm) do { } while (0)
+/* update_hiwater_rss/vm removed - no callers, were empty stubs */
 
 /* setmax_mm_hiwater_rss removed - callers removed, maxrss unused */
 

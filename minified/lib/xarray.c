@@ -167,7 +167,6 @@ extern void radix_tree_node_rcu_free(struct rcu_head *head);
 
 static void xa_node_free(struct xa_node *node)
 {
-	XA_NODE_BUG_ON(node, !list_empty(&node->private_list));
 	node->array = XA_RCU_FREE;
 	call_rcu(&node->rcu_head, radix_tree_node_rcu_free);
 }
@@ -177,7 +176,6 @@ void xas_destroy(struct xa_state *xas)
 	struct xa_node *next, *node = xas->xa_alloc;
 
 	while (node) {
-		XA_NODE_BUG_ON(node, !list_empty(&node->private_list));
 		next = rcu_dereference_raw(node->parent);
 		radix_tree_node_rcu_free(&node->rcu_head);
 		xas->xa_alloc = node = next;
@@ -197,8 +195,6 @@ bool xas_nomem(struct xa_state *xas, gfp_t gfp)
 	if (!xas->xa_alloc)
 		return false;
 	xas->xa_alloc->parent = NULL;
-	XA_NODE_BUG_ON(xas->xa_alloc,
-		       !list_empty(&xas->xa_alloc->private_list));
 	xas->xa_node = XAS_RESTART;
 	return true;
 }
@@ -207,8 +203,6 @@ static void xas_update(struct xa_state *xas, struct xa_node *node)
 {
 	if (xas->xa_update)
 		xas->xa_update(node);
-	else
-		XA_NODE_BUG_ON(node, !list_empty(&node->private_list));
 }
 
 static void *xas_alloc(struct xa_state *xas, unsigned int shift)
@@ -238,11 +232,8 @@ static void *xas_alloc(struct xa_state *xas, unsigned int shift)
 	if (parent) {
 		node->offset = xas->xa_offset;
 		parent->count++;
-		XA_NODE_BUG_ON(node, parent->count > XA_CHUNK_SIZE);
 		xas_update(xas, parent);
 	}
-	XA_NODE_BUG_ON(node, shift > BITS_PER_LONG);
-	XA_NODE_BUG_ON(node, !list_empty(&node->private_list));
 	node->shift = shift;
 	node->count = 0;
 	node->nr_values = 0;
@@ -275,7 +266,6 @@ static void xas_delete_node(struct xa_state *xas)
 	for (;;) {
 		struct xa_node *parent;
 
-		XA_NODE_BUG_ON(node, node->count > XA_CHUNK_SIZE);
 		if (node->count)
 			break;
 
@@ -292,7 +282,6 @@ static void xas_delete_node(struct xa_state *xas)
 
 		parent->slots[xas->xa_offset] = NULL;
 		parent->count--;
-		XA_NODE_BUG_ON(parent, parent->count > XA_CHUNK_SIZE);
 		node = parent;
 		xas_update(xas, node);
 	}
@@ -303,7 +292,6 @@ static void xas_delete_node(struct xa_state *xas)
 		for (;;) {
 			void *entry;
 
-			XA_NODE_BUG_ON(node, node->count > XA_CHUNK_SIZE);
 			if (node->count != 1)
 				break;
 			entry = xa_entry_locked(xa, node, 0);
@@ -389,7 +377,6 @@ static int xas_expand(struct xa_state *xas, void *head)
 	while (max > max_index(head)) {
 		xa_mark_t mark = 0;
 
-		XA_NODE_BUG_ON(node, shift > BITS_PER_LONG);
 		node = xas_alloc(xas, shift);
 		if (!node)
 			return -ENOMEM;
@@ -493,8 +480,6 @@ static void update_node(struct xa_state *xas, struct xa_node *node, int count,
 
 	node->count += count;
 	node->nr_values += values;
-	XA_NODE_BUG_ON(node, node->count > XA_CHUNK_SIZE);
-	XA_NODE_BUG_ON(node, node->nr_values > XA_CHUNK_SIZE);
 	xas_update(xas, node);
 	if (count < 0)
 		xas_delete_node(xas);

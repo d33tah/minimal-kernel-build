@@ -104,8 +104,6 @@ void update_rq_clock(struct rq *rq)
 {
 	s64 delta;
 
-	lockdep_assert_rq_held(rq);
-
 	if (rq->clock_update_flags & RQCF_ACT_SKIP)
 		return;
 
@@ -166,8 +164,6 @@ void resched_curr(struct rq *rq)
 {
 	struct task_struct *curr = rq->curr;
 	int cpu;
-
-	lockdep_assert_rq_held(rq);
 
 	if (test_tsk_need_resched(curr))
 		return;

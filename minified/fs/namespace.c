@@ -153,7 +153,6 @@ int __mnt_want_write(struct vfsmount *m)
 	mnt->mnt_writers++;
 
 	smp_mb();
-	might_lock(&mount_lock.lock);
 	/* CONFIG_PREEMPT_RT not enabled */
 	while (READ_ONCE(mnt->mnt.mnt_flags) & MNT_WRITE_HOLD)
 		cpu_relax();

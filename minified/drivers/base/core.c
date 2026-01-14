@@ -347,8 +347,6 @@ void put_device(struct device *dev)
 
 static bool kill_device(struct device *dev)
 {
-	device_lock_assert(dev);
-
 	if (dev->p->dead)
 		return false;
 	dev->p->dead = true;

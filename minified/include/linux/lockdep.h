@@ -49,7 +49,7 @@ static inline void lockdep_on(void)
 
 /* lockdep_assert removed - unused */
 
-#define lockdep_assert_held(l)			do { (void)(l); } while (0)
+/* lockdep_assert_held removed - no callers */
 /* lockdep_assert_not_held, lockdep_assert_held_write, lockdep_assert_held_read removed - unused */
 
 #define lockdep_pin_lock(l)			({ struct pin_cookie cookie = { }; cookie; })
@@ -94,7 +94,7 @@ static inline void lockdep_on(void)
 
 /* lock_map_acquire, lock_map_acquire_read, lock_map_release removed - never called */
 
-# define might_lock(lock) do { } while (0)
+/* might_lock removed - no callers */
 
 /* lockdep_assert_irqs_enabled/disabled removed - no callers */
 

@@ -69,7 +69,7 @@ static inline bool rcu_is_watching(void) { return true; }
 
 static inline void rcu_all_qs(void) { barrier(); }
 
-/* rcu_*_lock_map externs removed - never defined, rcu_lock_acquire/release are empty */
+/* rcu_*_lock_map externs removed - rcu_lock_acquire/release are empty stubs */
 # define rcu_lock_acquire(a)		do { } while (0)
 # define rcu_lock_release(a)		do { } while (0)
 

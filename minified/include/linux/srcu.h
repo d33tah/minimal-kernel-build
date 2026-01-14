@@ -77,7 +77,7 @@ static inline int srcu_read_lock(struct srcu_struct *ssp) __acquires(ssp)
 	int retval;
 
 	retval = __srcu_read_lock(ssp);
-	rcu_lock_acquire(&(ssp)->dep_map);
+	/* rcu_lock_acquire removed - empty stub */
 	return retval;
 }
 
@@ -86,7 +86,7 @@ static inline void srcu_read_unlock(struct srcu_struct *ssp, int idx)
 	__releases(ssp)
 {
 	WARN_ON_ONCE(idx & ~0x1);
-	rcu_lock_release(&(ssp)->dep_map);
+	/* rcu_lock_release removed - empty stub */
 	__srcu_read_unlock(ssp, idx);
 }
 

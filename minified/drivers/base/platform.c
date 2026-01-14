@@ -102,10 +102,8 @@ static int platform_probe(struct device *_dev)
 	if (drv->probe)
 		ret = drv->probe(dev);
 
-	if (drv->prevent_deferred_probe && ret == -EPROBE_DEFER) {
-		dev_warn(_dev, "probe deferral not supported\n");
+	if (drv->prevent_deferred_probe && ret == -EPROBE_DEFER)
 		ret = -ENXIO;
-	}
 
 	return ret;
 }
@@ -115,14 +113,8 @@ static void platform_remove(struct device *_dev)
 	struct platform_driver *drv = to_platform_driver(_dev->driver);
 	struct platform_device *dev = to_platform_device(_dev);
 
-	if (drv->remove) {
-		int ret = drv->remove(dev);
-
-		if (ret)
-			dev_warn(
-				_dev,
-				"remove callback returned a non-zero value. This will be ignored.\n");
-	}
+	if (drv->remove)
+		drv->remove(dev);
 }
 
 static void platform_shutdown(struct device *_dev)

@@ -964,7 +964,6 @@ struct device *tty_register_device(struct tty_driver *driver, unsigned index,
 
 static void tty_device_create_release(struct device *dev)
 {
-	dev_dbg(dev, "releasing...\n");
 	kfree(dev);
 }
 

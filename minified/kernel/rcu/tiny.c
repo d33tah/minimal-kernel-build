@@ -104,10 +104,6 @@ rcu_process_callbacks(struct softirq_action *unused)
 
 void synchronize_rcu(void)
 {
-	RCU_LOCKDEP_WARN(
-		lock_is_held(&rcu_bh_lock_map) || lock_is_held(&rcu_lock_map) ||
-			lock_is_held(&rcu_sched_lock_map),
-		"Illegal synchronize_rcu() in RCU read-side critical section");
 }
 
 void call_rcu(struct rcu_head *head, rcu_callback_t func)

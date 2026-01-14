@@ -47,7 +47,6 @@ static void deferred_probe_work_func(struct work_struct *work)
 
 		device_pm_move_to_tail(dev);
 
-		dev_dbg(dev, "Retrying from deferred list\n");
 		bus_probe_device(dev);
 		mutex_lock(&deferred_probe_mutex);
 
@@ -64,7 +63,6 @@ void driver_deferred_probe_add(struct device *dev)
 
 	mutex_lock(&deferred_probe_mutex);
 	if (list_empty(&dev->p->deferred_probe)) {
-		dev_dbg(dev, "Added to deferred list\n");
 		list_add_tail(&dev->p->deferred_probe,
 			      &deferred_probe_pending_list);
 	}
@@ -75,7 +73,6 @@ void driver_deferred_probe_del(struct device *dev)
 {
 	mutex_lock(&deferred_probe_mutex);
 	if (!list_empty(&dev->p->deferred_probe)) {
-		dev_dbg(dev, "Removed from deferred list\n");
 		list_del_init(&dev->p->deferred_probe);
 		__device_set_deferred_probe_reason(dev, NULL);
 	}
@@ -171,9 +168,6 @@ static int call_driver_probe(struct device *dev, struct device_driver *drv)
 	else if (drv->probe)
 		ret = drv->probe(dev);
 
-	if (ret == -EPROBE_DEFER)
-		dev_dbg(dev, "Driver %s requests probe deferral\n", drv->name);
-
 	return ret;
 }
 
@@ -181,16 +175,13 @@ static int really_probe(struct device *dev, struct device_driver *drv)
 {
 	int ret;
 
-	if (defer_all_probes) {
-		dev_dbg(dev, "Driver %s force probe deferral\n", drv->name);
+	if (defer_all_probes)
 		return -EPROBE_DEFER;
-	}
 
 	/* device_links_check_suppliers always returns 0 - inlined side effect */
 	dev->links.status = DL_DEV_PROBING;
 
 	if (!list_empty(&dev->devres_head)) {
-		dev_crit(dev, "Resources present before probing\n");
 		ret = -EBUSY;
 		goto done;
 	}
@@ -311,11 +302,9 @@ static int __device_attach_driver(struct device_driver *drv, void *_data)
 	if (ret == 0) {
 		return 0;
 	} else if (ret == -EPROBE_DEFER) {
-		dev_dbg(dev, "Device match requests probe deferral\n");
 		dev->can_match = true;
 		driver_deferred_probe_add(dev);
 	} else if (ret < 0) {
-		dev_dbg(dev, "Bus failed to match device: %d\n", ret);
 		return ret;
 	}
 
@@ -346,7 +335,6 @@ static void __device_attach_async_helper(void *_dev, async_cookie_t cookie)
 		pm_runtime_get_sync(dev->parent);
 
 	bus_for_each_drv(dev->bus, NULL, &data, __device_attach_driver);
-	dev_dbg(dev, "async probe completed\n");
 
 	pm_request_idle(dev);
 
@@ -386,7 +374,6 @@ static int __device_attach(struct device *dev, bool allow_async)
 		ret = bus_for_each_drv(dev->bus, NULL, &data,
 				       __device_attach_driver);
 		if (!ret && allow_async && data.have_async) {
-			dev_dbg(dev, "scheduling asynchronous probe\n");
 			get_device(dev);
 			async = true;
 		} else {
@@ -431,11 +418,9 @@ static int __driver_attach(struct device *dev, void *data)
 	if (ret == 0) {
 		return 0;
 	} else if (ret == -EPROBE_DEFER) {
-		dev_dbg(dev, "Device match requests probe deferral\n");
 		dev->can_match = true;
 		driver_deferred_probe_add(dev);
 	} else if (ret < 0) {
-		dev_dbg(dev, "Bus failed to match device: %d\n", ret);
 		return ret;
 	}
 

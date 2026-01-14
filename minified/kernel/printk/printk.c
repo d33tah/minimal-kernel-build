@@ -216,8 +216,7 @@ void console_unblank(void)
 			c->unblank();
 	console_unlock();
 
-	if (!oops_in_progress)
-		pr_flush(1000, true);
+	/* pr_flush removed - always returns true, return value unused */
 }
 
 /* console_flush_on_panic simplified - only called with CONSOLE_FLUSH_PENDING */

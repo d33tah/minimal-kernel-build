@@ -34,9 +34,7 @@
 #include <asm/bugs.h>
 #include <asm/tlb.h>
 #include <asm/tlbflush.h>
-static inline void olpc_dt_build_devicetree(void)
-{
-}
+/* olpc_dt_build_devicetree removed - empty stub */
 #include <asm/pgalloc.h>
 #include <asm/sections.h>
 #include <asm/paravirt.h>
@@ -390,8 +388,7 @@ void __init paging_init(void)
 	pagetable_init();
 
 	__flush_tlb_all();
-
-	olpc_dt_build_devicetree();
+	/* olpc_dt_build_devicetree removed - empty stub */
 	sparse_init();
 	zone_sizes_init();
 }

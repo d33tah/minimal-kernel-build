@@ -89,9 +89,7 @@ extern void deferred_probe_extend_timeout(void);
 /* devices_kset_move_last removed - unused */
 extern struct kset *devices_kset;
 
-static inline void module_add_driver(struct module *mod,
-				     struct device_driver *drv) { }
-/* module_remove_driver, devtmpfs_init - never called */
+/* module_add_driver, module_remove_driver, devtmpfs_init removed - never called */
 
 /* device_links_*, fw_devlink_drivers_done removed - empty stubs or inlined */
 

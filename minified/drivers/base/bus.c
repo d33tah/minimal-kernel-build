@@ -282,9 +282,7 @@ int bus_add_driver(struct device_driver *drv)
 		if (error)
 			goto out_del_list;
 	}
-	module_add_driver(drv->owner, drv);
-
-	/* driver_create_file, driver_add_groups, add_bind_files calls removed - all stubs that do nothing */
+	/* module_add_driver, driver_create_file, driver_add_groups, add_bind_files - all stubs removed */
 
 	return 0;
 

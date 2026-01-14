@@ -50,10 +50,7 @@ irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc)
 	{
 		irqreturn_t res;
 
-		if (irq_settings_can_thread(desc) &&
-		    !(action->flags &
-		      (IRQF_NO_THREAD | IRQF_PERCPU | IRQF_ONESHOT)))
-			lockdep_hardirq_threaded();
+		/* lockdep_hardirq_threaded removed - empty stub */
 
 		res = action->handler(irq, action->dev_id);
 

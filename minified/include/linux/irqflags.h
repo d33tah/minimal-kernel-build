@@ -7,11 +7,10 @@
 
 /* ftrace/lockdep stubs removed - unused */
 # define lockdep_hardirqs_enabled()		0
-# define lockdep_hardirq_threaded()		do { } while (0)
-# define lockdep_hardirq_exit()			do { } while (0)
-/* lockdep_hrtimer_enter, lockdep_hrtimer_exit, stop_critical_timings, start_critical_timings removed - unused */
+/* lockdep_hardirq_threaded, lockdep_hardirq_exit, lockdep_hrtimer_enter,
+   lockdep_hrtimer_exit, stop_critical_timings, start_critical_timings removed - unused */
 
-#define raw_check_bogus_irq_restore() do { } while (0)
+/* raw_check_bogus_irq_restore removed - empty stub */
 
 #define raw_local_irq_disable()		arch_local_irq_disable()
 #define raw_local_irq_enable()		arch_local_irq_enable()
@@ -23,7 +22,6 @@
 #define raw_local_irq_restore(flags)			\
 	do {						\
 		typecheck(unsigned long, flags);	\
-		raw_check_bogus_irq_restore();		\
 		arch_local_irq_restore(flags);		\
 	} while (0)
 #define raw_local_save_flags(flags)			\

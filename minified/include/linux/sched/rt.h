@@ -18,10 +18,6 @@ static inline int rt_task(struct task_struct *p)
 }
 
 # define rt_mutex_adjust_pi(p)		do { } while (0)
-static inline bool tsk_is_pi_blocked(struct task_struct *tsk)
-{
-	return false;
-}
 
 
 #define RR_TIMESLICE		(100 * HZ / 1000)

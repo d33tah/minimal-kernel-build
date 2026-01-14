@@ -33,7 +33,7 @@ void rcutree_migrate_callbacks(int cpu);
 /* rcu_init_tasks_generic, rcu_init_nohz, exit_tasks_rcu_start,
    exit_tasks_rcu_finish removed - call sites removed */
 
-#define rcu_tasks_qs(t, preempt) do { } while (0)
+/* rcu_tasks_qs removed - no callers */
 
 
 /* TINY_RCU only */
@@ -59,7 +59,6 @@ static inline void rcu_softirq_qs(void)
 #define rcu_note_context_switch(preempt) \
 	do { \
 		rcu_qs(); \
-		rcu_tasks_qs(current, (preempt)); \
 	} while (0)
 
 /* rcu_idle_enter, rcu_idle_exit, rcu_irq_enter, rcu_irq_exit,

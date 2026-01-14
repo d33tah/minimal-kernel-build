@@ -332,7 +332,7 @@ void __noreturn do_exit(long code)
 			mmgrab(mm);
 			BUG_ON(mm != current->active_mm);
 			task_lock(current);
-			smp_mb__after_spinlock();
+			/* smp_mb__after_spinlock removed - empty stub */
 			local_irq_disable();
 			current->mm = NULL;
 			enter_lazy_tlb(mm, current);

@@ -663,8 +663,7 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 	rcu_note_context_switch(!!sched_mode);
 
 	rq_lock(rq, &rf);
-	smp_mb__after_spinlock();
-
+	/* smp_mb__after_spinlock removed - empty stub */
 	rq->clock_update_flags <<= 1;
 	update_rq_clock(rq);
 

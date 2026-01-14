@@ -40,7 +40,7 @@ void init_timer_key(struct timer_list *timer, void (*func)(struct timer_list *),
 	timer->entry.pprev = NULL;
 	timer->function = func;
 	timer->flags = flags | raw_smp_processor_id();
-	lockdep_init_map(&timer->lockdep_map, name, key, 0);
+	/* lockdep_init_map removed - empty stub */
 }
 /* mod_timer, del_timer removed - never called */
 

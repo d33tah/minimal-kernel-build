@@ -58,10 +58,10 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 
 	/* security_inode_alloc always returns 0 */
 	spin_lock_init(&inode->i_lock);
-	lockdep_set_class(&inode->i_lock, &sb->s_type->i_lock_key);
+	/* lockdep_set_class removed - empty stub */
 
 	init_rwsem(&inode->i_rwsem);
-	lockdep_set_class(&inode->i_rwsem, &sb->s_type->i_mutex_key);
+	/* lockdep_set_class removed - empty stub */
 
 	mapping->a_ops = &empty_aops;
 	mapping->host = inode;
@@ -71,9 +71,7 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 	mapping_set_gfp_mask(mapping, GFP_HIGHUSER_MOVABLE);
 	/* mapping->private_data removed - field removed */
 	init_rwsem(&mapping->invalidate_lock);
-	lockdep_set_class_and_name(&mapping->invalidate_lock,
-				   &sb->s_type->invalidate_lock_key,
-				   "mapping.invalidate_lock");
+	/* lockdep_set_class_and_name removed - empty stub */
 	/* inode->i_private removed - unused */
 	inode->i_mapping = mapping;
 	INIT_HLIST_HEAD(&inode->i_dentry);

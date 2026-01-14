@@ -74,7 +74,7 @@ static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
 		goto err_desc;
 
 	raw_spin_lock_init(&desc->lock);
-	lockdep_set_class(&desc->lock, &irq_desc_lock_class);
+	/* lockdep_set_class removed - empty stub */
 	mutex_init(&desc->request_mutex);
 	init_waitqueue_head(&desc->wait_for_threads);
 

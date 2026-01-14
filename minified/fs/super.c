@@ -130,7 +130,7 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags,
 	INIT_LIST_HEAD(&s->s_mounts);
 	s->s_user_ns = get_user_ns(user_ns);
 	init_rwsem(&s->s_umount);
-	lockdep_set_class(&s->s_umount, &type->s_umount_key);
+	/* lockdep_set_class removed - empty stub */
 
 	down_write_nested(&s->s_umount, SINGLE_DEPTH_NESTING);
 
@@ -156,7 +156,7 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags,
 	s->s_count = 1;
 	atomic_set(&s->s_active, 1);
 	mutex_init(&s->s_vfs_rename_mutex);
-	lockdep_set_class(&s->s_vfs_rename_mutex, &type->s_vfs_rename_key);
+	/* lockdep_set_class removed - empty stub */
 	s->s_maxbytes = MAX_NON_LFS;
 	s->s_op = &default_op;
 	/* s_time_gran, s_time_min, s_time_max removed - fields removed */

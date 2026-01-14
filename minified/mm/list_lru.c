@@ -174,8 +174,7 @@ int __list_lru_init(struct list_lru *lru, bool memcg_aware,
 
 	/* for_each_node simplified - single node */
 	spin_lock_init(&lru->node[0].lock);
-	if (key)
-		lockdep_set_class(&lru->node[0].lock, key);
+	/* lockdep_set_class removed - empty stub */
 	INIT_LIST_HEAD(&lru->node[0].lru.list);
 	lru->node[0].lru.nr_items = 0;
 

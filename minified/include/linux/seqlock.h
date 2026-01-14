@@ -17,8 +17,7 @@ typedef struct seqcount {
 static inline void __seqcount_init(seqcount_t *s, const char *name,
 					  struct lock_class_key *key)
 {
-	 
-	lockdep_init_map(&s->dep_map, name, key, 0);
+	/* lockdep_init_map removed - empty stub */
 	s->sequence = 0;
 }
 

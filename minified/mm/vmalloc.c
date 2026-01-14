@@ -913,18 +913,7 @@ static DEFINE_PER_CPU(struct vmap_block_queue, vmap_block_queue);
 
 /* purge_fragmented_blocks_allcpus definition removed - already inlined in stubs above */
 
-/* vmlist removed - never assigned, always NULL */
-
-static inline unsigned int vm_area_page_order(struct vm_struct *vm)
-{
-	return 0;
-}
-
-static inline void set_vm_area_page_order(struct vm_struct *vm,
-					  unsigned int order)
-{
-	BUG_ON(order != 0);
-}
+/* vmlist, vm_area_page_order, set_vm_area_page_order removed - page order always 0 */
 
 /* vmap_init_free_space inlined into vmalloc_init */
 
@@ -1212,8 +1201,8 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 		return NULL;
 	}
 
-	set_vm_area_page_order(area, page_shift - PAGE_SHIFT);
-	page_order = vm_area_page_order(area);
+	/* set_vm_area_page_order, vm_area_page_order removed - page_order always 0 */
+	page_order = 0;
 
 	area->nr_pages = vm_area_alloc_pages(gfp_mask | __GFP_NOWARN, node,
 					     page_order, nr_small_pages,

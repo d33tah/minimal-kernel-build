@@ -797,15 +797,6 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 	if (!calculate_sizes(s))
 		goto error;
 
-	if (disable_higher_order_debug) {
-		if (get_order(s->size) > get_order(s->object_size)) {
-			s->flags &= ~DEBUG_METADATA_FLAGS;
-			s->offset = 0;
-			if (!calculate_sizes(s))
-				goto error;
-		}
-	}
-
 #if defined(CONFIG_HAVE_CMPXCHG_DOUBLE) && \
 	defined(CONFIG_HAVE_ALIGNED_STRUCT_PAGE)
 	if (system_has_cmpxchg_double() && (s->flags & SLAB_NO_CMPXCHG) == 0)

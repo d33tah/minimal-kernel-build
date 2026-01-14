@@ -5,10 +5,8 @@
 
 /* SCHED_CPUFREQ_IOWAIT removed - unused */
 #include <linux/sched.h>
-/* Inlined from linux/sched/deadline.h */
+/* dl_prio, dl_task removed - always returned false */
 #define MAX_DL_PRIO 0
-static inline int dl_prio(int prio) { return unlikely(prio < MAX_DL_PRIO); }
-static inline int dl_task(struct task_struct *p) { return dl_prio(p->prio); }
 #include <linux/sched/loadavg.h>
 #include <linux/sched/mm.h>
 

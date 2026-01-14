@@ -163,9 +163,7 @@ static int __init warn_bootconfig(char *str)
 {
 	return 0;
 }
-#define exit_boot_config() \
-	do {               \
-	} while (0)
+/* exit_boot_config removed - empty stub */
 early_param("bootconfig", warn_bootconfig);
 
 static void __init repair_env_string(char *param, char *val)
@@ -619,8 +617,7 @@ static int __ref kernel_init(void *unused)
 	/* async_synchronize_full removed - empty stub (runs synchronously) */
 
 	system_state = SYSTEM_FREEING_INITMEM;
-	/* kprobe_free_init_mem, kgdb_free_init_mem removed - empty stubs */
-	exit_boot_config();
+	/* kprobe_free_init_mem, kgdb_free_init_mem, exit_boot_config removed - empty stubs */
 	free_initmem();
 	/* Inlined mark_readonly */
 	if (rodata_enabled) {

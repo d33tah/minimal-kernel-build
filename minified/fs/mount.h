@@ -92,9 +92,6 @@ extern struct mount *__lookup_mnt(struct vfsmount *, struct dentry *);
 extern int __legitimize_mnt(struct vfsmount *, unsigned);
 extern bool legitimize_mnt(struct vfsmount *, unsigned);
 
-/* __detach_mounts, detach_mounts removed - both were stubs */
-static inline void detach_mounts(struct dentry *dentry) {}
-
 static inline void get_mnt_ns(struct mnt_namespace *ns)
 {
 	refcount_inc(&ns->ns.count);

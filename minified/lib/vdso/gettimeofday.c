@@ -240,12 +240,6 @@ __cvdso_clock_getres_data(const struct vdso_data *vd, clockid_t clock,
 	return 0;
 }
 
-static __maybe_unused int __cvdso_clock_getres(clockid_t clock,
-					       struct __kernel_timespec *res)
-{
-	return __cvdso_clock_getres_data(__arch_get_vdso_data(), clock, res);
-}
-
 #ifdef BUILD_VDSO32
 static __maybe_unused int
 __cvdso_clock_getres_time32_data(const struct vdso_data *vd, clockid_t clock,

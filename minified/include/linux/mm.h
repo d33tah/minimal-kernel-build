@@ -586,8 +586,7 @@ static __always_inline void *lowmem_page_address(const struct page *page)
 
 /* WANT_PAGE_VIRTUAL and HASHED_PAGE_VIRTUAL blocks removed - never defined */
 #define page_address(page) lowmem_page_address(page)
-/* set_page_address removed - never used */
-#define page_address_init()  do { } while(0)
+/* set_page_address, page_address_init removed - never used */
 
 static inline void *folio_address(const struct folio *folio)
 {

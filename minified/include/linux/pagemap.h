@@ -251,7 +251,7 @@ static inline int folio_wait_locked_killable(struct folio *folio)
 	return folio_wait_bit_killable(folio, PG_locked);
 }
 
-int folio_put_wait_locked(struct folio *folio, int state);
+/* folio_put_wait_locked removed - always returned 0 */
 void wait_on_page_writeback(struct page *page);
 void folio_wait_writeback(struct folio *folio);
 void folio_end_writeback(struct folio *folio);

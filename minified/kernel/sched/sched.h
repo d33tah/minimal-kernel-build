@@ -386,20 +386,15 @@ static inline void rq_clock_skip_update(struct rq *rq)
 
 struct rq_flags {
 	unsigned long flags;
-	struct pin_cookie cookie;
 };
 
 
 static inline void rq_pin_lock(struct rq *rq, struct rq_flags *rf)
 {
-	rf->cookie = lockdep_pin_lock(__rq_lockp(rq));
-
 }
 
 static inline void rq_unpin_lock(struct rq *rq, struct rq_flags *rf)
 {
-
-	lockdep_unpin_lock(__rq_lockp(rq), rf->cookie);
 }
 
 struct rq *__task_rq_lock(struct task_struct *p, struct rq_flags *rf)

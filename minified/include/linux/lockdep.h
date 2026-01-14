@@ -52,9 +52,8 @@ static inline void lockdep_on(void)
 /* lockdep_assert_held removed - no callers */
 /* lockdep_assert_not_held, lockdep_assert_held_write, lockdep_assert_held_read removed - unused */
 
-#define lockdep_pin_lock(l)			({ struct pin_cookie cookie = { }; cookie; })
+/* lockdep_pin_lock/unpin_lock removed - no callers */
 /* lockdep_repin_lock removed - unused */
-#define lockdep_unpin_lock(l, c)		do { (void)(l); (void)(c); } while (0)
 
 /* STATIC_LOCKDEP_MAP_INIT removed - unused */
 

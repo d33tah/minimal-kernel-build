@@ -439,6 +439,10 @@ COND_SYSCALL(dup2);
 COND_SYSCALL(dup3);
 COND_SYSCALL(pipe);
 COND_SYSCALL(pipe2);
+COND_SYSCALL(sched_setattr);
+COND_SYSCALL(sched_getattr);
+COND_SYSCALL(sched_getaffinity);
+COND_SYSCALL(sched_rr_get_interval);
 COND_SYSCALL(utimensat_time32);
 COND_SYSCALL(clock_adjtime32);
 

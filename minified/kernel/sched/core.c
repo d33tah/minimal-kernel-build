@@ -893,12 +893,7 @@ SYSCALL_DEFINE2(sched_setparam, pid_t, pid, struct sched_param __user *, param)
 	return 0;
 }
 
-SYSCALL_DEFINE3(sched_setattr, pid_t, pid, struct sched_attr __user *, uattr,
-		unsigned int, flags)
-{
-	/* Stubbed: sched_setattr not needed for minimal kernel */
-	return -ENOSYS;
-}
+/* sched_setattr replaced with COND_SYSCALL */
 
 SYSCALL_DEFINE1(sched_getscheduler, pid_t, pid)
 {
@@ -912,12 +907,7 @@ SYSCALL_DEFINE2(sched_getparam, pid_t, pid, struct sched_param __user *, param)
 	return 0;
 }
 
-SYSCALL_DEFINE4(sched_getattr, pid_t, pid, struct sched_attr __user *, uattr,
-		unsigned int, usize, unsigned int, flags)
-{
-	/* Stubbed: sched_getattr not needed for minimal kernel */
-	return -ENOSYS;
-}
+/* sched_getattr replaced with COND_SYSCALL */
 
 long sched_setaffinity(pid_t pid, const struct cpumask *in_mask)
 {
@@ -938,12 +928,7 @@ long sched_getaffinity(pid_t pid, struct cpumask *mask)
 	return -ESRCH;
 }
 
-SYSCALL_DEFINE3(sched_getaffinity, pid_t, pid, unsigned int, len,
-		unsigned long __user *, user_mask_ptr)
-{
-	/* Stub: just return success for minimal kernel */
-	return -ENOSYS;
-}
+/* sched_getaffinity syscall replaced with COND_SYSCALL */
 
 /* Stub: sched_yield not needed for Hello World */
 SYSCALL_DEFINE0(sched_yield)
@@ -983,12 +968,7 @@ SYSCALL_DEFINE1(sched_get_priority_min, int, policy)
 	return 0;
 }
 
-/* Stub: sched_rr_get_interval not needed for Hello World */
-SYSCALL_DEFINE2(sched_rr_get_interval, pid_t, pid,
-		struct __kernel_timespec __user *, interval)
-{
-	return -ENOSYS;
-}
+/* sched_rr_get_interval replaced with COND_SYSCALL */
 
 void __init init_idle(struct task_struct *idle, int cpu)
 {

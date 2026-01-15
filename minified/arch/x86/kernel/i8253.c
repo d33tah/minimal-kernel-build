@@ -12,7 +12,7 @@ static bool __init use_pit(void)
 	if (!boot_cpu_has(X86_FEATURE_TSC))
 		return true;
 
-	return apic_needs_pit();
+	return true; /* apic_needs_pit() always returns true */
 }
 
 bool __init pit_timer_init(void)

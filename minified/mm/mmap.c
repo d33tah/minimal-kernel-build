@@ -31,6 +31,9 @@
 
 #include "internal.h"
 
+/* mmap_min_addr moved from security/min_addr.c */
+unsigned long mmap_min_addr = CONFIG_DEFAULT_MMAP_MIN_ADDR;
+
 #ifndef arch_mmap_check
 #define arch_mmap_check(addr, len, flags) (0)
 #endif

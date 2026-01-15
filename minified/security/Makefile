@@ -4,7 +4,7 @@
 #
 
 # commoncap.o removed - all functions were stubs never called
-obj-$(CONFIG_MMU)			+= min_addr.o
+# min_addr.o removed - mmap_min_addr moved to mm/mmap.c
 
 # Object file lists
 obj-$(CONFIG_SECURITY)			+= security.o

@@ -104,8 +104,4 @@ __visible struct task_struct *__switch_to(struct task_struct *prev_p,
 	return prev_p;
 }
 
-/* Stub: arch_prctl not needed for Hello World */
-SYSCALL_DEFINE2(arch_prctl, int, option, unsigned long, arg2)
-{
-	return -ENOSYS;
-}
+/* arch_prctl replaced with COND_SYSCALL */

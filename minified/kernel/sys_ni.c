@@ -443,6 +443,11 @@ COND_SYSCALL(sched_setattr);
 COND_SYSCALL(sched_getattr);
 COND_SYSCALL(sched_getaffinity);
 COND_SYSCALL(sched_rr_get_interval);
+COND_SYSCALL(ioperm);
+COND_SYSCALL(iopl);
+COND_SYSCALL(set_thread_area);
+COND_SYSCALL(get_thread_area);
+COND_SYSCALL(arch_prctl);
 COND_SYSCALL(utimensat_time32);
 COND_SYSCALL(clock_adjtime32);
 

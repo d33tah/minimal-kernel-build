@@ -51,8 +51,7 @@
 	__v;								\
 })
 
-#define ASSERT_EXCLUSIVE_BITS(var, mask) do { } while (0)
-/* ASSERT_EXCLUSIVE_WRITER removed - unused */
+/* ASSERT_EXCLUSIVE_BITS, ASSERT_EXCLUSIVE_WRITER removed - unused */
 
 #endif
 

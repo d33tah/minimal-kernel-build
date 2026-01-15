@@ -7,12 +7,7 @@
 
 /* PRINTK_INFO_*, struct dev_printk_info removed - never instantiated */
 
-/* dev_printk stubs - only defining those actually used */
-#define dev_crit(dev, fmt, ...) do { } while (0)
-#define dev_err(dev, fmt, ...) do { } while (0)
-#define dev_warn(dev, fmt, ...) do { } while (0)
-#define dev_dbg(dev, fmt, ...) do { } while (0)
-/* dev_err_once, dev_WARN_ONCE removed - unused */
+/* dev_printk stubs all removed - dev_crit, dev_err, dev_warn, dev_dbg, dev_err_once, dev_WARN_ONCE */
 /* end dev_printk.h */
 
 #include <linux/ioport.h>

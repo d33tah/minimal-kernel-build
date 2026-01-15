@@ -32,12 +32,7 @@ SYS_NI(clock_adjtime32);
 SYS_NI(alarm);
 #endif
 
-/* Stub: clock syscalls not needed for Hello World */
-SYSCALL_DEFINE2(clock_settime, const clockid_t, which_clock,
-		const struct __kernel_timespec __user *, tp)
-{
-	return -ENOSYS;
-}
+/* clock_settime replaced with COND_SYSCALL */
 
 SYSCALL_DEFINE2(clock_gettime, const clockid_t, which_clock,
 		struct __kernel_timespec __user *, tp)

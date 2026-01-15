@@ -448,6 +448,7 @@ COND_SYSCALL(iopl);
 COND_SYSCALL(set_thread_area);
 COND_SYSCALL(get_thread_area);
 COND_SYSCALL(arch_prctl);
+COND_SYSCALL(clock_settime);
 COND_SYSCALL(utimensat_time32);
 COND_SYSCALL(clock_adjtime32);
 

@@ -328,6 +328,8 @@ COND_SYSCALL(fstatfs);
 COND_SYSCALL(fstatfs64);
 COND_SYSCALL(ustat);
 COND_SYSCALL(getcwd);
+COND_SYSCALL(reboot);
+COND_SYSCALL(ptrace);
 COND_SYSCALL(utimensat_time32);
 COND_SYSCALL(clock_adjtime32);
 

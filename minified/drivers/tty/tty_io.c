@@ -36,9 +36,7 @@
 
 #include "tty.h"
 
-#define tty_debug_hangup(tty, f, args...) \
-	do {                              \
-	} while (0)
+/* tty_debug_hangup removed - was empty macro */
 
 struct ktermios tty_std_termios = {
 	.c_iflag = ICRNL | IXON,
@@ -669,8 +667,6 @@ static void tty_release_struct(struct tty_struct *tty, int idx)
 
 	tty_flush_works(tty);
 
-	tty_debug_hangup(tty, "freeing structure\n");
-
 	mutex_lock(&tty_mutex);
 	release_tty(tty, idx);
 	mutex_unlock(&tty_mutex);
@@ -831,7 +827,6 @@ retry_open:
 	}
 
 	tty_add_file(tty, filp);
-	tty_debug_hangup(tty, "opening (count=%d)\n", tty->count);
 
 	if (tty->ops->open)
 		retval = tty->ops->open(tty, filp);
@@ -840,8 +835,6 @@ retry_open:
 	filp->f_flags = saved_flags;
 
 	if (retval) {
-		tty_debug_hangup(tty, "open error %d, releasing\n", retval);
-
 		tty_unlock(tty);
 		tty_release(inode, filp);
 		if (retval != -ERESTARTSYS)

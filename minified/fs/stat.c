@@ -1,44 +1,8 @@
-#include <linux/fs.h>
-#include <linux/stat.h>
 #include <linux/syscalls.h>
 
-/* generic_fillattr removed - empty stub, callers simplified */
-/* vfs_getattr removed - always returned 0, caller simplified */
+/* generic_fillattr, vfs_getattr removed - stub callers simplified */
 
-SYSCALL_DEFINE2(stat, const char __user *, filename,
-		struct __old_kernel_stat __user *, statbuf)
-{
-	return -ENOSYS;
-}
-SYSCALL_DEFINE2(lstat, const char __user *, filename,
-		struct __old_kernel_stat __user *, statbuf)
-{
-	return -ENOSYS;
-}
-SYSCALL_DEFINE2(fstat, unsigned int, fd, struct __old_kernel_stat __user *,
-		statbuf)
-{
-	return -ENOSYS;
-}
-SYSCALL_DEFINE2(newstat, const char __user *, filename, struct stat __user *,
-		statbuf)
-{
-	return -ENOSYS;
-}
-SYSCALL_DEFINE2(newlstat, const char __user *, filename, struct stat __user *,
-		statbuf)
-{
-	return -ENOSYS;
-}
-SYSCALL_DEFINE4(newfstatat, int, dfd, const char __user *, filename,
-		struct stat __user *, statbuf, int, flag)
-{
-	return -ENOSYS;
-}
-SYSCALL_DEFINE2(newfstat, unsigned int, fd, struct stat __user *, statbuf)
-{
-	return -ENOSYS;
-}
+/* readlink returns -EINVAL not -ENOSYS, can't use COND_SYSCALL */
 SYSCALL_DEFINE4(readlinkat, int, dfd, const char __user *, pathname,
 		char __user *, buf, int, bufsiz)
 {
@@ -48,28 +12,4 @@ SYSCALL_DEFINE3(readlink, const char __user *, path, char __user *, buf, int,
 		bufsiz)
 {
 	return -EINVAL;
-}
-SYSCALL_DEFINE2(stat64, const char __user *, filename, struct stat64 __user *,
-		statbuf)
-{
-	return -ENOSYS;
-}
-SYSCALL_DEFINE2(lstat64, const char __user *, filename, struct stat64 __user *,
-		statbuf)
-{
-	return -ENOSYS;
-}
-SYSCALL_DEFINE2(fstat64, unsigned long, fd, struct stat64 __user *, statbuf)
-{
-	return -ENOSYS;
-}
-SYSCALL_DEFINE4(fstatat64, int, dfd, const char __user *, filename,
-		struct stat64 __user *, statbuf, int, flag)
-{
-	return -ENOSYS;
-}
-SYSCALL_DEFINE5(statx, int, dfd, const char __user *, filename, unsigned, flags,
-		unsigned int, mask, struct statx __user *, buffer)
-{
-	return -ENOSYS;
 }

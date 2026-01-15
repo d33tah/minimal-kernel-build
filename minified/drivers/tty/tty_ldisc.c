@@ -18,7 +18,7 @@
 #include <linux/ratelimit.h>
 #include "tty.h"
 
-#define tty_ldisc_debug(tty, f, args...)
+/* tty_ldisc_debug removed - was empty macro */
 
 enum {
 	LDISC_SEM_NORMAL,
@@ -233,7 +233,6 @@ static int tty_ldisc_open(struct tty_struct *tty, struct tty_ldisc *ld)
 		if (ret)
 			clear_bit(TTY_LDISC_OPEN, &tty->flags);
 
-		tty_ldisc_debug(tty, "%p: opened\n", ld);
 		return ret;
 	}
 	return 0;
@@ -245,7 +244,6 @@ static void tty_ldisc_close(struct tty_struct *tty, struct tty_ldisc *ld)
 	clear_bit(TTY_LDISC_OPEN, &tty->flags);
 	if (ld->ops->close)
 		ld->ops->close(tty);
-	tty_ldisc_debug(tty, "%p: closed\n", ld);
 }
 
 static void tty_ldisc_kill(struct tty_struct *tty)
@@ -315,8 +313,6 @@ void tty_ldisc_release(struct tty_struct *tty)
 	__tty_ldisc_unlock(tty);
 	if (o_tty)
 		__tty_ldisc_unlock(o_tty);
-
-	tty_ldisc_debug(tty, "released\n");
 }
 
 int tty_ldisc_init(struct tty_struct *tty)

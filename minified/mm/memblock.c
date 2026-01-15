@@ -220,7 +220,7 @@ static int __init_memblock memblock_double_array(struct memblock_type *type,
 {
 	struct memblock_region *new_array, *old_array;
 	phys_addr_t old_alloc_size, new_alloc_size;
-	phys_addr_t old_size, new_size, addr, new_end;
+	phys_addr_t old_size, new_size, addr;
 	int use_slab = slab_is_available();
 	int *in_slab;
 
@@ -260,8 +260,6 @@ static int __init_memblock memblock_double_array(struct memblock_type *type,
 		       type->name, type->max, type->max * 2);
 		return -1;
 	}
-
-	new_end = addr + new_size - 1;
 
 	memcpy(new_array, type->regions, old_size);
 	memset(new_array + type->max, 0, old_size);

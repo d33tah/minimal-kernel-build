@@ -67,37 +67,17 @@ SYSCALL_DEFINE0(setsid)
 {
 	return 1;
 }
-#ifdef __ARCH_WANT_SYS_OLD_UNAME
-SYSCALL_DEFINE1(uname, struct old_utsname __user *, name)
-{
-	return -ENOSYS;
-}
-SYSCALL_DEFINE1(olduname, struct oldold_utsname __user *, name)
-{
-	return -ENOSYS;
-}
-#endif
+/* uname/olduname replaced with COND_SYSCALL */
 SYSCALL_DEFINE2(sethostname, char __user *, name, int, len)
 {
 	return -EPERM;
 }
-#ifdef __ARCH_WANT_SYS_GETHOSTNAME
-SYSCALL_DEFINE2(gethostname, char __user *, name, int, len)
-{
-	return -ENOSYS;
-}
-#endif
+/* gethostname replaced with COND_SYSCALL */
 SYSCALL_DEFINE2(setdomainname, char __user *, name, int, len)
 {
 	return -EPERM;
 }
-#ifdef __ARCH_WANT_SYS_OLD_GETRLIMIT
-SYSCALL_DEFINE2(old_getrlimit, unsigned int, resource, struct rlimit __user *,
-		rlim)
-{
-	return -ENOSYS;
-}
-#endif
+/* old_getrlimit replaced with COND_SYSCALL */
 SYSCALL_DEFINE2(setrlimit, unsigned int, resource, struct rlimit __user *, rlim)
 {
 	return 0;

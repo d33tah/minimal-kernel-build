@@ -452,6 +452,10 @@ COND_SYSCALL(clock_settime);
 COND_SYSCALL(sigpending);
 COND_SYSCALL(signal);
 COND_SYSCALL(pause);
+COND_SYSCALL(uname);
+COND_SYSCALL(olduname);
+COND_SYSCALL(gethostname);
+COND_SYSCALL(old_getrlimit);
 COND_SYSCALL(utimensat_time32);
 COND_SYSCALL(clock_adjtime32);
 

@@ -597,12 +597,10 @@ static void tty_save_termios(struct tty_struct *tty)
 
 static void tty_flush_works(struct tty_struct *tty)
 {
-	flush_work(&tty->SAK_work);
+	/* SAK_work flush removed - never scheduled */
 	flush_work(&tty->hangup_work);
-	if (tty->link) {
-		flush_work(&tty->link->SAK_work);
+	if (tty->link)
 		flush_work(&tty->link->hangup_work);
-	}
 }
 
 static void release_one_tty(struct work_struct *work)
@@ -873,11 +871,7 @@ retry_open:
    ioctl syscall returns -ENOTTY directly (~50 LOC) */
 
 /* tty_ioctl removed - ioctl syscall returns ENOTTY */
-
-static void do_SAK_work(struct work_struct *work)
-{
-	/* Stub: SAK_work never scheduled in minimal kernel */
-}
+/* do_SAK_work removed - SAK_work never scheduled in minimal kernel */
 
 static struct device *tty_get_device(struct tty_struct *tty)
 {
@@ -913,7 +907,7 @@ struct tty_struct *alloc_tty_struct(struct tty_driver *driver, int idx)
 	spin_lock_init(&tty->flow.lock);
 	spin_lock_init(&tty->files_lock);
 	INIT_LIST_HEAD(&tty->tty_files);
-	INIT_WORK(&tty->SAK_work, do_SAK_work);
+	/* INIT_WORK(&tty->SAK_work) removed - never scheduled */
 
 	tty->driver = driver;
 	tty->ops = driver->ops;

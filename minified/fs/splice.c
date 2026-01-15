@@ -23,18 +23,3 @@ static const struct pipe_buf_operations stub_pipe_buf_ops = {
 };
 const struct pipe_buf_operations page_cache_pipe_buf_ops = stub_pipe_buf_ops;
 const struct pipe_buf_operations default_pipe_buf_ops = stub_pipe_buf_ops;
-/* splice_from_pipe removed - only declared, never called */
-SYSCALL_DEFINE6(splice, int, fd_in, loff_t __user *, off_in, int, fd_out,
-		loff_t __user *, off_out, size_t, len, unsigned int, flags)
-{
-	return -ENOSYS;
-}
-SYSCALL_DEFINE4(tee, int, fdin, int, fdout, size_t, len, unsigned int, flags)
-{
-	return -ENOSYS;
-}
-SYSCALL_DEFINE4(vmsplice, int, fd, const struct iovec __user *, iov,
-		unsigned long, nr_segs, unsigned int, flags)
-{
-	return -ENOSYS;
-}

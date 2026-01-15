@@ -11,7 +11,3 @@ char *dynamic_dname(struct dentry *dentry, char *buffer, int buflen,
 	return buffer;
 }
 /* simple_dname removed - d_dname callback never called */
-SYSCALL_DEFINE2(getcwd, char __user *, buf, unsigned long, size)
-{
-	return -ENOSYS;
-}

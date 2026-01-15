@@ -7,14 +7,12 @@
 
 /* is_hugepd, hugepd_t, __hugepd removed - never used */
 
-#ifndef pgd_huge
-#define pgd_huge(x)	0
-#endif
+/* pgd_huge removed - never called */
 #ifndef p4d_huge
 #define p4d_huge(x)	0
 #endif
 
-#define is_file_hugepages(file)	false
+/* is_file_hugepages removed - never called */
 
 struct hstate {};
 

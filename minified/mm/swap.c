@@ -113,13 +113,8 @@ static void pagevec_move_tail_fn(struct page *page, struct lruvec *lruvec)
 
 static bool pagevec_add_and_need_flush(struct pagevec *pvec, struct page *page)
 {
-	bool ret = false;
-
-	if (!pagevec_add(pvec, page) || PageCompound(page) ||
-	    lru_cache_disabled())
-		ret = true;
-
-	return ret;
+	/* lru_cache_disabled() call removed - always returns false */
+	return !pagevec_add(pvec, page) || PageCompound(page);
 }
 
 void folio_rotate_reclaimable(struct folio *folio)

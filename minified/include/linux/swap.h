@@ -36,8 +36,7 @@ extern void lru_cache_add(struct page *);
 void mark_page_accessed(struct page *);
 void folio_mark_accessed(struct folio *);
 
-/* lru_disable_count removed - never modified, always 0 */
-static inline bool lru_cache_disabled(void) { return false; }
+/* lru_disable_count, lru_cache_disabled removed - never used, always 0/false */
 
 extern void lru_add_drain(void);
 extern void lru_add_drain_cpu(int cpu);

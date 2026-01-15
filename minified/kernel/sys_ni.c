@@ -404,6 +404,14 @@ COND_SYSCALL(rt_tgsigqueueinfo);
 COND_SYSCALL(sigaltstack);
 COND_SYSCALL(rt_sigsuspend);
 COND_SYSCALL(sigsuspend);
+COND_SYSCALL(setpriority);
+COND_SYSCALL(times);
+COND_SYSCALL(newuname);
+COND_SYSCALL(getrlimit);
+COND_SYSCALL(prlimit64);
+COND_SYSCALL(getrusage);
+COND_SYSCALL(getcpu);
+COND_SYSCALL(sysinfo);
 COND_SYSCALL(utimensat_time32);
 COND_SYSCALL(clock_adjtime32);
 

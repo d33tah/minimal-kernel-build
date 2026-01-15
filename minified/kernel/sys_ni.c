@@ -420,6 +420,10 @@ COND_SYSCALL(fsmount);
 COND_SYSCALL(move_mount);
 COND_SYSCALL(pivot_root);
 COND_SYSCALL(mount_setattr);
+COND_SYSCALL(brk);
+COND_SYSCALL(mmap_pgoff);
+COND_SYSCALL(old_mmap);
+COND_SYSCALL(munmap);
 COND_SYSCALL(utimensat_time32);
 COND_SYSCALL(clock_adjtime32);
 

@@ -84,12 +84,6 @@ static struct vm_area_struct *remove_vma(struct vm_area_struct *vma)
 	return next;
 }
 
-/* Stub: brk syscall */
-SYSCALL_DEFINE1(brk, unsigned long, brk)
-{
-	return -ENOSYS;
-}
-
 static inline unsigned long vma_compute_gap(struct vm_area_struct *vma)
 {
 	unsigned long gap, prev_end;
@@ -548,29 +542,6 @@ unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len,
 		*populate = len;
 	return addr;
 }
-
-/* Stub: mmap syscalls */
-SYSCALL_DEFINE6(mmap_pgoff, unsigned long, addr, unsigned long, len,
-		unsigned long, prot, unsigned long, flags, unsigned long, fd,
-		unsigned long, pgoff)
-{
-	return -ENOSYS;
-}
-
-#ifdef __ARCH_WANT_SYS_OLD_MMAP
-struct mmap_arg_struct {
-	unsigned long addr;
-	unsigned long len;
-	unsigned long prot;
-	unsigned long flags;
-	unsigned long fd;
-	unsigned long offset;
-};
-SYSCALL_DEFINE1(old_mmap, struct mmap_arg_struct __user *, arg)
-{
-	return -ENOSYS;
-}
-#endif
 
 /* Removed: vma_wants_writenotify - was used only by vma_set_page_prot (~4 LOC) */
 
@@ -1072,12 +1043,6 @@ int vm_munmap(unsigned long start, size_t len)
 	mmap_write_unlock(mm);
 	userfaultfd_unmap_complete(mm, &uf);
 	return ret;
-}
-
-/* Stub: munmap syscall */
-SYSCALL_DEFINE2(munmap, unsigned long, addr, size_t, len)
-{
-	return -ENOSYS;
 }
 
 /* remap_file_pages removed - COND_SYSCALL provides stub */

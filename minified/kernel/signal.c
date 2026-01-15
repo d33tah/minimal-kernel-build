@@ -496,55 +496,6 @@ SYSCALL_DEFINE2(rt_sigpending, sigset_t __user *, uset, size_t, sigsetsize)
 	return 0;
 }
 
-SYSCALL_DEFINE4(rt_sigtimedwait, const sigset_t __user *, uthese,
-		siginfo_t __user *, uinfo,
-		const struct __kernel_timespec __user *, uts, size_t,
-		sigsetsize)
-{
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE2(kill, pid_t, pid, int, sig)
-{
-	/* Stub: kill not needed for minimal kernel */
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE4(pidfd_send_signal, int, pidfd, int, sig, siginfo_t __user *,
-		info, unsigned int, flags)
-{
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE3(tgkill, pid_t, tgid, pid_t, pid, int, sig)
-{
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE2(tkill, pid_t, pid, int, sig)
-{
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE3(rt_sigqueueinfo, pid_t, pid, int, sig, siginfo_t __user *,
-		uinfo)
-{
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE4(rt_tgsigqueueinfo, pid_t, tgid, pid_t, pid, int, sig,
-		siginfo_t __user *, uinfo)
-{
-	return -ENOSYS;
-}
-
-/* Stub: sigaltstack not needed for Hello World */
-SYSCALL_DEFINE2(sigaltstack, const stack_t __user *, uss, stack_t __user *,
-		uoss)
-{
-	return -ENOSYS;
-}
-
 /* Stub: sigpending not needed for Hello World */
 #ifdef __ARCH_WANT_SYS_SIGPENDING
 SYSCALL_DEFINE1(sigpending, old_sigset_t __user *, uset)
@@ -594,16 +545,6 @@ SYSCALL_DEFINE0(pause)
 	return -ENOSYS;
 }
 #endif
-
-SYSCALL_DEFINE2(rt_sigsuspend, sigset_t __user *, unewset, size_t, sigsetsize)
-{
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE3(sigsuspend, int, unused1, int, unused2, old_sigset_t, mask)
-{
-	return -ENOSYS;
-}
 
 void __init signals_init(void)
 {

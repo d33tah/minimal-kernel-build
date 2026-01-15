@@ -394,6 +394,16 @@ COND_SYSCALL(pwritev);
 COND_SYSCALL(pwritev2);
 COND_SYSCALL(sendfile);
 COND_SYSCALL(sendfile64);
+COND_SYSCALL(rt_sigtimedwait);
+COND_SYSCALL(kill);
+COND_SYSCALL(pidfd_send_signal);
+COND_SYSCALL(tgkill);
+COND_SYSCALL(tkill);
+COND_SYSCALL(rt_sigqueueinfo);
+COND_SYSCALL(rt_tgsigqueueinfo);
+COND_SYSCALL(sigaltstack);
+COND_SYSCALL(rt_sigsuspend);
+COND_SYSCALL(sigsuspend);
 COND_SYSCALL(utimensat_time32);
 COND_SYSCALL(clock_adjtime32);
 

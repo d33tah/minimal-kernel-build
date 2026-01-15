@@ -10,8 +10,6 @@
 
 #include "internals.h"
 
-static struct lock_class_key irq_desc_lock_class;
-
 static void desc_set_defaults(unsigned int irq, struct irq_desc *desc, int node,
 			      const struct cpumask *affinity,
 			      struct module *owner)

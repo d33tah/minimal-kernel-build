@@ -496,13 +496,7 @@ SYSCALL_DEFINE2(rt_sigpending, sigset_t __user *, uset, size_t, sigsetsize)
 	return 0;
 }
 
-/* Stub: sigpending not needed for Hello World */
-#ifdef __ARCH_WANT_SYS_SIGPENDING
-SYSCALL_DEFINE1(sigpending, old_sigset_t __user *, uset)
-{
-	return -ENOSYS;
-}
-#endif
+/* sigpending replaced with COND_SYSCALL */
 
 #ifdef __ARCH_WANT_SYS_SIGPROCMASK
 
@@ -530,21 +524,7 @@ SYSCALL_DEFINE3(sigaction, int, sig, const struct old_sigaction __user *, act,
 	return 0;
 }
 
-/* Stub: old signal() syscall not needed for Hello World */
-#ifdef __ARCH_WANT_SYS_SIGNAL
-SYSCALL_DEFINE2(signal, int, sig, __sighandler_t, handler)
-{
-	return -ENOSYS;
-}
-#endif
-
-/* Stub: pause and sigsuspend not needed for Hello World */
-#ifdef __ARCH_WANT_SYS_PAUSE
-SYSCALL_DEFINE0(pause)
-{
-	return -ENOSYS;
-}
-#endif
+/* signal and pause syscalls replaced with COND_SYSCALL */
 
 void __init signals_init(void)
 {

@@ -306,6 +306,14 @@ COND_SYSCALL(pselect6_time32);
 COND_SYSCALL_COMPAT(pselect6_time32);
 COND_SYSCALL(ppoll_time32);
 COND_SYSCALL_COMPAT(ppoll_time32);
+COND_SYSCALL(select);
+COND_SYSCALL(pselect6);
+COND_SYSCALL(old_select);
+COND_SYSCALL(poll);
+COND_SYSCALL(ppoll);
+COND_SYSCALL(fsopen);
+COND_SYSCALL(fspick);
+COND_SYSCALL(fsconfig);
 COND_SYSCALL(utimensat_time32);
 COND_SYSCALL(clock_adjtime32);
 

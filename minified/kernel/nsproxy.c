@@ -172,11 +172,7 @@ void exit_task_namespaces(struct task_struct *p)
 		put_nsproxy(ns);
 }
 
-SYSCALL_DEFINE2(setns, int, fd, int, flags)
-{
-	/* Stubbed: setns not needed for minimal kernel */
-	return -ENOSYS;
-}
+/* setns replaced with COND_SYSCALL */
 
 int __init nsproxy_cache_init(void)
 {

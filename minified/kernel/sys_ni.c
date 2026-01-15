@@ -424,6 +424,15 @@ COND_SYSCALL(brk);
 COND_SYSCALL(mmap_pgoff);
 COND_SYSCALL(old_mmap);
 COND_SYSCALL(munmap);
+COND_SYSCALL(waitid);
+COND_SYSCALL(wait4);
+COND_SYSCALL(waitpid);
+COND_SYSCALL(fork);
+COND_SYSCALL(vfork);
+COND_SYSCALL(clone);
+COND_SYSCALL(setns);
+COND_SYSCALL(pidfd_open);
+COND_SYSCALL(pidfd_getfd);
 COND_SYSCALL(utimensat_time32);
 COND_SYSCALL(clock_adjtime32);
 

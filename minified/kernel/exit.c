@@ -369,22 +369,4 @@ SYSCALL_DEFINE1(exit_group, int, error_code)
 	return 0;
 }
 
-/* Stub: wait syscalls not needed for minimal Hello World kernel */
-SYSCALL_DEFINE5(waitid, int, which, pid_t, upid, struct siginfo __user *, infop,
-		int, options, struct rusage __user *, ru)
-{
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE4(wait4, pid_t, upid, int __user *, stat_addr, int, options,
-		struct rusage __user *, ru)
-{
-	return -ENOSYS;
-}
-
-#ifdef __ARCH_WANT_SYS_WAITPID
-SYSCALL_DEFINE3(waitpid, pid_t, pid, int __user *, stat_addr, int, options)
-{
-	return -ENOSYS;
-}
-#endif
+/* wait syscalls replaced with COND_SYSCALL */

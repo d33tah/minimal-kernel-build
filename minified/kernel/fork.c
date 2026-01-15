@@ -1088,38 +1088,7 @@ pid_t user_mode_thread(int (*fn)(void *), void *arg, unsigned long flags)
 	return kernel_clone(&args);
 }
 
-/* Stub: fork syscalls not needed for Hello World kernel */
-#ifdef __ARCH_WANT_SYS_FORK
-SYSCALL_DEFINE0(fork)
-{
-	return -ENOSYS;
-}
-#endif
-
-#ifdef __ARCH_WANT_SYS_VFORK
-SYSCALL_DEFINE0(vfork)
-{
-	return -ENOSYS;
-}
-#endif
-
-#ifdef __ARCH_WANT_SYS_CLONE
-SYSCALL_DEFINE5(clone, unsigned long, clone_flags, unsigned long, newsp,
-		int __user *, parent_tidptr, unsigned long, tls, int __user *,
-		child_tidptr)
-{
-	return -ENOSYS;
-}
-#endif
-
-#ifdef __ARCH_WANT_SYS_CLONE3
-
-/* Stub: clone3 syscall not needed for minimal kernel - use clone() instead */
-SYSCALL_DEFINE2(clone3, struct clone_args __user *, uargs, size_t, size)
-{
-	return -ENOSYS;
-}
-#endif
+/* fork/vfork/clone/clone3 syscalls replaced with COND_SYSCALL */
 
 #ifndef ARCH_MIN_MMSTRUCT_ALIGN
 #define ARCH_MIN_MMSTRUCT_ALIGN 0

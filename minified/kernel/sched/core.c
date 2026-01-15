@@ -922,13 +922,7 @@ SYSCALL_DEFINE3(sched_setaffinity, pid_t, pid, unsigned int, len,
 	return 0;
 }
 
-long sched_getaffinity(pid_t pid, struct cpumask *mask)
-{
-	/* Stub: not needed for minimal kernel */
-	return -ESRCH;
-}
-
-/* sched_getaffinity syscall replaced with COND_SYSCALL */
+/* sched_getaffinity function and syscall replaced with COND_SYSCALL */
 
 /* Stub: sched_yield not needed for Hello World */
 SYSCALL_DEFINE0(sched_yield)

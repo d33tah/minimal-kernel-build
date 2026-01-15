@@ -57,14 +57,7 @@ struct pcpu_chunk {
 	unsigned long populated[];
 };
 
-extern spinlock_t pcpu_lock;
-extern struct list_head *pcpu_chunk_lists;
-extern int pcpu_nr_slots;
-extern int pcpu_sidelined_slot;
-extern int pcpu_to_depopulate_slot;
-extern int pcpu_nr_empty_pop_pages;
-extern struct pcpu_chunk *pcpu_first_chunk;
-extern struct pcpu_chunk *pcpu_reserved_chunk;
+/* Redundant extern declarations removed - all defined in same file below */
 
 static inline int pcpu_chunk_nr_blocks(struct pcpu_chunk *chunk)
 {

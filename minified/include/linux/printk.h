@@ -50,9 +50,7 @@ struct va_format {
 	0;						\
 })
 
-static inline __printf(1, 2) __cold
-void early_printk(const char *s, ...) { }
-
+/* early_printk removed - no callers */
 /* vprintk removed - never called */
 static inline __printf(1, 2) __cold
 int _printk(const char *s, ...)

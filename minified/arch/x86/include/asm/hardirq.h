@@ -17,7 +17,5 @@ DECLARE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
 
 extern void ack_bad_irq(unsigned int irq);
 
-/* CONFIG_KVM_INTEL not enabled, but called from DEFINE_IDTENTRY_IRQ macro */
-static inline void kvm_set_cpu_l1tf_flush_l1d(void) { }
 
 #endif  

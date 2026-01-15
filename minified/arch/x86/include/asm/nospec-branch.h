@@ -91,10 +91,6 @@ void alternative_msr_write(unsigned int msr, u64 val, unsigned int feature)
    mds_user_clear, mds_idle_clear, switch_mm_cond_l1d_flush static keys
    are DEFINE_STATIC_KEY_FALSE and never enabled - declarations removed */
 
-/* mds_clear_cpu_buffers removed - never called since keys always false */
-static __always_inline void mds_user_clear_cpu_buffers(void) { }
-static inline void mds_idle_clear_cpu_buffers(void) { }
-
-#endif  
+#endif
 
 #endif  

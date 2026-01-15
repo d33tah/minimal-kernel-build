@@ -390,18 +390,6 @@ typedef unsigned int pgtbl_mod_mask;
 
 #endif  
 
-#ifndef pgd_leaf
-#define pgd_leaf(x)	0
-#endif
-#ifndef p4d_leaf
-#define p4d_leaf(x)	0
-#endif
-#ifndef pud_leaf
-#define pud_leaf(x)	0
-#endif
-#ifndef pmd_leaf
-#define pmd_leaf(x)	0
-#endif
-
+/* pgd_leaf, p4d_leaf, pud_leaf, pmd_leaf removed - never called */
 
 #endif  

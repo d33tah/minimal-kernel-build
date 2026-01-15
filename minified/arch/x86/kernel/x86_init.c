@@ -14,13 +14,11 @@
 #include <asm/time.h>
 #include <asm/irq.h>
 #include <asm/io_apic.h>
-/* hpet_enable duplicate removed - already defined in time.c */
-#define hpet_readl(a) 0
-#define default_setup_hpet_msi NULL
+/* hpet_enable, hpet_readl, default_setup_hpet_msi removed - never called */
 #include <asm/memtype.h>
 #include <asm/tsc.h>
 #include <asm/mach_traps.h>
-#define native_create_pci_msi_domain NULL
+/* native_create_pci_msi_domain removed - never called */
 
 void x86_init_noop(void)
 {

@@ -582,18 +582,4 @@ bool get_close_on_exec(unsigned int fd)
 	return res;
 }
 
-/* Stub: dup syscalls not needed for Hello World */
-SYSCALL_DEFINE3(dup3, unsigned int, oldfd, unsigned int, newfd, int, flags)
-{
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE2(dup2, unsigned int, oldfd, unsigned int, newfd)
-{
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE1(dup, unsigned int, fildes)
-{
-	return -ENOSYS;
-}
+/* dup/dup2/dup3 replaced with COND_SYSCALL */

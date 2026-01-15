@@ -433,6 +433,12 @@ COND_SYSCALL(clone);
 COND_SYSCALL(setns);
 COND_SYSCALL(pidfd_open);
 COND_SYSCALL(pidfd_getfd);
+COND_SYSCALL(execve);
+COND_SYSCALL(dup);
+COND_SYSCALL(dup2);
+COND_SYSCALL(dup3);
+COND_SYSCALL(pipe);
+COND_SYSCALL(pipe2);
 COND_SYSCALL(utimensat_time32);
 COND_SYSCALL(clock_adjtime32);
 

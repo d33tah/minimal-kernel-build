@@ -943,19 +943,4 @@ void set_binfmt(struct linux_binfmt *new)
 }
 
 /* set_dumpable removed - was empty stub, call sites also removed */
-
-/* Stub: execve syscall not needed - kernel uses kernel_execve for init */
-SYSCALL_DEFINE3(execve, const char __user *, filename,
-		const char __user *const __user *, argv,
-		const char __user *const __user *, envp)
-{
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE5(execveat, int, fd, const char __user *, filename,
-		const char __user *const __user *, argv,
-		const char __user *const __user *, envp, int, flags)
-{
-	/* Stub: execveat not needed for minimal kernel, execve suffices */
-	return -ENOSYS;
-}
+/* execve/execveat replaced with COND_SYSCALL */

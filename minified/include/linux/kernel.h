@@ -110,7 +110,8 @@ extern enum system_states {
 	SYSTEM_SUSPEND,
 } system_state;
 
-extern const char hex_asc_upper[];
+/* hex_asc_upper moved from lib/hexdump.c */
+static const char hex_asc_upper[] = "0123456789ABCDEF";
 
 #define VERIFY_OCTAL_PERMISSIONS(perms)						\
 	(BUILD_BUG_ON_ZERO((perms) < 0) +					\

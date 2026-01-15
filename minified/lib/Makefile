@@ -55,7 +55,7 @@ obj-y += sort.o debug_locks.o \
 obj-$(CONFIG_STRING_SELFTEST) += test_string.o
 obj-y += string_helpers.o
 obj-$(CONFIG_TEST_STRING_HELPERS) += test-string_helpers.o
-obj-y += hexdump.o
+# hexdump.o removed - hex_asc_upper moved to kernel.h
 obj-$(CONFIG_TEST_HEXDUMP) += test_hexdump.o
 obj-y += kstrtox.o
 obj-$(CONFIG_FIND_BIT_BENCHMARK) += find_bit_benchmark.o

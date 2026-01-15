@@ -1,6 +1,5 @@
 /* Minimal RT scheduler stub */
 
-int sched_rr_timeslice = RR_TIMESLICE;
 unsigned int sysctl_sched_rt_period = 1000000;
 int sysctl_sched_rt_runtime = 950000;
 struct rt_bandwidth def_rt_bandwidth;

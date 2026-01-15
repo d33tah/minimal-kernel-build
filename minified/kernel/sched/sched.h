@@ -90,7 +90,6 @@ extern unsigned long calc_load_update;
 
 extern unsigned int sysctl_sched_rt_period;
 extern int sysctl_sched_rt_runtime;
-extern int sched_rr_timeslice;
 
  
 #define NS_TO_JIFFIES(TIME)	((unsigned long)(TIME) / (NSEC_PER_SEC / HZ))

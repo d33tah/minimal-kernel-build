@@ -412,6 +412,14 @@ COND_SYSCALL(prlimit64);
 COND_SYSCALL(getrusage);
 COND_SYSCALL(getcpu);
 COND_SYSCALL(sysinfo);
+COND_SYSCALL(umount);
+COND_SYSCALL(oldumount);
+COND_SYSCALL(open_tree);
+COND_SYSCALL(mount);
+COND_SYSCALL(fsmount);
+COND_SYSCALL(move_mount);
+COND_SYSCALL(pivot_root);
+COND_SYSCALL(mount_setattr);
 COND_SYSCALL(utimensat_time32);
 COND_SYSCALL(clock_adjtime32);
 

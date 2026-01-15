@@ -705,19 +705,6 @@ bool may_mount(void)
 	return true;
 }
 
-/* Stub: umount not needed for Hello World kernel */
-SYSCALL_DEFINE2(umount, char __user *, name, int, flags)
-{
-	return -ENOSYS;
-}
-
-#ifdef __ARCH_WANT_SYS_OLDUMOUNT
-SYSCALL_DEFINE1(oldumount, char __user *, name)
-{
-	return -ENOSYS;
-}
-#endif
-
 static struct mnt_namespace *to_mnt_ns(struct ns_common *ns)
 {
 	return container_of(ns, struct mnt_namespace, ns);
@@ -912,12 +899,6 @@ static int do_change_type(struct path *path, int ms_flags)
 out_unlock:
 	namespace_unlock();
 	return err;
-}
-
-SYSCALL_DEFINE3(open_tree, int, dfd, const char __user *, filename, unsigned,
-		flags)
-{
-	return -ENOSYS;
 }
 
 static int do_add_mount(struct mount *newmnt, struct mountpoint *mp,
@@ -1141,42 +1122,6 @@ copy_mnt_ns(unsigned long flags, struct mnt_namespace *ns,
 		return ns;
 	}
 	return ERR_PTR(-EINVAL);
-}
-
-/* Stub: mount syscall not needed for Hello World kernel */
-SYSCALL_DEFINE5(mount, char __user *, dev_name, char __user *, dir_name,
-		char __user *, type, unsigned long, flags, void __user *, data)
-{
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE3(fsmount, int, fs_fd, unsigned int, flags, unsigned int,
-		attr_flags)
-{
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE5(move_mount, int, from_dfd, const char __user *, from_pathname,
-		int, to_dfd, const char __user *, to_pathname, unsigned int,
-		flags)
-{
-	/* Stubbed: move_mount not needed for minimal kernel */
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE2(pivot_root, const char __user *, new_root, const char __user *,
-		put_old)
-{
-	/* Stubbed: pivot_root not needed for minimal kernel */
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE5(mount_setattr, int, dfd, const char __user *, path,
-		unsigned int, flags, struct mount_attr __user *, uattr, size_t,
-		usize)
-{
-	/* Stubbed: mount_setattr not needed for minimal kernel */
-	return -ENOSYS;
 }
 
 /* init_mount_tree inlined into mnt_init */

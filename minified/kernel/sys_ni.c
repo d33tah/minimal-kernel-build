@@ -188,6 +188,7 @@ COND_SYSCALL(mlock);
 COND_SYSCALL(munlock);
 COND_SYSCALL(mlockall);
 COND_SYSCALL(munlockall);
+COND_SYSCALL(readahead);
 COND_SYSCALL(mincore);
 COND_SYSCALL(madvise);
 COND_SYSCALL(process_madvise);

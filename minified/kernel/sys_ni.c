@@ -441,6 +441,7 @@ COND_SYSCALL(pipe);
 COND_SYSCALL(pipe2);
 COND_SYSCALL(sched_setattr);
 COND_SYSCALL(sched_getattr);
+COND_SYSCALL(sched_setaffinity);
 COND_SYSCALL(sched_getaffinity);
 COND_SYSCALL(sched_rr_get_interval);
 COND_SYSCALL(ioperm);

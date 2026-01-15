@@ -907,22 +907,7 @@ SYSCALL_DEFINE2(sched_getparam, pid_t, pid, struct sched_param __user *, param)
 	return 0;
 }
 
-/* sched_getattr replaced with COND_SYSCALL */
-
-long sched_setaffinity(pid_t pid, const struct cpumask *in_mask)
-{
-	/* Stub: not needed for minimal kernel */
-	return 0;
-}
-
-/* Stub: setaffinity not needed for single-CPU minimal kernel */
-SYSCALL_DEFINE3(sched_setaffinity, pid_t, pid, unsigned int, len,
-		unsigned long __user *, user_mask_ptr)
-{
-	return 0;
-}
-
-/* sched_getaffinity function and syscall replaced with COND_SYSCALL */
+/* sched_getattr, sched_setaffinity, sched_getaffinity replaced with COND_SYSCALL */
 
 /* Stub: sched_yield not needed for Hello World */
 SYSCALL_DEFINE0(sched_yield)

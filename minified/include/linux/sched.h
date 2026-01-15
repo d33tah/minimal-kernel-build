@@ -570,9 +570,8 @@ static inline unsigned int task_cpu(const struct task_struct *p)
 	return 0;
 }
 
-extern long sched_setaffinity(pid_t pid, const struct cpumask *new_mask);
-
-/* rseq_execve, rseq_handle_notify_resume, rseq_signal_deliver, rseq_preempt, rseq_migrate,
+/* sched_setaffinity extern removed - function replaced with COND_SYSCALL
+   rseq_execve, rseq_handle_notify_resume, rseq_signal_deliver, rseq_preempt, rseq_migrate,
    rseq_fork, rseq_syscall, sched_core_free, sched_core_fork removed - unused */
 
 #endif

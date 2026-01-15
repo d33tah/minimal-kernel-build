@@ -11,16 +11,12 @@ typedef struct {
 
 #define INIT_LOCAL_LOCK(lockname)	{ }
 
-/* __local_lock_init simplified - all components are empty stubs */
-#define __local_lock_init(lock)	do { } while (0)
-
+/* __local_lock_init, local_lock_init removed - never called */
 /* local_lock_acquire/release are empty stubs - simplified macros */
 #define __local_lock(lock)		preempt_disable()
 #define __local_lock_irqsave(lock, flags) local_irq_save(flags)
 #define __local_unlock(lock)		preempt_enable()
 #define __local_unlock_irqrestore(lock, flags) local_irq_restore(flags)
-
-#define local_lock_init(lock)		__local_lock_init(lock)
 
 #define local_lock(lock)		__local_lock(lock)
 

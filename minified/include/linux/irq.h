@@ -264,6 +264,6 @@ int __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt, int node,
 		      struct module *owner,
 		      const struct irq_affinity_desc *affinity);
 
-void irq_free_descs(unsigned int irq, unsigned int cnt);
+/* irq_free_descs removed - never called */
 
 #endif  

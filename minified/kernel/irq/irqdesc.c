@@ -206,20 +206,7 @@ int generic_handle_irq_safe(unsigned int irq)
 	return ret;
 }
 
-void irq_free_descs(unsigned int from, unsigned int cnt)
-{
-	int i;
-
-	if (from >= nr_irqs || (from + cnt) > nr_irqs)
-		return;
-
-	mutex_lock(&sparse_irq_lock);
-	for (i = 0; i < cnt; i++)
-		free_desc(from + i);
-
-	bitmap_clear(allocated_irqs, from, cnt);
-	mutex_unlock(&sparse_irq_lock);
-}
+/* irq_free_descs removed - never called */
 
 int __ref __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt,
 			    int node, struct module *owner,

@@ -31,7 +31,7 @@ static inline int get_si_code(unsigned long condition)
 		return TRAP_BRKPT;
 }
 
-extern int panic_on_unrecovered_nmi;
+/* panic_on_unrecovered_nmi removed - never set to non-zero */
 
 bool fault_in_kernel_space(unsigned long address);
 

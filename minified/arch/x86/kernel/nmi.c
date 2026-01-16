@@ -85,8 +85,7 @@ static void pci_serr_error(unsigned char reason, struct pt_regs *regs)
 	pr_emerg("NMI: PCI system error (SERR) for reason %02x on CPU %d.\n",
 		 reason, smp_processor_id());
 
-	if (panic_on_unrecovered_nmi)
-		nmi_panic(regs, "NMI: Not continuing");
+	/* panic_on_unrecovered_nmi check removed - never set to non-zero */
 
 	pr_emerg("Dazed and confused, but trying to continue\n");
 
@@ -107,11 +106,7 @@ static void io_check_error(unsigned char reason, struct pt_regs *regs)
 		reason, smp_processor_id());
 	show_regs(regs);
 
-	if (panic_on_io_nmi) {
-		nmi_panic(regs, "NMI IOCK error: Not continuing");
-
-		return;
-	}
+	/* panic_on_io_nmi check removed - never set to non-zero */
 
 	reason = (reason & NMI_REASON_CLEAR_MASK) | NMI_REASON_CLEAR_IOCHK;
 	outb(reason, NMI_REASON_PORT);
@@ -140,7 +135,8 @@ static void unknown_nmi_error(unsigned char reason, struct pt_regs *regs)
 	pr_emerg("Uhhuh. NMI received for unknown reason %02x on CPU %d.\n",
 		 reason, smp_processor_id());
 
-	if (unknown_nmi_panic || panic_on_unrecovered_nmi)
+	/* panic_on_unrecovered_nmi removed - never set to non-zero */
+	if (unknown_nmi_panic)
 		nmi_panic(regs, "NMI: Not continuing");
 
 	pr_emerg("Dazed and confused, but trying to continue\n");

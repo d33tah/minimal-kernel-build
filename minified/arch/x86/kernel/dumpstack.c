@@ -15,8 +15,7 @@
 #include <asm/stacktrace.h>
 #include <asm/unwind.h>
 
-int panic_on_unrecovered_nmi;
-int panic_on_io_nmi;
+/* panic_on_unrecovered_nmi, panic_on_io_nmi removed - never set to non-zero */
 static int die_counter;
 
 static struct pt_regs exec_summary_regs;

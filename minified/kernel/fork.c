@@ -583,31 +583,17 @@ static inline void init_task_pid(struct task_struct *task, enum pid_type type,
 		task->signal->pids[type] = pid;
 }
 
-static int pidfd_release(struct inode *inode, struct file *file)
-{
-	struct pid *pid = file->private_data;
-
-	file->private_data = NULL;
-	put_pid(pid);
-	return 0;
-}
-
-/* pidfd_poll removed - poll/select syscalls return ENOSYS */
-
-const struct file_operations pidfd_fops = {
-	.release = pidfd_release,
-	/* poll removed - poll/select syscalls return ENOSYS */
-};
+/* pidfd_release, pidfd_fops removed - CLONE_PIDFD never used (only kernel_thread/user_mode_thread call kernel_clone) */
 
 static __latent_entropy struct task_struct *
 copy_process(struct pid *pid, int trace, int node,
 	     struct kernel_clone_args *args)
 {
-	int pidfd = -1, retval;
+	int retval;
 	struct task_struct *p;
 	struct multiprocess_signals delayed;
-	struct file *pidfile = NULL;
 	const u64 clone_flags = args->flags;
+	/* pidfd, pidfile removed - CLONE_PIDFD never used */
 	struct nsproxy *nsp = current->nsproxy;
 
 	if ((clone_flags & (CLONE_NEWNS | CLONE_FS)) ==
@@ -639,10 +625,7 @@ copy_process(struct pid *pid, int trace, int node,
 			return ERR_PTR(-EINVAL);
 	}
 
-	if (clone_flags & CLONE_PIDFD) {
-		if (clone_flags & (CLONE_DETACHED | CLONE_THREAD))
-			return ERR_PTR(-EINVAL);
-	}
+	/* CLONE_PIDFD check removed - never used */
 
 	sigemptyset(&delayed.signal);
 	INIT_HLIST_NODE(&delayed.node);
@@ -823,26 +806,7 @@ copy_process(struct pid *pid, int trace, int node,
 		}
 	}
 
-	if (clone_flags & CLONE_PIDFD) {
-		retval = get_unused_fd_flags(O_RDWR | O_CLOEXEC);
-		if (retval < 0)
-			goto bad_fork_free_pid;
-
-		pidfd = retval;
-
-		pidfile = anon_inode_getfile("[pidfd]", &pidfd_fops, pid,
-					     O_RDWR | O_CLOEXEC);
-		if (IS_ERR(pidfile)) {
-			put_unused_fd(pidfd);
-			retval = PTR_ERR(pidfile);
-			goto bad_fork_free_pid;
-		}
-		get_pid(pid);
-
-		retval = put_user(pidfd, args->pidfd);
-		if (retval)
-			goto bad_fork_put_pidfd;
-	}
+	/* CLONE_PIDFD block removed - never used */
 
 	if ((clone_flags & (CLONE_VM | CLONE_VFORK)) == CLONE_VM)
 		sas_ss_reset(p);
@@ -941,8 +905,7 @@ copy_process(struct pid *pid, int trace, int node,
 	spin_unlock(&current->sighand->siglock);
 	write_unlock_irq(&tasklist_lock);
 
-	if (pidfile)
-		fd_install(pidfd, pidfile);
+	/* pidfile fd_install removed - CLONE_PIDFD never used */
 	sched_post_fork(p);
 
 	return p;
@@ -950,11 +913,7 @@ copy_process(struct pid *pid, int trace, int node,
 bad_fork_cancel_cgroup:
 	spin_unlock(&current->sighand->siglock);
 	write_unlock_irq(&tasklist_lock);
-bad_fork_put_pidfd:
-	if (clone_flags & CLONE_PIDFD) {
-		fput(pidfile);
-		put_unused_fd(pidfd);
-	}
+	/* bad_fork_put_pidfd removed - CLONE_PIDFD never used */
 bad_fork_free_pid:
 	if (pid != &init_struct_pid)
 		free_pid(pid);
@@ -1005,10 +964,7 @@ pid_t kernel_clone(struct kernel_clone_args *args)
 	int trace = 0;
 	pid_t nr;
 
-	if ((args->flags & CLONE_PIDFD) &&
-	    (args->flags & CLONE_PARENT_SETTID) &&
-	    (args->pidfd == args->parent_tid))
-		return -EINVAL;
+	/* CLONE_PIDFD check removed - never used */
 
 	if (!(clone_flags & CLONE_UNTRACED)) {
 		if (clone_flags & CLONE_VFORK)

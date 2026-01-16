@@ -102,8 +102,8 @@ extern int __get_user_bad(void);
 	__builtin_expect(__ret_gu, 0);					\
 })
 
- 
-#define get_user(x,ptr) ({ might_fault(); do_get_user_call(get_user,x,ptr); })
+/* might_fault() removed from get_user/put_user - empty stub */
+#define get_user(x,ptr) do_get_user_call(get_user,x,ptr)
 
  
 #define __get_user(x,ptr) do_get_user_call(get_user_nocheck,x,ptr)
@@ -150,8 +150,7 @@ extern void __put_user_nocheck_8(void);
 	__builtin_expect(__ret_pu, 0);					\
 })
 
- 
-#define put_user(x, ptr) ({ might_fault(); do_put_user_call(put_user,x,ptr); })
+#define put_user(x, ptr) do_put_user_call(put_user,x,ptr)
 
  
 #define __put_user(x, ptr) do_put_user_call(put_user_nocheck,x,ptr)

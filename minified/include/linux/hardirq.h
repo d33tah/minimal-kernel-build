@@ -22,7 +22,7 @@ void irq_exit_rcu(void);
 
 #define __nmi_enter()						\
 	do {							\
-		lockdep_off();					\
+		/* lockdep_off() removed - empty stub */	\
 		BUG_ON(in_nmi() == NMI_MASK);			\
 		__preempt_count_add(NMI_OFFSET + HARDIRQ_OFFSET);	\
 	} while (0)
@@ -33,7 +33,7 @@ void irq_exit_rcu(void);
 	do {							\
 		BUG_ON(!in_nmi());				\
 		__preempt_count_sub(NMI_OFFSET + HARDIRQ_OFFSET);	\
-		lockdep_on();					\
+		/* lockdep_on() removed - empty stub */		\
 	} while (0)
 
 #define nmi_exit()	__nmi_exit()

@@ -6,9 +6,7 @@
 
 /* lockdep_init_task, lock_acquire, lock_release, lockdep_init,
    lockdep_init_map*, lockdep_set_class* all removed - no callers */
-
-static inline void lockdep_off(void) { }
-static inline void lockdep_on(void) { }
+/* lockdep_off, lockdep_on removed - no callers */
 
 /* lock_is_held, lockdep_is_held are never defined but used in
    RCU_LOCKDEP_WARN conditions (which are no-ops but still need valid syntax) */

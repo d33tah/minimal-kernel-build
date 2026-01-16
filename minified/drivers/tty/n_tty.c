@@ -102,17 +102,7 @@ static ssize_t n_tty_write(struct tty_struct *tty, struct file *file,
 
 /* n_tty_poll removed - poll/select syscalls return ENOSYS */
 /* n_tty_ioctl removed - ld->ops->ioctl never called */
-
-static void n_tty_receive_buf(struct tty_struct *tty, const unsigned char *cp,
-			      const char *fp, int count)
-{
-}
-
-static int n_tty_receive_buf2(struct tty_struct *tty, const unsigned char *cp,
-			      const char *fp, int count)
-{
-	return 0;
-}
+/* n_tty_receive_buf, n_tty_receive_buf2 removed - ops->receive_buf* never called */
 
 static struct tty_ldisc_ops n_tty_ops = {
 	.owner = THIS_MODULE,
@@ -122,9 +112,8 @@ static struct tty_ldisc_ops n_tty_ops = {
 	.close = n_tty_close,
 	.read = n_tty_read,
 	.write = n_tty_write,
-	.receive_buf = n_tty_receive_buf,
+	/* .receive_buf, .receive_buf2 removed - never called */
 	.write_wakeup = n_tty_write_wakeup,
-	.receive_buf2 = n_tty_receive_buf2,
 };
 
 void __init n_tty_init(void)

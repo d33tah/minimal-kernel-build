@@ -505,7 +505,7 @@ extern struct task_struct *find_task_by_pid_ns(pid_t nr, struct pid_namespace *n
 extern int wake_up_state(struct task_struct *tsk, unsigned int state);
 extern int wake_up_process(struct task_struct *tsk);
 extern void wake_up_new_task(struct task_struct *tsk);
-static inline void kick_process(struct task_struct *tsk) { }
+/* kick_process removed - empty stub, no callers */
 
 extern void __set_task_comm(struct task_struct *tsk, const char *from, bool exec);
 

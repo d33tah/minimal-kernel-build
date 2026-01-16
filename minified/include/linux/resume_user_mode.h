@@ -8,8 +8,8 @@
 
 static inline void set_notify_resume(struct task_struct *task)
 {
-	if (!test_and_set_tsk_thread_flag(task, TIF_NOTIFY_RESUME))
-		kick_process(task);
+	test_and_set_tsk_thread_flag(task, TIF_NOTIFY_RESUME);
+	/* kick_process call removed - empty stub */
 }
 
 

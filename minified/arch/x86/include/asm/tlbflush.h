@@ -148,7 +148,7 @@ void flush_tlb_multi(const struct cpumask *cpumask,
 				? huge_page_shift(hstate_vma(vma))	\
 				: PAGE_SHIFT, false)
 
-extern void flush_tlb_all(void);
+/* flush_tlb_all removed - never called */
 extern void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 				unsigned long end, unsigned int stride_shift,
 				bool freed_tables);

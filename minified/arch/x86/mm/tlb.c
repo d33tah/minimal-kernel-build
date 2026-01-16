@@ -431,17 +431,7 @@ void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 	put_cpu();
 }
 
-static void do_flush_tlb_all(void *info)
-{
-	/* count_vm_tlb_event removed - empty stub */
-	__flush_tlb_all();
-}
-
-void flush_tlb_all(void)
-{
-	/* count_vm_tlb_event removed - empty stub */
-	on_each_cpu(do_flush_tlb_all, NULL, 1);
-}
+/* flush_tlb_all and do_flush_tlb_all removed - never called (~11 LOC) */
 
 unsigned long __get_current_cr3_fast(void)
 {

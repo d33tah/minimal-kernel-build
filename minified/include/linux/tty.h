@@ -73,9 +73,7 @@ struct tty_ldisc {
 struct tty_ldisc *tty_ldisc_ref(struct tty_struct *);
 void tty_ldisc_deref(struct tty_ldisc *);
 struct tty_ldisc *tty_ldisc_ref_wait(struct tty_struct *);
-
-void tty_ldisc_flush(struct tty_struct *tty);
-
+/* tty_ldisc_flush removed - never called */
 int tty_register_ldisc(struct tty_ldisc_ops *new_ldisc);
 #include <linux/mutex.h>
 #include <linux/rwsem.h>

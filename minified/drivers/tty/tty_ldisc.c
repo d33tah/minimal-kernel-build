@@ -205,13 +205,7 @@ static int tty_ldisc_lock_pair_timeout(struct tty_struct *tty,
 
 /* tty_ldisc_lock_pair inlined into tty_ldisc_release */
 /* tty_ldisc_unlock_pair inlined into tty_ldisc_release */
-
-void tty_ldisc_flush(struct tty_struct *tty)
-{
-	struct tty_ldisc *ld = tty_ldisc_ref(tty);
-	if (ld)
-		tty_ldisc_deref(ld);
-}
+/* tty_ldisc_flush removed - never called */
 
 static void tty_set_termios_ldisc(struct tty_struct *tty, int disc)
 {

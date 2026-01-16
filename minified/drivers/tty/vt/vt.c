@@ -832,7 +832,7 @@ static struct console vt_console_driver = {
 	.name = "tty",
 	.write = vt_console_print,
 	.device = vt_console_device,
-	.unblank = unblank_screen,
+	/* .unblank removed - was empty stub */
 	.flags = CON_PRINTBUFFER,
 	.index = -1,
 };
@@ -1101,17 +1101,7 @@ postcore_initcall(vtconsole_class_init);
 
 #endif
 
-void do_unblank_screen(int leaving_gfx)
-{
-	/* Stubbed: screen unblanking not needed for minimal boot */
-}
-
-void unblank_screen(void)
-{
-	/* inlined: do_unblank_screen was empty */
-}
-/* blank_screen_t removed - never called */
-
+/* do_unblank_screen, unblank_screen, blank_screen_t removed - never called */
 /* set_palette stub inlined into reset_palette */
 
 void reset_palette(struct vc_data *vc)

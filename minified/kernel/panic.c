@@ -96,7 +96,7 @@ void panic(const char *fmt, ...)
 
 	kmsg_dump(KMSG_DUMP_PANIC);
 
-	unblank_screen();
+	/* unblank_screen removed - was empty stub */
 	console_unblank();
 
 	debug_locks_off();

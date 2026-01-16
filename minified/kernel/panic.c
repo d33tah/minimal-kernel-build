@@ -25,7 +25,7 @@ int panic_on_oops = CONFIG_PANIC_ON_OOPS_VALUE;
 static unsigned long tainted_mask = 0;
 /* pause_on_oops removed - always 0, sysctl not available */
 int panic_on_warn __read_mostly;
-unsigned long panic_on_taint;
+/* panic_on_taint removed - never set to non-zero */
 
 int panic_timeout = CONFIG_PANIC_TIMEOUT;
 
@@ -125,11 +125,7 @@ void add_taint(unsigned flag, enum lockdep_ok lockdep_ok)
 		__debug_locks_off();
 
 	set_bit(flag, &tainted_mask);
-
-	if (tainted_mask & panic_on_taint) {
-		panic_on_taint = 0;
-		panic("panic_on_taint set ...");
-	}
+	/* panic_on_taint check removed - never set to non-zero */
 }
 
 /* spin_msec, do_oops_enter_exit removed - pause_on_oops always 0 */

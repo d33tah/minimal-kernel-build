@@ -1,9 +1,7 @@
 #ifndef _LINUX_PROC_NS_H
 #define _LINUX_PROC_NS_H
 #include <linux/ns_common.h>
-struct pid_namespace;
-struct task_struct;
-/* proc_ns_operations removed - ns.ops field removed */
+/* forward decls removed - proc_ns_operations removed */
 enum {
 	PROC_UTS_INIT_INO	= 0xEFFFFFFEU,
 	PROC_USER_INIT_INO	= 0xEFFFFFFDU,

@@ -23,9 +23,7 @@
 #include <asm/atomic.h>
 #include <linux/tracepoint-defs.h>
 
-static inline void do_trace_write_msr(unsigned int msr, u64 val, int failed) {}
-static inline void do_trace_read_msr(unsigned int msr, u64 val, int failed) {}
-/* do_trace_rdpmc removed - unused */
+/* do_trace_write_msr, do_trace_read_msr, do_trace_rdpmc removed - tracepoint_enabled always false */
 
  
 static __always_inline unsigned long long __rdmsr(unsigned int msr)
@@ -64,14 +62,7 @@ do {							\
 
 static inline unsigned long long native_read_msr(unsigned int msr)
 {
-	unsigned long long val;
-
-	val = __rdmsr(msr);
-
-	if (tracepoint_enabled(read_msr))
-		do_trace_read_msr(msr, val, 0);
-
-	return val;
+	return __rdmsr(msr);
 }
 
 static inline unsigned long long native_read_msr_safe(unsigned int msr,
@@ -84,8 +75,6 @@ static inline unsigned long long native_read_msr_safe(unsigned int msr,
 		     _ASM_EXTABLE_TYPE_REG(1b, 2b, EX_TYPE_RDMSR_SAFE, %[err])
 		     : [err] "=r" (*err), EAX_EDX_RET(val, low, high)
 		     : "c" (msr));
-	if (tracepoint_enabled(read_msr))
-		do_trace_read_msr(msr, EAX_EDX_VAL(val, low, high), *err);
 	return EAX_EDX_VAL(val, low, high);
 }
 
@@ -94,9 +83,6 @@ static inline void notrace
 native_write_msr(unsigned int msr, u32 low, u32 high)
 {
 	__wrmsr(msr, low, high);
-
-	if (tracepoint_enabled(write_msr))
-		do_trace_write_msr(msr, ((u64)high << 32 | low), 0);
 }
 
 /* native_write_msr_safe, rdmsr_safe_regs, wrmsr_safe_regs removed - never called */

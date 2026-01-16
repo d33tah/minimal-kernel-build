@@ -205,10 +205,7 @@ static inline void restore_saved_sigmask(void)
 
 extern void __cleanup_sighand(struct sighand_struct *);
 
-#define next_task(p) \
-	list_entry_rcu((p)->tasks.next, struct task_struct, tasks)
-
-/* for_each_process, do_each_thread removed - never called */
+/* next_task, for_each_process, do_each_thread removed - never called */
 
 #define while_each_thread(g, t) \
 	while ((t = next_thread(t)) != g)

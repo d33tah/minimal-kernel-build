@@ -101,15 +101,7 @@ static inline void irq_settings_set_no_balancing(struct irq_desc *desc)
 	desc->status_use_accessors |= _IRQ_NO_BALANCING;
 }
 
-static inline bool irq_settings_has_no_balance_set(struct irq_desc *desc)
-{
-	return desc->status_use_accessors & _IRQ_NO_BALANCING;
-}
-
-static inline u32 irq_settings_get_trigger_mask(struct irq_desc *desc)
-{
-	return desc->status_use_accessors & IRQ_TYPE_SENSE_MASK;
-}
+/* irq_settings_has_no_balance_set, irq_settings_get_trigger_mask removed - unused */
 
 static inline void
 irq_settings_set_trigger_mask(struct irq_desc *desc, u32 mask)
@@ -118,10 +110,7 @@ irq_settings_set_trigger_mask(struct irq_desc *desc, u32 mask)
 	desc->status_use_accessors |= mask & IRQ_TYPE_SENSE_MASK;
 }
 
-static inline bool irq_settings_is_level(struct irq_desc *desc)
-{
-	return desc->status_use_accessors & _IRQ_LEVEL;
-}
+/* irq_settings_is_level removed - unused */
 
 static inline void irq_settings_clr_level(struct irq_desc *desc)
 {
@@ -157,16 +146,11 @@ static inline void irq_settings_set_nothread(struct irq_desc *desc)
 	desc->status_use_accessors |= _IRQ_NOTHREAD;
 }
 
-/* irq_settings_can_probe and irq_settings_clr_noprobe removed - unused */
+/* irq_settings_can_probe, irq_settings_clr_noprobe, irq_settings_can_move_pcntxt removed - unused */
 
 static inline void irq_settings_set_noprobe(struct irq_desc *desc)
 {
 	desc->status_use_accessors |= _IRQ_NOPROBE;
-}
-
-static inline bool irq_settings_can_move_pcntxt(struct irq_desc *desc)
-{
-	return desc->status_use_accessors & _IRQ_MOVE_PCNTXT;
 }
 
 static inline bool irq_settings_can_autoenable(struct irq_desc *desc)

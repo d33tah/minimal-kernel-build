@@ -190,20 +190,7 @@ static const struct file_operations hung_up_tty_fops = {
 	/* fasync removed - fcntl returns EINVAL, FASYNC never set */
 };
 
-void tty_wakeup(struct tty_struct *tty)
-{
-	struct tty_ldisc *ld;
-
-	if (test_bit(TTY_DO_WRITE_WAKEUP, &tty->flags)) {
-		ld = tty_ldisc_ref(tty);
-		if (ld) {
-			if (ld->ops->write_wakeup)
-				ld->ops->write_wakeup(tty);
-			tty_ldisc_deref(ld);
-		}
-	}
-	wake_up_interruptible_poll(&tty->write_wait, EPOLLOUT);
-}
+/* tty_wakeup removed - only called from removed tty_port_default_wakeup */
 
 static void __tty_hangup(struct tty_struct *tty, int exit_session)
 {

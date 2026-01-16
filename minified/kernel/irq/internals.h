@@ -211,7 +211,7 @@ static inline int check_irq_resend(struct irq_desc *desc, bool inject)
 	desc->istate &= ~IRQS_PENDING;
 	return 0;
 }
-bool irq_wait_for_poll(struct irq_desc *desc);
+/* irq_wait_for_poll removed - never defined or called */
 void __irq_wake_thread(struct irq_desc *desc, struct irqaction *action);
 
 /* register_irq_proc, unregister_irq_proc, register_handler_proc,

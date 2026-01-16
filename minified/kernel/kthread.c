@@ -67,7 +67,7 @@ bool set_kthread_struct(struct task_struct *p)
 
 	init_completion(&kthread->exited);
 	init_completion(&kthread->parked);
-	p->vfork_done = &kthread->exited;
+	/* vfork_done removed - write-only field */
 
 	p->worker_private = kthread;
 	return true;

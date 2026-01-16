@@ -606,9 +606,8 @@ copy_process(struct pid *pid, int trace, int node,
 		siginitsetinv(&p->blocked, sigmask(SIGKILL) | sigmask(SIGSTOP));
 	}
 
-	/* CLONE_CHILD_SETTID, CLONE_CHILD_CLEARTID never set */
+	/* CLONE_CHILD_SETTID never set, clear_child_tid removed */
 	p->set_child_tid = NULL;
-	p->clear_child_tid = NULL;
 
 	raw_spin_lock_init(&p->pi_lock);
 
@@ -624,7 +623,7 @@ copy_process(struct pid *pid, int trace, int node,
 	p->flags |= PF_FORKNOEXEC;
 	INIT_LIST_HEAD(&p->children);
 	INIT_LIST_HEAD(&p->sibling);
-	p->vfork_done = NULL;
+	/* vfork_done removed - write-only field */
 	spin_lock_init(&p->alloc_lock);
 
 	init_sigpending(&p->pending);

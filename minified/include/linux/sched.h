@@ -287,13 +287,12 @@ struct task_struct {
 	struct list_head		thread_group;
 	struct list_head		thread_node;
 
-	struct completion		*vfork_done;
+	/* vfork_done removed - write-only field (CLONE_VFORK never used) */
 
-	 
+
 	int __user			*set_child_tid;
 
-	 
-	int __user			*clear_child_tid;
+	/* clear_child_tid removed - write-only (CLONE_CHILD_CLEARTID never set) */
 
 
 	void				*worker_private;

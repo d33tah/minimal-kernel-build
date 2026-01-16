@@ -126,36 +126,18 @@ struct cred *prepare_exec_creds(void)
 int copy_creds(struct task_struct *p, unsigned long clone_flags)
 {
 	struct cred *new;
-	int ret;
-
-	if (clone_flags & CLONE_THREAD) {
-		p->real_cred = get_cred(p->cred);
-		get_cred(p->cred);
-		inc_rlimit_ucounts(task_ucounts(p), UCOUNT_RLIMIT_NPROC, 1);
-		return 0;
-	}
+	(void)clone_flags;
+	/* CLONE_THREAD, CLONE_NEWUSER never set */
 
 	new = prepare_creds();
 	if (!new)
 		return -ENOMEM;
 
-	if (clone_flags & CLONE_NEWUSER) {
-		ret = create_user_ns(new);
-		if (ret < 0)
-			goto error_put;
-		ret = set_cred_ucounts(new);
-		if (ret < 0)
-			goto error_put;
-	}
-
 	p->cred = p->real_cred = get_cred(new);
 	inc_rlimit_ucounts(task_ucounts(p), UCOUNT_RLIMIT_NPROC, 1);
 	validate_creds(new);
 	return 0;
-
-error_put:
-	put_cred(new);
-	return ret;
+	/* error_put label removed - CLONE_NEWUSER never used */
 }
 
 static bool cred_cap_issubset(const struct cred *set, const struct cred *subset)

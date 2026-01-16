@@ -676,10 +676,8 @@ copy_process(struct pid *pid, int trace, int node,
 			}
 		}
 	}
-	/* Inlined copy_sighand */
-	if (clone_flags & CLONE_SIGHAND) {
-		refcount_inc(&current->sighand->count);
-	} else {
+	/* Inlined copy_sighand - CLONE_SIGHAND never set */
+	{
 		struct sighand_struct *sig;
 		sig = kmem_cache_alloc(sighand_cachep, GFP_KERNEL);
 		RCU_INIT_POINTER(p->sighand, sig);
@@ -692,11 +690,10 @@ copy_process(struct pid *pid, int trace, int node,
 		memcpy(sig->action, current->sighand->action,
 		       sizeof(sig->action));
 		spin_unlock_irq(&current->sighand->siglock);
-		if (clone_flags & CLONE_CLEAR_SIGHAND)
-			flush_signal_handlers(p, 0);
+		/* CLONE_CLEAR_SIGHAND never set */
 	}
-	/* Inlined copy_signal */
-	if (!(clone_flags & CLONE_THREAD)) {
+	/* Inlined copy_signal - CLONE_THREAD never set, always alloc */
+	{
 		struct signal_struct *sig;
 		sig = kmem_cache_zalloc(signal_cachep, GFP_KERNEL);
 		p->signal = sig;

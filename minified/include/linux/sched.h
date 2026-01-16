@@ -423,7 +423,7 @@ static inline int is_global_init(struct task_struct *tsk)
 #define PF_FORKNOEXEC		0x00000040
 #define PF_SUPERPRIV		0x00000100
 #define PF_MEMALLOC		0x00000800
-#define PF_NPROC_EXCEEDED	0x00001000
+/* PF_NPROC_EXCEEDED removed - never used */
 #define PF_NOFREEZE		0x00008000
 /* PF_FROZEN removed - unused */
 #define PF_MEMALLOC_NOFS	0x00040000

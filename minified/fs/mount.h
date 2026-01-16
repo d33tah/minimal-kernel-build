@@ -12,8 +12,7 @@ struct fs_pin {
 	void (*kill)(struct fs_pin *);
 };
 struct vfsmount;
-void pin_remove(struct fs_pin *);
-void pin_insert(struct fs_pin *, struct vfsmount *);
+/* pin_remove, pin_insert removed - never called */
 void pin_kill(struct fs_pin *);
 
 struct mnt_namespace {

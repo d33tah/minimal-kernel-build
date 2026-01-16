@@ -101,11 +101,11 @@ struct delayed_work {
 #define DECLARE_DELAYED_WORK(n, f)					\
 	struct delayed_work n = __DELAYED_WORK_INITIALIZER(n, f, 0)
 
-static inline void __init_work(struct work_struct *work, int onstack) { }
+/* __init_work removed - empty stub */
 
 #define __INIT_WORK(_work, _func, _onstack)				\
 	do {								\
-		__init_work((_work), _onstack);				\
+		/* __init_work call removed - empty stub */		\
 		(_work)->data = (atomic_long_t) WORK_DATA_INIT();	\
 		INIT_LIST_HEAD(&(_work)->entry);			\
 		(_work)->func = (_func);				\

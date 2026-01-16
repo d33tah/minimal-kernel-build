@@ -352,7 +352,7 @@ int bus_register(struct bus_type *bus)
 		goto bus_drivers_fail;
 	}
 
-	INIT_LIST_HEAD(&priv->interfaces);
+	/* INIT_LIST_HEAD(&priv->interfaces) removed - field removed */
 	__mutex_init(&priv->mutex, "subsys mutex", key);
 	klist_init(&priv->klist_devices, klist_devices_get, klist_devices_put);
 	klist_init(&priv->klist_drivers, NULL, NULL);

@@ -6,7 +6,7 @@
 struct subsys_private {
 	struct kset subsys;
 	struct kset *devices_kset;
-	struct list_head interfaces;
+	/* interfaces removed - list never populated */
 	struct mutex mutex;
 
 	struct kset *drivers_kset;

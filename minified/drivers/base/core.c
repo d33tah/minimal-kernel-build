@@ -345,7 +345,6 @@ void device_del(struct device *dev)
 {
 	struct device *parent = dev->parent;
 	struct kobject *glue_dir = NULL;
-	struct class_interface *class_intf;
 	unsigned int noio_flag;
 
 	device_lock(dev);
@@ -364,12 +363,7 @@ void device_del(struct device *dev)
 		device_remove_class_symlinks(dev);
 
 		mutex_lock(&dev->class->p->mutex);
-
-		list_for_each_entry(class_intf, &dev->class->p->interfaces,
-				    node)
-			if (class_intf->remove_dev)
-				class_intf->remove_dev(dev, class_intf);
-
+		/* class_intf loop removed - interfaces list never populated */
 		klist_del(&dev->p->knode_class);
 		mutex_unlock(&dev->class->p->mutex);
 	}

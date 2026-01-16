@@ -65,15 +65,7 @@ static inline struct device *class_find_device_by_devt(struct class *class,
 }
 
 /* struct class_attribute removed - never used */
-
-struct class_interface {
-	struct list_head	node;
-	struct class		*class;
-
-	int (*add_dev)		(struct device *, struct class_interface *);
-	void (*remove_dev)	(struct device *, struct class_interface *);
-};
-
+/* struct class_interface removed - never used */
 /* class_interface_register, __class_create, class_create macro removed - never called */
 
 #endif	 

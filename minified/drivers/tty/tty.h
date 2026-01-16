@@ -32,8 +32,7 @@ void tty_ldisc_unlock(struct tty_struct *tty);
 void tty_buffer_free_all(struct tty_port *port);
 /* tty_buffer_flush removed - empty stub */
 void tty_buffer_init(struct tty_port *port);
-/* tty_buffer_set_lock_subclass removed - never implemented or called */
-bool tty_buffer_restart_work(struct tty_port *port);
+/* tty_buffer_set_lock_subclass, tty_buffer_restart_work removed - never called */
 bool tty_buffer_cancel_work(struct tty_port *port);
 /* tty_buffer_flush_work, tty_ldisc_hangup removed - unused */
 speed_t tty_termios_input_baud_rate(struct ktermios *termios);

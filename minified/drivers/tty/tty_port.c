@@ -14,22 +14,8 @@
 
 #include "tty.h"
 
-/* tty_port_default_receive_buf removed - only called via flush_to_ldisc which was never triggered */
-
-static void tty_port_default_wakeup(struct tty_port *port)
-{
-	struct tty_struct *tty = tty_port_tty_get(port);
-
-	if (tty) {
-		tty_wakeup(tty);
-		tty_kref_put(tty);
-	}
-}
-
-const struct tty_port_client_operations tty_port_default_client_ops = {
-	/* .receive_buf removed - never called */
-	.write_wakeup = tty_port_default_wakeup,
-};
+/* tty_port_default_receive_buf, tty_port_default_wakeup removed - client_ops never read */
+/* tty_port_default_client_ops removed - only read from removed receive_buf in tty_buffer.c */
 
 void tty_port_init(struct tty_port *port)
 {
@@ -38,7 +24,7 @@ void tty_port_init(struct tty_port *port)
 	mutex_init(&port->mutex);
 	mutex_init(&port->buf_mutex);
 	spin_lock_init(&port->lock);
-	port->client_ops = &tty_port_default_client_ops;
+	/* client_ops not set - never read */
 	kref_init(&port->kref);
 }
 

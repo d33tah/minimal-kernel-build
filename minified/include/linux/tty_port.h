@@ -47,19 +47,15 @@ struct tty_port_operations {
 	void (*destruct)(struct tty_port *port);
 };
 
-struct tty_port_client_operations {
-	int (*receive_buf)(struct tty_port *port, const unsigned char *, const unsigned char *, size_t);
-	void (*write_wakeup)(struct tty_port *port);
-};
-
-extern const struct tty_port_client_operations tty_port_default_client_ops;
+/* tty_port_client_operations struct removed - never read after tty_buffer.c receive_buf removed */
+/* tty_port_default_client_ops removed - never read */
 
 struct tty_port {
 	struct tty_bufhead	buf;
 	struct tty_struct	*tty;
 	struct tty_struct	*itty;
 	const struct tty_port_operations *ops;
-	const struct tty_port_client_operations *client_ops;
+	/* client_ops field removed - never read */
 	spinlock_t		lock;
 	/* blocked_open, open_wait, delta_msr_wait removed - never used */
 	int			count;

@@ -36,28 +36,28 @@ struct thread_info {
 #endif
 
  
-#define TIF_NOTIFY_RESUME	1	 
-#define TIF_SIGPENDING		2	 
-#define TIF_NEED_RESCHED	3	 
-#define TIF_SINGLESTEP		4	 
-#define TIF_SSBD		5	 
-#define TIF_SPEC_IB		9	 
-#define TIF_SPEC_L1D_FLUSH	10	 
-#define TIF_USER_RETURN_NOTIFY	11	 
-#define TIF_UPROBE		12	 
-#define TIF_PATCH_PENDING	13	 
-#define TIF_NEED_FPU_LOAD	14	 
-#define TIF_NOCPUID		15	 
-#define TIF_NOTSC		16	 
-#define TIF_NOTIFY_SIGNAL	17	 
-#define TIF_MEMDIE		20	 
-#define TIF_POLLING_NRFLAG	21	 
-#define TIF_IO_BITMAP		22	 
-#define TIF_SPEC_FORCE_UPDATE	23	 
-#define TIF_FORCED_TF		24	 
-#define TIF_BLOCKSTEP		25	 
-#define TIF_LAZY_MMU_UPDATES	27	 
-#define TIF_ADDR32		29	 
+#define TIF_NOTIFY_RESUME	1
+#define TIF_SIGPENDING		2
+#define TIF_NEED_RESCHED	3
+#define TIF_SINGLESTEP		4
+#define TIF_SSBD		5
+#define TIF_SPEC_IB		9
+#define TIF_SPEC_L1D_FLUSH	10
+#define TIF_USER_RETURN_NOTIFY	11
+#define TIF_UPROBE		12
+#define TIF_PATCH_PENDING	13
+#define TIF_NEED_FPU_LOAD	14
+#define TIF_NOCPUID		15
+#define TIF_NOTSC		16
+#define TIF_NOTIFY_SIGNAL	17
+/* TIF_MEMDIE removed - unused (OOM killer disabled) */
+#define TIF_POLLING_NRFLAG	21
+/* TIF_IO_BITMAP removed - unused (no I/O bitmap support) */
+#define TIF_SPEC_FORCE_UPDATE	23
+/* TIF_FORCED_TF removed - unused (no ptrace) */
+#define TIF_BLOCKSTEP		25
+/* TIF_LAZY_MMU_UPDATES removed - unused (paravirt disabled) */
+/* TIF_ADDR32 removed - unused (IA32 emulation disabled) */
 
 #define _TIF_NOTIFY_RESUME	(1 << TIF_NOTIFY_RESUME)
 #define _TIF_SIGPENDING		(1 << TIF_SIGPENDING)
@@ -74,12 +74,8 @@ struct thread_info {
 #define _TIF_NOTSC		(1 << TIF_NOTSC)
 #define _TIF_NOTIFY_SIGNAL	(1 << TIF_NOTIFY_SIGNAL)
 #define _TIF_POLLING_NRFLAG	(1 << TIF_POLLING_NRFLAG)
-#define _TIF_IO_BITMAP		(1 << TIF_IO_BITMAP)
 #define _TIF_SPEC_FORCE_UPDATE	(1 << TIF_SPEC_FORCE_UPDATE)
-#define _TIF_FORCED_TF		(1 << TIF_FORCED_TF)
 #define _TIF_BLOCKSTEP		(1 << TIF_BLOCKSTEP)
-#define _TIF_LAZY_MMU_UPDATES	(1 << TIF_LAZY_MMU_UPDATES)
-#define _TIF_ADDR32		(1 << TIF_ADDR32)
 
  
 #define _TIF_WORK_CTXSW_BASE					\

@@ -1112,19 +1112,7 @@ static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns,
 	return new_ns;
 }
 
-__latent_entropy struct mnt_namespace *
-copy_mnt_ns(unsigned long flags, struct mnt_namespace *ns,
-	    struct user_namespace *user_ns, struct fs_struct *new_fs)
-{
-	/* Stubbed: namespace cloning not needed for minimal boot */
-	if (likely(!(flags & CLONE_NEWNS))) {
-		get_mnt_ns(ns);
-		return ns;
-	}
-	return ERR_PTR(-EINVAL);
-}
-
-/* init_mount_tree inlined into mnt_init */
+/* copy_mnt_ns removed - create_new_namespaces no longer called */
 
 void __init mnt_init(void)
 {

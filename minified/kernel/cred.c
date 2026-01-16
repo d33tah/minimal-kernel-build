@@ -67,12 +67,12 @@ void exit_creds(struct task_struct *tsk)
 
 	cred = (struct cred *)tsk->real_cred;
 	tsk->real_cred = NULL;
-	validate_creds(cred);
+	/* validate_creds call removed - empty stub */
 	put_cred(cred);
 
 	cred = (struct cred *)tsk->cred;
 	tsk->cred = NULL;
-	validate_creds(cred);
+	/* validate_creds call removed - empty stub */
 	put_cred(cred);
 }
 
@@ -99,8 +99,7 @@ struct cred *prepare_creds(void)
 	if (!new->ucounts)
 		goto error;
 
-	/* security_prepare_creds always returns 0 */
-	validate_creds(new);
+	/* security_prepare_creds always returns 0, validate_creds removed - empty stub */
 	return new;
 
 error:
@@ -135,7 +134,7 @@ int copy_creds(struct task_struct *p, unsigned long clone_flags)
 
 	p->cred = p->real_cred = get_cred(new);
 	inc_rlimit_ucounts(task_ucounts(p), UCOUNT_RLIMIT_NPROC, 1);
-	validate_creds(new);
+	/* validate_creds call removed - empty stub */
 	return 0;
 	/* error_put label removed - CLONE_NEWUSER never used */
 }

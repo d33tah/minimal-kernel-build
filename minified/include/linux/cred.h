@@ -72,13 +72,7 @@ extern void abort_creds(struct cred *);
 extern void __init cred_init(void);
 extern int set_cred_ucounts(struct cred *);
 
-static inline void validate_creds(const struct cred *cred)
-{
-}
-static inline void validate_creds_for_do_exit(struct task_struct *tsk)
-{
-}
-/* validate_process_creds removed - unused */
+/* validate_creds, validate_creds_for_do_exit, validate_process_creds removed - empty stubs, no callers */
 
 static inline struct cred *get_new_cred(struct cred *cred)
 {
@@ -91,7 +85,7 @@ static inline const struct cred *get_cred(const struct cred *cred)
 	struct cred *nonconst_cred = (struct cred *) cred;
 	if (!cred)
 		return cred;
-	validate_creds(cred);
+	/* validate_creds call removed - empty stub */
 	nonconst_cred->non_rcu = 0;
 	return get_new_cred(nonconst_cred);
 }
@@ -101,7 +95,7 @@ static inline void put_cred(const struct cred *_cred)
 	struct cred *cred = (struct cred *) _cred;
 
 	if (cred) {
-		validate_creds(cred);
+		/* validate_creds call removed - empty stub */
 		if (atomic_dec_and_test(&(cred)->usage))
 			__put_cred(cred);
 	}

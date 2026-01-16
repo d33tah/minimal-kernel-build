@@ -328,7 +328,7 @@ void __noreturn do_exit(long code)
 	exit_thread(tsk);
 	exit_notify(tsk, group_dead);
 
-	validate_creds_for_do_exit(tsk);
+	/* validate_creds_for_do_exit call removed - empty stub */
 	exit_task_stack_account(tsk);
 	preempt_disable();
 

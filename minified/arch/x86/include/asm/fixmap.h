@@ -66,15 +66,7 @@ static inline void __set_fixmap(enum fixed_addresses idx,
  
 #define FIXMAP_PAGE_NOCACHE PAGE_KERNEL_IO_NOCACHE
 
- 
-void __init *early_memremap_encrypted(resource_size_t phys_addr,
-				      unsigned long size);
-void __init *early_memremap_encrypted_wp(resource_size_t phys_addr,
-					 unsigned long size);
-void __init *early_memremap_decrypted(resource_size_t phys_addr,
-				      unsigned long size);
-void __init *early_memremap_decrypted_wp(resource_size_t phys_addr,
-					 unsigned long size);
+/* early_memremap_{encrypted,decrypted}[_wp] declarations removed - never called */
 
 /* Inlined from asm-generic/fixmap.h */
 #include <linux/bug.h>

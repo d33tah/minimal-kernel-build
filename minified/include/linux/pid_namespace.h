@@ -19,7 +19,7 @@ extern struct pid_namespace init_pid_ns;
 #define PIDNS_ADDING (1U << 31)
 #include <linux/err.h>
 static inline struct pid_namespace *get_pid_ns(struct pid_namespace *ns) { return ns; }
-static inline struct pid_namespace *copy_pid_ns(unsigned long flags, struct user_namespace *user_ns, struct pid_namespace *ns) { if (flags & CLONE_NEWPID) ns = ERR_PTR(-EINVAL); return ns; }
+/* copy_pid_ns removed - no callers */
 /* put_pid_ns removed - unused */
 static inline void zap_pid_ns_processes(struct pid_namespace *ns) { BUG(); }
 extern struct pid_namespace *task_active_pid_ns(struct task_struct *tsk);

@@ -34,19 +34,8 @@ static inline void put_time_ns(struct time_namespace *ns)
 {
 }
 
-static inline
-struct time_namespace *copy_time_ns(unsigned long flags,
-				    struct user_namespace *user_ns,
-				    struct time_namespace *old_ns)
-{
-	if (flags & CLONE_NEWTIME)
-		return ERR_PTR(-EINVAL);
+/* copy_time_ns removed - no callers */
 
-	return old_ns;
-}
-
-static inline void timens_on_fork(struct nsproxy *nsproxy, struct task_struct *tsk)
-{
-}
+/* timens_on_fork removed - no callers */
 
 #endif

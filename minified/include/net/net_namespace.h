@@ -21,13 +21,6 @@ static inline void put_net(struct net *net)
 {
 }
 
-static inline struct net *copy_net_ns(unsigned long flags,
-	struct user_namespace *user_ns, struct net *old_ns)
-{
-	if (flags & CLONE_NEWNET)
-		return ERR_PTR(-EINVAL);
-
-	return old_ns;
-}
+/* copy_net_ns removed - no callers */
 
 #endif

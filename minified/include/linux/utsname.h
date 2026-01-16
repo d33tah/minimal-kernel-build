@@ -46,14 +46,7 @@ struct uts_namespace {
 } __randomize_layout;
 extern struct uts_namespace init_uts_ns;
 
-static inline struct uts_namespace *copy_utsname(unsigned long flags,
-	struct user_namespace *user_ns, struct uts_namespace *old_ns)
-{
-	if (flags & CLONE_NEWUTS)
-		return ERR_PTR(-EINVAL);
-
-	return old_ns;
-}
+/* copy_utsname removed - no callers */
 
 static inline struct new_utsname *utsname(void)
 {

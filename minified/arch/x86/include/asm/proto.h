@@ -14,6 +14,6 @@ void __end_SYSENTER_singlestep_region(void);
 
 void x86_configure_nx(void);
 
-long do_arch_prctl_common(int option, unsigned long arg2);
+/* do_arch_prctl_common removed - arch_prctl uses COND_SYSCALL */
 
 #endif  

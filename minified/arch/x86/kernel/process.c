@@ -196,23 +196,7 @@ static void enable_cpuid(void)
 	preempt_enable();
 }
 
-static int get_cpuid_mode(void)
-{
-	return !test_thread_flag(TIF_NOCPUID);
-}
-
-static int set_cpuid_mode(unsigned long cpuid_enabled)
-{
-	if (!boot_cpu_has(X86_FEATURE_CPUID_FAULT))
-		return -ENODEV;
-
-	if (cpuid_enabled)
-		enable_cpuid();
-	else
-		disable_cpuid();
-
-	return 0;
-}
+/* get_cpuid_mode and set_cpuid_mode removed - only called from do_arch_prctl_common */
 
 void arch_setup_new_exec(void)
 {
@@ -402,20 +386,4 @@ unsigned long arch_randomize_brk(struct mm_struct *mm)
 	return randomize_page(mm->brk, 0x02000000);
 }
 
-long do_arch_prctl_common(int option, unsigned long arg2)
-{
-	switch (option) {
-	case ARCH_GET_CPUID:
-		return get_cpuid_mode();
-	case ARCH_SET_CPUID:
-		return set_cpuid_mode(arg2);
-	case ARCH_GET_XCOMP_SUPP:
-	case ARCH_GET_XCOMP_PERM:
-	case ARCH_REQ_XCOMP_PERM:
-	case ARCH_GET_XCOMP_GUEST_PERM:
-	case ARCH_REQ_XCOMP_GUEST_PERM:
-		return 0; /* fpu_xstate_prctl was empty stub */
-	}
-
-	return -EINVAL;
-}
+/* do_arch_prctl_common removed - arch_prctl syscall uses COND_SYSCALL */

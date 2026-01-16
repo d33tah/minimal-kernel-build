@@ -141,17 +141,7 @@ static void load_new_mm_cr3(pgd_t *pgdir, u16 new_asid, bool need_flush)
 	write_cr3(new_mm_cr3);
 }
 
-void leave_mm(int cpu)
-{
-	struct mm_struct *loaded_mm = this_cpu_read(cpu_tlbstate.loaded_mm);
-
-	if (loaded_mm == &init_mm)
-		return;
-
-	WARN_ON(!this_cpu_read(cpu_tlbstate_shared.is_lazy));
-
-	switch_mm(NULL, &init_mm, NULL);
-}
+/* leave_mm removed - never called (~11 LOC) */
 
 void switch_mm(struct mm_struct *prev, struct mm_struct *next,
 	       struct task_struct *tsk)

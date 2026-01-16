@@ -593,46 +593,20 @@ copy_process(struct pid *pid, int trace, int node,
 	struct task_struct *p;
 	struct multiprocess_signals delayed;
 	const u64 clone_flags = args->flags;
-	/* pidfd, pidfile removed - CLONE_PIDFD never used */
+	/* Clone flag validation checks removed - only CLONE_FS, CLONE_FILES,
+	 * CLONE_VM, CLONE_UNTRACED are ever used (from kernel_thread/user_mode_thread) */
 	struct nsproxy *nsp = current->nsproxy;
 
-	if ((clone_flags & (CLONE_NEWNS | CLONE_FS)) ==
-	    (CLONE_NEWNS | CLONE_FS))
+	/* time_ns check kept - CLONE_VM is always set */
+	if (nsp->time_ns != nsp->time_ns_for_children)
 		return ERR_PTR(-EINVAL);
-
-	if ((clone_flags & (CLONE_NEWUSER | CLONE_FS)) ==
-	    (CLONE_NEWUSER | CLONE_FS))
-		return ERR_PTR(-EINVAL);
-
-	if ((clone_flags & CLONE_THREAD) && !(clone_flags & CLONE_SIGHAND))
-		return ERR_PTR(-EINVAL);
-
-	if ((clone_flags & CLONE_SIGHAND) && !(clone_flags & CLONE_VM))
-		return ERR_PTR(-EINVAL);
-
-	if ((clone_flags & CLONE_PARENT) &&
-	    current->signal->flags & SIGNAL_UNKILLABLE)
-		return ERR_PTR(-EINVAL);
-
-	if (clone_flags & CLONE_THREAD) {
-		if ((clone_flags & (CLONE_NEWUSER | CLONE_NEWPID)) ||
-		    (task_active_pid_ns(current) != nsp->pid_ns_for_children))
-			return ERR_PTR(-EINVAL);
-	}
-
-	if (clone_flags & (CLONE_THREAD | CLONE_VM)) {
-		if (nsp->time_ns != nsp->time_ns_for_children)
-			return ERR_PTR(-EINVAL);
-	}
-
-	/* CLONE_PIDFD check removed - never used */
 
 	sigemptyset(&delayed.signal);
 	INIT_HLIST_NODE(&delayed.node);
 
 	spin_lock_irq(&current->sighand->siglock);
-	if (!(clone_flags & CLONE_THREAD))
-		hlist_add_head(&delayed.node, &current->signal->multiprocess);
+	/* CLONE_THREAD never set - always add to multiprocess */
+	hlist_add_head(&delayed.node, &current->signal->multiprocess);
 	recalc_sigpending();
 	spin_unlock_irq(&current->sighand->siglock);
 	retval = -ERESTARTNOINTR;
@@ -651,11 +625,9 @@ copy_process(struct pid *pid, int trace, int node,
 		siginitsetinv(&p->blocked, sigmask(SIGKILL) | sigmask(SIGSTOP));
 	}
 
-	p->set_child_tid =
-		(clone_flags & CLONE_CHILD_SETTID) ? args->child_tid : NULL;
-
-	p->clear_child_tid =
-		(clone_flags & CLONE_CHILD_CLEARTID) ? args->child_tid : NULL;
+	/* CLONE_CHILD_SETTID, CLONE_CHILD_CLEARTID never set */
+	p->set_child_tid = NULL;
+	p->clear_child_tid = NULL;
 
 	raw_spin_lock_init(&p->pi_lock);
 
@@ -768,26 +740,17 @@ copy_process(struct pid *pid, int trace, int node,
 		init_rwsem(&sig->exec_update_lock);
 	}
 	/* Inlined copy_mm */
+	/* Inlined copy_mm - CLONE_VM always set, no dup_mm needed */
 	{
-		struct mm_struct *mm, *oldmm;
-		/* p->min_flt/maj_flt/nvcsw/nivcsw init removed - write-only fields */
+		struct mm_struct *oldmm;
 		p->mm = NULL;
 		p->active_mm = NULL;
 		oldmm = current->mm;
 		if (oldmm) {
 			vmacache_flush(p);
-			if (clone_flags & CLONE_VM) {
-				mmget(oldmm);
-				mm = oldmm;
-			} else {
-				mm = dup_mm(p, current->mm);
-				if (!mm) {
-					retval = -ENOMEM;
-					goto bad_fork_cleanup_signal;
-				}
-			}
-			p->mm = mm;
-			p->active_mm = mm;
+			mmget(oldmm);
+			p->mm = oldmm;
+			p->active_mm = oldmm;
 		}
 	}
 	retval = copy_namespaces(clone_flags, p);
@@ -808,20 +771,16 @@ copy_process(struct pid *pid, int trace, int node,
 
 	/* CLONE_PIDFD block removed - never used */
 
-	if ((clone_flags & (CLONE_VM | CLONE_VFORK)) == CLONE_VM)
-		sas_ss_reset(p);
+	/* CLONE_VM always set without CLONE_VFORK - always reset sas */
+	sas_ss_reset(p);
 
 	clear_task_syscall_work(p, SYSCALL_TRACE);
 	clear_task_syscall_work(p, SYSCALL_EMU);
 
 	p->pid = pid_nr(pid);
-	if (clone_flags & CLONE_THREAD) {
-		p->group_leader = current->group_leader;
-		p->tgid = current->tgid;
-	} else {
-		p->group_leader = p;
-		p->tgid = p->pid;
-	}
+	/* CLONE_THREAD never set - always own group_leader */
+	p->group_leader = p;
+	p->tgid = p->pid;
 
 	/* p->nr_dirtied removed - write-only */
 	p->pdeath_signal = 0;
@@ -833,18 +792,9 @@ copy_process(struct pid *pid, int trace, int node,
 
 	write_lock_irq(&tasklist_lock);
 
-	if (clone_flags & (CLONE_PARENT | CLONE_THREAD)) {
-		p->real_parent = current->real_parent;
-		/* parent_exec_id removed - write-only field */
-		if (clone_flags & CLONE_THREAD)
-			p->exit_signal = -1;
-		else
-			p->exit_signal = current->group_leader->exit_signal;
-	} else {
-		p->real_parent = current;
-		/* parent_exec_id removed - write-only field */
-		p->exit_signal = args->exit_signal;
-	}
+	/* CLONE_PARENT, CLONE_THREAD never set */
+	p->real_parent = current;
+	p->exit_signal = args->exit_signal;
 
 	spin_lock(&current->sighand->siglock);
 
@@ -864,7 +814,8 @@ copy_process(struct pid *pid, int trace, int node,
 			INIT_HLIST_NODE(&p->pid_links[type]);
 	}
 	if (likely(p->pid)) {
-		ptrace_init_task(p, (clone_flags & CLONE_PTRACE) || trace);
+		/* CLONE_PTRACE never set, trace from ptrace_event_enabled */
+		ptrace_init_task(p, trace);
 
 		init_task_pid(p, PIDTYPE_PID, pid);
 		if (thread_group_leader(p)) {
@@ -925,8 +876,8 @@ bad_fork_cleanup_mm:
 	if (p->mm)
 		mmput(p->mm);
 bad_fork_cleanup_signal:
-	if (!(clone_flags & CLONE_THREAD))
-		free_signal_struct(p->signal);
+	/* CLONE_THREAD never set - always free signal */
+	free_signal_struct(p->signal);
 bad_fork_cleanup_sighand:
 	__cleanup_sighand(p->sighand);
 bad_fork_cleanup_fs:
@@ -957,61 +908,21 @@ struct mm_struct *copy_init_mm(void)
 
 pid_t kernel_clone(struct kernel_clone_args *args)
 {
-	u64 clone_flags = args->flags;
-	struct completion vfork;
 	struct pid *pid;
 	struct task_struct *p;
-	int trace = 0;
 	pid_t nr;
+	/* clone_flags, vfork, trace removed - unused */
 
-	/* CLONE_PIDFD check removed - never used */
-
-	if (!(clone_flags & CLONE_UNTRACED)) {
-		if (clone_flags & CLONE_VFORK)
-			trace = PTRACE_EVENT_VFORK;
-		else if (args->exit_signal != SIGCHLD)
-			trace = PTRACE_EVENT_CLONE;
-		else
-			trace = PTRACE_EVENT_FORK;
-
-		if (likely(!ptrace_event_enabled(current, trace)))
-			trace = 0;
-	}
-
-	p = copy_process(NULL, trace, NUMA_NO_NODE, args);
+	p = copy_process(NULL, 0, NUMA_NO_NODE, args);
 
 	if (IS_ERR(p))
 		return PTR_ERR(p);
 
 	pid = get_task_pid(p, PIDTYPE_PID);
 	nr = pid_vnr(pid);
-
-	if (clone_flags & CLONE_PARENT_SETTID)
-		put_user(nr, args->parent_tid);
-
-	if (clone_flags & CLONE_VFORK) {
-		p->vfork_done = &vfork;
-		init_completion(&vfork);
-		get_task_struct(p);
-	}
+	/* CLONE_PARENT_SETTID, CLONE_VFORK never used */
 
 	wake_up_new_task(p);
-
-	if (unlikely(trace))
-		ptrace_event_pid(trace, pid);
-
-	if (clone_flags & CLONE_VFORK) {
-		/* Inlined wait_for_vfork_done */
-		int killed = wait_for_completion_killable(&vfork);
-		if (killed) {
-			task_lock(p);
-			p->vfork_done = NULL;
-			task_unlock(p);
-		}
-		put_task_struct(p);
-		if (!killed)
-			ptrace_event_pid(PTRACE_EVENT_VFORK_DONE, pid);
-	}
 
 	put_pid(pid);
 	return nr;

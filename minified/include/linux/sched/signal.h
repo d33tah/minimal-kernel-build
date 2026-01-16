@@ -93,8 +93,7 @@ struct signal_struct {
 extern void ignore_signals(struct task_struct *);
 extern void flush_signal_handlers(struct task_struct *, int force_default);
 
-/* x86 only - no ia64 support */
-#define ___ARCH_SI_IA64(_a1, _a2, _a3)
+/* ___ARCH_SI_IA64 removed - x86 only, no ia64 support */
 
 int force_sig_fault(int sig, int code, void __user *addr);
 /* send_sig_fault, force_sig_mceerr, send_sig_mceerr, force_sig_bnderr, send_sig_perf,
@@ -202,24 +201,14 @@ static inline void restore_saved_sigmask(void)
 #define SEND_SIG_NOINFO ((struct kernel_siginfo *) 0)
 #define SEND_SIG_PRIV	((struct kernel_siginfo *) 1)
 
-/* __on_sig_stack, on_sig_stack, sas_ss_flags removed - never called */
-
-static inline void sas_ss_reset(struct task_struct *p)
-{
-	/* sas_ss_sp, sas_ss_size removed - write-only fields */
-}
+/* __on_sig_stack, on_sig_stack, sas_ss_flags, sas_ss_reset removed - never called or empty stubs */
 
 extern void __cleanup_sighand(struct sighand_struct *);
 
 #define next_task(p) \
 	list_entry_rcu((p)->tasks.next, struct task_struct, tasks)
 
-#define for_each_process(p) \
-	for (p = &init_task ; (p = next_task(p)) != &init_task ; )
-
-
-#define do_each_thread(g, t) \
-	for (g = t = &init_task ; (g = t = next_task(g)) != &init_task ; ) do
+/* for_each_process, do_each_thread removed - never called */
 
 #define while_each_thread(g, t) \
 	while ((t = next_thread(t)) != g)

@@ -747,9 +747,7 @@ copy_process(struct pid *pid, int trace, int node,
 	}
 
 	/* CLONE_PIDFD block removed - never used */
-
-	/* CLONE_VM always set without CLONE_VFORK - always reset sas */
-	sas_ss_reset(p);
+	/* sas_ss_reset removed - empty stub */
 
 	clear_task_syscall_work(p, SYSCALL_TRACE);
 	clear_task_syscall_work(p, SYSCALL_EMU);

@@ -301,7 +301,7 @@ void __noreturn do_exit(long code)
 			panic("Attempted to kill init! exitcode=0x%08x\n",
 			      tsk->signal->group_exit_code ?: (int)code);
 	}
-	tsk->exit_code = code;
+	/* exit_code removed - write-only field */
 
 	/* Inlined exit_mm */
 	{

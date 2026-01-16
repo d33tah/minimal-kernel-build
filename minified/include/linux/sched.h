@@ -234,7 +234,7 @@ struct task_struct {
 	struct vmacache			vmacache;
 
 	int				exit_state;
-	int				exit_code;
+	/* exit_code removed - write-only field (never read) */
 	int				exit_signal;
 	 
 	int				pdeath_signal;

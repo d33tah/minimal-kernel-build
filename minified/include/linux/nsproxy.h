@@ -4,14 +4,13 @@
 #include <linux/sched.h>
 struct mnt_namespace;
 struct uts_namespace;
-struct ipc_namespace;
 struct pid_namespace;
 struct cgroup_namespace;
 struct fs_struct;
 struct nsproxy {
 	atomic_t count;
 	struct uts_namespace *uts_ns;
-	struct ipc_namespace *ipc_ns;
+	/* ipc_ns removed - never used */
 	struct mnt_namespace *mnt_ns;
 	struct pid_namespace *pid_ns_for_children;
 	struct net 	     *net_ns;
@@ -20,7 +19,7 @@ struct nsproxy {
 	struct cgroup_namespace *cgroup_ns;
 };
 extern struct nsproxy init_nsproxy;
-struct nsset { unsigned flags; struct nsproxy *nsproxy; struct fs_struct *fs; const struct cred *cred; };
+/* struct nsset removed - never used */
 int copy_namespaces(unsigned long flags, struct task_struct *tsk);
 void exit_task_namespaces(struct task_struct *tsk);
 void free_nsproxy(struct nsproxy *ns);

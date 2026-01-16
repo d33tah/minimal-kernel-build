@@ -8,11 +8,7 @@
 #include <net/net_namespace.h>
 #include <linux/time_namespace.h>
 
-struct ipc_namespace {
-	struct user_namespace *user_ns;
-	struct ns_common ns;
-};
-/* copy_ipcs removed - create_new_namespaces no longer called */
+/* struct ipc_namespace removed - never used */
 #include <linux/fs_struct.h>
 #include <linux/proc_fs.h>
 #include <linux/proc_ns.h>

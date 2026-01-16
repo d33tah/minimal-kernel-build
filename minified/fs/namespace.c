@@ -705,10 +705,7 @@ bool may_mount(void)
 	return true;
 }
 
-static struct mnt_namespace *to_mnt_ns(struct ns_common *ns)
-{
-	return container_of(ns, struct mnt_namespace, ns);
-}
+/* to_mnt_ns removed - no callers after mntns_* cleanup */
 
 static void free_mnt_ns(struct mnt_namespace *);
 static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *, bool);

@@ -24,9 +24,8 @@ extern unsigned long __FIXADDR_TOP;
  
 enum fixed_addresses {
 	FIX_HOLE,
-	FIX_DBGP_BASE,
-	FIX_EARLYCON_MEM_BASE,
-	FIX_KMAP_BEGIN,	 
+	/* FIX_DBGP_BASE, FIX_EARLYCON_MEM_BASE removed - never used */
+	FIX_KMAP_BEGIN,
 	FIX_KMAP_END = FIX_KMAP_BEGIN + (KM_MAX_IDX * NR_CPUS) - 1,
 
 

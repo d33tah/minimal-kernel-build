@@ -490,27 +490,8 @@ int set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file)
 static void mm_release(struct task_struct *tsk, struct mm_struct *mm)
 {
 	deactivate_mm(tsk, mm);
-
-	if (tsk->clear_child_tid) {
-		if (atomic_read(&mm->mm_users) > 1) {
-			put_user(0, tsk->clear_child_tid);
-			do_futex(tsk->clear_child_tid, FUTEX_WAKE, 1, NULL,
-				 NULL, 0, 0);
-		}
-		tsk->clear_child_tid = NULL;
-	}
-
-	if (tsk->vfork_done) {
-		struct completion *vfork;
-
-		task_lock(tsk);
-		vfork = tsk->vfork_done;
-		if (likely(vfork)) {
-			tsk->vfork_done = NULL;
-			complete(vfork);
-		}
-		task_unlock(tsk);
-	}
+	/* clear_child_tid block removed - CLONE_CHILD_CLEARTID never set */
+	/* vfork_done block removed - CLONE_VFORK never used */
 }
 
 void exit_mm_release(struct task_struct *tsk, struct mm_struct *mm)

@@ -65,36 +65,4 @@ bool syscall_user_dispatch(struct pt_regs *regs)
 	return true;
 }
 
-int set_syscall_user_dispatch(unsigned long mode, unsigned long offset,
-			      unsigned long len, char __user *selector)
-{
-	switch (mode) {
-	case PR_SYS_DISPATCH_OFF:
-		if (offset || len || selector)
-			return -EINVAL;
-		break;
-	case PR_SYS_DISPATCH_ON:
-
-		if (offset && offset + len <= offset)
-			return -EINVAL;
-
-		if (selector && !access_ok(selector, sizeof(*selector)))
-			return -EFAULT;
-
-		break;
-	default:
-		return -EINVAL;
-	}
-
-	current->syscall_dispatch.selector = selector;
-	current->syscall_dispatch.offset = offset;
-	current->syscall_dispatch.len = len;
-	current->syscall_dispatch.on_dispatch = false;
-
-	if (mode == PR_SYS_DISPATCH_ON)
-		set_syscall_work(SYSCALL_USER_DISPATCH);
-	else
-		clear_syscall_work(SYSCALL_USER_DISPATCH);
-
-	return 0;
-}
+/* set_syscall_user_dispatch removed - prctl PR_SET_SYSCALL_USER_DISPATCH returns -EINVAL */

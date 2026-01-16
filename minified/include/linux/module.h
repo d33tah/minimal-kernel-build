@@ -37,25 +37,7 @@
 
 struct module;
 /* struct exception_table_entry forward decl removed - unused */
-
-struct module_kobject {
-	struct kobject kobj;
-	struct module *mod;
-	struct kobject *drivers_dir;
-	struct module_param_attrs *mp;
-	struct completion *kobj_completion;
-} __randomize_layout;
-
-struct module_attribute {
-	struct attribute attr;
-	ssize_t (*show)(struct module_attribute *, struct module_kobject *,
-			char *);
-	ssize_t (*store)(struct module_attribute *, struct module_kobject *,
-			 const char *, size_t count);
-	void (*setup)(struct module *, const char *);
-	int (*test)(struct module *);
-	void (*free)(struct module *);
-};
+/* struct module_kobject, module_attribute removed - never used */
 
 /* struct module_version_attribute removed - unused */
 /* extern int init_module(void) removed - never called */

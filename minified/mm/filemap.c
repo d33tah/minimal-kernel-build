@@ -162,13 +162,7 @@ void delete_from_page_cache_batch(struct address_space *mapping,
 }
 
 /* filemap_check_errors inlined into filemap_fdatawait_range */
-
-int filemap_fdatawrite_wbc(struct address_space *mapping,
-			   struct writeback_control *wbc)
-{
-	/* do_writepages always returns 0, so simplified */
-	return 0;
-}
+/* filemap_fdatawrite_wbc removed - never called (~5 LOC) */
 
 int filemap_fdatawait_range(struct address_space *mapping, loff_t start_byte,
 			    loff_t end_byte)

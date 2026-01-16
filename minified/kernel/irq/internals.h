@@ -316,12 +316,7 @@ static inline void kstat_incr_irqs_this_cpu(struct irq_desc *desc)
 
 /* irq_init_generic_chip, irq_can_move_pcntxt, irq_move_pending,
    irq_copy_pending, irq_get_pending, irq_desc_get_pending_mask,
-   irq_fixup_move_pending removed - unused */
-
-static inline bool handle_enforce_irqctx(struct irq_data *data)
-{
-	return false;
-}
+   irq_fixup_move_pending, handle_enforce_irqctx removed - unused */
 
 static inline int irq_domain_activate_irq(struct irq_data *data, bool reserve)
 {

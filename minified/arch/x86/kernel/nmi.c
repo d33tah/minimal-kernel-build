@@ -50,7 +50,7 @@ static struct nmi_desc nmi_desc[NMI_MAX] = {
 
 static int ignore_nmis __read_mostly;
 
-int unknown_nmi_panic;
+/* unknown_nmi_panic removed - never set to non-zero */
 static DEFINE_RAW_SPINLOCK(nmi_reason_lock);
 
 #define nmi_to_desc(type) (&nmi_desc[type])
@@ -135,9 +135,7 @@ static void unknown_nmi_error(unsigned char reason, struct pt_regs *regs)
 	pr_emerg("Uhhuh. NMI received for unknown reason %02x on CPU %d.\n",
 		 reason, smp_processor_id());
 
-	/* panic_on_unrecovered_nmi removed - never set to non-zero */
-	if (unknown_nmi_panic)
-		nmi_panic(regs, "NMI: Not continuing");
+	/* unknown_nmi_panic, panic_on_unrecovered_nmi removed - never set to non-zero */
 
 	pr_emerg("Dazed and confused, but trying to continue\n");
 }

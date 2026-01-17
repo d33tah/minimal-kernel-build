@@ -229,17 +229,6 @@ __cvdso_clock_getres_common(const struct vdso_data *vd, clockid_t clock,
 	return 0;
 }
 
-static __maybe_unused int
-__cvdso_clock_getres_data(const struct vdso_data *vd, clockid_t clock,
-			  struct __kernel_timespec *res)
-{
-	int ret = __cvdso_clock_getres_common(vd, clock, res);
-
-	if (unlikely(ret))
-		return clock_getres_fallback(clock, res);
-	return 0;
-}
-
 #ifdef BUILD_VDSO32
 static __maybe_unused int
 __cvdso_clock_getres_time32_data(const struct vdso_data *vd, clockid_t clock,

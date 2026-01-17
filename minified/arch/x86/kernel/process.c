@@ -168,15 +168,6 @@ static void set_cpuid_faulting(bool on)
 	wrmsrl(MSR_MISC_FEATURES_ENABLES, msrval);
 }
 
-static void disable_cpuid(void)
-{
-	preempt_disable();
-	if (!test_and_set_thread_flag(TIF_NOCPUID)) {
-		set_cpuid_faulting(true);
-	}
-	preempt_enable();
-}
-
 static void enable_cpuid(void)
 {
 	preempt_disable();

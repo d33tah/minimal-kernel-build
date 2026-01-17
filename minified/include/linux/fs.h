@@ -69,8 +69,7 @@ static inline void clear_delayed_call(struct delayed_call *call)
 #define SEEK_SET	0
 #define SEEK_END	2
 /* SEEK_DATA, SEEK_HOLE, RENAME_NOREPLACE removed - unused */
-/* RWF_* values needed for IOCB_* macros, rwf_t typedef */
-typedef int rwf_t;
+/* rwf_t typedef removed - unused, RWF_NOWAIT kept for IOCB_NOWAIT */
 #define RWF_NOWAIT	0x00000008
 /* end uapi/linux/fs.h */
 
@@ -91,7 +90,6 @@ extern void __init files_init(void);
 /* files_maxfiles_init removed - was empty stub */
 extern unsigned int sysctl_nr_open;
 
-/* rwf_t defined earlier */
 /* struct buffer_head, get_block_t removed - only used by block device code */
 
 #define MAY_EXEC		0x00000001

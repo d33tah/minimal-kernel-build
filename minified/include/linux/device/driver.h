@@ -18,15 +18,10 @@ struct device_driver {
 	/* mod_name, suppress_bind_attrs, probe_type, of_match_table, acpi_match_table removed - unused */
 
 	int (*probe) (struct device *dev);
-	/* sync_state removed - never called */
+	/* sync_state, suspend, resume, pm, coredump removed - never called */
 	int (*remove) (struct device *dev);
 	void (*shutdown) (struct device *dev);
-	int (*suspend) (struct device *dev, pm_message_t state);
-	int (*resume) (struct device *dev);
 	/* groups, dev_groups removed - never read (sysfs stubbed) */
-
-	const struct dev_pm_ops *pm;
-	/* coredump removed - never called */
 
 	struct driver_private *p;
 };

@@ -33,11 +33,7 @@ bool flush_work(struct work_struct *work)
 	return false;
 }
 
-bool cancel_work_sync(struct work_struct *work)
-{
-	return test_and_clear_bit(WORK_STRUCT_PENDING_BIT,
-				  work_data_bits(work));
-}
+/* cancel_work_sync removed - never called */
 
 bool flush_delayed_work(struct delayed_work *dwork)
 {
@@ -46,7 +42,8 @@ bool flush_delayed_work(struct delayed_work *dwork)
 
 bool cancel_delayed_work(struct delayed_work *dwork)
 {
-	return cancel_work_sync(&dwork->work);
+	return test_and_clear_bit(WORK_STRUCT_PENDING_BIT,
+				  work_data_bits(&dwork->work));
 }
 
 __printf(1, 4) struct workqueue_struct *alloc_workqueue(const char *fmt,

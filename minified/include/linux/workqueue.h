@@ -153,7 +153,7 @@ extern bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
 
 
 extern bool flush_work(struct work_struct *work);
-extern bool cancel_work_sync(struct work_struct *work);
+/* cancel_work_sync removed - never called */
 
 extern bool flush_delayed_work(struct delayed_work *dwork);
 extern bool cancel_delayed_work(struct delayed_work *dwork);

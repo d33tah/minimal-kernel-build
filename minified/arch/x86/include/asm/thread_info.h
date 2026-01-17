@@ -19,9 +19,9 @@ struct task_struct;
 #include <linux/atomic.h>
 
 struct thread_info {
-	unsigned long		flags;		 
-	unsigned long		syscall_work;	 
-	u32			status;		 
+	unsigned long		flags;
+	unsigned long		syscall_work;
+	/* status field removed - unused after TS_COMPAT removal */
 };
 
 #define INIT_THREAD_INFO(tsk)			\
@@ -36,36 +36,35 @@ struct thread_info {
 #endif
 
  
-#define TIF_NOTIFY_RESUME	1	 
-#define TIF_SIGPENDING		2	 
-#define TIF_NEED_RESCHED	3	 
-#define TIF_SINGLESTEP		4	 
-#define TIF_SSBD		5	 
-#define TIF_SPEC_IB		9	 
-#define TIF_SPEC_L1D_FLUSH	10	 
-#define TIF_USER_RETURN_NOTIFY	11	 
-#define TIF_UPROBE		12	 
-#define TIF_PATCH_PENDING	13	 
-#define TIF_NEED_FPU_LOAD	14	 
-#define TIF_NOCPUID		15	 
-#define TIF_NOTSC		16	 
-#define TIF_NOTIFY_SIGNAL	17	 
-#define TIF_MEMDIE		20	 
-#define TIF_POLLING_NRFLAG	21	 
-#define TIF_IO_BITMAP		22	 
-#define TIF_SPEC_FORCE_UPDATE	23	 
-#define TIF_FORCED_TF		24	 
-#define TIF_BLOCKSTEP		25	 
-#define TIF_LAZY_MMU_UPDATES	27	 
-#define TIF_ADDR32		29	 
+#define TIF_NOTIFY_RESUME	1
+#define TIF_SIGPENDING		2
+#define TIF_NEED_RESCHED	3
+/* TIF_SINGLESTEP removed - never used */
+#define TIF_SSBD		5
+#define TIF_SPEC_IB		9
+#define TIF_SPEC_L1D_FLUSH	10
+#define TIF_USER_RETURN_NOTIFY	11
+#define TIF_UPROBE		12
+#define TIF_PATCH_PENDING	13
+#define TIF_NEED_FPU_LOAD	14
+#define TIF_NOCPUID		15
+#define TIF_NOTSC		16
+#define TIF_NOTIFY_SIGNAL	17
+/* TIF_MEMDIE removed - unused (OOM killer disabled) */
+#define TIF_POLLING_NRFLAG	21
+/* TIF_IO_BITMAP removed - unused (no I/O bitmap support) */
+#define TIF_SPEC_FORCE_UPDATE	23
+/* TIF_FORCED_TF removed - unused (no ptrace) */
+#define TIF_BLOCKSTEP		25
+/* TIF_LAZY_MMU_UPDATES removed - unused (paravirt disabled) */
+/* TIF_ADDR32 removed - unused (IA32 emulation disabled) */
 
 #define _TIF_NOTIFY_RESUME	(1 << TIF_NOTIFY_RESUME)
 #define _TIF_SIGPENDING		(1 << TIF_SIGPENDING)
 #define _TIF_NEED_RESCHED	(1 << TIF_NEED_RESCHED)
-#define _TIF_SINGLESTEP		(1 << TIF_SINGLESTEP)
+/* _TIF_SINGLESTEP removed - never used */
 #define _TIF_SSBD		(1 << TIF_SSBD)
-#define _TIF_SPEC_IB		(1 << TIF_SPEC_IB)
-#define _TIF_SPEC_L1D_FLUSH	(1 << TIF_SPEC_L1D_FLUSH)
+/* _TIF_SPEC_IB, _TIF_SPEC_L1D_FLUSH removed - never used */
 #define _TIF_USER_RETURN_NOTIFY	(1 << TIF_USER_RETURN_NOTIFY)
 #define _TIF_UPROBE		(1 << TIF_UPROBE)
 #define _TIF_PATCH_PENDING	(1 << TIF_PATCH_PENDING)
@@ -73,13 +72,9 @@ struct thread_info {
 #define _TIF_NOCPUID		(1 << TIF_NOCPUID)
 #define _TIF_NOTSC		(1 << TIF_NOTSC)
 #define _TIF_NOTIFY_SIGNAL	(1 << TIF_NOTIFY_SIGNAL)
-#define _TIF_POLLING_NRFLAG	(1 << TIF_POLLING_NRFLAG)
-#define _TIF_IO_BITMAP		(1 << TIF_IO_BITMAP)
+/* _TIF_POLLING_NRFLAG removed - never used */
 #define _TIF_SPEC_FORCE_UPDATE	(1 << TIF_SPEC_FORCE_UPDATE)
-#define _TIF_FORCED_TF		(1 << TIF_FORCED_TF)
 #define _TIF_BLOCKSTEP		(1 << TIF_BLOCKSTEP)
-#define _TIF_LAZY_MMU_UPDATES	(1 << TIF_LAZY_MMU_UPDATES)
-#define _TIF_ADDR32		(1 << TIF_ADDR32)
 
  
 #define _TIF_WORK_CTXSW_BASE					\
@@ -93,25 +88,22 @@ struct thread_info {
 
 #define _TIF_WORK_CTXSW_NEXT	(_TIF_WORK_CTXSW)
 
-#define STACK_WARN		(THREAD_SIZE/8)
+/* STACK_WARN removed - never used */
 
- 
 #ifndef __ASSEMBLY__
 
 /* arch_within_stack_frames removed - unused */
 
 #endif   
 
- 
-#define TS_COMPAT		0x0002	 
+/* TS_COMPAT removed - never used (IA32_EMULATION disabled) */
 
 #ifndef __ASSEMBLY__
 
 #define in_ia32_syscall() true
 
-extern void arch_task_cache_init(void);
+/* arch_task_cache_init, arch_release_task_struct removed - declared but never defined/used */
 extern int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src);
-extern void arch_release_task_struct(struct task_struct *tsk);
 extern void arch_setup_new_exec(void);
 #define arch_setup_new_exec arch_setup_new_exec
 #endif	 

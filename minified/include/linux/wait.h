@@ -6,20 +6,6 @@
 
 #include <asm/current.h>
 
-#define WNOHANG		0x00000001
-#define WUNTRACED	0x00000002
-#define WSTOPPED	WUNTRACED
-#define WEXITED		0x00000004
-#define WCONTINUED	0x00000008
-#define WNOWAIT		0x01000000
-#define __WNOTHREAD	0x20000000
-#define __WALL		0x40000000
-#define __WCLONE	0x80000000
-#define P_ALL		0
-#define P_PID		1
-#define P_PGID		2
-#define P_PIDFD		3
-
 typedef struct wait_queue_entry wait_queue_entry_t;
 
 typedef int (*wait_queue_func_t)(struct wait_queue_entry *wq_entry, unsigned mode, int flags, void *key);
@@ -45,8 +31,7 @@ struct wait_queue_head {
 };
 typedef struct wait_queue_head wait_queue_head_t;
 
-struct task_struct;
-
+/* struct task_struct forward decl removed - unused */
 
 #define __WAITQUEUE_INITIALIZER(name, tsk) {					\
 	.private	= tsk,							\
@@ -73,14 +58,6 @@ extern void __init_waitqueue_head(struct wait_queue_head *wq_head, const char *n
 	} while (0)
 
 # define DECLARE_WAIT_QUEUE_HEAD_ONSTACK(name) DECLARE_WAIT_QUEUE_HEAD(name)
-
-static inline void
-init_waitqueue_func_entry(struct wait_queue_entry *wq_entry, wait_queue_func_t func)
-{
-	wq_entry->flags		= 0;
-	wq_entry->private	= NULL;
-	wq_entry->func		= func;
-}
 
 static inline int waitqueue_active(struct wait_queue_head *wq_head)
 {
@@ -119,7 +96,7 @@ void __wake_up(struct wait_queue_head *wq_head, unsigned int mode, int nr, void 
 void __wake_up_locked_key(struct wait_queue_head *wq_head, unsigned int mode, void *key);
 void __wake_up_locked_key_bookmark(struct wait_queue_head *wq_head,
 		unsigned int mode, void *key, wait_queue_entry_t *bookmark);
-void __wake_up_sync_key(struct wait_queue_head *wq_head, unsigned int mode, void *key);
+/* __wake_up_sync_key removed - no callers */
 void __wake_up_locked(struct wait_queue_head *wq_head, unsigned int mode, int nr);
 
 #define wake_up(x)			__wake_up(x, TASK_NORMAL, 1, NULL)
@@ -130,19 +107,11 @@ void __wake_up_locked(struct wait_queue_head *wq_head, unsigned int mode, int nr
 #define wake_up_interruptible_all(x)	__wake_up(x, TASK_INTERRUPTIBLE, 0, NULL)
 
 #define poll_to_key(m) ((void *)(__force uintptr_t)(__poll_t)(m))
-#define key_to_poll(m) ((__force __poll_t)(uintptr_t)(void *)(m))
-#define wake_up_poll(x, m)							\
-	__wake_up(x, TASK_NORMAL, 1, poll_to_key(m))
+/* key_to_poll, wake_up_poll removed - unused */
 #define wake_up_interruptible_poll(x, m)					\
 	__wake_up(x, TASK_INTERRUPTIBLE, 1, poll_to_key(m))
 
-#define ___wait_cond_timeout(condition)						\
-({										\
-	bool __cond = (condition);						\
-	if (__cond && !__ret)							\
-		__ret = 1;							\
-	__cond || !__ret;							\
-})
+/* ___wait_cond_timeout removed - never used */
 
 #define ___wait_is_interruptible(state)						\
 	(!__builtin_constant_p(state) ||					\
@@ -187,17 +156,11 @@ do {										\
 	__wait_event(wq_head, condition);					\
 } while (0)
 
-#define __wait_event_interruptible(wq_head, condition)				\
-	___wait_event(wq_head, condition, TASK_INTERRUPTIBLE, 0, 0,		\
-		      schedule())
-
+/* __wait_event_interruptible removed - unused */
 
 void prepare_to_wait(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry, int state);
-bool prepare_to_wait_exclusive(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry, int state);
 long prepare_to_wait_event(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry, int state);
 void finish_wait(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry);
-long wait_woken(struct wait_queue_entry *wq_entry, unsigned mode, long timeout);
-int woken_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, int sync, void *key);
 int autoremove_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, int sync, void *key);
 
 #define DEFINE_WAIT_FUNC(name, function)					\
@@ -206,8 +169,7 @@ int autoremove_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, i
 		.func		= function,					\
 		.entry		= LIST_HEAD_INIT((name).entry),			\
 	}
-
-#define DEFINE_WAIT(name) DEFINE_WAIT_FUNC(name, autoremove_wake_function)
+/* DEFINE_WAIT removed - unused */
 
 #define init_wait(wait)								\
 	do {									\

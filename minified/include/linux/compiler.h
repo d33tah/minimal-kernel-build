@@ -7,43 +7,11 @@
 
 #ifdef __KERNEL__
 
-#if defined(CONFIG_TRACE_BRANCH_PROFILING) \
-    && !defined(DISABLE_BRANCH_PROFILING) && !defined(__CHECKER__)
-void ftrace_likely_update(struct ftrace_likely_data *f, int val,
-			  int expect, int is_constant);
-
-#define likely_notrace(x)	__builtin_expect(!!(x), 1)
-#define unlikely_notrace(x)	__builtin_expect(!!(x), 0)
-
-#define __branch_check__(x, expect, is_constant) ({			\
-			long ______r;					\
-			static struct ftrace_likely_data		\
-				__aligned(4)				\
-				__section("_ftrace_annotated_branch")	\
-				______f = {				\
-				.data.func = __func__,			\
-				.data.file = __FILE__,			\
-				.data.line = __LINE__,			\
-			};						\
-			______r = __builtin_expect(!!(x), expect);	\
-			ftrace_likely_update(&______f, ______r,		\
-					     expect, is_constant);	\
-			______r;					\
-		})
-
-# ifndef likely
-#  define likely(x)	(__branch_check__(x, 1, __builtin_constant_p(x)))
-# endif
-# ifndef unlikely
-#  define unlikely(x)	(__branch_check__(x, 0, __builtin_constant_p(x)))
-# endif
-
-#else
-# define likely(x)	__builtin_expect(!!(x), 1)
-# define unlikely(x)	__builtin_expect(!!(x), 0)
-# define likely_notrace(x)	likely(x)
-# define unlikely_notrace(x)	unlikely(x)
-#endif
+/* CONFIG_TRACE_BRANCH_PROFILING not enabled - simple likely/unlikely */
+#define likely(x)	__builtin_expect(!!(x), 1)
+#define unlikely(x)	__builtin_expect(!!(x), 0)
+#define likely_notrace(x)	likely(x)
+#define unlikely_notrace(x)	unlikely(x)
 
 #ifndef barrier
 # define barrier() __asm__ __volatile__("": : :"memory")
@@ -53,28 +21,7 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
 # define barrier_data(ptr) __asm__ __volatile__("": :"r"(ptr) :"memory")
 #endif
 
-#ifndef barrier_before_unreachable
-# define barrier_before_unreachable() do { } while (0)
-#endif
-
-#define annotate_unreachable()
-#define __annotate_jump_table  
-
-#ifndef unreachable
-# define unreachable() do {		\
-	annotate_unreachable();		\
-	__builtin_unreachable();	\
-} while (0)
-#endif
-
-#ifndef KENTRY
-# define KENTRY(sym)						\
-	extern typeof(sym) sym;					\
-	static const unsigned long __kentry_##sym		\
-	__used							\
-	__attribute__((__section__("___kentry+" #sym)))		\
-	= (unsigned long)&sym;
-#endif
+/* unreachable() macro removed - never used */
 
 #ifndef RELOC_HIDE
 # define RELOC_HIDE(ptr, off)					\
@@ -104,10 +51,9 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
 	__v;								\
 })
 
-#define ASSERT_EXCLUSIVE_BITS(var, mask) do { } while (0)
-#define ASSERT_EXCLUSIVE_WRITER(var) do { } while (0)
+/* ASSERT_EXCLUSIVE_BITS, ASSERT_EXCLUSIVE_WRITER removed - unused */
 
-#endif  
+#endif
 
 #define __ADDRESSABLE(sym) \
 	static void * __section(".discard.addressable") __used \

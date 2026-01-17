@@ -34,10 +34,7 @@ struct vm_area_struct;
 #define ___GFP_HARDWALL		0x100000u
 #define ___GFP_THISNODE		0x200000u
 #define ___GFP_ACCOUNT		0x400000u
-#define ___GFP_SKIP_ZERO		0
-#define ___GFP_SKIP_KASAN_UNPOISON	0
-#define ___GFP_SKIP_KASAN_POISON	0
-#define ___GFP_NOLOCKDEP	0
+/* ___GFP_SKIP_ZERO, ___GFP_SKIP_KASAN_*, ___GFP_NOLOCKDEP removed - always 0 and unused */
 
 #define __GFP_DMA	((__force gfp_t)___GFP_DMA)
 #define __GFP_HIGHMEM	((__force gfp_t)___GFP_HIGHMEM)
@@ -68,12 +65,10 @@ struct vm_area_struct;
 #define __GFP_NOWARN	((__force gfp_t)___GFP_NOWARN)
 #define __GFP_COMP	((__force gfp_t)___GFP_COMP)
 #define __GFP_ZERO	((__force gfp_t)___GFP_ZERO)
-#define __GFP_SKIP_ZERO ((__force gfp_t)___GFP_SKIP_ZERO)
-#define __GFP_SKIP_KASAN_UNPOISON ((__force gfp_t)___GFP_SKIP_KASAN_UNPOISON)
-#define __GFP_SKIP_KASAN_POISON   ((__force gfp_t)___GFP_SKIP_KASAN_POISON)
-#define __GFP_NOLOCKDEP ((__force gfp_t)___GFP_NOLOCKDEP)
+/* __GFP_SKIP_ZERO, __GFP_SKIP_KASAN_*, __GFP_NOLOCKDEP removed - always 0 and unused */
 
-#define __GFP_BITS_SHIFT (27 + IS_ENABLED(CONFIG_LOCKDEP))
+/* CONFIG_LOCKDEP not enabled */
+#define __GFP_BITS_SHIFT 27
 #define __GFP_BITS_MASK ((__force gfp_t)((1 << __GFP_BITS_SHIFT) - 1))
 
 #define GFP_ATOMIC	(__GFP_HIGH|__GFP_ATOMIC|__GFP_KSWAPD_RECLAIM)
@@ -84,8 +79,7 @@ struct vm_area_struct;
 #define GFP_DMA		__GFP_DMA
 #define GFP_DMA32	__GFP_DMA32
 #define GFP_HIGHUSER	(GFP_USER | __GFP_HIGHMEM)
-#define GFP_HIGHUSER_MOVABLE	(GFP_HIGHUSER | __GFP_MOVABLE | \
-			 __GFP_SKIP_KASAN_POISON)
+#define GFP_HIGHUSER_MOVABLE	(GFP_HIGHUSER | __GFP_MOVABLE)
 
 #define GFP_MOVABLE_MASK (__GFP_RECLAIMABLE|__GFP_MOVABLE)
 #define GFP_MOVABLE_SHIFT 3
@@ -117,12 +111,7 @@ static inline bool gfpflags_allow_blocking(const gfp_t gfp_flags)
 
 #define OPT_ZONE_DMA32 ZONE_NORMAL
 
-
-#if defined(CONFIG_ZONE_DEVICE) && (MAX_NR_ZONES-1) <= 4
-#define GFP_ZONES_SHIFT 2
-#else
 #define GFP_ZONES_SHIFT ZONES_SHIFT
-#endif
 
 #if 16 * GFP_ZONES_SHIFT > BITS_PER_LONG
 #error GFP_ZONES_SHIFT too large to create GFP_ZONE_TABLE integer
@@ -172,12 +161,7 @@ static inline struct zonelist *node_zonelist(int nid, gfp_t flags)
 	return NODE_DATA(nid)->node_zonelists + gfp_zonelist(flags);
 }
 
-#ifndef HAVE_ARCH_FREE_PAGE
-static inline void arch_free_page(struct page *page, int order) { }
-#endif
-#ifndef HAVE_ARCH_ALLOC_PAGE
-static inline void arch_alloc_page(struct page *page, int order) { }
-#endif
+/* Removed: arch_free_page, arch_alloc_page - never called */
 
 struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid,
 		nodemask_t *nodemask);
@@ -188,11 +172,6 @@ unsigned long __alloc_pages_bulk(gfp_t gfp, int preferred_nid,
 				nodemask_t *nodemask, int nr_pages,
 				struct list_head *page_list,
 				struct page **page_array);
-
-unsigned long alloc_pages_bulk_array_mempolicy(gfp_t gfp,
-				unsigned long nr_pages,
-				struct page **page_array);
-
 
 static inline unsigned long
 alloc_pages_bulk_array_node(gfp_t gfp, int nid, unsigned long nr_pages, struct page **page_array)
@@ -212,14 +191,7 @@ __alloc_pages_node(int nid, gfp_t gfp_mask, unsigned int order)
 	return __alloc_pages(gfp_mask, order, nid, NULL);
 }
 
-static inline
-struct folio *__folio_alloc_node(gfp_t gfp, unsigned int order, int nid)
-{
-	VM_BUG_ON(nid < 0 || nid >= MAX_NUMNODES);
-	VM_WARN_ON((gfp & __GFP_THISNODE) && !node_online(nid));
-
-	return __folio_alloc(gfp, order, nid, NULL);
-}
+/* __folio_alloc_node removed - never called */
 
 static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
 						unsigned int order)
@@ -236,7 +208,7 @@ static inline struct page *alloc_pages(gfp_t gfp_mask, unsigned int order)
 }
 static inline struct folio *folio_alloc(gfp_t gfp, unsigned int order)
 {
-	return __folio_alloc_node(gfp, order, numa_node_id());
+	return __folio_alloc(gfp, order, numa_node_id(), NULL);
 }
 #define vma_alloc_folio(gfp, order, vma, addr, hugepage)		\
 	folio_alloc(gfp, order)
@@ -250,7 +222,7 @@ static inline struct page *alloc_page_vma(gfp_t gfp,
 }
 
 extern unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order);
-extern unsigned long get_zeroed_page(gfp_t gfp_mask);
+/* get_zeroed_page removed - never called */
 
 void *alloc_pages_exact(size_t size, gfp_t gfp_mask) __alloc_size(1);
 

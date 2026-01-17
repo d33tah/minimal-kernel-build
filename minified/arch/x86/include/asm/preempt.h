@@ -33,7 +33,7 @@ static __always_inline void preempt_count_set(int pc)
 }
 
  
-#define init_task_preempt_count(p) do { } while (0)
+/* init_task_preempt_count removed - no callers */
 
 #define init_idle_preempt_count(p, cpu) do { \
 	per_cpu(__preempt_count, (cpu)) = PREEMPT_DISABLED; \
@@ -50,13 +50,6 @@ static __always_inline void clear_preempt_need_resched(void)
 {
 	raw_cpu_or_4(__preempt_count, PREEMPT_NEED_RESCHED);
 }
-
-static __always_inline bool test_preempt_need_resched(void)
-{
-	return !(raw_cpu_read_4(__preempt_count) & PREEMPT_NEED_RESCHED);
-}
-
- 
 
 static __always_inline void __preempt_count_add(int val)
 {

@@ -4,37 +4,25 @@
 #include <linux/slab.h>
 #include <linux/cred.h>
 #include <linux/hash.h>
-#include <linux/kmemleak.h>
 #include <linux/user_namespace.h>
 
 struct ucounts init_ucounts = {
-	.ns    = &init_user_ns,
-	.uid   = GLOBAL_ROOT_UID,
+	.ns = &init_user_ns,
+	.uid = GLOBAL_ROOT_UID,
 	.count = ATOMIC_INIT(1),
 };
 
-#define UCOUNTS_HASHTABLE_BITS 10
+#define UCOUNTS_HASHTABLE_BITS 4 /* Reduced from 10 for minimal boot */
 static struct hlist_head ucounts_hashtable[(1 << UCOUNTS_HASHTABLE_BITS)];
 static DEFINE_SPINLOCK(ucounts_lock);
 
-#define ucounts_hashfn(ns, uid)						\
+#define ucounts_hashfn(ns, uid)                                         \
 	hash_long((unsigned long)__kuid_val(uid) + (unsigned long)(ns), \
 		  UCOUNTS_HASHTABLE_BITS)
-#define ucounts_hashentry(ns, uid)	\
-	(ucounts_hashtable + ucounts_hashfn(ns, uid))
+#define ucounts_hashentry(ns, uid) (ucounts_hashtable + ucounts_hashfn(ns, uid))
 
-
-
-bool setup_userns_sysctls(struct user_namespace *ns)
-{
-	return true;
-}
-
-void retire_userns_sysctls(struct user_namespace *ns)
-{
-}
-
-static struct ucounts *find_ucounts(struct user_namespace *ns, kuid_t uid, struct hlist_head *hashent)
+static struct ucounts *find_ucounts(struct user_namespace *ns, kuid_t uid,
+				    struct hlist_head *hashent)
 {
 	struct ucounts *ucounts;
 
@@ -47,7 +35,8 @@ static struct ucounts *find_ucounts(struct user_namespace *ns, kuid_t uid, struc
 
 static void hlist_add_ucounts(struct ucounts *ucounts)
 {
-	struct hlist_head *hashent = ucounts_hashentry(ucounts->ns, ucounts->uid);
+	struct hlist_head *hashent =
+		ucounts_hashentry(ucounts->ns, ucounts->uid);
 	spin_lock_irq(&ucounts_lock);
 	hlist_add_head(&ucounts->node, hashent);
 	spin_unlock_irq(&ucounts_lock);
@@ -55,7 +44,6 @@ static void hlist_add_ucounts(struct ucounts *ucounts)
 
 static inline bool get_ucounts_or_wrap(struct ucounts *ucounts)
 {
-	 
 	return !atomic_add_negative(1, &ucounts->count);
 }
 
@@ -111,7 +99,8 @@ void put_ucounts(struct ucounts *ucounts)
 {
 	unsigned long flags;
 
-	if (atomic_dec_and_lock_irqsave(&ucounts->count, &ucounts_lock, flags)) {
+	if (atomic_dec_and_lock_irqsave(&ucounts->count, &ucounts_lock,
+					flags)) {
 		hlist_del_init(&ucounts->node);
 		spin_unlock_irqrestore(&ucounts_lock, flags);
 		put_user_ns(ucounts->ns);
@@ -126,7 +115,7 @@ static inline bool atomic_long_inc_below(atomic_long_t *v, int u)
 	for (;;) {
 		if (unlikely(c >= u))
 			return false;
-		old = atomic_long_cmpxchg(v, c, c+1);
+		old = atomic_long_cmpxchg(v, c, c + 1);
 		if (likely(old == c))
 			return true;
 		c = old;
@@ -186,7 +175,7 @@ long inc_rlimit_ucounts(struct ucounts *ucounts, enum ucount_type type, long v)
 bool dec_rlimit_ucounts(struct ucounts *ucounts, enum ucount_type type, long v)
 {
 	struct ucounts *iter;
-	long new = -1;  
+	long new = -1;
 	for (iter = ucounts; iter; iter = iter->ns->ucounts) {
 		long dec = atomic_long_sub_return(v, &iter->ucount[type]);
 		WARN_ON_ONCE(dec < 0);
@@ -197,7 +186,8 @@ bool dec_rlimit_ucounts(struct ucounts *ucounts, enum ucount_type type, long v)
 }
 
 static void do_dec_rlimit_put_ucounts(struct ucounts *ucounts,
-				struct ucounts *last, enum ucount_type type)
+				      struct ucounts *last,
+				      enum ucount_type type)
 {
 	struct ucounts *iter, *next;
 	for (iter = ucounts; iter != last; iter = next) {
@@ -216,7 +206,6 @@ void dec_rlimit_put_ucounts(struct ucounts *ucounts, enum ucount_type type)
 
 long inc_rlimit_get_ucounts(struct ucounts *ucounts, enum ucount_type type)
 {
-	 
 	struct ucounts *iter;
 	long max = LONG_MAX;
 	long dec, ret = 0;
@@ -228,7 +217,7 @@ long inc_rlimit_get_ucounts(struct ucounts *ucounts, enum ucount_type type)
 		if (iter == ucounts)
 			ret = new;
 		max = READ_ONCE(iter->ns->ucount_max[type]);
-		 
+
 		if (new != 1)
 			continue;
 		if (!get_ucounts(iter))
@@ -243,7 +232,8 @@ unwind:
 	return 0;
 }
 
-bool is_ucounts_overlimit(struct ucounts *ucounts, enum ucount_type type, unsigned long rlimit)
+bool is_ucounts_overlimit(struct ucounts *ucounts, enum ucount_type type,
+			  unsigned long rlimit)
 {
 	struct ucounts *iter;
 	long max = rlimit;

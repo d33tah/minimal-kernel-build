@@ -31,18 +31,7 @@ struct nmiaction {
 	const char		*name;
 };
 
-#define register_nmi_handler(t, fn, fg, n, init...)	\
-({							\
-	static struct nmiaction init fn##_na = {	\
-		.list = LIST_HEAD_INIT(fn##_na.list),	\
-		.handler = (fn),			\
-		.name = (n),				\
-		.flags = (fg),				\
-	};						\
-	__register_nmi_handler((t), &fn##_na);		\
-})
-
-int __register_nmi_handler(unsigned int, struct nmiaction *);
+/* register_nmi_handler and __register_nmi_handler removed - never called */
 
 void local_touch_nmi(void);
 

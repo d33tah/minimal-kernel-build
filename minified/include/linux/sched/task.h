@@ -6,11 +6,9 @@
 #include <linux/uaccess.h>
 
 struct task_struct;
-struct rusage;
+/* struct rusage forward decl removed - unused */
 union thread_union;
 struct css_set;
-
-#define CLONE_LEGACY_FLAGS 0xffffffffULL
 
 struct kernel_clone_args {
 	u64 flags;
@@ -40,7 +38,9 @@ extern spinlock_t mmlist_lock;
 extern union thread_union init_thread_union;
 extern struct task_struct init_task;
 
-extern int lockdep_tasklist_lock_is_held(void);
+/* lockdep_tasklist_lock_is_held is never defined but used in
+   rcu_dereference_check conditions (which use RCU_LOCKDEP_WARN, a no-op) */
+#define lockdep_tasklist_lock_is_held() (1)
 
 extern asmlinkage void schedule_tail(struct task_struct *prev);
 extern void init_idle(struct task_struct *idle, int cpu);
@@ -74,8 +74,7 @@ extern pid_t user_mode_thread(int (*fn)(void *), void *arg, unsigned long flags)
 /* kernel_wait4 now static in exit.c */
 
 extern void free_task(struct task_struct *tsk);
-
-#define sched_exec()   {}
+/* sched_exec() macro removed - no callers */
 
 static inline struct task_struct *get_task_struct(struct task_struct *t)
 {
@@ -95,12 +94,6 @@ static inline void put_task_struct(struct task_struct *t)
 void put_task_struct_rcu_user(struct task_struct *task);
 
 extern int arch_task_struct_size __read_mostly;
-
-
-static inline struct vm_struct *task_stack_vm_area(const struct task_struct *t)
-{
-	return NULL;
-}
 
 static inline void task_lock(struct task_struct *p)
 {

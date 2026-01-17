@@ -9,20 +9,16 @@
 #include <linux/pid_namespace.h>	 
 #include <linux/types.h>
 #include <asm/ptrace.h>
-#include <linux/seccomp.h>
+/* seccomp.h removed - header is empty */
 
-#define PTRACE_EVENT_FORK	1
-#define PTRACE_EVENT_VFORK	2
-#define PTRACE_EVENT_CLONE	3
+/* PTRACE_EVENT_FORK, VFORK, CLONE, VFORK_DONE removed - never used */
 #define PTRACE_EVENT_EXEC	4
-#define PTRACE_EVENT_VFORK_DONE	5
 #define PTRACE_EVENT_EXIT	6
 #define PTRACE_EVENTMSG_SYSCALL_ENTRY	1
 #define PTRACE_EVENTMSG_SYSCALL_EXIT	2
 
 
-extern int ptrace_access_vm(struct task_struct *tsk, unsigned long addr,
-			    void *buf, int len, unsigned int gup_flags);
+/* ptrace_access_vm removed - declared but never implemented */
 
 
 #define PT_SEIZED	0x00010000	 
@@ -32,30 +28,16 @@ extern int ptrace_access_vm(struct task_struct *tsk, unsigned long addr,
 #define PT_EVENT_FLAG(event)	(1 << (PT_OPT_FLAG_SHIFT + (event)))
 #define PT_TRACESYSGOOD		PT_EVENT_FLAG(0)
 
-extern long arch_ptrace(struct task_struct *child, long request,
-			unsigned long addr, unsigned long data);
-extern void ptrace_disable(struct task_struct *);
-extern int ptrace_request(struct task_struct *child, long request,
-			  unsigned long addr, unsigned long data);
+/* arch_ptrace, ptrace_disable removed - never called */
+/* ptrace_request removed - never called */
 extern int ptrace_notify(int exit_code, unsigned long message);
 extern void __ptrace_link(struct task_struct *child,
 			  struct task_struct *new_parent,
 			  const struct cred *ptracer_cred);
 extern void __ptrace_unlink(struct task_struct *child);
 extern void exit_ptrace(struct task_struct *tracer, struct list_head *dead);
-#define PTRACE_MODE_READ	0x01
-#define PTRACE_MODE_ATTACH	0x02
-#define PTRACE_MODE_NOAUDIT	0x04
-#define PTRACE_MODE_FSCREDS	0x08
-#define PTRACE_MODE_REALCREDS	0x10
 
-
-extern bool ptrace_may_access(struct task_struct *task, unsigned int mode);
-
-static inline int ptrace_reparented(struct task_struct *child)
-{
-	return !same_thread_group(child->real_parent, child->parent);
-}
+/* PTRACE_MODE_*, ptrace_may_access, ptrace_reparented removed - never called */
 
 static inline void ptrace_unlink(struct task_struct *child)
 {
@@ -106,15 +88,12 @@ static inline void ptrace_init_task(struct task_struct *child, bool ptrace)
 
 	if (unlikely(ptrace) && current->ptrace) {
 		child->ptrace = current->ptrace;
-		__ptrace_link(child, current->parent, current->ptracer_cred);
+		__ptrace_link(child, current->parent, NULL);  /* ptracer_cred field removed */
 
-		if (child->ptrace & PT_SEIZED)
-			task_set_jobctl_pending(child, JOBCTL_TRAP_STOP);
-		else
-			sigaddset(&child->pending.signal, SIGSTOP);
+		/* task_set_jobctl_pending removed - always returns false */
+		sigaddset(&child->pending.signal, SIGSTOP);
 	}
-	else
-		child->ptracer_cred = NULL;
+	/* child->ptracer_cred = NULL removed - field removed from task_struct */
 }
 
 static inline void ptrace_release_task(struct task_struct *task)
@@ -123,66 +102,14 @@ static inline void ptrace_release_task(struct task_struct *task)
 	ptrace_unlink(task);
 	BUG_ON(!list_empty(&task->ptrace_entry));
 }
+/* force_successful_syscall_return, is_syscall_success removed - never called */
 
-#ifndef force_successful_syscall_return
-#define force_successful_syscall_return() do { } while (0)
-#endif
-
-#ifndef is_syscall_success
-#define is_syscall_success(regs) (!IS_ERR_VALUE((unsigned long)(regs_return_value(regs))))
-#endif
-
-
-#ifndef arch_has_single_step
-#define arch_has_single_step()		(0)
-
-static inline void user_enable_single_step(struct task_struct *task)
-{
-	BUG();			 
-}
-
-static inline void user_disable_single_step(struct task_struct *task)
-{
-}
-#else
-extern void user_enable_single_step(struct task_struct *);
-extern void user_disable_single_step(struct task_struct *);
-#endif	 
-
-#ifndef arch_has_block_step
-#define arch_has_block_step()		(0)
-
-static inline void user_enable_block_step(struct task_struct *task)
-{
-	BUG();			 
-}
-#else
-extern void user_enable_block_step(struct task_struct *);
-#endif	 
-
-#ifdef ARCH_HAS_USER_SINGLE_STEP_REPORT
+/* x86 defines arch_has_single_step, arch_has_block_step,
+ * and ARCH_HAS_USER_SINGLE_STEP_REPORT */
+/* user_enable_single_step, user_enable_block_step,
+   user_disable_single_step, arch_ptrace_stop_needed, arch_ptrace_stop
+   removed - declared but never called */
 extern void user_single_step_report(struct pt_regs *regs);
-#else
-static inline void user_single_step_report(struct pt_regs *regs)
-{
-	kernel_siginfo_t info;
-	clear_siginfo(&info);
-	info.si_signo = SIGTRAP;
-	info.si_errno = 0;
-	info.si_code = SI_USER;
-	info.si_pid = 0;
-	info.si_uid = 0;
-	force_sig_info(&info);
-}
-#endif
-
-#ifndef arch_ptrace_stop_needed
-#define arch_ptrace_stop_needed()	(0)
-#endif
-
-#ifndef arch_ptrace_stop
-#define arch_ptrace_stop()		do { } while (0)
-#endif
 
 #ifndef current_pt_regs
 #define current_pt_regs() task_pt_regs(current)
@@ -192,9 +119,7 @@ static inline void user_single_step_report(struct pt_regs *regs)
 #define signal_pt_regs() task_pt_regs(current)
 #endif
 
-#ifndef current_user_stack_pointer
-#define current_user_stack_pointer() user_stack_pointer(current_pt_regs())
-#endif
+/* current_user_stack_pointer removed - never used */
 
 
 static inline int ptrace_report_syscall(unsigned long message)

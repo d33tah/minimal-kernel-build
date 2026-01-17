@@ -255,10 +255,7 @@ static inline int expr_is_yes(struct expr *e)
 	return !e || (e->type == E_SYMBOL && e->left.sym == &symbol_yes);
 }
 
-static inline int expr_is_no(struct expr *e)
-{
-	return e && (e->type == E_SYMBOL && e->left.sym == &symbol_no);
-}
+/* expr_is_no removed - never called */
 
 #ifdef __cplusplus
 }

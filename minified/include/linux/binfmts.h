@@ -5,14 +5,11 @@
 #include <linux/unistd.h>
 #include <linux/capability.h>
 
-struct pt_regs;
+/* struct pt_regs and filename forward decls removed - unused */
 #define MAX_ARG_STRLEN (PAGE_SIZE * 32)
 #define MAX_ARG_STRINGS 0x7FFFFFFF
 #define BINPRM_BUF_SIZE 256
 #define AT_FLAGS_PRESERVE_ARGV0 (1 << 0)
-
-struct filename;
-struct coredump_params;
 
 struct linux_binprm {
 	struct vm_area_struct *vma;
@@ -28,11 +25,8 @@ struct linux_binprm {
 		execfd_creds:1,
 		 
 		secureexec:1,
-		 
+		/* x86 only - alpha taso field removed */
 		point_of_no_return:1;
-#ifdef __alpha__
-	unsigned int taso:1;
-#endif
 	struct file *executable;  
 	struct file *interpreter;
 	struct file *file;
@@ -52,7 +46,7 @@ struct linux_binprm {
 	char buf[BINPRM_BUF_SIZE];
 } __randomize_layout;
 
-#define BINPRM_FLAGS_ENFORCE_NONDUMP (1 << 0)
+/* BINPRM_FLAGS_ENFORCE_NONDUMP removed - never used */
 #define BINPRM_FLAGS_PATH_INACCESSIBLE (1 << 2)
 #define BINPRM_FLAGS_PRESERVE_ARGV0 (1 << 3)
 
@@ -73,7 +67,6 @@ static inline void register_binfmt(struct linux_binfmt *fmt)
 extern int begin_new_exec(struct linux_binprm * bprm);
 extern void setup_new_exec(struct linux_binprm * bprm);
 extern void finalize_exec(struct linux_binprm *bprm);
-extern void would_dump(struct linux_binprm *, struct file *);
 
 extern int suid_dumpable;
 

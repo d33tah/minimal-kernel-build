@@ -7,17 +7,14 @@
 
 # define NEED_PAE	0
 
-# define NEED_CX8	(1<<(X86_FEATURE_CX8 & 31))
-
-# define NEED_CMOV	(1<<(X86_FEATURE_CMOV & 31))
+/* CONFIG_X86_CMPXCHG64 and CONFIG_X86_CMOV not set */
+# define NEED_CX8	0
+# define NEED_CMOV	0
 
 # define NEED_3DNOW	0
 
-#if defined(CONFIG_X86_P6_NOP) || defined(CONFIG_X86_64)
-# define NEED_NOPL	(1<<(X86_FEATURE_NOPL & 31))
-#else
+/* X86_32 without P6_NOP - NOPL not required */
 # define NEED_NOPL	0
-#endif
 
 # define NEED_MOVBE	0
 

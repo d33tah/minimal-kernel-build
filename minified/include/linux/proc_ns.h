@@ -1,57 +1,13 @@
 #ifndef _LINUX_PROC_NS_H
 #define _LINUX_PROC_NS_H
-
 #include <linux/ns_common.h>
-
-struct pid_namespace;
-struct nsset;
-struct path;
-struct task_struct;
-struct inode;
-
-struct proc_ns_operations {
-	const char *name;
-	const char *real_ns_name;
-	int type;
-	struct ns_common *(*get)(struct task_struct *task);
-	void (*put)(struct ns_common *ns);
-	int (*install)(struct nsset *nsset, struct ns_common *ns);
-	struct user_namespace *(*owner)(struct ns_common *ns);
-	struct ns_common *(*get_parent)(struct ns_common *ns);
-} __randomize_layout;
-
-extern const struct proc_ns_operations mntns_operations;
-
+/* forward decls removed - proc_ns_operations removed */
 enum {
-	PROC_ROOT_INO		= 1,
-	PROC_IPC_INIT_INO	= 0xEFFFFFFFU,
 	PROC_UTS_INIT_INO	= 0xEFFFFFFEU,
 	PROC_USER_INIT_INO	= 0xEFFFFFFDU,
 	PROC_PID_INIT_INO	= 0xEFFFFFFCU,
-	PROC_CGROUP_INIT_INO	= 0xEFFFFFFBU,
-	PROC_TIME_INIT_INO	= 0xEFFFFFFAU,
 };
-
-
-static inline int proc_alloc_inum(unsigned int *inum)
-{
-	*inum = 1;
-	return 0;
-}
-static inline void proc_free_inum(unsigned int inum) {}
-
-
-static inline int ns_alloc_inum(struct ns_common *ns)
-{
-	atomic_long_set(&ns->stashed, 0);
-	return proc_alloc_inum(&ns->inum);
-}
-
-#define ns_free_inum(ns) proc_free_inum((ns)->inum)
-
-#define get_proc_ns(inode) ((struct ns_common *)(inode)->i_private)
-typedef struct ns_common *ns_get_path_helper_t(void *);
-
-extern void nsfs_init(void);
-
-#endif  
+static inline int ns_alloc_inum(struct ns_common *ns) { atomic_long_set(&ns->stashed, 0); ns->inum = 1; return 0; }
+#define ns_free_inum(ns) ((void)(ns)->inum)
+/* get_proc_ns removed - never used */
+#endif

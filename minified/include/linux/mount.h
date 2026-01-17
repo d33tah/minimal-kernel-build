@@ -9,8 +9,7 @@ struct dentry;
 struct user_namespace;
 struct file_system_type;
 struct fs_context;
-struct file;
-struct path;
+/* struct file, path forward decls removed - unused */
 
 #define MNT_NOSUID	0x01
 #define MNT_NODEV	0x02
@@ -27,9 +26,7 @@ struct path;
 #define MNT_SHARED	0x1000	 
 #define MNT_UNBINDABLE	0x2000	 
 #define MNT_SHARED_MASK	(MNT_UNBINDABLE)
-#define MNT_USER_SETTABLE_MASK  (MNT_NOSUID | MNT_NODEV | MNT_NOEXEC \
-				 | MNT_NOATIME | MNT_NODIRATIME | MNT_RELATIME \
-				 | MNT_READONLY | MNT_NOSYMFOLLOW)
+/* MNT_USER_SETTABLE_MASK removed - unused */
 #define MNT_ATIME_MASK (MNT_NOATIME | MNT_NODIRATIME | MNT_RELATIME )
 
 #define MNT_INTERNAL_FLAGS (MNT_SHARED | MNT_WRITE_HOLD | MNT_INTERNAL | \
@@ -39,9 +36,7 @@ struct path;
 #define MNT_INTERNAL	0x4000
 
 #define MNT_LOCK_ATIME		0x040000
-#define MNT_LOCK_NOEXEC		0x080000
-#define MNT_LOCK_NOSUID		0x100000
-#define MNT_LOCK_NODEV		0x200000
+/* MNT_LOCK_NOEXEC, MNT_LOCK_NOSUID, MNT_LOCK_NODEV removed - unused */
 #define MNT_LOCK_READONLY	0x400000
 #define MNT_LOCKED		0x800000
 #define MNT_DOOMED		0x1000000
@@ -64,9 +59,9 @@ static inline struct user_namespace *mnt_user_ns(const struct vfsmount *mnt)
 }
 
 extern int mnt_want_write(struct vfsmount *mnt);
-extern int mnt_want_write_file(struct file *file);
+/* mnt_want_write_file removed - never called */
 extern void mnt_drop_write(struct vfsmount *mnt);
-extern void mnt_drop_write_file(struct file *file);
+/* mnt_drop_write_file removed - never called */
 extern void mntput(struct vfsmount *mnt);
 extern struct vfsmount *mntget(struct vfsmount *mnt);
 extern bool mnt_may_suid(struct vfsmount *mnt);
@@ -84,7 +79,5 @@ extern struct vfsmount *vfs_kern_mount(struct file_system_type *type,
 extern dev_t name_to_dev_t(const char *name);
 
 extern struct vfsmount *kern_mount(struct file_system_type *);
-extern long do_mount(const char *, const char __user *,
-		     const char *, unsigned long, void *);
 
 #endif  

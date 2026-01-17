@@ -693,11 +693,6 @@ SYM_CODE_START(__switch_to_asm)
 	movl	%esp, TASK_threadsp(%eax)
 	movl	TASK_threadsp(%edx), %esp
 
-#ifdef CONFIG_STACKPROTECTOR
-	movl	TASK_stack_canary(%edx), %ebx
-	movl	%ebx, PER_CPU_VAR(__stack_chk_guard)
-#endif
-
 	/*
 	 * When switching from a shallower to a deeper call stack
 	 * the RSB may either underflow or use entries populated

@@ -11,7 +11,7 @@ void die(char *fmt, ...)
 
 static void usage(void)
 {
-	die("relocs [--abs-syms|--abs-relocs|--reloc-info|--text|--realmode]" \
+	die("relocs [--abs-syms|--abs-relocs|--reloc-info|--text|--realmode]"
 	    " vmlinux\n");
 }
 
@@ -53,8 +53,7 @@ int main(int argc, char **argv)
 				use_real_mode = 1;
 				continue;
 			}
-		}
-		else if (!fname) {
+		} else if (!fname) {
 			fname = arg;
 			continue;
 		}
@@ -72,13 +71,11 @@ int main(int argc, char **argv)
 	}
 	rewind(fp);
 	if (e_ident[EI_CLASS] == ELFCLASS64)
-		process_64(fp, use_real_mode, as_text,
-			   show_absolute_syms, show_absolute_relocs,
-			   show_reloc_info);
+		process_64(fp, use_real_mode, as_text, show_absolute_syms,
+			   show_absolute_relocs, show_reloc_info);
 	else
-		process_32(fp, use_real_mode, as_text,
-			   show_absolute_syms, show_absolute_relocs,
-			   show_reloc_info);
+		process_32(fp, use_real_mode, as_text, show_absolute_syms,
+			   show_absolute_relocs, show_reloc_info);
 	fclose(fp);
 	return 0;
 }

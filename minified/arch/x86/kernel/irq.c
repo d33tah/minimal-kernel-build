@@ -2,7 +2,7 @@
 #include <linux/interrupt.h>
 #include <linux/kernel_stat.h>
 #include <linux/of.h>
-#include <linux/seq_file.h>
+/* seq_file.h removed - header is empty */
 #include <linux/smp.h>
 #include <linux/delay.h>
 #include <linux/export.h>
@@ -12,33 +12,24 @@
 #include <asm/apic.h>
 #include <asm/io_apic.h>
 #include <asm/irq.h>
-#include <asm/mce.h>
+/* mce.h removed - header is empty */
 #include <asm/hw_irq.h>
 #include <asm/desc.h>
 #include <asm/traps.h>
 
-
 DEFINE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
-
-atomic_t irq_err_count;
+/* irq_err_count removed - only incremented, never read */
 
 void ack_bad_irq(unsigned int irq)
 {
-	if (printk_ratelimit())
-		pr_err("unexpected IRQ trap at vector %02x\n", irq);
-
-
-	ack_APIC_irq();
+	/* printk_ratelimit() always returns 0, ack_APIC_irq is empty stub */
 }
-
 
 static __always_inline void handle_irq(struct irq_desc *desc,
 				       struct pt_regs *regs)
 {
-	if (IS_ENABLED(CONFIG_X86_64))
-		generic_handle_irq_desc(desc);
-	else
-		__handle_irq(desc, regs);
+	/* X86_32 */
+	__handle_irq(desc, regs);
 }
 
 DEFINE_IDTENTRY_IRQ(common_interrupt)
@@ -46,19 +37,15 @@ DEFINE_IDTENTRY_IRQ(common_interrupt)
 	struct pt_regs *old_regs = set_irq_regs(regs);
 	struct irq_desc *desc;
 
-	 
-	RCU_LOCKDEP_WARN(!rcu_is_watching(), "IRQ failed to wake up RCU");
-
 	desc = __this_cpu_read(vector_irq[vector]);
 	if (likely(!IS_ERR_OR_NULL(desc))) {
 		handle_irq(desc, regs);
 	} else {
-		ack_APIC_irq();
-
+		/* ack_APIC_irq removed - empty stub */
 		if (desc == VECTOR_UNUSED) {
-			pr_emerg_ratelimited("%s: %d.%u No irq handler for vector\n",
-					     __func__, smp_processor_id(),
-					     vector);
+			pr_emerg_ratelimited(
+				"%s: %d.%u No irq handler for vector\n",
+				__func__, smp_processor_id(), vector);
 		} else {
 			__this_cpu_write(vector_irq[vector], VECTOR_UNUSED);
 		}
@@ -66,8 +53,3 @@ DEFINE_IDTENTRY_IRQ(common_interrupt)
 
 	set_irq_regs(old_regs);
 }
-
-
-
-
-

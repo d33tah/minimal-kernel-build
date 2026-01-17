@@ -9,12 +9,7 @@
 #include <asm/user.h>
 #include <asm/auxvec.h>
 
-typedef unsigned long elf_greg_t;
-
-#define ELF_NGREG (sizeof(struct user_regs_struct) / sizeof(elf_greg_t))
-typedef elf_greg_t elf_gregset_t[ELF_NGREG];
-
-typedef struct user_i387_struct elf_fpregset_t;
+/* elf_greg_t, ELF_NGREG, elf_gregset_t removed - never used */
 
 /* 32-bit only kernel - removed x86_64 relocation types */
 #define R_386_NONE	0
@@ -28,11 +23,10 @@ typedef struct user_i387_struct elf_fpregset_t;
 #define R_386_RELATIVE	8
 #define R_386_GOTOFF	9
 #define R_386_GOTPC	10
-#define R_386_NUM	11
+/* R_386_NUM removed - unused */
 
 #define ELF_CLASS	ELFCLASS32
-#define ELF_DATA	ELFDATA2LSB
-#define ELF_ARCH	EM_386
+/* ELF_DATA, ELF_ARCH removed - never used */
 
 #include <asm/vdso.h>
 
@@ -56,34 +50,12 @@ extern unsigned int vdso32_enabled;
 	_r->ax = 0;				\
 } while (0)
 
- 
-
-#define ELF_CORE_COPY_REGS(pr_reg, regs)	\
-do {						\
-	pr_reg[0] = regs->bx;			\
-	pr_reg[1] = regs->cx;			\
-	pr_reg[2] = regs->dx;			\
-	pr_reg[3] = regs->si;			\
-	pr_reg[4] = regs->di;			\
-	pr_reg[5] = regs->bp;			\
-	pr_reg[6] = regs->ax;			\
-	pr_reg[7] = regs->ds;			\
-	pr_reg[8] = regs->es;			\
-	pr_reg[9] = regs->fs;			\
-	savesegment(gs, pr_reg[10]);		\
-	pr_reg[11] = regs->orig_ax;		\
-	pr_reg[12] = regs->ip;			\
-	pr_reg[13] = regs->cs;			\
-	pr_reg[14] = regs->flags;		\
-	pr_reg[15] = regs->sp;			\
-	pr_reg[16] = regs->ss;			\
-} while (0);
+/* ELF_CORE_COPY_REGS removed - unused */
 
 #define ELF_PLATFORM	(utsname()->machine)
 #define set_personality_64bit()	do { } while (0)
 
 
-#define CORE_DUMP_USE_REGSET
 #define ELF_EXEC_PAGESIZE	4096
 
  
@@ -118,18 +90,15 @@ do {									\
 	NEW_AUX_ENT(AT_MINSIGSTKSZ, get_sigframe_size());		\
 } while (0)
 
- 
+/* CONFIG_X86_32 is enabled, always ia32 */
 static inline int mmap_is_ia32(void)
 {
-	return IS_ENABLED(CONFIG_X86_32) ||
-	       (IS_ENABLED(CONFIG_COMPAT) &&
-		test_thread_flag(TIF_ADDR32));
+	return 1;
 }
 
 extern unsigned long task_size_32bit(void);
 extern unsigned long task_size_64bit(int full_addr_space);
-extern unsigned long get_mmap_base(int is_legacy);
-extern bool mmap_address_hint_valid(unsigned long addr, unsigned long len);
+/* get_mmap_base, mmap_address_hint_valid removed - never called */
 extern unsigned long get_sigframe_size(void);
 
 

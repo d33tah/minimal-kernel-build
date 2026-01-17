@@ -5,13 +5,7 @@
 #include <linux/limits.h>
 #include <linux/const.h>
 
-#define is_signed_type(type)       (((type)(-1)) < (type)1)
-#define __type_half_max(type) ((type)1 << (8*sizeof(type) - 1 - is_signed_type(type)))
-#define type_max(T) ((T)((__type_half_max(T) - 1) + __type_half_max(T)))
-#define type_min(T) ((T)((T)-type_max(T)-(T)1))
-
-#define is_non_negative(a) ((a) > 0 || (a) == 0)
-#define is_negative(a) (!(is_non_negative(a)))
+/* is_signed_type, __type_half_max, type_max, type_min, is_non_negative, is_negative removed - unused */
 
 static inline bool __must_check __must_check_overflow(bool overflow)
 {
@@ -27,14 +21,7 @@ static inline bool __must_check __must_check_overflow(bool overflow)
 	__builtin_add_overflow(__a, __b, __d);	\
 }))
 
-#define check_sub_overflow(a, b, d) __must_check_overflow(({	\
-	typeof(a) __a = (a);			\
-	typeof(b) __b = (b);			\
-	typeof(d) __d = (d);			\
-	(void) (&__a == &__b);			\
-	(void) (&__a == __d);			\
-	__builtin_sub_overflow(__a, __b, __d);	\
-}))
+/* check_sub_overflow removed - unused */
 
 #define check_mul_overflow(a, b, d) __must_check_overflow(({	\
 	typeof(a) __a = (a);			\

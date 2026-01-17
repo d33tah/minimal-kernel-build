@@ -3,18 +3,7 @@
 #include <linux/slab.h>
 
 #include <linux/major.h>
-#define MISC_DYNAMIC_MINOR	255
-struct miscdevice  {
-	int minor;
-	const char *name;
-	const struct file_operations *fops;
-	struct list_head list;
-	struct device *parent;
-	struct device *this_device;
-	const struct attribute_group **groups;
-	const char *nodename;
-	umode_t mode;
-};
+/* MISC_DYNAMIC_MINOR, struct miscdevice removed - unused */
 #include <linux/vmalloc.h>
 #include <linux/mman.h>
 #include <linux/random.h>
@@ -34,14 +23,10 @@ struct miscdevice  {
 #include <linux/uaccess.h>
 #include <linux/security.h>
 
+/* DEVMEM_MINOR, DEVPORT_MINOR removed - unused */
 
-#define DEVMEM_MINOR	1
-#define DEVPORT_MINOR	4
-
-
-
-static ssize_t read_null(struct file *file, char __user *buf,
-			 size_t count, loff_t *ppos)
+static ssize_t read_null(struct file *file, char __user *buf, size_t count,
+			 loff_t *ppos)
 {
 	return 0;
 }
@@ -64,17 +49,7 @@ static ssize_t write_iter_null(struct kiocb *iocb, struct iov_iter *from)
 	return count;
 }
 
-static int pipe_to_null(struct pipe_inode_info *info, struct pipe_buffer *buf,
-			struct splice_desc *sd)
-{
-	return sd->len;
-}
-
-static ssize_t splice_write_null(struct pipe_inode_info *pipe, struct file *out,
-				 loff_t *ppos, size_t len, unsigned int flags)
-{
-	return splice_from_pipe(pipe, out, ppos, len, flags, pipe_to_null);
-}
+/* pipe_to_null, splice_write_null removed - splice syscall returns ENOSYS */
 
 static ssize_t read_iter_zero(struct kiocb *iocb, struct iov_iter *iter)
 {
@@ -84,7 +59,7 @@ static ssize_t read_iter_zero(struct kiocb *iocb, struct iov_iter *iter)
 		size_t chunk = iov_iter_count(iter), n;
 
 		if (chunk > PAGE_SIZE)
-			chunk = PAGE_SIZE;	 
+			chunk = PAGE_SIZE;
 		n = iov_iter_zero(chunk, iter);
 		if (!n && iov_iter_count(iter))
 			return written ? written : -EFAULT;
@@ -100,8 +75,8 @@ static ssize_t read_iter_zero(struct kiocb *iocb, struct iov_iter *iter)
 	return written;
 }
 
-static ssize_t read_zero(struct file *file, char __user *buf,
-			 size_t count, loff_t *ppos)
+static ssize_t read_zero(struct file *file, char __user *buf, size_t count,
+			 loff_t *ppos)
 {
 	size_t cleared = 0;
 
@@ -135,16 +110,14 @@ static int mmap_zero(struct file *file, struct vm_area_struct *vma)
 	return 0;
 }
 
-static unsigned long get_unmapped_area_zero(struct file *file,
-				unsigned long addr, unsigned long len,
-				unsigned long pgoff, unsigned long flags)
+static unsigned long
+get_unmapped_area_zero(struct file *file, unsigned long addr, unsigned long len,
+		       unsigned long pgoff, unsigned long flags)
 {
 	if (flags & MAP_SHARED) {
-		 
 		return shmem_get_unmapped_area(NULL, addr, len, pgoff, flags);
 	}
 
-	 
 	return current->mm->get_unmapped_area(file, addr, len, pgoff, flags);
 }
 
@@ -154,41 +127,31 @@ static ssize_t write_full(struct file *file, const char __user *buf,
 	return -ENOSPC;
 }
 
-static loff_t null_lseek(struct file *file, loff_t offset, int orig)
-{
-	return file->f_pos = 0;
-}
+/* null_lseek removed - never used */
 
-
-#define zero_lseek	null_lseek
-#define full_lseek      null_lseek
-#define write_zero	write_null
-#define write_iter_zero	write_iter_null
-
+#define write_zero write_null
+#define write_iter_zero write_iter_null
 
 static const struct file_operations null_fops = {
-	.llseek		= null_lseek,
-	.read		= read_null,
-	.write		= write_null,
-	.read_iter	= read_iter_null,
-	.write_iter	= write_iter_null,
-	.splice_write	= splice_write_null,
+	/* llseek removed - lseek syscall returns ENOSYS */
+	.read = read_null,
+	.write = write_null,
+	.read_iter = read_iter_null,
+	.write_iter = write_iter_null,
+	/* splice_write removed - splice syscall returns ENOSYS */
 };
 
 static const struct file_operations zero_fops = {
-	.llseek		= zero_lseek,
-	.write		= write_zero,
-	.read_iter	= read_iter_zero,
-	.read		= read_zero,
-	.write_iter	= write_iter_zero,
-	.mmap		= mmap_zero,
-	.get_unmapped_area = get_unmapped_area_zero,
+	/* llseek removed - lseek syscall returns ENOSYS */
+	.write = write_zero, .read_iter = read_iter_zero,
+	.read = read_zero,   .write_iter = write_iter_zero,
+	.mmap = mmap_zero,   .get_unmapped_area = get_unmapped_area_zero,
 };
 
 static const struct file_operations full_fops = {
-	.llseek		= full_lseek,
-	.read_iter	= read_iter_zero,
-	.write		= write_full,
+	/* llseek removed - lseek syscall returns ENOSYS */
+	.read_iter = read_iter_zero,
+	.write = write_full,
 };
 
 static const struct memdev {
@@ -197,74 +160,16 @@ static const struct memdev {
 	const struct file_operations *fops;
 	fmode_t fmode;
 } devlist[] = {
-	 [3] = { "null", 0666, &null_fops, FMODE_NOWAIT },
-	 [5] = { "zero", 0666, &zero_fops, FMODE_NOWAIT },
-	 [7] = { "full", 0666, &full_fops, 0 },
-	 [8] = { "random", 0666, &random_fops, 0 },
-	 [9] = { "urandom", 0666, &urandom_fops, 0 },
+	[3] = { "null", 0666, &null_fops, FMODE_NOWAIT },
+	[5] = { "zero", 0666, &zero_fops, FMODE_NOWAIT },
+	[7] = { "full", 0666, &full_fops, 0 },
+	[8] = { "random", 0666, &random_fops, 0 },
+	[9] = { "urandom", 0666, &urandom_fops, 0 },
 };
 
-static int memory_open(struct inode *inode, struct file *filp)
-{
-	int minor;
-	const struct memdev *dev;
+/* memory_open, memory_fops removed - never called */
 
-	minor = iminor(inode);
-	if (minor >= ARRAY_SIZE(devlist))
-		return -ENXIO;
+/* mem_devnode, mem_class removed - unused */
 
-	dev = &devlist[minor];
-	if (!dev->fops)
-		return -ENXIO;
-
-	filp->f_op = dev->fops;
-	filp->f_mode |= dev->fmode;
-
-	if (dev->fops->open)
-		return dev->fops->open(inode, filp);
-
-	return 0;
-}
-
-static const struct file_operations memory_fops = {
-	.open = memory_open,
-	.llseek = noop_llseek,
-};
-
-static char *mem_devnode(struct device *dev, umode_t *mode)
-{
-	if (mode && devlist[MINOR(dev->devt)].mode)
-		*mode = devlist[MINOR(dev->devt)].mode;
-	return NULL;
-}
-
-static struct class *mem_class;
-
-static int __init chr_dev_init(void)
-{
-	int minor;
-
-	if (register_chrdev(MEM_MAJOR, "mem", &memory_fops))
-		printk("unable to get major %d for memory devs\n", MEM_MAJOR);
-
-	mem_class = class_create(THIS_MODULE, "mem");
-	if (IS_ERR(mem_class))
-		return PTR_ERR(mem_class);
-
-	mem_class->devnode = mem_devnode;
-	for (minor = 1; minor < ARRAY_SIZE(devlist); minor++) {
-		if (!devlist[minor].name)
-			continue;
-
-		 
-		if ((minor == DEVPORT_MINOR) && !arch_has_dev_port())
-			continue;
-
-		device_create(mem_class, NULL, MKDEV(MEM_MAJOR, minor),
-			      NULL, devlist[minor].name);
-	}
-
-	return tty_init();
-}
-
-fs_initcall(chr_dev_init);
+/* chr_dev_init removed - tty_init hangs with low memory */
+/* Hello World uses direct VGA writes, doesn't need TTY */

@@ -5,28 +5,7 @@
 #include <asm/reboot.h>
 #include <asm/io.h>
 
-void (*pm_power_off)(void);
-
-bool port_cf9_safe = false;
-
-void __noreturn machine_real_restart(unsigned int type)
-{
-	while (1)
-		halt();
-}
-
-void __attribute__((weak)) mach_reboot_fixups(void)
-{
-}
-
-void native_machine_shutdown(void)
-{
-}
-
-void machine_shutdown(void)
-{
-	native_machine_shutdown();
-}
+/* pm_power_off, port_cf9_safe, machine_real_restart removed - never called */
 
 void machine_emergency_restart(void)
 {
@@ -39,18 +18,4 @@ void machine_restart(char *cmd)
 		halt();
 }
 
-void machine_halt(void)
-{
-	while (1)
-		halt();
-}
-
-void machine_power_off(void)
-{
-	machine_halt();
-}
-
-
-void run_crash_ipi_callback(struct pt_regs *regs)
-{
-}
+/* machine_halt, run_crash_ipi_callback removed - never called/empty stub */

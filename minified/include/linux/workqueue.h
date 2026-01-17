@@ -58,12 +58,7 @@ enum {
 	WORK_STRUCT_WQ_DATA_MASK = ~WORK_STRUCT_FLAG_MASK,
 	WORK_STRUCT_NO_POOL	= (unsigned long)WORK_OFFQ_POOL_NONE << WORK_OFFQ_POOL_SHIFT,
 
-	 
-	WORK_BUSY_PENDING	= 1 << 0,
-	WORK_BUSY_RUNNING	= 1 << 1,
-
-	 
-	WORKER_DESC_LEN		= 24,
+	/* WORK_BUSY_PENDING, WORK_BUSY_RUNNING, WORKER_DESC_LEN removed - unused */
 };
 
 struct work_struct {
@@ -84,8 +79,6 @@ struct delayed_work {
 	struct workqueue_struct *wq;
 	int cpu;
 };
-
-struct workqueue_attrs;
 
 #define __WORK_INIT_LOCKDEP_MAP(n, k)
 
@@ -108,11 +101,11 @@ struct workqueue_attrs;
 #define DECLARE_DELAYED_WORK(n, f)					\
 	struct delayed_work n = __DELAYED_WORK_INITIALIZER(n, f, 0)
 
-static inline void __init_work(struct work_struct *work, int onstack) { }
+/* __init_work removed - empty stub */
 
 #define __INIT_WORK(_work, _func, _onstack)				\
 	do {								\
-		__init_work((_work), _onstack);				\
+		/* __init_work call removed - empty stub */		\
 		(_work)->data = (atomic_long_t) WORK_DATA_INIT();	\
 		INIT_LIST_HEAD(&(_work)->entry);			\
 		(_work)->func = (_func);				\
@@ -124,9 +117,9 @@ static inline void __init_work(struct work_struct *work, int onstack) { }
 #define __INIT_DELAYED_WORK(_work, _func, _tflags)			\
 	do {								\
 		INIT_WORK(&(_work)->work, (_func));			\
-		__init_timer(&(_work)->timer,				\
-			     delayed_work_timer_fn,			\
-			     (_tflags) | TIMER_IRQSAFE);		\
+		timer_setup(&(_work)->timer,				\
+			    delayed_work_timer_fn,			\
+			    (_tflags) | TIMER_IRQSAFE);			\
 	} while (0)
 
 #define INIT_DELAYED_WORK(_work, _func)					\
@@ -138,37 +131,21 @@ static inline void __init_work(struct work_struct *work, int onstack) { }
 #define delayed_work_pending(w) \
 	work_pending(&(w)->work)
 
-enum {
-	WQ_UNBOUND		= 1 << 1,  
-	WQ_FREEZABLE		= 1 << 2,  
-	WQ_MEM_RECLAIM		= 1 << 3,  
-	WQ_HIGHPRI		= 1 << 4,  
-	WQ_CPU_INTENSIVE	= 1 << 5,  
-	WQ_SYSFS		= 1 << 6,  
-
-	 
-	WQ_POWER_EFFICIENT	= 1 << 7,
-
-	__WQ_DRAINING		= 1 << 16,  
-	__WQ_ORDERED		= 1 << 17,  
-	__WQ_LEGACY		= 1 << 18,  
-	__WQ_ORDERED_EXPLICIT	= 1 << 19,  
-
-	WQ_MAX_ACTIVE		= 512,	   
-	WQ_MAX_UNBOUND_PER_CPU	= 4,	   
-	WQ_DFL_ACTIVE		= WQ_MAX_ACTIVE / 2,
-};
+/* All WQ_* flags removed - unused:
+   WQ_UNBOUND, WQ_MEM_RECLAIM, WQ_SYSFS, WQ_FREEZABLE, WQ_HIGHPRI,
+   WQ_CPU_INTENSIVE, WQ_POWER_EFFICIENT, __WQ_DRAINING, __WQ_ORDERED,
+   __WQ_LEGACY, __WQ_ORDERED_EXPLICIT, WQ_MAX_ACTIVE, WQ_MAX_UNBOUND_PER_CPU,
+   WQ_DFL_ACTIVE */
 
 extern struct workqueue_struct *system_wq;
-extern struct workqueue_struct *system_long_wq;
+/* system_long_wq removed - never used */
 extern struct workqueue_struct *system_unbound_wq;
 
 __printf(1, 4) struct workqueue_struct *
 alloc_workqueue(const char *fmt, unsigned int flags, int max_active, ...);
 
 
-extern void destroy_workqueue(struct workqueue_struct *wq);
-
+/* destroy_workqueue removed - never called */
 extern bool queue_work_on(int cpu, struct workqueue_struct *wq,
 			struct work_struct *work);
 extern bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
@@ -176,7 +153,7 @@ extern bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
 
 
 extern bool flush_work(struct work_struct *work);
-extern bool cancel_work_sync(struct work_struct *work);
+/* cancel_work_sync removed - never called */
 
 extern bool flush_delayed_work(struct delayed_work *dwork);
 extern bool cancel_delayed_work(struct delayed_work *dwork);
@@ -219,7 +196,6 @@ static inline bool schedule_delayed_work(struct delayed_work *dwork,
 	return queue_delayed_work(system_wq, dwork, delay);
 }
 
-void __init workqueue_init_early(void);
-void __init workqueue_init(void);
+/* workqueue_init_early, workqueue_init removed - unused */
 
 #endif

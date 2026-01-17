@@ -17,7 +17,6 @@
 
 #define __IRQ_MASK(x)	((1UL << (x))-1)
 
-#define PREEMPT_MASK	(__IRQ_MASK(PREEMPT_BITS) << PREEMPT_SHIFT)
 #define SOFTIRQ_MASK	(__IRQ_MASK(SOFTIRQ_BITS) << SOFTIRQ_SHIFT)
 #define HARDIRQ_MASK	(__IRQ_MASK(HARDIRQ_BITS) << HARDIRQ_SHIFT)
 #define NMI_MASK	(__IRQ_MASK(NMI_BITS)     << NMI_SHIFT)
@@ -48,8 +47,6 @@
 #define in_serving_softirq()	(softirq_count() & SOFTIRQ_OFFSET)
 #define in_task()		(!(in_nmi() | in_hardirq() | in_serving_softirq()))
 
-#define in_irq()		(hardirq_count())
-#define in_softirq()		(softirq_count())
 #define in_interrupt()		(irq_count())
 
 # define PREEMPT_DISABLE_OFFSET	0
@@ -76,35 +73,14 @@
 #define sched_preempt_enable_no_resched()	barrier()
 #define preempt_enable_no_resched()		barrier()
 #define preempt_enable()			barrier()
-#define preempt_check_resched()			do { } while (0)
-
+/* preempt_check_resched removed - no-op, never called */
 #define preempt_disable_notrace()		barrier()
 #define preempt_enable_no_resched_notrace()	barrier()
 #define preempt_enable_notrace()		barrier()
 #define preemptible()				0
 
+/* preempt_set_need_resched, preempt_fold_need_resched removed - never called */
 
-#ifdef MODULE
-#undef sched_preempt_enable_no_resched
-#undef preempt_enable_no_resched
-#undef preempt_enable_no_resched_notrace
-#undef preempt_check_resched
-#endif
-
-#define preempt_set_need_resched() \
-do { \
-	set_preempt_need_resched(); \
-} while (0)
-#define preempt_fold_need_resched() \
-do { \
-	if (tif_need_resched()) \
-		set_preempt_need_resched(); \
-} while (0)
-
-
-
-static inline void migrate_disable(void) { }
-static inline void migrate_enable(void) { }
-
+/* migrate_disable removed - call site removed */
 
 #endif  

@@ -120,8 +120,7 @@ extern void clear_cpu_cap(struct cpuinfo_x86 *c, unsigned int bit);
 	set_cpu_cap(&boot_cpu_data, bit);	\
 	set_bit(bit, (unsigned long *)cpu_caps_set);	\
 } while (0)
-
-#define setup_force_cpu_bug(bit) setup_force_cpu_cap(bit)
+/* setup_force_cpu_bug removed - never used */
 
 
  
@@ -154,18 +153,13 @@ t_no:
 
 #define cpu_has_bug(c, bit)		cpu_has(c, (bit))
 #define set_cpu_bug(c, bit)		set_cpu_cap(c, (bit))
-#define clear_cpu_bug(c, bit)		clear_cpu_cap(c, (bit))
+/* clear_cpu_bug removed - unused */
 
 #define static_cpu_has_bug(bit)		static_cpu_has((bit))
 #define boot_cpu_has_bug(bit)		cpu_has_bug(&boot_cpu_data, (bit))
 #define boot_cpu_set_bug(bit)		set_cpu_cap(&boot_cpu_data, (bit))
 
-#define MAX_CPU_FEATURES		(NCAPINTS * 32)
-#define cpu_have_feature		boot_cpu_has
+/* MAX_CPU_FEATURES, cpu_have_feature, CPU_FEATURE_TYPEFMT/VAL removed - never used */
 
-#define CPU_FEATURE_TYPEFMT		"x86,ven%04Xfam%04Xmod%04X"
-#define CPU_FEATURE_TYPEVAL		boot_cpu_data.x86_vendor, boot_cpu_data.x86, \
-					boot_cpu_data.x86_model
-
-#endif  
+#endif
 #endif  

@@ -6,18 +6,10 @@
 
 struct pt_regs;
 
-extern long __x64_sys_ni_syscall(const struct pt_regs *regs);
 extern long __ia32_sys_ni_syscall(const struct pt_regs *regs);
 
- 
+/* SC_X86_64_REGS_TO_ARGS removed - unused (this is 32-bit kernel) */
 
- 
-#define SC_X86_64_REGS_TO_ARGS(x, ...)					\
-	__MAP(x,__SC_ARGS						\
-		,,regs->di,,regs->si,,regs->dx				\
-		,,regs->r10,,regs->r8,,regs->r9)			\
-
- 
 #define SC_IA32_REGS_TO_ARGS(x, ...)					\
 	__MAP(x,__SC_ARGS						\
 	      ,,(unsigned int)regs->bx,,(unsigned int)regs->cx		\
@@ -46,6 +38,7 @@ extern long __ia32_sys_ni_syscall(const struct pt_regs *regs);
 #define __SYS_NI(abi, name)						\
 	SYSCALL_ALIAS(__##abi##_##name, sys_ni_posix_timers);
 
+/* __X64_SYS_* macros removed - not used on 32-bit kernel */
 #define __X64_SYS_STUB0(name)
 #define __X64_SYS_STUBx(x, name, ...)
 #define __X64_COND_SYSCALL(name)
@@ -64,16 +57,11 @@ extern long __ia32_sys_ni_syscall(const struct pt_regs *regs);
 #define __IA32_SYS_NI(name)						\
 	__SYS_NI(ia32, sys_##name)
 
+/* __IA32_COMPAT_SYS_* and __X32_COMPAT_SYS_* macros removed - compat disabled */
 #define __IA32_COMPAT_SYS_STUB0(name)
 #define __IA32_COMPAT_SYS_STUBx(x, name, ...)
-#define __IA32_COMPAT_COND_SYSCALL(name)
-#define __IA32_COMPAT_SYS_NI(name)
-
-
 #define __X32_COMPAT_SYS_STUB0(name)
 #define __X32_COMPAT_SYS_STUBx(x, name, ...)
-#define __X32_COMPAT_COND_SYSCALL(name)
-#define __X32_COMPAT_SYS_NI(name)
 
 
 
@@ -108,9 +96,6 @@ extern long __ia32_sys_ni_syscall(const struct pt_regs *regs);
 	__IA32_SYS_NI(name)
 
 
- 
-long __x64_sys_getcpu(const struct pt_regs *regs);
-long __x64_sys_gettimeofday(const struct pt_regs *regs);
-long __x64_sys_time(const struct pt_regs *regs);
+/* __x64_sys_getcpu, __x64_sys_gettimeofday, __x64_sys_time declarations removed - not used on 32-bit */
 
 #endif  

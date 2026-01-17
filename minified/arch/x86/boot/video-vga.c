@@ -28,11 +28,6 @@ static u8 vga_set_basic_mode(void)
 	return mode;
 }
 
-u16 vga_crtc(void)
-{
-	return (inb(0x3cc) & 1) ? 0x3d4 : 0x3b4;
-}
-
 static int vga_set_mode(struct mode_info *mode)
 {
 	vga_set_basic_mode();
@@ -72,11 +67,11 @@ static int vga_probe(void)
 
 	video_vga.modes = vga_modes;
 	video_vga.card_name = "VGA";
-	return 1;  /* Always return 1 mode (80x25) */
+	return 1; /* Always return 1 mode (80x25) */
 }
 
 static __videocard video_vga = {
-	.card_name	= "VGA",
-	.probe		= vga_probe,
-	.set_mode	= vga_set_mode,
+	.card_name = "VGA",
+	.probe = vga_probe,
+	.set_mode = vga_set_mode,
 };

@@ -6,7 +6,7 @@
 
  
 struct task_struct;
-struct mm_struct;
+/* struct mm_struct forward decl removed - unused */
 struct io_bitmap;
 struct vm86;
 
@@ -26,7 +26,7 @@ struct math_emu_info {
 #include <asm/percpu.h>
 #include <asm/msr.h>
 #include <asm/desc_defs.h>
-#include <asm/nops.h>
+#include <asm/asm.h>
 #include <asm/special_insns.h>
 #include <asm/fpu/types.h>
 #include <asm/unwind_hints.h>
@@ -41,18 +41,12 @@ struct math_emu_info {
 #include <linux/irqflags.h>
 #include <linux/mem_encrypt.h>
 
-/* NET_IP_ALIGN removed - unused */
 #define HBP_NUM 4
 
- 
 # define ARCH_MIN_TASKALIGN		__alignof__(union fpregs_state)
 # define ARCH_MIN_MMSTRUCT_ALIGN	0
 
-enum tlb_infos {
-	ENTRIES,
-	NR_INFO
-};
-/* TLB arrays removed - never used in minimal kernel */
+/* enum tlb_infos removed - never used in minimal kernel */
 
 struct cpuinfo_x86 {
 	__u8			x86;		 
@@ -62,8 +56,7 @@ struct cpuinfo_x86 {
 	__u8			x86_virt_bits;
 	__u8			x86_phys_bits;
 	 
-	__u8			x86_coreid_bits;
-	__u8			cu_id;
+	/* x86_coreid_bits, cu_id removed - never read */
 	 
 	__u32			extended_cpuid_level;
 	 
@@ -74,57 +67,27 @@ struct cpuinfo_x86 {
 		unsigned long	x86_capability_alignment;
 	};
 	char			x86_vendor_id[16];
-	char			x86_model_id[64];
-	 
-	unsigned int		x86_cache_size;
-	int			x86_cache_alignment;	 
-	 
-	int			x86_cache_max_rmid;	 
-	int			x86_cache_occ_scale;	 
-	int			x86_cache_mbm_width_offset;
-	int			x86_power;
+	/* x86_model_id[64] removed - only written, never read */
+
+	/* x86_cache_size removed - only written, never read */
+	int			x86_cache_alignment;
+
+	/* x86_cache_max_rmid, x86_cache_occ_scale, x86_cache_mbm_width_offset, x86_power removed - never read */
 	unsigned long		loops_per_jiffy;
-	 
-	u64			ppin;
-	 
-	u16			x86_max_cores;
-	u16			apicid;
-	u16			initial_apicid;
+	/* ppin, x86_max_cores, apicid, initial_apicid removed - never read */
 	u16			x86_clflush_size;
-	 
-	u16			booted_cores;
-	 
-	u16			phys_proc_id;
-	 
-	u16			logical_proc_id;
-	 
-	u16			cpu_core_id;
-	u16			cpu_die_id;
-	u16			logical_die_id;
-	 
-	u16			cpu_index;
-	 
+	/* booted_cores, phys_proc_id, logical_proc_id, cpu_core_id, cpu_die_id, logical_die_id, cpu_index removed - never read */
 	bool			smt_active;
-	u32			microcode;
+	/* microcode removed - never read */
 	 
 	u8			x86_cache_bits;
 	unsigned		initialized : 1;
 } __randomize_layout;
 
-struct cpuid_regs {
-	u32 eax, ebx, ecx, edx;
-};
-
-enum cpuid_regs_idx {
-	CPUID_EAX = 0,
-	CPUID_EBX,
-	CPUID_ECX,
-	CPUID_EDX,
-};
+/* struct cpuid_regs, enum cpuid_regs_idx removed - unused */
 
 #define X86_VENDOR_INTEL	0
-/* X86_VENDOR_CYRIX, UMC, CENTAUR, TRANSMETA, NSC, HYGON, ZHAOXIN, VORTEX removed - unused */
-#define X86_VENDOR_AMD		2
+/* X86_VENDOR_CYRIX, UMC, CENTAUR, TRANSMETA, NSC, AMD, HYGON, ZHAOXIN, VORTEX removed - unused */
 #define X86_VENDOR_NUM		12
 
 #define X86_VENDOR_UNKNOWN	0xff
@@ -144,11 +107,6 @@ extern __u32			cpu_caps_set[NCAPINTS + NBUGINTS];
 
 extern void cpu_detect(struct cpuinfo_x86 *c);
 
-static inline unsigned long long l1tf_pfn_limit(void)
-{
-	return BIT_ULL(boot_cpu_data.x86_cache_bits - 1 - PAGE_SHIFT);
-}
-
 extern void early_cpu_init(void);
 extern void identify_boot_cpu(void);
 /* identify_secondary_cpu, print_cpu_info, print_cpu_msr removed - never called */
@@ -167,23 +125,8 @@ static inline void native_cpuid(unsigned int *eax, unsigned int *ebx,
 	    : "memory");
 }
 
-#define native_cpuid_reg(reg)					\
-static inline unsigned int native_cpuid_##reg(unsigned int op)	\
-{								\
-	unsigned int eax = op, ebx, ecx = 0, edx;		\
-								\
-	native_cpuid(&eax, &ebx, &ecx, &edx);			\
-								\
-	return reg;						\
-}
+/* native_cpuid_reg macro and native_cpuid_eax/ebx/ecx/edx removed - unused */
 
- 
-native_cpuid_reg(eax)
-native_cpuid_reg(ebx)
-native_cpuid_reg(ecx)
-native_cpuid_reg(edx)
-
- 
 static inline unsigned long read_cr3_pa(void)
 {
 	return __read_cr3() & CR3_ADDR_MASK;
@@ -251,26 +194,11 @@ struct entry_stack_page {
 	struct entry_stack stack;
 } __aligned(PAGE_SIZE);
 
- 
-struct x86_io_bitmap {
-	 
-	u64			prev_sequence;
-
-	 
-	unsigned int		prev_max;
-
-	 
-	unsigned long		bitmap[IO_BITMAP_LONGS + 1];
-
-	 
-	unsigned long		mapall[IO_BITMAP_LONGS + 1];
-};
+/* CONFIG_X86_IOPL_IOPERM not set - x86_io_bitmap struct removed */
 
 struct tss_struct {
-	 
 	struct x86_hw_tss	x86_tss;
-
-	struct x86_io_bitmap	io_bitmap;
+	/* CONFIG_X86_IOPL_IOPERM not set - io_bitmap removed */
 } __aligned(PAGE_SIZE);
 
 DECLARE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw);
@@ -333,29 +261,13 @@ static inline void arch_thread_struct_whitelist(unsigned long *offset,
 	fpu_thread_struct_whitelist(offset, size);
 }
 
-static inline void
-native_load_sp0(unsigned long sp0)
-{
-	this_cpu_write(cpu_tss_rw.x86_tss.sp0, sp0);
-}
-
-static __always_inline unsigned long current_top_of_stack(void)
-{
-	 
-	return this_cpu_read_stable(cpu_current_top_of_stack);
-}
-
-static __always_inline bool on_thread_stack(void)
-{
-	return (unsigned long)(current_top_of_stack() -
-			       current_stack_pointer) < THREAD_SIZE;
-}
+/* current_top_of_stack removed - unused */
 
 #define __cpuid			native_cpuid
 
 static inline void load_sp0(unsigned long sp0)
 {
-	native_load_sp0(sp0);
+	this_cpu_write(cpu_tss_rw.x86_tss.sp0, sp0);
 }
 
 
@@ -392,15 +304,6 @@ static inline unsigned int cpuid_eax(unsigned int op)
 	return eax;
 }
 
-static inline unsigned int cpuid_ebx(unsigned int op)
-{
-	unsigned int eax, ebx, ecx, edx;
-
-	cpuid(op, &eax, &ebx, &ecx, &edx);
-
-	return ebx;
-}
-
 static inline unsigned int cpuid_edx(unsigned int op)
 {
 	unsigned int eax, ebx, ecx, edx;
@@ -411,10 +314,6 @@ static inline unsigned int cpuid_edx(unsigned int op)
 }
 
 extern void select_idle_routine(const struct cpuinfo_x86 *c);
-/* amd_e400_c1e_apic_setup declaration removed - implementation was removed */
-
-enum idle_boot_override {IDLE_NO_OVERRIDE=0, IDLE_HALT, IDLE_NOMWAIT,
-			 IDLE_POLL};
 
 extern void enable_sep_cpu(void);
 extern int sysenter_setup(void);
@@ -430,8 +329,7 @@ extern void load_percpu_segment(int);
 extern void cpu_init(void);
 /* cpu_init_secondary declaration removed - no implementation */
 extern void cpu_init_exception_handling(void);
-extern void cr4_init(void);
-/* set_task_blockstep, bootloader_type, bootloader_version removed - unused */
+/* cr4_init, set_task_blockstep, bootloader_type, bootloader_version removed - unused */
 
 #define HAVE_ARCH_PICK_MMAP_LAYOUT 1
 /* ARCH_HAS_PREFETCHW, ARCH_HAS_SPINLOCK_PREFETCH, ARCH_HAS_PREFETCH removed - unused */
@@ -462,8 +360,7 @@ static inline void spin_lock_prefetch(const void *x)
 #define TOP_OF_INIT_STACK ((unsigned long)&init_stack + sizeof(init_stack) - \
 			   TOP_OF_KERNEL_STACK_PADDING)
 
-#define task_top_of_stack(task) ((unsigned long)(task_pt_regs(task) + 1))
-
+/* task_top_of_stack removed - unused */
 #define task_pt_regs(task) \
 ({									\
 	unsigned long __ptr = (unsigned long)task_stack_page(task);	\
@@ -475,9 +372,6 @@ static inline void spin_lock_prefetch(const void *x)
 	.sp0			= TOP_OF_INIT_STACK,			  \
 	.sysenter_cs		= __KERNEL_CS,				  \
 }
-
-#define KSTK_ESP(task)		(task_pt_regs(task)->sp)
-
 
 extern void start_thread(struct pt_regs *regs, unsigned long new_ip,
 					       unsigned long new_sp);
@@ -492,19 +386,10 @@ DECLARE_PER_CPU(u64, msr_misc_features_shadow);
 
 extern unsigned long arch_align_stack(unsigned long sp);
 void free_init_pages(const char *what, unsigned long begin, unsigned long end);
-extern void free_kernel_image_pages(const char *what, void *begin, void *end);
+/* free_kernel_image_pages removed - never called */
 
 void default_idle(void);
-#define xen_set_default_idle 0
 
 void __noreturn stop_this_cpu(void *dummy);
-void microcode_check(void);
-
-enum mds_mitigations {
-	MDS_MITIGATION_OFF,
-	MDS_MITIGATION_FULL,
-	MDS_MITIGATION_VMWERV,
-};
-
 
 #endif  

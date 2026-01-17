@@ -12,11 +12,7 @@ extern char *strcpy(char *dest, const char *src);
 #define __HAVE_ARCH_STRNCPY
 extern char *strncpy(char *dest, const char *src, size_t count);
 
-#define __HAVE_ARCH_STRCAT
-extern char *strcat(char *dest, const char *src);
-
-#define __HAVE_ARCH_STRNCAT
-extern char *strncat(char *dest, const char *src, size_t count);
+/* strcat, strncat removed - never used in kernel proper */
 
 #define __HAVE_ARCH_STRCMP
 extern int strcmp(const char *cs, const char *ct);
@@ -43,100 +39,6 @@ static __always_inline void *__memcpy(void *to, const void *from, size_t n)
 		     : "0" (n / 4), "g" (n), "1" ((long)to), "2" ((long)from)
 		     : "memory");
 	return to;
-}
-
- 
-static __always_inline void *__constant_memcpy(void *to, const void *from,
-					       size_t n)
-{
-	long esi, edi;
-	if (!n)
-		return to;
-
-	switch (n) {
-	case 1:
-		*(char *)to = *(char *)from;
-		return to;
-	case 2:
-		*(short *)to = *(short *)from;
-		return to;
-	case 4:
-		*(int *)to = *(int *)from;
-		return to;
-	case 3:
-		*(short *)to = *(short *)from;
-		*((char *)to + 2) = *((char *)from + 2);
-		return to;
-	case 5:
-		*(int *)to = *(int *)from;
-		*((char *)to + 4) = *((char *)from + 4);
-		return to;
-	case 6:
-		*(int *)to = *(int *)from;
-		*((short *)to + 2) = *((short *)from + 2);
-		return to;
-	case 8:
-		*(int *)to = *(int *)from;
-		*((int *)to + 1) = *((int *)from + 1);
-		return to;
-	}
-
-	esi = (long)from;
-	edi = (long)to;
-	if (n >= 5 * 4) {
-		 
-		int ecx;
-		asm volatile("rep ; movsl"
-			     : "=&c" (ecx), "=&D" (edi), "=&S" (esi)
-			     : "0" (n / 4), "1" (edi), "2" (esi)
-			     : "memory"
-		);
-	} else {
-		 
-		if (n >= 4 * 4)
-			asm volatile("movsl"
-				     : "=&D"(edi), "=&S"(esi)
-				     : "0"(edi), "1"(esi)
-				     : "memory");
-		if (n >= 3 * 4)
-			asm volatile("movsl"
-				     : "=&D"(edi), "=&S"(esi)
-				     : "0"(edi), "1"(esi)
-				     : "memory");
-		if (n >= 2 * 4)
-			asm volatile("movsl"
-				     : "=&D"(edi), "=&S"(esi)
-				     : "0"(edi), "1"(esi)
-				     : "memory");
-		if (n >= 1 * 4)
-			asm volatile("movsl"
-				     : "=&D"(edi), "=&S"(esi)
-				     : "0"(edi), "1"(esi)
-				     : "memory");
-	}
-	switch (n % 4) {
-		 
-	case 0:
-		return to;
-	case 1:
-		asm volatile("movsb"
-			     : "=&D"(edi), "=&S"(esi)
-			     : "0"(edi), "1"(esi)
-			     : "memory");
-		return to;
-	case 2:
-		asm volatile("movsw"
-			     : "=&D"(edi), "=&S"(esi)
-			     : "0"(edi), "1"(esi)
-			     : "memory");
-		return to;
-	default:
-		asm volatile("movsw\n\tmovsb"
-			     : "=&D"(edi), "=&S"(esi)
-			     : "0"(edi), "1"(esi)
-			     : "memory");
-		return to;
-	}
 }
 
 #define __HAVE_ARCH_MEMCPY
@@ -198,19 +100,6 @@ static inline void *memset16(uint16_t *s, uint16_t v, size_t n)
 	return s;
 }
 
-#define __HAVE_ARCH_MEMSET32
-static inline void *memset32(uint32_t *s, uint32_t v, size_t n)
-{
-	int d0, d1;
-	asm volatile("rep\n\t"
-		     "stosl"
-		     : "=&c" (d0), "=&D" (d1)
-		     : "a" (v), "1" (s), "0" (n)
-		     : "memory");
-	return s;
-}
-
-
-#endif  
+#endif
 
 #endif  

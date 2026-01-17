@@ -21,15 +21,7 @@ static inline void clear_siginfo(kernel_siginfo_t *info)
 }
 
 
-int copy_siginfo_to_user(siginfo_t __user *to, const kernel_siginfo_t *from);
-int copy_siginfo_from_user(kernel_siginfo_t *to, const siginfo_t __user *from);
-
-enum siginfo_layout {
-	SIL_KILL,
-};
-
-enum siginfo_layout siginfo_layout(unsigned sig, int si_code);
-
+/* copy_siginfo_to_user removed - never called */
 
 #ifndef __HAVE_ARCH_SIG_BITOPS
 #include <linux/bitops.h>
@@ -58,9 +50,6 @@ static inline void sigdelset(sigset_t *set, int _sig)
 static inline int sigisemptyset(sigset_t *set)
 {
 	switch (_NSIG_WORDS) {
-	case 4:
-		return (set->sig[3] | set->sig[2] |
-			set->sig[1] | set->sig[0]) == 0;
 	case 2:
 		return (set->sig[1] | set->sig[0]) == 0;
 	case 1:
@@ -74,11 +63,6 @@ static inline int sigisemptyset(sigset_t *set)
 static inline int sigequalsets(const sigset_t *set1, const sigset_t *set2)
 {
 	switch (_NSIG_WORDS) {
-	case 4:
-		return	(set1->sig[3] == set2->sig[3]) &&
-			(set1->sig[2] == set2->sig[2]) &&
-			(set1->sig[1] == set2->sig[1]) &&
-			(set1->sig[0] == set2->sig[0]);
 	case 2:
 		return	(set1->sig[1] == set2->sig[1]) &&
 			(set1->sig[0] == set2->sig[0]);
@@ -95,15 +79,9 @@ static inline int sigequalsets(const sigset_t *set1, const sigset_t *set2)
 #define _SIG_SET_BINOP(name, op)					\
 static inline void name(sigset_t *r, const sigset_t *a, const sigset_t *b) \
 {									\
-	unsigned long a0, a1, a2, a3, b0, b1, b2, b3;			\
+	unsigned long a0, a1, b0, b1;					\
 									\
 	switch (_NSIG_WORDS) {						\
-	case 4:								\
-		a3 = a->sig[3]; a2 = a->sig[2];				\
-		b3 = b->sig[3]; b2 = b->sig[2];				\
-		r->sig[3] = op(a3, b3);					\
-		r->sig[2] = op(a2, b2);					\
-		fallthrough;						\
 	case 2:								\
 		a1 = a->sig[1]; b1 = b->sig[1];				\
 		r->sig[1] = op(a1, b1);					\
@@ -117,8 +95,7 @@ static inline void name(sigset_t *r, const sigset_t *a, const sigset_t *b) \
 	}								\
 }
 
-#define _sig_or(x,y)	((x) | (y))
-_SIG_SET_BINOP(sigorsets, _sig_or)
+/* sigorsets removed - never used */
 
 #define _sig_and(x,y)	((x) & (y))
 _SIG_SET_BINOP(sigandsets, _sig_and)
@@ -127,30 +104,10 @@ _SIG_SET_BINOP(sigandsets, _sig_and)
 _SIG_SET_BINOP(sigandnsets, _sig_andn)
 
 #undef _SIG_SET_BINOP
-#undef _sig_or
 #undef _sig_and
 #undef _sig_andn
 
-#define _SIG_SET_OP(name, op)						\
-static inline void name(sigset_t *set)					\
-{									\
-	switch (_NSIG_WORDS) {						\
-	case 4:	set->sig[3] = op(set->sig[3]);				\
-		set->sig[2] = op(set->sig[2]);				\
-		fallthrough;						\
-	case 2:	set->sig[1] = op(set->sig[1]);				\
-		fallthrough;						\
-	case 1:	set->sig[0] = op(set->sig[0]);				\
-		    break;						\
-	default:							\
-		BUILD_BUG();						\
-	}								\
-}
-
-#define _sig_not(x)	(~(x))
-
-#undef _SIG_SET_OP
-#undef _sig_not
+/* _SIG_SET_OP and _sig_not macros removed - never used to generate functions */
 
 static inline void sigemptyset(sigset_t *set)
 {
@@ -167,28 +124,7 @@ static inline void sigemptyset(sigset_t *set)
 
 
 
-static inline void sigaddsetmask(sigset_t *set, unsigned long mask)
-{
-	set->sig[0] |= mask;
-}
-
-static inline void sigdelsetmask(sigset_t *set, unsigned long mask)
-{
-	set->sig[0] &= ~mask;
-}
-
-static inline void siginitset(sigset_t *set, unsigned long mask)
-{
-	set->sig[0] = mask;
-	switch (_NSIG_WORDS) {
-	default:
-		memset(&set->sig[1], 0, sizeof(long)*(_NSIG_WORDS-1));
-		break;
-	case 2: set->sig[1] = 0;
-		break;
-	case 1: ;
-	}
-}
+/* sigdelsetmask removed - never called */
 
 static inline void siginitsetinv(sigset_t *set, unsigned long mask)
 {
@@ -218,8 +154,7 @@ static inline int valid_signal(unsigned long sig)
 	return sig <= _NSIG ? 1 : 0;
 }
 
-struct timespec;
-struct pt_regs;
+/* struct timespec, pt_regs forward decls removed - unused */
 enum pid_type;
 
 extern int do_send_sig_info(int sig, struct kernel_siginfo *info,
@@ -228,26 +163,17 @@ extern int group_send_sig_info(int sig, struct kernel_siginfo *info,
 			       struct task_struct *p, enum pid_type type);
 extern int send_signal_locked(int sig, struct kernel_siginfo *info,
 			      struct task_struct *p, enum pid_type type);
-extern int sigprocmask(int, sigset_t *, sigset_t *);
-extern void set_current_blocked(sigset_t *);
+/* sigprocmask, set_current_blocked removed - never called */
 extern void __set_current_blocked(const sigset_t *);
-extern int show_unhandled_signals;
+/* show_unhandled_signals removed - never used */
 
-extern bool get_signal(struct ksignal *ksig);
-extern void signal_setup_done(int failed, struct ksignal *ksig, int stepping);
+/* get_signal, signal_setup_done removed - never called */
 extern void exit_signals(struct task_struct *tsk);
 
 #define SIG_KTHREAD_KERNEL ((__force __sighandler_t)3)
 
 
 extern struct kmem_cache *sighand_cachep;
-
-
-#ifdef SIGEMT
-#define SIGEMT_MASK	rt_sigmask(SIGEMT)
-#else
-#define SIGEMT_MASK	0
-#endif
 
 /* SIGRTMIN == BITS_PER_LONG == 32 */
 #define rt_sigmask(sig)	sigmask(sig)
@@ -258,43 +184,15 @@ extern struct kmem_cache *sighand_cachep;
 #define SIG_KERNEL_ONLY_MASK (\
 	rt_sigmask(SIGKILL)   |  rt_sigmask(SIGSTOP))
 
-#define SIG_KERNEL_STOP_MASK (\
-	rt_sigmask(SIGSTOP)   |  rt_sigmask(SIGTSTP)   | \
-	rt_sigmask(SIGTTIN)   |  rt_sigmask(SIGTTOU)   )
-
-#define SIG_KERNEL_COREDUMP_MASK (\
-        rt_sigmask(SIGQUIT)   |  rt_sigmask(SIGILL)    | \
-	rt_sigmask(SIGTRAP)   |  rt_sigmask(SIGABRT)   | \
-        rt_sigmask(SIGFPE)    |  rt_sigmask(SIGSEGV)   | \
-	rt_sigmask(SIGBUS)    |  rt_sigmask(SIGSYS)    | \
-        rt_sigmask(SIGXCPU)   |  rt_sigmask(SIGXFSZ)   | \
-	SIGEMT_MASK				       )
-
 #define SIG_KERNEL_IGNORE_MASK (\
         rt_sigmask(SIGCONT)   |  rt_sigmask(SIGCHLD)   | \
 	rt_sigmask(SIGWINCH)  |  rt_sigmask(SIGURG)    )
 
-
 #define sig_kernel_only(sig)		siginmask(sig, SIG_KERNEL_ONLY_MASK)
-#define sig_kernel_coredump(sig)	siginmask(sig, SIG_KERNEL_COREDUMP_MASK)
 #define sig_kernel_ignore(sig)		siginmask(sig, SIG_KERNEL_IGNORE_MASK)
-
-#define sig_fatal(t, signr) \
-	(!siginmask(signr, SIG_KERNEL_IGNORE_MASK|SIG_KERNEL_STOP_MASK) && \
-	 (t)->sighand->action[(signr)-1].sa.sa_handler == SIG_DFL)
 
 void signals_init(void);
 
-int restore_altstack(const stack_t __user *);
-int __save_altstack(stack_t __user *, unsigned long);
-
-#define unsafe_save_altstack(uss, sp, label) do { \
-	stack_t __user *__uss = uss; \
-	struct task_struct *t = current; \
-	unsafe_put_user((void __user *)t->sas_ss_sp, &__uss->ss_sp, label); \
-	unsafe_put_user(t->sas_ss_flags, &__uss->ss_flags, label); \
-	unsafe_put_user(t->sas_ss_size, &__uss->ss_size, label); \
-} while (0);
-
+/* __save_altstack and unsafe_save_altstack removed - never called */
 
 #endif  

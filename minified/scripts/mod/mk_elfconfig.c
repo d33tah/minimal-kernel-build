@@ -3,11 +3,13 @@
 #include <string.h>
 #include <elf.h>
 
-int
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	unsigned char ei[EI_NIDENT];
-	union { short s; char c[2]; } endian_test;
+	union {
+		short s;
+		char c[2];
+	} endian_test;
 
 	if (fread(ei, 1, EI_NIDENT, stdin) != EI_NIDENT) {
 		fprintf(stderr, "Error: input truncated\n");

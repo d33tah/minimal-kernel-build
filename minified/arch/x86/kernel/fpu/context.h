@@ -13,10 +13,7 @@ static inline void __cpu_invalidate_fpregs_state(void)
 	__this_cpu_write(fpu_fpregs_owner_ctx, NULL);
 }
 
-static inline void __fpu_invalidate_fpregs_state(struct fpu *fpu)
-{
-	fpu->last_cpu = -1;
-}
+/* __fpu_invalidate_fpregs_state removed - never called */
 
 static inline int fpregs_state_valid(struct fpu *fpu, unsigned int cpu)
 {

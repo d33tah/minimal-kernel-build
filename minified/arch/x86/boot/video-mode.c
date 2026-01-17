@@ -1,7 +1,6 @@
 /* Minimal video mode setup - simplified for text-only boot */
 #include "boot.h"
 #include "video.h"
-#include "vesa.h"
 #include <uapi/asm/boot.h>
 
 int adapter;
@@ -29,22 +28,6 @@ void probe_cards(int unsafe)
 	}
 }
 
-int mode_defined(u16 mode)
-{
-	struct card_info *card;
-	struct mode_info *mi;
-	int i;
-
-	for (card = video_cards; card < video_cards_end; card++) {
-		mi = card->modes;
-		for (i = 0; i < card->nmodes; i++, mi++) {
-			if (mi->mode == mode)
-				return 1;
-		}
-	}
-	return 0;
-}
-
 static int raw_set_mode(u16 mode, u16 *real_mode)
 {
 	int nmode, i;
@@ -59,9 +42,8 @@ static int raw_set_mode(u16 mode, u16 *real_mode)
 		for (i = 0; i < card->nmodes; i++, mi++) {
 			int visible = mi->x || mi->y;
 
-			if ((mode == nmode && visible) ||
-			    mode == mi->mode ||
-			    mode == (mi->y << 8)+mi->x) {
+			if ((mode == nmode && visible) || mode == mi->mode ||
+			    mode == (mi->y << 8) + mi->x) {
 				*real_mode = mi->mode;
 				return card->set_mode(mi);
 			}
@@ -84,7 +66,7 @@ int set_mode(u16 mode)
 	else if (mode == NORMAL_VGA)
 		mode = VIDEO_80x25;
 	else if (mode == EXTENDED_VGA)
-		mode = VIDEO_80x25;  /* Use 80x25 instead of 8POINT */
+		mode = VIDEO_80x25; /* Use 80x25 instead of 8POINT */
 
 	rv = raw_set_mode(mode, &real_mode);
 	if (rv)

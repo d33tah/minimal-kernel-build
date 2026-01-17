@@ -8,9 +8,6 @@
 #include <linux/percpu.h>
 #include <asm/topology.h>
 
-
-int arch_update_cpu_topology(void);
-
 #ifndef numa_node_id
 static inline int numa_node_id(void)
 {

@@ -1,33 +1,7 @@
 #ifndef _LINUX_KASAN_CHECKS_H
 #define _LINUX_KASAN_CHECKS_H
-
 #include <linux/types.h>
 #include <linux/stddef.h>
-
-
-
-
-static inline bool __kasan_check_read(const volatile void *p, unsigned int size)
-{
-	return true;
-}
-static inline bool __kasan_check_write(const volatile void *p, unsigned int size)
-{
-	return true;
-}
-
-#ifdef __SANITIZE_ADDRESS__
-#define kasan_check_read __kasan_check_read
-#define kasan_check_write __kasan_check_write
-#else
-static inline bool kasan_check_read(const volatile void *p, unsigned int size)
-{
-	return true;
-}
-static inline bool kasan_check_write(const volatile void *p, unsigned int size)
-{
-	return true;
-}
-#endif
-
+static inline bool kasan_check_read(const volatile void *p, unsigned int size) { return true; }
+static inline bool kasan_check_write(const volatile void *p, unsigned int size) { return true; }
 #endif

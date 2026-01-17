@@ -54,14 +54,10 @@ union __sifields {
 		__ARCH_SI_CLOCK_T _stime;
 	} _sigchld;
 
-	 
+	/* SIGFAULT */
 	struct {
-		void __user *_addr;  
-#ifdef __ia64__
-		int _imm;		 
-		unsigned int _flags;	 
-		unsigned long _isr;	 
-#endif
+		void __user *_addr;
+		/* ia64-specific fields removed - x86 only */
 
 #define __ADDR_BND_PKEY_PAD  (__alignof__(void *) < sizeof(short) ? \
 			      sizeof(short) : __alignof__(void *))
@@ -147,15 +143,8 @@ typedef struct siginfo {
 #define si_syscall	_sifields._sigsys._syscall
 #define si_arch		_sifields._sigsys._arch
 
-#define SI_USER		0		 
-#define SI_KERNEL	0x80		 
-#define SI_QUEUE	-1		 
-#define SI_TIMER	-2		 
-/* SI_MESGQ, SI_ASYNCIO - unused */
-#define SI_SIGIO	-5
-#define SI_TKILL	-6
-#define SI_DETHREAD	-7
-/* SI_ASYNCNL - unused */
+#define SI_USER		0
+#define SI_KERNEL	0x80
 
 #define SI_FROMUSER(siptr)	((siptr)->si_code <= 0)
 #define SI_FROMKERNEL(siptr)	((siptr)->si_code > 0)
@@ -163,7 +152,6 @@ typedef struct siginfo {
 /* Only keep signal sub-codes actually used */
 #define ILL_ILLOPN	2
 #define ILL_BADSTK	8
-#define NSIGILL		11
 
 /* FPE codes used by x86 FPU */
 #define FPE_INTDIV	1
@@ -172,43 +160,22 @@ typedef struct siginfo {
 #define FPE_FLTUND	5
 #define FPE_FLTRES	6
 #define FPE_FLTINV	7
-#define NSIGFPE		15
 
 /* SEGV codes used by x86 fault handler */
 #define SEGV_MAPERR	1
 #define SEGV_ACCERR	2
 #define SEGV_PKUERR	4
-#define NSIGSEGV	9
 
 /* BUS codes used by x86 */
 #define BUS_ADRALN	1
 #define BUS_ADRERR	2
-#define NSIGBUS		5
 
 /* TRAP codes used by x86 */
 #define TRAP_BRKPT	1
 #define TRAP_TRACE	2
 #define TRAP_HWBKPT     4
-#define NSIGTRAP	6
-
-/* CLD codes used by kernel/exit.c, kernel/signal.c */
-#define CLD_EXITED	1
-#define CLD_KILLED	2
-#define CLD_DUMPED	3
-#define CLD_TRAPPED	4
-#define CLD_STOPPED	5
-#define CLD_CONTINUED	6
-#define NSIGCHLD	6
-
-/* POLL codes */
-#define POLL_OUT	2
-#define NSIGPOLL	6
 
 /* SYS codes */
 #define SYS_USER_DISPATCH 2
-#define NSIGSYS		2
-
-/* EMT_TAGOVF, NSIGEMT - unused */
-/* SIGEV_* and sigevent_t - unused */
 
 #endif  

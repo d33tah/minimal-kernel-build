@@ -12,32 +12,18 @@ struct fwnode_handle;
 struct bus_type {
 	const char		*name;
 	const char		*dev_name;
-	struct device		*dev_root;
-	const struct attribute_group **bus_groups;
-	const struct attribute_group **dev_groups;
-	const struct attribute_group **drv_groups;
+	/* dev_root, bus_groups, dev_groups, drv_groups, uevent removed - never read/called (sysfs stubbed) */
 
 	int (*match)(struct device *dev, struct device_driver *drv);
-	int (*uevent)(struct device *dev, struct kobj_uevent_env *env);
 	int (*probe)(struct device *dev);
-	void (*sync_state)(struct device *dev);
+	/* sync_state removed - never called */
 	void (*remove)(struct device *dev);
 	void (*shutdown)(struct device *dev);
 
-	int (*online)(struct device *dev);
-	int (*offline)(struct device *dev);
-
-	int (*suspend)(struct device *dev, pm_message_t state);
-	int (*resume)(struct device *dev);
-
-	int (*num_vf)(struct device *dev);
+	/* online, offline, num_vf, suspend, resume, pm, iommu_ops removed - never called/accessed */
 
 	int (*dma_configure)(struct device *dev);
 	void (*dma_cleanup)(struct device *dev);
-
-	const struct dev_pm_ops *pm;
-
-	const struct iommu_ops *iommu_ops;
 
 	struct subsys_private *p;
 	struct lock_class_key lock_key;
@@ -46,8 +32,7 @@ struct bus_type {
 };
 
 extern int __must_check bus_register(struct bus_type *bus);
-
-extern void bus_unregister(struct bus_type *bus);
+/* bus_unregister removed - never called */
 
 struct bus_attribute {
 	struct attribute	attr;
@@ -55,15 +40,7 @@ struct bus_attribute {
 	ssize_t (*store)(struct bus_type *bus, const char *buf, size_t count);
 };
 
-#define BUS_ATTR_RW(_name) \
-	struct bus_attribute bus_attr_##_name = __ATTR_RW(_name)
-#define BUS_ATTR_RO(_name) \
-	struct bus_attribute bus_attr_##_name = __ATTR_RO(_name)
-#define BUS_ATTR_WO(_name) \
-	struct bus_attribute bus_attr_##_name = __ATTR_WO(_name)
-
-
-/* device_match_name, device_match_of_node, device_match_fwnode,
+/* BUS_ATTR_RW, BUS_ATTR_WO, device_match_name, device_match_of_node, device_match_fwnode,
    device_match_acpi_dev, device_match_acpi_handle, device_match_any removed - unused */
 int device_match_devt(struct device *dev, const void *pdevt);
 
@@ -80,11 +57,6 @@ struct device *bus_find_device(struct bus_type *bus, struct device *start,
 int bus_for_each_drv(struct bus_type *bus, struct device_driver *start,
 		     void *data, int (*fn)(struct device_driver *, void *));
 
-#define BUS_NOTIFY_DEL_DEVICE		0x00000002
-#define BUS_NOTIFY_REMOVED_DEVICE	0x00000003
-#define BUS_NOTIFY_UNBIND_DRIVER	0x00000006
-#define BUS_NOTIFY_UNBOUND_DRIVER	0x00000007
-#define BUS_NOTIFY_DRIVER_NOT_BOUND	0x00000008  
-
+/* BUS_NOTIFY_* macros removed - unused */
 
 #endif

@@ -16,25 +16,12 @@
 struct vm_area_struct;		 
 struct notifier_block;		 
 
-#define VM_IOREMAP		0x00000001	 
-#define VM_ALLOC		0x00000002	 
-#define VM_MAP			0x00000004	 
-#define VM_USERMAP		0x00000008	 
-#define VM_DMA_COHERENT		0x00000010	 
-#define VM_UNINITIALIZED	0x00000020	 
-#define VM_NO_GUARD		0x00000040       
-#define VM_KASAN		0x00000080       
-#define VM_FLUSH_RESET_PERMS	0x00000100	 
-#define VM_MAP_PUT_PAGES	0x00000200	 
-#define VM_ALLOW_HUGE_VMAP	0x00000400       
-
-#if (defined(CONFIG_KASAN_GENERIC) || defined(CONFIG_KASAN_SW_TAGS)) && \
-	!defined(CONFIG_KASAN_VMALLOC)
-#define VM_DEFER_KMEMLEAK	0x00000800	 
-#else
-#define VM_DEFER_KMEMLEAK	0
-#endif
-
+#define VM_IOREMAP		0x00000001
+#define VM_ALLOC		0x00000002
+#define VM_UNINITIALIZED	0x00000020
+#define VM_NO_GUARD		0x00000040
+#define VM_MAP_PUT_PAGES	0x00000200
+#define VM_ALLOW_HUGE_VMAP	0x00000400
 
 #ifndef IOREMAP_MAX_ORDER
 #define IOREMAP_MAX_ORDER	(7 + PAGE_SHIFT)	 
@@ -66,27 +53,7 @@ struct vmap_area {
 };
 
 
-#ifndef arch_vmap_pmd_supported
-static inline bool arch_vmap_pmd_supported(pgprot_t prot)
-{
-	return false;
-}
-#endif
-
-
-#ifndef arch_vmap_pte_supported_shift
-static inline int arch_vmap_pte_supported_shift(unsigned long size)
-{
-	return PAGE_SHIFT;
-}
-#endif
-
-#ifndef arch_vmap_pgprot_tagged
-static inline pgprot_t arch_vmap_pgprot_tagged(pgprot_t prot)
-{
-	return prot;
-}
-#endif
+/* arch_vmap_pmd_supported, arch_vmap_pte_supported_shift removed - no callers */
 
 extern void __init vmalloc_init(void);
 
@@ -128,12 +95,5 @@ extern struct vm_struct *get_vm_area_caller(unsigned long size,
 void free_vm_area(struct vm_struct *area);
 extern struct vm_struct *remove_vm_area(const void *addr);
 extern struct vm_struct *find_vm_area(const void *addr);
-
-
-
-
-
-#define VMALLOC_TOTAL (VMALLOC_END - VMALLOC_START)
-
 
 #endif  

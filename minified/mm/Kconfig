@@ -154,13 +154,10 @@ config MEMORY_BALLOON
 
 config COMPACTION
 	bool "Allow for memory compaction"
-	def_bool y
-	select MIGRATION
 	depends on MMU
 
 config MIGRATION
 	bool "Page migration"
-	def_bool y
 	depends on (NUMA || ARCH_ENABLE_MEMORY_HOTREMOVE || COMPACTION || CMA) && MMU
 
 config DEVICE_MIGRATION

@@ -7,43 +7,10 @@
 #define CLONE_VM	0x00000100
 #define CLONE_FS	0x00000200
 #define CLONE_FILES	0x00000400
-#define CLONE_SIGHAND	0x00000800
-#define CLONE_PIDFD	0x00001000
-#define CLONE_PTRACE	0x00002000
-#define CLONE_VFORK	0x00004000
-#define CLONE_PARENT	0x00008000
-#define CLONE_THREAD	0x00010000
-#define CLONE_NEWNS	0x00020000
-#define CLONE_SYSVSEM	0x00040000
-#define CLONE_SETTLS	0x00080000
-#define CLONE_PARENT_SETTID	0x00100000
-#define CLONE_CHILD_CLEARTID	0x00200000
-#define CLONE_DETACHED		0x00400000
 #define CLONE_UNTRACED		0x00800000
-#define CLONE_CHILD_SETTID	0x01000000
-#define CLONE_NEWCGROUP		0x02000000
-#define CLONE_NEWUTS		0x04000000
-#define CLONE_NEWIPC		0x08000000
-#define CLONE_NEWUSER		0x10000000
-#define CLONE_NEWPID		0x20000000
-#define CLONE_NEWNET		0x40000000
-#define CLONE_CLEAR_SIGHAND 0x100000000ULL
-#define CLONE_NEWTIME	0x00000080
-#ifndef __ASSEMBLY__
-struct clone_args {
-	__aligned_u64 flags;
-	__aligned_u64 pidfd;
-	__aligned_u64 child_tid;
-	__aligned_u64 parent_tid;
-	__aligned_u64 exit_signal;
-	__aligned_u64 stack;
-	__aligned_u64 stack_size;
-	__aligned_u64 tls;
-	__aligned_u64 set_tid;
-	__aligned_u64 set_tid_size;
-	__aligned_u64 cgroup;
-};
-#endif
+/* Removed unused CLONE_* flags: CLONE_SIGHAND, CLONE_PIDFD, CLONE_PTRACE,
+   CLONE_VFORK, CLONE_PARENT, CLONE_THREAD, CLONE_SETTLS, CLONE_PARENT_SETTID,
+   CLONE_CHILD_CLEARTID, CLONE_CHILD_SETTID, CLONE_NEWUSER, CLONE_CLEAR_SIGHAND */
 #define SCHED_NORMAL		0
 #define SCHED_FIFO		1
 #define SCHED_RR		2
@@ -59,15 +26,12 @@ struct clone_args {
 
 #include <linux/pid.h>
 #include <linux/mutex.h>
-#include <linux/plist.h>
+/* plist.h, irqflags.h, nodemask.h removed - unused in sched.h */
 #include <linux/hrtimer.h>
-#include <linux/irqflags.h>
-#include <linux/seccomp.h>
-#include <linux/nodemask.h>
+/* seccomp.h removed - header is empty */
 #include <linux/rcupdate.h>
 #include <linux/refcount.h>
 #include <linux/resource.h>
-static inline void clear_tsk_latency_tracing(struct task_struct *p) {}
 #define MAX_NICE	19
 #define MIN_NICE	-20
 #define NICE_WIDTH	(MAX_NICE - MIN_NICE + 1)
@@ -81,49 +45,33 @@ static inline void clear_tsk_latency_tracing(struct task_struct *p) {}
 #include <linux/signal_types.h>
 #include <linux/syscall_user_dispatch.h>
 #include <linux/mm_types_task.h>
-struct task_io_accounting { };
-#include <linux/posix-timers.h>
+/* struct task_io_accounting, posix-timers.h removed - empty structs no longer needed */
 #include <linux/seqlock.h>
 #include <asm/kmap_size.h>
 
-struct audit_context;
-struct backing_dev_info;
-struct bio_list;
-struct blk_plug;
-struct cfs_rq;
+/* Unused forward declarations removed: cfs_rq, mempolicy, pipe_inode_info, rq, sched_attr, seq_file */
 struct fs_struct;
-struct io_context;
-struct mempolicy;
 struct nameidata;
 struct nsproxy;
-struct perf_event_context;
 struct pid_namespace;
-struct pipe_inode_info;
-struct reclaim_state;
-struct rq;
-struct sched_attr;
 struct sched_param;
-struct seq_file;
 struct sighand_struct;
 struct signal_struct;
-struct task_group;
 
 
 #define TASK_RUNNING			0x0000
 #define TASK_INTERRUPTIBLE		0x0001
 #define TASK_UNINTERRUPTIBLE		0x0002
-#define __TASK_STOPPED			0x0004
+/* __TASK_STOPPED removed - unused */
 #define __TASK_TRACED			0x0008
 #define EXIT_DEAD			0x0010
 #define EXIT_ZOMBIE			0x0020
-#define EXIT_TRACE			(EXIT_ZOMBIE | EXIT_DEAD)
 #define TASK_PARKED			0x0040
 #define TASK_DEAD			0x0080
 #define TASK_WAKEKILL			0x0100
 #define TASK_WAKING			0x0200
-#define TASK_NOLOAD			0x0400
+/* TASK_NOLOAD removed - never used */
 #define TASK_NEW			0x0800
-#define TASK_RTLOCK_WAIT		0x1000
 
 #define TASK_KILLABLE			(TASK_WAKEKILL | TASK_UNINTERRUPTIBLE)
 
@@ -131,61 +79,22 @@ struct task_group;
 
 #define task_is_running(task)		(READ_ONCE((task)->__state) == TASK_RUNNING)
 
-#define task_is_traced(task)		((READ_ONCE(task->jobctl) & JOBCTL_TRACED) != 0)
-#define task_is_stopped(task)		((READ_ONCE(task->jobctl) & JOBCTL_STOPPED) != 0)
-#define task_is_stopped_or_traced(task)	((READ_ONCE(task->jobctl) & (JOBCTL_STOPPED | JOBCTL_TRACED)) != 0)
-
-#define is_special_task_state(state)				\
-	((state) & (__TASK_STOPPED | __TASK_TRACED | TASK_PARKED | TASK_DEAD))
-
-# define debug_normal_state_change(cond)	do { } while (0)
-# define debug_special_state_change(cond)	do { } while (0)
-# define debug_rtlock_wait_set_state()		do { } while (0)
-# define debug_rtlock_wait_restore_state()	do { } while (0)
+/* debug_normal/special_state_change removed - empty stubs */
 
 #define __set_current_state(state_value)				\
-	do {								\
-		debug_normal_state_change((state_value));		\
-		WRITE_ONCE(current->__state, (state_value));		\
-	} while (0)
+	WRITE_ONCE(current->__state, (state_value))
 
 #define set_current_state(state_value)					\
-	do {								\
-		debug_normal_state_change((state_value));		\
-		smp_store_mb(current->__state, (state_value));		\
-	} while (0)
+	smp_store_mb(current->__state, (state_value))
 
 #define set_special_state(state_value)					\
 	do {								\
 		unsigned long flags;  			\
 									\
 		raw_spin_lock_irqsave(&current->pi_lock, flags);	\
-		debug_special_state_change((state_value));		\
 		WRITE_ONCE(current->__state, (state_value));		\
 		raw_spin_unlock_irqrestore(&current->pi_lock, flags);	\
 	} while (0)
-
-#define current_save_and_set_rtlock_wait_state()			\
-	do {								\
-		lockdep_assert_irqs_disabled();				\
-		raw_spin_lock(&current->pi_lock);			\
-		current->saved_state = current->__state;		\
-		debug_rtlock_wait_set_state();				\
-		WRITE_ONCE(current->__state, TASK_RTLOCK_WAIT);		\
-		raw_spin_unlock(&current->pi_lock);			\
-	} while (0);
-
-#define current_restore_rtlock_saved_state()				\
-	do {								\
-		lockdep_assert_irqs_disabled();				\
-		raw_spin_lock(&current->pi_lock);			\
-		debug_rtlock_wait_restore_state();			\
-		WRITE_ONCE(current->__state, current->saved_state);	\
-		current->saved_state = TASK_RUNNING;			\
-		raw_spin_unlock(&current->pi_lock);			\
-	} while (0);
-
-#define get_current_state()	READ_ONCE(current->__state)
 
 enum {
 	TASK_COMM_LEN = 16,
@@ -196,7 +105,7 @@ extern void scheduler_tick(void);
 #define	MAX_SCHEDULE_TIMEOUT		LONG_MAX
 
 extern long schedule_timeout(long timeout);
-extern long schedule_timeout_interruptible(long timeout);
+/* schedule_timeout_interruptible removed - never called */
 extern long schedule_timeout_uninterruptible(long timeout);
 asmlinkage void schedule(void);
 extern void schedule_preempt_disabled(void);
@@ -204,18 +113,7 @@ asmlinkage void preempt_schedule_irq(void);
 
 extern void io_schedule(void);
 
-struct prev_cputime {
-	u64				utime;
-	u64				stime;
-	raw_spinlock_t			lock;
-};
-
-
-enum uclamp_id { UCLAMP_CNT };
-
-
-struct sched_info {
-};
+/* struct prev_cputime removed - write-only (only initialized, never read) */
 
 # define SCHED_FIXEDPOINT_SHIFT		10
 # define SCHED_FIXEDPOINT_SCALE		(1L << SCHED_FIXEDPOINT_SHIFT)
@@ -228,17 +126,12 @@ struct load_weight {
 	u32				inv_weight;
 };
 
-struct util_est;
-struct sched_avg;
-
-struct sched_statistics {
-} ____cacheline_aligned;
+/* struct sched_statistics removed - schedstat_enabled() always 0 */
 
 struct sched_entity {
-	 
 	struct load_weight		load;
 	struct rb_node			run_node;
-	struct list_head		group_node;
+	/* group_node removed - write-only, only initialized */
 	unsigned int			on_rq;
 
 	u64				exec_start;
@@ -246,63 +139,19 @@ struct sched_entity {
 	u64				vruntime;
 	u64				prev_sum_exec_runtime;
 
-	u64				nr_migrations;
-
-
 };
 
 struct sched_rt_entity {
-	struct list_head		run_list;
-	unsigned long			timeout;
-	unsigned long			watchdog_stamp;
-	unsigned int			time_slice;
-	unsigned short			on_rq;
-	unsigned short			on_list;
-
-	struct sched_rt_entity		*back;
+	/* run_list, timeout, watchdog_stamp, time_slice, on_rq, on_list, back removed - write-only/unused */
 } __randomize_layout;
 
 struct sched_dl_entity {
-	struct rb_node			rb_node;
-
-	 
-	u64				dl_runtime;	 
-	u64				dl_deadline;	 
-	u64				dl_period;	 
-	u64				dl_bw;		 
-	u64				dl_density;	 
-
-	 
-	s64				runtime;	 
-	u64				deadline;	 
-	unsigned int			flags;		 
-
-	 
-	unsigned int			dl_throttled      : 1;
-	unsigned int			dl_yielded        : 1;
-	unsigned int			dl_non_contending : 1;
-	unsigned int			dl_overrun	  : 1;
-
-	 
-	struct hrtimer			dl_timer;
-
-	 
-	struct hrtimer inactive_timer;
-
+	/* rb_node removed - deadline scheduler stubbed, never used */
 };
 
 
-union rcu_special {
-	struct {
-		u8			blocked;
-		u8			need_qs;
-		u8			exp_hint;  
-		u8			need_mb;  
-	} b;  
-	u32 s;  
-};
-
-enum perf_event_task_context { perf_nr_task_contexts };
+/* union rcu_special removed - never used */
+/* enum perf_event_task_context removed - PERF_EVENTS disabled */
 
 struct wake_q_node {
 	struct wake_q_node *next;
@@ -339,40 +188,23 @@ struct task_struct {
 	struct sched_rt_entity		rt;
 	struct sched_dl_entity		dl;
 	const struct sched_class	*sched_class;
-
-
-
-
-	struct sched_statistics         stats;
-
-
+	/* stats field removed - schedstat_enabled() always 0 */
 
 	unsigned int			policy;
-	int				nr_cpus_allowed;
+	/* nr_cpus_allowed removed - only written, never read */
 	const cpumask_t			*cpus_ptr;
-	cpumask_t			*user_cpus_ptr;
 	cpumask_t			cpus_mask;
-	void				*migration_pending;
-	unsigned short			migration_flags;
-
-
-
-
-	struct sched_info		sched_info;
 
 	struct list_head		tasks;
 
 	struct mm_struct		*mm;
 	struct mm_struct		*active_mm;
 
-	 
+
 	struct vmacache			vmacache;
 
-#ifdef SPLIT_RSS_COUNTING
-	struct task_rss_stat		rss_stat;
-#endif
 	int				exit_state;
-	int				exit_code;
+	/* exit_code removed - write-only field (never read) */
 	int				exit_signal;
 	 
 	int				pdeath_signal;
@@ -382,26 +214,18 @@ struct task_struct {
 	 
 	unsigned int			personality;
 
-	 
 	unsigned			sched_reset_on_fork:1;
-	unsigned			sched_contributes_to_load:1;
-	unsigned			sched_migrated:1;
+	/* sched_contributes_to_load removed - write-only field */
 
-	 
 	unsigned			:0;
 
 	 
 
 	 
 	unsigned			sched_remote_wakeup:1;
-
-	 
-	unsigned			in_execve:1;
+	/* in_execve removed - write-only field */
 	unsigned			in_iowait:1;
-#ifndef TIF_RESTORE_SIGMASK
 	unsigned			restore_sigmask:1;
-#endif
-	unsigned			reported_split_lock:1;
 
 	unsigned long			atomic_flags;  
 
@@ -433,46 +257,22 @@ struct task_struct {
 	struct list_head		thread_group;
 	struct list_head		thread_node;
 
-	struct completion		*vfork_done;
+	/* vfork_done removed - write-only field (CLONE_VFORK never used) */
 
-	 
+
 	int __user			*set_child_tid;
 
-	 
-	int __user			*clear_child_tid;
+	/* clear_child_tid removed - write-only (CLONE_CHILD_CLEARTID never set) */
 
-	 
+
 	void				*worker_private;
+	/* utime, stime removed - write-only, task_cputime() never called */
 
-	u64				utime;
-	u64				stime;
-	u64				gtime;
-	struct prev_cputime		prev_cputime;
+	/* nvcsw, nivcsw removed - write-only fields (accumulation removed) */
+	/* min_flt, maj_flt removed - write-only fields (increments removed) */
+	/* start_time, posix_cputimers removed - write-only fields */
+	/* ptracer_cred removed - write-only (passed to empty stubs, never read) */
 
-	 
-	unsigned long			nvcsw;
-	unsigned long			nivcsw;
-
-	 
-	u64				start_time;
-
-	 
-	u64				start_boottime;
-
-	 
-	unsigned long			min_flt;
-	unsigned long			maj_flt;
-
-	 
-	struct posix_cputimers		posix_cputimers;
-
-
-	 
-
-	 
-	const struct cred __rcu		*ptracer_cred;
-
-	 
 	const struct cred __rcu		*real_cred;
 
 	 
@@ -502,18 +302,13 @@ struct task_struct {
 	 
 	sigset_t			saved_sigmask;
 	struct sigpending		pending;
-	unsigned long			sas_ss_sp;
-	size_t				sas_ss_size;
-	unsigned int			sas_ss_flags;
+	/* sas_ss_sp, sas_ss_size, sas_ss_flags removed - write-only fields */
 
 	struct callback_head		*task_works;
 
-	struct seccomp			seccomp;
 	struct syscall_user_dispatch	syscall_dispatch;
 
-	 
-	u64				parent_exec_id;
-	u64				self_exec_id;
+	/* parent_exec_id, self_exec_id removed - write-only fields */
 
 	 
 	spinlock_t			alloc_lock;
@@ -529,72 +324,29 @@ struct task_struct {
 
 
 
-	 
-	void				*journal_info;
 
-	 
-	struct bio_list			*bio_list;
-
-	 
-	struct blk_plug			*plug;
-
-	 
-	struct reclaim_state		*reclaim_state;
-
-	struct backing_dev_info		*backing_dev_info;
-
-	struct io_context		*io_context;
-
-	 
-	unsigned long			ptrace_message;
-	kernel_siginfo_t		*last_siginfo;
-
-	struct task_io_accounting	ioac;
-	struct perf_event_context	*perf_event_ctxp[perf_nr_task_contexts];
-	struct mutex			perf_event_mutex;
-	struct list_head		perf_event_list;
-
-
-	struct tlbflush_unmap_batch	tlb_ubc;
+	/* plug, backing_dev_info, ioac (empty struct) removed - write-only, never read */
+	/* perf_event_* fields removed - PERF_EVENTS disabled, never used */
 
 	union {
 		refcount_t		rcu_users;
 		struct rcu_head		rcu;
 	};
 
-	 
-	struct pipe_inode_info		*splice_pipe;
+	/* splice_pipe, task_frag removed - only set to NULL, never used */
 
-	struct page_frag		task_frag;
-
-
-	 
-	int				nr_dirtied;
-	int				nr_dirtied_pause;
-	 
-	unsigned long			dirty_paused_when;
-
-	 
-	u64				timer_slack_ns;
-	u64				default_timer_slack_ns;
+	/* nr_dirtied, timer_slack_ns removed - initialized but never read */
 
 
 
 
 	struct kmap_ctrl		kmap_ctrl;
 	int				pagefault_disabled;
-	struct task_struct		*oom_reaper_list;
-	struct timer_list		oom_reaper_timer;
-	 
+
 	refcount_t			stack_refcount;
 
+	/* l1d_flush_kill removed - never used */
 
-
-
-	 
-	struct callback_head		l1d_flush_kill;
-
-	 
 	randomized_struct_fields_end
 
 	 
@@ -626,59 +378,29 @@ static inline pid_t task_pid_vnr(struct task_struct *tsk)
 }
 
 
-static inline pid_t task_tgid_nr(struct task_struct *tsk)
-{
-	return tsk->tgid;
-}
-
-static inline pid_t task_tgid_vnr(struct task_struct *tsk)
-{
-	return __task_pid_nr_ns(tsk, PIDTYPE_TGID, NULL);
-}
-
-
 static inline int is_global_init(struct task_struct *tsk)
 {
-	return task_tgid_nr(tsk) == 1;
+	return tsk->tgid == 1;
 }
 
 
-#define PF_VCPU			0x00000001
 #define PF_IDLE			0x00000002
 #define PF_EXITING		0x00000004
-#define PF_POSTCOREDUMP		0x00000008
+/* PF_POSTCOREDUMP removed - never used */
 #define PF_IO_WORKER		0x00000010
 #define PF_WQ_WORKER		0x00000020
 #define PF_FORKNOEXEC		0x00000040
 #define PF_SUPERPRIV		0x00000100
 #define PF_MEMALLOC		0x00000800
-#define PF_NPROC_EXCEEDED	0x00001000
-#define PF_USED_MATH		0x00002000
+/* PF_NPROC_EXCEEDED removed - never used */
 #define PF_NOFREEZE		0x00008000
-#define PF_FROZEN		0x00010000
+/* PF_FROZEN removed - unused */
 #define PF_MEMALLOC_NOFS	0x00040000
 #define PF_MEMALLOC_NOIO	0x00080000
 #define PF_KTHREAD		0x00200000
 #define PF_RANDOMIZE		0x00400000
 #define PF_NO_SETAFFINITY	0x04000000
-#define PF_MEMALLOC_PIN		0x10000000       
-
-#define clear_stopped_child_used_math(child)	do { (child)->flags &= ~PF_USED_MATH; } while (0)
-#define set_stopped_child_used_math(child)	do { (child)->flags |= PF_USED_MATH; } while (0)
-#define clear_used_math()			clear_stopped_child_used_math(current)
-#define set_used_math()				set_stopped_child_used_math(current)
-
-#define conditional_stopped_child_used_math(condition, child) \
-	do { (child)->flags &= ~PF_USED_MATH, (child)->flags |= (condition) ? PF_USED_MATH : 0; } while (0)
-
-#define conditional_used_math(condition)	conditional_stopped_child_used_math(condition, current)
-
-#define copy_to_stopped_child_used_math(child) \
-	do { (child)->flags &= ~PF_USED_MATH, (child)->flags |= current->flags & PF_USED_MATH; } while (0)
-
-#define tsk_used_math(p)			((p)->flags & PF_USED_MATH)
-#define used_math()				tsk_used_math(current)
-
+#define PF_MEMALLOC_PIN		0x10000000
 
 #define PFA_NO_NEW_PRIVS		0
 #define PFA_SPEC_SSB_DISABLE		3
@@ -710,26 +432,13 @@ current_restore_flags(unsigned long orig_flags, unsigned long flags)
 	current->flags |= orig_flags & flags;
 }
 
-static inline void do_set_cpus_allowed(struct task_struct *p, const struct cpumask *new_mask)
-{
-}
+/* do_set_cpus_allowed removed - empty stub, call site removed */
 static inline int set_cpus_allowed_ptr(struct task_struct *p, const struct cpumask *new_mask)
 {
 	if (!cpumask_test_cpu(0, new_mask))
 		return -EINVAL;
 	return 0;
 }
-static inline int dup_user_cpus_ptr(struct task_struct *dst, struct task_struct *src, int node)
-{
-	if (src->user_cpus_ptr)
-		return -EINVAL;
-	return 0;
-}
-static inline void release_user_cpus_ptr(struct task_struct *p)
-{
-	WARN_ON(p->user_cpus_ptr);
-}
-
 
 static inline int task_nice(const struct task_struct *p)
 {
@@ -762,20 +471,13 @@ extern struct task_struct *find_task_by_pid_ns(pid_t nr, struct pid_namespace *n
 extern int wake_up_state(struct task_struct *tsk, unsigned int state);
 extern int wake_up_process(struct task_struct *tsk);
 extern void wake_up_new_task(struct task_struct *tsk);
-
-static inline void kick_process(struct task_struct *tsk) { }
+/* kick_process removed - empty stub, no callers */
 
 extern void __set_task_comm(struct task_struct *tsk, const char *from, bool exec);
 
 static inline void set_task_comm(struct task_struct *tsk, const char *from)
 {
 	__set_task_comm(tsk, from, false);
-}
-
-
-static inline unsigned long wait_task_inactive(struct task_struct *p, unsigned int match_state)
-{
-	return 1;
 }
 
 static inline void set_tsk_thread_flag(struct task_struct *tsk, int flag)
@@ -820,18 +522,7 @@ static inline int test_tsk_need_resched(struct task_struct *tsk)
 
 extern int __cond_resched(void);
 
-
-static inline int _cond_resched(void)
-{
-	return __cond_resched();
-}
-
-
-
-#define cond_resched() ({			\
-	__might_resched(__FILE__, __LINE__, 0);	\
-	_cond_resched();			\
-})
+#define cond_resched() __cond_resched()
 
 
 static __always_inline bool need_resched(void)
@@ -845,44 +536,8 @@ static inline unsigned int task_cpu(const struct task_struct *p)
 	return 0;
 }
 
-extern long sched_setaffinity(pid_t pid, const struct cpumask *new_mask);
-extern long sched_getaffinity(pid_t pid, struct cpumask *mask);
-
-#ifndef TASK_SIZE_OF
-#define TASK_SIZE_OF(tsk)	TASK_SIZE
-#endif
-
-
-
-static inline void rseq_handle_notify_resume(struct ksignal *ksig,
-					     struct pt_regs *regs)
-{
-}
-static inline void rseq_signal_deliver(struct ksignal *ksig,
-				       struct pt_regs *regs)
-{
-}
-static inline void rseq_preempt(struct task_struct *t)
-{
-}
-static inline void rseq_migrate(struct task_struct *t)
-{
-}
-static inline void rseq_fork(struct task_struct *t, unsigned long clone_flags)
-{
-}
-static inline void rseq_execve(struct task_struct *t)
-{
-}
-
-
-
-static inline void rseq_syscall(struct pt_regs *regs)
-{
-}
-
-
-static inline void sched_core_free(struct task_struct *tsk) { }
-static inline void sched_core_fork(struct task_struct *p) { }
+/* sched_setaffinity extern removed - function replaced with COND_SYSCALL
+   rseq_execve, rseq_handle_notify_resume, rseq_signal_deliver, rseq_preempt, rseq_migrate,
+   rseq_fork, rseq_syscall, sched_core_free, sched_core_fork removed - unused */
 
 #endif

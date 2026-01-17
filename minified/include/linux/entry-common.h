@@ -4,7 +4,7 @@
 #include <linux/static_call_types.h>
 #include <linux/ptrace.h>
 #include <linux/syscalls.h>
-#include <linux/seccomp.h>
+/* seccomp.h removed - header is empty */
 #include <linux/sched.h>
 
 #include <asm/entry-common.h>
@@ -130,7 +130,6 @@ typedef struct irqentry_state {
 irqentry_state_t noinstr irqentry_enter(struct pt_regs *regs);
 
 void raw_irqentry_exit_cond_resched(void);
-#define irqentry_exit_cond_resched()	raw_irqentry_exit_cond_resched()
 
 void noinstr irqentry_exit(struct pt_regs *regs, irqentry_state_t state);
 

@@ -9,14 +9,12 @@
 #define DECLARE_BITMAP(name,bits) \
 	unsigned long name[BITS_TO_LONGS(bits)]
 
-typedef u32 __kernel_dev_t;
-
 typedef __kernel_fd_set		fd_set;
-typedef __kernel_dev_t		dev_t;
+typedef u32			dev_t;
 typedef __kernel_ulong_t	ino_t;
 typedef __kernel_mode_t		mode_t;
 typedef unsigned short		umode_t;
-typedef u32			nlink_t;
+/* nlink_t removed - unused */
 typedef __kernel_off_t		off_t;
 typedef __kernel_pid_t		pid_t;
 typedef __kernel_clockid_t	clockid_t;
@@ -47,14 +45,10 @@ typedef __kernel_ssize_t	ssize_t;
 typedef __kernel_ptrdiff_t	ptrdiff_t;
 #endif
 
-#ifndef _CLOCK_T
-#define _CLOCK_T
-typedef __kernel_clock_t	clock_t;
-#endif
+/* clock_t removed - unused */
 
 typedef unsigned short		ushort;
-typedef unsigned int		uint;
-typedef unsigned long		ulong;
+/* typedef uint, ulong removed - never used */
 
 #ifndef __BIT_TYPES_DEFINED__
 #define __BIT_TYPES_DEFINED__
@@ -70,12 +64,10 @@ typedef u64			uint64_t;
 typedef s64			int64_t;
 #endif
 
-#define aligned_u64		__aligned_u64
-#define aligned_be64		__aligned_be64
-#define aligned_le64		__aligned_le64
+/* aligned_u64/be64/le64 removed - unused */
 
 typedef u64 sector_t;
-typedef u64 blkcnt_t;
+/* blkcnt_t removed - unused */
 
 #define pgoff_t unsigned long
 
@@ -110,12 +102,7 @@ struct hlist_node {
 	struct hlist_node *next, **pprev;
 };
 
-struct ustat {
-	__kernel_daddr_t	f_tfree;
-	unsigned long		f_tinode;
-	char			f_fname[6];
-	char			f_fpack[6];
-};
+/* struct ustat removed - ustat syscall is COND_SYSCALL */
 
 struct callback_head {
 	struct callback_head *next;

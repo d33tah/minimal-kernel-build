@@ -1,12 +1,18 @@
 #include <linux/platform_device.h>
 #include <linux/mc146818rtc.h>
-#include <linux/acpi.h>
-#include <linux/bcd.h>
+/* Inlined from linux/bcd.h */
+#define bcd2bin(x) \
+	(__builtin_constant_p((u8)(x)) ? const_bcd2bin(x) : _bcd2bin(x))
+#define const_bcd2bin(x) (((x) & 0x0f) + ((x) >> 4) * 10)
+static unsigned _bcd2bin(unsigned char val)
+{
+	return (val & 0x0f) + (val >> 4) * 10;
+}
 #include <linux/export.h>
 
 #include <linux/of.h>
 
-#include <asm/vsyscall.h>
+/* asm/vsyscall.h removed - empty */
 #include <asm/x86_init.h>
 #include <asm/time.h>
 #include <asm/setup.h>
@@ -17,17 +23,15 @@ volatile unsigned long cmos_lock;
 
 DEFINE_SPINLOCK(rtc_lock);
 
-/* mach_set_rtc_mmss stubbed - x86_platform.set_wallclock is never called */
-int mach_set_rtc_mmss(const struct timespec64 *now) { return -EINVAL; }
+/* mach_set_rtc_mmss removed - x86_platform.set_wallclock never called */
 
 void mach_get_cmos_time(struct timespec64 *now)
 {
-	unsigned int status, year, mon, day, hour, min, sec, century = 0;
+	unsigned int status, year, mon, day, hour, min, sec;
 	unsigned long flags;
 
 	spin_lock_irqsave(&rtc_lock, flags);
 
-	 
 	while ((CMOS_READ(RTC_FREQ_SELECT) & RTC_UIP))
 		cpu_relax();
 
@@ -37,7 +41,6 @@ void mach_get_cmos_time(struct timespec64 *now)
 	day = CMOS_READ(RTC_DAY_OF_MONTH);
 	mon = CMOS_READ(RTC_MONTH);
 	year = CMOS_READ(RTC_YEAR);
-
 
 	status = CMOS_READ(RTC_CONTROL);
 	WARN_ON_ONCE(RTC_ALWAYS_BCD && (status & RTC_DM_BINARY));
@@ -53,11 +56,8 @@ void mach_get_cmos_time(struct timespec64 *now)
 		year = bcd2bin(year);
 	}
 
-	if (century) {
-		century = bcd2bin(century);
-		year += century * 100;
-	} else
-		year += CMOS_YEARS_OFFS;
+	/* century is always 0 - dead code removed */
+	year += CMOS_YEARS_OFFS;
 
 	now->tv_sec = mktime64(year, mon, day, hour, min, sec);
 	now->tv_nsec = 0;
@@ -75,19 +75,11 @@ unsigned char rtc_cmos_read(unsigned char addr)
 	return val;
 }
 
-/* rtc_cmos_write stubbed - mc146818_set_time (only caller) is now a stub */
-void rtc_cmos_write(unsigned char val, unsigned char addr) { }
-
+/* rtc_cmos_write removed - mc146818_set_time (only caller) is now a stub */
 
 void read_persistent_clock64(struct timespec64 *ts)
 {
 	x86_platform.get_wallclock(ts);
 }
 
-
-/* Stub: RTC platform device registration not needed for minimal kernel */
-static __init int add_rtc_cmos(void)
-{
-	return 0;
-}
-device_initcall(add_rtc_cmos);
+/* add_rtc_cmos removed - was empty stub initcall */

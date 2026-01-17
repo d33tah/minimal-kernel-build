@@ -21,12 +21,8 @@
 #define X86_TRAP_PF		14	 
 #define X86_TRAP_SPURIOUS	15	 
 #define X86_TRAP_MF		16	 
-#define X86_TRAP_AC		17	 
-#define X86_TRAP_MC		18	 
-#define X86_TRAP_XF		19	 
-#define X86_TRAP_VE		20	 
-#define X86_TRAP_CP		21	 
-#define X86_TRAP_VC		29	 
+#define X86_TRAP_AC		17
+#define X86_TRAP_XF		19
 #define X86_TRAP_IRET		32	 
 
 #endif

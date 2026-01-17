@@ -4,67 +4,27 @@
 
 #include <linux/lockdep_types.h>
 
-struct task_struct;
+/* lockdep_init_task, lock_acquire, lock_release, lockdep_init,
+   lockdep_init_map*, lockdep_set_class* all removed - no callers */
+/* lockdep_off, lockdep_on removed - no callers */
 
+/* lock_is_held, lockdep_is_held are never defined but used in
+   RCU_LOCKDEP_WARN conditions (which are no-ops but still need valid syntax) */
+#define lock_is_held(l)			(1)
+#define lockdep_is_held(l)		(1)
+/* lockdep_is_held_type removed - unused */
 
-static inline void lockdep_init_task(struct task_struct *task)
-{
-}
+/* lockdep_assert removed - unused */
 
-static inline void lockdep_off(void)
-{
-}
+/* lockdep_assert_held removed - no callers */
+/* lockdep_assert_not_held, lockdep_assert_held_write, lockdep_assert_held_read removed - unused */
 
-static inline void lockdep_on(void)
-{
-}
+/* lockdep_pin_lock/unpin_lock removed - no callers */
+/* lockdep_repin_lock removed - unused */
 
+/* STATIC_LOCKDEP_MAP_INIT removed - unused */
 
-# define lock_acquire(l, s, t, r, c, n, i)	do { } while (0)
-# define lock_release(l, i)			do { } while (0)
-# define lockdep_init()				do { } while (0)
-# define lockdep_init_map_type(lock, name, key, sub, inner, outer, type) \
-		do { (void)(name); (void)(key); } while (0)
-# define lockdep_init_map_waits(lock, name, key, sub, inner, outer) \
-		do { (void)(name); (void)(key); } while (0)
-# define lockdep_init_map_wait(lock, name, key, sub, inner) \
-		do { (void)(name); (void)(key); } while (0)
-# define lockdep_init_map(lock, name, key, sub) \
-		do { (void)(name); (void)(key); } while (0)
-# define lockdep_set_class(lock, key)		do { (void)(key); } while (0)
-# define lockdep_set_class_and_name(lock, key, name) \
-		do { (void)(key); (void)(name); } while (0)
-#define lockdep_set_subclass(lock, sub)		do { } while (0)
-
-#define lockdep_set_novalidate_class(lock) do { } while (0)
-
-
-# define lockdep_sys_exit() 			do { } while (0)
-
-extern int lock_is_held(const void *);
-extern int lockdep_is_held(const void *);
-#define lockdep_is_held_type(l, r)		(1)
-
-#define lockdep_assert(c)			do { } while (0)
-
-#define lockdep_assert_held(l)			do { (void)(l); } while (0)
-#define lockdep_assert_not_held(l)		do { (void)(l); } while (0)
-#define lockdep_assert_held_write(l)		do { (void)(l); } while (0)
-#define lockdep_assert_held_read(l)		do { (void)(l); } while (0)
-#define lockdep_assert_held_once(l)		do { (void)(l); } while (0)
-
-#define lockdep_pin_lock(l)			({ struct pin_cookie cookie = { }; cookie; })
-#define lockdep_repin_lock(l, c)		do { (void)(l); (void)(c); } while (0)
-#define lockdep_unpin_lock(l, c)		do { (void)(l); (void)(c); } while (0)
-
-#define STATIC_LOCKDEP_MAP_INIT(_name, _key) \
-	{ .name = (_name), .key = (void *)(_key), }
-
-static inline void lockdep_free_task(struct task_struct *task) {}
-
-
-#define lock_contended(lockdep_map, ip) do {} while (0)
-#define lock_acquired(lockdep_map, ip) do {} while (0)
+/* lock_contended/lock_acquired removed - no callers */
 
 #define LOCK_CONTENDED(_lock, try, lock) \
 	lock(_lock)
@@ -72,57 +32,9 @@ static inline void lockdep_free_task(struct task_struct *task) {}
 #define LOCK_CONTENDED_RETURN(_lock, try, lock) \
 	lock(_lock)
 
-
-
-#define read_lock_is_recursive() 0
-
 #define SINGLE_DEPTH_NESTING			1
 
-
-#define lock_acquire_exclusive(l, s, t, n, i)		lock_acquire(l, s, t, 0, 1, n, i)
-#define lock_acquire_shared(l, s, t, n, i)		lock_acquire(l, s, t, 1, 1, n, i)
-#define lock_acquire_shared_recursive(l, s, t, n, i)	lock_acquire(l, s, t, 2, 1, n, i)
-
-#define spin_acquire(l, s, t, i)		lock_acquire_exclusive(l, s, t, NULL, i)
-#define spin_acquire_nest(l, s, t, n, i)	lock_acquire_exclusive(l, s, t, n, i)
-#define spin_release(l, i)			lock_release(l, i)
-
-#define rwlock_acquire(l, s, t, i)		lock_acquire_exclusive(l, s, t, NULL, i)
-#define rwlock_acquire_read(l, s, t, i)					\
-do {									\
-	if (read_lock_is_recursive())					\
-		lock_acquire_shared_recursive(l, s, t, NULL, i);	\
-	else								\
-		lock_acquire_shared(l, s, t, NULL, i);			\
-} while (0)
-
-#define rwlock_release(l, i)			lock_release(l, i)
-
-#define seqcount_acquire(l, s, t, i)		lock_acquire_exclusive(l, s, t, NULL, i)
-#define seqcount_acquire_read(l, s, t, i)	lock_acquire_shared_recursive(l, s, t, NULL, i)
-#define seqcount_release(l, i)			lock_release(l, i)
-
-#define mutex_acquire(l, s, t, i)		lock_acquire_exclusive(l, s, t, NULL, i)
-#define mutex_acquire_nest(l, s, t, n, i)	lock_acquire_exclusive(l, s, t, n, i)
-#define mutex_release(l, i)			lock_release(l, i)
-
-#define rwsem_acquire(l, s, t, i)		lock_acquire_exclusive(l, s, t, NULL, i)
-#define rwsem_acquire_nest(l, s, t, n, i)	lock_acquire_exclusive(l, s, t, n, i)
-#define rwsem_acquire_read(l, s, t, i)		lock_acquire_shared(l, s, t, NULL, i)
-#define rwsem_release(l, i)			lock_release(l, i)
-
-#define lock_map_acquire(l)			lock_acquire_exclusive(l, 0, 0, NULL, _THIS_IP_)
-#define lock_map_acquire_read(l)		lock_acquire_shared_recursive(l, 0, 0, NULL, _THIS_IP_)
-#define lock_map_release(l)			lock_release(l, _THIS_IP_)
-
-# define might_lock(lock) do { } while (0)
-# define might_lock_read(lock) do { } while (0)
-# define might_lock_nested(lock, subclass) do { } while (0)
-
-# define lockdep_assert_irqs_enabled() do { } while (0)
-# define lockdep_assert_irqs_disabled() do { } while (0)
-
-# define lockdep_assert_preemption_enabled() do { } while (0)
-# define lockdep_assert_preemption_disabled() do { } while (0)
+/* lock_acquire_*, spin_acquire/release, seqcount_acquire/release,
+   mutex_acquire/release, rwsem_acquire/release all removed - no callers */
 
 #endif  

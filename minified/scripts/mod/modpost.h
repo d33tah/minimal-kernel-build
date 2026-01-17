@@ -12,9 +12,12 @@
 #include <elf.h>
 
 #include "list.h"
-#include "elfconfig.h"
 
- 
+#define KERNEL_ELFCLASS ELFCLASS32
+#define KERNEL_ELFDATA ELFDATA2LSB
+#define HOST_ELFCLASS ELFCLASS64
+#define HOST_ELFDATA ELFDATA2LSB
+
 #undef ELF_ST_BIND
 #undef ELF_ST_TYPE
 #undef ELF_R_SYM
@@ -152,26 +155,8 @@ struct elf_info {
 	Elf32_Word   *symtab_shndx_stop;
 };
 
-static inline int is_shndx_special(unsigned int i)
-{
-	return i != SHN_XINDEX && i >= SHN_LORESERVE && i <= SHN_HIRESERVE;
-}
+/* is_shndx_special, SPECIAL macro and get_secindex removed - never used */
 
- 
-#define SPECIAL(i) ((i) - (SHN_HIRESERVE + 1))
-
- 
-static inline unsigned int get_secindex(const struct elf_info *info,
-					const Elf_Sym *sym)
-{
-	if (is_shndx_special(sym->st_shndx))
-		return SPECIAL(sym->st_shndx);
-	if (sym->st_shndx != SHN_XINDEX)
-		return sym->st_shndx;
-	return info->symtab_shndx_start[sym - info->symtab_start];
-}
-
- 
 void handle_moddevtable(struct module *mod, struct elf_info *info,
 			Elf_Sym *sym, const char *symname);
 void add_moddevtable(struct buffer *buf, struct module *mod);

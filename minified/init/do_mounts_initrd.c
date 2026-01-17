@@ -1,4 +1,4 @@
-#include <linux/unistd.h>
+/* unistd.h removed - unused */
 #include <linux/kernel.h>
 #include <linux/fs.h>
 #include <linux/initrd.h>
@@ -11,9 +11,4 @@ int initrd_below_start_ok;
 phys_addr_t phys_initrd_start __initdata;
 unsigned long phys_initrd_size __initdata;
 
-
-bool __init initrd_load(void)
-{
-	 
-	return false;
-}
+/* initrd_load() removed - always returned false, call sites updated */

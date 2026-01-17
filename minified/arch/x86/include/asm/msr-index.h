@@ -7,39 +7,19 @@
 
 /* AMD64 MSRs */
 #define MSR_EFER		0xc0000080
-#define MSR_FS_BASE		0xc0000100
-#define MSR_GS_BASE		0xc0000101
-#define MSR_KERNEL_GS_BASE	0xc0000102
 
-/* EFER bits */
-#define _EFER_SCE		0
-#define _EFER_LME		8
-#define _EFER_LMA		10
+/* EFER bits - _EFER_SCE, _EFER_LME, _EFER_LMA, EFER_SCE, EFER_LME, EFER_LMA removed - never used */
 #define _EFER_NX		11
-/* _EFER_SVME, _EFER_LMSLE, _EFER_FFXSR - unused (SVM/AMD only) */
-
-#define EFER_SCE		(1<<_EFER_SCE)
-#define EFER_LME		(1<<_EFER_LME)
-#define EFER_LMA		(1<<_EFER_LMA)
 #define EFER_NX			(1<<_EFER_NX)
-/* EFER_SVME, EFER_LMSLE, EFER_FFXSR - unused (SVM/AMD only) */
 
-/* Speculation control MSRs */
-#define MSR_IA32_SPEC_CTRL		0x00000048
-#define SPEC_CTRL_IBRS			BIT(0)
-#define SPEC_CTRL_STIBP_SHIFT		1
-#define SPEC_CTRL_STIBP			BIT(SPEC_CTRL_STIBP_SHIFT)
+/* MSR_IA32_SPEC_CTRL, SPEC_CTRL_IBRS removed - never used */
 #define SPEC_CTRL_SSBD_SHIFT		2
 #define SPEC_CTRL_SSBD			BIT(SPEC_CTRL_SSBD_SHIFT)
-#define SPEC_CTRL_RRSBA_DIS_S_SHIFT	6
-#define SPEC_CTRL_RRSBA_DIS_S		BIT(SPEC_CTRL_RRSBA_DIS_S_SHIFT)
 
 #define MSR_IA32_PRED_CMD		0x00000049
 #define PRED_CMD_IBPB			BIT(0)
 
-/* L1D flush */
-#define MSR_IA32_FLUSH_CMD		0x0000010b
-#define L1D_FLUSH			BIT(0)
+/* MSR_IA32_FLUSH_CMD, L1D_FLUSH removed - never used */
 
 /* SYSENTER MSRs */
 #define MSR_IA32_SYSENTER_CS		0x00000174
@@ -48,32 +28,18 @@
 
 /* Debug control */
 #define MSR_IA32_DEBUGCTLMSR		0x000001d9
-#define DEBUGCTLMSR_LBR			(1UL <<  0)
 #define DEBUGCTLMSR_BTF_SHIFT		1
 #define DEBUGCTLMSR_BTF			(1UL <<  1)
 
-/* TSC adjust */
-#define MSR_IA32_TSC_ADJUST		0x0000003b
-
-/* Microcode revision */
-#define MSR_IA32_UCODE_REV		0x0000008b
-
 /* MISC_ENABLE */
 #define MSR_IA32_MISC_ENABLE		0x000001a0
-#define MSR_IA32_MISC_ENABLE_XD_DISABLE_BIT		34
-#define MSR_IA32_MISC_ENABLE_XD_DISABLE			(1ULL << MSR_IA32_MISC_ENABLE_XD_DISABLE_BIT)
 
 /* MISC_FEATURES_ENABLES */
 #define MSR_MISC_FEATURES_ENABLES	0x00000140
 #define MSR_MISC_FEATURES_ENABLES_CPUID_FAULT_BIT	0
 #define MSR_MISC_FEATURES_ENABLES_CPUID_FAULT		BIT_ULL(MSR_MISC_FEATURES_ENABLES_CPUID_FAULT_BIT)
 
-/* CET (Control-flow Enforcement Technology) */
-#define MSR_IA32_S_CET			0x000006a2
-#define CET_SHSTK_EN			BIT_ULL(0)
-/* CET_WRSS_EN - unused */
-#define CET_ENDBR_EN			BIT_ULL(2)
-/* CET_LEG_IW_EN through CET_WAIT_ENDBR - unused */
+/* CET (MSR_IA32_S_CET, CET_ENDBR_EN) removed - unused */
 
 /* AMD specific */
 #define MSR_AMD64_LS_CFG		0xc0011020

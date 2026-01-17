@@ -2,7 +2,6 @@
 #include <linux/kernel.h>
 #include <linux/errno.h>
 #include <linux/mm.h>
-#include <linux/nmi.h>
 #include <linux/swap.h>
 #include <linux/smp.h>
 #include <linux/highmem.h>
@@ -19,7 +18,6 @@
 
 unsigned int __VMALLOC_RESERVE = 128 << 20;
 
-  
 void set_pte_vaddr(unsigned long vaddr, pte_t pteval)
 {
 	pgd_t *pgd;
@@ -28,21 +26,10 @@ void set_pte_vaddr(unsigned long vaddr, pte_t pteval)
 	pmd_t *pmd;
 	pte_t *pte;
 
+	/* pgd_none/p4d_none/pud_none always return 0 - folded paging */
 	pgd = swapper_pg_dir + pgd_index(vaddr);
-	if (pgd_none(*pgd)) {
-		BUG();
-		return;
-	}
 	p4d = p4d_offset(pgd, vaddr);
-	if (p4d_none(*p4d)) {
-		BUG();
-		return;
-	}
 	pud = pud_offset(p4d, vaddr);
-	if (pud_none(*pud)) {
-		BUG();
-		return;
-	}
 	pmd = pmd_offset(pud, vaddr);
 	if (pmd_none(*pmd)) {
 		BUG();
@@ -54,9 +41,7 @@ void set_pte_vaddr(unsigned long vaddr, pte_t pteval)
 	else
 		pte_clear(&init_mm, vaddr, pte);
 
-	 
 	flush_tlb_one_kernel(vaddr);
 }
 
 unsigned long __FIXADDR_TOP = 0xfffff000;
-

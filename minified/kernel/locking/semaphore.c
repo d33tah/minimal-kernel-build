@@ -16,7 +16,6 @@ void down(struct semaphore *sem)
 {
 	unsigned long flags;
 
-	might_sleep();
 	raw_spin_lock_irqsave(&sem->lock, flags);
 	if (likely(sem->count > 0))
 		sem->count--;
@@ -24,7 +23,6 @@ void down(struct semaphore *sem)
 		__down(sem);
 	raw_spin_unlock_irqrestore(&sem->lock, flags);
 }
-
 
 int down_trylock(struct semaphore *sem)
 {
@@ -40,7 +38,6 @@ int down_trylock(struct semaphore *sem)
 	return (count < 0);
 }
 
-
 void up(struct semaphore *sem)
 {
 	unsigned long flags;
@@ -53,7 +50,6 @@ void up(struct semaphore *sem)
 	raw_spin_unlock_irqrestore(&sem->lock, flags);
 }
 
-
 struct semaphore_waiter {
 	struct list_head list;
 	struct task_struct *task;
@@ -61,7 +57,7 @@ struct semaphore_waiter {
 };
 
 static inline int __sched ___down_common(struct semaphore *sem, long state,
-								long timeout)
+					 long timeout)
 {
 	struct semaphore_waiter waiter;
 
@@ -82,36 +78,25 @@ static inline int __sched ___down_common(struct semaphore *sem, long state,
 			return 0;
 	}
 
- timed_out:
+timed_out:
 	list_del(&waiter.list);
 	return -ETIME;
 
- interrupted:
+interrupted:
 	list_del(&waiter.list);
 	return -EINTR;
 }
 
-static inline int __sched __down_common(struct semaphore *sem, long state,
-					long timeout)
-{
-	int ret;
-
-	 
-	ret = ___down_common(sem, state, timeout);
-	 
-
-	return ret;
-}
-
 static noinline void __sched __down(struct semaphore *sem)
 {
-	__down_common(sem, TASK_UNINTERRUPTIBLE, MAX_SCHEDULE_TIMEOUT);
+	/* __down_common inlined */
+	___down_common(sem, TASK_UNINTERRUPTIBLE, MAX_SCHEDULE_TIMEOUT);
 }
 
 static noinline void __sched __up(struct semaphore *sem)
 {
-	struct semaphore_waiter *waiter = list_first_entry(&sem->wait_list,
-						struct semaphore_waiter, list);
+	struct semaphore_waiter *waiter = list_first_entry(
+		&sem->wait_list, struct semaphore_waiter, list);
 	list_del(&waiter->list);
 	waiter->up = true;
 	wake_up_process(waiter->task);

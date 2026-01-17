@@ -9,18 +9,12 @@ struct open_how {
 	__u64 mode;
 	__u64 resolve;
 };
-#define RESOLVE_NO_XDEV		0x01
-#define RESOLVE_NO_MAGICLINKS	0x02
-#define RESOLVE_NO_SYMLINKS	0x04
-#define RESOLVE_BENEATH		0x08
-#define RESOLVE_IN_ROOT		0x10
-#define RESOLVE_CACHED		0x20
+/* RESOLVE_* macros removed - unused */
 
 /* Inlined from uapi/linux/fcntl.h */
 #define AT_FDCWD		-100
 #define AT_SYMLINK_NOFOLLOW	0x100
-#define AT_REMOVEDIR		0x200
-#define AT_NO_AUTOMOUNT		0x800
+/* AT_NO_AUTOMOUNT removed - unused */
 #define AT_EMPTY_PATH		0x1000
 
 #define VALID_OPEN_FLAGS \
@@ -29,16 +23,6 @@ struct open_how {
 	 FASYNC	| O_DIRECT | O_LARGEFILE | O_DIRECTORY | O_NOFOLLOW | \
 	 O_NOATIME | O_CLOEXEC | O_PATH | __O_TMPFILE)
 
-#define VALID_RESOLVE_FLAGS \
-	(RESOLVE_NO_XDEV | RESOLVE_NO_MAGICLINKS | RESOLVE_NO_SYMLINKS | \
-	 RESOLVE_BENEATH | RESOLVE_IN_ROOT | RESOLVE_CACHED)
-
-#define OPEN_HOW_SIZE_VER0	24  
-#define OPEN_HOW_SIZE_LATEST	OPEN_HOW_SIZE_VER0
-
-#ifndef force_o_largefile
-#define force_o_largefile() (!IS_ENABLED(CONFIG_ARCH_32BIT_OFF_T))
-#endif
-
+/* VALID_RESOLVE_FLAGS, OPEN_HOW_SIZE_* removed - unused */
 
 #endif

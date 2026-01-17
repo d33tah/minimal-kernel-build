@@ -16,9 +16,7 @@
 /* BITS_PER_LONG == 32 (i386) */
 #define _BITOPS_LONG_SHIFT 5
 
-#define BIT_64(n)			(U64_C(1) << (n))
 
- 
 
 #define RLONG_ADDR(x)			 "m" (*(volatile long *) (x))
 #define WBYTE_ADDR(x)			"+m" (*(volatile char *) (x))
@@ -188,24 +186,24 @@ static __always_inline unsigned long __fls(unsigned long word)
 
 #ifdef __KERNEL__
  
+/* CONFIG_X86_CMOV not set - using non-cmov versions */
 static __always_inline int ffs(int x)
 {
 	int r;
-
 	asm("bsfl %1,%0\n\t"
-	    "cmovzl %2,%0"
-	    : "=&r" (r) : "rm" (x), "r" (-1));
+	    "jnz 1f\n\t"
+	    "movl $-1,%0\n"
+	    "1:" : "=r" (r) : "rm" (x));
 	return r + 1;
 }
 
- 
 static __always_inline int fls(unsigned int x)
 {
 	int r;
-
 	asm("bsrl %1,%0\n\t"
-	    "cmovzl %2,%0"
-	    : "=&r" (r) : "rm" (x), "rm" (-1));
+	    "jnz 1f\n\t"
+	    "movl $-1,%0\n"
+	    "1:" : "=r" (r) : "rm" (x));
 	return r + 1;
 }
 

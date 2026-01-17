@@ -13,15 +13,6 @@ static inline void switch_to_extra(struct task_struct *prev,
 	unsigned long next_tif = read_task_thread_flags(next);
 	unsigned long prev_tif = read_task_thread_flags(prev);
 
-	if (IS_ENABLED(CONFIG_SMP)) {
-		 
-		if (!static_branch_likely(&switch_to_cond_stibp)) {
-			prev_tif &= ~_TIF_SPEC_IB;
-			next_tif &= ~_TIF_SPEC_IB;
-		}
-	}
-
-	 
 	if (unlikely(next_tif & _TIF_WORK_CTXSW_NEXT ||
 		     prev_tif & _TIF_WORK_CTXSW_PREV))
 		__switch_to_xtra(prev, next);

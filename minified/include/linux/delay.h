@@ -19,18 +19,11 @@ extern unsigned long loops_per_jiffy;
 	(__builtin_constant_p(n) && (n)<=MAX_UDELAY_MS) ? udelay((n)*1000) : \
 	({unsigned long __ms=(n); while (__ms--) udelay(1000);}))
 #endif
-
-#ifndef ndelay
-static inline void ndelay(unsigned long x)
-{
-	udelay(DIV_ROUND_UP(x, 1000));
-}
-#define ndelay(x) ndelay(x)
-#endif
+/* ndelay macro removed - never called */
 
 void calibrate_delay(void);
 void msleep(unsigned int msecs);
-unsigned long msleep_interruptible(unsigned int msecs);
+/* msleep_interruptible removed - never called */
 static inline void ssleep(unsigned int seconds)
 {
 	msleep(seconds * 1000);

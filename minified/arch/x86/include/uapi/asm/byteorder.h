@@ -67,42 +67,8 @@ static __always_inline __u16 __le16_to_cpup(const __le16 *p)
 {
 	return (__force __u16)*p;
 }
-static __always_inline __be64 __cpu_to_be64p(const __u64 *p)
-{
-	return (__force __be64)__swab64p(p);
-}
-static __always_inline __u64 __be64_to_cpup(const __be64 *p)
-{
-	return __swab64p((__u64 *)p);
-}
-static __always_inline __be32 __cpu_to_be32p(const __u32 *p)
-{
-	return (__force __be32)__swab32p(p);
-}
-static __always_inline __u32 __be32_to_cpup(const __be32 *p)
-{
-	return __swab32p((__u32 *)p);
-}
-static __always_inline __be16 __cpu_to_be16p(const __u16 *p)
-{
-	return (__force __be16)__swab16p(p);
-}
-static __always_inline __u16 __be16_to_cpup(const __be16 *p)
-{
-	return __swab16p((__u16 *)p);
-}
-#define __cpu_to_le64s(x) do { (void)(x); } while (0)
-#define __le64_to_cpus(x) do { (void)(x); } while (0)
-#define __cpu_to_le32s(x) do { (void)(x); } while (0)
-#define __le32_to_cpus(x) do { (void)(x); } while (0)
-#define __cpu_to_le16s(x) do { (void)(x); } while (0)
-#define __le16_to_cpus(x) do { (void)(x); } while (0)
-#define __cpu_to_be64s(x) __swab64s((x))
-#define __be64_to_cpus(x) __swab64s((x))
-#define __cpu_to_be32s(x) __swab32s((x))
-#define __be32_to_cpus(x) __swab32s((x))
-#define __cpu_to_be16s(x) __swab16s((x))
-#define __be16_to_cpus(x) __swab16s((x))
+/* be*p functions removed - unused */
+/* *s macros removed - unused */
 /* end little_endian.h */
 
 /* Inlined from linux/byteorder/generic.h */
@@ -124,24 +90,7 @@ static __always_inline __u16 __be16_to_cpup(const __be16 *p)
 #define le32_to_cpup __le32_to_cpup
 #define cpu_to_le16p __cpu_to_le16p
 #define le16_to_cpup __le16_to_cpup
-#define cpu_to_be64p __cpu_to_be64p
-#define be64_to_cpup __be64_to_cpup
-#define cpu_to_be32p __cpu_to_be32p
-#define be32_to_cpup __be32_to_cpup
-#define cpu_to_be16p __cpu_to_be16p
-#define be16_to_cpup __be16_to_cpup
-#define cpu_to_le64s __cpu_to_le64s
-#define le64_to_cpus __le64_to_cpus
-#define cpu_to_le32s __cpu_to_le32s
-#define le32_to_cpus __le32_to_cpus
-#define cpu_to_le16s __cpu_to_le16s
-#define le16_to_cpus __le16_to_cpus
-#define cpu_to_be64s __cpu_to_be64s
-#define be64_to_cpus __be64_to_cpus
-#define cpu_to_be32s __cpu_to_be32s
-#define be32_to_cpus __be32_to_cpus
-#define cpu_to_be16s __cpu_to_be16s
-#define be16_to_cpus __be16_to_cpus
+/* be*p, *s macros removed - unused */
 
 #undef ntohl
 #undef ntohs

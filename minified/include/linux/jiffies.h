@@ -40,16 +40,7 @@
 # error Invalid value of HZ.
 #endif
 
-#define SH_DIV(NOM,DEN,LSH) (   (((NOM) / (DEN)) << (LSH))              \
-                             + ((((NOM) % (DEN)) << (LSH)) + (DEN) / 2) / (DEN))
-
-#define LATCH ((CLOCK_TICK_RATE + HZ/2) / HZ)	 
-
 extern int register_refined_jiffies(long clock_tick_rate);
-
-#define TICK_USEC ((USEC_PER_SEC + HZ/2) / HZ)
-
-#define USER_TICK_USEC ((1000000UL + USER_HZ/2) / USER_HZ)
 
 #ifndef __jiffy_arch_data
 #define __jiffy_arch_data
@@ -73,33 +64,6 @@ u64 get_jiffies_64(void);
 	 ((long)((a) - (b)) >= 0))
 #define time_before_eq(a,b)	time_after_eq(b,a)
 
-
-#define time_after64(a,b)	\
-	(typecheck(__u64, a) &&	\
-	 typecheck(__u64, b) && \
-	 ((__s64)((b) - (a)) < 0))
-#define time_before64(a,b)	time_after64(b,a)
-
-#define time_after_eq64(a,b)	\
-	(typecheck(__u64, a) && \
-	 typecheck(__u64, b) && \
-	 ((__s64)((a) - (b)) >= 0))
-#define time_before_eq64(a,b)	time_after_eq64(b,a)
-
-
-
-#define time_is_before_jiffies(a) time_after(jiffies, a)
-#define time_is_before_jiffies64(a) time_after64(get_jiffies_64(), a)
-
-#define time_is_after_jiffies(a) time_before(jiffies, a)
-#define time_is_after_jiffies64(a) time_before64(get_jiffies_64(), a)
-
-#define time_is_before_eq_jiffies(a) time_after_eq(jiffies, a)
-#define time_is_before_eq_jiffies64(a) time_after_eq64(get_jiffies_64(), a)
-
-#define time_is_after_eq_jiffies(a) time_before_eq(jiffies, a)
-#define time_is_after_eq_jiffies64(a) time_before_eq64(get_jiffies_64(), a)
-
 #define INITIAL_JIFFIES ((unsigned long)(unsigned int) (-300*HZ))
 
 #define MAX_JIFFY_OFFSET ((LONG_MAX >> 1)-1)
@@ -108,47 +72,18 @@ extern unsigned long preset_lpj;
 
 
 
-#define SEC_JIFFIE_SC (31 - SHIFT_HZ)
-#if !((((NSEC_PER_SEC << 2) / TICK_NSEC) << (SEC_JIFFIE_SC - 2)) & 0x80000000)
-#undef SEC_JIFFIE_SC
-#define SEC_JIFFIE_SC (32 - SHIFT_HZ)
-#endif
-#define NSEC_JIFFIE_SC (SEC_JIFFIE_SC + 29)
-#define SEC_CONVERSION ((unsigned long)((((u64)NSEC_PER_SEC << SEC_JIFFIE_SC) +\
-                                TICK_NSEC -1) / (u64)TICK_NSEC))
-
-#define NSEC_CONVERSION ((unsigned long)((((u64)1 << NSEC_JIFFIE_SC) +\
-                                        TICK_NSEC -1) / (u64)TICK_NSEC))
-/* BITS_PER_LONG == 32 */
-#define MAX_SEC_IN_JIFFIES \
-	(long)((u64)((u64)MAX_JIFFY_OFFSET * TICK_NSEC) / NSEC_PER_SEC)
+/* SEC_JIFFIE_SC, NSEC_JIFFIE_SC, SEC_CONVERSION, NSEC_CONVERSION removed - unused */
 
 extern unsigned int jiffies_to_msecs(const unsigned long j);
-extern unsigned int jiffies_to_usecs(const unsigned long j);
+/* jiffies_to_usecs removed - never called */
 
 
 extern unsigned long __msecs_to_jiffies(const unsigned int m);
-#if HZ <= MSEC_PER_SEC && !(MSEC_PER_SEC % HZ)
+/* HZ=250, MSEC_PER_SEC=1000: HZ <= MSEC_PER_SEC && !(MSEC_PER_SEC % HZ) */
 static inline unsigned long _msecs_to_jiffies(const unsigned int m)
 {
 	return (m + (MSEC_PER_SEC / HZ) - 1) / (MSEC_PER_SEC / HZ);
 }
-#elif HZ > MSEC_PER_SEC && !(HZ % MSEC_PER_SEC)
-static inline unsigned long _msecs_to_jiffies(const unsigned int m)
-{
-	if (m > jiffies_to_msecs(MAX_JIFFY_OFFSET))
-		return MAX_JIFFY_OFFSET;
-	return m * (HZ / MSEC_PER_SEC);
-}
-#else
-static inline unsigned long _msecs_to_jiffies(const unsigned int m)
-{
-	if (HZ > MSEC_PER_SEC && m > jiffies_to_msecs(MAX_JIFFY_OFFSET))
-		return MAX_JIFFY_OFFSET;
-
-	return (MSEC_TO_HZ_MUL32 * m + MSEC_TO_HZ_ADJ32) >> MSEC_TO_HZ_SHR32;
-}
-#endif
 static __always_inline unsigned long msecs_to_jiffies(const unsigned int m)
 {
 	if (__builtin_constant_p(m)) {
@@ -160,35 +95,7 @@ static __always_inline unsigned long msecs_to_jiffies(const unsigned int m)
 	}
 }
 
-extern unsigned long __usecs_to_jiffies(const unsigned int u);
-#if !(USEC_PER_SEC % HZ)
-static inline unsigned long _usecs_to_jiffies(const unsigned int u)
-{
-	return (u + (USEC_PER_SEC / HZ) - 1) / (USEC_PER_SEC / HZ);
-}
-#else
-static inline unsigned long _usecs_to_jiffies(const unsigned int u)
-{
-	return (USEC_TO_HZ_MUL32 * u + USEC_TO_HZ_ADJ32)
-		>> USEC_TO_HZ_SHR32;
-}
-#endif
-
-static __always_inline unsigned long usecs_to_jiffies(const unsigned int u)
-{
-	if (__builtin_constant_p(u)) {
-		if (u > jiffies_to_usecs(MAX_JIFFY_OFFSET))
-			return MAX_JIFFY_OFFSET;
-		return _usecs_to_jiffies(u);
-	} else {
-		return __usecs_to_jiffies(u);
-	}
-}
-
-extern unsigned long timespec64_to_jiffies(const struct timespec64 *value);
-extern u64 nsecs_to_jiffies64(u64 n);
-extern unsigned long nsecs_to_jiffies(u64 n);
-
-#define TIMESTAMP_SIZE	30
+/* __usecs_to_jiffies, usecs_to_jiffies removed - never called */
+/* timespec64_to_jiffies, nsecs_to_jiffies64, nsecs_to_jiffies removed - never called */
 
 #endif

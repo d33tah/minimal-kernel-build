@@ -1,19 +1,15 @@
 # SPDX-License-Identifier: GPL-2.0-only
-#
-# File system configuration
-#
+# --- 2025-12-21 22:15 ---
+# Minimized - only essential fs configs
 
 menu "File systems"
 
-# Use unaligned word dcache accesses
 config DCACHE_WORD_ACCESS
        bool
 
 config VALIDATE_FS_PARSER
 	bool "Validate filesystem parameter description"
-	help
-	  Enable this to perform validation of the parameter description for a
-	  filesystem when it is registered.
+	default n
 
 config FS_IOMAP
 	bool
@@ -21,7 +17,6 @@ config FS_IOMAP
 if BLOCK
 
 config FS_MBCACHE
-# Meta block cache for Extended Attributes (ext2/ext3/ext4)
 	tristate
 	default y if EXT2_FS=y && EXT2_FS_XATTR
 	default y if EXT4_FS=y
@@ -29,76 +24,14 @@ config FS_MBCACHE
 
 endif # BLOCK
 
-config FS_DAX
-	bool "File system based Direct Access (DAX) support"
-	depends on MMU
-	depends on !(ARM || MIPS || SPARC)
-	depends on ZONE_DEVICE || FS_DAX_LIMITED
-	select FS_IOMAP
-	select DAX
-	help
-	  Direct Access (DAX) can be used on memory-backed block devices.
-	  If the block device supports DAX and the filesystem supports DAX,
-	  then you can avoid using the pagecache to buffer I/Os.  Turning
-	  on this option will compile in support for DAX.
-
-	  For a DAX device to support file system access it needs to have
-	  struct pages.  For the nfit based NVDIMMs this can be enabled
-	  using the ndctl utility:
-
-		# ndctl create-namespace --force --reconfig=namespace0.0 \
-			--mode=fsdax --map=mem
-
-	  See the 'create-namespace' man page for details on the overhead of
-	  --map=mem:
-	  https://docs.pmem.io/ndctl-user-guide/ndctl-man-pages/ndctl-create-namespace
-
-          For ndctl to work CONFIG_DEV_DAX needs to be enabled as well. For most
-	  file systems DAX support needs to be manually enabled globally or
-	  per-inode using a mount option as well.  See the file documentation in
-	  Documentation/filesystems/dax.rst for details.
-
-	  If you do not have a block device that is capable of using this,
-	  or if unsure, say N.  Saying Y will increase the size of the kernel
-	  by about 5kB.
-
-config FS_DAX_PMD
-	bool
-	default FS_DAX
-	depends on FS_DAX
-	depends on ZONE_DEVICE
-	depends on TRANSPARENT_HUGEPAGE
-
-# Selected by DAX drivers that do not expect filesystem DAX to support
-# get_user_pages() of DAX mappings. I.e. "limited" indicates no support
-# for fork() of processes with MAP_SHARED mappings or support for
-# direct-I/O to a DAX mapping.
-config FS_DAX_LIMITED
-	bool
-
-# Posix ACL utility routines
-#
-# Note: Posix ACLs can be implemented without these helpers.  Never use
-# this symbol for ifdefs in core code.
-#
 config FS_POSIX_ACL
 	def_bool n
 
 config EXPORTFS
 	tristate
 
-config EXPORTFS_BLOCK_OPS
-	bool "Enable filesystem export operations for block IO"
-	help
-	  This option enables the export operations for a filesystem to support
-	  external block IO.
-
 config FILE_LOCKING
 	bool "Enable POSIX file locking API" if EXPERT
 	default y
-	help
-	  This option enables standard file locking support, required
-          for filesystems like NFS and for the flock() system
-          call. Disabling this option saves about 11k.
 
 endmenu

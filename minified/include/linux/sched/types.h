@@ -3,18 +3,11 @@
 
 #include <linux/types.h>
 
-struct task_cputime {
-	u64				stime;
-	u64				utime;
-	unsigned long long		sum_exec_runtime;
-};
+/* struct task_cputime removed - never used */
 
 struct sched_param {
 	int sched_priority;
 };
-
-#define SCHED_ATTR_SIZE_VER0	48
-#define SCHED_ATTR_SIZE_VER1	56
 
 struct sched_attr {
 	__u32 size;

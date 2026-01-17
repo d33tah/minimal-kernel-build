@@ -2,10 +2,10 @@
 #include <linux/syscall_user_dispatch.h>
 
 /* Inlined from prctl.h */
-#define PR_SYS_DISPATCH_OFF		0
-#define PR_SYS_DISPATCH_ON		1
-#define SYSCALL_DISPATCH_FILTER_ALLOW	0
-#define SYSCALL_DISPATCH_FILTER_BLOCK	1
+#define PR_SYS_DISPATCH_OFF 0
+#define PR_SYS_DISPATCH_ON 1
+#define SYSCALL_DISPATCH_FILTER_ALLOW 0
+#define SYSCALL_DISPATCH_FILTER_BLOCK 1
 #include <linux/uaccess.h>
 #include <linux/signal.h>
 #include <linux/elf.h>
@@ -15,7 +15,7 @@
 
 #include <asm/syscall.h>
 
-#include "common.h"
+bool syscall_user_dispatch(struct pt_regs *regs);
 
 static void trigger_sigsys(struct pt_regs *regs)
 {
@@ -44,7 +44,6 @@ bool syscall_user_dispatch(struct pt_regs *regs)
 		return false;
 
 	if (likely(sd->selector)) {
-		 
 		if (unlikely(__get_user(state, sd->selector))) {
 			force_exit_sig(SIGSEGV);
 			return true;
@@ -66,36 +65,4 @@ bool syscall_user_dispatch(struct pt_regs *regs)
 	return true;
 }
 
-int set_syscall_user_dispatch(unsigned long mode, unsigned long offset,
-			      unsigned long len, char __user *selector)
-{
-	switch (mode) {
-	case PR_SYS_DISPATCH_OFF:
-		if (offset || len || selector)
-			return -EINVAL;
-		break;
-	case PR_SYS_DISPATCH_ON:
-		 
-		if (offset && offset + len <= offset)
-			return -EINVAL;
-
-		if (selector && !access_ok(selector, sizeof(*selector)))
-			return -EFAULT;
-
-		break;
-	default:
-		return -EINVAL;
-	}
-
-	current->syscall_dispatch.selector = selector;
-	current->syscall_dispatch.offset = offset;
-	current->syscall_dispatch.len = len;
-	current->syscall_dispatch.on_dispatch = false;
-
-	if (mode == PR_SYS_DISPATCH_ON)
-		set_syscall_work(SYSCALL_USER_DISPATCH);
-	else
-		clear_syscall_work(SYSCALL_USER_DISPATCH);
-
-	return 0;
-}
+/* set_syscall_user_dispatch removed - prctl PR_SET_SYSCALL_USER_DISPATCH returns -EINVAL */

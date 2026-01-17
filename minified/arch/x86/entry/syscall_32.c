@@ -5,7 +5,7 @@
 #include <linux/syscalls.h>
 #include <asm/syscall.h>
 
-#define __SYSCALL_WITH_COMPAT(nr, native, compat)	__SYSCALL(nr, native)
+#define __SYSCALL_WITH_COMPAT(nr, native, compat) __SYSCALL(nr, native)
 
 #define __SYSCALL(nr, sym) extern long __ia32_##sym(const struct pt_regs *);
 #include <asm/syscalls_32.h>

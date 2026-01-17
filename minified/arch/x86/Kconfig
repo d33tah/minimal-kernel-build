@@ -219,6 +219,7 @@ config X86
 	select HAVE_KERNEL_LZ4
 	select HAVE_KERNEL_LZMA
 	select HAVE_KERNEL_LZO
+	select HAVE_KERNEL_UNCOMPRESSED
 	select HAVE_KERNEL_XZ
 	select HAVE_KERNEL_ZSTD
 	select HAVE_KPROBES
@@ -303,6 +304,9 @@ config STACKTRACE_SUPPORT
 
 config MMU
 	def_bool y
+	help
+	  MMU support. Required for normal operation.
+	  EXPERIMENTAL: Can be disabled for x86 NOMMU mode with bump allocator.
 
 config ARCH_MMAP_RND_BITS_MIN
 	default 28 if 64BIT
@@ -1173,8 +1177,6 @@ config X86_MCE_INJECT
 	  Provide support for injecting machine checks for testing purposes.
 	  If you don't know what a machine check is and you don't do kernel
 	  QA it is safe to say n.
-
-source "arch/x86/events/Kconfig"
 
 config X86_LEGACY_VM86
 	bool "Legacy VM86 support"

@@ -14,13 +14,9 @@ extern unsigned int cached_irq_mask;
  
 #define PIC_MASTER_CMD		0x20
 #define PIC_MASTER_IMR		0x21
-#define PIC_MASTER_ISR		PIC_MASTER_CMD
-#define PIC_MASTER_POLL		PIC_MASTER_ISR
-#define PIC_MASTER_OCW3		PIC_MASTER_ISR
+/* PIC_MASTER_ISR removed - never used */
 #define PIC_SLAVE_CMD		0xa0
 #define PIC_SLAVE_IMR		0xa1
-#define PIC_ELCR1		0x4d0
-#define PIC_ELCR2		0x4d1
 
  
 #define PIC_CASCADE_IR		2
@@ -31,15 +27,6 @@ extern unsigned int cached_irq_mask;
 extern raw_spinlock_t i8259A_lock;
 
  
-static inline unsigned char inb_pic(unsigned int port)
-{
-	unsigned char value = inb(port);
-
-	 
-	udelay(2);
-
-	return value;
-}
 
 static inline void outb_pic(unsigned char value, unsigned int port)
 {

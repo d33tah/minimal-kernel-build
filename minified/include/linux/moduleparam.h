@@ -4,15 +4,10 @@
 #include <linux/stringify.h>
 #include <linux/kernel.h>
 
-#ifdef MODULE
-#define MODULE_PARAM_PREFIX  
-#define __MODULE_INFO_PREFIX  
-#else
 #define MODULE_PARAM_PREFIX KBUILD_MODNAME "."
 #define __MODULE_INFO_PREFIX KBUILD_MODNAME "."
-#endif
 
-#define MAX_PARAM_PREFIX_LEN (64 - sizeof(unsigned long))
+/* MAX_PARAM_PREFIX_LEN removed - unused */
 
 #define __MODULE_INFO(tag, name, info)					  \
 	static const char __UNIQUE_ID(name)[]				  \
@@ -21,9 +16,6 @@
 
 #define __MODULE_PARM_TYPE(name, _type)					  \
 	__MODULE_INFO(parmtype, name##type, #name ":" _type)
-
-#define MODULE_PARM_DESC(_parm, desc) \
-	__MODULE_INFO(parm, _parm, #_parm ":" desc)
 
 struct kernel_param;
 
@@ -87,34 +79,10 @@ extern const struct kernel_param __start___param[], __stop___param[];
 	__module_param_call(MODULE_PARAM_PREFIX, name, ops, arg, perm, -1,    \
 			    KERNEL_PARAM_FL_UNSAFE)
 
-#define __level_param_cb(name, ops, arg, perm, level)			\
-	__module_param_call(MODULE_PARAM_PREFIX, name, ops, arg, perm, level, 0)
-#define core_param_cb(name, ops, arg, perm)		\
-	__level_param_cb(name, ops, arg, perm, 1)
+/* __level_param_cb, core_param_cb, postcore_param_cb, arch_param_cb, subsys_param_cb, fs_param_cb, device_param_cb, late_param_cb removed - unused */
 
-#define postcore_param_cb(name, ops, arg, perm)		\
-	__level_param_cb(name, ops, arg, perm, 2)
-
-#define arch_param_cb(name, ops, arg, perm)		\
-	__level_param_cb(name, ops, arg, perm, 3)
-
-#define subsys_param_cb(name, ops, arg, perm)		\
-	__level_param_cb(name, ops, arg, perm, 4)
-
-#define fs_param_cb(name, ops, arg, perm)		\
-	__level_param_cb(name, ops, arg, perm, 5)
-
-#define device_param_cb(name, ops, arg, perm)		\
-	__level_param_cb(name, ops, arg, perm, 6)
-
-#define late_param_cb(name, ops, arg, perm)		\
-	__level_param_cb(name, ops, arg, perm, 7)
-
-#if defined(CONFIG_ALPHA) || defined(CONFIG_IA64) || defined(CONFIG_PPC64)
-#define __moduleparam_const
-#else
+/* x86 only - alpha/ia64/ppc64 version removed */
 #define __moduleparam_const const
-#endif
 
 #define __module_param_call(prefix, name, ops, arg, perm, level, flags)	\
 	 			\
@@ -131,32 +99,9 @@ extern const struct kernel_param __start___param[], __stop___param[];
 	__module_param_call(MODULE_PARAM_PREFIX,			\
 			    name, &__param_ops_##name, arg, perm, -1, 0)
 
-static inline void kernel_param_lock(struct module *mod)
-{
-}
-static inline void kernel_param_unlock(struct module *mod)
-{
-}
+/* kernel_param_lock/unlock, core_param, core_param_unsafe removed - empty/never used */  
 
-#ifndef MODULE
-#define core_param(name, var, type, perm)				\
-	param_check_##type(name, &(var));				\
-	__module_param_call("", name, &param_ops_##type, &var, perm, -1, 0)
-
-#define core_param_unsafe(name, var, type, perm)		\
-	param_check_##type(name, &(var));				\
-	__module_param_call("", name, &param_ops_##type, &var, perm,	\
-			    -1, KERNEL_PARAM_FL_UNSAFE)
-
-#endif  
-
-#define module_param_string(name, string, len, perm)			\
-	static const struct kparam_string __param_string_##name		\
-		= { len, string };					\
-	__module_param_call(MODULE_PARAM_PREFIX, name,			\
-			    &param_ops_string,				\
-			    .str = &__param_string_##name, perm, -1, 0);\
-	__MODULE_PARM_TYPE(name, "string")
+/* module_param_string removed - never called */
 
 extern bool parameq(const char *name1, const char *name2);
 
@@ -173,37 +118,9 @@ extern char *parse_args(const char *name,
 				     const char *doing, void *arg));
 
 
-#define __param_check(name, p, type) \
-	static inline type __always_unused *__check_##name(void) { return(p); }
+/* __param_check, param_check_int, param_check_uint, etc. removed - unused */
 
-#define param_check_byte(name, p) __param_check(name, p, unsigned char)
-#define param_check_short(name, p) __param_check(name, p, short)
-#define param_check_ushort(name, p) __param_check(name, p, unsigned short)
-
-extern const struct kernel_param_ops param_ops_int;
-extern int param_set_int(const char *val, const struct kernel_param *kp);
-extern int param_get_int(char *buffer, const struct kernel_param *kp);
-#define param_check_int(name, p) __param_check(name, p, int)
-
-extern const struct kernel_param_ops param_ops_uint;
-extern int param_set_uint(const char *val, const struct kernel_param *kp);
-extern int param_get_uint(char *buffer, const struct kernel_param *kp);
-#define param_check_uint(name, p) __param_check(name, p, unsigned int)
-
-#define param_check_long(name, p) __param_check(name, p, long)
-#define param_check_ulong(name, p) __param_check(name, p, unsigned long)
-#define param_check_ullong(name, p) __param_check(name, p, unsigned long long)
-#define param_check_hexint(name, p) param_check_uint(name, p)
-
-extern const struct kernel_param_ops param_ops_charp;
-extern int param_set_charp(const char *val, const struct kernel_param *kp);
-extern int param_get_charp(char *buffer, const struct kernel_param *kp);
-#define param_check_charp(name, p) __param_check(name, p, char *)
-
-extern const struct kernel_param_ops param_ops_bool;
-extern int param_set_bool(const char *val, const struct kernel_param *kp);
-extern int param_get_bool(char *buffer, const struct kernel_param *kp);
-#define param_check_bool(name, p) __param_check(name, p, bool)
+/* param_ops_charp, param_ops_bool removed - never used */
 
 
 struct module;

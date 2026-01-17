@@ -20,26 +20,15 @@
 
 /* Inlined from asm/pkru.h */
 #include <asm/cpufeature.h>
-#define PKRU_AD_BIT 0x1u
-#define PKRU_WD_BIT 0x2u
-#define PKRU_BITS_PER_PKEY 2
+/* PKRU_AD_BIT, PKRU_WD_BIT removed - never used */
 #define init_pkru_value	0
 #define pkru_get_init_value()	0
-static inline bool __pkru_allows_read(u32 pkru, u16 pkey) { int pkru_pkey_bits = pkey * PKRU_BITS_PER_PKEY; return !(pkru & (PKRU_AD_BIT << pkru_pkey_bits)); }
-static inline bool __pkru_allows_write(u32 pkru, u16 pkey) { int pkru_pkey_bits = pkey * PKRU_BITS_PER_PKEY; return !(pkru & ((PKRU_AD_BIT|PKRU_WD_BIT) << pkru_pkey_bits)); }
 static inline u32 read_pkru(void) { if (cpu_feature_enabled(X86_FEATURE_OSPKE)) return rdpkru(); return 0; }
 static inline void pkru_write_default(void) { if (!cpu_feature_enabled(X86_FEATURE_OSPKE)) return; wrpkru(pkru_get_init_value()); }
 /* End of pkru.h */
 /* --- 2025-12-07 20:42 --- Inlined coco.h */
 #include <asm/types.h>
-enum cc_vendor {
-	CC_VENDOR_NONE,
-	CC_VENDOR_AMD,
-	CC_VENDOR_HYPERV,
-	CC_VENDOR_INTEL,
-};
-void cc_set_vendor(enum cc_vendor v);
-void cc_set_mask(u64 mask);
+/* cc_vendor enum, cc_set_vendor, cc_set_mask removed - unused */
 static inline u64 cc_mkenc(u64 val)
 {
 	return val;
@@ -50,30 +39,15 @@ static inline u64 cc_mkdec(u64 val)
 }
 #include <linux/page_table_check.h>
 
-/* uffd stubs - only keep functions used in .c files and headers */
-static __always_inline pte_t pte_mkuffd_wp(pte_t pte) { return pte; }
-static __always_inline int pte_swp_uffd_wp(pte_t pte) { return 0; }
-static __always_inline pte_t pte_swp_clear_uffd_wp(pte_t pte) { return pte; }
-/* pte_uffd_wp, pmd_uffd_wp, pmd_mkuffd_wp, pte_clear_uffd_wp, pmd_clear_uffd_wp,
-   pte_swp_mkuffd_wp, pmd_swp_* removed - never called */
-
-extern pgd_t early_top_pgt[PTRS_PER_PGD];
-bool __init __early_make_pgtable(unsigned long address, pmdval_t pmd);
-
-void ptdump_walk_pgd_level(struct seq_file *m, struct mm_struct *mm);
-void ptdump_walk_pgd_level_debugfs(struct seq_file *m, struct mm_struct *mm,
-				   bool user);
-void ptdump_walk_pgd_level_checkwx(void);
-void ptdump_walk_user_pgd_level_checkwx(void);
+/* uffd stubs all removed - never called in any .c file */
+/* early_top_pgt removed - unused (only declaration, no usage in .c or .S) */
+/* __early_make_pgtable, ptdump_walk_* declarations removed - unused */
 
  
 #define pgprot_encrypted(prot)	__pgprot(cc_mkenc(pgprot_val(prot)))
 #define pgprot_decrypted(prot)	__pgprot(cc_mkdec(pgprot_val(prot)))
+/* debug_checkwx, debug_checkwx_user removed - no-op stubs never used */
 
-#define debug_checkwx()		do { } while (0)
-#define debug_checkwx_user()	do { } while (0)
-
- 
 extern unsigned long empty_zero_page[PAGE_SIZE / sizeof(unsigned long)]
 	__visible;
 #define ZERO_PAGE(vaddr) ((void)(vaddr),virt_to_page(empty_zero_page))
@@ -83,7 +57,7 @@ extern struct list_head pgd_list;
 
 extern struct mm_struct *pgd_page_get_mm(struct page *page);
 
-extern pmdval_t early_pmd_flags;
+/* early_pmd_flags removed - unused */
 
 #define set_pte(ptep, pte)		native_set_pte(ptep, pte)
 
@@ -92,25 +66,12 @@ extern pmdval_t early_pmd_flags;
 
 #define set_pmd(pmdp, pmd)		native_set_pmd(pmdp, pmd)
 
-#ifndef __PAGETABLE_P4D_FOLDED
-#define set_pgd(pgdp, pgd)		native_set_pgd(pgdp, pgd)
-#define pgd_clear(pgd)			(pgtable_l5_enabled() ? native_pgd_clear(pgd) : 0)
-#endif
-
 #ifndef set_p4d
 # define set_p4d(p4dp, p4d)		native_set_p4d(p4dp, p4d)
 #endif
 
-#ifndef __PAGETABLE_PUD_FOLDED
-#define p4d_clear(p4d)			native_p4d_clear(p4d)
-#endif
-
 #ifndef set_pud
 # define set_pud(pudp, pud)		native_set_pud(pudp, pud)
-#endif
-
-#ifndef __PAGETABLE_PUD_FOLDED
-#define pud_clear(pud)			native_pud_clear(pud)
 #endif
 
 #define pte_clear(mm, addr, ptep)	native_pte_clear(mm, addr, ptep)
@@ -118,21 +79,6 @@ extern pmdval_t early_pmd_flags;
 
 #define pgd_val(x)	native_pgd_val(x)
 #define __pgd(x)	native_make_pgd(x)
-
-#ifndef __PAGETABLE_P4D_FOLDED
-#define p4d_val(x)	native_p4d_val(x)
-#define __p4d(x)	native_make_p4d(x)
-#endif
-
-#ifndef __PAGETABLE_PUD_FOLDED
-#define pud_val(x)	native_pud_val(x)
-#define __pud(x)	native_make_pud(x)
-#endif
-
-#ifndef __PAGETABLE_PMD_FOLDED
-#define pmd_val(x)	native_pmd_val(x)
-#define __pmd(x)	native_make_pmd(x)
-#endif
 
 #define pte_val(x)	native_pte_val(x)
 #define __pte(x)	native_make_pte(x)
@@ -171,35 +117,23 @@ static inline int pte_special(pte_t pte)
 
  
 
-static inline u64 protnone_mask(u64 val);
+/* protnone_mask always returns 0 - forward decl removed */
 
 static inline unsigned long pte_pfn(pte_t pte)
 {
 	phys_addr_t pfn = pte_val(pte);
-	pfn ^= protnone_mask(pfn);
+	/* protnone_mask always returns 0 - xor removed */
 	return (pfn & PTE_PFN_MASK) >> PAGE_SHIFT;
 }
 
 static inline unsigned long pmd_pfn(pmd_t pmd)
 {
 	phys_addr_t pfn = pmd_val(pmd);
-	pfn ^= protnone_mask(pfn);
+	/* protnone_mask always returns 0 - xor removed */
 	return (pfn & pmd_pfn_mask(pmd)) >> PAGE_SHIFT;
 }
 
-static inline unsigned long pud_pfn(pud_t pud)
-{
-	phys_addr_t pfn = pud_val(pud);
-	pfn ^= protnone_mask(pfn);
-	return (pfn & pud_pfn_mask(pud)) >> PAGE_SHIFT;
-}
-
-/* p4d_pfn removed - unused */
-
-static inline unsigned long pgd_pfn(pgd_t pgd)
-{
-	return (pgd_val(pgd) & PTE_PFN_MASK) >> PAGE_SHIFT;
-}
+/* pud_pfn, p4d_pfn, pgd_pfn removed - unused */
 
 #define p4d_leaf	p4d_large
 static inline int p4d_large(p4d_t p4d)
@@ -232,22 +166,14 @@ static inline pte_t pte_clear_flags(pte_t pte, pteval_t clear)
 }
 
 
-static inline pte_t pte_mkclean(pte_t pte)
-{
-	return pte_clear_flags(pte, _PAGE_DIRTY);
-}
+/* pte_mkclean removed - unused */
 
 static inline pte_t pte_mkold(pte_t pte)
 {
 	return pte_clear_flags(pte, _PAGE_ACCESSED);
 }
 
-static inline pte_t pte_wrprotect(pte_t pte)
-{
-	return pte_clear_flags(pte, _PAGE_RW);
-}
-
-/* pte_mkexec removed - unused */
+/* pte_wrprotect, pte_mkexec removed - unused */
 
 static inline pte_t pte_mkdirty(pte_t pte)
 {
@@ -271,46 +197,10 @@ static inline pte_t pte_mkspecial(pte_t pte)
 	return pte_set_flags(pte, _PAGE_SPECIAL);
 }
 
-static inline pte_t pte_mkdevmap(pte_t pte)
-{
-	return pte_set_flags(pte, _PAGE_SPECIAL|_PAGE_DEVMAP);
-}
+/* pte_mkdevmap removed - pfn_t_devmap always returns false */
 
-static inline pmd_t pmd_set_flags(pmd_t pmd, pmdval_t set)
-{
-	pmdval_t v = native_pmd_val(pmd);
-
-	return native_make_pmd(v | set);
-}
-
-static inline pmd_t pmd_clear_flags(pmd_t pmd, pmdval_t clear)
-{
-	pmdval_t v = native_pmd_val(pmd);
-
-	return native_make_pmd(v & ~clear);
-}
-
-
-/* pmd_mkold, pmd_mkclean removed - unused */
-
-static inline pmd_t pmd_wrprotect(pmd_t pmd)
-{
-	return pmd_clear_flags(pmd, _PAGE_RW);
-}
-
-/* pmd_mkdirty removed - unused */
-
-static inline pmd_t pmd_mkdevmap(pmd_t pmd)
-{
-	return pmd_set_flags(pmd, _PAGE_DEVMAP);
-}
-
-/* pmd_mkhuge, pmd_mkyoung removed - unused */
-
-static inline pmd_t pmd_mkwrite(pmd_t pmd)
-{
-	return pmd_set_flags(pmd, _PAGE_RW);
-}
+/* pmd_set_flags, pmd_mkdevmap removed - never called */
+/* pmd_mkold, pmd_mkclean, pmd_wrprotect, pmd_mkdirty, pmd_mkhuge, pmd_mkyoung, pmd_mkwrite removed - unused */
 
 /* pud_set_flags, pud_clear_flags removed - unused */
 /* pud_mkold, pud_mkclean, pud_wrprotect, pud_mkdirty, pud_mkdevmap, pud_mkhuge, pud_mkyoung, pud_mkwrite removed - unused */
@@ -339,7 +229,7 @@ static inline pgprotval_t check_pgprot(pgprot_t pgprot)
 static inline pte_t pfn_pte(unsigned long page_nr, pgprot_t pgprot)
 {
 	phys_addr_t pfn = (phys_addr_t)page_nr << PAGE_SHIFT;
-	pfn ^= protnone_mask(pgprot_val(pgprot));
+	/* protnone_mask always returns 0 - xor removed */
 	pfn &= PTE_PFN_MASK;
 	return __pte(pfn | check_pgprot(pgprot));
 }
@@ -347,16 +237,12 @@ static inline pte_t pfn_pte(unsigned long page_nr, pgprot_t pgprot)
 static inline pmd_t pfn_pmd(unsigned long page_nr, pgprot_t pgprot)
 {
 	phys_addr_t pfn = (phys_addr_t)page_nr << PAGE_SHIFT;
-	pfn ^= protnone_mask(pgprot_val(pgprot));
+	/* protnone_mask always returns 0 - xor removed */
 	pfn &= PHYSICAL_PMD_PAGE_MASK;
 	return __pmd(pfn | check_pgprot(pgprot));
 }
 
-/* pfn_pud, pmd_mkinvalid removed - unused */
-
-static inline u64 flip_protnone_guard(u64 oldval, u64 val, u64 mask);
-
-/* pte_modify, pmd_modify removed - unused */
+/* pfn_pud, pmd_mkinvalid, flip_protnone_guard, pte_modify, pmd_modify removed - unused */
 
  
 #define pgprot_modify pgprot_modify
@@ -372,7 +258,7 @@ static inline pgprot_t pgprot_modify(pgprot_t oldprot, pgprot_t newprot)
 #define pud_pgprot(x) __pgprot(pud_flags(x))
 #define p4d_pgprot(x) __pgprot(p4d_flags(x))
 
-#define canon_pgprot(p) __pgprot(massage_pgprot(p))
+/* canon_pgprot removed - never called */
 
 static inline int is_new_memtype_allowed(u64 paddr, unsigned long size,
 					 enum page_cache_mode pcm,
@@ -478,123 +364,14 @@ static inline unsigned long pages_to_mb(unsigned long npg)
 	return npg >> (20 - PAGE_SHIFT);
 }
 
-#if CONFIG_PGTABLE_LEVELS > 2
-static inline int pud_none(pud_t pud)
-{
-	return (native_pud_val(pud) & ~(_PAGE_KNL_ERRATUM_MASK)) == 0;
-}
-
-static inline int pud_present(pud_t pud)
-{
-	return pud_flags(pud) & _PAGE_PRESENT;
-}
-
-static inline pmd_t *pud_pgtable(pud_t pud)
-{
-	return (pmd_t *)__va(pud_val(pud) & pud_pfn_mask(pud));
-}
-
- 
-#define pud_page(pud)	pfn_to_page(pud_pfn(pud))
-
-#define pud_leaf	pud_large
-static inline int pud_large(pud_t pud)
-{
-	return (pud_val(pud) & (_PAGE_PSE | _PAGE_PRESENT)) ==
-		(_PAGE_PSE | _PAGE_PRESENT);
-}
-
-static inline int pud_bad(pud_t pud)
-{
-	return (pud_flags(pud) & ~(_KERNPG_TABLE | _PAGE_USER)) != 0;
-}
-#else
+/* CONFIG_PGTABLE_LEVELS == 2, so only 2-level paging supported */
 #define pud_leaf	pud_large
 static inline int pud_large(pud_t pud)
 {
 	return 0;
 }
-#endif	 
 
-#if CONFIG_PGTABLE_LEVELS > 3
-static inline int p4d_none(p4d_t p4d)
-{
-	return (native_p4d_val(p4d) & ~(_PAGE_KNL_ERRATUM_MASK)) == 0;
-}
-
-static inline int p4d_present(p4d_t p4d)
-{
-	return p4d_flags(p4d) & _PAGE_PRESENT;
-}
-
-static inline pud_t *p4d_pgtable(p4d_t p4d)
-{
-	return (pud_t *)__va(p4d_val(p4d) & p4d_pfn_mask(p4d));
-}
-
- 
-#define p4d_page(p4d)	pfn_to_page(p4d_pfn(p4d))
-
-static inline int p4d_bad(p4d_t p4d)
-{
-	unsigned long ignore_flags = _KERNPG_TABLE | _PAGE_USER;
-
-	if (IS_ENABLED(CONFIG_PAGE_TABLE_ISOLATION))
-		ignore_flags |= _PAGE_NX;
-
-	return (p4d_flags(p4d) & ~ignore_flags) != 0;
-}
-#endif   
-
-/* p4d_index removed - unused */
-
-#if CONFIG_PGTABLE_LEVELS > 4
-static inline int pgd_present(pgd_t pgd)
-{
-	if (!pgtable_l5_enabled())
-		return 1;
-	return pgd_flags(pgd) & _PAGE_PRESENT;
-}
-
-static inline unsigned long pgd_page_vaddr(pgd_t pgd)
-{
-	return (unsigned long)__va((unsigned long)pgd_val(pgd) & PTE_PFN_MASK);
-}
-
- 
-#define pgd_page(pgd)	pfn_to_page(pgd_pfn(pgd))
-
- 
-static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
-{
-	if (!pgtable_l5_enabled())
-		return (p4d_t *)pgd;
-	return (p4d_t *)pgd_page_vaddr(*pgd) + p4d_index(address);
-}
-
-static inline int pgd_bad(pgd_t pgd)
-{
-	unsigned long ignore_flags = _PAGE_USER;
-
-	if (!pgtable_l5_enabled())
-		return 0;
-
-	if (IS_ENABLED(CONFIG_PAGE_TABLE_ISOLATION))
-		ignore_flags |= _PAGE_NX;
-
-	return (pgd_flags(pgd) & ~ignore_flags) != _KERNPG_TABLE;
-}
-
-static inline int pgd_none(pgd_t pgd)
-{
-	if (!pgtable_l5_enabled())
-		return 0;
-	 
-	return !native_pgd_val(pgd);
-}
-#endif	 
-
-#endif	 
+#endif 
 
 #define KERNEL_PGD_BOUNDARY	pgd_index(PAGE_OFFSET)
 #define KERNEL_PGD_PTRS		(PTRS_PER_PGD - KERNEL_PGD_BOUNDARY)
@@ -642,21 +419,9 @@ static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
 	set_pte(ptep, pte);
 }
 
-static inline void set_pmd_at(struct mm_struct *mm, unsigned long addr,
-			      pmd_t *pmdp, pmd_t pmd)
-{
-	page_table_check_pmd_set(mm, addr, pmdp, pmd);
-	set_pmd(pmdp, pmd);
-}
+/* set_pmd_at, set_pud_at removed - unused */
 
-static inline void set_pud_at(struct mm_struct *mm, unsigned long addr,
-			      pud_t *pudp, pud_t pud)
-{
-	page_table_check_pud_set(mm, addr, pudp, pud);
-	native_set_pud(pudp, pud);
-}
 
- 
 struct vm_area_struct;
 
 #define  __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS
@@ -681,29 +446,6 @@ static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
 	return pte;
 }
 
-#define __HAVE_ARCH_PTEP_GET_AND_CLEAR_FULL
-static inline pte_t ptep_get_and_clear_full(struct mm_struct *mm,
-					    unsigned long addr, pte_t *ptep,
-					    int full)
-{
-	pte_t pte;
-	if (full) {
-		 
-		pte = native_local_ptep_get_and_clear(ptep);
-		page_table_check_pte_clear(mm, addr, pte);
-	} else {
-		pte = ptep_get_and_clear(mm, addr, ptep);
-	}
-	return pte;
-}
-
-#define __HAVE_ARCH_PTEP_SET_WRPROTECT
-static inline void ptep_set_wrprotect(struct mm_struct *mm,
-				      unsigned long addr, pte_t *ptep)
-{
-	clear_bit(_PAGE_BIT_RW, (unsigned long *)&ptep->pte);
-}
-
 #define flush_tlb_fix_spurious_fault(vma, address) do { } while (0)
 
 #define mk_pmd(page, pgprot)   pfn_pmd(page_to_pfn(page), (pgprot))
@@ -712,40 +454,7 @@ static inline void ptep_set_wrprotect(struct mm_struct *mm,
    pudp_test_and_clear_young, pmdp_clear_flush_young removed - unused */
 
 
-#define pmd_write pmd_write
-static inline int pmd_write(pmd_t pmd)
-{
-	return pmd_flags(pmd) & _PAGE_RW;
-}
-
-#define __HAVE_ARCH_PMDP_HUGE_GET_AND_CLEAR
-static inline pmd_t pmdp_huge_get_and_clear(struct mm_struct *mm, unsigned long addr,
-				       pmd_t *pmdp)
-{
-	pmd_t pmd = native_pmdp_get_and_clear(pmdp);
-
-	page_table_check_pmd_clear(mm, addr, pmd);
-
-	return pmd;
-}
-
-#define __HAVE_ARCH_PUDP_HUGE_GET_AND_CLEAR
-static inline pud_t pudp_huge_get_and_clear(struct mm_struct *mm,
-					unsigned long addr, pud_t *pudp)
-{
-	pud_t pud = native_pudp_get_and_clear(pudp);
-
-	page_table_check_pud_clear(mm, addr, pud);
-
-	return pud;
-}
-
-#define __HAVE_ARCH_PMDP_SET_WRPROTECT
-static inline void pmdp_set_wrprotect(struct mm_struct *mm,
-				      unsigned long addr, pmd_t *pmdp)
-{
-	clear_bit(_PAGE_BIT_RW, (unsigned long *)pmdp);
-}
+/* pmd_write, pmdp_huge_get_and_clear, pudp_huge_get_and_clear, pmdp_set_wrprotect removed - unused */
 
 #define pud_write pud_write
 static inline int pud_write(pud_t pud)
@@ -753,21 +462,7 @@ static inline int pud_write(pud_t pud)
 	return pud_flags(pud) & _PAGE_RW;
 }
 
-#ifndef pmdp_establish
-#define pmdp_establish pmdp_establish
-static inline pmd_t pmdp_establish(struct vm_area_struct *vma,
-		unsigned long address, pmd_t *pmdp, pmd_t pmd)
-{
-	page_table_check_pmd_set(vma->vm_mm, address, pmdp, pmd);
-	if (IS_ENABLED(CONFIG_SMP)) {
-		return xchg(pmdp, pmd);
-	} else {
-		pmd_t old = *pmdp;
-		WRITE_ONCE(*pmdp, pmd);
-		return old;
-	}
-}
-#endif
+/* pmdp_establish removed - never called */
 
 /* pmdp_invalidate_ad, pgdp_maps_userspace, pgd_large removed - unused */
 
@@ -789,35 +484,17 @@ static inline void update_mmu_cache(struct vm_area_struct *vma,
 
 
 
-static inline u16 pte_flags_pkey(unsigned long pte_flags)
-{
-	return 0;
-}
-
-static inline bool __pkru_allows_pkey(u16 pkey, bool write)
-{
-	u32 pkru = read_pkru();
-
-	if (!__pkru_allows_read(pkru, pkey))
-		return false;
-	if (write && !__pkru_allows_write(pkru, pkey))
-		return false;
-
-	return true;
-}
+/* pte_flags_pkey, __pkru_allows_pkey removed - never called */
 
  
 static inline bool __pte_access_permitted(unsigned long pteval, bool write)
 {
-	unsigned long need_pte_bits = _PAGE_PRESENT|_PAGE_USER;
+	unsigned long need_pte_bits = _PAGE_PRESENT | _PAGE_USER;
 
 	if (write)
 		need_pte_bits |= _PAGE_RW;
-
-	if ((pteval & need_pte_bits) != need_pte_bits)
-		return 0;
-
-	return __pkru_allows_pkey(pte_flags_pkey(pteval), write);
+	/* __pkru_allows_pkey always returns true */
+	return (pteval & need_pte_bits) == need_pte_bits;
 }
 
 #define pte_access_permitted pte_access_permitted

@@ -5,28 +5,7 @@
 
 #include <linux/percpu-defs.h>
 #include <asm/processor.h>
-/* --- 2025-12-07 20:38 --- Inlined intel_ds.h */
-#define BTS_BUFFER_SIZE		(PAGE_SIZE << 4)
-#define PEBS_BUFFER_SIZE	(PAGE_SIZE << 4)
-#define MAX_PEBS_EVENTS_FMT4	8
-#define MAX_PEBS_EVENTS		32
-#define MAX_FIXED_PEBS_EVENTS	16
-struct debug_store {
-	u64	bts_buffer_base;
-	u64	bts_index;
-	u64	bts_absolute_maximum;
-	u64	bts_interrupt_threshold;
-	u64	pebs_buffer_base;
-	u64	pebs_index;
-	u64	pebs_absolute_maximum;
-	u64	pebs_interrupt_threshold;
-	u64	pebs_event_reset[MAX_PEBS_EVENTS + MAX_FIXED_PEBS_EVENTS];
-} __aligned(PAGE_SIZE);
-DECLARE_PER_CPU_PAGE_ALIGNED(struct debug_store, cpu_debug_store);
-struct debug_store_buffers {
-	char	bts_buffer[BTS_BUFFER_SIZE];
-	char	pebs_buffer[PEBS_BUFFER_SIZE];
-};
+/* CONFIG_PERF_EVENTS debug store structs removed - not set */
 #include <asm/pgtable_areas.h>
 
 
@@ -39,20 +18,14 @@ struct doublefault_stack {
 struct cpu_entry_area {
 	char gdt[PAGE_SIZE];
 
-	 
 	char guard_entry_stack[PAGE_SIZE];
 	struct entry_stack_page entry_stack_page;
 
 	char guard_doublefault_stack[PAGE_SIZE];
 	struct doublefault_stack doublefault_stack;
 
-	 
 	struct tss_struct tss;
-
-	 
-	struct debug_store cpu_debug_store;
-	 
-	struct debug_store_buffers cpu_debug_buffers;
+	/* CONFIG_PERF_EVENTS debug_store members removed - not set */
 };
 
 #define CPU_ENTRY_AREA_SIZE		(sizeof(struct cpu_entry_area))
@@ -62,7 +35,7 @@ struct cpu_entry_area {
 #define CPU_ENTRY_AREA_TOTAL_SIZE	(CPU_ENTRY_AREA_ARRAY_SIZE + PAGE_SIZE)
 
 DECLARE_PER_CPU(struct cpu_entry_area *, cpu_entry_area);
-DECLARE_PER_CPU(struct cea_exception_stacks *, cea_exception_stacks);
+/* cea_exception_stacks removed - never used */
 
 extern void setup_cpu_entry_areas(void);
 extern void cea_set_pte(void *cea_vaddr, phys_addr_t pa, pgprot_t flags);
@@ -74,10 +47,6 @@ static __always_inline struct entry_stack *cpu_entry_stack(int cpu)
 	return &get_cpu_entry_area(cpu)->entry_stack_page.stack;
 }
 
-#define __this_cpu_ist_top_va(name)					\
-	CEA_ESTACK_TOP(__this_cpu_read(cea_exception_stacks), name)
-
-#define __this_cpu_ist_bottom_va(name)					\
-	CEA_ESTACK_BOT(__this_cpu_read(cea_exception_stacks), name)
+/* __this_cpu_ist_top_va, __this_cpu_ist_bottom_va removed - never used */
 
 #endif

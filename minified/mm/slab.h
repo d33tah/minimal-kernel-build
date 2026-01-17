@@ -48,12 +48,8 @@ static_assert(sizeof(struct slab) <= sizeof(struct page));
 	const struct slab *:	(const struct folio *)s,		\
 	struct slab *:		(struct folio *)s))
 
- 
-#define page_slab(p)		(_Generic((p),				\
-	const struct page *:	(const struct slab *)(p),		\
-	struct page *:		(struct slab *)(p)))
+/* page_slab removed - unused */
 
- 
 #define slab_page(s) folio_page(slab_folio(s), 0)
 
  
@@ -67,12 +63,7 @@ static inline void slab_set_pfmemalloc(struct slab *slab)
 	folio_set_active(slab_folio(slab));
 }
 
-/* slab_clear_pfmemalloc removed - unused */
-
-static inline void __slab_clear_pfmemalloc(struct slab *slab)
-{
-	__folio_clear_active(slab_folio(slab));
-}
+/* slab_clear_pfmemalloc, __slab_clear_pfmemalloc removed - unused */
 
 static inline void *slab_address(const struct slab *slab)
 {
@@ -89,29 +80,10 @@ static inline pg_data_t *slab_pgdat(const struct slab *slab)
 	return folio_pgdat(slab_folio(slab));
 }
 
-static inline struct slab *virt_to_slab(const void *addr)
-{
-	struct folio *folio = virt_to_folio(addr);
-
-	if (!folio_test_slab(folio))
-		return NULL;
-
-	return folio_slab(folio);
-}
-
-static inline int slab_order(const struct slab *slab)
-{
-	return folio_order((struct folio *)slab_folio(slab));
-}
-
-static inline size_t slab_size(const struct slab *slab)
-{
-	return PAGE_SIZE << slab_order(slab);
-}
+/* virt_to_slab, slab_order, slab_size removed - unused */
 
 
 
-#include <linux/kfence.h>
 #include <linux/kobject.h>
 #include <linux/reciprocal_div.h>
 #include <linux/local_lock.h>
@@ -153,8 +125,7 @@ struct kmem_cache_cpu {
 };
 
 #define slub_percpu_partial(c)			NULL
-#define slub_set_percpu_partial(c, p)
-#define slub_percpu_partial_read_once(c)	NULL
+/* slub_set_percpu_partial and slub_percpu_partial_read_once removed - unused */
 
 struct kmem_cache_order_objects {
 	unsigned int x;
@@ -187,45 +158,12 @@ struct kmem_cache {
 
 void *fixup_red_left(struct kmem_cache *s, void *p);
 
-static inline void *nearest_obj(struct kmem_cache *cache, const struct slab *slab,
-				void *x) {
-	void *object = x - (x - slab_address(slab)) % cache->size;
-	void *last_object = slab_address(slab) +
-		(slab->objects - 1) * cache->size;
-	void *result = (unlikely(object > last_object)) ? last_object : object;
-
-	result = fixup_red_left(cache, result);
-	return result;
-}
-
-static inline unsigned int __obj_to_index(const struct kmem_cache *cache,
-					  void *addr, void *obj)
-{
-	return reciprocal_divide(kasan_reset_tag(obj) - addr,
-				 cache->reciprocal_size);
-}
-
-static inline unsigned int obj_to_index(const struct kmem_cache *cache,
-					const struct slab *slab, void *obj)
-{
-	if (is_kfence_address(obj))
-		return 0;
-	return __obj_to_index(cache, slab_address(slab), obj);
-}
-
-static inline int objs_per_slab(const struct kmem_cache *cache,
-				     const struct slab *slab)
-{
-	return slab->objects;
-}
+/* nearest_obj, __obj_to_index, obj_to_index, objs_per_slab removed - unused */
 
 #include <linux/memcontrol.h>
-int should_failslab(struct kmem_cache *s, gfp_t gfpflags);
-static inline bool __should_failslab(struct kmem_cache *s, gfp_t gfpflags)
-{ return false; }
+/* should_failslab, __should_failslab removed - always returns false */
 /* end fault-inject.h */
-#include <linux/kasan.h>
-#include <linux/kmemleak.h>
+/* kmemleak_alloc_recursive removed - unused */
 #include <linux/random.h>
 #include <linux/sched/mm.h>
 #include <linux/list_lru.h>
@@ -312,31 +250,8 @@ slab_flags_t kmem_cache_flags(unsigned int object_size,
 			      SLAB_ACCOUNT | \
 			      SLAB_NO_USER_FLAGS)
 
-bool __kmem_cache_empty(struct kmem_cache *);
 int __kmem_cache_shutdown(struct kmem_cache *);
 void __kmem_cache_release(struct kmem_cache *);
-int __kmem_cache_shrink(struct kmem_cache *);
-void slab_kmem_cache_release(struct kmem_cache *);
-
-struct seq_file;
-struct file;
-
-struct slabinfo {
-	unsigned long active_objs;
-	unsigned long num_objs;
-	unsigned long active_slabs;
-	unsigned long num_slabs;
-	unsigned long shared_avail;
-	unsigned int limit;
-	unsigned int batchcount;
-	unsigned int shared;
-	unsigned int objects_per_slab;
-	unsigned int cache_order;
-};
-
-/* get_slabinfo, slabinfo_show_stats, slabinfo_write removed - never called/defined */
-
-/* __kmem_cache_free_bulk, __kmem_cache_alloc_bulk removed - never called */
 
 static inline enum node_stat_item cache_vmstat_idx(struct kmem_cache *s)
 {
@@ -344,103 +259,20 @@ static inline enum node_stat_item cache_vmstat_idx(struct kmem_cache *s)
 		NR_SLAB_RECLAIMABLE_B : NR_SLAB_UNRECLAIMABLE_B;
 }
 
-static inline void print_tracking(struct kmem_cache *s, void *object)
-{
-}
-static inline bool __slub_debug_enabled(void)
-{
-	return false;
-}
+/* print_tracking, __slub_debug_enabled, kmem_cache_debug_flags,
+   slab_objcgs, memcg_from_slab_obj, memcg_alloc_slab_cgroups, memcg_free_slab_cgroups removed - unused */
 
- 
-static inline bool kmem_cache_debug_flags(struct kmem_cache *s, slab_flags_t flags)
-{
-	if (IS_ENABLED(CONFIG_SLUB_DEBUG))
-		VM_WARN_ON_ONCE(!(flags & SLAB_DEBUG_FLAGS));
-	if (__slub_debug_enabled())
-		return s->flags & flags;
-	return false;
-}
-
-/* slab_objcgs, memcg_from_slab_obj removed - unused */
-
-static inline int memcg_alloc_slab_cgroups(struct slab *slab,
-					       struct kmem_cache *s, gfp_t gfp,
-					       bool new_slab)
-{
-	return 0;
-}
-
-static inline void memcg_free_slab_cgroups(struct slab *slab)
-{
-}
-
-static inline bool memcg_slab_pre_alloc_hook(struct kmem_cache *s,
-					     struct list_lru *lru,
-					     struct obj_cgroup **objcgp,
-					     size_t objects, gfp_t flags)
-{
-	return true;
-}
-
-static inline void memcg_slab_post_alloc_hook(struct kmem_cache *s,
-					      struct obj_cgroup *objcg,
-					      gfp_t flags, size_t size,
-					      void **p)
-{
-}
-
-static inline void memcg_slab_free_hook(struct kmem_cache *s,
-					void **p, int objects)
-{
-}
-
-static inline struct kmem_cache *virt_to_cache(const void *obj)
-{
-	struct slab *slab;
-
-	slab = virt_to_slab(obj);
-	if (WARN_ONCE(!slab, "%s: Object is not a Slab page!\n",
-					__func__))
-		return NULL;
-	return slab->slab_cache;
-}
+/* memcg_slab_pre_alloc_hook, memcg_slab_post_alloc_hook, memcg_slab_free_hook, virt_to_cache removed - unused */
 
 static __always_inline void account_slab(struct slab *slab, int order,
 					 struct kmem_cache *s, gfp_t gfp)
 {
-	if (memcg_kmem_enabled() && (s->flags & SLAB_ACCOUNT))
-		memcg_alloc_slab_cgroups(slab, s, gfp, true);
-
+	/* memcg_kmem_enabled always returns false */
 	mod_node_page_state(slab_pgdat(slab), cache_vmstat_idx(s),
 			    PAGE_SIZE << order);
 }
 
-static __always_inline void unaccount_slab(struct slab *slab, int order,
-					   struct kmem_cache *s)
-{
-	if (memcg_kmem_enabled())
-		memcg_free_slab_cgroups(slab);
-
-	mod_node_page_state(slab_pgdat(slab), cache_vmstat_idx(s),
-			    -(PAGE_SIZE << order));
-}
-
-static inline struct kmem_cache *cache_from_obj(struct kmem_cache *s, void *x)
-{
-	struct kmem_cache *cachep;
-
-	if (!IS_ENABLED(CONFIG_SLAB_FREELIST_HARDENED) &&
-	    !kmem_cache_debug_flags(s, SLAB_CONSISTENCY_CHECKS))
-		return s;
-
-	cachep = virt_to_cache(x);
-	if (WARN(cachep && cachep != s,
-		  "%s: Wrong slab cache. %s but object is from %s\n",
-		  __func__, s->name, cachep->name))
-		print_tracking(cachep, x);
-	return cachep;
-}
+/* unaccount_slab, cache_from_obj removed - unused */
 
 static inline size_t slab_ksize(const struct kmem_cache *s)
 {
@@ -462,11 +294,7 @@ static inline struct kmem_cache *slab_pre_alloc_hook(struct kmem_cache *s,
 
 	might_alloc(flags);
 
-	if (should_failslab(s, flags))
-		return NULL;
-
-	if (!memcg_slab_pre_alloc_hook(s, lru, objcgp, size, flags))
-		return NULL;
+	/* should_failslab, memcg_slab_pre_alloc_hook always return 0/true - checks removed */
 
 	return s;
 }
@@ -480,15 +308,11 @@ static inline void slab_post_alloc_hook(struct kmem_cache *s,
 	flags &= gfp_allowed_mask;
 
 	 
+	/* kasan_slab_alloc just returns object, kasan_has_integrated_init=false */
 	for (i = 0; i < size; i++) {
-		p[i] = kasan_slab_alloc(s, p[i], flags, init);
-		if (p[i] && init && !kasan_has_integrated_init())
+		if (p[i] && init)
 			memset(p[i], 0, s->object_size);
-		kmemleak_alloc_recursive(p[i], s->object_size, 1,
-					 s->flags, flags);
 	}
-
-	memcg_slab_post_alloc_hook(s, objcg, flags, size, p);
 }
 
  
@@ -512,16 +336,9 @@ static inline struct kmem_cache_node *get_node(struct kmem_cache *s, int node)
 		 if ((__n = get_node(__s, __node)))
 
 
-/* dump_unreclaimable_slab removed - unused */
+/* dump_unreclaimable_slab, ___cache_free removed - unused */
 
-void ___cache_free(struct kmem_cache *cache, void *x, unsigned long addr);
-
-static inline int cache_random_seq_create(struct kmem_cache *cachep,
-					unsigned int count, gfp_t gfp)
-{
-	return 0;
-}
-static inline void cache_random_seq_destroy(struct kmem_cache *cachep) { }
+/* cache_random_seq_create, cache_random_seq_destroy removed - unused */
 
 static inline bool slab_want_init_on_alloc(gfp_t flags, struct kmem_cache *c)
 {
@@ -545,10 +362,6 @@ static inline bool slab_want_init_on_free(struct kmem_cache *c)
 	return false;
 }
 
-static inline void debugfs_slab_release(struct kmem_cache *s) { }
-
-
-void __check_heap_object(const void *ptr, unsigned long n,
-			 const struct slab *slab, bool to_user);
+/* debugfs_slab_release, __check_heap_object removed - unused */
 
 #endif  

@@ -16,14 +16,13 @@ static int has_fpu(void)
 	u16 fcw = -1, fsw = -1;
 	unsigned long cr0;
 
-	asm volatile("mov %%cr0,%0" : "=r" (cr0));
-	if (cr0 & (X86_CR0_EM|X86_CR0_TS)) {
-		cr0 &= ~(X86_CR0_EM|X86_CR0_TS);
-		asm volatile("mov %0,%%cr0" : : "r" (cr0));
+	asm volatile("mov %%cr0,%0" : "=r"(cr0));
+	if (cr0 & (X86_CR0_EM | X86_CR0_TS)) {
+		cr0 &= ~(X86_CR0_EM | X86_CR0_TS);
+		asm volatile("mov %0,%%cr0" : : "r"(cr0));
 	}
 
-	asm volatile("fninit ; fnstsw %0 ; fnstcw %1"
-		     : "+m" (fsw), "+m" (fcw));
+	asm volatile("fninit ; fnstsw %0 ; fnstcw %1" : "+m"(fsw), "+m"(fcw));
 
 	return fsw == 0 && (fcw & 0x103f) == 0x003f;
 }
@@ -36,26 +35,22 @@ int has_eflag(unsigned long mask)
 {
 	unsigned long f0, f1;
 
-	asm volatile(PUSHF "	\n\t"
-		     PUSHF "	\n\t"
-		     "pop %0	\n\t"
-		     "mov %0,%1	\n\t"
-		     "xor %2,%1	\n\t"
-		     "push %1	\n\t"
-		     POPF "	\n\t"
-		     PUSHF "	\n\t"
-		     "pop %1	\n\t"
-		     POPF
-		     : "=&r" (f0), "=&r" (f1)
-		     : "ri" (mask));
+	asm volatile(PUSHF "	\n\t" PUSHF "	\n\t"
+			   "pop %0	\n\t"
+			   "mov %0,%1	\n\t"
+			   "xor %2,%1	\n\t"
+			   "push %1	\n\t" POPF "	\n\t" PUSHF "	\n\t"
+			   "pop %1	\n\t" POPF
+		     : "=&r"(f0), "=&r"(f1)
+		     : "ri"(mask));
 
-	return !!((f0^f1) & mask);
+	return !!((f0 ^ f1) & mask);
 }
 
 #if defined(__i386__) && defined(__PIC__)
-# define EBX_REG "=r"
+#define EBX_REG "=r"
 #else
-# define EBX_REG "=b"
+#define EBX_REG "=b"
 #endif
 
 void cpuid_count(u32 id, u32 count, u32 *a, u32 *b, u32 *c, u32 *d)
@@ -63,9 +58,8 @@ void cpuid_count(u32 id, u32 count, u32 *a, u32 *b, u32 *c, u32 *d)
 	asm volatile(".ifnc %%ebx,%3 ; movl  %%ebx,%3 ; .endif	\n\t"
 		     "cpuid					\n\t"
 		     ".ifnc %%ebx,%3 ; xchgl %%ebx,%3 ; .endif	\n\t"
-		    : "=a" (*a), "=c" (*c), "=d" (*d), EBX_REG (*b)
-		    : "a" (id), "c" (count)
-	);
+		     : "=a"(*a), "=c"(*c), "=d"(*d), EBX_REG(*b)
+		     : "a"(id), "c"(count));
 }
 
 #define cpuid(id, a, b, c, d) cpuid_count(id, 0, a, b, c, d)
@@ -100,11 +94,10 @@ void get_cpuflags(void)
 
 		if (max_intel_level >= 0x00000007) {
 			cpuid_count(0x00000007, 0, &ignored, &ignored,
-					&cpu.flags[16], &ignored);
+				    &cpu.flags[16], &ignored);
 		}
 
-		cpuid(0x80000000, &max_amd_level, &ignored, &ignored,
-		      &ignored);
+		cpuid(0x80000000, &max_amd_level, &ignored, &ignored, &ignored);
 
 		if (max_amd_level >= 0x80000001 &&
 		    max_amd_level <= 0x8000ffff) {

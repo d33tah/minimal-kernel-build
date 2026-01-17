@@ -8,14 +8,7 @@
 
 typedef int (*cpu_stop_fn_t)(void *arg);
 
-
-#include <linux/workqueue.h>
-
-struct cpu_stop_work {
-	struct work_struct	work;
-	cpu_stop_fn_t		fn;
-	void			*arg;
-};
+/* cpu_stop_work struct removed - never used */
 
 static __always_inline int stop_machine_cpuslocked(cpu_stop_fn_t fn, void *data,
 					  const struct cpumask *cpus)

@@ -11,7 +11,6 @@
 #include <linux/err.h>
 
 #define UID_GID_MAP_MAX_BASE_EXTENTS 5
-#define UID_GID_MAP_MAX_EXTENTS 340
 
 struct uid_gid_extent {
 	u32 first;
@@ -85,8 +84,7 @@ struct ucounts {
 extern struct user_namespace init_user_ns;
 extern struct ucounts init_ucounts;
 
-bool setup_userns_sysctls(struct user_namespace *ns);
-void retire_userns_sysctls(struct user_namespace *ns);
+/* setup_userns_sysctls and retire_userns_sysctls removed - no callers */
 struct ucounts *inc_ucount(struct user_namespace *ns, kuid_t uid, enum ucount_type type);
 void dec_ucount(struct ucounts *ucounts, enum ucount_type type);
 struct ucounts *alloc_ucounts(struct user_namespace *ns, kuid_t uid);
@@ -116,10 +114,7 @@ static inline struct user_namespace *get_user_ns(struct user_namespace *ns)
 	return &init_user_ns;
 }
 
-static inline int create_user_ns(struct cred *new)
-{
-	return -EINVAL;
-}
+/* create_user_ns removed - CLONE_NEWUSER never used */
 
 static inline void put_user_ns(struct user_namespace *ns)
 {

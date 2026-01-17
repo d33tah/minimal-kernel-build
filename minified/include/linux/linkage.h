@@ -10,14 +10,10 @@
 #define ASM_NL		 ;
 #endif
 
-#ifdef __cplusplus
-#define CPP_ASMLINKAGE extern "C"
-#else
 #define CPP_ASMLINKAGE
-#endif
 
 #ifndef asmlinkage
-#define asmlinkage CPP_ASMLINKAGE
+#define asmlinkage
 #endif
 
 #ifndef cond_syscall
@@ -34,7 +30,7 @@
 		  __stringify(name))
 #endif
 
-#define __page_aligned_data	__section(".data..page_aligned") __aligned(PAGE_SIZE)
+/* __page_aligned_data removed - never used */
 #define __page_aligned_bss	__section(".bss..page_aligned") __aligned(PAGE_SIZE)
 
 #define __PAGE_ALIGNED_DATA	.section ".data..page_aligned", "aw"
@@ -47,8 +43,7 @@
 #endif
 
 #ifndef __ALIGN
-#define __ALIGN		.align 4,0x90
-#define __ALIGN_STR	".align 4,0x90"
+#define __ALIGN .align 4, 0x90
 #endif
 
 #ifdef __ASSEMBLY__
@@ -74,9 +69,6 @@
 
 #ifndef LINKER_SCRIPT
 #define ALIGN __ALIGN
-#define ALIGN_STR __ALIGN_STR
-
-
 #endif  
 
 

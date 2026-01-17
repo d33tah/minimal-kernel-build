@@ -22,10 +22,7 @@ static inline void __invpcid(unsigned long pcid, unsigned long addr, unsigned lo
 #define INVPCID_TYPE_ALL_INCL_GLOBAL	2
 #define INVPCID_TYPE_ALL_NON_GLOBAL	3
 static inline void invpcid_flush_one(unsigned long pcid, unsigned long addr) { __invpcid(pcid, addr, INVPCID_TYPE_INDIV_ADDR); }
-static inline void invpcid_flush_single_context(unsigned long pcid) { __invpcid(pcid, 0, INVPCID_TYPE_SINGLE_CTXT); }
 static inline void invpcid_flush_all(void) { __invpcid(0, 0, INVPCID_TYPE_ALL_INCL_GLOBAL); }
-static inline void invpcid_flush_all_nonglobals(void) { __invpcid(0, 0, INVPCID_TYPE_ALL_NON_GLOBAL); }
-/* End of invpcid.h */
 
 void __flush_tlb_all(void);
 
@@ -110,8 +107,7 @@ struct tlb_state_shared {
 };
 DECLARE_PER_CPU_SHARED_ALIGNED(struct tlb_state_shared, cpu_tlbstate_shared);
 
-bool nmi_uaccess_okay(void);
-#define nmi_uaccess_okay nmi_uaccess_okay
+/* nmi_uaccess_okay removed - only caller was copy_from_user_nmi */
 
  
 static inline void cr4_init_shadow(void)
@@ -152,107 +148,17 @@ void flush_tlb_multi(const struct cpumask *cpumask,
 				? huge_page_shift(hstate_vma(vma))	\
 				: PAGE_SHIFT, false)
 
-extern void flush_tlb_all(void);
+/* flush_tlb_all removed - never called */
 extern void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 				unsigned long end, unsigned int stride_shift,
 				bool freed_tables);
-extern void flush_tlb_kernel_range(unsigned long start, unsigned long end);
-
-static inline void flush_tlb_page(struct vm_area_struct *vma, unsigned long a)
-{
-	flush_tlb_mm_range(vma->vm_mm, a, a + PAGE_SIZE, PAGE_SHIFT, false);
-}
-
 static inline u64 inc_mm_tlb_gen(struct mm_struct *mm)
 {
 	 
 	return atomic64_inc_return(&mm->context.tlb_gen);
 }
 
-static inline void arch_tlbbatch_add_mm(struct arch_tlbflush_unmap_batch *batch,
-					struct mm_struct *mm)
-{
-	inc_mm_tlb_gen(mm);
-	cpumask_or(&batch->cpumask, &batch->cpumask, mm_cpumask(mm));
-}
-/* arch_tlbbatch_flush declaration removed - no implementation */
-
-static inline bool pte_flags_need_flush(unsigned long oldflags,
-					unsigned long newflags,
-					bool ignore_access)
-{
-	 
-	const pteval_t flush_on_clear = _PAGE_DIRTY | _PAGE_PRESENT |
-					_PAGE_ACCESSED;
-	const pteval_t software_flags = _PAGE_SOFTW1 | _PAGE_SOFTW2 |
-					_PAGE_SOFTW3 | _PAGE_SOFTW4;
-	const pteval_t flush_on_change = _PAGE_RW | _PAGE_USER | _PAGE_PWT |
-			  _PAGE_PCD | _PAGE_PSE | _PAGE_GLOBAL | _PAGE_PAT |
-			  _PAGE_PAT_LARGE | _PAGE_PKEY_BIT0 | _PAGE_PKEY_BIT1 |
-			  _PAGE_PKEY_BIT2 | _PAGE_PKEY_BIT3 | _PAGE_NX;
-	unsigned long diff = oldflags ^ newflags;
-
-	BUILD_BUG_ON(flush_on_clear & software_flags);
-	BUILD_BUG_ON(flush_on_clear & flush_on_change);
-	BUILD_BUG_ON(flush_on_change & software_flags);
-
-	 
-	diff &= ~software_flags;
-
-	if (ignore_access)
-		diff &= ~_PAGE_ACCESSED;
-
-	 
-	if (diff & oldflags & flush_on_clear)
-		return true;
-
-	 
-	if (diff & flush_on_change)
-		return true;
-
-	 
-	if (IS_ENABLED(CONFIG_DEBUG_VM) &&
-	    (diff & ~(flush_on_clear | software_flags | flush_on_change))) {
-		VM_WARN_ON_ONCE(1);
-		return true;
-	}
-
-	return false;
-}
-
- 
-static inline bool pte_needs_flush(pte_t oldpte, pte_t newpte)
-{
-	 
-	if (!(pte_flags(oldpte) & _PAGE_PRESENT))
-		return false;
-
-	 
-	if (pte_pfn(oldpte) != pte_pfn(newpte))
-		return true;
-
-	 
-	return pte_flags_need_flush(pte_flags(oldpte), pte_flags(newpte),
-				    true);
-}
-#define pte_needs_flush pte_needs_flush
-
- 
-static inline bool huge_pmd_needs_flush(pmd_t oldpmd, pmd_t newpmd)
-{
-	 
-	if (!(pmd_flags(oldpmd) & _PAGE_PRESENT))
-		return false;
-
-	 
-	if (pmd_pfn(oldpmd) != pmd_pfn(newpmd))
-		return true;
-
-	 
-	return pte_flags_need_flush(pmd_flags(oldpmd), pmd_flags(newpmd),
-				    false);
-}
-#define huge_pmd_needs_flush huge_pmd_needs_flush
+/* pte_flags_need_flush, pte_needs_flush, huge_pmd_needs_flush removed - never called */
 
 #endif  
 

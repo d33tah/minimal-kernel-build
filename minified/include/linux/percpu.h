@@ -44,16 +44,8 @@ struct pcpu_alloc_info {
 	struct pcpu_group_info	groups[];
 };
 
-enum pcpu_fc {
-	PCPU_FC_AUTO,
-	PCPU_FC_EMBED,
-	PCPU_FC_PAGE,
-
-	PCPU_FC_NR,
-};
-
-typedef int (pcpu_fc_cpu_to_node_fn_t)(int cpu);
-typedef int (pcpu_fc_cpu_distance_fn_t)(unsigned int from, unsigned int to);
+/* enum pcpu_fc removed - never used */
+/* pcpu_fc_cpu_to_node_fn_t and pcpu_fc_cpu_distance_fn_t removed - unused */
 
 extern struct pcpu_alloc_info * __init pcpu_alloc_alloc_info(int nr_groups,
 							     int nr_units);
@@ -65,14 +57,11 @@ extern void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 
 extern void __init setup_per_cpu_areas(void);
 
-extern void __percpu *__alloc_percpu_gfp(size_t size, size_t align, gfp_t gfp) __alloc_size(1);
 extern void __percpu *__alloc_percpu(size_t size, size_t align) __alloc_size(1);
 extern void free_percpu(void __percpu *__pdata);
 extern phys_addr_t per_cpu_ptr_to_phys(void *addr);
 
-#define alloc_percpu_gfp(type, gfp)					\
-	(typeof(type) __percpu *)__alloc_percpu_gfp(sizeof(type),	\
-						__alignof__(type), gfp)
+/* alloc_percpu_gfp removed - unused */
 #define alloc_percpu(type)						\
 	(typeof(type) __percpu *)__alloc_percpu(sizeof(type),		\
 						__alignof__(type))

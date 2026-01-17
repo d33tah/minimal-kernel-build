@@ -8,17 +8,7 @@
 
  
 
-#define VGA_MAP_MEM(x, s)					\
-({								\
-	unsigned long start = (unsigned long)phys_to_virt(x);	\
-								\
-	if (IS_ENABLED(CONFIG_AMD_MEM_ENCRYPT))			\
-		set_memory_decrypted(start, (s) >> PAGE_SHIFT);	\
-								\
-	start;							\
-})
-
-#define vga_readb(x) (*(x))
-#define vga_writeb(x, y) (*(y) = (x))
+/* CONFIG_AMD_MEM_ENCRYPT not enabled */
+#define VGA_MAP_MEM(x, s) ((unsigned long)phys_to_virt(x))
 
 #endif  

@@ -20,29 +20,7 @@
 	.section ".text32", "ax"
 	.code32
 SYM_CODE_START(machine_real_restart_asm)
-
-#ifdef CONFIG_X86_64
-	/* Switch to trampoline GDT as it is guaranteed < 4 GiB */
-	movl	$__KERNEL_DS, %eax
-	movl	%eax, %ds
-	lgdtl	pa_tr_gdt
-
-	/* Disable paging to drop us out of long mode */
-	movl	%cr0, %eax
-	andl	$~X86_CR0_PG, %eax
-	movl	%eax, %cr0
-	ljmpl	$__KERNEL32_CS, $pa_machine_real_restart_paging_off
-
-SYM_INNER_LABEL(machine_real_restart_paging_off, SYM_L_GLOBAL)
-	xorl	%eax, %eax
-	xorl	%edx, %edx
-	movl	$MSR_EFER, %ecx
-	wrmsr
-
-	movl	%edi, %eax
-	
-#endif /* CONFIG_X86_64 */
-	
+/* X86_32 - no paging disable or long mode exit needed */
 	/* Set up the IDT for real mode. */
 	lidtl	pa_machine_real_restart_idt
 

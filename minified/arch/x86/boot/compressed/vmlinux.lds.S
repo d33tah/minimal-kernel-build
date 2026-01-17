@@ -8,13 +8,9 @@ OUTPUT_FORMAT(CONFIG_OUTPUT_FORMAT)
 #include <asm/cache.h>
 #include <asm/page_types.h>
 
-#ifdef CONFIG_X86_64
-OUTPUT_ARCH(i386:x86-64)
-ENTRY(startup_64)
-#else
+/* X86_32 only */
 OUTPUT_ARCH(i386)
 ENTRY(startup_32)
-#endif
 
 SECTIONS
 {
@@ -58,14 +54,7 @@ SECTIONS
 		. = ALIGN(8);	/* For convenience during zeroing */
 		_ebss = .;
 	}
-#ifdef CONFIG_X86_64
-       . = ALIGN(PAGE_SIZE);
-       .pgtable : {
-		_pgtable = . ;
-		*(.pgtable)
-		_epgtable = . ;
-	}
-#endif
+	/* pgtable section removed - X86_32 */
 	. = ALIGN(PAGE_SIZE);	/* keep ZO size page aligned */
 	_end = .;
 
@@ -84,11 +73,7 @@ SECTIONS
 		*(.got.plt)
 	}
 	ASSERT(SIZEOF(.got.plt) == 0 ||
-#ifdef CONFIG_X86_64
-	       SIZEOF(.got.plt) == 0x18,
-#else
-	       SIZEOF(.got.plt) == 0xc,
-#endif
+	       SIZEOF(.got.plt) == 0xc, /* X86_32 */
 	       "Unexpected GOT/PLT entries detected!")
 
 	/*

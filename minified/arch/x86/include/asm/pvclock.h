@@ -19,11 +19,9 @@ struct pvclock_wall_clock {
 	u32   sec;
 	u32   nsec;
 } __attribute__((__packed__));
-#define PVCLOCK_TSC_STABLE_BIT	(1 << 0)
-#define PVCLOCK_GUEST_STOPPED	(1 << 1)
-#define PVCLOCK_COUNTS_FROM_ZERO (1 << 2)
+/* PVCLOCK_TSC_STABLE_BIT, PVCLOCK_GUEST_STOPPED, PVCLOCK_COUNTS_FROM_ZERO removed - unused */
 
- 
+
 u64 pvclock_clocksource_read(struct pvclock_vcpu_time_info *src);
 u8 pvclock_read_flags(struct pvclock_vcpu_time_info *src);
 void pvclock_set_flags(u8 flags);
@@ -91,7 +89,7 @@ struct pvclock_vsyscall_time_info {
 	struct pvclock_vcpu_time_info pvti;
 } __attribute__((__aligned__(SMP_CACHE_BYTES)));
 
-#define PVTI_SIZE sizeof(struct pvclock_vsyscall_time_info)
+/* PVTI_SIZE removed - never used */
 
 static inline struct pvclock_vsyscall_time_info *pvclock_get_pvti_cpu0_va(void)
 {

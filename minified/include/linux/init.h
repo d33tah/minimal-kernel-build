@@ -4,28 +4,20 @@
 #include <linux/compiler.h>
 #include <linux/types.h>
 
-#if defined(__noretpoline) && !defined(MODULE)
-#define __noinitretpoline __noretpoline
-#else
+/* MODULE is never defined (CONFIG_MODULES=n) */
+/* __noretpoline is never defined, so __noinitretpoline is always empty */
 #define __noinitretpoline
-#endif
 
 
 #define __init		__section(".init.text") __cold  __latent_entropy __noinitretpoline __nocfi
 #define __initdata	__section(".init.data")
 #define __initconst	__section(".init.rodata")
-#define __exitdata	__section(".exit.data")
-#define __exit_call	__used __section(".exitcall.exit")
+/* __exitdata, __exit_call removed - never used (no modules) */
 
 #define __ref            __section(".ref.text") noinline
 #define __refdata        __section(".ref.data")
-#ifdef MODULE
-#define __exitused
-#else
-#define __exitused  __used
-#endif
 
-#define __exit          __section(".exit.text") __exitused __cold notrace
+#define __exit          __section(".exit.text") __used __cold notrace
 
 #define __meminit        __section(".meminit.text") __cold notrace \
 						  __latent_entropy
@@ -33,21 +25,16 @@
 
 #define __HEAD		.section	".head.text","ax"
 #define __INIT		.section	".init.text","ax"
-#define __FINIT		.previous
 
 #define __INITDATA	.section	".init.data","aw",%progbits
-#define __INITRODATA	.section	".init.rodata","a",%progbits
-#define __FINITDATA	.previous
+/* __INITRODATA removed - never used */
 
-#define __MEMINIT        .section	".meminit.text", "ax"
-#define __MEMINITDATA    .section	".meminit.data", "aw"
-
-#define __REF            .section       ".ref.text", "ax"
+/* __REF removed - never used */
 #define __REFDATA        .section       ".ref.data", "aw"
 
 #ifndef __ASSEMBLY__
 typedef int (*initcall_t)(void);
-typedef void (*exitcall_t)(void);
+/* exitcall_t removed - never used (no modules) */
 
 typedef int initcall_entry_t;
 
@@ -58,7 +45,7 @@ static inline initcall_t initcall_from_entry(initcall_entry_t *entry)
 
 extern initcall_entry_t __con_initcall_start[], __con_initcall_end[];
 
-typedef void (*ctor_fn_t)(void);
+/* typedef ctor_fn_t removed - never used */
 
 struct file_system_type;
 
@@ -67,7 +54,7 @@ extern char __initdata boot_command_line[];
 
 void setup_arch(char **);
 void prepare_namespace(void);
-void __init init_rootfs(void);
+/* init_rootfs removed - was empty stub */
 extern struct file_system_type rootfs_fs_type;
 
 void mark_rodata_ro(void);
@@ -76,8 +63,6 @@ extern void (*late_time_init)(void);
 
 
 #endif
-  
-#ifndef MODULE
 
 #ifndef __ASSEMBLY__
 
@@ -124,29 +109,24 @@ extern void (*late_time_init)(void);
 #define __define_initcall(fn, id) ___define_initcall(fn, id, .initcall##id)
 
 #define early_initcall(fn)		__define_initcall(fn, early)
-
-#define pure_initcall(fn)		__define_initcall(fn, 0)
-
+/* pure_initcall removed - unused */
 #define core_initcall(fn)		__define_initcall(fn, 1)
-#define core_initcall_sync(fn)		__define_initcall(fn, 1s)
+/* core_initcall_sync removed - unused */
 #define postcore_initcall(fn)		__define_initcall(fn, 2)
-#define postcore_initcall_sync(fn)	__define_initcall(fn, 2s)
-#define arch_initcall(fn)		__define_initcall(fn, 3)
-#define arch_initcall_sync(fn)		__define_initcall(fn, 3s)
+/* postcore_initcall_sync, arch_initcall, arch_initcall_sync removed - unused */
 #define subsys_initcall(fn)		__define_initcall(fn, 4)
-#define subsys_initcall_sync(fn)	__define_initcall(fn, 4s)
+/* subsys_initcall_sync removed - unused */
 #define fs_initcall(fn)			__define_initcall(fn, 5)
-#define fs_initcall_sync(fn)		__define_initcall(fn, 5s)
+/* fs_initcall_sync removed - unused */
 #define rootfs_initcall(fn)		__define_initcall(fn, rootfs)
 #define device_initcall(fn)		__define_initcall(fn, 6)
-#define device_initcall_sync(fn)	__define_initcall(fn, 6s)
+/* device_initcall_sync removed - unused */
 #define late_initcall(fn)		__define_initcall(fn, 7)
-#define late_initcall_sync(fn)		__define_initcall(fn, 7s)
+/* late_initcall_sync removed - unused */
 
 #define __initcall(fn) device_initcall(fn)
 
-#define __exitcall(fn)						\
-	static exitcall_t __exitcall_##fn __exit_call = fn
+/* __exitcall removed - never used (no modules) */
 
 #define console_initcall(fn)	___define_initcall(fn, con, .con_initcall)
 
@@ -190,20 +170,8 @@ struct obs_kernel_param {
 
 void __init parse_early_param(void);
 void __init parse_early_options(char *cmdline);
-#endif  
+#endif  /* __ASSEMBLY__ */
 
-#else  
+/* __nosavedata, __exit_p removed - never used */
 
-#define __setup_param(str, unique_id, fn)	 
-#define __setup(str, func) 			 
-#endif
-
-#define __nosavedata __section(".data..nosave")
-
-#ifdef MODULE
-#define __exit_p(x) x
-#else
-#define __exit_p(x) NULL
-#endif
-
-#endif  
+#endif  /* _LINUX_INIT_H */

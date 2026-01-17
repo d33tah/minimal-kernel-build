@@ -13,25 +13,10 @@ struct cpu_dev {
 	void		(*c_bsp_init)(struct cpuinfo_x86 *);
 	void		(*c_init)(struct cpuinfo_x86 *);
 	void		(*c_identify)(struct cpuinfo_x86 *);
-	void		(*c_detect_tlb)(struct cpuinfo_x86 *);
+	/* c_detect_tlb removed - never called */
 	int		c_x86_vendor;
-	 
-	unsigned int	(*legacy_cache_size)(struct cpuinfo_x86 *,
-					     unsigned int);
-
-	 
-	struct legacy_cpu_model_info {
-		int		family;
-		const char	*model_names[16];
-	}		legacy_models[5];
-};
-
-struct _tlb_table {
-	unsigned char descriptor;
-	char tlb_type;
-	unsigned int entries;
-	 
-	char info[128];
+	/* legacy_cache_size removed - never used */
+	/* legacy_cpu_model_info removed - x86_model_id never read */
 };
 
 #define cpu_dev_register(cpu_devX) \
@@ -42,27 +27,13 @@ struct _tlb_table {
 extern const struct cpu_dev *const __x86_cpu_dev_start[],
 			    *const __x86_cpu_dev_end[];
 
-enum tsx_ctrl_states {
-	TSX_CTRL_ENABLE,
-	TSX_CTRL_DISABLE,
-	TSX_CTRL_RTM_ALWAYS_ABORT,
-	TSX_CTRL_NOT_SUPPORTED,
-};
-
-extern __ro_after_init enum tsx_ctrl_states tsx_ctrl_state;
-
-extern void __init tsx_init(void);
-/* tsx_ap_init, init_spectral_chicken removed - no callers */
+/* enum tsx_ctrl_states and tsx_ctrl_state removed - never used */
 
 extern void get_cpu_cap(struct cpuinfo_x86 *c);
 extern void get_cpu_address_sizes(struct cpuinfo_x86 *c);
-extern void cpu_detect_cache_sizes(struct cpuinfo_x86 *c);
-extern void init_scattered_cpuid_features(struct cpuinfo_x86 *c);
-/* init_intel_cacheinfo, init_amd_cacheinfo, init_hygon_cacheinfo removed - no callers */
-
-extern void detect_num_cpu_cores(struct cpuinfo_x86 *c);
-extern int detect_extended_topology_early(struct cpuinfo_x86 *c);
-extern int detect_extended_topology(struct cpuinfo_x86 *c);
-/* detect_ht_early, detect_ht, check_null_seg_clears_base, x86_read_arch_cap_msr, aperfmperf_get_khz removed - no callers */
+/* cpu_detect_cache_sizes, init_scattered_cpuid_features, init_intel_cacheinfo, init_amd_cacheinfo,
+   init_hygon_cacheinfo, detect_num_cpu_cores, detect_extended_topology_early,
+   detect_extended_topology, detect_ht_early, detect_ht, check_null_seg_clears_base,
+   x86_read_arch_cap_msr, aperfmperf_get_khz removed - no callers */
 
 #endif  

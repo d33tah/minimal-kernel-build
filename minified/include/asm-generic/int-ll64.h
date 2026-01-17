@@ -30,24 +30,12 @@ typedef __u32 u32;
 typedef __s64 s64;
 typedef __u64 u64;
 
-#define S8_C(x)  x
-#define U8_C(x)  x ## U
-#define S16_C(x) x
-#define U16_C(x) x ## U
-#define S32_C(x) x
-#define U32_C(x) x ## U
-#define S64_C(x) x ## LL
+/* S8_C, U8_C, S16_C, U16_C, S32_C, U32_C, S64_C removed - unused */
 #define U64_C(x) x ## ULL
 
 #else  /* __ASSEMBLY__ */
 
-#define S8_C(x)  x
-#define U8_C(x)  x
-#define S16_C(x) x
-#define U16_C(x) x
-#define S32_C(x) x
-#define U32_C(x) x
-#define S64_C(x) x
+/* S8_C, U8_C, S16_C, U16_C, S32_C, U32_C, S64_C removed - unused */
 #define U64_C(x) x
 
 #endif  /* __ASSEMBLY__ */

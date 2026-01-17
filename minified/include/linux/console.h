@@ -6,11 +6,8 @@
 #include <linux/types.h>
 
 struct vc_data;
-struct console_font_op;
-struct console_font;
 struct module;
-struct tty_struct;
-struct notifier_block;
+/* struct console_font, tty_struct, notifier_block forward decls removed - unused */
 
 enum con_scroll {
 	SM_UP,
@@ -35,11 +32,7 @@ struct consw {
 			unsigned int lines);
 	int	(*con_switch)(struct vc_data *vc);
 	int	(*con_blank)(struct vc_data *vc, int blank, int mode_switch);
-	int	(*con_font_set)(struct vc_data *vc, struct console_font *font,
-			unsigned int flags);
-	int	(*con_font_get)(struct vc_data *vc, struct console_font *font);
-	int	(*con_font_default)(struct vc_data *vc,
-			struct console_font *font, char *name);
+	/* con_font_set, con_font_get, con_font_default removed - never called */
 	int     (*con_resize)(struct vc_data *vc, unsigned int width,
 			unsigned int height, unsigned int user);
 	void	(*con_set_palette)(struct vc_data *vc,
@@ -50,16 +43,8 @@ struct consw {
 	u8	(*con_build_attr)(struct vc_data *vc, u8 color,
 			enum vc_intensity intensity,
 			bool blink, bool underline, bool reverse, bool italic);
-	void	(*con_invert_region)(struct vc_data *vc, u16 *p, int count);
-	u16    *(*con_screen_pos)(const struct vc_data *vc, int offset);
-	unsigned long (*con_getxy)(struct vc_data *vc, unsigned long position,
-			int *px, int *py);
-	 
-	void	(*con_flush_scrollback)(struct vc_data *vc);
-	 
-	int	(*con_debug_enter)(struct vc_data *vc);
-	 
-	int	(*con_debug_leave)(struct vc_data *vc);
+	/* con_invert_region, con_screen_pos, con_getxy removed - never called */
+	/* con_flush_scrollback, con_debug_enter, con_debug_leave removed - never called */
 };
 
 extern const struct consw *conswitchp;
@@ -76,9 +61,9 @@ extern const struct consw vga_con;
 #define CON_CONSDEV	(2)  
 #define CON_ENABLED	(4)
 #define CON_BOOT	(8)
-#define CON_ANYTIME	(16)  
-#define CON_BRL		(32)  
-#define CON_EXTENDED	(64)  
+#define CON_ANYTIME	(16)
+#define CON_BRL		(32)
+/* CON_EXTENDED removed - unused */
 
 struct console {
 	char	name[16];
@@ -92,8 +77,7 @@ struct console {
 	short	flags;
 	short	index;
 	int	cflag;
-	uint	ispeed;
-	uint	ospeed;
+	/* ispeed, ospeed removed - never accessed */
 	u64	seq;
 	unsigned long dropped;
 	void	*data;
@@ -119,9 +103,7 @@ extern void console_unblank(void);
 extern void console_flush_on_panic(enum con_flush_mode mode);
 extern struct tty_driver *console_device(int *);
 extern int is_console_locked(void);
-extern void console_sysfs_notify(void);
-
-static inline void vcs_make_sysfs(int index) { }
+/* console_sysfs_notify, vcs_make_sysfs removed - unused */
 
 #define WARN_CONSOLE_UNLOCKED()						\
 	WARN_ON(!atomic_read(&ignore_console_lock_warning) &&		\

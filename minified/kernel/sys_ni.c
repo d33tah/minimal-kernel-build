@@ -15,12 +15,11 @@ asmlinkage long sys_ni_syscall(void)
 
 #ifndef COND_SYSCALL
 #define COND_SYSCALL(name) cond_syscall(sys_##name)
-#endif  
+#endif
 
 #ifndef COND_SYSCALL_COMPAT
 #define COND_SYSCALL_COMPAT(name) cond_syscall(compat_sys_##name)
-#endif  
-
+#endif
 
 COND_SYSCALL(io_setup);
 COND_SYSCALL_COMPAT(io_setup);
@@ -38,8 +37,6 @@ COND_SYSCALL(io_uring_setup);
 COND_SYSCALL(io_uring_enter);
 COND_SYSCALL(io_uring_register);
 
-
-
 COND_SYSCALL(lookup_dcookie);
 COND_SYSCALL_COMPAT(lookup_dcookie);
 
@@ -52,34 +49,20 @@ COND_SYSCALL_COMPAT(epoll_pwait);
 COND_SYSCALL(epoll_pwait2);
 COND_SYSCALL_COMPAT(epoll_pwait2);
 
-
 COND_SYSCALL(inotify_init1);
 COND_SYSCALL(inotify_add_watch);
 COND_SYSCALL(inotify_rm_watch);
-
 
 COND_SYSCALL(ioprio_set);
 COND_SYSCALL(ioprio_get);
 
 COND_SYSCALL(flock);
 
-
-
-
-
-
 COND_SYSCALL(quotactl);
 COND_SYSCALL(quotactl_fd);
 
-
-
-
-
 COND_SYSCALL(signalfd4);
 COND_SYSCALL_COMPAT(signalfd4);
-
-
-
 
 COND_SYSCALL(timerfd_create);
 COND_SYSCALL(timerfd_settime);
@@ -87,13 +70,10 @@ COND_SYSCALL(timerfd_settime32);
 COND_SYSCALL(timerfd_gettime);
 COND_SYSCALL(timerfd_gettime32);
 
-
 COND_SYSCALL(acct);
 
 COND_SYSCALL(capget);
 COND_SYSCALL(capset);
-
-
 
 COND_SYSCALL(clone3);
 
@@ -105,18 +85,13 @@ COND_SYSCALL(get_robust_list);
 COND_SYSCALL_COMPAT(get_robust_list);
 COND_SYSCALL(futex_waitv);
 
-
-
 COND_SYSCALL(kexec_load);
 COND_SYSCALL_COMPAT(kexec_load);
 
 COND_SYSCALL(init_module);
 COND_SYSCALL(delete_module);
 
-
 COND_SYSCALL(syslog);
-
-
 
 COND_SYSCALL(setregid);
 COND_SYSCALL(setgid);
@@ -130,8 +105,6 @@ COND_SYSCALL(setfsuid);
 COND_SYSCALL(setfsgid);
 COND_SYSCALL(setgroups);
 COND_SYSCALL(getgroups);
-
-
 
 COND_SYSCALL(mq_open);
 COND_SYSCALL_COMPAT(mq_open);
@@ -194,7 +167,6 @@ COND_SYSCALL_COMPAT(sendmsg);
 COND_SYSCALL(recvmsg);
 COND_SYSCALL_COMPAT(recvmsg);
 
-
 COND_SYSCALL(mremap);
 
 COND_SYSCALL(add_key);
@@ -206,7 +178,6 @@ COND_SYSCALL(landlock_create_ruleset);
 COND_SYSCALL(landlock_add_rule);
 COND_SYSCALL(landlock_restrict_self);
 
-
 COND_SYSCALL(fadvise64_64);
 
 COND_SYSCALL(swapon);
@@ -217,6 +188,7 @@ COND_SYSCALL(mlock);
 COND_SYSCALL(munlock);
 COND_SYSCALL(mlockall);
 COND_SYSCALL(munlockall);
+COND_SYSCALL(readahead);
 COND_SYSCALL(mincore);
 COND_SYSCALL(madvise);
 COND_SYSCALL(process_madvise);
@@ -235,7 +207,6 @@ COND_SYSCALL(recvmmsg);
 COND_SYSCALL(recvmmsg_time32);
 COND_SYSCALL_COMPAT(recvmmsg_time32);
 COND_SYSCALL_COMPAT(recvmmsg_time64);
-
 
 COND_SYSCALL(fanotify_init);
 COND_SYSCALL(fanotify_mark);
@@ -277,7 +248,6 @@ COND_SYSCALL(pkey_free);
 
 COND_SYSCALL(memfd_secret);
 
-
 COND_SYSCALL(pciconfig_read);
 COND_SYSCALL(pciconfig_write);
 COND_SYSCALL(pciconfig_iobase);
@@ -301,8 +271,6 @@ COND_SYSCALL(rtas);
 COND_SYSCALL(spu_run);
 COND_SYSCALL(spu_create);
 COND_SYSCALL(subpage_prot);
-
-
 
 COND_SYSCALL(epoll_create);
 COND_SYSCALL(inotify_init);
@@ -338,9 +306,159 @@ COND_SYSCALL(pselect6_time32);
 COND_SYSCALL_COMPAT(pselect6_time32);
 COND_SYSCALL(ppoll_time32);
 COND_SYSCALL_COMPAT(ppoll_time32);
+COND_SYSCALL(select);
+COND_SYSCALL(pselect6);
+COND_SYSCALL(old_select);
+COND_SYSCALL(poll);
+COND_SYSCALL(ppoll);
+COND_SYSCALL(fsopen);
+COND_SYSCALL(fspick);
+COND_SYSCALL(fsconfig);
+COND_SYSCALL(syncfs);
+COND_SYSCALL(fsync);
+COND_SYSCALL(fdatasync);
+COND_SYSCALL(sync_file_range);
+COND_SYSCALL(sync_file_range2);
+COND_SYSCALL(splice);
+COND_SYSCALL(tee);
+COND_SYSCALL(vmsplice);
+COND_SYSCALL(statfs);
+COND_SYSCALL(statfs64);
+COND_SYSCALL(fstatfs);
+COND_SYSCALL(fstatfs64);
+COND_SYSCALL(ustat);
+COND_SYSCALL(getcwd);
+COND_SYSCALL(reboot);
+COND_SYSCALL(ptrace);
+COND_SYSCALL(truncate);
+COND_SYSCALL(ftruncate);
+COND_SYSCALL(truncate64);
+COND_SYSCALL(ftruncate64);
+COND_SYSCALL(fallocate);
+COND_SYSCALL(faccessat);
+COND_SYSCALL(faccessat2);
+COND_SYSCALL(access);
+COND_SYSCALL(chdir);
+COND_SYSCALL(fchdir);
+COND_SYSCALL(chroot);
+COND_SYSCALL(fchmod);
+COND_SYSCALL(fchmodat);
+COND_SYSCALL(chmod);
+COND_SYSCALL(fchownat);
+COND_SYSCALL(chown);
+COND_SYSCALL(lchown);
+COND_SYSCALL(fchown);
+COND_SYSCALL(open);
+COND_SYSCALL(openat);
+COND_SYSCALL(openat2);
+COND_SYSCALL(creat);
+COND_SYSCALL(close);
+COND_SYSCALL(close_range);
+COND_SYSCALL(vhangup);
+COND_SYSCALL(mknodat);
+COND_SYSCALL(mknod);
+COND_SYSCALL(mkdirat);
+COND_SYSCALL(mkdir);
+COND_SYSCALL(rmdir);
+COND_SYSCALL(unlinkat);
+COND_SYSCALL(unlink);
+COND_SYSCALL(symlinkat);
+COND_SYSCALL(symlink);
+COND_SYSCALL(linkat);
+COND_SYSCALL(link);
+COND_SYSCALL(renameat2);
+COND_SYSCALL(renameat);
+COND_SYSCALL(rename);
+COND_SYSCALL(stat);
+COND_SYSCALL(lstat);
+COND_SYSCALL(fstat);
+COND_SYSCALL(newstat);
+COND_SYSCALL(newlstat);
+COND_SYSCALL(newfstatat);
+COND_SYSCALL(newfstat);
+COND_SYSCALL(stat64);
+COND_SYSCALL(lstat64);
+COND_SYSCALL(fstat64);
+COND_SYSCALL(fstatat64);
+COND_SYSCALL(statx);
+COND_SYSCALL(lseek);
+COND_SYSCALL(llseek);
+COND_SYSCALL(read);
+COND_SYSCALL(pread64);
+COND_SYSCALL(pwrite64);
+COND_SYSCALL(readv);
+COND_SYSCALL(writev);
+COND_SYSCALL(preadv);
+COND_SYSCALL(preadv2);
+COND_SYSCALL(pwritev);
+COND_SYSCALL(pwritev2);
+COND_SYSCALL(sendfile);
+COND_SYSCALL(sendfile64);
+COND_SYSCALL(rt_sigtimedwait);
+COND_SYSCALL(kill);
+COND_SYSCALL(pidfd_send_signal);
+COND_SYSCALL(tgkill);
+COND_SYSCALL(tkill);
+COND_SYSCALL(rt_sigqueueinfo);
+COND_SYSCALL(rt_tgsigqueueinfo);
+COND_SYSCALL(sigaltstack);
+COND_SYSCALL(rt_sigsuspend);
+COND_SYSCALL(sigsuspend);
+COND_SYSCALL(setpriority);
+COND_SYSCALL(times);
+COND_SYSCALL(newuname);
+COND_SYSCALL(getrlimit);
+COND_SYSCALL(prlimit64);
+COND_SYSCALL(getrusage);
+COND_SYSCALL(getcpu);
+COND_SYSCALL(sysinfo);
+COND_SYSCALL(umount);
+COND_SYSCALL(oldumount);
+COND_SYSCALL(open_tree);
+COND_SYSCALL(mount);
+COND_SYSCALL(fsmount);
+COND_SYSCALL(move_mount);
+COND_SYSCALL(pivot_root);
+COND_SYSCALL(mount_setattr);
+COND_SYSCALL(brk);
+COND_SYSCALL(mmap_pgoff);
+COND_SYSCALL(old_mmap);
+COND_SYSCALL(munmap);
+COND_SYSCALL(waitid);
+COND_SYSCALL(wait4);
+COND_SYSCALL(waitpid);
+COND_SYSCALL(fork);
+COND_SYSCALL(vfork);
+COND_SYSCALL(clone);
+COND_SYSCALL(setns);
+COND_SYSCALL(pidfd_open);
+COND_SYSCALL(pidfd_getfd);
+COND_SYSCALL(execve);
+COND_SYSCALL(dup);
+COND_SYSCALL(dup2);
+COND_SYSCALL(dup3);
+COND_SYSCALL(pipe);
+COND_SYSCALL(pipe2);
+COND_SYSCALL(sched_setattr);
+COND_SYSCALL(sched_getattr);
+COND_SYSCALL(sched_setaffinity);
+COND_SYSCALL(sched_getaffinity);
+COND_SYSCALL(sched_rr_get_interval);
+COND_SYSCALL(ioperm);
+COND_SYSCALL(iopl);
+COND_SYSCALL(set_thread_area);
+COND_SYSCALL(get_thread_area);
+COND_SYSCALL(arch_prctl);
+COND_SYSCALL(clock_settime);
+COND_SYSCALL(sigpending);
+COND_SYSCALL(signal);
+COND_SYSCALL(pause);
+COND_SYSCALL(uname);
+COND_SYSCALL(olduname);
+COND_SYSCALL(gethostname);
+COND_SYSCALL(old_getrlimit);
 COND_SYSCALL(utimensat_time32);
 COND_SYSCALL(clock_adjtime32);
-
 
 COND_SYSCALL(sgetmask);
 COND_SYSCALL(ssetmask);

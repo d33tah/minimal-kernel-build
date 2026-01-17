@@ -1,34 +1,4 @@
-/* Minimal includes for workingset stubs */
-#include <linux/mm.h>
-#include <linux/module.h>
+/* Minimal workingset - only keeping shadow_nodes variable */
 #include <linux/list_lru.h>
-#include <linux/xarray.h>
-
-void workingset_refault(struct folio *folio, void *shadow)
-{
-	 
-}
-
-void workingset_activation(struct folio *folio)
-{
-	 
-}
-
-void workingset_update_node(struct xa_node *node)
-{
-	 
-}
-
+/* workingset_refault/workingset_activation/workingset_update_node removed */
 struct list_lru shadow_nodes;
-
-static int __init workingset_init(void)
-{
-	int ret;
-
-	ret = list_lru_init(&shadow_nodes);
-	if (ret)
-		return ret;
-
-	return 0;
-}
-module_init(workingset_init);

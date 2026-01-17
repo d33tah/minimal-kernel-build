@@ -5,24 +5,7 @@
 #include <linux/sched.h>
 #include <linux/spinlock.h>
 
-static inline void ratelimit_state_init(struct ratelimit_state *rs,
-					int interval, int burst)
-{
-	memset(rs, 0, sizeof(*rs));
-
-	raw_spin_lock_init(&rs->lock);
-	rs->interval	= interval;
-	rs->burst	= burst;
-}
-
-static inline void
-ratelimit_set_flags(struct ratelimit_state *rs, unsigned long flags)
-{
-	rs->flags = flags;
-}
-
-#define WARN_ON_RATELIMIT(condition, state)			\
-	WARN_ON(condition)
+/* ratelimit_state_init, ratelimit_set_flags removed - never called */
 
 #define WARN_RATELIMIT(condition, format, ...)			\
 ({								\

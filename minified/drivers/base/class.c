@@ -11,186 +11,16 @@
 #include <linux/mutex.h>
 #include "base.h"
 
-#define to_class_attr(_attr) container_of(_attr, struct class_attribute, attr)
-
-static ssize_t class_attr_show(struct kobject *kobj, struct attribute *attr,
-			       char *buf)
-{
-	struct class_attribute *class_attr = to_class_attr(attr);
-	struct subsys_private *cp = to_subsys_private(kobj);
-	ssize_t ret = -EIO;
-
-	if (class_attr->show)
-		ret = class_attr->show(cp->class, class_attr, buf);
-	return ret;
-}
-
-static ssize_t class_attr_store(struct kobject *kobj, struct attribute *attr,
-				const char *buf, size_t count)
-{
-	struct class_attribute *class_attr = to_class_attr(attr);
-	struct subsys_private *cp = to_subsys_private(kobj);
-	ssize_t ret = -EIO;
-
-	if (class_attr->store)
-		ret = class_attr->store(cp->class, class_attr, buf, count);
-	return ret;
-}
-
-static void class_release(struct kobject *kobj)
-{
-	struct subsys_private *cp = to_subsys_private(kobj);
-	struct class *class = cp->class;
-
-	if (class->class_release)
-		class->class_release(class);
-
-	kfree(cp);
-}
-
-static const struct kobj_ns_type_operations *class_child_ns_type(struct kobject *kobj)
-{
-	struct subsys_private *cp = to_subsys_private(kobj);
-	struct class *class = cp->class;
-
-	return class->ns_type;
-}
-
-static const struct sysfs_ops class_sysfs_ops = {
-	.show	   = class_attr_show,
-	.store	   = class_attr_store,
-};
-
-static struct kobj_type class_ktype = {
-	.sysfs_ops	= &class_sysfs_ops,
-	.release	= class_release,
-	.child_ns_type	= class_child_ns_type,
-};
+/* class_attr_show, class_attr_store, class_release, class_sysfs_ops,
+   class_ktype all removed - class_ktype never used */
 
 static struct kset *class_kset;
-
-
-
-static struct class *class_get(struct class *cls)
-{
-	if (cls)
-		kset_get(&cls->p->subsys);
-	return cls;
-}
-
-static void class_put(struct class *cls)
-{
-	if (cls)
-		kset_put(&cls->p->subsys);
-}
 
 static struct device *klist_class_to_dev(struct klist_node *n)
 {
 	struct device_private *p = to_device_private_class(n);
 	return p->device;
 }
-
-static void klist_class_dev_get(struct klist_node *n)
-{
-	struct device *dev = klist_class_to_dev(n);
-
-	get_device(dev);
-}
-
-static void klist_class_dev_put(struct klist_node *n)
-{
-	struct device *dev = klist_class_to_dev(n);
-
-	put_device(dev);
-}
-
-/* Stub: sysfs functions are stubs */
-static int class_add_groups(struct class *cls,
-			    const struct attribute_group **groups)
-{
-	return 0;
-}
-
-static void class_remove_groups(struct class *cls,
-				const struct attribute_group **groups)
-{
-}
-
-int __class_register(struct class *cls, struct lock_class_key *key)
-{
-	struct subsys_private *cp;
-	int error;
-
-	cp = kzalloc(sizeof(*cp), GFP_KERNEL);
-	if (!cp)
-		return -ENOMEM;
-	klist_init(&cp->klist_devices, klist_class_dev_get, klist_class_dev_put);
-	INIT_LIST_HEAD(&cp->interfaces);
-	kset_init(&cp->glue_dirs);
-	__mutex_init(&cp->mutex, "subsys mutex", key);
-	error = kobject_set_name(&cp->subsys.kobj, "%s", cls->name);
-	if (error) {
-		kfree(cp);
-		return error;
-	}
-
-	 
-	if (!cls->dev_kobj)
-		cls->dev_kobj = sysfs_dev_char_kobj;
-
-	cp->subsys.kobj.kset = class_kset;
-	cp->subsys.kobj.ktype = &class_ktype;
-	cp->class = cls;
-	cls->p = cp;
-
-	error = kset_register(&cp->subsys);
-	if (error) {
-		kfree(cp);
-		return error;
-	}
-	error = class_add_groups(class_get(cls), cls->class_groups);
-	class_put(cls);
-	return error;
-}
-
-void class_unregister(struct class *cls)
-{
-	class_remove_groups(cls, cls->class_groups);
-	kset_unregister(&cls->p->subsys);
-}
-
-static void class_create_release(struct class *cls)
-{
-	kfree(cls);
-}
-
-struct class *__class_create(struct module *owner, const char *name,
-			     struct lock_class_key *key)
-{
-	struct class *cls;
-	int retval;
-
-	cls = kzalloc(sizeof(*cls), GFP_KERNEL);
-	if (!cls) {
-		retval = -ENOMEM;
-		goto error;
-	}
-
-	cls->name = name;
-	cls->owner = owner;
-	cls->class_release = class_create_release;
-
-	retval = __class_register(cls, key);
-	if (retval)
-		goto error;
-
-	return cls;
-
-error:
-	kfree(cls);
-	return ERR_PTR(retval);
-}
-
 
 void class_dev_iter_init(struct class_dev_iter *iter, struct class *class,
 			 struct device *start, const struct device_type *type)
@@ -223,32 +53,6 @@ void class_dev_iter_exit(struct class_dev_iter *iter)
 	klist_iter_exit(&iter->ki);
 }
 
-int class_for_each_device(struct class *class, struct device *start,
-			  void *data, int (*fn)(struct device *, void *))
-{
-	struct class_dev_iter iter;
-	struct device *dev;
-	int error = 0;
-
-	if (!class)
-		return -EINVAL;
-	if (!class->p) {
-		WARN(1, "%s called for class '%s' before it was initialized",
-		     __func__, class->name);
-		return -EINVAL;
-	}
-
-	class_dev_iter_init(&iter, class, start, NULL);
-	while ((dev = class_dev_iter_next(&iter))) {
-		error = fn(dev, data);
-		if (error)
-			break;
-	}
-	class_dev_iter_exit(&iter);
-
-	return error;
-}
-
 struct device *class_find_device(struct class *class, struct device *start,
 				 const void *data,
 				 int (*match)(struct device *, const void *))
@@ -276,33 +80,7 @@ struct device *class_find_device(struct class *class, struct device *start,
 	return dev;
 }
 
-int class_interface_register(struct class_interface *class_intf)
-{
-	struct class *parent;
-	struct class_dev_iter iter;
-	struct device *dev;
-
-	if (!class_intf || !class_intf->class)
-		return -ENODEV;
-
-	parent = class_get(class_intf->class);
-	if (!parent)
-		return -EINVAL;
-
-	mutex_lock(&parent->p->mutex);
-	list_add_tail(&class_intf->node, &parent->p->interfaces);
-	if (class_intf->add_dev) {
-		class_dev_iter_init(&iter, parent, NULL, NULL);
-		while ((dev = class_dev_iter_next(&iter)))
-			class_intf->add_dev(dev, class_intf);
-		class_dev_iter_exit(&iter);
-	}
-	mutex_unlock(&parent->p->mutex);
-
-	return 0;
-}
-
-/* class_interface_unregister, show_class_attr_string, class_compat_register,
+/* class_interface_register, class_interface_unregister, show_class_attr_string, class_compat_register,
    class_compat_unregister, class_compat_create_link, class_compat_remove_link removed - unused */
 
 int __init classes_init(void)
@@ -312,5 +90,3 @@ int __init classes_init(void)
 		return -ENOMEM;
 	return 0;
 }
-
-

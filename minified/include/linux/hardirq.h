@@ -1,92 +1,41 @@
 #ifndef LINUX_HARDIRQ_H
 #define LINUX_HARDIRQ_H
 
-#include <linux/context_tracking_state.h>
 #include <linux/preempt.h>
 #include <linux/lockdep.h>
 #include <linux/sched.h>
-#include <linux/vtime.h>
 #include <asm/hardirq.h>
 
-
-static inline void __rcu_irq_enter_check_tick(void) { }
-
-static __always_inline void rcu_irq_enter_check_tick(void)
-{
-	if (context_tracking_enabled())
-		__rcu_irq_enter_check_tick();
-}
-
-#define __irq_enter()					\
-	do {						\
-		preempt_count_add(HARDIRQ_OFFSET);	\
-		lockdep_hardirq_enter();		\
-		account_hardirq_enter(current);		\
-	} while (0)
-
-#define __irq_enter_raw()				\
-	do {						\
-		preempt_count_add(HARDIRQ_OFFSET);	\
-		lockdep_hardirq_enter();		\
-	} while (0)
+#define __irq_enter()	preempt_count_add(HARDIRQ_OFFSET)
+#define __irq_enter_raw() __irq_enter()
 
 void irq_enter(void);
 void irq_enter_rcu(void);
 
-#define __irq_exit()					\
-	do {						\
-		account_hardirq_exit(current);		\
-		lockdep_hardirq_exit();			\
-		preempt_count_sub(HARDIRQ_OFFSET);	\
-	} while (0)
-
-#define __irq_exit_raw()				\
-	do {						\
-		lockdep_hardirq_exit();			\
-		preempt_count_sub(HARDIRQ_OFFSET);	\
-	} while (0)
+#define __irq_exit()	preempt_count_sub(HARDIRQ_OFFSET)
+#define __irq_exit_raw() __irq_exit()
 
 void irq_exit(void);
-
 void irq_exit_rcu(void);
 
-#ifndef arch_nmi_enter
-#define arch_nmi_enter()	do { } while (0)
-#define arch_nmi_exit()		do { } while (0)
-#endif
-
-static inline void rcu_nmi_enter(void) { }
-static inline void rcu_nmi_exit(void) { }
-
+/* arch_nmi_enter/exit, rcu_nmi_enter/exit removed - empty stubs */
 
 #define __nmi_enter()						\
 	do {							\
-		lockdep_off();					\
-		arch_nmi_enter();				\
+		/* lockdep_off() removed - empty stub */	\
 		BUG_ON(in_nmi() == NMI_MASK);			\
 		__preempt_count_add(NMI_OFFSET + HARDIRQ_OFFSET);	\
 	} while (0)
 
-#define nmi_enter()						\
-	do {							\
-		__nmi_enter();					\
-		lockdep_hardirq_enter();			\
-		rcu_nmi_enter();				\
-	} while (0)
+#define nmi_enter()	__nmi_enter()
 
 #define __nmi_exit()						\
 	do {							\
 		BUG_ON(!in_nmi());				\
 		__preempt_count_sub(NMI_OFFSET + HARDIRQ_OFFSET);	\
-		arch_nmi_exit();				\
-		lockdep_on();					\
+		/* lockdep_on() removed - empty stub */		\
 	} while (0)
 
-#define nmi_exit()						\
-	do {							\
-		rcu_nmi_exit();					\
-		lockdep_hardirq_exit();				\
-		__nmi_exit();					\
-	} while (0)
+#define nmi_exit()	__nmi_exit()
 
 #endif  

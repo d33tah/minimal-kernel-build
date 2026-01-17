@@ -18,71 +18,40 @@ extern void kernel_fpu_end(void);
 extern bool irq_fpu_usable(void);
 extern void fpregs_mark_activate(void);
 
- 
-static inline void kernel_fpu_begin(void)
-{
-	 
-	kernel_fpu_begin_mask(KFPU_387 | KFPU_MXCSR);
-}
+/* kernel_fpu_begin removed - never called */
 
- 
+/* CONFIG_PREEMPT_RT not enabled */
 static inline void fpregs_lock(void)
 {
-	if (!IS_ENABLED(CONFIG_PREEMPT_RT))
-		local_bh_disable();
-	else
-		preempt_disable();
+	local_bh_disable();
 }
 
 static inline void fpregs_unlock(void)
 {
-	if (!IS_ENABLED(CONFIG_PREEMPT_RT))
-		local_bh_enable();
-	else
-		preempt_enable();
+	local_bh_enable();
 }
-
-static inline void fpregs_assert_state_consistent(void) { }
-
- 
+/* fpregs_assert_state_consistent removed - empty stub */
 extern void switch_fpu_return(void);
 
  
-extern int cpu_has_xfeatures(u64 xfeatures_mask, const char **feature_name);
+/* cpu_has_xfeatures removed - never called */
 
- 
 extern int  fpu__exception_code(struct fpu *fpu, int trap_nr);
 extern void fpu_sync_fpstate(struct fpu *fpu);
 extern void fpu_reset_from_exception_fixup(void);
 
- 
 extern void fpu__init_cpu(void);
 extern void fpu__init_system(struct cpuinfo_x86 *c);
-extern void fpu__init_check_bugs(void);
-extern void fpu__resume_cpu(void);
+/* fpu__init_check_bugs, fpu__resume_cpu removed - empty/never called */
 
-static inline void fpstate_init_soft(struct swregs_state *soft) {}
-
- 
 DECLARE_PER_CPU(struct fpu *, fpu_fpregs_owner_ctx);
 
- 
-/* fpstate_free, fpu_update_guest_xfd, fpu_sync_guest_vmexit_xfd_state,
-   fpstate_set_confidential, fpstate_is_confidential removed - unused */
-
-extern void fpstate_clear_xstate_component(struct fpstate *fps, unsigned int xfeature);
-
-extern u64 xstate_get_guest_group_perm(void);
-
-extern bool fpu_alloc_guest_fpstate(struct fpu_guest *gfpu);
-extern void fpu_free_guest_fpstate(struct fpu_guest *gfpu);
-extern int fpu_swap_kvm_fpstate(struct fpu_guest *gfpu, bool enter_guest);
-extern int fpu_enable_guest_xfd_features(struct fpu_guest *guest_fpu, u64 xfeatures);
-
-extern void fpu_copy_guest_fpstate_to_uabi(struct fpu_guest *gfpu, void *buf, unsigned int size, u32 pkru);
-extern int fpu_copy_uabi_to_guest_fpstate(struct fpu_guest *gfpu, const void *buf, u64 xcr0, u32 *vpkru);
-
- 
-extern long fpu_xstate_prctl(int option, unsigned long arg2);
+/* KVM guest FPU functions removed - unused (no KVM support):
+   fpstate_free, fpu_update_guest_xfd, fpu_sync_guest_vmexit_xfd_state,
+   fpstate_set_confidential, fpstate_is_confidential,
+   fpstate_clear_xstate_component, xstate_get_guest_group_perm,
+   fpu_alloc_guest_fpstate, fpu_free_guest_fpstate, fpu_swap_kvm_fpstate,
+   fpu_enable_guest_xfd_features, fpu_copy_guest_fpstate_to_uabi,
+   fpu_copy_uabi_to_guest_fpstate, fpu_xstate_prctl */
 
 #endif  

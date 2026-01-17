@@ -1,36 +1,7 @@
-
-#include <linux/export.h>
-#include <linux/time.h>
 #include <linux/mm.h>
-#include <linux/string.h>
 #include <linux/sched/signal.h>
 #include <linux/capability.h>
-#include <linux/fsnotify.h>
-#include <linux/fcntl.h>
 #include <linux/security.h>
-static inline void ima_inode_post_setattr(struct user_namespace *mnt_userns,
-					  struct dentry *dentry) {}
-
-#include <linux/xattr.h>
-
-/* Only evm_inode_post_setattr is used (from notify_change) */
-static inline void evm_inode_post_setattr(struct dentry *dentry, int ia_valid) { }
-
-static bool chown_ok(struct user_namespace *mnt_userns,
-		     const struct inode *inode,
-		     kuid_t uid)
-{
-	kuid_t kuid = i_uid_into_mnt(mnt_userns, inode);
-	if (uid_eq(current_fsuid(), kuid) && uid_eq(uid, inode->i_uid))
-		return true;
-	if (capable_wrt_inode_uidgid(mnt_userns, inode, CAP_CHOWN))
-		return true;
-	if (uid_eq(kuid, INVALID_UID) &&
-	    ns_capable(inode->i_sb->s_user_ns, CAP_CHOWN))
-		return true;
-	return false;
-}
-
 static bool chgrp_ok(struct user_namespace *mnt_userns,
 		     const struct inode *inode, kgid_t gid)
 {
@@ -58,26 +29,29 @@ int setattr_prepare(struct user_namespace *mnt_userns, struct dentry *dentry,
 	struct inode *inode = d_inode(dentry);
 	unsigned int ia_valid = attr->ia_valid;
 
-	 
-	if (ia_valid & ATTR_SIZE) {
-		int error = inode_newsize_ok(inode, attr->ia_size);
-		if (error)
-			return error;
-	}
-
-	 
+	/* inode_newsize_ok always returns 0 - dead code removed */
 	if (ia_valid & ATTR_FORCE)
 		goto kill_priv;
 
-	 
-	if ((ia_valid & ATTR_UID) && !chown_ok(mnt_userns, inode, attr->ia_uid))
-		return -EPERM;
+	/* Inlined chown_ok */
+	if (ia_valid & ATTR_UID) {
+		kuid_t kuid = i_uid_into_mnt(mnt_userns, inode);
+		kuid_t uid = attr->ia_uid;
+		bool ok = false;
+		if (uid_eq(current_fsuid(), kuid) && uid_eq(uid, inode->i_uid))
+			ok = true;
+		else if (capable_wrt_inode_uidgid(mnt_userns, inode, CAP_CHOWN))
+			ok = true;
+		else if (uid_eq(kuid, INVALID_UID) &&
+			 ns_capable(inode->i_sb->s_user_ns, CAP_CHOWN))
+			ok = true;
+		if (!ok)
+			return -EPERM;
+	}
 
-	 
 	if ((ia_valid & ATTR_GID) && !chgrp_ok(mnt_userns, inode, attr->ia_gid))
 		return -EPERM;
 
-	 
 	if (ia_valid & ATTR_MODE) {
 		kgid_t mapped_gid;
 
@@ -85,38 +59,25 @@ int setattr_prepare(struct user_namespace *mnt_userns, struct dentry *dentry,
 			return -EPERM;
 
 		if (ia_valid & ATTR_GID)
-			mapped_gid = mapped_kgid_fs(mnt_userns,
-						i_user_ns(inode), attr->ia_gid);
+			mapped_gid = mapped_kgid_fs(
+				mnt_userns, i_user_ns(inode), attr->ia_gid);
 		else
 			mapped_gid = i_gid_into_mnt(mnt_userns, inode);
 
-		 
 		if (!in_group_p(mapped_gid) &&
 		    !capable_wrt_inode_uidgid(mnt_userns, inode, CAP_FSETID))
 			attr->ia_mode &= ~S_ISGID;
 	}
 
-	 
 	if (ia_valid & (ATTR_MTIME_SET | ATTR_ATIME_SET | ATTR_TIMES_SET)) {
 		if (!inode_owner_or_capable(mnt_userns, inode))
 			return -EPERM;
 	}
 
 kill_priv:
-	 
-	if (ia_valid & ATTR_KILL_PRIV) {
-		int error;
-
-		error = security_inode_killpriv(mnt_userns, dentry);
-		if (error)
-			return error;
-	}
-
+	/* security_inode_killpriv always returns 0 - dead code check removed */
 	return 0;
 }
-
-/* inode_newsize_ok used internally by setattr_prepare */
-int inode_newsize_ok(const struct inode *inode, loff_t offset) { return 0; }
 
 void setattr_copy(struct user_namespace *mnt_userns, struct inode *inode,
 		  const struct iattr *attr)
@@ -127,12 +88,7 @@ void setattr_copy(struct user_namespace *mnt_userns, struct inode *inode,
 		inode->i_uid = attr->ia_uid;
 	if (ia_valid & ATTR_GID)
 		inode->i_gid = attr->ia_gid;
-	if (ia_valid & ATTR_ATIME)
-		inode->i_atime = attr->ia_atime;
-	if (ia_valid & ATTR_MTIME)
-		inode->i_mtime = attr->ia_mtime;
-	if (ia_valid & ATTR_CTIME)
-		inode->i_ctime = attr->ia_ctime;
+	/* ATTR_ATIME, ATTR_MTIME handling removed - i_atime, i_mtime never read */
 	if (ia_valid & ATTR_MODE) {
 		umode_t mode = attr->ia_mode;
 		kgid_t kgid = i_gid_into_mnt(mnt_userns, inode);
@@ -143,54 +99,26 @@ void setattr_copy(struct user_namespace *mnt_userns, struct inode *inode,
 	}
 }
 
-/* may_setattr used internally by notify_change */
-int may_setattr(struct user_namespace *mnt_userns, struct inode *inode,
-		unsigned int ia_valid) { return 0; }
-
 int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 		  struct iattr *attr, struct inode **delegated_inode)
 {
 	struct inode *inode = dentry->d_inode;
 	umode_t mode = inode->i_mode;
 	int error;
-	struct timespec64 now;
+	/* struct timespec64 now removed - timestamps not used */
 	unsigned int ia_valid = attr->ia_valid;
 
 	WARN_ON_ONCE(!inode_is_locked(inode));
+	/* may_setattr always returns 0 - removed */
+	/* ATTR_MODE check removed - S_NOSEC cleared but never tested */
 
-	error = may_setattr(mnt_userns, inode, ia_valid);
-	if (error)
-		return error;
+	/* ia_ctime, ia_atime, ia_mtime computation removed - timestamps don't exist */
 
-	if ((ia_valid & ATTR_MODE)) {
-		umode_t amode = attr->ia_mode;
-		 
-		if (is_sxid(amode))
-			inode->i_flags &= ~S_NOSEC;
-	}
+	/* security_inode_need_killpriv always returns 0 - simplified */
+	if (ia_valid & ATTR_KILL_PRIV)
+		ia_valid = attr->ia_valid &= ~ATTR_KILL_PRIV;
 
-	now = current_time(inode);
-
-	attr->ia_ctime = now;
-	if (!(ia_valid & ATTR_ATIME_SET))
-		attr->ia_atime = now;
-	else
-		attr->ia_atime = timestamp_truncate(attr->ia_atime, inode);
-	if (!(ia_valid & ATTR_MTIME_SET))
-		attr->ia_mtime = now;
-	else
-		attr->ia_mtime = timestamp_truncate(attr->ia_mtime, inode);
-
-	if (ia_valid & ATTR_KILL_PRIV) {
-		error = security_inode_need_killpriv(dentry);
-		if (error < 0)
-			return error;
-		if (error == 0)
-			ia_valid = attr->ia_valid &= ~ATTR_KILL_PRIV;
-	}
-
-	 
-	if ((ia_valid & (ATTR_KILL_SUID|ATTR_KILL_SGID)) &&
+	if ((ia_valid & (ATTR_KILL_SUID | ATTR_KILL_SGID)) &&
 	    (ia_valid & ATTR_MODE))
 		BUG();
 
@@ -212,7 +140,6 @@ int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 	if (!(attr->ia_valid & ~(ATTR_KILL_SUID | ATTR_KILL_SGID)))
 		return 0;
 
-	 
 	if (ia_valid & ATTR_UID &&
 	    !kuid_has_mapping(inode->i_sb->s_user_ns, attr->ia_uid))
 		return -EOVERFLOW;
@@ -220,7 +147,6 @@ int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 	    !kgid_has_mapping(inode->i_sb->s_user_ns, attr->ia_gid))
 		return -EOVERFLOW;
 
-	 
 	if (!(ia_valid & ATTR_UID) &&
 	    !uid_valid(i_uid_into_mnt(mnt_userns, inode)))
 		return -EOVERFLOW;
@@ -228,23 +154,13 @@ int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 	    !gid_valid(i_gid_into_mnt(mnt_userns, inode)))
 		return -EOVERFLOW;
 
-	error = security_inode_setattr(dentry, attr);
-	if (error)
-		return error;
-	error = try_break_deleg(inode, delegated_inode);
-	if (error)
-		return error;
-
+	/* security_inode_setattr always returns 0 - dead code check removed */
+	/* try_break_deleg always returns 0 - dead code removed */
 	if (inode->i_op->setattr)
 		error = inode->i_op->setattr(mnt_userns, dentry, attr);
 	else
 		error = simple_setattr(mnt_userns, dentry, attr);
 
-	if (!error) {
-		fsnotify_change(dentry, ia_valid);
-		ima_inode_post_setattr(mnt_userns, dentry);
-		evm_inode_post_setattr(dentry, ia_valid);
-	}
-
+	/* ima_inode_post_setattr, evm_inode_post_setattr calls removed - empty stubs */
 	return error;
 }

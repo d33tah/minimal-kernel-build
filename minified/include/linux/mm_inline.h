@@ -2,7 +2,7 @@
 #define LINUX_MM_INLINE_H
 
 #include <linux/atomic.h>
-#include <linux/huge_mm.h>
+/* huge_mm.h removed - was empty stub */
 #include <linux/swap.h>
 #include <linux/string.h>
 #include <linux/swapops.h>
@@ -69,11 +69,7 @@ void lruvec_add_folio(struct lruvec *lruvec, struct folio *folio)
 		list_add(&folio->lru, &lruvec->lists[lru]);
 }
 
-static __always_inline void add_page_to_lru_list(struct page *page,
-				struct lruvec *lruvec)
-{
-	lruvec_add_folio(lruvec, page_folio(page));
-}
+/* add_page_to_lru_list removed - never called */
 
 static __always_inline
 void lruvec_add_folio_tail(struct lruvec *lruvec, struct folio *folio)
@@ -86,11 +82,7 @@ void lruvec_add_folio_tail(struct lruvec *lruvec, struct folio *folio)
 	list_add_tail(&folio->lru, &lruvec->lists[lru]);
 }
 
-static __always_inline void add_page_to_lru_list_tail(struct page *page,
-				struct lruvec *lruvec)
-{
-	lruvec_add_folio_tail(lruvec, page_folio(page));
-}
+/* add_page_to_lru_list_tail removed - never called */
 
 static __always_inline
 void lruvec_del_folio(struct lruvec *lruvec, struct folio *folio)
@@ -109,21 +101,7 @@ static __always_inline void del_page_from_lru_list(struct page *page,
 	lruvec_del_folio(lruvec, page_folio(page));
 }
 
-static inline struct anon_vma_name *anon_vma_name(struct vm_area_struct *vma)
-{
-	return NULL;
-}
-
-static inline void dup_anon_vma_name(struct vm_area_struct *orig_vma,
-				     struct vm_area_struct *new_vma) {}
-static inline void free_anon_vma_name(struct vm_area_struct *vma) {}
-
-static inline bool anon_vma_name_eq(struct anon_vma_name *anon_name1,
-				    struct anon_vma_name *anon_name2)
-{
-	return true;
-}
-
+/* anon_vma_name, anon_vma_name_eq, dup_anon_vma_name, free_anon_vma_name removed - never called */
 
 static inline void init_tlb_flush_pending(struct mm_struct *mm)
 {

@@ -19,18 +19,25 @@ CFLAGS_REMOVE_mem_encrypt_amd.o		= -pg
 CFLAGS_REMOVE_mem_encrypt_identity.o	= -pg
 endif
 
-obj-y				:=  init.o init_$(BITS).o fault.o ioremap.o extable.o mmap.o \
-				    pgtable.o physaddr.o tlb.o cpu_entry_area.o maccess.o pgprot.o
+# Common files for both MMU and NOMMU
+obj-y				:= fault.o ioremap.o extable.o pgprot.o
+
+# MMU-specific files (replaced by NOMMU stubs when CONFIG_MMU=n)
+mmu-y				:= nommu-stubs.o
+mmu-$(CONFIG_MMU)		:= init.o init_$(BITS).o mmap.o pgtable.o tlb.o cpu_entry_area.o
+
+obj-y				+= $(mmu-y)
 
 obj-y				+= pat/
 
-# Make sure __phys_addr has no stackprotector
-CFLAGS_physaddr.o		:= -fno-stack-protector
+# Make sure mem_encrypt_identity has no stackprotector
 CFLAGS_mem_encrypt_identity.o	:= -fno-stack-protector
 
 CFLAGS_fault.o := -I $(srctree)/$(src)/../include/asm/trace
 
-obj-$(CONFIG_X86_32)		+= pgtable_32.o iomap_32.o
+# pgtable_32 has MMU-specific code, use nommu-stubs when !MMU
+obj-$(CONFIG_X86_32)		+= iomap_32.o
+obj-$(CONFIG_MMU)		+= pgtable_32.o
 
 obj-$(CONFIG_HUGETLB_PAGE)	+= hugetlbpage.o
 obj-$(CONFIG_PTDUMP_CORE)	+= dump_pagetables.o

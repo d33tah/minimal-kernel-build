@@ -47,47 +47,7 @@ ENTRY(phys_startup_64)
 
 jiffies = jiffies_64;
 
-#if defined(CONFIG_X86_64)
-/*
- * On 64-bit, align RODATA to 2MB so we retain large page mappings for
- * boundaries spanning kernel text, rodata and data sections.
- *
- * However, kernel identity mappings will have different RWX permissions
- * to the pages mapping to text and to the pages padding (which are freed) the
- * text section. Hence kernel identity mappings will be broken to smaller
- * pages. For 64-bit, kernel text and kernel identity mappings are different,
- * so we can enable protection checks as well as retain 2MB large page
- * mappings for kernel text.
- */
-#define X86_ALIGN_RODATA_BEGIN	. = ALIGN(HPAGE_SIZE);
-
-#define X86_ALIGN_RODATA_END					\
-		. = ALIGN(HPAGE_SIZE);				\
-		__end_rodata_hpage_align = .;			\
-		__end_rodata_aligned = .;
-
-#define ALIGN_ENTRY_TEXT_BEGIN	. = ALIGN(PMD_SIZE);
-#define ALIGN_ENTRY_TEXT_END	. = ALIGN(PMD_SIZE);
-
-/*
- * This section contains data which will be mapped as decrypted. Memory
- * encryption operates on a page basis. Make this section PMD-aligned
- * to avoid splitting the pages while mapping the section early.
- *
- * Note: We use a separate section so that only this section gets
- * decrypted to avoid exposing more than we wish.
- */
-#define BSS_DECRYPTED						\
-	. = ALIGN(PMD_SIZE);					\
-	__start_bss_decrypted = .;				\
-	*(.bss..decrypted);					\
-	. = ALIGN(PAGE_SIZE);					\
-	__start_bss_decrypted_unused = .;			\
-	. = ALIGN(PMD_SIZE);					\
-	__end_bss_decrypted = .;				\
-
-#else
-
+/* X86_32 - simplified alignment macros */
 #define X86_ALIGN_RODATA_BEGIN
 #define X86_ALIGN_RODATA_END					\
 		. = ALIGN(PAGE_SIZE);				\
@@ -97,29 +57,18 @@ jiffies = jiffies_64;
 #define ALIGN_ENTRY_TEXT_END
 #define BSS_DECRYPTED
 
-#endif
-
 PHDRS {
 	text PT_LOAD FLAGS(5);          /* R_E */
 	data PT_LOAD FLAGS(6);          /* RW_ */
-#ifdef CONFIG_X86_64
-#ifdef CONFIG_SMP
-	percpu PT_LOAD FLAGS(6);        /* RW_ */
-#endif
-	init PT_LOAD FLAGS(7);          /* RWE */
-#endif
+	/* X86_64 percpu/init segments removed */
 	note PT_NOTE FLAGS(0);          /* ___ */
 }
 
 SECTIONS
 {
-#ifdef CONFIG_X86_32
+	/* X86_32 only */
 	. = LOAD_OFFSET + LOAD_PHYSICAL_ADDR;
 	phys_startup_32 = ABSOLUTE(startup_32 - LOAD_OFFSET);
-#else
-	. = __START_KERNEL;
-	phys_startup_64 = ABSOLUTE(startup_64 - LOAD_OFFSET);
-#endif
 
 	/* Text and read-only data */
 	.text :  AT(ADDR(.text) - LOAD_OFFSET) {
@@ -138,12 +87,6 @@ SECTIONS
 		SOFTIRQENTRY_TEXT
 		STATIC_CALL_TEXT
 		*(.gnu.warning)
-
-#ifdef CONFIG_RETPOLINE
-		__indirect_thunk_start = .;
-		*(.text.__x86.*)
-		__indirect_thunk_end = .;
-#endif
 	} :text =0xcccc
 
 	/* End of text section, which should occupy whole number of pages */
@@ -214,21 +157,10 @@ SECTIONS
 		__init_begin = .; /* paired with __init_end */
 	}
 
-#if defined(CONFIG_X86_64) && defined(CONFIG_SMP)
-	/*
-	 * percpu offsets are zero-based on SMP.  PERCPU_VADDR() changes the
-	 * output PHDR, so the next output section - .init.text - should
-	 * start another segment - init.
-	 */
-	PERCPU_VADDR(INTERNODE_CACHE_BYTES, 0, :percpu)
-	ASSERT(SIZEOF(.data..percpu) < CONFIG_PHYSICAL_START,
-	       "per-CPU data too large - increase CONFIG_PHYSICAL_START")
-#endif
+	/* PERCPU_VADDR removed - X86_32 or !SMP */
 
 	INIT_TEXT_SECTION(PAGE_SIZE)
-#ifdef CONFIG_X86_64
-	:init
-#endif
+	/* :init segment removed - X86_32 */
 
 	/*
 	 * Section for code used exclusively before alternatives are run. All
@@ -271,36 +203,6 @@ SECTIONS
 		__parainstructions_end = .;
 	}
 
-#ifdef CONFIG_RETPOLINE
-	/*
-	 * List of instructions that call/jmp/jcc to retpoline thunks
-	 * __x86_indirect_thunk_*(). These instructions can be patched along
-	 * with alternatives, after which the section can be freed.
-	 */
-	. = ALIGN(8);
-	.retpoline_sites : AT(ADDR(.retpoline_sites) - LOAD_OFFSET) {
-		__retpoline_sites = .;
-		*(.retpoline_sites)
-		__retpoline_sites_end = .;
-	}
-
-	. = ALIGN(8);
-	.return_sites : AT(ADDR(.return_sites) - LOAD_OFFSET) {
-		__return_sites = .;
-		*(.return_sites)
-		__return_sites_end = .;
-	}
-#endif
-
-#ifdef CONFIG_X86_KERNEL_IBT
-	. = ALIGN(8);
-	.ibt_endbr_seal : AT(ADDR(.ibt_endbr_seal) - LOAD_OFFSET) {
-		__ibt_endbr_seal = .;
-		*(.ibt_endbr_seal)
-		__ibt_endbr_seal_end = .;
-	}
-#endif
-
 	/*
 	 * struct alt_inst entries. From the header (alternative.h):
 	 * "Alternative instructions for different CPU types or capabilities"
@@ -342,9 +244,8 @@ SECTIONS
 		EXIT_DATA
 	}
 
-#if !defined(CONFIG_X86_64) || !defined(CONFIG_SMP)
+	/* X86_32 - PERCPU_SECTION is always included */
 	PERCPU_SECTION(INTERNODE_CACHE_BYTES)
-#endif
 
 	. = ALIGN(PAGE_SIZE);
 
@@ -365,11 +266,7 @@ SECTIONS
 		__smp_locks_end = .;
 	}
 
-#ifdef CONFIG_X86_64
-	.data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
-		NOSAVE_DATA
-	}
-#endif
+	/* .data_nosave removed - X86_32 */
 
 	/* BSS */
 	. = ALIGN(PAGE_SIZE);
@@ -439,11 +336,7 @@ SECTIONS
 	 */
 	.got.plt (INFO) : { *(.got.plt) }
 	ASSERT(SIZEOF(.got.plt) == 0 ||
-#ifdef CONFIG_X86_64
-	       SIZEOF(.got.plt) == 0x18,
-#else
-	       SIZEOF(.got.plt) == 0xc,
-#endif
+	       SIZEOF(.got.plt) == 0xc, /* X86_32 */
 	       "Unexpected GOT/PLT entries detected!")
 
 	/*
@@ -477,27 +370,5 @@ SECTIONS
 . = ASSERT((_end - LOAD_OFFSET <= KERNEL_IMAGE_SIZE),
 	   "kernel image bigger than KERNEL_IMAGE_SIZE");
 
-#ifdef CONFIG_X86_64
-/*
- * Per-cpu symbols which need to be offset from __per_cpu_load
- * for the boot processor.
- */
-#define INIT_PER_CPU(x) init_per_cpu__##x = ABSOLUTE(x) + __per_cpu_load
-INIT_PER_CPU(gdt_page);
-INIT_PER_CPU(fixed_percpu_data);
-INIT_PER_CPU(irq_stack_backing_store);
-
-#ifdef CONFIG_SMP
-. = ASSERT((fixed_percpu_data == 0),
-           "fixed_percpu_data is not at start of per-cpu area");
-#endif
-
-#endif /* CONFIG_X86_64 */
-
-#ifdef CONFIG_KEXEC_CORE
-#include <asm/kexec.h>
-
-. = ASSERT(kexec_control_code_size <= KEXEC_CONTROL_CODE_MAX_SIZE,
-           "kexec control code size is too big");
-#endif
+/* INIT_PER_CPU and KEXEC sections removed - X86_32, !SMP, !KEXEC */
 

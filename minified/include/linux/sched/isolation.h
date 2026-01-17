@@ -2,8 +2,6 @@
 #define _LINUX_SCHED_ISOLATION_H
 
 #include <linux/cpumask.h>
-#include <linux/init.h>
-#include <linux/tick.h>
 
 enum hk_type {
 	HK_TYPE_TIMER,
@@ -18,12 +16,9 @@ enum hk_type {
 	HK_TYPE_MAX
 };
 
-
 static inline const struct cpumask *housekeeping_cpumask(enum hk_type type)
 {
 	return cpu_possible_mask;
 }
-
-static inline void housekeeping_init(void) { }
-
+/* housekeeping_init removed - never called */
 #endif  

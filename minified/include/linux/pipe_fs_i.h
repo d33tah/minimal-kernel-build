@@ -1,15 +1,6 @@
 #ifndef _LINUX_PIPE_FS_I_H
 #define _LINUX_PIPE_FS_I_H
 
-#define PIPE_DEF_BUFFERS	16
-
-#define PIPE_BUF_FLAG_LRU	0x01	 
-#define PIPE_BUF_FLAG_ATOMIC	0x02	 
-#define PIPE_BUF_FLAG_GIFT	0x04	 
-#define PIPE_BUF_FLAG_PACKET	0x08	 
-#define PIPE_BUF_FLAG_CAN_MERGE	0x10	 
-#define PIPE_BUF_FLAG_WHOLE	0x20	 
-
 struct pipe_buffer {
 	struct page *page;
 	unsigned int offset, len;
@@ -33,8 +24,7 @@ struct pipe_inode_info {
 	unsigned int w_counter;
 	bool poll_usage;
 	struct page *tmp_page;
-	struct fasync_struct *fasync_readers;
-	struct fasync_struct *fasync_writers;
+	/* fasync_readers, fasync_writers removed - never accessed */
 	struct pipe_buffer *bufs;
 	struct user_struct *user;
 };
@@ -78,9 +68,6 @@ static inline void pipe_buf_release(struct pipe_inode_info *pipe,
 	ops->release(pipe, buf);
 }
 
-#define PIPE_SIZE		PAGE_SIZE
-
-
-void free_pipe_info(struct pipe_inode_info *);
+/* free_pipe_info removed - empty stub never called */
 
 #endif

@@ -42,9 +42,7 @@ static inline bool radix_tree_is_internal_node(void *ptr)
 #define RADIX_TREE_MAX_TAGS	XA_MAX_MARKS
 #define RADIX_TREE_TAG_LONGS	XA_MARK_LONGS
 
-#define RADIX_TREE_INDEX_BITS  (8   * sizeof(unsigned long))
-#define RADIX_TREE_MAX_PATH (DIV_ROUND_UP(RADIX_TREE_INDEX_BITS, \
-					  RADIX_TREE_MAP_SHIFT))
+/* RADIX_TREE_INDEX_BITS, RADIX_TREE_MAX_PATH removed - never used */
 
 #define ROOT_IS_IDR	((__force gfp_t)4)
 #define ROOT_TAG_SHIFT	(__GFP_BITS_SHIFT)
@@ -70,8 +68,6 @@ int radix_tree_insert(struct radix_tree_root *, unsigned long index,
 void *__radix_tree_lookup(const struct radix_tree_root *, unsigned long index,
 			  struct radix_tree_node **nodep, void __rcu ***slotp);
 void *radix_tree_lookup(const struct radix_tree_root *, unsigned long);
-void __rcu **radix_tree_lookup_slot(const struct radix_tree_root *,
-					unsigned long index);
 void __radix_tree_replace(struct radix_tree_root *, struct radix_tree_node *,
 			  void __rcu **slot, void *entry);
 void radix_tree_iter_replace(struct radix_tree_root *,
@@ -88,11 +84,7 @@ void __rcu **idr_get_free(struct radix_tree_root *root,
 			      struct radix_tree_iter *iter, gfp_t gfp,
 			      unsigned long max);
 
-enum {
-	RADIX_TREE_ITER_TAG_MASK = 0x0f,	 
-	RADIX_TREE_ITER_TAGGED   = 0x10,	 
-	RADIX_TREE_ITER_CONTIG   = 0x20,	 
-};
+/* RADIX_TREE_ITER enum removed - never used */
 
 static __always_inline void __rcu **
 radix_tree_iter_init(struct radix_tree_iter *iter, unsigned long start)
@@ -102,9 +94,6 @@ radix_tree_iter_init(struct radix_tree_iter *iter, unsigned long start)
 	iter->next_index = start;
 	return NULL;
 }
-
-void __rcu **radix_tree_next_chunk(const struct radix_tree_root *,
-			     struct radix_tree_iter *iter, unsigned flags);
 
 static inline unsigned long
 __radix_tree_iter_add(struct radix_tree_iter *iter, unsigned long slots)

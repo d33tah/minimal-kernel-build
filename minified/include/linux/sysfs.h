@@ -7,21 +7,20 @@
 #include <linux/errno.h>
 #include <linux/list.h>
 #include <linux/lockdep.h>
-#include <linux/kobject_ns.h>
+/* kobject_ns.h removed - never used */
 #include <linux/stat.h>
 #include <linux/atomic.h>
 
 struct kobject;
-struct module;
 struct bin_attribute;
-enum kobj_ns_type;
+/* enum kobj_ns_type forward declaration removed - never used */
 
 struct attribute {
 	const char		*name;
 	umode_t			mode;
 };
 
-#define sysfs_attr_init(attr) do {} while (0)
+/* sysfs_attr_init removed - unused */
 
 struct attribute_group {
 	const char		*name;
@@ -34,8 +33,6 @@ struct attribute_group {
 };
 
 
-#define SYSFS_PREALLOC 010000
-
 #define __ATTR(_name, _mode, _show, _store) {				\
 	.attr = {.name = __stringify(_name),				\
 		 .mode = VERIFY_OCTAL_PERMISSIONS(_mode) },		\
@@ -43,41 +40,7 @@ struct attribute_group {
 	.store	= _store,						\
 }
 
-#define __ATTR_PREALLOC(_name, _mode, _show, _store) {			\
-	.attr = {.name = __stringify(_name),				\
-		 .mode = SYSFS_PREALLOC | VERIFY_OCTAL_PERMISSIONS(_mode) },\
-	.show	= _show,						\
-	.store	= _store,						\
-}
-
-#define __ATTR_RO(_name) {						\
-	.attr	= { .name = __stringify(_name), .mode = 0444 },		\
-	.show	= _name##_show,						\
-}
-
-#define __ATTR_RO_MODE(_name, _mode) {					\
-	.attr	= { .name = __stringify(_name),				\
-		    .mode = VERIFY_OCTAL_PERMISSIONS(_mode) },		\
-	.show	= _name##_show,						\
-}
-
-#define __ATTR_RW_MODE(_name, _mode) {					\
-	.attr	= { .name = __stringify(_name),				\
-		    .mode = VERIFY_OCTAL_PERMISSIONS(_mode) },		\
-	.show	= _name##_show,						\
-	.store	= _name##_store,					\
-}
-
-#define __ATTR_WO(_name) {						\
-	.attr	= { .name = __stringify(_name), .mode = 0200 },		\
-	.store	= _name##_store,					\
-}
-
-#define __ATTR_RW(_name) __ATTR(_name, 0644, _name##_show, _name##_store)
-
-#define __ATTR_NULL { .attr = { .name = NULL } }
-
-#define __ATTR_IGNORE_LOCKDEP	__ATTR
+/* __ATTR_RO, __ATTR_WO, __ATTR_RW removed - unused */
 
 #define __ATTRIBUTE_GROUPS(_name)				\
 static const struct attribute_group *_name##_groups[] = {	\
@@ -109,32 +72,14 @@ struct bin_attribute {
 		    struct vm_area_struct *vma);
 };
 
-#define sysfs_bin_attr_init(bin_attr) sysfs_attr_init(&(bin_attr)->attr)
+/* sysfs_bin_attr_init removed - unused */
 
 struct sysfs_ops {
 	ssize_t	(*show)(struct kobject *, struct attribute *, char *);
 	ssize_t	(*store)(struct kobject *, struct attribute *, const char *, size_t);
 };
 
-
-static inline int sysfs_create_file_ns(struct kobject *kobj,
-				       const struct attribute *attr,
-				       const void *ns)
-{
-	return 0;
-}
-
-static inline void sysfs_remove_file_ns(struct kobject *kobj,
-					const struct attribute *attr,
-					const void *ns)
-{
-}
-
-
-static inline void sysfs_notify(struct kobject *kobj, const char *dir,
-				const char *attr)
-{
-}
+/* sysfs_notify removed - unused */
 
 static inline int __must_check sysfs_init(void)
 {
@@ -143,11 +88,6 @@ static inline int __must_check sysfs_init(void)
 
 
 
-__printf(2, 3)
-static inline int sysfs_emit(char *buf, const char *fmt, ...)
-{
-	return 0;
-}
-
+/* sysfs_emit removed - no callers */
 
 #endif  

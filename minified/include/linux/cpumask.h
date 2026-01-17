@@ -13,11 +13,8 @@ typedef struct cpumask { DECLARE_BITMAP(bits, NR_CPUS); } cpumask_t;
 
 #define cpumask_pr_args(maskp)		nr_cpu_ids, cpumask_bits(maskp)
 
-#if NR_CPUS == 1
+/* NR_CPUS == 1 */
 #define nr_cpu_ids		1U
-#else
-extern unsigned int nr_cpu_ids;
-#endif
 
 #define nr_cpumask_bits	((unsigned int)NR_CPUS)
 
@@ -29,7 +26,7 @@ extern struct cpumask __cpu_active_mask;
 #define cpu_possible_mask ((const struct cpumask *)&__cpu_possible_mask)
 #define cpu_online_mask   ((const struct cpumask *)&__cpu_online_mask)
 #define cpu_present_mask  ((const struct cpumask *)&__cpu_present_mask)
-#define cpu_active_mask   ((const struct cpumask *)&__cpu_active_mask)
+/* cpu_active_mask removed - never used */
 
 extern atomic_t __num_online_cpus;
 
@@ -48,12 +45,6 @@ static __always_inline unsigned int cpumask_check(unsigned int cpu)
 static inline unsigned int cpumask_first(const struct cpumask *srcp)
 {
 	return 0;
-}
-
-
-static inline unsigned int cpumask_next(int n, const struct cpumask *srcp)
-{
-	return n+1;
 }
 
 static inline unsigned int cpumask_any_but(const struct cpumask *mask,
@@ -106,19 +97,8 @@ static inline void cpumask_clear(struct cpumask *dstp)
 
 
 
-static inline void cpumask_or(struct cpumask *dstp, const struct cpumask *src1p,
-			      const struct cpumask *src2p)
-{
-	bitmap_or(cpumask_bits(dstp), cpumask_bits(src1p),
-				      cpumask_bits(src2p), nr_cpumask_bits);
-}
 
-static inline bool cpumask_equal(const struct cpumask *src1p,
-				const struct cpumask *src2p)
-{
-	return bitmap_equal(cpumask_bits(src1p), cpumask_bits(src2p),
-						 nr_cpumask_bits);
-}
+/* cpumask_equal removed - no callers */
 
 static inline bool cpumask_empty(const struct cpumask *srcp)
 {
@@ -126,8 +106,7 @@ static inline bool cpumask_empty(const struct cpumask *srcp)
 }
 
 
-#define cpumask_any(srcp) cpumask_first(srcp)
-
+/* cpumask_any removed - unused */
 #define cpumask_of(cpu) (get_cpu_mask(cpu))
 
 
@@ -138,16 +117,10 @@ static inline unsigned int cpumask_size(void)
 
 typedef struct cpumask cpumask_var_t[1];
 
-#define __cpumask_var_read_mostly
-
-static inline void alloc_bootmem_cpumask_var(cpumask_var_t *mask)
-{
-}
+/* __cpumask_var_read_mostly, alloc_bootmem_cpumask_var removed - never used */
 
 extern const DECLARE_BITMAP(cpu_all_bits, NR_CPUS);
 #define cpu_all_mask to_cpumask(cpu_all_bits)
-
-#define cpu_none_mask to_cpumask(cpu_bit_bitmap[0])
 
 #define for_each_possible_cpu(cpu) for_each_cpu((cpu), cpu_possible_mask)
 #define for_each_online_cpu(cpu)   for_each_cpu((cpu), cpu_online_mask)
@@ -219,7 +192,7 @@ static inline bool cpu_possible(unsigned int cpu)
 	return cpu == 0;
 }
 
-#define cpu_is_offline(cpu)	unlikely(!cpu_online(cpu))
+/* cpu_is_offline removed - unused */
 
 /* NR_CPUS <= BITS_PER_LONG always true */
 #define CPU_BITS_ALL						\
@@ -227,12 +200,7 @@ static inline bool cpu_possible(unsigned int cpu)
 	[BITS_TO_LONGS(NR_CPUS)-1] = BITMAP_LAST_WORD_MASK(NR_CPUS)	\
 }
 
-static inline ssize_t
-cpumap_print_to_pagebuf(bool list, char *buf, const struct cpumask *mask)
-{
-	return bitmap_print_to_pagebuf(list, buf, cpumask_bits(mask),
-				      nr_cpu_ids);
-}
+/* cpumap_print_to_pagebuf removed - never called */
 
 
 /* NR_CPUS <= BITS_PER_LONG always true */

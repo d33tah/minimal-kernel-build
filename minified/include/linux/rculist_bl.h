@@ -40,32 +40,10 @@ static inline struct hlist_bl_node *hlist_bl_first(struct hlist_bl_head *h)
 		((unsigned long)h->first & ~LIST_BL_LOCKMASK);
 }
 
-static inline void hlist_bl_set_first(struct hlist_bl_head *h,
-					struct hlist_bl_node *n)
-{
-	LIST_BL_BUG_ON((unsigned long)n & LIST_BL_LOCKMASK);
-	LIST_BL_BUG_ON(((unsigned long)h->first & LIST_BL_LOCKMASK) !=
-							LIST_BL_LOCKMASK);
-	h->first = (struct hlist_bl_node *)((unsigned long)n | LIST_BL_LOCKMASK);
-}
-
 static inline bool hlist_bl_empty(const struct hlist_bl_head *h)
 {
 	return !((unsigned long)READ_ONCE(h->first) & ~LIST_BL_LOCKMASK);
 }
-
-static inline void hlist_bl_add_head(struct hlist_bl_node *n,
-					struct hlist_bl_head *h)
-{
-	struct hlist_bl_node *first = hlist_bl_first(h);
-
-	n->next = first;
-	if (first)
-		first->pprev = &n->next;
-	n->pprev = &h->first;
-	hlist_bl_set_first(h, n);
-}
-
 
 static inline void __hlist_bl_del(struct hlist_bl_node *n)
 {
@@ -81,21 +59,6 @@ static inline void __hlist_bl_del(struct hlist_bl_node *n)
 			 ((unsigned long)*pprev & LIST_BL_LOCKMASK)));
 	if (next)
 		next->pprev = pprev;
-}
-
-static inline void hlist_bl_del(struct hlist_bl_node *n)
-{
-	__hlist_bl_del(n);
-	n->next = LIST_POISON1;
-	n->pprev = LIST_POISON2;
-}
-
-static inline void hlist_bl_del_init(struct hlist_bl_node *n)
-{
-	if (!hlist_bl_unhashed(n)) {
-		__hlist_bl_del(n);
-		INIT_HLIST_BL_NODE(n);
-	}
 }
 
 static inline void hlist_bl_lock(struct hlist_bl_head *b)
@@ -119,11 +82,7 @@ static inline bool hlist_bl_is_locked(struct hlist_bl_head *b)
 		({ tpos = hlist_bl_entry(pos, typeof(*tpos), member); 1;}); \
 	     pos = pos->next)
 
-#define hlist_bl_for_each_entry_safe(tpos, pos, n, head, member)	 \
-	for (pos = hlist_bl_first(head);				 \
-	     pos && ({ n = pos->next; 1; }) && 				 \
-		({ tpos = hlist_bl_entry(pos, typeof(*tpos), member); 1;}); \
-	     pos = n)
+/* hlist_bl_for_each_entry_safe removed - unused */
 
 
 /* RCU-specific functions */
@@ -141,12 +100,6 @@ static inline struct hlist_bl_node *hlist_bl_first_rcu(struct hlist_bl_head *h)
 {
 	return (struct hlist_bl_node *)
 		((unsigned long)rcu_dereference_check(h->first, hlist_bl_is_locked(h)) & ~LIST_BL_LOCKMASK);
-}
-
-static inline void hlist_bl_del_rcu(struct hlist_bl_node *n)
-{
-	__hlist_bl_del(n);
-	n->pprev = LIST_POISON2;
 }
 
 static inline void hlist_bl_add_head_rcu(struct hlist_bl_node *n,

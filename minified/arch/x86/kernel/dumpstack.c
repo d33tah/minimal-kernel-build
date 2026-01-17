@@ -8,18 +8,14 @@
 #include <linux/ptrace.h>
 #include <linux/sched/debug.h>
 #include <linux/sched/task_stack.h>
-#include <linux/kexec.h>
 #include <linux/bug.h>
-#include <linux/nmi.h>
 #include <linux/sysfs.h>
-#include <linux/kasan.h>
 
 #include <asm/cpu_entry_area.h>
 #include <asm/stacktrace.h>
 #include <asm/unwind.h>
 
-int panic_on_unrecovered_nmi;
-int panic_on_io_nmi;
+/* panic_on_unrecovered_nmi, panic_on_io_nmi removed - never set to non-zero */
 static int die_counter;
 
 static struct pt_regs exec_summary_regs;
@@ -28,15 +24,15 @@ bool noinstr in_task_stack(unsigned long *stack, struct task_struct *task,
 			   struct stack_info *info)
 {
 	unsigned long *begin = task_stack_page(task);
-	unsigned long *end   = task_stack_page(task) + THREAD_SIZE;
+	unsigned long *end = task_stack_page(task) + THREAD_SIZE;
 
 	if (stack < begin || stack >= end)
 		return false;
 
-	info->type	= STACK_TYPE_TASK;
-	info->begin	= begin;
-	info->end	= end;
-	info->next_sp	= NULL;
+	info->type = STACK_TYPE_TASK;
+	info->begin = begin;
+	info->end = end;
+	info->next_sp = NULL;
 
 	return true;
 }
@@ -51,22 +47,20 @@ bool noinstr in_entry_stack(unsigned long *stack, struct stack_info *info)
 	if ((void *)stack < begin || (void *)stack >= end)
 		return false;
 
-	info->type	= STACK_TYPE_ENTRY;
-	info->begin	= begin;
-	info->end	= end;
-	info->next_sp	= NULL;
+	info->type = STACK_TYPE_ENTRY;
+	info->begin = begin;
+	info->end = end;
+	info->next_sp = NULL;
 
 	return true;
 }
 
-
 static void show_trace_log_lvl(struct task_struct *task, struct pt_regs *regs,
-			unsigned long *stack, const char *log_lvl)
+			       unsigned long *stack, const char *log_lvl)
 {
 	/* Stub: stack trace printing not needed for minimal kernel */
 	printk("%sCall Trace: <stubbed>\n", log_lvl);
 }
-
 
 void show_stack_regs(struct pt_regs *regs)
 {
@@ -84,12 +78,11 @@ unsigned long oops_begin(void)
 
 	oops_enter();
 
-	 
 	raw_local_irq_save(flags);
 	cpu = smp_processor_id();
 	if (!arch_spin_trylock(&die_lock)) {
 		if (cpu == die_owner)
-			 ;
+			;
 		else
 			arch_spin_lock(&die_lock);
 	}
@@ -105,20 +98,16 @@ void __noreturn rewind_stack_and_make_dead(int signr);
 
 void oops_end(unsigned long flags, struct pt_regs *regs, int signr)
 {
-	if (regs && kexec_should_crash(current))
-		crash_kexec(regs);
-
 	bust_spinlocks(0);
 	die_owner = -1;
 	add_taint(TAINT_DIE, LOCKDEP_NOW_UNRELIABLE);
 	die_nest_count--;
 	if (!die_nest_count)
-		 
+
 		arch_spin_unlock(&die_lock);
 	raw_local_irq_restore(flags);
 	oops_exit();
 
-	 
 	__show_regs(&exec_summary_regs, SHOW_REGS_ALL, KERN_DEFAULT);
 
 	if (!signr)
@@ -128,8 +117,6 @@ void oops_end(unsigned long flags, struct pt_regs *regs, int signr)
 	if (panic_on_oops)
 		panic("Fatal exception");
 
-	 
-	kasan_unpoison_task_stack(current);
 	rewind_stack_and_make_dead(signr);
 }
 NOKPROBE_SYMBOL(oops_end);
@@ -146,8 +133,8 @@ NOKPROBE_SYMBOL(__die_header);
 static int __die_body(const char *str, struct pt_regs *regs, long err)
 {
 	/* Stub: minimal crash info */
-	return notify_die(DIE_OOPS, str, regs, err,
-			current->thread.trap_nr, SIGSEGV) == NOTIFY_STOP;
+	return notify_die(DIE_OOPS, str, regs, err, current->thread.trap_nr,
+			  SIGSEGV) == NOTIFY_STOP;
 }
 NOKPROBE_SYMBOL(__die_body);
 
@@ -174,8 +161,6 @@ void die_addr(const char *str, struct pt_regs *regs, long err, long gp_addr)
 	int sig = SIGSEGV;
 
 	__die_header(str, regs, err);
-	if (gp_addr)
-		kasan_non_canonical_hook(gp_addr);
 	if (__die_body(str, regs, err))
 		sig = 0;
 	oops_end(flags, regs, sig);

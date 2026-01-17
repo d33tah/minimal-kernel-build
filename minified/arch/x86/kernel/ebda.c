@@ -5,35 +5,28 @@
 #include <asm/setup.h>
 #include <asm/bios_ebda.h>
 
+#define BIOS_RAM_SIZE_KB_PTR 0x413
 
-#define BIOS_RAM_SIZE_KB_PTR	0x413
-
-#define BIOS_START_MIN		0x20000U	 
-#define BIOS_START_MAX		0x9f000U	 
+#define BIOS_START_MIN 0x20000U
+#define BIOS_START_MAX 0x9f000U
 
 void __init reserve_bios_regions(void)
 {
 	unsigned int bios_start, ebda_start;
 
-	 
 	if (!x86_platform.legacy.reserve_bios_regions)
 		return;
 
-	 
 	bios_start = *(unsigned short *)__va(BIOS_RAM_SIZE_KB_PTR);
 	bios_start <<= 10;
 
-	 
 	if (bios_start < BIOS_START_MIN || bios_start > BIOS_START_MAX)
 		bios_start = BIOS_START_MAX;
 
-	 
 	ebda_start = get_bios_ebda();
 
-	 
 	if (ebda_start >= BIOS_START_MIN && ebda_start < bios_start)
 		bios_start = ebda_start;
 
-	 
 	memblock_reserve(bios_start, 0x100000 - bios_start);
 }

@@ -6,28 +6,13 @@
 
 struct pt_regs;
 
-struct machine_ops {
-	void (*restart)(char *cmd);
-	void (*halt)(void);
-	void (*power_off)(void);
-	void (*shutdown)(void);
-	void (*crash_shutdown)(struct pt_regs *);
-	void (*emergency_restart)(void);
-};
+/* struct machine_ops removed - unused */
 
-extern struct machine_ops machine_ops;
-extern int crashing_cpu;
+/* native_machine_crash_shutdown removed - declared but never implemented */
+/* native_machine_shutdown removed - never called */
+/* machine_real_restart removed - never called */
 
-void native_machine_crash_shutdown(struct pt_regs *regs);
-void native_machine_shutdown(void);
-void __noreturn machine_real_restart(unsigned int type);
- 
-#define MRR_BIOS	0
-#define MRR_APM		1
-
-typedef void (*nmi_shootdown_cb)(int, struct pt_regs*);
-void nmi_panic_self_stop(struct pt_regs *regs);
-/* nmi_shootdown_cpus removed - stub never called */
-void run_crash_ipi_callback(struct pt_regs *regs);
+/* nmi_panic_self_stop removed - only called by nmi_panic which was removed */
+/* nmi_shootdown_cpus, run_crash_ipi_callback removed - stub never called */
 
 #endif  

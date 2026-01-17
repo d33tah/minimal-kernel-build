@@ -21,7 +21,7 @@ enum clock_event_state {
 # define CLOCK_EVT_FEAT_PERIODIC	0x000001
 # define CLOCK_EVT_FEAT_ONESHOT		0x000002
 # define CLOCK_EVT_FEAT_KTIME		0x000004
-# define CLOCK_EVT_FEAT_C3STOP		0x000008
+/* CLOCK_EVT_FEAT_C3STOP removed - unused */
 # define CLOCK_EVT_FEAT_DUMMY		0x000010
 
 struct clock_event_device {
@@ -35,15 +35,12 @@ struct clock_event_device {
 	u32			shift;
 	enum clock_event_state	state_use_accessors;
 	unsigned int		features;
-	unsigned long		retries;
-
+	/* retries removed - only incremented, never read */
 	int			(*set_state_periodic)(struct clock_event_device *);
 	int			(*set_state_oneshot)(struct clock_event_device *);
 	int			(*set_state_oneshot_stopped)(struct clock_event_device *);
 	int			(*set_state_shutdown)(struct clock_event_device *);
-	int			(*tick_resume)(struct clock_event_device *);
-
-	void			(*broadcast)(const struct cpumask *mask);
+	/* tick_resume, broadcast removed - never called */
 	void			(*suspend)(struct clock_event_device *);
 	void			(*resume)(struct clock_event_device *);
 	unsigned long		min_delta_ticks;
@@ -52,7 +49,7 @@ struct clock_event_device {
 	const char		*name;
 	int			rating;
 	int			irq;
-	int			bound_on;
+	/* bound_on removed - never accessed */
 	const struct cpumask	*cpumask;
 	struct list_head	list;
 	struct module		*owner;
@@ -90,9 +87,6 @@ clockevents_calc_mult_shift(struct clock_event_device *ce, u32 freq, u32 maxsec)
 	return clocks_calc_mult_shift(&ce->mult, &ce->shift, NSEC_PER_SEC, freq, maxsec);
 }
 
-
-
-static inline int tick_check_broadcast_expired(void) { return 0; }
 
 
 #endif  

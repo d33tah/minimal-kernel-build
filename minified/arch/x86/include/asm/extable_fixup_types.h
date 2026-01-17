@@ -2,10 +2,9 @@
 #ifndef _ASM_X86_EXTABLE_FIXUP_TYPES_H
 #define _ASM_X86_EXTABLE_FIXUP_TYPES_H
 
- 
 #define EX_DATA_TYPE_MASK		((int)0x000000FF)
 #define EX_DATA_REG_MASK		((int)0x00000F00)
-#define EX_DATA_FLAG_MASK		((int)0x0000F000)
+/* EX_DATA_FLAG_MASK removed - never used */
 #define EX_DATA_IMM_MASK		((int)0xFFFF0000)
 
 #define EX_DATA_REG_SHIFT		8
@@ -20,12 +19,12 @@
 #define EX_REG_DS			EX_DATA_REG(8)
 #define EX_REG_ES			EX_DATA_REG(9)
 #define EX_REG_FS			EX_DATA_REG(10)
-#define EX_REG_GS			EX_DATA_REG(11)
+/* EX_REG_GS removed - never used */
 
  
 #define EX_FLAG_CLEAR_AX		EX_DATA_FLAG(1)
 #define EX_FLAG_CLEAR_DX		EX_DATA_FLAG(2)
-#define EX_FLAG_CLEAR_AX_DX		EX_DATA_FLAG(3)
+/* EX_FLAG_CLEAR_AX_DX removed - never used */
 
  
 #define	EX_TYPE_NONE			 0
@@ -35,13 +34,12 @@
 #define	EX_TYPE_COPY			 4
 #define	EX_TYPE_CLEAR_FS		 5
 #define	EX_TYPE_FPU_RESTORE		 6
-#define	EX_TYPE_BPF			 7
+/* EX_TYPE_BPF (7) removed - never used in minimal kernel */
 #define	EX_TYPE_WRMSR			 8
 #define	EX_TYPE_RDMSR			 9
 #define	EX_TYPE_WRMSR_SAFE		10  
-#define	EX_TYPE_RDMSR_SAFE		11  
-#define	EX_TYPE_WRMSR_IN_MCE		12
-#define	EX_TYPE_RDMSR_IN_MCE		13
+#define	EX_TYPE_RDMSR_SAFE		11
+/* EX_TYPE_WRMSR_IN_MCE (12), EX_TYPE_RDMSR_IN_MCE (13) removed - never used */
 #define	EX_TYPE_DEFAULT_MCE_SAFE	14
 #define	EX_TYPE_FAULT_MCE_SAFE		15
 
@@ -51,13 +49,13 @@
 #define	EX_TYPE_IMM_REG			17  
 #define	EX_TYPE_EFAULT_REG		(EX_TYPE_IMM_REG | EX_DATA_IMM(-EFAULT))
 #define	EX_TYPE_ZERO_REG		(EX_TYPE_IMM_REG | EX_DATA_IMM(0))
-#define	EX_TYPE_ONE_REG			(EX_TYPE_IMM_REG | EX_DATA_IMM(1))
+/* EX_TYPE_ONE_REG removed - never used */
 
-#define	EX_TYPE_FAULT_SGX		18
+/* EX_TYPE_FAULT_SGX (18) removed - no SGX in minimal kernel */
 
-#define	EX_TYPE_UCOPY_LEN		19  
+#define	EX_TYPE_UCOPY_LEN		19
 #define	EX_TYPE_UCOPY_LEN1		(EX_TYPE_UCOPY_LEN | EX_DATA_IMM(1))
 #define	EX_TYPE_UCOPY_LEN4		(EX_TYPE_UCOPY_LEN | EX_DATA_IMM(4))
-#define	EX_TYPE_UCOPY_LEN8		(EX_TYPE_UCOPY_LEN | EX_DATA_IMM(8))
+/* EX_TYPE_UCOPY_LEN8 removed - never used */
 
 #endif

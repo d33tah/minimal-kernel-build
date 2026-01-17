@@ -47,36 +47,36 @@ CFLAGS_irq.o := -I $(srctree)/$(src)/../include/asm/trace
 obj-y			:= process_$(BITS).o signal.o
 obj-$(CONFIG_COMPAT)	+= signal_compat.o
 obj-y			+= traps.o idt.o irq.o irq_$(BITS).o dumpstack_$(BITS).o
-obj-y			+= time.o ioport.o dumpstack.o nmi.o
+obj-y			+= time.o dumpstack.o nmi.o
 obj-$(CONFIG_MODIFY_LDT_SYSCALL)	+= ldt.o
 obj-y			+= setup.o x86_init.o i8259.o irqinit.o
 obj-$(CONFIG_JUMP_LABEL)	+= jump_label.o
 obj-$(CONFIG_IRQ_WORK)  += irq_work.o
-obj-y			+= probe_roms.o
+# probe_roms.o removed - probe_roms was empty stub
 obj-$(CONFIG_X86_32)	+= sys_ia32.o
 obj-$(CONFIG_IA32_EMULATION)	+= sys_ia32.o
 obj-$(CONFIG_X86_64)	+= sys_x86_64.o
 obj-$(CONFIG_X86_ESPFIX64)	+= espfix_64.o
 obj-$(CONFIG_SYSFS)	+= ksysfs.o
 obj-y			+= e820.o
-obj-y			+= pci-dma.o quirks.o
+obj-y			+= pci-dma.o
+# quirks.o removed - early_platform_quirks was empty stub
 obj-y			+= alternative.o i8253.o hw_breakpoint.o
-obj-y			+= tsc.o tsc_msr.o io_delay.o rtc.o
+# tsc_msr.o removed - cpu_khz_from_msr was stub returning 0
+obj-y			+= tsc.o io_delay.o rtc.o
 # resource.o removed - arch_remove_reservations never called
 obj-y			+= irqflags.o
-obj-y			+= static_call.o
+# static_call.o removed - __static_call_return0 never called
 
 obj-y				+= process.o
 obj-y				+= fpu/
 obj-y				+= ptrace.o
-obj-$(CONFIG_X86_32)		+= tls.o
-obj-$(CONFIG_IA32_EMULATION)	+= tls.o
-obj-y				+= step.o
+# tls.o removed - do_set_thread_area no longer called (CLONE_SETTLS never used)
+# step.o removed - user_disable_single_step was empty stub
 obj-$(CONFIG_INTEL_TXT)		+= tboot.o
 # i8237.o removed - empty stub
 # obj-y				+= stacktrace.o
 obj-y				+= cpu/
-obj-y				+= acpi/
 obj-y				+= reboot.o
 obj-$(CONFIG_X86_MSR)		+= msr.o
 obj-$(CONFIG_X86_CPUID)		+= cpuid.o
@@ -85,7 +85,7 @@ apm-y				:= apm_32.o
 obj-$(CONFIG_APM)		+= apm.o
 obj-$(CONFIG_SMP)		+= smp.o
 obj-$(CONFIG_SMP)		+= smpboot.o
-obj-$(CONFIG_X86_TSC)		+= tsc_sync.o
+# tsc_sync.o removed - tsc_verify_tsc_adjust/tsc_store_and_check_tsc_adjust were empty stubs
 obj-$(CONFIG_SMP)		+= setup_percpu.o
 obj-$(CONFIG_X86_MPPARSE)	+= mpparse.o
 obj-y				+= apic/
@@ -102,7 +102,6 @@ obj-$(CONFIG_KEXEC_CORE)	+= machine_kexec_$(BITS).o
 obj-$(CONFIG_KEXEC_CORE)	+= relocate_kernel_$(BITS).o crash.o
 obj-$(CONFIG_KEXEC_FILE)	+= kexec-bzimage64.o
 obj-$(CONFIG_CRASH_DUMP)	+= crash_dump_$(BITS).o
-obj-y				+= kprobes/
 obj-$(CONFIG_MODULES)		+= module.o
 obj-$(CONFIG_X86_32)		+= doublefault_32.o
 obj-$(CONFIG_KGDB)		+= kgdb.o

@@ -13,31 +13,22 @@
 #include <linux/kref.h>
 #include <linux/refcount.h>
 
-struct page;
+/* struct page, dentry forward decls removed - unused */
 struct device;
-struct dentry;
 
 enum wb_state {
 	WB_registered,
-	WB_writeback_running,
-	WB_has_dirty_io,
+	/* WB_writeback_running, WB_has_dirty_io removed - unused */
 };
 
-enum wb_stat_item {
-	NR_WB_STAT_ITEMS
-};
-
-
-enum wb_reason {
-	WB_REASON_BACKGROUND,
-};
-
+/* enum wb_stat_item removed - NR_WB_STAT_ITEMS was 0, stat array unused */
+/* enum wb_reason removed - only used in unused field start_all_reason */
 
 struct bdi_writeback {
-	struct backing_dev_info *bdi;	 
+	struct backing_dev_info *bdi;
 
-	unsigned long state;		 
-	unsigned long last_old_flush;	 
+	unsigned long state;
+	/* last_old_flush removed - write-only field */
 
 	struct list_head b_dirty;	 
 	struct list_head b_io;		 
@@ -45,31 +36,19 @@ struct bdi_writeback {
 	struct list_head b_dirty_time;	 
 	spinlock_t list_lock;		 
 
-	atomic_t writeback_inodes;	 
-	struct percpu_counter stat[NR_WB_STAT_ITEMS];
+	atomic_t writeback_inodes;
+	/* stat[NR_WB_STAT_ITEMS], congested removed - unused */
 
-	unsigned long congested;	 
-
-	unsigned long bw_time_stamp;	 
-	unsigned long dirtied_stamp;
-	unsigned long written_stamp;	 
-	unsigned long write_bandwidth;	 
-	unsigned long avg_write_bandwidth;  
-
-	 
-	unsigned long dirty_ratelimit;
-	unsigned long balanced_dirty_ratelimit;
+	/* bw_time_stamp, dirtied_stamp, written_stamp, write_bandwidth,
+	   avg_write_bandwidth, dirty_ratelimit, balanced_dirty_ratelimit,
+	   dirty_exceeded, dirty_sleep removed - write-only fields */
 
 	struct fprop_local_percpu completions;
-	int dirty_exceeded;
-	enum wb_reason start_all_reason;
 
-	spinlock_t work_lock;		 
+	spinlock_t work_lock;
 	struct list_head work_list;
-	struct delayed_work dwork;	 
-	struct delayed_work bw_dwork;	 
-
-	unsigned long dirty_sleep;	 
+	struct delayed_work dwork;
+	struct delayed_work bw_dwork;
 
 	struct list_head bdi_node;	 
 
@@ -77,18 +56,16 @@ struct bdi_writeback {
 
 struct backing_dev_info {
 	u64 id;
-	struct rb_node rb_node;  
+	/* rb_node removed - bdi_tree was never inserted into */
 	struct list_head bdi_list;
 	unsigned long ra_pages;	 
 	unsigned long io_pages;	 
 
-	struct kref refcnt;	 
-	unsigned int capabilities;  
-	unsigned int min_ratio;
-	unsigned int max_ratio, max_prop_frac;
+	struct kref refcnt;
+	unsigned int capabilities;
+	/* min_ratio, max_ratio, max_prop_frac removed - write-only */
 
-	 
-	atomic_long_t tot_write_bandwidth;
+	/* tot_write_bandwidth removed - never used */
 
 	struct bdi_writeback wb;   
 	struct list_head wb_list;  
@@ -98,7 +75,7 @@ struct backing_dev_info {
 	char dev_name[64];
 	struct device *owner;
 
-	struct timer_list laptop_mode_wb_timer;
+	/* laptop_mode_wb_timer removed - never set up, only deleted */
 
 };
 

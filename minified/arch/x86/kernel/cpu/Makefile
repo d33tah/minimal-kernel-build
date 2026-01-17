@@ -19,9 +19,12 @@ KCSAN_SANITIZE_common.o := n
 # Make sure load_percpu_segment has no stackprotector
 CFLAGS_common.o		:= -fno-stack-protector
 
-obj-y			:= cacheinfo.o scattered.o topology.o
+# cacheinfo.o removed - only had type defs, no functions
+# topology.o removed - __max_die_per_package never actually used
+obj-y			:=
+# scattered.o removed - was empty stub
 obj-y			+= common.o
-obj-y			+= match.o
+# match.o removed - x86_match_cpu was never called
 obj-y			+= bugs.o
 # aperfmperf.o removed - inlined in topology.h
 obj-y			+= cpuid-deps.o
@@ -31,7 +34,8 @@ obj-$(CONFIG_X86_FEATURE_NAMES) += capflags.o powerflags.o
 
 # feat_ctl.o removed - empty file
 ifdef CONFIG_CPU_SUP_INTEL
-obj-y			+= intel.o tsx.o
+# intel.o removed - sld_setup/handle_bus_lock were empty stubs
+# tsx.o removed - was empty stub
 obj-$(CONFIG_PM)	+= intel_epb.o
 endif
 obj-$(CONFIG_CPU_SUP_AMD)		+= amd.o

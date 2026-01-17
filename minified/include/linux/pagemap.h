@@ -11,33 +11,17 @@
 #include <linux/bitops.h>
 #include <linux/hardirq.h>
 
-/* Inlined from hugetlb_inline.h */
-static inline bool is_vm_hugetlb_page(struct vm_area_struct *vma) { return false; }
+/* is_vm_hugetlb_page removed - callers removed */
 
 struct folio_batch;
 
-unsigned long invalidate_mapping_pages(struct address_space *mapping,
-					pgoff_t start, pgoff_t end);
+/* invalidate_mapping_pages removed - never called */
 
 int invalidate_inode_pages2_range(struct address_space *mapping,
 		pgoff_t start, pgoff_t end);
-int write_inode_now(struct inode *, int sync);
+/* write_inode_now removed - returns 0 stub, caller simplified */
 int filemap_fdatawait_range(struct address_space *, loff_t lstart, loff_t lend);
-int filemap_write_and_wait_range(struct address_space *mapping,
-		loff_t lstart, loff_t lend);
-int filemap_fdatawrite_wbc(struct address_space *mapping,
-			   struct writeback_control *wbc);
-
-static inline errseq_t filemap_sample_wb_err(struct address_space *mapping)
-{
-	return errseq_sample(&mapping->wb_err);
-}
-
-static inline errseq_t file_sample_sb_err(struct file *file)
-{
-	return errseq_sample(&file->f_path.dentry->d_sb->s_wb_err);
-}
-
+/* filemap_write_and_wait_range, filemap_fdatawrite_wbc, filemap_sample_wb_err removed - never called */
 static inline bool mapping_empty(struct address_space *mapping)
 {
 	return xa_empty(&mapping->i_pages);
@@ -47,16 +31,10 @@ static inline bool mapping_shrinkable(struct address_space *mapping)
 {
 	void *head;
 
-	 
-	if (IS_ENABLED(CONFIG_HIGHMEM))
-		return true;
-
-	 
 	head = rcu_access_pointer(mapping->i_pages.xa_head);
 	if (!head)
 		return true;
 
-	 
 	if (!xa_is_node(head) && xa_is_value(head))
 		return true;
 
@@ -64,14 +42,10 @@ static inline bool mapping_shrinkable(struct address_space *mapping)
 }
 
 enum mapping_flags {
-	AS_EIO		= 0,	 
-	AS_ENOSPC	= 1,	 
-	AS_MM_ALL_LOCKS	= 2,	 
-	AS_UNEVICTABLE	= 3,	 
-	AS_EXITING	= 4, 	 
-	 
-	AS_NO_WRITEBACK_TAGS = 5,
-	AS_LARGE_FOLIO_SUPPORT = 6,
+	AS_EIO		= 0,
+	AS_ENOSPC	= 1,
+	AS_UNEVICTABLE	= 3,
+	AS_EXITING	= 4,
 };
 
 static inline void mapping_set_unevictable(struct address_space *mapping)
@@ -111,40 +85,18 @@ static inline void mapping_set_gfp_mask(struct address_space *m, gfp_t mask)
 }
 
 
-static inline bool mapping_large_folio_support(struct address_space *mapping)
-{
-	return IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE) &&
-		test_bit(AS_LARGE_FOLIO_SUPPORT, &mapping->flags);
-}
-
-static inline int filemap_nr_thps(struct address_space *mapping)
-{
-	return 0;
-}
-
-static inline void filemap_nr_thps_dec(struct address_space *mapping)
-{
-	WARN_ON_ONCE(mapping_large_folio_support(mapping) == 0);
-}
+/* filemap_nr_thps removed - never called */
 
 void release_pages(struct page **pages, int nr);
 
-struct address_space *page_mapping(struct page *);
+/* page_mapping removed - never called */
 struct address_space *folio_mapping(struct folio *);
-struct address_space *swapcache_mapping(struct folio *);
 
 
 static inline struct folio *filemap_alloc_folio(gfp_t gfp, unsigned int order)
 {
 	return folio_alloc(gfp, order);
 }
-
-typedef int filler_t(struct file *, struct folio *);
-
-pgoff_t page_cache_next_miss(struct address_space *mapping,
-			     pgoff_t index, unsigned long max_scan);
-pgoff_t page_cache_prev_miss(struct address_space *mapping,
-			     pgoff_t index, unsigned long max_scan);
 
 #define FGP_ACCESSED		0x00000001
 #define FGP_LOCK		0x00000002
@@ -169,11 +121,7 @@ static inline struct folio *filemap_get_folio(struct address_space *mapping,
 }
 
 
-static inline struct page *find_get_page(struct address_space *mapping,
-					pgoff_t offset)
-{
-	return pagecache_get_page(mapping, offset, 0, 0);
-}
+/* find_get_page removed - never called */
 
 static inline struct page *find_lock_page(struct address_space *mapping,
 					pgoff_t index)
@@ -195,51 +143,17 @@ static inline struct page *folio_file_page(struct folio *folio, pgoff_t index)
 	return folio_page(folio, index & (folio_nr_pages(folio) - 1));
 }
 
-static inline bool folio_contains(struct folio *folio, pgoff_t index)
-{
-	 
-	if (folio_test_hugetlb(folio))
-		return folio->index == index;
-	return index - folio_index(folio) < folio_nr_pages(folio);
-}
+/* folio_contains removed - never called */
 
 unsigned find_get_pages_range_tag(struct address_space *mapping, pgoff_t *index,
 			pgoff_t end, xa_mark_t tag, unsigned int nr_pages,
 			struct page **pages);
-struct page *grab_cache_page_write_begin(struct address_space *mapping,
-			pgoff_t index);
-
-struct folio *read_cache_folio(struct address_space *, pgoff_t index,
-		filler_t *filler, struct file *file);
-struct page *read_cache_page(struct address_space *, pgoff_t index,
-		filler_t *filler, struct file *file);
-extern struct page * read_cache_page_gfp(struct address_space *mapping,
-				pgoff_t index, gfp_t gfp_mask);
-
-static inline struct page *read_mapping_page(struct address_space *mapping,
-				pgoff_t index, struct file *file)
-{
-	return read_cache_page(mapping, index, NULL, file);
-}
-
-static inline pgoff_t page_to_index(struct page *page)
-{
-	struct page *head;
-
-	if (likely(!PageTransTail(page)))
-		return page->index;
-
-	head = compound_head(page);
-	return head->index + page - head;
-}
-
-extern pgoff_t hugetlb_basepage_index(struct page *page);
+/* grab_cache_page_write_begin, read_cache_folio, read_cache_page, read_mapping_page removed - never called */
 
 static inline pgoff_t page_to_pgoff(struct page *page)
 {
-	if (unlikely(PageHuge(page)))
-		return hugetlb_basepage_index(page);
-	return page_to_index(page);
+	/* PageHuge and PageTransTail always return false */
+	return page->index;
 }
 
 static inline loff_t page_offset(struct page *page)
@@ -252,16 +166,13 @@ static inline loff_t folio_pos(struct folio *folio)
 	return page_offset(&folio->page);
 }
 
-
-extern pgoff_t linear_hugepage_index(struct vm_area_struct *vma,
-				     unsigned long address);
+/* linear_hugepage_index removed - declared but never called */
 
 static inline pgoff_t linear_page_index(struct vm_area_struct *vma,
 					unsigned long address)
 {
 	pgoff_t pgoff;
-	if (unlikely(is_vm_hugetlb_page(vma)))
-		return linear_hugepage_index(vma, address);
+	/* is_vm_hugetlb_page always returns false */
 	pgoff = (address - vma->vm_start) >> PAGE_SHIFT;
 	pgoff += vma->vm_pgoff;
 	return pgoff;
@@ -337,11 +248,9 @@ static inline int folio_wait_locked_killable(struct folio *folio)
 	return folio_wait_bit_killable(folio, PG_locked);
 }
 
-int folio_put_wait_locked(struct folio *folio, int state);
+/* folio_put_wait_locked removed - always returned 0 */
 void wait_on_page_writeback(struct page *page);
 void folio_wait_writeback(struct folio *folio);
-int folio_wait_writeback_killable(struct folio *folio);
-void end_page_writeback(struct page *page);
 void folio_end_writeback(struct folio *folio);
 void folio_wait_stable(struct folio *folio);
 void folio_account_cleaned(struct folio *folio, struct bdi_writeback *wb);
@@ -352,88 +261,27 @@ static inline void folio_cancel_dirty(struct folio *folio)
 	if (folio_test_dirty(folio))
 		__folio_cancel_dirty(folio);
 }
-bool folio_clear_dirty_for_io(struct folio *folio);
-bool clear_page_dirty_for_io(struct page *page);
 void folio_invalidate(struct folio *folio, size_t offset, size_t length);
-int __must_check folio_write_one(struct folio *folio);
-int __set_page_dirty_nobuffers(struct page *page);
-bool noop_dirty_folio(struct address_space *mapping, struct folio *folio);
-
-void page_endio(struct page *page, bool is_write, int err);
-
-void folio_end_private_2(struct folio *folio);
-void folio_wait_private_2(struct folio *folio);
-int folio_wait_private_2_killable(struct folio *folio);
-
-void folio_add_wait_queue(struct folio *folio, wait_queue_entry_t *waiter);
-
-size_t fault_in_writeable(char __user *uaddr, size_t size);
-size_t fault_in_subpage_writeable(char __user *uaddr, size_t size);
-size_t fault_in_safe_writeable(const char __user *uaddr, size_t size);
+/* __set_page_dirty_nobuffers, noop_dirty_folio removed - unused */
 size_t fault_in_readable(const char __user *uaddr, size_t size);
 
-int add_to_page_cache_locked(struct page *page, struct address_space *mapping,
-		pgoff_t index, gfp_t gfp);
-int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
-		pgoff_t index, gfp_t gfp);
 int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 		pgoff_t index, gfp_t gfp);
 void filemap_remove_folio(struct folio *folio);
-void delete_from_page_cache(struct page *page);
 void __filemap_remove_folio(struct folio *folio, void *shadow);
-void replace_page_cache_page(struct page *old, struct page *new);
 void delete_from_page_cache_batch(struct address_space *mapping,
 				  struct folio_batch *fbatch);
-int try_to_release_page(struct page *page, gfp_t gfp);
 bool filemap_release_folio(struct folio *folio, gfp_t gfp);
 
 int __filemap_add_folio(struct address_space *mapping, struct folio *folio,
 		pgoff_t index, gfp_t gfp, void **shadowp);
 
-
-static inline bool filemap_range_needs_writeback(struct address_space *mapping,
-						 loff_t start_byte,
-						 loff_t end_byte)
-{
-	if (!mapping->nrpages)
-		return false;
-	if (!mapping_tagged(mapping, PAGECACHE_TAG_DIRTY) &&
-	    !mapping_tagged(mapping, PAGECACHE_TAG_WRITEBACK))
-		return false;
-	return false; /* simplified - no writeback in minimal kernel */
-}
-
-struct readahead_control {
-	struct file *file;
-	struct address_space *mapping;
-	struct file_ra_state *ra;
-	pgoff_t _index;
-	unsigned int _nr_pages;
-	unsigned int _batch_count;
-};
-
-#define DEFINE_READAHEAD(ractl, f, r, m, i)				\
-	struct readahead_control ractl = {				\
-		.file = f,						\
-		.mapping = m,						\
-		.ra = r,						\
-		._index = i,						\
-	}
-
-#define VM_READAHEAD_PAGES	(SZ_128K / PAGE_SIZE)
-
-void page_cache_sync_ra(struct readahead_control *, unsigned long req_count);
-void page_cache_async_ra(struct readahead_control *, struct folio *,
-		unsigned long req_count);
-
+/* struct readahead_control removed - readahead disabled for minimal kernel */
 static inline
 void page_cache_sync_readahead(struct address_space *mapping,
 		struct file_ra_state *ra, struct file *file, pgoff_t index,
 		unsigned long req_count)
 {
-	DEFINE_READAHEAD(ractl, file, ra, mapping, index);
-	page_cache_sync_ra(&ractl, req_count);
 }
-
 
 #endif

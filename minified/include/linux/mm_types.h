@@ -4,7 +4,7 @@
 #include <linux/mm_types_task.h>
 
 #include <asm/auxvec.h>
-#define AT_EXECFD 2
+/* AT_EXECFD removed - unused */
 #define AT_PHDR   3
 #define AT_PHENT  4
 #define AT_PHNUM  5
@@ -57,16 +57,15 @@ struct page {
 	unsigned long flags;		 
 	 
 	union {
-		struct {	 
-			 
+		struct {
+
 			union {
 				struct list_head lru;
-				 
+
 				struct {
-					 
+
 					void *__filler;
-					 
-					unsigned int mlock_count;
+					/* mlock_count removed - only written, never read */
 				};
 			};
 			 
@@ -140,10 +139,7 @@ struct page {
 	atomic_t _refcount;
 
 
-	 
-#if defined(WANT_PAGE_VIRTUAL)
-	void *virtual;			 
-#endif  
+	/* WANT_PAGE_VIRTUAL virtual field removed - never defined */
 
 #ifdef LAST_CPUPID_NOT_IN_PAGE_FLAGS
 	int _last_cpupid;
@@ -158,14 +154,12 @@ struct folio {
 			unsigned long flags;
 			union {
 				struct list_head lru;
-	 
+
 				struct {
 					void *__filler;
-	 
-					unsigned int mlock_count;
-	 
+					/* mlock_count removed - write-only */
 				};
-	 
+
 			};
 			struct address_space *mapping;
 			pgoff_t index;
@@ -207,8 +201,6 @@ static inline atomic_t *compound_pincount_ptr(struct page *page)
 	return &page[1].compound_pincount;
 }
 
-#define STRUCT_PAGE_MAX_SHIFT	(order_base_2(sizeof(struct page)))
-
 #define page_private(page)		((page)->private)
 
 static inline void set_page_private(struct page *page, unsigned long private)
@@ -221,11 +213,8 @@ typedef unsigned long vm_flags_t;
 #define NULL_VM_UFFD_CTX ((struct vm_userfaultfd_ctx) {})
 struct vm_userfaultfd_ctx {};
 
-struct anon_vma_name {
-	struct kref kref;
-	 
-	char name[];
-};
+/* anon_vma_name fields removed - only used as opaque pointer */
+struct anon_vma_name;
 
 struct vm_area_struct {
 	 
@@ -247,21 +236,14 @@ struct vm_area_struct {
 
 	 
 	pgprot_t vm_page_prot;
-	unsigned long vm_flags;		 
+	unsigned long vm_flags;
 
-	 
+	struct {
+		struct rb_node rb;
+		unsigned long rb_subtree_last;
+	} shared;
 
-	union {
-		struct {
-			struct rb_node rb;
-			unsigned long rb_subtree_last;
-		} shared;
-		 
-		struct anon_vma_name *anon_name;
-	};
-
-	 
-	struct list_head anon_vma_chain;  
+	struct list_head anon_vma_chain;
 	struct anon_vma *anon_vma;	 
 
 	 
@@ -269,10 +251,8 @@ struct vm_area_struct {
 
 	 
 	unsigned long vm_pgoff;		 
-	struct file * vm_file;		 
-	void * vm_private_data;		 
-
-	struct vm_userfaultfd_ctx vm_userfaultfd_ctx;
+	struct file * vm_file;
+	void * vm_private_data;
 } __randomize_layout;
 
 struct mm_struct {
@@ -285,7 +265,6 @@ struct mm_struct {
 				unsigned long pgoff, unsigned long flags);
 		unsigned long mmap_base;	 
 		unsigned long mmap_legacy_base;	 
-		unsigned long task_size;	 
 		unsigned long highest_vm_end;	 
 		pgd_t * pgd;
 
@@ -303,22 +282,13 @@ struct mm_struct {
 		 
 		struct rw_semaphore mmap_lock;
 
-		struct list_head mmlist;  
+		struct list_head mmlist;
+		/* hiwater_rss, hiwater_vm removed - write-only fields */
 
-
-		unsigned long hiwater_rss;  
-		unsigned long hiwater_vm;   
-
-		unsigned long total_vm;	    
-		unsigned long locked_vm;    
-		atomic64_t    pinned_vm;    
-		unsigned long data_vm;	    
-		unsigned long exec_vm;	    
-		unsigned long stack_vm;	    
+		unsigned long total_vm;
 		unsigned long def_flags;
 
-		 
-		seqcount_t write_protect_seq;
+		/* write_protect_seq removed - initialized but never used */
 
 		spinlock_t arg_lock;  
 
@@ -344,10 +314,9 @@ struct mm_struct {
 		struct file __rcu *exe_file;
 		 
 		atomic_t tlb_flush_pending;
-		 
+
 		atomic_t tlb_flush_batched;
-		struct uprobes_state uprobes_state;
-		struct work_struct async_put_work;
+		/* async_put_work removed - never scheduled */
 
 	} __randomize_layout;
 
@@ -382,7 +351,6 @@ typedef __bitwise unsigned int vm_fault_t;
 enum vm_fault_reason {
 	VM_FAULT_OOM            = (__force vm_fault_t)0x000001,
 	VM_FAULT_SIGBUS         = (__force vm_fault_t)0x000002,
-	VM_FAULT_MAJOR          = (__force vm_fault_t)0x000004,
 	VM_FAULT_WRITE          = (__force vm_fault_t)0x000008,
 	VM_FAULT_HWPOISON       = (__force vm_fault_t)0x000010,
 	VM_FAULT_HWPOISON_LARGE = (__force vm_fault_t)0x000020,
@@ -392,8 +360,7 @@ enum vm_fault_reason {
 	VM_FAULT_RETRY          = (__force vm_fault_t)0x000400,
 	VM_FAULT_FALLBACK       = (__force vm_fault_t)0x000800,
 	VM_FAULT_DONE_COW       = (__force vm_fault_t)0x001000,
-	VM_FAULT_NEEDDSYNC      = (__force vm_fault_t)0x002000,
-	VM_FAULT_HINDEX_MASK    = (__force vm_fault_t)0x0f0000,
+	/* VM_FAULT_NEEDDSYNC and VM_FAULT_HINDEX_MASK removed - unused */
 };
 
 #define VM_FAULT_ERROR (VM_FAULT_OOM | VM_FAULT_SIGBUS |	\
@@ -401,23 +368,15 @@ enum vm_fault_reason {
 			VM_FAULT_HWPOISON_LARGE | VM_FAULT_FALLBACK)
 
 struct vm_special_mapping {
-	const char *name;	 
-
-	 
+	const char *name;
 	struct page **pages;
-
-	 
-	vm_fault_t (*fault)(const struct vm_special_mapping *sm,
-				struct vm_area_struct *vma,
-				struct vm_fault *vmf);
-
-	int (*mremap)(const struct vm_special_mapping *sm,
-		     struct vm_area_struct *new_vma);
+	vm_fault_t (*fault)(const struct vm_special_mapping *sm, struct vm_area_struct *vma,
+			    struct vm_fault *vmf);
+	/* mremap removed - mremap syscall returns ENOSYS */
 };
 
-enum tlb_flush_reason { NR_TLB_FLUSH_REASONS };
+/* enum tlb_flush_reason removed - never used */
 
-  
 typedef struct {
 	unsigned long val;
 } swp_entry_t;
@@ -426,14 +385,14 @@ enum fault_flag {
 	FAULT_FLAG_WRITE =		1 << 0,
 	FAULT_FLAG_MKWRITE =		1 << 1,
 	FAULT_FLAG_ALLOW_RETRY =	1 << 2,
-	FAULT_FLAG_RETRY_NOWAIT = 	1 << 3,
+	/* FAULT_FLAG_RETRY_NOWAIT removed - never set */
 	FAULT_FLAG_KILLABLE =		1 << 4,
-	FAULT_FLAG_TRIED = 		1 << 5,
-	FAULT_FLAG_USER =		1 << 6,
+	FAULT_FLAG_TRIED =		1 << 5,
+	/* FAULT_FLAG_USER removed - never tested */
 	FAULT_FLAG_REMOTE =		1 << 7,
-	FAULT_FLAG_INSTRUCTION =	1 << 8,
-	FAULT_FLAG_INTERRUPTIBLE =	1 << 9,
-	FAULT_FLAG_UNSHARE =		1 << 10,
+	/* FAULT_FLAG_INSTRUCTION removed - never tested */
+	/* FAULT_FLAG_INTERRUPTIBLE removed - never tested */
+	/* FAULT_FLAG_UNSHARE removed - never set */
 	FAULT_FLAG_ORIG_PTE_VALID =	1 << 11,
 };
 

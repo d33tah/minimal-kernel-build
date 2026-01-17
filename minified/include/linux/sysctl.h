@@ -10,7 +10,7 @@
 
 struct completion;
 struct ctl_table;
-struct nsproxy;
+/* struct nsproxy forward decl removed - unused */
 struct ctl_table_root;
 struct ctl_table_header;
 struct ctl_dir;
@@ -82,15 +82,6 @@ struct ctl_table_root {
 			      kuid_t *uid, kgid_t *gid);
 	int (*permissions)(struct ctl_table_header *head, struct ctl_table *table);
 };
-
-struct ctl_path {
-	const char *procname;
-};
-
-
-static inline void do_sysctl_args(void)
-{
-}
-
+/* do_sysctl_args removed - unused */
 
 #endif  

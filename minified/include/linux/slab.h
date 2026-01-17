@@ -37,10 +37,8 @@
 #define ZERO_OR_NULL_PTR(x) ((unsigned long)(x) <= \
 				(unsigned long)ZERO_SIZE_PTR)
 
-#include <linux/kasan.h>
-
 struct list_lru;
-struct mem_cgroup;
+/* struct mem_cgroup forward decl removed - unused */
 void __init kmem_cache_init(void);
 bool slab_is_available(void);
 
@@ -65,7 +63,6 @@ struct kmem_cache *kmem_cache_create_usercopy(const char *name,
 
 void kfree(const void *objp);
 size_t __ksize(const void *objp);
-size_t ksize(const void *objp);
 
 #if defined(ARCH_DMA_MINALIGN) && ARCH_DMA_MINALIGN > 8
 #define ARCH_KMALLOC_MINALIGN ARCH_DMA_MINALIGN
@@ -106,9 +103,6 @@ static inline unsigned int arch_slab_minalign(void)
 #define KMALLOC_MIN_SIZE (1 << KMALLOC_SHIFT_LOW)
 #endif
 
-#define SLAB_OBJ_MIN_SIZE      (KMALLOC_MIN_SIZE < 16 ? \
-                               (KMALLOC_MIN_SIZE) : 16)
-
 enum kmalloc_cache_type {
 	KMALLOC_NORMAL = 0,
 	KMALLOC_DMA = KMALLOC_NORMAL,
@@ -120,24 +114,15 @@ enum kmalloc_cache_type {
 extern struct kmem_cache *
 kmalloc_caches[NR_KMALLOC_TYPES][KMALLOC_SHIFT_HIGH + 1];
 
-#define KMALLOC_NOT_NORMAL_BITS					\
-	(__GFP_RECLAIMABLE |					\
-	(IS_ENABLED(CONFIG_ZONE_DMA)   ? __GFP_DMA : 0) |	\
-	(IS_ENABLED(CONFIG_MEMCG_KMEM) ? __GFP_ACCOUNT : 0))
+/* !ZONE_DMA and !MEMCG_KMEM - simplified */
+#define KMALLOC_NOT_NORMAL_BITS	(__GFP_RECLAIMABLE)
 
 static __always_inline enum kmalloc_cache_type kmalloc_type(gfp_t flags)
 {
-	 
 	if (likely((flags & KMALLOC_NOT_NORMAL_BITS) == 0))
 		return KMALLOC_NORMAL;
 
-	 
-	if (IS_ENABLED(CONFIG_ZONE_DMA) && (flags & __GFP_DMA))
-		return KMALLOC_DMA;
-	if (!IS_ENABLED(CONFIG_MEMCG_KMEM) || (flags & __GFP_RECLAIMABLE))
-		return KMALLOC_RECLAIM;
-	else
-		return KMALLOC_CGROUP;
+	return KMALLOC_RECLAIM;
 }
 
 static __always_inline unsigned int __kmalloc_index(size_t size,
@@ -177,12 +162,12 @@ static __always_inline unsigned int __kmalloc_index(size_t size,
 	if (size <=  16 * 1024 * 1024) return 24;
 	if (size <=  32 * 1024 * 1024) return 25;
 
-	if (!IS_ENABLED(CONFIG_PROFILE_ALL_BRANCHES) && size_is_constant)
+	/* PROFILE_ALL_BRANCHES not enabled */
+	if (size_is_constant)
 		BUILD_BUG_ON_MSG(1, "unexpected size in kmalloc_index()");
 	else
 		BUG();
 
-	 
 	return -1;
 }
 #define kmalloc_index(s) __kmalloc_index(s, true)
@@ -206,19 +191,13 @@ static __always_inline void *kmem_cache_alloc_node(struct kmem_cache *s, gfp_t f
 static __always_inline __alloc_size(3) void *kmem_cache_alloc_trace(struct kmem_cache *s,
 								    gfp_t flags, size_t size)
 {
-	void *ret = kmem_cache_alloc(s, flags);
-
-	ret = kasan_kmalloc(s, ret, size, flags);
-	return ret;
+	return kmem_cache_alloc(s, flags);
 }
 
 static __always_inline void *kmem_cache_alloc_node_trace(struct kmem_cache *s, gfp_t gfpflags,
 							 int node, size_t size)
 {
-	void *ret = kmem_cache_alloc_node(s, gfpflags, node);
-
-	ret = kasan_kmalloc(s, ret, size, gfpflags);
-	return ret;
+	return kmem_cache_alloc_node(s, gfpflags, node);
 }
 
 extern void *kmalloc_order(size_t size, gfp_t flags, unsigned int order) __assume_page_alignment
@@ -291,10 +270,6 @@ extern void *__kmalloc_track_caller(size_t size, gfp_t flags, unsigned long call
 #define kmalloc_track_caller(size, flags) \
 	__kmalloc_track_caller(size, flags, _RET_IP_)
 
-#define kmalloc_node_track_caller(size, flags, node) \
-	kmalloc_track_caller(size, flags)
-
-
 static inline void *kmem_cache_zalloc(struct kmem_cache *k, gfp_t flags)
 {
 	return kmem_cache_alloc(k, flags | __GFP_ZERO);
@@ -326,10 +301,6 @@ static inline __alloc_size(1, 2) void *kvmalloc_array(size_t n, size_t size, gfp
 }
 
 extern void kvfree(const void *addr);
+/* kmem_cache_init_late removed - empty function */
 
-void __init kmem_cache_init_late(void);
-
-#define slab_prepare_cpu	NULL
-#define slab_dead_cpu		NULL
-
-#endif	 
+#endif 

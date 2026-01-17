@@ -4,9 +4,6 @@
 #include <linux/string.h>
 #include <linux/ctype.h>
 
-/* parse_option_str stubbed - never called */
-bool parse_option_str(const char *str, const char *option) { return false; }
-
 char *next_arg(char *args, char **param, char **val)
 {
 	unsigned int i, equals = 0;
@@ -36,15 +33,14 @@ char *next_arg(char *args, char **param, char **val)
 		args[equals] = '\0';
 		*val = args + equals + 1;
 
-		 
 		if (**val == '"') {
 			(*val)++;
-			if (args[i-1] == '"')
-				args[i-1] = '\0';
+			if (args[i - 1] == '"')
+				args[i - 1] = '\0';
 		}
 	}
-	if (quoted && args[i-1] == '"')
-		args[i-1] = '\0';
+	if (quoted && args[i - 1] == '"')
+		args[i - 1] = '\0';
 
 	if (args[i]) {
 		args[i] = '\0';
@@ -52,6 +48,5 @@ char *next_arg(char *args, char **param, char **val)
 	} else
 		args += i;
 
-	 
 	return skip_spaces(args);
 }

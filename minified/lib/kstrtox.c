@@ -8,8 +8,8 @@
 
 #include "kstrtox.h"
 
-noinline
-const char *_parse_integer_fixup_radix(const char *s, unsigned int *base)
+noinline const char *_parse_integer_fixup_radix(const char *s,
+						unsigned int *base)
 {
 	if (*base == 0) {
 		if (s[0] == '0') {
@@ -25,9 +25,9 @@ const char *_parse_integer_fixup_radix(const char *s, unsigned int *base)
 	return s;
 }
 
-noinline
-unsigned int _parse_integer_limit(const char *s, unsigned int base, unsigned long long *p,
-				  size_t max_chars)
+noinline unsigned int _parse_integer_limit(const char *s, unsigned int base,
+					   unsigned long long *p,
+					   size_t max_chars)
 {
 	unsigned long long res;
 	unsigned int rv;
@@ -36,7 +36,7 @@ unsigned int _parse_integer_limit(const char *s, unsigned int base, unsigned lon
 	rv = 0;
 	while (max_chars--) {
 		unsigned int c = *s;
-		unsigned int lc = c | 0x20;  
+		unsigned int lc = c | 0x20;
 		unsigned int val;
 
 		if ('0' <= c && c <= '9')
@@ -48,7 +48,7 @@ unsigned int _parse_integer_limit(const char *s, unsigned int base, unsigned lon
 
 		if (val >= base)
 			break;
-		 
+
 		if (unlikely(res & (~0ull << 60))) {
 			if (res > div_u64(ULLONG_MAX - val, base))
 				rv |= KSTRTOX_OVERFLOW;
@@ -61,8 +61,8 @@ unsigned int _parse_integer_limit(const char *s, unsigned int base, unsigned lon
 	return rv;
 }
 
-noinline
-unsigned int _parse_integer(const char *s, unsigned int base, unsigned long long *p)
+noinline unsigned int _parse_integer(const char *s, unsigned int base,
+				     unsigned long long *p)
 {
 	return _parse_integer_limit(s, base, p, INT_MAX);
 }
@@ -87,68 +87,17 @@ static int _kstrtoull(const char *s, unsigned int base, unsigned long long *res)
 	return 0;
 }
 
-noinline
-int kstrtoull(const char *s, unsigned int base, unsigned long long *res)
+noinline int kstrtoull(const char *s, unsigned int base,
+		       unsigned long long *res)
 {
 	if (s[0] == '+')
 		s++;
 	return _kstrtoull(s, base, res);
 }
 
-noinline
-int kstrtoll(const char *s, unsigned int base, long long *res)
-{
-	unsigned long long tmp;
-	int rv;
+/* kstrtoll, _kstrtoul, _kstrtol removed - no callers */
 
-	if (s[0] == '-') {
-		rv = _kstrtoull(s + 1, base, &tmp);
-		if (rv < 0)
-			return rv;
-		if ((long long)-tmp > 0)
-			return -ERANGE;
-		*res = -tmp;
-	} else {
-		rv = kstrtoull(s, base, &tmp);
-		if (rv < 0)
-			return rv;
-		if ((long long)tmp < 0)
-			return -ERANGE;
-		*res = tmp;
-	}
-	return 0;
-}
-
-int _kstrtoul(const char *s, unsigned int base, unsigned long *res)
-{
-	unsigned long long tmp;
-	int rv;
-
-	rv = kstrtoull(s, base, &tmp);
-	if (rv < 0)
-		return rv;
-	if (tmp != (unsigned long)tmp)
-		return -ERANGE;
-	*res = tmp;
-	return 0;
-}
-
-int _kstrtol(const char *s, unsigned int base, long *res)
-{
-	long long tmp;
-	int rv;
-
-	rv = kstrtoll(s, base, &tmp);
-	if (rv < 0)
-		return rv;
-	if (tmp != (long)tmp)
-		return -ERANGE;
-	*res = tmp;
-	return 0;
-}
-
-noinline
-int kstrtouint(const char *s, unsigned int base, unsigned int *res)
+noinline int kstrtouint(const char *s, unsigned int base, unsigned int *res)
 {
 	unsigned long long tmp;
 	int rv;
@@ -161,108 +110,4 @@ int kstrtouint(const char *s, unsigned int base, unsigned int *res)
 	*res = tmp;
 	return 0;
 }
-
-noinline
-int kstrtoint(const char *s, unsigned int base, int *res)
-{
-	long long tmp;
-	int rv;
-
-	rv = kstrtoll(s, base, &tmp);
-	if (rv < 0)
-		return rv;
-	if (tmp != (int)tmp)
-		return -ERANGE;
-	*res = tmp;
-	return 0;
-}
-
-noinline
-int kstrtou16(const char *s, unsigned int base, u16 *res)
-{
-	unsigned long long tmp;
-	int rv;
-
-	rv = kstrtoull(s, base, &tmp);
-	if (rv < 0)
-		return rv;
-	if (tmp != (u16)tmp)
-		return -ERANGE;
-	*res = tmp;
-	return 0;
-}
-
-noinline
-int kstrtos16(const char *s, unsigned int base, s16 *res)
-{
-	long long tmp;
-	int rv;
-
-	rv = kstrtoll(s, base, &tmp);
-	if (rv < 0)
-		return rv;
-	if (tmp != (s16)tmp)
-		return -ERANGE;
-	*res = tmp;
-	return 0;
-}
-
-noinline
-int kstrtou8(const char *s, unsigned int base, u8 *res)
-{
-	unsigned long long tmp;
-	int rv;
-
-	rv = kstrtoull(s, base, &tmp);
-	if (rv < 0)
-		return rv;
-	if (tmp != (u8)tmp)
-		return -ERANGE;
-	*res = tmp;
-	return 0;
-}
-
-
-noinline
-int kstrtobool(const char *s, bool *res)
-{
-	if (!s)
-		return -EINVAL;
-
-	switch (s[0]) {
-	case 'y':
-	case 'Y':
-	case 't':
-	case 'T':
-	case '1':
-		*res = true;
-		return 0;
-	case 'n':
-	case 'N':
-	case 'f':
-	case 'F':
-	case '0':
-		*res = false;
-		return 0;
-	case 'o':
-	case 'O':
-		switch (s[1]) {
-		case 'n':
-		case 'N':
-			*res = true;
-			return 0;
-		case 'f':
-		case 'F':
-			*res = false;
-			return 0;
-		default:
-			break;
-		}
-		break;
-	default:
-		break;
-	}
-
-	return -EINVAL;
-}
-
+/* kstrtoint, kstrtou16, kstrtos16, kstrtou8, kstrtobool removed - no callers */

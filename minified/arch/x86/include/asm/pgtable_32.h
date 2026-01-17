@@ -25,8 +25,7 @@ void paging_init(void);
 void sync_initial_page_table(void);
 
 /* --- 2025-12-07 20:18 --- Inlined pgtable-2level.h */
-#define pte_ERROR(e) \
-	pr_err("%s:%d: bad pte %08lx\n", __FILE__, __LINE__, (e).pte_low)
+/* pte_ERROR removed - unused */
 #define pgd_ERROR(e) \
 	pr_err("%s:%d: bad pgd %08lx\n", __FILE__, __LINE__, pgd_val(e))
 
@@ -60,34 +59,7 @@ static inline void native_pte_clear(struct mm_struct *mm,
 #define native_ptep_get_and_clear(xp) native_local_ptep_get_and_clear(xp)
 #define native_pmdp_get_and_clear(xp) native_local_pmdp_get_and_clear(xp)
 #define native_pudp_get_and_clear(xp) native_local_pudp_get_and_clear(xp)
-static inline unsigned long pte_bitop(unsigned long value, unsigned int rightshift,
-				      unsigned long mask, unsigned int leftshift)
-{
-	return ((value >> rightshift) & mask) << leftshift;
-}
-#define SWP_TYPE_BITS 5
-#define SWP_OFFSET_SHIFT (_PAGE_BIT_PROTNONE + 1)
-#define MAX_SWAPFILES_CHECK() BUILD_BUG_ON(MAX_SWAPFILES_SHIFT > SWP_TYPE_BITS)
-#define __swp_type(x)			(((x).val >> (_PAGE_BIT_PRESENT + 1)) \
-					 & ((1U << SWP_TYPE_BITS) - 1))
-#define __swp_offset(x)			((x).val >> SWP_OFFSET_SHIFT)
-#define __swp_entry(type, offset)	((swp_entry_t) { \
-					 ((type) << (_PAGE_BIT_PRESENT + 1)) \
-					 | ((offset) << SWP_OFFSET_SHIFT) })
-#define __pte_to_swp_entry(pte)		((swp_entry_t) { (pte).pte_low })
-#define __swp_entry_to_pte(x)		((pte_t) { .pte = (x).val })
-static inline u64 protnone_mask(u64 val)
-{
-	return 0;
-}
-static inline u64 flip_protnone_guard(u64 oldval, u64 val, u64 mask)
-{
-	return val;
-}
-static inline bool __pte_needs_invert(u64 val)
-{
-	return false;
-}
+/* Swap/protnone/invert macros removed - unused */
 
  
 #define kpte_clear_flush(ptep, vaddr)		\
@@ -96,12 +68,10 @@ do {						\
 	flush_tlb_one_kernel((vaddr));		\
 } while (0)
 
-#endif  
+#endif
 
- 
-#define kern_addr_valid(addr)	(1)
+/* kern_addr_valid removed - unused */
 
- 
 #if PTRS_PER_PMD > 1
 #define PAGE_TABLE_SIZE(pages) (((pages) / PTRS_PER_PMD) + PTRS_PER_PGD)
 #else
@@ -109,6 +79,7 @@ do {						\
 #endif
 
  
-#define LOWMEM_PAGES ((((_ULL(2)<<31) - __PAGE_OFFSET) >> PAGE_SHIFT))
+/* Reduced for minimal 2MB boot - original: ((((_ULL(2)<<31) - __PAGE_OFFSET) >> PAGE_SHIFT)) */
+#define LOWMEM_PAGES (2 * 1024 * 1024 / 4096)  /* 2MB / 4KB = 512 pages */
 
 #endif  

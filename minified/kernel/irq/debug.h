@@ -4,8 +4,6 @@
 #define ___P(f) if (desc->status_use_accessors & f) printk("%14s set\n", #f)
 #define ___PS(f) if (desc->istate & f) printk("%14s set\n", #f)
  
-#define ___PD(f) do { } while (0)
-
 static inline void print_irq_desc(unsigned int irq, struct irq_desc *desc)
 {
 	static DEFINE_RATELIMIT_STATE(ratelimit, 5 * HZ, 5);
@@ -36,12 +34,7 @@ static inline void print_irq_desc(unsigned int irq, struct irq_desc *desc)
 	___PS(IRQS_REPLAY);
 	___PS(IRQS_WAITING);
 	___PS(IRQS_PENDING);
-
-	___PD(IRQS_INPROGRESS);
-	___PD(IRQS_DISABLED);
-	___PD(IRQS_MASKED);
 }
 
 #undef ___P
 #undef ___PS
-#undef ___PD

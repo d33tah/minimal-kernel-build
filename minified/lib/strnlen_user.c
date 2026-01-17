@@ -6,13 +6,13 @@
 
 #include <asm/word-at-a-time.h>
 
-static __always_inline long do_strnlen_user(const char __user *src, unsigned long count, unsigned long max)
+static __always_inline long
+do_strnlen_user(const char __user *src, unsigned long count, unsigned long max)
 {
 	const struct word_at_a_time constants = WORD_AT_A_TIME_CONSTANTS;
 	unsigned long align, res = 0;
 	unsigned long c;
 
-	 
 	align = (sizeof(unsigned long) - 1) & (unsigned long)src;
 	src -= align;
 	max += align;
@@ -28,19 +28,17 @@ static __always_inline long do_strnlen_user(const char __user *src, unsigned lon
 			return res + find_zero(data) + 1 - align;
 		}
 		res += sizeof(unsigned long);
-		 
+
 		if (unlikely(max <= sizeof(unsigned long)))
 			break;
 		max -= sizeof(unsigned long);
-		unsafe_get_user(c, (unsigned long __user *)(src+res), efault);
+		unsafe_get_user(c, (unsigned long __user *)(src + res), efault);
 	}
 	res -= align;
 
-	 
 	if (res >= count)
-		return count+1;
+		return count + 1;
 
-	 
 efault:
 	return 0;
 }
@@ -58,7 +56,6 @@ long strnlen_user(const char __user *str, long count)
 		unsigned long max = max_addr - src_addr;
 		long retval;
 
-		 
 		if (max > count)
 			max = count;
 

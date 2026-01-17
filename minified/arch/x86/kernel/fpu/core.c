@@ -9,7 +9,6 @@
 /* Removed: #include <uapi/asm/kvm.h> - not needed for minimal kernel */
 
 #include <linux/hardirq.h>
-#include <linux/pkeys.h>
 #include <linux/vmalloc.h>
 
 #include "context.h"
@@ -19,8 +18,7 @@
 
 #include <asm/trace/fpu.h>
 
-
-struct fpu_state_config	fpu_kernel_cfg __ro_after_init;
+struct fpu_state_config fpu_kernel_cfg __ro_after_init;
 struct fpu_state_config fpu_user_cfg __ro_after_init;
 
 struct fpstate init_fpstate __ro_after_init;
@@ -34,22 +32,18 @@ bool irq_fpu_usable(void)
 	if (WARN_ON_ONCE(in_nmi()))
 		return false;
 
-	 
 	if (this_cpu_read(in_kernel_fpu))
 		return false;
 
-	 
 	if (!in_hardirq())
 		return true;
 
-	 
 	return !softirq_count();
 }
 
 static void update_avx_timestamp(struct fpu *fpu)
 {
-
-#define AVX512_TRACKING_MASK	(XFEATURE_MASK_ZMM_Hi256 | XFEATURE_MASK_Hi16_ZMM)
+#define AVX512_TRACKING_MASK (XFEATURE_MASK_ZMM_Hi256 | XFEATURE_MASK_Hi16_ZMM)
 
 	if (fpu->fpstate->regs.xsave.header.xfeatures & AVX512_TRACKING_MASK)
 		fpu->avx512_timestamp = jiffies;
@@ -68,27 +62,22 @@ void save_fpregs_to_fpstate(struct fpu *fpu)
 		return;
 	}
 
-	 
-	asm volatile("fnsave %[fp]; fwait" : [fp] "=m" (fpu->fpstate->regs.fsave));
+	asm volatile("fnsave %[fp]; fwait"
+		     : [fp] "=m"(fpu->fpstate->regs.fsave));
 	frstor(&fpu->fpstate->regs.fsave);
 }
 
 void restore_fpregs_from_fpstate(struct fpstate *fpstate, u64 mask)
 {
-	 
 	if (unlikely(static_cpu_has_bug(X86_BUG_FXSAVE_LEAK))) {
-		asm volatile(
-			"fnclex\n\t"
-			"emms\n\t"
-			"fildl %P[addr]"	 
-			: : [addr] "m" (fpstate));
+		asm volatile("fnclex\n\t"
+			     "emms\n\t"
+			     "fildl %P[addr]"
+			     :
+			     : [addr] "m"(fpstate));
 	}
 
 	if (use_xsave()) {
-		 
-		xfd_update_state(fpstate);
-
-		 
 		mask = fpu_kernel_cfg.max_features & mask;
 
 		os_xrstor(fpstate, mask);
@@ -104,67 +93,6 @@ void fpu_reset_from_exception_fixup(void)
 {
 	restore_fpregs_from_fpstate(&init_fpstate, XFEATURE_MASK_FPSTATE);
 }
-
-#if IS_ENABLED(CONFIG_KVM)
-static void __fpstate_reset(struct fpstate *fpstate, u64 xfd);
-
-static void fpu_init_guest_permissions(struct fpu_guest *gfpu)
-{
-	struct fpu_state_perm *fpuperm;
-	u64 perm;
-
-	if (!IS_ENABLED(CONFIG_X86_64))
-		return;
-
-	spin_lock_irq(&current->sighand->siglock);
-	fpuperm = &current->group_leader->thread.fpu.guest_perm;
-	perm = fpuperm->__state_perm;
-
-	 
-	WRITE_ONCE(fpuperm->__state_perm, perm | FPU_GUEST_PERM_LOCKED);
-
-	spin_unlock_irq(&current->sighand->siglock);
-
-	gfpu->perm = perm & ~FPU_GUEST_PERM_LOCKED;
-}
-
-bool fpu_alloc_guest_fpstate(struct fpu_guest *gfpu)
-{
-	/* Stub: KVM guest FPU not needed for minimal kernel */
-	return false;
-}
-
-void fpu_free_guest_fpstate(struct fpu_guest *gfpu)
-{
-	/* Stub: KVM guest FPU not needed for minimal kernel */
-}
-
-int fpu_enable_guest_xfd_features(struct fpu_guest *guest_fpu, u64 xfeatures)
-{
-	/* Stub: KVM guest FPU not needed for minimal kernel */
-	return -ENOSYS;
-}
-
-
-int fpu_swap_kvm_fpstate(struct fpu_guest *guest_fpu, bool enter_guest)
-{
-	/* Stub: KVM guest FPU not needed for minimal kernel */
-	return -ENOSYS;
-}
-
-void fpu_copy_guest_fpstate_to_uabi(struct fpu_guest *gfpu, void *buf,
-				    unsigned int size, u32 pkru)
-{
-	/* Stub: KVM guest FPU not needed for minimal kernel */
-}
-
-int fpu_copy_uabi_to_guest_fpstate(struct fpu_guest *gfpu, const void *buf,
-				   u64 xcr0, u32 *vpkru)
-{
-	/* Stub: KVM guest FPU not needed for minimal kernel */
-	return -ENOSYS;
-}
-#endif  
 
 void kernel_fpu_begin_mask(unsigned int kfpu_mask)
 {
@@ -182,12 +110,11 @@ void kernel_fpu_begin_mask(unsigned int kfpu_mask)
 	}
 	__cpu_invalidate_fpregs_state();
 
-	 
 	if (likely(kfpu_mask & KFPU_MXCSR) && boot_cpu_has(X86_FEATURE_XMM))
 		ldmxcsr(MXCSR_DEFAULT);
 
 	if (unlikely(kfpu_mask & KFPU_387) && boot_cpu_has(X86_FEATURE_FPU))
-		asm volatile ("fninit");
+		asm volatile("fninit");
 }
 
 void kernel_fpu_end(void)
@@ -217,7 +144,6 @@ static inline unsigned int init_fpstate_copy_size(void)
 	if (!use_xsave())
 		return fpu_kernel_cfg.default_size;
 
-	 
 	return sizeof(init_fpstate.regs.xsave);
 }
 
@@ -237,10 +163,8 @@ static inline void fpstate_init_fstate(struct fpstate *fpstate)
 
 void fpstate_init_user(struct fpstate *fpstate)
 {
-	if (!cpu_feature_enabled(X86_FEATURE_FPU)) {
-		fpstate_init_soft(&fpstate->regs.soft);
+	if (!cpu_feature_enabled(X86_FEATURE_FPU))
 		return;
-	}
 
 	xstate_init_xcomp_bv(&fpstate->regs.xsave, fpstate->xfeatures);
 
@@ -252,39 +176,28 @@ void fpstate_init_user(struct fpstate *fpstate)
 
 static void __fpstate_reset(struct fpstate *fpstate, u64 xfd)
 {
-	 
-	fpstate->size		= fpu_kernel_cfg.default_size;
-	fpstate->user_size	= fpu_user_cfg.default_size;
-	fpstate->xfeatures	= fpu_kernel_cfg.default_features;
-	fpstate->user_xfeatures	= fpu_user_cfg.default_features;
-	fpstate->xfd		= xfd;
+	fpstate->size = fpu_kernel_cfg.default_size;
+	fpstate->user_size = fpu_user_cfg.default_size;
+	fpstate->xfeatures = fpu_kernel_cfg.default_features;
+	fpstate->user_xfeatures = fpu_user_cfg.default_features;
+	fpstate->xfd = xfd;
 }
 
 void fpstate_reset(struct fpu *fpu)
 {
-	 
 	fpu->fpstate = &fpu->__fpstate;
 	__fpstate_reset(fpu->fpstate, init_fpstate.xfd);
 
-	 
-	fpu->perm.__state_perm		= fpu_kernel_cfg.default_features;
-	fpu->perm.__state_size		= fpu_kernel_cfg.default_size;
-	fpu->perm.__user_state_size	= fpu_user_cfg.default_size;
-	 
+	fpu->perm.__state_perm = fpu_kernel_cfg.default_features;
+	fpu->perm.__state_size = fpu_kernel_cfg.default_size;
+	fpu->perm.__user_state_size = fpu_user_cfg.default_size;
+
 	fpu->guest_perm = fpu->perm;
 }
 
 static inline void fpu_inherit_perms(struct fpu *dst_fpu)
 {
-	if (fpu_state_size_dynamic()) {
-		struct fpu *src_fpu = &current->group_leader->thread.fpu;
-
-		spin_lock_irq(&current->sighand->siglock);
-		 
-		dst_fpu->perm = src_fpu->perm;
-		dst_fpu->guest_perm = src_fpu->guest_perm;
-		spin_unlock_irq(&current->sighand->siglock);
-	}
+	/* fpu_state_size_dynamic always returns false - function body removed */
 }
 
 int fpu_clone(struct task_struct *dst, unsigned long clone_flags, bool minimal)
@@ -292,7 +205,6 @@ int fpu_clone(struct task_struct *dst, unsigned long clone_flags, bool minimal)
 	struct fpu *src_fpu = &current->thread.fpu;
 	struct fpu *dst_fpu = &dst->thread.fpu;
 
-	 
 	dst_fpu->last_cpu = -1;
 
 	fpstate_reset(dst_fpu);
@@ -300,32 +212,27 @@ int fpu_clone(struct task_struct *dst, unsigned long clone_flags, bool minimal)
 	if (!cpu_feature_enabled(X86_FEATURE_FPU))
 		return 0;
 
-	 
 	set_tsk_thread_flag(dst, TIF_NEED_FPU_LOAD);
 
-	 
 	if (minimal) {
-		 
 		memcpy(&dst_fpu->fpstate->regs, &init_fpstate.regs,
 		       init_fpstate_copy_size());
 		return 0;
 	}
 
-	 
 	BUILD_BUG_ON(XFEATURE_MASK_USER_DYNAMIC != XFEATURE_MASK_XTILE_DATA);
 
-	 
 	fpregs_lock();
 	if (test_thread_flag(TIF_NEED_FPU_LOAD))
 		fpregs_restore_userregs();
 	save_fpregs_to_fpstate(dst_fpu);
-	if (!(clone_flags & CLONE_THREAD))
-		fpu_inherit_perms(dst_fpu);
+	/* CLONE_THREAD never set - always inherit */
+	fpu_inherit_perms(dst_fpu);
 	fpregs_unlock();
 
-	 
 	if (use_xsave())
-		dst_fpu->fpstate->regs.xsave.header.xfeatures &= ~XFEATURE_MASK_PASID;
+		dst_fpu->fpstate->regs.xsave.header.xfeatures &=
+			~XFEATURE_MASK_PASID;
 
 	trace_x86_fpu_copy_src(src_fpu);
 	trace_x86_fpu_copy_dst(dst_fpu);
@@ -345,10 +252,8 @@ void fpu__drop(struct fpu *fpu)
 	preempt_disable();
 
 	if (fpu == &current->thread.fpu) {
-		 
 		asm volatile("1: fwait\n"
-			     "2:\n"
-			     _ASM_EXTABLE(1b, 2b));
+			     "2:\n" _ASM_EXTABLE(1b, 2b));
 		fpregs_deactivate(fpu);
 	}
 
@@ -357,17 +262,7 @@ void fpu__drop(struct fpu *fpu)
 	preempt_enable();
 }
 
-static inline void restore_fpregs_from_init_fpstate(u64 features_mask)
-{
-	if (use_xsave())
-		os_xrstor(&init_fpstate, features_mask);
-	else if (use_fxsr())
-		fxrstor(&init_fpstate.regs.fxsave);
-	else
-		frstor(&init_fpstate.regs.fsave);
-
-	pkru_write_default();
-}
+/* restore_fpregs_from_init_fpstate removed - never called */
 
 static void fpu_reset_fpregs(void)
 {
@@ -375,33 +270,10 @@ static void fpu_reset_fpregs(void)
 
 	fpregs_lock();
 	fpu__drop(fpu);
-	 
-	memcpy(&fpu->fpstate->regs, &init_fpstate.regs, init_fpstate_copy_size());
+
+	memcpy(&fpu->fpstate->regs, &init_fpstate.regs,
+	       init_fpstate_copy_size());
 	set_thread_flag(TIF_NEED_FPU_LOAD);
-	fpregs_unlock();
-}
-
-void fpu__clear_user_states(struct fpu *fpu)
-{
-	WARN_ON_FPU(fpu != &current->thread.fpu);
-
-	fpregs_lock();
-	if (!cpu_feature_enabled(X86_FEATURE_FPU)) {
-		fpu_reset_fpregs();
-		fpregs_unlock();
-		return;
-	}
-
-	 
-	if (xfeatures_mask_supervisor() &&
-	    !fpregs_state_valid(fpu, smp_processor_id()))
-		os_xrstor_supervisor(fpu->fpstate);
-
-	 
-	restore_fpregs_from_init_fpstate(XFEATURE_MASK_USER_RESTORE);
-
-	 
-	fpregs_mark_activate();
 	fpregs_unlock();
 }
 
@@ -418,7 +290,6 @@ void switch_fpu_return(void)
 	fpregs_restore_userregs();
 }
 
-
 void fpregs_mark_activate(void)
 {
 	struct fpu *fpu = &current->thread.fpu;
@@ -428,14 +299,13 @@ void fpregs_mark_activate(void)
 	clear_thread_flag(TIF_NEED_FPU_LOAD);
 }
 
-
 int fpu__exception_code(struct fpu *fpu, int trap_nr)
 {
 	int err;
 
 	if (trap_nr == X86_TRAP_MF) {
 		unsigned short cwd, swd;
-		 
+
 		if (boot_cpu_has(X86_FEATURE_FXSR)) {
 			cwd = fpu->fpstate->regs.fxsave.cwd;
 			swd = fpu->fpstate->regs.fxsave.swd;
@@ -446,7 +316,6 @@ int fpu__exception_code(struct fpu *fpu, int trap_nr)
 
 		err = swd & ~cwd;
 	} else {
-		 
 		unsigned short mxcsr = MXCSR_DEFAULT;
 
 		if (boot_cpu_has(X86_FEATURE_XMM))
@@ -455,19 +324,17 @@ int fpu__exception_code(struct fpu *fpu, int trap_nr)
 		err = ~(mxcsr >> 7) & mxcsr;
 	}
 
-	if (err & 0x001) {	 
-		 
+	if (err & 0x001) {
 		return FPE_FLTINV;
-	} else if (err & 0x004) {  
+	} else if (err & 0x004) {
 		return FPE_FLTDIV;
-	} else if (err & 0x008) {  
+	} else if (err & 0x008) {
 		return FPE_FLTOVF;
-	} else if (err & 0x012) {  
+	} else if (err & 0x012) {
 		return FPE_FLTUND;
-	} else if (err & 0x020) {  
+	} else if (err & 0x020) {
 		return FPE_FLTRES;
 	}
 
-	 
 	return 0;
 }

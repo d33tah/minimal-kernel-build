@@ -3,9 +3,6 @@
 #ifndef _ASM_X86_LDT_H
 #define _ASM_X86_LDT_H
 
- 
-#define LDT_ENTRIES	8192
- 
 #define LDT_ENTRY_SIZE	8
 
 #ifndef __ASSEMBLY__
@@ -22,10 +19,6 @@ struct user_desc {
 	unsigned int  seg_not_present:1;
 	unsigned int  useable:1;
 };
-
-#define MODIFY_LDT_CONTENTS_DATA	0
-#define MODIFY_LDT_CONTENTS_STACK	1
-#define MODIFY_LDT_CONTENTS_CODE	2
-
+/* MODIFY_LDT_CONTENTS_* macros removed - unused */
 #endif  
 #endif  

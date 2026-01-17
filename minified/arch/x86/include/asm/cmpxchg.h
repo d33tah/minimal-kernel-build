@@ -127,6 +127,7 @@ extern void __add_wrong_size(void)
 	__try_cmpxchg64((ptr), (unsigned long long *)(po), \
 			(unsigned long long)(n))
 
+#ifdef CONFIG_X86_CMPXCHG64
 static inline u64 __cmpxchg64(volatile u64 *ptr, u64 old, u64 new)
 {
 	u64 prev;
@@ -170,6 +171,39 @@ static inline bool __try_cmpxchg64(volatile u64 *ptr, u64 *pold, u64 new)
 		*pold = old;
 	return success;
 }
+#else
+/* 486 without cmpxchg8b - use emulation */
+extern void cmpxchg8b_emu(void);
+
+static inline u64 __cmpxchg64(volatile u64 *ptr, u64 old, u64 new)
+{
+	u64 prev;
+	asm volatile("call cmpxchg8b_emu"
+		     : "=A" (prev)
+		     : "S" (ptr),
+		       "b" ((u32)new),
+		       "c" ((u32)(new >> 32)),
+		       "0" (old)
+		     : "memory");
+	return prev;
+}
+
+static inline u64 __cmpxchg64_local(volatile u64 *ptr, u64 old, u64 new)
+{
+	return __cmpxchg64(ptr, old, new);
+}
+
+static inline bool __try_cmpxchg64(volatile u64 *ptr, u64 *pold, u64 new)
+{
+	u64 old = *pold;
+	u64 prev = __cmpxchg64(ptr, old, new);
+	if (prev != old) {
+		*pold = prev;
+		return false;
+	}
+	return true;
+}
+#endif
 
 #define system_has_cmpxchg_double() boot_cpu_has(X86_FEATURE_CX8)
 

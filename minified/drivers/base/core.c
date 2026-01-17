@@ -1,225 +1,37 @@
 
-#include <linux/acpi.h>
 #include <linux/device.h>
 #include <linux/err.h>
-#include <linux/fwnode.h>
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/slab.h>
 #include <linux/string.h>
 #include <linux/kdev_t.h>
-#include <linux/notifier.h>
 #include <linux/of.h>
-#include <linux/of_device.h>
+/* of_device.h removed - only has includes, no definitions used */
 #include <linux/blkdev.h>
 #include <linux/mutex.h>
 #include <linux/pm_runtime.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/mm.h>
-#include <linux/swiotlb.h>
 #include <linux/sysfs.h>
-#include <linux/delay.h>
-#include <linux/dma-map-ops.h> 
+#include <linux/dma-map-ops.h>
 
 #include "base.h"
-static const struct attribute_group dev_attr_physical_location_group = {};
-/* end physical_location.h */
 #include "power/power.h"
-
 
 /* Removed: fwnode_link_add, fwnode_links_purge, fw_devlink_purge_absent_suppliers - no callers */
 
 DEFINE_STATIC_SRCU(device_links_srcu);
 
-
-static int device_links_read_lock(void) __acquires(&device_links_srcu)
-{
-	return srcu_read_lock(&device_links_srcu);
-}
-
-static void device_links_read_unlock(int idx) __releases(&device_links_srcu)
-{
-	srcu_read_unlock(&device_links_srcu, idx);
-}
-
-
-static void device_link_synchronize_removal(void)
-{
-	synchronize_srcu(&device_links_srcu);
-}
-
-
-static int device_reorder_to_tail(struct device *dev, void *not_used)
-{
-	/* Minimal stub */
-	(void)dev;
-	(void)not_used;
-	return 0;
-}
-
 void device_pm_move_to_tail(struct device *dev)
 {
 	int idx;
 
-	idx = device_links_read_lock();
-	device_pm_lock();
-	device_reorder_to_tail(dev, NULL);
-	device_pm_unlock();
-	device_links_read_unlock(idx);
+	idx = srcu_read_lock(&device_links_srcu);
+	srcu_read_unlock(&device_links_srcu, idx);
 }
 
-#define to_devlink(dev)	container_of((dev), struct device_link, link_dev)
-
-/* Stub: device link sysfs attributes not needed for minimal kernel */
-static struct attribute *devlink_attrs[] = { NULL };
-ATTRIBUTE_GROUPS(devlink);
-
-static void device_link_release_fn(struct work_struct *work)
-{
-	struct device_link *link = container_of(work, struct device_link, rm_work);
-
-	
-	device_link_synchronize_removal();
-
-	pm_runtime_release_supplier(link);
-	
-	if (link->supplier_preactivated)
-		pm_runtime_put_noidle(link->supplier);
-
-	pm_request_idle(link->supplier);
-
-	put_device(link->consumer);
-	put_device(link->supplier);
-	kfree(link);
-}
-
-static void devlink_dev_release(struct device *dev)
-{
-	struct device_link *link = to_devlink(dev);
-
-	INIT_WORK(&link->rm_work, device_link_release_fn);
-	
-	queue_work(system_long_wq, &link->rm_work);
-}
-
-static struct class devlink_class = {
-	.name = "devlink",
-	.owner = THIS_MODULE,
-	.dev_groups = devlink_groups,
-	.dev_release = devlink_dev_release,
-};
-
-static int devlink_add_symlinks(struct device *dev,
-				struct class_interface *class_intf)
-{
-	/* Stubbed: device link symlinks not needed for minimal boot */
-	return 0;
-}
-
-static void devlink_remove_symlinks(struct device *dev,
-				   struct class_interface *class_intf)
-{
-	/* Stubbed: device link symlinks removal not needed (add is stubbed) */
-}
-
-static struct class_interface devlink_class_intf = {
-	.class = &devlink_class,
-	.add_dev = devlink_add_symlinks,
-	.remove_dev = devlink_remove_symlinks,
-};
-
-static int __init devlink_class_init(void)
-{
-	int ret;
-
-	ret = class_register(&devlink_class);
-	if (ret)
-		return ret;
-
-	ret = class_interface_register(&devlink_class_intf);
-	if (ret)
-		class_unregister(&devlink_class);
-
-	return ret;
-}
-postcore_initcall(devlink_class_init);
-
-#define DL_MANAGED_LINK_FLAGS (DL_FLAG_AUTOREMOVE_CONSUMER | \
-			       DL_FLAG_AUTOREMOVE_SUPPLIER | \
-			       DL_FLAG_AUTOPROBE_CONSUMER  | \
-			       DL_FLAG_SYNC_STATE_ONLY | \
-			       DL_FLAG_INFERRED)
-
-#define DL_ADD_VALID_FLAGS (DL_MANAGED_LINK_FLAGS | DL_FLAG_STATELESS | \
-			    DL_FLAG_PM_RUNTIME | DL_FLAG_RPM_ACTIVE)
-
-
-/* Stub: no device links since device_link_add returns NULL */
-int device_links_check_suppliers(struct device *dev)
-{
-	dev->links.status = DL_DEV_PROBING;
-	return 0;
-}
-
-
-
-void device_links_no_driver(struct device *dev)
-{
-	/* Minimal stub */
-	(void)dev;
-}
-
-void device_links_driver_cleanup(struct device *dev)
-{
-	/* Minimal stub */
-	(void)dev;
-}
-
-bool device_links_busy(struct device *dev)
-{
-	/* Minimal stub: never busy */
-	(void)dev;
-	return false;
-}
-
-void device_links_unbind_consumers(struct device *dev)
-{
-	/* Minimal stub */
-	(void)dev;
-}
-
-static void device_links_purge(struct device *dev)
-{
-	/* Stub: no device links to purge since device_link_add returns NULL */
-}
-
-#define FW_DEVLINK_FLAGS_PERMISSIVE	(DL_FLAG_INFERRED | \
-					 DL_FLAG_SYNC_STATE_ONLY)
-#define FW_DEVLINK_FLAGS_ON		(DL_FLAG_INFERRED | \
-					 DL_FLAG_AUTOPROBE_CONSUMER)
-#define FW_DEVLINK_FLAGS_RPM		(FW_DEVLINK_FLAGS_ON | \
-					 DL_FLAG_PM_RUNTIME)
-
-
-
-/* Stub: firmware device link functions not needed for minimal kernel */
-void fw_devlink_drivers_done(void)
-{
-	/* fw_devlink_drv_reg_done assignment removed - never read */
-}
-
-static struct kobject *dev_kobj;
-struct kobject *sysfs_dev_char_kobj;
-struct kobject *sysfs_dev_block_kobj;
-
-
-static void device_platform_notify_remove(struct device *dev)
-{
-	acpi_device_notify_remove(dev);
-	software_node_notify_remove(dev);
-	/* platform_notify_remove call removed - never assigned */
-}
-
+/* devlink_class and related functions removed - devlink_class_init was removed so class is never registered */
 
 #define to_dev_attr(_attr) container_of(_attr, struct device_attribute, attr)
 
@@ -234,7 +46,7 @@ static ssize_t dev_attr_show(struct kobject *kobj, struct attribute *attr,
 		ret = dev_attr->show(dev, dev_attr, buf);
 	if (ret >= (ssize_t)PAGE_SIZE) {
 		printk("dev_attr_show: %pS returned bad count\n",
-				dev_attr->show);
+		       dev_attr->show);
 	}
 	return ret;
 }
@@ -252,19 +64,14 @@ static ssize_t dev_attr_store(struct kobject *kobj, struct attribute *attr,
 }
 
 static const struct sysfs_ops dev_sysfs_ops = {
-	.show	= dev_attr_show,
-	.store	= dev_attr_store,
+	.show = dev_attr_show,
+	.store = dev_attr_store,
 };
 
 static void device_release(struct kobject *kobj)
 {
 	struct device *dev = kobj_to_dev(kobj);
 	struct device_private *p = dev->p;
-
-	
-	devres_release_all(dev);
-
-	kfree(dev->dma_range_map);
 
 	if (dev->release)
 		dev->release(dev);
@@ -273,35 +80,29 @@ static void device_release(struct kobject *kobj)
 	else if (dev->class && dev->class->dev_release)
 		dev->class->dev_release(dev);
 	else
-		WARN(1, KERN_ERR "Device '%s' does not have a release() function, it is broken and must be fixed. See Documentation/core-api/kobject.rst.\n",
-			dev_name(dev));
+		WARN(1,
+		     KERN_ERR
+		     "Device '%s' does not have a release() function, it is broken and must be fixed. See Documentation/core-api/kobject.rst.\n",
+		     dev_name(dev));
 	kfree(p);
 }
 
 static const void *device_namespace(struct kobject *kobj)
 {
-	struct device *dev = kobj_to_dev(kobj);
-	const void *ns = NULL;
-
-	if (dev->class && dev->class->ns_type)
-		ns = dev->class->namespace(dev);
-
-	return ns;
+	/* ns_type is never set, so namespace() is never called */
+	return NULL;
 }
 
 static void device_get_ownership(struct kobject *kobj, kuid_t *uid, kgid_t *gid)
 {
-	struct device *dev = kobj_to_dev(kobj);
-
-	if (dev->class && dev->class->get_ownership)
-		dev->class->get_ownership(dev, uid, gid);
+	/* class->get_ownership is never set */
 }
 
 static struct kobj_type device_ktype = {
-	.release	= device_release,
-	.sysfs_ops	= &dev_sysfs_ops,
-	.namespace	= device_namespace,
-	.get_ownership	= device_get_ownership,
+	.release = device_release,
+	.sysfs_ops = &dev_sysfs_ops,
+	.namespace = device_namespace,
+	.get_ownership = device_get_ownership,
 };
 
 static int dev_uevent_filter(struct kobject *kobj)
@@ -336,64 +137,22 @@ static int dev_uevent(struct kobject *kobj, struct kobj_uevent_env *env)
 }
 
 static const struct kset_uevent_ops device_uevent_ops = {
-	.filter =	dev_uevent_filter,
-	.name =		dev_uevent_name,
-	.uevent =	dev_uevent,
+	.filter = dev_uevent_filter,
+	.name = dev_uevent_name,
+	.uevent = dev_uevent,
 };
 
-static ssize_t uevent_show(struct device *dev, struct device_attribute *attr,
-			   char *buf)
-{
-	/* Stub: sysfs uevent display not needed for minimal kernel */
-	return 0;
-}
-
-/* Stub: uevent_store simplified for minimal kernel */
-static ssize_t uevent_store(struct device *dev, struct device_attribute *attr,
-			    const char *buf, size_t count)
-{
-	return count;
-}
-static DEVICE_ATTR_RW(uevent);
+/* uevent_show, uevent_store, dev_attr_uevent removed - only caller was empty device_remove_file stub */
 
 /* Stub: online sysfs attributes simplified for minimal kernel */
 
-/* Stub: device sysfs groups not needed for minimal kernel */
-int device_add_groups(struct device *dev, const struct attribute_group **groups)
-{
-	return 0;
-}
+/* device_add_groups, device_remove_groups removed - calls removed, functions did nothing */
 
-void device_remove_groups(struct device *dev,
-			  const struct attribute_group **groups)
-{
-}
+/* device_remove_attrs removed - physical_location field removed, now empty */
 
-
-/* Stub: device_remove_attrs not needed (sysfs functions are stubbed) */
-static void device_remove_attrs(struct device *dev)
-{
-	if (dev->physical_location)
-		kfree(dev->physical_location);
-}
-
-static ssize_t dev_show(struct device *dev, struct device_attribute *attr,
-			char *buf)
-{
-	return print_dev_t(buf, dev->devt);
-}
-static DEVICE_ATTR_RO(dev);
+/* device_remove_file_self, device_create_bin_file, device_remove_bin_file - no callers */
 
 struct kset *devices_kset;
-
-
-/* Stub: device_remove_file not needed for minimal kernel */
-void device_remove_file(struct device *dev,
-			const struct device_attribute *attr)
-{
-}
-
-/* Removed: device_remove_file_self, device_create_bin_file, device_remove_bin_file - no callers */
 
 static void klist_children_get(struct klist_node *n)
 {
@@ -417,7 +176,6 @@ void device_initialize(struct device *dev)
 	kobject_init(&dev->kobj, &device_ktype);
 	INIT_LIST_HEAD(&dev->dma_pools);
 	mutex_init(&dev->mutex);
-	lockdep_set_novalidate_class(&dev->mutex);
 	spin_lock_init(&dev->devres_lock);
 	INIT_LIST_HEAD(&dev->devres_head);
 	device_pm_init(dev);
@@ -426,22 +184,18 @@ void device_initialize(struct device *dev)
 	INIT_LIST_HEAD(&dev->links.suppliers);
 	INIT_LIST_HEAD(&dev->links.defer_sync);
 	dev->links.status = DL_DEV_NO_DRIVER;
-#if defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_DEVICE) || \
-    defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU) || \
-    defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU_ALL)
+#if defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_DEVICE) ||  \
+	defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU) || \
+	defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU_ALL)
 	dev->dma_coherent = dma_default_coherent;
 #endif
 }
 
-
-
 static DEFINE_MUTEX(gdp_mutex);
 
-static inline bool live_in_glue_dir(struct kobject *kobj,
-				    struct device *dev)
+static inline bool live_in_glue_dir(struct kobject *kobj, struct device *dev)
 {
-	if (!kobj || !dev->class ||
-	    kobj->kset != &dev->class->p->glue_dirs)
+	if (!kobj || !dev->class || kobj->kset != &dev->class->p->glue_dirs)
 		return false;
 	return true;
 }
@@ -462,12 +216,11 @@ static void cleanup_glue_dir(struct device *dev, struct kobject *glue_dir)
 {
 	unsigned int ref;
 
-	
 	if (!live_in_glue_dir(glue_dir, dev))
 		return;
 
 	mutex_lock(&gdp_mutex);
-	
+
 	ref = kref_read(&glue_dir->kref);
 	if (!kobject_has_children(glue_dir) && !--ref)
 		kobject_del(glue_dir);
@@ -489,11 +242,6 @@ int dev_set_name(struct device *dev, const char *fmt, ...)
 	err = kobject_set_name_vargs(&dev->kobj, fmt, vargs);
 	va_end(vargs);
 	return err;
-}
-
-/* Stub: device_to_dev_kobj and device_remove_sys_dev_entry not needed */
-static void device_remove_sys_dev_entry(struct device *dev)
-{
 }
 
 static int device_private_init(struct device *dev)
@@ -545,7 +293,6 @@ int device_add(struct device *dev)
 	if (error)
 		goto parent_error;
 
-	device_pm_add(dev);
 	bus_probe_device(dev);
 
 	error = 0;
@@ -575,16 +322,12 @@ struct device *get_device(struct device *dev)
 
 void put_device(struct device *dev)
 {
-	
 	if (dev)
 		kobject_put(&dev->kobj);
 }
 
 static bool kill_device(struct device *dev)
 {
-	
-	device_lock_assert(dev);
-
 	if (dev->p->dead)
 		return false;
 	dev->p->dead = true;
@@ -595,7 +338,6 @@ void device_del(struct device *dev)
 {
 	struct device *parent = dev->parent;
 	struct kobject *glue_dir = NULL;
-	struct class_interface *class_intf;
 	unsigned int noio_flag;
 
 	device_lock(dev);
@@ -605,44 +347,23 @@ void device_del(struct device *dev)
 	if (dev->fwnode && dev->fwnode->dev == dev)
 		dev->fwnode->dev = NULL;
 
-	
 	noio_flag = memalloc_noio_save();
-	if (dev->bus)
-		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
-					     BUS_NOTIFY_DEL_DEVICE, dev);
 
-	dpm_sysfs_remove(dev);
 	if (parent)
 		klist_del(&dev->p->knode_parent);
-	if (MAJOR(dev->devt)) {
-		devtmpfs_delete_node(dev);
-		device_remove_sys_dev_entry(dev);
-		device_remove_file(dev, &dev_attr_dev);
-	}
+	/* MAJOR(dev->devt) check removed - device_remove_file is empty stub */
 	if (dev->class) {
 		device_remove_class_symlinks(dev);
 
 		mutex_lock(&dev->class->p->mutex);
-		
-		list_for_each_entry(class_intf,
-				    &dev->class->p->interfaces, node)
-			if (class_intf->remove_dev)
-				class_intf->remove_dev(dev, class_intf);
-		
+		/* class_intf loop removed - interfaces list never populated */
 		klist_del(&dev->p->knode_class);
 		mutex_unlock(&dev->class->p->mutex);
 	}
-	device_remove_file(dev, &dev_attr_uevent);
-	device_remove_attrs(dev);
+	/* device_remove_attrs call removed - function now empty */
 	bus_remove_device(dev);
-	device_pm_remove(dev);
 	driver_deferred_probe_del(dev);
-	device_platform_notify_remove(dev);
-	device_links_purge(dev);
-
-	if (dev->bus)
-		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
-					     BUS_NOTIFY_REMOVED_DEVICE, dev);
+	/* device_platform_notify_remove, device_links_purge, bus_notifier calls removed */
 	kobject_uevent(&dev->kobj, KOBJ_REMOVE);
 	glue_dir = get_glue_dir(dev);
 	kobject_del(&dev->kobj);
@@ -657,51 +378,23 @@ void device_unregister(struct device *dev)
 	put_device(dev);
 }
 
-
-
+/* Simplified - kobject_create_and_add returns NULL (stub), return ignored */
 int __init devices_init(void)
 {
 	devices_kset = kset_create_and_add("devices", &device_uevent_ops, NULL);
-	if (!devices_kset)
-		return -ENOMEM;
-	dev_kobj = kobject_create_and_add("dev", NULL);
-	if (!dev_kobj)
-		goto dev_kobj_err;
-	sysfs_dev_block_kobj = kobject_create_and_add("block", dev_kobj);
-	if (!sysfs_dev_block_kobj)
-		goto block_kobj_err;
-	sysfs_dev_char_kobj = kobject_create_and_add("char", dev_kobj);
-	if (!sysfs_dev_char_kobj)
-		goto char_kobj_err;
-
 	return 0;
-
- char_kobj_err:
-	kobject_put(sysfs_dev_block_kobj);
- block_kobj_err:
-	kobject_put(dev_kobj);
- dev_kobj_err:
-	kset_unregister(devices_kset);
-	return -ENOMEM;
 }
 
-struct root_device {
-	struct device dev;
-	struct module *owner;
-};
-
-/* Removed: __root_device_register, root_device_unregister - no callers */
+/* Removed: root_device struct, __root_device_register, root_device_unregister - no callers */
 
 static void device_create_release(struct device *dev)
 {
 	kfree(dev);
 }
 
-static __printf(6, 0) struct device *
-device_create_groups_vargs(struct class *class, struct device *parent,
-			   dev_t devt, void *drvdata,
-			   const struct attribute_group **groups,
-			   const char *fmt, va_list args)
+static __printf(6, 0) struct device *device_create_groups_vargs(
+	struct class *class, struct device *parent, dev_t devt, void *drvdata,
+	const struct attribute_group **groups, const char *fmt, va_list args)
 {
 	struct device *dev = NULL;
 	int retval = -ENODEV;
@@ -719,7 +412,7 @@ device_create_groups_vargs(struct class *class, struct device *parent,
 	dev->devt = devt;
 	dev->class = class;
 	dev->parent = parent;
-	dev->groups = groups;
+	/* dev->groups removed - field no longer exists (sysfs stubbed) */
 	dev->release = device_create_release;
 	dev_set_drvdata(dev, drvdata);
 
@@ -746,26 +439,12 @@ struct device *device_create(struct class *class, struct device *parent,
 
 	va_start(vargs, fmt);
 	dev = device_create_groups_vargs(class, parent, devt, drvdata, NULL,
-					  fmt, vargs);
-	va_end(vargs);
-	return dev;
-}
-
-struct device *device_create_with_groups(struct class *class,
-					 struct device *parent, dev_t devt,
-					 void *drvdata,
-					 const struct attribute_group **groups,
-					 const char *fmt, ...)
-{
-	va_list vargs;
-	struct device *dev;
-
-	va_start(vargs, fmt);
-	dev = device_create_groups_vargs(class, parent, devt, drvdata, groups,
 					 fmt, vargs);
 	va_end(vargs);
 	return dev;
 }
+
+/* device_create_with_groups removed - groups parameter now ignored (sysfs stubbed) */
 
 void device_destroy(struct class *class, dev_t devt)
 {
@@ -778,16 +457,13 @@ void device_destroy(struct class *class, dev_t devt)
 	}
 }
 
-void device_shutdown(void)
-{
-	/* Stubbed: device shutdown not needed for minimal boot */
-}
-
 int dev_err_probe(const struct device *dev, int err, const char *fmt, ...)
 {
 	/* Stub: minimal error probe for tiny kernel */
 	return err;
 }
 
-
-int device_match_devt(struct device *dev, const void *pdevt) { return 0; }
+int device_match_devt(struct device *dev, const void *pdevt)
+{
+	return 0;
+}

@@ -57,10 +57,8 @@
 #define X86_FEATURE_TSC			( 0*32+ 4)
 #define X86_FEATURE_PAE			( 0*32+ 6)
 #define X86_FEATURE_CX8			( 0*32+ 8)
-#define X86_FEATURE_APIC		( 0*32+ 9)
 #define X86_FEATURE_SEP			( 0*32+11)
 #define X86_FEATURE_PGE			( 0*32+13)
-#define X86_FEATURE_CMOV		( 0*32+15)
 #define X86_FEATURE_PSE36		( 0*32+17)
 #define X86_FEATURE_FXSR		( 0*32+24)
 #define X86_FEATURE_XMM			( 0*32+25)
@@ -73,9 +71,6 @@
 #define X86_FEATURE_LM			( 1*32+29)
 
 /* Word 3 - Auxiliary flags (required for DISABLE_* macros) */
-#define X86_FEATURE_K6_MTRR		( 3*32+ 1)
-#define X86_FEATURE_CYRIX_ARR		( 3*32+ 2)
-#define X86_FEATURE_CENTAUR_MCR		( 3*32+ 3)
 #define X86_FEATURE_CONSTANT_TSC	( 3*32+ 8)
 #define X86_FEATURE_LFENCE_RDTSC	( 3*32+18)
 #define X86_FEATURE_NOPL		( 3*32+20)
@@ -90,7 +85,6 @@
 #define X86_FEATURE_MWAIT		( 4*32+ 3)
 #define X86_FEATURE_PCID		( 4*32+17)
 #define X86_FEATURE_DCA			( 4*32+18)
-#define X86_FEATURE_TSC_DEADLINE_TIMER	( 4*32+24)
 #define X86_FEATURE_XSAVE		( 4*32+26)
 #define X86_FEATURE_OSXSAVE		( 4*32+27)
 #define X86_FEATURE_HYPERVISOR		( 4*32+31)
@@ -105,7 +99,6 @@
 #define X86_FEATURE_PTI			( 7*32+11)
 #define X86_FEATURE_RSB_CTXSW		( 7*32+19)
 #define X86_FEATURE_USE_IBPB		( 7*32+21)
-#define X86_FEATURE_USE_IBRS_FW		( 7*32+22)
 #define X86_FEATURE_LS_CFG_SSBD		( 7*32+24)
 
 /* Word 8 - Virtualization flags */
@@ -114,7 +107,6 @@
 
 /* Word 9 - Extended leaf 7 */
 #define X86_FEATURE_FSGSBASE		( 9*32+ 0)
-#define X86_FEATURE_TSC_ADJUST		( 9*32+ 1)
 #define X86_FEATURE_SGX			( 9*32+ 2)
 #define X86_FEATURE_SMEP		( 9*32+ 7)
 #define X86_FEATURE_INVPCID		( 9*32+10)
@@ -126,12 +118,10 @@
 #define X86_FEATURE_XSAVES		(10*32+ 3)
 
 /* Word 11 - Kernel-synthesized */
-#define X86_FEATURE_ENTRY_IBPB		(11*32+10)
 #define X86_FEATURE_RETPOLINE		(11*32+12)
 #define X86_FEATURE_RETPOLINE_LFENCE	(11*32+13)
 #define X86_FEATURE_RETHUNK		(11*32+14)
 #define X86_FEATURE_UNRET		(11*32+15)
-#define X86_FEATURE_USE_IBPB_FW		(11*32+16)
 
 /* Word 13 - AMD extended 2 */
 #define X86_FEATURE_AMD_SSBD		(13*32+24)
@@ -141,30 +131,20 @@
 #define X86_FEATURE_UMIP		(16*32+ 2)
 #define X86_FEATURE_PKU			(16*32+ 3)
 #define X86_FEATURE_OSPKE		(16*32+ 4)
-#define X86_FEATURE_WAITPKG		(16*32+ 5)
 #define X86_FEATURE_LA57		(16*32+16)
 #define X86_FEATURE_ENQCMD		(16*32+29)
 
 /* Word 18 - Intel extended 3 */
 #define X86_FEATURE_SERIALIZE		(18*32+14)
-#define X86_FEATURE_ARCH_LBR		(18*32+19)
-#define X86_FEATURE_IBT			(18*32+20)
 #define X86_FEATURE_SPEC_CTRL_SSBD	(18*32+31)
-
-/* Word 19 - AMD SEV/SME */
-#define X86_FEATURE_SME			(19*32+ 0)
 
 /* CPU bugs - only keep the used ones */
 #define X86_BUG(x)			(NCAPINTS*32 + (x))
 
-#define X86_BUG_FDIV			X86_BUG(1)
 #define X86_BUG_AMD_APIC_C1E		X86_BUG(4)
 #define X86_BUG_FXSAVE_LEAK		X86_BUG(6)
-#define X86_BUG_CLFLUSH_MONITOR		X86_BUG(7)
 #define X86_BUG_ESPFIX			X86_BUG(9)
 #define X86_BUG_NULL_SEG		X86_BUG(10)
-#define X86_BUG_MONITOR			X86_BUG(12)
 #define X86_BUG_AMD_E400		X86_BUG(13)
-#define X86_BUG_L1TF			X86_BUG(18)
 
 #endif

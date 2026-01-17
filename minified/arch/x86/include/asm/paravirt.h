@@ -3,8 +3,6 @@
 #define _ASM_X86_PARAVIRT_H
  
 
-# define default_banner x86_init_noop
-
 #ifndef __ASSEMBLY__
 /* paravirt_arch_dup_mmap removed - unused */
 

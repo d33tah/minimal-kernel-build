@@ -3,7 +3,7 @@
 #define _ASM_X86_BARRIER_H
 
 #include <asm/alternative.h>
-#include <asm/nops.h>
+#include <asm/asm.h>
 
  
 

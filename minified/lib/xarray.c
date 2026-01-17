@@ -32,20 +32,20 @@ static inline unsigned long *node_marks(struct xa_node *node, xa_mark_t mark)
 	return node->marks[(__force unsigned)mark];
 }
 
-static inline bool node_get_mark(struct xa_node *node,
-		unsigned int offset, xa_mark_t mark)
+static inline bool node_get_mark(struct xa_node *node, unsigned int offset,
+				 xa_mark_t mark)
 {
 	return test_bit(offset, node_marks(node, mark));
 }
 
 static inline bool node_set_mark(struct xa_node *node, unsigned int offset,
-				xa_mark_t mark)
+				 xa_mark_t mark)
 {
 	return __test_and_set_bit(offset, node_marks(node, mark));
 }
 
 static inline bool node_clear_mark(struct xa_node *node, unsigned int offset,
-				xa_mark_t mark)
+				   xa_mark_t mark)
 {
 	return __test_and_clear_bit(offset, node_marks(node, mark));
 }
@@ -60,9 +60,10 @@ static inline void node_mark_all(struct xa_node *node, xa_mark_t mark)
 	bitmap_fill(node_marks(node, mark), XA_CHUNK_SIZE);
 }
 
-#define mark_inc(mark) do { \
-	mark = (__force xa_mark_t)((__force unsigned)(mark) + 1); \
-} while (0)
+#define mark_inc(mark)                                                    \
+	do {                                                              \
+		mark = (__force xa_mark_t)((__force unsigned)(mark) + 1); \
+	} while (0)
 
 static void xas_squash_marks(const struct xa_state *xas)
 {
@@ -138,13 +139,7 @@ static void *xas_descend(struct xa_state *xas, struct xa_node *node)
 	void *entry = xa_entry(xas->xa, node, offset);
 
 	xas->xa_node = node;
-	if (xa_is_sibling(entry)) {
-		offset = xa_to_sibling(entry);
-		entry = xa_entry(xas->xa, node, offset);
-		if (node->shift && xa_is_node(entry))
-			entry = XA_RETRY_ENTRY;
-	}
-
+	/* xa_is_sibling always returns false - sibling block removed */
 	xas->xa_offset = offset;
 	return entry;
 }
@@ -168,11 +163,10 @@ void *xas_load(struct xa_state *xas)
 extern struct kmem_cache *radix_tree_node_cachep;
 extern void radix_tree_node_rcu_free(struct rcu_head *head);
 
-#define XA_RCU_FREE	((struct xarray *)1)
+#define XA_RCU_FREE ((struct xarray *)1)
 
 static void xa_node_free(struct xa_node *node)
 {
-	XA_NODE_BUG_ON(node, !list_empty(&node->private_list));
 	node->array = XA_RCU_FREE;
 	call_rcu(&node->rcu_head, radix_tree_node_rcu_free);
 }
@@ -182,7 +176,6 @@ void xas_destroy(struct xa_state *xas)
 	struct xa_node *next, *node = xas->xa_alloc;
 
 	while (node) {
-		XA_NODE_BUG_ON(node, !list_empty(&node->private_list));
 		next = rcu_dereference_raw(node->parent);
 		radix_tree_node_rcu_free(&node->rcu_head);
 		xas->xa_alloc = node = next;
@@ -197,11 +190,11 @@ bool xas_nomem(struct xa_state *xas, gfp_t gfp)
 	}
 	if (xas->xa->xa_flags & XA_FLAGS_ACCOUNT)
 		gfp |= __GFP_ACCOUNT;
-	xas->xa_alloc = kmem_cache_alloc_lru(radix_tree_node_cachep, xas->xa_lru, gfp);
+	xas->xa_alloc =
+		kmem_cache_alloc_lru(radix_tree_node_cachep, xas->xa_lru, gfp);
 	if (!xas->xa_alloc)
 		return false;
 	xas->xa_alloc->parent = NULL;
-	XA_NODE_BUG_ON(xas->xa_alloc, !list_empty(&xas->xa_alloc->private_list));
 	xas->xa_node = XAS_RESTART;
 	return true;
 }
@@ -210,8 +203,6 @@ static void xas_update(struct xa_state *xas, struct xa_node *node)
 {
 	if (xas->xa_update)
 		xas->xa_update(node);
-	else
-		XA_NODE_BUG_ON(node, !list_empty(&node->private_list));
 }
 
 static void *xas_alloc(struct xa_state *xas, unsigned int shift)
@@ -230,7 +221,8 @@ static void *xas_alloc(struct xa_state *xas, unsigned int shift)
 		if (xas->xa->xa_flags & XA_FLAGS_ACCOUNT)
 			gfp |= __GFP_ACCOUNT;
 
-		node = kmem_cache_alloc_lru(radix_tree_node_cachep, xas->xa_lru, gfp);
+		node = kmem_cache_alloc_lru(radix_tree_node_cachep, xas->xa_lru,
+					    gfp);
 		if (!node) {
 			xas_set_err(xas, -ENOMEM);
 			return NULL;
@@ -240,11 +232,8 @@ static void *xas_alloc(struct xa_state *xas, unsigned int shift)
 	if (parent) {
 		node->offset = xas->xa_offset;
 		parent->count++;
-		XA_NODE_BUG_ON(node, parent->count > XA_CHUNK_SIZE);
 		xas_update(xas, parent);
 	}
-	XA_NODE_BUG_ON(node, shift > BITS_PER_LONG);
-	XA_NODE_BUG_ON(node, !list_empty(&node->private_list));
 	node->shift = shift;
 	node->count = 0;
 	node->nr_values = 0;
@@ -268,42 +257,7 @@ static unsigned long max_index(void *entry)
 	return (XA_CHUNK_SIZE << xa_to_node(entry)->shift) - 1;
 }
 
-static void xas_shrink(struct xa_state *xas)
-{
-	struct xarray *xa = xas->xa;
-	struct xa_node *node = xas->xa_node;
-
-	for (;;) {
-		void *entry;
-
-		XA_NODE_BUG_ON(node, node->count > XA_CHUNK_SIZE);
-		if (node->count != 1)
-			break;
-		entry = xa_entry_locked(xa, node, 0);
-		if (!entry)
-			break;
-		if (!xa_is_node(entry) && node->shift)
-			break;
-		if (xa_is_zero(entry) && xa_zero_busy(xa))
-			entry = NULL;
-		xas->xa_node = XAS_BOUNDS;
-
-		RCU_INIT_POINTER(xa->xa_head, entry);
-		if (xa_track_free(xa) && !node_get_mark(node, 0, XA_FREE_MARK))
-			xa_mark_clear(xa, XA_FREE_MARK);
-
-		node->count = 0;
-		node->nr_values = 0;
-		if (!xa_is_node(entry))
-			RCU_INIT_POINTER(node->slots[0], XA_RETRY_ENTRY);
-		xas_update(xas, node);
-		xa_node_free(node);
-		if (!xa_is_node(entry))
-			break;
-		node = xa_to_node(entry);
-		node->parent = NULL;
-	}
-}
+/* xas_shrink inlined into xas_delete_node */
 
 static void xas_delete_node(struct xa_state *xas)
 {
@@ -312,7 +266,6 @@ static void xas_delete_node(struct xa_state *xas)
 	for (;;) {
 		struct xa_node *parent;
 
-		XA_NODE_BUG_ON(node, node->count > XA_CHUNK_SIZE);
 		if (node->count)
 			break;
 
@@ -329,13 +282,45 @@ static void xas_delete_node(struct xa_state *xas)
 
 		parent->slots[xas->xa_offset] = NULL;
 		parent->count--;
-		XA_NODE_BUG_ON(parent, parent->count > XA_CHUNK_SIZE);
 		node = parent;
 		xas_update(xas, node);
 	}
 
-	if (!node->parent)
-		xas_shrink(xas);
+	if (!node->parent) {
+		/* Inlined xas_shrink */
+		struct xarray *xa = xas->xa;
+		for (;;) {
+			void *entry;
+
+			if (node->count != 1)
+				break;
+			entry = xa_entry_locked(xa, node, 0);
+			if (!entry)
+				break;
+			if (!xa_is_node(entry) && node->shift)
+				break;
+			if (xa_is_zero(entry) && xa_zero_busy(xa))
+				entry = NULL;
+			xas->xa_node = XAS_BOUNDS;
+
+			RCU_INIT_POINTER(xa->xa_head, entry);
+			if (xa_track_free(xa) &&
+			    !node_get_mark(node, 0, XA_FREE_MARK))
+				xa_mark_clear(xa, XA_FREE_MARK);
+
+			node->count = 0;
+			node->nr_values = 0;
+			if (!xa_is_node(entry))
+				RCU_INIT_POINTER(node->slots[0],
+						 XA_RETRY_ENTRY);
+			xas_update(xas, node);
+			xa_node_free(node);
+			if (!xa_is_node(entry))
+				break;
+			node = xa_to_node(entry);
+			node->parent = NULL;
+		}
+	}
 }
 
 static void xas_free_nodes(struct xa_state *xas, struct xa_node *top)
@@ -392,7 +377,6 @@ static int xas_expand(struct xa_state *xas, void *head)
 	while (max > max_index(head)) {
 		xa_mark_t mark = 0;
 
-		XA_NODE_BUG_ON(node, shift > BITS_PER_LONG);
 		node = xas_alloc(xas, shift);
 		if (!node)
 			return -ENOMEM;
@@ -488,17 +472,14 @@ static void *xas_create(struct xa_state *xas, bool allow_root)
 	return entry;
 }
 
-
-static void update_node(struct xa_state *xas, struct xa_node *node,
-		int count, int values)
+static void update_node(struct xa_state *xas, struct xa_node *node, int count,
+			int values)
 {
 	if (!node || (!count && !values))
 		return;
 
 	node->count += count;
 	node->nr_values += values;
-	XA_NODE_BUG_ON(node, node->count > XA_CHUNK_SIZE);
-	XA_NODE_BUG_ON(node, node->nr_values > XA_CHUNK_SIZE);
 	xas_update(xas, node);
 	if (count < 0)
 		xas_delete_node(xas);
@@ -541,7 +522,6 @@ void *xas_store(struct xa_state *xas, void *entry)
 		xas_init_marks(xas);
 
 	for (;;) {
-		
 		rcu_assign_pointer(*slot, entry);
 		if (xa_is_node(next) && (!node || node->shift))
 			xas_free_nodes(xas, xa_to_node(next));
@@ -552,25 +532,23 @@ void *xas_store(struct xa_state *xas, void *entry)
 		if (entry) {
 			if (offset == max)
 				break;
-			if (!xa_is_sibling(entry))
-				entry = xa_mk_sibling(xas->xa_offset);
+			/* xa_is_sibling always returns false */
+			entry = xa_mk_sibling(xas->xa_offset);
 		} else {
 			if (offset == XA_CHUNK_MASK)
 				break;
 		}
 		next = xa_entry_locked(xas->xa, node, ++offset);
-		if (!xa_is_sibling(next)) {
-			if (!entry && (offset > max))
-				break;
-			first = next;
-		}
+		/* xa_is_sibling always returns false */
+		if (!entry && (offset > max))
+			break;
+		first = next;
 		slot++;
 	}
 
 	update_node(xas, node, count, values);
 	return first;
 }
-
 
 void xas_set_mark(const struct xa_state *xas, xa_mark_t mark)
 {
@@ -628,8 +606,6 @@ void xas_init_marks(const struct xa_state *xas)
 	}
 }
 
-
-
 void *__xas_next(struct xa_state *xas)
 {
 	void *entry;
@@ -678,7 +654,7 @@ void *xas_find(struct xa_state *xas, unsigned long max)
 		if (entry || xas_not_node(xas->xa_node))
 			return entry;
 	} else if (!xas->xa_node->shift &&
-		    xas->xa_offset != (xas->xa_index & XA_CHUNK_MASK)) {
+		   xas->xa_offset != (xas->xa_index & XA_CHUNK_MASK)) {
 		xas->xa_offset = ((xas->xa_index - 1) & XA_CHUNK_MASK) + 1;
 	}
 
@@ -697,7 +673,8 @@ void *xas_find(struct xa_state *xas, unsigned long max)
 			xas->xa_offset = 0;
 			continue;
 		}
-		if (entry && !xa_is_sibling(entry))
+		/* xa_is_sibling always returns false */
+		if (entry)
 			return entry;
 
 		xas_next_offset(xas);
@@ -748,19 +725,13 @@ void *xas_find_marked(struct xa_state *xas, unsigned long max, xa_mark_t mark)
 			continue;
 		}
 
-		if (!advance) {
-			entry = xa_entry(xas->xa, xas->xa_node, xas->xa_offset);
-			if (xa_is_sibling(entry)) {
-				xas->xa_offset = xa_to_sibling(entry);
-				xas_move_index(xas, xas->xa_offset);
-			}
-		}
+		/* xa_is_sibling always returns false - sibling block removed */
 
 		offset = xas_find_chunk(xas, advance, mark);
 		if (offset > xas->xa_offset) {
 			advance = false;
 			xas_move_index(xas, offset);
-			
+
 			if ((xas->xa_index - 1) >= max)
 				goto max;
 			xas->xa_offset = offset;
@@ -786,10 +757,7 @@ max:
 	return NULL;
 }
 
-void *xas_find_conflict(struct xa_state *xas)
-{
-	return NULL;
-}
+/* xas_find_conflict removed - no callers after filemap simplification */
 
 void *xa_load(struct xarray *xa, unsigned long index)
 {
@@ -807,6 +775,4 @@ void *xa_load(struct xarray *xa, unsigned long index)
 	return entry;
 }
 
-
 /* Removed: __xa_store, xa_store, __xa_cmpxchg, __xa_insert, __xa_alloc - no callers */
-

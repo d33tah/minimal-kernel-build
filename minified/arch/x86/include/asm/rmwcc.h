@@ -59,12 +59,4 @@ cc_label:	c = true;						\
 
 #define GEN_BINARY_RMWcc(X...) RMWcc_CONCAT(GEN_BINARY_RMWcc_, RMWcc_ARGS(X))(X)
 
-#define GEN_UNARY_SUFFIXED_RMWcc(op, suffix, var, cc, clobbers...)	\
-	__GEN_RMWcc(op " %[var]\n\t" suffix, var, cc,			\
-		    __CLOBBERS_MEM(clobbers))
-
-#define GEN_BINARY_SUFFIXED_RMWcc(op, suffix, var, cc, vcon, _val, clobbers...)\
-	__GEN_RMWcc(op " %[val], %[var]\n\t" suffix, var, cc,		\
-		    __CLOBBERS_MEM(clobbers), [val] vcon (_val))
-
 #endif  

@@ -10,37 +10,7 @@
 #include <linux/types.h>
 #include <linux/atomic.h>
 
-struct rcu_cblist {
-	struct rcu_head *head;
-	struct rcu_head **tail;
-	long len;
-};
-
-#define RCU_CBLIST_INITIALIZER(n) { .head = NULL, .tail = &n.head }
-
-#define RCU_DONE_TAIL		0
-#define RCU_WAIT_TAIL		1
-#define RCU_NEXT_READY_TAIL	2
-#define RCU_NEXT_TAIL		3
-#define RCU_CBLIST_NSEGS	4
-
-struct rcu_segcblist {
-	struct rcu_head *head;
-	struct rcu_head **tails[RCU_CBLIST_NSEGS];
-	unsigned long gp_seq[RCU_CBLIST_NSEGS];
-	long len;
-	long seglen[RCU_CBLIST_NSEGS];
-	u8 flags;
-};
-
-#define RCU_SEGCBLIST_INITIALIZER(n) \
-{ \
-	.head = NULL, \
-	.tails[RCU_DONE_TAIL] = &n.head, \
-	.tails[RCU_WAIT_TAIL] = &n.head, \
-	.tails[RCU_NEXT_READY_TAIL] = &n.head, \
-	.tails[RCU_NEXT_TAIL] = &n.head, \
-}
+/* RCU_CBLIST_NSEGS, struct rcu_segcblist removed - unused */
 
 struct srcu_struct;
 
@@ -74,8 +44,6 @@ void srcu_drive_gp(struct work_struct *wp);
 	__SRCU_DEP_MAP_INIT(name)					\
 }
 
-#define DEFINE_SRCU(name) \
-	struct srcu_struct name = __SRCU_STRUCT_INIT(name, name)
 #define DEFINE_STATIC_SRCU(name) \
 	static struct srcu_struct name = __SRCU_STRUCT_INIT(name, name)
 
@@ -93,37 +61,23 @@ static inline int __srcu_read_lock(struct srcu_struct *ssp)
 
 void call_srcu(struct srcu_struct *ssp, struct rcu_head *head,
 		void (*func)(struct rcu_head *head));
-void cleanup_srcu_struct(struct srcu_struct *ssp);
+/* cleanup_srcu_struct, start_poll_synchronize_srcu, poll_state_synchronize_srcu removed - never called */
 int __srcu_read_lock(struct srcu_struct *ssp) __acquires(ssp);
 void __srcu_read_unlock(struct srcu_struct *ssp, int idx) __releases(ssp);
 void synchronize_srcu(struct srcu_struct *ssp);
 unsigned long get_state_synchronize_srcu(struct srcu_struct *ssp);
-unsigned long start_poll_synchronize_srcu(struct srcu_struct *ssp);
-bool poll_state_synchronize_srcu(struct srcu_struct *ssp, unsigned long cookie);
 
 void srcu_init(void);
 
-
-static inline int srcu_read_lock_held(const struct srcu_struct *ssp)
-{
-	return 1;
-}
-
-
-#define srcu_dereference_check(p, ssp, c) \
-	__rcu_dereference_check((p), __UNIQUE_ID(rcu), \
-				(c) || srcu_read_lock_held(ssp), __rcu)
-
-#define srcu_dereference(p, ssp) srcu_dereference_check((p), (ssp), 0)
-
-#define srcu_dereference_notrace(p, ssp) srcu_dereference_check((p), (ssp), 1)
+/* srcu_read_lock_held removed - unused */
+/* srcu_dereference_check, srcu_dereference, srcu_dereference_notrace removed - never used */
 
 static inline int srcu_read_lock(struct srcu_struct *ssp) __acquires(ssp)
 {
 	int retval;
 
 	retval = __srcu_read_lock(ssp);
-	rcu_lock_acquire(&(ssp)->dep_map);
+	/* rcu_lock_acquire removed - empty stub */
 	return retval;
 }
 
@@ -132,7 +86,7 @@ static inline void srcu_read_unlock(struct srcu_struct *ssp, int idx)
 	__releases(ssp)
 {
 	WARN_ON_ONCE(idx & ~0x1);
-	rcu_lock_release(&(ssp)->dep_map);
+	/* rcu_lock_release removed - empty stub */
 	__srcu_read_unlock(ssp, idx);
 }
 

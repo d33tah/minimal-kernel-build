@@ -35,10 +35,7 @@ static inline void *xa_mk_internal(unsigned long v)
 	return (void *)((v << 2) | 2);
 }
 
-static inline unsigned long xa_to_internal(const void *entry)
-{
-	return (unsigned long)entry >> 2;
-}
+/* xa_to_internal removed - no callers */
 
 static inline bool xa_is_internal(const void *entry)
 {
@@ -59,10 +56,7 @@ static inline int xa_err(void *entry)
 	return 0;
 }
 
-struct xa_limit {
-	u32 max;
-	u32 min;
-};
+/* struct xa_limit removed - unused */
 
 typedef unsigned __bitwise xa_mark_t;
 #define XA_MARK_0		((__force xa_mark_t)0U)
@@ -126,10 +120,6 @@ static inline bool xa_marked(const struct xarray *xa, xa_mark_t mark)
 #define xa_unlock_irqrestore(xa, flags) \
 				spin_unlock_irqrestore(&(xa)->xa_lock, flags)
 
-int __must_check __xa_alloc(struct xarray *, u32 *id, void *entry,
-		struct xa_limit, gfp_t);
-
-
 #ifndef XA_CHUNK_SHIFT
 #define XA_CHUNK_SHIFT		(CONFIG_BASE_SMALL ? 4 : 6)
 #endif
@@ -156,7 +146,7 @@ struct xa_node {
 	};
 };
 
-#define XA_NODE_BUG_ON(node, x)	do { } while (0)
+/* XA_NODE_BUG_ON removed - no callers */
 
 static inline void *xa_head(const struct xarray *xa)
 {
@@ -173,7 +163,6 @@ static inline void *xa_head_locked(const struct xarray *xa)
 static inline void *xa_entry(const struct xarray *xa,
 				const struct xa_node *node, unsigned int offset)
 {
-	XA_NODE_BUG_ON(node, offset >= XA_CHUNK_SIZE);
 	return rcu_dereference_check(node->slots[offset],
 						lockdep_is_held(&xa->xa_lock));
 }
@@ -181,7 +170,6 @@ static inline void *xa_entry(const struct xarray *xa,
 static inline void *xa_entry_locked(const struct xarray *xa,
 				const struct xa_node *node, unsigned int offset)
 {
-	XA_NODE_BUG_ON(node, offset >= XA_CHUNK_SIZE);
 	return rcu_dereference_protected(node->slots[offset],
 						lockdep_is_held(&xa->xa_lock));
 }
@@ -220,16 +208,7 @@ static inline void *xa_mk_sibling(unsigned int offset)
 	return xa_mk_internal(offset);
 }
 
-static inline unsigned long xa_to_sibling(const void *entry)
-{
-	return xa_to_internal(entry);
-}
-
-static inline bool xa_is_sibling(const void *entry)
-{
-	return IS_ENABLED(CONFIG_XARRAY_MULTI) && xa_is_internal(entry) &&
-		(entry < xa_mk_sibling(XA_CHUNK_SIZE - 1));
-}
+/* xa_to_sibling, xa_is_sibling removed - unused/always false */
 
 #define XA_RETRY_ENTRY		xa_mk_internal(256)
 
@@ -239,8 +218,6 @@ static inline bool xa_is_retry(const void *entry)
 }
 
 typedef void (*xa_update_node_t)(struct xa_node *node);
-
-void xa_delete_node(struct xa_node *, xa_update_node_t);
 
 struct xa_state {
 	struct xarray *xa;
@@ -342,7 +319,7 @@ static inline bool xas_retry(struct xa_state *xas, const void *entry)
 void *xas_load(struct xa_state *);
 void *xas_store(struct xa_state *, void *entry);
 void *xas_find(struct xa_state *, unsigned long max);
-void *xas_find_conflict(struct xa_state *);
+/* xas_find_conflict removed - no callers */
 
 void xas_set_mark(const struct xa_state *, xa_mark_t);
 void xas_clear_mark(const struct xa_state *, xa_mark_t);
@@ -353,40 +330,15 @@ bool xas_nomem(struct xa_state *, gfp_t);
 void xas_destroy(struct xa_state *);
 
 
-static inline int xa_get_order(struct xarray *xa, unsigned long index)
-{
-	return 0;
-}
-
-static inline void xas_split(struct xa_state *xas, void *entry,
-		unsigned int order)
-{
-	xas_store(xas, entry);
-}
-
-static inline void xas_split_alloc(struct xa_state *xas, void *entry,
-		unsigned int order, gfp_t gfp)
-{
-}
+/* xa_get_order, xas_split, xas_split_alloc removed - never called */
 
 static inline void *xas_reload(struct xa_state *xas)
 {
 	struct xa_node *node = xas->xa_node;
-	void *entry;
-	char offset;
 
 	if (!node)
 		return xa_head(xas->xa);
-	if (IS_ENABLED(CONFIG_XARRAY_MULTI)) {
-		offset = (xas->xa_index >> node->shift) & XA_CHUNK_MASK;
-		entry = xa_entry(xas->xa, node, offset);
-		if (!xa_is_sibling(entry))
-			return entry;
-		offset = xa_to_sibling(entry);
-	} else {
-		offset = xas->xa_offset;
-	}
-	return xa_entry(xas->xa, node, offset);
+	return xa_entry(xas->xa, node, xas->xa_offset);
 }
 
 static inline void xas_set(struct xa_state *xas, unsigned long index)
@@ -472,8 +424,7 @@ enum {
 	for (entry = xas_find(xas, max); entry; \
 	     entry = xas_next_entry(xas, max))
 
-#define xas_for_each_conflict(xas, entry) \
-	while ((entry = xas_find_conflict(xas)))
+/* xas_for_each_conflict removed - xas_find_conflict removed */
 
 void *__xas_next(struct xa_state *);
 

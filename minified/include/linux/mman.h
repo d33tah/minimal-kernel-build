@@ -14,11 +14,7 @@
 #define MAP_PRIVATE	0x02
 #define MAP_SHARED_VALIDATE 0x03
 
-/* hugetlb encoding constants - only shift/mask used */
-#define HUGETLB_FLAG_ENCODE_SHIFT	26
-#define HUGETLB_FLAG_ENCODE_MASK	0x3f
-#define MAP_HUGE_SHIFT	HUGETLB_FLAG_ENCODE_SHIFT
-#define MAP_HUGE_MASK	HUGETLB_FLAG_ENCODE_MASK
+/* hugetlb encoding constants removed - never used */
 
 #ifndef MAP_32BIT
 #define MAP_32BIT 0
@@ -54,9 +50,7 @@
 		| MAP_HUGE_2MB \
 		| MAP_HUGE_1GB)
 
-extern int sysctl_overcommit_memory;
-extern int sysctl_overcommit_ratio;
-extern unsigned long sysctl_overcommit_kbytes;
+/* sysctl_overcommit_* externs already in mm.h */
 extern struct percpu_counter vm_committed_as;
 
 #define vm_committed_as_batch 0
@@ -80,21 +74,7 @@ static inline void vm_unacct_memory(long pages)
 #define arch_calc_vm_flag_bits(flags) 0
 #endif
 
-#ifndef arch_validate_prot
-static inline bool arch_validate_prot(unsigned long prot, unsigned long addr)
-{
-	return (prot & ~(PROT_READ | PROT_WRITE | PROT_EXEC | PROT_SEM)) == 0;
-}
-#define arch_validate_prot arch_validate_prot
-#endif
-
-#ifndef arch_validate_flags
-static inline bool arch_validate_flags(unsigned long flags)
-{
-	return true;
-}
-#define arch_validate_flags arch_validate_flags
-#endif
+/* arch_validate_prot, arch_validate_flags removed - no callers */
 
 #define _calc_vm_trans(x, bit1, bit2) \
   ((!(bit1) || !(bit2)) ? 0 : \

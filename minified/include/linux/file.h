@@ -12,11 +12,9 @@ struct file;
 extern void fput(struct file *);
 
 struct file_operations;
-struct task_struct;
+/* struct task_struct, dentry, path forward decls removed - unused */
 struct vfsmount;
-struct dentry;
 struct inode;
-struct path;
 extern struct file *alloc_file_pseudo(struct inode *, struct vfsmount *,
 	const char *, int flags, const struct file_operations *);
 
@@ -48,10 +46,7 @@ static inline struct fd __to_fd(unsigned long v)
 	return (struct fd){(struct file *)(v & ~3),v & 3};
 }
 
-static inline struct fd fdget(unsigned int fd)
-{
-	return __to_fd(__fdget(fd));
-}
+/* fdget removed - never called */
 
 static inline struct fd fdget_raw(unsigned int fd)
 {
@@ -76,8 +71,6 @@ extern void put_unused_fd(unsigned int fd);
 
 extern void fd_install(unsigned int fd, struct file *file);
 
-
-extern void flush_delayed_fput(void);
-
+/* flush_delayed_fput removed - never called */
 
 #endif

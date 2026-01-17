@@ -69,18 +69,6 @@ static __always_inline void native_set_debugreg(int regno, unsigned long value)
 	}
 }
 
-static inline void hw_breakpoint_disable(void)
-{
-	 
-	set_debugreg(0UL, 7);
-
-	 
-	set_debugreg(0UL, 0);
-	set_debugreg(0UL, 1);
-	set_debugreg(0UL, 2);
-	set_debugreg(0UL, 3);
-}
-
 static __always_inline bool hw_breakpoint_active(void)
 {
 	return __this_cpu_read(cpu_dr7) & DR_GLOBAL_ENABLE_MASK;

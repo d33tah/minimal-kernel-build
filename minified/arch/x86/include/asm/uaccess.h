@@ -8,7 +8,7 @@
 #include <asm/asm.h>
 #include <asm/page.h>
 /* --- 2025-12-07 20:15 --- Inlined smap.h */
-#include <asm/nops.h>
+#include <asm/asm.h>
 #include <asm/cpufeatures.h>
 #include <asm/alternative.h>
 
@@ -45,15 +45,11 @@ static __always_inline void stac(void)
 #endif
 
 #ifndef __access_ok
+/* CONFIG_MMU=y, CONFIG_ALTERNATE_USER_ADDRESS_SPACE not set */
 static inline int __access_ok(const void __user *ptr, unsigned long size)
 {
 	unsigned long limit = TASK_SIZE_MAX;
 	unsigned long addr = (unsigned long)ptr;
-
-	if (IS_ENABLED(CONFIG_ALTERNATE_USER_ADDRESS_SPACE) ||
-	    !IS_ENABLED(CONFIG_MMU))
-		return true;
-
 	return (size <= limit) && (addr <= (limit - size));
 }
 #endif
@@ -106,8 +102,8 @@ extern int __get_user_bad(void);
 	__builtin_expect(__ret_gu, 0);					\
 })
 
- 
-#define get_user(x,ptr) ({ might_fault(); do_get_user_call(get_user,x,ptr); })
+/* might_fault() removed from get_user/put_user - empty stub */
+#define get_user(x,ptr) do_get_user_call(get_user,x,ptr)
 
  
 #define __get_user(x,ptr) do_get_user_call(get_user_nocheck,x,ptr)
@@ -154,8 +150,7 @@ extern void __put_user_nocheck_8(void);
 	__builtin_expect(__ret_pu, 0);					\
 })
 
- 
-#define put_user(x, ptr) ({ might_fault(); do_put_user_call(put_user,x,ptr); })
+#define put_user(x, ptr) do_put_user_call(put_user,x,ptr)
 
  
 #define __put_user(x, ptr) do_put_user_call(put_user_nocheck,x,ptr)
@@ -284,10 +279,7 @@ struct __large_struct { unsigned long buf[100]; };
 		: : ltype(x), "m" (__m(addr))				\
 		: : label)
 
-extern unsigned long
-copy_from_user_nmi(void *to, const void __user *from, unsigned long n);
-extern __must_check long
-strncpy_from_user(char *dst, const char __user *src, long count);
+/* copy_from_user_nmi, strncpy_from_user removed - never called */
 
 extern __must_check long strnlen_user(const char __user *str, long n);
 
@@ -297,13 +289,11 @@ unsigned long __must_check __clear_user(void __user *mem, unsigned long len);
 
  
 
-#define ARCH_HAS_NOCACHE_UACCESS 1
+/* ARCH_HAS_NOCACHE_UACCESS removed - unused */
 
 /* --- 2025-12-07 20:27 --- Inlined uaccess_32.h */
 unsigned long __must_check __copy_user_ll
 		(void *to, const void *from, unsigned long n);
-unsigned long __must_check __copy_from_user_ll_nocache_nozero
-		(void *to, const void __user *from, unsigned long n);
 
 static __always_inline unsigned long __must_check
 raw_copy_to_user(void __user *to, const void *from, unsigned long n)
@@ -317,14 +307,9 @@ raw_copy_from_user(void *to, const void __user *from, unsigned long n)
 	return __copy_user_ll(to, (__force const void *)from, n);
 }
 
-static __always_inline unsigned long
-__copy_from_user_inatomic_nocache(void *to, const void __user *from,
-				  unsigned long n)
-{
-       return __copy_from_user_ll_nocache_nozero(to, from, n);
-}
+/* __copy_from_user_inatomic_nocache removed - never called */
 
- 
+
 static __must_check __always_inline bool user_access_begin(const void __user *ptr, size_t len)
 {
 	if (unlikely(!access_ok(ptr,len)))

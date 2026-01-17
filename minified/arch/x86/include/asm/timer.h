@@ -6,15 +6,10 @@
 #include <linux/interrupt.h>
 #include <linux/math64.h>
 
-#define TICK_SIZE (tick_nsec / 1000)
-
 unsigned long long native_sched_clock(void);
+/* using_native_sched_clock removed - never called */
 
-extern int no_timer_check;
 
-extern bool using_native_sched_clock(void);
-
- 
 struct cyc2ns_data {
 	u32 cyc2ns_mul;
 	u32 cyc2ns_shift;

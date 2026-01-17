@@ -9,7 +9,7 @@
 #define ALIGN(x, a)		__ALIGN_KERNEL((x), (a))
 #define ALIGN_DOWN(x, a)	__ALIGN_KERNEL((x) - ((a) - 1), (a))
 #define __ALIGN_MASK(x, mask)	__ALIGN_KERNEL_MASK((x), (mask))
-#define PTR_ALIGN(p, a)		((typeof(p))ALIGN((unsigned long)(p), (a)))
+/* PTR_ALIGN removed - unused */
 #define IS_ALIGNED(x, a)		(((x) & ((typeof(x))(a) - 1)) == 0)
 #include <linux/linkage.h>
 #include <linux/stddef.h>
@@ -56,36 +56,16 @@ struct sysinfo {
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
 
-
-#define upper_32_bits(n) ((u32)(((n) >> 16) >> 16))
-
+/* upper_32_bits removed - unused */
 #define lower_32_bits(n) ((u32)((n) & 0xffffffff))
 
 
 struct completion;
 
-
-# define might_resched() do { } while (0)
-
-
-  static inline void __might_resched(const char *file, int line,
-				     unsigned int offsets) { }
-# define might_sleep() do { might_resched(); } while (0)
-# define cant_sleep() do { } while (0)
-# define cant_migrate()		do { } while (0)
-# define sched_annotate_sleep() do { } while (0)
-# define non_block_start() do { } while (0)
-# define non_block_end() do { } while (0)
-
-#define might_sleep_if(cond) do { if (cond) might_sleep(); } while (0)
-
-#if defined(CONFIG_MMU) && \
-	(defined(CONFIG_PROVE_LOCKING) || defined(CONFIG_DEBUG_ATOMIC_SLEEP))
-#define might_fault() __might_fault(__FILE__, __LINE__)
-void __might_fault(const char *file, int line);
-#else
-static inline void might_fault(void) { }
-#endif
+#define might_resched() do { } while (0)
+#define might_sleep() do { } while (0)
+#define might_sleep_if(cond) do { } while (0)
+/* might_fault() removed - no callers */
 
 void do_exit(long error_code) __noreturn;
 
@@ -108,16 +88,11 @@ const char *kvasprintf_const(gfp_t gfp, const char *fmt, va_list args);
 
 extern __scanf(2, 3)
 int sscanf(const char *, const char *, ...);
-extern __scanf(2, 0)
-int vsscanf(const char *, const char *, va_list);
+/* vsscanf removed - never called */
 
-extern int no_hash_pointers_enable(char *str);
-
-extern bool parse_option_str(const char *str, const char *option);
 extern char *next_arg(char *args, char **param, char **val);
 
-extern int __kernel_text_address(unsigned long addr);
-extern int kernel_text_address(unsigned long addr);
+/* kernel_text_address removed - never called */
 
 extern void bust_spinlocks(int yes);
 
@@ -135,11 +110,8 @@ extern enum system_states {
 	SYSTEM_SUSPEND,
 } system_state;
 
-extern const char hex_asc_upper[];
-/* Removed: hex_to_bin, hex2bin, bin2hex, mac_pton - never called */
-
-
-static inline void tracing_off(void) { }
+/* hex_asc_upper moved from lib/hexdump.c */
+static const char hex_asc_upper[] = "0123456789ABCDEF";
 
 #define VERIFY_OCTAL_PERMISSIONS(perms)						\
 	(BUILD_BUG_ON_ZERO((perms) < 0) +					\

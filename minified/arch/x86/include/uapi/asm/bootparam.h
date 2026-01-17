@@ -2,11 +2,8 @@
 #ifndef _ASM_X86_BOOTPARAM_H
 #define _ASM_X86_BOOTPARAM_H
 
- 
-#define SETUP_NONE			0
 #define SETUP_E820_EXT			1
 #define SETUP_DTB			2
-#define SETUP_PCI			3
 #define SETUP_EFI			4
 /* SETUP_APPLE_PROPERTIES, SETUP_JAILHOUSE - unused */
 #define SETUP_CC_BLOB			7
@@ -22,16 +19,9 @@
  
 #define LOADED_HIGH	(1<<0)
 #define KASLR_FLAG	(1<<1)
-#define QUIET_FLAG	(1<<5)
-#define KEEP_SEGMENTS	(1<<6)
 #define CAN_USE_HEAP	(1<<7)
 
  
-#define XLF_KERNEL_64			(1<<0)
-#define XLF_CAN_BE_LOADED_ABOVE_4G	(1<<1)
-/* XLF_EFI_HANDOVER_32, XLF_EFI_HANDOVER_64, XLF_EFI_KEXEC - unused */
-#define XLF_5LEVEL			(1<<5)
-#define XLF_5LEVEL_ENABLED		(1<<6)
 
 #ifndef __ASSEMBLY__
 
@@ -51,10 +41,6 @@ struct apm_bios_info {
 	__u16	dseg_len;
 };
 
-#define APM_CS		(GDT_ENTRY_APMBIOS_BASE * 8)
-#define APM_CS_16	(APM_CS + 8)
-#define APM_DS		(APM_CS_16 + 8)
-/* APM_*_SUPPORT, APM_BIOS_* - unused */
 
 struct apm_info {
 	struct apm_bios_info	bios;
@@ -67,56 +53,22 @@ struct apm_info {
 	int			disabled;
 };
 
-#define	APM_FUNC_INST_CHECK	0x5300
-#define	APM_FUNC_REAL_CONN	0x5301
-#define	APM_FUNC_16BIT_CONN	0x5302
-#define	APM_FUNC_32BIT_CONN	0x5303
-#define	APM_FUNC_DISCONN	0x5304
-#define	APM_FUNC_IDLE		0x5305
-#define	APM_FUNC_BUSY		0x5306
-#define	APM_FUNC_SET_STATE	0x5307
-#define	APM_FUNC_ENABLE_PM	0x5308
-#define	APM_FUNC_RESTORE_BIOS	0x5309
-#define	APM_FUNC_GET_STATUS	0x530a
-#define	APM_FUNC_GET_EVENT	0x530b
-#define	APM_FUNC_GET_STATE	0x530c
-#define	APM_FUNC_ENABLE_DEV_PM	0x530d
-#define	APM_FUNC_VERSION	0x530e
-#define	APM_FUNC_ENGAGE_PM	0x530f
-#define	APM_FUNC_GET_CAP	0x5310
-#define	APM_FUNC_RESUME_TIMER	0x5311
-#define	APM_FUNC_RESUME_ON_RING	0x5312
-#define	APM_FUNC_TIMER		0x5313
+/* All APM_FUNC_* and APM_DEVICE_* macros removed - APM driver not included */
+/* apm_info extern removed - variable removed, only struct definition needed for boot_params */
 
-#define	APM_FUNC_DISABLE_TIMER	0
-#define	APM_FUNC_GET_TIMER	1
-#define	APM_FUNC_SET_TIMER	2
-
-#define	APM_FUNC_DISABLE_RING	0
-#define	APM_FUNC_ENABLE_RING	1
-#define	APM_FUNC_GET_RING	2
-
-#define	APM_FUNC_TIMER_DISABLE	0
-#define	APM_FUNC_TIMER_ENABLE	1
-#define	APM_FUNC_TIMER_GET	2
-
-extern struct apm_info	apm_info;
-
-#define APM_DEVICE_BALL		((apm_info.connection_version > 0x0100) ? \
-				 APM_DEVICE_ALL : APM_DEVICE_OLD_ALL)
 struct ist_info {
 	__u32 signature;
 	__u32 command;
 	__u32 event;
 	__u32 perf_level;
 };
-extern struct ist_info ist_info;
+/* ist_info extern removed - variable removed, only struct definition needed for boot_params */
 
 /* Inlined from video/edid.h */
 struct edid_info {
 	unsigned char dummy[128];
 };
-extern struct edid_info edid_info;
+/* edid_info extern removed - variable removed, only struct definition needed for boot_params */
 
 struct setup_data {
 	__u64 next;
@@ -209,30 +161,6 @@ struct boot_e820_entry {
 	__u32 type;
 } __attribute__((packed));
 
- 
-#define JAILHOUSE_SETUP_REQUIRED_VERSION	1
-
- 
-struct jailhouse_setup_data {
-	struct {
-		__u16	version;
-		__u16	compatible_version;
-	} __attribute__((packed)) hdr;
-	struct {
-		__u16	pm_timer_address;
-		__u16	num_cpus;
-		__u64	pci_mmconfig_base;
-		__u32	tsc_khz;
-		__u32	apic_khz;
-		__u8	standard_ioapic;
-		__u8	cpu_ids[255];
-	} __attribute__((packed)) v1;
-	struct {
-		__u32	flags;
-	} __attribute__((packed)) v2;
-} __attribute__((packed));
-
- 
 struct boot_params {
 	struct screen_info screen_info;			 
 	struct apm_bios_info apm_bios_info;		 

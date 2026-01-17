@@ -8,9 +8,7 @@
 #include <asm/tlbflush.h>
 #include <asm/cacheflush.h>
 
-#ifndef nmi_uaccess_okay
-# define nmi_uaccess_okay() true
-#endif
+/* nmi_uaccess_okay macro removed - no callers */
 
 #define tlb_remove_table(tlb, page) tlb_remove_page((tlb), (page))
 
@@ -88,10 +86,11 @@ static inline void __tlb_reset_range(struct mmu_gather *tlb)
 	tlb->cleared_p4ds = 0;
 }
 
+/* is_vm_hugetlb_page always returns false */
 static inline void
 tlb_update_vma_flags(struct mmu_gather *tlb, struct vm_area_struct *vma)
 {
-	tlb->vma_huge = is_vm_hugetlb_page(vma);
+	tlb->vma_huge = false;
 	tlb->vma_exec = !!(vma->vm_flags & VM_EXEC);
 	tlb->vma_pfn  = !!(vma->vm_flags & (VM_PFNMAP|VM_MIXEDMAP));
 }
@@ -145,10 +144,7 @@ static inline void tlb_remove_page_size(struct mmu_gather *tlb,
 		tlb_flush_mmu(tlb);
 }
 
-static inline bool __tlb_remove_page(struct mmu_gather *tlb, struct page *page)
-{
-	return __tlb_remove_page_size(tlb, page, PAGE_SIZE);
-}
+/* __tlb_remove_page removed - unused */
 
 static inline void tlb_remove_page(struct mmu_gather *tlb, struct page *page)
 {
@@ -176,7 +172,8 @@ static inline void tlb_end_vma(struct mmu_gather *tlb, struct vm_area_struct *vm
 	if (tlb->fullmm)
 		return;
 
-	if (tlb->vma_pfn || !IS_ENABLED(CONFIG_MMU_GATHER_MERGE_VMAS)) {
+	/* CONFIG_MMU_GATHER_MERGE_VMAS=y, so only flush if vma_pfn */
+	if (tlb->vma_pfn) {
 		tlb_flush_mmu_tlbonly(tlb);
 	}
 }
@@ -257,23 +254,8 @@ static inline void tlb_flush_p4d_range(struct mmu_gather *tlb,
 	} while (0)
 #endif
 
-#ifndef pte_needs_flush
-static inline bool pte_needs_flush(pte_t oldpte, pte_t newpte)
-{
-	return true;
-}
-#endif
+/* pte_needs_flush, huge_pmd_needs_flush removed - never called */
 
-#ifndef huge_pmd_needs_flush
-static inline bool huge_pmd_needs_flush(pmd_t oldpmd, pmd_t newpmd)
-{
-	return true;
-}
-#endif
-
-static inline void __tlb_remove_table(void *table)
-{
-	free_page_and_swap_cache(table);
-}
+/* __tlb_remove_table removed - unused */
 
 #endif /* _ASM_X86_TLB_H */

@@ -51,10 +51,8 @@ extern struct memblock memblock;
 void memblock_discard(void);
 
 void memblock_allow_resize(void);
-int memblock_add_node(phys_addr_t base, phys_addr_t size, int nid,
-		      enum memblock_flags flags);
+/* memblock_add_node, memblock_remove removed - never called */
 int memblock_add(phys_addr_t base, phys_addr_t size);
-int memblock_remove(phys_addr_t base, phys_addr_t size);
 int memblock_phys_free(phys_addr_t base, phys_addr_t size);
 int memblock_reserve(phys_addr_t base, phys_addr_t size);
 void memblock_trim_memory(phys_addr_t align);
@@ -99,19 +97,13 @@ void memblock_free_late(phys_addr_t base, phys_addr_t size);
 			     MEMBLOCK_HOTPLUG | MEMBLOCK_DRIVER_MANAGED, \
 			     p_start, p_end, NULL)
 
-#define for_each_mem_range_rev(i, p_start, p_end)			\
-	__for_each_mem_range_rev(i, &memblock.memory, NULL, NUMA_NO_NODE, \
-				 MEMBLOCK_HOTPLUG | MEMBLOCK_DRIVER_MANAGED,\
-				 p_start, p_end, NULL)
+/* for_each_mem_range_rev removed - never called */
 
 #define for_each_reserved_mem_range(i, p_start, p_end)			\
 	__for_each_mem_range(i, &memblock.reserved, NULL, NUMA_NO_NODE,	\
 			     MEMBLOCK_NONE, p_start, p_end, NULL)
 
-static inline bool memblock_is_hotpluggable(struct memblock_region *m)
-{
-	return m->flags & MEMBLOCK_HOTPLUG;
-}
+/* memblock_is_hotpluggable removed - never called */
 
 static inline bool memblock_is_mirror(struct memblock_region *m)
 {
@@ -145,17 +137,7 @@ void __next_mem_pfn_range(int *idx, int nid, unsigned long *out_start_pfn,
 	__for_each_mem_range_rev(i, &memblock.memory, &memblock.reserved, \
 				 nid, flags, p_start, p_end, p_nid)
 
-int memblock_set_node(phys_addr_t base, phys_addr_t size,
-		      struct memblock_type *type, int nid);
-
-static inline void memblock_set_region_node(struct memblock_region *r, int nid)
-{
-}
-
-static inline int memblock_get_region_node(const struct memblock_region *r)
-{
-	return 0;
-}
+/* memblock_set_node, memblock_set_region_node, memblock_get_region_node removed */
 
 #define MEMBLOCK_ALLOC_ANYWHERE	(~(phys_addr_t)0)
 #define MEMBLOCK_ALLOC_ACCESSIBLE	0
@@ -172,14 +154,6 @@ phys_addr_t memblock_phys_alloc_range(phys_addr_t size, phys_addr_t align,
 phys_addr_t memblock_alloc_range_nid(phys_addr_t size,
 				      phys_addr_t align, phys_addr_t start,
 				      phys_addr_t end, int nid, bool exact_nid);
-phys_addr_t memblock_phys_alloc_try_nid(phys_addr_t size, phys_addr_t align, int nid);
-
-static __always_inline phys_addr_t memblock_phys_alloc(phys_addr_t size,
-						       phys_addr_t align)
-{
-	return memblock_phys_alloc_range(size, align, 0,
-					 MEMBLOCK_ALLOC_ACCESSIBLE);
-}
 
 void *memblock_alloc_exact_nid_raw(phys_addr_t size, phys_addr_t align,
 				 phys_addr_t min_addr, phys_addr_t max_addr,
@@ -221,16 +195,11 @@ static inline __init_memblock bool memblock_bottom_up(void)
 }
 
 phys_addr_t memblock_start_of_DRAM(void);
-phys_addr_t memblock_end_of_DRAM(void);
+/* memblock_end_of_DRAM, memblock_is_region_reserved, memblock_get_current_limit,
+   memblock_dump_all removed - never called */
 bool memblock_is_region_memory(phys_addr_t base, phys_addr_t size);
-bool memblock_is_region_reserved(phys_addr_t base, phys_addr_t size);
-
-void memblock_dump_all(void);
 
 void memblock_set_current_limit(phys_addr_t limit);
-
-
-phys_addr_t memblock_get_current_limit(void);
 
 
 
@@ -240,10 +209,7 @@ phys_addr_t memblock_get_current_limit(void);
 	     region < (memblock.memory.regions + memblock.memory.cnt);	\
 	     region++)
 
-#define for_each_reserved_mem_region(region)				\
-	for (region = memblock.reserved.regions;			\
-	     region < (memblock.reserved.regions + memblock.reserved.cnt); \
-	     region++)
+/* for_each_reserved_mem_region removed - never called */
 
 extern void *alloc_large_system_hash(const char *tablename,
 				     unsigned long bucketsize,
@@ -260,9 +226,6 @@ extern void *alloc_large_system_hash(const char *tablename,
 
 #define hashdist (0)
 
-static inline void early_memtest(phys_addr_t start, phys_addr_t end)
-{
-}
-
+/* early_memtest removed - empty stub, no callers */
 
 #endif  

@@ -39,7 +39,6 @@ extern const struct vdso_image vdso_image_32;
 
 extern void __init init_vdso_image(const struct vdso_image *image);
 
-extern int map_vdso_once(const struct vdso_image *image, unsigned long addr);
 
 extern bool fixup_vdso_exception(struct pt_regs *regs, int trapnr,
 				 unsigned long error_code,

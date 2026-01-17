@@ -8,7 +8,6 @@
 #include <linux/list.h>
 #include <linux/memcontrol.h>
 #include <linux/sched.h>
-#include <linux/node.h>
 #include <linux/fs.h>
 #include <linux/pagemap.h>
 #include <linux/atomic.h>
@@ -16,44 +15,18 @@
 #include <linux/mempolicy.h>
 #include <asm/page.h>
 
-struct notifier_block;
-struct bio;
-struct pagevec;
-
-#define MAX_SWAPFILES_SHIFT	5
-#define SWP_SWAPIN_ERROR_NUM 1
-#define SWP_PTE_MARKER_NUM 0
-#define SWP_DEVICE_NUM 0
-#define SWP_MIGRATION_NUM 0
-#define SWP_HWPOISON_NUM 0
-#define MAX_SWAPFILES \
-	((1 << MAX_SWAPFILES_SHIFT) - SWP_DEVICE_NUM - \
-	SWP_MIGRATION_NUM - SWP_HWPOISON_NUM - \
-	SWP_PTE_MARKER_NUM - SWP_SWAPIN_ERROR_NUM)
-struct reclaim_state {
-	unsigned long reclaimed_slab;
-};
+/* MAX_SWAPFILES_SHIFT, SWP_SWAPIN_ERROR_NUM removed - unused */
 
 #ifdef __KERNEL__
 
-struct address_space;
-struct sysinfo;
-struct writeback_control;
-struct zone;
-struct swap_info_struct;
-
 #define SWAP_CLUSTER_MAX 32UL
 
-void workingset_refault(struct folio *folio, void *shadow);
-void workingset_activation(struct folio *folio);
-
-void workingset_update_node(struct xa_node *node);
 extern struct list_lru shadow_nodes;
+/* workingset_update_node removed - was empty stub */
+/* dax_mapping and shmem_mapping always return false */
 #define mapping_set_update(xas, mapping) do {				\
-	if (!dax_mapping(mapping) && !shmem_mapping(mapping)) {		\
-		xas_set_update(xas, workingset_update_node);		\
-		xas_set_lru(xas, &shadow_nodes);			\
-	}								\
+	xas_set_update(xas, NULL);					\
+	xas_set_lru(xas, &shadow_nodes);				\
 } while (0)
 
 #define nr_free_pages() global_zone_page_state(NR_FREE_PAGES)
@@ -63,35 +36,22 @@ extern void lru_cache_add(struct page *);
 void mark_page_accessed(struct page *);
 void folio_mark_accessed(struct folio *);
 
-extern atomic_t lru_disable_count;
-
-static inline bool lru_cache_disabled(void)
-{
-	return atomic_read(&lru_disable_count);
-}
+/* lru_disable_count, lru_cache_disabled removed - never used, always 0/false */
 
 extern void lru_add_drain(void);
 extern void lru_add_drain_cpu(int cpu);
 extern void lru_cache_add_inactive_or_unevictable(struct page *page,
 						struct vm_area_struct *vma);
 
-extern unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
-					gfp_t gfp_mask, nodemask_t *mask);
-long remove_mapping(struct address_space *mapping, struct folio *folio);
-
-#define node_reclaim_mode 0
-
+/* remove_mapping removed - always returned 0, inlined in truncate.c */
 
 #define total_swap_pages			0L
 
-#define free_page_and_swap_cache(page) \
-	put_page(page)
+/* free_page_and_swap_cache removed - unused */
 #define free_pages_and_swap_cache(pages, nr) \
 	release_pages((pages), (nr));
 
-static inline void cgroup_throttle_swaprate(struct page *page, gfp_t gfp_mask)
-{
-}
+/* cgroup_throttle_swaprate removed - empty stub, no callers */
 
 #endif /* __KERNEL__ */
 #endif /* _LINUX_SWAP_H */

@@ -6,21 +6,14 @@
 #include <linux/bug.h>
 #include <asm/cacheflush.h>
 struct folio;
-#if ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE
-#ifndef ARCH_IMPLEMENTS_FLUSH_DCACHE_FOLIO
-void flush_dcache_folio(struct folio *folio);
-#endif
-#else
-static inline void flush_dcache_folio(struct folio *folio) {}
-#define ARCH_IMPLEMENTS_FLUSH_DCACHE_FOLIO 0
-#endif
+/* flush_dcache_folio, ARCH_IMPLEMENTS_FLUSH_DCACHE_FOLIO removed - unused */
 #include <linux/mm.h>
 #include <linux/uaccess.h>
 #include <linux/hardirq.h>
 
 /* Inlined from highmem-internal.h */
 void *__kmap_local_pfn_prot(unsigned long pfn, pgprot_t prot);
-void *__kmap_local_page_prot(struct page *page, pgprot_t prot);
+/* __kmap_local_page_prot removed - never called */
 void kmap_local_fork(struct task_struct *tsk);
 void __kmap_local_sched_out(void);
 void __kmap_local_sched_in(void);
@@ -39,9 +32,6 @@ static inline void *kmap(struct page *page)
 
 static inline void kunmap(struct page *page)
 {
-#ifdef ARCH_HAS_FLUSH_ON_KUNMAP
-	kunmap_flush_on_unmap(page_address(page));
-#endif
 }
 
 static inline void *kmap_local_page(struct page *page)
@@ -56,31 +46,19 @@ static inline void *kmap_local_folio(struct folio *folio, size_t offset)
 
 static inline void __kunmap_local(void *addr)
 {
-#ifdef ARCH_HAS_FLUSH_ON_KUNMAP
-	kunmap_flush_on_unmap(addr);
-#endif
 }
 
 static inline void *kmap_atomic(struct page *page)
 {
-	if (IS_ENABLED(CONFIG_PREEMPT_RT))
-		migrate_disable();
-	else
-		preempt_disable();
+	preempt_disable();
 	pagefault_disable();
 	return page_address(page);
 }
 
 static inline void __kunmap_atomic(void *addr)
 {
-#ifdef ARCH_HAS_FLUSH_ON_KUNMAP
-	kunmap_flush_on_unmap(addr);
-#endif
 	pagefault_enable();
-	if (IS_ENABLED(CONFIG_PREEMPT_RT))
-		migrate_enable();
-	else
-		preempt_enable();
+	preempt_enable();
 }
 
 #define kunmap_atomic(__addr)					\
@@ -94,14 +72,6 @@ do {								\
 	BUILD_BUG_ON(__same_type((__addr), struct page *));	\
 	__kunmap_local(__addr);					\
 } while (0)
-
-
-#ifndef ARCH_HAS_FLUSH_ANON_PAGE
-static inline void flush_anon_page(struct vm_area_struct *vma, struct page *page, unsigned long vmaddr)
-{
-}
-#endif
-
 
 #ifndef clear_user_highpage
 static inline void clear_user_highpage(struct page *page, unsigned long vaddr)

@@ -149,41 +149,12 @@ static inline pte_t ptep_get_and_clear(struct mm_struct *mm,
 #endif
 
 
-#ifndef __HAVE_ARCH_PTEP_GET_AND_CLEAR_FULL
-static inline pte_t ptep_get_and_clear_full(struct mm_struct *mm,
-					    unsigned long address, pte_t *ptep,
-					    int full)
-{
-	pte_t pte;
-	pte = ptep_get_and_clear(mm, address, ptep);
-	return pte;
-}
-#endif
 
 
-#ifndef __HAVE_ARCH_UPDATE_MMU_TLB
-static inline void update_mmu_tlb(struct vm_area_struct *vma,
-				unsigned long address, pte_t *ptep)
-{
-}
-#define __HAVE_ARCH_UPDATE_MMU_TLB
-#endif
-
-#ifndef __HAVE_ARCH_PTEP_CLEAR_FLUSH
-extern pte_t ptep_clear_flush(struct vm_area_struct *vma,
-			      unsigned long address,
-			      pte_t *ptep);
-#endif
+/* update_mmu_tlb removed - empty stub, call site removed */
+/* ptep_clear_flush removed - never called */
 
 
-#ifndef __HAVE_ARCH_PTEP_SET_WRPROTECT
-struct mm_struct;
-static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long address, pte_t *ptep)
-{
-	pte_t old_pte = *ptep;
-	set_pte_at(mm, address, ptep, pte_wrprotect(old_pte));
-}
-#endif
 
 #ifndef pte_sw_mkyoung
 static inline pte_t pte_sw_mkyoung(pte_t pte)
@@ -194,10 +165,7 @@ static inline pte_t pte_sw_mkyoung(pte_t pte)
 #endif
 
 
-#ifndef __HAVE_ARCH_PMDP_SET_WRPROTECT
-#endif
-#ifndef __HAVE_ARCH_PUDP_SET_WRPROTECT
-#endif
+/* Empty __HAVE_ARCH_PMDP_SET_WRPROTECT, __HAVE_ARCH_PUDP_SET_WRPROTECT removed */
 
 
 
@@ -226,57 +194,7 @@ static inline int pte_same(pte_t pte_a, pte_t pte_b)
 #endif
 
 
-#ifndef __HAVE_ARCH_PMD_SAME
-static inline int pmd_same(pmd_t pmd_a, pmd_t pmd_b)
-{
-	return pmd_val(pmd_a) == pmd_val(pmd_b);
-}
-
-static inline int pud_same(pud_t pud_a, pud_t pud_b)
-{
-	return pud_val(pud_a) == pud_val(pud_b);
-}
-#endif
-
-#ifndef __HAVE_ARCH_P4D_SAME
-static inline int p4d_same(p4d_t p4d_a, p4d_t p4d_b)
-{
-	return p4d_val(p4d_a) == p4d_val(p4d_b);
-}
-#endif
-
-#ifndef __HAVE_ARCH_PGD_SAME
-static inline int pgd_same(pgd_t pgd_a, pgd_t pgd_b)
-{
-	return pgd_val(pgd_a) == pgd_val(pgd_b);
-}
-#endif
-
-
-
-#define set_pmd_safe(pmdp, pmd) \
-({ \
-	WARN_ON_ONCE(pmd_present(*pmdp) && !pmd_same(*pmdp, pmd)); \
-	set_pmd(pmdp, pmd); \
-})
-
-#define set_pud_safe(pudp, pud) \
-({ \
-	WARN_ON_ONCE(pud_present(*pudp) && !pud_same(*pudp, pud)); \
-	set_pud(pudp, pud); \
-})
-
-#define set_p4d_safe(p4dp, p4d) \
-({ \
-	WARN_ON_ONCE(p4d_present(*p4dp) && !p4d_same(*p4dp, p4d)); \
-	set_p4d(p4dp, p4d); \
-})
-
-#define set_pgd_safe(pgdp, pgd) \
-({ \
-	WARN_ON_ONCE(pgd_present(*pgdp) && !pgd_same(*pgdp, pgd)); \
-	set_pgd(pgdp, pgd); \
-})
+/* pmd_same, pud_same, p4d_same, pgd_same and set_*_safe macros removed - unused */
 
 
 #ifndef __HAVE_ARCH_PGD_OFFSET_GATE
@@ -322,54 +240,11 @@ static inline int pgd_same(pgd_t pgd_a, pgd_t pgd_b)
 })
 #endif
 
-void pgd_clear_bad(pgd_t *);
-
-#ifndef __PAGETABLE_P4D_FOLDED
-void p4d_clear_bad(p4d_t *);
-#else
-#define p4d_clear_bad(p4d)        do { } while (0)
-#endif
-
-#ifndef __PAGETABLE_PUD_FOLDED
-void pud_clear_bad(pud_t *);
-#else
-#define pud_clear_bad(p4d)        do { } while (0)
-#endif
+/* pgd_clear_bad, p4d_clear_bad, pud_clear_bad removed - never called */
 
 void pmd_clear_bad(pmd_t *);
 
-static inline int pgd_none_or_clear_bad(pgd_t *pgd)
-{
-	if (pgd_none(*pgd))
-		return 1;
-	if (unlikely(pgd_bad(*pgd))) {
-		pgd_clear_bad(pgd);
-		return 1;
-	}
-	return 0;
-}
-
-static inline int p4d_none_or_clear_bad(p4d_t *p4d)
-{
-	if (p4d_none(*p4d))
-		return 1;
-	if (unlikely(p4d_bad(*p4d))) {
-		p4d_clear_bad(p4d);
-		return 1;
-	}
-	return 0;
-}
-
-static inline int pud_none_or_clear_bad(pud_t *pud)
-{
-	if (pud_none(*pud))
-		return 1;
-	if (unlikely(pud_bad(*pud))) {
-		pud_clear_bad(pud);
-		return 1;
-	}
-	return 0;
-}
+/* pgd/p4d/pud_none_or_clear_bad stubs removed - never called */
 
 static inline int pmd_none_or_clear_bad(pmd_t *pmd)
 {
@@ -426,81 +301,12 @@ static inline pgprot_t pgprot_modify(pgprot_t oldprot, pgprot_t newprot)
 #define pgprot_decrypted(prot)	(prot)
 #endif
 
-#ifndef __HAVE_ARCH_ENTER_LAZY_MMU_MODE
-#define arch_enter_lazy_mmu_mode()	do {} while (0)
-#define arch_leave_lazy_mmu_mode()	do {} while (0)
-#define arch_flush_lazy_mmu_mode()	do {} while (0)
-#endif
+/* arch_enter/leave_lazy_mmu_mode, arch_start_context_switch removed - no callers */
 
-#ifndef __HAVE_ARCH_START_CONTEXT_SWITCH
-#define arch_start_context_switch(prev)	do {} while (0)
-#endif
+/* pte_swp_exclusive, pte_swp_clear_exclusive,
+   pte_swp_soft_dirty, pte_swp_clear_soft_dirty removed - unused */
 
-#ifndef __HAVE_ARCH_PTE_SWP_EXCLUSIVE
-static inline pte_t pte_swp_mkexclusive(pte_t pte)
-{
-	return pte;
-}
-
-static inline int pte_swp_exclusive(pte_t pte)
-{
-	return false;
-}
-
-static inline pte_t pte_swp_clear_exclusive(pte_t pte)
-{
-	return pte;
-}
-#endif
-
-
-static inline int pte_swp_soft_dirty(pte_t pte)
-{
-	return 0;
-}
-
-static inline pte_t pte_swp_clear_soft_dirty(pte_t pte)
-{
-	return pte;
-}
-
-#ifndef __HAVE_PFNMAP_TRACKING
-
-static inline int track_pfn_remap(struct vm_area_struct *vma, pgprot_t *prot,
-				  unsigned long pfn, unsigned long addr,
-				  unsigned long size)
-{
-	return 0;
-}
-
-static inline void track_pfn_insert(struct vm_area_struct *vma, pgprot_t *prot,
-				    pfn_t pfn)
-{
-}
-
-static inline int track_pfn_copy(struct vm_area_struct *vma)
-{
-	return 0;
-}
-
-static inline void untrack_pfn(struct vm_area_struct *vma,
-			       unsigned long pfn, unsigned long size)
-{
-}
-
-static inline void untrack_pfn_moved(struct vm_area_struct *vma)
-{
-}
-#else
-extern int track_pfn_remap(struct vm_area_struct *vma, pgprot_t *prot,
-			   unsigned long pfn, unsigned long addr,
-			   unsigned long size);
-extern void track_pfn_insert(struct vm_area_struct *vma, pgprot_t *prot,
-			     pfn_t pfn);
-extern int track_pfn_copy(struct vm_area_struct *vma);
-extern void untrack_pfn(struct vm_area_struct *vma, unsigned long pfn,
-			unsigned long size);
-#endif
+/* track_pfn_remap, track_pfn_insert, track_pfn_copy, untrack_pfn removed - never called */
 
 #ifdef __HAVE_COLOR_ZERO_PAGE
 static inline int is_zero_pfn(unsigned long pfn)
@@ -509,61 +315,17 @@ static inline int is_zero_pfn(unsigned long pfn)
 	unsigned long offset_from_zero_pfn = pfn - zero_pfn;
 	return offset_from_zero_pfn <= (zero_page_mask >> PAGE_SHIFT);
 }
-
-#define my_zero_pfn(addr)	page_to_pfn(ZERO_PAGE(addr))
-
 #else
 static inline int is_zero_pfn(unsigned long pfn)
 {
 	extern unsigned long zero_pfn;
 	return pfn == zero_pfn;
 }
-
-static inline unsigned long my_zero_pfn(unsigned long addr)
-{
-	extern unsigned long zero_pfn;
-	return zero_pfn;
-}
 #endif
 
 
-static inline int pmd_trans_huge(pmd_t pmd)
-{
-	return 0;
-}
-#ifndef pmd_write
-static inline int pmd_write(pmd_t pmd)
-{
-	BUG();
-	return 0;
-}
-#endif  
-
-#ifndef pud_write
-static inline int pud_write(pud_t pud)
-{
-	BUG();
-	return 0;
-}
-#endif  
-
-static inline int pmd_devmap(pmd_t pmd)
-{
-	return 0;
-}
-static inline int pud_devmap(pud_t pud)
-{
-	return 0;
-}
-
-#if !defined(CONFIG_TRANSPARENT_HUGEPAGE) || \
-	(defined(CONFIG_TRANSPARENT_HUGEPAGE) && \
-	 !defined(CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD))
-static inline int pud_trans_huge(pud_t pud)
-{
-	return 0;
-}
-#endif
+/* pmd_trans_huge, pmd_write, pud_write removed - never called */
+/* pmd_devmap, pud_devmap, pud_trans_huge removed - never called */
 
 
 #ifndef pmd_read_atomic
@@ -577,10 +339,8 @@ static inline pmd_t pmd_read_atomic(pmd_t *pmdp)
 static inline int pmd_none_or_trans_huge_or_clear_bad(pmd_t *pmd)
 {
 	pmd_t pmdval = pmd_read_atomic(pmd);
-	 
-	 
-	if (pmd_none(pmdval) || pmd_trans_huge(pmdval) ||
-		(IS_ENABLED(CONFIG_ARCH_ENABLE_THP_MIGRATION) && !pmd_present(pmdval)))
+	/* pmd_trans_huge always returns 0 */
+	if (pmd_none(pmdval))
 		return 1;
 	if (unlikely(pmd_bad(pmdval))) {
 		pmd_clear_bad(pmd);
@@ -589,44 +349,17 @@ static inline int pmd_none_or_trans_huge_or_clear_bad(pmd_t *pmd)
 	return 0;
 }
 
-static inline int pmd_trans_unstable(pmd_t *pmd)
-{
-	return 0;
-}
+/* pmd_trans_unstable, pmd_devmap_trans_unstable removed - unused */
 
-static inline int pmd_devmap_trans_unstable(pmd_t *pmd)
-{
-	return pmd_devmap(*pmd) || pmd_trans_unstable(pmd);
-}
-
-static inline int pte_protnone(pte_t pte)
-{
-	return 0;
-}
-
-static inline int pmd_protnone(pmd_t pmd)
-{
-	return 0;
-}
+/* pte_protnone, pmd_protnone removed - unused */
 
 
 /* p4d_set_huge, pud_set_huge, pmd_set_huge, p4d_free_pud_page, pud_free_pmd_page,
-   pmd_free_pte_page removed - unused */
-static inline void p4d_clear_huge(p4d_t *p4d) { }
-static inline int pud_clear_huge(pud_t *pud)
-{
-	return 0;
-}
-static inline int pmd_clear_huge(pmd_t *pmd)
-{
-	return 0;
-}
+   pmd_free_pte_page, p4d_clear_huge, pud_clear_huge, pmd_clear_huge removed - unused */
 
 
 
-static inline void init_espfix_bsp(void) { }
-
-extern void __init pgtable_cache_init(void);
+/* init_espfix_bsp, pgtable_cache_init removed - call site removed / empty */
 
 #ifndef __HAVE_ARCH_PFN_MODIFY_ALLOWED
 static inline bool pfn_modify_allowed(unsigned long pfn, pgprot_t prot)
@@ -646,14 +379,10 @@ static inline bool pfn_modify_allowed(unsigned long pfn, pgprot_t prot)
 #endif
 
 #define		__PGTBL_PGD_MODIFIED	0
-#define		__PGTBL_P4D_MODIFIED	1
-#define		__PGTBL_PUD_MODIFIED	2
 #define		__PGTBL_PMD_MODIFIED	3
 #define		__PGTBL_PTE_MODIFIED	4
 
 #define		PGTBL_PGD_MODIFIED	BIT(__PGTBL_PGD_MODIFIED)
-#define		PGTBL_P4D_MODIFIED	BIT(__PGTBL_P4D_MODIFIED)
-#define		PGTBL_PUD_MODIFIED	BIT(__PGTBL_PUD_MODIFIED)
 #define		PGTBL_PMD_MODIFIED	BIT(__PGTBL_PMD_MODIFIED)
 #define		PGTBL_PTE_MODIFIED	BIT(__PGTBL_PTE_MODIFIED)
 
@@ -661,30 +390,6 @@ typedef unsigned int pgtbl_mod_mask;
 
 #endif  
 
-#if !defined(MAX_POSSIBLE_PHYSMEM_BITS) && !defined(CONFIG_64BIT)
-#define MAX_POSSIBLE_PHYSMEM_BITS 32
-#endif
-
-#ifndef mm_pud_folded
-#define mm_pud_folded(mm)	__is_defined(__PAGETABLE_PUD_FOLDED)
-#endif
-
-#ifndef mm_pmd_folded
-#define mm_pmd_folded(mm)	__is_defined(__PAGETABLE_PMD_FOLDED)
-#endif
-
-#ifndef pgd_leaf
-#define pgd_leaf(x)	0
-#endif
-#ifndef p4d_leaf
-#define p4d_leaf(x)	0
-#endif
-#ifndef pud_leaf
-#define pud_leaf(x)	0
-#endif
-#ifndef pmd_leaf
-#define pmd_leaf(x)	0
-#endif
-
+/* pgd_leaf, p4d_leaf, pud_leaf, pmd_leaf removed - never called */
 
 #endif  

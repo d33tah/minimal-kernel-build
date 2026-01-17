@@ -1,26 +1,26 @@
 
-#define ElfW(type)		_ElfW(ELF_BITS, type)
-#define _ElfW(bits, type)	__ElfW(bits, type)
-#define __ElfW(bits, type)	Elf##bits##_##type
+#define ElfW(type) _ElfW(ELF_BITS, type)
+#define _ElfW(bits, type) __ElfW(bits, type)
+#define __ElfW(bits, type) Elf##bits##_##type
 
-#define Elf_Addr		ElfW(Addr)
-#define Elf_Ehdr		ElfW(Ehdr)
-#define Elf_Phdr		ElfW(Phdr)
-#define Elf_Shdr		ElfW(Shdr)
-#define Elf_Sym			ElfW(Sym)
+#define Elf_Addr ElfW(Addr)
+#define Elf_Ehdr ElfW(Ehdr)
+#define Elf_Phdr ElfW(Phdr)
+#define Elf_Shdr ElfW(Shdr)
+#define Elf_Sym ElfW(Sym)
 
-static Elf_Ehdr		ehdr;
-static unsigned long	shnum;
-static unsigned int	shstrndx;
-static unsigned int	shsymtabndx;
-static unsigned int	shxsymtabndx;
+static Elf_Ehdr ehdr;
+static unsigned long shnum;
+static unsigned int shstrndx;
+static unsigned int shsymtabndx;
+static unsigned int shxsymtabndx;
 
 static int sym_index(Elf_Sym *sym);
 
 struct relocs {
-	uint32_t	*offset;
-	unsigned long	count;
-	unsigned long	size;
+	uint32_t *offset;
+	unsigned long count;
+	unsigned long size;
 };
 
 static struct relocs relocs16;
@@ -34,73 +34,67 @@ static struct relocs relocs64;
 #endif
 
 struct section {
-	Elf_Shdr       shdr;
+	Elf_Shdr shdr;
 	struct section *link;
-	Elf_Sym        *symtab;
-	Elf32_Word     *xsymtab;
-	Elf_Rel        *reltab;
-	char           *strtab;
+	Elf_Sym *symtab;
+	Elf32_Word *xsymtab;
+	Elf_Rel *reltab;
+	char *strtab;
 };
 static struct section *secs;
 
-static const char * const sym_regex_kernel[S_NSYMTYPES] = {
-	[S_ABS] =
-	"^(xen_irq_disable_direct_reloc$|"
-	"xen_save_fl_direct_reloc$|"
-	"VDSO|"
-	"__crc_)",
+static const char *const sym_regex_kernel[S_NSYMTYPES] = {
+	[S_ABS] = "^(xen_irq_disable_direct_reloc$|"
+		  "xen_save_fl_direct_reloc$|"
+		  "VDSO|"
+		  "__crc_)",
 
-	[S_REL] =
-	"^(__init_(begin|end)|"
-	"__x86_cpu_dev_(start|end)|"
-	"(__parainstructions|__alt_instructions)(_end)?|"
-	"(__iommu_table|__apicdrivers|__smp_locks)(_end)?|"
-	"__(start|end)_pci_.*|"
-	"__(start|stop)___ksymtab(_gpl)?|"
-	"__(start|stop)___kcrctab(_gpl)?|"
-	"__(start|stop)___param|"
-	"__(start|stop)___modver|"
-	"__(start|stop)___bug_table|"
-	"__tracedata_(start|end)|"
-	"__(start|stop)_notes|"
-	"__end_rodata|"
-	"__end_rodata_aligned|"
-	"__initramfs_start|"
-	"(jiffies|jiffies_64)|"
+	[S_REL] = "^(__init_(begin|end)|"
+		  "__x86_cpu_dev_(start|end)|"
+		  "(__parainstructions|__alt_instructions)(_end)?|"
+		  "(__iommu_table|__apicdrivers|__smp_locks)(_end)?|"
+		  "__(start|end)_pci_.*|"
+		  "__(start|stop)___ksymtab(_gpl)?|"
+		  "__(start|stop)___kcrctab(_gpl)?|"
+		  "__(start|stop)___param|"
+		  "__(start|stop)___modver|"
+		  "__(start|stop)___bug_table|"
+		  "__tracedata_(start|end)|"
+		  "__(start|stop)_notes|"
+		  "__end_rodata|"
+		  "__end_rodata_aligned|"
+		  "__initramfs_start|"
+		  "(jiffies|jiffies_64)|"
 #if ELF_BITS == 64
-	"__per_cpu_load|"
-	"init_per_cpu__.*|"
-	"__end_rodata_hpage_align|"
+		  "__per_cpu_load|"
+		  "init_per_cpu__.*|"
+		  "__end_rodata_hpage_align|"
 #endif
-	"__vvar_page|"
-	"_end)$"
+		  "__vvar_page|"
+		  "_end)$"
 };
 
+static const char *const sym_regex_realmode[S_NSYMTYPES] = {
+	[S_REL] = "^pa_",
 
-static const char * const sym_regex_realmode[S_NSYMTYPES] = {
-	[S_REL] =
-	"^pa_",
+	[S_SEG] = "^real_mode_seg$",
 
-	[S_SEG] =
-	"^real_mode_seg$",
-
-	[S_LIN] =
-	"^pa_",
+	[S_LIN] = "^pa_",
 };
 
-static const char * const *sym_regex;
+static const char *const *sym_regex;
 
 static regex_t sym_regex_c[S_NSYMTYPES];
 static int is_reloc(enum symtype type, const char *sym_name)
 {
 	return sym_regex[type] &&
-		!regexec(&sym_regex_c[type], sym_name, 0, NULL, 0);
+	       !regexec(&sym_regex_c[type], sym_name, 0, NULL, 0);
 }
 
 static void regex_init(int use_real_mode)
 {
-        char errbuf[128];
-        int err;
+	char errbuf[128];
+	int err;
 	int i;
 
 	if (use_real_mode)
@@ -113,25 +107,22 @@ static void regex_init(int use_real_mode)
 			continue;
 
 		err = regcomp(&sym_regex_c[i], sym_regex[i],
-			      REG_EXTENDED|REG_NOSUB);
+			      REG_EXTENDED | REG_NOSUB);
 
 		if (err) {
 			regerror(err, &sym_regex_c[i], errbuf, sizeof(errbuf));
 			die("%s", errbuf);
 		}
-        }
+	}
 }
 
 static const char *sym_type(unsigned type)
 {
 	static const char *type_name[] = {
 #define SYM_TYPE(X) [X] = #X
-		SYM_TYPE(STT_NOTYPE),
-		SYM_TYPE(STT_OBJECT),
-		SYM_TYPE(STT_FUNC),
-		SYM_TYPE(STT_SECTION),
-		SYM_TYPE(STT_FILE),
-		SYM_TYPE(STT_COMMON),
+		SYM_TYPE(STT_NOTYPE), SYM_TYPE(STT_OBJECT),
+		SYM_TYPE(STT_FUNC),   SYM_TYPE(STT_SECTION),
+		SYM_TYPE(STT_FILE),   SYM_TYPE(STT_COMMON),
 		SYM_TYPE(STT_TLS),
 #undef SYM_TYPE
 	};
@@ -180,38 +171,23 @@ static const char *rel_type(unsigned type)
 	static const char *type_name[] = {
 #define REL_TYPE(X) [X] = #X
 #if ELF_BITS == 64
-		REL_TYPE(R_X86_64_NONE),
-		REL_TYPE(R_X86_64_64),
-		REL_TYPE(R_X86_64_PC64),
-		REL_TYPE(R_X86_64_PC32),
-		REL_TYPE(R_X86_64_GOT32),
-		REL_TYPE(R_X86_64_PLT32),
-		REL_TYPE(R_X86_64_COPY),
-		REL_TYPE(R_X86_64_GLOB_DAT),
-		REL_TYPE(R_X86_64_JUMP_SLOT),
-		REL_TYPE(R_X86_64_RELATIVE),
-		REL_TYPE(R_X86_64_GOTPCREL),
-		REL_TYPE(R_X86_64_32),
-		REL_TYPE(R_X86_64_32S),
-		REL_TYPE(R_X86_64_16),
-		REL_TYPE(R_X86_64_PC16),
-		REL_TYPE(R_X86_64_8),
+		REL_TYPE(R_X86_64_NONE),      REL_TYPE(R_X86_64_64),
+		REL_TYPE(R_X86_64_PC64),      REL_TYPE(R_X86_64_PC32),
+		REL_TYPE(R_X86_64_GOT32),     REL_TYPE(R_X86_64_PLT32),
+		REL_TYPE(R_X86_64_COPY),      REL_TYPE(R_X86_64_GLOB_DAT),
+		REL_TYPE(R_X86_64_JUMP_SLOT), REL_TYPE(R_X86_64_RELATIVE),
+		REL_TYPE(R_X86_64_GOTPCREL),  REL_TYPE(R_X86_64_32),
+		REL_TYPE(R_X86_64_32S),	      REL_TYPE(R_X86_64_16),
+		REL_TYPE(R_X86_64_PC16),      REL_TYPE(R_X86_64_8),
 		REL_TYPE(R_X86_64_PC8),
 #else
-		REL_TYPE(R_386_NONE),
-		REL_TYPE(R_386_32),
-		REL_TYPE(R_386_PC32),
-		REL_TYPE(R_386_GOT32),
-		REL_TYPE(R_386_PLT32),
-		REL_TYPE(R_386_COPY),
-		REL_TYPE(R_386_GLOB_DAT),
-		REL_TYPE(R_386_JMP_SLOT),
-		REL_TYPE(R_386_RELATIVE),
-		REL_TYPE(R_386_GOTOFF),
-		REL_TYPE(R_386_GOTPC),
-		REL_TYPE(R_386_8),
-		REL_TYPE(R_386_PC8),
-		REL_TYPE(R_386_16),
+		REL_TYPE(R_386_NONE),	  REL_TYPE(R_386_32),
+		REL_TYPE(R_386_PC32),	  REL_TYPE(R_386_GOT32),
+		REL_TYPE(R_386_PLT32),	  REL_TYPE(R_386_COPY),
+		REL_TYPE(R_386_GLOB_DAT), REL_TYPE(R_386_JMP_SLOT),
+		REL_TYPE(R_386_RELATIVE), REL_TYPE(R_386_GOTOFF),
+		REL_TYPE(R_386_GOTPC),	  REL_TYPE(R_386_8),
+		REL_TYPE(R_386_PC8),	  REL_TYPE(R_386_16),
 		REL_TYPE(R_386_PC16),
 #endif
 #undef REL_TYPE
@@ -231,11 +207,9 @@ static const char *sec_name(unsigned shndx)
 	name = "<noname>";
 	if (shndx < shnum) {
 		name = sec_strtab + secs[shndx].shdr.sh_name;
-	}
-	else if (shndx == SHN_ABS) {
+	} else if (shndx == SHN_ABS) {
 		name = "ABSOLUTE";
-	}
-	else if (shndx == SHN_COMMON) {
+	} else if (shndx == SHN_COMMON) {
 		name = "COMMON";
 	}
 	return name;
@@ -247,8 +221,7 @@ static const char *sym_name(const char *sym_strtab, Elf_Sym *sym)
 	name = "<noname>";
 	if (sym->st_name) {
 		name = sym_strtab + sym->st_name;
-	}
-	else {
+	} else {
 		name = sec_name(sym_index(sym));
 	}
 	return name;
@@ -267,7 +240,7 @@ static Elf_Sym *sym_lookup(const char *symname)
 		if (sec->shdr.sh_type != SHT_SYMTAB)
 			continue;
 
-		nsyms = sec->shdr.sh_size/sizeof(Elf_Sym);
+		nsyms = sec->shdr.sh_size / sizeof(Elf_Sym);
 		symtab = sec->symtab;
 		strtab = sec->link->strtab;
 
@@ -302,21 +275,21 @@ static uint32_t elf32_to_cpu(uint32_t val)
 	return le32_to_cpu(val);
 }
 
-#define elf_half_to_cpu(x)	elf16_to_cpu(x)
-#define elf_word_to_cpu(x)	elf32_to_cpu(x)
+#define elf_half_to_cpu(x) elf16_to_cpu(x)
+#define elf_word_to_cpu(x) elf32_to_cpu(x)
 
 #if ELF_BITS == 64
 static uint64_t elf64_to_cpu(uint64_t val)
 {
-        return le64_to_cpu(val);
+	return le64_to_cpu(val);
 }
-#define elf_addr_to_cpu(x)	elf64_to_cpu(x)
-#define elf_off_to_cpu(x)	elf64_to_cpu(x)
-#define elf_xword_to_cpu(x)	elf64_to_cpu(x)
+#define elf_addr_to_cpu(x) elf64_to_cpu(x)
+#define elf_off_to_cpu(x) elf64_to_cpu(x)
+#define elf_xword_to_cpu(x) elf64_to_cpu(x)
 #else
-#define elf_addr_to_cpu(x)	elf32_to_cpu(x)
-#define elf_off_to_cpu(x)	elf32_to_cpu(x)
-#define elf_xword_to_cpu(x)	elf32_to_cpu(x)
+#define elf_addr_to_cpu(x) elf32_to_cpu(x)
+#define elf_off_to_cpu(x) elf32_to_cpu(x)
+#define elf_xword_to_cpu(x) elf32_to_cpu(x)
 #endif
 
 static int sym_index(Elf_Sym *sym)
@@ -329,7 +302,6 @@ static int sym_index(Elf_Sym *sym)
 	if (sym->st_shndx != SHN_XINDEX)
 		return sym->st_shndx;
 
-	 
 	offset = (unsigned long)sym - (unsigned long)symtab;
 	index = offset / sizeof(*sym);
 
@@ -339,8 +311,7 @@ static int sym_index(Elf_Sym *sym)
 static void read_ehdr(FILE *fp)
 {
 	if (fread(&ehdr, sizeof(ehdr), 1, fp) != 1) {
-		die("Cannot read ELF header: %s\n",
-			strerror(errno));
+		die("Cannot read ELF header: %s\n", strerror(errno));
 	}
 	if (memcmp(ehdr.e_ident, ELFMAG, SELFMAG) != 0) {
 		die("No ELF magic\n");
@@ -354,20 +325,20 @@ static void read_ehdr(FILE *fp)
 	if (ehdr.e_ident[EI_VERSION] != EV_CURRENT) {
 		die("Unknown ELF version\n");
 	}
-	 
-	ehdr.e_type      = elf_half_to_cpu(ehdr.e_type);
-	ehdr.e_machine   = elf_half_to_cpu(ehdr.e_machine);
-	ehdr.e_version   = elf_word_to_cpu(ehdr.e_version);
-	ehdr.e_entry     = elf_addr_to_cpu(ehdr.e_entry);
-	ehdr.e_phoff     = elf_off_to_cpu(ehdr.e_phoff);
-	ehdr.e_shoff     = elf_off_to_cpu(ehdr.e_shoff);
-	ehdr.e_flags     = elf_word_to_cpu(ehdr.e_flags);
-	ehdr.e_ehsize    = elf_half_to_cpu(ehdr.e_ehsize);
+
+	ehdr.e_type = elf_half_to_cpu(ehdr.e_type);
+	ehdr.e_machine = elf_half_to_cpu(ehdr.e_machine);
+	ehdr.e_version = elf_word_to_cpu(ehdr.e_version);
+	ehdr.e_entry = elf_addr_to_cpu(ehdr.e_entry);
+	ehdr.e_phoff = elf_off_to_cpu(ehdr.e_phoff);
+	ehdr.e_shoff = elf_off_to_cpu(ehdr.e_shoff);
+	ehdr.e_flags = elf_word_to_cpu(ehdr.e_flags);
+	ehdr.e_ehsize = elf_half_to_cpu(ehdr.e_ehsize);
 	ehdr.e_phentsize = elf_half_to_cpu(ehdr.e_phentsize);
-	ehdr.e_phnum     = elf_half_to_cpu(ehdr.e_phnum);
+	ehdr.e_phnum = elf_half_to_cpu(ehdr.e_phnum);
 	ehdr.e_shentsize = elf_half_to_cpu(ehdr.e_shentsize);
-	ehdr.e_shnum     = elf_half_to_cpu(ehdr.e_shnum);
-	ehdr.e_shstrndx  = elf_half_to_cpu(ehdr.e_shstrndx);
+	ehdr.e_shnum = elf_half_to_cpu(ehdr.e_shnum);
+	ehdr.e_shstrndx = elf_half_to_cpu(ehdr.e_shstrndx);
 
 	shnum = ehdr.e_shnum;
 	shstrndx = ehdr.e_shstrndx;
@@ -385,15 +356,16 @@ static void read_ehdr(FILE *fp)
 	if (ehdr.e_shentsize != sizeof(Elf_Shdr))
 		die("Bad section header entry\n");
 
-
 	if (shnum == SHN_UNDEF || shstrndx == SHN_XINDEX) {
 		Elf_Shdr shdr;
 
 		if (fseek(fp, ehdr.e_shoff, SEEK_SET) < 0)
-			die("Seek to %" FMT " failed: %s\n", ehdr.e_shoff, strerror(errno));
+			die("Seek to %" FMT " failed: %s\n", ehdr.e_shoff,
+			    strerror(errno));
 
 		if (fread(&shdr, sizeof(shdr), 1, fp) != 1)
-			die("Cannot read initial ELF section header: %s\n", strerror(errno));
+			die("Cannot read initial ELF section header: %s\n",
+			    strerror(errno));
 
 		if (shnum == SHN_UNDEF)
 			shnum = elf_xword_to_cpu(shdr.sh_size);
@@ -413,32 +385,30 @@ static void read_shdrs(FILE *fp)
 
 	secs = calloc(shnum, sizeof(struct section));
 	if (!secs) {
-		die("Unable to allocate %ld section headers\n",
-		    shnum);
+		die("Unable to allocate %ld section headers\n", shnum);
 	}
 	if (fseek(fp, ehdr.e_shoff, SEEK_SET) < 0) {
-		die("Seek to %" FMT " failed: %s\n",
-		    ehdr.e_shoff, strerror(errno));
+		die("Seek to %" FMT " failed: %s\n", ehdr.e_shoff,
+		    strerror(errno));
 	}
 	for (i = 0; i < shnum; i++) {
 		struct section *sec = &secs[i];
 		if (fread(&shdr, sizeof(shdr), 1, fp) != 1)
-			die("Cannot read ELF section headers %d/%ld: %s\n",
-			    i, shnum, strerror(errno));
-		sec->shdr.sh_name      = elf_word_to_cpu(shdr.sh_name);
-		sec->shdr.sh_type      = elf_word_to_cpu(shdr.sh_type);
-		sec->shdr.sh_flags     = elf_xword_to_cpu(shdr.sh_flags);
-		sec->shdr.sh_addr      = elf_addr_to_cpu(shdr.sh_addr);
-		sec->shdr.sh_offset    = elf_off_to_cpu(shdr.sh_offset);
-		sec->shdr.sh_size      = elf_xword_to_cpu(shdr.sh_size);
-		sec->shdr.sh_link      = elf_word_to_cpu(shdr.sh_link);
-		sec->shdr.sh_info      = elf_word_to_cpu(shdr.sh_info);
+			die("Cannot read ELF section headers %d/%ld: %s\n", i,
+			    shnum, strerror(errno));
+		sec->shdr.sh_name = elf_word_to_cpu(shdr.sh_name);
+		sec->shdr.sh_type = elf_word_to_cpu(shdr.sh_type);
+		sec->shdr.sh_flags = elf_xword_to_cpu(shdr.sh_flags);
+		sec->shdr.sh_addr = elf_addr_to_cpu(shdr.sh_addr);
+		sec->shdr.sh_offset = elf_off_to_cpu(shdr.sh_offset);
+		sec->shdr.sh_size = elf_xword_to_cpu(shdr.sh_size);
+		sec->shdr.sh_link = elf_word_to_cpu(shdr.sh_link);
+		sec->shdr.sh_info = elf_word_to_cpu(shdr.sh_info);
 		sec->shdr.sh_addralign = elf_xword_to_cpu(shdr.sh_addralign);
-		sec->shdr.sh_entsize   = elf_xword_to_cpu(shdr.sh_entsize);
+		sec->shdr.sh_entsize = elf_xword_to_cpu(shdr.sh_entsize);
 		if (sec->shdr.sh_link < shnum)
 			sec->link = &secs[sec->shdr.sh_link];
 	}
-
 }
 
 static void read_strtabs(FILE *fp)
@@ -458,17 +428,16 @@ static void read_strtabs(FILE *fp)
 			die("Seek to %" FMT " failed: %s\n",
 			    sec->shdr.sh_offset, strerror(errno));
 		}
-		if (fread(sec->strtab, 1, sec->shdr.sh_size, fp)
-		    != sec->shdr.sh_size) {
-			die("Cannot read symbol table: %s\n",
-				strerror(errno));
+		if (fread(sec->strtab, 1, sec->shdr.sh_size, fp) !=
+		    sec->shdr.sh_size) {
+			die("Cannot read symbol table: %s\n", strerror(errno));
 		}
 	}
 }
 
 static void read_symtabs(FILE *fp)
 {
-	int i,j;
+	int i, j;
 
 	for (i = 0; i < shnum; i++) {
 		struct section *sec = &secs[i];
@@ -478,15 +447,16 @@ static void read_symtabs(FILE *fp)
 		case SHT_SYMTAB_SHNDX:
 			sec->xsymtab = malloc(sec->shdr.sh_size);
 			if (!sec->xsymtab) {
-				die("malloc of %" FMT " bytes for xsymtab failed\n",
+				die("malloc of %" FMT
+				    " bytes for xsymtab failed\n",
 				    sec->shdr.sh_size);
 			}
 			if (fseek(fp, sec->shdr.sh_offset, SEEK_SET) < 0) {
 				die("Seek to %" FMT " failed: %s\n",
 				    sec->shdr.sh_offset, strerror(errno));
 			}
-			if (fread(sec->xsymtab, 1, sec->shdr.sh_size, fp)
-			    != sec->shdr.sh_size) {
+			if (fread(sec->xsymtab, 1, sec->shdr.sh_size, fp) !=
+			    sec->shdr.sh_size) {
 				die("Cannot read extended symbol table: %s\n",
 				    strerror(errno));
 			}
@@ -498,24 +468,25 @@ static void read_symtabs(FILE *fp)
 
 			sec->symtab = malloc(sec->shdr.sh_size);
 			if (!sec->symtab) {
-				die("malloc of %" FMT " bytes for symtab failed\n",
+				die("malloc of %" FMT
+				    " bytes for symtab failed\n",
 				    sec->shdr.sh_size);
 			}
 			if (fseek(fp, sec->shdr.sh_offset, SEEK_SET) < 0) {
 				die("Seek to %" FMT " failed: %s\n",
 				    sec->shdr.sh_offset, strerror(errno));
 			}
-			if (fread(sec->symtab, 1, sec->shdr.sh_size, fp)
-			    != sec->shdr.sh_size) {
+			if (fread(sec->symtab, 1, sec->shdr.sh_size, fp) !=
+			    sec->shdr.sh_size) {
 				die("Cannot read symbol table: %s\n",
 				    strerror(errno));
 			}
 			for (j = 0; j < num_syms; j++) {
 				Elf_Sym *sym = &sec->symtab[j];
 
-				sym->st_name  = elf_word_to_cpu(sym->st_name);
+				sym->st_name = elf_word_to_cpu(sym->st_name);
 				sym->st_value = elf_addr_to_cpu(sym->st_value);
-				sym->st_size  = elf_xword_to_cpu(sym->st_size);
+				sym->st_size = elf_xword_to_cpu(sym->st_size);
 				sym->st_shndx = elf_half_to_cpu(sym->st_shndx);
 			}
 			shsymtabndx = i;
@@ -527,10 +498,9 @@ static void read_symtabs(FILE *fp)
 	}
 }
 
-
 static void read_relocs(FILE *fp)
 {
-	int i,j;
+	int i, j;
 	for (i = 0; i < shnum; i++) {
 		struct section *sec = &secs[i];
 		if (sec->shdr.sh_type != SHT_REL_TYPE) {
@@ -545,15 +515,14 @@ static void read_relocs(FILE *fp)
 			die("Seek to %" FMT " failed: %s\n",
 			    sec->shdr.sh_offset, strerror(errno));
 		}
-		if (fread(sec->reltab, 1, sec->shdr.sh_size, fp)
-		    != sec->shdr.sh_size) {
-			die("Cannot read symbol table: %s\n",
-				strerror(errno));
+		if (fread(sec->reltab, 1, sec->shdr.sh_size, fp) !=
+		    sec->shdr.sh_size) {
+			die("Cannot read symbol table: %s\n", strerror(errno));
 		}
-		for (j = 0; j < sec->shdr.sh_size/sizeof(Elf_Rel); j++) {
+		for (j = 0; j < sec->shdr.sh_size / sizeof(Elf_Rel); j++) {
 			Elf_Rel *rel = &sec->reltab[j];
 			rel->r_offset = elf_addr_to_cpu(rel->r_offset);
-			rel->r_info   = elf_xword_to_cpu(rel->r_info);
+			rel->r_info = elf_xword_to_cpu(rel->r_info);
 #if (SHT_REL_TYPE == SHT_RELA)
 			rel->r_addend = elf_xword_to_cpu(rel->r_addend);
 #endif
@@ -561,16 +530,15 @@ static void read_relocs(FILE *fp)
 	}
 }
 
-
 static void print_absolute_symbols(void)
 {
 	int i;
 	const char *format;
 
 	if (ELF_BITS == 64)
-		format = "%5d %016"PRIx64" %5"PRId64" %10s %10s %12s %s\n";
+		format = "%5d %016" PRIx64 " %5" PRId64 " %10s %10s %12s %s\n";
 	else
-		format = "%5d %08"PRIx32"  %5"PRId32" %10s %10s %12s %s\n";
+		format = "%5d %08" PRIx32 "  %5" PRId32 " %10s %10s %12s %s\n";
 
 	printf("Absolute symbols\n");
 	printf(" Num:    Value Size  Type       Bind        Visibility  Name\n");
@@ -583,7 +551,7 @@ static void print_absolute_symbols(void)
 			continue;
 		}
 		sym_strtab = sec->link->strtab;
-		for (j = 0; j < sec->shdr.sh_size/sizeof(Elf_Sym); j++) {
+		for (j = 0; j < sec->shdr.sh_size / sizeof(Elf_Sym); j++) {
 			Elf_Sym *sym;
 			const char *name;
 			sym = &sec->symtab[j];
@@ -591,12 +559,11 @@ static void print_absolute_symbols(void)
 			if (sym->st_shndx != SHN_ABS) {
 				continue;
 			}
-			printf(format,
-				j, sym->st_value, sym->st_size,
-				sym_type(ELF_ST_TYPE(sym->st_info)),
-				sym_bind(ELF_ST_BIND(sym->st_info)),
-				sym_visibility(ELF_ST_VISIBILITY(sym->st_other)),
-				name);
+			printf(format, j, sym->st_value, sym->st_size,
+			       sym_type(ELF_ST_TYPE(sym->st_info)),
+			       sym_bind(ELF_ST_BIND(sym->st_info)),
+			       sym_visibility(ELF_ST_VISIBILITY(sym->st_other)),
+			       name);
 		}
 	}
 	printf("\n");
@@ -608,9 +575,10 @@ static void print_absolute_relocs(void)
 	const char *format;
 
 	if (ELF_BITS == 64)
-		format = "%016"PRIx64" %016"PRIx64" %10s %016"PRIx64"  %s\n";
+		format = "%016" PRIx64 " %016" PRIx64 " %10s %016" PRIx64
+			 "  %s\n";
 	else
-		format = "%08"PRIx32" %08"PRIx32" %10s %08"PRIx32"  %s\n";
+		format = "%08" PRIx32 " %08" PRIx32 " %10s %08" PRIx32 "  %s\n";
 
 	for (i = 0; i < shnum; i++) {
 		struct section *sec = &secs[i];
@@ -621,14 +589,14 @@ static void print_absolute_relocs(void)
 		if (sec->shdr.sh_type != SHT_REL_TYPE) {
 			continue;
 		}
-		sec_symtab  = sec->link;
+		sec_symtab = sec->link;
 		sec_applies = &secs[sec->shdr.sh_info];
 		if (!(sec_applies->shdr.sh_flags & SHF_ALLOC)) {
 			continue;
 		}
-		sh_symtab  = sec_symtab->symtab;
+		sh_symtab = sec_symtab->symtab;
 		sym_strtab = sec_symtab->link->strtab;
-		for (j = 0; j < sec->shdr.sh_size/sizeof(Elf_Rel); j++) {
+		for (j = 0; j < sec->shdr.sh_size / sizeof(Elf_Rel); j++) {
 			Elf_Rel *rel;
 			Elf_Sym *sym;
 			const char *name;
@@ -639,24 +607,20 @@ static void print_absolute_relocs(void)
 				continue;
 			}
 
-			 
 			if (is_reloc(S_ABS, name) || is_reloc(S_REL, name))
 				continue;
 
 			if (!printed) {
 				printf("WARNING: Absolute relocations"
-					" present\n");
+				       " present\n");
 				printf("Offset     Info     Type     Sym.Value "
-					"Sym.Name\n");
+				       "Sym.Name\n");
 				printed = 1;
 			}
 
-			printf(format,
-				rel->r_offset,
-				rel->r_info,
-				rel_type(ELF_R_TYPE(rel->r_info)),
-				sym->st_value,
-				name);
+			printf(format, rel->r_offset, rel->r_info,
+			       rel_type(ELF_R_TYPE(rel->r_info)), sym->st_value,
+			       name);
 		}
 	}
 
@@ -672,7 +636,7 @@ static void add_reloc(struct relocs *r, uint32_t offset)
 
 		if (!mem)
 			die("realloc of %ld entries for relocs failed\n",
-                                newsize);
+			    newsize);
 		r->offset = mem;
 		r->size = newsize;
 	}
@@ -680,10 +644,10 @@ static void add_reloc(struct relocs *r, uint32_t offset)
 }
 
 static void walk_relocs(int (*process)(struct section *sec, Elf_Rel *rel,
-			Elf_Sym *sym, const char *symname))
+				       Elf_Sym *sym, const char *symname))
 {
 	int i;
-	 
+
 	for (i = 0; i < shnum; i++) {
 		char *sym_strtab;
 		Elf_Sym *sh_symtab;
@@ -694,14 +658,14 @@ static void walk_relocs(int (*process)(struct section *sec, Elf_Rel *rel,
 		if (sec->shdr.sh_type != SHT_REL_TYPE) {
 			continue;
 		}
-		sec_symtab  = sec->link;
+		sec_symtab = sec->link;
 		sec_applies = &secs[sec->shdr.sh_info];
 		if (!(sec_applies->shdr.sh_flags & SHF_ALLOC)) {
 			continue;
 		}
 		sh_symtab = sec_symtab->symtab;
 		sym_strtab = sec_symtab->link->strtab;
-		for (j = 0; j < sec->shdr.sh_size/sizeof(Elf_Rel); j++) {
+		for (j = 0; j < sec->shdr.sh_size / sizeof(Elf_Rel); j++) {
 			Elf_Rel *rel = &sec->reltab[j];
 			Elf_Sym *sym = &sh_symtab[ELF_R_SYM(rel->r_info)];
 			const char *symname = sym_name(sym_strtab, sym);
@@ -711,18 +675,18 @@ static void walk_relocs(int (*process)(struct section *sec, Elf_Rel *rel,
 	}
 }
 
-static int per_cpu_shndx	= -1;
+static int per_cpu_shndx = -1;
 static Elf_Addr per_cpu_load_addr;
 
 static void percpu_init(void)
 {
 	int i;
 	for (i = 0; i < shnum; i++) {
-		ElfW(Sym) *sym;
+		ElfW(Sym) * sym;
 		if (strcmp(sec_name(i), ".data..percpu"))
 			continue;
 
-		if (secs[i].shdr.sh_addr != 0)	 
+		if (secs[i].shdr.sh_addr != 0)
 			return;
 
 		sym = sym_lookup("__per_cpu_load");
@@ -737,18 +701,16 @@ static void percpu_init(void)
 
 #if ELF_BITS == 64
 
-static int is_percpu_sym(ElfW(Sym) *sym, const char *symname)
+static int is_percpu_sym(ElfW(Sym) * sym, const char *symname)
 {
 	int shndx = sym_index(sym);
 
-	return (shndx == per_cpu_shndx) &&
-		strcmp(symname, "__init_begin") &&
-		strcmp(symname, "__per_cpu_load") &&
-		strncmp(symname, "init_per_cpu_", 13);
+	return (shndx == per_cpu_shndx) && strcmp(symname, "__init_begin") &&
+	       strcmp(symname, "__per_cpu_load") &&
+	       strncmp(symname, "init_per_cpu_", 13);
 }
 
-
-static int do_reloc64(struct section *sec, Elf_Rel *rel, ElfW(Sym) *sym,
+static int do_reloc64(struct section *sec, Elf_Rel *rel, ElfW(Sym) * sym,
 		      const char *symname)
 {
 	unsigned r_type = ELF64_R_TYPE(rel->r_info);
@@ -758,24 +720,23 @@ static int do_reloc64(struct section *sec, Elf_Rel *rel, ElfW(Sym) *sym,
 	if (sym->st_shndx == SHN_UNDEF)
 		return 0;
 
-	 
 	if (sec->shdr.sh_info == per_cpu_shndx)
 		offset += per_cpu_load_addr;
 
 	switch (r_type) {
 	case R_X86_64_NONE:
-		 
+
 		break;
 
 	case R_X86_64_PC32:
 	case R_X86_64_PLT32:
-		 
+
 		if (is_percpu_sym(sym, symname))
 			add_reloc(&relocs32neg, offset);
 		break;
 
 	case R_X86_64_PC64:
-		 
+
 		if (is_percpu_sym(sym, symname))
 			die("Invalid R_X86_64_PC64 relocation against per-CPU symbol %s\n",
 			    symname);
@@ -784,12 +745,11 @@ static int do_reloc64(struct section *sec, Elf_Rel *rel, ElfW(Sym) *sym,
 	case R_X86_64_32:
 	case R_X86_64_32S:
 	case R_X86_64_64:
-		 
+
 		if (is_percpu_sym(sym, symname))
 			break;
 
 		if (shn_abs) {
-			 
 			if (is_reloc(S_ABS, symname))
 				break;
 
@@ -798,7 +758,6 @@ static int do_reloc64(struct section *sec, Elf_Rel *rel, ElfW(Sym) *sym,
 			break;
 		}
 
-		 
 		if ((int32_t)offset != (int64_t)offset)
 			die("Relocation offset doesn't fit in 32 bits\n");
 
@@ -809,8 +768,8 @@ static int do_reloc64(struct section *sec, Elf_Rel *rel, ElfW(Sym) *sym,
 		break;
 
 	default:
-		die("Unsupported relocation type: %s (%d)\n",
-		    rel_type(r_type), r_type);
+		die("Unsupported relocation type: %s (%d)\n", rel_type(r_type),
+		    r_type);
 		break;
 	}
 
@@ -831,12 +790,11 @@ static int do_reloc32(struct section *sec, Elf_Rel *rel, Elf_Sym *sym,
 	case R_386_PC16:
 	case R_386_PC8:
 	case R_386_PLT32:
-		 
+
 		break;
 
 	case R_386_32:
 		if (shn_abs) {
-			 
 			if (is_reloc(S_ABS, symname))
 				break;
 
@@ -849,8 +807,8 @@ static int do_reloc32(struct section *sec, Elf_Rel *rel, Elf_Sym *sym,
 		break;
 
 	default:
-		die("Unsupported relocation type: %s (%d)\n",
-		    rel_type(r_type), r_type);
+		die("Unsupported relocation type: %s (%d)\n", rel_type(r_type),
+		    r_type);
 		break;
 	}
 
@@ -869,12 +827,11 @@ static int do_reloc_real(struct section *sec, Elf_Rel *rel, Elf_Sym *sym,
 	case R_386_PC16:
 	case R_386_PC8:
 	case R_386_PLT32:
-		 
+
 		break;
 
 	case R_386_16:
 		if (shn_abs) {
-			 
 			if (is_reloc(S_ABS, symname))
 				break;
 
@@ -887,13 +844,12 @@ static int do_reloc_real(struct section *sec, Elf_Rel *rel, Elf_Sym *sym,
 				break;
 		}
 		die("Invalid %s %s relocation: %s\n",
-		    shn_abs ? "absolute" : "relative",
-		    rel_type(r_type), symname);
+		    shn_abs ? "absolute" : "relative", rel_type(r_type),
+		    symname);
 		break;
 
 	case R_386_32:
 		if (shn_abs) {
-			 
 			if (is_reloc(S_ABS, symname))
 				break;
 
@@ -907,13 +863,13 @@ static int do_reloc_real(struct section *sec, Elf_Rel *rel, Elf_Sym *sym,
 			break;
 		}
 		die("Invalid %s %s relocation: %s\n",
-		    shn_abs ? "absolute" : "relative",
-		    rel_type(r_type), symname);
+		    shn_abs ? "absolute" : "relative", rel_type(r_type),
+		    symname);
 		break;
 
 	default:
-		die("Unsupported relocation type: %s (%d)\n",
-		    rel_type(r_type), r_type);
+		die("Unsupported relocation type: %s (%d)\n", rel_type(r_type),
+		    r_type);
 		break;
 	}
 
@@ -925,8 +881,9 @@ static int do_reloc_real(struct section *sec, Elf_Rel *rel, Elf_Sym *sym,
 static int cmp_relocs(const void *va, const void *vb)
 {
 	const uint32_t *a, *b;
-	a = va; b = vb;
-	return (*a == *b)? 0 : (*a > *b)? 1 : -1;
+	a = va;
+	b = vb;
+	return (*a == *b) ? 0 : (*a > *b) ? 1 : -1;
 }
 
 static void sort_relocs(struct relocs *r)
@@ -944,7 +901,7 @@ static int write32(uint32_t v, FILE *f)
 
 static int write32_as_text(uint32_t v, FILE *f)
 {
-	return fprintf(f, "\t.long 0x%08"PRIx32"\n", v) > 0 ? 0 : -1;
+	return fprintf(f, "\t.long 0x%08" PRIx32 "\n", v) > 0 ? 0 : -1;
 }
 
 static void emit_relocs(int as_text, int use_real_mode)
@@ -966,13 +923,11 @@ static void emit_relocs(int as_text, int use_real_mode)
 		do_reloc = do_reloc_real;
 #endif
 
-	 
 	walk_relocs(do_reloc);
 
 	if (relocs16.count && !use_real_mode)
 		die("Segment relocations found but --realmode not specified\n");
 
-	 
 	sort_relocs(&relocs32);
 #if ELF_BITS == 64
 	sort_relocs(&relocs32neg);
@@ -981,9 +936,7 @@ static void emit_relocs(int as_text, int use_real_mode)
 	sort_relocs(&relocs16);
 #endif
 
-	 
 	if (as_text) {
-		 
 		printf(".section \".data.reloc\",\"a\"\n");
 		printf(".balign 4\n");
 		write_reloc = write32_as_text;
@@ -999,38 +952,31 @@ static void emit_relocs(int as_text, int use_real_mode)
 			write_reloc(relocs32.offset[i], stdout);
 	} else {
 #if ELF_BITS == 64
-		 
+
 		write_reloc(0, stdout);
 
-		 
 		for (i = 0; i < relocs64.count; i++)
 			write_reloc(relocs64.offset[i], stdout);
 
-		 
 		write_reloc(0, stdout);
 
-		 
 		for (i = 0; i < relocs32neg.count; i++)
 			write_reloc(relocs32neg.offset[i], stdout);
 #endif
 
-		 
 		write_reloc(0, stdout);
 
-		 
 		for (i = 0; i < relocs32.count; i++)
 			write_reloc(relocs32.offset[i], stdout);
 	}
 }
 
-static int do_reloc_info(struct section *sec, Elf_Rel *rel, ElfW(Sym) *sym,
-				const char *symname)
+static int do_reloc_info(struct section *sec, Elf_Rel *rel, ElfW(Sym) * sym,
+			 const char *symname)
 {
-	printf("%s\t%s\t%s\t%s\n",
-		sec_name(sec->shdr.sh_info),
-		rel_type(ELF_R_TYPE(rel->r_info)),
-		symname,
-		sec_name(sym_index(sym)));
+	printf("%s\t%s\t%s\t%s\n", sec_name(sec->shdr.sh_info),
+	       rel_type(ELF_R_TYPE(rel->r_info)), symname,
+	       sec_name(sym_index(sym)));
 	return 0;
 }
 
@@ -1041,14 +987,13 @@ static void print_reloc_info(void)
 }
 
 #if ELF_BITS == 64
-# define process process_64
+#define process process_64
 #else
-# define process process_32
+#define process process_32
 #endif
 
-void process(FILE *fp, int use_real_mode, int as_text,
-	     int show_absolute_syms, int show_absolute_relocs,
-	     int show_reloc_info)
+void process(FILE *fp, int use_real_mode, int as_text, int show_absolute_syms,
+	     int show_absolute_relocs, int show_reloc_info)
 {
 	regex_init(use_real_mode);
 	read_ehdr(fp);

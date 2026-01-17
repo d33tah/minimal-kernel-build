@@ -34,23 +34,16 @@ struct zone *next_zone(struct zone *zone)
 	return zone;
 }
 
-static inline int zref_in_nodemask(struct zoneref *zref, nodemask_t *nodes)
-{
-	return 1;
-}
+/* zref_in_nodemask always returns 1 - single node kernel */
 
 struct zoneref *__next_zones_zonelist(struct zoneref *z,
-					enum zone_type highest_zoneidx,
-					nodemask_t *nodes)
+				      enum zone_type highest_zoneidx,
+				      nodemask_t *nodes)
 {
-	 
-	if (unlikely(nodes == NULL))
-		while (zonelist_zone_idx(z) > highest_zoneidx)
-			z++;
-	else
-		while (zonelist_zone_idx(z) > highest_zoneidx ||
-				(z->zone && !zref_in_nodemask(z, nodes)))
-			z++;
+	/* zref_in_nodemask always 1, so !zref_in_nodemask is always false */
+	/* Both branches do the same thing now */
+	while (zonelist_zone_idx(z) > highest_zoneidx)
+		z++;
 
 	return z;
 }
@@ -64,7 +57,6 @@ void lruvec_init(struct lruvec *lruvec)
 
 	for_each_lru(lru)
 		INIT_LIST_HEAD(&lruvec->lists[lru]);
-	 
+
 	list_del(&lruvec->lists[LRU_UNEVICTABLE]);
 }
-

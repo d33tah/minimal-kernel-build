@@ -9,10 +9,7 @@ struct __kernel_timespec {
 	long long               tv_nsec;
 };
 
-struct __kernel_itimerspec {
-	struct __kernel_timespec it_interval;
-	struct __kernel_timespec it_value;
-};
+/* struct __kernel_itimerspec removed - never instantiated */
 
 #ifndef __kernel_old_timeval
 struct __kernel_old_timeval {
@@ -21,17 +18,7 @@ struct __kernel_old_timeval {
 };
 #endif
 
-struct __kernel_old_timespec {
-	__kernel_old_time_t	tv_sec;
-	long			tv_nsec;
-};
-
-struct __kernel_old_itimerval {
-	struct __kernel_old_timeval it_interval;
-	struct __kernel_old_timeval it_value;
-};
-
-/* __kernel_sock_timeval - unused */
+/* __kernel_old_timespec, __kernel_old_itimerval, __kernel_sock_timeval removed - unused */
 /* End time_types.h */
 
 #ifndef __KERNEL__
@@ -48,24 +35,13 @@ struct timeval {
 	__kernel_suseconds_t	tv_usec;
 };
 
-struct itimerspec {
-	struct timespec it_interval;
-	struct timespec it_value;
-};
-
-struct itimerval {
-	struct timeval it_interval;
-	struct timeval it_value;
-};
+/* struct itimerspec, itimerval removed - unused */
 #endif
 
 struct timezone {
 	int	tz_minuteswest;
 	int	tz_dsttime;
 };
-
-/* Only ITIMER_REAL is used */
-#define	ITIMER_REAL		0
 
 /* Only keep clock IDs actually used */
 #define CLOCK_REALTIME			0
@@ -77,9 +53,5 @@ struct timezone {
 #define CLOCK_TAI			11
 
 #define MAX_CLOCKS			16
-#define CLOCKS_MASK			(CLOCK_REALTIME | CLOCK_MONOTONIC)
-#define CLOCKS_MONO			CLOCK_MONOTONIC
-
-#define TIMER_ABSTIME			0x01
 
 #endif

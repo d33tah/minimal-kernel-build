@@ -29,12 +29,6 @@ static inline bool close_on_exec(unsigned int fd, const struct fdtable *fdt)
 {
 	return test_bit(fd, fdt->close_on_exec);
 }
-
-static inline bool fd_is_open(unsigned int fd, const struct fdtable *fdt)
-{
-	return test_bit(fd, fdt->open_fds);
-}
-
 struct files_struct {
    
 	atomic_t count;
@@ -52,9 +46,7 @@ struct files_struct {
 	struct file __rcu * fd_array[NR_OPEN_DEFAULT];
 };
 
-struct file_operations;
-struct vfsmount;
-struct dentry;
+/* struct file_operations, vfsmount, dentry forward decls removed - unused */
 
 #define rcu_dereference_check_fdtable(files, fdtfd) \
 	rcu_dereference_check((fdtfd), lockdep_is_held(&(files)->file_lock))
@@ -73,25 +65,6 @@ static inline struct file *files_lookup_fd_raw(struct files_struct *files, unsig
 	return NULL;
 }
 
-static inline struct file *files_lookup_fd_locked(struct files_struct *files, unsigned int fd)
-{
-	RCU_LOCKDEP_WARN(!lockdep_is_held(&files->file_lock),
-			   "suspicious rcu_dereference_check() usage");
-	return files_lookup_fd_raw(files, fd);
-}
-
-static inline struct file *files_lookup_fd_rcu(struct files_struct *files, unsigned int fd)
-{
-	RCU_LOCKDEP_WARN(!rcu_read_lock_held(),
-			   "suspicious rcu_dereference_check() usage");
-	return files_lookup_fd_raw(files, fd);
-}
-
-static inline struct file *lookup_fd_rcu(unsigned int fd)
-{
-	return files_lookup_fd_rcu(current->files, fd);
-}
-
 struct file *task_lookup_fd_rcu(struct task_struct *task, unsigned int fd);
 struct file *task_lookup_next_fd_rcu(struct task_struct *task, unsigned int *fd);
 
@@ -101,12 +74,8 @@ void put_files_struct(struct files_struct *fs);
 int unshare_files(void);
 struct files_struct *dup_fd(struct files_struct *, unsigned, int *) __latent_entropy;
 void do_close_on_exec(struct files_struct *);
-int iterate_fd(struct files_struct *, unsigned,
-		int (*)(const void *, struct file *, unsigned),
-		const void *);
 
-extern int close_fd(unsigned int fd);
-extern int __close_range(unsigned int fd, unsigned int max_fd, unsigned int flags);
+/* close_fd, __close_range, iterate_fd removed - never called */
 
 extern struct kmem_cache *files_cachep;
 

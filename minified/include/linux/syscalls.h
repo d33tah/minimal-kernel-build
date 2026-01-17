@@ -15,10 +15,10 @@ struct statfs;
 struct statfs64;
 struct sysinfo;
 struct __kernel_old_timeval;
-struct __kernel_timex;
+/* struct __kernel_timex forward decl removed - never used */
 struct timeval;
-struct mq_attr;
-struct clone_args;
+/* struct mq_attr removed - unused */
+/* struct clone_args forward decl removed - clone3 is COND_SYSCALL */
 struct utimbuf;
 struct getcpu_cache;
 struct linux_dirent64;
@@ -31,13 +31,10 @@ struct old_linux_dirent;
 #include <linux/bug.h>
 #include <asm/siginfo.h>
 #include <linux/unistd.h>
-#include <linux/quota.h>
-#include <linux/key.h>
 #include <linux/personality.h>
 #include <linux/fcntl.h>
 
-/* Inlined from trace/syscall.h */
-static inline void syscall_tracepoint_update(struct task_struct *p) {}
+/* syscall_tracepoint_update removed - unused */
 
 #include <asm/syscall_wrapper.h>
 #include <asm/syscall.h>
@@ -79,7 +76,6 @@ static inline void syscall_tracepoint_update(struct task_struct *p) {}
 #define SYSCALL_DEFINE0(sname)					\
 	SYSCALL_METADATA(_##sname, 0);				\
 	asmlinkage long sys_##sname(void);			\
-	ALLOW_ERROR_INJECTION(sys_##sname, ERRNO);		\
 	asmlinkage long sys_##sname(void)
 #endif  
 
@@ -89,8 +85,6 @@ static inline void syscall_tracepoint_update(struct task_struct *p) {}
 #define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
 #define SYSCALL_DEFINE5(name, ...) SYSCALL_DEFINEx(5, _##name, __VA_ARGS__)
 #define SYSCALL_DEFINE6(name, ...) SYSCALL_DEFINEx(6, _##name, __VA_ARGS__)
-
-#define SYSCALL_DEFINE_MAXARGS	6
 
 #define SYSCALL_DEFINEx(x, sname, ...)				\
 	SYSCALL_METADATA(sname, x, __VA_ARGS__)			\
@@ -105,7 +99,6 @@ static inline void syscall_tracepoint_update(struct task_struct *p) {}
 		      "Type aliasing is used to sanitize syscall arguments");\
 	asmlinkage long sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))	\
 		__attribute__((alias(__stringify(__se_sys##name))));	\
-	ALLOW_ERROR_INJECTION(sys##name, ERRNO);			\
 	static inline long __do_sys##name(__MAP(x,__SC_DECL,__VA_ARGS__));\
 	asmlinkage long __se_sys##name(__MAP(x,__SC_LONG,__VA_ARGS__));	\
 	asmlinkage long __se_sys##name(__MAP(x,__SC_LONG,__VA_ARGS__))	\
@@ -119,59 +112,10 @@ static inline void syscall_tracepoint_update(struct task_struct *p) {}
 	static inline long __do_sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))
 #endif  
 
-#ifdef __LITTLE_ENDIAN
 #define SC_ARG64(name) u32, name##_lo, u32, name##_hi
-#else
-#define SC_ARG64(name) u32, name##_hi, u32, name##_lo
-#endif
-#define SC_VAL64(type, name) ((type) name##_hi << 32 | name##_lo)
 
-#define SYSCALL32_DEFINE1 SYSCALL_DEFINE1
-#define SYSCALL32_DEFINE2 SYSCALL_DEFINE2
-#define SYSCALL32_DEFINE3 SYSCALL_DEFINE3
-#define SYSCALL32_DEFINE4 SYSCALL_DEFINE4
-#define SYSCALL32_DEFINE5 SYSCALL_DEFINE5
-#define SYSCALL32_DEFINE6 SYSCALL_DEFINE6
+/* SC_VAL64, SYSCALL32_DEFINEx removed - never used */
 
-static inline void addr_limit_user_check(void)
-{
-#ifdef TIF_FSCHECK
-	if (!test_thread_flag(TIF_FSCHECK))
-		return;
-#endif
-
-#ifdef TIF_FSCHECK
-	clear_thread_flag(TIF_FSCHECK);
-#endif
-}
-
-
-
-void ksys_sync(void);
-int ksys_sync_file_range(int fd, loff_t offset, loff_t nbytes,
-			 unsigned int flags);
-ssize_t ksys_pread64(unsigned int fd, char __user *buf, size_t count,
-		     loff_t pos);
-ssize_t ksys_pwrite64(unsigned int fd, const char __user *buf,
-		      size_t count, loff_t pos);
-int ksys_fallocate(int fd, int mode, loff_t offset, loff_t len);
-static inline int ksys_fadvise64_64(int fd, loff_t offset, loff_t len,
-				    int advice)
-{
-	return -EINVAL;
-}
-unsigned long ksys_mmap_pgoff(unsigned long addr, unsigned long len,
-			      unsigned long prot, unsigned long flags,
-			      unsigned long fd, unsigned long pgoff);
-ssize_t ksys_readahead(int fd, loff_t offset, size_t count);
-
-
-extern long do_sys_ftruncate(unsigned int fd, loff_t length, int small);
-
-static inline long ksys_ftruncate(unsigned int fd, loff_t length)
-{
-	return do_sys_ftruncate(fd, length, 1);
-}
-
+/* addr_limit_user_check, ksys_* declarations removed - never called */
 
 #endif

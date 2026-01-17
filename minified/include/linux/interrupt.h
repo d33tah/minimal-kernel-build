@@ -12,7 +12,6 @@ enum irqreturn {
 	IRQ_WAKE_THREAD		= (1 << 1),
 };
 typedef enum irqreturn irqreturn_t;
-#define IRQ_RETVAL(x)	((x) ? IRQ_HANDLED : IRQ_NONE)
 
 #include <linux/irqnr.h>
 #include <linux/hardirq.h>
@@ -44,17 +43,13 @@ typedef enum irqreturn irqreturn_t;
 
 #define IRQF_TIMER		(__IRQF_TIMER | IRQF_NO_SUSPEND | IRQF_NO_THREAD)
 
-enum {
-	IRQC_IS_HARDIRQ	= 0,
-	IRQC_IS_NESTED,
-};
+/* IRQC_IS_HARDIRQ, IRQC_IS_NESTED enum removed - unused */
 
 typedef irqreturn_t (*irq_handler_t)(int, void *);
 
 struct irqaction {
 	irq_handler_t		handler;
 	void			*dev_id;
-	void __percpu		*percpu_dev_id;
 	struct irqaction	*next;
 	irq_handler_t		thread_fn;
 	struct task_struct	*thread;
@@ -64,7 +59,6 @@ struct irqaction {
 	unsigned long		thread_flags;
 	unsigned long		thread_mask;
 	const char		*name;
-	struct proc_dir_entry	*dir;
 } ____cacheline_internodealigned_in_smp;
 
 extern irqreturn_t no_action(int cpl, void *dev_id);
@@ -83,12 +77,9 @@ request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
 	return request_threaded_irq(irq, handler, NULL, flags, name, dev);
 }
 
-extern const void *free_irq(unsigned int, void *);
+/* free_irq, disable_irq_nosync removed - never called */
+/* struct device forward decl removed - unused */
 
-struct device;
-
-bool irq_has_action(unsigned int irq);
-extern void disable_irq_nosync(unsigned int irq);
 extern void enable_irq(unsigned int irq);
 
 struct irq_affinity_desc {
@@ -96,21 +87,9 @@ struct irq_affinity_desc {
 	unsigned int	is_managed : 1;
 };
 
-static inline int irq_set_affinity(unsigned int irq, const struct cpumask *m)
-{
-	return -EINVAL;
-}
+/* irq_set_affinity, irq_can_set_affinity removed - never called */
 
-static inline int irq_can_set_affinity(unsigned int irq)
-{
-	return 0;
-}
-
-
-enum irqchip_irq_state {
-	IRQCHIP_STATE_PENDING,
-	IRQCHIP_STATE_ACTIVE,
-};
+/* irqchip_irq_state enum removed - unused */
 
 
 DECLARE_STATIC_KEY_FALSE(force_irqthreads_key);
@@ -128,9 +107,7 @@ DECLARE_STATIC_KEY_FALSE(force_irqthreads_key);
 
 #endif  
 
-#ifndef hard_irq_disable
-#define hard_irq_disable()	do { } while(0)
-#endif
+/* hard_irq_disable removed - never called */
 
 
 enum
@@ -162,24 +139,16 @@ extern void softirq_init(void);
 extern void __raise_softirq_irqoff(unsigned int nr);
 
 extern void raise_softirq_irqoff(unsigned int nr);
-extern void raise_softirq(unsigned int nr);
+/* raise_softirq removed - never called */
 
 DECLARE_PER_CPU(struct task_struct *, ksoftirqd);
 
 
 
-static inline void init_irq_proc(void)
-{
-}
-
-
-struct seq_file;
-int show_interrupts(struct seq_file *p, void *v);
-int arch_show_interrupts(struct seq_file *p, int prec);
+/* init_irq_proc removed - unused */
 
 extern int early_irq_init(void);
-extern int arch_probe_nr_irqs(void);
-extern int arch_early_irq_init(void);
+/* arch_probe_nr_irqs, arch_early_irq_init removed - inlined at call sites */
 
 #ifndef __irq_entry
 # define __irq_entry	 __section(".irqentry.text")

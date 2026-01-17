@@ -7,8 +7,6 @@
 #include <linux/ns_common.h>
 #include <linux/err.h>
 
-#define __OLD_UTS_LEN 8
-
 struct oldold_utsname {
 	char sysname[9];
 	char nodename[9];
@@ -36,9 +34,7 @@ struct new_utsname {
 	char domainname[__NEW_UTS_LEN + 1];
 };
 
-/* Unused enum uts_proc reduced */
-enum uts_proc { UTS_PROC_UNUSED };
-
+/* enum uts_proc removed - unused */
 struct user_namespace;
 extern struct user_namespace init_user_ns;
 
@@ -50,22 +46,7 @@ struct uts_namespace {
 } __randomize_layout;
 extern struct uts_namespace init_uts_ns;
 
-static inline void put_uts_ns(struct uts_namespace *ns)
-{
-}
-
-static inline struct uts_namespace *copy_utsname(unsigned long flags,
-	struct user_namespace *user_ns, struct uts_namespace *old_ns)
-{
-	if (flags & CLONE_NEWUTS)
-		return ERR_PTR(-EINVAL);
-
-	return old_ns;
-}
-
-static inline void uts_ns_init(void)
-{
-}
+/* copy_utsname removed - no callers */
 
 static inline struct new_utsname *utsname(void)
 {
@@ -77,6 +58,6 @@ static inline struct new_utsname *init_utsname(void)
 	return &init_uts_ns.name;
 }
 
-extern struct rw_semaphore uts_sem;
+/* uts_sem removed - never used */
 
 #endif  

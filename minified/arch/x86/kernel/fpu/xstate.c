@@ -8,8 +8,7 @@
 #include <linux/cpu.h>
 #include <linux/mman.h>
 #include <linux/nospec.h>
-#include <linux/pkeys.h>
-#include <linux/seq_file.h>
+/* seq_file.h removed - header is empty */
 #include <linux/proc_fs.h>
 #include <linux/vmalloc.h>
 
@@ -26,29 +25,7 @@
 #include "legacy.h"
 #include "xstate.h"
 
-// Stub: Check if CPU has xfeatures
-int cpu_has_xfeatures(u64 xfeatures_needed, const char **feature_name)
-{
-	return 1; // Always claim features are present
-}
+/* cpu_has_xfeatures removed - never called */
 
-// Stub: Initialize CPU xstate
-void fpu__init_cpu_xstate(void) { }
-
-// Stub: Initialize system xstate
-void __init fpu__init_system_xstate(unsigned int legacy_size) { }
-
-// Stub: Resume CPU FPU state
-void fpu__resume_cpu(void) { }
-
-int copy_sigframe_from_user_to_xstate(struct fpstate *fpstate,
-				      const void __user *ubuf)
-{
-	return 0;
-}
-
-// Stub: xstate prctl
-long fpu_xstate_prctl(int option, unsigned long arg2)
-{
-	return 0;
-}
+/* fpu__init_cpu_xstate, fpu__init_system_xstate removed - empty stubs */
+/* fpu__resume_cpu, copy_sigframe_from_user_to_xstate, fpu_xstate_prctl removed */

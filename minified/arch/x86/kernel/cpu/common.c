@@ -17,21 +17,21 @@
 #include <linux/kprobes.h>
 #include <linux/smp.h>
 #include <linux/io.h>
-#include <linux/syscore_ops.h>
 #include <linux/pgtable.h>
 
 #include <asm/perf_event.h>
 #include <asm/mmu_context.h>
-static inline void x86_init_rdrand(struct cpuinfo_x86 *c) { }
+static inline void x86_init_rdrand(struct cpuinfo_x86 *c)
+{
+}
 
 /* Inlined from asm/doublefault.h */
 extern void doublefault_init_cpu_tss(void);
-#include <asm/hypervisor.h>
 #include <asm/processor.h>
 #include <asm/tlbflush.h>
 #include <asm/debugreg.h>
 #include <asm/sections.h>
-#include <asm/vsyscall.h>
+/* asm/vsyscall.h removed - empty */
 #include <linux/topology.h>
 #include <linux/cpumask.h>
 #include <linux/atomic.h>
@@ -40,119 +40,102 @@ extern void doublefault_init_cpu_tss(void);
 #include <asm/apic.h>
 #include <asm/desc.h>
 #include <asm/fpu/api.h>
-#include <asm/mtrr.h>
+/* mtrr.h removed - header is empty */
 #include <asm/hwcap2.h>
 #include <linux/numa.h>
 #include <asm/numa.h>
 #include <asm/asm.h>
 #include <asm/bugs.h>
 #include <asm/cpu.h>
-#include <asm/mce.h>
+/* mce.h removed - header is empty */
 #include <asm/msr.h>
 #include <asm/memtype.h>
-#include <asm/microcode.h>
-#include <asm/microcode_intel.h>
+/* show_ucode_info_early removed - microcode support disabled */
 #include <asm/intel-family.h>
-#include <asm/cpu_device_id.h>
-static inline int is_uv_system(void) { return 0; }
-static inline void uv_cpu_init(void) { }
 #include <asm/sigframe.h>
 #include <asm/traps.h>
-#include <asm/sev.h>
+/* asm/sev.h include removed - file is stub, nothing used */
 
 #include "cpu.h"
 
 u32 elf_hwcap2 __read_mostly;
 
-cpumask_var_t cpu_initialized_mask;
+/* cpu_initialized_mask, smp_num_siblings, cpu_llc_id, cpu_l2c_id removed - never used */
+/* ppin_init removed - empty function */
 
-int smp_num_siblings = 1;
-
-DEFINE_PER_CPU_READ_MOSTLY(u16, cpu_llc_id) = BAD_APICID;
-
-DEFINE_PER_CPU_READ_MOSTLY(u16, cpu_l2c_id) = BAD_APICID;
-
-/* Stub: PPIN (Protected Processor Inventory Number) not needed for minimal kernel */
-static void ppin_init(struct cpuinfo_x86 *c)
-{
-}
-
-void __init setup_cpu_local_masks(void)
-{
-	alloc_bootmem_cpumask_var(&cpu_initialized_mask);
-	/* cpu_callin_mask, cpu_callout_mask, cpu_sibling_setup_mask allocations removed - unused */
-}
-
-static void default_init(struct cpuinfo_x86 *c)
-{
-	
-	
-	if (c->cpuid_level == -1) {
-		
-		if (c->x86 == 4)
-			strcpy(c->x86_model_id, "486");
-		else if (c->x86 == 3)
-			strcpy(c->x86_model_id, "386");
-	}
-}
-
+/* default_init removed - was empty stub */
 static const struct cpu_dev default_cpu = {
-	.c_init		= default_init,
-	.c_vendor	= "Unknown",
-	.c_x86_vendor	= X86_VENDOR_UNKNOWN,
+	.c_init = NULL,
+	.c_vendor = "Unknown",
+	.c_x86_vendor = X86_VENDOR_UNKNOWN,
 };
 
 static const struct cpu_dev *this_cpu = &default_cpu;
 
-DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = { .gdt = {
-	[GDT_ENTRY_KERNEL_CS]		= GDT_ENTRY_INIT(0xc09a, 0, 0xfffff),
-	[GDT_ENTRY_KERNEL_DS]		= GDT_ENTRY_INIT(0xc092, 0, 0xfffff),
-	[GDT_ENTRY_DEFAULT_USER_CS]	= GDT_ENTRY_INIT(0xc0fa, 0, 0xfffff),
-	[GDT_ENTRY_DEFAULT_USER_DS]	= GDT_ENTRY_INIT(0xc0f2, 0, 0xfffff),
-	
-	
-	[GDT_ENTRY_PNPBIOS_CS32]	= GDT_ENTRY_INIT(0x409a, 0, 0xffff),
-	
-	[GDT_ENTRY_PNPBIOS_CS16]	= GDT_ENTRY_INIT(0x009a, 0, 0xffff),
-	
-	[GDT_ENTRY_PNPBIOS_DS]		= GDT_ENTRY_INIT(0x0092, 0, 0xffff),
-	
-	[GDT_ENTRY_PNPBIOS_TS1]		= GDT_ENTRY_INIT(0x0092, 0, 0),
-	
-	[GDT_ENTRY_PNPBIOS_TS2]		= GDT_ENTRY_INIT(0x0092, 0, 0),
-	
-	
-	[GDT_ENTRY_APMBIOS_BASE]	= GDT_ENTRY_INIT(0x409a, 0, 0xffff),
-	
-	[GDT_ENTRY_APMBIOS_BASE+1]	= GDT_ENTRY_INIT(0x009a, 0, 0xffff),
-	
-	[GDT_ENTRY_APMBIOS_BASE+2]	= GDT_ENTRY_INIT(0x4092, 0, 0xffff),
+DEFINE_PER_CPU_PAGE_ALIGNED(
+	struct gdt_page,
+	gdt_page) = { .gdt = {
+			      [GDT_ENTRY_KERNEL_CS] = GDT_ENTRY_INIT(0xc09a, 0,
+								     0xfffff),
+			      [GDT_ENTRY_KERNEL_DS] = GDT_ENTRY_INIT(0xc092, 0,
+								     0xfffff),
+			      [GDT_ENTRY_DEFAULT_USER_CS] =
+				      GDT_ENTRY_INIT(0xc0fa, 0, 0xfffff),
+			      [GDT_ENTRY_DEFAULT_USER_DS] =
+				      GDT_ENTRY_INIT(0xc0f2, 0, 0xfffff),
 
-	[GDT_ENTRY_ESPFIX_SS]		= GDT_ENTRY_INIT(0xc092, 0, 0xfffff),
-	[GDT_ENTRY_PERCPU]		= GDT_ENTRY_INIT(0xc092, 0, 0xfffff),
-} };
+			      [GDT_ENTRY_PNPBIOS_CS32] = GDT_ENTRY_INIT(0x409a,
+									0,
+									0xffff),
 
+			      [GDT_ENTRY_PNPBIOS_CS16] = GDT_ENTRY_INIT(0x009a,
+									0,
+									0xffff),
 
+			      [GDT_ENTRY_PNPBIOS_DS] = GDT_ENTRY_INIT(0x0092, 0,
+								      0xffff),
+
+			      [GDT_ENTRY_PNPBIOS_TS1] = GDT_ENTRY_INIT(0x0092,
+								       0, 0),
+
+			      [GDT_ENTRY_PNPBIOS_TS2] = GDT_ENTRY_INIT(0x0092,
+								       0, 0),
+
+			      [GDT_ENTRY_APMBIOS_BASE] = GDT_ENTRY_INIT(0x409a,
+									0,
+									0xffff),
+
+			      [GDT_ENTRY_APMBIOS_BASE +
+				      1] = GDT_ENTRY_INIT(0x009a, 0, 0xffff),
+
+			      [GDT_ENTRY_APMBIOS_BASE +
+				      2] = GDT_ENTRY_INIT(0x4092, 0, 0xffff),
+
+			      [GDT_ENTRY_ESPFIX_SS] = GDT_ENTRY_INIT(0xc092, 0,
+								     0xfffff),
+			      [GDT_ENTRY_PERCPU] = GDT_ENTRY_INIT(0xc092, 0,
+								  0xfffff),
+		      } };
 
 static inline int flag_is_changeable_p(u32 flag)
 {
 	u32 f1, f2;
 
-	asm volatile ("pushfl		\n\t"
-		      "pushfl		\n\t"
-		      "popl %0		\n\t"
-		      "movl %0, %1	\n\t"
-		      "xorl %2, %0	\n\t"
-		      "pushl %0		\n\t"
-		      "popfl		\n\t"
-		      "pushfl		\n\t"
-		      "popl %0		\n\t"
-		      "popfl		\n\t"
+	asm volatile("pushfl		\n\t"
+		     "pushfl		\n\t"
+		     "popl %0		\n\t"
+		     "movl %0, %1	\n\t"
+		     "xorl %2, %0	\n\t"
+		     "pushl %0		\n\t"
+		     "popfl		\n\t"
+		     "pushfl		\n\t"
+		     "popl %0		\n\t"
+		     "popfl		\n\t"
 
-		      : "=&r" (f1), "=&r" (f2)
-		      : "ir" (flag));
+		     : "=&r"(f1), "=&r"(f2)
+		     : "ir"(flag));
 
-	return ((f1^f2) & flag) != 0;
+	return ((f1 ^ f2) & flag) != 0;
 }
 
 int have_cpuid_p(void)
@@ -183,27 +166,13 @@ static __always_inline void setup_smap(struct cpuinfo_x86 *c)
 
 static __always_inline void setup_umip(struct cpuinfo_x86 *c)
 {
-	
-	if (!cpu_feature_enabled(X86_FEATURE_UMIP))
-		goto out;
-
-	if (!cpu_has(c, X86_FEATURE_UMIP))
-		goto out;
-
-	cr4_set_bits(X86_CR4_UMIP);
-
-	pr_info_once("x86/cpu: User Mode Instruction Prevention (UMIP) activated\n");
-
-	return;
-
-out:
-	
+	/* X86_FEATURE_UMIP is disabled */
 	cr4_clear_bits(X86_CR4_UMIP);
 }
 
-static const unsigned long cr4_pinned_mask =
-	X86_CR4_SMEP | X86_CR4_SMAP | X86_CR4_UMIP |
-	X86_CR4_FSGSBASE | X86_CR4_CET;
+static const unsigned long cr4_pinned_mask = X86_CR4_SMEP | X86_CR4_SMAP |
+					     X86_CR4_UMIP | X86_CR4_FSGSBASE |
+					     X86_CR4_CET;
 static DEFINE_STATIC_KEY_FALSE_RO(cr_pinning);
 static unsigned long cr4_pinned_bits __ro_after_init;
 
@@ -212,7 +181,7 @@ void native_write_cr0(unsigned long val)
 	unsigned long bits_missing = 0;
 
 set_register:
-	asm volatile("mov %0,%%cr0": "+r" (val) : : "memory");
+	asm volatile("mov %0,%%cr0" : "+r"(val) : : "memory");
 
 	if (static_branch_likely(&cr_pinning)) {
 		if (unlikely((val & X86_CR0_WP) != X86_CR0_WP)) {
@@ -220,7 +189,7 @@ set_register:
 			val |= bits_missing;
 			goto set_register;
 		}
-		
+
 		WARN_ONCE(bits_missing, "CR0 WP bit went missing!?\n");
 	}
 }
@@ -230,27 +199,24 @@ void __no_profile native_write_cr4(unsigned long val)
 	unsigned long bits_changed = 0;
 
 set_register:
-	asm volatile("mov %0,%%cr4": "+r" (val) : : "memory");
+	asm volatile("mov %0,%%cr4" : "+r"(val) : : "memory");
 
 	if (static_branch_likely(&cr_pinning)) {
 		if (unlikely((val & cr4_pinned_mask) != cr4_pinned_bits)) {
-			bits_changed = (val & cr4_pinned_mask) ^ cr4_pinned_bits;
+			bits_changed = (val & cr4_pinned_mask) ^
+				       cr4_pinned_bits;
 			val = (val & ~cr4_pinned_mask) | cr4_pinned_bits;
 			goto set_register;
 		}
-		
+
 		WARN_ONCE(bits_changed, "pinned CR4 bits changed: 0x%lx!?\n",
 			  bits_changed);
 	}
 }
-#if IS_MODULE(CONFIG_LKDTM)
-#endif
 
 void cr4_update_irqsoff(unsigned long set, unsigned long clear)
 {
 	unsigned long newval, cr4 = this_cpu_read(cpu_tlbstate.cr4);
-
-	lockdep_assert_irqs_disabled();
 
 	newval = (cr4 & ~clear) | set;
 	if (newval != cr4) {
@@ -264,19 +230,7 @@ unsigned long cr4_read_shadow(void)
 	return this_cpu_read(cpu_tlbstate.cr4);
 }
 
-void cr4_init(void)
-{
-	unsigned long cr4 = __read_cr4();
-
-	if (boot_cpu_has(X86_FEATURE_PCID))
-		cr4 |= X86_CR4_PCIDE;
-	if (static_branch_likely(&cr_pinning))
-		cr4 = (cr4 & ~cr4_pinned_mask) | cr4_pinned_bits;
-
-	__write_cr4(cr4);
-
-	this_cpu_write(cpu_tlbstate.cr4, cr4);
-}
+/* cr4_init removed - never called */
 
 static void __init setup_cr_pinning(void)
 {
@@ -284,55 +238,17 @@ static void __init setup_cr_pinning(void)
 	static_key_enable(&cr_pinning.key);
 }
 
-
-static bool pku_disabled;
-
-static __always_inline void setup_pku(struct cpuinfo_x86 *c)
-{
-	if (c == &boot_cpu_data) {
-		if (pku_disabled || !cpu_feature_enabled(X86_FEATURE_PKU))
-			return;
-		
-		setup_force_cpu_cap(X86_FEATURE_OSPKE);
-
-	} else if (!cpu_feature_enabled(X86_FEATURE_OSPKE)) {
-		return;
-	}
-
-	cr4_set_bits(X86_CR4_PKE);
-	
-	pkru_write_default();
-}
-
-static __always_inline void setup_cet(struct cpuinfo_x86 *c)
-{
-	u64 msr = CET_ENDBR_EN;
-
-	if (!HAS_KERNEL_IBT ||
-	    !cpu_feature_enabled(X86_FEATURE_IBT))
-		return;
-
-	wrmsrl(MSR_IA32_S_CET, msr);
-	cr4_set_bits(X86_CR4_CET);
-
-	if (!ibt_selftest()) {
-		pr_err("IBT selftest: Failed!\n");
-		setup_clear_cpu_cap(X86_FEATURE_IBT);
-		return;
-	}
-}
-
+/* setup_pku, setup_cet removed - empty functions, features disabled */
 
 struct cpuid_dependent_feature {
 	u32 feature;
 	u32 level;
 };
 
-static const struct cpuid_dependent_feature
-cpuid_dependent_features[] = {
-	{ X86_FEATURE_MWAIT,		0x00000005 },
-	{ X86_FEATURE_DCA,		0x00000009 },
-	{ X86_FEATURE_XSAVE,		0x0000000d },
+static const struct cpuid_dependent_feature cpuid_dependent_features[] = {
+	{ X86_FEATURE_MWAIT, 0x00000005 },
+	{ X86_FEATURE_DCA, 0x00000009 },
+	{ X86_FEATURE_XSAVE, 0x0000000d },
 	{ 0, 0 }
 };
 
@@ -341,43 +257,25 @@ static void filter_cpuid_features(struct cpuinfo_x86 *c, bool warn)
 	const struct cpuid_dependent_feature *df;
 
 	for (df = cpuid_dependent_features; df->feature; df++) {
-
 		if (!cpu_has(c, df->feature))
 			continue;
-		
-		if (!((s32)df->level < 0 ?
-		     (u32)df->level > (u32)c->extended_cpuid_level :
-		     (s32)df->level > (s32)c->cpuid_level))
+
+		if (!((s32)df->level<0 ? (u32)df->level >
+						     (u32)c->extended_cpuid_level :
+					 (s32)df->level>(s32) c->cpuid_level))
 			continue;
 
 		clear_cpu_cap(c, df->feature);
 		if (!warn)
 			continue;
 
-		pr_warn("CPU: CPU feature " X86_CAP_FMT " disabled, no CPUID level 0x%x\n",
+		pr_warn("CPU: CPU feature " X86_CAP_FMT
+			" disabled, no CPUID level 0x%x\n",
 			x86_cap_flag(df->feature), df->level);
 	}
 }
 
-static const char *table_lookup_model(struct cpuinfo_x86 *c)
-{
-	const struct legacy_cpu_model_info *info;
-
-	if (c->x86_model >= 16)
-		return NULL;	
-
-	if (!this_cpu)
-		return NULL;
-
-	info = this_cpu->legacy_models;
-
-	while (info->family) {
-		if (info->family == c->x86)
-			return info->model_names[c->x86_model];
-		info++;
-	}
-	return NULL;		
-}
+/* table_lookup_model removed - x86_model_id is never read */
 
 __u32 cpu_caps_cleared[NCAPINTS + NBUGINTS] __aligned(sizeof(unsigned long));
 __u32 cpu_caps_set[NCAPINTS + NBUGINTS] __aligned(sizeof(unsigned long));
@@ -409,55 +307,16 @@ void load_fixmap_gdt(int cpu)
 
 void switch_to_new_gdt(int cpu)
 {
-	
 	load_direct_gdt(cpu);
-	
+
 	load_percpu_segment(cpu);
 }
 
 static const struct cpu_dev *cpu_devs[X86_VENDOR_NUM] = {};
 
-static void get_model_name(struct cpuinfo_x86 *c)
-{
-	unsigned int *v;
-	char *p, *q, *s;
+/* get_model_name removed - x86_model_id is never read */
 
-	if (c->extended_cpuid_level < 0x80000004)
-		return;
-
-	v = (unsigned int *)c->x86_model_id;
-	cpuid(0x80000002, &v[0], &v[1], &v[2], &v[3]);
-	cpuid(0x80000003, &v[4], &v[5], &v[6], &v[7]);
-	cpuid(0x80000004, &v[8], &v[9], &v[10], &v[11]);
-	c->x86_model_id[48] = 0;
-
-	p = q = s = &c->x86_model_id[0];
-
-	while (*p == ' ')
-		p++;
-
-	while (*p) {
-		
-		if (!isspace(*p))
-			s = q;
-
-		*q++ = *p++;
-	}
-
-	*(s + 1) = '\0';
-}
-
-/* Stub: detect_num_cpu_cores not called in minimal kernel */
-void detect_num_cpu_cores(struct cpuinfo_x86 *c)
-{
-	c->x86_max_cores = 1;
-}
-
-/* Stub: cpu_detect_cache_sizes not called in minimal kernel */
-void cpu_detect_cache_sizes(struct cpuinfo_x86 *c)
-{
-	c->x86_cache_size = 0;
-}
+/* detect_num_cpu_cores, cpu_detect_cache_sizes removed - never called */
 
 static void get_cpu_vendor(struct cpuinfo_x86 *c)
 {
@@ -471,15 +330,15 @@ static void get_cpu_vendor(struct cpuinfo_x86 *c)
 		if (!strcmp(v, cpu_devs[i]->c_ident[0]) ||
 		    (cpu_devs[i]->c_ident[1] &&
 		     !strcmp(v, cpu_devs[i]->c_ident[1]))) {
-
 			this_cpu = cpu_devs[i];
 			c->x86_vendor = this_cpu->c_x86_vendor;
 			return;
 		}
 	}
 
-	pr_err_once("CPU: vendor_id '%s' unknown, using generic init.\n" \
-		    "CPU: Your system may be unstable.\n", v);
+	pr_err_once("CPU: vendor_id '%s' unknown, using generic init.\n"
+		    "CPU: Your system may be unstable.\n",
+		    v);
 
 	c->x86_vendor = X86_VENDOR_UNKNOWN;
 	this_cpu = &default_cpu;
@@ -487,23 +346,22 @@ static void get_cpu_vendor(struct cpuinfo_x86 *c)
 
 void cpu_detect(struct cpuinfo_x86 *c)
 {
-	
 	cpuid(0x00000000, (unsigned int *)&c->cpuid_level,
 	      (unsigned int *)&c->x86_vendor_id[0],
 	      (unsigned int *)&c->x86_vendor_id[8],
 	      (unsigned int *)&c->x86_vendor_id[4]);
 
 	c->x86 = 4;
-	
+
 	if (c->cpuid_level >= 0x00000001) {
 		u32 junk, tfms, cap0, misc;
 
 		cpuid(0x00000001, &tfms, &misc, &junk, &cap0);
-		c->x86		= x86_family(tfms);
-		c->x86_model	= x86_model(tfms);
-		c->x86_stepping	= x86_stepping(tfms);
+		c->x86 = x86_family(tfms);
+		c->x86_model = x86_model(tfms);
+		c->x86_stepping = x86_stepping(tfms);
 
-		if (cap0 & (1<<19)) {
+		if (cap0 & (1 << 19)) {
 			c->x86_clflush_size = ((misc >> 8) & 0xff) * 8;
 			c->x86_cache_alignment = c->x86_clflush_size;
 		}
@@ -573,7 +431,7 @@ void get_cpu_cap(struct cpuinfo_x86 *c)
 		cpuid(0x80000007, &eax, &ebx, &ecx, &edx);
 
 		c->x86_capability[CPUID_8000_0007_EBX] = ebx;
-		c->x86_power = edx;
+		/* c->x86_power removed - never read */
 	}
 
 	if (c->extended_cpuid_level >= 0x80000008) {
@@ -587,7 +445,7 @@ void get_cpu_cap(struct cpuinfo_x86 *c)
 	if (c->extended_cpuid_level >= 0x8000001f)
 		c->x86_capability[CPUID_8000_001F_EAX] = cpuid_eax(0x8000001f);
 
-	init_scattered_cpuid_features(c);
+	/* init_scattered_cpuid_features removed - was empty stub */
 	init_speculation_control(c);
 
 	apply_forced_caps(c);
@@ -602,8 +460,7 @@ void get_cpu_address_sizes(struct cpuinfo_x86 *c)
 
 		c->x86_virt_bits = (eax >> 8) & 0xff;
 		c->x86_phys_bits = eax & 0xff;
-	}
-	else if (cpu_has(c, X86_FEATURE_PAE) || cpu_has(c, X86_FEATURE_PSE36))
+	} else if (cpu_has(c, X86_FEATURE_PAE) || cpu_has(c, X86_FEATURE_PSE36))
 		c->x86_phys_bits = 36;
 	c->x86_cache_bits = c->x86_phys_bits;
 }
@@ -628,16 +485,12 @@ static void identify_cpu_without_cpuid(struct cpuinfo_x86 *c)
 		}
 }
 
-
 static void __init cpu_set_bug_bits(struct cpuinfo_x86 *c)
 {
 	/* Stub: CPU bug detection not needed for minimal kernel */
 }
 
-static void detect_nopl(void)
-{
-	setup_clear_cpu_cap(X86_FEATURE_NOPL);
-}
+/* detect_nopl inlined into early_identify_cpu */
 
 static void __init cpu_parse_early_param(void)
 {
@@ -668,7 +521,7 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c)
 		if (this_cpu->c_early_init)
 			this_cpu->c_early_init(c);
 
-		c->cpu_index = 0;
+		/* c->cpu_index removed - never read */
 		filter_cpuid_features(c, false);
 
 		if (this_cpu->c_bsp_init)
@@ -681,7 +534,7 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c)
 
 	cpu_set_bug_bits(c);
 
-	sld_setup(c);
+	/* sld_setup removed - was empty stub in intel.c */
 
 	fpu__init_system(c);
 
@@ -692,7 +545,7 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c)
 	if (!pgtable_l5_enabled())
 		setup_clear_cpu_cap(X86_FEATURE_LA57);
 
-	detect_nopl();
+	setup_clear_cpu_cap(X86_FEATURE_NOPL);
 }
 
 void __init early_cpu_init(void)
@@ -707,7 +560,6 @@ void __init early_cpu_init(void)
 			break;
 		cpu_devs[count] = cpudev;
 		count++;
-
 	}
 	early_identify_cpu(&boot_cpu_data);
 }
@@ -730,13 +582,9 @@ static void generic_identify(struct cpuinfo_x86 *c)
 
 	get_cpu_address_sizes(c);
 
-	if (c->cpuid_level >= 0x00000001) {
-		c->initial_apicid = (cpuid_ebx(1) >> 24) & 0xFF;
-		c->apicid = c->initial_apicid;
-		c->phys_proc_id = c->initial_apicid;
-	}
+	/* c->initial_apicid, c->apicid, c->phys_proc_id removed - never read */
 
-	get_model_name(c); 
+	/* get_model_name removed - x86_model_id is never read */
 
 	set_cpu_bug(c, X86_BUG_ESPFIX);
 }
@@ -746,15 +594,12 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 	int i;
 
 	c->loops_per_jiffy = loops_per_jiffy;
-	c->x86_cache_size = 0;
+	/* c->x86_cache_size removed - never read */
 	c->x86_vendor = X86_VENDOR_UNKNOWN;
-	c->x86_model = c->x86_stepping = 0;	
-	c->x86_vendor_id[0] = '\0'; 
-	c->x86_model_id[0] = '\0';  
-	c->x86_max_cores = 1;
-	c->x86_coreid_bits = 0;
-	c->cu_id = 0xff;
-	c->cpuid_level = -1;	
+	c->x86_model = c->x86_stepping = 0;
+	c->x86_vendor_id[0] = '\0';
+	/* c->x86_model_id, c->x86_max_cores, c->x86_coreid_bits, c->cu_id removed - never read */
+	c->cpuid_level = -1;
 	c->x86_clflush_size = 32;
 	c->x86_phys_bits = 32;
 	c->x86_virt_bits = 32;
@@ -784,25 +629,12 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 
 	filter_cpuid_features(c, true);
 
-	if (!c->x86_model_id[0]) {
-		const char *p;
-		p = table_lookup_model(c);
-		if (p)
-			strcpy(c->x86_model_id, p);
-		else
-			
-			sprintf(c->x86_model_id, "%02x/%02x",
-				c->x86, c->x86_model);
-	}
+	/* x86_model_id population removed - field is never read */
 
 	x86_init_rdrand(c);
-	setup_pku(c);
-	setup_cet(c);
-
 	apply_forced_caps(c);
 
 	if (c != &boot_cpu_data) {
-		
 		for (i = 0; i < NCAPINTS; i++)
 			boot_cpu_data.x86_capability[i] &= c->x86_capability[i];
 
@@ -810,12 +642,7 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 			c->x86_capability[i] |= boot_cpu_data.x86_capability[i];
 	}
 
-	ppin_init(c);
-
-	mcheck_cpu_init(c);
-
 	select_idle_routine(c);
-
 }
 
 void enable_sep_cpu(void)
@@ -831,7 +658,8 @@ void enable_sep_cpu(void)
 
 	tss->x86_tss.ss1 = __KERNEL_CS;
 	wrmsr(MSR_IA32_SYSENTER_CS, tss->x86_tss.ss1, 0);
-	wrmsr(MSR_IA32_SYSENTER_ESP, (unsigned long)(cpu_entry_stack(cpu) + 1), 0);
+	wrmsr(MSR_IA32_SYSENTER_ESP, (unsigned long)(cpu_entry_stack(cpu) + 1),
+	      0);
 	wrmsr(MSR_IA32_SYSENTER_EIP, (unsigned long)entry_SYSENTER_32, 0);
 
 	put_cpu();
@@ -840,29 +668,26 @@ void enable_sep_cpu(void)
 void __init identify_boot_cpu(void)
 {
 	identify_cpu(&boot_cpu_data);
-	if (HAS_KERNEL_IBT && cpu_feature_enabled(X86_FEATURE_IBT))
-		pr_info("CET detected: Indirect Branch Tracking enabled\n");
+	/* HAS_KERNEL_IBT is 0 */
 	sysenter_setup();
 	enable_sep_cpu();
 	/* cpu_detect_tlb removed - TLB info never used */
 	setup_cr_pinning();
-
-	tsx_init();
+	/* tsx_init removed - was empty stub */
 }
-
 
 DEFINE_PER_CPU(struct task_struct *, current_task) = &init_task;
 DEFINE_PER_CPU(int, __preempt_count) = INIT_PREEMPT_COUNT;
 
-DEFINE_PER_CPU(unsigned long, cpu_current_top_of_stack) =
-	(unsigned long)&init_thread_union + THREAD_SIZE;
+DEFINE_PER_CPU(unsigned long,
+	       cpu_current_top_of_stack) = (unsigned long)&init_thread_union
+					   + THREAD_SIZE;
 
 static void clear_all_debug_regs(void)
 {
 	int i;
 
 	for (i = 0; i < 8; i++) {
-		
 		if ((i == 4) || (i == 5))
 			continue;
 
@@ -872,23 +697,11 @@ static void clear_all_debug_regs(void)
 
 #define dbg_restore_debug_regs()
 
-static void wait_for_master_cpu(int cpu)
-{
-}
-
-static inline void setup_getcpu(int cpu) { }
-
-static inline void ucode_cpu_init(int cpu)
-{
-	show_ucode_info_early();
-}
-
-static inline void tss_setup_ist(struct tss_struct *tss) { }
+/* wait_for_master_cpu, setup_getcpu, ucode_cpu_init, tss_setup_ist removed - empty */
 
 static inline void tss_setup_io_bitmap(struct tss_struct *tss)
 {
 	tss->x86_tss.io_bitmap_base = IO_BITMAP_OFFSET_INVALID;
-
 }
 
 void cpu_init_exception_handling(void)
@@ -896,16 +709,10 @@ void cpu_init_exception_handling(void)
 	struct tss_struct *tss = this_cpu_ptr(&cpu_tss_rw);
 	int cpu = raw_smp_processor_id();
 
-	setup_getcpu(cpu);
-
-	tss_setup_ist(tss);
 	tss_setup_io_bitmap(tss);
 	set_tss_desc(cpu, &get_cpu_entry_area(cpu)->tss.x86_tss);
 
 	load_TR_desc();
-
-	setup_ghcb();
-
 	load_current_idt();
 }
 
@@ -914,27 +721,14 @@ void cpu_init(void)
 	struct task_struct *cur = current;
 	int cpu = raw_smp_processor_id();
 
-	wait_for_master_cpu(cpu);
-
-	ucode_cpu_init(cpu);
-
-	if (IS_ENABLED(CONFIG_X86_64) || cpu_feature_enabled(X86_FEATURE_VME) ||
+	/* X86_32: check VME/TSC/DE features */
+	if (cpu_feature_enabled(X86_FEATURE_VME) ||
 	    boot_cpu_has(X86_FEATURE_TSC) || boot_cpu_has(X86_FEATURE_DE))
-		cr4_clear_bits(X86_CR4_VME|X86_CR4_PVI|X86_CR4_TSD|X86_CR4_DE);
+		cr4_clear_bits(X86_CR4_VME | X86_CR4_PVI | X86_CR4_TSD |
+			       X86_CR4_DE);
 
 	switch_to_new_gdt(cpu);
-
-	if (IS_ENABLED(CONFIG_X86_64)) {
-		loadsegment(fs, 0);
-		memset(cur->thread.tls_array, 0, GDT_ENTRY_TLS_ENTRIES * 8);
-		syscall_init();
-
-		wrmsrl(MSR_FS_BASE, 0);
-		wrmsrl(MSR_KERNEL_GS_BASE, 0);
-		barrier();
-
-		x2apic_setup();
-	}
+	/* X86_64 block removed */
 
 	mmgrab(&init_mm);
 	cur->active_mm = &init_mm;
@@ -953,9 +747,5 @@ void cpu_init(void)
 
 	fpu__init_cpu();
 
-	if (is_uv_system())
-		uv_cpu_init();
-
 	load_fixmap_gdt(cpu);
 }
-

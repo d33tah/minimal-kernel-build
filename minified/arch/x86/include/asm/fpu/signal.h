@@ -13,20 +13,13 @@
 # define ia32_setup_frame	__setup_frame
 # define ia32_setup_rt_frame	__setup_rt_frame
 
-extern void convert_from_fxsr(struct user_i387_ia32_struct *env,
-			      struct task_struct *tsk);
-extern void convert_to_fxsr(struct fxregs_state *fxsave,
-			    const struct user_i387_ia32_struct *env);
+/* convert_from_fxsr, convert_to_fxsr removed - only caller was signal.c which is now stubbed */
 
-unsigned long
-fpu__alloc_mathframe(unsigned long sp, int ia32_frame,
-		     unsigned long *buf_fx, unsigned long *size);
+/* fpu__alloc_mathframe removed - never called */
 
 unsigned long fpu__get_fpstate_size(void);
 
-extern bool copy_fpstate_to_sigframe(void __user *buf, void __user *fp, int size);
-extern void fpu__clear_user_states(struct fpu *fpu);
-extern bool fpu__restore_sig(void __user *buf, int ia32_frame);
+/* copy_fpstate_to_sigframe, fpu__restore_sig, fpu__clear_user_states removed - never called */
 
 extern void restore_fpregs_from_fpstate(struct fpstate *fpstate, u64 mask);
 #endif  

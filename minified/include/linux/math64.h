@@ -22,9 +22,7 @@ __iter_div_u64_rem(u64 dividend, u32 divisor, u64 *remainder)
 	return ret;
 }
 
-/* BITS_PER_LONG == 32 (i386) */
-#define div64_long(x, y) div_s64((x), (y))
-#define div64_ul(x, y)   div_u64((x), (y))
+/* div64_long, div64_ul removed - never used */
 
 #ifndef div_u64_rem
 static inline u64 div_u64_rem(u64 dividend, u32 divisor, u32 *remainder)
@@ -38,17 +36,13 @@ static inline u64 div_u64_rem(u64 dividend, u32 divisor, u32 *remainder)
 extern s64 div_s64_rem(s64 dividend, s32 divisor, s32 *remainder);
 #endif
 
-#ifndef div64_u64_rem
-extern u64 div64_u64_rem(u64 dividend, u64 divisor, u64 *remainder);
-#endif
+/* div64_u64_rem removed - never called */
 
 #ifndef div64_u64
 extern u64 div64_u64(u64 dividend, u64 divisor);
 #endif
 
-#ifndef div64_s64
-extern s64 div64_s64(s64 dividend, s64 divisor);
-#endif
+/* div64_s64 removed - never called */
 
 #ifndef div_u64
 static inline u64 div_u64(u64 dividend, u32 divisor)
@@ -66,7 +60,7 @@ static inline s64 div_s64(s64 dividend, s32 divisor)
 }
 #endif
 
-u32 iter_div_u64_rem(u64 dividend, u32 divisor, u64 *remainder);
+/* iter_div_u64_rem declaration removed - inline version used */
 
 #ifndef mul_u32_u32
 static inline u64 mul_u32_u32(u32 a, u32 b)
@@ -74,24 +68,6 @@ static inline u64 mul_u32_u32(u32 a, u32 b)
 	return (u64)a * b;
 }
 #endif
-
-#if defined(CONFIG_ARCH_SUPPORTS_INT128) && defined(__SIZEOF_INT128__)
-
-#ifndef mul_u64_u32_shr
-static inline u64 mul_u64_u32_shr(u64 a, u32 mul, unsigned int shift)
-{
-	return (u64)(((unsigned __int128)a * mul) >> shift);
-}
-#endif  
-
-#ifndef mul_u64_u64_shr
-static inline u64 mul_u64_u64_shr(u64 a, u64 mul, unsigned int shift)
-{
-	return (u64)(((unsigned __int128)a * mul) >> shift);
-}
-#endif  
-
-#else
 
 #ifndef mul_u64_u32_shr
 static inline u64 mul_u64_u32_shr(u64 a, u32 mul, unsigned int shift)
@@ -110,107 +86,6 @@ static inline u64 mul_u64_u32_shr(u64 a, u32 mul, unsigned int shift)
 }
 #endif  
 
-#ifndef mul_u64_u64_shr
-static inline u64 mul_u64_u64_shr(u64 a, u64 b, unsigned int shift)
-{
-	union {
-		u64 ll;
-		struct {
-#ifdef __BIG_ENDIAN
-			u32 high, low;
-#else
-			u32 low, high;
-#endif
-		} l;
-	} rl, rm, rn, rh, a0, b0;
-	u64 c;
+/* mul_u64_u64_shr removed - no callers */
 
-	a0.ll = a;
-	b0.ll = b;
-
-	rl.ll = mul_u32_u32(a0.l.low, b0.l.low);
-	rm.ll = mul_u32_u32(a0.l.low, b0.l.high);
-	rn.ll = mul_u32_u32(a0.l.high, b0.l.low);
-	rh.ll = mul_u32_u32(a0.l.high, b0.l.high);
-
-	 
-	rl.l.high = c = (u64)rl.l.high + rm.l.low + rn.l.low;
-	rh.l.low = c = (c >> 32) + rm.l.high + rn.l.high + rh.l.low;
-	rh.l.high = (c >> 32) + rh.l.high;
-
-	 
-	if (shift == 0)
-		return rl.ll;
-	if (shift < 64)
-		return (rl.ll >> shift) | (rh.ll << (64 - shift));
-	return rh.ll >> (shift & 63);
-}
-#endif  
-
-#endif
-
-#ifndef mul_s64_u64_shr
-static inline u64 mul_s64_u64_shr(s64 a, u64 b, unsigned int shift)
-{
-	u64 ret;
-
-	 
-	ret = mul_u64_u64_shr(abs(a), b, shift);
-
-	if (a < 0)
-		ret = -((s64) ret);
-
-	return ret;
-}
-#endif  
-
-#ifndef mul_u64_u32_div
-static inline u64 mul_u64_u32_div(u64 a, u32 mul, u32 divisor)
-{
-	union {
-		u64 ll;
-		struct {
-#ifdef __BIG_ENDIAN
-			u32 high, low;
-#else
-			u32 low, high;
-#endif
-		} l;
-	} u, rl, rh;
-
-	u.ll = a;
-	rl.ll = mul_u32_u32(u.l.low, mul);
-	rh.ll = mul_u32_u32(u.l.high, mul) + rl.l.high;
-
-	 
-	rl.l.high = do_div(rh.ll, divisor);
-
-	 
-	do_div(rl.ll, divisor);
-
-	rl.l.high = rh.l.low;
-	return rl.ll;
-}
-#endif  
-
-u64 mul_u64_u64_div_u64(u64 a, u64 mul, u64 div);
-
-#define DIV64_U64_ROUND_UP(ll, d)	\
-	({ u64 _tmp = (d); div64_u64((ll) + _tmp - 1, _tmp); })
-
-#define DIV64_U64_ROUND_CLOSEST(dividend, divisor)	\
-	({ u64 _tmp = (divisor); div64_u64((dividend) + _tmp / 2, _tmp); })
-
-#define DIV_U64_ROUND_CLOSEST(dividend, divisor)	\
-	({ u32 _tmp = (divisor); div_u64((u64)(dividend) + _tmp / 2, _tmp); })
-
-#define DIV_S64_ROUND_CLOSEST(dividend, divisor)(	\
-{							\
-	s64 __x = (dividend);				\
-	s32 __d = (divisor);				\
-	((__x > 0) == (__d > 0)) ?			\
-		div_s64((__x + (__d / 2)), __d) :	\
-		div_s64((__x - (__d / 2)), __d);	\
-}							\
-)
 #endif  

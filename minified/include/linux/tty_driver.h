@@ -8,45 +8,27 @@
 #include <linux/cdev.h>
 #include <linux/types.h>
 #include <asm/termios.h>
-#include <linux/seq_file.h>
+/* seq_file.h removed - header is empty */
 
 struct tty_struct;
 struct tty_driver;
-struct serial_icounter_struct;
-struct serial_struct;
 
 struct tty_operations {
-	struct tty_struct * (*lookup)(struct tty_driver *driver,
-			struct file *filp, int idx);
-	int  (*install)(struct tty_driver *driver, struct tty_struct *tty);
+	struct tty_struct *(*lookup)(struct tty_driver *driver, struct file *filp, int idx);
+	int (*install)(struct tty_driver *driver, struct tty_struct *tty);
 	void (*remove)(struct tty_driver *driver, struct tty_struct *tty);
-	int  (*open)(struct tty_struct * tty, struct file * filp);
-	void (*close)(struct tty_struct * tty, struct file * filp);
+	int (*open)(struct tty_struct *tty, struct file *filp);
+	void (*close)(struct tty_struct *tty, struct file *filp);
 	void (*shutdown)(struct tty_struct *tty);
 	void (*cleanup)(struct tty_struct *tty);
-	int  (*write)(struct tty_struct * tty,
-		      const unsigned char *buf, int count);
-	int  (*put_char)(struct tty_struct *tty, unsigned char ch);
+	int (*write)(struct tty_struct *tty, const unsigned char *buf, int count);
+	/* put_char removed - never called */
 	void (*flush_chars)(struct tty_struct *tty);
-	unsigned int (*write_room)(struct tty_struct *tty);
-	unsigned int (*chars_in_buffer)(struct tty_struct *tty);
-	int  (*ioctl)(struct tty_struct *tty,
-		    unsigned int cmd, unsigned long arg);
-	long (*compat_ioctl)(struct tty_struct *tty,
-			     unsigned int cmd, unsigned long arg);
-	void (*set_termios)(struct tty_struct *tty, struct ktermios * old);
-	void (*throttle)(struct tty_struct * tty);
-	void (*unthrottle)(struct tty_struct * tty);
-	void (*stop)(struct tty_struct *tty);
-	void (*start)(struct tty_struct *tty);
+	/* write_room, chars_in_buffer, ioctl, compat_ioctl, set_termios removed - never called */
+	/* throttle, unthrottle, stop, start removed - never called */
 	void (*hangup)(struct tty_struct *tty);
-	int (*break_ctl)(struct tty_struct *tty, int state);
-	void (*flush_buffer)(struct tty_struct *tty);
-	void (*set_ldisc)(struct tty_struct *tty);
-	void (*wait_until_sent)(struct tty_struct *tty, int timeout);
-	void (*send_xchar)(struct tty_struct *tty, char ch);
-	/* tiocmget, tiocmset, get_icount, get_serial, set_serial, show_fdinfo, proc_show removed - unused */
-	int (*resize)(struct tty_struct *tty, struct winsize *ws);
+	/* break_ctl, flush_buffer, set_ldisc, wait_until_sent, send_xchar, resize removed */
+	/* tiocmget, tiocmset, get_icount, get_serial, set_serial, show_fdinfo, proc_show removed */
 } __randomize_layout;
 
 struct tty_driver {
@@ -64,16 +46,11 @@ struct tty_driver {
 	short	subtype;
 	struct ktermios init_termios;
 	unsigned long	flags;
-	struct proc_dir_entry *proc_entry;
-	struct tty_driver *other;
+	/* proc_entry, other, driver_state removed - never used */
 
-	 
 	struct tty_struct **ttys;
 	struct tty_port **ports;
 	struct ktermios **termios;
-	void *driver_state;
-
-	 
 
 	const struct tty_operations *ops;
 	struct list_head tty_drivers;
@@ -83,7 +60,6 @@ extern struct list_head tty_drivers;
 
 struct tty_driver *__tty_alloc_driver(unsigned int lines, struct module *owner,
 		unsigned long flags);
-struct tty_driver *tty_find_polling_driver(char *name, int *line);
 
 void tty_driver_kref_put(struct tty_driver *driver);
 
@@ -109,30 +85,19 @@ static inline void tty_set_operations(struct tty_driver *driver,
 #define TTY_DRIVER_REAL_RAW		0x0004
 #define TTY_DRIVER_DYNAMIC_DEV		0x0008
 #define TTY_DRIVER_DEVPTS_MEM		0x0010
-#define TTY_DRIVER_HARDWARE_BREAK	0x0020
 #define TTY_DRIVER_DYNAMIC_ALLOC	0x0040
 #define TTY_DRIVER_UNNUMBERED_NODE	0x0080
 
-#define TTY_DRIVER_TYPE_SYSTEM		0x0001
 #define TTY_DRIVER_TYPE_CONSOLE		0x0002
-#define TTY_DRIVER_TYPE_SERIAL		0x0003
 #define TTY_DRIVER_TYPE_PTY		0x0004
-
-#define SYSTEM_TYPE_TTY			0x0001
 
 #define PTY_TYPE_MASTER			0x0001
 #define PTY_TYPE_SLAVE			0x0002
-
-#define SERIAL_TYPE_NORMAL	1
 
 int tty_register_driver(struct tty_driver *driver);
 struct device *tty_register_device(struct tty_driver *driver, unsigned index,
 		struct device *dev);
 struct device *tty_register_device_attr(struct tty_driver *driver,
-		unsigned index, struct device *device, void *drvdata,
-		const struct attribute_group **attr_grp);
-
-static inline void proc_tty_register_driver(struct tty_driver *d) {}
-static inline void proc_tty_unregister_driver(struct tty_driver *d) {}
+		unsigned index, struct device *device, void *drvdata);
 
 #endif  

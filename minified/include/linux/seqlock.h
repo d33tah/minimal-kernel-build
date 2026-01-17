@@ -17,8 +17,7 @@ typedef struct seqcount {
 static inline void __seqcount_init(seqcount_t *s, const char *name,
 					  struct lock_class_key *key)
 {
-	 
-	lockdep_init_map(&s->dep_map, name, key, 0);
+	/* lockdep_init_map removed - empty stub */
 	s->sequence = 0;
 }
 
@@ -58,38 +57,19 @@ __seqprop_##lockname##_ptr(seqcount_##lockname##_t *s)			\
 static __always_inline unsigned						\
 __seqprop_##lockname##_sequence(const seqcount_##lockname##_t *s)	\
 {									\
-	unsigned seq = READ_ONCE(s->seqcount.sequence);			\
-									\
-	if (!IS_ENABLED(CONFIG_PREEMPT_RT))				\
-		return seq;						\
-									\
-	if (preemptible && unlikely(seq & 1)) {				\
-		__SEQ_LOCK(lock_acquire);				\
-		__SEQ_LOCK(lockbase##_unlock(s->lock));			\
-									\
-		 							\
-		seq = READ_ONCE(s->seqcount.sequence);			\
-	}								\
-									\
-	return seq;							\
+	return READ_ONCE(s->seqcount.sequence);				\
 }									\
 									\
 static __always_inline bool						\
 __seqprop_##lockname##_preemptible(const seqcount_##lockname##_t *s)	\
 {									\
-	if (!IS_ENABLED(CONFIG_PREEMPT_RT))				\
-		return preemptible;					\
-									\
-	 		\
-	return false;							\
+	return preemptible;						\
 }									\
 									\
 static __always_inline void						\
 __seqprop_##lockname##_assert(const seqcount_##lockname##_t *s)		\
 {									\
-	__SEQ_LOCK(lockdep_assert_held(lockmember));			\
 }
-
 
 static inline seqcount_t *__seqprop_ptr(seqcount_t *s)
 {
@@ -108,15 +88,12 @@ static inline bool __seqprop_preemptible(const seqcount_t *s)
 
 static inline void __seqprop_assert(const seqcount_t *s)
 {
-	lockdep_assert_preemption_disabled();
 }
 
-#define __SEQ_RT	IS_ENABLED(CONFIG_PREEMPT_RT)
+#define __SEQ_RT	false
 
 SEQCOUNT_LOCKNAME(raw_spinlock, raw_spinlock_t,  false,    s->lock,        raw_spin, raw_spin_lock(s->lock))
 SEQCOUNT_LOCKNAME(spinlock,     spinlock_t,      __SEQ_RT, s->lock,        spin,     spin_lock(s->lock))
-SEQCOUNT_LOCKNAME(rwlock,       rwlock_t,        __SEQ_RT, s->lock,        read,     read_lock(s->lock))
-SEQCOUNT_LOCKNAME(mutex,        struct mutex,    true,     s->lock,        mutex,    mutex_lock(s->lock))
 
 
 #define SEQCOUNT_LOCKNAME_ZERO(seq_name, assoc_lock) {			\
@@ -133,9 +110,7 @@ SEQCOUNT_LOCKNAME(mutex,        struct mutex,    true,     s->lock,        mutex
 #define __seqprop(s, prop) _Generic(*(s),				\
 	seqcount_t:		__seqprop_##prop((void *)(s)),		\
 	__seqprop_case((s),	raw_spinlock,	prop),			\
-	__seqprop_case((s),	spinlock,	prop),			\
-	__seqprop_case((s),	rwlock,		prop),			\
-	__seqprop_case((s),	mutex,		prop))
+	__seqprop_case((s),	spinlock,	prop))
 
 #define seqprop_ptr(s)			__seqprop(s, ptr)
 #define seqprop_sequence(s)		__seqprop(s, sequence)
@@ -229,7 +204,7 @@ static inline void do_raw_write_seqcount_end(seqcount_t *s)
 static inline void do_write_seqcount_begin_nested(seqcount_t *s, int subclass)
 {
 	do_raw_write_seqcount_begin(s);
-	seqcount_acquire(&s->dep_map, subclass, 0, _RET_IP_);
+	/* seqcount_acquire removed - empty stub */
 }
 
 #define write_seqcount_begin(s)						\
@@ -257,19 +232,11 @@ do {									\
 
 static inline void do_write_seqcount_end(seqcount_t *s)
 {
-	seqcount_release(&s->dep_map, _RET_IP_);
+	/* seqcount_release removed - empty stub */
 	do_raw_write_seqcount_end(s);
 }
 
-#define raw_write_seqcount_barrier(s)					\
-	do_raw_write_seqcount_barrier(seqprop_ptr(s))
-
-static inline void do_raw_write_seqcount_barrier(seqcount_t *s)
-{
-	s->sequence++;
-	smp_wmb();
-	s->sequence++;
-}
+/* raw_write_seqcount_barrier and do_raw_write_seqcount_barrier removed - unused */
 
 #define write_seqcount_invalidate(s)					\
 	do_write_seqcount_invalidate(seqprop_ptr(s))

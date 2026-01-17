@@ -8,46 +8,7 @@
 #include <linux/srcu.h>
 #include <linux/rbtree.h>
 
-/* Inlined from interval_tree.h */
-struct interval_tree_node {
-	struct rb_node rb;
-	unsigned long start;
-	unsigned long last;
-	unsigned long __subtree_last;
-};
-extern void interval_tree_insert(struct interval_tree_node *node,
-		     struct rb_root_cached *root);
-extern void interval_tree_remove(struct interval_tree_node *node,
-		     struct rb_root_cached *root);
-extern struct interval_tree_node *interval_tree_iter_first(struct rb_root_cached *root,
-			 unsigned long start, unsigned long last);
-extern struct interval_tree_node *interval_tree_iter_next(struct interval_tree_node *node,
-			unsigned long start, unsigned long last);
-
-struct mmu_notifier_subscriptions;
-struct mmu_notifier;
-struct mmu_notifier_range;
-struct mmu_interval_notifier;
-
-enum mmu_notifier_event {
-	MMU_NOTIFY_UNMAP = 0,
-	MMU_NOTIFY_CLEAR,
-	MMU_NOTIFY_PROTECTION_VMA,
-	MMU_NOTIFY_PROTECTION_PAGE,
-	MMU_NOTIFY_SOFT_DIRTY,
-	MMU_NOTIFY_RELEASE,
-	MMU_NOTIFY_MIGRATE,
-	MMU_NOTIFY_EXCLUSIVE,
-};
-
-#define MMU_NOTIFIER_RANGE_BLOCKABLE (1 << 0)
-
-/* mmu_notifier_ops, mmu_notifier, mmu_interval_notifier_ops, mmu_interval_notifier - not used in minimal kernel */
-struct mmu_notifier_ops;
-struct mmu_notifier;
-struct mmu_interval_notifier_ops;
-struct mmu_interval_notifier;
-
+/* Most forward declarations removed - unused in minimal kernel */
 
 struct mmu_notifier_range {
 	unsigned long start;
@@ -96,10 +57,5 @@ static inline void mmu_notifier_subscriptions_init(struct mm_struct *mm)
 static inline void mmu_notifier_subscriptions_destroy(struct mm_struct *mm)
 {
 }
-
-#define ptep_clear_flush_young_notify ptep_clear_flush_young
-#define ptep_clear_young_notify ptep_test_and_clear_young
-#define	ptep_clear_flush_notify ptep_clear_flush
-#define set_pte_at_notify set_pte_at
 
 #endif  

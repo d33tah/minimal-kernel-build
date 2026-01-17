@@ -1,17 +1,12 @@
 
-#include <linux/ratelimit.h>
 #include <linux/string.h>
 #include <linux/mm.h>
 #include <linux/fs.h>
-#include <linux/fscrypt.h>
-#include <linux/fsnotify.h>
 #include <linux/slab.h>
 #include <linux/init.h>
 #include <linux/hash.h>
 #include <linux/cache.h>
-#include <linux/export.h>
 #include <linux/security.h>
-#include <linux/seqlock.h>
 #include <linux/memblock.h>
 #include <linux/bit_spinlock.h>
 #include <linux/rculist_bl.h>
@@ -22,7 +17,6 @@
 int sysctl_vfs_cache_pressure __read_mostly = 100;
 
 __cacheline_aligned_in_smp DEFINE_SEQLOCK(rename_lock);
-
 
 static struct kmem_cache *dentry_cache __read_mostly;
 
@@ -37,34 +31,25 @@ static inline struct hlist_bl_head *d_hash(unsigned int hash)
 	return dentry_hashtable + (hash >> d_hash_shift);
 }
 
-#define IN_LOOKUP_SHIFT 10
+#define IN_LOOKUP_SHIFT 4 /* Reduced from 10 for minimal boot */
 static struct hlist_bl_head in_lookup_hashtable[1 << IN_LOOKUP_SHIFT];
 
 static inline struct hlist_bl_head *in_lookup_hash(const struct dentry *parent,
-					unsigned int hash)
+						   unsigned int hash)
 {
-	hash += (unsigned long) parent / L1_CACHE_BYTES;
+	hash += (unsigned long)parent / L1_CACHE_BYTES;
 	return in_lookup_hashtable + hash_32(hash, IN_LOOKUP_SHIFT);
 }
 
-struct dentry_stat_t {
-	long nr_dentry;
-	long nr_unused;
-	long age_limit;		
-	long want_pages;	
-	long nr_negative;	
-	long dummy;		
-};
-
-static DEFINE_PER_CPU(long, nr_dentry);
-static DEFINE_PER_CPU(long, nr_dentry_unused);
-static DEFINE_PER_CPU(long, nr_dentry_negative);
+/* nr_dentry, nr_dentry_unused, nr_dentry_negative removed - only written, never read */
 
 #include <asm/word-at-a-time.h>
 
-static inline int dentry_string_cmp(const unsigned char *cs, const unsigned char *ct, unsigned tcount)
+static inline int dentry_cmp(const struct dentry *dentry,
+			     const unsigned char *ct, unsigned tcount)
 {
-	unsigned long a,b,mask;
+	const unsigned char *cs = READ_ONCE(dentry->d_name.name);
+	unsigned long a, b, mask;
 
 	for (;;) {
 		a = read_word_at_a_time(cs);
@@ -81,14 +66,6 @@ static inline int dentry_string_cmp(const unsigned char *cs, const unsigned char
 	}
 	mask = bytemask_from_count(tcount);
 	return unlikely(!!((a ^ b) & mask));
-}
-
-static inline int dentry_cmp(const struct dentry *dentry, const unsigned char *ct, unsigned tcount)
-{
-	
-	const unsigned char *cs = READ_ONCE(dentry->d_name.name);
-
-	return dentry_string_cmp(cs, ct, tcount);
 }
 
 struct external_name {
@@ -108,7 +85,7 @@ static void __d_free(struct rcu_head *head)
 {
 	struct dentry *dentry = container_of(head, struct dentry, d_u.d_rcu);
 
-	kmem_cache_free(dentry_cache, dentry); 
+	kmem_cache_free(dentry_cache, dentry);
 }
 
 static void __d_free_external(struct rcu_head *head)
@@ -136,101 +113,48 @@ static inline void __d_set_inode_and_type(struct dentry *dentry,
 	smp_store_release(&dentry->d_flags, flags);
 }
 
-static inline void __d_clear_type_and_inode(struct dentry *dentry)
+static void dentry_unlink_inode(struct dentry *dentry)
+	__releases(dentry->d_lock) __releases(dentry->d_inode->i_lock)
 {
-	unsigned flags = READ_ONCE(dentry->d_flags);
+	struct inode *inode = dentry->d_inode;
+	unsigned flags;
 
+	raw_write_seqcount_begin(&dentry->d_seq);
+	flags = READ_ONCE(dentry->d_flags);
 	flags &= ~(DCACHE_ENTRY_TYPE | DCACHE_FALLTHRU);
 	WRITE_ONCE(dentry->d_flags, flags);
 	dentry->d_inode = NULL;
-	if (dentry->d_flags & DCACHE_LRU_LIST)
-		this_cpu_inc(nr_dentry_negative);
-}
-
-static void dentry_free(struct dentry *dentry)
-{
-	WARN_ON(!hlist_unhashed(&dentry->d_u.d_alias));
-	if (unlikely(dname_external(dentry))) {
-		struct external_name *p = external_name(dentry);
-		if (likely(atomic_dec_and_test(&p->u.count))) {
-			call_rcu(&dentry->d_u.d_rcu, __d_free_external);
-			return;
-		}
-	}
-	
-	if (dentry->d_flags & DCACHE_NORCU)
-		__d_free(&dentry->d_u.d_rcu);
-	else
-		call_rcu(&dentry->d_u.d_rcu, __d_free);
-}
-
-static void dentry_unlink_inode(struct dentry * dentry)
-	__releases(dentry->d_lock)
-	__releases(dentry->d_inode->i_lock)
-{
-	struct inode *inode = dentry->d_inode;
-
-	raw_write_seqcount_begin(&dentry->d_seq);
-	__d_clear_type_and_inode(dentry);
 	hlist_del_init(&dentry->d_u.d_alias);
 	raw_write_seqcount_end(&dentry->d_seq);
 	spin_unlock(&dentry->d_lock);
 	spin_unlock(&inode->i_lock);
-	if (!inode->i_nlink)
-		fsnotify_inoderemove(inode);
-	if (dentry->d_op && dentry->d_op->d_iput)
-		dentry->d_op->d_iput(dentry, inode);
-	else
-		iput(inode);
+	iput(inode);
 }
 
-#define D_FLAG_VERIFY(dentry,x) WARN_ON_ONCE(((dentry)->d_flags & (DCACHE_LRU_LIST | DCACHE_SHRINK_LIST)) != (x))
-static void d_lru_add(struct dentry *dentry)
-{
-	D_FLAG_VERIFY(dentry, 0);
-	dentry->d_flags |= DCACHE_LRU_LIST;
-	this_cpu_inc(nr_dentry_unused);
-	if (d_is_negative(dentry))
-		this_cpu_inc(nr_dentry_negative);
-	WARN_ON_ONCE(!list_lru_add(&dentry->d_sb->s_dentry_lru, &dentry->d_lru));
-}
-
+#define D_FLAG_VERIFY(dentry, x)          \
+	WARN_ON_ONCE(((dentry)->d_flags & \
+		      (DCACHE_LRU_LIST | DCACHE_SHRINK_LIST)) != (x))
 static void d_lru_del(struct dentry *dentry)
 {
 	D_FLAG_VERIFY(dentry, DCACHE_LRU_LIST);
 	dentry->d_flags &= ~DCACHE_LRU_LIST;
-	this_cpu_dec(nr_dentry_unused);
-	if (d_is_negative(dentry))
-		this_cpu_dec(nr_dentry_negative);
-	WARN_ON_ONCE(!list_lru_del(&dentry->d_sb->s_dentry_lru, &dentry->d_lru));
-}
-
-static void d_shrink_add(struct dentry *dentry, struct list_head *list)
-{
-	D_FLAG_VERIFY(dentry, 0);
-	list_add(&dentry->d_lru, list);
-	dentry->d_flags |= DCACHE_SHRINK_LIST | DCACHE_LRU_LIST;
-	this_cpu_inc(nr_dentry_unused);
-}
-
-static void ___d_drop(struct dentry *dentry)
-{
-	struct hlist_bl_head *b;
-	
-	if (unlikely(IS_ROOT(dentry)))
-		b = &dentry->d_sb->s_roots;
-	else
-		b = d_hash(dentry->d_name.hash);
-
-	hlist_bl_lock(b);
-	__hlist_bl_del(&dentry->d_hash);
-	hlist_bl_unlock(b);
+	WARN_ON_ONCE(
+		!list_lru_del(&dentry->d_sb->s_dentry_lru, &dentry->d_lru));
 }
 
 void __d_drop(struct dentry *dentry)
 {
 	if (!d_unhashed(dentry)) {
-		___d_drop(dentry);
+		struct hlist_bl_head *b;
+
+		if (unlikely(IS_ROOT(dentry)))
+			b = &dentry->d_sb->s_roots;
+		else
+			b = d_hash(dentry->d_name.hash);
+
+		hlist_bl_lock(b);
+		__hlist_bl_del(&dentry->d_hash);
+		hlist_bl_unlock(b);
 		dentry->d_hash.pprev = NULL;
 		write_seqcount_invalidate(&dentry->d_seq);
 	}
@@ -243,22 +167,7 @@ void d_drop(struct dentry *dentry)
 	spin_unlock(&dentry->d_lock);
 }
 
-static inline void dentry_unlist(struct dentry *dentry, struct dentry *parent)
-{
-	struct dentry *next;
-	
-	dentry->d_flags |= DCACHE_DENTRY_KILLED;
-	if (unlikely(list_empty(&dentry->d_child)))
-		return;
-	__list_del_entry(&dentry->d_child);
-	
-	while (dentry->d_child.next != &parent->d_subdirs) {
-		next = list_entry(dentry->d_child.next, struct dentry, d_child);
-		if (likely(!(next->d_flags & DCACHE_DENTRY_CURSOR)))
-			break;
-		dentry->d_child.next = next->d_child.next;
-	}
-}
+/* dentry_unlist inlined into __dentry_kill */
 
 static void __dentry_kill(struct dentry *dentry)
 {
@@ -267,29 +176,36 @@ static void __dentry_kill(struct dentry *dentry)
 	if (!IS_ROOT(dentry))
 		parent = dentry->d_parent;
 
-	
 	lockref_mark_dead(&dentry->d_lockref);
-
-	
-	if (dentry->d_flags & DCACHE_OP_PRUNE)
-		dentry->d_op->d_prune(dentry);
 
 	if (dentry->d_flags & DCACHE_LRU_LIST) {
 		if (!(dentry->d_flags & DCACHE_SHRINK_LIST))
 			d_lru_del(dentry);
 	}
-	
+
 	__d_drop(dentry);
-	dentry_unlist(dentry, parent);
+	/* Inlined dentry_unlist */
+	{
+		struct dentry *next;
+		dentry->d_flags |= DCACHE_DENTRY_KILLED;
+		if (!unlikely(list_empty(&dentry->d_child))) {
+			__list_del_entry(&dentry->d_child);
+			while (dentry->d_child.next != &parent->d_subdirs) {
+				next = list_entry(dentry->d_child.next,
+						  struct dentry, d_child);
+				if (likely(!(next->d_flags &
+					     DCACHE_DENTRY_CURSOR)))
+					break;
+				dentry->d_child.next = next->d_child.next;
+			}
+		}
+	}
 	if (parent)
 		spin_unlock(&parent->d_lock);
 	if (dentry->d_inode)
 		dentry_unlink_inode(dentry);
 	else
 		spin_unlock(&dentry->d_lock);
-	this_cpu_dec(nr_dentry);
-	if (dentry->d_op && dentry->d_op->d_release)
-		dentry->d_op->d_release(dentry);
 
 	spin_lock(&dentry->d_lock);
 	if (dentry->d_flags & DCACHE_SHRINK_LIST) {
@@ -297,8 +213,22 @@ static void __dentry_kill(struct dentry *dentry)
 		can_free = false;
 	}
 	spin_unlock(&dentry->d_lock);
-	if (likely(can_free))
-		dentry_free(dentry);
+	if (likely(can_free)) {
+		/* Inlined dentry_free */
+		WARN_ON(!hlist_unhashed(&dentry->d_u.d_alias));
+		if (unlikely(dname_external(dentry))) {
+			struct external_name *p = external_name(dentry);
+			if (likely(atomic_dec_and_test(&p->u.count))) {
+				call_rcu(&dentry->d_u.d_rcu, __d_free_external);
+				goto skip_rcu;
+			}
+		}
+		if (dentry->d_flags & DCACHE_NORCU)
+			__d_free(&dentry->d_u.d_rcu);
+		else
+			call_rcu(&dentry->d_u.d_rcu, __d_free);
+skip_rcu:;
+	}
 	cond_resched();
 }
 
@@ -310,7 +240,7 @@ static struct dentry *__lock_parent(struct dentry *dentry)
 again:
 	parent = READ_ONCE(dentry->d_parent);
 	spin_lock(&parent->d_lock);
-	
+
 	if (unlikely(parent != dentry->d_parent)) {
 		spin_unlock(&parent->d_lock);
 		goto again;
@@ -337,7 +267,6 @@ static inline bool retain_dentry(struct dentry *dentry)
 {
 	WARN_ON(d_in_lookup(dentry));
 
-	
 	if (unlikely(d_unhashed(dentry)))
 		return false;
 
@@ -352,11 +281,14 @@ static inline bool retain_dentry(struct dentry *dentry)
 	if (unlikely(dentry->d_flags & DCACHE_DONTCACHE))
 		return false;
 
-	
 	dentry->d_lockref.count--;
-	if (unlikely(!(dentry->d_flags & DCACHE_LRU_LIST)))
-		d_lru_add(dentry);
-	else if (unlikely(!(dentry->d_flags & DCACHE_REFERENCED)))
+	if (unlikely(!(dentry->d_flags & DCACHE_LRU_LIST))) {
+		D_FLAG_VERIFY(dentry, 0);
+		dentry->d_flags |= DCACHE_LRU_LIST;
+		/* nr_dentry_unused, nr_dentry_negative counters removed */
+		WARN_ON_ONCE(!list_lru_add(&dentry->d_sb->s_dentry_lru,
+					   &dentry->d_lru));
+	} else if (unlikely(!(dentry->d_flags & DCACHE_REFERENCED)))
 		dentry->d_flags |= DCACHE_REFERENCED;
 	return true;
 }
@@ -376,7 +308,7 @@ static struct dentry *dentry_kill(struct dentry *dentry)
 			parent = __lock_parent(dentry);
 			if (likely(inode || !dentry->d_inode))
 				goto got_locks;
-			
+
 			if (parent)
 				spin_unlock(&parent->d_lock);
 			inode = dentry->d_inode;
@@ -398,7 +330,7 @@ got_locks:
 		__dentry_kill(dentry);
 		return parent;
 	}
-	
+
 	if (inode)
 		spin_unlock(&inode->i_lock);
 	if (parent)
@@ -412,14 +344,11 @@ static inline bool fast_dput(struct dentry *dentry)
 	int ret;
 	unsigned int d_flags;
 
-	
 	if (unlikely(dentry->d_flags & DCACHE_OP_DELETE))
 		return lockref_put_or_lock(&dentry->d_lockref);
 
-	
 	ret = lockref_put_return(&dentry->d_lockref);
 
-	
 	if (unlikely(ret < 0)) {
 		spin_lock(&dentry->d_lock);
 		if (dentry->d_lockref.count > 1) {
@@ -430,30 +359,25 @@ static inline bool fast_dput(struct dentry *dentry)
 		return false;
 	}
 
-	
 	if (ret)
 		return true;
 
-	
 	smp_rmb();
 	d_flags = READ_ONCE(dentry->d_flags);
-	d_flags &= DCACHE_REFERENCED | DCACHE_LRU_LIST |
-			DCACHE_DISCONNECTED | DCACHE_DONTCACHE;
+	d_flags &= DCACHE_REFERENCED | DCACHE_LRU_LIST | DCACHE_DISCONNECTED |
+		   DCACHE_DONTCACHE;
 
-	
-	if (d_flags == (DCACHE_REFERENCED | DCACHE_LRU_LIST) && !d_unhashed(dentry))
+	if (d_flags == (DCACHE_REFERENCED | DCACHE_LRU_LIST) &&
+	    !d_unhashed(dentry))
 		return true;
 
-	
 	spin_lock(&dentry->d_lock);
 
-	
 	if (dentry->d_lockref.count) {
 		spin_unlock(&dentry->d_lock);
 		return true;
 	}
 
-	
 	dentry->d_lockref.count = 1;
 	return false;
 }
@@ -461,15 +385,12 @@ static inline bool fast_dput(struct dentry *dentry)
 void dput(struct dentry *dentry)
 {
 	while (dentry) {
-		might_sleep();
-
 		rcu_read_lock();
 		if (likely(fast_dput(dentry))) {
 			rcu_read_unlock();
 			return;
 		}
 
-		
 		rcu_read_unlock();
 
 		if (likely(retain_dentry(dentry))) {
@@ -482,16 +403,19 @@ void dput(struct dentry *dentry)
 }
 
 static void __dput_to_list(struct dentry *dentry, struct list_head *list)
-__must_hold(&dentry->d_lock)
+	__must_hold(&dentry->d_lock)
 {
 	if (dentry->d_flags & DCACHE_SHRINK_LIST) {
-		
 		--dentry->d_lockref.count;
 	} else {
 		if (dentry->d_flags & DCACHE_LRU_LIST)
 			d_lru_del(dentry);
-		if (!--dentry->d_lockref.count)
-			d_shrink_add(dentry, list);
+		if (!--dentry->d_lockref.count) {
+			D_FLAG_VERIFY(dentry, 0);
+			list_add(&dentry->d_lru, list);
+			dentry->d_flags |= DCACHE_SHRINK_LIST | DCACHE_LRU_LIST;
+			/* nr_dentry_unused counter removed */
+		}
 	}
 }
 
@@ -508,18 +432,12 @@ void dput_to_list(struct dentry *dentry, struct list_head *list)
 	spin_unlock(&dentry->d_lock);
 }
 
-static inline void __dget_dlock(struct dentry *dentry)
-{
-	dentry->d_lockref.count++;
-}
-
 struct dentry *dget_parent(struct dentry *dentry)
 {
 	int gotref;
 	struct dentry *ret;
 	unsigned seq;
 
-	
 	rcu_read_lock();
 	seq = raw_seqcount_begin(&dentry->d_seq);
 	ret = READ_ONCE(dentry->d_parent);
@@ -532,7 +450,7 @@ struct dentry *dget_parent(struct dentry *dentry)
 	}
 
 repeat:
-	
+
 	rcu_read_lock();
 	ret = dentry->d_parent;
 	spin_lock(&ret->d_lock);
@@ -548,14 +466,14 @@ repeat:
 	return ret;
 }
 
-
 void shrink_dentry_list(struct list_head *list)
 {
 	/* Stub: not needed for minimal boot */
 }
 
 static enum lru_status dentry_lru_isolate(struct list_head *item,
-		struct list_lru_one *lru, spinlock_t *lru_lock, void *arg)
+					  struct list_lru_one *lru,
+					  spinlock_t *lru_lock, void *arg)
 {
 	return LRU_SKIP; /* Stub */
 }
@@ -565,29 +483,11 @@ long prune_dcache_sb(struct super_block *sb, struct shrink_control *sc)
 	LIST_HEAD(dispose);
 	long freed;
 
-	freed = list_lru_shrink_walk(&sb->s_dentry_lru, sc,
-				     dentry_lru_isolate, &dispose);
+	freed = list_lru_shrink_walk(&sb->s_dentry_lru, sc, dentry_lru_isolate,
+				     &dispose);
 	shrink_dentry_list(&dispose);
 	return freed;
 }
-
-enum d_walk_ret {
-	D_WALK_CONTINUE,
-	D_WALK_QUIT,
-	D_WALK_NORETRY,
-	D_WALK_SKIP,
-};
-
-static void d_walk(struct dentry *parent, void *data,
-		   enum d_walk_ret (*enter)(void *, struct dentry *))
-{
-	/* Stub: not needed for minimal boot */
-}
-
-struct check_mount {
-	struct vfsmount *mnt;
-	unsigned int mounted;
-};
 
 int d_set_mounted(struct dentry *dentry)
 {
@@ -602,68 +502,9 @@ int d_set_mounted(struct dentry *dentry)
 	return -EBUSY;
 }
 
-struct select_data {
-	struct dentry *start;
-	union {
-		long found;
-		struct dentry *victim;
-	};
-	struct list_head dispose;
-};
-
-static enum d_walk_ret select_collect(void *_data, struct dentry *dentry)
-{
-	/* Stub: simplified dentry collection for minimal kernel */
-	struct select_data *data = _data;
-
-	if (data->start == dentry)
-		return D_WALK_CONTINUE;
-
-	if (!(dentry->d_flags & DCACHE_SHRINK_LIST) && !dentry->d_lockref.count) {
-		d_shrink_add(dentry, &data->dispose);
-		data->found++;
-	}
-	return D_WALK_CONTINUE;
-}
-
-void shrink_dcache_parent(struct dentry *parent)
-{
-	/* Stub: minimal dcache shrinking for simple kernel */
-	struct select_data data = {.start = parent};
-
-	INIT_LIST_HEAD(&data.dispose);
-	d_walk(parent, &data, select_collect);
-	if (!list_empty(&data.dispose))
-		shrink_dentry_list(&data.dispose);
-}
-
-static enum d_walk_ret umount_check(void *_data, struct dentry *dentry)
-{
-	
-	if (!list_empty(&dentry->d_subdirs))
-		return D_WALK_CONTINUE;
-
-	
-	if (dentry == _data && dentry->d_lockref.count == 1)
-		return D_WALK_CONTINUE;
-
-	printk(KERN_ERR "BUG: Dentry %p{i=%lx,n=%pd} "
-			" still in use (%d) [unmount of %s %s]\n",
-		       dentry,
-		       dentry->d_inode ?
-		       dentry->d_inode->i_ino : 0UL,
-		       dentry,
-		       dentry->d_lockref.count,
-		       dentry->d_sb->s_type->name,
-		       dentry->d_sb->s_id);
-	WARN_ON(1);
-	return D_WALK_CONTINUE;
-}
-
 static void do_one_tree(struct dentry *dentry)
 {
-	shrink_dcache_parent(dentry);
-	d_walk(dentry, dentry, umount_check);
+	/* d_walk is empty stub - just drop and put */
 	d_drop(dentry);
 	dput(dentry);
 }
@@ -672,32 +513,23 @@ void shrink_dcache_for_umount(struct super_block *sb)
 {
 	struct dentry *dentry;
 
-	WARN(down_read_trylock(&sb->s_umount), "s_umount should've been locked");
+	WARN(down_read_trylock(&sb->s_umount),
+	     "s_umount should've been locked");
 
 	dentry = sb->s_root;
 	sb->s_root = NULL;
 	do_one_tree(dentry);
 
 	while (!hlist_bl_empty(&sb->s_roots)) {
-		dentry = dget(hlist_bl_entry(hlist_bl_first(&sb->s_roots), struct dentry, d_hash));
+		dentry = dget(hlist_bl_entry(hlist_bl_first(&sb->s_roots),
+					     struct dentry, d_hash));
 		do_one_tree(dentry);
 	}
 }
 
-static enum d_walk_ret find_submount(void *_data, struct dentry *dentry)
-{
-	struct dentry **victim = _data;
-	if (d_mountpoint(dentry)) {
-		__dget_dlock(dentry);
-		*victim = dentry;
-		return D_WALK_QUIT;
-	}
-	return D_WALK_CONTINUE;
-}
-
 void d_invalidate(struct dentry *dentry)
 {
-	bool had_submounts = false;
+	/* d_walk is empty stub - simplify to just drop */
 	spin_lock(&dentry->d_lock);
 	if (d_unhashed(dentry)) {
 		spin_unlock(&dentry->d_lock);
@@ -705,64 +537,44 @@ void d_invalidate(struct dentry *dentry)
 	}
 	__d_drop(dentry);
 	spin_unlock(&dentry->d_lock);
-
-	
-	if (!dentry->d_inode)
-		return;
-
-	shrink_dcache_parent(dentry);
-	for (;;) {
-		struct dentry *victim = NULL;
-		d_walk(dentry, &victim, find_submount);
-		if (!victim) {
-			if (had_submounts)
-				shrink_dcache_parent(dentry);
-			return;
-		}
-		had_submounts = true;
-		detach_mounts(victim);
-		dput(victim);
-	}
 }
 
 static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 {
 	struct dentry *dentry;
 	char *dname;
-	int err;
+	/* int err; - removed, was unused */
 
 	dentry = kmem_cache_alloc_lru(dentry_cache, &sb->s_dentry_lru,
 				      GFP_KERNEL);
 	if (!dentry)
 		return NULL;
 
-	
-	dentry->d_iname[DNAME_INLINE_LEN-1] = 0;
+	dentry->d_iname[DNAME_INLINE_LEN - 1] = 0;
 	if (unlikely(!name)) {
 		name = &slash_name;
 		dname = dentry->d_iname;
-	} else if (name->len > DNAME_INLINE_LEN-1) {
+	} else if (name->len > DNAME_INLINE_LEN - 1) {
 		size_t size = offsetof(struct external_name, name[1]);
-		struct external_name *p = kmalloc(size + name->len,
-						  GFP_KERNEL_ACCOUNT |
-						  __GFP_RECLAIMABLE);
+		struct external_name *p =
+			kmalloc(size + name->len,
+				GFP_KERNEL_ACCOUNT | __GFP_RECLAIMABLE);
 		if (!p) {
-			kmem_cache_free(dentry_cache, dentry); 
+			kmem_cache_free(dentry_cache, dentry);
 			return NULL;
 		}
 		atomic_set(&p->u.count, 1);
 		dname = p->name;
-	} else  {
+	} else {
 		dname = dentry->d_iname;
-	}	
+	}
 
 	dentry->d_name.len = name->len;
 	dentry->d_name.hash = name->hash;
 	memcpy(dname, name->name, name->len);
 	dname[name->len] = 0;
 
-	
-	smp_store_release(&dentry->d_name.name, dname); 
+	smp_store_release(&dentry->d_name.name, dname);
 
 	dentry->d_lockref.count = 1;
 	dentry->d_flags = 0;
@@ -772,37 +584,23 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 	dentry->d_parent = dentry;
 	dentry->d_sb = sb;
 	dentry->d_op = NULL;
-	dentry->d_fsdata = NULL;
 	INIT_HLIST_BL_NODE(&dentry->d_hash);
 	INIT_LIST_HEAD(&dentry->d_lru);
 	INIT_LIST_HEAD(&dentry->d_subdirs);
 	INIT_HLIST_NODE(&dentry->d_u.d_alias);
 	INIT_LIST_HEAD(&dentry->d_child);
-	d_set_d_op(dentry, dentry->d_sb->s_d_op);
-
-	if (dentry->d_op && dentry->d_op->d_init) {
-		err = dentry->d_op->d_init(dentry);
-		if (err) {
-			if (dname_external(dentry))
-				kfree(external_name(dentry));
-			kmem_cache_free(dentry_cache, dentry);
-			return NULL;
-		}
-	}
-
-	this_cpu_inc(nr_dentry);
-
+	/* d_set_d_op call removed - s_d_op is always NULL (dops never set) */
 	return dentry;
 }
 
-struct dentry *d_alloc(struct dentry * parent, const struct qstr *name)
+struct dentry *d_alloc(struct dentry *parent, const struct qstr *name)
 {
 	struct dentry *dentry = __d_alloc(parent->d_sb, name);
 	if (!dentry)
 		return NULL;
 	spin_lock(&parent->d_lock);
-	
-	__dget_dlock(parent);
+
+	parent->d_lockref.count++;
 	dentry->d_parent = parent;
 	list_add(&dentry->d_child, &parent->d_subdirs);
 	spin_unlock(&parent->d_lock);
@@ -816,7 +614,10 @@ struct dentry *d_alloc_anon(struct super_block *sb)
 }
 
 /* Stub: d_alloc_cursor not used in minimal kernel */
-struct dentry *d_alloc_cursor(struct dentry *parent) { return NULL; }
+struct dentry *d_alloc_cursor(struct dentry *parent)
+{
+	return NULL;
+}
 
 struct dentry *d_alloc_pseudo(struct super_block *sb, const struct qstr *name)
 {
@@ -829,30 +630,14 @@ struct dentry *d_alloc_pseudo(struct super_block *sb, const struct qstr *name)
 void d_set_d_op(struct dentry *dentry, const struct dentry_operations *op)
 {
 	WARN_ON_ONCE(dentry->d_op);
-	WARN_ON_ONCE(dentry->d_flags & (DCACHE_OP_HASH	|
-				DCACHE_OP_COMPARE	|
-				DCACHE_OP_REVALIDATE	|
-				DCACHE_OP_WEAK_REVALIDATE	|
-				DCACHE_OP_DELETE	|
-				DCACHE_OP_REAL));
+	WARN_ON_ONCE(dentry->d_flags & DCACHE_OP_DELETE);
 	dentry->d_op = op;
 	if (!op)
 		return;
-	if (op->d_hash)
-		dentry->d_flags |= DCACHE_OP_HASH;
-	if (op->d_compare)
-		dentry->d_flags |= DCACHE_OP_COMPARE;
-	if (op->d_revalidate)
-		dentry->d_flags |= DCACHE_OP_REVALIDATE;
-	if (op->d_weak_revalidate)
-		dentry->d_flags |= DCACHE_OP_WEAK_REVALIDATE;
+	/* d_hash, d_compare, d_revalidate, d_weak_revalidate, d_prune,
+	   d_real checks removed - never set */
 	if (op->d_delete)
 		dentry->d_flags |= DCACHE_OP_DELETE;
-	if (op->d_prune)
-		dentry->d_flags |= DCACHE_OP_PRUNE;
-	if (op->d_real)
-		dentry->d_flags |= DCACHE_OP_REAL;
-
 }
 
 static unsigned d_flags_for_inode(struct inode *inode)
@@ -873,13 +658,8 @@ static unsigned d_flags_for_inode(struct inode *inode)
 		goto type_determined;
 	}
 
-	if (unlikely(!(inode->i_opflags & IOP_NOFOLLOW))) {
-		if (unlikely(inode->i_op->get_link)) {
-			add_flags = DCACHE_SYMLINK_TYPE;
-			goto type_determined;
-		}
-		inode->i_opflags |= IOP_NOFOLLOW;
-	}
+	/* get_link check removed - symlinks never created (get_link never set) */
+	inode->i_opflags |= IOP_NOFOLLOW;
 
 	if (unlikely(!S_ISREG(inode->i_mode)))
 		add_flags = DCACHE_SPECIAL_TYPE;
@@ -890,34 +670,24 @@ type_determined:
 	return add_flags;
 }
 
-static void __d_instantiate(struct dentry *dentry, struct inode *inode)
-{
-	unsigned add_flags = d_flags_for_inode(inode);
-	WARN_ON(d_in_lookup(dentry));
-
-	spin_lock(&dentry->d_lock);
-	
-	if (dentry->d_flags & DCACHE_LRU_LIST)
-		this_cpu_dec(nr_dentry_negative);
-	hlist_add_head(&dentry->d_u.d_alias, &inode->i_dentry);
-	raw_write_seqcount_begin(&dentry->d_seq);
-	__d_set_inode_and_type(dentry, inode, add_flags);
-	raw_write_seqcount_end(&dentry->d_seq);
-	fsnotify_update_flags(dentry);
-	spin_unlock(&dentry->d_lock);
-}
-
-void d_instantiate(struct dentry *entry, struct inode * inode)
+void d_instantiate(struct dentry *entry, struct inode *inode)
 {
 	BUG_ON(!hlist_unhashed(&entry->d_u.d_alias));
 	if (inode) {
-		security_d_instantiate(entry, inode);
+		unsigned add_flags = d_flags_for_inode(inode);
+		WARN_ON(d_in_lookup(entry));
+
+		/* security_d_instantiate - empty stub */
 		spin_lock(&inode->i_lock);
-		__d_instantiate(entry, inode);
+		spin_lock(&entry->d_lock);
+		hlist_add_head(&entry->d_u.d_alias, &inode->i_dentry);
+		raw_write_seqcount_begin(&entry->d_seq);
+		__d_set_inode_and_type(entry, inode, add_flags);
+		raw_write_seqcount_end(&entry->d_seq);
+		spin_unlock(&entry->d_lock);
 		spin_unlock(&inode->i_lock);
 	}
 }
-
 
 struct dentry *d_make_root(struct inode *root_inode)
 {
@@ -934,22 +704,16 @@ struct dentry *d_make_root(struct inode *root_inode)
 }
 
 static inline bool d_same_name(const struct dentry *dentry,
-				const struct dentry *parent,
-				const struct qstr *name)
+			       const struct dentry *parent,
+			       const struct qstr *name)
 {
-	if (likely(!(parent->d_flags & DCACHE_OP_COMPARE))) {
-		if (dentry->d_name.len != name->len)
-			return false;
-		return dentry_cmp(dentry, name->name, name->len) == 0;
-	}
-	return parent->d_op->d_compare(dentry,
-				       dentry->d_name.len, dentry->d_name.name,
-				       name) == 0;
+	if (dentry->d_name.len != name->len)
+		return false;
+	return dentry_cmp(dentry, name->name, name->len) == 0;
 }
 
 struct dentry *__d_lookup_rcu(const struct dentry *parent,
-				const struct qstr *name,
-				unsigned *seqp)
+			      const struct qstr *name, unsigned *seqp)
 {
 	u64 hashlen = name->hash_len;
 	const unsigned char *str = name->name;
@@ -957,41 +721,19 @@ struct dentry *__d_lookup_rcu(const struct dentry *parent,
 	struct hlist_bl_node *node;
 	struct dentry *dentry;
 
-	
-
-	
 	hlist_bl_for_each_entry_rcu(dentry, node, b, d_hash) {
 		unsigned seq;
-
-seqretry:
-		
 		seq = raw_seqcount_begin(&dentry->d_seq);
 		if (dentry->d_parent != parent)
 			continue;
 		if (d_unhashed(dentry))
 			continue;
 
-		if (unlikely(parent->d_flags & DCACHE_OP_COMPARE)) {
-			int tlen;
-			const char *tname;
-			if (dentry->d_name.hash != hashlen_hash(hashlen))
-				continue;
-			tlen = dentry->d_name.len;
-			tname = dentry->d_name.name;
-			
-			if (read_seqcount_retry(&dentry->d_seq, seq)) {
-				cpu_relax();
-				goto seqretry;
-			}
-			if (parent->d_op->d_compare(dentry,
-						    tlen, tname, name) != 0)
-				continue;
-		} else {
-			if (dentry->d_name.hash_len != hashlen)
-				continue;
-			if (dentry_cmp(dentry, str, hashlen_len(hashlen)) != 0)
-				continue;
-		}
+		/* DCACHE_OP_COMPARE branch removed - d_compare never set */
+		if (dentry->d_name.hash_len != hashlen)
+			continue;
+		if (dentry_cmp(dentry, str, hashlen_len(hashlen)) != 0)
+			continue;
 		*seqp = seq;
 		return dentry;
 	}
@@ -1020,13 +762,9 @@ struct dentry *__d_lookup(const struct dentry *parent, const struct qstr *name)
 	struct dentry *found = NULL;
 	struct dentry *dentry;
 
-	
-
-	
 	rcu_read_lock();
-	
-	hlist_bl_for_each_entry_rcu(dentry, node, b, d_hash) {
 
+	hlist_bl_for_each_entry_rcu(dentry, node, b, d_hash) {
 		if (dentry->d_name.hash != hash)
 			continue;
 
@@ -1045,19 +783,19 @@ struct dentry *__d_lookup(const struct dentry *parent, const struct qstr *name)
 		break;
 next:
 		spin_unlock(&dentry->d_lock);
- 	}
- 	rcu_read_unlock();
+	}
+	rcu_read_unlock();
 
- 	return found;
+	return found;
 }
 
-void d_delete(struct dentry * dentry)
+void d_delete(struct dentry *dentry)
 {
 	struct inode *inode = dentry->d_inode;
 
 	spin_lock(&inode->i_lock);
 	spin_lock(&dentry->d_lock);
-	
+
 	if (dentry->d_lockref.count == 1) {
 		dentry->d_flags &= ~DCACHE_CANT_MOUNT;
 		dentry_unlink_inode(dentry);
@@ -1068,37 +806,7 @@ void d_delete(struct dentry * dentry)
 	}
 }
 
-static void __d_rehash(struct dentry *entry)
-{
-	struct hlist_bl_head *b = d_hash(entry->d_name.hash);
-
-	hlist_bl_lock(b);
-	hlist_bl_add_head_rcu(&entry->d_hash, b);
-	hlist_bl_unlock(b);
-}
-
-void d_rehash(struct dentry * entry)
-{
-	spin_lock(&entry->d_lock);
-	__d_rehash(entry);
-	spin_unlock(&entry->d_lock);
-}
-
-static inline unsigned start_dir_add(struct inode *dir)
-{
-
-	for (;;) {
-		unsigned n = dir->i_dir_seq;
-		if (!(n & 1) && cmpxchg(&dir->i_dir_seq, n, n + 1) == n)
-			return n;
-		cpu_relax();
-	}
-}
-
-static inline void end_dir_add(struct inode *dir, unsigned n)
-{
-	smp_store_release(&dir->i_dir_seq, n + 2);
-}
+/* end_dir_add and start_dir_add inlined into callers */
 
 static void d_wait_lookup(struct dentry *dentry)
 {
@@ -1114,8 +822,7 @@ static void d_wait_lookup(struct dentry *dentry)
 	}
 }
 
-struct dentry *d_alloc_parallel(struct dentry *parent,
-				const struct qstr *name,
+struct dentry *d_alloc_parallel(struct dentry *parent, const struct qstr *name,
 				wait_queue_head_t *wq)
 {
 	unsigned int hash = name->hash;
@@ -1163,7 +870,7 @@ retry:
 		rcu_read_unlock();
 		goto retry;
 	}
-	
+
 	hlist_bl_for_each_entry(dentry, node, b, d_u.d_in_lookup_hash) {
 		if (dentry->d_name.hash != hash)
 			continue;
@@ -1172,17 +879,17 @@ retry:
 		if (!d_same_name(dentry, parent, name))
 			continue;
 		hlist_bl_unlock(b);
-		
+
 		if (!lockref_get_not_dead(&dentry->d_lockref)) {
 			rcu_read_unlock();
 			goto retry;
 		}
 
 		rcu_read_unlock();
-		
+
 		spin_lock(&dentry->d_lock);
 		d_wait_lookup(dentry);
-		
+
 		if (unlikely(dentry->d_name.hash != hash))
 			goto mismatch;
 		if (unlikely(dentry->d_parent != parent))
@@ -1191,13 +898,13 @@ retry:
 			goto mismatch;
 		if (unlikely(!d_same_name(dentry, parent, name)))
 			goto mismatch;
-		
+
 		spin_unlock(&dentry->d_lock);
 		dput(new);
 		return dentry;
 	}
 	rcu_read_unlock();
-	
+
 	new->d_flags |= DCACHE_PAR_LOOKUP;
 	new->d_wait = wq;
 	hlist_bl_add_head_rcu(&new->d_u.d_in_lookup_hash, b);
@@ -1211,8 +918,8 @@ mismatch:
 
 void __d_lookup_done(struct dentry *dentry)
 {
-	struct hlist_bl_head *b = in_lookup_hash(dentry->d_parent,
-						 dentry->d_name.hash);
+	struct hlist_bl_head *b =
+		in_lookup_hash(dentry->d_parent, dentry->d_name.hash);
 	hlist_bl_lock(b);
 	dentry->d_flags &= ~DCACHE_PAR_LOOKUP;
 	__hlist_bl_del(&dentry->d_u.d_in_lookup_hash);
@@ -1230,7 +937,13 @@ static inline void __d_add(struct dentry *dentry, struct inode *inode)
 	spin_lock(&dentry->d_lock);
 	if (unlikely(d_in_lookup(dentry))) {
 		dir = dentry->d_parent->d_inode;
-		n = start_dir_add(dir);
+		/* Inlined start_dir_add */
+		for (;;) {
+			n = dir->i_dir_seq;
+			if (!(n & 1) && cmpxchg(&dir->i_dir_seq, n, n + 1) == n)
+				break;
+			cpu_relax();
+		}
 		__d_lookup_done(dentry);
 	}
 	if (inode) {
@@ -1239,11 +952,15 @@ static inline void __d_add(struct dentry *dentry, struct inode *inode)
 		raw_write_seqcount_begin(&dentry->d_seq);
 		__d_set_inode_and_type(dentry, inode, add_flags);
 		raw_write_seqcount_end(&dentry->d_seq);
-		fsnotify_update_flags(dentry);
 	}
-	__d_rehash(dentry);
+	{
+		struct hlist_bl_head *b = d_hash(dentry->d_name.hash);
+		hlist_bl_lock(b);
+		hlist_bl_add_head_rcu(&dentry->d_hash, b);
+		hlist_bl_unlock(b);
+	}
 	if (dir)
-		end_dir_add(dir, n);
+		smp_store_release(&dir->i_dir_seq, n + 2);
 	spin_unlock(&dentry->d_lock);
 	if (inode)
 		spin_unlock(&inode->i_lock);
@@ -1252,100 +969,48 @@ static inline void __d_add(struct dentry *dentry, struct inode *inode)
 void d_add(struct dentry *entry, struct inode *inode)
 {
 	if (inode) {
-		security_d_instantiate(entry, inode);
+		/* security_d_instantiate - empty stub */
 		spin_lock(&inode->i_lock);
 	}
 	__d_add(entry, inode);
 }
 
-
-/* Stubbed - not used in minimal kernel */
-struct dentry *d_ancestor(struct dentry *p1, struct dentry *p2)
-{
-	return NULL;
-}
-
-
+/* Simplified - d_ancestor always returned NULL, so only equality check matters */
 bool is_subdir(struct dentry *new_dentry, struct dentry *old_dentry)
 {
-	bool result;
-	unsigned seq;
-
-	if (new_dentry == old_dentry)
-		return true;
-
-	do {
-		
-		seq = read_seqbegin(&rename_lock);
-		
-		rcu_read_lock();
-		if (d_ancestor(old_dentry, new_dentry))
-			result = true;
-		else
-			result = false;
-		rcu_read_unlock();
-	} while (read_seqretry(&rename_lock, seq));
-
-	return result;
+	return new_dentry == old_dentry;
 }
 
-void d_tmpfile(struct dentry *dentry, struct inode *inode)
-{
-	inode_dec_link_count(inode);
-	BUG_ON(dentry->d_name.name != dentry->d_iname ||
-		!hlist_unhashed(&dentry->d_u.d_alias) ||
-		!d_unlinked(dentry));
-	spin_lock(&dentry->d_parent->d_lock);
-	spin_lock_nested(&dentry->d_lock, DENTRY_D_LOCK_NESTED);
-	dentry->d_name.len = sprintf(dentry->d_iname, "#%llu",
-				(unsigned long long)inode->i_ino);
-	spin_unlock(&dentry->d_lock);
-	spin_unlock(&dentry->d_parent->d_lock);
-	d_instantiate(dentry, inode);
-}
+/* d_tmpfile removed - tmpfile callback removed from inode_operations */
 
 static __initdata unsigned long dhash_entries;
 
 static void __init dcache_init_early(void)
 {
-	
 	if (hashdist)
 		return;
 
-	dentry_hashtable =
-		alloc_large_system_hash("Dentry cache",
-					sizeof(struct hlist_bl_head),
-					dhash_entries,
-					13,
-					HASH_EARLY | HASH_ZERO,
-					&d_hash_shift,
-					NULL,
-					0,
-					0);
+	dentry_hashtable = alloc_large_system_hash(
+		"Dentry cache", sizeof(struct hlist_bl_head), dhash_entries, 13,
+		HASH_EARLY | HASH_ZERO, &d_hash_shift, NULL, 0, 0);
 	d_hash_shift = 32 - d_hash_shift;
 }
 
 static void __init dcache_init(void)
 {
-	
-	dentry_cache = KMEM_CACHE_USERCOPY(dentry,
-		SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|SLAB_MEM_SPREAD|SLAB_ACCOUNT,
-		d_iname);
+	dentry_cache =
+		KMEM_CACHE_USERCOPY(dentry,
+				    SLAB_RECLAIM_ACCOUNT | SLAB_PANIC |
+					    SLAB_MEM_SPREAD | SLAB_ACCOUNT,
+				    d_iname);
 
-	
 	if (!hashdist)
 		return;
 
-	dentry_hashtable =
-		alloc_large_system_hash("Dentry cache",
-					sizeof(struct hlist_bl_head),
-					dhash_entries,
-					13,
-					HASH_ZERO,
-					&d_hash_shift,
-					NULL,
-					0,
-					0);
+	dentry_hashtable = alloc_large_system_hash("Dentry cache",
+						   sizeof(struct hlist_bl_head),
+						   dhash_entries, 13, HASH_ZERO,
+						   &d_hash_shift, NULL, 0, 0);
 	d_hash_shift = 32 - d_hash_shift;
 }
 
@@ -1364,14 +1029,13 @@ void __init vfs_caches_init_early(void)
 
 void __init vfs_caches_init(void)
 {
-	names_cachep = kmem_cache_create_usercopy("names_cache", PATH_MAX, 0,
-			SLAB_HWCACHE_ALIGN|SLAB_PANIC, 0, PATH_MAX, NULL);
+	names_cachep = kmem_cache_create_usercopy(
+		"names_cache", PATH_MAX, 0, SLAB_HWCACHE_ALIGN | SLAB_PANIC, 0,
+		PATH_MAX, NULL);
 
 	dcache_init();
 	inode_init();
 	files_init();
-	files_maxfiles_init();
 	mnt_init();
-	bdev_cache_init();
 	chrdev_init();
 }

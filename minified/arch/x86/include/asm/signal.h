@@ -19,9 +19,7 @@ typedef struct {
 	unsigned long sig[_NSIG_WORDS];
 } sigset_t;
 
- 
-#define SA_IA32_ABI	0x02000000u
-#define SA_X32_ABI	0x01000000u
+/* SA_IA32_ABI, SA_X32_ABI removed - never used */
 
 #define compat_sigset_t compat_sigset_t
 typedef sigset_t compat_sigset_t;

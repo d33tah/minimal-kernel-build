@@ -1,6 +1,6 @@
 
 
-#define WAIT_TABLE_BITS 8
+#define WAIT_TABLE_BITS 4 /* Reduced from 8 for minimal boot */
 #define WAIT_TABLE_SIZE (1 << WAIT_TABLE_BITS)
 
 static wait_queue_head_t bit_wait_table[WAIT_TABLE_SIZE] __cacheline_aligned;
@@ -13,22 +13,24 @@ wait_queue_head_t *bit_waitqueue(void *word, int bit)
 	return bit_wait_table + hash_long(val, WAIT_TABLE_BITS);
 }
 
-int wake_bit_function(struct wait_queue_entry *wq_entry, unsigned mode, int sync, void *arg)
+int wake_bit_function(struct wait_queue_entry *wq_entry, unsigned mode,
+		      int sync, void *arg)
 {
 	struct wait_bit_key *key = arg;
-	struct wait_bit_queue_entry *wait_bit = container_of(wq_entry, struct wait_bit_queue_entry, wq_entry);
+	struct wait_bit_queue_entry *wait_bit =
+		container_of(wq_entry, struct wait_bit_queue_entry, wq_entry);
 
 	if (wait_bit->key.flags != key->flags ||
-			wait_bit->key.bit_nr != key->bit_nr ||
-			test_bit(key->bit_nr, key->flags))
+	    wait_bit->key.bit_nr != key->bit_nr ||
+	    test_bit(key->bit_nr, key->flags))
 		return 0;
 
 	return autoremove_wake_function(wq_entry, mode, sync, key);
 }
 
-int __sched
-__wait_on_bit(struct wait_queue_head *wq_head, struct wait_bit_queue_entry *wbq_entry,
-	      wait_bit_action_f *action, unsigned mode)
+int __sched __wait_on_bit(struct wait_queue_head *wq_head,
+			  struct wait_bit_queue_entry *wbq_entry,
+			  wait_bit_action_f *action, unsigned mode)
 {
 	int ret = 0;
 
@@ -63,16 +65,6 @@ void __wake_up_bit(struct wait_queue_head *wq_head, void *word, int bit)
 void wake_up_bit(void *word, int bit)
 {
 	__wake_up_bit(bit_waitqueue(word, bit), word, bit);
-}
-
-
-__sched int bit_wait(struct wait_bit_key *word, int mode)
-{
-	schedule();
-	if (signal_pending_state(mode, current))
-		return -EINTR;
-
-	return 0;
 }
 
 void __init wait_bit_init(void)

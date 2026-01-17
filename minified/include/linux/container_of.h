@@ -3,8 +3,6 @@
 
 #include <linux/build_bug.h>
 
-#define typeof_member(T, m)	typeof(((T*)0)->m)
-
 #define container_of(ptr, type, member) ({				\
 	void *__mptr = (void *)(ptr);					\
 	static_assert(__same_type(*(ptr), ((type *)0)->member) ||	\

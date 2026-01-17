@@ -16,14 +16,13 @@ bool fixup_vdso_exception(struct pt_regs *regs, int trapnr,
 	unsigned int nr_entries, i;
 	unsigned long base;
 
-	 
 	if (trapnr == X86_TRAP_DB || trapnr == X86_TRAP_BP)
 		return false;
 
 	if (!current->mm->context.vdso)
 		return false;
 
-	base =  (unsigned long)current->mm->context.vdso + image->extable_base;
+	base = (unsigned long)current->mm->context.vdso + image->extable_base;
 	nr_entries = image->extable_len / (sizeof(*extable));
 	extable = image->extable;
 

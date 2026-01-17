@@ -13,27 +13,14 @@
 #include <linux/rcupdate.h>
 #include <linux/sched.h>
 
-struct module;
-struct request_queue;
-struct kiocb;
+/* struct module, kiocb, request_queue, gendisk, blk_plug removed - unused */
 
-struct gendisk;
-
-struct blk_plug {
-};
-
-
-static inline void blk_flush_plug(struct blk_plug *plug, bool async)
-{
-}
-
+/* blk_flush_plug removed - no callers */
 
 static inline void printk_all_partitions(void)
 {
 }
 
 #define BDEVNAME_SIZE	32
-
-struct io_comp_batch;
 
 #endif

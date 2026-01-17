@@ -16,9 +16,7 @@ extern unsigned int tsc_khz;
 
 static inline cycles_t get_cycles(void)
 {
-	if (!IS_ENABLED(CONFIG_X86_TSC) &&
-	    !cpu_feature_enabled(X86_FEATURE_TSC))
-		return 0;
+	/* CONFIG_X86_TSC=y, so TSC is always available */
 	return rdtsc();
 }
 #define get_cycles get_cycles
@@ -26,26 +24,16 @@ static inline cycles_t get_cycles(void)
 /* convert_art_to_tsc, convert_art_ns_to_tsc removed - unused */
 
 extern void tsc_early_init(void);
-extern void tsc_init(void);
-extern unsigned long calibrate_delay_is_known(void);
+/* tsc_init removed - never called */
 extern void mark_tsc_unstable(char *reason);
-extern int unsynchronized_tsc(void);
-/* check_tsc_unstable, mark_tsc_async_resets removed - unused */
+/* unsynchronized_tsc, check_tsc_unstable, mark_tsc_async_resets, tsc_async_resets removed - unused */
 extern unsigned long native_calibrate_cpu_early(void);
 extern unsigned long native_calibrate_tsc(void);
-extern unsigned long long native_sched_clock_from_tsc(u64 tsc);
+/* native_sched_clock_from_tsc removed - never called */
+/* tsc_clocksource_reliable removed - never used */
+/* tsc_store_and_check_tsc_adjust, tsc_verify_tsc_adjust, check_tsc_sync_source, check_tsc_sync_target removed - unused */
 
-extern int tsc_clocksource_reliable;
-extern bool tsc_async_resets;
-
- 
-extern bool tsc_store_and_check_tsc_adjust(bool bootcpu);
-extern void tsc_verify_tsc_adjust(bool resume);
-/* check_tsc_sync_source, check_tsc_sync_target removed - unused (SMP) */
-
-extern int notsc_setup(char *);
-extern void tsc_save_sched_clock_state(void);
-extern void tsc_restore_sched_clock_state(void);
+/* tsc_save/restore_sched_clock_state removed - never called */
 
 unsigned long cpu_khz_from_msr(void);
 

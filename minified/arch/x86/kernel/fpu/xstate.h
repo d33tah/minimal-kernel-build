@@ -6,8 +6,7 @@
 #include <asm/fpu/xstate.h>
 
 /* Inlined from asm/fpu/xcr.h */
-#define XCR_XFEATURE_ENABLED_MASK	0x00000000
-#define XCR_XFEATURE_IN_USE_MASK	0x00000001
+/* XCR_XFEATURE_ENABLED_MASK, XCR_XFEATURE_IN_USE_MASK removed - unused */
 
 static inline u64 xgetbv(u32 index)
 {
@@ -23,11 +22,7 @@ static inline void xsetbv(u32 index, u64 value)
 	asm volatile("xsetbv" :: "a" (eax), "d" (edx), "c" (index));
 }
 
-static inline u64 xfeatures_in_use(void)
-{
-	return xgetbv(XCR_XFEATURE_IN_USE_MASK);
-}
-
+/* xfeatures_in_use removed - unused */
 
 static inline void xstate_init_xcomp_bv(struct xregs_state *xsave, u64 mask)
 {
@@ -36,55 +31,18 @@ static inline void xstate_init_xcomp_bv(struct xregs_state *xsave, u64 mask)
 		xsave->header.xcomp_bv = mask | XCOMP_BV_COMPACTED_FORMAT;
 }
 
-static inline u64 xstate_get_group_perm(bool guest)
-{
-	struct fpu *fpu = &current->group_leader->thread.fpu;
-	struct fpu_state_perm *perm;
-
-	 
-	perm = guest ? &fpu->guest_perm : &fpu->perm;
-	return READ_ONCE(perm->__state_perm);
-}
-
-static inline u64 xstate_get_host_group_perm(void)
-{
-	return xstate_get_group_perm(false);
-}
-
 enum xstate_copy_mode {
 	XSTATE_COPY_FP,
 	XSTATE_COPY_FX,
 	XSTATE_COPY_XSAVE,
 };
 
-struct membuf;
-extern void __copy_xstate_to_uabi_buf(struct membuf to, struct fpstate *fpstate,
-				      u32 pkru_val, enum xstate_copy_mode copy_mode);
-extern void copy_xstate_to_uabi_buf(struct membuf to, struct task_struct *tsk,
-				    enum xstate_copy_mode mode);
-extern int copy_uabi_from_kernel_to_xstate(struct fpstate *fpstate, const void *kbuf);
-extern int copy_sigframe_from_user_to_xstate(struct fpstate *fpstate, const void __user *ubuf);
+/* struct membuf, __copy_xstate_to_uabi_buf, copy_xstate_to_uabi_buf,
+ * copy_uabi_from_kernel_to_xstate, get_xsave_addr,
+ * copy_sigframe_from_user_to_xstate, fpu__init_cpu_xstate,
+ * fpu__init_system_xstate, xfeatures_mask_supervisor removed - unused */
 
 
-extern void fpu__init_cpu_xstate(void);
-extern void fpu__init_system_xstate(unsigned int legacy_size);
-
-extern void *get_xsave_addr(struct xregs_state *xsave, int xfeature_nr);
-
-static inline u64 xfeatures_mask_supervisor(void)
-{
-	return fpu_kernel_cfg.max_features & XFEATURE_MASK_SUPERVISOR_SUPPORTED;
-}
-
-static inline u64 xfeatures_mask_independent(void)
-{
-	if (!cpu_feature_enabled(X86_FEATURE_ARCH_LBR))
-		return XFEATURE_MASK_INDEPENDENT & ~XFEATURE_MASK_LBR;
-
-	return XFEATURE_MASK_INDEPENDENT;
-}
-
- 
 
 #define REX_PREFIX
 
@@ -131,15 +89,8 @@ static inline u64 xfeatures_mask_independent(void)
 		     : "D" (st), "m" (*st), "a" (lmask), "d" (hmask)	\
 		     : "memory")
 
-static inline void xfd_validate_state(struct fpstate *fpstate, u64 mask, bool rstor) { }
+/* xfd_validate_state, xfd_update_state removed - empty stubs */
 
-static inline void xfd_update_state(struct fpstate *fpstate) { }
-
-static inline int __xfd_enable_feature(u64 which, struct fpu_guest *guest_fpu) {
-	return -EPERM;
-}
-
- 
 static inline void os_xsave(struct fpstate *fpstate)
 {
 	u64 mask = fpstate->xfeatures;
@@ -148,109 +99,21 @@ static inline void os_xsave(struct fpstate *fpstate)
 	int err;
 
 	WARN_ON_FPU(!alternatives_patched);
-	xfd_validate_state(fpstate, mask, false);
-
+	/* xfd_validate_state removed - empty stub */
 	XSTATE_XSAVE(&fpstate->regs.xsave, lmask, hmask, err);
-
-	 
 	WARN_ON_FPU(err);
 }
 
- 
 static inline void os_xrstor(struct fpstate *fpstate, u64 mask)
 {
 	u32 lmask = mask;
 	u32 hmask = mask >> 32;
-
-	xfd_validate_state(fpstate, mask, true);
+	/* xfd_validate_state removed - empty stub */
 	XSTATE_XRESTORE(&fpstate->regs.xsave, lmask, hmask);
 }
 
- 
-static inline void os_xrstor_supervisor(struct fpstate *fpstate)
-{
-	u64 mask = xfeatures_mask_supervisor();
-	u32 lmask = mask;
-	u32 hmask = mask >> 32;
-
-	XSTATE_XRESTORE(&fpstate->regs.xsave, lmask, hmask);
-}
-
- 
-static inline u64 xfeatures_need_sigframe_write(void)
-{
-	u64 xfeaures_to_write;
-
-	 
-	xfeaures_to_write = xfeatures_in_use();
-
-	 
-	xfeaures_to_write |= XFEATURE_MASK_USER_SUPPORTED &
-			     ~XFEATURE_MASK_SIGFRAME_INITOPT;
-
-	return xfeaures_to_write;
-}
-
- 
-static inline int xsave_to_user_sigframe(struct xregs_state __user *buf)
-{
-	 
-	struct fpstate *fpstate = current->thread.fpu.fpstate;
-	u64 mask = fpstate->user_xfeatures;
-	u32 lmask;
-	u32 hmask;
-	int err;
-
-	 
-	if (fpu_state_size_dynamic())
-		mask &= xfeatures_need_sigframe_write();
-
-	lmask = mask;
-	hmask = mask >> 32;
-	xfd_validate_state(fpstate, mask, false);
-
-	stac();
-	XSTATE_OP(XSAVE, buf, lmask, hmask, err);
-	clac();
-
-	return err;
-}
-
- 
-static inline int xrstor_from_user_sigframe(struct xregs_state __user *buf, u64 mask)
-{
-	struct xregs_state *xstate = ((__force struct xregs_state *)buf);
-	u32 lmask = mask;
-	u32 hmask = mask >> 32;
-	int err;
-
-	xfd_validate_state(current->thread.fpu.fpstate, mask, true);
-
-	stac();
-	XSTATE_OP(XRSTOR, xstate, lmask, hmask, err);
-	clac();
-
-	return err;
-}
-
- 
-static inline int os_xrstor_safe(struct fpstate *fpstate, u64 mask)
-{
-	struct xregs_state *xstate = &fpstate->regs.xsave;
-	u32 lmask = mask;
-	u32 hmask = mask >> 32;
-	int err;
-
-	 
-	xfd_update_state(fpstate);
-
-	if (cpu_feature_enabled(X86_FEATURE_XSAVES))
-		XSTATE_OP(XRSTORS, xstate, lmask, hmask, err);
-	else
-		XSTATE_OP(XRSTOR, xstate, lmask, hmask, err);
-
-	return err;
-}
+/* os_xrstor_supervisor, xsave_to_user_sigframe, xrstor_from_user_sigframe,
+   os_xrstor_safe removed - never called */
 
 
 #endif

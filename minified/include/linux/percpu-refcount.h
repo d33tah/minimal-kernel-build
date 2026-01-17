@@ -19,16 +19,7 @@ enum {
 	__PERCPU_REF_FLAG_BITS	= 2,
 };
 
-enum {
-	 
-	PERCPU_REF_INIT_ATOMIC	= 1 << 0,
-
-	 
-	PERCPU_REF_INIT_DEAD	= 1 << 1,
-
-	 
-	PERCPU_REF_ALLOW_REINIT	= 1 << 2,
-};
+/* PERCPU_REF_INIT_* enum removed - never used */
 
 struct percpu_ref_data {
 	atomic_long_t		count;
@@ -76,20 +67,6 @@ static inline bool __ref_is_percpu(struct percpu_ref *ref,
 
 	*percpu_countp = (unsigned long __percpu *)percpu_ptr;
 	return true;
-}
-
-static inline void percpu_ref_get_many(struct percpu_ref *ref, unsigned long nr)
-{
-	unsigned long __percpu *percpu_count;
-
-	rcu_read_lock();
-
-	if (__ref_is_percpu(ref, &percpu_count))
-		this_cpu_add(*percpu_count, nr);
-	else
-		atomic_long_add(nr, &ref->data->count);
-
-	rcu_read_unlock();
 }
 
 static inline void percpu_ref_put_many(struct percpu_ref *ref, unsigned long nr)

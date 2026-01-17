@@ -21,24 +21,10 @@ static inline void INIT_LIST_HEAD(struct list_head *list)
 	WRITE_ONCE(list->prev, list);
 }
 
-static inline bool __list_add_valid(struct list_head *new,
-				struct list_head *prev,
-				struct list_head *next)
-{
-	return true;
-}
-static inline bool __list_del_entry_valid(struct list_head *entry)
-{
-	return true;
-}
-
 static inline void __list_add(struct list_head *new,
 			      struct list_head *prev,
 			      struct list_head *next)
 {
-	if (!__list_add_valid(new, prev, next))
-		return;
-
 	next->prev = new;
 	new->next = next;
 	new->prev = prev;
@@ -64,9 +50,6 @@ static inline void __list_del(struct list_head * prev, struct list_head * next)
 
 static inline void __list_del_entry(struct list_head *entry)
 {
-	if (!__list_del_entry_valid(entry))
-		return;
-
 	__list_del(entry->prev, entry->next);
 }
 
@@ -204,9 +187,6 @@ static inline void list_splice_tail_init(struct list_head *list,
 #define list_prev_entry(pos, member) \
 	list_entry((pos)->member.prev, typeof(*(pos)), member)
 
-#define list_for_each(pos, head) \
-	for (pos = (head)->next; !list_is_head(pos, (head)); pos = pos->next)
-
 #define list_for_each_safe(pos, n, head) \
 	for (pos = (head)->next, n = pos->next; \
 	     !list_is_head(pos, (head)); \
@@ -254,11 +234,6 @@ static inline int hlist_unhashed(const struct hlist_node *h)
 	return !h->pprev;
 }
 
-static inline int hlist_unhashed_lockless(const struct hlist_node *h)
-{
-	return !READ_ONCE(h->pprev);
-}
-
 static inline int hlist_empty(const struct hlist_head *h)
 {
 	return !READ_ONCE(h->first);
@@ -304,12 +279,6 @@ static inline bool hlist_fake(struct hlist_node *h)
 	return h->pprev == &h->next;
 }
 
-static inline bool
-hlist_is_singular_node(struct hlist_node *n, struct hlist_head *h)
-{
-	return !n->next && n->pprev == &h->first;
-}
-
 static inline void hlist_move_list(struct hlist_head *old,
 				   struct hlist_head *new)
 {
@@ -321,8 +290,7 @@ static inline void hlist_move_list(struct hlist_head *old,
 
 #define hlist_entry(ptr, type, member) container_of(ptr,type,member)
 
-#define hlist_for_each(pos, head) \
-	for (pos = (head)->first; pos ; pos = pos->next)
+/* hlist_for_each removed - unused */
 
 #define hlist_entry_safe(ptr, type, member) \
 	({ typeof(ptr) ____ptr = (ptr); \

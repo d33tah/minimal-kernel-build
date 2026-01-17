@@ -39,17 +39,7 @@ int wake_bit_function(struct wait_queue_entry *wq_entry, unsigned mode, int sync
 		},								\
 	}
 
-extern int bit_wait(struct wait_bit_key *key, int mode);
-
-static inline int
-wait_on_bit(unsigned long *word, int bit, unsigned mode)
-{
-	might_sleep();
-	if (!test_bit(bit, word))
-		return 0;
-	return out_of_line_wait_on_bit(word, bit, bit_wait, mode);
-}
-
+/* wait_on_bit removed - never called */
 /* wait_on_bit_io, wait_on_bit_timeout, wait_on_bit_lock,
    wait_on_bit_lock_io, wait_on_bit_lock_action removed - unused */
 

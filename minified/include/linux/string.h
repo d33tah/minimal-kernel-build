@@ -7,10 +7,7 @@
 #include <linux/errno.h>	 
 #include <linux/stdarg.h>
 
-
-extern char *strndup_user(const char __user *, long);
-extern void *memdup_user(const void __user *, size_t);
-
+/* memdup_user removed - never called */
 #include <asm/string_32.h>
 
 #ifndef __HAVE_ARCH_STRCPY
@@ -82,8 +79,6 @@ extern void * memmove(void *,const void *,__kernel_size_t);
 #endif
 #ifndef __HAVE_ARCH_MEMCMP
 extern int memcmp(const void *,const void *,__kernel_size_t);
-#endif
-#ifndef __HAVE_ARCH_BCMP
 #endif
 #ifndef __HAVE_ARCH_MEMCHR
 extern void * memchr(const void *,int,__kernel_size_t);

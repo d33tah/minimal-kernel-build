@@ -1,7 +1,6 @@
 
 #include <linux/personality.h>
 #include <linux/mm.h>
-#include <linux/random.h>
 #include <linux/limits.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/mm.h>
@@ -9,7 +8,7 @@
 #include <asm/elf.h>
 #include <asm/io.h>
 
-#include "physaddr.h"
+/* phys_addr_valid removed - never called in this file */
 
 unsigned long task_size_32bit(void)
 {
@@ -32,10 +31,10 @@ static unsigned long stack_maxrandom_size(unsigned long task_size)
 	return max;
 }
 
-# define mmap32_rnd_bits  mmap_rnd_bits
-# define mmap64_rnd_bits  mmap_rnd_bits
+#define mmap32_rnd_bits mmap_rnd_bits
+#define mmap64_rnd_bits mmap_rnd_bits
 
-#define SIZE_128M    (128 * 1024 * 1024UL)
+#define SIZE_128M (128 * 1024 * 1024UL)
 
 static int mmap_is_legacy(void)
 {
@@ -45,11 +44,10 @@ static int mmap_is_legacy(void)
 	return sysctl_legacy_va_layout;
 }
 
+/* Simplified for minimal kernel - no ASLR randomization */
 static unsigned long arch_rnd(unsigned int rndbits)
 {
-	if (!(current->flags & PF_RANDOMIZE))
-		return 0;
-	return (get_random_long() & ((1UL << rndbits) - 1)) << PAGE_SHIFT;
+	return 0;
 }
 
 unsigned long arch_mmap_rnd(void)
@@ -64,11 +62,9 @@ static unsigned long mmap_base(unsigned long rnd, unsigned long task_size,
 	unsigned long pad = stack_maxrandom_size(task_size) + stack_guard_gap;
 	unsigned long gap_min, gap_max;
 
-	 
 	if (gap + pad > gap)
 		gap += pad;
 
-	 
 	gap_min = SIZE_128M;
 	gap_max = (task_size / 6) * 5;
 
@@ -87,8 +83,9 @@ static unsigned long mmap_legacy_base(unsigned long rnd,
 }
 
 static void arch_pick_mmap_base(unsigned long *base, unsigned long *legacy_base,
-		unsigned long random_factor, unsigned long task_size,
-		struct rlimit *rlim_stack)
+				unsigned long random_factor,
+				unsigned long task_size,
+				struct rlimit *rlim_stack)
 {
 	*legacy_base = mmap_legacy_base(random_factor, task_size);
 	if (mmap_is_legacy())
@@ -105,38 +102,14 @@ void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
 		mm->get_unmapped_area = arch_get_unmapped_area_topdown;
 
 	arch_pick_mmap_base(&mm->mmap_base, &mm->mmap_legacy_base,
-			arch_rnd(mmap64_rnd_bits), task_size_64bit(0),
-			rlim_stack);
-
+			    arch_rnd(mmap64_rnd_bits), task_size_64bit(0),
+			    rlim_stack);
 }
 
-unsigned long get_mmap_base(int is_legacy)
-{
-	struct mm_struct *mm = current->mm;
+/* get_mmap_base, mmap_address_hint_valid removed - never called */
 
-	return is_legacy ? mm->mmap_legacy_base : mm->mmap_base;
-}
-
-
-bool mmap_address_hint_valid(unsigned long addr, unsigned long len)
-{
-	if (TASK_SIZE - len < addr)
-		return false;
-
-	return (addr > DEFAULT_MAP_WINDOW) == (addr + len > DEFAULT_MAP_WINDOW);
-}
-
-
+/* pfn_modify_allowed simplified - always returns true (capable check removed) */
 bool pfn_modify_allowed(unsigned long pfn, pgprot_t prot)
 {
-	if (!boot_cpu_has_bug(X86_BUG_L1TF))
-		return true;
-	if (!__pte_needs_invert(pgprot_val(prot)))
-		return true;
-	 
-	if (pfn_valid(pfn))
-		return true;
-	if (pfn >= l1tf_pfn_limit() && !capable(CAP_SYS_ADMIN))
-		return false;
 	return true;
 }

@@ -22,10 +22,7 @@ struct static_key {
 
 #ifndef __ASSEMBLY__
 
-enum jump_label_type {
-	JUMP_LABEL_NOP = 0,
-	JUMP_LABEL_JMP,
-};
+/* enum jump_label_type removed - never used */
 
 struct module;
 
@@ -43,34 +40,7 @@ static __always_inline void jump_label_init(void)
 	static_key_initialized = true;
 }
 
-static __always_inline bool static_key_false(struct static_key *key)
-{
-	if (unlikely_notrace(static_key_count(key) > 0))
-		return true;
-	return false;
-}
-
-static __always_inline bool static_key_true(struct static_key *key)
-{
-	if (likely_notrace(static_key_count(key) > 0))
-		return true;
-	return false;
-}
-
-static inline void static_key_slow_inc(struct static_key *key)
-{
-	STATIC_KEY_CHECK_USE(key);
-	atomic_inc(&key->enabled);
-}
-
-static inline void static_key_slow_dec(struct static_key *key)
-{
-	STATIC_KEY_CHECK_USE(key);
-	atomic_dec(&key->enabled);
-}
-
-#define static_key_slow_inc_cpuslocked(key) static_key_slow_inc(key)
-#define static_key_slow_dec_cpuslocked(key) static_key_slow_dec(key)
+/* static_key_slow_inc, static_key_slow_dec, static_key_slow_inc_cpuslocked, static_key_slow_dec_cpuslocked removed - never used */
 
 
 static inline void static_key_enable(struct static_key *key)
@@ -95,15 +65,11 @@ static inline void static_key_disable(struct static_key *key)
 	atomic_set(&key->enabled, 0);
 }
 
-#define static_key_enable_cpuslocked(k)		static_key_enable((k))
-#define static_key_disable_cpuslocked(k)	static_key_disable((k))
+/* static_key_enable_cpuslocked, static_key_disable_cpuslocked removed - never used */
 
 #define STATIC_KEY_INIT_TRUE	{ .enabled = ATOMIC_INIT(1) }
 #define STATIC_KEY_INIT_FALSE	{ .enabled = ATOMIC_INIT(0) }
-
-
-#define STATIC_KEY_INIT STATIC_KEY_INIT_FALSE
-#define jump_label_enabled static_key_enabled
+/* STATIC_KEY_INIT removed - never used */
 
 
 
@@ -120,9 +86,6 @@ struct static_key_false {
 
 #define DEFINE_STATIC_KEY_TRUE(name)	\
 	struct static_key_true name = STATIC_KEY_TRUE_INIT
-
-#define DEFINE_STATIC_KEY_TRUE_RO(name)	\
-	struct static_key_true name __ro_after_init = STATIC_KEY_TRUE_INIT
 
 #define DECLARE_STATIC_KEY_TRUE(name)	\
 	extern struct static_key_true name
@@ -142,10 +105,7 @@ struct static_key_false {
 #define DEFINE_STATIC_KEY_MAYBE(cfg, name)			\
 	__PASTE(_DEFINE_STATIC_KEY_, IS_ENABLED(cfg))(name)
 
-#define _DEFINE_STATIC_KEY_RO_1(name)	DEFINE_STATIC_KEY_TRUE_RO(name)
-#define _DEFINE_STATIC_KEY_RO_0(name)	DEFINE_STATIC_KEY_FALSE_RO(name)
-#define DEFINE_STATIC_KEY_MAYBE_RO(cfg, name)			\
-	__PASTE(_DEFINE_STATIC_KEY_RO_, IS_ENABLED(cfg))(name)
+/* DEFINE_STATIC_KEY_MAYBE_RO, _DEFINE_STATIC_KEY_RO_* removed - never used */
 
 #define _DECLARE_STATIC_KEY_1(name)	DECLARE_STATIC_KEY_TRUE(name)
 #define _DECLARE_STATIC_KEY_0(name)	DECLARE_STATIC_KEY_FALSE(name)
@@ -173,16 +133,12 @@ extern bool ____wrong_branch_error(void);
 			    : static_branch_unlikely(x))
 
 
-#define static_branch_inc(x)		static_key_slow_inc(&(x)->key)
-#define static_branch_dec(x)		static_key_slow_dec(&(x)->key)
-#define static_branch_inc_cpuslocked(x)	static_key_slow_inc_cpuslocked(&(x)->key)
-#define static_branch_dec_cpuslocked(x)	static_key_slow_dec_cpuslocked(&(x)->key)
+/* static_branch_inc, static_branch_dec, static_branch_inc_cpuslocked, static_branch_dec_cpuslocked removed - never used */
 
 
 #define static_branch_enable(x)			static_key_enable(&(x)->key)
 #define static_branch_disable(x)		static_key_disable(&(x)->key)
-#define static_branch_enable_cpuslocked(x)	static_key_enable_cpuslocked(&(x)->key)
-#define static_branch_disable_cpuslocked(x)	static_key_disable_cpuslocked(&(x)->key)
+/* static_branch_enable_cpuslocked, static_branch_disable_cpuslocked removed - never used */
 
 #endif  
 

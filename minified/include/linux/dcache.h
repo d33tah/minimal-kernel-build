@@ -20,18 +20,13 @@
 #include <linux/wait.h>
 
 struct path;
-struct vfsmount;
+/* struct vfsmount forward decl removed - unused */
 
 
 #define IS_ROOT(x) ((x) == (x)->d_parent)
 
-#ifdef __LITTLE_ENDIAN
- #define HASH_LEN_DECLARE u32 hash; u32 len
- #define bytemask_from_count(cnt)	(~(~0ul << (cnt)*8))
-#else
- #define HASH_LEN_DECLARE u32 len; u32 hash
- #define bytemask_from_count(cnt)	(~(~0ul >> (cnt)*8))
-#endif
+#define HASH_LEN_DECLARE u32 hash; u32 len
+#define bytemask_from_count(cnt)	(~(~0ul << (cnt)*8))
 
 struct qstr {
 	union {
@@ -60,12 +55,10 @@ struct dentry {
 	struct inode *d_inode;		 
 	unsigned char d_iname[DNAME_INLINE_LEN];	 
 
-	 
-	struct lockref d_lockref;	 
+
+	struct lockref d_lockref;
 	const struct dentry_operations *d_op;
-	struct super_block *d_sb;	 
-	unsigned long d_time;		 
-	void *d_fsdata;			 
+	struct super_block *d_sb;
 
 	union {
 		struct list_head d_lru;		 
@@ -88,28 +81,17 @@ enum dentry_d_lock_class
 };
 
 struct dentry_operations {
-	int (*d_revalidate)(struct dentry *, unsigned int);
-	int (*d_weak_revalidate)(struct dentry *, unsigned int);
-	int (*d_hash)(const struct dentry *, struct qstr *);
-	int (*d_compare)(const struct dentry *,
-			unsigned int, const char *, const struct qstr *);
+	/* d_revalidate, d_weak_revalidate, d_hash, d_compare removed - never called/set */
 	int (*d_delete)(const struct dentry *);
-	int (*d_init)(struct dentry *);
-	void (*d_release)(struct dentry *);
-	void (*d_prune)(struct dentry *);
-	void (*d_iput)(struct dentry *, struct inode *);
-	char *(*d_dname)(struct dentry *, char *, int);
-	/* d_automount removed - unused */
-	int (*d_manage)(const struct path *, bool);
-	struct dentry *(*d_real)(struct dentry *, const struct inode *);
+	/* d_init, d_release, d_prune, d_iput, d_dname, d_automount, d_manage, d_real removed - never called/set */
 } ____cacheline_aligned;
 
 
 #define DCACHE_OP_HASH			0x00000001
 #define DCACHE_OP_COMPARE		0x00000002
-#define DCACHE_OP_REVALIDATE		0x00000004
+/* DCACHE_OP_REVALIDATE removed - unused */
 #define DCACHE_OP_DELETE		0x00000008
-#define DCACHE_OP_PRUNE			0x00000010
+/* DCACHE_OP_PRUNE removed - unused */
 
 #define	DCACHE_DISCONNECTED		0x00000020
       
@@ -120,10 +102,7 @@ struct dentry_operations {
 
 #define DCACHE_CANT_MOUNT		0x00000100
 #define DCACHE_SHRINK_LIST		0x00000400
-
-#define DCACHE_OP_WEAK_REVALIDATE	0x00000800
-
-
+/* DCACHE_OP_WEAK_REVALIDATE removed - unused */
 
 #define DCACHE_DENTRY_KILLED		0x00008000
 
@@ -145,7 +124,7 @@ struct dentry_operations {
 
 #define DCACHE_MAY_FREE			0x00800000
 #define DCACHE_FALLTHRU			0x01000000
-#define DCACHE_OP_REAL			0x04000000
+/* DCACHE_OP_REAL removed - unused */
 
 #define DCACHE_PAR_LOOKUP		0x10000000  
 #define DCACHE_DENTRY_CURSOR		0x20000000
@@ -164,20 +143,17 @@ extern struct dentry * d_alloc(struct dentry *, const struct qstr *);
 extern struct dentry * d_alloc_anon(struct super_block *);
 extern struct dentry * d_alloc_parallel(struct dentry *, const struct qstr *,
 					wait_queue_head_t *);
-extern void shrink_dcache_parent(struct dentry *);
+/* shrink_dcache_parent removed - never called */
 extern void shrink_dcache_for_umount(struct super_block *);
 extern void d_invalidate(struct dentry *);
 
 
 extern struct dentry * d_make_root(struct inode *);
 
-extern void d_tmpfile(struct dentry *, struct inode *);
+/* d_tmpfile removed - tmpfile callback removed from inode_operations */
 
-
-extern void d_rehash(struct dentry *);
 extern void d_add(struct dentry *, struct inode *);
-extern struct dentry *d_ancestor(struct dentry *, struct dentry *);
-
+/* d_ancestor removed - never called */
 extern struct dentry *d_lookup(const struct dentry *, const struct qstr *);
 extern struct dentry *__d_lookup(const struct dentry *, const struct qstr *);
 extern struct dentry *__d_lookup_rcu(const struct dentry *parent,
@@ -188,13 +164,6 @@ extern __printf(4, 5)
 char *dynamic_dname(struct dentry *, char *, int, const char *, ...);
 
 extern char *d_path(const struct path *, char *, int);
-
-static inline struct dentry *dget_dlock(struct dentry *dentry)
-{
-	if (dentry)
-		dentry->d_lockref.count++;
-	return dentry;
-}
 
 static inline struct dentry *dget(struct dentry *dentry)
 {
@@ -249,10 +218,7 @@ static inline unsigned __d_entry_type(const struct dentry *dentry)
 	return dentry->d_flags & DCACHE_ENTRY_TYPE;
 }
 
-static inline bool d_is_miss(const struct dentry *dentry)
-{
-	return __d_entry_type(dentry) == DCACHE_MISS_TYPE;
-}
+/* d_is_miss removed - never called */
 
 static inline bool d_can_lookup(const struct dentry *dentry)
 {
@@ -276,31 +242,12 @@ static inline bool d_is_reg(const struct dentry *dentry)
 	return __d_entry_type(dentry) == DCACHE_REGULAR_TYPE;
 }
 
-static inline bool d_is_negative(const struct dentry *dentry)
-{
-	 
-	return d_is_miss(dentry);
-}
-
 static inline bool d_flags_negative(unsigned flags)
 {
 	return (flags & DCACHE_ENTRY_TYPE) == DCACHE_MISS_TYPE;
 }
 
-static inline bool d_is_positive(const struct dentry *dentry)
-{
-	return !d_is_negative(dentry);
-}
-
-static inline bool d_really_is_positive(const struct dentry *dentry)
-{
-	return dentry->d_inode != NULL;
-}
-
-static inline int simple_positive(const struct dentry *dentry)
-{
-	return d_really_is_positive(dentry) && !d_unhashed(dentry);
-}
+/* d_really_is_positive removed - never called */
 
 extern int sysctl_vfs_cache_pressure;
 
@@ -319,15 +266,6 @@ static inline struct inode *d_backing_inode(const struct dentry *upper)
 	struct inode *inode = upper->d_inode;
 
 	return inode;
-}
-
-static inline struct dentry *d_real(struct dentry *dentry,
-				    const struct inode *inode)
-{
-	if (unlikely(dentry->d_flags & DCACHE_OP_REAL))
-		return dentry->d_op->d_real(dentry, inode);
-	else
-		return dentry;
 }
 
 #endif

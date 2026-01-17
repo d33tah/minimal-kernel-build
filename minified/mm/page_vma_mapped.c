@@ -16,22 +16,10 @@ static bool map_pte(struct page_vma_mapped_walk *pvmw)
 {
 	pvmw->pte = pte_offset_map(pvmw->pmd, pvmw->address);
 	if (!(pvmw->flags & PVMW_SYNC)) {
-		if (pvmw->flags & PVMW_MIGRATION) {
-			if (!is_swap_pte(*pvmw->pte))
-				return false;
-		} else {
-			 
-			if (is_swap_pte(*pvmw->pte)) {
-				swp_entry_t entry;
-
-				 
-				entry = pte_to_swp_entry(*pvmw->pte);
-				if (!is_device_private_entry(entry) &&
-				    !is_device_exclusive_entry(entry))
-					return false;
-			} else if (!pte_present(*pvmw->pte))
-				return false;
-		}
+		if (is_swap_pte(*pvmw->pte))
+			return false;
+		if (!pte_present(*pvmw->pte))
+			return false;
 	}
 	pvmw->ptl = pte_lockptr(pvmw->vma->vm_mm, pvmw->pmd);
 	spin_lock(pvmw->ptl);
@@ -42,45 +30,16 @@ static bool check_pte(struct page_vma_mapped_walk *pvmw)
 {
 	unsigned long pfn;
 
-	if (pvmw->flags & PVMW_MIGRATION) {
-		swp_entry_t entry;
-		if (!is_swap_pte(*pvmw->pte))
-			return false;
-		entry = pte_to_swp_entry(*pvmw->pte);
+	if (is_swap_pte(*pvmw->pte))
+		return false;
+	if (!pte_present(*pvmw->pte))
+		return false;
 
-		if (!is_migration_entry(entry) &&
-		    !is_device_exclusive_entry(entry))
-			return false;
-
-		pfn = swp_offset(entry);
-	} else if (is_swap_pte(*pvmw->pte)) {
-		swp_entry_t entry;
-
-		 
-		entry = pte_to_swp_entry(*pvmw->pte);
-		if (!is_device_private_entry(entry) &&
-		    !is_device_exclusive_entry(entry))
-			return false;
-
-		pfn = swp_offset(entry);
-	} else {
-		if (!pte_present(*pvmw->pte))
-			return false;
-
-		pfn = pte_pfn(*pvmw->pte);
-	}
-
+	pfn = pte_pfn(*pvmw->pte);
 	return (pfn - pvmw->pfn) < pvmw->nr_pages;
 }
 
-static bool check_pmd(unsigned long pfn, struct page_vma_mapped_walk *pvmw)
-{
-	if ((pfn + HPAGE_PMD_NR - 1) < pvmw->pfn)
-		return false;
-	if (pfn > pvmw->pfn + pvmw->nr_pages - 1)
-		return false;
-	return true;
-}
+/* Removed: check_pmd - never called (~8 LOC) */
 
 static void step_forward(struct page_vma_mapped_walk *pvmw, unsigned long size)
 {
@@ -99,28 +58,8 @@ bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw)
 	pud_t *pud;
 	pmd_t pmde;
 
-	 
 	if (pvmw->pmd && !pvmw->pte)
 		return not_found(pvmw);
-
-	if (unlikely(is_vm_hugetlb_page(vma))) {
-		struct hstate *hstate = hstate_vma(vma);
-		unsigned long size = huge_page_size(hstate);
-		 
-		if (pvmw->pte)
-			return not_found(pvmw);
-
-		 
-		pvmw->pte = huge_pte_offset(mm, pvmw->address, size);
-		if (!pvmw->pte)
-			return false;
-
-		pvmw->ptl = huge_pte_lockptr(hstate, mm, pvmw->pte);
-		spin_lock(pvmw->ptl);
-		if (!check_pte(pvmw))
-			return not_found(pvmw);
-		return true;
-	}
 
 	end = vma_address_end(pvmw);
 	if (pvmw->pte)
@@ -144,44 +83,11 @@ restart:
 		}
 
 		pvmw->pmd = pmd_offset(pud, pvmw->address);
-		 
+
 		pmde = READ_ONCE(*pvmw->pmd);
 
-		if (pmd_trans_huge(pmde) || is_pmd_migration_entry(pmde) ||
-		    (pmd_present(pmde) && pmd_devmap(pmde))) {
-			pvmw->ptl = pmd_lock(mm, pvmw->pmd);
-			pmde = *pvmw->pmd;
-			if (!pmd_present(pmde)) {
-				swp_entry_t entry;
-
-				if (!thp_migration_supported() ||
-				    !(pvmw->flags & PVMW_MIGRATION))
-					return not_found(pvmw);
-				entry = pmd_to_swp_entry(pmde);
-				if (!is_migration_entry(entry) ||
-				    !check_pmd(swp_offset(entry), pvmw))
-					return not_found(pvmw);
-				return true;
-			}
-			if (likely(pmd_trans_huge(pmde) || pmd_devmap(pmde))) {
-				if (pvmw->flags & PVMW_MIGRATION)
-					return not_found(pvmw);
-				if (!check_pmd(pmd_pfn(pmde), pvmw))
-					return not_found(pvmw);
-				return true;
-			}
-			 
-			spin_unlock(pvmw->ptl);
-			pvmw->ptl = NULL;
-		} else if (!pmd_present(pmde)) {
-			 
-			if ((pvmw->flags & PVMW_SYNC) &&
-			    transparent_hugepage_active(vma) &&
-			    (pvmw->nr_pages >= HPAGE_PMD_NR)) {
-				spinlock_t *ptl = pmd_lock(mm, pvmw->pmd);
-
-				spin_unlock(ptl);
-			}
+		/* pmd_trans_huge/migration_entry/devmap/transparent_hugepage_active return 0 */
+		if (!pmd_present(pmde)) {
 			step_forward(pvmw, PMD_SIZE);
 			continue;
 		}
@@ -195,7 +101,7 @@ next_pte:
 			pvmw->address += PAGE_SIZE;
 			if (pvmw->address >= end)
 				return not_found(pvmw);
-			 
+
 			if ((pvmw->address & (PMD_SIZE - PAGE_SIZE)) == 0) {
 				if (pvmw->ptl) {
 					spin_unlock(pvmw->ptl);
@@ -222,20 +128,4 @@ next_pte:
 	return false;
 }
 
-int page_mapped_in_vma(struct page *page, struct vm_area_struct *vma)
-{
-	struct page_vma_mapped_walk pvmw = {
-		.pfn = page_to_pfn(page),
-		.nr_pages = 1,
-		.vma = vma,
-		.flags = PVMW_SYNC,
-	};
-
-	pvmw.address = vma_address(page, vma);
-	if (pvmw.address == -EFAULT)
-		return 0;
-	if (!page_vma_mapped_walk(&pvmw))
-		return 0;
-	page_vma_mapped_walk_done(&pvmw);
-	return 1;
-}
+/* page_mapped_in_vma removed - never called */

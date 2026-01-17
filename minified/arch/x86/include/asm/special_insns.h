@@ -5,7 +5,7 @@
 
 #ifdef __KERNEL__
 
-#include <asm/nops.h>
+#include <asm/asm.h>
 #include <asm/processor-flags.h>
 #include <linux/irqflags.h>
 #include <linux/jump_label.h>
@@ -118,17 +118,8 @@ static inline void __write_cr4(unsigned long x)
 	native_write_cr4(x);
 }
 
-static inline void wbinvd(void)
-{
-	native_wbinvd();
-}
-
-/* load_gs_index removed - unused */
-
-static inline void clflush(volatile void *__p)
-{
-	asm volatile("clflush %0" : "+m" (*(volatile char __force *)__p));
-}
+/* wbinvd removed - unused wrapper, native_wbinvd called directly */
+/* load_gs_index, clflush removed - unused */
 
 #define nop() asm volatile ("nop")
 

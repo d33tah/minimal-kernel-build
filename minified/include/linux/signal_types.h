@@ -6,10 +6,7 @@
 #include <asm/signal.h>
 #include <asm/siginfo.h>
 
-#define SS_ONSTACK	1
-#define SS_DISABLE	2
-#define SS_AUTODISARM	(1U << 31)
-#define SS_FLAG_BITS	SS_AUTODISARM
+/* SS_DISABLE, SS_ONSTACK, SS_AUTODISARM, SS_FLAG_BITS removed - unused */
 
 typedef struct kernel_siginfo {
 	__SIGINFO;
@@ -60,24 +57,8 @@ struct old_sigaction {
 	__sigrestore_t sa_restorer;
 };
 
-struct ksignal {
-	struct k_sigaction ka;
-	kernel_siginfo_t info;
-	int sig;
-};
+/* struct ksignal removed - unused */
 
 #define SA_IMMUTABLE		0x00800000
-
-#ifndef __ARCH_UAPI_SA_FLAGS
-#ifdef SA_RESTORER
-#define __ARCH_UAPI_SA_FLAGS	SA_RESTORER
-#else
-#define __ARCH_UAPI_SA_FLAGS	0
-#endif
-#endif
-
-#define UAPI_SA_FLAGS                                                          \
-	(SA_NOCLDSTOP | SA_NOCLDWAIT | SA_SIGINFO | SA_ONSTACK | SA_RESTART |  \
-	 SA_NODEFER | SA_RESETHAND | SA_EXPOSE_TAGBITS | __ARCH_UAPI_SA_FLAGS)
 
 #endif  

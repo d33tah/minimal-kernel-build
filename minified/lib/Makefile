@@ -27,12 +27,14 @@ KASAN_SANITIZE_string.o := n
 CFLAGS_string.o += -fno-stack-protector
 endif
 
+# timerqueue.o - Removed: all functions were stubbed out
 lib-y := ctype.o string.o vsprintf.o cmdline.o \
-	 rbtree.o radix-tree.o timerqueue.o xarray.o \
+	 rbtree.o radix-tree.o xarray.o \
 	 idr.o extable.o irq_regs.o \
 	 flex_proportions.o ratelimit.o \
-	 decompress.o kobject_uevent.o \
-	 siphash.o dec_and_lock.o
+	 kobject_uevent.o \
+	 dec_and_lock.o
+	 # siphash.o - Removed: ptr hashing disabled in vsprintf.c
 	 # argv_split.o - Removed: not used
 	 # buildid.o - Removed: Not needed (stub functions)
 
@@ -42,16 +44,18 @@ lib-$(CONFIG_SMP) += cpumask.o
 lib-y	+= kobject.o klist.o
 obj-y	+= lockref.o
 
-obj-y += bcd.o sort.o debug_locks.o \
-	 bust_spinlocks.o kasprintf.o bitmap.o scatterlist.o \
+# bcd.o removed - inlined into rtc.c
+obj-y += sort.o debug_locks.o \
+	 bust_spinlocks.o kasprintf.o bitmap.o \
 	 iov_iter.o \
 	 bsearch.o find_bit.o llist.o \
-	 refcount.o usercopy.o errseq.o
+	 refcount.o usercopy.o
+# errseq.o removed - file is empty
 	 # parser.o removed - not used
 obj-$(CONFIG_STRING_SELFTEST) += test_string.o
 obj-y += string_helpers.o
 obj-$(CONFIG_TEST_STRING_HELPERS) += test-string_helpers.o
-obj-y += hexdump.o
+# hexdump.o removed - hex_asc_upper moved to kernel.h
 obj-$(CONFIG_TEST_HEXDUMP) += test_hexdump.o
 obj-y += kstrtox.o
 obj-$(CONFIG_FIND_BIT_BENCHMARK) += find_bit_benchmark.o
@@ -229,7 +233,7 @@ obj-$(CONFIG_SIGNATURE) += digsig.o
 lib-$(CONFIG_CLZ_TAB) += clz_tab.o
 lib-$(CONFIG_LIB_MEMNEQ) += memneq.o
 
-obj-$(CONFIG_GENERIC_STRNCPY_FROM_USER) += strncpy_from_user.o
+# strncpy_from_user.o removed - never called
 obj-$(CONFIG_GENERIC_STRNLEN_USER) += strnlen_user.o
 
 obj-$(CONFIG_GENERIC_NET_UTILS) += net_utils.o

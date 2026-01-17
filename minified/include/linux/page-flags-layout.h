@@ -18,8 +18,6 @@
 
 #define ZONES_WIDTH		ZONES_SHIFT
 
-#define SECTIONS_SHIFT	0
-
 #ifndef BUILD_VDSO32_64
 #define SECTIONS_WIDTH		0
 
@@ -27,10 +25,6 @@
 #define NODES_WIDTH		NODES_SHIFT
 #else
 #define NODES_WIDTH		0
-#endif
-
-#if NODES_SHIFT != 0 && NODES_WIDTH == 0
-#define NODE_NOT_IN_PAGE_FLAGS	1
 #endif
 
 #define KASAN_TAG_WIDTH 0

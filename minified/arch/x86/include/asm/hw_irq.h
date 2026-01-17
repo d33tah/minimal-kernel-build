@@ -17,12 +17,9 @@
 #include <asm/irq.h>
 #include <asm/sections.h>
 
-static inline void lock_vector_lock(void) {}
-static inline void unlock_vector_lock(void) {}
 
  
-extern atomic_t irq_err_count;
-
+/* irq_err_count removed - only incremented, never read */
 extern char irq_entries_start[];
 
 #define VECTOR_UNUSED		NULL

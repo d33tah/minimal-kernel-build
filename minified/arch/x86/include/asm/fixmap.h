@@ -5,10 +5,9 @@
 
 #include <asm/kmap_size.h>
 
- 
+
 # define FIXMAP_PMD_NUM	2
- 
-#define FIXMAP_PMD_TOP	507
+/* FIXMAP_PMD_TOP removed - never used */
 
 #ifndef __ASSEMBLY__
 #include <linux/kernel.h>
@@ -25,9 +24,8 @@ extern unsigned long __FIXADDR_TOP;
  
 enum fixed_addresses {
 	FIX_HOLE,
-	FIX_DBGP_BASE,
-	FIX_EARLYCON_MEM_BASE,
-	FIX_KMAP_BEGIN,	 
+	/* FIX_DBGP_BASE, FIX_EARLYCON_MEM_BASE removed - never used */
+	FIX_KMAP_BEGIN,
 	FIX_KMAP_END = FIX_KMAP_BEGIN + (KM_MAX_IDX * NR_CPUS) - 1,
 
 
@@ -50,16 +48,10 @@ enum fixed_addresses {
 };
 
 
-extern void reserve_top_address(unsigned long reserve);
-
 #define FIXADDR_SIZE		(__end_of_permanent_fixed_addresses << PAGE_SHIFT)
 #define FIXADDR_START		(FIXADDR_TOP - FIXADDR_SIZE)
 #define FIXADDR_TOT_SIZE	(__end_of_fixed_addresses << PAGE_SHIFT)
 #define FIXADDR_TOT_START	(FIXADDR_TOP - FIXADDR_TOT_SIZE)
-
-extern int fixmaps_set;
-
-extern pte_t *pkmap_page_table;
 
 void __native_set_fixmap(enum fixed_addresses idx, pte_t pte);
 void native_set_fixmap(unsigned   idx,
@@ -74,22 +66,14 @@ static inline void __set_fixmap(enum fixed_addresses idx,
  
 #define FIXMAP_PAGE_NOCACHE PAGE_KERNEL_IO_NOCACHE
 
- 
-void __init *early_memremap_encrypted(resource_size_t phys_addr,
-				      unsigned long size);
-void __init *early_memremap_encrypted_wp(resource_size_t phys_addr,
-					 unsigned long size);
-void __init *early_memremap_decrypted(resource_size_t phys_addr,
-				      unsigned long size);
-void __init *early_memremap_decrypted_wp(resource_size_t phys_addr,
-					 unsigned long size);
+/* early_memremap_{encrypted,decrypted}[_wp] declarations removed - never called */
 
 /* Inlined from asm-generic/fixmap.h */
 #include <linux/bug.h>
 #include <linux/mm_types.h>
 
 #define __fix_to_virt(x)	(FIXADDR_TOP - ((x) << PAGE_SHIFT))
-#define __virt_to_fix(x)	((FIXADDR_TOP - ((x)&PAGE_MASK)) >> PAGE_SHIFT)
+/* __virt_to_fix removed - unused */
 
 static __always_inline unsigned long fix_to_virt(const unsigned int idx)
 {
@@ -97,11 +81,6 @@ static __always_inline unsigned long fix_to_virt(const unsigned int idx)
 	return __fix_to_virt(idx);
 }
 
-static inline unsigned long virt_to_fix(const unsigned long vaddr)
-{
-	BUG_ON(vaddr >= FIXADDR_TOP || vaddr < FIXADDR_START);
-	return __virt_to_fix(vaddr);
-}
 
 #ifndef FIXMAP_PAGE_NORMAL
 #define FIXMAP_PAGE_NORMAL PAGE_KERNEL

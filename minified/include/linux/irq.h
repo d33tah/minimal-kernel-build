@@ -17,11 +17,8 @@ typedef void (*irq_flow_handler_t)(struct irq_desc *desc);
 #include <asm/ptrace.h>
 #include <asm/irq_regs.h>
 
-struct seq_file;
 struct module;
-struct msi_msg;
 struct irq_affinity_desc;
-enum irqchip_irq_state;
 
 enum {
 	IRQ_TYPE_NONE		= 0x00000000,
@@ -86,29 +83,26 @@ struct irq_data {
 
 enum {
 	IRQD_TRIGGER_MASK		= 0xf,
-	IRQD_SETAFFINITY_PENDING	= (1 <<  8),
+	/* IRQD_SETAFFINITY_PENDING removed - unused */
 	IRQD_ACTIVATED			= (1 <<  9),
 	IRQD_NO_BALANCING		= (1 << 10),
 	IRQD_PER_CPU			= (1 << 11),
-	IRQD_AFFINITY_SET		= (1 << 12),
+	/* IRQD_AFFINITY_SET removed - unused */
 	IRQD_LEVEL			= (1 << 13),
-	IRQD_WAKEUP_STATE		= (1 << 14),
-	IRQD_MOVE_PCNTXT		= (1 << 15),
+	/* IRQD_WAKEUP_STATE, IRQD_MOVE_PCNTXT removed - unused */
 	IRQD_IRQ_DISABLED		= (1 << 16),
 	IRQD_IRQ_MASKED			= (1 << 17),
 	IRQD_IRQ_INPROGRESS		= (1 << 18),
 	IRQD_WAKEUP_ARMED		= (1 << 19),
-	IRQD_FORWARDED_TO_VCPU		= (1 << 20),
+	/* IRQD_FORWARDED_TO_VCPU removed - unused */
 	IRQD_AFFINITY_MANAGED		= (1 << 21),
 	IRQD_IRQ_STARTED		= (1 << 22),
 	IRQD_MANAGED_SHUTDOWN		= (1 << 23),
-	IRQD_SINGLE_TARGET		= (1 << 24),
+	/* IRQD_SINGLE_TARGET removed - unused */
 	IRQD_DEFAULT_TRIGGER_SET	= (1 << 25),
-	IRQD_CAN_RESERVE		= (1 << 26),
-	IRQD_MSI_NOMASK_QUIRK		= (1 << 27),
-	IRQD_HANDLE_ENFORCE_IRQCTX	= (1 << 28),
-	IRQD_AFFINITY_ON_ACTIVATE	= (1 << 29),
-	IRQD_IRQ_ENABLED_ON_SUSPEND	= (1 << 30),
+	/* IRQD_CAN_RESERVE, IRQD_MSI_NOMASK_QUIRK removed - unused */
+	/* IRQD_HANDLE_ENFORCE_IRQCTX, IRQD_AFFINITY_ON_ACTIVATE removed - unused */
+	/* IRQD_IRQ_ENABLED_ON_SUSPEND removed - unused */
 };
 
 #define __irqd_to_state(d) ACCESS_PRIVATE((d)->common, state_use_accessors)
@@ -160,10 +154,7 @@ static inline void irqd_set_activated(struct irq_data *d)
 	__irqd_to_state(d) |= IRQD_ACTIVATED;
 }
 
-static inline void irqd_clr_activated(struct irq_data *d)
-{
-	__irqd_to_state(d) &= ~IRQD_ACTIVATED;
-}
+/* irqd_clr_activated removed - never called */
 
 static inline bool irqd_is_started(struct irq_data *d)
 {
@@ -192,31 +183,13 @@ struct irq_chip {
 
 	void		(*irq_bus_lock)(struct irq_data *data);
 	void		(*irq_bus_sync_unlock)(struct irq_data *data);
-
-	void		(*irq_suspend)(struct irq_data *data);
-	void		(*irq_resume)(struct irq_data *data);
-	void		(*irq_pm_shutdown)(struct irq_data *data);
-
-	void		(*irq_calc_mask)(struct irq_data *data);
-
-	void		(*irq_print_chip)(struct irq_data *data, struct seq_file *p);
+	/* irq_suspend, irq_resume, irq_pm_shutdown removed - never used */
+	/* irq_calc_mask, irq_print_chip removed - never used */
 	int		(*irq_request_resources)(struct irq_data *data);
 	void		(*irq_release_resources)(struct irq_data *data);
-
-	void		(*irq_compose_msi_msg)(struct irq_data *data, struct msi_msg *msg);
-	void		(*irq_write_msi_msg)(struct irq_data *data, struct msi_msg *msg);
-
-	int		(*irq_get_irqchip_state)(struct irq_data *data, enum irqchip_irq_state which, bool *state);
-	int		(*irq_set_irqchip_state)(struct irq_data *data, enum irqchip_irq_state which, bool state);
-
-	int		(*irq_set_vcpu_affinity)(struct irq_data *data, void *vcpu_info);
-
-	void		(*ipi_send_single)(struct irq_data *data, unsigned int cpu);
-	void		(*ipi_send_mask)(struct irq_data *data, const struct cpumask *dest);
-
-	int		(*irq_nmi_setup)(struct irq_data *data);
-	void		(*irq_nmi_teardown)(struct irq_data *data);
-
+	/* irq_compose_msi_msg, irq_write_msi_msg removed - never used */
+	/* irq_get_irqchip_state, irq_set_irqchip_state removed - never used */
+	/* irq_set_vcpu_affinity, ipi_send_*, irq_nmi_* removed - never used */
 	unsigned long	flags;
 };
 
@@ -229,10 +202,8 @@ enum {
 	IRQCHIP_ONESHOT_SAFE			= (1 <<  5),
 	IRQCHIP_EOI_THREADED			= (1 <<  6),
 	IRQCHIP_SUPPORTS_LEVEL_MSI		= (1 <<  7),
-	IRQCHIP_SUPPORTS_NMI			= (1 <<  8),
-	IRQCHIP_ENABLE_WAKEUP_ON_SUSPEND	= (1 <<  9),
-	IRQCHIP_AFFINITY_PRE_STARTUP		= (1 << 10),
-	IRQCHIP_IMMUTABLE			= (1 << 11),
+	/* IRQCHIP_SUPPORTS_NMI, IRQCHIP_ENABLE_WAKEUP_ON_SUSPEND,
+	   IRQCHIP_AFFINITY_PRE_STARTUP, IRQCHIP_IMMUTABLE removed - unused */
 };
 
 #include <linux/irqdesc.h>
@@ -251,9 +222,6 @@ enum {
 
 struct irqaction;
 
-# define irq_affinity_online_cpu	NULL
-
-
 extern void handle_level_irq(struct irq_desc *desc);
 extern void handle_bad_irq(struct irq_desc *desc);
 
@@ -261,8 +229,7 @@ extern void handle_bad_irq(struct irq_desc *desc);
 extern int irq_chip_pm_get(struct irq_data *data);
 extern int irq_chip_pm_put(struct irq_data *data);
 
-extern void note_interrupt(struct irq_desc *desc, irqreturn_t action_ret);
-
+/* note_interrupt removed - declared but never called */
 
 extern struct irq_chip no_irq_chip;
 extern struct irq_chip dummy_irq_chip;
@@ -284,32 +251,16 @@ __irq_set_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained,
 		  const char *name);
 
 
-void irq_modify_status(unsigned int irq, unsigned long clr, unsigned long set);
+/* irq_modify_status removed - never called */
 
 
 extern int irq_set_chip(unsigned int irq, const struct irq_chip *chip);
-extern int irq_set_chip_data(unsigned int irq, void *data);
-extern int irq_set_irq_type(unsigned int irq, unsigned int type);
-extern struct irq_data *irq_get_irq_data(unsigned int irq);
-
-static inline struct irq_chip *irq_data_get_irq_chip(struct irq_data *d)
-{
-	return d->chip;
-}
-
-
-static inline struct cpumask *irq_data_get_affinity_mask(struct irq_data *d)
-{
-	return d->common->affinity;
-}
-
-
-unsigned int arch_dynirq_lower_bound(unsigned int from);
+/* irq_set_chip_data, irq_set_irq_type, irq_get_irq_data, irq_data_get_irq_chip, irq_data_get_affinity_mask, arch_dynirq_lower_bound removed - unused */
 
 int __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt, int node,
 		      struct module *owner,
 		      const struct irq_affinity_desc *affinity);
 
-void irq_free_descs(unsigned int irq, unsigned int cnt);
+/* irq_free_descs removed - never called */
 
 #endif  

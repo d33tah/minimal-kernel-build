@@ -83,18 +83,6 @@ enum syscall_work_bit {
 
 #ifdef __KERNEL__
 
-#ifndef arch_set_restart_data
-#define arch_set_restart_data(restart) do { } while (0)
-#endif
-
-static inline long set_restart_fn(struct restart_block *restart,
-					long (*fn)(struct restart_block *))
-{
-	restart->fn = fn;
-	arch_set_restart_data(restart);
-	return -ERESTART_RESTARTBLOCK;
-}
-
 #ifndef THREAD_ALIGN
 #define THREAD_ALIGN	THREAD_SIZE
 #endif
@@ -175,12 +163,8 @@ __bad_copy_from(void);
 extern void __compiletime_error("copy destination size is too small")
 __bad_copy_to(void);
 
-void __copy_overflow(int size, unsigned long count);
-
 static inline void copy_overflow(int size, unsigned long count)
 {
-	if (IS_ENABLED(CONFIG_BUG))
-		__copy_overflow(size, count);
 }
 
 static __always_inline __must_check bool
@@ -202,10 +186,8 @@ check_copy_size(const void *addr, size_t bytes, bool is_source)
 	return true;
 }
 
-#ifndef arch_setup_new_exec
-static inline void arch_setup_new_exec(void) { }
-#endif
+/* arch_setup_new_exec removed - call site removed in exec.c */
 
-#endif	 
+#endif
 
 #endif  

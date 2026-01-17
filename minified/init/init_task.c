@@ -7,7 +7,6 @@
 #include <linux/init.h>
 #include <linux/fs.h>
 #include <linux/mm.h>
-#include <linux/audit.h>
 #include <linux/numa.h>
 
 #include <linux/uaccess.h>
@@ -15,7 +14,7 @@
 static struct signal_struct init_signals = {
 	.nr_threads	= 1,
 	.thread_head	= LIST_HEAD_INIT(init_task.thread_node),
-	.wait_chldexit	= __WAIT_QUEUE_HEAD_INITIALIZER(init_signals.wait_chldexit),
+	/* wait_chldexit removed */
 	.shared_pending	= {
 		.list = LIST_HEAD_INIT(init_signals.shared_pending.list),
 		.signal =  {{0}}
@@ -31,16 +30,15 @@ static struct signal_struct init_signals = {
 		[PIDTYPE_PGID]	= &init_struct_pid,
 		[PIDTYPE_SID]	= &init_struct_pid,
 	},
-	INIT_PREV_CPUTIME(init_signals)
+	/* INIT_PREV_CPUTIME removed - prev_cputime removed from signal_struct */
 };
 
 static struct sighand_struct init_sighand = {
 	.count		= REFCOUNT_INIT(1),
 	.action		= { { { .sa_handler = SIG_DFL, } }, },
 	.siglock	= __SPIN_LOCK_UNLOCKED(init_sighand.siglock),
-	.signalfd_wqh	= __WAIT_QUEUE_HEAD_INITIALIZER(init_sighand.signalfd_wqh),
+	/* signalfd_wqh removed */
 };
-
 
 struct task_struct init_task
 	__aligned(L1_CACHE_BYTES)
@@ -56,20 +54,18 @@ struct task_struct init_task
 	.normal_prio	= MAX_PRIO - 20,
 	.policy		= SCHED_NORMAL,
 	.cpus_ptr	= &init_task.cpus_mask,
-	.user_cpus_ptr	= NULL,
 	.cpus_mask	= CPU_MASK_ALL,
-	.nr_cpus_allowed= NR_CPUS,
+	/* nr_cpus_allowed removed - never read */
 	.mm		= NULL,
 	.active_mm	= &init_mm,
 	.restart_block	= {
 		.fn = do_no_restart_syscall,
 	},
 	.se		= {
-		.group_node 	= LIST_HEAD_INIT(init_task.se.group_node),
+		/* .group_node removed - field removed from sched_entity */
 	},
 	.rt		= {
-		.run_list	= LIST_HEAD_INIT(init_task.rt.run_list),
-		.time_slice	= RR_TIMESLICE,
+		/* .run_list, .time_slice removed - fields removed from sched_rt_entity */
 	},
 	.tasks		= LIST_HEAD_INIT(init_task.tasks),
 	.ptraced	= LIST_HEAD_INIT(init_task.ptraced),
@@ -94,15 +90,11 @@ struct task_struct init_task
 	},
 	.blocked	= {{0}},
 	.alloc_lock	= __SPIN_LOCK_UNLOCKED(init_task.alloc_lock),
-	.journal_info	= NULL,
 	INIT_CPU_TIMERS(init_task)
 	.pi_lock	= __RAW_SPIN_LOCK_UNLOCKED(init_task.pi_lock),
-	.timer_slack_ns = 50000,  
+	/* .timer_slack_ns removed - field removed from task_struct */
 	.thread_pid	= &init_struct_pid,
 	.thread_group	= LIST_HEAD_INIT(init_task.thread_group),
 	.thread_node	= LIST_HEAD_INIT(init_signals.thread_head),
-	.perf_event_mutex = __MUTEX_INITIALIZER(init_task.perf_event_mutex),
-	.perf_event_list = LIST_HEAD_INIT(init_task.perf_event_list),
-	INIT_PREV_CPUTIME(init_task)
+	/* perf_event_*, prev_cputime initializers removed - fields no longer exist */
 };
-

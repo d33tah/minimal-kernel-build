@@ -9,7 +9,6 @@
 #include <linux/highmem.h>
 #include <linux/mm.h>
 #include <linux/vmalloc.h>
-#include <linux/memory.h>
 #include <linux/stop_machine.h>
 #include <linux/slab.h>
 #include <linux/kdebug.h>
@@ -19,7 +18,7 @@
 #include <asm/text-patching.h>
 #include <asm/alternative.h>
 #include <asm/sections.h>
-#include <asm/mce.h>
+/* mce.h removed - header is empty */
 #include <asm/nmi.h>
 #include <asm/cacheflush.h>
 #include <asm/tlbflush.h>
@@ -31,7 +30,7 @@
 #include <linux/pgtable.h>
 #include <asm/string_32.h>
 #include <asm/page.h>
-#include <asm/mce.h>
+/* mce.h removed - header is empty */
 #include <asm/special_insns.h>
 #include <asm/preempt.h>
 #include <asm/asm.h>
@@ -47,7 +46,6 @@ void __init_or_module noinline apply_alternatives(struct alt_instr *start,
 						  struct alt_instr *end)
 {
 }
-
 
 void __init alternative_instructions(void)
 {
@@ -68,18 +66,8 @@ void __init_or_module text_poke_early(void *addr, const void *opcode,
 	sync_core();
 }
 
-void *text_poke(void *addr, const void *opcode, size_t len)
-{
-	return NULL;
-}
-
-/* text_poke_kgdb, text_poke_copy, text_poke_set, text_poke_sync,
-   text_poke_queue, text_poke_finish, int3_exception_notify removed - unused */
-
-void __ref text_poke_bp(void *addr, const void *opcode, size_t len, const void *emulate)
-{
-	text_poke_early(addr, opcode, len);
-}
+/* text_poke, text_poke_kgdb, text_poke_copy, text_poke_set, text_poke_sync,
+   text_poke_queue, text_poke_finish, int3_exception_notify, text_poke_bp removed - unused */
 
 int poke_int3_handler(struct pt_regs *regs)
 {

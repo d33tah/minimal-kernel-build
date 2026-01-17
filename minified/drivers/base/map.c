@@ -100,8 +100,7 @@ retry:
 			continue;
 		if (p->range - 1 >= best)
 			break;
-		if (!try_module_get(p->owner))
-			continue;
+		/* try_module_get always returns true - dead check removed */
 		owner = p->owner;
 		data = p->data;
 		probe = p->get;
@@ -113,7 +112,7 @@ retry:
 		}
 		mutex_unlock(domain->lock);
 		kobj = probe(dev, index, data);
-		 
+
 		module_put(owner);
 		if (kobj)
 			return kobj;

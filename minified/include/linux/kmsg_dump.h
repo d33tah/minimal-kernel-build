@@ -1,37 +1,17 @@
 #ifndef _LINUX_KMSG_DUMP_H
 #define _LINUX_KMSG_DUMP_H
 
-#include <linux/errno.h>
-#include <linux/list.h>
-
 enum kmsg_dump_reason {
-	KMSG_DUMP_UNDEF,
-	KMSG_DUMP_PANIC,
+	KMSG_DUMP_PANIC = 1,
 	KMSG_DUMP_OOPS,
 	KMSG_DUMP_EMERG,
-	KMSG_DUMP_SHUTDOWN,
-	KMSG_DUMP_MAX
+	/* KMSG_DUMP_SHUTDOWN, KMSG_DUMP_MAX removed - unused */
 };
 
-struct kmsg_dump_iter {
-	u64	cur_seq;
-	u64	next_seq;
-};
-
-struct kmsg_dumper {
-	struct list_head list;
-	void (*dump)(struct kmsg_dumper *dumper, enum kmsg_dump_reason reason);
-	enum kmsg_dump_reason max_reason;
-	bool registered;
-};
+/* struct kmsg_dumper removed - never used */
 
 static inline void kmsg_dump(enum kmsg_dump_reason reason)
 {
-}
-
-static inline const char *kmsg_dump_reason_str(enum kmsg_dump_reason reason)
-{
-	return "Disabled";
 }
 
 #endif  

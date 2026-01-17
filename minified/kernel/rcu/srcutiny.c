@@ -29,24 +29,12 @@ static int init_srcu_struct_fields(struct srcu_struct *ssp)
 	return 0;
 }
 
-
 int init_srcu_struct(struct srcu_struct *ssp)
 {
 	return init_srcu_struct_fields(ssp);
 }
 
-
-void cleanup_srcu_struct(struct srcu_struct *ssp)
-{
-	WARN_ON(ssp->srcu_lock_nesting[0] || ssp->srcu_lock_nesting[1]);
-	flush_work(&ssp->srcu_work);
-	WARN_ON(ssp->srcu_gp_running);
-	WARN_ON(ssp->srcu_gp_waiting);
-	WARN_ON(ssp->srcu_cb_head);
-	WARN_ON(&ssp->srcu_cb_head != ssp->srcu_cb_tail);
-	WARN_ON(ssp->srcu_idx != ssp->srcu_idx_max);
-	WARN_ON(ssp->srcu_idx & 0x1);
-}
+/* cleanup_srcu_struct removed - never called */
 
 void __srcu_read_unlock(struct srcu_struct *ssp, int idx)
 {
@@ -65,10 +53,10 @@ void srcu_drive_gp(struct work_struct *wp)
 	struct srcu_struct *ssp;
 
 	ssp = container_of(wp, struct srcu_struct, srcu_work);
-	if (ssp->srcu_gp_running || USHORT_CMP_GE(ssp->srcu_idx, READ_ONCE(ssp->srcu_idx_max)))
-		return;  
+	if (ssp->srcu_gp_running ||
+	    USHORT_CMP_GE(ssp->srcu_idx, READ_ONCE(ssp->srcu_idx_max)))
+		return;
 
-	 
 	WRITE_ONCE(ssp->srcu_gp_running, true);
 	local_irq_disable();
 	lh = ssp->srcu_cb_head;
@@ -77,12 +65,12 @@ void srcu_drive_gp(struct work_struct *wp)
 	local_irq_enable();
 	idx = (ssp->srcu_idx & 0x2) / 2;
 	WRITE_ONCE(ssp->srcu_idx, ssp->srcu_idx + 1);
-	WRITE_ONCE(ssp->srcu_gp_waiting, true);   
-	swait_event_exclusive(ssp->srcu_wq, !READ_ONCE(ssp->srcu_lock_nesting[idx]));
-	WRITE_ONCE(ssp->srcu_gp_waiting, false);  
+	WRITE_ONCE(ssp->srcu_gp_waiting, true);
+	swait_event_exclusive(ssp->srcu_wq,
+			      !READ_ONCE(ssp->srcu_lock_nesting[idx]));
+	WRITE_ONCE(ssp->srcu_gp_waiting, false);
 	WRITE_ONCE(ssp->srcu_idx, ssp->srcu_idx + 1);
 
-	 
 	while (lh) {
 		rhp = lh;
 		lh = lh->next;
@@ -91,7 +79,6 @@ void srcu_drive_gp(struct work_struct *wp)
 		local_bh_enable();
 	}
 
-	 
 	WRITE_ONCE(ssp->srcu_gp_running, false);
 	if (USHORT_CMP_LT(ssp->srcu_idx, READ_ONCE(ssp->srcu_idx_max)))
 		schedule_work(&ssp->srcu_work);
@@ -131,11 +118,9 @@ void synchronize_srcu(struct srcu_struct *ssp)
 {
 	struct rcu_synchronize rs;
 
-	init_rcu_head_on_stack(&rs.head);
 	init_completion(&rs.completion);
 	call_srcu(ssp, &rs.head, wakeme_after_rcu);
 	wait_for_completion(&rs.completion);
-	destroy_rcu_head_on_stack(&rs.head);
 }
 
 unsigned long get_state_synchronize_srcu(struct srcu_struct *ssp)
@@ -148,21 +133,7 @@ unsigned long get_state_synchronize_srcu(struct srcu_struct *ssp)
 	return ret & USHRT_MAX;
 }
 
-unsigned long start_poll_synchronize_srcu(struct srcu_struct *ssp)
-{
-	unsigned long ret = get_state_synchronize_srcu(ssp);
-
-	srcu_gp_start_if_needed(ssp);
-	return ret;
-}
-
-bool poll_state_synchronize_srcu(struct srcu_struct *ssp, unsigned long cookie)
-{
-	bool ret = USHORT_CMP_GE(READ_ONCE(ssp->srcu_idx), cookie);
-
-	barrier();
-	return ret;
-}
+/* start_poll_synchronize_srcu, poll_state_synchronize_srcu removed - never called */
 
 void __init rcu_scheduler_starting(void)
 {
@@ -175,8 +146,8 @@ void __init srcu_init(void)
 
 	srcu_init_done = true;
 	while (!list_empty(&srcu_boot_list)) {
-		ssp = list_first_entry(&srcu_boot_list,
-				      struct srcu_struct, srcu_work.entry);
+		ssp = list_first_entry(&srcu_boot_list, struct srcu_struct,
+				       srcu_work.entry);
 		list_del_init(&ssp->srcu_work.entry);
 		schedule_work(&ssp->srcu_work);
 	}

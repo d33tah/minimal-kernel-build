@@ -26,9 +26,6 @@ struct swait_queue {
 	.task_list	= LIST_HEAD_INIT((name).task_list),		\
 }
 
-#define DECLARE_SWAIT_QUEUE_HEAD(name)					\
-	struct swait_queue_head name = __SWAIT_QUEUE_HEAD_INITIALIZER(name)
-
 extern void __init_swait_queue_head(struct swait_queue_head *q, const char *name,
 				    struct lock_class_key *key);
 
@@ -37,17 +34,15 @@ extern void __init_swait_queue_head(struct swait_queue_head *q, const char *name
 		static struct lock_class_key __key;		\
 		__init_swait_queue_head((q), #q, &__key);	\
 	} while (0)
-
-# define DECLARE_SWAIT_QUEUE_HEAD_ONSTACK(name)			\
-	DECLARE_SWAIT_QUEUE_HEAD(name)
+/* DECLARE_SWAIT_QUEUE_HEAD_ONSTACK removed - never used */
 
 extern void swake_up_one(struct swait_queue_head *q);
 extern void swake_up_locked(struct swait_queue_head *q);
 
-extern void prepare_to_swait_exclusive(struct swait_queue_head *q, struct swait_queue *wait, int state);
+/* prepare_to_swait_exclusive removed - never called */
 extern long prepare_to_swait_event(struct swait_queue_head *q, struct swait_queue *wait, int state);
 
-extern void __finish_swait(struct swait_queue_head *q, struct swait_queue *wait);
+/* __finish_swait removed - never called */
 extern void finish_swait(struct swait_queue_head *q, struct swait_queue *wait);
 
 #define ___swait_event(wq, condition, state, ret, cmd)			\

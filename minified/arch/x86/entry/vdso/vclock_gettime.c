@@ -4,7 +4,8 @@
 
 #include "../../../../lib/vdso/gettimeofday.c"
 
-extern int __vdso_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz);
+extern int __vdso_gettimeofday(struct __kernel_old_timeval *tv,
+			       struct timezone *tz);
 extern __kernel_old_time_t __vdso_time(__kernel_old_time_t *t);
 
 int __vdso_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz)
@@ -20,8 +21,8 @@ __kernel_old_time_t __vdso_time(__kernel_old_time_t *t)
 	return __cvdso_time(t);
 }
 
-__kernel_old_time_t time(__kernel_old_time_t *t)	__attribute__((weak, alias("__vdso_time")));
-
+__kernel_old_time_t time(__kernel_old_time_t *t)
+	__attribute__((weak, alias("__vdso_time")));
 
 extern int __vdso_clock_gettime(clockid_t clock, struct old_timespec32 *ts);
 extern int __vdso_clock_getres(clockid_t clock, struct old_timespec32 *res);

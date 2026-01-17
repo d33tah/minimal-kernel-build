@@ -24,7 +24,6 @@ typedef union {
 #define PGDIR_SHIFT	22
 #define PTRS_PER_PGD	1024
 #define PTRS_PER_PTE	1024
-#define PGD_KERNEL_START	(CONFIG_PAGE_OFFSET >> PGDIR_SHIFT)
 
 #define pgtable_l5_enabled() 0
 

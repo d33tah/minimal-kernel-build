@@ -25,8 +25,6 @@ struct time_namespace {
 	bool			frozen_offsets;
 } __randomize_layout;
 
-extern struct time_namespace init_time_ns;
-
 static inline struct time_namespace *get_time_ns(struct time_namespace *ns)
 {
 	return NULL;
@@ -36,29 +34,8 @@ static inline void put_time_ns(struct time_namespace *ns)
 {
 }
 
-static inline
-struct time_namespace *copy_time_ns(unsigned long flags,
-				    struct user_namespace *user_ns,
-				    struct time_namespace *old_ns)
-{
-	if (flags & CLONE_NEWTIME)
-		return ERR_PTR(-EINVAL);
+/* copy_time_ns removed - no callers */
 
-	return old_ns;
-}
+/* timens_on_fork removed - no callers */
 
-static inline void timens_on_fork(struct nsproxy *nsproxy,
-				 struct task_struct *tsk)
-{
-	return;
-}
-
-static inline void timens_add_monotonic(struct timespec64 *ts) { }
-static inline void timens_add_boottime(struct timespec64 *ts) { }
-
-static inline ktime_t timens_ktime_to_host(clockid_t clockid, ktime_t tim)
-{
-	return tim;
-}
-
-#endif  
+#endif

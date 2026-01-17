@@ -5,46 +5,24 @@
 #include <linux/sched.h>
 #include <linux/stddef.h>
 #include <linux/hardirq.h>
-#include <linux/suspend.h>
+/* suspend.h removed - only needed for pbe offsets */
 #include <linux/kbuild.h>
 #include <asm/processor.h>
 #include <asm/thread_info.h>
 #include <asm/sigframe.h>
 #include <asm/bootparam.h>
-/* --- 2025-12-07 20:29 --- Inlined suspend_32.h */
+/* struct saved_context removed - hibernation not used */
 #include <asm/desc.h>
-#include <asm/fpu/api.h>
-struct saved_context {
-	u16 gs;
-	unsigned long cr0, cr2, cr3, cr4;
-	u64 misc_enable;
-	struct saved_msrs saved_msrs;
-	struct desc_ptr gdt_desc;
-	struct desc_ptr idt;
-	u16 ldt;
-	u16 tss;
-	unsigned long tr;
-	unsigned long safety;
-	unsigned long return_address;
-	bool misc_enable_saved;
-} __attribute__((packed));
-extern char core_restore_code[];
-extern char restore_registers[];
-#include <asm/tlbflush.h>
-/* TDX not used in minimal kernel */
+/* fpu/api.h, tlbflush.h removed - offsets no longer used */
 
-
-# include "asm-offsets_32.c"
+#include "asm-offsets_32.c"
 
 static void __used common(void)
 {
 	BLANK();
 	OFFSET(TASK_threadsp, task_struct, thread.sp);
 
-	BLANK();
-	OFFSET(pbe_address, pbe, address);
-	OFFSET(pbe_orig_address, pbe, orig_address);
-	OFFSET(pbe_next, pbe, next);
+	/* pbe_address, pbe_orig_address, pbe_next removed - never used */
 
 	BLANK();
 	OFFSET(IA32_SIGCONTEXT_ax, sigcontext_32, ax);
@@ -60,33 +38,24 @@ static void __used common(void)
 	BLANK();
 	OFFSET(IA32_RT_SIGFRAME_sigcontext, rt_sigframe_ia32, uc.uc_mcontext);
 
-
 	/* TDX offsets removed - not used in minimal kernel */
 
 	BLANK();
 	OFFSET(BP_scratch, boot_params, scratch);
-	OFFSET(BP_secure_boot, boot_params, secure_boot);
-	OFFSET(BP_loadflags, boot_params, hdr.loadflags);
-	OFFSET(BP_hardware_subarch, boot_params, hdr.hardware_subarch);
-	OFFSET(BP_version, boot_params, hdr.version);
+	/* BP_secure_boot, BP_loadflags, BP_hardware_subarch, BP_version, BP_pref_address removed - not used in assembly */
 	OFFSET(BP_kernel_alignment, boot_params, hdr.kernel_alignment);
 	OFFSET(BP_init_size, boot_params, hdr.init_size);
-	OFFSET(BP_pref_address, boot_params, hdr.pref_address);
 
 	BLANK();
 	DEFINE(PTREGS_SIZE, sizeof(struct pt_regs));
 
-	 
-	OFFSET(TLB_STATE_user_pcid_flush_mask, tlb_state, user_pcid_flush_mask);
+	/* TLB_STATE_user_pcid_flush_mask removed - not used in assembly */
 
-	 
 	OFFSET(CPU_ENTRY_AREA_entry_stack, cpu_entry_area, entry_stack_page);
 	DEFINE(SIZEOF_entry_stack, sizeof(struct entry_stack));
 	DEFINE(MASK_entry_stack, (~(sizeof(struct entry_stack) - 1)));
 
-	 
 	OFFSET(TSS_sp0, tss_struct, x86_tss.sp0);
 	OFFSET(TSS_sp1, tss_struct, x86_tss.sp1);
-	OFFSET(TSS_sp2, tss_struct, x86_tss.sp2);
-
+	/* TSS_sp2 removed - not used in assembly */
 }

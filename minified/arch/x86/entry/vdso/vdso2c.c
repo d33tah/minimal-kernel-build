@@ -41,22 +41,22 @@ struct vdso_sym {
 };
 
 struct vdso_sym required_syms[] = {
-	[sym_vvar_start] = {"vvar_start", true},
-	[sym_vvar_page] = {"vvar_page", true},
-	[sym_pvclock_page] = {"pvclock_page", true},
-	[sym_hvclock_page] = {"hvclock_page", true},
-	[sym_timens_page] = {"timens_page", true},
-	{"VDSO32_NOTE_MASK", true},
-	{"__kernel_vsyscall", true},
-	{"__kernel_sigreturn", true},
-	{"__kernel_rt_sigreturn", true},
-	{"int80_landing_pad", true},
-	{"vdso32_rt_sigreturn_landing_pad", true},
-	{"vdso32_sigreturn_landing_pad", true},
+	[sym_vvar_start] = { "vvar_start", true },
+	[sym_vvar_page] = { "vvar_page", true },
+	[sym_pvclock_page] = { "pvclock_page", true },
+	[sym_hvclock_page] = { "hvclock_page", true },
+	[sym_timens_page] = { "timens_page", true },
+	{ "VDSO32_NOTE_MASK", true },
+	{ "__kernel_vsyscall", true },
+	{ "__kernel_sigreturn", true },
+	{ "__kernel_rt_sigreturn", true },
+	{ "int80_landing_pad", true },
+	{ "vdso32_rt_sigreturn_landing_pad", true },
+	{ "vdso32_sigreturn_landing_pad", true },
 };
 
-__attribute__((format(printf, 1, 2))) __attribute__((noreturn))
-static void fail(const char *format, ...)
+__attribute__((format(printf, 1, 2))) __attribute__((noreturn)) static void
+fail(const char *format, ...)
 {
 	va_list ap;
 	va_start(ap, format);
@@ -68,30 +68,26 @@ static void fail(const char *format, ...)
 	va_end(ap);
 }
 
-#define GLE(x, bits, ifnot)						\
-	__builtin_choose_expr(						\
-		(sizeof(*(x)) == bits/8),				\
-		(__typeof__(*(x)))get_unaligned_le##bits(x), ifnot)
+#define GLE(x, bits, ifnot)                                                \
+	__builtin_choose_expr((sizeof(*(x)) == bits / 8),                  \
+			      (__typeof__(*(x)))get_unaligned_le##bits(x), \
+			      ifnot)
 
 extern void bad_get_le(void);
-#define LAST_GLE(x)							\
-	__builtin_choose_expr(sizeof(*(x)) == 1, *(x), bad_get_le())
+#define LAST_GLE(x) __builtin_choose_expr(sizeof(*(x)) == 1, *(x), bad_get_le())
 
-#define GET_LE(x)							\
-	GLE(x, 64, GLE(x, 32, GLE(x, 16, LAST_GLE(x))))
+#define GET_LE(x) GLE(x, 64, GLE(x, 32, GLE(x, 16, LAST_GLE(x))))
 
-#define PLE(x, val, bits, ifnot)					\
-	__builtin_choose_expr(						\
-		(sizeof(*(x)) == bits/8),				\
-		put_unaligned_le##bits((val), (x)), ifnot)
+#define PLE(x, val, bits, ifnot)                          \
+	__builtin_choose_expr((sizeof(*(x)) == bits / 8), \
+			      put_unaligned_le##bits((val), (x)), ifnot)
 
 extern void bad_put_le(void);
-#define LAST_PLE(x, val)						\
+#define LAST_PLE(x, val) \
 	__builtin_choose_expr(sizeof(*(x)) == 1, *(x) = (val), bad_put_le())
 
-#define PUT_LE(x, val)					\
+#define PUT_LE(x, val) \
 	PLE(x, val, 64, PLE(x, val, 32, PLE(x, val, 16, LAST_PLE(x, val))))
-
 
 #define NSYMS ARRAY_SIZE(required_syms)
 
@@ -113,18 +109,17 @@ extern void bad_put_le(void);
 #include "vdso2c.h"
 #undef ELF_BITS
 
-static void go(void *raw_addr, size_t raw_len,
-	       void *stripped_addr, size_t stripped_len,
-	       FILE *outfile, const char *name)
+static void go(void *raw_addr, size_t raw_len, void *stripped_addr,
+	       size_t stripped_len, FILE *outfile, const char *name)
 {
 	Elf64_Ehdr *hdr = (Elf64_Ehdr *)raw_addr;
 
 	if (hdr->e_ident[EI_CLASS] == ELFCLASS64) {
-		go64(raw_addr, raw_len, stripped_addr, stripped_len,
-		     outfile, name);
+		go64(raw_addr, raw_len, stripped_addr, stripped_len, outfile,
+		     name);
 	} else if (hdr->e_ident[EI_CLASS] == ELFCLASS32) {
-		go32(raw_addr, raw_len, stripped_addr, stripped_len,
-		     outfile, name);
+		go32(raw_addr, raw_len, stripped_addr, stripped_len, outfile,
+		     name);
 	} else {
 		fail("unknown ELF class\n");
 	}
@@ -163,7 +158,6 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	 
 	name = strdup(argv[3]);
 	namelen = strlen(name);
 	if (namelen >= 3 && !strcmp(name + namelen - 3, ".so")) {

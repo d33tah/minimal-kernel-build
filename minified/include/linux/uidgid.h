@@ -2,7 +2,11 @@
 #define _LINUX_UIDGID_H
 
 #include <linux/types.h>
-#include <linux/highuid.h>
+/* Inlined from linux/highuid.h */
+extern int overflowuid;
+extern int overflowgid;
+#define DEFAULT_OVERFLOWUID 65534
+#define DEFAULT_OVERFLOWGID 65534
 
 struct user_namespace;
 extern struct user_namespace init_user_ns;

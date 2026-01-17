@@ -393,50 +393,8 @@ relocatable_kernel:    .byte 0
 min_alignment:		.byte MIN_KERNEL_ALIGN_LG2	# minimum alignment
 
 xloadflags:
-#ifdef CONFIG_X86_64
-# define XLF0 XLF_KERNEL_64			/* 64-bit kernel */
-#else
-# define XLF0 0
-#endif
-
-#if defined(CONFIG_RELOCATABLE) && defined(CONFIG_X86_64)
-   /* kernel/boot_param/ramdisk could be loaded above 4g */
-# define XLF1 XLF_CAN_BE_LOADED_ABOVE_4G
-#else
-# define XLF1 0
-#endif
-
-#ifdef CONFIG_EFI_STUB
-# ifdef CONFIG_EFI_MIXED
-#  define XLF23 (XLF_EFI_HANDOVER_32|XLF_EFI_HANDOVER_64)
-# else
-#  ifdef CONFIG_X86_64
-#   define XLF23 XLF_EFI_HANDOVER_64		/* 64-bit EFI handover ok */
-#  else
-#   define XLF23 XLF_EFI_HANDOVER_32		/* 32-bit EFI handover ok */
-#  endif
-# endif
-#else
-# define XLF23 0
-#endif
-
-#if defined(CONFIG_X86_64) && defined(CONFIG_EFI) && defined(CONFIG_KEXEC_CORE)
-# define XLF4 XLF_EFI_KEXEC
-#else
-# define XLF4 0
-#endif
-
-#ifdef CONFIG_X86_64
-#ifdef CONFIG_X86_5LEVEL
-#define XLF56 (XLF_5LEVEL|XLF_5LEVEL_ENABLED)
-#else
-#define XLF56 XLF_5LEVEL
-#endif
-#else
-#define XLF56 0
-#endif
-
-			.word XLF0 | XLF1 | XLF23 | XLF4 | XLF56
+/* X86_32 - all XLF flags are 0 (no EFI, no 64-bit, no 5-level paging) */
+			.word 0
 
 cmdline_size:   .long   COMMAND_LINE_SIZE-1     #length of the command line,
                                                 #added with boot protocol

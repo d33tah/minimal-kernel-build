@@ -25,17 +25,14 @@ enum pageblock_bits {
 	NR_PAGEBLOCK_BITS
 };
 
-#define pageblock_order		(MAX_ORDER-1)
-#define pageblock_nr_pages	(1UL << pageblock_order)
+#define pageblock_order (MAX_ORDER - 1)
+#define pageblock_nr_pages (1UL << pageblock_order)
 
 unsigned long get_pfnblock_flags_mask(const struct page *page,
-				unsigned long pfn,
-				unsigned long mask);
+				      unsigned long pfn, unsigned long mask);
 
-void set_pfnblock_flags_mask(struct page *page,
-				unsigned long flags,
-				unsigned long pfn,
-				unsigned long mask);
+void set_pfnblock_flags_mask(struct page *page, unsigned long flags,
+			     unsigned long pfn, unsigned long mask);
 /* end pageblock-flags.h */
 #include <linux/atomic.h>
 #include <linux/mm_types.h>
@@ -43,11 +40,8 @@ void set_pfnblock_flags_mask(struct page *page,
 #include <linux/local_lock.h>
 #include <asm/page.h>
 
-#ifndef CONFIG_FORCE_MAX_ZONEORDER
+/* CONFIG_FORCE_MAX_ZONEORDER not defined */
 #define MAX_ORDER 11
-#else
-#define MAX_ORDER CONFIG_FORCE_MAX_ZONEORDER
-#endif
 #define MAX_ORDER_NR_PAGES (1 << (MAX_ORDER - 1))
 
 #define PAGE_ALLOC_COSTLY_ORDER 3
@@ -56,17 +50,14 @@ enum migratetype {
 	MIGRATE_UNMOVABLE,
 	MIGRATE_MOVABLE,
 	MIGRATE_RECLAIMABLE,
-	MIGRATE_PCPTYPES,	 
+	MIGRATE_PCPTYPES,
 	MIGRATE_HIGHATOMIC = MIGRATE_PCPTYPES,
 	MIGRATE_TYPES
 };
 
-#  define is_migrate_cma(migratetype) false
-#  define is_migrate_cma_page(_page) false
+#define is_migrate_cma(migratetype) false
 
-
-
-#define for_each_migratetype_order(order, type) \
+#define for_each_migratetype_order(order, type)     \
 	for (order = 0; order < MAX_ORDER; order++) \
 		for (type = 0; type < MIGRATE_TYPES; type++)
 
@@ -74,16 +65,15 @@ extern int page_group_by_mobility_disabled;
 
 #define MIGRATETYPE_MASK ((1UL << PB_migratetype_bits) - 1)
 
-#define get_pageblock_migratetype(page)					\
-	get_pfnblock_flags_mask(page, page_to_pfn(page), MIGRATETYPE_MASK)
+/* get_pageblock_migratetype removed - unused */
 
 struct free_area {
-	struct list_head	free_list[MIGRATE_TYPES];
-	unsigned long		nr_free;
+	struct list_head free_list[MIGRATE_TYPES];
+	unsigned long nr_free;
 };
 
 static inline struct page *get_page_from_free_area(struct free_area *area,
-					    int migratetype)
+						   int migratetype)
 {
 	return list_first_entry_or_null(&area->free_list[migratetype],
 					struct page, lru);
@@ -98,34 +88,35 @@ struct pglist_data;
 
 #define ZONE_PADDING(name)
 
-#define NR_VM_NUMA_EVENT_ITEMS 0
+/* NR_VM_NUMA_EVENT_ITEMS removed - unused */
 
 enum zone_stat_item {
-	 
+
 	NR_FREE_PAGES,
-	NR_ZONE_LRU_BASE,  
+	NR_ZONE_LRU_BASE,
 	NR_ZONE_INACTIVE_ANON = NR_ZONE_LRU_BASE,
 	NR_ZONE_ACTIVE_ANON,
 	NR_ZONE_INACTIVE_FILE,
 	NR_ZONE_ACTIVE_FILE,
 	NR_ZONE_UNEVICTABLE,
-	NR_ZONE_WRITE_PENDING,	 
+	NR_ZONE_WRITE_PENDING,
 	NR_MLOCK,
 	NR_BOUNCE,
 	NR_FREE_CMA_PAGES,
-	NR_VM_ZONE_STAT_ITEMS };
+	NR_VM_ZONE_STAT_ITEMS
+};
 
 enum node_stat_item {
 	NR_LRU_BASE,
-	NR_INACTIVE_ANON = NR_LRU_BASE,  
-	NR_ACTIVE_ANON,		 
-	NR_INACTIVE_FILE,	 
-	NR_ACTIVE_FILE,		 
-	NR_UNEVICTABLE,		 
+	NR_INACTIVE_ANON = NR_LRU_BASE,
+	NR_ACTIVE_ANON,
+	NR_INACTIVE_FILE,
+	NR_ACTIVE_FILE,
+	NR_UNEVICTABLE,
 	NR_SLAB_RECLAIMABLE_B,
 	NR_SLAB_UNRECLAIMABLE_B,
-	NR_ISOLATED_ANON,	 
-	NR_ISOLATED_FILE,	 
+	NR_ISOLATED_ANON,
+	NR_ISOLATED_FILE,
 	WORKINGSET_NODES,
 	WORKINGSET_REFAULT_BASE,
 	WORKINGSET_REFAULT_ANON = WORKINGSET_REFAULT_BASE,
@@ -137,24 +128,24 @@ enum node_stat_item {
 	WORKINGSET_RESTORE_ANON = WORKINGSET_RESTORE_BASE,
 	WORKINGSET_RESTORE_FILE,
 	WORKINGSET_NODERECLAIM,
-	NR_ANON_MAPPED,	 
-	NR_FILE_MAPPED,	 
+	NR_ANON_MAPPED,
+	NR_FILE_MAPPED,
 	NR_FILE_PAGES,
 	NR_FILE_DIRTY,
 	NR_WRITEBACK,
-	NR_WRITEBACK_TEMP,	 
-	NR_SHMEM,		 
+	NR_WRITEBACK_TEMP,
+	NR_SHMEM,
 	NR_SHMEM_THPS,
 	NR_SHMEM_PMDMAPPED,
 	NR_FILE_THPS,
 	NR_FILE_PMDMAPPED,
 	NR_ANON_THPS,
 	NR_VMSCAN_WRITE,
-	NR_VMSCAN_IMMEDIATE,	 
-	NR_DIRTIED,		 
-	NR_WRITTEN,		 
-	NR_THROTTLED_WRITTEN,	 
-	NR_KERNEL_MISC_RECLAIMABLE,	 
+	NR_VMSCAN_IMMEDIATE,
+	NR_DIRTIED,
+	NR_WRITTEN,
+	NR_THROTTLED_WRITTEN,
+	NR_KERNEL_MISC_RECLAIMABLE,
 	NR_FOLL_PIN_ACQUIRED,
 	NR_FOLL_PIN_RELEASED,
 	NR_KERNEL_STACK_KB,
@@ -162,12 +153,9 @@ enum node_stat_item {
 	NR_VM_NODE_STAT_ITEMS
 };
 
-
 static __always_inline bool vmstat_item_in_bytes(int idx)
 {
-	 
-	return (idx == NR_SLAB_RECLAIMABLE_B ||
-		idx == NR_SLAB_UNRECLAIMABLE_B);
+	return (idx == NR_SLAB_RECLAIMABLE_B || idx == NR_SLAB_UNRECLAIMABLE_B);
 }
 
 #define LRU_BASE 0
@@ -183,78 +171,52 @@ enum lru_list {
 	NR_LRU_LISTS
 };
 
-enum vmscan_throttle_state {
-	VMSCAN_THROTTLE_WRITEBACK,
-	VMSCAN_THROTTLE_ISOLATED,
-	VMSCAN_THROTTLE_NOPROGRESS,
-	VMSCAN_THROTTLE_CONGESTED,
-	NR_VMSCAN_THROTTLE,
-};
+/* vmscan_throttle_state enum removed - reclaim_wait removed */
 
 #define for_each_lru(lru) for (lru = 0; lru < NR_LRU_LISTS; lru++)
 
-
-enum lruvec_flags {
-	LRUVEC_CONGESTED,
-};
-
 struct lruvec {
-	struct list_head		lists[NR_LRU_LISTS];
+	struct list_head lists[NR_LRU_LISTS];
 
-	spinlock_t			lru_lock;
+	spinlock_t lru_lock;
 
-	unsigned long			anon_cost;
-	unsigned long			file_cost;
-
-	atomic_long_t			nonresident_age;
-
-	unsigned long			flags;
+	/* anon_cost, file_cost, nonresident_age, flags removed - never used */
 };
 
-
-typedef unsigned __bitwise isolate_mode_t;
+/* isolate_mode_t removed - unused */
 
 enum zone_watermarks {
 	WMARK_MIN,
 	WMARK_LOW,
 	WMARK_HIGH,
-	WMARK_PROMO,
+	/* WMARK_PROMO removed - unused */
 	NR_WMARK
 };
 
 #define NR_PCP_LISTS (MIGRATE_PCPTYPES * (PAGE_ALLOC_COSTLY_ORDER + 1))
 
-
-#define min_wmark_pages(z) (z->_watermark[WMARK_MIN] + z->watermark_boost)
-#define low_wmark_pages(z) (z->_watermark[WMARK_LOW] + z->watermark_boost)
 #define high_wmark_pages(z) (z->_watermark[WMARK_HIGH] + z->watermark_boost)
 #define wmark_pages(z, i) (z->_watermark[i] + z->watermark_boost)
 
 struct per_cpu_pages {
-	int count;		 
-	int high;		 
-	int batch;		 
-	short free_factor;	 
-
-	 
+	int count;
+	/* high removed - write-only, never read */
+	int batch;
 	struct list_head lists[NR_PCP_LISTS];
 };
 
-struct per_cpu_zonestat {
-};
+struct per_cpu_zonestat {};
 
 struct per_cpu_nodestat {
-	s8 stat_threshold;
-	s8 vm_node_stat_diff[NR_VM_NODE_STAT_ITEMS];
+	/* stat_threshold, vm_node_stat_diff removed - never accessed */
 };
 
-#endif  
+#endif
 
 enum zone_type {
-	 
-	 
+
 	ZONE_NORMAL,
-	 
+
 	ZONE_MOVABLE,
 	__MAX_NR_ZONES
 
@@ -262,108 +224,61 @@ enum zone_type {
 
 #ifndef __GENERATING_BOUNDS_H
 
-
 struct zone {
-	 
-
-	 
 	unsigned long _watermark[NR_WMARK];
 	unsigned long watermark_boost;
 
-	unsigned long nr_reserved_highatomic;
+	/* nr_reserved_highatomic removed - never used */
 
-	 
 	long lowmem_reserve[MAX_NR_ZONES];
 
-	struct pglist_data	*zone_pgdat;
-	struct per_cpu_pages	__percpu *per_cpu_pageset;
-	struct per_cpu_zonestat	__percpu *per_cpu_zonestats;
-	 
-	int pageset_high;
-	int pageset_batch;
+	struct pglist_data *zone_pgdat;
+	struct per_cpu_pages __percpu *per_cpu_pageset;
+	struct per_cpu_zonestat __percpu *per_cpu_zonestats;
 
-	 
-	unsigned long		*pageblock_flags;
+	/* pageset_high, pageset_batch removed - write-only cache fields */
 
-	 
-	unsigned long		zone_start_pfn;
+	unsigned long *pageblock_flags;
 
-	 
-	atomic_long_t		managed_pages;
-	unsigned long		spanned_pages;
-	unsigned long		present_pages;
+	unsigned long zone_start_pfn;
 
-	const char		*name;
+	atomic_long_t managed_pages;
+	unsigned long spanned_pages;
+	unsigned long present_pages;
 
+	const char *name;
 
-
-	int initialized;
-
-	 
 	ZONE_PADDING(_pad1_)
 
-	 
-	struct free_area	free_area[MAX_ORDER];
+	struct free_area free_area[MAX_ORDER];
 
-	 
-	unsigned long		flags;
+	/* flags removed - never used */
 
-	 
-	spinlock_t		lock;
+	spinlock_t lock;
 
-	 
+	/* contiguous removed - write-only */
+
 	ZONE_PADDING(_pad2_)
 
-	 
-	unsigned long percpu_drift_mark;
-
-
-
-
-	bool			contiguous;
-
-	ZONE_PADDING(_pad3_)
-	 
-	atomic_long_t		vm_stat[NR_VM_ZONE_STAT_ITEMS];
-	atomic_long_t		vm_numa_event[NR_VM_NUMA_EVENT_ITEMS];
+	atomic_long_t vm_stat[NR_VM_ZONE_STAT_ITEMS];
 } ____cacheline_internodealigned_in_smp;
 
-enum pgdat_flags {
-	PGDAT_DIRTY,			 
-	PGDAT_WRITEBACK,		 
-	PGDAT_RECLAIM_LOCKED,		 
-};
-
-enum zone_flags {
-	ZONE_BOOSTED_WATERMARK,		 
-	ZONE_RECLAIM_ACTIVE,		 
-};
+/* pgdat_flags and zone_flags enums removed - unused */
 
 static inline unsigned long zone_managed_pages(struct zone *zone)
 {
 	return (unsigned long)atomic_long_read(&zone->managed_pages);
 }
 
-static inline unsigned long zone_end_pfn(const struct zone *zone)
-{
-	return zone->zone_start_pfn + zone->spanned_pages;
-}
-
-static inline bool zone_spans_pfn(const struct zone *zone, unsigned long pfn)
-{
-	return zone->zone_start_pfn <= pfn && pfn < zone_end_pfn(zone);
-}
+/* zone_end_pfn, zone_spans_pfn removed - never called */
 
 #define MAX_ZONES_PER_ZONELIST (MAX_NUMNODES * MAX_NR_ZONES)
 
-enum {
-	ZONELIST_FALLBACK,	 
-	MAX_ZONELISTS
-};
+enum { ZONELIST_FALLBACK, MAX_ZONELISTS };
 
 struct zoneref {
-	struct zone *zone;	 
-	int zone_idx;		 
+	struct zone *zone;
+	int zone_idx;
 };
 
 struct zonelist {
@@ -372,61 +287,37 @@ struct zonelist {
 
 extern struct page *mem_map;
 
-
 typedef struct pglist_data {
-	 
 	struct zone node_zones[MAX_NR_ZONES];
 
-	 
 	struct zonelist node_zonelists[MAX_ZONELISTS];
 
-	int nr_zones;  
+	int nr_zones;
 	struct page *node_mem_map;
 	unsigned long node_start_pfn;
-	unsigned long node_present_pages;  
-	unsigned long node_spanned_pages;  
+	unsigned long node_present_pages;
+	unsigned long node_spanned_pages;
 	int node_id;
-	wait_queue_head_t kswapd_wait;
-	wait_queue_head_t pfmemalloc_wait;
 
-	 
-	wait_queue_head_t reclaim_wait[NR_VMSCAN_THROTTLE];
+	/* kswapd_wait, pfmemalloc_wait, reclaim_wait, nr_writeback_throttled,
+	   kswapd_order, kswapd_highest_zoneidx, totalreserve_pages, kswapd removed */
 
-	atomic_t nr_writeback_throttled; 
-	unsigned long nr_reclaim_start;	 
-	struct task_struct *kswapd;	 
-	int kswapd_order;
-	enum zone_type kswapd_highest_zoneidx;
-
-	int kswapd_failures;		 
-
-	 
-	unsigned long		totalreserve_pages;
-
-
-	 
 	ZONE_PADDING(_pad1_)
 
+	struct lruvec __lruvec;
 
-
-	 
-
-	 
-	struct lruvec		__lruvec;
-
-	unsigned long		flags;
+	/* flags removed - never used */
 
 	ZONE_PADDING(_pad2_)
 
-	 
-	struct per_cpu_nodestat __percpu *per_cpu_nodestats;
-	atomic_long_t		vm_stat[NR_VM_NODE_STAT_ITEMS];
+	/* per_cpu_nodestats removed - only assigned, never read */
+	atomic_long_t vm_stat[NR_VM_NODE_STAT_ITEMS];
 } pg_data_t;
 
-#define node_present_pages(nid)	(NODE_DATA(nid)->node_present_pages)
-#define node_spanned_pages(nid)	(NODE_DATA(nid)->node_spanned_pages)
+#define node_present_pages(nid) (NODE_DATA(nid)->node_present_pages)
+#define node_spanned_pages(nid) (NODE_DATA(nid)->node_spanned_pages)
 
-#define node_start_pfn(nid)	(NODE_DATA(nid)->node_start_pfn)
+#define node_start_pfn(nid) (NODE_DATA(nid)->node_start_pfn)
 #define node_end_pfn(nid) pgdat_end_pfn(NODE_DATA(nid))
 
 static inline unsigned long pgdat_end_pfn(pg_data_t *pgdat)
@@ -437,8 +328,6 @@ static inline unsigned long pgdat_end_pfn(pg_data_t *pgdat)
 #include <linux/memory_hotplug.h>
 
 void build_all_zonelists(pg_data_t *pgdat);
-void wakeup_kswapd(struct zone *zone, gfp_t gfp_mask, int order,
-		   enum zone_type highest_zoneidx);
 bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 			 int highest_zoneidx, unsigned int alloc_flags,
 			 long free_pages);
@@ -447,8 +336,9 @@ enum meminit_context {
 	MEMINIT_HOTPLUG,
 };
 
-extern void init_currently_empty_zone(struct zone *zone, unsigned long start_pfn,
-				     unsigned long size);
+extern void init_currently_empty_zone(struct zone *zone,
+				      unsigned long start_pfn,
+				      unsigned long size);
 
 extern void lruvec_init(struct lruvec *lruvec);
 
@@ -457,10 +347,7 @@ static inline struct pglist_data *lruvec_pgdat(struct lruvec *lruvec)
 	return container_of(lruvec, struct pglist_data, __lruvec);
 }
 
-
-#define zone_idx(zone)		((zone) - (zone)->zone_pgdat->node_zones)
-
-
+#define zone_idx(zone) ((zone) - (zone)->zone_pgdat->node_zones)
 
 static inline bool populated_zone(struct zone *zone)
 {
@@ -472,14 +359,9 @@ static inline int zone_to_nid(struct zone *zone)
 	return 0;
 }
 
-static inline void zone_set_nid(struct zone *zone, int nid) {}
-
 extern int movable_zone;
 
-static inline int is_highmem_idx(enum zone_type idx)
-{
-	return 0;
-}
+/* is_highmem_idx removed - never called */
 
 extern struct pglist_data contig_page_data;
 static inline struct pglist_data *NODE_DATA(int nid)
@@ -487,26 +369,22 @@ static inline struct pglist_data *NODE_DATA(int nid)
 	return &contig_page_data;
 }
 
-
 extern struct pglist_data *first_online_pgdat(void);
 extern struct pglist_data *next_online_pgdat(struct pglist_data *pgdat);
 extern struct zone *next_zone(struct zone *zone);
 
-#define for_each_online_pgdat(pgdat)			\
-	for (pgdat = first_online_pgdat();		\
-	     pgdat;					\
+#define for_each_online_pgdat(pgdat)              \
+	for (pgdat = first_online_pgdat(); pgdat; \
 	     pgdat = next_online_pgdat(pgdat))
-#define for_each_zone(zone)			        \
-	for (zone = (first_online_pgdat())->node_zones; \
-	     zone;					\
+#define for_each_zone(zone)                                   \
+	for (zone = (first_online_pgdat())->node_zones; zone; \
 	     zone = next_zone(zone))
 
-#define for_each_populated_zone(zone)		        \
-	for (zone = (first_online_pgdat())->node_zones; \
-	     zone;					\
-	     zone = next_zone(zone))			\
-		if (!populated_zone(zone))		\
-			;  		\
+#define for_each_populated_zone(zone)                         \
+	for (zone = (first_online_pgdat())->node_zones; zone; \
+	     zone = next_zone(zone))                          \
+		if (!populated_zone(zone))                    \
+			;                                     \
 		else
 
 static inline struct zone *zonelist_zone(struct zoneref *zoneref)
@@ -520,50 +398,44 @@ static inline int zonelist_zone_idx(struct zoneref *zoneref)
 }
 
 struct zoneref *__next_zones_zonelist(struct zoneref *z,
-					enum zone_type highest_zoneidx,
-					nodemask_t *nodes);
+				      enum zone_type highest_zoneidx,
+				      nodemask_t *nodes);
 
-static __always_inline struct zoneref *next_zones_zonelist(struct zoneref *z,
-					enum zone_type highest_zoneidx,
-					nodemask_t *nodes)
+static __always_inline struct zoneref *
+next_zones_zonelist(struct zoneref *z, enum zone_type highest_zoneidx,
+		    nodemask_t *nodes)
 {
 	if (likely(!nodes && zonelist_zone_idx(z) <= highest_zoneidx))
 		return z;
 	return __next_zones_zonelist(z, highest_zoneidx, nodes);
 }
 
-static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
-					enum zone_type highest_zoneidx,
-					nodemask_t *nodes)
+static inline struct zoneref *
+first_zones_zonelist(struct zonelist *zonelist, enum zone_type highest_zoneidx,
+		     nodemask_t *nodes)
 {
-	return next_zones_zonelist(zonelist->_zonerefs,
-							highest_zoneidx, nodes);
+	return next_zones_zonelist(zonelist->_zonerefs, highest_zoneidx, nodes);
 }
 
 #define for_each_zone_zonelist_nodemask(zone, z, zlist, highidx, nodemask) \
-	for (z = first_zones_zonelist(zlist, highidx, nodemask), zone = zonelist_zone(z);	\
-		zone;							\
-		z = next_zones_zonelist(++z, highidx, nodemask),	\
-			zone = zonelist_zone(z))
+	for (z = first_zones_zonelist(zlist, highidx, nodemask),           \
+	    zone = zonelist_zone(z);                                       \
+	     zone; z = next_zones_zonelist(++z, highidx, nodemask),        \
+	    zone = zonelist_zone(z))
 
 #define for_next_zone_zonelist_nodemask(zone, z, highidx, nodemask) \
-	for (zone = z->zone;	\
-		zone;							\
-		z = next_zones_zonelist(++z, highidx, nodemask),	\
-			zone = zonelist_zone(z))
-
+	for (zone = z->zone; zone;                                  \
+	     z = next_zones_zonelist(++z, highidx, nodemask),       \
+	    zone = zonelist_zone(z))
 
 #define for_each_zone_zonelist(zone, z, zlist, highidx) \
 	for_each_zone_zonelist_nodemask(zone, z, zlist, highidx, NULL)
 
+/* pfn_to_nid removed - unused */
+#define sparse_init() \
+	do {          \
+	} while (0)
 
-#define pfn_to_nid(pfn)		(0)
-
-#define sparse_init()	do {} while (0)
-#define sparse_index_init(_sec, _nid)  do {} while (0)
-#define pfn_in_present_section pfn_valid
-#define subsection_map_init(_pfn, _nr_pages) do {} while (0)
-
-#endif  
-#endif  
-#endif  
+#endif
+#endif
+#endif

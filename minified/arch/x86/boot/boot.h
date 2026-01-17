@@ -110,16 +110,10 @@ extern char _end[];
 extern char *HEAP;
 extern char *heap_end;
 #define RESET_HEAP() ((void *)( HEAP = _end ))
-#define GET_HEAP(type, n) \
-	((type *)(HEAP = (char *)(((size_t)HEAP+(__alignof__(type)-1)) & ~(__alignof__(type)-1)), \
-	          HEAP += sizeof(type)*(n), HEAP - sizeof(type)*(n)))
 
  
 
-void copy_to_fs(addr_t dst, void *src, size_t len);
-void *copy_from_fs(void *dst, addr_t src, size_t len);
-void copy_to_gs(addr_t dst, void *src, size_t len);
-void *copy_from_gs(void *dst, addr_t src, size_t len);
+/* copy_to/from_fs/gs removed - never called */
 
  
 int enable_a20(void);
@@ -231,27 +225,19 @@ int strcmp(const char *str1, const char *str2);
 int strncmp(const char *cs, const char *ct, size_t count);
 size_t strnlen(const char *s, size_t maxlen);
 unsigned int atou(const char *s);
-unsigned long long simple_strtoull(const char *cp, char **endp, unsigned int base);
 size_t strlen(const char *s);
 char *strchr(const char *s, int c);
 
- 
+
 void puts(const char *);
 void putchar(int);
-int getchar(void);
-void kbd_flush(void);
-int getchar_timeout(void);
+/* getchar removed - never called */
 
- 
 void set_video(void);
 
- 
 int set_mode(u16 mode);
-int mode_defined(u16 mode);
 void probe_cards(int unsafe);
-
- 
-void vesa_store_edid(void);
+/* vesa_store_edid removed - empty stub */
 
 #endif  
 

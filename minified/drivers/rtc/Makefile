@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0
-# Minimal RTC Makefile - only build lib (needed for MC146818)
+# Minimal RTC Makefile
 
-obj-$(CONFIG_RTC_LIB)		+= lib.o
-obj-$(CONFIG_RTC_MC146818_LIB)	+= rtc-mc146818-lib.o
+# lib.o removed - rtc_month_days/rtc_time64_to_tm/rtc_valid_tm never called
+# rtc-mc146818-lib.o removed - mc146818_avoid_UIP/get_time/set_time never called

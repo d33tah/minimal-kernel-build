@@ -22,12 +22,6 @@ struct list_lru_one {
 	long			nr_items;
 };
 
-struct list_lru_memcg {
-	struct rcu_head		rcu;
-	 
-	struct list_lru_one	node[];
-};
-
 struct list_lru_node {
 	 
 	spinlock_t		lock;
@@ -46,14 +40,9 @@ int __list_lru_init(struct list_lru *lru, bool memcg_aware,
 
 #define list_lru_init(lru)				\
 	__list_lru_init((lru), false, NULL, NULL)
-#define list_lru_init_key(lru, key)			\
-	__list_lru_init((lru), false, (key), NULL)
+/* list_lru_init_key removed - unused */
 #define list_lru_init_memcg(lru, shrinker)		\
 	__list_lru_init((lru), true, NULL, shrinker)
-
-int memcg_list_lru_alloc(struct mem_cgroup *memcg, struct list_lru *lru,
-			 gfp_t gfp);
-void memcg_reparent_list_lrus(struct mem_cgroup *memcg, struct mem_cgroup *parent);
 
 bool list_lru_add(struct list_lru *lru, struct list_head *item);
 
@@ -61,7 +50,6 @@ bool list_lru_del(struct list_lru *lru, struct list_head *item);
 
 unsigned long list_lru_count_one(struct list_lru *lru,
 				 int nid, struct mem_cgroup *memcg);
-unsigned long list_lru_count_node(struct list_lru *lru, int nid);
 
 static inline unsigned long list_lru_shrink_count(struct list_lru *lru,
 						  struct shrink_control *sc)
@@ -81,13 +69,6 @@ unsigned long list_lru_walk_one(struct list_lru *lru,
 				int nid, struct mem_cgroup *memcg,
 				list_lru_walk_cb isolate, void *cb_arg,
 				unsigned long *nr_to_walk);
-unsigned long list_lru_walk_one_irq(struct list_lru *lru,
-				    int nid, struct mem_cgroup *memcg,
-				    list_lru_walk_cb isolate, void *cb_arg,
-				    unsigned long *nr_to_walk);
-unsigned long list_lru_walk_node(struct list_lru *lru, int nid,
-				 list_lru_walk_cb isolate, void *cb_arg,
-				 unsigned long *nr_to_walk);
 
 static inline unsigned long
 list_lru_shrink_walk(struct list_lru *lru, struct shrink_control *sc,

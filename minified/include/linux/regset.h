@@ -14,18 +14,6 @@ struct membuf {
 	size_t left;
 };
 
-static inline int membuf_zero(struct membuf *s, size_t size)
-{
-	if (s->left) {
-		if (size > s->left)
-			size = s->left;
-		memset(s->p, 0, size);
-		s->p += size;
-		s->left -= size;
-	}
-	return s->left;
-}
-
 static inline int membuf_write(struct membuf *s, const void *v, size_t size)
 {
 	if (s->left) {
@@ -92,20 +80,6 @@ struct user_regset_view {
 	u8 ei_osabi;
 };
 
-const struct user_regset_view *task_user_regset_view(struct task_struct *tsk);
-
-extern int regset_get(struct task_struct *target,
-		      const struct user_regset *regset,
-		      unsigned int size, void *data);
-
-extern int regset_get_alloc(struct task_struct *target,
-			    const struct user_regset *regset,
-			    unsigned int size,
-			    void **data);
-
-extern int copy_regset_to_user(struct task_struct *target,
-			       const struct user_regset_view *view,
-			       unsigned int setno, unsigned int offset,
-			       unsigned int size, void __user *data);
+/* regset_get, regset_get_alloc, copy_regset_to_user, task_user_regset_view removed - never called/defined */
 
 #endif	 

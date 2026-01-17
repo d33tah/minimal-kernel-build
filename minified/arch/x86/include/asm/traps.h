@@ -2,7 +2,6 @@
 #ifndef _ASM_X86_TRAPS_H
 #define _ASM_X86_TRAPS_H
 
-#include <linux/context_tracking_state.h>
 #include <linux/kprobes.h>
 
 #include <asm/debugreg.h>
@@ -20,8 +19,7 @@ enum x86_pf_error_code {
 	X86_PF_SGX	=		1 << 15,
 };
 
-extern bool ibt_selftest(void);
-
+/* ibt_selftest removed - declared but never defined or called */
 
 static inline int get_si_code(unsigned long condition)
 {
@@ -33,9 +31,7 @@ static inline int get_si_code(unsigned long condition)
 		return TRAP_BRKPT;
 }
 
-extern int panic_on_unrecovered_nmi;
-
-void math_emulate(struct math_emu_info *);
+/* panic_on_unrecovered_nmi removed - never set to non-zero */
 
 bool fault_in_kernel_space(unsigned long address);
 

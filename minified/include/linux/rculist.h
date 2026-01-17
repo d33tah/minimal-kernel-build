@@ -18,19 +18,13 @@
 static inline void __list_add_rcu(struct list_head *new,
 		struct list_head *prev, struct list_head *next)
 {
-	if (!__list_add_valid(new, prev, next))
-		return;
-
 	new->next = next;
 	new->prev = prev;
 	rcu_assign_pointer(list_next_rcu(prev), new);
 	next->prev = new;
 }
 
-static inline void list_add_rcu(struct list_head *new, struct list_head *head)
-{
-	__list_add_rcu(new, head, head->next);
-}
+/* list_add_rcu removed - never called */
 
 static inline void list_add_tail_rcu(struct list_head *new,
 					struct list_head *head)
@@ -106,7 +100,6 @@ static inline void hlists_swap_heads_rcu(struct hlist_head *left, struct hlist_h
 
 #define hlist_first_rcu(head)	(*((struct hlist_node __rcu **)(&(head)->first)))
 #define hlist_next_rcu(node)	(*((struct hlist_node __rcu **)(&(node)->next)))
-#define hlist_pprev_rcu(node)	(*((struct hlist_node __rcu **)((node)->pprev)))
 
 static inline void hlist_add_head_rcu(struct hlist_node *n,
 					struct hlist_head *h)

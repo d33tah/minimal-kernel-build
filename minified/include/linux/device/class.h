@@ -14,8 +14,7 @@ struct class {
 	const char		*name;
 	struct module		*owner;
 
-	const struct attribute_group	**class_groups;
-	const struct attribute_group	**dev_groups;
+	/* class_groups, dev_groups removed - never read (sysfs stubbed) */
 	struct kobject			*dev_kobj;
 
 	int (*dev_uevent)(struct device *dev, struct kobj_uevent_env *env);

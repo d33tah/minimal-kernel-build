@@ -64,12 +64,7 @@ platform_match_id(const struct platform_device_id *id,
 	return NULL;
 }
 
-/* Stub: platform device sysfs attributes not needed for minimal kernel */
-static struct attribute *platform_dev_attrs[] = { NULL };
-static const struct attribute_group platform_dev_group = {
-	.attrs = platform_dev_attrs
-};
-__ATTRIBUTE_GROUPS(platform_dev);
+/* platform_dev_attrs, platform_dev_group removed - dev_groups field never read */
 
 static int platform_match(struct device *dev, struct device_driver *drv)
 {
@@ -139,7 +134,7 @@ static const struct dev_pm_ops platform_dev_pm_ops = { SET_RUNTIME_PM_OPS(
 
 struct bus_type platform_bus_type = {
 	.name = "platform",
-	.dev_groups = platform_dev_groups,
+	/* .dev_groups removed - field never read (sysfs stubbed) */
 	.match = platform_match,
 	.uevent = platform_uevent,
 	.probe = platform_probe,

@@ -29,8 +29,7 @@ struct device_driver {
 	void (*shutdown) (struct device *dev);
 	int (*suspend) (struct device *dev, pm_message_t state);
 	int (*resume) (struct device *dev);
-	const struct attribute_group **groups;
-	const struct attribute_group **dev_groups;
+	/* groups, dev_groups removed - never read (sysfs stubbed) */
 
 	const struct dev_pm_ops *pm;
 	void (*coredump) (struct device *dev);

@@ -9,7 +9,7 @@
 #include <linux/user_namespace.h>
 #include <linux/seqlock.h>
 
-#define SECUREBITS_DEFAULT 0x00000000
+/* SECUREBITS_DEFAULT removed - never used */
 #include <linux/rbtree.h>
 #include <linux/refcount.h>
 #include <net/net_namespace.h>

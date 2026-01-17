@@ -42,9 +42,7 @@ static inline bool radix_tree_is_internal_node(void *ptr)
 #define RADIX_TREE_MAX_TAGS	XA_MAX_MARKS
 #define RADIX_TREE_TAG_LONGS	XA_MARK_LONGS
 
-#define RADIX_TREE_INDEX_BITS  (8   * sizeof(unsigned long))
-#define RADIX_TREE_MAX_PATH (DIV_ROUND_UP(RADIX_TREE_INDEX_BITS, \
-					  RADIX_TREE_MAP_SHIFT))
+/* RADIX_TREE_INDEX_BITS, RADIX_TREE_MAX_PATH removed - never used */
 
 #define ROOT_IS_IDR	((__force gfp_t)4)
 #define ROOT_TAG_SHIFT	(__GFP_BITS_SHIFT)

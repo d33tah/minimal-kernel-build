@@ -80,11 +80,7 @@ static int platform_match(struct device *dev, struct device_driver *drv)
 	return (strcmp(pdev->name, drv->name) == 0);
 }
 
-/* Stub: platform uevent simplified for minimal kernel */
-static int platform_uevent(struct device *dev, struct kobj_uevent_env *env)
-{
-	return 0;
-}
+/* platform_uevent removed - uevent callback removed from bus_type */
 
 static int platform_probe(struct device *_dev)
 {
@@ -133,9 +129,8 @@ static int platform_dma_configure(struct device *dev)
 
 struct bus_type platform_bus_type = {
 	.name = "platform",
-	/* .dev_groups, .pm removed - fields never read/accessed (sysfs stubbed) */
+	/* .dev_groups, .pm, .uevent removed - fields never read/accessed (sysfs stubbed) */
 	.match = platform_match,
-	.uevent = platform_uevent,
 	.probe = platform_probe,
 	.remove = platform_remove,
 	.shutdown = platform_shutdown,

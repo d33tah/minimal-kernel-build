@@ -42,13 +42,8 @@ struct fwnode_handle;
 
 struct device_type {
 	const char *name;
-	const struct attribute_group **groups;
-	int (*uevent)(struct device *dev, struct kobj_uevent_env *env);
-	char *(*devnode)(struct device *dev, umode_t *mode,
-			 kuid_t *uid, kgid_t *gid);
+	/* groups, uevent, devnode, pm removed - never accessed */
 	void (*release)(struct device *dev);
-
-	const struct dev_pm_ops *pm;
 };
 
 struct device_attribute {
@@ -100,8 +95,7 @@ struct device {
 	struct dev_pm_domain	*pm_domain;
 
 
-	/* dev_msi_info msi, dma_mask, coherent_dma_mask, bus_dma_limit removed - never accessed */
-	const struct bus_dma_region *dma_range_map;
+	/* dev_msi_info msi, dma_mask, coherent_dma_mask, bus_dma_limit, dma_range_map removed - never accessed */
 
 	struct list_head	dma_pools;
 

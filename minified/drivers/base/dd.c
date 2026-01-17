@@ -134,8 +134,6 @@ static DECLARE_WAIT_QUEUE_HEAD(probe_waitqueue);
 static void device_unbind_cleanup(struct device *dev)
 {
 	arch_teardown_dma_ops(dev);
-	kfree(dev->dma_range_map);
-	dev->dma_range_map = NULL;
 	dev->driver = NULL;
 	dev_set_drvdata(dev, NULL);
 	if (dev->pm_domain && dev->pm_domain->dismiss)

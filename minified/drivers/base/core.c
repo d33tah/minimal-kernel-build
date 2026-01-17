@@ -73,8 +73,6 @@ static void device_release(struct kobject *kobj)
 	struct device *dev = kobj_to_dev(kobj);
 	struct device_private *p = dev->p;
 
-	kfree(dev->dma_range_map);
-
 	if (dev->release)
 		dev->release(dev);
 	else if (dev->type && dev->type->release)

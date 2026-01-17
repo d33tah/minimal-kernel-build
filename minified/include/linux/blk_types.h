@@ -9,16 +9,10 @@ struct bio;
 /* struct page forward decl removed - unused */
 /* cgroup_subsys_state, bio_set, bio_integrity_payload, bio_crypt_ctx removed - unused */
 
-/* Minimal block_device struct - only pointers used, never instantiated */
-struct block_device {
-	int dummy;
-};
+/* struct block_device removed - never used */
 
 /* blk_status_t, blk_short_t, blk_qc_t, BLK_STS_OK removed - unused */
 
-/* Minimal struct bio - only forward declaration needed */
-struct bio {
-	int dummy;
-};
+/* struct bio removed - never used */
 
 #endif

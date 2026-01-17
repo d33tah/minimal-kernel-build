@@ -83,29 +83,26 @@ struct irq_data {
 
 enum {
 	IRQD_TRIGGER_MASK		= 0xf,
-	IRQD_SETAFFINITY_PENDING	= (1 <<  8),
+	/* IRQD_SETAFFINITY_PENDING removed - unused */
 	IRQD_ACTIVATED			= (1 <<  9),
 	IRQD_NO_BALANCING		= (1 << 10),
 	IRQD_PER_CPU			= (1 << 11),
-	IRQD_AFFINITY_SET		= (1 << 12),
+	/* IRQD_AFFINITY_SET removed - unused */
 	IRQD_LEVEL			= (1 << 13),
-	IRQD_WAKEUP_STATE		= (1 << 14),
-	IRQD_MOVE_PCNTXT		= (1 << 15),
+	/* IRQD_WAKEUP_STATE, IRQD_MOVE_PCNTXT removed - unused */
 	IRQD_IRQ_DISABLED		= (1 << 16),
 	IRQD_IRQ_MASKED			= (1 << 17),
 	IRQD_IRQ_INPROGRESS		= (1 << 18),
 	IRQD_WAKEUP_ARMED		= (1 << 19),
-	IRQD_FORWARDED_TO_VCPU		= (1 << 20),
+	/* IRQD_FORWARDED_TO_VCPU removed - unused */
 	IRQD_AFFINITY_MANAGED		= (1 << 21),
 	IRQD_IRQ_STARTED		= (1 << 22),
 	IRQD_MANAGED_SHUTDOWN		= (1 << 23),
-	IRQD_SINGLE_TARGET		= (1 << 24),
+	/* IRQD_SINGLE_TARGET removed - unused */
 	IRQD_DEFAULT_TRIGGER_SET	= (1 << 25),
-	IRQD_CAN_RESERVE		= (1 << 26),
-	IRQD_MSI_NOMASK_QUIRK		= (1 << 27),
-	IRQD_HANDLE_ENFORCE_IRQCTX	= (1 << 28),
-	IRQD_AFFINITY_ON_ACTIVATE	= (1 << 29),
-	IRQD_IRQ_ENABLED_ON_SUSPEND	= (1 << 30),
+	/* IRQD_CAN_RESERVE, IRQD_MSI_NOMASK_QUIRK removed - unused */
+	/* IRQD_HANDLE_ENFORCE_IRQCTX, IRQD_AFFINITY_ON_ACTIVATE removed - unused */
+	/* IRQD_IRQ_ENABLED_ON_SUSPEND removed - unused */
 };
 
 #define __irqd_to_state(d) ACCESS_PRIVATE((d)->common, state_use_accessors)

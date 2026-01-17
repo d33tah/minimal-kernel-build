@@ -88,9 +88,8 @@ struct thread_info {
 
 #define _TIF_WORK_CTXSW_NEXT	(_TIF_WORK_CTXSW)
 
-#define STACK_WARN		(THREAD_SIZE/8)
+/* STACK_WARN removed - never used */
 
- 
 #ifndef __ASSEMBLY__
 
 /* arch_within_stack_frames removed - unused */

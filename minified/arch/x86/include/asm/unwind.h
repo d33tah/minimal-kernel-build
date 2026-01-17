@@ -6,8 +6,7 @@
 #include <asm/ptrace.h>
 #include <asm/stacktrace.h>
 
-#define IRET_FRAME_OFFSET (offsetof(struct pt_regs, ip))
-/* IRET_FRAME_SIZE removed - unused */
+/* IRET_FRAME_OFFSET, IRET_FRAME_SIZE removed - unused */
 
 /* struct unwind_state, __unwind_start, unwind_next_frame, unwind_get_return_address,
    unwind_get_return_address_ptr, unwind_start, READ_ONCE_TASK_STACK removed - never used */

@@ -39,6 +39,6 @@ bool get_stack_info_noinstr(unsigned long *stack, struct task_struct *task,
 
 const char *stack_type_name(enum stack_type type);
 
-#define STACKSLOTS_PER_LINE 8
+/* STACKSLOTS_PER_LINE removed - never used */
 
-#endif  
+#endif

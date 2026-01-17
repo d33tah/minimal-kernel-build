@@ -89,7 +89,7 @@ struct pvclock_vsyscall_time_info {
 	struct pvclock_vcpu_time_info pvti;
 } __attribute__((__aligned__(SMP_CACHE_BYTES)));
 
-#define PVTI_SIZE sizeof(struct pvclock_vsyscall_time_info)
+/* PVTI_SIZE removed - never used */
 
 static inline struct pvclock_vsyscall_time_info *pvclock_get_pvti_cpu0_va(void)
 {

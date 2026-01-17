@@ -27,19 +27,17 @@
 #define S_IXUSR 00100
 #define S_IRWXG 00070
 #define S_IRGRP 00040
-#define S_IWGRP 00020
+/* S_IWGRP removed - never used */
 #define S_IXGRP 00010
 #define S_IRWXO 00007
-#define S_IROTH 00004
-#define S_IWOTH 00002
+/* S_IROTH, S_IWOTH removed - never used */
 #define S_IXOTH 00001
 #endif
 struct statx;
 /* STATX_BASIC_STATS removed - unused */
 #define S_IRWXUGO	(S_IRWXU|S_IRWXG|S_IRWXO)
 #define S_IALLUGO	(S_ISUID|S_ISGID|S_ISVTX|S_IRWXUGO)
-#define S_IRUGO		(S_IRUSR|S_IRGRP|S_IROTH)
-/* S_IWUGO removed - unused */
+/* S_IRUGO, S_IWUGO removed - unused */
 #define S_IXUGO		(S_IXUSR|S_IXGRP|S_IXOTH)
 #include <linux/time.h>
 #include <linux/uidgid.h>

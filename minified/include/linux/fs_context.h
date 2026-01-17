@@ -26,23 +26,13 @@ enum fs_context_purpose {
 	FS_CONTEXT_FOR_RECONFIGURE,	 
 };
 
-enum fs_context_phase {
-	FS_CONTEXT_CREATE_PARAMS,	 
-	FS_CONTEXT_CREATING,		 
-	FS_CONTEXT_AWAITING_MOUNT,	 
-	FS_CONTEXT_AWAITING_RECONF,	 
-	FS_CONTEXT_RECONF_PARAMS,	 
-	FS_CONTEXT_RECONFIGURING,	 
-	FS_CONTEXT_FAILED,		 
-};
+/* enum fs_context_phase removed - never used */
 
 enum fs_value_type {
-	fs_value_is_undefined,
-	fs_value_is_flag,		 
-	fs_value_is_string,		 
-	fs_value_is_blob,		 
-	fs_value_is_filename,		 
-	fs_value_is_file,		 
+	/* fs_value_is_undefined removed - never used */
+	fs_value_is_flag = 1,
+	fs_value_is_string,
+	/* fs_value_is_blob, fs_value_is_filename, fs_value_is_file removed - never used */
 };
 
 struct fs_parameter {
@@ -82,7 +72,7 @@ struct fs_context {
 	unsigned int		s_iflags;	 
 	unsigned int		lsm_flags;	 
 	enum fs_context_purpose	purpose:8;
-	enum fs_context_phase	phase:8;	 
+	/* phase field removed - never read */
 	bool			need_free:1;	 
 	bool			global:1;	 
 	bool			oldapi:1;	 

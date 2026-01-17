@@ -63,12 +63,7 @@ static inline unsigned long instruction_pointer(struct pt_regs *regs)
 #define arch_has_block_step()	(1)
 #define ARCH_HAS_USER_SINGLE_STEP_REPORT
 
-struct user_desc;
-/* do_get_thread_area removed - never called */
-extern int do_set_thread_area(struct task_struct *p, int idx,
-			      struct user_desc __user *info, int can_allocate);
-
-#define do_set_thread_area_64(p, s, t)	(0)
+/* do_get_thread_area, do_set_thread_area, do_set_thread_area_64 removed - never called */
 
 #endif /* !__ASSEMBLY__ */
 #endif /* _ASM_X86_PTRACE_H */

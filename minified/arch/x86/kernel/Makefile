@@ -71,8 +71,7 @@ obj-y			+= irqflags.o
 obj-y				+= process.o
 obj-y				+= fpu/
 obj-y				+= ptrace.o
-obj-$(CONFIG_X86_32)		+= tls.o
-obj-$(CONFIG_IA32_EMULATION)	+= tls.o
+# tls.o removed - do_set_thread_area no longer called (CLONE_SETTLS never used)
 # step.o removed - user_disable_single_step was empty stub
 obj-$(CONFIG_INTEL_TXT)		+= tboot.o
 # i8237.o removed - empty stub

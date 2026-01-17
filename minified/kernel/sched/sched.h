@@ -665,38 +665,14 @@ extern void activate_task(struct rq *rq, struct task_struct *p, int flags);
 extern void deactivate_task(struct rq *rq, struct task_struct *p, int flags);
 
 extern void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags);
-/* hrtick_enabled_fair removed - always returns 0, no callers */
-
-#ifndef arch_scale_freq_tick
-static __always_inline
-void arch_scale_freq_tick(void)
-{
-}
-#endif
-
-#ifndef arch_scale_freq_capacity
- 
-static __always_inline
-unsigned long arch_scale_freq_capacity(int cpu)
-{
-	return SCHED_CAPACITY_SCALE;
-}
-#endif
+/* hrtick_enabled_fair, arch_scale_freq_tick, arch_scale_freq_capacity removed - never called */
 
 extern struct sched_entity *__pick_first_entity(struct cfs_rq *cfs_rq);
 /* resched_latency_warn removed - empty stub, never called */
 extern void init_cfs_rq(struct cfs_rq *cfs_rq);
 extern void init_rt_rq(struct rt_rq *rt_rq);
 extern void init_dl_rq(struct dl_rq *dl_rq);
-/* cpufreq_update_util, uclamp_rq_util_with, perf_domain_span removed - unused stubs */
-
-
-static inline void membarrier_switch_mm(struct rq *rq,
-					struct mm_struct *prev_mm,
-					struct mm_struct *next_mm)
-{
-}
-
+/* cpufreq_update_util, uclamp_rq_util_with, perf_domain_span, membarrier_switch_mm removed - unused stubs */
 
 /* swake_up_all_locked removed - unused */
 extern void __prepare_to_swait(struct swait_queue_head *q, struct swait_queue *wait);

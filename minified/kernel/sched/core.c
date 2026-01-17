@@ -501,8 +501,7 @@ static __always_inline struct rq *context_switch(struct rq *rq,
 		else
 			prev->active_mm = NULL;
 	} else {
-		membarrier_switch_mm(rq, prev->active_mm, next->mm);
-
+		/* membarrier_switch_mm removed - empty stub */
 		switch_mm_irqs_off(prev->active_mm, next->mm, next);
 
 		if (!prev->mm) {

@@ -5,13 +5,7 @@
 #include <linux/string.h>
 #include <linux/device.h>
 #include <linux/err.h>
-enum dma_data_direction {
-	DMA_BIDIRECTIONAL = 0,
-	DMA_TO_DEVICE = 1,
-	DMA_FROM_DEVICE = 2,
-	DMA_NONE = 3,
-};
-/* end dma-direction.h */
+/* enum dma_data_direction removed - never used */
 /* scatterlist.h removed - unused */
 #include <linux/bug.h>
 #include <linux/mem_encrypt.h>

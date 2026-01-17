@@ -95,8 +95,7 @@ static inline void name(sigset_t *r, const sigset_t *a, const sigset_t *b) \
 	}								\
 }
 
-#define _sig_or(x,y)	((x) | (y))
-_SIG_SET_BINOP(sigorsets, _sig_or)
+/* sigorsets removed - never used */
 
 #define _sig_and(x,y)	((x) & (y))
 _SIG_SET_BINOP(sigandsets, _sig_and)
@@ -105,7 +104,6 @@ _SIG_SET_BINOP(sigandsets, _sig_and)
 _SIG_SET_BINOP(sigandnsets, _sig_andn)
 
 #undef _SIG_SET_BINOP
-#undef _sig_or
 #undef _sig_and
 #undef _sig_andn
 

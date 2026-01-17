@@ -35,14 +35,12 @@ void *fixup_red_left(struct kmem_cache *s, void *p)
 #define MAX_PARTIAL 10
 /* DEBUG_DEFAULT_FLAGS removed - unused */
 #define SLAB_NO_CMPXCHG (SLAB_CONSISTENCY_CHECKS | SLAB_STORE_USER | SLAB_TRACE)
-
-#define DEBUG_METADATA_FLAGS (SLAB_RED_ZONE | SLAB_POISON | SLAB_STORE_USER)
+/* DEBUG_METADATA_FLAGS removed - never used */
 
 #define OO_SHIFT 16
 #define OO_MASK ((1 << OO_SHIFT) - 1)
 #define MAX_OBJS_PER_PAGE 32767
-
-#define __OBJECT_POISON ((slab_flags_t __force)0x80000000U)
+/* __OBJECT_POISON removed - never used */
 
 #define __CMPXCHG_DOUBLE ((slab_flags_t __force)0x40000000U)
 /* TRACK_ADDRS_COUNT, struct track, enum track_item removed - unused */

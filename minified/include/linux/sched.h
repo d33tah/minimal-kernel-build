@@ -13,7 +13,7 @@
 #define CLONE_VFORK	0x00004000
 #define CLONE_PARENT	0x00008000
 #define CLONE_THREAD	0x00010000
-#define CLONE_NEWNS	0x00020000
+/* CLONE_NEWNS removed - namespace cloning disabled */
 /* CLONE_SYSVSEM removed - unused (no SysV semaphores) */
 #define CLONE_SETTLS	0x00080000
 #define CLONE_PARENT_SETTID	0x00100000
@@ -26,21 +26,7 @@
 /* CLONE_NEWPID, CLONE_NEWNET removed - namespace cloning disabled */
 #define CLONE_CLEAR_SIGHAND 0x100000000ULL
 /* CLONE_NEWTIME removed - namespace cloning disabled */
-#ifndef __ASSEMBLY__
-struct clone_args {
-	__aligned_u64 flags;
-	__aligned_u64 pidfd;
-	__aligned_u64 child_tid;
-	__aligned_u64 parent_tid;
-	__aligned_u64 exit_signal;
-	__aligned_u64 stack;
-	__aligned_u64 stack_size;
-	__aligned_u64 tls;
-	__aligned_u64 set_tid;
-	__aligned_u64 set_tid_size;
-	__aligned_u64 cgroup;
-};
-#endif
+/* struct clone_args removed - only needed for clone3 syscall which is COND_SYSCALL */
 #define SCHED_NORMAL		0
 #define SCHED_FIFO		1
 #define SCHED_RR		2

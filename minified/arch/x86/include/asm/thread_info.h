@@ -39,7 +39,7 @@ struct thread_info {
 #define TIF_NOTIFY_RESUME	1
 #define TIF_SIGPENDING		2
 #define TIF_NEED_RESCHED	3
-#define TIF_SINGLESTEP		4
+/* TIF_SINGLESTEP removed - never used */
 #define TIF_SSBD		5
 #define TIF_SPEC_IB		9
 #define TIF_SPEC_L1D_FLUSH	10

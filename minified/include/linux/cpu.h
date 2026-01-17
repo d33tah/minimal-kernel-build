@@ -6,11 +6,11 @@
 #include <linux/types.h>
 #include <linux/device.h>
 
-/* Simplified - only OFFLINE and ONLINE states needed, no hotplug callbacks */
+/* Simplified - only ONLINE state needed, no hotplug callbacks */
 enum cpuhp_state {
-	CPUHP_INVALID = -1,
-	CPUHP_OFFLINE = 0,
-	CPUHP_ONLINE,
+	/* CPUHP_INVALID removed - unused */
+	/* CPUHP_OFFLINE removed - unused */
+	CPUHP_ONLINE = 1,
 };
 
 /* __cpuhp_setup_state, __cpuhp_setup_state_cpuslocked,

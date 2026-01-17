@@ -9,7 +9,7 @@ struct pt_regs;
 /* panic_blink removed - no_blink always returned 0 */
 __printf(1, 2)
 void panic(const char *fmt, ...) __noreturn __cold;
-void nmi_panic(struct pt_regs *regs, const char *msg);
+/* nmi_panic removed - never called */
 extern void oops_enter(void);
 extern void oops_exit(void);
 /* Removed: oops_may_print - never called */

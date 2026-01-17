@@ -39,27 +39,12 @@ void __weak panic_smp_self_stop(void)
 		cpu_relax();
 }
 
-void __weak nmi_panic_self_stop(struct pt_regs *regs)
-{
-	panic_smp_self_stop();
-}
-
+/* nmi_panic_self_stop removed - only called by nmi_panic which was removed */
 /* crash_smp_send_stop removed - stub that only called smp_send_stop() which is empty */
 
 atomic_t panic_cpu = ATOMIC_INIT(PANIC_CPU_INVALID);
 
-void nmi_panic(struct pt_regs *regs, const char *msg)
-{
-	int old_cpu, cpu;
-
-	cpu = raw_smp_processor_id();
-	old_cpu = atomic_cmpxchg(&panic_cpu, PANIC_CPU_INVALID, cpu);
-
-	if (old_cpu == PANIC_CPU_INVALID)
-		panic("%s", msg);
-	else if (old_cpu != cpu)
-		nmi_panic_self_stop(regs);
-}
+/* nmi_panic removed - never called from outside panic.c */
 
 void panic(const char *fmt, ...)
 {

@@ -21,12 +21,7 @@ DEFINE_PER_CPU(struct hrtimer_cpu_base, hrtimer_bases) = {
 	.lock = __RAW_SPIN_LOCK_UNLOCKED(hrtimer_bases.lock),
 };
 
-/* ktime_add_safe removed - never called */
-
-void clock_was_set(unsigned int bases)
-{
-	/* Stubbed for minimal Hello World */
-}
+/* ktime_add_safe, clock_was_set removed - never called */
 
 void clock_was_set_delayed(void)
 {

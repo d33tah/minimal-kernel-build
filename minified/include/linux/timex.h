@@ -5,15 +5,9 @@
 #include <linux/compiler.h>
 #include <linux/types.h>
 #include <linux/param.h>
-unsigned long random_get_entropy_fallback(void);
+/* random_get_entropy_fallback declaration removed - function never called */
 #include <asm/timex.h>
-#ifndef random_get_entropy
-#ifdef get_cycles
-#define random_get_entropy()	((unsigned long)get_cycles())
-#else
-#define random_get_entropy()	random_get_entropy_fallback()
-#endif
-#endif
+/* random_get_entropy macros removed - never called */
 #define shift_right(x, s) ({ __typeof__(x) __x = (x); __typeof__(s) __s = (s); __x < 0 ? -(-__x >> __s) : __x >> __s; })
 #define NTP_SCALE_SHIFT		32
 #define NTP_INTERVAL_FREQ  (HZ)

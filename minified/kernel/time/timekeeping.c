@@ -518,13 +518,4 @@ void do_timer(unsigned long ticks)
 }
 
 /* ktime_get_update_offsets_now removed - never called (~28 LOC) */
-
-unsigned long random_get_entropy_fallback(void)
-{
-	struct tk_read_base *tkr = &tk_core.timekeeper.tkr_mono;
-	struct clocksource *clock = READ_ONCE(tkr->clock);
-
-	if (unlikely(timekeeping_suspended || !clock))
-		return 0;
-	return clock->read(clock);
-}
+/* random_get_entropy_fallback removed - random_get_entropy() is never called (~8 LOC) */

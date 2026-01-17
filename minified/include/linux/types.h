@@ -102,12 +102,7 @@ struct hlist_node {
 	struct hlist_node *next, **pprev;
 };
 
-struct ustat {
-	__kernel_daddr_t	f_tfree;
-	unsigned long		f_tinode;
-	char			f_fname[6];
-	char			f_fpack[6];
-};
+/* struct ustat removed - ustat syscall is COND_SYSCALL */
 
 struct callback_head {
 	struct callback_head *next;

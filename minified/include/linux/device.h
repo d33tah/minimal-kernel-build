@@ -105,7 +105,7 @@ struct device {
 
 	struct list_head	dma_pools;
 
-	struct device_node	*of_node;  
+	/* of_node removed - never accessed */
 	struct fwnode_handle	*fwnode;  
 
 	dev_t			devt;	 

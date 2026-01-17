@@ -90,8 +90,7 @@ void timer_clear_idle(void);
 
 /* CLOCK_SET_WALL, CLOCK_SET_BOOT removed - unused */
 
-/* clock_was_set removed - never called */
-void clock_was_set_delayed(void);
+/* clock_was_set, clock_was_set_delayed removed - never called or empty stub */
 /* hrtimers_resume_local removed - unused */
 
  

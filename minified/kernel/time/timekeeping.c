@@ -505,8 +505,8 @@ out:
 
 void update_wall_time(void)
 {
-	if (timekeeping_advance(TK_ADV_TICK))
-		clock_was_set_delayed();
+	timekeeping_advance(TK_ADV_TICK);
+	/* clock_was_set_delayed() call removed - function was empty stub */
 }
 
 /* ktime_get_coarse_real_ts64 removed - never called (~11 LOC) */

@@ -20,7 +20,7 @@ struct tty_buffer {
 	unsigned long data[];
 };
 
-#define TTYB_NORMAL	1	 
+/* TTYB_NORMAL removed - never used */
 
 static inline unsigned char *char_buf_ptr(struct tty_buffer *b, int ofs)
 {
@@ -44,6 +44,6 @@ struct tty_bufhead {
 	struct tty_buffer *tail;	 
 };
 
-#define TTY_NORMAL	0
+/* TTY_NORMAL removed - never used */
 
 #endif

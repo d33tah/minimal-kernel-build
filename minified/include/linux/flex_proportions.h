@@ -6,10 +6,7 @@
 #include <linux/spinlock.h>
 #include <linux/gfp.h>
 
-#define FPROP_FRAC_SHIFT 10
-#define FPROP_FRAC_BASE (1UL << FPROP_FRAC_SHIFT)
-
-/* fprop_global struct and related functions removed - never used */
+/* FPROP_FRAC_SHIFT, FPROP_FRAC_BASE, fprop_global removed - never used */
 
 struct fprop_local_percpu {
 	struct percpu_counter events;

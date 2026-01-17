@@ -46,7 +46,7 @@ struct linux_binprm {
 	char buf[BINPRM_BUF_SIZE];
 } __randomize_layout;
 
-#define BINPRM_FLAGS_ENFORCE_NONDUMP (1 << 0)
+/* BINPRM_FLAGS_ENFORCE_NONDUMP removed - never used */
 #define BINPRM_FLAGS_PATH_INACCESSIBLE (1 << 2)
 #define BINPRM_FLAGS_PRESERVE_ARGV0 (1 << 3)
 

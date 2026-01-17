@@ -839,8 +839,7 @@ copy_process(struct pid *pid, int trace, int node,
 bad_fork_cancel_cgroup:
 	spin_unlock(&current->sighand->siglock);
 	write_unlock_irq(&tasklist_lock);
-	/* bad_fork_put_pidfd removed - CLONE_PIDFD never used */
-bad_fork_free_pid:
+	/* bad_fork_put_pidfd, bad_fork_free_pid removed - never jumped to */
 	if (pid != &init_struct_pid)
 		free_pid(pid);
 bad_fork_cleanup_thread:
@@ -850,8 +849,7 @@ bad_fork_cleanup_namespaces:
 bad_fork_cleanup_mm:
 	if (p->mm)
 		mmput(p->mm);
-bad_fork_cleanup_signal:
-	/* CLONE_THREAD never set - always free signal */
+	/* bad_fork_cleanup_signal removed - never jumped to, CLONE_THREAD never set */
 	free_signal_struct(p->signal);
 bad_fork_cleanup_sighand:
 	__cleanup_sighand(p->sighand);

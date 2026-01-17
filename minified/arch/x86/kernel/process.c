@@ -90,7 +90,6 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 {
 	unsigned long clone_flags = args->flags;
 	unsigned long sp = args->stack;
-	unsigned long tls = args->tls;
 	struct inactive_task_frame *frame;
 	struct fork_frame *fork_frame;
 	struct pt_regs *childregs;

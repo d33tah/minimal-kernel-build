@@ -45,13 +45,13 @@ static inline bool __nodes_empty(const nodemask_t *srcp, unsigned int nbits)
 	for ((node) = 0; (node) < 1 && !nodes_empty(mask); (node)++)  
 
 enum node_states {
-	N_POSSIBLE,		 
-	N_ONLINE,		 
-	N_NORMAL_MEMORY,	 
+	N_POSSIBLE,
+	N_ONLINE,
+	N_NORMAL_MEMORY,
 	N_HIGH_MEMORY = N_NORMAL_MEMORY,
-	N_MEMORY,		 
-	N_CPU,		 
-	N_GENERIC_INITIATOR,	 
+	N_MEMORY,
+	N_CPU,
+	/* N_GENERIC_INITIATOR removed - unused */
 	NR_NODE_STATES
 };
 

@@ -1034,17 +1034,7 @@ static const struct tty_operations con_ops = {
 
 static struct cdev vc0_cdev;
 
-/* Stub: show_tty_active simplified for minimal kernel */
-static ssize_t show_tty_active(struct device *dev,
-			       struct device_attribute *attr, char *buf)
-{
-	return sprintf(buf, "tty1\n");
-}
-static DEVICE_ATTR(active, S_IRUGO, show_tty_active, NULL);
-
-static struct attribute *vt_dev_attrs[] = { &dev_attr_active.attr, NULL };
-
-ATTRIBUTE_GROUPS(vt_dev);
+/* show_tty_active, dev_attr_active, vt_dev_attrs removed - groups not stored anymore */
 
 int __init vty_init(const struct file_operations *console_fops)
 {
@@ -1052,9 +1042,8 @@ int __init vty_init(const struct file_operations *console_fops)
 	if (cdev_add(&vc0_cdev, MKDEV(TTY_MAJOR, 0), 1) ||
 	    register_chrdev_region(MKDEV(TTY_MAJOR, 0), 1, "/dev/vc/0") < 0)
 		panic("Couldn't register /dev/tty0 driver\n");
-	tty0dev = device_create_with_groups(tty_class, NULL,
-					    MKDEV(TTY_MAJOR, 0), NULL,
-					    vt_dev_groups, "tty0");
+	tty0dev = device_create(tty_class, NULL, MKDEV(TTY_MAJOR, 0), NULL,
+				"tty0");
 	if (IS_ERR(tty0dev))
 		tty0dev = NULL;
 

@@ -150,12 +150,7 @@ static const struct kset_uevent_ops device_uevent_ops = {
 
 /* device_add_groups, device_remove_groups removed - calls removed, functions did nothing */
 
-/* Stub: device_remove_attrs not needed (sysfs functions are stubbed) */
-static void device_remove_attrs(struct device *dev)
-{
-	if (dev->physical_location)
-		kfree(dev->physical_location);
-}
+/* device_remove_attrs removed - physical_location field removed, now empty */
 
 /* device_remove_file_self, device_create_bin_file, device_remove_bin_file - no callers */
 
@@ -367,7 +362,7 @@ void device_del(struct device *dev)
 		klist_del(&dev->p->knode_class);
 		mutex_unlock(&dev->class->p->mutex);
 	}
-	device_remove_attrs(dev);
+	/* device_remove_attrs call removed - function now empty */
 	bus_remove_device(dev);
 	driver_deferred_probe_del(dev);
 	/* device_platform_notify_remove, device_links_purge, bus_notifier calls removed */
@@ -419,7 +414,7 @@ static __printf(6, 0) struct device *device_create_groups_vargs(
 	dev->devt = devt;
 	dev->class = class;
 	dev->parent = parent;
-	dev->groups = groups;
+	/* dev->groups removed - field no longer exists (sysfs stubbed) */
 	dev->release = device_create_release;
 	dev_set_drvdata(dev, drvdata);
 
@@ -451,21 +446,7 @@ struct device *device_create(struct class *class, struct device *parent,
 	return dev;
 }
 
-struct device *device_create_with_groups(struct class *class,
-					 struct device *parent, dev_t devt,
-					 void *drvdata,
-					 const struct attribute_group **groups,
-					 const char *fmt, ...)
-{
-	va_list vargs;
-	struct device *dev;
-
-	va_start(vargs, fmt);
-	dev = device_create_groups_vargs(class, parent, devt, drvdata, groups,
-					 fmt, vargs);
-	va_end(vargs);
-	return dev;
-}
+/* device_create_with_groups removed - groups parameter now ignored (sysfs stubbed) */
 
 void device_destroy(struct class *class, dev_t devt)
 {

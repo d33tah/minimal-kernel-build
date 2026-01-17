@@ -79,7 +79,7 @@ struct dev_links_info {
 /* struct dev_msi_info removed - never accessed */
 
 /* device_physical_location - not used in minimal kernel */
-struct device_physical_location;
+/* struct device_physical_location removed - never used */
 
 struct device {
 	struct kobject kobj;
@@ -115,11 +115,9 @@ struct device {
 	struct list_head	devres_head;
 
 	struct class		*class;
-	const struct attribute_group **groups;	 
+	/* groups field removed - only written, never read (sysfs stubbed) */
 
 	void	(*release)(struct device *dev);
-
-	struct device_physical_location *physical_location;
 
 	bool			can_match:1;
 };
@@ -210,10 +208,7 @@ void device_initial_probe(struct device *dev);
 __printf(5, 6) struct device *
 device_create(struct class *cls, struct device *parent, dev_t devt,
 	      void *drvdata, const char *fmt, ...);
-__printf(6, 7) struct device *
-device_create_with_groups(struct class *cls, struct device *parent, dev_t devt,
-			  void *drvdata, const struct attribute_group **groups,
-			  const char *fmt, ...);
+/* device_create_with_groups removed - groups field no longer stored */
 void device_destroy(struct class *cls, dev_t devt);
 
 /* device_add_groups, device_remove_groups removed - calls removed */

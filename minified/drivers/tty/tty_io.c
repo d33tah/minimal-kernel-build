@@ -919,7 +919,7 @@ static int tty_cdev_add(struct tty_driver *driver, dev_t dev,
 struct device *tty_register_device(struct tty_driver *driver, unsigned index,
 				   struct device *device)
 {
-	return tty_register_device_attr(driver, index, device, NULL, NULL);
+	return tty_register_device_attr(driver, index, device, NULL);
 }
 
 static void tty_device_create_release(struct device *dev)
@@ -929,8 +929,7 @@ static void tty_device_create_release(struct device *dev)
 
 struct device *tty_register_device_attr(struct tty_driver *driver,
 					unsigned index, struct device *device,
-					void *drvdata,
-					const struct attribute_group **attr_grp)
+					void *drvdata)
 {
 	char name[64];
 	dev_t devt = MKDEV(driver->major, driver->minor_start) + index;
@@ -958,7 +957,7 @@ struct device *tty_register_device_attr(struct tty_driver *driver,
 	dev->parent = device;
 	dev->release = tty_device_create_release;
 	dev_set_name(dev, "%s", name);
-	dev->groups = attr_grp;
+	/* dev->groups removed - field no longer exists */
 	dev_set_drvdata(dev, drvdata);
 	retval = device_register(dev);
 	if (retval)

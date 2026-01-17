@@ -2,8 +2,7 @@
 #define _LINUX_KMSG_DUMP_H
 
 enum kmsg_dump_reason {
-	KMSG_DUMP_UNDEF,
-	KMSG_DUMP_PANIC,
+	KMSG_DUMP_PANIC = 1,
 	KMSG_DUMP_OOPS,
 	KMSG_DUMP_EMERG,
 	/* KMSG_DUMP_SHUTDOWN, KMSG_DUMP_MAX removed - unused */

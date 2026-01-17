@@ -40,20 +40,7 @@ void hrtimer_run_queues(void)
 	/* Stubbed for minimal Hello World */
 }
 
-int hrtimers_prepare_cpu(unsigned int cpu)
-{
-	struct hrtimer_cpu_base *cpu_base = &per_cpu(hrtimer_bases, cpu);
-	int i;
-
-	for (i = 0; i < HRTIMER_MAX_CLOCK_BASES; i++) {
-		struct hrtimer_clock_base *clock_b = &cpu_base->clock_base[i];
-		clock_b->cpu_base = cpu_base;
-		seqcount_raw_spinlock_init(&clock_b->seq, &cpu_base->lock);
-		timerqueue_init_head(&clock_b->active);
-	}
-	cpu_base->cpu = cpu;
-	return 0;
-}
+/* hrtimers_prepare_cpu removed - CPU hotplug disabled, never called (~13 LOC) */
 
 void __init hrtimers_init(void)
 {

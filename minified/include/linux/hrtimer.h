@@ -80,7 +80,6 @@ extern void hrtimer_run_queues(void);
 extern void __init hrtimers_init(void);
 
 
-int hrtimers_prepare_cpu(unsigned int cpu);
-/* hrtimers_dead_cpu removed - unused */
+/* hrtimers_prepare_cpu, hrtimers_dead_cpu removed - CPU hotplug disabled */
 
 #endif

@@ -15,9 +15,7 @@ struct device_driver {
 	struct bus_type		*bus;
 
 	struct module		*owner;
-	const char		*mod_name;
-
-	/* suppress_bind_attrs, probe_type, of_match_table, acpi_match_table removed - unused */
+	/* mod_name, suppress_bind_attrs, probe_type, of_match_table, acpi_match_table removed - unused */
 
 	int (*probe) (struct device *dev);
 	/* sync_state removed - never called */

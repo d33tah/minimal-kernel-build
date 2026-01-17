@@ -14,15 +14,10 @@ struct class {
 	const char		*name;
 	struct module		*owner;
 
-	/* class_groups, dev_groups, dev_kobj removed - never read/used */
-
-	int (*dev_uevent)(struct device *dev, struct kobj_uevent_env *env);
-	/* devnode, class_release, shutdown_pre removed - never called */
+	/* class_groups, dev_groups, dev_kobj, dev_uevent, devnode, class_release, shutdown_pre removed */
 	void (*dev_release)(struct device *dev);
 
-	/* ns_type, namespace, get_ownership removed - never set */
-
-	const struct dev_pm_ops *pm;
+	/* ns_type, namespace, get_ownership, pm removed - never set/accessed */
 
 	struct subsys_private *p;
 };

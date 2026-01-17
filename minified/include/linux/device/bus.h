@@ -12,8 +12,7 @@ struct fwnode_handle;
 struct bus_type {
 	const char		*name;
 	const char		*dev_name;
-	struct device		*dev_root;
-	/* bus_groups, dev_groups, drv_groups removed - never read (sysfs stubbed) */
+	/* dev_root, bus_groups, dev_groups, drv_groups removed - never read (sysfs stubbed) */
 
 	int (*match)(struct device *dev, struct device_driver *drv);
 	int (*uevent)(struct device *dev, struct kobj_uevent_env *env);

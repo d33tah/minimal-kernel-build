@@ -17,11 +17,7 @@ struct device_driver {
 	struct module		*owner;
 	const char		*mod_name;
 
-	bool suppress_bind_attrs;
-	/* probe_type field removed - never read */
-
-	const struct of_device_id	*of_match_table;
-	/* acpi_match_table removed - unused */
+	/* suppress_bind_attrs, probe_type, of_match_table, acpi_match_table removed - unused */
 
 	int (*probe) (struct device *dev);
 	/* sync_state removed - never called */

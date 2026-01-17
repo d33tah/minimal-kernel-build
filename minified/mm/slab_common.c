@@ -107,7 +107,7 @@ kmem_cache_create_usercopy(const char *name, unsigned int size,
 {
 	struct kmem_cache *s = NULL;
 	const char *cache_name;
-	int err;
+	int err = 0;
 
 	mutex_lock(&slab_mutex);
 

@@ -7,26 +7,10 @@
 #define CLONE_VM	0x00000100
 #define CLONE_FS	0x00000200
 #define CLONE_FILES	0x00000400
-#define CLONE_SIGHAND	0x00000800
-#define CLONE_PIDFD	0x00001000
-#define CLONE_PTRACE	0x00002000
-#define CLONE_VFORK	0x00004000
-#define CLONE_PARENT	0x00008000
-#define CLONE_THREAD	0x00010000
-/* CLONE_NEWNS removed - namespace cloning disabled */
-/* CLONE_SYSVSEM removed - unused (no SysV semaphores) */
-#define CLONE_SETTLS	0x00080000
-#define CLONE_PARENT_SETTID	0x00100000
-#define CLONE_CHILD_CLEARTID	0x00200000
-/* CLONE_DETACHED removed - unused */
 #define CLONE_UNTRACED		0x00800000
-#define CLONE_CHILD_SETTID	0x01000000
-/* CLONE_NEWCGROUP, CLONE_NEWUTS, CLONE_NEWIPC removed - namespace cloning disabled */
-#define CLONE_NEWUSER		0x10000000
-/* CLONE_NEWPID, CLONE_NEWNET removed - namespace cloning disabled */
-#define CLONE_CLEAR_SIGHAND 0x100000000ULL
-/* CLONE_NEWTIME removed - namespace cloning disabled */
-/* struct clone_args removed - only needed for clone3 syscall which is COND_SYSCALL */
+/* Removed unused CLONE_* flags: CLONE_SIGHAND, CLONE_PIDFD, CLONE_PTRACE,
+   CLONE_VFORK, CLONE_PARENT, CLONE_THREAD, CLONE_SETTLS, CLONE_PARENT_SETTID,
+   CLONE_CHILD_CLEARTID, CLONE_CHILD_SETTID, CLONE_NEWUSER, CLONE_CLEAR_SIGHAND */
 #define SCHED_NORMAL		0
 #define SCHED_FIFO		1
 #define SCHED_RR		2

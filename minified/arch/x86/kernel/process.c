@@ -84,15 +84,7 @@ void exit_thread(struct task_struct *tsk)
 	fpu__drop(fpu);
 }
 
-static int set_new_tls(struct task_struct *p, unsigned long tls)
-{
-	struct user_desc __user *utls = (struct user_desc __user *)tls;
-
-	if (in_ia32_syscall())
-		return do_set_thread_area(p, -1, utls, 0);
-	else
-		return do_set_thread_area_64(p, ARCH_SET_FS, tls);
-}
+/* set_new_tls removed - CLONE_SETTLS never used */
 
 int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 {
@@ -144,9 +136,7 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 		return 0;
 	}
 
-	if (clone_flags & CLONE_SETTLS)
-		ret = set_new_tls(p, tls);
-
+	/* CLONE_SETTLS check removed - kernel_thread/user_mode_thread never set it */
 	/* io_bitmap_share removed - empty stub */
 
 	return ret;

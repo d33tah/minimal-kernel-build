@@ -21,17 +21,10 @@ struct bus_type {
 	void (*remove)(struct device *dev);
 	void (*shutdown)(struct device *dev);
 
-	/* online, offline, num_vf removed - never called */
-
-	int (*suspend)(struct device *dev, pm_message_t state);
-	int (*resume)(struct device *dev);
+	/* online, offline, num_vf, suspend, resume, pm, iommu_ops removed - never called/accessed */
 
 	int (*dma_configure)(struct device *dev);
 	void (*dma_cleanup)(struct device *dev);
-
-	const struct dev_pm_ops *pm;
-
-	const struct iommu_ops *iommu_ops;
 
 	struct subsys_private *p;
 	struct lock_class_key lock_key;

@@ -129,17 +129,15 @@ static int platform_dma_configure(struct device *dev)
 	return 0;
 }
 
-static const struct dev_pm_ops platform_dev_pm_ops = { SET_RUNTIME_PM_OPS(
-	NULL, NULL, NULL) USE_PLATFORM_PM_SLEEP_OPS };
+/* platform_dev_pm_ops removed - pm field removed from bus_type */
 
 struct bus_type platform_bus_type = {
 	.name = "platform",
-	/* .dev_groups removed - field never read (sysfs stubbed) */
+	/* .dev_groups, .pm removed - fields never read/accessed (sysfs stubbed) */
 	.match = platform_match,
 	.uevent = platform_uevent,
 	.probe = platform_probe,
 	.remove = platform_remove,
 	.shutdown = platform_shutdown,
 	.dma_configure = platform_dma_configure,
-	.pm = &platform_dev_pm_ops,
 };

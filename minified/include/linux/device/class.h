@@ -14,16 +14,11 @@ struct class {
 	const char		*name;
 	struct module		*owner;
 
-	/* class_groups, dev_groups removed - never read (sysfs stubbed) */
-	struct kobject			*dev_kobj;
+	/* class_groups, dev_groups, dev_kobj removed - never read/used */
 
 	int (*dev_uevent)(struct device *dev, struct kobj_uevent_env *env);
-	char *(*devnode)(struct device *dev, umode_t *mode);
-
-	void (*class_release)(struct class *class);
+	/* devnode, class_release, shutdown_pre removed - never called */
 	void (*dev_release)(struct device *dev);
-
-	int (*shutdown_pre)(struct device *dev);
 
 	/* ns_type, namespace, get_ownership removed - never set */
 

@@ -24,7 +24,7 @@ struct device_driver {
 	/* acpi_match_table removed - unused */
 
 	int (*probe) (struct device *dev);
-	void (*sync_state)(struct device *dev);
+	/* sync_state removed - never called */
 	int (*remove) (struct device *dev);
 	void (*shutdown) (struct device *dev);
 	int (*suspend) (struct device *dev, pm_message_t state);
@@ -32,7 +32,7 @@ struct device_driver {
 	/* groups, dev_groups removed - never read (sysfs stubbed) */
 
 	const struct dev_pm_ops *pm;
-	void (*coredump) (struct device *dev);
+	/* coredump removed - never called */
 
 	struct driver_private *p;
 };

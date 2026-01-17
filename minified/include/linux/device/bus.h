@@ -18,17 +18,14 @@ struct bus_type {
 	int (*match)(struct device *dev, struct device_driver *drv);
 	int (*uevent)(struct device *dev, struct kobj_uevent_env *env);
 	int (*probe)(struct device *dev);
-	void (*sync_state)(struct device *dev);
+	/* sync_state removed - never called */
 	void (*remove)(struct device *dev);
 	void (*shutdown)(struct device *dev);
 
-	int (*online)(struct device *dev);
-	int (*offline)(struct device *dev);
+	/* online, offline, num_vf removed - never called */
 
 	int (*suspend)(struct device *dev, pm_message_t state);
 	int (*resume)(struct device *dev);
-
-	int (*num_vf)(struct device *dev);
 
 	int (*dma_configure)(struct device *dev);
 	void (*dma_cleanup)(struct device *dev);

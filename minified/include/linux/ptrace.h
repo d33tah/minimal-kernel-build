@@ -11,11 +11,8 @@
 #include <asm/ptrace.h>
 /* seccomp.h removed - header is empty */
 
-#define PTRACE_EVENT_FORK	1
-#define PTRACE_EVENT_VFORK	2
-#define PTRACE_EVENT_CLONE	3
+/* PTRACE_EVENT_FORK, VFORK, CLONE, VFORK_DONE removed - never used */
 #define PTRACE_EVENT_EXEC	4
-#define PTRACE_EVENT_VFORK_DONE	5
 #define PTRACE_EVENT_EXIT	6
 #define PTRACE_EVENTMSG_SYSCALL_ENTRY	1
 #define PTRACE_EVENTMSG_SYSCALL_EXIT	2

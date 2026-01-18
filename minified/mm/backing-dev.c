@@ -12,6 +12,22 @@
 #include <linux/module.h>
 #include <linux/writeback.h>
 #include <linux/device.h>
+#include <linux/flex_proportions.h>
+
+/* Merged from lib/flex_proportions.c */
+int fprop_local_init_percpu(struct fprop_local_percpu *pl, gfp_t gfp)
+{
+	int err = percpu_counter_init(&pl->events, 0, gfp);
+	if (err)
+		return err;
+	pl->period = 0;
+	raw_spin_lock_init(&pl->lock);
+	return 0;
+}
+void fprop_local_destroy_percpu(struct fprop_local_percpu *pl)
+{
+	percpu_counter_destroy(&pl->events);
+}
 
 struct backing_dev_info noop_backing_dev_info;
 /* bdi_class removed - never used */

@@ -24,6 +24,13 @@ const struct address_space_operations empty_aops = {};
 /* pipefifo_fops moved here from fs/pipe.c */
 const struct file_operations pipefifo_fops = {};
 
+/* Merged from no-block.c (CONFIG_BLOCK not set) */
+static int no_blkdev_open(struct inode *inode, struct file *filp)
+{
+	return -ENODEV;
+}
+const struct file_operations def_blk_fops = { .open = no_blkdev_open };
+
 /* nr_inodes, nr_unused removed - only inc/dec, never read */
 
 static struct kmem_cache *inode_cachep __read_mostly;

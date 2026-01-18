@@ -19,9 +19,8 @@ obj-y :=	open.o read_write.o file_table.o super.o \
 
 ifeq ($(CONFIG_BLOCK),y)
 obj-y +=	buffer.o direct-io.o mpage.o
-else
-obj-y +=	no-block.o
 endif
+# no-block.o merged into inode.c
 
 obj-$(CONFIG_PROC_FS) += proc_namespace.o
 

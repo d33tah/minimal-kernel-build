@@ -5,7 +5,7 @@
 #include <linux/mempolicy.h>
 #include <linux/pagemap.h>
 #include <linux/percpu_counter.h>
-#include <linux/xattr.h>
+/* xattr.h removed - not used in minimal kernel */
 #include <linux/fs_parser.h>
 extern void shmem_init(void);
 /* shmem_file_setup removed - never called */

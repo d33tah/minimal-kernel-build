@@ -6,7 +6,7 @@
 ccflags-y := -fno-function-sections -fno-data-sections
 
 obj-y                          := main.o version.o mounts.o
-obj-$(CONFIG_BLK_DEV_INITRD)   += initramfs.o
+# initramfs.o removed - empty, merged into do_mounts.c
 # noinitramfs.o merged into do_mounts.c
 obj-$(CONFIG_GENERIC_CALIBRATE_DELAY) += calibrate.o
 
@@ -14,7 +14,7 @@ obj-y                          += init_task.o
 
 mounts-y			:= do_mounts.o
 mounts-$(CONFIG_BLK_DEV_RAM)	+= do_mounts_rd.o
-mounts-$(CONFIG_BLK_DEV_INITRD)	+= do_mounts_initrd.o
+# do_mounts_initrd.o merged into do_mounts.c
 
 # dependencies on generated files need to be listed explicitly
 $(obj)/version.o: include/generated/compile.h

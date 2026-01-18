@@ -29,6 +29,12 @@ static int root_wait;
 
 dev_t ROOT_DEV;
 
+/* Merged from do_mounts_initrd.c */
+unsigned long initrd_start, initrd_end;
+int initrd_below_start_ok;
+phys_addr_t phys_initrd_start __initdata;
+unsigned long phys_initrd_size __initdata;
+
 static dev_t devt_from_devnum(const char *name)
 {
 	unsigned maj, min, offset;

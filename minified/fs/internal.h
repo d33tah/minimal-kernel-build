@@ -80,10 +80,8 @@ extern char *simple_dname(struct dentry *, char *, int);
 extern void dput_to_list(struct dentry *, struct list_head *);
 extern void shrink_dentry_list(struct list_head *);
 
- 
-extern const struct file_operations pipefifo_fops;
+/* pipefifo_fops moved to inode.c */
 
- 
 /* group_pin_kill removed - unused */
 extern void mnt_pin_kill(struct mount *m);
 

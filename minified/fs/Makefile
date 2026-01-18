@@ -9,7 +9,7 @@
 obj-$(CONFIG_SYSCTL)		+= sysctls.o
 
 obj-y :=	open.o read_write.o file_table.o super.o \
-		char_dev.o stat.o exec.o pipe.o namei.o fcntl.o \
+		char_dev.o stat.o exec.o namei.o fcntl.o \
 		ioctl.o readdir.o dcache.o inode.o \
 		attr.o file.o filesystems.o namespace.o \
 		libfs.o fs-writeback.o \

@@ -21,6 +21,9 @@ static __cacheline_aligned_in_smp DEFINE_SPINLOCK(inode_hash_lock);
 
 const struct address_space_operations empty_aops = {};
 
+/* pipefifo_fops moved here from fs/pipe.c */
+const struct file_operations pipefifo_fops = {};
+
 /* nr_inodes, nr_unused removed - only inc/dec, never read */
 
 static struct kmem_cache *inode_cachep __read_mostly;

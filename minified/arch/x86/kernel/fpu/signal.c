@@ -7,7 +7,7 @@
 #include <linux/pagemap.h>
 
 #include <asm/fpu/signal.h>
-#include <asm/fpu/regset.h>
+/* asm/fpu/regset.h removed - not used */
 #include <asm/fpu/xstate.h>
 
 #include <asm/sigframe.h>

@@ -13,7 +13,7 @@
 #include <linux/vmalloc.h>
 
 #include <asm/fpu/api.h>
-#include <asm/fpu/regset.h>
+/* asm/fpu/regset.h removed - not used */
 #include <asm/fpu/signal.h>
 
 #include <asm/tlbflush.h>

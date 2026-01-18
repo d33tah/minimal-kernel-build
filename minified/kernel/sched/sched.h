@@ -35,7 +35,7 @@ extern unsigned int nr_iowait_cpu(int cpu);
 
 
 #include <linux/interrupt.h>
-#include <linux/irq_work.h>
+/* irq_work.h removed - header is now empty */
 #include <linux/jiffies.h>
 
 #include <linux/kthread.h>

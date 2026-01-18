@@ -15,7 +15,7 @@
 #include <linux/syscalls.h>
 #include <linux/delay.h>
 #include <linux/kallsyms.h>
-#include <linux/irq_work.h>
+/* irq_work.h removed - header is now empty */
 #include <linux/sched/signal.h>
 #include <linux/sched/sysctl.h>
 #include <linux/sched/debug.h>

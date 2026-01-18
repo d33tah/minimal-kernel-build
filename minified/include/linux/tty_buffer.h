@@ -21,16 +21,7 @@ struct tty_buffer {
 };
 
 /* TTYB_NORMAL removed - never used */
-
-static inline unsigned char *char_buf_ptr(struct tty_buffer *b, int ofs)
-{
-	return ((unsigned char *)b->data) + ofs;
-}
-
-static inline char *flag_buf_ptr(struct tty_buffer *b, int ofs)
-{
-	return (char *)char_buf_ptr(b, ofs) + b->size;
-}
+/* char_buf_ptr, flag_buf_ptr removed - never called */
 
 struct tty_bufhead {
 	struct tty_buffer *head;	 

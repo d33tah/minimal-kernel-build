@@ -16,11 +16,6 @@ struct timerqueue_head {
 
 
 /* timerqueue_add, timerqueue_del removed - never called */
-/* timerqueue_iterate_next, timerqueue_getnext, timerqueue_init removed - never called */
+/* timerqueue_iterate_next, timerqueue_getnext, timerqueue_init, timerqueue_init_head removed - never called */
 
-
-static inline void timerqueue_init_head(struct timerqueue_head *head)
-{
-	head->rb_root = RB_ROOT_CACHED;
-}
 #endif  

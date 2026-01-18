@@ -19,10 +19,7 @@ void panic_smp_self_stop(void);
 /* nmi_panic_self_stop removed - only called by nmi_panic which was removed */
 /* crash_smp_send_stop removed - stub */
 
-static inline void on_each_cpu(smp_call_func_t func, void *info, int wait)
-{
-	on_each_cpu_cond_mask(NULL, func, info, wait, cpu_online_mask);
-}
+/* on_each_cpu removed - never called */
 
 static inline void on_each_cpu_mask(const struct cpumask *mask,
 				    smp_call_func_t func, void *info, bool wait)

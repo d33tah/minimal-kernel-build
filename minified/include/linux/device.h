@@ -159,10 +159,7 @@ static inline int device_is_registered(struct device *dev)
 	return dev->kobj.state_in_sysfs;
 }
 
-static inline void device_set_pm_not_required(struct device *dev)
-{
-	dev->power.no_pm = true;
-}
+/* device_set_pm_not_required removed - never called */
 
 static inline void dev_pm_set_driver_flags(struct device *dev, u32 flags)
 {

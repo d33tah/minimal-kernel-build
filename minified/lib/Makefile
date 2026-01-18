@@ -32,8 +32,8 @@ lib-y := ctype.o string.o vsprintf.o cmdline.o \
 	 rbtree.o radix-tree.o xarray.o \
 	 idr.o extable.o \
 	 ratelimit.o \
-	 kobject_uevent.o \
 	 dec_and_lock.o
+# kobject_uevent.o merged into kobject.c
 # irq_regs.o merged into arch/x86/kernel/irq.c
 # flex_proportions.o merged into mm/backing-dev.c
 	 # siphash.o - Removed: ptr hashing disabled in vsprintf.c

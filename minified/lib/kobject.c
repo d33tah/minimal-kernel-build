@@ -5,6 +5,21 @@
 /* stat.h removed - unused */
 #include <linux/slab.h>
 
+/* Merged from kobject_uevent.c */
+int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
+		       char *envp_ext[])
+{
+	if (action == KOBJ_REMOVE)
+		kobj->state_remove_uevent_sent = 1;
+	if (action == KOBJ_ADD)
+		kobj->state_add_uevent_sent = 1;
+	return 0;
+}
+int kobject_uevent(struct kobject *kobj, enum kobject_action action)
+{
+	return kobject_uevent_env(kobj, action, NULL);
+}
+
 static void kobject_get_ownership(struct kobject *kobj, kuid_t *uid,
 				  kgid_t *gid)
 {

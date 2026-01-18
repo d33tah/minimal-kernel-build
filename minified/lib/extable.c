@@ -61,3 +61,12 @@ search_extable(const struct exception_table_entry *base, const size_t num,
 	return bsearch(&value, base, num, sizeof(struct exception_table_entry),
 		       cmp_ex_search);
 }
+
+/* Merged from bsearch.c */
+#define NOKPROBE_SYMBOL(fname) /* stub for disabled kprobes */
+void *bsearch(const void *key, const void *base, size_t num, size_t size,
+	      cmp_func_t cmp)
+{
+	return __inline_bsearch(key, base, num, size, cmp);
+}
+NOKPROBE_SYMBOL(bsearch);

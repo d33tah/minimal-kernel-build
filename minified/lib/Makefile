@@ -49,8 +49,9 @@ obj-y	+= lockref.o
 obj-y += sort.o debug_locks.o \
 	 bust_spinlocks.o kasprintf.o bitmap.o \
 	 iov_iter.o \
-	 bsearch.o find_bit.o llist.o \
+	 find_bit.o llist.o \
 	 refcount.o usercopy.o
+# bsearch.o merged into extable.c
 # errseq.o removed - file is empty
 	 # parser.o removed - not used
 obj-$(CONFIG_STRING_SELFTEST) += test_string.o

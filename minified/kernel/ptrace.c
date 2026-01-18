@@ -1,9 +1,6 @@
 /* Minimal ptrace stubs */
 #include <linux/ptrace.h>
-void __ptrace_link(struct task_struct *child, struct task_struct *new_parent,
-		   const struct cred *ptracer_cred)
-{
-}
+/* __ptrace_link removed - never called */
 void __ptrace_unlink(struct task_struct *child)
 {
 }

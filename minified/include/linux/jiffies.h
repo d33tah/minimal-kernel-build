@@ -68,8 +68,7 @@ u64 get_jiffies_64(void);
 
 #define MAX_JIFFY_OFFSET ((LONG_MAX >> 1)-1)
 
-extern unsigned long preset_lpj;
-
+/* preset_lpj removed - never assigned, always zero */
 
 
 /* SEC_JIFFIE_SC, NSEC_JIFFIE_SC, SEC_CONVERSION, NSEC_CONVERSION removed - unused */

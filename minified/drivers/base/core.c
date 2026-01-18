@@ -15,9 +15,19 @@
 #include <linux/sched/mm.h>
 #include <linux/sysfs.h>
 #include <linux/dma-map-ops.h>
+#include <linux/backing-dev.h>
 
 #include "base.h"
 #include "power/power.h"
+
+/* Merged from init.c */
+void __init driver_init(void)
+{
+	bdi_init(&noop_backing_dev_info);
+	devices_init();
+	buses_init();
+	classes_init();
+}
 
 /* Removed: fwnode_link_add, fwnode_links_purge, fw_devlink_purge_absent_suppliers - no callers */
 

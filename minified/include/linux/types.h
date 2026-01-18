@@ -9,9 +9,9 @@
 #define DECLARE_BITMAP(name,bits) \
 	unsigned long name[BITS_TO_LONGS(bits)]
 
-typedef __kernel_fd_set		fd_set;
+/* fd_set removed - unused */
 typedef u32			dev_t;
-typedef __kernel_ulong_t	ino_t;
+/* ino_t removed - unused */
 typedef __kernel_mode_t		mode_t;
 typedef unsigned short		umode_t;
 /* nlink_t removed - unused */

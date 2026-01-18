@@ -19,5 +19,4 @@
 #include "idle.c"
 
 #include "rt.c"
-
-#include "deadline.c"
+/* deadline.c merged into rt.c */

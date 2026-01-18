@@ -74,3 +74,61 @@ DEFINE_SCHED_CLASS(rt) = {
 	.switched_to = switched_to_rt,
 	.update_curr = update_curr_rt,
 };
+
+/* Merged from deadline.c */
+void init_dl_rq(struct dl_rq *dl_rq)
+{
+	dl_rq->root = RB_ROOT_CACHED;
+}
+static void enqueue_task_dl(struct rq *rq, struct task_struct *p, int flags)
+{
+}
+static void dequeue_task_dl(struct rq *rq, struct task_struct *p, int flags)
+{
+}
+static void check_preempt_curr_dl(struct rq *rq, struct task_struct *p,
+				  int flags)
+{
+}
+static struct task_struct *pick_next_task_dl(struct rq *rq)
+{
+	return NULL;
+}
+static void put_prev_task_dl(struct rq *rq, struct task_struct *p)
+{
+}
+static void set_next_task_dl(struct rq *rq, struct task_struct *p, bool first)
+{
+}
+static void task_tick_dl(struct rq *rq, struct task_struct *p, int queued)
+{
+}
+static void task_fork_dl(struct task_struct *p)
+{
+}
+static void prio_changed_dl(struct rq *rq, struct task_struct *p, int oldprio)
+{
+}
+static void switched_from_dl(struct rq *rq, struct task_struct *p)
+{
+}
+static void switched_to_dl(struct rq *rq, struct task_struct *p)
+{
+}
+static void update_curr_dl(struct rq *rq)
+{
+}
+DEFINE_SCHED_CLASS(dl) = {
+	.enqueue_task = enqueue_task_dl,
+	.dequeue_task = dequeue_task_dl,
+	.check_preempt_curr = check_preempt_curr_dl,
+	.pick_next_task = pick_next_task_dl,
+	.put_prev_task = put_prev_task_dl,
+	.set_next_task = set_next_task_dl,
+	.task_tick = task_tick_dl,
+	.task_fork = task_fork_dl,
+	.prio_changed = prio_changed_dl,
+	.switched_from = switched_from_dl,
+	.switched_to = switched_to_dl,
+	.update_curr = update_curr_dl,
+};

@@ -45,6 +45,14 @@ extern int nr_threads;
 #include <asm/unistd.h>
 #include <asm/mmu_context.h>
 
+/* ptrace stubs (merged from ptrace.c) */
+void __ptrace_unlink(struct task_struct *child)
+{
+}
+void exit_ptrace(struct task_struct *tracer, struct list_head *dead)
+{
+}
+
 static void __exit_signal(struct task_struct *tsk)
 {
 	struct signal_struct *sig = tsk->signal;

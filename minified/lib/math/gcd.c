@@ -33,3 +33,23 @@ unsigned long lcm(unsigned long a, unsigned long b)
 	return (a && b) ? (a / gcd(a, b)) * b : 0;
 }
 /* lcm_not_zero removed - never called */
+
+/* int_sqrt() merged from int_sqrt.c */
+#include <linux/bitops.h>
+unsigned long int_sqrt(unsigned long x)
+{
+	unsigned long b, m, y = 0;
+	if (x <= 1)
+		return x;
+	m = 1UL << (__fls(x) & ~1UL);
+	while (m != 0) {
+		b = y + m;
+		y >>= 1;
+		if (x >= b) {
+			x -= b;
+			y += m;
+		}
+		m >>= 2;
+	}
+	return y;
+}

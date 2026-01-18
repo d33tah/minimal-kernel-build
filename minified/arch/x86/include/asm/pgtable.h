@@ -316,18 +316,7 @@ static inline int pte_present(pte_t a)
 }
 
 
-#define pte_accessible pte_accessible
-static inline bool pte_accessible(struct mm_struct *mm, pte_t a)
-{
-	if (pte_flags(a) & _PAGE_PRESENT)
-		return true;
-
-	if ((pte_flags(a) & _PAGE_PROTNONE) &&
-			atomic_read(&mm->tlb_flush_pending))
-		return true;
-
-	return false;
-}
+/* pte_accessible removed - not called from any .c file */
 
 static inline int pmd_present(pmd_t pmd)
 {

@@ -32,6 +32,11 @@ static void wb_update_bandwidth_workfn(struct work_struct *work)
 	/* Stub: bw_dwork never scheduled in minimal kernel */
 }
 
+/* From fs-writeback.c - stub for wb dwork */
+void wb_workfn(struct work_struct *work)
+{
+}
+
 /* INIT_BW removed - no longer used after field removal */
 
 static int wb_init(struct bdi_writeback *wb, struct backing_dev_info *bdi,

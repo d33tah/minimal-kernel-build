@@ -12,7 +12,7 @@ obj-y :=	open.o read_write.o file_table.o super.o \
 		char_dev.o stat.o exec.o namei.o fcntl.o \
 		ioctl.o readdir.o dcache.o inode.o \
 		attr.o file.o filesystems.o namespace.o \
-		libfs.o fs-writeback.o \
+		libfs.o \
 		splice.o sync.o d_path.o \
 		fs_struct.o fs_pin.o \
 		fs_context.o fs_parser.o init.o

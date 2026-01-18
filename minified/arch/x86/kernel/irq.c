@@ -18,6 +18,10 @@
 #include <asm/traps.h>
 
 DEFINE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
+
+/* Merged from lib/irq_regs.c */
+#include <asm/irq_regs.h>
+DEFINE_PER_CPU(struct pt_regs *, __irq_regs);
 /* irq_err_count removed - only incremented, never read */
 
 void ack_bad_irq(unsigned int irq)

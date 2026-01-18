@@ -30,10 +30,11 @@ endif
 # timerqueue.o - Removed: all functions were stubbed out
 lib-y := ctype.o string.o vsprintf.o cmdline.o \
 	 rbtree.o radix-tree.o xarray.o \
-	 idr.o extable.o irq_regs.o \
+	 idr.o extable.o \
 	 flex_proportions.o ratelimit.o \
 	 kobject_uevent.o \
 	 dec_and_lock.o
+# irq_regs.o merged into arch/x86/kernel/irq.c
 	 # siphash.o - Removed: ptr hashing disabled in vsprintf.c
 	 # argv_split.o - Removed: not used
 	 # buildid.o - Removed: Not needed (stub functions)

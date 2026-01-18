@@ -63,20 +63,7 @@ static inline void ptrace_event(int event, unsigned long message)
 	}
 }
 
-static inline void ptrace_event_pid(int event, struct pid *pid)
-{
-	 
-	unsigned long message = 0;
-	struct pid_namespace *ns;
-
-	rcu_read_lock();
-	ns = task_active_pid_ns(rcu_dereference(current->parent));
-	if (ns)
-		message = pid_nr_ns(pid, ns);
-	rcu_read_unlock();
-
-	ptrace_event(event, message);
-}
+/* ptrace_event_pid removed - never called */
 
 static inline void ptrace_init_task(struct task_struct *child, bool ptrace)
 {

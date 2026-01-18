@@ -90,3 +90,11 @@ SYSCALL_DEFINE1(personality, unsigned int, personality)
 {
 	return 0;
 }
+SYSCALL_DEFINE0(sync)
+{
+	return 0;
+}
+SYSCALL_DEFINE3(ioctl, unsigned int, fd, unsigned int, cmd, unsigned long, arg)
+{
+	return -ENOTTY;
+}

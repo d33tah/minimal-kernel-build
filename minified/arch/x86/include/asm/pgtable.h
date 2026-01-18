@@ -242,16 +242,7 @@ static inline pmd_t pfn_pmd(unsigned long page_nr, pgprot_t pgprot)
 	return __pmd(pfn | check_pgprot(pgprot));
 }
 
-/* pfn_pud, pmd_mkinvalid, flip_protnone_guard, pte_modify, pmd_modify removed - unused */
-
- 
-#define pgprot_modify pgprot_modify
-static inline pgprot_t pgprot_modify(pgprot_t oldprot, pgprot_t newprot)
-{
-	pgprotval_t preservebits = pgprot_val(oldprot) & _PAGE_CHG_MASK;
-	pgprotval_t addbits = pgprot_val(newprot) & ~_PAGE_CHG_MASK;
-	return __pgprot(preservebits | addbits);
-}
+/* pfn_pud, pmd_mkinvalid, flip_protnone_guard, pte_modify, pmd_modify, pgprot_modify removed - unused */
 
 #define pte_pgprot(x) __pgprot(pte_flags(x))
 #define pmd_pgprot(x) __pgprot(pmd_flags(x))

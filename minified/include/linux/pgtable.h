@@ -279,19 +279,7 @@ static inline int pmd_none_or_clear_bad(pmd_t *pmd)
 #define pgprot_device pgprot_noncached
 #endif
 
-#ifndef pgprot_modify
-#define pgprot_modify pgprot_modify
-static inline pgprot_t pgprot_modify(pgprot_t oldprot, pgprot_t newprot)
-{
-	if (pgprot_val(oldprot) == pgprot_val(pgprot_noncached(oldprot)))
-		newprot = pgprot_noncached(newprot);
-	if (pgprot_val(oldprot) == pgprot_val(pgprot_writecombine(oldprot)))
-		newprot = pgprot_writecombine(newprot);
-	if (pgprot_val(oldprot) == pgprot_val(pgprot_device(oldprot)))
-		newprot = pgprot_device(newprot);
-	return newprot;
-}
-#endif
+/* pgprot_modify removed - never called */
 
 #ifndef pgprot_encrypted
 #define pgprot_encrypted(prot)	(prot)

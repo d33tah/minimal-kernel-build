@@ -36,17 +36,7 @@ build_mmio_write(writel, "l", unsigned int, "r", :"memory")
 #define writew writew
 #define writel writel
 /* __read*, __write*, relaxed versions, __raw versions removed - unused */
-/* ARCH_HAS_VALID_PHYS_ADDR_RANGE, valid_*_range removed - unused */
-
- 
-
-static inline phys_addr_t virt_to_phys(volatile void *address)
-{
-	return __pa(address);
-}
-#define virt_to_phys virt_to_phys
-
- 
+/* ARCH_HAS_VALID_PHYS_ADDR_RANGE, valid_*_range, virt_to_phys removed - unused */
 
 static inline void *phys_to_virt(phys_addr_t address)
 {

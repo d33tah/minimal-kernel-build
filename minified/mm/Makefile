@@ -50,10 +50,10 @@ endif
 obj-y			:= filemap.o \
 			   maccess.o page-writeback.o folio-compat.o \
 			   swap.o truncate.o shmem.o \
-			   util.o mmzone.o vmstat.o backing-dev.o \
+			   util.o mmzone.o backing-dev.o \
 			   percpu.o slab_common.o \
 			   vmacache.o \
-			   interval_tree.o list_lru.o workingset.o \
+			   interval_tree.o list_lru.o \
 			   gup.o $(mmu-y)
 
 # Give 'page_alloc' its own module-parameter namespace

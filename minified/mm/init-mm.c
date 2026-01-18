@@ -1,3 +1,7 @@
+/* MM initialization globals - consolidated from init-mm.c, vmstat.c, workingset.c */
+#include <linux/mm.h>
+#include <linux/vmstat.h>
+#include <linux/list_lru.h>
 #include <linux/mm_types.h>
 #include <linux/rbtree.h>
 #include <linux/rwsem.h>
@@ -38,3 +42,10 @@ void setup_initial_init_mm(void *start_code, void *end_code, void *end_data,
 	init_mm.end_data = (unsigned long)end_data;
 	init_mm.brk = (unsigned long)brk;
 }
+
+/* From vmstat.c */
+atomic_long_t vm_zone_stat[NR_VM_ZONE_STAT_ITEMS] __cacheline_aligned_in_smp;
+atomic_long_t vm_node_stat[NR_VM_NODE_STAT_ITEMS] __cacheline_aligned_in_smp;
+
+/* From workingset.c */
+struct list_lru shadow_nodes;

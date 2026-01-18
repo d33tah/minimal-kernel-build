@@ -381,6 +381,21 @@ COND_SYSCALL(lstat64);
 COND_SYSCALL(fstat64);
 COND_SYSCALL(fstatat64);
 COND_SYSCALL(statx);
+
+/* xattr syscalls - moved from fs/xattr.c */
+COND_SYSCALL(setxattr);
+COND_SYSCALL(lsetxattr);
+COND_SYSCALL(fsetxattr);
+COND_SYSCALL(getxattr);
+COND_SYSCALL(lgetxattr);
+COND_SYSCALL(fgetxattr);
+COND_SYSCALL(listxattr);
+COND_SYSCALL(llistxattr);
+COND_SYSCALL(flistxattr);
+COND_SYSCALL(removexattr);
+COND_SYSCALL(lremovexattr);
+COND_SYSCALL(fremovexattr);
+
 COND_SYSCALL(lseek);
 COND_SYSCALL(llseek);
 COND_SYSCALL(read);
@@ -458,6 +473,13 @@ COND_SYSCALL(olduname);
 COND_SYSCALL(gethostname);
 COND_SYSCALL(old_getrlimit);
 COND_SYSCALL(utimensat_time32);
+
+/* utimes syscalls - moved from fs/utimes.c */
+COND_SYSCALL(utimensat);
+COND_SYSCALL(futimesat);
+COND_SYSCALL(utimes);
+COND_SYSCALL(utime);
+
 COND_SYSCALL(clock_adjtime32);
 
 COND_SYSCALL(sgetmask);

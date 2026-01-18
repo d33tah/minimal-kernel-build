@@ -51,7 +51,7 @@ lib-$(CONFIG_FUNCTION_ERROR_INJECTION)	+= error-inject.o
 lib-$(CONFIG_RETPOLINE) += retpoline.o
 
 # msr.o, msr-reg.o removed - MSR helper functions not used
-obj-y += hweight.o
+# hweight.o removed - __sw_hweight32/__sw_hweight64 never called
 # iomem.o removed - memcpy_fromio/memcpy_toio/memset_io never called
 
 ifeq ($(CONFIG_X86_32),y)

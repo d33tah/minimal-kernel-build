@@ -8,8 +8,6 @@
 struct lock_class_key { };
 
 struct lockdep_map { };
-
-struct pin_cookie { };
-
+/* pin_cookie removed - never referenced */
 
 #endif  

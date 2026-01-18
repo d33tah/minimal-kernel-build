@@ -206,10 +206,7 @@ struct per_cpu_pages {
 };
 
 struct per_cpu_zonestat {};
-
-struct per_cpu_nodestat {
-	/* stat_threshold, vm_node_stat_diff removed - never accessed */
-};
+/* per_cpu_nodestat removed - never referenced */
 
 #endif
 

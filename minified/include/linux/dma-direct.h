@@ -7,13 +7,6 @@
 #include <linux/memblock.h>
 #include <linux/mem_encrypt.h>
 
-struct bus_dma_region {
-	phys_addr_t cpu_start;
-	dma_addr_t dma_start;
-	u64 size;
-	u64 offset;
-};
-
-/* phys_to_dma_unencrypted, phys_to_dma, dma_to_phys, dma_direct_* removed - no callers */
+/* bus_dma_region, phys_to_dma_unencrypted, phys_to_dma, dma_to_phys, dma_direct_* removed - no callers */
 
 #endif

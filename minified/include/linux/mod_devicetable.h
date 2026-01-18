@@ -18,14 +18,6 @@ struct platform_device_id {
 	kernel_ulong_t driver_data;
 };
 
-/* OF (Device Tree) */
-struct of_device_id {
-	char name[32];
-	char type[32];
-	char compatible[128];
-	const void *data;
-};
-
-/* x86 CPU - x86_cpu_id struct and X86_MATCH macros removed - never used */
+/* OF (Device Tree) of_device_id struct, x86 CPU x86_cpu_id struct and X86_MATCH macros removed - never used */
 
 #endif /* LINUX_MOD_DEVICETABLE_H */

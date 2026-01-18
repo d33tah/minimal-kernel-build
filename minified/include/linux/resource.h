@@ -29,13 +29,7 @@ struct rlimit {
 	__kernel_ulong_t	rlim_cur;
 	__kernel_ulong_t	rlim_max;
 };
-
-struct rlimit64 {
-	__u64 rlim_cur;
-	__u64 rlim_max;
-};
-
-/* PRIO_* macros removed - unused */
+/* rlimit64 removed - never referenced; PRIO_* macros removed - unused */
 #define _STK_LIM	(8*1024*1024)
 #define MLOCK_LIMIT	(8*1024*1024)
 

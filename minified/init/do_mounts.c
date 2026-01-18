@@ -278,6 +278,13 @@ out:
 	init_chroot(".");
 }
 
+/* Merged from noinitramfs.c */
+static int __init default_rootfs(void)
+{
+	return 0;
+}
+late_initcall(default_rootfs);
+
 /* TMPFS not defined - use ramfs */
 static int rootfs_init_fs_context(struct fs_context *fc)
 {

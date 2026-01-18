@@ -160,10 +160,7 @@ extern struct dentry *__d_lookup_rcu(const struct dentry *parent,
 				const struct qstr *name, unsigned *seq);
 
 
-extern __printf(4, 5)
-char *dynamic_dname(struct dentry *, char *, int, const char *, ...);
-
-extern char *d_path(const struct path *, char *, int);
+/* d_path and dynamic_dname removed - fs/d_path.c was removed */
 
 static inline struct dentry *dget(struct dentry *dentry)
 {

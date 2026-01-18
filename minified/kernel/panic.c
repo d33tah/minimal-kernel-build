@@ -2,6 +2,10 @@
 #include <linux/debug_locks.h>
 #include <linux/sched/debug.h>
 #include <linux/printk.h>
+
+/* Merged from lib/debug_locks.c */
+int debug_locks __read_mostly = 1;
+int debug_locks_silent __read_mostly;
 #include <linux/kallsyms.h>
 #include <linux/kmsg_dump.h>
 #include <linux/notifier.h>
@@ -123,6 +127,18 @@ void oops_enter(void)
 void oops_exit(void)
 {
 	kmsg_dump(KMSG_DUMP_OOPS);
+}
+
+/* Merged from lib/debug_locks.c */
+int debug_locks_off(void)
+{
+	if (debug_locks && __debug_locks_off()) {
+		if (!debug_locks_silent) {
+			console_verbose();
+			return 1;
+		}
+	}
+	return 0;
 }
 
 struct warn_args {

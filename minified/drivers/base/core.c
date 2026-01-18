@@ -21,6 +21,9 @@
 
 /* Removed: fwnode_link_add, fwnode_links_purge, fw_devlink_purge_absent_suppliers - no callers */
 
+/* Merged from kernel/dma/mapping.c */
+bool dma_default_coherent;
+
 DEFINE_STATIC_SRCU(device_links_srcu);
 
 void device_pm_move_to_tail(struct device *dev)

@@ -150,11 +150,7 @@ unsigned find_get_pages_range_tag(struct address_space *mapping, pgoff_t *index,
 			struct page **pages);
 /* grab_cache_page_write_begin, read_cache_folio, read_cache_page, read_mapping_page removed - never called */
 
-static inline pgoff_t page_to_pgoff(struct page *page)
-{
-	/* PageHuge and PageTransTail always return false */
-	return page->index;
-}
+/* page_to_pgoff removed - never called */
 
 static inline loff_t page_offset(struct page *page)
 {

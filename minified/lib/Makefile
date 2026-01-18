@@ -47,11 +47,11 @@ obj-y	+= lockref.o
 
 # bcd.o removed - inlined into rtc.c
 obj-y += sort.o \
-	 bust_spinlocks.o kasprintf.o bitmap.o \
+	 kasprintf.o bitmap.o \
 	 iov_iter.o \
 	 find_bit.o llist.o \
 	 refcount.o usercopy.o
-# debug_locks.o merged into kernel/panic.c
+# debug_locks.o, bust_spinlocks.o merged into kernel/panic.c
 # bsearch.o merged into extable.c
 # errseq.o removed - file is empty
 	 # parser.o removed - not used

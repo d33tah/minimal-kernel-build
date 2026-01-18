@@ -141,6 +141,17 @@ int debug_locks_off(void)
 	return 0;
 }
 
+/* Merged from lib/bust_spinlocks.c */
+void bust_spinlocks(int yes)
+{
+	if (yes) {
+		++oops_in_progress;
+	} else {
+		console_unblank();
+		--oops_in_progress;
+	}
+}
+
 struct warn_args {
 	const char *fmt;
 	va_list args;

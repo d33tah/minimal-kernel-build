@@ -11,11 +11,7 @@
 #else
 
 #define ENCODE_FRAME_POINTER
-
-static inline unsigned long encode_frame_pointer(struct pt_regs *regs)
-{
-	return 0;
-}
+/* encode_frame_pointer function removed - always returned 0 */
 
 #endif
 

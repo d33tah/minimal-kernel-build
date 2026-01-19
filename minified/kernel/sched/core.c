@@ -563,11 +563,7 @@ __pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 	BUG();
 }
 
-static struct task_struct *
-pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
-{
-	return __pick_next_task(rq, prev, rf);
-}
+/* pick_next_task inlined - was just a wrapper around __pick_next_task */
 
 #define SM_NONE 0x0
 #define SM_PREEMPT 0x1
@@ -617,7 +613,7 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 		}
 	}
 
-	next = pick_next_task(rq, prev, &rf);
+	next = __pick_next_task(rq, prev, &rf);
 	clear_tsk_need_resched(prev);
 	clear_preempt_need_resched();
 

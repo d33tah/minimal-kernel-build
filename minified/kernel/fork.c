@@ -1,8 +1,4 @@
-
-struct file_operations;
-struct file *anon_inode_getfile(const char *name,
-				const struct file_operations *fops, void *priv,
-				int flags);
+/* anon_inode_getfile declaration removed - function never called */
 #include <linux/slab.h>
 #include <linux/sched/mm.h>
 #include <linux/sched/coredump.h>

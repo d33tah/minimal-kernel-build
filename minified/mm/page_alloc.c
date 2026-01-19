@@ -435,15 +435,7 @@ retry:
  * free_unref_page_prepare, nr_pcp_free, nr_pcp_high, free_unref_page_commit, drain_pages
  * - Dead code since free_unref_page is now a no-op (~55 lines) */
 
-void free_unref_page(struct page *page, unsigned int order)
-{
-	/* No-op: bump allocator style - no deallocation */
-}
-
-void free_unref_page_list(struct list_head *list)
-{
-	/* No-op: bump allocator style - no deallocation */
-}
+/* free_unref_page, free_unref_page_list moved to internal.h as static inline */
 
 void split_page(struct page *page, unsigned int order)
 {
@@ -768,15 +760,7 @@ unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order)
 	return (unsigned long)page_address(page);
 }
 
-void __free_pages(struct page *page, unsigned int order)
-{
-	/* No-op: bump allocator style - no deallocation */
-}
-
-void free_pages(unsigned long addr, unsigned int order)
-{
-	/* No-op: bump allocator style - no deallocation */
-}
+/* __free_pages, free_pages moved to gfp.h as static inline */
 
 void *alloc_pages_exact(size_t size, gfp_t gfp_mask)
 {

@@ -132,8 +132,9 @@ extern void prep_compound_page(struct page *page, unsigned int order);
 extern void post_alloc_hook(struct page *page, unsigned int order);
 /* user_min_free_kbytes removed - unused */
 
-extern void free_unref_page(struct page *page, unsigned int order);
-extern void free_unref_page_list(struct list_head *list);
+/* free_unref_page/free_unref_page_list - no-op stubs for bump allocator */
+static inline void free_unref_page(struct page *page, unsigned int order) {}
+static inline void free_unref_page_list(struct list_head *list) {}
 
 
 extern void *memmap_alloc(phys_addr_t size, phys_addr_t align,

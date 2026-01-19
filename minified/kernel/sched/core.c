@@ -54,23 +54,16 @@ void raw_spin_rq_unlock(struct rq *rq)
 	raw_spin_unlock(rq_lockp(rq));
 }
 
+/* Migration wait loops removed - TASK_ON_RQ_MIGRATING never set in UP kernel */
 struct rq *__task_rq_lock(struct task_struct *p, struct rq_flags *rf)
 	__acquires(rq->lock)
 {
 	struct rq *rq;
 
-	for (;;) {
-		rq = task_rq(p);
-		raw_spin_rq_lock(rq);
-		if (likely(rq == task_rq(p) && !task_on_rq_migrating(p))) {
-			rq_pin_lock(rq, rf);
-			return rq;
-		}
-		raw_spin_rq_unlock(rq);
-
-		while (unlikely(task_on_rq_migrating(p)))
-			cpu_relax();
-	}
+	rq = task_rq(p);
+	raw_spin_rq_lock(rq);
+	rq_pin_lock(rq, rf);
+	return rq;
 }
 
 struct rq *task_rq_lock(struct task_struct *p, struct rq_flags *rf)
@@ -78,21 +71,12 @@ struct rq *task_rq_lock(struct task_struct *p, struct rq_flags *rf)
 {
 	struct rq *rq;
 
-	for (;;) {
-		raw_spin_lock_irqsave(&p->pi_lock, rf->flags);
-		rq = task_rq(p);
-		raw_spin_rq_lock(rq);
-
-		if (likely(rq == task_rq(p) && !task_on_rq_migrating(p))) {
-			rq_pin_lock(rq, rf);
-			return rq;
-		}
-		raw_spin_rq_unlock(rq);
-		raw_spin_unlock_irqrestore(&p->pi_lock, rf->flags);
-
-		while (unlikely(task_on_rq_migrating(p)))
-			cpu_relax();
-	}
+	/* Migration wait loops removed - UP kernel, no migration */
+	raw_spin_lock_irqsave(&p->pi_lock, rf->flags);
+	rq = task_rq(p);
+	raw_spin_rq_lock(rq);
+	rq_pin_lock(rq, rf);
+	return rq;
 }
 
 void update_rq_clock(struct rq *rq)

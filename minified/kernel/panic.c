@@ -168,7 +168,16 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
 	add_taint(taint, LOCKDEP_STILL_OK);
 }
 
-/* Merged from kernel/reboot.c */
+/* Merged from kernel/reboot.c and arch/x86/kernel/reboot.c */
+static void machine_restart(char *cmd)
+{
+	while (1)
+		halt();
+}
+static void machine_emergency_restart(void)
+{
+	machine_restart(NULL);
+}
 void emergency_restart(void)
 {
 	kmsg_dump(KMSG_DUMP_EMERG);

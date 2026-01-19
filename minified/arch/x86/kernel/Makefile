@@ -79,7 +79,7 @@ obj-$(CONFIG_INTEL_TXT)		+= tboot.o
 # i8237.o removed - empty stub
 # obj-y				+= stacktrace.o
 obj-y				+= cpu/
-obj-y				+= reboot.o
+# reboot.o removed - merged into kernel/panic.c
 obj-$(CONFIG_X86_MSR)		+= msr.o
 obj-$(CONFIG_X86_CPUID)		+= cpuid.o
 obj-$(CONFIG_PCI)		+= early-quirks.o

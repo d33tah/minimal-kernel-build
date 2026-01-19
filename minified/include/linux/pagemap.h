@@ -239,7 +239,7 @@ static inline int folio_wait_locked_killable(struct folio *folio)
 }
 
 /* folio_put_wait_locked removed - always returned 0 */
-void wait_on_page_writeback(struct page *page);
+/* wait_on_page_writeback inlined into single caller in filemap.c */
 /* folio_wait_writeback, folio_wait_stable, folio_account_cleaned, __folio_cancel_dirty
    inlined from mm/page-writeback.c - all stubs */
 static inline void folio_wait_writeback(struct folio *folio) { }

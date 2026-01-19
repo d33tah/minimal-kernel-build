@@ -185,8 +185,8 @@ int filemap_fdatawait_range(struct address_space *mapping, loff_t start_byte,
 
 			for (i = 0; i < nr_pages; i++) {
 				struct page *page = pvec.pages[i];
-
-				wait_on_page_writeback(page);
+				/* wait_on_page_writeback inlined */
+				folio_wait_writeback(page_folio(page));
 				ClearPageError(page);
 			}
 			pagevec_release(&pvec);

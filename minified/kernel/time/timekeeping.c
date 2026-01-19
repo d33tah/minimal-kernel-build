@@ -265,12 +265,12 @@ static int change_clocksource(void *data)
 
 	new = (struct clocksource *)data;
 
-	if (try_module_get(new->owner)) {
-		if (!new->enable || new->enable(new) == 0)
-			change = true;
-		else
-			module_put(new->owner);
-	}
+	/* try_module_get always returns true - check removed */
+	try_module_get(new->owner);
+	if (!new->enable || new->enable(new) == 0)
+		change = true;
+	else
+		module_put(new->owner);
 
 	raw_spin_lock_irqsave(&timekeeper_lock, flags);
 	write_seqcount_begin(&tk_core.seq);

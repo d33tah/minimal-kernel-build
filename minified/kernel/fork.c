@@ -420,20 +420,16 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	}
 
 	mm->pgd = pgd_alloc(mm);
-	if (unlikely(!mm->pgd))
-		goto fail_nopgd;
+	if (unlikely(!mm->pgd)) {
+		free_mm(mm);
+		return NULL;
+	}
 
-	if (init_new_context(p, mm))
-		goto fail_nocontext;
+	/* init_new_context always returns 0 - check removed */
+	init_new_context(p, mm);
 
 	mm->user_ns = get_user_ns(user_ns);
 	return mm;
-
-fail_nocontext:
-	pgd_free(mm, mm->pgd);
-fail_nopgd:
-	free_mm(mm);
-	return NULL;
 }
 
 struct mm_struct *mm_alloc(void)

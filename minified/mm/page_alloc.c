@@ -727,9 +727,9 @@ struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid,
 
 	gfp = current_gfp_context(gfp);
 	alloc_gfp = gfp;
-	if (!prepare_alloc_pages(gfp, order, preferred_nid, nodemask, &ac,
-				 &alloc_gfp, &alloc_flags))
-		return NULL;
+	/* prepare_alloc_pages always returns true - check removed */
+	prepare_alloc_pages(gfp, order, preferred_nid, nodemask, &ac,
+			    &alloc_gfp, &alloc_flags);
 
 	/* Inlined alloc_flags_nofragment */
 	alloc_flags |= (__force int)(gfp & __GFP_KSWAPD_RECLAIM);

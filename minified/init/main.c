@@ -80,6 +80,18 @@ static int kernel_init(void *);
 extern void init_IRQ(void);
 extern void radix_tree_init(void);
 
+/* Merged from init/calibrate.c - delay loop calibration stub */
+static DEFINE_PER_CPU(unsigned long, cpu_loops_per_jiffy) = { 0 };
+void calibrate_delay(void)
+{
+	unsigned long lpj = 12500000;
+	int this_cpu = smp_processor_id();
+	if (per_cpu(cpu_loops_per_jiffy, this_cpu))
+		lpj = per_cpu(cpu_loops_per_jiffy, this_cpu);
+	per_cpu(cpu_loops_per_jiffy, this_cpu) = lpj;
+	loops_per_jiffy = lpj;
+}
+
 bool early_boot_irqs_disabled __read_mostly;
 
 enum system_states system_state __read_mostly;

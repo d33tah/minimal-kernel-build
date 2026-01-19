@@ -8,7 +8,7 @@ ccflags-y := -fno-function-sections -fno-data-sections
 obj-y                          := main.o version.o mounts.o
 # initramfs.o removed - empty, merged into do_mounts.c
 # noinitramfs.o merged into do_mounts.c
-obj-$(CONFIG_GENERIC_CALIBRATE_DELAY) += calibrate.o
+# calibrate.o merged into main.c
 
 obj-y                          += init_task.o
 

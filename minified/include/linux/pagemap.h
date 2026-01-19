@@ -240,14 +240,15 @@ static inline int folio_wait_locked_killable(struct folio *folio)
 
 /* folio_put_wait_locked removed - always returned 0 */
 void wait_on_page_writeback(struct page *page);
-void folio_wait_writeback(struct folio *folio);
+/* folio_wait_writeback, folio_wait_stable, folio_account_cleaned, __folio_cancel_dirty
+   inlined from mm/page-writeback.c - all stubs */
+static inline void folio_wait_writeback(struct folio *folio) { }
 void folio_end_writeback(struct folio *folio);
-void folio_wait_stable(struct folio *folio);
-void folio_account_cleaned(struct folio *folio, struct bdi_writeback *wb);
-void __folio_cancel_dirty(struct folio *folio);
+static inline void folio_wait_stable(struct folio *folio) { }
+static inline void folio_account_cleaned(struct folio *folio, struct bdi_writeback *wb) { }
+static inline void __folio_cancel_dirty(struct folio *folio) { }
 static inline void folio_cancel_dirty(struct folio *folio)
 {
-	 
 	if (folio_test_dirty(folio))
 		__folio_cancel_dirty(folio);
 }

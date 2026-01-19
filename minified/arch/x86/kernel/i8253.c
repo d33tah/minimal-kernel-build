@@ -6,20 +6,9 @@
 
 struct clock_event_device *global_clock_event;
 
-static bool __init use_pit(void)
-{
-	/* CONFIG_X86_TSC=y, check only for TSC feature */
-	if (!boot_cpu_has(X86_FEATURE_TSC))
-		return true;
-
-	return true; /* apic_needs_pit() always returns true */
-}
-
+/* use_pit removed - always returns true (~7 LOC) */
 bool __init pit_timer_init(void)
 {
-	if (!use_pit())
-		return false;
-
 	clockevent_i8253_init(true);
 	global_clock_event = &i8253_clockevent;
 	return true;

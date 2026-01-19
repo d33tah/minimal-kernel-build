@@ -76,11 +76,9 @@ static nokprobe_inline int do_trap_no_signal(struct task_struct *tsk,
 					     long error_code)
 {
 	if (v8086_mode(regs)) {
-		if (trapnr < X86_TRAP_UD) {
-			if (!handle_vm86_trap((struct kernel_vm86_regs *)regs,
-					      error_code, trapnr))
-				return 0;
-		}
+		/* handle_vm86_trap always returns 0 */
+		if (trapnr < X86_TRAP_UD)
+			return 0;
 	} else if (!user_mode(regs)) {
 		if (fixup_exception(regs, trapnr, error_code, 0))
 			return 0;
@@ -431,11 +429,9 @@ static __always_inline void exc_debug_user(struct pt_regs *regs,
 
 	local_irq_enable();
 
-	if (v8086_mode(regs)) {
-		handle_vm86_trap((struct kernel_vm86_regs *)regs, 0,
-				 X86_TRAP_DB);
+	if (v8086_mode(regs))
+		/* handle_vm86_trap always returns 0 */
 		goto out_irq;
-	}
 
 	/* handle_bus_lock removed - was empty stub in intel.c */
 

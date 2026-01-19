@@ -6,11 +6,7 @@
 
 #include "internal.h"
 
-static inline bool not_found(struct page_vma_mapped_walk *pvmw)
-{
-	page_vma_mapped_walk_done(pvmw);
-	return false;
-}
+/* not_found removed - inlined into callers (~5 LOC) */
 
 static bool map_pte(struct page_vma_mapped_walk *pvmw)
 {
@@ -58,8 +54,10 @@ bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw)
 	pud_t *pud;
 	pmd_t pmde;
 
-	if (pvmw->pmd && !pvmw->pte)
-		return not_found(pvmw);
+	if (pvmw->pmd && !pvmw->pte) {
+		page_vma_mapped_walk_done(pvmw);
+		return false;
+	}
 
 	end = vma_address_end(pvmw);
 	if (pvmw->pte)
@@ -99,8 +97,10 @@ this_pte:
 next_pte:
 		do {
 			pvmw->address += PAGE_SIZE;
-			if (pvmw->address >= end)
-				return not_found(pvmw);
+			if (pvmw->address >= end) {
+				page_vma_mapped_walk_done(pvmw);
+				return false;
+			}
 
 			if ((pvmw->address & (PMD_SIZE - PAGE_SIZE)) == 0) {
 				if (pvmw->ptl) {

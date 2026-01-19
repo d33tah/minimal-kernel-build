@@ -373,10 +373,7 @@ out_dput:
 	return false;
 }
 
-static inline int d_revalidate(struct dentry *dentry, unsigned int flags)
-{
-	return 1;
-}
+/* d_revalidate removed - always returned 1, callers simplified (~6 LOC) */
 
 static int complete_walk(struct nameidata *nd)
 {
@@ -446,17 +443,7 @@ static inline void put_link(struct nameidata *nd)
 /* may_linkat removed - only caller was init_link which was removed */
 
 /* Removed: __traverse_mounts - inlined into traverse_mounts */
-
-static inline int traverse_mounts(struct path *path, bool *jumped,
-				  unsigned lookup_flags)
-{
-	unsigned flags = smp_load_acquire(&path->dentry->d_flags);
-
-	*jumped = false;
-	if (unlikely(d_flags_negative(flags)))
-		return -ENOENT;
-	return 0;
-}
+/* Removed: traverse_mounts - inlined into handle_mounts (~9 LOC) */
 
 /* __follow_mount_rcu inlined into handle_mounts */
 
@@ -464,9 +451,6 @@ static inline int handle_mounts(struct nameidata *nd, struct dentry *dentry,
 				struct path *path, struct inode **inode,
 				unsigned int *seqp)
 {
-	bool jumped;
-	int ret;
-
 	path->mnt = nd->path.mnt;
 	path->dentry = dentry;
 	if (nd->flags & LOOKUP_RCU) {
@@ -515,18 +499,19 @@ rcu_fail:;
 		path->mnt = nd->path.mnt;
 		path->dentry = dentry;
 	}
-	ret = traverse_mounts(path, &jumped, nd->flags);
-	if (jumped)
-		nd->state |= ND_JUMPED;
-	if (unlikely(ret)) {
-		dput(path->dentry);
-		if (path->mnt != nd->path.mnt)
-			mntput(path->mnt);
-	} else {
-		*inode = d_backing_inode(path->dentry);
-		*seqp = 0;
+	/* Inlined traverse_mounts - jumped is always false in minimal config */
+	{
+		unsigned flags = smp_load_acquire(&path->dentry->d_flags);
+		if (unlikely(d_flags_negative(flags))) {
+			dput(path->dentry);
+			if (path->mnt != nd->path.mnt)
+				mntput(path->mnt);
+			return -ENOENT;
+		}
 	}
-	return ret;
+	*inode = d_backing_inode(path->dentry);
+	*seqp = 0;
+	return 0;
 }
 
 /* __lookup_hash removed - only caller was filename_create */
@@ -535,7 +520,6 @@ static struct dentry *lookup_fast(struct nameidata *nd, struct inode **inode,
 				  unsigned *seqp)
 {
 	struct dentry *dentry, *parent = nd->path.dentry;
-	int status = 1;
 
 	if (nd->flags & LOOKUP_RCU) {
 		unsigned seq;
@@ -554,25 +538,12 @@ static struct dentry *lookup_fast(struct nameidata *nd, struct inode **inode,
 			return ERR_PTR(-ECHILD);
 
 		*seqp = seq;
-		status = d_revalidate(dentry, nd->flags);
-		if (likely(status > 0))
-			return dentry;
-		if (!try_to_unlazy_next(nd, dentry, seq))
-			return ERR_PTR(-ECHILD);
-		if (status == -ECHILD)
-
-			status = d_revalidate(dentry, nd->flags);
+		/* d_revalidate always returned 1 - removed call */
 	} else {
 		dentry = __d_lookup(parent, &nd->last);
 		if (unlikely(!dentry))
 			return NULL;
-		status = d_revalidate(dentry, nd->flags);
-	}
-	if (unlikely(status <= 0)) {
-		if (!status)
-			d_invalidate(dentry);
-		dput(dentry);
-		return ERR_PTR(status);
+		/* d_revalidate always returned 1 - removed call */
 	}
 	return dentry;
 }
@@ -591,16 +562,7 @@ again:
 	if (IS_ERR(dentry))
 		return dentry;
 	if (unlikely(!d_in_lookup(dentry))) {
-		int error = d_revalidate(dentry, flags);
-		if (unlikely(error <= 0)) {
-			if (!error) {
-				d_invalidate(dentry);
-				dput(dentry);
-				goto again;
-			}
-			dput(dentry);
-			dentry = ERR_PTR(error);
-		}
+		/* d_revalidate always returned 1 (> 0), dead error handling removed */
 	} else {
 		old = inode->i_op->lookup(inode, dentry, flags);
 		d_lookup_done(dentry);

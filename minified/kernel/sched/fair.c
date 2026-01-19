@@ -370,38 +370,9 @@ static void enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 	se->on_rq = 1;
 }
 
-/* __clear_buddies_last/next/skip inlined into clear_buddies */
-static void clear_buddies(struct cfs_rq *cfs_rq, struct sched_entity *se)
+/* clear_buddies removed - buddy tracking only matters with multiple tasks (~32 LOC) */
+static inline void clear_buddies(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
-	struct sched_entity *tmp;
-
-	if (cfs_rq->last == se) {
-		for_each_sched_entity(tmp = se)
-		{
-			struct cfs_rq *c = cfs_rq_of(tmp);
-			if (c->last != tmp)
-				break;
-			c->last = NULL;
-		}
-	}
-	if (cfs_rq->next == se) {
-		for_each_sched_entity(tmp = se)
-		{
-			struct cfs_rq *c = cfs_rq_of(tmp);
-			if (c->next != tmp)
-				break;
-			c->next = NULL;
-		}
-	}
-	if (cfs_rq->skip == se) {
-		for_each_sched_entity(tmp = se)
-		{
-			struct cfs_rq *c = cfs_rq_of(tmp);
-			if (c->skip != tmp)
-				break;
-			c->skip = NULL;
-		}
-	}
 }
 
 static void dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
@@ -448,46 +419,14 @@ static void set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 	se->prev_sum_exec_runtime = se->sum_exec_runtime;
 }
 
-static int wakeup_preempt_entity(struct sched_entity *curr,
-				 struct sched_entity *se);
-
+/* pick_next_entity simplified - buddy selection code removed for single-task kernel (~36 LOC) */
 static struct sched_entity *pick_next_entity(struct cfs_rq *cfs_rq,
 					     struct sched_entity *curr)
 {
 	struct sched_entity *left = __pick_first_entity(cfs_rq);
-	struct sched_entity *se;
-
 	if (!left || (curr && entity_before(curr, left)))
 		left = curr;
-
-	se = left;
-
-	if (cfs_rq->skip && cfs_rq->skip == se) {
-		struct sched_entity *second;
-		struct rb_node *next;
-
-		if (se == curr) {
-			second = __pick_first_entity(cfs_rq);
-		} else {
-			/* Inlined __pick_next_entity */
-			next = rb_next(&se->run_node);
-			second = next ? __node_2_se(next) : NULL;
-			if (!second || (curr && entity_before(curr, second)))
-				second = curr;
-		}
-
-		if (second && wakeup_preempt_entity(second, left) < 1)
-			se = second;
-	}
-
-	if (cfs_rq->next && wakeup_preempt_entity(cfs_rq->next, left) < 1) {
-		se = cfs_rq->next;
-	} else if (cfs_rq->last &&
-		   wakeup_preempt_entity(cfs_rq->last, left) < 1) {
-		se = cfs_rq->last;
-	}
-
-	return se;
+	return left;
 }
 
 static void put_prev_entity(struct cfs_rq *cfs_rq, struct sched_entity *prev)
@@ -594,15 +533,9 @@ static int wakeup_preempt_entity(struct sched_entity *curr,
 	return 0;
 }
 
-static void set_next_buddy(struct sched_entity *se)
+/* set_next_buddy removed - buddy tracking dead with single task (~10 LOC) */
+static inline void set_next_buddy(struct sched_entity *se)
 {
-	for_each_sched_entity(se)
-	{
-		if (SCHED_WARN_ON(!se->on_rq))
-			return;
-		/* se_is_idle() always 0 - skip */
-		cfs_rq_of(se)->next = se;
-	}
 }
 
 static void check_preempt_wakeup(struct rq *rq, struct task_struct *p,

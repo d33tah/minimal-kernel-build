@@ -831,8 +831,7 @@ copy_process(struct pid *pid, int trace, int node,
 	spin_unlock(&current->sighand->siglock);
 	write_unlock_irq(&tasklist_lock);
 
-	/* pidfile fd_install removed - CLONE_PIDFD never used */
-	sched_post_fork(p);
+	/* pidfile fd_install, sched_post_fork removed - CLONE_PIDFD never used, function was empty */
 
 	return p;
 

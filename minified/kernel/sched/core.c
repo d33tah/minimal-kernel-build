@@ -396,9 +396,7 @@ void sched_cgroup_fork(struct task_struct *p, struct kernel_clone_args *kargs)
 	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
 }
 
-void sched_post_fork(struct task_struct *p)
-{
-}
+/* sched_post_fork removed - empty function (~3 LOC) */
 
 void wake_up_new_task(struct task_struct *p)
 {

@@ -2,6 +2,8 @@
 #include <linux/debug_locks.h>
 #include <linux/sched/debug.h>
 #include <linux/printk.h>
+#include <linux/kdebug.h> /* for notify_die */
+#include <linux/kprobes.h> /* for NOKPROBE_SYMBOL */
 
 /* Merged from lib/debug_locks.c */
 int debug_locks __read_mostly = 1;
@@ -172,3 +174,18 @@ void emergency_restart(void)
 	kmsg_dump(KMSG_DUMP_EMERG);
 	machine_emergency_restart();
 }
+
+/* Merged from kernel/notifier.c */
+int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
+			       unsigned long val, void *v)
+{
+	return NOTIFY_DONE; /* No registrations, chain is always empty */
+}
+NOKPROBE_SYMBOL(atomic_notifier_call_chain);
+
+int notrace notify_die(enum die_val val, const char *str, struct pt_regs *regs,
+		       long err, int trap, int sig)
+{
+	return NOTIFY_DONE;
+}
+NOKPROBE_SYMBOL(notify_die);

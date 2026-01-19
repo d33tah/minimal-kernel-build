@@ -483,11 +483,7 @@ static inline bool pte_access_permitted(pte_t pte, bool write)
 	return __pte_access_permitted(pte_val(pte), write);
 }
 
-/* pmd_access_permitted, pud_access_permitted removed - unused */
-
-#define __HAVE_ARCH_PFN_MODIFY_ALLOWED 1
-extern bool pfn_modify_allowed(unsigned long pfn, pgprot_t prot);
-
+/* pmd_access_permitted, pud_access_permitted, pfn_modify_allowed removed - unused or always true */
 /* arch_has_pfn_modify_check, arch_faults_on_old_pte removed - unused */
 
 #endif

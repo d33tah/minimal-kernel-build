@@ -106,10 +106,4 @@ void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
 			    rlim_stack);
 }
 
-/* get_mmap_base, mmap_address_hint_valid removed - never called */
-
-/* pfn_modify_allowed simplified - always returns true (capable check removed) */
-bool pfn_modify_allowed(unsigned long pfn, pgprot_t prot)
-{
-	return true;
-}
+/* get_mmap_base, mmap_address_hint_valid, pfn_modify_allowed removed - never called or always true */

@@ -10,7 +10,8 @@ obj-y     = fork.o panic.o \
 	    extable.o params.o \
 	    kthread.o sys_ni.o nsproxy.o \
 	    notifier.o cred.o \
-	    async.o range.o ucount.o
+	    range.o ucount.o
+# async.o merged into drivers/base/dd.c
 # reboot.o merged into panic.c
 # smpboot.o removed - smpboot_register_percpu_thread was stub
 

@@ -340,9 +340,7 @@ LIST_HEAD(vmap_area_list);
 static struct rb_root vmap_area_root = RB_ROOT;
 static bool vmap_initialized __read_mostly;
 
-static struct rb_root purge_vmap_area_root = RB_ROOT;
-static LIST_HEAD(purge_vmap_area_list);
-static DEFINE_SPINLOCK(purge_vmap_area_lock);
+/* purge_vmap_area_root, purge_vmap_area_list, purge_vmap_area_lock removed - lazy purge dead (~3 LOC) */
 
 static struct kmem_cache *vmap_area_cachep;
 
@@ -368,10 +366,10 @@ static __always_inline unsigned long get_subtree_max_size(struct rb_node *node)
 RB_DECLARE_CALLBACKS_MAX(static, free_vmap_area_rb_augment_cb, struct vmap_area,
 			 rb_node, unsigned long, subtree_max_size, va_size)
 
-static void purge_vmap_area_lazy(void);
-/* vmap_notify_list removed - no registrations */
-static void drain_vmap_area_work(struct work_struct *work);
-static DECLARE_WORK(drain_vmap_work, drain_vmap_area_work);
+/* purge_vmap_area_lazy stub - lazy purge dead but one call site remains */
+static inline void purge_vmap_area_lazy(void)
+{
+}
 /* nr_vmalloc_pages removed - only added to, never read */
 
 static struct vmap_area *__find_vmap_area(unsigned long addr)
@@ -821,49 +819,15 @@ overflow:
 	return ERR_PTR(-EBUSY);
 }
 
-static unsigned long lazy_max_pages(void)
-{
-	unsigned int log;
-
-	log = fls(num_online_cpus());
-
-	return log * (32UL * 1024 * 1024 / PAGE_SIZE);
-}
-
-static atomic_long_t vmap_lazy_nr = ATOMIC_LONG_INIT(0);
-
-/* vmap_purge_lock removed - never used */
-
-/* purge_fragmented_blocks_allcpus, __purge_vmap_area_lazy removed - stubs */
-
-static void purge_vmap_area_lazy(void)
-{
-	/* Stub: no-op */
-}
-
-static void drain_vmap_area_work(struct work_struct *work)
-{
-	/* Stub: no-op */
-}
+/* lazy_max_pages, vmap_lazy_nr, purge_vmap_area_lazy, drain_vmap_area_work
+   and lazy purge infrastructure removed - all stubs that do nothing (~35 LOC) */
 
 static void free_vmap_area_noflush(struct vmap_area *va)
 {
-	unsigned long nr_lazy;
-
 	spin_lock(&vmap_area_lock);
 	unlink_va(va, &vmap_area_root);
 	spin_unlock(&vmap_area_lock);
-
-	nr_lazy = atomic_long_add_return(
-		(va->va_end - va->va_start) >> PAGE_SHIFT, &vmap_lazy_nr);
-
-	spin_lock(&purge_vmap_area_lock);
-	merge_or_add_vmap_area(va, &purge_vmap_area_root,
-			       &purge_vmap_area_list);
-	spin_unlock(&purge_vmap_area_lock);
-
-	if (unlikely(nr_lazy > lazy_max_pages()))
-		schedule_work(&drain_vmap_work);
+	/* Lazy purge code removed - merge_or_add_vmap_area and schedule_work were dead */
 }
 
 static struct vmap_area *find_vmap_area(unsigned long addr)

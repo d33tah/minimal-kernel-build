@@ -132,21 +132,17 @@ int bdi_init(struct backing_dev_info *bdi)
 	return wb_init(&bdi->wb, bdi, GFP_KERNEL);
 }
 
-static void bdi_remove_from_list(struct backing_dev_info *bdi)
-{
-	spin_lock_bh(&bdi_lock);
-	/* rb_erase removed - bdi_tree was never inserted into */
-	list_del_rcu(&bdi->bdi_list);
-	spin_unlock_bh(&bdi_lock);
-
-	synchronize_rcu_expedited();
-}
+/* bdi_remove_from_list removed - inlined into single caller (~8 LOC) */
 
 void bdi_unregister(struct backing_dev_info *bdi)
 {
 	/* del_timer_sync laptop_mode_wb_timer removed - field removed */
 
-	bdi_remove_from_list(bdi);
+	/* Inlined bdi_remove_from_list */
+	spin_lock_bh(&bdi_lock);
+	list_del_rcu(&bdi->bdi_list);
+	spin_unlock_bh(&bdi_lock);
+	synchronize_rcu_expedited();
 	wb_shutdown(&bdi->wb);
 	/* bdi_set_min_ratio call removed - min_ratio always 0 */
 	if (bdi->dev) {

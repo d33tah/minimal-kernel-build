@@ -174,14 +174,11 @@ static void machine_restart(char *cmd)
 	while (1)
 		halt();
 }
-static void machine_emergency_restart(void)
-{
-	machine_restart(NULL);
-}
+/* machine_emergency_restart removed - inlined into single caller (~4 LOC) */
 void emergency_restart(void)
 {
 	kmsg_dump(KMSG_DUMP_EMERG);
-	machine_emergency_restart();
+	machine_restart(NULL);
 }
 
 /* Merged from kernel/notifier.c */

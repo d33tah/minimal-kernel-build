@@ -189,8 +189,11 @@ void mnt_drop_write(struct vfsmount *mnt)
 	sb_end_write(mnt->mnt_sb);
 }
 
-static void free_vfsmnt(struct mount *mnt)
+/* free_vfsmnt removed - inlined into delayed_free_vfsmnt (~9 LOC) */
+
+static void delayed_free_vfsmnt(struct rcu_head *head)
 {
+	struct mount *mnt = container_of(head, struct mount, mnt_rcu);
 	struct user_namespace *mnt_userns;
 
 	mnt_userns = mnt_user_ns(&mnt->mnt);
@@ -198,11 +201,6 @@ static void free_vfsmnt(struct mount *mnt)
 		put_user_ns(mnt_userns);
 	kfree_const(mnt->mnt_devname);
 	kmem_cache_free(mnt_cache, mnt);
-}
-
-static void delayed_free_vfsmnt(struct rcu_head *head)
-{
-	free_vfsmnt(container_of(head, struct mount, mnt_rcu));
 }
 
 int __legitimize_mnt(struct vfsmount *bastard, unsigned seq)

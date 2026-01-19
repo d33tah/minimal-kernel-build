@@ -71,9 +71,11 @@ void memset_io(volatile void __iomem *, int, size_t);
 
 #endif  
 
-extern void native_io_delay(void);
-/* io_delay_init removed - was empty stub */
-
+/* io_delay.c removed - native_io_delay inlined */
+static inline void native_io_delay(void)
+{
+	asm volatile("outb %al, $0x80");
+}
 
 static inline void slow_down_io(void)
 {

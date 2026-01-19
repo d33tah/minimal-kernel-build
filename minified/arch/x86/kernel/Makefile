@@ -63,7 +63,8 @@ obj-y			+= pci-dma.o
 # quirks.o removed - early_platform_quirks was empty stub
 obj-y			+= alternative.o i8253.o hw_breakpoint.o
 # tsc_msr.o removed - cpu_khz_from_msr was stub returning 0
-obj-y			+= tsc.o io_delay.o rtc.o
+obj-y			+= tsc.o rtc.o
+# io_delay.o removed - native_io_delay inlined into asm/io.h
 # resource.o removed - arch_remove_reservations never called
 obj-y			+= irqflags.o
 # static_call.o removed - __static_call_return0 never called

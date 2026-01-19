@@ -32,7 +32,7 @@ extern struct list_lru shadow_nodes;
 #define nr_free_pages() global_zone_page_state(NR_FREE_PAGES)
 
 extern void folio_add_lru(struct folio *);
-extern void lru_cache_add(struct page *);
+/* lru_cache_add inlined into single caller */
 /* mark_page_accessed inlined into single caller */
 void folio_mark_accessed(struct folio *);
 

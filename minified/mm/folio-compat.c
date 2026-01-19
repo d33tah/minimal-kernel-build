@@ -21,11 +21,7 @@ bool set_page_dirty(struct page *page)
 }
 
 /* __set_page_dirty_nobuffers removed - never called */
-
-void lru_cache_add(struct page *page)
-{
-	folio_add_lru(page_folio(page));
-}
+/* lru_cache_add inlined into single caller (~4 LOC) */
 
 noinline struct page *pagecache_get_page(struct address_space *mapping,
 					 pgoff_t index, int fgp_flags,

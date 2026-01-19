@@ -202,7 +202,8 @@ void lru_cache_add_inactive_or_unevictable(struct page *page,
 					   struct vm_area_struct *vma)
 {
 	/* mlock_new_page removed - empty stub */
-	lru_cache_add(page);
+	/* lru_cache_add inlined */
+	folio_add_lru(page_folio(page));
 }
 
 /* lru_deactivate_file_fn, lru_deactivate_fn, lru_lazyfree_fn removed - pvecs never populated */

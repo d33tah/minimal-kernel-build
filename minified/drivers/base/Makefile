@@ -2,8 +2,9 @@
 # Makefile for the Linux device tree
 
 obj-y			:= core.o bus.o dd.o \
-			   driver.o class.o platform.o \
+			   class.o platform.o \
 			   map.o
+# driver.o merged into platform.c
 # cpu.o removed - cpu_subsys was defined but never used
 # init.o merged into core.c
 obj-$(CONFIG_AUXILIARY_BUS) += auxiliary.o

@@ -538,23 +538,16 @@ static inline void set_next_buddy(struct sched_entity *se)
 {
 }
 
+/* check_preempt_wakeup simplified - removed buddy code, dead scale variable (~17 LOC) */
 static void check_preempt_wakeup(struct rq *rq, struct task_struct *p,
 				 int wake_flags)
 {
 	struct task_struct *curr = rq->curr;
 	struct sched_entity *se = &curr->se, *pse = &p->se;
 	struct cfs_rq *cfs_rq = task_cfs_rq(curr);
-	int scale = cfs_rq->nr_running >= sched_nr_latency;
-	int next_buddy_marked = 0;
-	/* cse_is_idle, pse_is_idle removed - se_is_idle always 0 */
 
 	if (unlikely(se == pse))
 		return;
-	/* throttled_hierarchy() always 0 - skip */
-	if (sched_feat(NEXT_BUDDY) && scale && !(wake_flags & WF_FORK)) {
-		set_next_buddy(pse);
-		next_buddy_marked = 1;
-	}
 
 	if (test_tsk_need_resched(curr))
 		return;
@@ -567,32 +560,14 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p,
 	    !sched_feat(WAKEUP_PREEMPTION))
 		return;
 
-	BUG_ON(!pse);
-	/* se_is_idle always 0 - both cse_is_idle/pse_is_idle are 0, conditions skipped */
 	update_curr(cfs_rq_of(se));
-	if (wakeup_preempt_entity(se, pse) == 1) {
-		if (!next_buddy_marked)
-			set_next_buddy(pse);
+	if (wakeup_preempt_entity(se, pse) == 1)
 		goto preempt;
-	}
 
 	return;
 
 preempt:
 	resched_curr(rq);
-
-	if (unlikely(!se->on_rq || curr == rq->idle))
-		return;
-
-	/* Inlined set_last_buddy */
-	if (sched_feat(LAST_BUDDY) && scale && entity_is_task(se)) {
-		for_each_sched_entity(se)
-		{
-			if (SCHED_WARN_ON(!se->on_rq))
-				break;
-			cfs_rq_of(se)->last = se;
-		}
-	}
 }
 
 struct task_struct *pick_next_task_fair(struct rq *rq, struct task_struct *prev,

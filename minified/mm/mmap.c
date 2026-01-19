@@ -109,10 +109,8 @@ static inline unsigned long vma_compute_gap(struct vm_area_struct *vma)
 RB_DECLARE_CALLBACKS_MAX(static, vma_gap_callbacks, struct vm_area_struct,
 			 vm_rb, unsigned long, rb_subtree_gap, vma_compute_gap)
 
-static void vma_gap_update(struct vm_area_struct *vma)
-{
-	vma_gap_callbacks_propagate(&vma->vm_rb, NULL);
-}
+/* vma_gap_update removed - converted to macro for 4 callers (~4 LOC) */
+#define vma_gap_update(vma) vma_gap_callbacks_propagate(&(vma)->vm_rb, NULL)
 
 static inline void
 anon_vma_interval_tree_pre_update_vma(struct vm_area_struct *vma)

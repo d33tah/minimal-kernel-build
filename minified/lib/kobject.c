@@ -30,27 +30,7 @@ static void kobject_get_ownership(struct kobject *kobj, kuid_t *uid,
 		kobj->ktype->get_ownership(kobj, uid, gid);
 }
 
-static void kobj_kset_join(struct kobject *kobj)
-{
-	if (!kobj->kset)
-		return;
-
-	kset_get(kobj->kset);
-	spin_lock(&kobj->kset->list_lock);
-	list_add_tail(&kobj->entry, &kobj->kset->list);
-	spin_unlock(&kobj->kset->list_lock);
-}
-
-static void kobj_kset_leave(struct kobject *kobj)
-{
-	if (!kobj->kset)
-		return;
-
-	spin_lock(&kobj->kset->list_lock);
-	list_del_init(&kobj->entry);
-	spin_unlock(&kobj->kset->list_lock);
-	kset_put(kobj->kset);
-}
+/* kobj_kset_join, kobj_kset_leave removed - inlined into single callers (~16 LOC) */
 
 static void kobject_init_internal(struct kobject *kobj)
 {
@@ -83,7 +63,11 @@ static int kobject_add_internal(struct kobject *kobj)
 	if (kobj->kset) {
 		if (!parent)
 			parent = kobject_get(&kobj->kset->kobj);
-		kobj_kset_join(kobj);
+		/* Inlined kobj_kset_join */
+		kset_get(kobj->kset);
+		spin_lock(&kobj->kset->list_lock);
+		list_add_tail(&kobj->entry, &kobj->kset->list);
+		spin_unlock(&kobj->kset->list_lock);
 		kobj->parent = parent;
 	}
 
@@ -216,7 +200,13 @@ static void __kobject_del(struct kobject *kobj)
 		kobject_uevent(kobj, KOBJ_REMOVE);
 
 	kobj->state_in_sysfs = 0;
-	kobj_kset_leave(kobj);
+	/* Inlined kobj_kset_leave */
+	if (kobj->kset) {
+		spin_lock(&kobj->kset->list_lock);
+		list_del_init(&kobj->entry);
+		spin_unlock(&kobj->kset->list_lock);
+		kset_put(kobj->kset);
+	}
 	kobj->parent = NULL;
 }
 

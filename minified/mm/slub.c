@@ -944,19 +944,8 @@ struct kmem_cache *__kmem_cache_alias(const char *name, unsigned int size,
 				      unsigned int align, slab_flags_t flags,
 				      void (*ctor)(void *))
 {
-	struct kmem_cache *s;
-
-	s = find_mergeable(size, align, flags, name, ctor);
-	if (s) {
-		s->refcount++;
-
-		s->object_size = max(s->object_size, size);
-		s->inuse = max(s->inuse, ALIGN(size, sizeof(void *)));
-
-		/* sysfs_slab_alias removed - always succeeded */
-	}
-
-	return s;
+	/* find_mergeable always returns NULL (slab_nomerge is true) */
+	return NULL;
 }
 
 int __kmem_cache_create(struct kmem_cache *s, slab_flags_t flags)

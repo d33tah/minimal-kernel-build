@@ -180,10 +180,7 @@ void iov_iter_init(struct iov_iter *i, unsigned int direction,
 				.count = count };
 }
 
-static inline bool allocated(struct pipe_buffer *buf)
-{
-	return buf->ops == &default_pipe_buf_ops;
-}
+/* allocated() inlined - was only called once */
 
 static size_t push_pipe(struct iov_iter *i, size_t size, int *iter_headp,
 			size_t *offp)
@@ -204,8 +201,10 @@ static size_t push_pipe(struct iov_iter *i, size_t size, int *iter_headp,
 	/* Inlined data_start */
 	iter_head = i->head;
 	off = i->iov_offset;
+	/* allocated() inlined */
 	if (off &&
-	    (!allocated(&pipe->bufs[iter_head & p_mask]) || off == PAGE_SIZE)) {
+	    (pipe->bufs[iter_head & p_mask].ops != &default_pipe_buf_ops ||
+	     off == PAGE_SIZE)) {
 		iter_head++;
 		off = 0;
 	}

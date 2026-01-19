@@ -58,19 +58,12 @@ int __init list_bdev_fs_names(char *buf, size_t size)
 	return 0;
 }
 
-static struct file_system_type *__get_fs_type(const char *name, int len)
-{
-	struct file_system_type *fs;
-
-	read_lock(&file_systems_lock);
-	fs = *(find_filesystem(name, len));
-	/* try_module_get always returns true - dead check removed */
-	read_unlock(&file_systems_lock);
-	return fs;
-}
-
+/* __get_fs_type inlined into get_fs_type (~6 LOC) */
 struct file_system_type *get_fs_type(const char *name)
 {
-	/* request_module & FS_HAS_SUBTYPE handling removed - dead code */
-	return __get_fs_type(name, strlen(name));
+	struct file_system_type *fs;
+	read_lock(&file_systems_lock);
+	fs = *(find_filesystem(name, strlen(name)));
+	read_unlock(&file_systems_lock);
+	return fs;
 }

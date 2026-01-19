@@ -23,8 +23,9 @@ static inline void init_completion(struct completion *x)
 	init_swait_queue_head(&x->wait);
 }
 
-extern void wait_for_completion(struct completion *);
-extern int wait_for_completion_killable(struct completion *x);
-extern void complete(struct completion *);
+/* Stubs from kernel/sched/completion.c - inlined */
+static inline void wait_for_completion(struct completion *x) { }
+static inline int wait_for_completion_killable(struct completion *x) { return 0; }
+static inline void complete(struct completion *x) { }
 
 #endif

@@ -29,7 +29,7 @@
 /* loadavg.c removed - calc_global_load/calc_global_load_tick calls removed */
 unsigned long calc_load_update;
 
-#include "completion.c"
+/* completion.c removed - stubs inlined into include/linux/completion.h */
 #include "swait.c"
 #include "wait_bit.c"
 #include "wait.c"

@@ -486,22 +486,16 @@ int set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file)
 }
 
 /* get_mm_exe_file removed - no callers after dup_mmap simplification */
-
-static void mm_release(struct task_struct *tsk, struct mm_struct *mm)
-{
-	deactivate_mm(tsk, mm);
-	/* clear_child_tid block removed - CLONE_CHILD_CLEARTID never set */
-	/* vfork_done block removed - CLONE_VFORK never used */
-}
+/* mm_release removed - inlined into exit_mm_release and exec_mm_release */
 
 void exit_mm_release(struct task_struct *tsk, struct mm_struct *mm)
 {
-	mm_release(tsk, mm);
+	deactivate_mm(tsk, mm);
 }
 
 void exec_mm_release(struct task_struct *tsk, struct mm_struct *mm)
 {
-	mm_release(tsk, mm);
+	deactivate_mm(tsk, mm);
 }
 
 static struct mm_struct *dup_mm(struct task_struct *tsk,

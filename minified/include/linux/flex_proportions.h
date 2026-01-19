@@ -14,7 +14,7 @@ struct fprop_local_percpu {
 	raw_spinlock_t lock;
 };
 
-int fprop_local_init_percpu(struct fprop_local_percpu *pl, gfp_t gfp);
+void fprop_local_init_percpu(struct fprop_local_percpu *pl, gfp_t gfp);
 void fprop_local_destroy_percpu(struct fprop_local_percpu *pl);
 
 #endif

@@ -116,12 +116,11 @@ static void do_error_trap(struct pt_regs *regs, long error_code, char *str,
 			  unsigned long trapnr, int signr, int sicode,
 			  void __user *addr)
 {
-	if (notify_die(DIE_TRAP, str, regs, error_code, trapnr, signr) !=
-	    NOTIFY_STOP) {
-		cond_local_irq_enable(regs);
-		do_trap(trapnr, signr, str, regs, error_code, sicode, addr);
-		cond_local_irq_disable(regs);
-	}
+	/* notify_die always returns NOTIFY_DONE - check removed */
+	notify_die(DIE_TRAP, str, regs, error_code, trapnr, signr);
+	cond_local_irq_enable(regs);
+	do_trap(trapnr, signr, str, regs, error_code, sicode, addr);
+	cond_local_irq_disable(regs);
 }
 
 static __always_inline void __user *error_get_trap_addr(struct pt_regs *regs)
@@ -203,11 +202,9 @@ DEFINE_IDTENTRY_ERRORCODE(exc_stack_segment)
 
 DEFINE_IDTENTRY_ERRORCODE(exc_alignment_check)
 {
-	char *str = "alignment check";
-
-	if (notify_die(DIE_TRAP, str, regs, error_code, X86_TRAP_AC, SIGBUS) ==
-	    NOTIFY_STOP)
-		return;
+	/* notify_die always returns NOTIFY_DONE - check removed */
+	notify_die(DIE_TRAP, "alignment check", regs, error_code, X86_TRAP_AC,
+		   SIGBUS);
 
 	if (!user_mode(regs))
 		die("Split lock detected\n", regs, error_code);
@@ -238,9 +235,8 @@ DEFINE_IDTENTRY_DF(exc_double_fault)
 
 DEFINE_IDTENTRY(exc_bounds)
 {
-	if (notify_die(DIE_TRAP, "bounds", regs, 0, X86_TRAP_BR, SIGSEGV) ==
-	    NOTIFY_STOP)
-		return;
+	/* notify_die always returns NOTIFY_DONE - check removed */
+	notify_die(DIE_TRAP, "bounds", regs, 0, X86_TRAP_BR, SIGSEGV);
 	cond_local_irq_enable(regs);
 
 	if (!user_mode(regs))
@@ -265,9 +261,9 @@ static bool gp_try_fixup_and_notify(struct pt_regs *regs, int trapnr,
 	current->thread.trap_nr = trapnr;
 
 	/* kprobe_running() always returns NULL when CONFIG_KPROBES is disabled */
-
-	return notify_die(DIE_GPF, str, regs, error_code, trapnr, SIGSEGV) ==
-	       NOTIFY_STOP;
+	/* notify_die always returns NOTIFY_DONE */
+	notify_die(DIE_GPF, str, regs, error_code, trapnr, SIGSEGV);
+	return false;
 }
 
 static void gp_user_force_sig_segv(struct pt_regs *regs, int trapnr,
@@ -313,21 +309,18 @@ exit:
 	cond_local_irq_disable(regs);
 }
 
+/* notify_die always returns NOTIFY_DONE, so do_int3 always returns false */
 static bool do_int3(struct pt_regs *regs)
 {
-	int res;
-
-	res = notify_die(DIE_INT3, "int3", regs, 0, X86_TRAP_BP, SIGTRAP);
-
-	return res == NOTIFY_STOP;
+	notify_die(DIE_INT3, "int3", regs, 0, X86_TRAP_BP, SIGTRAP);
+	return false;
 }
 NOKPROBE_SYMBOL(do_int3);
 
 static void do_int3_user(struct pt_regs *regs)
 {
-	if (do_int3(regs))
-		return;
-
+	/* do_int3 always returns false - early return removed */
+	do_int3(regs);
 	cond_local_irq_enable(regs);
 	do_trap(X86_TRAP_BP, SIGTRAP, "int3", regs, 0, 0, NULL);
 	cond_local_irq_disable(regs);
@@ -343,8 +336,9 @@ DEFINE_IDTENTRY_RAW(exc_int3)
 	} else {
 		irqentry_state_t irq_state = irqentry_nmi_enter(regs);
 
-		if (!do_int3(regs))
-			die("int3", regs, 0);
+		/* do_int3 always returns false - unconditional die */
+		do_int3(regs);
+		die("int3", regs, 0);
 		irqentry_nmi_exit(regs, irq_state);
 	}
 }
@@ -367,12 +361,10 @@ static __always_inline unsigned long debug_read_clear_dr6(void)
 	return dr6;
 }
 
+/* notify_die always returns NOTIFY_DONE, so notify_debug always returns false */
 static bool notify_debug(struct pt_regs *regs, unsigned long *dr6)
 {
-	if (notify_die(DIE_DEBUG, "debug", regs, (long)dr6, 0, SIGTRAP) ==
-	    NOTIFY_STOP)
-		return true;
-
+	notify_die(DIE_DEBUG, "debug", regs, (long)dr6, 0, SIGTRAP);
 	return false;
 }
 
@@ -398,8 +390,8 @@ static __always_inline void exc_debug_kernel(struct pt_regs *regs,
 	if (!dr6)
 		goto out;
 
-	if (notify_debug(regs, &dr6))
-		goto out;
+	/* notify_debug always returns false - check removed */
+	notify_debug(regs, &dr6);
 
 	if (WARN_ON_ONCE(dr6 & DR_STEP))
 		regs->flags &= ~X86_EFLAGS_TF;
@@ -472,9 +464,9 @@ static void math_error(struct pt_regs *regs, int trapnr)
 		task->thread.error_code = 0;
 		task->thread.trap_nr = trapnr;
 
-		if (notify_die(DIE_TRAP, str, regs, 0, trapnr, SIGFPE) !=
-		    NOTIFY_STOP)
-			die(str, regs, 0);
+		/* notify_die always returns NOTIFY_DONE - check removed */
+		notify_die(DIE_TRAP, str, regs, 0, trapnr, SIGFPE);
+		die(str, regs, 0);
 		goto exit;
 	}
 
@@ -529,11 +521,10 @@ DEFINE_IDTENTRY(exc_device_not_available)
 DEFINE_IDTENTRY_SW(iret_error)
 {
 	local_irq_enable();
-	if (notify_die(DIE_TRAP, "iret exception", regs, 0, X86_TRAP_IRET,
-		       SIGILL) != NOTIFY_STOP) {
-		do_trap(X86_TRAP_IRET, SIGILL, "iret exception", regs, 0,
-			ILL_BADSTK, (void __user *)NULL);
-	}
+	/* notify_die always returns NOTIFY_DONE - check removed */
+	notify_die(DIE_TRAP, "iret exception", regs, 0, X86_TRAP_IRET, SIGILL);
+	do_trap(X86_TRAP_IRET, SIGILL, "iret exception", regs, 0, ILL_BADSTK,
+		(void __user *)NULL);
 	local_irq_disable();
 }
 

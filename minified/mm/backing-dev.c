@@ -15,14 +15,12 @@
 #include <linux/flex_proportions.h>
 
 /* Merged from lib/flex_proportions.c */
-int fprop_local_init_percpu(struct fprop_local_percpu *pl, gfp_t gfp)
+/* percpu_counter_init always returns 0 - simplified */
+void fprop_local_init_percpu(struct fprop_local_percpu *pl, gfp_t gfp)
 {
-	int err = percpu_counter_init(&pl->events, 0, gfp);
-	if (err)
-		return err;
+	percpu_counter_init(&pl->events, 0, gfp);
 	pl->period = 0;
 	raw_spin_lock_init(&pl->lock);
-	return 0;
 }
 void fprop_local_destroy_percpu(struct fprop_local_percpu *pl)
 {
@@ -58,8 +56,7 @@ void wb_workfn(struct work_struct *work)
 static int wb_init(struct bdi_writeback *wb, struct backing_dev_info *bdi,
 		   gfp_t gfp)
 {
-	int err;
-	/* i removed - stat init loop removed */
+	/* i, err removed - stat init loop and error handling removed */
 
 	memset(wb, 0, sizeof(*wb));
 
@@ -81,9 +78,8 @@ static int wb_init(struct bdi_writeback *wb, struct backing_dev_info *bdi,
 	INIT_DELAYED_WORK(&wb->dwork, wb_workfn);
 	INIT_DELAYED_WORK(&wb->bw_dwork, wb_update_bandwidth_workfn);
 
-	err = fprop_local_init_percpu(&wb->completions, gfp);
-	if (err)
-		return err;
+	/* fprop_local_init_percpu now void - always succeeds */
+	fprop_local_init_percpu(&wb->completions, gfp);
 
 	/* stat init loop removed - NR_WB_STAT_ITEMS is 0 */
 

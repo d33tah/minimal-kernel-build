@@ -111,16 +111,8 @@ static struct inode *alloc_inode(struct super_block *sb)
 	if (!inode)
 		return NULL;
 
-	if (unlikely(inode_init_always(sb, inode))) {
-		if (ops->destroy_inode) {
-			ops->destroy_inode(inode);
-			if (!ops->free_inode)
-				return NULL;
-		}
-		inode->free_inode = ops->free_inode;
-		i_callback(&inode->i_rcu);
-		return NULL;
-	}
+	/* inode_init_always always returns 0 - error handling removed */
+	inode_init_always(sb, inode);
 
 	return inode;
 }

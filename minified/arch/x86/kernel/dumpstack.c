@@ -130,11 +130,11 @@ static void __die_header(const char *str, struct pt_regs *regs, long err)
 }
 NOKPROBE_SYMBOL(__die_header);
 
+/* notify_die always returns NOTIFY_DONE, so __die_body always returns 0 */
 static int __die_body(const char *str, struct pt_regs *regs, long err)
 {
-	/* Stub: minimal crash info */
-	return notify_die(DIE_OOPS, str, regs, err, current->thread.trap_nr,
-			  SIGSEGV) == NOTIFY_STOP;
+	notify_die(DIE_OOPS, str, regs, err, current->thread.trap_nr, SIGSEGV);
+	return 0;
 }
 NOKPROBE_SYMBOL(__die_body);
 

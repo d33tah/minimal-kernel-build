@@ -489,10 +489,7 @@ void __init e820__reserve_setup_data(void)
 	/* kexec table update removed - unused in minimal kernel */
 }
 
-void __init e820__finish_early_params(void)
-{
-	/* Body removed - userdef always 0 (never written) */
-}
+/* e820__finish_early_params removed - body was empty (~3 LOC) */
 
 static const char *__init e820_type_to_string(struct e820_entry *entry)
 {

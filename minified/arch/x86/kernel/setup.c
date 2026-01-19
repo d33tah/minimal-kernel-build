@@ -417,7 +417,7 @@ void __init setup_arch(char **cmdline_p)
 	/* x86_report_nx removed - was empty stub */
 
 	e820__reserve_setup_data();
-	e820__finish_early_params();
+	/* e820__finish_early_params removed - function was empty */
 
 	/* dmi_setup, init_hypervisor_platform removed - empty stubs */
 

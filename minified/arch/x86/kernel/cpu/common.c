@@ -21,9 +21,7 @@
 
 #include <asm/perf_event.h>
 #include <asm/mmu_context.h>
-static inline void x86_init_rdrand(struct cpuinfo_x86 *c)
-{
-}
+/* x86_init_rdrand removed - empty function (~3 LOC) */
 
 /* Inlined from asm/doublefault.h */
 extern void doublefault_init_cpu_tss(void);
@@ -143,10 +141,7 @@ int have_cpuid_p(void)
 	return flag_is_changeable_p(X86_EFLAGS_ID);
 }
 
-static void squash_the_stupid_serial_number(struct cpuinfo_x86 *c)
-{
-	/* Stub: CPU serial number feature not relevant for minimal kernel */
-}
+/* squash_the_stupid_serial_number removed - empty stub (~3 LOC) */
 
 static __always_inline void setup_smep(struct cpuinfo_x86 *c)
 {
@@ -378,10 +373,7 @@ static void apply_forced_caps(struct cpuinfo_x86 *c)
 	}
 }
 
-static void init_speculation_control(struct cpuinfo_x86 *c)
-{
-	/* Stub: speculation control not needed for minimal kernel */
-}
+/* init_speculation_control removed - empty stub (~3 LOC) */
 
 void get_cpu_cap(struct cpuinfo_x86 *c)
 {
@@ -445,8 +437,7 @@ void get_cpu_cap(struct cpuinfo_x86 *c)
 	if (c->extended_cpuid_level >= 0x8000001f)
 		c->x86_capability[CPUID_8000_001F_EAX] = cpuid_eax(0x8000001f);
 
-	/* init_scattered_cpuid_features removed - was empty stub */
-	init_speculation_control(c);
+	/* init_scattered_cpuid_features, init_speculation_control removed - empty stubs */
 
 	apply_forced_caps(c);
 }
@@ -616,8 +607,7 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 	if (this_cpu->c_init)
 		this_cpu->c_init(c);
 
-	squash_the_stupid_serial_number(c);
-
+	/* squash_the_stupid_serial_number call removed - function was empty */
 	setup_smep(c);
 	setup_smap(c);
 	setup_umip(c);
@@ -630,8 +620,7 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 	filter_cpuid_features(c, true);
 
 	/* x86_model_id population removed - field is never read */
-
-	x86_init_rdrand(c);
+	/* x86_init_rdrand call removed - function was empty */
 	apply_forced_caps(c);
 
 	if (c != &boot_cpu_data) {

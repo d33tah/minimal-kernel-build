@@ -366,10 +366,7 @@ static __always_inline unsigned long get_subtree_max_size(struct rb_node *node)
 RB_DECLARE_CALLBACKS_MAX(static, free_vmap_area_rb_augment_cb, struct vmap_area,
 			 rb_node, unsigned long, subtree_max_size, va_size)
 
-/* purge_vmap_area_lazy stub - lazy purge dead but one call site remains */
-static inline void purge_vmap_area_lazy(void)
-{
-}
+/* purge_vmap_area_lazy removed - lazy purge dead, retry now pointless (~5 LOC) */
 /* nr_vmalloc_pages removed - only added to, never read */
 
 static struct vmap_area *__find_vmap_area(unsigned long addr)
@@ -766,9 +763,8 @@ alloc_vmap_area(unsigned long size, unsigned long align, unsigned long vstart,
 		unsigned long vend, int node, gfp_t gfp_mask)
 {
 	struct vmap_area *va;
-	/* freed removed - vmap_notify_list call removed */
+	/* freed, purged removed - vmap_notify_list call removed, purge_vmap_area_lazy dead */
 	unsigned long addr;
-	int purged = 0;
 
 	BUG_ON(!size);
 	BUG_ON(offset_in_page(size));
@@ -783,13 +779,16 @@ alloc_vmap_area(unsigned long size, unsigned long align, unsigned long vstart,
 	if (unlikely(!va))
 		return ERR_PTR(-ENOMEM);
 
-retry:
+	/* retry label removed - purge_vmap_area_lazy was empty, no point retrying */
 	preload_this_cpu_lock(&free_vmap_area_lock, gfp_mask, node);
 	addr = __alloc_vmap_area(size, align, vstart, vend);
 	spin_unlock(&free_vmap_area_lock);
 
-	if (unlikely(addr == vend))
-		goto overflow;
+	if (unlikely(addr == vend)) {
+		/* retry label removed - purge_vmap_area_lazy was empty, no point retrying */
+		kmem_cache_free(vmap_area_cachep, va);
+		return ERR_PTR(-EBUSY);
+	}
 
 	va->va_start = addr;
 	va->va_end = addr + size;
@@ -804,20 +803,8 @@ retry:
 	BUG_ON(va->va_end > vend);
 
 	return va;
-
-overflow:
-	if (!purged) {
-		purge_vmap_area_lazy();
-		purged = 1;
-		goto retry;
-	}
-
-	/* vmap_notify_list call removed - no registrations, freed always 0 */
-
-	/* printk_ratelimit() always returns 0 */
-	kmem_cache_free(vmap_area_cachep, va);
-	return ERR_PTR(-EBUSY);
 }
+/* overflow label, retry logic, purge_vmap_area_lazy call removed (~13 LOC) */
 
 /* lazy_max_pages, vmap_lazy_nr, purge_vmap_area_lazy, drain_vmap_area_work
    and lazy purge infrastructure removed - all stubs that do nothing (~35 LOC) */

@@ -698,13 +698,7 @@ static void umount_tree(struct mount *mnt, enum umount_tree_flags how)
 /* do_umount, can_umount, path_umount removed - cascading removal after path_umount's only caller removed */
 
 /* __detach_mounts removed - empty stub moved inline to mount.h */
-
-bool may_mount(void)
-{
-	/* ns_capable always returns true - simplified */
-	return true;
-}
-
+/* may_mount removed - never called (~4 LOC) */
 /* to_mnt_ns removed - no callers after mntns_* cleanup */
 
 static void free_mnt_ns(struct mnt_namespace *);

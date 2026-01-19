@@ -190,12 +190,8 @@ static __printf(4, 0) struct task_struct *__kthread_create_on_node(
 
 	wake_up_process(kthreadd_task);
 
-	if (unlikely(wait_for_completion_killable(&done))) {
-		if (xchg(&create->done, NULL))
-			return ERR_PTR(-EINTR);
-
-		wait_for_completion(&done);
-	}
+	/* wait_for_completion_killable always returns 0, so killed branch removed (~6 LOC) */
+	wait_for_completion(&done);
 	task = create->result;
 	if (!IS_ERR(task)) {
 		char name[TASK_COMM_LEN];

@@ -11,8 +11,7 @@
 #define __parainstructions_end	NULL
 
 extern void text_poke_early(void *addr, const void *opcode, size_t len);
-/* text_poke removed - no callers */
-extern int poke_int3_handler(struct pt_regs *regs);
+/* text_poke, poke_int3_handler removed - no callers or always returned 0 */
 /* POKE_MAX_OPCODE_SIZE, INSN macros, text_opcode_size, text_gen_insn removed - unused */
 
 extern int after_bootmem;

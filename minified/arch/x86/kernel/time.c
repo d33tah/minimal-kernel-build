@@ -11,10 +11,7 @@
 #include <asm/x86_init.h>
 #include <asm/i8259.h>
 #include <asm/timer.h>
-static inline int hpet_enable(void)
-{
-	return 0;
-}
+/* hpet_enable removed - always returned 0 */
 #include <asm/time.h>
 
 /* profile_pc removed - never called */
@@ -29,10 +26,9 @@ void __init hpet_time_init(void)
 {
 	unsigned long flags = IRQF_NOBALANCING | IRQF_IRQPOLL | IRQF_TIMER;
 
-	if (!hpet_enable()) {
-		if (!pit_timer_init())
-			return;
-	}
+	/* hpet_enable check removed - always returned 0 */
+	if (!pit_timer_init())
+		return;
 
 	if (request_irq(0, timer_interrupt, flags, "timer", NULL))
 		pr_info("Failed to register legacy timer interrupt\n");

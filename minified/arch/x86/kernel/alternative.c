@@ -67,9 +67,5 @@ void __init_or_module text_poke_early(void *addr, const void *opcode,
 }
 
 /* text_poke, text_poke_kgdb, text_poke_copy, text_poke_set, text_poke_sync,
-   text_poke_queue, text_poke_finish, int3_exception_notify, text_poke_bp removed - unused */
-
-int poke_int3_handler(struct pt_regs *regs)
-{
-	return 0;
-}
+   text_poke_queue, text_poke_finish, int3_exception_notify, text_poke_bp,
+   poke_int3_handler removed - never true or unused */

@@ -337,9 +337,7 @@ static void do_int3_user(struct pt_regs *regs)
 
 DEFINE_IDTENTRY_RAW(exc_int3)
 {
-	if (poke_int3_handler(regs))
-		return;
-
+	/* poke_int3_handler check removed - always returned 0 */
 	if (user_mode(regs)) {
 		irqentry_enter_from_user_mode(regs);
 		do_int3_user(regs);

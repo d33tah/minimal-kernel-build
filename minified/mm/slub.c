@@ -165,12 +165,13 @@ slab_flags_t kmem_cache_flags(unsigned int object_size, slab_flags_t flags,
 /* Removed: kfree_hook, slab_free_hook, slab_free_freelist_hook
  * - No longer needed since kfree/kmem_cache_free are no-ops */
 
-static void *setup_object(struct kmem_cache *s, void *object)
-{
-	if (unlikely(s->ctor))
-		s->ctor(object);
-	return object;
-}
+/* setup_object removed - inlined into 2 callers (~5 LOC) */
+#define setup_object(s, obj)             \
+	({                               \
+		if (unlikely((s)->ctor)) \
+			(s)->ctor(obj);  \
+		(obj);                   \
+	})
 
 static inline struct slab *alloc_slab_page(gfp_t flags, int node,
 					   struct kmem_cache_order_objects oo)

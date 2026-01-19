@@ -286,11 +286,7 @@ static int irq_thread(void *data)
 	return 0;
 }
 
-static int irq_setup_forced_threading(struct irqaction *new)
-{
-	/* force_irqthreads() always returns false (static key never enabled) */
-	return 0;
-}
+/* irq_setup_forced_threading removed - always returned 0, caller check removed (~5 LOC) */
 
 static int irq_request_resources(struct irq_desc *desc)
 {
@@ -359,11 +355,7 @@ static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 
 		new->handler = irq_nested_primary_handler;
 	} else {
-		if (irq_settings_can_thread(desc)) {
-			ret = irq_setup_forced_threading(new);
-			if (ret)
-				goto out_mput;
-		}
+		/* irq_setup_forced_threading always returned 0, dead check removed */
 	}
 
 	if (new->thread_fn && !nested) {

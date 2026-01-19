@@ -35,16 +35,7 @@ int irq_set_chip(unsigned int irq, const struct irq_chip *chip)
 }
 
 /* irq_set_irq_type, irq_set_chip_data, irq_get_irq_data removed - never called */
-
-static void irq_state_clr_disabled(struct irq_desc *desc)
-{
-	irqd_clear(&desc->irq_data, IRQD_IRQ_DISABLED);
-}
-
-static void irq_state_clr_masked(struct irq_desc *desc)
-{
-	irqd_clear(&desc->irq_data, IRQD_IRQ_MASKED);
-}
+/* irq_state_clr_disabled, irq_state_clr_masked removed - inlined into callers (~8 LOC) */
 
 static int __irq_startup(struct irq_desc *desc)
 {
@@ -55,8 +46,8 @@ static int __irq_startup(struct irq_desc *desc)
 
 	if (d->chip->irq_startup) {
 		ret = d->chip->irq_startup(d);
-		irq_state_clr_disabled(desc);
-		irq_state_clr_masked(desc);
+		irqd_clear(&desc->irq_data, IRQD_IRQ_DISABLED);
+		irqd_clear(&desc->irq_data, IRQD_IRQ_MASKED);
 	} else {
 		irq_enable(desc);
 	}
@@ -123,10 +114,10 @@ void irq_enable(struct irq_desc *desc)
 	if (!irqd_irq_disabled(&desc->irq_data)) {
 		unmask_irq(desc);
 	} else {
-		irq_state_clr_disabled(desc);
+		irqd_clear(&desc->irq_data, IRQD_IRQ_DISABLED);
 		if (desc->irq_data.chip->irq_enable) {
 			desc->irq_data.chip->irq_enable(&desc->irq_data);
-			irq_state_clr_masked(desc);
+			irqd_clear(&desc->irq_data, IRQD_IRQ_MASKED);
 		} else {
 			unmask_irq(desc);
 		}
@@ -184,7 +175,7 @@ void unmask_irq(struct irq_desc *desc)
 
 	if (desc->irq_data.chip->irq_unmask) {
 		desc->irq_data.chip->irq_unmask(&desc->irq_data);
-		irq_state_clr_masked(desc);
+		irqd_clear(&desc->irq_data, IRQD_IRQ_MASKED);
 	}
 }
 

@@ -242,7 +242,12 @@ static inline int pte_same(pte_t pte_a, pte_t pte_b)
 
 /* pgd_clear_bad, p4d_clear_bad, pud_clear_bad removed - never called */
 
-void pmd_clear_bad(pmd_t *);
+/* pmd_clear_bad inlined from mm/pgtable-generic.c */
+static inline void pmd_clear_bad(pmd_t *pmd)
+{
+	pmd_ERROR(*pmd);
+	pmd_clear(pmd);
+}
 
 /* pgd/p4d/pud_none_or_clear_bad stubs removed - never called */
 

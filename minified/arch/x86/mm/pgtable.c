@@ -74,26 +74,8 @@ static void pgd_dtor(pgd_t *pgd)
 #define PREALLOCATED_USER_PMDS 0
 #define MAX_PREALLOCATED_USER_PMDS 0
 
-/* Simplified functions for this case */
-static inline void free_pmds(struct mm_struct *mm, pmd_t *pmds[], int count)
-{
-}
-static inline int preallocate_pmds(struct mm_struct *mm, pmd_t *pmds[],
-				   int count)
-{
-	return 0;
-}
-static inline void pgd_mop_up_pmds(struct mm_struct *mm, pgd_t *pgdp)
-{
-}
-static inline void pgd_prepopulate_pmd(struct mm_struct *mm, pgd_t *pgd,
-				       pmd_t *pmds[])
-{
-}
-static inline void pgd_prepopulate_user_pmd(struct mm_struct *mm, pgd_t *k_pgd,
-					    pmd_t *pmds[])
-{
-}
+/* Simplified functions removed - free_pmds, preallocate_pmds, pgd_mop_up_pmds,
+   pgd_prepopulate_pmd, pgd_prepopulate_user_pmd were empty stubs */
 
 static inline pgd_t *_pgd_alloc(void)
 {
@@ -128,7 +110,7 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
 
 void pgd_free(struct mm_struct *mm, pgd_t *pgd)
 {
-	pgd_mop_up_pmds(mm, pgd);
+	/* pgd_mop_up_pmds is empty stub - call removed */
 	pgd_dtor(pgd);
 	/* paravirt_pgd_free is empty stub - call removed */
 	_pgd_free(pgd);

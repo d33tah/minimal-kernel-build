@@ -102,7 +102,8 @@ void update_rq_clock(struct rq *rq)
 	if (rq->clock_update_flags & RQCF_ACT_SKIP)
 		return;
 
-	delta = sched_clock_cpu(cpu_of(rq)) - rq->clock;
+	/* cpu_of always returns 0 in UP config */
+	delta = sched_clock_cpu(0) - rq->clock;
 	if (delta < 0)
 		return;
 	rq->clock += delta;
@@ -157,20 +158,12 @@ void wake_up_q(struct wake_q_head *head)
 void resched_curr(struct rq *rq)
 {
 	struct task_struct *curr = rq->curr;
-	int cpu;
-
 	if (test_tsk_need_resched(curr))
 		return;
 
-	cpu = cpu_of(rq);
-
-	if (cpu == smp_processor_id()) {
-		set_tsk_need_resched(curr);
-		set_preempt_need_resched();
-		return;
-	}
-
-	/* smp_send_reschedule removed - empty stub in UP config */
+	/* cpu_of always returns 0, smp_processor_id() returns 0 in UP, so always true */
+	set_tsk_need_resched(curr);
+	set_preempt_need_resched();
 }
 
 void resched_cpu(int cpu)

@@ -44,15 +44,11 @@ static int mmap_is_legacy(void)
 	return sysctl_legacy_va_layout;
 }
 
-/* Simplified for minimal kernel - no ASLR randomization */
-static unsigned long arch_rnd(unsigned int rndbits)
-{
-	return 0;
-}
+/* arch_rnd removed - always returned 0 (no ASLR randomization) */
 
 unsigned long arch_mmap_rnd(void)
 {
-	return arch_rnd(mmap_is_ia32() ? mmap32_rnd_bits : mmap64_rnd_bits);
+	return 0;
 }
 
 static unsigned long mmap_base(unsigned long rnd, unsigned long task_size,
@@ -101,9 +97,9 @@ void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
 	else
 		mm->get_unmapped_area = arch_get_unmapped_area_topdown;
 
-	arch_pick_mmap_base(&mm->mmap_base, &mm->mmap_legacy_base,
-			    arch_rnd(mmap64_rnd_bits), task_size_64bit(0),
-			    rlim_stack);
+	/* arch_rnd always returns 0 */
+	arch_pick_mmap_base(&mm->mmap_base, &mm->mmap_legacy_base, 0,
+			    task_size_64bit(0), rlim_stack);
 }
 
 /* get_mmap_base, mmap_address_hint_valid, pfn_modify_allowed removed - never called or always true */

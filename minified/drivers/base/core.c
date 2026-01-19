@@ -206,36 +206,22 @@ void device_initialize(struct device *dev)
 
 static DEFINE_MUTEX(gdp_mutex);
 
-static inline bool live_in_glue_dir(struct kobject *kobj, struct device *dev)
-{
-	if (!kobj || !dev->class || kobj->kset != &dev->class->p->glue_dirs)
-		return false;
-	return true;
-}
-
-static inline struct kobject *get_glue_dir(struct device *dev)
-{
-	return dev->kobj.parent;
-}
-
-static inline bool kobject_has_children(struct kobject *kobj)
-{
-	WARN_ON_ONCE(kref_read(&kobj->kref) == 0);
-
-	return kobj->sd && kobj->sd->dir.subdirs;
-}
-
+/* live_in_glue_dir, get_glue_dir, kobject_has_children, cleanup_glue_dir - inlined (~17 LOC) */
 static void cleanup_glue_dir(struct device *dev, struct kobject *glue_dir)
 {
 	unsigned int ref;
 
-	if (!live_in_glue_dir(glue_dir, dev))
+	/* Inlined live_in_glue_dir check */
+	if (!glue_dir || !dev->class ||
+	    glue_dir->kset != &dev->class->p->glue_dirs)
 		return;
 
 	mutex_lock(&gdp_mutex);
 
 	ref = kref_read(&glue_dir->kref);
-	if (!kobject_has_children(glue_dir) && !--ref)
+	/* Inlined kobject_has_children check */
+	WARN_ON_ONCE(kref_read(&glue_dir->kref) == 0);
+	if (!(glue_dir->sd && glue_dir->sd->dir.subdirs) && !--ref)
 		kobject_del(glue_dir);
 	kobject_put(glue_dir);
 	mutex_unlock(&gdp_mutex);
@@ -378,7 +364,7 @@ void device_del(struct device *dev)
 	driver_deferred_probe_del(dev);
 	/* device_platform_notify_remove, device_links_purge, bus_notifier calls removed */
 	kobject_uevent(&dev->kobj, KOBJ_REMOVE);
-	glue_dir = get_glue_dir(dev);
+	glue_dir = dev->kobj.parent; /* Inlined get_glue_dir */
 	kobject_del(&dev->kobj);
 	cleanup_glue_dir(dev, glue_dir);
 	memalloc_noio_restore(noio_flag);

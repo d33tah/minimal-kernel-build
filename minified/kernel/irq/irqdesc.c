@@ -46,11 +46,7 @@ static struct kobj_type irq_kobj_type = {
 };
 
 static RADIX_TREE(irq_desc_tree, GFP_KERNEL);
-
-static void irq_insert_desc(unsigned int irq, struct irq_desc *desc)
-{
-	radix_tree_insert(&irq_desc_tree, irq, desc);
-}
+/* irq_insert_desc removed - inlined into 2 callers (~4 LOC) */
 
 struct irq_desc *irq_to_desc(unsigned int irq)
 {
@@ -142,7 +138,7 @@ static int alloc_descs(unsigned int start, unsigned int cnt, int node,
 		desc = alloc_desc(start + i, node, flags, mask, owner);
 		if (!desc)
 			goto err;
-		irq_insert_desc(start + i, desc);
+		radix_tree_insert(&irq_desc_tree, start + i, desc);
 		/* irq_add_debugfs_entry removed - empty stub */
 	}
 	bitmap_set(allocated_irqs, start, cnt);
@@ -175,7 +171,7 @@ int __init early_irq_init(void)
 	for (i = 0; i < initcnt; i++) {
 		desc = alloc_desc(i, node, 0, NULL, NULL);
 		set_bit(i, allocated_irqs);
-		irq_insert_desc(i, desc);
+		radix_tree_insert(&irq_desc_tree, i, desc);
 	}
 	return 0; /* arch_early_irq_init inlined */
 }

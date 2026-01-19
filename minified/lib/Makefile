@@ -50,8 +50,9 @@ obj-y	+= lockref.o
 obj-y += sort.o \
 	 kasprintf.o bitmap.o \
 	 iov_iter.o \
-	 find_bit.o llist.o \
+	 find_bit.o \
 	 refcount.o usercopy.o
+# llist.o merged into fs/file_table.c
 # debug_locks.o, bust_spinlocks.o merged into kernel/panic.c
 # bsearch.o merged into extable.c
 # errseq.o removed - file is empty

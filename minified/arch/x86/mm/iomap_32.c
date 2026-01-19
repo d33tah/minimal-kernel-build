@@ -10,19 +10,12 @@ int iomap_create_wc(resource_size_t base, unsigned long size, pgprot_t *prot);
 #include <asm/memtype.h>
 #include <linux/export.h>
 
-static int is_io_mapping_possible(resource_size_t base, unsigned long size)
-{
-	return 1;
-}
-
 int iomap_create_wc(resource_size_t base, unsigned long size, pgprot_t *prot)
 {
 	enum page_cache_mode pcm = _PAGE_CACHE_MODE_WC;
 	int ret;
 
-	if (!is_io_mapping_possible(base, size))
-		return -EINVAL;
-
+	/* is_io_mapping_possible removed - always returned 1 */
 	ret = memtype_reserve_io(base, base + size, &pcm);
 	if (ret)
 		return ret;

@@ -13,13 +13,7 @@
 #include <asm/nospec-branch.h>
 void do_softirq_own_stack(void);
 
-static inline int check_stack_overflow(void)
-{
-	return 0;
-}
-static inline void print_stack_overflow(void)
-{
-}
+/* check_stack_overflow and print_stack_overflow removed - always 0/empty */
 
 DEFINE_PER_CPU(struct irq_stack *, hardirq_stack_ptr);
 DEFINE_PER_CPU(struct irq_stack *, softirq_stack_ptr);
@@ -38,7 +32,7 @@ static inline void *current_stack(void)
 	return (void *)(current_stack_pointer & ~(THREAD_SIZE - 1));
 }
 
-static inline int execute_on_irq_stack(int overflow, struct irq_desc *desc)
+static inline int execute_on_irq_stack(struct irq_desc *desc)
 {
 	struct irq_stack *curstk, *irqstk;
 	u32 *isp, *prev_esp, arg1;
@@ -54,8 +48,7 @@ static inline int execute_on_irq_stack(int overflow, struct irq_desc *desc)
 	prev_esp = (u32 *)irqstk;
 	*prev_esp = current_stack_pointer;
 
-	if (unlikely(overflow))
-		call_on_stack(print_stack_overflow, isp);
+	/* overflow check removed - always 0 */
 
 	asm volatile("xchgl	%%ebx,%%esp	\n" CALL_NOSPEC
 		     "movl	%%ebx,%%esp	\n"
@@ -104,11 +97,7 @@ void do_softirq_own_stack(void)
 
 void __handle_irq(struct irq_desc *desc, struct pt_regs *regs)
 {
-	int overflow = check_stack_overflow();
-
-	if (user_mode(regs) || !execute_on_irq_stack(overflow, desc)) {
-		if (unlikely(overflow))
-			print_stack_overflow();
+	/* overflow checks removed - check_stack_overflow always returned 0 */
+	if (user_mode(regs) || !execute_on_irq_stack(desc))
 		generic_handle_irq_desc(desc);
-	}
 }

@@ -135,13 +135,7 @@ static void clocksource_enqueue(struct clocksource *cs)
 	list_add(&cs->list, entry);
 }
 
-/* Stub: watchdog enqueue - mark continuous sources as valid */
-static void clocksource_enqueue_watchdog(struct clocksource *cs)
-{
-	INIT_LIST_HEAD(&cs->wd_list);
-	if (cs->flags & CLOCK_SOURCE_IS_CONTINUOUS)
-		cs->flags |= CLOCK_SOURCE_VALID_FOR_HRES;
-}
+/* clocksource_enqueue_watchdog removed - inlined into single caller (~5 LOC) */
 
 void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale,
 				     u32 freq)
@@ -201,7 +195,10 @@ int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq)
 
 	clocksource_watchdog_lock(&flags);
 	clocksource_enqueue(cs);
-	clocksource_enqueue_watchdog(cs);
+	/* Inlined clocksource_enqueue_watchdog */
+	INIT_LIST_HEAD(&cs->wd_list);
+	if (cs->flags & CLOCK_SOURCE_IS_CONTINUOUS)
+		cs->flags |= CLOCK_SOURCE_VALID_FOR_HRES;
 	clocksource_watchdog_unlock(&flags);
 
 	__clocksource_select(false);

@@ -199,11 +199,7 @@ static irqreturn_t irq_thread_fn(struct irq_desc *desc,
 	return ret;
 }
 
-static void wake_threads_waitq(struct irq_desc *desc)
-{
-	if (atomic_dec_and_test(&desc->threads_active))
-		wake_up(&desc->wait_for_threads);
-}
+/* wake_threads_waitq inlined - just atomic_dec_and_test + wake_up */
 
 static void irq_thread_dtor(struct callback_head *unused)
 {
@@ -222,7 +218,8 @@ static void irq_thread_dtor(struct callback_head *unused)
 	desc = irq_to_desc(action->irq);
 
 	if (test_and_clear_bit(IRQTF_RUNTHREAD, &action->thread_flags))
-		wake_threads_waitq(desc);
+		if (atomic_dec_and_test(&desc->threads_active))
+			wake_up(&desc->wait_for_threads);
 
 	irq_finalize_oneshot(desc, action);
 }
@@ -279,7 +276,8 @@ static int irq_thread(void *data)
 		if (action_ret == IRQ_WAKE_THREAD)
 			irq_wake_secondary(desc, action);
 
-		wake_threads_waitq(desc);
+		if (atomic_dec_and_test(&desc->threads_active))
+			wake_up(&desc->wait_for_threads);
 	}
 
 	task_work_cancel(current, irq_thread_dtor);

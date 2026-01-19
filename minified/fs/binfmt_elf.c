@@ -480,12 +480,7 @@ out:
 	return error;
 }
 
-static int parse_elf_properties(struct file *f, const struct elf_phdr *phdr,
-				struct arch_elf_state *arch)
-{
-	/* Stub: GNU properties not needed for minimal kernel */
-	return 0;
-}
+/* parse_elf_properties removed - always returned 0 */
 
 static int load_elf_binary(struct linux_binprm *bprm)
 {
@@ -634,12 +629,7 @@ out_free_interp:
 			}
 	}
 
-	retval = parse_elf_properties(interpreter ?: bprm->file,
-				      elf_property_phdata, &arch_state);
-	if (retval)
-		goto out_free_dentry;
-
-	/* arch_check_elf removed - always returned 0 */
+	/* parse_elf_properties and arch_check_elf removed - always returned 0 */
 
 	retval = begin_new_exec(bprm);
 	if (retval)

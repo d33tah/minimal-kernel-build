@@ -540,7 +540,6 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p,
 {
 	struct task_struct *curr = rq->curr;
 	struct sched_entity *se = &curr->se, *pse = &p->se;
-	struct cfs_rq *cfs_rq = task_cfs_rq(curr);
 
 	if (unlikely(se == pse))
 		return;

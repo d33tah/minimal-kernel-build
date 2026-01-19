@@ -107,8 +107,10 @@ static int bprm_mm_init(struct linux_binprm *bprm)
 	task_unlock(current->group_leader);
 
 	bprm->vma = vma = vm_area_alloc(mm);
-	if (!vma)
+	if (!vma) {
+		err = -ENOMEM;
 		goto err_mm;
+	}
 	vma_set_anonymous(vma);
 
 	if (mmap_write_lock_killable(mm)) {

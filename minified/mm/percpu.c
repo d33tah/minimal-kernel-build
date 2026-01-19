@@ -951,9 +951,8 @@ area_found:
 	/* pcpu_memcg_post_alloc_hook is empty */
 	return ptr;
 
-fail_unlock:
-	spin_unlock_irqrestore(&pcpu_lock, flags);
 fail:
+	/* fail_unlock label removed - no goto references it */
 
 	/* is_atomic always false - only caller is __alloc_percpu with GFP_KERNEL */
 	if (do_warn && warn_limit) {

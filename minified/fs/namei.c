@@ -557,7 +557,7 @@ static struct dentry *__lookup_slow(const struct qstr *name, struct dentry *dir,
 
 	if (unlikely(IS_DEADDIR(inode)))
 		return ERR_PTR(-ENOENT);
-again:
+	/* 'again' label removed - no goto references it */
 	dentry = d_alloc_parallel(dir, name, &wq);
 	if (IS_ERR(dentry))
 		return dentry;

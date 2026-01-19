@@ -371,9 +371,7 @@ static void enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 }
 
 /* clear_buddies removed - buddy tracking only matters with multiple tasks (~32 LOC) */
-static inline void clear_buddies(struct cfs_rq *cfs_rq, struct sched_entity *se)
-{
-}
+/* stub function also removed - calls replaced with nothing */
 
 static void dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 			   int flags)
@@ -384,7 +382,7 @@ static void dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 
 	update_stats_dequeue_fair(cfs_rq, se, flags);
 
-	clear_buddies(cfs_rq, se);
+	/* clear_buddies call removed - empty stub */
 
 	if (se != cfs_rq->curr)
 		__dequeue_entity(cfs_rq, se);
@@ -403,7 +401,7 @@ static void dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 
 static void set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
-	clear_buddies(cfs_rq, se);
+	/* clear_buddies call removed - empty stub */
 
 	if (se->on_rq) {
 		update_stats_wait_end_fair(cfs_rq, se);
@@ -481,7 +479,7 @@ static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	/* enqueue_throttle label and assert_list_leaf_cfs_rq removed */
 }
 
-static void set_next_buddy(struct sched_entity *se);
+/* set_next_buddy forward decl removed - function never called */
 
 static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 {
@@ -534,9 +532,7 @@ static int wakeup_preempt_entity(struct sched_entity *curr,
 }
 
 /* set_next_buddy removed - buddy tracking dead with single task (~10 LOC) */
-static inline void set_next_buddy(struct sched_entity *se)
-{
-}
+/* stub function also removed - never called */
 
 /* check_preempt_wakeup simplified - removed buddy code, dead scale variable (~17 LOC) */
 static void check_preempt_wakeup(struct rq *rq, struct task_struct *p,

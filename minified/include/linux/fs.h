@@ -776,8 +776,7 @@ void kill_anon_super(struct super_block *sb);
 void kill_litter_super(struct super_block *sb);
 void deactivate_super(struct super_block *sb);
 void deactivate_locked_super(struct super_block *sb);
-int set_anon_super(struct super_block *s, void *data);
-int set_anon_super_fc(struct super_block *s, struct fs_context *fc);
+/* set_anon_super, set_anon_super_fc inlined into super.c */
 int get_anon_bdev(dev_t *);
 void free_anon_bdev(dev_t);
 struct super_block *sget_fc(struct fs_context *fc,
@@ -785,8 +784,9 @@ struct super_block *sget_fc(struct fs_context *fc,
 			    int (*set)(struct super_block *, struct fs_context *));
 /* sget removed - never called */
 
+/* try_module_get always returns true - simplified */
 #define fops_get(fops) \
-	(((fops) && try_module_get((fops)->owner) ? (fops) : NULL))
+	((fops) ? (try_module_get((fops)->owner), (fops)) : NULL)
 #define fops_put(fops) \
 	do { if (fops) module_put((fops)->owner); } while(0)
 

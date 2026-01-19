@@ -360,10 +360,7 @@ void free_anon_bdev(dev_t dev)
 	ida_free(&unnamed_dev_ida, MINOR(dev));
 }
 
-int set_anon_super(struct super_block *s, void *data)
-{
-	return get_anon_bdev(&s->s_dev);
-}
+/* set_anon_super inlined into set_anon_super_fc (~3 LOC) */
 
 void kill_anon_super(struct super_block *sb)
 {
@@ -377,9 +374,9 @@ void kill_litter_super(struct super_block *sb)
 	kill_anon_super(sb);
 }
 
-int set_anon_super_fc(struct super_block *sb, struct fs_context *fc)
+static int set_anon_super_fc(struct super_block *sb, struct fs_context *fc)
 {
-	return set_anon_super(sb, NULL);
+	return get_anon_bdev(&sb->s_dev);
 }
 
 static int test_keyed_super(struct super_block *sb, struct fs_context *fc)

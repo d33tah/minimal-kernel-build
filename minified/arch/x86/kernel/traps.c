@@ -253,14 +253,7 @@ DEFINE_IDTENTRY(exc_bounds)
 	cond_local_irq_disable(regs);
 }
 
-enum kernel_gp_hint { GP_NO_HINT, GP_NON_CANONICAL, GP_CANONICAL };
-
-static enum kernel_gp_hint get_kernel_gp_address(struct pt_regs *regs,
-						 unsigned long *addr)
-{
-	/* Stub: GP address hint not needed for minimal kernel */
-	return GP_NO_HINT;
-}
+/* get_kernel_gp_address and enum kernel_gp_hint removed - always returned GP_NO_HINT (~8 LOC) */
 
 #define GPFSTR "general protection fault"
 
@@ -290,8 +283,7 @@ static void gp_user_force_sig_segv(struct pt_regs *regs, int trapnr,
 DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
 {
 	char desc[sizeof(GPFSTR) + 50 + 2 * sizeof(unsigned long) + 1] = GPFSTR;
-	enum kernel_gp_hint hint = GP_NO_HINT;
-	unsigned long gp_addr;
+	/* hint, gp_addr simplified - get_kernel_gp_address always returned GP_NO_HINT */
 
 	cond_local_irq_enable(regs);
 
@@ -315,20 +307,9 @@ DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
 
 	if (error_code)
 		snprintf(desc, sizeof(desc), "segment-related " GPFSTR);
-	else
-		hint = get_kernel_gp_address(regs, &gp_addr);
+	/* get_kernel_gp_address call and hint conditionals removed - always GP_NO_HINT (~10 LOC) */
 
-	if (hint != GP_NO_HINT)
-		snprintf(desc, sizeof(desc), GPFSTR ", %s 0x%lx",
-			 (hint == GP_NON_CANONICAL) ?
-				 "probably for non-canonical address" :
-				 "maybe for address",
-			 gp_addr);
-
-	if (hint != GP_NON_CANONICAL)
-		gp_addr = 0;
-
-	die_addr(desc, regs, error_code, gp_addr);
+	die_addr(desc, regs, error_code, 0);
 
 exit:
 	cond_local_irq_disable(regs);

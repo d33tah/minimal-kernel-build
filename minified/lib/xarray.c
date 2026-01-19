@@ -243,12 +243,7 @@ static void *xas_alloc(struct xa_state *xas, unsigned int shift)
 	return node;
 }
 
-static unsigned long xas_max(struct xa_state *xas)
-{
-	unsigned long max = xas->xa_index;
-
-	return max;
-}
+/* xas_max removed - trivial wrapper returning xas->xa_index (~5 LOC) */
 
 static unsigned long max_index(void *entry)
 {
@@ -360,7 +355,7 @@ static int xas_expand(struct xa_state *xas, void *head)
 	struct xarray *xa = xas->xa;
 	struct xa_node *node = NULL;
 	unsigned int shift = 0;
-	unsigned long max = xas_max(xas);
+	unsigned long max = xas->xa_index; /* xas_max inlined */
 
 	if (!head) {
 		if (max == 0)

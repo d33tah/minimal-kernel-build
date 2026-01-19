@@ -41,11 +41,11 @@ int suid_dumpable = 0;
 static LIST_HEAD(formats);
 static DEFINE_RWLOCK(binfmt_lock);
 
-void __register_binfmt(struct linux_binfmt *fmt, int insert)
+/* insert parameter removed - only caller passes 0 */
+void __register_binfmt(struct linux_binfmt *fmt)
 {
 	write_lock(&binfmt_lock);
-	insert ? list_add(&fmt->lh, &formats) :
-		 list_add_tail(&fmt->lh, &formats);
+	list_add_tail(&fmt->lh, &formats);
 	write_unlock(&binfmt_lock);
 }
 
@@ -621,12 +621,7 @@ void setup_new_exec(struct linux_binprm *bprm)
 	mutex_unlock(&me->signal->cred_guard_mutex);
 }
 
-void finalize_exec(struct linux_binprm *bprm)
-{
-	task_lock(current->group_leader);
-	current->signal->rlim[RLIMIT_STACK] = bprm->rlim_stack;
-	task_unlock(current->group_leader);
-}
+/* finalize_exec removed - inlined into binfmt_elf.c */
 
 /* prepare_bprm_creds inlined into bprm_execve */
 

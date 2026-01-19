@@ -57,16 +57,17 @@ struct linux_binfmt {
 	int (*load_shlib)(struct file *);
 } __randomize_layout;
 
-extern void __register_binfmt(struct linux_binfmt *fmt, int insert);
+/* insert parameter removed - only caller passed 0 */
+extern void __register_binfmt(struct linux_binfmt *fmt);
 
 static inline void register_binfmt(struct linux_binfmt *fmt)
 {
-	__register_binfmt(fmt, 0);
+	__register_binfmt(fmt);
 }
 
 extern int begin_new_exec(struct linux_binprm * bprm);
 extern void setup_new_exec(struct linux_binprm * bprm);
-extern void finalize_exec(struct linux_binprm *bprm);
+/* finalize_exec removed - inlined into binfmt_elf.c */
 
 extern int suid_dumpable;
 

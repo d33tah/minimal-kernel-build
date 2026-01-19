@@ -150,14 +150,14 @@ void resched_curr(struct rq *rq)
 	set_preempt_need_resched();
 }
 
+/* Simplified - only caller passes cpu=0, and cpu_online(0) is always true in UP */
 void resched_cpu(int cpu)
 {
 	struct rq *rq = cpu_rq(cpu);
 	unsigned long flags;
 
 	raw_spin_rq_lock_irqsave(rq, flags);
-	if (cpu_online(cpu) || cpu == smp_processor_id())
-		resched_curr(rq);
+	resched_curr(rq);
 	raw_spin_rq_unlock_irqrestore(rq, flags);
 }
 

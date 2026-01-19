@@ -237,7 +237,7 @@ archheaders:
 head-y := arch/x86/kernel/head_$(BITS).o
 head-y += arch/x86/kernel/head$(BITS).o
 head-y += arch/x86/kernel/ebda.o
-head-y += arch/x86/kernel/platform-quirks.o
+# platform-quirks.o removed - inlined into head32.c
 
 libs-y  += arch/x86/lib/
 

@@ -31,7 +31,10 @@ asmlinkage __visible void __init i386_start_kernel(void)
 
 	sanitize_boot_params(&boot_params);
 
-	x86_early_init_platform_quirks();
+	/* x86_early_init_platform_quirks inlined from platform-quirks.c */
+	x86_platform.legacy.reserve_bios_regions = 0;
+	if (boot_params.hdr.hardware_subarch == X86_SUBARCH_PC)
+		x86_platform.legacy.reserve_bios_regions = 1;
 
 	/* x86_intel_mid_early_setup and x86_ce4100_early_setup are empty stubs */
 	switch (boot_params.hdr.hardware_subarch) {

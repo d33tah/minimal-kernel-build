@@ -104,8 +104,7 @@ obj-$(CONFIG_SHADOW_CALL_STACK) += scs.o
 obj-$(CONFIG_HAVE_STATIC_CALL_INLINE) += static_call_inline.o
 obj-$(CONFIG_CFI_CLANG) += cfi.o
 
-# Always build events/ for stubs
-obj-y += events/
+# events/ removed - stubs moved to arch/x86/mm/tlb.c and arch/x86/mm/extable.c
 
 obj-$(CONFIG_USER_RETURN_NOTIFIER) += user-return-notifier.o
 obj-$(CONFIG_PADATA) += padata.o

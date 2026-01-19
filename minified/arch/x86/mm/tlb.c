@@ -18,6 +18,10 @@
 
 #include "mm_internal.h"
 
+/* Moved from kernel/events/stubs.c - static key definitions for perf/rdpmc */
+DEFINE_STATIC_KEY_TRUE(rdpmc_never_available_key);
+DEFINE_STATIC_KEY_FALSE(rdpmc_always_available_key);
+
 #define STATIC_NOPV static
 #define __flush_tlb_local native_flush_tlb_local
 #define __flush_tlb_global native_flush_tlb_global

@@ -50,8 +50,11 @@
 /* asm/sev.h include removed - file is stub, nothing used */
 #include <asm/traps.h>
 #include <asm/kdebug.h>
-/* Inlined from asm/insn-eval.h */
-int pt_regs_offset(struct pt_regs *regs, int regno);
+/* Inlined from kernel/events/stubs.c - insn-eval.c was removed */
+static inline int pt_regs_offset(struct pt_regs *regs, int regno)
+{
+	return -1;
+}
 
 /* SGX_ENCLS_FAULT_FLAG removed - no SGX in minimal kernel */
 

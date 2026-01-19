@@ -25,6 +25,8 @@
 #include <asm/fpu/sched.h>
 #include <asm/fpu/xstate.h>
 #include <asm/debugreg.h>
+/* Moved from hw_breakpoint.c - just the percpu variable needed for hw_breakpoint_active() */
+DEFINE_PER_CPU(unsigned long, cpu_dr7);
 #include <asm/nmi.h>
 #include <asm/tlbflush.h>
 /* mce.h removed - header is empty */

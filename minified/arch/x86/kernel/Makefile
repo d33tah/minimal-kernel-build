@@ -61,7 +61,8 @@ obj-$(CONFIG_SYSFS)	+= ksysfs.o
 obj-y			+= e820.o
 obj-y			+= pci-dma.o
 # quirks.o removed - early_platform_quirks was empty stub
-obj-y			+= alternative.o i8253.o hw_breakpoint.o
+obj-y			+= alternative.o i8253.o
+# hw_breakpoint.o removed - cpu_dr7 percpu variable moved to process.c
 # tsc_msr.o removed - cpu_khz_from_msr was stub returning 0
 obj-y			+= tsc.o rtc.o
 # io_delay.o removed - native_io_delay inlined into asm/io.h

@@ -101,9 +101,12 @@ static inline bool ns_capable(struct user_namespace *ns, int cap)
 	return true;
 }
 
-/* privileged_wrt_inode_uidgid moved to static in capability.c */
-bool capable_wrt_inode_uidgid(struct user_namespace *mnt_userns,
-			      const struct inode *inode, int cap);
+/* capable_wrt_inode_uidgid simplified - always return true for minimal kernel */
+static inline bool capable_wrt_inode_uidgid(struct user_namespace *mnt_userns,
+					    const struct inode *inode, int cap)
+{
+	return true;
+}
 
 /* checkpoint_restore_ns_capable removed - unused */
 

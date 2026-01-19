@@ -20,7 +20,7 @@ KCOV_INSTRUMENT_fault-inject.o := n
 # them into calls to themselves.
 CFLAGS_string.o := -ffreestanding
 
-# Early boot use of cmdline, don't instrument it
+# Early boot string.c - don't instrument it
 ifdef CONFIG_AMD_MEM_ENCRYPT
 KASAN_SANITIZE_string.o := n
 
@@ -28,7 +28,8 @@ CFLAGS_string.o += -fno-stack-protector
 endif
 
 # timerqueue.o - Removed: all functions were stubbed out
-lib-y := ctype.o string.o vsprintf.o cmdline.o \
+# cmdline.o merged into kernel/params.c
+lib-y := ctype.o string.o vsprintf.o \
 	 rbtree.o radix-tree.o xarray.o \
 	 idr.o extable.o \
 	 dec_and_lock.o

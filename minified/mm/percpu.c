@@ -117,7 +117,7 @@ int pcpu_nr_empty_pop_pages;
 static void pcpu_balance_workfn(struct work_struct *work);
 static DECLARE_WORK(pcpu_balance_work, pcpu_balance_workfn);
 static bool pcpu_async_enabled __read_mostly;
-static bool pcpu_atomic_alloc_failed;
+/* pcpu_atomic_alloc_failed removed - is_atomic always false, never set */
 
 static void pcpu_schedule_balance_work(void)
 {
@@ -857,7 +857,7 @@ static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved,
 				 gfp_t gfp)
 {
 	gfp_t pcpu_gfp;
-	bool is_atomic;
+	/* is_atomic removed - only caller is __alloc_percpu with GFP_KERNEL, always false */
 	bool do_warn;
 	static int warn_limit = 10;
 	struct pcpu_chunk *chunk, *next;
@@ -871,7 +871,6 @@ static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved,
 	gfp = current_gfp_context(gfp);
 
 	pcpu_gfp = gfp & (GFP_KERNEL | __GFP_NORETRY | __GFP_NOWARN);
-	is_atomic = (gfp & GFP_KERNEL) != GFP_KERNEL;
 	do_warn = !(gfp & __GFP_NOWARN);
 
 	if (unlikely(align < PCPU_MIN_ALLOC_SIZE))
@@ -890,13 +889,11 @@ static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved,
 	}
 
 	/* pcpu_memcg_pre_alloc_hook always returns true, post_alloc_hook is empty */
-
-	if (!is_atomic) {
-		if (gfp & __GFP_NOFAIL) {
-			mutex_lock(&pcpu_alloc_mutex);
-		} else if (mutex_lock_killable(&pcpu_alloc_mutex)) {
-			return NULL;
-		}
+	/* is_atomic always false - always take mutex */
+	if (gfp & __GFP_NOFAIL) {
+		mutex_lock(&pcpu_alloc_mutex);
+	} else if (mutex_lock_killable(&pcpu_alloc_mutex)) {
+		return NULL;
 	}
 
 	spin_lock_irqsave(&pcpu_lock, flags);
@@ -904,7 +901,7 @@ static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved,
 	if (reserved && pcpu_reserved_chunk) {
 		chunk = pcpu_reserved_chunk;
 
-		off = pcpu_find_block_fit(chunk, bits, bit_align, is_atomic);
+		off = pcpu_find_block_fit(chunk, bits, bit_align, false);
 		if (off < 0) {
 			err = "alloc from reserved chunk failed";
 			goto fail_unlock;
@@ -924,7 +921,7 @@ restart:
 		list_for_each_entry_safe(chunk, next, &pcpu_chunk_lists[slot],
 					 list) {
 			off = pcpu_find_block_fit(chunk, bits, bit_align,
-						  is_atomic);
+						  false);
 			if (off < 0) {
 				if (slot < PCPU_SLOT_FAIL_THRESHOLD)
 					__pcpu_chunk_move(chunk, 0, true);
@@ -941,11 +938,7 @@ restart:
 
 	spin_unlock_irqrestore(&pcpu_lock, flags);
 
-	if (is_atomic) {
-		err = "atomic alloc failed, no space left";
-		goto fail;
-	}
-
+	/* is_atomic always false - removed dead branch */
 	if (list_empty(&pcpu_chunk_lists[pcpu_free_slot])) {
 		chunk = pcpu_create_chunk(pcpu_gfp);
 		if (!chunk) {
@@ -965,7 +958,8 @@ area_found:
 	/* pcpu_stats_area_alloc removed - stats stub */
 	spin_unlock_irqrestore(&pcpu_lock, flags);
 
-	if (!is_atomic) {
+	/* is_atomic always false - block always executed */
+	{
 		unsigned int page_end, rs, re;
 
 		rs = PFN_DOWN(off);
@@ -998,18 +992,14 @@ fail_unlock:
 	spin_unlock_irqrestore(&pcpu_lock, flags);
 fail:
 
-	if (!is_atomic && do_warn && warn_limit) {
-		pr_warn("allocation failed, size=%zu align=%zu atomic=%d, %s\n",
-			size, align, is_atomic, err);
+	/* is_atomic always false - only caller is __alloc_percpu with GFP_KERNEL */
+	if (do_warn && warn_limit) {
+		pr_warn("allocation failed, size=%zu align=%zu, %s\n", size,
+			align, err);
 		if (!--warn_limit)
 			pr_info("limit reached, disable warning\n");
 	}
-	if (is_atomic) {
-		pcpu_atomic_alloc_failed = true;
-		pcpu_schedule_balance_work();
-	} else {
-		mutex_unlock(&pcpu_alloc_mutex);
-	}
+	mutex_unlock(&pcpu_alloc_mutex);
 	return NULL;
 }
 
@@ -1026,17 +1016,11 @@ static void pcpu_balance_populated(void)
 	struct pcpu_chunk *chunk;
 	int slot, nr_to_pop;
 	/* ret removed - pcpu_populate_chunk always returns 0 */
+	/* pcpu_atomic_alloc_failed removed - is_atomic always false */
 
 retry_pop:
-	if (pcpu_atomic_alloc_failed) {
-		nr_to_pop = PCPU_EMPTY_POP_PAGES_HIGH;
-
-		pcpu_atomic_alloc_failed = false;
-	} else {
-		nr_to_pop = clamp(PCPU_EMPTY_POP_PAGES_HIGH -
-					  pcpu_nr_empty_pop_pages,
-				  0, PCPU_EMPTY_POP_PAGES_HIGH);
-	}
+	nr_to_pop = clamp(PCPU_EMPTY_POP_PAGES_HIGH - pcpu_nr_empty_pop_pages,
+			  0, PCPU_EMPTY_POP_PAGES_HIGH);
 
 	for (slot = pcpu_size_to_slot(PAGE_SIZE); slot <= pcpu_free_slot;
 	     slot++) {

@@ -3,7 +3,8 @@
 
 obj-y			:= core.o bus.o dd.o \
 			   driver.o class.o platform.o \
-			   cpu.o map.o
+			   map.o
+# cpu.o removed - cpu_subsys was defined but never used
 # init.o merged into core.c
 obj-$(CONFIG_AUXILIARY_BUS) += auxiliary.o
 obj-$(CONFIG_DEVTMPFS)	+= devtmpfs.o

@@ -165,3 +165,10 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
 		panic("panic_on_warn set ...\n");
 	add_taint(taint, LOCKDEP_STILL_OK);
 }
+
+/* Merged from kernel/reboot.c */
+void emergency_restart(void)
+{
+	kmsg_dump(KMSG_DUMP_EMERG);
+	machine_emergency_restart();
+}

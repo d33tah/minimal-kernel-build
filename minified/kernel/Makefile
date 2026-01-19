@@ -9,9 +9,10 @@ obj-y     = fork.o panic.o \
 	    signal.o sys.o workqueue.o pid.o task_work.o \
 	    extable.o params.o \
 	    kthread.o sys_ni.o nsproxy.o \
-	    notifier.o cred.o reboot.o \
+	    notifier.o cred.o \
 	    async.o range.o ucount.o
-	    # smpboot.o removed - smpboot_register_percpu_thread was stub
+# reboot.o merged into panic.c
+# smpboot.o removed - smpboot_register_percpu_thread was stub
 
 obj-$(CONFIG_USERMODE_DRIVER) += usermode_driver.o
 obj-$(CONFIG_MODULES) += kmod.o

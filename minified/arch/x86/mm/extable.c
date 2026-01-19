@@ -50,23 +50,14 @@
 /* asm/sev.h include removed - file is stub, nothing used */
 #include <asm/traps.h>
 #include <asm/kdebug.h>
-/* Inlined from kernel/events/stubs.c - insn-eval.c was removed */
-static inline int pt_regs_offset(struct pt_regs *regs, int regno)
-{
-	return -1;
-}
-
-/* SGX_ENCLS_FAULT_FLAG removed - no SGX in minimal kernel */
+/* pt_regs_offset inlined - always returns -1, so pt_regs_nr always returns &__dummy */
 
 static inline unsigned long *pt_regs_nr(struct pt_regs *regs, int nr)
 {
-	int reg_offset = pt_regs_offset(regs, nr);
 	static unsigned long __dummy;
-
-	if (WARN_ON_ONCE(reg_offset < 0))
-		return &__dummy;
-
-	return (unsigned long *)((unsigned long)regs + reg_offset);
+	/* Always returns &__dummy since pt_regs_offset was always -1 */
+	WARN_ON_ONCE(true);
+	return &__dummy;
 }
 
 static inline unsigned long ex_fixup_addr(const struct exception_table_entry *x)

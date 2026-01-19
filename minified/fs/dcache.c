@@ -95,10 +95,7 @@ static void __d_free_external(struct rcu_head *head)
 	kmem_cache_free(dentry_cache, dentry);
 }
 
-static inline int dname_external(const struct dentry *dentry)
-{
-	return dentry->d_name.name != dentry->d_iname;
-}
+/* dname_external inlined - just compares dentry->d_name.name != dentry->d_iname */
 
 static inline void __d_set_inode_and_type(struct dentry *dentry,
 					  struct inode *inode,
@@ -216,7 +213,7 @@ static void __dentry_kill(struct dentry *dentry)
 	if (likely(can_free)) {
 		/* Inlined dentry_free */
 		WARN_ON(!hlist_unhashed(&dentry->d_u.d_alias));
-		if (unlikely(dname_external(dentry))) {
+		if (unlikely(dentry->d_name.name != dentry->d_iname)) {
 			struct external_name *p = external_name(dentry);
 			if (likely(atomic_dec_and_test(&p->u.count))) {
 				call_rcu(&dentry->d_u.d_rcu, __d_free_external);

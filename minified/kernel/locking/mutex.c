@@ -86,10 +86,7 @@ static inline struct task_struct *__mutex_trylock_common(struct mutex *lock,
 	return __owner_task(owner);
 }
 
-static inline bool __mutex_trylock_or_handoff(struct mutex *lock, bool handoff)
-{
-	return !__mutex_trylock_common(lock, handoff);
-}
+/* __mutex_trylock_or_handoff inlined - just calls !__mutex_trylock_common */
 
 static inline bool __mutex_trylock(struct mutex *lock)
 {
@@ -223,7 +220,7 @@ static __always_inline int __sched __mutex_lock_common(
 		first = __mutex_waiter_is_first(lock, &waiter);
 
 		set_current_state(state);
-		if (__mutex_trylock_or_handoff(lock, first))
+		if (!__mutex_trylock_common(lock, first))
 			break;
 
 		if (first) {

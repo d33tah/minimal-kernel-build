@@ -527,41 +527,24 @@ static void vgacon_set_palette(struct vc_data *vc, const unsigned char *table)
 	vga_set_palette(vc, table);
 }
 
-static void vga_vesa_blank(struct vgastate *state, int mode)
-{
-	/* Stub: VESA blanking not needed for minimal kernel */
-}
-
-static void vga_vesa_unblank(struct vgastate *state)
-{
-	/* Stub: VESA unblanking not needed for minimal kernel */
-}
-
-static void vga_pal_blank(struct vgastate *state)
-{
-	/* Stub: palette blanking not needed for minimal kernel */
-}
+/* vga_vesa_blank, vga_vesa_unblank, vga_pal_blank removed - empty stubs */
 
 static int vgacon_blank(struct vc_data *c, int blank, int mode_switch)
 {
 	switch (blank) {
 	case 0:
-		if (vga_vesa_blanked) {
-			vga_vesa_unblank(&vgastate);
+		if (vga_vesa_blanked)
 			vga_vesa_blanked = 0;
-		}
 		if (vga_palette_blanked) {
 			vga_set_palette(c, color_table);
 			vga_palette_blanked = false;
 			return 0;
 		}
 		vga_is_gfx = false;
-
 		return 1;
 	case 1:
 	case -1:
 		if (!mode_switch && vga_video_type == VIDEO_TYPE_VGAC) {
-			vga_pal_blank(&vgastate);
 			vga_palette_blanked = true;
 			return 0;
 		}
@@ -571,10 +554,8 @@ static int vgacon_blank(struct vc_data *c, int blank, int mode_switch)
 			vga_is_gfx = true;
 		return 1;
 	default:
-		if (vga_video_type == VIDEO_TYPE_VGAC) {
-			vga_vesa_blank(&vgastate, blank - 1);
+		if (vga_video_type == VIDEO_TYPE_VGAC)
 			vga_vesa_blanked = blank;
-		}
 		return 0;
 	}
 }

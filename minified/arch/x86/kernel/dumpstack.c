@@ -130,18 +130,13 @@ static void __die_header(const char *str, struct pt_regs *regs, long err)
 }
 NOKPROBE_SYMBOL(__die_header);
 
-/* notify_die always returns NOTIFY_DONE, so __die_body always returns 0 */
-static int __die_body(const char *str, struct pt_regs *regs, long err)
-{
-	notify_die(DIE_OOPS, str, regs, err, current->thread.trap_nr, SIGSEGV);
-	return 0;
-}
-NOKPROBE_SYMBOL(__die_body);
+/* __die_body inlined - notify_die always returns NOTIFY_DONE */
 
 int __die(const char *str, struct pt_regs *regs, long err)
 {
 	__die_header(str, regs, err);
-	return __die_body(str, regs, err);
+	notify_die(DIE_OOPS, str, regs, err, current->thread.trap_nr, SIGSEGV);
+	return 0;
 }
 NOKPROBE_SYMBOL(__die);
 
@@ -161,8 +156,8 @@ void die_addr(const char *str, struct pt_regs *regs, long err, long gp_addr)
 	int sig = SIGSEGV;
 
 	__die_header(str, regs, err);
-	if (__die_body(str, regs, err))
-		sig = 0;
+	notify_die(DIE_OOPS, str, regs, err, current->thread.trap_nr, SIGSEGV);
+	/* __die_body always returned 0, so sig stays SIGSEGV */
 	oops_end(flags, regs, sig);
 }
 

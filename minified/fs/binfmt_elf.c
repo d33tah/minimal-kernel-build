@@ -364,12 +364,7 @@ static inline int arch_elf_pt_proc(struct elfhdr *ehdr, struct elf_phdr *phdr,
 	return 0;
 }
 
-static inline int arch_check_elf(struct elfhdr *ehdr, bool has_interp,
-				 struct elfhdr *interp_ehdr,
-				 struct arch_elf_state *state)
-{
-	return 0;
-}
+/* arch_check_elf inlined - always returns 0 */
 
 #endif
 
@@ -644,10 +639,7 @@ out_free_interp:
 	if (retval)
 		goto out_free_dentry;
 
-	retval = arch_check_elf(elf_ex, !!interpreter, interp_elf_ex,
-				&arch_state);
-	if (retval)
-		goto out_free_dentry;
+	/* arch_check_elf removed - always returned 0 */
 
 	retval = begin_new_exec(bprm);
 	if (retval)

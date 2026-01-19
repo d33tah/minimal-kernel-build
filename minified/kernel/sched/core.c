@@ -391,16 +391,8 @@ void wake_up_new_task(struct task_struct *p)
 	task_rq_unlock(rq, p, &rf);
 }
 
-static inline void prepare_lock_switch(struct rq *rq, struct task_struct *next,
-				       struct rq_flags *rf)
-{
-	rq_unpin_lock(rq, rf);
-}
-
-static inline void finish_lock_switch(struct rq *rq)
-{
-	raw_spin_rq_unlock_irq(rq);
-}
+/* prepare_lock_switch inlined - just called rq_unpin_lock */
+/* finish_lock_switch inlined - just called raw_spin_rq_unlock_irq */
 
 #ifndef prepare_arch_switch
 #define prepare_arch_switch(next) \
@@ -432,7 +424,7 @@ static struct rq *finish_task_switch(struct task_struct *prev)
 
 	prev_state = READ_ONCE(prev->__state);
 
-	finish_lock_switch(rq);
+	raw_spin_rq_unlock_irq(rq);
 
 	if (unlikely(current->kmap_ctrl.idx))
 		__kmap_local_sched_in();
@@ -487,7 +479,7 @@ static __always_inline struct rq *context_switch(struct rq *rq,
 
 	rq->clock_update_flags &= ~(RQCF_ACT_SKIP | RQCF_REQ_SKIP);
 
-	prepare_lock_switch(rq, next, rf);
+	rq_unpin_lock(rq, rf);
 
 	switch_to(prev, next, prev);
 	barrier();

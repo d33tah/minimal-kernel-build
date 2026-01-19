@@ -80,10 +80,7 @@ unsigned long get_sigframe_size(void)
 
 /* setup_rt_frame, handle_signal removed - get_signal always returns false */
 
-static inline unsigned long get_nr_restart_syscall(const struct pt_regs *regs)
-{
-	return __NR_restart_syscall;
-}
+/* get_nr_restart_syscall inlined - always returns __NR_restart_syscall */
 
 void arch_do_signal_or_restart(struct pt_regs *regs)
 {
@@ -99,7 +96,7 @@ void arch_do_signal_or_restart(struct pt_regs *regs)
 			break;
 
 		case -ERESTART_RESTARTBLOCK:
-			regs->ax = get_nr_restart_syscall(regs);
+			regs->ax = __NR_restart_syscall;
 			regs->ip -= 2;
 			break;
 		}

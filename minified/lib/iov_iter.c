@@ -165,7 +165,7 @@ static int copyin(void *to, const void __user *from, size_t n)
  * __copy_page_to_iter below */
 
 /* --- 2025-12-22 04:58 --- Removed PIPE_PARANOIA dead code (~40 LOC) */
-#define sanity(i) true
+/* sanity(i) macro removed - always returned true, callers removed (~1 LOC) */
 
 void iov_iter_init(struct iov_iter *i, unsigned int direction,
 		   const struct iovec *iov, unsigned long nr_segs, size_t count)
@@ -248,9 +248,7 @@ static size_t copy_pipe_to_iter(const void *addr, size_t bytes,
 	unsigned int p_mask = pipe->ring_size - 1;
 	unsigned int i_head;
 	size_t n, off;
-
-	if (!sanity(i))
-		return 0;
+	/* sanity(i) check removed - always returns true (~2 LOC) */
 
 	bytes = n = push_pipe(i, bytes, &i_head, &off);
 	if (unlikely(!n))
@@ -451,9 +449,7 @@ static size_t pipe_zero(size_t bytes, struct iov_iter *i)
 	unsigned int p_mask = pipe->ring_size - 1;
 	unsigned int i_head;
 	size_t n, off;
-
-	if (!sanity(i))
-		return 0;
+	/* sanity(i) check removed - always returns true (~2 LOC) */
 
 	bytes = n = push_pipe(i, bytes, &i_head, &off);
 	if (unlikely(!n))

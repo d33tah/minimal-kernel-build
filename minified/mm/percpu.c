@@ -418,12 +418,14 @@ static void pcpu_block_update_scan(struct pcpu_chunk *chunk, int bit_off,
 	pcpu_block_update(block, s_off, e_off);
 }
 
-static void pcpu_chunk_refresh_hint(struct pcpu_chunk *chunk, bool full_scan)
+/* full_scan parameter removed - only call passes false */
+static void pcpu_chunk_refresh_hint(struct pcpu_chunk *chunk)
 {
 	struct pcpu_block_md *chunk_md = &chunk->chunk_md;
 	int bit_off, bits;
 
-	if (!full_scan && chunk_md->scan_hint) {
+	/* full_scan was always false, so this branch always taken when scan_hint set */
+	if (chunk_md->scan_hint) {
 		bit_off = chunk_md->scan_hint_start + chunk_md->scan_hint;
 		chunk_md->contig_hint_start = chunk_md->scan_hint_start;
 		chunk_md->contig_hint = chunk_md->scan_hint;
@@ -553,7 +555,7 @@ static void pcpu_block_update_hint_alloc(struct pcpu_chunk *chunk, int bit_off,
 				chunk_md->contig_hint_start +
 					chunk_md->contig_hint,
 				bit_off, bit_off + bits))
-		pcpu_chunk_refresh_hint(chunk, false);
+		pcpu_chunk_refresh_hint(chunk);
 }
 
 /* pcpu_is_populated removed - only called when pop_only was true, which was always false */
@@ -830,9 +832,9 @@ static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp);
 
 /* Removed: pcpu_chunk_addr_search, pcpu_memcg_pre_alloc_hook,
  * pcpu_memcg_post_alloc_hook - dead code */
+/* reserved parameter removed - only caller passes false */
 
-static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved,
-				 gfp_t gfp)
+static void __percpu *pcpu_alloc(size_t size, size_t align, gfp_t gfp)
 {
 	gfp_t pcpu_gfp;
 	/* is_atomic removed - only caller is __alloc_percpu with GFP_KERNEL, always false */
@@ -876,23 +878,7 @@ static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved,
 
 	spin_lock_irqsave(&pcpu_lock, flags);
 
-	if (reserved && pcpu_reserved_chunk) {
-		chunk = pcpu_reserved_chunk;
-
-		off = pcpu_find_block_fit(chunk, bits, bit_align);
-		if (off < 0) {
-			err = "alloc from reserved chunk failed";
-			goto fail_unlock;
-		}
-
-		off = pcpu_alloc_area(chunk, bits, bit_align, off);
-		if (off >= 0)
-			goto area_found;
-
-		err = "alloc from reserved chunk failed";
-		goto fail_unlock;
-	}
-
+	/* reserved block removed - only caller passes false */
 restart:
 
 	for (slot = pcpu_size_to_slot(size); slot <= pcpu_free_slot; slot++) {
@@ -984,7 +970,7 @@ fail:
 
 void __percpu *__alloc_percpu(size_t size, size_t align)
 {
-	return pcpu_alloc(size, align, false, GFP_KERNEL);
+	return pcpu_alloc(size, align, GFP_KERNEL);
 }
 
 static void pcpu_balance_populated(void)

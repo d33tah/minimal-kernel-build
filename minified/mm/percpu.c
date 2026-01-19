@@ -556,44 +556,22 @@ static void pcpu_block_update_hint_alloc(struct pcpu_chunk *chunk, int bit_off,
 		pcpu_chunk_refresh_hint(chunk, false);
 }
 
-static bool pcpu_is_populated(struct pcpu_chunk *chunk, int bit_off, int bits,
-			      int *next_off)
-{
-	unsigned int start, end;
-
-	start = PFN_DOWN(bit_off * PCPU_MIN_ALLOC_SIZE);
-	end = PFN_UP((bit_off + bits) * PCPU_MIN_ALLOC_SIZE);
-
-	start = find_next_zero_bit(chunk->populated, end, start);
-	if (start >= end)
-		return true;
-
-	end = find_next_bit(chunk->populated, end, start + 1);
-
-	*next_off = end * PAGE_SIZE / PCPU_MIN_ALLOC_SIZE;
-	return false;
-}
-
+/* pcpu_is_populated removed - only called when pop_only was true, which was always false */
+/* pop_only parameter removed - always false, so condition always breaks immediately */
 static int pcpu_find_block_fit(struct pcpu_chunk *chunk, int alloc_bits,
-			       size_t align, bool pop_only)
+			       size_t align)
 {
 	struct pcpu_block_md *chunk_md = &chunk->chunk_md;
-	int bit_off, bits, next_off;
+	int bit_off, bits;
 
 	if (!pcpu_check_block_hint(chunk_md, alloc_bits, align))
 		return -1;
 
 	bit_off = pcpu_next_hint(chunk_md, alloc_bits);
 	bits = 0;
-	pcpu_for_each_fit_region(chunk, alloc_bits, align, bit_off, bits)
-	{
-		if (!pop_only ||
-		    pcpu_is_populated(chunk, bit_off, bits, &next_off))
-			break;
-
-		bit_off = next_off;
-		bits = 0;
-	}
+	pcpu_for_each_fit_region(
+		chunk, alloc_bits, align, bit_off,
+		bits) break; /* pop_only was always false, so !pop_only always true */
 
 	if (bit_off == pcpu_chunk_map_bits(chunk))
 		return -1;
@@ -901,7 +879,7 @@ static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved,
 	if (reserved && pcpu_reserved_chunk) {
 		chunk = pcpu_reserved_chunk;
 
-		off = pcpu_find_block_fit(chunk, bits, bit_align, false);
+		off = pcpu_find_block_fit(chunk, bits, bit_align);
 		if (off < 0) {
 			err = "alloc from reserved chunk failed";
 			goto fail_unlock;
@@ -920,8 +898,7 @@ restart:
 	for (slot = pcpu_size_to_slot(size); slot <= pcpu_free_slot; slot++) {
 		list_for_each_entry_safe(chunk, next, &pcpu_chunk_lists[slot],
 					 list) {
-			off = pcpu_find_block_fit(chunk, bits, bit_align,
-						  false);
+			off = pcpu_find_block_fit(chunk, bits, bit_align);
 			if (off < 0) {
 				if (slot < PCPU_SLOT_FAIL_THRESHOLD)
 					__pcpu_chunk_move(chunk, 0, true);

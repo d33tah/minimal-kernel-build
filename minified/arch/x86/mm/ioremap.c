@@ -6,15 +6,7 @@
 #include <linux/slab.h>
 #include <linux/vmalloc.h>
 /* mmiotrace_ioremap, mmiotrace_iounmap removed - empty stubs */
-enum cc_attr {
-	CC_ATTR_HOST_MEM_ENCRYPT,
-	CC_ATTR_GUEST_MEM_ENCRYPT,
-	CC_ATTR_GUEST_UNROLL_STRING_IO
-};
-static inline bool cc_platform_has(enum cc_attr attr)
-{
-	return false;
-}
+/* cc_platform_has, cc_attr enum, phys_addr_valid removed - always false/1 */
 #include <linux/pgtable.h>
 
 #include <asm/set_memory.h>
@@ -24,11 +16,6 @@ static inline bool cc_platform_has(enum cc_attr attr)
 #include <asm/pgalloc.h>
 #include <asm/memtype.h>
 #include <asm/setup.h>
-
-static inline int phys_addr_valid(resource_size_t addr)
-{
-	return 1;
-}
 
 struct ioremap_desc {
 	unsigned int flags;
@@ -54,21 +41,7 @@ static unsigned int __ioremap_check_ram(struct resource *res)
 	return 0;
 }
 
-static unsigned int __ioremap_check_encrypted(struct resource *res)
-{
-	if (!cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT))
-		return 0;
-
-	switch (res->desc) {
-	case IORES_DESC_NONE:
-	case IORES_DESC_RESERVED:
-		break;
-	default:
-		return IORES_MAP_ENCRYPTED;
-	}
-
-	return 0;
-}
+/* __ioremap_check_encrypted removed - cc_platform_has always returned false */
 
 static int __ioremap_collect_map_flags(struct resource *res, void *arg)
 {
@@ -77,11 +50,8 @@ static int __ioremap_collect_map_flags(struct resource *res, void *arg)
 	if (!(desc->flags & IORES_MAP_SYSTEM_RAM))
 		desc->flags |= __ioremap_check_ram(res);
 
-	if (!(desc->flags & IORES_MAP_ENCRYPTED))
-		desc->flags |= __ioremap_check_encrypted(res);
-
-	return ((desc->flags & (IORES_MAP_SYSTEM_RAM | IORES_MAP_ENCRYPTED)) ==
-		(IORES_MAP_SYSTEM_RAM | IORES_MAP_ENCRYPTED));
+	/* IORES_MAP_ENCRYPTED check removed - cc_platform_has always returns false */
+	return (desc->flags & IORES_MAP_SYSTEM_RAM);
 }
 
 static void __ioremap_check_mem(resource_size_t addr, unsigned long size,
@@ -115,12 +85,7 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
 	if (!size || last_addr < phys_addr)
 		return NULL;
 
-	if (!phys_addr_valid(phys_addr)) {
-		printk(KERN_WARNING "ioremap: invalid physical address %llx\n",
-		       (unsigned long long)phys_addr);
-		WARN_ON_ONCE(1);
-		return NULL;
-	}
+	/* phys_addr_valid check removed - always returned 1 */
 
 	__ioremap_check_mem(phys_addr, size, &io_desc);
 
@@ -154,7 +119,8 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
 	}
 
 	prot = PAGE_KERNEL_IO;
-	if ((io_desc.flags & IORES_MAP_ENCRYPTED) || encrypted)
+	/* IORES_MAP_ENCRYPTED check removed - never set since cc_platform_has always returns false */
+	if (encrypted)
 		prot = pgprot_encrypted(prot);
 	else
 		prot = pgprot_decrypted(prot);

@@ -537,18 +537,12 @@ DEFINE_IDTENTRY(exc_spurious_interrupt_bug)
 {
 }
 
-static bool handle_xfd_event(struct pt_regs *regs)
-{
-	/* Stub: XFD (Extended Feature Disable) not needed for minimal kernel */
-	return false;
-}
+/* handle_xfd_event removed - always returned false (~5 LOC) */
 
 DEFINE_IDTENTRY(exc_device_not_available)
 {
 	unsigned long cr0 = read_cr0();
-
-	if (handle_xfd_event(regs))
-		return;
+	/* handle_xfd_event check removed - function always returned false */
 
 	if (WARN(cr0 & X86_CR0_TS, "CR0.TS was set")) {
 		write_cr0(cr0 & ~X86_CR0_TS);

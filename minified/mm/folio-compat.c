@@ -13,11 +13,7 @@ void unlock_page(struct page *page)
 /* wait_on_page_writeback inlined into single caller (~4 LOC) */
 
 /* page_mapped removed - never called */
-
-void mark_page_accessed(struct page *page)
-{
-	folio_mark_accessed(page_folio(page));
-}
+/* mark_page_accessed inlined into single caller (~4 LOC) */
 
 bool set_page_dirty(struct page *page)
 {

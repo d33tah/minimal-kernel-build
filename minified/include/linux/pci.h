@@ -16,7 +16,8 @@
 /* Inlined from asm/pci.h */
 #ifdef CONFIG_X86
 /* struct pci_bus, pci_dev forward decls removed - never defined or used */
-extern void pci_iommu_alloc(void);
+/* pci_iommu_alloc inlined from arch/x86/kernel/pci-dma.c - empty stub */
+static inline void pci_iommu_alloc(void) { }
 #endif
 /* PCI macros, structs removed - unused */
 /* pci_device_id, pci_printk/err/warn/etc removed - unused */

@@ -59,7 +59,7 @@ obj-$(CONFIG_X86_64)	+= sys_x86_64.o
 obj-$(CONFIG_X86_ESPFIX64)	+= espfix_64.o
 obj-$(CONFIG_SYSFS)	+= ksysfs.o
 obj-y			+= e820.o
-obj-y			+= pci-dma.o
+# pci-dma.o removed - pci_iommu_alloc inlined into include/linux/pci.h
 # quirks.o removed - early_platform_quirks was empty stub
 obj-y			+= alternative.o i8253.o
 # hw_breakpoint.o removed - cpu_dr7 percpu variable moved to process.c

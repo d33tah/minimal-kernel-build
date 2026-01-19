@@ -7,6 +7,5 @@ struct ratelimit_state { raw_spinlock_t lock; int interval; int burst; int print
 #define RATELIMIT_STATE_INIT_FLAGS(name, interval_init, burst_init, flags_init) { .lock = __RAW_SPIN_LOCK_UNLOCKED(name.lock), .interval = interval_init, .burst = burst_init, .flags = flags_init, }
 #define RATELIMIT_STATE_INIT(name, interval_init, burst_init) RATELIMIT_STATE_INIT_FLAGS(name, interval_init, burst_init, 0)
 #define DEFINE_RATELIMIT_STATE(name, interval_init, burst_init) struct ratelimit_state name = RATELIMIT_STATE_INIT(name, interval_init, burst_init)
-extern int ___ratelimit(struct ratelimit_state *rs, const char *func);
-#define __ratelimit(state) ___ratelimit(state, __func__)
+/* ___ratelimit function and __ratelimit macro removed - rate limiting disabled */
 #endif  

@@ -4,13 +4,9 @@
 #define ___P(f) if (desc->status_use_accessors & f) printk("%14s set\n", #f)
 #define ___PS(f) if (desc->istate & f) printk("%14s set\n", #f)
  
+/* Simplified - rate limiting removed, this path is rarely hit */
 static inline void print_irq_desc(unsigned int irq, struct irq_desc *desc)
 {
-	static DEFINE_RATELIMIT_STATE(ratelimit, 5 * HZ, 5);
-
-	if (!__ratelimit(&ratelimit))
-		return;
-
 	printk("irq %d, desc: %p, depth: %d, count: %d, unhandled: %d\n",
 		irq, desc, desc->depth, desc->irq_count, desc->irqs_unhandled);
 	printk("->handle_irq():  %p, %pS\n",

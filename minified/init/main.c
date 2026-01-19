@@ -45,7 +45,7 @@
 #include <linux/kthread.h>
 #include <linux/sched.h>
 extern void sched_init(void);
-extern void sched_init_smp(void);
+/* sched_init_smp removed - empty stub */
 #include <linux/signal.h>
 #include <linux/idr.h>
 /* dbg_late_init, kgdb_free_init_mem, kprobe_free_init_mem removed - empty stubs */
@@ -710,8 +710,7 @@ static noinline void __init kernel_init_freeable(void)
 	}
 	/* lockup_detector_init removed - empty stub */
 	/* smp_init removed - empty stub */
-	sched_init_smp();
-
+	/* sched_init_smp removed - empty stub */
 	/* padata_init removed - empty stub */
 	page_alloc_init_late();
 

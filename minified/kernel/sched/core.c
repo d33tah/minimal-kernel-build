@@ -13,7 +13,7 @@
 #include <linux/sched/debug.h>
 
 extern void sched_init(void);
-extern void sched_init_smp(void);
+/* sched_init_smp removed - empty stub */
 #include <linux/sched/mm.h>
 
 #include <linux/sched/rt.h>
@@ -954,9 +954,7 @@ void __init init_idle(struct task_struct *idle, int cpu)
 	idle->sched_class = &idle_sched_class;
 }
 
-void __init sched_init_smp(void)
-{
-}
+/* sched_init_smp removed - empty stub, call removed from main.c */
 
 DECLARE_PER_CPU(cpumask_var_t, load_balance_mask);
 DECLARE_PER_CPU(cpumask_var_t, select_idle_mask);

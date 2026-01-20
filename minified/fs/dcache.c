@@ -399,22 +399,7 @@ void dput(struct dentry *dentry)
 	}
 }
 
-static void __dput_to_list(struct dentry *dentry, struct list_head *list)
-	__must_hold(&dentry->d_lock)
-{
-	if (dentry->d_flags & DCACHE_SHRINK_LIST) {
-		--dentry->d_lockref.count;
-	} else {
-		if (dentry->d_flags & DCACHE_LRU_LIST)
-			d_lru_del(dentry);
-		if (!--dentry->d_lockref.count) {
-			D_FLAG_VERIFY(dentry, 0);
-			list_add(&dentry->d_lru, list);
-			dentry->d_flags |= DCACHE_SHRINK_LIST | DCACHE_LRU_LIST;
-			/* nr_dentry_unused counter removed */
-		}
-	}
-}
+/* __dput_to_list removed - inlined into single caller (~11 LOC) */
 
 void dput_to_list(struct dentry *dentry, struct list_head *list)
 {
@@ -424,8 +409,21 @@ void dput_to_list(struct dentry *dentry, struct list_head *list)
 		return;
 	}
 	rcu_read_unlock();
-	if (!retain_dentry(dentry))
-		__dput_to_list(dentry, list);
+	if (!retain_dentry(dentry)) {
+		/* Inlined __dput_to_list */
+		if (dentry->d_flags & DCACHE_SHRINK_LIST) {
+			--dentry->d_lockref.count;
+		} else {
+			if (dentry->d_flags & DCACHE_LRU_LIST)
+				d_lru_del(dentry);
+			if (!--dentry->d_lockref.count) {
+				D_FLAG_VERIFY(dentry, 0);
+				list_add(&dentry->d_lru, list);
+				dentry->d_flags |= DCACHE_SHRINK_LIST |
+						   DCACHE_LRU_LIST;
+			}
+		}
+	}
 	spin_unlock(&dentry->d_lock);
 }
 
@@ -804,20 +802,7 @@ void d_delete(struct dentry *dentry)
 }
 
 /* end_dir_add and start_dir_add inlined into callers */
-
-static void d_wait_lookup(struct dentry *dentry)
-{
-	if (d_in_lookup(dentry)) {
-		DECLARE_WAITQUEUE(wait, current);
-		add_wait_queue(dentry->d_wait, &wait);
-		do {
-			set_current_state(TASK_UNINTERRUPTIBLE);
-			spin_unlock(&dentry->d_lock);
-			schedule();
-			spin_lock(&dentry->d_lock);
-		} while (d_in_lookup(dentry));
-	}
-}
+/* d_wait_lookup removed - inlined into single caller (~12 LOC) */
 
 struct dentry *d_alloc_parallel(struct dentry *parent, const struct qstr *name,
 				wait_queue_head_t *wq)
@@ -885,7 +870,17 @@ retry:
 		rcu_read_unlock();
 
 		spin_lock(&dentry->d_lock);
-		d_wait_lookup(dentry);
+		/* Inlined d_wait_lookup */
+		if (d_in_lookup(dentry)) {
+			DECLARE_WAITQUEUE(wait, current);
+			add_wait_queue(dentry->d_wait, &wait);
+			do {
+				set_current_state(TASK_UNINTERRUPTIBLE);
+				spin_unlock(&dentry->d_lock);
+				schedule();
+				spin_lock(&dentry->d_lock);
+			} while (d_in_lookup(dentry));
+		}
 
 		if (unlikely(dentry->d_name.hash != hash))
 			goto mismatch;

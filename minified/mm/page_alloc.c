@@ -193,18 +193,7 @@ static inline void add_to_free_list(struct page *page, struct zone *zone,
 	area->nr_free++;
 }
 
-/* add_to_free_list_tail and move_to_free_list inlined into callers */
-
-static inline void del_page_from_free_list(struct page *page, struct zone *zone,
-					   unsigned int order)
-{
-	/* page_reported() always false - check removed */
-
-	list_del(&page->lru);
-	__ClearPageBuddy(page);
-	set_page_private(page, 0);
-	zone->free_area[order].nr_free--;
-}
+/* add_to_free_list_tail, move_to_free_list, del_page_from_free_list inlined */
 
 static inline void __free_one_page(struct page *page, unsigned long pfn,
 				   struct zone *zone, unsigned int order,
@@ -223,15 +212,7 @@ static inline void __free_one_page(struct page *page, unsigned long pfn,
 		add_to_free_list(page, zone, order, migratetype);
 }
 
-static __always_inline bool free_pages_prepare(struct page *page,
-					       unsigned int order)
-{
-	/* Stub: minimal page freeing for simple system */
-	if (PageMappingFlags(page))
-		page->mapping = NULL;
-	page->flags &= ~PAGE_FLAGS_CHECK_AT_PREP;
-	return true;
-}
+/* free_pages_prepare inlined into __free_pages_ok */
 
 /* Removed: free_pcp_prepare, free_pcppages_bulk
  * - Dead code since free_unref_page and free_the_page are no-ops (~15 lines) */
@@ -274,8 +255,10 @@ static void __free_pages_ok(struct page *page, unsigned int order,
 	unsigned long pfn = page_to_pfn(page);
 	struct zone *zone = page_zone(page);
 
-	if (!free_pages_prepare(page, order))
-		return;
+	/* free_pages_prepare inlined */
+	if (PageMappingFlags(page))
+		page->mapping = NULL;
+	page->flags &= ~PAGE_FLAGS_CHECK_AT_PREP;
 
 	migratetype = __get_pfnblock_flags_mask(page, pfn, MIGRATETYPE_MASK);
 
@@ -354,7 +337,11 @@ __rmqueue_smallest(struct zone *zone, unsigned int order, int migratetype)
 		page = get_page_from_free_area(area, migratetype);
 		if (!page)
 			continue;
-		del_page_from_free_list(page, zone, current_order);
+		/* del_page_from_free_list inlined */
+		list_del(&page->lru);
+		__ClearPageBuddy(page);
+		set_page_private(page, 0);
+		zone->free_area[current_order].nr_free--;
 		expand(zone, page, order, current_order, migratetype);
 		page->index = migratetype;
 		return page;

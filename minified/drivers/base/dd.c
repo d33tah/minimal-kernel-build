@@ -141,19 +141,7 @@ static void device_unbind_cleanup(struct device *dev)
 	dev_pm_set_driver_flags(dev, 0);
 }
 
-/* device_remove inlined into single caller */
-
-static int call_driver_probe(struct device *dev, struct device_driver *drv)
-{
-	int ret = 0;
-
-	if (dev->bus->probe)
-		ret = dev->bus->probe(dev);
-	else if (drv->probe)
-		ret = drv->probe(dev);
-
-	return ret;
-}
+/* device_remove, call_driver_probe inlined into single caller */
 
 static int really_probe(struct device *dev, struct device_driver *drv)
 {
@@ -184,7 +172,11 @@ static int really_probe(struct device *dev, struct device_driver *drv)
 			goto probe_failed;
 	}
 
-	ret = call_driver_probe(dev, drv);
+	/* call_driver_probe inlined */
+	if (dev->bus->probe)
+		ret = dev->bus->probe(dev);
+	else if (drv->probe)
+		ret = drv->probe(dev);
 	if (ret) {
 		ret = -ret;
 		goto probe_failed;

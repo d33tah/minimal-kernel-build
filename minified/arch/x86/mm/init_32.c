@@ -283,12 +283,7 @@ void __init early_ioremap_page_table_range_init(void)
 	early_ioremap_reset();
 }
 
-static void __init pagetable_init(void)
-{
-	pgd_t *pgd_base = swapper_pg_dir;
-
-	permanent_kmaps_init(pgd_base);
-}
+/* pagetable_init inlined into paging_init */
 
 #define DEFAULT_PTE_MASK ~(_PAGE_NX | _PAGE_GLOBAL)
 pteval_t __supported_pte_mask __read_mostly = DEFAULT_PTE_MASK;
@@ -364,7 +359,8 @@ void __init initmem_init(void)
 /* pidbg debug function removed */
 void __init paging_init(void)
 {
-	pagetable_init();
+	/* pagetable_init inlined */
+	permanent_kmaps_init(swapper_pg_dir);
 
 	__flush_tlb_all();
 	/* olpc_dt_build_devicetree removed - empty stub */

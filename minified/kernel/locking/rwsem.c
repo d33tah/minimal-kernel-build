@@ -12,33 +12,13 @@
 #include <linux/rwsem.h>
 #include <linux/atomic.h>
 
-#define LOCK_EVENT(name) LOCKEVENT_##name,
-enum lock_events {
-	LOCK_EVENT(rwsem_sleep_reader) LOCK_EVENT(rwsem_sleep_writer) LOCK_EVENT(
-		rwsem_wake_reader) LOCK_EVENT(rwsem_wake_writer)
-		LOCK_EVENT(rwsem_opt_lock) LOCK_EVENT(
-			rwsem_opt_fail) LOCK_EVENT(rwsem_opt_nospin)
-			LOCK_EVENT(rwsem_rlock) LOCK_EVENT(
-				rwsem_rlock_steal) LOCK_EVENT(rwsem_rlock_fast)
-				LOCK_EVENT(rwsem_rlock_fail) LOCK_EVENT(
-					rwsem_rlock_handoff)
-					LOCK_EVENT(rwsem_wlock) LOCK_EVENT(
-						rwsem_wlock_fail)
-						LOCK_EVENT(rwsem_wlock_handoff)
-							lockevent_num,
-	LOCKEVENT_reset_cnts = lockevent_num,
-};
-#undef LOCK_EVENT
-#define lockevent_inc(ev)
-#define lockevent_add(ev, c)
-#define lockevent_cond_inc(ev, c)
-/* end lock_events headers */
+/* lockevent enum and macros removed - were empty stubs */
 
 #define RWSEM_READER_OWNED (1UL << 0)
 #define RWSEM_NONSPINNABLE (1UL << 1)
 #define RWSEM_OWNER_FLAGS_MASK (RWSEM_READER_OWNED | RWSEM_NONSPINNABLE)
 
-#define DEBUG_RWSEMS_WARN_ON(c, sem)
+/* DEBUG_RWSEMS_WARN_ON removed - was empty stub */
 
 #define RWSEM_WRITER_LOCKED (1UL << 0)
 #define RWSEM_FLAG_WAITERS (1UL << 1)
@@ -192,10 +172,8 @@ static void rwsem_mark_wake(struct rw_semaphore *sem,
 	waiter = rwsem_first_waiter(sem);
 
 	if (waiter->type == RWSEM_WAITING_FOR_WRITE) {
-		if (wake_type == RWSEM_WAKE_ANY) {
+		if (wake_type == RWSEM_WAKE_ANY)
 			wake_q_add(wake_q, waiter->task);
-			lockevent_inc(rwsem_wake_writer);
-		}
 
 		return;
 	}
@@ -210,10 +188,8 @@ static void rwsem_mark_wake(struct rw_semaphore *sem,
 		oldcount = atomic_long_fetch_add(adjustment, &sem->count);
 		if (unlikely(oldcount & RWSEM_WRITER_MASK)) {
 			if (!(oldcount & RWSEM_FLAG_HANDOFF) &&
-			    time_after(jiffies, waiter->timeout)) {
+			    time_after(jiffies, waiter->timeout))
 				adjustment -= RWSEM_FLAG_HANDOFF;
-				lockevent_inc(rwsem_rlock_handoff);
-			}
 
 			atomic_long_add(-adjustment, &sem->count);
 			return;
@@ -236,7 +212,6 @@ static void rwsem_mark_wake(struct rw_semaphore *sem,
 	}
 
 	adjustment = woken * RWSEM_READER_BIAS - adjustment;
-	lockevent_cond_inc(rwsem_wake_reader, woken);
 
 	oldcount = atomic_long_read(&sem->count);
 	if (list_empty(&sem->wait_list)) {
@@ -316,7 +291,6 @@ static inline bool rwsem_try_write_lock(struct rw_semaphore *sem,
 
 	if (new &RWSEM_FLAG_HANDOFF) {
 		waiter->handoff_set = true;
-		lockevent_inc(rwsem_wlock_handoff);
 		return false;
 	}
 
@@ -363,8 +337,6 @@ rwsem_down_read_slowpath(struct rw_semaphore *sem, long count,
 
 	if (!(count & (RWSEM_WRITER_LOCKED | RWSEM_FLAG_HANDOFF))) {
 		rwsem_set_reader_owned(sem);
-		lockevent_inc(rwsem_rlock_steal);
-
 		if ((rcnt == 1) && (count & RWSEM_FLAG_WAITERS)) {
 			raw_spin_lock_irq(&sem->wait_lock);
 			if (!list_empty(&sem->wait_list))
@@ -387,7 +359,6 @@ queue:
 			smp_acquire__after_ctrl_dep();
 			raw_spin_unlock_irq(&sem->wait_lock);
 			rwsem_set_reader_owned(sem);
-			lockevent_inc(rwsem_rlock_fast);
 			return sem;
 		}
 		adjustment += RWSEM_FLAG_WAITERS;
@@ -416,19 +387,14 @@ queue:
 			break;
 		}
 		schedule();
-		lockevent_inc(rwsem_sleep_reader);
 	}
 
 	__set_current_state(TASK_RUNNING);
-	lockevent_inc(rwsem_rlock);
-
 	return sem;
 
 out_nolock:
 	rwsem_del_wake_waiter(sem, &waiter, &wake_q);
 	__set_current_state(TASK_RUNNING);
-	lockevent_inc(rwsem_rlock_fail);
-
 	return ERR_PTR(-EINTR);
 }
 
@@ -475,22 +441,17 @@ rwsem_down_write_slowpath(struct rw_semaphore *sem, int state)
 		/* waiter.handoff_set spin code removed - rwsem_spin_on_owner was stub */
 
 		schedule();
-		lockevent_inc(rwsem_sleep_writer);
 		set_current_state(state);
 		raw_spin_lock_irq(&sem->wait_lock);
 	}
 	__set_current_state(TASK_RUNNING);
 	raw_spin_unlock_irq(&sem->wait_lock);
-	lockevent_inc(rwsem_wlock);
-
 	return sem;
 
 out_nolock:
 	__set_current_state(TASK_RUNNING);
 	raw_spin_lock_irq(&sem->wait_lock);
 	rwsem_del_wake_waiter(sem, &waiter, &wake_q);
-	lockevent_inc(rwsem_wlock_fail);
-
 	return ERR_PTR(-EINTR);
 }
 
@@ -533,7 +494,6 @@ static inline int __down_read_common(struct rw_semaphore *sem, int state)
 	if (!rwsem_read_trylock(sem, &count)) {
 		if (IS_ERR(rwsem_down_read_slowpath(sem, count, state)))
 			return -EINTR;
-		DEBUG_RWSEMS_WARN_ON(!is_rwsem_reader_owned(sem), sem);
 	}
 	return 0;
 }
@@ -551,8 +511,6 @@ static inline int __down_read_killable(struct rw_semaphore *sem)
 static inline int __down_read_trylock(struct rw_semaphore *sem)
 {
 	long tmp;
-
-	DEBUG_RWSEMS_WARN_ON(sem->magic != sem, sem);
 
 	tmp = atomic_long_read(&sem->count);
 	while (!(tmp & RWSEM_READ_FAILED_MASK)) {
@@ -587,7 +545,6 @@ static inline int __down_write_killable(struct rw_semaphore *sem)
 
 static inline int __down_write_trylock(struct rw_semaphore *sem)
 {
-	DEBUG_RWSEMS_WARN_ON(sem->magic != sem, sem);
 	return rwsem_write_trylock(sem);
 }
 
@@ -595,10 +552,7 @@ static inline void __up_read(struct rw_semaphore *sem)
 {
 	long tmp;
 
-	DEBUG_RWSEMS_WARN_ON(sem->magic != sem, sem);
-	DEBUG_RWSEMS_WARN_ON(!is_rwsem_reader_owned(sem), sem);
 	tmp = atomic_long_add_return_release(-RWSEM_READER_BIAS, &sem->count);
-	DEBUG_RWSEMS_WARN_ON(tmp < 0, sem);
 	if (unlikely((tmp & (RWSEM_LOCK_MASK | RWSEM_FLAG_WAITERS)) ==
 		     RWSEM_FLAG_WAITERS)) {
 		rwsem_wake(sem);
@@ -608,13 +562,6 @@ static inline void __up_read(struct rw_semaphore *sem)
 static inline void __up_write(struct rw_semaphore *sem)
 {
 	long tmp;
-
-	DEBUG_RWSEMS_WARN_ON(sem->magic != sem, sem);
-
-	DEBUG_RWSEMS_WARN_ON((rwsem_owner(sem) != current) &&
-				     !rwsem_test_oflags(sem,
-							RWSEM_NONSPINNABLE),
-			     sem);
 
 	atomic_long_set(&sem->owner, 0); /* rwsem_clear_owner inlined */
 	tmp = atomic_long_fetch_add_release(-RWSEM_WRITER_LOCKED, &sem->count);
@@ -626,7 +573,6 @@ static inline void __downgrade_write(struct rw_semaphore *sem)
 {
 	long tmp;
 
-	DEBUG_RWSEMS_WARN_ON(rwsem_owner(sem) != current, sem);
 	tmp = atomic_long_fetch_add_release(
 		-RWSEM_WRITER_LOCKED + RWSEM_READER_BIAS, &sem->count);
 	rwsem_set_reader_owned(sem);

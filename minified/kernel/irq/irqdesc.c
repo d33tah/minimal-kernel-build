@@ -91,64 +91,8 @@ static void irq_kobj_release(struct kobject *kobj)
 	kfree(desc);
 }
 
-static void delayed_free_desc(struct rcu_head *rhp)
-{
-	struct irq_desc *desc = container_of(rhp, struct irq_desc, rcu);
-
-	kobject_put(&desc->kobj);
-}
-
-static void free_desc(unsigned int irq)
-{
-	struct irq_desc *desc = irq_to_desc(irq);
-
-	/* irq_remove_debugfs_entry, unregister_irq_proc removed - empty stubs */
-	radix_tree_delete(&irq_desc_tree, irq);
-	call_rcu(&desc->rcu, delayed_free_desc);
-}
-
-static int alloc_descs(unsigned int start, unsigned int cnt, int node,
-		       const struct irq_affinity_desc *affinity,
-		       struct module *owner)
-{
-	struct irq_desc *desc;
-	int i;
-
-	if (affinity) {
-		for (i = 0; i < cnt; i++) {
-			if (cpumask_empty(&affinity[i].mask))
-				return -EINVAL;
-		}
-	}
-
-	for (i = 0; i < cnt; i++) {
-		const struct cpumask *mask = NULL;
-		unsigned int flags = 0;
-
-		if (affinity) {
-			if (affinity->is_managed) {
-				flags = IRQD_AFFINITY_MANAGED |
-					IRQD_MANAGED_SHUTDOWN;
-			}
-			mask = &affinity->mask;
-			node = cpu_to_node(cpumask_first(mask));
-			affinity++;
-		}
-
-		desc = alloc_desc(start + i, node, flags, mask, owner);
-		if (!desc)
-			goto err;
-		radix_tree_insert(&irq_desc_tree, start + i, desc);
-		/* irq_add_debugfs_entry removed - empty stub */
-	}
-	bitmap_set(allocated_irqs, start, cnt);
-	return start;
-
-err:
-	for (i--; i >= 0; i--)
-		free_desc(start + i);
-	return -ENOMEM;
-}
+/* delayed_free_desc, free_desc, alloc_descs removed -
+   only caller was __irq_alloc_descs which was never called */
 
 int __init early_irq_init(void)
 {
@@ -203,45 +147,7 @@ int generic_handle_irq_safe(unsigned int irq)
 	return ret;
 }
 
-/* irq_free_descs removed - never called */
-
-int __ref __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt,
-			    int node, struct module *owner,
-			    const struct irq_affinity_desc *affinity)
-{
-	int start, ret;
-
-	if (!cnt)
-		return -EINVAL;
-
-	if (irq >= 0) {
-		if (from > irq)
-			return -EINVAL;
-		from = irq;
-	}
-	/* arch_dynirq_lower_bound inlined - weak impl just returns from */
-
-	mutex_lock(&sparse_irq_lock);
-
-	start = bitmap_find_next_zero_area(allocated_irqs, IRQ_BITMAP_BITS,
-					   from, cnt, 0);
-	ret = -EEXIST;
-	if (irq >= 0 && start != irq)
-		goto unlock;
-
-	/* Inlined irq_expand_nr_irqs */
-	if (start + cnt > nr_irqs) {
-		if (start + cnt > IRQ_BITMAP_BITS) {
-			ret = -ENOMEM;
-			goto unlock;
-		}
-		nr_irqs = start + cnt;
-	}
-	ret = alloc_descs(start, cnt, node, affinity, owner);
-unlock:
-	mutex_unlock(&sparse_irq_lock);
-	return ret;
-}
+/* irq_free_descs, __irq_alloc_descs removed - never called */
 
 unsigned int irq_get_next_irq(unsigned int offset)
 {

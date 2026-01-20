@@ -82,12 +82,7 @@ request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
 
 extern void enable_irq(unsigned int irq);
 
-struct irq_affinity_desc {
-	struct cpumask	mask;
-	unsigned int	is_managed : 1;
-};
-
-/* irq_set_affinity, irq_can_set_affinity removed - never called */
+/* struct irq_affinity_desc, irq_set_affinity, irq_can_set_affinity removed - never used */
 
 /* irqchip_irq_state enum removed - unused */
 

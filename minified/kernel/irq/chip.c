@@ -69,15 +69,14 @@ int irq_activate(struct irq_desc *desc)
 {
 	struct irq_data *d = irq_desc_get_irq_data(desc);
 
-	if (!irqd_affinity_is_managed(d))
-		return irq_domain_activate_irq(d, false);
-	return 0;
+	/* irqd_affinity_is_managed always false - IRQD_AFFINITY_MANAGED never set */
+	return irq_domain_activate_irq(d, false);
 }
 
 int irq_activate_and_startup(struct irq_desc *desc, bool resend)
 {
-	if (WARN_ON(irq_activate(desc)))
-		return 0;
+	/* irq_activate always returns 0, WARN_ON never triggers */
+	irq_activate(desc);
 	return irq_startup(desc, resend, IRQ_START_FORCE);
 }
 

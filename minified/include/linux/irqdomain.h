@@ -12,7 +12,7 @@ struct irq_domain;
 struct irq_chip;
 struct irq_data;
 struct cpumask;
-struct irq_affinity_desc;
+/* struct irq_affinity_desc removed - never used */
 #define IRQ_DOMAIN_IRQ_SPEC_PARAMS 16
 struct irq_fwspec { struct fwnode_handle *fwnode; int param_count; u32 param[IRQ_DOMAIN_IRQ_SPEC_PARAMS]; };
 enum irq_domain_bus_token { DOMAIN_BUS_ANY = 0, };

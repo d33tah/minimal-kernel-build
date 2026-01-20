@@ -81,10 +81,7 @@ irq_settings_clr_and_set(struct irq_desc *desc, u32 clr, u32 set)
 	desc->status_use_accessors |= (set & _IRQF_MODIFY_MASK);
 }
 
-static inline bool irq_settings_is_per_cpu(struct irq_desc *desc)
-{
-	return desc->status_use_accessors & _IRQ_PER_CPU;
-}
+/* irq_settings_is_per_cpu removed - never called */
 
 static inline bool irq_settings_is_per_cpu_devid(struct irq_desc *desc)
 {
@@ -134,12 +131,7 @@ static inline void irq_settings_set_norequest(struct irq_desc *desc)
 	desc->status_use_accessors |= _IRQ_NOREQUEST;
 }
 
-static inline bool irq_settings_can_thread(struct irq_desc *desc)
-{
-	return !(desc->status_use_accessors & _IRQ_NOTHREAD);
-}
-
-/* irq_settings_clr_nothread removed - unused */
+/* irq_settings_can_thread, irq_settings_clr_nothread removed - unused */
 
 static inline void irq_settings_set_nothread(struct irq_desc *desc)
 {

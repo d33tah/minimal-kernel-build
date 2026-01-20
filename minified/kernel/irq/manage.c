@@ -444,9 +444,8 @@ static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 				goto out_unlock;
 		}
 
-		ret = irq_activate(desc);
-		if (ret)
-			goto out_unlock;
+		/* irq_activate always returns 0 - error check removed */
+		irq_activate(desc);
 
 		desc->istate &= ~(IRQS_AUTODETECT | IRQS_SPURIOUS_DISABLED |
 				  IRQS_ONESHOT | IRQS_WAITING);

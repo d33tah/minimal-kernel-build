@@ -18,7 +18,7 @@ typedef void (*irq_flow_handler_t)(struct irq_desc *desc);
 #include <asm/irq_regs.h>
 
 struct module;
-struct irq_affinity_desc;
+/* struct irq_affinity_desc removed - never used */
 
 enum {
 	IRQ_TYPE_NONE		= 0x00000000,
@@ -94,10 +94,8 @@ enum {
 	IRQD_IRQ_MASKED			= (1 << 17),
 	IRQD_IRQ_INPROGRESS		= (1 << 18),
 	IRQD_WAKEUP_ARMED		= (1 << 19),
-	/* IRQD_FORWARDED_TO_VCPU removed - unused */
-	IRQD_AFFINITY_MANAGED		= (1 << 21),
+	/* IRQD_FORWARDED_TO_VCPU, IRQD_AFFINITY_MANAGED, IRQD_MANAGED_SHUTDOWN removed - never used */
 	IRQD_IRQ_STARTED		= (1 << 22),
-	IRQD_MANAGED_SHUTDOWN		= (1 << 23),
 	/* IRQD_SINGLE_TARGET removed - unused */
 	IRQD_DEFAULT_TRIGGER_SET	= (1 << 25),
 	/* IRQD_CAN_RESERVE, IRQD_MSI_NOMASK_QUIRK removed - unused */
@@ -139,10 +137,8 @@ static inline bool irqd_irq_inprogress(struct irq_data *d)
 	return __irqd_to_state(d) & IRQD_IRQ_INPROGRESS;
 }
 
-static inline bool irqd_affinity_is_managed(struct irq_data *d)
-{
-	return __irqd_to_state(d) & IRQD_AFFINITY_MANAGED;
-}
+/* irqd_affinity_is_managed always false - IRQD_AFFINITY_MANAGED never set */
+static inline bool irqd_affinity_is_managed(struct irq_data *d) { return false; }
 
 static inline bool irqd_is_activated(struct irq_data *d)
 {
@@ -257,10 +253,6 @@ __irq_set_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained,
 extern int irq_set_chip(unsigned int irq, const struct irq_chip *chip);
 /* irq_set_chip_data, irq_set_irq_type, irq_get_irq_data, irq_data_get_irq_chip, irq_data_get_affinity_mask, arch_dynirq_lower_bound removed - unused */
 
-int __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt, int node,
-		      struct module *owner,
-		      const struct irq_affinity_desc *affinity);
-
-/* irq_free_descs removed - never called */
+/* __irq_alloc_descs, irq_free_descs removed - never called */
 
 #endif  

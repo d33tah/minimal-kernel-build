@@ -533,10 +533,7 @@ static inline int task_on_rq_queued(struct task_struct *p)
 	return p->on_rq == TASK_ON_RQ_QUEUED;
 }
 
-static inline int task_on_rq_migrating(struct task_struct *p)
-{
-	return READ_ONCE(p->on_rq) == TASK_ON_RQ_MIGRATING;
-}
+/* task_on_rq_migrating removed - never called (single-CPU) */
 
 #define WF_FORK     0x04
 /* WF_SYNC removed - unused */

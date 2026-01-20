@@ -616,11 +616,6 @@ static void con_flush(struct vc_data *vc, struct vc_draw_region *draw)
 	draw->x = -1;
 }
 
-static inline int vc_translate_ascii(const struct vc_data *vc, int c)
-{
-	return c;
-}
-
 static int vc_translate_unicode(struct vc_data *vc, int c, bool *rescan)
 {
 	static const u32 utf8_length_changes[] = { 0x0000007f, 0x000007ff,
@@ -689,7 +684,7 @@ static int vc_translate(struct vc_data *vc, int *c, bool *rescan)
 	if (vc->vc_utf && !vc->vc_disp_ctrl)
 		return *c = vc_translate_unicode(vc, *c, rescan);
 
-	return vc_translate_ascii(vc, *c);
+	return *c;
 }
 
 static bool vc_is_control(struct vc_data *vc, int tc, int c)

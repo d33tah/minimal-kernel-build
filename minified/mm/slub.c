@@ -102,12 +102,7 @@ static inline unsigned int oo_objects(struct kmem_cache_order_objects x)
 }
 
 /* __slab_lock/__slab_unlock inlined into slab_lock/slab_unlock */
-
-static __always_inline void slab_lock(struct slab *slab, unsigned long *flags)
-{
-	/* CONFIG_PREEMPT_RT not enabled - no irq save */
-	bit_spin_lock(PG_locked, &slab_page(slab)->flags);
-}
+/* slab_lock inlined into __cmpxchg_double_slab */
 
 static __always_inline void slab_unlock(struct slab *slab, unsigned long *flags)
 {
@@ -135,7 +130,7 @@ static inline bool __cmpxchg_double_slab(struct kmem_cache *s,
 
 		unsigned long flags = 0;
 
-		slab_lock(slab, &flags);
+		bit_spin_lock(PG_locked, &slab_page(slab)->flags);
 		if (slab->freelist == freelist_old &&
 		    slab->counters == counters_old) {
 			slab->freelist = freelist_new;
@@ -489,12 +484,7 @@ static void *__slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node,
 	return p;
 }
 
-static __always_inline void maybe_wipe_obj_freeptr(struct kmem_cache *s,
-						   void *obj)
-{
-	if (unlikely(slab_want_init_on_free(s)) && obj)
-		memset((void *)((char *)obj + s->offset), 0, sizeof(void *));
-}
+/* maybe_wipe_obj_freeptr inlined into slab_alloc_node */
 
 static __always_inline void *
 slab_alloc_node(struct kmem_cache *s, struct list_lru *lru, gfp_t gfpflags,
@@ -533,7 +523,9 @@ redo:
 		prefetchw(next_object + s->offset);
 	}
 
-	maybe_wipe_obj_freeptr(s, object);
+	/* maybe_wipe_obj_freeptr inlined */
+	if (unlikely(slab_want_init_on_free(s)) && object)
+		memset((void *)((char *)object + s->offset), 0, sizeof(void *));
 	init = slab_want_init_on_alloc(gfpflags, s);
 
 	slab_post_alloc_hook(s, objcg, gfpflags, 1, &object, init);

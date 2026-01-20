@@ -150,13 +150,8 @@ static int pcpu_chunk_slot(const struct pcpu_chunk *chunk)
 }
 
 /* pcpu_set_page_chunk inlined into pcpu_create_chunk
- * pcpu_unit_page_offset inlined into pcpu_chunk_addr */
-static unsigned long pcpu_chunk_addr(struct pcpu_chunk *chunk, unsigned int cpu,
-				     int page_idx)
-{
-	return (unsigned long)chunk->base_addr + pcpu_unit_offsets[cpu] +
-	       (page_idx << PAGE_SHIFT);
-}
+ * pcpu_unit_page_offset inlined into pcpu_chunk_addr
+ * pcpu_chunk_addr inlined into pcpu_alloc */
 
 static unsigned long *pcpu_index_alloc_map(struct pcpu_chunk *chunk, int index)
 {
@@ -945,7 +940,11 @@ area_found:
 		pcpu_schedule_balance_work();
 
 	/* for_each_possible_cpu simplified - single CPU */
-	memset((void *)pcpu_chunk_addr(chunk, 0, 0) + off, 0, size);
+	/* pcpu_chunk_addr(chunk, 0, 0) = chunk->base_addr + pcpu_unit_offsets[0] */
+	memset((void *)((unsigned long)chunk->base_addr +
+			pcpu_unit_offsets[0]) +
+		       off,
+	       0, size);
 
 	ptr = __addr_to_pcpu_ptr(chunk->base_addr + off);
 	/* pcpu_memcg_post_alloc_hook is empty */

@@ -102,12 +102,7 @@ static __always_inline bool __mutex_trylock_fast(struct mutex *lock)
 	return false;
 }
 
-static __always_inline bool __mutex_unlock_fast(struct mutex *lock)
-{
-	unsigned long curr = (unsigned long)current;
-
-	return atomic_long_try_cmpxchg_release(&lock->owner, &curr, 0UL);
-}
+/* __mutex_unlock_fast inlined into mutex_unlock */
 
 static inline bool __mutex_waiter_is_first(struct mutex *lock,
 					   struct mutex_waiter *waiter)
@@ -168,7 +163,9 @@ static noinline void __sched __mutex_unlock_slowpath(struct mutex *lock,
 
 void __sched mutex_unlock(struct mutex *lock)
 {
-	if (__mutex_unlock_fast(lock))
+	/* __mutex_unlock_fast inlined */
+	unsigned long curr = (unsigned long)current;
+	if (atomic_long_try_cmpxchg_release(&lock->owner, &curr, 0UL))
 		return;
 	__mutex_unlock_slowpath(lock, _RET_IP_);
 }

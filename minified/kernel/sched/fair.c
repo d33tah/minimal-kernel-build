@@ -98,14 +98,7 @@ static inline u64 max_vruntime(u64 max_vruntime, u64 vruntime)
 	return max_vruntime;
 }
 
-static inline u64 min_vruntime(u64 min_vruntime, u64 vruntime)
-{
-	s64 delta = (s64)(vruntime - min_vruntime);
-	if (delta < 0)
-		min_vruntime = vruntime;
-
-	return min_vruntime;
-}
+/* min_vruntime inlined into update_min_vruntime */
 
 static inline bool entity_before(struct sched_entity *a, struct sched_entity *b)
 {
@@ -133,8 +126,12 @@ static void update_min_vruntime(struct cfs_rq *cfs_rq)
 
 		if (!curr)
 			vruntime = se->vruntime;
-		else
-			vruntime = min_vruntime(vruntime, se->vruntime);
+		else {
+			/* min_vruntime inlined */
+			s64 delta = (s64)(se->vruntime - vruntime);
+			if (delta < 0)
+				vruntime = se->vruntime;
+		}
 	}
 
 	cfs_rq->min_vruntime = max_vruntime(cfs_rq->min_vruntime, vruntime);

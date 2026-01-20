@@ -106,10 +106,7 @@ unsigned long randomize_stack_top(unsigned long stack_top)
 	return PAGE_ALIGN(stack_top);
 }
 
-unsigned long randomize_page(unsigned long start, unsigned long range)
-{
-	return PAGE_ALIGNED(start) ? start : PAGE_ALIGN(start);
-}
+/* randomize_page removed - no callers (~4 LOC) */
 
 #if defined(CONFIG_MMU) && !defined(HAVE_ARCH_PICK_MMAP_LAYOUT)
 void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)

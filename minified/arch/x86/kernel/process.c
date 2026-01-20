@@ -355,14 +355,10 @@ void __init arch_post_acpi_subsys_init(void)
 
 unsigned long arch_align_stack(unsigned long sp)
 {
-	if (!(current->personality & ADDR_NO_RANDOMIZE) && randomize_va_space)
-		sp -= get_random_int() % 8192;
+	/* randomize_va_space always 0 - dead branch removed */
 	return sp & ~0xf;
 }
 
-unsigned long arch_randomize_brk(struct mm_struct *mm)
-{
-	return randomize_page(mm->brk, 0x02000000);
-}
+/* arch_randomize_brk removed - randomize_va_space always 0, never called */
 
 /* do_arch_prctl_common removed - arch_prctl syscall uses COND_SYSCALL */

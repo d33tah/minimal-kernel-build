@@ -900,7 +900,7 @@ extern struct vm_area_struct *_install_special_mapping(struct mm_struct *mm,
 
 
 unsigned long randomize_stack_top(unsigned long stack_top);
-unsigned long randomize_page(unsigned long start, unsigned long range);
+/* randomize_page removed - no callers */
 
 extern unsigned long get_unmapped_area(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
 
@@ -1062,6 +1062,6 @@ extern int randomize_va_space;
 
 /* Inlined from elf-randomize.h */
 extern unsigned long arch_mmap_rnd(void);
-extern unsigned long arch_randomize_brk(struct mm_struct *mm);
+/* arch_randomize_brk removed - randomize_va_space always 0, never called */
 
-#endif 
+#endif

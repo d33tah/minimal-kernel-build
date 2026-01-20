@@ -24,9 +24,6 @@ extern unsigned long loops_per_jiffy;
 void calibrate_delay(void);
 void msleep(unsigned int msecs);
 /* msleep_interruptible removed - never called */
-static inline void ssleep(unsigned int seconds)
-{
-	msleep(seconds * 1000);
-}
+/* ssleep removed - never called */
 
-#endif  
+#endif

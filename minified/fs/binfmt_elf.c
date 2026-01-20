@@ -639,8 +639,7 @@ out_free_interp:
 	if (elf_read_implies_exec(*elf_ex, executable_stack))
 		current->personality |= READ_IMPLIES_EXEC;
 
-	if (!(current->personality & ADDR_NO_RANDOMIZE) && randomize_va_space)
-		current->flags |= PF_RANDOMIZE;
+	/* randomize_va_space always 0 - PF_RANDOMIZE dead code removed */
 
 	setup_new_exec(bprm);
 
@@ -854,14 +853,7 @@ out_free_interp:
 	mm->end_data = end_data;
 	mm->start_stack = bprm->p;
 
-	if ((current->flags & PF_RANDOMIZE) && (randomize_va_space > 1)) {
-		/* CONFIG_ARCH_HAS_ELF_RANDOMIZE is always enabled */
-		if (elf_ex->e_type == ET_DYN && !interpreter) {
-			mm->brk = mm->start_brk = ELF_ET_DYN_BASE;
-		}
-
-		mm->brk = mm->start_brk = arch_randomize_brk(mm);
-	}
+	/* randomize_va_space always 0 - brk randomization dead code removed */
 
 	if (current->personality & MMAP_PAGE_ZERO) {
 		error = vm_mmap(NULL, 0, PAGE_SIZE, PROT_READ | PROT_EXEC,

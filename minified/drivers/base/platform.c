@@ -27,16 +27,10 @@ struct device platform_bus = {
 
 /* platform_get_mem_or_io, devm_platform_get_and_ioremap_resource,
    devm_platform_ioremap_resource, devm_platform_ioremap_resource_byname,
-   platform_get_irq_optional removed - no external callers */
-
-struct platform_object {
-	struct platform_device pdev;
-	char name[];
-};
-
-/* Removed: platform_device_add_resources, platform_device_add_data, platform_device_add,
+   platform_get_irq_optional, struct platform_object,
+   platform_device_add_resources, platform_device_add_data, platform_device_add,
    platform_device_del, platform_device_register, platform_device_unregister,
-   platform_device_register_full - no external callers */
+   platform_device_register_full removed - no external callers */
 
 int __platform_driver_register(struct platform_driver *drv,
 			       struct module *owner)

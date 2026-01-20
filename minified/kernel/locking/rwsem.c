@@ -299,12 +299,7 @@ static inline bool rwsem_try_write_lock(struct rw_semaphore *sem,
 	return true;
 }
 
-enum owner_state {
-	OWNER_NULL = 1 << 0,
-	OWNER_WRITER = 1 << 1,
-	OWNER_READER = 1 << 2,
-	OWNER_NONSPINNABLE = 1 << 3,
-};
+/* enum owner_state removed - was unused */
 
 static inline void rwsem_cond_wake_waiter(struct rw_semaphore *sem, long count,
 					  struct wake_q_head *wake_q)

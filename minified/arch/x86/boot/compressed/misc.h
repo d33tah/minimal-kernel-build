@@ -91,12 +91,6 @@ void boot_stage1_vc(void);
 void boot_stage2_vc(void);
 
 unsigned long sev_verify_cbit(unsigned long cr3);
-
-enum efi_type {
-	EFI_TYPE_64,
-	EFI_TYPE_32,
-	EFI_TYPE_NONE,
-};
-
+/* enum efi_type removed - unused */
 
 #endif  

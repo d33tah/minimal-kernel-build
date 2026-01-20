@@ -1,14 +1,7 @@
 /* Simplified idle scheduler for minimal kernel */
 
 #include <linux/sched.h>
-/* Inlined from linux/sched/idle.h */
-enum cpu_idle_type {
-	CPU_IDLE,
-	CPU_NOT_IDLE,
-	CPU_NEWLY_IDLE,
-	CPU_MAX_IDLE_TYPES
-};
-/* __current_set_polling, __current_clr_polling, current_clr_polling_and_test inlined */
+/* enum cpu_idle_type removed - unused */
 extern void default_idle_call(void);
 #include <linux/tick.h>
 

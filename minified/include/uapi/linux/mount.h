@@ -35,13 +35,7 @@
 #define MOUNT_ATTR_NOEXEC	0x00000008
 /* MOUNT_ATTR__ATIME, MOUNT_ATTR_IDMAP removed - unused */
 #define MOUNT_ATTR_NODIRATIME	0x00000080
-#define MOUNT_ATTR_NOSYMFOLLOW	0x00200000  
-
-struct mount_attr {
-	__u64 attr_set;
-	__u64 attr_clr;
-	__u64 propagation;
-	__u64 userns_fd;
-};
+#define MOUNT_ATTR_NOSYMFOLLOW	0x00200000
+/* struct mount_attr removed - unused */
 
 #endif  

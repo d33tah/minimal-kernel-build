@@ -6,23 +6,8 @@
 #include <asm/fpu/xstate.h>
 
 /* Inlined from asm/fpu/xcr.h */
-/* XCR_XFEATURE_ENABLED_MASK, XCR_XFEATURE_IN_USE_MASK removed - unused */
-
-static inline u64 xgetbv(u32 index)
-{
-	u32 eax, edx;
-	asm volatile("xgetbv" : "=a" (eax), "=d" (edx) : "c" (index));
-	return eax + ((u64)edx << 32);
-}
-
-static inline void xsetbv(u32 index, u64 value)
-{
-	u32 eax = value;
-	u32 edx = value >> 32;
-	asm volatile("xsetbv" :: "a" (eax), "d" (edx), "c" (index));
-}
-
-/* xfeatures_in_use removed - unused */
+/* XCR_XFEATURE_ENABLED_MASK, XCR_XFEATURE_IN_USE_MASK, xgetbv, xsetbv,
+   xfeatures_in_use removed - unused */
 
 static inline void xstate_init_xcomp_bv(struct xregs_state *xsave, u64 mask)
 {

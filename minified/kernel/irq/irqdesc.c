@@ -152,7 +152,7 @@ err:
 
 int __init early_irq_init(void)
 {
-	int i, node = first_online_node;
+	int i;
 	int initcnt = NR_IRQS_LEGACY; /* arch_probe_nr_irqs inlined */
 	struct irq_desc *desc;
 
@@ -169,7 +169,8 @@ int __init early_irq_init(void)
 		nr_irqs = initcnt;
 
 	for (i = 0; i < initcnt; i++) {
-		desc = alloc_desc(i, node, 0, NULL, NULL);
+		desc = alloc_desc(i, 0, 0, NULL,
+				  NULL); /* node=0 (first_online_node) */
 		set_bit(i, allocated_irqs);
 		radix_tree_insert(&irq_desc_tree, i, desc);
 	}

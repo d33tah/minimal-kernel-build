@@ -20,15 +20,10 @@ unsigned long task_size_64bit(int full_addr_space)
 	return full_addr_space ? TASK_SIZE_MAX : DEFAULT_MAP_WINDOW;
 }
 
+/* stack_maxrandom_size always returns 0 - PF_RANDOMIZE never set */
 static unsigned long stack_maxrandom_size(unsigned long task_size)
 {
-	unsigned long max = 0;
-	if (current->flags & PF_RANDOMIZE) {
-		max = (-1UL) & __STACK_RND_MASK(task_size == task_size_32bit());
-		max <<= PAGE_SHIFT;
-	}
-
-	return max;
+	return 0;
 }
 
 #define mmap32_rnd_bits mmap_rnd_bits
@@ -44,12 +39,7 @@ static int mmap_is_legacy(void)
 	return sysctl_legacy_va_layout;
 }
 
-/* arch_rnd removed - always returned 0 (no ASLR randomization) */
-
-unsigned long arch_mmap_rnd(void)
-{
-	return 0;
-}
+/* arch_rnd, arch_mmap_rnd removed - no ASLR randomization, PF_RANDOMIZE never set */
 
 static unsigned long mmap_base(unsigned long rnd, unsigned long task_size,
 			       struct rlimit *rlim_stack)

@@ -1060,8 +1060,6 @@ extern int randomize_va_space;
 
 #define  ZAP_FLAG_DROP_MARKER        ((__force zap_flags_t) BIT(0))
 
-/* Inlined from elf-randomize.h */
-extern unsigned long arch_mmap_rnd(void);
-/* arch_randomize_brk removed - randomize_va_space always 0, never called */
+/* Inlined from elf-randomize.h - arch_mmap_rnd, arch_randomize_brk removed (no ASLR) */
 
 #endif

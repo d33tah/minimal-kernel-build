@@ -700,8 +700,7 @@ out_free_interp:
 			if (interpreter) {
 				int align_i;
 				load_bias = ELF_ET_DYN_BASE;
-				if (current->flags & PF_RANDOMIZE)
-					load_bias += arch_mmap_rnd();
+				/* PF_RANDOMIZE never set - arch_mmap_rnd call removed */
 				/* Inlined maximum_alignment */
 				alignment = 0;
 				for (align_i = 0; align_i < elf_ex->e_phnum;

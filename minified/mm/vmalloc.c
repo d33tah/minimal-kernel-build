@@ -486,16 +486,7 @@ static __always_inline void augment_tree_propagate_from(struct vmap_area *va)
 	free_vmap_area_rb_augment_cb_propagate(&va->rb_node, NULL);
 }
 
-static void insert_vmap_area(struct vmap_area *va, struct rb_root *root,
-			     struct list_head *head)
-{
-	struct rb_node **link;
-	struct rb_node *parent;
-
-	link = find_va_links(va, root, NULL, &parent);
-	if (link)
-		link_va(va, root, parent, link, head);
-}
+/* insert_vmap_area inlined */
 
 static void insert_vmap_area_augment(struct vmap_area *va, struct rb_node *from,
 				     struct rb_root *root,
@@ -792,7 +783,14 @@ alloc_vmap_area(unsigned long size, unsigned long align, unsigned long vstart,
 	va->vm = NULL;
 
 	spin_lock(&vmap_area_lock);
-	insert_vmap_area(va, &vmap_area_root, &vmap_area_list);
+	{
+		struct rb_node **link;
+		struct rb_node *parent;
+		link = find_va_links(va, &vmap_area_root, NULL, &parent);
+		if (link)
+			link_va(va, &vmap_area_root, parent, link,
+				&vmap_area_list);
+	}
 	spin_unlock(&vmap_area_lock);
 
 	BUG_ON(!IS_ALIGNED(va->va_start, align));

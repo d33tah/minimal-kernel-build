@@ -170,14 +170,7 @@ static unsigned long pcpu_block_off_to_off(int index, int off)
 	return index * PCPU_BITMAP_BLOCK_BITS + off;
 }
 
-static bool pcpu_check_block_hint(struct pcpu_block_md *block, int bits,
-				  size_t align)
-{
-	int bit_off = ALIGN(block->contig_hint_start, align) -
-		      block->contig_hint_start;
-
-	return bit_off + bits <= block->contig_hint;
-}
+/* pcpu_check_block_hint inlined */
 
 static int pcpu_next_hint(struct pcpu_block_md *block, int alloc_bits)
 {
@@ -556,8 +549,10 @@ static int pcpu_find_block_fit(struct pcpu_chunk *chunk, int alloc_bits,
 {
 	struct pcpu_block_md *chunk_md = &chunk->chunk_md;
 	int bit_off, bits;
+	int hint_off = ALIGN(chunk_md->contig_hint_start, align) -
+		       chunk_md->contig_hint_start;
 
-	if (!pcpu_check_block_hint(chunk_md, alloc_bits, align))
+	if (hint_off + alloc_bits > chunk_md->contig_hint)
 		return -1;
 
 	bit_off = pcpu_next_hint(chunk_md, alloc_bits);

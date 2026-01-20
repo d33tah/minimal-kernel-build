@@ -555,11 +555,7 @@ static int __init ignore_unknown_bootoption(char *param, char *val,
 static void __init do_initcall_level(int level, char *command_line)
 {
 	initcall_entry_t *fn;
-	char buf[16];
-
-	buf[0] = '0' + level;
-	buf[1] = '\n';
-	buf[2] = 0;
+	/* buf removed - was written but never used */
 
 	parse_args(initcall_level_names[level], command_line, __start___param,
 		   __stop___param - __start___param, level, level, NULL,

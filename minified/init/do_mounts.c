@@ -87,14 +87,12 @@ static int __init root_data_setup(char *str)
 	return 1;
 }
 
-static char *__initdata root_fs_names;
+/* root_fs_names, root_delay removed - stubs never assigned them */
 /* Stub: rootfstype= not needed for minimal kernel */
 static int __init fs_names_setup(char *str)
 {
 	return 1;
 }
-
-static unsigned int __initdata root_delay;
 /* Stub: rootdelay= not needed for minimal kernel */
 static int __init root_delay_setup(char *str)
 {
@@ -105,21 +103,7 @@ __setup("rootflags=", root_data_setup);
 __setup("rootfstype=", fs_names_setup);
 __setup("rootdelay=", root_delay_setup);
 
-static int __init split_fs_names(char *page, size_t size, char *names)
-{
-	int count = 1;
-	char *p = page;
-
-	strlcpy(p, root_fs_names, size);
-	while (*p++) {
-		if (p[-1] == ',') {
-			p[-1] = '\0';
-			count++;
-		}
-	}
-
-	return count;
-}
+/* split_fs_names removed - only caller mount_nodev_root was removed */
 
 static int __init do_mount_root(const char *name, const char *fs,
 				const int flags, const void *data)
@@ -166,10 +150,8 @@ void __init mount_block_root(char *name, int flags)
 
 	scnprintf(b, BDEVNAME_SIZE, "unknown-block(%u,%u)", MAJOR(ROOT_DEV),
 		  MINOR(ROOT_DEV));
-	if (root_fs_names)
-		num_fs = split_fs_names(fs_names, PAGE_SIZE, root_fs_names);
-	else
-		num_fs = list_bdev_fs_names(fs_names, PAGE_SIZE);
+	/* root_fs_names always NULL - stub never assigns it */
+	num_fs = list_bdev_fs_names(fs_names, PAGE_SIZE);
 retry:
 	for (i = 0, p = fs_names; i < num_fs; i++, p += strlen(p) + 1) {
 		int err;
@@ -208,50 +190,16 @@ out:
 	put_page(page);
 }
 
-/* fs_is_nodev removed - FS_REQUIRES_DEV never set, all fs are nodev */
-
-static int __init mount_nodev_root(void)
-{
-	char *fs_names, *fstype;
-	int err = -EINVAL;
-	int num_fs, i;
-
-	fs_names = (void *)__get_free_page(GFP_KERNEL);
-	if (!fs_names)
-		return -EINVAL;
-	num_fs = split_fs_names(fs_names, PAGE_SIZE, root_fs_names);
-
-	for (i = 0, fstype = fs_names; i < num_fs;
-	     i++, fstype += strlen(fstype) + 1) {
-		if (!*fstype)
-			continue;
-		/* fs_is_nodev check removed - FS_REQUIRES_DEV never set */
-		err = do_mount_root(root_device_name, fstype, root_mountflags,
-				    root_mount_data);
-		if (!err)
-			break;
-	}
-
-	free_page((unsigned long)fs_names);
-	return err;
-}
+/* fs_is_nodev, mount_nodev_root removed - root_fs_names always NULL */
 
 void __init mount_root(void)
 {
-	if (ROOT_DEV == 0 && root_device_name && root_fs_names) {
-		if (mount_nodev_root() == 0)
-			return;
-	}
+	/* root_fs_names always NULL - mount_nodev_root never called */
 }
 
 void __init prepare_namespace(void)
 {
-	if (root_delay) {
-		printk(KERN_INFO
-		       "Waiting %d sec before mounting root device...\n",
-		       root_delay);
-		ssleep(root_delay);
-	}
+	/* root_delay always 0 - stub never assigns it */
 
 	wait_for_device_probe();
 

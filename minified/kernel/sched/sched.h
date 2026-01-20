@@ -388,13 +388,9 @@ struct rq_flags {
 };
 
 
-static inline void rq_pin_lock(struct rq *rq, struct rq_flags *rf)
-{
-}
-
-static inline void rq_unpin_lock(struct rq *rq, struct rq_flags *rf)
-{
-}
+/* rq_pin_lock, rq_unpin_lock removed - lockdep disabled, empty bodies */
+#define rq_pin_lock(rq, rf) do { } while (0)
+#define rq_unpin_lock(rq, rf) do { } while (0)
 
 struct rq *__task_rq_lock(struct task_struct *p, struct rq_flags *rf)
 	__acquires(rq->lock);

@@ -44,7 +44,7 @@ static struct {
 
 static struct timekeeper shadow_timekeeper;
 
-static int __read_mostly timekeeping_suspended;
+/* timekeeping_suspended removed - never set, always 0 */
 
 /* struct tk_fast, cycles_at_suspend, dummy_clock_read, dummy_clock, FAST_TK_INIT,
    tk_fast_mono, tk_fast_raw removed - fast timekeeper path is stubbed out */
@@ -205,7 +205,7 @@ ktime_t ktime_get(void)
 	ktime_t base;
 	u64 nsecs;
 
-	WARN_ON(timekeeping_suspended);
+	/* WARN_ON(timekeeping_suspended) removed - never suspended */
 
 	do {
 		seq = read_seqcount_begin(&tk_core.seq);
@@ -444,8 +444,7 @@ static bool timekeeping_advance(enum timekeeping_adv_mode mode)
 
 	raw_spin_lock_irqsave(&timekeeper_lock, flags);
 
-	if (unlikely(timekeeping_suspended))
-		goto out;
+	/* timekeeping_suspended check removed - never suspended */
 
 	offset = clocksource_delta(tk_clock_read(&tk->tkr_mono),
 				   tk->tkr_mono.cycle_last, tk->tkr_mono.mask);

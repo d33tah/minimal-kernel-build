@@ -293,10 +293,10 @@ void reweight_task(struct task_struct *p, int prio)
 #define SKIP_AGE_LOAD 0x0
 #define DO_ATTACH 0x0
 
-static inline void update_load_avg(struct cfs_rq *cfs_rq,
-				   struct sched_entity *se, int not_used1)
-{
-}
+/* update_load_avg removed - schedstat always disabled, empty body */
+#define update_load_avg(cfs_rq, se, flags) \
+	do {                               \
+	} while (0)
 
 static void place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 			 int initial)

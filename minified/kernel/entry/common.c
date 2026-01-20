@@ -134,13 +134,7 @@ static void exit_to_user_mode_prepare(struct pt_regs *regs)
 	/* lockdep_sys_exit is empty do{}while(0) */
 }
 
-static inline bool report_single_step(unsigned long work)
-{
-	if (work & SYSCALL_WORK_SYSCALL_EMU)
-		return false;
-
-	return work & SYSCALL_WORK_SYSCALL_EXIT_TRAP;
-}
+/* report_single_step inlined */
 
 static void syscall_exit_work(struct pt_regs *regs, unsigned long work)
 {
@@ -155,7 +149,8 @@ static void syscall_exit_work(struct pt_regs *regs, unsigned long work)
 
 	/* audit_syscall_exit is empty stub */
 
-	step = report_single_step(work);
+	step = !(work & SYSCALL_WORK_SYSCALL_EMU) &&
+	       (work & SYSCALL_WORK_SYSCALL_EXIT_TRAP);
 	if (step || work & SYSCALL_WORK_SYSCALL_TRACE)
 		ptrace_report_syscall_exit(regs, step);
 }

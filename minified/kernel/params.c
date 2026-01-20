@@ -80,14 +80,7 @@ bool parameq(const char *a, const char *b)
 	return parameqn(a, b, strlen(a) + 1);
 }
 
-static bool param_check_unsafe(const struct kernel_param *kp)
-{
-	/* security_locked_down always returns 0 - dead code removed */
-	if (kp->flags & KERNEL_PARAM_FL_UNSAFE) {
-		add_taint(TAINT_USER, LOCKDEP_STILL_OK);
-	}
-	return true;
-}
+/* param_check_unsafe inlined - always returns true */
 
 static int parse_one(char *param, char *val, const char *doing,
 		     const struct kernel_param *params, unsigned num_params,
@@ -107,11 +100,9 @@ static int parse_one(char *param, char *val, const char *doing,
 			if (!val &&
 			    !(params[i].ops->flags & KERNEL_PARAM_OPS_FL_NOARG))
 				return -EINVAL;
-			if (param_check_unsafe(&params[i]))
-				err = params[i].ops->set(val, &params[i]);
-			else
-				err = -EPERM;
-			return err;
+			if (params[i].flags & KERNEL_PARAM_FL_UNSAFE)
+				add_taint(TAINT_USER, LOCKDEP_STILL_OK);
+			return params[i].ops->set(val, &params[i]);
 		}
 	}
 

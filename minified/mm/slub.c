@@ -54,16 +54,13 @@ static inline void *freelist_ptr(const struct kmem_cache *s, void *ptr,
 	return ptr;
 }
 
-static inline void *freelist_dereference(const struct kmem_cache *s,
-					 void *ptr_addr)
-{
-	return freelist_ptr(s, (void *)*(unsigned long *)(ptr_addr),
-			    (unsigned long)ptr_addr);
-}
+/* freelist_dereference inlined */
 
 static inline void *get_freepointer(struct kmem_cache *s, void *object)
 {
-	return freelist_dereference(s, object + s->offset);
+	void *ptr_addr = object + s->offset;
+	return freelist_ptr(s, (void *)*(unsigned long *)(ptr_addr),
+			    (unsigned long)ptr_addr);
 }
 
 static inline void set_freepointer(struct kmem_cache *s, void *object, void *fp)

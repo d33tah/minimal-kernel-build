@@ -26,11 +26,7 @@ void __mutex_init(struct mutex *lock, const char *name,
 
 #define MUTEX_FLAGS 0x07
 
-static inline struct task_struct *__mutex_owner(struct mutex *lock)
-{
-	return (struct task_struct *)(atomic_long_read(&lock->owner) &
-				      ~MUTEX_FLAGS);
-}
+/* __mutex_owner inlined - returned (task_struct*)(owner & ~MUTEX_FLAGS) */
 
 static inline struct task_struct *__owner_task(unsigned long owner)
 {
@@ -39,7 +35,7 @@ static inline struct task_struct *__owner_task(unsigned long owner)
 
 bool mutex_is_locked(struct mutex *lock)
 {
-	return __mutex_owner(lock) != NULL;
+	return (atomic_long_read(&lock->owner) & ~MUTEX_FLAGS) != 0;
 }
 
 static inline unsigned long __owner_flags(unsigned long owner)

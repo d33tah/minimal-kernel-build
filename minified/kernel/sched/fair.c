@@ -170,15 +170,7 @@ static inline u64 calc_delta_fair(u64 delta, struct sched_entity *se)
 	return delta;
 }
 
-static u64 __sched_period(unsigned long nr_running)
-{
-	if (unlikely(nr_running > sched_nr_latency))
-		return nr_running * sysctl_sched_min_granularity;
-	else
-		return sysctl_sched_latency;
-}
-
-/* sched_idle_cfs_rq removed - always returns false (idle_nr_running never set) */
+/* __sched_period inlined */
 
 static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
@@ -189,7 +181,11 @@ static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
 	if (sched_feat(ALT_PERIOD))
 		nr_running = rq_of(cfs_rq)->cfs.h_nr_running;
 
-	slice = __sched_period(nr_running + !se->on_rq);
+	nr_running += !se->on_rq;
+	if (unlikely(nr_running > sched_nr_latency))
+		slice = nr_running * sysctl_sched_min_granularity;
+	else
+		slice = sysctl_sched_latency;
 
 	for_each_sched_entity(se)
 	{
@@ -400,15 +396,7 @@ static void set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 	se->prev_sum_exec_runtime = se->sum_exec_runtime;
 }
 
-/* pick_next_entity simplified - buddy selection code removed for single-task kernel (~36 LOC) */
-static struct sched_entity *pick_next_entity(struct cfs_rq *cfs_rq,
-					     struct sched_entity *curr)
-{
-	struct sched_entity *left = __pick_first_entity(cfs_rq);
-	if (!left || (curr && entity_before(curr, left)))
-		left = curr;
-	return left;
-}
+/* pick_next_entity inlined - buddy selection code removed for single-task kernel */
 
 static void put_prev_entity(struct cfs_rq *cfs_rq, struct sched_entity *prev)
 {
@@ -424,13 +412,7 @@ static void put_prev_entity(struct cfs_rq *cfs_rq, struct sched_entity *prev)
 	cfs_rq->curr = NULL;
 }
 
-static void entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr,
-			int queued)
-{
-	update_curr(cfs_rq);
-	update_load_avg(cfs_rq, curr, UPDATE_TG);
-	/* check_preempt_tick call removed - nr_running never > 1 */
-}
+/* entity_tick inlined */
 
 static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 {
@@ -563,7 +545,7 @@ struct task_struct *pick_next_task_fair(struct rq *rq, struct task_struct *prev,
 		put_prev_task(rq, prev);
 
 	/* group_cfs_rq always returns NULL, loop simplified */
-	se = pick_next_entity(cfs_rq, NULL);
+	se = __pick_first_entity(cfs_rq);
 	set_next_entity(cfs_rq, se);
 
 	p = task_of(se);
@@ -608,7 +590,8 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
 	for_each_sched_entity(se)
 	{
 		cfs_rq = cfs_rq_of(se);
-		entity_tick(cfs_rq, se, queued);
+		update_curr(cfs_rq);
+		update_load_avg(cfs_rq, se, UPDATE_TG);
 	}
 }
 
@@ -663,15 +646,7 @@ static inline bool vruntime_normalized(struct task_struct *p)
 	return false;
 }
 
-/* detach_entity_cfs_rq inlined - just calls update_load_avg */
-
-static void attach_entity_cfs_rq(struct sched_entity *se)
-{
-	struct cfs_rq *cfs_rq = cfs_rq_of(se);
-
-	update_load_avg(cfs_rq, se,
-			sched_feat(ATTACH_AGE_LOAD) ? 0 : SKIP_AGE_LOAD);
-}
+/* detach_entity_cfs_rq, attach_entity_cfs_rq inlined */
 
 static void detach_task_cfs_rq(struct task_struct *p)
 {
@@ -691,7 +666,8 @@ static void attach_task_cfs_rq(struct task_struct *p)
 	struct sched_entity *se = &p->se;
 	struct cfs_rq *cfs_rq = cfs_rq_of(se);
 
-	attach_entity_cfs_rq(se);
+	update_load_avg(cfs_rq, se,
+			sched_feat(ATTACH_AGE_LOAD) ? 0 : SKIP_AGE_LOAD);
 
 	if (!vruntime_normalized(p))
 		se->vruntime += cfs_rq->min_vruntime;

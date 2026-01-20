@@ -359,11 +359,7 @@ static void visual_init(struct vc_data *vc, int num, int init)
 	vc->vc_screenbuf_size = vc->vc_rows * vc->vc_size_row;
 }
 
-static void visual_deinit(struct vc_data *vc)
-{
-	vc->vc_sw->con_deinit(vc);
-	module_put(vc->vc_sw->owner);
-}
+/* visual_deinit inlined */
 
 static void vc_port_destruct(struct tty_port *port)
 {
@@ -419,7 +415,8 @@ int vc_allocate(unsigned int currcons)
 
 	return 0;
 err_free:
-	visual_deinit(vc);
+	vc->vc_sw->con_deinit(vc);
+	module_put(vc->vc_sw->owner);
 	kfree(vc);
 	vc_cons[currcons].d = NULL;
 	return err;

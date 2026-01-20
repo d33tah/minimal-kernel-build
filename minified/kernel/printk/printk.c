@@ -81,8 +81,7 @@ static int console_may_schedule;
 
 static DEFINE_MUTEX(syslog_lock);
 
-/* CONSOLE_LOG_MAX, DROPPED_TEXT_MAX removed - unused */
-#define printk_time false
+/* CONSOLE_LOG_MAX, DROPPED_TEXT_MAX, printk_time removed - unused */
 
 /* prb_read_valid, prb_first_valid_seq, prb_next_seq removed - inlined */
 

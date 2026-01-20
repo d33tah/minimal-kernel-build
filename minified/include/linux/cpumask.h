@@ -47,11 +47,7 @@ static inline unsigned int cpumask_first(const struct cpumask *srcp)
 	return 0;
 }
 
-static inline unsigned int cpumask_any_but(const struct cpumask *mask,
-					   unsigned int cpu)
-{
-	return 1;
-}
+/* cpumask_any_but removed - never called */
 
 #define for_each_cpu(cpu, mask)			\
 	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)

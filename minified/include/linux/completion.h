@@ -25,7 +25,7 @@ static inline void init_completion(struct completion *x)
 
 /* Stubs from kernel/sched/completion.c - inlined */
 static inline void wait_for_completion(struct completion *x) { }
-static inline int wait_for_completion_killable(struct completion *x) { return 0; }
+/* wait_for_completion_killable removed - never called */
 static inline void complete(struct completion *x) { }
 
 #endif

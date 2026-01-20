@@ -40,7 +40,8 @@ static int no_open(struct inode *inode, struct file *file)
 	return -ENXIO;
 }
 
-int inode_init_always(struct super_block *sb, struct inode *inode)
+/* Changed to void - always returned 0, no callers check return value */
+void inode_init_always(struct super_block *sb, struct inode *inode)
 {
 	static const struct inode_operations empty_iops;
 	static const struct file_operations no_open_fops = { .open = no_open };
@@ -85,8 +86,6 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 	/* inode->i_private removed - unused */
 	inode->i_mapping = mapping;
 	INIT_HLIST_HEAD(&inode->i_dentry);
-	/* nr_inodes counter removed */
-	return 0;
 }
 
 static void i_callback(struct rcu_head *head)
@@ -111,7 +110,6 @@ static struct inode *alloc_inode(struct super_block *sb)
 	if (!inode)
 		return NULL;
 
-	/* inode_init_always always returns 0 - error handling removed */
 	inode_init_always(sb, inode);
 
 	return inode;

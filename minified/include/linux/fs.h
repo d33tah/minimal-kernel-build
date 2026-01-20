@@ -917,7 +917,7 @@ extern struct file * open_exec(const char *);
 
 extern bool is_subdir(struct dentry *, struct dentry *);
 /* vfs_llseek removed - never called */
-extern int inode_init_always(struct super_block *, struct inode *);
+extern void inode_init_always(struct super_block *, struct inode *);
 extern void inode_init_once(struct inode *);
 extern int generic_delete_inode(struct inode *inode);
 static inline int generic_drop_inode(struct inode *inode)

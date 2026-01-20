@@ -360,18 +360,7 @@ enum behavior {
 	DROP,
 };
 
-static inline bool folio_trylock_flag(struct folio *folio, int bit_nr,
-				      struct wait_queue_entry *wait)
-{
-	if (wait->flags & WQ_FLAG_EXCLUSIVE) {
-		if (test_and_set_bit(bit_nr, &folio->flags))
-			return false;
-	} else if (test_bit(bit_nr, &folio->flags))
-		return false;
-
-	wait->flags |= WQ_FLAG_WOKEN | WQ_FLAG_DONE;
-	return true;
-}
+/* folio_trylock_flag inlined into folio_wait_bit_common */
 
 int sysctl_page_lock_unfairness = 5;
 
@@ -400,8 +389,18 @@ repeat:
 
 	spin_lock_irq(&q->lock);
 	folio_set_waiters(folio);
-	if (!folio_trylock_flag(folio, bit_nr, wait))
-		__add_wait_queue_entry_tail(q, wait);
+	/* folio_trylock_flag inlined */
+	{
+		bool locked;
+		if (wait->flags & WQ_FLAG_EXCLUSIVE)
+			locked = !test_and_set_bit(bit_nr, &folio->flags);
+		else
+			locked = !test_bit(bit_nr, &folio->flags);
+		if (locked)
+			wait->flags |= WQ_FLAG_WOKEN | WQ_FLAG_DONE;
+		else
+			__add_wait_queue_entry_tail(q, wait);
+	}
 	spin_unlock_irq(&q->lock);
 
 	if (behavior == DROP)

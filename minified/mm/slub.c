@@ -24,11 +24,7 @@
 #define slub_get_cpu_ptr(var) get_cpu_ptr(var)
 #define slub_put_cpu_ptr(var) put_cpu_ptr(var)
 
-/* kmem_cache_debug_flags always returns false */
-void *fixup_red_left(struct kmem_cache *s, void *p)
-{
-	return p;
-}
+/* fixup_red_left removed - always returned p unchanged (no red zone) */
 
 #define MIN_PARTIAL 5
 
@@ -70,9 +66,10 @@ static inline void set_freepointer(struct kmem_cache *s, void *object, void *fp)
 	*(void **)freeptr_addr = freelist_ptr(s, fp, freeptr_addr);
 }
 
-#define for_each_object(__p, __s, __addr, __objects) \
-	for (__p = fixup_red_left(__s, __addr);      \
-	     __p < (__addr) + (__objects) * (__s)->size; __p += (__s)->size)
+/* fixup_red_left removed - always returned p unchanged (no red zone) */
+#define for_each_object(__p, __s, __addr, __objects)                     \
+	for (__p = (__addr); __p < (__addr) + (__objects) * (__s)->size; \
+	     __p += (__s)->size)
 
 static inline unsigned int order_objects(unsigned int order, unsigned int size)
 {
@@ -144,11 +141,7 @@ static inline bool __cmpxchg_double_slab(struct kmem_cache *s,
 
 /* Removed: setup_object_debug, setup_slab_debug - empty stubs */
 
-slab_flags_t kmem_cache_flags(unsigned int object_size, slab_flags_t flags,
-			      const char *name)
-{
-	return flags;
-}
+/* kmem_cache_flags removed - just returned flags unchanged */
 #define slub_debug 0
 
 #define disable_higher_order_debug 0
@@ -224,7 +217,7 @@ static struct slab *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 	slab->slab_cache = s;
 
 	start = slab_address(slab);
-	start = fixup_red_left(s, start);
+	/* fixup_red_left removed - no red zone */
 	start = setup_object(s, start);
 	slab->freelist = start;
 	for (idx = 0, p = start; idx < slab->objects - 1; idx++) {
@@ -741,7 +734,8 @@ static int calculate_sizes(struct kmem_cache *s)
 
 static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 {
-	s->flags = kmem_cache_flags(s->size, flags, s->name);
+	s->flags =
+		flags; /* kmem_cache_flags inlined - returned flags unchanged */
 
 	if (!calculate_sizes(s))
 		goto error;
@@ -895,13 +889,7 @@ void __init kmem_cache_init(void)
 
 /* kmem_cache_init_late removed - empty function */
 
-struct kmem_cache *__kmem_cache_alias(const char *name, unsigned int size,
-				      unsigned int align, slab_flags_t flags,
-				      void (*ctor)(void *))
-{
-	/* find_mergeable always returns NULL (slab_nomerge is true) */
-	return NULL;
-}
+/* __kmem_cache_alias removed - always returned NULL (slab_nomerge is true) */
 
 int __kmem_cache_create(struct kmem_cache *s, slab_flags_t flags)
 {

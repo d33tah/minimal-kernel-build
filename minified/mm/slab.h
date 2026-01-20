@@ -154,9 +154,7 @@ struct kmem_cache {
 	struct kmem_cache_node *node[MAX_NUMNODES];
 };
 
-/* sysfs_slab_unlink/release removed - unused */
-
-void *fixup_red_left(struct kmem_cache *s, void *p);
+/* sysfs_slab_unlink/release, fixup_red_left removed - unused */
 
 /* nearest_obj, __obj_to_index, obj_to_index, objs_per_slab removed - unused */
 
@@ -213,14 +211,7 @@ extern void create_boot_cache(struct kmem_cache *, const char *name,
 			unsigned int size, slab_flags_t flags,
 			unsigned int useroffset, unsigned int usersize);
 
-struct kmem_cache *find_mergeable(unsigned size, unsigned align,
-		slab_flags_t flags, const char *name, void (*ctor)(void *));
-struct kmem_cache *
-__kmem_cache_alias(const char *name, unsigned int size, unsigned int align,
-		   slab_flags_t flags, void (*ctor)(void *));
-
-slab_flags_t kmem_cache_flags(unsigned int object_size,
-	slab_flags_t flags, const char *name);
+/* find_mergeable, __kmem_cache_alias, kmem_cache_flags removed - unused */
 
 
  

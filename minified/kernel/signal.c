@@ -15,11 +15,7 @@
 static struct kmem_cache *sigqueue_cachep;
 
 /* Removed: print_fatal_signals - never used */
-
-static void __user *sig_handler(struct task_struct *t, int sig)
-{
-	return t->sighand->action[sig - 1].sa.sa_handler;
-}
+/* sig_handler removed - inlined into single caller (~4 LOC) */
 
 static bool sig_ignored(struct task_struct *t, int sig, bool force)
 {
@@ -31,7 +27,8 @@ static bool sig_ignored(struct task_struct *t, int sig, bool force)
 	if (t->ptrace && sig != SIGKILL)
 		return false;
 
-	handler = sig_handler(t, sig);
+	/* Inlined sig_handler */
+	handler = t->sighand->action[sig - 1].sa.sa_handler;
 
 	if (unlikely(is_global_init(t) && sig_kernel_only(sig)))
 		return true;

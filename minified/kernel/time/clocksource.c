@@ -82,26 +82,21 @@ u64 clocks_calc_max_nsecs(u32 mult, u32 shift, u32 maxadj, u64 mask,
 	return max_nsecs;
 }
 
-static struct clocksource *clocksource_find_best(bool skipcur)
-{
-	struct clocksource *cs;
-
-	if (!finished_booting || list_empty(&clocksource_list))
-		return NULL;
-
-	list_for_each_entry(cs, &clocksource_list, list) {
-		if (skipcur && cs == curr_clocksource)
-			continue;
-		return cs;
-	}
-	return NULL;
-}
+/* clocksource_find_best removed - inlined into single caller (~13 LOC) */
 
 static void __clocksource_select(bool skipcur)
 {
-	struct clocksource *best;
+	struct clocksource *best = NULL, *cs;
 
-	best = clocksource_find_best(skipcur);
+	/* Inlined clocksource_find_best */
+	if (finished_booting && !list_empty(&clocksource_list)) {
+		list_for_each_entry(cs, &clocksource_list, list) {
+			if (skipcur && cs == curr_clocksource)
+				continue;
+			best = cs;
+			break;
+		}
+	}
 	if (!best)
 		return;
 

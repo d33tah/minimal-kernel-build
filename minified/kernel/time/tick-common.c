@@ -76,26 +76,7 @@ void tick_setup_periodic(struct clock_event_device *dev, int broadcast)
 	}
 }
 
-static void tick_setup_device(struct tick_device *td,
-			      struct clock_event_device *newdev, int cpu,
-			      const struct cpumask *cpumask)
-{
-	if (!td->evtdev) {
-		if (tick_do_timer_cpu == TICK_DO_TIMER_BOOT) {
-			tick_do_timer_cpu = cpu;
-			tick_next_period = ktime_get();
-		}
-		td->mode = TICKDEV_MODE_PERIODIC;
-	} else {
-		td->evtdev->event_handler = clockevents_handle_noop;
-	}
-
-	td->evtdev = newdev;
-	/* cpumask_equal stub always returns false, irq_set_affinity is no-op */
-
-	if (td->mode == TICKDEV_MODE_PERIODIC)
-		tick_setup_periodic(newdev, 0);
-}
+/* tick_setup_device removed - inlined into single caller (~19 LOC) */
 
 void tick_check_new_device(struct clock_event_device *newdev)
 {
@@ -114,7 +95,21 @@ void tick_check_new_device(struct clock_event_device *newdev)
 	/* try_module_get always returns true - dead check removed */
 
 	clockevents_exchange_device(curdev, newdev);
-	tick_setup_device(td, newdev, cpu, cpumask_of(cpu));
+
+	/* Inlined tick_setup_device */
+	if (!td->evtdev) {
+		if (tick_do_timer_cpu == TICK_DO_TIMER_BOOT) {
+			tick_do_timer_cpu = cpu;
+			tick_next_period = ktime_get();
+		}
+		td->mode = TICKDEV_MODE_PERIODIC;
+	} else {
+		td->evtdev->event_handler = clockevents_handle_noop;
+	}
+	td->evtdev = newdev;
+	/* cpumask_equal stub always returns false, irq_set_affinity is no-op */
+	if (td->mode == TICKDEV_MODE_PERIODIC)
+		tick_setup_periodic(newdev, 0);
 }
 
 void __init tick_init(void)

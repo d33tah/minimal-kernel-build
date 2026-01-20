@@ -36,24 +36,7 @@ int irq_set_chip(unsigned int irq, const struct irq_chip *chip)
 
 /* irq_set_irq_type, irq_set_chip_data, irq_get_irq_data removed - never called */
 /* irq_state_clr_disabled, irq_state_clr_masked removed - inlined into callers (~8 LOC) */
-
-static int __irq_startup(struct irq_desc *desc)
-{
-	struct irq_data *d = irq_desc_get_irq_data(desc);
-	int ret = 0;
-
-	WARN_ON_ONCE(!irqd_is_activated(d));
-
-	if (d->chip->irq_startup) {
-		ret = d->chip->irq_startup(d);
-		irqd_clear(&desc->irq_data, IRQD_IRQ_DISABLED);
-		irqd_clear(&desc->irq_data, IRQD_IRQ_MASKED);
-	} else {
-		irq_enable(desc);
-	}
-	irqd_set(&desc->irq_data, IRQD_IRQ_STARTED);
-	return ret;
-}
+/* __irq_startup removed - inlined into single caller (~16 LOC) */
 
 int irq_startup(struct irq_desc *desc, bool resend, bool force)
 {
@@ -65,8 +48,16 @@ int irq_startup(struct irq_desc *desc, bool resend, bool force)
 	if (irqd_is_started(d)) {
 		irq_enable(desc);
 	} else {
-		/* __irq_startup_managed always returns IRQ_STARTUP_NORMAL */
-		ret = __irq_startup(desc);
+		/* Inlined __irq_startup */
+		WARN_ON_ONCE(!irqd_is_activated(d));
+		if (d->chip->irq_startup) {
+			ret = d->chip->irq_startup(d);
+			irqd_clear(&desc->irq_data, IRQD_IRQ_DISABLED);
+			irqd_clear(&desc->irq_data, IRQD_IRQ_MASKED);
+		} else {
+			irq_enable(desc);
+		}
+		irqd_set(&desc->irq_data, IRQD_IRQ_STARTED);
 	}
 	if (resend)
 		check_irq_resend(desc, false);

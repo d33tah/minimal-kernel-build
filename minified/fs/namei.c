@@ -125,25 +125,11 @@ int generic_permission(struct user_namespace *mnt_userns, struct inode *inode,
 	return -EACCES;
 }
 
-static inline int do_inode_permission(struct user_namespace *mnt_userns,
-				      struct inode *inode, int mask)
-{
-	if (unlikely(!(inode->i_opflags & IOP_FASTPERM))) {
-		if (likely(inode->i_op->permission))
-			return inode->i_op->permission(mnt_userns, inode, mask);
-
-		spin_lock(&inode->i_lock);
-		inode->i_opflags |= IOP_FASTPERM;
-		spin_unlock(&inode->i_lock);
-	}
-	return generic_permission(mnt_userns, inode, mask);
-}
+/* do_inode_permission inlined into inode_permission */
 
 int inode_permission(struct user_namespace *mnt_userns, struct inode *inode,
 		     int mask)
 {
-	int retval;
-
 	if (unlikely(mask & MAY_WRITE)) {
 		umode_t mode = inode->i_mode;
 		if (sb_rdonly(inode->i_sb) && (S_ISREG(mode) || S_ISDIR(mode)))
@@ -154,9 +140,16 @@ int inode_permission(struct user_namespace *mnt_userns, struct inode *inode,
 			return -EACCES;
 	}
 
-	retval = do_inode_permission(mnt_userns, inode, mask);
-	/* security_inode_permission always returns 0 - call removed */
-	return retval;
+	/* do_inode_permission inlined */
+	if (unlikely(!(inode->i_opflags & IOP_FASTPERM))) {
+		if (likely(inode->i_op->permission))
+			return inode->i_op->permission(mnt_userns, inode, mask);
+
+		spin_lock(&inode->i_lock);
+		inode->i_opflags |= IOP_FASTPERM;
+		spin_unlock(&inode->i_lock);
+	}
+	return generic_permission(mnt_userns, inode, mask);
 }
 
 void path_get(const struct path *path)
@@ -570,17 +563,7 @@ static struct dentry *__lookup_slow(const struct qstr *name, struct dentry *dir,
 	return dentry;
 }
 
-static inline int may_lookup(struct user_namespace *mnt_userns,
-			     struct nameidata *nd)
-{
-	if (nd->flags & LOOKUP_RCU) {
-		int err = inode_permission(mnt_userns, nd->inode,
-					   MAY_EXEC | MAY_NOT_BLOCK);
-		if (err != -ECHILD || !try_to_unlazy(nd))
-			return err;
-	}
-	return inode_permission(mnt_userns, nd->inode, MAY_EXEC);
-}
+/* may_lookup inlined into link_path_walk */
 
 /* pick_link function removed (~80 LOC) - never called since
  * d_is_symlink() is always false (no symlinks created) */
@@ -769,9 +752,20 @@ static int link_path_walk(const char *name, struct nameidata *nd)
 		int type;
 
 		mnt_userns = mnt_user_ns(nd->path.mnt);
-		err = may_lookup(mnt_userns, nd);
+		/* may_lookup inlined */
+		if (nd->flags & LOOKUP_RCU) {
+			err = inode_permission(mnt_userns, nd->inode,
+					       MAY_EXEC | MAY_NOT_BLOCK);
+			if (err != -ECHILD || !try_to_unlazy(nd)) {
+				if (err)
+					return err;
+				goto past_may_lookup;
+			}
+		}
+		err = inode_permission(mnt_userns, nd->inode, MAY_EXEC);
 		if (err)
 			return err;
+past_may_lookup:
 
 		hash_len = hash_name(nd->path.dentry, name);
 

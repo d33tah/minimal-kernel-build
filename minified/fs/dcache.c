@@ -988,23 +988,7 @@ static void __init dcache_init_early(void)
 	d_hash_shift = 32 - d_hash_shift;
 }
 
-static void __init dcache_init(void)
-{
-	dentry_cache =
-		KMEM_CACHE_USERCOPY(dentry,
-				    SLAB_RECLAIM_ACCOUNT | SLAB_PANIC |
-					    SLAB_MEM_SPREAD | SLAB_ACCOUNT,
-				    d_iname);
-
-	if (!hashdist)
-		return;
-
-	dentry_hashtable = alloc_large_system_hash("Dentry cache",
-						   sizeof(struct hlist_bl_head),
-						   dhash_entries, 13, HASH_ZERO,
-						   &d_hash_shift, NULL, 0, 0);
-	d_hash_shift = 32 - d_hash_shift;
-}
+/* dcache_init inlined into vfs_caches_init */
 
 struct kmem_cache *names_cachep __read_mostly;
 
@@ -1025,7 +1009,20 @@ void __init vfs_caches_init(void)
 		"names_cache", PATH_MAX, 0, SLAB_HWCACHE_ALIGN | SLAB_PANIC, 0,
 		PATH_MAX, NULL);
 
-	dcache_init();
+	/* dcache_init inlined */
+	dentry_cache =
+		KMEM_CACHE_USERCOPY(dentry,
+				    SLAB_RECLAIM_ACCOUNT | SLAB_PANIC |
+					    SLAB_MEM_SPREAD | SLAB_ACCOUNT,
+				    d_iname);
+	if (hashdist) {
+		dentry_hashtable = alloc_large_system_hash(
+			"Dentry cache", sizeof(struct hlist_bl_head),
+			dhash_entries, 13, HASH_ZERO, &d_hash_shift, NULL, 0,
+			0);
+		d_hash_shift = 32 - d_hash_shift;
+	}
+
 	inode_init();
 	files_init();
 	mnt_init();

@@ -87,18 +87,7 @@ static void thread_stack_free_rcu(struct rcu_head *rh)
 }
 
 /* thread_stack_delayed_free inlined into free_thread_stack */
-
-static int alloc_thread_stack_node(struct task_struct *tsk, int node)
-{
-	struct page *page =
-		alloc_pages_node(node, THREADINFO_GFP, THREAD_SIZE_ORDER);
-
-	if (likely(page)) {
-		tsk->stack = page_address(page);
-		return 0;
-	}
-	return -ENOMEM;
-}
+/* alloc_thread_stack_node removed - inlined into single caller (~10 LOC) */
 
 static void free_thread_stack(struct task_struct *tsk)
 {
@@ -352,9 +341,14 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	if (err)
 		goto free_tsk;
 
-	err = alloc_thread_stack_node(tsk, node);
-	if (err)
-		goto free_tsk;
+	/* Inlined alloc_thread_stack_node */
+	{
+		struct page *page = alloc_pages_node(node, THREADINFO_GFP,
+						     THREAD_SIZE_ORDER);
+		if (!page)
+			goto free_tsk;
+		tsk->stack = page_address(page);
+	}
 
 	refcount_set(&tsk->stack_refcount, 1);
 	account_kernel_stack(tsk, 1);

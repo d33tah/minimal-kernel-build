@@ -218,19 +218,7 @@ void deactivate_super(struct super_block *s)
 	}
 }
 
-static int grab_super(struct super_block *s) __releases(sb_lock)
-{
-	s->s_count++;
-	spin_unlock(&sb_lock);
-	down_write(&s->s_umount);
-	if ((s->s_flags & SB_BORN) && atomic_inc_not_zero(&s->s_active)) {
-		put_super(s);
-		return 1;
-	}
-	up_write(&s->s_umount);
-	put_super(s);
-	return 0;
-}
+/* grab_super removed - inlined into single caller (~12 LOC) */
 
 bool trylock_super(struct super_block *sb)
 {
@@ -327,10 +315,18 @@ share_extant_sb:
 		destroy_unused_super(s);
 		return ERR_PTR(-EBUSY);
 	}
-	if (!grab_super(old))
-		goto retry;
-	destroy_unused_super(s);
-	return old;
+	/* Inlined grab_super */
+	old->s_count++;
+	spin_unlock(&sb_lock);
+	down_write(&old->s_umount);
+	if ((old->s_flags & SB_BORN) && atomic_inc_not_zero(&old->s_active)) {
+		put_super(old);
+		destroy_unused_super(s);
+		return old;
+	}
+	up_write(&old->s_umount);
+	put_super(old);
+	goto retry;
 }
 
 /* sget, drop_super removed - never called */

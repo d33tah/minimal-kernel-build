@@ -1048,7 +1048,7 @@ DECLARE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_FREE_DEFAULT_ON, init_on_free);
 
 /* debug_pagealloc_enabled[_static] removed - always false, not called */
 
-extern int randomize_va_space;
+/* randomize_va_space removed - no readers */
 
 /* debug_guardpage_minorder removed - callers removed */
 

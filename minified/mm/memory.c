@@ -46,7 +46,7 @@ static vm_fault_t do_fault(struct vm_fault *vmf);
 
 void *high_memory;
 
-int randomize_va_space __read_mostly = 0; /* Disabled for minimal kernel */
+/* randomize_va_space removed - no readers */
 
 unsigned long zero_pfn __read_mostly;
 

@@ -573,8 +573,8 @@ int begin_new_exec(struct linux_binprm *bprm)
 		}
 	}
 
-	me->flags &= ~(PF_RANDOMIZE | PF_FORKNOEXEC | PF_NOFREEZE |
-		       PF_NO_SETAFFINITY);
+	/* PF_RANDOMIZE removed - never set */
+	me->flags &= ~(PF_FORKNOEXEC | PF_NOFREEZE | PF_NO_SETAFFINITY);
 	flush_thread();
 	me->personality &= ~bprm->per_clear;
 

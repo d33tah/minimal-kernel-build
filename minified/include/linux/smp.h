@@ -12,20 +12,9 @@
 typedef void (*smp_call_func_t)(void *info);
 typedef bool (*smp_cond_func_t)(int cpu, void *info);
 
-void on_each_cpu_cond_mask(smp_cond_func_t cond_func, smp_call_func_t func,
-			   void *info, bool wait, const struct cpumask *mask);
+/* on_each_cpu_cond_mask, on_each_cpu_mask, on_each_cpu removed - no callers after TLB simplification */
 
 void panic_smp_self_stop(void);
-/* nmi_panic_self_stop removed - only called by nmi_panic which was removed */
-/* crash_smp_send_stop removed - stub */
-
-/* on_each_cpu removed - never called */
-
-static inline void on_each_cpu_mask(const struct cpumask *mask,
-				    smp_call_func_t func, void *info, bool wait)
-{
-	on_each_cpu_cond_mask(NULL, func, info, wait, mask);
-}
 
 /* smp_send_stop, smp_send_reschedule, smp_init, smp_prepare_boot_cpu removed - unused stubs */
 

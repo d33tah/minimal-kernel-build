@@ -68,16 +68,4 @@ void __init boot_cpu_hotplug_init(void)
 	this_cpu_write(cpuhp_state.state, CPUHP_ONLINE);
 }
 
-/* Merged from kernel/up.c */
-void on_each_cpu_cond_mask(smp_cond_func_t cond_func, smp_call_func_t func,
-			   void *info, bool wait, const struct cpumask *mask)
-{
-	unsigned long flags;
-	preempt_disable();
-	if ((!cond_func || cond_func(0, info)) && cpumask_test_cpu(0, mask)) {
-		local_irq_save(flags);
-		func(info);
-		local_irq_restore(flags);
-	}
-	preempt_enable();
-}
+/* on_each_cpu_cond_mask removed - no callers after TLB simplification */

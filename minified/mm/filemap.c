@@ -1303,3 +1303,26 @@ bool filemap_release_folio(struct folio *folio, gfp_t gfp)
 	/* a_ops->release_folio check removed - never set */
 	return true;
 }
+
+/* Merged from folio-compat.c */
+void unlock_page(struct page *page)
+{
+	return folio_unlock(page_folio(page));
+}
+
+bool set_page_dirty(struct page *page)
+{
+	return folio_mark_dirty(page_folio(page));
+}
+
+noinline struct page *pagecache_get_page(struct address_space *mapping,
+					 pgoff_t index, int fgp_flags,
+					 gfp_t gfp)
+{
+	struct folio *folio;
+
+	folio = __filemap_get_folio(mapping, index, fgp_flags, gfp);
+	if ((fgp_flags & FGP_HEAD) || !folio || xa_is_value(folio))
+		return &folio->page;
+	return folio_file_page(folio, index);
+}

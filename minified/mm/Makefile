@@ -48,8 +48,9 @@ mmu-$(CONFIG_MMU)	+= process_vm_access.o
 endif
 
 # page-writeback.o removed - all stubs inlined into headers
+# folio-compat.o removed - merged into filemap.o
 obj-y			:= filemap.o \
-			   maccess.o folio-compat.o \
+			   maccess.o \
 			   swap.o truncate.o shmem.o \
 			   util.o mmzone.o backing-dev.o \
 			   percpu.o slab_common.o \

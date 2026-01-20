@@ -86,15 +86,7 @@ static void thread_stack_free_rcu(struct rcu_head *rh)
 	__free_pages(virt_to_page(rh), THREAD_SIZE_ORDER);
 }
 
-/* thread_stack_delayed_free inlined into free_thread_stack */
-/* alloc_thread_stack_node removed - inlined into single caller (~10 LOC) */
-
-static void free_thread_stack(struct task_struct *tsk)
-{
-	struct rcu_head *rh = tsk->stack;
-	call_rcu(rh, thread_stack_free_rcu);
-	tsk->stack = NULL;
-}
+/* thread_stack_delayed_free, alloc_thread_stack_node, free_thread_stack inlined */
 
 /* #else block removed - dead code since THREAD_SIZE >= PAGE_SIZE on x86 */
 
@@ -160,9 +152,12 @@ void exit_task_stack_account(struct task_struct *tsk)
 void put_task_stack(struct task_struct *tsk)
 {
 	if (refcount_dec_and_test(&tsk->stack_refcount)) {
+		struct rcu_head *rh;
 		if (WARN_ON(READ_ONCE(tsk->__state) != TASK_DEAD))
 			return;
-		free_thread_stack(tsk);
+		rh = tsk->stack;
+		call_rcu(rh, thread_stack_free_rcu);
+		tsk->stack = NULL;
 	}
 }
 

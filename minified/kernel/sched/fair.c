@@ -265,23 +265,7 @@ static void update_curr_fair(struct rq *rq)
 	do {                                         \
 	} while (0)
 
-/* update_stats_curr_start inlined into set_next_entity */
-
-static void account_entity_enqueue(struct cfs_rq *cfs_rq,
-				   struct sched_entity *se)
-{
-	update_load_add(&cfs_rq->load, se->load.weight);
-	cfs_rq->nr_running++;
-	/* se_is_idle() always 0, idle_nr_running++ removed */
-}
-
-static void account_entity_dequeue(struct cfs_rq *cfs_rq,
-				   struct sched_entity *se)
-{
-	update_load_sub(&cfs_rq->load, se->load.weight);
-	cfs_rq->nr_running--;
-	/* se_is_idle() always 0, idle_nr_running-- removed */
-}
+/* update_stats_curr_start, account_entity_enqueue/dequeue inlined */
 
 static void reweight_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 			    unsigned long weight)
@@ -356,7 +340,8 @@ static void enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 		se->vruntime += cfs_rq->min_vruntime;
 
 	update_load_avg(cfs_rq, se, UPDATE_TG | DO_ATTACH);
-	account_entity_enqueue(cfs_rq, se);
+	update_load_add(&cfs_rq->load, se->load.weight);
+	cfs_rq->nr_running++;
 
 	if (flags & ENQUEUE_WAKEUP)
 		place_entity(cfs_rq, se, 0);
@@ -384,7 +369,8 @@ static void dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 	if (se != cfs_rq->curr)
 		__dequeue_entity(cfs_rq, se);
 	se->on_rq = 0;
-	account_entity_dequeue(cfs_rq, se);
+	update_load_sub(&cfs_rq->load, se->load.weight);
+	cfs_rq->nr_running--;
 
 	if (!(flags & DEQUEUE_SLEEP))
 		se->vruntime -= cfs_rq->min_vruntime;
@@ -677,12 +663,7 @@ static inline bool vruntime_normalized(struct task_struct *p)
 	return false;
 }
 
-static void detach_entity_cfs_rq(struct sched_entity *se)
-{
-	struct cfs_rq *cfs_rq = cfs_rq_of(se);
-
-	update_load_avg(cfs_rq, se, 0);
-}
+/* detach_entity_cfs_rq inlined - just calls update_load_avg */
 
 static void attach_entity_cfs_rq(struct sched_entity *se)
 {
@@ -702,7 +683,7 @@ static void detach_task_cfs_rq(struct task_struct *p)
 		se->vruntime -= cfs_rq->min_vruntime;
 	}
 
-	detach_entity_cfs_rq(se);
+	update_load_avg(cfs_rq, se, 0);
 }
 
 static void attach_task_cfs_rq(struct task_struct *p)

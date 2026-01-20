@@ -64,13 +64,7 @@ static inline phys_addr_t memblock_cap_size(phys_addr_t base, phys_addr_t *size)
 	return *size = min(*size, PHYS_ADDR_MAX - base);
 }
 
-static unsigned long __init_memblock memblock_addrs_overlap(phys_addr_t base1,
-							    phys_addr_t size1,
-							    phys_addr_t base2,
-							    phys_addr_t size2)
-{
-	return ((base1 < (base2 + size2)) && (base2 < (base1 + size1)));
-}
+/* memblock_addrs_overlap inlined into memblock_overlaps_region */
 
 bool __init_memblock memblock_overlaps_region(struct memblock_type *type,
 					      phys_addr_t base,
@@ -81,8 +75,8 @@ bool __init_memblock memblock_overlaps_region(struct memblock_type *type,
 	memblock_cap_size(base, &size);
 
 	for (i = 0; i < type->cnt; i++)
-		if (memblock_addrs_overlap(base, size, type->regions[i].base,
-					   type->regions[i].size))
+		if ((base < (type->regions[i].base + type->regions[i].size)) &&
+		    (type->regions[i].base < (base + size)))
 			break;
 	return i < type->cnt;
 }

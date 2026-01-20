@@ -42,11 +42,7 @@ static struct resource *next_resource(struct resource *p)
 	return p->sibling;
 }
 
-static void free_resource(struct resource *res)
-{
-	if (res && PageSlab(virt_to_head_page(res)))
-		kfree(res);
-}
+/* free_resource inlined into single caller */
 
 static struct resource *__request_resource(struct resource *root,
 					   struct resource *new)
@@ -305,7 +301,8 @@ struct resource *__request_region(struct resource *parent,
 	write_unlock(&resource_lock);
 
 	if (ret) {
-		free_resource(res);
+		if (res && PageSlab(virt_to_head_page(res)))
+			kfree(res);
 		return NULL;
 	}
 

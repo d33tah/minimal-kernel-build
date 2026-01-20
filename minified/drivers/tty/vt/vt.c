@@ -87,10 +87,7 @@ static struct device *tty0dev;
 
 /* Removed: vt_notifier_list, notify_write, notify_update - empty stubs */
 
-static inline bool con_is_fg(const struct vc_data *vc)
-{
-	return vc->vc_num == fg_console;
-}
+/* con_is_fg inlined - returned vc->vc_num == fg_console */
 
 static inline bool con_should_update(const struct vc_data *vc)
 {
@@ -256,7 +253,8 @@ static void hide_cursor(struct vc_data *vc)
 
 static void set_cursor(struct vc_data *vc)
 {
-	if (!con_is_fg(vc) || console_blanked || vc->vc_mode == KD_GRAPHICS)
+	if (vc->vc_num != fg_console || console_blanked ||
+	    vc->vc_mode == KD_GRAPHICS)
 		return;
 	if (vc->vc_deccm) {
 		add_softcursor(vc);

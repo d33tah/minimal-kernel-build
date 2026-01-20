@@ -105,14 +105,7 @@ static void wb_shutdown(struct bdi_writeback *wb)
 	flush_delayed_work(&wb->bw_dwork);
 }
 
-static void wb_exit(struct bdi_writeback *wb)
-{
-	WARN_ON(delayed_work_pending(&wb->dwork));
-	/* stat destroy loop removed - NR_WB_STAT_ITEMS was 0 */
-	fprop_local_destroy_percpu(&wb->completions);
-}
-
-/* Removed: cgwb_bdi_unregister - empty stub (~3 LOC) */
+/* wb_exit inlined into release_bdi */
 
 static void cgwb_remove_from_bdi_list(struct bdi_writeback *wb)
 {
@@ -163,7 +156,8 @@ static void release_bdi(struct kref *ref)
 
 	WARN_ON_ONCE(test_bit(WB_registered, &bdi->wb.state));
 	WARN_ON_ONCE(bdi->dev);
-	wb_exit(&bdi->wb);
+	WARN_ON(delayed_work_pending(&bdi->wb.dwork));
+	fprop_local_destroy_percpu(&bdi->wb.completions);
 	kfree(bdi);
 }
 

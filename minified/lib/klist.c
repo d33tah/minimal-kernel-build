@@ -24,11 +24,7 @@ static void knode_set_klist(struct klist_node *knode, struct klist *klist)
 	WARN_ON(knode_dead(knode));
 }
 
-static void knode_kill(struct klist_node *knode)
-{
-	WARN_ON(knode_dead(knode));
-	*(unsigned long *)&knode->n_klist |= KNODE_DEAD;
-}
+/* knode_kill inlined - set KNODE_DEAD bit in n_klist */
 
 void klist_init(struct klist *k, void (*get)(struct klist_node *),
 		void (*put)(struct klist_node *))
@@ -39,12 +35,7 @@ void klist_init(struct klist *k, void (*get)(struct klist_node *),
 	k->put = put;
 }
 
-static void add_tail(struct klist *k, struct klist_node *n)
-{
-	spin_lock(&k->k_lock);
-	list_add_tail(&n->n_node, &k->k_list);
-	spin_unlock(&k->k_lock);
-}
+/* add_tail inlined into klist_add_tail */
 
 static void klist_node_init(struct klist *k, struct klist_node *n)
 {
@@ -58,7 +49,9 @@ static void klist_node_init(struct klist *k, struct klist_node *n)
 void klist_add_tail(struct klist_node *n, struct klist *k)
 {
 	klist_node_init(k, n);
-	add_tail(k, n);
+	spin_lock(&k->k_lock);
+	list_add_tail(&n->n_node, &k->k_list);
+	spin_unlock(&k->k_lock);
 }
 
 struct klist_waiter {
@@ -103,8 +96,10 @@ static void klist_put(struct klist_node *n, bool kill)
 	void (*put)(struct klist_node *) = k->put;
 
 	spin_lock(&k->k_lock);
-	if (kill)
-		knode_kill(n);
+	if (kill) {
+		WARN_ON(knode_dead(n));
+		*(unsigned long *)&n->n_klist |= KNODE_DEAD;
+	}
 	if (!klist_dec_and_del(n))
 		put = NULL;
 	spin_unlock(&k->k_lock);

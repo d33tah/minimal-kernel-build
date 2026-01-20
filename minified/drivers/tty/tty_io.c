@@ -456,12 +456,7 @@ int tty_standard_install(struct tty_driver *driver, struct tty_struct *tty)
 	return 0;
 }
 
-static int tty_driver_install_tty(struct tty_driver *driver,
-				  struct tty_struct *tty)
-{
-	return driver->ops->install ? driver->ops->install(driver, tty) :
-				      tty_standard_install(driver, tty);
-}
+/* tty_driver_install_tty inlined - called driver->ops->install or tty_standard_install */
 
 static void tty_driver_remove_tty(struct tty_driver *driver,
 				  struct tty_struct *tty)
@@ -518,7 +513,8 @@ struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx)
 	}
 
 	tty_lock(tty);
-	retval = tty_driver_install_tty(driver, tty);
+	retval = driver->ops->install ? driver->ops->install(driver, tty) :
+					tty_standard_install(driver, tty);
 	if (retval < 0)
 		goto err_free_tty;
 

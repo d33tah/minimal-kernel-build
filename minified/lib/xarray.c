@@ -32,11 +32,7 @@ static inline unsigned long *node_marks(struct xa_node *node, xa_mark_t mark)
 	return node->marks[(__force unsigned)mark];
 }
 
-static inline bool node_get_mark(struct xa_node *node, unsigned int offset,
-				 xa_mark_t mark)
-{
-	return test_bit(offset, node_marks(node, mark));
-}
+/* node_get_mark inlined - returned test_bit(offset, node_marks(node, mark)) */
 
 static inline bool node_set_mark(struct xa_node *node, unsigned int offset,
 				 xa_mark_t mark)
@@ -50,10 +46,7 @@ static inline bool node_clear_mark(struct xa_node *node, unsigned int offset,
 	return __test_and_clear_bit(offset, node_marks(node, mark));
 }
 
-static inline bool node_any_mark(struct xa_node *node, xa_mark_t mark)
-{
-	return !bitmap_empty(node_marks(node, mark), XA_CHUNK_SIZE);
-}
+/* node_any_mark inlined - returned !bitmap_empty(...) */
 
 static inline void node_mark_all(struct xa_node *node, xa_mark_t mark)
 {
@@ -300,7 +293,7 @@ static void xas_delete_node(struct xa_state *xas)
 
 			RCU_INIT_POINTER(xa->xa_head, entry);
 			if (xa_track_free(xa) &&
-			    !node_get_mark(node, 0, XA_FREE_MARK))
+			    !test_bit(0, node_marks(node, XA_FREE_MARK)))
 				xa_mark_clear(xa, XA_FREE_MARK);
 
 			node->count = 0;
@@ -575,7 +568,7 @@ void xas_clear_mark(const struct xa_state *xas, xa_mark_t mark)
 	while (node) {
 		if (!node_clear_mark(node, offset, mark))
 			return;
-		if (node_any_mark(node, mark))
+		if (!bitmap_empty(node_marks(node, mark), XA_CHUNK_SIZE))
 			return;
 
 		offset = node->offset;

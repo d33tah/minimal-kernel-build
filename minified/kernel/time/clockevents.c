@@ -200,10 +200,9 @@ void clockevents_register_device(struct clock_event_device *dev)
 
 	clockevent_set_state(dev, CLOCK_EVT_STATE_DETACHED);
 
-	if (!dev->cpumask) {
-		WARN_ON(num_possible_cpus() > 1);
-		dev->cpumask = cpumask_of(smp_processor_id());
-	}
+	if (!dev->cpumask)
+		dev->cpumask = cpumask_of(
+			smp_processor_id()); /* num_possible_cpus()==1 */
 
 	if (dev->cpumask == cpu_all_mask) {
 		WARN(1,

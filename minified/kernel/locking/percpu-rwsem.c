@@ -49,13 +49,7 @@ static bool __percpu_down_read_trylock(struct percpu_rw_semaphore *sem)
 	return false;
 }
 
-static inline bool __percpu_down_write_trylock(struct percpu_rw_semaphore *sem)
-{
-	if (atomic_read(&sem->block))
-		return false;
-
-	return atomic_xchg(&sem->block, 1) == 0;
-}
+/* __percpu_down_write_trylock inlined into __percpu_rwsem_trylock */
 
 static bool __percpu_rwsem_trylock(struct percpu_rw_semaphore *sem, bool reader)
 {
@@ -68,7 +62,10 @@ static bool __percpu_rwsem_trylock(struct percpu_rw_semaphore *sem, bool reader)
 
 		return ret;
 	}
-	return __percpu_down_write_trylock(sem);
+	/* __percpu_down_write_trylock inlined */
+	if (atomic_read(&sem->block))
+		return false;
+	return atomic_xchg(&sem->block, 1) == 0;
 }
 
 static int percpu_rwsem_wake_function(struct wait_queue_entry *wq_entry,

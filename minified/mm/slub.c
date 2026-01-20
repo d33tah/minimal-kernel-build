@@ -257,16 +257,7 @@ static struct slab *new_slab(struct kmem_cache *s, gfp_t flags, int node)
 		s, flags & (GFP_RECLAIM_MASK | GFP_CONSTRAINT_MASK), node);
 }
 
-static inline void __add_partial(struct kmem_cache_node *n, struct slab *slab,
-				 int tail)
-{
-	n->nr_partial++;
-	if (tail == DEACTIVATE_TO_TAIL)
-		list_add_tail(&slab->slab_list, &n->partial);
-	else
-		list_add(&slab->slab_list, &n->partial);
-}
-
+/* __add_partial inlined into early_kmem_cache_node_alloc */
 /* add_partial and remove_partial inlined into callers */
 
 static inline void *acquire_slab(struct kmem_cache *s,
@@ -682,7 +673,9 @@ static void early_kmem_cache_node_alloc(int node)
 	init_kmem_cache_node(n);
 	/* inc_slabs_node removed - empty stub */
 
-	__add_partial(n, slab, DEACTIVATE_TO_HEAD);
+	/* __add_partial inlined - DEACTIVATE_TO_HEAD means list_add */
+	n->nr_partial++;
+	list_add(&slab->slab_list, &n->partial);
 }
 
 static void free_kmem_cache_nodes(struct kmem_cache *s)

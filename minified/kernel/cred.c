@@ -122,10 +122,9 @@ struct cred *prepare_exec_creds(void)
 	return new;
 }
 
-int copy_creds(struct task_struct *p, unsigned long clone_flags)
+int copy_creds(struct task_struct *p)
 {
 	struct cred *new;
-	(void)clone_flags;
 	/* CLONE_THREAD, CLONE_NEWUSER never set */
 
 	new = prepare_creds();

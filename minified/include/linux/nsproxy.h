@@ -20,7 +20,7 @@ struct nsproxy {
 };
 extern struct nsproxy init_nsproxy;
 /* struct nsset removed - never used */
-int copy_namespaces(unsigned long flags, struct task_struct *tsk);
+int copy_namespaces(struct task_struct *tsk);
 void exit_task_namespaces(struct task_struct *tsk);
 void free_nsproxy(struct nsproxy *ns);
 int __init nsproxy_cache_init(void);

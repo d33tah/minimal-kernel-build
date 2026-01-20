@@ -584,7 +584,7 @@ copy_process(struct pid *pid, int trace, int node,
 
 	raw_spin_lock_init(&p->pi_lock);
 
-	retval = copy_creds(p, clone_flags);
+	retval = copy_creds(p);
 	if (retval < 0)
 		goto bad_fork_free;
 
@@ -703,7 +703,7 @@ copy_process(struct pid *pid, int trace, int node,
 			p->active_mm = oldmm;
 		}
 	}
-	retval = copy_namespaces(clone_flags, p);
+	retval = copy_namespaces(p);
 	if (retval)
 		goto bad_fork_cleanup_mm;
 	retval = copy_thread(p, args);

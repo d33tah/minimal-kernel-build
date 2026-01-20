@@ -28,10 +28,9 @@ struct nsproxy init_nsproxy = {
 
 /* create_new_namespaces removed - no CLONE_NEW* flags ever used */
 
-int copy_namespaces(unsigned long flags, struct task_struct *tsk)
+int copy_namespaces(struct task_struct *tsk)
 {
 	struct nsproxy *old_ns = tsk->nsproxy;
-	(void)flags;
 	/* No CLONE_NEW* flags ever used - always share nsproxy */
 	get_nsproxy(old_ns);
 	return 0;

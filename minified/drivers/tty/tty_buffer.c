@@ -70,10 +70,4 @@ void tty_buffer_init(struct tty_port *port)
 	buf->mem_limit = TTYB_DEFAULT_MEM_LIMIT;
 }
 
-/* tty_buffer_restart_work removed - never called */
-
-bool tty_buffer_cancel_work(struct tty_port *port)
-{
-	/* No work to cancel - buf.work was never initialized */
-	return false;
-}
+/* tty_buffer_cancel_work moved to tty.h as static inline */

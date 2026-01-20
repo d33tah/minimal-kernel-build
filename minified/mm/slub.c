@@ -605,15 +605,10 @@ static inline int calculate_order(unsigned int size)
 	unsigned int order;
 	unsigned int min_objects;
 	unsigned int max_objects;
-	unsigned int nr_cpus;
 
 	min_objects = slub_min_objects;
-	if (!min_objects) {
-		nr_cpus = num_present_cpus();
-		if (nr_cpus <= 1)
-			nr_cpus = nr_cpu_ids;
-		min_objects = 4 * (fls(nr_cpus) + 1);
-	}
+	if (!min_objects)
+		min_objects = 8; /* 4 * (fls(1) + 1), single CPU kernel */
 	max_objects = order_objects(slub_max_order, size);
 	min_objects = min(min_objects, max_objects);
 

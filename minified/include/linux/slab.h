@@ -61,7 +61,8 @@ struct kmem_cache *kmem_cache_create_usercopy(const char *name,
 			offsetof(struct __struct, __field),		\
 			sizeof_field(struct __struct, __field), NULL)
 
-void kfree(const void *objp);
+/* kfree - no-op stub for bump allocator */
+static inline void kfree(const void *objp) {}
 size_t __ksize(const void *objp);
 
 #if defined(ARCH_DMA_MINALIGN) && ARCH_DMA_MINALIGN > 8
@@ -176,7 +177,8 @@ void *__kmalloc(size_t size, gfp_t flags) __assume_kmalloc_alignment __alloc_siz
 void *kmem_cache_alloc(struct kmem_cache *s, gfp_t flags) __assume_slab_alignment __malloc;
 void *kmem_cache_alloc_lru(struct kmem_cache *s, struct list_lru *lru,
 			   gfp_t gfpflags) __assume_slab_alignment __malloc;
-void kmem_cache_free(struct kmem_cache *s, void *objp);
+/* kmem_cache_free - no-op stub for bump allocator */
+static inline void kmem_cache_free(struct kmem_cache *s, void *objp) {}
 
 static __always_inline __alloc_size(1) void *__kmalloc_node(size_t size, gfp_t flags, int node)
 {

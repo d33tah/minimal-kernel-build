@@ -236,7 +236,8 @@ static inline void free_pages(unsigned long addr, unsigned int order) {}
 #define __free_page(page) __free_pages((page), 0)
 #define free_page(addr) free_pages((addr), 0)
 
-void page_alloc_init(void);
+/* page_alloc_init - empty in minimal kernel */
+static inline void page_alloc_init(void) {}
 void page_alloc_init_late(void);
 
 extern gfp_t gfp_allowed_mask;

@@ -66,11 +66,12 @@ extern void *__vmalloc_node_range(unsigned long size, unsigned long align,
 void *__vmalloc_node(unsigned long size, unsigned long align, gfp_t gfp_mask,
 		int node, const void *caller) __alloc_size(1);
 
-extern void vfree(const void *addr);
+/* vfree, vunmap - no-op stubs for bump allocator */
+static inline void vfree(const void *addr) {}
+static inline void vunmap(const void *addr) {}
 
 extern void *vmap(struct page **pages, unsigned int count,
 			unsigned long flags, pgprot_t prot);
-extern void vunmap(const void *addr);
 
 
 #ifndef ARCH_PAGE_TABLE_SYNC_MASK

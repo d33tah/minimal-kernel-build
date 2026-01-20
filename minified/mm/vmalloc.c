@@ -1013,18 +1013,7 @@ struct vm_struct *remove_vm_area(const void *addr)
 	return NULL;
 }
 
-/* Removed: set_area_direct_map, vm_remove_mappings, __vunmap, __vfree_deferred,
- * __vfree - Dead code since vfree is a no-op (~80 lines) */
-
-void vfree(const void *addr)
-{
-	/* No-op: bump allocator style - no deallocation */
-}
-
-void vunmap(const void *addr)
-{
-	/* No-op: bump allocator style - no deallocation */
-}
+/* vfree, vunmap moved to vmalloc.h as static inline */
 
 void *vmap(struct page **pages, unsigned int count, unsigned long flags,
 	   pgprot_t prot)

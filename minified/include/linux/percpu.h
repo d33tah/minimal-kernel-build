@@ -58,7 +58,8 @@ extern void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 extern void __init setup_per_cpu_areas(void);
 
 extern void __percpu *__alloc_percpu(size_t size, size_t align) __alloc_size(1);
-extern void free_percpu(void __percpu *__pdata);
+/* free_percpu - no-op stub for bump allocator */
+static inline void free_percpu(void __percpu *__pdata) {}
 extern phys_addr_t per_cpu_ptr_to_phys(void *addr);
 
 /* alloc_percpu_gfp removed - unused */

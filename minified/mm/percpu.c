@@ -1054,10 +1054,7 @@ static void pcpu_balance_workfn(struct work_struct *work)
 	mutex_unlock(&pcpu_alloc_mutex);
 }
 
-void free_percpu(void __percpu *ptr)
-{
-	/* No-op: bump allocator style - no deallocation */
-}
+/* free_percpu moved to percpu.h as static inline */
 
 /* Stub: per_cpu_ptr_to_phys not used in minimal kernel */
 phys_addr_t per_cpu_ptr_to_phys(void *addr)

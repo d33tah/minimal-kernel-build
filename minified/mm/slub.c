@@ -568,13 +568,7 @@ void *kmem_cache_alloc_lru(struct kmem_cache *s, struct list_lru *lru,
 	return __kmem_cache_alloc_lru(s, lru, gfpflags);
 }
 
-/* Removed: __slab_free, do_slab_free, slab_free, free_large_kmalloc
- * - All dead code since kfree/kmem_cache_free are no-ops (~115 lines) */
-
-void kmem_cache_free(struct kmem_cache *s, void *x)
-{
-	/* No-op: bump allocator style - no deallocation */
-}
+/* kmem_cache_free, kfree moved to slab.h as static inline */
 
 static unsigned int slub_min_order;
 static unsigned int slub_max_order = PAGE_ALLOC_COSTLY_ORDER;
@@ -874,10 +868,7 @@ size_t __ksize(const void *object)
 	return slab_ksize(folio_slab(folio)->slab_cache);
 }
 
-void kfree(const void *x)
-{
-	/* No-op: bump allocator style - no deallocation */
-}
+/* kfree moved to slab.h as static inline */
 
 /* Memory hotplug callbacks removed - not needed for minimal kernel
  * (register_hotmemory_notifier is already a no-op) */

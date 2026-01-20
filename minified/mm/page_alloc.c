@@ -1380,13 +1380,7 @@ unsigned long free_reserved_area(void *start, void *end, int poison,
 	return pages;
 }
 
-/* page_alloc_cpu_dead, page_alloc_cpu_online removed - CPU never goes offline (~12 LOC) */
-
-void __init page_alloc_init(void)
-{
-	/* cpuhp_setup_state_nocalls removed - CPU never goes online/offline */
-}
-
+/* page_alloc_cpu_dead, page_alloc_cpu_online, page_alloc_init moved to gfp.h */
 /* calculate_totalreserve_pages, setup_per_zone_lowmem_reserve, __setup_per_zone_wmarks,
    setup_per_zone_wmarks, calculate_min_free_kbytes removed - unused */
 

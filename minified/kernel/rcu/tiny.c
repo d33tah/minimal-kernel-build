@@ -56,21 +56,7 @@ void rcu_sched_clock_irq(int user)
 	}
 }
 
-static inline bool rcu_reclaim_tiny(struct rcu_head *head)
-{
-	rcu_callback_t f;
-	unsigned long offset = (unsigned long)head->func;
-
-	if (__is_kvfree_rcu_offset(offset)) {
-		kvfree((void *)head - offset);
-		return true;
-	}
-
-	f = head->func;
-	WRITE_ONCE(head->func, (rcu_callback_t)0L);
-	f(head);
-	return false;
-}
+/* rcu_reclaim_tiny inlined into rcu_process_callbacks */
 
 static __latent_entropy void
 rcu_process_callbacks(struct softirq_action *unused)
@@ -96,7 +82,17 @@ rcu_process_callbacks(struct softirq_action *unused)
 		prefetch(next);
 		/* debug_rcu_head_unqueue removed - empty stub */
 		local_bh_disable();
-		rcu_reclaim_tiny(list);
+		/* rcu_reclaim_tiny inlined */
+		{
+			unsigned long offset = (unsigned long)list->func;
+			if (__is_kvfree_rcu_offset(offset)) {
+				kvfree((void *)list - offset);
+			} else {
+				rcu_callback_t f = list->func;
+				WRITE_ONCE(list->func, (rcu_callback_t)0L);
+				f(list);
+			}
+		}
 		local_bh_enable();
 		list = next;
 	}

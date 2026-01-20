@@ -127,19 +127,7 @@ int is_console_locked(void)
 	return console_locked;
 }
 
-static inline bool console_is_usable(struct console *con)
-{
-	if (!(con->flags & CON_ENABLED))
-		return false;
-
-	if (!con->write)
-		return false;
-
-	if (!cpu_online(raw_smp_processor_id()) && !(con->flags & CON_ANYTIME))
-		return false;
-
-	return true;
-}
+/* console_is_usable inlined into console_flush_all */
 
 /* console_emit_next_record removed - never called (~8 LOC) */
 /* console_flush_all simplified - console_emit_next_record always returned false */
@@ -153,7 +141,13 @@ static bool console_flush_all(bool do_cond_resched, u64 *next_seq,
 	*handover = false;
 
 	for_each_console(con) {
-		if (!console_is_usable(con))
+		/* console_is_usable inlined */
+		if (!(con->flags & CON_ENABLED))
+			continue;
+		if (!con->write)
+			continue;
+		if (!cpu_online(raw_smp_processor_id()) &&
+		    !(con->flags & CON_ANYTIME))
 			continue;
 		any_usable = true;
 		if (con->seq > *next_seq)

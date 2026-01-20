@@ -23,12 +23,12 @@
 #include <linux/workqueue.h>
 
 #include <linux/bitops.h>
-#include <linux/notifier.h>
+/* notifier.h removed - notifiers not used */
 #include <linux/device.h>
 #include <linux/io.h>
 #include <linux/uaccess.h>
 
-#include <linux/ctype.h>
+/* ctype.h removed - character classification not used */
 
 #define MAX_NR_CON_DRIVER 16
 

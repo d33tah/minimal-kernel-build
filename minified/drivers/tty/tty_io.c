@@ -11,7 +11,7 @@
 #include <linux/tty_driver.h>
 #include <linux/tty_flip.h>
 #include <linux/file.h>
-#include <linux/fdtable.h>
+/* fdtable.h removed - not used */
 #include <linux/console.h>
 #include <linux/ctype.h>
 #include <linux/kd.h>
@@ -24,7 +24,7 @@
 #include <linux/device.h>
 #include <linux/wait.h>
 #include <linux/bitops.h>
-#include <linux/delay.h>
+/* delay.h removed - msleep/udelay not used */
 #include <linux/ratelimit.h>
 #include <linux/compat.h>
 

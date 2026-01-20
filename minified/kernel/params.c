@@ -89,7 +89,6 @@ static int parse_one(char *param, char *val, const char *doing,
 					   const char *doing, void *arg))
 {
 	unsigned int i;
-	int err;
 
 	for (i = 0; i < num_params; i++) {
 		if (parameq(param, params[i].name)) {

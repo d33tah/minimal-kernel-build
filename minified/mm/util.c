@@ -198,8 +198,7 @@ bool folio_mapped(struct folio *folio)
 		return atomic_read(&folio->_mapcount) >= 0;
 	if (atomic_read(folio_mapcount_ptr(folio)) >= 0)
 		return true;
-	if (folio_test_hugetlb(folio))
-		return false;
+	/* folio_test_hugetlb always returns false, skip check */
 
 	nr = folio_nr_pages(folio);
 	for (i = 0; i < nr; i++) {

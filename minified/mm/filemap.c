@@ -28,14 +28,13 @@ static void page_cache_delete(struct address_space *mapping,
 			      struct folio *folio, void *shadow)
 {
 	XA_STATE(xas, &mapping->i_pages, folio->index);
-	long nr = 1;
+	long nr;
 
 	mapping_set_update(&xas, mapping);
 
-	if (!folio_test_hugetlb(folio)) {
-		xas_set_order(&xas, folio->index, folio_order(folio));
-		nr = folio_nr_pages(folio);
-	}
+	/* folio_test_hugetlb always false, skip condition */
+	xas_set_order(&xas, folio->index, folio_order(folio));
+	nr = folio_nr_pages(folio);
 
 	xas_store(&xas, shadow);
 	xas_init_marks(&xas);
@@ -66,8 +65,7 @@ static void filemap_unaccount_folio(struct address_space *mapping,
 		}
 	}
 
-	if (folio_test_hugetlb(folio))
-		return;
+	/* folio_test_hugetlb always returns false, skip check */
 
 	nr = folio_nr_pages(folio);
 
@@ -97,7 +95,8 @@ void filemap_free_folio(struct address_space *mapping, struct folio *folio)
 
 	/* a_ops->free_folio check removed - never set */
 
-	if (folio_test_large(folio) && !folio_test_hugetlb(folio))
+	/* folio_test_hugetlb always false, simplify */
+	if (folio_test_large(folio))
 		refs = folio_nr_pages(folio);
 	folio_put_refs(folio, refs);
 }
@@ -212,16 +211,14 @@ noinline int __filemap_add_folio(struct address_space *mapping,
 				 void **shadowp)
 {
 	XA_STATE(xas, &mapping->i_pages, index);
-	int huge = folio_test_hugetlb(folio);
-	long nr = 1;
+	/* folio_test_hugetlb always false, simplify */
+	long nr;
 
 	mapping_set_update(&xas, mapping);
 
-	if (!huge) {
-		/* mem_cgroup_charge always returns 0 */
-		xas_set_order(&xas, index, folio_order(folio));
-		nr = folio_nr_pages(folio);
-	}
+	/* mem_cgroup_charge always returns 0 */
+	xas_set_order(&xas, index, folio_order(folio));
+	nr = folio_nr_pages(folio);
 
 	gfp &= GFP_RECLAIM_MASK;
 	folio_ref_add(folio, nr);
@@ -238,8 +235,8 @@ noinline int __filemap_add_folio(struct address_space *mapping,
 
 		mapping->nrpages += nr;
 
-		if (!huge)
-			__lruvec_stat_mod_folio(folio, NR_FILE_PAGES, nr);
+		/* huge (folio_test_hugetlb) is always false */
+		__lruvec_stat_mod_folio(folio, NR_FILE_PAGES, nr);
 unlock:
 		xas_unlock_irq(&xas);
 	} while (xas_nomem(&xas, gfp));
@@ -735,7 +732,8 @@ put:
 static inline bool folio_more_pages(struct folio *folio, pgoff_t index,
 				    pgoff_t max)
 {
-	if (!folio_test_large(folio) || folio_test_hugetlb(folio))
+	/* folio_test_hugetlb always false, simplify */
+	if (!folio_test_large(folio))
 		return false;
 	if (index >= max)
 		return false;

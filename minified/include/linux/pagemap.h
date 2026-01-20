@@ -131,9 +131,7 @@ static inline pgoff_t folio_index(struct folio *folio)
 
 static inline struct page *folio_file_page(struct folio *folio, pgoff_t index)
 {
-	 
-	if (folio_test_hugetlb(folio))
-		return &folio->page;
+	/* folio_test_hugetlb always false, simplify */
 	return folio_page(folio, index & (folio_nr_pages(folio) - 1));
 }
 

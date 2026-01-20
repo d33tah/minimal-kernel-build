@@ -83,8 +83,7 @@ typedef __u32 __wsum;
 				continue;                               \
 			if (WARN_ON(xa_is_value(folio)))                \
 				break;                                  \
-			if (WARN_ON(folio_test_hugetlb(folio)))         \
-				break;                                  \
+			/* folio_test_hugetlb always false */           \
 			offset = offset_in_folio(folio, start + __off); \
 			while (offset < folio_size(folio)) {            \
 				base = kmap_local_folio(folio, offset); \

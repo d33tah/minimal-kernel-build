@@ -7,7 +7,7 @@
 #include <linux/spinlock.h>
 #include <linux/interrupt.h>
 /* proc_fs.h, seq_file.h, kallsyms.h, io.h, memcontrol.h, llist.h removed - unused */
-#include <asm/set_memory.h>
+/* asm/set_memory.h removed - set_memory functions not used */
 #include <linux/list.h>
 #include <linux/rbtree.h>
 #include <linux/rcupdate.h>

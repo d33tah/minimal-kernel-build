@@ -24,7 +24,7 @@ struct alloc_context;
  * - Dead code: page_owner tracking not needed for minimal kernel (~9 LOC) */
 #include <asm/sections.h>
 #include <asm/tlbflush.h>
-#include <asm/div64.h>
+/* asm/div64.h removed - do_div not used */
 #include "internal.h"
 
 typedef int __bitwise fpi_t;

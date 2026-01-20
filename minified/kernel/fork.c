@@ -13,7 +13,7 @@
 #include <linux/module.h>
 #include <linux/vmalloc.h>
 #include <linux/completion.h>
-#include <linux/personality.h>
+/* personality.h removed - no personality functions used */
 #include <linux/mempolicy.h>
 #include <linux/file.h>
 #include <linux/fdtable.h>
@@ -38,8 +38,7 @@
 #include <linux/ptrace.h>
 #include <linux/mount.h>
 #include <linux/proc_fs.h>
-#include <linux/rmap.h>
-#include <linux/userfaultfd_k.h>
+/* rmap.h, userfaultfd_k.h removed - functions not used */
 #include <linux/tty.h>
 #include <linux/fs_struct.h>
 #include <linux/magic.h>

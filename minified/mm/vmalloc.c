@@ -744,19 +744,7 @@ static __always_inline unsigned long __alloc_vmap_area(unsigned long size,
 	return nva_start_addr;
 }
 
-static inline void preload_this_cpu_lock(spinlock_t *lock, gfp_t gfp_mask,
-					 int node)
-{
-	struct vmap_area *va = NULL;
-
-	if (!this_cpu_read(ne_fit_preload_node))
-		va = kmem_cache_alloc_node(vmap_area_cachep, gfp_mask, node);
-
-	spin_lock(lock);
-
-	if (va && __this_cpu_cmpxchg(ne_fit_preload_node, NULL, va))
-		kmem_cache_free(vmap_area_cachep, va);
-}
+/* preload_this_cpu_lock inlined into alloc_vmap_area */
 
 static struct vmap_area *
 alloc_vmap_area(unsigned long size, unsigned long align, unsigned long vstart,
@@ -780,7 +768,16 @@ alloc_vmap_area(unsigned long size, unsigned long align, unsigned long vstart,
 		return ERR_PTR(-ENOMEM);
 
 	/* retry label removed - purge_vmap_area_lazy was empty, no point retrying */
-	preload_this_cpu_lock(&free_vmap_area_lock, gfp_mask, node);
+	/* preload_this_cpu_lock inlined */
+	{
+		struct vmap_area *pva = NULL;
+		if (!this_cpu_read(ne_fit_preload_node))
+			pva = kmem_cache_alloc_node(vmap_area_cachep, gfp_mask,
+						    node);
+		spin_lock(&free_vmap_area_lock);
+		if (pva && __this_cpu_cmpxchg(ne_fit_preload_node, NULL, pva))
+			kmem_cache_free(vmap_area_cachep, pva);
+	}
 	addr = __alloc_vmap_area(size, align, vstart, vend);
 	spin_unlock(&free_vmap_area_lock);
 
@@ -911,23 +908,17 @@ void __init vmalloc_init(void)
 	vmap_initialized = true;
 }
 
-static inline void setup_vmalloc_vm_locked(struct vm_struct *vm,
-					   struct vmap_area *va,
-					   unsigned long flags,
-					   const void *caller)
-{
-	vm->flags = flags;
-	vm->addr = (void *)va->va_start;
-	vm->size = va->va_end - va->va_start;
-	vm->caller = caller;
-	va->vm = vm;
-}
+/* setup_vmalloc_vm_locked inlined into setup_vmalloc_vm */
 
 static void setup_vmalloc_vm(struct vm_struct *vm, struct vmap_area *va,
 			     unsigned long flags, const void *caller)
 {
 	spin_lock(&vmap_area_lock);
-	setup_vmalloc_vm_locked(vm, va, flags, caller);
+	vm->flags = flags;
+	vm->addr = (void *)va->va_start;
+	vm->size = va->va_end - va->va_start;
+	vm->caller = caller;
+	va->vm = vm;
 	spin_unlock(&vmap_area_lock);
 }
 

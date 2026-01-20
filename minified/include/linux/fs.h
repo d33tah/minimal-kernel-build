@@ -1018,7 +1018,8 @@ static inline int iocb_flags(struct file *file)
 
 /* parent_ino removed - never called */
 
-int __init list_bdev_fs_names(char *buf, size_t size);
+/* list_bdev_fs_names - stub, no filesystem sets FS_REQUIRES_DEV */
+static inline int __init list_bdev_fs_names(char *buf, size_t size) { return 0; }
 
 #define __FMODE_EXEC		((__force int) FMODE_EXEC)
 #define __FMODE_NONOTIFY	((__force int) FMODE_NONOTIFY)

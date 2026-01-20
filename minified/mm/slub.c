@@ -339,18 +339,7 @@ static inline unsigned long next_tid(unsigned long tid)
 	return tid + TID_STEP;
 }
 
-/* init_tid inlined - just returns cpu */
-
-/* Removed: deactivate_slab, flush_slab - dead/inlined code */
-
-static inline void __flush_cpu_slab(struct kmem_cache *s, int cpu)
-{
-	/* Simplified: just clear the cpu slab without deactivation */
-	struct kmem_cache_cpu *c = per_cpu_ptr(s->cpu_slab, cpu);
-	c->slab = NULL;
-	c->freelist = NULL;
-	c->tid = next_tid(c->tid);
-}
+/* init_tid, __flush_cpu_slab inlined */
 
 struct slub_flush_work {
 	struct work_struct work;
@@ -463,16 +452,7 @@ static void *___slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node,
 	return freelist;
 }
 
-static void *__slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node,
-			  unsigned long addr, struct kmem_cache_cpu *c)
-{
-	void *p;
-
-	p = ___slab_alloc(s, gfpflags, node, addr, c);
-	return p;
-}
-
-/* maybe_wipe_obj_freeptr inlined into slab_alloc_node */
+/* __slab_alloc inlined - just calls ___slab_alloc */
 
 static __always_inline void *
 slab_alloc_node(struct kmem_cache *s, struct list_lru *lru, gfp_t gfpflags,
@@ -500,7 +480,7 @@ redo:
 	slab = c->slab;
 	/* CONFIG_PREEMPT_RT not enabled, node_match always returns 1 */
 	if (unlikely(!object || !slab)) {
-		object = __slab_alloc(s, gfpflags, node, addr, c);
+		object = ___slab_alloc(s, gfpflags, node, addr, c);
 	} else {
 		void *next_object = get_freepointer(s, object);
 
@@ -858,7 +838,13 @@ static struct kmem_cache *__init bootstrap(struct kmem_cache *static_cache)
 
 	memcpy(s, static_cache, kmem_cache->object_size);
 
-	__flush_cpu_slab(s, smp_processor_id());
+	{
+		struct kmem_cache_cpu *c =
+			per_cpu_ptr(s->cpu_slab, smp_processor_id());
+		c->slab = NULL;
+		c->freelist = NULL;
+		c->tid = next_tid(c->tid);
+	}
 	for_each_kmem_cache_node(s, node, n)
 	{
 		struct slab *p;

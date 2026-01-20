@@ -829,15 +829,7 @@ static int filemap_read_folio(struct file *file, struct address_space *mapping,
 	return -EIO;
 }
 
-static bool filemap_range_uptodate(struct address_space *mapping, loff_t pos,
-				   struct iov_iter *iter, struct folio *folio)
-{
-	if (folio_test_uptodate(folio))
-		return true;
-
-	/* is_partially_uptodate check removed - never set (~14 LOC) */
-	return false;
-}
+/* filemap_range_uptodate inlined - is_partially_uptodate never set */
 
 static int filemap_update_page(struct kiocb *iocb,
 			       struct address_space *mapping,
@@ -871,7 +863,7 @@ static int filemap_update_page(struct kiocb *iocb,
 		goto unlock;
 
 	error = 0;
-	if (filemap_range_uptodate(mapping, iocb->ki_pos, iter, folio))
+	if (folio_test_uptodate(folio))
 		goto unlock;
 
 	error = -EAGAIN;

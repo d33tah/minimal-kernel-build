@@ -33,14 +33,7 @@ static struct ucounts *find_ucounts(struct user_namespace *ns, kuid_t uid,
 	return NULL;
 }
 
-static void hlist_add_ucounts(struct ucounts *ucounts)
-{
-	struct hlist_head *hashent =
-		ucounts_hashentry(ucounts->ns, ucounts->uid);
-	spin_lock_irq(&ucounts_lock);
-	hlist_add_head(&ucounts->node, hashent);
-	spin_unlock_irq(&ucounts_lock);
-}
+/* hlist_add_ucounts inlined */
 
 static inline bool get_ucounts_or_wrap(struct ucounts *ucounts)
 {
@@ -250,7 +243,11 @@ bool is_ucounts_overlimit(struct ucounts *ucounts, enum ucount_type type,
 
 static __init int user_namespace_sysctl_init(void)
 {
-	hlist_add_ucounts(&init_ucounts);
+	struct hlist_head *hashent =
+		ucounts_hashentry(init_ucounts.ns, init_ucounts.uid);
+	spin_lock_irq(&ucounts_lock);
+	hlist_add_head(&init_ucounts.node, hashent);
+	spin_unlock_irq(&ucounts_lock);
 	inc_rlimit_ucounts(&init_ucounts, UCOUNT_RLIMIT_NPROC, 1);
 	return 0;
 }

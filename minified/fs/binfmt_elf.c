@@ -643,8 +643,8 @@ out_free_interp:
 
 	setup_new_exec(bprm);
 
-	retval = setup_arg_pages(bprm, randomize_stack_top(STACK_TOP),
-				 executable_stack);
+	/* randomize_stack_top inlined - just returns PAGE_ALIGN(stack_top) */
+	retval = setup_arg_pages(bprm, PAGE_ALIGN(STACK_TOP), executable_stack);
 	if (retval < 0)
 		goto out_free_dentry;
 

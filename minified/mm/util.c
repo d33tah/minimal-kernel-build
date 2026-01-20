@@ -100,13 +100,7 @@ void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 
 /* __vma_unlink_list removed - never called */
 
-/* Randomization disabled for minimal kernel - no ASLR needed */
-unsigned long randomize_stack_top(unsigned long stack_top)
-{
-	return PAGE_ALIGN(stack_top);
-}
-
-/* randomize_page removed - no callers (~4 LOC) */
+/* randomize_stack_top, randomize_page removed - inlined to PAGE_ALIGN (~4 LOC) */
 
 #if defined(CONFIG_MMU) && !defined(HAVE_ARCH_PICK_MMAP_LAYOUT)
 void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)

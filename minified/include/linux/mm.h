@@ -898,8 +898,7 @@ extern struct vm_area_struct *_install_special_mapping(struct mm_struct *mm,
 				   const struct vm_special_mapping *spec);
 
 
-unsigned long randomize_stack_top(unsigned long stack_top);
-/* randomize_page removed - no callers */
+/* randomize_stack_top, randomize_page removed - inlined to PAGE_ALIGN */
 
 extern unsigned long get_unmapped_area(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
 

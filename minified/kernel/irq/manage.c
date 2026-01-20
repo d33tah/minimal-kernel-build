@@ -590,11 +590,8 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 	action->name = devname;
 	action->dev_id = dev_id;
 
-	retval = irq_chip_pm_get(&desc->irq_data);
-	if (retval < 0) {
-		kfree(action);
-		return retval;
-	}
+	/* irq_chip_pm_get always returns 0, skip error check */
+	irq_chip_pm_get(&desc->irq_data);
 
 	retval = __setup_irq(irq, desc, action);
 

@@ -39,19 +39,15 @@ static inline pmd_t *vmalloc_sync_one(pgd_t *pgd, unsigned long address)
 
 	pgd += index;
 	pgd_k = init_mm.pgd + index;
-
-	if (!pgd_present(*pgd_k))
-		return NULL;
+	/* pgd_present always returns 1, skip check */
 
 	p4d = p4d_offset(pgd, address);
 	p4d_k = p4d_offset(pgd_k, address);
-	if (!p4d_present(*p4d_k))
-		return NULL;
+	/* p4d_present always returns 1, skip check */
 
 	pud = pud_offset(p4d, address);
 	pud_k = pud_offset(p4d_k, address);
-	if (!pud_present(*pud_k))
-		return NULL;
+	/* pud_present always returns 1, skip check */
 
 	pmd = pmd_offset(pud, address);
 	pmd_k = pmd_offset(pud_k, address);
@@ -143,10 +139,9 @@ static noinline void page_fault_oops(struct pt_regs *regs,
 {
 	/* Simplified: just die with minimal output */
 	unsigned long flags = oops_begin();
-	int sig = SIGKILL;
-	if (__die("Oops", regs, error_code))
-		sig = 0;
-	oops_end(flags, regs, sig);
+	/* __die always returns 0, sig stays SIGKILL */
+	__die("Oops", regs, error_code);
+	oops_end(flags, regs, SIGKILL);
 }
 
 static noinline void kernelmode_fixup_or_oops(struct pt_regs *regs,
@@ -287,22 +282,13 @@ static noinline int spurious_kernel_fault(unsigned long error_code,
 		return 0;
 
 	pgd = init_mm.pgd + pgd_index(address);
-	if (!pgd_present(*pgd))
-		return 0;
+	/* pgd_present always returns 1, skip check */
 
 	p4d = p4d_offset(pgd, address);
-	if (!p4d_present(*p4d))
-		return 0;
-
-	if (p4d_large(*p4d))
-		return spurious_kernel_fault_check(error_code, (pte_t *)p4d);
+	/* p4d_present always returns 1, p4d_large always 0, skip checks */
 
 	pud = pud_offset(p4d, address);
-	if (!pud_present(*pud))
-		return 0;
-
-	if (pud_large(*pud))
-		return spurious_kernel_fault_check(error_code, (pte_t *)pud);
+	/* pud_present always returns 1, pud_large always 0, skip checks */
 
 	pmd = pmd_offset(pud, address);
 	if (!pmd_present(*pmd))

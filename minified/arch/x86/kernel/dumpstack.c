@@ -143,11 +143,9 @@ NOKPROBE_SYMBOL(__die);
 void die(const char *str, struct pt_regs *regs, long err)
 {
 	unsigned long flags = oops_begin();
-	int sig = SIGSEGV;
-
-	if (__die(str, regs, err))
-		sig = 0;
-	oops_end(flags, regs, sig);
+	/* __die always returns 0, sig stays SIGSEGV */
+	__die(str, regs, err);
+	oops_end(flags, regs, SIGSEGV);
 }
 
 void die_addr(const char *str, struct pt_regs *regs, long err, long gp_addr)

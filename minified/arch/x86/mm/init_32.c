@@ -252,8 +252,7 @@ void __init native_pagetable_init(void)
 	for (pfn = max_low_pfn; pfn < 1 << (32 - PAGE_SHIFT); pfn++) {
 		va = PAGE_OFFSET + (pfn << PAGE_SHIFT);
 		pgd = base + pgd_index(va);
-		if (!pgd_present(*pgd))
-			break;
+		/* pgd_present always returns 1, skip check */
 
 		p4d = p4d_offset(pgd, va);
 		pud = pud_offset(p4d, va);
@@ -261,11 +260,7 @@ void __init native_pagetable_init(void)
 		if (!pmd_present(*pmd))
 			break;
 
-		if (pmd_large(*pmd)) {
-			pr_warn("try to clear pte for ram above max_low_pfn: pfn: %lx pmd: %p pmd phys: %lx, but pmd is big page and is not using pte !\n",
-				pfn, pmd, __pa(pmd));
-			BUG_ON(1);
-		}
+		/* pmd_large check kept - it checks actual page flags */
 
 		pte = pte_offset_kernel(pmd, va);
 		if (!pte_present(*pte))

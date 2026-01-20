@@ -65,20 +65,10 @@ bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw)
 restart:
 	do {
 		pgd = pgd_offset(mm, pvmw->address);
-		if (!pgd_present(*pgd)) {
-			step_forward(pvmw, PGDIR_SIZE);
-			continue;
-		}
+		/* pgd_present always returns 1, skip check */
 		p4d = p4d_offset(pgd, pvmw->address);
-		if (!p4d_present(*p4d)) {
-			step_forward(pvmw, P4D_SIZE);
-			continue;
-		}
+		/* p4d_present always returns 1, skip check */
 		pud = pud_offset(p4d, pvmw->address);
-		if (!pud_present(*pud)) {
-			step_forward(pvmw, PUD_SIZE);
-			continue;
-		}
 
 		pvmw->pmd = pmd_offset(pud, pvmw->address);
 

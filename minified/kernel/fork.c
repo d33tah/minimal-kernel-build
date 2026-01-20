@@ -325,16 +325,14 @@ void set_task_stack_end_magic(struct task_struct *tsk)
 static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 {
 	struct task_struct *tsk;
-	int err;
 
 	/* tsk_fork_get_node call removed - always returns NUMA_NO_NODE, so this is a no-op */
 	tsk = kmem_cache_alloc_node(task_struct_cachep, GFP_KERNEL, node);
 	if (!tsk)
 		return NULL;
 
-	err = arch_dup_task_struct(tsk, orig);
-	if (err)
-		goto free_tsk;
+	/* arch_dup_task_struct always returns 0 */
+	arch_dup_task_struct(tsk, orig);
 
 	/* Inlined alloc_thread_stack_node */
 	{

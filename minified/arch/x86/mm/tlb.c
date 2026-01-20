@@ -423,9 +423,8 @@ void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 	info = get_flush_tlb_info(mm, start, end, stride_shift, freed_tables,
 				  new_tlb_gen);
 
-	if (cpumask_any_but(mm_cpumask(mm), cpu) < nr_cpu_ids) {
-		flush_tlb_multi(mm_cpumask(mm), info);
-	} else if (mm == this_cpu_read(cpu_tlbstate.loaded_mm)) {
+	/* Single-CPU: cpumask_any_but returns 1 and nr_cpu_ids is 1, so check is always false */
+	if (mm == this_cpu_read(cpu_tlbstate.loaded_mm)) {
 		local_irq_disable();
 		flush_tlb_func(info);
 		local_irq_enable();

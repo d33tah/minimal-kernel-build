@@ -5,21 +5,15 @@
 #include <linux/namei.h>
 #include "internal.h"
 
-static const struct constant_table *
-__lookup_constant(const struct constant_table *tbl, const char *name)
-{
-	for (; tbl->name; tbl++)
-		if (strcmp(name, tbl->name) == 0)
-			return tbl;
-	return NULL;
-}
+/* __lookup_constant inlined */
 
 int lookup_constant(const struct constant_table *tbl, const char *name,
 		    int not_found)
 {
-	const struct constant_table *p = __lookup_constant(tbl, name);
-
-	return p ? p->value : not_found;
+	for (; tbl->name; tbl++)
+		if (strcmp(name, tbl->name) == 0)
+			return tbl->value;
+	return not_found;
 }
 
 static inline bool is_flag(const struct fs_parameter_spec *p)

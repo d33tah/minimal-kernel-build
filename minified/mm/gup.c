@@ -545,17 +545,7 @@ out:
 
 /* __gup_longterm_locked removed - FOLL_LONGTERM never set, function never called */
 
-/* is_valid_gup_flags inlined into get_user_pages_remote */
-
-/* __get_user_pages_remote simplified - FOLL_LONGTERM branch removed (never set) */
-static long __get_user_pages_remote(struct mm_struct *mm, unsigned long start,
-				    unsigned long nr_pages,
-				    unsigned int gup_flags, struct page **pages,
-				    struct vm_area_struct **vmas, int *locked)
-{
-	return __get_user_pages_locked(mm, start, nr_pages, pages, vmas, locked,
-				       gup_flags | FOLL_TOUCH | FOLL_REMOTE);
-}
+/* is_valid_gup_flags, __get_user_pages_remote inlined */
 
 long get_user_pages_remote(struct mm_struct *mm, unsigned long start,
 			   unsigned long nr_pages, unsigned int gup_flags,
@@ -563,8 +553,8 @@ long get_user_pages_remote(struct mm_struct *mm, unsigned long start,
 			   int *locked)
 {
 	/* FOLL_PIN and FOLL_LONGTERM checks removed - never set */
-	return __get_user_pages_remote(mm, start, nr_pages, gup_flags, pages,
-				       vmas, locked);
+	return __get_user_pages_locked(mm, start, nr_pages, pages, vmas, locked,
+				       gup_flags | FOLL_TOUCH | FOLL_REMOTE);
 }
 
 /* get_user_pages_unlocked, get_user_pages_fast_only, get_user_pages_fast,

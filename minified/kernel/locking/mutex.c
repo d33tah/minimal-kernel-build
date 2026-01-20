@@ -111,13 +111,7 @@ static inline bool __mutex_waiter_is_first(struct mutex *lock,
 	       waiter;
 }
 
-static void __mutex_add_waiter(struct mutex *lock, struct mutex_waiter *waiter,
-			       struct list_head *list)
-{
-	list_add_tail(&waiter->list, list);
-	if (__mutex_waiter_is_first(lock, waiter))
-		atomic_long_or(MUTEX_FLAG_WAITERS, &lock->owner);
-}
+/* __mutex_add_waiter inlined into __mutex_lock_common */
 
 static void __mutex_remove_waiter(struct mutex *lock,
 				  struct mutex_waiter *waiter)
@@ -190,7 +184,9 @@ static __always_inline int __sched __mutex_lock_common(
 
 	waiter.task = current;
 
-	__mutex_add_waiter(lock, &waiter, &lock->wait_list);
+	list_add_tail(&waiter.list, &lock->wait_list);
+	if (__mutex_waiter_is_first(lock, &waiter))
+		atomic_long_or(MUTEX_FLAG_WAITERS, &lock->owner);
 
 	set_current_state(state);
 	for (;;) {

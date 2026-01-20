@@ -227,10 +227,7 @@ static void cleanup_glue_dir(struct device *dev, struct kobject *glue_dir)
 	mutex_unlock(&gdp_mutex);
 }
 
-static void device_remove_class_symlinks(struct device *dev)
-{
-	/* Stub: sysfs class symlinks not needed for minimal kernel */
-}
+/* device_remove_class_symlinks was empty stub - removed */
 
 int dev_set_name(struct device *dev, const char *fmt, ...)
 {
@@ -325,13 +322,7 @@ void put_device(struct device *dev)
 		kobject_put(&dev->kobj);
 }
 
-static bool kill_device(struct device *dev)
-{
-	if (dev->p->dead)
-		return false;
-	dev->p->dead = true;
-	return true;
-}
+/* kill_device inlined - sets dev->p->dead = true */
 
 void device_del(struct device *dev)
 {
@@ -340,7 +331,7 @@ void device_del(struct device *dev)
 	unsigned int noio_flag;
 
 	device_lock(dev);
-	kill_device(dev);
+	dev->p->dead = true;
 	device_unlock(dev);
 
 	if (dev->fwnode && dev->fwnode->dev == dev)
@@ -352,8 +343,7 @@ void device_del(struct device *dev)
 		klist_del(&dev->p->knode_parent);
 	/* MAJOR(dev->devt) check removed - device_remove_file is empty stub */
 	if (dev->class) {
-		device_remove_class_symlinks(dev);
-
+		/* device_remove_class_symlinks was empty stub */
 		mutex_lock(&dev->class->p->mutex);
 		/* class_intf loop removed - interfaces list never populated */
 		klist_del(&dev->p->knode_class);

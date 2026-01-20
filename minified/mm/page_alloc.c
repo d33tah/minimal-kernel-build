@@ -1210,12 +1210,7 @@ static void __ref setup_usemap(struct zone *zone)
 	}
 }
 
-static unsigned long __init calc_memmap_size(unsigned long spanned_pages,
-					     unsigned long present_pages)
-{
-	/* SPARSEMEM disabled */
-	return PAGE_ALIGN(spanned_pages * sizeof(struct page)) >> PAGE_SHIFT;
-}
+/* calc_memmap_size inlined - SPARSEMEM disabled */
 
 static void __init free_area_init_core(struct pglist_data *pgdat)
 {
@@ -1232,7 +1227,8 @@ static void __init free_area_init_core(struct pglist_data *pgdat)
 		size = zone->spanned_pages;
 		freesize = zone->present_pages;
 
-		memmap_pages = calc_memmap_size(size, freesize);
+		memmap_pages = PAGE_ALIGN(size * sizeof(struct page)) >>
+			       PAGE_SHIFT;
 		/* is_highmem_idx always returns 0, so !is_highmem_idx is always true */
 		if (freesize >= memmap_pages)
 			freesize -= memmap_pages;

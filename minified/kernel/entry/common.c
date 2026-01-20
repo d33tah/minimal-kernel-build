@@ -160,19 +160,14 @@ static void syscall_exit_work(struct pt_regs *regs, unsigned long work)
 		ptrace_report_syscall_exit(regs, step);
 }
 
-static void syscall_exit_to_user_mode_prepare(struct pt_regs *regs)
-{
-	unsigned long work = READ_ONCE(current_thread_info()->syscall_work);
-	/* CT_WARN_ON removed - context_tracking_enabled always false */
-
-	if (unlikely(work & SYSCALL_WORK_EXIT))
-		syscall_exit_work(regs, work);
-}
+/* syscall_exit_to_user_mode_prepare inlined */
 
 static __always_inline void
 __syscall_exit_to_user_mode_work(struct pt_regs *regs)
 {
-	syscall_exit_to_user_mode_prepare(regs);
+	unsigned long work = READ_ONCE(current_thread_info()->syscall_work);
+	if (unlikely(work & SYSCALL_WORK_EXIT))
+		syscall_exit_work(regs, work);
 	local_irq_disable_exit_to_user();
 	exit_to_user_mode_prepare(regs);
 }

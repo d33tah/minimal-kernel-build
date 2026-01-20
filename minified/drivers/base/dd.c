@@ -141,13 +141,7 @@ static void device_unbind_cleanup(struct device *dev)
 	dev_pm_set_driver_flags(dev, 0);
 }
 
-static void device_remove(struct device *dev)
-{
-	if (dev->bus && dev->bus->remove)
-		dev->bus->remove(dev);
-	else if (dev->driver->remove)
-		dev->driver->remove(dev);
-}
+/* device_remove inlined into single caller */
 
 static int call_driver_probe(struct device *dev, struct device_driver *drv)
 {
@@ -434,7 +428,10 @@ static void __device_release_driver(struct device *dev, struct device *parent)
 
 		pm_runtime_put_sync(dev);
 
-		device_remove(dev);
+		if (dev->bus && dev->bus->remove)
+			dev->bus->remove(dev);
+		else if (dev->driver->remove)
+			dev->driver->remove(dev);
 
 		if (dev->bus && dev->bus->dma_cleanup)
 			dev->bus->dma_cleanup(dev);

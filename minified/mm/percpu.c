@@ -119,11 +119,7 @@ static DECLARE_WORK(pcpu_balance_work, pcpu_balance_workfn);
 static bool pcpu_async_enabled __read_mostly;
 /* pcpu_atomic_alloc_failed removed - is_atomic always false, never set */
 
-static void pcpu_schedule_balance_work(void)
-{
-	if (pcpu_async_enabled)
-		schedule_work(&pcpu_balance_work);
-}
+/* pcpu_schedule_balance_work inlined */
 
 static int __pcpu_size_to_slot(int size)
 {
@@ -937,7 +933,8 @@ area_found:
 	}
 
 	if (pcpu_nr_empty_pop_pages < PCPU_EMPTY_POP_PAGES_LOW)
-		pcpu_schedule_balance_work();
+		if (pcpu_async_enabled)
+			schedule_work(&pcpu_balance_work);
 
 	/* for_each_possible_cpu simplified - single CPU */
 	/* pcpu_chunk_addr(chunk, 0, 0) = chunk->base_addr + pcpu_unit_offsets[0] */

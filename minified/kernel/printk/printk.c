@@ -84,9 +84,7 @@ static DEFINE_MUTEX(syslog_lock);
 /* CONSOLE_LOG_MAX, DROPPED_TEXT_MAX removed - unused */
 #define printk_time false
 
-#define prb_read_valid(rb, seq, r) false
-#define prb_first_valid_seq(rb) 0
-#define prb_next_seq(rb) 0
+/* prb_read_valid, prb_first_valid_seq, prb_next_seq removed - inlined */
 
 static u64 syslog_seq;
 /* call_console_driver removed - was empty stub */
@@ -160,7 +158,6 @@ void console_unlock(void)
 {
 	bool do_cond_resched;
 	bool handover;
-	bool flushed;
 	u64 next_seq;
 
 	if (console_suspended) {
@@ -170,20 +167,13 @@ void console_unlock(void)
 
 	do_cond_resched = console_may_schedule;
 
-	do {
-		console_may_schedule = 0;
-
-		flushed = console_flush_all(do_cond_resched, &next_seq,
-					    &handover);
-		if (!handover) {
-			console_locked = 0;
-			up_console_sem();
-		}
-
-		if (!flushed)
-			break;
-
-	} while (prb_read_valid(prb, next_seq, NULL) && console_trylock());
+	/* prb_read_valid always false - loop simplified to single iteration */
+	console_may_schedule = 0;
+	console_flush_all(do_cond_resched, &next_seq, &handover);
+	if (!handover) {
+		console_locked = 0;
+		up_console_sem();
+	}
 }
 
 void console_unblank(void)
@@ -319,7 +309,7 @@ void register_console(struct console *newcon)
 		newcon->seq = syslog_seq;
 		mutex_unlock(&syslog_lock);
 	} else {
-		newcon->seq = prb_next_seq(prb);
+		newcon->seq = 0; /* prb_next_seq always 0 */
 	}
 	console_unlock();
 	/* console_sysfs_notify call removed - empty stub */

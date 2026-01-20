@@ -663,15 +663,7 @@ void __sched schedule_preempt_disabled(void)
 	preempt_disable();
 }
 
-static void __sched notrace preempt_schedule_common(void)
-{
-	do {
-		preempt_disable_notrace();
-		__schedule(SM_PREEMPT);
-		preempt_enable_no_resched_notrace();
-
-	} while (need_resched());
-}
+/* preempt_schedule_common removed - inlined into single caller (~9 LOC) */
 
 asmlinkage __visible void __sched preempt_schedule_irq(void)
 {
@@ -880,7 +872,12 @@ SYSCALL_DEFINE0(sched_yield)
 int __sched __cond_resched(void)
 {
 	if (should_resched(0)) {
-		preempt_schedule_common();
+		/* Inlined preempt_schedule_common */
+		do {
+			preempt_disable_notrace();
+			__schedule(SM_PREEMPT);
+			preempt_enable_no_resched_notrace();
+		} while (need_resched());
 		return 1;
 	}
 

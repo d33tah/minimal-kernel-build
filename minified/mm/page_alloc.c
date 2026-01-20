@@ -837,22 +837,17 @@ static void __build_all_zonelists(void *data)
 	spin_unlock(&lock);
 }
 
-static noinline void __init build_all_zonelists_init(void)
-{
-	/* cpu variable removed - only single CPU used */
-	__build_all_zonelists(NULL);
-
-	/* for_each_possible_cpu simplified - single CPU */
-	per_cpu_pages_init(&per_cpu(boot_pageset, 0),
-			   &per_cpu(boot_zonestats, 0));
-}
+/* build_all_zonelists_init removed - inlined into single caller (~9 LOC) */
 
 void __ref build_all_zonelists(pg_data_t *pgdat)
 {
 	unsigned long vm_total_pages;
 
 	if (system_state == SYSTEM_BOOTING) {
-		build_all_zonelists_init();
+		/* Inlined build_all_zonelists_init */
+		__build_all_zonelists(NULL);
+		per_cpu_pages_init(&per_cpu(boot_pageset, 0),
+				   &per_cpu(boot_zonestats, 0));
 	} else {
 		__build_all_zonelists(pgdat);
 	}

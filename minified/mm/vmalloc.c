@@ -809,13 +809,7 @@ alloc_vmap_area(unsigned long size, unsigned long align, unsigned long vstart,
 /* lazy_max_pages, vmap_lazy_nr, purge_vmap_area_lazy, drain_vmap_area_work
    and lazy purge infrastructure removed - all stubs that do nothing (~35 LOC) */
 
-static void free_vmap_area_noflush(struct vmap_area *va)
-{
-	spin_lock(&vmap_area_lock);
-	unlink_va(va, &vmap_area_root);
-	spin_unlock(&vmap_area_lock);
-	/* Lazy purge code removed - merge_or_add_vmap_area and schedule_work were dead */
-}
+/* free_vmap_area_noflush removed - inlined into single caller (~7 LOC) */
 
 static struct vmap_area *find_vmap_area(unsigned long addr)
 {
@@ -1004,7 +998,11 @@ struct vm_struct *remove_vm_area(const void *addr)
 		spin_unlock(&vmap_area_lock);
 
 		vunmap_range_noflush(va->va_start, va->va_end);
-		free_vmap_area_noflush(va);
+
+		/* Inlined free_vmap_area_noflush */
+		spin_lock(&vmap_area_lock);
+		unlink_va(va, &vmap_area_root);
+		spin_unlock(&vmap_area_lock);
 
 		return vm;
 	}

@@ -148,12 +148,8 @@ int inode_permission(struct user_namespace *mnt_userns, struct inode *inode,
 		umode_t mode = inode->i_mode;
 		if (sb_rdonly(inode->i_sb) && (S_ISREG(mode) || S_ISDIR(mode)))
 			return -EROFS;
-	}
-
-	if (unlikely(mask & MAY_WRITE)) {
 		if (IS_IMMUTABLE(inode))
 			return -EPERM;
-
 		if (HAS_UNMAPPED_ID(mnt_userns, inode))
 			return -EACCES;
 	}
@@ -1043,7 +1039,7 @@ static int may_open(struct user_namespace *mnt_userns, const struct path *path,
 /* atomic_open removed - i_op->atomic_open is never set (~40 LOC) */
 
 static struct dentry *lookup_open(struct nameidata *nd, struct file *file,
-				  const struct open_flags *op, bool got_write)
+				  const struct open_flags *op)
 {
 	/* Simplified: basic lookup with minimal revalidation */
 	struct user_namespace *mnt_userns;
@@ -1151,7 +1147,7 @@ static const char *open_last_lookups(struct nameidata *nd, struct file *file,
 		inode_lock(dir->d_inode);
 	else
 		inode_lock_shared(dir->d_inode);
-	dentry = lookup_open(nd, file, op, got_write);
+	dentry = lookup_open(nd, file, op);
 	if (open_flag & O_CREAT)
 		inode_unlock(dir->d_inode);
 	else

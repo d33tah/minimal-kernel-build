@@ -244,16 +244,7 @@ static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags,
 	WRITE_ONCE(p->__state, TASK_RUNNING);
 }
 
-static __always_inline bool ttwu_state_match(struct task_struct *p,
-					     unsigned int state, int *success)
-{
-	if (READ_ONCE(p->__state) & state) {
-		*success = 1;
-		return true;
-	}
-
-	return false;
-}
+/* ttwu_state_match inlined into try_to_wake_up */
 
 static int try_to_wake_up(struct task_struct *p, unsigned int state,
 			  int wake_flags)
@@ -264,11 +255,11 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state,
 
 	preempt_disable();
 	if (p == current) {
-		if (!ttwu_state_match(p, state, &success))
-			goto out;
-
-		WRITE_ONCE(p->__state, TASK_RUNNING);
-
+		/* ttwu_state_match inlined */
+		if (READ_ONCE(p->__state) & state) {
+			success = 1;
+			WRITE_ONCE(p->__state, TASK_RUNNING);
+		}
 		goto out;
 	}
 
@@ -400,13 +391,7 @@ void wake_up_new_task(struct task_struct *p)
 	} while (0)
 #endif
 
-static inline void prepare_task_switch(struct rq *rq, struct task_struct *prev,
-				       struct task_struct *next)
-{
-	if (unlikely(current->kmap_ctrl.idx))
-		__kmap_local_sched_out();
-	prepare_arch_switch(next);
-}
+/* prepare_task_switch inlined into context_switch */
 
 static struct rq *finish_task_switch(struct task_struct *prev)
 	__releases(rq->lock)
@@ -457,7 +442,10 @@ static __always_inline struct rq *context_switch(struct rq *rq,
 						 struct task_struct *next,
 						 struct rq_flags *rf)
 {
-	prepare_task_switch(rq, prev, next);
+	/* prepare_task_switch inlined */
+	if (unlikely(current->kmap_ctrl.idx))
+		__kmap_local_sched_out();
+	prepare_arch_switch(next);
 
 	if (!next->mm) {
 		enter_lazy_tlb(prev->active_mm, next);

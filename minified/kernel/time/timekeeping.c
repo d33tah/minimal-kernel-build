@@ -74,16 +74,7 @@ static inline u64 tk_clock_read(const struct tk_read_base *tkr)
 	return clock->read(clock);
 }
 
-static inline u64 timekeeping_get_delta(const struct tk_read_base *tkr)
-{
-	u64 cycle_now, delta;
-
-	cycle_now = tk_clock_read(tkr);
-
-	delta = clocksource_delta(cycle_now, tkr->cycle_last, tkr->mask);
-
-	return delta;
-}
+/* timekeeping_get_delta inlined into ktime_get (via timekeeping_get_ns) */
 
 static void tk_setup_internals(struct timekeeper *tk, struct clocksource *clock)
 {
@@ -140,24 +131,7 @@ static void tk_setup_internals(struct timekeeper *tk, struct clocksource *clock)
 	tk->skip_second_overflow = 0;
 }
 
-static inline u64 timekeeping_delta_to_ns(const struct tk_read_base *tkr,
-					  u64 delta)
-{
-	u64 nsec;
-
-	nsec = delta * tkr->mult + tkr->xtime_nsec;
-	nsec >>= tkr->shift;
-
-	return nsec;
-}
-
-static inline u64 timekeeping_get_ns(const struct tk_read_base *tkr)
-{
-	u64 delta;
-
-	delta = timekeeping_get_delta(tkr);
-	return timekeeping_delta_to_ns(tkr, delta);
-}
+/* timekeeping_delta_to_ns, timekeeping_get_ns inlined into ktime_get */
 
 /* update_fast_timekeeper removed - fast path functions are stubbed */
 
@@ -236,8 +210,14 @@ ktime_t ktime_get(void)
 	do {
 		seq = read_seqcount_begin(&tk_core.seq);
 		base = tk->tkr_mono.base;
-		nsecs = timekeeping_get_ns(&tk->tkr_mono);
-
+		/* timekeeping_get_ns, timekeeping_get_delta, timekeeping_delta_to_ns inlined */
+		{
+			const struct tk_read_base *tkr = &tk->tkr_mono;
+			u64 delta = clocksource_delta(
+				tk_clock_read(tkr), tkr->cycle_last, tkr->mask);
+			nsecs = (delta * tkr->mult + tkr->xtime_nsec) >>
+				tkr->shift;
+		}
 	} while (read_seqcount_retry(&tk_core.seq, seq));
 
 	return ktime_add_ns(base, nsecs);

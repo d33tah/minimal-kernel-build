@@ -10,10 +10,10 @@
 
 #include "internals.h"
 
-static void desc_set_defaults(unsigned int irq, struct irq_desc *desc, int node,
-			      const struct cpumask *affinity,
+static void desc_set_defaults(unsigned int irq, struct irq_desc *desc,
 			      struct module *owner)
 {
+	/* node and affinity parameters removed - unused in minimal kernel */
 	desc->irq_common_data.handler_data = NULL;
 	desc->irq_common_data.msi_desc = NULL;
 
@@ -54,7 +54,6 @@ struct irq_desc *irq_to_desc(unsigned int irq)
 }
 
 static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
-				   const struct cpumask *affinity,
 				   struct module *owner)
 {
 	struct irq_desc *desc;
@@ -72,7 +71,7 @@ static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
 	mutex_init(&desc->request_mutex);
 	init_waitqueue_head(&desc->wait_for_threads);
 
-	desc_set_defaults(irq, desc, node, affinity, owner);
+	desc_set_defaults(irq, desc, owner);
 	irqd_set(&desc->irq_data, flags);
 	kobject_init(&desc->kobj, &irq_kobj_type);
 
@@ -113,7 +112,7 @@ int __init early_irq_init(void)
 		nr_irqs = initcnt;
 
 	for (i = 0; i < initcnt; i++) {
-		desc = alloc_desc(i, 0, 0, NULL,
+		desc = alloc_desc(i, 0, 0,
 				  NULL); /* node=0 (first_online_node) */
 		set_bit(i, allocated_irqs);
 		radix_tree_insert(&irq_desc_tree, i, desc);

@@ -9,10 +9,7 @@ void get_random_bytes(void *buf, size_t len)
 {
 	memset(buf, 0, len);
 }
-u32 get_random_u32(void)
-{
-	return 0;
-}
+/* get_random_u32 moved to header as inline */
 /* random_init removed - empty stub */
 
 static ssize_t random_read(struct file *file, char __user *buf, size_t nbytes,

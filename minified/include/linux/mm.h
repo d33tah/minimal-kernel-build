@@ -125,8 +125,7 @@ static inline void totalram_pages_add(long count)
 extern void * high_memory;
 
 #define sysctl_legacy_va_layout 0
-
-extern int mmap_rnd_bits __read_mostly;
+/* mmap_rnd_bits removed - no ASLR */
 
 #include <asm/page.h>
 #include <asm/processor.h>

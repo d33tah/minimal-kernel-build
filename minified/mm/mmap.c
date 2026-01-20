@@ -38,7 +38,7 @@ unsigned long mmap_min_addr = CONFIG_DEFAULT_MMAP_MIN_ADDR;
 #define arch_mmap_check(addr, len, flags) (0)
 #endif
 
-int mmap_rnd_bits __read_mostly = CONFIG_ARCH_MMAP_RND_BITS;
+/* mmap_rnd_bits removed - no ASLR */
 
 pgprot_t protection_map[16] __ro_after_init = {
 	[VM_NONE] = __P000,

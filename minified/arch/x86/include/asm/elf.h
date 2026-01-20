@@ -102,8 +102,7 @@ extern unsigned long task_size_64bit(int full_addr_space);
 extern unsigned long get_sigframe_size(void);
 
 
-#define __STACK_RND_MASK(is32bit) (0x7ff)
-#define STACK_RND_MASK (0x7ff)
+/* __STACK_RND_MASK, STACK_RND_MASK removed - no ASLR */
 
 #define ARCH_DLINFO		ARCH_DLINFO_IA32
 

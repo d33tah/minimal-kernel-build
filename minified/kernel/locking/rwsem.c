@@ -60,25 +60,23 @@ static inline bool is_rwsem_reader_owned(struct rw_semaphore *sem)
 	return atomic_long_read(&sem->owner) & RWSEM_READER_OWNED;
 }
 
-static inline void rwsem_set_nonspinnable(struct rw_semaphore *sem)
-{
-	unsigned long owner = atomic_long_read(&sem->owner);
-
-	do {
-		if (!(owner & RWSEM_READER_OWNED))
-			break;
-		if (owner & RWSEM_NONSPINNABLE)
-			break;
-	} while (!atomic_long_try_cmpxchg(&sem->owner, &owner,
-					  owner | RWSEM_NONSPINNABLE));
-}
+/* rwsem_set_nonspinnable inlined into rwsem_read_trylock */
 
 static inline bool rwsem_read_trylock(struct rw_semaphore *sem, long *cntp)
 {
 	*cntp = atomic_long_add_return_acquire(RWSEM_READER_BIAS, &sem->count);
 
-	if (WARN_ON_ONCE(*cntp < 0))
-		rwsem_set_nonspinnable(sem);
+	if (WARN_ON_ONCE(*cntp < 0)) {
+		/* rwsem_set_nonspinnable inlined */
+		unsigned long owner = atomic_long_read(&sem->owner);
+		do {
+			if (!(owner & RWSEM_READER_OWNED))
+				break;
+			if (owner & RWSEM_NONSPINNABLE)
+				break;
+		} while (!atomic_long_try_cmpxchg(&sem->owner, &owner,
+						  owner | RWSEM_NONSPINNABLE));
+	}
 
 	if (!(*cntp & RWSEM_READ_FAILED_MASK)) {
 		rwsem_set_reader_owned(sem);
@@ -145,17 +143,7 @@ static inline void rwsem_add_waiter(struct rw_semaphore *sem,
 	list_add_tail(&waiter->list, &sem->wait_list);
 }
 
-static inline bool rwsem_del_waiter(struct rw_semaphore *sem,
-				    struct rwsem_waiter *waiter)
-{
-	list_del(&waiter->list);
-	if (likely(!list_empty(&sem->wait_list)))
-		return true;
-
-	atomic_long_andnot(RWSEM_FLAG_HANDOFF | RWSEM_FLAG_WAITERS,
-			   &sem->count);
-	return false;
-}
+/* rwsem_del_waiter inlined into rwsem_del_wake_waiter */
 
 static void rwsem_mark_wake(struct rw_semaphore *sem,
 			    enum rwsem_wake_type wake_type,
@@ -240,10 +228,18 @@ static inline void rwsem_del_wake_waiter(struct rw_semaphore *sem,
 	__releases(&sem->wait_lock)
 {
 	bool first = rwsem_first_waiter(sem) == waiter;
+	bool has_waiters;
 
 	wake_q_init(wake_q);
 
-	if (rwsem_del_waiter(sem, waiter) && first)
+	/* rwsem_del_waiter inlined */
+	list_del(&waiter->list);
+	has_waiters = !list_empty(&sem->wait_list);
+	if (!has_waiters)
+		atomic_long_andnot(RWSEM_FLAG_HANDOFF | RWSEM_FLAG_WAITERS,
+				   &sem->count);
+
+	if (has_waiters && first)
 		rwsem_mark_wake(sem, RWSEM_WAKE_ANY, wake_q);
 	raw_spin_unlock_irq(&sem->wait_lock);
 	if (!wake_q_empty(wake_q))

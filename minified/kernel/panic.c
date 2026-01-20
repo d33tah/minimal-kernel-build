@@ -28,7 +28,7 @@ extern struct atomic_notifier_head panic_notifier_list;
 /* PANIC_BLINK_SPD removed - unused after panic_blink removal */
 
 int panic_on_oops = CONFIG_PANIC_ON_OOPS_VALUE;
-static unsigned long tainted_mask = 0;
+/* tainted_mask removed - write-only, never read */
 /* pause_on_oops removed - always 0, sysctl not available */
 int panic_on_warn __read_mostly;
 /* panic_on_taint removed - never set to non-zero */
@@ -115,7 +115,7 @@ void add_taint(unsigned flag, enum lockdep_ok lockdep_ok)
 	if (lockdep_ok == LOCKDEP_NOW_UNRELIABLE)
 		__debug_locks_off();
 
-	set_bit(flag, &tainted_mask);
+	/* set_bit(flag, &tainted_mask) removed - tainted_mask never read */
 	/* panic_on_taint check removed - never set to non-zero */
 }
 

@@ -39,10 +39,7 @@ static inline void rwsem_set_owner(struct rw_semaphore *sem)
 	atomic_long_set(&sem->owner, (long)current);
 }
 
-static inline bool rwsem_test_oflags(struct rw_semaphore *sem, long flags)
-{
-	return atomic_long_read(&sem->owner) & flags;
-}
+/* rwsem_test_oflags inlined into is_rwsem_reader_owned */
 
 static inline void __rwsem_set_reader_owned(struct rw_semaphore *sem,
 					    struct task_struct *owner)
@@ -50,7 +47,6 @@ static inline void __rwsem_set_reader_owned(struct rw_semaphore *sem,
 	unsigned long val =
 		(unsigned long)owner | RWSEM_READER_OWNED |
 		(atomic_long_read(&sem->owner) & RWSEM_NONSPINNABLE);
-
 	atomic_long_set(&sem->owner, val);
 }
 
@@ -61,7 +57,7 @@ static inline void rwsem_set_reader_owned(struct rw_semaphore *sem)
 
 static inline bool is_rwsem_reader_owned(struct rw_semaphore *sem)
 {
-	return rwsem_test_oflags(sem, RWSEM_READER_OWNED);
+	return atomic_long_read(&sem->owner) & RWSEM_READER_OWNED;
 }
 
 static inline void rwsem_set_nonspinnable(struct rw_semaphore *sem)

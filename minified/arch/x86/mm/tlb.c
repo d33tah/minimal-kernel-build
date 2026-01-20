@@ -26,7 +26,7 @@ DEFINE_STATIC_KEY_FALSE(rdpmc_always_available_key);
 #define __flush_tlb_local native_flush_tlb_local
 #define __flush_tlb_global native_flush_tlb_global
 #define __flush_tlb_one_user(addr) native_flush_tlb_one_user(addr)
-#define __flush_tlb_multi(msk, info) native_flush_tlb_multi(msk, info)
+/* __flush_tlb_multi removed - single-CPU kernel */
 
 #define LAST_USER_MM_IBPB 0x1UL
 #define LAST_USER_MM_L1D_FLUSH 0x2UL
@@ -354,29 +354,9 @@ static void flush_tlb_func(void *info)
 done:;
 }
 
-static bool tlb_is_not_lazy(int cpu, void *data)
-{
-	return !per_cpu(cpu_tlbstate_shared.is_lazy, cpu);
-}
-
 DEFINE_PER_CPU_SHARED_ALIGNED(struct tlb_state_shared, cpu_tlbstate_shared);
 
-STATIC_NOPV void native_flush_tlb_multi(const struct cpumask *cpumask,
-					const struct flush_tlb_info *info)
-{
-	/* count_vm_tlb_event(NR_TLB_REMOTE_FLUSH) removed - empty stub */
-	if (info->freed_tables)
-		on_each_cpu_mask(cpumask, flush_tlb_func, (void *)info, true);
-	else
-		on_each_cpu_cond_mask(tlb_is_not_lazy, flush_tlb_func,
-				      (void *)info, 1, cpumask);
-}
-
-void flush_tlb_multi(const struct cpumask *cpumask,
-		     const struct flush_tlb_info *info)
-{
-	__flush_tlb_multi(cpumask, info);
-}
+/* tlb_is_not_lazy, native_flush_tlb_multi, flush_tlb_multi removed - single-CPU kernel */
 
 unsigned long tlb_single_page_flush_ceiling __read_mostly = 33;
 

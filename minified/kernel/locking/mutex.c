@@ -142,11 +142,7 @@ void __sched mutex_lock(struct mutex *lock)
 		__mutex_lock_slowpath(lock);
 }
 
-static __always_inline bool mutex_optimistic_spin(struct mutex *lock,
-						  struct mutex_waiter *waiter)
-{
-	return false;
-}
+/* mutex_optimistic_spin removed - always returned false */
 
 static noinline void __sched __mutex_unlock_slowpath(struct mutex *lock,
 						     unsigned long ip);
@@ -169,7 +165,8 @@ static __always_inline int __sched __mutex_lock_common(
 
 	preempt_disable();
 
-	if (__mutex_trylock(lock) || mutex_optimistic_spin(lock, NULL)) {
+	/* mutex_optimistic_spin call removed - always returned false */
+	if (__mutex_trylock(lock)) {
 		preempt_enable();
 		return 0;
 	}
@@ -205,10 +202,7 @@ static __always_inline int __sched __mutex_lock_common(
 		if (!__mutex_trylock_common(lock, first))
 			break;
 
-		if (first) {
-			if (mutex_optimistic_spin(lock, &waiter))
-				break;
-		}
+		/* mutex_optimistic_spin block removed - always returned false */
 
 		raw_spin_lock(&lock->wait_lock);
 	}

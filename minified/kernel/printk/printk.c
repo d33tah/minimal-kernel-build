@@ -73,8 +73,7 @@ static void __up_console_sem(unsigned long ip)
 
 static int console_locked, console_suspended;
 
-/* console_cmdline array removed - never populated */
-static int preferred_console = -1;
+/* console_cmdline array, preferred_console removed - never populated/used */
 
 static int console_may_schedule;
 
@@ -275,18 +274,16 @@ void register_console(struct console *newcon)
 		return;
 	}
 
-	if (preferred_console < 0) {
-		if (!console_drivers || !console_drivers->device ||
-		    console_drivers->flags & CON_BOOT) {
-			/* inlined try_enable_default_console */
-			if (newcon->index < 0)
-				newcon->index = 0;
-			if (!newcon->setup ||
-			    newcon->setup(newcon, NULL) == 0) {
-				newcon->flags |= CON_ENABLED;
-				if (newcon->device)
-					newcon->flags |= CON_CONSDEV;
-			}
+	/* preferred_console always -1, so condition always true */
+	if (!console_drivers || !console_drivers->device ||
+	    console_drivers->flags & CON_BOOT) {
+		/* inlined try_enable_default_console */
+		if (newcon->index < 0)
+			newcon->index = 0;
+		if (!newcon->setup || newcon->setup(newcon, NULL) == 0) {
+			newcon->flags |= CON_ENABLED;
+			if (newcon->device)
+				newcon->flags |= CON_CONSDEV;
 		}
 	}
 

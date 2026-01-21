@@ -920,13 +920,20 @@ void __d_lookup_done(struct dentry *dentry)
 	INIT_LIST_HEAD(&dentry->d_lru);
 }
 
-static inline void __d_add(struct dentry *dentry, struct inode *inode)
+/* __d_add inlined into d_add */
+
+void d_add(struct dentry *entry, struct inode *inode)
 {
 	struct inode *dir = NULL;
 	unsigned n;
-	spin_lock(&dentry->d_lock);
-	if (unlikely(d_in_lookup(dentry))) {
-		dir = dentry->d_parent->d_inode;
+
+	if (inode) {
+		/* security_d_instantiate - empty stub */
+		spin_lock(&inode->i_lock);
+	}
+	spin_lock(&entry->d_lock);
+	if (unlikely(d_in_lookup(entry))) {
+		dir = entry->d_parent->d_inode;
 		/* Inlined start_dir_add */
 		for (;;) {
 			n = dir->i_dir_seq;
@@ -934,35 +941,26 @@ static inline void __d_add(struct dentry *dentry, struct inode *inode)
 				break;
 			cpu_relax();
 		}
-		__d_lookup_done(dentry);
+		__d_lookup_done(entry);
 	}
 	if (inode) {
 		unsigned add_flags = d_flags_for_inode(inode);
-		hlist_add_head(&dentry->d_u.d_alias, &inode->i_dentry);
-		raw_write_seqcount_begin(&dentry->d_seq);
-		__d_set_inode_and_type(dentry, inode, add_flags);
-		raw_write_seqcount_end(&dentry->d_seq);
+		hlist_add_head(&entry->d_u.d_alias, &inode->i_dentry);
+		raw_write_seqcount_begin(&entry->d_seq);
+		__d_set_inode_and_type(entry, inode, add_flags);
+		raw_write_seqcount_end(&entry->d_seq);
 	}
 	{
-		struct hlist_bl_head *b = d_hash(dentry->d_name.hash);
+		struct hlist_bl_head *b = d_hash(entry->d_name.hash);
 		hlist_bl_lock(b);
-		hlist_bl_add_head_rcu(&dentry->d_hash, b);
+		hlist_bl_add_head_rcu(&entry->d_hash, b);
 		hlist_bl_unlock(b);
 	}
 	if (dir)
 		smp_store_release(&dir->i_dir_seq, n + 2);
-	spin_unlock(&dentry->d_lock);
+	spin_unlock(&entry->d_lock);
 	if (inode)
 		spin_unlock(&inode->i_lock);
-}
-
-void d_add(struct dentry *entry, struct inode *inode)
-{
-	if (inode) {
-		/* security_d_instantiate - empty stub */
-		spin_lock(&inode->i_lock);
-	}
-	__d_add(entry, inode);
 }
 
 /* Simplified - d_ancestor always returned NULL, so only equality check matters */

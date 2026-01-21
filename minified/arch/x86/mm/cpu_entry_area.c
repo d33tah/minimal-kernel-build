@@ -40,18 +40,8 @@ static void __init cea_map_percpu_pages(void *cea_vaddr, void *ptr, int pages,
 		cea_set_pte(cea_vaddr, per_cpu_ptr_to_phys(ptr), prot);
 }
 
-/* CONFIG_PERF_EVENTS is not set - only empty stub compiled */
-static inline void percpu_setup_debug_store(unsigned int cpu)
-{
-}
-
-static inline void percpu_setup_exception_stacks(unsigned int cpu)
-{
-	struct cpu_entry_area *cea = get_cpu_entry_area(cpu);
-
-	cea_map_percpu_pages(&cea->doublefault_stack,
-			     &per_cpu(doublefault_stack, cpu), 1, PAGE_KERNEL);
-}
+/* percpu_setup_debug_store removed - empty stub */
+/* percpu_setup_exception_stacks inlined into setup_cpu_entry_area */
 
 static void __init setup_cpu_entry_area(unsigned int cpu)
 {
@@ -80,9 +70,10 @@ static void __init setup_cpu_entry_area(unsigned int cpu)
 
 	per_cpu(cpu_entry_area, cpu) = cea;
 
-	percpu_setup_exception_stacks(cpu);
-
-	percpu_setup_debug_store(cpu);
+	/* percpu_setup_exception_stacks inlined */
+	cea_map_percpu_pages(&cea->doublefault_stack,
+			     &per_cpu(doublefault_stack, cpu), 1, PAGE_KERNEL);
+	/* percpu_setup_debug_store removed - empty stub */
 }
 
 static __init void setup_cpu_entry_area_ptes(void)

@@ -118,10 +118,7 @@ SYM_CODE_START(startup_32)
 	movl %eax, pa(olpc_ofw_pgd)
 #endif
 
-#ifdef CONFIG_MICROCODE
-	/* Early load ucode on BSP. */
-	call load_ucode_bsp
-#endif
+/* CONFIG_MICROCODE block removed - not set */
 
 	/* Create early pagetables. */
 	call  mk_early_pgtbl_32
@@ -138,19 +135,7 @@ SYM_CODE_START(startup_32)
 	jmp .Ldefault_entry
 SYM_CODE_END(startup_32)
 
-#ifdef CONFIG_HOTPLUG_CPU
-/*
- * Boot CPU0 entry point. It's called from play_dead(). Everything has been set
- * up already except stack. We just set up stack here. Then call
- * start_secondary().
- */
-SYM_FUNC_START(start_cpu0)
-	movl initial_stack, %ecx
-	movl %ecx, %esp
-	call *(initial_code)
-1:	jmp 1b
-SYM_FUNC_END(start_cpu0)
-#endif
+/* CONFIG_HOTPLUG_CPU block (start_cpu0) removed - not set */
 
 /*
  * Non-boot CPU entry point; entered from trampoline.S
@@ -171,10 +156,7 @@ SYM_FUNC_START(startup_32_smp)
 	movl %eax,%ss
 	leal -__PAGE_OFFSET(%ecx),%esp
 
-#ifdef CONFIG_MICROCODE
-	/* Early load ucode on AP. */
-	call load_ucode_ap
-#endif
+/* CONFIG_MICROCODE block removed - not set */
 
 .Ldefault_entry:
 	movl $(CR0_STATE & ~X86_CR0_PG),%eax

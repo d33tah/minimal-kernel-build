@@ -226,13 +226,7 @@ unsigned long cr4_read_shadow(void)
 }
 
 /* cr4_init removed - never called */
-
-static void __init setup_cr_pinning(void)
-{
-	cr4_pinned_bits = this_cpu_read(cpu_tlbstate.cr4) & cr4_pinned_mask;
-	static_key_enable(&cr_pinning.key);
-}
-
+/* setup_cr_pinning inlined into identify_boot_cpu */
 /* setup_pku, setup_cet removed - empty functions, features disabled */
 
 struct cpuid_dependent_feature {
@@ -476,17 +470,8 @@ static void identify_cpu_without_cpuid(struct cpuinfo_x86 *c)
 		}
 }
 
-static void __init cpu_set_bug_bits(struct cpuinfo_x86 *c)
-{
-	/* Stub: CPU bug detection not needed for minimal kernel */
-}
-
+/* cpu_set_bug_bits and cpu_parse_early_param removed - empty stubs, calls removed */
 /* detect_nopl inlined into early_identify_cpu */
-
-static void __init cpu_parse_early_param(void)
-{
-	/* Stub: CPU early param parsing not needed for minimal kernel */
-}
 
 static void __init early_identify_cpu(struct cpuinfo_x86 *c)
 {
@@ -507,7 +492,7 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c)
 		get_cpu_cap(c);
 		get_cpu_address_sizes(c);
 		setup_force_cpu_cap(X86_FEATURE_CPUID);
-		cpu_parse_early_param();
+		/* cpu_parse_early_param removed - empty stub */
 
 		if (this_cpu->c_early_init)
 			this_cpu->c_early_init(c);
@@ -522,9 +507,7 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c)
 	}
 
 	setup_force_cpu_cap(X86_FEATURE_ALWAYS);
-
-	cpu_set_bug_bits(c);
-
+	/* cpu_set_bug_bits removed - empty stub */
 	/* sld_setup removed - was empty stub in intel.c */
 
 	fpu__init_system(c);
@@ -661,7 +644,9 @@ void __init identify_boot_cpu(void)
 	sysenter_setup();
 	enable_sep_cpu();
 	/* cpu_detect_tlb removed - TLB info never used */
-	setup_cr_pinning();
+	/* setup_cr_pinning inlined */
+	cr4_pinned_bits = this_cpu_read(cpu_tlbstate.cr4) & cr4_pinned_mask;
+	static_key_enable(&cr_pinning.key);
 	/* tsx_init removed - was empty stub */
 }
 

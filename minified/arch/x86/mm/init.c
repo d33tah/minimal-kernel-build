@@ -155,37 +155,7 @@ static inline void cr4_set_bits_and_update_boot(unsigned long mask)
 	cr4_set_bits(mask);
 }
 
-static void __init probe_page_size_mask(void)
-{
-	/* debug_pagealloc_enabled() always returns false */
-	if (boot_cpu_has(X86_FEATURE_PSE))
-		page_size_mask |= 1 << PG_LEVEL_2M;
-	else
-		direct_gbpages = 0;
-
-	if (boot_cpu_has(X86_FEATURE_PSE))
-		cr4_set_bits_and_update_boot(X86_CR4_PSE);
-
-	__supported_pte_mask &= ~_PAGE_GLOBAL;
-	if (boot_cpu_has(X86_FEATURE_PGE)) {
-		cr4_set_bits_and_update_boot(X86_CR4_PGE);
-		__supported_pte_mask |= _PAGE_GLOBAL;
-	}
-
-	__default_kernel_pte_mask = __supported_pte_mask;
-	/* X86_FEATURE_PTI is disabled */
-	if (direct_gbpages && boot_cpu_has(X86_FEATURE_GBPAGES)) {
-		printk(KERN_INFO "Using GB pages for direct mapping\n");
-		page_size_mask |= 1 << PG_LEVEL_1G;
-	} else {
-		direct_gbpages = 0;
-	}
-}
-
-static void setup_pcid(void)
-{
-	/* !X86_64: PCID not supported on 32-bit */
-}
+/* probe_page_size_mask inlined into init_mem_mapping, setup_pcid is empty */
 
 #define NR_RANGE_MR 3
 
@@ -434,9 +404,27 @@ static void __init memory_map_bottom_up(unsigned long map_start,
 void __init init_mem_mapping(void)
 {
 	unsigned long end;
-	/* pti_check_boottime_disable removed - empty stub */
-	probe_page_size_mask();
-	setup_pcid();
+
+	/* probe_page_size_mask inlined */
+	if (boot_cpu_has(X86_FEATURE_PSE)) {
+		page_size_mask |= 1 << PG_LEVEL_2M;
+		cr4_set_bits_and_update_boot(X86_CR4_PSE);
+	} else {
+		direct_gbpages = 0;
+	}
+	__supported_pte_mask &= ~_PAGE_GLOBAL;
+	if (boot_cpu_has(X86_FEATURE_PGE)) {
+		cr4_set_bits_and_update_boot(X86_CR4_PGE);
+		__supported_pte_mask |= _PAGE_GLOBAL;
+	}
+	__default_kernel_pte_mask = __supported_pte_mask;
+	if (direct_gbpages && boot_cpu_has(X86_FEATURE_GBPAGES)) {
+		printk(KERN_INFO "Using GB pages for direct mapping\n");
+		page_size_mask |= 1 << PG_LEVEL_1G;
+	} else {
+		direct_gbpages = 0;
+	}
+	/* setup_pcid empty - PCID not supported on 32-bit */
 
 	end = max_low_pfn << PAGE_SHIFT;
 

@@ -352,32 +352,15 @@ void __init paging_init(void)
 	zone_sizes_init();
 }
 
-static void __init test_wp_bit(void)
+/* test_wp_bit inlined - single caller */
+void __init mem_init(void)
 {
 	char z = 0;
 
-	__set_fixmap(FIX_WP_TEST, __pa_symbol(empty_zero_page), PAGE_KERNEL_RO);
-
-	if (copy_to_kernel_nofault((char *)fix_to_virt(FIX_WP_TEST), &z, 1)) {
-		clear_fixmap(FIX_WP_TEST);
-		return;
-	}
-
-	panic("Linux doesn't support CPUs with broken WP.");
-}
-
-void __init mem_init(void)
-{
 	pci_iommu_alloc();
-
 	BUG_ON(!mem_map);
-
-	/* set_highmem_pages_init removed - empty stub */
-
 	memblock_free_all();
-
 	after_bootmem = 1;
-	/* x86_init.hyper.init_after_bootmem removed - is x86_init_noop */
 
 #define __FIXADDR_TOP (-PAGE_SIZE)
 #define high_memory (-128UL << 20)
@@ -388,7 +371,11 @@ void __init mem_init(void)
 	BUG_ON(VMALLOC_START >= VMALLOC_END);
 	BUG_ON((unsigned long)high_memory > VMALLOC_START);
 
-	test_wp_bit();
+	/* test_wp_bit inlined */
+	__set_fixmap(FIX_WP_TEST, __pa_symbol(empty_zero_page), PAGE_KERNEL_RO);
+	if (!copy_to_kernel_nofault((char *)fix_to_virt(FIX_WP_TEST), &z, 1))
+		panic("Linux doesn't support CPUs with broken WP.");
+	clear_fixmap(FIX_WP_TEST);
 }
 
 static void mark_nxdata_nx(void)

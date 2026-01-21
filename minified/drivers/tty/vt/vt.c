@@ -668,73 +668,13 @@ static int vc_translate(struct vc_data *vc, int *c, bool *rescan)
 	return *c;
 }
 
-static bool vc_is_control(struct vc_data *vc, int tc, int c)
-{
-	static const u32 CTRL_ACTION = 0x0d00ff81;
-
-	static const u32 CTRL_ALWAYS = 0x0800f501;
-
-	if (vc->vc_state != ESnormal)
-		return true;
-
-	if (!tc)
-		return true;
-
-	if (c < 32) {
-		if (vc->vc_disp_ctrl)
-			return CTRL_ALWAYS & BIT(c);
-		else
-			return vc->vc_utf || (CTRL_ACTION & BIT(c));
-	}
-
-	if (c == 127 && !vc->vc_disp_ctrl)
-		return true;
-
-	if (c == 128 + 27)
-		return true;
-
-	return false;
-}
-
-static int vc_con_write_normal(struct vc_data *vc, int tc, int c,
-			       struct vc_draw_region *draw)
-{
-	/* Minimal stub: simplified character output without UTF-8/double-width support */
-	u16 himask = vc->vc_hi_font_mask;
-
-	if (vc->vc_need_wrap) {
-		cr(vc);
-		lf(vc);
-	}
-
-	tc = conv_uni_to_pc(vc, tc);
-	if (tc < 0)
-		tc = c;
-
-	if (himask)
-		tc = ((tc & 0x100) ? himask : 0) | (tc & 0xff);
-	tc |= (vc->vc_attr << 8) & ~himask;
-
-	scr_writew(tc, (u16 *)vc->vc_pos);
-
-	if (con_should_update(vc) && draw->x < 0) {
-		draw->x = vc->state.x;
-		draw->from = vc->vc_pos;
-	}
-
-	if (vc->state.x == vc->vc_cols - 1) {
-		vc->vc_need_wrap = vc->vc_decawm;
-		draw->to = vc->vc_pos + 2;
-	} else {
-		vc->state.x++;
-		draw->to = (vc->vc_pos += 2);
-	}
-	return 0;
-}
+/* vc_is_control and vc_con_write_normal inlined into do_con_write */
 
 static int do_con_write(struct tty_struct *tty, const unsigned char *buf,
 			int count)
 {
+	static const u32 CTRL_ACTION = 0x0d00ff81;
+	static const u32 CTRL_ALWAYS = 0x0800f501;
 	struct vc_draw_region draw = { .x = -1 };
 	struct vc_data *vc;
 	int c, tc, n = 0;
@@ -750,11 +690,43 @@ static int do_con_write(struct tty_struct *tty, const unsigned char *buf,
 	}
 
 	while (!tty->flow.stopped && count--) {
+		bool is_control;
 		c = *buf++;
 		n++;
 		tc = vc_translate(vc, &c, NULL);
-		if (tc != -1 && !vc_is_control(vc, tc, c))
-			vc_con_write_normal(vc, tc, c, &draw);
+		/* vc_is_control inlined */
+		is_control = vc->vc_state != ESnormal || !tc ||
+			     (c < 32 &&
+			      (vc->vc_disp_ctrl ? (CTRL_ALWAYS & BIT(c)) :
+						  (vc->vc_utf ||
+						   (CTRL_ACTION & BIT(c))))) ||
+			     (c == 127 && !vc->vc_disp_ctrl) || (c == 128 + 27);
+		if (tc != -1 && !is_control) {
+			/* vc_con_write_normal inlined */
+			u16 himask = vc->vc_hi_font_mask;
+			if (vc->vc_need_wrap) {
+				cr(vc);
+				lf(vc);
+			}
+			tc = conv_uni_to_pc(vc, tc);
+			if (tc < 0)
+				tc = c;
+			if (himask)
+				tc = ((tc & 0x100) ? himask : 0) | (tc & 0xff);
+			tc |= (vc->vc_attr << 8) & ~himask;
+			scr_writew(tc, (u16 *)vc->vc_pos);
+			if (con_should_update(vc) && draw.x < 0) {
+				draw.x = vc->state.x;
+				draw.from = vc->vc_pos;
+			}
+			if (vc->state.x == vc->vc_cols - 1) {
+				vc->vc_need_wrap = vc->vc_decawm;
+				draw.to = vc->vc_pos + 2;
+			} else {
+				vc->state.x++;
+				draw.to = (vc->vc_pos += 2);
+			}
+		}
 	}
 	/* Inlined con_flush */
 	if (draw.x >= 0) {

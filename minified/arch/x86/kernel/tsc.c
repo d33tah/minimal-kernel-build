@@ -116,15 +116,7 @@ static void __set_cyc2ns_scale(unsigned long khz, int cpu,
 	c2n->data[1] = data;
 }
 
-static void __init cyc2ns_init_boot_cpu(void)
-{
-	struct cyc2ns *c2n = this_cpu_ptr(&cyc2ns);
-
-	seqcount_latch_init(&c2n->seq);
-	__set_cyc2ns_scale(tsc_khz, smp_processor_id(), rdtsc());
-}
-
-/* cyc2ns_init_secondary_cpus removed - never called */
+/* cyc2ns_init_boot_cpu inlined below, cyc2ns_init_secondary_cpus removed */
 
 u64 native_sched_clock(void)
 {
@@ -440,27 +432,29 @@ static bool __init determine_cpu_tsc_frequencies(void)
 	return true;
 }
 
-static void __init tsc_enable_sched_clock(void)
+/* tsc_enable_sched_clock, cyc2ns_init_boot_cpu inlined - single callers */
+void __init tsc_early_init(void)
 {
-	u64 lpj = (u64)tsc_khz * KHZ;
+	u64 lpj;
+	struct cyc2ns *c2n;
+
+	if (!boot_cpu_has(X86_FEATURE_TSC))
+		return;
+
+	if (!determine_cpu_tsc_frequencies())
+		return;
+
+	/* tsc_enable_sched_clock inlined */
+	lpj = (u64)tsc_khz * KHZ;
 	do_div(lpj, HZ);
 	loops_per_jiffy = lpj;
 	use_tsc_delay();
 
-	/* tsc_store_and_check_tsc_adjust removed - was empty stub */
-	cyc2ns_init_boot_cpu();
+	/* cyc2ns_init_boot_cpu inlined */
+	c2n = this_cpu_ptr(&cyc2ns);
+	seqcount_latch_init(&c2n->seq);
+	__set_cyc2ns_scale(tsc_khz, smp_processor_id(), rdtsc());
 	static_branch_enable(&__use_tsc);
-}
-
-void __init tsc_early_init(void)
-{
-	if (!boot_cpu_has(X86_FEATURE_TSC))
-		return;
-
-	/* is_early_uv_system always false - check removed */
-	if (!determine_cpu_tsc_frequencies())
-		return;
-	tsc_enable_sched_clock();
 }
 
 /* tsc_init removed - never called */

@@ -16,19 +16,12 @@ extern asmlinkage void __init start_kernel(void);
 #include <asm/tlbflush.h>
 #include <asm/bootparam_utils.h>
 
-static void __init i386_default_early_setup(void)
-{
-	x86_init.resources.reserve_resources = i386_reserve_resources;
-}
-
-/* vdbg debug function removed */
+/* i386_default_early_setup inlined - single caller */
 
 asmlinkage __visible void __init i386_start_kernel(void)
 {
 	idt_setup_early_handler();
-
 	cr4_init_shadow();
-
 	sanitize_boot_params(&boot_params);
 
 	/* x86_early_init_platform_quirks inlined from platform-quirks.c */
@@ -37,14 +30,9 @@ asmlinkage __visible void __init i386_start_kernel(void)
 		x86_platform.legacy.reserve_bios_regions = 1;
 
 	/* x86_intel_mid_early_setup and x86_ce4100_early_setup are empty stubs */
-	switch (boot_params.hdr.hardware_subarch) {
-	case X86_SUBARCH_INTEL_MID:
-	case X86_SUBARCH_CE4100:
-		break;
-	default:
-		i386_default_early_setup();
-		break;
-	}
+	if (boot_params.hdr.hardware_subarch != X86_SUBARCH_INTEL_MID &&
+	    boot_params.hdr.hardware_subarch != X86_SUBARCH_CE4100)
+		x86_init.resources.reserve_resources = i386_reserve_resources;
 
 	start_kernel();
 }

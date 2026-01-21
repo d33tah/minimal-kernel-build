@@ -62,14 +62,14 @@ extern void sched_init(void);
 #include <linux/proc_ns.h>
 
 /* integrity_load_keys removed - empty stub */
-#include <linux/io.h>
+/* linux/io.h removed - I/O port functions not used */
 #include <linux/cache.h>
 #include <linux/jump_label.h>
 #include <linux/mem_encrypt.h>
 #include <linux/init_syscalls.h>
 /* stackdepot.h removed - unused */
 
-#include <asm/io.h>
+/* asm/io.h removed - I/O port functions not used */
 #include <asm/bugs.h>
 #include <asm/setup.h>
 #include <asm/sections.h>

@@ -216,28 +216,6 @@ static void update_attr(struct vc_data *vc)
 
 static int softcursor_original = -1;
 
-static void add_softcursor(struct vc_data *vc)
-{
-	int i = scr_readw((u16 *)vc->vc_pos);
-	u32 type = vc->vc_cursor_type;
-
-	if (!(type & CUR_SW))
-		return;
-	if (softcursor_original != -1)
-		return;
-	softcursor_original = i;
-	i |= CUR_SET(type);
-	i ^= CUR_CHANGE(type);
-	if ((type & CUR_ALWAYS_BG) &&
-	    (softcursor_original & CUR_BG) == (i & CUR_BG))
-		i ^= CUR_BG;
-	if ((type & CUR_INVERT_FG_BG) && (i & CUR_FG) == ((i & CUR_BG) >> 4))
-		i ^= CUR_FG;
-	scr_writew(i, (u16 *)vc->vc_pos);
-	if (con_should_update(vc))
-		vc->vc_sw->con_putc(vc, i, vc->state.y, vc->state.x);
-}
-
 static void hide_cursor(struct vc_data *vc)
 {
 	vc->vc_sw->con_cursor(vc, CM_ERASE);
@@ -257,7 +235,24 @@ static void set_cursor(struct vc_data *vc)
 	    vc->vc_mode == KD_GRAPHICS)
 		return;
 	if (vc->vc_deccm) {
-		add_softcursor(vc);
+		/* Inlined add_softcursor */
+		int i = scr_readw((u16 *)vc->vc_pos);
+		u32 type = vc->vc_cursor_type;
+		if ((type & CUR_SW) && softcursor_original == -1) {
+			softcursor_original = i;
+			i |= CUR_SET(type);
+			i ^= CUR_CHANGE(type);
+			if ((type & CUR_ALWAYS_BG) &&
+			    (softcursor_original & CUR_BG) == (i & CUR_BG))
+				i ^= CUR_BG;
+			if ((type & CUR_INVERT_FG_BG) &&
+			    (i & CUR_FG) == ((i & CUR_BG) >> 4))
+				i ^= CUR_FG;
+			scr_writew(i, (u16 *)vc->vc_pos);
+			if (con_should_update(vc))
+				vc->vc_sw->con_putc(vc, i, vc->state.y,
+						    vc->state.x);
+		}
 		if (CUR_SIZE(vc->vc_cursor_type) != CUR_NONE)
 			vc->vc_sw->con_cursor(vc, CM_DRAW);
 	} else
@@ -600,16 +595,7 @@ struct vc_draw_region {
 	int x;
 };
 
-static void con_flush(struct vc_data *vc, struct vc_draw_region *draw)
-{
-	if (draw->x < 0)
-		return;
-
-	vc->vc_sw->con_putcs(vc, (u16 *)draw->from,
-			     (u16 *)draw->to - (u16 *)draw->from, vc->state.y,
-			     draw->x);
-	draw->x = -1;
-}
+/* con_flush inlined into vt_write */
 
 static int vc_translate_unicode(struct vc_data *vc, int c, bool *rescan)
 {
@@ -770,7 +756,12 @@ static int do_con_write(struct tty_struct *tty, const unsigned char *buf,
 		if (tc != -1 && !vc_is_control(vc, tc, c))
 			vc_con_write_normal(vc, tc, c, &draw);
 	}
-	con_flush(vc, &draw);
+	/* Inlined con_flush */
+	if (draw.x >= 0) {
+		vc->vc_sw->con_putcs(vc, (u16 *)draw.from,
+				     (u16 *)draw.to - (u16 *)draw.from,
+				     vc->state.y, draw.x);
+	}
 	console_unlock();
 	return n;
 }

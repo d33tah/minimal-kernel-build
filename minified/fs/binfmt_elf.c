@@ -357,14 +357,7 @@ struct arch_elf_state {};
 	{                   \
 	}
 
-static inline int arch_elf_pt_proc(struct elfhdr *ehdr, struct elf_phdr *phdr,
-				   struct file *elf, bool is_interp,
-				   struct arch_elf_state *state)
-{
-	return 0;
-}
-
-/* arch_check_elf inlined - always returns 0 */
+/* arch_elf_pt_proc, arch_check_elf removed - always returned 0, callers removed */
 
 #endif
 
@@ -590,10 +583,7 @@ out_free_interp:
 			break;
 
 		case PT_LOPROC ... PT_HIPROC:
-			retval = arch_elf_pt_proc(elf_ex, elf_ppnt, bprm->file,
-						  false, &arch_state);
-			if (retval)
-				goto out_free_dentry;
+			/* arch_elf_pt_proc call and retval check removed - always returns 0 */
 			break;
 		}
 
@@ -620,11 +610,7 @@ out_free_interp:
 				break;
 
 			case PT_LOPROC ... PT_HIPROC:
-				retval = arch_elf_pt_proc(interp_elf_ex,
-							  elf_ppnt, interpreter,
-							  true, &arch_state);
-				if (retval)
-					goto out_free_dentry;
+				/* arch_elf_pt_proc call removed - always returns 0 */
 				break;
 			}
 	}

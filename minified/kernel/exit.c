@@ -44,9 +44,7 @@ extern int nr_threads;
 void __ptrace_unlink(struct task_struct *child)
 {
 }
-void exit_ptrace(struct task_struct *tracer, struct list_head *dead)
-{
-}
+/* exit_ptrace removed - empty stub */
 
 static void __exit_signal(struct task_struct *tsk)
 {
@@ -227,8 +225,7 @@ static void forget_original_parent(struct task_struct *father,
 {
 	struct task_struct *p, *t, *reaper;
 
-	if (unlikely(!list_empty(&father->ptraced)))
-		exit_ptrace(father, dead);
+	/* exit_ptrace call removed - function was empty */
 
 	reaper = find_child_reaper(father, dead);
 	if (list_empty(&father->children))

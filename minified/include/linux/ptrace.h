@@ -35,7 +35,7 @@ extern void __ptrace_link(struct task_struct *child,
 			  struct task_struct *new_parent,
 			  const struct cred *ptracer_cred);
 extern void __ptrace_unlink(struct task_struct *child);
-extern void exit_ptrace(struct task_struct *tracer, struct list_head *dead);
+/* exit_ptrace removed - empty stub never effectively called */
 
 /* PTRACE_MODE_*, ptrace_may_access, ptrace_reparented removed - never called */
 

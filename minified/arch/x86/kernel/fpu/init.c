@@ -10,7 +10,8 @@
 #include "legacy.h"
 #include "xstate.h"
 
-static void fpu__init_cpu_generic(void)
+/* fpu__init_cpu_generic inlined - single caller */
+void fpu__init_cpu(void)
 {
 	unsigned long cr0;
 	unsigned long cr4_mask = 0;
@@ -29,12 +30,6 @@ static void fpu__init_cpu_generic(void)
 	write_cr0(cr0);
 
 	asm volatile("fninit");
-}
-
-void fpu__init_cpu(void)
-{
-	fpu__init_cpu_generic();
-	/* fpu__init_cpu_xstate call removed - was empty stub */
 }
 
 /* fpu__probe_without_cpuid removed - never called */

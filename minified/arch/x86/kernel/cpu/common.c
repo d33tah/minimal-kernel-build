@@ -672,19 +672,7 @@ DEFINE_PER_CPU(unsigned long,
 	       cpu_current_top_of_stack) = (unsigned long)&init_thread_union
 					   + THREAD_SIZE;
 
-static void clear_all_debug_regs(void)
-{
-	int i;
-
-	for (i = 0; i < 8; i++) {
-		if ((i == 4) || (i == 5))
-			continue;
-
-		set_debugreg(0, i);
-	}
-}
-
-#define dbg_restore_debug_regs()
+/* clear_all_debug_regs inlined below, dbg_restore_debug_regs is no-op */
 
 /* wait_for_master_cpu, setup_getcpu, ucode_cpu_init, tss_setup_ist removed - empty */
 
@@ -729,8 +717,15 @@ void cpu_init(void)
 
 	load_mm_ldt(&init_mm);
 
-	clear_all_debug_regs();
-	dbg_restore_debug_regs();
+	/* clear_all_debug_regs inlined - single caller */
+	{
+		int i;
+		for (i = 0; i < 8; i++) {
+			if ((i == 4) || (i == 5))
+				continue;
+			set_debugreg(0, i);
+		}
+	}
 
 	doublefault_init_cpu_tss();
 

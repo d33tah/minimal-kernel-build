@@ -16,8 +16,7 @@ void sort_extable(struct exception_table_entry *start,
 void sort_main_extable(void);
 
 const struct exception_table_entry *search_exception_tables(unsigned long add);
-const struct exception_table_entry *
-search_kernel_exception_table(unsigned long addr);
+/* search_kernel_exception_table inlined into search_exception_tables */
 /* search_module_extables and search_bpf_extables removed - always NULL */
 
 #endif  

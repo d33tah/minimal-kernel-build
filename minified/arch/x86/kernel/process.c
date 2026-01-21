@@ -166,21 +166,16 @@ static void set_cpuid_faulting(bool on)
 	wrmsrl(MSR_MISC_FEATURES_ENABLES, msrval);
 }
 
-static void enable_cpuid(void)
-{
-	preempt_disable();
-	if (test_and_clear_thread_flag(TIF_NOCPUID)) {
-		set_cpuid_faulting(false);
-	}
-	preempt_enable();
-}
-
-/* get_cpuid_mode and set_cpuid_mode removed - only called from do_arch_prctl_common */
+/* enable_cpuid inlined - single caller */
 
 void arch_setup_new_exec(void)
 {
-	if (test_thread_flag(TIF_NOCPUID))
-		enable_cpuid();
+	if (test_thread_flag(TIF_NOCPUID)) {
+		preempt_disable();
+		if (test_and_clear_thread_flag(TIF_NOCPUID))
+			set_cpuid_faulting(false);
+		preempt_enable();
+	}
 
 	if (test_thread_flag(TIF_SSBD) && task_spec_ssb_noexec(current)) {
 		clear_thread_flag(TIF_SSBD);

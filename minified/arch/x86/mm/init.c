@@ -1,7 +1,6 @@
 #include <linux/gfp.h>
 #include <linux/initrd.h>
 #include <linux/ioport.h>
-#include <linux/swap.h>
 #include <linux/memblock.h>
 #include <linux/sched/task.h>
 

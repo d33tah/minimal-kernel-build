@@ -10,10 +10,8 @@
 #include <linux/init.h>
 #include <linux/tty.h>
 #include <linux/capability.h>
-#include <linux/ptrace.h>
 #include <linux/device.h>
 #include <linux/highmem.h>
-#include <linux/backing-dev.h>
 #include <linux/shmem_fs.h>
 #include <linux/splice.h>
 #include <linux/pfn.h>

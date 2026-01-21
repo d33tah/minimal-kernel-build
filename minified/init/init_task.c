@@ -7,7 +7,6 @@
 #include <linux/init.h>
 #include <linux/fs.h>
 #include <linux/mm.h>
-#include <linux/numa.h>
 
 #include <linux/uaccess.h>
 

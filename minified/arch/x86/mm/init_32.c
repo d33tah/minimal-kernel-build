@@ -19,9 +19,7 @@
 #include <linux/poison.h>
 #include <linux/memblock.h>
 #include <linux/proc_fs.h>
-#include <linux/memory_hotplug.h>
 #include <linux/initrd.h>
-#include <linux/cpumask.h>
 #include <linux/gfp.h>
 
 #include <asm/asm.h>

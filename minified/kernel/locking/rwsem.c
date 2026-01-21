@@ -537,26 +537,9 @@ static inline void __up_read(struct rw_semaphore *sem)
 	}
 }
 
-static inline void __up_write(struct rw_semaphore *sem)
-{
-	long tmp;
+/* __up_write inlined into up_write */
 
-	atomic_long_set(&sem->owner, 0); /* rwsem_clear_owner inlined */
-	tmp = atomic_long_fetch_add_release(-RWSEM_WRITER_LOCKED, &sem->count);
-	if (unlikely(tmp & RWSEM_FLAG_WAITERS))
-		rwsem_wake(sem);
-}
-
-static inline void __downgrade_write(struct rw_semaphore *sem)
-{
-	long tmp;
-
-	tmp = atomic_long_fetch_add_release(
-		-RWSEM_WRITER_LOCKED + RWSEM_READER_BIAS, &sem->count);
-	rwsem_set_reader_owned(sem);
-	if (tmp & RWSEM_FLAG_WAITERS)
-		rwsem_downgrade_wake(sem);
-}
+/* __downgrade_write inlined into downgrade_write */
 
 void __sched down_read(struct rw_semaphore *sem)
 {
@@ -601,11 +584,24 @@ void up_read(struct rw_semaphore *sem)
 
 void up_write(struct rw_semaphore *sem)
 {
-	__up_write(sem);
+	/* __up_write inlined */
+	long tmp;
+
+	atomic_long_set(&sem->owner, 0); /* rwsem_clear_owner inlined */
+	tmp = atomic_long_fetch_add_release(-RWSEM_WRITER_LOCKED, &sem->count);
+	if (unlikely(tmp & RWSEM_FLAG_WAITERS))
+		rwsem_wake(sem);
 }
 
 /* downgrade_write - called by __do_munmap */
 void downgrade_write(struct rw_semaphore *sem)
 {
-	__downgrade_write(sem);
+	/* __downgrade_write inlined */
+	long tmp;
+
+	tmp = atomic_long_fetch_add_release(
+		-RWSEM_WRITER_LOCKED + RWSEM_READER_BIAS, &sem->count);
+	rwsem_set_reader_owned(sem);
+	if (tmp & RWSEM_FLAG_WAITERS)
+		rwsem_downgrade_wake(sem);
 }

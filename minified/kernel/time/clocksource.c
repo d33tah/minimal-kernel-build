@@ -117,19 +117,7 @@ static int __init clocksource_done_booting(void)
 }
 fs_initcall(clocksource_done_booting);
 
-static void clocksource_enqueue(struct clocksource *cs)
-{
-	struct list_head *entry = &clocksource_list;
-	struct clocksource *tmp;
-
-	list_for_each_entry(tmp, &clocksource_list, list) {
-		if (tmp->rating < cs->rating)
-			break;
-		entry = &tmp->list;
-	}
-	list_add(&cs->list, entry);
-}
-
+/* clocksource_enqueue inlined into __clocksource_register_scale */
 /* clocksource_enqueue_watchdog removed - inlined into single caller (~5 LOC) */
 
 void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale,
@@ -189,7 +177,17 @@ int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq)
 	mutex_lock(&clocksource_mutex);
 
 	clocksource_watchdog_lock(&flags);
-	clocksource_enqueue(cs);
+	/* clocksource_enqueue inlined */
+	{
+		struct list_head *entry = &clocksource_list;
+		struct clocksource *tmp;
+		list_for_each_entry(tmp, &clocksource_list, list) {
+			if (tmp->rating < cs->rating)
+				break;
+			entry = &tmp->list;
+		}
+		list_add(&cs->list, entry);
+	}
 	/* Inlined clocksource_enqueue_watchdog */
 	INIT_LIST_HEAD(&cs->wd_list);
 	if (cs->flags & CLOCK_SOURCE_IS_CONTINUOUS)

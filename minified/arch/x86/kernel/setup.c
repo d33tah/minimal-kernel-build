@@ -145,52 +145,7 @@ static u64 __init get_ramdisk_size(void)
 	return ramdisk_size;
 }
 
-/* relocate_initrd, early_reserve_initrd inlined into their callers */
-
-static void __init reserve_initrd(void)
-{
-	u64 ramdisk_image = get_ramdisk_image();
-	u64 ramdisk_size = get_ramdisk_size();
-	u64 ramdisk_end = PAGE_ALIGN(ramdisk_image + ramdisk_size);
-
-	if (!boot_params.hdr.type_of_loader || !ramdisk_image || !ramdisk_size)
-		return;
-
-	initrd_start = 0;
-
-	printk(KERN_INFO "RAMDISK: [mem %#010llx-%#010llx]\n", ramdisk_image,
-	       ramdisk_end - 1);
-
-	if (pfn_range_is_mapped(PFN_DOWN(ramdisk_image),
-				PFN_DOWN(ramdisk_end))) {
-		initrd_start = ramdisk_image + PAGE_OFFSET;
-		initrd_end = initrd_start + ramdisk_size;
-		return;
-	}
-
-	/* Inlined relocate_initrd */
-	{
-		u64 area_size = PAGE_ALIGN(ramdisk_size);
-		relocated_ramdisk = memblock_phys_alloc_range(
-			area_size, PAGE_SIZE, 0, PFN_PHYS(max_pfn_mapped));
-		if (!relocated_ramdisk)
-			panic("Cannot find place for new RAMDISK of size %lld\n",
-			      ramdisk_size);
-		initrd_start = relocated_ramdisk + PAGE_OFFSET;
-		initrd_end = initrd_start + ramdisk_size;
-		printk(KERN_INFO
-		       "Allocated new RAMDISK: [mem %#010llx-%#010llx]\n",
-		       relocated_ramdisk, relocated_ramdisk + ramdisk_size - 1);
-		copy_from_early_mem((void *)initrd_start, ramdisk_image,
-				    ramdisk_size);
-		printk(KERN_INFO
-		       "Move RAMDISK from [mem %#010llx-%#010llx] to [mem %#010llx-%#010llx]\n",
-		       ramdisk_image, ramdisk_image + ramdisk_size - 1,
-		       relocated_ramdisk, relocated_ramdisk + ramdisk_size - 1);
-	}
-
-	memblock_phys_free(ramdisk_image, ramdisk_end - ramdisk_image);
-}
+/* relocate_initrd, early_reserve_initrd, reserve_initrd inlined into setup_arch */
 
 /* parse_setup_data inlined into setup_arch */
 
@@ -462,7 +417,50 @@ void __init setup_arch(char **cmdline_p)
 
 	/* setup_log_buf removed - empty stub */
 	/* efi_enabled always false - secure boot switch removed */
-	reserve_initrd();
+	/* reserve_initrd inlined */
+	{
+		u64 ramdisk_image = get_ramdisk_image();
+		u64 ramdisk_size = get_ramdisk_size();
+		u64 ramdisk_end = PAGE_ALIGN(ramdisk_image + ramdisk_size);
+
+		if (boot_params.hdr.type_of_loader && ramdisk_image &&
+		    ramdisk_size) {
+			initrd_start = 0;
+			printk(KERN_INFO "RAMDISK: [mem %#010llx-%#010llx]\n",
+			       ramdisk_image, ramdisk_end - 1);
+
+			if (pfn_range_is_mapped(PFN_DOWN(ramdisk_image),
+						PFN_DOWN(ramdisk_end))) {
+				initrd_start = ramdisk_image + PAGE_OFFSET;
+				initrd_end = initrd_start + ramdisk_size;
+			} else {
+				u64 area_size = PAGE_ALIGN(ramdisk_size);
+				relocated_ramdisk = memblock_phys_alloc_range(
+					area_size, PAGE_SIZE, 0,
+					PFN_PHYS(max_pfn_mapped));
+				if (!relocated_ramdisk)
+					panic("Cannot find place for new RAMDISK of size %lld\n",
+					      ramdisk_size);
+				initrd_start = relocated_ramdisk + PAGE_OFFSET;
+				initrd_end = initrd_start + ramdisk_size;
+				printk(KERN_INFO
+				       "Allocated new RAMDISK: [mem %#010llx-%#010llx]\n",
+				       relocated_ramdisk,
+				       relocated_ramdisk + ramdisk_size - 1);
+				copy_from_early_mem((void *)initrd_start,
+						    ramdisk_image,
+						    ramdisk_size);
+				printk(KERN_INFO
+				       "Move RAMDISK from [mem %#010llx-%#010llx] to [mem %#010llx-%#010llx]\n",
+				       ramdisk_image,
+				       ramdisk_image + ramdisk_size - 1,
+				       relocated_ramdisk,
+				       relocated_ramdisk + ramdisk_size - 1);
+				memblock_phys_free(ramdisk_image,
+						   ramdisk_end - ramdisk_image);
+			}
+		}
+	}
 	/* acpi_table_upgrade is empty stub */
 	/* io_delay_init removed - was empty stub */
 

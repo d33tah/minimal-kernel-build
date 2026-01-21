@@ -2,7 +2,6 @@
 
 #include <linux/module.h>
 #include <linux/sched.h>
-#include <linux/perf_event.h>
 #include <linux/mutex.h>
 #include <linux/list.h>
 #include <linux/stringify.h>
@@ -11,8 +10,6 @@
 #include <linux/vmalloc.h>
 #include <linux/stop_machine.h>
 #include <linux/slab.h>
-#include <linux/kdebug.h>
-#include <linux/kprobes.h>
 #include <linux/mmu_context.h>
 #include <asm/sync_core.h>
 #include <asm/text-patching.h>

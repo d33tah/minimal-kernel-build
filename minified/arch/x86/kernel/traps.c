@@ -3,7 +3,6 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/interrupt.h>
-#include <linux/kallsyms.h>
 #include <linux/spinlock.h>
 #include <linux/kprobes.h>
 #include <linux/uaccess.h>
@@ -11,7 +10,6 @@
 #include <linux/kernel.h>
 #include <linux/export.h>
 #include <linux/ptrace.h>
-#include <linux/uprobes.h>
 #include <linux/string.h>
 #include <linux/delay.h>
 #include <linux/errno.h>

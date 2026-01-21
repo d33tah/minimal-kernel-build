@@ -7,17 +7,6 @@
 
 #include <linux/sched/task_stack.h>
 
-#include <linux/ctype.h>
-
-#include <linux/irq.h>
-
-#include <linux/mempolicy.h>
-#include <linux/nospec.h>
-#include <linux/proc_fs.h>
-
-#include <linux/timex.h>
-#include <linux/utsname.h>
-
 #include <linux/sched/types.h>
 
 #include <asm/switch_to.h>

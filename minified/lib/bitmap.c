@@ -3,15 +3,11 @@
 #include <linux/bitops.h>
 #include <linux/bug.h>
 #include <linux/ctype.h>
-#include <linux/device.h>
 #include <linux/errno.h>
 #include <linux/export.h>
 #include <linux/kernel.h>
-#include <linux/mm.h>
 #include <linux/slab.h>
 #include <linux/string.h>
-#include <linux/thread_info.h>
-#include <linux/uaccess.h>
 
 #include <asm/page.h>
 

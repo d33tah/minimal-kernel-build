@@ -25,7 +25,7 @@
 #include <linux/bitops.h>
 /* notifier.h removed - notifiers not used */
 #include <linux/device.h>
-#include <linux/io.h>
+/* io.h removed - I/O port functions not used */
 #include <linux/uaccess.h>
 
 /* ctype.h removed - character classification not used */

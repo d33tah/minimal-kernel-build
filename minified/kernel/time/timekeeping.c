@@ -180,21 +180,7 @@ static void timekeeping_update(struct timekeeper *tk, unsigned int action)
 		       sizeof(tk_core.timekeeper));
 }
 
-static void timekeeping_forward_now(struct timekeeper *tk)
-{
-	u64 cycle_now, delta;
-
-	cycle_now = tk_clock_read(&tk->tkr_mono);
-	delta = clocksource_delta(cycle_now, tk->tkr_mono.cycle_last,
-				  tk->tkr_mono.mask);
-	tk->tkr_mono.cycle_last = cycle_now;
-	tk->tkr_raw.cycle_last = cycle_now;
-
-	tk->tkr_mono.xtime_nsec += delta * tk->tkr_mono.mult;
-	tk->tkr_raw.xtime_nsec += delta * tk->tkr_raw.mult;
-
-	tk_normalize_xtime(tk);
-}
+/* timekeeping_forward_now inlined into change_clocksource */
 
 /* ktime_get_real_ts64 removed - never called */
 
@@ -255,7 +241,17 @@ static int change_clocksource(void *data)
 	raw_spin_lock_irqsave(&timekeeper_lock, flags);
 	write_seqcount_begin(&tk_core.seq);
 
-	timekeeping_forward_now(tk);
+	/* timekeeping_forward_now inlined */
+	{
+		u64 cycle_now = tk_clock_read(&tk->tkr_mono);
+		u64 delta = clocksource_delta(
+			cycle_now, tk->tkr_mono.cycle_last, tk->tkr_mono.mask);
+		tk->tkr_mono.cycle_last = cycle_now;
+		tk->tkr_raw.cycle_last = cycle_now;
+		tk->tkr_mono.xtime_nsec += delta * tk->tkr_mono.mult;
+		tk->tkr_raw.xtime_nsec += delta * tk->tkr_raw.mult;
+		tk_normalize_xtime(tk);
+	}
 
 	if (change) {
 		old = tk->tkr_mono.clock;

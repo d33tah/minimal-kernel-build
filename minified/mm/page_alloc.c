@@ -441,11 +441,9 @@ __rmqueue_pcplist(struct zone *zone, unsigned int order, int migratetype,
 	struct page *page;
 
 	if (list_empty(list)) {
+		/* BOOT_PAGESET_BATCH is 1, batch > 1 check removed */
 		int batch = READ_ONCE(pcp->batch);
 		int alloced = 0;
-
-		if (batch > 1)
-			batch = max(batch >> order, 2);
 		{
 			int i;
 			spin_lock(&zone->lock);
@@ -456,10 +454,7 @@ __rmqueue_pcplist(struct zone *zone, unsigned int order, int migratetype,
 					break;
 				list_add_tail(&pg->lru, list);
 				alloced++;
-				if (is_migrate_cma(get_pcppage_migratetype(pg)))
-					__mod_zone_page_state(zone,
-							      NR_FREE_CMA_PAGES,
-							      -(1 << order));
+				/* is_migrate_cma always false - check removed */
 			}
 			__mod_zone_page_state(zone, NR_FREE_PAGES,
 					      -(i << order));

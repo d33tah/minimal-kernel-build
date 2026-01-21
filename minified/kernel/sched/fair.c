@@ -430,15 +430,7 @@ static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		/* idle_h_nr_running, cfs_rq_is_idle, cfs_rq_throttled always 0 - removed */
 		flags = ENQUEUE_WAKEUP;
 	}
-
-	for_each_sched_entity(se)
-	{
-		cfs_rq = cfs_rq_of(se);
-
-		update_load_avg(cfs_rq, se, UPDATE_TG);
-		cfs_rq->h_nr_running++;
-		/* idle_h_nr_running, cfs_rq_is_idle, cfs_rq_throttled always 0 - removed */
-	}
+	/* Second for_each_sched_entity loop removed - se is already NULL after first loop */
 
 	add_nr_running(rq, 1);
 	/* enqueue_throttle label and assert_list_leaf_cfs_rq removed */
@@ -466,15 +458,7 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		}
 		flags |= DEQUEUE_SLEEP;
 	}
-
-	for_each_sched_entity(se)
-	{
-		cfs_rq = cfs_rq_of(se);
-
-		update_load_avg(cfs_rq, se, UPDATE_TG);
-		cfs_rq->h_nr_running--;
-		/* idle_h_nr_running, cfs_rq_is_idle, cfs_rq_throttled always 0 - removed */
-	}
+	/* Second for_each_sched_entity loop removed - se is already NULL after first loop */
 
 	sub_nr_running(rq, 1);
 	/* dequeue_throttle label and util_est_update removed */

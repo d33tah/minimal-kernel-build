@@ -82,8 +82,7 @@ static inline void __mod_zone_freepage_state(struct zone *zone, int nr_pages,
 					     int migratetype)
 {
 	__mod_zone_page_state(zone, NR_FREE_PAGES, nr_pages);
-	if (is_migrate_cma(migratetype))
-		__mod_zone_page_state(zone, NR_FREE_CMA_PAGES, nr_pages);
+	/* is_migrate_cma always false - check removed */
 }
 
 static inline void __mod_lruvec_state(struct lruvec *lruvec,

@@ -309,8 +309,7 @@ int vmap_pages_range_noflush(unsigned long addr, unsigned long end,
 	pgd = pgd_offset_k(addr);
 	do {
 		next = pgd_addr_end(addr, end);
-		if (pgd_bad(*pgd))
-			mask |= PGTBL_PGD_MODIFIED;
+		/* pgd_bad always returns 0 - removed dead branch */
 		err = vmap_pages_p4d_range(pgd, addr, next, prot, pages, &nr,
 					   &mask);
 		if (err)

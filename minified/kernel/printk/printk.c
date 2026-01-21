@@ -40,7 +40,7 @@ struct console *console_drivers;
 
 #define down_console_sem() down(&console_sem)
 
-static int __down_trylock_console_sem(unsigned long ip)
+static int down_trylock_console_sem(void)
 {
 	int lock_failed;
 	unsigned long flags;
@@ -54,9 +54,8 @@ static int __down_trylock_console_sem(unsigned long ip)
 	/* mutex_acquire removed - empty stub */
 	return 0;
 }
-#define down_trylock_console_sem() __down_trylock_console_sem(_RET_IP_)
 
-static void __up_console_sem(unsigned long ip)
+static void up_console_sem(void)
 {
 	unsigned long flags;
 
@@ -66,7 +65,6 @@ static void __up_console_sem(unsigned long ip)
 	up(&console_sem);
 	printk_safe_exit_irqrestore(flags);
 }
-#define up_console_sem() __up_console_sem(_RET_IP_)
 
 /* panic_in_progress inlined into console_trylock */
 

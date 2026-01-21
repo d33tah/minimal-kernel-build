@@ -506,59 +506,7 @@ static void insert_vmap_area_augment(struct vmap_area *va, struct rb_node *from,
 	}
 }
 
-static __always_inline struct vmap_area *
-merge_or_add_vmap_area(struct vmap_area *va, struct rb_root *root,
-		       struct list_head *head)
-{
-	struct vmap_area *sibling;
-	struct list_head *next;
-	struct rb_node **link;
-	struct rb_node *parent;
-	bool merged = false;
-
-	link = find_va_links(va, root, NULL, &parent);
-	if (!link)
-		return NULL;
-
-	next = get_va_next_sibling(parent, link);
-	if (unlikely(next == NULL))
-		goto insert;
-
-	if (next != head) {
-		sibling = list_entry(next, struct vmap_area, list);
-		if (sibling->va_start == va->va_end) {
-			sibling->va_start = va->va_start;
-
-			kmem_cache_free(vmap_area_cachep, va);
-
-			va = sibling;
-			merged = true;
-		}
-	}
-
-	if (next->prev != head) {
-		sibling = list_entry(next->prev, struct vmap_area, list);
-		if (sibling->va_end == va->va_start) {
-			if (merged)
-				unlink_va(va, root);
-
-			sibling->va_end = va->va_end;
-
-			kmem_cache_free(vmap_area_cachep, va);
-
-			va = sibling;
-			merged = true;
-		}
-	}
-
-insert:
-	if (!merged)
-		link_va(va, root, parent, link, head);
-
-	return va;
-}
-
-/* merge_or_add_vmap_area_augment removed - unused */
+/* merge_or_add_vmap_area removed - unused */
 
 static __always_inline bool is_within_this_va(struct vmap_area *va,
 					      unsigned long size,

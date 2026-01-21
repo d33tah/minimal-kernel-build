@@ -26,12 +26,7 @@ void __mutex_init(struct mutex *lock, const char *name,
 
 #define MUTEX_FLAGS 0x07
 
-/* __mutex_owner inlined - returned (task_struct*)(owner & ~MUTEX_FLAGS) */
-
-static inline struct task_struct *__owner_task(unsigned long owner)
-{
-	return (struct task_struct *)(owner & ~MUTEX_FLAGS);
-}
+/* __mutex_owner and __owner_task inlined */
 
 bool mutex_is_locked(struct mutex *lock)
 {
@@ -77,7 +72,8 @@ static inline struct task_struct *__mutex_trylock_common(struct mutex *lock,
 		}
 	}
 
-	return __owner_task(owner);
+	return (struct task_struct *)(owner &
+				      ~MUTEX_FLAGS); /* __owner_task inlined */
 }
 
 /* __mutex_trylock_or_handoff inlined - just calls !__mutex_trylock_common */

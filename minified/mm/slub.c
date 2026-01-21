@@ -396,26 +396,7 @@ static inline bool pfmemalloc_match(struct slab *slab, gfp_t gfpflags)
 
 	return true;
 }
-
-static inline void *get_freelist(struct kmem_cache *s, struct slab *slab)
-{
-	struct slab new;
-	unsigned long counters;
-	void *freelist;
-
-	do {
-		freelist = slab->freelist;
-		counters = slab->counters;
-
-		new.counters = counters;
-		new.inuse = slab->objects;
-		new.frozen = freelist != NULL;
-
-	} while (!__cmpxchg_double_slab(s, slab, freelist, counters, NULL,
-					new.counters, "get_freelist"));
-
-	return freelist;
-}
+/* get_freelist removed - never called (~19 LOC) */
 
 static void *___slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node)
 {

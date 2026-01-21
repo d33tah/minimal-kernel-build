@@ -975,17 +975,7 @@ bool is_subdir(struct dentry *new_dentry, struct dentry *old_dentry)
 
 static __initdata unsigned long dhash_entries;
 
-static void __init dcache_init_early(void)
-{
-	if (hashdist)
-		return;
-
-	dentry_hashtable = alloc_large_system_hash(
-		"Dentry cache", sizeof(struct hlist_bl_head), dhash_entries, 13,
-		HASH_EARLY | HASH_ZERO, &d_hash_shift, NULL, 0, 0);
-	d_hash_shift = 32 - d_hash_shift;
-}
-
+/* dcache_init_early inlined into vfs_caches_init_early */
 /* dcache_init inlined into vfs_caches_init */
 
 struct kmem_cache *names_cachep __read_mostly;
@@ -997,7 +987,15 @@ void __init vfs_caches_init_early(void)
 	for (i = 0; i < ARRAY_SIZE(in_lookup_hashtable); i++)
 		INIT_HLIST_BL_HEAD(&in_lookup_hashtable[i]);
 
-	dcache_init_early();
+	/* dcache_init_early inlined */
+	if (!hashdist) {
+		dentry_hashtable = alloc_large_system_hash(
+			"Dentry cache", sizeof(struct hlist_bl_head),
+			dhash_entries, 13, HASH_EARLY | HASH_ZERO,
+			&d_hash_shift, NULL, 0, 0);
+		d_hash_shift = 32 - d_hash_shift;
+	}
+
 	inode_init_early();
 }
 

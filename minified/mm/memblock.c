@@ -789,30 +789,7 @@ void __init memblock_allow_resize(void)
 	memblock_can_resize = 1;
 }
 
-/* __free_pages_memory inlined into __free_memory_core */
-static unsigned long __init __free_memory_core(phys_addr_t start,
-					       phys_addr_t end)
-{
-	unsigned long start_pfn = PFN_UP(start);
-	unsigned long end_pfn =
-		min_t(unsigned long, PFN_DOWN(end), max_low_pfn);
-	int order;
-
-	if (start_pfn >= end_pfn)
-		return 0;
-
-	while (start_pfn < end_pfn) {
-		order = min(MAX_ORDER - 1UL, __ffs(start_pfn));
-		while (start_pfn + (1UL << order) > end_pfn)
-			order--;
-		memblock_free_pages(pfn_to_page(start_pfn), start_pfn, order);
-		start_pfn += (1UL << order);
-	}
-
-	return end_pfn - PFN_UP(start);
-}
-
-/* memmap_init_reserved_pages, free_low_memory_core_early inlined below */
+/* __free_pages_memory, __free_memory_core inlined into memblock_free_all */
 
 void __init memblock_free_all(void)
 {
@@ -833,10 +810,26 @@ void __init memblock_free_all(void)
 		}
 	}
 
-	/* free_low_memory_core_early inlined */
+	/* free_low_memory_core_early and __free_memory_core inlined */
 	for_each_free_mem_range(i, NUMA_NO_NODE, MEMBLOCK_NONE, &start, &end,
-				NULL)
-		count += __free_memory_core(start, end);
+				NULL) {
+		unsigned long start_pfn = PFN_UP(start);
+		unsigned long end_pfn =
+			min_t(unsigned long, PFN_DOWN(end), max_low_pfn);
+		int order;
+
+		if (start_pfn < end_pfn) {
+			while (start_pfn < end_pfn) {
+				order = min(MAX_ORDER - 1UL, __ffs(start_pfn));
+				while (start_pfn + (1UL << order) > end_pfn)
+					order--;
+				memblock_free_pages(pfn_to_page(start_pfn),
+						    start_pfn, order);
+				start_pfn += (1UL << order);
+			}
+			count += end_pfn - PFN_UP(start);
+		}
+	}
 
 	totalram_pages_add(count);
 }

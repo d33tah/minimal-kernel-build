@@ -145,19 +145,7 @@ static u64 __init get_ramdisk_size(void)
 	return ramdisk_size;
 }
 
-/* relocate_initrd inlined into reserve_initrd */
-
-static void __init early_reserve_initrd(void)
-{
-	u64 ramdisk_image = get_ramdisk_image();
-	u64 ramdisk_size = get_ramdisk_size();
-	u64 ramdisk_end = PAGE_ALIGN(ramdisk_image + ramdisk_size);
-
-	if (!boot_params.hdr.type_of_loader || !ramdisk_image || !ramdisk_size)
-		return;
-
-	memblock_reserve(ramdisk_image, ramdisk_end - ramdisk_image);
-}
+/* relocate_initrd, early_reserve_initrd inlined into their callers */
 
 static void __init reserve_initrd(void)
 {
@@ -337,7 +325,16 @@ static void __init early_reserve_memory(void)
 
 	memblock_reserve(0, SZ_64K);
 
-	early_reserve_initrd();
+	/* Inlined early_reserve_initrd */
+	{
+		u64 ramdisk_image = get_ramdisk_image();
+		u64 ramdisk_size = get_ramdisk_size();
+		u64 ramdisk_end = PAGE_ALIGN(ramdisk_image + ramdisk_size);
+		if (boot_params.hdr.type_of_loader && ramdisk_image &&
+		    ramdisk_size)
+			memblock_reserve(ramdisk_image,
+					 ramdisk_end - ramdisk_image);
+	}
 
 	memblock_x86_reserve_range_setup_data();
 

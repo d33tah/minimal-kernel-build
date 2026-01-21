@@ -378,27 +378,23 @@ void __init mem_init(void)
 	clear_fixmap(FIX_WP_TEST);
 }
 
-static void mark_nxdata_nx(void)
-{
-	unsigned long start = PFN_ALIGN(_etext);
-
-	unsigned long size =
-		(((unsigned long)__init_end + HPAGE_SIZE) & HPAGE_MASK) - start;
-
-	if (__supported_pte_mask & _PAGE_NX)
-		printk(KERN_INFO "NX-protecting the kernel data: %luk\n",
-		       size >> 10);
-	set_memory_nx(start, size >> PAGE_SHIFT);
-}
-
+/* mark_nxdata_nx inlined - single caller */
 void mark_rodata_ro(void)
 {
 	unsigned long start = PFN_ALIGN(_text);
 	unsigned long size = (unsigned long)__end_rodata - start;
+	unsigned long nx_start, nx_size;
 
 	set_pages_ro(virt_to_page(start), size >> PAGE_SHIFT);
 	pr_info("Write protecting kernel text and read-only data: %luk\n",
 		size >> 10);
 
-	mark_nxdata_nx();
+	/* mark_nxdata_nx inlined */
+	nx_start = PFN_ALIGN(_etext);
+	nx_size = (((unsigned long)__init_end + HPAGE_SIZE) & HPAGE_MASK) -
+		  nx_start;
+	if (__supported_pte_mask & _PAGE_NX)
+		printk(KERN_INFO "NX-protecting the kernel data: %luk\n",
+		       nx_size >> 10);
+	set_memory_nx(nx_start, nx_size >> PAGE_SHIFT);
 }

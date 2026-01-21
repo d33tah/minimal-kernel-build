@@ -260,19 +260,7 @@ static int __meminit split_mem_range(struct map_range *mr, int nr_range,
 struct range pfn_mapped[E820_MAX_ENTRIES];
 int nr_pfn_mapped;
 
-static void add_pfn_range_mapped(unsigned long start_pfn, unsigned long end_pfn)
-{
-	nr_pfn_mapped = add_range_with_merge(pfn_mapped, E820_MAX_ENTRIES,
-					     nr_pfn_mapped, start_pfn, end_pfn);
-	nr_pfn_mapped = clean_sort_range(pfn_mapped, E820_MAX_ENTRIES);
-
-	max_pfn_mapped = max(max_pfn_mapped, end_pfn);
-
-	if (start_pfn < (1UL << (32 - PAGE_SHIFT)))
-		max_low_pfn_mapped =
-			max(max_low_pfn_mapped,
-			    min(end_pfn, 1UL << (32 - PAGE_SHIFT)));
-}
+/* add_pfn_range_mapped inlined into init_memory_mapping */
 
 bool pfn_range_is_mapped(unsigned long start_pfn, unsigned long end_pfn)
 {
@@ -300,7 +288,20 @@ unsigned long __ref init_memory_mapping(unsigned long start, unsigned long end,
 		ret = kernel_physical_mapping_init(mr[i].start, mr[i].end,
 						   mr[i].page_size_mask, prot);
 
-	add_pfn_range_mapped(start >> PAGE_SHIFT, ret >> PAGE_SHIFT);
+	/* add_pfn_range_mapped inlined */
+	{
+		unsigned long start_pfn = start >> PAGE_SHIFT;
+		unsigned long end_pfn = ret >> PAGE_SHIFT;
+		nr_pfn_mapped =
+			add_range_with_merge(pfn_mapped, E820_MAX_ENTRIES,
+					     nr_pfn_mapped, start_pfn, end_pfn);
+		nr_pfn_mapped = clean_sort_range(pfn_mapped, E820_MAX_ENTRIES);
+		max_pfn_mapped = max(max_pfn_mapped, end_pfn);
+		if (start_pfn < (1UL << (32 - PAGE_SHIFT)))
+			max_low_pfn_mapped =
+				max(max_low_pfn_mapped,
+				    min(end_pfn, 1UL << (32 - PAGE_SHIFT)));
+	}
 
 	return ret >> PAGE_SHIFT;
 }

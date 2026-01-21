@@ -49,11 +49,7 @@ static inline u16 kern_pcid(u16 asid)
 	return asid + 1;
 }
 
-static inline u16 user_pcid(u16 asid)
-{
-	u16 ret = kern_pcid(asid);
-	return ret;
-}
+/* user_pcid removed - was identical to kern_pcid */
 
 static inline unsigned long build_cr3(pgd_t *pgd, u16 asid)
 {
@@ -451,7 +447,7 @@ STATIC_NOPV void native_flush_tlb_one_user(unsigned long addr)
 	if (!this_cpu_has(X86_FEATURE_INVPCID_SINGLE))
 		invalidate_user_asid(loaded_mm_asid);
 	else
-		invpcid_flush_one(user_pcid(loaded_mm_asid), addr);
+		invpcid_flush_one(kern_pcid(loaded_mm_asid), addr);
 }
 
 void flush_tlb_one_user(unsigned long addr)

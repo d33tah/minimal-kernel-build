@@ -262,25 +262,19 @@ void fpu__drop(struct fpu *fpu)
 	preempt_enable();
 }
 
-/* restore_fpregs_from_init_fpstate removed - never called */
+/* restore_fpregs_from_init_fpstate, fpu_reset_fpregs removed/inlined */
 
-static void fpu_reset_fpregs(void)
+void fpu_flush_thread(void)
 {
 	struct fpu *fpu = &current->thread.fpu;
 
+	fpstate_reset(fpu);
 	fpregs_lock();
 	fpu__drop(fpu);
-
 	memcpy(&fpu->fpstate->regs, &init_fpstate.regs,
 	       init_fpstate_copy_size());
 	set_thread_flag(TIF_NEED_FPU_LOAD);
 	fpregs_unlock();
-}
-
-void fpu_flush_thread(void)
-{
-	fpstate_reset(&current->thread.fpu);
-	fpu_reset_fpregs();
 }
 void switch_fpu_return(void)
 {

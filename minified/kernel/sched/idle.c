@@ -25,27 +25,21 @@ void __cpuidle default_idle_call(void)
 	}
 }
 
-static void do_idle(void)
-{
-	set_thread_flag(TIF_POLLING_NRFLAG); /* inlined __current_set_polling */
-
-	while (!need_resched()) {
-		rmb();
-		local_irq_disable();
-		arch_cpu_idle_enter();
-		default_idle_call();
-	}
-
-	clear_thread_flag(
-		TIF_POLLING_NRFLAG); /* inlined __current_clr_polling */
-	smp_mb__after_atomic();
-	schedule_idle();
-}
-
+/* do_idle inlined - single caller */
 void cpu_startup_entry(enum cpuhp_state state)
 {
-	while (1)
-		do_idle();
+	while (1) {
+		set_thread_flag(TIF_POLLING_NRFLAG);
+		while (!need_resched()) {
+			rmb();
+			local_irq_disable();
+			arch_cpu_idle_enter();
+			default_idle_call();
+		}
+		clear_thread_flag(TIF_POLLING_NRFLAG);
+		smp_mb__after_atomic();
+		schedule_idle();
+	}
 }
 
 static void check_preempt_curr_idle(struct rq *rq, struct task_struct *p,

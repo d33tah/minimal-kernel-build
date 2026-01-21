@@ -113,22 +113,7 @@ static void __mutex_remove_waiter(struct mutex *lock,
 		atomic_long_andnot(MUTEX_FLAGS, &lock->owner);
 }
 
-static void __mutex_handoff(struct mutex *lock, struct task_struct *task)
-{
-	unsigned long owner = atomic_long_read(&lock->owner);
-
-	for (;;) {
-		unsigned long new;
-
-		new = (owner & MUTEX_FLAG_WAITERS);
-		new |= (unsigned long)task;
-		if (task)
-			new |= MUTEX_FLAG_PICKUP;
-
-		if (atomic_long_try_cmpxchg_release(&lock->owner, &owner, new))
-			break;
-	}
-}
+/* __mutex_handoff inlined into __mutex_unlock_slowpath */
 
 static void __sched __mutex_lock_slowpath(struct mutex *lock);
 
@@ -259,8 +244,19 @@ static noinline void __sched __mutex_unlock_slowpath(struct mutex *lock,
 		wake_q_add(&wake_q, next);
 	}
 
-	if (owner & MUTEX_FLAG_HANDOFF)
-		__mutex_handoff(lock, next);
+	/* __mutex_handoff inlined */
+	if (owner & MUTEX_FLAG_HANDOFF) {
+		unsigned long howner = atomic_long_read(&lock->owner);
+		for (;;) {
+			unsigned long new = (howner & MUTEX_FLAG_WAITERS);
+			new |= (unsigned long)next;
+			if (next)
+				new |= MUTEX_FLAG_PICKUP;
+			if (atomic_long_try_cmpxchg_release(&lock->owner,
+							    &howner, new))
+				break;
+		}
+	}
 
 	raw_spin_unlock(&lock->wait_lock);
 

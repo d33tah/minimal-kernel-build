@@ -727,35 +727,31 @@ phys_addr_t __init_memblock memblock_start_of_DRAM(void)
 	return memblock.memory.regions[0].base;
 }
 
-static int __init_memblock memblock_search(struct memblock_type *type,
-					   phys_addr_t addr)
-{
-	unsigned int left = 0, right = type->cnt;
-
-	do {
-		unsigned int mid = (right + left) / 2;
-
-		if (addr < type->regions[mid].base)
-			right = mid;
-		else if (addr >=
-			 (type->regions[mid].base + type->regions[mid].size))
-			left = mid + 1;
-		else
-			return mid;
-	} while (left < right);
-	return -1;
-}
-
+/* memblock_search inlined */
 bool __init_memblock memblock_is_region_memory(phys_addr_t base,
 					       phys_addr_t size)
 {
-	int idx = memblock_search(&memblock.memory, base);
+	struct memblock_type *type = &memblock.memory;
+	unsigned int left = 0, right = type->cnt;
 	phys_addr_t end = base + memblock_cap_size(base, &size);
+	int idx = -1;
+
+	do {
+		unsigned int mid = (right + left) / 2;
+		if (base < type->regions[mid].base)
+			right = mid;
+		else if (base >=
+			 (type->regions[mid].base + type->regions[mid].size))
+			left = mid + 1;
+		else {
+			idx = mid;
+			break;
+		}
+	} while (left < right);
 
 	if (idx == -1)
 		return false;
-	return (memblock.memory.regions[idx].base +
-		memblock.memory.regions[idx].size) >= end;
+	return (type->regions[idx].base + type->regions[idx].size) >= end;
 }
 
 void __init_memblock memblock_trim_memory(phys_addr_t align)

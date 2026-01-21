@@ -17,9 +17,8 @@
 #define PUD_PAGE_SIZE		(_AC(1, UL) << PUD_SHIFT)
 #define PUD_PAGE_MASK		(~(PUD_PAGE_SIZE-1))
 
-#define __VIRTUAL_MASK		((1UL << __VIRTUAL_MASK_SHIFT) - 1)
+/* __VIRTUAL_MASK removed - never used */
 
- 
 #define PHYSICAL_PAGE_MASK	(((signed long)PAGE_MASK) & __PHYSICAL_MASK)
 #define PHYSICAL_PMD_PAGE_MASK	(((signed long)PMD_PAGE_MASK) & __PHYSICAL_MASK)
 #define PHYSICAL_PUD_PAGE_MASK	(((signed long)PUD_PAGE_MASK) & __PHYSICAL_MASK)
@@ -34,7 +33,7 @@
 #define __PHYSICAL_START	ALIGN(CONFIG_PHYSICAL_START, \
 				      CONFIG_PHYSICAL_ALIGN)
 
-#define __START_KERNEL		(__START_KERNEL_map + __PHYSICAL_START)
+/* __START_KERNEL removed - never used */
 
 #include <asm/page_32_types.h>
 #define IOREMAP_MAX_ORDER       (PMD_SHIFT)

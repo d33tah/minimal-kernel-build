@@ -33,27 +33,7 @@ struct attribute_group {
 };
 
 
-#define __ATTR(_name, _mode, _show, _store) {				\
-	.attr = {.name = __stringify(_name),				\
-		 .mode = VERIFY_OCTAL_PERMISSIONS(_mode) },		\
-	.show	= _show,						\
-	.store	= _store,						\
-}
-
-/* __ATTR_RO, __ATTR_WO, __ATTR_RW removed - unused */
-
-#define __ATTRIBUTE_GROUPS(_name)				\
-static const struct attribute_group *_name##_groups[] = {	\
-	&_name##_group,						\
-	NULL,							\
-}
-
-#define ATTRIBUTE_GROUPS(_name)					\
-static const struct attribute_group _name##_group = {		\
-	.attrs = _name##_attrs,					\
-};								\
-__ATTRIBUTE_GROUPS(_name)
-
+/* __ATTR, __ATTR_RO, __ATTR_WO, __ATTR_RW, __ATTRIBUTE_GROUPS, ATTRIBUTE_GROUPS removed - unused */
 
 struct file;
 struct vm_area_struct;

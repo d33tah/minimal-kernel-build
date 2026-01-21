@@ -54,8 +54,7 @@ struct device_attribute {
 			 const char *buf, size_t count);
 };
 
-#define DEVICE_ATTR(_name, _mode, _show, _store) \
-	struct device_attribute dev_attr_##_name = __ATTR(_name, _mode, _show, _store)
+/* DEVICE_ATTR removed - never used */
 
 /* device_remove_file, devres functions, struct device_dma_parameters removed - never called */
 

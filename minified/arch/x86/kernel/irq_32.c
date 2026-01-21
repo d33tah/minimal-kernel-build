@@ -27,17 +27,14 @@ static void call_on_stack(void *func, void *stack)
 		     : "memory", "cc", "edx", "ecx", "eax");
 }
 
-static inline void *current_stack(void)
-{
-	return (void *)(current_stack_pointer & ~(THREAD_SIZE - 1));
-}
-
+/* current_stack inlined into execute_on_irq_stack */
 static inline int execute_on_irq_stack(struct irq_desc *desc)
 {
 	struct irq_stack *curstk, *irqstk;
 	u32 *isp, *prev_esp, arg1;
 
-	curstk = (struct irq_stack *)current_stack();
+	curstk = (struct irq_stack *)(current_stack_pointer &
+				      ~(THREAD_SIZE - 1));
 	irqstk = __this_cpu_read(hardirq_stack_ptr);
 
 	if (unlikely(curstk == irqstk))

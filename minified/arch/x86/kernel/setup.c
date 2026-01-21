@@ -145,30 +145,7 @@ static u64 __init get_ramdisk_size(void)
 	return ramdisk_size;
 }
 
-static void __init relocate_initrd(void)
-{
-	u64 ramdisk_image = get_ramdisk_image();
-	u64 ramdisk_size = get_ramdisk_size();
-	u64 area_size = PAGE_ALIGN(ramdisk_size);
-
-	relocated_ramdisk = memblock_phys_alloc_range(area_size, PAGE_SIZE, 0,
-						      PFN_PHYS(max_pfn_mapped));
-	if (!relocated_ramdisk)
-		panic("Cannot find place for new RAMDISK of size %lld\n",
-		      ramdisk_size);
-
-	initrd_start = relocated_ramdisk + PAGE_OFFSET;
-	initrd_end = initrd_start + ramdisk_size;
-	printk(KERN_INFO "Allocated new RAMDISK: [mem %#010llx-%#010llx]\n",
-	       relocated_ramdisk, relocated_ramdisk + ramdisk_size - 1);
-
-	copy_from_early_mem((void *)initrd_start, ramdisk_image, ramdisk_size);
-
-	printk(KERN_INFO "Move RAMDISK from [mem %#010llx-%#010llx] to"
-			 " [mem %#010llx-%#010llx]\n",
-	       ramdisk_image, ramdisk_image + ramdisk_size - 1,
-	       relocated_ramdisk, relocated_ramdisk + ramdisk_size - 1);
-}
+/* relocate_initrd inlined into reserve_initrd */
 
 static void __init early_reserve_initrd(void)
 {
@@ -203,7 +180,26 @@ static void __init reserve_initrd(void)
 		return;
 	}
 
-	relocate_initrd();
+	/* Inlined relocate_initrd */
+	{
+		u64 area_size = PAGE_ALIGN(ramdisk_size);
+		relocated_ramdisk = memblock_phys_alloc_range(
+			area_size, PAGE_SIZE, 0, PFN_PHYS(max_pfn_mapped));
+		if (!relocated_ramdisk)
+			panic("Cannot find place for new RAMDISK of size %lld\n",
+			      ramdisk_size);
+		initrd_start = relocated_ramdisk + PAGE_OFFSET;
+		initrd_end = initrd_start + ramdisk_size;
+		printk(KERN_INFO
+		       "Allocated new RAMDISK: [mem %#010llx-%#010llx]\n",
+		       relocated_ramdisk, relocated_ramdisk + ramdisk_size - 1);
+		copy_from_early_mem((void *)initrd_start, ramdisk_image,
+				    ramdisk_size);
+		printk(KERN_INFO
+		       "Move RAMDISK from [mem %#010llx-%#010llx] to [mem %#010llx-%#010llx]\n",
+		       ramdisk_image, ramdisk_image + ramdisk_size - 1,
+		       relocated_ramdisk, relocated_ramdisk + ramdisk_size - 1);
+	}
 
 	memblock_phys_free(ramdisk_image, ramdisk_end - ramdisk_image);
 }

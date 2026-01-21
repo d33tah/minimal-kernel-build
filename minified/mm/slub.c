@@ -417,15 +417,10 @@ static inline void *get_freelist(struct kmem_cache *s, struct slab *slab)
 	return freelist;
 }
 
-static void *___slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node,
-			   unsigned long addr, struct kmem_cache_cpu *c)
+static void *___slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node)
 {
 	void *freelist;
 	struct slab *slab;
-
-	/* Minimal stub: simplified slow path allocator */
-	(void)addr;
-	(void)c;
 
 	/* Try to get from partial lists */
 	freelist = get_partial(s, gfpflags, node, &slab);
@@ -447,9 +442,10 @@ static void *___slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node,
 
 /* __slab_alloc inlined - just calls ___slab_alloc */
 
-static __always_inline void *
-slab_alloc_node(struct kmem_cache *s, struct list_lru *lru, gfp_t gfpflags,
-		int node, unsigned long addr, size_t orig_size)
+static __always_inline void *slab_alloc_node(struct kmem_cache *s,
+					     struct list_lru *lru,
+					     gfp_t gfpflags, int node,
+					     size_t orig_size)
 {
 	void *object;
 	struct kmem_cache_cpu *c;
@@ -473,7 +469,7 @@ redo:
 	slab = c->slab;
 	/* CONFIG_PREEMPT_RT not enabled, node_match always returns 1 */
 	if (unlikely(!object || !slab)) {
-		object = ___slab_alloc(s, gfpflags, node, addr, c);
+		object = ___slab_alloc(s, gfpflags, node);
 	} else {
 		void *next_object = get_freepointer(s, object);
 
@@ -496,16 +492,16 @@ redo:
 
 static __always_inline void *slab_alloc(struct kmem_cache *s,
 					struct list_lru *lru, gfp_t gfpflags,
-					unsigned long addr, size_t orig_size)
+					size_t orig_size)
 {
-	return slab_alloc_node(s, lru, gfpflags, NUMA_NO_NODE, addr, orig_size);
+	return slab_alloc_node(s, lru, gfpflags, NUMA_NO_NODE, orig_size);
 }
 
 static __always_inline void *__kmem_cache_alloc_lru(struct kmem_cache *s,
 						    struct list_lru *lru,
 						    gfp_t gfpflags)
 {
-	void *ret = slab_alloc(s, lru, gfpflags, _RET_IP_, s->object_size);
+	void *ret = slab_alloc(s, lru, gfpflags, s->object_size);
 
 	return ret;
 }
@@ -799,7 +795,7 @@ void *__kmalloc(size_t size, gfp_t flags)
 	if (unlikely(ZERO_OR_NULL_PTR(s)))
 		return s;
 
-	ret = slab_alloc(s, NULL, flags, _RET_IP_, size);
+	ret = slab_alloc(s, NULL, flags, size);
 
 	return ret;
 }

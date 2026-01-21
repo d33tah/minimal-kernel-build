@@ -5,12 +5,11 @@
 #include <linux/export.h>
 #include <linux/sort.h>
 
-__attribute_const__ __always_inline static bool
-is_aligned(const void *base, size_t size, unsigned char align)
+__attribute_const__ __always_inline static bool is_aligned(size_t size,
+							   unsigned char align)
 {
 	unsigned char lsbits = (unsigned char)size;
 
-	(void)base;
 	return (lsbits & (align - 1)) == 0;
 }
 
@@ -104,9 +103,9 @@ void sort_r(void *base, size_t num, size_t size, cmp_r_func_t cmp_func,
 		swap_func = NULL;
 
 	if (!swap_func) {
-		if (is_aligned(base, size, 8))
+		if (is_aligned(size, 8))
 			swap_func = SWAP_WORDS_64;
-		else if (is_aligned(base, size, 4))
+		else if (is_aligned(size, 4))
 			swap_func = SWAP_WORDS_32;
 		else
 			swap_func = SWAP_BYTES;

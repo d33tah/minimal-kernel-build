@@ -111,29 +111,17 @@ static inline bool __cmpxchg_double_slab(struct kmem_cache *s,
 					 unsigned long counters_new,
 					 const char *n)
 {
-#if defined(CONFIG_HAVE_CMPXCHG_DOUBLE) && \
-	defined(CONFIG_HAVE_ALIGNED_STRUCT_PAGE)
-	if (s->flags & __CMPXCHG_DOUBLE) {
-		if (cmpxchg_double(&slab->freelist, &slab->counters,
-				   freelist_old, counters_old, freelist_new,
-				   counters_new))
-			return true;
-	} else
-#endif
-	{
+	/* CONFIG_HAVE_CMPXCHG_DOUBLE block removed - not enabled in tinyconfig */
+	unsigned long flags = 0;
 
-		unsigned long flags = 0;
-
-		bit_spin_lock(PG_locked, &slab_page(slab)->flags);
-		if (slab->freelist == freelist_old &&
-		    slab->counters == counters_old) {
-			slab->freelist = freelist_new;
-			slab->counters = counters_new;
-			slab_unlock(slab, &flags);
-			return true;
-		}
+	bit_spin_lock(PG_locked, &slab_page(slab)->flags);
+	if (slab->freelist == freelist_old && slab->counters == counters_old) {
+		slab->freelist = freelist_new;
+		slab->counters = counters_new;
 		slab_unlock(slab, &flags);
+		return true;
 	}
+	slab_unlock(slab, &flags);
 
 	cpu_relax();
 	return false;
@@ -717,12 +705,7 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 	if (!calculate_sizes(s))
 		goto error;
 
-#if defined(CONFIG_HAVE_CMPXCHG_DOUBLE) && \
-	defined(CONFIG_HAVE_ALIGNED_STRUCT_PAGE)
-	if (system_has_cmpxchg_double() && (s->flags & SLAB_NO_CMPXCHG) == 0)
-
-		s->flags |= __CMPXCHG_DOUBLE;
-#endif
+	/* CONFIG_HAVE_CMPXCHG_DOUBLE block removed - not enabled in tinyconfig */
 
 	s->min_partial = min_t(unsigned long, MAX_PARTIAL, ilog2(s->size) / 2);
 	s->min_partial = max_t(unsigned long, MIN_PARTIAL, s->min_partial);

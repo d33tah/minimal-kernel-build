@@ -199,24 +199,12 @@ static void __init parse_setup_data(void)
 
 	pa_data = boot_params.hdr.setup_data;
 	while (pa_data) {
-		u32 data_len, data_type;
-
 		data = early_memremap(pa_data, sizeof(*data));
-		data_len = data->len + sizeof(struct setup_data);
-		data_type = data->type;
 		pa_next = data->next;
+		if (data->type == SETUP_E820_EXT)
+			e820__memory_setup_extended(
+				pa_data, data->len + sizeof(struct setup_data));
 		early_memunmap(data, sizeof(*data));
-
-		switch (data_type) {
-		case SETUP_E820_EXT:
-			e820__memory_setup_extended(pa_data, data_len);
-			break;
-		case SETUP_DTB:
-			/* add_dtb - empty stub */
-			break;
-		default:
-			break;
-		}
 		pa_data = pa_next;
 	}
 }

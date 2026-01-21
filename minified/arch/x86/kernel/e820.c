@@ -197,14 +197,7 @@ static int __init __append_e820_table(struct boot_e820_entry *entries,
 	return 0;
 }
 
-static int __init append_e820_table(struct boot_e820_entry *entries,
-				    u32 nr_entries)
-{
-	if (nr_entries < 2)
-		return -1;
-
-	return __append_e820_table(entries, nr_entries);
-}
+/* append_e820_table merged into e820__memory_setup_default */
 
 static u64 __init __e820__range_update(struct e820_table *table, u64 start,
 				       u64 size, enum e820_type old_type,
@@ -610,8 +603,10 @@ char *__init e820__memory_setup_default(void)
 {
 	char *who = "BIOS-e820";
 
-	if (append_e820_table(boot_params.e820_table,
-			      boot_params.e820_entries) < 0) {
+	/* Inlined append_e820_table check */
+	if (boot_params.e820_entries < 2 ||
+	    __append_e820_table(boot_params.e820_table,
+				boot_params.e820_entries) < 0) {
 		u64 mem_size;
 
 		if (boot_params.alt_mem_k < boot_params.screen_info.ext_mem_k) {

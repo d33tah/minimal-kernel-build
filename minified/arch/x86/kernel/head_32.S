@@ -411,13 +411,9 @@ __REFDATA
 SYM_DATA(initial_code,		.long i386_start_kernel)
 SYM_DATA(setup_once_ref,	.long setup_once)
 
-#ifdef CONFIG_PAGE_TABLE_ISOLATION
-#define	PGD_ALIGN	(2 * PAGE_SIZE)
-#define PTI_USER_PGD_FILL	1024
-#else
+/* CONFIG_PAGE_TABLE_ISOLATION not set - use simplified values */
 #define	PGD_ALIGN	(PAGE_SIZE)
 #define PTI_USER_PGD_FILL	0
-#endif
 /*
  * BSS section
  */
@@ -471,14 +467,7 @@ SYM_DATA_START(initial_page_table)
 # endif
 	.align PAGE_SIZE		/* needs to be page-sized too */
 
-#ifdef CONFIG_PAGE_TABLE_ISOLATION
-	/*
-	 * PTI needs another page so sync_initial_pagetable() works correctly
-	 * and does not scribble over the data which is placed behind the
-	 * actual initial_page_table. See clone_pgd_range().
-	 */
-	.fill 1024, 4, 0
-#endif
+/* CONFIG_PAGE_TABLE_ISOLATION block removed - not set */
 
 SYM_DATA_END(initial_page_table)
 #endif

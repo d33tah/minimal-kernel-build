@@ -244,22 +244,7 @@ static void update_curr_fair(struct rq *rq)
 	update_curr(cfs_rq_of(&rq->curr->se));
 }
 
-/* update_stats functions removed - schedstat_enabled() is always 0 */
-#define update_stats_wait_start_fair(cfs_rq, se) \
-	do {                                     \
-	} while (0)
-#define update_stats_wait_end_fair(cfs_rq, se) \
-	do {                                   \
-	} while (0)
-#define update_stats_enqueue_sleeper_fair(cfs_rq, se) \
-	do {                                          \
-	} while (0)
-#define update_stats_enqueue_fair(cfs_rq, se, flags) \
-	do {                                         \
-	} while (0)
-#define update_stats_dequeue_fair(cfs_rq, se, flags) \
-	do {                                         \
-	} while (0)
+/* update_stats_* macros removed - schedstat_enabled() always 0, no calls needed */
 
 /* update_stats_curr_start, account_entity_enqueue/dequeue inlined */
 
@@ -342,7 +327,6 @@ static void enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 	if (flags & ENQUEUE_WAKEUP)
 		place_entity(cfs_rq, se, 0);
 
-	update_stats_enqueue_fair(cfs_rq, se, flags);
 	if (!curr)
 		__enqueue_entity(cfs_rq, se);
 	se->on_rq = 1;
@@ -357,8 +341,6 @@ static void dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 	update_curr(cfs_rq);
 
 	update_load_avg(cfs_rq, se, UPDATE_TG);
-
-	update_stats_dequeue_fair(cfs_rq, se, flags);
 
 	/* clear_buddies call removed - empty stub */
 
@@ -383,7 +365,6 @@ static void set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 	/* clear_buddies call removed - empty stub */
 
 	if (se->on_rq) {
-		update_stats_wait_end_fair(cfs_rq, se);
 		__dequeue_entity(cfs_rq, se);
 		update_load_avg(cfs_rq, se, UPDATE_TG);
 	}
@@ -403,8 +384,6 @@ static void put_prev_entity(struct cfs_rq *cfs_rq, struct sched_entity *prev)
 	if (prev->on_rq)
 		update_curr(cfs_rq);
 	if (prev->on_rq) {
-		update_stats_wait_start_fair(cfs_rq, prev);
-
 		__enqueue_entity(cfs_rq, prev);
 
 		update_load_avg(cfs_rq, prev, 0);

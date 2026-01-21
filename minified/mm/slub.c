@@ -44,26 +44,16 @@
 
 static nodemask_t slab_nodes;
 
-static inline void *freelist_ptr(const struct kmem_cache *s, void *ptr,
-				 unsigned long ptr_addr)
-{
-	return ptr;
-}
-
-/* freelist_dereference inlined */
+/* freelist_ptr inlined - always returned ptr unchanged (no obfuscation) */
 
 static inline void *get_freepointer(struct kmem_cache *s, void *object)
 {
-	void *ptr_addr = object + s->offset;
-	return freelist_ptr(s, (void *)*(unsigned long *)(ptr_addr),
-			    (unsigned long)ptr_addr);
+	return *(void **)(object + s->offset);
 }
 
 static inline void set_freepointer(struct kmem_cache *s, void *object, void *fp)
 {
-	unsigned long freeptr_addr = (unsigned long)object + s->offset;
-
-	*(void **)freeptr_addr = freelist_ptr(s, fp, freeptr_addr);
+	*(void **)((unsigned long)object + s->offset) = fp;
 }
 
 /* fixup_red_left removed - always returned p unchanged (no red zone) */

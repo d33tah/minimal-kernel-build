@@ -1235,33 +1235,7 @@ static void __init alloc_node_mem_map(struct pglist_data *pgdat)
 	}
 }
 
-static void __init free_area_init_node(int nid)
-{
-	pg_data_t *pgdat = NODE_DATA(nid);
-	unsigned long start_pfn = -1UL;
-	unsigned long end_pfn = 0;
-	unsigned long this_start_pfn, this_end_pfn;
-	int i;
-
-	WARN_ON(pgdat->nr_zones);
-
-	/* get_pfn_range_for_nid inlined */
-	for_each_mem_pfn_range(i, nid, &this_start_pfn, &this_end_pfn, NULL) {
-		start_pfn = min(start_pfn, this_start_pfn);
-		end_pfn = max(end_pfn, this_end_pfn);
-	}
-	if (start_pfn == -1UL)
-		start_pfn = 0;
-
-	pgdat->node_id = nid;
-	pgdat->node_start_pfn = start_pfn;
-
-	calculate_node_totalpages(pgdat, start_pfn, end_pfn);
-
-	alloc_node_mem_map(pgdat);
-	free_area_init_core(pgdat);
-}
-
+/* free_area_init_node inlined into free_area_init */
 /* MAX_NUMNODES == 1, setup_nr_node_ids removed - inline stub in mm.h */
 
 void __init free_area_init(unsigned long *max_zone_pfn)
@@ -1289,9 +1263,33 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 		start_pfn = end_pfn;
 	}
 
-	/* Basic node initialization - single node */
-	if (node_online(0))
-		free_area_init_node(0);
+	/* free_area_init_node inlined - single node */
+	if (node_online(0)) {
+		pg_data_t *pgdat = NODE_DATA(0);
+		unsigned long node_start_pfn = -1UL;
+		unsigned long node_end_pfn = 0;
+		unsigned long this_start_pfn, this_end_pfn;
+		int j;
+
+		WARN_ON(pgdat->nr_zones);
+
+		/* get_pfn_range_for_nid inlined */
+		for_each_mem_pfn_range(j, 0, &this_start_pfn, &this_end_pfn,
+				       NULL) {
+			node_start_pfn = min(node_start_pfn, this_start_pfn);
+			node_end_pfn = max(node_end_pfn, this_end_pfn);
+		}
+		if (node_start_pfn == -1UL)
+			node_start_pfn = 0;
+
+		pgdat->node_id = 0;
+		pgdat->node_start_pfn = node_start_pfn;
+
+		calculate_node_totalpages(pgdat, node_start_pfn, node_end_pfn);
+
+		alloc_node_mem_map(pgdat);
+		free_area_init_core(pgdat);
+	}
 
 	/* Inlined memmap_init */
 	{

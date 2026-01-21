@@ -645,11 +645,10 @@ static inline struct page *__alloc_pages_slowpath(gfp_t gfp_mask,
 	return page;
 }
 
-static inline bool prepare_alloc_pages(gfp_t gfp_mask, unsigned int order,
+/* alloc_gfp and alloc_flags params removed - unused */
+static inline void prepare_alloc_pages(gfp_t gfp_mask, unsigned int order,
 				       int preferred_nid, nodemask_t *nodemask,
-				       struct alloc_context *ac,
-				       gfp_t *alloc_gfp,
-				       unsigned int *alloc_flags)
+				       struct alloc_context *ac)
 {
 	ac->highest_zoneidx = gfp_zone(gfp_mask);
 	ac->zonelist = node_zonelist(preferred_nid, gfp_mask);
@@ -660,8 +659,6 @@ static inline bool prepare_alloc_pages(gfp_t gfp_mask, unsigned int order,
 
 	ac->preferred_zoneref = first_zones_zonelist(
 		ac->zonelist, ac->highest_zoneidx, ac->nodemask);
-
-	return true;
 }
 
 unsigned long __alloc_pages_bulk(gfp_t gfp, int preferred_nid,
@@ -702,8 +699,7 @@ struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid,
 	gfp = current_gfp_context(gfp);
 	alloc_gfp = gfp;
 	/* prepare_alloc_pages always returns true - check removed */
-	prepare_alloc_pages(gfp, order, preferred_nid, nodemask, &ac,
-			    &alloc_gfp, &alloc_flags);
+	prepare_alloc_pages(gfp, order, preferred_nid, nodemask, &ac);
 
 	/* Inlined alloc_flags_nofragment */
 	alloc_flags |= (__force int)(gfp & __GFP_KSWAPD_RECLAIM);

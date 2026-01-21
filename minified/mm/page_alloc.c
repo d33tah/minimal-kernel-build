@@ -926,29 +926,7 @@ static void __init memmap_init_zone_range(struct zone *zone,
 	*hole_pfn = end_pfn;
 }
 
-static void __init memmap_init(void)
-{
-	unsigned long start_pfn, end_pfn;
-	unsigned long hole_pfn = 0;
-	int i, j, zone_id = 0, nid;
-
-	for_each_mem_pfn_range(i, MAX_NUMNODES, &start_pfn, &end_pfn, &nid) {
-		struct pglist_data *node = NODE_DATA(nid);
-
-		for (j = 0; j < MAX_NR_ZONES; j++) {
-			struct zone *zone = node->node_zones + j;
-
-			if (!populated_zone(zone))
-				continue;
-
-			memmap_init_zone_range(zone, start_pfn, end_pfn,
-					       &hole_pfn);
-			zone_id = j;
-		}
-	}
-
-	init_unavailable_range(hole_pfn, end_pfn, zone_id, nid);
-}
+/* memmap_init inlined into free_area_init */
 
 void __init *memmap_alloc(phys_addr_t size, phys_addr_t align,
 			  phys_addr_t min_addr, int nid, bool exact_nid)
@@ -1324,7 +1302,26 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 	if (node_online(0))
 		free_area_init_node(0);
 
-	memmap_init();
+	/* Inlined memmap_init */
+	{
+		unsigned long m_start_pfn, m_end_pfn;
+		unsigned long hole_pfn = 0;
+		int mi, mj, zone_id = 0, nid;
+
+		for_each_mem_pfn_range(mi, MAX_NUMNODES, &m_start_pfn,
+				       &m_end_pfn, &nid) {
+			struct pglist_data *node = NODE_DATA(nid);
+			for (mj = 0; mj < MAX_NR_ZONES; mj++) {
+				struct zone *zone = node->node_zones + mj;
+				if (!populated_zone(zone))
+					continue;
+				memmap_init_zone_range(zone, m_start_pfn,
+						       m_end_pfn, &hole_pfn);
+				zone_id = mj;
+			}
+		}
+		init_unavailable_range(hole_pfn, m_end_pfn, zone_id, nid);
+	}
 }
 
 void adjust_managed_page_count(struct page *page, long count)

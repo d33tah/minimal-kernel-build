@@ -192,22 +192,7 @@ static void __init reserve_initrd(void)
 	memblock_phys_free(ramdisk_image, ramdisk_end - ramdisk_image);
 }
 
-static void __init parse_setup_data(void)
-{
-	struct setup_data *data;
-	u64 pa_data, pa_next;
-
-	pa_data = boot_params.hdr.setup_data;
-	while (pa_data) {
-		data = early_memremap(pa_data, sizeof(*data));
-		pa_next = data->next;
-		if (data->type == SETUP_E820_EXT)
-			e820__memory_setup_extended(
-				pa_data, data->len + sizeof(struct setup_data));
-		early_memunmap(data, sizeof(*data));
-		pa_data = pa_next;
-	}
-}
+/* parse_setup_data inlined into setup_arch */
 
 static void __init memblock_x86_reserve_range_setup_data(void)
 {
@@ -372,7 +357,23 @@ void __init setup_arch(char **cmdline_p)
 
 	iomem_resource.end = (1ULL << boot_cpu_data.x86_phys_bits) - 1;
 	e820__memory_setup();
-	parse_setup_data();
+	/* parse_setup_data inlined */
+	{
+		struct setup_data *data;
+		u64 pa_data, pa_next;
+
+		pa_data = boot_params.hdr.setup_data;
+		while (pa_data) {
+			data = early_memremap(pa_data, sizeof(*data));
+			pa_next = data->next;
+			if (data->type == SETUP_E820_EXT)
+				e820__memory_setup_extended(
+					pa_data,
+					data->len + sizeof(struct setup_data));
+			early_memunmap(data, sizeof(*data));
+			pa_data = pa_next;
+		}
+	}
 	/* copy_edd removed - empty stub */
 
 	if (!boot_params.hdr.root_flags)

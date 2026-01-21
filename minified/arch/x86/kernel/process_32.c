@@ -16,9 +16,7 @@
 #include <linux/interrupt.h>
 #include <linux/delay.h>
 #include <linux/reboot.h>
-#include <linux/mc146818rtc.h>
 #include <linux/export.h>
-#include <linux/kallsyms.h>
 #include <linux/ptrace.h>
 #include <linux/personality.h>
 #include <linux/percpu.h>

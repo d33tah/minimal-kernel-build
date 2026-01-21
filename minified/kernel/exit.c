@@ -27,19 +27,14 @@ extern int nr_threads;
 #include <linux/cgroup.h>
 #include <linux/syscalls.h>
 #include <linux/signal.h>
-#include <linux/posix-timers.h>
 #include <linux/mutex.h>
-#include <linux/futex.h>
-#include <linux/pipe_fs_i.h>
 #include <linux/resource.h>
-#include <linux/blkdev.h>
 #include <linux/task_work.h>
 #include <linux/fs_struct.h>
 #include <linux/init_task.h>
 #include <linux/writeback.h>
 #include <linux/rcuwait.h>
 #include <linux/compat.h>
-#include <linux/kprobes.h>
 
 #include <linux/uaccess.h>
 #include <asm/unistd.h>

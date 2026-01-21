@@ -1010,24 +1010,7 @@ void __meminit init_currently_empty_zone(struct zone *zone,
 	}
 }
 
-static void __init get_pfn_range_for_nid(unsigned int nid,
-					 unsigned long *start_pfn,
-					 unsigned long *end_pfn)
-{
-	unsigned long this_start_pfn, this_end_pfn;
-	int i;
-
-	*start_pfn = -1UL;
-	*end_pfn = 0;
-
-	for_each_mem_pfn_range(i, nid, &this_start_pfn, &this_end_pfn, NULL) {
-		*start_pfn = min(*start_pfn, this_start_pfn);
-		*end_pfn = max(*end_pfn, this_end_pfn);
-	}
-
-	if (*start_pfn == -1UL)
-		*start_pfn = 0;
-}
+/* get_pfn_range_for_nid inlined into free_area_init_node */
 
 static void __init adjust_zone_range_for_zone_movable(
 	int nid, unsigned long zone_type, unsigned long node_start_pfn,
@@ -1255,12 +1238,20 @@ static void __init alloc_node_mem_map(struct pglist_data *pgdat)
 static void __init free_area_init_node(int nid)
 {
 	pg_data_t *pgdat = NODE_DATA(nid);
-	unsigned long start_pfn = 0;
+	unsigned long start_pfn = -1UL;
 	unsigned long end_pfn = 0;
+	unsigned long this_start_pfn, this_end_pfn;
+	int i;
 
 	WARN_ON(pgdat->nr_zones);
 
-	get_pfn_range_for_nid(nid, &start_pfn, &end_pfn);
+	/* get_pfn_range_for_nid inlined */
+	for_each_mem_pfn_range(i, nid, &this_start_pfn, &this_end_pfn, NULL) {
+		start_pfn = min(start_pfn, this_start_pfn);
+		end_pfn = max(end_pfn, this_end_pfn);
+	}
+	if (start_pfn == -1UL)
+		start_pfn = 0;
 
 	pgdat->node_id = nid;
 	pgdat->node_start_pfn = start_pfn;

@@ -14,8 +14,7 @@
 
 #include <linux/cpu.h>
 /* rculist.h, poll.h, irq_work.h, ctype.h, uio.h removed - unused */
-/* sched/clock.h, sched/debug.h, sched/task_stack.h, uaccess.h removed - unused */
-#include <asm/sections.h>
+/* sched/clock.h, sched/debug.h, sched/task_stack.h, uaccess.h, asm/sections.h removed - unused */
 
 /* printk_ringbuffer.h structs, macros, and function declarations removed
    since all prb_* functions are now stubbed as macros below */

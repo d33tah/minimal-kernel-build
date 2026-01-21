@@ -244,28 +244,7 @@ static int __init_memblock memblock_double_array(struct memblock_type *type,
 	return 0;
 }
 
-static void __init_memblock memblock_merge_regions(struct memblock_type *type)
-{
-	int i = 0;
-
-	while (i < type->cnt - 1) {
-		struct memblock_region *this = &type->regions[i];
-		struct memblock_region *next = &type->regions[i + 1];
-
-		/* memblock_get_region_node comparison removed - always returns 0 */
-		if (this->base + this->size != next->base ||
-		    this->flags != next->flags) {
-			BUG_ON(this->base + this->size > next->base);
-			i++;
-			continue;
-		}
-
-		this->size += next->size;
-
-		memmove(next, next + 1, (type->cnt - (i + 2)) * sizeof(*next));
-		type->cnt--;
-	}
-}
+/* memblock_merge_regions inlined into memblock_add_range */
 
 static void __init_memblock memblock_insert_region(struct memblock_type *type,
 						   int idx, phys_addr_t base,
@@ -349,7 +328,22 @@ repeat:
 		insert = true;
 		goto repeat;
 	} else {
-		memblock_merge_regions(type);
+		/* memblock_merge_regions inlined */
+		int i = 0;
+		while (i < type->cnt - 1) {
+			struct memblock_region *this = &type->regions[i];
+			struct memblock_region *next = &type->regions[i + 1];
+			if (this->base + this->size != next->base ||
+			    this->flags != next->flags) {
+				BUG_ON(this->base + this->size > next->base);
+				i++;
+				continue;
+			}
+			this->size += next->size;
+			memmove(next, next + 1,
+				(type->cnt - (i + 2)) * sizeof(*next));
+			type->cnt--;
+		}
 		return 0;
 	}
 }

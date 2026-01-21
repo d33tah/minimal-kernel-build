@@ -603,10 +603,7 @@ struct dentry *d_alloc(struct dentry *parent, const struct qstr *name)
 	return dentry;
 }
 
-struct dentry *d_alloc_anon(struct super_block *sb)
-{
-	return __d_alloc(sb, NULL);
-}
+/* d_alloc_anon inlined into d_make_root - only caller */
 
 /* Stub: d_alloc_cursor not used in minimal kernel */
 struct dentry *d_alloc_cursor(struct dentry *parent)
@@ -689,7 +686,8 @@ struct dentry *d_make_root(struct inode *root_inode)
 	struct dentry *res = NULL;
 
 	if (root_inode) {
-		res = d_alloc_anon(root_inode->i_sb);
+		res = __d_alloc(root_inode->i_sb,
+				NULL); /* inlined d_alloc_anon */
 		if (res)
 			d_instantiate(res, root_inode);
 		else

@@ -550,9 +550,8 @@ static struct dentry *__lookup_slow(const struct qstr *name, struct dentry *dir,
 	dentry = d_alloc_parallel(dir, name, &wq);
 	if (IS_ERR(dentry))
 		return dentry;
-	if (unlikely(!d_in_lookup(dentry))) {
-		/* d_revalidate always returned 1 (> 0), dead error handling removed */
-	} else {
+	/* d_revalidate always returned 1 (> 0), dead error handling removed */
+	if (likely(d_in_lookup(dentry))) {
 		old = inode->i_op->lookup(inode, dentry, flags);
 		d_lookup_done(dentry);
 		if (unlikely(old)) {

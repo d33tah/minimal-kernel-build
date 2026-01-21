@@ -24,8 +24,7 @@
 					  inst##q##__VA_ARGS__)
 #define __ASM_REG(reg)         __ASM_SEL_RAW(e##reg, r##reg)
 
-#define _ASM_PTR	__ASM_SEL(.long, .quad)
-#define _ASM_ALIGN	__ASM_SEL(.balign 4, .balign 8)
+/* _ASM_PTR, _ASM_ALIGN removed - never used */
 
 /* Keep only used register macros */
 #define _ASM_AX		__ASM_REG(ax)

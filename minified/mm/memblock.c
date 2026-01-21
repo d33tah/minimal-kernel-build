@@ -845,12 +845,16 @@ static unsigned long __init __free_memory_core(phys_addr_t start,
 	return end_pfn - PFN_UP(start);
 }
 
-static void __init memmap_init_reserved_pages(void)
+/* memmap_init_reserved_pages, free_low_memory_core_early inlined below */
+
+void __init memblock_free_all(void)
 {
 	struct memblock_region *region;
+	unsigned long count = 0;
 	phys_addr_t start, end;
 	u64 i;
 
+	/* memmap_init_reserved_pages inlined */
 	for_each_reserved_mem_range(i, &start, &end)
 		reserve_bootmem_region(start, end);
 
@@ -861,27 +865,11 @@ static void __init memmap_init_reserved_pages(void)
 			reserve_bootmem_region(start, end);
 		}
 	}
-}
 
-static unsigned long __init free_low_memory_core_early(void)
-{
-	unsigned long count = 0;
-	phys_addr_t start, end;
-	u64 i;
-
-	memmap_init_reserved_pages();
-
+	/* free_low_memory_core_early inlined */
 	for_each_free_mem_range(i, NUMA_NO_NODE, MEMBLOCK_NONE, &start, &end,
 				NULL)
 		count += __free_memory_core(start, end);
 
-	return count;
-}
-
-void __init memblock_free_all(void)
-{
-	unsigned long pages;
-
-	pages = free_low_memory_core_early();
-	totalram_pages_add(pages);
+	totalram_pages_add(count);
 }

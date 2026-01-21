@@ -208,16 +208,24 @@ out_unlock:
 	raw_spin_unlock(&desc->lock);
 }
 
-static void __irq_do_set_handler(struct irq_desc *desc,
-				 irq_flow_handler_t handle, int is_chained,
-				 const char *name)
+/* __irq_do_set_handler inlined into __irq_set_handler */
+
+void __irq_set_handler(unsigned int irq, irq_flow_handler_t handle,
+		       int is_chained, const char *name)
 {
+	unsigned long flags;
+	struct irq_desc *desc = irq_get_desc_buslock(irq, &flags, 0);
+
+	if (!desc)
+		return;
+
+	/* __irq_do_set_handler inlined */
 	if (!handle) {
 		handle = handle_bad_irq;
 	} else {
 		struct irq_data *irq_data = &desc->irq_data;
 		if (WARN_ON(!irq_data || irq_data->chip == &no_irq_chip))
-			return;
+			goto out;
 	}
 
 	if (handle == handle_bad_irq) {
@@ -248,18 +256,8 @@ static void __irq_do_set_handler(struct irq_desc *desc,
 		WARN_ON(irq_chip_pm_get(irq_desc_get_irq_data(desc)));
 		irq_activate_and_startup(desc, IRQ_RESEND);
 	}
-}
 
-void __irq_set_handler(unsigned int irq, irq_flow_handler_t handle,
-		       int is_chained, const char *name)
-{
-	unsigned long flags;
-	struct irq_desc *desc = irq_get_desc_buslock(irq, &flags, 0);
-
-	if (!desc)
-		return;
-
-	__irq_do_set_handler(desc, handle, is_chained, name);
+out:
 	irq_put_desc_busunlock(desc, flags);
 }
 

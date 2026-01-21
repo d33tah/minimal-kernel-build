@@ -224,9 +224,7 @@ repeat:
 	return last_map_addr;
 }
 
-static inline void permanent_kmaps_init(pgd_t *pgd_base)
-{
-}
+/* permanent_kmaps_init removed - empty function */
 
 void __init sync_initial_page_table(void)
 {
@@ -343,9 +341,7 @@ void __init initmem_init(void)
 /* pidbg debug function removed */
 void __init paging_init(void)
 {
-	/* pagetable_init inlined */
-	permanent_kmaps_init(swapper_pg_dir);
-
+	/* pagetable_init inlined, permanent_kmaps_init removed - empty */
 	__flush_tlb_all();
 	/* olpc_dt_build_devicetree removed - empty stub */
 	sparse_init();

@@ -360,16 +360,19 @@ int __init_memblock memblock_add(phys_addr_t base, phys_addr_t size)
 				  0);
 }
 
-static int __init_memblock memblock_isolate_range(struct memblock_type *type,
-						  phys_addr_t base,
-						  phys_addr_t size,
-						  int *start_rgn, int *end_rgn)
+void __init_memblock memblock_free(void *ptr, size_t size)
 {
-	phys_addr_t end = base + memblock_cap_size(base, &size);
-	int idx;
-	struct memblock_region *rgn;
+	if (ptr)
+		memblock_phys_free(__pa(ptr), size);
+}
 
-	*start_rgn = *end_rgn = 0;
+/* memblock_isolate_range and memblock_remove_range inlined */
+int __init_memblock memblock_phys_free(phys_addr_t base, phys_addr_t size)
+{
+	struct memblock_type *type = &memblock.reserved;
+	phys_addr_t end = base + memblock_cap_size(base, &size);
+	int idx, start_rgn = 0, end_rgn = 0, i;
+	struct memblock_region *rgn;
 
 	if (!size)
 		return 0;
@@ -388,7 +391,6 @@ static int __init_memblock memblock_isolate_range(struct memblock_type *type,
 		if (rend <= base)
 			continue;
 
-		/* memblock_get_region_node always returns 0 - simplified to pass 0 */
 		if (rbase < base) {
 			rgn->base = base;
 			rgn->size -= base - rbase;
@@ -402,40 +404,15 @@ static int __init_memblock memblock_isolate_range(struct memblock_type *type,
 			memblock_insert_region(type, idx--, rbase, end - rbase,
 					       0, rgn->flags);
 		} else {
-			if (!*end_rgn)
-				*start_rgn = idx;
-			*end_rgn = idx + 1;
+			if (!end_rgn)
+				start_rgn = idx;
+			end_rgn = idx + 1;
 		}
 	}
-
-	return 0;
-}
-
-static int __init_memblock memblock_remove_range(struct memblock_type *type,
-						 phys_addr_t base,
-						 phys_addr_t size)
-{
-	int start_rgn, end_rgn;
-	int i, ret;
-
-	ret = memblock_isolate_range(type, base, size, &start_rgn, &end_rgn);
-	if (ret)
-		return ret;
 
 	for (i = end_rgn - 1; i >= start_rgn; i--)
 		memblock_remove_region(type, i);
 	return 0;
-}
-
-void __init_memblock memblock_free(void *ptr, size_t size)
-{
-	if (ptr)
-		memblock_phys_free(__pa(ptr), size);
-}
-
-int __init_memblock memblock_phys_free(phys_addr_t base, phys_addr_t size)
-{
-	return memblock_remove_range(&memblock.reserved, base, size);
 }
 
 int __init_memblock memblock_reserve(phys_addr_t base, phys_addr_t size)

@@ -7,7 +7,6 @@
 #include <linux/module.h>
 #include <linux/slab.h>
 #include <linux/uaccess.h>
-#include <linux/fs_parser.h>
 
 static struct file_system_type *file_systems;
 static DEFINE_RWLOCK(file_systems_lock);

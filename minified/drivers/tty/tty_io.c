@@ -695,41 +695,7 @@ static struct tty_struct *tty_open_current_tty(dev_t device, struct file *filp)
 	return ERR_PTR(-ENXIO);
 }
 
-static struct tty_driver *tty_lookup_driver(dev_t device, struct file *filp,
-					    int *index)
-{
-	struct tty_driver *driver = NULL;
-
-	switch (device) {
-	case MKDEV(TTY_MAJOR, 0): {
-		extern struct tty_driver *console_driver;
-
-		driver = tty_driver_kref_get(console_driver);
-		*index = fg_console;
-		break;
-	}
-	case MKDEV(TTYAUX_MAJOR, 1): {
-		struct tty_driver *console_driver = console_device(index);
-
-		if (console_driver) {
-			driver = tty_driver_kref_get(console_driver);
-			if (driver && filp) {
-				filp->f_flags |= O_NONBLOCK;
-				break;
-			}
-		}
-		if (driver)
-			tty_driver_kref_put(driver);
-		return ERR_PTR(-ENODEV);
-	}
-	default:
-		driver = get_tty_driver(device, index);
-		if (!driver)
-			return ERR_PTR(-ENODEV);
-		break;
-	}
-	return driver;
-}
+/* tty_lookup_driver inlined into tty_open_by_driver */
 
 static struct tty_struct *tty_open_by_driver(dev_t device, struct file *filp)
 {
@@ -739,7 +705,36 @@ static struct tty_struct *tty_open_by_driver(dev_t device, struct file *filp)
 	int retval;
 
 	mutex_lock(&tty_mutex);
-	driver = tty_lookup_driver(device, filp, &index);
+	/* tty_lookup_driver inlined */
+	switch (device) {
+	case MKDEV(TTY_MAJOR, 0): {
+		extern struct tty_driver *console_driver;
+		driver = tty_driver_kref_get(console_driver);
+		index = fg_console;
+		break;
+	}
+	case MKDEV(TTYAUX_MAJOR, 1): {
+		struct tty_driver *console_driver = console_device(&index);
+		if (console_driver) {
+			driver = tty_driver_kref_get(console_driver);
+			if (driver && filp) {
+				filp->f_flags |= O_NONBLOCK;
+				break;
+			}
+		}
+		if (driver)
+			tty_driver_kref_put(driver);
+		mutex_unlock(&tty_mutex);
+		return ERR_PTR(-ENODEV);
+	}
+	default:
+		driver = get_tty_driver(device, &index);
+		if (!driver) {
+			mutex_unlock(&tty_mutex);
+			return ERR_PTR(-ENODEV);
+		}
+		break;
+	}
 	if (IS_ERR(driver)) {
 		mutex_unlock(&tty_mutex);
 		return ERR_CAST(driver);

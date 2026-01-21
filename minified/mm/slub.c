@@ -343,25 +343,7 @@ static void flush_cpu_slab(struct work_struct *w)
 static DEFINE_MUTEX(flush_lock);
 static DEFINE_PER_CPU(struct slub_flush_work, slub_flush);
 
-static void flush_all_cpus_locked(struct kmem_cache *s)
-{
-	struct slub_flush_work *sfw;
-	struct kmem_cache_cpu *c = per_cpu_ptr(s->cpu_slab, 0);
-
-	mutex_lock(&flush_lock);
-
-	/* for_each_online_cpu simplified - single CPU */
-	sfw = &per_cpu(slub_flush, 0);
-	if (c->slab || slub_percpu_partial(c)) {
-		INIT_WORK(&sfw->work, flush_cpu_slab);
-		sfw->s = s;
-		schedule_work_on(0, &sfw->work);
-		flush_work(&sfw->work);
-	}
-
-	mutex_unlock(&flush_lock);
-}
-
+/* flush_all_cpus_locked inlined into __kmem_cache_shutdown */
 /* slub_cpu_dead removed - CPU never goes offline in single-CPU kernel (~10 LOC) */
 
 /* node_match removed - always returned 1 */
@@ -717,7 +699,20 @@ int __kmem_cache_shutdown(struct kmem_cache *s)
 	int node;
 	struct kmem_cache_node *n;
 
-	flush_all_cpus_locked(s);
+	/* flush_all_cpus_locked inlined */
+	{
+		struct slub_flush_work *sfw;
+		struct kmem_cache_cpu *c = per_cpu_ptr(s->cpu_slab, 0);
+		mutex_lock(&flush_lock);
+		sfw = &per_cpu(slub_flush, 0);
+		if (c->slab || slub_percpu_partial(c)) {
+			INIT_WORK(&sfw->work, flush_cpu_slab);
+			sfw->s = s;
+			schedule_work_on(0, &sfw->work);
+			flush_work(&sfw->work);
+		}
+		mutex_unlock(&flush_lock);
+	}
 
 	for_each_kmem_cache_node(s, node, n)
 	{

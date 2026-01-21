@@ -54,11 +54,7 @@ static inline void rwsem_set_reader_owned(struct rw_semaphore *sem)
 {
 	__rwsem_set_reader_owned(sem, current);
 }
-
-static inline bool is_rwsem_reader_owned(struct rw_semaphore *sem)
-{
-	return atomic_long_read(&sem->owner) & RWSEM_READER_OWNED;
-}
+/* is_rwsem_reader_owned removed - never called */
 
 /* rwsem_set_nonspinnable inlined into rwsem_read_trylock */
 
@@ -98,12 +94,7 @@ static inline bool rwsem_write_trylock(struct rw_semaphore *sem)
 
 	return false;
 }
-
-static inline struct task_struct *rwsem_owner(struct rw_semaphore *sem)
-{
-	return (struct task_struct *)(atomic_long_read(&sem->owner) &
-				      ~RWSEM_OWNER_FLAGS_MASK);
-}
+/* rwsem_owner removed - never called */
 
 void __init_rwsem(struct rw_semaphore *sem, const char *name,
 		  struct lock_class_key *key)

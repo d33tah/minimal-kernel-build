@@ -65,8 +65,7 @@ static inline struct file *files_lookup_fd_raw(struct files_struct *files, unsig
 	return NULL;
 }
 
-struct file *task_lookup_fd_rcu(struct task_struct *task, unsigned int fd);
-struct file *task_lookup_next_fd_rcu(struct task_struct *task, unsigned int *fd);
+/* task_lookup_fd_rcu, task_lookup_next_fd_rcu removed - never used */
 
 struct task_struct;
 

@@ -377,9 +377,7 @@ struct vm_special_mapping {
 
 /* enum tlb_flush_reason removed - never used */
 
-typedef struct {
-	unsigned long val;
-} swp_entry_t;
+/* swp_entry_t removed - never used */
 
 enum fault_flag {
 	FAULT_FLAG_WRITE =		1 << 0,

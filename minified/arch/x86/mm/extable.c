@@ -109,14 +109,7 @@ static bool ex_handler_uaccess(const struct exception_table_entry *fixup,
 	return ex_handler_default(fixup, regs);
 }
 
-static bool ex_handler_copy(const struct exception_table_entry *fixup,
-			    struct pt_regs *regs, int trapnr)
-{
-	WARN_ONCE(
-		trapnr == X86_TRAP_GP,
-		"General protection fault in user access. Non-canonical address?");
-	return ex_handler_fault(fixup, regs, trapnr);
-}
+/* ex_handler_copy inlined into fixup_exception */
 
 static bool ex_handler_msr(const struct exception_table_entry *fixup,
 			   struct pt_regs *regs, bool wrmsr, bool safe, int reg)
@@ -182,7 +175,11 @@ int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code,
 	case EX_TYPE_UACCESS:
 		return ex_handler_uaccess(e, regs, trapnr);
 	case EX_TYPE_COPY:
-		return ex_handler_copy(e, regs, trapnr);
+		/* ex_handler_copy inlined */
+		WARN_ONCE(
+			trapnr == X86_TRAP_GP,
+			"General protection fault in user access. Non-canonical address?");
+		return ex_handler_fault(e, regs, trapnr);
 	case EX_TYPE_CLEAR_FS:
 		/* ex_handler_clear_fs inlined */
 		if (static_cpu_has(X86_BUG_NULL_SEG))

@@ -583,9 +583,11 @@ static inline bool vruntime_normalized(struct task_struct *p)
 }
 
 /* detach_entity_cfs_rq, attach_entity_cfs_rq inlined */
+/* detach_task_cfs_rq, attach_task_cfs_rq inlined */
 
-static void detach_task_cfs_rq(struct task_struct *p)
+static void switched_from_fair(struct rq *rq, struct task_struct *p)
 {
+	/* detach_task_cfs_rq inlined */
 	struct sched_entity *se = &p->se;
 	struct cfs_rq *cfs_rq = cfs_rq_of(se);
 
@@ -597,8 +599,9 @@ static void detach_task_cfs_rq(struct task_struct *p)
 	update_load_avg(cfs_rq, se, 0);
 }
 
-static void attach_task_cfs_rq(struct task_struct *p)
+static void switched_to_fair(struct rq *rq, struct task_struct *p)
 {
+	/* attach_task_cfs_rq inlined */
 	struct sched_entity *se = &p->se;
 	struct cfs_rq *cfs_rq = cfs_rq_of(se);
 
@@ -607,16 +610,6 @@ static void attach_task_cfs_rq(struct task_struct *p)
 
 	if (!vruntime_normalized(p))
 		se->vruntime += cfs_rq->min_vruntime;
-}
-
-static void switched_from_fair(struct rq *rq, struct task_struct *p)
-{
-	detach_task_cfs_rq(p);
-}
-
-static void switched_to_fair(struct rq *rq, struct task_struct *p)
-{
-	attach_task_cfs_rq(p);
 
 	if (task_on_rq_queued(p)) {
 		if (task_current(rq, p))

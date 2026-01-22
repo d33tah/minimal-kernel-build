@@ -152,26 +152,22 @@ void switch_mm(struct mm_struct *prev, struct mm_struct *next,
 }
 
 /* l1d_flush_force_sigbus, l1d_flush_evaluate removed - never called (~18 LOC) */
-
-static unsigned long mm_mangle_tif_spec_bits(struct task_struct *next)
-{
-	unsigned long next_tif = read_task_thread_flags(next);
-	unsigned long spec_bits = (next_tif >> TIF_SPEC_IB) &
-				  LAST_USER_MM_SPEC_MASK;
-
-	BUILD_BUG_ON(TIF_SPEC_L1D_FLUSH != TIF_SPEC_IB + 1);
-
-	return (unsigned long)next->mm | spec_bits;
-}
+/* mm_mangle_tif_spec_bits inlined into cond_mitigation */
 
 static void cond_mitigation(struct task_struct *next)
 {
 	unsigned long next_mm;
+	unsigned long next_tif, spec_bits;
 
 	if (!next || !next->mm)
 		return;
 
-	next_mm = mm_mangle_tif_spec_bits(next);
+	/* mm_mangle_tif_spec_bits inlined */
+	next_tif = read_task_thread_flags(next);
+	spec_bits = (next_tif >> TIF_SPEC_IB) & LAST_USER_MM_SPEC_MASK;
+	BUILD_BUG_ON(TIF_SPEC_L1D_FLUSH != TIF_SPEC_IB + 1);
+	next_mm = (unsigned long)next->mm | spec_bits;
+
 	/* switch_mm_cond_ibpb, switch_mm_always_ibpb, switch_mm_cond_l1d_flush
 	   are all DEFINE_STATIC_KEY_FALSE and never enabled - dead code removed */
 

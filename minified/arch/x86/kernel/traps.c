@@ -68,39 +68,37 @@ __always_inline int is_valid_bugaddr(unsigned long addr)
 	return *(unsigned short *)addr == INSN_UD2;
 }
 
-static nokprobe_inline int do_trap_no_signal(struct task_struct *tsk,
-					     int trapnr, const char *str,
-					     struct pt_regs *regs,
-					     long error_code)
-{
-	if (v8086_mode(regs)) {
-		/* handle_vm86_trap always returns 0 */
-		if (trapnr < X86_TRAP_UD)
-			return 0;
-	} else if (!user_mode(regs)) {
-		if (fixup_exception(regs, trapnr, error_code, 0))
-			return 0;
-
-		tsk->thread.error_code = error_code;
-		tsk->thread.trap_nr = trapnr;
-		die(str, regs, error_code);
-	} else {
-		if (fixup_vdso_exception(regs, trapnr, error_code, 0))
-			return 0;
-	}
-
-	tsk->thread.error_code = error_code;
-	tsk->thread.trap_nr = trapnr;
-
-	return -1;
-}
+/* do_trap_no_signal inlined into do_trap */
 
 static void do_trap(int trapnr, int signr, char *str, struct pt_regs *regs,
 		    long error_code, int sicode, void __user *addr)
 {
 	struct task_struct *tsk = current;
+	int no_sig_result;
 
-	if (!do_trap_no_signal(tsk, trapnr, str, regs, error_code))
+	/* Inlined do_trap_no_signal */
+	no_sig_result = -1;
+	if (v8086_mode(regs)) {
+		if (trapnr < X86_TRAP_UD)
+			no_sig_result = 0;
+	} else if (!user_mode(regs)) {
+		if (fixup_exception(regs, trapnr, error_code, 0))
+			no_sig_result = 0;
+		else {
+			tsk->thread.error_code = error_code;
+			tsk->thread.trap_nr = trapnr;
+			die(str, regs, error_code);
+		}
+	} else {
+		if (fixup_vdso_exception(regs, trapnr, error_code, 0))
+			no_sig_result = 0;
+	}
+	if (no_sig_result == -1) {
+		tsk->thread.error_code = error_code;
+		tsk->thread.trap_nr = trapnr;
+	}
+
+	if (!no_sig_result)
 		return;
 
 	if (!sicode)

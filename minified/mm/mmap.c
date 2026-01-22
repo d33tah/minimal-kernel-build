@@ -99,9 +99,7 @@ static inline unsigned long vma_compute_gap(struct vm_area_struct *vma)
 	return gap;
 }
 
-#define validate_mm_rb(root, ignore) \
-	do {                         \
-	} while (0)
+/* validate_mm_rb macro removed - never called */
 #define validate_mm(mm) \
 	do {            \
 	} while (0)

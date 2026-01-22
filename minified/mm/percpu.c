@@ -381,25 +381,7 @@ static void pcpu_block_update(struct pcpu_block_md *block, int start, int end)
 	}
 }
 
-static void pcpu_block_update_scan(struct pcpu_chunk *chunk, int bit_off,
-				   int bits)
-{
-	int s_off = pcpu_off_to_block_off(bit_off);
-	int e_off = s_off + bits;
-	int s_index, l_bit;
-	struct pcpu_block_md *block;
-
-	if (e_off > PCPU_BITMAP_BLOCK_BITS)
-		return;
-
-	s_index = pcpu_off_to_block_index(bit_off);
-	block = chunk->md_blocks + s_index;
-
-	l_bit = find_last_bit(pcpu_index_alloc_map(chunk, s_index), s_off);
-	s_off = (s_off == l_bit) ? 0 : l_bit + 1;
-
-	pcpu_block_update(block, s_off, e_off);
-}
+/* pcpu_block_update_scan inlined into pcpu_alloc_area */
 
 /* full_scan parameter removed - only call passes false */
 static void pcpu_chunk_refresh_hint(struct pcpu_chunk *chunk)
@@ -616,8 +598,24 @@ static int pcpu_alloc_area(struct pcpu_chunk *chunk, int alloc_bits,
 	if (bit_off >= end)
 		return -1;
 
-	if (area_bits)
-		pcpu_block_update_scan(chunk, area_off, area_bits);
+	/* Inlined pcpu_block_update_scan */
+	if (area_bits) {
+		int s_off = pcpu_off_to_block_off(area_off);
+		int e_off = s_off + area_bits;
+		int s_index, l_bit;
+		struct pcpu_block_md *block;
+
+		if (e_off <= PCPU_BITMAP_BLOCK_BITS) {
+			s_index = pcpu_off_to_block_index(area_off);
+			block = chunk->md_blocks + s_index;
+
+			l_bit = find_last_bit(
+				pcpu_index_alloc_map(chunk, s_index), s_off);
+			s_off = (s_off == l_bit) ? 0 : l_bit + 1;
+
+			pcpu_block_update(block, s_off, e_off);
+		}
+	}
 
 	bitmap_set(chunk->alloc_map, bit_off, alloc_bits);
 
@@ -962,61 +960,7 @@ void __percpu *__alloc_percpu(size_t size, size_t align)
 	return pcpu_alloc(size, align, GFP_KERNEL);
 }
 
-static void pcpu_balance_populated(void)
-{
-	const gfp_t gfp = GFP_KERNEL | __GFP_NORETRY | __GFP_NOWARN;
-	struct pcpu_chunk *chunk;
-	int slot, nr_to_pop;
-	/* ret removed - pcpu_populate_chunk always returns 0 */
-	/* pcpu_atomic_alloc_failed removed - is_atomic always false */
-
-retry_pop:
-	nr_to_pop = clamp(PCPU_EMPTY_POP_PAGES_HIGH - pcpu_nr_empty_pop_pages,
-			  0, PCPU_EMPTY_POP_PAGES_HIGH);
-
-	for (slot = pcpu_size_to_slot(PAGE_SIZE); slot <= pcpu_free_slot;
-	     slot++) {
-		unsigned int nr_unpop = 0, rs, re;
-
-		if (!nr_to_pop)
-			break;
-
-		list_for_each_entry(chunk, &pcpu_chunk_lists[slot], list) {
-			nr_unpop = chunk->nr_pages - chunk->nr_populated;
-			if (nr_unpop)
-				break;
-		}
-
-		if (!nr_unpop)
-			continue;
-
-		for_each_clear_bitrange(rs, re, chunk->populated,
-					chunk->nr_pages) {
-			int nr = min_t(int, re - rs, nr_to_pop);
-
-			spin_unlock_irq(&pcpu_lock);
-			/* pcpu_populate_chunk always returns 0 */
-			cond_resched();
-			spin_lock_irq(&pcpu_lock);
-			nr_to_pop -= nr;
-			pcpu_chunk_populated(chunk, rs, rs + nr);
-
-			if (!nr_to_pop)
-				break;
-		}
-	}
-
-	if (nr_to_pop) {
-		spin_unlock_irq(&pcpu_lock);
-		chunk = pcpu_create_chunk(gfp);
-		cond_resched();
-		spin_lock_irq(&pcpu_lock);
-		if (chunk) {
-			pcpu_chunk_relocate(chunk, -1);
-			goto retry_pop;
-		}
-	}
-}
+/* pcpu_balance_populated inlined into pcpu_balance_workfn */
 
 /* pcpu_reclaim_populated inlined into pcpu_balance_workfn */
 
@@ -1035,7 +979,60 @@ static void pcpu_balance_workfn(struct work_struct *work)
 			struct pcpu_chunk, list);
 		pcpu_reintegrate_chunk(chunk);
 	}
-	pcpu_balance_populated();
+	/* Inlined pcpu_balance_populated */
+	{
+		const gfp_t gfp = GFP_KERNEL | __GFP_NORETRY | __GFP_NOWARN;
+		int slot, nr_to_pop;
+
+retry_pop:
+		nr_to_pop = clamp(PCPU_EMPTY_POP_PAGES_HIGH -
+					  pcpu_nr_empty_pop_pages,
+				  0, PCPU_EMPTY_POP_PAGES_HIGH);
+
+		for (slot = pcpu_size_to_slot(PAGE_SIZE);
+		     slot <= pcpu_free_slot; slot++) {
+			unsigned int nr_unpop = 0, rs, re;
+
+			if (!nr_to_pop)
+				break;
+
+			list_for_each_entry(chunk, &pcpu_chunk_lists[slot],
+					    list) {
+				nr_unpop =
+					chunk->nr_pages - chunk->nr_populated;
+				if (nr_unpop)
+					break;
+			}
+
+			if (!nr_unpop)
+				continue;
+
+			for_each_clear_bitrange(rs, re, chunk->populated,
+						chunk->nr_pages) {
+				int nr = min_t(int, re - rs, nr_to_pop);
+
+				spin_unlock_irq(&pcpu_lock);
+				cond_resched();
+				spin_lock_irq(&pcpu_lock);
+				nr_to_pop -= nr;
+				pcpu_chunk_populated(chunk, rs, rs + nr);
+
+				if (!nr_to_pop)
+					break;
+			}
+		}
+
+		if (nr_to_pop) {
+			spin_unlock_irq(&pcpu_lock);
+			chunk = pcpu_create_chunk(gfp);
+			cond_resched();
+			spin_lock_irq(&pcpu_lock);
+			if (chunk) {
+				pcpu_chunk_relocate(chunk, -1);
+				goto retry_pop;
+			}
+		}
+	}
 
 	spin_unlock_irq(&pcpu_lock);
 	mutex_unlock(&pcpu_alloc_mutex);

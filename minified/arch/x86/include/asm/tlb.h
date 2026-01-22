@@ -162,9 +162,7 @@ static inline void tlb_start_vma(struct mmu_gather *tlb, struct vm_area_struct *
 		return;
 
 	tlb_update_vma_flags(tlb, vma);
-#ifndef CONFIG_MMU_GATHER_NO_FLUSH_CACHE
-	flush_cache_range(vma, vma->vm_start, vma->vm_end);
-#endif
+	/* flush_cache_range is empty stub on x86, call removed */
 }
 
 static inline void tlb_end_vma(struct mmu_gather *tlb, struct vm_area_struct *vma)

@@ -416,22 +416,7 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	/* dequeue_throttle label and util_est_update removed */
 }
 
-static int wakeup_preempt_entity(struct sched_entity *curr,
-				 struct sched_entity *se)
-{
-	s64 gran, vdiff = curr->vruntime - se->vruntime;
-
-	if (vdiff <= 0)
-		return -1;
-
-	/* Inlined wakeup_gran */
-	gran = calc_delta_fair(sysctl_sched_wakeup_granularity, se);
-	if (vdiff > gran)
-		return 1;
-
-	return 0;
-}
-
+/* wakeup_preempt_entity inlined - single caller */
 /* set_next_buddy removed - buddy tracking dead with single task (~10 LOC) */
 /* stub function also removed - never called */
 
@@ -457,8 +442,16 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p,
 		return;
 
 	update_curr(cfs_rq_of(se));
-	if (wakeup_preempt_entity(se, pse) == 1)
-		goto preempt;
+	/* wakeup_preempt_entity inlined */
+	{
+		s64 gran, vdiff = se->vruntime - pse->vruntime;
+		if (vdiff > 0) {
+			gran = calc_delta_fair(sysctl_sched_wakeup_granularity,
+					       pse);
+			if (vdiff > gran)
+				goto preempt;
+		}
+	}
 
 	return;
 

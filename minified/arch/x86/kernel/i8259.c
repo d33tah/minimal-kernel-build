@@ -59,22 +59,7 @@ static void enable_8259A_irq(struct irq_data *data)
 	raw_spin_unlock_irqrestore(&i8259A_lock, flags);
 }
 
-static inline int i8259A_irq_real(unsigned int irq)
-{
-	int value;
-	int irqmask = 1 << irq;
-
-	if (irq < 8) {
-		outb(0x0B, PIC_MASTER_CMD);
-		value = inb(PIC_MASTER_CMD) & irqmask;
-		outb(0x0A, PIC_MASTER_CMD);
-		return value;
-	}
-	outb(0x0B, PIC_SLAVE_CMD);
-	value = inb(PIC_SLAVE_CMD) & (irqmask >> 8);
-	outb(0x0A, PIC_SLAVE_CMD);
-	return value;
-}
+/* i8259A_irq_real inlined - single caller */
 
 static void mask_and_ack_8259A(struct irq_data *data)
 {
@@ -105,10 +90,21 @@ handle_real_irq:
 	return;
 
 spurious_8259A_irq:
-
-	if (i8259A_irq_real(irq))
-
-		goto handle_real_irq;
+	/* i8259A_irq_real inlined */
+	{
+		int value;
+		if (irq < 8) {
+			outb(0x0B, PIC_MASTER_CMD);
+			value = inb(PIC_MASTER_CMD) & irqmask;
+			outb(0x0A, PIC_MASTER_CMD);
+		} else {
+			outb(0x0B, PIC_SLAVE_CMD);
+			value = inb(PIC_SLAVE_CMD) & (irqmask >> 8);
+			outb(0x0A, PIC_SLAVE_CMD);
+		}
+		if (value)
+			goto handle_real_irq;
+	}
 
 	{
 		static int spurious_irq_mask;

@@ -138,22 +138,7 @@ int copy_creds(struct task_struct *p)
 	/* error_put label removed - CLONE_NEWUSER never used */
 }
 
-static bool cred_cap_issubset(const struct cred *set, const struct cred *subset)
-{
-	const struct user_namespace *set_ns = set->user_ns;
-	const struct user_namespace *subset_ns = subset->user_ns;
-
-	if (set_ns == subset_ns)
-		return cap_issubset(subset->cap_permitted, set->cap_permitted);
-
-	for (; subset_ns != &init_user_ns; subset_ns = subset_ns->parent) {
-		if ((set_ns == subset_ns->parent) &&
-		    uid_eq(subset_ns->owner, set->euid))
-			return true;
-	}
-
-	return false;
-}
+/* cred_cap_issubset inlined - single caller */
 
 int commit_creds(struct cred *new)
 {
@@ -165,12 +150,31 @@ int commit_creds(struct cred *new)
 
 	get_cred(new);
 
-	if (!uid_eq(old->euid, new->euid) || !gid_eq(old->egid, new->egid) ||
-	    !uid_eq(old->fsuid, new->fsuid) ||
-	    !gid_eq(old->fsgid, new->fsgid) || !cred_cap_issubset(old, new)) {
-		task->pdeath_signal = 0;
-
-		smp_wmb();
+	/* cred_cap_issubset inlined */
+	{
+		bool cap_subset = false;
+		const struct user_namespace *set_ns = old->user_ns;
+		const struct user_namespace *subset_ns = new->user_ns;
+		if (set_ns == subset_ns)
+			cap_subset = cap_issubset(new->cap_permitted,
+						  old->cap_permitted);
+		else {
+			for (; subset_ns != &init_user_ns;
+			     subset_ns = subset_ns->parent) {
+				if ((set_ns == subset_ns->parent) &&
+				    uid_eq(subset_ns->owner, old->euid)) {
+					cap_subset = true;
+					break;
+				}
+			}
+		}
+		if (!uid_eq(old->euid, new->euid) ||
+		    !gid_eq(old->egid, new->egid) ||
+		    !uid_eq(old->fsuid, new->fsuid) ||
+		    !gid_eq(old->fsgid, new->fsgid) || !cap_subset) {
+			task->pdeath_signal = 0;
+			smp_wmb();
+		}
 	}
 
 	if (new->user != old->user || new->user_ns != old->user_ns)

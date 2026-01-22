@@ -191,10 +191,14 @@ static const struct file_operations hung_up_tty_fops = {
 };
 
 /* tty_wakeup removed - only called from removed tty_port_default_wakeup */
+/* __tty_hangup inlined into do_tty_hangup */
 
-static void __tty_hangup(struct tty_struct *tty, int exit_session)
+static void do_tty_hangup(struct work_struct *work)
 {
-	/* Stub: minimal TTY hangup for simple kernel */
+	struct tty_struct *tty =
+		container_of(work, struct tty_struct, hangup_work);
+
+	/* __tty_hangup inlined */
 	if (!tty)
 		return;
 
@@ -203,14 +207,6 @@ static void __tty_hangup(struct tty_struct *tty, int exit_session)
 	if (tty->ops->hangup)
 		tty->ops->hangup(tty);
 	tty_unlock(tty);
-}
-
-static void do_tty_hangup(struct work_struct *work)
-{
-	struct tty_struct *tty =
-		container_of(work, struct tty_struct, hangup_work);
-
-	__tty_hangup(tty, 0);
 }
 
 int tty_hung_up_p(struct file *filp)
@@ -452,15 +448,7 @@ int tty_standard_install(struct tty_driver *driver, struct tty_struct *tty)
 }
 
 /* tty_driver_install_tty inlined - called driver->ops->install or tty_standard_install */
-
-static void tty_driver_remove_tty(struct tty_driver *driver,
-				  struct tty_struct *tty)
-{
-	if (driver->ops->remove)
-		driver->ops->remove(driver, tty);
-	else
-		driver->ttys[tty->index] = NULL;
-}
+/* tty_driver_remove_tty inlined into release_tty */
 
 static int tty_reopen(struct tty_struct *tty)
 {
@@ -611,7 +599,12 @@ static void release_tty(struct tty_struct *tty, int idx)
 		if (tp)
 			*tp = tty->termios;
 	}
-	tty_driver_remove_tty(tty->driver, tty);
+	/* tty_driver_remove_tty inlined */
+	if (tty->driver->ops->remove)
+		tty->driver->ops->remove(tty->driver, tty);
+	else
+		tty->driver->ttys[tty->index] = NULL;
+
 	if (tty->port)
 		tty->port->itty = NULL;
 	if (tty->link)

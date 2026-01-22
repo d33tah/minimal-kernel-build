@@ -205,16 +205,7 @@ static int tty_ldisc_lock_pair_timeout(struct tty_struct *tty,
 /* tty_ldisc_lock_pair inlined into tty_ldisc_release */
 /* tty_ldisc_unlock_pair inlined into tty_ldisc_release */
 /* tty_ldisc_flush removed - never called */
-
-static void tty_set_termios_ldisc(struct tty_struct *tty, int disc)
-{
-	down_write(&tty->termios_rwsem);
-	tty->termios.c_line = disc;
-	up_write(&tty->termios_rwsem);
-
-	tty->disc_data = NULL;
-	tty->receive_room = 0;
-}
+/* tty_set_termios_ldisc inlined into tty_set_ldisc */
 
 static int tty_ldisc_open(struct tty_struct *tty, struct tty_ldisc *ld)
 {
@@ -267,7 +258,13 @@ int tty_ldisc_reinit(struct tty_struct *tty, int disc)
 	}
 
 	tty->ldisc = ld;
-	tty_set_termios_ldisc(tty, disc);
+	/* tty_set_termios_ldisc inlined */
+	down_write(&tty->termios_rwsem);
+	tty->termios.c_line = disc;
+	up_write(&tty->termios_rwsem);
+	tty->disc_data = NULL;
+	tty->receive_room = 0;
+
 	retval = tty_ldisc_open(tty, tty->ldisc);
 	if (retval) {
 		tty_ldisc_put(tty->ldisc);

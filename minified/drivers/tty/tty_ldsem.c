@@ -69,19 +69,17 @@ static inline int writer_trylock(struct ld_semaphore *sem)
 	} while (1);
 }
 
-static void __ldsem_wake_writer(struct ld_semaphore *sem)
-{
-	struct ldsem_waiter *waiter;
-
-	waiter = list_entry(sem->write_wait.next, struct ldsem_waiter, list);
-	wake_up_process(waiter->task);
-}
+/* __ldsem_wake_writer inlined into __ldsem_wake */
 
 static void __ldsem_wake(struct ld_semaphore *sem)
 {
-	if (!list_empty(&sem->write_wait))
-		__ldsem_wake_writer(sem);
-	else if (!list_empty(&sem->read_wait))
+	if (!list_empty(&sem->write_wait)) {
+		/* __ldsem_wake_writer inlined */
+		struct ldsem_waiter *waiter;
+		waiter = list_entry(sem->write_wait.next, struct ldsem_waiter,
+				    list);
+		wake_up_process(waiter->task);
+	} else if (!list_empty(&sem->read_wait))
 		__ldsem_wake_readers(sem);
 }
 

@@ -112,25 +112,15 @@ SYM_CODE_START(startup_32)
 	movsl
 1:
 
-#ifdef CONFIG_OLPC
-	/* save OFW's pgdir table for later use when calling into OFW */
-	movl %cr3, %eax
-	movl %eax, pa(olpc_ofw_pgd)
-#endif
-
-/* CONFIG_MICROCODE block removed - not set */
+/* CONFIG_OLPC, CONFIG_MICROCODE blocks removed - not set */
 
 	/* Create early pagetables. */
 	call  mk_early_pgtbl_32
 
 	/* Do early initialization of the fixmap area */
+	/* CONFIG_X86_PAE not set - resolved to non-PAE branch */
 	movl $pa(initial_pg_fixmap)+PDE_IDENT_ATTR,%eax
-#ifdef  CONFIG_X86_PAE
-#define KPMDS (((-__PAGE_OFFSET) >> 30) & 3) /* Number of kernel PMDs */
-	movl %eax,pa(initial_pg_pmd+0x1000*KPMDS-8)
-#else
 	movl %eax,pa(initial_page_table+0xffc)
-#endif
 
 	jmp .Ldefault_entry
 SYM_CODE_END(startup_32)
@@ -419,15 +409,10 @@ SYM_DATA(setup_once_ref,	.long setup_once)
  */
 __PAGE_ALIGNED_BSS
 	.align PGD_ALIGN
-#ifdef CONFIG_X86_PAE
-.globl initial_pg_pmd
-initial_pg_pmd:
-	.fill 1024*KPMDS,4,0
-#else
+/* CONFIG_X86_PAE not set - non-PAE page table */
 .globl initial_page_table
 initial_page_table:
 	.fill 1024,4,0
-#endif
 	.align PGD_ALIGN
 initial_pg_fixmap:
 	.fill 1024,4,0
@@ -441,37 +426,7 @@ empty_zero_page:
 	.fill 4096,1,0
 EXPORT_SYMBOL(empty_zero_page)
 
-/*
- * This starts the data section.
- */
-#ifdef CONFIG_X86_PAE
-__PAGE_ALIGNED_DATA
-	/* Page-aligned for the benefit of paravirt? */
-	.align PGD_ALIGN
-SYM_DATA_START(initial_page_table)
-	.long	pa(initial_pg_pmd+PGD_IDENT_ATTR),0	/* low identity map */
-# if KPMDS == 3
-	.long	pa(initial_pg_pmd+PGD_IDENT_ATTR),0
-	.long	pa(initial_pg_pmd+PGD_IDENT_ATTR+0x1000),0
-	.long	pa(initial_pg_pmd+PGD_IDENT_ATTR+0x2000),0
-# elif KPMDS == 2
-	.long	0,0
-	.long	pa(initial_pg_pmd+PGD_IDENT_ATTR),0
-	.long	pa(initial_pg_pmd+PGD_IDENT_ATTR+0x1000),0
-# elif KPMDS == 1
-	.long	0,0
-	.long	0,0
-	.long	pa(initial_pg_pmd+PGD_IDENT_ATTR),0
-# else
-#  error "Kernel PMDs should be 1, 2 or 3"
-# endif
-	.align PAGE_SIZE		/* needs to be page-sized too */
-
-/* CONFIG_PAGE_TABLE_ISOLATION block removed - not set */
-
-SYM_DATA_END(initial_page_table)
-#endif
-
+/* CONFIG_X86_PAE block removed - not set (~27 LOC) */
 .data
 .balign 4
 /*

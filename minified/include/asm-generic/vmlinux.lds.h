@@ -19,21 +19,13 @@
 
 #define ALIGN_FUNCTION()  . = ALIGN(8)
 
-#if defined(CONFIG_LD_DEAD_CODE_DATA_ELIMINATION) || defined(CONFIG_LTO_CLANG)
+/* CONFIG_LTO_CLANG is enabled - use expanded section definitions */
 #define TEXT_MAIN .text .text.[0-9a-zA-Z_]*
 #define DATA_MAIN .data .data.[0-9a-zA-Z_]* .data..L* .data..compoundliteral* .data.$__unnamed_* .data.$L*
 #define SDATA_MAIN .sdata .sdata.[0-9a-zA-Z_]*
 #define RODATA_MAIN .rodata .rodata.[0-9a-zA-Z_]* .rodata..L*
 #define BSS_MAIN .bss .bss.[0-9a-zA-Z_]* .bss..compoundliteral*
 #define SBSS_MAIN .sbss .sbss.[0-9a-zA-Z_]*
-#else
-#define TEXT_MAIN .text
-#define DATA_MAIN .data
-#define SDATA_MAIN .sdata
-#define RODATA_MAIN .rodata
-#define BSS_MAIN .bss
-#define SBSS_MAIN .sbss
-#endif
 
 #define STRUCT_ALIGNMENT 32
 #define STRUCT_ALIGN() . = ALIGN(STRUCT_ALIGNMENT)
@@ -585,14 +577,8 @@
 	EXIT_DATA
 #endif
 
-#if defined(CONFIG_GCOV_KERNEL) || defined(CONFIG_KASAN_GENERIC) || defined(CONFIG_KCSAN) || \
-	defined(CONFIG_CFI_CLANG)
-#  define SANITIZER_DISCARDS						\
-	*(.init_array) *(.init_array.*)					\
-	*(.eh_frame)
-#else
-# define SANITIZER_DISCARDS
-#endif
+/* GCOV, KASAN, KCSAN, CFI not enabled - SANITIZER_DISCARDS empty */
+#define SANITIZER_DISCARDS
 
 #define COMMON_DISCARDS							\
 	SANITIZER_DISCARDS						\

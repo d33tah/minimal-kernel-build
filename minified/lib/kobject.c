@@ -20,16 +20,7 @@ int kobject_uevent(struct kobject *kobj, enum kobject_action action)
 	return kobject_uevent_env(kobj, action, NULL);
 }
 
-static void kobject_get_ownership(struct kobject *kobj, kuid_t *uid,
-				  kgid_t *gid)
-{
-	*uid = GLOBAL_ROOT_UID;
-	*gid = GLOBAL_ROOT_GID;
-
-	if (kobj->ktype->get_ownership)
-		kobj->ktype->get_ownership(kobj, uid, gid);
-}
-
+/* kobject_get_ownership inlined into kset_get_ownership */
 /* kobj_kset_join, kobj_kset_leave removed - inlined into single callers (~16 LOC) */
 
 static void kobject_init_internal(struct kobject *kobj)
@@ -357,8 +348,14 @@ static void kset_release(struct kobject *kobj)
 
 static void kset_get_ownership(struct kobject *kobj, kuid_t *uid, kgid_t *gid)
 {
-	if (kobj->parent)
-		kobject_get_ownership(kobj->parent, uid, gid);
+	if (kobj->parent) {
+		/* kobject_get_ownership inlined */
+		*uid = GLOBAL_ROOT_UID;
+		*gid = GLOBAL_ROOT_GID;
+		if (kobj->parent->ktype->get_ownership)
+			kobj->parent->ktype->get_ownership(kobj->parent, uid,
+							   gid);
+	}
 }
 
 static struct kobj_type kset_ktype = {

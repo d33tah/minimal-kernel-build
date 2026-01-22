@@ -552,22 +552,12 @@ static int __init ignore_unknown_bootoption(char *param, char *val,
 	return 0;
 }
 
-static void __init do_initcall_level(int level, char *command_line)
-{
-	initcall_entry_t *fn;
-	/* buf removed - was written but never used */
-
-	parse_args(initcall_level_names[level], command_line, __start___param,
-		   __stop___param - __start___param, level, level, NULL,
-		   ignore_unknown_bootoption);
-
-	for (fn = initcall_levels[level]; fn < initcall_levels[level + 1]; fn++)
-		do_one_initcall(initcall_from_entry(fn));
-}
+/* do_initcall_level inlined into do_basic_setup */
 
 static void __init do_basic_setup(void)
 {
 	int level;
+	initcall_entry_t *fn;
 	/* Use static buffer to avoid kzalloc which hangs with low memory */
 	static char command_line[256];
 	size_t len = strlen(saved_command_line);
@@ -582,7 +572,13 @@ static void __init do_basic_setup(void)
 	for (level = 0; level < ARRAY_SIZE(initcall_levels) - 1; level++) {
 		memcpy(command_line, saved_command_line, len);
 		command_line[len] = '\0';
-		do_initcall_level(level, command_line);
+		/* do_initcall_level inlined */
+		parse_args(initcall_level_names[level], command_line,
+			   __start___param, __stop___param - __start___param,
+			   level, level, NULL, ignore_unknown_bootoption);
+		for (fn = initcall_levels[level];
+		     fn < initcall_levels[level + 1]; fn++)
+			do_one_initcall(initcall_from_entry(fn));
 	}
 }
 

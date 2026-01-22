@@ -449,56 +449,7 @@ static void identify_cpu_without_cpuid(struct cpuinfo_x86 *c)
 }
 
 /* cpu_set_bug_bits and cpu_parse_early_param removed - empty stubs, calls removed */
-/* detect_nopl inlined into early_identify_cpu */
-
-static void __init early_identify_cpu(struct cpuinfo_x86 *c)
-{
-	c->x86_clflush_size = 32;
-	c->x86_phys_bits = 32;
-	c->x86_virt_bits = 32;
-	c->x86_cache_alignment = c->x86_clflush_size;
-
-	memset(&c->x86_capability, 0, sizeof(c->x86_capability));
-	c->extended_cpuid_level = 0;
-
-	if (!have_cpuid_p())
-		identify_cpu_without_cpuid(c);
-
-	if (have_cpuid_p()) {
-		cpu_detect(c);
-		get_cpu_vendor(c);
-		get_cpu_cap(c);
-		get_cpu_address_sizes(c);
-		setup_force_cpu_cap(X86_FEATURE_CPUID);
-		/* cpu_parse_early_param removed - empty stub */
-
-		if (this_cpu->c_early_init)
-			this_cpu->c_early_init(c);
-
-		/* c->cpu_index removed - never read */
-		filter_cpuid_features(c, false);
-
-		if (this_cpu->c_bsp_init)
-			this_cpu->c_bsp_init(c);
-	} else {
-		setup_clear_cpu_cap(X86_FEATURE_CPUID);
-	}
-
-	setup_force_cpu_cap(X86_FEATURE_ALWAYS);
-	/* cpu_set_bug_bits removed - empty stub */
-	/* sld_setup removed - was empty stub in intel.c */
-
-	fpu__init_system(c);
-
-	init_sigframe_size();
-
-	setup_clear_cpu_cap(X86_FEATURE_PCID);
-
-	if (!pgtable_l5_enabled())
-		setup_clear_cpu_cap(X86_FEATURE_LA57);
-
-	setup_clear_cpu_cap(X86_FEATURE_NOPL);
-}
+/* detect_nopl, early_identify_cpu inlined into early_cpu_init */
 
 void __init early_cpu_init(void)
 {
@@ -513,7 +464,51 @@ void __init early_cpu_init(void)
 		cpu_devs[count] = cpudev;
 		count++;
 	}
-	early_identify_cpu(&boot_cpu_data);
+	/* Inlined early_identify_cpu */
+	{
+		struct cpuinfo_x86 *c = &boot_cpu_data;
+
+		c->x86_clflush_size = 32;
+		c->x86_phys_bits = 32;
+		c->x86_virt_bits = 32;
+		c->x86_cache_alignment = c->x86_clflush_size;
+
+		memset(&c->x86_capability, 0, sizeof(c->x86_capability));
+		c->extended_cpuid_level = 0;
+
+		if (!have_cpuid_p())
+			identify_cpu_without_cpuid(c);
+
+		if (have_cpuid_p()) {
+			cpu_detect(c);
+			get_cpu_vendor(c);
+			get_cpu_cap(c);
+			get_cpu_address_sizes(c);
+			setup_force_cpu_cap(X86_FEATURE_CPUID);
+
+			if (this_cpu->c_early_init)
+				this_cpu->c_early_init(c);
+
+			filter_cpuid_features(c, false);
+
+			if (this_cpu->c_bsp_init)
+				this_cpu->c_bsp_init(c);
+		} else {
+			setup_clear_cpu_cap(X86_FEATURE_CPUID);
+		}
+
+		setup_force_cpu_cap(X86_FEATURE_ALWAYS);
+
+		fpu__init_system(c);
+		init_sigframe_size();
+
+		setup_clear_cpu_cap(X86_FEATURE_PCID);
+
+		if (!pgtable_l5_enabled())
+			setup_clear_cpu_cap(X86_FEATURE_LA57);
+
+		setup_clear_cpu_cap(X86_FEATURE_NOPL);
+	}
 }
 
 static void generic_identify(struct cpuinfo_x86 *c)

@@ -127,52 +127,7 @@ extern void __add_wrong_size(void)
 	__try_cmpxchg64((ptr), (unsigned long long *)(po), \
 			(unsigned long long)(n))
 
-#ifdef CONFIG_X86_CMPXCHG64
-static inline u64 __cmpxchg64(volatile u64 *ptr, u64 old, u64 new)
-{
-	u64 prev;
-	asm volatile(LOCK_PREFIX "cmpxchg8b %1"
-		     : "=A" (prev),
-		       "+m" (*ptr)
-		     : "b" ((u32)new),
-		       "c" ((u32)(new >> 32)),
-		       "0" (old)
-		     : "memory");
-	return prev;
-}
-
-static inline u64 __cmpxchg64_local(volatile u64 *ptr, u64 old, u64 new)
-{
-	u64 prev;
-	asm volatile("cmpxchg8b %1"
-		     : "=A" (prev),
-		       "+m" (*ptr)
-		     : "b" ((u32)new),
-		       "c" ((u32)(new >> 32)),
-		       "0" (old)
-		     : "memory");
-	return prev;
-}
-
-static inline bool __try_cmpxchg64(volatile u64 *ptr, u64 *pold, u64 new)
-{
-	bool success;
-	u64 old = *pold;
-	asm volatile(LOCK_PREFIX "cmpxchg8b %[ptr]"
-		     CC_SET(z)
-		     : CC_OUT(z) (success),
-		       [ptr] "+m" (*ptr),
-		       "+A" (old)
-		     : "b" ((u32)new),
-		       "c" ((u32)(new >> 32))
-		     : "memory");
-
-	if (unlikely(!success))
-		*pold = old;
-	return success;
-}
-#else
-/* 486 without cmpxchg8b - use emulation */
+/* CONFIG_X86_CMPXCHG64 not set - use cmpxchg8b emulation (~43 LOC removed) */
 extern void cmpxchg8b_emu(void);
 
 static inline u64 __cmpxchg64(volatile u64 *ptr, u64 old, u64 new)
@@ -203,7 +158,6 @@ static inline bool __try_cmpxchg64(volatile u64 *ptr, u64 *pold, u64 new)
 	}
 	return true;
 }
-#endif
 
 #define system_has_cmpxchg_double() boot_cpu_has(X86_FEATURE_CX8)
 

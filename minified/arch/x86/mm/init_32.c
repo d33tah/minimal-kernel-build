@@ -353,7 +353,7 @@ void __init mem_init(void)
 {
 	char z = 0;
 
-	pci_iommu_alloc();
+	/* pci_iommu_alloc() - empty stub, call removed */
 	BUG_ON(!mem_map);
 	memblock_free_all();
 	after_bootmem = 1;

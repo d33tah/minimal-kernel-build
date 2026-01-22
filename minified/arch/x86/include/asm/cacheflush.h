@@ -14,7 +14,7 @@ struct page;
 
 /* flush_cache_range removed - empty stub on x86, calls eliminated */
 
-/* flush_dcache_page called but is empty stub - keeping */
+/* flush_dcache_page called from highmem.h - keeping empty stub */
 static inline void flush_dcache_page(struct page *page) { }
 /* ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE removed - unused */
 

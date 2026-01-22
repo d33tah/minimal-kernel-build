@@ -15,8 +15,7 @@
 #include <linux/acpi.h>
 /* Inlined from asm/pci.h - CONFIG_X86 always true */
 /* struct pci_bus, pci_dev forward decls removed - never defined or used */
-/* pci_iommu_alloc inlined from arch/x86/kernel/pci-dma.c - empty stub */
-static inline void pci_iommu_alloc(void) { }
+/* pci_iommu_alloc removed - empty stub, call site eliminated */
 /* PCI macros, structs removed - unused */
 /* pci_device_id, pci_printk/err/warn/etc removed - unused */
 #include <linux/dma-mapping.h>

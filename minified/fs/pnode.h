@@ -7,9 +7,7 @@
 #include "mount.h"
 
 #define IS_MNT_SHARED(m) ((m)->mnt.mnt_flags & MNT_SHARED)
-#define IS_MNT_SLAVE(m) ((m)->mnt_master)
-/* IS_MNT_NEW removed - unused */
-#define CLEAR_MNT_SHARED(m) ((m)->mnt.mnt_flags &= ~MNT_SHARED)
+/* IS_MNT_NEW, IS_MNT_SLAVE, CLEAR_MNT_SHARED removed - unused */
 /* IS_MNT_UNBINDABLE, IS_MNT_MARKED, SET_MNT_MARK, CLEAR_MNT_MARK removed - unused */
 #define IS_MNT_LOCKED(m) ((m)->mnt.mnt_flags & MNT_LOCKED)
 

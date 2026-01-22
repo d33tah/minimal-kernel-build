@@ -31,22 +31,23 @@
 
 /* no_hash_pointers removed - always false, never set */
 
-static noinline unsigned long long simple_strntoull(const char *startp,
-						    size_t max_chars,
-						    char **endp,
-						    unsigned int base)
+/* simple_strntoull inlined into simple_strtoull */
+
+/* Inlined simple_strntoull */
+noinline unsigned long long simple_strtoull(const char *startp, char **endp,
+					    unsigned int base)
 {
 	const char *cp;
 	unsigned long long result = 0ULL;
 	size_t prefix_chars;
 	unsigned int rv;
+	size_t max_chars = INT_MAX;
 
 	cp = _parse_integer_fixup_radix(startp, &base);
 	prefix_chars = cp - startp;
 	if (prefix_chars < max_chars) {
 		rv = _parse_integer_limit(cp, base, &result,
 					  max_chars - prefix_chars);
-
 		cp += (rv & ~KSTRTOX_OVERFLOW);
 	} else {
 		cp = startp + max_chars;
@@ -56,12 +57,6 @@ static noinline unsigned long long simple_strntoull(const char *startp,
 		*endp = (char *)cp;
 
 	return result;
-}
-
-noinline unsigned long long simple_strtoull(const char *cp, char **endp,
-					    unsigned int base)
-{
-	return simple_strntoull(cp, INT_MAX, endp, base);
 }
 
 unsigned long simple_strtoul(const char *cp, char **endp, unsigned int base)

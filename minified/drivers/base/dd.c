@@ -141,61 +141,7 @@ static void device_unbind_cleanup(struct device *dev)
 	dev_pm_set_driver_flags(dev, 0);
 }
 
-/* device_remove, call_driver_probe inlined into single caller */
-
-static int really_probe(struct device *dev, struct device_driver *drv)
-{
-	int ret;
-
-	if (defer_all_probes)
-		return -EPROBE_DEFER;
-
-	/* device_links_check_suppliers always returns 0 - inlined side effect */
-	dev->links.status = DL_DEV_PROBING;
-
-	if (!list_empty(&dev->devres_head)) {
-		ret = -EBUSY;
-		goto done;
-	}
-
-	dev->driver = drv;
-
-	if (dev->bus->dma_configure) {
-		ret = dev->bus->dma_configure(dev);
-		if (ret)
-			goto pinctrl_bind_failed;
-	}
-
-	if (dev->pm_domain && dev->pm_domain->activate) {
-		ret = dev->pm_domain->activate(dev);
-		if (ret)
-			goto probe_failed;
-	}
-
-	/* call_driver_probe inlined */
-	if (dev->bus->probe)
-		ret = dev->bus->probe(dev);
-	else if (drv->probe)
-		ret = drv->probe(dev);
-	if (ret) {
-		ret = -ret;
-		goto probe_failed;
-	}
-
-	/* device_add_groups call removed - stub that always returns 0 */
-
-	if (dev->pm_domain && dev->pm_domain->sync)
-		dev->pm_domain->sync(dev);
-	goto done;
-
-probe_failed:
-	if (dev->bus && dev->bus->dma_cleanup)
-		dev->bus->dma_cleanup(dev);
-pinctrl_bind_failed:
-	device_unbind_cleanup(dev);
-done:
-	return ret;
-}
+/* device_remove, call_driver_probe, really_probe inlined into single caller */
 
 int driver_probe_done(void)
 {
@@ -227,7 +173,50 @@ static int __driver_probe_device(struct device_driver *drv, struct device *dev)
 	if (dev->parent)
 		pm_runtime_get_sync(dev->parent);
 
-	ret = really_probe(dev, drv);
+	/* Inlined really_probe */
+	if (defer_all_probes) {
+		ret = -EPROBE_DEFER;
+	} else {
+		dev->links.status = DL_DEV_PROBING;
+
+		if (!list_empty(&dev->devres_head)) {
+			ret = -EBUSY;
+		} else {
+			dev->driver = drv;
+
+			if (dev->bus->dma_configure) {
+				ret = dev->bus->dma_configure(dev);
+				if (ret)
+					goto really_probe_pinctrl_failed;
+			}
+
+			if (dev->pm_domain && dev->pm_domain->activate) {
+				ret = dev->pm_domain->activate(dev);
+				if (ret)
+					goto really_probe_failed;
+			}
+
+			if (dev->bus->probe)
+				ret = dev->bus->probe(dev);
+			else if (drv->probe)
+				ret = drv->probe(dev);
+			if (ret) {
+				ret = -ret;
+				goto really_probe_failed;
+			}
+
+			if (dev->pm_domain && dev->pm_domain->sync)
+				dev->pm_domain->sync(dev);
+			goto really_probe_done;
+
+really_probe_failed:
+			if (dev->bus && dev->bus->dma_cleanup)
+				dev->bus->dma_cleanup(dev);
+really_probe_pinctrl_failed:
+			device_unbind_cleanup(dev);
+really_probe_done:;
+		}
+	}
 	pm_request_idle(dev);
 
 	if (dev->parent)

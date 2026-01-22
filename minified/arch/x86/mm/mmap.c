@@ -51,18 +51,13 @@ static unsigned long mmap_base(unsigned long task_size,
 	return PAGE_ALIGN(task_size - gap);
 }
 
-/* mmap_legacy_base simplified - rnd (random_factor) always 0 */
-static unsigned long mmap_legacy_base(unsigned long task_size)
-{
-	return __TASK_UNMAPPED_BASE(task_size);
-}
+/* mmap_legacy_base inlined - random_factor always 0 */
 
-/* random_factor parameter removed - always 0 */
 static void arch_pick_mmap_base(unsigned long *base, unsigned long *legacy_base,
 				unsigned long task_size,
 				struct rlimit *rlim_stack)
 {
-	*legacy_base = mmap_legacy_base(task_size);
+	*legacy_base = __TASK_UNMAPPED_BASE(task_size);
 	if (mmap_is_legacy())
 		*base = *legacy_base;
 	else

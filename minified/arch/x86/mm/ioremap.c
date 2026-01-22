@@ -219,10 +219,7 @@ static inline pmd_t *__init early_ioremap_pmd(unsigned long addr)
 	return pmd;
 }
 
-static inline pte_t *__init early_ioremap_pte(unsigned long addr)
-{
-	return &bm_pte[pte_index(addr)];
-}
+/* early_ioremap_pte inlined */
 
 void __init early_ioremap_init(void)
 {
@@ -265,7 +262,7 @@ void __init __early_set_fixmap(enum fixed_addresses idx, phys_addr_t phys,
 		BUG();
 		return;
 	}
-	pte = early_ioremap_pte(addr);
+	pte = &bm_pte[pte_index(addr)];
 
 	pgprot_val(flags) &= __supported_pte_mask;
 

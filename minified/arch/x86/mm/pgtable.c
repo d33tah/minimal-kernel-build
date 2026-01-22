@@ -8,11 +8,7 @@
 
 #define PGTABLE_HIGHMEM 0
 
-static inline void paravirt_tlb_remove_table(struct mmu_gather *tlb,
-					     void *table)
-{
-	tlb_remove_page(tlb, table);
-}
+/* paravirt_tlb_remove_table inlined */
 
 gfp_t __userpte_alloc_gfp = GFP_PGTABLE_USER | PGTABLE_HIGHMEM;
 
@@ -25,7 +21,7 @@ void ___pte_free_tlb(struct mmu_gather *tlb, struct page *pte)
 {
 	pgtable_pte_page_dtor(pte);
 	paravirt_release_pte(page_to_pfn(pte));
-	paravirt_tlb_remove_table(tlb, pte);
+	tlb_remove_page(tlb, pte);
 }
 
 /* pgd_list_add, pgd_list_del, _pgd_alloc, _pgd_free inlined into callers */

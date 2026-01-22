@@ -43,10 +43,7 @@ DEFINE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_ALLOC_DEFAULT_ON, init_on_alloc);
 
 DEFINE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_FREE_DEFAULT_ON, init_on_free);
 
-static inline int get_pcppage_migratetype(struct page *page)
-{
-	return page->index;
-}
+/* get_pcppage_migratetype inlined - returns page->index */
 
 static void __free_pages_ok(struct page *page, unsigned int order,
 			    fpi_t fpi_flags);
@@ -519,8 +516,7 @@ static inline struct page *rmqueue(struct zone *preferred_zone,
 		if (!page)
 			goto failed;
 	}
-	__mod_zone_freepage_state(zone, -(1 << order),
-				  get_pcppage_migratetype(page));
+	__mod_zone_freepage_state(zone, -(1 << order), page->index);
 	spin_unlock_irqrestore(&zone->lock, flags);
 	/* check_new_pages always returns false - loop removed */
 out:

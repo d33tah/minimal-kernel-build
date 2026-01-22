@@ -236,22 +236,7 @@ static void update_curr_fair(struct rq *rq)
 
 /* update_stats_* macros removed - schedstat_enabled() always 0, no calls needed */
 
-/* update_stats_curr_start, account_entity_enqueue/dequeue inlined */
-
-static void reweight_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
-			    unsigned long weight)
-{
-	if (se->on_rq) {
-		if (cfs_rq->curr == se)
-			update_curr(cfs_rq);
-		update_load_sub(&cfs_rq->load, se->load.weight);
-	}
-	/* dequeue_load_avg, update_load_set inlined, enqueue_load_avg removed */
-	se->load.weight = weight;
-	se->load.inv_weight = 0;
-	if (se->on_rq)
-		update_load_add(&cfs_rq->load, se->load.weight);
-}
+/* update_stats_curr_start, account_entity_enqueue/dequeue, reweight_entity inlined */
 
 void reweight_task(struct task_struct *p, int prio)
 {
@@ -260,7 +245,16 @@ void reweight_task(struct task_struct *p, int prio)
 	struct load_weight *load = &se->load;
 	unsigned long weight = scale_load(sched_prio_to_weight[prio]);
 
-	reweight_entity(cfs_rq, se, weight);
+	/* reweight_entity inlined */
+	if (se->on_rq) {
+		if (cfs_rq->curr == se)
+			update_curr(cfs_rq);
+		update_load_sub(&cfs_rq->load, se->load.weight);
+	}
+	se->load.weight = weight;
+	se->load.inv_weight = 0;
+	if (se->on_rq)
+		update_load_add(&cfs_rq->load, se->load.weight);
 	load->inv_weight = sched_prio_to_wmult[prio];
 }
 

@@ -15,22 +15,7 @@
 
 #include <asm/syscall.h>
 
-bool syscall_user_dispatch(struct pt_regs *regs);
-
-static void trigger_sigsys(struct pt_regs *regs)
-{
-	struct kernel_siginfo info;
-
-	clear_siginfo(&info);
-	info.si_signo = SIGSYS;
-	info.si_code = SYS_USER_DISPATCH;
-	info.si_call_addr = (void __user *)KSTK_EIP(current);
-	info.si_errno = 0;
-	info.si_arch = syscall_get_arch(current);
-	info.si_syscall = syscall_get_nr(current, regs);
-
-	force_sig_info(&info);
-}
+/* trigger_sigsys inlined - single caller */
 
 bool syscall_user_dispatch(struct pt_regs *regs)
 {
@@ -60,7 +45,18 @@ bool syscall_user_dispatch(struct pt_regs *regs)
 
 	sd->on_dispatch = true;
 	syscall_rollback(current, regs);
-	trigger_sigsys(regs);
+	/* trigger_sigsys inlined */
+	{
+		struct kernel_siginfo info;
+		clear_siginfo(&info);
+		info.si_signo = SIGSYS;
+		info.si_code = SYS_USER_DISPATCH;
+		info.si_call_addr = (void __user *)KSTK_EIP(current);
+		info.si_errno = 0;
+		info.si_arch = syscall_get_arch(current);
+		info.si_syscall = syscall_get_nr(current, regs);
+		force_sig_info(&info);
+	}
 
 	return true;
 }

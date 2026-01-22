@@ -449,21 +449,7 @@ static struct rw_semaphore *rwsem_wake(struct rw_semaphore *sem)
 	return sem;
 }
 
-static struct rw_semaphore *rwsem_downgrade_wake(struct rw_semaphore *sem)
-{
-	unsigned long flags;
-	DEFINE_WAKE_Q(wake_q);
-
-	raw_spin_lock_irqsave(&sem->wait_lock, flags);
-
-	if (!list_empty(&sem->wait_list))
-		rwsem_mark_wake(sem, RWSEM_WAKE_READ_OWNED, &wake_q);
-
-	raw_spin_unlock_irqrestore(&sem->wait_lock, flags);
-	wake_up_q(&wake_q);
-
-	return sem;
-}
+/* rwsem_downgrade_wake inlined - single caller */
 
 static inline int __down_read_common(struct rw_semaphore *sem, int state)
 {
@@ -526,17 +512,7 @@ static inline int __down_write_trylock(struct rw_semaphore *sem)
 	return rwsem_write_trylock(sem);
 }
 
-static inline void __up_read(struct rw_semaphore *sem)
-{
-	long tmp;
-
-	tmp = atomic_long_add_return_release(-RWSEM_READER_BIAS, &sem->count);
-	if (unlikely((tmp & (RWSEM_LOCK_MASK | RWSEM_FLAG_WAITERS)) ==
-		     RWSEM_FLAG_WAITERS)) {
-		rwsem_wake(sem);
-	}
-}
-
+/* __up_read inlined into up_read */
 /* __up_write inlined into up_write */
 
 /* __downgrade_write inlined into downgrade_write */
@@ -579,7 +555,12 @@ int __sched down_write_killable(struct rw_semaphore *sem)
 
 void up_read(struct rw_semaphore *sem)
 {
-	__up_read(sem);
+	/* __up_read inlined */
+	long tmp;
+	tmp = atomic_long_add_return_release(-RWSEM_READER_BIAS, &sem->count);
+	if (unlikely((tmp & (RWSEM_LOCK_MASK | RWSEM_FLAG_WAITERS)) ==
+		     RWSEM_FLAG_WAITERS))
+		rwsem_wake(sem);
 }
 
 void up_write(struct rw_semaphore *sem)
@@ -602,6 +583,14 @@ void downgrade_write(struct rw_semaphore *sem)
 	tmp = atomic_long_fetch_add_release(
 		-RWSEM_WRITER_LOCKED + RWSEM_READER_BIAS, &sem->count);
 	rwsem_set_reader_owned(sem);
-	if (tmp & RWSEM_FLAG_WAITERS)
-		rwsem_downgrade_wake(sem);
+	if (tmp & RWSEM_FLAG_WAITERS) {
+		/* rwsem_downgrade_wake inlined */
+		unsigned long flags;
+		DEFINE_WAKE_Q(wake_q);
+		raw_spin_lock_irqsave(&sem->wait_lock, flags);
+		if (!list_empty(&sem->wait_list))
+			rwsem_mark_wake(sem, RWSEM_WAKE_READ_OWNED, &wake_q);
+		raw_spin_unlock_irqrestore(&sem->wait_lock, flags);
+		wake_up_q(&wake_q);
+	}
 }

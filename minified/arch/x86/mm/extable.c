@@ -85,20 +85,7 @@ static bool ex_handler_fault(const struct exception_table_entry *fixup,
 }
 
 /* ex_handler_sgx removed - no SGX in minimal kernel */
-
-static bool ex_handler_fprestore(const struct exception_table_entry *fixup,
-				 struct pt_regs *regs)
-{
-	regs->ip = ex_fixup_addr(fixup);
-
-	WARN_ONCE(
-		1,
-		"Bad FPU state detected at %pB, reinitializing FPU registers.",
-		(void *)instruction_pointer(regs));
-
-	fpu_reset_from_exception_fixup();
-	return true;
-}
+/* ex_handler_fprestore inlined into fixup_exception */
 
 static bool ex_handler_uaccess(const struct exception_table_entry *fixup,
 			       struct pt_regs *regs, int trapnr)
@@ -187,7 +174,14 @@ int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code,
 		asm volatile("mov %0, %%fs" : : "rm"(0));
 		return ex_handler_default(e, regs);
 	case EX_TYPE_FPU_RESTORE:
-		return ex_handler_fprestore(e, regs);
+		/* ex_handler_fprestore inlined */
+		regs->ip = ex_fixup_addr(e);
+		WARN_ONCE(
+			1,
+			"Bad FPU state detected at %pB, reinitializing FPU registers.",
+			(void *)instruction_pointer(regs));
+		fpu_reset_from_exception_fixup();
+		return true;
 	/* EX_TYPE_BPF removed - never used in this minimal kernel */
 	case EX_TYPE_WRMSR:
 		return ex_handler_msr(e, regs, true, false, reg);

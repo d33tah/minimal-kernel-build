@@ -28,37 +28,20 @@ const char *stack_type_name(enum stack_type type)
 	return NULL;
 }
 
-static bool in_hardirq_stack(unsigned long *stack, struct stack_info *info)
+/* in_hardirq_stack inlined into get_stack_info */
+/* in_softirq_stack inlined into get_stack_info */
+
+static bool in_irq_stack_helper(unsigned long *stack, struct stack_info *info,
+				unsigned long *begin, enum stack_type type)
 {
-	unsigned long *begin =
-		(unsigned long *)this_cpu_read(hardirq_stack_ptr);
 	unsigned long *end = begin + (THREAD_SIZE / sizeof(long));
 
 	if (stack < begin || stack > end)
 		return false;
 
-	info->type = STACK_TYPE_IRQ;
+	info->type = type;
 	info->begin = begin;
 	info->end = end;
-
-	info->next_sp = (unsigned long *)*begin;
-
-	return true;
-}
-
-static bool in_softirq_stack(unsigned long *stack, struct stack_info *info)
-{
-	unsigned long *begin =
-		(unsigned long *)this_cpu_read(softirq_stack_ptr);
-	unsigned long *end = begin + (THREAD_SIZE / sizeof(long));
-
-	if (stack < begin || stack > end)
-		return false;
-
-	info->type = STACK_TYPE_SOFTIRQ;
-	info->begin = begin;
-	info->end = end;
-
 	info->next_sp = (unsigned long *)*begin;
 
 	return true;
@@ -100,10 +83,16 @@ int get_stack_info(unsigned long *stack, struct task_struct *task,
 	if (in_entry_stack(stack, info))
 		goto recursion_check;
 
-	if (in_hardirq_stack(stack, info))
+	if (in_irq_stack_helper(
+		    stack, info,
+		    (unsigned long *)this_cpu_read(hardirq_stack_ptr),
+		    STACK_TYPE_IRQ))
 		goto recursion_check;
 
-	if (in_softirq_stack(stack, info))
+	if (in_irq_stack_helper(
+		    stack, info,
+		    (unsigned long *)this_cpu_read(softirq_stack_ptr),
+		    STACK_TYPE_SOFTIRQ))
 		goto recursion_check;
 
 	if (in_doublefault_stack(stack, info))

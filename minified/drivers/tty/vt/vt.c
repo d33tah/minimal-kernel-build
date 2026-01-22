@@ -59,7 +59,7 @@ static int con_open(struct tty_struct *, struct file *);
 static void vc_init(struct vc_data *vc, unsigned int rows, unsigned int cols,
 		    int do_clear);
 static void gotoxy(struct vc_data *vc, int new_x, int new_y);
-static void save_cur(struct vc_data *vc);
+/* save_cur forward decl removed - inlined */
 static void reset_terminal(struct vc_data *vc, int do_clear);
 static void con_flush_chars(struct tty_struct *tty);
 static void set_cursor(struct vc_data *vc);
@@ -516,10 +516,7 @@ static void csi_J(struct vc_data *vc, int vpar)
 	vc->vc_need_wrap = 0;
 }
 
-static void save_cur(struct vc_data *vc)
-{
-	memcpy(&vc->saved_state, &vc->state, sizeof(vc->state));
-}
+/* save_cur inlined into reset_terminal */
 
 enum {
 	ESnormal,
@@ -585,7 +582,7 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 	/* vc_bell_pitch, vc_bell_duration, vc_cur_blink_ms removed - fields removed */
 
 	gotoxy(vc, 0, 0);
-	save_cur(vc);
+	memcpy(&vc->saved_state, &vc->state, sizeof(vc->state));
 	if (do_clear)
 		csi_J(vc, 2);
 }

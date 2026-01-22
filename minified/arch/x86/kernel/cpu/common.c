@@ -643,19 +643,14 @@ DEFINE_PER_CPU(unsigned long,
 
 /* clear_all_debug_regs inlined below, dbg_restore_debug_regs is no-op */
 
-/* wait_for_master_cpu, setup_getcpu, ucode_cpu_init, tss_setup_ist removed - empty */
-
-static inline void tss_setup_io_bitmap(struct tss_struct *tss)
-{
-	tss->x86_tss.io_bitmap_base = IO_BITMAP_OFFSET_INVALID;
-}
+/* wait_for_master_cpu, setup_getcpu, ucode_cpu_init, tss_setup_ist, tss_setup_io_bitmap removed/inlined */
 
 void cpu_init_exception_handling(void)
 {
 	struct tss_struct *tss = this_cpu_ptr(&cpu_tss_rw);
 	int cpu = raw_smp_processor_id();
 
-	tss_setup_io_bitmap(tss);
+	tss->x86_tss.io_bitmap_base = IO_BITMAP_OFFSET_INVALID;
 	set_tss_desc(cpu, &get_cpu_entry_area(cpu)->tss.x86_tss);
 
 	load_TR_desc();

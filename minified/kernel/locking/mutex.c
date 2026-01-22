@@ -113,14 +113,17 @@ static void __mutex_remove_waiter(struct mutex *lock,
 		atomic_long_andnot(MUTEX_FLAGS, &lock->owner);
 }
 
-/* __mutex_handoff inlined into __mutex_unlock_slowpath */
+/* __mutex_handoff, __mutex_lock_slowpath inlined */
 
-static void __sched __mutex_lock_slowpath(struct mutex *lock);
+static int __sched __mutex_lock(struct mutex *lock, unsigned int state,
+				unsigned int subclass,
+				struct lockdep_map *nest_lock,
+				unsigned long ip);
 
 void __sched mutex_lock(struct mutex *lock)
 {
 	if (!__mutex_trylock_fast(lock))
-		__mutex_lock_slowpath(lock);
+		__mutex_lock(lock, TASK_UNINTERRUPTIBLE, 0, NULL, _RET_IP_);
 }
 
 /* mutex_optimistic_spin removed - always returned false */
@@ -263,17 +266,14 @@ static noinline void __sched __mutex_unlock_slowpath(struct mutex *lock,
 	wake_up_q(&wake_q);
 }
 
-static noinline int __sched __mutex_lock_killable_slowpath(struct mutex *lock);
-
-static noinline int __sched
-__mutex_lock_interruptible_slowpath(struct mutex *lock);
+/* __mutex_lock_*_slowpath functions inlined into callers */
 
 int __sched mutex_lock_interruptible(struct mutex *lock)
 {
 	if (__mutex_trylock_fast(lock))
 		return 0;
 
-	return __mutex_lock_interruptible_slowpath(lock);
+	return __mutex_lock(lock, TASK_INTERRUPTIBLE, 0, NULL, _RET_IP_);
 }
 
 int __sched mutex_lock_killable(struct mutex *lock)
@@ -281,23 +281,7 @@ int __sched mutex_lock_killable(struct mutex *lock)
 	if (__mutex_trylock_fast(lock))
 		return 0;
 
-	return __mutex_lock_killable_slowpath(lock);
-}
-
-static noinline void __sched __mutex_lock_slowpath(struct mutex *lock)
-{
-	__mutex_lock(lock, TASK_UNINTERRUPTIBLE, 0, NULL, _RET_IP_);
-}
-
-static noinline int __sched __mutex_lock_killable_slowpath(struct mutex *lock)
-{
 	return __mutex_lock(lock, TASK_KILLABLE, 0, NULL, _RET_IP_);
-}
-
-static noinline int __sched
-__mutex_lock_interruptible_slowpath(struct mutex *lock)
-{
-	return __mutex_lock(lock, TASK_INTERRUPTIBLE, 0, NULL, _RET_IP_);
 }
 
 int __sched mutex_trylock(struct mutex *lock)

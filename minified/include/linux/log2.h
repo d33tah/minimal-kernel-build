@@ -5,21 +5,18 @@
 #include <linux/types.h>
 #include <linux/bitops.h>
 
-#ifndef CONFIG_ARCH_HAS_ILOG2_U32
+/* CONFIG_ARCH_HAS_ILOG2_* not defined - using generic fallbacks */
 static __always_inline __attribute__((const))
 int __ilog2_u32(u32 n)
 {
 	return fls(n) - 1;
 }
-#endif
 
-#ifndef CONFIG_ARCH_HAS_ILOG2_U64
 static __always_inline __attribute__((const))
 int __ilog2_u64(u64 n)
 {
 	return fls64(n) - 1;
 }
-#endif
 
 static inline __attribute__((const))
 bool is_power_of_2(unsigned long n)

@@ -15,11 +15,8 @@
  * put it inside the section definition.
  */
 
-#ifdef CONFIG_X86_32
+/* CONFIG_X86_32 always defined in minimal config */
 #define LOAD_OFFSET __PAGE_OFFSET
-#else
-#define LOAD_OFFSET __START_KERNEL_map
-#endif
 
 #define RUNTIME_DISCARD_EXIT
 #define EMITS_PT_NOTE
@@ -37,13 +34,9 @@
 
 OUTPUT_FORMAT(CONFIG_OUTPUT_FORMAT)
 
-#ifdef CONFIG_X86_32
+/* CONFIG_X86_32 always defined */
 OUTPUT_ARCH(i386)
 ENTRY(phys_startup_32)
-#else
-OUTPUT_ARCH(i386:x86-64)
-ENTRY(phys_startup_64)
-#endif
 
 jiffies = jiffies_64;
 
@@ -105,10 +98,8 @@ SECTIONS
 		/* init_task */
 		INIT_TASK_DATA(THREAD_SIZE)
 
-#ifdef CONFIG_X86_32
 		/* 32 bit has nosave before _edata */
 		NOSAVE_DATA
-#endif
 
 		PAGE_ALIGNED_DATA(PAGE_SIZE)
 
@@ -181,14 +172,7 @@ SECTIONS
 		__x86_cpu_dev_end = .;
 	}
 
-#ifdef CONFIG_X86_INTEL_MID
-	.x86_intel_mid_dev.init : AT(ADDR(.x86_intel_mid_dev.init) - \
-								LOAD_OFFSET) {
-		__x86_intel_mid_dev_start = .;
-		*(.x86_intel_mid_dev.init)
-		__x86_intel_mid_dev_end = .;
-	}
-#endif
+	/* CONFIG_X86_INTEL_MID not set - section removed */
 
 	/*
 	 * start address and size of operations which during runtime
@@ -299,30 +283,7 @@ SECTIONS
 	. = ALIGN(PAGE_SIZE);		/* keep VO_INIT_SIZE page aligned */
 	_end = .;
 
-#ifdef CONFIG_AMD_MEM_ENCRYPT
-	/*
-	 * Early scratch/workarea section: Lives outside of the kernel proper
-	 * (_text - _end).
-	 *
-	 * Resides after _end because even though the .brk section is after
-	 * __end_of_kernel_reserve, the .brk section is later reserved as a
-	 * part of the kernel. Since it is located after __end_of_kernel_reserve
-	 * it will be discarded and become part of the available memory. As
-	 * such, it can only be used by very early boot code and must not be
-	 * needed afterwards.
-	 *
-	 * Currently used by SME for performing in-place encryption of the
-	 * kernel during boot. Resides on a 2MB boundary to simplify the
-	 * pagetable setup used for SME in-place encryption.
-	 */
-	. = ALIGN(HPAGE_SIZE);
-	.init.scratch : AT(ADDR(.init.scratch) - LOAD_OFFSET) {
-		__init_scratch_begin = .;
-		*(.init.scratch)
-		. = ALIGN(HPAGE_SIZE);
-		__init_scratch_end = .;
-	}
-#endif
+	/* CONFIG_AMD_MEM_ENCRYPT not set - scratch section removed */
 
 	STABS_DEBUG
 	DWARF_DEBUG

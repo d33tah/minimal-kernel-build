@@ -33,14 +33,7 @@ struct resource iomem_resource = {
 
 static DEFINE_RWLOCK(resource_lock);
 
-static struct resource *next_resource(struct resource *p)
-{
-	if (p->child)
-		return p->child;
-	while (!p->sibling && p->parent)
-		p = p->parent;
-	return p->sibling;
-}
+/* next_resource inlined into find_next_iomem_res loop */
 
 /* free_resource inlined into single caller */
 
@@ -109,7 +102,14 @@ static int find_next_iomem_res(resource_size_t start, resource_size_t end,
 
 	read_lock(&resource_lock);
 
-	for (p = iomem_resource.child; p; p = next_resource(p)) {
+	/* next_resource inlined into loop iteration */
+	for (p = iomem_resource.child; p;
+	     p = (p->child) ? p->child : (({
+		     struct resource *__p = p;
+		     while (!__p->sibling && __p->parent)
+			     __p = __p->parent;
+		     __p->sibling;
+	     }))) {
 		if (p->start > end) {
 			p = NULL;
 			break;

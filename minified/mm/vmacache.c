@@ -17,29 +17,21 @@ void vmacache_update(unsigned long addr, struct vm_area_struct *newvma)
 		current->vmacache.vmas[VMACACHE_HASH(addr)] = newvma;
 }
 
-static bool vmacache_valid(struct mm_struct *mm)
-{
-	struct task_struct *curr;
-
-	if (!vmacache_valid_mm(mm))
-		return false;
-
-	curr = current;
-	if (mm->vmacache_seqnum != curr->vmacache.seqnum) {
-		curr->vmacache.seqnum = mm->vmacache_seqnum;
-		vmacache_flush(curr);
-		return false;
-	}
-	return true;
-}
+/* vmacache_valid inlined into vmacache_find */
 
 struct vm_area_struct *vmacache_find(struct mm_struct *mm, unsigned long addr)
 {
 	int idx = VMACACHE_HASH(addr);
 	int i;
-	/* count_vm_vmacache_event removed - empty stub */
-	if (!vmacache_valid(mm))
+	struct task_struct *curr = current;
+	/* vmacache_valid inlined - check validity and seqnum */
+	if (!vmacache_valid_mm(mm))
 		return NULL;
+	if (mm->vmacache_seqnum != curr->vmacache.seqnum) {
+		curr->vmacache.seqnum = mm->vmacache_seqnum;
+		vmacache_flush(curr);
+		return NULL;
+	}
 
 	for (i = 0; i < VMACACHE_SIZE; i++) {
 		struct vm_area_struct *vma = current->vmacache.vmas[idx];

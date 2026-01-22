@@ -25,8 +25,7 @@ extern int parse_monolithic_mount_data(struct fs_context *, void *);
  
 extern int filename_lookup(int dfd, struct filename *name, unsigned flags,
 			   struct path *path, struct path *root);
-extern int vfs_path_lookup(struct dentry *, struct vfsmount *,
-			   const char *, unsigned int, struct path *);
+/* vfs_path_lookup removed - never called */
 /* do_rmdir, do_unlinkat, may_linkat, do_renameat2, do_mkdirat, do_symlinkat, do_linkat removed */
 
 extern struct vfsmount *lookup_mnt(const struct path *);

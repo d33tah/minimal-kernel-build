@@ -962,19 +962,7 @@ int kern_path(const char *name, unsigned int flags, struct path *path)
 	return ret;
 }
 
-int vfs_path_lookup(struct dentry *dentry, struct vfsmount *mnt,
-		    const char *name, unsigned int flags, struct path *path)
-{
-	struct filename *filename;
-	struct path root = { .mnt = mnt, .dentry = dentry };
-	int ret;
-
-	filename = getname_kernel(name);
-
-	ret = filename_lookup(AT_FDCWD, filename, flags, path, &root);
-	putname(filename);
-	return ret;
-}
+/* vfs_path_lookup removed - never called */
 
 /* may_create removed - never called (only callers vfs_mknod, vfs_mkdir, etc were removed) */
 

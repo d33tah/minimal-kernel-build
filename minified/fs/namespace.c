@@ -897,45 +897,7 @@ static int do_add_mount(struct mount *newmnt, struct mountpoint *mp,
 static bool mount_too_revealing(const struct super_block *sb,
 				int *new_mnt_flags);
 
-static int do_new_mount_fc(struct fs_context *fc, struct path *mountpoint,
-			   unsigned int mnt_flags)
-{
-	struct vfsmount *mnt;
-	struct mountpoint *mp;
-	struct super_block *sb = fc->root->d_sb;
-	int error;
-
-	/* security_sb_kern_mount always returns 0 - simplified */
-	if (mount_too_revealing(sb, &mnt_flags)) {
-		fc_drop_locked(fc);
-		return -EPERM;
-	}
-
-	up_write(&sb->s_umount);
-
-	mnt = vfs_create_mount(fc);
-	if (IS_ERR(mnt))
-		return PTR_ERR(mnt);
-
-	mp = lock_mount(mountpoint);
-	if (IS_ERR(mp)) {
-		mntput(mnt);
-		return PTR_ERR(mp);
-	}
-	error = do_add_mount(real_mount(mnt), mp, mountpoint, mnt_flags);
-	/* unlock_mount inlined */
-	{
-		struct dentry *dentry = mp->m_dentry;
-		read_seqlock_excl(&mount_lock);
-		put_mountpoint(mp);
-		read_sequnlock_excl(&mount_lock);
-		namespace_unlock();
-		inode_unlock(dentry->d_inode);
-	}
-	if (error < 0)
-		mntput(mnt);
-	return error;
-}
+/* do_new_mount_fc inlined into do_new_mount */
 
 static int do_new_mount(struct path *path, const char *fstype, int sb_flags,
 			int mnt_flags, const char *name, void *data)
@@ -963,8 +925,45 @@ static int do_new_mount(struct path *path, const char *fstype, int sb_flags,
 	/* mount_capable() always returns true - check removed */
 	if (!err)
 		err = vfs_get_tree(fc);
-	if (!err)
-		err = do_new_mount_fc(fc, path, mnt_flags);
+	/* Inlined do_new_mount_fc */
+	if (!err) {
+		struct vfsmount *mnt;
+		struct mountpoint *mp;
+		struct super_block *sb = fc->root->d_sb;
+
+		if (mount_too_revealing(sb, &mnt_flags)) {
+			fc_drop_locked(fc);
+			err = -EPERM;
+		} else {
+			up_write(&sb->s_umount);
+
+			mnt = vfs_create_mount(fc);
+			if (IS_ERR(mnt)) {
+				err = PTR_ERR(mnt);
+			} else {
+				mp = lock_mount(path);
+				if (IS_ERR(mp)) {
+					mntput(mnt);
+					err = PTR_ERR(mp);
+				} else {
+					err = do_add_mount(real_mount(mnt), mp,
+							   path, mnt_flags);
+					{
+						struct dentry *dentry =
+							mp->m_dentry;
+						read_seqlock_excl(&mount_lock);
+						put_mountpoint(mp);
+						read_sequnlock_excl(
+							&mount_lock);
+						namespace_unlock();
+						inode_unlock(dentry->d_inode);
+					}
+					if (err < 0)
+						mntput(mnt);
+				}
+			}
+		}
+	}
 
 	put_fs_context(fc);
 	return err;

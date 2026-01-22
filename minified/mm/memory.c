@@ -450,44 +450,7 @@ pte_t *__get_locked_pte(struct mm_struct *mm, unsigned long addr,
 	return pte_alloc_map_lock(mm, pmd, addr, ptl);
 }
 
-static vm_fault_t insert_pfn(struct vm_area_struct *vma, unsigned long addr,
-			     pfn_t pfn, pgprot_t prot, bool mkwrite)
-{
-	struct mm_struct *mm = vma->vm_mm;
-	pte_t *pte, entry;
-	spinlock_t *ptl;
-
-	pte = get_locked_pte(mm, addr, &ptl);
-	if (!pte)
-		return VM_FAULT_OOM;
-	if (!pte_none(*pte)) {
-		if (mkwrite) {
-			if (pte_pfn(*pte) != pfn_t_to_pfn(pfn)) {
-				WARN_ON_ONCE(!is_zero_pfn(pte_pfn(*pte)));
-				goto out_unlock;
-			}
-			entry = pte_mkyoung(*pte);
-			entry = maybe_mkwrite(pte_mkdirty(entry), vma);
-			ptep_set_access_flags(vma, addr, pte, entry, 1);
-			/* update_mmu_cache - empty stub on x86 */
-		}
-		goto out_unlock;
-	}
-
-	/* pfn_t_devmap always returns false */
-	entry = pte_mkspecial(pfn_t_pte(pfn, prot));
-
-	if (mkwrite) {
-		entry = pte_mkyoung(entry);
-		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
-	}
-
-	set_pte_at(mm, addr, pte, entry);
-	/* update_mmu_cache - empty stub on x86 */
-out_unlock:
-	pte_unmap_unlock(pte, ptl);
-	return VM_FAULT_NOPAGE;
-}
+/* insert_pfn inlined into vmf_insert_pfn_prot */
 
 vm_fault_t vmf_insert_pfn_prot(struct vm_area_struct *vma, unsigned long addr,
 			       unsigned long pfn, pgprot_t pgprot)
@@ -503,8 +466,25 @@ vm_fault_t vmf_insert_pfn_prot(struct vm_area_struct *vma, unsigned long addr,
 
 	/* pfn_modify_allowed check removed - always returned true */
 	/* track_pfn_insert is empty stub, call removed */
-	return insert_pfn(vma, addr, __pfn_to_pfn_t(pfn, PFN_DEV), pgprot,
-			  false);
+	/* Inlined insert_pfn */
+	{
+		struct mm_struct *mm = vma->vm_mm;
+		pte_t *pte, entry;
+		spinlock_t *ptl;
+		pfn_t pfn_val = __pfn_to_pfn_t(pfn, PFN_DEV);
+
+		pte = get_locked_pte(mm, addr, &ptl);
+		if (!pte)
+			return VM_FAULT_OOM;
+		if (!pte_none(*pte))
+			goto pfn_out_unlock;
+
+		entry = pte_mkspecial(pfn_t_pte(pfn_val, pgprot));
+		set_pte_at(mm, addr, pte, entry);
+pfn_out_unlock:
+		pte_unmap_unlock(pte, ptl);
+		return VM_FAULT_NOPAGE;
+	}
 }
 
 vm_fault_t vmf_insert_pfn(struct vm_area_struct *vma, unsigned long addr,

@@ -272,26 +272,8 @@ static void set_origin(struct vc_data *vc)
 		vc->vc_origin + vc->vc_size_row * vc->state.y + 2 * vc->state.x;
 }
 
-static void save_screen(struct vc_data *vc)
-{
-	WARN_CONSOLE_UNLOCKED();
-
-	if (vc->vc_sw->con_save_screen)
-		vc->vc_sw->con_save_screen(vc);
-}
-
-static void flush_scrollback(struct vc_data *vc)
-{
-	WARN_CONSOLE_UNLOCKED();
-
-	set_origin(vc);
-	/* con_flush_scrollback never assigned in any driver */
-	if (con_is_visible(vc)) {
-		hide_cursor(vc);
-		vc->vc_sw->con_switch(vc);
-		set_cursor(vc);
-	}
-}
+/* save_screen inlined into con_init */
+/* flush_scrollback inlined into redraw_screen */
 
 /* switch_screen/update_screen unified - is_switch parameter removed (always 0) */
 static void redraw_screen(struct vc_data *vc)
@@ -501,7 +483,14 @@ static void csi_J(struct vc_data *vc, int vpar)
 		start = (unsigned short *)vc->vc_origin;
 		break;
 	case 3:
-		flush_scrollback(vc);
+		/* flush_scrollback inlined */
+		WARN_CONSOLE_UNLOCKED();
+		set_origin(vc);
+		if (con_is_visible(vc)) {
+			hide_cursor(vc);
+			vc->vc_sw->con_switch(vc);
+			set_cursor(vc);
+		}
 		fallthrough;
 	case 2:
 		count = vc->vc_cols * vc->vc_rows;
@@ -957,7 +946,10 @@ static int __init con_init(void)
 	currcons = fg_console = 0;
 	master_display_fg = vc = vc_cons[currcons].d;
 	set_origin(vc);
-	save_screen(vc);
+	/* save_screen inlined */
+	WARN_CONSOLE_UNLOCKED();
+	if (vc->vc_sw->con_save_screen)
+		vc->vc_sw->con_save_screen(vc);
 	gotoxy(vc, vc->state.x, vc->state.y);
 	csi_J(vc, 0);
 	redraw_screen(vc);

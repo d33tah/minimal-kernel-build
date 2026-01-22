@@ -829,18 +829,7 @@ retry:
 	goto retry;
 }
 
-static void unlock_mount(struct mountpoint *where)
-{
-	struct dentry *dentry = where->m_dentry;
-
-	read_seqlock_excl(&mount_lock);
-	put_mountpoint(where);
-	read_sequnlock_excl(&mount_lock);
-
-	namespace_unlock();
-	inode_unlock(dentry->d_inode);
-}
-
+/* unlock_mount inlined into do_loopback */
 /* graft_tree inlined at call site - only called once */
 
 /* flags_to_propagation_type inlined - only called once */
@@ -934,7 +923,15 @@ static int do_new_mount_fc(struct fs_context *fc, struct path *mountpoint,
 		return PTR_ERR(mp);
 	}
 	error = do_add_mount(real_mount(mnt), mp, mountpoint, mnt_flags);
-	unlock_mount(mp);
+	/* unlock_mount inlined */
+	{
+		struct dentry *dentry = mp->m_dentry;
+		read_seqlock_excl(&mount_lock);
+		put_mountpoint(mp);
+		read_sequnlock_excl(&mount_lock);
+		namespace_unlock();
+		inode_unlock(dentry->d_inode);
+	}
 	if (error < 0)
 		mntput(mnt);
 	return error;

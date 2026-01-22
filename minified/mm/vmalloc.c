@@ -853,19 +853,7 @@ void __init vmalloc_init(void)
 	vmap_initialized = true;
 }
 
-/* setup_vmalloc_vm_locked inlined into setup_vmalloc_vm */
-
-static void setup_vmalloc_vm(struct vm_struct *vm, struct vmap_area *va,
-			     unsigned long flags, const void *caller)
-{
-	spin_lock(&vmap_area_lock);
-	vm->flags = flags;
-	vm->addr = (void *)va->va_start;
-	vm->size = va->va_end - va->va_start;
-	vm->caller = caller;
-	va->vm = vm;
-	spin_unlock(&vmap_area_lock);
-}
+/* setup_vmalloc_vm inlined into __get_vm_area_node */
 
 static struct vm_struct *
 __get_vm_area_node(unsigned long size, unsigned long align, unsigned long shift,
@@ -897,7 +885,14 @@ __get_vm_area_node(unsigned long size, unsigned long align, unsigned long shift,
 		return NULL;
 	}
 
-	setup_vmalloc_vm(area, va, flags, caller);
+	/* setup_vmalloc_vm inlined */
+	spin_lock(&vmap_area_lock);
+	area->flags = flags;
+	area->addr = (void *)va->va_start;
+	area->size = va->va_end - va->va_start;
+	area->caller = caller;
+	va->vm = area;
+	spin_unlock(&vmap_area_lock);
 
 	return area;
 }

@@ -36,23 +36,7 @@ static inline void update_load_sub(struct load_weight *lw, unsigned long dec)
 
 #define WMULT_CONST (~0U)
 #define WMULT_SHIFT 32
-
-static void __update_inv_weight(struct load_weight *lw)
-{
-	unsigned long w;
-
-	if (likely(lw->inv_weight))
-		return;
-
-	w = scale_load_down(lw->weight);
-
-	if (BITS_PER_LONG > 32 && unlikely(w >= WMULT_CONST))
-		lw->inv_weight = 1;
-	else if (unlikely(!w))
-		lw->inv_weight = WMULT_CONST;
-	else
-		lw->inv_weight = WMULT_CONST / w;
-}
+/* __update_inv_weight inlined into __calc_delta */
 
 static u64 __calc_delta(u64 delta_exec, unsigned long weight,
 			struct load_weight *lw)
@@ -62,7 +46,17 @@ static u64 __calc_delta(u64 delta_exec, unsigned long weight,
 	int shift = WMULT_SHIFT;
 	int fs;
 
-	__update_inv_weight(lw);
+	/* __update_inv_weight inlined */
+	if (!lw->inv_weight) {
+		unsigned long w = scale_load_down(lw->weight);
+
+		if (BITS_PER_LONG > 32 && unlikely(w >= WMULT_CONST))
+			lw->inv_weight = 1;
+		else if (unlikely(!w))
+			lw->inv_weight = WMULT_CONST;
+		else
+			lw->inv_weight = WMULT_CONST / w;
+	}
 
 	if (unlikely(fact_hi)) {
 		fs = fls(fact_hi);
@@ -378,18 +372,7 @@ static void set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 }
 
 /* pick_next_entity inlined - buddy selection code removed for single-task kernel */
-
-static void put_prev_entity(struct cfs_rq *cfs_rq, struct sched_entity *prev)
-{
-	if (prev->on_rq)
-		update_curr(cfs_rq);
-	if (prev->on_rq) {
-		__enqueue_entity(cfs_rq, prev);
-
-		update_load_avg(cfs_rq, prev, 0);
-	}
-	cfs_rq->curr = NULL;
-}
+/* put_prev_entity inlined into put_prev_task_fair */
 
 /* entity_tick inlined */
 
@@ -537,7 +520,14 @@ static void put_prev_task_fair(struct rq *rq, struct task_struct *prev)
 	for_each_sched_entity(se)
 	{
 		cfs_rq = cfs_rq_of(se);
-		put_prev_entity(cfs_rq, se);
+		/* put_prev_entity inlined */
+		if (se->on_rq)
+			update_curr(cfs_rq);
+		if (se->on_rq) {
+			__enqueue_entity(cfs_rq, se);
+			update_load_avg(cfs_rq, se, 0);
+		}
+		cfs_rq->curr = NULL;
 	}
 }
 

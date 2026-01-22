@@ -357,9 +357,10 @@ out:
 	return ret;
 }
 
-static ssize_t file_tty_write(struct file *file, struct kiocb *iocb,
-			      struct iov_iter *from)
+/* file_tty_write inlined into tty_write */
+static ssize_t tty_write(struct kiocb *iocb, struct iov_iter *from)
 {
+	struct file *file = iocb->ki_filp;
 	struct tty_struct *tty = file_tty(file);
 	struct tty_ldisc *ld;
 	ssize_t ret;
@@ -367,7 +368,6 @@ static ssize_t file_tty_write(struct file *file, struct kiocb *iocb,
 	if (!tty || !tty->ops->write || tty_io_error(tty))
 		return -EIO;
 
-	/* write_room check removed - ops->write_room callback removed */
 	ld = tty_ldisc_ref_wait(tty);
 	if (!ld)
 		return hung_up_tty_write(iocb, from);
@@ -377,11 +377,6 @@ static ssize_t file_tty_write(struct file *file, struct kiocb *iocb,
 		ret = do_tty_write(ld->ops->write, tty, file, from);
 	tty_ldisc_deref(ld);
 	return ret;
-}
-
-static ssize_t tty_write(struct kiocb *iocb, struct iov_iter *from)
-{
-	return file_tty_write(iocb->ki_filp, iocb, from);
 }
 
 /* redirect is never set, so just call tty_write directly */
@@ -558,31 +553,8 @@ err_release_lock:
 	return ERR_PTR(retval);
 }
 
-static void tty_save_termios(struct tty_struct *tty)
-{
-	struct ktermios *tp;
-	int idx = tty->index;
-
-	if (tty->driver->flags & TTY_DRIVER_RESET_TERMIOS)
-		return;
-
-	tp = tty->driver->termios[idx];
-	if (tp == NULL) {
-		tp = kmalloc(sizeof(*tp), GFP_KERNEL);
-		if (tp == NULL)
-			return;
-		tty->driver->termios[idx] = tp;
-	}
-	*tp = tty->termios;
-}
-
-static void tty_flush_works(struct tty_struct *tty)
-{
-	/* SAK_work flush removed - never scheduled */
-	flush_work(&tty->hangup_work);
-	if (tty->link)
-		flush_work(&tty->link->hangup_work);
-}
+/* tty_save_termios inlined into release_tty */
+/* tty_flush_works inlined into tty_release_struct */
 
 static void release_one_tty(struct work_struct *work)
 {
@@ -627,7 +599,18 @@ static void release_tty(struct tty_struct *tty, int idx)
 	WARN_ON(!mutex_is_locked(&tty_mutex));
 	if (tty->ops->shutdown)
 		tty->ops->shutdown(tty);
-	tty_save_termios(tty);
+	/* tty_save_termios inlined */
+	if (!(tty->driver->flags & TTY_DRIVER_RESET_TERMIOS)) {
+		struct ktermios *tp = tty->driver->termios[idx];
+
+		if (tp == NULL) {
+			tp = kmalloc(sizeof(*tp), GFP_KERNEL);
+			if (tp)
+				tty->driver->termios[idx] = tp;
+		}
+		if (tp)
+			*tp = tty->termios;
+	}
 	tty_driver_remove_tty(tty->driver, tty);
 	if (tty->port)
 		tty->port->itty = NULL;
@@ -648,7 +631,10 @@ static void tty_release_struct(struct tty_struct *tty, int idx)
 {
 	tty_ldisc_release(tty);
 
-	tty_flush_works(tty);
+	/* tty_flush_works inlined */
+	flush_work(&tty->hangup_work);
+	if (tty->link)
+		flush_work(&tty->link->hangup_work);
 
 	mutex_lock(&tty_mutex);
 	release_tty(tty, idx);

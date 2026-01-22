@@ -747,39 +747,7 @@ static int search_binary_handler(struct linux_binprm *bprm)
 	return retval;
 }
 
-static int exec_binprm(struct linux_binprm *bprm)
-{
-	pid_t old_pid, old_vpid;
-	int ret, depth;
-
-	old_pid = current->pid;
-	rcu_read_lock();
-	old_vpid = task_pid_nr_ns(current, task_active_pid_ns(current->parent));
-	rcu_read_unlock();
-
-	for (depth = 0;; depth++) {
-		struct file *exec;
-		if (depth > 5)
-			return -ELOOP;
-
-		ret = search_binary_handler(bprm);
-		if (ret < 0)
-			return ret;
-		if (!bprm->interpreter)
-			break;
-
-		exec = bprm->file;
-		bprm->file = bprm->interpreter;
-		bprm->interpreter = NULL;
-
-		allow_write_access(exec);
-		fput(exec);
-	}
-
-	/* audit_bprm - empty stub */
-	ptrace_event(PTRACE_EVENT_EXEC, old_vpid);
-	return 0;
-}
+/* exec_binprm inlined into bprm_execve */
 
 static int bprm_execve(struct linux_binprm *bprm, int fd,
 		       struct filename *filename, int flags)
@@ -837,9 +805,41 @@ static int bprm_execve(struct linux_binprm *bprm, int fd,
 		bprm->interp_flags |= BINPRM_FLAGS_PATH_INACCESSIBLE;
 
 	/* security_bprm_creds_for_exec always returns 0 - dead code removed */
-	retval = exec_binprm(bprm);
-	if (retval < 0)
-		goto out;
+	/* exec_binprm inlined */
+	{
+		pid_t old_pid, old_vpid;
+		int depth;
+
+		old_pid = current->pid;
+		rcu_read_lock();
+		old_vpid = task_pid_nr_ns(current,
+					  task_active_pid_ns(current->parent));
+		rcu_read_unlock();
+
+		for (depth = 0;; depth++) {
+			struct file *exec;
+
+			if (depth > 5) {
+				retval = -ELOOP;
+				goto out;
+			}
+
+			retval = search_binary_handler(bprm);
+			if (retval < 0)
+				goto out;
+			if (!bprm->interpreter)
+				break;
+
+			exec = bprm->file;
+			bprm->file = bprm->interpreter;
+			bprm->interpreter = NULL;
+
+			allow_write_access(exec);
+			fput(exec);
+		}
+
+		ptrace_event(PTRACE_EVENT_EXEC, old_vpid);
+	}
 
 	current->fs->in_exec = 0;
 	return retval;

@@ -48,23 +48,7 @@ static struct timekeeper shadow_timekeeper;
 
 /* struct tk_fast, cycles_at_suspend, dummy_clock_read, dummy_clock, FAST_TK_INIT,
    tk_fast_mono, tk_fast_raw removed - fast timekeeper path is stubbed out */
-
-static inline void tk_normalize_xtime(struct timekeeper *tk)
-{
-	while (tk->tkr_mono.xtime_nsec >=
-	       ((u64)NSEC_PER_SEC << tk->tkr_mono.shift)) {
-		tk->tkr_mono.xtime_nsec -= (u64)NSEC_PER_SEC
-					   << tk->tkr_mono.shift;
-		tk->xtime_sec++;
-	}
-	while (tk->tkr_raw.xtime_nsec >=
-	       ((u64)NSEC_PER_SEC << tk->tkr_raw.shift)) {
-		tk->tkr_raw.xtime_nsec -= (u64)NSEC_PER_SEC
-					  << tk->tkr_raw.shift;
-		tk->raw_sec++;
-	}
-}
-
+/* tk_normalize_xtime inlined into change_clocksource */
 /* tk_xtime, tk_set_xtime, tk_set_wall_to_mono removed - never called */
 
 static inline u64 tk_clock_read(const struct tk_read_base *tkr)
@@ -139,23 +123,7 @@ static void tk_setup_internals(struct timekeeper *tk, struct clocksource *clock)
    ktime_get_fast_timestamps - no callers */
 
 /* pvclock_gtod_chain removed - no registrations */
-
-static inline void tk_update_ktime_data(struct timekeeper *tk)
-{
-	u64 seconds;
-	u32 nsec;
-
-	seconds = (u64)(tk->xtime_sec + tk->wall_to_monotonic.tv_sec);
-	nsec = (u32)tk->wall_to_monotonic.tv_nsec;
-	tk->tkr_mono.base = ns_to_ktime(seconds * NSEC_PER_SEC + nsec);
-
-	nsec += (u32)(tk->tkr_mono.xtime_nsec >> tk->tkr_mono.shift);
-	if (nsec >= NSEC_PER_SEC)
-		seconds++;
-	tk->ktime_sec = seconds;
-
-	tk->tkr_raw.base = ns_to_ktime(tk->raw_sec * NSEC_PER_SEC);
-}
+/* tk_update_ktime_data inlined into timekeeping_update */
 
 static void timekeeping_update(struct timekeeper *tk, unsigned int action)
 {
@@ -165,7 +133,22 @@ static void timekeeping_update(struct timekeeper *tk, unsigned int action)
 	}
 
 	tk->next_leap_ktime = KTIME_MAX; /* tk_update_leap_state inlined */
-	tk_update_ktime_data(tk);
+	/* tk_update_ktime_data inlined */
+	{
+		u64 seconds;
+		u32 nsec;
+
+		seconds = (u64)(tk->xtime_sec + tk->wall_to_monotonic.tv_sec);
+		nsec = (u32)tk->wall_to_monotonic.tv_nsec;
+		tk->tkr_mono.base = ns_to_ktime(seconds * NSEC_PER_SEC + nsec);
+
+		nsec += (u32)(tk->tkr_mono.xtime_nsec >> tk->tkr_mono.shift);
+		if (nsec >= NSEC_PER_SEC)
+			seconds++;
+		tk->ktime_sec = seconds;
+
+		tk->tkr_raw.base = ns_to_ktime(tk->raw_sec * NSEC_PER_SEC);
+	}
 
 	/* update_vsyscall, raw_notifier_call_chain(pvclock_gtod_chain),
 	   update_fast_timekeeper calls removed - empty stubs */
@@ -250,7 +233,19 @@ static int change_clocksource(void *data)
 		tk->tkr_raw.cycle_last = cycle_now;
 		tk->tkr_mono.xtime_nsec += delta * tk->tkr_mono.mult;
 		tk->tkr_raw.xtime_nsec += delta * tk->tkr_raw.mult;
-		tk_normalize_xtime(tk);
+		/* tk_normalize_xtime inlined */
+		while (tk->tkr_mono.xtime_nsec >=
+		       ((u64)NSEC_PER_SEC << tk->tkr_mono.shift)) {
+			tk->tkr_mono.xtime_nsec -= (u64)NSEC_PER_SEC
+						   << tk->tkr_mono.shift;
+			tk->xtime_sec++;
+		}
+		while (tk->tkr_raw.xtime_nsec >=
+		       ((u64)NSEC_PER_SEC << tk->tkr_raw.shift)) {
+			tk->tkr_raw.xtime_nsec -= (u64)NSEC_PER_SEC
+						  << tk->tkr_raw.shift;
+			tk->raw_sec++;
+		}
 	}
 
 	if (change) {

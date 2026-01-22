@@ -203,72 +203,7 @@ void __init reserve_standard_io_resources(void)
 /* trim_snb_memory removed - empty stub */
 
 /* trim_bios_range inlined into setup_arch */
-/* e820_add_kernel_range inlined into setup_arch */
-
-static void __init early_reserve_memory(void)
-{
-	memblock_reserve(__pa_symbol(_text),
-			 (unsigned long)__end_of_kernel_reserve -
-				 (unsigned long)_text);
-
-	memblock_reserve(0, SZ_64K);
-
-	/* Inlined early_reserve_initrd */
-	{
-		u64 ramdisk_image = get_ramdisk_image();
-		u64 ramdisk_size = get_ramdisk_size();
-		u64 ramdisk_end = PAGE_ALIGN(ramdisk_image + ramdisk_size);
-		if (boot_params.hdr.type_of_loader && ramdisk_image &&
-		    ramdisk_size)
-			memblock_reserve(ramdisk_image,
-					 ramdisk_end - ramdisk_image);
-	}
-
-	/* memblock_x86_reserve_range_setup_data inlined */
-	{
-		struct setup_indirect *indirect;
-		struct setup_data *data;
-		u64 pa_data, pa_next;
-		u32 len;
-
-		pa_data = boot_params.hdr.setup_data;
-		while (pa_data) {
-			data = early_memremap(pa_data, sizeof(*data));
-			if (!data) {
-				pr_warn("setup: failed to memremap setup_data entry\n");
-				break;
-			}
-
-			len = sizeof(*data);
-			pa_next = data->next;
-
-			memblock_reserve(pa_data, sizeof(*data) + data->len);
-
-			if (data->type == SETUP_INDIRECT) {
-				len += data->len;
-				early_memunmap(data, sizeof(*data));
-				data = early_memremap(pa_data, len);
-				if (!data) {
-					pr_warn("setup: failed to memremap indirect setup_data\n");
-					break;
-				}
-
-				indirect = (struct setup_indirect *)data->data;
-
-				if (indirect->type != SETUP_INDIRECT)
-					memblock_reserve(indirect->addr,
-							 indirect->len);
-			}
-
-			pa_data = pa_next;
-			early_memunmap(data, len);
-		}
-	}
-
-	/* reserve_ibft_region removed - empty stub */
-	reserve_bios_regions();
-	/* trim_snb_memory removed - empty stub */
-}
+/* e820_add_kernel_range, early_reserve_memory inlined into setup_arch */
 
 /* dump_kernel_offset and kernel_offset_notifier removed - stub that did nothing */
 
@@ -307,7 +242,54 @@ void __init setup_arch(char **cmdline_p)
 
 	/* x86_init.oem.arch_setup removed - is x86_init_noop */
 
-	early_reserve_memory();
+	/* Inlined early_reserve_memory */
+	memblock_reserve(__pa_symbol(_text),
+			 (unsigned long)__end_of_kernel_reserve -
+				 (unsigned long)_text);
+	memblock_reserve(0, SZ_64K);
+	{
+		u64 ramdisk_image = get_ramdisk_image();
+		u64 ramdisk_size = get_ramdisk_size();
+		u64 ramdisk_end = PAGE_ALIGN(ramdisk_image + ramdisk_size);
+		if (boot_params.hdr.type_of_loader && ramdisk_image &&
+		    ramdisk_size)
+			memblock_reserve(ramdisk_image,
+					 ramdisk_end - ramdisk_image);
+	}
+	{
+		struct setup_indirect *indirect;
+		struct setup_data *data;
+		u64 pa_data, pa_next;
+		u32 len;
+
+		pa_data = boot_params.hdr.setup_data;
+		while (pa_data) {
+			data = early_memremap(pa_data, sizeof(*data));
+			if (!data) {
+				pr_warn("setup: failed to memremap setup_data entry\n");
+				break;
+			}
+			len = sizeof(*data);
+			pa_next = data->next;
+			memblock_reserve(pa_data, sizeof(*data) + data->len);
+			if (data->type == SETUP_INDIRECT) {
+				len += data->len;
+				early_memunmap(data, sizeof(*data));
+				data = early_memremap(pa_data, len);
+				if (!data) {
+					pr_warn("setup: failed to memremap indirect setup_data\n");
+					break;
+				}
+				indirect = (struct setup_indirect *)data->data;
+				if (indirect->type != SETUP_INDIRECT)
+					memblock_reserve(indirect->addr,
+							 indirect->len);
+			}
+			pa_data = pa_next;
+			early_memunmap(data, len);
+		}
+	}
+	reserve_bios_regions();
 
 	iomem_resource.end = (1ULL << boot_cpu_data.x86_phys_bits) - 1;
 	e820__memory_setup();

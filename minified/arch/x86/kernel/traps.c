@@ -341,23 +341,8 @@ DEFINE_IDTENTRY_RAW(exc_int3)
 	}
 }
 
-static bool is_sysenter_singlestep(struct pt_regs *regs)
-{
-	return (regs->ip - (unsigned long)__begin_SYSENTER_singlestep_region) <
-	       (unsigned long)__end_SYSENTER_singlestep_region -
-		       (unsigned long)__begin_SYSENTER_singlestep_region;
-}
-
-static __always_inline unsigned long debug_read_clear_dr6(void)
-{
-	unsigned long dr6;
-
-	get_debugreg(dr6, 6);
-	set_debugreg(DR6_RESERVED, 6);
-	dr6 ^= DR6_RESERVED;
-
-	return dr6;
-}
+/* is_sysenter_singlestep inlined into exc_debug_kernel */
+/* debug_read_clear_dr6 inlined into exc_debug_user */
 
 /* notify_die always returns NOTIFY_DONE, so notify_debug always returns false */
 static bool notify_debug(struct pt_regs *regs, unsigned long *dr6)
@@ -382,7 +367,11 @@ static __always_inline void exc_debug_kernel(struct pt_regs *regs,
 		wrmsrl(MSR_IA32_DEBUGCTLMSR, debugctl);
 	}
 
-	if ((dr6 & DR_STEP) && is_sysenter_singlestep(regs))
+	/* is_sysenter_singlestep inlined */
+	if ((dr6 & DR_STEP) &&
+	    (regs->ip - (unsigned long)__begin_SYSENTER_singlestep_region) <
+		    (unsigned long)__end_SYSENTER_singlestep_region -
+			    (unsigned long)__begin_SYSENTER_singlestep_region)
 		dr6 &= ~DR_STEP;
 
 	if (!dr6)
@@ -437,7 +426,12 @@ out:
 
 DEFINE_IDTENTRY_RAW(exc_debug)
 {
-	unsigned long dr6 = debug_read_clear_dr6();
+	unsigned long dr6;
+
+	/* debug_read_clear_dr6 inlined */
+	get_debugreg(dr6, 6);
+	set_debugreg(DR6_RESERVED, 6);
+	dr6 ^= DR6_RESERVED;
 
 	if (user_mode(regs))
 		exc_debug_user(regs, dr6);

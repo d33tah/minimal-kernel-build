@@ -77,14 +77,7 @@ static int __init cpcompare(const void *a, const void *b)
 	return (ap->addr != ap->entry->addr) - (bp->addr != bp->entry->addr);
 }
 
-static bool e820_nomerge(enum e820_type type)
-{
-	if (type == E820_TYPE_PRAM)
-		return true;
-	if (type == E820_TYPE_SOFT_RESERVED)
-		return true;
-	return false;
-}
+/* e820_nomerge inlined into e820__update_table */
 
 int __init e820__update_table(struct e820_table *table)
 {
@@ -149,7 +142,10 @@ int __init e820__update_table(struct e820_table *table)
 				current_type = overlap_list[i]->type;
 		}
 
-		if (current_type != last_type || e820_nomerge(current_type)) {
+		/* e820_nomerge inlined */
+		if (current_type != last_type ||
+		    current_type == E820_TYPE_PRAM ||
+		    current_type == E820_TYPE_SOFT_RESERVED) {
 			if (last_type != 0) {
 				new_entries[new_nr_entries].size =
 					change_point[chg_idx]->addr - last_addr;

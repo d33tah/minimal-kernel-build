@@ -34,9 +34,7 @@
 #include "internal.h"
 /* struct swap_iocb forward decl removed - unused */
 
-#if defined(LAST_CPUPID_NOT_IN_PAGE_FLAGS) && !defined(CONFIG_COMPILE_TEST)
-#warning Unfortunate NUMA and NUMA Balancing config, growing page-frame for last_cpupid.
-#endif
+/* LAST_CPUPID warning removed - not triggered on x86 tinyconfig */
 
 unsigned long max_mapnr;
 

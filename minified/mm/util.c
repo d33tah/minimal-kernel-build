@@ -102,13 +102,7 @@ void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 
 /* randomize_stack_top, randomize_page removed - inlined to PAGE_ALIGN (~4 LOC) */
 
-#if defined(CONFIG_MMU) && !defined(HAVE_ARCH_PICK_MMAP_LAYOUT)
-void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
-{
-	mm->mmap_base = TASK_UNMAPPED_BASE;
-	mm->get_unmapped_area = arch_get_unmapped_area;
-}
-#endif
+/* arch_pick_mmap_layout removed - HAVE_ARCH_PICK_MMAP_LAYOUT is defined on x86 */
 
 unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
 			    unsigned long len, unsigned long prot,

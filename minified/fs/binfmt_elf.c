@@ -349,17 +349,11 @@ out:
 	return elf_phdata;
 }
 
-#ifndef CONFIG_ARCH_BINFMT_ELF_STATE
-
+/* CONFIG_ARCH_BINFMT_ELF_STATE resolved - not defined on x86 */
 struct arch_elf_state {};
-
 #define INIT_ARCH_ELF_STATE \
 	{                   \
 	}
-
-/* arch_elf_pt_proc, arch_check_elf removed - always returned 0, callers removed */
-
-#endif
 
 static inline int make_prot(u32 p_flags, struct arch_elf_state *arch_state,
 			    bool has_interp, bool is_interp)

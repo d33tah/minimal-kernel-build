@@ -10,29 +10,7 @@
 
 #include "internals.h"
 
-static void desc_set_defaults(unsigned int irq, struct irq_desc *desc,
-			      struct module *owner)
-{
-	/* node and affinity parameters removed - unused in minimal kernel */
-	desc->irq_common_data.handler_data = NULL;
-	desc->irq_common_data.msi_desc = NULL;
-
-	desc->irq_data.common = &desc->irq_common_data;
-	desc->irq_data.irq = irq;
-	desc->irq_data.chip = &no_irq_chip;
-	desc->irq_data.chip_data = NULL;
-	irq_settings_clr_and_set(desc, ~0, _IRQ_DEFAULT_INIT_FLAGS);
-	irqd_set(&desc->irq_data, IRQD_IRQ_DISABLED);
-	irqd_set(&desc->irq_data, IRQD_IRQ_MASKED);
-	desc->handle_irq = handle_bad_irq;
-	desc->depth = 1;
-	desc->irq_count = 0;
-	desc->irqs_unhandled = 0;
-	desc->name = NULL;
-	desc->owner = owner;
-	/* for_each_possible_cpu simplified - single CPU */
-	*per_cpu_ptr(desc->kstat_irqs, 0) = 0;
-}
+/* desc_set_defaults inlined into alloc_desc */
 
 int nr_irqs = NR_IRQS;
 
@@ -71,7 +49,23 @@ static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
 	mutex_init(&desc->request_mutex);
 	init_waitqueue_head(&desc->wait_for_threads);
 
-	desc_set_defaults(irq, desc, owner);
+	/* desc_set_defaults inlined */
+	desc->irq_common_data.handler_data = NULL;
+	desc->irq_common_data.msi_desc = NULL;
+	desc->irq_data.common = &desc->irq_common_data;
+	desc->irq_data.irq = irq;
+	desc->irq_data.chip = &no_irq_chip;
+	desc->irq_data.chip_data = NULL;
+	irq_settings_clr_and_set(desc, ~0, _IRQ_DEFAULT_INIT_FLAGS);
+	irqd_set(&desc->irq_data, IRQD_IRQ_DISABLED);
+	irqd_set(&desc->irq_data, IRQD_IRQ_MASKED);
+	desc->handle_irq = handle_bad_irq;
+	desc->depth = 1;
+	desc->irq_count = 0;
+	desc->irqs_unhandled = 0;
+	desc->name = NULL;
+	desc->owner = owner;
+	*per_cpu_ptr(desc->kstat_irqs, 0) = 0;
 	irqd_set(&desc->irq_data, flags);
 	kobject_init(&desc->kobj, &irq_kobj_type);
 

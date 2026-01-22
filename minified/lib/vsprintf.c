@@ -707,24 +707,7 @@ qualifier:
 	return ++fmt - start;
 }
 
-static void set_field_width(struct printf_spec *spec, int width)
-{
-	spec->field_width = width;
-	if (WARN_ONCE(spec->field_width != width, "field width %d too large",
-		      width)) {
-		spec->field_width =
-			clamp(width, -FIELD_WIDTH_MAX, FIELD_WIDTH_MAX);
-	}
-}
-
-static void set_precision(struct printf_spec *spec, int prec)
-{
-	spec->precision = prec;
-	if (WARN_ONCE(spec->precision != prec, "precision %d too large",
-		      prec)) {
-		spec->precision = clamp(prec, 0, PRECISION_MAX);
-	}
-}
+/* set_field_width and set_precision inlined into vsnprintf */
 
 int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 {
@@ -761,13 +744,25 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 			break;
 		}
 
-		case FORMAT_TYPE_WIDTH:
-			set_field_width(&spec, va_arg(args, int));
+		case FORMAT_TYPE_WIDTH: {
+			int width = va_arg(args, int);
+			spec.field_width = width;
+			if (WARN_ONCE(spec.field_width != width,
+				      "field width %d too large", width))
+				spec.field_width = clamp(width,
+							 -FIELD_WIDTH_MAX,
+							 FIELD_WIDTH_MAX);
 			break;
+		}
 
-		case FORMAT_TYPE_PRECISION:
-			set_precision(&spec, va_arg(args, int));
+		case FORMAT_TYPE_PRECISION: {
+			int prec = va_arg(args, int);
+			spec.precision = prec;
+			if (WARN_ONCE(spec.precision != prec,
+				      "precision %d too large", prec))
+				spec.precision = clamp(prec, 0, PRECISION_MAX);
 			break;
+		}
 
 		case FORMAT_TYPE_CHAR: {
 			char c;

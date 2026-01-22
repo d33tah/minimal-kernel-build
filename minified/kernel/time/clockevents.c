@@ -227,32 +227,31 @@ void clockevents_register_device(struct clock_event_device *dev)
 	raw_spin_unlock_irqrestore(&clockevents_lock, flags);
 }
 
-static void clockevents_config(struct clock_event_device *dev, u32 freq)
-{
-	u64 sec;
-
-	if (!(dev->features & CLOCK_EVT_FEAT_ONESHOT))
-		return;
-
-	sec = dev->max_delta_ticks;
-	do_div(sec, freq);
-	if (!sec)
-		sec = 1;
-	else if (sec > 600 && dev->max_delta_ticks > UINT_MAX)
-		sec = 600;
-
-	clockevents_calc_mult_shift(dev, freq, sec);
-	dev->min_delta_ns = cev_delta2ns(dev->min_delta_ticks, dev, false);
-	dev->max_delta_ns = cev_delta2ns(dev->max_delta_ticks, dev, true);
-}
-
+/* clockevents_config inlined into clockevents_config_and_register */
 void clockevents_config_and_register(struct clock_event_device *dev, u32 freq,
 				     unsigned long min_delta,
 				     unsigned long max_delta)
 {
+	u64 sec;
+
 	dev->min_delta_ticks = min_delta;
 	dev->max_delta_ticks = max_delta;
-	clockevents_config(dev, freq);
+
+	/* clockevents_config inlined */
+	if (dev->features & CLOCK_EVT_FEAT_ONESHOT) {
+		sec = dev->max_delta_ticks;
+		do_div(sec, freq);
+		if (!sec)
+			sec = 1;
+		else if (sec > 600 && dev->max_delta_ticks > UINT_MAX)
+			sec = 600;
+
+		clockevents_calc_mult_shift(dev, freq, sec);
+		dev->min_delta_ns =
+			cev_delta2ns(dev->min_delta_ticks, dev, false);
+		dev->max_delta_ns =
+			cev_delta2ns(dev->max_delta_ticks, dev, true);
+	}
 	clockevents_register_device(dev);
 }
 

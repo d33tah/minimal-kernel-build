@@ -101,19 +101,7 @@ void put_ucounts(struct ucounts *ucounts)
 	}
 }
 
-static inline bool atomic_long_inc_below(atomic_long_t *v, int u)
-{
-	long c, old;
-	c = atomic_long_read(v);
-	for (;;) {
-		if (unlikely(c >= u))
-			return false;
-		old = atomic_long_cmpxchg(v, c, c + 1);
-		if (likely(old == c))
-			return true;
-		c = old;
-	}
-}
+/* atomic_long_inc_below inlined - single caller */
 
 struct ucounts *inc_ucount(struct user_namespace *ns, kuid_t uid,
 			   enum ucount_type type)
@@ -122,10 +110,25 @@ struct ucounts *inc_ucount(struct user_namespace *ns, kuid_t uid,
 	struct user_namespace *tns;
 	ucounts = alloc_ucounts(ns, uid);
 	for (iter = ucounts; iter; iter = tns->ucounts) {
-		long max;
+		long max, c, old;
+		bool inc_ok;
 		tns = iter->ns;
 		max = READ_ONCE(tns->ucount_max[type]);
-		if (!atomic_long_inc_below(&iter->ucount[type], max))
+		/* atomic_long_inc_below inlined */
+		c = atomic_long_read(&iter->ucount[type]);
+		inc_ok = false;
+		for (;;) {
+			if (unlikely(c >= max))
+				break;
+			old = atomic_long_cmpxchg(&iter->ucount[type], c,
+						  c + 1);
+			if (likely(old == c)) {
+				inc_ok = true;
+				break;
+			}
+			c = old;
+		}
+		if (!inc_ok)
 			goto fail;
 	}
 	return ucounts;

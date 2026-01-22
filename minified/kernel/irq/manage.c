@@ -224,17 +224,7 @@ static void irq_thread_dtor(struct callback_head *unused)
 	irq_finalize_oneshot(desc, action);
 }
 
-static void irq_wake_secondary(struct irq_desc *desc, struct irqaction *action)
-{
-	struct irqaction *secondary = action->secondary;
-
-	if (WARN_ON_ONCE(!secondary))
-		return;
-
-	raw_spin_lock_irq(&desc->lock);
-	__irq_wake_thread(desc, secondary);
-	raw_spin_unlock_irq(&desc->lock);
-}
+/* irq_wake_secondary inlined - single caller */
 
 static void wake_up_and_wait_for_irq_thread_ready(struct irq_desc *desc,
 						  struct irqaction *action)
@@ -273,8 +263,14 @@ static int irq_thread(void *data)
 		irqreturn_t action_ret;
 
 		action_ret = handler_fn(desc, action);
-		if (action_ret == IRQ_WAKE_THREAD)
-			irq_wake_secondary(desc, action);
+		if (action_ret == IRQ_WAKE_THREAD) {
+			struct irqaction *secondary = action->secondary;
+			if (!WARN_ON_ONCE(!secondary)) {
+				raw_spin_lock_irq(&desc->lock);
+				__irq_wake_thread(desc, secondary);
+				raw_spin_unlock_irq(&desc->lock);
+			}
+		}
 
 		if (atomic_dec_and_test(&desc->threads_active))
 			wake_up(&desc->wait_for_threads);

@@ -6,36 +6,7 @@
 
 #include "internal.h"
 
-/* not_found removed - inlined into callers (~5 LOC) */
-
-static bool map_pte(struct page_vma_mapped_walk *pvmw)
-{
-	pvmw->pte = pte_offset_map(pvmw->pmd, pvmw->address);
-	if (!(pvmw->flags & PVMW_SYNC)) {
-		if (is_swap_pte(*pvmw->pte))
-			return false;
-		if (!pte_present(*pvmw->pte))
-			return false;
-	}
-	pvmw->ptl = pte_lockptr(pvmw->vma->vm_mm, pvmw->pmd);
-	spin_lock(pvmw->ptl);
-	return true;
-}
-
-static bool check_pte(struct page_vma_mapped_walk *pvmw)
-{
-	unsigned long pfn;
-
-	if (is_swap_pte(*pvmw->pte))
-		return false;
-	if (!pte_present(*pvmw->pte))
-		return false;
-
-	pfn = pte_pfn(*pvmw->pte);
-	return (pfn - pvmw->pfn) < pvmw->nr_pages;
-}
-
-/* Removed: check_pmd, step_forward - inlined */
+/* Removed: not_found, map_pte, check_pte, check_pmd, step_forward - inlined */
 
 bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw)
 {
@@ -73,10 +44,18 @@ restart:
 				pvmw->address = ULONG_MAX;
 			continue;
 		}
-		if (!map_pte(pvmw))
-			goto next_pte;
+		/* map_pte inlined - single caller */
+		pvmw->pte = pte_offset_map(pvmw->pmd, pvmw->address);
+		if (!(pvmw->flags & PVMW_SYNC)) {
+			if (is_swap_pte(*pvmw->pte) || !pte_present(*pvmw->pte))
+				goto next_pte;
+		}
+		pvmw->ptl = pte_lockptr(pvmw->vma->vm_mm, pvmw->pmd);
+		spin_lock(pvmw->ptl);
 this_pte:
-		if (check_pte(pvmw))
+		/* check_pte inlined - single caller */
+		if (!is_swap_pte(*pvmw->pte) && pte_present(*pvmw->pte) &&
+		    (pte_pfn(*pvmw->pte) - pvmw->pfn) < pvmw->nr_pages)
 			return true;
 next_pte:
 		do {

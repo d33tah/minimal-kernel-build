@@ -13,36 +13,7 @@ __attribute_const__ __always_inline static bool is_aligned(size_t size,
 	return (lsbits & (align - 1)) == 0;
 }
 
-static void swap_words_32(void *a, void *b, size_t n)
-{
-	do {
-		u32 t = *(u32 *)(a + (n -= 4));
-		*(u32 *)(a + n) = *(u32 *)(b + n);
-		*(u32 *)(b + n) = t;
-	} while (n);
-}
-
-static void swap_words_64(void *a, void *b, size_t n)
-{
-	do {
-		u32 t = *(u32 *)(a + (n -= 4));
-		*(u32 *)(a + n) = *(u32 *)(b + n);
-		*(u32 *)(b + n) = t;
-
-		t = *(u32 *)(a + (n -= 4));
-		*(u32 *)(a + n) = *(u32 *)(b + n);
-		*(u32 *)(b + n) = t;
-	} while (n);
-}
-
-static void swap_bytes(void *a, void *b, size_t n)
-{
-	do {
-		char t = ((char *)a)[--n];
-		((char *)a)[n] = ((char *)b)[n];
-		((char *)b)[n] = t;
-	} while (n);
-}
+/* swap_words_32, swap_words_64, swap_bytes inlined into do_swap */
 
 #define SWAP_WORDS_64 (swap_r_func_t)0
 #define SWAP_WORDS_32 (swap_r_func_t)1
@@ -62,13 +33,32 @@ static void do_swap(void *a, void *b, size_t size, swap_r_func_t swap_func,
 		return;
 	}
 
-	if (swap_func == SWAP_WORDS_64)
-		swap_words_64(a, b, size);
-	else if (swap_func == SWAP_WORDS_32)
-		swap_words_32(a, b, size);
-	else if (swap_func == SWAP_BYTES)
-		swap_bytes(a, b, size);
-	else
+	/* Inlined swap functions */
+	if (swap_func == SWAP_WORDS_64) {
+		size_t n = size;
+		do {
+			u32 t = *(u32 *)(a + (n -= 4));
+			*(u32 *)(a + n) = *(u32 *)(b + n);
+			*(u32 *)(b + n) = t;
+			t = *(u32 *)(a + (n -= 4));
+			*(u32 *)(a + n) = *(u32 *)(b + n);
+			*(u32 *)(b + n) = t;
+		} while (n);
+	} else if (swap_func == SWAP_WORDS_32) {
+		size_t n = size;
+		do {
+			u32 t = *(u32 *)(a + (n -= 4));
+			*(u32 *)(a + n) = *(u32 *)(b + n);
+			*(u32 *)(b + n) = t;
+		} while (n);
+	} else if (swap_func == SWAP_BYTES) {
+		size_t n = size;
+		do {
+			char t = ((char *)a)[--n];
+			((char *)a)[n] = ((char *)b)[n];
+			((char *)b)[n] = t;
+		} while (n);
+	} else
 		swap_func(a, b, (int)size, priv);
 }
 

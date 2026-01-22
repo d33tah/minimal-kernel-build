@@ -381,15 +381,7 @@ ssize_t redirected_tty_write(struct kiocb *iocb, struct iov_iter *iter)
 	return tty_write(iocb, iter);
 }
 
-static void pty_line_name(struct tty_driver *driver, int index, char *p)
-{
-	static const char ptychar[] = "pqrstuvwxyzabcde";
-	int i = index + driver->name_base;
-
-	sprintf(p, "%s%c%x",
-		driver->subtype == PTY_TYPE_SLAVE ? "tty" : driver->name,
-		ptychar[i >> 4 & 0xf], i & 0xf);
-}
+/* pty_line_name inlined into tty_register_device_attr */
 
 static ssize_t tty_line_name(struct tty_driver *driver, int index, char *p)
 {
@@ -907,9 +899,15 @@ struct device *tty_register_device_attr(struct tty_driver *driver,
 		return ERR_PTR(-EINVAL);
 	}
 
-	if (driver->type == TTY_DRIVER_TYPE_PTY)
-		pty_line_name(driver, index, name);
-	else
+	if (driver->type == TTY_DRIVER_TYPE_PTY) {
+		/* pty_line_name inlined */
+		static const char ptychar[] = "pqrstuvwxyzabcde";
+		int i = index + driver->name_base;
+		sprintf(name, "%s%c%x",
+			driver->subtype == PTY_TYPE_SLAVE ? "tty" :
+							    driver->name,
+			ptychar[i >> 4 & 0xf], i & 0xf);
+	} else
 		tty_line_name(driver, index, name);
 
 	dev = kzalloc(sizeof(*dev), GFP_KERNEL);

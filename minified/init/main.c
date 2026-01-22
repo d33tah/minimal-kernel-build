@@ -277,22 +277,7 @@ static int __init rdinit_setup(char *str)
 __setup("rdinit=", rdinit_setup);
 
 /* setup_max_cpus, setup_nr_cpu_ids, smp_prepare_cpus removed - unused */
-
-static void __init setup_command_line(char *command_line)
-{
-	size_t len = strlen(boot_command_line) + 1;
-
-	saved_command_line = memblock_alloc(len, SMP_CACHE_BYTES);
-	if (!saved_command_line)
-		panic("%s: Failed to allocate %zu bytes\n", __func__, len);
-
-	static_command_line = memblock_alloc(len, SMP_CACHE_BYTES);
-	if (!static_command_line)
-		panic("%s: Failed to allocate %zu bytes\n", __func__, len);
-
-	strcpy(saved_command_line, boot_command_line);
-	strcpy(static_command_line, command_line);
-}
+/* setup_command_line inlined into start_kernel */
 
 static __initdata DECLARE_COMPLETION(kthreadd_done);
 
@@ -400,7 +385,18 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	/* early_security_init removed - returns 0 */
 	setup_arch(&command_line);
 	/* setup_boot_config removed - was empty stub */
-	setup_command_line(command_line);
+	/* setup_command_line inlined */
+	{
+		size_t len = strlen(boot_command_line) + 1;
+		saved_command_line = memblock_alloc(len, SMP_CACHE_BYTES);
+		if (!saved_command_line)
+			panic("Failed to allocate saved_command_line\n");
+		static_command_line = memblock_alloc(len, SMP_CACHE_BYTES);
+		if (!static_command_line)
+			panic("Failed to allocate static_command_line\n");
+		strcpy(saved_command_line, boot_command_line);
+		strcpy(static_command_line, command_line);
+	}
 	/* setup_nr_cpu_ids, smp_prepare_boot_cpu removed - empty stubs */
 	setup_per_cpu_areas();
 	boot_cpu_hotplug_init();

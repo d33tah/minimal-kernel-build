@@ -1018,26 +1018,23 @@ retry_pop:
 	}
 }
 
-static void pcpu_reclaim_populated(void)
+/* pcpu_reclaim_populated inlined into pcpu_balance_workfn */
+
+static void pcpu_balance_workfn(struct work_struct *work)
 {
 	struct pcpu_chunk *chunk;
 
-	/* No-op for reclaim - just reintegrate chunks back to active lists */
+	mutex_lock(&pcpu_alloc_mutex);
+	spin_lock_irq(&pcpu_lock);
+
+	/* pcpu_balance_free removed - no-op bump allocator */
+	/* Inlined pcpu_reclaim_populated - reintegrate chunks */
 	while (!list_empty(&pcpu_chunk_lists[pcpu_to_depopulate_slot])) {
 		chunk = list_first_entry(
 			&pcpu_chunk_lists[pcpu_to_depopulate_slot],
 			struct pcpu_chunk, list);
 		pcpu_reintegrate_chunk(chunk);
 	}
-}
-
-static void pcpu_balance_workfn(struct work_struct *work)
-{
-	mutex_lock(&pcpu_alloc_mutex);
-	spin_lock_irq(&pcpu_lock);
-
-	/* pcpu_balance_free removed - no-op bump allocator */
-	pcpu_reclaim_populated();
 	pcpu_balance_populated();
 
 	spin_unlock_irq(&pcpu_lock);

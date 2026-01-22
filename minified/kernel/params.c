@@ -57,19 +57,16 @@ char *next_arg(char *args, char **param, char **val)
 	return skip_spaces(args);
 }
 
-static char dash2underscore(char c)
-{
-	if (c == '-')
-		return '_';
-	return c;
-}
+/* dash2underscore inlined into parameqn */
 
 bool parameqn(const char *a, const char *b, size_t n)
 {
 	size_t i;
 
 	for (i = 0; i < n; i++) {
-		if (dash2underscore(a[i]) != dash2underscore(b[i]))
+		char ca = (a[i] == '-') ? '_' : a[i];
+		char cb = (b[i] == '-') ? '_' : b[i];
+		if (ca != cb)
 			return false;
 	}
 	return true;

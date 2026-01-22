@@ -350,23 +350,7 @@ special_hex_number(char *buf, char *end, unsigned long long num, int size)
 	return number(buf, end, num, spec);
 }
 
-static void move_right(char *buf, char *end, unsigned len, unsigned spaces)
-{
-	size_t size;
-	if (buf >= end)
-		return;
-	size = end - buf;
-	if (size <= spaces) {
-		memset(buf, ' ', size);
-		return;
-	}
-	if (len) {
-		if (len > size - spaces)
-			len = size - spaces;
-		memmove(buf + spaces, buf, len);
-	}
-	memset(buf, ' ', spaces);
-}
+/* move_right inlined into widen_string */
 
 static noinline_for_stack char *widen_string(char *buf, int n, char *end,
 					     struct printf_spec spec)
@@ -378,7 +362,23 @@ static noinline_for_stack char *widen_string(char *buf, int n, char *end,
 
 	spaces = spec.field_width - n;
 	if (!(spec.flags & LEFT)) {
-		move_right(buf - n, end, n, spaces);
+		/* Inlined move_right(buf - n, end, n, spaces) */
+		char *mr_buf = buf - n;
+		unsigned mr_len = n;
+		if (mr_buf < end) {
+			size_t size = end - mr_buf;
+			if (size <= spaces)
+				memset(mr_buf, ' ', size);
+			else {
+				if (mr_len) {
+					if (mr_len > size - spaces)
+						mr_len = size - spaces;
+					memmove(mr_buf + spaces, mr_buf,
+						mr_len);
+				}
+				memset(mr_buf, ' ', spaces);
+			}
+		}
 		return buf + spaces;
 	}
 	while (spaces--) {

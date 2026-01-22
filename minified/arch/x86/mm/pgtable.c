@@ -28,29 +28,12 @@ void ___pte_free_tlb(struct mmu_gather *tlb, struct page *pte)
 	paravirt_tlb_remove_table(tlb, pte);
 }
 
-static inline void pgd_list_add(pgd_t *pgd)
-{
-	struct page *page = virt_to_page(pgd);
-
-	list_add(&page->lru, &pgd_list);
-}
-
-static inline void pgd_list_del(pgd_t *pgd)
-{
-	struct page *page = virt_to_page(pgd);
-
-	list_del(&page->lru);
-}
-
-/* pgd_set_mm inlined into pgd_ctor */
+/* pgd_list_add, pgd_list_del, _pgd_alloc, _pgd_free inlined into callers */
 
 struct mm_struct *pgd_page_get_mm(struct page *page)
 {
 	return page->pt_mm;
 }
-
-/* pgd_ctor inlined into pgd_alloc */
-/* pgd_dtor inlined into pgd_free */
 
 /* PREALLOCATED_PMDS and related are all 0 for 2-level paging */
 #define PREALLOCATED_PMDS 0
@@ -61,35 +44,21 @@ struct mm_struct *pgd_page_get_mm(struct page *page)
 /* Simplified functions removed - free_pmds, preallocate_pmds, pgd_mop_up_pmds,
    pgd_prepopulate_pmd, pgd_prepopulate_user_pmd were empty stubs */
 
-static inline pgd_t *_pgd_alloc(void)
-{
-	return (pgd_t *)__get_free_pages(GFP_PGTABLE_USER,
-					 PGD_ALLOCATION_ORDER);
-}
-
-static inline void _pgd_free(pgd_t *pgd)
-{
-	free_pages((unsigned long)pgd, PGD_ALLOCATION_ORDER);
-}
-
 pgd_t *pgd_alloc(struct mm_struct *mm)
 {
 	pgd_t *pgd;
 
-	pgd = _pgd_alloc();
+	pgd = (pgd_t *)__get_free_pages(GFP_PGTABLE_USER, PGD_ALLOCATION_ORDER);
 	if (pgd == NULL)
 		return NULL;
 
 	mm->pgd = pgd;
 
-	/* preallocate_pmds checks removed - always returns 0 */
-	/* paravirt_pgd_alloc always returns 0 - check removed */
 	spin_lock(&pgd_lock);
-	/* pgd_ctor inlined */
 	clone_pgd_range(pgd + KERNEL_PGD_BOUNDARY,
 			swapper_pg_dir + KERNEL_PGD_BOUNDARY, KERNEL_PGD_PTRS);
 	virt_to_page(pgd)->pt_mm = mm;
-	pgd_list_add(pgd);
+	list_add(&virt_to_page(pgd)->lru, &pgd_list);
 	spin_unlock(&pgd_lock);
 
 	return pgd;
@@ -97,13 +66,10 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
 
 void pgd_free(struct mm_struct *mm, pgd_t *pgd)
 {
-	/* pgd_mop_up_pmds is empty stub - call removed */
-	/* pgd_dtor inlined */
 	spin_lock(&pgd_lock);
-	pgd_list_del(pgd);
+	list_del(&virt_to_page(pgd)->lru);
 	spin_unlock(&pgd_lock);
-	/* paravirt_pgd_free is empty stub - call removed */
-	_pgd_free(pgd);
+	free_pages((unsigned long)pgd, PGD_ALLOCATION_ORDER);
 }
 
 int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,

@@ -141,29 +141,7 @@ int have_cpuid_p(void)
 	return flag_is_changeable_p(X86_EFLAGS_ID);
 }
 
-/* squash_the_stupid_serial_number removed - empty stub (~3 LOC) */
-
-static __always_inline void setup_smep(struct cpuinfo_x86 *c)
-{
-	if (cpu_has(c, X86_FEATURE_SMEP))
-		cr4_set_bits(X86_CR4_SMEP);
-}
-
-static __always_inline void setup_smap(struct cpuinfo_x86 *c)
-{
-	unsigned long eflags = native_save_fl();
-
-	BUG_ON(eflags & X86_EFLAGS_AC);
-
-	if (cpu_has(c, X86_FEATURE_SMAP))
-		cr4_set_bits(X86_CR4_SMAP);
-}
-
-static __always_inline void setup_umip(struct cpuinfo_x86 *c)
-{
-	/* X86_FEATURE_UMIP is disabled */
-	cr4_clear_bits(X86_CR4_UMIP);
-}
+/* setup_smep, setup_smap, setup_umip inlined into identify_cpu */
 
 static const unsigned long cr4_pinned_mask = X86_CR4_SMEP | X86_CR4_SMAP |
 					     X86_CR4_UMIP | X86_CR4_FSGSBASE |
@@ -590,10 +568,16 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 	if (this_cpu->c_init)
 		this_cpu->c_init(c);
 
-	/* squash_the_stupid_serial_number call removed - function was empty */
-	setup_smep(c);
-	setup_smap(c);
-	setup_umip(c);
+	/* Inlined setup_smep, setup_smap, setup_umip */
+	if (cpu_has(c, X86_FEATURE_SMEP))
+		cr4_set_bits(X86_CR4_SMEP);
+	{
+		unsigned long eflags = native_save_fl();
+		BUG_ON(eflags & X86_EFLAGS_AC);
+		if (cpu_has(c, X86_FEATURE_SMAP))
+			cr4_set_bits(X86_CR4_SMAP);
+	}
+	cr4_clear_bits(X86_CR4_UMIP);
 
 	if (cpu_has(c, X86_FEATURE_FSGSBASE)) {
 		cr4_set_bits(X86_CR4_FSGSBASE);

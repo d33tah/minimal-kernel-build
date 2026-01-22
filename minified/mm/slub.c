@@ -547,35 +547,7 @@ static inline int alloc_kmem_cache_cpus(struct kmem_cache *s)
 
 static struct kmem_cache *kmem_cache_node;
 
-static void early_kmem_cache_node_alloc(int node)
-{
-	struct slab *slab;
-	struct kmem_cache_node *n;
-
-	BUG_ON(kmem_cache_node->size < sizeof(struct kmem_cache_node));
-
-	slab = new_slab(kmem_cache_node, GFP_NOWAIT, node);
-
-	BUG_ON(!slab);
-	if (slab_nid(slab) != node) {
-		pr_err("SLUB: Unable to allocate memory from node %d\n", node);
-		pr_err("SLUB: Allocating a useless per node structure in order to be able to continue\n");
-	}
-
-	n = slab->freelist;
-	BUG_ON(!n);
-	slab->freelist = get_freepointer(kmem_cache_node, n);
-	slab->inuse = 1;
-	slab->frozen = 0;
-	kmem_cache_node->node[node] = n;
-
-	init_kmem_cache_node(n);
-	/* inc_slabs_node removed - empty stub */
-
-	/* __add_partial inlined - DEACTIVATE_TO_HEAD means list_add */
-	n->nr_partial++;
-	list_add(&slab->slab_list, &n->partial);
-}
+/* early_kmem_cache_node_alloc inlined into init_kmem_cache_nodes */
 
 static void free_kmem_cache_nodes(struct kmem_cache *s)
 {
@@ -599,7 +571,26 @@ static int init_kmem_cache_nodes(struct kmem_cache *s)
 {
 	/* for_each_node_mask simplified - single node */
 	if (slab_state == DOWN) {
-		early_kmem_cache_node_alloc(0);
+		/* Inlined early_kmem_cache_node_alloc(0) */
+		struct slab *slab;
+		struct kmem_cache_node *n;
+		BUG_ON(kmem_cache_node->size < sizeof(struct kmem_cache_node));
+		slab = new_slab(kmem_cache_node, GFP_NOWAIT, 0);
+		BUG_ON(!slab);
+		if (slab_nid(slab) != 0) {
+			pr_err("SLUB: Unable to allocate memory from node %d\n",
+			       0);
+			pr_err("SLUB: Allocating a useless per node structure in order to be able to continue\n");
+		}
+		n = slab->freelist;
+		BUG_ON(!n);
+		slab->freelist = get_freepointer(kmem_cache_node, n);
+		slab->inuse = 1;
+		slab->frozen = 0;
+		kmem_cache_node->node[0] = n;
+		init_kmem_cache_node(n);
+		n->nr_partial++;
+		list_add(&slab->slab_list, &n->partial);
 	} else {
 		struct kmem_cache_node *n =
 			kmem_cache_alloc_node(kmem_cache_node, GFP_KERNEL, 0);

@@ -35,14 +35,7 @@ static bool check_pte(struct page_vma_mapped_walk *pvmw)
 	return (pfn - pvmw->pfn) < pvmw->nr_pages;
 }
 
-/* Removed: check_pmd - never called (~8 LOC) */
-
-static void step_forward(struct page_vma_mapped_walk *pvmw, unsigned long size)
-{
-	pvmw->address = (pvmw->address + size) & ~(size - 1);
-	if (!pvmw->address)
-		pvmw->address = ULONG_MAX;
-}
+/* Removed: check_pmd, step_forward - inlined */
 
 bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw)
 {
@@ -65,18 +58,19 @@ bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw)
 restart:
 	do {
 		pgd = pgd_offset(mm, pvmw->address);
-		/* pgd_present always returns 1, skip check */
 		p4d = p4d_offset(pgd, pvmw->address);
-		/* p4d_present always returns 1, skip check */
 		pud = pud_offset(p4d, pvmw->address);
 
 		pvmw->pmd = pmd_offset(pud, pvmw->address);
 
 		pmde = READ_ONCE(*pvmw->pmd);
 
-		/* pmd_trans_huge/migration_entry/devmap/transparent_hugepage_active return 0 */
 		if (!pmd_present(pmde)) {
-			step_forward(pvmw, PMD_SIZE);
+			/* Inlined step_forward(pvmw, PMD_SIZE) */
+			pvmw->address = (pvmw->address + PMD_SIZE) &
+					~(PMD_SIZE - 1);
+			if (!pvmw->address)
+				pvmw->address = ULONG_MAX;
 			continue;
 		}
 		if (!map_pte(pvmw))

@@ -259,28 +259,20 @@ unsigned long native_calibrate_tsc(void)
 	return crystal_khz * ebx_numerator / eax_denominator;
 }
 
-static unsigned long cpu_khz_from_cpuid(void)
-{
-	unsigned int eax_base_mhz, ebx_max_mhz, ecx_bus_mhz, edx;
-
-	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL)
-		return 0;
-
-	if (boot_cpu_data.cpuid_level < 0x16)
-		return 0;
-
-	eax_base_mhz = ebx_max_mhz = ecx_bus_mhz = edx = 0;
-
-	cpuid(0x16, &eax_base_mhz, &ebx_max_mhz, &ecx_bus_mhz, &edx);
-
-	return eax_base_mhz * 1000;
-}
-
-/* pit_hpet_ptimer_calibrate_cpu removed - never called (~91 LOC) */
+/* cpu_khz_from_cpuid, pit_hpet_ptimer_calibrate_cpu removed - inlined/never called */
 
 unsigned long native_calibrate_cpu_early(void)
 {
-	unsigned long flags, fast_calibrate = cpu_khz_from_cpuid();
+	unsigned long flags, fast_calibrate = 0;
+
+	/* Inlined cpu_khz_from_cpuid() */
+	if (boot_cpu_data.x86_vendor == X86_VENDOR_INTEL &&
+	    boot_cpu_data.cpuid_level >= 0x16) {
+		unsigned int eax_base_mhz, ebx_max_mhz, ecx_bus_mhz, edx;
+		eax_base_mhz = ebx_max_mhz = ecx_bus_mhz = edx = 0;
+		cpuid(0x16, &eax_base_mhz, &ebx_max_mhz, &ecx_bus_mhz, &edx);
+		fast_calibrate = eax_base_mhz * 1000;
+	}
 
 	/* cpu_khz_from_msr removed - was stub returning 0 */
 	if (!fast_calibrate) {

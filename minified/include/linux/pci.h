@@ -13,12 +13,10 @@
 #include <linux/interrupt.h>
 #include <linux/io.h>
 #include <linux/acpi.h>
-/* Inlined from asm/pci.h */
-#ifdef CONFIG_X86
+/* Inlined from asm/pci.h - CONFIG_X86 always true */
 /* struct pci_bus, pci_dev forward decls removed - never defined or used */
 /* pci_iommu_alloc inlined from arch/x86/kernel/pci-dma.c - empty stub */
 static inline void pci_iommu_alloc(void) { }
-#endif
 /* PCI macros, structs removed - unused */
 /* pci_device_id, pci_printk/err/warn/etc removed - unused */
 #include <linux/dma-mapping.h>

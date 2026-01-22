@@ -1,13 +1,8 @@
 #ifndef _LINUX_THREADS_H
 #define _LINUX_THREADS_H
 
-
-
-#ifndef CONFIG_NR_CPUS
-#define CONFIG_NR_CPUS	1
-#endif
-
-#define NR_CPUS		CONFIG_NR_CPUS
+/* CONFIG_NR_CPUS always 1 in our minimal config */
+#define NR_CPUS		1
 
 #define PID_MAX_DEFAULT (CONFIG_BASE_SMALL ? 0x1000 : 0x8000)
 

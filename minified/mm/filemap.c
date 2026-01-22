@@ -24,25 +24,7 @@
 
 #include <asm/mman.h>
 
-static void page_cache_delete(struct address_space *mapping,
-			      struct folio *folio, void *shadow)
-{
-	XA_STATE(xas, &mapping->i_pages, folio->index);
-	long nr;
-
-	mapping_set_update(&xas, mapping);
-
-	/* folio_test_hugetlb always false, skip condition */
-	xas_set_order(&xas, folio->index, folio_order(folio));
-	nr = folio_nr_pages(folio);
-
-	xas_store(&xas, shadow);
-	xas_init_marks(&xas);
-
-	folio->mapping = NULL;
-
-	mapping->nrpages -= nr;
-}
+/* page_cache_delete inlined into __filemap_remove_folio */
 
 static void filemap_unaccount_folio(struct address_space *mapping,
 				    struct folio *folio)
@@ -86,7 +68,21 @@ void __filemap_remove_folio(struct folio *folio, void *shadow)
 	struct address_space *mapping = folio->mapping;
 
 	filemap_unaccount_folio(mapping, folio);
-	page_cache_delete(mapping, folio, shadow);
+	/* Inlined page_cache_delete */
+	{
+		XA_STATE(xas, &mapping->i_pages, folio->index);
+		long nr;
+
+		mapping_set_update(&xas, mapping);
+		xas_set_order(&xas, folio->index, folio_order(folio));
+		nr = folio_nr_pages(folio);
+
+		xas_store(&xas, shadow);
+		xas_init_marks(&xas);
+
+		folio->mapping = NULL;
+		mapping->nrpages -= nr;
+	}
 }
 
 void filemap_free_folio(struct address_space *mapping, struct folio *folio)

@@ -644,43 +644,7 @@ static __always_inline int adjust_va_to_fit_type(struct vmap_area *va,
 	return 0;
 }
 
-static __always_inline unsigned long __alloc_vmap_area(unsigned long size,
-						       unsigned long align,
-						       unsigned long vstart,
-						       unsigned long vend)
-{
-	bool adjust_search_size = true;
-	unsigned long nva_start_addr;
-	struct vmap_area *va;
-	enum fit_type type;
-	int ret;
-
-	if (align <= PAGE_SIZE ||
-	    (align > PAGE_SIZE && (vend - vstart) == size))
-		adjust_search_size = false;
-
-	va = find_vmap_lowest_match(size, align, vstart, adjust_search_size);
-	if (unlikely(!va))
-		return vend;
-
-	if (va->va_start > vstart)
-		nva_start_addr = ALIGN(va->va_start, align);
-	else
-		nva_start_addr = ALIGN(vstart, align);
-
-	if (nva_start_addr + size > vend)
-		return vend;
-
-	type = classify_va_fit_type(va, nva_start_addr, size);
-	if (WARN_ON_ONCE(type == NOTHING_FIT))
-		return vend;
-
-	ret = adjust_va_to_fit_type(va, nva_start_addr, size, type);
-	if (ret)
-		return vend;
-
-	return nva_start_addr;
-}
+/* __alloc_vmap_area inlined into alloc_vmap_area */
 
 /* preload_this_cpu_lock inlined into alloc_vmap_area */
 
@@ -716,7 +680,51 @@ alloc_vmap_area(unsigned long size, unsigned long align, unsigned long vstart,
 		if (pva && __this_cpu_cmpxchg(ne_fit_preload_node, NULL, pva))
 			kmem_cache_free(vmap_area_cachep, pva);
 	}
-	addr = __alloc_vmap_area(size, align, vstart, vend);
+	/* Inlined __alloc_vmap_area */
+	{
+		bool adjust_search_size = true;
+		unsigned long nva_start_addr;
+		struct vmap_area *found_va;
+		enum fit_type type;
+		int fit_ret;
+
+		if (align <= PAGE_SIZE ||
+		    (align > PAGE_SIZE && (vend - vstart) == size))
+			adjust_search_size = false;
+
+		found_va = find_vmap_lowest_match(size, align, vstart,
+						  adjust_search_size);
+		if (unlikely(!found_va)) {
+			addr = vend;
+			goto alloc_done;
+		}
+
+		if (found_va->va_start > vstart)
+			nva_start_addr = ALIGN(found_va->va_start, align);
+		else
+			nva_start_addr = ALIGN(vstart, align);
+
+		if (nva_start_addr + size > vend) {
+			addr = vend;
+			goto alloc_done;
+		}
+
+		type = classify_va_fit_type(found_va, nva_start_addr, size);
+		if (WARN_ON_ONCE(type == NOTHING_FIT)) {
+			addr = vend;
+			goto alloc_done;
+		}
+
+		fit_ret = adjust_va_to_fit_type(found_va, nva_start_addr, size,
+						type);
+		if (fit_ret) {
+			addr = vend;
+			goto alloc_done;
+		}
+
+		addr = nva_start_addr;
+	}
+alloc_done:
 	spin_unlock(&free_vmap_area_lock);
 
 	if (unlikely(addr == vend)) {

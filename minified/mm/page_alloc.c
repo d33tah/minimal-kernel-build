@@ -640,22 +640,6 @@ static inline struct page *__alloc_pages_slowpath(gfp_t gfp_mask,
 	return page;
 }
 
-/* alloc_gfp and alloc_flags params removed - unused */
-static inline void prepare_alloc_pages(gfp_t gfp_mask, unsigned int order,
-				       int preferred_nid, nodemask_t *nodemask,
-				       struct alloc_context *ac)
-{
-	ac->highest_zoneidx = gfp_zone(gfp_mask);
-	ac->zonelist = node_zonelist(preferred_nid, gfp_mask);
-	ac->nodemask = nodemask;
-	ac->migratetype = gfp_migratetype(gfp_mask);
-
-	ac->spread_dirty_pages = (gfp_mask & __GFP_WRITE);
-
-	ac->preferred_zoneref = first_zones_zonelist(
-		ac->zonelist, ac->highest_zoneidx, ac->nodemask);
-}
-
 unsigned long __alloc_pages_bulk(gfp_t gfp, int preferred_nid,
 				 nodemask_t *nodemask, int nr_pages,
 				 struct list_head *page_list,
@@ -693,8 +677,14 @@ struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid,
 
 	gfp = current_gfp_context(gfp);
 	alloc_gfp = gfp;
-	/* prepare_alloc_pages always returns true - check removed */
-	prepare_alloc_pages(gfp, order, preferred_nid, nodemask, &ac);
+	/* Inlined prepare_alloc_pages */
+	ac.highest_zoneidx = gfp_zone(gfp);
+	ac.zonelist = node_zonelist(preferred_nid, gfp);
+	ac.nodemask = nodemask;
+	ac.migratetype = gfp_migratetype(gfp);
+	ac.spread_dirty_pages = (gfp & __GFP_WRITE);
+	ac.preferred_zoneref = first_zones_zonelist(
+		ac.zonelist, ac.highest_zoneidx, ac.nodemask);
 
 	/* Inlined alloc_flags_nofragment */
 	alloc_flags |= (__force int)(gfp & __GFP_KSWAPD_RECLAIM);
@@ -1092,140 +1082,15 @@ static unsigned long __init zone_absent_pages_in_node(
 	return nr_absent;
 }
 
-static void __init calculate_node_totalpages(struct pglist_data *pgdat,
-					     unsigned long node_start_pfn,
-					     unsigned long node_end_pfn)
-{
-	unsigned long realtotalpages = 0, totalpages = 0;
-	enum zone_type i;
-
-	for (i = 0; i < MAX_NR_ZONES; i++) {
-		struct zone *zone = pgdat->node_zones + i;
-		unsigned long zone_start_pfn, zone_end_pfn;
-		unsigned long spanned, absent;
-		unsigned long size, real_size;
-
-		spanned = zone_spanned_pages_in_node(
-			pgdat->node_id, i, node_start_pfn, node_end_pfn,
-			&zone_start_pfn, &zone_end_pfn);
-		absent = zone_absent_pages_in_node(
-			pgdat->node_id, i, node_start_pfn, node_end_pfn);
-
-		size = spanned;
-		real_size = size - absent;
-
-		if (size)
-			zone->zone_start_pfn = zone_start_pfn;
-		else
-			zone->zone_start_pfn = 0;
-		zone->spanned_pages = size;
-		zone->present_pages = real_size;
-
-		totalpages += size;
-		realtotalpages += real_size;
-	}
-
-	pgdat->node_spanned_pages = totalpages;
-	pgdat->node_present_pages = realtotalpages;
-}
+/* calculate_node_totalpages inlined into free_area_init */
 
 /* usemap_size inlined into free_area_init_core */
 /* setup_usemap inlined into free_area_init_core */
 /* calc_memmap_size inlined - SPARSEMEM disabled */
 
-static void __init free_area_init_core(struct pglist_data *pgdat)
-{
-	enum zone_type j;
-	int nid = pgdat->node_id;
+/* free_area_init_core inlined into free_area_init */
 
-	/* Inlined pgdat_init_internals - kswapd_wait, pfmemalloc_wait, reclaim_wait, per_cpu_nodestats removed */
-	lruvec_init(&pgdat->__lruvec);
-
-	for (j = 0; j < MAX_NR_ZONES; j++) {
-		struct zone *zone = pgdat->node_zones + j;
-		unsigned long size, freesize, memmap_pages;
-
-		size = zone->spanned_pages;
-		freesize = zone->present_pages;
-
-		memmap_pages = PAGE_ALIGN(size * sizeof(struct page)) >>
-			       PAGE_SHIFT;
-		/* is_highmem_idx always returns 0, so !is_highmem_idx is always true */
-		if (freesize >= memmap_pages)
-			freesize -= memmap_pages;
-
-		/* Inlined zone_init_internals */
-		atomic_long_set(&zone->managed_pages, freesize);
-		zone->name = zone_names[j];
-		zone->zone_pgdat = NODE_DATA(nid);
-		spin_lock_init(&zone->lock);
-		/* Inlined zone_pcp_init */
-		zone->per_cpu_pageset = &boot_pageset;
-		zone->per_cpu_zonestats = &boot_zonestats;
-
-		if (!size)
-			continue;
-
-		/* setup_usemap and usemap_size inlined */
-		{
-			unsigned long usemapsize;
-			unsigned long zonesize = zone->spanned_pages;
-
-			zonesize += zone->zone_start_pfn &
-				    (pageblock_nr_pages - 1);
-			usemapsize = roundup(zonesize, pageblock_nr_pages);
-			usemapsize = usemapsize >> pageblock_order;
-			usemapsize *= NR_PAGEBLOCK_BITS;
-			usemapsize =
-				roundup(usemapsize, 8 * sizeof(unsigned long));
-			usemapsize /= 8;
-			zone->pageblock_flags = NULL;
-			if (usemapsize) {
-				zone->pageblock_flags = memblock_alloc_node(
-					usemapsize, SMP_CACHE_BYTES,
-					zone_to_nid(zone));
-				if (!zone->pageblock_flags)
-					panic("Failed to allocate %ld bytes for zone %s pageblock flags on node %d\n",
-					      usemapsize, zone->name,
-					      zone_to_nid(zone));
-			}
-		}
-		init_currently_empty_zone(zone, zone->zone_start_pfn, size);
-	}
-}
-
-static void __init alloc_node_mem_map(struct pglist_data *pgdat)
-{
-	unsigned long start = 0;
-	unsigned long offset = 0;
-
-	if (!pgdat->node_spanned_pages)
-		return;
-
-	start = pgdat->node_start_pfn & ~(MAX_ORDER_NR_PAGES - 1);
-	offset = pgdat->node_start_pfn - start;
-
-	if (!pgdat->node_mem_map) {
-		unsigned long size, end;
-		struct page *map;
-
-		end = pgdat_end_pfn(pgdat);
-		end = ALIGN(end, MAX_ORDER_NR_PAGES);
-		size = (end - start) * sizeof(struct page);
-		map = memmap_alloc(size, SMP_CACHE_BYTES, MEMBLOCK_LOW_LIMIT,
-				   pgdat->node_id, false);
-		if (!map)
-			panic("Failed to allocate %ld bytes for node %d memory map\n",
-			      size, pgdat->node_id);
-		pgdat->node_mem_map = map + offset;
-	}
-
-	if (pgdat == NODE_DATA(0)) {
-		mem_map = NODE_DATA(0)->node_mem_map;
-		if (page_to_pfn(mem_map) != pgdat->node_start_pfn)
-			mem_map -= offset;
-	}
-}
+/* alloc_node_mem_map inlined into free_area_init */
 
 /* free_area_init_node inlined into free_area_init */
 /* MAX_NUMNODES == 1, setup_nr_node_ids removed - inline stub in mm.h */
@@ -1277,10 +1142,140 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 		pgdat->node_id = 0;
 		pgdat->node_start_pfn = node_start_pfn;
 
-		calculate_node_totalpages(pgdat, node_start_pfn, node_end_pfn);
+		/* Inlined calculate_node_totalpages */
+		{
+			unsigned long realtotalpages = 0, totalpages = 0;
+			enum zone_type zi;
 
-		alloc_node_mem_map(pgdat);
-		free_area_init_core(pgdat);
+			for (zi = 0; zi < MAX_NR_ZONES; zi++) {
+				struct zone *zone = pgdat->node_zones + zi;
+				unsigned long z_start_pfn, z_end_pfn;
+				unsigned long spanned, absent;
+				unsigned long zsize, real_size;
+
+				spanned = zone_spanned_pages_in_node(
+					pgdat->node_id, zi, node_start_pfn,
+					node_end_pfn, &z_start_pfn, &z_end_pfn);
+				absent = zone_absent_pages_in_node(
+					pgdat->node_id, zi, node_start_pfn,
+					node_end_pfn);
+
+				zsize = spanned;
+				real_size = zsize - absent;
+
+				if (zsize)
+					zone->zone_start_pfn = z_start_pfn;
+				else
+					zone->zone_start_pfn = 0;
+				zone->spanned_pages = zsize;
+				zone->present_pages = real_size;
+
+				totalpages += zsize;
+				realtotalpages += real_size;
+			}
+
+			pgdat->node_spanned_pages = totalpages;
+			pgdat->node_present_pages = realtotalpages;
+		}
+
+		/* Inlined alloc_node_mem_map */
+		if (pgdat->node_spanned_pages) {
+			unsigned long map_start = pgdat->node_start_pfn &
+						  ~(MAX_ORDER_NR_PAGES - 1);
+			unsigned long map_offset =
+				pgdat->node_start_pfn - map_start;
+
+			if (!pgdat->node_mem_map) {
+				unsigned long map_size, map_end;
+				struct page *map;
+
+				map_end = pgdat_end_pfn(pgdat);
+				map_end = ALIGN(map_end, MAX_ORDER_NR_PAGES);
+				map_size = (map_end - map_start) *
+					   sizeof(struct page);
+				map = memmap_alloc(map_size, SMP_CACHE_BYTES,
+						   MEMBLOCK_LOW_LIMIT,
+						   pgdat->node_id, false);
+				if (!map)
+					panic("Failed to allocate %ld bytes for node %d memory map\n",
+					      map_size, pgdat->node_id);
+				pgdat->node_mem_map = map + map_offset;
+			}
+
+			if (pgdat == NODE_DATA(0)) {
+				mem_map = NODE_DATA(0)->node_mem_map;
+				if (page_to_pfn(mem_map) !=
+				    pgdat->node_start_pfn)
+					mem_map -= map_offset;
+			}
+		}
+		/* Inlined free_area_init_core */
+		{
+			enum zone_type fj;
+			int nid = pgdat->node_id;
+
+			lruvec_init(&pgdat->__lruvec);
+
+			for (fj = 0; fj < MAX_NR_ZONES; fj++) {
+				struct zone *zone = pgdat->node_zones + fj;
+				unsigned long fsize, freesize, memmap_pages;
+
+				fsize = zone->spanned_pages;
+				freesize = zone->present_pages;
+
+				memmap_pages =
+					PAGE_ALIGN(fsize *
+						   sizeof(struct page)) >>
+					PAGE_SHIFT;
+				if (freesize >= memmap_pages)
+					freesize -= memmap_pages;
+
+				atomic_long_set(&zone->managed_pages, freesize);
+				zone->name = zone_names[fj];
+				zone->zone_pgdat = NODE_DATA(nid);
+				spin_lock_init(&zone->lock);
+				zone->per_cpu_pageset = &boot_pageset;
+				zone->per_cpu_zonestats = &boot_zonestats;
+
+				if (!fsize)
+					continue;
+
+				{
+					unsigned long usemapsize;
+					unsigned long uzonesize =
+						zone->spanned_pages;
+
+					uzonesize += zone->zone_start_pfn &
+						     (pageblock_nr_pages - 1);
+					usemapsize = roundup(
+						uzonesize, pageblock_nr_pages);
+					usemapsize = usemapsize >>
+						     pageblock_order;
+					usemapsize *= NR_PAGEBLOCK_BITS;
+					usemapsize = roundup(
+						usemapsize,
+						8 * sizeof(unsigned long));
+					usemapsize /= 8;
+					zone->pageblock_flags = NULL;
+					if (usemapsize) {
+						zone->pageblock_flags =
+							memblock_alloc_node(
+								usemapsize,
+								SMP_CACHE_BYTES,
+								zone_to_nid(
+									zone));
+						if (!zone->pageblock_flags)
+							panic("Failed to allocate %ld bytes for zone %s pageblock flags on node %d\n",
+							      usemapsize,
+							      zone->name,
+							      zone_to_nid(
+								      zone));
+					}
+				}
+				init_currently_empty_zone(
+					zone, zone->zone_start_pfn, fsize);
+			}
+		}
 	}
 
 	/* Inlined memmap_init */

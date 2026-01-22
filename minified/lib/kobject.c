@@ -235,33 +235,27 @@ struct kobject *__must_check kobject_get_unless_zero(struct kobject *kobj)
 	return kobj;
 }
 
-static void kobject_cleanup(struct kobject *kobj)
-{
-	struct kobject *parent = kobj->parent;
-	const struct kobj_type *t = get_ktype(kobj);
-	const char *name = kobj->name;
-
-	if (kobj->state_in_sysfs) {
-		__kobject_del(kobj);
-	} else {
-		parent = NULL;
-	}
-
-	if (t && t->release) {
-		t->release(kobj);
-	}
-
-	if (name) {
-		kfree_const(name);
-	}
-
-	kobject_put(parent);
-}
+/* kobject_cleanup inlined into kobject_release */
 
 static void kobject_release(struct kref *kref)
 {
 	struct kobject *kobj = container_of(kref, struct kobject, kref);
-	kobject_cleanup(kobj);
+	struct kobject *parent = kobj->parent;
+	const struct kobj_type *t = get_ktype(kobj);
+	const char *name = kobj->name;
+
+	if (kobj->state_in_sysfs)
+		__kobject_del(kobj);
+	else
+		parent = NULL;
+
+	if (t && t->release)
+		t->release(kobj);
+
+	if (name)
+		kfree_const(name);
+
+	kobject_put(parent);
 }
 
 void kobject_put(struct kobject *kobj)

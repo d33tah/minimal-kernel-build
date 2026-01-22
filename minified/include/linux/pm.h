@@ -45,31 +45,7 @@ struct dev_pm_ops {
 	int (*runtime_idle)(struct device *dev);
 };
 
-#define SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
-	.suspend = pm_sleep_ptr(suspend_fn), \
-	.resume = pm_sleep_ptr(resume_fn), \
-	.freeze = pm_sleep_ptr(suspend_fn), \
-	.thaw = pm_sleep_ptr(resume_fn), \
-	.poweroff = pm_sleep_ptr(suspend_fn), \
-	.restore = pm_sleep_ptr(resume_fn),
-
-/* LATE_SYSTEM_SLEEP_PM_OPS, NOIRQ_SYSTEM_SLEEP_PM_OPS removed - never used */
-
-#define RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
-	.runtime_suspend = suspend_fn, \
-	.runtime_resume = resume_fn, \
-	.runtime_idle = idle_fn,
-
-/* SET_SYSTEM_SLEEP_PM_OPS removed - never used */
-#define SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn)
-
-#define _DEFINE_DEV_PM_OPS(name, \
-			   suspend_fn, resume_fn, \
-			   runtime_suspend_fn, runtime_resume_fn, idle_fn) \
-const struct dev_pm_ops name = { \
-	SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
-	RUNTIME_PM_OPS(runtime_suspend_fn, runtime_resume_fn, idle_fn) \
-}
+/* SYSTEM_SLEEP_PM_OPS, RUNTIME_PM_OPS, _DEFINE_DEV_PM_OPS removed - never used */
 
 /* PM_EVENT_ON and other PMSG_*, rpm_status, DPM_FLAG_* macros removed - never used */
 

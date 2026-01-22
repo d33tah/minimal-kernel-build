@@ -178,12 +178,7 @@ static void cond_mitigation(struct task_struct *next)
 	this_cpu_write(cpu_tlbstate.last_user_mm_spec, next_mm);
 }
 
-/* cr4_update_pce_mm simplified - perf_rdpmc_allowed removed (never written),
-   rdpmc_never_available_key is TRUE, so PCE is always cleared */
-static inline void cr4_update_pce_mm(struct mm_struct *mm)
-{
-	cr4_clear_bits_irqsoff(X86_CR4_PCE);
-}
+/* cr4_update_pce_mm inlined - PCE is always cleared */
 
 void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 			struct task_struct *tsk)
@@ -256,7 +251,7 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 	this_cpu_write(cpu_tlbstate.loaded_mm_asid, new_asid);
 
 	if (next != real_prev) {
-		cr4_update_pce_mm(next);
+		cr4_clear_bits_irqsoff(X86_CR4_PCE);
 		switch_ldt(real_prev, next);
 	}
 }

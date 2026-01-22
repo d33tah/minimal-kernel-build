@@ -92,12 +92,7 @@ static inline u64 max_vruntime(u64 max_vruntime, u64 vruntime)
 	return max_vruntime;
 }
 
-/* min_vruntime inlined into update_min_vruntime */
-
-static inline bool entity_before(struct sched_entity *a, struct sched_entity *b)
-{
-	return (s64)(a->vruntime - b->vruntime) < 0;
-}
+/* min_vruntime, entity_before inlined into callers */
 
 #define __node_2_se(node) rb_entry((node), struct sched_entity, run_node)
 
@@ -133,7 +128,8 @@ static void update_min_vruntime(struct cfs_rq *cfs_rq)
 
 static inline bool __entity_less(struct rb_node *a, const struct rb_node *b)
 {
-	return entity_before(__node_2_se(a), __node_2_se(b));
+	/* Inlined entity_before */
+	return (s64)(__node_2_se(a)->vruntime - __node_2_se(b)->vruntime) < 0;
 }
 
 static void __enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)

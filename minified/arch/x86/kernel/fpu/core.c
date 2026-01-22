@@ -187,10 +187,7 @@ void fpstate_reset(struct fpu *fpu)
 	fpu->guest_perm = fpu->perm;
 }
 
-static inline void fpu_inherit_perms(struct fpu *dst_fpu)
-{
-	/* fpu_state_size_dynamic always returns false - function body removed */
-}
+/* fpu_inherit_perms removed - was empty stub */
 
 int fpu_clone(struct task_struct *dst, unsigned long clone_flags, bool minimal)
 {
@@ -218,8 +215,7 @@ int fpu_clone(struct task_struct *dst, unsigned long clone_flags, bool minimal)
 	if (test_thread_flag(TIF_NEED_FPU_LOAD))
 		fpregs_restore_userregs();
 	save_fpregs_to_fpstate(dst_fpu);
-	/* CLONE_THREAD never set - always inherit */
-	fpu_inherit_perms(dst_fpu);
+	/* CLONE_THREAD never set - fpu_inherit_perms call removed (was empty) */
 	fpregs_unlock();
 
 	if (use_xsave())

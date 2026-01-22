@@ -17,33 +17,7 @@ static struct kmem_cache *sigqueue_cachep;
 /* Removed: print_fatal_signals - never used */
 /* sig_handler removed - inlined into single caller (~4 LOC) */
 
-static bool sig_ignored(struct task_struct *t, int sig, bool force)
-{
-	void __user *handler;
-
-	if (sigismember(&t->blocked, sig) || sigismember(&t->real_blocked, sig))
-		return false;
-
-	if (t->ptrace && sig != SIGKILL)
-		return false;
-
-	/* Inlined sig_handler */
-	handler = t->sighand->action[sig - 1].sa.sa_handler;
-
-	if (unlikely(is_global_init(t) && sig_kernel_only(sig)))
-		return true;
-
-	if (unlikely(t->signal->flags & SIGNAL_UNKILLABLE) &&
-	    handler == SIG_DFL && !(force && sig_kernel_only(sig)))
-		return true;
-
-	if (unlikely((t->flags & PF_KTHREAD) &&
-		     (handler == SIG_KTHREAD_KERNEL) && !force))
-		return true;
-
-	return handler == SIG_IGN ||
-	       (handler == SIG_DFL && sig_kernel_ignore(sig));
-}
+/* sig_ignored inlined into __send_signal_locked */
 
 static inline bool has_pending_signals(sigset_t *signal, sigset_t *blocked)
 {
@@ -191,8 +165,34 @@ static int __send_signal_locked(int sig, struct kernel_siginfo *info,
 	struct sigpending *pending;
 	struct sigqueue *q;
 
-	if (sig_ignored(t, sig, force))
-		return 0;
+	/* Inlined sig_ignored */
+	{
+		void __user *handler;
+		bool ignored = false;
+
+		if (!sigismember(&t->blocked, sig) &&
+		    !sigismember(&t->real_blocked, sig) &&
+		    !(t->ptrace && sig != SIGKILL)) {
+			handler = t->sighand->action[sig - 1].sa.sa_handler;
+
+			if (unlikely(is_global_init(t) && sig_kernel_only(sig)))
+				ignored = true;
+			else if (unlikely(t->signal->flags &
+					  SIGNAL_UNKILLABLE) &&
+				 handler == SIG_DFL &&
+				 !(force && sig_kernel_only(sig)))
+				ignored = true;
+			else if (unlikely((t->flags & PF_KTHREAD) &&
+					  (handler == SIG_KTHREAD_KERNEL) &&
+					  !force))
+				ignored = true;
+			else if (handler == SIG_IGN ||
+				 (handler == SIG_DFL && sig_kernel_ignore(sig)))
+				ignored = true;
+		}
+		if (ignored)
+			return 0;
+	}
 
 	pending = (type != PIDTYPE_PID) ? &t->signal->shared_pending :
 					  &t->pending;

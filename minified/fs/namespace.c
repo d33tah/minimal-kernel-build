@@ -623,25 +623,7 @@ enum umount_tree_flags {
 	UMOUNT_CONNECTED = 4,
 };
 
-static bool disconnect_mount(struct mount *mnt, enum umount_tree_flags how)
-{
-	if (how & UMOUNT_SYNC)
-		return true;
-
-	if (!mnt_has_parent(mnt))
-		return true;
-
-	if (!(mnt->mnt_parent->mnt.mnt_flags & MNT_UMOUNT))
-		return true;
-
-	if (how & UMOUNT_CONNECTED)
-		return false;
-
-	if (IS_MNT_LOCKED(mnt))
-		return false;
-
-	return true;
-}
+/* disconnect_mount inlined into umount_tree */
 
 static void umount_tree(struct mount *mnt, enum umount_tree_flags how)
 {
@@ -677,7 +659,10 @@ static void umount_tree(struct mount *mnt, enum umount_tree_flags how)
 		if (how & UMOUNT_SYNC)
 			p->mnt.mnt_flags |= MNT_SYNC_UMOUNT;
 
-		disconnect = disconnect_mount(p, how);
+		/* disconnect_mount inlined */
+		disconnect = (how & UMOUNT_SYNC) || !mnt_has_parent(p) ||
+			     !(p->mnt_parent->mnt.mnt_flags & MNT_UMOUNT) ||
+			     (!(how & UMOUNT_CONNECTED) && !IS_MNT_LOCKED(p));
 		if (mnt_has_parent(p)) {
 			mnt_add_count(p->mnt_parent, -1);
 			if (!disconnect) {

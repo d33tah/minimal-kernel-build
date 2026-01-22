@@ -299,20 +299,7 @@ void __init page_alloc_init_late(void)
 	/* contiguous removed - write-only */
 }
 
-static inline void expand(struct zone *zone, struct page *page, int low,
-			  int high, int migratetype)
-{
-	unsigned long size = 1 << high;
-
-	while (high > low) {
-		high--;
-		size >>= 1;
-		/* set_page_guard() always returns false - check removed */
-		add_to_free_list(&page[size], zone, high, migratetype);
-		set_buddy_order(&page[size], high);
-	}
-}
-
+/* expand() inlined into __rmqueue_smallest */
 /* check_new_pages, check_pcp_refill, check_new_pcp always return false - removed */
 
 inline void post_alloc_hook(struct page *page, unsigned int order)
@@ -342,7 +329,19 @@ __rmqueue_smallest(struct zone *zone, unsigned int order, int migratetype)
 		__ClearPageBuddy(page);
 		set_page_private(page, 0);
 		zone->free_area[current_order].nr_free--;
-		expand(zone, page, order, current_order, migratetype);
+		/* expand() inlined */
+		{
+			unsigned long size = 1 << current_order;
+			int high = current_order;
+
+			while (high > order) {
+				high--;
+				size >>= 1;
+				add_to_free_list(&page[size], zone, high,
+						 migratetype);
+				set_buddy_order(&page[size], high);
+			}
+		}
 		page->index = migratetype;
 		return page;
 	}
@@ -1134,20 +1133,7 @@ static void __init calculate_node_totalpages(struct pglist_data *pgdat,
 	pgdat->node_present_pages = realtotalpages;
 }
 
-static unsigned long __init usemap_size(unsigned long zone_start_pfn,
-					unsigned long zonesize)
-{
-	unsigned long usemapsize;
-
-	zonesize += zone_start_pfn & (pageblock_nr_pages - 1);
-	usemapsize = roundup(zonesize, pageblock_nr_pages);
-	usemapsize = usemapsize >> pageblock_order;
-	usemapsize *= NR_PAGEBLOCK_BITS;
-	usemapsize = roundup(usemapsize, 8 * sizeof(unsigned long));
-
-	return usemapsize / 8;
-}
-
+/* usemap_size inlined into free_area_init_core */
 /* setup_usemap inlined into free_area_init_core */
 /* calc_memmap_size inlined - SPARSEMEM disabled */
 
@@ -1184,10 +1170,19 @@ static void __init free_area_init_core(struct pglist_data *pgdat)
 		if (!size)
 			continue;
 
-		/* setup_usemap inlined */
+		/* setup_usemap and usemap_size inlined */
 		{
-			unsigned long usemapsize = usemap_size(
-				zone->zone_start_pfn, zone->spanned_pages);
+			unsigned long usemapsize;
+			unsigned long zonesize = zone->spanned_pages;
+
+			zonesize += zone->zone_start_pfn &
+				    (pageblock_nr_pages - 1);
+			usemapsize = roundup(zonesize, pageblock_nr_pages);
+			usemapsize = usemapsize >> pageblock_order;
+			usemapsize *= NR_PAGEBLOCK_BITS;
+			usemapsize =
+				roundup(usemapsize, 8 * sizeof(unsigned long));
+			usemapsize /= 8;
 			zone->pageblock_flags = NULL;
 			if (usemapsize) {
 				zone->pageblock_flags = memblock_alloc_node(

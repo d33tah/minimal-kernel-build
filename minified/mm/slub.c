@@ -290,18 +290,7 @@ static void *get_partial_node(struct kmem_cache *s, struct kmem_cache_node *n,
 }
 
 /* get_any_partial removed - always returned NULL */
-
-static void *get_partial(struct kmem_cache *s, gfp_t flags, int node,
-			 struct slab **ret_slab)
-{
-	int searchnode = node;
-
-	if (node == NUMA_NO_NODE)
-		searchnode = numa_mem_id();
-
-	/* get_any_partial was stub returning NULL, so just return result */
-	return get_partial_node(s, get_node(s, searchnode), ret_slab, flags);
-}
+/* get_partial inlined into ___slab_alloc */
 
 #define TID_STEP 1
 
@@ -362,9 +351,12 @@ static void *___slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node)
 {
 	void *freelist;
 	struct slab *slab;
+	int searchnode;
 
-	/* Try to get from partial lists */
-	freelist = get_partial(s, gfpflags, node, &slab);
+	/* get_partial inlined - try to get from partial lists */
+	searchnode = (node == NUMA_NO_NODE) ? numa_mem_id() : node;
+	freelist =
+		get_partial_node(s, get_node(s, searchnode), &slab, gfpflags);
 	if (freelist)
 		return freelist;
 

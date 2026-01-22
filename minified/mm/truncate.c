@@ -22,17 +22,7 @@ static inline void __clear_shadow_entry(struct address_space *mapping,
 	xas_store(&xas, NULL);
 }
 
-static void clear_shadow_entry(struct address_space *mapping, pgoff_t index,
-			       void *entry)
-{
-	spin_lock(&mapping->host->i_lock);
-	xa_lock_irq(&mapping->i_pages);
-	__clear_shadow_entry(mapping, index, entry);
-	xa_unlock_irq(&mapping->i_pages);
-	if (mapping_shrinkable(mapping))
-		inode_add_lru(mapping->host);
-	spin_unlock(&mapping->host->i_lock);
-}
+/* clear_shadow_entry inlined into invalidate_inode_pages2_range */
 
 static void truncate_folio_batch_exceptionals(struct address_space *mapping,
 					      struct folio_batch *fbatch,
@@ -288,7 +278,14 @@ int invalidate_inode_pages2_range(struct address_space *mapping, pgoff_t start,
 			index = indices[i];
 
 			if (xa_is_value(folio)) {
-				clear_shadow_entry(mapping, index, folio);
+				/* clear_shadow_entry inlined */
+				spin_lock(&mapping->host->i_lock);
+				xa_lock_irq(&mapping->i_pages);
+				__clear_shadow_entry(mapping, index, folio);
+				xa_unlock_irq(&mapping->i_pages);
+				if (mapping_shrinkable(mapping))
+					inode_add_lru(mapping->host);
+				spin_unlock(&mapping->host->i_lock);
 				continue;
 			}
 

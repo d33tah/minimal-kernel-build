@@ -49,24 +49,8 @@ struct mm_struct *pgd_page_get_mm(struct page *page)
 	return page->pt_mm;
 }
 
-static void pgd_ctor(struct mm_struct *mm, pgd_t *pgd)
-{
-	/* CONFIG_PGTABLE_LEVELS == 2, always clone kernel pgd */
-	clone_pgd_range(pgd + KERNEL_PGD_BOUNDARY,
-			swapper_pg_dir + KERNEL_PGD_BOUNDARY, KERNEL_PGD_PTRS);
-
-	/* SHARED_KERNEL_PMD == 0 */
-	virt_to_page(pgd)->pt_mm = mm;
-	pgd_list_add(pgd);
-}
-
-static void pgd_dtor(pgd_t *pgd)
-{
-	/* SHARED_KERNEL_PMD == 0 */
-	spin_lock(&pgd_lock);
-	pgd_list_del(pgd);
-	spin_unlock(&pgd_lock);
-}
+/* pgd_ctor inlined into pgd_alloc */
+/* pgd_dtor inlined into pgd_free */
 
 /* PREALLOCATED_PMDS and related are all 0 for 2-level paging */
 #define PREALLOCATED_PMDS 0
@@ -101,8 +85,11 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
 	/* preallocate_pmds checks removed - always returns 0 */
 	/* paravirt_pgd_alloc always returns 0 - check removed */
 	spin_lock(&pgd_lock);
-	pgd_ctor(mm, pgd);
-	/* pgd_prepopulate_pmd, pgd_prepopulate_user_pmd are empty stubs */
+	/* pgd_ctor inlined */
+	clone_pgd_range(pgd + KERNEL_PGD_BOUNDARY,
+			swapper_pg_dir + KERNEL_PGD_BOUNDARY, KERNEL_PGD_PTRS);
+	virt_to_page(pgd)->pt_mm = mm;
+	pgd_list_add(pgd);
 	spin_unlock(&pgd_lock);
 
 	return pgd;
@@ -111,7 +98,10 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
 void pgd_free(struct mm_struct *mm, pgd_t *pgd)
 {
 	/* pgd_mop_up_pmds is empty stub - call removed */
-	pgd_dtor(pgd);
+	/* pgd_dtor inlined */
+	spin_lock(&pgd_lock);
+	pgd_list_del(pgd);
+	spin_unlock(&pgd_lock);
 	/* paravirt_pgd_free is empty stub - call removed */
 	_pgd_free(pgd);
 }

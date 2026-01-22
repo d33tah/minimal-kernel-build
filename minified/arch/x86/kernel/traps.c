@@ -137,11 +137,7 @@ DEFINE_IDTENTRY(exc_overflow)
 	do_error_trap(regs, 0, "overflow", X86_TRAP_OF, SIGSEGV, 0, NULL);
 }
 
-static inline void handle_invalid_op(struct pt_regs *regs)
-{
-	do_error_trap(regs, 0, "invalid opcode", X86_TRAP_UD, SIGILL,
-		      ILL_ILLOPN, error_get_trap_addr(regs));
-}
+/* handle_invalid_op inlined into exc_invalid_op */
 
 static noinstr bool handle_bug(struct pt_regs *regs)
 {
@@ -170,7 +166,9 @@ DEFINE_IDTENTRY_RAW(exc_invalid_op)
 		return;
 
 	state = irqentry_enter(regs);
-	handle_invalid_op(regs);
+	/* Inlined handle_invalid_op */
+	do_error_trap(regs, 0, "invalid opcode", X86_TRAP_UD, SIGILL,
+		      ILL_ILLOPN, error_get_trap_addr(regs));
 	irqentry_exit(regs, state);
 }
 

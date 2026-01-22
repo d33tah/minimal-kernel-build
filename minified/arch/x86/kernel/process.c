@@ -185,21 +185,8 @@ void arch_setup_new_exec(void)
 	}
 }
 
-static inline void switch_to_bitmap(unsigned long tifp)
-{
-}
-
-static __always_inline void amd_set_core_ssb_state(unsigned long tifn)
-{
-	u64 msr = x86_amd_ls_cfg_base | ssbd_tif_to_amd_ls_cfg(tifn);
-
-	wrmsrl(MSR_AMD64_LS_CFG, msr);
-}
-
-static __always_inline void amd_set_ssb_virt_state(unsigned long tifn)
-{
-	wrmsrl(MSR_AMD64_VIRT_SPEC_CTRL, ssbd_tif_to_spec_ctrl(tifn));
-}
+/* switch_to_bitmap removed - was empty stub */
+/* amd_set_core_ssb_state, amd_set_ssb_virt_state inlined into __speculation_ctrl_update */
 
 static __always_inline void __speculation_ctrl_update(unsigned long tifp,
 						      unsigned long tifn)
@@ -208,10 +195,13 @@ static __always_inline void __speculation_ctrl_update(unsigned long tifp,
 
 	if (static_cpu_has(X86_FEATURE_VIRT_SSBD)) {
 		if (tif_diff & _TIF_SSBD)
-			amd_set_ssb_virt_state(tifn);
+			wrmsrl(MSR_AMD64_VIRT_SPEC_CTRL,
+			       ssbd_tif_to_spec_ctrl(tifn));
 	} else if (static_cpu_has(X86_FEATURE_LS_CFG_SSBD)) {
 		if (tif_diff & _TIF_SSBD)
-			amd_set_core_ssb_state(tifn);
+			wrmsrl(MSR_AMD64_LS_CFG,
+			       x86_amd_ls_cfg_base |
+				       ssbd_tif_to_amd_ls_cfg(tifn));
 	}
 }
 
@@ -241,16 +231,7 @@ void speculation_ctrl_update(unsigned long tif)
 	local_irq_restore(flags);
 }
 
-static inline void cr4_toggle_bits_irqsoff(unsigned long mask)
-{
-	unsigned long newval, cr4 = this_cpu_read(cpu_tlbstate.cr4);
-
-	newval = cr4 ^ mask;
-	if (newval != cr4) {
-		this_cpu_write(cpu_tlbstate.cr4, newval);
-		__write_cr4(newval);
-	}
-}
+/* cr4_toggle_bits_irqsoff inlined into __switch_to_xtra */
 
 void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
 {
@@ -259,7 +240,7 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
 	tifn = read_task_thread_flags(next_p);
 	tifp = read_task_thread_flags(prev_p);
 
-	switch_to_bitmap(tifp);
+	/* switch_to_bitmap call removed - was empty stub */
 
 	if ((tifp & _TIF_BLOCKSTEP || tifn & _TIF_BLOCKSTEP) &&
 	    arch_has_block_step()) {
@@ -272,8 +253,15 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
 		wrmsrl(MSR_IA32_DEBUGCTLMSR, debugctl);
 	}
 
-	if ((tifp ^ tifn) & _TIF_NOTSC)
-		cr4_toggle_bits_irqsoff(X86_CR4_TSD);
+	if ((tifp ^ tifn) & _TIF_NOTSC) {
+		/* Inlined cr4_toggle_bits_irqsoff(X86_CR4_TSD) */
+		unsigned long newval, cr4 = this_cpu_read(cpu_tlbstate.cr4);
+		newval = cr4 ^ X86_CR4_TSD;
+		if (newval != cr4) {
+			this_cpu_write(cpu_tlbstate.cr4, newval);
+			__write_cr4(newval);
+		}
+	}
 
 	if ((tifp ^ tifn) & _TIF_NOCPUID)
 		set_cpuid_faulting(!!(tifn & _TIF_NOCPUID));

@@ -32,13 +32,7 @@ void fpu__init_cpu(void)
 	asm volatile("fninit");
 }
 
-/* fpu__probe_without_cpuid removed - never called */
-
-static void fpu__init_system_early_generic(struct cpuinfo_x86 *c)
-{
-	/* Stubbed - force FPU capability for minimal boot */
-	setup_force_cpu_cap(X86_FEATURE_FPU);
-}
+/* fpu__probe_without_cpuid, fpu__init_system_early_generic removed/inlined */
 
 unsigned int mxcsr_feature_mask __ro_after_init = 0xffffffffu;
 
@@ -64,7 +58,7 @@ void __init fpu__init_system(struct cpuinfo_x86 *c)
 	int task_size;
 
 	fpstate_reset(&current->thread.fpu);
-	fpu__init_system_early_generic(c);
+	setup_force_cpu_cap(X86_FEATURE_FPU);
 
 	fpu__init_cpu();
 

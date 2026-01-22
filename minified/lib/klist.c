@@ -6,11 +6,7 @@
 #define KNODE_DEAD 1LU
 #define KNODE_KLIST_MASK ~KNODE_DEAD
 
-static struct klist *knode_klist(struct klist_node *knode)
-{
-	return (struct klist *)((unsigned long)knode->n_klist &
-				KNODE_KLIST_MASK);
-}
+/* knode_klist inlined into klist_put */
 
 static bool knode_dead(struct klist_node *knode)
 {
@@ -92,7 +88,9 @@ static int klist_dec_and_del(struct klist_node *n)
 
 static void klist_put(struct klist_node *n, bool kill)
 {
-	struct klist *k = knode_klist(n);
+	/* Inlined knode_klist */
+	struct klist *k =
+		(struct klist *)((unsigned long)n->n_klist & KNODE_KLIST_MASK);
 	void (*put)(struct klist_node *) = k->put;
 
 	spin_lock(&k->k_lock);

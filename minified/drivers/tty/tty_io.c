@@ -673,15 +673,7 @@ int tty_release(struct inode *inode, struct file *filp)
 	return 0;
 }
 
-static struct tty_struct *tty_open_current_tty(dev_t device, struct file *filp)
-{
-	if (device != MKDEV(TTYAUX_MAJOR, 0))
-		return NULL;
-	/* get_current_tty() always returns NULL */
-	return ERR_PTR(-ENXIO);
-}
-
-/* tty_lookup_driver inlined into tty_open_by_driver */
+/* tty_open_current_tty, tty_lookup_driver inlined into callers */
 
 static struct tty_struct *tty_open_by_driver(dev_t device, struct file *filp)
 {
@@ -777,8 +769,10 @@ retry_open:
 	if (retval)
 		return -ENOMEM;
 
-	tty = tty_open_current_tty(device, filp);
-	if (!tty)
+	/* Inlined tty_open_current_tty - returns NULL unless MKDEV(TTYAUX_MAJOR, 0) */
+	if (device == MKDEV(TTYAUX_MAJOR, 0))
+		tty = ERR_PTR(-ENXIO);
+	else
 		tty = tty_open_by_driver(device, filp);
 
 	if (IS_ERR(tty)) {

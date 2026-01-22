@@ -61,13 +61,7 @@ static inline unsigned long build_cr3(pgd_t *pgd, u16 asid)
 	}
 }
 
-static inline unsigned long build_cr3_noflush(pgd_t *pgd, u16 asid)
-{
-	VM_WARN_ON_ONCE(asid > MAX_ASID_AVAILABLE);
-
-	VM_WARN_ON_ONCE(!boot_cpu_has(X86_FEATURE_PCID));
-	return __sme_pa(pgd) | kern_pcid(asid) | CR3_NOFLUSH;
-}
+/* build_cr3_noflush inlined into load_new_mm_cr3 */
 
 static void clear_asid_other(void)
 {
@@ -135,7 +129,11 @@ static void load_new_mm_cr3(pgd_t *pgdir, u16 new_asid, bool need_flush)
 		invalidate_user_asid(new_asid);
 		new_mm_cr3 = build_cr3(pgdir, new_asid);
 	} else {
-		new_mm_cr3 = build_cr3_noflush(pgdir, new_asid);
+		/* Inlined build_cr3_noflush */
+		VM_WARN_ON_ONCE(new_asid > MAX_ASID_AVAILABLE);
+		VM_WARN_ON_ONCE(!boot_cpu_has(X86_FEATURE_PCID));
+		new_mm_cr3 = __sme_pa(pgdir) | kern_pcid(new_asid) |
+			     CR3_NOFLUSH;
 	}
 
 	write_cr3(new_mm_cr3);

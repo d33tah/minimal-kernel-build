@@ -41,19 +41,18 @@ bool irq_fpu_usable(void)
 	return !softirq_count();
 }
 
-static void update_avx_timestamp(struct fpu *fpu)
-{
 #define AVX512_TRACKING_MASK (XFEATURE_MASK_ZMM_Hi256 | XFEATURE_MASK_Hi16_ZMM)
 
-	if (fpu->fpstate->regs.xsave.header.xfeatures & AVX512_TRACKING_MASK)
-		fpu->avx512_timestamp = jiffies;
-}
+/* update_avx_timestamp inlined into save_fpregs_to_fpstate */
 
 void save_fpregs_to_fpstate(struct fpu *fpu)
 {
 	if (likely(use_xsave())) {
 		os_xsave(fpu->fpstate);
-		update_avx_timestamp(fpu);
+		/* Inlined update_avx_timestamp */
+		if (fpu->fpstate->regs.xsave.header.xfeatures &
+		    AVX512_TRACKING_MASK)
+			fpu->avx512_timestamp = jiffies;
 		return;
 	}
 
@@ -147,19 +146,7 @@ static inline unsigned int init_fpstate_copy_size(void)
 	return sizeof(init_fpstate.regs.xsave);
 }
 
-static inline void fpstate_init_fxstate(struct fpstate *fpstate)
-{
-	fpstate->regs.fxsave.cwd = 0x37f;
-	fpstate->regs.fxsave.mxcsr = MXCSR_DEFAULT;
-}
-
-static inline void fpstate_init_fstate(struct fpstate *fpstate)
-{
-	fpstate->regs.fsave.cwd = 0xffff037fu;
-	fpstate->regs.fsave.swd = 0xffff0000u;
-	fpstate->regs.fsave.twd = 0xffffffffu;
-	fpstate->regs.fsave.fos = 0xffff0000u;
-}
+/* fpstate_init_fxstate, fpstate_init_fstate inlined into fpstate_init_user */
 
 void fpstate_init_user(struct fpstate *fpstate)
 {
@@ -168,10 +155,15 @@ void fpstate_init_user(struct fpstate *fpstate)
 
 	xstate_init_xcomp_bv(&fpstate->regs.xsave, fpstate->xfeatures);
 
-	if (cpu_feature_enabled(X86_FEATURE_FXSR))
-		fpstate_init_fxstate(fpstate);
-	else
-		fpstate_init_fstate(fpstate);
+	if (cpu_feature_enabled(X86_FEATURE_FXSR)) {
+		fpstate->regs.fxsave.cwd = 0x37f;
+		fpstate->regs.fxsave.mxcsr = MXCSR_DEFAULT;
+	} else {
+		fpstate->regs.fsave.cwd = 0xffff037fu;
+		fpstate->regs.fsave.swd = 0xffff0000u;
+		fpstate->regs.fsave.twd = 0xffffffffu;
+		fpstate->regs.fsave.fos = 0xffff0000u;
+	}
 }
 
 static void __fpstate_reset(struct fpstate *fpstate, u64 xfd)

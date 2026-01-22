@@ -24,7 +24,7 @@ do {									\
 
 #define wait_rcu_gp(...) _wait_rcu_gp(false, __VA_ARGS__)
 
-#define synchronize_rcu_mult(...) \
-	_wait_rcu_gp(IS_ENABLED(CONFIG_TINY_RCU), __VA_ARGS__)
+/* CONFIG_TINY_RCU=y in minimal config */
+#define synchronize_rcu_mult(...) _wait_rcu_gp(true, __VA_ARGS__)
 
 #endif  

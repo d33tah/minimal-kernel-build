@@ -752,17 +752,7 @@ alloc_vmap_area(unsigned long size, unsigned long align, unsigned long vstart,
    and lazy purge infrastructure removed - all stubs that do nothing (~35 LOC) */
 
 /* free_vmap_area_noflush removed - inlined into single caller (~7 LOC) */
-
-static struct vmap_area *find_vmap_area(unsigned long addr)
-{
-	struct vmap_area *va;
-
-	spin_lock(&vmap_area_lock);
-	va = __find_vmap_area(addr);
-	spin_unlock(&vmap_area_lock);
-
-	return va;
-}
+/* find_vmap_area inlined - single caller */
 
 /* BITS_PER_LONG == 32 (i386) */
 #define VMALLOC_SPACE (128UL * 1024 * 1024)
@@ -909,7 +899,9 @@ struct vm_struct *find_vm_area(const void *addr)
 {
 	struct vmap_area *va;
 
-	va = find_vmap_area((unsigned long)addr);
+	spin_lock(&vmap_area_lock);
+	va = __find_vmap_area((unsigned long)addr);
+	spin_unlock(&vmap_area_lock);
 	if (!va)
 		return NULL;
 

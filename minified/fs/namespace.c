@@ -1036,10 +1036,7 @@ int path_mount(const char *dev_name, struct path *path, const char *type_page,
 			    data_page);
 }
 
-static struct ucounts *inc_mnt_namespaces(struct user_namespace *ns)
-{
-	return inc_ucount(ns, current_euid(), UCOUNT_MNT_NAMESPACES);
-}
+/* inc_mnt_namespaces inlined - single caller */
 
 static void dec_mnt_namespaces(struct ucounts *ucounts)
 {
@@ -1063,7 +1060,7 @@ static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns,
 	struct mnt_namespace *new_ns;
 	struct ucounts *ucounts;
 
-	ucounts = inc_mnt_namespaces(user_ns);
+	ucounts = inc_ucount(user_ns, current_euid(), UCOUNT_MNT_NAMESPACES);
 	if (!ucounts)
 		return ERR_PTR(-ENOSPC);
 

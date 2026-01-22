@@ -262,13 +262,7 @@ static bool gp_try_fixup_and_notify(struct pt_regs *regs, int trapnr,
 	return false;
 }
 
-static void gp_user_force_sig_segv(struct pt_regs *regs, int trapnr,
-				   unsigned long error_code, const char *str)
-{
-	current->thread.error_code = error_code;
-	current->thread.trap_nr = trapnr;
-	force_sig(SIGSEGV);
-}
+/* gp_user_force_sig_segv inlined - single caller */
 
 DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
 {
@@ -288,7 +282,9 @@ DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
 		if (fixup_vdso_exception(regs, X86_TRAP_GP, error_code, 0))
 			goto exit;
 
-		gp_user_force_sig_segv(regs, X86_TRAP_GP, error_code, desc);
+		current->thread.error_code = error_code;
+		current->thread.trap_nr = X86_TRAP_GP;
+		force_sig(SIGSEGV);
 		goto exit;
 	}
 
@@ -313,21 +309,17 @@ static bool do_int3(struct pt_regs *regs)
 }
 NOKPROBE_SYMBOL(do_int3);
 
-static void do_int3_user(struct pt_regs *regs)
-{
-	/* do_int3 always returns false - early return removed */
-	do_int3(regs);
-	cond_local_irq_enable(regs);
-	do_trap(X86_TRAP_BP, SIGTRAP, "int3", regs, 0, 0, NULL);
-	cond_local_irq_disable(regs);
-}
+/* do_int3_user inlined - single caller */
 
 DEFINE_IDTENTRY_RAW(exc_int3)
 {
 	/* poke_int3_handler check removed - always returned 0 */
 	if (user_mode(regs)) {
 		irqentry_enter_from_user_mode(regs);
-		do_int3_user(regs);
+		do_int3(regs);
+		cond_local_irq_enable(regs);
+		do_trap(X86_TRAP_BP, SIGTRAP, "int3", regs, 0, 0, NULL);
+		cond_local_irq_disable(regs);
 		irqentry_exit_to_user_mode(regs);
 	} else {
 		irqentry_state_t irq_state = irqentry_nmi_enter(regs);

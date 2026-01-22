@@ -7,14 +7,7 @@
 #define KD_TEXT		0x00
 #define KD_GRAPHICS	0x01
 
-/* console_font_op used by vt.c, vgacon.c, vt_kern.h, console.h */
-struct console_font_op {
-	unsigned int op;
-	unsigned int flags;
-	unsigned int width, height;
-	unsigned int charcount;
-	unsigned char __user *data;
-};
+/* console_font_op removed - never used */
 
 /* console_font used by vt.c, vgacon.c */
 struct console_font {

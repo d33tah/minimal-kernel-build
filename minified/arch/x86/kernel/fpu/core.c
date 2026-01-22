@@ -166,19 +166,18 @@ void fpstate_init_user(struct fpstate *fpstate)
 	}
 }
 
-static void __fpstate_reset(struct fpstate *fpstate, u64 xfd)
+/* __fpstate_reset inlined into fpstate_reset - single caller */
+
+void fpstate_reset(struct fpu *fpu)
 {
+	struct fpstate *fpstate;
+	fpu->fpstate = &fpu->__fpstate;
+	fpstate = fpu->fpstate;
 	fpstate->size = fpu_kernel_cfg.default_size;
 	fpstate->user_size = fpu_user_cfg.default_size;
 	fpstate->xfeatures = fpu_kernel_cfg.default_features;
 	fpstate->user_xfeatures = fpu_user_cfg.default_features;
-	fpstate->xfd = xfd;
-}
-
-void fpstate_reset(struct fpu *fpu)
-{
-	fpu->fpstate = &fpu->__fpstate;
-	__fpstate_reset(fpu->fpstate, init_fpstate.xfd);
+	fpstate->xfd = init_fpstate.xfd;
 
 	fpu->perm.__state_perm = fpu_kernel_cfg.default_features;
 	fpu->perm.__state_size = fpu_kernel_cfg.default_size;

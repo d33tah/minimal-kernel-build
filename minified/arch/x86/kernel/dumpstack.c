@@ -55,16 +55,12 @@ bool noinstr in_entry_stack(unsigned long *stack, struct stack_info *info)
 	return true;
 }
 
-static void show_trace_log_lvl(struct task_struct *task, struct pt_regs *regs,
-			       unsigned long *stack, const char *log_lvl)
-{
-	/* Stub: stack trace printing not needed for minimal kernel */
-	printk("%sCall Trace: <stubbed>\n", log_lvl);
-}
+/* show_trace_log_lvl inlined into show_stack_regs - single caller */
 
 void show_stack_regs(struct pt_regs *regs)
 {
-	show_trace_log_lvl(current, regs, NULL, KERN_DEFAULT);
+	/* Stub: stack trace printing not needed for minimal kernel */
+	printk("%sCall Trace: <stubbed>\n", KERN_DEFAULT);
 }
 
 static arch_spinlock_t die_lock = __ARCH_SPIN_LOCK_UNLOCKED;

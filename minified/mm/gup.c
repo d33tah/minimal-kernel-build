@@ -50,24 +50,7 @@ static struct page *no_page_table(struct vm_area_struct *vma,
 	return NULL;
 }
 
-static int follow_pfn_pte(struct vm_area_struct *vma, unsigned long address,
-			  pte_t *pte, unsigned int flags)
-{
-	if (flags & FOLL_TOUCH) {
-		pte_t entry = *pte;
-
-		if (flags & FOLL_WRITE)
-			entry = pte_mkdirty(entry);
-		entry = pte_mkyoung(entry);
-
-		if (!pte_same(*pte, entry))
-			set_pte_at(vma->vm_mm, address, pte, entry);
-		/* update_mmu_cache - empty stub on x86 */
-	}
-
-	return -EEXIST;
-}
-
+/* follow_pfn_pte inlined into follow_page_pte */
 /* can_follow_write_pte inlined into follow_page_pte */
 
 static struct page *follow_page_pte(struct vm_area_struct *vma,
@@ -79,7 +62,6 @@ static struct page *follow_page_pte(struct vm_area_struct *vma,
 	struct page *page;
 	spinlock_t *ptl;
 	pte_t *ptep, pte;
-	int ret;
 
 	/* FOLL_PIN|FOLL_GET check removed - FOLL_PIN never set */
 	/* retry label removed - never jumped to */
@@ -106,8 +88,20 @@ static struct page *follow_page_pte(struct vm_area_struct *vma,
 		if (is_zero_pfn(pte_pfn(pte))) {
 			page = pte_page(pte);
 		} else {
-			ret = follow_pfn_pte(vma, address, ptep, flags);
-			page = ERR_PTR(ret);
+			/* follow_pfn_pte inlined */
+			if (flags & FOLL_TOUCH) {
+				pte_t entry = *ptep;
+
+				if (flags & FOLL_WRITE)
+					entry = pte_mkdirty(entry);
+				entry = pte_mkyoung(entry);
+
+				if (!pte_same(*ptep, entry))
+					set_pte_at(vma->vm_mm, address, ptep,
+						   entry);
+				/* update_mmu_cache - empty stub on x86 */
+			}
+			page = ERR_PTR(-EEXIST);
 			goto out;
 		}
 	}

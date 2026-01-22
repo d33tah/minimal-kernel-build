@@ -145,21 +145,8 @@ static bool ex_handler_msr(const struct exception_table_entry *fixup,
 	return ex_handler_default(fixup, regs);
 }
 
-static bool ex_handler_clear_fs(const struct exception_table_entry *fixup,
-				struct pt_regs *regs)
-{
-	if (static_cpu_has(X86_BUG_NULL_SEG))
-		asm volatile("mov %0, %%fs" : : "rm"(__USER_DS));
-	asm volatile("mov %0, %%fs" : : "rm"(0));
-	return ex_handler_default(fixup, regs);
-}
-
-static bool ex_handler_imm_reg(const struct exception_table_entry *fixup,
-			       struct pt_regs *regs, int reg, int imm)
-{
-	*pt_regs_nr(regs, reg) = (long)imm;
-	return ex_handler_default(fixup, regs);
-}
+/* ex_handler_clear_fs inlined into fixup_exception */
+/* ex_handler_imm_reg inlined into fixup_exception */
 
 static bool ex_handler_ucopy_len(const struct exception_table_entry *fixup,
 				 struct pt_regs *regs, int trapnr, int reg,
@@ -197,7 +184,11 @@ int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code,
 	case EX_TYPE_COPY:
 		return ex_handler_copy(e, regs, trapnr);
 	case EX_TYPE_CLEAR_FS:
-		return ex_handler_clear_fs(e, regs);
+		/* ex_handler_clear_fs inlined */
+		if (static_cpu_has(X86_BUG_NULL_SEG))
+			asm volatile("mov %0, %%fs" : : "rm"(__USER_DS));
+		asm volatile("mov %0, %%fs" : : "rm"(0));
+		return ex_handler_default(e, regs);
 	case EX_TYPE_FPU_RESTORE:
 		return ex_handler_fprestore(e, regs);
 	/* EX_TYPE_BPF removed - never used in this minimal kernel */
@@ -214,7 +205,9 @@ int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code,
 		regs->sp += sizeof(long);
 		fallthrough;
 	case EX_TYPE_IMM_REG:
-		return ex_handler_imm_reg(e, regs, reg, imm);
+		/* ex_handler_imm_reg inlined */
+		*pt_regs_nr(regs, reg) = (long)imm;
+		return ex_handler_default(e, regs);
 	/* EX_TYPE_FAULT_SGX removed - no SGX in minimal kernel */
 	case EX_TYPE_UCOPY_LEN:
 		return ex_handler_ucopy_len(e, regs, trapnr, reg, imm);

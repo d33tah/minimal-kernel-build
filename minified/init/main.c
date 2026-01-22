@@ -548,35 +548,7 @@ static int __init ignore_unknown_bootoption(char *param, char *val,
 	return 0;
 }
 
-/* do_initcall_level inlined into do_basic_setup */
-
-static void __init do_basic_setup(void)
-{
-	int level;
-	initcall_entry_t *fn;
-	/* Use static buffer to avoid kzalloc which hangs with low memory */
-	static char command_line[256];
-	size_t len = strlen(saved_command_line);
-
-	driver_init();
-	/* init_irq_proc, do_ctors removed - empty stubs */
-
-	/* Inlined do_initcalls */
-	if (len >= sizeof(command_line))
-		len = sizeof(command_line) - 1;
-
-	for (level = 0; level < ARRAY_SIZE(initcall_levels) - 1; level++) {
-		memcpy(command_line, saved_command_line, len);
-		command_line[len] = '\0';
-		/* do_initcall_level inlined */
-		parse_args(initcall_level_names[level], command_line,
-			   __start___param, __stop___param - __start___param,
-			   level, level, NULL, ignore_unknown_bootoption);
-		for (fn = initcall_levels[level];
-		     fn < initcall_levels[level + 1]; fn++)
-			do_one_initcall(initcall_from_entry(fn));
-	}
-}
+/* do_initcall_level, do_basic_setup inlined into kernel_init_freeable */
 
 static int run_init_process(const char *init_filename)
 {
@@ -704,7 +676,31 @@ static noinline void __init kernel_init_freeable(void)
 
 	/* page_ext_init removed - empty stub */
 
-	do_basic_setup();
+	/* Inlined do_basic_setup */
+	{
+		int level;
+		initcall_entry_t *fn;
+		static char command_line[256];
+		size_t len = strlen(saved_command_line);
+
+		driver_init();
+
+		if (len >= sizeof(command_line))
+			len = sizeof(command_line) - 1;
+
+		for (level = 0; level < ARRAY_SIZE(initcall_levels) - 1;
+		     level++) {
+			memcpy(command_line, saved_command_line, len);
+			command_line[len] = '\0';
+			parse_args(initcall_level_names[level], command_line,
+				   __start___param,
+				   __stop___param - __start___param, level,
+				   level, NULL, ignore_unknown_bootoption);
+			for (fn = initcall_levels[level];
+			     fn < initcall_levels[level + 1]; fn++)
+				do_one_initcall(initcall_from_entry(fn));
+		}
+	}
 	/* wait_for_initramfs call removed - it's a no-op */
 	console_on_rootfs();
 

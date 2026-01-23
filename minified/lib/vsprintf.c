@@ -452,14 +452,7 @@ static char *pointer_string(char *buf, char *end, const void *ptr,
 }
 
 /* Simplified for minimal kernel - no pointer hashing */
-/* ptr_to_id removed - only called pointer_string */
-/* default_pointer simplified - no_hash_pointers always false */
-static char *default_pointer(char *buf, char *end, const void *ptr,
-			     struct printf_spec spec)
-{
-	return pointer_string(buf, end, ptr, spec);
-}
-
+/* ptr_to_id, default_pointer removed - just called pointer_string */
 /* restricted_pointer removed - never called */
 
 /* dentry_name, file_dentry_name inlined into pointer() - just error_string stubs */
@@ -521,7 +514,8 @@ static noinline_for_stack char *pointer(const char *fmt, char *buf, char *end,
 	case 'x':
 		return pointer_string(buf, end, ptr, spec);
 	default:
-		return default_pointer(buf, end, ptr, spec);
+		/* inlined default_pointer */
+		return pointer_string(buf, end, ptr, spec);
 	}
 }
 

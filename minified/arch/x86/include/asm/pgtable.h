@@ -20,8 +20,6 @@
 
 /* Inlined from asm/pkru.h */
 #include <asm/cpufeature.h>
-/* PKRU_AD_BIT, PKRU_WD_BIT removed - never used */
-#define init_pkru_value	0
 #define pkru_get_init_value()	0
 static inline u32 read_pkru(void) { if (cpu_feature_enabled(X86_FEATURE_OSPKE)) return rdpkru(); return 0; }
 static inline void pkru_write_default(void) { if (!cpu_feature_enabled(X86_FEATURE_OSPKE)) return; wrpkru(pkru_get_init_value()); }
@@ -60,9 +58,6 @@ extern struct mm_struct *pgd_page_get_mm(struct page *page);
 /* early_pmd_flags removed - unused */
 
 #define set_pte(ptep, pte)		native_set_pte(ptep, pte)
-
-#define set_pte_atomic(ptep, pte)					\
-	native_set_pte_atomic(ptep, pte)
 
 #define set_pmd(pmdp, pmd)		native_set_pmd(pmdp, pmd)
 

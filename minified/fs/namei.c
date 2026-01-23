@@ -569,53 +569,7 @@ static const char *step_into(struct nameidata *nd, int flags,
 	return NULL;
 }
 
-static struct dentry *follow_dotdot_rcu(struct nameidata *nd,
-					struct inode **inodep, unsigned *seqp)
-{
-	struct dentry *parent, *old;
-
-	if (path_equal(&nd->path, &nd->root))
-		goto in_root;
-	if (unlikely(nd->path.dentry == nd->path.mnt->mnt_root))
-		goto in_root;
-	old = nd->path.dentry;
-	parent = old->d_parent;
-	*inodep = parent->d_inode;
-	*seqp = read_seqcount_begin(&parent->d_seq);
-	if (unlikely(read_seqcount_retry(&old->d_seq, nd->seq)))
-		return ERR_PTR(-ECHILD);
-	if (unlikely(!path_connected(nd->path.mnt, parent)))
-		return ERR_PTR(-ECHILD);
-	return parent;
-in_root:
-	if (unlikely(read_seqretry(&mount_lock, nd->m_seq)))
-		return ERR_PTR(-ECHILD);
-	return NULL;
-}
-
-static struct dentry *follow_dotdot(struct nameidata *nd, struct inode **inodep,
-				    unsigned *seqp)
-{
-	struct dentry *parent;
-
-	if (path_equal(&nd->path, &nd->root))
-		goto in_root;
-	if (unlikely(nd->path.dentry == nd->path.mnt->mnt_root))
-		goto in_root;
-
-	parent = dget_parent(nd->path.dentry);
-	if (unlikely(!path_connected(nd->path.mnt, parent))) {
-		dput(parent);
-		return ERR_PTR(-ENOENT);
-	}
-	*seqp = 0;
-	*inodep = parent->d_inode;
-	return parent;
-
-in_root:
-	dget(nd->path.dentry);
-	return NULL;
-}
+/* follow_dotdot_rcu and follow_dotdot inlined into handle_dots */
 
 static const char *handle_dots(struct nameidata *nd, int type)
 {
@@ -630,10 +584,47 @@ static const char *handle_dots(struct nameidata *nd, int type)
 			if (error)
 				return error;
 		}
-		if (nd->flags & LOOKUP_RCU)
-			parent = follow_dotdot_rcu(nd, &inode, &seq);
-		else
-			parent = follow_dotdot(nd, &inode, &seq);
+		if (nd->flags & LOOKUP_RCU) {
+			/* follow_dotdot_rcu inlined */
+			if (path_equal(&nd->path, &nd->root) ||
+			    unlikely(nd->path.dentry ==
+				     nd->path.mnt->mnt_root)) {
+				if (unlikely(read_seqretry(&mount_lock,
+							   nd->m_seq)))
+					parent = ERR_PTR(-ECHILD);
+				else
+					parent = NULL;
+			} else {
+				struct dentry *old = nd->path.dentry;
+				parent = old->d_parent;
+				inode = parent->d_inode;
+				seq = read_seqcount_begin(&parent->d_seq);
+				if (unlikely(read_seqcount_retry(&old->d_seq,
+								 nd->seq)))
+					parent = ERR_PTR(-ECHILD);
+				else if (unlikely(!path_connected(nd->path.mnt,
+								  parent)))
+					parent = ERR_PTR(-ECHILD);
+			}
+		} else {
+			/* follow_dotdot inlined */
+			if (path_equal(&nd->path, &nd->root) ||
+			    unlikely(nd->path.dentry ==
+				     nd->path.mnt->mnt_root)) {
+				dget(nd->path.dentry);
+				parent = NULL;
+			} else {
+				parent = dget_parent(nd->path.dentry);
+				if (unlikely(!path_connected(nd->path.mnt,
+							     parent))) {
+					dput(parent);
+					parent = ERR_PTR(-ENOENT);
+				} else {
+					seq = 0;
+					inode = parent->d_inode;
+				}
+			}
+		}
 		if (IS_ERR(parent))
 			return ERR_CAST(parent);
 		if (unlikely(!parent))

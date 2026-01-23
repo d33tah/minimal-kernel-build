@@ -58,9 +58,7 @@ static void filemap_unaccount_folio(struct address_space *mapping,
 	}
 	/* else if folio_test_pmd_mappable block removed - always false */
 
-	if (WARN_ON_ONCE(folio_test_dirty(folio) &&
-			 mapping_can_writeback(mapping)))
-		folio_account_cleaned(folio, inode_to_wb(mapping->host));
+	/* folio_account_cleaned call removed - was empty stub */
 }
 
 void __filemap_remove_folio(struct folio *folio, void *shadow)
@@ -577,8 +575,7 @@ repeat:
 	if (fgp_flags & FGP_ACCESSED)
 		folio_mark_accessed(folio);
 
-	if (fgp_flags & FGP_STABLE)
-		folio_wait_stable(folio);
+	/* FGP_STABLE / folio_wait_stable removed - was empty stub */
 no_page:
 	if (!folio && (fgp_flags & FGP_CREAT)) {
 		int err;
@@ -912,8 +909,7 @@ retry:
 	if (!folio_batch_count(fbatch)) {
 		if (iocb->ki_flags & IOCB_NOIO)
 			return -EAGAIN;
-		page_cache_sync_readahead(mapping, ra, filp, index,
-					  last_index - index);
+		/* page_cache_sync_readahead removed - was empty stub */
 		filemap_get_read_batch(mapping, index, last_index, fbatch);
 	}
 	if (!folio_batch_count(fbatch)) {
@@ -1188,7 +1184,7 @@ vm_fault_t filemap_page_mkwrite(struct vm_fault *vmf)
 	}
 
 	folio_mark_dirty(folio);
-	folio_wait_stable(folio);
+	/* folio_wait_stable removed - was empty stub */
 out:
 	sb_end_pagefault(mapping->host->i_sb);
 	return ret;

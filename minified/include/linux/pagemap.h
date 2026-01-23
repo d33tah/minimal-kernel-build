@@ -238,10 +238,9 @@ static inline int folio_wait_locked_killable(struct folio *folio)
 
 /* folio_put_wait_locked removed - always returned 0 */
 /* wait_on_page_writeback inlined into single caller in filemap.c */
-/* folio_wait_writeback, __folio_cancel_dirty, folio_cancel_dirty removed - were empty stubs, calls removed */
+/* folio_wait_writeback, __folio_cancel_dirty, folio_cancel_dirty, folio_wait_stable,
+   folio_account_cleaned, page_cache_sync_readahead removed - empty stubs, calls removed */
 void folio_end_writeback(struct folio *folio);
-static inline void folio_wait_stable(struct folio *folio) { }
-static inline void folio_account_cleaned(struct folio *folio, struct bdi_writeback *wb) { }
 void folio_invalidate(struct folio *folio, size_t offset, size_t length);
 /* __set_page_dirty_nobuffers, noop_dirty_folio removed - unused */
 size_t fault_in_readable(const char __user *uaddr, size_t size);
@@ -256,13 +255,5 @@ bool filemap_release_folio(struct folio *folio, gfp_t gfp);
 
 int __filemap_add_folio(struct address_space *mapping, struct folio *folio,
 		pgoff_t index, gfp_t gfp, void **shadowp);
-
-/* struct readahead_control removed - readahead disabled for minimal kernel */
-static inline
-void page_cache_sync_readahead(struct address_space *mapping,
-		struct file_ra_state *ra, struct file *file, pgoff_t index,
-		unsigned long req_count)
-{
-}
 
 #endif

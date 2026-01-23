@@ -438,12 +438,10 @@ static inline enum zone_type folio_zonenum(const struct folio *folio)
 	return page_zonenum(&folio->page);
 }
 
-#define folio_ref_zero_or_close_to_overflow(folio) \
-	((unsigned int) folio_ref_count(folio) + 127u <= 127u)
-
+/* folio_ref_zero_or_close_to_overflow inlined into folio_get */
 static inline void folio_get(struct folio *folio)
 {
-	VM_BUG_ON_FOLIO(folio_ref_zero_or_close_to_overflow(folio), folio);
+	VM_BUG_ON_FOLIO((unsigned int) folio_ref_count(folio) + 127u <= 127u, folio);
 	folio_ref_inc(folio);
 }
 
@@ -519,23 +517,14 @@ static inline unsigned long folio_pfn(struct folio *folio)
 
 /* folio_pincount_ptr removed - unused */
 
-static inline void set_page_zone(struct page *page, enum zone_type zone)
-{
-	page->flags &= ~(ZONES_MASK << ZONES_PGSHIFT);
-	page->flags |= (zone & ZONES_MASK) << ZONES_PGSHIFT;
-}
-
-static inline void set_page_node(struct page *page, unsigned long node)
-{
-	page->flags &= ~(NODES_MASK << NODES_PGSHIFT);
-	page->flags |= (node & NODES_MASK) << NODES_PGSHIFT;
-}
-
+/* set_page_zone, set_page_node inlined into set_page_links */
 static inline void set_page_links(struct page *page, enum zone_type zone,
 	unsigned long node, unsigned long pfn)
 {
-	set_page_zone(page, zone);
-	set_page_node(page, node);
+	page->flags &= ~(ZONES_MASK << ZONES_PGSHIFT);
+	page->flags |= (zone & ZONES_MASK) << ZONES_PGSHIFT;
+	page->flags &= ~(NODES_MASK << NODES_PGSHIFT);
+	page->flags |= (node & NODES_MASK) << NODES_PGSHIFT;
 }
 
 static inline long folio_nr_pages(struct folio *folio)

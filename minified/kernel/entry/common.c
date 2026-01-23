@@ -135,34 +135,28 @@ static void exit_to_user_mode_prepare(struct pt_regs *regs)
 }
 
 /* report_single_step inlined */
-
-static void syscall_exit_work(struct pt_regs *regs, unsigned long work)
-{
-	bool step;
-
-	if (work & SYSCALL_WORK_SYSCALL_USER_DISPATCH) {
-		if (unlikely(current->syscall_dispatch.on_dispatch)) {
-			current->syscall_dispatch.on_dispatch = false;
-			return;
-		}
-	}
-
-	/* audit_syscall_exit is empty stub */
-
-	step = !(work & SYSCALL_WORK_SYSCALL_EMU) &&
-	       (work & SYSCALL_WORK_SYSCALL_EXIT_TRAP);
-	if (step || work & SYSCALL_WORK_SYSCALL_TRACE)
-		ptrace_report_syscall_exit(regs, step);
-}
-
 /* syscall_exit_to_user_mode_prepare inlined */
 
 static __always_inline void
 __syscall_exit_to_user_mode_work(struct pt_regs *regs)
 {
 	unsigned long work = READ_ONCE(current_thread_info()->syscall_work);
-	if (unlikely(work & SYSCALL_WORK_EXIT))
-		syscall_exit_work(regs, work);
+	if (unlikely(work & SYSCALL_WORK_EXIT)) {
+		bool step;
+
+		if (work & SYSCALL_WORK_SYSCALL_USER_DISPATCH) {
+			if (unlikely(current->syscall_dispatch.on_dispatch)) {
+				current->syscall_dispatch.on_dispatch = false;
+				goto done_exit_work;
+			}
+		}
+
+		step = !(work & SYSCALL_WORK_SYSCALL_EMU) &&
+		       (work & SYSCALL_WORK_SYSCALL_EXIT_TRAP);
+		if (step || work & SYSCALL_WORK_SYSCALL_TRACE)
+			ptrace_report_syscall_exit(regs, step);
+	}
+done_exit_work:
 	local_irq_disable_exit_to_user();
 	exit_to_user_mode_prepare(regs);
 }

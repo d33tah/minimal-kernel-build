@@ -140,16 +140,15 @@ static int find_next_iomem_res(resource_size_t start, resource_size_t end,
 	return p ? 0 : -ENODEV;
 }
 
-static int __walk_iomem_res_desc(resource_size_t start, resource_size_t end,
-				 unsigned long flags, unsigned long desc,
-				 void *arg,
-				 int (*func)(struct resource *, void *))
+int walk_mem_res(u64 start, u64 end, void *arg,
+		 int (*func)(struct resource *, void *))
 {
+	unsigned long flags = IORESOURCE_MEM | IORESOURCE_BUSY;
 	struct resource res;
 	int ret = -EINVAL;
 
 	while (start < end &&
-	       !find_next_iomem_res(start, end, flags, desc, &res)) {
+	       !find_next_iomem_res(start, end, flags, IORES_DESC_NONE, &res)) {
 		ret = (*func)(&res, arg);
 		if (ret)
 			break;
@@ -158,14 +157,6 @@ static int __walk_iomem_res_desc(resource_size_t start, resource_size_t end,
 	}
 
 	return ret;
-}
-
-int walk_mem_res(u64 start, u64 end, void *arg,
-		 int (*func)(struct resource *, void *))
-{
-	unsigned long flags = IORESOURCE_MEM | IORESOURCE_BUSY;
-	return __walk_iomem_res_desc(start, end, flags, IORES_DESC_NONE, arg,
-				     func);
 }
 
 /* STUB: unused resource allocation/lookup functions */

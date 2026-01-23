@@ -72,9 +72,8 @@ static int __wake_up_common(struct wait_queue_head *wq_head, unsigned int mode,
 	return nr_exclusive;
 }
 
-static void __wake_up_common_lock(struct wait_queue_head *wq_head,
-				  unsigned int mode, int nr_exclusive,
-				  int wake_flags, void *key)
+void __wake_up(struct wait_queue_head *wq_head, unsigned int mode,
+	       int nr_exclusive, void *key)
 {
 	unsigned long flags;
 	wait_queue_entry_t bookmark;
@@ -86,16 +85,10 @@ static void __wake_up_common_lock(struct wait_queue_head *wq_head,
 
 	do {
 		spin_lock_irqsave(&wq_head->lock, flags);
-		nr_exclusive = __wake_up_common(wq_head, mode, nr_exclusive,
-						wake_flags, key, &bookmark);
+		nr_exclusive = __wake_up_common(wq_head, mode, nr_exclusive, 0,
+						key, &bookmark);
 		spin_unlock_irqrestore(&wq_head->lock, flags);
 	} while (bookmark.flags & WQ_FLAG_BOOKMARK);
-}
-
-void __wake_up(struct wait_queue_head *wq_head, unsigned int mode,
-	       int nr_exclusive, void *key)
-{
-	__wake_up_common_lock(wq_head, mode, nr_exclusive, 0, key);
 }
 
 void __wake_up_locked(struct wait_queue_head *wq_head, unsigned int mode,

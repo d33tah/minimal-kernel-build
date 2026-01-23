@@ -468,93 +468,8 @@ void __init e820__reserve_setup_data(void)
 }
 
 /* e820__finish_early_params removed - body was empty (~3 LOC) */
-
-static const char *__init e820_type_to_string(struct e820_entry *entry)
-{
-	switch (entry->type) {
-	case E820_TYPE_RESERVED_KERN:
-	case E820_TYPE_RAM:
-		return "System RAM";
-	case E820_TYPE_ACPI:
-		return "ACPI Tables";
-	case E820_TYPE_NVS:
-		return "ACPI Non-volatile Storage";
-	case E820_TYPE_UNUSABLE:
-		return "Unusable memory";
-	case E820_TYPE_PRAM:
-		return "Persistent Memory (legacy)";
-	case E820_TYPE_PMEM:
-		return "Persistent Memory";
-	case E820_TYPE_RESERVED:
-		return "Reserved";
-	case E820_TYPE_SOFT_RESERVED:
-		return "Soft Reserved";
-	default:
-		return "Unknown E820 type";
-	}
-}
-
-static unsigned long __init e820_type_to_iomem_type(struct e820_entry *entry)
-{
-	switch (entry->type) {
-	case E820_TYPE_RESERVED_KERN:
-	case E820_TYPE_RAM:
-		return IORESOURCE_SYSTEM_RAM;
-	case E820_TYPE_ACPI:
-	case E820_TYPE_NVS:
-	case E820_TYPE_UNUSABLE:
-	case E820_TYPE_PRAM:
-	case E820_TYPE_PMEM:
-	case E820_TYPE_RESERVED:
-	case E820_TYPE_SOFT_RESERVED:
-	default:
-		return IORESOURCE_MEM;
-	}
-}
-
-static unsigned long __init e820_type_to_iores_desc(struct e820_entry *entry)
-{
-	switch (entry->type) {
-	case E820_TYPE_ACPI:
-		return IORES_DESC_ACPI_TABLES;
-	case E820_TYPE_NVS:
-		return IORES_DESC_ACPI_NV_STORAGE;
-	case E820_TYPE_PMEM:
-		return IORES_DESC_PERSISTENT_MEMORY;
-	case E820_TYPE_PRAM:
-		return IORES_DESC_PERSISTENT_MEMORY_LEGACY;
-	case E820_TYPE_RESERVED:
-		return IORES_DESC_RESERVED;
-	case E820_TYPE_SOFT_RESERVED:
-		return IORES_DESC_SOFT_RESERVED;
-	case E820_TYPE_RESERVED_KERN:
-	case E820_TYPE_RAM:
-	case E820_TYPE_UNUSABLE:
-	default:
-		return IORES_DESC_NONE;
-	}
-}
-
-static bool __init do_mark_busy(enum e820_type type, struct resource *res)
-{
-	if (res->start < (1ULL << 20))
-		return true;
-
-	switch (type) {
-	case E820_TYPE_RESERVED:
-	case E820_TYPE_SOFT_RESERVED:
-	case E820_TYPE_PRAM:
-	case E820_TYPE_PMEM:
-		return false;
-	case E820_TYPE_RESERVED_KERN:
-	case E820_TYPE_RAM:
-	case E820_TYPE_ACPI:
-	case E820_TYPE_NVS:
-	case E820_TYPE_UNUSABLE:
-	default:
-		return true;
-	}
-}
+/* e820_type_to_string, e820_type_to_iomem_type, e820_type_to_iores_desc, do_mark_busy
+   inlined into e820__reserve_resources */
 
 static struct resource __initdata *e820_res;
 
@@ -581,13 +496,85 @@ void __init e820__reserve_resources(void)
 		}
 		res->start = entry->addr;
 		res->end = end;
-		res->name = e820_type_to_string(entry);
-		res->flags = e820_type_to_iomem_type(entry);
-		res->desc = e820_type_to_iores_desc(entry);
-
-		if (do_mark_busy(entry->type, res)) {
-			res->flags |= IORESOURCE_BUSY;
-			insert_resource(&iomem_resource, res);
+		/* e820_type_to_string inlined */
+		switch (entry->type) {
+		case E820_TYPE_RESERVED_KERN:
+		case E820_TYPE_RAM:
+			res->name = "System RAM";
+			break;
+		case E820_TYPE_ACPI:
+			res->name = "ACPI Tables";
+			break;
+		case E820_TYPE_NVS:
+			res->name = "ACPI Non-volatile Storage";
+			break;
+		case E820_TYPE_UNUSABLE:
+			res->name = "Unusable memory";
+			break;
+		case E820_TYPE_PRAM:
+			res->name = "Persistent Memory (legacy)";
+			break;
+		case E820_TYPE_PMEM:
+			res->name = "Persistent Memory";
+			break;
+		case E820_TYPE_RESERVED:
+			res->name = "Reserved";
+			break;
+		case E820_TYPE_SOFT_RESERVED:
+			res->name = "Soft Reserved";
+			break;
+		default:
+			res->name = "Unknown E820 type";
+			break;
+		}
+		/* e820_type_to_iomem_type inlined */
+		res->flags = (entry->type == E820_TYPE_RESERVED_KERN ||
+			      entry->type == E820_TYPE_RAM) ?
+				     IORESOURCE_SYSTEM_RAM :
+				     IORESOURCE_MEM;
+		/* e820_type_to_iores_desc inlined */
+		switch (entry->type) {
+		case E820_TYPE_ACPI:
+			res->desc = IORES_DESC_ACPI_TABLES;
+			break;
+		case E820_TYPE_NVS:
+			res->desc = IORES_DESC_ACPI_NV_STORAGE;
+			break;
+		case E820_TYPE_PMEM:
+			res->desc = IORES_DESC_PERSISTENT_MEMORY;
+			break;
+		case E820_TYPE_PRAM:
+			res->desc = IORES_DESC_PERSISTENT_MEMORY_LEGACY;
+			break;
+		case E820_TYPE_RESERVED:
+			res->desc = IORES_DESC_RESERVED;
+			break;
+		case E820_TYPE_SOFT_RESERVED:
+			res->desc = IORES_DESC_SOFT_RESERVED;
+			break;
+		default:
+			res->desc = IORES_DESC_NONE;
+			break;
+		}
+		/* do_mark_busy inlined */
+		{
+			bool busy = true;
+			if (res->start >= (1ULL << 20)) {
+				switch (entry->type) {
+				case E820_TYPE_RESERVED:
+				case E820_TYPE_SOFT_RESERVED:
+				case E820_TYPE_PRAM:
+				case E820_TYPE_PMEM:
+					busy = false;
+					break;
+				default:
+					break;
+				}
+			}
+			if (busy) {
+				res->flags |= IORESOURCE_BUSY;
+				insert_resource(&iomem_resource, res);
+			}
 		}
 		res++;
 	}

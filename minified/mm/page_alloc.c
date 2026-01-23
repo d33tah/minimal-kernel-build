@@ -469,25 +469,7 @@ __rmqueue_pcplist(struct zone *zone, unsigned int order, int migratetype,
 	return page;
 }
 
-static struct page *rmqueue_pcplist(struct zone *preferred_zone,
-				    struct zone *zone, unsigned int order,
-				    gfp_t gfp_flags, int migratetype,
-				    unsigned int alloc_flags)
-{
-	struct per_cpu_pages *pcp;
-	struct list_head *list;
-	struct page *page;
-	unsigned long flags;
-
-	/* Stub: simplified PCP allocation for minimal kernel */
-	local_lock_irqsave(&pagesets.lock, flags);
-	pcp = this_cpu_ptr(zone->per_cpu_pageset);
-	list = &pcp->lists[(MIGRATE_PCPTYPES * order) + migratetype];
-	page = __rmqueue_pcplist(zone, order, migratetype, alloc_flags, pcp,
-				 list);
-	local_unlock_irqrestore(&pagesets.lock, flags);
-	return page;
-}
+/* rmqueue_pcplist inlined into rmqueue */
 
 static inline struct page *rmqueue(struct zone *preferred_zone,
 				   struct zone *zone, unsigned int order,
@@ -498,9 +480,15 @@ static inline struct page *rmqueue(struct zone *preferred_zone,
 	struct page *page;
 
 	if (likely(order <= PAGE_ALLOC_COSTLY_ORDER)) {
-		/* CONFIG_CMA not enabled - always take this path */
-		page = rmqueue_pcplist(preferred_zone, zone, order, gfp_flags,
-				       migratetype, alloc_flags);
+		/* rmqueue_pcplist inlined */
+		struct per_cpu_pages *pcp;
+		struct list_head *list;
+		local_lock_irqsave(&pagesets.lock, flags);
+		pcp = this_cpu_ptr(zone->per_cpu_pageset);
+		list = &pcp->lists[(MIGRATE_PCPTYPES * order) + migratetype];
+		page = __rmqueue_pcplist(zone, order, migratetype, alloc_flags,
+					 pcp, list);
+		local_unlock_irqrestore(&pagesets.lock, flags);
 		goto out;
 	}
 
@@ -1044,45 +1032,8 @@ static unsigned long __init zone_spanned_pages_in_node(
 	return *zone_end_pfn - *zone_start_pfn;
 }
 
-static unsigned long __init __absent_pages_in_range(
-	int nid, unsigned long range_start_pfn, unsigned long range_end_pfn)
-{
-	unsigned long nr_absent = range_end_pfn - range_start_pfn;
-	unsigned long start_pfn, end_pfn;
-	int i;
-
-	for_each_mem_pfn_range(i, nid, &start_pfn, &end_pfn, NULL) {
-		start_pfn = clamp(start_pfn, range_start_pfn, range_end_pfn);
-		end_pfn = clamp(end_pfn, range_start_pfn, range_end_pfn);
-		nr_absent -= end_pfn - start_pfn;
-	}
-	return nr_absent;
-}
-
-static unsigned long __init zone_absent_pages_in_node(
-	int nid, unsigned long zone_type, unsigned long node_start_pfn,
-	unsigned long node_end_pfn)
-{
-	unsigned long zone_low = arch_zone_lowest_possible_pfn[zone_type];
-	unsigned long zone_high = arch_zone_highest_possible_pfn[zone_type];
-	unsigned long zone_start_pfn, zone_end_pfn;
-	unsigned long nr_absent;
-
-	if (!node_start_pfn && !node_end_pfn)
-		return 0;
-
-	zone_start_pfn = clamp(node_start_pfn, zone_low, zone_high);
-	zone_end_pfn = clamp(node_end_pfn, zone_low, zone_high);
-
-	adjust_zone_range_for_zone_movable(nid, zone_type, node_start_pfn,
-					   node_end_pfn, &zone_start_pfn,
-					   &zone_end_pfn);
-	nr_absent = __absent_pages_in_range(nid, zone_start_pfn, zone_end_pfn);
-
-	return nr_absent;
-}
-
-/* calculate_node_totalpages inlined into free_area_init */
+/* __absent_pages_in_range, zone_absent_pages_in_node, calculate_node_totalpages
+   inlined into free_area_init */
 
 /* usemap_size inlined into free_area_init_core */
 /* setup_usemap inlined into free_area_init_core */
@@ -1156,9 +1107,42 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 				spanned = zone_spanned_pages_in_node(
 					pgdat->node_id, zi, node_start_pfn,
 					node_end_pfn, &z_start_pfn, &z_end_pfn);
-				absent = zone_absent_pages_in_node(
-					pgdat->node_id, zi, node_start_pfn,
-					node_end_pfn);
+				/* zone_absent_pages_in_node inlined */
+				{
+					unsigned long z_low =
+						arch_zone_lowest_possible_pfn[zi];
+					unsigned long z_high =
+						arch_zone_highest_possible_pfn
+							[zi];
+					unsigned long zs_pfn, ze_pfn;
+					int j;
+					absent = 0;
+					if (node_start_pfn || node_end_pfn) {
+						zs_pfn = clamp(node_start_pfn,
+							       z_low, z_high);
+						ze_pfn = clamp(node_end_pfn,
+							       z_low, z_high);
+						adjust_zone_range_for_zone_movable(
+							pgdat->node_id, zi,
+							node_start_pfn,
+							node_end_pfn, &zs_pfn,
+							&ze_pfn);
+						/* __absent_pages_in_range inlined */
+						absent = ze_pfn - zs_pfn;
+						for_each_mem_pfn_range(
+							j, pgdat->node_id,
+							&z_low, &z_high, NULL) {
+							z_low = clamp(z_low,
+								      zs_pfn,
+								      ze_pfn);
+							z_high = clamp(z_high,
+								       zs_pfn,
+								       ze_pfn);
+							absent -=
+								z_high - z_low;
+						}
+					}
+				}
 
 				zsize = spanned;
 				real_size = zsize - absent;

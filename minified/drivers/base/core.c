@@ -202,27 +202,6 @@ void device_initialize(struct device *dev)
 
 static DEFINE_MUTEX(gdp_mutex);
 
-/* live_in_glue_dir, get_glue_dir, kobject_has_children, cleanup_glue_dir - inlined (~17 LOC) */
-static void cleanup_glue_dir(struct device *dev, struct kobject *glue_dir)
-{
-	unsigned int ref;
-
-	/* Inlined live_in_glue_dir check */
-	if (!glue_dir || !dev->class ||
-	    glue_dir->kset != &dev->class->p->glue_dirs)
-		return;
-
-	mutex_lock(&gdp_mutex);
-
-	ref = kref_read(&glue_dir->kref);
-	/* Inlined kobject_has_children check */
-	WARN_ON_ONCE(kref_read(&glue_dir->kref) == 0);
-	if (!(glue_dir->sd && glue_dir->sd->dir.subdirs) && !--ref)
-		kobject_del(glue_dir);
-	kobject_put(glue_dir);
-	mutex_unlock(&gdp_mutex);
-}
-
 /* device_remove_class_symlinks was empty stub - removed */
 
 int dev_set_name(struct device *dev, const char *fmt, ...)
@@ -236,18 +215,6 @@ int dev_set_name(struct device *dev, const char *fmt, ...)
 	return err;
 }
 
-static int device_private_init(struct device *dev)
-{
-	dev->p = kzalloc(sizeof(*dev->p), GFP_KERNEL);
-	if (!dev->p)
-		return -ENOMEM;
-	dev->p->device = dev;
-	klist_init(&dev->p->klist_children, klist_children_get,
-		   klist_children_put);
-	INIT_LIST_HEAD(&dev->p->deferred_probe);
-	return 0;
-}
-
 int device_add(struct device *dev)
 {
 	struct device *parent;
@@ -259,9 +226,15 @@ int device_add(struct device *dev)
 		return error;
 
 	if (!dev->p) {
-		error = device_private_init(dev);
-		if (error)
+		dev->p = kzalloc(sizeof(*dev->p), GFP_KERNEL);
+		if (!dev->p) {
+			error = -ENOMEM;
 			goto done;
+		}
+		dev->p->device = dev;
+		klist_init(&dev->p->klist_children, klist_children_get,
+			   klist_children_put);
+		INIT_LIST_HEAD(&dev->p->deferred_probe);
 	}
 
 	if (dev->init_name) {
@@ -352,7 +325,21 @@ void device_del(struct device *dev)
 	kobject_uevent(&dev->kobj, KOBJ_REMOVE);
 	glue_dir = dev->kobj.parent; /* Inlined get_glue_dir */
 	kobject_del(&dev->kobj);
-	cleanup_glue_dir(dev, glue_dir);
+
+	/* Inlined cleanup_glue_dir */
+	if (glue_dir && dev->class &&
+	    glue_dir->kset == &dev->class->p->glue_dirs) {
+		unsigned int ref;
+
+		mutex_lock(&gdp_mutex);
+		ref = kref_read(&glue_dir->kref);
+		WARN_ON_ONCE(kref_read(&glue_dir->kref) == 0);
+		if (!(glue_dir->sd && glue_dir->sd->dir.subdirs) && !--ref)
+			kobject_del(glue_dir);
+		kobject_put(glue_dir);
+		mutex_unlock(&gdp_mutex);
+	}
+
 	memalloc_noio_restore(noio_flag);
 	put_device(parent);
 }

@@ -15,12 +15,6 @@
 
 static struct kset *class_kset;
 
-static struct device *klist_class_to_dev(struct klist_node *n)
-{
-	struct device_private *p = to_device_private_class(n);
-	return p->device;
-}
-
 void class_dev_iter_init(struct class_dev_iter *iter, struct class *class,
 			 struct device *start, const struct device_type *type)
 {
@@ -41,7 +35,7 @@ struct device *class_dev_iter_next(struct class_dev_iter *iter)
 		knode = klist_next(&iter->ki);
 		if (!knode)
 			return NULL;
-		dev = klist_class_to_dev(knode);
+		dev = to_device_private_class(knode)->device;
 		if (!iter->type || iter->type == dev->type)
 			return dev;
 	}

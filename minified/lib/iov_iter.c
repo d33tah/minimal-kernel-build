@@ -549,48 +549,37 @@ static void pipe_advance(struct iov_iter *i, size_t size)
 	pipe_truncate(i);
 }
 
-static void iov_iter_bvec_advance(struct iov_iter *i, size_t size)
-{
-	struct bvec_iter bi;
-
-	bi.bi_size = i->count;
-	bi.bi_bvec_done = i->iov_offset;
-	bi.bi_idx = 0;
-	bvec_iter_advance(i->bvec, &bi, size);
-
-	i->bvec += bi.bi_idx;
-	i->nr_segs -= bi.bi_idx;
-	i->count = bi.bi_size;
-	i->iov_offset = bi.bi_bvec_done;
-}
-
-static void iov_iter_iovec_advance(struct iov_iter *i, size_t size)
-{
-	const struct iovec *iov, *end;
-
-	if (!i->count)
-		return;
-	i->count -= size;
-
-	size += i->iov_offset;
-	for (iov = i->iov, end = iov + i->nr_segs; iov < end; iov++) {
-		if (likely(size < iov->iov_len))
-			break;
-		size -= iov->iov_len;
-	}
-	i->iov_offset = size;
-	i->nr_segs -= iov - i->iov;
-	i->iov = iov;
-}
-
 void iov_iter_advance(struct iov_iter *i, size_t size)
 {
 	if (unlikely(i->count < size))
 		size = i->count;
 	if (likely(iter_is_iovec(i) || iov_iter_is_kvec(i))) {
-		iov_iter_iovec_advance(i, size);
+		/* iov_iter_iovec_advance inlined */
+		const struct iovec *iov, *end;
+		if (i->count) {
+			i->count -= size;
+			size += i->iov_offset;
+			for (iov = i->iov, end = iov + i->nr_segs; iov < end;
+			     iov++) {
+				if (likely(size < iov->iov_len))
+					break;
+				size -= iov->iov_len;
+			}
+			i->iov_offset = size;
+			i->nr_segs -= iov - i->iov;
+			i->iov = iov;
+		}
 	} else if (iov_iter_is_bvec(i)) {
-		iov_iter_bvec_advance(i, size);
+		/* iov_iter_bvec_advance inlined */
+		struct bvec_iter bi;
+		bi.bi_size = i->count;
+		bi.bi_bvec_done = i->iov_offset;
+		bi.bi_idx = 0;
+		bvec_iter_advance(i->bvec, &bi, size);
+		i->bvec += bi.bi_idx;
+		i->nr_segs -= bi.bi_idx;
+		i->count = bi.bi_size;
+		i->iov_offset = bi.bi_bvec_done;
 	} else if (iov_iter_is_pipe(i)) {
 		pipe_advance(i, size);
 	} else if (unlikely(iov_iter_is_xarray(i))) {

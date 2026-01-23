@@ -95,27 +95,20 @@
 #define __UNLOCK_IRQ(lock) do { local_irq_enable(); __UNLOCK(lock); } while (0)
 #define __UNLOCK_IRQRESTORE(lock, flags) do { local_irq_restore(flags); __UNLOCK(lock); } while (0)
 #define _raw_spin_lock(lock)			__LOCK(lock)
-#define _raw_spin_lock_nested(lock, subclass)	__LOCK(lock)
 #define _raw_read_lock(lock)			__LOCK(lock)
 #define _raw_write_lock(lock)			__LOCK(lock)
-#define _raw_write_lock_nested(lock, subclass)	__LOCK(lock)
 #define _raw_spin_lock_bh(lock)			__LOCK_BH(lock)
 #define _raw_spin_lock_irq(lock)		__LOCK_IRQ(lock)
-#define _raw_read_lock_irq(lock)		__LOCK_IRQ(lock)
 #define _raw_write_lock_irq(lock)		__LOCK_IRQ(lock)
 #define _raw_spin_lock_irqsave(lock, flags)	__LOCK_IRQSAVE(lock, flags)
-/* _raw_write_lock_irqsave removed - unused */
 #define _raw_spin_trylock(lock)			({ __LOCK(lock); 1; })
-/* _raw_read_trylock, _raw_write_trylock removed - unused */
 #define _raw_spin_unlock(lock)			__UNLOCK(lock)
 #define _raw_read_unlock(lock)			__UNLOCK(lock)
 #define _raw_write_unlock(lock)			__UNLOCK(lock)
 #define _raw_spin_unlock_bh(lock)		__UNLOCK_BH(lock)
 #define _raw_spin_unlock_irq(lock)		__UNLOCK_IRQ(lock)
-#define _raw_read_unlock_irq(lock)		__UNLOCK_IRQ(lock)
 #define _raw_write_unlock_irq(lock)		__UNLOCK_IRQ(lock)
 #define _raw_spin_unlock_irqrestore(lock, flags) __UNLOCK_IRQRESTORE(lock, flags)
-/* _raw_write_unlock_irqrestore removed - unused */
 /* End of spinlock_api_up.h */
 
 

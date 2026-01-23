@@ -124,21 +124,7 @@ const char *tty_driver_name(const struct tty_struct *tty)
 }
 
 /* Removed: tty_paranoia_check, check_tty_count - always returned 0 */
-
-static struct tty_driver *get_tty_driver(dev_t device, int *index)
-{
-	struct tty_driver *p;
-
-	list_for_each_entry(p, &tty_drivers, tty_drivers) {
-		dev_t base = MKDEV(p->major, p->minor_start);
-
-		if (device < base || device >= base + p->num)
-			continue;
-		*index = device - base;
-		return tty_driver_kref_get(p);
-	}
-	return NULL;
-}
+/* Removed: get_tty_driver - inlined into tty_open_by_driver */
 
 static ssize_t hung_up_tty_read(struct kiocb *iocb, struct iov_iter *to)
 {
@@ -214,47 +200,7 @@ int tty_hung_up_p(struct file *filp)
 	return (filp && filp->f_op == &hung_up_tty_fops);
 }
 
-static int iterate_tty_read(struct tty_ldisc *ld, struct tty_struct *tty,
-			    struct file *file, struct iov_iter *to)
-{
-	int retval = 0;
-	void *cookie = NULL;
-	unsigned long offset = 0;
-	char kernel_buf[64];
-	size_t count = iov_iter_count(to);
-
-	do {
-		int size, copied;
-
-		size = count > sizeof(kernel_buf) ? sizeof(kernel_buf) : count;
-		size = ld->ops->read(tty, file, kernel_buf, size, &cookie,
-				     offset);
-		if (!size)
-			break;
-
-		if (size < 0) {
-			if (retval)
-				break;
-			retval = size;
-
-			if (retval == -EOVERFLOW)
-				offset = 0;
-			break;
-		}
-
-		copied = copy_to_iter(kernel_buf, size, to);
-		offset += copied;
-		count -= copied;
-
-		if (unlikely(copied != size)) {
-			count = 0;
-			retval = -EFAULT;
-		}
-	} while (cookie);
-
-	memzero_explicit(kernel_buf, sizeof(kernel_buf));
-	return offset ? offset : retval;
-}
+/* iterate_tty_read inlined into tty_read */
 
 static ssize_t tty_read(struct kiocb *iocb, struct iov_iter *to)
 {
@@ -270,8 +216,42 @@ static ssize_t tty_read(struct kiocb *iocb, struct iov_iter *to)
 	if (!ld)
 		return hung_up_tty_read(iocb, to);
 	i = -EIO;
-	if (ld->ops->read)
-		i = iterate_tty_read(ld, tty, file, to);
+	if (ld->ops->read) {
+		/* iterate_tty_read inlined */
+		int retval = 0;
+		void *cookie = NULL;
+		unsigned long offset = 0;
+		char kernel_buf[64];
+		size_t count = iov_iter_count(to);
+
+		do {
+			int size, copied;
+
+			size = count > sizeof(kernel_buf) ? sizeof(kernel_buf) :
+							    count;
+			size = ld->ops->read(tty, file, kernel_buf, size,
+					     &cookie, offset);
+			if (!size)
+				break;
+			if (size < 0) {
+				if (retval)
+					break;
+				retval = size;
+				if (retval == -EOVERFLOW)
+					offset = 0;
+				break;
+			}
+			copied = copy_to_iter(kernel_buf, size, to);
+			offset += copied;
+			count -= copied;
+			if (unlikely(copied != size)) {
+				count = 0;
+				retval = -EFAULT;
+			}
+		} while (cookie);
+		memzero_explicit(kernel_buf, sizeof(kernel_buf));
+		i = offset ? offset : retval;
+	}
 	tty_ldisc_deref(ld);
 
 	return i;
@@ -392,23 +372,7 @@ static ssize_t tty_line_name(struct tty_driver *driver, int index, char *p)
 			       index + driver->name_base);
 }
 
-static struct tty_struct *tty_driver_lookup_tty(struct tty_driver *driver,
-						struct file *file, int idx)
-{
-	struct tty_struct *tty;
-
-	if (driver->ops->lookup)
-		if (!file)
-			tty = ERR_PTR(-EIO);
-		else
-			tty = driver->ops->lookup(driver, file, idx);
-	else
-		tty = driver->ttys[idx];
-
-	if (!IS_ERR(tty))
-		tty_kref_get(tty);
-	return tty;
-}
+/* tty_driver_lookup_tty inlined into tty_open_by_driver */
 
 void tty_init_termios(struct tty_struct *tty)
 {
@@ -685,7 +649,19 @@ static struct tty_struct *tty_open_by_driver(dev_t device, struct file *filp)
 		return ERR_PTR(-ENODEV);
 	}
 	default:
-		driver = get_tty_driver(device, &index);
+		/* get_tty_driver inlined */
+		{
+			struct tty_driver *p;
+			driver = NULL;
+			list_for_each_entry(p, &tty_drivers, tty_drivers) {
+				dev_t base = MKDEV(p->major, p->minor_start);
+				if (device < base || device >= base + p->num)
+					continue;
+				index = device - base;
+				driver = tty_driver_kref_get(p);
+				break;
+			}
+		}
 		if (!driver) {
 			mutex_unlock(&tty_mutex);
 			return ERR_PTR(-ENODEV);
@@ -697,7 +673,17 @@ static struct tty_struct *tty_open_by_driver(dev_t device, struct file *filp)
 		return ERR_CAST(driver);
 	}
 
-	tty = tty_driver_lookup_tty(driver, filp, index);
+	/* tty_driver_lookup_tty inlined */
+	if (driver->ops->lookup)
+		if (!filp)
+			tty = ERR_PTR(-EIO);
+		else
+			tty = driver->ops->lookup(driver, filp, index);
+	else
+		tty = driver->ttys[index];
+	if (!IS_ERR(tty))
+		tty_kref_get(tty);
+	/* end inline */
 	if (IS_ERR(tty)) {
 		mutex_unlock(&tty_mutex);
 		goto out;

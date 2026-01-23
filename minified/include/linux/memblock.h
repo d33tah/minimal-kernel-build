@@ -144,10 +144,7 @@ void __next_mem_pfn_range(int *idx, int nid, unsigned long *out_start_pfn,
 #define MEMBLOCK_ALLOC_NOLEAKTRACE	1
 
 #define MEMBLOCK_LOW_LIMIT 0
-
-#ifndef ARCH_LOW_ADDRESS_LIMIT
-#define ARCH_LOW_ADDRESS_LIMIT  0xffffffffUL
-#endif
+/* ARCH_LOW_ADDRESS_LIMIT removed - unused */
 
 phys_addr_t memblock_phys_alloc_range(phys_addr_t size, phys_addr_t align,
 				      phys_addr_t start, phys_addr_t end);

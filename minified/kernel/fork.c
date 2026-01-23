@@ -253,7 +253,7 @@ void __init fork_init(void)
 	int i;
 	u64 threads;
 	unsigned long nr_pages = totalram_pages();
-#ifndef CONFIG_ARCH_TASK_STRUCT_ALLOCATOR
+	/* CONFIG_ARCH_TASK_STRUCT_ALLOCATOR not set - #ifndef removed */
 #ifndef ARCH_MIN_TASKALIGN
 #define ARCH_MIN_TASKALIGN 0
 #endif
@@ -269,7 +269,6 @@ void __init fork_init(void)
 	task_struct_cachep = kmem_cache_create_usercopy(
 		"task_struct", arch_task_struct_size, align,
 		SLAB_PANIC | SLAB_ACCOUNT, useroffset, usersize, NULL);
-#endif
 
 	/* Inlined set_max_threads */
 	if (fls64(nr_pages) + fls64(PAGE_SIZE) > 64)

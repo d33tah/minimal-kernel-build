@@ -16,7 +16,7 @@
 #error tlb_needs_table_invalidate() requires MMU_GATHER_RCU_TABLE_FREE
 #endif
 
-#ifndef CONFIG_MMU_GATHER_NO_GATHER
+/* CONFIG_MMU_GATHER_NO_GATHER not set - #ifndef removed */
 #define MMU_GATHER_BUNDLE	8
 
 struct mmu_gather_batch {
@@ -33,7 +33,6 @@ struct mmu_gather_batch {
 
 extern bool __tlb_remove_page_size(struct mmu_gather *tlb, struct page *page,
 				   int page_size);
-#endif
 
 struct mmu_gather {
 	struct mm_struct	*mm;
@@ -54,11 +53,10 @@ struct mmu_gather {
 
 	unsigned int		batch_count;
 
-#ifndef CONFIG_MMU_GATHER_NO_GATHER
+	/* CONFIG_MMU_GATHER_NO_GATHER not set - #ifndef removed */
 	struct mmu_gather_batch *active;
 	struct mmu_gather_batch	local;
 	struct page		*__pages[MMU_GATHER_BUNDLE];
-#endif
 };
 
 void tlb_flush_mmu(struct mmu_gather *tlb);

@@ -8,7 +8,7 @@
 #include <asm/io.h>
 
 
-#define NMI_FLAG_FIRST	1
+/* NMI_FLAG_FIRST removed - unused */
 
 enum {
 	NMI_LOCAL=0,

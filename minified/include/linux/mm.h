@@ -40,34 +40,20 @@ static inline void init_page_count(struct page *page)
 	set_page_count(page, 1);
 }
 
-static inline void page_ref_add(struct page *page, int nr)
-{
-	atomic_add(nr, &page->_refcount);
-}
-
+/* page_ref_add, page_ref_sub, page_ref_inc inlined into folio_* versions */
 static inline void folio_ref_add(struct folio *folio, int nr)
 {
-	page_ref_add(&folio->page, nr);
-}
-
-static inline void page_ref_sub(struct page *page, int nr)
-{
-	atomic_sub(nr, &page->_refcount);
+	atomic_add(nr, &folio->page._refcount);
 }
 
 static inline void folio_ref_sub(struct folio *folio, int nr)
 {
-	page_ref_sub(&folio->page, nr);
-}
-
-static inline void page_ref_inc(struct page *page)
-{
-	atomic_inc(&page->_refcount);
+	atomic_sub(nr, &folio->page._refcount);
 }
 
 static inline void folio_ref_inc(struct folio *folio)
 {
-	page_ref_inc(&folio->page);
+	atomic_inc(&folio->page._refcount);
 }
 
 
@@ -82,15 +68,10 @@ static inline int page_ref_dec_and_test(struct page *page)
 }
 
 
-static inline bool folio_ref_add_unless(struct folio *folio, int nr, int u)
-{
-	return atomic_add_unless(&folio->page._refcount, nr, u);
-}
-
-
+/* folio_ref_add_unless inlined into folio_try_get_rcu */
 static inline bool folio_try_get_rcu(struct folio *folio)
 {
-	return folio_ref_add_unless(folio, 1, 0);
+	return atomic_add_unless(&folio->page._refcount, 1, 0);
 }
 #include <linux/sizes.h>
 #include <linux/sched.h>

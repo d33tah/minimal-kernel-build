@@ -67,30 +67,7 @@ static void acct_arg_size(struct linux_binprm *bprm, unsigned long pages)
 	add_mm_counter(mm, MM_ANONPAGES, diff);
 }
 
-static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos,
-				 int write)
-{
-	struct page *page;
-	int ret;
-	unsigned int gup_flags = FOLL_FORCE;
-
-	if (write)
-		gup_flags |= FOLL_WRITE;
-
-	mmap_read_lock(bprm->mm);
-	ret = get_user_pages_remote(bprm->mm, pos, 1, gup_flags, &page, NULL,
-				    NULL);
-	mmap_read_unlock(bprm->mm);
-	if (ret <= 0)
-		return NULL;
-
-	if (write)
-		acct_arg_size(bprm, vma_pages(bprm->vma));
-
-	return page;
-}
-
-/* put_arg_page and flush_arg_page inlined - trivial stubs */
+/* get_arg_page, put_arg_page and flush_arg_page inlined */
 
 static int bprm_mm_init(struct linux_binprm *bprm)
 {
@@ -193,9 +170,18 @@ int copy_string_kernel(const char *arg, struct linux_binprm *bprm)
 		arg -= bytes_to_copy;
 		len -= bytes_to_copy;
 
-		page = get_arg_page(bprm, pos, 1);
-		if (!page)
-			return -E2BIG;
+		/* get_arg_page inlined */
+		{
+			int ret;
+			mmap_read_lock(bprm->mm);
+			ret = get_user_pages_remote(bprm->mm, pos, 1,
+						    FOLL_FORCE | FOLL_WRITE,
+						    &page, NULL, NULL);
+			mmap_read_unlock(bprm->mm);
+			if (ret <= 0)
+				return -E2BIG;
+			acct_arg_size(bprm, vma_pages(bprm->vma));
+		}
 		kaddr = kmap_atomic(page);
 		memcpy(kaddr + offset_in_page(pos), arg, bytes_to_copy);
 		kunmap_atomic(kaddr);

@@ -396,30 +396,7 @@ static int set_root(struct nameidata *nd)
 	return 0;
 }
 
-static int nd_jump_root(struct nameidata *nd)
-{
-	if (!nd->root.mnt) {
-		int error = set_root(nd);
-		if (error)
-			return error;
-	}
-	if (nd->flags & LOOKUP_RCU) {
-		struct dentry *d;
-		nd->path = nd->root;
-		d = nd->path.dentry;
-		nd->inode = d->d_inode;
-		nd->seq = nd->root_seq;
-		if (unlikely(read_seqcount_retry(&d->d_seq, nd->seq)))
-			return -ECHILD;
-	} else {
-		path_put(&nd->path);
-		nd->path = nd->root;
-		path_get(&nd->path);
-		nd->inode = nd->path.dentry->d_inode;
-	}
-	nd->state |= ND_JUMPED;
-	return 0;
-}
+/* nd_jump_root inlined into path_init (~23 LOC) */
 
 static inline void put_link(struct nameidata *nd)
 {
@@ -857,9 +834,25 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
 
 	/* Simplified: handle absolute/relative paths - LOOKUP_IN_ROOT never set */
 	if (*s == '/') {
-		error = nd_jump_root(nd);
-		if (unlikely(error))
+		/* inlined nd_jump_root */
+		error = set_root(nd);
+		if (error)
 			return ERR_PTR(error);
+		if (nd->flags & LOOKUP_RCU) {
+			struct dentry *d;
+			nd->path = nd->root;
+			d = nd->path.dentry;
+			nd->inode = d->d_inode;
+			nd->seq = nd->root_seq;
+			if (unlikely(read_seqcount_retry(&d->d_seq, nd->seq)))
+				return ERR_PTR(-ECHILD);
+		} else {
+			path_put(&nd->path);
+			nd->path = nd->root;
+			path_get(&nd->path);
+			nd->inode = nd->path.dentry->d_inode;
+		}
+		nd->state |= ND_JUMPED;
 		return s;
 	}
 

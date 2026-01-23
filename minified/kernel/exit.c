@@ -46,55 +46,7 @@ void __ptrace_unlink(struct task_struct *child)
 }
 /* exit_ptrace removed - empty stub */
 
-static void __exit_signal(struct task_struct *tsk)
-{
-	struct signal_struct *sig = tsk->signal;
-	bool group_dead = thread_group_leader(tsk);
-	struct sighand_struct *sighand;
-	struct tty_struct *tty;
-
-	sighand = rcu_dereference_check(tsk->sighand,
-					lockdep_tasklist_lock_is_held());
-	spin_lock(&sighand->siglock);
-
-	if (group_dead) {
-		tty = sig->tty;
-		sig->tty = NULL;
-	} else {
-		if (sig->notify_count > 0 && !--sig->notify_count)
-			wake_up_process(sig->group_exec_task);
-
-		if (tsk == sig->curr_target)
-			sig->curr_target = next_thread(tsk);
-	}
-
-	/* add_device_randomness, task_cputime, sig->utime/stime, min_flt/maj_flt/nvcsw/nivcsw,
-	 * sum_sched_runtime, io accounting all removed - write-only or empty stub fields
-	 * stats_lock also removed since it protected those removed fields */
-	sig->nr_threads--;
-	nr_threads--;
-	detach_pid(tsk, PIDTYPE_PID);
-	if (group_dead) {
-		detach_pid(tsk, PIDTYPE_TGID);
-		detach_pid(tsk, PIDTYPE_PGID);
-		detach_pid(tsk, PIDTYPE_SID);
-		list_del_rcu(&tsk->tasks);
-		list_del_init(&tsk->sibling);
-	}
-	list_del_rcu(&tsk->thread_group);
-	list_del_rcu(&tsk->thread_node);
-
-	flush_sigqueue(&tsk->pending);
-	tsk->sighand = NULL;
-	spin_unlock(&sighand->siglock);
-
-	__cleanup_sighand(sighand);
-	clear_tsk_thread_flag(tsk, TIF_SIGPENDING);
-	if (group_dead) {
-		flush_sigqueue(&sig->shared_pending);
-		tty_kref_put(tty);
-	}
-}
+/* __exit_signal inlined into release_task (~48 LOC) */
 
 static void delayed_put_task_struct(struct rcu_head *rhp)
 {
@@ -112,6 +64,10 @@ void put_task_struct_rcu_user(struct task_struct *task)
 void release_task(struct task_struct *p)
 {
 	struct pid *thread_pid;
+	struct signal_struct *sig;
+	bool group_dead;
+	struct sighand_struct *sighand;
+	struct tty_struct *tty = NULL;
 
 	rcu_read_lock();
 	dec_rlimit_ucounts(task_ucounts(p), UCOUNT_RLIMIT_NPROC, 1);
@@ -120,7 +76,43 @@ void release_task(struct task_struct *p)
 	write_lock_irq(&tasklist_lock);
 	ptrace_release_task(p);
 	thread_pid = get_pid(p->thread_pid);
-	__exit_signal(p);
+
+	/* inlined __exit_signal */
+	sig = p->signal;
+	group_dead = thread_group_leader(p);
+	sighand = rcu_dereference_check(p->sighand,
+					lockdep_tasklist_lock_is_held());
+	spin_lock(&sighand->siglock);
+	if (group_dead) {
+		tty = sig->tty;
+		sig->tty = NULL;
+	} else {
+		if (sig->notify_count > 0 && !--sig->notify_count)
+			wake_up_process(sig->group_exec_task);
+		if (p == sig->curr_target)
+			sig->curr_target = next_thread(p);
+	}
+	sig->nr_threads--;
+	nr_threads--;
+	detach_pid(p, PIDTYPE_PID);
+	if (group_dead) {
+		detach_pid(p, PIDTYPE_TGID);
+		detach_pid(p, PIDTYPE_PGID);
+		detach_pid(p, PIDTYPE_SID);
+		list_del_rcu(&p->tasks);
+		list_del_init(&p->sibling);
+	}
+	list_del_rcu(&p->thread_group);
+	list_del_rcu(&p->thread_node);
+	flush_sigqueue(&p->pending);
+	p->sighand = NULL;
+	spin_unlock(&sighand->siglock);
+	__cleanup_sighand(sighand);
+	clear_tsk_thread_flag(p, TIF_SIGPENDING);
+	if (group_dead) {
+		flush_sigqueue(&sig->shared_pending);
+		tty_kref_put(tty);
+	}
 
 	/* do_notify_parent always returns false, so zap_leader logic removed */
 

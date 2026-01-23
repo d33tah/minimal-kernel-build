@@ -448,23 +448,13 @@ int folio_wait_bit_killable(struct folio *folio, int bit_nr)
 
 /* folio_put_wait_locked removed - always returns 0 */
 
-#ifndef clear_bit_unlock_is_negative_byte
-
-static inline bool clear_bit_unlock_is_negative_byte(long nr,
-						     volatile void *mem)
-{
-	clear_bit_unlock(nr, mem);
-
-	return test_bit(PG_waiters, mem);
-}
-
-#endif
-
 void folio_unlock(struct folio *folio)
 {
 	BUILD_BUG_ON(PG_waiters != 7);
 	BUILD_BUG_ON(PG_locked > 7);
-	if (clear_bit_unlock_is_negative_byte(PG_locked, folio_flags(folio, 0)))
+	/* inlined clear_bit_unlock_is_negative_byte */
+	clear_bit_unlock(PG_locked, folio_flags(folio, 0));
+	if (test_bit(PG_waiters, folio_flags(folio, 0)))
 		folio_wake_bit(folio, PG_locked);
 }
 
@@ -496,26 +486,7 @@ int __folio_lock_killable(struct folio *folio)
 				     EXCLUSIVE);
 }
 
-static int __folio_lock_async(struct folio *folio, struct wait_page_queue *wait)
-{
-	struct wait_queue_head *q = folio_waitqueue(folio);
-	int ret = 0;
-
-	wait->folio = folio;
-	wait->bit_nr = PG_locked;
-
-	spin_lock_irq(&q->lock);
-	__add_wait_queue_entry_tail(q, &wait->wait);
-	folio_set_waiters(folio);
-	ret = !folio_trylock(folio);
-
-	if (!ret)
-		__remove_wait_queue(q, &wait->wait);
-	else
-		ret = -EIOCBQUEUED;
-	spin_unlock_irq(&q->lock);
-	return ret;
-}
+/* __folio_lock_async inlined into filemap_update_page (~20 LOC) */
 
 bool __folio_lock_or_retry(struct folio *folio, struct mm_struct *mm,
 			   unsigned int flags)
@@ -847,9 +818,24 @@ static int filemap_update_page(struct kiocb *iocb,
 			/* folio_put_wait_locked removed - returns 0 */
 			return AOP_TRUNCATED_PAGE;
 		}
-		error = __folio_lock_async(folio, iocb->ki_waitq);
-		if (error)
-			goto unlock_mapping;
+		/* inlined __folio_lock_async */
+		{
+			struct wait_page_queue *wait = iocb->ki_waitq;
+			struct wait_queue_head *q = folio_waitqueue(folio);
+			wait->folio = folio;
+			wait->bit_nr = PG_locked;
+			spin_lock_irq(&q->lock);
+			__add_wait_queue_entry_tail(q, &wait->wait);
+			folio_set_waiters(folio);
+			error = !folio_trylock(folio);
+			if (!error)
+				__remove_wait_queue(q, &wait->wait);
+			else
+				error = -EIOCBQUEUED;
+			spin_unlock_irq(&q->lock);
+			if (error)
+				goto unlock_mapping;
+		}
 	}
 
 	error = AOP_TRUNCATED_PAGE;

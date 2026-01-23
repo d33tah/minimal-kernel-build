@@ -47,8 +47,7 @@ extern int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 
 #define NOTIFY_DONE		0x0000
 #define NOTIFY_OK		0x0001
-#define NOTIFY_STOP_MASK	0x8000
-#define NOTIFY_STOP		(NOTIFY_OK|NOTIFY_STOP_MASK)
+/* NOTIFY_STOP_MASK, NOTIFY_STOP removed - never used */
 
 
 

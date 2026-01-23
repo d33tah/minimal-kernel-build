@@ -130,9 +130,7 @@ extern unsigned int sysctl_nr_open;
 #define FMODE_STREAM		((__force fmode_t)0x200000)
 /* FMODE_CAN_ODIRECT removed - never used */
 #define FMODE_NONOTIFY		((__force fmode_t)0x4000000)
-
-#define FMODE_NOWAIT		((__force fmode_t)0x8000000)
-
+/* FMODE_NOWAIT removed - never used */
 #define FMODE_NEED_UNMOUNT	((__force fmode_t)0x10000000)
 /* FMODE_NOACCOUNT removed - never used */
 
@@ -748,8 +746,7 @@ struct file_system_type {
 	const char *name;
 	int fs_flags;
 #define FS_REQUIRES_DEV		1
-/* FS_BINARY_MOUNTDATA removed - unused */
-#define FS_HAS_SUBTYPE		4
+/* FS_BINARY_MOUNTDATA, FS_HAS_SUBTYPE removed - unused */
 #define FS_USERNS_MOUNT		8
 	int (*init_fs_context)(struct fs_context *);
 	const struct fs_parameter_spec *parameters;

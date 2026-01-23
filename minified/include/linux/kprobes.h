@@ -7,8 +7,7 @@
 
 /* Stubs for kprobes-disabled kernel */
 #define NOKPROBE_SYMBOL(fname)
-/* __kprobes removed - never used */
-#define nokprobe_inline	inline
+/* __kprobes, nokprobe_inline removed - never used */
 
 /* All kprobe stubs removed - call sites removed */
 

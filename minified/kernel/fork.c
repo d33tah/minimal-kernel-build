@@ -67,31 +67,19 @@ __cacheline_aligned DEFINE_RWLOCK(tasklist_lock);
 
 /* arch_release_task_struct removed - empty weak stub, no x86 override */
 
-#ifndef CONFIG_ARCH_TASK_STRUCT_ALLOCATOR
+/* CONFIG_ARCH_TASK_STRUCT_ALLOCATOR not set - #ifndef removed */
 static struct kmem_cache *task_struct_cachep;
 
 static inline void free_task_struct(struct task_struct *tsk)
 {
 	kmem_cache_free(task_struct_cachep, tsk);
 }
-#endif
 
-#ifndef CONFIG_ARCH_THREAD_STACK_ALLOCATOR
-
-#if THREAD_SIZE >= PAGE_SIZE || defined(CONFIG_VMAP_STACK)
-
+/* CONFIG_ARCH_THREAD_STACK_ALLOCATOR not set, THREAD_SIZE >= PAGE_SIZE on x86 - conditionals removed */
 static void thread_stack_free_rcu(struct rcu_head *rh)
 {
 	__free_pages(virt_to_page(rh), THREAD_SIZE_ORDER);
 }
-
-/* thread_stack_delayed_free, alloc_thread_stack_node, free_thread_stack inlined */
-
-/* #else block removed - dead code since THREAD_SIZE >= PAGE_SIZE on x86 */
-
-#endif
-/* CONFIG_ARCH_THREAD_STACK_ALLOCATOR #else block removed - not set on x86 */
-#endif
 
 static struct kmem_cache *signal_cachep;
 

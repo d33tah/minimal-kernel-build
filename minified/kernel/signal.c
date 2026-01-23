@@ -506,13 +506,12 @@ SYSCALL_DEFINE3(sigprocmask, int, how, old_sigset_t __user *, nset,
 #endif
 
 /* Stub: rt_sigaction not needed for Hello World */
-#ifndef CONFIG_ODD_RT_SIGACTION
+/* CONFIG_ODD_RT_SIGACTION not set - #ifndef removed */
 SYSCALL_DEFINE4(rt_sigaction, int, sig, const struct sigaction __user *, act,
 		struct sigaction __user *, oact, size_t, sigsetsize)
 {
 	return 0;
 }
-#endif
 
 /* Stub: sigaction not needed for Hello World */
 SYSCALL_DEFINE3(sigaction, int, sig, const struct old_sigaction __user *, act,

@@ -5,23 +5,6 @@
 #include <linux/string.h>
 #include <linux/range.h>
 
-static int add_range(struct range *range, int az, int nr_range, u64 start,
-		     u64 end)
-{
-	if (start >= end)
-		return nr_range;
-
-	if (nr_range >= az)
-		return nr_range;
-
-	range[nr_range].start = start;
-	range[nr_range].end = end;
-
-	nr_range++;
-
-	return nr_range;
-}
-
 int add_range_with_merge(struct range *range, int az, int nr_range, u64 start,
 			 u64 end)
 {
@@ -52,7 +35,14 @@ int add_range_with_merge(struct range *range, int az, int nr_range, u64 start,
 		i--;
 	}
 
-	return add_range(range, az, nr_range, start, end);
+	if (nr_range >= az)
+		return nr_range;
+
+	range[nr_range].start = start;
+	range[nr_range].end = end;
+	nr_range++;
+
+	return nr_range;
 }
 
 static int cmp_range(const void *x1, const void *x2)

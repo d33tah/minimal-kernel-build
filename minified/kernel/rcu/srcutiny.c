@@ -13,7 +13,7 @@ int rcu_scheduler_active __read_mostly;
 static LIST_HEAD(srcu_boot_list);
 static bool srcu_init_done;
 
-static int init_srcu_struct_fields(struct srcu_struct *ssp)
+int init_srcu_struct(struct srcu_struct *ssp)
 {
 	ssp->srcu_lock_nesting[0] = 0;
 	ssp->srcu_lock_nesting[1] = 0;
@@ -27,11 +27,6 @@ static int init_srcu_struct_fields(struct srcu_struct *ssp)
 	INIT_WORK(&ssp->srcu_work, srcu_drive_gp);
 	INIT_LIST_HEAD(&ssp->srcu_work.entry);
 	return 0;
-}
-
-int init_srcu_struct(struct srcu_struct *ssp)
-{
-	return init_srcu_struct_fields(ssp);
 }
 
 /* cleanup_srcu_struct removed - never called */
@@ -84,9 +79,18 @@ void srcu_drive_gp(struct work_struct *wp)
 		schedule_work(&ssp->srcu_work);
 }
 
-static void srcu_gp_start_if_needed(struct srcu_struct *ssp)
+void call_srcu(struct srcu_struct *ssp, struct rcu_head *rhp,
+	       rcu_callback_t func)
 {
+	unsigned long flags;
 	unsigned short cookie;
+
+	rhp->func = func;
+	rhp->next = NULL;
+	local_irq_save(flags);
+	*ssp->srcu_cb_tail = rhp;
+	ssp->srcu_cb_tail = &rhp->next;
+	local_irq_restore(flags);
 
 	cookie = get_state_synchronize_srcu(ssp);
 	if (USHORT_CMP_GE(READ_ONCE(ssp->srcu_idx_max), cookie))
@@ -98,20 +102,6 @@ static void srcu_gp_start_if_needed(struct srcu_struct *ssp)
 		else if (list_empty(&ssp->srcu_work.entry))
 			list_add(&ssp->srcu_work.entry, &srcu_boot_list);
 	}
-}
-
-void call_srcu(struct srcu_struct *ssp, struct rcu_head *rhp,
-	       rcu_callback_t func)
-{
-	unsigned long flags;
-
-	rhp->func = func;
-	rhp->next = NULL;
-	local_irq_save(flags);
-	*ssp->srcu_cb_tail = rhp;
-	ssp->srcu_cb_tail = &rhp->next;
-	local_irq_restore(flags);
-	srcu_gp_start_if_needed(ssp);
 }
 
 void synchronize_srcu(struct srcu_struct *ssp)

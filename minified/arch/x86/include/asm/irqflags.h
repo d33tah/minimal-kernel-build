@@ -14,7 +14,7 @@
  
 
  
-extern inline unsigned long native_save_fl(void);
+/* Duplicate extern inline declaration removed */
 extern __always_inline unsigned long native_save_fl(void)
 {
 	unsigned long flags;

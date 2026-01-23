@@ -48,21 +48,11 @@
 
 #define __malloc                        __attribute__((__malloc__))
 
-#define __mode(x)                       __attribute__((__mode__(x)))
-
-#if __has_attribute(__noclone__)
-# define __noclone                      __attribute__((__noclone__))
-#else
-# define __noclone
-#endif
-
 #if __has_attribute(__fallthrough__)
 # define fallthrough                    __attribute__((__fallthrough__))
 #else
-# define fallthrough                    do {} while (0)   
+# define fallthrough                    do {} while (0)
 #endif
-
-# define __flatten			__attribute__((flatten))
 
 #define   noinline                      __attribute__((__noinline__))
 

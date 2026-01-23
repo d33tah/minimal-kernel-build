@@ -116,10 +116,6 @@ extern void io_schedule(void);
 /* struct prev_cputime removed - write-only (only initialized, never read) */
 
 # define SCHED_FIXEDPOINT_SHIFT		10
-# define SCHED_FIXEDPOINT_SCALE		(1L << SCHED_FIXEDPOINT_SHIFT)
-
-# define SCHED_CAPACITY_SHIFT		SCHED_FIXEDPOINT_SHIFT
-# define SCHED_CAPACITY_SCALE		(1L << SCHED_CAPACITY_SHIFT)
 
 struct load_weight {
 	unsigned long			weight;

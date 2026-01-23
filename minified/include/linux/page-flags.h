@@ -377,7 +377,6 @@ static __always_inline void __ClearPage##uname(struct page *page)	\
 
 PAGE_TYPE_OPS(Buddy, buddy)
 
-
 PAGE_TYPE_OPS(Table, table)
 
 

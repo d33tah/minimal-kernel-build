@@ -381,10 +381,7 @@ static inline void destroy_compound_page(struct page *page)
 	compound_page_dtors[page[1].compound_dtor](page);
 }
 
-static inline void set_compound_order(struct page *page, unsigned int order)
-{
-	page[1].compound_order = order;
-}
+/* set_compound_order inlined into page_alloc.c */
 
 static inline unsigned long compound_nr(struct page *page)
 {

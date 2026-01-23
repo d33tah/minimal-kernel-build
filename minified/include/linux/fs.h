@@ -43,10 +43,7 @@ static inline void do_delayed_call(struct delayed_call *call)
 	if (call->fn)
 		call->fn(call->arg);
 }
-static inline void clear_delayed_call(struct delayed_call *call)
-{
-	call->fn = NULL;
-}
+/* clear_delayed_call inlined into namei.c */
 
 /* uuid.h removed - unused */
 /* ioprio.h removed - unused after ki_ioprio removal */
@@ -243,17 +240,7 @@ static inline void i_mmap_unlock_read(struct address_space *mapping)
 	up_read(&mapping->i_mmap_rwsem);
 }
 
-/* mapping_writably_mapped removed - never called */
-
-static inline void mapping_unmap_writable(struct address_space *mapping)
-{
-	atomic_dec(&mapping->i_mmap_writable);
-}
-
-static inline void mapping_allow_writable(struct address_space *mapping)
-{
-	atomic_inc(&mapping->i_mmap_writable);
-}
+/* mapping_writably_mapped, mapping_unmap_writable, mapping_allow_writable removed - never called or inlined */
 
 /* i_size_ordered_init removed - never called */
 /* struct posix_acl removed - unused */

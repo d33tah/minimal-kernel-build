@@ -163,7 +163,7 @@ void prep_compound_page(struct page *page, unsigned int order)
 	}
 
 	set_compound_page_dtor(page, COMPOUND_PAGE_DTOR);
-	set_compound_order(page, order);
+	page[1].compound_order = order; /* inlined set_compound_order */
 	atomic_set(compound_mapcount_ptr(page), -1);
 	atomic_set(compound_pincount_ptr(page), 0);
 }

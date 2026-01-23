@@ -237,7 +237,7 @@ static void drop_links(struct nameidata *nd)
 	while (i--) {
 		struct saved *last = nd->stack + i;
 		do_delayed_call(&last->done);
-		clear_delayed_call(&last->done);
+		last->done.fn = NULL; /* inlined clear_delayed_call */
 	}
 }
 

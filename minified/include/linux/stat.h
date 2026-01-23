@@ -41,11 +41,5 @@ struct statx;
 #define S_IXUGO		(S_IXUSR|S_IXGRP|S_IXOTH)
 #include <linux/time.h>
 #include <linux/uidgid.h>
-struct kstat {
-	u32 result_mask; umode_t mode; unsigned int nlink; uint32_t blksize;
-	u64 attributes; u64 attributes_mask; u64 ino; dev_t dev; dev_t rdev;
-	kuid_t uid; kgid_t gid; loff_t size; struct timespec64 atime;
-	struct timespec64 mtime; struct timespec64 ctime; struct timespec64 btime;
-	u64 blocks; u64 mnt_id;
-};
+/* struct kstat removed - unused */
 #endif

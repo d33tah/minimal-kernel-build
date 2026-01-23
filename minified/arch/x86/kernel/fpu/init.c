@@ -33,8 +33,7 @@ void fpu__init_cpu(void)
 }
 
 /* fpu__probe_without_cpuid, fpu__init_system_early_generic removed/inlined */
-
-unsigned int mxcsr_feature_mask __ro_after_init = 0xffffffffu;
+/* mxcsr_feature_mask removed - only written, never read */
 
 /* fpu__init_system_mxcsr, fpu__init_task_struct_size,
  * fpu__init_system_xstate_size_legacy all inlined below */
@@ -53,7 +52,6 @@ unsigned int mxcsr_feature_mask __ro_after_init = 0xffffffffu;
 
 void __init fpu__init_system(struct cpuinfo_x86 *c)
 {
-	unsigned int mask = 0;
 	unsigned int size;
 	int task_size;
 
@@ -64,15 +62,7 @@ void __init fpu__init_system(struct cpuinfo_x86 *c)
 
 	fpstate_init_user(&init_fpstate);
 
-	/* fpu__init_system_mxcsr inlined */
-	if (boot_cpu_has(X86_FEATURE_FXSR)) {
-		static struct fxregs_state fxregs __initdata;
-		asm volatile("fxsave %0" : "+m"(fxregs));
-		mask = fxregs.mxcsr_mask;
-		if (mask == 0)
-			mask = 0x0000ffbf;
-	}
-	mxcsr_feature_mask &= mask;
+	/* fpu__init_system_mxcsr removed - mxcsr_feature_mask was write-only */
 
 	/* fpu__init_system_xstate_size_legacy inlined */
 	if (!cpu_feature_enabled(X86_FEATURE_FPU)) {

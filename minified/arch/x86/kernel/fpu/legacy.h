@@ -4,7 +4,7 @@
 
 #include <asm/fpu/types.h>
 
-extern unsigned int mxcsr_feature_mask;
+/* mxcsr_feature_mask removed - only written, never read */
 
 static inline void ldmxcsr(u32 mxcsr)
 {

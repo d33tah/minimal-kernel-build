@@ -8,10 +8,7 @@
 #include <linux/cpumask.h>
 #include <linux/init.h>
 /* smp_types.h removed - empty file after irq_work removal */
-
-typedef void (*smp_call_func_t)(void *info);
-typedef bool (*smp_cond_func_t)(int cpu, void *info);
-
+/* smp_call_func_t, smp_cond_func_t typedefs removed - never used */
 /* on_each_cpu_cond_mask, on_each_cpu_mask, on_each_cpu removed - no callers after TLB simplification */
 
 void panic_smp_self_stop(void);

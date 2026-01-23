@@ -24,7 +24,10 @@ asmlinkage noinstr void __noreturn doublefault_shim(void)
 	cr2 = native_read_cr2();
 
 	force_reload_TR();
-	set_df_gdt_entry(smp_processor_id());
+	/* inlined set_df_gdt_entry */
+	__set_tss_desc(
+		smp_processor_id(), GDT_ENTRY_DOUBLEFAULT_TSS,
+		&get_cpu_entry_area(smp_processor_id())->doublefault_stack.tss);
 
 	regs.ss = TSS(ss);
 	regs.__ssh = 0;
@@ -59,11 +62,7 @@ asmlinkage noinstr void __noreturn doublefault_shim(void)
 /* Stubbed - doublefault_stack not needed for Hello World */
 DEFINE_PER_CPU_PAGE_ALIGNED(struct doublefault_stack, doublefault_stack) = {};
 
-static void set_df_gdt_entry(unsigned int cpu)
-{
-	__set_tss_desc(cpu, GDT_ENTRY_DOUBLEFAULT_TSS,
-		       &get_cpu_entry_area(cpu)->doublefault_stack.tss);
-}
+/* set_df_gdt_entry inlined into doublefault_shim (~5 LOC) */
 
 void doublefault_init_cpu_tss(void)
 {

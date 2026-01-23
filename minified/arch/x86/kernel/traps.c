@@ -245,21 +245,7 @@ DEFINE_IDTENTRY(exc_bounds)
 
 #define GPFSTR "general protection fault"
 
-static bool gp_try_fixup_and_notify(struct pt_regs *regs, int trapnr,
-				    unsigned long error_code, const char *str)
-{
-	if (fixup_exception(regs, trapnr, error_code, 0))
-		return true;
-
-	current->thread.error_code = error_code;
-	current->thread.trap_nr = trapnr;
-
-	/* kprobe_running() always returns NULL when CONFIG_KPROBES is disabled */
-	/* notify_die always returns NOTIFY_DONE */
-	notify_die(DIE_GPF, str, regs, error_code, trapnr, SIGSEGV);
-	return false;
-}
-
+/* gp_try_fixup_and_notify inlined into exc_general_protection (~14 LOC) */
 /* gp_user_force_sig_segv inlined - single caller */
 
 DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
@@ -286,8 +272,12 @@ DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
 		goto exit;
 	}
 
-	if (gp_try_fixup_and_notify(regs, X86_TRAP_GP, error_code, desc))
+	/* inlined gp_try_fixup_and_notify */
+	if (fixup_exception(regs, X86_TRAP_GP, error_code, 0))
 		goto exit;
+	current->thread.error_code = error_code;
+	current->thread.trap_nr = X86_TRAP_GP;
+	notify_die(DIE_GPF, desc, regs, error_code, X86_TRAP_GP, SIGSEGV);
 
 	if (error_code)
 		snprintf(desc, sizeof(desc), "segment-related " GPFSTR);

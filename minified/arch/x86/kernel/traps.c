@@ -135,33 +135,25 @@ DEFINE_IDTENTRY(exc_overflow)
 	do_error_trap(regs, 0, "overflow", X86_TRAP_OF, SIGSEGV, 0, NULL);
 }
 
-/* handle_invalid_op inlined into exc_invalid_op */
-
-static noinstr bool handle_bug(struct pt_regs *regs)
-{
-	bool handled = false;
-
-	if (!is_valid_bugaddr(regs->ip))
-		return handled;
-
-	if (regs->flags & X86_EFLAGS_IF)
-		raw_local_irq_enable();
-	if (report_bug(regs->ip, regs) == BUG_TRAP_TYPE_WARN) {
-		regs->ip += LEN_UD2;
-		handled = true;
-	}
-	if (regs->flags & X86_EFLAGS_IF)
-		raw_local_irq_disable();
-
-	return handled;
-}
+/* handle_invalid_op, handle_bug inlined into exc_invalid_op */
 
 DEFINE_IDTENTRY_RAW(exc_invalid_op)
 {
 	irqentry_state_t state;
 
-	if (!user_mode(regs) && handle_bug(regs))
-		return;
+	/* handle_bug inlined */
+	if (!user_mode(regs) && is_valid_bugaddr(regs->ip)) {
+		if (regs->flags & X86_EFLAGS_IF)
+			raw_local_irq_enable();
+		if (report_bug(regs->ip, regs) == BUG_TRAP_TYPE_WARN) {
+			regs->ip += LEN_UD2;
+			if (regs->flags & X86_EFLAGS_IF)
+				raw_local_irq_disable();
+			return;
+		}
+		if (regs->flags & X86_EFLAGS_IF)
+			raw_local_irq_disable();
+	}
 
 	state = irqentry_enter(regs);
 	/* Inlined handle_invalid_op */

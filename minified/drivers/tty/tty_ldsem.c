@@ -57,19 +57,7 @@ static void __ldsem_wake_readers(struct ld_semaphore *sem)
 	sem->wait_readers = 0;
 }
 
-static inline int writer_trylock(struct ld_semaphore *sem)
-{
-	long count = atomic_long_add_return(LDSEM_ACTIVE_BIAS, &sem->count);
-	do {
-		if ((count & LDSEM_ACTIVE_MASK) == LDSEM_ACTIVE_BIAS)
-			return 1;
-		if (atomic_long_try_cmpxchg(&sem->count, &count,
-					    count - LDSEM_ACTIVE_BIAS))
-			return 0;
-	} while (1);
-}
-
-/* __ldsem_wake_writer inlined into __ldsem_wake */
+/* writer_trylock, __ldsem_wake_writer inlined */
 
 static void __ldsem_wake(struct ld_semaphore *sem)
 {
@@ -182,7 +170,24 @@ static struct ld_semaphore __sched *down_write_failed(struct ld_semaphore *sem,
 		timeout = schedule_timeout(timeout);
 		raw_spin_lock_irq(&sem->wait_lock);
 		set_current_state(TASK_UNINTERRUPTIBLE);
-		locked = writer_trylock(sem);
+		/* writer_trylock inlined */
+		{
+			long count = atomic_long_add_return(LDSEM_ACTIVE_BIAS,
+							    &sem->count);
+			do {
+				if ((count & LDSEM_ACTIVE_MASK) ==
+				    LDSEM_ACTIVE_BIAS) {
+					locked = 1;
+					break;
+				}
+				if (atomic_long_try_cmpxchg(
+					    &sem->count, &count,
+					    count - LDSEM_ACTIVE_BIAS)) {
+					locked = 0;
+					break;
+				}
+			} while (1);
+		}
 		if (locked)
 			break;
 	}

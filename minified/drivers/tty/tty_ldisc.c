@@ -60,15 +60,6 @@ static struct tty_ldisc_ops *get_ldops(int disc)
 	return ret;
 }
 
-static void put_ldops(struct tty_ldisc_ops *ldops)
-{
-	unsigned long flags;
-
-	raw_spin_lock_irqsave(&tty_ldiscs_lock, flags);
-	module_put(ldops->owner);
-	raw_spin_unlock_irqrestore(&tty_ldiscs_lock, flags);
-}
-
 static struct tty_ldisc *tty_ldisc_get(struct tty_struct *tty, int disc)
 {
 	struct tty_ldisc *ld;
@@ -94,7 +85,10 @@ static void tty_ldisc_put(struct tty_ldisc *ld)
 	if (WARN_ON_ONCE(!ld))
 		return;
 
-	put_ldops(ld->ops);
+	unsigned long flags;
+	raw_spin_lock_irqsave(&tty_ldiscs_lock, flags);
+	module_put(ld->ops->owner);
+	raw_spin_unlock_irqrestore(&tty_ldiscs_lock, flags);
 	kfree(ld);
 }
 

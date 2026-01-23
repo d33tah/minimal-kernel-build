@@ -643,18 +643,7 @@ need_more_bytes:
 	return -1;
 }
 
-static int vc_translate(struct vc_data *vc, int *c, bool *rescan)
-{
-	if (vc->vc_state != ESnormal)
-		return *c;
-
-	if (vc->vc_utf && !vc->vc_disp_ctrl)
-		return *c = vc_translate_unicode(vc, *c, rescan);
-
-	return *c;
-}
-
-/* vc_is_control and vc_con_write_normal inlined into do_con_write */
+/* vc_translate, vc_is_control and vc_con_write_normal inlined into do_con_write */
 
 static int do_con_write(struct tty_struct *tty, const unsigned char *buf,
 			int count)
@@ -679,7 +668,13 @@ static int do_con_write(struct tty_struct *tty, const unsigned char *buf,
 		bool is_control;
 		c = *buf++;
 		n++;
-		tc = vc_translate(vc, &c, NULL);
+		/* vc_translate inlined */
+		if (vc->vc_state != ESnormal)
+			tc = c;
+		else if (vc->vc_utf && !vc->vc_disp_ctrl)
+			tc = c = vc_translate_unicode(vc, c, NULL);
+		else
+			tc = c;
 		/* vc_is_control inlined */
 		is_control = vc->vc_state != ESnormal || !tc ||
 			     (c < 32 &&

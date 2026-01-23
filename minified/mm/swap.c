@@ -306,20 +306,6 @@ void __pagevec_release(struct pagevec *pvec)
 	pagevec_reinit(pvec);
 }
 
-static void __pagevec_lru_add_fn(struct folio *folio, struct lruvec *lruvec)
-{
-	(void)folio_test_clear_unevictable(folio); /* side effect needed */
-	folio_set_lru(folio);
-
-	if (!folio_evictable(folio)) {
-		folio_clear_active(folio);
-		folio_set_unevictable(folio);
-		/* mlock_count removed - only written, never read */
-	}
-
-	lruvec_add_folio(lruvec, folio);
-}
-
 void __pagevec_lru_add(struct pagevec *pvec)
 {
 	int i;
@@ -330,7 +316,14 @@ void __pagevec_lru_add(struct pagevec *pvec)
 		struct folio *folio = page_folio(pvec->pages[i]);
 
 		lruvec = folio_lruvec_relock_irqsave(folio, lruvec, &flags);
-		__pagevec_lru_add_fn(folio, lruvec);
+		/* __pagevec_lru_add_fn inlined */
+		(void)folio_test_clear_unevictable(folio);
+		folio_set_lru(folio);
+		if (!folio_evictable(folio)) {
+			folio_clear_active(folio);
+			folio_set_unevictable(folio);
+		}
+		lruvec_add_folio(lruvec, folio);
 	}
 	if (lruvec)
 		unlock_page_lruvec_irqrestore(lruvec, flags);

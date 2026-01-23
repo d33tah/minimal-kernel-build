@@ -610,21 +610,7 @@ static void release_tty(struct tty_struct *tty, int idx)
 	tty_kref_put(tty);
 }
 
-/* tty_release_checks removed - always returned 0 */
-
-static void tty_release_struct(struct tty_struct *tty, int idx)
-{
-	tty_ldisc_release(tty);
-
-	/* tty_flush_works inlined */
-	flush_work(&tty->hangup_work);
-	if (tty->link)
-		flush_work(&tty->link->hangup_work);
-
-	mutex_lock(&tty_mutex);
-	release_tty(tty, idx);
-	mutex_unlock(&tty_mutex);
-}
+/* tty_release_checks, tty_release_struct removed - inlined */
 
 int tty_release(struct inode *inode, struct file *filp)
 {
@@ -652,8 +638,16 @@ int tty_release(struct inode *inode, struct file *filp)
 	}
 	tty_unlock(tty);
 
-	if (!tty->count)
-		tty_release_struct(tty, idx);
+	if (!tty->count) {
+		/* tty_release_struct inlined */
+		tty_ldisc_release(tty);
+		flush_work(&tty->hangup_work);
+		if (tty->link)
+			flush_work(&tty->link->hangup_work);
+		mutex_lock(&tty_mutex);
+		release_tty(tty, idx);
+		mutex_unlock(&tty_mutex);
+	}
 
 	return 0;
 }
@@ -809,14 +803,6 @@ retry_open:
 /* tty_ioctl removed - ioctl syscall returns ENOTTY */
 /* do_SAK_work removed - SAK_work never scheduled in minimal kernel */
 
-static struct device *tty_get_device(struct tty_struct *tty)
-{
-	dev_t devt = MKDEV(tty->driver->major, tty->driver->minor_start) +
-		     tty->index;
-
-	return class_find_device_by_devt(tty_class, devt);
-}
-
 struct tty_struct *alloc_tty_struct(struct tty_driver *driver, int idx)
 {
 	struct tty_struct *tty;
@@ -849,7 +835,8 @@ struct tty_struct *alloc_tty_struct(struct tty_driver *driver, int idx)
 	tty->ops = driver->ops;
 	tty->index = idx;
 	tty_line_name(driver, idx, tty->name);
-	tty->dev = tty_get_device(tty);
+	tty->dev = class_find_device_by_devt(
+		tty_class, MKDEV(driver->major, driver->minor_start) + idx);
 
 	return tty;
 }

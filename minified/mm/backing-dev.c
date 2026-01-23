@@ -86,31 +86,7 @@ static int wb_init(struct bdi_writeback *wb, struct backing_dev_info *bdi,
 	return 0;
 }
 
-static void cgwb_remove_from_bdi_list(struct bdi_writeback *wb);
-
-static void wb_shutdown(struct bdi_writeback *wb)
-{
-	spin_lock_bh(&wb->work_lock);
-	if (!test_and_clear_bit(WB_registered, &wb->state)) {
-		spin_unlock_bh(&wb->work_lock);
-		return;
-	}
-	spin_unlock_bh(&wb->work_lock);
-
-	cgwb_remove_from_bdi_list(wb);
-
-	mod_delayed_work(bdi_wq, &wb->dwork, 0);
-	flush_delayed_work(&wb->dwork);
-	WARN_ON(!list_empty(&wb->work_list));
-	flush_delayed_work(&wb->bw_dwork);
-}
-
-/* wb_exit inlined into release_bdi */
-
-static void cgwb_remove_from_bdi_list(struct bdi_writeback *wb)
-{
-	list_del_rcu(&wb->bdi_node);
-}
+/* wb_shutdown, cgwb_remove_from_bdi_list, wb_exit inlined */
 
 int bdi_init(struct backing_dev_info *bdi)
 {
@@ -136,8 +112,18 @@ void bdi_unregister(struct backing_dev_info *bdi)
 	list_del_rcu(&bdi->bdi_list);
 	spin_unlock_bh(&bdi_lock);
 	synchronize_rcu_expedited();
-	wb_shutdown(&bdi->wb);
-	/* bdi_set_min_ratio call removed - min_ratio always 0 */
+	/* wb_shutdown inlined */
+	spin_lock_bh(&bdi->wb.work_lock);
+	if (test_and_clear_bit(WB_registered, &bdi->wb.state)) {
+		spin_unlock_bh(&bdi->wb.work_lock);
+		list_del_rcu(&bdi->wb.bdi_node);
+		mod_delayed_work(bdi_wq, &bdi->wb.dwork, 0);
+		flush_delayed_work(&bdi->wb.dwork);
+		WARN_ON(!list_empty(&bdi->wb.work_list));
+		flush_delayed_work(&bdi->wb.bw_dwork);
+	} else {
+		spin_unlock_bh(&bdi->wb.work_lock);
+	}
 	if (bdi->dev) {
 		device_unregister(bdi->dev);
 		bdi->dev = NULL;

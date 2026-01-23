@@ -97,29 +97,29 @@ void update_rq_clock(struct rq *rq)
 
 /* fetch_or macro removed - only used by removed set_nr_and_not_polling */
 
-static bool __wake_q_add(struct wake_q_head *head, struct task_struct *task)
-{
-	struct wake_q_node *node = &task->wake_q;
-
-	smp_mb__before_atomic();
-	if (unlikely(cmpxchg_relaxed(&node->next, NULL, WAKE_Q_TAIL)))
-		return false;
-
-	*head->lastp = node;
-	head->lastp = &node->next;
-	return true;
-}
+/* __wake_q_add inlined into wake_q_add and wake_q_add_safe */
 
 void wake_q_add(struct wake_q_head *head, struct task_struct *task)
 {
-	if (__wake_q_add(head, task))
-		get_task_struct(task);
+	struct wake_q_node *node = &task->wake_q;
+	smp_mb__before_atomic();
+	if (unlikely(cmpxchg_relaxed(&node->next, NULL, WAKE_Q_TAIL)))
+		return;
+	*head->lastp = node;
+	head->lastp = &node->next;
+	get_task_struct(task);
 }
 
 void wake_q_add_safe(struct wake_q_head *head, struct task_struct *task)
 {
-	if (!__wake_q_add(head, task))
+	struct wake_q_node *node = &task->wake_q;
+	smp_mb__before_atomic();
+	if (unlikely(cmpxchg_relaxed(&node->next, NULL, WAKE_Q_TAIL))) {
 		put_task_struct(task);
+		return;
+	}
+	*head->lastp = node;
+	head->lastp = &node->next;
 }
 
 void wake_up_q(struct wake_q_head *head)

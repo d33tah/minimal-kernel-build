@@ -122,18 +122,14 @@ void vm_area_free(struct vm_area_struct *vma)
 	kmem_cache_free(vm_area_cachep, vma);
 }
 
-static void account_kernel_stack(struct task_struct *tsk, int account)
-{
-	void *stack = task_stack_page(tsk);
-
-	/* !VMAP_STACK - simplified path */
-	mod_lruvec_kmem_state(stack, NR_KERNEL_STACK_KB,
-			      account * (THREAD_SIZE / 1024));
-}
+/* account_kernel_stack inlined into callers */
 
 void exit_task_stack_account(struct task_struct *tsk)
 {
-	account_kernel_stack(tsk, -1);
+	/* inlined account_kernel_stack(tsk, -1) */
+	void *stack = task_stack_page(tsk);
+	mod_lruvec_kmem_state(stack, NR_KERNEL_STACK_KB,
+			      -1 * (THREAD_SIZE / 1024));
 }
 
 void put_task_stack(struct task_struct *tsk)
@@ -330,7 +326,9 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	}
 
 	refcount_set(&tsk->stack_refcount, 1);
-	account_kernel_stack(tsk, 1);
+	/* inlined account_kernel_stack(tsk, 1) */
+	mod_lruvec_kmem_state(tsk->stack, NR_KERNEL_STACK_KB,
+			      THREAD_SIZE / 1024);
 	clear_tsk_need_resched(tsk);
 	set_task_stack_end_magic(tsk);
 	clear_syscall_work_syscall_user_dispatch(tsk);

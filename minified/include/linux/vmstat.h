@@ -9,10 +9,6 @@
 #include <linux/jump_label.h>
 #include <linux/mmdebug.h>
 
-#define count_vm_tlb_event(x)     do {} while (0)
-#define count_vm_tlb_events(x, y) do { (void)(y); } while (0)
-#define count_vm_vmacache_event(x) do {} while (0)
-
 extern atomic_long_t vm_zone_stat[NR_VM_ZONE_STAT_ITEMS];
 extern atomic_long_t vm_node_stat[NR_VM_NODE_STAT_ITEMS];
 

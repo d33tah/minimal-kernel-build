@@ -172,31 +172,7 @@ static void vunmap_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
 	} while (pmd++, addr = next, addr != end);
 }
 
-/* vunmap_pud_range inlined into vunmap_p4d_range */
-
-static void vunmap_p4d_range(pgd_t *pgd, unsigned long addr, unsigned long end,
-			     pgtbl_mod_mask *mask)
-{
-	p4d_t *p4d;
-	unsigned long next;
-
-	/* p4d_none_or_clear_bad, p4d_bad always return 0 - folded paging */
-	p4d = p4d_offset(pgd, addr);
-	do {
-		next = p4d_addr_end(addr, end);
-		/* Inlined vunmap_pud_range */
-		{
-			pud_t *pud;
-			unsigned long pud_next;
-			unsigned long pud_addr = addr;
-			pud = pud_offset(p4d, pud_addr);
-			do {
-				pud_next = pud_addr_end(pud_addr, next);
-				vunmap_pmd_range(pud, pud_addr, pud_next, mask);
-			} while (pud++, pud_addr = pud_next, pud_addr != next);
-		}
-	} while (p4d++, addr = next, addr != end);
-}
+/* vunmap_pud_range, vunmap_p4d_range inlined into vunmap_range_noflush */
 
 void vunmap_range_noflush(unsigned long start, unsigned long end)
 {
@@ -210,7 +186,28 @@ void vunmap_range_noflush(unsigned long start, unsigned long end)
 	pgd = pgd_offset_k(addr);
 	do {
 		next = pgd_addr_end(addr, end);
-		vunmap_p4d_range(pgd, addr, next, &mask);
+		/* vunmap_p4d_range inlined */
+		{
+			p4d_t *p4d = p4d_offset(pgd, addr);
+			unsigned long p4d_next, p4d_addr = addr;
+			do {
+				p4d_next = p4d_addr_end(p4d_addr, next);
+				/* vunmap_pud_range inlined */
+				{
+					pud_t *pud = pud_offset(p4d, p4d_addr);
+					unsigned long pud_next,
+						pud_addr = p4d_addr;
+					do {
+						pud_next = pud_addr_end(
+							pud_addr, p4d_next);
+						vunmap_pmd_range(pud, pud_addr,
+								 pud_next,
+								 &mask);
+					} while (pud++, pud_addr = pud_next,
+						 pud_addr != p4d_next);
+				}
+			} while (p4d++, p4d_addr = p4d_next, p4d_addr != next);
+		}
 	} while (pgd++, addr = next, addr != end);
 
 	if (mask & ARCH_PAGE_TABLE_SYNC_MASK)
@@ -579,28 +576,7 @@ enum fit_type {
 	NE_FIT_TYPE = 4
 };
 
-static __always_inline enum fit_type
-classify_va_fit_type(struct vmap_area *va, unsigned long nva_start_addr,
-		     unsigned long size)
-{
-	enum fit_type type;
-
-	if (nva_start_addr < va->va_start || nva_start_addr + size > va->va_end)
-		return NOTHING_FIT;
-
-	if (va->va_start == nva_start_addr) {
-		if (va->va_end == nva_start_addr + size)
-			type = FL_FIT_TYPE;
-		else
-			type = LE_FIT_TYPE;
-	} else if (va->va_end == nva_start_addr + size) {
-		type = RE_FIT_TYPE;
-	} else {
-		type = NE_FIT_TYPE;
-	}
-
-	return type;
-}
+/* classify_va_fit_type inlined into alloc_vmap_area */
 
 static __always_inline int adjust_va_to_fit_type(struct vmap_area *va,
 						 unsigned long nva_start_addr,
@@ -709,7 +685,19 @@ alloc_vmap_area(unsigned long size, unsigned long align, unsigned long vstart,
 			goto alloc_done;
 		}
 
-		type = classify_va_fit_type(found_va, nva_start_addr, size);
+		/* classify_va_fit_type inlined */
+		if (nva_start_addr < found_va->va_start ||
+		    nva_start_addr + size > found_va->va_end)
+			type = NOTHING_FIT;
+		else if (found_va->va_start == nva_start_addr) {
+			if (found_va->va_end == nva_start_addr + size)
+				type = FL_FIT_TYPE;
+			else
+				type = LE_FIT_TYPE;
+		} else if (found_va->va_end == nva_start_addr + size)
+			type = RE_FIT_TYPE;
+		else
+			type = NE_FIT_TYPE;
 		if (WARN_ON_ONCE(type == NOTHING_FIT)) {
 			addr = vend;
 			goto alloc_done;

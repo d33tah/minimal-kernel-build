@@ -301,38 +301,7 @@ struct zap_details {
 	zap_flags_t zap_flags;
 };
 
-/* zap_pte_range inlined into zap_pmd_range (~16 LOC) */
-
-static inline unsigned long zap_pmd_range(struct mmu_gather *tlb,
-					  struct vm_area_struct *vma,
-					  pud_t *pud, unsigned long addr,
-					  unsigned long end,
-					  struct zap_details *details)
-{
-	pmd_t *pmd;
-	unsigned long next;
-
-	pmd = pmd_offset(pud, addr);
-	do {
-		next = pmd_addr_end(addr, end);
-		/* is_swap_pmd/pmd_trans_huge/pmd_devmap always return 0 */
-		if (pmd_none_or_trans_huge_or_clear_bad(pmd))
-			goto next;
-		/* inlined zap_pte_range - minimal stub for PTE clearing */
-		{
-			spinlock_t *ptl;
-			pte_t *pte =
-				pte_offset_map_lock(tlb->mm, pmd, addr, &ptl);
-			pte_unmap_unlock(pte, ptl);
-		}
-next:
-		cond_resched();
-	} while (pmd++, addr = next, addr != end);
-
-	return addr;
-}
-
-/* zap_pud_range inlined into zap_p4d_range */
+/* zap_pte_range, zap_pmd_range, zap_pud_range inlined */
 
 static inline unsigned long zap_p4d_range(struct mmu_gather *tlb,
 					  struct vm_area_struct *vma,
@@ -355,9 +324,31 @@ static inline unsigned long zap_p4d_range(struct mmu_gather *tlb,
 			pud = pud_offset(p4d, pud_addr);
 			do {
 				pud_next = pud_addr_end(pud_addr, next);
-				pud_next = zap_pmd_range(tlb, vma, pud,
-							 pud_addr, pud_next,
-							 details);
+				/* zap_pmd_range inlined */
+				{
+					pmd_t *pmd = pmd_offset(pud, pud_addr);
+					unsigned long pmd_next,
+						pmd_addr = pud_addr;
+					do {
+						pmd_next = pmd_addr_end(
+							pmd_addr, pud_next);
+						if (!pmd_none_or_trans_huge_or_clear_bad(
+							    pmd)) {
+							spinlock_t *ptl;
+							pte_t *pte =
+								pte_offset_map_lock(
+									tlb->mm,
+									pmd,
+									pmd_addr,
+									&ptl);
+							pte_unmap_unlock(pte,
+									 ptl);
+						}
+						cond_resched();
+					} while (pmd++, pmd_addr = pmd_next,
+						 pmd_addr != pud_next);
+					pud_next = pmd_addr;
+				}
 				cond_resched();
 			} while (pud++, pud_addr = pud_next, pud_addr != next);
 			next = pud_addr;
@@ -887,35 +878,7 @@ static vm_fault_t do_fault(struct vm_fault *vmf)
 	return ret;
 }
 
-static vm_fault_t handle_pte_fault(struct vm_fault *vmf)
-{
-	if (unlikely(pmd_none(*vmf->pmd))) {
-		vmf->pte = NULL;
-	} else {
-		vmf->pte = pte_offset_map(vmf->pmd, vmf->address);
-		vmf->orig_pte = *vmf->pte;
-		if (pte_none(vmf->orig_pte)) {
-			pte_unmap(vmf->pte);
-			vmf->pte = NULL;
-		}
-	}
-
-	if (!vmf->pte)
-		return vma_is_anonymous(vmf->vma) ? do_anonymous_page(vmf) :
-						    do_fault(vmf);
-
-	if (!pte_present(vmf->orig_pte))
-		return do_swap_page(vmf);
-
-	vmf->ptl = pte_lockptr(vmf->vma->vm_mm, vmf->pmd);
-	spin_lock(vmf->ptl);
-	/* FAULT_FLAG_UNSHARE never set */
-	if ((vmf->flags & FAULT_FLAG_WRITE) && !pte_write(vmf->orig_pte))
-		return do_wp_page(vmf);
-
-	pte_unmap_unlock(vmf->pte, vmf->ptl);
-	return 0;
-}
+/* handle_pte_fault inlined into __handle_mm_fault */
 
 static vm_fault_t __handle_mm_fault(struct vm_area_struct *vma,
 				    unsigned long address, unsigned int flags)
@@ -949,7 +912,28 @@ static vm_fault_t __handle_mm_fault(struct vm_area_struct *vma,
 	if (!vmf.pmd)
 		return VM_FAULT_OOM;
 
-	return handle_pte_fault(&vmf);
+	/* handle_pte_fault inlined */
+	if (unlikely(pmd_none(*vmf.pmd))) {
+		vmf.pte = NULL;
+	} else {
+		vmf.pte = pte_offset_map(vmf.pmd, vmf.address);
+		vmf.orig_pte = *vmf.pte;
+		if (pte_none(vmf.orig_pte)) {
+			pte_unmap(vmf.pte);
+			vmf.pte = NULL;
+		}
+	}
+	if (!vmf.pte)
+		return vma_is_anonymous(vmf.vma) ? do_anonymous_page(&vmf) :
+						   do_fault(&vmf);
+	if (!pte_present(vmf.orig_pte))
+		return do_swap_page(&vmf);
+	vmf.ptl = pte_lockptr(vmf.vma->vm_mm, vmf.pmd);
+	spin_lock(vmf.ptl);
+	if ((vmf.flags & FAULT_FLAG_WRITE) && !pte_write(vmf.orig_pte))
+		return do_wp_page(&vmf);
+	pte_unmap_unlock(vmf.pte, vmf.ptl);
+	return 0;
 }
 
 vm_fault_t handle_mm_fault(struct vm_area_struct *vma, unsigned long address,

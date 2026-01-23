@@ -213,7 +213,7 @@ typedef struct { pgd_t pgd; } p4d_t;
 static inline int pgd_none(pgd_t pgd)		{ return 0; }
 static inline int pgd_bad(pgd_t pgd)		{ return 0; }
 static inline int pgd_present(pgd_t pgd)	{ return 1; }
-static inline void pgd_clear(pgd_t *pgd)	{ }
+/* pgd_clear removed - empty stub, calls removed from callers */
 #define p4d_ERROR(p4d)				(pgd_ERROR((p4d).pgd))
 
 /* pgd_populate, pgd_populate_safe removed - no callers */
@@ -253,9 +253,8 @@ typedef struct { p4d_t p4d; } pud_t;
 #define PUD_MASK  	(~(PUD_SIZE-1))
 
 static inline int p4d_none(p4d_t p4d)		{ return 0; }
-/* p4d_bad removed - unused */
+/* p4d_bad, p4d_clear removed - unused/empty stub */
 static inline int p4d_present(p4d_t p4d)	{ return 1; }
-static inline void p4d_clear(p4d_t *p4d)	{ }
 #define pud_ERROR(pud)				(p4d_ERROR((pud).p4d))
 
 /* p4d_populate, p4d_populate_safe removed - no callers */
@@ -298,10 +297,8 @@ typedef struct { pud_t pud; } pmd_t;
 #define PMD_MASK  	(~(PMD_SIZE-1))
 
 static inline int pud_none(pud_t pud)		{ return 0; }
-/* pud_bad removed - unused */
+/* pud_bad, pud_clear, pud_user, pud_leaf removed - unused/empty stub */
 static inline int pud_present(pud_t pud)	{ return 1; }
-/* pud_user, pud_leaf removed - unused */
-static inline void pud_clear(pud_t *pud)	{ }
 #define pmd_ERROR(pmd)				(pud_ERROR((pmd).pud))
 
 #define pud_populate(mm, pmd, pte)		do { } while (0)

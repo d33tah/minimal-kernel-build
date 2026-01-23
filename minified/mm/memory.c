@@ -98,7 +98,7 @@ static inline void free_pmd_range(struct mmu_gather *tlb, pud_t *pud,
 		return;
 
 	pmd = pmd_offset(pud, start);
-	pud_clear(pud);
+	/* pud_clear removed - empty stub */
 	pmd_free_tlb(tlb, pmd, start);
 }
 
@@ -130,7 +130,7 @@ static inline void free_pud_range(struct mmu_gather *tlb, p4d_t *p4d,
 		return;
 
 	pud = pud_offset(p4d, start);
-	p4d_clear(p4d);
+	/* p4d_clear removed - empty stub */
 	pud_free_tlb(tlb, pud, start);
 }
 
@@ -162,7 +162,7 @@ static inline void free_p4d_range(struct mmu_gather *tlb, pgd_t *pgd,
 		return;
 
 	p4d = p4d_offset(pgd, start);
-	pgd_clear(pgd);
+	/* pgd_clear removed - empty stub */
 	p4d_free_tlb(tlb, p4d, start);
 }
 

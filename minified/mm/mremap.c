@@ -170,7 +170,7 @@ static bool move_normal_pud(struct vm_area_struct *vma, unsigned long old_addr,
 		spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
 
 	pud = *old_pud;
-	pud_clear(old_pud);
+	/* pud_clear removed - empty stub */
 	pud_populate(mm, new_pud, pud_pgtable(pud));
 	flush_tlb_range(vma, old_addr, old_addr + PUD_SIZE);
 	if (new_ptl != old_ptl)

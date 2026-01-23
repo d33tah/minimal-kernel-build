@@ -45,28 +45,7 @@ static inline int major_to_index(unsigned major)
 	return major % CHRDEV_MAJOR_HASH_SIZE;
 }
 
-static int find_dynamic_major(void)
-{
-	int i;
-	struct char_device_struct *cd;
-
-	for (i = ARRAY_SIZE(chrdevs) - 1; i >= CHRDEV_MAJOR_DYN_END; i--) {
-		if (chrdevs[i] == NULL)
-			return i;
-	}
-
-	for (i = CHRDEV_MAJOR_DYN_EXT_START; i >= CHRDEV_MAJOR_DYN_EXT_END;
-	     i--) {
-		for (cd = chrdevs[major_to_index(i)]; cd; cd = cd->next)
-			if (cd->major == i)
-				break;
-
-		if (cd == NULL)
-			return i;
-	}
-
-	return -EBUSY;
-}
+/* find_dynamic_major inlined into __register_chrdev_region */
 
 static struct char_device_struct *
 __register_chrdev_region(unsigned int major, unsigned int baseminor,
@@ -95,12 +74,27 @@ __register_chrdev_region(unsigned int major, unsigned int baseminor,
 	mutex_lock(&chrdevs_lock);
 
 	if (major == 0) {
-		ret = find_dynamic_major();
-		if (ret < 0) {
-			pr_err("CHRDEV \"%s\" dynamic allocation region is full\n",
-			       name);
-			goto out;
+		/* find_dynamic_major inlined */
+		struct char_device_struct *cd2;
+		for (ret = ARRAY_SIZE(chrdevs) - 1; ret >= CHRDEV_MAJOR_DYN_END;
+		     ret--) {
+			if (chrdevs[ret] == NULL)
+				goto found;
 		}
+		for (ret = CHRDEV_MAJOR_DYN_EXT_START;
+		     ret >= CHRDEV_MAJOR_DYN_EXT_END; ret--) {
+			for (cd2 = chrdevs[major_to_index(ret)]; cd2;
+			     cd2 = cd2->next)
+				if (cd2->major == ret)
+					break;
+			if (cd2 == NULL)
+				goto found;
+		}
+		ret = -EBUSY;
+		pr_err("CHRDEV \"%s\" dynamic allocation region is full\n",
+		       name);
+		goto out;
+found:
 		major = ret;
 	}
 

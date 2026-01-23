@@ -133,45 +133,7 @@ void folio_rotate_reclaimable(struct folio *folio)
 	}
 }
 
-/* __folio_activate inlined into folio_activate */
-/* activate_page_drain removed - empty stub */
-
-static void folio_activate(struct folio *folio)
-{
-	struct lruvec *lruvec;
-
-	if (folio_test_clear_lru(folio)) {
-		lruvec = folio_lruvec_lock_irq(folio);
-		if (!folio_test_active(folio) &&
-		    !folio_test_unevictable(folio)) {
-			lruvec_del_folio(lruvec, folio);
-			folio_set_active(folio);
-			lruvec_add_folio(lruvec, folio);
-		}
-		unlock_page_lruvec_irq(lruvec);
-		folio_set_lru(folio);
-	}
-}
-
-static void __lru_cache_activate_folio(struct folio *folio)
-{
-	struct pagevec *pvec;
-	int i;
-
-	local_lock(&lru_pvecs.lock);
-	pvec = this_cpu_ptr(&lru_pvecs.lru_add);
-
-	for (i = pagevec_count(pvec) - 1; i >= 0; i--) {
-		struct page *pagevec_page = pvec->pages[i];
-
-		if (pagevec_page == &folio->page) {
-			folio_set_active(folio);
-			break;
-		}
-	}
-
-	local_unlock(&lru_pvecs.lock);
-}
+/* folio_activate, __lru_cache_activate_folio, activate_page_drain inlined/removed */
 
 void folio_mark_accessed(struct folio *folio)
 {
@@ -179,10 +141,34 @@ void folio_mark_accessed(struct folio *folio)
 		folio_set_referenced(folio);
 	} else if (folio_test_unevictable(folio)) {
 	} else if (!folio_test_active(folio)) {
-		if (folio_test_lru(folio))
-			folio_activate(folio);
-		else
-			__lru_cache_activate_folio(folio);
+		if (folio_test_lru(folio)) {
+			/* folio_activate inlined */
+			struct lruvec *lruvec;
+			if (folio_test_clear_lru(folio)) {
+				lruvec = folio_lruvec_lock_irq(folio);
+				if (!folio_test_active(folio) &&
+				    !folio_test_unevictable(folio)) {
+					lruvec_del_folio(lruvec, folio);
+					folio_set_active(folio);
+					lruvec_add_folio(lruvec, folio);
+				}
+				unlock_page_lruvec_irq(lruvec);
+				folio_set_lru(folio);
+			}
+		} else {
+			/* __lru_cache_activate_folio inlined */
+			struct pagevec *pvec;
+			int i;
+			local_lock(&lru_pvecs.lock);
+			pvec = this_cpu_ptr(&lru_pvecs.lru_add);
+			for (i = pagevec_count(pvec) - 1; i >= 0; i--) {
+				if (pvec->pages[i] == &folio->page) {
+					folio_set_active(folio);
+					break;
+				}
+			}
+			local_unlock(&lru_pvecs.lock);
+		}
 		folio_clear_referenced(folio);
 	}
 }

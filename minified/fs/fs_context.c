@@ -45,26 +45,7 @@ static const struct constant_table common_clear_sb_flag[] = {
 	{},
 };
 
-static int vfs_parse_sb_flag(struct fs_context *fc, const char *key)
-{
-	unsigned int token;
-
-	token = lookup_constant(common_set_sb_flag, key, 0);
-	if (token) {
-		fc->sb_flags |= token;
-		fc->sb_flags_mask |= token;
-		return 0;
-	}
-
-	token = lookup_constant(common_clear_sb_flag, key, 0);
-	if (token) {
-		fc->sb_flags &= ~token;
-		fc->sb_flags_mask |= token;
-		return 0;
-	}
-
-	return -ENOPARAM;
-}
+/* vfs_parse_sb_flag inlined into vfs_parse_fs_param */
 
 int vfs_parse_fs_param_source(struct fs_context *fc, struct fs_parameter *param)
 {
@@ -89,9 +70,22 @@ int vfs_parse_fs_param(struct fs_context *fc, struct fs_parameter *param)
 	if (!param->key)
 		return invalf(fc, "Unnamed parameter\n");
 
-	ret = vfs_parse_sb_flag(fc, param->key);
-	if (ret != -ENOPARAM)
-		return ret;
+	/* vfs_parse_sb_flag inlined */
+	{
+		unsigned int token;
+		token = lookup_constant(common_set_sb_flag, param->key, 0);
+		if (token) {
+			fc->sb_flags |= token;
+			fc->sb_flags_mask |= token;
+			return 0;
+		}
+		token = lookup_constant(common_clear_sb_flag, param->key, 0);
+		if (token) {
+			fc->sb_flags &= ~token;
+			fc->sb_flags_mask |= token;
+			return 0;
+		}
+	}
 
 	/* security_fs_context_parse_param always returns -ENOPARAM */
 

@@ -455,37 +455,7 @@ static char *pointer_string(char *buf, char *end, const void *ptr,
 /* ptr_to_id, default_pointer removed - just called pointer_string */
 /* restricted_pointer removed - never called */
 
-/* dentry_name, file_dentry_name inlined into pointer() - just error_string stubs */
-
-static noinline_for_stack char *symbol_string(char *buf, char *end, void *ptr,
-					      struct printf_spec spec,
-					      const char *fmt)
-{
-	unsigned long value;
-
-	if (fmt[1] == 'R')
-		ptr = __builtin_extract_return_addr(ptr);
-	value = (unsigned long)ptr;
-
-	return special_hex_number(buf, end, value, sizeof(void *));
-}
-
-static char *va_format(char *buf, char *end, struct va_format *va_fmt,
-		       struct printf_spec spec, const char *fmt)
-{
-	va_list va;
-
-	if (check_pointer(&buf, end, va_fmt, spec))
-		return buf;
-
-	va_copy(va, *va_fmt->va);
-	buf += vsnprintf(buf, end > buf ? end - buf : 0, va_fmt->fmt, va);
-	va_end(va);
-
-	return buf;
-}
-
-/* address_val, flags_string inlined - were just error_string stubs */
+/* dentry_name, file_dentry_name, symbol_string, va_format, address_val, flags_string inlined */
 
 static noinline_for_stack char *pointer(const char *fmt, char *buf, char *end,
 					void *ptr, struct printf_spec spec)
@@ -496,9 +466,28 @@ static noinline_for_stack char *pointer(const char *fmt, char *buf, char *end,
 		/* dereference_symbol_descriptor removed - was no-op (just returned ptr) */
 		fallthrough;
 	case 'B':
-		return symbol_string(buf, end, ptr, spec, fmt);
+		/* symbol_string inlined */
+		{
+			unsigned long value;
+			if (fmt[1] == 'R')
+				ptr = __builtin_extract_return_addr(ptr);
+			value = (unsigned long)ptr;
+			return special_hex_number(buf, end, value,
+						  sizeof(void *));
+		}
 	case 'V':
-		return va_format(buf, end, ptr, spec, fmt);
+		/* va_format inlined */
+		{
+			struct va_format *va_fmt = ptr;
+			va_list va;
+			if (check_pointer(&buf, end, va_fmt, spec))
+				return buf;
+			va_copy(va, *va_fmt->va);
+			buf += vsnprintf(buf, end > buf ? end - buf : 0,
+					 va_fmt->fmt, va);
+			va_end(va);
+			return buf;
+		}
 	case 'a':
 		/* address_val inlined - stub */
 		return error_string(buf, end, "(addr)", spec);

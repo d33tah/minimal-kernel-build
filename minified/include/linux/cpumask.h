@@ -94,15 +94,7 @@ static inline void cpumask_clear(struct cpumask *dstp)
 
 
 
-/* cpumask_equal removed - no callers */
-
-static inline bool cpumask_empty(const struct cpumask *srcp)
-{
-	return bitmap_empty(cpumask_bits(srcp), nr_cpumask_bits);
-}
-
-
-/* cpumask_any removed - unused */
+/* cpumask_equal, cpumask_empty, cpumask_any removed - no callers */
 #define cpumask_of(cpu) (get_cpu_mask(cpu))
 
 

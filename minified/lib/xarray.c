@@ -58,23 +58,6 @@ static inline void node_mark_all(struct xa_node *node, xa_mark_t mark)
 		mark = (__force xa_mark_t)((__force unsigned)(mark) + 1); \
 	} while (0)
 
-static void xas_squash_marks(const struct xa_state *xas)
-{
-	unsigned int mark = 0;
-	unsigned int limit = xas->xa_offset + xas->xa_sibs + 1;
-
-	if (!xas->xa_sibs)
-		return;
-
-	do {
-		unsigned long *marks = xas->xa_node->marks[mark];
-		if (find_next_bit(marks, limit, xas->xa_offset + 1) == limit)
-			continue;
-		__set_bit(xas->xa_offset, marks);
-		bitmap_clear(marks, xas->xa_offset + 1, xas->xa_sibs);
-	} while (mark++ != (__force unsigned)XA_MARK_MAX);
-}
-
 static unsigned int get_offset(unsigned long index, struct xa_node *node)
 {
 	return (index >> node->shift) & XA_CHUNK_MASK;
@@ -460,19 +443,6 @@ static void *xas_create(struct xa_state *xas, bool allow_root)
 	return entry;
 }
 
-static void update_node(struct xa_state *xas, struct xa_node *node, int count,
-			int values)
-{
-	if (!node || (!count && !values))
-		return;
-
-	node->count += count;
-	node->nr_values += values;
-	xas_update(xas, node);
-	if (count < 0)
-		xas_delete_node(xas);
-}
-
 void *xas_store(struct xa_state *xas, void *entry)
 {
 	struct xa_node *node;
@@ -503,8 +473,21 @@ void *xas_store(struct xa_state *xas, void *entry)
 	max = xas->xa_offset + xas->xa_sibs;
 	if (node) {
 		slot = &node->slots[offset];
-		if (xas->xa_sibs)
-			xas_squash_marks(xas);
+		/* xas_squash_marks inlined */
+		if (xas->xa_sibs) {
+			unsigned int mark = 0;
+			unsigned int limit = xas->xa_offset + xas->xa_sibs + 1;
+			do {
+				unsigned long *marks =
+					xas->xa_node->marks[mark];
+				if (find_next_bit(marks, limit,
+						  xas->xa_offset + 1) == limit)
+					continue;
+				__set_bit(xas->xa_offset, marks);
+				bitmap_clear(marks, xas->xa_offset + 1,
+					     xas->xa_sibs);
+			} while (mark++ != (__force unsigned)XA_MARK_MAX);
+		}
 	}
 	if (!entry)
 		xas_init_marks(xas);
@@ -534,7 +517,14 @@ void *xas_store(struct xa_state *xas, void *entry)
 		slot++;
 	}
 
-	update_node(xas, node, count, values);
+	/* update_node inlined */
+	if (node && (count || values)) {
+		node->count += count;
+		node->nr_values += values;
+		xas_update(xas, node);
+		if (count < 0)
+			xas_delete_node(xas);
+	}
 	return first;
 }
 

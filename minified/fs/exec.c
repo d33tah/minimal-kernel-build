@@ -36,7 +36,7 @@
 
 static void bprm_creds_from_file(struct linux_binprm *bprm);
 
-int suid_dumpable = 0;
+/* suid_dumpable removed - never used */
 
 static LIST_HEAD(formats);
 static DEFINE_RWLOCK(binfmt_lock);

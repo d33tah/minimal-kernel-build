@@ -68,8 +68,7 @@ static inline void register_binfmt(struct linux_binfmt *fmt)
 extern int begin_new_exec(struct linux_binprm * bprm);
 extern void setup_new_exec(struct linux_binprm * bprm);
 /* finalize_exec removed - inlined into binfmt_elf.c */
-
-extern int suid_dumpable;
+/* suid_dumpable removed - never used */
 
 #define EXSTACK_DEFAULT   0	 
 #define EXSTACK_DISABLE_X 1	 

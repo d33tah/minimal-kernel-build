@@ -48,8 +48,7 @@ enum fixed_addresses {
 };
 
 
-#define FIXADDR_SIZE		(__end_of_permanent_fixed_addresses << PAGE_SHIFT)
-#define FIXADDR_START		(FIXADDR_TOP - FIXADDR_SIZE)
+/* FIXADDR_SIZE, FIXADDR_START removed - unused */
 #define FIXADDR_TOT_SIZE	(__end_of_fixed_addresses << PAGE_SHIFT)
 #define FIXADDR_TOT_START	(FIXADDR_TOP - FIXADDR_TOT_SIZE)
 

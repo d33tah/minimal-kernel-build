@@ -27,7 +27,7 @@
 /* EX_FLAG_CLEAR_AX_DX removed - never used */
 
  
-#define	EX_TYPE_NONE			 0
+/* EX_TYPE_NONE (0) removed - unused */
 #define	EX_TYPE_DEFAULT			 1
 #define	EX_TYPE_FAULT			 2
 #define	EX_TYPE_UACCESS			 3

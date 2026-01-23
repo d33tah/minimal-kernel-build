@@ -18,8 +18,7 @@ enum {
 	NMI_MAX
 };
 
-#define NMI_DONE	0
-#define NMI_HANDLED	1
+/* NMI_DONE, NMI_HANDLED removed - unused */
 
 typedef int (*nmi_handler_t)(unsigned int, struct pt_regs *);
 

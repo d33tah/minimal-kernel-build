@@ -352,16 +352,7 @@ static inline int pmd_none_or_trans_huge_or_clear_bad(pmd_t *pmd)
 
 
 
-/* init_espfix_bsp, pgtable_cache_init removed - call site removed / empty */
-
-#ifndef __HAVE_ARCH_PFN_MODIFY_ALLOWED
-static inline bool pfn_modify_allowed(unsigned long pfn, pgprot_t prot)
-{
-	return true;
-}
-
-#endif  
-
+/* init_espfix_bsp, pgtable_cache_init, pfn_modify_allowed removed - call site removed / empty / never called */
 
 #ifndef PAGE_KERNEL_RO
 # define PAGE_KERNEL_RO PAGE_KERNEL

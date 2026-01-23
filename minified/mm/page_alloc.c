@@ -159,7 +159,9 @@ void prep_compound_page(struct page *page, unsigned int order)
 	for (i = 1; i < nr_pages; i++) {
 		p = page + i;
 		p->mapping = TAIL_MAPPING;
-		set_compound_head(p, page);
+		WRITE_ONCE(p->compound_head,
+			   (unsigned long)page +
+				   1); /* inlined set_compound_head */
 	}
 
 	set_compound_page_dtor(page, COMPOUND_PAGE_DTOR);

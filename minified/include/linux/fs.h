@@ -339,10 +339,7 @@ static inline void inode_unlock_shared(struct inode *inode)
 	up_read(&inode->i_rwsem);
 }
 
-static inline int inode_is_locked(struct inode *inode)
-{
-	return rwsem_is_locked(&inode->i_rwsem);
-}
+/* inode_is_locked inlined into attr.c */
 
 /* inode_lock_nested removed - never called */
 

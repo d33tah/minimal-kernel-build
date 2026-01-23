@@ -336,10 +336,7 @@ static inline bool folio_test_large(struct folio *folio)
 	return folio_test_head(folio);
 }
 
-static __always_inline void set_compound_head(struct page *page, struct page *head)
-{
-	WRITE_ONCE(page->compound_head, (unsigned long)head + 1);
-}
+/* set_compound_head inlined into page_alloc.c */
 
 TESTPAGEFLAG_FALSE(Huge, hugetlb)
 

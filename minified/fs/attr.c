@@ -108,7 +108,8 @@ int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 	/* struct timespec64 now removed - timestamps not used */
 	unsigned int ia_valid = attr->ia_valid;
 
-	WARN_ON_ONCE(!inode_is_locked(inode));
+	WARN_ON_ONCE(!rwsem_is_locked(
+		&inode->i_rwsem)); /* inlined inode_is_locked */
 	/* may_setattr always returns 0 - removed */
 	/* ATTR_MODE check removed - S_NOSEC cleared but never tested */
 

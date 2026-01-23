@@ -5,8 +5,7 @@
 #include <linux/bvec.h>
 #include <linux/device.h>
 
-struct bio;
-/* struct page forward decl removed - unused */
+/* struct bio forward decl removed - unused */
 /* cgroup_subsys_state, bio_set, bio_integrity_payload, bio_crypt_ctx removed - unused */
 
 /* struct block_device removed - never used */

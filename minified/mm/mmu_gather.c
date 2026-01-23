@@ -12,37 +12,40 @@
 #include <asm/pgalloc.h>
 #include <asm/tlb.h>
 
-static bool tlb_next_batch(struct mmu_gather *tlb)
+bool __tlb_remove_page_size(struct mmu_gather *tlb, struct page *page,
+			    int page_size)
 {
 	struct mmu_gather_batch *batch;
-
 	batch = tlb->active;
-	if (batch->next) {
-		tlb->active = batch->next;
-		return true;
+	batch->pages[batch->nr++] = page;
+	if (batch->nr == batch->max) {
+		batch = tlb->active;
+		if (batch->next) {
+			tlb->active = batch->next;
+		} else if (tlb->batch_count == MAX_GATHER_BATCH_COUNT) {
+			return true;
+		} else {
+			batch = (void *)__get_free_pages(
+				GFP_NOWAIT | __GFP_NOWARN, 0);
+			if (!batch)
+				return true;
+			tlb->batch_count++;
+			batch->next = NULL;
+			batch->nr = 0;
+			batch->max = MAX_GATHER_BATCH;
+			tlb->active->next = batch;
+			tlb->active = batch;
+		}
+		batch = tlb->active;
 	}
-
-	if (tlb->batch_count == MAX_GATHER_BATCH_COUNT)
-		return false;
-
-	batch = (void *)__get_free_pages(GFP_NOWAIT | __GFP_NOWARN, 0);
-	if (!batch)
-		return false;
-
-	tlb->batch_count++;
-	batch->next = NULL;
-	batch->nr = 0;
-	batch->max = MAX_GATHER_BATCH;
-
-	tlb->active->next = batch;
-	tlb->active = batch;
-
-	return true;
+	return false;
 }
 
-static void tlb_batch_pages_flush(struct mmu_gather *tlb)
+void tlb_flush_mmu(struct mmu_gather *tlb)
 {
 	struct mmu_gather_batch *batch;
+
+	tlb_flush_mmu_tlbonly(tlb);
 
 	for (batch = &tlb->local; batch && batch->nr; batch = batch->next) {
 		struct page **pages = batch->pages;
@@ -58,30 +61,6 @@ static void tlb_batch_pages_flush(struct mmu_gather *tlb)
 		} while (batch->nr);
 	}
 	tlb->active = &tlb->local;
-}
-
-/* tlb_batch_list_free inlined into tlb_finish_mmu */
-
-bool __tlb_remove_page_size(struct mmu_gather *tlb, struct page *page,
-			    int page_size)
-{
-	struct mmu_gather_batch *batch;
-	batch = tlb->active;
-	batch->pages[batch->nr++] = page;
-	if (batch->nr == batch->max) {
-		if (!tlb_next_batch(tlb))
-			return true;
-		batch = tlb->active;
-	}
-	return false;
-}
-
-/* tlb_flush_mmu_free inlined into tlb_flush_mmu */
-
-void tlb_flush_mmu(struct mmu_gather *tlb)
-{
-	tlb_flush_mmu_tlbonly(tlb);
-	tlb_batch_pages_flush(tlb);
 }
 
 static void __tlb_gather_mmu(struct mmu_gather *tlb, struct mm_struct *mm,

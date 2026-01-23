@@ -62,10 +62,9 @@ struct sysinfo {
 
 struct completion;
 
-#define might_resched() do { } while (0)
 #define might_sleep() do { } while (0)
 #define might_sleep_if(cond) do { } while (0)
-/* might_fault() removed - no callers */
+/* might_resched, might_fault removed - no callers */
 
 void do_exit(long error_code) __noreturn;
 

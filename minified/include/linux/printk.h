@@ -16,7 +16,6 @@
 #define KERN_INFO	KERN_SOH "6"
 #define KERN_DEBUG	KERN_SOH "7"
 #define KERN_DEFAULT	""
-#define KERN_CONT	KERN_SOH "c"
 #include <linux/ratelimit_types.h>
 
 
@@ -94,10 +93,7 @@ static inline int printk_ratelimit(void)
 #define pr_info(fmt, ...) \
 	printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
 
-#define pr_cont(fmt, ...) \
-	printk(KERN_CONT fmt, ##__VA_ARGS__)
-
-/* pr_devel removed - unused */
+/* pr_devel, pr_cont removed - unused */
 #define pr_debug(fmt, ...) \
 	no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
 

@@ -84,9 +84,7 @@ static __always_inline unsigned long fix_to_virt(const unsigned int idx)
 #ifndef FIXMAP_PAGE_NORMAL
 #define FIXMAP_PAGE_NORMAL PAGE_KERNEL
 #endif
-#if !defined(FIXMAP_PAGE_RO) && defined(PAGE_KERNEL_RO)
-#define FIXMAP_PAGE_RO PAGE_KERNEL_RO
-#endif
+/* FIXMAP_PAGE_RO removed - unused */
 #ifndef FIXMAP_PAGE_NOCACHE
 #define FIXMAP_PAGE_NOCACHE PAGE_KERNEL_NOCACHE
 #endif
@@ -115,20 +113,8 @@ static __always_inline unsigned long fix_to_virt(const unsigned int idx)
 	________addr;							\
 })
 
-#define set_fixmap_offset(idx, phys) \
-	__set_fixmap_offset(idx, phys, FIXMAP_PAGE_NORMAL)
-
-#define set_fixmap_nocache(idx, phys) \
-	__set_fixmap(idx, phys, FIXMAP_PAGE_NOCACHE)
-
-#define set_fixmap_offset_nocache(idx, phys) \
-	__set_fixmap_offset(idx, phys, FIXMAP_PAGE_NOCACHE)
-
-#define set_fixmap_io(idx, phys) \
-	__set_fixmap(idx, phys, FIXMAP_PAGE_IO)
-
-#define set_fixmap_offset_io(idx, phys) \
-	__set_fixmap_offset(idx, phys, FIXMAP_PAGE_IO)
+/* set_fixmap_offset, set_fixmap_nocache, set_fixmap_offset_nocache,
+   set_fixmap_io, set_fixmap_offset_io removed - unused */
 
 #define __late_set_fixmap(idx, phys, flags) __set_fixmap(idx, phys, flags)
 #define __late_clear_fixmap(idx) __set_fixmap(idx, 0, __pgprot(0))

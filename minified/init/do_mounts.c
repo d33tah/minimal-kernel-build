@@ -35,12 +35,21 @@ int initrd_below_start_ok;
 phys_addr_t phys_initrd_start __initdata;
 unsigned long phys_initrd_size __initdata;
 
-static dev_t devt_from_devnum(const char *name)
+/* devt_from_devnum inlined into name_to_dev_t */
+
+dev_t name_to_dev_t(const char *name)
 {
 	unsigned maj, min, offset;
 	dev_t devt = 0;
 	char *p, dummy;
 
+	if (strcmp(name, "/dev/nfs") == 0)
+		return Root_NFS;
+	if (strcmp(name, "/dev/cifs") == 0)
+		return Root_CIFS;
+	if (strcmp(name, "/dev/ram") == 0)
+		return Root_RAM0;
+	/* devt_from_devnum inlined */
 	if (sscanf(name, "%u:%u%c", &maj, &min, &dummy) == 2 ||
 	    sscanf(name, "%u:%u:%u:%c", &maj, &min, &offset, &dummy) == 3) {
 		devt = MKDEV(maj, min);
@@ -51,19 +60,7 @@ static dev_t devt_from_devnum(const char *name)
 		if (*p)
 			return 0;
 	}
-
 	return devt;
-}
-
-dev_t name_to_dev_t(const char *name)
-{
-	if (strcmp(name, "/dev/nfs") == 0)
-		return Root_NFS;
-	if (strcmp(name, "/dev/cifs") == 0)
-		return Root_CIFS;
-	if (strcmp(name, "/dev/ram") == 0)
-		return Root_RAM0;
-	return devt_from_devnum(name);
 }
 
 /* Stub: root= cmdline not needed for minimal kernel */

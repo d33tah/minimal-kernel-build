@@ -42,12 +42,7 @@ static __always_inline unsigned int cpumask_check(unsigned int cpu)
 }
 
 #if NR_CPUS == 1
-static inline unsigned int cpumask_first(const struct cpumask *srcp)
-{
-	return 0;
-}
-
-/* cpumask_any_but removed - never called */
+/* cpumask_first, cpumask_any_but removed - never called */
 
 #define for_each_cpu(cpu, mask)			\
 	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)

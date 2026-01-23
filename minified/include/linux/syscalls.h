@@ -17,10 +17,7 @@ struct sysinfo;
 struct __kernel_old_timeval;
 /* struct __kernel_timex forward decl removed - never used */
 struct timeval;
-/* struct mq_attr removed - unused */
-/* struct clone_args forward decl removed - clone3 is COND_SYSCALL */
-struct utimbuf;
-struct getcpu_cache;
+/* struct mq_attr, clone_args, utimbuf, getcpu_cache forward decls removed - unused */
 struct linux_dirent64;
 struct old_linux_dirent;
 

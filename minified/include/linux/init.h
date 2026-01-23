@@ -117,8 +117,7 @@ extern void (*late_time_init)(void);
 #define subsys_initcall(fn)		__define_initcall(fn, 4)
 /* subsys_initcall_sync removed - unused */
 #define fs_initcall(fn)			__define_initcall(fn, 5)
-/* fs_initcall_sync removed - unused */
-#define rootfs_initcall(fn)		__define_initcall(fn, rootfs)
+/* fs_initcall_sync, rootfs_initcall removed - unused */
 #define device_initcall(fn)		__define_initcall(fn, 6)
 /* device_initcall_sync removed - unused */
 #define late_initcall(fn)		__define_initcall(fn, 7)

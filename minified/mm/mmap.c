@@ -110,23 +110,7 @@ RB_DECLARE_CALLBACKS_MAX(static, vma_gap_callbacks, struct vm_area_struct,
 /* vma_gap_update removed - converted to macro for 4 callers (~4 LOC) */
 #define vma_gap_update(vma) vma_gap_callbacks_propagate(&(vma)->vm_rb, NULL)
 
-static inline void
-anon_vma_interval_tree_pre_update_vma(struct vm_area_struct *vma)
-{
-	struct anon_vma_chain *avc;
-
-	list_for_each_entry(avc, &vma->anon_vma_chain, same_vma)
-		anon_vma_interval_tree_remove(avc, &avc->anon_vma->rb_root);
-}
-
-static inline void
-anon_vma_interval_tree_post_update_vma(struct vm_area_struct *vma)
-{
-	struct anon_vma_chain *avc;
-
-	list_for_each_entry(avc, &vma->anon_vma_chain, same_vma)
-		anon_vma_interval_tree_insert(avc, &avc->anon_vma->rb_root);
-}
+/* anon_vma_interval_tree_pre/post_update_vma inlined into expand_stack (~16 LOC) */
 
 static int find_vma_links(struct mm_struct *mm, unsigned long addr,
 			  unsigned long end, struct vm_area_struct **pprev,
@@ -818,10 +802,24 @@ int expand_downwards(struct vm_area_struct *vma, unsigned long address)
 		    !security_vm_enough_memory_mm(mm, grow)) {
 			error = 0;
 			spin_lock(&mm->page_table_lock);
-			anon_vma_interval_tree_pre_update_vma(vma);
+			/* inlined anon_vma_interval_tree_pre_update_vma */
+			{
+				struct anon_vma_chain *avc;
+				list_for_each_entry(avc, &vma->anon_vma_chain,
+						    same_vma)
+					anon_vma_interval_tree_remove(
+						avc, &avc->anon_vma->rb_root);
+			}
 			vma->vm_start = address;
 			vma->vm_pgoff -= grow;
-			anon_vma_interval_tree_post_update_vma(vma);
+			/* inlined anon_vma_interval_tree_post_update_vma */
+			{
+				struct anon_vma_chain *avc;
+				list_for_each_entry(avc, &vma->anon_vma_chain,
+						    same_vma)
+					anon_vma_interval_tree_insert(
+						avc, &avc->anon_vma->rb_root);
+			}
 			vma_gap_update(vma);
 			spin_unlock(&mm->page_table_lock);
 		}

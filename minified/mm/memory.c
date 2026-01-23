@@ -301,22 +301,7 @@ struct zap_details {
 	zap_flags_t zap_flags;
 };
 
-static unsigned long zap_pte_range(struct mmu_gather *tlb,
-				   struct vm_area_struct *vma, pmd_t *pmd,
-				   unsigned long addr, unsigned long end,
-				   struct zap_details *details)
-{
-	/* Minimal stub: basic PTE clearing */
-	struct mm_struct *mm = tlb->mm;
-	spinlock_t *ptl;
-	pte_t *pte;
-
-	pte = pte_offset_map_lock(mm, pmd, addr, &ptl);
-	/* arch_enter/leave_lazy_mmu_mode removed - empty stubs */
-	/* Just clear the range without complex tracking */
-	pte_unmap_unlock(pte, ptl);
-	return addr;
-}
+/* zap_pte_range inlined into zap_pmd_range (~16 LOC) */
 
 static inline unsigned long zap_pmd_range(struct mmu_gather *tlb,
 					  struct vm_area_struct *vma,
@@ -333,7 +318,13 @@ static inline unsigned long zap_pmd_range(struct mmu_gather *tlb,
 		/* is_swap_pmd/pmd_trans_huge/pmd_devmap always return 0 */
 		if (pmd_none_or_trans_huge_or_clear_bad(pmd))
 			goto next;
-		next = zap_pte_range(tlb, vma, pmd, addr, next, details);
+		/* inlined zap_pte_range - minimal stub for PTE clearing */
+		{
+			spinlock_t *ptl;
+			pte_t *pte =
+				pte_offset_map_lock(tlb->mm, pmd, addr, &ptl);
+			pte_unmap_unlock(pte, ptl);
+		}
 next:
 		cond_resched();
 	} while (pmd++, addr = next, addr != end);

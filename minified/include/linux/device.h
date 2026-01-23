@@ -28,13 +28,11 @@
 #include <linux/device/driver.h>
 /* struct dev_archdata, pdev_archdata removed - unused */
 
-/* Unused forward decls removed: driver_private, module, subsys_private, iommu_ops */
+/* Unused forward decls removed: driver_private, module, subsys_private, iommu_ops, device_node, fwnode_handle */
 struct device;
 struct device_private;
 struct device_driver;
 struct class;
-struct device_node;
-struct fwnode_handle;
 
 /* struct subsys_interface removed - never instantiated after subsys_interface_register removal */
 

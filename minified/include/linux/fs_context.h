@@ -10,15 +10,10 @@
 
 struct cred;
 struct dentry;
-struct file_operations;
 struct file_system_type;
-struct mnt_namespace;
 struct net;
-struct pid_namespace;
 struct super_block;
 struct user_namespace;
-struct vfsmount;
-struct path;
 
 enum fs_context_purpose {
 	FS_CONTEXT_FOR_MOUNT,		 

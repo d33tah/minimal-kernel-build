@@ -19,8 +19,7 @@
 
 #include <linux/wait.h>
 
-struct path;
-/* struct vfsmount forward decl removed - unused */
+/* struct path, vfsmount forward decls removed - unused */
 
 
 #define IS_ROOT(x) ((x) == (x)->d_parent)

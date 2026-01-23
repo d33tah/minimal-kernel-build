@@ -65,9 +65,7 @@ static inline struct file *files_lookup_fd_raw(struct files_struct *files, unsig
 	return NULL;
 }
 
-/* task_lookup_fd_rcu, task_lookup_next_fd_rcu removed - never used */
-
-struct task_struct;
+/* task_lookup_fd_rcu, task_lookup_next_fd_rcu, struct task_struct forward decl removed - never used */
 
 void put_files_struct(struct files_struct *fs);
 int unshare_files(void);

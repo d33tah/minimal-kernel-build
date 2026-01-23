@@ -66,8 +66,7 @@ static void truncate_cleanup_folio(struct folio *folio)
 {
 	if (folio_mapped(folio))
 		unmap_mapping_folio(folio);
-	/* folio_invalidate call removed - was empty */
-	folio_cancel_dirty(folio);
+	/* folio_invalidate, folio_cancel_dirty calls removed - were empty stubs */
 	folio_clear_mappedtodisk(folio);
 }
 
@@ -96,7 +95,7 @@ bool truncate_inode_partial_folio(struct folio *folio, loff_t start, loff_t end)
 	else
 		length = end + 1 - pos - offset;
 
-	folio_wait_writeback(folio);
+	/* folio_wait_writeback removed - empty stub */
 	if (length == folio_size(folio)) {
 		truncate_inode_folio(folio->mapping, folio);
 		return true;
@@ -195,7 +194,7 @@ void truncate_inode_pages_range(struct address_space *mapping, loff_t lstart,
 				continue;
 
 			folio_lock(folio);
-			folio_wait_writeback(folio);
+			/* folio_wait_writeback removed - empty stub */
 			truncate_inode_folio(mapping, folio);
 			folio_unlock(folio);
 			index = folio_index(folio) + folio_nr_pages(folio) - 1;
@@ -300,7 +299,7 @@ int invalidate_inode_pages2_range(struct address_space *mapping, pgoff_t start,
 				folio_unlock(folio);
 				continue;
 			}
-			folio_wait_writeback(folio);
+			/* folio_wait_writeback removed - empty stub */
 
 			if (folio_mapped(folio))
 				unmap_mapping_folio(folio);

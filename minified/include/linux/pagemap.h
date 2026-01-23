@@ -238,18 +238,10 @@ static inline int folio_wait_locked_killable(struct folio *folio)
 
 /* folio_put_wait_locked removed - always returned 0 */
 /* wait_on_page_writeback inlined into single caller in filemap.c */
-/* folio_wait_writeback, folio_wait_stable, folio_account_cleaned, __folio_cancel_dirty
-   inlined from mm/page-writeback.c - all stubs */
-static inline void folio_wait_writeback(struct folio *folio) { }
+/* folio_wait_writeback, __folio_cancel_dirty, folio_cancel_dirty removed - were empty stubs, calls removed */
 void folio_end_writeback(struct folio *folio);
 static inline void folio_wait_stable(struct folio *folio) { }
 static inline void folio_account_cleaned(struct folio *folio, struct bdi_writeback *wb) { }
-static inline void __folio_cancel_dirty(struct folio *folio) { }
-static inline void folio_cancel_dirty(struct folio *folio)
-{
-	if (folio_test_dirty(folio))
-		__folio_cancel_dirty(folio);
-}
 void folio_invalidate(struct folio *folio, size_t offset, size_t length);
 /* __set_page_dirty_nobuffers, noop_dirty_folio removed - unused */
 size_t fault_in_readable(const char __user *uaddr, size_t size);

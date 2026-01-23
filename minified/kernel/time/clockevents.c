@@ -109,29 +109,7 @@ void clockevents_shutdown(struct clock_event_device *dev)
 
 #define MIN_DELTA_LIMIT (NSEC_PER_SEC / HZ)
 
-static int clockevents_increase_min_delta(struct clock_event_device *dev)
-{
-	if (dev->min_delta_ns >= MIN_DELTA_LIMIT) {
-		printk_deferred(KERN_WARNING
-				"CE: Reprogramming failure. Giving up\n");
-		dev->next_event = KTIME_MAX;
-		return -ETIME;
-	}
-
-	if (dev->min_delta_ns < 5000)
-		dev->min_delta_ns = 5000;
-	else
-		dev->min_delta_ns += dev->min_delta_ns >> 1;
-
-	if (dev->min_delta_ns > MIN_DELTA_LIMIT)
-		dev->min_delta_ns = MIN_DELTA_LIMIT;
-
-	printk_deferred(KERN_WARNING
-			"CE: %s increased min_delta_ns to %llu nsec\n",
-			dev->name ? dev->name : "?",
-			(unsigned long long)dev->min_delta_ns);
-	return 0;
-}
+/* clockevents_increase_min_delta inlined into clockevents_program_min_delta */
 
 static int clockevents_program_min_delta(struct clock_event_device *dev)
 {
@@ -151,8 +129,25 @@ static int clockevents_program_min_delta(struct clock_event_device *dev)
 			return 0;
 
 		if (++i > 2) {
-			if (clockevents_increase_min_delta(dev))
+			/* clockevents_increase_min_delta inlined */
+			if (dev->min_delta_ns >= MIN_DELTA_LIMIT) {
+				printk_deferred(
+					KERN_WARNING
+					"CE: Reprogramming failure. Giving up\n");
+				dev->next_event = KTIME_MAX;
 				return -ETIME;
+			}
+			if (dev->min_delta_ns < 5000)
+				dev->min_delta_ns = 5000;
+			else
+				dev->min_delta_ns += dev->min_delta_ns >> 1;
+			if (dev->min_delta_ns > MIN_DELTA_LIMIT)
+				dev->min_delta_ns = MIN_DELTA_LIMIT;
+			printk_deferred(
+				KERN_WARNING
+				"CE: %s increased min_delta_ns to %llu nsec\n",
+				dev->name ? dev->name : "?",
+				(unsigned long long)dev->min_delta_ns);
 			i = 0;
 		}
 	}

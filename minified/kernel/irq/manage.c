@@ -128,29 +128,7 @@ static irqreturn_t irq_forced_secondary_handler(int irq, void *dev_id)
 	return IRQ_NONE;
 }
 
-static int irq_wait_for_interrupt(struct irqaction *action)
-{
-	for (;;) {
-		set_current_state(TASK_INTERRUPTIBLE);
-
-		if (kthread_should_stop()) {
-			if (test_and_clear_bit(IRQTF_RUNTHREAD,
-					       &action->thread_flags)) {
-				__set_current_state(TASK_RUNNING);
-				return 0;
-			}
-			__set_current_state(TASK_RUNNING);
-			return -1;
-		}
-
-		if (test_and_clear_bit(IRQTF_RUNTHREAD,
-				       &action->thread_flags)) {
-			__set_current_state(TASK_RUNNING);
-			return 0;
-		}
-		schedule();
-	}
-}
+/* irq_wait_for_interrupt inlined into irq_thread */
 
 static void irq_finalize_oneshot(struct irq_desc *desc,
 				 struct irqaction *action)
@@ -259,8 +237,31 @@ static int irq_thread(void *data)
 
 	/* irq_thread_check_affinity calls removed - empty function */
 
-	while (!irq_wait_for_interrupt(action)) {
+	/* irq_wait_for_interrupt inlined */
+	for (;;) {
 		irqreturn_t action_ret;
+		int should_exit;
+
+		set_current_state(TASK_INTERRUPTIBLE);
+		if (kthread_should_stop()) {
+			if (test_and_clear_bit(IRQTF_RUNTHREAD,
+					       &action->thread_flags)) {
+				__set_current_state(TASK_RUNNING);
+				should_exit = 0;
+			} else {
+				__set_current_state(TASK_RUNNING);
+				should_exit = -1;
+			}
+		} else if (test_and_clear_bit(IRQTF_RUNTHREAD,
+					      &action->thread_flags)) {
+			__set_current_state(TASK_RUNNING);
+			should_exit = 0;
+		} else {
+			schedule();
+			continue;
+		}
+		if (should_exit)
+			break;
 
 		action_ret = handler_fn(desc, action);
 		if (action_ret == IRQ_WAKE_THREAD) {

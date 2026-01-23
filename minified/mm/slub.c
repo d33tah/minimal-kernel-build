@@ -525,25 +525,7 @@ static void init_kmem_cache_node(struct kmem_cache_node *n)
 	INIT_LIST_HEAD(&n->partial);
 }
 
-static inline int alloc_kmem_cache_cpus(struct kmem_cache *s)
-{
-	BUILD_BUG_ON(PERCPU_DYNAMIC_EARLY_SIZE <
-		     KMALLOC_SHIFT_HIGH * sizeof(struct kmem_cache_cpu));
-
-	s->cpu_slab = __alloc_percpu(sizeof(struct kmem_cache_cpu),
-				     2 * sizeof(void *));
-
-	if (!s->cpu_slab)
-		return 0;
-
-	/* Inlined init_kmem_cache_cpus */
-	{
-		struct kmem_cache_cpu *c = per_cpu_ptr(s->cpu_slab, 0);
-		c->tid = 0; /* Inlined init_tid(0) */
-	}
-
-	return 1;
-}
+/* alloc_kmem_cache_cpus inlined into __kmem_cache_create */
 
 static struct kmem_cache *kmem_cache_node;
 
@@ -669,8 +651,16 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 	if (!init_kmem_cache_nodes(s))
 		goto error;
 
-	if (alloc_kmem_cache_cpus(s))
+	/* alloc_kmem_cache_cpus inlined */
+	BUILD_BUG_ON(PERCPU_DYNAMIC_EARLY_SIZE <
+		     KMALLOC_SHIFT_HIGH * sizeof(struct kmem_cache_cpu));
+	s->cpu_slab = __alloc_percpu(sizeof(struct kmem_cache_cpu),
+				     2 * sizeof(void *));
+	if (s->cpu_slab) {
+		struct kmem_cache_cpu *c = per_cpu_ptr(s->cpu_slab, 0);
+		c->tid = 0;
 		return 0;
+	}
 
 error:
 	__kmem_cache_release(s);

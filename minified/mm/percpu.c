@@ -381,29 +381,7 @@ static void pcpu_block_update(struct pcpu_block_md *block, int start, int end)
 	}
 }
 
-/* pcpu_block_update_scan inlined into pcpu_alloc_area */
-
-/* full_scan parameter removed - only call passes false */
-static void pcpu_chunk_refresh_hint(struct pcpu_chunk *chunk)
-{
-	struct pcpu_block_md *chunk_md = &chunk->chunk_md;
-	int bit_off, bits;
-
-	/* full_scan was always false, so this branch always taken when scan_hint set */
-	if (chunk_md->scan_hint) {
-		bit_off = chunk_md->scan_hint_start + chunk_md->scan_hint;
-		chunk_md->contig_hint_start = chunk_md->scan_hint_start;
-		chunk_md->contig_hint = chunk_md->scan_hint;
-		chunk_md->scan_hint = 0;
-	} else {
-		bit_off = chunk_md->first_free;
-		chunk_md->contig_hint = 0;
-	}
-
-	bits = 0;
-	pcpu_for_each_md_free_region(chunk, bit_off, bits)
-		pcpu_block_update(chunk_md, bit_off, bit_off + bits);
-}
+/* pcpu_block_update_scan, pcpu_chunk_refresh_hint inlined into pcpu_alloc_area */
 
 static void pcpu_block_refresh_hint(struct pcpu_chunk *chunk, int index)
 {
@@ -519,8 +497,25 @@ static void pcpu_block_update_hint_alloc(struct pcpu_chunk *chunk, int bit_off,
 	if (pcpu_region_overlap(chunk_md->contig_hint_start,
 				chunk_md->contig_hint_start +
 					chunk_md->contig_hint,
-				bit_off, bit_off + bits))
-		pcpu_chunk_refresh_hint(chunk);
+				bit_off, bit_off + bits)) {
+		/* inlined pcpu_chunk_refresh_hint */
+		int refresh_bit_off, refresh_bits;
+		if (chunk_md->scan_hint) {
+			refresh_bit_off =
+				chunk_md->scan_hint_start + chunk_md->scan_hint;
+			chunk_md->contig_hint_start = chunk_md->scan_hint_start;
+			chunk_md->contig_hint = chunk_md->scan_hint;
+			chunk_md->scan_hint = 0;
+		} else {
+			refresh_bit_off = chunk_md->first_free;
+			chunk_md->contig_hint = 0;
+		}
+		refresh_bits = 0;
+		pcpu_for_each_md_free_region(chunk, refresh_bit_off,
+					     refresh_bits)
+			pcpu_block_update(chunk_md, refresh_bit_off,
+					  refresh_bit_off + refresh_bits);
+	}
 }
 
 /* pcpu_is_populated removed - only called when pop_only was true, which was always false */

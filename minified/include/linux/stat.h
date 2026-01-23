@@ -26,8 +26,7 @@
 #define S_IWUSR 00200
 #define S_IXUSR 00100
 #define S_IRWXG 00070
-#define S_IRGRP 00040
-/* S_IWGRP removed - never used */
+/* S_IRGRP, S_IWGRP removed - never used */
 #define S_IXGRP 00010
 #define S_IRWXO 00007
 /* S_IROTH, S_IWOTH removed - never used */

@@ -42,10 +42,7 @@ static __always_inline unsigned int cpumask_check(unsigned int cpu)
 }
 
 #if NR_CPUS == 1
-/* cpumask_first, cpumask_any_but removed - never called */
-
-#define for_each_cpu(cpu, mask)			\
-	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)
+/* cpumask_first, cpumask_any_but, for_each_cpu removed - never called */
 #endif
 
 #define CPU_BITS_NONE						\
@@ -105,9 +102,7 @@ typedef struct cpumask cpumask_var_t[1];
 extern const DECLARE_BITMAP(cpu_all_bits, NR_CPUS);
 #define cpu_all_mask to_cpumask(cpu_all_bits)
 
-#define for_each_possible_cpu(cpu) for_each_cpu((cpu), cpu_possible_mask)
-#define for_each_online_cpu(cpu)   for_each_cpu((cpu), cpu_online_mask)
-#define for_each_present_cpu(cpu)  for_each_cpu((cpu), cpu_present_mask)
+/* for_each_possible_cpu, for_each_online_cpu, for_each_present_cpu removed - code simplified */
 
 static inline void
 set_cpu_possible(unsigned int cpu, bool possible)

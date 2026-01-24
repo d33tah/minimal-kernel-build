@@ -50,7 +50,7 @@ void tick_handle_periodic(struct clock_event_device *dev)
 
 void tick_setup_periodic(struct clock_event_device *dev, int broadcast)
 {
-	tick_set_periodic_handler(dev, broadcast);
+	dev->event_handler = tick_handle_periodic;
 
 	if (dev->features & CLOCK_EVT_FEAT_DUMMY)
 		return;

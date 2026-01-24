@@ -63,13 +63,8 @@ extern void clockevents_handle_noop(struct clock_event_device *dev);
  * tick_resume_check_broadcast, tick_broadcast_update_freq, tick_broadcast_init removed - never called */
 
  
-static inline void tick_set_periodic_handler(struct clock_event_device *dev, int broadcast)
-{
-	dev->event_handler = tick_handle_periodic;
-}
+/* tick_set_periodic_handler removed - inlined at single call site */
 
-
- 
 static inline
 void tick_setup_oneshot(struct clock_event_device *newdev,
 			void (*handler)(struct clock_event_device *),

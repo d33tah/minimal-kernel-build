@@ -71,7 +71,8 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count,
 		init_sync_kiocb(&kiocb, file);
 		kiocb.ki_pos = (pos ? *pos : 0);
 		iov_iter_init(&iter, WRITE, &iov, 1, count);
-		ret = call_write_iter(file, &kiocb, &iter);
+		/* call_write_iter inlined */
+		ret = file->f_op->write_iter(&kiocb, &iter);
 		BUG_ON(ret == -EIOCBQUEUED);
 		if (ret > 0 && pos)
 			*pos = kiocb.ki_pos;

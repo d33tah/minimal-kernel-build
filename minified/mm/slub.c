@@ -194,7 +194,7 @@ static struct slab *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 
 	slab->slab_cache = s;
 
-	start = slab_address(slab);
+	start = folio_address(slab_folio(slab)); /* slab_address inlined */
 	/* fixup_red_left removed - no red zone */
 	start = setup_object(s, start);
 	slab->freelist = start;
@@ -559,7 +559,8 @@ static int init_kmem_cache_nodes(struct kmem_cache *s)
 		BUG_ON(kmem_cache_node->size < sizeof(struct kmem_cache_node));
 		slab = new_slab(kmem_cache_node, GFP_NOWAIT, 0);
 		BUG_ON(!slab);
-		if (slab_nid(slab) != 0) {
+		if (page_to_nid(&slab_folio(slab)->page) !=
+		    0) { /* slab_nid inlined */
 			pr_err("SLUB: Unable to allocate memory from node %d\n",
 			       0);
 			pr_err("SLUB: Allocating a useless per node structure in order to be able to continue\n");

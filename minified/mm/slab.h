@@ -63,18 +63,7 @@ static inline void slab_set_pfmemalloc(struct slab *slab)
 	folio_set_active(slab_folio(slab));
 }
 
-/* slab_clear_pfmemalloc, __slab_clear_pfmemalloc removed - unused */
-
-static inline void *slab_address(const struct slab *slab)
-{
-	return folio_address(slab_folio(slab));
-}
-
-static inline int slab_nid(const struct slab *slab)
-{
-	return page_to_nid(&slab_folio(slab)->page); /* folio_nid inlined */
-}
-
+/* slab_clear_pfmemalloc, __slab_clear_pfmemalloc, slab_address, slab_nid removed - inlined */
 /* slab_pgdat removed - inlined at single call site */
 /* virt_to_slab, slab_order, slab_size removed - unused */
 

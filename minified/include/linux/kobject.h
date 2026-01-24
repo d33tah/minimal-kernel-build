@@ -109,14 +109,13 @@ extern struct kset * __must_check kset_create_and_add(const char *name,
 						const struct kset_uevent_ops *u,
 						struct kobject *parent_kobj);
 
-static inline struct kset *to_kset(struct kobject *kobj)
-{
-	return kobj ? container_of(kobj, struct kset, kobj) : NULL;
-}
-
+/* to_kset inlined into kset_get */
 static inline struct kset *kset_get(struct kset *k)
 {
-	return k ? to_kset(kobject_get(&k->kobj)) : NULL;
+	if (!k)
+		return NULL;
+	struct kobject *kobj = kobject_get(&k->kobj);
+	return kobj ? container_of(kobj, struct kset, kobj) : NULL;
 }
 
 static inline void kset_put(struct kset *k)

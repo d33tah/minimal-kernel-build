@@ -23,8 +23,6 @@ do {									\
 } while (0)
 
 #define wait_rcu_gp(...) _wait_rcu_gp(false, __VA_ARGS__)
-
-/* CONFIG_TINY_RCU=y in minimal config */
-#define synchronize_rcu_mult(...) _wait_rcu_gp(true, __VA_ARGS__)
+/* synchronize_rcu_mult removed - never used (TINY_RCU=y) */
 
 #endif  

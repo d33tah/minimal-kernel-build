@@ -56,52 +56,10 @@ struct kernel_param {
 extern const struct kernel_param __start___param[], __stop___param[];
 
 
-#define module_param(name, type, perm)				\
-	module_param_named(name, name, type, perm)
-
-#define module_param_unsafe(name, type, perm)			\
-	module_param_named_unsafe(name, name, type, perm)
-
-#define module_param_named(name, value, type, perm)			   \
-	param_check_##type(name, &(value));				   \
-	module_param_cb(name, &param_ops_##type, &value, perm);		   \
-	__MODULE_PARM_TYPE(name, #type)
-
-#define module_param_named_unsafe(name, value, type, perm)		\
-	param_check_##type(name, &(value));				\
-	module_param_cb_unsafe(name, &param_ops_##type, &value, perm);	\
-	__MODULE_PARM_TYPE(name, #type)
-
-#define module_param_cb(name, ops, arg, perm)				      \
-	__module_param_call(MODULE_PARAM_PREFIX, name, ops, arg, perm, -1, 0)
-
-#define module_param_cb_unsafe(name, ops, arg, perm)			      \
-	__module_param_call(MODULE_PARAM_PREFIX, name, ops, arg, perm, -1,    \
-			    KERNEL_PARAM_FL_UNSAFE)
-
-/* __level_param_cb, core_param_cb, postcore_param_cb, arch_param_cb, subsys_param_cb, fs_param_cb, device_param_cb, late_param_cb removed - unused */
+/* All module_param macros removed - never used (no modules) */
 
 /* x86 only - alpha/ia64/ppc64 version removed */
 #define __moduleparam_const const
-
-#define __module_param_call(prefix, name, ops, arg, perm, level, flags)	\
-	 			\
-	static const char __param_str_##name[] = prefix #name;		\
-	static struct kernel_param __moduleparam_const __param_##name	\
-	__used __section("__param")					\
-	__aligned(__alignof__(struct kernel_param))			\
-	= { __param_str_##name, THIS_MODULE, ops,			\
-	    VERIFY_OCTAL_PERMISSIONS(perm), level, flags, { arg } }
-
-#define module_param_call(name, _set, _get, arg, perm)			\
-	static const struct kernel_param_ops __param_ops_##name =	\
-		{ .flags = 0, .set = _set, .get = _get };		\
-	__module_param_call(MODULE_PARAM_PREFIX,			\
-			    name, &__param_ops_##name, arg, perm, -1, 0)
-
-/* kernel_param_lock/unlock, core_param, core_param_unsafe removed - empty/never used */  
-
-/* module_param_string removed - never called */
 
 extern bool parameq(const char *name1, const char *name2);
 

@@ -61,7 +61,7 @@
 
 #define preempt_count_add(val)	__preempt_count_add(val)
 #define preempt_count_sub(val)	__preempt_count_sub(val)
-#define preempt_count_dec_and_test() __preempt_count_dec_and_test()
+/* preempt_count_dec_and_test removed - never used (no preemption) */
 
 #define __preempt_count_inc() __preempt_count_add(1)
 #define __preempt_count_dec() __preempt_count_sub(1)

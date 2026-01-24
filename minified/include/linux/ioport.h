@@ -66,10 +66,7 @@ static inline unsigned long resource_ext_type(const struct resource *res)
 
 
 
-#define request_region(start,n,name)		__request_region(&ioport_resource, (start), (n), (name), 0)
-#define request_muxed_region(start,n,name)	__request_region(&ioport_resource, (start), (n), (name), IORESOURCE_MUXED)
-#define __request_mem_region(start,n,name, excl) __request_region(&iomem_resource, (start), (n), (name), excl)
-#define request_mem_region(start,n,name) __request_region(&iomem_resource, (start), (n), (name), 0)
+/* request_region, request_muxed_region, request_mem_region removed - never used */
 
 extern struct resource * __request_region(struct resource *,
 					resource_size_t start,

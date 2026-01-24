@@ -109,9 +109,7 @@ struct old_linux_dirent;
 	static inline long __do_sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))
 #endif  
 
-#define SC_ARG64(name) u32, name##_lo, u32, name##_hi
-
-/* SC_VAL64, SYSCALL32_DEFINEx removed - never used */
+/* SC_ARG64, SC_VAL64, SYSCALL32_DEFINEx removed - never used */
 
 /* addr_limit_user_check, ksys_* declarations removed - never called */
 

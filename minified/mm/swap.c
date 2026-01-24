@@ -310,10 +310,13 @@ void __pagevec_lru_add(struct pagevec *pvec)
 		/* folio_evictable inlined - single caller */
 		{
 			bool evictable;
+			struct address_space *mapping;
 			rcu_read_lock();
-			evictable =
-				!mapping_unevictable(folio_mapping(folio)) &&
-				!folio_test_mlocked(folio);
+			/* mapping_unevictable inlined - single caller */
+			mapping = folio_mapping(folio);
+			evictable = !(mapping && test_bit(AS_UNEVICTABLE,
+							  &mapping->flags)) &&
+				    !folio_test_mlocked(folio);
 			rcu_read_unlock();
 			if (!evictable) {
 				folio_clear_active(folio);

@@ -213,7 +213,7 @@ void truncate_inode_pages(struct address_space *mapping, loff_t lstart)
 
 void truncate_inode_pages_final(struct address_space *mapping)
 {
-	mapping_set_exiting(mapping);
+	set_bit(AS_EXITING, &mapping->flags); /* mapping_set_exiting inlined */
 
 	if (!mapping_empty(mapping)) {
 		xa_lock_irq(&mapping->i_pages);

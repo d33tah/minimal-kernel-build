@@ -38,7 +38,9 @@ static void filemap_unaccount_folio(struct address_space *mapping,
 			 page_to_pfn(&folio->page)); /* folio_pfn inlined */
 		add_taint(TAINT_BAD_PAGE, LOCKDEP_NOW_UNRELIABLE);
 
-		if (mapping_exiting(mapping) && !folio_test_large(folio)) {
+		/* mapping_exiting inlined - single caller */
+		if (test_bit(AS_EXITING, &mapping->flags) &&
+		    !folio_test_large(folio)) {
 			/* page_mapcount inlined - single caller */
 			struct page *pg = &folio->page;
 			int mapcount =

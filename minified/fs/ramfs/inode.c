@@ -64,7 +64,9 @@ struct inode *ramfs_get_inode(struct super_block *sb, const struct inode *dir,
 		inode_init_owner(&init_user_ns, inode, dir, mode);
 		inode->i_mapping->a_ops = &ram_aops;
 		mapping_set_gfp_mask(inode->i_mapping, GFP_HIGHUSER);
-		mapping_set_unevictable(inode->i_mapping);
+		set_bit(AS_UNEVICTABLE,
+			&inode->i_mapping
+				 ->flags); /* mapping_set_unevictable inlined */
 		/* i_atime, i_mtime assignment removed - never read */
 		switch (mode & S_IFMT) {
 		default:

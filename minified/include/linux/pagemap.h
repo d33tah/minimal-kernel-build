@@ -48,25 +48,10 @@ enum mapping_flags {
 	AS_EXITING	= 4,
 };
 
-static inline void mapping_set_unevictable(struct address_space *mapping)
-{
-	set_bit(AS_UNEVICTABLE, &mapping->flags);
-}
-
-static inline bool mapping_unevictable(struct address_space *mapping)
-{
-	return mapping && test_bit(AS_UNEVICTABLE, &mapping->flags);
-}
-
-static inline void mapping_set_exiting(struct address_space *mapping)
-{
-	set_bit(AS_EXITING, &mapping->flags);
-}
-
-static inline int mapping_exiting(struct address_space *mapping)
-{
-	return test_bit(AS_EXITING, &mapping->flags);
-}
+/* mapping_set_unevictable inlined at fs/ramfs/inode.c - single caller */
+/* mapping_unevictable inlined at mm/swap.c - single caller */
+/* mapping_set_exiting inlined at mm/truncate.c - single caller */
+/* mapping_exiting inlined at mm/filemap.c - single caller */
 
 static inline gfp_t mapping_gfp_mask(struct address_space * mapping)
 {

@@ -34,7 +34,8 @@ static void filemap_unaccount_folio(struct address_space *mapping,
 	/* DEBUG_VM disabled - always check */
 	if (unlikely(folio_mapped(folio))) {
 		pr_alert("BUG: Bad page cache in process %s  pfn:%05lx\n",
-			 current->comm, folio_pfn(folio));
+			 current->comm,
+			 page_to_pfn(&folio->page)); /* folio_pfn inlined */
 		add_taint(TAINT_BAD_PAGE, LOCKDEP_NOW_UNRELIABLE);
 
 		if (mapping_exiting(mapping) && !folio_test_large(folio)) {

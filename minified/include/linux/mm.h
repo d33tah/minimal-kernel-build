@@ -501,11 +501,7 @@ static inline pg_data_t *folio_pgdat(const struct folio *folio)
 	return page_pgdat(&folio->page);
 }
 
-static inline unsigned long folio_pfn(struct folio *folio)
-{
-	return page_to_pfn(&folio->page);
-}
-
+/* folio_pfn removed - inlined at single call site */
 /* folio_pincount_ptr removed - unused */
 
 /* set_page_zone, set_page_node inlined into set_page_links */

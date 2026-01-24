@@ -85,12 +85,7 @@ static inline bool cap_isclear(const kernel_cap_t a)
 	return true;
 }
 
-static inline bool cap_issubset(const kernel_cap_t a, const kernel_cap_t set)
-{
-	kernel_cap_t dest;
-	dest = cap_drop(a, set);
-	return cap_isclear(dest);
-}
+/* cap_issubset inlined at kernel/cred.c - single caller */
 
 static inline bool capable(int cap)
 {

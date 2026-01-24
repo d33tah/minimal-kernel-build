@@ -155,10 +155,12 @@ int commit_creds(struct cred *new)
 		bool cap_subset = false;
 		const struct user_namespace *set_ns = old->user_ns;
 		const struct user_namespace *subset_ns = new->user_ns;
-		if (set_ns == subset_ns)
-			cap_subset = cap_issubset(new->cap_permitted,
-						  old->cap_permitted);
-		else {
+		if (set_ns == subset_ns) {
+			/* cap_issubset inlined - single caller */
+			kernel_cap_t dropped = cap_drop(new->cap_permitted,
+							old->cap_permitted);
+			cap_subset = cap_isclear(dropped);
+		} else {
 			for (; subset_ns != &init_user_ns;
 			     subset_ns = subset_ns->parent) {
 				if ((set_ns == subset_ns->parent) &&

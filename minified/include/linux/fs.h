@@ -615,10 +615,7 @@ static inline ssize_t call_write_iter(struct file *file, struct kiocb *kio, stru
 	return file->f_op->write_iter(kio, iter);
 }
 
-static inline int call_mmap(struct file *file, struct vm_area_struct *vma)
-{
-	return file->f_op->mmap(file, vma);
-}
+/* call_mmap inlined at mm/mmap.c - single caller */
 
 extern ssize_t vfs_write(struct file *, const char __user *, size_t, loff_t *);
 

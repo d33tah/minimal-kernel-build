@@ -553,7 +553,8 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 
 	if (file) {
 		vma->vm_file = get_file(file);
-		if (call_mmap(file, vma)) {
+		/* call_mmap inlined */
+		if (file->f_op->mmap(file, vma)) {
 			fput(vma->vm_file);
 			vm_area_free(vma);
 			return -EINVAL;

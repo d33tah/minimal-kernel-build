@@ -495,9 +495,7 @@ static vm_fault_t do_wp_page(struct vm_fault *vmf) __releases(vmf->ptl)
 
 	if (PageAnon(vmf->page) && PageAnonExclusive(vmf->page)) {
 		pte_t entry;
-		if (vmf->page)
-			page_cpupid_xchg_last(vmf->page,
-					      (1 << LAST_CPUPID_SHIFT) - 1);
+		/* page_cpupid_xchg_last call removed - no effect (function returns page_to_nid, result unused) */
 		entry = pte_mkyoung(vmf->orig_pte);
 		entry = maybe_mkwrite(pte_mkdirty(entry), vmf->vma);
 		ptep_set_access_flags(vmf->vma, vmf->address, vmf->pte, entry,

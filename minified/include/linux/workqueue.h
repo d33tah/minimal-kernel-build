@@ -178,10 +178,7 @@ static inline bool mod_delayed_work(struct workqueue_struct *wq,
 	return queue_delayed_work(wq, dwork, delay);
 }
 
-static inline bool schedule_work_on(int cpu, struct work_struct *work)
-{
-	return queue_work_on(cpu, system_wq, work);
-}
+/* schedule_work_on inlined into slub.c (~3 LOC) */
 
 static inline bool schedule_work(struct work_struct *work)
 {

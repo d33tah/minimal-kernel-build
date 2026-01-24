@@ -681,7 +681,8 @@ int __kmem_cache_shutdown(struct kmem_cache *s)
 		if (c->slab || slub_percpu_partial(c)) {
 			INIT_WORK(&sfw->work, flush_cpu_slab);
 			sfw->s = s;
-			schedule_work_on(0, &sfw->work);
+			/* schedule_work_on inlined */
+			queue_work_on(0, system_wq, &sfw->work);
 			/* flush_work removed - stub returning false */
 		}
 		mutex_unlock(&flush_lock);

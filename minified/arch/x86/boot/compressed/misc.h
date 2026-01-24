@@ -60,14 +60,7 @@ int cmdline_find_option(const char *option, char *buffer, int bufsize);
 int cmdline_find_option_bool(const char *option);
 
 /* struct mem_vector removed - never instantiated */
-
-static inline void choose_random_location(unsigned long input,
-					  unsigned long input_size,
-					  unsigned long *output,
-					  unsigned long output_size,
-					  unsigned long *virt_addr)
-{
-}
+/* choose_random_location removed - call deleted (no KASLR) */
 
 static const int early_serial_base;
 static inline void console_init(void)

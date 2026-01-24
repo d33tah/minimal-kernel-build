@@ -225,9 +225,7 @@ asmlinkage __visible void *extract_kernel(void *rmode, memptr heap,
 	debug_putaddr(kernel_total_size);
 	debug_putaddr(needed_size);
 
-	choose_random_location((unsigned long)input_data, input_len,
-			       (unsigned long *)&output, needed_size,
-			       &virt_addr);
+	/* choose_random_location removed - was empty stub (no KASLR) */
 
 	if ((unsigned long)output & (MIN_KERNEL_ALIGN - 1))
 		error("Destination physical address inappropriately aligned");

@@ -197,9 +197,7 @@ static inline int pte_same(pte_t pte_a, pte_t pte_b)
 /* pmd_same, pud_same, p4d_same, pgd_same and set_*_safe macros removed - unused */
 
 
-#ifndef __HAVE_ARCH_PGD_OFFSET_GATE
-#define pgd_offset_gate(mm, addr)	pgd_offset(mm, addr)
-#endif
+/* pgd_offset_gate removed - never used */
 
 #ifndef __HAVE_ARCH_MOVE_PTE
 #define move_pte(pte, prot, old_addr, new_addr)	(pte)

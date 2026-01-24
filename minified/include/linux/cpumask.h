@@ -155,10 +155,7 @@ static inline const struct cpumask *get_cpu_mask(unsigned int cpu)
 	return to_cpumask(p);
 }
 
-/* NR_CPUS == 1 - simplified */
-#define num_online_cpus()	1U
-#define num_possible_cpus()	1U
-#define num_present_cpus()	1U
+/* num_online_cpus, num_possible_cpus, num_present_cpus removed - NR_CPUS == 1 */
 
 static inline bool cpu_online(unsigned int cpu)
 {

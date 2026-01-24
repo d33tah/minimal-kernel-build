@@ -92,12 +92,7 @@ void memblock_free_late(phys_addr_t base, phys_addr_t size);
 	     __next_mem_range_rev(&i, nid, flags, type_a, type_b,	\
 				  p_start, p_end, p_nid))
 
-#define for_each_mem_range(i, p_start, p_end) \
-	__for_each_mem_range(i, &memblock.memory, NULL, NUMA_NO_NODE,	\
-			     MEMBLOCK_HOTPLUG | MEMBLOCK_DRIVER_MANAGED, \
-			     p_start, p_end, NULL)
-
-/* for_each_mem_range_rev removed - never called */
+/* for_each_mem_range, for_each_mem_range_rev removed - never called */
 
 #define for_each_reserved_mem_range(i, p_start, p_end)			\
 	__for_each_mem_range(i, &memblock.reserved, NULL, NUMA_NO_NODE,	\

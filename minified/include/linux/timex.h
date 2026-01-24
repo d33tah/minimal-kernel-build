@@ -8,7 +8,7 @@
 /* random_get_entropy_fallback declaration removed - function never called */
 #include <asm/timex.h>
 /* random_get_entropy macros removed - never called */
-#define shift_right(x, s) ({ __typeof__(x) __x = (x); __typeof__(s) __s = (s); __x < 0 ? -(-__x >> __s) : __x >> __s; })
+/* shift_right removed - never used */
 #define NTP_SCALE_SHIFT		32
 #define NTP_INTERVAL_FREQ  (HZ)
 #define NTP_INTERVAL_LENGTH (NSEC_PER_SEC/NTP_INTERVAL_FREQ)

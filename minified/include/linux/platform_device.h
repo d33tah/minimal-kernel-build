@@ -21,9 +21,7 @@ struct platform_device {
 	/* mfd_cell, pdev_archdata fields removed - never accessed */
 };
 
-#define platform_get_device_id(pdev)	((pdev)->id_entry)
-
-/* dev_is_platform removed - never used */
+/* platform_get_device_id, dev_is_platform removed - never used */
 #define to_platform_device(x) container_of((x), struct platform_device, dev)
 
 extern struct bus_type platform_bus_type;
@@ -51,8 +49,6 @@ extern int __platform_driver_register(struct platform_driver *,
 					struct module *);
 
 /* builtin_platform_driver, platform_create_bundle, platform_register_drivers, platform_unregister_drivers removed - never called */
-/* platform_pm_* macros removed - unused */
-
-#define USE_PLATFORM_PM_SLEEP_OPS
+/* platform_pm_* macros, USE_PLATFORM_PM_SLEEP_OPS removed - unused */
 
 #endif  

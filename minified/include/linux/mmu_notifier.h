@@ -43,10 +43,7 @@ void mmu_notifier_invalidate_range_end(struct mmu_notifier_range *range)
 {
 }
 
-static inline void mmu_notifier_invalidate_range(struct mm_struct *mm,
-				  unsigned long start, unsigned long end)
-{
-}
+/* mmu_notifier_invalidate_range removed - empty stub, no callers */
 
 static inline void mmu_notifier_subscriptions_init(struct mm_struct *mm)
 {

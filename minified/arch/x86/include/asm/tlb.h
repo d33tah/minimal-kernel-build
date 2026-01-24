@@ -131,7 +131,7 @@ static inline void tlb_flush_mmu_tlbonly(struct mmu_gather *tlb)
 		return;
 
 	tlb_flush(tlb);
-	mmu_notifier_invalidate_range(tlb->mm, tlb->start, tlb->end);
+	/* mmu_notifier_invalidate_range call removed - empty stub */
 	__tlb_reset_range(tlb);
 }
 

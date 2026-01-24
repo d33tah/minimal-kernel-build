@@ -97,9 +97,16 @@ struct vm_area_struct *vm_area_alloc(struct mm_struct *mm)
 {
 	struct vm_area_struct *vma;
 
+	static const struct vm_operations_struct dummy_vm_ops = {};
+
 	vma = kmem_cache_alloc(vm_area_cachep, GFP_KERNEL);
-	if (vma)
-		vma_init(vma, mm);
+	if (vma) {
+		/* vma_init inlined - single caller */
+		memset(vma, 0, sizeof(*vma));
+		vma->vm_mm = mm;
+		vma->vm_ops = &dummy_vm_ops;
+		INIT_LIST_HEAD(&vma->anon_vma_chain);
+	}
 	return vma;
 }
 

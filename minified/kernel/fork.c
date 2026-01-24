@@ -374,7 +374,8 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	atomic_set(&mm->mm_count, 1);
 	mmap_init_lock(mm);
 	INIT_LIST_HEAD(&mm->mmlist);
-	mm_pgtables_bytes_init(mm);
+	atomic_long_set(&mm->pgtables_bytes,
+			0); /* mm_pgtables_bytes_init inlined */
 	mm->map_count = 0;
 	memset(&mm->rss_stat, 0, sizeof(mm->rss_stat));
 	spin_lock_init(&mm->page_table_lock);

@@ -82,7 +82,9 @@ static inline void free_pmd_range(struct mmu_gather *tlb, pud_t *pud,
 			pgtable_t token = pmd_pgtable(*pmd);
 			pmd_clear(pmd);
 			pte_free_tlb(tlb, token, addr);
-			mm_dec_nr_ptes(tlb->mm);
+			/* mm_dec_nr_ptes inlined - single caller */
+			atomic_long_sub(PTRS_PER_PTE * sizeof(pte_t),
+					&tlb->mm->pgtables_bytes);
 		}
 	} while (pmd++, addr = next, addr != end);
 
@@ -225,8 +227,9 @@ void pmd_install(struct mm_struct *mm, pmd_t *pmd, pgtable_t *pte)
 	spinlock_t *ptl = pmd_lock(mm, pmd);
 
 	if (likely(pmd_none(*pmd))) {
-		mm_inc_nr_ptes(mm);
-
+		/* mm_inc_nr_ptes inlined - single caller */
+		atomic_long_add(PTRS_PER_PTE * sizeof(pte_t),
+				&mm->pgtables_bytes);
 		smp_wmb();
 		pmd_populate(mm, pmd, *pte);
 		*pte = NULL;

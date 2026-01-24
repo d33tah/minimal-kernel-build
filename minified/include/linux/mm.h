@@ -609,21 +609,8 @@ static inline pte_t *get_locked_pte(struct mm_struct *mm, unsigned long addr,
 
 /* __p4d_alloc, __pud_alloc, __pmd_alloc removed - never called (folded) */
 
-static inline void mm_pgtables_bytes_init(struct mm_struct *mm)
-{
-	atomic_long_set(&mm->pgtables_bytes, 0);
-}
-
-
-static inline void mm_inc_nr_ptes(struct mm_struct *mm)
-{
-	atomic_long_add(PTRS_PER_PTE * sizeof(pte_t), &mm->pgtables_bytes);
-}
-
-static inline void mm_dec_nr_ptes(struct mm_struct *mm)
-{
-	atomic_long_sub(PTRS_PER_PTE * sizeof(pte_t), &mm->pgtables_bytes);
-}
+/* mm_pgtables_bytes_init inlined at kernel/fork.c - single caller */
+/* mm_inc_nr_ptes and mm_dec_nr_ptes inlined at mm/memory.c - single caller each */
 
 int __pte_alloc(struct mm_struct *mm, pmd_t *pmd);
 int __pte_alloc_kernel(pmd_t *pmd);

@@ -703,7 +703,9 @@ static int __sched_setscheduler(struct task_struct *p,
 	/* Basic validation only */
 	if (policy < 0)
 		policy = p->policy;
-	else if (!valid_policy(policy))
+	/* valid_policy inlined - single caller */
+	else if (!(idle_policy(policy) || fair_policy(policy) ||
+		   rt_policy(policy) || dl_policy(policy)))
 		return -EINVAL;
 
 	if (attr->sched_priority > MAX_RT_PRIO - 1)

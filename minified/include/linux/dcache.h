@@ -229,11 +229,6 @@ static inline struct inode *d_inode(const struct dentry *dentry)
 	return dentry->d_inode;
 }
 
-static inline struct inode *d_backing_inode(const struct dentry *upper)
-{
-	struct inode *inode = upper->d_inode;
-
-	return inode;
-}
+/* d_backing_inode removed - alias for d_inode in minimal kernel (no overlayfs) */
 
 #endif

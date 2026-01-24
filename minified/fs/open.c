@@ -119,7 +119,7 @@ cleanup_file:
 int vfs_open(const struct path *path, struct file *file)
 {
 	file->f_path = *path;
-	return do_dentry_open(file, d_backing_inode(path->dentry), NULL);
+	return do_dentry_open(file, d_inode(path->dentry), NULL);
 }
 
 #define WILL_CREATE(flags) (flags & (O_CREAT | __O_TMPFILE))

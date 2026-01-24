@@ -476,7 +476,7 @@ rcu_fail:;
 			return -ENOENT;
 		}
 	}
-	*inode = d_backing_inode(path->dentry);
+	*inode = d_inode(path->dentry);
 	*seqp = 0;
 	return 0;
 }
@@ -497,7 +497,7 @@ static struct dentry *lookup_fast(struct nameidata *nd, struct inode **inode,
 			return NULL;
 		}
 
-		*inode = d_backing_inode(dentry);
+		*inode = d_inode(dentry);
 		if (unlikely(read_seqcount_retry(&dentry->d_seq, seq)))
 			return ERR_PTR(-ECHILD);
 

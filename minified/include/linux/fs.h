@@ -537,18 +537,7 @@ static inline kgid_t i_gid_into_mnt(struct user_namespace *mnt_userns,
 	return mapped_kgid_fs(mnt_userns, i_user_ns(inode), inode->i_gid);
 }
 
-static inline void inode_fsuid_set(struct inode *inode,
-				   struct user_namespace *mnt_userns)
-{
-	inode->i_uid = mapped_fsuid(mnt_userns, i_user_ns(inode));
-}
-
-static inline void inode_fsgid_set(struct inode *inode,
-				   struct user_namespace *mnt_userns)
-{
-	inode->i_gid = mapped_fsgid(mnt_userns, i_user_ns(inode));
-}
-
+/* inode_fsuid_set, inode_fsgid_set inlined into inode.c (~8 LOC) */
 /* fsuidgid_has_mapping, current_time removed - not called */
 
 static inline void __sb_end_write(struct super_block *sb, int level)

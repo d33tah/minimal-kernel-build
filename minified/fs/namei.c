@@ -392,7 +392,11 @@ static int set_root(struct nameidata *nd)
 				__read_seqcount_begin(&nd->root.dentry->d_seq);
 		} while (read_seqcount_retry(&fs->seq, seq));
 	} else {
-		get_fs_root(fs, &nd->root);
+		/* get_fs_root inlined - single caller */
+		spin_lock(&fs->lock);
+		nd->root = fs->root;
+		path_get(&nd->root);
+		spin_unlock(&fs->lock);
 		nd->state |= ND_ROOT_GRABBED;
 	}
 	return 0;

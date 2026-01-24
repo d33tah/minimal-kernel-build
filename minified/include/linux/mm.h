@@ -745,13 +745,7 @@ extern void adjust_managed_page_count(struct page *page, long count);
 
 extern void reserve_bootmem_region(phys_addr_t start, phys_addr_t end);
 
-static inline void free_reserved_page(struct page *page)
-{
-	ClearPageReserved(page);
-	init_page_count(page);
-	/* __free_page removed - empty stub */
-	adjust_managed_page_count(page, 1);
-}
+/* free_reserved_page inlined at mm/page_alloc.c - single caller */
 
 void free_area_init(unsigned long *max_zone_pfn);
 extern int __meminit init_per_zone_wmark_min(void);

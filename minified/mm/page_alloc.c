@@ -1301,7 +1301,11 @@ unsigned long free_reserved_area(void *start, void *end, int poison,
 	start = (void *)PAGE_ALIGN((unsigned long)start);
 	end = (void *)((unsigned long)end & PAGE_MASK);
 	for (pos = start; pos < end; pos += PAGE_SIZE, pages++) {
-		free_reserved_page(virt_to_page(pos));
+		/* free_reserved_page inlined - single caller */
+		struct page *page = virt_to_page(pos);
+		ClearPageReserved(page);
+		init_page_count(page);
+		adjust_managed_page_count(page, 1);
 	}
 
 	return pages;

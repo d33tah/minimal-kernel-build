@@ -57,35 +57,8 @@ struct user_namespace;
 #endif
 
 /* cap_clear macro removed - never used */
-
-#define CAP_BOP_ALL(c, a, b, OP)                                    \
-do {                                                                \
-	unsigned __capi;                                            \
-	CAP_FOR_EACH_U32(__capi) {                                  \
-		c.cap[__capi] = a.cap[__capi] OP b.cap[__capi];     \
-	}                                                           \
-} while (0)
-/* CAP_UOP_ALL removed - unused */
-
-static inline kernel_cap_t cap_drop(const kernel_cap_t a,
-				    const kernel_cap_t drop)
-{
-	kernel_cap_t dest;
-	CAP_BOP_ALL(dest, a, drop, &~);
-	return dest;
-}
-
-static inline bool cap_isclear(const kernel_cap_t a)
-{
-	unsigned __capi;
-	CAP_FOR_EACH_U32(__capi) {
-		if (a.cap[__capi] != 0)
-			return false;
-	}
-	return true;
-}
-
-/* cap_issubset inlined at kernel/cred.c - single caller */
+/* CAP_BOP_ALL, CAP_UOP_ALL removed - unused */
+/* cap_drop, cap_isclear, cap_issubset inlined at kernel/cred.c - single callers */
 
 static inline bool capable(int cap)
 {

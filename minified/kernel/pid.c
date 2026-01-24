@@ -231,7 +231,9 @@ void detach_pid(struct task_struct *task, enum pid_type type)
 
 	pid = *pid_ptr;
 
-	hlist_del_rcu(&task->pid_links[type]);
+	/* hlist_del_rcu inlined */
+	__hlist_del(&task->pid_links[type]);
+	WRITE_ONCE(task->pid_links[type].pprev, LIST_POISON2);
 	*pid_ptr = NULL;
 
 	for (tmp = PIDTYPE_MAX; --tmp >= 0;)

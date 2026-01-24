@@ -60,12 +60,7 @@ static inline void hlist_del_init_rcu(struct hlist_node *n)
 
 
 
-static inline void hlist_del_rcu(struct hlist_node *n)
-{
-	__hlist_del(n);
-	WRITE_ONCE(n->pprev, LIST_POISON2);
-}
-
+/* hlist_del_rcu inlined at kernel/pid.c - single caller */
 /* hlist_replace_rcu inlined at kernel/pid.c - single caller */
 /* hlists_swap_heads_rcu inlined at kernel/pid.c - single caller */
 

@@ -16,19 +16,9 @@
 
 struct hstate {};
 
-/* hugetlb_count_init removed - empty stub, call site removed */
+/* hugetlb_count_init, hstate_vma, huge_page_shift removed - stubs inlined */
 
 /* follow_huge_addr removed - call site in gup.c was removed */
-
-static inline struct hstate *hstate_vma(struct vm_area_struct *vma)
-{
-	return NULL;
-}
-
-static inline unsigned int huge_page_shift(struct hstate *h)
-{
-	return PAGE_SHIFT;
-}
 
 /* All other hugetlb_* functions removed - never called */
 

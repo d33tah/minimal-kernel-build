@@ -8,7 +8,7 @@ struct llist_head { struct llist_node *first; };
 struct llist_node { struct llist_node *next; };
 #define LLIST_HEAD_INIT(name)	{ NULL }
 #define LLIST_HEAD(name)	struct llist_head name = LLIST_HEAD_INIT(name)
-static inline void init_llist_head(struct llist_head *list) { list->first = NULL; }
+/* init_llist_head removed - inlined at single call site */
 #define llist_entry(ptr, type, member) container_of(ptr, type, member)
 #define member_address_is_nonnull(ptr, member) ((uintptr_t)(ptr) + offsetof(typeof(*(ptr)), member) != 0)
 #define llist_for_each_entry_safe(pos, n, node, member) for (pos = llist_entry((node), typeof(*pos), member); member_address_is_nonnull(pos, member) && (n = llist_entry(pos->member.next, typeof(*n), member), true); pos = n)

@@ -63,7 +63,7 @@ void tty_buffer_init(struct tty_port *port)
 	tty_buffer_reset(&buf->sentinel, 0);
 	buf->head = &buf->sentinel;
 	buf->tail = &buf->sentinel;
-	init_llist_head(&buf->free);
+	buf->free.first = NULL; /* init_llist_head inlined */
 	atomic_set(&buf->mem_used, 0);
 	atomic_set(&buf->priority, 0);
 	/* buf->work not initialized - tty_flip_buffer_push/tty_buffer_restart_work never called */

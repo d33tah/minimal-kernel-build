@@ -1169,7 +1169,9 @@ static int do_open(struct nameidata *nd, struct file *file,
 	if (file->f_mode & FMODE_CREATED) {
 		open_flag &= ~O_TRUNC;
 		acc_mode = 0;
-	} else if (d_is_reg(nd->path.dentry) && open_flag & O_TRUNC) {
+	} else if ((nd->path.dentry->d_flags & DCACHE_ENTRY_TYPE) ==
+			   DCACHE_REGULAR_TYPE &&
+		   open_flag & O_TRUNC) { /* d_is_reg inlined */
 		error = mnt_want_write(nd->path.mnt);
 		if (error)
 			return error;

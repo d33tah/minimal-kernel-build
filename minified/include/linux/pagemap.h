@@ -123,11 +123,7 @@ static inline struct page *find_lock_page(struct address_space *mapping,
 	return pagecache_get_page(mapping, index, FGP_LOCK, 0);
 }
 
-static inline pgoff_t folio_index(struct folio *folio)
-{
-        return folio->index;
-}
-
+/* folio_index removed - inlined at single call site */
 
 static inline struct page *folio_file_page(struct folio *folio, pgoff_t index)
 {

@@ -20,8 +20,7 @@ extern struct pid_namespace init_pid_ns;
 #include <linux/err.h>
 static inline struct pid_namespace *get_pid_ns(struct pid_namespace *ns) { return ns; }
 /* copy_pid_ns removed - no callers */
-/* put_pid_ns removed - unused */
-static inline void zap_pid_ns_processes(struct pid_namespace *ns) { BUG(); }
+/* put_pid_ns, zap_pid_ns_processes removed - inlined */
 extern struct pid_namespace *task_active_pid_ns(struct task_struct *tsk);
 void pid_idr_init(void);
 #endif

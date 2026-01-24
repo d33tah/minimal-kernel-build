@@ -197,7 +197,8 @@ void truncate_inode_pages_range(struct address_space *mapping, loff_t lstart,
 			/* folio_wait_writeback removed - empty stub */
 			truncate_inode_folio(mapping, folio);
 			folio_unlock(folio);
-			index = folio_index(folio) + folio_nr_pages(folio) - 1;
+			index = folio->index + folio_nr_pages(folio) -
+				1; /* folio_index inlined */
 		}
 		truncate_folio_batch_exceptionals(mapping, &fbatch, indices);
 		folio_batch_release(&fbatch);

@@ -176,7 +176,7 @@ static struct task_struct *find_child_reaper(struct task_struct *father,
 		release_task(p);
 	}
 
-	zap_pid_ns_processes(pid_ns);
+	BUG(); /* zap_pid_ns_processes inlined - never supposed to be reached */
 	write_lock_irq(&tasklist_lock);
 
 	return father;

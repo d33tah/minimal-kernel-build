@@ -88,10 +88,7 @@ static inline bool irq_settings_is_per_cpu_devid(struct irq_desc *desc)
 	return desc->status_use_accessors & _IRQ_PER_CPU_DEVID;
 }
 
-static inline void irq_settings_set_per_cpu(struct irq_desc *desc)
-{
-	desc->status_use_accessors |= _IRQ_PER_CPU;
-}
+/* irq_settings_set_per_cpu removed - inlined at single call site */
 
 static inline void irq_settings_set_no_balancing(struct irq_desc *desc)
 {
@@ -119,10 +116,7 @@ static inline void irq_settings_set_level(struct irq_desc *desc)
 	desc->status_use_accessors |= _IRQ_LEVEL;
 }
 
-static inline bool irq_settings_can_request(struct irq_desc *desc)
-{
-	return !(desc->status_use_accessors & _IRQ_NOREQUEST);
-}
+/* irq_settings_can_request removed - inlined at single call site */
 
 /* irq_settings_clr_norequest removed - unused */
 

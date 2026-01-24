@@ -238,18 +238,7 @@ static __always_inline void account_slab(struct slab *slab, int order,
 			    PAGE_SIZE << order);
 }
 
-/* unaccount_slab, cache_from_obj removed - unused */
-
-static inline size_t slab_ksize(const struct kmem_cache *s)
-{
-	if (s->flags & SLAB_KASAN)
-		return s->object_size;
-	 
-	if (s->flags & (SLAB_TYPESAFE_BY_RCU | SLAB_STORE_USER))
-		return s->inuse;
-	 
-	return s->size;
-}
+/* unaccount_slab, cache_from_obj, slab_ksize removed - unused/inlined */
 
 static inline struct kmem_cache *slab_pre_alloc_hook(struct kmem_cache *s,
 						     struct list_lru *lru,

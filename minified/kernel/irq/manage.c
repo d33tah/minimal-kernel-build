@@ -450,7 +450,7 @@ static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 
 		if (new->flags & IRQF_PERCPU) {
 			irqd_set(&desc->irq_data, IRQD_PER_CPU);
-			irq_settings_set_per_cpu(desc);
+			desc->status_use_accessors |= _IRQ_PER_CPU;
 			if (new->flags & IRQF_NO_DEBUG)
 				irq_settings_set_no_debug(desc);
 		}
@@ -566,7 +566,7 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 	if (!desc)
 		return -EINVAL;
 
-	if (!irq_settings_can_request(desc) ||
+	if ((desc->status_use_accessors & _IRQ_NOREQUEST) ||
 	    WARN_ON(irq_settings_is_per_cpu_devid(desc)))
 		return -EINVAL;
 

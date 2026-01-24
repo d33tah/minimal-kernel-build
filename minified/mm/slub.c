@@ -736,7 +736,12 @@ size_t __ksize(const void *object)
 	if (unlikely(!folio_test_slab(folio)))
 		return folio_size(folio);
 
-	return slab_ksize(folio_slab(folio)->slab_cache);
+	struct kmem_cache *s = folio_slab(folio)->slab_cache;
+	if (s->flags & SLAB_KASAN)
+		return s->object_size;
+	if (s->flags & (SLAB_TYPESAFE_BY_RCU | SLAB_STORE_USER))
+		return s->inuse;
+	return s->size;
 }
 
 /* kfree moved to slab.h as static inline */

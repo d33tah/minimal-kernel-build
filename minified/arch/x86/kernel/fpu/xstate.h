@@ -9,12 +9,7 @@
 /* XCR_XFEATURE_ENABLED_MASK, XCR_XFEATURE_IN_USE_MASK, xgetbv, xsetbv,
    xfeatures_in_use removed - unused */
 
-static inline void xstate_init_xcomp_bv(struct xregs_state *xsave, u64 mask)
-{
-	 
-	if (cpu_feature_enabled(X86_FEATURE_XCOMPACTED))
-		xsave->header.xcomp_bv = mask | XCOMP_BV_COMPACTED_FORMAT;
-}
+/* xstate_init_xcomp_bv removed - inlined at single call site */
 
 enum xstate_copy_mode {
 	XSTATE_COPY_FP,

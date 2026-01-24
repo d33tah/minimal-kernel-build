@@ -153,7 +153,9 @@ void fpstate_init_user(struct fpstate *fpstate)
 	if (!cpu_feature_enabled(X86_FEATURE_FPU))
 		return;
 
-	xstate_init_xcomp_bv(&fpstate->regs.xsave, fpstate->xfeatures);
+	if (cpu_feature_enabled(X86_FEATURE_XCOMPACTED))
+		fpstate->regs.xsave.header.xcomp_bv = fpstate->xfeatures |
+						      XCOMP_BV_COMPACTED_FORMAT;
 
 	if (cpu_feature_enabled(X86_FEATURE_FXSR)) {
 		fpstate->regs.fxsave.cwd = 0x37f;

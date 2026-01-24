@@ -72,17 +72,7 @@ bool truncate_inode_partial_folio(struct folio *folio, loff_t start,
 /* invalidate_mapping_pagevec removed - never called */
 
  
-static inline bool folio_evictable(struct folio *folio)
-{
-	bool ret;
-
-	 
-	rcu_read_lock();
-	ret = !mapping_unevictable(folio_mapping(folio)) &&
-			!folio_test_mlocked(folio);
-	rcu_read_unlock();
-	return ret;
-}
+/* folio_evictable inlined at mm/swap.c - single caller */
 
 /* page_evictable removed - unused */
 

@@ -307,9 +307,18 @@ void __pagevec_lru_add(struct pagevec *pvec)
 		/* __pagevec_lru_add_fn inlined */
 		(void)folio_test_clear_unevictable(folio);
 		folio_set_lru(folio);
-		if (!folio_evictable(folio)) {
-			folio_clear_active(folio);
-			folio_set_unevictable(folio);
+		/* folio_evictable inlined - single caller */
+		{
+			bool evictable;
+			rcu_read_lock();
+			evictable =
+				!mapping_unevictable(folio_mapping(folio)) &&
+				!folio_test_mlocked(folio);
+			rcu_read_unlock();
+			if (!evictable) {
+				folio_clear_active(folio);
+				folio_set_unevictable(folio);
+			}
 		}
 		lruvec_add_folio(lruvec, folio);
 	}

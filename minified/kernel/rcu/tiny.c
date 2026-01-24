@@ -115,7 +115,8 @@ void call_rcu(struct rcu_head *head, rcu_callback_t func)
 	rcu_ctrlblk.curtail = &head->next;
 	local_irq_restore(flags);
 
-	if (unlikely(is_idle_task(current))) {
+	/* is_idle_task inlined - single caller */
+	if (unlikely(current->flags & PF_IDLE)) {
 		resched_cpu(0);
 	}
 }

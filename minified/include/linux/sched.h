@@ -434,10 +434,7 @@ extern int sched_setscheduler(struct task_struct *, int, const struct sched_para
 extern int sched_setscheduler_nocheck(struct task_struct *, int, const struct sched_param *);
 extern void sched_set_fifo(struct task_struct *p);
 
-static __always_inline bool is_idle_task(const struct task_struct *p)
-{
-	return !!(p->flags & PF_IDLE);
-}
+/* is_idle_task inlined at kernel/rcu/tiny.c - single caller */
 
 
 union thread_union {

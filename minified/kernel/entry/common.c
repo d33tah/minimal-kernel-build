@@ -130,7 +130,8 @@ static void exit_to_user_mode_prepare(struct pt_regs *regs)
 	arch_exit_to_user_mode_prepare(regs, ti_work);
 
 	/* addr_limit_user_check removed - empty stub */
-	kmap_assert_nomap();
+	/* kmap_assert_nomap inlined */
+	DEBUG_LOCKS_WARN_ON(current->kmap_ctrl.idx);
 	/* lockdep_sys_exit is empty do{}while(0) */
 }
 

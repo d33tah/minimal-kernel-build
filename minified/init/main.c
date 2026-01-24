@@ -402,7 +402,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	boot_cpu_hotplug_init();
 
 	build_all_zonelists(NULL);
-	page_alloc_init();
+	/* page_alloc_init removed - empty stub */
 
 	pr_notice("Kernel command line: %s\n", saved_command_line);
 
@@ -425,7 +425,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	init_mem_debugging_and_hardening();
 	mem_init();
 	kmem_cache_init();
-	pgtable_init();
+	/* pgtable_init removed - empty stub */
 	vmalloc_init();
 	sched_init();
 

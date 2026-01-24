@@ -714,10 +714,7 @@ static inline spinlock_t *pte_lockptr(struct mm_struct *mm, pmd_t *pmd)
 }
 /* Removed: ptlock_cache_init, ptlock_init, ptlock_free - not needed for minimal kernel */
 
-static inline void pgtable_init(void)
-{
-	/* pgtable_cache_init removed - empty weak stub */
-}
+/* pgtable_init removed - unused */
 
 static inline bool pgtable_pte_page_ctor(struct page *page)
 {

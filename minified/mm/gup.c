@@ -186,10 +186,13 @@ static int faultin_page(struct vm_area_struct *vma, unsigned long address,
 
 	ret = handle_mm_fault(vma, address, fault_flags, NULL);
 	if (ret & VM_FAULT_ERROR) {
-		int err = vm_fault_to_errno(ret, *flags);
-
-		if (err)
-			return err;
+		/* vm_fault_to_errno inlined - single caller */
+		if (ret & VM_FAULT_OOM)
+			return -ENOMEM;
+		if (ret & (VM_FAULT_HWPOISON | VM_FAULT_HWPOISON_LARGE))
+			return (*flags & FOLL_HWPOISON) ? -EHWPOISON : -EFAULT;
+		if (ret & (VM_FAULT_SIGBUS | VM_FAULT_SIGSEGV))
+			return -EFAULT;
 		BUG();
 	}
 

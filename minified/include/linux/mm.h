@@ -956,16 +956,7 @@ vm_fault_t vmf_insert_pfn_prot(struct vm_area_struct *vma, unsigned long addr,
 #define FOLL_ANON	0x8000
 /* FOLL_LONGTERM, FOLL_PIN removed - never set */
 
-static inline int vm_fault_to_errno(vm_fault_t vm_fault, int foll_flags)
-{
-	if (vm_fault & VM_FAULT_OOM)
-		return -ENOMEM;
-	if (vm_fault & (VM_FAULT_HWPOISON | VM_FAULT_HWPOISON_LARGE))
-		return (foll_flags & FOLL_HWPOISON) ? -EHWPOISON : -EFAULT;
-	if (vm_fault & (VM_FAULT_SIGBUS | VM_FAULT_SIGSEGV))
-		return -EFAULT;
-	return 0;
-}
+/* vm_fault_to_errno inlined at mm/gup.c - single caller */
 
 /* gup_must_unshare removed - FOLL_PIN never set, always false, never called */
 

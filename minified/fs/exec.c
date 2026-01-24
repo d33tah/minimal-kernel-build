@@ -462,7 +462,16 @@ static int de_thread(struct task_struct *tsk)
 		transfer_pid(leader, tsk, PIDTYPE_PGID);
 		transfer_pid(leader, tsk, PIDTYPE_SID);
 
-		list_replace_rcu(&leader->tasks, &tsk->tasks);
+		/* list_replace_rcu inlined */
+		{
+			struct list_head *old = &leader->tasks,
+					 *new = &tsk->tasks;
+			new->next = old->next;
+			new->prev = old->prev;
+			rcu_assign_pointer(list_next_rcu(new->prev), new);
+			new->next->prev = new;
+			old->prev = LIST_POISON2;
+		}
 		list_replace_init(&leader->sibling, &tsk->sibling);
 
 		tsk->group_leader = tsk;

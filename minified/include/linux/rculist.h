@@ -46,15 +46,7 @@ static inline void hlist_del_init_rcu(struct hlist_node *n)
 	}
 }
 
-static inline void list_replace_rcu(struct list_head *old,
-				struct list_head *new)
-{
-	new->next = old->next;
-	new->prev = old->prev;
-	rcu_assign_pointer(list_next_rcu(new->prev), new);
-	new->next->prev = new;
-	old->prev = LIST_POISON2;
-}
+/* list_replace_rcu inlined at fs/exec.c - single caller */
 
 #define list_entry_rcu(ptr, type, member) \
 	container_of(READ_ONCE(ptr), type, member)

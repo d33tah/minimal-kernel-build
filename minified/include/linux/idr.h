@@ -58,13 +58,9 @@ static inline void idr_init(struct idr *idr)
 }
 
 
-static inline void idr_preload_end(void)
-{
-	local_unlock(&radix_tree_preloads.lock);
-}
+/* idr_preload_end inlined into pid.c (~2 LOC) */
 
-
-#define IDA_CHUNK_SIZE		128	 
+#define IDA_CHUNK_SIZE		128
 #define IDA_BITMAP_LONGS	(IDA_CHUNK_SIZE / sizeof(long))
 #define IDA_BITMAP_BITS 	(IDA_BITMAP_LONGS * sizeof(long) * 8)
 

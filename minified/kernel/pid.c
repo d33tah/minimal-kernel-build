@@ -151,7 +151,8 @@ struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 					      GFP_ATOMIC);
 		}
 		spin_unlock_irq(&pidmap_lock);
-		idr_preload_end();
+		/* idr_preload_end inlined */
+		local_unlock(&radix_tree_preloads.lock);
 
 		if (nr < 0) {
 			retval = (nr == -ENOSPC) ? -EAGAIN : nr;

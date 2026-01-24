@@ -328,7 +328,9 @@ static size_t __copy_page_to_iter(struct page *page, size_t offset,
 		buf = iov->iov_base + skip;
 		copy = min(bytes, iov->iov_len - skip);
 
-		kaddr = kmap(page);
+		/* kmap inlined */
+		might_sleep();
+		kaddr = page_address(page);
 		from = kaddr + offset;
 		left = copyout(buf, from, copy);
 		copy -= left;

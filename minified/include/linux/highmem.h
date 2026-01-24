@@ -19,12 +19,7 @@ void __kmap_local_sched_out(void);
 void __kmap_local_sched_in(void);
 /* kmap_assert_nomap inlined into entry/common.c (~2 LOC) */
 
-static inline void *kmap(struct page *page)
-{
-	might_sleep();
-	return page_address(page);
-}
-
+/* kmap inlined into iov_iter.c (~3 LOC) */
 
 static inline void kunmap(struct page *page)
 {

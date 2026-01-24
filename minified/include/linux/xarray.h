@@ -110,9 +110,7 @@ static inline bool xa_marked(const struct xarray *xa, xa_mark_t mark)
 	return xa->xa_flags & XA_FLAGS_MARK(mark);
 }
 
-#define xa_trylock(xa)		spin_trylock(&(xa)->xa_lock)
-#define xa_lock(xa)		spin_lock(&(xa)->xa_lock)
-#define xa_unlock(xa)		spin_unlock(&(xa)->xa_lock)
+/* xa_trylock, xa_lock, xa_unlock removed - only irq versions used */
 #define xa_lock_irq(xa)		spin_lock_irq(&(xa)->xa_lock)
 #define xa_unlock_irq(xa)	spin_unlock_irq(&(xa)->xa_lock)
 #define xa_lock_irqsave(xa, flags) \

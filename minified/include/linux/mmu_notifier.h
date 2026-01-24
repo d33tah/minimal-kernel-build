@@ -25,9 +25,7 @@ static inline void _mmu_notifier_range_init(struct mmu_notifier_range *range,
 
 #define mmu_notifier_range_init(range,event,flags,vma,mm,start,end)  \
 	_mmu_notifier_range_init(range, start, end)
-#define mmu_notifier_range_init_owner(range, event, flags, vma, mm, start, \
-					end, owner) \
-	_mmu_notifier_range_init(range, start, end)
+/* mmu_notifier_range_init_owner removed - never used */
 
 
 static inline void mmu_notifier_release(struct mm_struct *mm)

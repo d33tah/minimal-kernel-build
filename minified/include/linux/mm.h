@@ -598,12 +598,7 @@ static inline void dec_mm_counter(struct mm_struct *mm, int member)
 	atomic_long_dec(&mm->rss_stat.count[member]);
 }
 
-static inline int mm_counter_file(struct page *page)
-{
-	if (PageSwapBacked(page))
-		return MM_SHMEMPAGES;
-	return MM_FILEPAGES;
-}
+/* mm_counter_file inlined at mm/memory.c - single caller */
 
 
 /* get_mm_rss removed - never called */

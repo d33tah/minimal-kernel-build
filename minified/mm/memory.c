@@ -695,7 +695,10 @@ void do_set_pte(struct vm_fault *vmf, struct page *page, unsigned long addr)
 		page_add_new_anon_rmap(page, vma, addr);
 		lru_cache_add_inactive_or_unevictable(page, vma);
 	} else {
-		inc_mm_counter_fast(vma->vm_mm, mm_counter_file(page));
+		/* mm_counter_file inlined - single caller */
+		int counter = PageSwapBacked(page) ? MM_SHMEMPAGES :
+						     MM_FILEPAGES;
+		inc_mm_counter_fast(vma->vm_mm, counter);
 		page_add_file_rmap(page, vma, false);
 	}
 	set_pte_at(vma->vm_mm, addr, vmf->pte, entry);

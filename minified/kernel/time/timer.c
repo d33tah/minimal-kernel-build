@@ -10,7 +10,6 @@
 #include <linux/thread_info.h>
 #include <linux/time.h>
 #include <linux/jiffies.h>
-#include <linux/posix-timers.h>
 #include <linux/cpu.h>
 #include <linux/syscalls.h>
 #include <linux/delay.h>

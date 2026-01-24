@@ -18,7 +18,6 @@
 /* task_set_jobctl_pending removed - always returned false, callers simplified */
 #include <linux/cred.h>
 #include <linux/refcount.h>
-#include <linux/posix-timers.h>
 #include <linux/mm_types.h>
 #include <asm/ptrace.h>
 

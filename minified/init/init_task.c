@@ -20,7 +20,6 @@ static struct signal_struct init_signals = {
 	.rlim		= INIT_RLIMITS,
 	.cred_guard_mutex = __MUTEX_INITIALIZER(init_signals.cred_guard_mutex),
 	.exec_update_lock = __RWSEM_INITIALIZER(init_signals.exec_update_lock),
-	INIT_CPU_TIMERS(init_signals)
 	.pids = {
 		[PIDTYPE_PID]	= &init_struct_pid,
 		[PIDTYPE_TGID]	= &init_struct_pid,
@@ -87,7 +86,6 @@ struct task_struct init_task
 	},
 	.blocked	= {{0}},
 	.alloc_lock	= __SPIN_LOCK_UNLOCKED(init_task.alloc_lock),
-	INIT_CPU_TIMERS(init_task)
 	.pi_lock	= __RAW_SPIN_LOCK_UNLOCKED(init_task.pi_lock),
 	/* .timer_slack_ns removed - field removed from task_struct */
 	.thread_pid	= &init_struct_pid,

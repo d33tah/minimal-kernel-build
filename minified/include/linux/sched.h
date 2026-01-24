@@ -358,11 +358,7 @@ static inline struct pid *task_pid(struct task_struct *task)
 
 pid_t __task_pid_nr_ns(struct task_struct *task, enum pid_type type, struct pid_namespace *ns);
 
-static inline pid_t task_pid_nr(struct task_struct *tsk)
-{
-	return tsk->pid;
-}
-
+/* task_pid_nr inlined at fs/binfmt_elf.c - single caller (just tsk->pid) */
 /* task_pid_nr_ns inlined into exec.c (~3 LOC) */
 /* task_pid_vnr inlined into sched/core.c (~3 LOC) */
 

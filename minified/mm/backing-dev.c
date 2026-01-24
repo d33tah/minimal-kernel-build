@@ -117,7 +117,9 @@ void bdi_unregister(struct backing_dev_info *bdi)
 	if (test_and_clear_bit(WB_registered, &bdi->wb.state)) {
 		spin_unlock_bh(&bdi->wb.work_lock);
 		list_del_rcu(&bdi->wb.bdi_node);
-		mod_delayed_work(bdi_wq, &bdi->wb.dwork, 0);
+		/* mod_delayed_work inlined */
+		cancel_delayed_work(&bdi->wb.dwork);
+		queue_delayed_work(bdi_wq, &bdi->wb.dwork, 0);
 		flush_delayed_work(&bdi->wb.dwork);
 		WARN_ON(!list_empty(&bdi->wb.work_list));
 		flush_delayed_work(&bdi->wb.bw_dwork);

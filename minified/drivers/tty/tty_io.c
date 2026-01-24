@@ -605,9 +605,7 @@ int tty_release(struct inode *inode, struct file *filp)
 	if (!tty->count) {
 		/* tty_release_struct inlined */
 		tty_ldisc_release(tty);
-		flush_work(&tty->hangup_work);
-		if (tty->link)
-			flush_work(&tty->link->hangup_work);
+		/* flush_work calls removed - stubs returning false */
 		mutex_lock(&tty_mutex);
 		release_tty(tty, idx);
 		mutex_unlock(&tty_mutex);

@@ -100,7 +100,7 @@ static void deferred_probe_timeout_work_func(struct work_struct *work)
 {
 	driver_deferred_probe_timeout = 0;
 	driver_deferred_probe_trigger();
-	flush_work(&deferred_probe_work);
+	/* flush_work removed - stub returning false */
 }
 static DECLARE_DELAYED_WORK(deferred_probe_timeout_work,
 			    deferred_probe_timeout_work_func);
@@ -154,8 +154,7 @@ int driver_probe_done(void)
 
 void wait_for_device_probe(void)
 {
-	flush_work(&deferred_probe_work);
-
+	/* flush_work removed - stub returning false */
 	wait_event(probe_waitqueue, atomic_read(&probe_count) == 0);
 }
 

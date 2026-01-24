@@ -306,11 +306,7 @@ struct inode {
 } __randomize_layout;
 
 /* timestamp_truncate removed - no longer called */
-
-static inline unsigned int i_blocksize(const struct inode *node)
-{
-	return (1 << node->i_blkbits);
-}
+/* i_blocksize inlined into truncate.c (~3 LOC) */
 
 static inline int inode_unhashed(struct inode *inode)
 {

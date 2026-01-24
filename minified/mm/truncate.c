@@ -345,7 +345,7 @@ void truncate_setsize(struct inode *inode, loff_t newsize)
 
 void pagecache_isize_extended(struct inode *inode, loff_t from, loff_t to)
 {
-	int bsize = i_blocksize(inode);
+	int bsize = (1 << inode->i_blkbits); /* i_blocksize inlined */
 	loff_t rounded_from;
 	struct page *page;
 	pgoff_t index;

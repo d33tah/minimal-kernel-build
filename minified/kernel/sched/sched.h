@@ -629,15 +629,7 @@ extern void init_rt_bandwidth(struct rt_bandwidth *rt_b, u64 period, u64 runtime
 /* init_entity_runnable_average, post_init_entity_util_avg removed - never called */
 /* sched_tick_offload_init, sched_update_tick_dependency removed - unused */
 
-static inline void add_nr_running(struct rq *rq, unsigned count)
-{
-	rq->nr_running += count;
-}
-
-static inline void sub_nr_running(struct rq *rq, unsigned count)
-{
-	rq->nr_running -= count;
-}
+/* add_nr_running and sub_nr_running inlined at fair.c - single caller each */
 
 extern void activate_task(struct rq *rq, struct task_struct *p, int flags);
 extern void deactivate_task(struct rq *rq, struct task_struct *p, int flags);

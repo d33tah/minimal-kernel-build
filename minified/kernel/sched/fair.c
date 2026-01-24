@@ -352,7 +352,7 @@ static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	}
 	/* Second for_each_sched_entity loop removed - se is already NULL after first loop */
 
-	add_nr_running(rq, 1);
+	rq->nr_running++; /* add_nr_running inlined - single caller */
 	/* enqueue_throttle label and assert_list_leaf_cfs_rq removed */
 }
 
@@ -391,7 +391,7 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	}
 	/* Second for_each_sched_entity loop removed - se is already NULL after first loop */
 
-	sub_nr_running(rq, 1);
+	rq->nr_running--; /* sub_nr_running inlined - single caller */
 	/* dequeue_throttle label and util_est_update removed */
 }
 

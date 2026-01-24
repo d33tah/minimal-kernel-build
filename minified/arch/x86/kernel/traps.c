@@ -385,8 +385,17 @@ static __always_inline void exc_debug_user(struct pt_regs *regs,
 	/* handle_bus_lock removed - was empty stub in intel.c */
 
 	dr6 |= current->thread.virtual_dr6;
-	if (dr6 & (DR_STEP | DR_TRAP_BITS) || icebp)
-		send_sigtrap(regs, 0, get_si_code(dr6));
+	if (dr6 & (DR_STEP | DR_TRAP_BITS) || icebp) {
+		/* get_si_code inlined */
+		int si_code;
+		if (dr6 & DR_STEP)
+			si_code = TRAP_TRACE;
+		else if (dr6 & (DR_TRAP0 | DR_TRAP1 | DR_TRAP2 | DR_TRAP3))
+			si_code = TRAP_HWBKPT;
+		else
+			si_code = TRAP_BRKPT;
+		send_sigtrap(regs, 0, si_code);
+	}
 
 out_irq:
 	local_irq_disable();

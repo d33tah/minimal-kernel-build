@@ -20,17 +20,7 @@ enum x86_pf_error_code {
 };
 
 /* ibt_selftest removed - declared but never defined or called */
-
-static inline int get_si_code(unsigned long condition)
-{
-	if (condition & DR_STEP)
-		return TRAP_TRACE;
-	else if (condition & (DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3))
-		return TRAP_HWBKPT;
-	else
-		return TRAP_BRKPT;
-}
-
+/* get_si_code inlined at arch/x86/kernel/traps.c - single caller */
 /* panic_on_unrecovered_nmi removed - never set to non-zero */
 
 bool fault_in_kernel_space(unsigned long address);

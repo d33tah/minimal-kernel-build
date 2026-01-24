@@ -36,10 +36,7 @@ extern void tick_check_new_device(struct clock_event_device *dev);
 
 /* clockevents_tick_resume removed - never called */
 
-static inline int tick_device_is_functional(struct clock_event_device *dev)
-{
-	return !(dev->features & CLOCK_EVT_FEAT_DUMMY);
-}
+/* tick_device_is_functional removed - inlined at single call site */
 
 static inline enum clock_event_state clockevent_get_state(struct clock_event_device *dev)
 {

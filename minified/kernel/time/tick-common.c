@@ -52,7 +52,7 @@ void tick_setup_periodic(struct clock_event_device *dev, int broadcast)
 {
 	tick_set_periodic_handler(dev, broadcast);
 
-	if (!tick_device_is_functional(dev))
+	if (dev->features & CLOCK_EVT_FEAT_DUMMY)
 		return;
 
 	if (dev->features & CLOCK_EVT_FEAT_PERIODIC) {

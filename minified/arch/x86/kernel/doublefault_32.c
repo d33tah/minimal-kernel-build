@@ -9,10 +9,8 @@
 #include <asm/desc.h>
 #include <asm/traps.h>
 
-/* ptr_ok removed - unused */
+/* ptr_ok, set_df_gdt_entry removed - inlined or unused */
 #define TSS(x) this_cpu_read(cpu_tss_rw.x86_tss.x)
-
-static void set_df_gdt_entry(unsigned int cpu);
 
 asmlinkage noinstr void __noreturn doublefault_shim(void)
 {

@@ -137,9 +137,7 @@ void __init idt_setup_apic_and_irq_gates(void)
 		    PAGE_KERNEL_RO);
 	idt_descr.address = CPU_ENTRY_AREA_RO_IDT;
 	load_idt(&idt_descr);
-
-	set_memory_ro((unsigned long)&idt_table, 1);
-
+	/* set_memory_ro removed - stub returning 0 */
 	idt_setup_done = true;
 }
 

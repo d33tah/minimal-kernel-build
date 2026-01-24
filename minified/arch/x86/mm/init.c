@@ -483,9 +483,7 @@ void free_init_pages(const char *what, unsigned long begin, unsigned long end)
 	if (begin >= end)
 		return;
 
-	/* debug_pagealloc_enabled() always returns false */
-	set_memory_nx(begin, (end - begin) >> PAGE_SHIFT);
-	set_memory_rw(begin, (end - begin) >> PAGE_SHIFT);
+	/* set_memory_nx, set_memory_rw removed - stubs returning 0 */
 	free_reserved_area((void *)begin, (void *)end, POISON_FREE_INITMEM,
 			   what);
 }

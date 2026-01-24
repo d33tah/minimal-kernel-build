@@ -381,7 +381,7 @@ void mark_rodata_ro(void)
 	unsigned long size = (unsigned long)__end_rodata - start;
 	unsigned long nx_start, nx_size;
 
-	set_pages_ro(virt_to_page(start), size >> PAGE_SHIFT);
+	/* set_pages_ro removed - stub returning 0 */
 	pr_info("Write protecting kernel text and read-only data: %luk\n",
 		size >> 10);
 
@@ -392,5 +392,5 @@ void mark_rodata_ro(void)
 	if (__supported_pte_mask & _PAGE_NX)
 		printk(KERN_INFO "NX-protecting the kernel data: %luk\n",
 		       nx_size >> 10);
-	set_memory_nx(nx_start, nx_size >> PAGE_SHIFT);
+	/* set_memory_nx removed - stub returning 0 */
 }

@@ -107,7 +107,7 @@ void kernel_fpu_begin_mask(unsigned int kfpu_mask)
 		set_thread_flag(TIF_NEED_FPU_LOAD);
 		save_fpregs_to_fpstate(&current->thread.fpu);
 	}
-	__cpu_invalidate_fpregs_state();
+	__this_cpu_write(fpu_fpregs_owner_ctx, NULL);
 
 	if (likely(kfpu_mask & KFPU_MXCSR) && boot_cpu_has(X86_FEATURE_XMM))
 		ldmxcsr(MXCSR_DEFAULT);

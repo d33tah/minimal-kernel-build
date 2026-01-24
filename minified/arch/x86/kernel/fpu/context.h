@@ -8,11 +8,7 @@
  
 
  
-static inline void __cpu_invalidate_fpregs_state(void)
-{
-	__this_cpu_write(fpu_fpregs_owner_ctx, NULL);
-}
-
+/* __cpu_invalidate_fpregs_state removed - inlined at single call site */
 /* __fpu_invalidate_fpregs_state removed - never called */
 
 static inline int fpregs_state_valid(struct fpu *fpu, unsigned int cpu)

@@ -506,18 +506,7 @@ static const_debug __maybe_unused unsigned int sysctl_sched_features =
 
 /* sched_numa_balancing removed - defined but never used */
 
-static inline u64 global_rt_period(void)
-{
-	return (u64)sysctl_sched_rt_period * NSEC_PER_USEC;
-}
-
-static inline u64 global_rt_runtime(void)
-{
-	if (sysctl_sched_rt_runtime < 0)
-		return RUNTIME_INF;
-
-	return (u64)sysctl_sched_rt_runtime * NSEC_PER_USEC;
-}
+/* global_rt_period and global_rt_runtime inlined at core.c - single caller */
 
 static inline int task_current(struct rq *rq, struct task_struct *p)
 {

@@ -144,7 +144,8 @@ struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 		} else {
 			int pid_min = 1;
 
-			if (idr_get_cursor(&tmp->idr) > RESERVED_PIDS)
+			/* idr_get_cursor inlined */
+			if (READ_ONCE(tmp->idr.idr_next) > RESERVED_PIDS)
 				pid_min = RESERVED_PIDS;
 
 			nr = idr_alloc_cyclic(&tmp->idr, NULL, pid_min, pid_max,
@@ -193,8 +194,9 @@ out_free:
 		idr_remove(&upid->ns->idr, upid->nr);
 	}
 
+	/* idr_set_cursor inlined */
 	if (ns->pid_allocated == PIDNS_ADDING)
-		idr_set_cursor(&ns->idr, 0);
+		WRITE_ONCE(ns->idr.idr_next, 0);
 
 	spin_unlock_irq(&pidmap_lock);
 

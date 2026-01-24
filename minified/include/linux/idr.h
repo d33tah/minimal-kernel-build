@@ -24,16 +24,8 @@ struct idr {
 }
 
 #define IDR_INIT(name) IDR_INIT_BASE(name, 0)
-static inline unsigned int idr_get_cursor(const struct idr *idr)
-{
-	return READ_ONCE(idr->idr_next);
-}
-
-static inline void idr_set_cursor(struct idr *idr, unsigned int val)
-{
-	WRITE_ONCE(idr->idr_next, val);
-}
-
+/* idr_get_cursor inlined into pid.c (~2 LOC) */
+/* idr_set_cursor inlined into pid.c (~2 LOC) */
 
 void idr_preload(gfp_t gfp_mask);
 

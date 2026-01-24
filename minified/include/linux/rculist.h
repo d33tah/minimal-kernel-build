@@ -74,18 +74,7 @@ static inline void hlist_del_rcu(struct hlist_node *n)
 	WRITE_ONCE(n->pprev, LIST_POISON2);
 }
 
-static inline void hlist_replace_rcu(struct hlist_node *old,
-					struct hlist_node *new)
-{
-	struct hlist_node *next = old->next;
-
-	new->next = next;
-	WRITE_ONCE(new->pprev, old->pprev);
-	rcu_assign_pointer(*(struct hlist_node __rcu **)new->pprev, new);
-	if (next)
-		WRITE_ONCE(new->next->pprev, &new->next);
-	WRITE_ONCE(old->pprev, LIST_POISON2);
-}
+/* hlist_replace_rcu inlined at kernel/pid.c - single caller */
 
 static inline void hlists_swap_heads_rcu(struct hlist_head *left, struct hlist_head *right)
 {

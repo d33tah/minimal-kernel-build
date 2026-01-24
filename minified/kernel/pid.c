@@ -260,9 +260,20 @@ void exchange_tids(struct task_struct *left, struct task_struct *right)
 void transfer_pid(struct task_struct *old, struct task_struct *new,
 		  enum pid_type type)
 {
+	struct hlist_node *old_node, *new_node, *next;
 	if (type == PIDTYPE_PID)
 		new->thread_pid = old->thread_pid;
-	hlist_replace_rcu(&old->pid_links[type], &new->pid_links[type]);
+	/* hlist_replace_rcu inlined */
+	old_node = &old->pid_links[type];
+	new_node = &new->pid_links[type];
+	next = old_node->next;
+	new_node->next = next;
+	WRITE_ONCE(new_node->pprev, old_node->pprev);
+	rcu_assign_pointer(*(struct hlist_node __rcu **)new_node->pprev,
+			   new_node);
+	if (next)
+		WRITE_ONCE(new_node->next->pprev, &new_node->next);
+	WRITE_ONCE(old_node->pprev, LIST_POISON2);
 }
 
 struct task_struct *pid_task(struct pid *pid, enum pid_type type)

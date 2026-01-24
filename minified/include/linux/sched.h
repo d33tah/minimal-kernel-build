@@ -363,11 +363,7 @@ static inline pid_t task_pid_nr(struct task_struct *tsk)
 	return tsk->pid;
 }
 
-static inline pid_t task_pid_nr_ns(struct task_struct *tsk, struct pid_namespace *ns)
-{
-	return __task_pid_nr_ns(tsk, PIDTYPE_PID, ns);
-}
-
+/* task_pid_nr_ns inlined into exec.c (~3 LOC) */
 /* task_pid_vnr inlined into sched/core.c (~3 LOC) */
 
 static inline int is_global_init(struct task_struct *tsk)

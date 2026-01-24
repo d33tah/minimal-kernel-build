@@ -798,8 +798,10 @@ static int bprm_execve(struct linux_binprm *bprm, int fd,
 
 		old_pid = current->pid;
 		rcu_read_lock();
-		old_vpid = task_pid_nr_ns(current,
-					  task_active_pid_ns(current->parent));
+		/* task_pid_nr_ns inlined */
+		old_vpid =
+			__task_pid_nr_ns(current, PIDTYPE_PID,
+					 task_active_pid_ns(current->parent));
 		rcu_read_unlock();
 
 		for (depth = 0;; depth++) {

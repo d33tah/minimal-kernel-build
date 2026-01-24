@@ -801,7 +801,7 @@ static int filemap_update_page(struct kiocb *iocb,
 	int error;
 
 	if (iocb->ki_flags & IOCB_NOWAIT) {
-		if (!filemap_invalidate_trylock_shared(mapping))
+		if (!down_read_trylock(&mapping->invalidate_lock))
 			return -EAGAIN;
 	} else {
 		filemap_invalidate_lock_shared(mapping);

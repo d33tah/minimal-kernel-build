@@ -344,11 +344,7 @@ static inline void filemap_invalidate_lock_shared(struct address_space *mapping)
 	down_read(&mapping->invalidate_lock);
 }
 
-static inline int filemap_invalidate_trylock_shared(
-					struct address_space *mapping)
-{
-	return down_read_trylock(&mapping->invalidate_lock);
-}
+/* filemap_invalidate_trylock_shared removed - inlined at single call site */
 
 static inline void filemap_invalidate_unlock_shared(
 					struct address_space *mapping)

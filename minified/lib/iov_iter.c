@@ -253,8 +253,15 @@ static size_t copy_pipe_to_iter(const void *addr, size_t bytes,
 		return 0;
 	do {
 		size_t chunk = min_t(size_t, n, PAGE_SIZE - off);
-		memcpy_to_page(pipe->bufs[i_head & p_mask].page, off, addr,
-			       chunk);
+		/* memcpy_to_page inlined - single caller */
+		{
+			struct page *page = pipe->bufs[i_head & p_mask].page;
+			char *to = kmap_local_page(page);
+			VM_BUG_ON(off + chunk > PAGE_SIZE);
+			memcpy(to + off, addr, chunk);
+			flush_dcache_page(page);
+			kunmap_local(to);
+		}
 		i->head = i_head;
 		i->iov_offset = off + chunk;
 		n -= chunk;

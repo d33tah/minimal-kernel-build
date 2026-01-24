@@ -117,16 +117,7 @@ static inline void zero_user(struct page *page,
 
 /* copy_user_highpage inlined at mm/memory.c - single caller */
 
-static inline void memcpy_to_page(struct page *page, size_t offset,
-				  const char *from, size_t len)
-{
-	char *to = kmap_local_page(page);
-
-	VM_BUG_ON(offset + len > PAGE_SIZE);
-	memcpy(to + offset, from, len);
-	flush_dcache_page(page);
-	kunmap_local(to);
-}
+/* memcpy_to_page inlined at lib/iov_iter.c - single caller */
 
 static inline void folio_zero_range(struct folio *folio,
 		size_t start, size_t length)

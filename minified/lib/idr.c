@@ -150,7 +150,9 @@ next:
 			goto next;
 
 		__set_bit(bit, bitmap->bitmap);
-		if (bitmap_full(bitmap->bitmap, IDA_BITMAP_BITS))
+		/* bitmap_full inlined - IDA_BITMAP_BITS > BITS_PER_LONG */
+		if (find_first_zero_bit(bitmap->bitmap, IDA_BITMAP_BITS) ==
+		    IDA_BITMAP_BITS)
 			xas_clear_mark(&xas, XA_FREE_MARK);
 	} else {
 		if (bit < BITS_PER_XA_VALUE) {

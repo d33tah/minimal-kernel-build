@@ -183,14 +183,7 @@ static inline bool bitmap_empty(const unsigned long *src, unsigned nbits)
 	return find_first_bit(src, nbits) == nbits;
 }
 
-static inline bool bitmap_full(const unsigned long *src, unsigned int nbits)
-{
-	if (small_const_nbits(nbits))
-		return ! (~(*src) & BITMAP_LAST_WORD_MASK(nbits));
-
-	return find_first_zero_bit(src, nbits) == nbits;
-}
-
+/* bitmap_full inlined at lib/idr.c - single caller */
 
 static __always_inline void bitmap_set(unsigned long *map, unsigned int start,
 		unsigned int nbits)

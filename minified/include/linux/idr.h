@@ -82,10 +82,7 @@ struct ida {
 int ida_alloc_range(struct ida *, unsigned int min, unsigned int max, gfp_t);
 void ida_free(struct ida *, unsigned int id);
 
-static inline int ida_alloc(struct ida *ida, gfp_t gfp)
-{
-	return ida_alloc_range(ida, 0, ~0, gfp);
-}
+/* ida_alloc inlined into namespace.c (~3 LOC) */
 
 static inline int ida_alloc_min(struct ida *ida, unsigned int min, gfp_t gfp)
 {

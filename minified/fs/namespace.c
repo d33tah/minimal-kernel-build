@@ -98,7 +98,8 @@ static struct mount *alloc_vfsmnt(const char *name)
 	if (mnt) {
 		int res;
 
-		res = ida_alloc(&mnt_id_ida, GFP_KERNEL);
+		/* ida_alloc inlined */
+		res = ida_alloc_range(&mnt_id_ida, 0, ~0, GFP_KERNEL);
 		if (res < 0)
 			goto out_free_cache;
 		mnt->mnt_id = res;

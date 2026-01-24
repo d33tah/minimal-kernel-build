@@ -72,14 +72,10 @@ static inline void *slab_address(const struct slab *slab)
 
 static inline int slab_nid(const struct slab *slab)
 {
-	return folio_nid(slab_folio(slab));
+	return page_to_nid(&slab_folio(slab)->page); /* folio_nid inlined */
 }
 
-static inline pg_data_t *slab_pgdat(const struct slab *slab)
-{
-	return folio_pgdat(slab_folio(slab));
-}
-
+/* slab_pgdat removed - inlined at single call site */
 /* virt_to_slab, slab_order, slab_size removed - unused */
 
 
@@ -259,7 +255,7 @@ static __always_inline void account_slab(struct slab *slab, int order,
 					 struct kmem_cache *s, gfp_t gfp)
 {
 	/* memcg_kmem_enabled always returns false */
-	mod_node_page_state(slab_pgdat(slab), cache_vmstat_idx(s),
+	mod_node_page_state(folio_pgdat(slab_folio(slab)), cache_vmstat_idx(s), /* slab_pgdat inlined */
 			    PAGE_SIZE << order);
 }
 

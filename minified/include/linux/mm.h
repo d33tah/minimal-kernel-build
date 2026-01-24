@@ -473,10 +473,7 @@ static inline int page_to_nid(const struct page *page)
 	return (PF_POISONED_CHECK(p)->flags >> NODES_PGSHIFT) & NODES_MASK;
 }
 
-static inline int folio_nid(const struct folio *folio)
-{
-	return page_to_nid(&folio->page);
-}
+/* folio_nid removed - inlined at single call site */
 
 static inline int page_cpupid_xchg_last(struct page *page, int cpupid)
 {

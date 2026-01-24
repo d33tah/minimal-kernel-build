@@ -1158,7 +1158,7 @@ static int do_open(struct nameidata *nd, struct file *file,
 	if (open_flag & O_CREAT) {
 		if ((open_flag & O_EXCL) && !(file->f_mode & FMODE_CREATED))
 			return -EEXIST;
-		if (d_is_dir(nd->path.dentry))
+		if (d_can_lookup(nd->path.dentry))
 			return -EISDIR;
 	}
 	if ((nd->flags & LOOKUP_DIRECTORY) && !d_can_lookup(nd->path.dentry))

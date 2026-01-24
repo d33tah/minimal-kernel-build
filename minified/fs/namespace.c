@@ -892,7 +892,7 @@ static int do_add_mount(struct mount *newmnt, struct mountpoint *mp,
 	/* Inline: graft_tree logic */
 	if (newmnt->mnt.mnt_sb->s_flags & SB_NOUSER)
 		return -EINVAL;
-	if (d_is_dir(mp->m_dentry) != d_is_dir(newmnt->mnt.mnt_root))
+	if (d_can_lookup(mp->m_dentry) != d_can_lookup(newmnt->mnt.mnt_root))
 		return -ENOTDIR;
 	return attach_recursive_mnt(newmnt, parent, mp, false);
 }

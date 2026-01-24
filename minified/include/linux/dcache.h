@@ -217,13 +217,7 @@ static inline bool d_can_lookup(const struct dentry *dentry)
 	return __d_entry_type(dentry) == DCACHE_DIRECTORY_TYPE;
 }
 
-
-static inline bool d_is_dir(const struct dentry *dentry)
-{
-	/* Simplified: only check d_can_lookup since d_is_autodir was unused */
-	return d_can_lookup(dentry);
-}
-
+/* d_is_dir removed - alias for d_can_lookup, use it directly */
 /* d_is_symlink, d_is_reg removed - inlined at single call site */
 
 static inline bool d_flags_negative(unsigned flags)

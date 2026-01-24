@@ -447,7 +447,10 @@ good_area:
 
 	fault = handle_mm_fault(vma, address, flags, regs);
 
-	if (fault_signal_pending(fault, regs)) {
+	/* fault_signal_pending inlined */
+	if (unlikely((fault & VM_FAULT_RETRY) &&
+		     (fatal_signal_pending(current) ||
+		      (user_mode(regs) && signal_pending(current))))) {
 		if (!user_mode(regs))
 			kernelmode_fixup_or_oops(regs, error_code, address,
 						 SIGBUS, BUS_ADRERR,

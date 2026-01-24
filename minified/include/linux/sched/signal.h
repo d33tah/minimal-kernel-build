@@ -154,13 +154,7 @@ static inline int signal_pending_state(unsigned int state, struct task_struct *p
 	return (state & TASK_INTERRUPTIBLE) || __fatal_signal_pending(p);
 }
 
-static inline bool fault_signal_pending(vm_fault_t fault_flags,
-					struct pt_regs *regs)
-{
-	return unlikely((fault_flags & VM_FAULT_RETRY) &&
-			(fatal_signal_pending(current) ||
-			 (user_mode(regs) && signal_pending(current))));
-}
+/* fault_signal_pending inlined at arch/x86/mm/fault.c - single caller */
 
 /* recalc_sigpending_and_wake only used internally in signal.c */
 extern void recalc_sigpending(void);

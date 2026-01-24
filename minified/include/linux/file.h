@@ -58,12 +58,7 @@ static inline struct fd fdget_pos(int fd)
 	return __to_fd(__fdget_pos(fd));
 }
 
-static inline void fdput_pos(struct fd f)
-{
-	if (f.flags & FDPUT_POS_UNLOCK)
-		__f_unlock_pos(f.file);
-	fdput(f);
-}
+/* fdput_pos inlined at fs/read_write.c - single caller */
 
 extern bool get_close_on_exec(unsigned int fd);
 extern int get_unused_fd_flags(unsigned flags);

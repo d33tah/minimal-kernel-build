@@ -1269,8 +1269,7 @@ ssize_t generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 		ret = __generic_file_write_iter(iocb, from);
 	inode_unlock(inode);
 
-	if (ret > 0)
-		ret = generic_write_sync(iocb, ret);
+	/* generic_write_sync was a no-op stub, removed */
 	return ret;
 }
 

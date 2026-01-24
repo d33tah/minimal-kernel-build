@@ -984,9 +984,10 @@ ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
 			goto put_folios;
 		end_offset = min_t(loff_t, isize, iocb->ki_pos + iter->count);
 
-		/* pos_same_folio inlined */
+		/* pos_same_folio inlined, folio_shift inlined */
 		{
-			unsigned int shift = folio_shift(fbatch.folios[0]);
+			unsigned int shift =
+				PAGE_SHIFT + folio_order(fbatch.folios[0]);
 			if (!(iocb->ki_pos >> shift ==
 			      (ra->prev_pos - 1) >> shift))
 				folio_mark_accessed(fbatch.folios[0]);

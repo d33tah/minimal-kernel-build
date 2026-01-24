@@ -524,10 +524,7 @@ static inline long folio_nr_pages(struct folio *folio)
 }
 
 
-static inline unsigned int folio_shift(struct folio *folio)
-{
-	return PAGE_SHIFT + folio_order(folio);
-}
+/* folio_shift inlined into filemap.c (~3 LOC) */
 
 static inline size_t folio_size(struct folio *folio)
 {

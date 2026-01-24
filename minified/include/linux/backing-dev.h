@@ -17,5 +17,5 @@ extern struct backing_dev_info noop_backing_dev_info;
 int bdi_init(struct backing_dev_info *bdi);
 struct backing_dev_info *inode_to_bdi(struct inode *inode);
 static inline bool mapping_can_writeback(struct address_space *mapping) { return inode_to_bdi(mapping->host)->capabilities & BDI_CAP_WRITEBACK; }
-static inline struct bdi_writeback *inode_to_wb(struct inode *inode) { return &inode_to_bdi(inode)->wb; }
+/* inode_to_wb removed - unused */
 #endif

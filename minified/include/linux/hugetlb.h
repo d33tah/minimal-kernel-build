@@ -16,10 +16,7 @@
 
 struct hstate {};
 
-/* Functions called in the codebase */
-static inline void hugetlb_count_init(struct mm_struct *mm)
-{
-}
+/* hugetlb_count_init removed - empty stub, call site removed */
 
 /* follow_huge_addr removed - call site in gup.c was removed */
 

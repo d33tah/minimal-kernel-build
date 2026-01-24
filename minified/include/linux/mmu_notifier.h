@@ -28,29 +28,18 @@ static inline void _mmu_notifier_range_init(struct mmu_notifier_range *range,
 /* mmu_notifier_range_init_owner removed - never used */
 
 
-static inline void mmu_notifier_release(struct mm_struct *mm)
-{
-}
+/* mmu_notifier_release removed - empty stub, call site removed */
 
 static inline void
 mmu_notifier_invalidate_range_start(struct mmu_notifier_range *range)
 {
 }
 
-
 static inline
 void mmu_notifier_invalidate_range_end(struct mmu_notifier_range *range)
 {
 }
 
-/* mmu_notifier_invalidate_range removed - empty stub, no callers */
-
-static inline void mmu_notifier_subscriptions_init(struct mm_struct *mm)
-{
-}
-
-static inline void mmu_notifier_subscriptions_destroy(struct mm_struct *mm)
-{
-}
+/* mmu_notifier_subscriptions_init, mmu_notifier_subscriptions_destroy removed - empty stubs */
 
 #endif  

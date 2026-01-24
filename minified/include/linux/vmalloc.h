@@ -78,16 +78,7 @@ extern void *vmap(struct page **pages, unsigned int count,
 
 void arch_sync_kernel_mappings(unsigned long start, unsigned long end);
 
-
-static inline size_t get_vm_area_size(const struct vm_struct *area)
-{
-	if (!(area->flags & VM_NO_GUARD))
-		 
-		return area->size - PAGE_SIZE;
-	else
-		return area->size;
-
-}
+/* get_vm_area_size inlined at mm/vmalloc.c - single caller */
 
 extern struct vm_struct *get_vm_area_caller(unsigned long size,
 					unsigned long flags, const void *caller);

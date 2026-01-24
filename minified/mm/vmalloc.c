@@ -1024,7 +1024,10 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 	const gfp_t nested_gfp = (gfp_mask & GFP_RECLAIM_MASK) | __GFP_ZERO;
 	bool nofail = gfp_mask & __GFP_NOFAIL;
 	unsigned long addr = (unsigned long)area->addr;
-	unsigned long size = get_vm_area_size(area);
+	/* get_vm_area_size inlined */
+	unsigned long size = (area->flags & VM_NO_GUARD) ?
+				     area->size :
+				     area->size - PAGE_SIZE;
 	unsigned long array_size;
 	unsigned int nr_small_pages = size >> PAGE_SHIFT;
 	unsigned int page_order;

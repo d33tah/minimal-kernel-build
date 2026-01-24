@@ -654,12 +654,7 @@ static inline bool sb_rdonly(const struct super_block *sb) { return sb->s_flags 
 #define IS_AUTOMOUNT(inode)	((inode)->i_flags & S_AUTOMOUNT)
 /* IS_DAX removed - S_DAX was always 0 */
 
-static inline bool HAS_UNMAPPED_ID(struct user_namespace *mnt_userns,
-				   struct inode *inode)
-{
-	return !uid_valid(i_uid_into_mnt(mnt_userns, inode)) ||
-	       !gid_valid(i_gid_into_mnt(mnt_userns, inode));
-}
+/* HAS_UNMAPPED_ID inlined at fs/namei.c - single caller */
 
 static inline int iocb_flags(struct file *file);
 

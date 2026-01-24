@@ -136,7 +136,9 @@ int inode_permission(struct user_namespace *mnt_userns, struct inode *inode,
 			return -EROFS;
 		if (IS_IMMUTABLE(inode))
 			return -EPERM;
-		if (HAS_UNMAPPED_ID(mnt_userns, inode))
+		/* HAS_UNMAPPED_ID inlined - single caller */
+		if (!uid_valid(i_uid_into_mnt(mnt_userns, inode)) ||
+		    !gid_valid(i_gid_into_mnt(mnt_userns, inode)))
 			return -EACCES;
 	}
 

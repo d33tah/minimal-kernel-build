@@ -515,11 +515,7 @@ static inline void *folio_address(const struct folio *folio)
 
 bool folio_mapped(struct folio *folio);
 
-static inline bool page_is_pfmemalloc(const struct page *page)
-{
-	
-	return (uintptr_t)page->lru.next & BIT(1);
-}
+/* page_is_pfmemalloc inlined at mm/slub.c - single caller */
 
 static inline void set_page_pfmemalloc(struct page *page)
 {

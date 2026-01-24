@@ -153,7 +153,8 @@ static inline struct slab *alloc_slab_page(gfp_t flags, int node,
 
 	slab = folio_slab(folio);
 	__folio_set_slab(folio);
-	if (page_is_pfmemalloc(folio_page(folio, 0)))
+	/* page_is_pfmemalloc inlined - single caller */
+	if ((uintptr_t)folio_page(folio, 0)->lru.next & BIT(1))
 		folio_set_active(slab_folio(slab));
 
 	return slab;

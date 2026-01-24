@@ -72,7 +72,7 @@ u64 clocks_calc_max_nsecs(u32 mult, u32 shift, u32 maxadj, u64 mask,
 	do_div(max_cycles, mult + maxadj);
 
 	max_cycles = min(max_cycles, mask);
-	max_nsecs = clocksource_cyc2ns(max_cycles, mult - maxadj, shift);
+	max_nsecs = ((u64)max_cycles * (mult - maxadj)) >> shift;
 
 	if (max_cyc)
 		*max_cyc = max_cycles;

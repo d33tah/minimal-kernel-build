@@ -64,13 +64,6 @@ struct clocksource {
 #define CLOCK_SOURCE_VERIFY_PERCPU		0x200
 #define CLOCKSOURCE_MASK(bits) GENMASK_ULL((bits) - 1, 0)
 
-
-static inline s64 clocksource_cyc2ns(u64 cycles, u32 mult, u32 shift)
-{
-	return ((u64) cycles * mult) >> shift;
-}
-
-
 extern int clocksource_unregister(struct clocksource*);
 extern struct clocksource * __init clocksource_default_clock(void);
 

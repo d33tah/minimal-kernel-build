@@ -154,7 +154,7 @@ static inline struct slab *alloc_slab_page(gfp_t flags, int node,
 	slab = folio_slab(folio);
 	__folio_set_slab(folio);
 	if (page_is_pfmemalloc(folio_page(folio, 0)))
-		slab_set_pfmemalloc(slab);
+		folio_set_active(slab_folio(slab));
 
 	return slab;
 }
@@ -340,7 +340,7 @@ static DEFINE_PER_CPU(struct slub_flush_work, slub_flush);
 
 static inline bool pfmemalloc_match(struct slab *slab, gfp_t gfpflags)
 {
-	if (unlikely(slab_test_pfmemalloc(slab)))
+	if (unlikely(folio_test_active((struct folio *)slab_folio(slab))))
 		return gfp_pfmemalloc_allowed(gfpflags);
 
 	return true;

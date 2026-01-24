@@ -34,12 +34,6 @@ struct vm86 {
 
 #define handle_vm86_fault(a, b)
 #define release_vm86_irqs(a)
-
-static inline int handle_vm86_trap(struct kernel_vm86_regs *a, long b, int c)
-{
-	return 0;
-}
-
-/* save_v86_state, free_vm86 removed - unused */
+/* handle_vm86_trap, save_v86_state, free_vm86 removed - unused */
 
 #endif  

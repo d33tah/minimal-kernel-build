@@ -79,8 +79,7 @@ do {						\
 
 static inline void arch_exit_mmap(struct mm_struct *mm)
 {
-	paravirt_arch_exit_mmap(mm);
-	/* ldt_arch_exit_mmap - empty stub */
+	/* paravirt_arch_exit_mmap and ldt_arch_exit_mmap - empty stubs, inlined */
 }
 
 /* is_64bit_mm removed - unused */

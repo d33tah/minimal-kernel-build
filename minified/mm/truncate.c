@@ -361,7 +361,7 @@ void pagecache_isize_extended(struct inode *inode, loff_t from, loff_t to)
 		return;
 
 	index = from >> PAGE_SHIFT;
-	page = find_lock_page(inode->i_mapping, index);
+	page = pagecache_get_page(inode->i_mapping, index, FGP_LOCK, 0);
 
 	if (!page)
 		return;

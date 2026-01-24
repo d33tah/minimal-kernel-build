@@ -114,14 +114,7 @@ struct folio *__filemap_get_folio(struct address_space *mapping, pgoff_t index,
 struct page *pagecache_get_page(struct address_space *mapping, pgoff_t index,
 		int fgp_flags, gfp_t gfp);
 
-/* filemap_get_folio removed - never called */
-/* find_get_page removed - never called */
-
-static inline struct page *find_lock_page(struct address_space *mapping,
-					pgoff_t index)
-{
-	return pagecache_get_page(mapping, index, FGP_LOCK, 0);
-}
+/* filemap_get_folio, find_get_page, find_lock_page removed - never called/inlined */
 
 /* folio_index removed - inlined at single call site */
 

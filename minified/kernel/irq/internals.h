@@ -96,42 +96,15 @@ static inline void irq_settings_set_no_balancing(struct irq_desc *desc)
 }
 
 /* irq_settings_has_no_balance_set, irq_settings_get_trigger_mask removed - unused */
-
-static inline void
-irq_settings_set_trigger_mask(struct irq_desc *desc, u32 mask)
-{
-	desc->status_use_accessors &= ~IRQ_TYPE_SENSE_MASK;
-	desc->status_use_accessors |= mask & IRQ_TYPE_SENSE_MASK;
-}
-
+/* irq_settings_set_trigger_mask inlined at manage.c - single caller */
 /* irq_settings_is_level removed - unused */
-
-static inline void irq_settings_clr_level(struct irq_desc *desc)
-{
-	desc->status_use_accessors &= ~_IRQ_LEVEL;
-}
-
-static inline void irq_settings_set_level(struct irq_desc *desc)
-{
-	desc->status_use_accessors |= _IRQ_LEVEL;
-}
-
+/* irq_settings_clr_level inlined at manage.c - single caller */
+/* irq_settings_set_level inlined at manage.c - single caller */
 /* irq_settings_can_request removed - inlined at single call site */
-
 /* irq_settings_clr_norequest removed - unused */
-
-static inline void irq_settings_set_norequest(struct irq_desc *desc)
-{
-	desc->status_use_accessors |= _IRQ_NOREQUEST;
-}
-
+/* irq_settings_set_norequest inlined at chip.c - single caller */
 /* irq_settings_can_thread, irq_settings_clr_nothread removed - unused */
-
-static inline void irq_settings_set_nothread(struct irq_desc *desc)
-{
-	desc->status_use_accessors |= _IRQ_NOTHREAD;
-}
-
+/* irq_settings_set_nothread inlined at chip.c - single caller */
 /* irq_settings_can_probe, irq_settings_clr_noprobe, irq_settings_can_move_pcntxt removed - unused */
 
 static inline void irq_settings_set_noprobe(struct irq_desc *desc)
@@ -139,22 +112,10 @@ static inline void irq_settings_set_noprobe(struct irq_desc *desc)
 	desc->status_use_accessors |= _IRQ_NOPROBE;
 }
 
-static inline bool irq_settings_can_autoenable(struct irq_desc *desc)
-{
-	return !(desc->status_use_accessors & _IRQ_NOAUTOEN);
-}
-
-static inline bool irq_settings_is_nested_thread(struct irq_desc *desc)
-{
-	return desc->status_use_accessors & _IRQ_NESTED_THREAD;
-}
-
+/* irq_settings_can_autoenable inlined at manage.c - single caller */
+/* irq_settings_is_nested_thread inlined at manage.c - single caller */
 /* irq_settings_is_polled removed - unused */
-
-static inline bool irq_settings_disable_unlazy(struct irq_desc *desc)
-{
-	return desc->status_use_accessors & _IRQ_DISABLE_UNLAZY;
-}
+/* irq_settings_disable_unlazy inlined at chip.c - single caller */
 
 /* irq_settings_clr_disable_unlazy, irq_settings_is_hidden removed - unused */
 

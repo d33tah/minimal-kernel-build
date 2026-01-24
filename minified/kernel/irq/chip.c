@@ -132,7 +132,8 @@ static void __irq_disable(struct irq_desc *desc, bool mask)
 
 void irq_disable(struct irq_desc *desc)
 {
-	__irq_disable(desc, irq_settings_disable_unlazy(desc));
+	/* irq_settings_disable_unlazy inlined - single caller */
+	__irq_disable(desc, desc->status_use_accessors & _IRQ_DISABLE_UNLAZY);
 }
 
 static inline void mask_ack_irq(struct irq_desc *desc)
@@ -250,8 +251,9 @@ void __irq_set_handler(unsigned int irq, irq_flow_handler_t handle,
 		}
 
 		irq_settings_set_noprobe(desc);
-		irq_settings_set_norequest(desc);
-		irq_settings_set_nothread(desc);
+		/* irq_settings_set_norequest and irq_settings_set_nothread inlined - single caller */
+		desc->status_use_accessors |= _IRQ_NOREQUEST;
+		desc->status_use_accessors |= _IRQ_NOTHREAD;
 		desc->action = &chained_action;
 		WARN_ON(irq_chip_pm_get(irq_desc_get_irq_data(desc)));
 		irq_activate_and_startup(desc, IRQ_RESEND);

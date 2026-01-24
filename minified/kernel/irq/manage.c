@@ -92,11 +92,15 @@ int __irq_set_trigger(struct irq_desc *desc, unsigned long flags)
 
 	case IRQ_SET_MASK_OK_NOCOPY:
 		flags = irqd_get_trigger_type(&desc->irq_data);
-		irq_settings_set_trigger_mask(desc, flags);
+		/* irq_settings_set_trigger_mask inlined - single caller */
+		desc->status_use_accessors &= ~IRQ_TYPE_SENSE_MASK;
+		desc->status_use_accessors |= flags & IRQ_TYPE_SENSE_MASK;
 		irqd_clear(&desc->irq_data, IRQD_LEVEL);
-		irq_settings_clr_level(desc);
+		desc->status_use_accessors &=
+			~_IRQ_LEVEL; /* irq_settings_clr_level inlined */
 		if (flags & IRQ_TYPE_LEVEL_MASK) {
-			irq_settings_set_level(desc);
+			desc->status_use_accessors |=
+				_IRQ_LEVEL; /* irq_settings_set_level inlined */
 			irqd_set(&desc->irq_data, IRQD_LEVEL);
 		}
 
@@ -341,7 +345,8 @@ static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 	if (!(new->flags &IRQF_TRIGGER_MASK))
 		new->flags |= irqd_get_trigger_type(&desc->irq_data);
 
-	nested = irq_settings_is_nested_thread(desc);
+	/* irq_settings_is_nested_thread inlined - single caller */
+	nested = desc->status_use_accessors & _IRQ_NESTED_THREAD;
 	if (nested) {
 		if (!new->thread_fn) {
 			ret = -EINVAL;
@@ -466,8 +471,9 @@ static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 			irqd_set(&desc->irq_data, IRQD_NO_BALANCING);
 		}
 
+		/* irq_settings_can_autoenable inlined - single caller */
 		if (!(new->flags &IRQF_NO_AUTOEN) &&
-		    irq_settings_can_autoenable(desc)) {
+		    !(desc->status_use_accessors & _IRQ_NOAUTOEN)) {
 			irq_startup(desc, IRQ_RESEND, IRQ_START_COND);
 		} else {
 			WARN_ON_ONCE(new->flags &IRQF_SHARED);

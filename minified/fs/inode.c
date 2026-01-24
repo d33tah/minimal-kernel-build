@@ -432,7 +432,8 @@ void iput(struct inode *inode)
 	if (op->drop_inode)
 		drop = op->drop_inode(inode);
 	else
-		drop = generic_drop_inode(inode);
+		/* generic_drop_inode inlined */
+		drop = !inode->i_nlink || inode_unhashed(inode);
 
 	if (!drop && !(inode->i_state & I_DONTCACHE) &&
 	    (sb->s_flags & SB_ACTIVE)) {

@@ -854,10 +854,7 @@ extern bool is_subdir(struct dentry *, struct dentry *);
 extern void inode_init_always(struct super_block *, struct inode *);
 extern void inode_init_once(struct inode *);
 extern int generic_delete_inode(struct inode *inode);
-static inline int generic_drop_inode(struct inode *inode)
-{
-	return !inode->i_nlink || inode_unhashed(inode);
-}
+/* generic_drop_inode inlined at fs/inode.c - single caller */
 extern unsigned int get_next_ino(void);
 extern void evict_inodes(struct super_block *sb);
 

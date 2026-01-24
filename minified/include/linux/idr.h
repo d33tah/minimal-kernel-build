@@ -44,12 +44,7 @@ static inline void idr_init_base(struct idr *idr, int base)
 	idr->idr_next = 0;
 }
 
-static inline void idr_init(struct idr *idr)
-{
-	idr_init_base(idr, 0);
-}
-
-
+/* idr_init inlined into pid.c (~2 LOC) */
 /* idr_preload_end inlined into pid.c (~2 LOC) */
 
 #define IDA_CHUNK_SIZE		128

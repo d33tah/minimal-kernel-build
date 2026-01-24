@@ -341,7 +341,8 @@ void __init pid_idr_init(void)
 	pid_max = min(pid_max_max, max_t(int, pid_max, PIDS_PER_CPU_DEFAULT));
 	pid_max_min = max_t(int, pid_max_min, PIDS_PER_CPU_MIN);
 
-	idr_init(&init_pid_ns.idr);
+	/* idr_init inlined */
+	idr_init_base(&init_pid_ns.idr, 0);
 
 	init_pid_ns.pid_cachep =
 		KMEM_CACHE(pid, SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT);

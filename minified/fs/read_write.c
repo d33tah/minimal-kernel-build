@@ -58,7 +58,9 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count,
 
 	if (count > MAX_RW_COUNT)
 		count = MAX_RW_COUNT;
-	file_start_write(file);
+	/* file_start_write inlined - single caller */
+	if (S_ISREG(file_inode(file)->i_mode))
+		sb_start_write(file_inode(file)->i_sb);
 	if (file->f_op->write)
 		ret = file->f_op->write(file, buf, count, pos);
 	else if (file->f_op->write_iter) {
@@ -75,7 +77,9 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count,
 			*pos = kiocb.ki_pos;
 	} else
 		ret = -EINVAL;
-	file_end_write(file);
+	/* file_end_write inlined - single caller */
+	if (S_ISREG(file_inode(file)->i_mode))
+		__sb_end_write(file_inode(file)->i_sb, SB_FREEZE_WRITE);
 	return ret;
 }
 

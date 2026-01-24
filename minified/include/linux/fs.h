@@ -832,19 +832,7 @@ static inline int path_permission(const struct path *path, int mask)
 				d_inode(path->dentry), mask);
 }
 
-static inline void file_start_write(struct file *file)
-{
-	if (!S_ISREG(file_inode(file)->i_mode))
-		return;
-	sb_start_write(file_inode(file)->i_sb);
-}
-
-static inline void file_end_write(struct file *file)
-{
-	if (!S_ISREG(file_inode(file)->i_mode))
-		return;
-	__sb_end_write(file_inode(file)->i_sb, SB_FREEZE_WRITE);
-}
+/* file_start_write and file_end_write inlined at fs/read_write.c - single caller each */
 
 static inline int get_write_access(struct inode *inode)
 {

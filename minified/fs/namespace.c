@@ -714,8 +714,9 @@ static int invent_group_ids(struct mount *mnt, bool recurse)
 
 	for (p = mnt; p; p = recurse ? next_mnt(p, mnt) : NULL) {
 		if (!p->mnt_group_id && !IS_MNT_SHARED(p)) {
-			/* mnt_alloc_group_id inlined */
-			int res = ida_alloc_min(&mnt_group_ida, 1, GFP_KERNEL);
+			/* mnt_alloc_group_id inlined, ida_alloc_min inlined */
+			int res = ida_alloc_range(&mnt_group_ida, 1, ~0,
+						  GFP_KERNEL);
 			if (res < 0)
 				return res;
 			p->mnt_group_id = res;

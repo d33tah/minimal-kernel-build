@@ -60,7 +60,7 @@ int irq_init_percpu_irqstack(unsigned int cpu)
 		return -ENOMEM;
 	ps = alloc_pages_node(node, THREADINFO_GFP, THREAD_SIZE_ORDER);
 	if (!ps) {
-		__free_pages(ph, THREAD_SIZE_ORDER);
+		/* __free_pages removed - empty stub */
 		return -ENOMEM;
 	}
 

@@ -27,7 +27,7 @@ static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm)
 
 static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
 {
-	free_page((unsigned long)pte);
+	/* free_page removed - empty stub */
 }
 
 static inline pgtable_t __pte_alloc_one(struct mm_struct *mm, gfp_t gfp)
@@ -38,7 +38,7 @@ static inline pgtable_t __pte_alloc_one(struct mm_struct *mm, gfp_t gfp)
 	if (!pte)
 		return NULL;
 	if (!pgtable_pte_page_ctor(pte)) {
-		__free_page(pte);
+		/* __free_page removed - empty stub */
 		return NULL;
 	}
 
@@ -56,7 +56,7 @@ static inline pgtable_t pte_alloc_one(struct mm_struct *mm)
 static inline void pte_free(struct mm_struct *mm, struct page *pte_page)
 {
 	pgtable_pte_page_dtor(pte_page);
-	__free_page(pte_page);
+	/* __free_page removed - empty stub */
 }
 
 
@@ -65,7 +65,7 @@ static inline void pte_free(struct mm_struct *mm, struct page *pte_page)
 #ifndef __HAVE_ARCH_PGD_FREE
 static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
 {
-	free_page((unsigned long)pgd);
+	/* free_page removed - empty stub */
 }
 #endif
 

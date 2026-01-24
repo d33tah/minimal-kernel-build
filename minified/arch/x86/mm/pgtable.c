@@ -65,7 +65,7 @@ void pgd_free(struct mm_struct *mm, pgd_t *pgd)
 	spin_lock(&pgd_lock);
 	list_del(&virt_to_page(pgd)->lru);
 	spin_unlock(&pgd_lock);
-	free_pages((unsigned long)pgd, PGD_ALLOCATION_ORDER);
+	/* free_pages removed - empty stub */
 }
 
 int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,

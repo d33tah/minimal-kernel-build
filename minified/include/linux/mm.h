@@ -794,7 +794,7 @@ static inline void free_reserved_page(struct page *page)
 {
 	ClearPageReserved(page);
 	init_page_count(page);
-	__free_page(page);
+	/* __free_page removed - empty stub */
 	adjust_managed_page_count(page, 1);
 }
 

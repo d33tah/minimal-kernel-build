@@ -730,10 +730,9 @@ void *alloc_pages_exact(size_t size, gfp_t gfp_mask)
 		unsigned long used = addr + PAGE_ALIGN(size);
 
 		split_page(virt_to_page((void *)addr), order);
-		while (used < alloc_end) {
-			free_page(used);
-			used += PAGE_SIZE;
-		}
+		/* free_page loop removed - empty stub (bump allocator) */
+		(void)alloc_end;
+		(void)used; /* suppress warnings */
 	}
 	return (void *)addr;
 }

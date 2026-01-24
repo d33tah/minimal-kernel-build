@@ -44,7 +44,7 @@ static void tty_port_destructor(struct kref *kref)
 
 	if (WARN_ON(port->itty))
 		return;
-	free_page((unsigned long)port->xmit_buf);
+	/* free_page removed - empty stub */
 	tty_port_destroy(port);
 	if (port->ops && port->ops->destruct)
 		port->ops->destruct(port);

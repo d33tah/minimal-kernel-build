@@ -105,7 +105,7 @@ void tlb_finish_mmu(struct mmu_gather *tlb)
 
 	for (batch = tlb->local.next; batch; batch = next) {
 		next = batch->next;
-		free_pages((unsigned long)batch, 0);
+		/* free_pages removed - empty stub */
 	}
 	tlb->local.next = NULL;
 	dec_tlb_flush_pending(tlb->mm);

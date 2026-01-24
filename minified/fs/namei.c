@@ -468,7 +468,8 @@ rcu_fail:;
 	/* Inlined traverse_mounts - jumped is always false in minimal config */
 	{
 		unsigned flags = smp_load_acquire(&path->dentry->d_flags);
-		if (unlikely(d_flags_negative(flags))) {
+		if (unlikely((flags & DCACHE_ENTRY_TYPE) ==
+			     DCACHE_MISS_TYPE)) { /* d_flags_negative inlined */
 			dput(path->dentry);
 			if (path->mnt != nd->path.mnt)
 				mntput(path->mnt);

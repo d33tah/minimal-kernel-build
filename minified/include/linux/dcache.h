@@ -218,13 +218,7 @@ static inline bool d_can_lookup(const struct dentry *dentry)
 }
 
 /* d_is_dir removed - alias for d_can_lookup, use it directly */
-/* d_is_symlink, d_is_reg removed - inlined at single call site */
-
-static inline bool d_flags_negative(unsigned flags)
-{
-	return (flags & DCACHE_ENTRY_TYPE) == DCACHE_MISS_TYPE;
-}
-
+/* d_is_symlink, d_is_reg, d_flags_negative removed - inlined at single call site */
 /* d_really_is_positive removed - never called */
 
 extern int sysctl_vfs_cache_pressure;

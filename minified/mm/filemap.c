@@ -894,7 +894,7 @@ static int filemap_get_pages(struct kiocb *iocb, struct iov_iter *iter,
 {
 	struct file *filp = iocb->ki_filp;
 	struct address_space *mapping = filp->f_mapping;
-	struct file_ra_state *ra = &filp->f_ra;
+	/* ra removed - unused */
 	pgoff_t index = iocb->ki_pos >> PAGE_SHIFT;
 	pgoff_t last_index;
 	struct folio *folio;

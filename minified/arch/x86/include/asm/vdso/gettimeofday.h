@@ -152,16 +152,7 @@ long clock_getres32_fallback(clockid_t _clkid, struct old_timespec32 *_ts)
 
 #endif
 
-
-
-static inline u64 __arch_get_hw_counter(s32 clock_mode,
-					const struct vdso_data *vd)
-{
-	if (likely(clock_mode == VDSO_CLOCKMODE_TSC))
-		return (u64)rdtsc_ordered();
-	 
-	return U64_MAX;
-}
+/* __arch_get_hw_counter inlined at lib/vdso/gettimeofday.c - single caller */
 
 static __always_inline const struct vdso_data *__arch_get_vdso_data(void)
 {

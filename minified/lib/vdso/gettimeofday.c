@@ -55,7 +55,10 @@ static __always_inline int do_hres(const struct vdso_data *vd, clockid_t clk,
 		if (unlikely(!vdso_clocksource_ok(vd)))
 			return -1;
 
-		cycles = __arch_get_hw_counter(vd->clock_mode, vd);
+		/* __arch_get_hw_counter inlined */
+		cycles = likely(vd->clock_mode == VDSO_CLOCKMODE_TSC) ?
+				 (u64)rdtsc_ordered() :
+				 U64_MAX;
 		if (unlikely(!vdso_cycles_ok(cycles)))
 			return -1;
 		ns = vdso_ts->nsec;

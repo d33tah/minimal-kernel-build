@@ -873,11 +873,7 @@ alloc_inode_sb(struct super_block *sb, struct kmem_cache *cache, gfp_t gfp)
 }
 
 extern void __remove_inode_hash(struct inode *);
-static inline void remove_inode_hash(struct inode *inode)
-{
-	if (!inode_unhashed(inode) && !hlist_fake(&inode->i_hash))
-		__remove_inode_hash(inode);
-}
+/* remove_inode_hash inlined at fs/inode.c - single caller */
 
 extern void inode_sb_list_add(struct inode *inode);
 extern void inode_add_lru(struct inode *inode);

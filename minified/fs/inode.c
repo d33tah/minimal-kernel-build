@@ -257,7 +257,9 @@ static void evict(struct inode *inode)
 	if (S_ISCHR(inode->i_mode) && inode->i_cdev)
 		cd_forget(inode);
 
-	remove_inode_hash(inode);
+	/* remove_inode_hash inlined */
+	if (!inode_unhashed(inode) && !hlist_fake(&inode->i_hash))
+		__remove_inode_hash(inode);
 
 	spin_lock(&inode->i_lock);
 	wake_up_bit(&inode->i_state, __I_NEW);

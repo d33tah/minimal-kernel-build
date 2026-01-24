@@ -56,13 +56,13 @@ u64 get_jiffies_64(void);
 	(typecheck(unsigned long, a) && \
 	 typecheck(unsigned long, b) && \
 	 ((long)((b) - (a)) < 0))
-#define time_before(a,b)	time_after(b,a)
+/* time_before removed - never used */
 
 #define time_after_eq(a,b)	\
 	(typecheck(unsigned long, a) && \
 	 typecheck(unsigned long, b) && \
 	 ((long)((a) - (b)) >= 0))
-#define time_before_eq(a,b)	time_after_eq(b,a)
+/* time_before_eq removed - never used */
 
 #define INITIAL_JIFFIES ((unsigned long)(unsigned int) (-300*HZ))
 

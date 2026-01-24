@@ -180,12 +180,7 @@ do {									\
 #define raw_cpu_cmpxchg_double(pcp1, pcp2, oval1, oval2, nval1, nval2) \
 	__pcpu_double_call_return_bool(raw_cpu_cmpxchg_double_, pcp1, pcp2, oval1, oval2, nval1, nval2)
 
-#define raw_cpu_sub(pcp, val)		raw_cpu_add(pcp, -(val))
-#define raw_cpu_inc(pcp)		raw_cpu_add(pcp, 1)
-#define raw_cpu_dec(pcp)		raw_cpu_sub(pcp, 1)
-#define raw_cpu_sub_return(pcp, val)	raw_cpu_add_return(pcp, -(typeof(pcp))(val))
-#define raw_cpu_inc_return(pcp)		raw_cpu_add_return(pcp, 1)
-#define raw_cpu_dec_return(pcp)		raw_cpu_add_return(pcp, -1)
+/* raw_cpu_sub, raw_cpu_inc, raw_cpu_dec, raw_cpu_*_return removed - never used */
 
 #define __this_cpu_read(pcp)						\
 ({									\

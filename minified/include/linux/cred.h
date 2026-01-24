@@ -128,10 +128,9 @@ static inline void put_cred(const struct cred *_cred)
 	current_cred()->xxx;			\
 })
 
-#define current_uid()		(current_cred_xxx(uid))
-#define current_gid()		(current_cred_xxx(gid))
+/* current_uid, current_gid removed - never used */
 #define current_euid()		(current_cred_xxx(euid))
-#define current_egid()		(current_cred_xxx(egid))
+/* current_egid removed - never used */
 #define current_fsuid() 	(current_cred_xxx(fsuid))
 #define current_fsgid() 	(current_cred_xxx(fsgid))
 /* current_ucounts removed - never used */

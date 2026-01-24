@@ -692,8 +692,8 @@ static inline void init_sync_kiocb(struct kiocb *kiocb, struct file *filp)
 #define I_DONTCACHE		(1 << 16)
 
 #define I_DIRTY_INODE (I_DIRTY_SYNC | I_DIRTY_DATASYNC)
-#define I_DIRTY (I_DIRTY_INODE | I_DIRTY_PAGES)
-#define I_DIRTY_ALL (I_DIRTY | I_DIRTY_TIME)
+/* I_DIRTY removed - never used, inlined into I_DIRTY_ALL */
+#define I_DIRTY_ALL (I_DIRTY_INODE | I_DIRTY_PAGES | I_DIRTY_TIME)
 
 /* __mark_inode_dirty, mark_inode_dirty removed - empty stubs, no callers */
 

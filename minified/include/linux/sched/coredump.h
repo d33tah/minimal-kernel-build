@@ -3,8 +3,7 @@
 
 #include <linux/mm_types.h>
 
-#define SUID_DUMP_USER		1
-/* SUID_DUMP_ROOT removed - unused */
+/* SUID_DUMP_USER and SUID_DUMP_ROOT removed - unused */
 
 #define MMF_DUMPABLE_BITS 2
 #define MMF_DUMPABLE_MASK ((1 << MMF_DUMPABLE_BITS) - 1)

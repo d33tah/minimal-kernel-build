@@ -29,9 +29,7 @@ struct timer_list {
 			__FILE__ ":" __stringify(__LINE__))	\
 	}
 
-#define DEFINE_TIMER(_name, _function)				\
-	struct timer_list _name =				\
-		__TIMER_INITIALIZER(_function, 0)
+/* DEFINE_TIMER removed - never used */
 
 void init_timer_key(struct timer_list *timer,
 		    void (*func)(struct timer_list *), unsigned int flags,

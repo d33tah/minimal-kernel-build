@@ -767,7 +767,14 @@ static vm_fault_t do_cow_fault(struct vm_fault *vmf)
 	if (ret & VM_FAULT_DONE_COW)
 		return ret;
 
-	copy_user_highpage(vmf->cow_page, vmf->page, vmf->address, vma);
+	/* copy_user_highpage inlined - single caller */
+	{
+		char *vfrom = kmap_local_page(vmf->page);
+		char *vto = kmap_local_page(vmf->cow_page);
+		copy_user_page(vto, vfrom, vmf->address, vmf->cow_page);
+		kunmap_local(vto);
+		kunmap_local(vfrom);
+	}
 	__SetPageUptodate(vmf->cow_page);
 
 	ret |= finish_fault(vmf);

@@ -115,21 +115,7 @@ static inline void zero_user(struct page *page,
 	zero_user_segments(page, start, start + size, 0, 0);
 }
 
-#ifndef __HAVE_ARCH_COPY_USER_HIGHPAGE
-
-static inline void copy_user_highpage(struct page *to, struct page *from,
-	unsigned long vaddr, struct vm_area_struct *vma)
-{
-	char *vfrom, *vto;
-
-	vfrom = kmap_local_page(from);
-	vto = kmap_local_page(to);
-	copy_user_page(vto, vfrom, vaddr, to);
-	kunmap_local(vto);
-	kunmap_local(vfrom);
-}
-
-#endif
+/* copy_user_highpage inlined at mm/memory.c - single caller */
 
 static inline void memcpy_to_page(struct page *page, size_t offset,
 				  const char *from, size_t len)

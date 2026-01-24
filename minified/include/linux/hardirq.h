@@ -13,7 +13,7 @@ void irq_enter(void);
 void irq_enter_rcu(void);
 
 #define __irq_exit()	preempt_count_sub(HARDIRQ_OFFSET)
-#define __irq_exit_raw() __irq_exit()
+/* __irq_exit_raw removed - never used */
 
 void irq_exit(void);
 void irq_exit_rcu(void);
@@ -27,7 +27,7 @@ void irq_exit_rcu(void);
 		__preempt_count_add(NMI_OFFSET + HARDIRQ_OFFSET);	\
 	} while (0)
 
-#define nmi_enter()	__nmi_enter()
+/* nmi_enter removed - only __nmi_enter used directly */
 
 #define __nmi_exit()						\
 	do {							\
@@ -36,6 +36,6 @@ void irq_exit_rcu(void);
 		/* lockdep_on() removed - empty stub */		\
 	} while (0)
 
-#define nmi_exit()	__nmi_exit()
+/* nmi_exit removed - only __nmi_exit used directly */
 
 #endif  

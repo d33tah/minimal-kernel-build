@@ -38,9 +38,7 @@ void list_lru_destroy(struct list_lru *lru);
 int __list_lru_init(struct list_lru *lru, bool memcg_aware,
 		    struct lock_class_key *key, struct shrinker *shrinker);
 
-#define list_lru_init(lru)				\
-	__list_lru_init((lru), false, NULL, NULL)
-/* list_lru_init_key removed - unused */
+/* list_lru_init, list_lru_init_key removed - unused */
 #define list_lru_init_memcg(lru, shrinker)		\
 	__list_lru_init((lru), true, NULL, shrinker)
 

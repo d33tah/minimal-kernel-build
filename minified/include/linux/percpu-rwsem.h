@@ -61,10 +61,6 @@ extern int __percpu_init_rwsem(struct percpu_rw_semaphore *,
 
 extern void percpu_free_rwsem(struct percpu_rw_semaphore *);
 
-#define percpu_init_rwsem(sem)					\
-({								\
-	static struct lock_class_key rwsem_key;			\
-	__percpu_init_rwsem(sem, #sem, &rwsem_key);		\
-})
+/* percpu_init_rwsem removed - never called */
 
 #endif

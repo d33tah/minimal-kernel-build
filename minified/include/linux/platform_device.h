@@ -43,8 +43,7 @@ struct platform_driver {
 #define to_platform_driver(drv)	(container_of((drv), struct platform_driver, \
 				 driver))
 
-#define platform_driver_register(drv) \
-	__platform_driver_register(drv, THIS_MODULE)
+/* platform_driver_register removed - never called */
 extern int __platform_driver_register(struct platform_driver *,
 					struct module *);
 

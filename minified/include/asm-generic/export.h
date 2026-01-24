@@ -22,9 +22,6 @@
 	__EXPORT_SYMBOL(name, KSYM_FUNC(name),)
 #define EXPORT_SYMBOL_GPL(name) 				\
 	__EXPORT_SYMBOL(name, KSYM_FUNC(name), _gpl)
-#define EXPORT_DATA_SYMBOL(name)				\
-	__EXPORT_SYMBOL(name, name,)
-#define EXPORT_DATA_SYMBOL_GPL(name)				\
-	__EXPORT_SYMBOL(name, name,_gpl)
+/* EXPORT_DATA_SYMBOL, EXPORT_DATA_SYMBOL_GPL removed - never used */
 
 #endif

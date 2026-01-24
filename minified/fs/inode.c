@@ -58,8 +58,9 @@ void inode_init_always(struct super_block *sb, struct inode *inode)
 	inode->i_opflags = 0;
 	if (sb->s_xattr)
 		inode->i_opflags |= IOP_XATTR;
-	i_uid_write(inode, 0);
-	i_gid_write(inode, 0);
+	/* i_uid_write, i_gid_write inlined */
+	inode->i_uid = make_kuid(i_user_ns(inode), 0);
+	inode->i_gid = make_kgid(i_user_ns(inode), 0);
 	atomic_set(&inode->i_writecount, 0);
 	inode->i_size = 0;
 	inode->i_cdev = NULL;

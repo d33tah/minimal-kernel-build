@@ -39,7 +39,12 @@ static void filemap_unaccount_folio(struct address_space *mapping,
 		add_taint(TAINT_BAD_PAGE, LOCKDEP_NOW_UNRELIABLE);
 
 		if (mapping_exiting(mapping) && !folio_test_large(folio)) {
-			int mapcount = page_mapcount(&folio->page);
+			/* page_mapcount inlined - single caller */
+			struct page *pg = &folio->page;
+			int mapcount =
+				unlikely(PageCompound(pg)) ?
+					__page_mapcount(pg) :
+					(atomic_read(&pg->_mapcount) + 1);
 
 			if (folio_ref_count(folio) >= mapcount + 2) {
 				page_mapcount_reset(&folio->page);

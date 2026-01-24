@@ -305,12 +305,7 @@ static inline void page_mapcount_reset(struct page *page)
 
 int __page_mapcount(struct page *page);
 
-static inline int page_mapcount(struct page *page)
-{
-	if (unlikely(PageCompound(page)))
-		return __page_mapcount(page);
-	return atomic_read(&page->_mapcount) + 1;
-}
+/* page_mapcount inlined at mm/filemap.c - single caller */
 
 static inline struct page *virt_to_head_page(const void *x)
 {

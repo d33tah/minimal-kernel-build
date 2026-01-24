@@ -63,7 +63,7 @@ MALLOC_VISIBLE void free(void *where)
 #define free(a) kfree(a)
 
 #define large_malloc(a) vmalloc(a)
-#define large_free(a) vfree(a)
+#define large_free(a) do { } while(0)  /* vfree was empty stub */
 
 #define INIT __init
 #define STATIC

@@ -953,7 +953,7 @@ void *vmap(struct page **pages, unsigned int count, unsigned long flags,
 	addr = (unsigned long)area->addr;
 	if (vmap_pages_range(addr, addr + size, pgprot_nx(prot), pages,
 			     PAGE_SHIFT) < 0) {
-		vunmap(area->addr);
+		/* vunmap removed - empty stub */
 		return NULL;
 	}
 

@@ -66,9 +66,7 @@ extern void *__vmalloc_node_range(unsigned long size, unsigned long align,
 void *__vmalloc_node(unsigned long size, unsigned long align, gfp_t gfp_mask,
 		int node, const void *caller) __alloc_size(1);
 
-/* vfree, vunmap - no-op stubs for bump allocator */
-static inline void vfree(const void *addr) {}
-static inline void vunmap(const void *addr) {}
+/* vfree, vunmap removed - callers stubbed out */
 
 extern void *vmap(struct page **pages, unsigned int count,
 			unsigned long flags, pgprot_t prot);

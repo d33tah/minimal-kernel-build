@@ -174,18 +174,7 @@ static inline void clear_LDT(void)
 
 void alloc_intr_gate(unsigned int n, const void *addr);
 
-static inline void init_idt_data(struct idt_data *data, unsigned int n,
-				 const void *addr)
-{
-	BUG_ON(n > 0xFF);
-
-	memset(data, 0, sizeof(*data));
-	data->vector	= n;
-	data->addr	= addr;
-	data->segment	= __KERNEL_CS;
-	data->bits.type	= GATE_INTERRUPT;
-	data->bits.p	= 1;
-}
+/* init_idt_data inlined at arch/x86/kernel/idt.c - single caller */
 
 static inline void idt_init_desc(gate_desc *gate, const struct idt_data *d)
 {

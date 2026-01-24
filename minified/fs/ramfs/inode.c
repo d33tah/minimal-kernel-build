@@ -133,7 +133,8 @@ static int ramfs_parse_param(struct fs_context *fc, struct fs_parameter *param)
 	struct ramfs_fs_info *fsi = fc->s_fs_info;
 	int opt;
 
-	opt = fs_parse(fc, ramfs_fs_parameters, param, &result);
+	/* fs_parse inlined */
+	opt = __fs_parse(&fc->log, ramfs_fs_parameters, param, &result);
 	if (opt == -ENOPARAM) {
 		opt = vfs_parse_fs_param_source(fc, param);
 		if (opt != -ENOPARAM)

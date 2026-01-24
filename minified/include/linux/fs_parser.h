@@ -46,14 +46,7 @@ extern int __fs_parse(struct p_log *log,
 		    struct fs_parameter *value,
 		    struct fs_parse_result *result);
 
-static inline int fs_parse(struct fs_context *fc,
-	     const struct fs_parameter_spec *desc,
-	     struct fs_parameter *param,
-	     struct fs_parse_result *result)
-{
-	return __fs_parse(&fc->log, desc, param, result);
-}
-
+/* fs_parse inlined at fs/ramfs/inode.c - single caller */
 /* fs_lookup_param, fs_validate_description removed - never called / always returned true */
 
 extern int lookup_constant(const struct constant_table tbl[], const char *name, int not_found);

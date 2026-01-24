@@ -872,7 +872,7 @@ int __sched __cond_resched(void)
 		return 1;
 	}
 
-	rcu_all_qs();
+	barrier(); /* rcu_all_qs inlined */
 	return 0;
 }
 

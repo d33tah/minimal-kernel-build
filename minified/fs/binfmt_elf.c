@@ -367,7 +367,7 @@ static inline int make_prot(u32 p_flags, struct arch_elf_state *arch_state,
 	if (p_flags & PF_X)
 		prot |= PROT_EXEC;
 
-	return arch_elf_adjust_prot(prot, arch_state, has_interp, is_interp);
+	return prot; /* arch_elf_adjust_prot inlined - just returns prot unchanged */
 }
 
 static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,

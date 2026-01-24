@@ -180,11 +180,7 @@ static inline int d_unlinked(const struct dentry *dentry)
 	return d_unhashed(dentry) && !IS_ROOT(dentry);
 }
 
-static inline int cant_mount(const struct dentry *dentry)
-{
-	return (dentry->d_flags & DCACHE_CANT_MOUNT);
-}
-
+/* cant_mount removed - inlined at single call site */
 
 extern void __d_lookup_done(struct dentry *);
 

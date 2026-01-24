@@ -25,5 +25,5 @@ void exit_task_namespaces(struct task_struct *tsk);
 void free_nsproxy(struct nsproxy *ns);
 int __init nsproxy_cache_init(void);
 static inline void put_nsproxy(struct nsproxy *ns) { if (atomic_dec_and_test(&ns->count)) free_nsproxy(ns); }
-static inline void get_nsproxy(struct nsproxy *ns) { atomic_inc(&ns->count); }
+/* get_nsproxy removed - inlined at single call site */
 #endif

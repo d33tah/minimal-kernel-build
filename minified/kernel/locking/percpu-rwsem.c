@@ -17,7 +17,7 @@ int __percpu_init_rwsem(struct percpu_rw_semaphore *sem, const char *name,
 		return -ENOMEM;
 
 	rcu_sync_init(&sem->rss);
-	rcuwait_init(&sem->writer);
+	sem->writer.task = NULL; /* rcuwait_init inlined */
 	init_waitqueue_head(&sem->waiters);
 	atomic_set(&sem->block, 0);
 	return 0;

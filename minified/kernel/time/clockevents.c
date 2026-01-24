@@ -174,7 +174,9 @@ int clockevents_program_event(struct clock_event_device *dev, ktime_t expires,
 	if (dev->features & CLOCK_EVT_FEAT_KTIME)
 		return dev->set_next_ktime(expires, dev);
 
-	delta = ktime_to_ns(ktime_sub(expires, ktime_get()));
+	delta = ktime_sub(
+		expires,
+		ktime_get()); /* ktime_to_ns inlined - just returns kt */
 	if (delta <= 0)
 		return force ? clockevents_program_min_delta(dev) : -ETIME;
 

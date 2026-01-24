@@ -32,6 +32,5 @@
 #define elf_addr_t	Elf64_Off
 /* Elf_Half, Elf_Word, ELF_GNU_PROPERTY_ALIGN removed - never used */
 #endif
-struct arch_elf_state;
-static inline int arch_elf_adjust_prot(int prot, const struct arch_elf_state *state, bool has_interp, bool is_interp) { return prot; }
+/* arch_elf_state, arch_elf_adjust_prot removed - inlined at single call site */
 #endif

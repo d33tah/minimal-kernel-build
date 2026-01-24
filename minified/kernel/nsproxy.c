@@ -32,7 +32,7 @@ int copy_namespaces(struct task_struct *tsk)
 {
 	struct nsproxy *old_ns = tsk->nsproxy;
 	/* No CLONE_NEW* flags ever used - always share nsproxy */
-	get_nsproxy(old_ns);
+	atomic_inc(&old_ns->count); /* get_nsproxy inlined */
 	return 0;
 }
 

@@ -40,17 +40,7 @@ static inline void init_page_count(struct page *page)
 	set_page_count(page, 1);
 }
 
-/* page_ref_add, page_ref_sub, page_ref_inc inlined into folio_* versions */
-static inline void folio_ref_add(struct folio *folio, int nr)
-{
-	atomic_add(nr, &folio->page._refcount);
-}
-
-static inline void folio_ref_sub(struct folio *folio, int nr)
-{
-	atomic_sub(nr, &folio->page._refcount);
-}
-
+/* page_ref_add, page_ref_sub, page_ref_inc, folio_ref_add, folio_ref_sub inlined */
 static inline void folio_ref_inc(struct folio *folio)
 {
 	atomic_inc(&folio->page._refcount);

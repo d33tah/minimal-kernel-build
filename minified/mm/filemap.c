@@ -43,7 +43,7 @@ static void filemap_unaccount_folio(struct address_space *mapping,
 
 			if (folio_ref_count(folio) >= mapcount + 2) {
 				page_mapcount_reset(&folio->page);
-				folio_ref_sub(folio, mapcount);
+				atomic_sub(mapcount, &folio->page._refcount);
 			}
 		}
 	}
@@ -215,7 +215,7 @@ noinline int __filemap_add_folio(struct address_space *mapping,
 	nr = folio_nr_pages(folio);
 
 	gfp &= GFP_RECLAIM_MASK;
-	folio_ref_add(folio, nr);
+	atomic_add(nr, &folio->page._refcount);
 	folio->mapping = mapping;
 	folio->index = xas.xa_index;
 

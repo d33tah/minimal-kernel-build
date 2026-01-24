@@ -656,12 +656,7 @@ static inline spinlock_t *pte_lockptr(struct mm_struct *mm, pmd_t *pmd)
 
 /* pgtable_init removed - unused */
 
-static inline bool pgtable_pte_page_ctor(struct page *page)
-{
-	__SetPageTable(page);
-	inc_lruvec_page_state(page, NR_PAGETABLE);
-	return true;
-}
+/* pgtable_pte_page_ctor inlined at arch/x86/include/asm/pgalloc.h - single caller */
 
 static inline void pgtable_pte_page_dtor(struct page *page)
 {

@@ -37,11 +37,9 @@ static inline pgtable_t __pte_alloc_one(struct mm_struct *mm, gfp_t gfp)
 	pte = alloc_page(gfp);
 	if (!pte)
 		return NULL;
-	if (!pgtable_pte_page_ctor(pte)) {
-		/* __free_page removed - empty stub */
-		return NULL;
-	}
-
+	/* pgtable_pte_page_ctor inlined - single caller, always returns true */
+	__SetPageTable(pte);
+	inc_lruvec_page_state(pte, NR_PAGETABLE);
 	return pte;
 }
 

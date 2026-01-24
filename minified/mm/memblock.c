@@ -718,7 +718,7 @@ void __init memblock_free_late(phys_addr_t base, phys_addr_t size)
 
 	for (; cursor < end; cursor++) {
 		memblock_free_pages(pfn_to_page(cursor), cursor, 0);
-		totalram_pages_inc();
+		atomic_long_inc(&_totalram_pages);
 	}
 }
 

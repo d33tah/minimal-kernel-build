@@ -83,10 +83,7 @@ static inline unsigned long totalram_pages(void)
 	return (unsigned long)atomic_long_read(&_totalram_pages);
 }
 
-static inline void totalram_pages_inc(void)
-{
-	atomic_long_inc(&_totalram_pages);
-}
+/* totalram_pages_inc removed - inlined at single call site */
 
 static inline void totalram_pages_add(long count)
 {

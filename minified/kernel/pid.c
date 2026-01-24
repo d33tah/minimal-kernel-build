@@ -247,8 +247,15 @@ void exchange_tids(struct task_struct *left, struct task_struct *right)
 	struct pid *pid2 = right->thread_pid;
 	struct hlist_head *head1 = &pid1->tasks[PIDTYPE_PID];
 	struct hlist_head *head2 = &pid2->tasks[PIDTYPE_PID];
+	struct hlist_node *node1, *node2;
 
-	hlists_swap_heads_rcu(head1, head2);
+	/* hlists_swap_heads_rcu inlined */
+	node1 = head1->first;
+	node2 = head2->first;
+	rcu_assign_pointer(head1->first, node2);
+	rcu_assign_pointer(head2->first, node1);
+	WRITE_ONCE(node2->pprev, &head1->first);
+	WRITE_ONCE(node1->pprev, &head2->first);
 
 	rcu_assign_pointer(left->thread_pid, pid2);
 	rcu_assign_pointer(right->thread_pid, pid1);

@@ -223,13 +223,7 @@ extern pgprot_t protection_map[16];
 #define FAULT_FLAG_DEFAULT  (FAULT_FLAG_ALLOW_RETRY | \
 			     FAULT_FLAG_KILLABLE)
 /* FAULT_FLAG_INTERRUPTIBLE removed from default - never tested */
-
-static inline bool fault_flag_allow_retry_first(enum fault_flag flags)
-{
-	return (flags & FAULT_FLAG_ALLOW_RETRY) &&
-	    (!(flags & FAULT_FLAG_TRIED));
-}
-
+/* fault_flag_allow_retry_first inlined into __folio_lock_or_retry (~4 LOC) */
 
 struct vm_fault {
 	const struct {

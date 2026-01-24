@@ -717,9 +717,10 @@ static int __sched_setscheduler(struct task_struct *p,
 		goto unlock;
 	}
 
-	/* Check if already set */
+	/* Check if already set, task_nice inlined */
 	if (policy == p->policy &&
-	    (!fair_policy(policy) || attr->sched_nice == task_nice(p)) &&
+	    (!fair_policy(policy) ||
+	     attr->sched_nice == PRIO_TO_NICE(p->static_prio)) &&
 	    (!rt_policy(policy) || attr->sched_priority == p->rt_priority)) {
 		retval = 0;
 		goto unlock;

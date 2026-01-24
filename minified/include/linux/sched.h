@@ -436,10 +436,7 @@ static inline int set_cpus_allowed_ptr(struct task_struct *p, const struct cpuma
 	return 0;
 }
 
-static inline int task_nice(const struct task_struct *p)
-{
-	return PRIO_TO_NICE((p)->static_prio);
-}
+/* task_nice inlined into sched/core.c (~3 LOC) */
 
 extern int sched_setscheduler(struct task_struct *, int, const struct sched_param *);
 extern int sched_setscheduler_nocheck(struct task_struct *, int, const struct sched_param *);

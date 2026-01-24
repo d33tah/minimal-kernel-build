@@ -83,7 +83,13 @@ __visible struct task_struct *__switch_to(struct task_struct *prev_p,
 
 	load_TLS(next, cpu);
 
-	switch_to_extra(prev_p, next_p);
+	{
+		unsigned long next_tif = read_task_thread_flags(next_p);
+		unsigned long prev_tif = read_task_thread_flags(prev_p);
+		if (unlikely(next_tif & _TIF_WORK_CTXSW_NEXT ||
+			     prev_tif & _TIF_WORK_CTXSW_PREV))
+			__switch_to_xtra(prev_p, next_p);
+	}
 
 	arch_end_context_switch(next_p);
 

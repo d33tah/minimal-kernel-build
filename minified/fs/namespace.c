@@ -1128,7 +1128,7 @@ void __init mnt_init(void)
 		ns->mounts = 1;
 		list_add(&m->mnt_list, &ns->list);
 		init_task.nsproxy->mnt_ns = ns;
-		get_mnt_ns(ns);
+		refcount_inc(&ns->ns.count);
 
 		root.mnt = mnt;
 		root.dentry = mnt->mnt_root;

@@ -998,7 +998,7 @@ int __init vty_init(const struct file_operations *console_fops)
 	console_driver->init_termios = tty_std_termios;
 	if (default_utf8)
 		console_driver->init_termios.c_iflag |= IUTF8;
-	tty_set_operations(console_driver, &con_ops);
+	console_driver->ops = &con_ops;
 	if (tty_register_driver(console_driver))
 		panic("Couldn't register console driver\n");
 	/* kbd_init removed - empty stub */

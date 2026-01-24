@@ -981,7 +981,7 @@ int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 		} else
 			mm->highest_vm_end = prev ? vm_end_gap(prev) : 0;
 		tail_vma->vm_next = NULL;
-		vmacache_invalidate(mm);
+		mm->vmacache_seqnum++;
 		if (tmp_vma && (tmp_vma->vm_flags & VM_GROWSDOWN))
 			downgrade = false;
 		if (prev && (prev->vm_flags & VM_GROWSUP))

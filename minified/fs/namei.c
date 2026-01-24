@@ -849,7 +849,10 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
 	}
 
 	if (nd->dfd == AT_FDCWD) {
-		get_fs_pwd(current->fs, &nd->path);
+		spin_lock(&current->fs->lock);
+		nd->path = current->fs->pwd;
+		path_get(&nd->path);
+		spin_unlock(&current->fs->lock);
 		nd->inode = nd->path.dentry->d_inode;
 	} else {
 		struct fd f = fdget_raw(nd->dfd);

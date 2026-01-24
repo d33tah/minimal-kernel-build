@@ -72,12 +72,6 @@ static inline struct tty_driver *tty_driver_kref_get(struct tty_driver *d)
 	return d;
 }
 
-static inline void tty_set_operations(struct tty_driver *driver,
-		const struct tty_operations *op)
-{
-	driver->ops = op;
-}
-
 #define TTY_DRIVER_MAGIC		0x5402
 
 #define TTY_DRIVER_INSTALLED		0x0001

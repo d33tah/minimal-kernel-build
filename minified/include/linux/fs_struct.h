@@ -30,12 +30,4 @@ static inline void get_fs_root(struct fs_struct *fs, struct path *root)
 	spin_unlock(&fs->lock);
 }
 
-static inline void get_fs_pwd(struct fs_struct *fs, struct path *pwd)
-{
-	spin_lock(&fs->lock);
-	*pwd = fs->pwd;
-	path_get(pwd);
-	spin_unlock(&fs->lock);
-}
-
 #endif  

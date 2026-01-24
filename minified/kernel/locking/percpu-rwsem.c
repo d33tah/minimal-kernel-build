@@ -29,7 +29,7 @@ void percpu_free_rwsem(struct percpu_rw_semaphore *sem)
 		return;
 
 	rcu_sync_dtor(&sem->rss);
-	free_percpu(sem->read_count);
+	/* free_percpu removed - empty stub */
 	sem->read_count = NULL;
 }
 

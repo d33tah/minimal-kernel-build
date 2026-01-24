@@ -671,7 +671,19 @@ struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid,
 	ac.highest_zoneidx = gfp_zone(gfp);
 	ac.zonelist = node_zonelist(preferred_nid, gfp);
 	ac.nodemask = nodemask;
-	ac.migratetype = gfp_migratetype(gfp);
+	/* gfp_migratetype inlined */
+	{
+		VM_WARN_ON((gfp & (__GFP_RECLAIMABLE | __GFP_MOVABLE)) ==
+			   (__GFP_RECLAIMABLE | __GFP_MOVABLE));
+		if (unlikely(page_group_by_mobility_disabled))
+			ac.migratetype = MIGRATE_UNMOVABLE;
+		else
+			ac.migratetype =
+				(__force unsigned long)(gfp &
+							(__GFP_RECLAIMABLE |
+							 __GFP_MOVABLE)) >>
+				3;
+	}
 	ac.spread_dirty_pages = (gfp & __GFP_WRITE);
 	ac.preferred_zoneref = first_zones_zonelist(
 		ac.zonelist, ac.highest_zoneidx, ac.nodemask);

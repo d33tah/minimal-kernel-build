@@ -363,11 +363,7 @@ static inline unsigned long page_size(struct page *page)
 	return PAGE_SIZE << compound_order(page);
 }
 
-static inline int thp_nr_pages(struct page *page)
-{
-	VM_BUG_ON_PGFLAGS(PageTail(page), page);
-	return compound_nr(page);
-}
+/* thp_nr_pages inlined at mm/swap.c - single caller */
 
 void free_compound_page(struct page *page);
 

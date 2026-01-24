@@ -81,8 +81,8 @@ static unsigned long super_cache_count(struct shrinker *shrink,
 	if (!total_objects)
 		return SHRINK_EMPTY;
 
-	total_objects = vfs_pressure_ratio(total_objects);
-	return total_objects;
+	return mult_frac(total_objects, sysctl_vfs_cache_pressure,
+			 100); /* vfs_pressure_ratio inlined */
 }
 
 static void destroy_super_work(struct work_struct *work)

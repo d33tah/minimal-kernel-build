@@ -222,11 +222,7 @@ static inline bool d_can_lookup(const struct dentry *dentry)
 /* d_really_is_positive removed - never called */
 
 extern int sysctl_vfs_cache_pressure;
-
-static inline unsigned long vfs_pressure_ratio(unsigned long val)
-{
-	return mult_frac(val, sysctl_vfs_cache_pressure, 100);
-}
+/* vfs_pressure_ratio removed - inlined at single call site */
 
 static inline struct inode *d_inode(const struct dentry *dentry)
 {

@@ -191,7 +191,12 @@ static struct slab *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 
 	slab->objects = oo_objects(oo);
 
-	account_slab(slab, oo_order(oo), s, flags);
+	/* account_slab and cache_vmstat_idx inlined - single caller */
+	mod_node_page_state(folio_pgdat(slab_folio(slab)),
+			    (s->flags & SLAB_RECLAIM_ACCOUNT) ?
+				    NR_SLAB_RECLAIMABLE_B :
+				    NR_SLAB_UNRECLAIMABLE_B,
+			    PAGE_SIZE << oo_order(oo));
 
 	slab->slab_cache = s;
 

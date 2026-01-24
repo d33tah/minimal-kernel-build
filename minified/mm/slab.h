@@ -219,24 +219,7 @@ extern void create_boot_cache(struct kmem_cache *, const char *name,
 int __kmem_cache_shutdown(struct kmem_cache *);
 void __kmem_cache_release(struct kmem_cache *);
 
-static inline enum node_stat_item cache_vmstat_idx(struct kmem_cache *s)
-{
-	return (s->flags & SLAB_RECLAIM_ACCOUNT) ?
-		NR_SLAB_RECLAIMABLE_B : NR_SLAB_UNRECLAIMABLE_B;
-}
-
-/* print_tracking, __slub_debug_enabled, kmem_cache_debug_flags,
-   slab_objcgs, memcg_from_slab_obj, memcg_alloc_slab_cgroups, memcg_free_slab_cgroups removed - unused */
-
-/* memcg_slab_pre_alloc_hook, memcg_slab_post_alloc_hook, memcg_slab_free_hook, virt_to_cache removed - unused */
-
-static __always_inline void account_slab(struct slab *slab, int order,
-					 struct kmem_cache *s, gfp_t gfp)
-{
-	/* memcg_kmem_enabled always returns false */
-	mod_node_page_state(folio_pgdat(slab_folio(slab)), cache_vmstat_idx(s), /* slab_pgdat inlined */
-			    PAGE_SIZE << order);
-}
+/* cache_vmstat_idx and account_slab inlined at slub.c - single caller */
 
 /* unaccount_slab, cache_from_obj, slab_ksize removed - unused/inlined */
 

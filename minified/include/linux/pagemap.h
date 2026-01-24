@@ -152,18 +152,7 @@ struct wait_page_queue {
 	wait_queue_entry_t wait;
 };
 
-static inline bool wake_page_match(struct wait_page_queue *wait_page,
-				  struct wait_page_key *key)
-{
-	if (wait_page->folio != key->folio)
-	       return false;
-	key->page_match = 1;
-
-	if (wait_page->bit_nr != key->bit_nr)
-		return false;
-
-	return true;
-}
+/* wake_page_match inlined at mm/filemap.c - single caller */
 
 void __folio_lock(struct folio *folio);
 int __folio_lock_killable(struct folio *folio);

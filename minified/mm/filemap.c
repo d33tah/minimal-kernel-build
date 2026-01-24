@@ -299,7 +299,11 @@ static int wake_page_function(wait_queue_entry_t *wait, unsigned mode, int sync,
 	struct wait_page_queue *wait_page =
 		container_of(wait, struct wait_page_queue, wait);
 
-	if (!wake_page_match(wait_page, key))
+	/* wake_page_match inlined - single caller */
+	if (wait_page->folio != key->folio)
+		return 0;
+	key->page_match = 1;
+	if (wait_page->bit_nr != key->bit_nr)
 		return 0;
 
 	flags = wait->flags;

@@ -37,57 +37,51 @@ static u64 cev_delta2ns(unsigned long latch, struct clock_event_device *evt,
 	return clc > 1000 ? clc : 1000;
 }
 
-static int __clockevents_switch_state(struct clock_event_device *dev,
-				      enum clock_event_state state)
-{
-	if (dev->features & CLOCK_EVT_FEAT_DUMMY)
-		return 0;
-
-	switch (state) {
-	case CLOCK_EVT_STATE_DETACHED:
-
-	case CLOCK_EVT_STATE_SHUTDOWN:
-		if (dev->set_state_shutdown)
-			return dev->set_state_shutdown(dev);
-		return 0;
-
-	case CLOCK_EVT_STATE_PERIODIC:
-
-		if (!(dev->features & CLOCK_EVT_FEAT_PERIODIC))
-			return -ENOSYS;
-		if (dev->set_state_periodic)
-			return dev->set_state_periodic(dev);
-		return 0;
-
-	case CLOCK_EVT_STATE_ONESHOT:
-
-		if (!(dev->features & CLOCK_EVT_FEAT_ONESHOT))
-			return -ENOSYS;
-		if (dev->set_state_oneshot)
-			return dev->set_state_oneshot(dev);
-		return 0;
-
-	case CLOCK_EVT_STATE_ONESHOT_STOPPED:
-
-		if (WARN_ONCE(!clockevent_state_oneshot(dev),
-			      "Current state: %d\n", clockevent_get_state(dev)))
-			return -EINVAL;
-
-		if (dev->set_state_oneshot_stopped)
-			return dev->set_state_oneshot_stopped(dev);
-		else
-			return -ENOSYS;
-
-	default:
-		return -ENOSYS;
-	}
-}
+/* __clockevents_switch_state inlined into clockevents_switch_state */
 
 void clockevents_switch_state(struct clock_event_device *dev,
 			      enum clock_event_state state)
 {
+	int err = 0;
+
 	if (clockevent_get_state(dev) != state) {
-		if (__clockevents_switch_state(dev, state))
+		/* Inlined __clockevents_switch_state */
+		if (!(dev->features & CLOCK_EVT_FEAT_DUMMY)) {
+			switch (state) {
+			case CLOCK_EVT_STATE_DETACHED:
+			case CLOCK_EVT_STATE_SHUTDOWN:
+				if (dev->set_state_shutdown)
+					err = dev->set_state_shutdown(dev);
+				break;
+			case CLOCK_EVT_STATE_PERIODIC:
+				if (!(dev->features & CLOCK_EVT_FEAT_PERIODIC))
+					err = -ENOSYS;
+				else if (dev->set_state_periodic)
+					err = dev->set_state_periodic(dev);
+				break;
+			case CLOCK_EVT_STATE_ONESHOT:
+				if (!(dev->features & CLOCK_EVT_FEAT_ONESHOT))
+					err = -ENOSYS;
+				else if (dev->set_state_oneshot)
+					err = dev->set_state_oneshot(dev);
+				break;
+			case CLOCK_EVT_STATE_ONESHOT_STOPPED:
+				if (WARN_ONCE(!clockevent_state_oneshot(dev),
+					      "Current state: %d\n",
+					      clockevent_get_state(dev)))
+					err = -EINVAL;
+				else if (dev->set_state_oneshot_stopped)
+					err = dev->set_state_oneshot_stopped(
+						dev);
+				else
+					err = -ENOSYS;
+				break;
+			default:
+				err = -ENOSYS;
+			}
+		}
+
+		if (err)
 			return;
 
 		clockevent_set_state(dev, state);

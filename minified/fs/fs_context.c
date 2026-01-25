@@ -7,7 +7,7 @@
 #include <linux/mount.h>
 #include <linux/nsproxy.h>
 #include <linux/slab.h>
-#include <linux/magic.h>
+/* magic.h removed - not used */
 #include <linux/security.h>
 #include <linux/mnt_namespace.h>
 #include <linux/pid_namespace.h>

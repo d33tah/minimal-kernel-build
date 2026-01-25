@@ -12,7 +12,7 @@
 #include <linux/pagemap.h>
 #include <linux/atomic.h>
 #include <linux/page-flags.h>
-#include <linux/mempolicy.h>
+/* mempolicy.h removed - struct mempolicy forward declared in mm.h */
 #include <asm/page.h>
 
 /* MAX_SWAPFILES_SHIFT, SWP_SWAPIN_ERROR_NUM removed - unused */

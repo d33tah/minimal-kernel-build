@@ -3,7 +3,7 @@
 
 
 #include <linux/sched.h>
-#include <linux/magic.h>
+/* magic.h removed - not used here */
 
 
 static __always_inline void *task_stack_page(const struct task_struct *task)

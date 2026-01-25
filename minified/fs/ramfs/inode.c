@@ -9,7 +9,8 @@
 #include <linux/backing-dev.h>
 #include <linux/ramfs.h>
 #include <linux/sched.h>
-#include <linux/magic.h>
+/* magic.h inlined - only RAMFS_MAGIC used */
+#define RAMFS_MAGIC 0x858458f6
 #include <linux/slab.h>
 #include <linux/uaccess.h>
 #include <linux/fs_context.h>

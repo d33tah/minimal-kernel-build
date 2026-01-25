@@ -14,7 +14,7 @@
 #include <linux/vmalloc.h>
 #include <linux/completion.h>
 /* personality.h removed - no personality functions used */
-#include <linux/mempolicy.h>
+/* mempolicy.h removed - forward decl in mm.h */
 #include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/binfmts.h>
@@ -32,7 +32,8 @@
 #include <linux/hugetlb.h>
 #include <linux/swap.h>
 #include <linux/syscalls.h>
-#include <linux/futex.h>
+/* futex.h inlined - only FUTEX_TID_MASK used for MAX_THREADS */
+#define FUTEX_TID_MASK 0x3fffffff
 #include <linux/kthread.h>
 #include <linux/rcupdate.h>
 #include <linux/ptrace.h>
@@ -41,7 +42,8 @@
 /* rmap.h, userfaultfd_k.h removed - functions not used */
 #include <linux/tty.h>
 #include <linux/fs_struct.h>
-#include <linux/magic.h>
+/* magic.h inlined - only STACK_END_MAGIC used */
+#define STACK_END_MAGIC 0x57AC6E9D
 #include <linux/compiler.h>
 #include <linux/init_task.h>
 #include <linux/thread_info.h>

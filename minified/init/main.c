@@ -34,7 +34,7 @@
 #include <linux/interrupt.h>
 /* taskstats_init_early, delayacct_init removed - empty stubs */
 #include <linux/rmap.h>
-#include <linux/mempolicy.h>
+/* mempolicy.h removed - forward decl in mm.h */
 /* linux/page_ext.h, linux/key.h removed - empty stubs */
 #include <linux/lockdep.h>
 #include <linux/pid_namespace.h>

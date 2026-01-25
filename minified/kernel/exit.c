@@ -23,7 +23,7 @@ extern int nr_threads;
 #include <linux/mount.h>
 #include <linux/proc_fs.h>
 #include <linux/kthread.h>
-#include <linux/mempolicy.h>
+/* mempolicy.h removed - forward decl in mm.h */
 #include <linux/cgroup.h>
 #include <linux/syscalls.h>
 #include <linux/signal.h>

@@ -2,7 +2,7 @@
 #define __SHMEM_FS_H
 #include <linux/file.h>
 #include <linux/swap.h>
-#include <linux/mempolicy.h>
+/* mempolicy.h removed - forward decl in mm.h */
 #include <linux/pagemap.h>
 #include <linux/percpu_counter.h>
 /* xattr.h removed - not used in minimal kernel */

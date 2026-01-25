@@ -14,7 +14,7 @@
 #include <linux/pfn.h>
 #include <linux/mm.h>
 #include <linux/mount.h>
-#include <uapi/linux/magic.h>
+/* magic.h removed - not used */
 #include <asm/io.h>
 
 struct resource ioport_resource = {

@@ -245,34 +245,7 @@ static void forget_original_parent(struct task_struct *father,
 	list_splice_tail_init(&father->children, &reaper->children);
 }
 
-static void exit_notify(struct task_struct *tsk, int group_dead)
-{
-	bool autoreap;
-	struct task_struct *p, *n;
-	LIST_HEAD(dead);
-
-	write_lock_irq(&tasklist_lock);
-	forget_original_parent(tsk, &dead);
-
-	tsk->exit_state = EXIT_ZOMBIE;
-	/* do_notify_parent always returns false, so simplified:
-	 * autoreap = !tsk->ptrace && !thread_group_leader(tsk) */
-	autoreap = !tsk->ptrace && !thread_group_leader(tsk);
-
-	if (autoreap) {
-		tsk->exit_state = EXIT_DEAD;
-		list_add(&tsk->ptrace_entry, &dead);
-	}
-
-	if (unlikely(tsk->signal->notify_count < 0))
-		wake_up_process(tsk->signal->group_exec_task);
-	write_unlock_irq(&tasklist_lock);
-
-	list_for_each_entry_safe(p, n, &dead, ptrace_entry) {
-		list_del_init(&p->ptrace_entry);
-		release_task(p);
-	}
-}
+/* exit_notify inlined into do_exit */
 
 void __noreturn do_exit(long code)
 {
@@ -316,7 +289,33 @@ void __noreturn do_exit(long code)
 	exit_task_namespaces(tsk);
 	exit_task_work(tsk);
 	exit_thread(tsk);
-	exit_notify(tsk, group_dead);
+
+	/* Inlined exit_notify */
+	{
+		bool autoreap;
+		struct task_struct *p, *n;
+		LIST_HEAD(dead);
+
+		write_lock_irq(&tasklist_lock);
+		forget_original_parent(tsk, &dead);
+
+		tsk->exit_state = EXIT_ZOMBIE;
+		autoreap = !tsk->ptrace && !thread_group_leader(tsk);
+
+		if (autoreap) {
+			tsk->exit_state = EXIT_DEAD;
+			list_add(&tsk->ptrace_entry, &dead);
+		}
+
+		if (unlikely(tsk->signal->notify_count < 0))
+			wake_up_process(tsk->signal->group_exec_task);
+		write_unlock_irq(&tasklist_lock);
+
+		list_for_each_entry_safe(p, n, &dead, ptrace_entry) {
+			list_del_init(&p->ptrace_entry);
+			release_task(p);
+		}
+	}
 
 	/* validate_creds_for_do_exit call removed - empty stub */
 	exit_task_stack_account(tsk);

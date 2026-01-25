@@ -40,8 +40,7 @@
 #include <asm/fpu/xstate.h>
 #include <asm/vm86.h>
 #include <asm/vdso.h>
-#include <asm/tdx.h>
-
+/* tdx.h removed - header is empty */
 #include <asm/processor-flags.h>
 #include <asm/setup.h>
 #include <asm/proto.h>

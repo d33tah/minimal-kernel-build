@@ -41,9 +41,7 @@ extern int nr_threads;
 #include <asm/mmu_context.h>
 
 /* ptrace stubs (merged from ptrace.c) */
-void __ptrace_unlink(struct task_struct *child)
-{
-}
+/* __ptrace_unlink removed - empty stub, call site removed */
 /* exit_ptrace removed - empty stub */
 
 /* __exit_signal inlined into release_task (~48 LOC) */

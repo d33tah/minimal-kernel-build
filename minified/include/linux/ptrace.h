@@ -34,16 +34,12 @@ extern int ptrace_notify(int exit_code, unsigned long message);
 extern void __ptrace_link(struct task_struct *child,
 			  struct task_struct *new_parent,
 			  const struct cred *ptracer_cred);
-extern void __ptrace_unlink(struct task_struct *child);
+/* __ptrace_unlink removed - empty stub */
 /* exit_ptrace removed - empty stub never effectively called */
 
 /* PTRACE_MODE_*, ptrace_may_access, ptrace_reparented removed - never called */
 
-static inline void ptrace_unlink(struct task_struct *child)
-{
-	if (unlikely(child->ptrace))
-		__ptrace_unlink(child);
-}
+/* ptrace_unlink removed - __ptrace_unlink was empty */
 
 
 
@@ -70,7 +66,7 @@ static inline void ptrace_event(int event, unsigned long message)
 static inline void ptrace_release_task(struct task_struct *task)
 {
 	BUG_ON(!list_empty(&task->ptraced));
-	ptrace_unlink(task);
+	/* ptrace_unlink call removed - it called empty __ptrace_unlink */
 	BUG_ON(!list_empty(&task->ptrace_entry));
 }
 /* force_successful_syscall_return, is_syscall_success removed - never called */

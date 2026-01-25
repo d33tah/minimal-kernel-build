@@ -15,7 +15,7 @@
 /* hugetlb.h, huge_mm.h removed - unused */
 #include <linux/backing-dev.h>
 #include <linux/memremap.h>
-#include <linux/userfaultfd_k.h>
+/* userfaultfd_k.h removed - empty stubs */
 #include <linux/mm_inline.h>
 
 #include <asm/tlbflush.h>

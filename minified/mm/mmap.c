@@ -21,7 +21,7 @@
 #include <linux/mmdebug.h>
 #include <linux/rbtree_augmented.h>
 #include <linux/printk.h>
-#include <linux/userfaultfd_k.h>
+/* userfaultfd_k.h removed - empty stubs */
 #include <linux/sched/mm.h>
 
 #include <linux/uaccess.h>
@@ -1039,7 +1039,7 @@ int vm_munmap(unsigned long start, size_t len)
 
 	ret = __do_munmap(mm, start, len, &uf, false);
 	mmap_write_unlock(mm);
-	userfaultfd_unmap_complete(mm, &uf);
+	/* userfaultfd_unmap_complete call removed - empty stub */
 	return ret;
 }
 
@@ -1115,7 +1115,7 @@ int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 	ret = do_brk_flags(addr, len, flags, &uf);
 	populate = ((mm->def_flags & VM_LOCKED) != 0);
 	mmap_write_unlock(mm);
-	userfaultfd_unmap_complete(mm, &uf);
+	/* userfaultfd_unmap_complete call removed - empty stub */
 	if (populate && !ret)
 		mm_populate(addr, len);
 	return ret;

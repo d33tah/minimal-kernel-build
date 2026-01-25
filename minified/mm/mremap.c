@@ -10,7 +10,7 @@
 #include <linux/syscalls.h>
 #include <linux/mmu_notifier.h>
 #include <linux/uaccess.h>
-#include <linux/userfaultfd_k.h>
+/* userfaultfd_k.h removed - empty stubs */
 
 #include <asm/cacheflush.h>
 #include <asm/tlb.h>

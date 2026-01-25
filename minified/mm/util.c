@@ -13,7 +13,7 @@
 #include <linux/mman.h>
 #include <linux/hugetlb.h>
 #include <linux/vmalloc.h>
-#include <linux/userfaultfd_k.h>
+/* userfaultfd_k.h removed - empty stubs */
 #include <linux/elf.h>
 #include <linux/personality.h>
 /* Removed: linux/random.h - randomization disabled */
@@ -118,7 +118,7 @@ unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
 		return -EINTR;
 	ret = do_mmap(file, addr, len, prot, flag, pgoff, &populate, &uf);
 	mmap_write_unlock(mm);
-	userfaultfd_unmap_complete(mm, &uf);
+	/* userfaultfd_unmap_complete call removed - empty stub */
 	if (populate)
 		mm_populate(ret, populate);
 	return ret;

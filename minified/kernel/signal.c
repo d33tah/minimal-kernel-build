@@ -156,16 +156,22 @@ void signal_wake_up_state(struct task_struct *t, unsigned int state)
 
 /* check_kill_permission inlined into kill_something_info caller */
 /* complete_signal was empty stub - removed */
+/* __send_signal_locked inlined into send_signal_locked */
 
-static int __send_signal_locked(int sig, struct kernel_siginfo *info,
-				struct task_struct *t, enum pid_type type,
-				bool force)
+int send_signal_locked(int sig, struct kernel_siginfo *info,
+		       struct task_struct *t, enum pid_type type)
 {
-	/* Minimal stub: simplified signal delivery */
+	/* Minimal stub: simplified signal permission handling */
+	bool force = false;
 	struct sigpending *pending;
 	struct sigqueue *q;
 
-	/* Inlined sig_ignored */
+	if (info == SEND_SIG_PRIV)
+		force = true;
+	else if (info != SEND_SIG_NOINFO && info->si_code == SI_KERNEL)
+		force = true;
+
+	/* Inlined __send_signal_locked with sig_ignored */
 	{
 		void __user *handler;
 		bool ignored = false;
@@ -218,22 +224,7 @@ static int __send_signal_locked(int sig, struct kernel_siginfo *info,
 
 out_set:
 	sigaddset(&pending->signal, sig);
-	/* complete_signal was empty stub - call removed */
 	return 0;
-}
-
-int send_signal_locked(int sig, struct kernel_siginfo *info,
-		       struct task_struct *t, enum pid_type type)
-{
-	/* Minimal stub: simplified signal permission handling */
-	bool force = false;
-
-	if (info == SEND_SIG_PRIV)
-		force = true;
-	else if (info != SEND_SIG_NOINFO && info->si_code == SI_KERNEL)
-		force = true;
-
-	return __send_signal_locked(sig, info, t, type, force);
 }
 
 /* Removed: setup_print_fatal_signals and __setup - never used */

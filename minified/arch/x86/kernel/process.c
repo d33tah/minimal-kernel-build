@@ -33,7 +33,7 @@ DEFINE_PER_CPU(unsigned long, cpu_dr7);
 #include <asm/vm86.h>
 #include <asm/switch_to.h>
 #include <asm/desc.h>
-#include <asm/prctl.h>
+/* prctl.h removed - header is empty */
 #include <asm/spec-ctrl.h>
 #include <asm/io_bitmap.h>
 #include <asm/proto.h>

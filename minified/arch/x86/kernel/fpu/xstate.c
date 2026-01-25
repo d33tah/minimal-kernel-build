@@ -17,7 +17,7 @@
 #include <asm/fpu/signal.h>
 
 #include <asm/tlbflush.h>
-#include <asm/prctl.h>
+/* prctl.h removed - header is empty */
 #include <asm/elf.h>
 
 #include "context.h"

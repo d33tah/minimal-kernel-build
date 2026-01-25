@@ -35,7 +35,8 @@
 #include <linux/rwsem.h>
 #include <linux/completion.h>
 #include <linux/cpumask.h>
-#include <linux/uprobes.h>
+/* uprobes.h inlined */
+#define uprobe_get_trap_addr(regs)	instruction_pointer(regs)
 #include <linux/rcupdate.h>
 #include <linux/page-flags-layout.h>
 #include <linux/workqueue.h>

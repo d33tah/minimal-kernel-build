@@ -1044,62 +1044,16 @@ int vm_munmap(unsigned long start, size_t len)
 }
 
 /* remap_file_pages removed - COND_SYSCALL provides stub */
-
-static int do_brk_flags(unsigned long addr, unsigned long len,
-			unsigned long flags, struct list_head *uf)
-{
-	struct mm_struct *mm = current->mm;
-	struct vm_area_struct *vma, *prev;
-	struct rb_node **rb_link, *rb_parent;
-	pgoff_t pgoff = addr >> PAGE_SHIFT;
-	unsigned long mapped_addr;
-
-	if ((flags & (~VM_EXEC)) != 0)
-		return -EINVAL;
-	flags |= VM_DATA_DEFAULT_FLAGS | VM_ACCOUNT | mm->def_flags;
-
-	mapped_addr = get_unmapped_area(NULL, addr, len, 0, MAP_FIXED);
-	if (IS_ERR_VALUE(mapped_addr))
-		return mapped_addr;
-
-	if (munmap_vma_range(mm, addr, len, &prev, &rb_link, &rb_parent, uf))
-		return -ENOMEM;
-
-	if (mm->map_count > sysctl_max_map_count)
-		return -ENOMEM;
-
-	if (security_vm_enough_memory_mm(mm, len >> PAGE_SHIFT))
-		return -ENOMEM;
-
-	vma = vma_merge(mm, prev, addr, addr + len, flags, NULL, NULL, pgoff,
-			NULL, NULL_VM_UFFD_CTX, NULL);
-	if (vma)
-		goto out;
-
-	vma = vm_area_alloc(mm);
-	if (!vma) {
-		vm_unacct_memory(len >> PAGE_SHIFT);
-		return -ENOMEM;
-	}
-
-	vma_set_anonymous(vma);
-	vma->vm_start = addr;
-	vma->vm_end = addr + len;
-	vma->vm_pgoff = pgoff;
-	vma->vm_flags = flags;
-	vma->vm_page_prot = vm_get_page_prot(flags);
-	vma_link(mm, vma, prev, rb_link, rb_parent);
-out:
-	mm->total_vm += len >> PAGE_SHIFT;
-	vma->vm_flags |= VM_SOFTDIRTY;
-	return 0;
-}
+/* do_brk_flags inlined into vm_brk_flags */
 
 int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 {
 	struct mm_struct *mm = current->mm;
-	unsigned long len;
-	int ret;
+	struct vm_area_struct *vma, *prev;
+	struct rb_node **rb_link, *rb_parent;
+	pgoff_t pgoff;
+	unsigned long len, mapped_addr;
+	int ret = 0;
 	bool populate;
 	LIST_HEAD(uf);
 
@@ -1112,10 +1066,60 @@ int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 	if (mmap_write_lock_killable(mm))
 		return -EINTR;
 
-	ret = do_brk_flags(addr, len, flags, &uf);
+	/* Inlined do_brk_flags */
+	pgoff = addr >> PAGE_SHIFT;
+
+	if ((flags & (~VM_EXEC)) != 0) {
+		ret = -EINVAL;
+		goto out_unlock;
+	}
+	flags |= VM_DATA_DEFAULT_FLAGS | VM_ACCOUNT | mm->def_flags;
+
+	mapped_addr = get_unmapped_area(NULL, addr, len, 0, MAP_FIXED);
+	if (IS_ERR_VALUE(mapped_addr)) {
+		ret = mapped_addr;
+		goto out_unlock;
+	}
+
+	if (munmap_vma_range(mm, addr, len, &prev, &rb_link, &rb_parent, &uf)) {
+		ret = -ENOMEM;
+		goto out_unlock;
+	}
+
+	if (mm->map_count > sysctl_max_map_count) {
+		ret = -ENOMEM;
+		goto out_unlock;
+	}
+
+	if (security_vm_enough_memory_mm(mm, len >> PAGE_SHIFT)) {
+		ret = -ENOMEM;
+		goto out_unlock;
+	}
+
+	vma = vma_merge(mm, prev, addr, addr + len, flags, NULL, NULL, pgoff,
+			NULL, NULL_VM_UFFD_CTX, NULL);
+	if (!vma) {
+		vma = vm_area_alloc(mm);
+		if (!vma) {
+			vm_unacct_memory(len >> PAGE_SHIFT);
+			ret = -ENOMEM;
+			goto out_unlock;
+		}
+
+		vma_set_anonymous(vma);
+		vma->vm_start = addr;
+		vma->vm_end = addr + len;
+		vma->vm_pgoff = pgoff;
+		vma->vm_flags = flags;
+		vma->vm_page_prot = vm_get_page_prot(flags);
+		vma_link(mm, vma, prev, rb_link, rb_parent);
+	}
+	mm->total_vm += len >> PAGE_SHIFT;
+	vma->vm_flags |= VM_SOFTDIRTY;
+
+out_unlock:
 	populate = ((mm->def_flags & VM_LOCKED) != 0);
 	mmap_write_unlock(mm);
-	/* userfaultfd_unmap_complete call removed - empty stub */
 	if (populate && !ret)
 		mm_populate(addr, len);
 	return ret;

@@ -382,7 +382,10 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	memset(&mm->rss_stat, 0, sizeof(mm->rss_stat));
 	spin_lock_init(&mm->page_table_lock);
 	spin_lock_init(&mm->arg_lock);
-	mm_init_cpumask(mm);
+	/* mm_init_cpumask inlined */
+	cpumask_clear(
+		(struct cpumask *)((unsigned long)mm +
+				   offsetof(struct mm_struct, cpu_bitmap)));
 	RCU_INIT_POINTER(mm->exe_file, NULL);
 	/* mmu_notifier_subscriptions_init, hugetlb_count_init removed - empty stubs */
 	atomic_set(&mm->tlb_flush_pending,

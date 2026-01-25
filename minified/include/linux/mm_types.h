@@ -327,13 +327,7 @@ struct mm_struct {
 
 extern struct mm_struct init_mm;
 
-static inline void mm_init_cpumask(struct mm_struct *mm)
-{
-	unsigned long cpu_bitmap = (unsigned long)mm;
-
-	cpu_bitmap += offsetof(struct mm_struct, cpu_bitmap);
-	cpumask_clear((struct cpumask *)cpu_bitmap);
-}
+/* mm_init_cpumask inlined into fork.c */
 
 static inline cpumask_t *mm_cpumask(struct mm_struct *mm)
 {

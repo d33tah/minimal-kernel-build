@@ -222,7 +222,11 @@ static void __meminit __init_single_page(struct page *page, unsigned long pfn,
 					 unsigned long zone, int nid)
 {
 	mm_zero_struct_page(page);
-	set_page_links(page, zone, nid, pfn);
+	/* set_page_links inlined */
+	page->flags &= ~(ZONES_MASK << ZONES_PGSHIFT);
+	page->flags |= (zone & ZONES_MASK) << ZONES_PGSHIFT;
+	page->flags &= ~(NODES_MASK << NODES_PGSHIFT);
+	page->flags |= (nid & NODES_MASK) << NODES_PGSHIFT;
 	init_page_count(page);
 	page_mapcount_reset(page);
 

@@ -467,15 +467,7 @@ static inline pg_data_t *folio_pgdat(const struct folio *folio)
 /* folio_pfn removed - inlined at single call site */
 /* folio_pincount_ptr removed - unused */
 
-/* set_page_zone, set_page_node inlined into set_page_links */
-static inline void set_page_links(struct page *page, enum zone_type zone,
-	unsigned long node, unsigned long pfn)
-{
-	page->flags &= ~(ZONES_MASK << ZONES_PGSHIFT);
-	page->flags |= (zone & ZONES_MASK) << ZONES_PGSHIFT;
-	page->flags &= ~(NODES_MASK << NODES_PGSHIFT);
-	page->flags |= (node & NODES_MASK) << NODES_PGSHIFT;
-}
+/* set_page_links inlined into page_alloc.c */
 
 static inline long folio_nr_pages(struct folio *folio)
 {

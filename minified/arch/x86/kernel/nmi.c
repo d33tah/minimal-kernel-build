@@ -16,7 +16,7 @@
 #include <asm/mach_traps.h>
 #include <asm/nmi.h>
 #include <asm/x86_init.h>
-#include <asm/reboot.h>
+/* reboot.h removed - empty header, nothing used */
 #include <asm/cache.h>
 #include <asm/nospec-branch.h>
 /* asm/sev.h include removed - file is stub, nothing used */

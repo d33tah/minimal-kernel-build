@@ -55,28 +55,6 @@ struct file *alloc_empty_file(int flags, const struct cred *cred)
 	return f;
 }
 
-static struct file *alloc_file(const struct path *path, int flags,
-			       const struct file_operations *fop)
-{
-	struct file *file;
-
-	file = alloc_empty_file(flags, current_cred());
-	if (IS_ERR(file))
-		return file;
-
-	file->f_path = *path;
-	file->f_inode = path->dentry->d_inode;
-	file->f_mapping = path->dentry->d_inode->i_mapping;
-	if ((file->f_mode & FMODE_READ) && likely(fop->read || fop->read_iter))
-		file->f_mode |= FMODE_CAN_READ;
-	if ((file->f_mode & FMODE_WRITE) &&
-	    likely(fop->write || fop->write_iter))
-		file->f_mode |= FMODE_CAN_WRITE;
-	file->f_mode |= FMODE_OPENED;
-	file->f_op = fop;
-	return file;
-}
-
 struct file *alloc_file_pseudo(struct inode *inode, struct vfsmount *mnt,
 			       const char *name, int flags,
 			       const struct file_operations *fops)
@@ -95,11 +73,24 @@ struct file *alloc_file_pseudo(struct inode *inode, struct vfsmount *mnt,
 	d_set_d_op(path.dentry, &anon_ops);
 	path.mnt = mntget(mnt);
 	d_instantiate(path.dentry, inode);
-	file = alloc_file(&path, flags, fops);
+	/* alloc_file inlined */
+	file = alloc_empty_file(flags, current_cred());
 	if (IS_ERR(file)) {
 		ihold(inode);
 		path_put(&path);
+		return file;
 	}
+	file->f_path = path;
+	file->f_inode = path.dentry->d_inode;
+	file->f_mapping = path.dentry->d_inode->i_mapping;
+	if ((file->f_mode & FMODE_READ) &&
+	    likely(fops->read || fops->read_iter))
+		file->f_mode |= FMODE_CAN_READ;
+	if ((file->f_mode & FMODE_WRITE) &&
+	    likely(fops->write || fops->write_iter))
+		file->f_mode |= FMODE_CAN_WRITE;
+	file->f_mode |= FMODE_OPENED;
+	file->f_op = fops;
 	return file;
 }
 

@@ -505,21 +505,13 @@ static inline struct file *__fget_files_rcu(struct files_struct *files,
 	}
 }
 
-static struct file *__fget_files(struct files_struct *files, unsigned int fd,
-				 fmode_t mask)
-{
-	struct file *file;
-
-	rcu_read_lock();
-	file = __fget_files_rcu(files, fd, mask);
-	rcu_read_unlock();
-
-	return file;
-}
-
 static inline struct file *__fget(unsigned int fd, fmode_t mask)
 {
-	return __fget_files(current->files, fd, mask);
+	struct file *file;
+	rcu_read_lock();
+	file = __fget_files_rcu(current->files, fd, mask);
+	rcu_read_unlock();
+	return file;
 }
 
 struct file *fget(unsigned int fd)

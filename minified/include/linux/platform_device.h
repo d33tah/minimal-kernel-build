@@ -25,7 +25,7 @@ struct platform_device {
 #define to_platform_device(x) container_of((x), struct platform_device, dev)
 
 extern struct bus_type platform_bus_type;
-extern struct device platform_bus;
+/* extern struct device platform_bus removed - never used */
 
 /* platform_get_resource, platform_get_irq removed - never called */
 /* platform_get_irq_optional removed - no callers */

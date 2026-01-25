@@ -15,9 +15,7 @@
 #include "base.h"
 #include "power/power.h"
 
-struct device platform_bus = {
-	.init_name = "platform",
-};
+/* struct device platform_bus removed - never used */
 
 /* platform_get_mem_or_io, devm_platform_get_and_ioremap_resource,
    devm_platform_ioremap_resource, devm_platform_ioremap_resource_byname,

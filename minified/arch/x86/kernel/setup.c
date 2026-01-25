@@ -41,7 +41,8 @@ extern struct atomic_notifier_head panic_notifier_list;
 #include <asm/realmode.h>
 /* pci-direct.h inlined - extern declarations removed as never called */
 #include <linux/types.h>
-#include <asm/prom.h>
+/* prom.h inlined - only asm/setup.h needed for COMMAND_LINE_SIZE */
+#include <asm/setup.h>
 #include <asm/proto.h>
 #include <asm/unwind.h>
 /* asm/vsyscall.h removed - empty */

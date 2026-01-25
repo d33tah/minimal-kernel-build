@@ -11,21 +11,7 @@ u32 cpu_vendor[3];
 
 static bool loaded_flags;
 
-static int has_fpu(void)
-{
-	u16 fcw = -1, fsw = -1;
-	unsigned long cr0;
-
-	asm volatile("mov %%cr0,%0" : "=r"(cr0));
-	if (cr0 & (X86_CR0_EM | X86_CR0_TS)) {
-		cr0 &= ~(X86_CR0_EM | X86_CR0_TS);
-		asm volatile("mov %0,%%cr0" : : "r"(cr0));
-	}
-
-	asm volatile("fninit ; fnstsw %0 ; fnstcw %1" : "+m"(fsw), "+m"(fcw));
-
-	return fsw == 0 && (fcw & 0x103f) == 0x003f;
-}
+/* has_fpu inlined into get_cpuflags */
 
 /* 32-bit only kernel */
 #define PUSHF "pushfl"
@@ -74,8 +60,23 @@ void get_cpuflags(void)
 		return;
 	loaded_flags = true;
 
-	if (has_fpu())
-		set_bit(X86_FEATURE_FPU, cpu.flags);
+	/* has_fpu inlined */
+	{
+		u16 fcw = -1, fsw = -1;
+		unsigned long cr0;
+
+		asm volatile("mov %%cr0,%0" : "=r"(cr0));
+		if (cr0 & (X86_CR0_EM | X86_CR0_TS)) {
+			cr0 &= ~(X86_CR0_EM | X86_CR0_TS);
+			asm volatile("mov %0,%%cr0" : : "r"(cr0));
+		}
+
+		asm volatile("fninit ; fnstsw %0 ; fnstcw %1"
+			     : "+m"(fsw), "+m"(fcw));
+
+		if (fsw == 0 && (fcw & 0x103f) == 0x003f)
+			set_bit(X86_FEATURE_FPU, cpu.flags);
+	}
 
 	if (has_eflag(X86_EFLAGS_ID)) {
 		cpuid(0x0, &max_intel_level, &cpu_vendor[0], &cpu_vendor[2],

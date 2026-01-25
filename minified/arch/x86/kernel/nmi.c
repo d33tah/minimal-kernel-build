@@ -136,7 +136,22 @@ static noinstr void default_do_nmi(struct pt_regs *regs)
 				udelay(100);
 			outb(reason & ~NMI_REASON_CLEAR_IOCHK, NMI_REASON_PORT);
 		}
-		reassert_nmi();
+		/* reassert_nmi inlined */
+		{
+			int old_reg = -1;
+			if (do_i_have_lock_cmos())
+				old_reg = current_lock_cmos_reg();
+			else
+				lock_cmos(0);
+			outb(0x8f, 0x70);
+			inb(0x71);
+			outb(0x0f, 0x70);
+			inb(0x71);
+			if (old_reg >= 0)
+				outb(old_reg, 0x70);
+			else
+				unlock_cmos();
+		}
 		raw_spin_unlock(&nmi_reason_lock);
 		goto out;
 	}

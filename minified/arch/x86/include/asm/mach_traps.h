@@ -20,22 +20,6 @@ static inline unsigned char default_get_nmi_reason(void)
 	return inb(NMI_REASON_PORT);
 }
 
-static inline void reassert_nmi(void)
-{
-	int old_reg = -1;
-
-	if (do_i_have_lock_cmos())
-		old_reg = current_lock_cmos_reg();
-	else
-		lock_cmos(0);  
-	outb(0x8f, 0x70);
-	inb(0x71);		 
-	outb(0x0f, 0x70);
-	inb(0x71);		 
-	if (old_reg >= 0)
-		outb(old_reg, 0x70);
-	else
-		unlock_cmos();
-}
+/* reassert_nmi inlined at single call site in nmi.c */
 
 #endif  

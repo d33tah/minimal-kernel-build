@@ -137,7 +137,7 @@ struct kmem_cache {
 /* should_failslab, __should_failslab removed - always returns false */
 /* end fault-inject.h */
 /* kmemleak_alloc_recursive removed - unused */
-#include <linux/random.h>
+/* random.h removed - header is empty */
 #include <linux/sched/mm.h>
 #include <linux/list_lru.h>
 

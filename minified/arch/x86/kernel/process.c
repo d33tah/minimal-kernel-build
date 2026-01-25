@@ -11,7 +11,7 @@
 #include <linux/sched/task_stack.h>
 #include <linux/init.h>
 #include <linux/export.h>
-#include <linux/random.h>
+/* random.h removed - header is empty */
 #include <linux/utsname.h>
 /* boot_init_stack_canary removed - empty stub, never called */
 /* end stackprotector.h */

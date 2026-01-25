@@ -57,7 +57,7 @@ extern void sched_init(void);
 #include <linux/sched/clock.h>
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
-#include <linux/random.h>
+/* random.h removed - header is empty */
 #include <linux/list.h>
 #include <linux/proc_ns.h>
 

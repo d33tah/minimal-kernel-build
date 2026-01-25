@@ -286,23 +286,7 @@ static int irq_thread(void *data)
 }
 
 /* irq_setup_forced_threading removed - always returned 0, caller check removed (~5 LOC) */
-
-static int irq_request_resources(struct irq_desc *desc)
-{
-	struct irq_data *d = &desc->irq_data;
-	struct irq_chip *c = d->chip;
-
-	return c->irq_request_resources ? c->irq_request_resources(d) : 0;
-}
-
-static void irq_release_resources(struct irq_desc *desc)
-{
-	struct irq_data *d = &desc->irq_data;
-	struct irq_chip *c = d->chip;
-
-	if (c->irq_release_resources)
-		c->irq_release_resources(d);
-}
+/* irq_request_resources and irq_release_resources inlined into __setup_irq */
 
 static int setup_irq_thread(struct irqaction *new, unsigned int irq,
 			    bool secondary)
@@ -377,7 +361,10 @@ static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 	chip_bus_lock(desc);
 
 	if (!desc->action) {
-		ret = irq_request_resources(desc);
+		struct irq_data *d = &desc->irq_data;
+		struct irq_chip *c = d->chip;
+		ret = c->irq_request_resources ? c->irq_request_resources(d) :
+						 0;
 		if (ret) {
 			pr_err("Failed to request resources for %s (irq %d) on irqchip %s\n",
 			       new->name, irq, desc->irq_data.chip->name);
@@ -523,8 +510,12 @@ mismatch:
 out_unlock:
 	raw_spin_unlock_irqrestore(&desc->lock, flags);
 
-	if (!desc->action)
-		irq_release_resources(desc);
+	if (!desc->action) {
+		struct irq_data *d = &desc->irq_data;
+		struct irq_chip *c = d->chip;
+		if (c->irq_release_resources)
+			c->irq_release_resources(d);
+	}
 out_bus_unlock:
 	chip_bus_sync_unlock(desc);
 	mutex_unlock(&desc->request_mutex);

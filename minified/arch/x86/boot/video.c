@@ -4,46 +4,34 @@
 
 static u16 video_segment;
 
-static void store_cursor_position(void)
-{
-	struct biosregs ireg, oreg;
-
-	initregs(&ireg);
-	ireg.ah = 0x03;
-	intcall(0x10, &ireg, &oreg);
-
-	boot_params.screen_info.orig_x = oreg.dl;
-	boot_params.screen_info.orig_y = oreg.dh;
-
-	if (oreg.ch & 0x20)
-		boot_params.screen_info.flags |= VIDEO_FLAGS_NOCURSOR;
-
-	if ((oreg.ch & 0x1f) > (oreg.cl & 0x1f))
-		boot_params.screen_info.flags |= VIDEO_FLAGS_NOCURSOR;
-}
-
-static void store_video_mode(void)
-{
-	struct biosregs ireg, oreg;
-
-	initregs(&ireg);
-	ireg.ah = 0x0f;
-	intcall(0x10, &ireg, &oreg);
-
-	boot_params.screen_info.orig_video_mode = oreg.al & 0x7f;
-	boot_params.screen_info.orig_video_page = oreg.bh;
-}
+/* store_cursor_position and store_video_mode inlined into store_mode_params */
 
 static void store_mode_params(void)
 {
+	struct biosregs ireg, oreg;
 	u16 font_size;
 	int x, y;
 
 	if (graphic_mode)
 		return;
 
-	store_cursor_position();
-	store_video_mode();
+	/* store_cursor_position inlined */
+	initregs(&ireg);
+	ireg.ah = 0x03;
+	intcall(0x10, &ireg, &oreg);
+	boot_params.screen_info.orig_x = oreg.dl;
+	boot_params.screen_info.orig_y = oreg.dh;
+	if (oreg.ch & 0x20)
+		boot_params.screen_info.flags |= VIDEO_FLAGS_NOCURSOR;
+	if ((oreg.ch & 0x1f) > (oreg.cl & 0x1f))
+		boot_params.screen_info.flags |= VIDEO_FLAGS_NOCURSOR;
+
+	/* store_video_mode inlined */
+	initregs(&ireg);
+	ireg.ah = 0x0f;
+	intcall(0x10, &ireg, &oreg);
+	boot_params.screen_info.orig_video_mode = oreg.al & 0x7f;
+	boot_params.screen_info.orig_video_page = oreg.bh;
 
 	if (boot_params.screen_info.orig_video_mode == 0x07) {
 		video_segment = 0xb000;

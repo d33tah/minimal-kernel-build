@@ -54,17 +54,7 @@ static int __ioremap_collect_map_flags(struct resource *res, void *arg)
 	return (desc->flags & IORES_MAP_SYSTEM_RAM);
 }
 
-static void __ioremap_check_mem(resource_size_t addr, unsigned long size,
-				struct ioremap_desc *desc)
-{
-	u64 start, end;
-
-	start = (u64)addr;
-	end = start + size - 1;
-	memset(desc, 0, sizeof(struct ioremap_desc));
-
-	walk_mem_res(start, end, desc, __ioremap_collect_map_flags);
-}
+/* __ioremap_check_mem inlined into __ioremap_caller */
 
 static void __iomem *__ioremap_caller(resource_size_t phys_addr,
 				      unsigned long size,
@@ -87,7 +77,10 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
 
 	/* phys_addr_valid check removed - always returned 1 */
 
-	__ioremap_check_mem(phys_addr, size, &io_desc);
+	/* __ioremap_check_mem inlined */
+	memset(&io_desc, 0, sizeof(struct ioremap_desc));
+	walk_mem_res((u64)phys_addr, (u64)phys_addr + size - 1, &io_desc,
+		     __ioremap_collect_map_flags);
 
 	if (io_desc.flags & IORES_MAP_SYSTEM_RAM) {
 		WARN_ONCE(1, "ioremap on RAM at %pa - %pa\n", &phys_addr,

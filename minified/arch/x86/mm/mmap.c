@@ -52,27 +52,22 @@ static unsigned long mmap_base(unsigned long task_size,
 }
 
 /* mmap_legacy_base inlined - random_factor always 0 */
-
-static void arch_pick_mmap_base(unsigned long *base, unsigned long *legacy_base,
-				unsigned long task_size,
-				struct rlimit *rlim_stack)
-{
-	*legacy_base = __TASK_UNMAPPED_BASE(task_size);
-	if (mmap_is_legacy())
-		*base = *legacy_base;
-	else
-		*base = mmap_base(task_size, rlim_stack);
-}
+/* arch_pick_mmap_base inlined into arch_pick_mmap_layout */
 
 void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
 {
+	unsigned long task_size = task_size_64bit(0);
+
 	if (mmap_is_legacy())
 		mm->get_unmapped_area = arch_get_unmapped_area;
 	else
 		mm->get_unmapped_area = arch_get_unmapped_area_topdown;
 
-	arch_pick_mmap_base(&mm->mmap_base, &mm->mmap_legacy_base,
-			    task_size_64bit(0), rlim_stack);
+	mm->mmap_legacy_base = __TASK_UNMAPPED_BASE(task_size);
+	if (mmap_is_legacy())
+		mm->mmap_base = mm->mmap_legacy_base;
+	else
+		mm->mmap_base = mmap_base(task_size, rlim_stack);
 }
 
 /* get_mmap_base, mmap_address_hint_valid, pfn_modify_allowed removed - never called or always true */

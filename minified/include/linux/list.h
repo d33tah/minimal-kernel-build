@@ -272,14 +272,7 @@ static inline bool hlist_fake(struct hlist_node *h)
 	return h->pprev == &h->next;
 }
 
-static inline void hlist_move_list(struct hlist_head *old,
-				   struct hlist_head *new)
-{
-	new->first = old->first;
-	if (new->first)
-		new->first->pprev = &new->first;
-	old->first = NULL;
-}
+/* hlist_move_list inlined into namespace.c */
 
 #define hlist_entry(ptr, type, member) container_of(ptr,type,member)
 

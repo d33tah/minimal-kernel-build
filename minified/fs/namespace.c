@@ -595,7 +595,11 @@ static void namespace_unlock(void)
 	struct mount *m;
 	LIST_HEAD(list);
 
-	hlist_move_list(&unmounted, &head);
+	/* hlist_move_list inlined */
+	head.first = unmounted.first;
+	if (head.first)
+		head.first->pprev = &head.first;
+	unmounted.first = NULL;
 	/* list_splice_init inlined */
 	if (!list_empty(&ex_mountpoints)) {
 		__list_splice(&ex_mountpoints, &list, list.next);

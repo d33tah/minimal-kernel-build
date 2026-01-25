@@ -38,12 +38,7 @@
 #define arch_kmap_local_unmap_idx(idx, vaddr) kmap_local_calc_idx(idx)
 #endif
 
-#ifndef arch_kmap_local_high_get
-static inline void *arch_kmap_local_high_get(struct page *page)
-{
-	return NULL;
-}
-#endif
+/* arch_kmap_local_high_get stub removed - never called */
 
 #ifndef arch_kmap_local_set_pte
 #define arch_kmap_local_set_pte(mm, vaddr, ptep, ptev) \

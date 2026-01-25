@@ -25,7 +25,7 @@
 #include <linux/syscalls.h>
 #include <linux/fs_struct.h>
 #include <linux/vmalloc.h>
-#include <linux/syscall_user_dispatch.h>
+/* syscall_user_dispatch.h removed - macro inlined */
 #include <linux/ptrace.h>
 
 #include <linux/uaccess.h>
@@ -575,7 +575,7 @@ int begin_new_exec(struct linux_binprm *bprm)
 	flush_thread();
 	me->personality &= ~bprm->per_clear;
 
-	clear_syscall_work_syscall_user_dispatch(me);
+	clear_task_syscall_work(me, SYSCALL_USER_DISPATCH);
 
 	do_close_on_exec(me->files);
 

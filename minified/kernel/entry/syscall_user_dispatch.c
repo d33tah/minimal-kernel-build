@@ -1,5 +1,5 @@
 #include <linux/sched.h>
-#include <linux/syscall_user_dispatch.h>
+/* syscall_user_dispatch.h removed - struct inlined into sched.h */
 
 /* Inlined from prctl.h */
 #define PR_SYS_DISPATCH_OFF 0

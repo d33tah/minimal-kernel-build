@@ -43,7 +43,8 @@
 /* end sched/prio.h */
 #include <linux/sched/types.h>
 #include <linux/signal_types.h>
-#include <linux/syscall_user_dispatch.h>
+/* syscall_user_dispatch.h inlined */
+struct syscall_user_dispatch { char __user *selector; unsigned long offset; unsigned long len; bool on_dispatch; };
 #include <linux/mm_types_task.h>
 /* struct task_io_accounting, posix-timers.h removed - empty structs no longer needed */
 #include <linux/seqlock.h>

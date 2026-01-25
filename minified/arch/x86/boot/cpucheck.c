@@ -37,26 +37,7 @@ static const u32 req_flags[NCAPINTS] = {
 
 #define A32(a, b, c, d) (((d) << 24) + ((c) << 16) + ((b) << 8) + (a))
 
-static int is_amd(void)
-{
-	return cpu_vendor[0] == A32('A', 'u', 't', 'h') &&
-	       cpu_vendor[1] == A32('e', 'n', 't', 'i') &&
-	       cpu_vendor[2] == A32('c', 'A', 'M', 'D');
-}
-
-static int is_centaur(void)
-{
-	return cpu_vendor[0] == A32('C', 'e', 'n', 't') &&
-	       cpu_vendor[1] == A32('a', 'u', 'r', 'H') &&
-	       cpu_vendor[2] == A32('a', 'u', 'l', 's');
-}
-
-static int is_transmeta(void)
-{
-	return cpu_vendor[0] == A32('G', 'e', 'n', 'u') &&
-	       cpu_vendor[1] == A32('i', 'n', 'e', 'T') &&
-	       cpu_vendor[2] == A32('M', 'x', '8', '6');
-}
+/* is_amd, is_centaur, is_transmeta inlined into check_cpu */
 
 static int is_intel(void)
 {
@@ -96,10 +77,13 @@ int check_cpu(int *cpu_level_ptr, int *req_level_ptr, u32 **err_flags_ptr)
 	if (test_bit(X86_FEATURE_LM, cpu.flags))
 		cpu.level = 64;
 
+	/* is_amd inlined */
 	if (err == 0x01 &&
 	    !(err_flags[0] &
 	      ~((1 << X86_FEATURE_XMM) | (1 << X86_FEATURE_XMM2))) &&
-	    is_amd()) {
+	    cpu_vendor[0] == A32('A', 'u', 't', 'h') &&
+	    cpu_vendor[1] == A32('e', 'n', 't', 'i') &&
+	    cpu_vendor[2] == A32('c', 'A', 'M', 'D')) {
 		struct msr m;
 
 		boot_rdmsr(MSR_K7_HWCR, &m);
@@ -108,8 +92,11 @@ int check_cpu(int *cpu_level_ptr, int *req_level_ptr, u32 **err_flags_ptr)
 
 		get_cpuflags();
 		err = check_cpuflags();
+		/* is_centaur inlined */
 	} else if (err == 0x01 && !(err_flags[0] & ~(1 << X86_FEATURE_CX8)) &&
-		   is_centaur() && cpu.model >= 6) {
+		   cpu_vendor[0] == A32('C', 'e', 'n', 't') &&
+		   cpu_vendor[1] == A32('a', 'u', 'r', 'H') &&
+		   cpu_vendor[2] == A32('a', 'u', 'l', 's') && cpu.model >= 6) {
 		struct msr m;
 
 		boot_rdmsr(MSR_VIA_FCR, &m);
@@ -118,7 +105,10 @@ int check_cpu(int *cpu_level_ptr, int *req_level_ptr, u32 **err_flags_ptr)
 
 		set_bit(X86_FEATURE_CX8, cpu.flags);
 		err = check_cpuflags();
-	} else if (err == 0x01 && is_transmeta()) {
+		/* is_transmeta inlined */
+	} else if (err == 0x01 && cpu_vendor[0] == A32('G', 'e', 'n', 'u') &&
+		   cpu_vendor[1] == A32('i', 'n', 'e', 'T') &&
+		   cpu_vendor[2] == A32('M', 'x', '8', '6')) {
 		struct msr m, m_tmp;
 		u32 level = 1;
 

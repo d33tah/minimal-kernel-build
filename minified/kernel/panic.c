@@ -9,7 +9,11 @@
 int debug_locks __read_mostly = 1;
 int debug_locks_silent __read_mostly;
 #include <linux/kallsyms.h>
-#include <linux/kmsg_dump.h>
+/* kmsg_dump.h inlined */
+enum kmsg_dump_reason { KMSG_DUMP_PANIC = 1, KMSG_DUMP_OOPS, KMSG_DUMP_EMERG };
+static inline void kmsg_dump(enum kmsg_dump_reason reason)
+{
+}
 #include <linux/notifier.h>
 #include <linux/vt_kern.h>
 #include <linux/module.h>

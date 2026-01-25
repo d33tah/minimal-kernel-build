@@ -960,56 +960,7 @@ int kern_path(const char *name, unsigned int flags, struct path *path)
 
 /* may_create removed - never called (only callers vfs_mknod, vfs_mkdir, etc were removed) */
 
-/* Removed: may_open_dev - always returned true */
-
-static int may_open(struct user_namespace *mnt_userns, const struct path *path,
-		    int acc_mode, int flag)
-{
-	struct dentry *dentry = path->dentry;
-	struct inode *inode = dentry->d_inode;
-	int error;
-
-	if (!inode)
-		return -ENOENT;
-
-	switch (inode->i_mode & S_IFMT) {
-	case S_IFDIR:
-		if (acc_mode & MAY_WRITE)
-			return -EISDIR;
-		if (acc_mode & MAY_EXEC)
-			return -EACCES;
-		break;
-	case S_IFBLK:
-	case S_IFCHR:
-		fallthrough;
-	case S_IFIFO:
-	case S_IFSOCK:
-		if (acc_mode & MAY_EXEC)
-			return -EACCES;
-		flag &= ~O_TRUNC;
-		break;
-	case S_IFREG:
-		if ((acc_mode & MAY_EXEC) && path_noexec(path))
-			return -EACCES;
-		break;
-	}
-
-	error = inode_permission(mnt_userns, inode, MAY_OPEN | acc_mode);
-	if (error)
-		return error;
-
-	if (IS_APPEND(inode)) {
-		if ((flag & O_ACCMODE) != O_RDONLY && !(flag & O_APPEND))
-			return -EPERM;
-		if (flag & O_TRUNC)
-			return -EPERM;
-	}
-
-	if (flag & O_NOATIME && !inode_owner_or_capable(mnt_userns, inode))
-		return -EPERM;
-
-	return 0;
-}
+/* may_open_dev, may_open inlined into do_open */
 
 /* atomic_open removed - i_op->atomic_open is never set (~40 LOC) */
 
@@ -1187,7 +1138,53 @@ static int do_open(struct nameidata *nd, struct file *file,
 			return error;
 		need_truncate = true;
 	}
-	error = may_open(mnt_userns, &nd->path, acc_mode, open_flag);
+	/* Inlined may_open */
+	{
+		struct inode *inode = nd->path.dentry->d_inode;
+
+		if (!inode)
+			error = -ENOENT;
+		else {
+			switch (inode->i_mode & S_IFMT) {
+			case S_IFDIR:
+				if (acc_mode & MAY_WRITE)
+					error = -EISDIR;
+				else if (acc_mode & MAY_EXEC)
+					error = -EACCES;
+				break;
+			case S_IFBLK:
+			case S_IFCHR:
+				fallthrough;
+			case S_IFIFO:
+			case S_IFSOCK:
+				if (acc_mode & MAY_EXEC)
+					error = -EACCES;
+				open_flag &= ~O_TRUNC;
+				break;
+			case S_IFREG:
+				if ((acc_mode & MAY_EXEC) &&
+				    path_noexec(&nd->path))
+					error = -EACCES;
+				break;
+			}
+
+			if (!error)
+				error = inode_permission(mnt_userns, inode,
+							 MAY_OPEN | acc_mode);
+
+			if (!error && IS_APPEND(inode)) {
+				if ((open_flag & O_ACCMODE) != O_RDONLY &&
+				    !(open_flag & O_APPEND))
+					error = -EPERM;
+				else if (open_flag & O_TRUNC)
+					error = -EPERM;
+			}
+
+			if (!error && (open_flag & O_NOATIME) &&
+			    !inode_owner_or_capable(mnt_userns, inode))
+				error = -EPERM;
+		}
+	}
 	if (!error && !(file->f_mode & FMODE_OPENED))
 		error = vfs_open(&nd->path, file);
 	if (!error && need_truncate) {

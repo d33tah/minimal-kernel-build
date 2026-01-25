@@ -120,21 +120,22 @@ int is_console_locked(void)
 	return console_locked;
 }
 
-/* console_is_usable inlined into console_flush_all */
+/* console_is_usable, console_emit_next_record, console_flush_all inlined */
 
-/* console_emit_next_record removed - never called (~8 LOC) */
-/* console_flush_all simplified - console_emit_next_record always returned false */
-static bool console_flush_all(bool do_cond_resched, u64 *next_seq,
-			      bool *handover)
+void console_unlock(void)
 {
-	bool any_usable = false;
 	struct console *con;
 
-	*next_seq = 0;
-	*handover = false;
+	if (console_suspended) {
+		up_console_sem();
+		return;
+	}
 
+	/* prb_read_valid always false - loop simplified to single iteration */
+	console_may_schedule = 0;
+
+	/* Inlined console_flush_all - only checks for usable consoles */
 	for_each_console(con) {
-		/* console_is_usable inlined */
 		if (!(con->flags & CON_ENABLED))
 			continue;
 		if (!con->write)
@@ -142,34 +143,11 @@ static bool console_flush_all(bool do_cond_resched, u64 *next_seq,
 		if (!cpu_online(raw_smp_processor_id()) &&
 		    !(con->flags & CON_ANYTIME))
 			continue;
-		any_usable = true;
-		if (con->seq > *next_seq)
-			*next_seq = con->seq;
 	}
 
-	return any_usable;
-}
-
-void console_unlock(void)
-{
-	bool do_cond_resched;
-	bool handover;
-	u64 next_seq;
-
-	if (console_suspended) {
-		up_console_sem();
-		return;
-	}
-
-	do_cond_resched = console_may_schedule;
-
-	/* prb_read_valid always false - loop simplified to single iteration */
-	console_may_schedule = 0;
-	console_flush_all(do_cond_resched, &next_seq, &handover);
-	if (!handover) {
-		console_locked = 0;
-		up_console_sem();
-	}
+	/* handover always false */
+	console_locked = 0;
+	up_console_sem();
 }
 
 void console_unblank(void)

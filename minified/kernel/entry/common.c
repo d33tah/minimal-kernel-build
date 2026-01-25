@@ -20,39 +20,29 @@ void noinstr enter_from_user_mode(struct pt_regs *regs)
 	__enter_from_user_mode(regs);
 }
 
-/* syscall_enter_audit removed - audit_context always returns NULL */
-
-static long syscall_trace_enter(struct pt_regs *regs, long syscall,
-				unsigned long work)
-{
-	long ret = 0;
-
-	if (work & SYSCALL_WORK_SYSCALL_USER_DISPATCH) {
-		if (syscall_user_dispatch(regs))
-			return -1L;
-	}
-
-	if (work & (SYSCALL_WORK_SYSCALL_TRACE | SYSCALL_WORK_SYSCALL_EMU)) {
-		ret = ptrace_report_syscall_entry(regs);
-		if (ret || (work & SYSCALL_WORK_SYSCALL_EMU))
-			return -1L;
-	}
-
-	syscall = syscall_get_nr(current, regs);
-
-	/* syscall_enter_audit removed - audit_context always returns NULL */
-	(void)work;
-
-	return ret ?: syscall;
-}
+/* syscall_enter_audit, syscall_trace_enter inlined */
 
 static __always_inline long __syscall_enter_from_user_work(struct pt_regs *regs,
 							   long syscall)
 {
 	unsigned long work = READ_ONCE(current_thread_info()->syscall_work);
 
-	if (work & SYSCALL_WORK_ENTER)
-		syscall = syscall_trace_enter(regs, syscall, work);
+	if (work & SYSCALL_WORK_ENTER) {
+		/* Inlined syscall_trace_enter */
+		if (work & SYSCALL_WORK_SYSCALL_USER_DISPATCH) {
+			if (syscall_user_dispatch(regs))
+				return -1L;
+		}
+
+		if (work &
+		    (SYSCALL_WORK_SYSCALL_TRACE | SYSCALL_WORK_SYSCALL_EMU)) {
+			if (ptrace_report_syscall_entry(regs) ||
+			    (work & SYSCALL_WORK_SYSCALL_EMU))
+				return -1L;
+		}
+
+		syscall = syscall_get_nr(current, regs);
+	}
 
 	return syscall;
 }

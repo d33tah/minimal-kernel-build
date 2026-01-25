@@ -770,15 +770,7 @@ struct vmap_block_queue {
 	struct list_head free;
 };
 
-struct vmap_block {
-	spinlock_t lock;
-	struct vmap_area *va;
-	unsigned long free, dirty;
-	unsigned long dirty_min, dirty_max;
-	struct list_head free_list;
-	struct rcu_head rcu_head;
-	struct list_head purge;
-};
+/* struct vmap_block removed - never used */
 
 static DEFINE_PER_CPU(struct vmap_block_queue, vmap_block_queue);
 

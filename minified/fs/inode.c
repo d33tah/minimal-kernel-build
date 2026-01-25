@@ -516,8 +516,9 @@ void init_special_inode(struct inode *inode, umode_t mode, dev_t rdev)
 void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,
 		      const struct inode *dir, umode_t mode)
 {
-	/* inode_fsuid_set inlined */
-	inode->i_uid = mapped_fsuid(mnt_userns, i_user_ns(inode));
+	/* inode_fsuid_set inlined, mapped_fsuid inlined */
+	inode->i_uid =
+		mapped_kuid_fs(mnt_userns, i_user_ns(inode), current_fsuid());
 	if (dir && dir->i_mode & S_ISGID) {
 		inode->i_gid = dir->i_gid;
 
@@ -528,8 +529,9 @@ void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,
 			 !capable_wrt_inode_uidgid(mnt_userns, dir, CAP_FSETID))
 			mode &= ~S_ISGID;
 	} else
-		/* inode_fsgid_set inlined */
-		inode->i_gid = mapped_fsgid(mnt_userns, i_user_ns(inode));
+		/* inode_fsgid_set inlined, mapped_fsgid inlined */
+		inode->i_gid = mapped_kgid_fs(mnt_userns, i_user_ns(inode),
+					      current_fsgid());
 	inode->i_mode = mode;
 }
 

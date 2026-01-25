@@ -51,18 +51,6 @@ static inline kgid_t mapped_kgid_fs(struct user_namespace *mnt_userns,
 	return make_kgid(mnt_userns, gid);
 }
 
-static inline kuid_t mapped_fsuid(struct user_namespace *mnt_userns,
-				  struct user_namespace *fs_userns)
-{
-	return mapped_kuid_fs(mnt_userns, fs_userns, current_fsuid());
-}
-
-static inline kgid_t mapped_fsgid(struct user_namespace *mnt_userns,
-				  struct user_namespace *fs_userns)
-{
-	return mapped_kgid_fs(mnt_userns, fs_userns, current_fsgid());
-}
-
-/* mapped_kuid_user, mapped_kgid_user removed - never called */
+/* mapped_fsuid, mapped_fsgid, mapped_kuid_user, mapped_kgid_user inlined/removed */
 
 #endif  

@@ -1230,10 +1230,12 @@ static vm_fault_t special_mapping_fault(struct vm_fault *vmf)
 	return VM_FAULT_SIGBUS;
 }
 
-static struct vm_area_struct *
-__install_special_mapping(struct mm_struct *mm, unsigned long addr,
-			  unsigned long len, unsigned long vm_flags, void *priv,
-			  const struct vm_operations_struct *ops)
+/* __install_special_mapping inlined into _install_special_mapping */
+
+struct vm_area_struct *
+_install_special_mapping(struct mm_struct *mm, unsigned long addr,
+			 unsigned long len, unsigned long vm_flags,
+			 const struct vm_special_mapping *spec)
 {
 	int ret;
 	struct vm_area_struct *vma;
@@ -1249,27 +1251,16 @@ __install_special_mapping(struct mm_struct *mm, unsigned long addr,
 	vma->vm_flags &= VM_LOCKED_CLEAR_MASK;
 	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
 
-	vma->vm_ops = ops;
-	vma->vm_private_data = priv;
+	vma->vm_ops = &special_mapping_vmops;
+	vma->vm_private_data = (void *)spec;
 
 	ret = insert_vm_struct(mm, vma);
-	if (ret)
-		goto out;
+	if (ret) {
+		vm_area_free(vma);
+		return ERR_PTR(ret);
+	}
 
 	return vma;
-
-out:
-	vm_area_free(vma);
-	return ERR_PTR(ret);
-}
-
-struct vm_area_struct *
-_install_special_mapping(struct mm_struct *mm, unsigned long addr,
-			 unsigned long len, unsigned long vm_flags,
-			 const struct vm_special_mapping *spec)
-{
-	return __install_special_mapping(mm, addr, len, vm_flags, (void *)spec,
-					 &special_mapping_vmops);
 }
 
 void __init mmap_init(void)

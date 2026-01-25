@@ -1,6 +1,6 @@
 
 #include <linux/entry-common.h>
-#include <linux/resume_user_mode.h>
+#include <linux/task_work.h>
 #include <linux/highmem.h>
 #include <linux/jump_label.h>
 #include <linux/init_task.h>
@@ -104,8 +104,13 @@ static unsigned long exit_to_user_mode_loop(struct pt_regs *regs,
 		if (ti_work & (_TIF_SIGPENDING | _TIF_NOTIFY_SIGNAL))
 			arch_do_signal_or_restart(regs);
 
-		if (ti_work & _TIF_NOTIFY_RESUME)
-			resume_user_mode_work(regs);
+		if (ti_work & _TIF_NOTIFY_RESUME) {
+			/* resume_user_mode_work inlined */
+			clear_thread_flag(TIF_NOTIFY_RESUME);
+			smp_mb__after_atomic();
+			if (unlikely(task_work_pending(current)))
+				task_work_run();
+		}
 
 		/* arch_exit_to_user_mode_work is empty on x86 */
 

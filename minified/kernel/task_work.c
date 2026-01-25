@@ -1,6 +1,6 @@
 #include <linux/spinlock.h>
 #include <linux/task_work.h>
-#include <linux/resume_user_mode.h>
+#include <linux/sched/signal.h>
 
 static struct callback_head work_exited;
 
@@ -20,7 +20,8 @@ int task_work_add(struct task_struct *task, struct callback_head *work,
 	case TWA_NONE:
 		break;
 	case TWA_RESUME:
-		set_notify_resume(task);
+		/* set_notify_resume inlined */
+		test_and_set_tsk_thread_flag(task, TIF_NOTIFY_RESUME);
 		break;
 	case TWA_SIGNAL:
 		set_notify_signal(task);

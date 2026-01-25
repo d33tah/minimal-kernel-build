@@ -11,7 +11,7 @@
 #define USHORT_CMP_LT(a, b)	(USHRT_MAX / 2 < (unsigned short)((a) - (b)))
 
 void call_rcu(struct rcu_head *head, rcu_callback_t func);
-void synchronize_rcu(void);
+/* synchronize_rcu removed - empty stub, all call sites removed */
 
 static inline void __rcu_read_lock(void)
 {
@@ -41,10 +41,7 @@ void rcutree_migrate_callbacks(int cpu);
 
 extern void rcu_barrier(void);
 
-static inline void synchronize_rcu_expedited(void)
-{
-	synchronize_rcu();
-}
+/* synchronize_rcu_expedited removed - called synchronize_rcu which was empty */
 
 extern void kvfree(const void *addr);
 

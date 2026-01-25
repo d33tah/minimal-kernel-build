@@ -604,9 +604,7 @@ static void namespace_unlock(void)
 
 	if (likely(hlist_empty(&head)))
 		return;
-
-	synchronize_rcu_expedited();
-
+	/* synchronize_rcu_expedited call removed - empty stub (single task) */
 	hlist_for_each_entry_safe(m, p, &head, mnt_umount) {
 		hlist_del(&m->mnt_umount);
 		mntput(&m->mnt);

@@ -98,9 +98,7 @@ rcu_process_callbacks(struct softirq_action *unused)
 	}
 }
 
-void synchronize_rcu(void)
-{
-}
+/* synchronize_rcu removed - empty stub, all call sites removed */
 
 void call_rcu(struct rcu_head *head, rcu_callback_t func)
 {

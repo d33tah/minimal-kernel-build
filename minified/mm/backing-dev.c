@@ -111,7 +111,7 @@ void bdi_unregister(struct backing_dev_info *bdi)
 	spin_lock_bh(&bdi_lock);
 	list_del_rcu(&bdi->bdi_list);
 	spin_unlock_bh(&bdi_lock);
-	synchronize_rcu_expedited();
+	/* synchronize_rcu_expedited call removed - empty stub */
 	/* wb_shutdown inlined */
 	spin_lock_bh(&bdi->wb.work_lock);
 	if (test_and_clear_bit(WB_registered, &bdi->wb.state)) {

@@ -124,10 +124,7 @@ repeat:
 
 		spin_unlock(&files->file_lock);
 		new_fdt = alloc_fdtable(nr);
-
-		if (atomic_read(&files->count) > 1)
-			synchronize_rcu();
-
+		/* synchronize_rcu call removed - empty stub (single task) */
 		spin_lock(&files->file_lock);
 		if (!new_fdt) {
 			expanded = -ENOMEM;

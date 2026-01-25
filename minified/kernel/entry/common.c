@@ -81,12 +81,17 @@ void noinstr exit_to_user_mode(void)
 }
 
 /* arch_do_signal_or_restart - x86 provides its own in arch/x86/kernel/signal.c */
+/* exit_to_user_mode_loop inlined into exit_to_user_mode_prepare */
 
-static unsigned long exit_to_user_mode_loop(struct pt_regs *regs,
-					    unsigned long ti_work)
+static void exit_to_user_mode_prepare(struct pt_regs *regs)
 {
+	unsigned long ti_work = read_thread_flags();
+
+	/* tick_nohz_user_enter_prepare is empty stub */
+
+	/* Inlined exit_to_user_mode_loop */
 	while (ti_work & EXIT_TO_USER_MODE_WORK) {
-		local_irq_enable(); /* local_irq_enable_exit_to_user inlined */
+		local_irq_enable();
 
 		if (ti_work & _TIF_NEED_RESCHED)
 			schedule();
@@ -95,32 +100,15 @@ static unsigned long exit_to_user_mode_loop(struct pt_regs *regs,
 			arch_do_signal_or_restart(regs);
 
 		if (ti_work & _TIF_NOTIFY_RESUME) {
-			/* resume_user_mode_work inlined */
 			clear_thread_flag(TIF_NOTIFY_RESUME);
 			smp_mb__after_atomic();
 			if (unlikely(task_work_pending(current)))
 				task_work_run();
 		}
 
-		/* arch_exit_to_user_mode_work is empty on x86 */
-
 		local_irq_disable_exit_to_user();
-
-		/* tick_nohz_user_enter_prepare is empty stub */
 		ti_work = read_thread_flags();
 	}
-
-	return ti_work;
-}
-
-static void exit_to_user_mode_prepare(struct pt_regs *regs)
-{
-	unsigned long ti_work = read_thread_flags();
-
-	/* tick_nohz_user_enter_prepare is empty stub */
-
-	if (unlikely(ti_work & EXIT_TO_USER_MODE_WORK))
-		ti_work = exit_to_user_mode_loop(regs, ti_work);
 
 	/* arch_exit_to_user_mode_prepare inlined */
 	if (unlikely(ti_work & _TIF_NEED_FPU_LOAD))

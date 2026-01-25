@@ -4,7 +4,7 @@
 /* cc_attr enum and cc_platform_has removed - unused now that init_real_mode is stubbed */
 #include <linux/pgtable.h>
 
-#include <asm/set_memory.h>
+/* set_memory.h removed - header is empty */
 #include <asm/realmode.h>
 #include <asm/tlbflush.h>
 /* asm/sev.h include removed - file is stub, nothing used */

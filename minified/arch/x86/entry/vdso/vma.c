@@ -9,7 +9,7 @@
 #include <linux/ptrace.h>
 #include <linux/time_namespace.h>
 
-#include <asm/pvclock.h>
+/* pvclock.h removed - header is empty */
 #include <asm/vgtod.h>
 #include <asm/proto.h>
 #include <asm/vdso.h>

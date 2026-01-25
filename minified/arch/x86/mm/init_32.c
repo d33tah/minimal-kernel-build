@@ -37,7 +37,7 @@
 #include <asm/sections.h>
 /* paravirt.h removed - header is empty */
 #include <asm/setup.h>
-#include <asm/set_memory.h>
+/* set_memory.h removed - header is empty */
 #include <asm/page_types.h>
 #include <asm/cpu_entry_area.h>
 #include <asm/pgtable_areas.h>

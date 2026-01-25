@@ -1,7 +1,7 @@
 #include <linux/interrupt.h>
 
 #include <asm/cpu_entry_area.h>
-#include <asm/set_memory.h>
+/* set_memory.h removed - header is empty */
 #include <asm/traps.h>
 #include <asm/proto.h>
 #include <asm/desc.h>

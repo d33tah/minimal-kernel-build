@@ -4,7 +4,7 @@
 #include <linux/memblock.h>
 #include <linux/sched/task.h>
 
-#include <asm/set_memory.h>
+/* set_memory.h removed - header is empty */
 #include <asm/e820/api.h>
 #include <asm/page.h>
 #include <asm/page_types.h>

@@ -9,7 +9,7 @@
 /* cc_platform_has, cc_attr enum, phys_addr_valid removed - always false/1 */
 #include <linux/pgtable.h>
 
-#include <asm/set_memory.h>
+/* set_memory.h removed - header is empty */
 #include <asm/e820/api.h>
 #include <asm/fixmap.h>
 #include <asm/tlbflush.h>

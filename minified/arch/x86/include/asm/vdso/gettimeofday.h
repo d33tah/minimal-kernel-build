@@ -10,8 +10,7 @@
 #include <asm/vvar.h>
 #include <asm/unistd.h>
 #include <asm/msr.h>
-#include <asm/pvclock.h>
-
+/* pvclock.h removed - header is empty */
 #define __vdso_data (VVAR(_vdso_data))
 #define __timens_vdso_data (TIMENS(_vdso_data))
 

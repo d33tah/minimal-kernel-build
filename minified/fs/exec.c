@@ -472,7 +472,9 @@ static int de_thread(struct task_struct *tsk)
 			new->next->prev = new;
 			old->prev = LIST_POISON2;
 		}
-		list_replace_init(&leader->sibling, &tsk->sibling);
+		/* list_replace_init inlined */
+		list_replace(&leader->sibling, &tsk->sibling);
+		INIT_LIST_HEAD(&leader->sibling);
 
 		tsk->group_leader = tsk;
 		leader->group_leader = tsk;

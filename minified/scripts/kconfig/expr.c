@@ -1149,7 +1149,10 @@ void expr_print(struct expr *e,
 static void expr_print_file_helper(void *data, struct symbol *sym,
 				   const char *str)
 {
-	xfwrite(str, strlen(str), 1, data);
+	/* xfwrite inlined */
+	size_t len = strlen(str);
+	if (len != 0 && fwrite(str, len, 1, data) != 1)
+		fprintf(stderr, "Error in writing or end of file.\n");
 }
 
 void expr_fprint(struct expr *e, FILE *out)

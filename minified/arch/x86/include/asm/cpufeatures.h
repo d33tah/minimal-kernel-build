@@ -70,8 +70,7 @@
 #define X86_FEATURE_RDTSCP		( 1*32+27)
 #define X86_FEATURE_LM			( 1*32+29)
 
-/* Word 3 - Auxiliary flags (required for DISABLE_* macros) */
-#define X86_FEATURE_CONSTANT_TSC	( 3*32+ 8)
+/* Word 3 - Auxiliary flags */
 #define X86_FEATURE_LFENCE_RDTSC	( 3*32+18)
 #define X86_FEATURE_NOPL		( 3*32+20)
 #define X86_FEATURE_ALWAYS		( 3*32+21)
@@ -93,12 +92,10 @@
 #define X86_FEATURE_3DNOWPREFETCH	( 6*32+ 8)
 
 /* Word 7 - Kernel-synthesized flags */
-#define X86_FEATURE_CPUID_FAULT		( 7*32+ 1)
 #define X86_FEATURE_INVPCID_SINGLE	( 7*32+ 7)
 #define X86_FEATURE_XCOMPACTED		( 7*32+10)
 #define X86_FEATURE_PTI			( 7*32+11)
 #define X86_FEATURE_RSB_CTXSW		( 7*32+19)
-#define X86_FEATURE_USE_IBPB		( 7*32+21)
 #define X86_FEATURE_LS_CFG_SSBD		( 7*32+24)
 
 /* Word 8 - Virtualization flags */
@@ -124,7 +121,6 @@
 #define X86_FEATURE_UNRET		(11*32+15)
 
 /* Word 13 - AMD extended 2 */
-#define X86_FEATURE_AMD_SSBD		(13*32+24)
 #define X86_FEATURE_VIRT_SSBD		(13*32+25)
 
 /* Word 16 - Intel extended 2 */
@@ -136,7 +132,6 @@
 
 /* Word 18 - Intel extended 3 */
 #define X86_FEATURE_SERIALIZE		(18*32+14)
-#define X86_FEATURE_SPEC_CTRL_SSBD	(18*32+31)
 
 /* CPU bugs - only keep the used ones */
 #define X86_BUG(x)			(NCAPINTS*32 + (x))

@@ -107,7 +107,21 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
 	}
 
 	if (pcm != new_pcm) {
-		if (!is_new_memtype_allowed(phys_addr, size, pcm, new_pcm)) {
+		/* is_new_memtype_allowed inlined */
+		int memtype_allowed = 1;
+		if (!x86_platform.is_untracked_pat_range(phys_addr,
+							 phys_addr + size)) {
+			if ((pcm == _PAGE_CACHE_MODE_UC_MINUS &&
+			     new_pcm == _PAGE_CACHE_MODE_WB) ||
+			    (pcm == _PAGE_CACHE_MODE_WC &&
+			     new_pcm == _PAGE_CACHE_MODE_WB) ||
+			    (pcm == _PAGE_CACHE_MODE_WT &&
+			     new_pcm == _PAGE_CACHE_MODE_WB) ||
+			    (pcm == _PAGE_CACHE_MODE_WT &&
+			     new_pcm == _PAGE_CACHE_MODE_WC))
+				memtype_allowed = 0;
+		}
+		if (!memtype_allowed) {
 			printk(KERN_ERR
 			       "ioremap error for 0x%llx-0x%llx, requested 0x%x, got 0x%x\n",
 			       (unsigned long long)phys_addr,

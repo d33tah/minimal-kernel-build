@@ -1255,10 +1255,13 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 					usemapsize /= 8;
 					zone->pageblock_flags = NULL;
 					if (usemapsize) {
+						/* memblock_alloc_node inlined */
 						zone->pageblock_flags =
-							memblock_alloc_node(
+							memblock_alloc_try_nid(
 								usemapsize,
 								SMP_CACHE_BYTES,
+								MEMBLOCK_LOW_LIMIT,
+								MEMBLOCK_ALLOC_ACCESSIBLE,
 								zone_to_nid(
 									zone));
 						if (!zone->pageblock_flags)

@@ -1221,7 +1221,9 @@ void __init setup_per_cpu_areas(void)
 	void *fc;
 
 	ai = pcpu_alloc_alloc_info(1, 1);
-	fc = memblock_alloc_from(unit_size, PAGE_SIZE, __pa(MAX_DMA_ADDRESS));
+	/* memblock_alloc_from inlined */
+	fc = memblock_alloc_try_nid(unit_size, PAGE_SIZE, __pa(MAX_DMA_ADDRESS),
+				    MEMBLOCK_ALLOC_ACCESSIBLE, NUMA_NO_NODE);
 	if (!ai || !fc)
 		panic("Failed to allocate memory for percpu areas.");
 

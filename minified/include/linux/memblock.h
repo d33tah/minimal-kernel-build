@@ -164,22 +164,7 @@ static __always_inline void *memblock_alloc(phys_addr_t size, phys_addr_t align)
 }
 
 
-static inline void *memblock_alloc_from(phys_addr_t size,
-						phys_addr_t align,
-						phys_addr_t min_addr)
-{
-	return memblock_alloc_try_nid(size, align, min_addr,
-				      MEMBLOCK_ALLOC_ACCESSIBLE, NUMA_NO_NODE);
-}
-
-
-static inline void *memblock_alloc_node(phys_addr_t size,
-						phys_addr_t align, int nid)
-{
-	return memblock_alloc_try_nid(size, align, MEMBLOCK_LOW_LIMIT,
-				      MEMBLOCK_ALLOC_ACCESSIBLE, nid);
-}
-
+/* memblock_alloc_from, memblock_alloc_node inlined at single call sites */
 
 static inline __init_memblock bool memblock_bottom_up(void)
 {

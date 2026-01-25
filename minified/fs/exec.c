@@ -586,7 +586,11 @@ int begin_new_exec(struct linux_binprm *bprm)
 
 	/* me->sas_ss_sp = me->sas_ss_size = 0; removed - write-only fields */
 
-	__set_task_comm(me, kbasename(bprm->filename), true);
+	/* kbasename inlined */
+	{
+		const char *tail = strrchr(bprm->filename, '/');
+		__set_task_comm(me, tail ? tail + 1 : bprm->filename, true);
+	}
 
 	/* self_exec_id increment removed - write-only field */
 	flush_signal_handlers(me, 0);

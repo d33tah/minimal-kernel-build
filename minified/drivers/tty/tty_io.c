@@ -249,7 +249,9 @@ static ssize_t tty_read(struct kiocb *iocb, struct iov_iter *to)
 				retval = -EFAULT;
 			}
 		} while (cookie);
-		memzero_explicit(kernel_buf, sizeof(kernel_buf));
+		/* memzero_explicit inlined */
+		memset(kernel_buf, 0, sizeof(kernel_buf));
+		barrier_data(kernel_buf);
 		i = offset ? offset : retval;
 	}
 	tty_ldisc_deref(ld);

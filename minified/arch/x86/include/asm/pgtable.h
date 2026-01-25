@@ -244,30 +244,7 @@ static inline pmd_t pfn_pmd(unsigned long page_nr, pgprot_t pgprot)
 #define pud_pgprot(x) __pgprot(pud_flags(x))
 #define p4d_pgprot(x) __pgprot(p4d_flags(x))
 
-/* canon_pgprot removed - never called */
-
-static inline int is_new_memtype_allowed(u64 paddr, unsigned long size,
-					 enum page_cache_mode pcm,
-					 enum page_cache_mode new_pcm)
-{
-	 
-	if (x86_platform.is_untracked_pat_range(paddr, paddr + size))
-		return 1;
-
-	 
-	if ((pcm == _PAGE_CACHE_MODE_UC_MINUS &&
-	     new_pcm == _PAGE_CACHE_MODE_WB) ||
-	    (pcm == _PAGE_CACHE_MODE_WC &&
-	     new_pcm == _PAGE_CACHE_MODE_WB) ||
-	    (pcm == _PAGE_CACHE_MODE_WT &&
-	     new_pcm == _PAGE_CACHE_MODE_WB) ||
-	    (pcm == _PAGE_CACHE_MODE_WT &&
-	     new_pcm == _PAGE_CACHE_MODE_WC)) {
-		return 0;
-	}
-
-	return 1;
-}
+/* canon_pgprot, is_new_memtype_allowed inlined at single call site */
 
 pmd_t *populate_extra_pmd(unsigned long vaddr);
 pte_t *populate_extra_pte(unsigned long vaddr);

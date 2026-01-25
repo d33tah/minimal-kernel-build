@@ -17,21 +17,6 @@ void __init early_ioremap_reset(void)
 	after_paging_init = 1;
 }
 
-#ifndef __late_set_fixmap
-static inline void __init __late_set_fixmap(enum fixed_addresses idx,
-					    phys_addr_t phys, pgprot_t prot)
-{
-	BUG();
-}
-#endif
-
-#ifndef __late_clear_fixmap
-static inline void __init __late_clear_fixmap(enum fixed_addresses idx)
-{
-	BUG();
-}
-#endif
-
 static void __iomem *prev_map[FIX_BTMAPS_SLOTS] __initdata;
 static unsigned long prev_size[FIX_BTMAPS_SLOTS] __initdata;
 static unsigned long slot_virt[FIX_BTMAPS_SLOTS] __initdata;
@@ -89,7 +74,7 @@ static void __init __iomem *__early_ioremap(resource_size_t phys_addr,
 	idx = FIX_BTMAP_BEGIN - NR_FIX_BTMAPS * slot;
 	while (nrpages > 0) {
 		if (after_paging_init)
-			__late_set_fixmap(idx, phys_addr, prot);
+			BUG(); /* __late_set_fixmap inlined */
 		else
 			__early_set_fixmap(idx, phys_addr, prot);
 		phys_addr += PAGE_SIZE;
@@ -137,7 +122,7 @@ void __init early_iounmap(void __iomem *addr, unsigned long size)
 	idx = FIX_BTMAP_BEGIN - NR_FIX_BTMAPS * slot;
 	while (nrpages > 0) {
 		if (after_paging_init)
-			__late_clear_fixmap(idx);
+			BUG(); /* __late_clear_fixmap inlined */
 		else
 			__early_set_fixmap(idx, 0, FIXMAP_PAGE_CLEAR);
 		--idx;

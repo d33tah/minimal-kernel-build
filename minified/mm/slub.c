@@ -424,7 +424,9 @@ redo:
 		memset((void *)((char *)object + s->offset), 0, sizeof(void *));
 	init = slab_want_init_on_alloc(gfpflags, s);
 
-	slab_post_alloc_hook(s, objcg, gfpflags, 1, &object, init);
+	/* slab_post_alloc_hook inlined - only 1 element so loop simplified */
+	if (object && init)
+		memset(object, 0, s->object_size);
 
 	return object;
 }

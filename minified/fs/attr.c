@@ -2,26 +2,7 @@
 #include <linux/sched/signal.h>
 #include <linux/capability.h>
 #include <linux/security.h>
-static bool chgrp_ok(struct user_namespace *mnt_userns,
-		     const struct inode *inode, kgid_t gid)
-{
-	kgid_t kgid = i_gid_into_mnt(mnt_userns, inode);
-	if (uid_eq(current_fsuid(), i_uid_into_mnt(mnt_userns, inode))) {
-		kgid_t mapped_gid;
-
-		if (gid_eq(gid, inode->i_gid))
-			return true;
-		mapped_gid = mapped_kgid_fs(mnt_userns, i_user_ns(inode), gid);
-		if (in_group_p(mapped_gid))
-			return true;
-	}
-	if (capable_wrt_inode_uidgid(mnt_userns, inode, CAP_CHOWN))
-		return true;
-	if (gid_eq(kgid, INVALID_GID) &&
-	    ns_capable(inode->i_sb->s_user_ns, CAP_CHOWN))
-		return true;
-	return false;
-}
+/* chgrp_ok inlined into setattr_prepare */
 
 int setattr_prepare(struct user_namespace *mnt_userns, struct dentry *dentry,
 		    struct iattr *attr)
@@ -49,8 +30,28 @@ int setattr_prepare(struct user_namespace *mnt_userns, struct dentry *dentry,
 			return -EPERM;
 	}
 
-	if ((ia_valid & ATTR_GID) && !chgrp_ok(mnt_userns, inode, attr->ia_gid))
-		return -EPERM;
+	/* Inlined chgrp_ok */
+	if (ia_valid & ATTR_GID) {
+		kgid_t gid = attr->ia_gid;
+		kgid_t kgid = i_gid_into_mnt(mnt_userns, inode);
+		bool ok = false;
+		if (uid_eq(current_fsuid(),
+			   i_uid_into_mnt(mnt_userns, inode))) {
+			if (gid_eq(gid, inode->i_gid))
+				ok = true;
+			else if (in_group_p(mapped_kgid_fs(
+					 mnt_userns, i_user_ns(inode), gid)))
+				ok = true;
+		}
+		if (!ok &&
+		    capable_wrt_inode_uidgid(mnt_userns, inode, CAP_CHOWN))
+			ok = true;
+		if (!ok && gid_eq(kgid, INVALID_GID) &&
+		    ns_capable(inode->i_sb->s_user_ns, CAP_CHOWN))
+			ok = true;
+		if (!ok)
+			return -EPERM;
+	}
 
 	if (ia_valid & ATTR_MODE) {
 		kgid_t mapped_gid;

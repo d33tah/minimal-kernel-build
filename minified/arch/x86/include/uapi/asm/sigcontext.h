@@ -92,20 +92,8 @@ struct _header {
 	__u64				reserved2[5];
 };
 
-struct _ymmh_state {
-	 
-	__u32				ymmh_space[64];
-};
+/* struct _ymmh_state and struct _xstate removed - never used */
 
- 
-struct _xstate {
-	struct _fpstate			fpstate;
-	struct _header			xstate_hdr;
-	struct _ymmh_state		ymmh;
-	 
-};
-
- 
 struct sigcontext_32 {
 	__u16				gs, __gsh;
 	__u16				fs, __fsh;

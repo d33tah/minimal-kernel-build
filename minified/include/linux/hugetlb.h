@@ -14,9 +14,7 @@
 
 /* is_file_hugepages removed - never called */
 
-struct hstate {};
-
-/* hugetlb_count_init, hstate_vma, huge_page_shift removed - stubs inlined */
+/* struct hstate removed - never used, hugetlb is disabled */
 
 /* follow_huge_addr removed - call site in gup.c was removed */
 

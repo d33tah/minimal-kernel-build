@@ -42,19 +42,7 @@ struct apm_bios_info {
 };
 
 
-struct apm_info {
-	struct apm_bios_info	bios;
-	unsigned short		connection_version;
-	int			get_power_status_broken;
-	int			get_power_status_swabinminutes;
-	int			allow_ints;
-	int			forbid_idle;
-	int			realmode_power_off;
-	int			disabled;
-};
-
-/* All APM_FUNC_* and APM_DEVICE_* macros removed - APM driver not included */
-/* apm_info extern removed - variable removed, only struct definition needed for boot_params */
+/* struct apm_info removed - was never used, only apm_bios_info needed for boot_params */
 
 struct ist_info {
 	__u32 signature;

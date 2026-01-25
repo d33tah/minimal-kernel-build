@@ -127,15 +127,7 @@ static bool ex_handler_msr(const struct exception_table_entry *fixup,
 
 /* ex_handler_clear_fs inlined into fixup_exception */
 /* ex_handler_imm_reg inlined into fixup_exception */
-
-static bool ex_handler_ucopy_len(const struct exception_table_entry *fixup,
-				 struct pt_regs *regs, int trapnr, int reg,
-				 int imm)
-{
-	regs->cx = imm * regs->cx + *pt_regs_nr(regs, reg);
-	return ex_handler_uaccess(fixup, regs, trapnr);
-}
-
+/* ex_handler_ucopy_len inlined into fixup_exception */
 /* ex_get_fixup_type removed - never called */
 
 int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code,
@@ -201,7 +193,9 @@ int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code,
 		return ex_handler_default(e, regs);
 	/* EX_TYPE_FAULT_SGX removed - no SGX in minimal kernel */
 	case EX_TYPE_UCOPY_LEN:
-		return ex_handler_ucopy_len(e, regs, trapnr, reg, imm);
+		/* ex_handler_ucopy_len inlined */
+		regs->cx = imm * regs->cx + *pt_regs_nr(regs, reg);
+		return ex_handler_uaccess(e, regs, trapnr);
 	}
 	BUG();
 }

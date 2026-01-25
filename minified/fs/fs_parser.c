@@ -21,20 +21,24 @@ static inline bool is_flag(const struct fs_parameter_spec *p)
 	return p->type == NULL;
 }
 
-static const struct fs_parameter_spec *
-fs_lookup_key(const struct fs_parameter_spec *desc, struct fs_parameter *param,
-	      bool *negated)
+/* fs_lookup_key inlined into __fs_parse */
+
+int __fs_parse(struct p_log *log, const struct fs_parameter_spec *desc,
+	       struct fs_parameter *param, struct fs_parse_result *result)
 {
 	const struct fs_parameter_spec *p, *other = NULL;
 	const char *name = param->key;
 	bool want_flag = param->type == fs_value_is_flag;
 
-	*negated = false;
+	result->uint_64 = 0;
+	result->negated = false;
+
+	/* Inlined fs_lookup_key */
 	for (p = desc; p->name; p++) {
 		if (strcmp(p->name, name) != 0)
 			continue;
 		if (likely(is_flag(p) == want_flag))
-			return p;
+			goto found;
 		other = p;
 	}
 	if (want_flag) {
@@ -44,24 +48,15 @@ fs_lookup_key(const struct fs_parameter_spec *desc, struct fs_parameter *param,
 					continue;
 				if (!(p->flags & fs_param_neg_with_no))
 					continue;
-				*negated = true;
-				return p;
+				result->negated = true;
+				goto found;
 			}
 		}
 	}
-	return other;
-}
-
-int __fs_parse(struct p_log *log, const struct fs_parameter_spec *desc,
-	       struct fs_parameter *param, struct fs_parse_result *result)
-{
-	const struct fs_parameter_spec *p;
-
-	result->uint_64 = 0;
-
-	p = fs_lookup_key(desc, param, &result->negated);
+	p = other;
 	if (!p)
 		return -ENOPARAM;
+found:
 
 	if (p->flags & fs_param_deprecated)
 		warn_plog(log, "Deprecated parameter '%s'", param->key);

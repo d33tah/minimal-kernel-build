@@ -8,7 +8,7 @@
 #include <linux/bitops.h>
 #include <linux/slab.h>
 #include "slab.h"
-#include <linux/proc_fs.h>
+/* proc_fs.h removed - empty header */
 /* seq_file.h removed - header is empty */
 #include <linux/cpu.h>
 /* cpuset.h, mempolicy.h removed - unused */

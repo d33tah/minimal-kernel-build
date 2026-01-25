@@ -8,7 +8,7 @@
 #include <linux/spinlock.h>
 #include <linux/fs.h>
 #include <linux/fs_context.h>
-#include <linux/proc_fs.h>
+/* proc_fs.h removed - empty header */
 #include <linux/sched.h>
 #include <linux/device.h>
 #include <linux/pfn.h>

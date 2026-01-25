@@ -21,7 +21,7 @@ extern int nr_threads;
 #include <linux/pid_namespace.h>
 #include <linux/ptrace.h>
 #include <linux/mount.h>
-#include <linux/proc_fs.h>
+/* proc_fs.h removed - empty header */
 #include <linux/kthread.h>
 /* mempolicy.h removed - forward decl in mm.h */
 #include <linux/cgroup.h>

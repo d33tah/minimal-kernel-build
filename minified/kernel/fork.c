@@ -38,7 +38,7 @@
 #include <linux/rcupdate.h>
 #include <linux/ptrace.h>
 #include <linux/mount.h>
-#include <linux/proc_fs.h>
+/* proc_fs.h removed - empty header */
 /* rmap.h, userfaultfd_k.h removed - functions not used */
 #include <linux/tty.h>
 #include <linux/fs_struct.h>

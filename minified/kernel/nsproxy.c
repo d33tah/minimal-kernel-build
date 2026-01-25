@@ -10,7 +10,7 @@
 
 /* struct ipc_namespace removed - never used */
 #include <linux/fs_struct.h>
-#include <linux/proc_fs.h>
+/* proc_fs.h removed - empty header */
 #include <linux/proc_ns.h>
 #include <linux/file.h>
 #include <linux/syscalls.h>

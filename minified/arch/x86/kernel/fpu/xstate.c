@@ -9,7 +9,7 @@
 #include <linux/mman.h>
 #include <linux/nospec.h>
 /* seq_file.h removed - header is empty */
-#include <linux/proc_fs.h>
+/* proc_fs.h removed - empty header */
 #include <linux/vmalloc.h>
 
 #include <asm/fpu/api.h>

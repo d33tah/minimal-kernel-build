@@ -1,7 +1,7 @@
 
 #include <linux/syscalls.h>
 #include <linux/fs.h>
-#include <linux/proc_fs.h>
+/* proc_fs.h removed - empty header */
 /* seq_file.h, kmod.h removed - headers empty */
 #include <linux/init.h>
 #include <linux/module.h>

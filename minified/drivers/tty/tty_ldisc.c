@@ -9,7 +9,7 @@
 #include <linux/string.h>
 #include <linux/slab.h>
 #include <linux/poll.h>
-#include <linux/proc_fs.h>
+/* proc_fs.h removed - empty header */
 #include <linux/module.h>
 #include <linux/device.h>
 #include <linux/wait.h>

@@ -49,7 +49,7 @@ extern unsigned int nr_iowait_cpu(int cpu);
 
 /* plist.h removed - unused */
 #include <linux/poll.h>
-#include <linux/proc_fs.h>
+/* proc_fs.h removed - empty header */
 #include <linux/rcupdate.h>
 /* seq_file.h removed - header is empty */
 #include <linux/seqlock.h>

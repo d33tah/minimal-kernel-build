@@ -18,7 +18,7 @@
 #include <linux/pfn.h>
 #include <linux/poison.h>
 #include <linux/memblock.h>
-#include <linux/proc_fs.h>
+/* proc_fs.h removed - empty header */
 #include <linux/initrd.h>
 #include <linux/gfp.h>
 

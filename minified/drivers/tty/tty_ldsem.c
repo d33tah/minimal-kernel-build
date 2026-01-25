@@ -208,8 +208,9 @@ static struct ld_semaphore __sched *down_write_failed(struct ld_semaphore *sem,
 	return sem;
 }
 
-static int __ldsem_down_read_nested(struct ld_semaphore *sem, int subclass,
-				    long timeout)
+/* __ldsem_down_read_nested and __ldsem_down_write_nested inlined below */
+
+int __sched ldsem_down_read(struct ld_semaphore *sem, long timeout)
 {
 	long count;
 
@@ -220,25 +221,6 @@ static int __ldsem_down_read_nested(struct ld_semaphore *sem, int subclass,
 		}
 	}
 	return 1;
-}
-
-static int __ldsem_down_write_nested(struct ld_semaphore *sem, int subclass,
-				     long timeout)
-{
-	long count;
-
-	count = atomic_long_add_return(LDSEM_WRITE_BIAS, &sem->count);
-	if ((count & LDSEM_ACTIVE_MASK) != LDSEM_ACTIVE_BIAS) {
-		if (!down_write_failed(sem, count, timeout)) {
-			return 0;
-		}
-	}
-	return 1;
-}
-
-int __sched ldsem_down_read(struct ld_semaphore *sem, long timeout)
-{
-	return __ldsem_down_read_nested(sem, 0, timeout);
 }
 
 int ldsem_down_read_trylock(struct ld_semaphore *sem)
@@ -256,7 +238,15 @@ int ldsem_down_read_trylock(struct ld_semaphore *sem)
 
 int __sched ldsem_down_write(struct ld_semaphore *sem, long timeout)
 {
-	return __ldsem_down_write_nested(sem, 0, timeout);
+	long count;
+
+	count = atomic_long_add_return(LDSEM_WRITE_BIAS, &sem->count);
+	if ((count & LDSEM_ACTIVE_MASK) != LDSEM_ACTIVE_BIAS) {
+		if (!down_write_failed(sem, count, timeout)) {
+			return 0;
+		}
+	}
+	return 1;
 }
 
 int ldsem_down_write_trylock(struct ld_semaphore *sem)

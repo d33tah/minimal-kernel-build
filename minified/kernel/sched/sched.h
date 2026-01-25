@@ -7,7 +7,8 @@
 #include <linux/sched.h>
 /* dl_prio, dl_task removed - always returned false */
 #define MAX_DL_PRIO 0
-#include <linux/sched/loadavg.h>
+/* loadavg.h inlined - LOAD_FREQ is the only macro used */
+#define LOAD_FREQ (5*HZ+1)
 #include <linux/sched/mm.h>
 
 #include <linux/sched/signal.h>

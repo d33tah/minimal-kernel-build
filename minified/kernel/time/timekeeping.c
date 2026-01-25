@@ -6,7 +6,7 @@
 #include <linux/init.h>
 #include <linux/mm.h>
 #include <linux/sched.h>
-#include <linux/sched/loadavg.h>
+/* loadavg.h include removed - LOAD_FREQ not used here */
 #include <linux/sched/clock.h>
 #include <linux/clocksource.h>
 #include <linux/jiffies.h>

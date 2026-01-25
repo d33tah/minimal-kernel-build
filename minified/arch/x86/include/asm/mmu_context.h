@@ -5,7 +5,9 @@
 #include <asm/desc.h>
 #include <linux/atomic.h>
 #include <linux/mm_types.h>
-#include <linux/pkeys.h>
+/* pkeys.h inlined - only user */
+#define ARCH_DEFAULT_PKEY 0
+#define execute_only_pkey(mm) (0)
 
 
 

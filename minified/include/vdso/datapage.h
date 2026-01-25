@@ -13,7 +13,7 @@
 #include <linux/ktime.h>
 #include <linux/math64.h>
 #include <linux/time64.h>
-#include <linux/time32.h>
+/* time32.h removed - types now in time.h */
 #include <linux/time.h>
 
 struct arch_vdso_data {};

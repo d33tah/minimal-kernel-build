@@ -2,7 +2,7 @@
 #include <linux/sched/cputime.h>
 #include <linux/sched/debug.h>
 #include <linux/sched/isolation.h>
-#include <linux/sched/loadavg.h>
+/* loadavg.h removed - LOAD_FREQ moved to sched.h */
 #include <linux/sched/mm.h>
 
 #include <linux/sched/task_stack.h>

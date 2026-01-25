@@ -63,7 +63,9 @@ static inline bool folio_try_get_rcu(struct folio *folio)
 {
 	return atomic_add_unless(&folio->page._refcount, 1, 0);
 }
-#include <linux/sizes.h>
+/* sizes.h inlined */
+#define SZ_64K				0x00010000
+#define SZ_1M				0x00100000
 #include <linux/sched.h>
 #include <linux/pgtable.h>
 

@@ -31,7 +31,9 @@ struct math_emu_info {
 #include <asm/fpu/types.h>
 #include <asm/unwind_hints.h>
 /* Removed: #include <asm/vmxfeatures.h> - not needed for minimal kernel */
-#include <asm/vdso/processor.h>
+/* vdso/processor.h inlined */
+static __always_inline void rep_nop(void) { asm volatile("rep; nop" ::: "memory"); }
+static __always_inline void cpu_relax(void) { rep_nop(); }
 
 #include <linux/personality.h>
 #include <linux/cache.h>

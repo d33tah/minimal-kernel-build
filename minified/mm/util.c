@@ -178,7 +178,8 @@ bool folio_mapped(struct folio *folio)
 
 	if (!folio_test_large(folio))
 		return atomic_read(&folio->_mapcount) >= 0;
-	if (atomic_read(folio_mapcount_ptr(folio)) >= 0)
+	/* folio_mapcount_ptr inlined */
+	if (atomic_read(&(&folio->page + 1)->compound_mapcount) >= 0)
 		return true;
 	/* folio_test_hugetlb always returns false, skip check */
 

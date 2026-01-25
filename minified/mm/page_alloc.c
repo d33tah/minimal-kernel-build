@@ -164,7 +164,9 @@ void prep_compound_page(struct page *page, unsigned int order)
 				   1); /* inlined set_compound_head */
 	}
 
-	set_compound_page_dtor(page, COMPOUND_PAGE_DTOR);
+	/* set_compound_page_dtor inlined */
+	VM_BUG_ON_PAGE(COMPOUND_PAGE_DTOR >= NR_COMPOUND_DTORS, page);
+	page[1].compound_dtor = COMPOUND_PAGE_DTOR;
 	page[1].compound_order = order; /* inlined set_compound_order */
 	atomic_set(compound_mapcount_ptr(page), -1);
 	atomic_set(compound_pincount_ptr(page), 0);

@@ -93,8 +93,17 @@ __visible struct task_struct *__switch_to(struct task_struct *prev_p,
 
 	arch_end_context_switch(next_p);
 
-	update_task_stack(next_p);
-	refresh_sysenter_cs(next);
+	/* update_task_stack inlined */
+	if (static_cpu_has(X86_FEATURE_XENPV))
+		load_sp0(next_p->thread.sp0);
+	else
+		this_cpu_write(cpu_tss_rw.x86_tss.sp1, next_p->thread.sp0);
+	/* refresh_sysenter_cs inlined */
+	if (unlikely(this_cpu_read(cpu_tss_rw.x86_tss.ss1) !=
+		     next->sysenter_cs)) {
+		this_cpu_write(cpu_tss_rw.x86_tss.ss1, next->sysenter_cs);
+		wrmsr(MSR_IA32_SYSENTER_CS, next->sysenter_cs, 0);
+	}
 	this_cpu_write(cpu_current_top_of_stack,
 		       (unsigned long)task_stack_page(next_p) + THREAD_SIZE);
 

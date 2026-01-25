@@ -78,7 +78,8 @@ static void __tlb_gather_mmu(struct mmu_gather *tlb, struct mm_struct *mm,
 	/* tlb_table_init removed - empty stub */
 
 	__tlb_reset_range(tlb);
-	inc_tlb_flush_pending(tlb->mm);
+	atomic_inc(
+		&tlb->mm->tlb_flush_pending); /* inc_tlb_flush_pending inlined */
 }
 
 void tlb_gather_mmu(struct mmu_gather *tlb, struct mm_struct *mm)
@@ -95,7 +96,8 @@ void tlb_finish_mmu(struct mmu_gather *tlb)
 {
 	struct mmu_gather_batch *batch, *next;
 
-	if (mm_tlb_flush_nested(tlb->mm)) {
+	if (atomic_read(&tlb->mm->tlb_flush_pending) >
+	    1) { /* mm_tlb_flush_nested inlined */
 		tlb->fullmm = 1;
 		__tlb_reset_range(tlb);
 		tlb->freed_tables = 1;
@@ -108,5 +110,6 @@ void tlb_finish_mmu(struct mmu_gather *tlb)
 		/* free_pages removed - empty stub */
 	}
 	tlb->local.next = NULL;
-	dec_tlb_flush_pending(tlb->mm);
+	atomic_dec(
+		&tlb->mm->tlb_flush_pending); /* dec_tlb_flush_pending inlined */
 }

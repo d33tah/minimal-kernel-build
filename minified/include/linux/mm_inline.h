@@ -102,28 +102,6 @@ static __always_inline void del_page_from_lru_list(struct page *page,
 }
 
 /* anon_vma_name, anon_vma_name_eq, dup_anon_vma_name, free_anon_vma_name removed - never called */
-
-static inline void init_tlb_flush_pending(struct mm_struct *mm)
-{
-	atomic_set(&mm->tlb_flush_pending, 0);
-}
-
-static inline void inc_tlb_flush_pending(struct mm_struct *mm)
-{
-	atomic_inc(&mm->tlb_flush_pending);
-	 
-}
-
-static inline void dec_tlb_flush_pending(struct mm_struct *mm)
-{
-
-	atomic_dec(&mm->tlb_flush_pending);
-}
-
-static inline bool mm_tlb_flush_nested(struct mm_struct *mm)
-{
-
-	return atomic_read(&mm->tlb_flush_pending) > 1;
-}
+/* init_tlb_flush_pending, inc_tlb_flush_pending, dec_tlb_flush_pending, mm_tlb_flush_nested inlined at call sites */
 
 #endif

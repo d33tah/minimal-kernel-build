@@ -385,7 +385,8 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	mm_init_cpumask(mm);
 	RCU_INIT_POINTER(mm->exe_file, NULL);
 	/* mmu_notifier_subscriptions_init, hugetlb_count_init removed - empty stubs */
-	init_tlb_flush_pending(mm);
+	atomic_set(&mm->tlb_flush_pending,
+		   0); /* init_tlb_flush_pending inlined */
 
 	if (current->mm) {
 		mm->flags = current->mm->flags & MMF_INIT_MASK;

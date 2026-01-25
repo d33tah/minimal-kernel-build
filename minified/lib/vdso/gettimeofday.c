@@ -68,7 +68,16 @@ static __always_inline int do_hres(const struct vdso_data *vd, clockid_t clk,
 		sec = vdso_ts->sec;
 	} while (unlikely(vdso_read_retry(vd, seq)));
 
-	ts->tv_sec = sec + __iter_div_u64_rem(ns, NSEC_PER_SEC, &ns);
+	/* __iter_div_u64_rem inlined */
+	{
+		u32 extra_sec = 0;
+		while (ns >= NSEC_PER_SEC) {
+			asm("" : "+rm"(ns));
+			ns -= NSEC_PER_SEC;
+			extra_sec++;
+		}
+		ts->tv_sec = sec + extra_sec;
+	}
 	ts->tv_nsec = ns;
 
 	return 0;

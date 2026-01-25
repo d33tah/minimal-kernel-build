@@ -6,7 +6,6 @@
 #include <linux/irqdomain.h>
 #include <linux/interrupt.h>
 #include <linux/kernel_stat.h>
-#include <linux/irqdomain.h>
 
 #include "internals.h"
 

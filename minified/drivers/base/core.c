@@ -31,8 +31,7 @@ void __init driver_init(void)
 
 /* Removed: fwnode_link_add, fwnode_links_purge, fw_devlink_purge_absent_suppliers - no callers */
 
-/* Merged from kernel/dma/mapping.c */
-bool dma_default_coherent;
+/* bool dma_default_coherent removed - never used */
 
 DEFINE_STATIC_SRCU(device_links_srcu);
 

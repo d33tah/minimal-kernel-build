@@ -18,7 +18,7 @@
 #include <generated/timeconst.h>
 #include "timekeeping.h"
 
-struct timezone sys_tz;
+/* struct timezone sys_tz removed - never used */
 
 #ifdef __ARCH_WANT_SYS_TIME
 

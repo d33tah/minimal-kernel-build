@@ -19,10 +19,7 @@ struct cpu_dev {
 	/* legacy_cpu_model_info removed - x86_model_id never read */
 };
 
-#define cpu_dev_register(cpu_devX) \
-	static const struct cpu_dev *const __cpu_dev_##cpu_devX __used \
-	__section(".x86_cpu_dev.init") = \
-	&cpu_devX;
+/* cpu_dev_register macro removed - never used */
 
 extern const struct cpu_dev *const __x86_cpu_dev_start[],
 			    *const __x86_cpu_dev_end[];

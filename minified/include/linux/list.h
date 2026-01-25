@@ -262,10 +262,7 @@ static inline void hlist_add_head(struct hlist_node *n, struct hlist_head *h)
 	WRITE_ONCE(n->pprev, &h->first);
 }
 
-static inline bool hlist_fake(struct hlist_node *h)
-{
-	return h->pprev == &h->next;
-}
+/* hlist_fake inlined into inode.c */
 
 /* hlist_move_list inlined into namespace.c */
 

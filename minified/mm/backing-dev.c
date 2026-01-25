@@ -52,53 +52,36 @@ void wb_workfn(struct work_struct *work)
 }
 
 /* INIT_BW removed - no longer used after field removal */
+/* wb_init inlined into bdi_init */
+/* wb_shutdown, cgwb_remove_from_bdi_list, wb_exit inlined */
 
-static int wb_init(struct bdi_writeback *wb, struct backing_dev_info *bdi,
-		   gfp_t gfp)
+int bdi_init(struct backing_dev_info *bdi)
 {
-	/* i, err removed - stat init loop and error handling removed */
+	struct bdi_writeback *wb = &bdi->wb;
 
+	bdi->dev = NULL;
+
+	kref_init(&bdi->refcnt);
+	INIT_LIST_HEAD(&bdi->bdi_list);
+	INIT_LIST_HEAD(&bdi->wb_list);
+	init_waitqueue_head(&bdi->wb_waitq);
+
+	/* Inlined wb_init */
 	memset(wb, 0, sizeof(*wb));
-
 	wb->bdi = bdi;
-	/* last_old_flush init removed - field removed */
 	INIT_LIST_HEAD(&wb->b_dirty);
 	INIT_LIST_HEAD(&wb->b_io);
 	INIT_LIST_HEAD(&wb->b_more_io);
 	INIT_LIST_HEAD(&wb->b_dirty_time);
 	spin_lock_init(&wb->list_lock);
-
 	atomic_set(&wb->writeback_inodes, 0);
-	/* bw_time_stamp, balanced_dirty_ratelimit, dirty_ratelimit,
-	   write_bandwidth, avg_write_bandwidth, dirty_sleep inits removed
-	   - fields removed from struct */
-
 	spin_lock_init(&wb->work_lock);
 	INIT_LIST_HEAD(&wb->work_list);
 	INIT_DELAYED_WORK(&wb->dwork, wb_workfn);
 	INIT_DELAYED_WORK(&wb->bw_dwork, wb_update_bandwidth_workfn);
-
-	/* fprop_local_init_percpu now void - always succeeds */
-	fprop_local_init_percpu(&wb->completions, gfp);
-
-	/* stat init loop removed - NR_WB_STAT_ITEMS is 0 */
+	fprop_local_init_percpu(&wb->completions, GFP_KERNEL);
 
 	return 0;
-}
-
-/* wb_shutdown, cgwb_remove_from_bdi_list, wb_exit inlined */
-
-int bdi_init(struct backing_dev_info *bdi)
-{
-	bdi->dev = NULL;
-
-	kref_init(&bdi->refcnt);
-	/* min_ratio, max_ratio, max_prop_frac assignments removed - fields removed */
-	INIT_LIST_HEAD(&bdi->bdi_list);
-	INIT_LIST_HEAD(&bdi->wb_list);
-	init_waitqueue_head(&bdi->wb_waitq);
-
-	return wb_init(&bdi->wb, bdi, GFP_KERNEL);
 }
 
 /* bdi_remove_from_list removed - inlined into single caller (~8 LOC) */

@@ -596,7 +596,11 @@ static void namespace_unlock(void)
 	LIST_HEAD(list);
 
 	hlist_move_list(&unmounted, &head);
-	list_splice_init(&ex_mountpoints, &list);
+	/* list_splice_init inlined */
+	if (!list_empty(&ex_mountpoints)) {
+		__list_splice(&ex_mountpoints, &list, list.next);
+		INIT_LIST_HEAD(&ex_mountpoints);
+	}
 
 	up_write(&namespace_sem);
 

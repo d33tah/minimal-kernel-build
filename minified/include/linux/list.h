@@ -147,14 +147,7 @@ static inline void list_splice(const struct list_head *list,
 
 
 
-static inline void list_splice_init(struct list_head *list,
-				    struct list_head *head)
-{
-	if (!list_empty(list)) {
-		__list_splice(list, head, head->next);
-		INIT_LIST_HEAD(list);
-	}
-}
+/* list_splice_init inlined into namespace.c */
 
 static inline void list_splice_tail_init(struct list_head *list,
 					 struct list_head *head)

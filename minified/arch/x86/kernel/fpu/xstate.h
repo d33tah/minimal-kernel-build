@@ -11,11 +11,7 @@
 
 /* xstate_init_xcomp_bv removed - inlined at single call site */
 
-enum xstate_copy_mode {
-	XSTATE_COPY_FP,
-	XSTATE_COPY_FX,
-	XSTATE_COPY_XSAVE,
-};
+/* enum xstate_copy_mode removed - never used */
 
 /* struct membuf, __copy_xstate_to_uabi_buf, copy_xstate_to_uabi_buf,
  * copy_uabi_from_kernel_to_xstate, get_xsave_addr,

@@ -16,11 +16,7 @@ struct tick_device {
 	enum tick_device_mode mode;
 };
 
-enum tick_nohz_mode {
-	NOHZ_MODE_INACTIVE,
-	NOHZ_MODE_LOWRES,
-	NOHZ_MODE_HIGHRES,
-};
+/* enum tick_nohz_mode removed - never used */
 
 # define TICK_DO_TIMER_NONE	-1
 # define TICK_DO_TIMER_BOOT	-2

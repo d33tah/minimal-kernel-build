@@ -579,12 +579,26 @@ void iov_iter_advance(struct iov_iter *i, size_t size)
 			i->iov = iov;
 		}
 	} else if (iov_iter_is_bvec(i)) {
-		/* iov_iter_bvec_advance inlined */
+		/* bvec_iter_advance inlined */
 		struct bvec_iter bi;
+		unsigned int idx, bytes;
 		bi.bi_size = i->count;
 		bi.bi_bvec_done = i->iov_offset;
 		bi.bi_idx = 0;
-		bvec_iter_advance(i->bvec, &bi, size);
+		idx = bi.bi_idx;
+		if (WARN_ONCE(size > bi.bi_size,
+			      "Attempted to advance past end of bvec iter\n")) {
+			bi.bi_size = 0;
+		} else {
+			bi.bi_size -= size;
+			bytes = size + bi.bi_bvec_done;
+			while (bytes && bytes >= i->bvec[idx].bv_len) {
+				bytes -= i->bvec[idx].bv_len;
+				idx++;
+			}
+			bi.bi_idx = idx;
+			bi.bi_bvec_done = bytes;
+		}
 		i->bvec += bi.bi_idx;
 		i->nr_segs -= bi.bi_idx;
 		i->count = bi.bi_size;

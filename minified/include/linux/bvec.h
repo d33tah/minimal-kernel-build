@@ -27,31 +27,7 @@ struct bvec_iter {
 } __packed;
 
 
-/* All bvec iterator macros removed - only bvec_iter_advance used directly */
-
-static inline bool bvec_iter_advance(const struct bio_vec *bv,
-		struct bvec_iter *iter, unsigned bytes)
-{
-	unsigned int idx = iter->bi_idx;
-
-	if (WARN_ONCE(bytes > iter->bi_size,
-		     "Attempted to advance past end of bvec iter\n")) {
-		iter->bi_size = 0;
-		return false;
-	}
-
-	iter->bi_size -= bytes;
-	bytes += iter->bi_bvec_done;
-
-	while (bytes && bytes >= bv[idx].bv_len) {
-		bytes -= bv[idx].bv_len;
-		idx++;
-	}
-
-	iter->bi_idx = idx;
-	iter->bi_bvec_done = bytes;
-	return true;
-}
+/* bvec_iter_advance inlined into iov_iter.c */
 
 
 #endif  

@@ -132,7 +132,9 @@ static void exit_to_user_mode_prepare(struct pt_regs *regs)
 	if (unlikely(ti_work & EXIT_TO_USER_MODE_WORK))
 		ti_work = exit_to_user_mode_loop(regs, ti_work);
 
-	arch_exit_to_user_mode_prepare(regs, ti_work);
+	/* arch_exit_to_user_mode_prepare inlined */
+	if (unlikely(ti_work & _TIF_NEED_FPU_LOAD))
+		switch_fpu_return();
 
 	/* addr_limit_user_check removed - empty stub */
 	/* kmap_assert_nomap inlined */

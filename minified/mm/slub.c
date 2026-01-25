@@ -419,12 +419,28 @@ redo:
 		prefetchw(next_object + s->offset);
 	}
 
-	/* maybe_wipe_obj_freeptr inlined */
-	if (unlikely(slab_want_init_on_free(s)) && object)
+	/* maybe_wipe_obj_freeptr + slab_want_init_on_free inlined */
+	if (static_branch_maybe(CONFIG_INIT_ON_FREE_DEFAULT_ON,
+				&init_on_free) &&
+	    !(s->ctor || (s->flags & (SLAB_TYPESAFE_BY_RCU | SLAB_POISON))) &&
+	    object)
 		memset((void *)((char *)object + s->offset), 0, sizeof(void *));
-	init = slab_want_init_on_alloc(gfpflags, s);
 
-	/* slab_post_alloc_hook inlined - only 1 element so loop simplified */
+	/* slab_want_init_on_alloc inlined */
+	if (static_branch_maybe(CONFIG_INIT_ON_ALLOC_DEFAULT_ON,
+				&init_on_alloc)) {
+		if (!s->ctor &&
+		    !(s->flags & (SLAB_TYPESAFE_BY_RCU | SLAB_POISON)))
+			init = true;
+		else if (s->flags & (SLAB_TYPESAFE_BY_RCU | SLAB_POISON))
+			init = gfpflags & __GFP_ZERO;
+		else
+			init = false;
+	} else {
+		init = gfpflags & __GFP_ZERO;
+	}
+
+	/* slab_post_alloc_hook inlined */
 	if (object && init)
 		memset(object, 0, s->object_size);
 

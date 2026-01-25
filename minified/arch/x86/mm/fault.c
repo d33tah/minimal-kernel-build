@@ -312,32 +312,7 @@ static noinline int spurious_kernel_fault(unsigned long error_code,
 NOKPROBE_SYMBOL(spurious_kernel_fault);
 
 /* show_unhandled_signals removed - never used */
-
-static inline int access_error(unsigned long error_code,
-			       struct vm_area_struct *vma)
-{
-	/* foreign variable removed - PKU disabled */
-
-	if (error_code & X86_PF_PK)
-		return 1;
-
-	if (unlikely(error_code & X86_PF_SGX))
-		return 1;
-	/* arch_vma_access_permitted always returns true (OSPKE disabled) */
-	if (error_code & X86_PF_WRITE) {
-		if (unlikely(!(vma->vm_flags & VM_WRITE)))
-			return 1;
-		return 0;
-	}
-
-	if (unlikely(error_code & X86_PF_PROT))
-		return 1;
-
-	if (unlikely(!vma_is_accessible(vma)))
-		return 1;
-
-	return 0;
-}
+/* access_error inlined at single call site */
 
 bool fault_in_kernel_space(unsigned long address)
 {
@@ -440,7 +415,14 @@ retry:
 	}
 
 good_area:
-	if (unlikely(access_error(error_code, vma))) {
+	/* access_error inlined */
+	if (unlikely((error_code & X86_PF_PK) || (error_code & X86_PF_SGX) ||
+		     ((error_code & X86_PF_WRITE) &&
+		      !(vma->vm_flags & VM_WRITE)) ||
+		     ((!(error_code & X86_PF_WRITE)) &&
+		      (error_code & X86_PF_PROT)) ||
+		     ((!(error_code & X86_PF_WRITE)) &&
+		      !vma_is_accessible(vma)))) {
 		bad_area_access_error(regs, error_code, address, vma);
 		return;
 	}

@@ -208,44 +208,7 @@ static struct task_struct *find_new_reaper(struct task_struct *father,
 	return child_reaper;
 }
 
-/* reparent_leader inlined into forget_original_parent */
-
-static void forget_original_parent(struct task_struct *father,
-				   struct list_head *dead)
-{
-	struct task_struct *p, *t, *reaper;
-
-	/* exit_ptrace call removed - function was empty */
-
-	reaper = find_child_reaper(father, dead);
-	if (list_empty(&father->children))
-		return;
-
-	reaper = find_new_reaper(father, reaper);
-	list_for_each_entry(p, &father->children, sibling) {
-		for_each_thread(p, t) {
-			RCU_INIT_POINTER(t->real_parent, reaper);
-			BUG_ON((!t->ptrace) !=
-			       (rcu_access_pointer(t->parent) == father));
-			if (likely(!t->ptrace))
-				t->parent = t->real_parent;
-			if (t->pdeath_signal)
-				group_send_sig_info(t->pdeath_signal,
-						    SEND_SIG_NOINFO, t,
-						    PIDTYPE_TGID);
-		}
-
-		/* Inlined reparent_leader */
-		if (!same_thread_group(reaper, father) &&
-		    likely(p->exit_state != EXIT_DEAD)) {
-			p->exit_signal = SIGCHLD;
-			/* do_notify_parent always returns false - dead code removed */
-		}
-	}
-	list_splice_tail_init(&father->children, &reaper->children);
-}
-
-/* exit_notify inlined into do_exit */
+/* reparent_leader, forget_original_parent, exit_notify inlined into do_exit */
 
 void __noreturn do_exit(long code)
 {
@@ -290,14 +253,40 @@ void __noreturn do_exit(long code)
 	exit_task_work(tsk);
 	exit_thread(tsk);
 
-	/* Inlined exit_notify */
+	/* Inlined exit_notify with forget_original_parent */
 	{
 		bool autoreap;
-		struct task_struct *p, *n;
+		struct task_struct *p, *n, *t, *reaper;
 		LIST_HEAD(dead);
 
 		write_lock_irq(&tasklist_lock);
-		forget_original_parent(tsk, &dead);
+
+		/* Inlined forget_original_parent */
+		reaper = find_child_reaper(tsk, &dead);
+		if (!list_empty(&tsk->children)) {
+			reaper = find_new_reaper(tsk, reaper);
+			list_for_each_entry(p, &tsk->children, sibling) {
+				for_each_thread(p, t) {
+					RCU_INIT_POINTER(t->real_parent,
+							 reaper);
+					BUG_ON((!t->ptrace) !=
+					       (rcu_access_pointer(t->parent) ==
+						tsk));
+					if (likely(!t->ptrace))
+						t->parent = t->real_parent;
+					if (t->pdeath_signal)
+						group_send_sig_info(
+							t->pdeath_signal,
+							SEND_SIG_NOINFO, t,
+							PIDTYPE_TGID);
+				}
+				if (!same_thread_group(reaper, tsk) &&
+				    likely(p->exit_state != EXIT_DEAD))
+					p->exit_signal = SIGCHLD;
+			}
+			list_splice_tail_init(&tsk->children,
+					      &reaper->children);
+		}
 
 		tsk->exit_state = EXIT_ZOMBIE;
 		autoreap = !tsk->ptrace && !thread_group_leader(tsk);

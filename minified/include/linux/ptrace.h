@@ -65,23 +65,7 @@ static inline void ptrace_event(int event, unsigned long message)
 
 /* ptrace_event_pid removed - never called */
 
-static inline void ptrace_init_task(struct task_struct *child, bool ptrace)
-{
-	INIT_LIST_HEAD(&child->ptrace_entry);
-	INIT_LIST_HEAD(&child->ptraced);
-	child->jobctl = 0;
-	child->ptrace = 0;
-	child->parent = child->real_parent;
-
-	if (unlikely(ptrace) && current->ptrace) {
-		child->ptrace = current->ptrace;
-		__ptrace_link(child, current->parent, NULL);  /* ptracer_cred field removed */
-
-		/* task_set_jobctl_pending removed - always returns false */
-		sigaddset(&child->pending.signal, SIGSTOP);
-	}
-	/* child->ptracer_cred = NULL removed - field removed from task_struct */
-}
+/* ptrace_init_task inlined at single call site in fork.c */
 
 static inline void ptrace_release_task(struct task_struct *task)
 {

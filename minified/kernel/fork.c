@@ -753,8 +753,17 @@ copy_process(struct pid *pid, int trace, int node,
 			INIT_HLIST_NODE(&p->pid_links[type]);
 	}
 	if (likely(p->pid)) {
-		/* CLONE_PTRACE never set, trace from ptrace_event_enabled */
-		ptrace_init_task(p, trace);
+		/* ptrace_init_task inlined */
+		INIT_LIST_HEAD(&p->ptrace_entry);
+		INIT_LIST_HEAD(&p->ptraced);
+		p->jobctl = 0;
+		p->ptrace = 0;
+		p->parent = p->real_parent;
+		if (unlikely(trace) && current->ptrace) {
+			p->ptrace = current->ptrace;
+			__ptrace_link(p, current->parent, NULL);
+			sigaddset(&p->pending.signal, SIGSTOP);
+		}
 
 		init_task_pid(p, PIDTYPE_PID, pid);
 		if (thread_group_leader(p)) {

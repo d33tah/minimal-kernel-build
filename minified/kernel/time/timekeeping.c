@@ -315,34 +315,13 @@ void __init timekeeping_init(void)
 	raw_spin_unlock_irqrestore(&timekeeper_lock, flags);
 }
 
-static __always_inline void
-timekeeping_apply_adjustment(struct timekeeper *tk, s64 offset, s32 mult_adj)
-{
-	s64 interval = tk->cycle_interval;
-
-	if (mult_adj == 0) {
-		return;
-	} else if (mult_adj == -1) {
-		interval = -interval;
-		offset = -offset;
-	} else if (mult_adj != 1) {
-		interval *= mult_adj;
-		offset *= mult_adj;
-	}
-
-	if ((mult_adj > 0) && (tk->tkr_mono.mult + mult_adj < mult_adj)) {
-		WARN_ON_ONCE(1);
-		return;
-	}
-
-	tk->tkr_mono.mult += mult_adj;
-	tk->xtime_interval += interval;
-	tk->tkr_mono.xtime_nsec -= offset;
-}
+/* timekeeping_apply_adjustment inlined into timekeeping_adjust */
 
 static void timekeeping_adjust(struct timekeeper *tk, s64 offset)
 {
 	u32 mult;
+	s32 mult_adj;
+	s64 interval;
 
 	if (likely(tk->ntp_tick == NTP_TICK_LENGTH)) {
 		mult = tk->tkr_mono.mult - tk->ntp_err_mult;
@@ -356,7 +335,28 @@ static void timekeeping_adjust(struct timekeeper *tk, s64 offset)
 	tk->ntp_err_mult = tk->ntp_error > 0 ? 1 : 0;
 	mult += tk->ntp_err_mult;
 
-	timekeeping_apply_adjustment(tk, offset, mult - tk->tkr_mono.mult);
+	/* Inlined timekeeping_apply_adjustment */
+	mult_adj = mult - tk->tkr_mono.mult;
+	interval = tk->cycle_interval;
+
+	if (mult_adj != 0) {
+		if (mult_adj == -1) {
+			interval = -interval;
+			offset = -offset;
+		} else if (mult_adj != 1) {
+			interval *= mult_adj;
+			offset *= mult_adj;
+		}
+
+		if (!((mult_adj > 0) &&
+		      (tk->tkr_mono.mult + mult_adj < mult_adj))) {
+			tk->tkr_mono.mult += mult_adj;
+			tk->xtime_interval += interval;
+			tk->tkr_mono.xtime_nsec -= offset;
+		} else {
+			WARN_ON_ONCE(1);
+		}
+	}
 
 	if (unlikely(tk->tkr_mono.clock->maxadj &&
 		     (abs(tk->tkr_mono.mult - tk->tkr_mono.clock->mult) >

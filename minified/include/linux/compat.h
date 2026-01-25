@@ -10,7 +10,11 @@
 #include <linux/fs.h>
 #include <linux/uaccess.h>
 #include <linux/unistd.h>
-#include <asm/compat.h>
+/* asm/compat.h inlined - just provides includes */
+#include <linux/sched.h>
+#include <linux/sched/task_stack.h>
+#include <asm/processor.h>
+#include <asm/unistd.h>
 #include <asm/siginfo.h>
 #include <asm/signal.h>
 #include <asm/syscall_wrapper.h>

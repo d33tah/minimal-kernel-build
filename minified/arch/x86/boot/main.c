@@ -36,58 +36,13 @@ static void copy_boot_params(void)
 	}
 }
 
-static void keyboard_init(void)
-{
-	struct biosregs ireg, oreg;
-	initregs(&ireg);
-
-	ireg.ah = 0x02;
-	intcall(0x16, &ireg, &oreg);
-	boot_params.kbd_status = oreg.al;
-
-	ireg.ax = 0x0305;
-	intcall(0x16, &ireg, NULL);
-}
-
-static void query_ist(void)
-{
-	struct biosregs ireg, oreg;
-
-	if (cpu.level < 6)
-		return;
-
-	initregs(&ireg);
-	ireg.ax = 0xe980;
-	ireg.edx = 0x47534943;
-	intcall(0x15, &ireg, &oreg);
-
-	boot_params.ist_info.signature = oreg.eax;
-	boot_params.ist_info.command = oreg.ebx;
-	boot_params.ist_info.event = oreg.ecx;
-	boot_params.ist_info.perf_level = oreg.edx;
-}
-
+/* keyboard_init, query_ist, init_heap inlined into main */
 /* set_bios_mode removed - was empty stub */
-
-static void init_heap(void)
-{
-	char *stack_end;
-
-	if (boot_params.hdr.loadflags & CAN_USE_HEAP) {
-		asm("leal %P1(%%esp),%0" : "=r"(stack_end) : "i"(-STACK_SIZE));
-
-		heap_end =
-			(char *)((size_t)boot_params.hdr.heap_end_ptr + 0x200);
-		if (heap_end > stack_end)
-			heap_end = stack_end;
-	} else {
-		puts("WARNING: Ancient bootloader, some functionality "
-		     "may be limited!\n");
-	}
-}
 
 void main(void)
 {
+	struct biosregs ireg, oreg;
+
 	init_default_io_ops();
 
 	copy_boot_params();
@@ -96,11 +51,20 @@ void main(void)
 	if (cmdline_find_option_bool("debug"))
 		puts("early console in setup code\n");
 
-	init_heap();
+	/* init_heap inlined */
+	if (boot_params.hdr.loadflags & CAN_USE_HEAP) {
+		char *stack_end;
+		asm("leal %P1(%%esp),%0" : "=r"(stack_end) : "i"(-STACK_SIZE));
+		heap_end =
+			(char *)((size_t)boot_params.hdr.heap_end_ptr + 0x200);
+		if (heap_end > stack_end)
+			heap_end = stack_end;
+	} else {
+		puts("WARNING: Ancient bootloader, some functionality may be limited!\n");
+	}
 
 	if (validate_cpu()) {
-		puts("Unable to boot - please use a kernel appropriate "
-		     "for your CPU.\n");
+		puts("Unable to boot - please use a kernel appropriate for your CPU.\n");
 		die();
 	}
 
@@ -108,9 +72,25 @@ void main(void)
 
 	detect_memory();
 
-	keyboard_init();
+	/* keyboard_init inlined */
+	initregs(&ireg);
+	ireg.ah = 0x02;
+	intcall(0x16, &ireg, &oreg);
+	boot_params.kbd_status = oreg.al;
+	ireg.ax = 0x0305;
+	intcall(0x16, &ireg, NULL);
 
-	query_ist();
+	/* query_ist inlined */
+	if (cpu.level >= 6) {
+		initregs(&ireg);
+		ireg.ax = 0xe980;
+		ireg.edx = 0x47534943;
+		intcall(0x15, &ireg, &oreg);
+		boot_params.ist_info.signature = oreg.eax;
+		boot_params.ist_info.command = oreg.ebx;
+		boot_params.ist_info.event = oreg.ecx;
+		boot_params.ist_info.perf_level = oreg.edx;
+	}
 
 	set_video();
 

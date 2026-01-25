@@ -5,7 +5,7 @@
 
 /* asm/acpi.h removed - unused */
 #include <asm/bios_ebda.h>
-#include <asm/paravirt.h>
+/* paravirt.h removed - header is empty */
 /* asm/pci_x86.h removed - file was empty stub */
 #include <asm/mpspec.h>
 #include <asm/setup.h>

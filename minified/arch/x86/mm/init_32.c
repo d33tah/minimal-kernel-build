@@ -35,7 +35,7 @@
 /* olpc_dt_build_devicetree removed - empty stub */
 #include <asm/pgalloc.h>
 #include <asm/sections.h>
-#include <asm/paravirt.h>
+/* paravirt.h removed - header is empty */
 #include <asm/setup.h>
 #include <asm/set_memory.h>
 #include <asm/page_types.h>

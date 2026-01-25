@@ -10,7 +10,7 @@
 
 
 #include <asm/tlbflush.h>
-#include <asm/paravirt.h>
+/* paravirt.h removed - header is empty */
 #include <asm/debugreg.h>
 
 extern atomic64_t last_mm_ctx_id;

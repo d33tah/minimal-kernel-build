@@ -8,8 +8,7 @@
 #ifndef __ASSEMBLY__
 #include <asm/processor.h>
 #include <linux/threads.h>
-#include <asm/paravirt.h>
-
+/* paravirt.h removed - header is empty */
 #include <linux/bitops.h>
 #include <linux/list.h>
 #include <linux/spinlock.h>

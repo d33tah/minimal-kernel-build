@@ -11,7 +11,10 @@
 #include <linux/memremap.h>
 #include <linux/rmap.h>
 #include <linux/init.h>
-#include <linux/pfn_t.h>
+/* pfn_t.h removed - all functions inlined */
+#define PFN_FLAGS_MASK \
+	(((u64)(~PAGE_MASK)) << (BITS_PER_LONG_LONG - PAGE_SHIFT))
+#define PFN_DEV (1ULL << (BITS_PER_LONG_LONG - 3))
 /* memcontrol.h removed - unused */
 #include <linux/mmu_notifier.h>
 #include <linux/swapops.h>
@@ -456,7 +459,10 @@ vm_fault_t vmf_insert_pfn_prot(struct vm_area_struct *vma, unsigned long addr,
 		struct mm_struct *mm = vma->vm_mm;
 		pte_t *pte, entry;
 		spinlock_t *ptl;
-		pfn_t pfn_val = __pfn_to_pfn_t(pfn, PFN_DEV);
+		/* __pfn_to_pfn_t, pfn_t_pte, pfn_t_to_pfn all inlined */
+		pfn_t pfn_val = {
+			.val = pfn | (PFN_DEV & PFN_FLAGS_MASK),
+		};
 
 		pte = get_locked_pte(mm, addr, &ptl);
 		if (!pte)
@@ -464,7 +470,8 @@ vm_fault_t vmf_insert_pfn_prot(struct vm_area_struct *vma, unsigned long addr,
 		if (!pte_none(*pte))
 			goto pfn_out_unlock;
 
-		entry = pte_mkspecial(pfn_t_pte(pfn_val, pgprot));
+		entry = pte_mkspecial(
+			pfn_pte(pfn_val.val & ~PFN_FLAGS_MASK, pgprot));
 		set_pte_at(mm, addr, pte, entry);
 pfn_out_unlock:
 		pte_unmap_unlock(pte, ptl);

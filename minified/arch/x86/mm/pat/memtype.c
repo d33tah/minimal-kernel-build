@@ -5,7 +5,7 @@
 #include <linux/memblock.h>
 #include <linux/ioport.h>
 #include <linux/kernel.h>
-#include <linux/pfn_t.h>
+/* pfn_t.h removed - not used */
 #include <linux/slab.h>
 #include <linux/mm.h>
 #include <linux/fs.h>

@@ -96,7 +96,7 @@ static unsigned long exit_to_user_mode_loop(struct pt_regs *regs,
 					    unsigned long ti_work)
 {
 	while (ti_work & EXIT_TO_USER_MODE_WORK) {
-		local_irq_enable_exit_to_user(ti_work);
+		local_irq_enable(); /* local_irq_enable_exit_to_user inlined */
 
 		if (ti_work & _TIF_NEED_RESCHED)
 			schedule();

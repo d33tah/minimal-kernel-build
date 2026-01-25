@@ -62,14 +62,7 @@ long syscall_enter_from_user_mode_work(struct pt_regs *regs, long syscall);
 
 long syscall_enter_from_user_mode(struct pt_regs *regs, long syscall);
 
-static inline void local_irq_enable_exit_to_user(unsigned long ti_work);
-
-#ifndef local_irq_enable_exit_to_user
-static inline void local_irq_enable_exit_to_user(unsigned long ti_work)
-{
-	local_irq_enable();
-}
-#endif
+/* local_irq_enable_exit_to_user inlined into common.c */
 
 static inline void local_irq_disable_exit_to_user(void);
 

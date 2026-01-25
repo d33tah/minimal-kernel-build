@@ -39,7 +39,8 @@ extern void doublefault_init_cpu_tss(void);
 #include <asm/desc.h>
 #include <asm/fpu/api.h>
 /* mtrr.h removed - header is empty */
-#include <asm/hwcap2.h>
+/* hwcap2.h inlined */
+#define HWCAP2_FSGSBASE _BITUL(1)
 #include <linux/numa.h>
 #include <asm/numa.h>
 #include <asm/asm.h>

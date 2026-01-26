@@ -20,7 +20,18 @@
 #include <linux/shmem_fs.h>
 #include <linux/mnt_idmapping.h>
 
-#include "pnode.h"
+/* --- 2026-01-26 01:10 --- Inlined from pnode.h */
+#include "mount.h"
+#define IS_MNT_SHARED(m) ((m)->mnt.mnt_flags & MNT_SHARED)
+#define IS_MNT_LOCKED(m) ((m)->mnt.mnt_flags & MNT_LOCKED)
+static inline void set_mnt_shared(struct mount *mnt)
+{
+	mnt->mnt.mnt_flags &= ~MNT_SHARED_MASK;
+	mnt->mnt.mnt_flags |= MNT_SHARED;
+}
+int mnt_get_count(struct mount *mnt);
+void mnt_set_mountpoint(struct mount *, struct mountpoint *, struct mount *);
+/* end pnode.h */
 #include "internal.h"
 
 static unsigned int m_hash_mask __read_mostly;

@@ -35,20 +35,7 @@ int __platform_driver_register(struct platform_driver *drv,
 
 /* Removed: __platform_driver_probe, __platform_create_bundle,
    __platform_register_drivers, platform_unregister_drivers - no external callers */
-
-static const struct platform_device_id *
-platform_match_id(const struct platform_device_id *id,
-		  struct platform_device *pdev)
-{
-	while (id->name[0]) {
-		if (strcmp(pdev->name, id->name) == 0) {
-			pdev->id_entry = id;
-			return id;
-		}
-		id++;
-	}
-	return NULL;
-}
+/* platform_match_id inlined into platform_match */
 
 /* platform_dev_attrs, platform_dev_group removed - dev_groups field never read */
 
@@ -60,8 +47,18 @@ static int platform_match(struct device *dev, struct device_driver *drv)
 	if (pdev->driver_override)
 		return !strcmp(pdev->driver_override, drv->name);
 
-	if (pdrv->id_table)
-		return platform_match_id(pdrv->id_table, pdev) != NULL;
+	if (pdrv->id_table) {
+		/* platform_match_id inlined */
+		const struct platform_device_id *id = pdrv->id_table;
+		while (id->name[0]) {
+			if (strcmp(pdev->name, id->name) == 0) {
+				pdev->id_entry = id;
+				return 1;
+			}
+			id++;
+		}
+		return 0;
+	}
 
 	return (strcmp(pdev->name, drv->name) == 0);
 }

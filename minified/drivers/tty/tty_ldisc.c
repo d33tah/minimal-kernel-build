@@ -43,35 +43,23 @@ int tty_register_ldisc(struct tty_ldisc_ops *new_ldisc)
 }
 
 /* tty_unregister_ldisc stubbed - ldisc modules never unloaded in minimal kernel */
-
-static struct tty_ldisc_ops *get_ldops(int disc)
-{
-	unsigned long flags;
-	struct tty_ldisc_ops *ldops, *ret;
-
-	raw_spin_lock_irqsave(&tty_ldiscs_lock, flags);
-	ret = ERR_PTR(-EINVAL);
-	ldops = tty_ldiscs[disc];
-	if (ldops) {
-		/* try_module_get always returns true - simplified */
-		ret = ldops;
-	}
-	raw_spin_unlock_irqrestore(&tty_ldiscs_lock, flags);
-	return ret;
-}
+/* get_ldops inlined into tty_ldisc_get */
 
 static struct tty_ldisc *tty_ldisc_get(struct tty_struct *tty, int disc)
 {
 	struct tty_ldisc *ld;
 	struct tty_ldisc_ops *ldops;
+	unsigned long flags;
 
 	if (disc < N_TTY || disc >= NR_LDISCS)
 		return ERR_PTR(-EINVAL);
 
-	ldops = get_ldops(disc);
-	/* capable() always true, request_module returns -ENOSYS - module code dead */
-	if (IS_ERR(ldops))
-		return ERR_CAST(ldops);
+	/* Inlined get_ldops */
+	raw_spin_lock_irqsave(&tty_ldiscs_lock, flags);
+	ldops = tty_ldiscs[disc];
+	raw_spin_unlock_irqrestore(&tty_ldiscs_lock, flags);
+	if (!ldops)
+		return ERR_PTR(-EINVAL);
 
 	ld = kmalloc(sizeof(struct tty_ldisc), GFP_KERNEL | __GFP_NOFAIL);
 	ld->ops = ldops;

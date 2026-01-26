@@ -525,31 +525,7 @@ static inline void pipe_truncate(struct iov_iter *i)
 	}
 }
 
-static void pipe_advance(struct iov_iter *i, size_t size)
-{
-	struct pipe_inode_info *pipe = i->pipe;
-	if (size) {
-		struct pipe_buffer *buf;
-		unsigned int p_mask = pipe->ring_size - 1;
-		unsigned int i_head = i->head;
-		size_t off = i->iov_offset, left = size;
-
-		if (off)
-			left += off - pipe->bufs[i_head & p_mask].offset;
-		while (1) {
-			buf = &pipe->bufs[i_head & p_mask];
-			if (left <= buf->len)
-				break;
-			left -= buf->len;
-			i_head++;
-		}
-		i->head = i_head;
-		i->iov_offset = buf->offset + left;
-	}
-	i->count -= size;
-
-	pipe_truncate(i);
-}
+/* pipe_advance inlined into iov_iter_advance */
 
 void iov_iter_advance(struct iov_iter *i, size_t size)
 {
@@ -597,7 +573,29 @@ void iov_iter_advance(struct iov_iter *i, size_t size)
 		i->count = bi.bi_size;
 		i->iov_offset = bi.bi_bvec_done;
 	} else if (iov_iter_is_pipe(i)) {
-		pipe_advance(i, size);
+		/* pipe_advance inlined */
+		struct pipe_inode_info *pipe = i->pipe;
+		if (size) {
+			struct pipe_buffer *buf;
+			unsigned int p_mask = pipe->ring_size - 1;
+			unsigned int i_head = i->head;
+			size_t off = i->iov_offset, left = size;
+
+			if (off)
+				left += off -
+					pipe->bufs[i_head & p_mask].offset;
+			while (1) {
+				buf = &pipe->bufs[i_head & p_mask];
+				if (left <= buf->len)
+					break;
+				left -= buf->len;
+				i_head++;
+			}
+			i->head = i_head;
+			i->iov_offset = buf->offset + left;
+		}
+		i->count -= size;
+		pipe_truncate(i);
 	} else if (unlikely(iov_iter_is_xarray(i))) {
 		i->iov_offset += size;
 		i->count -= size;

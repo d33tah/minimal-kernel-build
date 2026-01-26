@@ -161,43 +161,7 @@ void tty_ldisc_unlock(struct tty_struct *tty)
 	__tty_ldisc_unlock(tty);
 }
 
-static int tty_ldisc_lock_pair_timeout(struct tty_struct *tty,
-				       struct tty_struct *tty2,
-				       unsigned long timeout)
-{
-	int ret;
-
-	if (tty < tty2) {
-		ret = __tty_ldisc_lock(tty, timeout);
-		if (ret) {
-			ret = __tty_ldisc_lock_nested(tty2, timeout);
-			if (!ret)
-				__tty_ldisc_unlock(tty);
-		}
-	} else {
-		WARN_ON_ONCE(tty == tty2);
-		if (tty2 && tty != tty2) {
-			ret = __tty_ldisc_lock(tty2, timeout);
-			if (ret) {
-				ret = __tty_ldisc_lock_nested(tty, timeout);
-				if (!ret)
-					__tty_ldisc_unlock(tty2);
-			}
-		} else
-			ret = __tty_ldisc_lock(tty, timeout);
-	}
-
-	if (!ret)
-		return -EBUSY;
-
-	set_bit(TTY_LDISC_HALTED, &tty->flags);
-	if (tty2)
-		set_bit(TTY_LDISC_HALTED, &tty2->flags);
-	return 0;
-}
-
-/* tty_ldisc_lock_pair inlined into tty_ldisc_release */
-/* tty_ldisc_unlock_pair inlined into tty_ldisc_release */
+/* tty_ldisc_lock_pair_timeout inlined into tty_ldisc_release */
 /* tty_ldisc_flush removed - never called */
 /* tty_set_termios_ldisc inlined into tty_set_ldisc */
 
@@ -289,8 +253,36 @@ int tty_ldisc_setup(struct tty_struct *tty, struct tty_struct *o_tty)
 void tty_ldisc_release(struct tty_struct *tty)
 {
 	struct tty_struct *o_tty = tty->link;
+	int ret;
 
-	tty_ldisc_lock_pair_timeout(tty, o_tty, MAX_SCHEDULE_TIMEOUT);
+	/* tty_ldisc_lock_pair_timeout inlined */
+	if (tty < o_tty) {
+		ret = __tty_ldisc_lock(tty, MAX_SCHEDULE_TIMEOUT);
+		if (ret) {
+			ret = __tty_ldisc_lock_nested(o_tty,
+						      MAX_SCHEDULE_TIMEOUT);
+			if (!ret)
+				__tty_ldisc_unlock(tty);
+		}
+	} else {
+		WARN_ON_ONCE(tty == o_tty);
+		if (o_tty && tty != o_tty) {
+			ret = __tty_ldisc_lock(o_tty, MAX_SCHEDULE_TIMEOUT);
+			if (ret) {
+				ret = __tty_ldisc_lock_nested(
+					tty, MAX_SCHEDULE_TIMEOUT);
+				if (!ret)
+					__tty_ldisc_unlock(o_tty);
+			}
+		} else
+			ret = __tty_ldisc_lock(tty, MAX_SCHEDULE_TIMEOUT);
+	}
+	if (ret) {
+		set_bit(TTY_LDISC_HALTED, &tty->flags);
+		if (o_tty)
+			set_bit(TTY_LDISC_HALTED, &o_tty->flags);
+	}
+
 	tty_ldisc_kill(tty);
 	if (o_tty)
 		tty_ldisc_kill(o_tty);

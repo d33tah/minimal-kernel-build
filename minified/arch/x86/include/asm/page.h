@@ -88,7 +88,27 @@ static inline void copy_user_page(void *to, void *from, unsigned long vaddr,
 #define pfn_to_page __pfn_to_page
 /* __phys_to_pfn, __pfn_to_phys, HAVE_ARCH_HUGETLB_UNMAPPED_AREA removed - unused */
 
-#include <asm-generic/getorder.h>
+/* --- 2026-01-26 00:50 --- Inlined from asm-generic/getorder.h */
+#ifndef __ASSEMBLY__
+#include <linux/log2.h>
+static __always_inline __attribute_const__ int get_order(unsigned long size)
+{
+	if (__builtin_constant_p(size)) {
+		if (!size)
+			return BITS_PER_LONG - PAGE_SHIFT;
+
+		if (size < (1UL << PAGE_SHIFT))
+			return 0;
+
+		return ilog2((size) - 1) - PAGE_SHIFT + 1;
+	}
+
+	size--;
+	size >>= PAGE_SHIFT;
+	return fls(size); /* BITS_PER_LONG == 32 */
+}
+#endif
+/* end getorder.h */
 
 #endif
 #endif  

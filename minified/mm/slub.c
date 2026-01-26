@@ -346,34 +346,7 @@ static inline bool pfmemalloc_match(struct slab *slab, gfp_t gfpflags)
 	return true;
 }
 /* get_freelist removed - never called (~19 LOC) */
-
-static void *___slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node)
-{
-	void *freelist;
-	struct slab *slab;
-	int searchnode;
-
-	/* get_partial inlined - try to get from partial lists */
-	searchnode = (node == NUMA_NO_NODE) ? numa_mem_id() : node;
-	freelist =
-		get_partial_node(s, get_node(s, searchnode), &slab, gfpflags);
-	if (freelist)
-		return freelist;
-
-	/* Allocate new slab */
-	slub_put_cpu_ptr(s->cpu_slab);
-	slab = new_slab(s, gfpflags, node);
-	slub_get_cpu_ptr(s->cpu_slab);
-
-	if (!slab)
-		return NULL; /* slab_out_of_memory removed - was empty stub */
-
-	freelist = slab->freelist;
-	slab->freelist = NULL;
-	return freelist;
-}
-
-/* __slab_alloc inlined - just calls ___slab_alloc */
+/* ___slab_alloc inlined into slab_alloc_node */
 
 static __always_inline void *slab_alloc_node(struct kmem_cache *s,
 					     struct list_lru *lru,
@@ -402,7 +375,21 @@ redo:
 	slab = c->slab;
 	/* CONFIG_PREEMPT_RT not enabled, node_match always returns 1 */
 	if (unlikely(!object || !slab)) {
-		object = ___slab_alloc(s, gfpflags, node);
+		/* ___slab_alloc inlined */
+		void *freelist;
+		int searchnode = (node == NUMA_NO_NODE) ? numa_mem_id() : node;
+		freelist = get_partial_node(s, get_node(s, searchnode), &slab,
+					    gfpflags);
+		if (!freelist) {
+			slub_put_cpu_ptr(s->cpu_slab);
+			slab = new_slab(s, gfpflags, node);
+			slub_get_cpu_ptr(s->cpu_slab);
+			if (slab) {
+				freelist = slab->freelist;
+				slab->freelist = NULL;
+			}
+		}
+		object = freelist;
 	} else {
 		void *next_object = get_freepointer(s, object);
 

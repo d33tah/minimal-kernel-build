@@ -77,37 +77,7 @@ bool parameq(const char *a, const char *b)
 	return parameqn(a, b, strlen(a) + 1);
 }
 
-/* param_check_unsafe inlined - always returns true */
-
-static int parse_one(char *param, char *val, const char *doing,
-		     const struct kernel_param *params, unsigned num_params,
-		     s16 min_level, s16 max_level, void *arg,
-		     int (*handle_unknown)(char *param, char *val,
-					   const char *doing, void *arg))
-{
-	unsigned int i;
-
-	for (i = 0; i < num_params; i++) {
-		if (parameq(param, params[i].name)) {
-			if (params[i].level < min_level ||
-			    params[i].level > max_level)
-				return 0;
-
-			if (!val &&
-			    !(params[i].ops->flags & KERNEL_PARAM_OPS_FL_NOARG))
-				return -EINVAL;
-			if (params[i].flags & KERNEL_PARAM_FL_UNSAFE)
-				add_taint(TAINT_USER, LOCKDEP_STILL_OK);
-			return params[i].ops->set(val, &params[i]);
-		}
-	}
-
-	if (handle_unknown) {
-		return handle_unknown(param, val, doing, arg);
-	}
-
-	return -ENOENT;
-}
+/* parse_one inlined into parse_args */
 
 char *
 parse_args(const char *doing, char *args, const struct kernel_param *params,
@@ -120,14 +90,40 @@ parse_args(const char *doing, char *args, const struct kernel_param *params,
 
 	if (*args)
 		while (*args) {
-			int ret;
+			int ret = -ENOENT;
+			unsigned int i;
 
 			args = next_arg(args, &param, &val);
 
 			if (!val && strcmp(param, "--") == 0)
 				return err ?: args;
-			ret = parse_one(param, val, doing, params, num,
-					min_level, max_level, arg, unknown);
+
+			/* parse_one inlined */
+			for (i = 0; i < num; i++) {
+				if (parameq(param, params[i].name)) {
+					if (params[i].level < min_level ||
+					    params[i].level > max_level) {
+						ret = 0;
+						break;
+					}
+					if (!val &&
+					    !(params[i].ops->flags &
+					      KERNEL_PARAM_OPS_FL_NOARG)) {
+						ret = -EINVAL;
+						break;
+					}
+					if (params[i].flags &
+					    KERNEL_PARAM_FL_UNSAFE)
+						add_taint(TAINT_USER,
+							  LOCKDEP_STILL_OK);
+					ret = params[i].ops->set(val,
+								 &params[i]);
+					break;
+				}
+			}
+			if (ret == -ENOENT && unknown)
+				ret = unknown(param, val, doing, arg);
+
 			switch (ret) {
 			case 0:
 				continue;
@@ -144,7 +140,6 @@ parse_args(const char *doing, char *args, const struct kernel_param *params,
 				       doing, val ?: "", param);
 				break;
 			}
-
 			err = ERR_PTR(ret);
 		}
 

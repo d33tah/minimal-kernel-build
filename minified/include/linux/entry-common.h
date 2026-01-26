@@ -7,7 +7,20 @@
 /* seccomp.h removed - header is empty */
 #include <linux/sched.h>
 
-#include <asm/entry-common.h>
+/* --- 2026-01-26 04:40 --- Inlined from asm/entry-common.h */
+#include <linux/sched/task_stack.h>
+#include <asm/nospec-branch.h>
+#include <asm/io_bitmap.h>
+#include <asm/fpu/api.h>
+static __always_inline void arch_enter_from_user_mode(struct pt_regs *regs)
+{
+}
+#define arch_enter_from_user_mode arch_enter_from_user_mode
+static __always_inline void arch_exit_to_user_mode(void)
+{
+}
+#define arch_exit_to_user_mode arch_exit_to_user_mode
+/* end asm/entry-common.h */
 
 #ifndef _TIF_PATCH_PENDING
 # define _TIF_PATCH_PENDING		(0)

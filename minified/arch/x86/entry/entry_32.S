@@ -43,7 +43,13 @@
 #include <asm/alternative.h>
 #include <asm/asm.h>
 #include <asm/smap.h>
-#include <asm/frame.h>
+/* --- 2026-01-26 04:25 --- Inlined from asm/frame.h */
+.macro ENCODE_FRAME_POINTER ptregs_offset=0
+.endm
+#define FRAME_BEGIN
+#define FRAME_END
+#define FRAME_OFFSET 0
+/* end frame.h */
 #include <asm/trapnr.h>
 #include <asm/nospec-branch.h>
 /* --- 2026-01-26 01:25 --- Inlined from calling.h */

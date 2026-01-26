@@ -593,15 +593,17 @@ static int init_kmem_cache_nodes(struct kmem_cache *s)
 }
 
 /* set_cpu_partial removed - was empty stub */
+/* calculate_sizes inlined into kmem_cache_open */
 
-static int calculate_sizes(struct kmem_cache *s)
+static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 {
-	slab_flags_t flags = s->flags;
 	unsigned int size = s->object_size;
 	unsigned int order;
 
-	size = ALIGN(size, sizeof(void *));
+	s->flags = flags;
 
+	/* calculate_sizes inlined */
+	size = ALIGN(size, sizeof(void *));
 	s->inuse = size;
 
 	if ((flags & (SLAB_TYPESAFE_BY_RCU | SLAB_POISON)) ||
@@ -619,33 +621,25 @@ static int calculate_sizes(struct kmem_cache *s)
 	order = calculate_order(size);
 
 	if ((int)order < 0)
-		return 0;
+		goto error;
 
 	s->allocflags = 0;
 	if (order)
 		s->allocflags |= __GFP_COMP;
 
-	if (s->flags & SLAB_CACHE_DMA)
+	if (flags & SLAB_CACHE_DMA)
 		s->allocflags |= GFP_DMA;
 
-	if (s->flags & SLAB_CACHE_DMA32)
+	if (flags & SLAB_CACHE_DMA32)
 		s->allocflags |= GFP_DMA32;
 
-	if (s->flags & SLAB_RECLAIM_ACCOUNT)
+	if (flags & SLAB_RECLAIM_ACCOUNT)
 		s->allocflags |= __GFP_RECLAIMABLE;
 
 	s->oo = oo_make(order, size);
 	s->min = oo_make(get_order(size), size);
 
-	return !!oo_objects(s->oo);
-}
-
-static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
-{
-	s->flags =
-		flags; /* kmem_cache_flags inlined - returned flags unchanged */
-
-	if (!calculate_sizes(s))
+	if (!oo_objects(s->oo))
 		goto error;
 
 	/* CONFIG_HAVE_CMPXCHG_DOUBLE block removed - not enabled in tinyconfig */

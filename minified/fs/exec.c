@@ -34,8 +34,6 @@
 
 #include "internal.h"
 
-static void bprm_creds_from_file(struct linux_binprm *bprm);
-
 /* suid_dumpable removed - never used */
 
 static LIST_HEAD(formats);
@@ -468,8 +466,30 @@ int begin_new_exec(struct linux_binprm *bprm)
 	struct task_struct *me = current;
 	int retval;
 
-	/* bprm_creds_from_file now returns void (security check removed) */
-	bprm_creds_from_file(bprm);
+	/* bprm_creds_from_file inlined */
+	{
+		struct file *file = bprm->file;
+		struct inode *inode;
+		unsigned int mode;
+
+		if (mnt_may_suid(file->f_path.mnt) && !task_no_new_privs(me)) {
+			inode = file->f_path.dentry->d_inode;
+			mode = READ_ONCE(inode->i_mode);
+			if (mode & (S_ISUID | S_ISGID)) {
+				if (mode & S_ISUID) {
+					bprm->per_clear |= PER_CLEAR_ON_SETID;
+					bprm->cred->euid = i_uid_into_mnt(
+						file_mnt_user_ns(file), inode);
+				}
+				if ((mode & (S_ISGID | S_IXGRP)) ==
+				    (S_ISGID | S_IXGRP)) {
+					bprm->per_clear |= PER_CLEAR_ON_SETID;
+					bprm->cred->egid = i_gid_into_mnt(
+						file_mnt_user_ns(file), inode);
+				}
+			}
+		}
+	}
 	bprm->point_of_no_return = true;
 
 	retval = de_thread(me);
@@ -676,35 +696,7 @@ out:
 /* Removed: bprm_change_interp - never called */
 
 /* check_unsafe_exec inlined into bprm_execve */
-
-/* security_bprm_creds_from_file always returns 0 - simplified */
-static void bprm_creds_from_file(struct linux_binprm *bprm)
-{
-	/* bprm->execfd_creds is never set (kzalloc zeros), so always use bprm->file */
-	struct file *file = bprm->file;
-	struct inode *inode;
-	unsigned int mode;
-
-	if (!mnt_may_suid(file->f_path.mnt) || task_no_new_privs(current))
-		return;
-
-	inode = file->f_path.dentry->d_inode;
-	mode = READ_ONCE(inode->i_mode);
-	if (!(mode & (S_ISUID | S_ISGID)))
-		return;
-
-	if (mode & S_ISUID) {
-		bprm->per_clear |= PER_CLEAR_ON_SETID;
-		bprm->cred->euid =
-			i_uid_into_mnt(file_mnt_user_ns(file), inode);
-	}
-
-	if ((mode & (S_ISGID | S_IXGRP)) == (S_ISGID | S_IXGRP)) {
-		bprm->per_clear |= PER_CLEAR_ON_SETID;
-		bprm->cred->egid =
-			i_gid_into_mnt(file_mnt_user_ns(file), inode);
-	}
-}
+/* bprm_creds_from_file inlined into begin_new_exec */
 
 static int search_binary_handler(struct linux_binprm *bprm)
 {

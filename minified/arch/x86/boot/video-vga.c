@@ -9,28 +9,22 @@ static struct mode_info vga_modes[] = {
 
 static __videocard video_vga;
 
-static u8 vga_set_basic_mode(void)
+/* --- 2026-01-26 05:18 --- vga_set_basic_mode inlined */
+static int vga_set_mode(struct mode_info *mode)
 {
 	struct biosregs ireg, oreg;
-	u8 mode;
+	u8 vmode;
 
 	initregs(&ireg);
 	ireg.ax = 0x0f00;
 	intcall(0x10, &ireg, &oreg);
-	mode = oreg.al;
-
-	if (mode != 3 && mode != 7)
-		mode = 3;
-
-	ireg.ax = mode;
+	vmode = oreg.al;
+	if (vmode != 3 && vmode != 7)
+		vmode = 3;
+	ireg.ax = vmode;
 	intcall(0x10, &ireg, NULL);
 	do_restore = 1;
-	return mode;
-}
 
-static int vga_set_mode(struct mode_info *mode)
-{
-	vga_set_basic_mode();
 	force_x = mode->x;
 	force_y = mode->y;
 	return 0;

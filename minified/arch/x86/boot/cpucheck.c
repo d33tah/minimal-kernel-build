@@ -9,7 +9,17 @@
 #include <asm/required-features.h>
 #include <asm/msr-index.h>
 #include "string.h"
-#include "msr.h"
+/* --- 2026-01-26 01:05 --- Inlined from msr.h */
+#include <asm/shared/msr.h>
+static inline void boot_rdmsr(unsigned int reg, struct msr *m)
+{
+	asm volatile("rdmsr" : "=a"(m->l), "=d"(m->h) : "c"(reg));
+}
+static inline void boot_wrmsr(unsigned int reg, const struct msr *m)
+{
+	asm volatile("wrmsr" : : "c"(reg), "a"(m->l), "d"(m->h) : "memory");
+}
+/* end msr.h */
 
 static u32 err_flags[NCAPINTS];
 

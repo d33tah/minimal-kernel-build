@@ -45,22 +45,7 @@ static pud_t *alloc_new_pud(struct mm_struct *mm, struct vm_area_struct *vma,
 	return pud_alloc(mm, p4d, addr);
 }
 
-static pmd_t *alloc_new_pmd(struct mm_struct *mm, struct vm_area_struct *vma,
-			    unsigned long addr)
-{
-	pud_t *pud;
-	pmd_t *pmd;
-
-	pud = alloc_new_pud(mm, vma, addr);
-	if (!pud)
-		return NULL;
-
-	pmd = pmd_alloc(mm, pud, addr);
-	if (!pmd)
-		return NULL;
-
-	return pmd;
-}
+/* alloc_new_pmd inlined into move_page_tables */
 
 static void take_rmap_locks(struct vm_area_struct *vma)
 {
@@ -265,7 +250,12 @@ unsigned long move_page_tables(struct vm_area_struct *vma,
 		}
 		if (!old_pmd)
 			continue;
-		new_pmd = alloc_new_pmd(vma->vm_mm, vma, new_addr);
+		/* Inlined alloc_new_pmd */
+		{
+			pud_t *pud = alloc_new_pud(vma->vm_mm, vma, new_addr);
+			new_pmd = pud ? pmd_alloc(vma->vm_mm, pud, new_addr) :
+					NULL;
+		}
 		if (!new_pmd)
 			break;
 		/* is_swap_pmd/pmd_trans_huge/pmd_devmap always return 0 */

@@ -168,45 +168,7 @@ static struct page *follow_page_mask(struct vm_area_struct *vma,
 }
 
 /* get_gate_page removed - in_gate_area always returns 0 */
-
-static int faultin_page(struct vm_area_struct *vma, unsigned long address,
-			unsigned int *flags, int *locked)
-{
-	unsigned int fault_flags = 0;
-	vm_fault_t ret;
-	/* FOLL_NOFAULT, FOLL_NOWAIT, FAULT_FLAG_UNSHARE checks removed - never set */
-	if (*flags & FOLL_WRITE)
-		fault_flags |= FAULT_FLAG_WRITE;
-	if (*flags & FOLL_REMOTE)
-		fault_flags |= FAULT_FLAG_REMOTE;
-	if (locked)
-		fault_flags |= FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_KILLABLE;
-	if (*flags & FOLL_TRIED)
-		fault_flags |= FAULT_FLAG_TRIED;
-
-	ret = handle_mm_fault(vma, address, fault_flags, NULL);
-	if (ret & VM_FAULT_ERROR) {
-		/* vm_fault_to_errno inlined - single caller */
-		if (ret & VM_FAULT_OOM)
-			return -ENOMEM;
-		if (ret & (VM_FAULT_HWPOISON | VM_FAULT_HWPOISON_LARGE))
-			return (*flags & FOLL_HWPOISON) ? -EHWPOISON : -EFAULT;
-		if (ret & (VM_FAULT_SIGBUS | VM_FAULT_SIGSEGV))
-			return -EFAULT;
-		BUG();
-	}
-
-	if (ret & VM_FAULT_RETRY) {
-		/* FAULT_FLAG_RETRY_NOWAIT never set */
-		if (locked)
-			*locked = 0;
-		return -EBUSY;
-	}
-
-	if ((ret & VM_FAULT_WRITE) && !(vma->vm_flags & VM_WRITE))
-		*flags |= FOLL_COW;
-	return 0;
-}
+/* faultin_page inlined into __get_user_pages */
 
 static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
 {
@@ -285,19 +247,54 @@ retry:
 		page = follow_page_mask(vma, start, foll_flags, &ctx);
 		/* -EMLINK check removed - gup_must_unshare always false */
 		if (!page) {
-			ret = faultin_page(vma, start, &foll_flags, locked);
-			switch (ret) {
-			case 0:
-				goto retry;
-			case -EBUSY:
-				ret = 0;
-				fallthrough;
-			case -EFAULT:
-			case -ENOMEM:
-			case -EHWPOISON:
+			/* faultin_page inlined */
+			unsigned int fault_flags = 0;
+			vm_fault_t fault_ret;
+
+			if (foll_flags & FOLL_WRITE)
+				fault_flags |= FAULT_FLAG_WRITE;
+			if (foll_flags & FOLL_REMOTE)
+				fault_flags |= FAULT_FLAG_REMOTE;
+			if (locked)
+				fault_flags |= FAULT_FLAG_ALLOW_RETRY |
+					       FAULT_FLAG_KILLABLE;
+			if (foll_flags & FOLL_TRIED)
+				fault_flags |= FAULT_FLAG_TRIED;
+
+			fault_ret =
+				handle_mm_fault(vma, start, fault_flags, NULL);
+			if (fault_ret & VM_FAULT_ERROR) {
+				if (fault_ret & VM_FAULT_OOM) {
+					ret = -ENOMEM;
+					goto out;
+				}
+				if (fault_ret & (VM_FAULT_HWPOISON |
+						 VM_FAULT_HWPOISON_LARGE)) {
+					ret = (foll_flags & FOLL_HWPOISON) ?
+						      -EHWPOISON :
+						      -EFAULT;
+					goto out;
+				}
+				if (fault_ret &
+				    (VM_FAULT_SIGBUS | VM_FAULT_SIGSEGV)) {
+					ret = -EFAULT;
+					goto out;
+				}
+				BUG();
+			}
+
+			if (fault_ret & VM_FAULT_RETRY) {
+				if (locked)
+					*locked = 0;
+				/* -EBUSY case: ret = 0 and exit */
 				goto out;
 			}
-			BUG();
+
+			if ((fault_ret & VM_FAULT_WRITE) &&
+			    !(vma->vm_flags & VM_WRITE))
+				foll_flags |= FOLL_COW;
+
+			goto retry;
 		} else if (PTR_ERR(page) == -EEXIST) {
 			if (pages) {
 				ret = PTR_ERR(page);

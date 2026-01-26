@@ -74,30 +74,4 @@ struct reciprocal_value reciprocal_value(u32 d)
 	R.sh2 = max(l - 1, 0);
 	return R;
 }
-struct reciprocal_value_adv reciprocal_value_adv(u32 d, u8 prec)
-{
-	struct reciprocal_value_adv R;
-	u32 l, post_shift;
-	u64 mhigh, mlow;
-	l = fls(d - 1);
-	WARN(l == 32,
-	     "ceil(log2(0x%08x)) == 32, %s doesn't support such divisor", d,
-	     __func__);
-	post_shift = l;
-	mlow = 1ULL << (32 + l);
-	do_div(mlow, d);
-	mhigh = (1ULL << (32 + l)) + (1ULL << (32 + l - prec));
-	do_div(mhigh, d);
-	for (; post_shift > 0; post_shift--) {
-		u64 lo = mlow >> 1, hi = mhigh >> 1;
-		if (lo >= hi)
-			break;
-		mlow = lo;
-		mhigh = hi;
-	}
-	R.m = (u32)mhigh;
-	R.sh = post_shift;
-	R.exp = l;
-	R.is_wide_m = mhigh > U32_MAX;
-	return R;
-}
+/* reciprocal_value_adv removed - never called (~27 LOC) */

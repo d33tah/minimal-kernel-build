@@ -335,35 +335,7 @@ static inline unsigned int accumulate_nsecs_to_secs(struct timekeeper *tk)
 	return clock_set;
 }
 
-static u64 logarithmic_accumulation(struct timekeeper *tk, u64 offset,
-				    u32 shift, unsigned int *clock_set)
-{
-	u64 interval = tk->cycle_interval << shift;
-	u64 snsec_per_sec;
-
-	if (offset < interval)
-		return offset;
-
-	offset -= interval;
-	tk->tkr_mono.cycle_last += interval;
-	tk->tkr_raw.cycle_last += interval;
-
-	tk->tkr_mono.xtime_nsec += tk->xtime_interval << shift;
-	*clock_set |= accumulate_nsecs_to_secs(tk);
-
-	tk->tkr_raw.xtime_nsec += tk->raw_interval << shift;
-	snsec_per_sec = (u64)NSEC_PER_SEC << tk->tkr_raw.shift;
-	while (tk->tkr_raw.xtime_nsec >= snsec_per_sec) {
-		tk->tkr_raw.xtime_nsec -= snsec_per_sec;
-		tk->raw_sec++;
-	}
-
-	tk->ntp_error += tk->ntp_tick << shift;
-	tk->ntp_error -= (tk->xtime_interval + tk->xtime_remainder)
-			 << (tk->ntp_error_shift + shift);
-
-	return offset;
-}
+/* logarithmic_accumulation inlined into timekeeping_advance */
 
 static bool timekeeping_advance(enum timekeeping_adv_mode mode)
 {
@@ -376,15 +348,11 @@ static bool timekeeping_advance(enum timekeeping_adv_mode mode)
 
 	raw_spin_lock_irqsave(&timekeeper_lock, flags);
 
-	/* timekeeping_suspended check removed - never suspended */
-
 	offset = clocksource_delta(tk_clock_read(&tk->tkr_mono),
 				   tk->tkr_mono.cycle_last, tk->tkr_mono.mask);
 
 	if (offset < real_tk->cycle_interval && mode == TK_ADV_TICK)
 		goto out;
-
-	/* timekeeping_check_update removed - empty stub */
 
 	shift = ilog2(offset) - ilog2(tk->cycle_interval);
 	shift = max(0, shift);
@@ -392,8 +360,31 @@ static bool timekeeping_advance(enum timekeeping_adv_mode mode)
 	maxshift = (64 - (ilog2(NTP_TICK_LENGTH) + 1)) - 1;
 	shift = min(shift, maxshift);
 	while (offset >= tk->cycle_interval) {
-		offset =
-			logarithmic_accumulation(tk, offset, shift, &clock_set);
+		/* logarithmic_accumulation inlined */
+		u64 interval = tk->cycle_interval << shift;
+		u64 snsec_per_sec;
+
+		if (offset < interval)
+			break;
+
+		offset -= interval;
+		tk->tkr_mono.cycle_last += interval;
+		tk->tkr_raw.cycle_last += interval;
+
+		tk->tkr_mono.xtime_nsec += tk->xtime_interval << shift;
+		clock_set |= accumulate_nsecs_to_secs(tk);
+
+		tk->tkr_raw.xtime_nsec += tk->raw_interval << shift;
+		snsec_per_sec = (u64)NSEC_PER_SEC << tk->tkr_raw.shift;
+		while (tk->tkr_raw.xtime_nsec >= snsec_per_sec) {
+			tk->tkr_raw.xtime_nsec -= snsec_per_sec;
+			tk->raw_sec++;
+		}
+
+		tk->ntp_error += tk->ntp_tick << shift;
+		tk->ntp_error -= (tk->xtime_interval + tk->xtime_remainder)
+				 << (tk->ntp_error_shift + shift);
+
 		if (offset < tk->cycle_interval << shift)
 			shift--;
 	}

@@ -320,17 +320,18 @@ struct files_struct init_files = {
 	.resize_wait	= __WAIT_QUEUE_HEAD_INITIALIZER(init_files.resize_wait),
 };
 
-static int alloc_fd(unsigned start, unsigned end, unsigned flags)
+int get_unused_fd_flags(unsigned flags)
 {
 	struct files_struct *files = current->files;
 	unsigned int fd;
 	int error;
 	struct fdtable *fdt;
+	unsigned int end = rlimit(RLIMIT_NOFILE);
 
 	spin_lock(&files->file_lock);
 repeat:
 	fdt = files_fdtable(files);
-	fd = start;
+	fd = 0;
 	if (fd < files->next_fd)
 		fd = files->next_fd;
 
@@ -362,8 +363,7 @@ repeat:
 	if (error)
 		goto repeat;
 
-	if (start <= files->next_fd)
-		files->next_fd = fd + 1;
+	files->next_fd = fd + 1;
 
 	__set_bit(fd, fdt->open_fds);
 	{
@@ -376,16 +376,10 @@ repeat:
 	else if (test_bit(fd, fdt->close_on_exec))
 		__clear_bit(fd, fdt->close_on_exec);
 	error = fd;
-	/* Debug #if 1 check removed - slot should never be non-NULL here */
 
 out:
 	spin_unlock(&files->file_lock);
 	return error;
-}
-
-int get_unused_fd_flags(unsigned flags)
-{
-	return alloc_fd(0, rlimit(RLIMIT_NOFILE), flags);
 }
 
 static void __put_unused_fd(struct files_struct *files, unsigned int fd)

@@ -50,21 +50,37 @@ static struct page *no_page_table(struct vm_area_struct *vma,
 	return NULL;
 }
 
-/* follow_pfn_pte inlined into follow_page_pte */
-/* can_follow_write_pte inlined into follow_page_pte */
+/* follow_pfn_pte, follow_page_pte, follow_pmd_mask, follow_pud_mask, follow_p4d_mask inlined */
 
-static struct page *follow_page_pte(struct vm_area_struct *vma,
-				    unsigned long address, pmd_t *pmd,
-				    unsigned int flags,
-				    struct dev_pagemap **pgmap)
+static struct page *follow_page_mask(struct vm_area_struct *vma,
+				     unsigned long address, unsigned int flags,
+				     struct follow_page_context *ctx)
 {
 	struct mm_struct *mm = vma->vm_mm;
+	pgd_t *pgd;
+	p4d_t *p4d;
+	pud_t *pud;
+	pmd_t *pmd, pmdval;
 	struct page *page;
 	spinlock_t *ptl;
 	pte_t *ptep, pte;
 
-	/* FOLL_PIN|FOLL_GET check removed - FOLL_PIN never set */
-	/* retry label removed - never jumped to */
+	ctx->page_mask = 0;
+
+	pgd = pgd_offset(mm, address);
+	p4d = p4d_offset(pgd, address);
+	BUILD_BUG_ON(p4d_huge(*p4d));
+	pud = pud_offset(p4d, address);
+
+	/* Inlined follow_pmd_mask */
+	pmd = pmd_offset(pud, address);
+	pmdval = READ_ONCE(*pmd);
+	if (pmd_none(pmdval))
+		return no_page_table(vma, flags);
+	if (!pmd_present(pmdval))
+		return no_page_table(vma, flags);
+
+	/* Inlined follow_page_pte */
 	if (unlikely(pmd_bad(*pmd)))
 		return no_page_table(vma, flags);
 
@@ -72,7 +88,7 @@ static struct page *follow_page_pte(struct vm_area_struct *vma,
 	pte = *ptep;
 	if (!pte_present(pte))
 		goto no_page;
-	/* pte_protnone always returns 0, FOLL_NUMA check removed */
+
 	/* Inlined can_follow_write_pte */
 	if ((flags & FOLL_WRITE) &&
 	    !(pte_write(pte) ||
@@ -82,9 +98,7 @@ static struct page *follow_page_pte(struct vm_area_struct *vma,
 	}
 
 	page = vm_normal_page(vma, address, pte);
-	/* pte_devmap always returns 0, devmap branch removed */
 	if (unlikely(!page)) {
-		/* FOLL_DUMP check removed - never set */
 		if (is_zero_pfn(pte_pfn(pte))) {
 			page = pte_page(pte);
 		} else {
@@ -97,27 +111,21 @@ static struct page *follow_page_pte(struct vm_area_struct *vma,
 				entry = pte_mkyoung(entry);
 
 				if (!pte_same(*ptep, entry))
-					set_pte_at(vma->vm_mm, address, ptep,
-						   entry);
-				/* update_mmu_cache - empty stub on x86 */
+					set_pte_at(mm, address, ptep, entry);
 			}
 			page = ERR_PTR(-EEXIST);
 			goto out;
 		}
 	}
 
-	/* gup_must_unshare always returns false - FOLL_PIN never set */
-
 	if (unlikely(!try_grab_page(page, flags))) {
 		page = ERR_PTR(-ENOMEM);
 		goto out;
 	}
 
-	/* arch_make_page_accessible always returns 0, FOLL_PIN dead code removed */
 	if (flags & FOLL_TOUCH) {
 		if ((flags & FOLL_WRITE) && !pte_dirty(pte) && !PageDirty(page))
 			set_page_dirty(page);
-		/* mark_page_accessed inlined */
 		folio_mark_accessed(page_folio(page));
 	}
 out:
@@ -128,43 +136,6 @@ no_page:
 	if (!pte_none(pte))
 		return NULL;
 	return no_page_table(vma, flags);
-}
-
-static struct page *follow_pmd_mask(struct vm_area_struct *vma,
-				    unsigned long address, pud_t *pudp,
-				    unsigned int flags,
-				    struct follow_page_context *ctx)
-{
-	pmd_t *pmd, pmdval;
-
-	pmd = pmd_offset(pudp, address);
-	pmdval = READ_ONCE(*pmd);
-	if (pmd_none(pmdval))
-		return no_page_table(vma, flags);
-	/* pmd_devmap/pmd_trans_huge always return 0 */
-	if (!pmd_present(pmdval))
-		return no_page_table(vma, flags);
-	return follow_page_pte(vma, address, pmd, flags, &ctx->pgmap);
-}
-
-/* follow_pud_mask, follow_p4d_mask inlined - paging levels folded on x86 */
-
-static struct page *follow_page_mask(struct vm_area_struct *vma,
-				     unsigned long address, unsigned int flags,
-				     struct follow_page_context *ctx)
-{
-	pgd_t *pgd;
-	p4d_t *p4d;
-	pud_t *pud;
-	struct mm_struct *mm = vma->vm_mm;
-
-	ctx->page_mask = 0;
-
-	pgd = pgd_offset(mm, address);
-	p4d = p4d_offset(pgd, address);
-	BUILD_BUG_ON(p4d_huge(*p4d));
-	pud = pud_offset(p4d, address);
-	return follow_pmd_mask(vma, address, pud, flags, ctx);
 }
 
 /* get_gate_page removed - in_gate_area always returns 0 */

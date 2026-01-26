@@ -55,32 +55,8 @@ static inline void rwsem_set_reader_owned(struct rw_semaphore *sem)
 	__rwsem_set_reader_owned(sem, current);
 }
 /* is_rwsem_reader_owned removed - never called */
-
 /* rwsem_set_nonspinnable inlined into rwsem_read_trylock */
-
-static inline bool rwsem_read_trylock(struct rw_semaphore *sem, long *cntp)
-{
-	*cntp = atomic_long_add_return_acquire(RWSEM_READER_BIAS, &sem->count);
-
-	if (WARN_ON_ONCE(*cntp < 0)) {
-		/* rwsem_set_nonspinnable inlined */
-		unsigned long owner = atomic_long_read(&sem->owner);
-		do {
-			if (!(owner & RWSEM_READER_OWNED))
-				break;
-			if (owner & RWSEM_NONSPINNABLE)
-				break;
-		} while (!atomic_long_try_cmpxchg(&sem->owner, &owner,
-						  owner | RWSEM_NONSPINNABLE));
-	}
-
-	if (!(*cntp & RWSEM_READ_FAILED_MASK)) {
-		rwsem_set_reader_owned(sem);
-		return true;
-	}
-
-	return false;
-}
+/* rwsem_read_trylock inlined into __down_read_common */
 
 static inline bool rwsem_write_trylock(struct rw_semaphore *sem)
 {
@@ -454,8 +430,27 @@ static struct rw_semaphore *rwsem_wake(struct rw_semaphore *sem)
 static inline int __down_read_common(struct rw_semaphore *sem, int state)
 {
 	long count;
+	bool trylock_ok;
 
-	if (!rwsem_read_trylock(sem, &count)) {
+	/* Inlined rwsem_read_trylock */
+	count = atomic_long_add_return_acquire(RWSEM_READER_BIAS, &sem->count);
+	if (WARN_ON_ONCE(count < 0)) {
+		unsigned long owner = atomic_long_read(&sem->owner);
+		do {
+			if (!(owner & RWSEM_READER_OWNED) ||
+			    (owner & RWSEM_NONSPINNABLE))
+				break;
+		} while (!atomic_long_try_cmpxchg(&sem->owner, &owner,
+						  owner | RWSEM_NONSPINNABLE));
+	}
+	if (!(count & RWSEM_READ_FAILED_MASK)) {
+		rwsem_set_reader_owned(sem);
+		trylock_ok = true;
+	} else {
+		trylock_ok = false;
+	}
+
+	if (!trylock_ok) {
 		if (IS_ERR(rwsem_down_read_slowpath(sem, count, state)))
 			return -EINTR;
 	}

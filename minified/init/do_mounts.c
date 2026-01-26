@@ -1,7 +1,6 @@
 #include <linux/module.h>
 #include <linux/sched.h>
 #include <linux/ctype.h>
-
 #include <linux/tty.h>
 #include <linux/suspend.h>
 #include <linux/root_dev.h>
@@ -17,10 +16,11 @@
 #include <linux/slab.h>
 #include <linux/ramfs.h>
 #include <linux/shmem_fs.h>
-
+#include <linux/major.h>
+#include <linux/blkdev.h>
+#include <linux/init_syscalls.h>
 #include <uapi/linux/mount.h>
-
-#include "do_mounts.h"
+/* --- 2026-01-26 01:00 --- Inlined from do_mounts.h */
 
 int root_mountflags = MS_RDONLY | MS_SILENT;
 static char *__initdata root_device_name;

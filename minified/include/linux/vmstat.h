@@ -27,11 +27,7 @@ static inline void node_page_state_add(long x, struct pglist_data *pgdat,
 	atomic_long_add(x, &vm_node_stat[item]);
 }
 
-static inline unsigned long global_zone_page_state(enum zone_stat_item item)
-{
-	long x = atomic_long_read(&vm_zone_stat[item]);
-	return x;
-}
+/* global_zone_page_state removed - never called */
 
 static inline unsigned long zone_page_state(struct zone *zone,
 					enum zone_stat_item item)

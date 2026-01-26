@@ -160,51 +160,7 @@ static inline u64 calc_delta_fair(u64 delta, struct sched_entity *se)
 	return delta;
 }
 
-/* __sched_period inlined */
-
-static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
-{
-	unsigned int nr_running = cfs_rq->nr_running;
-	unsigned int min_gran;
-	u64 slice;
-
-	if (sched_feat(ALT_PERIOD))
-		nr_running = rq_of(cfs_rq)->cfs.h_nr_running;
-
-	nr_running += !se->on_rq;
-	if (unlikely(nr_running > sched_nr_latency))
-		slice = nr_running * sysctl_sched_min_granularity;
-	else
-		slice = sysctl_sched_latency;
-
-	for_each_sched_entity(se)
-	{
-		struct load_weight *load;
-		struct load_weight lw;
-		struct cfs_rq *qcfs_rq;
-
-		qcfs_rq = cfs_rq_of(se);
-		load = &qcfs_rq->load;
-
-		if (unlikely(!se->on_rq)) {
-			lw = qcfs_rq->load;
-
-			update_load_add(&lw, se->load.weight);
-			load = &lw;
-		}
-		slice = __calc_delta(slice, se->load.weight, load);
-	}
-
-	if (sched_feat(BASE_SLICE)) {
-		/* se_is_idle always 0 - use min_granularity directly */
-		min_gran = sysctl_sched_min_granularity;
-		slice = max_t(u64, slice, min_gran);
-	}
-
-	return slice;
-}
-
-/* sched_vslice inlined into place_entity */
+/* sched_slice inlined into place_entity */
 
 #include "pelt.h"
 
@@ -272,18 +228,43 @@ static void place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 {
 	u64 vruntime = cfs_rq->min_vruntime;
 
-	if (initial && sched_feat(START_DEBIT))
-		/* sched_vslice inlined */
-		vruntime += calc_delta_fair(sched_slice(cfs_rq, se), se);
+	if (initial && sched_feat(START_DEBIT)) {
+		/* sched_slice inlined */
+		unsigned int nr_running = cfs_rq->nr_running;
+		u64 slice;
+		struct sched_entity *tmp;
+
+		if (sched_feat(ALT_PERIOD))
+			nr_running = rq_of(cfs_rq)->cfs.h_nr_running;
+		nr_running += !se->on_rq;
+		if (unlikely(nr_running > sched_nr_latency))
+			slice = nr_running * sysctl_sched_min_granularity;
+		else
+			slice = sysctl_sched_latency;
+
+		for_each_sched_entity(tmp)
+		{
+			struct load_weight *load;
+			struct load_weight lw;
+			struct cfs_rq *qcfs_rq = cfs_rq_of(tmp);
+			load = &qcfs_rq->load;
+			if (unlikely(!tmp->on_rq)) {
+				lw = qcfs_rq->load;
+				update_load_add(&lw, tmp->load.weight);
+				load = &lw;
+			}
+			slice = __calc_delta(slice, tmp->load.weight, load);
+		}
+		if (sched_feat(BASE_SLICE))
+			slice = max_t(u64, slice, sysctl_sched_min_granularity);
+		vruntime += calc_delta_fair(slice, se);
+	}
 
 	if (!initial) {
 		unsigned long thresh;
-		/* se_is_idle() always 0 - use sysctl_sched_latency */
 		thresh = sysctl_sched_latency;
-
 		if (sched_feat(GENTLE_FAIR_SLEEPERS))
 			thresh >>= 1;
-
 		vruntime -= thresh;
 	}
 

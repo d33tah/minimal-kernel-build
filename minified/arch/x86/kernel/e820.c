@@ -1,6 +1,11 @@
 #include <asm/early_ioremap.h>
 #include <linux/memblock.h>
-#include <linux/suspend.h>
+#include <linux/swap.h>
+#include <linux/notifier.h>
+#include <linux/init.h>
+#include <linux/pm.h>
+#include <linux/mm.h>
+#include <asm/errno.h>
 #include <linux/acpi.h>
 #include <linux/sort.h>
 

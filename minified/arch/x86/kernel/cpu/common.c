@@ -55,7 +55,21 @@ extern void doublefault_init_cpu_tss(void);
 #include <asm/traps.h>
 /* asm/sev.h include removed - file is stub, nothing used */
 
-#include "cpu.h"
+/* --- 2026-01-26 04:35 --- Inlined from cpu.h */
+struct cpu_dev {
+	const char *c_vendor;
+	const char *c_ident[2];
+	void (*c_early_init)(struct cpuinfo_x86 *);
+	void (*c_bsp_init)(struct cpuinfo_x86 *);
+	void (*c_init)(struct cpuinfo_x86 *);
+	void (*c_identify)(struct cpuinfo_x86 *);
+	int c_x86_vendor;
+};
+extern const struct cpu_dev *const __x86_cpu_dev_start[],
+	*const __x86_cpu_dev_end[];
+extern void get_cpu_cap(struct cpuinfo_x86 *c);
+extern void get_cpu_address_sizes(struct cpuinfo_x86 *c);
+/* end cpu.h */
 
 u32 elf_hwcap2 __read_mostly;
 

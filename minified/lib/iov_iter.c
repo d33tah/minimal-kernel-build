@@ -239,44 +239,38 @@ static size_t push_pipe(struct iov_iter *i, size_t size, int *iter_headp,
 	return size - left;
 }
 
-static size_t copy_pipe_to_iter(const void *addr, size_t bytes,
-				struct iov_iter *i)
-{
-	struct pipe_inode_info *pipe = i->pipe;
-	unsigned int p_mask = pipe->ring_size - 1;
-	unsigned int i_head;
-	size_t n, off;
-	/* sanity(i) check removed - always returns true (~2 LOC) */
+/* copy_pipe_to_iter inlined into _copy_to_iter */
 
-	bytes = n = push_pipe(i, bytes, &i_head, &off);
-	if (unlikely(!n))
-		return 0;
-	do {
-		size_t chunk = min_t(size_t, n, PAGE_SIZE - off);
-		/* memcpy_to_page inlined - single caller */
-		{
+size_t _copy_to_iter(const void *addr, size_t bytes, struct iov_iter *i)
+{
+	if (unlikely(iov_iter_is_pipe(i))) {
+		/* copy_pipe_to_iter inlined */
+		struct pipe_inode_info *pipe = i->pipe;
+		unsigned int p_mask = pipe->ring_size - 1;
+		unsigned int i_head;
+		size_t n, off;
+
+		bytes = n = push_pipe(i, bytes, &i_head, &off);
+		if (unlikely(!n))
+			return 0;
+		do {
+			size_t chunk = min_t(size_t, n, PAGE_SIZE - off);
 			struct page *page = pipe->bufs[i_head & p_mask].page;
 			char *to = kmap_local_page(page);
 			VM_BUG_ON(off + chunk > PAGE_SIZE);
 			memcpy(to + off, addr, chunk);
 			flush_dcache_page(page);
 			kunmap_local(to);
-		}
-		i->head = i_head;
-		i->iov_offset = off + chunk;
-		n -= chunk;
-		addr += chunk;
-		off = 0;
-		i_head++;
-	} while (n);
-	i->count -= bytes;
-	return bytes;
-}
-
-size_t _copy_to_iter(const void *addr, size_t bytes, struct iov_iter *i)
-{
-	if (unlikely(iov_iter_is_pipe(i)))
-		return copy_pipe_to_iter(addr, bytes, i);
+			i->head = i_head;
+			i->iov_offset = off + chunk;
+			n -= chunk;
+			addr += chunk;
+			off = 0;
+			i_head++;
+		} while (n);
+		i->count -= bytes;
+		return bytes;
+	}
 	iterate_and_advance(i, bytes, base, len, off,
 			    copyout(base, addr + off, len),
 			    memcpy(base, addr + off, len))

@@ -543,38 +543,7 @@ static int pcpu_find_block_fit(struct pcpu_chunk *chunk, int alloc_bits,
 	return bit_off;
 }
 
-static unsigned long pcpu_find_zero_area(unsigned long *map, unsigned long size,
-					 unsigned long start, unsigned long nr,
-					 unsigned long align_mask,
-					 unsigned long *largest_off,
-					 unsigned long *largest_bits)
-{
-	unsigned long index, end, i, area_off, area_bits;
-again:
-	index = find_next_zero_bit(map, size, start);
-
-	index = __ALIGN_MASK(index, align_mask);
-	area_off = index;
-
-	end = index + nr;
-	if (end > size)
-		return end;
-	i = find_next_bit(map, end, index);
-	if (i < end) {
-		area_bits = i - area_off;
-
-		if (area_bits > *largest_bits ||
-		    (area_bits == *largest_bits && *largest_off &&
-		     (!area_off || __ffs(area_off) > __ffs(*largest_off)))) {
-			*largest_off = area_off;
-			*largest_bits = area_bits;
-		}
-
-		start = i + 1;
-		goto again;
-	}
-	return index;
-}
+/* pcpu_find_zero_area inlined into pcpu_alloc_area */
 
 static int pcpu_alloc_area(struct pcpu_chunk *chunk, int alloc_bits,
 			   size_t align, int start)
@@ -583,13 +552,38 @@ static int pcpu_alloc_area(struct pcpu_chunk *chunk, int alloc_bits,
 	size_t align_mask = (align) ? (align - 1) : 0;
 	unsigned long area_off = 0, area_bits = 0;
 	int bit_off, end, oslot;
+	unsigned long index, i, off, bits;
+	unsigned long *map;
 
 	oslot = pcpu_chunk_slot(chunk);
 
 	end = min_t(int, start + alloc_bits + PCPU_BITMAP_BLOCK_BITS,
 		    pcpu_chunk_map_bits(chunk));
-	bit_off = pcpu_find_zero_area(chunk->alloc_map, end, start, alloc_bits,
-				      align_mask, &area_off, &area_bits);
+	map = chunk->alloc_map;
+
+	/* pcpu_find_zero_area inlined */
+again:
+	index = find_next_zero_bit(map, end, start);
+	index = __ALIGN_MASK(index, align_mask);
+	off = index;
+	if (index + alloc_bits > (unsigned long)end) {
+		bit_off = end;
+		goto check_end;
+	}
+	i = find_next_bit(map, index + alloc_bits, index);
+	if (i < index + alloc_bits) {
+		bits = i - off;
+		if (bits > area_bits ||
+		    (bits == area_bits && area_off &&
+		     (!off || __ffs(off) > __ffs(area_off)))) {
+			area_off = off;
+			area_bits = bits;
+		}
+		start = i + 1;
+		goto again;
+	}
+	bit_off = index;
+check_end:
 	if (bit_off >= end)
 		return -1;
 

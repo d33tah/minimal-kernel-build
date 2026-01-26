@@ -870,44 +870,13 @@ unlock_mapping:
 	return error;
 }
 
-static int filemap_create_folio(struct file *file,
-				struct address_space *mapping, pgoff_t index,
-				struct folio_batch *fbatch)
-{
-	struct folio *folio;
-	int error;
-
-	folio = filemap_alloc_folio(mapping_gfp_mask(mapping), 0);
-	if (!folio)
-		return -ENOMEM;
-
-	filemap_invalidate_lock_shared(mapping);
-	error = filemap_add_folio(mapping, folio, index,
-				  mapping_gfp_constraint(mapping, GFP_KERNEL));
-	if (error == -EEXIST)
-		error = AOP_TRUNCATED_PAGE;
-	if (error)
-		goto error;
-
-	error = filemap_read_folio(file, mapping, folio);
-	if (error)
-		goto error;
-
-	filemap_invalidate_unlock_shared(mapping);
-	folio_batch_add(fbatch, folio);
-	return 0;
-error:
-	filemap_invalidate_unlock_shared(mapping);
-	folio_put(folio);
-	return error;
-}
+/* filemap_create_folio inlined into filemap_get_pages */
 
 static int filemap_get_pages(struct kiocb *iocb, struct iov_iter *iter,
 			     struct folio_batch *fbatch)
 {
 	struct file *filp = iocb->ki_filp;
 	struct address_space *mapping = filp->f_mapping;
-	/* ra removed - unused */
 	pgoff_t index = iocb->ki_pos >> PAGE_SHIFT;
 	pgoff_t last_index;
 	struct folio *folio;
@@ -922,17 +891,33 @@ retry:
 	if (!folio_batch_count(fbatch)) {
 		if (iocb->ki_flags & IOCB_NOIO)
 			return -EAGAIN;
-		/* page_cache_sync_readahead removed - was empty stub */
 		filemap_get_read_batch(mapping, index, last_index, fbatch);
 	}
 	if (!folio_batch_count(fbatch)) {
 		if (iocb->ki_flags & (IOCB_NOWAIT | IOCB_WAITQ))
 			return -EAGAIN;
-		err = filemap_create_folio(filp, mapping,
-					   iocb->ki_pos >> PAGE_SHIFT, fbatch);
-		if (err == AOP_TRUNCATED_PAGE)
-			goto retry;
-		return err;
+		/* filemap_create_folio inlined */
+		folio = filemap_alloc_folio(mapping_gfp_mask(mapping), 0);
+		if (!folio)
+			return -ENOMEM;
+		filemap_invalidate_lock_shared(mapping);
+		err = filemap_add_folio(mapping, folio, index,
+					mapping_gfp_constraint(mapping,
+							       GFP_KERNEL));
+		if (err == -EEXIST)
+			err = AOP_TRUNCATED_PAGE;
+		if (!err)
+			err = filemap_read_folio(filp, mapping, folio);
+		if (err) {
+			filemap_invalidate_unlock_shared(mapping);
+			folio_put(folio);
+			if (err == AOP_TRUNCATED_PAGE)
+				goto retry;
+			return err;
+		}
+		filemap_invalidate_unlock_shared(mapping);
+		folio_batch_add(fbatch, folio);
+		return 0;
 	}
 
 	folio = fbatch->folios[folio_batch_count(fbatch) - 1];

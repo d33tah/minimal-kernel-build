@@ -151,45 +151,7 @@ static int copy_strings_kernel(int argc, const char *const *argv,
 	return 0;
 }
 
-static int shift_arg_pages(struct vm_area_struct *vma, unsigned long shift)
-{
-	struct mm_struct *mm = vma->vm_mm;
-	unsigned long old_start = vma->vm_start;
-	unsigned long old_end = vma->vm_end;
-	unsigned long length = old_end - old_start;
-	unsigned long new_start = old_start - shift;
-	unsigned long new_end = old_end - shift;
-	struct mmu_gather tlb;
-
-	BUG_ON(new_start > new_end);
-
-	if (vma != find_vma(mm, new_start))
-		return -EFAULT;
-
-	if (vma_adjust(vma, new_start, old_end, vma->vm_pgoff, NULL))
-		return -ENOMEM;
-
-	if (length !=
-	    move_page_tables(vma, old_start, vma, new_start, length, false))
-		return -ENOMEM;
-
-	lru_add_drain();
-	tlb_gather_mmu(&tlb, mm);
-	if (new_end > old_start) {
-		free_pgd_range(&tlb, new_end, old_end, new_end,
-			       vma->vm_next ? vma->vm_next->vm_start :
-					      USER_PGTABLES_CEILING);
-	} else {
-		free_pgd_range(&tlb, old_start, old_end, new_end,
-			       vma->vm_next ? vma->vm_next->vm_start :
-					      USER_PGTABLES_CEILING);
-	}
-	tlb_finish_mmu(&tlb);
-
-	vma_adjust(vma, new_start, new_end, vma->vm_pgoff, NULL);
-
-	return 0;
-}
+/* shift_arg_pages inlined into setup_arg_pages */
 
 int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top,
 		    int executable_stack)
@@ -216,7 +178,6 @@ int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top,
 	bprm->p -= stack_shift;
 	mm->arg_start = bprm->p;
 
-	/* bprm->loader check removed - never set (kzalloc zeros) */
 	bprm->exec -= stack_shift;
 
 	if (mmap_write_lock_killable(mm))
@@ -230,12 +191,42 @@ int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top,
 		vm_flags &= ~VM_EXEC;
 	vm_flags |= mm->def_flags;
 	vm_flags |= VM_STACK_INCOMPLETE_SETUP;
-	/* mprotect_fixup removed - was a no-op stub */
 
 	if (stack_shift) {
-		ret = shift_arg_pages(vma, stack_shift);
-		if (ret)
+		/* shift_arg_pages inlined */
+		unsigned long old_start = vma->vm_start;
+		unsigned long old_end = vma->vm_end;
+		unsigned long length = old_end - old_start;
+		unsigned long new_start = old_start - stack_shift;
+		unsigned long new_end = old_end - stack_shift;
+		struct mmu_gather tlb;
+
+		BUG_ON(new_start > new_end);
+		if (vma != find_vma(mm, new_start)) {
+			ret = -EFAULT;
 			goto out_unlock;
+		}
+		if (vma_adjust(vma, new_start, old_end, vma->vm_pgoff, NULL)) {
+			ret = -ENOMEM;
+			goto out_unlock;
+		}
+		if (length != move_page_tables(vma, old_start, vma, new_start,
+					       length, false)) {
+			ret = -ENOMEM;
+			goto out_unlock;
+		}
+		lru_add_drain();
+		tlb_gather_mmu(&tlb, mm);
+		if (new_end > old_start)
+			free_pgd_range(&tlb, new_end, old_end, new_end,
+				       vma->vm_next ? vma->vm_next->vm_start :
+						      USER_PGTABLES_CEILING);
+		else
+			free_pgd_range(&tlb, old_start, old_end, new_end,
+				       vma->vm_next ? vma->vm_next->vm_start :
+						      USER_PGTABLES_CEILING);
+		tlb_finish_mmu(&tlb);
+		vma_adjust(vma, new_start, new_end, vma->vm_pgoff, NULL);
 	}
 
 	vma->vm_flags &= ~VM_STACK_INCOMPLETE_SETUP;

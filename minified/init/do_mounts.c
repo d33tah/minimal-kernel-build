@@ -192,12 +192,7 @@ out:
 	put_page(page);
 }
 
-/* fs_is_nodev, mount_nodev_root removed - root_fs_names always NULL */
-
-void __init mount_root(void)
-{
-	/* root_fs_names always NULL - mount_nodev_root never called */
-}
+/* fs_is_nodev, mount_nodev_root, mount_root removed - all stubs */
 
 void __init prepare_namespace(void)
 {
@@ -228,7 +223,7 @@ void __init prepare_namespace(void)
 		/* async_synchronize_full removed - empty stub */
 	}
 
-	mount_root();
+	/* mount_root() removed - was empty */
 out:
 	init_mount(".", "/", NULL, MS_MOVE, NULL);
 	init_chroot(".");

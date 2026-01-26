@@ -89,31 +89,13 @@ static int percpu_rwsem_wake_function(struct wait_queue_entry *wq_entry,
 	return !reader;
 }
 
-static void percpu_rwsem_wait(struct percpu_rw_semaphore *sem, bool reader)
+/* percpu_rwsem_wait inlined into __percpu_down_read */
+
+bool __sched __percpu_down_read(struct percpu_rw_semaphore *sem, bool try)
 {
 	DEFINE_WAIT_FUNC(wq_entry, percpu_rwsem_wake_function);
 	bool wait;
 
-	spin_lock_irq(&sem->waiters.lock);
-
-	wait = !__percpu_rwsem_trylock(sem, reader);
-	if (wait) {
-		wq_entry.flags |= WQ_FLAG_EXCLUSIVE | reader * WQ_FLAG_CUSTOM;
-		__add_wait_queue_entry_tail(&sem->waiters, &wq_entry);
-	}
-	spin_unlock_irq(&sem->waiters.lock);
-
-	while (wait) {
-		set_current_state(TASK_UNINTERRUPTIBLE);
-		if (!smp_load_acquire(&wq_entry.private))
-			break;
-		schedule();
-	}
-	__set_current_state(TASK_RUNNING);
-}
-
-bool __sched __percpu_down_read(struct percpu_rw_semaphore *sem, bool try)
-{
 	if (__percpu_down_read_trylock(sem))
 		return true;
 
@@ -121,8 +103,23 @@ bool __sched __percpu_down_read(struct percpu_rw_semaphore *sem, bool try)
 		return false;
 
 	preempt_enable();
-	percpu_rwsem_wait(sem, true);
-	preempt_disable();
 
+	/* percpu_rwsem_wait inlined with reader=true */
+	spin_lock_irq(&sem->waiters.lock);
+	wait = !__percpu_rwsem_trylock(sem, true);
+	if (wait) {
+		wq_entry.flags |= WQ_FLAG_EXCLUSIVE | WQ_FLAG_CUSTOM;
+		__add_wait_queue_entry_tail(&sem->waiters, &wq_entry);
+	}
+	spin_unlock_irq(&sem->waiters.lock);
+	while (wait) {
+		set_current_state(TASK_UNINTERRUPTIBLE);
+		if (!smp_load_acquire(&wq_entry.private))
+			break;
+		schedule();
+	}
+	__set_current_state(TASK_RUNNING);
+
+	preempt_disable();
 	return true;
 }

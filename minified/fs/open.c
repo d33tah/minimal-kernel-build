@@ -43,83 +43,79 @@ int do_truncate(struct user_namespace *mnt_userns, struct dentry *dentry,
 	return ret;
 }
 
-static int do_dentry_open(struct file *f, struct inode *inode,
-			  int (*open)(struct inode *, struct file *))
+int vfs_open(const struct path *path, struct file *file)
 {
 	static const struct file_operations empty_fops = {};
+	struct inode *inode = d_inode(path->dentry);
 	int error;
+	int (*open)(struct inode *, struct file *) = NULL;
 
-	path_get(&f->f_path);
-	f->f_inode = inode;
-	f->f_mapping = inode->i_mapping;
+	file->f_path = *path;
+	path_get(&file->f_path);
+	file->f_inode = inode;
+	file->f_mapping = inode->i_mapping;
 
-	if (unlikely(f->f_flags & O_PATH)) {
-		f->f_mode = FMODE_PATH | FMODE_OPENED;
-		f->f_op = &empty_fops;
+	if (unlikely(file->f_flags & O_PATH)) {
+		file->f_mode = FMODE_PATH | FMODE_OPENED;
+		file->f_op = &empty_fops;
 		return 0;
 	}
 
-	if (f->f_mode & FMODE_WRITE && !special_file(inode->i_mode)) {
+	if (file->f_mode & FMODE_WRITE && !special_file(inode->i_mode)) {
 		error = get_write_access(inode);
 		if (unlikely(error))
 			goto cleanup_file;
-		error = __mnt_want_write(f->f_path.mnt);
+		error = __mnt_want_write(file->f_path.mnt);
 		if (unlikely(error)) {
 			put_write_access(inode);
 			goto cleanup_file;
 		}
-		f->f_mode |= FMODE_WRITER;
+		file->f_mode |= FMODE_WRITER;
 	}
 
 	if (S_ISREG(inode->i_mode) || S_ISDIR(inode->i_mode))
-		f->f_mode |= FMODE_ATOMIC_POS;
+		file->f_mode |= FMODE_ATOMIC_POS;
 
-	f->f_op = fops_get(inode->i_fop);
-	if (WARN_ON(!f->f_op)) {
+	file->f_op = fops_get(inode->i_fop);
+	if (WARN_ON(!file->f_op)) {
 		error = -ENODEV;
 		goto cleanup_all;
 	}
 
-	f->f_mode |= FMODE_LSEEK | FMODE_PREAD | FMODE_PWRITE;
+	file->f_mode |= FMODE_LSEEK | FMODE_PREAD | FMODE_PWRITE;
 	if (!open)
-		open = f->f_op->open;
+		open = file->f_op->open;
 	if (open) {
-		error = open(inode, f);
+		error = open(inode, file);
 		if (error)
 			goto cleanup_all;
 	}
-	f->f_mode |= FMODE_OPENED;
-	if ((f->f_mode & FMODE_READ) &&
-	    likely(f->f_op->read || f->f_op->read_iter))
-		f->f_mode |= FMODE_CAN_READ;
-	if ((f->f_mode & FMODE_WRITE) &&
-	    likely(f->f_op->write || f->f_op->write_iter))
-		f->f_mode |= FMODE_CAN_WRITE;
+	file->f_mode |= FMODE_OPENED;
+	if ((file->f_mode & FMODE_READ) &&
+	    likely(file->f_op->read || file->f_op->read_iter))
+		file->f_mode |= FMODE_CAN_READ;
+	if ((file->f_mode & FMODE_WRITE) &&
+	    likely(file->f_op->write || file->f_op->write_iter))
+		file->f_mode |= FMODE_CAN_WRITE;
 
-	f->f_flags &= ~(O_CREAT | O_EXCL | O_NOCTTY | O_TRUNC);
+	file->f_flags &= ~(O_CREAT | O_EXCL | O_NOCTTY | O_TRUNC);
 
 	return 0;
 
 cleanup_all:
 	if (WARN_ON_ONCE(error > 0))
 		error = -EINVAL;
-	fops_put(f->f_op);
-	if (f->f_mode & FMODE_WRITER) {
+	fops_put(file->f_op);
+	if (file->f_mode & FMODE_WRITER) {
 		put_write_access(inode);
-		__mnt_drop_write(f->f_path.mnt);
+		__mnt_drop_write(file->f_path.mnt);
 	}
 cleanup_file:
-	path_put(&f->f_path);
-	f->f_path.mnt = NULL;
-	f->f_path.dentry = NULL;
-	f->f_inode = NULL;
+	path_put(&file->f_path);
+	file->f_path.mnt = NULL;
+	file->f_path.dentry = NULL;
+	file->f_inode = NULL;
 	return error;
-}
-
-int vfs_open(const struct path *path, struct file *file)
-{
-	file->f_path = *path;
-	return do_dentry_open(file, d_inode(path->dentry), NULL);
 }
 
 #define WILL_CREATE(flags) (flags & (O_CREAT | __O_TMPFILE))

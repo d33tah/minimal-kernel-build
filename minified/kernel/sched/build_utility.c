@@ -1,5 +1,5 @@
 #include <linux/sched/clock.h>
-#include <linux/sched/cputime.h>
+#include <linux/sched/signal.h>
 #include <linux/sched/debug.h>
 #include <linux/sched/isolation.h>
 /* loadavg.h removed - LOAD_FREQ moved to sched.h */

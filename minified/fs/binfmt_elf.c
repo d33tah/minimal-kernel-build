@@ -23,7 +23,7 @@
 #include <linux/sched.h>
 #include <linux/sched/coredump.h>
 #include <linux/sched/task_stack.h>
-#include <linux/sched/cputime.h>
+#include <linux/sched/signal.h>
 #include <linux/types.h>
 #include <linux/cred.h>
 #include <linux/uaccess.h>

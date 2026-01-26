@@ -1,6 +1,6 @@
 
 #include <linux/sched/clock.h>
-#include <linux/sched/cputime.h>
+#include <linux/sched/signal.h>
 
 #include <linux/sched/rt.h>
 

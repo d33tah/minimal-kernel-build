@@ -373,22 +373,22 @@ static bool delete_node(struct radix_tree_root *root,
 	return deleted;
 }
 
-static int __radix_tree_create(struct radix_tree_root *root,
-			       unsigned long index,
-			       struct radix_tree_node **nodep,
-			       void __rcu ***slotp)
+/* __radix_tree_create inlined into radix_tree_insert */
+
+int radix_tree_insert(struct radix_tree_root *root, unsigned long index,
+		      void *item)
 {
 	struct radix_tree_node *node = NULL, *child;
 	void __rcu **slot = (void __rcu **)&root->xa_head;
 	unsigned long maxindex;
 	unsigned int shift, offset = 0;
-	unsigned long max = index;
 	gfp_t gfp = root->xa_flags & (__GFP_BITS_MASK & ~GFP_ZONEMASK);
 
-	shift = radix_tree_load_root(root, &child, &maxindex);
+	BUG_ON(radix_tree_is_internal_node(item));
 
-	if (max > maxindex) {
-		int error = radix_tree_extend(root, gfp, max, shift);
+	shift = radix_tree_load_root(root, &child, &maxindex);
+	if (index > maxindex) {
+		int error = radix_tree_extend(root, gfp, index, shift);
 		if (error < 0)
 			return error;
 		shift = error;
@@ -407,31 +407,10 @@ static int __radix_tree_create(struct radix_tree_root *root,
 				node->count++;
 		} else if (!radix_tree_is_internal_node(child))
 			break;
-
 		node = entry_to_node(child);
 		offset = radix_tree_descend(node, &child, index);
 		slot = &node->slots[offset];
 	}
-
-	if (nodep)
-		*nodep = node;
-	if (slotp)
-		*slotp = slot;
-	return 0;
-}
-
-int radix_tree_insert(struct radix_tree_root *root, unsigned long index,
-		      void *item)
-{
-	struct radix_tree_node *node;
-	void __rcu **slot;
-	int error;
-
-	BUG_ON(radix_tree_is_internal_node(item));
-
-	error = __radix_tree_create(root, index, &node, &slot);
-	if (error)
-		return error;
 
 	/* Inlined insert_entries */
 	if (*slot)

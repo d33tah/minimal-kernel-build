@@ -62,24 +62,7 @@ static inline unsigned long build_cr3(pgd_t *pgd, u16 asid)
 }
 
 /* build_cr3_noflush inlined into load_new_mm_cr3 */
-
-static void clear_asid_other(void)
-{
-	u16 asid;
-
-	if (!static_cpu_has(X86_FEATURE_PTI)) {
-		WARN_ON_ONCE(1);
-		return;
-	}
-
-	for (asid = 0; asid < TLB_NR_DYN_ASIDS; asid++) {
-		if (asid == this_cpu_read(cpu_tlbstate.loaded_mm_asid))
-			continue;
-
-		this_cpu_write(cpu_tlbstate.ctxs[asid].ctx_id, 0);
-	}
-	this_cpu_write(cpu_tlbstate.invalidate_other, false);
-}
+/* clear_asid_other inlined into choose_new_asid */
 
 atomic64_t last_mm_ctx_id = ATOMIC64_INIT(1);
 
@@ -94,8 +77,21 @@ static void choose_new_asid(struct mm_struct *next, u64 next_tlb_gen,
 		return;
 	}
 
-	if (this_cpu_read(cpu_tlbstate.invalidate_other))
-		clear_asid_other();
+	/* Inlined clear_asid_other */
+	if (this_cpu_read(cpu_tlbstate.invalidate_other)) {
+		if (!static_cpu_has(X86_FEATURE_PTI)) {
+			WARN_ON_ONCE(1);
+		} else {
+			for (asid = 0; asid < TLB_NR_DYN_ASIDS; asid++) {
+				if (asid !=
+				    this_cpu_read(cpu_tlbstate.loaded_mm_asid))
+					this_cpu_write(
+						cpu_tlbstate.ctxs[asid].ctx_id,
+						0);
+			}
+			this_cpu_write(cpu_tlbstate.invalidate_other, false);
+		}
+	}
 
 	for (asid = 0; asid < TLB_NR_DYN_ASIDS; asid++) {
 		if (this_cpu_read(cpu_tlbstate.ctxs[asid].ctx_id) !=

@@ -511,3 +511,5 @@ COND_SYSCALL(setreuid16);
 COND_SYSCALL(setuid16);
 
 COND_SYSCALL(rseq);
+
+COND_SYSCALL(getrandom);

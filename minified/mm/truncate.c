@@ -224,36 +224,7 @@ void truncate_inode_pages_final(struct address_space *mapping)
 }
 
 /* invalidate_mapping_pagevec, invalidate_mapping_pages removed - never called */
-
-static int invalidate_complete_folio2(struct address_space *mapping,
-				      struct folio *folio)
-{
-	if (folio->mapping != mapping)
-		return 0;
-
-	if (folio_has_private(folio) &&
-	    !filemap_release_folio(folio, GFP_KERNEL))
-		return 0;
-
-	spin_lock(&mapping->host->i_lock);
-	xa_lock_irq(&mapping->i_pages);
-	if (folio_test_dirty(folio))
-		goto failed;
-
-	BUG_ON(folio_has_private(folio));
-	__filemap_remove_folio(folio, NULL);
-	xa_unlock_irq(&mapping->i_pages);
-	if (mapping_shrinkable(mapping))
-		inode_add_lru(mapping->host);
-	spin_unlock(&mapping->host->i_lock);
-
-	filemap_free_folio(mapping, folio);
-	return 1;
-failed:
-	xa_unlock_irq(&mapping->i_pages);
-	spin_unlock(&mapping->host->i_lock);
-	return 0;
-}
+/* invalidate_complete_folio2 inlined into invalidate_inode_pages2_range */
 
 int invalidate_inode_pages2_range(struct address_space *mapping, pgoff_t start,
 				  pgoff_t end)
@@ -263,7 +234,6 @@ int invalidate_inode_pages2_range(struct address_space *mapping, pgoff_t start,
 	pgoff_t index;
 	int i;
 	int ret = 0;
-	int ret2 = 0;
 	int did_range_unmap = 0;
 
 	if (mapping_empty(mapping))
@@ -274,6 +244,7 @@ int invalidate_inode_pages2_range(struct address_space *mapping, pgoff_t start,
 	while (find_get_entries(mapping, index, end, &fbatch, indices)) {
 		for (i = 0; i < folio_batch_count(&fbatch); i++) {
 			struct folio *folio = fbatch.folios[i];
+			int complete = 0;
 
 			index = indices[i];
 
@@ -300,18 +271,33 @@ int invalidate_inode_pages2_range(struct address_space *mapping, pgoff_t start,
 				folio_unlock(folio);
 				continue;
 			}
-			/* folio_wait_writeback removed - empty stub */
 
 			if (folio_mapped(folio))
 				unmap_mapping_folio(folio);
 			BUG_ON(folio_mapped(folio));
 
-			/* launder_folio check removed - never set */
-			ret2 = 0;
-			if (!invalidate_complete_folio2(mapping, folio))
-				ret2 = -EBUSY;
-			if (ret2 < 0)
-				ret = ret2;
+			/* invalidate_complete_folio2 inlined */
+			if (folio->mapping == mapping &&
+			    (!folio_has_private(folio) ||
+			     filemap_release_folio(folio, GFP_KERNEL))) {
+				spin_lock(&mapping->host->i_lock);
+				xa_lock_irq(&mapping->i_pages);
+				if (!folio_test_dirty(folio)) {
+					BUG_ON(folio_has_private(folio));
+					__filemap_remove_folio(folio, NULL);
+					xa_unlock_irq(&mapping->i_pages);
+					if (mapping_shrinkable(mapping))
+						inode_add_lru(mapping->host);
+					spin_unlock(&mapping->host->i_lock);
+					filemap_free_folio(mapping, folio);
+					complete = 1;
+				} else {
+					xa_unlock_irq(&mapping->i_pages);
+					spin_unlock(&mapping->host->i_lock);
+				}
+			}
+			if (!complete)
+				ret = -EBUSY;
 			folio_unlock(folio);
 		}
 		folio_batch_remove_exceptionals(&fbatch);
@@ -320,7 +306,6 @@ int invalidate_inode_pages2_range(struct address_space *mapping, pgoff_t start,
 		index++;
 	}
 
-	/* dax_mapping() always returns false */
 	return ret;
 }
 

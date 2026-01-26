@@ -16,7 +16,7 @@ extern spinlock_t rtc_lock;
 #define RTC_FREQ_SELECT RTC_REG_A
 #define RTC_UIP 0x80
 #define RTC_CONTROL RTC_REG_B
-#define RTC_DM_BINARY 0x04
+/* RTC_DM_BINARY and RTC_ALWAYS_BCD not needed - always BCD mode */
 /* end mc146818rtc.h */
 /* Inlined from linux/bcd.h */
 #define bcd2bin(x) \
@@ -45,7 +45,7 @@ DEFINE_SPINLOCK(rtc_lock);
 
 void mach_get_cmos_time(struct timespec64 *now)
 {
-	unsigned int status, year, mon, day, hour, min, sec;
+	unsigned int year, mon, day, hour, min, sec;
 	unsigned long flags;
 
 	spin_lock_irqsave(&rtc_lock, flags);
@@ -60,19 +60,17 @@ void mach_get_cmos_time(struct timespec64 *now)
 	mon = CMOS_READ(RTC_MONTH);
 	year = CMOS_READ(RTC_YEAR);
 
-	status = CMOS_READ(RTC_CONTROL);
-	WARN_ON_ONCE(RTC_ALWAYS_BCD && (status & RTC_DM_BINARY));
+	/* RTC_ALWAYS_BCD is always 1, removed conditional */
 
 	spin_unlock_irqrestore(&rtc_lock, flags);
 
-	if (RTC_ALWAYS_BCD || !(status & RTC_DM_BINARY)) {
-		sec = bcd2bin(sec);
-		min = bcd2bin(min);
-		hour = bcd2bin(hour);
-		day = bcd2bin(day);
-		mon = bcd2bin(mon);
-		year = bcd2bin(year);
-	}
+	/* RTC_ALWAYS_BCD is always 1, so always convert from BCD */
+	sec = bcd2bin(sec);
+	min = bcd2bin(min);
+	hour = bcd2bin(hour);
+	day = bcd2bin(day);
+	mon = bcd2bin(mon);
+	year = bcd2bin(year);
 
 	/* century is always 0 - dead code removed */
 	year += CMOS_YEARS_OFFS;

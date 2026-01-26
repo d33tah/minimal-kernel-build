@@ -524,72 +524,70 @@ static void delayed_mntput(struct work_struct *unused)
 }
 static DECLARE_DELAYED_WORK(delayed_mntput_work, delayed_mntput);
 
-static void mntput_no_expire(struct mount *mnt)
+/* mntput_no_expire inlined into mntput */
+
+void mntput(struct vfsmount *mnt)
 {
+	struct mount *m;
 	LIST_HEAD(list);
 	int count;
 
+	if (!mnt)
+		return;
+
+	m = real_mount(mnt);
+	if (unlikely(m->mnt_expiry_mark))
+		m->mnt_expiry_mark = 0;
+
 	rcu_read_lock();
-	if (likely(READ_ONCE(mnt->mnt_ns))) {
-		mnt_add_count(mnt, -1);
+	if (likely(READ_ONCE(m->mnt_ns))) {
+		mnt_add_count(m, -1);
 		rcu_read_unlock();
 		return;
 	}
 	lock_mount_hash();
 
 	smp_mb();
-	mnt_add_count(mnt, -1);
-	count = mnt_get_count(mnt);
+	mnt_add_count(m, -1);
+	count = mnt_get_count(m);
 	if (count != 0) {
 		WARN_ON(count < 0);
 		rcu_read_unlock();
 		unlock_mount_hash();
 		return;
 	}
-	if (unlikely(mnt->mnt.mnt_flags & MNT_DOOMED)) {
+	if (unlikely(m->mnt.mnt_flags & MNT_DOOMED)) {
 		rcu_read_unlock();
 		unlock_mount_hash();
 		return;
 	}
-	mnt->mnt.mnt_flags |= MNT_DOOMED;
+	m->mnt.mnt_flags |= MNT_DOOMED;
 	rcu_read_unlock();
 
-	list_del(&mnt->mnt_instance);
+	list_del(&m->mnt_instance);
 
-	if (unlikely(!list_empty(&mnt->mnt_mounts))) {
+	if (unlikely(!list_empty(&m->mnt_mounts))) {
 		struct mount *p, *tmp;
-		list_for_each_entry_safe(p, tmp, &mnt->mnt_mounts, mnt_child) {
+		list_for_each_entry_safe(p, tmp, &m->mnt_mounts, mnt_child) {
 			__put_mountpoint(unhash_mnt(p), &list);
-			hlist_add_head(&p->mnt_umount,
-				       &mnt->mnt_stuck_children);
+			hlist_add_head(&p->mnt_umount, &m->mnt_stuck_children);
 		}
 	}
 	unlock_mount_hash();
 	shrink_dentry_list(&list);
 
-	if (likely(!(mnt->mnt.mnt_flags & MNT_INTERNAL))) {
+	if (likely(!(m->mnt.mnt_flags & MNT_INTERNAL))) {
 		struct task_struct *task = current;
 		if (likely(!(task->flags & PF_KTHREAD))) {
-			init_task_work(&mnt->mnt_rcu, __cleanup_mnt);
-			if (!task_work_add(task, &mnt->mnt_rcu, TWA_RESUME))
+			init_task_work(&m->mnt_rcu, __cleanup_mnt);
+			if (!task_work_add(task, &m->mnt_rcu, TWA_RESUME))
 				return;
 		}
-		if (llist_add(&mnt->mnt_llist, &delayed_mntput_list))
+		if (llist_add(&m->mnt_llist, &delayed_mntput_list))
 			schedule_delayed_work(&delayed_mntput_work, 1);
 		return;
 	}
-	cleanup_mnt(mnt);
-}
-
-void mntput(struct vfsmount *mnt)
-{
-	if (mnt) {
-		struct mount *m = real_mount(mnt);
-
-		if (unlikely(m->mnt_expiry_mark))
-			m->mnt_expiry_mark = 0;
-		mntput_no_expire(m);
-	}
+	cleanup_mnt(m);
 }
 
 struct vfsmount *mntget(struct vfsmount *mnt)

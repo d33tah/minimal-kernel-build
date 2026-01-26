@@ -68,59 +68,7 @@ static void acct_arg_size(struct linux_binprm *bprm, unsigned long pages)
 }
 
 /* get_arg_page, put_arg_page and flush_arg_page inlined */
-
-static int bprm_mm_init(struct linux_binprm *bprm)
-{
-	int err;
-	struct vm_area_struct *vma = NULL;
-	struct mm_struct *mm = NULL;
-
-	bprm->mm = mm = mm_alloc();
-	if (!mm)
-		return -ENOMEM;
-
-	task_lock(current->group_leader);
-	bprm->rlim_stack = current->signal->rlim[RLIMIT_STACK];
-	task_unlock(current->group_leader);
-
-	bprm->vma = vma = vm_area_alloc(mm);
-	if (!vma) {
-		err = -ENOMEM;
-		goto err_mm;
-	}
-	vma_set_anonymous(vma);
-
-	if (mmap_write_lock_killable(mm)) {
-		err = -EINTR;
-		goto err_vma;
-	}
-
-	BUILD_BUG_ON(VM_STACK_FLAGS & VM_STACK_INCOMPLETE_SETUP);
-	vma->vm_end = STACK_TOP_MAX;
-	vma->vm_start = vma->vm_end - PAGE_SIZE;
-	vma->vm_flags = VM_SOFTDIRTY | VM_STACK_FLAGS |
-			VM_STACK_INCOMPLETE_SETUP;
-	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
-
-	err = insert_vm_struct(mm, vma);
-	if (err)
-		goto err_unlock;
-
-	mm->total_vm = 1;
-	mmap_write_unlock(mm);
-	bprm->p = vma->vm_end - sizeof(void *);
-	return 0;
-
-err_unlock:
-	mmap_write_unlock(mm);
-err_vma:
-	bprm->vma = NULL;
-	vm_area_free(vma);
-err_mm:
-	bprm->mm = NULL;
-	mmdrop(mm);
-	return err;
-}
+/* bprm_mm_init inlined into alloc_bprm */
 
 /* Removed: user_arg_ptr, get_user_arg_ptr, count - only used by removed do_execveat_common */
 
@@ -653,6 +601,8 @@ static void free_bprm(struct linux_binprm *bprm)
 static struct linux_binprm *alloc_bprm(int fd, struct filename *filename)
 {
 	struct linux_binprm *bprm = kzalloc(sizeof(*bprm), GFP_KERNEL);
+	struct vm_area_struct *vma = NULL;
+	struct mm_struct *mm = NULL;
 	int retval = -ENOMEM;
 	if (!bprm)
 		goto out;
@@ -672,11 +622,51 @@ static struct linux_binprm *alloc_bprm(int fd, struct filename *filename)
 	}
 	bprm->interp = bprm->filename;
 
-	retval = bprm_mm_init(bprm);
-	if (retval)
+	/* Inlined bprm_mm_init */
+	bprm->mm = mm = mm_alloc();
+	if (!mm)
 		goto out_free;
+
+	task_lock(current->group_leader);
+	bprm->rlim_stack = current->signal->rlim[RLIMIT_STACK];
+	task_unlock(current->group_leader);
+
+	bprm->vma = vma = vm_area_alloc(mm);
+	if (!vma) {
+		retval = -ENOMEM;
+		goto err_mm;
+	}
+	vma_set_anonymous(vma);
+
+	if (mmap_write_lock_killable(mm)) {
+		retval = -EINTR;
+		goto err_vma;
+	}
+
+	BUILD_BUG_ON(VM_STACK_FLAGS & VM_STACK_INCOMPLETE_SETUP);
+	vma->vm_end = STACK_TOP_MAX;
+	vma->vm_start = vma->vm_end - PAGE_SIZE;
+	vma->vm_flags = VM_SOFTDIRTY | VM_STACK_FLAGS |
+			VM_STACK_INCOMPLETE_SETUP;
+	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
+
+	retval = insert_vm_struct(mm, vma);
+	if (retval)
+		goto err_unlock;
+
+	mm->total_vm = 1;
+	mmap_write_unlock(mm);
+	bprm->p = vma->vm_end - sizeof(void *);
 	return bprm;
 
+err_unlock:
+	mmap_write_unlock(mm);
+err_vma:
+	bprm->vma = NULL;
+	vm_area_free(vma);
+err_mm:
+	bprm->mm = NULL;
+	mmdrop(mm);
 out_free:
 	free_bprm(bprm);
 out:

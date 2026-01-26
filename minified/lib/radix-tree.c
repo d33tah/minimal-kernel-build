@@ -197,35 +197,7 @@ static inline void radix_tree_node_free(struct radix_tree_node *node)
 	call_rcu(&node->rcu_head, radix_tree_node_rcu_free);
 }
 
-static __must_check int __radix_tree_preload(gfp_t gfp_mask, unsigned nr)
-{
-	struct radix_tree_preload *rtp;
-	struct radix_tree_node *node;
-	int ret = -ENOMEM;
-
-	gfp_mask &= ~__GFP_ACCOUNT;
-
-	local_lock(&radix_tree_preloads.lock);
-	rtp = this_cpu_ptr(&radix_tree_preloads);
-	while (rtp->nr < nr) {
-		local_unlock(&radix_tree_preloads.lock);
-		node = kmem_cache_alloc(radix_tree_node_cachep, gfp_mask);
-		if (node == NULL)
-			goto out;
-		local_lock(&radix_tree_preloads.lock);
-		rtp = this_cpu_ptr(&radix_tree_preloads);
-		if (rtp->nr < nr) {
-			node->parent = rtp->nodes;
-			rtp->nodes = node;
-			rtp->nr++;
-		} else {
-			kmem_cache_free(radix_tree_node_cachep, node);
-		}
-	}
-	ret = 0;
-out:
-	return ret;
-}
+/* __radix_tree_preload inlined into idr_preload */
 
 static unsigned radix_tree_load_root(const struct radix_tree_root *root,
 				     struct radix_tree_node **nodep,
@@ -688,7 +660,31 @@ void *radix_tree_delete(struct radix_tree_root *root, unsigned long index)
 
 void idr_preload(gfp_t gfp_mask)
 {
-	if (__radix_tree_preload(gfp_mask, IDR_PRELOAD_SIZE))
+	struct radix_tree_preload *rtp;
+	struct radix_tree_node *node;
+	int ok = 0;
+
+	gfp_mask &= ~__GFP_ACCOUNT;
+	local_lock(&radix_tree_preloads.lock);
+	rtp = this_cpu_ptr(&radix_tree_preloads);
+	while (rtp->nr < IDR_PRELOAD_SIZE) {
+		local_unlock(&radix_tree_preloads.lock);
+		node = kmem_cache_alloc(radix_tree_node_cachep, gfp_mask);
+		if (node == NULL)
+			goto done;
+		local_lock(&radix_tree_preloads.lock);
+		rtp = this_cpu_ptr(&radix_tree_preloads);
+		if (rtp->nr < IDR_PRELOAD_SIZE) {
+			node->parent = rtp->nodes;
+			rtp->nodes = node;
+			rtp->nr++;
+		} else {
+			kmem_cache_free(radix_tree_node_cachep, node);
+		}
+	}
+	ok = 1;
+done:
+	if (!ok)
 		local_lock(&radix_tree_preloads.lock);
 }
 

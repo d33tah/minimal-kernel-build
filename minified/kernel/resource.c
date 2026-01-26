@@ -88,74 +88,52 @@ int request_resource(struct resource *root, struct resource *new)
 }
 /* release_resource removed - never called (~9 LOC) */
 
-static int find_next_iomem_res(resource_size_t start, resource_size_t end,
-			       unsigned long flags, unsigned long desc,
-			       struct resource *res)
-{
-	struct resource *p;
-
-	if (!res)
-		return -EINVAL;
-
-	if (start >= end)
-		return -EINVAL;
-
-	read_lock(&resource_lock);
-
-	/* next_resource inlined into loop iteration */
-	for (p = iomem_resource.child; p;
-	     p = (p->child) ? p->child : (({
-		     struct resource *__p = p;
-		     while (!__p->sibling && __p->parent)
-			     __p = __p->parent;
-		     __p->sibling;
-	     }))) {
-		if (p->start > end) {
-			p = NULL;
-			break;
-		}
-
-		if (p->end < start)
-			continue;
-
-		if ((p->flags & flags) != flags)
-			continue;
-		if ((desc != IORES_DESC_NONE) && (desc != p->desc))
-			continue;
-
-		break;
-	}
-
-	if (p) {
-		*res = (struct resource){
-			.start = max(start, p->start),
-			.end = min(end, p->end),
-			.flags = p->flags,
-			.desc = p->desc,
-			.parent = p->parent,
-		};
-	}
-
-	read_unlock(&resource_lock);
-	return p ? 0 : -ENODEV;
-}
+/* find_next_iomem_res inlined into walk_mem_res */
 
 int walk_mem_res(u64 start, u64 end, void *arg,
 		 int (*func)(struct resource *, void *))
 {
 	unsigned long flags = IORESOURCE_MEM | IORESOURCE_BUSY;
 	struct resource res;
+	struct resource *p;
 	int ret = -EINVAL;
 
-	while (start < end &&
-	       !find_next_iomem_res(start, end, flags, IORES_DESC_NONE, &res)) {
+	while (start < end) {
+		read_lock(&resource_lock);
+		for (p = iomem_resource.child; p;
+		     p = (p->child) ? p->child : (({
+			     struct resource *__p = p;
+			     while (!__p->sibling && __p->parent)
+				     __p = __p->parent;
+			     __p->sibling;
+		     }))) {
+			if (p->start > end) {
+				p = NULL;
+				break;
+			}
+			if (p->end < start)
+				continue;
+			if ((p->flags & flags) != flags)
+				continue;
+			break;
+		}
+		if (p) {
+			res = (struct resource){
+				.start = max(start, p->start),
+				.end = min(end, p->end),
+				.flags = p->flags,
+				.desc = p->desc,
+				.parent = p->parent,
+			};
+		}
+		read_unlock(&resource_lock);
+		if (!p)
+			break;
 		ret = (*func)(&res, arg);
 		if (ret)
 			break;
-
 		start = res.end + 1;
 	}
-
 	return ret;
 }
 

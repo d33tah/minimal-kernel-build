@@ -409,38 +409,7 @@ int tty_standard_install(struct tty_driver *driver, struct tty_struct *tty)
 
 /* tty_driver_install_tty inlined - called driver->ops->install or tty_standard_install */
 /* tty_driver_remove_tty inlined into release_tty */
-
-static int tty_reopen(struct tty_struct *tty)
-{
-	struct tty_driver *driver = tty->driver;
-	struct tty_ldisc *ld;
-	int retval = 0;
-
-	if (driver->type == TTY_DRIVER_TYPE_PTY &&
-	    driver->subtype == PTY_TYPE_MASTER)
-		return -EIO;
-
-	if (!tty->count)
-		return -EAGAIN;
-
-	ld = tty_ldisc_ref_wait(tty);
-	if (ld) {
-		tty_ldisc_deref(ld);
-	} else {
-		retval = tty_ldisc_lock(tty, 5 * HZ);
-		if (retval)
-			return retval;
-
-		if (!tty->ldisc)
-			retval = tty_ldisc_reinit(tty, tty->termios.c_line);
-		tty_ldisc_unlock(tty);
-	}
-
-	if (retval == 0)
-		tty->count++;
-
-	return retval;
-}
+/* tty_reopen inlined into tty_open_by_driver */
 
 struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx)
 {
@@ -707,7 +676,36 @@ static struct tty_struct *tty_open_by_driver(dev_t device, struct file *filp)
 			tty = ERR_PTR(retval);
 			goto out;
 		}
-		retval = tty_reopen(tty);
+		/* tty_reopen inlined */
+		{
+			struct tty_driver *driver = tty->driver;
+			struct tty_ldisc *ld;
+			retval = 0;
+
+			if (driver->type == TTY_DRIVER_TYPE_PTY &&
+			    driver->subtype == PTY_TYPE_MASTER)
+				retval = -EIO;
+			else if (!tty->count)
+				retval = -EAGAIN;
+			else {
+				ld = tty_ldisc_ref_wait(tty);
+				if (ld)
+					tty_ldisc_deref(ld);
+				else {
+					retval = tty_ldisc_lock(tty, 5 * HZ);
+					if (!retval) {
+						if (!tty->ldisc)
+							retval = tty_ldisc_reinit(
+								tty,
+								tty->termios
+									.c_line);
+						tty_ldisc_unlock(tty);
+					}
+				}
+				if (retval == 0)
+					tty->count++;
+			}
+		}
 		if (retval < 0) {
 			tty_unlock(tty);
 			tty = ERR_PTR(retval);

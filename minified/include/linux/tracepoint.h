@@ -9,7 +9,9 @@
 #include <linux/cpumask.h>
 #include <linux/rcupdate.h>
 #include <linux/tracepoint-defs.h>
-#include <linux/static_call.h>
+#include <linux/types.h>
+#include <linux/cpu.h>
+#include <linux/static_call_types.h>
 
 struct module;
 struct tracepoint;

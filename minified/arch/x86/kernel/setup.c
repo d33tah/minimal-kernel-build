@@ -18,7 +18,9 @@ extern struct atomic_notifier_head panic_notifier_list;
 #define tboot_probe() \
 	do {          \
 	} while (0)
-#include <linux/static_call.h>
+#include <linux/types.h>
+#include <linux/cpu.h>
+#include <linux/static_call_types.h>
 
 #include <uapi/linux/mount.h>
 

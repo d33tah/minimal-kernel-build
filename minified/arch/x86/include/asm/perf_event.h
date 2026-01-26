@@ -4,7 +4,9 @@
 
  
 
-#include <linux/static_call.h>
+#include <linux/types.h>
+#include <linux/cpu.h>
+#include <linux/static_call_types.h>
 #include <asm/stacktrace.h>
 
 /* struct perf_guest_switch_msr, perf_clear_dirty_counters,

@@ -12,7 +12,9 @@
 #include <linux/percpu.h>
 #include <linux/timex.h>
 #include <linux/jump_label.h>
-#include <linux/static_call.h>
+#include <linux/types.h>
+#include <linux/cpu.h>
+#include <linux/static_call_types.h>
 
 /* is_hpet_enabled, hpet_readl, HPET_COUNTER, HPET_PERIOD removed - hpet disabled */
 #include <asm/timer.h>

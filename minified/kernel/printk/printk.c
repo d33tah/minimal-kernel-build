@@ -21,7 +21,11 @@
 /* end printk_ringbuffer.h */
 /* struct console_cmdline removed - never populated */
 /* _braille_register_console removed - always returned 0 */
-#include "internal.h"
+/* --- 2026-01-26 01:50 --- Inlined from internal.h */
+#include <linux/percpu.h>
+#define printk_safe_enter_irqsave(flags) local_irq_save(flags)
+#define printk_safe_exit_irqrestore(flags) local_irq_restore(flags)
+/* end internal.h */
 
 int console_printk[4] = {
 	CONSOLE_LOGLEVEL_DEFAULT,

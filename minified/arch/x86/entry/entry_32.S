@@ -46,8 +46,21 @@
 #include <asm/frame.h>
 #include <asm/trapnr.h>
 #include <asm/nospec-branch.h>
-
-#include "calling.h"
+/* --- 2026-01-26 01:25 --- Inlined from calling.h */
+#include <linux/jump_label.h>
+#include <asm/unwind_hints.h>
+#include <asm/page_types.h>
+#include <asm/asm-offsets.h>
+#include <asm/ptrace-abi.h>
+#include <asm/msr.h>
+# undef		UNWIND_HINT_IRET_REGS
+# define	UNWIND_HINT_IRET_REGS
+.macro STACKLEAK_ERASE
+.endm
+.macro GET_PERCPU_BASE reg:req
+	movq	pcpu_unit_offsets(%rip), \reg
+.endm
+/* end calling.h */
 
 	.section .entry.text, "ax"
 

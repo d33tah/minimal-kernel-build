@@ -313,52 +313,7 @@ void set_task_stack_end_magic(struct task_struct *tsk)
 	*stackend = STACK_END_MAGIC;
 }
 
-static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
-{
-	struct task_struct *tsk;
-
-	/* tsk_fork_get_node call removed - always returns NUMA_NO_NODE, so this is a no-op */
-	tsk = kmem_cache_alloc_node(task_struct_cachep, GFP_KERNEL, node);
-	if (!tsk)
-		return NULL;
-
-	/* arch_dup_task_struct always returns 0 */
-	arch_dup_task_struct(tsk, orig);
-
-	/* Inlined alloc_thread_stack_node */
-	{
-		struct page *page = alloc_pages_node(node, THREADINFO_GFP,
-						     THREAD_SIZE_ORDER);
-		if (!page)
-			goto free_tsk;
-		tsk->stack = page_address(page);
-	}
-
-	refcount_set(&tsk->stack_refcount, 1);
-	/* inlined account_kernel_stack(tsk, 1) */
-	mod_lruvec_kmem_state(tsk->stack, NR_KERNEL_STACK_KB,
-			      THREAD_SIZE / 1024);
-	clear_tsk_need_resched(tsk);
-	set_task_stack_end_magic(tsk);
-	clear_task_syscall_work(tsk, SYSCALL_USER_DISPATCH);
-
-	if (orig->cpus_ptr == &orig->cpus_mask)
-		tsk->cpus_ptr = &tsk->cpus_mask;
-
-	refcount_set(&tsk->rcu_users, 2);
-
-	refcount_set(&tsk->usage, 1);
-	tsk->wake_q.next = NULL;
-	tsk->worker_private = NULL;
-
-	kmap_local_fork(tsk);
-
-	return tsk;
-
-free_tsk:
-	free_task_struct(tsk);
-	return NULL;
-}
+/* dup_task_struct inlined into copy_process */
 
 __cacheline_aligned_in_smp DEFINE_SPINLOCK(mmlist_lock);
 
@@ -564,10 +519,32 @@ copy_process(struct pid *pid, int trace, int node,
 	if (task_sigpending(current))
 		goto fork_out;
 
+	/* dup_task_struct inlined */
 	retval = -ENOMEM;
-	p = dup_task_struct(current, node);
+	p = kmem_cache_alloc_node(task_struct_cachep, GFP_KERNEL, node);
 	if (!p)
 		goto fork_out;
+	arch_dup_task_struct(p, current);
+	{
+		struct page *page = alloc_pages_node(node, THREADINFO_GFP,
+						     THREAD_SIZE_ORDER);
+		if (!page)
+			goto bad_fork_free_tsk;
+		p->stack = page_address(page);
+	}
+	refcount_set(&p->stack_refcount, 1);
+	mod_lruvec_kmem_state(p->stack, NR_KERNEL_STACK_KB, THREAD_SIZE / 1024);
+	clear_tsk_need_resched(p);
+	set_task_stack_end_magic(p);
+	clear_task_syscall_work(p, SYSCALL_USER_DISPATCH);
+	if (current->cpus_ptr == &current->cpus_mask)
+		p->cpus_ptr = &p->cpus_mask;
+	refcount_set(&p->rcu_users, 2);
+	refcount_set(&p->usage, 1);
+	p->wake_q.next = NULL;
+	p->worker_private = NULL;
+	kmap_local_fork(p);
+
 	p->flags &= ~PF_KTHREAD;
 	if (args->kthread)
 		p->flags |= PF_KTHREAD;
@@ -845,6 +822,9 @@ bad_fork_free:
 	exit_task_stack_account(p);
 	put_task_stack(p);
 	free_task(p);
+	goto fork_out;
+bad_fork_free_tsk:
+	free_task_struct(p);
 fork_out:
 	spin_lock_irq(&current->sighand->siglock);
 	hlist_del_init(&delayed.node);

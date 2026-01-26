@@ -158,21 +158,30 @@ void wait_for_device_probe(void)
 	wait_event(probe_waitqueue, atomic_read(&probe_count) == 0);
 }
 
-static int __driver_probe_device(struct device_driver *drv, struct device *dev)
+/* __driver_probe_device inlined into driver_probe_device */
+
+static int driver_probe_device(struct device_driver *drv, struct device *dev)
 {
+	int trigger_count = atomic_read(&deferred_trigger_count);
 	int ret = 0;
 
-	if (dev->p->dead || !device_is_registered(dev))
-		return -ENODEV;
-	if (dev->driver)
-		return -EBUSY;
+	atomic_inc(&probe_count);
+
+	/* Inlined __driver_probe_device */
+	if (dev->p->dead || !device_is_registered(dev)) {
+		ret = -ENODEV;
+		goto out;
+	}
+	if (dev->driver) {
+		ret = -EBUSY;
+		goto out;
+	}
 
 	dev->can_match = true;
 
 	if (dev->parent)
 		pm_runtime_get_sync(dev->parent);
 
-	/* Inlined really_probe */
 	if (defer_all_probes) {
 		ret = -EPROBE_DEFER;
 	} else {
@@ -221,16 +230,7 @@ really_probe_done:;
 	if (dev->parent)
 		pm_runtime_put(dev->parent);
 
-	return ret;
-}
-
-static int driver_probe_device(struct device_driver *drv, struct device *dev)
-{
-	int trigger_count = atomic_read(&deferred_trigger_count);
-	int ret;
-
-	atomic_inc(&probe_count);
-	ret = __driver_probe_device(drv, dev);
+out:
 	if (ret == -EPROBE_DEFER || ret == EPROBE_DEFER) {
 		driver_deferred_probe_add(dev);
 

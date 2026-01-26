@@ -7,7 +7,7 @@
 #include <linux/kthread.h>
 #include <linux/completion.h>
 #include <linux/err.h>
-#include <linux/unistd.h>
+#include <asm/unistd.h>
 #include <linux/file.h>
 #include <linux/mutex.h>
 #include <linux/slab.h>

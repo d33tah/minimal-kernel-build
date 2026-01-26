@@ -9,7 +9,7 @@
 #include <linux/compiler.h>
 #include <linux/fs.h>
 #include <linux/uaccess.h>
-#include <linux/unistd.h>
+#include <asm/unistd.h>
 /* asm/compat.h inlined - just provides includes */
 #include <linux/sched.h>
 #include <linux/sched/task_stack.h>

@@ -2,7 +2,7 @@
 #define _LINUX_BINFMTS_H
 
 #include <linux/sched.h>
-#include <linux/unistd.h>
+#include <asm/unistd.h>
 #include <linux/capability.h>
 
 /* struct pt_regs and filename forward decls removed - unused */

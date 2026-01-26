@@ -8,7 +8,7 @@
 #include <linux/kernel.h>
 #include <linux/errno.h>
 #include <linux/wait.h>
-#include <linux/unistd.h>
+#include <asm/unistd.h>
 #include <linux/stddef.h>
 #include <linux/personality.h>
 #include <linux/uaccess.h>

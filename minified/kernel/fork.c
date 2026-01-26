@@ -9,7 +9,7 @@
 #include <linux/sched/task_stack.h>
 #include <linux/sched/cputime.h>
 #include <linux/init.h>
-#include <linux/unistd.h>
+#include <asm/unistd.h>
 #include <linux/module.h>
 #include <linux/vmalloc.h>
 #include <linux/completion.h>

@@ -122,63 +122,7 @@ static void move_ptes(struct vm_area_struct *vma, pmd_t *old_pmd,
 		drop_rmap_locks(vma);
 }
 
-/* arch_supports_page_table_move removed - always returns true
-   since CONFIG_HAVE_MOVE_PMD and CONFIG_HAVE_MOVE_PUD are both enabled */
-
-static bool move_normal_pmd(struct vm_area_struct *vma, unsigned long old_addr,
-			    unsigned long new_addr, pmd_t *old_pmd,
-			    pmd_t *new_pmd)
-{
-	spinlock_t *old_ptl, *new_ptl;
-	struct mm_struct *mm = vma->vm_mm;
-	pmd_t pmd;
-
-	if (WARN_ON_ONCE(!pmd_none(*new_pmd)))
-		return false;
-
-	old_ptl = pmd_lock(vma->vm_mm, old_pmd);
-	new_ptl = pmd_lockptr(mm, new_pmd);
-	if (new_ptl != old_ptl)
-		spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
-
-	pmd = *old_pmd;
-	pmd_clear(old_pmd);
-	pmd_populate(mm, new_pmd, pmd_pgtable(pmd));
-	flush_tlb_range(vma, old_addr, old_addr + PMD_SIZE);
-	if (new_ptl != old_ptl)
-		spin_unlock(new_ptl);
-	spin_unlock(old_ptl);
-
-	return true;
-}
-
-/* --- 2025-12-22 04:35 --- Removed #else branch - CONFIG_HAVE_MOVE_PUD is set */
-static bool move_normal_pud(struct vm_area_struct *vma, unsigned long old_addr,
-			    unsigned long new_addr, pud_t *old_pud,
-			    pud_t *new_pud)
-{
-	spinlock_t *old_ptl, *new_ptl;
-	struct mm_struct *mm = vma->vm_mm;
-	pud_t pud;
-
-	if (WARN_ON_ONCE(!pud_none(*new_pud)))
-		return false;
-
-	old_ptl = pud_lock(vma->vm_mm, old_pud);
-	new_ptl = pud_lockptr(mm, new_pud);
-	if (new_ptl != old_ptl)
-		spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
-
-	pud = *old_pud;
-	/* pud_clear removed - empty stub */
-	pud_populate(mm, new_pud, pud_pgtable(pud));
-	flush_tlb_range(vma, old_addr, old_addr + PUD_SIZE);
-	if (new_ptl != old_ptl)
-		spin_unlock(new_ptl);
-	spin_unlock(old_ptl);
-
-	return true;
-}
+/* move_normal_pmd, move_normal_pud inlined into move_pgt_entry */
 
 enum pgt_entry {
 	NORMAL_PMD,
@@ -204,7 +148,6 @@ static __always_inline unsigned long get_extent(enum pgt_entry entry,
 	}
 
 	next = (old_addr + size) & mask;
-
 	extent = next - old_addr;
 	if (extent > old_end - old_addr)
 		extent = old_end - old_addr;
@@ -219,20 +162,51 @@ static bool move_pgt_entry(enum pgt_entry entry, struct vm_area_struct *vma,
 			   void *old_entry, void *new_entry,
 			   bool need_rmap_locks)
 {
+	spinlock_t *old_ptl, *new_ptl;
+	struct mm_struct *mm = vma->vm_mm;
 	bool moved = false;
 
 	if (need_rmap_locks)
 		take_rmap_locks(vma);
 
 	switch (entry) {
-	case NORMAL_PMD:
-		moved = move_normal_pmd(vma, old_addr, new_addr, old_entry,
-					new_entry);
+	case NORMAL_PMD: {
+		pmd_t *old_pmd = old_entry, *new_pmd = new_entry;
+		pmd_t pmd;
+		if (WARN_ON_ONCE(!pmd_none(*new_pmd)))
+			break;
+		old_ptl = pmd_lock(mm, old_pmd);
+		new_ptl = pmd_lockptr(mm, new_pmd);
+		if (new_ptl != old_ptl)
+			spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
+		pmd = *old_pmd;
+		pmd_clear(old_pmd);
+		pmd_populate(mm, new_pmd, pmd_pgtable(pmd));
+		flush_tlb_range(vma, old_addr, old_addr + PMD_SIZE);
+		if (new_ptl != old_ptl)
+			spin_unlock(new_ptl);
+		spin_unlock(old_ptl);
+		moved = true;
 		break;
-	case NORMAL_PUD:
-		moved = move_normal_pud(vma, old_addr, new_addr, old_entry,
-					new_entry);
+	}
+	case NORMAL_PUD: {
+		pud_t *old_pud = old_entry, *new_pud = new_entry;
+		pud_t pud;
+		if (WARN_ON_ONCE(!pud_none(*new_pud)))
+			break;
+		old_ptl = pud_lock(mm, old_pud);
+		new_ptl = pud_lockptr(mm, new_pud);
+		if (new_ptl != old_ptl)
+			spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
+		pud = *old_pud;
+		pud_populate(mm, new_pud, pud_pgtable(pud));
+		flush_tlb_range(vma, old_addr, old_addr + PUD_SIZE);
+		if (new_ptl != old_ptl)
+			spin_unlock(new_ptl);
+		spin_unlock(old_ptl);
+		moved = true;
 		break;
+	}
 	}
 
 	if (need_rmap_locks)

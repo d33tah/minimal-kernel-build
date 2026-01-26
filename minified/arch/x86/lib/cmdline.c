@@ -8,22 +8,17 @@ static inline int myisspace(u8 c)
 	return c <= ' ';
 }
 
-static int __cmdline_find_option_bool(const char *cmdline, int max_cmdline_size,
-				      const char *option)
+int cmdline_find_option_bool(const char *cmdline, const char *option)
 {
 	char c;
 	int pos = 0, wstart = 0;
 	const char *opptr = NULL;
-	enum {
-		st_wordstart = 0,
-		st_wordcmp,
-		st_wordskip,
-	} state = st_wordstart;
+	enum { st_wordstart = 0, st_wordcmp, st_wordskip } state = st_wordstart;
 
 	if (!cmdline)
 		return -1;
 
-	while (pos < max_cmdline_size) {
+	while (pos < COMMAND_LINE_SIZE) {
 		c = *(char *)cmdline++;
 		pos++;
 
@@ -33,17 +28,14 @@ static int __cmdline_find_option_bool(const char *cmdline, int max_cmdline_size,
 				return 0;
 			else if (myisspace(c))
 				break;
-
 			state = st_wordcmp;
 			opptr = option;
 			wstart = pos;
 			fallthrough;
-
 		case st_wordcmp:
 			if (!*opptr) {
 				if (!c || myisspace(c))
 					return wstart;
-
 			} else if (!c) {
 				return 0;
 			} else if (c == *opptr++) {
@@ -51,7 +43,6 @@ static int __cmdline_find_option_bool(const char *cmdline, int max_cmdline_size,
 			}
 			state = st_wordskip;
 			fallthrough;
-
 		case st_wordskip:
 			if (!c)
 				return 0;
@@ -60,12 +51,11 @@ static int __cmdline_find_option_bool(const char *cmdline, int max_cmdline_size,
 			break;
 		}
 	}
-
 	return 0;
 }
 
-static int __cmdline_find_option(const char *cmdline, int max_cmdline_size,
-				 const char *option, char *buffer, int bufsize)
+int cmdline_find_option(const char *cmdline, const char *option, char *buffer,
+			int bufsize)
 {
 	char c;
 	int pos = 0, len = -1;
@@ -75,13 +65,13 @@ static int __cmdline_find_option(const char *cmdline, int max_cmdline_size,
 		st_wordstart = 0,
 		st_wordcmp,
 		st_wordskip,
-		st_bufcpy,
+		st_bufcpy
 	} state = st_wordstart;
 
 	if (!cmdline)
 		return -1;
 
-	while (pos++ < max_cmdline_size) {
+	while (pos++ < COMMAND_LINE_SIZE) {
 		c = *(char *)cmdline++;
 		if (!c)
 			break;
@@ -90,11 +80,9 @@ static int __cmdline_find_option(const char *cmdline, int max_cmdline_size,
 		case st_wordstart:
 			if (myisspace(c))
 				break;
-
 			state = st_wordcmp;
 			opptr = option;
 			fallthrough;
-
 		case st_wordcmp:
 			if ((c == '=') && !*opptr) {
 				len = 0;
@@ -106,12 +94,10 @@ static int __cmdline_find_option(const char *cmdline, int max_cmdline_size,
 			}
 			state = st_wordskip;
 			fallthrough;
-
 		case st_wordskip:
 			if (myisspace(c))
 				state = st_wordstart;
 			break;
-
 		case st_bufcpy:
 			if (myisspace(c)) {
 				state = st_wordstart;
@@ -127,16 +113,4 @@ static int __cmdline_find_option(const char *cmdline, int max_cmdline_size,
 		*bufptr = '\0';
 
 	return len;
-}
-
-int cmdline_find_option_bool(const char *cmdline, const char *option)
-{
-	return __cmdline_find_option_bool(cmdline, COMMAND_LINE_SIZE, option);
-}
-
-int cmdline_find_option(const char *cmdline, const char *option, char *buffer,
-			int bufsize)
-{
-	return __cmdline_find_option(cmdline, COMMAND_LINE_SIZE, option, buffer,
-				     bufsize);
 }

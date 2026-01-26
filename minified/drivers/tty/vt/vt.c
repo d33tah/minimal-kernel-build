@@ -645,81 +645,7 @@ need_more_bytes:
 	return -1;
 }
 
-/* vc_translate, vc_is_control and vc_con_write_normal inlined into do_con_write */
-
-static int do_con_write(struct tty_struct *tty, const unsigned char *buf,
-			int count)
-{
-	static const u32 CTRL_ACTION = 0x0d00ff81;
-	static const u32 CTRL_ALWAYS = 0x0800f501;
-	struct vc_draw_region draw = { .x = -1 };
-	struct vc_data *vc;
-	int c, tc, n = 0;
-
-	if (in_interrupt())
-		return count;
-
-	console_lock();
-	vc = tty->driver_data;
-	if (!vc || !vc_cons_allocated(vc->vc_num)) {
-		console_unlock();
-		return 0;
-	}
-
-	while (!tty->flow.stopped && count--) {
-		bool is_control;
-		c = *buf++;
-		n++;
-		/* vc_translate inlined */
-		if (vc->vc_state != ESnormal)
-			tc = c;
-		else if (vc->vc_utf && !vc->vc_disp_ctrl)
-			tc = c = vc_translate_unicode(vc, c, NULL);
-		else
-			tc = c;
-		/* vc_is_control inlined */
-		is_control = vc->vc_state != ESnormal || !tc ||
-			     (c < 32 &&
-			      (vc->vc_disp_ctrl ? (CTRL_ALWAYS & BIT(c)) :
-						  (vc->vc_utf ||
-						   (CTRL_ACTION & BIT(c))))) ||
-			     (c == 127 && !vc->vc_disp_ctrl) || (c == 128 + 27);
-		if (tc != -1 && !is_control) {
-			/* vc_con_write_normal inlined */
-			u16 himask = vc->vc_hi_font_mask;
-			if (vc->vc_need_wrap) {
-				cr(vc);
-				lf(vc);
-			}
-			tc = conv_uni_to_pc(vc, tc);
-			if (tc < 0)
-				tc = c;
-			if (himask)
-				tc = ((tc & 0x100) ? himask : 0) | (tc & 0xff);
-			tc |= (vc->vc_attr << 8) & ~himask;
-			scr_writew(tc, (u16 *)vc->vc_pos);
-			if (con_should_update(vc) && draw.x < 0) {
-				draw.x = vc->state.x;
-				draw.from = vc->vc_pos;
-			}
-			if (vc->state.x == vc->vc_cols - 1) {
-				vc->vc_need_wrap = vc->vc_decawm;
-				draw.to = vc->vc_pos + 2;
-			} else {
-				vc->state.x++;
-				draw.to = (vc->vc_pos += 2);
-			}
-		}
-	}
-	/* Inlined con_flush */
-	if (draw.x >= 0) {
-		vc->vc_sw->con_putcs(vc, (u16 *)draw.from,
-				     (u16 *)draw.to - (u16 *)draw.from,
-				     vc->state.y, draw.x);
-	}
-	console_unlock();
-	return n;
-}
+/* do_con_write inlined into con_write */
 
 struct tty_driver *console_driver;
 
@@ -776,12 +702,73 @@ static struct console vt_console_driver = {
 static int con_write(struct tty_struct *tty, const unsigned char *buf,
 		     int count)
 {
-	int retval;
+	/* do_con_write inlined */
+	static const u32 CTRL_ACTION = 0x0d00ff81;
+	static const u32 CTRL_ALWAYS = 0x0800f501;
+	struct vc_draw_region draw = { .x = -1 };
+	struct vc_data *vc;
+	int c, tc, n = 0;
 
-	retval = do_con_write(tty, buf, count);
-	con_flush_chars(tty);
+	if (in_interrupt())
+		return count;
 
-	return retval;
+	console_lock();
+	vc = tty->driver_data;
+	if (!vc || !vc_cons_allocated(vc->vc_num)) {
+		console_unlock();
+		return 0;
+	}
+
+	while (!tty->flow.stopped && count--) {
+		bool is_control;
+		c = *buf++;
+		n++;
+		if (vc->vc_state != ESnormal)
+			tc = c;
+		else if (vc->vc_utf && !vc->vc_disp_ctrl)
+			tc = c = vc_translate_unicode(vc, c, NULL);
+		else
+			tc = c;
+		is_control = vc->vc_state != ESnormal || !tc ||
+			     (c < 32 &&
+			      (vc->vc_disp_ctrl ? (CTRL_ALWAYS & BIT(c)) :
+						  (vc->vc_utf ||
+						   (CTRL_ACTION & BIT(c))))) ||
+			     (c == 127 && !vc->vc_disp_ctrl) || (c == 128 + 27);
+		if (tc != -1 && !is_control) {
+			u16 himask = vc->vc_hi_font_mask;
+			if (vc->vc_need_wrap) {
+				cr(vc);
+				lf(vc);
+			}
+			tc = conv_uni_to_pc(vc, tc);
+			if (tc < 0)
+				tc = c;
+			if (himask)
+				tc = ((tc & 0x100) ? himask : 0) | (tc & 0xff);
+			tc |= (vc->vc_attr << 8) & ~himask;
+			scr_writew(tc, (u16 *)vc->vc_pos);
+			if (con_should_update(vc) && draw.x < 0) {
+				draw.x = vc->state.x;
+				draw.from = vc->vc_pos;
+			}
+			if (vc->state.x == vc->vc_cols - 1) {
+				vc->vc_need_wrap = vc->vc_decawm;
+				draw.to = vc->vc_pos + 2;
+			} else {
+				vc->state.x++;
+				draw.to = (vc->vc_pos += 2);
+			}
+		}
+	}
+	if (draw.x >= 0) {
+		vc->vc_sw->con_putcs(vc, (u16 *)draw.from,
+				     (u16 *)draw.to - (u16 *)draw.from,
+				     vc->state.y, draw.x);
+	}
+	set_cursor(vc);
+	console_unlock();
+	return n;
 }
 
 /* con_put_char, con_write_room removed - ops->put_char, ops->write_room never called */

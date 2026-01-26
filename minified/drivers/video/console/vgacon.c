@@ -34,7 +34,7 @@ static void vgacon_deinit(struct vc_data *c);
 static void vgacon_cursor(struct vc_data *c, int mode);
 static int vgacon_switch(struct vc_data *c);
 static int vgacon_blank(struct vc_data *c, int blank, int mode_switch);
-static void vgacon_scrolldelta(struct vc_data *c, int lines);
+/* vgacon_scrolldelta inlined into vgacon_restore_screen */
 static int vgacon_set_origin(struct vc_data *c);
 static void vgacon_save_screen(struct vc_data *c);
 static struct uni_pagedir *vgacon_uni_pagedir;
@@ -79,17 +79,14 @@ static inline void vga_set_mem_top(struct vc_data *c)
 	write_vga(12, (c->vc_visible_origin - vga_vram_base) / 2);
 }
 
+/* --- 2026-01-26 05:02 --- vgacon_scrolldelta inlined */
 static void vgacon_restore_screen(struct vc_data *c)
 {
-	if (c->vc_origin != c->vc_visible_origin)
-		vgacon_scrolldelta(c, 0);
-}
-
-static void vgacon_scrolldelta(struct vc_data *c, int lines)
-{
-	vc_scrolldelta_helper(c, lines, vga_rolled_over, (void *)vga_vram_base,
-			      vga_vram_size);
-	vga_set_mem_top(c);
+	if (c->vc_origin != c->vc_visible_origin) {
+		vc_scrolldelta_helper(c, 0, vga_rolled_over,
+				      (void *)vga_vram_base, vga_vram_size);
+		vga_set_mem_top(c);
+	}
 }
 
 static const char *vgacon_startup(void)

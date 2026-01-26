@@ -1,7 +1,7 @@
 
 #include "misc.h"
 #include "error.h"
-#include "pgtable.h"
+/* --- 2026-01-26 04:10 --- pgtable.h was empty (just guards), removed */
 #include "../string.h"
 #include "../voffset.h"
 #include <asm/bootparam_utils.h>

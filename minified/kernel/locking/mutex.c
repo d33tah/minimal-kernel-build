@@ -8,7 +8,13 @@
 #include <linux/interrupt.h>
 #include <linux/debug_locks.h>
 
-#include "mutex.h"
+/* --- 2026-01-26 01:45 --- Inlined from mutex.h */
+struct mutex_waiter {
+	struct list_head list;
+	struct task_struct *task;
+	struct ww_acquire_ctx *ww_ctx;
+};
+/* end mutex.h */
 
 /* MUTEX_WARN_ON removed - was empty stub */
 

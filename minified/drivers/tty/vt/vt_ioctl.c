@@ -18,7 +18,8 @@
 #include <asm/io.h>
 #include <linux/uaccess.h>
 
-#include <linux/kbd_kern.h>
+#include <linux/tty.h>
+#include <linux/interrupt.h>
 #include <linux/vt_kern.h>
 #include <linux/selection.h>
 

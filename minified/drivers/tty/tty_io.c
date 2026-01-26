@@ -9,7 +9,8 @@
 #include <linux/interrupt.h>
 #include <linux/tty.h>
 #include <linux/tty_driver.h>
-#include <linux/tty_flip.h>
+#include <linux/tty_buffer.h>
+#include <linux/tty_port.h>
 #include <linux/file.h>
 /* fdtable.h removed - not used */
 #include <linux/console.h>

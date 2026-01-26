@@ -3,7 +3,8 @@
 #include <linux/types.h>
 #include <linux/sched/signal.h>
 #include <linux/tty.h>
-#include <linux/tty_flip.h>
+#include <linux/tty_buffer.h>
+#include <linux/tty_port.h>
 #include <linux/kernel.h>
 #include <linux/string.h>
 #include <linux/errno.h>

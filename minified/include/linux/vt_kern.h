@@ -1,8 +1,10 @@
 #ifndef _VT_KERN_H
 #define _VT_KERN_H
 
+/* Inlined from linux/vt.h */
+#define MIN_NR_CONSOLES 1
+#define MAX_NR_CONSOLES	2
 
-#include <linux/vt.h>
 #include <linux/kd.h>
 #include <linux/tty.h>
 #include <linux/mutex.h>

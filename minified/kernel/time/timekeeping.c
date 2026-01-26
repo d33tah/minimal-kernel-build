@@ -315,66 +315,7 @@ void __init timekeeping_init(void)
 	raw_spin_unlock_irqrestore(&timekeeper_lock, flags);
 }
 
-/* timekeeping_apply_adjustment inlined into timekeeping_adjust */
-
-static void timekeeping_adjust(struct timekeeper *tk, s64 offset)
-{
-	u32 mult;
-	s32 mult_adj;
-	s64 interval;
-
-	if (likely(tk->ntp_tick == NTP_TICK_LENGTH)) {
-		mult = tk->tkr_mono.mult - tk->ntp_err_mult;
-	} else {
-		tk->ntp_tick = NTP_TICK_LENGTH;
-		mult = div64_u64((tk->ntp_tick >> tk->ntp_error_shift) -
-					 tk->xtime_remainder,
-				 tk->cycle_interval);
-	}
-
-	tk->ntp_err_mult = tk->ntp_error > 0 ? 1 : 0;
-	mult += tk->ntp_err_mult;
-
-	/* Inlined timekeeping_apply_adjustment */
-	mult_adj = mult - tk->tkr_mono.mult;
-	interval = tk->cycle_interval;
-
-	if (mult_adj != 0) {
-		if (mult_adj == -1) {
-			interval = -interval;
-			offset = -offset;
-		} else if (mult_adj != 1) {
-			interval *= mult_adj;
-			offset *= mult_adj;
-		}
-
-		if (!((mult_adj > 0) &&
-		      (tk->tkr_mono.mult + mult_adj < mult_adj))) {
-			tk->tkr_mono.mult += mult_adj;
-			tk->xtime_interval += interval;
-			tk->tkr_mono.xtime_nsec -= offset;
-		} else {
-			WARN_ON_ONCE(1);
-		}
-	}
-
-	if (unlikely(tk->tkr_mono.clock->maxadj &&
-		     (abs(tk->tkr_mono.mult - tk->tkr_mono.clock->mult) >
-		      tk->tkr_mono.clock->maxadj))) {
-		printk_once(KERN_WARNING
-			    "Adjusting %s more than 11%% (%ld vs %ld)\n",
-			    tk->tkr_mono.clock->name, (long)tk->tkr_mono.mult,
-			    (long)tk->tkr_mono.clock->mult +
-				    tk->tkr_mono.clock->maxadj);
-	}
-
-	if (unlikely((s64)tk->tkr_mono.xtime_nsec < 0)) {
-		tk->tkr_mono.xtime_nsec += (u64)NSEC_PER_SEC
-					   << tk->tkr_mono.shift;
-		tk->xtime_sec--;
-		tk->skip_second_overflow = 1;
-	}
-}
+/* timekeeping_apply_adjustment inlined into timekeeping_adjust, which is inlined into timekeeping_advance */
 
 static inline unsigned int accumulate_nsecs_to_secs(struct timekeeper *tk)
 {
@@ -457,7 +398,66 @@ static bool timekeeping_advance(enum timekeeping_adv_mode mode)
 			shift--;
 	}
 
-	timekeeping_adjust(tk, offset);
+	/* Inlined timekeeping_adjust */
+	{
+		u32 mult;
+		s32 mult_adj;
+		s64 interval;
+
+		if (likely(tk->ntp_tick == NTP_TICK_LENGTH)) {
+			mult = tk->tkr_mono.mult - tk->ntp_err_mult;
+		} else {
+			tk->ntp_tick = NTP_TICK_LENGTH;
+			mult = div64_u64((tk->ntp_tick >> tk->ntp_error_shift) -
+						 tk->xtime_remainder,
+					 tk->cycle_interval);
+		}
+
+		tk->ntp_err_mult = tk->ntp_error > 0 ? 1 : 0;
+		mult += tk->ntp_err_mult;
+
+		mult_adj = mult - tk->tkr_mono.mult;
+		interval = tk->cycle_interval;
+
+		if (mult_adj != 0) {
+			if (mult_adj == -1) {
+				interval = -interval;
+				offset = -offset;
+			} else if (mult_adj != 1) {
+				interval *= mult_adj;
+				offset *= mult_adj;
+			}
+
+			if (!((mult_adj > 0) &&
+			      (tk->tkr_mono.mult + mult_adj < mult_adj))) {
+				tk->tkr_mono.mult += mult_adj;
+				tk->xtime_interval += interval;
+				tk->tkr_mono.xtime_nsec -= offset;
+			} else {
+				WARN_ON_ONCE(1);
+			}
+		}
+
+		if (unlikely(
+			    tk->tkr_mono.clock->maxadj &&
+			    (abs(tk->tkr_mono.mult - tk->tkr_mono.clock->mult) >
+			     tk->tkr_mono.clock->maxadj))) {
+			printk_once(
+				KERN_WARNING
+				"Adjusting %s more than 11%% (%ld vs %ld)\n",
+				tk->tkr_mono.clock->name,
+				(long)tk->tkr_mono.mult,
+				(long)tk->tkr_mono.clock->mult +
+					tk->tkr_mono.clock->maxadj);
+		}
+
+		if (unlikely((s64)tk->tkr_mono.xtime_nsec < 0)) {
+			tk->tkr_mono.xtime_nsec += (u64)NSEC_PER_SEC
+						   << tk->tkr_mono.shift;
+			tk->xtime_sec--;
+			tk->skip_second_overflow = 1;
+		}
+	}
 
 	clock_set |= accumulate_nsecs_to_secs(tk);
 

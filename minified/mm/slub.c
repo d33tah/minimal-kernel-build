@@ -163,15 +163,23 @@ static inline struct slab *alloc_slab_page(gfp_t flags, int node,
 /* Removed: init_cache_random_seq, init_freelist_randomization
  * - Slab freelist randomization disabled for minimal kernel */
 
-static struct slab *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
+/* allocate_slab inlined into new_slab */
+
+static struct slab *new_slab(struct kmem_cache *s, gfp_t flags, int node)
 {
 	struct slab *slab;
 	struct kmem_cache_order_objects oo = s->oo;
 	gfp_t alloc_gfp;
 	void *start, *p, *next;
 	int idx;
-	flags &= gfp_allowed_mask;
 
+	if (unlikely(flags & GFP_SLAB_BUG_MASK))
+		flags = kmalloc_fix_flags(flags);
+
+	WARN_ON_ONCE(s->ctor && (flags & __GFP_ZERO));
+
+	flags = (flags & (GFP_RECLAIM_MASK | GFP_CONSTRAINT_MASK)) &
+		gfp_allowed_mask;
 	flags |= s->allocflags;
 
 	alloc_gfp = (flags | __GFP_NOWARN | __GFP_NORETRY) & ~__GFP_NOFAIL;
@@ -186,7 +194,7 @@ static struct slab *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 
 		slab = alloc_slab_page(alloc_gfp, node, oo);
 		if (unlikely(!slab))
-			goto out;
+			return NULL;
 	}
 
 	slab->objects = oo_objects(oo);
@@ -201,7 +209,6 @@ static struct slab *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 	slab->slab_cache = s;
 
 	start = folio_address(slab_folio(slab)); /* slab_address inlined */
-	/* fixup_red_left removed - no red zone */
 	start = setup_object(s, start);
 	slab->freelist = start;
 	for (idx = 0, p = start; idx < slab->objects - 1; idx++) {
@@ -215,20 +222,7 @@ static struct slab *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 	slab->inuse = slab->objects;
 	slab->frozen = 1;
 
-out:
-	/* inc_slabs_node removed - empty stub */
 	return slab;
-}
-
-static struct slab *new_slab(struct kmem_cache *s, gfp_t flags, int node)
-{
-	if (unlikely(flags & GFP_SLAB_BUG_MASK))
-		flags = kmalloc_fix_flags(flags);
-
-	WARN_ON_ONCE(s->ctor && (flags & __GFP_ZERO));
-
-	return allocate_slab(
-		s, flags & (GFP_RECLAIM_MASK | GFP_CONSTRAINT_MASK), node);
 }
 
 /* __add_partial inlined into early_kmem_cache_node_alloc */

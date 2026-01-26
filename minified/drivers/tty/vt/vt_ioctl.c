@@ -1,29 +1,7 @@
-
-#include <linux/types.h>
-#include <linux/errno.h>
-#include <linux/sched/signal.h>
-#include <linux/tty.h>
-#include <linux/kernel.h>
-#include <linux/compat.h>
-#include <linux/module.h>
+/* Minimal includes for vt_ioctl stubs */
 #include <linux/kd.h>
-#include <linux/vt.h>
-#include <linux/string.h>
-#include <linux/slab.h>
-#include <linux/fs.h>
-#include <linux/console.h>
-#include <linux/consolemap.h>
-#include <linux/signal.h>
-
-#include <asm/io.h>
-#include <linux/uaccess.h>
-
-#include <linux/tty.h>
-#include <linux/interrupt.h>
 #include <linux/vt_kern.h>
-#include <linux/selection.h>
-
-/* vt_ioctl removed - never called (ioctl syscall returns -ENOTTY) */
+#include <linux/workqueue.h>
 
 void reset_vc(struct vc_data *vc)
 {

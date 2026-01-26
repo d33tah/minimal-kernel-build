@@ -258,8 +258,6 @@ static inline void *acquire_slab(struct kmem_cache *s,
 	return freelist;
 }
 
-static inline bool pfmemalloc_match(struct slab *slab, gfp_t gfpflags);
-
 static void *get_partial_node(struct kmem_cache *s, struct kmem_cache_node *n,
 			      struct slab **ret_slab, gfp_t gfpflags)
 {
@@ -274,7 +272,10 @@ static void *get_partial_node(struct kmem_cache *s, struct kmem_cache_node *n,
 	list_for_each_entry_safe(slab, slab2, &n->partial, slab_list) {
 		void *t;
 
-		if (!pfmemalloc_match(slab, gfpflags))
+		/* pfmemalloc_match inlined */
+		if (unlikely(folio_test_active(
+			    (struct folio *)slab_folio(slab))) &&
+		    !gfp_pfmemalloc_allowed(gfpflags))
 			continue;
 
 		t = acquire_slab(s, n, slab, true);
@@ -337,14 +338,7 @@ static DEFINE_PER_CPU(struct slub_flush_work, slub_flush);
 
 /* node_match removed - always returned 1 */
 /* slab_out_of_memory removed - was empty stub */
-
-static inline bool pfmemalloc_match(struct slab *slab, gfp_t gfpflags)
-{
-	if (unlikely(folio_test_active((struct folio *)slab_folio(slab))))
-		return gfp_pfmemalloc_allowed(gfpflags);
-
-	return true;
-}
+/* pfmemalloc_match inlined into get_partial_node (~7 LOC) */
 /* get_freelist removed - never called (~19 LOC) */
 /* ___slab_alloc inlined into slab_alloc_node */
 

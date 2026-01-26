@@ -151,17 +151,12 @@ up_fail:
 	return ret;
 }
 
-static int load_vdso32(void)
+/* --- 2026-01-26 05:05 --- load_vdso32 inlined */
+int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
 {
 	if (vdso32_enabled != 1)
 		return 0;
-
 	return map_vdso(&vdso_image_32, 0);
-}
-
-int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
-{
-	return load_vdso32();
 }
 
 bool arch_syscall_is_vdso_sigreturn(struct pt_regs *regs)

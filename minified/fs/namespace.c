@@ -915,85 +915,15 @@ static int do_add_mount(struct mount *newmnt, struct mountpoint *mp,
 static bool mount_too_revealing(const struct super_block *sb,
 				int *new_mnt_flags);
 
-/* do_new_mount_fc inlined into do_new_mount */
-
-static int do_new_mount(struct path *path, const char *fstype, int sb_flags,
-			int mnt_flags, const char *name, void *data)
-{
-	struct file_system_type *type;
-	struct fs_context *fc;
-	int err = 0;
-
-	if (!fstype)
-		return -EINVAL;
-
-	type = get_fs_type(fstype);
-	if (!type)
-		return -ENODEV;
-
-	fc = fs_context_for_mount(type, sb_flags);
-	put_filesystem(type);
-	if (IS_ERR(fc))
-		return PTR_ERR(fc);
-
-	if (name)
-		err = vfs_parse_fs_string(fc, "source", name, strlen(name));
-	if (!err)
-		err = parse_monolithic_mount_data(fc, data);
-	/* mount_capable() always returns true - check removed */
-	if (!err)
-		err = vfs_get_tree(fc);
-	/* Inlined do_new_mount_fc */
-	if (!err) {
-		struct vfsmount *mnt;
-		struct mountpoint *mp;
-		struct super_block *sb = fc->root->d_sb;
-
-		if (mount_too_revealing(sb, &mnt_flags)) {
-			fc_drop_locked(fc);
-			err = -EPERM;
-		} else {
-			up_write(&sb->s_umount);
-
-			mnt = vfs_create_mount(fc);
-			if (IS_ERR(mnt)) {
-				err = PTR_ERR(mnt);
-			} else {
-				mp = lock_mount(path);
-				if (IS_ERR(mp)) {
-					mntput(mnt);
-					err = PTR_ERR(mp);
-				} else {
-					err = do_add_mount(real_mount(mnt), mp,
-							   path, mnt_flags);
-					{
-						struct dentry *dentry =
-							mp->m_dentry;
-						read_seqlock_excl(&mount_lock);
-						put_mountpoint(mp);
-						read_sequnlock_excl(
-							&mount_lock);
-						namespace_unlock();
-						inode_unlock(dentry->d_inode);
-					}
-					if (err < 0)
-						mntput(mnt);
-				}
-			}
-		}
-	}
-
-	put_fs_context(fc);
-	return err;
-}
-
-/* Removed: copy_mount_options, copy_mount_string - mount syscall stubbed */
+/* do_new_mount inlined into path_mount */
 
 int path_mount(const char *dev_name, struct path *path, const char *type_page,
 	       unsigned long flags, void *data_page)
 {
 	unsigned int mnt_flags = 0, sb_flags;
-	/* ret removed - never used after security/may_mount simplifications */
+	struct file_system_type *type;
+	struct fs_context *fc;
+	int err = 0;
 
 	if ((flags & MS_MGC_MSK) == MS_MGC_VAL)
 		flags &= ~MS_MGC_MSK;
@@ -1046,8 +976,66 @@ int path_mount(const char *dev_name, struct path *path, const char *type_page,
 	if (flags & MS_MOVE)
 		return -EINVAL;
 
-	return do_new_mount(path, type_page, sb_flags, mnt_flags, dev_name,
-			    data_page);
+	/* Inlined do_new_mount */
+	if (!type_page)
+		return -EINVAL;
+
+	type = get_fs_type(type_page);
+	if (!type)
+		return -ENODEV;
+
+	fc = fs_context_for_mount(type, sb_flags);
+	put_filesystem(type);
+	if (IS_ERR(fc))
+		return PTR_ERR(fc);
+
+	if (dev_name)
+		err = vfs_parse_fs_string(fc, "source", dev_name,
+					  strlen(dev_name));
+	if (!err)
+		err = parse_monolithic_mount_data(fc, data_page);
+	if (!err)
+		err = vfs_get_tree(fc);
+	if (!err) {
+		struct vfsmount *mnt;
+		struct mountpoint *mp;
+		struct super_block *sb = fc->root->d_sb;
+
+		if (mount_too_revealing(sb, &mnt_flags)) {
+			fc_drop_locked(fc);
+			err = -EPERM;
+		} else {
+			up_write(&sb->s_umount);
+			mnt = vfs_create_mount(fc);
+			if (IS_ERR(mnt)) {
+				err = PTR_ERR(mnt);
+			} else {
+				mp = lock_mount(path);
+				if (IS_ERR(mp)) {
+					mntput(mnt);
+					err = PTR_ERR(mp);
+				} else {
+					err = do_add_mount(real_mount(mnt), mp,
+							   path, mnt_flags);
+					{
+						struct dentry *dentry =
+							mp->m_dentry;
+						read_seqlock_excl(&mount_lock);
+						put_mountpoint(mp);
+						read_sequnlock_excl(
+							&mount_lock);
+						namespace_unlock();
+						inode_unlock(dentry->d_inode);
+					}
+					if (err < 0)
+						mntput(mnt);
+				}
+			}
+		}
+	}
+
+	put_fs_context(fc);
+	return err;
 }
 
 /* inc_mnt_namespaces inlined - single caller */

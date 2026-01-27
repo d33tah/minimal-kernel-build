@@ -31,10 +31,8 @@ int do_truncate(struct user_namespace *mnt_userns, struct dentry *dentry,
 
 	newattrs.ia_size = length;
 	newattrs.ia_valid = ATTR_SIZE | time_attrs;
-	if (filp) {
-		newattrs.ia_file = filp;
-		newattrs.ia_valid |= ATTR_FILE;
-	}
+	/* ATTR_FILE and ia_file writes removed - never read */
+	(void)filp;
 
 	inode_lock(dentry->d_inode);
 

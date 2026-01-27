@@ -95,12 +95,11 @@ static vm_fault_t vvar_fault(const struct vm_special_mapping *sm,
 }
 
 static const struct vm_special_mapping vdso_mapping = {
-	.name = "[vdso]",
+	/* .name removed - never read */
 	.fault = vdso_fault,
 	/* mremap removed - mremap syscall returns ENOSYS */
 };
 static const struct vm_special_mapping vvar_mapping = {
-	.name = "[vvar]",
 	.fault = vvar_fault,
 };
 

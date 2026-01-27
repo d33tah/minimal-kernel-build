@@ -143,7 +143,7 @@ extern unsigned int sysctl_nr_open;
 #define ATTR_FORCE	(1 << 9) 
 #define ATTR_KILL_SUID	(1 << 11)
 #define ATTR_KILL_SGID	(1 << 12)
-#define ATTR_FILE	(1 << 13)
+/* ATTR_FILE removed - never read */
 #define ATTR_KILL_PRIV	(1 << 14)
 #define ATTR_OPEN	(1 << 15) 
 #define ATTR_TIMES_SET	(1 << 16)
@@ -156,8 +156,7 @@ struct iattr {
 	kuid_t		ia_uid;
 	kgid_t		ia_gid;
 	loff_t		ia_size;
-	/* ia_atime, ia_mtime, ia_ctime removed - timestamps never read */
-	struct file	*ia_file;
+	/* ia_atime, ia_mtime, ia_ctime, ia_file removed - never read */
 };
 
 /* linux/quota.h removed - empty stub */
@@ -181,7 +180,7 @@ struct kiocb {
 	randomized_struct_fields_start
 
 	loff_t			ki_pos;
-	void (*ki_complete)(struct kiocb *iocb, long ret);
+	/* ki_complete callback removed - never invoked */
 	void			*private;
 	int			ki_flags;
 	/* ki_ioprio removed - write-only field */

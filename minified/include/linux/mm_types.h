@@ -359,7 +359,7 @@ enum vm_fault_reason {
 			VM_FAULT_HWPOISON_LARGE | VM_FAULT_FALLBACK)
 
 struct vm_special_mapping {
-	const char *name;
+	/* name field removed - never read */
 	struct page **pages;
 	vm_fault_t (*fault)(const struct vm_special_mapping *sm, struct vm_area_struct *vma,
 			    struct vm_fault *vmf);

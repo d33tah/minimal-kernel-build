@@ -912,38 +912,7 @@ struct vm_struct *remove_vm_area(const void *addr)
 }
 
 /* vfree, vunmap moved to vmalloc.h as static inline */
-
-void *vmap(struct page **pages, unsigned int count, unsigned long flags,
-	   pgprot_t prot)
-{
-	struct vm_struct *area;
-	unsigned long addr;
-	unsigned long size;
-
-	if (WARN_ON_ONCE(flags & VM_NO_GUARD))
-		flags &= ~VM_NO_GUARD;
-
-	if (count > totalram_pages())
-		return NULL;
-
-	size = (unsigned long)count << PAGE_SHIFT;
-	area = get_vm_area_caller(size, flags, __builtin_return_address(0));
-	if (!area)
-		return NULL;
-
-	addr = (unsigned long)area->addr;
-	if (vmap_pages_range(addr, addr + size, pgprot_nx(prot), pages,
-			     PAGE_SHIFT) < 0) {
-		/* vunmap removed - empty stub */
-		return NULL;
-	}
-
-	if (flags & VM_MAP_PUT_PAGES) {
-		area->pages = pages;
-		area->nr_pages = count;
-	}
-	return area->addr;
-}
+/* vmap removed - never called */
 
 static inline unsigned int vm_area_alloc_pages(gfp_t gfp, int nid,
 					       unsigned int order,
@@ -1157,11 +1126,7 @@ void *__vmalloc(unsigned long size, gfp_t gfp_mask)
 			      __builtin_return_address(0));
 }
 
-void *vmalloc(unsigned long size)
-{
-	return __vmalloc_node(size, 1, GFP_KERNEL, NUMA_NO_NODE,
-			      __builtin_return_address(0));
-}
+/* vmalloc removed - never called */
 
 void free_vm_area(struct vm_struct *area)
 {

@@ -57,7 +57,7 @@ struct vmap_area {
 
 extern void __init vmalloc_init(void);
 
-extern void *vmalloc(unsigned long size) __alloc_size(1);
+/* vmalloc removed - never called */
 extern void *__vmalloc(unsigned long size, gfp_t gfp_mask) __alloc_size(1);
 extern void *__vmalloc_node_range(unsigned long size, unsigned long align,
 			unsigned long start, unsigned long end, gfp_t gfp_mask,
@@ -67,9 +67,7 @@ void *__vmalloc_node(unsigned long size, unsigned long align, gfp_t gfp_mask,
 		int node, const void *caller) __alloc_size(1);
 
 /* vfree, vunmap removed - callers stubbed out */
-
-extern void *vmap(struct page **pages, unsigned int count,
-			unsigned long flags, pgprot_t prot);
+/* vmap removed - never called */
 
 
 #ifndef ARCH_PAGE_TABLE_SYNC_MASK

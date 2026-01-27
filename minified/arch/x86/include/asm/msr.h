@@ -46,19 +46,7 @@ static __always_inline void __wrmsr(unsigned int msr, u32 low, u32 high)
 		     : : "c" (msr), "a"(low), "d" (high) : "memory");
 }
 
-#define native_rdmsr(msr, val1, val2)			\
-do {							\
-	u64 __val = __rdmsr((msr));			\
-	(void)((val1) = (u32)__val);			\
-	(void)((val2) = (u32)(__val >> 32));		\
-} while (0)
-
-#define native_wrmsr(msr, low, high)			\
-	__wrmsr(msr, low, high)
-
-#define native_wrmsrl(msr, val)				\
-	__wrmsr((msr), (u32)((u64)(val)),		\
-		       (u32)((u64)(val) >> 32))
+/* native_rdmsr, native_wrmsr, native_wrmsrl macros removed - never used */
 
 static inline unsigned long long native_read_msr(unsigned int msr)
 {
@@ -135,14 +123,7 @@ static inline void wrmsrl(unsigned int msr, u64 val)
 	native_write_msr(msr, (u32)(val & 0xffffffffULL), (u32)(val >> 32));
 }
 
-#define rdmsr_safe(msr, low, high)				\
-({								\
-	int __err;						\
-	u64 __val = native_read_msr_safe((msr), &__err);	\
-	(*low) = (u32)__val;					\
-	(*high) = (u32)(__val >> 32);				\
-	__err;							\
-})
+/* rdmsr_safe macro removed - never used */
 
 /* Removed unused declarations: msrs_alloc, msrs_free, msr_set_bit, msr_clear_bit, rdmsrl_safe, wrmsrl_safe */
 

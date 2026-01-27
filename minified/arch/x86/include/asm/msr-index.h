@@ -8,16 +8,11 @@
 /* AMD64 MSRs */
 #define MSR_EFER		0xc0000080
 
-/* EFER bits - _EFER_SCE, _EFER_LME, _EFER_LMA, EFER_SCE, EFER_LME, EFER_LMA removed - never used */
+/* EFER bits - EFER_NX, MSR_IA32_PRED_CMD, PRED_CMD_IBPB, SPEC_CTRL_SSBD removed - never used */
 #define _EFER_NX		11
-#define EFER_NX			(1<<_EFER_NX)
 
-/* MSR_IA32_SPEC_CTRL, SPEC_CTRL_IBRS removed - never used */
+/* SPEC_CTRL_SSBD_SHIFT still used by spec-ctrl.h */
 #define SPEC_CTRL_SSBD_SHIFT		2
-#define SPEC_CTRL_SSBD			BIT(SPEC_CTRL_SSBD_SHIFT)
-
-#define MSR_IA32_PRED_CMD		0x00000049
-#define PRED_CMD_IBPB			BIT(0)
 
 /* MSR_IA32_FLUSH_CMD, L1D_FLUSH removed - never used */
 

@@ -46,7 +46,4 @@
 	__builtin_types_compatible_p(typeof(x), unsigned type),		\
 	({ signed type __x = (x); __x < 0 ? -__x : __x; }), other)
 
-
-unsigned long int_sqrt(unsigned long);
-
-#endif	 
+#endif

@@ -39,10 +39,7 @@ static inline void native_set_pmd(pmd_t *pmdp, pmd_t pmd)
 static inline void native_set_pud(pud_t *pudp, pud_t pud)
 {
 }
-static inline void native_set_pte_atomic(pte_t *ptep, pte_t pte)
-{
-	native_set_pte(ptep, pte);
-}
+/* native_set_pte_atomic removed - never called */
 static inline void native_pmd_clear(pmd_t *pmdp)
 {
 	native_set_pmd(pmdp, __pmd(0));

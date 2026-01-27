@@ -53,20 +53,8 @@ static inline unsigned long long native_read_msr(unsigned int msr)
 	return __rdmsr(msr);
 }
 
-static inline unsigned long long native_read_msr_safe(unsigned int msr,
-						      int *err)
-{
-	DECLARE_ARGS(val, low, high);
+/* native_read_msr_safe removed - never called */
 
-	asm volatile("1: rdmsr ; xor %[err],%[err]\n"
-		     "2:\n\t"
-		     _ASM_EXTABLE_TYPE_REG(1b, 2b, EX_TYPE_RDMSR_SAFE, %[err])
-		     : [err] "=r" (*err), EAX_EDX_RET(val, low, high)
-		     : "c" (msr));
-	return EAX_EDX_VAL(val, low, high);
-}
-
- 
 static inline void notrace
 native_write_msr(unsigned int msr, u32 low, u32 high)
 {

@@ -494,8 +494,7 @@ struct super_block {
 
 	atomic_long_t s_remove_count;
 
-	/* s_readonly_remount, s_dio_done_wq removed - never written/created */
-	struct hlist_head s_pins;
+	/* s_readonly_remount, s_dio_done_wq, s_pins removed - never used */
 
 	
 	struct user_namespace *s_user_ns;

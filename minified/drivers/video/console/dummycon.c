@@ -37,10 +37,7 @@ static void dummycon_init(struct vc_data *vc, int init)
 static void dummycon_deinit(struct vc_data *vc)
 {
 }
-static void dummycon_clear(struct vc_data *vc, int sy, int sx, int height,
-			   int width)
-{
-}
+/* dummycon_clear removed - con_clear callback never invoked */
 static void dummycon_cursor(struct vc_data *vc, int mode)
 {
 }
@@ -62,7 +59,6 @@ const struct consw dummy_con = {
 	.con_startup = dummycon_startup,
 	.con_init = dummycon_init,
 	.con_deinit = dummycon_deinit,
-	.con_clear = dummycon_clear,
 	.con_putc = dummycon_putc,
 	.con_putcs = dummycon_putcs,
 	.con_cursor = dummycon_cursor,

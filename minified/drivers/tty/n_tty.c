@@ -26,9 +26,7 @@ struct n_tty_data {
 	struct mutex output_lock;
 };
 
-static void n_tty_write_wakeup(struct tty_struct *tty)
-{
-}
+/* n_tty_write_wakeup removed - write_wakeup callback never invoked */
 
 static void n_tty_close(struct tty_struct *tty)
 {
@@ -112,8 +110,7 @@ static struct tty_ldisc_ops n_tty_ops = {
 	.close = n_tty_close,
 	.read = n_tty_read,
 	.write = n_tty_write,
-	/* .receive_buf, .receive_buf2 removed - never called */
-	.write_wakeup = n_tty_write_wakeup,
+	/* .receive_buf, .receive_buf2, .write_wakeup removed - never called */
 };
 
 void __init n_tty_init(void)

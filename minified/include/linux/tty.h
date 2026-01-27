@@ -55,12 +55,7 @@ struct tty_ldisc_ops {
 			void **cookie, unsigned long offset);
 	ssize_t	(*write)(struct tty_struct *tty, struct file *file,
 			 const unsigned char *buf, size_t nr);
-	/* ioctl, compat_ioctl, set_termios, poll, hangup, dcd_change removed - never called */
-	void	(*receive_buf)(struct tty_struct *tty, const unsigned char *cp,
-			       const char *fp, int count);
-	void	(*write_wakeup)(struct tty_struct *tty);
-	int	(*receive_buf2)(struct tty_struct *tty, const unsigned char *cp,
-				const char *fp, int count);
+	/* ioctl, compat_ioctl, set_termios, poll, hangup, dcd_change, receive_buf, write_wakeup, receive_buf2 removed - never called */
 	struct  module *owner;
 };
 

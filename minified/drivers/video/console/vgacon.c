@@ -567,13 +567,7 @@ static void vga_set_palette(struct vc_data *vc, const unsigned char *table)
 	}
 }
 
-static void vgacon_set_palette(struct vc_data *vc, const unsigned char *table)
-{
-	if (vga_video_type != VIDEO_TYPE_VGAC || vga_palette_blanked ||
-	    !con_is_visible(vc))
-		return;
-	vga_set_palette(vc, table);
-}
+/* vgacon_set_palette removed - con_set_palette callback never invoked */
 
 /* vga_vesa_blank, vga_vesa_unblank, vga_pal_blank removed - empty stubs */
 
@@ -610,27 +604,7 @@ static int vgacon_blank(struct vc_data *c, int blank, int mode_switch)
 
 /* colourmap, blackwmap, cmapsz removed - unused */
 
-static int vgacon_resize(struct vc_data *c, unsigned int width,
-			 unsigned int height, unsigned int user)
-{
-	if ((width << 1) * height > vga_vram_size)
-		return -EINVAL;
-
-	if (user) {
-		screen_info.orig_video_cols = width;
-		screen_info.orig_video_lines = height;
-		vga_default_font_height = c->vc_cell_height;
-		return 0;
-	}
-	if (width % 2 || width > screen_info.orig_video_cols ||
-	    height > (screen_info.orig_video_lines * vga_default_font_height) /
-			     c->vc_cell_height)
-		return -EINVAL;
-
-	if (con_is_visible(c) && !vga_is_gfx)
-		vgacon_doresize(c, width, height);
-	return 0;
-}
+/* vgacon_resize removed - con_resize callback never invoked */
 
 static int vgacon_set_origin(struct vc_data *c)
 {
@@ -705,10 +679,7 @@ static bool vgacon_scroll(struct vc_data *c, unsigned int t, unsigned int b,
 	return true;
 }
 
-static void vgacon_clear(struct vc_data *vc, int sy, int sx, int height,
-			 int width)
-{
-}
+/* vgacon_clear removed - con_clear callback never invoked */
 static void vgacon_putc(struct vc_data *vc, int c, int ypos, int xpos)
 {
 }
@@ -722,17 +693,13 @@ const struct consw vga_con = {
 	.con_startup = vgacon_startup,
 	.con_init = vgacon_init,
 	.con_deinit = vgacon_deinit,
-	.con_clear = vgacon_clear,
 	.con_putc = vgacon_putc,
 	.con_putcs = vgacon_putcs,
 	.con_cursor = vgacon_cursor,
 	.con_scroll = vgacon_scroll,
 	.con_switch = vgacon_switch,
 	.con_blank = vgacon_blank,
-	/* .con_font_set, .con_font_get removed - never called */
-	.con_resize = vgacon_resize,
-	.con_set_palette = vgacon_set_palette,
-	/* .con_scrolldelta removed - never called through vc_sw */
+	/* .con_font_set, .con_font_get, .con_resize, .con_set_palette, .con_scrolldelta removed - never called */
 	.con_set_origin = vgacon_set_origin,
 	.con_save_screen = vgacon_save_screen,
 	.con_build_attr = vgacon_build_attr,

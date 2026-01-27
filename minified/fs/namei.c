@@ -995,7 +995,7 @@ static struct dentry *lookup_open(struct nameidata *nd, struct file *file,
 	mnt_userns = mnt_user_ns(nd->path.mnt);
 	if (open_flag & O_CREAT) {
 		if (!IS_POSIXACL(dir->d_inode))
-			mode &= ~current_umask();
+			mode &= ~current->fs->umask;
 
 		if (d_in_lookup(dentry)) {
 			struct dentry *res = dir_inode->i_op->lookup(

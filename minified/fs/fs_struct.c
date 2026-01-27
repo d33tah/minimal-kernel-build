@@ -82,10 +82,7 @@ struct fs_struct *copy_fs_struct(struct fs_struct *old)
 	return fs;
 }
 
-int current_umask(void)
-{
-	return current->fs->umask;
-}
+/* current_umask inlined into single call site in namei.c */
 
 struct fs_struct init_fs = {
 	.users = 1,

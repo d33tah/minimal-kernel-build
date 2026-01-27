@@ -741,7 +741,7 @@ struct super_block *sget_fc(struct fs_context *fc,
 
 extern int register_filesystem(struct file_system_type *);
 
-extern int current_umask(void);
+/* current_umask() inlined into single call site */
 
 extern void ihold(struct inode * inode);
 extern void iput(struct inode *);

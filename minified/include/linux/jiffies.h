@@ -69,7 +69,7 @@ u64 get_jiffies_64(void);
 
 /* SEC_JIFFIE_SC, NSEC_JIFFIE_SC, SEC_CONVERSION, NSEC_CONVERSION removed - unused */
 
-extern unsigned int jiffies_to_msecs(const unsigned long j);
+/* jiffies_to_msecs removed - never called */
 /* jiffies_to_usecs removed - never called */
 
 

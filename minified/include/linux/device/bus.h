@@ -31,7 +31,7 @@ struct bus_type {
 	bool need_parent_lock;
 };
 
-extern int __must_check bus_register(struct bus_type *bus);
+/* bus_register removed - never called */
 /* bus_unregister removed - never called */
 
 struct bus_attribute {

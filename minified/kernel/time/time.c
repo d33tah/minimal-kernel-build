@@ -49,22 +49,7 @@ SYSCALL_DEFINE2(settimeofday, struct __kernel_old_timeval __user *, tv,
 	return -EPERM;
 }
 
-unsigned int jiffies_to_msecs(const unsigned long j)
-{
-#if HZ <= MSEC_PER_SEC && !(MSEC_PER_SEC % HZ)
-	return (MSEC_PER_SEC / HZ) * j;
-#elif HZ > MSEC_PER_SEC && !(HZ % MSEC_PER_SEC)
-	return (j + (HZ / MSEC_PER_SEC) - 1) / (HZ / MSEC_PER_SEC);
-#else
-#if BITS_PER_LONG == 32
-	return (HZ_TO_MSEC_MUL32 * j + (1ULL << HZ_TO_MSEC_SHR32) - 1) >>
-	       HZ_TO_MSEC_SHR32;
-#else
-	return DIV_ROUND_UP(j * HZ_TO_MSEC_NUM, HZ_TO_MSEC_DEN);
-#endif
-#endif
-}
-
+/* jiffies_to_msecs removed - never called */
 /* jiffies_to_usecs removed - never called */
 
 time64_t mktime64(const unsigned int year0, const unsigned int mon0,
@@ -87,21 +72,7 @@ time64_t mktime64(const unsigned int year0, const unsigned int mon0,
 	       sec;
 }
 
-struct timespec64 ns_to_timespec64(const s64 nsec)
-{
-	struct timespec64 ts = { 0, 0 };
-	s32 rem;
-
-	if (likely(nsec > 0)) {
-		ts.tv_sec = div_u64_rem(nsec, NSEC_PER_SEC, &rem);
-		ts.tv_nsec = rem;
-	} else if (nsec < 0) {
-		ts.tv_sec = -div_u64_rem(-nsec - 1, NSEC_PER_SEC, &rem) - 1;
-		ts.tv_nsec = NSEC_PER_SEC - rem - 1;
-	}
-
-	return ts;
-}
+/* ns_to_timespec64 removed - never called */
 
 unsigned long __msecs_to_jiffies(const unsigned int m)
 {

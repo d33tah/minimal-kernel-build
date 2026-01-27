@@ -313,63 +313,7 @@ static void klist_devices_put(struct klist_node *n)
 	put_device(dev);
 }
 
-int bus_register(struct bus_type *bus)
-{
-	int retval;
-	struct subsys_private *priv;
-	struct lock_class_key *key = &bus->lock_key;
-
-	priv = kzalloc(sizeof(struct subsys_private), GFP_KERNEL);
-	if (!priv)
-		return -ENOMEM;
-
-	priv->bus = bus;
-	bus->p = priv;
-
-	retval = kobject_set_name(&priv->subsys.kobj, "%s", bus->name);
-	if (retval)
-		goto out;
-
-	priv->subsys.kobj.kset = bus_kset;
-	priv->subsys.kobj.ktype = &bus_ktype;
-	priv->drivers_autoprobe = 1;
-
-	retval = kset_register(&priv->subsys);
-	if (retval)
-		goto out;
-
-	priv->devices_kset =
-		kset_create_and_add("devices", NULL, &priv->subsys.kobj);
-	if (!priv->devices_kset) {
-		retval = -ENOMEM;
-		goto bus_devices_fail;
-	}
-
-	priv->drivers_kset =
-		kset_create_and_add("drivers", NULL, &priv->subsys.kobj);
-	if (!priv->drivers_kset) {
-		retval = -ENOMEM;
-		goto bus_drivers_fail;
-	}
-
-	/* INIT_LIST_HEAD(&priv->interfaces) removed - field removed */
-	__mutex_init(&priv->mutex, "subsys mutex", key);
-	klist_init(&priv->klist_devices, klist_devices_get, klist_devices_put);
-	klist_init(&priv->klist_drivers, NULL, NULL);
-
-	return 0;
-
-bus_drivers_fail:
-	kset_unregister(bus->p->drivers_kset);
-bus_devices_fail:
-	kset_unregister(bus->p->devices_kset);
-	kset_unregister(&bus->p->subsys);
-out:
-	kfree(bus->p);
-	bus->p = NULL;
-	return retval;
-}
-
+/* bus_register removed - never called */
 /* bus_unregister, subsys_register, subsys_system_register removed - never called (~51 LOC) */
 
 int __init buses_init(void)

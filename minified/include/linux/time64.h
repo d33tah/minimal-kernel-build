@@ -28,6 +28,6 @@ struct timespec64 {
 /* timespec64_compare, timespec64_sub, timespec64_valid, timespec64_valid_settod,
    timespec64_to_ns, set_normalized_timespec64, timespec64_add_ns removed - unused */
 
-extern struct timespec64 ns_to_timespec64(const s64 nsec);
+/* ns_to_timespec64 removed - never called */
 
 #endif  

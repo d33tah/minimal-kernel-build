@@ -10,36 +10,7 @@
 #define THIS_MODULE ((struct module *)0)
 
 #include <linux/compiler.h>
-#define __KSYMTAB_ENTRY(sym, sec)					\
-	__ADDRESSABLE(sym)						\
-	asm("	.section \"___ksymtab" sec "+" #sym "\", \"a\"	\n"	\
-	    "	.balign	4					\n"	\
-	    "__ksymtab_" #sym ":				\n"	\
-	    "	.long	" #sym "- .				\n"	\
-	    "	.long	__kstrtab_" #sym "- .			\n"	\
-	    "	.long	__kstrtabns_" #sym "- .			\n"	\
-	    "	.previous					\n")
-
-#ifdef __GENKSYMS__
-
-#define ___EXPORT_SYMBOL(sym, sec, ns)	__GENKSYMS_EXPORT_SYMBOL(sym)
-
-#else
-
-#define ___EXPORT_SYMBOL(sym, sec, ns)						\
-	extern typeof(sym) sym;							\
-	extern const char __kstrtab_##sym[];					\
-	extern const char __kstrtabns_##sym[];					\
-	asm("	.section \"__ksymtab_strings\",\"aMS\",%progbits,1	\n"	\
-	    "__kstrtab_" #sym ":					\n"	\
-	    "	.asciz 	\"" #sym "\"					\n"	\
-	    "__kstrtabns_" #sym ":					\n"	\
-	    "	.asciz 	\"" ns "\"					\n"	\
-	    "	.previous						\n");	\
-	__KSYMTAB_ENTRY(sym, sec)
-
-#endif
-
+/* __KSYMTAB_ENTRY, ___EXPORT_SYMBOL removed - no modules, EXPORT_SYMBOL never used */
 
 #define __EXPORT_SYMBOL(sym, sec, ns)
 

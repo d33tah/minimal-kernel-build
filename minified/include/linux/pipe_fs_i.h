@@ -30,9 +30,8 @@ struct pipe_inode_info {
 };
 
 struct pipe_buf_operations {
-	int (*confirm)(struct pipe_inode_info *, struct pipe_buffer *);
 	void (*release)(struct pipe_inode_info *, struct pipe_buffer *);
-	/* try_steal, get callbacks removed - never invoked */
+	/* confirm, try_steal, get callbacks removed - never invoked */
 };
 
 static inline bool pipe_empty(unsigned int head, unsigned int tail)

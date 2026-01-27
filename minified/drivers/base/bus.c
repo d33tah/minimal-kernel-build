@@ -29,11 +29,7 @@ static struct bus_type *bus_get(struct bus_type *bus)
 	return NULL;
 }
 
-static void bus_put(struct bus_type *bus)
-{
-	if (bus)
-		kset_put(&bus->p->subsys);
-}
+/* bus_put inlined into bus_remove_device - single caller */
 
 static ssize_t drv_attr_show(struct kobject *kobj, struct attribute *attr,
 			     char *buf)
@@ -233,7 +229,9 @@ void bus_remove_device(struct device *dev)
 		klist_del(&dev->p->knode_bus);
 
 	device_release_driver(dev);
-	bus_put(dev->bus);
+	/* bus_put inlined */
+	if (dev->bus)
+		kset_put(&dev->bus->p->subsys);
 }
 
 /* uevent_store, driver_attr_uevent, add_bind_files, remove_bind_files removed -

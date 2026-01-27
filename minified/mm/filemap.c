@@ -525,41 +525,32 @@ bool __folio_lock_or_retry(struct folio *folio, struct mm_struct *mm,
 	return true;
 }
 
-static void *mapping_get_entry(struct address_space *mapping, pgoff_t index)
-{
-	XA_STATE(xas, &mapping->i_pages, index);
-	struct folio *folio;
-
-	rcu_read_lock();
-repeat:
-	xas_reset(&xas);
-	folio = xas_load(&xas);
-	if (xas_retry(&xas, folio))
-		goto repeat;
-
-	if (!folio || xa_is_value(folio))
-		goto out;
-
-	if (!folio_try_get_rcu(folio))
-		goto repeat;
-
-	if (unlikely(folio != xas_reload(&xas))) {
-		folio_put(folio);
-		goto repeat;
-	}
-out:
-	rcu_read_unlock();
-
-	return folio;
-}
+/* mapping_get_entry inlined into __filemap_get_folio */
 
 struct folio *__filemap_get_folio(struct address_space *mapping, pgoff_t index,
 				  int fgp_flags, gfp_t gfp)
 {
+	XA_STATE(xas, &mapping->i_pages, index);
 	struct folio *folio;
 
 repeat:
-	folio = mapping_get_entry(mapping, index);
+	/* mapping_get_entry inlined */
+	rcu_read_lock();
+repeat_xas:
+	xas_reset(&xas);
+	folio = xas_load(&xas);
+	if (xas_retry(&xas, folio))
+		goto repeat_xas;
+	if (!folio || xa_is_value(folio))
+		goto out_rcu;
+	if (!folio_try_get_rcu(folio))
+		goto repeat_xas;
+	if (unlikely(folio != xas_reload(&xas))) {
+		folio_put(folio);
+		goto repeat_xas;
+	}
+out_rcu:
+	rcu_read_unlock();
 	if (xa_is_value(folio)) {
 		if (fgp_flags & FGP_ENTRY)
 			return folio;

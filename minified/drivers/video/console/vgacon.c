@@ -50,22 +50,14 @@ struct vgastate {
 	void *vidstate;
 };
 
-static inline void vga_io_w(unsigned short port, unsigned char val)
-{
-	outb_p(val, port);
-}
-static inline void vga_mm_w(void __iomem *regbase, unsigned short port,
-			    unsigned char val)
-{
-	writeb(val, regbase + port);
-}
+/* vga_io_w, vga_mm_w inlined into vga_w */
 static inline void vga_w(void __iomem *regbase, unsigned short port,
 			 unsigned char val)
 {
 	if (regbase)
-		vga_mm_w(regbase, port, val);
+		writeb(val, regbase + port);
 	else
-		vga_io_w(port, val);
+		outb_p(val, port);
 }
 
 static DEFINE_RAW_SPINLOCK(vga_lock);

@@ -273,7 +273,7 @@ static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
 #define p4d_pgtable(p4d)			((pud_t *)(pud_pgtable((pud_t){ p4d })))
 
 /* pud_alloc_one removed - no callers */
-#define pud_free(mm, x)				do { } while (0)
+/* pud_free removed - never called */
 #define pud_free_tlb(tlb, x, a)		        do { } while (0)
 
 #undef  pud_addr_end

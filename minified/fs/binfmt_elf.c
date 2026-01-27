@@ -476,7 +476,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	int first_pt_load = 1;
 	unsigned long error;
 	struct elf_phdr *elf_ppnt, *elf_phdata, *interp_elf_phdata = NULL;
-	struct elf_phdr *elf_property_phdata = NULL;
+	/* elf_property_phdata removed - never used after parse_elf_properties removed */
 	unsigned long elf_bss, elf_brk;
 	int bss_prot = 0;
 	int retval, i;
@@ -514,10 +514,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	for (i = 0; i < elf_ex->e_phnum; i++, elf_ppnt++) {
 		char *elf_interpreter;
 
-		if (elf_ppnt->p_type == PT_GNU_PROPERTY) {
-			elf_property_phdata = elf_ppnt;
-			continue;
-		}
+		/* PT_GNU_PROPERTY handling removed - elf_property_phdata never used */
 
 		if (elf_ppnt->p_type != PT_INTERP)
 			continue;
@@ -595,18 +592,7 @@ out_free_interp:
 		if (!interp_elf_phdata)
 			goto out_free_dentry;
 
-		elf_property_phdata = NULL;
-		elf_ppnt = interp_elf_phdata;
-		for (i = 0; i < interp_elf_ex->e_phnum; i++, elf_ppnt++)
-			switch (elf_ppnt->p_type) {
-			case PT_GNU_PROPERTY:
-				elf_property_phdata = elf_ppnt;
-				break;
-
-			case PT_LOPROC ... PT_HIPROC:
-				/* arch_elf_pt_proc call removed - always returns 0 */
-				break;
-			}
+		/* PT_GNU_PROPERTY and PT_LOPROC..PT_HIPROC handling removed - never used */
 	}
 
 	/* parse_elf_properties and arch_check_elf removed - always returned 0 */

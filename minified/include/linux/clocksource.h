@@ -46,12 +46,7 @@ struct clocksource {
 
 	int			(*enable)(struct clocksource *cs);
 	void			(*disable)(struct clocksource *cs);
-	void			(*suspend)(struct clocksource *cs);
-	void			(*resume)(struct clocksource *cs);
-	void			(*mark_unstable)(struct clocksource *cs);
-	void			(*tick_stable)(struct clocksource *cs);
-
-	struct list_head	wd_list;
+	/* suspend, resume, mark_unstable, tick_stable, wd_list removed - never used */
 	/* cs_last, wd_last removed - never accessed */
 	struct module		*owner;
 };

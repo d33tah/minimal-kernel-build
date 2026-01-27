@@ -188,8 +188,7 @@ int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq)
 		}
 		list_add(&cs->list, entry);
 	}
-	/* Inlined clocksource_enqueue_watchdog */
-	INIT_LIST_HEAD(&cs->wd_list);
+	/* Inlined clocksource_enqueue_watchdog - wd_list removed */
 	if (cs->flags & CLOCK_SOURCE_IS_CONTINUOUS)
 		cs->flags |= CLOCK_SOURCE_VALID_FOR_HRES;
 	clocksource_watchdog_unlock(&flags);

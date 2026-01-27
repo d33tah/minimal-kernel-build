@@ -262,30 +262,14 @@ unsigned long native_calibrate_cpu_early(void)
 
 /* tsc_save/restore_sched_clock_state removed - never called */
 
-static void tsc_resume(struct clocksource *cs)
-{
-	/* tsc_verify_tsc_adjust removed - was empty stub */
-}
+/* tsc_resume removed - callback never invoked */
 
 static u64 read_tsc(struct clocksource *cs)
 {
 	return (u64)rdtsc_ordered();
 }
 
-static void tsc_cs_mark_unstable(struct clocksource *cs)
-{
-	if (tsc_unstable)
-		return;
-
-	tsc_unstable = 1;
-	/* clear_sched_clock_stable removed - empty stub */
-	pr_info("Marking TSC unstable due to clocksource watchdog\n");
-}
-
-static void tsc_cs_tick_stable(struct clocksource *cs)
-{
-	/* sched_clock_tick_stable removed - empty stub */
-}
+/* tsc_cs_mark_unstable, tsc_cs_tick_stable removed - callbacks never invoked */
 
 static int tsc_cs_enable(struct clocksource *cs)
 {
@@ -302,9 +286,6 @@ static struct clocksource clocksource_tsc_early = {
 	.flags = CLOCK_SOURCE_IS_CONTINUOUS | CLOCK_SOURCE_MUST_VERIFY,
 	.vdso_clock_mode = VDSO_CLOCKMODE_TSC,
 	.enable = tsc_cs_enable,
-	.resume = tsc_resume,
-	.mark_unstable = tsc_cs_mark_unstable,
-	.tick_stable = tsc_cs_tick_stable,
 	.list = LIST_HEAD_INIT(clocksource_tsc_early.list),
 };
 
@@ -317,9 +298,6 @@ static struct clocksource clocksource_tsc = {
 		 CLOCK_SOURCE_MUST_VERIFY | CLOCK_SOURCE_VERIFY_PERCPU,
 	.vdso_clock_mode = VDSO_CLOCKMODE_TSC,
 	.enable = tsc_cs_enable,
-	.resume = tsc_resume,
-	.mark_unstable = tsc_cs_mark_unstable,
-	.tick_stable = tsc_cs_tick_stable,
 	.list = LIST_HEAD_INIT(clocksource_tsc.list),
 };
 

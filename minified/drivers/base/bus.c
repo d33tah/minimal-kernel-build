@@ -119,18 +119,7 @@ static struct kobj_type bus_ktype = {
 	.release = bus_release,
 };
 
-static int bus_uevent_filter(struct kobject *kobj)
-{
-	const struct kobj_type *ktype = get_ktype(kobj);
-
-	if (ktype == &bus_ktype)
-		return 1;
-	return 0;
-}
-
-static const struct kset_uevent_ops bus_uevent_ops = {
-	.filter = bus_uevent_filter,
-};
+/* bus_uevent_filter, bus_uevent_ops removed - callbacks never invoked */
 
 static struct kset *bus_kset;
 
@@ -260,7 +249,7 @@ void bus_remove_device(struct device *dev)
 
 int __init buses_init(void)
 {
-	bus_kset = kset_create_and_add("bus", &bus_uevent_ops, NULL);
+	bus_kset = kset_create_and_add("bus", NULL, NULL);
 	if (!bus_kset)
 		return -ENOMEM;
 

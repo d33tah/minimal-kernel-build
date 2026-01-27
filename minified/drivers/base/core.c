@@ -99,60 +99,15 @@ static void device_release(struct kobject *kobj)
 	kfree(p);
 }
 
-static const void *device_namespace(struct kobject *kobj)
-{
-	/* ns_type is never set, so namespace() is never called */
-	return NULL;
-}
-
-static void device_get_ownership(struct kobject *kobj, kuid_t *uid, kgid_t *gid)
-{
-	/* class->get_ownership is never set */
-}
+/* device_namespace, device_get_ownership removed - callbacks never invoked */
 
 static struct kobj_type device_ktype = {
 	.release = device_release,
 	.sysfs_ops = &dev_sysfs_ops,
-	.namespace = device_namespace,
-	.get_ownership = device_get_ownership,
+	/* .namespace, .get_ownership removed - never invoked */
 };
 
-static int dev_uevent_filter(struct kobject *kobj)
-{
-	const struct kobj_type *ktype = get_ktype(kobj);
-
-	if (ktype == &device_ktype) {
-		struct device *dev = kobj_to_dev(kobj);
-		if (dev->bus)
-			return 1;
-		if (dev->class)
-			return 1;
-	}
-	return 0;
-}
-
-static const char *dev_uevent_name(struct kobject *kobj)
-{
-	struct device *dev = kobj_to_dev(kobj);
-
-	if (dev->bus)
-		return dev->bus->name;
-	if (dev->class)
-		return dev->class->name;
-	return NULL;
-}
-
-static int dev_uevent(struct kobject *kobj, struct kobj_uevent_env *env)
-{
-	/* Stub: uevent environment setup not needed for minimal kernel */
-	return 0;
-}
-
-static const struct kset_uevent_ops device_uevent_ops = {
-	.filter = dev_uevent_filter,
-	.name = dev_uevent_name,
-	.uevent = dev_uevent,
-};
+/* dev_uevent_filter, dev_uevent_name, dev_uevent, device_uevent_ops removed - never invoked */
 
 /* uevent_show, uevent_store, dev_attr_uevent removed - only caller was empty device_remove_file stub */
 
@@ -352,7 +307,7 @@ void device_unregister(struct device *dev)
 /* Simplified - kobject_create_and_add returns NULL (stub), return ignored */
 int __init devices_init(void)
 {
-	devices_kset = kset_create_and_add("devices", &device_uevent_ops, NULL);
+	devices_kset = kset_create_and_add("devices", NULL, NULL);
 	return 0;
 }
 

@@ -850,37 +850,7 @@ retry:
 /* unlock_mount inlined into do_loopback */
 /* graft_tree inlined at call site - only called once */
 
-/* flags_to_propagation_type inlined - only called once */
-
-static int do_change_type(struct path *path, int ms_flags)
-{
-	struct mount *mnt = real_mount(path->mnt);
-	int recurse = ms_flags & MS_REC;
-	int type = ms_flags & ~(MS_REC | MS_SILENT);
-	int err = 0;
-
-	if (path->dentry != path->mnt->mnt_root)
-		return -EINVAL;
-
-	/* Inline: flags_to_propagation_type logic */
-	if ((type & ~(MS_SHARED | MS_PRIVATE | MS_SLAVE | MS_UNBINDABLE)) ||
-	    !is_power_of_2(type))
-		return -EINVAL;
-
-	namespace_lock();
-	if (type == MS_SHARED) {
-		err = invent_group_ids(mnt, recurse);
-		if (err)
-			goto out_unlock;
-	}
-
-	lock_mount_hash();
-	unlock_mount_hash();
-
-out_unlock:
-	namespace_unlock();
-	return err;
-}
+/* do_change_type inlined into path_mount */
 
 static int do_add_mount(struct mount *newmnt, struct mountpoint *mp,
 			const struct path *path, int mnt_flags)
@@ -971,8 +941,33 @@ int path_mount(const char *dev_name, struct path *path, const char *type_page,
 		return -ENOSYS;
 	if (flags & MS_BIND)
 		return -EINVAL;
-	if (flags & (MS_SHARED | MS_PRIVATE | MS_SLAVE | MS_UNBINDABLE))
-		return do_change_type(path, flags);
+	if (flags & (MS_SHARED | MS_PRIVATE | MS_SLAVE | MS_UNBINDABLE)) {
+		/* Inlined do_change_type */
+		struct mount *mnt = real_mount(path->mnt);
+		int recurse = flags & MS_REC;
+		int prop_type = flags & ~(MS_REC | MS_SILENT);
+		int err = 0;
+
+		if (path->dentry != path->mnt->mnt_root)
+			return -EINVAL;
+		if ((prop_type &
+		     ~(MS_SHARED | MS_PRIVATE | MS_SLAVE | MS_UNBINDABLE)) ||
+		    !is_power_of_2(prop_type))
+			return -EINVAL;
+		namespace_lock();
+		if (prop_type == MS_SHARED) {
+			err = invent_group_ids(mnt, recurse);
+			if (!err) {
+				lock_mount_hash();
+				unlock_mount_hash();
+			}
+		} else {
+			lock_mount_hash();
+			unlock_mount_hash();
+		}
+		namespace_unlock();
+		return err;
+	}
 	if (flags & MS_MOVE)
 		return -EINVAL;
 

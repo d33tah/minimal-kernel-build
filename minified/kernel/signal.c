@@ -75,34 +75,7 @@ void calculate_sigpending(void)
 /* Removed: print_dropped_signal - empty stub */
 /* task_set_jobctl_pending removed - always returned false, callers simplified */
 
-static struct sigqueue *__sigqueue_alloc(struct task_struct *t, gfp_t gfp_flags,
-					 int override_rlimit,
-					 const unsigned int sigqueue_flags)
-{
-	struct sigqueue *q = NULL;
-	struct ucounts *ucounts = NULL;
-	long sigpending;
-
-	rcu_read_lock();
-	ucounts = task_ucounts(t);
-	sigpending = inc_rlimit_get_ucounts(ucounts, UCOUNT_RLIMIT_SIGPENDING);
-	rcu_read_unlock();
-	if (!sigpending)
-		return NULL;
-
-	if (override_rlimit ||
-	    likely(sigpending <= task_rlimit(t, RLIMIT_SIGPENDING)))
-		q = kmem_cache_alloc(sigqueue_cachep, gfp_flags);
-
-	if (unlikely(q == NULL)) {
-		dec_rlimit_put_ucounts(ucounts, UCOUNT_RLIMIT_SIGPENDING);
-	} else {
-		INIT_LIST_HEAD(&q->list);
-		q->flags = sigqueue_flags;
-		q->ucounts = ucounts;
-	}
-	return q;
-}
+/* __sigqueue_alloc inlined into send_signal_locked (~5 LOC) */
 
 void flush_sigqueue(struct sigpending *queue)
 {
@@ -210,7 +183,34 @@ int send_signal_locked(int sig, struct kernel_siginfo *info,
 	if ((sig == SIGKILL) || (t->flags & PF_KTHREAD))
 		goto out_set;
 
-	q = __sigqueue_alloc(t, GFP_ATOMIC, 0, 0);
+	/* Inlined __sigqueue_alloc */
+	{
+		struct ucounts *ucounts = NULL;
+		long sigpending;
+
+		rcu_read_lock();
+		ucounts = task_ucounts(t);
+		sigpending = inc_rlimit_get_ucounts(ucounts,
+						    UCOUNT_RLIMIT_SIGPENDING);
+		rcu_read_unlock();
+		if (!sigpending)
+			q = NULL;
+		else if (likely(sigpending <=
+				task_rlimit(t, RLIMIT_SIGPENDING)))
+			q = kmem_cache_alloc(sigqueue_cachep, GFP_ATOMIC);
+		else
+			q = NULL;
+
+		if (unlikely(q == NULL)) {
+			if (sigpending)
+				dec_rlimit_put_ucounts(
+					ucounts, UCOUNT_RLIMIT_SIGPENDING);
+		} else {
+			INIT_LIST_HEAD(&q->list);
+			q->flags = 0;
+			q->ucounts = ucounts;
+		}
+	}
 	if (q) {
 		list_add_tail(&q->list, &pending->list);
 		if (info == SEND_SIG_NOINFO) {

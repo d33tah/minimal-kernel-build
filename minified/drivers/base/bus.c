@@ -20,15 +20,7 @@ static struct kset *system_kset;
 
 /* DRIVER_ATTR_IGNORE_LOCKDEP removed - only used for bind/unbind which were removed */
 
-static struct bus_type *bus_get(struct bus_type *bus)
-{
-	if (bus) {
-		kset_get(&bus->p->subsys);
-		return bus;
-	}
-	return NULL;
-}
-
+/* bus_get removed - never called */
 /* bus_put inlined into bus_remove_device - single caller */
 
 static ssize_t drv_attr_show(struct kobject *kobj, struct attribute *attr,

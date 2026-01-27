@@ -546,20 +546,7 @@ static int vgacon_switch(struct vc_data *c)
 	return 0;
 }
 
-static void vga_set_palette(struct vc_data *vc, const unsigned char *table)
-{
-	int i, j;
-
-	vga_w(vgastate.vgabase, VGA_PEL_MSK, 0xff);
-	for (i = j = 0; i < 16; i++) {
-		vga_w(vgastate.vgabase, VGA_PEL_IW, table[i]);
-		vga_w(vgastate.vgabase, VGA_PEL_D, vc->vc_palette[j++] >> 2);
-		vga_w(vgastate.vgabase, VGA_PEL_D, vc->vc_palette[j++] >> 2);
-		vga_w(vgastate.vgabase, VGA_PEL_D, vc->vc_palette[j++] >> 2);
-	}
-}
-
-/* vgacon_set_palette removed - con_set_palette callback never invoked */
+/* vga_set_palette removed - never called (vgacon_set_palette callback removed) */
 
 /* vgacon_blank, vga_vesa_blank, vga_vesa_unblank, vga_pal_blank removed - con_blank never invoked */
 /* colourmap, blackwmap, cmapsz removed - unused */

@@ -476,7 +476,7 @@ void __init e820__reserve_setup_data(void)
 /* e820_type_to_string, e820_type_to_iomem_type, e820_type_to_iores_desc, do_mark_busy
    inlined into e820__reserve_resources */
 
-static struct resource __initdata *e820_res;
+/* e820_res removed - only written, never read */
 
 void __init e820__reserve_resources(void)
 {
@@ -489,7 +489,6 @@ void __init e820__reserve_resources(void)
 	if (!res)
 		panic("%s: Failed to allocate %zu bytes\n", __func__,
 		      sizeof(*res) * e820_table->nr_entries);
-	e820_res = res;
 
 	for (i = 0; i < e820_table->nr_entries; i++) {
 		struct e820_entry *entry = e820_table->entries + i;

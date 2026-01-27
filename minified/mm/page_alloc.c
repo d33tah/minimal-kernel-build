@@ -37,7 +37,7 @@ nodemask_t node_states[NR_NODE_STATES] __read_mostly = {
 };
 
 atomic_long_t _totalram_pages __read_mostly;
-unsigned long totalreserve_pages __read_mostly;
+/* totalreserve_pages removed - never read or written */
 gfp_t gfp_allowed_mask __read_mostly = GFP_BOOT_MASK;
 DEFINE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_ALLOC_DEFAULT_ON, init_on_alloc);
 

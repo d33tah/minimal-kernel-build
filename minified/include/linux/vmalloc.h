@@ -20,7 +20,7 @@ struct notifier_block;
 #define VM_ALLOC		0x00000002
 #define VM_UNINITIALIZED	0x00000020
 #define VM_NO_GUARD		0x00000040
-#define VM_MAP_PUT_PAGES	0x00000200
+/* VM_MAP_PUT_PAGES removed - never used */
 #define VM_ALLOW_HUGE_VMAP	0x00000400
 
 #ifndef IOREMAP_MAX_ORDER

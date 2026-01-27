@@ -300,49 +300,7 @@ struct file *open_exec(const char *name)
 	return f;
 }
 
-static int exec_mmap(struct mm_struct *mm)
-{
-	struct task_struct *tsk;
-	struct mm_struct *old_mm, *active_mm;
-	int ret;
-
-	tsk = current;
-	old_mm = current->mm;
-	exec_mm_release(tsk, old_mm);
-	/* sync_mm_rss() - empty stub */
-	ret = down_write_killable(&tsk->signal->exec_update_lock);
-	if (ret)
-		return ret;
-
-	if (old_mm) {
-		ret = mmap_read_lock_killable(old_mm);
-		if (ret) {
-			up_write(&tsk->signal->exec_update_lock);
-			return ret;
-		}
-	}
-
-	task_lock(tsk);
-	/* membarrier_exec_mmap - empty stub removed */
-	local_irq_disable();
-	active_mm = tsk->active_mm;
-	tsk->active_mm = mm;
-	tsk->mm = mm;
-	/* ARCH_WANT_IRQS_OFF_ACTIVATE_MM not defined */
-	local_irq_enable();
-	activate_mm(active_mm, mm);
-	tsk->mm->vmacache_seqnum = 0;
-	vmacache_flush(tsk);
-	task_unlock(tsk);
-	if (old_mm) {
-		mmap_read_unlock(old_mm);
-		BUG_ON(active_mm != old_mm);
-		mmput(old_mm);
-		return 0;
-	}
-	mmdrop(active_mm);
-	return 0;
-}
+/* exec_mmap inlined into begin_new_exec */
 
 static int de_thread(struct task_struct *tsk)
 {
@@ -496,9 +454,41 @@ int begin_new_exec(struct linux_binprm *bprm)
 		goto out;
 
 	acct_arg_size(bprm, 0);
-	retval = exec_mmap(bprm->mm);
-	if (retval)
-		goto out;
+	/* Inlined exec_mmap */
+	{
+		struct mm_struct *mm = bprm->mm;
+		struct task_struct *tsk = current;
+		struct mm_struct *old_mm = current->mm, *active_mm;
+
+		exec_mm_release(tsk, old_mm);
+		retval = down_write_killable(&tsk->signal->exec_update_lock);
+		if (retval)
+			goto out;
+		if (old_mm) {
+			retval = mmap_read_lock_killable(old_mm);
+			if (retval) {
+				up_write(&tsk->signal->exec_update_lock);
+				goto out;
+			}
+		}
+		task_lock(tsk);
+		local_irq_disable();
+		active_mm = tsk->active_mm;
+		tsk->active_mm = mm;
+		tsk->mm = mm;
+		local_irq_enable();
+		activate_mm(active_mm, mm);
+		tsk->mm->vmacache_seqnum = 0;
+		vmacache_flush(tsk);
+		task_unlock(tsk);
+		if (old_mm) {
+			mmap_read_unlock(old_mm);
+			BUG_ON(active_mm != old_mm);
+			mmput(old_mm);
+		} else {
+			mmdrop(active_mm);
+		}
+	}
 
 	bprm->mm = NULL;
 

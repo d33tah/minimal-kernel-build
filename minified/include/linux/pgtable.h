@@ -360,11 +360,10 @@ static inline int pmd_none_or_trans_huge_or_clear_bad(pmd_t *pmd)
 # define PAGE_KERNEL_EXEC PAGE_KERNEL
 #endif
 
-#define		__PGTBL_PGD_MODIFIED	0
+/* __PGTBL_PGD_MODIFIED, PGTBL_PGD_MODIFIED removed - never used */
 #define		__PGTBL_PMD_MODIFIED	3
 #define		__PGTBL_PTE_MODIFIED	4
 
-#define		PGTBL_PGD_MODIFIED	BIT(__PGTBL_PGD_MODIFIED)
 #define		PGTBL_PMD_MODIFIED	BIT(__PGTBL_PMD_MODIFIED)
 #define		PGTBL_PTE_MODIFIED	BIT(__PGTBL_PTE_MODIFIED)
 

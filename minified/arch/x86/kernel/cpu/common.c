@@ -526,31 +526,7 @@ void __init early_cpu_init(void)
 	}
 }
 
-static void generic_identify(struct cpuinfo_x86 *c)
-{
-	c->extended_cpuid_level = 0;
-
-	if (!have_cpuid_p())
-		identify_cpu_without_cpuid(c);
-
-	if (!have_cpuid_p())
-		return;
-
-	cpu_detect(c);
-
-	get_cpu_vendor(c);
-
-	get_cpu_cap(c);
-
-	get_cpu_address_sizes(c);
-
-	/* c->initial_apicid, c->apicid, c->phys_proc_id removed - never read */
-
-	/* get_model_name removed - x86_model_id is never read */
-
-	set_cpu_bug(c, X86_BUG_ESPFIX);
-}
-
+/* generic_identify inlined into identify_cpu */
 static void identify_cpu(struct cpuinfo_x86 *c)
 {
 	int i;
@@ -568,7 +544,17 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 	c->x86_cache_alignment = c->x86_clflush_size;
 	memset(&c->x86_capability, 0, sizeof(c->x86_capability));
 
-	generic_identify(c);
+	/* generic_identify inlined */
+	c->extended_cpuid_level = 0;
+	if (!have_cpuid_p())
+		identify_cpu_without_cpuid(c);
+	if (have_cpuid_p()) {
+		cpu_detect(c);
+		get_cpu_vendor(c);
+		get_cpu_cap(c);
+		get_cpu_address_sizes(c);
+		set_cpu_bug(c, X86_BUG_ESPFIX);
+	}
 
 	if (this_cpu->c_identify)
 		this_cpu->c_identify(c);

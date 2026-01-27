@@ -18,9 +18,7 @@ extern char __per_cpu_load[], __per_cpu_start[], __per_cpu_end[];
 extern char __start_rodata[], __end_rodata[];
 extern char __irqentry_text_start[], __irqentry_text_end[];
 
-#define dereference_function_descriptor(p) ((void *)(p))
-#define dereference_kernel_function_descriptor(p) ((void *)(p))
-/* func_desc_t removed - unused */
+/* dereference_function_descriptor, dereference_kernel_function_descriptor, func_desc_t removed - unused */
 
 static inline bool is_kernel_rodata(unsigned long addr)
 {

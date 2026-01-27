@@ -102,8 +102,7 @@ extern __u32			cpu_caps_cleared[NCAPINTS + NBUGINTS];
 extern __u32			cpu_caps_set[NCAPINTS + NBUGINTS];
 
 #define cpu_info		boot_cpu_data
-#define cpu_data(cpu)		boot_cpu_data
-/* cpuinfo_op declaration removed - no implementation */
+/* cpu_data, cpuinfo_op removed - unused */
 
 #define cache_line_size()	(boot_cpu_data.x86_cache_alignment)
 

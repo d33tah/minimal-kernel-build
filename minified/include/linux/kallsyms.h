@@ -16,10 +16,6 @@ struct cred;
 struct module;
 
 /* is_kernel_text removed - never called */
-
-static inline void *dereference_symbol_descriptor(void *ptr)
-{
-	return ptr;
-}
+/* dereference_symbol_descriptor removed - never called */
 
 #endif  

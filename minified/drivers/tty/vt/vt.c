@@ -275,37 +275,7 @@ static void set_origin(struct vc_data *vc)
 }
 
 /* save_screen inlined into con_init */
-/* flush_scrollback inlined into redraw_screen */
-
-/* switch_screen/update_screen unified - is_switch parameter removed (always 0) */
-static void redraw_screen(struct vc_data *vc)
-{
-	int update;
-	int old_was_color;
-
-	WARN_CONSOLE_UNLOCKED();
-
-	if (!vc)
-		return;
-
-	hide_cursor(vc);
-
-	old_was_color = vc->vc_can_do_color;
-	set_origin(vc);
-	update = vc->vc_sw->con_switch(vc);
-	/* set_palette was no-op stub - call removed */
-
-	if (old_was_color != vc->vc_can_do_color) {
-		update_attr(vc);
-		/* clear_buffer_attributes removed - empty stub */
-	}
-
-	if (update && vc->vc_mode != KD_GRAPHICS)
-		do_update_region(vc, vc->vc_origin, vc->vc_screenbuf_size / 2);
-
-	set_cursor(vc);
-	/* vt_set_leds_compute_shiftstate call removed - empty stub */
-}
+/* flush_scrollback, redraw_screen inlined into con_init (~6 LOC) */
 
 int vc_cons_allocated(unsigned int i)
 {
@@ -936,7 +906,26 @@ static int __init con_init(void)
 		vc->vc_sw->con_save_screen(vc);
 	gotoxy(vc, vc->state.x, vc->state.y);
 	csi_J(vc, 0);
-	redraw_screen(vc);
+	/* Inlined redraw_screen */
+	{
+		int update;
+		int old_was_color;
+
+		hide_cursor(vc);
+
+		old_was_color = vc->vc_can_do_color;
+		set_origin(vc);
+		update = vc->vc_sw->con_switch(vc);
+
+		if (old_was_color != vc->vc_can_do_color)
+			update_attr(vc);
+
+		if (update && vc->vc_mode != KD_GRAPHICS)
+			do_update_region(vc, vc->vc_origin,
+					 vc->vc_screenbuf_size / 2);
+
+		set_cursor(vc);
+	}
 	printable = 1;
 
 	console_unlock();

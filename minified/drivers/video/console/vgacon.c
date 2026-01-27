@@ -84,7 +84,7 @@ static void vgacon_init(struct vc_data *c, int init);
 static void vgacon_deinit(struct vc_data *c);
 static void vgacon_cursor(struct vc_data *c, int mode);
 static int vgacon_switch(struct vc_data *c);
-static int vgacon_blank(struct vc_data *c, int blank, int mode_switch);
+/* vgacon_blank removed - con_blank never invoked */
 /* vgacon_scrolldelta inlined into vgacon_restore_screen */
 static int vgacon_set_origin(struct vc_data *c);
 static void vgacon_save_screen(struct vc_data *c);
@@ -569,39 +569,7 @@ static void vga_set_palette(struct vc_data *vc, const unsigned char *table)
 
 /* vgacon_set_palette removed - con_set_palette callback never invoked */
 
-/* vga_vesa_blank, vga_vesa_unblank, vga_pal_blank removed - empty stubs */
-
-static int vgacon_blank(struct vc_data *c, int blank, int mode_switch)
-{
-	switch (blank) {
-	case 0:
-		if (vga_vesa_blanked)
-			vga_vesa_blanked = 0;
-		if (vga_palette_blanked) {
-			vga_set_palette(c, color_table);
-			vga_palette_blanked = false;
-			return 0;
-		}
-		vga_is_gfx = false;
-		return 1;
-	case 1:
-	case -1:
-		if (!mode_switch && vga_video_type == VIDEO_TYPE_VGAC) {
-			vga_palette_blanked = true;
-			return 0;
-		}
-		vgacon_set_origin(c);
-		scr_memsetw((void *)vga_vram_base, BLANK, c->vc_screenbuf_size);
-		if (mode_switch)
-			vga_is_gfx = true;
-		return 1;
-	default:
-		if (vga_video_type == VIDEO_TYPE_VGAC)
-			vga_vesa_blanked = blank;
-		return 0;
-	}
-}
-
+/* vgacon_blank, vga_vesa_blank, vga_vesa_unblank, vga_pal_blank removed - con_blank never invoked */
 /* colourmap, blackwmap, cmapsz removed - unused */
 
 /* vgacon_resize removed - con_resize callback never invoked */
@@ -698,8 +666,7 @@ const struct consw vga_con = {
 	.con_cursor = vgacon_cursor,
 	.con_scroll = vgacon_scroll,
 	.con_switch = vgacon_switch,
-	.con_blank = vgacon_blank,
-	/* .con_font_set, .con_font_get, .con_resize, .con_set_palette, .con_scrolldelta removed - never called */
+	/* .con_blank, .con_font_set, .con_font_get, .con_resize, .con_set_palette, .con_scrolldelta removed - never invoked */
 	.con_set_origin = vgacon_set_origin,
 	.con_save_screen = vgacon_save_screen,
 	.con_build_attr = vgacon_build_attr,

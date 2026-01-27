@@ -30,8 +30,7 @@ struct consw {
 			unsigned int bottom, enum con_scroll dir,
 			unsigned int lines);
 	int	(*con_switch)(struct vc_data *vc);
-	int	(*con_blank)(struct vc_data *vc, int blank, int mode_switch);
-	/* con_font_set, con_font_get, con_font_default, con_resize, con_set_palette, con_scrolldelta removed - never called */
+	/* con_blank, con_font_set, con_font_get, con_font_default, con_resize, con_set_palette, con_scrolldelta removed - never invoked */
 	int	(*con_set_origin)(struct vc_data *vc);
 	void	(*con_save_screen)(struct vc_data *vc);
 	u8	(*con_build_attr)(struct vc_data *vc, u8 color,

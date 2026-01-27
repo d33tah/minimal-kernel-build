@@ -14,10 +14,7 @@ static void dummycon_putcs(struct vc_data *vc, const unsigned short *s,
 			   int count, int ypos, int xpos)
 {
 }
-static int dummycon_blank(struct vc_data *vc, int blank, int mode_switch)
-{
-	return 0;
-}
+/* dummycon_blank removed - con_blank callback never invoked */
 
 static const char *dummycon_startup(void)
 {
@@ -64,5 +61,5 @@ const struct consw dummy_con = {
 	.con_cursor = dummycon_cursor,
 	.con_scroll = dummycon_scroll,
 	.con_switch = dummycon_switch,
-	.con_blank = dummycon_blank,
+	/* .con_blank removed - callback never invoked */
 };

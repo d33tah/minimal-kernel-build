@@ -53,43 +53,30 @@ static int cmp_ex_search(const void *key, const void *elt)
 	return 0;
 }
 
-/* Merged from bsearch.c and bsearch.h */
-#define NOKPROBE_SYMBOL(fname) /* stub for disabled kprobes */
-static __always_inline void *__inline_bsearch(const void *key, const void *base,
-					      size_t num, size_t size,
-					      cmp_func_t cmp)
-{
-	const char *pivot;
-	int result;
-
-	while (num > 0) {
-		pivot = base + (num >> 1) * size;
-		result = cmp(key, pivot);
-
-		if (result == 0)
-			return (void *)pivot;
-
-		if (result > 0) {
-			base = pivot + size;
-			num--;
-		}
-		num >>= 1;
-	}
-
-	return NULL;
-}
-
-void *bsearch(const void *key, const void *base, size_t num, size_t size,
-	      cmp_func_t cmp)
-{
-	return __inline_bsearch(key, base, num, size, cmp);
-}
-NOKPROBE_SYMBOL(bsearch);
-
+/* bsearch inlined into search_extable - was its only caller */
 const struct exception_table_entry *
 search_extable(const struct exception_table_entry *base, const size_t num,
 	       unsigned long value)
 {
-	return bsearch(&value, base, num, sizeof(struct exception_table_entry),
-		       cmp_ex_search);
+	const char *pivot;
+	const char *b = (const char *)base;
+	size_t n = num;
+	size_t size = sizeof(struct exception_table_entry);
+	int result;
+
+	while (n > 0) {
+		pivot = b + (n >> 1) * size;
+		result = cmp_ex_search(&value, pivot);
+
+		if (result == 0)
+			return (const struct exception_table_entry *)pivot;
+
+		if (result > 0) {
+			b = pivot + size;
+			n--;
+		}
+		n >>= 1;
+	}
+
+	return NULL;
 }

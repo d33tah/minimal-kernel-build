@@ -27,12 +27,7 @@
 static const unsigned int ioremap_max_page_shift = PAGE_SHIFT;
 /* vmap_allow_huge removed - was always false, huge vmap code removed */
 
-bool is_vmalloc_addr(const void *x)
-{
-	unsigned long addr = (unsigned long)x;
-
-	return addr >= VMALLOC_START && addr < VMALLOC_END;
-}
+/* is_vmalloc_addr removed - never called */
 
 /* Removed: struct vfree_deferred, vfree_deferred, free_work
  * - Dead code since vfree is a no-op (~17 lines) */

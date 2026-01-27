@@ -522,17 +522,7 @@ void shrink_dcache_for_umount(struct super_block *sb)
 	}
 }
 
-void d_invalidate(struct dentry *dentry)
-{
-	/* d_walk is empty stub - simplify to just drop */
-	spin_lock(&dentry->d_lock);
-	if (d_unhashed(dentry)) {
-		spin_unlock(&dentry->d_lock);
-		return;
-	}
-	__d_drop(dentry);
-	spin_unlock(&dentry->d_lock);
-}
+/* d_invalidate removed - never called */
 
 static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 {

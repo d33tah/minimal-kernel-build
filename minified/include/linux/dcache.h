@@ -144,7 +144,7 @@ extern struct dentry * d_alloc_parallel(struct dentry *, const struct qstr *,
 					wait_queue_head_t *);
 /* shrink_dcache_parent removed - never called */
 extern void shrink_dcache_for_umount(struct super_block *);
-extern void d_invalidate(struct dentry *);
+/* d_invalidate removed - never called */
 
 
 extern struct dentry * d_make_root(struct inode *);

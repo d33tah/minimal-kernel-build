@@ -295,8 +295,7 @@ static inline int folio_put_testzero(struct folio *folio)
 
 
 /* vmalloc_to_page removed - no callers */
-
-extern bool is_vmalloc_addr(const void *x);
+/* is_vmalloc_addr removed - no callers */
 
 
 static inline void page_mapcount_reset(struct page *page)

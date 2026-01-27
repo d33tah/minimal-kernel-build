@@ -25,10 +25,7 @@ extern struct cpumask __cpu_present_mask;
 extern struct cpumask __cpu_active_mask;
 #define cpu_possible_mask ((const struct cpumask *)&__cpu_possible_mask)
 #define cpu_online_mask   ((const struct cpumask *)&__cpu_online_mask)
-/* cpu_present_mask, cpu_active_mask removed - never used */
-
-extern atomic_t __num_online_cpus;
-
+/* cpu_present_mask, cpu_active_mask, __num_online_cpus removed - never used */
 
 static __always_inline void cpu_max_bits_warn(unsigned int cpu, unsigned int bits)
 {

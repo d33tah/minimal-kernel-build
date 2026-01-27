@@ -397,41 +397,38 @@ int driver_attach(struct device_driver *drv)
 	return bus_for_each_dev(drv->bus, NULL, drv, __driver_attach);
 }
 
-static void __device_release_driver(struct device *dev, struct device *parent)
+/* __device_release_driver inlined into device_release_driver_internal (~5 LOC) */
+void device_release_driver_internal(struct device *dev,
+				    struct device_driver *drv_arg,
+				    struct device *parent)
 {
 	struct device_driver *drv;
 
-	drv = dev->driver;
-	if (drv) {
-		pm_runtime_get_sync(dev);
-		/* device_links_busy always false - removed dead while loop */
-
-		pm_runtime_put_sync(dev);
-
-		if (dev->bus && dev->bus->remove)
-			dev->bus->remove(dev);
-		else if (dev->driver->remove)
-			dev->driver->remove(dev);
-
-		if (dev->bus && dev->bus->dma_cleanup)
-			dev->bus->dma_cleanup(dev);
-
-		device_unbind_cleanup(dev);
-
-		klist_remove(&dev->p->knode_driver);
-
-		kobject_uevent(&dev->kobj, KOBJ_UNBIND);
-	}
-}
-
-void device_release_driver_internal(struct device *dev,
-				    struct device_driver *drv,
-				    struct device *parent)
-{
 	__device_driver_lock(dev, parent);
 
-	if (!drv || drv == dev->driver)
-		__device_release_driver(dev, parent);
+	if (!drv_arg || drv_arg == dev->driver) {
+		drv = dev->driver;
+		if (drv) {
+			pm_runtime_get_sync(dev);
+			/* device_links_busy always false - removed dead while loop */
+
+			pm_runtime_put_sync(dev);
+
+			if (dev->bus && dev->bus->remove)
+				dev->bus->remove(dev);
+			else if (dev->driver->remove)
+				dev->driver->remove(dev);
+
+			if (dev->bus && dev->bus->dma_cleanup)
+				dev->bus->dma_cleanup(dev);
+
+			device_unbind_cleanup(dev);
+
+			klist_remove(&dev->p->knode_driver);
+
+			kobject_uevent(&dev->kobj, KOBJ_UNBIND);
+		}
+	}
 
 	__device_driver_unlock(dev, parent);
 }

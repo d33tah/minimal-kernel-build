@@ -370,32 +370,8 @@ static void __device_driver_unlock(struct device *dev, struct device *parent)
 		device_unlock(parent);
 }
 
-static int __driver_attach(struct device *dev, void *data)
-{
-	struct device_driver *drv = data;
-	int ret;
-
-	ret = driver_match_device(drv, dev);
-	if (ret == 0) {
-		return 0;
-	} else if (ret == -EPROBE_DEFER) {
-		dev->can_match = true;
-		driver_deferred_probe_add(dev);
-	} else if (ret < 0) {
-		return ret;
-	}
-
-	__device_driver_lock(dev, dev->parent);
-	driver_probe_device(drv, dev);
-	__device_driver_unlock(dev, dev->parent);
-
-	return 0;
-}
-
-int driver_attach(struct device_driver *drv)
-{
-	return bus_for_each_dev(drv->bus, NULL, drv, __driver_attach);
-}
+/* __driver_attach removed - only caller was driver_attach */
+/* driver_attach removed - only caller was bus_add_driver */
 
 /* __device_release_driver inlined into device_release_driver_internal (~5 LOC) */
 void device_release_driver_internal(struct device *dev,

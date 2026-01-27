@@ -190,7 +190,7 @@ void device_del(struct device *dev);
    root_device_unregister removed - unused */
 
 void device_release_driver(struct device *dev);
-int __must_check driver_attach(struct device_driver *drv);
+/* driver_attach removed - only caller was bus_add_driver */
 void device_initial_probe(struct device *dev);
 
 __printf(5, 6) struct device *

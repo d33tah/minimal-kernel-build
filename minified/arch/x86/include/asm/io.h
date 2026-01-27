@@ -44,7 +44,7 @@ static inline void *phys_to_virt(phys_addr_t address)
 }
 #define phys_to_virt phys_to_virt
 
-#define page_to_phys(page)    ((dma_addr_t)page_to_pfn(page) << PAGE_SHIFT)
+/* page_to_phys removed - never used */
 
 /* ioremap_prot, ioremap_uc, ioremap_cache, ioremap_encrypted declarations removed - no callers */
 

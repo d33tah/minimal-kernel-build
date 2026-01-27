@@ -47,7 +47,7 @@ extern struct boot_params *boot_params;
 void __putstr(const char *s);
 void __puthex(unsigned long value);
 #define error_putstr(__x)  __putstr(__x)
-#define error_puthex(__x)  __puthex(__x)
+/* error_puthex removed - never used */
 
 
 static inline void debug_putstr(const char *s)

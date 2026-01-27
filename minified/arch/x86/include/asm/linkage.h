@@ -42,15 +42,7 @@
 	SYM_START(name, SYM_L_LOCAL, SYM_A_NONE)	\
 	ENDBR
 
- 
-#define SYM_FUNC_START_WEAK(name)			\
-	SYM_START(name, SYM_L_WEAK, SYM_A_ALIGN)	\
-	ENDBR
-
- 
-#define SYM_FUNC_START_WEAK_NOALIGN(name)		\
-	SYM_START(name, SYM_L_WEAK, SYM_A_NONE)		\
-	ENDBR
+/* SYM_FUNC_START_WEAK, SYM_FUNC_START_WEAK_NOALIGN removed - never used */
 
 #endif  
 

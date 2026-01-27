@@ -8,10 +8,7 @@
 #include <linux/atomic.h>
 #include <linux/bits.h>
 
- 
-#define MM_CONTEXT_UPROBE_IA32	BIT(0)
- 
-#define MM_CONTEXT_HAS_VSYSCALL	BIT(1)
+/* MM_CONTEXT_UPROBE_IA32, MM_CONTEXT_HAS_VSYSCALL removed - never used */
 
  
 typedef struct {

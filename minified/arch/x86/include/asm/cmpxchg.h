@@ -159,7 +159,7 @@ static inline bool __try_cmpxchg64(volatile u64 *ptr, u64 *pold, u64 new)
 	return true;
 }
 
-#define system_has_cmpxchg_double() boot_cpu_has(X86_FEATURE_CX8)
+/* system_has_cmpxchg_double removed - never used */
 
 #define arch_cmpxchg(ptr, old, new)					\
 	__cmpxchg(ptr, old, new, sizeof(*(ptr)))

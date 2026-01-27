@@ -7,8 +7,7 @@
 #ifdef __ASSEMBLY__
 
 #define PER_CPU_VAR(var)	var
-
-#define INIT_PER_CPU_VAR(var)  var
+/* INIT_PER_CPU_VAR removed - never used */
 
 #else  
 

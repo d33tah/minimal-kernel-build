@@ -2,7 +2,6 @@
 
 #include <linux/sched.h>
 /* enum cpu_idle_type removed - unused */
-extern void default_idle_call(void);
 #include <linux/tick.h>
 
 #include "sched.h"
@@ -10,22 +9,7 @@ extern void default_idle_call(void);
 extern char __cpuidle_text_start[], __cpuidle_text_end[];
 
 /* arch_cpu_idle_prepare, arch_cpu_idle_exit removed - empty weak funcs, no overrides */
-
-void __cpuidle default_idle_call(void)
-{
-	/* inlined current_clr_polling_and_test */
-	clear_thread_flag(TIF_POLLING_NRFLAG);
-	smp_mb__after_atomic();
-	if (unlikely(tif_need_resched())) {
-		local_irq_enable();
-	} else {
-		arch_cpu_idle();
-		raw_local_irq_disable();
-		raw_local_irq_enable();
-	}
-}
-
-/* do_idle inlined - single caller */
+/* do_idle, default_idle_call inlined - single callers */
 void cpu_startup_entry(enum cpuhp_state state)
 {
 	while (1) {
@@ -34,7 +18,16 @@ void cpu_startup_entry(enum cpuhp_state state)
 			rmb();
 			local_irq_disable();
 			arch_cpu_idle_enter();
-			default_idle_call();
+			/* inlined default_idle_call */
+			clear_thread_flag(TIF_POLLING_NRFLAG);
+			smp_mb__after_atomic();
+			if (unlikely(tif_need_resched())) {
+				local_irq_enable();
+			} else {
+				arch_cpu_idle();
+				raw_local_irq_disable();
+				raw_local_irq_enable();
+			}
 		}
 		clear_thread_flag(TIF_POLLING_NRFLAG);
 		smp_mb__after_atomic();

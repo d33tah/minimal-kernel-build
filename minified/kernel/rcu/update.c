@@ -78,7 +78,5 @@ void __wait_rcu_gp(bool checktiny, int n, call_rcu_func_t *crcu_array,
 }
 
 /* finish_rcuwait removed - unused */
-
-int rcu_cpu_stall_suppress_at_boot __read_mostly;
-
+/* rcu_cpu_stall_suppress_at_boot removed - unused */
 /* rcu_early_boot_tests removed - empty stub */

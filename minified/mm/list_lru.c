@@ -67,18 +67,7 @@ bool list_lru_del(struct list_lru *lru, struct list_head *item)
 	return false;
 }
 
-void list_lru_isolate(struct list_lru_one *list, struct list_head *item)
-{
-	list_del_init(item);
-	list->nr_items--;
-}
-
-void list_lru_isolate_move(struct list_lru_one *list, struct list_head *item,
-			   struct list_head *head)
-{
-	list_move(item, head);
-	list->nr_items--;
-}
+/* list_lru_isolate, list_lru_isolate_move inlined into single call sites */
 
 unsigned long list_lru_count_one(struct list_lru *lru, int nid,
 				 struct mem_cgroup *memcg)

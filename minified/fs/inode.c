@@ -341,14 +341,18 @@ static enum lru_status inode_lru_isolate(struct list_head *item,
 		return LRU_SKIP;
 
 	if (atomic_read(&inode->i_count) || (inode->i_state & ~I_REFERENCED)) {
-		list_lru_isolate(lru, &inode->i_lru);
+		/* list_lru_isolate inlined */
+		list_del_init(&inode->i_lru);
+		lru->nr_items--;
 		spin_unlock(&inode->i_lock);
 		/* nr_unused counter removed */
 		return LRU_REMOVED;
 	}
 
 	inode->i_state |= I_FREEING;
-	list_lru_isolate_move(lru, &inode->i_lru, freeable);
+	/* list_lru_isolate_move inlined */
+	list_move(&inode->i_lru, freeable);
+	lru->nr_items--;
 	spin_unlock(&inode->i_lock);
 	/* nr_unused counter removed */
 	return LRU_REMOVED;

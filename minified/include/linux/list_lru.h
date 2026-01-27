@@ -55,10 +55,7 @@ static inline unsigned long list_lru_shrink_count(struct list_lru *lru,
 	return list_lru_count_one(lru, sc->nid, sc->memcg);
 }
 
-
-void list_lru_isolate(struct list_lru_one *list, struct list_head *item);
-void list_lru_isolate_move(struct list_lru_one *list, struct list_head *item,
-			   struct list_head *head);
+/* list_lru_isolate, list_lru_isolate_move inlined into single call sites */
 
 typedef enum lru_status (*list_lru_walk_cb)(struct list_head *item,
 		struct list_lru_one *list, spinlock_t *lock, void *cb_arg);

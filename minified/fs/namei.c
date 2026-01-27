@@ -521,30 +521,7 @@ static struct dentry *lookup_fast(struct nameidata *nd, struct inode **inode,
 	return dentry;
 }
 
-static struct dentry *__lookup_slow(const struct qstr *name, struct dentry *dir,
-				    unsigned int flags)
-{
-	struct dentry *dentry, *old;
-	struct inode *inode = dir->d_inode;
-	DECLARE_WAIT_QUEUE_HEAD_ONSTACK(wq);
-
-	if (unlikely(IS_DEADDIR(inode)))
-		return ERR_PTR(-ENOENT);
-	/* 'again' label removed - no goto references it */
-	dentry = d_alloc_parallel(dir, name, &wq);
-	if (IS_ERR(dentry))
-		return dentry;
-	/* d_revalidate always returned 1 (> 0), dead error handling removed */
-	if (likely(d_in_lookup(dentry))) {
-		old = inode->i_op->lookup(inode, dentry, flags);
-		d_lookup_done(dentry);
-		if (unlikely(old)) {
-			dput(dentry);
-			dentry = old;
-		}
-	}
-	return dentry;
-}
+/* __lookup_slow inlined into walk_component */
 
 /* may_lookup inlined into link_path_walk */
 
@@ -661,9 +638,30 @@ static const char *walk_component(struct nameidata *nd, int flags)
 	if (IS_ERR(dentry))
 		return ERR_CAST(dentry);
 	if (unlikely(!dentry)) {
+		/* __lookup_slow inlined */
 		struct inode *dir_inode = nd->path.dentry->d_inode;
+		struct dentry *old;
+		DECLARE_WAIT_QUEUE_HEAD_ONSTACK(wq);
+
 		inode_lock_shared(dir_inode);
-		dentry = __lookup_slow(&nd->last, nd->path.dentry, nd->flags);
+		if (unlikely(IS_DEADDIR(dir_inode))) {
+			inode_unlock_shared(dir_inode);
+			return ERR_PTR(-ENOENT);
+		}
+		dentry = d_alloc_parallel(nd->path.dentry, &nd->last, &wq);
+		if (IS_ERR(dentry)) {
+			inode_unlock_shared(dir_inode);
+			return ERR_CAST(dentry);
+		}
+		if (likely(d_in_lookup(dentry))) {
+			old = dir_inode->i_op->lookup(dir_inode, dentry,
+						      nd->flags);
+			d_lookup_done(dentry);
+			if (unlikely(old)) {
+				dput(dentry);
+				dentry = old;
+			}
+		}
 		inode_unlock_shared(dir_inode);
 		if (IS_ERR(dentry))
 			return ERR_CAST(dentry);

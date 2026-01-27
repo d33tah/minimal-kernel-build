@@ -90,34 +90,7 @@ static __always_inline unsigned long long cycles_2_ns(unsigned long long cyc)
 	return ns;
 }
 
-static void __set_cyc2ns_scale(unsigned long khz, int cpu,
-			       unsigned long long tsc_now)
-{
-	unsigned long long ns_now;
-	struct cyc2ns_data data;
-	struct cyc2ns *c2n;
-
-	ns_now = cycles_2_ns(tsc_now);
-
-	clocks_calc_mult_shift(&data.cyc2ns_mul, &data.cyc2ns_shift, khz,
-			       NSEC_PER_MSEC, 0);
-
-	if (data.cyc2ns_shift == 32) {
-		data.cyc2ns_shift = 31;
-		data.cyc2ns_mul >>= 1;
-	}
-
-	data.cyc2ns_offset = ns_now - mul_u64_u32_shr(tsc_now, data.cyc2ns_mul,
-						      data.cyc2ns_shift);
-
-	c2n = per_cpu_ptr(&cyc2ns, cpu);
-
-	raw_write_seqcount_latch(&c2n->seq);
-	c2n->data[0] = data;
-	raw_write_seqcount_latch(&c2n->seq);
-	c2n->data[1] = data;
-}
-
+/* __set_cyc2ns_scale inlined into tsc_early_init */
 /* cyc2ns_init_boot_cpu inlined below, cyc2ns_init_secondary_cpus removed */
 
 u64 native_sched_clock(void)
@@ -444,10 +417,31 @@ void __init tsc_early_init(void)
 	loops_per_jiffy = lpj;
 	use_tsc_delay();
 
-	/* cyc2ns_init_boot_cpu inlined */
+	/* cyc2ns_init_boot_cpu, __set_cyc2ns_scale inlined */
 	c2n = this_cpu_ptr(&cyc2ns);
 	seqcount_latch_init(&c2n->seq);
-	__set_cyc2ns_scale(tsc_khz, smp_processor_id(), rdtsc());
+	{
+		unsigned long long tsc_now = rdtsc();
+		unsigned long long ns_now = cycles_2_ns(tsc_now);
+		struct cyc2ns_data data;
+
+		clocks_calc_mult_shift(&data.cyc2ns_mul, &data.cyc2ns_shift,
+				       tsc_khz, NSEC_PER_MSEC, 0);
+
+		if (data.cyc2ns_shift == 32) {
+			data.cyc2ns_shift = 31;
+			data.cyc2ns_mul >>= 1;
+		}
+
+		data.cyc2ns_offset =
+			ns_now - mul_u64_u32_shr(tsc_now, data.cyc2ns_mul,
+						 data.cyc2ns_shift);
+
+		raw_write_seqcount_latch(&c2n->seq);
+		c2n->data[0] = data;
+		raw_write_seqcount_latch(&c2n->seq);
+		c2n->data[1] = data;
+	}
 	static_branch_enable(&__use_tsc);
 }
 

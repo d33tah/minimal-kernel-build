@@ -11,22 +11,7 @@
 
 #include <asm/stacktrace.h>
 
-const char *stack_type_name(enum stack_type type)
-{
-	if (type == STACK_TYPE_IRQ)
-		return "IRQ";
-
-	if (type == STACK_TYPE_SOFTIRQ)
-		return "SOFTIRQ";
-
-	if (type == STACK_TYPE_ENTRY)
-		return "ENTRY_TRAMPOLINE";
-
-	if (type == STACK_TYPE_EXCEPTION)
-		return "#DF";
-
-	return NULL;
-}
+/* stack_type_name removed - never called (~16 LOC) */
 
 /* in_hardirq_stack inlined into get_stack_info */
 /* in_softirq_stack inlined into get_stack_info */

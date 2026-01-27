@@ -35,9 +35,7 @@ int get_stack_info(unsigned long *stack, struct task_struct *task,
 bool get_stack_info_noinstr(unsigned long *stack, struct task_struct *task,
 			    struct stack_info *info);
 
-/* get_stack_guard_info, on_stack, get_frame_pointer, get_stack_pointer removed - never used */
-
-const char *stack_type_name(enum stack_type type);
+/* get_stack_guard_info, on_stack, get_frame_pointer, get_stack_pointer, stack_type_name removed - never used */
 
 /* STACKSLOTS_PER_LINE removed - never used */
 

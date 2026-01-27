@@ -308,14 +308,7 @@ int vmap_pages_range_noflush(unsigned long addr, unsigned long end,
 	return 0;
 }
 
-static int vmap_pages_range(unsigned long addr, unsigned long end,
-			    pgprot_t prot, struct page **pages,
-			    unsigned int page_shift)
-{
-	/* flush_cache_vmap - empty stub on x86 */
-	return vmap_pages_range_noflush(addr, end, prot, pages, page_shift);
-}
-
+/* vmap_pages_range inlined into __vmalloc_area_node - single caller */
 /* vmalloc_to_page removed - no callers */
 
 static DEFINE_SPINLOCK(vmap_area_lock);
@@ -1027,9 +1020,10 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 	else if ((gfp_mask & (__GFP_FS | __GFP_IO)) == 0)
 		flags = memalloc_noio_save();
 
+	/* vmap_pages_range inlined - flush_cache_vmap is empty stub on x86 */
 	do {
-		ret = vmap_pages_range(addr, addr + size, prot, area->pages,
-				       page_shift);
+		ret = vmap_pages_range_noflush(addr, addr + size, prot,
+					       area->pages, page_shift);
 		if (nofail && (ret < 0))
 			schedule_timeout_uninterruptible(1);
 	} while (nofail && (ret < 0));

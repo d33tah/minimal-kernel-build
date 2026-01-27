@@ -83,7 +83,7 @@ static inline int driver_match_device(struct device_driver *drv,
 /* make_class_name removed - unused */
 
 /* devres_release_all, device_block_probing, device_unblock_probing removed - unused */
-extern void deferred_probe_extend_timeout(void);
+/* deferred_probe_extend_timeout removed - never called */
 
 /* devices_kset_move_last removed - unused */
 extern struct kset *devices_kset;

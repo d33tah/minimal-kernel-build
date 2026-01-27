@@ -105,13 +105,7 @@ static void deferred_probe_timeout_work_func(struct work_struct *work)
 static DECLARE_DELAYED_WORK(deferred_probe_timeout_work,
 			    deferred_probe_timeout_work_func);
 
-void deferred_probe_extend_timeout(void)
-{
-	if (cancel_delayed_work(&deferred_probe_timeout_work)) {
-		schedule_delayed_work(&deferred_probe_timeout_work,
-				      driver_deferred_probe_timeout * HZ);
-	}
-}
+/* deferred_probe_extend_timeout removed - never called */
 
 /* Stub: simplified deferred probe for minimal kernel */
 static int deferred_probe_initcall(void)

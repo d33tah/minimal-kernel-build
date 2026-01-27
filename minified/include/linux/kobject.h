@@ -104,7 +104,7 @@ struct kset {
 
 extern void kset_init(struct kset *kset);
 extern int __must_check kset_register(struct kset *kset);
-extern void kset_unregister(struct kset *kset);
+/* kset_unregister removed - no callers */
 extern struct kset * __must_check kset_create_and_add(const char *name,
 						const struct kset_uevent_ops *u,
 						struct kobject *parent_kobj);

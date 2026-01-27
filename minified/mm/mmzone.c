@@ -10,10 +10,7 @@ struct pglist_data *first_online_pgdat(void)
 	return NODE_DATA(0);
 }
 
-struct pglist_data *next_online_pgdat(struct pglist_data *pgdat)
-{
-	return NULL; /* Always NULL for single node - next_online_node always returns MAX_NUMNODES */
-}
+/* next_online_pgdat removed - never called */
 
 struct zone *next_zone(struct zone *zone)
 {

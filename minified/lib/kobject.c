@@ -324,14 +324,7 @@ int kset_register(struct kset *k)
 	return 0;
 }
 
-void kset_unregister(struct kset *k)
-{
-	if (!k)
-		return;
-	kobject_del(&k->kobj);
-	kobject_put(&k->kobj);
-}
-
+/* kset_unregister removed - no callers */
 /* kset_find_obj removed - no callers after driver_find removal */
 
 static void kset_release(struct kobject *kobj)

@@ -125,31 +125,6 @@ static const char *panic_later, *panic_param;
 
 extern const struct obs_kernel_param __setup_start[], __setup_end[];
 
-static bool __init obsolete_checksetup(char *line)
-{
-	const struct obs_kernel_param *p;
-	bool had_early_param = false;
-
-	p = __setup_start;
-	do {
-		int n = strlen(p->str);
-		if (parameqn(line, p->str, n)) {
-			if (p->early) {
-				if (line[n] == '\0' || line[n] == '=')
-					had_early_param = true;
-			} else if (!p->setup_func) {
-				pr_warn("Parameter %s is obsolete, ignored\n",
-					p->str);
-				return true;
-			} else if (p->setup_func(line + n))
-				return true;
-		}
-		p++;
-	} while (p < __setup_end);
-
-	return had_early_param;
-}
-
 unsigned long loops_per_jiffy = (1 << 12);
 
 /* Stub: debug/quiet/loglevel cmdline not needed for minimal kernel */
@@ -212,14 +187,35 @@ static int __init set_init_arg(char *param, char *val, const char *unused,
 	return 0;
 }
 
+/* obsolete_checksetup inlined into unknown_bootoption (~4 LOC) */
 static int __init unknown_bootoption(char *param, char *val, const char *unused,
 				     void *arg)
 {
 	size_t len = strlen(param);
+	const struct obs_kernel_param *p;
+	bool had_early_param = false;
 
 	repair_env_string(param, val);
 
-	if (obsolete_checksetup(param))
+	/* Inlined obsolete_checksetup */
+	p = __setup_start;
+	do {
+		int n = strlen(p->str);
+		if (parameqn(param, p->str, n)) {
+			if (p->early) {
+				if (param[n] == '\0' || param[n] == '=')
+					had_early_param = true;
+			} else if (!p->setup_func) {
+				pr_warn("Parameter %s is obsolete, ignored\n",
+					p->str);
+				return 0;
+			} else if (p->setup_func(param + n))
+				return 0;
+		}
+		p++;
+	} while (p < __setup_end);
+
+	if (had_early_param)
 		return 0;
 
 	if (strnchr(param, len, '.'))

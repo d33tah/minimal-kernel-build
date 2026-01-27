@@ -9,9 +9,11 @@
 #include <linux/semaphore.h>
 #include <linux/spinlock.h>
 
-static noinline void __down(struct semaphore *sem);
 static noinline void __up(struct semaphore *sem);
+static inline int __sched ___down_common(struct semaphore *sem, long state,
+					 long timeout);
 
+/* __down inlined into down (~3 LOC) */
 void down(struct semaphore *sem)
 {
 	unsigned long flags;
@@ -20,7 +22,7 @@ void down(struct semaphore *sem)
 	if (likely(sem->count > 0))
 		sem->count--;
 	else
-		__down(sem);
+		___down_common(sem, TASK_UNINTERRUPTIBLE, MAX_SCHEDULE_TIMEOUT);
 	raw_spin_unlock_irqrestore(&sem->lock, flags);
 }
 
@@ -85,12 +87,6 @@ timed_out:
 interrupted:
 	list_del(&waiter.list);
 	return -EINTR;
-}
-
-static noinline void __sched __down(struct semaphore *sem)
-{
-	/* __down_common inlined */
-	___down_common(sem, TASK_UNINTERRUPTIBLE, MAX_SCHEDULE_TIMEOUT);
 }
 
 static noinline void __sched __up(struct semaphore *sem)

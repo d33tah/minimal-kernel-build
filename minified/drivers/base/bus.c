@@ -253,21 +253,7 @@ void bus_remove_device(struct device *dev)
 /* bus_add_driver removed - never called (only caller was driver_register) */
 /* bus_remove_driver removed - never called (~14 LOC) */
 
-static void klist_devices_get(struct klist_node *n)
-{
-	struct device_private *dev_prv = to_device_private_bus(n);
-	struct device *dev = dev_prv->device;
-
-	get_device(dev);
-}
-
-static void klist_devices_put(struct klist_node *n)
-{
-	struct device_private *dev_prv = to_device_private_bus(n);
-	struct device *dev = dev_prv->device;
-
-	put_device(dev);
-}
+/* klist_devices_get and klist_devices_put removed - only caller was bus_add_driver (~15 LOC) */
 
 /* bus_register removed - never called */
 /* bus_unregister, subsys_register, subsys_system_register removed - never called (~51 LOC) */

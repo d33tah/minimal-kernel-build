@@ -36,7 +36,7 @@ CFLAGS_mem_encrypt_identity.o	:= -fno-stack-protector
 CFLAGS_fault.o := -I $(srctree)/$(src)/../include/asm/trace
 
 # pgtable_32 has MMU-specific code, use nommu-stubs when !MMU
-obj-$(CONFIG_X86_32)		+= iomap_32.o
+# iomap_32.o removed - file was empty
 obj-$(CONFIG_MMU)		+= pgtable_32.o
 
 obj-$(CONFIG_HUGETLB_PAGE)	+= hugetlbpage.o

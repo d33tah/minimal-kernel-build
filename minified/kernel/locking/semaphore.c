@@ -9,7 +9,6 @@
 #include <linux/semaphore.h>
 #include <linux/spinlock.h>
 
-static noinline void __up(struct semaphore *sem);
 static inline int __sched ___down_common(struct semaphore *sem, long state,
 					 long timeout);
 
@@ -40,6 +39,13 @@ int down_trylock(struct semaphore *sem)
 	return (count < 0);
 }
 
+struct semaphore_waiter {
+	struct list_head list;
+	struct task_struct *task;
+	bool up;
+};
+
+/* __up inlined into up (~3 LOC) */
 void up(struct semaphore *sem)
 {
 	unsigned long flags;
@@ -47,16 +53,15 @@ void up(struct semaphore *sem)
 	raw_spin_lock_irqsave(&sem->lock, flags);
 	if (likely(list_empty(&sem->wait_list)))
 		sem->count++;
-	else
-		__up(sem);
+	else {
+		struct semaphore_waiter *waiter = list_first_entry(
+			&sem->wait_list, struct semaphore_waiter, list);
+		list_del(&waiter->list);
+		waiter->up = true;
+		wake_up_process(waiter->task);
+	}
 	raw_spin_unlock_irqrestore(&sem->lock, flags);
 }
-
-struct semaphore_waiter {
-	struct list_head list;
-	struct task_struct *task;
-	bool up;
-};
 
 static inline int __sched ___down_common(struct semaphore *sem, long state,
 					 long timeout)
@@ -87,13 +92,4 @@ timed_out:
 interrupted:
 	list_del(&waiter.list);
 	return -EINTR;
-}
-
-static noinline void __sched __up(struct semaphore *sem)
-{
-	struct semaphore_waiter *waiter = list_first_entry(
-		&sem->wait_list, struct semaphore_waiter, list);
-	list_del(&waiter->list);
-	waiter->up = true;
-	wake_up_process(waiter->task);
 }

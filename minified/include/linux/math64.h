@@ -16,9 +16,7 @@ static inline u64 div_u64_rem(u64 dividend, u32 divisor, u32 *remainder)
 }
 #endif
 
-#ifndef div_s64_rem
-extern s64 div_s64_rem(s64 dividend, s32 divisor, s32 *remainder);
-#endif
+/* div_s64_rem removed - never called */
 
 /* div64_u64_rem removed - never called */
 
@@ -36,13 +34,7 @@ static inline u64 div_u64(u64 dividend, u32 divisor)
 }
 #endif
 
-#ifndef div_s64
-static inline s64 div_s64(s64 dividend, s32 divisor)
-{
-	s32 remainder;
-	return div_s64_rem(dividend, divisor, &remainder);
-}
-#endif
+/* div_s64 removed - never called */
 
 /* iter_div_u64_rem declaration removed - inline version used */
 

@@ -41,26 +41,7 @@ uint32_t __attribute__((weak)) __div64_32(uint64_t *n, uint32_t base)
 }
 #endif
 
-#ifndef div_s64_rem
-s64 div_s64_rem(s64 dividend, s32 divisor, s32 *remainder)
-{
-	u64 quotient;
-
-	if (dividend < 0) {
-		quotient =
-			div_u64_rem(-dividend, abs(divisor), (u32 *)remainder);
-		*remainder = -*remainder;
-		if (divisor > 0)
-			quotient = -quotient;
-	} else {
-		quotient =
-			div_u64_rem(dividend, abs(divisor), (u32 *)remainder);
-		if (divisor < 0)
-			quotient = -quotient;
-	}
-	return quotient;
-}
-#endif
+/* div_s64_rem removed - never called */
 
 /* div64_u64_rem removed - never called */
 

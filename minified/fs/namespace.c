@@ -850,37 +850,7 @@ retry:
 /* unlock_mount inlined into do_loopback */
 /* graft_tree inlined at call site - only called once */
 
-/* do_change_type inlined into path_mount */
-
-static int do_add_mount(struct mount *newmnt, struct mountpoint *mp,
-			const struct path *path, int mnt_flags)
-{
-	struct mount *parent = real_mount(path->mnt);
-
-	mnt_flags &= ~MNT_INTERNAL_FLAGS;
-
-	if (unlikely(!check_mnt(parent))) {
-		if (!(mnt_flags & MNT_SHRINKABLE))
-			return -EINVAL;
-
-		if (!parent->mnt_ns)
-			return -EINVAL;
-	}
-
-	if (path->mnt->mnt_sb == newmnt->mnt.mnt_sb &&
-	    path->mnt->mnt_root == path->dentry)
-		return -EBUSY;
-
-	/* d_is_symlink check removed - always false, no symlinks created */
-	newmnt->mnt.mnt_flags = mnt_flags;
-
-	/* Inline: graft_tree logic */
-	if (newmnt->mnt.mnt_sb->s_flags & SB_NOUSER)
-		return -EINVAL;
-	if (d_can_lookup(mp->m_dentry) != d_can_lookup(newmnt->mnt.mnt_root))
-		return -ENOTDIR;
-	return attach_recursive_mnt(newmnt, parent, mp, false);
-}
+/* do_change_type, do_add_mount inlined into path_mount */
 
 static bool mount_too_revealing(const struct super_block *sb,
 				int *new_mnt_flags);
@@ -1010,8 +980,40 @@ int path_mount(const char *dev_name, struct path *path, const char *type_page,
 					mntput(mnt);
 					err = PTR_ERR(mp);
 				} else {
-					err = do_add_mount(real_mount(mnt), mp,
-							   path, mnt_flags);
+					/* Inlined do_add_mount */
+					struct mount *newmnt = real_mount(mnt);
+					struct mount *parent =
+						real_mount(path->mnt);
+					int m_flags = mnt_flags &
+						      ~MNT_INTERNAL_FLAGS;
+
+					if (unlikely(!check_mnt(parent))) {
+						if (!(m_flags & MNT_SHRINKABLE))
+							err = -EINVAL;
+						else if (!parent->mnt_ns)
+							err = -EINVAL;
+					}
+					if (!err &&
+					    path->mnt->mnt_sb ==
+						    newmnt->mnt.mnt_sb &&
+					    path->mnt->mnt_root == path->dentry)
+						err = -EBUSY;
+					if (!err) {
+						newmnt->mnt.mnt_flags = m_flags;
+						if (newmnt->mnt.mnt_sb->s_flags &
+						    SB_NOUSER)
+							err = -EINVAL;
+						else if (d_can_lookup(
+								 mp->m_dentry) !=
+							 d_can_lookup(
+								 newmnt->mnt
+									 .mnt_root))
+							err = -ENOTDIR;
+						else
+							err = attach_recursive_mnt(
+								newmnt, parent,
+								mp, false);
+					}
 					{
 						struct dentry *dentry =
 							mp->m_dentry;

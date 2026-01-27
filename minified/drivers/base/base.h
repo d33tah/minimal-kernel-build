@@ -65,8 +65,7 @@ extern int classes_init(void);
 extern void bus_probe_device(struct device *dev);
 extern void bus_remove_device(struct device *dev);
 
-extern int bus_add_driver(struct device_driver *drv);
-/* bus_remove_driver, driver_detach removed - never called */
+/* bus_add_driver, bus_remove_driver, driver_detach removed - never called */
 extern void device_release_driver_internal(struct device *dev,
 					   struct device_driver *drv,
 					   struct device *parent);

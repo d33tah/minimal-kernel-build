@@ -24,15 +24,7 @@
    platform_device_del, platform_device_register, platform_device_unregister,
    platform_device_register_full removed - no external callers */
 
-int __platform_driver_register(struct platform_driver *drv,
-			       struct module *owner)
-{
-	drv->driver.owner = owner;
-	drv->driver.bus = &platform_bus_type;
-
-	return driver_register(&drv->driver);
-}
-
+/* __platform_driver_register removed - never called */
 /* Removed: __platform_driver_probe, __platform_create_bundle,
    __platform_register_drivers, platform_unregister_drivers - no external callers */
 /* platform_match_id inlined into platform_match */
@@ -120,25 +112,4 @@ struct bus_type platform_bus_type = {
 	.dma_configure = platform_dma_configure,
 };
 
-/* Merged from driver.c */
-int driver_register(struct device_driver *drv)
-{
-	int ret;
-
-	if (!drv->bus->p) {
-		pr_err("Driver '%s' was unable to register with bus_type '%s' because the bus was not initialized.\n",
-		       drv->name, drv->bus->name);
-		return -EINVAL;
-	}
-
-	/* driver_find always returns NULL (kset_find_obj stubbed) */
-
-	ret = bus_add_driver(drv);
-	if (ret)
-		return ret;
-	/* driver_add_groups call removed - was a stub returning 0 */
-	kobject_uevent(&drv->p->kobj, KOBJ_ADD);
-	deferred_probe_extend_timeout();
-
-	return ret;
-}
+/* driver_register removed - never called (only caller was __platform_driver_register) */

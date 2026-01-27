@@ -44,8 +44,7 @@ struct platform_driver {
 				 driver))
 
 /* platform_driver_register removed - never called */
-extern int __platform_driver_register(struct platform_driver *,
-					struct module *);
+/* __platform_driver_register removed - never called */
 
 /* builtin_platform_driver, platform_create_bundle, platform_register_drivers, platform_unregister_drivers removed - never called */
 /* platform_pm_* macros, USE_PLATFORM_PM_SLEEP_OPS removed - unused */

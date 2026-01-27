@@ -250,51 +250,7 @@ void bus_remove_device(struct device *dev)
 /* uevent_store, driver_attr_uevent, add_bind_files, remove_bind_files removed -
    driver_create_file was removed so these attributes are never used */
 
-int bus_add_driver(struct device_driver *drv)
-{
-	struct bus_type *bus;
-	struct driver_private *priv;
-	int error = 0;
-
-	bus = bus_get(drv->bus);
-	if (!bus)
-		return -EINVAL;
-
-	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
-	if (!priv) {
-		error = -ENOMEM;
-		goto out_put_bus;
-	}
-	klist_init(&priv->klist_devices, NULL, NULL);
-	priv->driver = drv;
-	drv->p = priv;
-	priv->kobj.kset = bus->p->drivers_kset;
-	error = kobject_init_and_add(&priv->kobj, &driver_ktype, NULL, "%s",
-				     drv->name);
-	if (error)
-		goto out_unregister;
-
-	klist_add_tail(&priv->knode_bus, &bus->p->klist_drivers);
-	if (drv->bus->p->drivers_autoprobe) {
-		error = driver_attach(drv);
-		if (error)
-			goto out_del_list;
-	}
-	/* module_add_driver, driver_create_file, driver_add_groups, add_bind_files - all stubs removed */
-
-	return 0;
-
-out_del_list:
-	klist_del(&priv->knode_bus);
-out_unregister:
-	kobject_put(&priv->kobj);
-
-	drv->p = NULL;
-out_put_bus:
-	bus_put(bus);
-	return error;
-}
-
+/* bus_add_driver removed - never called (only caller was driver_register) */
 /* bus_remove_driver removed - never called (~14 LOC) */
 
 static void klist_devices_get(struct klist_node *n)

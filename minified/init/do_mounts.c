@@ -30,7 +30,7 @@
 int root_mountflags = MS_RDONLY | MS_SILENT;
 static char *__initdata root_device_name;
 static char __initdata saved_root_name[64];
-static int root_wait;
+/* root_wait removed - never assigned, always 0 */
 
 dev_t ROOT_DEV;
 
@@ -214,14 +214,7 @@ void __init prepare_namespace(void)
 
 	/* initrd_load() always returns false, call removed */
 
-	if ((ROOT_DEV == 0) && root_wait) {
-		printk(KERN_INFO "Waiting for root device %s...\n",
-		       saved_root_name);
-		while (driver_probe_done() != 0 ||
-		       (ROOT_DEV = name_to_dev_t(saved_root_name)) == 0)
-			msleep(5);
-		/* async_synchronize_full removed - empty stub */
-	}
+	/* root_wait block removed - root_wait was never assigned (always 0) */
 
 	/* mount_root() removed - was empty */
 out:

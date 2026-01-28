@@ -61,12 +61,11 @@ extern const struct consw vga_con;
 struct console {
 	char	name[16];
 	void	(*write)(struct console *, const char *, unsigned);
-	int	(*read)(struct console *, char *, unsigned);
+	/* read callback removed - never invoked */
 	struct tty_driver *(*device)(struct console *, int *);
 	void	(*unblank)(void);
 	int	(*setup)(struct console *, char *);
-	int	(*exit)(struct console *);
-	int	(*match)(struct console *, char *name, int idx, char *options);
+	/* exit, match callbacks removed - never invoked */
 	short	flags;
 	short	index;
 	int	cflag;

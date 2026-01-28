@@ -85,7 +85,7 @@ extern void __init inode_init(void);
 extern void __init inode_init_early(void);
 extern void __init files_init(void);
 /* files_maxfiles_init removed - was empty stub */
-extern unsigned int sysctl_nr_open;
+/* sysctl_nr_open extern removed - only used in file.c */
 
 /* struct buffer_head, get_block_t removed - only used by block device code */
 

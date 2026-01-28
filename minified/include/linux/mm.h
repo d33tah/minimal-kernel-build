@@ -120,8 +120,7 @@ extern void * high_memory;
 extern int sysctl_max_map_count;
 
 extern int sysctl_overcommit_memory;
-extern int sysctl_overcommit_ratio;
-extern unsigned long sysctl_overcommit_kbytes;
+/* sysctl_overcommit_ratio, sysctl_overcommit_kbytes externs removed - only used in util.c */
 
 #define nth_page(page,n) ((page) + (n))
 

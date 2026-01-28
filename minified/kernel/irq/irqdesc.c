@@ -140,11 +140,7 @@ int generic_handle_irq_safe(unsigned int irq)
 }
 
 /* irq_free_descs, __irq_alloc_descs removed - never called */
-
-unsigned int irq_get_next_irq(unsigned int offset)
-{
-	return find_next_bit(allocated_irqs, nr_irqs, offset);
-}
+/* irq_get_next_irq removed - only used by for_each_active_irq macro (unused) */
 
 struct irq_desc *__irq_get_desc_lock(unsigned int irq, unsigned long *flags,
 				     bool bus, unsigned int check)

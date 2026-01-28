@@ -9,7 +9,7 @@
 
 #include <linux/sched/clock.h>
 
-#include <linux/sched/signal.h>
+/* linux/sched/signal.h already included above */
 #include <linux/sched/debug.h>
 
 extern void sched_init(void);

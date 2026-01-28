@@ -18,10 +18,10 @@
 #include <linux/mutex.h>
 #include <linux/vt_kern.h>
 #include <linux/selection.h> /* includes tiocl defines */
-#include <linux/tty.h>
+/* linux/tty.h already included above */
 #include <linux/interrupt.h>
 #include <linux/consolemap.h>
-#include <linux/interrupt.h>
+/* duplicate linux/interrupt.h removed */
 #include <linux/workqueue.h>
 
 #include <linux/bitops.h>

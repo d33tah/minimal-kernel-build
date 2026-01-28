@@ -31,8 +31,7 @@
 
 #include <linux/uaccess.h>
 
-#include <linux/tty.h>
-#include <linux/interrupt.h>
+/* linux/tty.h and linux/interrupt.h already included above */
 #include <linux/vt_kern.h>
 #include <linux/selection.h>
 

@@ -307,7 +307,7 @@ void device_unregister(struct device *dev)
 /* Simplified - kobject_create_and_add returns NULL (stub), return ignored */
 int __init devices_init(void)
 {
-	devices_kset = kset_create_and_add("devices", NULL, NULL);
+	devices_kset = kset_create_and_add("devices", NULL);
 	return 0;
 }
 

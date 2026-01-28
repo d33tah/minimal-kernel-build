@@ -156,11 +156,11 @@ void bus_remove_device(struct device *dev)
 
 int __init buses_init(void)
 {
-	bus_kset = kset_create_and_add("bus", NULL, NULL);
+	bus_kset = kset_create_and_add("bus", NULL);
 	if (!bus_kset)
 		return -ENOMEM;
 
-	system_kset = kset_create_and_add("system", NULL, &devices_kset->kobj);
+	system_kset = kset_create_and_add("system", &devices_kset->kobj);
 	if (!system_kset)
 		return -ENOMEM;
 

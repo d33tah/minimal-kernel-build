@@ -76,14 +76,7 @@ struct kobj_type {
 	void (*get_ownership)(struct kobject *kobj, kuid_t *uid, kgid_t *gid);
 };
 
-/* kobj_uevent_env fields removed - only used as pointer type */
-struct kobj_uevent_env;
-
-struct kset_uevent_ops {
-	int (* const filter)(struct kobject *kobj);
-	const char *(* const name)(struct kobject *kobj);
-	int (* const uevent)(struct kobject *kobj, struct kobj_uevent_env *env);
-};
+/* kobj_uevent_env and kset_uevent_ops removed - never used, always NULL */
 
 struct kobj_attribute {
 	struct attribute attr;
@@ -99,14 +92,13 @@ struct kset {
 	struct list_head list;
 	spinlock_t list_lock;
 	struct kobject kobj;
-	const struct kset_uevent_ops *uevent_ops;
+	/* uevent_ops removed - always NULL */
 } __randomize_layout;
 
 extern void kset_init(struct kset *kset);
 extern int __must_check kset_register(struct kset *kset);
 /* kset_unregister removed - no callers */
 extern struct kset * __must_check kset_create_and_add(const char *name,
-						const struct kset_uevent_ops *u,
 						struct kobject *parent_kobj);
 
 /* to_kset inlined into kset_get */

@@ -4,7 +4,7 @@
 #
 FONTMAPFILE = cp437.uni
 
-obj-$(CONFIG_VT)			+= vt_ioctl.o
+# vt_ioctl.o removed - reset_vc and vc_SAK inlined into vt.c
 obj-$(CONFIG_CONSOLE_TRANSLATIONS)	+= consolemap.o consolemap_deftbl.o
 obj-$(CONFIG_HW_CONSOLE)		+= vt.o
 

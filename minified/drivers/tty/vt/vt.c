@@ -26,6 +26,12 @@
 
 #include <linux/bitops.h>
 /* notifier.h removed - notifiers not used */
+
+/* vc_SAK - stub for SAK work, never actually scheduled.
+   Inlined from vt_ioctl.c to allow removal of that file */
+static void vc_SAK(struct work_struct *work)
+{
+}
 #include <linux/device.h>
 /* io.h removed - I/O port functions not used */
 #include <linux/uaccess.h>
@@ -837,7 +843,9 @@ static void vc_init(struct vc_data *vc, unsigned int rows, unsigned int cols,
 
 	set_origin(vc);
 	vc->vc_pos = vc->vc_origin;
-	reset_vc(vc);
+	/* reset_vc inlined from vt_ioctl.c */
+	vc->vc_mode = KD_TEXT;
+	reset_palette(vc);
 	for (j = k = 0; j < 16; j++) {
 		vc->vc_palette[k++] = default_red[j];
 		vc->vc_palette[k++] = default_grn[j];

@@ -103,7 +103,7 @@ struct vc {
 };
 
 extern struct vc vc_cons [MAX_NR_CONSOLES];
-extern void vc_SAK(struct work_struct *work);
+/* vc_SAK moved to static in vt.c - work is initialized but never scheduled */
 
 #define CUR_SIZE(c)		 ((c) & 0x00000f)
 # define CUR_NONE			       1
@@ -137,7 +137,7 @@ void reset_palette(struct vc_data *vc);
    con_get_unimap, con_set_default_unimap, con_free_unimap, con_copy_unimap */
 
 
-void reset_vc(struct vc_data *vc);
+/* reset_vc inlined into vt.c - single caller */
 int vty_init(const struct file_operations *console_fops);
 
 extern int default_utf8;

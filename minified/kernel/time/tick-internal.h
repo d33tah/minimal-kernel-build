@@ -25,7 +25,7 @@ DECLARE_PER_CPU(struct tick_device, tick_cpu_device);
 extern ktime_t tick_next_period;
 extern int tick_do_timer_cpu __read_mostly;
 
-extern void tick_setup_periodic(struct clock_event_device *dev, int broadcast);
+/* tick_setup_periodic made static in tick-common.c */
 extern void tick_handle_periodic(struct clock_event_device *dev);
 extern void tick_check_new_device(struct clock_event_device *dev);
 /* tick_shutdown, tick_suspend, tick_resume, tick_check_replacement, tick_install_replacement, tick_get_device removed - unused */
@@ -45,7 +45,7 @@ static inline void clockevent_set_state(struct clock_event_device *dev,
 	dev->state_use_accessors = state;
 }
 
-extern void clockevents_shutdown(struct clock_event_device *dev);
+/* clockevents_shutdown made static in clockevents.c */
 extern void clockevents_exchange_device(struct clock_event_device *old,
 					struct clock_event_device *new);
 extern void clockevents_switch_state(struct clock_event_device *dev,
@@ -73,8 +73,7 @@ void tick_setup_oneshot(struct clock_event_device *newdev,
 
 DECLARE_PER_CPU(struct hrtimer_cpu_base, hrtimer_bases);
 
-/* get_next_timer_interrupt removed - unused */
-void timer_clear_idle(void);
+/* get_next_timer_interrupt, timer_clear_idle removed - unused */
 
 /* CLOCK_SET_WALL, CLOCK_SET_BOOT removed - unused */
 

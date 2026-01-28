@@ -93,7 +93,7 @@ void clockevents_switch_state(struct clock_event_device *dev,
 	}
 }
 
-void clockevents_shutdown(struct clock_event_device *dev)
+static void clockevents_shutdown(struct clock_event_device *dev)
 {
 	clockevents_switch_state(dev, CLOCK_EVT_STATE_SHUTDOWN);
 	dev->next_event = KTIME_MAX;

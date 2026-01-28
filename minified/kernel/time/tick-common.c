@@ -48,7 +48,7 @@ void tick_handle_periodic(struct clock_event_device *dev)
 	}
 }
 
-void tick_setup_periodic(struct clock_event_device *dev, int broadcast)
+static void tick_setup_periodic(struct clock_event_device *dev, int broadcast)
 {
 	dev->event_handler = tick_handle_periodic;
 

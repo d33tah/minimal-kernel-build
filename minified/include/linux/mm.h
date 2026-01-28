@@ -691,7 +691,7 @@ extern void reserve_bootmem_region(phys_addr_t start, phys_addr_t end);
 /* free_reserved_page inlined at mm/page_alloc.c - single caller */
 
 void free_area_init(unsigned long *max_zone_pfn);
-extern int __meminit init_per_zone_wmark_min(void);
+/* init_per_zone_wmark_min extern removed - never directly called */
 extern void mem_init(void);
 extern void __init mmap_init(void);
 

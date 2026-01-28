@@ -1002,14 +1002,7 @@ void __meminit init_currently_empty_zone(struct zone *zone,
 }
 
 /* get_pfn_range_for_nid inlined into free_area_init_node */
-
-static void __init adjust_zone_range_for_zone_movable(
-	int nid, unsigned long zone_type, unsigned long node_start_pfn,
-	unsigned long node_end_pfn, unsigned long *zone_start_pfn,
-	unsigned long *zone_end_pfn)
-{
-	/* Body removed - zone_movable_pfn was never assigned, always 0 */
-}
+/* adjust_zone_range_for_zone_movable removed - zone_movable_pfn always 0 */
 
 static unsigned long __init zone_spanned_pages_in_node(
 	int nid, unsigned long zone_type, unsigned long node_start_pfn,
@@ -1024,9 +1017,6 @@ static unsigned long __init zone_spanned_pages_in_node(
 
 	*zone_start_pfn = clamp(node_start_pfn, zone_low, zone_high);
 	*zone_end_pfn = clamp(node_end_pfn, zone_low, zone_high);
-	adjust_zone_range_for_zone_movable(nid, zone_type, node_start_pfn,
-					   node_end_pfn, zone_start_pfn,
-					   zone_end_pfn);
 
 	if (*zone_end_pfn < node_start_pfn || *zone_start_pfn > node_end_pfn)
 		return 0;
@@ -1127,11 +1117,7 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 							       z_low, z_high);
 						ze_pfn = clamp(node_end_pfn,
 							       z_low, z_high);
-						adjust_zone_range_for_zone_movable(
-							pgdat->node_id, zi,
-							node_start_pfn,
-							node_end_pfn, &zs_pfn,
-							&ze_pfn);
+						/* adjust_zone_range_for_zone_movable call removed - always no-op */
 						/* __absent_pages_in_range inlined */
 						absent = ze_pfn - zs_pfn;
 						for_each_mem_pfn_range(
@@ -1320,24 +1306,16 @@ unsigned long free_reserved_area(void *start, void *end, int poison,
 
 /* page_alloc_cpu_dead, page_alloc_cpu_online, page_alloc_init moved to gfp.h */
 /* calculate_totalreserve_pages, setup_per_zone_lowmem_reserve, __setup_per_zone_wmarks,
-   setup_per_zone_wmarks, calculate_min_free_kbytes removed - unused */
+   setup_per_zone_wmarks, calculate_min_free_kbytes, init_per_zone_wmark_min removed - unused */
+/* ADAPT_SCALE_* removed - unused 64-bit only code */
 
-int __meminit init_per_zone_wmark_min(void)
-{
-	/* Simplified for 4MB boot */
-	return 0;
-}
-postcore_initcall(init_per_zone_wmark_min)
-
-	/* ADAPT_SCALE_* removed - unused 64-bit only code */
-
-	void *__init
-	alloc_large_system_hash(const char *tablename, unsigned long bucketsize,
-				unsigned long numentries, int scale, int flags,
-				unsigned int *_hash_shift,
-				unsigned int *_hash_mask,
-				unsigned long low_limit,
-				unsigned long high_limit)
+void *__init alloc_large_system_hash(const char *tablename,
+				     unsigned long bucketsize,
+				     unsigned long numentries, int scale,
+				     int flags, unsigned int *_hash_shift,
+				     unsigned int *_hash_mask,
+				     unsigned long low_limit,
+				     unsigned long high_limit)
 {
 	unsigned long log2qty, size;
 	void *table;

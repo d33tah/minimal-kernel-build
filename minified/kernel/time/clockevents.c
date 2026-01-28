@@ -93,11 +93,7 @@ void clockevents_switch_state(struct clock_event_device *dev,
 	}
 }
 
-static void clockevents_shutdown(struct clock_event_device *dev)
-{
-	clockevents_switch_state(dev, CLOCK_EVT_STATE_SHUTDOWN);
-	dev->next_event = KTIME_MAX;
-}
+/* clockevents_shutdown inlined into clockevents_exchange_device */
 
 /* clockevents_tick_resume removed - never called (~8 LOC) */
 
@@ -261,6 +257,8 @@ void clockevents_exchange_device(struct clock_event_device *old,
 
 	if (new) {
 		BUG_ON(!clockevent_state_detached(new));
-		clockevents_shutdown(new);
+		/* clockevents_shutdown inlined */
+		clockevents_switch_state(new, CLOCK_EVT_STATE_SHUTDOWN);
+		new->next_event = KTIME_MAX;
 	}
 }

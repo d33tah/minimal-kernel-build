@@ -72,11 +72,7 @@ void __put_page(struct page *page)
 
 /* pagevec_lru_move_fn, pagevec_move_tail_fn removed - lru_rotate and lru_deactivate removed */
 
-static bool pagevec_add_and_need_flush(struct pagevec *pvec, struct page *page)
-{
-	/* lru_cache_disabled() call removed - always returns false */
-	return !pagevec_add(pvec, page) || PageCompound(page);
-}
+/* pagevec_add_and_need_flush inlined into folio_add_lru */
 
 /* folio_rotate_reclaimable removed - orphaned after folio_end_writeback removal */
 
@@ -126,7 +122,8 @@ void folio_add_lru(struct folio *folio)
 	folio_get(folio);
 	local_lock(&lru_pvecs.lock);
 	pvec = this_cpu_ptr(&lru_pvecs.lru_add);
-	if (pagevec_add_and_need_flush(pvec, &folio->page))
+	/* pagevec_add_and_need_flush inlined */
+	if (!pagevec_add(pvec, &folio->page) || PageCompound(&folio->page))
 		__pagevec_lru_add(pvec);
 	local_unlock(&lru_pvecs.lock);
 }

@@ -1048,48 +1048,7 @@ vm_fault_t filemap_fault(struct vm_fault *vmf)
 	return VM_FAULT_LOCKED;
 }
 
-static struct folio *next_uptodate_page(struct folio *folio,
-					struct address_space *mapping,
-					struct xa_state *xas, pgoff_t end_pgoff)
-{
-	unsigned long max_idx;
-
-	do {
-		if (!folio)
-			return NULL;
-		if (xas_retry(xas, folio))
-			continue;
-		if (xa_is_value(folio))
-			continue;
-		if (folio_test_locked(folio))
-			continue;
-		if (!folio_try_get_rcu(folio))
-			continue;
-
-		if (unlikely(folio != xas_reload(xas)))
-			goto skip;
-		if (!folio_test_uptodate(folio) || folio_test_readahead(folio))
-			goto skip;
-		if (!folio_trylock(folio))
-			goto skip;
-		if (folio->mapping != mapping)
-			goto unlock;
-		if (!folio_test_uptodate(folio))
-			goto unlock;
-		max_idx = DIV_ROUND_UP(i_size_read(mapping->host), PAGE_SIZE);
-		if (xas->xa_index >= max_idx)
-			goto unlock;
-		return folio;
-unlock:
-		folio_unlock(folio);
-skip:
-		folio_put(folio);
-	} while ((folio = xas_next_entry(xas, end_pgoff)) != NULL);
-
-	return NULL;
-}
-
-/* filemap_map_pages removed - never called (~68 LOC) */
+/* next_uptodate_page and filemap_map_pages removed (~108 LOC) */
 
 vm_fault_t filemap_page_mkwrite(struct vm_fault *vmf)
 {

@@ -23,23 +23,11 @@ struct fpu_state_config fpu_user_cfg __ro_after_init;
 
 struct fpstate init_fpstate __ro_after_init;
 
-static DEFINE_PER_CPU(bool, in_kernel_fpu);
+/* in_kernel_fpu removed - only used by removed kernel_fpu_begin_mask/end */
 
 DEFINE_PER_CPU(struct fpu *, fpu_fpregs_owner_ctx);
 
-bool irq_fpu_usable(void)
-{
-	if (WARN_ON_ONCE(in_nmi()))
-		return false;
-
-	if (this_cpu_read(in_kernel_fpu))
-		return false;
-
-	if (!in_hardirq())
-		return true;
-
-	return !softirq_count();
-}
+/* irq_fpu_usable removed - only called from removed kernel_fpu_begin_mask */
 
 #define AVX512_TRACKING_MASK (XFEATURE_MASK_ZMM_Hi256 | XFEATURE_MASK_Hi16_ZMM)
 
@@ -93,36 +81,8 @@ void fpu_reset_from_exception_fixup(void)
 	restore_fpregs_from_fpstate(&init_fpstate, XFEATURE_MASK_FPSTATE);
 }
 
-void kernel_fpu_begin_mask(unsigned int kfpu_mask)
-{
-	preempt_disable();
-
-	WARN_ON_FPU(!irq_fpu_usable());
-	WARN_ON_FPU(this_cpu_read(in_kernel_fpu));
-
-	this_cpu_write(in_kernel_fpu, true);
-
-	if (!(current->flags & PF_KTHREAD) &&
-	    !test_thread_flag(TIF_NEED_FPU_LOAD)) {
-		set_thread_flag(TIF_NEED_FPU_LOAD);
-		save_fpregs_to_fpstate(&current->thread.fpu);
-	}
-	__this_cpu_write(fpu_fpregs_owner_ctx, NULL);
-
-	if (likely(kfpu_mask & KFPU_MXCSR) && boot_cpu_has(X86_FEATURE_XMM))
-		ldmxcsr(MXCSR_DEFAULT);
-
-	if (unlikely(kfpu_mask & KFPU_387) && boot_cpu_has(X86_FEATURE_FPU))
-		asm volatile("fninit");
-}
-
-void kernel_fpu_end(void)
-{
-	WARN_ON_FPU(!this_cpu_read(in_kernel_fpu));
-
-	this_cpu_write(in_kernel_fpu, false);
-	preempt_enable();
-}
+/* kernel_fpu_begin_mask removed - never called */
+/* kernel_fpu_end removed - never called */
 
 void fpu_sync_fpstate(struct fpu *fpu)
 {
@@ -273,14 +233,7 @@ void switch_fpu_return(void)
 	fpregs_restore_userregs();
 }
 
-void fpregs_mark_activate(void)
-{
-	struct fpu *fpu = &current->thread.fpu;
-
-	fpregs_activate(fpu);
-	fpu->last_cpu = smp_processor_id();
-	clear_thread_flag(TIF_NEED_FPU_LOAD);
-}
+/* fpregs_mark_activate removed - never called */
 
 int fpu__exception_code(struct fpu *fpu, int trap_nr)
 {

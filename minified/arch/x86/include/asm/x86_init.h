@@ -28,10 +28,7 @@ struct x86_init_paging {
 	void (*pagetable_init)(void);
 };
 
-/* x86_init_timers struct emptied - setup_percpu_clockev, timer_init, wallclock_init never called */
-struct x86_init_timers {
-};
-
+/* x86_init_timers struct removed - all callbacks removed, never accessed */
 /* x86_init_iommu, x86_init_pci, x86_hyper_init, x86_init_acpi, x86_guest removed - never used */
 
 struct x86_init_ops {
@@ -40,7 +37,7 @@ struct x86_init_ops {
 	struct x86_init_irqs		irqs;
 	/* oem field removed - never accessed */
 	struct x86_init_paging		paging;
-	struct x86_init_timers		timers;
+	/* timers field removed - struct was empty */
 	/* iommu, pci, hyper, acpi fields removed - never accessed */
 };
 

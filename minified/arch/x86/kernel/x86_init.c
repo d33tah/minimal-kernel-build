@@ -48,10 +48,7 @@ struct x86_init_ops x86_init __initdata = {
 		.pagetable_init		= native_pagetable_init,
 	},
 
-	.timers = {
-		/* All fields removed - setup_percpu_clockev, timer_init, wallclock_init never called */
-	},
-
+	/* .timers field removed - struct was empty, all callbacks removed */
 	/* .iommu, .pci, .hyper, .acpi removed - never accessed */
 };
 

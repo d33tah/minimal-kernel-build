@@ -81,21 +81,7 @@ int irq_activate_and_startup(struct irq_desc *desc, bool resend)
 
 static void __irq_disable(struct irq_desc *desc, bool mask);
 
-void irq_shutdown(struct irq_desc *desc)
-{
-	if (irqd_is_started(&desc->irq_data)) {
-		desc->depth = 1;
-		if (desc->irq_data.chip->irq_shutdown) {
-			desc->irq_data.chip->irq_shutdown(&desc->irq_data);
-			irq_state_set_disabled(desc);
-			irq_state_set_masked(desc);
-		} else {
-			__irq_disable(desc, true);
-		}
-		irqd_clear(&desc->irq_data, IRQD_IRQ_STARTED);
-	}
-}
-
+/* irq_shutdown removed - never called (~13 LOC) */
 /* irq_shutdown_and_deactivate removed - never called */
 
 void irq_enable(struct irq_desc *desc)

@@ -159,8 +159,7 @@ static inline void clear_LDT(void)
 	set_ldt(NULL, 0);
 }
 
-void alloc_intr_gate(unsigned int n, const void *addr);
-
+/* alloc_intr_gate removed - never called */
 /* init_idt_data inlined at arch/x86/kernel/idt.c - single caller */
 
 static inline void idt_init_desc(gate_desc *gate, const struct idt_data *d)

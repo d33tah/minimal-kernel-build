@@ -159,14 +159,4 @@ void __init idt_setup_early_handler(void)
 	load_idt(&idt_descr);
 }
 
-void __init alloc_intr_gate(unsigned int n, const void *addr)
-{
-	if (WARN_ON(n < FIRST_SYSTEM_VECTOR))
-		return;
-
-	if (WARN_ON(idt_setup_done))
-		return;
-
-	if (!WARN_ON(test_and_set_bit(n, system_vectors)))
-		set_intr_gate(n, addr);
-}
+/* alloc_intr_gate removed - never called */

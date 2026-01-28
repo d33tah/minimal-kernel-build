@@ -23,13 +23,7 @@
 
 #include "internal.h"
 
-struct lru_rotate {
-	local_lock_t lock;
-	struct pagevec pvec;
-};
-static DEFINE_PER_CPU(struct lru_rotate, lru_rotate) = {
-	.lock = INIT_LOCAL_LOCK(lock),
-};
+/* lru_rotate struct removed - only producer was folio_rotate_reclaimable which is gone */
 
 struct lru_pvecs {
 	local_lock_t lock;
@@ -102,16 +96,7 @@ static void pagevec_lru_move_fn(struct pagevec *pvec,
 	pagevec_reinit(pvec);
 }
 
-static void pagevec_move_tail_fn(struct page *page, struct lruvec *lruvec)
-{
-	struct folio *folio = page_folio(page);
-
-	if (!folio_test_unevictable(folio)) {
-		lruvec_del_folio(lruvec, folio);
-		folio_clear_active(folio);
-		lruvec_add_folio_tail(lruvec, folio);
-	}
-}
+/* pagevec_move_tail_fn removed - lru_rotate removed */
 
 static bool pagevec_add_and_need_flush(struct pagevec *pvec, struct page *page)
 {
@@ -189,17 +174,7 @@ void lru_add_drain_cpu(int cpu)
 	if (pagevec_count(pvec))
 		__pagevec_lru_add(pvec);
 
-	pvec = &per_cpu(lru_rotate.pvec, cpu);
-
-	if (data_race(pagevec_count(pvec))) {
-		unsigned long flags;
-
-		local_lock_irqsave(&lru_rotate.lock, flags);
-		pagevec_lru_move_fn(pvec, pagevec_move_tail_fn);
-		local_unlock_irqrestore(&lru_rotate.lock, flags);
-	}
-
-	/* lru_deactivate_file, lru_deactivate, lru_lazyfree, activate_page_drain removed - never populated */
+	/* lru_rotate, lru_deactivate_file, lru_deactivate, lru_lazyfree, activate_page_drain removed - never populated */
 }
 
 /* deactivate_file_folio removed - never called */

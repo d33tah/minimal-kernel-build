@@ -403,10 +403,7 @@ static inline int page_has_private(struct page *page)
 	return !!(page->flags & PAGE_FLAGS_PRIVATE);
 }
 
-static inline bool folio_has_private(struct folio *folio)
-{
-	return page_has_private(&folio->page);
-}
+/* folio_has_private removed - never called */
 
 #undef PF_ANY
 #undef PF_HEAD

@@ -311,12 +311,7 @@ static inline struct page *virt_to_head_page(const void *x)
 	return compound_head(page);
 }
 
-static inline struct folio *virt_to_folio(const void *x)
-{
-	struct page *page = virt_to_page(x);
-
-	return page_folio(page);
-}
+/* virt_to_folio removed - never called */
 
 void __put_page(struct page *page);
 

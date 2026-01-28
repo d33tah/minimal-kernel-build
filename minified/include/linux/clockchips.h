@@ -63,10 +63,7 @@ static inline bool clockevent_state_shutdown(struct clock_event_device *dev)
 	return dev->state_use_accessors == CLOCK_EVT_STATE_SHUTDOWN;
 }
 
-static inline bool clockevent_state_periodic(struct clock_event_device *dev)
-{
-	return dev->state_use_accessors == CLOCK_EVT_STATE_PERIODIC;
-}
+/* clockevent_state_periodic removed - never called */
 
 static inline bool clockevent_state_oneshot(struct clock_event_device *dev)
 {

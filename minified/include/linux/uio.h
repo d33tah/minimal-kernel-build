@@ -31,10 +31,8 @@ size_t _copy_from_iter(void *addr, size_t bytes, struct iov_iter *i);
 static inline size_t copy_folio_to_iter(struct folio *folio, size_t offset, size_t bytes, struct iov_iter *i) { return copy_page_to_iter(&folio->page, offset, bytes, i); }
 static __always_inline __must_check size_t copy_to_iter(const void *addr, size_t bytes, struct iov_iter *i) { if (unlikely(!check_copy_size(addr, bytes, true))) return 0; else return _copy_to_iter(addr, bytes, i); }
 static __always_inline __must_check size_t copy_from_iter(void *addr, size_t bytes, struct iov_iter *i) { if (unlikely(!check_copy_size(addr, bytes, false))) return 0; else return _copy_from_iter(addr, bytes, i); }
-/* copy_from_iter_full, _copy_mc_to_iter removed - unused */
-size_t iov_iter_zero(size_t bytes, struct iov_iter *);
-unsigned long iov_iter_alignment(const struct iov_iter *i);
-unsigned long iov_iter_gap_alignment(const struct iov_iter *i);
+/* copy_from_iter_full, _copy_mc_to_iter, iov_iter_zero,
+   iov_iter_alignment, iov_iter_gap_alignment removed - unused */
 void iov_iter_init(struct iov_iter *i, unsigned int direction, const struct iovec *iov, unsigned long nr_segs, size_t count);
 void iov_iter_kvec(struct iov_iter *i, unsigned int direction, const struct kvec *kvec, unsigned long nr_segs, size_t count);
 static inline size_t iov_iter_count(const struct iov_iter *i) { return i->count; }

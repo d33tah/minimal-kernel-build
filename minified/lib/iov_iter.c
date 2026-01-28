@@ -444,41 +444,7 @@ size_t copy_page_to_iter(struct page *page, size_t offset, size_t bytes,
 	return res;
 }
 
-/* pipe_zero inlined into iov_iter_zero */
-
-size_t iov_iter_zero(size_t bytes, struct iov_iter *i)
-{
-	if (unlikely(iov_iter_is_pipe(i))) {
-		/* pipe_zero inlined */
-		struct pipe_inode_info *pipe = i->pipe;
-		unsigned int p_mask = pipe->ring_size - 1;
-		unsigned int i_head;
-		size_t n, off;
-
-		bytes = n = push_pipe(i, bytes, &i_head, &off);
-		if (unlikely(!n))
-			return 0;
-
-		do {
-			size_t chunk = min_t(size_t, n, PAGE_SIZE - off);
-			char *p = kmap_local_page(
-				pipe->bufs[i_head & p_mask].page);
-			memset(p + off, 0, chunk);
-			kunmap_local(p);
-			i->head = i_head;
-			i->iov_offset = off + chunk;
-			n -= chunk;
-			off = 0;
-			i_head++;
-		} while (n);
-		i->count -= bytes;
-		return bytes;
-	}
-	iterate_and_advance(i, bytes, base, len, count, clear_user(base, len),
-			    memset(base, 0, len))
-
-		return bytes;
-}
+/* iov_iter_zero removed - never called */
 
 size_t copy_page_from_iter_atomic(struct page *page, unsigned offset,
 				  size_t bytes, struct iov_iter *i)

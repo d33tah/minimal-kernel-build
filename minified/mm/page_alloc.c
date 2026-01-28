@@ -60,9 +60,8 @@ compound_page_dtor *const compound_page_dtors[NR_COMPOUND_DTORS] = {
 
 static unsigned long arch_zone_lowest_possible_pfn[MAX_NR_ZONES] __initdata;
 static unsigned long arch_zone_highest_possible_pfn[MAX_NR_ZONES] __initdata;
-static unsigned long zone_movable_pfn[MAX_NUMNODES] __initdata;
-
-int movable_zone;
+/* zone_movable_pfn removed - never assigned, always 0 */
+/* movable_zone removed - never assigned, only used by dead zone_movable_pfn code */
 
 /* MAX_NUMNODES == 1, removed unused nr_node_ids/nr_online_nodes */
 
@@ -1009,20 +1008,7 @@ static void __init adjust_zone_range_for_zone_movable(
 	unsigned long node_end_pfn, unsigned long *zone_start_pfn,
 	unsigned long *zone_end_pfn)
 {
-	if (zone_movable_pfn[nid]) {
-		if (zone_type == ZONE_MOVABLE) {
-			*zone_start_pfn = zone_movable_pfn[nid];
-			*zone_end_pfn = min(
-				node_end_pfn,
-				arch_zone_highest_possible_pfn[movable_zone]);
-
-		} else if (*zone_start_pfn < zone_movable_pfn[nid] &&
-			   *zone_end_pfn > zone_movable_pfn[nid]) {
-			*zone_end_pfn = zone_movable_pfn[nid];
-
-		} else if (*zone_start_pfn >= zone_movable_pfn[nid])
-			*zone_start_pfn = *zone_end_pfn;
-	}
+	/* Body removed - zone_movable_pfn was never assigned, always 0 */
 }
 
 static unsigned long __init zone_spanned_pages_in_node(

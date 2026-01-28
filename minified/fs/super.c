@@ -227,8 +227,6 @@ bool trylock_super(struct super_block *sb)
 
 void generic_shutdown_super(struct super_block *sb)
 {
-	const struct super_operations *sop = sb->s_op;
-
 	if (sb->s_root) {
 		shrink_dcache_for_umount(sb);
 		sb->s_flags &= ~SB_ACTIVE;
@@ -237,8 +235,7 @@ void generic_shutdown_super(struct super_block *sb)
 		/* security_sb_delete() - empty stub */
 		/* s_dio_done_wq destroy removed - field removed */
 
-		if (sop->put_super)
-			sop->put_super(sb);
+		/* put_super callback removed - never assigned */
 
 		if (!list_empty(&sb->s_inodes)) {
 			printk("VFS: Busy inodes after unmount of %s. "

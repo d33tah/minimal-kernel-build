@@ -92,21 +92,16 @@ void inode_init_always(struct super_block *sb, struct inode *inode)
 static void i_callback(struct rcu_head *head)
 {
 	struct inode *inode = container_of(head, struct inode, i_rcu);
-	if (inode->free_inode)
-		inode->free_inode(inode);
-	else
-		kmem_cache_free(inode_cachep, inode);
+	/* free_inode callback removed - never assigned */
+	kmem_cache_free(inode_cachep, inode);
 }
 
 static struct inode *alloc_inode(struct super_block *sb)
 {
-	const struct super_operations *ops = sb->s_op;
 	struct inode *inode;
 
-	if (ops->alloc_inode)
-		inode = ops->alloc_inode(sb);
-	else
-		inode = alloc_inode_sb(sb, inode_cachep, GFP_KERNEL);
+	/* alloc_inode callback removed - never assigned */
+	inode = alloc_inode_sb(sb, inode_cachep, GFP_KERNEL);
 
 	if (!inode)
 		return NULL;
@@ -234,8 +229,6 @@ void clear_inode(struct inode *inode)
 
 static void evict(struct inode *inode)
 {
-	const struct super_operations *op = inode->i_sb->s_op;
-
 	BUG_ON(!(inode->i_state & I_FREEING));
 	BUG_ON(!list_empty(&inode->i_lru));
 
@@ -248,12 +241,10 @@ static void evict(struct inode *inode)
 		spin_unlock(&inode->i_sb->s_inode_list_lock);
 	}
 
-	if (op->evict_inode) {
-		op->evict_inode(inode);
-	} else {
-		truncate_inode_pages_final(&inode->i_data);
-		clear_inode(inode);
-	}
+	/* evict_inode callback removed - never assigned */
+	truncate_inode_pages_final(&inode->i_data);
+	clear_inode(inode);
+
 	if (S_ISCHR(inode->i_mode) && inode->i_cdev)
 		cd_forget(inode);
 
@@ -267,19 +258,11 @@ static void evict(struct inode *inode)
 	BUG_ON(inode->i_state != (I_FREEING | I_CLEAR));
 	spin_unlock(&inode->i_lock);
 
-	/* Inlined destroy_inode */
+	/* destroy_inode and free_inode callbacks removed - never assigned */
 	BUG_ON(!list_empty(&inode->i_lru));
 	__destroy_inode(inode);
-	if (op->destroy_inode) {
-		op->destroy_inode(inode);
-		if (op->free_inode) {
-			inode->free_inode = op->free_inode;
-			call_rcu(&inode->i_rcu, i_callback);
-		}
-	} else {
-		inode->free_inode = op->free_inode;
-		call_rcu(&inode->i_rcu, i_callback);
-	}
+	/* free_inode is NULL since callback was never assigned */
+	call_rcu(&inode->i_rcu, i_callback);
 }
 
 static void dispose_list(struct list_head *head)

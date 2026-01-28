@@ -287,10 +287,8 @@ struct inode {
 	atomic_t		i_count;
 	/* i_dio_count removed - only initialized, never used */
 	atomic_t		i_writecount;
-	union {
-		const struct file_operations	*i_fop;	
-		void (*free_inode)(struct inode *);
-	};
+	const struct file_operations	*i_fop;
+	/* free_inode field removed - callback never assigned */
 	/* i_flctx removed - never used */
 	struct address_space	i_data;
 	struct list_head	i_devices;
@@ -609,13 +607,9 @@ struct inode_operations {
 extern ssize_t vfs_write(struct file *, const char __user *, size_t, loff_t *);
 
 struct super_operations {
-	struct inode *(*alloc_inode)(struct super_block *sb);
-	void (*destroy_inode)(struct inode *);
-	void (*free_inode)(struct inode *);
+	/* alloc_inode, destroy_inode, free_inode, evict_inode, put_super removed - never assigned */
 	/* dirty_inode, write_inode removed - never set/called */
 	int (*drop_inode)(struct inode *);
-	void (*evict_inode)(struct inode *);
-	void (*put_super)(struct super_block *);
 	/* sync_fs, freeze_super, freeze_fs, thaw_super, unfreeze_fs removed */
 	/* statfs removed - statfs syscalls return ENOSYS */
 	/* remount_fs, umount_begin, show_options removed - never called */

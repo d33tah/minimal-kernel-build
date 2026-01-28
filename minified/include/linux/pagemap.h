@@ -15,10 +15,7 @@
 
 struct folio_batch;
 
-/* invalidate_mapping_pages removed - never called */
-
-int invalidate_inode_pages2_range(struct address_space *mapping,
-		pgoff_t start, pgoff_t end);
+/* invalidate_mapping_pages, invalidate_inode_pages2_range removed - never called */
 /* write_inode_now removed - returns 0 stub, caller simplified */
 int filemap_fdatawait_range(struct address_space *, loff_t lstart, loff_t lend);
 /* filemap_write_and_wait_range, filemap_fdatawrite_wbc, filemap_sample_wb_err removed - never called */

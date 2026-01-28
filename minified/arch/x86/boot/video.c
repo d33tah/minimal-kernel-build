@@ -2,7 +2,7 @@
 #include "boot.h"
 #include "video.h"
 
-static u16 video_segment;
+/* video_segment removed - only written, never read */
 
 /* store_cursor_position and store_video_mode inlined into store_mode_params */
 
@@ -33,11 +33,7 @@ static void store_mode_params(void)
 	boot_params.screen_info.orig_video_mode = oreg.al & 0x7f;
 	boot_params.screen_info.orig_video_page = oreg.bh;
 
-	if (boot_params.screen_info.orig_video_mode == 0x07) {
-		video_segment = 0xb000;
-	} else {
-		video_segment = 0xb800;
-	}
+	/* video_segment assignment removed - variable was never read */
 
 	set_fs(0);
 	font_size = rdfs16(0x485);

@@ -30,10 +30,10 @@ typedef enum irqreturn irqreturn_t;
 
 #define IRQF_SHARED		0x00000080
 #define IRQF_PROBE_SHARED	0x00000100
-#define __IRQF_TIMER		0x00000200
+/* __IRQF_TIMER removed - unused */
 #define IRQF_PERCPU		0x00000400
 #define IRQF_NOBALANCING	0x00000800
-#define IRQF_IRQPOLL		0x00001000
+/* IRQF_IRQPOLL removed - unused */
 #define IRQF_ONESHOT		0x00002000
 #define IRQF_NO_SUSPEND		0x00004000
 #define IRQF_NO_THREAD		0x00010000
@@ -41,7 +41,7 @@ typedef enum irqreturn irqreturn_t;
 #define IRQF_NO_AUTOEN		0x00080000
 #define IRQF_NO_DEBUG		0x00100000
 
-#define IRQF_TIMER		(__IRQF_TIMER | IRQF_NO_SUSPEND | IRQF_NO_THREAD)
+/* IRQF_TIMER removed - unused */
 
 /* IRQC_IS_HARDIRQ, IRQC_IS_NESTED enum removed - unused */
 

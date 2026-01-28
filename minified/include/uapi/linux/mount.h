@@ -29,13 +29,6 @@
 /* Removed unused OPEN_TREE_*, MOVE_MOUNT_*, FSOPEN_*, FSPICK_*,
    enum fsconfig_command, FSMOUNT_CLOEXEC defines */
 
-#define MOUNT_ATTR_RDONLY	0x00000001
-#define MOUNT_ATTR_NOSUID	0x00000002
-#define MOUNT_ATTR_NODEV	0x00000004
-#define MOUNT_ATTR_NOEXEC	0x00000008
-/* MOUNT_ATTR__ATIME, MOUNT_ATTR_IDMAP removed - unused */
-#define MOUNT_ATTR_NODIRATIME	0x00000080
-#define MOUNT_ATTR_NOSYMFOLLOW	0x00200000
-/* struct mount_attr removed - unused */
+/* MOUNT_ATTR_* macros removed - all unused */
 
 #endif  

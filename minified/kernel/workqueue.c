@@ -4,7 +4,6 @@
 #include <linux/timer.h>
 
 struct workqueue_struct {
-	unsigned int flags;
 	const char *name;
 };
 
@@ -51,7 +50,6 @@ __printf(1, 4) struct workqueue_struct *alloc_workqueue(const char *fmt,
 	if (!wq)
 		return NULL;
 
-	wq->flags = flags;
 	wq->name = fmt;
 	return wq;
 }

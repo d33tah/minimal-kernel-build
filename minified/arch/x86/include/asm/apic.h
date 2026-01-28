@@ -18,10 +18,9 @@ static inline void generic_apic_probe(void)
 {
 }
 
-# define setup_boot_APIC_clock x86_init_noop
-/* init_apic_mappings, disable_local_APIC, init_bsp_APIC, apic_intr_mode_select,
-   apic_intr_mode_init, lapic_assign_system_vectors, lapic_assign_legacy_vector,
-   apic_needs_pit removed - apic_needs_pit always returned true, inlined in i8253.c */
+/* setup_boot_APIC_clock, init_apic_mappings, disable_local_APIC, init_bsp_APIC,
+   apic_intr_mode_select, apic_intr_mode_init, lapic_assign_system_vectors,
+   lapic_assign_legacy_vector, apic_needs_pit removed - never called */
 
 
 struct apic {

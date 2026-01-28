@@ -696,16 +696,7 @@ put:
 	return folio_batch_count(fbatch);
 }
 
-static inline bool folio_more_pages(struct folio *folio, pgoff_t index,
-				    pgoff_t max)
-{
-	/* folio_test_hugetlb always false, simplify */
-	if (!folio_test_large(folio))
-		return false;
-	if (index >= max)
-		return false;
-	return index < folio->index + folio_nr_pages(folio) - 1;
-}
+/* folio_more_pages removed - orphaned after filemap_map_pages removal (~10 LOC) */
 
 unsigned find_get_pages_range_tag(struct address_space *mapping, pgoff_t *index,
 				  pgoff_t end, xa_mark_t tag,

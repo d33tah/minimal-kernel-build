@@ -14,10 +14,7 @@
 
 static struct kset *system_kset;
 
-#define to_bus_attr(_attr) container_of(_attr, struct bus_attribute, attr)
-
-#define to_drv_attr(_attr) container_of(_attr, struct driver_attribute, attr)
-
+/* to_bus_attr, to_drv_attr macros removed - only used by removed ktype functions */
 /* DRIVER_ATTR_IGNORE_LOCKDEP removed - only used for bind/unbind which were removed */
 
 /* bus_get removed - never called */

@@ -35,8 +35,7 @@
 #define _PAGE_PSE	(_AT(pteval_t, 1) << _PAGE_BIT_PSE)
 #define _PAGE_GLOBAL	(_AT(pteval_t, 1) << _PAGE_BIT_GLOBAL)
 #define _PAGE_SOFTW1	(_AT(pteval_t, 1) << _PAGE_BIT_SOFTW1)
-#define _PAGE_SOFTW2	(_AT(pteval_t, 1) << _PAGE_BIT_SOFTW2)
-#define _PAGE_SOFTW3	(_AT(pteval_t, 1) << _PAGE_BIT_SOFTW3)
+/* _PAGE_SOFTW2, _PAGE_SOFTW3 removed - unused */
 #define _PAGE_PAT	(_AT(pteval_t, 1) << _PAGE_BIT_PAT)
 #define _PAGE_PAT_LARGE (_AT(pteval_t, 1) << _PAGE_BIT_PAT_LARGE)
 #define _PAGE_SPECIAL	(_AT(pteval_t, 1) << _PAGE_BIT_SPECIAL)
@@ -54,7 +53,7 @@
 
 #define _PAGE_NX	(_AT(pteval_t, 0))
 #define _PAGE_DEVMAP	(_AT(pteval_t, 0))
-#define _PAGE_SOFTW4	(_AT(pteval_t, 0))
+/* _PAGE_SOFTW4 removed - unused */
 
 #define _PAGE_PROTNONE	(_AT(pteval_t, 1) << _PAGE_BIT_PROTNONE)
 
@@ -63,7 +62,7 @@
 			 _PAGE_SPECIAL | _PAGE_ACCESSED | _PAGE_DIRTY |	\
 			 _PAGE_SOFT_DIRTY | _PAGE_DEVMAP | _PAGE_ENC |  \
 			 _PAGE_UFFD_WP)
-#define _HPAGE_CHG_MASK (_PAGE_CHG_MASK | _PAGE_PSE)
+/* _HPAGE_CHG_MASK removed - unused */
 
  
 #ifndef __ASSEMBLY__
@@ -85,7 +84,7 @@ enum page_cache_mode {
 #define _PAGE_LARGE_CACHE_MASK	(_PAGE_PWT | _PAGE_PCD | _PAGE_PAT_LARGE)
 
 #define _PAGE_NOCACHE		(cachemode2protval(_PAGE_CACHE_MODE_UC))
-#define _PAGE_CACHE_WP		(cachemode2protval(_PAGE_CACHE_MODE_WP))
+/* _PAGE_CACHE_WP removed - unused */
 
 #define __PP _PAGE_PRESENT
 #define __RW _PAGE_RW
@@ -96,8 +95,7 @@ enum page_cache_mode {
 #define __NX _PAGE_NX
 
 #define _ENC _PAGE_ENC
-#define __WP _PAGE_CACHE_WP
-#define __NC _PAGE_NOCACHE
+/* __WP, __NC removed - unused */
 #define _PSE _PAGE_PSE
 
 #define pgprot_val(x)		((x).pgprot)

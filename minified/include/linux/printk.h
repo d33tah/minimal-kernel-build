@@ -63,11 +63,7 @@ int _printk_deferred(const char *s, ...)
 }
 
 /* pr_flush removed - always returns true */
-
-static inline int printk_ratelimit(void)
-{
-	return 0;
-}
+/* printk_ratelimit removed - never called */
 
 #ifndef pr_fmt
 #define pr_fmt(fmt) fmt

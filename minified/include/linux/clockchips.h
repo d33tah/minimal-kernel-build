@@ -40,9 +40,7 @@ struct clock_event_device {
 	int			(*set_state_oneshot)(struct clock_event_device *);
 	int			(*set_state_oneshot_stopped)(struct clock_event_device *);
 	int			(*set_state_shutdown)(struct clock_event_device *);
-	/* tick_resume, broadcast removed - never called */
-	void			(*suspend)(struct clock_event_device *);
-	void			(*resume)(struct clock_event_device *);
+	/* tick_resume, broadcast, suspend, resume removed - never called */
 	unsigned long		min_delta_ticks;
 	unsigned long		max_delta_ticks;
 

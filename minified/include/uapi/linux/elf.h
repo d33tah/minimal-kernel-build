@@ -22,12 +22,12 @@ typedef __u32	Elf64_Word;
 typedef __u64	Elf64_Xword;
 typedef __s64	Elf64_Sxword;
 
-#define PT_NULL    0
+/* PT_NULL removed - unused */
 #define PT_LOAD    1
 #define PT_DYNAMIC 2
 #define PT_INTERP  3
 #define PT_NOTE    4
-#define PT_PHDR    6
+/* PT_PHDR removed - unused */
 #define PT_LOOS    0x60000000
 #define PT_LOPROC  0x70000000
 #define PT_HIPROC  0x7fffffff
@@ -256,13 +256,8 @@ typedef struct elf64_shdr {
 #define ELF_OSABI ELFOSABI_NONE
 #endif
 
-/* Note types - only those used for x86 */
-#define NT_PRSTATUS	1
-#define NT_PRFPREG	2
-#define NT_PRXFPREG     0x46e62b7f
-#define NT_386_TLS	0x200
-#define NT_386_IOPERM	0x201
-#define NT_X86_XSTATE	0x202
+/* Note types removed - all unused: NT_PRSTATUS, NT_PRFPREG, NT_PRXFPREG,
+   NT_386_TLS, NT_386_IOPERM, NT_X86_XSTATE */
 
 typedef struct elf32_note {
   Elf32_Word	n_namesz;	 

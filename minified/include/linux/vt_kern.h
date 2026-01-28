@@ -140,7 +140,7 @@ void reset_palette(struct vc_data *vc);
 /* reset_vc inlined into vt.c - single caller */
 int vty_init(const struct file_operations *console_fops);
 
-extern int default_utf8;
+/* default_utf8 removed - only used in vt.c */
 extern int global_cursor_default;
 
 

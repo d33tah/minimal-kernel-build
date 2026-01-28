@@ -14,7 +14,7 @@ extern void oops_enter(void);
 extern void oops_exit(void);
 /* Removed: oops_may_print - never called */
 
-extern int panic_timeout;
+/* panic_timeout, panic_cpu externs removed - only used in panic.c */
 /* panic_print removed - only defined, never read */
 extern int panic_on_oops;
 extern int panic_on_warn;
@@ -22,7 +22,6 @@ extern int panic_on_warn;
    sysctl_panic_on_rcu_stall, sysctl_max_rcu_stall_to_panic, sysctl_panic_on_stackoverflow removed */
 /* Removed: crash_kexec_post_notifiers - kexec stubs removed */
 
-extern atomic_t panic_cpu;
 #define PANIC_CPU_INVALID	-1
 
 #define TAINT_BAD_PAGE			5

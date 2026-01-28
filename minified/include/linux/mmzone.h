@@ -61,7 +61,7 @@ enum migratetype {
 	for (order = 0; order < MAX_ORDER; order++) \
 		for (type = 0; type < MIGRATE_TYPES; type++)
 
-extern int page_group_by_mobility_disabled;
+/* page_group_by_mobility_disabled extern removed - only used in page_alloc.c */
 
 #define MIGRATETYPE_MASK ((1UL << PB_migratetype_bits) - 1)
 
@@ -356,7 +356,7 @@ static inline int zone_to_nid(struct zone *zone)
 	return 0;
 }
 
-extern int movable_zone;
+/* movable_zone extern removed - only used in page_alloc.c */
 
 /* is_highmem_idx removed - never called */
 

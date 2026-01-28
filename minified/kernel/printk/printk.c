@@ -85,8 +85,7 @@ static DEFINE_MUTEX(syslog_lock);
 /* CONSOLE_LOG_MAX, DROPPED_TEXT_MAX, printk_time removed - unused */
 
 /* prb_read_valid, prb_first_valid_seq, prb_next_seq removed - inlined */
-
-static u64 syslog_seq;
+/* syslog_seq removed - unused */
 /* call_console_driver removed - was empty stub */
 
 /* printk_console_no_auto_verbose removed - never set, condition simplified */

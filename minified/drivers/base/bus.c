@@ -23,89 +23,9 @@ static struct kset *system_kset;
 /* bus_get removed - never called */
 /* bus_put inlined into bus_remove_device - single caller */
 
-static ssize_t drv_attr_show(struct kobject *kobj, struct attribute *attr,
-			     char *buf)
-{
-	struct driver_attribute *drv_attr = to_drv_attr(attr);
-	struct driver_private *drv_priv = to_driver(kobj);
-	ssize_t ret = -EIO;
-
-	if (drv_attr->show)
-		ret = drv_attr->show(drv_priv->driver, buf);
-	return ret;
-}
-
-static ssize_t drv_attr_store(struct kobject *kobj, struct attribute *attr,
-			      const char *buf, size_t count)
-{
-	struct driver_attribute *drv_attr = to_drv_attr(attr);
-	struct driver_private *drv_priv = to_driver(kobj);
-	ssize_t ret = -EIO;
-
-	if (drv_attr->store)
-		ret = drv_attr->store(drv_priv->driver, buf, count);
-	return ret;
-}
-
-static const struct sysfs_ops driver_sysfs_ops = {
-	.show = drv_attr_show,
-	.store = drv_attr_store,
-};
-
-static void driver_release(struct kobject *kobj)
-{
-	struct driver_private *drv_priv = to_driver(kobj);
-
-	kfree(drv_priv);
-}
-
-static struct kobj_type driver_ktype = {
-	.sysfs_ops = &driver_sysfs_ops,
-	.release = driver_release,
-};
-
-static ssize_t bus_attr_show(struct kobject *kobj, struct attribute *attr,
-			     char *buf)
-{
-	struct bus_attribute *bus_attr = to_bus_attr(attr);
-	struct subsys_private *subsys_priv = to_subsys_private(kobj);
-	ssize_t ret = 0;
-
-	if (bus_attr->show)
-		ret = bus_attr->show(subsys_priv->bus, buf);
-	return ret;
-}
-
-static ssize_t bus_attr_store(struct kobject *kobj, struct attribute *attr,
-			      const char *buf, size_t count)
-{
-	struct bus_attribute *bus_attr = to_bus_attr(attr);
-	struct subsys_private *subsys_priv = to_subsys_private(kobj);
-	ssize_t ret = 0;
-
-	if (bus_attr->store)
-		ret = bus_attr->store(subsys_priv->bus, buf, count);
-	return ret;
-}
-
-static const struct sysfs_ops bus_sysfs_ops = {
-	.show = bus_attr_show,
-	.store = bus_attr_store,
-};
-
-static void bus_release(struct kobject *kobj)
-{
-	struct subsys_private *priv = to_subsys_private(kobj);
-	struct bus_type *bus = priv->bus;
-
-	kfree(priv);
-	bus->p = NULL;
-}
-
-static struct kobj_type bus_ktype = {
-	.sysfs_ops = &bus_sysfs_ops,
-	.release = bus_release,
-};
+/* drv_attr_show, drv_attr_store, driver_sysfs_ops, driver_release,
+   driver_ktype, bus_attr_show, bus_attr_store, bus_sysfs_ops,
+   bus_release, bus_ktype removed - never used (~77 LOC) */
 
 /* bus_uevent_filter, bus_uevent_ops removed - callbacks never invoked */
 

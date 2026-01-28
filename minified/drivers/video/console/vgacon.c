@@ -93,7 +93,7 @@ static unsigned int vga_video_num_lines;
 static bool vga_can_do_color;
 static unsigned int vga_default_font_height __read_mostly;
 static unsigned char vga_video_type __read_mostly;
-static int vga_vesa_blanked;
+/* vga_vesa_blanked removed - unused */
 static bool vga_palette_blanked;
 static bool vga_is_gfx;
 static bool vga_512_chars;

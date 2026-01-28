@@ -257,7 +257,6 @@ int vmap_pages_range_noflush(unsigned long addr, unsigned long end,
 	unsigned long start = addr;
 	pgd_t *pgd;
 	unsigned long next;
-	int err = 0;
 	int nr = 0;
 	pgtbl_mod_mask mask = 0;
 

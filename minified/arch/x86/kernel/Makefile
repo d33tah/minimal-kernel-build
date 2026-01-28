@@ -46,7 +46,8 @@ CFLAGS_irq.o := -I $(srctree)/$(src)/../include/asm/trace
 
 obj-y			:= process_$(BITS).o signal.o
 obj-$(CONFIG_COMPAT)	+= signal_compat.o
-obj-y			+= traps.o idt.o irq.o irq_$(BITS).o dumpstack_$(BITS).o
+obj-y			+= traps.o idt.o irq.o irq_$(BITS).o
+# dumpstack_$(BITS).o removed - get_stack_info never called
 obj-y			+= time.o dumpstack.o nmi.o
 obj-$(CONFIG_MODIFY_LDT_SYSCALL)	+= ldt.o
 obj-y			+= setup.o x86_init.o i8259.o irqinit.o

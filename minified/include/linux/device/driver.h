@@ -29,7 +29,7 @@ struct device_driver {
 
 /* driver_register removed - never called */
 /* driver_find removed - kset_find_obj always returns NULL */
-extern int driver_probe_done(void);
+/* driver_probe_done removed - never called */
 extern void wait_for_device_probe(void);
 
 

@@ -136,15 +136,7 @@ static void device_unbind_cleanup(struct device *dev)
 }
 
 /* device_remove, call_driver_probe, really_probe inlined into single caller */
-
-int driver_probe_done(void)
-{
-	int local_probe_count = atomic_read(&probe_count);
-
-	if (local_probe_count)
-		return -EBUSY;
-	return 0;
-}
+/* driver_probe_done removed - never called */
 
 void wait_for_device_probe(void)
 {

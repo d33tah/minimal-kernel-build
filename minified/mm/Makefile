@@ -39,8 +39,8 @@ CFLAGS_init-mm.o += $(call cc-disable-warning, initializer-overrides)
 mmu-y			:= nommu.o
 mmu-$(CONFIG_MMU)	:= highmem.o memory.o \
 			   mmap.o mmu_gather.o mremap.o \
-			   page_vma_mapped.o \
 			   rmap.o vmalloc.o
+# page_vma_mapped.o removed - page_vma_mapped_walk() never called
 
 
 ifdef CONFIG_CROSS_MEMORY_ATTACH

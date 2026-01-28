@@ -1089,74 +1089,7 @@ skip:
 	return NULL;
 }
 
-vm_fault_t filemap_map_pages(struct vm_fault *vmf, pgoff_t start_pgoff,
-			     pgoff_t end_pgoff)
-{
-	struct vm_area_struct *vma = vmf->vma;
-	struct file *file = vma->vm_file;
-	struct address_space *mapping = file->f_mapping;
-	pgoff_t last_pgoff = start_pgoff;
-	unsigned long addr;
-	XA_STATE(xas, &mapping->i_pages, start_pgoff);
-	struct folio *folio;
-	struct page *page;
-	unsigned int mmap_miss = READ_ONCE(file->f_ra.mmap_miss);
-	vm_fault_t ret = 0;
-
-	rcu_read_lock();
-	folio = next_uptodate_page(xas_find(&xas, end_pgoff), mapping, &xas,
-				   end_pgoff);
-	if (!folio)
-		goto out;
-
-	/* pmd_trans_huge and pmd_devmap_trans_unstable always return 0 */
-	if (pmd_none(*vmf->pmd))
-		pmd_install(vma->vm_mm, vmf->pmd, &vmf->prealloc_pte);
-
-	addr = vma->vm_start + ((start_pgoff - vma->vm_pgoff) << PAGE_SHIFT);
-	vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd, addr, &vmf->ptl);
-	do {
-again:
-		page = folio_file_page(folio, xas.xa_index);
-		/* PageHWPoison always returns false */
-		if (mmap_miss > 0)
-			mmap_miss--;
-
-		addr += (xas.xa_index - last_pgoff) << PAGE_SHIFT;
-		vmf->pte += xas.xa_index - last_pgoff;
-		last_pgoff = xas.xa_index;
-
-		if (!pte_none(*vmf->pte))
-			goto unlock;
-
-		if (vmf->address == addr)
-			ret = VM_FAULT_NOPAGE;
-
-		do_set_pte(vmf, page, addr);
-		/* update_mmu_cache - empty stub on x86 */
-		if (folio_more_pages(folio, xas.xa_index, end_pgoff)) {
-			xas.xa_index++;
-			folio_ref_inc(folio);
-			goto again;
-		}
-		folio_unlock(folio);
-		continue;
-unlock:
-		if (folio_more_pages(folio, xas.xa_index, end_pgoff)) {
-			xas.xa_index++;
-			goto again;
-		}
-		folio_unlock(folio);
-		folio_put(folio);
-	} while ((folio = next_uptodate_page(xas_next_entry(&xas, end_pgoff),
-					     mapping, &xas, end_pgoff)) !=
-		 NULL);
-	pte_unmap_unlock(vmf->pte, vmf->ptl);
-out:
-	rcu_read_unlock();
-	WRITE_ONCE(file->f_ra.mmap_miss, mmap_miss);
-	return ret;
-}
+/* filemap_map_pages removed - never called (~68 LOC) */
 
 vm_fault_t filemap_page_mkwrite(struct vm_fault *vmf)
 {
@@ -1182,7 +1115,6 @@ out:
 
 const struct vm_operations_struct generic_file_vm_ops = {
 	.fault = filemap_fault,
-	.map_pages = filemap_map_pages,
 	.page_mkwrite = filemap_page_mkwrite,
 };
 

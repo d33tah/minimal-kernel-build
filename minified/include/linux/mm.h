@@ -241,9 +241,8 @@ struct vm_operations_struct {
 	void (*open)(struct vm_area_struct *area);
 	void (*close)(struct vm_area_struct *area);
 	int (*may_split)(struct vm_area_struct *area, unsigned long addr);
-	/* mremap, mprotect removed - never called */
+	/* mremap, mprotect, map_pages removed - never called */
 	vm_fault_t (*fault)(struct vm_fault *vmf);
-	vm_fault_t (*map_pages)(struct vm_fault *vmf, pgoff_t start_pgoff, pgoff_t end_pgoff);
 	vm_fault_t (*page_mkwrite)(struct vm_fault *vmf);
 	/* find_special_page removed - never set/called */
 };
@@ -812,8 +811,7 @@ extern void truncate_inode_pages_range(struct address_space *,
 extern void truncate_inode_pages_final(struct address_space *);
 
 extern vm_fault_t filemap_fault(struct vm_fault *vmf);
-extern vm_fault_t filemap_map_pages(struct vm_fault *vmf,
-		pgoff_t start_pgoff, pgoff_t end_pgoff);
+/* filemap_map_pages removed - never called */
 extern vm_fault_t filemap_page_mkwrite(struct vm_fault *vmf);
 
 extern unsigned long stack_guard_gap;

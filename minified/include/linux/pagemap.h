@@ -199,8 +199,7 @@ static inline int folio_wait_locked_killable(struct folio *folio)
 /* folio_put_wait_locked removed - always returned 0 */
 /* wait_on_page_writeback inlined into single caller in filemap.c */
 /* folio_wait_writeback, __folio_cancel_dirty, folio_cancel_dirty, folio_wait_stable,
-   folio_account_cleaned, page_cache_sync_readahead, folio_end_writeback removed - unused */
-void folio_invalidate(struct folio *folio, size_t offset, size_t length);
+   folio_account_cleaned, page_cache_sync_readahead, folio_end_writeback, folio_invalidate removed - unused */
 /* __set_page_dirty_nobuffers, noop_dirty_folio, fault_in_readable removed - unused */
 
 int filemap_add_folio(struct address_space *mapping, struct folio *folio,

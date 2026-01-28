@@ -28,9 +28,8 @@ struct driver_private {
 	/* mkobj removed - never used */
 	struct device_driver *driver;
 };
-#define to_driver(obj) container_of(obj, struct driver_private, kobj)
+/* to_driver macro removed - never called */
 
- 
 struct device_private {
 	struct klist klist_children;
 	struct klist_node knode_parent;

@@ -281,14 +281,7 @@ void register_console(struct console *newcon)
 		console_drivers->next = newcon;
 	}
 
-	newcon->dropped = 0;
-	if (newcon->flags & CON_PRINTBUFFER) {
-		mutex_lock(&syslog_lock);
-		newcon->seq = syslog_seq;
-		mutex_unlock(&syslog_lock);
-	} else {
-		newcon->seq = 0; /* prb_next_seq always 0 */
-	}
+	/* newcon->dropped, newcon->seq writes removed - fields removed (write-only) */
 	console_unlock();
 	/* console_sysfs_notify call removed - empty stub */
 	con_printk(KERN_INFO, newcon, "enabled\n");

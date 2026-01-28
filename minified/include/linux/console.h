@@ -68,10 +68,7 @@ struct console {
 	/* exit, match callbacks removed - never invoked */
 	short	flags;
 	short	index;
-	int	cflag;
-	/* ispeed, ospeed removed - never accessed */
-	u64	seq;
-	unsigned long dropped;
+	/* cflag, ispeed, ospeed, seq, dropped removed - write-only, never read */
 	void	*data;
 	struct	 console *next;
 };

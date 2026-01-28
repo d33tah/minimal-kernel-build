@@ -119,21 +119,7 @@ static bool pagevec_add_and_need_flush(struct pagevec *pvec, struct page *page)
 	return !pagevec_add(pvec, page) || PageCompound(page);
 }
 
-void folio_rotate_reclaimable(struct folio *folio)
-{
-	if (!folio_test_locked(folio) && !folio_test_dirty(folio) &&
-	    !folio_test_unevictable(folio) && folio_test_lru(folio)) {
-		struct pagevec *pvec;
-		unsigned long flags;
-
-		folio_get(folio);
-		local_lock_irqsave(&lru_rotate.lock, flags);
-		pvec = this_cpu_ptr(&lru_rotate.pvec);
-		if (pagevec_add_and_need_flush(pvec, &folio->page))
-			pagevec_lru_move_fn(pvec, pagevec_move_tail_fn);
-		local_unlock_irqrestore(&lru_rotate.lock, flags);
-	}
-}
+/* folio_rotate_reclaimable removed - orphaned after folio_end_writeback removal */
 
 /* folio_activate, __lru_cache_activate_folio, activate_page_drain inlined/removed */
 

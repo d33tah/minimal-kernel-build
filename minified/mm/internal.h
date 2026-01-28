@@ -170,25 +170,7 @@ vma_pgoff_address(pgoff_t pgoff, unsigned long nr_pages,
 	return address;
 }
 
-/* vma_address removed - never called */
-
-static inline unsigned long vma_address_end(struct page_vma_mapped_walk *pvmw)
-{
-	struct vm_area_struct *vma = pvmw->vma;
-	pgoff_t pgoff;
-	unsigned long address;
-
-	 
-	if (pvmw->nr_pages == 1)
-		return pvmw->address + PAGE_SIZE;
-
-	pgoff = pvmw->pgoff + pvmw->nr_pages;
-	address = vma->vm_start + ((pgoff - vma->vm_pgoff) << PAGE_SHIFT);
-	 
-	if (address < vma->vm_start || address > vma->vm_end)
-		address = vma->vm_end;
-	return address;
-}
+/* vma_address, vma_address_end removed - never called */
 
 /* maybe_unlock_mmap_for_io removed - unused */
 

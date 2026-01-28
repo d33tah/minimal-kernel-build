@@ -82,30 +82,8 @@ void page_add_file_rmap(struct page *, struct vm_area_struct *,
 void page_remove_rmap(struct page *, struct vm_area_struct *,
 		bool compound);
 
-#define PVMW_SYNC		(1 << 0)
-
-struct page_vma_mapped_walk {
-	unsigned long pfn;
-	unsigned long nr_pages;
-	pgoff_t pgoff;
-	struct vm_area_struct *vma;
-	unsigned long address;
-	pmd_t *pmd;
-	pte_t *pte;
-	spinlock_t *ptl;
-	unsigned int flags;
-};
-
-/* is_vm_hugetlb_page always returns false */
-static inline void page_vma_mapped_walk_done(struct page_vma_mapped_walk *pvmw)
-{
-	if (pvmw->pte)
-		pte_unmap(pvmw->pte);
-	if (pvmw->ptl)
-		spin_unlock(pvmw->ptl);
-}
-
-bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw);
+/* PVMW_SYNC, page_vma_mapped_walk struct and functions removed - never used
+ * (page_vma_mapped.c was removed) */
 
 
 /* folio_mkclean, remove_migration_ptes, page_mapped_in_vma, page_mkclean removed - never called */

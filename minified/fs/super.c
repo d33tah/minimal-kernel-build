@@ -160,10 +160,9 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags,
 	s->s_op = &default_op;
 	/* s_time_gran, s_time_min, s_time_max removed - fields removed */
 
-	s->s_shrink.seeks = DEFAULT_SEEKS;
+	/* s_shrink.seeks, .batch removed - never read */
 	s->s_shrink.scan_objects = super_cache_scan;
 	s->s_shrink.count_objects = super_cache_count;
-	s->s_shrink.batch = 1024;
 	/* s->s_shrink.flags removed - never read */
 	/* prealloc_shrinker always returns 0 - dead code removed */
 	if (list_lru_init_memcg(&s->s_dentry_lru, &s->s_shrink))

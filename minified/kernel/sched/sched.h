@@ -273,11 +273,7 @@ static inline raw_spinlock_t *rq_lockp(struct rq *rq)
 {
 	return &rq->__lock;
 }
-
-static inline raw_spinlock_t *__rq_lockp(struct rq *rq)
-{
-	return &rq->__lock;
-}
+/* __rq_lockp removed - duplicate of rq_lockp, never called */
 
 /* lockdep_assert_rq_held removed - was empty stub */
 

@@ -1,40 +1,18 @@
 
 #include <linux/clocksource.h>
-#include <linux/clockchips.h>
-#include <linux/interrupt.h>
-#include <linux/irq.h>
-#include <linux/i8253.h>
 #include <linux/time.h>
 #include <linux/export.h>
 
 /* asm/vsyscall.h removed - empty */
-#include <asm/x86_init.h>
-#include <asm/i8259.h>
+/* clockchips.h, interrupt.h, irq.h, i8253.h, i8259.h removed - timer init dead */
 #include <asm/timer.h>
 /* hpet_enable removed - always returned 0 */
 #include <asm/time.h>
 
 /* profile_pc removed - never called */
 
-static irqreturn_t timer_interrupt(int irq, void *dev_id)
-{
-	global_clock_event->event_handler(global_clock_event);
-	return IRQ_HANDLED;
-}
-
-void __init hpet_time_init(void)
-{
-	unsigned long flags = IRQF_NOBALANCING | IRQF_IRQPOLL | IRQF_TIMER;
-
-	/* hpet_enable check removed - always returned 0 */
-	if (!pit_timer_init())
-		return;
-
-	if (request_irq(0, timer_interrupt, flags, "timer", NULL))
-		pr_info("Failed to register legacy timer interrupt\n");
-}
-
-/* x86_late_time_init removed - never assigned to late_time_init pointer */
+/* timer_interrupt, hpet_time_init, x86_late_time_init removed -
+   x86_init.timers.timer_init never called, entire timer init chain is dead */
 
 void __init time_init(void)
 {

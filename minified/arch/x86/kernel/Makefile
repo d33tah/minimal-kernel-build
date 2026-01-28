@@ -62,7 +62,8 @@ obj-$(CONFIG_SYSFS)	+= ksysfs.o
 obj-y			+= e820.o
 # pci-dma.o removed - pci_iommu_alloc inlined into include/linux/pci.h
 # quirks.o removed - early_platform_quirks was empty stub
-obj-y			+= alternative.o i8253.o
+obj-y			+= alternative.o
+# i8253.o removed - pit_timer_init never called (timer_init callback dead)
 # hw_breakpoint.o removed - cpu_dr7 percpu variable moved to process.c
 # tsc_msr.o removed - cpu_khz_from_msr was stub returning 0
 obj-y			+= tsc.o rtc.o

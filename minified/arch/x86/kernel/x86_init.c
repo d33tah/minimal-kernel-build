@@ -50,7 +50,7 @@ struct x86_init_ops x86_init __initdata = {
 
 	.timers = {
 		.setup_percpu_clockev	= setup_boot_APIC_clock,
-		.timer_init		= hpet_time_init,
+		/* .timer_init removed - never called, entire timer init chain is dead */
 		/* .wallclock_init removed - never called */
 	},
 

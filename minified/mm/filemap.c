@@ -467,21 +467,7 @@ void folio_unlock(struct folio *folio)
 		folio_wake_bit(folio, PG_locked);
 }
 
-void folio_end_writeback(struct folio *folio)
-{
-	if (folio_test_reclaim(folio)) {
-		folio_clear_reclaim(folio);
-		folio_rotate_reclaimable(folio);
-	}
-
-	folio_get(folio);
-	/* __folio_end_writeback always returns true */
-	smp_mb__after_atomic();
-	if (folio_test_waiters(folio))
-		folio_wake_bit(folio, PG_writeback);
-	/* acct_reclaim_writeback - nr_writeback_throttled never set */
-	folio_put(folio);
-}
+/* folio_end_writeback removed - never called */
 
 void __folio_lock(struct folio *folio)
 {
@@ -1131,15 +1117,7 @@ ssize_t generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 	return ret;
 }
 
-bool filemap_release_folio(struct folio *folio, gfp_t gfp)
-{
-	BUG_ON(!folio_test_locked(folio));
-	if (folio_test_writeback(folio))
-		return false;
-
-	/* a_ops->release_folio check removed - never set */
-	return true;
-}
+/* filemap_release_folio removed - never called */
 
 /* Merged from folio-compat.c */
 void unlock_page(struct page *page)

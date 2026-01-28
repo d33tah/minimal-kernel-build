@@ -331,17 +331,7 @@ void __pagevec_lru_add(struct pagevec *pvec)
 	pagevec_reinit(pvec);
 }
 
-void folio_batch_remove_exceptionals(struct folio_batch *fbatch)
-{
-	unsigned int i, j;
-
-	for (i = 0, j = 0; i < folio_batch_count(fbatch); i++) {
-		struct folio *folio = fbatch->folios[i];
-		if (!xa_is_value(folio))
-			fbatch->folios[j++] = folio;
-	}
-	fbatch->nr = j;
-}
+/* folio_batch_remove_exceptionals removed - never called */
 
 unsigned pagevec_lookup_range_tag(struct pagevec *pvec,
 				  struct address_space *mapping, pgoff_t *index,

@@ -680,10 +680,7 @@ static vm_fault_t __do_fault(struct vm_fault *vmf)
 	return ret;
 }
 
-vm_fault_t do_set_pmd(struct vm_fault *vmf, struct page *page)
-{
-	return VM_FAULT_FALLBACK;
-}
+/* do_set_pmd removed - never called */
 
 void do_set_pte(struct vm_fault *vmf, struct page *page, unsigned long addr)
 {

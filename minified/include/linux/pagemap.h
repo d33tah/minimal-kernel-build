@@ -199,11 +199,9 @@ static inline int folio_wait_locked_killable(struct folio *folio)
 /* folio_put_wait_locked removed - always returned 0 */
 /* wait_on_page_writeback inlined into single caller in filemap.c */
 /* folio_wait_writeback, __folio_cancel_dirty, folio_cancel_dirty, folio_wait_stable,
-   folio_account_cleaned, page_cache_sync_readahead removed - empty stubs, calls removed */
-void folio_end_writeback(struct folio *folio);
+   folio_account_cleaned, page_cache_sync_readahead, folio_end_writeback removed - unused */
 void folio_invalidate(struct folio *folio, size_t offset, size_t length);
-/* __set_page_dirty_nobuffers, noop_dirty_folio removed - unused */
-size_t fault_in_readable(const char __user *uaddr, size_t size);
+/* __set_page_dirty_nobuffers, noop_dirty_folio, fault_in_readable removed - unused */
 
 int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 		pgoff_t index, gfp_t gfp);
@@ -211,7 +209,7 @@ void filemap_remove_folio(struct folio *folio);
 void __filemap_remove_folio(struct folio *folio, void *shadow);
 void delete_from_page_cache_batch(struct address_space *mapping,
 				  struct folio_batch *fbatch);
-bool filemap_release_folio(struct folio *folio, gfp_t gfp);
+/* filemap_release_folio removed - never called */
 
 int __filemap_add_folio(struct address_space *mapping, struct folio *folio,
 		pgoff_t index, gfp_t gfp, void **shadowp);

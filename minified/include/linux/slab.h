@@ -63,7 +63,7 @@ struct kmem_cache *kmem_cache_create_usercopy(const char *name,
 
 /* kfree - no-op stub for bump allocator */
 static inline void kfree(const void *objp) {}
-size_t __ksize(const void *objp);
+/* __ksize removed - never called */
 
 #if defined(ARCH_DMA_MINALIGN) && ARCH_DMA_MINALIGN > 8
 #define ARCH_KMALLOC_MINALIGN ARCH_DMA_MINALIGN

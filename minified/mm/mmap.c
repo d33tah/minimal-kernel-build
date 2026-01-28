@@ -894,8 +894,7 @@ int __split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
 	if (new->vm_file)
 		get_file(new->vm_file);
 
-	if (new->vm_ops &&new->vm_ops->open)
-		new->vm_ops->open(new);
+	/* vm_ops->open call removed - never assigned */
 
 	if (new_below)
 		err = vma_adjust(vma, addr, vma->vm_end,
@@ -908,8 +907,7 @@ int __split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
 	if (!err)
 		return 0;
 
-	if (new->vm_ops &&new->vm_ops->close)
-		new->vm_ops->close(new);
+	/* vm_ops->close call removed - never assigned */
 	if (new->vm_file)
 		fput(new->vm_file);
 	unlink_anon_vmas(new);

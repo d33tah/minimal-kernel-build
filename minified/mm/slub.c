@@ -706,25 +706,7 @@ void *__kmalloc(size_t size, gfp_t flags)
 	return ret;
 }
 
-size_t __ksize(const void *object)
-{
-	struct folio *folio;
-
-	if (unlikely(object == ZERO_SIZE_PTR))
-		return 0;
-
-	folio = virt_to_folio(object);
-
-	if (unlikely(!folio_test_slab(folio)))
-		return folio_size(folio);
-
-	struct kmem_cache *s = folio_slab(folio)->slab_cache;
-	if (s->flags & SLAB_KASAN)
-		return s->object_size;
-	if (s->flags & (SLAB_TYPESAFE_BY_RCU | SLAB_STORE_USER))
-		return s->inuse;
-	return s->size;
-}
+/* __ksize removed - never called */
 
 /* kfree moved to slab.h as static inline */
 

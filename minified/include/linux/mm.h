@@ -238,8 +238,7 @@ struct vm_fault {
 };
 
 struct vm_operations_struct {
-	void (*open)(struct vm_area_struct *area);
-	void (*close)(struct vm_area_struct *area);
+	/* open, close removed - never assigned */
 	int (*may_split)(struct vm_area_struct *area, unsigned long addr);
 	/* mremap, mprotect, map_pages removed - never called */
 	vm_fault_t (*fault)(struct vm_fault *vmf);
@@ -368,7 +367,7 @@ static inline pte_t maybe_mkwrite(pte_t pte, struct vm_area_struct *vma)
 	return pte;
 }
 
-vm_fault_t do_set_pmd(struct vm_fault *vmf, struct page *page);
+/* do_set_pmd removed - never called */
 void do_set_pte(struct vm_fault *vmf, struct page *page, unsigned long addr);
 
 vm_fault_t finish_fault(struct vm_fault *vmf);

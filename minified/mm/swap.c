@@ -70,33 +70,7 @@ void __put_page(struct page *page)
 	}
 }
 
-static void pagevec_lru_move_fn(struct pagevec *pvec,
-				void (*move_fn)(struct page *page,
-						struct lruvec *lruvec))
-{
-	int i;
-	struct lruvec *lruvec = NULL;
-	unsigned long flags = 0;
-
-	for (i = 0; i < pagevec_count(pvec); i++) {
-		struct page *page = pvec->pages[i];
-		struct folio *folio = page_folio(page);
-
-		if (!TestClearPageLRU(page))
-			continue;
-
-		lruvec = folio_lruvec_relock_irqsave(folio, lruvec, &flags);
-		(*move_fn)(page, lruvec);
-
-		SetPageLRU(page);
-	}
-	if (lruvec)
-		unlock_page_lruvec_irqrestore(lruvec, flags);
-	release_pages(pvec->pages, pvec->nr);
-	pagevec_reinit(pvec);
-}
-
-/* pagevec_move_tail_fn removed - lru_rotate removed */
+/* pagevec_lru_move_fn, pagevec_move_tail_fn removed - lru_rotate and lru_deactivate removed */
 
 static bool pagevec_add_and_need_flush(struct pagevec *pvec, struct page *page)
 {

@@ -208,8 +208,6 @@ void put_device(struct device *dev);
 
 /* device_link_add, device_link_del, device_link_remove, device_shutdown,
    device_links_supplier_sync_state_pause, device_links_supplier_sync_state_resume removed - unused */
-
-extern __printf(3, 4)
-int dev_err_probe(const struct device *dev, int err, const char *fmt, ...);
+/* dev_err_probe removed - never called */
 
 #endif  

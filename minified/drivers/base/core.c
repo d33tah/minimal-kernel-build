@@ -383,11 +383,7 @@ void device_destroy(struct class *class, dev_t devt)
 	}
 }
 
-int dev_err_probe(const struct device *dev, int err, const char *fmt, ...)
-{
-	/* Stub: minimal error probe for tiny kernel */
-	return err;
-}
+/* dev_err_probe removed - never called */
 
 int device_match_devt(struct device *dev, const void *pdevt)
 {

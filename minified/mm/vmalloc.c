@@ -406,19 +406,6 @@ static __always_inline struct rb_node **find_va_links(struct vmap_area *va,
 	return link;
 }
 
-static __always_inline struct list_head *
-get_va_next_sibling(struct rb_node *parent, struct rb_node **link)
-{
-	struct list_head *list;
-
-	if (unlikely(!parent))
-
-		return NULL;
-
-	list = &rb_entry(parent, struct vmap_area, rb_node)->list;
-	return (&parent->rb_right == link ? list->next : list);
-}
-
 static __always_inline void link_va(struct vmap_area *va, struct rb_root *root,
 				    struct rb_node *parent,
 				    struct rb_node **link,

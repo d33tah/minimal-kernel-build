@@ -23,7 +23,7 @@
 #define VGA_ATT_W 0x3C0
 #define VGA_IS1_RC 0x3DA
 #define VGA_PEL_D 0x3C9
-#define VGA_PEL_MSK 0x3C6
+/* VGA_PEL_MSK removed - unused after vga_set_palette removal */
 #define VGA_CRT_IC 0x3D4
 #define VGA_CRT_IM 0x3B4
 #define VGA_PEL_IW 0x3C8
@@ -67,7 +67,7 @@ static u32 vgacon_xres;
 static u32 vgacon_yres;
 static struct vgastate vgastate;
 
-#define BLANK 0x0020
+/* BLANK removed - unused */
 
 #define VGA_FONTWIDTH 8
 

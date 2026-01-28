@@ -20,11 +20,7 @@ struct pipe_inode_info {
 	unsigned int readers;
 	unsigned int writers;
 	unsigned int files;
-	unsigned int r_counter;
-	unsigned int w_counter;
-	bool poll_usage;
-	struct page *tmp_page;
-	/* fasync_readers, fasync_writers removed - never accessed */
+	/* r_counter, w_counter, poll_usage, tmp_page, fasync_readers, fasync_writers removed - never accessed */
 	struct pipe_buffer *bufs;
 	struct user_struct *user;
 };

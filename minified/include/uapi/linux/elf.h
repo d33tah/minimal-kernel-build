@@ -195,7 +195,7 @@ typedef struct elf64_phdr {
 #define SHT_REL		9
 
 #define SHF_ALLOC		0x2
-#define SHF_EXECINSTR		0x4
+/* SHF_EXECINSTR removed - unused */
 
 #define SHN_UNDEF	0
 #define SHN_ABS		0xfff1

@@ -55,17 +55,13 @@ int dcache_dir_close(struct inode *inode, struct file *file)
 /* scan_positives, dcache_dir_lseek, dcache_readdir removed -
    iterate_shared removed from file_operations */
 
-ssize_t generic_read_dir(struct file *filp, char __user *buf, size_t siz,
-			 loff_t *ppos)
-{
-	return -EISDIR;
-}
+/* generic_read_dir removed - .read callback no longer exists */
 
 const struct file_operations simple_dir_operations = {
 	.open = dcache_dir_open,
 	.release = dcache_dir_close,
 	/* llseek removed - lseek syscall returns ENOSYS */
-	.read = generic_read_dir,
+	/* read removed - .read callback no longer exists in file_operations */
 	/* iterate_shared removed - getdents syscalls return 0 */
 	/* fsync removed - fsync syscall returns ENOSYS */
 };
@@ -250,7 +246,7 @@ static const struct inode_operations empty_dir_inode_operations = {
 
 static const struct file_operations empty_dir_operations = {
 	/* llseek removed - lseek syscall returns ENOSYS */
-	.read = generic_read_dir,
+	/* read removed - .read callback no longer exists in file_operations */
 	/* iterate_shared removed - getdents syscalls return 0 */
 	/* fsync removed - fsync syscall returns ENOSYS */
 };

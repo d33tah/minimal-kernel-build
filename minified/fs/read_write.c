@@ -28,7 +28,8 @@ ssize_t kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
 	if (!(file->f_mode & FMODE_CAN_READ))
 		return -EINVAL;
 
-	if (unlikely(!file->f_op->read_iter || file->f_op->read)) {
+	/* .read callback removed - only read_iter used */
+	if (unlikely(!file->f_op->read_iter)) {
 		pr_warn_ratelimited(
 			"kernel read not supported for file %pD4 (pid: %d comm: %.20s)\n",
 			file, current->pid, current->comm);
@@ -61,9 +62,8 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count,
 	/* file_start_write inlined - single caller */
 	if (S_ISREG(file_inode(file)->i_mode))
 		sb_start_write(file_inode(file)->i_sb);
-	if (file->f_op->write)
-		ret = file->f_op->write(file, buf, count, pos);
-	else if (file->f_op->write_iter) {
+	/* .write callback removed - only write_iter used */
+	if (file->f_op->write_iter) {
 		struct iovec iov = { .iov_base = (void __user *)buf,
 				     .iov_len = count };
 		struct kiocb kiocb;

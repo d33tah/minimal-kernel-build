@@ -89,11 +89,10 @@ int vfs_open(const struct path *path, struct file *file)
 			goto cleanup_all;
 	}
 	file->f_mode |= FMODE_OPENED;
-	if ((file->f_mode & FMODE_READ) &&
-	    likely(file->f_op->read || file->f_op->read_iter))
+	/* .read/.write callbacks removed - only read_iter/write_iter used */
+	if ((file->f_mode & FMODE_READ) && likely(file->f_op->read_iter))
 		file->f_mode |= FMODE_CAN_READ;
-	if ((file->f_mode & FMODE_WRITE) &&
-	    likely(file->f_op->write || file->f_op->write_iter))
+	if ((file->f_mode & FMODE_WRITE) && likely(file->f_op->write_iter))
 		file->f_mode |= FMODE_CAN_WRITE;
 
 	file->f_flags &= ~(O_CREAT | O_EXCL | O_NOCTTY | O_TRUNC);

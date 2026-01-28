@@ -573,8 +573,7 @@ void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,
 struct file_operations {
 	struct module *owner;
 	/* llseek removed - lseek syscall returns ENOSYS */
-	ssize_t (*read)(struct file *, char __user *, size_t, loff_t *);
-	ssize_t (*write)(struct file *, const char __user *, size_t, loff_t *);
+	/* read, write removed - never assigned, only read_iter/write_iter used */
 	ssize_t (*read_iter)(struct kiocb *, struct iov_iter *);
 	ssize_t (*write_iter)(struct kiocb *, struct iov_iter *);
 	/* iterate, iterate_shared, sendpage, flock, fallocate, show_fdinfo, copy_file_range removed */
@@ -908,7 +907,7 @@ extern int always_delete_dentry(const struct dentry *);
 extern const struct dentry_operations simple_dentry_operations;
 
 extern struct dentry *simple_lookup(struct inode *, struct dentry *, unsigned int flags);
-extern ssize_t generic_read_dir(struct file *, char __user *, size_t, loff_t *);
+/* generic_read_dir removed - .read callback no longer exists */
 extern const struct file_operations simple_dir_operations;
 extern bool is_empty_dir_inode(struct inode *inode);
 /* simple_pin_fs, simple_release_fs removed - never called */

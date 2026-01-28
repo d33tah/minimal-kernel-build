@@ -249,18 +249,7 @@ int __sched ldsem_down_write(struct ld_semaphore *sem, long timeout)
 	return 1;
 }
 
-int ldsem_down_write_trylock(struct ld_semaphore *sem)
-{
-	long count = atomic_long_read(&sem->count);
-
-	while ((count & LDSEM_ACTIVE_MASK) == 0) {
-		if (atomic_long_try_cmpxchg(&sem->count, &count,
-					    count + LDSEM_WRITE_BIAS)) {
-			return 1;
-		}
-	}
-	return 0;
-}
+/* ldsem_down_write_trylock removed - never called */
 
 void ldsem_up_read(struct ld_semaphore *sem)
 {

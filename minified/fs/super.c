@@ -141,7 +141,7 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags,
 					&type->s_writers_key[i]))
 			goto fail;
 	}
-	init_waitqueue_head(&s->s_writers.wait_unfrozen);
+	/* init_waitqueue_head(&s->s_writers.wait_unfrozen) removed - field removed */
 	s->s_bdi = &noop_backing_dev_info;
 	s->s_flags = flags;
 	if (s->s_user_ns != &init_user_ns)
@@ -155,8 +155,7 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags,
 
 	s->s_count = 1;
 	atomic_set(&s->s_active, 1);
-	mutex_init(&s->s_vfs_rename_mutex);
-	/* lockdep_set_class removed - empty stub */
+	/* mutex_init(&s->s_vfs_rename_mutex) removed - field removed */
 	s->s_maxbytes = MAX_NON_LFS;
 	s->s_op = &default_op;
 	/* s_time_gran, s_time_min, s_time_max removed - fields removed */

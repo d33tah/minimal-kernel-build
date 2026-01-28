@@ -180,8 +180,7 @@ struct kiocb {
 	randomized_struct_fields_start
 
 	loff_t			ki_pos;
-	/* ki_complete callback removed - never invoked */
-	void			*private;
+	/* ki_complete callback, private removed - never accessed */
 	int			ki_flags;
 	/* ki_ioprio removed - write-only field */
 	struct wait_page_queue	*ki_waitq; 
@@ -365,8 +364,7 @@ static inline void i_size_write(struct inode *inode, loff_t i_size)
 /* fown_struct removed - f_owner is never accessed */
 
 struct file_ra_state {
-	/* start, size, async_size, ra_pages removed - never accessed */
-	unsigned int mmap_miss;
+	/* start, size, async_size, ra_pages, mmap_miss removed - never accessed */
 	loff_t prev_pos;
 };
 
@@ -450,8 +448,7 @@ enum {
 #define SB_FREEZE_LEVELS (SB_FREEZE_COMPLETE - 1)
 
 struct sb_writers {
-	int				frozen;		
-	wait_queue_head_t		wait_unfrozen;	
+	/* frozen, wait_unfrozen removed - never accessed */
 	struct percpu_rw_semaphore	rw_sem[SB_FREEZE_LEVELS];
 };
 
@@ -484,8 +481,7 @@ struct super_block {
 	/* s_time_gran, s_time_min, s_time_max removed - timestamp_truncate gone */
 
 	char			s_id[32];
-	/* s_max_links, s_subtype removed - unused */
-	struct mutex s_vfs_rename_mutex;
+	/* s_max_links, s_subtype, s_vfs_rename_mutex removed - unused */
 
 	const struct dentry_operations *s_d_op; 
 

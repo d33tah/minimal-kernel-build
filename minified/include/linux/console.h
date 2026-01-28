@@ -79,7 +79,7 @@ struct console {
 
 enum con_flush_mode {
 	CONSOLE_FLUSH_PENDING,
-	CONSOLE_REPLAY_ALL,
+	/* CONSOLE_REPLAY_ALL removed - never used */
 };
 
 extern void register_console(struct console *);

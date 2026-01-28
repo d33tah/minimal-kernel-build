@@ -42,7 +42,7 @@
 /* TRACK_ADDRS_COUNT, struct track, enum track_item removed - unused */
 /* Removed: sysfs_slab_add, sysfs_slab_alias, debugfs_slab_add - empty stubs */
 
-static nodemask_t slab_nodes;
+/* slab_nodes removed - only written, never read */
 
 /* freelist_ptr inlined - always returned ptr unchanged (no obfuscation) */
 
@@ -751,8 +751,7 @@ void __init kmem_cache_init(void)
 	kmem_cache_node = &boot_kmem_cache_node;
 	kmem_cache = &boot_kmem_cache;
 
-	/* for_each_node_state simplified - single node */
-	node_set(0, slab_nodes);
+	/* for_each_node_state, node_set removed - slab_nodes was never read */
 
 	create_boot_cache(kmem_cache_node, "kmem_cache_node",
 			  sizeof(struct kmem_cache_node), SLAB_HWCACHE_ALIGN, 0,

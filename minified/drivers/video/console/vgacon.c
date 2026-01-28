@@ -50,15 +50,7 @@ struct vgastate {
 	void *vidstate;
 };
 
-/* vga_io_w, vga_mm_w inlined into vga_w */
-static inline void vga_w(void __iomem *regbase, unsigned short port,
-			 unsigned char val)
-{
-	if (regbase)
-		writeb(val, regbase + port);
-	else
-		outb_p(val, port);
-}
+/* vga_io_w, vga_mm_w, vga_w removed - never called */
 
 static DEFINE_RAW_SPINLOCK(vga_lock);
 static int cursor_size_lastfrom;

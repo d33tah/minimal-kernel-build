@@ -1,4 +1,4 @@
-#include <linux/platform_device.h>
+/* linux/platform_device.h removed - nothing from it was used */
 /* --- 2026-01-26 04:30 --- Inlined from linux/mc146818rtc.h */
 #include <asm/io.h>
 #include <asm/mc146818rtc.h>

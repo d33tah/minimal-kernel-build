@@ -20,40 +20,7 @@ static int die_counter;
 
 static struct pt_regs exec_summary_regs;
 
-bool noinstr in_task_stack(unsigned long *stack, struct task_struct *task,
-			   struct stack_info *info)
-{
-	unsigned long *begin = task_stack_page(task);
-	unsigned long *end = task_stack_page(task) + THREAD_SIZE;
-
-	if (stack < begin || stack >= end)
-		return false;
-
-	info->type = STACK_TYPE_TASK;
-	info->begin = begin;
-	info->end = end;
-	info->next_sp = NULL;
-
-	return true;
-}
-
-bool noinstr in_entry_stack(unsigned long *stack, struct stack_info *info)
-{
-	struct entry_stack *ss = cpu_entry_stack(smp_processor_id());
-
-	void *begin = ss;
-	void *end = ss + 1;
-
-	if ((void *)stack < begin || (void *)stack >= end)
-		return false;
-
-	info->type = STACK_TYPE_ENTRY;
-	info->begin = begin;
-	info->end = end;
-	info->next_sp = NULL;
-
-	return true;
-}
+/* in_task_stack, in_entry_stack removed - only caller was dumpstack_32.c which was removed */
 
 /* show_trace_log_lvl inlined into show_stack_regs - single caller */
 

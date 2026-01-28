@@ -44,8 +44,7 @@ struct device_private {
 };
 #define to_device_private_parent(obj)	\
 	container_of(obj, struct device_private, knode_parent)
-#define to_device_private_driver(obj)	\
-	container_of(obj, struct device_private, knode_driver)
+/* to_device_private_driver macro removed - never called */
 #define to_device_private_bus(obj)	\
 	container_of(obj, struct device_private, knode_bus)
 #define to_device_private_class(obj)	\

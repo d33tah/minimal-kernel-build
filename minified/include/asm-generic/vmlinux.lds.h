@@ -335,11 +335,7 @@
 		*(.entry.text)						\
 		__entry_text_end = .;
 
-#define IRQENTRY_TEXT							\
-		ALIGN_FUNCTION();					\
-		__irqentry_text_start = .;				\
-		*(.irqentry.text)					\
-		__irqentry_text_end = .;
+/* IRQENTRY_TEXT removed - unused */
 
 #define SOFTIRQENTRY_TEXT						\
 		ALIGN_FUNCTION();					\
@@ -355,10 +351,7 @@
 
 #define HEAD_TEXT  KEEP(*(.head.text))
 
-#define HEAD_TEXT_SECTION							\
-	.head.text : AT(ADDR(.head.text) - LOAD_OFFSET) {		\
-		HEAD_TEXT						\
-	}
+/* HEAD_TEXT_SECTION removed - unused */
 
 #define EXCEPTION_TABLE(align)						\
 	. = ALIGN(align);						\

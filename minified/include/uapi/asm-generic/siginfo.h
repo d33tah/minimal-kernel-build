@@ -120,28 +120,16 @@ typedef struct siginfo {
 	};
 } __ARCH_SI_ATTRIBUTES siginfo_t;
 
+/* Only keep si_ accessors that are actually used */
 #define si_pid		_sifields._kill._pid
 #define si_uid		_sifields._kill._uid
-#define si_tid		_sifields._timer._tid
-#define si_overrun	_sifields._timer._overrun
-#define si_sys_private  _sifields._timer._sys_private
-#define si_status	_sifields._sigchld._status
-#define si_utime	_sifields._sigchld._utime
-#define si_stime	_sifields._sigchld._stime
-#define si_value	_sifields._rt._sigval
-#define si_int		_sifields._rt._sigval.sival_int
-#define si_ptr		_sifields._rt._sigval.sival_ptr
 #define si_addr		_sifields._sigfault._addr
-#define si_trapno	_sifields._sigfault._trapno
-#define si_addr_lsb	_sifields._sigfault._addr_lsb
-#define si_lower	_sifields._sigfault._addr_bnd._lower
-#define si_upper	_sifields._sigfault._addr_bnd._upper
-#define si_pkey		_sifields._sigfault._addr_pkey._pkey
-#define si_band		_sifields._sigpoll._band
-#define si_fd		_sifields._sigpoll._fd
 #define si_call_addr	_sifields._sigsys._call_addr
 #define si_syscall	_sifields._sigsys._syscall
 #define si_arch		_sifields._sigsys._arch
+/* Removed unused: si_tid, si_overrun, si_sys_private, si_status, si_utime,
+   si_stime, si_value, si_int, si_ptr, si_trapno, si_addr_lsb, si_lower,
+   si_upper, si_pkey, si_band, si_fd */
 
 #define SI_USER		0
 #define SI_KERNEL	0x80

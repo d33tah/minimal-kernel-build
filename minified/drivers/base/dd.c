@@ -45,7 +45,7 @@ static void deferred_probe_work_func(struct work_struct *work)
 
 		mutex_unlock(&deferred_probe_mutex);
 
-		device_pm_move_to_tail(dev);
+		/* device_pm_move_to_tail call removed - was empty stub */
 
 		bus_probe_device(dev);
 		mutex_lock(&deferred_probe_mutex);

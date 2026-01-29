@@ -35,13 +35,7 @@ void __init driver_init(void)
 
 DEFINE_STATIC_SRCU(device_links_srcu);
 
-void device_pm_move_to_tail(struct device *dev)
-{
-	int idx;
-
-	idx = srcu_read_lock(&device_links_srcu);
-	srcu_read_unlock(&device_links_srcu, idx);
-}
+/* device_pm_move_to_tail removed - was empty stub (lock/unlock with no work) */
 
 /* devlink_class and related functions removed - devlink_class_init was removed so class is never registered */
 

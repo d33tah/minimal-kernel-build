@@ -88,8 +88,6 @@ extern struct kset *devices_kset;
 
 /* module_add_driver, module_remove_driver, devtmpfs_init removed - never called */
 
-/* device_links_*, fw_devlink_drivers_done removed - empty stubs or inlined */
-
-void device_pm_move_to_tail(struct device *dev);
+/* device_links_*, fw_devlink_drivers_done, device_pm_move_to_tail removed - empty stubs or inlined */
 
 /* devtmpfs_create_node, devtmpfs_delete_node, software_node_notify, software_node_notify_remove removed - never called */

@@ -51,7 +51,7 @@ struct user_namespace;
 /* CAP_LAST_U32 removed - never used */
 #define CAP_LAST_U32_VALID_MASK		(CAP_TO_MASK(CAP_LAST_CAP + 1) -1)
 
-# define CAP_EMPTY_SET    ((kernel_cap_t){{ 0, 0 }})
+/* CAP_EMPTY_SET removed - never used */
 # define CAP_FULL_SET     ((kernel_cap_t){{ ~0, CAP_LAST_U32_VALID_MASK }})
 /* CAP_FS_SET, CAP_NFSD_SET removed - unused */
 #endif

@@ -32,7 +32,7 @@
 /* S_IROTH, S_IWOTH removed - never used */
 #define S_IXOTH 00001
 #endif
-struct statx;
+/* struct statx forward decl removed - unused */
 /* STATX_BASIC_STATS removed - unused */
 #define S_IRWXUGO	(S_IRWXU|S_IRWXG|S_IRWXO)
 #define S_IALLUGO	(S_ISUID|S_ISGID|S_ISVTX|S_IRWXUGO)

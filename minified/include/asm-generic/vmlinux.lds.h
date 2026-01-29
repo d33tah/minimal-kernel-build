@@ -40,8 +40,7 @@
 	*(__idle_sched_class)			\
 	__sched_class_lowest = .;
 
-#define CPU_KEEP(sec)
-#define CPU_DISCARD(sec) *(.cpu##sec)
+/* CPU_KEEP, CPU_DISCARD removed - unused */
 
 #define MEM_KEEP(sec)
 #define MEM_DISCARD(sec) *(.mem##sec)

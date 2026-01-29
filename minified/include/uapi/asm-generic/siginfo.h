@@ -4,95 +4,36 @@
 #include <linux/compiler.h>
 #include <linux/types.h>
 
-typedef union sigval {
-	int sival_int;
-	void __user *sival_ptr;
-} sigval_t;
-
 #define SI_MAX_SIZE	128
-
-#ifndef __ARCH_SI_BAND_T
-#define __ARCH_SI_BAND_T long
-#endif
-
-#ifndef __ARCH_SI_CLOCK_T
-#define __ARCH_SI_CLOCK_T __kernel_clock_t
-#endif
 
 #ifndef __ARCH_SI_ATTRIBUTES
 #define __ARCH_SI_ATTRIBUTES
 #endif
 
+/* sigval_t removed - never used */
+/* __ARCH_SI_BAND_T, __ARCH_SI_CLOCK_T removed - never used */
+
+/* Simplified __sifields - only keep struct members actually accessed */
 union __sifields {
-	 
+	/* _kill: used by si_pid, si_uid */
 	struct {
-		__kernel_pid_t _pid;	 
-		__kernel_uid32_t _uid;	 
+		__kernel_pid_t _pid;
+		__kernel_uid32_t _uid;
 	} _kill;
 
-	 
-	struct {
-		__kernel_timer_t _tid;	 
-		int _overrun;		 
-		sigval_t _sigval;	 
-		int _sys_private;        
-	} _timer;
-
-	 
-	struct {
-		__kernel_pid_t _pid;	 
-		__kernel_uid32_t _uid;	 
-		sigval_t _sigval;
-	} _rt;
-
-	 
-	struct {
-		__kernel_pid_t _pid;	 
-		__kernel_uid32_t _uid;	 
-		int _status;		 
-		__ARCH_SI_CLOCK_T _utime;
-		__ARCH_SI_CLOCK_T _stime;
-	} _sigchld;
-
-	/* SIGFAULT */
+	/* _sigfault: used by si_addr (nested union removed - unused) */
 	struct {
 		void __user *_addr;
-		/* ia64-specific fields removed - x86 only */
-
-#define __ADDR_BND_PKEY_PAD  (__alignof__(void *) < sizeof(short) ? \
-			      sizeof(short) : __alignof__(void *))
-		union {
-			 
-			int _trapno;	 
-			 
-			short _addr_lsb;  
-			 
-			struct {
-				char _dummy_bnd[__ADDR_BND_PKEY_PAD];
-				void __user *_lower;
-				void __user *_upper;
-			} _addr_bnd;
-			 
-			struct {
-				char _dummy_pkey[__ADDR_BND_PKEY_PAD];
-				__u32 _pkey;
-			} _addr_pkey;
-			/* _perf struct removed - unused */
-		};
 	} _sigfault;
 
-	 
+	/* _sigsys: used by si_call_addr, si_syscall, si_arch */
 	struct {
-		__ARCH_SI_BAND_T _band;	 
-		int _fd;
-	} _sigpoll;
-
-	 
-	struct {
-		void __user *_call_addr;  
-		int _syscall;	 
-		unsigned int _arch;	 
+		void __user *_call_addr;
+		int _syscall;
+		unsigned int _arch;
 	} _sigsys;
+
+	/* Removed: _timer, _rt, _sigchld, _sigpoll - never accessed */
 };
 
 #ifndef __ARCH_HAS_SWAPPED_SIGINFO

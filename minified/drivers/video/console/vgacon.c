@@ -37,18 +37,7 @@
 #define VGA_CRTC_OFFSET 0x13
 #define VGA_CRTC_MODE 0x17
 
-struct vgastate {
-	void __iomem *vgabase;
-	unsigned long membase;
-	__u32 memsize;
-	__u32 flags;
-	__u32 depth;
-	__u32 num_attr;
-	__u32 num_crtc;
-	__u32 num_gfx;
-	__u32 num_seq;
-	void *vidstate;
-};
+/* vgastate struct removed - write-only, never read */
 
 /* vga_io_w, vga_mm_w, vga_w removed - never called */
 
@@ -57,7 +46,6 @@ static int cursor_size_lastfrom;
 static int cursor_size_lastto;
 static u32 vgacon_xres;
 static u32 vgacon_yres;
-static struct vgastate vgastate;
 
 /* BLANK removed - unused */
 
@@ -150,7 +138,7 @@ no_vga:
 
 	vga_video_num_lines = screen_info.orig_video_lines;
 	vga_video_num_columns = screen_info.orig_video_cols;
-	vgastate.vgabase = NULL;
+	/* vgastate.vgabase = NULL removed - vgastate was write-only */
 
 	if (screen_info.orig_video_mode == 7) {
 		vga_vram_base = 0xb0000;

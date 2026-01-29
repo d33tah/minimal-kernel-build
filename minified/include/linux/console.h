@@ -11,7 +11,7 @@ struct module;
 
 enum con_scroll {
 	SM_UP,
-	SM_DOWN,
+	/* SM_DOWN removed - never used */
 };
 
 enum vc_intensity;

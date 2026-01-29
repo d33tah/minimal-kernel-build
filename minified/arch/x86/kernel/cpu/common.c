@@ -97,32 +97,7 @@ DEFINE_PER_CPU_PAGE_ALIGNED(
 			      [GDT_ENTRY_DEFAULT_USER_DS] =
 				      GDT_ENTRY_INIT(0xc0f2, 0, 0xfffff),
 
-			      [GDT_ENTRY_PNPBIOS_CS32] = GDT_ENTRY_INIT(0x409a,
-									0,
-									0xffff),
-
-			      [GDT_ENTRY_PNPBIOS_CS16] = GDT_ENTRY_INIT(0x009a,
-									0,
-									0xffff),
-
-			      [GDT_ENTRY_PNPBIOS_DS] = GDT_ENTRY_INIT(0x0092, 0,
-								      0xffff),
-
-			      [GDT_ENTRY_PNPBIOS_TS1] = GDT_ENTRY_INIT(0x0092,
-								       0, 0),
-
-			      [GDT_ENTRY_PNPBIOS_TS2] = GDT_ENTRY_INIT(0x0092,
-								       0, 0),
-
-			      [GDT_ENTRY_APMBIOS_BASE] = GDT_ENTRY_INIT(0x409a,
-									0,
-									0xffff),
-
-			      [GDT_ENTRY_APMBIOS_BASE +
-				      1] = GDT_ENTRY_INIT(0x009a, 0, 0xffff),
-
-			      [GDT_ENTRY_APMBIOS_BASE +
-				      2] = GDT_ENTRY_INIT(0x4092, 0, 0xffff),
+			      /* PNPBIOS and APMBIOS GDT entries removed - unused */
 
 			      [GDT_ENTRY_ESPFIX_SS] = GDT_ENTRY_INIT(0xc092, 0,
 								     0xfffff),

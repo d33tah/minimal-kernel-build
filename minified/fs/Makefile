@@ -14,7 +14,7 @@ obj-y :=	open.o read_write.o file_table.o super.o \
 		attr.o file.o filesystems.o namespace.o \
 		libfs.o \
 		splice.o \
-		fs_struct.o fs_pin.o \
+		fs_struct.o \
 		fs_context.o fs_parser.o init.o
 
 ifeq ($(CONFIG_BLOCK),y)

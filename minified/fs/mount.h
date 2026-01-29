@@ -4,16 +4,8 @@
 #include <linux/poll.h>
 #include <linux/ns_common.h>
 
-struct fs_pin {
-	wait_queue_head_t	wait;
-	int			done;
-	struct hlist_node	s_list;
-	struct hlist_node	m_list;
-	void (*kill)(struct fs_pin *);
-};
+/* struct fs_pin, pin_kill, pin_remove, pin_insert removed - never called */
 struct vfsmount;
-/* pin_remove, pin_insert removed - never called */
-void pin_kill(struct fs_pin *);
 
 struct mnt_namespace {
 	struct ns_common	ns;

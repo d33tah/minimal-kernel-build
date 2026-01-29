@@ -481,10 +481,7 @@ static __always_inline void *lowmem_page_address(const struct page *page)
 #define page_address(page) lowmem_page_address(page)
 /* set_page_address, page_address_init removed - never used */
 
-static inline void *folio_address(const struct folio *folio)
-{
-	return page_address(&folio->page);
-}
+/* folio_address removed - inlined at single call site */
 
 /* page_rmapping, page_mapped removed - never called */
 

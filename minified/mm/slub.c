@@ -208,7 +208,8 @@ static struct slab *new_slab(struct kmem_cache *s, gfp_t flags, int node)
 
 	slab->slab_cache = s;
 
-	start = folio_address(slab_folio(slab)); /* slab_address inlined */
+	start = page_address(
+		&slab_folio(slab)->page); /* folio_address inlined */
 	start = setup_object(s, start);
 	slab->freelist = start;
 	for (idx = 0, p = start; idx < slab->objects - 1; idx++) {

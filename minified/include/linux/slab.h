@@ -77,12 +77,7 @@ static inline void kfree(const void *objp) {}
 #define ARCH_SLAB_MINALIGN __alignof__(unsigned long long)
 #endif
 
-#ifndef arch_slab_minalign
-static inline unsigned int arch_slab_minalign(void)
-{
-	return ARCH_SLAB_MINALIGN;
-}
-#endif
+/* arch_slab_minalign removed - inlined at single call site */
 
 #define __assume_kmalloc_alignment __assume_aligned(ARCH_KMALLOC_MINALIGN)
 #define __assume_slab_alignment __assume_aligned(ARCH_SLAB_MINALIGN)

@@ -32,9 +32,6 @@ void arch_dma_free(struct device *dev, size_t size, void *cpu_addr,
 void *arch_dma_set_uncached(void *addr, size_t size);
 
 /* arch_dma_*_direct macros removed - unused */
-
-static inline void arch_teardown_dma_ops(struct device *dev)
-{
-}
+/* arch_teardown_dma_ops removed - inlined at single call site (empty function) */
 
 #endif  

@@ -127,12 +127,12 @@ static DECLARE_WAIT_QUEUE_HEAD(probe_waitqueue);
 
 static void device_unbind_cleanup(struct device *dev)
 {
-	arch_teardown_dma_ops(dev);
+	/* arch_teardown_dma_ops inlined - empty function */
 	dev->driver = NULL;
 	dev_set_drvdata(dev, NULL);
 	if (dev->pm_domain && dev->pm_domain->dismiss)
 		dev->pm_domain->dismiss(dev);
-	dev_pm_set_driver_flags(dev, 0);
+	dev->power.driver_flags = 0; /* dev_pm_set_driver_flags inlined */
 }
 
 /* device_remove, call_driver_probe, really_probe inlined into single caller */

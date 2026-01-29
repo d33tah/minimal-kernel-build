@@ -157,12 +157,7 @@ static inline int device_is_registered(struct device *dev)
 }
 
 /* device_set_pm_not_required removed - never called */
-
-static inline void dev_pm_set_driver_flags(struct device *dev, u32 flags)
-{
-	dev->power.driver_flags = flags;
-}
-
+/* dev_pm_set_driver_flags removed - inlined at single call site */
 
 static inline void device_lock(struct device *dev)
 {

@@ -47,7 +47,10 @@ static unsigned int calculate_alignment(slab_flags_t flags, unsigned int align,
 		align = max(align, ralign);
 	}
 
-	align = max(align, arch_slab_minalign());
+	align = max(
+		align,
+		(unsigned int)
+			ARCH_SLAB_MINALIGN); /* arch_slab_minalign() inlined */
 
 	return ALIGN(align, sizeof(void *));
 }

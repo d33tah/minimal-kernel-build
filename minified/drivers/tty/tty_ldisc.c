@@ -209,7 +209,7 @@ int tty_ldisc_reinit(struct tty_struct *tty, int disc)
 	tty->termios.c_line = disc;
 	up_write(&tty->termios_rwsem);
 	tty->disc_data = NULL;
-	tty->receive_room = 0;
+	/* tty->receive_room assignment removed - field was write-only */
 
 	retval = tty_ldisc_open(tty, tty->ldisc);
 	if (retval) {

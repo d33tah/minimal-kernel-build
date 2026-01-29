@@ -121,8 +121,7 @@ struct tty_struct {
 		unsigned long unused[0];
 	} __aligned(sizeof(unsigned long)) ctrl;
 
-	/* hw_stopped, flow_change removed - unused */
-	unsigned int receive_room;
+	/* hw_stopped, flow_change, receive_room removed - unused/write-only */
 
 	struct tty_struct *link;
 	/* fasync removed - fcntl returns EINVAL, FASYNC never set */
@@ -142,7 +141,7 @@ struct tty_struct {
 
 struct tty_file_private {
 	struct tty_struct *tty;
-	struct file *file;
+	/* file field removed - write-only, never read */
 	struct list_head list;
 };
 

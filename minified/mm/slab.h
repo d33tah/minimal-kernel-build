@@ -63,34 +63,7 @@ static_assert(sizeof(struct slab) <= sizeof(struct page));
 #include <linux/reciprocal_div.h>
 #include <linux/local_lock.h>
 
-enum stat_item {
-	ALLOC_FASTPATH,
-	ALLOC_SLOWPATH,
-	FREE_FASTPATH,
-	FREE_SLOWPATH,
-	FREE_FROZEN,
-	FREE_ADD_PARTIAL,
-	FREE_REMOVE_PARTIAL,
-	ALLOC_FROM_PARTIAL,
-	ALLOC_SLAB,
-	ALLOC_REFILL,
-	ALLOC_NODE_MISMATCH,
-	FREE_SLAB,
-	CPUSLAB_FLUSH,
-	DEACTIVATE_FULL,
-	DEACTIVATE_EMPTY,
-	DEACTIVATE_TO_HEAD,
-	DEACTIVATE_TO_TAIL,
-	DEACTIVATE_REMOTE_FREES,
-	DEACTIVATE_BYPASS,
-	ORDER_FALLBACK,
-	CMPXCHG_DOUBLE_CPU_FAIL,
-	CMPXCHG_DOUBLE_FAIL,
-	CPU_PARTIAL_ALLOC,
-	CPU_PARTIAL_FREE,
-	CPU_PARTIAL_NODE,
-	CPU_PARTIAL_DRAIN,
-	NR_SLUB_STAT_ITEMS };
+/* enum stat_item removed - SLUB statistics not used (~27 values) */
 
 struct kmem_cache_cpu {
 	void **freelist;

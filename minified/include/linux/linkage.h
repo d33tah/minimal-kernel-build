@@ -33,7 +33,7 @@
 /* __page_aligned_data removed - never used */
 #define __page_aligned_bss	__section(".bss..page_aligned") __aligned(PAGE_SIZE)
 
-#define __PAGE_ALIGNED_DATA	.section ".data..page_aligned", "aw"
+/* __PAGE_ALIGNED_DATA removed - unused */
 #define __PAGE_ALIGNED_BSS	.section ".bss..page_aligned", "aw"
 
 #ifndef __ASSEMBLY__
@@ -64,7 +64,7 @@
 #define SYM_A_NONE				 
 
 #define SYM_L_GLOBAL(name)			.globl name
-#define SYM_L_WEAK(name)			.weak name
+/* SYM_L_WEAK removed - unused */
 #define SYM_L_LOCAL(name)			 
 
 #ifndef LINKER_SCRIPT

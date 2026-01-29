@@ -22,9 +22,7 @@
 #define SIZE_MAX	(~(size_t)0)
 #define PHYS_ADDR_MAX	(~(phys_addr_t)0)
 
-/* U8_MAX, U16_MAX removed - unused */
-#define U32_MAX		((u32)~0U)
-/* S32_MIN removed - unused */
+/* U8_MAX, U16_MAX, U32_MAX, S32_MIN removed - unused */
 #define U64_MAX		((u64)~0ULL)
 
 #endif  

@@ -89,14 +89,8 @@ int _printk_deferred(const char *s, ...)
 #define pr_info(fmt, ...) \
 	printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
 
-/* pr_devel, pr_cont removed - unused */
-#define pr_debug(fmt, ...) \
-	no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
-
-
+/* pr_devel, pr_cont, pr_debug, printk_deferred_once removed - unused */
 #define printk_once(fmt, ...)					\
-	no_printk(fmt, ##__VA_ARGS__)
-#define printk_deferred_once(fmt, ...)				\
 	no_printk(fmt, ##__VA_ARGS__)
 
 #define pr_err_once(fmt, ...)					\

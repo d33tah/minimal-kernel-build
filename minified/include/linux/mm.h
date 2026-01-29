@@ -125,8 +125,7 @@ extern int sysctl_overcommit_memory;
 #define nth_page(page,n) ((page) + (n))
 
 #define PAGE_ALIGN(addr) ALIGN(addr, PAGE_SIZE)
-
-#define PAGE_ALIGNED(addr)	IS_ALIGNED((unsigned long)(addr), PAGE_SIZE)
+/* PAGE_ALIGNED removed - unused */
 
 void setup_initial_init_mm(void *start_code, void *end_code,
 			   void *end_data, void *brk);

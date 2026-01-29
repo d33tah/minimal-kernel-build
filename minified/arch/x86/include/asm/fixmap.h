@@ -102,14 +102,7 @@ static __always_inline unsigned long fix_to_virt(const unsigned int idx)
 	__set_fixmap(idx, 0, FIXMAP_PAGE_CLEAR)
 #endif
 
-#define __set_fixmap_offset(idx, phys, flags)				\
-({									\
-	unsigned long ________addr;					\
-	__set_fixmap(idx, phys, flags);					\
-	________addr = fix_to_virt(idx) + ((phys) & (PAGE_SIZE - 1));	\
-	________addr;							\
-})
-
+/* __set_fixmap_offset removed - unused */
 /* set_fixmap_offset, set_fixmap_nocache, set_fixmap_offset_nocache,
    set_fixmap_io, set_fixmap_offset_io removed - unused */
 

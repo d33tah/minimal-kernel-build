@@ -34,8 +34,7 @@
 #define _PAGE_DIRTY	(_AT(pteval_t, 1) << _PAGE_BIT_DIRTY)
 #define _PAGE_PSE	(_AT(pteval_t, 1) << _PAGE_BIT_PSE)
 #define _PAGE_GLOBAL	(_AT(pteval_t, 1) << _PAGE_BIT_GLOBAL)
-#define _PAGE_SOFTW1	(_AT(pteval_t, 1) << _PAGE_BIT_SOFTW1)
-/* _PAGE_SOFTW2, _PAGE_SOFTW3 removed - unused */
+/* _PAGE_SOFTW1, _PAGE_SOFTW2, _PAGE_SOFTW3 removed - unused */
 #define _PAGE_PAT	(_AT(pteval_t, 1) << _PAGE_BIT_PAT)
 /* _PAGE_PAT_LARGE removed - unused */
 #define _PAGE_SPECIAL	(_AT(pteval_t, 1) << _PAGE_BIT_SPECIAL)

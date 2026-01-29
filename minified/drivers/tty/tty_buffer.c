@@ -19,12 +19,9 @@
 
 static void tty_buffer_reset(struct tty_buffer *p, size_t size)
 {
-	p->used = 0;
+	/* used, commit, read, flags removed - write-only, never read */
 	p->size = size;
 	p->next = NULL;
-	p->commit = 0;
-	p->read = 0;
-	p->flags = 0;
 }
 
 void tty_buffer_free_all(struct tty_port *port)

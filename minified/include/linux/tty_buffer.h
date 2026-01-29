@@ -11,12 +11,8 @@ struct tty_buffer {
 		struct tty_buffer *next;
 		struct llist_node free;
 	};
-	int used;
+	/* used, commit, read, flags removed - write-only, never read */
 	int size;
-	int commit;
-	int read;
-	int flags;
-	 
 	unsigned long data[];
 };
 

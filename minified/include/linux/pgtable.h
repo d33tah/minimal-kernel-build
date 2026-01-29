@@ -183,17 +183,7 @@ static inline int pte_same(pte_t pte_a, pte_t pte_b)
 	(pte_present(pte) && (!(write) || pte_write(pte)))
 #endif
 
-#ifndef pmd_access_permitted
-#define pmd_access_permitted(pmd, write) \
-	(pmd_present(pmd) && (!(write) || pmd_write(pmd)))
-#endif
-
-#ifndef pud_access_permitted
-#define pud_access_permitted(pud, write) \
-	(pud_present(pud) && (!(write) || pud_write(pud)))
-#endif
-
-
+/* pmd_access_permitted, pud_access_permitted removed - unused */
 /* pmd_same, pud_same, p4d_same, pgd_same and set_*_safe macros removed - unused */
 
 

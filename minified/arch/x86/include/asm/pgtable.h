@@ -238,12 +238,7 @@ static inline pmd_t pfn_pmd(unsigned long page_nr, pgprot_t pgprot)
 }
 
 /* pfn_pud, pmd_mkinvalid, flip_protnone_guard, pte_modify, pmd_modify, pgprot_modify removed - unused */
-
-#define pte_pgprot(x) __pgprot(pte_flags(x))
-#define pmd_pgprot(x) __pgprot(pmd_flags(x))
-#define pud_pgprot(x) __pgprot(pud_flags(x))
-#define p4d_pgprot(x) __pgprot(p4d_flags(x))
-
+/* pte_pgprot, pmd_pgprot, pud_pgprot, p4d_pgprot removed - unused */
 /* canon_pgprot, is_new_memtype_allowed inlined at single call site */
 
 pmd_t *populate_extra_pmd(unsigned long vaddr);
@@ -400,8 +395,7 @@ static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
 
 #define flush_tlb_fix_spurious_fault(vma, address) do { } while (0)
 
-#define mk_pmd(page, pgprot)   pfn_pmd(page_to_pfn(page), (pgprot))
-
+/* mk_pmd removed - unused */
 /* pmdp_set_access_flags, pudp_set_access_flags, pmdp_test_and_clear_young,
    pudp_test_and_clear_young, pmdp_clear_flush_young removed - unused */
 

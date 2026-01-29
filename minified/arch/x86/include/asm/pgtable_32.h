@@ -56,13 +56,7 @@ static inline void native_pte_clear(struct mm_struct *mm,
 #define native_pmdp_get_and_clear(xp) native_local_pmdp_get_and_clear(xp)
 #define native_pudp_get_and_clear(xp) native_local_pudp_get_and_clear(xp)
 /* Swap/protnone/invert macros removed - unused */
-
- 
-#define kpte_clear_flush(ptep, vaddr)		\
-do {						\
-	pte_clear(&init_mm, (vaddr), (ptep));	\
-	flush_tlb_one_kernel((vaddr));		\
-} while (0)
+/* kpte_clear_flush removed - unused */
 
 #endif
 

@@ -60,12 +60,7 @@ extern void clockevents_handle_noop(struct clock_event_device *dev);
 
  
 /* tick_set_periodic_handler removed - inlined at single call site */
-
-static inline
-void tick_setup_oneshot(struct clock_event_device *newdev,
-			void (*handler)(struct clock_event_device *),
-			ktime_t nextevt) { BUG(); }
-/* tick_resume_oneshot, tick_program_event, tick_oneshot_notify, tick_oneshot_possible,
+/* tick_setup_oneshot, tick_resume_oneshot, tick_program_event, tick_oneshot_notify, tick_oneshot_possible,
  * tick_oneshot_mode_active, tick_clock_notify, tick_check_oneshot_change,
  * tick_broadcast_switch_to_oneshot, tick_check_oneshot_broadcast_this_cpu,
  * tick_broadcast_oneshot_available, tick_broadcast_offline, tick_broadcast_oneshot_active,

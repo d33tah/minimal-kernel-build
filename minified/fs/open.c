@@ -168,15 +168,13 @@ struct file *filp_open(const char *filename, int flags, umode_t mode)
 
 int filp_close(struct file *filp, fl_owner_t id)
 {
-	int retval = 0;
-
 	if (!file_count(filp)) {
 		printk(KERN_ERR "VFS: Close: file count is 0\n");
 		return 0;
 	}
 
 	fput(filp);
-	return retval;
+	return 0;
 }
 
 int nonseekable_open(struct inode *inode, struct file *filp)

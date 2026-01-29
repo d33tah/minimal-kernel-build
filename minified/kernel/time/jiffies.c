@@ -26,19 +26,7 @@ __cacheline_aligned_in_smp DEFINE_RAW_SPINLOCK(jiffies_lock);
 __cacheline_aligned_in_smp seqcount_raw_spinlock_t jiffies_seq =
 	SEQCNT_RAW_SPINLOCK_ZERO(jiffies_seq, &jiffies_lock);
 
-#if (BITS_PER_LONG < 64)
-u64 get_jiffies_64(void)
-{
-	unsigned int seq;
-	u64 ret;
-
-	do {
-		seq = read_seqcount_begin(&jiffies_seq);
-		ret = jiffies_64;
-	} while (read_seqcount_retry(&jiffies_seq, seq));
-	return ret;
-}
-#endif
+/* get_jiffies_64 removed - never called */
 
 static int __init init_jiffies_clocksource(void)
 {

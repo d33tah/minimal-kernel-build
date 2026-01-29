@@ -1,9 +1,5 @@
-/* Minimal ioctls.h - all ioctls removed as unused */
+/* Minimal ioctls.h - all ioctls and ioctl.h macros unused */
 #ifndef __ASM_GENERIC_IOCTLS_H
 #define __ASM_GENERIC_IOCTLS_H
-
-#include <asm/ioctl.h>
-
-/* All ioctls removed as unused */
-
+/* asm/ioctl.h include removed - _IO*, _IOC* macros never used */
 #endif

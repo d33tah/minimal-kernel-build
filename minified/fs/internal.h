@@ -81,7 +81,6 @@ extern void shrink_dentry_list(struct list_head *);
 
 /* pipefifo_fops moved to inode.c */
 
-/* group_pin_kill removed - unused */
-extern void mnt_pin_kill(struct mount *m);
+/* group_pin_kill, mnt_pin_kill removed - pin_insert never called, mnt_pins always empty */
 
 /* ns_dentry_operations, sb_init_dio_done_wq removed - unused */

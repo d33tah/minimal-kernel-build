@@ -155,8 +155,9 @@ void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale,
 	}
 
 	/* Inlined clocksource_update_max_deferment */
-	cs->max_idle_ns = clocks_calc_max_nsecs(cs->mult, cs->shift, cs->maxadj,
-						cs->mask, &cs->max_cycles);
+	/* max_idle_ns assignment removed - field was write-only */
+	clocks_calc_max_nsecs(cs->mult, cs->shift, cs->maxadj, cs->mask,
+			      &cs->max_cycles);
 }
 
 int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq)

@@ -33,7 +33,7 @@ struct clocksource {
 	u64			mask;
 	u32			mult;
 	u32			shift;
-	u64			max_idle_ns;
+	/* max_idle_ns removed - write-only, never read */
 	u32			maxadj;
 	u32			uncertainty_margin;
 	u64			max_cycles;

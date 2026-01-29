@@ -50,7 +50,7 @@ void tick_handle_periodic(struct clock_event_device *dev)
 
 static void tick_setup_periodic(struct clock_event_device *dev, int broadcast)
 {
-	dev->event_handler = tick_handle_periodic;
+	/* event_handler assignment removed - callback never invoked */
 
 	if (dev->features & CLOCK_EVT_FEAT_DUMMY)
 		return;
@@ -104,7 +104,7 @@ void tick_check_new_device(struct clock_event_device *newdev)
 		}
 		td->mode = TICKDEV_MODE_PERIODIC;
 	} else {
-		td->evtdev->event_handler = clockevents_handle_noop;
+		/* event_handler assignment removed - callback never invoked */
 	}
 	td->evtdev = newdev;
 	/* cpumask_equal stub always returns false, irq_set_affinity is no-op */

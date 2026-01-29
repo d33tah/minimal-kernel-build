@@ -25,7 +25,7 @@ enum clock_event_state {
 # define CLOCK_EVT_FEAT_DUMMY		0x000010
 
 struct clock_event_device {
-	void			(*event_handler)(struct clock_event_device *);
+	/* event_handler callback removed - never invoked */
 	int			(*set_next_event)(unsigned long evt, struct clock_event_device *);
 	int			(*set_next_ktime)(ktime_t expires, struct clock_event_device *);
 	ktime_t			next_event;

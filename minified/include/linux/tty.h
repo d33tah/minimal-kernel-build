@@ -78,17 +78,7 @@ int tty_register_ldisc(struct tty_ldisc_ops *new_ldisc);
 #define NR_LDISCS	31
 #include <linux/llist.h>
 
-/* Flag accessor macros - only keep used ones */
-#define _C_FLAG(tty, f)	((tty)->termios.c_cflag & (f))
-#define _L_FLAG(tty, f)	((tty)->termios.c_lflag & (f))
-
-/* C_* macros - keep only used: C_BAUD, C_HUPCL, C_CLOCAL */
-#define C_BAUD(tty)	_C_FLAG((tty), CBAUD)
-#define C_HUPCL(tty)	_C_FLAG((tty), HUPCL)
-#define C_CLOCAL(tty)	_C_FLAG((tty), CLOCAL)
-
-/* L_* macros - keep only used: L_TOSTOP */
-#define L_TOSTOP(tty)	_L_FLAG((tty), TOSTOP)
+/* All C_* and L_* flag accessor macros removed - none were used */
 
 struct device;
 /* struct signal_struct forward decl removed - unused */

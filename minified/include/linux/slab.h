@@ -24,8 +24,7 @@
 
 # define SLAB_FAILSLAB		0
 # define SLAB_ACCOUNT		0
-
-#define SLAB_KASAN		0
+/* SLAB_KASAN removed - unused */
 
 #define SLAB_NO_USER_FLAGS	((slab_flags_t __force)0x10000000U)
 

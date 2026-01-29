@@ -12,8 +12,7 @@
 void irq_enter(void);
 void irq_enter_rcu(void);
 
-#define __irq_exit()	preempt_count_sub(HARDIRQ_OFFSET)
-/* __irq_exit_raw removed - never used */
+/* __irq_exit, __irq_exit_raw removed - never used */
 
 void irq_exit(void);
 void irq_exit_rcu(void);

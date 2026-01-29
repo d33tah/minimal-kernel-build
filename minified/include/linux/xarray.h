@@ -249,8 +249,7 @@ struct xa_state {
 #define XA_STATE(name, array, index)				\
 	struct xa_state name = __XA_STATE(array, index, 0, 0)
 
-#define xas_lock(xas)		xa_lock((xas)->xa)
-#define xas_unlock(xas)		xa_unlock((xas)->xa)
+/* xas_lock, xas_unlock removed - unused */
 #define xas_lock_irq(xas)	xa_lock_irq((xas)->xa)
 #define xas_unlock_irq(xas)	xa_unlock_irq((xas)->xa)
 #define xas_lock_irqsave(xas, flags) \

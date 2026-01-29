@@ -40,9 +40,7 @@ static inline bool __nodes_empty(const nodemask_t *srcp, unsigned int nbits)
 	[BITS_TO_LONGS(MAX_NUMNODES)-1] = NODE_MASK_LAST_WORD		\
 } })
 
-/* MAX_NUMNODES=1, use simplified version */
-#define for_each_node_mask(node, mask)                                  \
-	for ((node) = 0; (node) < 1 && !nodes_empty(mask); (node)++)  
+/* MAX_NUMNODES=1 - for_each_node_mask removed as unused */
 
 enum node_states {
 	N_POSSIBLE,

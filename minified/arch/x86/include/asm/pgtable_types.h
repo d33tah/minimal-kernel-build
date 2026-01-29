@@ -20,7 +20,7 @@
 #define _PAGE_BIT_SOFTW1	9	 
 #define _PAGE_BIT_SOFTW2	10	 
 #define _PAGE_BIT_SOFTW3	11	 
-#define _PAGE_BIT_PAT_LARGE	12
+/* _PAGE_BIT_PAT_LARGE removed - unused */
 #define _PAGE_BIT_NX		63
 #define _PAGE_BIT_SPECIAL	_PAGE_BIT_SOFTW1
 #define _PAGE_BIT_PROTNONE	_PAGE_BIT_GLOBAL
@@ -37,7 +37,7 @@
 #define _PAGE_SOFTW1	(_AT(pteval_t, 1) << _PAGE_BIT_SOFTW1)
 /* _PAGE_SOFTW2, _PAGE_SOFTW3 removed - unused */
 #define _PAGE_PAT	(_AT(pteval_t, 1) << _PAGE_BIT_PAT)
-#define _PAGE_PAT_LARGE (_AT(pteval_t, 1) << _PAGE_BIT_PAT_LARGE)
+/* _PAGE_PAT_LARGE removed - unused */
 #define _PAGE_SPECIAL	(_AT(pteval_t, 1) << _PAGE_BIT_SPECIAL)
 /* _PAGE_PKEY_BIT0-3 removed - unused */
 
@@ -81,7 +81,7 @@ enum page_cache_mode {
 #define _PAGE_ENC		(_AT(pteval_t, sme_me_mask))
 
 #define _PAGE_CACHE_MASK	(_PAGE_PWT | _PAGE_PCD | _PAGE_PAT)
-#define _PAGE_LARGE_CACHE_MASK	(_PAGE_PWT | _PAGE_PCD | _PAGE_PAT_LARGE)
+/* _PAGE_LARGE_CACHE_MASK removed - unused */
 
 #define _PAGE_NOCACHE		(cachemode2protval(_PAGE_CACHE_MODE_UC))
 /* _PAGE_CACHE_WP removed - unused */

@@ -14,8 +14,7 @@
 		__used __section(".modinfo") __aligned(1)		  \
 		= __MODULE_INFO_PREFIX __stringify(tag) "=" info
 
-#define __MODULE_PARM_TYPE(name, _type)					  \
-	__MODULE_INFO(parmtype, name##type, #name ":" _type)
+/* __MODULE_PARM_TYPE removed - unused */
 
 struct kernel_param;
 
@@ -56,10 +55,7 @@ struct kernel_param {
 extern const struct kernel_param __start___param[], __stop___param[];
 
 
-/* All module_param macros removed - never used (no modules) */
-
-/* x86 only - alpha/ia64/ppc64 version removed */
-#define __moduleparam_const const
+/* All module_param macros, __moduleparam_const removed - never used */
 
 extern bool parameq(const char *name1, const char *name2);
 

@@ -75,8 +75,7 @@ typedef struct siginfo {
 #define SI_USER		0
 #define SI_KERNEL	0x80
 
-#define SI_FROMUSER(siptr)	((siptr)->si_code <= 0)
-#define SI_FROMKERNEL(siptr)	((siptr)->si_code > 0)
+/* SI_FROMUSER, SI_FROMKERNEL removed - never used */
 
 /* Only keep signal sub-codes actually used */
 #define ILL_ILLOPN	2

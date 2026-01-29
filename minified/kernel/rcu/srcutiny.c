@@ -29,16 +29,7 @@ int init_srcu_struct(struct srcu_struct *ssp)
 	return 0;
 }
 
-/* cleanup_srcu_struct removed - never called */
-
-void __srcu_read_unlock(struct srcu_struct *ssp, int idx)
-{
-	int newval = READ_ONCE(ssp->srcu_lock_nesting[idx]) - 1;
-
-	WRITE_ONCE(ssp->srcu_lock_nesting[idx], newval);
-	if (!newval && READ_ONCE(ssp->srcu_gp_waiting) && in_task())
-		swake_up_one(&ssp->srcu_wq);
-}
+/* cleanup_srcu_struct, __srcu_read_unlock removed - never called */
 
 void srcu_drive_gp(struct work_struct *wp)
 {

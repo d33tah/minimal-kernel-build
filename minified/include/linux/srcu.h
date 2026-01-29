@@ -49,46 +49,12 @@ void srcu_drive_gp(struct work_struct *wp);
 
 void synchronize_srcu(struct srcu_struct *ssp);
 
-static inline int __srcu_read_lock(struct srcu_struct *ssp)
-{
-	int idx;
-
-	idx = ((READ_ONCE(ssp->srcu_idx) + 1) & 0x2) >> 1;
-	WRITE_ONCE(ssp->srcu_lock_nesting[idx], READ_ONCE(ssp->srcu_lock_nesting[idx]) + 1);
-	return idx;
-}
-
-
 void call_srcu(struct srcu_struct *ssp, struct rcu_head *head,
 		void (*func)(struct rcu_head *head));
 /* cleanup_srcu_struct, start_poll_synchronize_srcu, poll_state_synchronize_srcu removed - never called */
-int __srcu_read_lock(struct srcu_struct *ssp) __acquires(ssp);
-void __srcu_read_unlock(struct srcu_struct *ssp, int idx) __releases(ssp);
-void synchronize_srcu(struct srcu_struct *ssp);
+/* __srcu_read_lock, __srcu_read_unlock, srcu_read_lock, srcu_read_unlock removed - never called */
 unsigned long get_state_synchronize_srcu(struct srcu_struct *ssp);
 
 void srcu_init(void);
-
-/* srcu_read_lock_held removed - unused */
-/* srcu_dereference_check, srcu_dereference, srcu_dereference_notrace removed - never used */
-
-static inline int srcu_read_lock(struct srcu_struct *ssp) __acquires(ssp)
-{
-	int retval;
-
-	retval = __srcu_read_lock(ssp);
-	/* rcu_lock_acquire removed - empty stub */
-	return retval;
-}
-
-
-static inline void srcu_read_unlock(struct srcu_struct *ssp, int idx)
-	__releases(ssp)
-{
-	WARN_ON_ONCE(idx & ~0x1);
-	/* rcu_lock_release removed - empty stub */
-	__srcu_read_unlock(ssp, idx);
-}
-
 
 #endif

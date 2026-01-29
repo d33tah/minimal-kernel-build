@@ -48,7 +48,7 @@ struct vc_data {
 	unsigned int	vc_cols;
 	unsigned int	vc_rows;
 	unsigned int	vc_size_row;
-	unsigned int	vc_scan_lines;
+	/* vc_scan_lines removed - write-only, never read */
 	unsigned int	vc_cell_height;
 	unsigned long	vc_origin;
 	unsigned long	vc_scr_end;

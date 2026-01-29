@@ -297,7 +297,7 @@ static void vgacon_init(struct vc_data *c, int init)
 	struct uni_pagedir *p;
 
 	c->vc_can_do_color = vga_can_do_color;
-	c->vc_scan_lines = vga_scan_lines;
+	/* vc_scan_lines assignment removed - field removed */
 	c->vc_font.height = c->vc_cell_height = vga_video_font_height;
 
 	if (init) {

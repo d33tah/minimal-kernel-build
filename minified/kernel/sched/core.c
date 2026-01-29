@@ -315,7 +315,7 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 	p->se.on_rq = 0;
 	p->se.exec_start = 0;
 	p->se.sum_exec_runtime = 0;
-	p->se.prev_sum_exec_runtime = 0;
+	/* prev_sum_exec_runtime removed - write-only field */
 	p->se.vruntime = 0;
 
 	/* p->rt.run_list, timeout, time_slice, on_rq, on_list removed - write-only fields */

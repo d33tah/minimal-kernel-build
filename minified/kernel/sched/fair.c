@@ -289,8 +289,7 @@ static void set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 	se->exec_start = rq_clock_task(rq_of(cfs_rq));
 	cfs_rq->curr = se;
 	/* schedstat_enabled() always 0, block removed */
-
-	se->prev_sum_exec_runtime = se->sum_exec_runtime;
+	/* se->prev_sum_exec_runtime assignment removed - write-only field removed */
 }
 
 /* pick_next_entity inlined - buddy selection code removed for single-task kernel */

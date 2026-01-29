@@ -19,7 +19,7 @@
 void fprop_local_init_percpu(struct fprop_local_percpu *pl, gfp_t gfp)
 {
 	percpu_counter_init(&pl->events, 0, gfp);
-	pl->period = 0;
+	/* pl->period removed - write-only, never read */
 	raw_spin_lock_init(&pl->lock);
 }
 void fprop_local_destroy_percpu(struct fprop_local_percpu *pl)
@@ -68,7 +68,7 @@ int bdi_init(struct backing_dev_info *bdi)
 
 	/* Inlined wb_init */
 	memset(wb, 0, sizeof(*wb));
-	wb->bdi = bdi;
+	/* wb->bdi removed - write-only, never read */
 	INIT_LIST_HEAD(&wb->b_dirty);
 	INIT_LIST_HEAD(&wb->b_io);
 	INIT_LIST_HEAD(&wb->b_more_io);

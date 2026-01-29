@@ -10,7 +10,7 @@
 
 struct fprop_local_percpu {
 	struct percpu_counter events;
-	unsigned int period;
+	/* period removed - write-only, never read */
 	raw_spinlock_t lock;
 };
 

@@ -96,9 +96,9 @@ struct alloc_context {
 	struct zoneref *preferred_zoneref;
 	int migratetype;
 
-	 
+
 	enum zone_type highest_zoneidx;
-	bool spread_dirty_pages;
+	/* spread_dirty_pages removed - write-only, never read */
 };
 
  

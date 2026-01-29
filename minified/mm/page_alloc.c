@@ -689,7 +689,7 @@ struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid,
 							 __GFP_MOVABLE)) >>
 				3;
 	}
-	ac.spread_dirty_pages = (gfp & __GFP_WRITE);
+	/* ac.spread_dirty_pages removed - write-only, never read */
 	ac.preferred_zoneref = first_zones_zonelist(
 		ac.zonelist, ac.highest_zoneidx, ac.nodemask);
 
@@ -701,7 +701,7 @@ struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid,
 		goto out;
 
 	alloc_gfp = gfp;
-	ac.spread_dirty_pages = false;
+	/* ac.spread_dirty_pages removed - write-only */
 
 	ac.nodemask = nodemask;
 

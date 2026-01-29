@@ -947,7 +947,7 @@ struct tty_driver *__tty_alloc_driver(unsigned int lines, struct module *owner,
 		return ERR_PTR(-ENOMEM);
 
 	kref_init(&driver->kref);
-	driver->magic = TTY_DRIVER_MAGIC;
+	/* driver->magic assignment removed - field was write-only */
 	driver->num = lines;
 	driver->owner = owner;
 	driver->flags = flags;

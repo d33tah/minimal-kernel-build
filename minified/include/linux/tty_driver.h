@@ -32,7 +32,7 @@ struct tty_operations {
 } __randomize_layout;
 
 struct tty_driver {
-	int	magic;
+	/* magic field removed - write-only, never checked */
 	struct kref kref;
 	struct cdev **cdevs;
 	struct module	*owner;
@@ -72,7 +72,7 @@ static inline struct tty_driver *tty_driver_kref_get(struct tty_driver *d)
 	return d;
 }
 
-#define TTY_DRIVER_MAGIC		0x5402
+/* TTY_DRIVER_MAGIC removed - never used (magic field removed) */
 
 #define TTY_DRIVER_INSTALLED		0x0001
 #define TTY_DRIVER_RESET_TERMIOS	0x0002

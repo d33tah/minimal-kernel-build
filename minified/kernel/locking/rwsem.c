@@ -89,7 +89,7 @@ struct rwsem_waiter {
 	enum rwsem_waiter_type type;
 	unsigned long timeout;
 
-	bool handoff_set;
+	/* handoff_set removed - write-only, never read */
 };
 #define rwsem_first_waiter(sem) \
 	list_first_entry(&sem->wait_list, struct rwsem_waiter, list)
@@ -226,8 +226,6 @@ static inline bool rwsem_try_write_lock(struct rw_semaphore *sem,
 		if (has_handoff) {
 			if (!first)
 				return false;
-
-			waiter->handoff_set = true;
 		}
 
 		new = count;
@@ -248,10 +246,8 @@ static inline bool rwsem_try_write_lock(struct rw_semaphore *sem,
 		}
 	} while (!atomic_long_try_cmpxchg_acquire(&sem->count, &count, new));
 
-	if (new &RWSEM_FLAG_HANDOFF) {
-		waiter->handoff_set = true;
+	if (new &RWSEM_FLAG_HANDOFF)
 		return false;
-	}
 
 	list_del(&waiter->list);
 	rwsem_set_owner(sem);
@@ -363,7 +359,6 @@ rwsem_down_write_slowpath(struct rw_semaphore *sem, int state)
 	waiter.task = current;
 	waiter.type = RWSEM_WAITING_FOR_WRITE;
 	waiter.timeout = jiffies + RWSEM_WAIT_TIMEOUT;
-	waiter.handoff_set = false;
 
 	raw_spin_lock_irq(&sem->wait_lock);
 	rwsem_add_waiter(sem, &waiter);

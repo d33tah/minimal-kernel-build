@@ -36,7 +36,7 @@
 /* Clang-specific definitions - inlined from compiler-clang.h */
 #define __UNIQUE_ID(prefix) __PASTE(__PASTE(__UNIQUE_ID_, prefix), __COUNTER__)
 #define __no_sanitize_address
-#define __no_sanitize_thread
+/* __no_sanitize_thread removed - unused */
 #define __HAVE_BUILTIN_BSWAP32__
 #define __HAVE_BUILTIN_BSWAP64__
 #define __HAVE_BUILTIN_BSWAP16__
@@ -121,8 +121,7 @@
 	compiletime_assert(__native_word(t),				\
 		"Need native word sized stores/loads for atomicity.")
 
-#define __diag_GCC(version, severity, string)
-
+/* __diag_GCC removed - unused (building with clang) */
 #define __diag_push()	__diag(push)
 #define __diag_pop()	__diag(pop)
 

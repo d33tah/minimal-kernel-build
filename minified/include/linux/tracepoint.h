@@ -57,8 +57,7 @@ struct notifier_block;
 		return false;						\
 	}
 
-# define tracepoint_string(str) str
-# define __tracepoint_string
+/* tracepoint_string, __tracepoint_string removed - unused */
 
 #define DECLARE_TRACE(name, proto, args)				\
 	__DECLARE_TRACE(name, PARAMS(proto), PARAMS(args),		\

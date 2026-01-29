@@ -18,13 +18,7 @@ static __always_inline void __node_set(int node, volatile nodemask_t *dstp)
 /* node_isset removed - unused */
 
 /* node_test_and_set, nodes_and, nodes_or, nodes_andnot, nodes_equal,
- * nodes_intersects, nodes_subset removed - unused */
-
-#define nodes_empty(src) __nodes_empty(&(src), MAX_NUMNODES)
-static inline bool __nodes_empty(const nodemask_t *srcp, unsigned int nbits)
-{
-	return bitmap_empty(srcp->bits, nbits);
-}
+ * nodes_intersects, nodes_subset, nodes_empty removed - unused */
 
 
 

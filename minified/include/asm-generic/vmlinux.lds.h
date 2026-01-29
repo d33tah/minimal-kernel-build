@@ -22,9 +22,8 @@
 /* CONFIG_LTO_CLANG is enabled - use expanded section definitions */
 #define TEXT_MAIN .text .text.[0-9a-zA-Z_]*
 #define DATA_MAIN .data .data.[0-9a-zA-Z_]* .data..L* .data..compoundliteral* .data.$__unnamed_* .data.$L*
-/* SDATA_MAIN, RODATA_MAIN removed - unused */
+/* SDATA_MAIN, RODATA_MAIN, SBSS_MAIN removed - unused */
 #define BSS_MAIN .bss .bss.[0-9a-zA-Z_]* .bss..compoundliteral*
-#define SBSS_MAIN .sbss .sbss.[0-9a-zA-Z_]*
 
 #define STRUCT_ALIGNMENT 32
 #define STRUCT_ALIGN() . = ALIGN(STRUCT_ALIGNMENT)

@@ -61,9 +61,7 @@
 
 /* raw_spin_trylock_irqsave removed - unused */
 
-/* Inlined from rwlock.h */
-# define rwlock_init(lock)					\
-	do { *(lock) = __RW_LOCK_UNLOCKED(lock); } while (0)
+/* rwlock_init removed - unused */
 
 /* do_raw_read_lock, do_raw_read_trylock, do_raw_read_unlock,
    do_raw_write_lock, do_raw_write_trylock, do_raw_write_unlock removed - unused */

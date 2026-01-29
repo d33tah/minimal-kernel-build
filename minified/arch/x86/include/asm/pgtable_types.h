@@ -17,10 +17,8 @@
 #define _PAGE_BIT_PSE		7	 
 #define _PAGE_BIT_PAT		7	 
 #define _PAGE_BIT_GLOBAL	8	 
-#define _PAGE_BIT_SOFTW1	9	 
-#define _PAGE_BIT_SOFTW2	10	 
-#define _PAGE_BIT_SOFTW3	11	 
-/* _PAGE_BIT_PAT_LARGE removed - unused */
+#define _PAGE_BIT_SOFTW1	9
+/* _PAGE_BIT_SOFTW2, _PAGE_BIT_SOFTW3, _PAGE_BIT_PAT_LARGE removed - unused */
 #define _PAGE_BIT_NX		63
 #define _PAGE_BIT_SPECIAL	_PAGE_BIT_SOFTW1
 #define _PAGE_BIT_PROTNONE	_PAGE_BIT_GLOBAL
@@ -43,12 +41,9 @@
 #define _PAGE_KNL_ERRATUM_MASK 0
 
 #define _PAGE_SOFT_DIRTY	(_AT(pteval_t, 0))
-
- 
-#define _PAGE_SWP_SOFT_DIRTY	(_AT(pteval_t, 0))
-
+/* _PAGE_SWP_SOFT_DIRTY removed - unused */
 #define _PAGE_UFFD_WP		(_AT(pteval_t, 0))
-#define _PAGE_SWP_UFFD_WP	(_AT(pteval_t, 0))
+/* _PAGE_SWP_UFFD_WP removed - unused */
 
 #define _PAGE_NX	(_AT(pteval_t, 0))
 #define _PAGE_DEVMAP	(_AT(pteval_t, 0))
@@ -115,12 +110,12 @@ enum page_cache_mode {
 #define _KERNPG_TABLE		 (__PP|__RW|   0|___A|   0|___D|   0|   0| _ENC)
 #define _PAGE_TABLE		 (__PP|__RW|_USR|___A|   0|___D|   0|   0| _ENC)
 #define __PAGE_KERNEL_RO	 (__PP|   0|   0|___A|__NX|___D|   0|___G)
-#define __PAGE_KERNEL_NOCACHE	 (__PP|__RW|   0|___A|__NX|___D|   0|___G| __NC)
+/* __PAGE_KERNEL_NOCACHE removed - unused */
 #define __PAGE_KERNEL_LARGE	 (__PP|__RW|   0|___A|__NX|___D|_PSE|___G)
 #define __PAGE_KERNEL_LARGE_EXEC (__PP|__RW|   0|___A|   0|___D|_PSE|___G)
 
 #define __PAGE_KERNEL_IO		__PAGE_KERNEL
-#define __PAGE_KERNEL_IO_NOCACHE	__PAGE_KERNEL_NOCACHE
+/* __PAGE_KERNEL_IO_NOCACHE removed - unused */
 
 #ifndef __ASSEMBLY__
 
@@ -129,12 +124,12 @@ enum page_cache_mode {
 #define PAGE_KERNEL		__pgprot_mask(__PAGE_KERNEL            | _ENC)
 #define PAGE_KERNEL_RO		__pgprot_mask(__PAGE_KERNEL_RO         | _ENC)
 #define PAGE_KERNEL_EXEC	__pgprot_mask(__PAGE_KERNEL_EXEC       | _ENC)
-#define PAGE_KERNEL_NOCACHE	__pgprot_mask(__PAGE_KERNEL_NOCACHE    | _ENC)
+/* PAGE_KERNEL_NOCACHE removed - unused */
 #define PAGE_KERNEL_LARGE	__pgprot_mask(__PAGE_KERNEL_LARGE      | _ENC)
 #define PAGE_KERNEL_LARGE_EXEC	__pgprot_mask(__PAGE_KERNEL_LARGE_EXEC | _ENC)
 
 #define PAGE_KERNEL_IO		__pgprot_mask(__PAGE_KERNEL_IO)
-#define PAGE_KERNEL_IO_NOCACHE	__pgprot_mask(__PAGE_KERNEL_IO_NOCACHE)
+/* PAGE_KERNEL_IO_NOCACHE removed - unused */
 
 #endif	 
 

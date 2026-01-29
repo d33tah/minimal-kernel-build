@@ -62,8 +62,7 @@ static inline void __set_fixmap(enum fixed_addresses idx,
 	native_set_fixmap(idx, phys, flags);
 }
 
- 
-#define FIXMAP_PAGE_NOCACHE PAGE_KERNEL_IO_NOCACHE
+/* FIXMAP_PAGE_NOCACHE removed - unused */
 
 /* early_memremap_{encrypted,decrypted}[_wp] declarations removed - never called */
 
@@ -85,9 +84,7 @@ static __always_inline unsigned long fix_to_virt(const unsigned int idx)
 #define FIXMAP_PAGE_NORMAL PAGE_KERNEL
 #endif
 /* FIXMAP_PAGE_RO removed - unused */
-#ifndef FIXMAP_PAGE_NOCACHE
-#define FIXMAP_PAGE_NOCACHE PAGE_KERNEL_NOCACHE
-#endif
+/* FIXMAP_PAGE_NOCACHE removed - unused */
 #ifndef FIXMAP_PAGE_IO
 #define FIXMAP_PAGE_IO PAGE_KERNEL_IO
 #endif

@@ -69,9 +69,7 @@ static const __initconst struct idt_data def_idts[] = {
 	SYSG(IA32_SYSCALL_VECTOR, entry_INT80_32),
 };
 
-static const __initconst struct idt_data apic_idts[] = {
-
-};
+/* apic_idts array removed - was empty, APIC not used in minimal kernel */
 
 static gate_desc idt_table[IDT_ENTRIES] __page_aligned_bss;
 
@@ -132,7 +130,7 @@ void __init idt_setup_apic_and_irq_gates(void)
 	int i = FIRST_EXTERNAL_VECTOR;
 	void *entry;
 
-	idt_setup_from_table(idt_table, apic_idts, ARRAY_SIZE(apic_idts), true);
+	/* apic_idts call removed - array was empty */
 
 	for_each_clear_bit_from(i, system_vectors, FIRST_SYSTEM_VECTOR) {
 		entry = irq_entries_start +

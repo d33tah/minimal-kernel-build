@@ -655,8 +655,8 @@ static inline void init_sync_kiocb(struct kiocb *kiocb, struct file *filp)
 #define I_WILL_FREE		(1 << 4)
 #define I_FREEING		(1 << 5)
 #define I_CLEAR			(1 << 6)
-#define __I_SYNC		7
-#define I_SYNC			(1 << __I_SYNC)
+/* __I_SYNC removed - unused, inlined */
+#define I_SYNC			(1 << 7)
 #define I_REFERENCED		(1 << 8)
 #define I_LINKABLE		(1 << 10)
 #define I_DIRTY_TIME		(1 << 11)

@@ -4,8 +4,7 @@
 
 #ifdef __KERNEL__
 #include <linux/types.h>
-/* uuid.h removed - guid_t not used */
-typedef unsigned long kernel_ulong_t;
+/* uuid.h, kernel_ulong_t removed - unused */
 #endif
 
 /* PCI, ACPI, DMI structures removed - unused in minimal kernel */

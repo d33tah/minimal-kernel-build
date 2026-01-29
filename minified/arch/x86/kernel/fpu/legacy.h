@@ -5,11 +5,7 @@
 #include <asm/fpu/types.h>
 
 /* mxcsr_feature_mask removed - only written, never read */
-
-static inline void ldmxcsr(u32 mxcsr)
-{
-	asm volatile("ldmxcsr %0" :: "m" (mxcsr));
-}
+/* ldmxcsr removed - never called */
 
 #define kernel_insn(insn, output, input...)				\
 	asm volatile("1:" #insn "\n\t"					\

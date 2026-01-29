@@ -33,12 +33,7 @@ struct bus_type {
 
 /* bus_register removed - never called */
 /* bus_unregister removed - never called */
-
-struct bus_attribute {
-	struct attribute	attr;
-	ssize_t (*show)(struct bus_type *bus, char *buf);
-	ssize_t (*store)(struct bus_type *bus, const char *buf, size_t count);
-};
+/* struct bus_attribute removed - never used */
 
 /* BUS_ATTR_RW, BUS_ATTR_WO, device_match_name, device_match_of_node, device_match_fwnode,
    device_match_acpi_dev, device_match_acpi_handle, device_match_any removed - unused */

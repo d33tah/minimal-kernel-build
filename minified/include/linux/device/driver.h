@@ -33,12 +33,7 @@ struct device_driver {
 extern void wait_for_device_probe(void);
 
 
-struct driver_attribute {
-	struct attribute attr;
-	ssize_t (*show)(struct device_driver *driver, char *buf);
-	ssize_t (*store)(struct device_driver *driver, const char *buf,
-			 size_t count);
-};
+/* struct driver_attribute removed - never used */
 
 /* DRIVER_ATTR_RW, DRIVER_ATTR_RO, DRIVER_ATTR_WO, driver_create_file, driver_remove_file, driver_find_device,
    driver_deferred_probe_timeout extern removed - only used internally in dd.c */

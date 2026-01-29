@@ -22,8 +22,7 @@
 /* CONFIG_LTO_CLANG is enabled - use expanded section definitions */
 #define TEXT_MAIN .text .text.[0-9a-zA-Z_]*
 #define DATA_MAIN .data .data.[0-9a-zA-Z_]* .data..L* .data..compoundliteral* .data.$__unnamed_* .data.$L*
-#define SDATA_MAIN .sdata .sdata.[0-9a-zA-Z_]*
-#define RODATA_MAIN .rodata .rodata.[0-9a-zA-Z_]* .rodata..L*
+/* SDATA_MAIN, RODATA_MAIN removed - unused */
 #define BSS_MAIN .bss .bss.[0-9a-zA-Z_]* .bss..compoundliteral*
 #define SBSS_MAIN .sbss .sbss.[0-9a-zA-Z_]*
 
@@ -363,11 +362,7 @@
 
 #define BTF
 
-#define INIT_TASK_DATA_SECTION(align)					\
-	. = ALIGN(align);						\
-	.data..init_task :  AT(ADDR(.data..init_task) - LOAD_OFFSET) {	\
-		INIT_TASK_DATA(align)					\
-	}
+/* INIT_TASK_DATA_SECTION removed - unused */
 
 #define KERNEL_CTORS()
 
@@ -418,13 +413,7 @@
 #define EXIT_CALL							\
 	*(.exitcall.exit)
 
-#define SBSS(sbss_align)						\
-	. = ALIGN(sbss_align);						\
-	.sbss : AT(ADDR(.sbss) - LOAD_OFFSET) {				\
-		*(.dynsbss)						\
-		*(SBSS_MAIN)						\
-		*(.scommon)						\
-	}
+/* SBSS removed - unused */
 
 #ifndef BSS_FIRST_SECTIONS
 #define BSS_FIRST_SECTIONS

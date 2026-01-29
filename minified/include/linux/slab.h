@@ -101,8 +101,7 @@ static inline void kfree(const void *objp) {}
 
 enum kmalloc_cache_type {
 	KMALLOC_NORMAL = 0,
-	KMALLOC_DMA = KMALLOC_NORMAL,
-	KMALLOC_CGROUP = KMALLOC_NORMAL,
+	/* KMALLOC_DMA, KMALLOC_CGROUP removed - never used */
 	KMALLOC_RECLAIM,
 	NR_KMALLOC_TYPES
 };

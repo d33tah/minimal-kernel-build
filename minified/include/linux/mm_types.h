@@ -285,9 +285,7 @@ struct mm_struct {
 		unsigned long total_vm;
 		unsigned long def_flags;
 
-		/* write_protect_seq removed - initialized but never used */
-
-		spinlock_t arg_lock;  
+		/* write_protect_seq, arg_lock removed - initialized but never used */
 
 		unsigned long start_code, end_code, start_data, end_data;
 		unsigned long start_brk, brk, start_stack;

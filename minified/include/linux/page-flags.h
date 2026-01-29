@@ -396,13 +396,7 @@ static __always_inline void SetPageAnonExclusive(struct page *page)
 
 #define PAGE_FLAGS_CHECK_AT_PREP	PAGEFLAGS_MASK
 
-#define PAGE_FLAGS_PRIVATE				\
-	(1UL << PG_private | 1UL << PG_private_2)
-static inline int page_has_private(struct page *page)
-{
-	return !!(page->flags & PAGE_FLAGS_PRIVATE);
-}
-
+/* PAGE_FLAGS_PRIVATE and page_has_private removed - never called */
 /* folio_has_private removed - never called */
 
 #undef PF_ANY

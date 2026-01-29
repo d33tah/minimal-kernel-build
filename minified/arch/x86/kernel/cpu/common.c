@@ -440,7 +440,7 @@ void get_cpu_address_sizes(struct cpuinfo_x86 *c)
 		c->x86_phys_bits = eax & 0xff;
 	} else if (cpu_has(c, X86_FEATURE_PAE) || cpu_has(c, X86_FEATURE_PSE36))
 		c->x86_phys_bits = 36;
-	c->x86_cache_bits = c->x86_phys_bits;
+	/* c->x86_cache_bits assignment removed - field removed */
 }
 
 static void identify_cpu_without_cpuid(struct cpuinfo_x86 *c)

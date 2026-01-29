@@ -15,7 +15,7 @@
 #include <linux/ratelimit.h>
 #include "tty.h"
 
-#define TTYB_DEFAULT_MEM_LIMIT (640 * 1024UL)
+/* TTYB_DEFAULT_MEM_LIMIT removed - mem_limit field removed */
 
 static void tty_buffer_reset(struct tty_buffer *p, size_t size)
 {
@@ -65,7 +65,7 @@ void tty_buffer_init(struct tty_port *port)
 	atomic_set(&buf->mem_used, 0);
 	atomic_set(&buf->priority, 0);
 	/* buf->work not initialized - tty_flip_buffer_push/tty_buffer_restart_work never called */
-	buf->mem_limit = TTYB_DEFAULT_MEM_LIMIT;
+	/* buf->mem_limit assignment removed - field removed */
 }
 
 /* tty_buffer_cancel_work moved to tty.h as static inline */

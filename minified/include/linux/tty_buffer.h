@@ -25,9 +25,9 @@ struct tty_bufhead {
 	struct mutex	   lock;
 	atomic_t	   priority;
 	struct tty_buffer sentinel;
-	struct llist_head free;		 
-	atomic_t	   mem_used;     
-	int		   mem_limit;
+	struct llist_head free;
+	atomic_t	   mem_used;
+	/* mem_limit removed - write-only, never read */
 	struct tty_buffer *tail;	 
 };
 

@@ -80,9 +80,7 @@ struct cpuinfo_x86 {
 	u16			x86_clflush_size;
 	/* booted_cores, phys_proc_id, logical_proc_id, cpu_core_id, cpu_die_id, logical_die_id, cpu_index removed - never read */
 	bool			smt_active;
-	/* microcode removed - never read */
-	 
-	u8			x86_cache_bits;
+	/* microcode, x86_cache_bits removed - never read */
 	unsigned		initialized : 1;
 } __randomize_layout;
 

@@ -288,9 +288,8 @@ typedef struct { pud_t pud; } pmd_t;
 #define PMD_SIZE  	(1UL << PMD_SHIFT)
 #define PMD_MASK  	(~(PMD_SIZE-1))
 
-static inline int pud_none(pud_t pud)		{ return 0; }
-/* pud_bad, pud_clear, pud_user, pud_leaf removed - unused/empty stub */
-static inline int pud_present(pud_t pud)	{ return 1; }
+/* pud_none, pud_bad, pud_clear, pud_user, pud_leaf removed - always return 0/0/empty/0/0 */
+/* pud_present removed - always returns 1, inlined at call site */
 #define pmd_ERROR(pmd)				(pud_ERROR((pmd).pud))
 
 #define pud_populate(mm, pmd, pte)		do { } while (0)

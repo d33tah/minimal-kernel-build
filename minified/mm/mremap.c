@@ -177,7 +177,8 @@ static bool move_pgt_entry(enum pgt_entry entry, struct vm_area_struct *vma,
 	case NORMAL_PUD: {
 		pud_t *old_pud = old_entry, *new_pud = new_entry;
 		pud_t pud;
-		if (WARN_ON_ONCE(!pud_none(*new_pud)))
+		/* pud_none always returns 0, so !pud_none is always true */
+		if (WARN_ON_ONCE(1))
 			break;
 		old_ptl = pud_lock(mm, old_pud);
 		new_ptl = pud_lockptr(mm, new_pud);

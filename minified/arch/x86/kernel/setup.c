@@ -484,8 +484,7 @@ void __init setup_arch(char **cmdline_p)
 	e820__setup_pci_gap();
 	/* efi_enabled always false - condition simplified */
 	conswitchp = &vga_con;
-	/* x86_init.timers.wallclock_init removed - x86_wallclock_init is empty */
-	register_refined_jiffies(CLOCK_TICK_RATE);
+	/* x86_init.timers.wallclock_init, register_refined_jiffies removed */
 }
 
 static struct resource video_ram_resource = { .name = "Video RAM area",

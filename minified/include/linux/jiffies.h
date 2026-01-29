@@ -40,7 +40,7 @@
 # error Invalid value of HZ.
 #endif
 
-extern int register_refined_jiffies(long clock_tick_rate);
+/* register_refined_jiffies declaration removed - function removed */
 
 #ifndef __jiffy_arch_data
 #define __jiffy_arch_data

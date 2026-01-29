@@ -150,12 +150,7 @@ static inline void dev_set_drvdata(struct device *dev, void *data)
 
 
 /* dev_set_uevent_suppress removed - empty stub, all callers removed */
-
-static inline int device_is_registered(struct device *dev)
-{
-	return dev->kobj.state_in_sysfs;
-}
-
+/* device_is_registered removed - inlined at single call site */
 /* device_set_pm_not_required removed - never called */
 /* dev_pm_set_driver_flags removed - inlined at single call site */
 

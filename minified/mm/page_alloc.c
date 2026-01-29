@@ -572,10 +572,11 @@ static struct page *get_page_from_freelist(gfp_t gfp_mask, unsigned int order,
 			post_alloc_hook(page, order);
 			if (order && (gfp_mask & __GFP_COMP))
 				prep_compound_page(page, order);
+			/* set_page_pfmemalloc/clear_page_pfmemalloc inlined */
 			if (alloc_flags & ALLOC_NO_WATERMARKS)
-				set_page_pfmemalloc(page);
+				page->lru.next = (void *)BIT(1);
 			else
-				clear_page_pfmemalloc(page);
+				page->lru.next = NULL;
 			return page;
 		}
 	}

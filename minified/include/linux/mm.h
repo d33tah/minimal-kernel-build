@@ -491,16 +491,7 @@ static inline void *folio_address(const struct folio *folio)
 bool folio_mapped(struct folio *folio);
 
 /* page_is_pfmemalloc inlined at mm/slub.c - single caller */
-
-static inline void set_page_pfmemalloc(struct page *page)
-{
-	page->lru.next = (void *)BIT(1);
-}
-
-static inline void clear_page_pfmemalloc(struct page *page)
-{
-	page->lru.next = NULL;
-}
+/* set_page_pfmemalloc, clear_page_pfmemalloc inlined at single call site */
 
 #define offset_in_page(p)	((unsigned long)(p) & ~PAGE_MASK)
 #define offset_in_folio(folio, p) ((unsigned long)(p) & (folio_size(folio) - 1))

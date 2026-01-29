@@ -154,7 +154,8 @@ static int driver_probe_device(struct device_driver *drv, struct device *dev)
 	atomic_inc(&probe_count);
 
 	/* Inlined __driver_probe_device */
-	if (dev->p->dead || !device_is_registered(dev)) {
+	if (dev->p->dead ||
+	    !dev->kobj.state_in_sysfs) { /* device_is_registered inlined */
 		ret = -ENODEV;
 		goto out;
 	}

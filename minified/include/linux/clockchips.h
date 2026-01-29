@@ -53,10 +53,7 @@ struct clock_event_device {
 	struct module		*owner;
 } ____cacheline_aligned;
 
-static inline bool clockevent_state_detached(struct clock_event_device *dev)
-{
-	return dev->state_use_accessors == CLOCK_EVT_STATE_DETACHED;
-}
+/* clockevent_state_detached removed - inlined at single call site */
 
 static inline bool clockevent_state_shutdown(struct clock_event_device *dev)
 {

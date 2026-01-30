@@ -8,7 +8,7 @@
 
 unsigned int sysctl_sched_latency = 6000000ULL;
 unsigned int sysctl_sched_min_granularity = 750000ULL;
-static unsigned int sched_nr_latency = 8;
+/* sched_nr_latency removed - unused after simplification */
 unsigned int sysctl_sched_wakeup_granularity = 1000000UL;
 
 static inline void update_load_add(struct load_weight *lw, unsigned long inc)

@@ -179,98 +179,11 @@ void iov_iter_init(struct iov_iter *i, unsigned int direction,
 				.count = count };
 }
 
-/* allocated() inlined - was only called once */
-
-static size_t push_pipe(struct iov_iter *i, size_t size, int *iter_headp,
-			size_t *offp)
-{
-	struct pipe_inode_info *pipe = i->pipe;
-	unsigned int p_tail = pipe->tail;
-	unsigned int p_mask = pipe->ring_size - 1;
-	unsigned int iter_head;
-	size_t off;
-	ssize_t left;
-
-	if (unlikely(size > i->count))
-		size = i->count;
-	if (unlikely(!size))
-		return 0;
-
-	left = size;
-	/* Inlined data_start */
-	iter_head = i->head;
-	off = i->iov_offset;
-	/* allocated() inlined */
-	if (off &&
-	    (pipe->bufs[iter_head & p_mask].ops != &default_pipe_buf_ops ||
-	     off == PAGE_SIZE)) {
-		iter_head++;
-		off = 0;
-	}
-	*iter_headp = iter_head;
-	*offp = off;
-	if (off) {
-		left -= PAGE_SIZE - off;
-		if (left <= 0) {
-			pipe->bufs[iter_head & p_mask].len += size;
-			return size;
-		}
-		pipe->bufs[iter_head & p_mask].len = PAGE_SIZE;
-		iter_head++;
-	}
-	while (!pipe_full(iter_head, p_tail, pipe->max_usage)) {
-		struct pipe_buffer *buf = &pipe->bufs[iter_head & p_mask];
-		struct page *page = alloc_page(GFP_USER);
-		if (!page)
-			break;
-
-		buf->ops = &default_pipe_buf_ops;
-		buf->flags = 0;
-		buf->page = page;
-		buf->offset = 0;
-		buf->len = min_t(ssize_t, left, PAGE_SIZE);
-		left -= buf->len;
-		iter_head++;
-		pipe->head = iter_head;
-
-		if (left == 0)
-			return size;
-	}
-	return size - left;
-}
-
-/* copy_pipe_to_iter inlined into _copy_to_iter */
+/* push_pipe, copy_pipe_to_iter removed - iov_iter_pipe never called (~60 LOC) */
 
 size_t _copy_to_iter(const void *addr, size_t bytes, struct iov_iter *i)
 {
-	if (unlikely(iov_iter_is_pipe(i))) {
-		/* copy_pipe_to_iter inlined */
-		struct pipe_inode_info *pipe = i->pipe;
-		unsigned int p_mask = pipe->ring_size - 1;
-		unsigned int i_head;
-		size_t n, off;
-
-		bytes = n = push_pipe(i, bytes, &i_head, &off);
-		if (unlikely(!n))
-			return 0;
-		do {
-			size_t chunk = min_t(size_t, n, PAGE_SIZE - off);
-			struct page *page = pipe->bufs[i_head & p_mask].page;
-			char *to = kmap_local_page(page);
-			VM_BUG_ON(off + chunk > PAGE_SIZE);
-			memcpy(to + off, addr, chunk);
-			flush_dcache_page(page);
-			kunmap_local(to);
-			i->head = i_head;
-			i->iov_offset = off + chunk;
-			n -= chunk;
-			addr += chunk;
-			off = 0;
-			i_head++;
-		} while (n);
-		i->count -= bytes;
-		return bytes;
-	}
+	/* ITER_PIPE removed - iov_iter_pipe never called in minimal kernel */
 	iterate_and_advance(i, bytes, base, len, off,
 			    copyout(base, addr + off, len),
 			    memcpy(base, addr + off, len))
@@ -465,33 +378,7 @@ size_t copy_page_from_iter_atomic(struct page *page, unsigned offset,
 	return bytes;
 }
 
-static inline void pipe_truncate(struct iov_iter *i)
-{
-	struct pipe_inode_info *pipe = i->pipe;
-	unsigned int p_tail = pipe->tail;
-	unsigned int p_head = pipe->head;
-	unsigned int p_mask = pipe->ring_size - 1;
-
-	if (!pipe_empty(p_head, p_tail)) {
-		struct pipe_buffer *buf;
-		unsigned int i_head = i->head;
-		size_t off = i->iov_offset;
-
-		if (off) {
-			buf = &pipe->bufs[i_head & p_mask];
-			buf->len = off - buf->offset;
-			i_head++;
-		}
-		while (p_head != i_head) {
-			p_head--;
-			pipe_buf_release(pipe, &pipe->bufs[p_head & p_mask]);
-		}
-
-		pipe->head = p_head;
-	}
-}
-
-/* pipe_advance inlined into iov_iter_advance */
+/* pipe_truncate, pipe_advance removed - ITER_PIPE never used (~30 LOC) */
 
 void iov_iter_advance(struct iov_iter *i, size_t size)
 {
@@ -539,29 +426,7 @@ void iov_iter_advance(struct iov_iter *i, size_t size)
 		i->count = bi.bi_size;
 		i->iov_offset = bi.bi_bvec_done;
 	} else if (iov_iter_is_pipe(i)) {
-		/* pipe_advance inlined */
-		struct pipe_inode_info *pipe = i->pipe;
-		if (size) {
-			struct pipe_buffer *buf;
-			unsigned int p_mask = pipe->ring_size - 1;
-			unsigned int i_head = i->head;
-			size_t off = i->iov_offset, left = size;
-
-			if (off)
-				left += off -
-					pipe->bufs[i_head & p_mask].offset;
-			while (1) {
-				buf = &pipe->bufs[i_head & p_mask];
-				if (left <= buf->len)
-					break;
-				left -= buf->len;
-				i_head++;
-			}
-			i->head = i_head;
-			i->iov_offset = buf->offset + left;
-		}
-		i->count -= size;
-		pipe_truncate(i);
+		WARN_ON(1); /* pipe iterator never used */
 	} else if (unlikely(iov_iter_is_xarray(i))) {
 		i->iov_offset += size;
 		i->count -= size;
@@ -577,32 +442,7 @@ void iov_iter_revert(struct iov_iter *i, size_t unroll)
 	if (WARN_ON(unroll > MAX_RW_COUNT))
 		return;
 	i->count += unroll;
-	if (unlikely(iov_iter_is_pipe(i))) {
-		struct pipe_inode_info *pipe = i->pipe;
-		unsigned int p_mask = pipe->ring_size - 1;
-		unsigned int i_head = i->head;
-		size_t off = i->iov_offset;
-		while (1) {
-			struct pipe_buffer *b = &pipe->bufs[i_head & p_mask];
-			size_t n = off - b->offset;
-			if (unroll < n) {
-				off -= unroll;
-				break;
-			}
-			unroll -= n;
-			if (!unroll && i_head == i->start_head) {
-				off = 0;
-				break;
-			}
-			i_head--;
-			b = &pipe->bufs[i_head & p_mask];
-			off = b->offset + b->len;
-		}
-		i->iov_offset = off;
-		i->head = i_head;
-		pipe_truncate(i);
-		return;
-	}
+	/* ITER_PIPE case removed - iov_iter_pipe never called (~25 LOC) */
 	if (unlikely(iov_iter_is_discard(i)))
 		return;
 	if (unroll <= i->iov_offset) {

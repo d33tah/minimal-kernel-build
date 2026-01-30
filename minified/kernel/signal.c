@@ -77,24 +77,10 @@ void calculate_sigpending(void)
 
 /* __sigqueue_alloc inlined into send_signal_locked (~5 LOC) */
 
+/* Stub: init doesn't exit cleanly, no signal queue cleanup needed */
 void flush_sigqueue(struct sigpending *queue)
 {
-	struct sigqueue *q;
-
 	sigemptyset(&queue->signal);
-	while (!list_empty(&queue->list)) {
-		q = list_entry(queue->list.next, struct sigqueue, list);
-		list_del_init(&q->list);
-		/* Inlined __sigqueue_free */
-		if (!(q->flags & SIGQUEUE_PREALLOC)) {
-			if (q->ucounts) {
-				dec_rlimit_put_ucounts(
-					q->ucounts, UCOUNT_RLIMIT_SIGPENDING);
-				q->ucounts = NULL;
-			}
-			kmem_cache_free(sigqueue_cachep, q);
-		}
-	}
 }
 
 void ignore_signals(struct task_struct *t)

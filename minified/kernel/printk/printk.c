@@ -76,7 +76,7 @@ static int console_locked, console_suspended;
 
 /* console_cmdline array, preferred_console removed - never populated/used */
 
-static int console_may_schedule;
+/* console_may_schedule removed - write-only variable, never read */
 
 /* console_msg_format, enum con_msg_format_flags removed - unused */
 
@@ -102,7 +102,7 @@ void console_lock(void)
 	if (console_suspended)
 		return;
 	console_locked = 1;
-	console_may_schedule = 1;
+	/* console_may_schedule = 1 removed - write-only */
 }
 
 int console_trylock(void)
@@ -114,7 +114,7 @@ int console_trylock(void)
 		return 0;
 	}
 	console_locked = 1;
-	console_may_schedule = 0;
+	/* console_may_schedule = 0 removed - write-only */
 	return 1;
 }
 
@@ -132,7 +132,7 @@ void console_unlock(void)
 		up_console_sem();
 		return;
 	}
-	console_may_schedule = 0;
+	/* console_may_schedule = 0 removed - write-only */
 	console_locked = 0;
 	up_console_sem();
 }
@@ -148,7 +148,7 @@ void console_unblank(void)
 		console_lock();
 
 	console_locked = 1;
-	console_may_schedule = 0;
+	/* console_may_schedule = 0 removed - write-only */
 	for_each_console(c)
 		if ((c->flags & CON_ENABLED) && c->unblank)
 			c->unblank();
@@ -161,7 +161,7 @@ void console_unblank(void)
 void console_flush_on_panic(enum con_flush_mode mode)
 {
 	console_trylock();
-	console_may_schedule = 0;
+	/* console_may_schedule = 0 removed - write-only */
 	console_unlock();
 }
 

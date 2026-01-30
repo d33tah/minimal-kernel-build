@@ -302,105 +302,12 @@ struct file *open_exec(const char *name)
 
 /* exec_mmap inlined into begin_new_exec */
 
+/* de_thread stubbed - multi-threading code removed for single-threaded init kernel */
 static int de_thread(struct task_struct *tsk)
 {
-	struct signal_struct *sig = tsk->signal;
-	struct sighand_struct *oldsighand = tsk->sighand;
-	spinlock_t *lock = &oldsighand->siglock;
-
-	if (thread_group_empty(tsk))
-		goto no_thread_group;
-
-	spin_lock_irq(lock);
-	if ((sig->flags & SIGNAL_GROUP_EXIT) || sig->group_exec_task) {
-		spin_unlock_irq(lock);
-		return -EAGAIN;
-	}
-
-	sig->group_exec_task = tsk;
-	sig->notify_count = zap_other_threads(tsk);
-	if (!thread_group_leader(tsk))
-		sig->notify_count--;
-
-	while (sig->notify_count) {
-		__set_current_state(TASK_KILLABLE);
-		spin_unlock_irq(lock);
-		schedule();
-		if (__fatal_signal_pending(tsk))
-			goto killed;
-		spin_lock_irq(lock);
-	}
-	spin_unlock_irq(lock);
-
-	if (!thread_group_leader(tsk)) {
-		struct task_struct *leader = tsk->group_leader;
-
-		for (;;) {
-			write_lock_irq(&tasklist_lock);
-
-			sig->notify_count = -1;
-			if (likely(leader->exit_state))
-				break;
-			__set_current_state(TASK_KILLABLE);
-			write_unlock_irq(&tasklist_lock);
-			schedule();
-			if (__fatal_signal_pending(tsk))
-				goto killed;
-		}
-
-		/* start_time removed - write-only field */
-
-		BUG_ON(!same_thread_group(leader, tsk));
-
-		exchange_tids(tsk, leader);
-		transfer_pid(leader, tsk, PIDTYPE_TGID);
-		transfer_pid(leader, tsk, PIDTYPE_PGID);
-		transfer_pid(leader, tsk, PIDTYPE_SID);
-
-		/* list_replace_rcu inlined */
-		{
-			struct list_head *old = &leader->tasks,
-					 *new = &tsk->tasks;
-			new->next = old->next;
-			new->prev = old->prev;
-			rcu_assign_pointer(list_next_rcu(new->prev), new);
-			new->next->prev = new;
-			old->prev = LIST_POISON2;
-		}
-		/* list_replace_init inlined */
-		list_replace(&leader->sibling, &tsk->sibling);
-		INIT_LIST_HEAD(&leader->sibling);
-
-		tsk->group_leader = tsk;
-		leader->group_leader = tsk;
-
-		tsk->exit_signal = SIGCHLD;
-		leader->exit_signal = -1;
-
-		BUG_ON(leader->exit_state != EXIT_ZOMBIE);
-		leader->exit_state = EXIT_DEAD;
-		write_unlock_irq(&tasklist_lock);
-
-		release_task(leader);
-	}
-
-	sig->group_exec_task = NULL;
-	sig->notify_count = 0;
-
-no_thread_group:
-
+	/* For single-threaded init, thread_group_empty() is always true */
 	tsk->exit_signal = SIGCHLD;
-
-	BUG_ON(!thread_group_leader(tsk));
 	return 0;
-
-killed:
-
-	read_lock(&tasklist_lock);
-	sig->group_exec_task = NULL;
-	sig->notify_count = 0;
-	read_unlock(&tasklist_lock);
-	return -EAGAIN;
 }
 
 void __set_task_comm(struct task_struct *tsk, const char *buf, bool exec)

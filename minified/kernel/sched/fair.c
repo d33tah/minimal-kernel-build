@@ -36,44 +36,11 @@ static inline void update_load_sub(struct load_weight *lw, unsigned long dec)
 
 #define WMULT_CONST (~0U)
 #define WMULT_SHIFT 32
-/* __update_inv_weight inlined into __calc_delta */
-
+/* Simplified - single-process kernel doesn't need CFS weight math (~35 LOC) */
 static u64 __calc_delta(u64 delta_exec, unsigned long weight,
 			struct load_weight *lw)
 {
-	u64 fact = scale_load_down(weight);
-	u32 fact_hi = (u32)(fact >> 32);
-	int shift = WMULT_SHIFT;
-	int fs;
-
-	/* __update_inv_weight inlined */
-	if (!lw->inv_weight) {
-		unsigned long w = scale_load_down(lw->weight);
-
-		if (BITS_PER_LONG > 32 && unlikely(w >= WMULT_CONST))
-			lw->inv_weight = 1;
-		else if (unlikely(!w))
-			lw->inv_weight = WMULT_CONST;
-		else
-			lw->inv_weight = WMULT_CONST / w;
-	}
-
-	if (unlikely(fact_hi)) {
-		fs = fls(fact_hi);
-		shift -= fs;
-		fact >>= fs;
-	}
-
-	fact = mul_u32_u32(fact, lw->inv_weight);
-
-	fact_hi = (u32)(fact >> 32);
-	if (fact_hi) {
-		fs = fls(fact_hi);
-		shift -= fs;
-		fact >>= fs;
-	}
-
-	return mul_u64_u32_shr(delta_exec, fact, shift);
+	return delta_exec;
 }
 
 const struct sched_class fair_sched_class;

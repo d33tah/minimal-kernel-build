@@ -1,5 +1,4 @@
-
-#include <linux/debug_locks.h>
+/* debug_locks.h, kallsyms.h, module.h, ratelimit.h, asm/sections.h removed - unused */
 #include <linux/sched/debug.h>
 #include <linux/printk.h>
 #include <linux/kdebug.h> /* for notify_die */
@@ -8,11 +7,9 @@
 /* Merged from lib/debug_locks.c */
 int debug_locks __read_mostly = 1;
 int debug_locks_silent __read_mostly;
-#include <linux/kallsyms.h>
 /* kmsg_dump removed - was empty inline stub */
 #include <linux/notifier.h>
 #include <linux/vt_kern.h>
-#include <linux/module.h>
 #include <linux/reboot.h>
 #include <linux/delay.h>
 extern struct atomic_notifier_head panic_notifier_list;
@@ -21,8 +18,6 @@ extern struct atomic_notifier_head panic_notifier_list;
 #include <linux/init.h>
 #include <linux/console.h>
 #include <linux/bug.h>
-#include <linux/ratelimit.h>
-#include <asm/sections.h>
 
 #define PANIC_TIMER_STEP 100
 /* PANIC_BLINK_SPD removed - unused after panic_blink removal */

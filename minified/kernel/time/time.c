@@ -1,18 +1,11 @@
-
+/* capability.h, errno.h, uaccess.h removed - unused */
 #include <linux/export.h>
 #include <linux/kernel.h>
 #include <linux/timex.h>
-#include <linux/capability.h>
 #include <linux/timekeeper_internal.h>
-#include <linux/errno.h>
 #include <linux/syscalls.h>
-/* linux/security.h removed - unused */
-/* linux/fs.h removed - unused */
+/* linux/security.h, linux/fs.h, linux/ptrace.h, linux/compat.h removed - unused */
 #include <linux/math64.h>
-/* linux/ptrace.h removed - unused */
-
-#include <linux/uaccess.h>
-/* linux/compat.h removed - unused */
 #include <asm/unistd.h>
 
 #include <generated/timeconst.h>

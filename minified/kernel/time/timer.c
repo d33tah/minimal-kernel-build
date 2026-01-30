@@ -1,32 +1,19 @@
-
-#include <linux/kernel_stat.h>
+/* kernel_stat.h, interrupt.h, pid_namespace.h, thread_info.h,
+   time.h, cpu.h, syscalls.h, sched/signal.h, sched/sysctl.h,
+   slab.h, compat.h, sysctl.h, uaccess.h,
+   asm/unistd.h, asm/timex.h, asm/io.h removed - unused */
 #include <linux/export.h>
-#include <linux/interrupt.h>
 #include <linux/percpu.h>
 #include <linux/init.h>
 #include <linux/mm.h>
 /* linux/swap.h removed - unused */
-#include <linux/pid_namespace.h>
-#include <linux/thread_info.h>
-#include <linux/time.h>
-#include <linux/jiffies.h>
-#include <linux/cpu.h>
-#include <linux/syscalls.h>
-#include <linux/delay.h>
 /* linux/kallsyms.h removed - unused */
 /* irq_work.h removed - header is now empty */
-#include <linux/sched/signal.h>
-#include <linux/sched/sysctl.h>
+#include <linux/jiffies.h>
+#include <linux/delay.h>
+#include <linux/printk.h>
 #include <linux/sched/debug.h>
-#include <linux/slab.h>
-#include <linux/compat.h>
-#include <linux/sysctl.h>
-
-#include <linux/uaccess.h>
-#include <asm/unistd.h>
 #include <asm/div64.h>
-#include <asm/timex.h>
-#include <asm/io.h>
 
 #include "tick-internal.h"
 

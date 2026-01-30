@@ -1,18 +1,8 @@
-
-#include <linux/cpu.h>
+/* cpu.h, syscalls.h, interrupt.h, err.h, sched/signal.h, sched/sysctl.h,
+   sched/rt.h, sched/debug.h, timer.h, uaccess.h removed - unused */
 #include <linux/export.h>
 #include <linux/percpu.h>
 #include <linux/hrtimer.h>
-#include <linux/syscalls.h>
-#include <linux/interrupt.h>
-#include <linux/err.h>
-#include <linux/sched/signal.h>
-#include <linux/sched/sysctl.h>
-#include <linux/sched/rt.h>
-#include <linux/sched/debug.h>
-#include <linux/timer.h>
-
-#include <linux/uaccess.h>
 
 #include "tick-internal.h"
 

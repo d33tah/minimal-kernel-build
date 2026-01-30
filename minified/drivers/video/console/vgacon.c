@@ -115,8 +115,6 @@ static void vgacon_restore_screen(struct vc_data *c)
 static const char *vgacon_startup(void)
 {
 	const char *display_desc = NULL;
-	u16 saved1, saved2;
-	volatile u16 *p;
 
 	if (screen_info.orig_video_isVGA == VIDEO_TYPE_VLFB ||
 	    screen_info.orig_video_isVGA == VIDEO_TYPE_EFI) {
@@ -176,35 +174,13 @@ no_vga:
 	vga_vram_base = VGA_MAP_MEM(vga_vram_base, vga_vram_size);
 	vga_vram_end = vga_vram_base + vga_vram_size;
 
-	p = (volatile u16 *)vga_vram_base;
-	saved1 = scr_readw(p);
-	saved2 = scr_readw(p + 1);
-	scr_writew(0xAA55, p);
-	scr_writew(0x55AA, p + 1);
-	if (scr_readw(p) != 0xAA55 || scr_readw(p + 1) != 0x55AA) {
-		scr_writew(saved1, p);
-		scr_writew(saved2, p + 1);
-		goto no_vga;
-	}
-	scr_writew(0x55AA, p);
-	scr_writew(0xAA55, p + 1);
-	if (scr_readw(p) != 0x55AA || scr_readw(p + 1) != 0xAA55) {
-		scr_writew(saved1, p);
-		scr_writew(saved2, p + 1);
-		goto no_vga;
-	}
-	scr_writew(saved1, p);
-	scr_writew(saved2, p + 1);
+	/* VRAM read/write test removed - QEMU VRAM always works (~18 LOC) */
 
-	if (vga_video_type == VIDEO_TYPE_EGAC ||
-	    vga_video_type == VIDEO_TYPE_VGAC ||
-	    vga_video_type == VIDEO_TYPE_EGAM) {
-		vga_hardscroll_enabled = vga_hardscroll_user_enable;
-		vga_default_font_height = screen_info.orig_video_points;
-		vga_video_font_height = screen_info.orig_video_points;
-
-		vga_scan_lines = vga_video_font_height * vga_video_num_lines;
-	}
+	/* Always VIDEO_TYPE_VGAC now, conditional removed */
+	vga_hardscroll_enabled = vga_hardscroll_user_enable;
+	vga_default_font_height = screen_info.orig_video_points;
+	vga_video_font_height = screen_info.orig_video_points;
+	vga_scan_lines = vga_video_font_height * vga_video_num_lines;
 
 	vgacon_xres = screen_info.orig_video_cols * VGA_FONTWIDTH;
 	vgacon_yres = vga_scan_lines;

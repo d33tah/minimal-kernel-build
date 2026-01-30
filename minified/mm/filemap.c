@@ -1067,54 +1067,20 @@ int generic_file_mmap(struct file *file, struct vm_area_struct *vma)
 
 /* do_read_cache_folio, read_cache_folio, do_read_cache_page, read_cache_page, read_cache_page_gfp, generic_file_direct_write removed - never called */
 
+/* Write operations stubbed - minimal kernel is read-only during boot */
 ssize_t generic_perform_write(struct kiocb *iocb, struct iov_iter *i)
 {
-	struct file *file = iocb->ki_filp;
-	struct address_space *mapping = file->f_mapping;
-	const struct address_space_operations *a_ops = mapping->a_ops;
-	struct page *page;
-	void *fsdata;
-	ssize_t written = 0;
-	size_t bytes = iov_iter_count(i);
-
-	if (a_ops->write_begin(file, mapping, iocb->ki_pos, bytes, &page,
-			       &fsdata) < 0)
-		return -EIO;
-	written = copy_page_from_iter_atomic(page, 0, bytes, i);
-	a_ops->write_end(file, mapping, iocb->ki_pos, bytes, written, page,
-			 fsdata);
-	return written;
+	return -EROFS;
 }
 
 ssize_t __generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 {
-	ssize_t written;
-
-	/* file_remove_privs and file_update_time always return 0 - dead code removed */
-	/* IOCB_DIRECT block removed - a_ops->direct_IO is never set (~25 LOC) */
-
-	written = generic_perform_write(iocb, from);
-	if (likely(written > 0))
-		iocb->ki_pos += written;
-
-	/* current->backing_dev_info = NULL removed - field removed */
-	return written;
+	return -EROFS;
 }
 
 ssize_t generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 {
-	struct file *file = iocb->ki_filp;
-	struct inode *inode = file->f_mapping->host;
-	ssize_t ret;
-
-	inode_lock(inode);
-	ret = generic_write_checks(iocb, from);
-	if (ret > 0)
-		ret = __generic_file_write_iter(iocb, from);
-	inode_unlock(inode);
-
-	/* generic_write_sync was a no-op stub, removed */
-	return ret;
+	return -EROFS;
 }
 
 /* filemap_release_folio removed - never called */

@@ -10,11 +10,11 @@
 #include <linux/rmap.h>
 #include <linux/rcupdate.h>
 /* memcontrol.h removed - unused */
-#include <linux/mmu_notifier.h>
+/* linux/mmu_notifier.h removed - unused */
 /* linux/migrate.h removed - empty header */
 /* hugetlb.h, huge_mm.h removed - unused */
-#include <linux/backing-dev.h>
-#include <linux/memremap.h>
+/* linux/backing-dev.h removed - unused */
+/* linux/memremap.h removed - unused */
 /* userfaultfd_k.h removed - empty stubs */
 #include <linux/mm_inline.h>
 

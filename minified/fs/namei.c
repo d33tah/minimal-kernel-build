@@ -74,55 +74,11 @@ void putname(struct filename *name)
 		__putname(name);
 }
 
+/* Stub: init runs as root, always allow access */
 int generic_permission(struct user_namespace *mnt_userns, struct inode *inode,
 		       int mask)
 {
-	int ret;
-	unsigned int mode = inode->i_mode;
-	kuid_t i_uid;
-
-	i_uid = i_uid_into_mnt(mnt_userns, inode);
-	if (likely(uid_eq(current_fsuid(), i_uid))) {
-		mask &= 7;
-		mode >>= 6;
-		ret = (mask & ~mode) ? -EACCES : 0;
-	} else {
-		mask &= 7;
-
-		if (mask & (mode ^ (mode >> 3))) {
-			kgid_t kgid = i_gid_into_mnt(mnt_userns, inode);
-			if (in_group_p(kgid))
-				mode >>= 3;
-		}
-
-		ret = (mask & ~mode) ? -EACCES : 0;
-	}
-	if (ret != -EACCES)
-		return ret;
-
-	if (S_ISDIR(inode->i_mode)) {
-		if (!(mask & MAY_WRITE))
-			if (capable_wrt_inode_uidgid(mnt_userns, inode,
-						     CAP_DAC_READ_SEARCH))
-				return 0;
-		if (capable_wrt_inode_uidgid(mnt_userns, inode,
-					     CAP_DAC_OVERRIDE))
-			return 0;
-		return -EACCES;
-	}
-
-	mask &= MAY_READ | MAY_WRITE | MAY_EXEC;
-	if (mask == MAY_READ)
-		if (capable_wrt_inode_uidgid(mnt_userns, inode,
-					     CAP_DAC_READ_SEARCH))
-			return 0;
-
-	if (!(mask & MAY_EXEC) || (inode->i_mode & S_IXUGO))
-		if (capable_wrt_inode_uidgid(mnt_userns, inode,
-					     CAP_DAC_OVERRIDE))
-			return 0;
-
-	return -EACCES;
+	return 0;
 }
 
 /* do_inode_permission inlined into inode_permission */

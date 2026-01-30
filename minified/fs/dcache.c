@@ -458,27 +458,14 @@ repeat:
 	return ret;
 }
 
+/* Dcache shrinking stubbed - not needed for minimal boot */
 void shrink_dentry_list(struct list_head *list)
 {
-	/* Stub: not needed for minimal boot */
-}
-
-static enum lru_status dentry_lru_isolate(struct list_head *item,
-					  struct list_lru_one *lru,
-					  spinlock_t *lru_lock, void *arg)
-{
-	return LRU_SKIP; /* Stub */
 }
 
 long prune_dcache_sb(struct super_block *sb, struct shrink_control *sc)
 {
-	LIST_HEAD(dispose);
-	long freed;
-
-	freed = list_lru_shrink_walk(&sb->s_dentry_lru, sc, dentry_lru_isolate,
-				     &dispose);
-	shrink_dentry_list(&dispose);
-	return freed;
+	return 0;
 }
 
 int d_set_mounted(struct dentry *dentry)

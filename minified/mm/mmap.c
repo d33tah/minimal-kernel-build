@@ -227,47 +227,9 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
 	return 0;
 }
 
-static inline int is_mergeable_vma(struct vm_area_struct *vma,
-				   struct file *file, unsigned long vm_flags,
-				   struct vm_userfaultfd_ctx vm_userfaultfd_ctx,
-				   struct anon_vma_name *anon_name)
-{
-	if ((vma->vm_flags ^ vm_flags) & ~VM_SOFTDIRTY)
-		return 0;
-	if (vma->vm_file != file)
-		return 0;
-	/* is_mergeable_vm_userfaultfd_ctx always returns true - dead code removed */
-	/* anon_vma_name_eq always returns true - dead code removed */
-	return 1;
-}
-
-static inline int is_mergeable_anon_vma(struct anon_vma *anon_vma1,
-					struct anon_vma *anon_vma2,
-					struct vm_area_struct *vma)
-{
-	if ((!anon_vma1 || !anon_vma2) &&
-	    (!vma || list_is_singular(&vma->anon_vma_chain)))
-		return 1;
-	return anon_vma1 == anon_vma2;
-}
-
-static int can_vma_merge_before(struct vm_area_struct *vma,
-				unsigned long vm_flags,
-				struct anon_vma *anon_vma, struct file *file,
-				pgoff_t vm_pgoff,
-				struct vm_userfaultfd_ctx vm_userfaultfd_ctx,
-				struct anon_vma_name *anon_name)
-{
-	if (is_mergeable_vma(vma, file, vm_flags, vm_userfaultfd_ctx,
-			     anon_name) &&
-	    is_mergeable_anon_vma(anon_vma, vma->anon_vma, vma)) {
-		if (vma->vm_pgoff == vm_pgoff)
-			return 1;
-	}
-	return 0;
-}
-
-/* can_vma_merge_after inlined into vma_merge - only called once */
+/* VMA merging disabled - always return NULL/allocate new VMAs */
+/* Removed: is_mergeable_vma, is_mergeable_anon_vma, can_vma_merge_before */
+/* Removed: reusable_anon_vma - only used by find_mergeable_anon_vma */
 
 struct vm_area_struct *
 vma_merge(struct mm_struct *mm, struct vm_area_struct *prev, unsigned long addr,
@@ -276,99 +238,14 @@ vma_merge(struct mm_struct *mm, struct vm_area_struct *prev, unsigned long addr,
 	  struct vm_userfaultfd_ctx vm_userfaultfd_ctx,
 	  struct anon_vma_name *anon_name)
 {
-	pgoff_t pglen = (end - addr) >> PAGE_SHIFT;
-	struct vm_area_struct *area, *next;
-	int err;
-	int can_merge_after;
-
-	if (vm_flags & VM_SPECIAL)
-		return NULL;
-
-	next = vma_next(mm, prev);
-	area = next;
-	if (area && area->vm_end == end)
-		next = next->vm_next;
-
-	/* Inlined can_vma_merge_after */
-	can_merge_after = 0;
-	if (prev && prev->vm_end == addr &&
-	    is_mergeable_vma(prev, file, vm_flags, vm_userfaultfd_ctx,
-			     anon_name) &&
-	    is_mergeable_anon_vma(anon_vma, prev->anon_vma, prev) &&
-	    prev->vm_pgoff + vma_pages(prev) == pgoff)
-		can_merge_after = 1;
-
-	/* mpol_equal always returns true - mempolicy disabled */
-	if (can_merge_after) {
-		if (next && end == next->vm_start &&
-		    can_vma_merge_before(next, vm_flags, anon_vma, file,
-					 pgoff + pglen, vm_userfaultfd_ctx,
-					 anon_name) &&
-		    is_mergeable_anon_vma(prev->anon_vma, next->anon_vma,
-					  NULL)) {
-			err = __vma_adjust(prev, prev->vm_start, next->vm_end,
-					   prev->vm_pgoff, NULL, prev);
-		} else
-			err = __vma_adjust(prev, prev->vm_start, end,
-					   prev->vm_pgoff, NULL, prev);
-		if (err)
-			return NULL;
-		return prev;
-	}
-
-	if (next && end == next->vm_start &&
-	    can_vma_merge_before(next, vm_flags, anon_vma, file, pgoff + pglen,
-				 vm_userfaultfd_ctx, anon_name)) {
-		if (prev && addr < prev->vm_end)
-			err = __vma_adjust(prev, prev->vm_start, addr,
-					   prev->vm_pgoff, NULL, next);
-		else {
-			err = __vma_adjust(area, addr, next->vm_end,
-					   next->vm_pgoff - pglen, NULL, next);
-
-			area = next;
-		}
-		if (err)
-			return NULL;
-		return area;
-	}
-
-	return NULL;
-}
-
-static struct anon_vma *reusable_anon_vma(struct vm_area_struct *old,
-					  struct vm_area_struct *a,
-					  struct vm_area_struct *b)
-{
-	/* Inlined anon_vma_compatible */
-	/* mpol_equal always returns true - mempolicy disabled */
-	if (a->vm_end == b->vm_start && a->vm_file == b->vm_file &&
-	    !((a->vm_flags ^ b->vm_flags) &
-	      ~(VM_ACCESS_FLAGS | VM_SOFTDIRTY)) &&
-	    b->vm_pgoff ==
-		    a->vm_pgoff + ((b->vm_start - a->vm_start) >> PAGE_SHIFT)) {
-		struct anon_vma *anon_vma = READ_ONCE(old->anon_vma);
-
-		if (anon_vma && list_is_singular(&old->anon_vma_chain))
-			return anon_vma;
-	}
+	/* VMA merging disabled - always allocate new VMAs */
 	return NULL;
 }
 
 struct anon_vma *find_mergeable_anon_vma(struct vm_area_struct *vma)
 {
-	struct anon_vma *anon_vma = NULL;
-
-	if (vma->vm_next) {
-		anon_vma = reusable_anon_vma(vma->vm_next, vma, vma->vm_next);
-		if (anon_vma)
-			return anon_vma;
-	}
-
-	if (vma->vm_prev)
-		anon_vma = reusable_anon_vma(vma->vm_prev, vma->vm_prev, vma);
-
-	return anon_vma;
+	/* VMA merging disabled - always allocate new anon_vma */
+	return NULL;
 }
 
 /* mlock_future_check removed - always returned 0 */

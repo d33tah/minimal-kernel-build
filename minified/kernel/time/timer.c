@@ -5,7 +5,7 @@
 #include <linux/percpu.h>
 #include <linux/init.h>
 #include <linux/mm.h>
-#include <linux/swap.h>
+/* linux/swap.h removed - unused */
 #include <linux/pid_namespace.h>
 #include <linux/thread_info.h>
 #include <linux/time.h>
@@ -13,7 +13,7 @@
 #include <linux/cpu.h>
 #include <linux/syscalls.h>
 #include <linux/delay.h>
-#include <linux/kallsyms.h>
+/* linux/kallsyms.h removed - unused */
 /* irq_work.h removed - header is now empty */
 #include <linux/sched/signal.h>
 #include <linux/sched/sysctl.h>

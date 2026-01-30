@@ -6,13 +6,13 @@
 #include <linux/timekeeper_internal.h>
 #include <linux/errno.h>
 #include <linux/syscalls.h>
-#include <linux/security.h>
-#include <linux/fs.h>
+/* linux/security.h removed - unused */
+/* linux/fs.h removed - unused */
 #include <linux/math64.h>
-#include <linux/ptrace.h>
+/* linux/ptrace.h removed - unused */
 
 #include <linux/uaccess.h>
-#include <linux/compat.h>
+/* linux/compat.h removed - unused */
 #include <asm/unistd.h>
 
 #include <generated/timeconst.h>

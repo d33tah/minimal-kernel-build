@@ -39,13 +39,8 @@ setup-y		+= pm.o pmjump.o printf.o regs.o string.o tty.o video.o
 setup-y		+= video-mode.o version.o
 setup-$(CONFIG_X86_APM_BOOT) += apm.o
 
-# The link order of the video-*.o modules can matter.  In particular,
-# video-vga.o *must* be listed first, followed by video-vesa.o.
-# Hardware-specific drivers should follow in the order they should be
-# probed, and video-bios.o should typically be last.
+# video-vesa.o, video-bios.o removed - only return 0/error, VGA is sufficient
 setup-y		+= video-vga.o
-setup-y		+= video-vesa.o
-setup-y		+= video-bios.o
 
 targets		+= $(setup-y)
 hostprogs	:= tools/build

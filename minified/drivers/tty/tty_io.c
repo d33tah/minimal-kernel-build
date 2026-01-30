@@ -201,63 +201,10 @@ int tty_hung_up_p(struct file *filp)
 	return (filp && filp->f_op == &hung_up_tty_fops);
 }
 
-/* iterate_tty_read inlined into tty_read */
-
+/* Stub: init only writes to console, never reads */
 static ssize_t tty_read(struct kiocb *iocb, struct iov_iter *to)
 {
-	int i;
-	struct file *file = iocb->ki_filp;
-	struct tty_struct *tty = file_tty(file);
-	struct tty_ldisc *ld;
-
-	if (!tty || tty_io_error(tty))
-		return -EIO;
-
-	ld = tty_ldisc_ref_wait(tty);
-	if (!ld)
-		return hung_up_tty_read(iocb, to);
-	i = -EIO;
-	if (ld->ops->read) {
-		/* iterate_tty_read inlined */
-		int retval = 0;
-		void *cookie = NULL;
-		unsigned long offset = 0;
-		char kernel_buf[64];
-		size_t count = iov_iter_count(to);
-
-		do {
-			int size, copied;
-
-			size = count > sizeof(kernel_buf) ? sizeof(kernel_buf) :
-							    count;
-			size = ld->ops->read(tty, file, kernel_buf, size,
-					     &cookie, offset);
-			if (!size)
-				break;
-			if (size < 0) {
-				if (retval)
-					break;
-				retval = size;
-				if (retval == -EOVERFLOW)
-					offset = 0;
-				break;
-			}
-			copied = copy_to_iter(kernel_buf, size, to);
-			offset += copied;
-			count -= copied;
-			if (unlikely(copied != size)) {
-				count = 0;
-				retval = -EFAULT;
-			}
-		} while (cookie);
-		/* memzero_explicit inlined */
-		memset(kernel_buf, 0, sizeof(kernel_buf));
-		barrier_data(kernel_buf);
-		i = offset ? offset : retval;
-	}
-	tty_ldisc_deref(ld);
-
-	return i;
+	return 0;
 }
 
 static inline ssize_t

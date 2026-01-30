@@ -2,14 +2,14 @@
 #include <linux/bitmap.h>
 #include <linux/bitops.h>
 #include <linux/bug.h>
-#include <linux/cpu.h>
+/* linux/cpu.h removed - CPU hotplug not used */
 #include <linux/errno.h>
 #include <linux/export.h>
 #include <linux/idr.h>
 #include <linux/init.h>
 #include <linux/kernel.h>
 #include <linux/percpu.h>
-#include <linux/preempt.h>
+/* linux/preempt.h removed - preempt_* functions not used */
 #include <linux/radix-tree.h>
 #include <linux/rcupdate.h>
 #include <linux/slab.h>

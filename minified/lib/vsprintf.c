@@ -2,7 +2,7 @@
 #include <linux/stdarg.h>
 #include <linux/build_bug.h>
 /* errname removed - unused */
-#include <linux/module.h>
+/* linux/module.h removed - no EXPORT_SYMBOL */
 #include <linux/types.h>
 #include <linux/string.h>
 #include <linux/ctype.h>
@@ -10,8 +10,7 @@
 /* kallsyms.h removed - only dereference_symbol_descriptor was used (no-op) */
 /* math64.h removed - unused */
 #include <linux/uaccess.h>
-/* ioport.h, dcache.h, cred.h, rtc.h removed - unused */
-#include <linux/time.h>
+/* ioport.h, dcache.h, cred.h, rtc.h, time.h removed - unused */
 /* uuid.h removed - guid_t not used */
 /* of.h removed - device_node not used in vsprintf */
 
@@ -24,7 +23,7 @@
 
 #include <asm/page.h>
 #include <asm/byteorder.h>
-#include <asm/unaligned.h>
+/* asm/unaligned.h removed - get_unaligned not used */
 
 /* string_helpers.h removed - unused */
 #include "kstrtox.h"

@@ -4,9 +4,9 @@
 #include <linux/pagemap.h>
 #include <linux/highmem.h>
 #include <linux/slab.h>
-#include <linux/vmalloc.h>
+/* linux/vmalloc.h removed - vmalloc not used */
 #include <linux/splice.h>
-#include <linux/compat.h>
+/* linux/compat.h removed - compat functions not used */
 /* scatterlist.h removed - unused */
 
 /* Inlined from net/checksum.h */

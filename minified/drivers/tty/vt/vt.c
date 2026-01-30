@@ -561,64 +561,10 @@ struct vc_draw_region {
 
 /* con_flush inlined into vt_write */
 
+/* Stub: Hello World only uses ASCII, no UTF-8 decoding needed */
 static int vc_translate_unicode(struct vc_data *vc, int c, bool *rescan)
 {
-	static const u32 utf8_length_changes[] = { 0x0000007f, 0x000007ff,
-						   0x0000ffff, 0x001fffff,
-						   0x03ffffff, 0x7fffffff };
-
-	if ((c & 0xc0) == 0x80) {
-		if (!vc->vc_utf_count)
-			return 0xfffd;
-
-		vc->vc_utf_char = (vc->vc_utf_char << 6) | (c & 0x3f);
-		vc->vc_npar++;
-		if (--vc->vc_utf_count)
-			goto need_more_bytes;
-
-		c = vc->vc_utf_char;
-
-		if (c <= utf8_length_changes[vc->vc_npar - 1] ||
-		    c > utf8_length_changes[vc->vc_npar])
-			return 0xfffd;
-
-		/* Inlined vc_sanitize_unicode */
-		if ((c >= 0xd800 && c <= 0xdfff) || c == 0xfffe || c == 0xffff)
-			return 0xfffd;
-		return c;
-	}
-
-	if (vc->vc_utf_count) {
-		*rescan = true;
-		vc->vc_utf_count = 0;
-		return 0xfffd;
-	}
-
-	if (c <= 0x7f)
-		return c;
-
-	vc->vc_npar = 0;
-	if ((c & 0xe0) == 0xc0) {
-		vc->vc_utf_count = 1;
-		vc->vc_utf_char = (c & 0x1f);
-	} else if ((c & 0xf0) == 0xe0) {
-		vc->vc_utf_count = 2;
-		vc->vc_utf_char = (c & 0x0f);
-	} else if ((c & 0xf8) == 0xf0) {
-		vc->vc_utf_count = 3;
-		vc->vc_utf_char = (c & 0x07);
-	} else if ((c & 0xfc) == 0xf8) {
-		vc->vc_utf_count = 4;
-		vc->vc_utf_char = (c & 0x03);
-	} else if ((c & 0xfe) == 0xfc) {
-		vc->vc_utf_count = 5;
-		vc->vc_utf_char = (c & 0x01);
-	} else {
-		return 0xfffd;
-	}
-
-need_more_bytes:
-	return -1;
+	return c;
 }
 
 /* do_con_write inlined into con_write */

@@ -137,72 +137,17 @@ int rcuwait_wake_up(struct rcuwait *w)
 
 /* coredump_task_exit inlined into do_exit */
 
-static struct task_struct *find_alive_thread(struct task_struct *p)
-{
-	struct task_struct *t;
-
-	for_each_thread(p, t) {
-		if (!(t->flags & PF_EXITING))
-			return t;
-	}
-	return NULL;
-}
-
+/* Reaper functions simplified - minimal kernel init has no children */
 static struct task_struct *find_child_reaper(struct task_struct *father,
 					     struct list_head *dead)
 	__releases(&tasklist_lock) __acquires(&tasklist_lock)
 {
-	struct pid_namespace *pid_ns = task_active_pid_ns(father);
-	struct task_struct *reaper = pid_ns->child_reaper;
-	struct task_struct *p, *n;
-
-	if (likely(reaper != father))
-		return reaper;
-
-	reaper = find_alive_thread(father);
-	if (reaper) {
-		pid_ns->child_reaper = reaper;
-		return reaper;
-	}
-
-	write_unlock_irq(&tasklist_lock);
-
-	list_for_each_entry_safe(p, n, dead, ptrace_entry) {
-		list_del_init(&p->ptrace_entry);
-		release_task(p);
-	}
-
-	BUG(); /* zap_pid_ns_processes inlined - never supposed to be reached */
-	write_lock_irq(&tasklist_lock);
-
-	return father;
+	return task_active_pid_ns(father)->child_reaper;
 }
 
 static struct task_struct *find_new_reaper(struct task_struct *father,
 					   struct task_struct *child_reaper)
 {
-	struct task_struct *thread, *reaper;
-
-	thread = find_alive_thread(father);
-	if (thread)
-		return thread;
-
-	if (father->signal->has_child_subreaper) {
-		unsigned int ns_level = task_pid(father)->level;
-
-		for (reaper = father->real_parent;
-		     task_pid(reaper)->level == ns_level;
-		     reaper = reaper->real_parent) {
-			if (reaper == &init_task)
-				break;
-			if (!reaper->signal->is_child_subreaper)
-				continue;
-			thread = find_alive_thread(reaper);
-			if (thread)
-				return thread;
-		}
-	}
-
 	return child_reaper;
 }
 

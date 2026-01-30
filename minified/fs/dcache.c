@@ -312,15 +312,10 @@ got_locks:
 	return NULL;
 }
 
+/* Simplified - no LRU list management, no d_delete callbacks (~25 LOC) */
 static inline bool fast_dput(struct dentry *dentry)
 {
-	int ret;
-	unsigned int d_flags;
-
-	if (unlikely(dentry->d_flags & DCACHE_OP_DELETE))
-		return lockref_put_or_lock(&dentry->d_lockref);
-
-	ret = lockref_put_return(&dentry->d_lockref);
+	int ret = lockref_put_return(&dentry->d_lockref);
 
 	if (unlikely(ret < 0)) {
 		spin_lock(&dentry->d_lock);
@@ -331,28 +326,7 @@ static inline bool fast_dput(struct dentry *dentry)
 		}
 		return false;
 	}
-
-	if (ret)
-		return true;
-
-	smp_rmb();
-	d_flags = READ_ONCE(dentry->d_flags);
-	d_flags &= DCACHE_REFERENCED | DCACHE_LRU_LIST | DCACHE_DISCONNECTED |
-		   DCACHE_DONTCACHE;
-
-	if (d_flags == (DCACHE_REFERENCED | DCACHE_LRU_LIST) &&
-	    !d_unhashed(dentry))
-		return true;
-
-	spin_lock(&dentry->d_lock);
-
-	if (dentry->d_lockref.count) {
-		spin_unlock(&dentry->d_lock);
-		return true;
-	}
-
-	dentry->d_lockref.count = 1;
-	return false;
+	return ret != 0;
 }
 
 void dput(struct dentry *dentry)

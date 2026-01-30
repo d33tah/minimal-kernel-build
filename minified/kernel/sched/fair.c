@@ -1,15 +1,7 @@
 
 #include <linux/jiffies.h>
-
-#include <linux/topology.h>
 #include <linux/sched/clock.h>
-
-#include <linux/sched/signal.h>
-#include <linux/sched/isolation.h>
-
-#include <linux/interrupt.h>
-
-#include <asm/switch_to.h>
+/* topology.h, sched/signal.h, sched/isolation.h, interrupt.h, switch_to.h removed - unused */
 
 #include "sched.h"
 /* stats.h removed - was empty header */

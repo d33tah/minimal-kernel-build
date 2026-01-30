@@ -205,78 +205,10 @@ ktime_t ktime_get(void)
 
 /* __timekeeping_set_tai_offset removed - unused after second_overflow removal */
 
-static int change_clocksource(void *data)
-{
-	struct timekeeper *tk = &tk_core.timekeeper;
-	struct clocksource *new, *old = NULL;
-	unsigned long flags;
-	bool change = false;
-
-	new = (struct clocksource *)data;
-
-	/* try_module_get always returns true - check removed */
-	try_module_get(new->owner);
-	if (!new->enable || new->enable(new) == 0)
-		change = true;
-	else
-		module_put(new->owner);
-
-	raw_spin_lock_irqsave(&timekeeper_lock, flags);
-	write_seqcount_begin(&tk_core.seq);
-
-	/* timekeeping_forward_now inlined */
-	{
-		u64 cycle_now = tk_clock_read(&tk->tkr_mono);
-		u64 delta = clocksource_delta(
-			cycle_now, tk->tkr_mono.cycle_last, tk->tkr_mono.mask);
-		tk->tkr_mono.cycle_last = cycle_now;
-		tk->tkr_raw.cycle_last = cycle_now;
-		tk->tkr_mono.xtime_nsec += delta * tk->tkr_mono.mult;
-		tk->tkr_raw.xtime_nsec += delta * tk->tkr_raw.mult;
-		/* tk_normalize_xtime inlined */
-		while (tk->tkr_mono.xtime_nsec >=
-		       ((u64)NSEC_PER_SEC << tk->tkr_mono.shift)) {
-			tk->tkr_mono.xtime_nsec -= (u64)NSEC_PER_SEC
-						   << tk->tkr_mono.shift;
-			tk->xtime_sec++;
-		}
-		while (tk->tkr_raw.xtime_nsec >=
-		       ((u64)NSEC_PER_SEC << tk->tkr_raw.shift)) {
-			tk->tkr_raw.xtime_nsec -= (u64)NSEC_PER_SEC
-						  << tk->tkr_raw.shift;
-			tk->raw_sec++;
-		}
-	}
-
-	if (change) {
-		old = tk->tkr_mono.clock;
-		tk_setup_internals(tk, new);
-	}
-
-	timekeeping_update(tk, TK_CLEAR_NTP | TK_MIRROR | TK_CLOCK_WAS_SET);
-
-	write_seqcount_end(&tk_core.seq);
-	raw_spin_unlock_irqrestore(&timekeeper_lock, flags);
-
-	if (old) {
-		if (old->disable)
-			old->disable(old);
-
-		module_put(old->owner);
-	}
-
-	return 0;
-}
-
+/* Stub: minimal kernel doesn't switch clock sources at runtime */
 int timekeeping_notify(struct clocksource *clock)
 {
-	struct timekeeper *tk = &tk_core.timekeeper;
-
-	if (tk->tkr_mono.clock == clock)
-		return 0;
-	stop_machine(change_clocksource, clock, NULL);
-	/* tick_clock_notify removed - empty stub */
-	return tk->tkr_mono.clock == clock ? 0 : -1;
+	return 0;
 }
 
 int timekeeping_valid_for_hres(void)

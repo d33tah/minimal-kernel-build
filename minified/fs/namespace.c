@@ -1154,85 +1154,13 @@ struct vfsmount *kern_mount(struct file_system_type *type)
 	return mnt;
 }
 
-static bool mnt_already_visible(struct mnt_namespace *ns,
-				const struct super_block *sb,
-				int *new_mnt_flags)
-{
-	int new_flags = *new_mnt_flags;
-	struct mount *mnt;
-	bool visible = false;
-
-	down_read(&namespace_sem);
-	spin_lock(&ns->ns_lock);
-	list_for_each_entry(mnt, &ns->list, mnt_list) {
-		struct mount *child;
-		int mnt_flags;
-
-		if (mnt->mnt.mnt_flags & MNT_CURSOR)
-			continue;
-
-		if (mnt->mnt.mnt_sb->s_type != sb->s_type)
-			continue;
-
-		if (mnt->mnt.mnt_root != mnt->mnt.mnt_sb->s_root)
-			continue;
-
-		mnt_flags = mnt->mnt.mnt_flags;
-
-		if (sb_rdonly(mnt->mnt.mnt_sb))
-			mnt_flags |= MNT_LOCK_READONLY;
-
-		if ((mnt_flags & MNT_LOCK_READONLY) &&
-		    !(new_flags & MNT_READONLY))
-			continue;
-		if ((mnt_flags & MNT_LOCK_ATIME) &&
-		    ((mnt_flags & MNT_ATIME_MASK) !=
-		     (new_flags & MNT_ATIME_MASK)))
-			continue;
-
-		list_for_each_entry(child, &mnt->mnt_mounts, mnt_child) {
-			struct inode *inode = child->mnt_mountpoint->d_inode;
-
-			if (!(child->mnt.mnt_flags & MNT_LOCKED))
-				continue;
-
-			if (!is_empty_dir_inode(inode))
-				goto next;
-		}
-
-		*new_mnt_flags |= mnt_flags &
-				  (MNT_LOCK_READONLY | MNT_LOCK_ATIME);
-		visible = true;
-		goto found;
-next:;
-	}
-found:
-	spin_unlock(&ns->ns_lock);
-	up_read(&namespace_sem);
-	return visible;
-}
+/* mnt_already_visible removed - only called by mount_too_revealing which is stubbed */
 
 static bool mount_too_revealing(const struct super_block *sb,
 				int *new_mnt_flags)
 {
-	const unsigned long required_iflags = SB_I_NOEXEC | SB_I_NODEV;
-	struct mnt_namespace *ns = current->nsproxy->mnt_ns;
-	unsigned long s_iflags;
-
-	if (ns->user_ns == &init_user_ns)
-		return false;
-
-	s_iflags = sb->s_iflags;
-	if (!(s_iflags & SB_I_USERNS_VISIBLE))
-		return false;
-
-	if ((s_iflags & required_iflags) != required_iflags) {
-		WARN_ONCE(1, "Expected s_iflags to contain 0x%lx\n",
-			  required_iflags);
-		return true;
-	}
-
-	return !mnt_already_visible(ns, sb, new_mnt_flags);
+	/* User namespace mount visibility check disabled - minimal kernel runs as init_user_ns */
+	return false;
 }
 
 bool mnt_may_suid(struct vfsmount *mnt)

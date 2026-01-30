@@ -11,8 +11,7 @@
 #include <linux/init.h>
 #include <asm/unistd.h>
 #include <linux/module.h>
-#include <linux/vmalloc.h>
-#include <linux/completion.h>
+/* linux/vmalloc.h, linux/completion.h removed - unused */
 /* personality.h removed - no personality functions used */
 /* mempolicy.h removed - forward decl in mm.h */
 #include <linux/file.h>
@@ -25,19 +24,19 @@
 #include <linux/mm_inline.h>
 #include <linux/vmacache.h>
 #include <linux/nsproxy.h>
-#include <linux/capability.h>
+/* linux/capability.h removed - cap_* functions not used */
 #include <linux/cpu.h>
 #include <linux/cgroup.h>
 #include <linux/security.h>
 #include <linux/hugetlb.h>
-#include <linux/swap.h>
+/* linux/swap.h removed - swap functions not used */
 #include <linux/syscalls.h>
 /* futex.h inlined - only FUTEX_TID_MASK used for MAX_THREADS */
 #define FUTEX_TID_MASK 0x3fffffff
 #include <linux/kthread.h>
 #include <linux/rcupdate.h>
 #include <linux/ptrace.h>
-#include <linux/mount.h>
+/* linux/mount.h removed - vfsmount not used */
 /* proc_fs.h removed - empty header */
 /* rmap.h, userfaultfd_k.h removed - functions not used */
 #include <linux/tty.h>

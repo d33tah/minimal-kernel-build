@@ -9,9 +9,7 @@ extern int nr_threads;
 #include <linux/sched/signal.h>
 #include <linux/interrupt.h>
 #include <linux/module.h>
-#include <linux/capability.h>
-#include <linux/completion.h>
-#include <linux/personality.h>
+/* linux/capability.h, linux/completion.h, linux/personality.h removed - unused */
 #include <linux/tty.h>
 #include <linux/cpu.h>
 #include <linux/file.h>
@@ -20,7 +18,7 @@ extern int nr_threads;
 #include <linux/nsproxy.h>
 #include <linux/pid_namespace.h>
 #include <linux/ptrace.h>
-#include <linux/mount.h>
+/* linux/mount.h removed - vfsmount not used */
 /* proc_fs.h removed - empty header */
 #include <linux/kthread.h>
 /* mempolicy.h removed - forward decl in mm.h */

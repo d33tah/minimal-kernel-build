@@ -1,14 +1,11 @@
-
+/* security.h, mutex.h removed - unused */
 #include <linux/slab.h>
 #include <linux/mount.h>
-#include <linux/security.h>
-/* linux/writeback.h removed - cgroup_writeback_umount is empty stub */
+/* linux/writeback.h, linux/lockdep.h removed */
 #include <linux/idr.h>
-#include <linux/mutex.h>
 #include <linux/backing-dev.h>
 #include <linux/rculist_bl.h>
 /* fscrypt_sb_free removed - never called */
-/* linux/lockdep.h removed - lockdep_set_class is empty stub */
 #include <linux/user_namespace.h>
 #include <linux/fs_context.h>
 #include <uapi/linux/mount.h>

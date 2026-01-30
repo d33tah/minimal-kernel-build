@@ -1,19 +1,10 @@
-
-#include <linux/blkdev.h>
+/* blkdev.h, types.h, asm/byteorder.h, mutex.h, namei.h, writeback.h, uaccess.h removed - unused */
 #include <linux/pagemap.h>
 #include <linux/slab.h>
 #include <linux/cred.h>
 #include <linux/mount.h>
-#include <linux/types.h>
 #include <asm/statfs.h>
-#include <asm/byteorder.h>
-
-#include <linux/mutex.h>
-#include <linux/namei.h>
-#include <linux/writeback.h>
 #include <linux/fs_context.h>
-
-#include <linux/uaccess.h>
 
 #include "internal.h"
 

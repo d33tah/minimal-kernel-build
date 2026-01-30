@@ -1,13 +1,9 @@
-
+/* string.h, errno.h, module.h removed - unused */
 #include <linux/init.h>
 #include <linux/fs.h>
 #include <linux/kdev_t.h>
 #include <linux/slab.h>
-#include <linux/string.h>
-
 #include <linux/major.h>
-#include <linux/errno.h>
-#include <linux/module.h>
 /* seq_file.h removed - header is empty */
 
 #include <linux/kobject.h>

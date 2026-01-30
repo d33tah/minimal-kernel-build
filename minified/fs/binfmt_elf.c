@@ -15,9 +15,9 @@
 #include <linux/ptrace.h>
 #include <linux/init.h>
 #include <linux/compiler.h>
-#include <linux/highmem.h>
+/* linux/highmem.h removed - unused */
 #include <linux/pagemap.h>
-#include <linux/vmalloc.h>
+/* linux/vmalloc.h removed - unused */
 #include <linux/elf.h>
 #include <linux/utsname.h>
 #include <linux/sched.h>

@@ -222,52 +222,11 @@ void reweight_task(struct task_struct *p, int prio)
 	do {                               \
 	} while (0)
 
+/* Stub: single-task kernel, vruntime doesn't matter for scheduling */
 static void place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 			 int initial)
 {
-	u64 vruntime = cfs_rq->min_vruntime;
-
-	if (initial && sched_feat(START_DEBIT)) {
-		/* sched_slice inlined */
-		unsigned int nr_running = cfs_rq->nr_running;
-		u64 slice;
-		struct sched_entity *tmp;
-
-		if (sched_feat(ALT_PERIOD))
-			nr_running = rq_of(cfs_rq)->cfs.h_nr_running;
-		nr_running += !se->on_rq;
-		if (unlikely(nr_running > sched_nr_latency))
-			slice = nr_running * sysctl_sched_min_granularity;
-		else
-			slice = sysctl_sched_latency;
-
-		for_each_sched_entity(tmp)
-		{
-			struct load_weight *load;
-			struct load_weight lw;
-			struct cfs_rq *qcfs_rq = cfs_rq_of(tmp);
-			load = &qcfs_rq->load;
-			if (unlikely(!tmp->on_rq)) {
-				lw = qcfs_rq->load;
-				update_load_add(&lw, tmp->load.weight);
-				load = &lw;
-			}
-			slice = __calc_delta(slice, tmp->load.weight, load);
-		}
-		if (sched_feat(BASE_SLICE))
-			slice = max_t(u64, slice, sysctl_sched_min_granularity);
-		vruntime += calc_delta_fair(slice, se);
-	}
-
-	if (!initial) {
-		unsigned long thresh;
-		thresh = sysctl_sched_latency;
-		if (sched_feat(GENTLE_FAIR_SLEEPERS))
-			thresh >>= 1;
-		vruntime -= thresh;
-	}
-
-	se->vruntime = max_vruntime(se->vruntime, vruntime);
+	se->vruntime = cfs_rq->min_vruntime;
 }
 
 /* enqueue_entity, dequeue_entity, clear_buddies inlined/removed */

@@ -47,96 +47,52 @@ static inline void sigdelset(sigset_t *set, int _sig)
 
 #endif  
 
+/* Simplified - _NSIG_WORDS is 2 on x86-32 (~16 LOC) */
 static inline int sigisemptyset(sigset_t *set)
 {
-	switch (_NSIG_WORDS) {
-	case 2:
-		return (set->sig[1] | set->sig[0]) == 0;
-	case 1:
-		return set->sig[0] == 0;
-	default:
-		BUILD_BUG();
-		return 0;
-	}
+	return (set->sig[1] | set->sig[0]) == 0;
 }
 
 static inline int sigequalsets(const sigset_t *set1, const sigset_t *set2)
 {
-	switch (_NSIG_WORDS) {
-	case 2:
-		return	(set1->sig[1] == set2->sig[1]) &&
-			(set1->sig[0] == set2->sig[0]);
-	case 1:
-		return	set1->sig[0] == set2->sig[0];
-	}
-	return 0;
+	return (set1->sig[1] == set2->sig[1]) && (set1->sig[0] == set2->sig[0]);
 }
 
 #define sigmask(sig)	(1UL << ((sig) - 1))
 
 #ifndef __HAVE_ARCH_SIG_SETOPS
 
-#define _SIG_SET_BINOP(name, op)					\
-static inline void name(sigset_t *r, const sigset_t *a, const sigset_t *b) \
-{									\
-	unsigned long a0, a1, b0, b1;					\
-									\
-	switch (_NSIG_WORDS) {						\
-	case 2:								\
-		a1 = a->sig[1]; b1 = b->sig[1];				\
-		r->sig[1] = op(a1, b1);					\
-		fallthrough;						\
-	case 1:								\
-		a0 = a->sig[0]; b0 = b->sig[0];				\
-		r->sig[0] = op(a0, b0);					\
-		break;							\
-	default:							\
-		BUILD_BUG();						\
-	}								\
+/* Simplified - _NSIG_WORDS is 2 on x86-32, expand macros (~17 LOC) */
+static inline void sigandsets(sigset_t *r, const sigset_t *a, const sigset_t *b)
+{
+	r->sig[1] = a->sig[1] & b->sig[1];
+	r->sig[0] = a->sig[0] & b->sig[0];
 }
 
-/* sigorsets removed - never used */
-
-#define _sig_and(x,y)	((x) & (y))
-_SIG_SET_BINOP(sigandsets, _sig_and)
-
-#define _sig_andn(x,y)	((x) & ~(y))
-_SIG_SET_BINOP(sigandnsets, _sig_andn)
-
-#undef _SIG_SET_BINOP
-#undef _sig_and
-#undef _sig_andn
+static inline void sigandnsets(sigset_t *r, const sigset_t *a, const sigset_t *b)
+{
+	r->sig[1] = a->sig[1] & ~b->sig[1];
+	r->sig[0] = a->sig[0] & ~b->sig[0];
+}
 
 /* _SIG_SET_OP and _sig_not macros removed - never used to generate functions */
 
+/* Simplified - _NSIG_WORDS is 2 on x86-32 (~10 LOC) */
 static inline void sigemptyset(sigset_t *set)
 {
-	switch (_NSIG_WORDS) {
-	default:
-		memset(set, 0, sizeof(sigset_t));
-		break;
-	case 2: set->sig[1] = 0;
-		fallthrough;
-	case 1:	set->sig[0] = 0;
-		break;
-	}
+	set->sig[1] = 0;
+	set->sig[0] = 0;
 }
 
 
 
 /* sigdelsetmask removed - never called */
 
+/* Simplified - _NSIG_WORDS is 2 on x86-32 (~9 LOC) */
 static inline void siginitsetinv(sigset_t *set, unsigned long mask)
 {
 	set->sig[0] = ~mask;
-	switch (_NSIG_WORDS) {
-	default:
-		memset(&set->sig[1], -1, sizeof(long)*(_NSIG_WORDS-1));
-		break;
-	case 2: set->sig[1] = -1;
-		break;
-	case 1: ;
-	}
+	set->sig[1] = -1;
 }
 
 #endif  

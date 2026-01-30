@@ -8,16 +8,16 @@
 #include <linux/pagemap.h>
 #include <linux/pagevec.h>
 #include <linux/init.h>
-#include <linux/tracepoint.h>
+/* linux/tracepoint.h removed - unused */
 #include <linux/mm_inline.h>
 #include <linux/percpu_counter.h>
-#include <linux/memremap.h>
+/* linux/memremap.h removed - unused */
 #include <linux/percpu.h>
 #include <linux/cpu.h>
 #include <linux/backing-dev.h>
 /* memcontrol.h removed - unused */
 #include <linux/gfp.h>
-#include <linux/uio.h>
+/* linux/uio.h removed - unused */
 /* hugetlb.h removed - unused */
 #include <linux/local_lock.h>
 

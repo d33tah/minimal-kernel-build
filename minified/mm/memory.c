@@ -795,58 +795,10 @@ uncharge_out:
 	return ret;
 }
 
+/* Stub: read-only initramfs has no shared writable mappings */
 static vm_fault_t do_shared_fault(struct vm_fault *vmf)
 {
-	struct vm_area_struct *vma = vmf->vma;
-	vm_fault_t ret, tmp;
-
-	ret = __do_fault(vmf);
-	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE | VM_FAULT_RETRY)))
-		return ret;
-
-	if (vma->vm_ops->page_mkwrite) {
-		/* Inlined do_page_mkwrite */
-		struct page *page = vmf->page;
-		unsigned int old_flags = vmf->flags;
-		unlock_page(page);
-		vmf->flags = FAULT_FLAG_WRITE | FAULT_FLAG_MKWRITE;
-		if (vmf->vma->vm_file &&
-		    IS_SWAPFILE(vmf->vma->vm_file->f_mapping->host)) {
-			put_page(page);
-			return VM_FAULT_SIGBUS;
-		}
-		tmp = vmf->vma->vm_ops->page_mkwrite(vmf);
-		vmf->flags = old_flags;
-		if (unlikely(tmp & (VM_FAULT_ERROR | VM_FAULT_NOPAGE))) {
-			put_page(page);
-			return tmp;
-		}
-		if (unlikely(!(tmp & VM_FAULT_LOCKED))) {
-			lock_page(page);
-			if (!page->mapping) {
-				unlock_page(page);
-				put_page(page);
-				return 0;
-			}
-		}
-	}
-
-	ret |= finish_fault(vmf);
-	if (unlikely(ret &
-		     (VM_FAULT_ERROR | VM_FAULT_NOPAGE | VM_FAULT_RETRY))) {
-		unlock_page(vmf->page);
-		put_page(vmf->page);
-		return ret;
-	}
-
-	/* Inlined fault_dirty_shared_page */
-	{
-		set_page_dirty(vmf->page);
-		/* page_rmapping call removed - result was unused */
-		unlock_page(vmf->page);
-		/* file_update_time call removed - stub returns 0 */
-	}
-	return ret;
+	return VM_FAULT_SIGBUS;
 }
 
 static vm_fault_t do_fault(struct vm_fault *vmf)

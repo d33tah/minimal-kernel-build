@@ -284,23 +284,10 @@ int force_sig_info(struct kernel_siginfo *info)
 	return force_sig_info_to_task(info, current, HANDLER_CURRENT);
 }
 
+/* zap_other_threads removed - only caller was de_thread which is stubbed */
 int zap_other_threads(struct task_struct *p)
 {
-	struct task_struct *t = p;
-	int count = 0;
-	/* group_stop_count assignment removed - field is write-only */
-
-	while_each_thread(p, t)
-	{
-		count++;
-
-		if (t->exit_state)
-			continue;
-		sigaddset(&t->pending.signal, SIGKILL);
-		signal_wake_up(t, 1);
-	}
-
-	return count;
+	return 0;
 }
 
 struct sighand_struct *__lock_task_sighand(struct task_struct *tsk,

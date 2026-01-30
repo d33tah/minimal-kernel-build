@@ -165,45 +165,11 @@ void delete_from_page_cache_batch(struct address_space *mapping,
 /* filemap_check_errors inlined into filemap_fdatawait_range */
 /* filemap_fdatawrite_wbc removed - never called (~5 LOC) */
 
+/* Simplified - ramfs never has writeback pages (~35 LOC) */
 int filemap_fdatawait_range(struct address_space *mapping, loff_t start_byte,
 			    loff_t end_byte)
 {
-	pgoff_t index = start_byte >> PAGE_SHIFT;
-	pgoff_t end = end_byte >> PAGE_SHIFT;
-	struct pagevec pvec;
-	int nr_pages;
-
-	if (end_byte >= start_byte) {
-		pagevec_init(&pvec);
-		while (index <= end) {
-			unsigned i;
-
-			nr_pages = pagevec_lookup_range_tag(
-				&pvec, mapping, &index, end,
-				PAGECACHE_TAG_WRITEBACK);
-			if (!nr_pages)
-				break;
-
-			for (i = 0; i < nr_pages; i++) {
-				struct page *page = pvec.pages[i];
-				/* wait_on_page_writeback, folio_wait_writeback removed - empty stubs */
-				ClearPageError(page);
-			}
-			pagevec_release(&pvec);
-			cond_resched();
-		}
-	}
-	/* Inlined filemap_check_errors */
-	{
-		int ret = 0;
-		if (test_bit(AS_ENOSPC, &mapping->flags) &&
-		    test_and_clear_bit(AS_ENOSPC, &mapping->flags))
-			ret = -ENOSPC;
-		if (test_bit(AS_EIO, &mapping->flags) &&
-		    test_and_clear_bit(AS_EIO, &mapping->flags))
-			ret = -EIO;
-		return ret;
-	}
+	return 0;
 }
 
 /* filemap_write_and_wait_range, file_check_and_advance_wb_err, file_write_and_wait_range removed - never called */

@@ -34,8 +34,7 @@ static inline void update_load_sub(struct load_weight *lw, unsigned long dec)
 /* sched_init_granularity, get_update_sysctl_factor, update_sysctl, normalized_sysctl_* removed -
    sysctl values already set to correct values at compile time */
 
-#define WMULT_CONST (~0U)
-#define WMULT_SHIFT 32
+/* WMULT_CONST/WMULT_SHIFT removed - unused after __calc_delta simplification */
 /* Simplified - single-process kernel doesn't need CFS weight math (~35 LOC) */
 static u64 __calc_delta(u64 delta_exec, unsigned long weight,
 			struct load_weight *lw)

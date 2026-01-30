@@ -1,6 +1,5 @@
-
+/* string.h removed - unused */
 #include <linux/kobject.h>
-#include <linux/string.h>
 #include <linux/export.h>
 /* stat.h removed - unused */
 #include <linux/slab.h>

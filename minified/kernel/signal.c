@@ -420,6 +420,7 @@ long do_no_restart_syscall(struct restart_block *param)
 	return -EINTR;
 }
 
+/* Stub: single-threaded init, no thread group signal retargeting */
 void __set_current_blocked(const sigset_t *newset)
 {
 	struct task_struct *tsk = current;
@@ -428,31 +429,6 @@ void __set_current_blocked(const sigset_t *newset)
 		return;
 
 	spin_lock_irq(&tsk->sighand->siglock);
-	/* Inlined __set_task_blocked and retarget_shared_pending */
-	if (task_sigpending(tsk) && !thread_group_empty(tsk)) {
-		sigset_t newblocked;
-		sigset_t retarget;
-		struct task_struct *t;
-		sigandnsets(&newblocked, newset, &current->blocked);
-		sigandsets(&retarget, &tsk->signal->shared_pending.signal,
-			   &newblocked);
-		if (!sigisemptyset(&retarget)) {
-			t = tsk;
-			while_each_thread(tsk, t)
-			{
-				if (t->flags & PF_EXITING)
-					continue;
-				if (!has_pending_signals(&retarget,
-							 &t->blocked))
-					continue;
-				sigandsets(&retarget, &retarget, &t->blocked);
-				if (!task_sigpending(t))
-					signal_wake_up(t, 0);
-				if (sigisemptyset(&retarget))
-					break;
-			}
-		}
-	}
 	tsk->blocked = *newset;
 	recalc_sigpending();
 	spin_unlock_irq(&tsk->sighand->siglock);

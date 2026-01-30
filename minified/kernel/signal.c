@@ -6,9 +6,9 @@
 #include <linux/pid_namespace.h>
 #include <linux/cgroup.h>
 #include <linux/task_work.h>
-#include <linux/tty.h>
+/* linux/tty.h removed - unused */
 
-#include <linux/uaccess.h>
+/* linux/uaccess.h removed - unused */
 #include <asm/siginfo.h>
 #include <asm/syscall.h>
 

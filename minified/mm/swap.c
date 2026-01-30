@@ -78,42 +78,9 @@ void __put_page(struct page *page)
 
 /* folio_activate, __lru_cache_activate_folio, activate_page_drain inlined/removed */
 
+/* Stubbed - LRU tracking not needed for single-process init (~35 LOC) */
 void folio_mark_accessed(struct folio *folio)
 {
-	if (!folio_test_referenced(folio)) {
-		folio_set_referenced(folio);
-	} else if (folio_test_unevictable(folio)) {
-	} else if (!folio_test_active(folio)) {
-		if (folio_test_lru(folio)) {
-			/* folio_activate inlined */
-			struct lruvec *lruvec;
-			if (folio_test_clear_lru(folio)) {
-				lruvec = folio_lruvec_lock_irq(folio);
-				if (!folio_test_active(folio) &&
-				    !folio_test_unevictable(folio)) {
-					lruvec_del_folio(lruvec, folio);
-					folio_set_active(folio);
-					lruvec_add_folio(lruvec, folio);
-				}
-				unlock_page_lruvec_irq(lruvec);
-				folio_set_lru(folio);
-			}
-		} else {
-			/* __lru_cache_activate_folio inlined */
-			struct pagevec *pvec;
-			int i;
-			local_lock(&lru_pvecs.lock);
-			pvec = this_cpu_ptr(&lru_pvecs.lru_add);
-			for (i = pagevec_count(pvec) - 1; i >= 0; i--) {
-				if (pvec->pages[i] == &folio->page) {
-					folio_set_active(folio);
-					break;
-				}
-			}
-			local_unlock(&lru_pvecs.lock);
-		}
-		folio_clear_referenced(folio);
-	}
 }
 
 void folio_add_lru(struct folio *folio)

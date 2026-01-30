@@ -949,82 +949,10 @@ void __percpu *__alloc_percpu(size_t size, size_t align)
 	return pcpu_alloc(size, align, GFP_KERNEL);
 }
 
-/* pcpu_balance_populated inlined into pcpu_balance_workfn */
-
-/* pcpu_reclaim_populated inlined into pcpu_balance_workfn */
-
+/* pcpu_balance_workfn stubbed - memory balancing disabled for minimal kernel */
 static void pcpu_balance_workfn(struct work_struct *work)
 {
-	struct pcpu_chunk *chunk;
-
-	mutex_lock(&pcpu_alloc_mutex);
-	spin_lock_irq(&pcpu_lock);
-
-	/* pcpu_balance_free removed - no-op bump allocator */
-	/* Inlined pcpu_reclaim_populated - reintegrate chunks */
-	while (!list_empty(&pcpu_chunk_lists[pcpu_to_depopulate_slot])) {
-		chunk = list_first_entry(
-			&pcpu_chunk_lists[pcpu_to_depopulate_slot],
-			struct pcpu_chunk, list);
-		pcpu_reintegrate_chunk(chunk);
-	}
-	/* Inlined pcpu_balance_populated */
-	{
-		const gfp_t gfp = GFP_KERNEL | __GFP_NORETRY | __GFP_NOWARN;
-		int slot, nr_to_pop;
-
-retry_pop:
-		nr_to_pop = clamp(PCPU_EMPTY_POP_PAGES_HIGH -
-					  pcpu_nr_empty_pop_pages,
-				  0, PCPU_EMPTY_POP_PAGES_HIGH);
-
-		for (slot = pcpu_size_to_slot(PAGE_SIZE);
-		     slot <= pcpu_free_slot; slot++) {
-			unsigned int nr_unpop = 0, rs, re;
-
-			if (!nr_to_pop)
-				break;
-
-			list_for_each_entry(chunk, &pcpu_chunk_lists[slot],
-					    list) {
-				nr_unpop =
-					chunk->nr_pages - chunk->nr_populated;
-				if (nr_unpop)
-					break;
-			}
-
-			if (!nr_unpop)
-				continue;
-
-			for_each_clear_bitrange(rs, re, chunk->populated,
-						chunk->nr_pages) {
-				int nr = min_t(int, re - rs, nr_to_pop);
-
-				spin_unlock_irq(&pcpu_lock);
-				cond_resched();
-				spin_lock_irq(&pcpu_lock);
-				nr_to_pop -= nr;
-				pcpu_chunk_populated(chunk, rs, rs + nr);
-
-				if (!nr_to_pop)
-					break;
-			}
-		}
-
-		if (nr_to_pop) {
-			spin_unlock_irq(&pcpu_lock);
-			chunk = pcpu_create_chunk(gfp);
-			cond_resched();
-			spin_lock_irq(&pcpu_lock);
-			if (chunk) {
-				pcpu_chunk_relocate(chunk, -1);
-				goto retry_pop;
-			}
-		}
-	}
-
-	spin_unlock_irq(&pcpu_lock);
-	mutex_unlock(&pcpu_alloc_mutex);
+	/* No-op: chunk balancing, population, and reclaim disabled */
 }
 
 /* free_percpu moved to percpu.h as static inline */

@@ -9,11 +9,7 @@
 int debug_locks __read_mostly = 1;
 int debug_locks_silent __read_mostly;
 #include <linux/kallsyms.h>
-/* kmsg_dump.h inlined */
-enum kmsg_dump_reason { KMSG_DUMP_PANIC = 1, KMSG_DUMP_OOPS, KMSG_DUMP_EMERG };
-static inline void kmsg_dump(enum kmsg_dump_reason reason)
-{
-}
+/* kmsg_dump removed - was empty inline stub */
 #include <linux/notifier.h>
 #include <linux/vt_kern.h>
 #include <linux/module.h>
@@ -89,7 +85,7 @@ void panic(const char *fmt, ...)
 
 	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
 
-	kmsg_dump(KMSG_DUMP_PANIC);
+	/* kmsg_dump call removed - was empty */
 
 	/* unblank_screen removed - was empty stub */
 	console_unblank();
@@ -132,7 +128,7 @@ void oops_enter(void)
 
 void oops_exit(void)
 {
-	kmsg_dump(KMSG_DUMP_OOPS);
+	/* kmsg_dump call removed - was empty */
 }
 
 /* Merged from lib/debug_locks.c */
@@ -175,7 +171,7 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
 /* machine_restart inlined - just calls halt() in a loop */
 void emergency_restart(void)
 {
-	kmsg_dump(KMSG_DUMP_EMERG);
+	/* kmsg_dump call removed - was empty */
 	while (1)
 		halt();
 }

@@ -193,6 +193,7 @@ void __pagevec_release(struct pagevec *pvec)
 	pagevec_reinit(pvec);
 }
 
+/* Simplified - minimal LRU add for single-process init (~22 LOC) */
 void __pagevec_lru_add(struct pagevec *pvec)
 {
 	int i;
@@ -201,27 +202,8 @@ void __pagevec_lru_add(struct pagevec *pvec)
 
 	for (i = 0; i < pagevec_count(pvec); i++) {
 		struct folio *folio = page_folio(pvec->pages[i]);
-
 		lruvec = folio_lruvec_relock_irqsave(folio, lruvec, &flags);
-		/* __pagevec_lru_add_fn inlined */
-		(void)folio_test_clear_unevictable(folio);
 		folio_set_lru(folio);
-		/* folio_evictable inlined - single caller */
-		{
-			bool evictable;
-			struct address_space *mapping;
-			rcu_read_lock();
-			/* mapping_unevictable inlined - single caller */
-			mapping = folio_mapping(folio);
-			evictable = !(mapping && test_bit(AS_UNEVICTABLE,
-							  &mapping->flags)) &&
-				    !folio_test_mlocked(folio);
-			rcu_read_unlock();
-			if (!evictable) {
-				folio_clear_active(folio);
-				folio_set_unevictable(folio);
-			}
-		}
 		lruvec_add_folio(lruvec, folio);
 	}
 	if (lruvec)

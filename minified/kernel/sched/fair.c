@@ -12,7 +12,7 @@
 #include <asm/switch_to.h>
 
 #include "sched.h"
-#include "stats.h"
+/* stats.h removed - was empty header */
 
 unsigned int sysctl_sched_latency = 6000000ULL;
 unsigned int sysctl_sched_min_granularity = 750000ULL;
@@ -161,8 +161,7 @@ static inline u64 calc_delta_fair(u64 delta, struct sched_entity *se)
 }
 
 /* sched_slice inlined into place_entity */
-
-#include "pelt.h"
+/* pelt.h removed - was empty stubs */
 
 static void update_curr(struct cfs_rq *cfs_rq)
 {
@@ -445,7 +444,7 @@ idle:
 	if (!rf)
 		return NULL;
 	/* newidle_balance always returns 0, dead branches removed */
-	update_idle_rq_clock_pelt(rq);
+	/* update_idle_rq_clock_pelt removed - was empty stub */
 	return NULL;
 }
 

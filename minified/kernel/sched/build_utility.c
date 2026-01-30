@@ -12,8 +12,7 @@
 #include <asm/switch_to.h>
 
 #include "sched.h"
-/* end sched-pelt.h */
-#include "stats.h"
+/* stats.h, pelt.h removed - were empty */
 
 /* loadavg.c removed - calc_global_load/calc_global_load_tick calls removed */
 unsigned long calc_load_update;

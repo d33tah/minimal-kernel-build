@@ -461,7 +461,7 @@ rq_unlock(struct rq *rq, struct rq_flags *rf)
 
 /* sched_init_numa, sched_update_numa, sched_domains_numa_masks_set/clear, sched_numa_find_closest, init_numa_balancing removed - unused */
 
-#include "stats.h"
+/* stats.h removed - was empty header */
 
 
 /* sched_core_account_forceidle removed - unused */

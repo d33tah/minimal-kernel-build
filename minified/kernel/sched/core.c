@@ -32,8 +32,7 @@ extern void sched_init(void);
 #include <asm/tlb.h>
 
 #include "sched.h"
-#include "stats.h"
-#include "pelt.h"
+/* stats.h, pelt.h removed - were empty */
 
 /* Removed: io_wq_worker_sleeping/running, sched_core_enqueue/dequeue - empty stubs */
 
@@ -92,7 +91,7 @@ void update_rq_clock(struct rq *rq)
 		return;
 	rq->clock += delta;
 	rq->clock_task += delta;
-	update_rq_clock_pelt(rq, delta);
+	/* update_rq_clock_pelt removed - was empty stub */
 }
 
 /* fetch_or macro removed - only used by removed set_nr_and_not_polling */

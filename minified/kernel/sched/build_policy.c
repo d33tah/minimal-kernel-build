@@ -17,9 +17,7 @@
 #include <linux/sched/types.h>
 
 #include "sched.h"
-
-#include "stats.h"
-#include "pelt.h"
+/* stats.h, pelt.h removed - were empty */
 
 #include "idle.c"
 

@@ -9,7 +9,7 @@
 #include <linux/sched/task_stack.h>
 #include <linux/security.h>
 #include <linux/swap.h>
-#include <linux/swapops.h>
+/* swapops.h removed - was empty */
 #include <linux/mman.h>
 #include <linux/hugetlb.h>
 #include <linux/vmalloc.h>

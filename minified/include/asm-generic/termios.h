@@ -4,7 +4,7 @@
 
 #include <linux/uaccess.h>
 #include <asm/termbits.h>
-#include <asm/ioctls.h>
+/* asm/ioctls.h removed - was empty stub */
 
 /* Inlined from uapi/asm-generic/termios.h */
 struct winsize {

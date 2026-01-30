@@ -5,7 +5,7 @@
 #include <linux/swap.h>
 #include <linux/capability.h>
 #include <linux/fs.h>
-#include <linux/swapops.h>
+/* swapops.h removed - was empty */
 #include <linux/highmem.h>
 #include <linux/syscalls.h>
 #include <linux/mmu_notifier.h>

@@ -17,7 +17,7 @@
 #define PFN_DEV (1ULL << (BITS_PER_LONG_LONG - 3))
 /* memcontrol.h removed - unused */
 #include <linux/mmu_notifier.h>
-#include <linux/swapops.h>
+/* swapops.h removed - was empty */
 #include <linux/gfp.h>
 /* linux/migrate.h removed - empty header */
 #include <linux/string.h>

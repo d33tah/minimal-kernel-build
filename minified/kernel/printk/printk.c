@@ -125,30 +125,14 @@ int is_console_locked(void)
 
 /* console_is_usable, console_emit_next_record, console_flush_all inlined */
 
+/* Simplified - printk buffer is stubbed, no console flushing needed (~15 LOC) */
 void console_unlock(void)
 {
-	struct console *con;
-
 	if (console_suspended) {
 		up_console_sem();
 		return;
 	}
-
-	/* prb_read_valid always false - loop simplified to single iteration */
 	console_may_schedule = 0;
-
-	/* Inlined console_flush_all - only checks for usable consoles */
-	for_each_console(con) {
-		if (!(con->flags & CON_ENABLED))
-			continue;
-		if (!con->write)
-			continue;
-		if (!cpu_online(raw_smp_processor_id()) &&
-		    !(con->flags & CON_ANYTIME))
-			continue;
-	}
-
-	/* handover always false */
 	console_locked = 0;
 	up_console_sem();
 }

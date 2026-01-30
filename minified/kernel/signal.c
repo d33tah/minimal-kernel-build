@@ -100,95 +100,30 @@ void signal_wake_up_state(struct task_struct *t, unsigned int state)
 int send_signal_locked(int sig, struct kernel_siginfo *info,
 		       struct task_struct *t, enum pid_type type)
 {
-	/* Minimal stub: simplified signal permission handling */
-	bool force = false;
+	/* Simplified stub for minimal hello-world kernel
+	 * - Skip complex ignored signal check (init ignores most anyway)
+	 * - Skip sigqueue allocation (no signal handlers to run)
+	 * - Just mark signal as pending
+	 */
 	struct sigpending *pending;
-	struct sigqueue *q;
+	void __user *handler;
 
-	if (info == SEND_SIG_PRIV)
-		force = true;
-	else if (info != SEND_SIG_NOINFO && info->si_code == SI_KERNEL)
-		force = true;
-
-	/* Inlined __send_signal_locked with sig_ignored */
-	{
-		void __user *handler;
-		bool ignored = false;
-
-		if (!sigismember(&t->blocked, sig) &&
-		    !sigismember(&t->real_blocked, sig) &&
-		    !(t->ptrace && sig != SIGKILL)) {
-			handler = t->sighand->action[sig - 1].sa.sa_handler;
-
-			if (unlikely(is_global_init(t) && sig_kernel_only(sig)))
-				ignored = true;
-			else if (unlikely(t->signal->flags &
-					  SIGNAL_UNKILLABLE) &&
-				 handler == SIG_DFL &&
-				 !(force && sig_kernel_only(sig)))
-				ignored = true;
-			else if (unlikely((t->flags & PF_KTHREAD) &&
-					  (handler == SIG_KTHREAD_KERNEL) &&
-					  !force))
-				ignored = true;
-			else if (handler == SIG_IGN ||
-				 (handler == SIG_DFL && sig_kernel_ignore(sig)))
-				ignored = true;
-		}
-		if (ignored)
-			return 0;
-	}
+	/* Check if signal should be ignored */
+	handler = t->sighand->action[sig - 1].sa.sa_handler;
+	if (handler == SIG_IGN ||
+	    (handler == SIG_DFL && sig_kernel_ignore(sig)))
+		return 0;
+	if (is_global_init(t) && sig_kernel_only(sig))
+		return 0;
 
 	pending = (type != PIDTYPE_PID) ? &t->signal->shared_pending :
 					  &t->pending;
 
+	/* Skip if already pending */
 	if ((sig < SIGRTMIN) && sigismember(&pending->signal, sig))
 		return 0;
 
-	/* For SIGKILL or kernel threads, just set the signal */
-	if ((sig == SIGKILL) || (t->flags & PF_KTHREAD))
-		goto out_set;
-
-	/* Inlined __sigqueue_alloc */
-	{
-		struct ucounts *ucounts = NULL;
-		long sigpending;
-
-		rcu_read_lock();
-		ucounts = task_ucounts(t);
-		sigpending = inc_rlimit_get_ucounts(ucounts,
-						    UCOUNT_RLIMIT_SIGPENDING);
-		rcu_read_unlock();
-		if (!sigpending)
-			q = NULL;
-		else if (likely(sigpending <=
-				task_rlimit(t, RLIMIT_SIGPENDING)))
-			q = kmem_cache_alloc(sigqueue_cachep, GFP_ATOMIC);
-		else
-			q = NULL;
-
-		if (unlikely(q == NULL)) {
-			if (sigpending)
-				dec_rlimit_put_ucounts(
-					ucounts, UCOUNT_RLIMIT_SIGPENDING);
-		} else {
-			INIT_LIST_HEAD(&q->list);
-			q->flags = 0;
-			q->ucounts = ucounts;
-		}
-	}
-	if (q) {
-		list_add_tail(&q->list, &pending->list);
-		if (info == SEND_SIG_NOINFO) {
-			clear_siginfo(&q->info);
-			q->info.si_signo = sig;
-			q->info.si_code = SI_USER;
-		} else if (info != SEND_SIG_PRIV) {
-			copy_siginfo(&q->info, info);
-		}
-	}
-
-out_set:
+	/* Just mark signal pending - no queue needed for simple init */
 	sigaddset(&pending->signal, sig);
 	return 0;
 }

@@ -809,39 +809,17 @@ static void __build_all_zonelists(void *data)
 
 /* build_all_zonelists_init removed - inlined into single caller (~9 LOC) */
 
+/* Stub: minimal boot has enough RAM, disable page mobility grouping */
 void __ref build_all_zonelists(pg_data_t *pgdat)
 {
-	unsigned long vm_total_pages;
-
 	if (system_state == SYSTEM_BOOTING) {
-		/* Inlined build_all_zonelists_init */
 		__build_all_zonelists(NULL);
 		per_cpu_pages_init(&per_cpu(boot_pageset, 0),
 				   &per_cpu(boot_zonestats, 0));
 	} else {
 		__build_all_zonelists(pgdat);
 	}
-
-	/* Inline: nr_free_zone_pages(gfp_zone(GFP_HIGHUSER_MOVABLE)) */
-	{
-		struct zoneref *z;
-		struct zone *zone;
-		struct zonelist *zonelist =
-			node_zonelist(numa_node_id(), GFP_KERNEL);
-		vm_total_pages = 0;
-		for_each_zone_zonelist(zone, z, zonelist,
-				       gfp_zone(GFP_HIGHUSER_MOVABLE)) {
-			unsigned long size = zone_managed_pages(zone);
-			unsigned long high = high_wmark_pages(zone);
-			if (size > high)
-				vm_total_pages += size - high;
-		}
-	}
-
-	if (vm_total_pages < (pageblock_nr_pages * MIGRATE_TYPES))
-		page_group_by_mobility_disabled = 1;
-	else
-		page_group_by_mobility_disabled = 0;
+	page_group_by_mobility_disabled = 1;
 }
 
 /* overlap_memmap_init removed - stub returning false, call site removed */

@@ -4,12 +4,12 @@
 #include <linux/slab.h>
 #include <linux/fs.h>
 #include <linux/namei.h>
-#include <linux/pagemap.h>
+/* linux/pagemap.h removed - page operations not used */
 #include <linux/sched/mm.h>
 #include <linux/security.h>
 /* Removed: ima_file_check, devcgroup_inode_permission, devcgroup_inode_mknod
  * - Always returned 0 (no-op stubs) */
-#include <linux/syscalls.h>
+/* linux/syscalls.h removed - no syscall entry points */
 #include <linux/mount.h>
 #include <linux/capability.h>
 #include <linux/file.h>

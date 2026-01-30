@@ -1,5 +1,4 @@
-
-#include <linux/syscalls.h>
+/* linux/syscalls.h removed - no syscall entry points */
 #include <linux/fs.h>
 /* proc_fs.h removed - empty header */
 /* seq_file.h, kmod.h removed - headers empty */

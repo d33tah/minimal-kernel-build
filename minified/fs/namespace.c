@@ -1,5 +1,4 @@
-
-#include <linux/syscalls.h>
+/* linux/syscalls.h removed - no syscall entry points */
 #include <linux/capability.h>
 #include <linux/mnt_namespace.h>
 #include <linux/user_namespace.h>

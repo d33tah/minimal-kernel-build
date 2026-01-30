@@ -17,7 +17,7 @@
 #include <linux/backing-dev.h>
 #include <linux/pagevec.h>
 /* cpuset.h removed - unused */
-#include <linux/hugetlb.h>
+/* linux/hugetlb.h removed - folio_test_hugetlb always false */
 /* memcontrol.h removed - unused */
 /* rmap.h, ramfs.h, migrate.h removed - unused */
 #include "internal.h"

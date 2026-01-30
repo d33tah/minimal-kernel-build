@@ -2,13 +2,13 @@
 #include <linux/mm.h>
 #include <linux/mm_inline.h>
 #include <linux/sched/mm.h>
-#include <linux/sched/coredump.h>
+/* linux/sched/coredump.h removed - unused */
 #include <linux/sched/task.h>
 #include <linux/mman.h>
 #include <linux/swap.h>
 #include <linux/highmem.h>
 #include <linux/pagemap.h>
-#include <linux/memremap.h>
+/* linux/memremap.h removed - unused */
 #include <linux/rmap.h>
 #include <linux/init.h>
 /* pfn_t.h removed - all functions inlined */

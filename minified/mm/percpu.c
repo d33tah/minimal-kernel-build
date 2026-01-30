@@ -20,7 +20,7 @@ unsigned long lcm(unsigned long a, unsigned long b) __attribute_const__;
 #include <linux/workqueue.h>
 #include <linux/sched.h>
 #include <linux/sched/mm.h>
-#include <linux/memcontrol.h>
+/* linux/memcontrol.h removed - memcg hooks are empty stubs */
 
 #include <asm/cacheflush.h>
 #include <asm/sections.h>

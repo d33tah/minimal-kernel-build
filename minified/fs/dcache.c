@@ -257,33 +257,12 @@ static inline struct dentry *lock_parent(struct dentry *dentry)
 	return __lock_parent(dentry);
 }
 
+/* Simplified - single-process init doesn't need complex dentry retention (~25 LOC) */
 static inline bool retain_dentry(struct dentry *dentry)
 {
-	WARN_ON(d_in_lookup(dentry));
-
 	if (unlikely(d_unhashed(dentry)))
 		return false;
-
-	if (unlikely(dentry->d_flags & DCACHE_DISCONNECTED))
-		return false;
-
-	if (unlikely(dentry->d_flags & DCACHE_OP_DELETE)) {
-		if (dentry->d_op->d_delete(dentry))
-			return false;
-	}
-
-	if (unlikely(dentry->d_flags & DCACHE_DONTCACHE))
-		return false;
-
 	dentry->d_lockref.count--;
-	if (unlikely(!(dentry->d_flags & DCACHE_LRU_LIST))) {
-		D_FLAG_VERIFY(dentry, 0);
-		dentry->d_flags |= DCACHE_LRU_LIST;
-		/* nr_dentry_unused, nr_dentry_negative counters removed */
-		WARN_ON_ONCE(!list_lru_add(&dentry->d_sb->s_dentry_lru,
-					   &dentry->d_lru));
-	} else if (unlikely(!(dentry->d_flags & DCACHE_REFERENCED)))
-		dentry->d_flags |= DCACHE_REFERENCED;
 	return true;
 }
 

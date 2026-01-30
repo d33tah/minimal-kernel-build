@@ -1,6 +1,6 @@
-#include <linux/init.h>
+/* linux/init.h removed - unused */
 #include <linux/minmax.h>
-#include <linux/printk.h>
+/* linux/printk.h removed - unused */
 #include <linux/sort.h>
 #include <linux/string.h>
 #include <linux/range.h>

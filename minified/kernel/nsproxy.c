@@ -15,7 +15,7 @@
 #include <linux/file.h>
 #include <linux/syscalls.h>
 #include <linux/cgroup.h>
-#include <linux/perf_event.h>
+/* linux/perf_event.h removed - unused */
 
 static struct kmem_cache *nsproxy_cachep;
 

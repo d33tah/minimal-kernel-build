@@ -1,13 +1,13 @@
 #include <linux/kernel.h>
 #include <linux/string.h>
 #include <linux/errno.h>
-#include <linux/module.h>
+/* linux/module.h removed - unused */
 #include <linux/moduleparam.h>
-#include <linux/device.h>
+/* linux/device.h removed - unused */
 #include <linux/err.h>
-#include <linux/slab.h>
+/* linux/slab.h removed - unused */
 #include <linux/ctype.h>
-#include <linux/security.h>
+/* linux/security.h removed - unused */
 
 /* Merged from lib/cmdline.c - only used here */
 char *next_arg(char *args, char **param, char **val)

@@ -1,21 +1,12 @@
-
+/* module.h, interrupt.h, swab.h, ctype.h, kallsyms.h removed - unused */
 #include <linux/mm.h>
 #include <linux/swap.h>
-#include <linux/module.h>
 #include <linux/bit_spinlock.h>
-#include <linux/interrupt.h>
-#include <linux/swab.h>
 #include <linux/bitops.h>
 #include <linux/slab.h>
 #include "slab.h"
-/* proc_fs.h removed - empty header */
-/* seq_file.h removed - header is empty */
+/* proc_fs.h, seq_file.h, cpuset.h, mempolicy.h, stackdepot.h, math64.h, stacktrace.h, sort.h, memcontrol.h removed - unused */
 #include <linux/cpu.h>
-/* cpuset.h, mempolicy.h removed - unused */
-#include <linux/ctype.h>
-/* stackdepot.h removed - unused */
-#include <linux/kallsyms.h>
-/* math64.h, stacktrace.h, sort.h, memcontrol.h removed - unused */
 
 #include "internal.h"
 

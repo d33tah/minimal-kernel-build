@@ -1,6 +1,5 @@
-#include <linux/sched/types.h>
+/* sched/types.h, mmu_context.h, file.h, mutex.h, uaccess.h removed - unused */
 #include <linux/mm.h>
-#include <linux/mmu_context.h>
 #include <linux/sched.h>
 #include <linux/sched/mm.h>
 #include <linux/sched/task.h>
@@ -8,11 +7,8 @@
 #include <linux/completion.h>
 #include <linux/err.h>
 #include <asm/unistd.h>
-#include <linux/file.h>
-#include <linux/mutex.h>
 #include <linux/slab.h>
 #include <linux/ptrace.h>
-#include <linux/uaccess.h>
 #include <linux/sched/isolation.h>
 
 static DEFINE_SPINLOCK(kthread_create_lock);

@@ -428,19 +428,9 @@ static void task_fork_fair(struct task_struct *p)
 	rq_unlock(rq, &rf);
 }
 
+/* Stubbed - single-task kernel doesn't need priority preemption (~13 LOC) */
 static void prio_changed_fair(struct rq *rq, struct task_struct *p, int oldprio)
 {
-	if (!task_on_rq_queued(p))
-		return;
-
-	if (rq->cfs.nr_running == 1)
-		return;
-
-	if (task_current(rq, p)) {
-		if (p->prio > oldprio)
-			resched_curr(rq);
-	} else
-		check_preempt_curr(rq, p, 0);
 }
 
 static inline bool vruntime_normalized(struct task_struct *p)

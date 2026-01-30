@@ -8,7 +8,7 @@
 #define SYSCALL_DISPATCH_FILTER_BLOCK 1
 #include <linux/uaccess.h>
 #include <linux/signal.h>
-#include <linux/elf.h>
+/* linux/elf.h removed - unused */
 
 #include <linux/sched/signal.h>
 #include <linux/sched/task_stack.h>

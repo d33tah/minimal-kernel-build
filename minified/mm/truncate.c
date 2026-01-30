@@ -5,7 +5,7 @@
 #include <linux/mm.h>
 #include <linux/swap.h>
 #include <linux/pagemap.h>
-#include <linux/highmem.h>
+/* linux/highmem.h removed - unused */
 #include <linux/pagevec.h>
 #include <linux/shmem_fs.h>
 #include <linux/rmap.h>

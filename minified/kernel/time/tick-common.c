@@ -4,7 +4,7 @@
 #include <linux/interrupt.h>
 #include <linux/percpu.h>
 #include <linux/sched.h>
-#include <linux/module.h>
+/* linux/module.h removed - unused */
 
 #include <asm/irq_regs.h>
 

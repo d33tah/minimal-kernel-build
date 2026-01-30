@@ -54,34 +54,13 @@ static inline u64 max_vruntime(u64 max_vruntime, u64 vruntime)
 
 #define __node_2_se(node) rb_entry((node), struct sched_entity, run_node)
 
+/* Simplified - single-process kernel has only one entity (~22 LOC) */
 static void update_min_vruntime(struct cfs_rq *cfs_rq)
 {
 	struct sched_entity *curr = cfs_rq->curr;
-	struct rb_node *leftmost = rb_first_cached(&cfs_rq->tasks_timeline);
-
-	u64 vruntime = cfs_rq->min_vruntime;
-
-	if (curr) {
-		if (curr->on_rq)
-			vruntime = curr->vruntime;
-		else
-			curr = NULL;
-	}
-
-	if (leftmost) {
-		struct sched_entity *se = __node_2_se(leftmost);
-
-		if (!curr)
-			vruntime = se->vruntime;
-		else {
-			/* min_vruntime inlined */
-			s64 delta = (s64)(se->vruntime - vruntime);
-			if (delta < 0)
-				vruntime = se->vruntime;
-		}
-	}
-
-	cfs_rq->min_vruntime = max_vruntime(cfs_rq->min_vruntime, vruntime);
+	if (curr && curr->on_rq)
+		cfs_rq->min_vruntime =
+			max_vruntime(cfs_rq->min_vruntime, curr->vruntime);
 }
 
 static inline bool __entity_less(struct rb_node *a, const struct rb_node *b)

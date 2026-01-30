@@ -312,44 +312,10 @@ again:
 	dispose_list(&dispose);
 }
 
-static enum lru_status inode_lru_isolate(struct list_head *item,
-					 struct list_lru_one *lru,
-					 spinlock_t *lru_lock, void *arg)
-{
-	/* Stub: simplified inode LRU isolation for minimal kernel */
-	struct list_head *freeable = arg;
-	struct inode *inode = container_of(item, struct inode, i_lru);
-
-	if (!spin_trylock(&inode->i_lock))
-		return LRU_SKIP;
-
-	if (atomic_read(&inode->i_count) || (inode->i_state & ~I_REFERENCED)) {
-		/* list_lru_isolate inlined */
-		list_del_init(&inode->i_lru);
-		lru->nr_items--;
-		spin_unlock(&inode->i_lock);
-		/* nr_unused counter removed */
-		return LRU_REMOVED;
-	}
-
-	inode->i_state |= I_FREEING;
-	/* list_lru_isolate_move inlined */
-	list_move(&inode->i_lru, freeable);
-	lru->nr_items--;
-	spin_unlock(&inode->i_lock);
-	/* nr_unused counter removed */
-	return LRU_REMOVED;
-}
-
+/* Inode cache shrinking stubbed - not needed for minimal boot */
 long prune_icache_sb(struct super_block *sb, struct shrink_control *sc)
 {
-	LIST_HEAD(freeable);
-	long freed;
-
-	freed = list_lru_shrink_walk(&sb->s_inode_lru, sc, inode_lru_isolate,
-				     &freeable);
-	dispose_list(&freeable);
-	return freed;
+	return 0;
 }
 
 static DEFINE_PER_CPU(unsigned int, last_ino);

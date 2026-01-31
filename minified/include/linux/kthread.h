@@ -25,7 +25,7 @@ void kthread_set_per_cpu(struct task_struct *k, int cpu);
 void free_kthread_struct(struct task_struct *k);
 int kthread_stop(struct task_struct *k);
 bool kthread_should_stop(void);
-bool kthread_should_park(void);
+/* kthread_should_park removed - never called */
 bool __kthread_should_park(struct task_struct *k);
 void *kthread_data(struct task_struct *k);
 /* kthread_unpark made static - only used in kthread.c */

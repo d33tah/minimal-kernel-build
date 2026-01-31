@@ -92,10 +92,7 @@ bool __kthread_should_park(struct task_struct *k)
 	return test_bit(KTHREAD_SHOULD_PARK, &to_kthread(k)->flags);
 }
 
-bool kthread_should_park(void)
-{
-	return __kthread_should_park(current);
-}
+/* kthread_should_park removed - never called */
 
 void *kthread_data(struct task_struct *task)
 {

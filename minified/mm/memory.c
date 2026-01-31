@@ -574,8 +574,8 @@ void unmap_mapping_folio(struct folio *folio)
 	i_mmap_unlock_read(mapping);
 }
 
-void unmap_mapping_pages(struct address_space *mapping, pgoff_t start,
-			 pgoff_t nr, bool even_cows)
+static void unmap_mapping_pages(struct address_space *mapping, pgoff_t start,
+				pgoff_t nr, bool even_cows)
 {
 	struct zap_details details = {};
 	pgoff_t first_index = start;
@@ -682,7 +682,8 @@ static vm_fault_t __do_fault(struct vm_fault *vmf)
 
 /* do_set_pmd removed - never called */
 
-void do_set_pte(struct vm_fault *vmf, struct page *page, unsigned long addr)
+static void do_set_pte(struct vm_fault *vmf, struct page *page,
+		       unsigned long addr)
 {
 	struct vm_area_struct *vma = vmf->vma;
 	bool write = vmf->flags & FAULT_FLAG_WRITE;

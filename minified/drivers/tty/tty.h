@@ -38,9 +38,6 @@ int tty_ldisc_reinit(struct tty_struct *tty, int disc);
 /* tty_ioctl removed - ioctl syscall returns ENOTTY */
 /* tty_jobctrl_ioctl removed - never called */
 struct tty_struct *alloc_tty_struct(struct tty_driver *driver, int idx);
-int tty_alloc_file(struct file *file);
-void tty_add_file(struct tty_struct *tty, struct file *file);
-void tty_free_file(struct file *file);
 int tty_release(struct inode *inode, struct file *filp);
 
 /* tty_is_writelocked removed - unused */

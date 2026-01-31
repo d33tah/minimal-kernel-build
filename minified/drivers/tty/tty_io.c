@@ -77,7 +77,7 @@ static inline struct tty_struct *file_tty(struct file *file)
 	return ((struct tty_file_private *)file->private_data)->tty;
 }
 
-int tty_alloc_file(struct file *file)
+static int tty_alloc_file(struct file *file)
 {
 	struct tty_file_private *priv;
 
@@ -90,7 +90,7 @@ int tty_alloc_file(struct file *file)
 	return 0;
 }
 
-void tty_add_file(struct tty_struct *tty, struct file *file)
+static void tty_add_file(struct tty_struct *tty, struct file *file)
 {
 	struct tty_file_private *priv = file->private_data;
 
@@ -102,7 +102,7 @@ void tty_add_file(struct tty_struct *tty, struct file *file)
 	spin_unlock(&tty->files_lock);
 }
 
-void tty_free_file(struct file *file)
+static void tty_free_file(struct file *file)
 {
 	struct tty_file_private *priv = file->private_data;
 

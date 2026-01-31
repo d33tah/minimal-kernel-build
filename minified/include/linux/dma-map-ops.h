@@ -17,10 +17,7 @@ struct page *dma_alloc_from_pool(struct device *dev, size_t size,
 
 /* dma_free_from_pool, dev_is_dma_coherent removed - no callers */
 
-void *arch_dma_alloc(struct device *dev, size_t size, dma_addr_t *dma_handle,
-		gfp_t gfp, unsigned long attrs);
-void arch_dma_free(struct device *dev, size_t size, void *cpu_addr,
-		dma_addr_t dma_addr, unsigned long attrs);
+/* arch_dma_alloc, arch_dma_free removed - never implemented or called */
 
 #ifndef pgprot_dmacoherent
 #define pgprot_dmacoherent(prot)	pgprot_noncached(prot)

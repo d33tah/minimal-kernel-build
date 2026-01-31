@@ -55,8 +55,7 @@ void __noreturn make_task_dead(int signr);
 extern void proc_caches_init(void);
 
 extern void fork_init(void);
-
-extern void release_task(struct task_struct * p);
+/* release_task made static in kernel/exit.c */
 
 extern int copy_thread(struct task_struct *, const struct kernel_clone_args *);
 

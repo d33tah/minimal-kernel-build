@@ -57,7 +57,7 @@ void put_task_struct_rcu_user(struct task_struct *task)
 		call_rcu(&task->rcu, delayed_put_task_struct);
 }
 
-void release_task(struct task_struct *p)
+static void release_task(struct task_struct *p)
 {
 	struct pid *thread_pid;
 	struct signal_struct *sig;

@@ -91,7 +91,8 @@ void __filemap_remove_folio(struct folio *folio, void *shadow)
 	}
 }
 
-void filemap_free_folio(struct address_space *mapping, struct folio *folio)
+static void filemap_free_folio(struct address_space *mapping,
+			       struct folio *folio)
 {
 	int refs = 1;
 

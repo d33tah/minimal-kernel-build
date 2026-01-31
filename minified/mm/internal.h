@@ -63,7 +63,7 @@ unsigned find_lock_entries(struct address_space *mapping, pgoff_t start,
 		pgoff_t end, struct folio_batch *fbatch, pgoff_t *indices);
 unsigned find_get_entries(struct address_space *mapping, pgoff_t start,
 		pgoff_t end, struct folio_batch *fbatch, pgoff_t *indices);
-void filemap_free_folio(struct address_space *mapping, struct folio *folio);
+/* filemap_free_folio made static in filemap.c */
 /* truncate_inode_folio, truncate_inode_partial_folio made static in truncate.c */
 /* invalidate_inode_page removed - no callers */
 /* invalidate_mapping_pagevec removed - never called */

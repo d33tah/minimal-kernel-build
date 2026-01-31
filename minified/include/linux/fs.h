@@ -603,8 +603,7 @@ struct inode_operations {
 } ____cacheline_aligned;
 /* call_write_iter inlined at fs/read_write.c - single caller */
 /* call_mmap inlined at mm/mmap.c - single caller */
-
-extern ssize_t vfs_write(struct file *, const char __user *, size_t, loff_t *);
+/* vfs_write made static in read_write.c */
 
 struct super_operations {
 	/* alloc_inode, destroy_inode, free_inode, evict_inode, put_super removed - never assigned */

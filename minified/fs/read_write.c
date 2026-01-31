@@ -45,8 +45,8 @@ ssize_t kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
 	return ret;
 }
 
-ssize_t vfs_write(struct file *file, const char __user *buf, size_t count,
-		  loff_t *pos)
+static ssize_t vfs_write(struct file *file, const char __user *buf,
+			 size_t count, loff_t *pos)
 {
 	ssize_t ret;
 

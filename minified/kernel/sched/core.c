@@ -476,11 +476,7 @@ static __always_inline struct rq *context_switch(struct rq *rq,
 	return finish_task_switch(prev);
 }
 
-/* nr_running simplified - single CPU */
-unsigned int nr_running(void)
-{
-	return cpu_rq(0)->nr_running;
-}
+/* nr_running() removed - never called */
 
 static unsigned int nr_iowait_cpu(int cpu)
 {

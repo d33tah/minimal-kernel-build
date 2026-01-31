@@ -14,9 +14,7 @@
 #include <linux/sched/signal.h>
 /* extern total_forks removed - only incremented, never read */
 extern int nr_threads;
-/* process_counts removed - never read */
-extern unsigned int nr_running(void);
-/* single_task_running, nr_iowait, nr_iowait_cpu made static in core.c */
+/* process_counts, nr_running, single_task_running, nr_iowait, nr_iowait_cpu removed/made static */
 /* end sched/stat.h */
 #include <linux/sched/sysctl.h>
 

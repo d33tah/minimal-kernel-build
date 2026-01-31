@@ -56,18 +56,8 @@ int memtype_reserve(u64 start, u64 end, enum page_cache_mode req_type,
 	return 0;
 }
 
-/* memtype_free removed - empty stub */
-
-int memtype_reserve_io(resource_size_t start, resource_size_t end,
-		       enum page_cache_mode *pcm)
-{
-	if (pcm)
-		*pcm = _PAGE_CACHE_MODE_UC_MINUS;
-	return 0;
-}
-
-/* memtype_free_io, memtype_kernel_map_sync, track_pfn_copy, track_pfn_remap,
-   track_pfn_insert, untrack_pfn removed - never called */
+/* memtype_free, memtype_reserve_io, memtype_free_io, memtype_kernel_map_sync,
+   track_pfn_copy, track_pfn_remap, track_pfn_insert, untrack_pfn removed - never called */
 
 pgprot_t pgprot_writecombine(pgprot_t prot)
 {

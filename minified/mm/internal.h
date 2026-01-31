@@ -110,7 +110,6 @@ static inline unsigned int buddy_order(struct page *page)
 /* __isolate_free_page, __putback_isolated_page removed - unused */
 extern void memblock_free_pages(struct page *page, unsigned long pfn,
 					unsigned int order);
-extern void post_alloc_hook(struct page *page, unsigned int order);
 /* user_min_free_kbytes removed - unused */
 
 /* free_unref_page/free_unref_page_list - no-op stubs for bump allocator */

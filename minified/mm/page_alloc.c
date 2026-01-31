@@ -306,7 +306,7 @@ void __init page_alloc_init_late(void)
 /* expand() inlined into __rmqueue_smallest */
 /* check_new_pages, check_pcp_refill, check_new_pcp always return false - removed */
 
-inline void post_alloc_hook(struct page *page, unsigned int order)
+static inline void post_alloc_hook(struct page *page, unsigned int order)
 {
 	/* Stub: minimal post-allocation setup */
 	set_page_private(page, 0);

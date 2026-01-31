@@ -148,7 +148,7 @@ void free_compound_page(struct page *page)
 	/* No-op: bump allocator style - no deallocation */
 }
 
-void prep_compound_page(struct page *page, unsigned int order)
+static void prep_compound_page(struct page *page, unsigned int order)
 {
 	int i;
 	int nr_pages = 1 << order;

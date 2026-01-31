@@ -111,7 +111,6 @@ static inline unsigned int buddy_order(struct page *page)
 extern void memblock_free_pages(struct page *page, unsigned long pfn,
 					unsigned int order);
 extern void __free_pages_core(struct page *page, unsigned int order);
-extern void prep_compound_page(struct page *page, unsigned int order);
 extern void post_alloc_hook(struct page *page, unsigned int order);
 /* user_min_free_kbytes removed - unused */
 

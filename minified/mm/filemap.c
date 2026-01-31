@@ -1031,10 +1031,7 @@ ssize_t generic_perform_write(struct kiocb *iocb, struct iov_iter *i)
 	return -EROFS;
 }
 
-ssize_t __generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
-{
-	return -EROFS;
-}
+/* __generic_file_write_iter removed - never called */
 
 ssize_t generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 {

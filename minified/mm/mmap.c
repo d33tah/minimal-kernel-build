@@ -649,7 +649,7 @@ struct vm_area_struct *find_vma_prev(struct mm_struct *mm, unsigned long addr,
 	return find_vma(mm, addr);
 }
 
-int expand_downwards(struct vm_area_struct *vma, unsigned long address)
+static int expand_downwards(struct vm_area_struct *vma, unsigned long address)
 {
 	struct mm_struct *mm = vma->vm_mm;
 	struct vm_area_struct *prev;

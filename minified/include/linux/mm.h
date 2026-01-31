@@ -791,9 +791,7 @@ extern vm_fault_t filemap_page_mkwrite(struct vm_fault *vmf);
 extern unsigned long stack_guard_gap;
 
 extern int expand_stack(struct vm_area_struct *vma, unsigned long address);
-
-extern int expand_downwards(struct vm_area_struct *vma,
-		unsigned long address);
+/* expand_downwards made static in mm/mmap.c */
 
 extern struct vm_area_struct * find_vma(struct mm_struct * mm, unsigned long addr);
 extern struct vm_area_struct * find_vma_prev(struct mm_struct * mm, unsigned long addr,

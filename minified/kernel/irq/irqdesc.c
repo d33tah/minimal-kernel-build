@@ -128,18 +128,7 @@ int generic_handle_irq(unsigned int irq)
 	return handle_irq_desc(irq_to_desc(irq));
 }
 
-int generic_handle_irq_safe(unsigned int irq)
-{
-	unsigned long flags;
-	int ret;
-
-	local_irq_save(flags);
-	ret = handle_irq_desc(irq_to_desc(irq));
-	local_irq_restore(flags);
-	return ret;
-}
-
-/* irq_free_descs, __irq_alloc_descs removed - never called */
+/* generic_handle_irq_safe, irq_free_descs, __irq_alloc_descs removed - never called */
 /* irq_get_next_irq removed - only used by for_each_active_irq macro (unused) */
 
 struct irq_desc *__irq_get_desc_lock(unsigned int irq, unsigned long *flags,

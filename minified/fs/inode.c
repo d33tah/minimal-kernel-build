@@ -141,7 +141,7 @@ void inc_nlink(struct inode *inode)
 	inode->__i_nlink++;
 }
 
-void inode_init_once(struct inode *inode)
+static void inode_init_once(struct inode *inode)
 {
 	struct address_space *mapping = &inode->i_data;
 	memset(inode, 0, sizeof(*inode));

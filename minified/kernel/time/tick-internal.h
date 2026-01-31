@@ -52,9 +52,7 @@ extern void clockevents_switch_state(struct clock_event_device *dev,
 				     enum clock_event_state state);
 extern int clockevents_program_event(struct clock_event_device *dev,
 				     ktime_t expires, bool force);
-extern void clockevents_handle_noop(struct clock_event_device *dev);
-
-/* tick_install_broadcast_device, tick_is_broadcast_device, tick_device_uses_broadcast,
+/* clockevents_handle_noop, tick_install_broadcast_device, tick_is_broadcast_device, tick_device_uses_broadcast,
  * tick_do_periodic_broadcast, tick_suspend_broadcast, tick_resume_broadcast,
  * tick_resume_check_broadcast, tick_broadcast_update_freq, tick_broadcast_init removed - never called */
 

@@ -242,10 +242,6 @@ void clockevents_config_and_register(struct clock_event_device *dev, u32 freq,
 	clockevents_register_device(dev);
 }
 
-void clockevents_handle_noop(struct clock_event_device *dev)
-{
-}
-
 void clockevents_exchange_device(struct clock_event_device *old,
 				 struct clock_event_device *new)
 {

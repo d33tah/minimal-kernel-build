@@ -482,13 +482,13 @@ unsigned int nr_running(void)
 	return cpu_rq(0)->nr_running;
 }
 
-unsigned int nr_iowait_cpu(int cpu)
+static unsigned int nr_iowait_cpu(int cpu)
 {
 	return atomic_read(&cpu_rq(cpu)->nr_iowait);
 }
 
 /* nr_iowait simplified - single CPU */
-unsigned int nr_iowait(void)
+static unsigned int nr_iowait(void)
 {
 	return nr_iowait_cpu(0);
 }

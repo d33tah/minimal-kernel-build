@@ -39,6 +39,9 @@
 
 /* tty_debug_hangup removed - was empty macro */
 
+/* Forward declaration for static function used before definition */
+static int tty_lock_interruptible(struct tty_struct *tty);
+
 struct ktermios tty_std_termios = {
 	.c_iflag = ICRNL | IXON,
 	.c_oflag = OPOST | ONLCR,
@@ -196,7 +199,7 @@ static void do_tty_hangup(struct work_struct *work)
 	tty_unlock(tty);
 }
 
-int tty_hung_up_p(struct file *filp)
+static int tty_hung_up_p(struct file *filp)
 {
 	return (filp && filp->f_op == &hung_up_tty_fops);
 }
@@ -1055,7 +1058,7 @@ void tty_lock(struct tty_struct *tty)
 	tty_kref_get(tty);
 	mutex_lock(&tty->legacy_mutex);
 }
-int tty_lock_interruptible(struct tty_struct *tty)
+static int tty_lock_interruptible(struct tty_struct *tty)
 {
 	int ret;
 	if (WARN(tty->magic != TTY_MAGIC, "L Bad %p\n", tty))

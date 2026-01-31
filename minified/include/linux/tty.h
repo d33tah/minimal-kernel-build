@@ -180,8 +180,7 @@ static inline struct tty_struct *tty_kref_get(struct tty_struct *tty)
 
 const char *tty_driver_name(const struct tty_struct *tty);
 /* tty_wait_until_sent, tty_chars_in_buffer, tty_write_room,
-   tty_driver_flush_buffer, tty_unthrottle, tty_hangup removed - never called */
-int tty_hung_up_p(struct file *filp);
+   tty_driver_flush_buffer, tty_unthrottle, tty_hangup, tty_hung_up_p removed - only internal */
 speed_t tty_termios_baud_rate(struct ktermios *termios);
 /* tty_get_char_size, tty_get_frame_size, tty_termios_copy_hw, tty_termios_hw_change,
    tty_wakeup removed - never called */
@@ -201,7 +200,6 @@ void __init n_tty_init(void);
 int vt_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg);
 
 void tty_lock(struct tty_struct *tty);
-int  tty_lock_interruptible(struct tty_struct *tty);
 void tty_unlock(struct tty_struct *tty);
 
 #endif

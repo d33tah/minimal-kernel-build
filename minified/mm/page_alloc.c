@@ -10,7 +10,7 @@
 #include <linux/nodemask.h>
 #include <linux/pfn.h>
 
-void set_pageblock_migratetype(struct page *page, int migratetype);
+static void set_pageblock_migratetype(struct page *page, int migratetype);
 /* end page-isolation.h */
 
 struct alloc_context;
@@ -131,7 +131,7 @@ void set_pfnblock_flags_mask(struct page *page, unsigned long flags,
 	}
 }
 
-void set_pageblock_migratetype(struct page *page, int migratetype)
+static void set_pageblock_migratetype(struct page *page, int migratetype)
 {
 	if (unlikely(page_group_by_mobility_disabled &&
 		     migratetype < MIGRATE_PCPTYPES))

@@ -160,9 +160,7 @@ static inline int signal_pending_state(unsigned int state, struct task_struct *p
 extern void recalc_sigpending(void);
 extern void calculate_sigpending(void);
 
-/* signal_wake_up_state, signal_wake_up removed - never called */
-
-void task_join_group_stop(struct task_struct *task);
+/* signal_wake_up_state, signal_wake_up, task_join_group_stop removed - never called */
 
 /* x86 doesn't define TIF_RESTORE_SIGMASK, use current->restore_sigmask */
 /* set_restore_sigmask, clear_restore_sigmask, test_restore_sigmask removed - not called */

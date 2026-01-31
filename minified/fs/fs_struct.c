@@ -37,7 +37,7 @@ void set_fs_pwd(struct fs_struct *fs, const struct path *path)
 		path_put(&old_pwd);
 }
 
-void free_fs_struct(struct fs_struct *fs)
+static void free_fs_struct(struct fs_struct *fs)
 {
 	path_put(&fs->root);
 	path_put(&fs->pwd);

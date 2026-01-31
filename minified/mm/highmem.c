@@ -59,31 +59,7 @@ static pte_t *kmap_get_pte(unsigned long vaddr, int idx)
 	return &__kmap_pte[-idx];
 }
 
-void *__kmap_local_pfn_prot(unsigned long pfn, pgprot_t prot)
-{
-	pte_t pteval, *kmap_pte;
-	unsigned long vaddr;
-	int idx, local_idx;
-
-	preempt_disable();
-	WARN_ON_ONCE(in_hardirq() && !irqs_disabled());
-	current->kmap_ctrl.idx += KM_INCR;
-	BUG_ON(current->kmap_ctrl.idx >= KM_MAX_IDX);
-	local_idx = current->kmap_ctrl.idx - 1;
-	idx = arch_kmap_local_map_idx(local_idx, pfn);
-	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
-	kmap_pte = kmap_get_pte(vaddr, idx);
-	BUG_ON(!pte_none(*kmap_pte));
-	pteval = pfn_pte(pfn, prot);
-	arch_kmap_local_set_pte(&init_mm, vaddr, kmap_pte, pteval);
-	arch_kmap_local_post_map(vaddr, pteval);
-	current->kmap_ctrl.pteval[local_idx] = pteval;
-	preempt_enable();
-
-	return (void *)vaddr;
-}
-
-/* __kmap_local_page_prot removed - never called */
+/* __kmap_local_pfn_prot, __kmap_local_page_prot removed - never called */
 
 void __kmap_local_sched_out(void)
 {

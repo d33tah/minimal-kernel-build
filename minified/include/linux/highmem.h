@@ -12,8 +12,7 @@ struct folio;
 #include <linux/hardirq.h>
 
 /* Inlined from highmem-internal.h */
-void *__kmap_local_pfn_prot(unsigned long pfn, pgprot_t prot);
-/* __kmap_local_page_prot removed - never called */
+/* __kmap_local_pfn_prot, __kmap_local_page_prot removed - never called */
 void kmap_local_fork(struct task_struct *tsk);
 void __kmap_local_sched_out(void);
 void __kmap_local_sched_in(void);

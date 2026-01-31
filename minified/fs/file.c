@@ -390,14 +390,6 @@ static void __put_unused_fd(struct files_struct *files, unsigned int fd)
 		files->next_fd = fd;
 }
 
-void put_unused_fd(unsigned int fd)
-{
-	struct files_struct *files = current->files;
-	spin_lock(&files->file_lock);
-	__put_unused_fd(files, fd);
-	spin_unlock(&files->file_lock);
-}
-
 void fd_install(unsigned int fd, struct file *file)
 {
 	struct files_struct *files = current->files;
@@ -468,11 +460,6 @@ static inline struct file *__fget(unsigned int fd, fmode_t mask)
 	file = __fget_files_rcu(current->files, fd, mask);
 	rcu_read_unlock();
 	return file;
-}
-
-struct file *fget(unsigned int fd)
-{
-	return __fget(fd, FMODE_PATH);
 }
 
 unsigned long __fdget(unsigned int fd)

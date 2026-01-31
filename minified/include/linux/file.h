@@ -36,7 +36,6 @@ static inline void fdput(struct fd fd)
 }
 extern void fput(struct file *file);
 
-extern struct file *fget(unsigned int fd);
 extern unsigned long __fdget(unsigned int fd);
 extern unsigned long __fdget_raw(unsigned int fd);
 extern unsigned long __fdget_pos(unsigned int fd);
@@ -62,7 +61,6 @@ static inline struct fd fdget_pos(int fd)
 
 extern bool get_close_on_exec(unsigned int fd);
 extern int get_unused_fd_flags(unsigned flags);
-extern void put_unused_fd(unsigned int fd);
 
 extern void fd_install(unsigned int fd, struct file *file);
 

@@ -5,8 +5,8 @@
 #include <linux/slab.h>
 
 /* Merged from kobject_uevent.c */
-int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
-		       char *envp_ext[])
+static int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
+			      char *envp_ext[])
 {
 	if (action == KOBJ_REMOVE)
 		kobj->state_remove_uevent_sent = 1;

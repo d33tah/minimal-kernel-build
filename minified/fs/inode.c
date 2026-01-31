@@ -334,7 +334,7 @@ unsigned int get_next_ino(void)
 	return res;
 }
 
-struct inode *new_inode_pseudo(struct super_block *sb)
+static struct inode *new_inode_pseudo(struct super_block *sb)
 {
 	struct inode *inode = alloc_inode(sb);
 

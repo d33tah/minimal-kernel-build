@@ -838,7 +838,6 @@ extern unsigned int get_next_ino(void);
 extern void evict_inodes(struct super_block *sb);
 
 extern void clear_inode(struct inode *);
-extern struct inode *new_inode_pseudo(struct super_block *sb);
 extern struct inode *new_inode(struct super_block *sb);
 
 static inline void *

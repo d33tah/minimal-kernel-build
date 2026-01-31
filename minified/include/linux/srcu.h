@@ -15,7 +15,7 @@
 struct srcu_struct;
 
 
-int init_srcu_struct(struct srcu_struct *ssp);
+/* init_srcu_struct removed - never called */
 
 #define __SRCU_DEP_MAP_INIT(srcu_name)
 

@@ -13,23 +13,7 @@ int rcu_scheduler_active __read_mostly;
 static LIST_HEAD(srcu_boot_list);
 static bool srcu_init_done;
 
-int init_srcu_struct(struct srcu_struct *ssp)
-{
-	ssp->srcu_lock_nesting[0] = 0;
-	ssp->srcu_lock_nesting[1] = 0;
-	init_swait_queue_head(&ssp->srcu_wq);
-	ssp->srcu_cb_head = NULL;
-	ssp->srcu_cb_tail = &ssp->srcu_cb_head;
-	ssp->srcu_gp_running = false;
-	ssp->srcu_gp_waiting = false;
-	ssp->srcu_idx = 0;
-	ssp->srcu_idx_max = 0;
-	INIT_WORK(&ssp->srcu_work, srcu_drive_gp);
-	INIT_LIST_HEAD(&ssp->srcu_work.entry);
-	return 0;
-}
-
-/* cleanup_srcu_struct, __srcu_read_unlock removed - never called */
+/* init_srcu_struct, cleanup_srcu_struct, __srcu_read_unlock removed - never called */
 
 void srcu_drive_gp(struct work_struct *wp)
 {

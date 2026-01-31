@@ -2,9 +2,7 @@
 #ifndef _KERNEL_TIME_TIMEKEEPING_H
 #define _KERNEL_TIME_TIMEKEEPING_H
  
-/* ktime_get_update_offsets_now removed - never called */
-
-extern int timekeeping_valid_for_hres(void);
+/* ktime_get_update_offsets_now, timekeeping_valid_for_hres removed - never called */
 /* timekeeping_warp_clock, timekeeping_suspend, timekeeping_resume,
    sched_clock_suspend, sched_clock_resume removed - unused */
 

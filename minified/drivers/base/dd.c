@@ -56,7 +56,7 @@ static void deferred_probe_work_func(struct work_struct *work)
 }
 static DECLARE_WORK(deferred_probe_work, deferred_probe_work_func);
 
-void driver_deferred_probe_add(struct device *dev)
+static void driver_deferred_probe_add(struct device *dev)
 {
 	if (!dev->can_match)
 		return;

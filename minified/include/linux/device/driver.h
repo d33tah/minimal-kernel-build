@@ -36,8 +36,7 @@ extern void wait_for_device_probe(void);
 /* struct driver_attribute removed - never used */
 
 /* DRIVER_ATTR_RW, DRIVER_ATTR_RO, DRIVER_ATTR_WO, driver_create_file, driver_remove_file, driver_find_device,
-   driver_deferred_probe_timeout extern removed - only used internally in dd.c */
-void driver_deferred_probe_add(struct device *dev);
+   driver_deferred_probe_timeout, driver_deferred_probe_add removed - only used internally in dd.c */
 void driver_init(void);
 
 #endif	 

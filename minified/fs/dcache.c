@@ -154,7 +154,7 @@ static void __d_drop(struct dentry *dentry)
 	}
 }
 
-void d_drop(struct dentry *dentry)
+static void d_drop(struct dentry *dentry)
 {
 	spin_lock(&dentry->d_lock);
 	__d_drop(dentry);

@@ -773,7 +773,6 @@ extern struct kmem_cache *names_cachep;
 #define __getname()		kmem_cache_alloc(names_cachep, GFP_KERNEL)
 #define __putname(name)		kmem_cache_free(names_cachep, (void *)(name))
 
-extern const struct file_operations def_blk_fops;
 extern const struct file_operations def_chr_fops;
 
 #define CHRDEV_MAJOR_MAX 512

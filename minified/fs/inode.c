@@ -29,7 +29,7 @@ static int no_blkdev_open(struct inode *inode, struct file *filp)
 {
 	return -ENODEV;
 }
-const struct file_operations def_blk_fops = { .open = no_blkdev_open };
+static const struct file_operations def_blk_fops = { .open = no_blkdev_open };
 
 /* nr_inodes, nr_unused removed - only inc/dec, never read */
 

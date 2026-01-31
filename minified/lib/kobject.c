@@ -147,20 +147,7 @@ int kobject_add(struct kobject *kobj, struct kobject *parent, const char *fmt,
 	return retval;
 }
 
-int kobject_init_and_add(struct kobject *kobj, const struct kobj_type *ktype,
-			 struct kobject *parent, const char *fmt, ...)
-{
-	va_list args;
-	int retval;
-
-	kobject_init(kobj, ktype);
-
-	va_start(args, fmt);
-	retval = kobject_add_varg(kobj, parent, fmt, args);
-	va_end(args);
-
-	return retval;
-}
+/* kobject_init_and_add removed - never called */
 
 /* Simplified: sysfs functions are already stubs */
 static void __kobject_del(struct kobject *kobj)

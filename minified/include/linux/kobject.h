@@ -50,10 +50,7 @@ extern void kobject_init(struct kobject *kobj, const struct kobj_type *ktype);
 extern __printf(3, 4) __must_check
 int kobject_add(struct kobject *kobj, struct kobject *parent,
 		const char *fmt, ...);
-extern __printf(4, 5) __must_check
-int kobject_init_and_add(struct kobject *kobj,
-			 const struct kobj_type *ktype, struct kobject *parent,
-			 const char *fmt, ...);
+/* kobject_init_and_add removed - never called */
 
 extern void kobject_del(struct kobject *kobj);
 

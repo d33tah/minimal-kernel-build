@@ -495,10 +495,7 @@ void __ref free_initmem(void)
 	/* Skip freeing init memory - hangs with 4MB RAM */
 }
 
-void __init free_initrd_mem(unsigned long start, unsigned long end)
-{
-	free_init_pages("initrd", start, PAGE_ALIGN(end));
-}
+/* free_initrd_mem removed - never called (~4 LOC) */
 
 void __init zone_sizes_init(void)
 {

@@ -1163,10 +1163,5 @@ static bool mount_too_revealing(const struct super_block *sb,
 	return false;
 }
 
-bool mnt_may_suid(struct vfsmount *mnt)
-{
-	return !(mnt->mnt_flags & MNT_NOSUID) && check_mnt(real_mount(mnt)) &&
-	       current_in_userns(mnt->mnt_sb->s_user_ns);
-}
-
+/* mnt_may_suid removed - never called (~5 LOC) */
 /* mntns_get, mntns_put, mntns_install, mntns_owner, mntns_operations removed - ns.ops never read */

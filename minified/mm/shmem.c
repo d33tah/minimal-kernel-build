@@ -74,11 +74,5 @@ static struct file *__shmem_file_setup(struct vfsmount *mnt, const char *name,
 	return res;
 }
 
-struct file *shmem_kernel_file_setup(const char *name, loff_t size,
-				     unsigned long flags)
-{
-	return __shmem_file_setup(shm_mnt, name, size, flags, S_PRIVATE);
-}
-
-/* shmem_file_setup removed - never called */
+/* shmem_kernel_file_setup, shmem_file_setup removed - never called */
 /* shmem_zero_setup removed - never called */

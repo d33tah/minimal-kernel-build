@@ -7,7 +7,7 @@
 extern int initrd_below_start_ok;
 
 extern unsigned long initrd_start, initrd_end;
-extern void free_initrd_mem(unsigned long, unsigned long);
+/* free_initrd_mem removed - never called */
 
 /* reserve_initrd_mem, wait_for_initramfs removed - unused */
 

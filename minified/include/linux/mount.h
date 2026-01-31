@@ -64,7 +64,7 @@ extern void mnt_drop_write(struct vfsmount *mnt);
 /* mnt_drop_write_file removed - never called */
 extern void mntput(struct vfsmount *mnt);
 extern struct vfsmount *mntget(struct vfsmount *mnt);
-extern bool mnt_may_suid(struct vfsmount *mnt);
+/* mnt_may_suid removed - never called */
 
 extern int __mnt_want_write(struct vfsmount *);
 extern void __mnt_drop_write(struct vfsmount *);

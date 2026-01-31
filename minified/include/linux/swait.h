@@ -36,7 +36,7 @@ extern void __init_swait_queue_head(struct swait_queue_head *q, const char *name
 	} while (0)
 /* DECLARE_SWAIT_QUEUE_HEAD_ONSTACK removed - never used */
 
-extern void swake_up_one(struct swait_queue_head *q);
+/* swake_up_one removed - never called */
 extern void swake_up_locked(struct swait_queue_head *q);
 
 /* prepare_to_swait_exclusive removed - never called */

@@ -18,14 +18,7 @@ void swake_up_locked(struct swait_queue_head *q)
 	list_del_init(&curr->task_list);
 }
 
-void swake_up_one(struct swait_queue_head *q)
-{
-	unsigned long flags;
-
-	raw_spin_lock_irqsave(&q->lock, flags);
-	swake_up_locked(q);
-	raw_spin_unlock_irqrestore(&q->lock, flags);
-}
+/* swake_up_one removed - never called (~8 LOC) */
 
 void __prepare_to_swait(struct swait_queue_head *q, struct swait_queue *wait)
 {

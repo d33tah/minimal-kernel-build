@@ -856,7 +856,7 @@ extern void inode_sb_list_add(struct inode *inode);
 extern void inode_add_lru(struct inode *inode);
 
 extern int generic_file_mmap(struct file *, struct vm_area_struct *);
-extern ssize_t generic_write_checks(struct kiocb *, struct iov_iter *);
+/* generic_write_checks removed - never called */
 ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *to,
 		ssize_t already_read);
 extern ssize_t generic_file_read_iter(struct kiocb *, struct iov_iter *);

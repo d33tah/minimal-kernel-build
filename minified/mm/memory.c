@@ -608,7 +608,7 @@ void unmap_mapping_range(struct address_space *mapping, loff_t const holebegin,
 	unmap_mapping_pages(mapping, hba, hlen, even_cows);
 }
 
-vm_fault_t do_swap_page(struct vm_fault *vmf)
+static vm_fault_t do_swap_page(struct vm_fault *vmf)
 {
 	/* Stub: swap not configured, should never be called */
 	return VM_FAULT_SIGBUS;

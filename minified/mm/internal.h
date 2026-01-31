@@ -44,7 +44,7 @@ struct folio_batch;
 /* __acct_reclaim_writeback, acct_reclaim_writeback removed - no callers/definition */
 /* wake_throttle_isolated removed - unused */
 
-vm_fault_t do_swap_page(struct vm_fault *vmf);
+/* do_swap_page made static in memory.c */
 /* folio_rotate_reclaimable, __folio_end_writeback, deactivate_file_folio removed - never called */
 
 void free_pgtables(struct mmu_gather *tlb, struct vm_area_struct *start_vma,

@@ -111,7 +111,7 @@ static struct inode *alloc_inode(struct super_block *sb)
 	return inode;
 }
 
-void __destroy_inode(struct inode *inode)
+static void __destroy_inode(struct inode *inode)
 {
 	/* BUG_ON(inode_has_buffers) removed - always 0 */
 	if (!inode->i_nlink) {

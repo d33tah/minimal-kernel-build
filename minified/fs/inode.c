@@ -204,7 +204,7 @@ void inode_sb_list_add(struct inode *inode)
 
 /* inode_sb_list_del inlined into evict() */
 
-void __remove_inode_hash(struct inode *inode)
+static void __remove_inode_hash(struct inode *inode)
 {
 	spin_lock(&inode_hash_lock);
 	spin_lock(&inode->i_lock);

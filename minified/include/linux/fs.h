@@ -846,7 +846,7 @@ alloc_inode_sb(struct super_block *sb, struct kmem_cache *cache, gfp_t gfp)
 	return kmem_cache_alloc_lru(cache, &sb->s_inode_lru, gfp);
 }
 
-extern void __remove_inode_hash(struct inode *);
+/* __remove_inode_hash made static in inode.c */
 /* remove_inode_hash inlined at fs/inode.c - single caller */
 
 extern void inode_sb_list_add(struct inode *inode);

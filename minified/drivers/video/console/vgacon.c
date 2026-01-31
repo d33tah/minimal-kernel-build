@@ -73,15 +73,14 @@ static bool vga_can_do_color;
 static unsigned int vga_default_font_height __read_mostly;
 static unsigned char vga_video_type __read_mostly;
 /* vga_vesa_blanked removed - unused */
-static bool vga_palette_blanked;
-static bool vga_is_gfx;
-static bool vga_512_chars;
+/* vga_palette_blanked removed - never assigned, always false */
+/* vga_is_gfx removed - never assigned, always false */
+/* vga_512_chars removed - always false, never set */
 static int vga_video_font_height;
 static int vga_scan_lines __read_mostly;
 static unsigned int vga_rolled_over;
 
-static bool vga_hardscroll_enabled;
-static bool vga_hardscroll_user_enable = true;
+/* vga_hardscroll_enabled, vga_hardscroll_user_enable removed - write-only */
 
 static inline void write_vga(unsigned char reg, unsigned int val)
 {
@@ -176,7 +175,7 @@ no_vga:
 	/* VRAM read/write test removed - QEMU VRAM always works (~18 LOC) */
 
 	/* Always VIDEO_TYPE_VGAC now, conditional removed */
-	vga_hardscroll_enabled = vga_hardscroll_user_enable;
+	/* vga_hardscroll assignment removed - var never read */
 	vga_default_font_height = screen_info.orig_video_points;
 	vga_video_font_height = screen_info.orig_video_points;
 	vga_scan_lines = vga_video_font_height * vga_video_num_lines;
@@ -202,8 +201,7 @@ static void vgacon_init(struct vc_data *c, int init)
 		vc_resize(c, vga_video_num_columns, vga_video_num_lines);
 
 	c->vc_complement_mask = 0x7700;
-	if (vga_512_chars)
-		c->vc_hi_font_mask = 0x0800;
+	/* vga_512_chars check removed - always false */
 	p = *c->vc_uni_pagedir_loc;
 	if (c->vc_uni_pagedir_loc != &vgacon_uni_pagedir)
 		c->vc_uni_pagedir_loc = &vgacon_uni_pagedir;
@@ -261,18 +259,17 @@ static int vgacon_switch(struct vc_data *c)
 	vga_video_num_columns = c->vc_cols;
 	vga_video_num_lines = c->vc_rows;
 
-	if (!vga_is_gfx) {
-		scr_memcpyw((u16 *)c->vc_origin, (u16 *)c->vc_screenbuf,
-			    c->vc_screenbuf_size > vga_vram_size ?
-				    vga_vram_size :
-				    c->vc_screenbuf_size);
+	/* vga_is_gfx check removed - always false */
+	scr_memcpyw((u16 *)c->vc_origin, (u16 *)c->vc_screenbuf,
+		    c->vc_screenbuf_size > vga_vram_size ?
+			    vga_vram_size :
+			    c->vc_screenbuf_size);
 
-		if ((vgacon_xres != x || vgacon_yres != y) &&
-		    (!(vga_video_num_columns % 2) &&
-		     vga_video_num_columns <= screen_info.orig_video_cols &&
-		     vga_video_num_lines <= rows))
-			vgacon_doresize(c, c->vc_cols, c->vc_rows);
-	}
+	if ((vgacon_xres != x || vgacon_yres != y) &&
+	    (!(vga_video_num_columns % 2) &&
+	     vga_video_num_columns <= screen_info.orig_video_cols &&
+	     vga_video_num_lines <= rows))
+		vgacon_doresize(c, c->vc_cols, c->vc_rows);
 
 	return 0;
 }
@@ -286,8 +283,7 @@ static int vgacon_switch(struct vc_data *c)
 
 static int vgacon_set_origin(struct vc_data *c)
 {
-	if (vga_is_gfx || (console_blanked && !vga_palette_blanked))
-		return 0;
+	/* vga_is_gfx check removed - always false */
 	c->vc_origin = c->vc_visible_origin = vga_vram_base;
 	vga_set_mem_top(c);
 	vga_rolled_over = 0;
@@ -304,11 +300,11 @@ static void vgacon_save_screen(struct vc_data *c)
 		c->state.y = screen_info.orig_y;
 	}
 
-	if (!vga_is_gfx)
-		scr_memcpyw((u16 *)c->vc_screenbuf, (u16 *)c->vc_origin,
-			    c->vc_screenbuf_size > vga_vram_size ?
-				    vga_vram_size :
-				    c->vc_screenbuf_size);
+	/* vga_is_gfx check removed - always false */
+	scr_memcpyw((u16 *)c->vc_screenbuf, (u16 *)c->vc_origin,
+		    c->vc_screenbuf_size > vga_vram_size ?
+			    vga_vram_size :
+			    c->vc_screenbuf_size);
 }
 
 /* Stub: Hello World doesn't need hardware scrolling */

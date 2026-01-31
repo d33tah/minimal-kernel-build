@@ -668,7 +668,7 @@ static noinline void __init kernel_init_freeable(void)
 	/* smp_init removed - empty stub */
 	/* sched_init_smp removed - empty stub */
 	/* padata_init removed - empty stub */
-	page_alloc_init_late();
+	memblock_discard(); /* page_alloc_init_late inlined */
 
 	/* page_ext_init removed - empty stub */
 

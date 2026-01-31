@@ -297,11 +297,7 @@ void __init memblock_free_pages(struct page *page, unsigned long pfn,
 	__free_pages_core(page, order);
 }
 
-void __init page_alloc_init_late(void)
-{
-	memblock_discard();
-	/* contiguous removed - write-only */
-}
+/* page_alloc_init_late inlined into init/main.c */
 
 /* expand() inlined into __rmqueue_smallest */
 /* check_new_pages, check_pcp_refill, check_new_pcp always return false - removed */

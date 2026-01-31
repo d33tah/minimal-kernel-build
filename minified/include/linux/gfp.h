@@ -220,8 +220,7 @@ static inline void free_pages(unsigned long addr, unsigned int order) {}
 #define __free_page(page) __free_pages((page), 0)
 #define free_page(addr) free_pages((addr), 0)
 
-/* page_alloc_init removed - unused */
-void page_alloc_init_late(void);
+/* page_alloc_init, page_alloc_init_late inlined into init/main.c */
 
 extern gfp_t gfp_allowed_mask;
 

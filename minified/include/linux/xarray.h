@@ -91,7 +91,7 @@ struct xarray {
 	.xa_head = NULL,					\
 }
 
-void *xa_load(struct xarray *, unsigned long index);
+/* xa_load removed - no callers */
 
 static inline void xa_init_flags(struct xarray *xa, gfp_t flags)
 {

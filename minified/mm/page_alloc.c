@@ -103,8 +103,8 @@ unsigned long get_pfnblock_flags_mask(const struct page *page,
 	return __get_pfnblock_flags_mask(page, pfn, mask);
 }
 
-void set_pfnblock_flags_mask(struct page *page, unsigned long flags,
-			     unsigned long pfn, unsigned long mask)
+static void set_pfnblock_flags_mask(struct page *page, unsigned long flags,
+				    unsigned long pfn, unsigned long mask)
 {
 	unsigned long *bitmap;
 	unsigned long bitidx, word_bitidx;

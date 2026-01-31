@@ -30,9 +30,6 @@ enum pageblock_bits {
 
 unsigned long get_pfnblock_flags_mask(const struct page *page,
 				      unsigned long pfn, unsigned long mask);
-
-void set_pfnblock_flags_mask(struct page *page, unsigned long flags,
-			     unsigned long pfn, unsigned long mask);
 /* end pageblock-flags.h */
 #include <linux/atomic.h>
 #include <linux/mm_types.h>

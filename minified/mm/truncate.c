@@ -70,7 +70,8 @@ static void truncate_cleanup_folio(struct folio *folio)
 	folio_clear_mappedtodisk(folio);
 }
 
-int truncate_inode_folio(struct address_space *mapping, struct folio *folio)
+static int truncate_inode_folio(struct address_space *mapping,
+				struct folio *folio)
 {
 	if (folio->mapping != mapping)
 		return -EIO;
@@ -80,7 +81,8 @@ int truncate_inode_folio(struct address_space *mapping, struct folio *folio)
 	return 0;
 }
 
-bool truncate_inode_partial_folio(struct folio *folio, loff_t start, loff_t end)
+static bool truncate_inode_partial_folio(struct folio *folio, loff_t start,
+					 loff_t end)
 {
 	loff_t pos = folio_pos(folio);
 	unsigned int offset, length;

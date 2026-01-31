@@ -903,7 +903,7 @@ extern const struct dentry_operations simple_dentry_operations;
 extern struct dentry *simple_lookup(struct inode *, struct dentry *, unsigned int flags);
 /* generic_read_dir removed - .read callback no longer exists */
 extern const struct file_operations simple_dir_operations;
-extern bool is_empty_dir_inode(struct inode *inode);
+/* is_empty_dir_inode removed - never called */
 /* simple_pin_fs, simple_release_fs removed - never called */
 /* may_setattr, inode_newsize_ok removed - always returned 0 */
 int setattr_prepare(struct user_namespace *, struct dentry *, struct iattr *);

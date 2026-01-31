@@ -242,8 +242,4 @@ static const struct file_operations empty_dir_operations = {
 	/* fsync removed - fsync syscall returns ENOSYS */
 };
 
-bool is_empty_dir_inode(struct inode *inode)
-{
-	return (inode->i_fop == &empty_dir_operations) &&
-	       (inode->i_op == &empty_dir_inode_operations);
-}
+/* is_empty_dir_inode removed - never called */

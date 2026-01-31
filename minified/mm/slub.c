@@ -534,7 +534,7 @@ static void free_kmem_cache_nodes(struct kmem_cache *s)
 	}
 }
 
-void __kmem_cache_release(struct kmem_cache *s)
+static void __kmem_cache_release(struct kmem_cache *s)
 {
 	/* free_percpu removed - empty stub */
 	free_kmem_cache_nodes(s);

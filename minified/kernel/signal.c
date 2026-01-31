@@ -87,11 +87,7 @@ void flush_signal_handlers(struct task_struct *t, int force_default)
 	}
 }
 
-void signal_wake_up_state(struct task_struct *t, unsigned int state)
-{
-	set_tsk_thread_flag(t, TIF_SIGPENDING);
-	wake_up_state(t, state | TASK_INTERRUPTIBLE);
-}
+/* signal_wake_up_state, signal_wake_up removed - never called */
 
 /* check_kill_permission inlined into kill_something_info caller */
 /* complete_signal was empty stub - removed */

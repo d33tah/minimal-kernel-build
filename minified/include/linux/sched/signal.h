@@ -160,16 +160,7 @@ static inline int signal_pending_state(unsigned int state, struct task_struct *p
 extern void recalc_sigpending(void);
 extern void calculate_sigpending(void);
 
-extern void signal_wake_up_state(struct task_struct *t, unsigned int state);
-
-static inline void signal_wake_up(struct task_struct *t, bool fatal)
-{
-	unsigned int state = 0;
-	/* Simplified: JOBCTL_PTRACE_FROZEN/STOPPED/TRACED never set */
-	if (fatal)
-		state = TASK_WAKEKILL | __TASK_TRACED;
-	signal_wake_up_state(t, state);
-}
+/* signal_wake_up_state, signal_wake_up removed - never called */
 
 void task_join_group_stop(struct task_struct *task);
 

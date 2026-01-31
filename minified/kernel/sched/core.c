@@ -195,14 +195,14 @@ static inline void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
 	p->sched_class->dequeue_task(rq, p, flags);
 }
 
-void activate_task(struct rq *rq, struct task_struct *p, int flags)
+static void activate_task(struct rq *rq, struct task_struct *p, int flags)
 {
 	enqueue_task(rq, p, flags);
 
 	p->on_rq = TASK_ON_RQ_QUEUED;
 }
 
-void deactivate_task(struct rq *rq, struct task_struct *p, int flags)
+static void deactivate_task(struct rq *rq, struct task_struct *p, int flags)
 {
 	p->on_rq = (flags & DEQUEUE_SLEEP) ? 0 : TASK_ON_RQ_MIGRATING;
 

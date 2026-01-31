@@ -624,9 +624,6 @@ extern void init_rt_bandwidth(struct rt_bandwidth *rt_b, u64 period, u64 runtime
 
 /* add_nr_running and sub_nr_running inlined at fair.c - single caller each */
 
-extern void activate_task(struct rq *rq, struct task_struct *p, int flags);
-extern void deactivate_task(struct rq *rq, struct task_struct *p, int flags);
-
 extern void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags);
 /* hrtick_enabled_fair, arch_scale_freq_tick, arch_scale_freq_capacity removed - never called */
 

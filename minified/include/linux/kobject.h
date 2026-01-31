@@ -36,8 +36,7 @@ struct kobject {
 	/* uevent_suppress removed - write-only, never checked */
 };
 
-extern __printf(2, 3)
-int kobject_set_name(struct kobject *kobj, const char *name, ...);
+/* kobject_set_name removed - inlined into single caller */
 extern __printf(2, 0)
 int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
 			   va_list vargs);

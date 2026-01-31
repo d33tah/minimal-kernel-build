@@ -84,17 +84,7 @@ int kobject_set_name_vargs(struct kobject *kobj, const char *fmt, va_list vargs)
 	return 0;
 }
 
-int kobject_set_name(struct kobject *kobj, const char *fmt, ...)
-{
-	va_list vargs;
-	int retval;
-
-	va_start(vargs, fmt);
-	retval = kobject_set_name_vargs(kobj, fmt, vargs);
-	va_end(vargs);
-
-	return retval;
-}
+/* kobject_set_name inlined into single caller - kset_create */
 
 void kobject_init(struct kobject *kobj, const struct kobj_type *ktype)
 {
@@ -343,13 +333,13 @@ static struct kobj_type kset_ktype = {
 static struct kset *kset_create(const char *name, struct kobject *parent_kobj)
 {
 	struct kset *kset;
-	int retval;
 
 	kset = kzalloc(sizeof(*kset), GFP_KERNEL);
 	if (!kset)
 		return NULL;
-	retval = kobject_set_name(&kset->kobj, "%s", name);
-	if (retval) {
+	/* kobject_set_name inlined - just duplicate the string */
+	kset->kobj.name = kstrdup_const(name, GFP_KERNEL);
+	if (!kset->kobj.name) {
 		kfree(kset);
 		return NULL;
 	}

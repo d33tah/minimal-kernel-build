@@ -77,11 +77,8 @@ request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
 	return request_threaded_irq(irq, handler, NULL, flags, name, dev);
 }
 
-/* free_irq, disable_irq_nosync removed - never called */
+/* free_irq, disable_irq_nosync, enable_irq removed - never called */
 /* struct device forward decl removed - unused */
-
-extern void enable_irq(unsigned int irq);
-
 /* struct irq_affinity_desc, irq_set_affinity, irq_can_set_affinity removed - never used */
 
 /* irqchip_irq_state enum removed - unused */

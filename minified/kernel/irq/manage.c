@@ -47,22 +47,7 @@ err_out:
 	}
 }
 
-void enable_irq(unsigned int irq)
-{
-	unsigned long flags;
-	struct irq_desc *desc =
-		irq_get_desc_buslock(irq, &flags, IRQ_GET_DESC_CHECK_GLOBAL);
-
-	if (!desc)
-		return;
-	if (WARN(!desc->irq_data.chip,
-		 KERN_ERR "enable_irq before setup/request_irq: irq %u\n", irq))
-		goto out;
-
-	__enable_irq(desc);
-out:
-	irq_put_desc_busunlock(desc, flags);
-}
+/* enable_irq removed - never called */
 
 int __irq_set_trigger(struct irq_desc *desc, unsigned long flags)
 {

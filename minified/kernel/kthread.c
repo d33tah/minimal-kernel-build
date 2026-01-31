@@ -101,7 +101,7 @@ void *kthread_data(struct task_struct *task)
 
 /* __kthread_parkme inlined into kthread */
 
-void __noreturn kthread_exit(long result)
+static void __noreturn kthread_exit(long result)
 {
 	struct kthread *kthread = to_kthread(current);
 	kthread->result = result;

@@ -364,9 +364,9 @@ static inline unsigned long zap_p4d_range(struct mmu_gather *tlb,
 	return addr;
 }
 
-void unmap_page_range(struct mmu_gather *tlb, struct vm_area_struct *vma,
-		      unsigned long addr, unsigned long end,
-		      struct zap_details *details)
+static void unmap_page_range(struct mmu_gather *tlb, struct vm_area_struct *vma,
+			     unsigned long addr, unsigned long end,
+			     struct zap_details *details)
 {
 	pgd_t *pgd;
 	unsigned long next;

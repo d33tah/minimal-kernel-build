@@ -33,8 +33,8 @@
 /* simple_strntoull inlined into simple_strtoull */
 
 /* Inlined simple_strntoull */
-noinline unsigned long long simple_strtoull(const char *startp, char **endp,
-					    unsigned int base)
+static noinline unsigned long long
+simple_strtoull(const char *startp, char **endp, unsigned int base)
 {
 	const char *cp;
 	unsigned long long result = 0ULL;

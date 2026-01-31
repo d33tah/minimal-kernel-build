@@ -10,6 +10,6 @@ int __must_check kstrtouint(const char *s, unsigned int base, unsigned int *res)
    kstrtobool, _kstrtoul, _kstrtol removed - no callers */
 
 extern unsigned long simple_strtoul(const char *,char **,unsigned int);
-extern unsigned long long simple_strtoull(const char *,char **,unsigned int);
+/* simple_strtoull made static in lib/vsprintf.c */
 
 #endif

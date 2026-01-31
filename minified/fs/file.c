@@ -382,13 +382,7 @@ out:
 	return error;
 }
 
-static void __put_unused_fd(struct files_struct *files, unsigned int fd)
-{
-	struct fdtable *fdt = files_fdtable(files);
-	__clear_open_fd(fd, fdt);
-	if (fd < files->next_fd)
-		files->next_fd = fd;
-}
+/* __put_unused_fd removed - never called */
 
 void fd_install(unsigned int fd, struct file *file)
 {

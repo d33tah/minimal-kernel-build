@@ -300,27 +300,7 @@ struct slub_flush_work {
 	/* bool skip removed - never read */
 };
 
-static void flush_cpu_slab(struct work_struct *w)
-{
-	struct kmem_cache *s;
-	struct kmem_cache_cpu *c;
-	struct slub_flush_work *sfw;
-
-	sfw = container_of(w, struct slub_flush_work, work);
-
-	s = sfw->s;
-	c = this_cpu_ptr(s->cpu_slab);
-
-	if (c->slab) {
-		unsigned long flags;
-		local_lock_irqsave(&s->cpu_slab->lock, flags);
-		c->slab = NULL;
-		c->freelist = NULL;
-		c->tid = next_tid(c->tid);
-		local_unlock_irqrestore(&s->cpu_slab->lock, flags);
-	}
-	/* unfreeze_partials removed - was empty stub */
-}
+/* flush_cpu_slab removed - never called (no CPU hotplug) */
 
 static DEFINE_MUTEX(flush_lock);
 static DEFINE_PER_CPU(struct slub_flush_work, slub_flush);

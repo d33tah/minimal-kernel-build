@@ -14,23 +14,7 @@ DEFINE_PER_CPU(struct tick_device, tick_cpu_device);
 ktime_t tick_next_period;
 int tick_do_timer_cpu __read_mostly = TICK_DO_TIMER_BOOT;
 
-/* tick_get_device removed - never called */
-
-static void tick_periodic(int cpu)
-{
-	if (tick_do_timer_cpu == cpu) {
-		raw_spin_lock(&jiffies_lock);
-		write_seqcount_begin(&jiffies_seq);
-		tick_next_period = ktime_add_ns(tick_next_period, TICK_NSEC);
-		do_timer(1);
-		write_seqcount_end(&jiffies_seq);
-		raw_spin_unlock(&jiffies_lock);
-		update_wall_time();
-	}
-	update_process_times(user_mode(get_irq_regs()));
-}
-
-/* tick_handle_periodic removed - never called (~17 LOC) */
+/* tick_get_device, tick_periodic, tick_handle_periodic removed - never called */
 
 static void tick_setup_periodic(struct clock_event_device *dev, int broadcast)
 {

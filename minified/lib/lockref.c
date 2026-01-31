@@ -39,17 +39,7 @@ int lockref_put_return(struct lockref *lockref)
 	return -1;
 }
 
-int lockref_put_or_lock(struct lockref *lockref)
-{
-	CMPXCHG_LOOP(new.count--; if (old.count <= 1) break;, return 1;);
-
-	spin_lock(&lockref->lock);
-	if (lockref->count <= 1)
-		return 0;
-	lockref->count--;
-	spin_unlock(&lockref->lock);
-	return 1;
-}
+/* lockref_put_or_lock removed - never called (~11 LOC) */
 
 void lockref_mark_dead(struct lockref *lockref)
 {

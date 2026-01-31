@@ -6,7 +6,7 @@ struct lockref { spinlock_t lock; int count; };
 extern void lockref_get(struct lockref *);
 extern int lockref_put_return(struct lockref *);
 extern int lockref_get_not_zero(struct lockref *);
-extern int lockref_put_or_lock(struct lockref *);
+/* lockref_put_or_lock removed - never called */
 extern void lockref_mark_dead(struct lockref *);
 extern int lockref_get_not_dead(struct lockref *);
 #endif  

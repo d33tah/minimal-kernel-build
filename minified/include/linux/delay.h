@@ -22,8 +22,6 @@ extern unsigned long loops_per_jiffy;
 /* ndelay macro removed - never called */
 
 void calibrate_delay(void);
-void msleep(unsigned int msecs);
-/* msleep_interruptible removed - never called */
-/* ssleep removed - never called */
+/* msleep, msleep_interruptible, ssleep removed - never called */
 
 #endif

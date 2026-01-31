@@ -72,10 +72,4 @@ void __init init_timers(void)
 	/* Minimal init for Hello World */
 }
 
-void msleep(unsigned int msecs)
-{
-	unsigned long timeout = msecs_to_jiffies(msecs) + 1;
-	while (timeout)
-		timeout = schedule_timeout_uninterruptible(timeout);
-}
-/* msleep_interruptible removed - never called */
+/* msleep, msleep_interruptible removed - never called */

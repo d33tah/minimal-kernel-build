@@ -69,7 +69,7 @@ static void filemap_unaccount_folio(struct address_space *mapping,
 	/* folio_account_cleaned call removed - was empty stub */
 }
 
-void __filemap_remove_folio(struct folio *folio, void *shadow)
+static void __filemap_remove_folio(struct folio *folio, void *shadow)
 {
 	struct address_space *mapping = folio->mapping;
 

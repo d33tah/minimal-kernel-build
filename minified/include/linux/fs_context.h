@@ -140,15 +140,6 @@ void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt, 
 #define invalf(fc, fmt, ...) (errorf(fc, fmt, ## __VA_ARGS__), -EINVAL)
 #define inval_plog(p, fmt, ...) (error_plog(p, fmt, ## __VA_ARGS__), -EINVAL)
 
-/* Inlined from pseudo_fs.h */
-struct pseudo_fs_context {
-	const struct super_operations *ops;
-	const struct xattr_handler **xattr;
-	const struct dentry_operations *dops;
-	unsigned long magic;
-};
+/* pseudo_fs_context struct and init_pseudo removed - init_pseudo never called */
 
-struct pseudo_fs_context *init_pseudo(struct fs_context *fc,
-				      unsigned long magic);
-
-#endif  
+#endif

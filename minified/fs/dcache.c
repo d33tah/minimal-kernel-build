@@ -136,7 +136,7 @@ static void d_lru_del(struct dentry *dentry)
 		!list_lru_del(&dentry->d_sb->s_dentry_lru, &dentry->d_lru));
 }
 
-void __d_drop(struct dentry *dentry)
+static void __d_drop(struct dentry *dentry)
 {
 	if (!d_unhashed(dentry)) {
 		struct hlist_bl_head *b;

@@ -6,8 +6,8 @@
 #include <linux/spinlock.h>
 #include <linux/xarray.h>
 
-int idr_alloc_u32(struct idr *idr, void *ptr, u32 *nextid, unsigned long max,
-		  gfp_t gfp)
+static int idr_alloc_u32(struct idr *idr, void *ptr, u32 *nextid,
+			 unsigned long max, gfp_t gfp)
 {
 	struct radix_tree_iter iter;
 	void __rcu **slot;

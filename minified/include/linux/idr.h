@@ -30,8 +30,7 @@ struct idr {
 void idr_preload(gfp_t gfp_mask);
 
 int idr_alloc(struct idr *, void *ptr, int start, int end, gfp_t);
-int __must_check idr_alloc_u32(struct idr *, void *ptr, u32 *id,
-				unsigned long max, gfp_t);
+/* idr_alloc_u32 made static in lib/idr.c */
 int idr_alloc_cyclic(struct idr *, void *ptr, int start, int end, gfp_t);
 void *idr_remove(struct idr *, unsigned long id);
 void *idr_find(const struct idr *, unsigned long id);

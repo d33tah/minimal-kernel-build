@@ -226,7 +226,7 @@ void truncate_inode_pages_final(struct address_space *mapping)
 /* invalidate_mapping_pagevec, invalidate_mapping_pages removed - never called */
 /* invalidate_inode_pages2_range removed - never called (~82 LOC) */
 
-void truncate_pagecache(struct inode *inode, loff_t newsize)
+static void truncate_pagecache(struct inode *inode, loff_t newsize)
 {
 	struct address_space *mapping = inode->i_mapping;
 	loff_t holebegin = round_up(newsize, PAGE_SIZE);

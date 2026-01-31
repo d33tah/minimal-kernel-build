@@ -94,7 +94,7 @@ struct kset {
 	/* uevent_ops removed - always NULL */
 } __randomize_layout;
 
-extern void kset_init(struct kset *kset);
+/* kset_init made static - only used in lib/kobject.c */
 extern int __must_check kset_register(struct kset *kset);
 /* kset_unregister removed - no callers */
 extern struct kset * __must_check kset_create_and_add(const char *name,

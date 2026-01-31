@@ -252,7 +252,7 @@ void kobject_put(struct kobject *kobj)
 /* dynamic_kobj_release, dynamic_kobj_ktype, kobject_create,
    kobject_create_and_add removed - never called */
 
-void kset_init(struct kset *k)
+static void kset_init(struct kset *k)
 {
 	kobject_init_internal(&k->kobj);
 	INIT_LIST_HEAD(&k->list);

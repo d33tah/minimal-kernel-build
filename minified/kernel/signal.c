@@ -185,11 +185,7 @@ int force_sig_info(struct kernel_siginfo *info)
 	return force_sig_info_to_task(info, current, HANDLER_CURRENT);
 }
 
-/* zap_other_threads removed - only caller was de_thread which is stubbed */
-int zap_other_threads(struct task_struct *p)
-{
-	return 0;
-}
+/* zap_other_threads removed - never called (~5 LOC) */
 
 struct sighand_struct *__lock_task_sighand(struct task_struct *tsk,
 					   unsigned long *flags)

@@ -433,42 +433,8 @@ void __folio_lock(struct folio *folio)
 			      EXCLUSIVE);
 }
 
-int __folio_lock_killable(struct folio *folio)
-{
-	return folio_wait_bit_common(folio, PG_locked, TASK_KILLABLE,
-				     EXCLUSIVE);
-}
-
+/* __folio_lock_killable and __folio_lock_or_retry removed - never called */
 /* __folio_lock_async inlined into filemap_update_page (~20 LOC) */
-
-bool __folio_lock_or_retry(struct folio *folio, struct mm_struct *mm,
-			   unsigned int flags)
-{
-	/* fault_flag_allow_retry_first inlined */
-	if ((flags & FAULT_FLAG_ALLOW_RETRY) && !(flags & FAULT_FLAG_TRIED)) {
-		/* FAULT_FLAG_RETRY_NOWAIT check removed - never set */
-		mmap_read_unlock(mm);
-		if (flags & FAULT_FLAG_KILLABLE)
-			folio_wait_locked_killable(folio);
-		else
-			folio_wait_locked(folio);
-		return false;
-	}
-	if (flags & FAULT_FLAG_KILLABLE) {
-		bool ret;
-
-		ret = __folio_lock_killable(folio);
-		if (ret) {
-			mmap_read_unlock(mm);
-			return false;
-		}
-	} else {
-		__folio_lock(folio);
-	}
-
-	return true;
-}
-
 /* mapping_get_entry inlined into __filemap_get_folio */
 
 struct folio *__filemap_get_folio(struct address_space *mapping, pgoff_t index,

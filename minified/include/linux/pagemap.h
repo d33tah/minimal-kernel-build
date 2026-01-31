@@ -151,9 +151,7 @@ struct wait_page_queue {
 /* wake_page_match inlined at mm/filemap.c - single caller */
 
 void __folio_lock(struct folio *folio);
-int __folio_lock_killable(struct folio *folio);
-bool __folio_lock_or_retry(struct folio *folio, struct mm_struct *mm,
-				unsigned int flags);
+/* __folio_lock_killable, __folio_lock_or_retry removed - never called */
 void unlock_page(struct page *page);
 void folio_unlock(struct folio *folio);
 

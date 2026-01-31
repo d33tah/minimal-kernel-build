@@ -27,6 +27,8 @@
 #define printk_safe_exit_irqrestore(flags) local_irq_restore(flags)
 /* end internal.h */
 
+static int unregister_console(struct console *console);
+
 int console_printk[4] = {
 	CONSOLE_LOGLEVEL_DEFAULT,
 	MESSAGE_LOGLEVEL_DEFAULT,
@@ -277,7 +279,7 @@ void register_console(struct console *newcon)
 	}
 }
 
-int unregister_console(struct console *console)
+static int unregister_console(struct console *console)
 {
 	/* Stub: console unregistration not needed for minimal kernel */
 	return 0;

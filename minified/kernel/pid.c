@@ -242,47 +242,7 @@ void detach_pid(struct task_struct *task, enum pid_type type)
 	free_pid(pid);
 }
 
-void exchange_tids(struct task_struct *left, struct task_struct *right)
-{
-	struct pid *pid1 = left->thread_pid;
-	struct pid *pid2 = right->thread_pid;
-	struct hlist_head *head1 = &pid1->tasks[PIDTYPE_PID];
-	struct hlist_head *head2 = &pid2->tasks[PIDTYPE_PID];
-	struct hlist_node *node1, *node2;
-
-	/* hlists_swap_heads_rcu inlined */
-	node1 = head1->first;
-	node2 = head2->first;
-	rcu_assign_pointer(head1->first, node2);
-	rcu_assign_pointer(head2->first, node1);
-	WRITE_ONCE(node2->pprev, &head1->first);
-	WRITE_ONCE(node1->pprev, &head2->first);
-
-	rcu_assign_pointer(left->thread_pid, pid2);
-	rcu_assign_pointer(right->thread_pid, pid1);
-
-	WRITE_ONCE(left->pid, pid_nr(pid2));
-	WRITE_ONCE(right->pid, pid_nr(pid1));
-}
-
-void transfer_pid(struct task_struct *old, struct task_struct *new,
-		  enum pid_type type)
-{
-	struct hlist_node *old_node, *new_node, *next;
-	if (type == PIDTYPE_PID)
-		new->thread_pid = old->thread_pid;
-	/* hlist_replace_rcu inlined */
-	old_node = &old->pid_links[type];
-	new_node = &new->pid_links[type];
-	next = old_node->next;
-	new_node->next = next;
-	WRITE_ONCE(new_node->pprev, old_node->pprev);
-	rcu_assign_pointer(*(struct hlist_node __rcu **)new_node->pprev,
-			   new_node);
-	if (next)
-		WRITE_ONCE(new_node->next->pprev, &new_node->next);
-	WRITE_ONCE(old_node->pprev, LIST_POISON2);
-}
+/* exchange_tids, transfer_pid removed - never called */
 
 struct task_struct *pid_task(struct pid *pid, enum pid_type type)
 {

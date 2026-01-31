@@ -522,9 +522,9 @@ failed:
 	return NULL;
 }
 
-bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
-			 int highest_zoneidx, unsigned int alloc_flags,
-			 long free_pages)
+static bool __zone_watermark_ok(struct zone *z, unsigned int order,
+				unsigned long mark, int highest_zoneidx,
+				unsigned int alloc_flags, long free_pages)
 {
 	/* Simplified watermark check for minimal kernel */
 	long min = mark;

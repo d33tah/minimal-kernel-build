@@ -829,7 +829,7 @@ extern struct file * open_exec(const char *);
 
 extern bool is_subdir(struct dentry *, struct dentry *);
 /* vfs_llseek removed - never called */
-extern void inode_init_always(struct super_block *, struct inode *);
+/* inode_init_always made static in inode.c */
 extern void inode_init_once(struct inode *);
 extern int generic_delete_inode(struct inode *inode);
 /* generic_drop_inode inlined at fs/inode.c - single caller */

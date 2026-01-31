@@ -41,7 +41,7 @@ static int no_open(struct inode *inode, struct file *file)
 }
 
 /* Changed to void - always returned 0, no callers check return value */
-void inode_init_always(struct super_block *sb, struct inode *inode)
+static void inode_init_always(struct super_block *sb, struct inode *inode)
 {
 	static const struct inode_operations empty_iops;
 	static const struct file_operations no_open_fops = { .open = no_open };

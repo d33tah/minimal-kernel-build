@@ -642,40 +642,7 @@ error:
 	return -EINVAL;
 }
 
-int __kmem_cache_shutdown(struct kmem_cache *s)
-{
-	int node;
-	struct kmem_cache_node *n;
-
-	/* flush_all_cpus_locked inlined */
-	{
-		struct slub_flush_work *sfw;
-		struct kmem_cache_cpu *c = per_cpu_ptr(s->cpu_slab, 0);
-		mutex_lock(&flush_lock);
-		sfw = &per_cpu(slub_flush, 0);
-		if (c->slab || slub_percpu_partial(c)) {
-			INIT_WORK(&sfw->work, flush_cpu_slab);
-			sfw->s = s;
-			/* schedule_work_on inlined */
-			queue_work_on(0, system_wq, &sfw->work);
-			/* flush_work removed - stub returning false */
-		}
-		mutex_unlock(&flush_lock);
-	}
-
-	for_each_kmem_cache_node(s, node, n)
-	{
-		/* Inlined free_partial */
-		spin_lock_irq(&n->list_lock);
-		INIT_LIST_HEAD(&n->partial);
-		n->nr_partial = 0;
-		spin_unlock_irq(&n->list_lock);
-		/* slabs_node always 0 - simplified condition */
-		if (n->nr_partial)
-			return 1;
-	}
-	return 0;
-}
+/* __kmem_cache_shutdown removed - never called */
 
 /* setup_slub_min_order, setup_slub_max_order, setup_slub_min_objects and __setup
  * handlers removed - not needed for minimal kernel (~21 LOC) */

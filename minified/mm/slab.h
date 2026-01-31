@@ -189,7 +189,7 @@ extern void create_boot_cache(struct kmem_cache *, const char *name,
 			      SLAB_ACCOUNT | \
 			      SLAB_NO_USER_FLAGS)
 
-int __kmem_cache_shutdown(struct kmem_cache *);
+/* __kmem_cache_shutdown removed - never called */
 void __kmem_cache_release(struct kmem_cache *);
 
 /* cache_vmstat_idx and account_slab inlined at slub.c - single caller */

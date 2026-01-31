@@ -1,5 +1,5 @@
 #include <linux/export.h>
-#include <linux/bvec.h>
+/* linux/bvec.h removed - ITER_BVEC never initialized */
 #include <linux/uio.h>
 #include <linux/pagemap.h>
 #include <linux/highmem.h>
@@ -36,35 +36,7 @@ typedef __u32 __wsum;
 		n = off;                                     \
 	}
 
-#define iterate_bvec(i, n, base, len, off, p, STEP)                          \
-	{                                                                    \
-		size_t off = 0;                                              \
-		unsigned skip = i->iov_offset;                               \
-		while (n) {                                                  \
-			unsigned offset = p->bv_offset + skip;               \
-			unsigned left;                                       \
-			void *kaddr = kmap_local_page(p->bv_page +           \
-						      offset / PAGE_SIZE);   \
-			base = kaddr + offset % PAGE_SIZE;                   \
-			len = min(min(n, (size_t)(p->bv_len - skip)),        \
-				  (size_t)(PAGE_SIZE - offset % PAGE_SIZE)); \
-			left = (STEP);                                       \
-			kunmap_local(kaddr);                                 \
-			len -= left;                                         \
-			off += len;                                          \
-			skip += len;                                         \
-			if (skip == p->bv_len) {                             \
-				skip = 0;                                    \
-				p++;                                         \
-			}                                                    \
-			n -= len;                                            \
-			if (left)                                            \
-				break;                                       \
-		}                                                            \
-		i->iov_offset = skip;                                        \
-		n = off;                                                     \
-	}
-
+/* iterate_bvec macro removed - ITER_BVEC never initialized (~28 LOC) */
 /* iterate_xarray macro removed - ITER_XARRAY never initialized (~40 LOC) */
 
 #define __iterate_and_advance(i, n, base, len, off, I, K)                      \
@@ -79,13 +51,6 @@ typedef __u32 __wsum;
 				iterate_iovec(i, n, base, len, off, iov, (I))  \
 					i->nr_segs -= iov - i->iov;            \
 				i->iov = iov;                                  \
-			} else if (iov_iter_is_bvec(i)) {                      \
-				const struct bio_vec *bvec = i->bvec;          \
-				void *base;                                    \
-				size_t len;                                    \
-				iterate_bvec(i, n, base, len, off, bvec, (K))  \
-					i->nr_segs -= bvec - i->bvec;          \
-				i->bvec = bvec;                                \
 			} else if (iov_iter_is_kvec(i)) {                      \
 				const struct kvec *kvec = i->kvec;             \
 				void *base;                                    \
@@ -94,6 +59,7 @@ typedef __u32 __wsum;
 					i->nr_segs -= kvec - i->kvec;          \
 				i->kvec = kvec;                                \
 			}                                                      \
+			/* ITER_BVEC removed - never initialized */            \
 			i->count -= n;                                         \
 		}                                                              \
 	}
@@ -231,12 +197,13 @@ static size_t __copy_page_to_iter(struct page *page, size_t offset,
 		i->iov_offset = skip;
 		return wanted - bytes;
 	}
-	if (iov_iter_is_bvec(i) || iov_iter_is_kvec(i)) {
+	if (iov_iter_is_kvec(i)) {
 		void *kaddr = kmap_local_page(page);
 		size_t wanted = _copy_to_iter(kaddr + offset, bytes, i);
 		kunmap_local(kaddr);
 		return wanted;
 	}
+	/* ITER_BVEC removed - never initialized */
 	/* ITER_PIPE, ITER_XARRAY, ITER_DISCARD removed - never initialized */
 	WARN_ON(1);
 	return 0;
@@ -295,49 +262,21 @@ void iov_iter_advance(struct iov_iter *i, size_t size)
 {
 	if (unlikely(i->count < size))
 		size = i->count;
-	if (likely(iter_is_iovec(i) || iov_iter_is_kvec(i))) {
-		/* iov_iter_iovec_advance inlined */
-		const struct iovec *iov, *end;
-		if (i->count) {
-			i->count -= size;
-			size += i->iov_offset;
-			for (iov = i->iov, end = iov + i->nr_segs; iov < end;
-			     iov++) {
-				if (likely(size < iov->iov_len))
-					break;
-				size -= iov->iov_len;
-			}
-			i->iov_offset = size;
-			i->nr_segs -= iov - i->iov;
-			i->iov = iov;
+	/* Only ITER_IOVEC and ITER_KVEC used - others never initialized */
+	/* iov_iter_iovec_advance inlined */
+	const struct iovec *iov, *end;
+	if (i->count) {
+		i->count -= size;
+		size += i->iov_offset;
+		for (iov = i->iov, end = iov + i->nr_segs; iov < end; iov++) {
+			if (likely(size < iov->iov_len))
+				break;
+			size -= iov->iov_len;
 		}
-	} else if (iov_iter_is_bvec(i)) {
-		/* bvec_iter_advance inlined */
-		struct bvec_iter bi;
-		unsigned int idx, bytes;
-		bi.bi_size = i->count;
-		bi.bi_bvec_done = i->iov_offset;
-		bi.bi_idx = 0;
-		idx = bi.bi_idx;
-		if (WARN_ONCE(size > bi.bi_size,
-			      "Attempted to advance past end of bvec iter\n")) {
-			bi.bi_size = 0;
-		} else {
-			bi.bi_size -= size;
-			bytes = size + bi.bi_bvec_done;
-			while (bytes && bytes >= i->bvec[idx].bv_len) {
-				bytes -= i->bvec[idx].bv_len;
-				idx++;
-			}
-			bi.bi_idx = idx;
-			bi.bi_bvec_done = bytes;
-		}
-		i->bvec += bi.bi_idx;
-		i->nr_segs -= bi.bi_idx;
-		i->count = bi.bi_size;
-		i->iov_offset = bi.bi_bvec_done;
+		i->iov_offset = size;
+		i->nr_segs -= iov - i->iov;
+		i->iov = iov;
 	}
-	/* ITER_PIPE, ITER_XARRAY, ITER_DISCARD removed - never initialized */
 }
 
 void iov_iter_revert(struct iov_iter *i, size_t unroll)
@@ -347,37 +286,22 @@ void iov_iter_revert(struct iov_iter *i, size_t unroll)
 	if (WARN_ON(unroll > MAX_RW_COUNT))
 		return;
 	i->count += unroll;
-	/* ITER_PIPE, ITER_DISCARD removed - never initialized */
+	/* Only ITER_IOVEC and ITER_KVEC used - others never initialized */
 	if (unroll <= i->iov_offset) {
 		i->iov_offset -= unroll;
 		return;
 	}
 	unroll -= i->iov_offset;
-	/* ITER_XARRAY removed - never initialized */
-	if (iov_iter_is_bvec(i)) {
-		const struct bio_vec *bvec = i->bvec;
-		while (1) {
-			size_t n = (--bvec)->bv_len;
-			i->nr_segs++;
-			if (unroll <= n) {
-				i->bvec = bvec;
-				i->iov_offset = n - unroll;
-				return;
-			}
-			unroll -= n;
+	const struct iovec *iov = i->iov;
+	while (1) {
+		size_t n = (--iov)->iov_len;
+		i->nr_segs++;
+		if (unroll <= n) {
+			i->iov = iov;
+			i->iov_offset = n - unroll;
+			return;
 		}
-	} else {
-		const struct iovec *iov = i->iov;
-		while (1) {
-			size_t n = (--iov)->iov_len;
-			i->nr_segs++;
-			if (unroll <= n) {
-				i->iov = iov;
-				i->iov_offset = n - unroll;
-				return;
-			}
-			unroll -= n;
-		}
+		unroll -= n;
 	}
 }
 

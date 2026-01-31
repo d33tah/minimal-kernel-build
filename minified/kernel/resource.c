@@ -187,22 +187,14 @@ static struct resource *__insert_resource(struct resource *parent,
 	return NULL;
 }
 
-struct resource *insert_resource_conflict(struct resource *parent,
-					  struct resource *new)
+/* insert_resource_conflict inlined into insert_resource - single caller */
+int insert_resource(struct resource *parent, struct resource *new)
 {
 	struct resource *conflict;
 
 	write_lock(&resource_lock);
 	conflict = __insert_resource(parent, new);
 	write_unlock(&resource_lock);
-	return conflict;
-}
-
-int insert_resource(struct resource *parent, struct resource *new)
-{
-	struct resource *conflict;
-
-	conflict = insert_resource_conflict(parent, new);
 	return conflict ? -EBUSY : 0;
 }
 

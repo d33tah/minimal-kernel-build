@@ -858,8 +858,7 @@ ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *to,
 		ssize_t already_read);
 extern ssize_t generic_file_read_iter(struct kiocb *, struct iov_iter *);
 extern ssize_t generic_file_write_iter(struct kiocb *, struct iov_iter *);
-/* generic_file_direct_write removed - never called */
-ssize_t generic_perform_write(struct kiocb *, struct iov_iter *);
+/* generic_file_direct_write, generic_perform_write removed - never called */
 
 /* generic_file_splice_read, iter_file_splice_write removed - never called */
 

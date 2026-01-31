@@ -1025,14 +1025,9 @@ int generic_file_mmap(struct file *file, struct vm_area_struct *vma)
 
 /* do_read_cache_folio, read_cache_folio, do_read_cache_page, read_cache_page, read_cache_page_gfp, generic_file_direct_write removed - never called */
 
+/* generic_perform_write, __generic_file_write_iter removed - never called */
+
 /* Write operations stubbed - minimal kernel is read-only during boot */
-ssize_t generic_perform_write(struct kiocb *iocb, struct iov_iter *i)
-{
-	return -EROFS;
-}
-
-/* __generic_file_write_iter removed - never called */
-
 ssize_t generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 {
 	return -EROFS;

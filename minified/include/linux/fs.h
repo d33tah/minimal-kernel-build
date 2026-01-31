@@ -837,7 +837,7 @@ extern int generic_delete_inode(struct inode *inode);
 extern unsigned int get_next_ino(void);
 extern void evict_inodes(struct super_block *sb);
 
-extern void clear_inode(struct inode *);
+/* clear_inode made static in inode.c */
 extern struct inode *new_inode(struct super_block *sb);
 
 static inline void *

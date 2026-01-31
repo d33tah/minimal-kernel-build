@@ -213,7 +213,7 @@ static void __remove_inode_hash(struct inode *inode)
 	spin_unlock(&inode_hash_lock);
 }
 
-void clear_inode(struct inode *inode)
+static void clear_inode(struct inode *inode)
 {
 	xa_lock_irq(&inode->i_data.i_pages);
 	BUG_ON(inode->i_data.nrpages);

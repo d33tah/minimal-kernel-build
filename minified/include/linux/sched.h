@@ -294,8 +294,7 @@ struct task_struct {
 	struct signal_struct		*signal;
 	struct sighand_struct __rcu		*sighand;
 	sigset_t			blocked;
-	sigset_t			real_blocked;
-	 
+	/* real_blocked removed - never accessed */
 	sigset_t			saved_sigmask;
 	struct sigpending		pending;
 	/* sas_ss_sp, sas_ss_size, sas_ss_flags removed - write-only fields */

@@ -504,7 +504,6 @@ void free_pgd_range(struct mmu_gather *tlb, unsigned long addr,
 		unsigned long end, unsigned long floor, unsigned long ceiling);
 
 extern void truncate_setsize(struct inode *inode, loff_t newsize);
-void pagecache_isize_extended(struct inode *inode, loff_t from, loff_t to);
 
 extern vm_fault_t handle_mm_fault(struct vm_area_struct *vma,
 				  unsigned long address, unsigned int flags,

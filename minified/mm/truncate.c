@@ -236,17 +236,8 @@ static void truncate_pagecache(struct inode *inode, loff_t newsize)
 	unmap_mapping_range(mapping, holebegin, 0, 1);
 }
 
-void truncate_setsize(struct inode *inode, loff_t newsize)
-{
-	loff_t oldsize = inode->i_size;
-
-	i_size_write(inode, newsize);
-	if (newsize > oldsize)
-		pagecache_isize_extended(inode, oldsize, newsize);
-	truncate_pagecache(inode, newsize);
-}
-
-void pagecache_isize_extended(struct inode *inode, loff_t from, loff_t to)
+static void pagecache_isize_extended(struct inode *inode, loff_t from,
+				     loff_t to)
 {
 	int bsize = (1 << inode->i_blkbits); /* i_blocksize inlined */
 	loff_t rounded_from;
@@ -271,4 +262,14 @@ void pagecache_isize_extended(struct inode *inode, loff_t from, loff_t to)
 	/* page_mkclean always returns 0 - dead code removed */
 	unlock_page(page);
 	put_page(page);
+}
+
+void truncate_setsize(struct inode *inode, loff_t newsize)
+{
+	loff_t oldsize = inode->i_size;
+
+	i_size_write(inode, newsize);
+	if (newsize > oldsize)
+		pagecache_isize_extended(inode, oldsize, newsize);
+	truncate_pagecache(inode, newsize);
 }

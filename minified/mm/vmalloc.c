@@ -169,7 +169,7 @@ static void vunmap_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
 
 /* vunmap_pud_range, vunmap_p4d_range inlined into vunmap_range_noflush */
 
-void vunmap_range_noflush(unsigned long start, unsigned long end)
+static void vunmap_range_noflush(unsigned long start, unsigned long end)
 {
 	unsigned long next;
 	pgd_t *pgd;
@@ -250,9 +250,9 @@ static int vmap_pages_pmd_range(pud_t *pud, unsigned long addr,
 
 /* vmap_pages_p4d_range inlined into vmap_pages_range_noflush */
 
-int vmap_pages_range_noflush(unsigned long addr, unsigned long end,
-			     pgprot_t prot, struct page **pages,
-			     unsigned int page_shift)
+static int vmap_pages_range_noflush(unsigned long addr, unsigned long end,
+				    pgprot_t prot, struct page **pages,
+				    unsigned int page_shift)
 {
 	unsigned long start = addr;
 	pgd_t *pgd;

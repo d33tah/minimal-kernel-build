@@ -9,19 +9,17 @@ struct iovec { void __user *iov_base; __kernel_size_t iov_len; };
 struct page;
 struct pipe_inode_info;
 struct kvec { void *iov_base; size_t iov_len; };
+/* Only ITER_IOVEC and ITER_KVEC are used - others never initialized */
 enum iter_type { ITER_IOVEC, ITER_KVEC, ITER_BVEC, ITER_PIPE, ITER_XARRAY, ITER_DISCARD, };
 struct iov_iter {
 	u8 iter_type; bool nofault; bool data_source; size_t iov_offset; size_t count;
-	union { const struct iovec *iov; const struct kvec *kvec; const struct bio_vec *bvec; struct xarray *xarray; struct pipe_inode_info *pipe; };
-	union { unsigned long nr_segs; struct { unsigned int head; unsigned int start_head; }; loff_t xarray_start; };
+	union { const struct iovec *iov; const struct kvec *kvec; };
+	unsigned long nr_segs;
 };
 static inline enum iter_type iov_iter_type(const struct iov_iter *i) { return i->iter_type; }
 static inline bool iter_is_iovec(const struct iov_iter *i) { return iov_iter_type(i) == ITER_IOVEC; }
 static inline bool iov_iter_is_kvec(const struct iov_iter *i) { return iov_iter_type(i) == ITER_KVEC; }
-static inline bool iov_iter_is_bvec(const struct iov_iter *i) { return iov_iter_type(i) == ITER_BVEC; }
-static inline bool iov_iter_is_pipe(const struct iov_iter *i) { return iov_iter_type(i) == ITER_PIPE; }
-static inline bool iov_iter_is_discard(const struct iov_iter *i) { return iov_iter_type(i) == ITER_DISCARD; }
-static inline bool iov_iter_is_xarray(const struct iov_iter *i) { return iov_iter_type(i) == ITER_XARRAY; }
+/* iov_iter_is_bvec, iov_iter_is_pipe, iov_iter_is_discard, iov_iter_is_xarray removed - never used */
 size_t copy_page_from_iter_atomic(struct page *page, unsigned offset, size_t bytes, struct iov_iter *i);
 void iov_iter_advance(struct iov_iter *i, size_t bytes);
 void iov_iter_revert(struct iov_iter *i, size_t bytes);

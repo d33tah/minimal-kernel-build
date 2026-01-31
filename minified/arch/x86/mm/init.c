@@ -48,12 +48,7 @@ static uint8_t __pte2cachemode_tbl[8] = {
 	[__pte2cm_idx(_PAGE_PWT | _PAGE_PCD | _PAGE_PAT)] = _PAGE_CACHE_MODE_UC,
 };
 
-bool x86_has_pat_wp(void)
-{
-	uint16_t prot = __cachemode2pte_tbl[_PAGE_CACHE_MODE_WP];
-
-	return __pte2cachemode_tbl[__pte2cm_idx(prot)] == _PAGE_CACHE_MODE_WP;
-}
+/* x86_has_pat_wp removed - never called (~6 LOC) */
 
 enum page_cache_mode pgprot2cachemode(pgprot_t pgprot)
 {

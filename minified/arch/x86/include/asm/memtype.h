@@ -12,7 +12,7 @@ extern int memtype_reserve(u64 start, u64 end,
 
 /* memtype_reserve_io, memtype_free, memtype_kernel_map_sync, memtype_free_io removed */
 
-bool x86_has_pat_wp(void);
+/* x86_has_pat_wp removed - never called */
 enum page_cache_mode pgprot2cachemode(pgprot_t pgprot);
 
 #endif  

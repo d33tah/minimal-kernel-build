@@ -271,7 +271,7 @@ static void __free_pages_ok(struct page *page, unsigned int order,
 	spin_unlock_irqrestore(&zone->lock, flags);
 }
 
-void __free_pages_core(struct page *page, unsigned int order)
+static void __free_pages_core(struct page *page, unsigned int order)
 {
 	unsigned int nr_pages = 1 << order;
 	struct page *p = page;

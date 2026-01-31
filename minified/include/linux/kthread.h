@@ -28,7 +28,7 @@ bool kthread_should_stop(void);
 bool kthread_should_park(void);
 bool __kthread_should_park(struct task_struct *k);
 void *kthread_data(struct task_struct *k);
-void kthread_unpark(struct task_struct *k);
+/* kthread_unpark made static - only used in kthread.c */
 void kthread_exit(long result) __noreturn;
 
 int kthreadd(void *unused);

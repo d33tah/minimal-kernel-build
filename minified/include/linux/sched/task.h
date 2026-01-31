@@ -73,7 +73,7 @@ extern pid_t kernel_thread(int (*fn)(void *), void *arg, unsigned long flags);
 extern pid_t user_mode_thread(int (*fn)(void *), void *arg, unsigned long flags);
 /* kernel_wait4 now static in exit.c */
 
-extern void free_task(struct task_struct *tsk);
+/* free_task made static in kernel/fork.c */
 /* sched_exec() macro removed - no callers */
 
 static inline struct task_struct *get_task_struct(struct task_struct *t)

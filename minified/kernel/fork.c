@@ -152,7 +152,7 @@ void put_task_stack(struct task_struct *tsk)
 	}
 }
 
-void free_task(struct task_struct *tsk)
+static void free_task(struct task_struct *tsk)
 {
 	WARN_ON_ONCE(refcount_read(&tsk->stack_refcount) != 0);
 	if (tsk->flags & PF_KTHREAD)

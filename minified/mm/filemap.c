@@ -162,16 +162,7 @@ void delete_from_page_cache_batch(struct address_space *mapping,
 		filemap_free_folio(mapping, fbatch->folios[i]);
 }
 
-/* filemap_check_errors inlined into filemap_fdatawait_range */
-/* filemap_fdatawrite_wbc removed - never called (~5 LOC) */
-
-/* Simplified - ramfs never has writeback pages (~35 LOC) */
-int filemap_fdatawait_range(struct address_space *mapping, loff_t start_byte,
-			    loff_t end_byte)
-{
-	return 0;
-}
-
+/* filemap_check_errors, filemap_fdatawrite_wbc, filemap_fdatawait_range removed - never called */
 /* filemap_write_and_wait_range, file_check_and_advance_wb_err, file_write_and_wait_range removed - never called */
 noinline int __filemap_add_folio(struct address_space *mapping,
 				 struct folio *folio, pgoff_t index, gfp_t gfp,

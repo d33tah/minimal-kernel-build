@@ -73,14 +73,12 @@ typedef int __bitwise rmap_t;
 
 #define RMAP_EXCLUSIVE		((__force rmap_t)BIT(0))
 
-void page_add_anon_rmap(struct page *, struct vm_area_struct *,
-		unsigned long address, rmap_t flags);
+/* page_add_anon_rmap removed - never called */
 void page_add_new_anon_rmap(struct page *, struct vm_area_struct *,
 		unsigned long address);
 void page_add_file_rmap(struct page *, struct vm_area_struct *,
 		bool compound);
-void page_remove_rmap(struct page *, struct vm_area_struct *,
-		bool compound);
+/* page_remove_rmap removed - never called */
 
 /* PVMW_SYNC, page_vma_mapped_walk struct and functions removed - never used
  * (page_vma_mapped.c was removed) */

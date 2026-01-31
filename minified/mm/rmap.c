@@ -261,19 +261,7 @@ out:
 		SetPageAnonExclusive(page);
 }
 
-void page_add_anon_rmap(struct page *page, struct vm_area_struct *vma,
-			unsigned long address, rmap_t flags)
-{
-	bool first;
-	first = atomic_inc_and_test(&page->_mapcount);
-	if (first) {
-		__mod_lruvec_page_state(page, NR_ANON_MAPPED, 1);
-		__page_set_anon_rmap(page, vma, address,
-				     !!(flags & RMAP_EXCLUSIVE));
-	} else {
-		(void)page_folio(page);
-	}
-}
+/* page_add_anon_rmap removed - never called */
 
 void page_add_new_anon_rmap(struct page *page, struct vm_area_struct *vma,
 			    unsigned long address)
@@ -297,28 +285,7 @@ void page_add_file_rmap(struct page *page, struct vm_area_struct *vma,
 		__mod_lruvec_page_state(page, NR_FILE_MAPPED, nr);
 }
 
-void page_remove_rmap(struct page *page, struct vm_area_struct *vma,
-		      bool compound)
-{
-	/* lock_page_memcg/unlock_page_memcg are empty stubs */
-	if (!PageAnon(page)) {
-		/* Inlined page_remove_file_rmap - PageHuge/PageTransHuge always false */
-		if (atomic_add_negative(-1, &page->_mapcount))
-			__mod_lruvec_page_state(page, NR_FILE_MAPPED, -1);
-		return;
-	}
-
-	if (compound) {
-		/* Inlined page_remove_anon_compound_rmap - PageHuge always false */
-		atomic_add_negative(-1, compound_mapcount_ptr(page));
-		return;
-	}
-
-	if (!atomic_add_negative(-1, &page->_mapcount))
-		return;
-
-	__dec_lruvec_page_state(page, NR_ANON_MAPPED);
-}
+/* page_remove_rmap removed - never called */
 
 void __put_anon_vma(struct anon_vma *anon_vma)
 {

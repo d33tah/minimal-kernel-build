@@ -8,12 +8,7 @@
 #include <asm/elf.h>
 #include <asm/io.h>
 
-/* phys_addr_valid removed - never called in this file */
-
-unsigned long task_size_32bit(void)
-{
-	return IA32_PAGE_OFFSET;
-}
+/* phys_addr_valid, task_size_32bit removed - never called */
 
 unsigned long task_size_64bit(int full_addr_space)
 {

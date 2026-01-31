@@ -96,7 +96,7 @@ static inline int mmap_is_ia32(void)
 	return 1;
 }
 
-extern unsigned long task_size_32bit(void);
+/* task_size_32bit removed - never called */
 extern unsigned long task_size_64bit(int full_addr_space);
 /* get_mmap_base, mmap_address_hint_valid removed - never called */
 extern unsigned long get_sigframe_size(void);

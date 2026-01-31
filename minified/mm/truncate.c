@@ -112,8 +112,8 @@ bool truncate_inode_partial_folio(struct folio *folio, loff_t start, loff_t end)
 /* mapping_evict_folio removed - always returned 0, caller simplified */
 /* invalidate_inode_page removed - no callers */
 
-void truncate_inode_pages_range(struct address_space *mapping, loff_t lstart,
-				loff_t lend)
+static void truncate_inode_pages_range(struct address_space *mapping,
+				       loff_t lstart, loff_t lend)
 {
 	pgoff_t start;
 	pgoff_t end;
@@ -206,7 +206,7 @@ void truncate_inode_pages_range(struct address_space *mapping, loff_t lstart,
 	}
 }
 
-void truncate_inode_pages(struct address_space *mapping, loff_t lstart)
+static void truncate_inode_pages(struct address_space *mapping, loff_t lstart)
 {
 	truncate_inode_pages_range(mapping, lstart, (loff_t)-1);
 }

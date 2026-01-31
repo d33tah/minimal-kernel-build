@@ -20,8 +20,7 @@ static inline enum iter_type iov_iter_type(const struct iov_iter *i) { return i-
 static inline bool iter_is_iovec(const struct iov_iter *i) { return iov_iter_type(i) == ITER_IOVEC; }
 static inline bool iov_iter_is_kvec(const struct iov_iter *i) { return iov_iter_type(i) == ITER_KVEC; }
 /* iov_iter_is_bvec, iov_iter_is_pipe, iov_iter_is_discard, iov_iter_is_xarray removed - never used */
-size_t copy_page_from_iter_atomic(struct page *page, unsigned offset, size_t bytes, struct iov_iter *i);
-void iov_iter_advance(struct iov_iter *i, size_t bytes);
+/* copy_page_from_iter_atomic, iov_iter_advance removed - never called */
 void iov_iter_revert(struct iov_iter *i, size_t bytes);
 size_t copy_page_to_iter(struct page *page, size_t offset, size_t bytes, struct iov_iter *i);
 size_t _copy_to_iter(const void *addr, size_t bytes, struct iov_iter *i);

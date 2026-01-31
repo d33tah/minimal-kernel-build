@@ -231,45 +231,7 @@ size_t copy_page_to_iter(struct page *page, size_t offset, size_t bytes,
 	return res;
 }
 
-/* iov_iter_zero removed - never called */
-
-size_t copy_page_from_iter_atomic(struct page *page, unsigned offset,
-				  size_t bytes, struct iov_iter *i)
-{
-	char *kaddr = kmap_atomic(page), *p = kaddr + offset;
-	if (unlikely(!page_copy_sane(page, offset, bytes))) {
-		kunmap_atomic(kaddr);
-		return 0;
-	}
-	/* ITER_PIPE check removed - never initialized */
-	iterate_and_advance(i, bytes, base, len, off,
-			    copyin(p + off, base, len),
-			    memcpy(p + off, base, len)) kunmap_atomic(kaddr);
-	return bytes;
-}
-
-/* pipe_truncate, pipe_advance removed - ITER_PIPE never used (~30 LOC) */
-
-void iov_iter_advance(struct iov_iter *i, size_t size)
-{
-	if (unlikely(i->count < size))
-		size = i->count;
-	/* Only ITER_IOVEC and ITER_KVEC used - others never initialized */
-	/* iov_iter_iovec_advance inlined */
-	const struct iovec *iov, *end;
-	if (i->count) {
-		i->count -= size;
-		size += i->iov_offset;
-		for (iov = i->iov, end = iov + i->nr_segs; iov < end; iov++) {
-			if (likely(size < iov->iov_len))
-				break;
-			size -= iov->iov_len;
-		}
-		i->iov_offset = size;
-		i->nr_segs -= iov - i->iov;
-		i->iov = iov;
-	}
-}
+/* iov_iter_zero, copy_page_from_iter_atomic, iov_iter_advance removed - never called (~34 LOC) */
 
 void iov_iter_revert(struct iov_iter *i, size_t unroll)
 {

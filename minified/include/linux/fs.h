@@ -849,7 +849,7 @@ alloc_inode_sb(struct super_block *sb, struct kmem_cache *cache, gfp_t gfp)
 /* __remove_inode_hash made static in inode.c */
 /* remove_inode_hash inlined at fs/inode.c - single caller */
 
-extern void inode_sb_list_add(struct inode *inode);
+/* inode_sb_list_add made static in inode.c */
 extern void inode_add_lru(struct inode *inode);
 
 extern int generic_file_mmap(struct file *, struct vm_area_struct *);

@@ -26,7 +26,7 @@ extern ktime_t tick_next_period;
 extern int tick_do_timer_cpu __read_mostly;
 
 /* tick_setup_periodic made static in tick-common.c */
-extern void tick_handle_periodic(struct clock_event_device *dev);
+/* tick_handle_periodic removed - never called */
 extern void tick_check_new_device(struct clock_event_device *dev);
 /* tick_shutdown, tick_suspend, tick_resume, tick_check_replacement, tick_install_replacement, tick_get_device removed - unused */
 

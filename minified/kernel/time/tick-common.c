@@ -30,23 +30,7 @@ static void tick_periodic(int cpu)
 	update_process_times(user_mode(get_irq_regs()));
 }
 
-void tick_handle_periodic(struct clock_event_device *dev)
-{
-	int cpu = smp_processor_id();
-	ktime_t next = dev->next_event;
-
-	tick_periodic(cpu);
-
-	if (!clockevent_state_oneshot(dev))
-		return;
-	for (;;) {
-		next = ktime_add_ns(next, TICK_NSEC);
-		if (!clockevents_program_event(dev, next, false))
-			return;
-		if (timekeeping_valid_for_hres())
-			tick_periodic(cpu);
-	}
-}
+/* tick_handle_periodic removed - never called (~17 LOC) */
 
 static void tick_setup_periodic(struct clock_event_device *dev, int broadcast)
 {

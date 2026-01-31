@@ -188,58 +188,6 @@ int insert_resource(struct resource *parent, struct resource *new)
 	return conflict ? -EBUSY : 0;
 }
 
-static DECLARE_WAIT_QUEUE_HEAD(muxed_resource_wait);
-
-/* __request_region_locked inlined into __request_region */
-
-struct resource *__request_region(struct resource *parent,
-				  resource_size_t start, resource_size_t n,
-				  const char *name, int flags)
-{
-	struct resource *res = kzalloc(sizeof(struct resource), GFP_KERNEL);
-	DECLARE_WAITQUEUE(wait, current);
-
-	if (!res)
-		return NULL;
-
-	res->name = name;
-	res->start = start;
-	res->end = start + n - 1;
-
-	write_lock(&resource_lock);
-	for (;;) {
-		struct resource *conflict;
-
-		res->flags = resource_type(parent) | resource_ext_type(parent);
-		res->flags |= IORESOURCE_BUSY | flags;
-		res->desc = parent->desc;
-
-		conflict = __request_resource(parent, res);
-		if (!conflict)
-			break;
-
-		if (conflict != parent) {
-			if (!(conflict->flags & IORESOURCE_BUSY)) {
-				parent = conflict;
-				continue;
-			}
-		}
-		if (conflict->flags & flags & IORESOURCE_MUXED) {
-			add_wait_queue(&muxed_resource_wait, &wait);
-			write_unlock(&resource_lock);
-			set_current_state(TASK_UNINTERRUPTIBLE);
-			schedule();
-			remove_wait_queue(&muxed_resource_wait, &wait);
-			write_lock(&resource_lock);
-			continue;
-		}
-
-		write_unlock(&resource_lock);
-		kfree(res);
-		return NULL;
-	}
-	write_unlock(&resource_lock);
-	return res;
-}
+/* __request_region removed - never called (~50 LOC) */
 
 /* iomem_init_inode removed - simple_pin_fs hangs with low memory */

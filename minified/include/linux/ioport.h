@@ -65,12 +65,7 @@ static inline unsigned long resource_ext_type(const struct resource *res)
 
 
 
-/* request_region, request_muxed_region, request_mem_region removed - never used */
-
-extern struct resource * __request_region(struct resource *,
-					resource_size_t start,
-					resource_size_t n,
-					const char *name, int flags);
+/* request_region, request_muxed_region, request_mem_region, __request_region removed - never used */
 
 /* release_region, release_mem_region, __release_region removed - never called */
 /* struct device forward decl removed - unused */

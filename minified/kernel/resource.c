@@ -66,27 +66,17 @@ static struct resource *__request_resource(struct resource *root,
 	}
 }
 
-/* __release_resource removed - no callers (~28 LOC) */
+/* __release_resource, request_resource_conflict, release_resource removed */
 
-struct resource *request_resource_conflict(struct resource *root,
-					   struct resource *new)
+int request_resource(struct resource *root, struct resource *new)
 {
 	struct resource *conflict;
 
 	write_lock(&resource_lock);
 	conflict = __request_resource(root, new);
 	write_unlock(&resource_lock);
-	return conflict;
-}
-
-int request_resource(struct resource *root, struct resource *new)
-{
-	struct resource *conflict;
-
-	conflict = request_resource_conflict(root, new);
 	return conflict ? -EBUSY : 0;
 }
-/* release_resource removed - never called (~9 LOC) */
 
 /* find_next_iomem_res inlined into walk_mem_res */
 

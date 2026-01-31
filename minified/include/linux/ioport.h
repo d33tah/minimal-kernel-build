@@ -50,7 +50,7 @@ enum {
 extern struct resource ioport_resource;
 extern struct resource iomem_resource;
 
-extern struct resource *request_resource_conflict(struct resource *root, struct resource *new);
+/* request_resource_conflict inlined into request_resource */
 extern int request_resource(struct resource *root, struct resource *new);
 /* release_resource, insert_resource_conflict removed - inlined/never called */
 extern int insert_resource(struct resource *parent, struct resource *new);

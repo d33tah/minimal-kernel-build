@@ -79,8 +79,7 @@ static int printable;
 int default_utf8 = true;
 int global_cursor_default = -1;
 static int cur_default = CUR_UNDERLINE;
-int console_blanked;
-/* blankinterval removed - never set to non-zero */
+/* console_blanked removed - never assigned, always 0 */
 
 int fg_console;
 /* last_console removed - never read or written */
@@ -99,7 +98,8 @@ static struct device *tty0dev;
 
 static inline bool con_should_update(const struct vc_data *vc)
 {
-	return con_is_visible(vc) && !console_blanked;
+	/* console_blanked check removed - never assigned, always 0 */
+	return con_is_visible(vc);
 }
 
 #ifdef NO_VC_UNI_SCREEN
@@ -239,8 +239,8 @@ static void hide_cursor(struct vc_data *vc)
 
 static void set_cursor(struct vc_data *vc)
 {
-	if (vc->vc_num != fg_console || console_blanked ||
-	    vc->vc_mode == KD_GRAPHICS)
+	/* console_blanked check removed - never assigned, always 0 */
+	if (vc->vc_num != fg_console || vc->vc_mode == KD_GRAPHICS)
 		return;
 	if (vc->vc_deccm) {
 		/* Inlined add_softcursor */

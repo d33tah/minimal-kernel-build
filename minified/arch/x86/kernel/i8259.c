@@ -22,7 +22,7 @@
 
 static void init_8259A(int auto_eoi);
 
-static int i8259A_auto_eoi;
+/* i8259A_auto_eoi removed - write-only variable, never read */
 DEFINE_RAW_SPINLOCK(i8259A_lock);
 
 unsigned int cached_irq_mask = 0xffff;
@@ -131,8 +131,6 @@ struct irq_chip i8259A_chip = {
 static void init_8259A(int auto_eoi)
 {
 	unsigned long flags;
-
-	i8259A_auto_eoi = auto_eoi;
 
 	raw_spin_lock_irqsave(&i8259A_lock, flags);
 

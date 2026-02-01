@@ -47,7 +47,7 @@ extern const struct consw vga_con;
 
 #define CM_DRAW     (1)
 #define CM_ERASE    (2)
-#define CM_MOVE     (3)
+/* CM_MOVE removed - never used */
 
 
 #define CON_PRINTBUFFER	(1)

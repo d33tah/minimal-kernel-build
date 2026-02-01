@@ -668,8 +668,7 @@ static inline void init_sync_kiocb(struct kiocb *kiocb, struct file *filp)
 /* __mark_inode_dirty, mark_inode_dirty removed - empty stubs, no callers */
 
 extern void inc_nlink(struct inode *inode);
-/* drop_nlink removed - never called */
-extern void clear_nlink(struct inode *inode);
+/* drop_nlink, clear_nlink removed - never called */
 
 /* inode_dec_link_count removed - never called */
 

@@ -121,15 +121,7 @@ static void __destroy_inode(struct inode *inode)
 	/* nr_inodes counter removed */
 }
 
-/* drop_nlink removed - never called */
-
-void clear_nlink(struct inode *inode)
-{
-	if (inode->i_nlink) {
-		inode->__i_nlink = 0;
-		atomic_long_inc(&inode->i_sb->s_remove_count);
-	}
-}
+/* drop_nlink, clear_nlink removed - never called */
 
 void inc_nlink(struct inode *inode)
 {

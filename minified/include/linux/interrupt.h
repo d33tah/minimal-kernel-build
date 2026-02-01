@@ -82,10 +82,7 @@ request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
 /* struct irq_affinity_desc, irq_set_affinity, irq_can_set_affinity removed - never used */
 
 /* irqchip_irq_state enum removed - unused */
-
-
-DECLARE_STATIC_KEY_FALSE(force_irqthreads_key);
-#  define force_irqthreads()	(static_branch_unlikely(&force_irqthreads_key))
+/* force_irqthreads_key and force_irqthreads() removed - never called */
 
 #ifndef local_softirq_pending
 

@@ -19,7 +19,7 @@
 /* noirqdebug moved from spurious.c */
 bool noirqdebug __read_mostly;
 
-DEFINE_STATIC_KEY_FALSE(force_irqthreads_key);
+/* force_irqthreads_key removed - macro never called */
 
 /* __synchronize_hardirq removed - only caller was __free_irq which was removed */
 

@@ -105,8 +105,7 @@ extern void __set_current_blocked(const sigset_t *);
 /* get_signal, signal_setup_done removed - never called */
 extern void exit_signals(struct task_struct *tsk);
 
-#define SIG_KTHREAD_KERNEL ((__force __sighandler_t)3)
-
+/* SIG_KTHREAD_KERNEL removed - unused */
 
 extern struct kmem_cache *sighand_cachep;
 

@@ -13,9 +13,9 @@ obj-y :=	open.o read_write.o file_table.o super.o \
 		dcache.o inode.o \
 		attr.o file.o filesystems.o namespace.o \
 		libfs.o \
-		splice.o \
 		fs_struct.o \
 		fs_context.o fs_parser.o init.o
+# splice.o removed - all splice functionality stubbed via COND_SYSCALL
 
 ifeq ($(CONFIG_BLOCK),y)
 obj-y +=	buffer.o direct-io.o mpage.o

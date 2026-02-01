@@ -32,8 +32,7 @@ void __init driver_init(void)
 /* Removed: fwnode_link_add, fwnode_links_purge, fw_devlink_purge_absent_suppliers - no callers */
 
 /* bool dma_default_coherent removed - never used */
-
-DEFINE_STATIC_SRCU(device_links_srcu);
+/* device_links_srcu removed - never used */
 
 /* device_pm_move_to_tail removed - was empty stub (lock/unlock with no work) */
 

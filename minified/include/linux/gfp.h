@@ -135,14 +135,11 @@ static inline enum zone_type gfp_zone(gfp_t flags)
 }
 
 
-static inline int gfp_zonelist(gfp_t flags)
-{
-	return ZONELIST_FALLBACK;
-}
+/* gfp_zonelist inlined - always returns ZONELIST_FALLBACK */
 
 static inline struct zonelist *node_zonelist(int nid, gfp_t flags)
 {
-	return NODE_DATA(nid)->node_zonelists + gfp_zonelist(flags);
+	return NODE_DATA(nid)->node_zonelists + ZONELIST_FALLBACK;
 }
 
 /* Removed: arch_free_page, arch_alloc_page - never called */

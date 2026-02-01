@@ -4,8 +4,7 @@
 #include <linux/pagemap.h>
 #include <linux/highmem.h>
 #include <linux/slab.h>
-/* linux/vmalloc.h removed - vmalloc not used */
-#include <linux/splice.h>
+/* linux/vmalloc.h, linux/splice.h removed - not used */
 /* linux/compat.h removed - compat functions not used */
 /* scatterlist.h removed - unused */
 

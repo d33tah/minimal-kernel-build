@@ -5,7 +5,7 @@
 #include <linux/uio.h>
 #include <linux/syscalls.h>
 #include <linux/pagemap.h>
-#include <linux/splice.h>
+/* linux/splice.h removed - splice functions never called */
 #include <linux/mount.h>
 #include <linux/fs.h>
 #include "internal.h"

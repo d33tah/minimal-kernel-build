@@ -608,11 +608,7 @@ void unmap_mapping_range(struct address_space *mapping, loff_t const holebegin,
 	unmap_mapping_pages(mapping, hba, hlen, even_cows);
 }
 
-static vm_fault_t do_swap_page(struct vm_fault *vmf)
-{
-	/* Stub: swap not configured, should never be called */
-	return VM_FAULT_SIGBUS;
-}
+/* do_swap_page inlined - stub returns VM_FAULT_SIGBUS */
 
 static vm_fault_t do_anonymous_page(struct vm_fault *vmf)
 {
@@ -797,10 +793,7 @@ uncharge_out:
 }
 
 /* Stub: read-only initramfs has no shared writable mappings */
-static vm_fault_t do_shared_fault(struct vm_fault *vmf)
-{
-	return VM_FAULT_SIGBUS;
-}
+/* do_shared_fault inlined - stub returns VM_FAULT_SIGBUS */
 
 static vm_fault_t do_fault(struct vm_fault *vmf)
 {
@@ -837,7 +830,7 @@ static vm_fault_t do_fault(struct vm_fault *vmf)
 	} else if (!(vma->vm_flags & VM_SHARED))
 		ret = do_cow_fault(vmf);
 	else
-		ret = do_shared_fault(vmf);
+		ret = VM_FAULT_SIGBUS; /* do_shared_fault inlined */
 
 	if (vmf->prealloc_pte) {
 		pte_free(vm_mm, vmf->prealloc_pte);
@@ -895,7 +888,7 @@ static vm_fault_t __handle_mm_fault(struct vm_area_struct *vma,
 		return vma_is_anonymous(vmf.vma) ? do_anonymous_page(&vmf) :
 						   do_fault(&vmf);
 	if (!pte_present(vmf.orig_pte))
-		return do_swap_page(&vmf);
+		return VM_FAULT_SIGBUS; /* do_swap_page inlined - swap not configured */
 	vmf.ptl = pte_lockptr(vmf.vma->vm_mm, vmf.pmd);
 	spin_lock(vmf.ptl);
 	if ((vmf.flags & FAULT_FLAG_WRITE) && !pte_write(vmf.orig_pte))

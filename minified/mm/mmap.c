@@ -231,7 +231,7 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
 /* Removed: is_mergeable_vma, is_mergeable_anon_vma, can_vma_merge_before */
 /* Removed: reusable_anon_vma - only used by find_mergeable_anon_vma */
 
-struct vm_area_struct *
+static struct vm_area_struct *
 vma_merge(struct mm_struct *mm, struct vm_area_struct *prev, unsigned long addr,
 	  unsigned long end, unsigned long vm_flags, struct anon_vma *anon_vma,
 	  struct file *file, pgoff_t pgoff, struct mempolicy *policy,

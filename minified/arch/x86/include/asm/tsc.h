@@ -34,7 +34,6 @@ extern unsigned long native_calibrate_tsc(void);
 /* tsc_store_and_check_tsc_adjust, tsc_verify_tsc_adjust, check_tsc_sync_source, check_tsc_sync_target removed - unused */
 
 /* tsc_save/restore_sched_clock_state removed - never called */
+/* cpu_khz_from_msr declaration removed - implementation was stub */
 
-unsigned long cpu_khz_from_msr(void);
-
-#endif  
+#endif

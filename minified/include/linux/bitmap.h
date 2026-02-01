@@ -106,12 +106,7 @@ unsigned long find_last_bit(const unsigned long *addr, unsigned long size)
 	     (bit) < (size);					\
 	     (bit) = find_next_zero_bit((addr), (size), (bit) + 1))
 
-#define for_each_clear_bitrange(b, e, addr, size)		\
-	for ((b) = find_next_zero_bit((addr), (size), 0),	\
-	     (e) = find_next_bit((addr), (size), (b) + 1);	\
-	     (b) < (size);					\
-	     (b) = find_next_zero_bit((addr), (size), (e) + 1),	\
-	     (e) = find_next_bit((addr), (size), (b) + 1))
+/* for_each_clear_bitrange removed - never used */
 
 #define for_each_clear_bitrange_from(b, e, addr, size)		\
 	for ((b) = find_next_zero_bit((addr), (size), (b)),	\

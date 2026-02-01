@@ -93,11 +93,10 @@ __remove_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq
 }
 
 void __wake_up(struct wait_queue_head *wq_head, unsigned int mode, int nr, void *key);
-void __wake_up_locked_key(struct wait_queue_head *wq_head, unsigned int mode, void *key);
+/* __wake_up_locked_key removed - no callers */
 void __wake_up_locked_key_bookmark(struct wait_queue_head *wq_head,
 		unsigned int mode, void *key, wait_queue_entry_t *bookmark);
-/* __wake_up_sync_key removed - no callers */
-void __wake_up_locked(struct wait_queue_head *wq_head, unsigned int mode, int nr);
+/* __wake_up_sync_key, __wake_up_locked removed - no callers */
 
 #define wake_up(x)			__wake_up(x, TASK_NORMAL, 1, NULL)
 #define wake_up_all(x)			__wake_up(x, TASK_NORMAL, 0, NULL)

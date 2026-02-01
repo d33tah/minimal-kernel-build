@@ -83,17 +83,7 @@ void __wake_up(struct wait_queue_head *wq_head, unsigned int mode,
 	} while (bookmark.flags & WQ_FLAG_BOOKMARK);
 }
 
-void __wake_up_locked(struct wait_queue_head *wq_head, unsigned int mode,
-		      int nr)
-{
-	__wake_up_common(wq_head, mode, nr, 0, NULL, NULL);
-}
-
-void __wake_up_locked_key(struct wait_queue_head *wq_head, unsigned int mode,
-			  void *key)
-{
-	__wake_up_common(wq_head, mode, 1, 0, key, NULL);
-}
+/* __wake_up_locked, __wake_up_locked_key removed - never called (~11 LOC) */
 
 void __wake_up_locked_key_bookmark(struct wait_queue_head *wq_head,
 				   unsigned int mode, void *key,

@@ -11,13 +11,11 @@
 /* __user_cap_header_struct, __user_cap_data_struct removed - userspace API never used in kernel */
 /* Keep only capabilities actually used in the codebase */
 #define CAP_CHOWN            0
-#define CAP_DAC_OVERRIDE     1
-#define CAP_DAC_READ_SEARCH  2
+/* CAP_DAC_OVERRIDE, CAP_DAC_READ_SEARCH removed - unused */
 /* CAP_FOWNER, CAP_SYS_MODULE, CAP_SYS_CHROOT, CAP_SYS_ADMIN, CAP_SYS_RESOURCE removed - unused */
 #define CAP_FSETID           4
-/* CAP_MKNOD removed - never used */
-#define CAP_CHECKPOINT_RESTORE	40
-#define CAP_LAST_CAP         CAP_CHECKPOINT_RESTORE
+/* CAP_MKNOD, CAP_CHECKPOINT_RESTORE removed - never used */
+#define CAP_LAST_CAP         CAP_FSETID
 #define CAP_TO_MASK(x)      (1 << ((x) & 31))
 
 /* _KERNEL_CAPABILITY_VERSION removed - unused */

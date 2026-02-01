@@ -57,9 +57,7 @@ const struct file_operations simple_dir_operations = {
 	/* fsync removed - fsync syscall returns ENOSYS */
 };
 
-static const struct super_operations simple_super_operations = {
-	/* statfs removed - statfs syscalls return ENOSYS */
-};
+/* simple_super_operations removed - never used */
 
 /* init_pseudo, pseudo_fs_fill_super, pseudo_fs_get_tree, pseudo_fs_free,
    pseudo_fs_context_ops removed - init_pseudo never called (~55 LOC) */
@@ -156,36 +154,5 @@ const struct address_space_operations ram_aops = {
 
 /* alloc_anon_inode removed - never called */
 
-static struct dentry *empty_dir_lookup(struct inode *dir, struct dentry *dentry,
-				       unsigned int flags)
-{
-	return ERR_PTR(-ENOENT);
-}
-
-/* empty_dir_getattr, empty_dir_listxattr removed - callbacks removed from inode_operations */
-
-static int empty_dir_setattr(struct user_namespace *mnt_userns,
-			     struct dentry *dentry, struct iattr *attr)
-{
-	return -EPERM;
-}
-
-static const struct inode_operations empty_dir_inode_operations = {
-	.lookup = empty_dir_lookup,
-	.permission = generic_permission,
-	.setattr = empty_dir_setattr,
-	/* getattr, listxattr removed - callbacks removed from inode_operations */
-};
-
-/* empty_dir_llseek removed - llseek callback removed from file_operations */
-
-/* empty_dir_readdir removed - iterate_shared removed from file_operations */
-
-static const struct file_operations empty_dir_operations = {
-	/* llseek removed - lseek syscall returns ENOSYS */
-	/* read removed - .read callback no longer exists in file_operations */
-	/* iterate_shared removed - getdents syscalls return 0 */
-	/* fsync removed - fsync syscall returns ENOSYS */
-};
-
-/* is_empty_dir_inode removed - never called */
+/* empty_dir_lookup, empty_dir_setattr, empty_dir_inode_operations,
+ * empty_dir_operations, is_empty_dir_inode removed - never used */

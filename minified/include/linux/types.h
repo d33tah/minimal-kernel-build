@@ -71,7 +71,7 @@ typedef u64 sector_t;
 
 #define pgoff_t unsigned long
 
-typedef u32 dma_addr_t;
+/* dma_addr_t removed - unused */
 
 typedef unsigned int __bitwise gfp_t;
 typedef unsigned int __bitwise slab_flags_t;

@@ -738,16 +738,9 @@ void *alloc_pages_exact(size_t size, gfp_t gfp_mask)
 		gfp_mask &= ~(__GFP_COMP | __GFP_HIGHMEM);
 
 	addr = __get_free_pages(gfp_mask, order);
-	/* Inlined make_alloc_exact */
-	if (addr) {
-		unsigned long alloc_end = addr + (PAGE_SIZE << order);
-		unsigned long used = addr + PAGE_ALIGN(size);
-
+	/* Inlined make_alloc_exact - free_page loop removed (bump allocator) */
+	if (addr)
 		split_page(virt_to_page((void *)addr), order);
-		/* free_page loop removed - empty stub (bump allocator) */
-		(void)alloc_end;
-		(void)used; /* suppress warnings */
-	}
 	return (void *)addr;
 }
 

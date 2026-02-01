@@ -48,8 +48,7 @@ static struct nmi_desc nmi_desc[NMI_MAX] = {
 
 /* nmi_stats struct removed - all fields were write-only, never read */
 
-static int ignore_nmis __read_mostly;
-
+/* ignore_nmis removed - never written, always 0 */
 /* unknown_nmi_panic removed - never set to non-zero */
 static DEFINE_RAW_SPINLOCK(nmi_reason_lock);
 
@@ -201,8 +200,8 @@ nmi_restart:
 
 	irq_state = irqentry_nmi_enter(regs);
 	/* inc_irq_stat(__nmi_count) removed - counter never read */
-	if (!ignore_nmis)
-		default_do_nmi(regs);
+	/* ignore_nmis check removed - variable was always 0 */
+	default_do_nmi(regs);
 
 	irqentry_nmi_exit(regs, irq_state);
 

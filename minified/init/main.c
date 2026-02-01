@@ -92,7 +92,7 @@ void calibrate_delay(void)
 	loops_per_jiffy = lpj;
 }
 
-bool early_boot_irqs_disabled __read_mostly;
+/* early_boot_irqs_disabled removed - write-only variable, never read */
 
 enum system_states system_state __read_mostly;
 
@@ -361,7 +361,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	/* smp_setup_processor_id removed - empty weak stub */
 
 	local_irq_disable();
-	early_boot_irqs_disabled = true;
+	/* early_boot_irqs_disabled removed */
 
 	boot_cpu_init();
 
@@ -450,7 +450,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	/* random_init, boot_init_stack_canary, perf_event_init, profile_init removed - empty stubs */
 	WARN(!irqs_disabled(), "Interrupts were enabled early\n");
 
-	early_boot_irqs_disabled = false;
+	/* early_boot_irqs_disabled removed */
 	local_irq_enable();
 	console_init();
 

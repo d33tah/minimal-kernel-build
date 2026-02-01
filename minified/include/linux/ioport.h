@@ -54,14 +54,7 @@ extern struct resource iomem_resource;
 extern int request_resource(struct resource *root, struct resource *new);
 /* release_resource, insert_resource_conflict removed - inlined/never called */
 extern int insert_resource(struct resource *parent, struct resource *new);
-static inline unsigned long resource_type(const struct resource *res)
-{
-	return res->flags & IORESOURCE_TYPE_BITS;
-}
-static inline unsigned long resource_ext_type(const struct resource *res)
-{
-	return res->flags & IORESOURCE_EXT_TYPE_BITS;
-}
+/* resource_type, resource_ext_type removed - never called */
 
 
 

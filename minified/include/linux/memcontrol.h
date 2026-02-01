@@ -23,15 +23,7 @@ static inline struct mem_cgroup *folio_memcg(struct folio *folio)
 
 
 /* PageMemcgKmem, mem_cgroup_charge, mem_cgroup_uncharge,
-   mem_cgroup_uncharge_list removed - callers already removed */
-
-
-static inline struct lruvec *folio_lruvec_lock_irq(struct folio *folio)
-{
-	struct pglist_data *pgdat = folio_pgdat(folio);
-	spin_lock_irq(&pgdat->__lruvec.lru_lock);
-	return &pgdat->__lruvec;
-}
+   mem_cgroup_uncharge_list, folio_lruvec_lock_irq removed - callers already removed */
 
 static inline struct lruvec *folio_lruvec_lock_irqsave(struct folio *folio,
 		unsigned long *flagsp)

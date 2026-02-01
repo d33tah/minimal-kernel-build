@@ -17,11 +17,7 @@
 # define barrier() __asm__ __volatile__("": : :"memory")
 #endif
 
-#ifndef barrier_data
-# define barrier_data(ptr) __asm__ __volatile__("": :"r"(ptr) :"memory")
-#endif
-
-/* unreachable() macro removed - never used */
+/* barrier_data, unreachable() macros removed - never used */
 
 #ifndef RELOC_HIDE
 # define RELOC_HIDE(ptr, off)					\

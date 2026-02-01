@@ -180,11 +180,7 @@ static inline void lock_page(struct page *page)
 void folio_wait_bit(struct folio *folio, int bit_nr);
 int folio_wait_bit_killable(struct folio *folio, int bit_nr);
 
-static inline void folio_wait_locked(struct folio *folio)
-{
-	if (folio_test_locked(folio))
-		folio_wait_bit(folio, PG_locked);
-}
+/* folio_wait_locked removed - never called (only killable variant used) */
 
 static inline int folio_wait_locked_killable(struct folio *folio)
 {

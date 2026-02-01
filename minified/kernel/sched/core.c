@@ -478,16 +478,7 @@ static __always_inline struct rq *context_switch(struct rq *rq,
 
 /* nr_running() removed - never called */
 
-static unsigned int nr_iowait_cpu(int cpu)
-{
-	return atomic_read(&cpu_rq(cpu)->nr_iowait);
-}
-
-/* nr_iowait simplified - single CPU */
-static unsigned int nr_iowait(void)
-{
-	return nr_iowait_cpu(0);
-}
+/* nr_iowait and nr_iowait_cpu removed - never called */
 
 DEFINE_PER_CPU(struct kernel_stat, kstat);
 

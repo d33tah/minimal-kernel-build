@@ -258,13 +258,7 @@ struct zone {
 } ____cacheline_internodealigned_in_smp;
 
 /* pgdat_flags and zone_flags enums removed - unused */
-
-static inline unsigned long zone_managed_pages(struct zone *zone)
-{
-	return (unsigned long)atomic_long_read(&zone->managed_pages);
-}
-
-/* zone_end_pfn, zone_spans_pfn removed - never called */
+/* zone_managed_pages, zone_end_pfn, zone_spans_pfn removed - never called */
 
 #define MAX_ZONES_PER_ZONELIST (MAX_NUMNODES * MAX_NR_ZONES)
 

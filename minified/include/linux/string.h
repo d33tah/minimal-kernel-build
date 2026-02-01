@@ -84,7 +84,7 @@ extern int memcmp(const void *,const void *,__kernel_size_t);
 extern void * memchr(const void *,int,__kernel_size_t);
 #endif
 
-char *strreplace(char *s, char old, char new);
+/* strreplace removed - never called */
 
 extern void kfree_const(const void *x);
 

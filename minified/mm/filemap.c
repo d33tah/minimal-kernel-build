@@ -403,10 +403,7 @@ repeat:
 	return wait->flags & WQ_FLAG_WOKEN ? 0 : -EINTR;
 }
 
-void folio_wait_bit(struct folio *folio, int bit_nr)
-{
-	folio_wait_bit_common(folio, bit_nr, TASK_UNINTERRUPTIBLE, SHARED);
-}
+/* folio_wait_bit removed - never called (only killable variant is used) */
 
 int folio_wait_bit_killable(struct folio *folio, int bit_nr)
 {

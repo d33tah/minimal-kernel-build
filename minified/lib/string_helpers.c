@@ -27,10 +27,4 @@ char *skip_spaces(const char *str)
 	return (char *)str;
 }
 
-char *strreplace(char *s, char old, char new)
-{
-	for (; *s; ++s)
-		if (*s == old)
-			*s = new;
-	return s;
-}
+/* strreplace removed - never called */

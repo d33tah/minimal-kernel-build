@@ -70,8 +70,7 @@ static inline void mapping_set_gfp_mask(struct address_space *m, gfp_t mask)
 
 void release_pages(struct page **pages, int nr);
 
-/* page_mapping removed - never called */
-struct address_space *folio_mapping(struct folio *);
+/* page_mapping, folio_mapping removed - never called */
 
 
 static inline struct folio *filemap_alloc_folio(gfp_t gfp, unsigned int order)
@@ -177,7 +176,7 @@ static inline void lock_page(struct page *page)
 		__folio_lock(folio);
 }
 
-void folio_wait_bit(struct folio *folio, int bit_nr);
+/* folio_wait_bit removed - never called (only killable variant is used) */
 int folio_wait_bit_killable(struct folio *folio, int bit_nr);
 
 /* folio_wait_locked removed - never called (only killable variant used) */

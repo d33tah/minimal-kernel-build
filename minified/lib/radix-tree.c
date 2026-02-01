@@ -651,10 +651,7 @@ void *radix_tree_delete_item(struct radix_tree_root *root, unsigned long index,
 	return entry;
 }
 
-void *radix_tree_delete(struct radix_tree_root *root, unsigned long index)
-{
-	return radix_tree_delete_item(root, index, NULL);
-}
+/* radix_tree_delete removed - never called */
 
 /* radix_tree_tagged inlined into idr_get_free */
 

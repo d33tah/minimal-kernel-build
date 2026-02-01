@@ -191,21 +191,7 @@ bool folio_mapped(struct folio *folio)
 	return false;
 }
 
-/* folio_anon_vma removed - never called */
-
-struct address_space *folio_mapping(struct folio *folio)
-{
-	struct address_space *mapping;
-
-	if (unlikely(folio_test_slab(folio)))
-		return NULL;
-
-	mapping = folio->mapping;
-	if ((unsigned long)mapping & PAGE_MAPPING_ANON)
-		return NULL;
-
-	return (void *)((unsigned long)mapping & ~PAGE_MAPPING_FLAGS);
-}
+/* folio_anon_vma, folio_mapping removed - never called */
 
 int __page_mapcount(struct page *page)
 {

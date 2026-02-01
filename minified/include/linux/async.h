@@ -6,7 +6,7 @@
 #include <linux/device.h>
 typedef u64 async_cookie_t;
 typedef void (*async_func_t) (void *data, async_cookie_t cookie);
-struct async_domain { struct list_head pending; unsigned registered:1; };
+struct async_domain { struct list_head pending; };
 async_cookie_t async_schedule_node_domain(async_func_t func, void *data, int node, struct async_domain *domain);
 extern struct async_domain async_dfl_domain;
 /* async_schedule_domain removed - never called */

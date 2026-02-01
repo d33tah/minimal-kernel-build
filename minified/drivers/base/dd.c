@@ -232,12 +232,8 @@ out:
 
 struct device_attach_data {
 	struct device *dev;
-
 	bool check_async;
-
 	bool want_async;
-
-	bool have_async;
 };
 
 static int __device_attach_driver(struct device_driver *drv, void *_data)
@@ -265,39 +261,11 @@ static int __device_attach_driver(struct device_driver *drv, void *_data)
 	return ret == 0;
 }
 
-static void __device_attach_async_helper(void *_dev, async_cookie_t cookie)
-{
-	struct device *dev = _dev;
-	struct device_attach_data data = {
-		.dev = dev,
-		.check_async = true,
-		.want_async = true,
-	};
-
-	device_lock(dev);
-
-	if (dev->p->dead || dev->driver)
-		goto out_unlock;
-
-	if (dev->parent)
-		pm_runtime_get_sync(dev->parent);
-
-	bus_for_each_drv(dev->bus, NULL, &data, __device_attach_driver);
-
-	pm_request_idle(dev);
-
-	if (dev->parent)
-		pm_runtime_put(dev->parent);
-out_unlock:
-	device_unlock(dev);
-
-	put_device(dev);
-}
+/* __device_attach_async_helper removed - have_async never set, async scheduling never happens */
 
 static int __device_attach(struct device *dev, bool allow_async)
 {
 	int ret = 0;
-	bool async = false;
 
 	device_lock(dev);
 	if (dev->p->dead) {
@@ -321,20 +289,14 @@ static int __device_attach(struct device *dev, bool allow_async)
 
 		ret = bus_for_each_drv(dev->bus, NULL, &data,
 				       __device_attach_driver);
-		if (!ret && allow_async && data.have_async) {
-			get_device(dev);
-			async = true;
-		} else {
-			pm_request_idle(dev);
-		}
+		/* have_async never set, so async branch removed */
+		pm_request_idle(dev);
 
 		if (dev->parent)
 			pm_runtime_put(dev->parent);
 	}
 out_unlock:
 	device_unlock(dev);
-	if (async)
-		async_schedule_dev(__device_attach_async_helper, dev);
 	return ret;
 }
 
@@ -405,8 +367,7 @@ void device_release_driver(struct device *dev)
 
 /* Merged from kernel/async.c - stub async scheduler runs synchronously */
 struct async_domain async_dfl_domain = { .pending = LIST_HEAD_INIT(
-						 async_dfl_domain.pending),
-					 .registered = 0 };
+						 async_dfl_domain.pending) };
 async_cookie_t async_schedule_node_domain(async_func_t func, void *data,
 					  int node, struct async_domain *domain)
 {

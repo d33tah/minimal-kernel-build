@@ -231,16 +231,7 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
 /* Removed: is_mergeable_vma, is_mergeable_anon_vma, can_vma_merge_before */
 /* Removed: reusable_anon_vma - only used by find_mergeable_anon_vma */
 
-static struct vm_area_struct *
-vma_merge(struct mm_struct *mm, struct vm_area_struct *prev, unsigned long addr,
-	  unsigned long end, unsigned long vm_flags, struct anon_vma *anon_vma,
-	  struct file *file, pgoff_t pgoff, struct mempolicy *policy,
-	  struct vm_userfaultfd_ctx vm_userfaultfd_ctx,
-	  struct anon_vma_name *anon_name)
-{
-	/* VMA merging disabled - always allocate new VMAs */
-	return NULL;
-}
+/* vma_merge inlined into mmap_region - VMA merging disabled */
 
 /* find_mergeable_anon_vma inlined into rmap.c - VMA merging disabled */
 
@@ -967,15 +958,12 @@ int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 		goto out_unlock;
 	}
 
-	vma = vma_merge(mm, prev, addr, addr + len, flags, NULL, NULL, pgoff,
-			NULL, NULL_VM_UFFD_CTX, NULL);
+	/* vma_merge inlined - VMA merging disabled, always allocate new */
+	vma = vm_area_alloc(mm);
 	if (!vma) {
-		vma = vm_area_alloc(mm);
-		if (!vma) {
-			vm_unacct_memory(len >> PAGE_SHIFT);
-			ret = -ENOMEM;
-			goto out_unlock;
-		}
+		vm_unacct_memory(len >> PAGE_SHIFT);
+		ret = -ENOMEM;
+		goto out_unlock;
 
 		vma_set_anonymous(vma);
 		vma->vm_start = addr;

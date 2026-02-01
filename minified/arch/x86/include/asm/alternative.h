@@ -22,8 +22,7 @@ struct alt_instr {
 
  
 extern int alternatives_patched;
-
-extern void alternative_instructions(void);
+/* alternative_instructions declaration removed - inlined */
 extern void apply_alternatives(struct alt_instr *start, struct alt_instr *end);
 /* apply_retpolines, apply_returns, apply_ibt_endbr removed - unused stubs */
 

@@ -28,8 +28,8 @@ void __init check_bugs(void)
 	init_utsname()->machine[1] =
 		'0' + (boot_cpu_data.x86 > 6 ? 6 : boot_cpu_data.x86);
 
-	alternative_instructions();
-	/* fpu__init_check_bugs removed - empty stub */
+	/* alternative_instructions inlined - only sets alternatives_patched = 1 */
+	alternatives_patched = 1;
 }
 
 /* x86_virt_spec_ctrl, x86_spec_ctrl_setup_ap, itlb_multihit_kvm_mitigation,

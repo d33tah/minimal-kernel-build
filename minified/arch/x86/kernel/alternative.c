@@ -43,11 +43,7 @@ void __init_or_module noinline apply_alternatives(struct alt_instr *start,
 						  struct alt_instr *end)
 {
 }
-
-void __init alternative_instructions(void)
-{
-	alternatives_patched = 1;
-}
+/* alternative_instructions removed - inlined into check_bugs (~4 LOC) */
 
 void __init_or_module text_poke_early(void *addr, const void *opcode,
 				      size_t len)

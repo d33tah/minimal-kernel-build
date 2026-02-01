@@ -228,10 +228,7 @@ static inline struct task_struct *next_thread(const struct task_struct *p)
 			      struct task_struct, thread_group);
 }
 
-static inline int thread_group_empty(struct task_struct *p)
-{
-	return list_empty(&p->thread_group);
-}
+/* thread_group_empty removed - never called (single-threaded init) */
 
 extern struct sighand_struct *__lock_task_sighand(struct task_struct *task,
 							unsigned long *flags);

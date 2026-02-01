@@ -16,7 +16,7 @@ void panic(const char *fmt, ...) __noreturn __cold;
 /* panic_timeout, panic_cpu externs removed - only used in panic.c */
 /* panic_print removed - only defined, never read */
 extern int panic_on_oops;
-extern int panic_on_warn;
+/* panic_on_warn removed - always 0, sysctl not available */
 /* panic_on_unrecovered_nmi, panic_on_io_nmi, panic_on_taint, panic_on_taint_nousertaint,
    sysctl_panic_on_rcu_stall, sysctl_max_rcu_stall_to_panic, sysctl_panic_on_stackoverflow removed */
 /* Removed: crash_kexec_post_notifiers - kexec stubs removed */

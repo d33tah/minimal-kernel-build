@@ -24,8 +24,7 @@ int debug_locks_silent __read_mostly;
 
 int panic_on_oops = CONFIG_PANIC_ON_OOPS_VALUE;
 /* tainted_mask removed - write-only, never read */
-/* pause_on_oops removed - always 0, sysctl not available */
-int panic_on_warn __read_mostly;
+/* pause_on_oops, panic_on_warn removed - always 0, sysctl not available */
 /* panic_on_taint removed - never set to non-zero */
 
 int panic_timeout = CONFIG_PANIC_TIMEOUT;
@@ -54,10 +53,7 @@ void panic(const char *fmt, ...)
 	long i, len;
 	int old_cpu, this_cpu;
 
-	if (panic_on_warn) {
-		panic_on_warn = 0;
-	}
-
+	/* panic_on_warn check removed - always 0 */
 	local_irq_disable();
 	preempt_disable_notrace();
 
@@ -148,9 +144,7 @@ struct warn_args {
 void __warn(const char *file, int line, void *caller, unsigned taint,
 	    struct pt_regs *regs, struct warn_args *args)
 {
-	/* Stub: minimal warning for tiny kernel */
-	if (panic_on_warn)
-		panic("panic_on_warn set ...\n");
+	/* Stub: panic_on_warn check removed (always 0) */
 	add_taint(taint, LOCKDEP_STILL_OK);
 }
 

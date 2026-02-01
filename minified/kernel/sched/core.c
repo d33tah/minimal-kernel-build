@@ -551,12 +551,9 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 	rq = cpu_rq(cpu);
 	prev = rq->curr;
 
-	/* Inlined schedule_debug */
-	if (unlikely(in_atomic_preempt_off())) {
-		if (panic_on_warn)
-			panic("scheduling while atomic\n");
+	/* Inlined schedule_debug - panic_on_warn check removed (always 0) */
+	if (unlikely(in_atomic_preempt_off()))
 		preempt_count_set(PREEMPT_DISABLED);
-	}
 	local_irq_disable();
 	rcu_note_context_switch(!!sched_mode);
 

@@ -135,7 +135,7 @@ struct tty_struct {
 	/* closing removed - never accessed */
 	unsigned char *write_buf;
 	int write_cnt;
-	struct work_struct SAK_work;
+	/* SAK_work removed - initialized but never scheduled */
 	struct tty_port *port;
 } __randomize_layout;
 

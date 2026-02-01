@@ -63,11 +63,8 @@ int cmdline_find_option_bool(const char *option);
 /* choose_random_location removed - call deleted (no KASLR) */
 
 static const int early_serial_base;
-static inline void console_init(void)
-{ }
+/* console_init removed - was empty stub */
 
-
- 
 /* get_rsdp_addr removed - replaced with inline 0 */
 
 

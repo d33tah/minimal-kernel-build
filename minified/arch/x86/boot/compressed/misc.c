@@ -195,7 +195,7 @@ asmlinkage __visible void *extract_kernel(void *rmode, memptr heap,
 
 	init_default_io_ops();
 	/* early_tdx_detect removed - was empty stub */
-	console_init();
+	/* console_init removed - was empty stub */
 
 	/* Ultra-early VGA Hello World - in decompressor */
 	{

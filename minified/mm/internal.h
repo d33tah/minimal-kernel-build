@@ -138,29 +138,7 @@ extern long populate_vma_page_range(struct vm_area_struct *vma,
 
 /* maybe_pmd_mkwrite removed - unused */
 
-
-static inline unsigned long
-vma_pgoff_address(pgoff_t pgoff, unsigned long nr_pages,
-		  struct vm_area_struct *vma)
-{
-	unsigned long address;
-
-	if (pgoff >= vma->vm_pgoff) {
-		address = vma->vm_start +
-			((pgoff - vma->vm_pgoff) << PAGE_SHIFT);
-		 
-		if (address < vma->vm_start || address >= vma->vm_end)
-			address = -EFAULT;
-	} else if (pgoff + nr_pages - 1 >= vma->vm_pgoff) {
-		 
-		address = vma->vm_start;
-	} else {
-		address = -EFAULT;
-	}
-	return address;
-}
-
-/* vma_address, vma_address_end removed - never called */
+/* vma_pgoff_address, vma_address, vma_address_end removed - never called */
 
 /* maybe_unlock_mmap_for_io removed - unused */
 

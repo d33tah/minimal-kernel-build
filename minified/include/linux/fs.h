@@ -215,7 +215,7 @@ struct address_space {
 	/* private_data removed - only set to NULL, never used */
 } __attribute__((aligned(sizeof(long)))) __randomize_layout;
 
-#define PAGECACHE_TAG_WRITEBACK	XA_MARK_1
+/* PAGECACHE_TAG_WRITEBACK removed - unused */
 
 static inline void i_mmap_lock_write(struct address_space *mapping)
 {
@@ -618,7 +618,7 @@ struct super_operations {
 #define S_IMMUTABLE	(1 << 3)
 #define S_DEAD		(1 << 4)
 #define S_SWAPFILE	(1 << 8)
-#define S_PRIVATE	(1 << 9)
+/* S_PRIVATE removed - unused */
 #define S_AUTOMOUNT	(1 << 11)
 /* S_NOSEC, S_DAX removed - never tested */
 

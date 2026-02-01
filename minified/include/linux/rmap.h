@@ -71,7 +71,7 @@ static inline int anon_vma_prepare(struct vm_area_struct *vma)
 
 typedef int __bitwise rmap_t;
 
-#define RMAP_EXCLUSIVE		((__force rmap_t)BIT(0))
+/* RMAP_EXCLUSIVE removed - unused */
 
 /* page_add_anon_rmap removed - never called */
 void page_add_new_anon_rmap(struct page *, struct vm_area_struct *,

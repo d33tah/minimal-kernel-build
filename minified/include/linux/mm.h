@@ -198,7 +198,7 @@ void vm_area_free(struct vm_area_struct *);
 
 #define VM_ACCESS_FLAGS (VM_READ | VM_WRITE | VM_EXEC)
 
-#define VM_SPECIAL (VM_IO | VM_DONTEXPAND | VM_PFNMAP | VM_MIXEDMAP)
+/* VM_SPECIAL removed - unused */
 
 #define VM_INIT_DEF_MASK	VM_NOHUGEPAGE
 
@@ -489,7 +489,7 @@ bool folio_mapped(struct folio *folio);
 /* set_page_pfmemalloc, clear_page_pfmemalloc inlined at single call site */
 
 #define offset_in_page(p)	((unsigned long)(p) & ~PAGE_MASK)
-#define offset_in_folio(folio, p) ((unsigned long)(p) & (folio_size(folio) - 1))
+/* offset_in_folio removed - unused */
 
 struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 			     pte_t pte);

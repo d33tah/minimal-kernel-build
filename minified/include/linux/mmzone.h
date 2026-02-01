@@ -192,7 +192,7 @@ enum zone_watermarks {
 
 #define NR_PCP_LISTS (MIGRATE_PCPTYPES * (PAGE_ALLOC_COSTLY_ORDER + 1))
 
-#define high_wmark_pages(z) (z->_watermark[WMARK_HIGH] + z->watermark_boost)
+/* high_wmark_pages removed - unused */
 #define wmark_pages(z, i) (z->_watermark[i] + z->watermark_boost)
 
 struct per_cpu_pages {

@@ -12,7 +12,7 @@
 #include <asm/siginfo.h>
 #include <asm/syscall.h>
 
-static struct kmem_cache *sigqueue_cachep;
+/* sigqueue_cachep removed - was assigned but never read */
 
 /* Removed: print_fatal_signals - never used */
 /* sig_handler removed - inlined into single caller (~4 LOC) */
@@ -372,5 +372,5 @@ SYSCALL_DEFINE3(sigaction, int, sig, const struct old_sigaction __user *, act,
 void __init signals_init(void)
 {
 	/* siginfo_buildtime_checks was empty stub - removed */
-	sigqueue_cachep = KMEM_CACHE(sigqueue, SLAB_PANIC | SLAB_ACCOUNT);
+	/* sigqueue_cachep initialization removed - variable was never read */
 }

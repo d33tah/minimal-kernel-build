@@ -22,7 +22,7 @@ int debug_locks_silent __read_mostly;
 #define PANIC_TIMER_STEP 100
 /* PANIC_BLINK_SPD removed - unused after panic_blink removal */
 
-int panic_on_oops = CONFIG_PANIC_ON_OOPS_VALUE;
+/* panic_on_oops removed - CONFIG_PANIC_ON_OOPS_VALUE=0, sysctl disabled */
 /* tainted_mask removed - write-only, never read */
 /* pause_on_oops, panic_on_warn removed - always 0, sysctl not available */
 /* panic_on_taint removed - never set to non-zero */

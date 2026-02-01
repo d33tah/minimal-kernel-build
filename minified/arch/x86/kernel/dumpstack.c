@@ -77,8 +77,7 @@ void oops_end(unsigned long flags, struct pt_regs *regs, int signr)
 		return;
 	if (in_interrupt())
 		panic("Fatal exception in interrupt");
-	if (panic_on_oops)
-		panic("Fatal exception");
+	/* panic_on_oops check removed - CONFIG_PANIC_ON_OOPS_VALUE=0, sysctl disabled */
 
 	rewind_stack_and_make_dead(signr);
 }

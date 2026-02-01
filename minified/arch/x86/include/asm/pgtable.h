@@ -424,26 +424,9 @@ static inline void clone_pgd_range(pgd_t *dst, pgd_t *src, int count)
 
 
 
-/* pte_flags_pkey, __pkru_allows_pkey removed - never called */
-
- 
-static inline bool __pte_access_permitted(unsigned long pteval, bool write)
-{
-	unsigned long need_pte_bits = _PAGE_PRESENT | _PAGE_USER;
-
-	if (write)
-		need_pte_bits |= _PAGE_RW;
-	/* __pkru_allows_pkey always returns true */
-	return (pteval & need_pte_bits) == need_pte_bits;
-}
-
-#define pte_access_permitted pte_access_permitted
-static inline bool pte_access_permitted(pte_t pte, bool write)
-{
-	return __pte_access_permitted(pte_val(pte), write);
-}
-
-/* pmd_access_permitted, pud_access_permitted, pfn_modify_allowed removed - unused or always true */
+/* pte_flags_pkey, __pkru_allows_pkey, __pte_access_permitted,
+   pte_access_permitted, pmd_access_permitted, pud_access_permitted,
+   pfn_modify_allowed removed - never called or unused */
 /* arch_has_pfn_modify_check, arch_faults_on_old_pte removed - unused */
 
 #endif

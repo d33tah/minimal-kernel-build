@@ -48,7 +48,7 @@ struct bdi_writeback {
 	spinlock_t work_lock;
 	struct list_head work_list;
 	struct delayed_work dwork;
-	struct delayed_work bw_dwork;
+	/* bw_dwork removed - never scheduled, only initialized */
 
 	struct list_head bdi_node;	 
 

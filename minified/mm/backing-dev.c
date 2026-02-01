@@ -40,11 +40,7 @@ struct workqueue_struct *bdi_wq;
 /* bdi_debug_init, bdi_debug_unregister, bdi sysfs attrs, bdi_class_init removed - unused */
 
 /* default_bdi_init removed - alloc_workqueue hangs with low memory */
-
-static void wb_update_bandwidth_workfn(struct work_struct *work)
-{
-	/* Stub: bw_dwork never scheduled in minimal kernel */
-}
+/* wb_update_bandwidth_workfn removed - bw_dwork never scheduled, only initialized */
 
 /* From fs-writeback.c - stub for wb dwork */
 void wb_workfn(struct work_struct *work)
@@ -78,7 +74,7 @@ int bdi_init(struct backing_dev_info *bdi)
 	spin_lock_init(&wb->work_lock);
 	INIT_LIST_HEAD(&wb->work_list);
 	INIT_DELAYED_WORK(&wb->dwork, wb_workfn);
-	INIT_DELAYED_WORK(&wb->bw_dwork, wb_update_bandwidth_workfn);
+	/* INIT_DELAYED_WORK bw_dwork removed - never scheduled */
 	fprop_local_init_percpu(&wb->completions, GFP_KERNEL);
 
 	return 0;
@@ -105,7 +101,7 @@ void bdi_unregister(struct backing_dev_info *bdi)
 		queue_delayed_work(bdi_wq, &bdi->wb.dwork, 0);
 		flush_delayed_work(&bdi->wb.dwork);
 		WARN_ON(!list_empty(&bdi->wb.work_list));
-		flush_delayed_work(&bdi->wb.bw_dwork);
+		/* flush_delayed_work bw_dwork removed - never scheduled */
 	} else {
 		spin_unlock_bh(&bdi->wb.work_lock);
 	}

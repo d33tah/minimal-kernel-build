@@ -294,8 +294,7 @@ static inline unsigned long next_tid(unsigned long tid)
 
 /* init_tid, __flush_cpu_slab inlined */
 /* slub_flush_work struct, flush_cpu_slab removed - no CPU hotplug */
-
-static DEFINE_MUTEX(flush_lock);
+/* flush_lock mutex removed - never used */
 
 /* flush_all_cpus_locked inlined into __kmem_cache_shutdown */
 /* slub_cpu_dead removed - CPU never goes offline in single-CPU kernel (~10 LOC) */

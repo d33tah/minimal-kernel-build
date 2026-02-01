@@ -74,7 +74,8 @@ static void up_console_sem(void)
 
 /* panic_in_progress inlined into console_trylock */
 
-static int console_locked, console_suspended;
+static int console_locked;
+/* console_suspended removed - never written, always 0 */
 
 /* console_cmdline array, preferred_console removed - never populated/used */
 
@@ -82,7 +83,7 @@ static int console_locked, console_suspended;
 
 /* console_msg_format, enum con_msg_format_flags removed - unused */
 
-static DEFINE_MUTEX(syslog_lock);
+/* syslog_lock removed - never used */
 
 /* CONSOLE_LOG_MAX, DROPPED_TEXT_MAX, printk_time removed - unused */
 
@@ -101,8 +102,7 @@ void console_verbose(void)
 void console_lock(void)
 {
 	down_console_sem();
-	if (console_suspended)
-		return;
+	/* console_suspended check removed - never set */
 	console_locked = 1;
 	/* console_may_schedule = 1 removed - write-only */
 }
@@ -111,10 +111,7 @@ int console_trylock(void)
 {
 	if (down_trylock_console_sem())
 		return 0;
-	if (console_suspended) {
-		up_console_sem();
-		return 0;
-	}
+	/* console_suspended check removed - never set */
 	console_locked = 1;
 	/* console_may_schedule = 0 removed - write-only */
 	return 1;
@@ -130,10 +127,7 @@ int is_console_locked(void)
 /* Simplified - printk buffer is stubbed, no console flushing needed (~15 LOC) */
 void console_unlock(void)
 {
-	if (console_suspended) {
-		up_console_sem();
-		return;
-	}
+	/* console_suspended check removed - never set */
 	/* console_may_schedule = 0 removed - write-only */
 	console_locked = 0;
 	up_console_sem();

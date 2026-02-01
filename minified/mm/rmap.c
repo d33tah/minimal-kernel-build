@@ -67,7 +67,8 @@ int __anon_vma_prepare(struct vm_area_struct *vma)
 	if (!avc)
 		goto out_enomem;
 
-	anon_vma = find_mergeable_anon_vma(vma);
+	anon_vma =
+		NULL; /* find_mergeable_anon_vma inlined - VMA merging disabled */
 	allocated = NULL;
 	if (!anon_vma) {
 		/* inlined anon_vma_alloc */

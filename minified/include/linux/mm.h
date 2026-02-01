@@ -714,7 +714,7 @@ static inline int vma_adjust(struct vm_area_struct *vma, unsigned long start,
 	return __vma_adjust(vma, start, end, pgoff, insert, NULL);
 }
 /* vma_merge made static in mmap.c - only used internally */
-extern struct anon_vma *find_mergeable_anon_vma(struct vm_area_struct *);
+/* find_mergeable_anon_vma removed - inlined into rmap.c */
 extern int __split_vma(struct mm_struct *, struct vm_area_struct *,
 	unsigned long addr, int new_below);
 extern int insert_vm_struct(struct mm_struct *, struct vm_area_struct *);

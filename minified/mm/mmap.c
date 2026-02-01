@@ -242,11 +242,7 @@ vma_merge(struct mm_struct *mm, struct vm_area_struct *prev, unsigned long addr,
 	return NULL;
 }
 
-struct anon_vma *find_mergeable_anon_vma(struct vm_area_struct *vma)
-{
-	/* VMA merging disabled - always allocate new anon_vma */
-	return NULL;
-}
+/* find_mergeable_anon_vma inlined into rmap.c - VMA merging disabled */
 
 /* mlock_future_check removed - always returned 0 */
 /* file_mmap_ok inlined into do_mmap - only called once */

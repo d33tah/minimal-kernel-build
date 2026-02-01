@@ -62,18 +62,7 @@ static inline int sigequalsets(const sigset_t *set1, const sigset_t *set2)
 
 #ifndef __HAVE_ARCH_SIG_SETOPS
 
-/* Simplified - _NSIG_WORDS is 2 on x86-32, expand macros (~17 LOC) */
-static inline void sigandsets(sigset_t *r, const sigset_t *a, const sigset_t *b)
-{
-	r->sig[1] = a->sig[1] & b->sig[1];
-	r->sig[0] = a->sig[0] & b->sig[0];
-}
-
-static inline void sigandnsets(sigset_t *r, const sigset_t *a, const sigset_t *b)
-{
-	r->sig[1] = a->sig[1] & ~b->sig[1];
-	r->sig[0] = a->sig[0] & ~b->sig[0];
-}
+/* sigandsets, sigandnsets removed - never called */
 
 /* _SIG_SET_OP and _sig_not macros removed - never used to generate functions */
 

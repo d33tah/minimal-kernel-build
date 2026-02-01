@@ -30,31 +30,6 @@ struct pipe_buf_operations {
 	/* confirm, try_steal, get callbacks removed - never invoked */
 };
 
-static inline bool pipe_empty(unsigned int head, unsigned int tail)
-{
-	return head == tail;
-}
-
-static inline unsigned int pipe_occupancy(unsigned int head, unsigned int tail)
-{
-	return head - tail;
-}
-
-static inline bool pipe_full(unsigned int head, unsigned int tail,
-			     unsigned int limit)
-{
-	return pipe_occupancy(head, tail) >= limit;
-}
-
-static inline void pipe_buf_release(struct pipe_inode_info *pipe,
-				    struct pipe_buffer *buf)
-{
-	const struct pipe_buf_operations *ops = buf->ops;
-
-	buf->ops = NULL;
-	ops->release(pipe, buf);
-}
-
-/* free_pipe_info removed - empty stub never called */
+/* pipe_empty, pipe_occupancy, pipe_full, pipe_buf_release removed - never called */
 
 #endif

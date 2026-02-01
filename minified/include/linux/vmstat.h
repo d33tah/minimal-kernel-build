@@ -96,11 +96,7 @@ static inline void mod_lruvec_page_state(struct page *page,
 }
 
 
-static inline void __dec_lruvec_page_state(struct page *page,
-					   enum node_stat_item idx)
-{
-	__mod_lruvec_page_state(page, idx, -1);
-}
+/* __dec_lruvec_page_state removed - never called */
 
 static inline void inc_lruvec_page_state(struct page *page,
 					 enum node_stat_item idx)

@@ -23,11 +23,7 @@ unsigned pagevec_lookup_range_tag(struct pagevec *pvec,
 		struct address_space *mapping, pgoff_t *index, pgoff_t end,
 		xa_mark_t tag);
 
-static inline void pagevec_init(struct pagevec *pvec)
-{
-	pvec->nr = 0;
-	pvec->percpu_pvec_drained = false;
-}
+/* pagevec_init removed - never called */
 
 static inline void pagevec_reinit(struct pagevec *pvec)
 {

@@ -7,13 +7,7 @@
 
 struct task_struct;
 
-/* Removed: print_fatal_signals - never used */
-
-static inline void copy_siginfo(kernel_siginfo_t *to,
-				const kernel_siginfo_t *from)
-{
-	memcpy(to, from, sizeof(*to));
-}
+/* Removed: print_fatal_signals, copy_siginfo - never used */
 
 static inline void clear_siginfo(kernel_siginfo_t *info)
 {
@@ -47,11 +41,7 @@ static inline void sigdelset(sigset_t *set, int _sig)
 
 #endif  
 
-/* Simplified - _NSIG_WORDS is 2 on x86-32 (~16 LOC) */
-static inline int sigisemptyset(sigset_t *set)
-{
-	return (set->sig[1] | set->sig[0]) == 0;
-}
+/* sigisemptyset removed - never called */
 
 static inline int sigequalsets(const sigset_t *set1, const sigset_t *set2)
 {

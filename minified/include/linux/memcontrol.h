@@ -60,10 +60,7 @@ static inline void mod_lruvec_kmem_state(void *p, enum node_stat_item idx,
 	mod_node_page_state(page_pgdat(page), idx, val);
 }
 
-static inline void unlock_page_lruvec_irq(struct lruvec *lruvec)
-{
-	spin_unlock_irq(&lruvec->lru_lock);
-}
+/* unlock_page_lruvec_irq removed - only irqrestore variant is used */
 
 static inline void unlock_page_lruvec_irqrestore(struct lruvec *lruvec,
 		unsigned long flags)

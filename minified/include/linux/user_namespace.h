@@ -121,10 +121,6 @@ static inline void put_user_ns(struct user_namespace *ns)
 }
 
 
-static inline bool current_in_userns(const struct user_namespace *target_ns)
-{
-	return true;
-}
-
+/* current_in_userns removed - never called */
 
 #endif  

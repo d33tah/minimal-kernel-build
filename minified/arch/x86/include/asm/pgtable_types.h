@@ -18,8 +18,7 @@
 #define _PAGE_BIT_PAT		7	 
 #define _PAGE_BIT_GLOBAL	8	 
 #define _PAGE_BIT_SOFTW1	9
-/* _PAGE_BIT_SOFTW2, _PAGE_BIT_SOFTW3, _PAGE_BIT_PAT_LARGE removed - unused */
-#define _PAGE_BIT_NX		63
+/* _PAGE_BIT_SOFTW2, _PAGE_BIT_SOFTW3, _PAGE_BIT_PAT_LARGE, _PAGE_BIT_NX removed - unused */
 #define _PAGE_BIT_SPECIAL	_PAGE_BIT_SOFTW1
 #define _PAGE_BIT_PROTNONE	_PAGE_BIT_GLOBAL
 
@@ -51,14 +50,9 @@
 
 #define _PAGE_PROTNONE	(_AT(pteval_t, 1) << _PAGE_BIT_PROTNONE)
 
- 
-#define _PAGE_CHG_MASK	(PTE_PFN_MASK | _PAGE_PCD | _PAGE_PWT |		\
-			 _PAGE_SPECIAL | _PAGE_ACCESSED | _PAGE_DIRTY |	\
-			 _PAGE_SOFT_DIRTY | _PAGE_DEVMAP | _PAGE_ENC |  \
-			 _PAGE_UFFD_WP)
-/* _HPAGE_CHG_MASK removed - unused */
+/* _PAGE_CHG_MASK, _HPAGE_CHG_MASK removed - unused */
 
- 
+
 #ifndef __ASSEMBLY__
 enum page_cache_mode {
 	_PAGE_CACHE_MODE_WB       = 0,
@@ -74,8 +68,7 @@ enum page_cache_mode {
 
 #define _PAGE_ENC		(_AT(pteval_t, sme_me_mask))
 
-#define _PAGE_CACHE_MASK	(_PAGE_PWT | _PAGE_PCD | _PAGE_PAT)
-/* _PAGE_LARGE_CACHE_MASK removed - unused */
+/* _PAGE_CACHE_MASK, _PAGE_LARGE_CACHE_MASK removed - unused */
 
 #define _PAGE_NOCACHE		(cachemode2protval(_PAGE_CACHE_MODE_UC))
 /* _PAGE_CACHE_WP removed - unused */
@@ -99,7 +92,7 @@ enum page_cache_mode {
 #define PAGE_NONE	     __pg(   0|   0|   0|___A|   0|   0|   0|___G)
 #define PAGE_SHARED	     __pg(__PP|__RW|_USR|___A|__NX|   0|   0|   0)
 #define PAGE_SHARED_EXEC     __pg(__PP|__RW|_USR|___A|   0|   0|   0|   0)
-#define PAGE_COPY_NOEXEC     __pg(__PP|   0|_USR|___A|__NX|   0|   0|   0)
+/* PAGE_COPY_NOEXEC removed - unused */
 #define PAGE_COPY_EXEC	     __pg(__PP|   0|_USR|___A|   0|   0|   0|   0)
 #define PAGE_COPY	     __pg(__PP|   0|_USR|___A|__NX|   0|   0|   0)
 #define PAGE_READONLY	     __pg(__PP|   0|_USR|___A|__NX|   0|   0|   0)
@@ -153,9 +146,9 @@ enum page_cache_mode {
 #define __S111	PAGE_SHARED_EXEC
 
  
-#define PTE_IDENT_ATTR	 0x003		 
-#define PDE_IDENT_ATTR	 0x063		 
-#define PGD_IDENT_ATTR	 0x001		 
+#define PTE_IDENT_ATTR	 0x003
+#define PDE_IDENT_ATTR	 0x063
+/* PGD_IDENT_ATTR removed - unused */
 
 # include <asm/pgtable_32_types.h>
 
@@ -198,7 +191,7 @@ static inline pgdval_t native_pgd_val(pgd_t pgd)
 typedef struct { pgd_t pgd; } p4d_t;
 
 #define P4D_SHIFT		PGDIR_SHIFT
-#define PTRS_PER_P4D		1
+/* PTRS_PER_P4D removed - unused */
 #define P4D_SIZE		(1UL << P4D_SHIFT)
 #define P4D_MASK		(~(P4D_SIZE-1))
 
@@ -217,7 +210,7 @@ static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
 #define __p4d(x)				((p4d_t) { __pgd(x) })
 
 #define pgd_page(pgd)				(p4d_page((p4d_t){ pgd }))
-#define pgd_page_vaddr(pgd)			((unsigned long)(p4d_pgtable((p4d_t){ pgd })))
+/* pgd_page_vaddr removed - unused */
 
 /* p4d_alloc_one removed - no callers */
 #define p4d_free(mm, x)				do { } while (0)

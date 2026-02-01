@@ -11,12 +11,8 @@
 #define SETUP_INDIRECT			(1<<31)
 #define SETUP_TYPE_MAX			(SETUP_INDIRECT | SETUP_CC_BLOB)
 
- 
-#define RAMDISK_IMAGE_START_MASK	0x07FF
-#define RAMDISK_PROMPT_FLAG		0x8000
-#define RAMDISK_LOAD_FLAG		0x4000
+/* RAMDISK_* macros removed - never used */
 
- 
 #define LOADED_HIGH	(1<<0)
 #define KASLR_FLAG	(1<<1)
 #define CAN_USE_HEAP	(1<<7)

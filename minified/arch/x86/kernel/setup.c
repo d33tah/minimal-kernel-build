@@ -32,17 +32,7 @@ static inline bool efi_enabled(int feature)
 #include <asm/e820/api.h>
 #include <asm/tlbflush.h>
 #include <asm/io_apic.h>
-/* --- 2025-12-07 20:48 --- Inlined kasan.h */
-#include <linux/const.h>
-#define KASAN_SHADOW_OFFSET _AC(CONFIG_KASAN_SHADOW_OFFSET, UL)
-#define KASAN_SHADOW_SCALE_SHIFT 3
-#define KASAN_SHADOW_START     \
-	(KASAN_SHADOW_OFFSET + \
-	 ((-1UL << __VIRTUAL_MASK_SHIFT) >> KASAN_SHADOW_SCALE_SHIFT))
-#define KASAN_SHADOW_END      \
-	(KASAN_SHADOW_START + \
-	 (1ULL << (__VIRTUAL_MASK_SHIFT - KASAN_SHADOW_SCALE_SHIFT)))
-/* mce.h removed - header is empty */
+/* kasan.h, mce.h removed - KASAN macros never used */
 #include <asm/memtype.h>
 /* mtrr.h removed - header is empty */
 #include <asm/realmode.h>
@@ -99,11 +89,7 @@ struct screen_info screen_info;
 
 extern int root_mountflags;
 
-/* saved_video_mode removed - set but never read */
-
-#define RAMDISK_IMAGE_START_MASK 0x07FF
-#define RAMDISK_PROMPT_FLAG 0x8000
-#define RAMDISK_LOAD_FLAG 0x4000
+/* saved_video_mode, RAMDISK_* macros removed - never used */
 
 static char __initdata command_line[COMMAND_LINE_SIZE];
 

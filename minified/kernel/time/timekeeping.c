@@ -204,13 +204,7 @@ ktime_t ktime_get(void)
 /* ktime_get_seconds, ktime_get_real_seconds removed - never called (~20 LOC) */
 
 /* __timekeeping_set_tai_offset removed - unused after second_overflow removal */
-
-/* Stub: minimal kernel doesn't switch clock sources at runtime */
-int timekeeping_notify(struct clocksource *clock)
-{
-	return 0;
-}
-
+/* timekeeping_notify removed - stub inlined into clocksource_select */
 /* timekeeping_valid_for_hres removed - never called */
 /* read_persistent_clock64 provided by arch/x86/kernel/rtc.c */
 /* read_persistent_wall_and_boot_offset removed - never called */

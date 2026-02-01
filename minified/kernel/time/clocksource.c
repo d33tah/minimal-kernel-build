@@ -101,7 +101,8 @@ static void __clocksource_select(bool skipcur)
 		return;
 
 	/* override_name was always empty - override logic removed */
-	if (curr_clocksource != best && !timekeeping_notify(best)) {
+	/* timekeeping_notify call inlined - always returned 0 (success) */
+	if (curr_clocksource != best) {
 		curr_clocksource = best;
 	}
 }

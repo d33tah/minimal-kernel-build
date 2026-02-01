@@ -84,7 +84,6 @@ static inline int clocksource_register_khz(struct clocksource *cs, u32 khz)
 
 
 extern void clocksource_arch_init(struct clocksource *cs);
-
-extern int timekeeping_notify(struct clocksource *clock);
+/* timekeeping_notify declaration removed - inlined */
 
 #endif

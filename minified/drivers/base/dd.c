@@ -94,13 +94,11 @@ static void driver_deferred_probe_trigger(void)
 	queue_work(system_unbound_wq, &deferred_probe_work);
 }
 
-int driver_deferred_probe_timeout;
+/* driver_deferred_probe_timeout removed - write-only variable */
 
 static void deferred_probe_timeout_work_func(struct work_struct *work)
 {
-	driver_deferred_probe_timeout = 0;
 	driver_deferred_probe_trigger();
-	/* flush_work removed - stub returning false */
 }
 static DECLARE_DELAYED_WORK(deferred_probe_timeout_work,
 			    deferred_probe_timeout_work_func);

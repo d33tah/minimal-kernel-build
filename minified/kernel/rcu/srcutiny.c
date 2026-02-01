@@ -9,7 +9,7 @@
 
 #include "rcu.h"
 
-int rcu_scheduler_active __read_mostly;
+/* rcu_scheduler_active removed - write-only variable */
 static LIST_HEAD(srcu_boot_list);
 static bool srcu_init_done;
 
@@ -102,7 +102,7 @@ unsigned long get_state_synchronize_srcu(struct srcu_struct *ssp)
 
 void __init rcu_scheduler_starting(void)
 {
-	rcu_scheduler_active = RCU_SCHEDULER_RUNNING;
+	/* rcu_scheduler_active assignment removed - never read */
 }
 
 void __init srcu_init(void)

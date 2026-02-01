@@ -33,8 +33,7 @@
 
 static int __init rcu_set_runtime_mode(void)
 {
-	rcu_scheduler_active = RCU_SCHEDULER_RUNNING;
-	/* kfree_rcu_scheduler_running, rcu_test_sync_prims removed - empty stubs */
+	/* rcu_scheduler_active removed - write-only variable */
 	return 0;
 }
 core_initcall(rcu_set_runtime_mode);

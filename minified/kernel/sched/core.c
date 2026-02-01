@@ -38,7 +38,7 @@ extern void sched_init(void);
 
 DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
 
-__read_mostly int scheduler_running;
+/* scheduler_running removed - write-only variable */
 
 void raw_spin_rq_lock_nested(struct rq *rq, int subclass)
 {
@@ -962,8 +962,7 @@ void __init sched_init(void)
 	init_idle(current, smp_processor_id());
 
 	calc_load_update = jiffies + LOAD_FREQ;
-
-	scheduler_running = 1;
+	/* scheduler_running assignment removed - never read */
 }
 
 const int sched_prio_to_weight[40] = {

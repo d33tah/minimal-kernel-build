@@ -78,7 +78,7 @@ struct rq;
 #define TASK_ON_RQ_QUEUED	1
 #define TASK_ON_RQ_MIGRATING	2
 
-extern __read_mostly int scheduler_running;
+/* scheduler_running removed - write-only variable */
 extern unsigned long calc_load_update;
 /* calc_load_tasks, sysctl_sched_child_runs_first removed - never used */
 /* calc_global_load_tick, calc_load_fold_active removed - never called */

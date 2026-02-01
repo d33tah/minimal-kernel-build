@@ -4,9 +4,9 @@
 #include <linux/rcupdate.h>
 struct rcu_sync {
 	int gp_state;
-	int gp_count;
+	/* gp_count removed - only used for WARN check, always 0 */
 	wait_queue_head_t gp_wait;
-	struct rcu_head cb_head;
+	/* cb_head removed - rcu_sync_enter never called */
 };
 static inline bool rcu_sync_is_idle(struct rcu_sync *rsp)
 {

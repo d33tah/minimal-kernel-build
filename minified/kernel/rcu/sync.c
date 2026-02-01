@@ -19,6 +19,6 @@ void rcu_sync_init(struct rcu_sync *rsp)
 /* Simplified: since rcu_sync_enter/exit are never called, gp_state is always GP_IDLE */
 void rcu_sync_dtor(struct rcu_sync *rsp)
 {
-	WARN_ON_ONCE(READ_ONCE(rsp->gp_count));
+	/* gp_count check removed - field removed, always 0 */
 	WARN_ON_ONCE(rsp->gp_state != GP_IDLE);
 }

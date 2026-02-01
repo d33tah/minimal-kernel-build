@@ -39,10 +39,7 @@ struct atomic_notifier_head {
 #ifdef __KERNEL__
 
 /* atomic_notifier_chain_register, blocking_notifier_chain_register removed - never called */
-
-
-extern int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
-		unsigned long val, void *v);
+/* atomic_notifier_call_chain removed - no registrations, always returns NOTIFY_DONE */
 /* blocking_notifier_call_chain, raw_notifier_call_chain removed - never called */
 
 #define NOTIFY_DONE		0x0000

@@ -12,7 +12,7 @@ int debug_locks_silent __read_mostly;
 #include <linux/vt_kern.h>
 #include <linux/reboot.h>
 #include <linux/delay.h>
-extern struct atomic_notifier_head panic_notifier_list;
+/* panic_notifier_list extern removed - no registrations */
 #include <linux/sched.h>
 
 #include <linux/init.h>
@@ -30,7 +30,7 @@ int panic_on_warn __read_mostly;
 
 int panic_timeout = CONFIG_PANIC_TIMEOUT;
 
-ATOMIC_NOTIFIER_HEAD(panic_notifier_list);
+/* ATOMIC_NOTIFIER_HEAD(panic_notifier_list) removed - never registered into */
 
 /* panic_blink removed - no_blink always returned 0 */
 
@@ -78,7 +78,7 @@ void panic(const char *fmt, ...)
 
 	pr_emerg("Kernel panic - not syncing: %s\n", buf);
 
-	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
+	/* atomic_notifier_call_chain removed - no registrations, always returns NOTIFY_DONE */
 
 	/* kmsg_dump call removed - was empty */
 
@@ -162,13 +162,7 @@ void emergency_restart(void)
 		halt();
 }
 
-/* Merged from kernel/notifier.c */
-int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
-			       unsigned long val, void *v)
-{
-	return NOTIFY_DONE; /* No registrations, chain is always empty */
-}
-NOKPROBE_SYMBOL(atomic_notifier_call_chain);
+/* atomic_notifier_call_chain removed - no registrations, always returns NOTIFY_DONE */
 
 int notrace notify_die(enum die_val val, const char *str, struct pt_regs *regs,
 		       long err, int trap, int sig)

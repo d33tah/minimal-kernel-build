@@ -11,7 +11,7 @@ static inline bool efi_enabled(int feature)
 
 #include <linux/initrd.h>
 #include <linux/memblock.h>
-extern struct atomic_notifier_head panic_notifier_list;
+/* panic_notifier_list extern removed - never registered into */
 #include <linux/pci.h>
 #include <linux/root_dev.h>
 #include <linux/hugetlb.h>

@@ -75,7 +75,6 @@ extern struct x86_init_ops x86_init;
 extern struct x86_platform_ops x86_platform;
 
 /* x86_early_init_platform_quirks removed - inlined into head32.c */
-extern void x86_init_noop(void);
-/* x86_init_uint_noop, bool_x86_init_noop, x86_op_int_noop, x86_pnpbios_disabled removed - never called */
+/* x86_init_noop, x86_init_uint_noop, bool_x86_init_noop, x86_op_int_noop, x86_pnpbios_disabled removed - never called */
 
 #endif

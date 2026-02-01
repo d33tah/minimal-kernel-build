@@ -20,9 +20,7 @@
 #include <asm/mach_traps.h>
 /* native_create_pci_msi_domain removed - never called */
 
-void x86_init_noop(void)
-{
-}
+/* x86_init_noop removed - never called */
 /* x86_init_uint_noop, bool_x86_init_noop, x86_op_int_noop, etc removed - never used */
 /* x86_wallclock_init removed - never called */
 

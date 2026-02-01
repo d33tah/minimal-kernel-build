@@ -63,10 +63,10 @@ static struct uni_pagedir *vgacon_uni_pagedir;
 /* vgacon_refcount removed - only inc/dec, never read */
 
 static unsigned long vga_vram_base __read_mostly;
-static unsigned long vga_vram_end __read_mostly;
+/* vga_vram_end removed - write-only, never read */
 static unsigned int vga_vram_size __read_mostly;
 static u16 vga_video_port_reg __read_mostly;
-static u16 vga_video_port_val __read_mostly;
+/* vga_video_port_val removed - write-only, never read */
 static unsigned int vga_video_num_columns;
 static unsigned int vga_video_num_lines;
 static bool vga_can_do_color;
@@ -148,7 +148,7 @@ no_vga:
 		vga_can_do_color = true;
 		vga_vram_base = 0xb8000;
 		vga_video_port_reg = VGA_CRT_IC;
-		vga_video_port_val = VGA_CRT_DC;
+		/* vga_video_port_val removed */
 		vga_vram_size = 0x8000;
 		vga_video_type = VIDEO_TYPE_VGAC;
 		display_desc = "VGA+";
@@ -170,7 +170,7 @@ no_vga:
 	}
 
 	vga_vram_base = VGA_MAP_MEM(vga_vram_base, vga_vram_size);
-	vga_vram_end = vga_vram_base + vga_vram_size;
+	/* vga_vram_end assignment removed - variable was never read */
 
 	/* VRAM read/write test removed - QEMU VRAM always works (~18 LOC) */
 

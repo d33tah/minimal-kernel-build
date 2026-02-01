@@ -9,13 +9,7 @@
 
 typedef struct { DECLARE_BITMAP(bits, MAX_NUMNODES); } nodemask_t;
 
-#define node_set(node, dst) __node_set((node), &(dst))
-static __always_inline void __node_set(int node, volatile nodemask_t *dstp)
-{
-	set_bit(node, dstp->bits);
-}
-
-/* node_isset removed - unused */
+/* node_set, __node_set, node_isset removed - unused */
 
 /* node_test_and_set, nodes_and, nodes_or, nodes_andnot, nodes_equal,
  * nodes_intersects, nodes_subset, nodes_empty removed - unused */

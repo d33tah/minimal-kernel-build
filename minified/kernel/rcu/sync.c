@@ -16,21 +16,9 @@ void rcu_sync_init(struct rcu_sync *rsp)
 
 /* rcu_sync_exit removed - never called */
 
+/* Simplified: since rcu_sync_enter/exit are never called, gp_state is always GP_IDLE */
 void rcu_sync_dtor(struct rcu_sync *rsp)
 {
-	int gp_state;
-
 	WARN_ON_ONCE(READ_ONCE(rsp->gp_count));
-	WARN_ON_ONCE(READ_ONCE(rsp->gp_state) == GP_PASSED);
-
-	spin_lock_irq(&rsp->rss_lock);
-	if (rsp->gp_state == GP_REPLAY)
-		WRITE_ONCE(rsp->gp_state, GP_EXIT);
-	gp_state = rsp->gp_state;
-	spin_unlock_irq(&rsp->rss_lock);
-
-	if (gp_state != GP_IDLE) {
-		rcu_barrier();
-		WARN_ON_ONCE(rsp->gp_state != GP_IDLE);
-	}
+	WARN_ON_ONCE(rsp->gp_state != GP_IDLE);
 }

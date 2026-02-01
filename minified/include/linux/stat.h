@@ -22,8 +22,7 @@
 #define S_ISFIFO(m)	(((m) & S_IFMT) == S_IFIFO)
 #define S_ISSOCK(m)	(((m) & S_IFMT) == S_IFSOCK)
 #define S_IRWXU 00700
-#define S_IRUSR 00400
-#define S_IWUSR 00200
+/* S_IRUSR, S_IWUSR removed - unused */
 #define S_IXUSR 00100
 #define S_IRWXG 00070
 /* S_IRGRP, S_IWGRP removed - never used */

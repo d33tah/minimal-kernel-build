@@ -40,7 +40,7 @@ extern struct card_info video_cards[], video_cards_end[];
 
 extern int adapter;
 extern int force_x, force_y;
-extern int do_restore;
+/* do_restore removed - never read */
 extern int graphic_mode;
 
 /* in_idx, out_idx removed - never called */

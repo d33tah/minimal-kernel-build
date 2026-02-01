@@ -42,10 +42,7 @@ struct screen_info {
 	__u8  _reserved[2];
 } __attribute__((packed));
 
-#define VIDEO_TYPE_MDA		0x10
-#define VIDEO_TYPE_CGA		0x11
-#define VIDEO_TYPE_EGAM		0x20
-#define VIDEO_TYPE_EGAC		0x21
+/* VIDEO_TYPE_MDA, VIDEO_TYPE_CGA, VIDEO_TYPE_EGAM, VIDEO_TYPE_EGAC removed - never used */
 #define VIDEO_TYPE_VGAC		0x22
 #define VIDEO_TYPE_VLFB		0x23
 #define VIDEO_TYPE_EFI		0x70

@@ -29,10 +29,7 @@ static inline void *kmap_local_page(struct page *page)
 	return page_address(page);
 }
 
-static inline void *kmap_local_folio(struct folio *folio, size_t offset)
-{
-	return page_address(&folio->page) + offset;
-}
+/* kmap_local_folio removed - never called (only kmap_local_page used) */
 
 static inline void __kunmap_local(void *addr)
 {
@@ -63,29 +60,8 @@ do {								\
 	__kunmap_local(__addr);					\
 } while (0)
 
-#ifndef clear_user_highpage
-static inline void clear_user_highpage(struct page *page, unsigned long vaddr)
-{
-	void *addr = kmap_local_page(page);
-	clear_user_page(addr, vaddr, page);
-	kunmap_local(addr);
-}
-#endif
-
-#ifndef __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE_MOVABLE
-static inline struct page *
-alloc_zeroed_user_highpage_movable(struct vm_area_struct *vma,
-				   unsigned long vaddr)
-{
-	struct page *page = alloc_page_vma(GFP_HIGHUSER_MOVABLE, vma, vaddr);
-
-	if (page)
-		clear_user_highpage(page, vaddr);
-
-	return page;
-}
-#endif
-
+/* clear_user_highpage, alloc_zeroed_user_highpage_movable removed -
+   x86 defines __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE_MOVABLE so generic versions unused */
 
 static inline void zero_user_segments(struct page *page,
 		unsigned start1, unsigned end1,

@@ -39,7 +39,7 @@ unsigned long oops_begin(void)
 	int cpu;
 	unsigned long flags;
 
-	oops_enter();
+	debug_locks_off(); /* oops_enter inlined */
 
 	raw_local_irq_save(flags);
 	cpu = smp_processor_id();
@@ -69,7 +69,7 @@ void oops_end(unsigned long flags, struct pt_regs *regs, int signr)
 
 		arch_spin_unlock(&die_lock);
 	raw_local_irq_restore(flags);
-	oops_exit();
+	/* oops_exit was empty, removed */
 
 	__show_regs(&exec_summary_regs, SHOW_REGS_ALL, KERN_DEFAULT);
 

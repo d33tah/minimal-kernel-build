@@ -115,16 +115,7 @@ void add_taint(unsigned flag, enum lockdep_ok lockdep_ok)
 }
 
 /* spin_msec, do_oops_enter_exit removed - pause_on_oops always 0 */
-
-void oops_enter(void)
-{
-	debug_locks_off();
-}
-
-void oops_exit(void)
-{
-	/* kmsg_dump call removed - was empty */
-}
+/* oops_enter, oops_exit inlined into dumpstack.c - single caller */
 
 /* Merged from lib/debug_locks.c */
 int debug_locks_off(void)

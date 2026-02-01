@@ -10,8 +10,7 @@ struct pt_regs;
 __printf(1, 2)
 void panic(const char *fmt, ...) __noreturn __cold;
 /* nmi_panic removed - never called */
-extern void oops_enter(void);
-extern void oops_exit(void);
+/* oops_enter, oops_exit inlined into dumpstack.c */
 /* Removed: oops_may_print - never called */
 
 /* panic_timeout, panic_cpu externs removed - only used in panic.c */

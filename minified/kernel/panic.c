@@ -6,7 +6,7 @@
 
 /* Merged from lib/debug_locks.c */
 int debug_locks __read_mostly = 1;
-int debug_locks_silent __read_mostly;
+/* debug_locks_silent removed - never set to non-zero */
 /* kmsg_dump removed - was empty inline stub */
 #include <linux/notifier.h>
 #include <linux/vt_kern.h>
@@ -117,10 +117,9 @@ void add_taint(unsigned flag, enum lockdep_ok lockdep_ok)
 int debug_locks_off(void)
 {
 	if (debug_locks && __debug_locks_off()) {
-		if (!debug_locks_silent) {
-			console_verbose();
-			return 1;
-		}
+		/* debug_locks_silent check removed - always 0 */
+		console_verbose();
+		return 1;
 	}
 	return 0;
 }

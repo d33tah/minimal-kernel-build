@@ -99,11 +99,10 @@ struct vc_data {
 
 struct vc {
 	struct vc_data *d;
-	struct work_struct SAK_work;
+	/* SAK_work removed - work was initialized but never scheduled */
 };
 
 extern struct vc vc_cons [MAX_NR_CONSOLES];
-/* vc_SAK moved to static in vt.c - work is initialized but never scheduled */
 
 #define CUR_SIZE(c)		 ((c) & 0x00000f)
 # define CUR_NONE			       1

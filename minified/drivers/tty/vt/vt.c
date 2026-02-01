@@ -27,11 +27,7 @@
 #include <linux/bitops.h>
 /* notifier.h removed - notifiers not used */
 
-/* vc_SAK - stub for SAK work, never actually scheduled.
-   Inlined from vt_ioctl.c to allow removal of that file */
-static void vc_SAK(struct work_struct *work)
-{
-}
+/* vc_SAK removed - work was initialized but never scheduled */
 #include <linux/device.h>
 /* io.h removed - I/O port functions not used */
 #include <linux/uaccess.h>
@@ -350,7 +346,7 @@ int vc_allocate(unsigned int currcons)
 	vc_cons[currcons].d = vc;
 	tty_port_init(&vc->port);
 	vc->port.ops = &vc_port_ops;
-	INIT_WORK(&vc_cons[currcons].SAK_work, vc_SAK);
+	/* INIT_WORK SAK_work removed - never scheduled */
 
 	visual_init(vc, currcons, 1);
 
@@ -843,7 +839,7 @@ static int __init con_init(void)
 	for (currcons = 0; currcons < MIN_NR_CONSOLES; currcons++) {
 		vc_cons[currcons].d = vc =
 			kzalloc(sizeof(struct vc_data), GFP_NOWAIT);
-		INIT_WORK(&vc_cons[currcons].SAK_work, vc_SAK);
+		/* INIT_WORK SAK_work removed - never scheduled */
 		tty_port_init(&vc->port);
 		visual_init(vc, currcons, 1);
 

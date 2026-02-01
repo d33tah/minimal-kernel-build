@@ -28,8 +28,9 @@ static inline void set_mnt_shared(struct mount *mnt)
 	mnt->mnt.mnt_flags &= ~MNT_SHARED_MASK;
 	mnt->mnt.mnt_flags |= MNT_SHARED;
 }
-int mnt_get_count(struct mount *mnt);
-void mnt_set_mountpoint(struct mount *, struct mountpoint *, struct mount *);
+static int mnt_get_count(struct mount *mnt);
+static void mnt_set_mountpoint(struct mount *, struct mountpoint *,
+			       struct mount *);
 /* end pnode.h */
 #include "internal.h"
 
@@ -97,7 +98,7 @@ static inline void mnt_add_count(struct mount *mnt, int n)
 	preempt_enable();
 }
 
-int mnt_get_count(struct mount *mnt)
+static int mnt_get_count(struct mount *mnt)
 {
 	return mnt->mnt_count;
 }
@@ -383,8 +384,8 @@ static struct mountpoint *unhash_mnt(struct mount *mnt)
 
 /* umount_mnt inlined into do_umount - put_mountpoint(unhash_mnt(mnt)) */
 
-void mnt_set_mountpoint(struct mount *mnt, struct mountpoint *mp,
-			struct mount *child_mnt)
+static void mnt_set_mountpoint(struct mount *mnt, struct mountpoint *mp,
+			       struct mount *child_mnt)
 {
 	mp->m_count++;
 	mnt_add_count(mnt, 1);

@@ -79,18 +79,7 @@ static inline unsigned long _msecs_to_jiffies(const unsigned int m)
 {
 	return (m + (MSEC_PER_SEC / HZ) - 1) / (MSEC_PER_SEC / HZ);
 }
-static __always_inline unsigned long msecs_to_jiffies(const unsigned int m)
-{
-	if (__builtin_constant_p(m)) {
-		if ((int)m < 0)
-			return MAX_JIFFY_OFFSET;
-		return _msecs_to_jiffies(m);
-	} else {
-		return __msecs_to_jiffies(m);
-	}
-}
-
-/* __usecs_to_jiffies, usecs_to_jiffies removed - never called */
+/* msecs_to_jiffies, __usecs_to_jiffies, usecs_to_jiffies removed - never called */
 /* timespec64_to_jiffies, nsecs_to_jiffies64, nsecs_to_jiffies removed - never called */
 
 #endif

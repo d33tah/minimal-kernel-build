@@ -189,10 +189,7 @@ static void do_tty_hangup(struct work_struct *work)
 	tty_unlock(tty);
 }
 
-static int tty_hung_up_p(struct file *filp)
-{
-	return (filp && filp->f_op == &hung_up_tty_fops);
-}
+/* tty_hung_up_p inlined into tty_open - single caller */
 
 /* Stub: init only writes to console, never reads */
 static ssize_t tty_read(struct kiocb *iocb, struct iov_iter *to)
@@ -714,7 +711,8 @@ retry_open:
 
 		schedule();
 
-		if (tty_hung_up_p(filp))
+		/* tty_hung_up_p inlined */
+		if (filp && filp->f_op == &hung_up_tty_fops)
 			filp->f_op = &tty_fops;
 		goto retry_open;
 	}

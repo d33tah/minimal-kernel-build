@@ -21,8 +21,7 @@ struct resource {
 #define IORESOURCE_MEM		0x00000200
 
 /* IORESOURCE_MUXED removed - unused */
-
-#define IORESOURCE_EXT_TYPE_BITS 0x01000000
+/* IORESOURCE_EXT_TYPE_BITS removed - unused */
 #define IORESOURCE_SYSRAM	0x01000000
 
 #define IORESOURCE_BUSY		0x80000000	 

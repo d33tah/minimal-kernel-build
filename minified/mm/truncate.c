@@ -227,16 +227,7 @@ void truncate_inode_pages_final(struct address_space *mapping)
 
 /* invalidate_mapping_pagevec, invalidate_mapping_pages removed - never called */
 /* invalidate_inode_pages2_range removed - never called (~82 LOC) */
-
-static void truncate_pagecache(struct inode *inode, loff_t newsize)
-{
-	struct address_space *mapping = inode->i_mapping;
-	loff_t holebegin = round_up(newsize, PAGE_SIZE);
-
-	unmap_mapping_range(mapping, holebegin, 0, 1);
-	truncate_inode_pages(mapping, newsize);
-	unmap_mapping_range(mapping, holebegin, 0, 1);
-}
+/* truncate_pagecache inlined into truncate_setsize - single caller */
 
 static void pagecache_isize_extended(struct inode *inode, loff_t from,
 				     loff_t to)
@@ -269,9 +260,14 @@ static void pagecache_isize_extended(struct inode *inode, loff_t from,
 void truncate_setsize(struct inode *inode, loff_t newsize)
 {
 	loff_t oldsize = inode->i_size;
+	struct address_space *mapping = inode->i_mapping;
+	loff_t holebegin = round_up(newsize, PAGE_SIZE);
 
 	i_size_write(inode, newsize);
 	if (newsize > oldsize)
 		pagecache_isize_extended(inode, oldsize, newsize);
-	truncate_pagecache(inode, newsize);
+	/* truncate_pagecache inlined */
+	unmap_mapping_range(mapping, holebegin, 0, 1);
+	truncate_inode_pages(mapping, newsize);
+	unmap_mapping_range(mapping, holebegin, 0, 1);
 }

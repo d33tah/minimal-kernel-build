@@ -41,16 +41,7 @@ const struct sched_class fair_sched_class;
 #define for_each_leaf_cfs_rq_safe(rq, cfs_rq, pos) \
 	for (cfs_rq = &rq->cfs, pos = NULL; cfs_rq; cfs_rq = pos)
 
-static inline u64 max_vruntime(u64 max_vruntime, u64 vruntime)
-{
-	s64 delta = (s64)(vruntime - max_vruntime);
-	if (delta > 0)
-		max_vruntime = vruntime;
-
-	return max_vruntime;
-}
-
-/* min_vruntime, entity_before inlined into callers */
+/* max_vruntime, min_vruntime, entity_before inlined into callers */
 
 #define __node_2_se(node) rb_entry((node), struct sched_entity, run_node)
 
@@ -58,9 +49,12 @@ static inline u64 max_vruntime(u64 max_vruntime, u64 vruntime)
 static void update_min_vruntime(struct cfs_rq *cfs_rq)
 {
 	struct sched_entity *curr = cfs_rq->curr;
-	if (curr && curr->on_rq)
-		cfs_rq->min_vruntime =
-			max_vruntime(cfs_rq->min_vruntime, curr->vruntime);
+	/* max_vruntime inlined */
+	if (curr && curr->on_rq) {
+		s64 delta = (s64)(curr->vruntime - cfs_rq->min_vruntime);
+		if (delta > 0)
+			cfs_rq->min_vruntime = curr->vruntime;
+	}
 }
 
 static inline bool __entity_less(struct rb_node *a, const struct rb_node *b)

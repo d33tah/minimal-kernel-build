@@ -23,11 +23,7 @@
 #include "mount.h"
 #define IS_MNT_SHARED(m) ((m)->mnt.mnt_flags & MNT_SHARED)
 #define IS_MNT_LOCKED(m) ((m)->mnt.mnt_flags & MNT_LOCKED)
-static inline void set_mnt_shared(struct mount *mnt)
-{
-	mnt->mnt.mnt_flags &= ~MNT_SHARED_MASK;
-	mnt->mnt.mnt_flags |= MNT_SHARED;
-}
+/* set_mnt_shared inlined into attach_recursive_mnt - single caller */
 static int mnt_get_count(struct mount *mnt);
 static void mnt_set_mountpoint(struct mount *, struct mountpoint *,
 			       struct mount *);
@@ -356,10 +352,7 @@ static void put_mountpoint(struct mountpoint *mp)
 	__put_mountpoint(mp, &ex_mountpoints);
 }
 
-static inline int check_mnt(struct mount *mnt)
-{
-	return mnt->mnt_ns == current->nsproxy->mnt_ns;
-}
+/* check_mnt inlined into path_mount - single caller */
 
 static void touch_mnt_namespace(struct mnt_namespace *ns)
 {
@@ -761,8 +754,11 @@ static int attach_recursive_mnt(struct mount *source_mnt,
 			goto out;
 		/* propagate_mnt call removed - always returns 0 */
 		lock_mount_hash();
-		for (p = source_mnt; p; p = next_mnt(p, source_mnt))
-			set_mnt_shared(p);
+		for (p = source_mnt; p; p = next_mnt(p, source_mnt)) {
+			/* set_mnt_shared inlined */
+			p->mnt.mnt_flags &= ~MNT_SHARED_MASK;
+			p->mnt.mnt_flags |= MNT_SHARED;
+		}
 	} else {
 		lock_mount_hash();
 	}
@@ -986,7 +982,10 @@ int path_mount(const char *dev_name, struct path *path, const char *type_page,
 					int m_flags = mnt_flags &
 						      ~MNT_INTERNAL_FLAGS;
 
-					if (unlikely(!check_mnt(parent))) {
+					/* check_mnt inlined */
+					if (unlikely(
+						    parent->mnt_ns !=
+						    current->nsproxy->mnt_ns)) {
 						if (!(m_flags & MNT_SHRINKABLE))
 							err = -EINVAL;
 						else if (!parent->mnt_ns)

@@ -238,13 +238,7 @@ void kobject_put(struct kobject *kobj)
 
 /* dynamic_kobj_release, dynamic_kobj_ktype, kobject_create,
    kobject_create_and_add removed - never called */
-
-static void kset_init(struct kset *k)
-{
-	kobject_init_internal(&k->kobj);
-	INIT_LIST_HEAD(&k->list);
-	spin_lock_init(&k->list_lock);
-}
+/* kset_init inlined into kset_register - single caller */
 
 static ssize_t kobj_attr_show(struct kobject *kobj, struct attribute *attr,
 			      char *buf)
@@ -282,7 +276,11 @@ int kset_register(struct kset *k)
 	if (!k)
 		return -EINVAL;
 
-	kset_init(k);
+	/* kset_init inlined */
+	kobject_init_internal(&k->kobj);
+	INIT_LIST_HEAD(&k->list);
+	spin_lock_init(&k->list_lock);
+
 	err = kobject_add_internal(&k->kobj);
 	if (err)
 		return err;

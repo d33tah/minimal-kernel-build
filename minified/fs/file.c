@@ -159,11 +159,7 @@ repeat:
 	return expanded;
 }
 
-static inline void __clear_open_fd(unsigned int fd, struct fdtable *fdt)
-{
-	__clear_bit(fd, fdt->open_fds);
-	__clear_bit(fd / BITS_PER_LONG, fdt->full_fds_bits);
-}
+/* __clear_open_fd inlined into dup_fd - single caller */
 
 static unsigned int sane_fdtable_size(struct fdtable *fdt, unsigned int max_fds)
 {
@@ -243,7 +239,10 @@ struct files_struct *dup_fd(struct files_struct *oldf, unsigned int max_fds,
 		if (f) {
 			get_file(f);
 		} else {
-			__clear_open_fd(open_files - i, new_fdt);
+			/* __clear_open_fd inlined */
+			unsigned int fd = open_files - i;
+			__clear_bit(fd, new_fdt->open_fds);
+			__clear_bit(fd / BITS_PER_LONG, new_fdt->full_fds_bits);
 		}
 		rcu_assign_pointer(*new_fds++, f);
 	}

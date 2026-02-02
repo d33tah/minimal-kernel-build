@@ -397,19 +397,12 @@ first_zones_zonelist(struct zonelist *zonelist, enum zone_type highest_zoneidx,
 	return next_zones_zonelist(zonelist->_zonerefs, highest_zoneidx, nodes);
 }
 
-#define for_each_zone_zonelist_nodemask(zone, z, zlist, highidx, nodemask) \
-	for (z = first_zones_zonelist(zlist, highidx, nodemask),           \
-	    zone = zonelist_zone(z);                                       \
-	     zone; z = next_zones_zonelist(++z, highidx, nodemask),        \
-	    zone = zonelist_zone(z))
-
 #define for_next_zone_zonelist_nodemask(zone, z, highidx, nodemask) \
 	for (zone = z->zone; zone;                                  \
 	     z = next_zones_zonelist(++z, highidx, nodemask),       \
 	    zone = zonelist_zone(z))
 
-#define for_each_zone_zonelist(zone, z, zlist, highidx) \
-	for_each_zone_zonelist_nodemask(zone, z, zlist, highidx, NULL)
+/* for_each_zone_zonelist_nodemask, for_each_zone_zonelist removed - unused */
 
 /* pfn_to_nid removed - unused */
 #define sparse_init() \

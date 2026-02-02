@@ -34,7 +34,7 @@ unsigned int __read_mostly tsc_khz;
 
 #define KHZ 1000
 
-static int __read_mostly tsc_unstable;
+/* tsc_unstable removed - mark_tsc_unstable was only setter, now removed */
 /* tsc_early_khz removed - never written, check was dead code */
 
 static DEFINE_STATIC_KEY_FALSE(__use_tsc);
@@ -319,15 +319,13 @@ static int __init init_tsc_clocksource(void)
 	if (!boot_cpu_has(X86_FEATURE_TSC) || !tsc_khz)
 		return 0;
 
-	if (tsc_unstable)
-		goto unreg;
+	/* tsc_unstable check removed - always 0 since mark_tsc_unstable removed */
 
 	if (boot_cpu_has(X86_FEATURE_NONSTOP_TSC_S3))
 		clocksource_tsc.flags |= CLOCK_SOURCE_SUSPEND_NONSTOP;
 
 	if (boot_cpu_has(X86_FEATURE_TSC_KNOWN_FREQ)) {
 		clocksource_register_khz(&clocksource_tsc, tsc_khz);
-unreg:
 		clocksource_unregister(&clocksource_tsc_early);
 		return 0;
 	}

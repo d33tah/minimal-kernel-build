@@ -30,13 +30,7 @@
 #define MODULE_PARAM_PREFIX "rcupdate."
 
 /* rcu_test_sync_prims removed - PROVE_RCU disabled */
-
-static int __init rcu_set_runtime_mode(void)
-{
-	/* rcu_scheduler_active removed - write-only variable */
-	return 0;
-}
-core_initcall(rcu_set_runtime_mode);
+/* rcu_set_runtime_mode removed - was empty stub (rcu_scheduler_active was write-only) */
 
 void wakeme_after_rcu(struct rcu_head *head)
 {

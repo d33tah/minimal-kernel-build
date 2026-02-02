@@ -76,7 +76,7 @@ DEFINE_SCHED_CLASS(rt) = {
 /* Merged from deadline.c */
 void init_dl_rq(struct dl_rq *dl_rq)
 {
-	dl_rq->root = RB_ROOT_CACHED;
+	/* All fields removed - dl_rq never read */
 }
 static void enqueue_task_dl(struct rq *rq, struct task_struct *p, int flags)
 {

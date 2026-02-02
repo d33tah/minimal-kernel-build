@@ -151,11 +151,7 @@ struct rt_bandwidth {
 /* __dl_clear_params removed - empty stub */
 /* struct dl_bandwidth removed - unused */
 
-struct dl_bw {
-	raw_spinlock_t		lock;
-	u64			bw;
-	u64			total_bw;
-};
+/* struct dl_bw removed - dl_rq never read, only initialized */
 
 /* init_dl_bw, sched_dl_global_validate, sched_dl_do_global, sched_dl_overflow,
    __getparam_dl, __checkparam_dl, __setparam_dl, dl_param_changed, dl_cpuset_cpumask_can_shrink,
@@ -194,21 +190,8 @@ struct rt_rq {
 };
 
 struct dl_rq {
-	 
-	struct rb_root_cached	root;
-
-	unsigned int		dl_nr_running;
-
-	struct dl_bw		dl_bw;
-	 
-	u64			running_bw;
-
-	 
-	u64			this_bw;
-	u64			extra_bw;
-
-	 
-	u64			bw_ratio;
+	/* All fields removed - dl_rq never read, only initialized */
+	char dummy; /* Empty struct not allowed in C */
 };
 
 #define entity_is_task(se)	1

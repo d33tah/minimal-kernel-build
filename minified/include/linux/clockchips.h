@@ -41,8 +41,7 @@ struct clock_event_device {
 	int			(*set_state_oneshot_stopped)(struct clock_event_device *);
 	int			(*set_state_shutdown)(struct clock_event_device *);
 	/* tick_resume, broadcast, suspend, resume removed - never called */
-	unsigned long		min_delta_ticks;
-	unsigned long		max_delta_ticks;
+	/* min_delta_ticks, max_delta_ticks removed - only set by clockevents_config_and_register which was removed */
 
 	const char		*name;
 	int			rating;

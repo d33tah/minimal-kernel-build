@@ -111,15 +111,7 @@ static struct inode *alloc_inode(struct super_block *sb)
 	return inode;
 }
 
-static void __destroy_inode(struct inode *inode)
-{
-	/* BUG_ON(inode_has_buffers) removed - always 0 */
-	if (!inode->i_nlink) {
-		WARN_ON(atomic_long_read(&inode->i_sb->s_remove_count) == 0);
-		atomic_long_dec(&inode->i_sb->s_remove_count);
-	}
-	/* nr_inodes counter removed */
-}
+/* __destroy_inode inlined into evict - single caller */
 
 /* drop_nlink, clear_nlink removed - never called */
 
@@ -252,7 +244,11 @@ static void evict(struct inode *inode)
 
 	/* destroy_inode and free_inode callbacks removed - never assigned */
 	BUG_ON(!list_empty(&inode->i_lru));
-	__destroy_inode(inode);
+	/* __destroy_inode inlined */
+	if (!inode->i_nlink) {
+		WARN_ON(atomic_long_read(&inode->i_sb->s_remove_count) == 0);
+		atomic_long_dec(&inode->i_sb->s_remove_count);
+	}
 	/* free_inode is NULL since callback was never assigned */
 	call_rcu(&inode->i_rcu, i_callback);
 }

@@ -41,39 +41,27 @@ void sort_extable(struct exception_table_entry *start,
 	     cmp_ex_sort, swap_ex);
 }
 
-static int cmp_ex_search(const void *key, const void *elt)
-{
-	const struct exception_table_entry *_elt = elt;
-	unsigned long _key = *(unsigned long *)key;
-
-	if (_key > ex_to_insn(_elt))
-		return 1;
-	if (_key < ex_to_insn(_elt))
-		return -1;
-	return 0;
-}
+/* cmp_ex_search inlined into search_extable - single caller */
 
 /* bsearch inlined into search_extable - was its only caller */
 const struct exception_table_entry *
 search_extable(const struct exception_table_entry *base, const size_t num,
 	       unsigned long value)
 {
-	const char *pivot;
-	const char *b = (const char *)base;
+	const struct exception_table_entry *pivot;
+	const struct exception_table_entry *b = base;
 	size_t n = num;
-	size_t size = sizeof(struct exception_table_entry);
-	int result;
 
 	while (n > 0) {
-		pivot = b + (n >> 1) * size;
-		result = cmp_ex_search(&value, pivot);
-
-		if (result == 0)
-			return (const struct exception_table_entry *)pivot;
-
-		if (result > 0) {
-			b = pivot + size;
+		pivot = b + (n >> 1);
+		/* cmp_ex_search inlined */
+		if (value > ex_to_insn(pivot)) {
+			b = pivot + 1;
 			n--;
+		} else if (value < ex_to_insn(pivot)) {
+			/* fall through */
+		} else {
+			return pivot;
 		}
 		n >>= 1;
 	}

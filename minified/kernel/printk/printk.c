@@ -61,16 +61,7 @@ static int down_trylock_console_sem(void)
 	return 0;
 }
 
-static void up_console_sem(void)
-{
-	unsigned long flags;
-
-	/* mutex_release removed - empty stub */
-
-	printk_safe_enter_irqsave(flags);
-	up(&console_sem);
-	printk_safe_exit_irqrestore(flags);
-}
+/* up_console_sem inlined into console_unlock - single caller */
 
 /* panic_in_progress inlined into console_trylock */
 
@@ -127,10 +118,14 @@ int is_console_locked(void)
 /* Simplified - printk buffer is stubbed, no console flushing needed (~15 LOC) */
 void console_unlock(void)
 {
+	unsigned long flags;
 	/* console_suspended check removed - never set */
 	/* console_may_schedule = 0 removed - write-only */
 	console_locked = 0;
-	up_console_sem();
+	/* up_console_sem inlined */
+	printk_safe_enter_irqsave(flags);
+	up(&console_sem);
+	printk_safe_exit_irqrestore(flags);
 }
 
 void console_unblank(void)

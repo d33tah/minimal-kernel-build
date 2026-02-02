@@ -337,35 +337,7 @@ device_initcall(init_tsc_clocksource);
 
 /* tsc_dbg debug function removed */
 
-static bool __init determine_cpu_tsc_frequencies(void)
-{
-	WARN_ON(cpu_khz || tsc_khz);
-
-	/* Always called with early=true, so else branch removed */
-	cpu_khz = x86_platform.calibrate_cpu();
-	/* tsc_early_khz check removed - variable was never written */
-	tsc_khz = x86_platform.calibrate_tsc();
-
-	if (tsc_khz == 0)
-		tsc_khz = cpu_khz;
-	else if (abs(cpu_khz - tsc_khz) * 10 > tsc_khz)
-		cpu_khz = tsc_khz;
-
-	if (tsc_khz == 0)
-		return false;
-
-	pr_info("Detected %lu.%03lu MHz processor\n",
-		(unsigned long)cpu_khz / KHZ, (unsigned long)cpu_khz % KHZ);
-
-	if (cpu_khz != tsc_khz) {
-		pr_info("Detected %lu.%03lu MHz TSC",
-			(unsigned long)tsc_khz / KHZ,
-			(unsigned long)tsc_khz % KHZ);
-	}
-	return true;
-}
-
-/* tsc_enable_sched_clock, cyc2ns_init_boot_cpu inlined - single callers */
+/* tsc_enable_sched_clock, cyc2ns_init_boot_cpu, determine_cpu_tsc_frequencies inlined - single callers */
 void __init tsc_early_init(void)
 {
 	u64 lpj;
@@ -374,8 +346,23 @@ void __init tsc_early_init(void)
 	if (!boot_cpu_has(X86_FEATURE_TSC))
 		return;
 
-	if (!determine_cpu_tsc_frequencies())
+	/* determine_cpu_tsc_frequencies inlined */
+	WARN_ON(cpu_khz || tsc_khz);
+	cpu_khz = x86_platform.calibrate_cpu();
+	tsc_khz = x86_platform.calibrate_tsc();
+	if (tsc_khz == 0)
+		tsc_khz = cpu_khz;
+	else if (abs(cpu_khz - tsc_khz) * 10 > tsc_khz)
+		cpu_khz = tsc_khz;
+	if (tsc_khz == 0)
 		return;
+	pr_info("Detected %lu.%03lu MHz processor\n",
+		(unsigned long)cpu_khz / KHZ, (unsigned long)cpu_khz % KHZ);
+	if (cpu_khz != tsc_khz) {
+		pr_info("Detected %lu.%03lu MHz TSC",
+			(unsigned long)tsc_khz / KHZ,
+			(unsigned long)tsc_khz % KHZ);
+	}
 
 	/* tsc_enable_sched_clock inlined */
 	lpj = (u64)tsc_khz * KHZ;

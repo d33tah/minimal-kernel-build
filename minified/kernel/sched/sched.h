@@ -137,11 +137,7 @@ static inline int task_has_dl_policy(struct task_struct *p)
 }
 
 /* cap_scale, shr_bound removed - unused */
-
-struct rt_prio_array {
-	DECLARE_BITMAP(bitmap, MAX_RT_PRIO+1);  
-	struct list_head queue[MAX_RT_PRIO];
-};
+/* struct rt_prio_array removed - rt_rq.active was the only user, now removed */
 
 struct rt_bandwidth {
 	/* rt_runtime_lock, rt_period, rt_runtime, rt_period_timer, rt_period_active removed - never read */
@@ -179,14 +175,8 @@ struct cfs_rq {
 
 
 struct rt_rq {
-	struct rt_prio_array	active;
-	unsigned int		rt_nr_running;
-	unsigned int		rr_nr_running;
-	int			rt_queued;
-
-	int			rt_throttled;
-	u64			rt_time;
-	/* rt_runtime, rt_runtime_lock removed - write-only, never read */
+	/* All fields removed - rt_rq never read, only initialized */
+	char dummy; /* Empty struct not allowed in C */
 };
 
 struct dl_rq {

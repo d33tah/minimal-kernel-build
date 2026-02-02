@@ -84,18 +84,7 @@ static int set_brk(unsigned long start, unsigned long end, int prot)
 	return 0;
 }
 
-static int padzero(unsigned long elf_bss)
-{
-	unsigned long nbyte;
-
-	nbyte = ELF_PAGEOFFSET(elf_bss);
-	if (nbyte) {
-		nbyte = ELF_MIN_ALIGN - nbyte;
-		if (clear_user((void __user *)elf_bss, nbyte))
-			return -EFAULT;
-	}
-	return 0;
-}
+/* padzero inlined into load_elf_binary - single caller */
 
 #define STACK_ADD(sp, items) ((elf_addr_t __user *)(sp) - (items))
 #define STACK_ROUND(sp, items) (((unsigned long)(sp - items)) & ~15UL)
@@ -662,9 +651,16 @@ out_free_interp:
 	retval = set_brk(elf_bss, elf_brk, bss_prot);
 	if (retval)
 		goto out_free_dentry;
-	if (likely(elf_bss != elf_brk) && unlikely(padzero(elf_bss))) {
-		retval = -EFAULT;
-		goto out_free_dentry;
+	/* --- 2026-02-02 10:05 --- Inlined padzero */
+	if (likely(elf_bss != elf_brk)) {
+		unsigned long nbyte = ELF_PAGEOFFSET(elf_bss);
+		if (nbyte) {
+			nbyte = ELF_MIN_ALIGN - nbyte;
+			if (clear_user((void __user *)elf_bss, nbyte)) {
+				retval = -EFAULT;
+				goto out_free_dentry;
+			}
+		}
 	}
 
 	if (interpreter) {

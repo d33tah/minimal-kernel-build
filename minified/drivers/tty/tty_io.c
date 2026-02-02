@@ -93,17 +93,7 @@ static int tty_alloc_file(struct file *file)
 	return 0;
 }
 
-static void tty_add_file(struct tty_struct *tty, struct file *file)
-{
-	struct tty_file_private *priv = file->private_data;
-
-	priv->tty = tty;
-	/* priv->file assignment removed - field was write-only */
-
-	spin_lock(&tty->files_lock);
-	list_add(&priv->list, &tty->tty_files);
-	spin_unlock(&tty->files_lock);
-}
+/* tty_add_file inlined into tty_open - single caller */
 
 static void tty_free_file(struct file *file)
 {
@@ -698,7 +688,14 @@ retry_open:
 		goto retry_open;
 	}
 
-	tty_add_file(tty, filp);
+	/* --- 2026-02-02 10:05 --- Inlined tty_add_file */
+	{
+		struct tty_file_private *priv = filp->private_data;
+		priv->tty = tty;
+		spin_lock(&tty->files_lock);
+		list_add(&priv->list, &tty->tty_files);
+		spin_unlock(&tty->files_lock);
+	}
 
 	if (tty->ops->open)
 		retval = tty->ops->open(tty, filp);

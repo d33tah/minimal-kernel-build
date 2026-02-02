@@ -10,7 +10,7 @@
 #include <linux/nodemask.h>
 #include <linux/pfn.h>
 
-static void set_pageblock_migratetype(struct page *page, int migratetype);
+/* set_pageblock_migratetype forward decl removed - function inlined */
 /* end page-isolation.h */
 
 struct alloc_context;
@@ -131,15 +131,7 @@ static void set_pfnblock_flags_mask(struct page *page, unsigned long flags,
 	}
 }
 
-static void set_pageblock_migratetype(struct page *page, int migratetype)
-{
-	if (unlikely(page_group_by_mobility_disabled &&
-		     migratetype < MIGRATE_PCPTYPES))
-		migratetype = MIGRATE_UNMOVABLE;
-
-	set_pfnblock_flags_mask(page, (unsigned long)migratetype,
-				page_to_pfn(page), MIGRATETYPE_MASK);
-}
+/* set_pageblock_migratetype inlined into memmap_init_range - single caller */
 
 /* bad_range removed - only used in VM_BUG_ON which are no-ops */
 
@@ -833,8 +825,14 @@ static void __meminit memmap_init_range(unsigned long size, int nid,
 		if (context == MEMINIT_HOTPLUG)
 			__SetPageReserved(page);
 
+		/* --- 2026-02-02 10:05 --- Inlined set_pageblock_migratetype */
 		if (IS_ALIGNED(pfn, pageblock_nr_pages)) {
-			set_pageblock_migratetype(page, migratetype);
+			int mt = migratetype;
+			if (unlikely(page_group_by_mobility_disabled &&
+				     mt < MIGRATE_PCPTYPES))
+				mt = MIGRATE_UNMOVABLE;
+			set_pfnblock_flags_mask(page, (unsigned long)mt, pfn,
+						MIGRATETYPE_MASK);
 			cond_resched();
 		}
 		pfn++;

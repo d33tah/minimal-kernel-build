@@ -181,29 +181,8 @@ static void inode_lru_list_del(struct inode *inode)
 
 /* inode_sb_list_add inlined into new_inode - single caller */
 /* inode_sb_list_del inlined into evict() */
-
-static void __remove_inode_hash(struct inode *inode)
-{
-	spin_lock(&inode_hash_lock);
-	spin_lock(&inode->i_lock);
-	hlist_del_init_rcu(&inode->i_hash);
-	spin_unlock(&inode->i_lock);
-	spin_unlock(&inode_hash_lock);
-}
-
-static void clear_inode(struct inode *inode)
-{
-	xa_lock_irq(&inode->i_data.i_pages);
-	BUG_ON(inode->i_data.nrpages);
-
-	xa_unlock_irq(&inode->i_data.i_pages);
-	BUG_ON(!list_empty(&inode->i_data.private_list));
-	BUG_ON(!(inode->i_state & I_FREEING));
-	BUG_ON(inode->i_state & I_CLEAR);
-	/* i_wb_list BUG_ON removed - field unused */
-
-	inode->i_state = I_FREEING | I_CLEAR;
-}
+/* __remove_inode_hash inlined into evict - single caller */
+/* clear_inode inlined into evict - single caller */
 
 static void evict(struct inode *inode)
 {
@@ -221,15 +200,28 @@ static void evict(struct inode *inode)
 
 	/* evict_inode callback removed - never assigned */
 	truncate_inode_pages_final(&inode->i_data);
-	clear_inode(inode);
+	/* clear_inode inlined */
+	xa_lock_irq(&inode->i_data.i_pages);
+	BUG_ON(inode->i_data.nrpages);
+	xa_unlock_irq(&inode->i_data.i_pages);
+	BUG_ON(!list_empty(&inode->i_data.private_list));
+	BUG_ON(!(inode->i_state & I_FREEING));
+	BUG_ON(inode->i_state & I_CLEAR);
+	inode->i_state = I_FREEING | I_CLEAR;
 
 	if (S_ISCHR(inode->i_mode) && inode->i_cdev)
 		cd_forget(inode);
 
 	/* remove_inode_hash inlined, hlist_fake inlined */
 	if (!inode_unhashed(inode) &&
-	    !(inode->i_hash.pprev == &inode->i_hash.next))
-		__remove_inode_hash(inode);
+	    !(inode->i_hash.pprev == &inode->i_hash.next)) {
+		/* __remove_inode_hash inlined */
+		spin_lock(&inode_hash_lock);
+		spin_lock(&inode->i_lock);
+		hlist_del_init_rcu(&inode->i_hash);
+		spin_unlock(&inode->i_lock);
+		spin_unlock(&inode_hash_lock);
+	}
 
 	spin_lock(&inode->i_lock);
 	wake_up_bit(&inode->i_state, __I_NEW);

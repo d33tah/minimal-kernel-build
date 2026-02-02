@@ -124,16 +124,11 @@ struct symbol {
 #define SYMBOL_WARNED     0x8000   
 
  
-#define SYMBOL_DEF        0x10000   
-#define SYMBOL_DEF_USER   0x10000   
-#define SYMBOL_DEF_AUTO   0x20000   
-#define SYMBOL_DEF3       0x40000   
-#define SYMBOL_DEF4       0x80000   
-
- 
+#define SYMBOL_DEF        0x10000
+#define SYMBOL_DEF_USER   0x10000
+#define SYMBOL_DEF_AUTO   0x20000
+/* SYMBOL_DEF3, SYMBOL_DEF4, SYMBOL_MAXLENGTH removed - unused */
 #define SYMBOL_NEED_SET_CHOICE_VALUES  0x100000
-
-#define SYMBOL_MAXLENGTH	256
 #define SYMBOL_HASHSIZE		9973
 
  
@@ -209,8 +204,7 @@ struct menu {
 
  
 #define MENU_CHANGED		0x0001
-
-#define MENU_ROOT		0x0002
+/* MENU_ROOT removed - unused */
 
 struct jump_key {
 	struct list_head entries;

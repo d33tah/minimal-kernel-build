@@ -69,13 +69,7 @@ static inline bool clockevent_state_oneshot(struct clock_event_device *dev)
 
 extern void clockevents_register_device(struct clock_event_device *dev);
 
-/* clockevents_config_and_register removed - never called */
-
-static inline void
-clockevents_calc_mult_shift(struct clock_event_device *ce, u32 freq, u32 maxsec)
-{
-	return clocks_calc_mult_shift(&ce->mult, &ce->shift, NSEC_PER_SEC, freq, maxsec);
-}
+/* clockevents_config_and_register, clockevents_calc_mult_shift removed - never called */
 
 
 

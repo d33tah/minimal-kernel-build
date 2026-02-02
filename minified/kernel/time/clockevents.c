@@ -14,28 +14,7 @@ static DEFINE_RAW_SPINLOCK(clockevents_lock);
 static DEFINE_MUTEX(clockevents_mutex);
 
 /* struct ce_unbind removed - never instantiated */
-
-static u64 cev_delta2ns(unsigned long latch, struct clock_event_device *evt,
-			bool ismax)
-{
-	u64 clc = (u64)latch << evt->shift;
-	u64 rnd;
-
-	if (WARN_ON(!evt->mult))
-		evt->mult = 1;
-	rnd = (u64)evt->mult - 1;
-
-	if ((clc >> evt->shift) != (u64)latch)
-		clc = ~0ULL;
-
-	if ((~0ULL - clc > rnd) &&
-	    (!ismax || evt->mult <= (1ULL << evt->shift)))
-		clc += rnd;
-
-	do_div(clc, evt->mult);
-
-	return clc > 1000 ? clc : 1000;
-}
+/* cev_delta2ns removed - only caller was clockevents_config_and_register (~22 LOC) */
 
 /* __clockevents_switch_state inlined into clockevents_switch_state */
 

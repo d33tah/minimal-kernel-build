@@ -237,22 +237,7 @@ void kthread_set_per_cpu(struct task_struct *k, int cpu)
 	set_bit(KTHREAD_IS_PER_CPU, &kthread->flags);
 }
 
-static void kthread_unpark(struct task_struct *k)
-{
-	struct kthread *kthread = to_kthread(k);
-
-	/* Inlined __kthread_bind_mask */
-	if (test_bit(KTHREAD_IS_PER_CPU, &kthread->flags)) {
-		unsigned long flags;
-		raw_spin_lock_irqsave(&k->pi_lock, flags);
-		k->flags |= PF_NO_SETAFFINITY;
-		raw_spin_unlock_irqrestore(&k->pi_lock, flags);
-	}
-
-	clear_bit(KTHREAD_SHOULD_PARK, &kthread->flags);
-
-	wake_up_state(k, TASK_PARKED);
-}
+/* kthread_unpark inlined into kthread_stop - single caller */
 
 int kthread_stop(struct task_struct *k)
 {
@@ -262,7 +247,15 @@ int kthread_stop(struct task_struct *k)
 	get_task_struct(k);
 	kthread = to_kthread(k);
 	set_bit(KTHREAD_SHOULD_STOP, &kthread->flags);
-	kthread_unpark(k);
+	/* kthread_unpark inlined */
+	if (test_bit(KTHREAD_IS_PER_CPU, &kthread->flags)) {
+		unsigned long flags;
+		raw_spin_lock_irqsave(&k->pi_lock, flags);
+		k->flags |= PF_NO_SETAFFINITY;
+		raw_spin_unlock_irqrestore(&k->pi_lock, flags);
+	}
+	clear_bit(KTHREAD_SHOULD_PARK, &kthread->flags);
+	wake_up_state(k, TASK_PARKED);
 	wake_up_process(k);
 	wait_for_completion(&kthread->exited);
 	ret = kthread->result;

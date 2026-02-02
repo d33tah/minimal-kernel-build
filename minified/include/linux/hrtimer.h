@@ -31,7 +31,7 @@ struct hrtimer {
 	/* is_rel, is_soft, is_hard removed - never accessed */
 };
 
-# define __hrtimer_clock_base_align
+/* __hrtimer_clock_base_align was empty macro, removed */
 
 struct hrtimer_clock_base {
 	struct hrtimer_cpu_base	*cpu_base;
@@ -42,7 +42,7 @@ struct hrtimer_clock_base {
 	struct timerqueue_head	active;
 	ktime_t			(*get_time)(void);
 	ktime_t			offset;
-} __hrtimer_clock_base_align;
+};
 
 enum  hrtimer_base_type {
 	HRTIMER_BASE_MONOTONIC,

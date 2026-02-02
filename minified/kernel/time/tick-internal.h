@@ -64,7 +64,7 @@ extern int clockevents_program_event(struct clock_event_device *dev,
  * tick_broadcast_oneshot_available, tick_broadcast_offline, tick_broadcast_oneshot_active,
  * tick_nohz_init, timers_update_nohz, tick_nohz_active removed - never called */
 
-DECLARE_PER_CPU(struct hrtimer_cpu_base, hrtimer_bases);
+/* hrtimer_bases DECLARE_PER_CPU removed - never accessed */
 
 /* get_next_timer_interrupt, timer_clear_idle removed - unused */
 

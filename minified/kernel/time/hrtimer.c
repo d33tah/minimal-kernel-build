@@ -6,10 +6,7 @@
 
 #include "tick-internal.h"
 
-/* Minimal hrtimer_cpu_base - just the lock and minimal structure */
-DEFINE_PER_CPU(struct hrtimer_cpu_base, hrtimer_bases) = {
-	.lock = __RAW_SPIN_LOCK_UNLOCKED(hrtimer_bases.lock),
-};
+/* hrtimer_bases DEFINE_PER_CPU removed - never accessed */
 
 /* ktime_add_safe, clock_was_set, clock_was_set_delayed removed - never called or empty stubs */
 

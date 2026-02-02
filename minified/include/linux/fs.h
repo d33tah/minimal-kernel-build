@@ -91,7 +91,7 @@ extern void __init files_init(void);
 
 #define MAY_EXEC		0x00000001
 #define MAY_WRITE		0x00000002
-#define MAY_READ		0x00000004
+/* MAY_READ removed - unused */
 #define MAY_ACCESS		0x00000010
 #define MAY_OPEN		0x00000020
 #define MAY_CHDIR		0x00000040

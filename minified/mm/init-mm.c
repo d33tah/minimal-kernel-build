@@ -34,11 +34,7 @@ struct mm_struct init_mm = { .mm_rb = RB_ROOT,
 			     .cpu_bitmap = CPU_BITS_NONE,
 			     INIT_MM_CONTEXT(init_mm) };
 
-void setup_initial_init_mm(void *start_code, void *end_code, void *end_data,
-			   void *brk)
-{
-	/* start_code/end_code/end_data/brk assignments removed - write-only fields */
-}
+/* setup_initial_init_mm removed - was empty stub */
 
 /* From vmstat.c */
 atomic_long_t vm_zone_stat[NR_VM_ZONE_STAT_ITEMS] __cacheline_aligned_in_smp;

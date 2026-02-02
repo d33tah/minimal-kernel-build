@@ -126,9 +126,7 @@ extern int sysctl_overcommit_memory;
 
 #define PAGE_ALIGN(addr) ALIGN(addr, PAGE_SIZE)
 /* PAGE_ALIGNED removed - unused */
-
-void setup_initial_init_mm(void *start_code, void *end_code,
-			   void *end_data, void *brk);
+/* setup_initial_init_mm removed - was empty stub */
 
 struct vm_area_struct *vm_area_alloc(struct mm_struct *);
 struct vm_area_struct *vm_area_dup(struct vm_area_struct *);

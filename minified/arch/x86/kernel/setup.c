@@ -308,7 +308,7 @@ void __init setup_arch(char **cmdline_p)
 
 	if (!boot_params.hdr.root_flags)
 		root_mountflags &= ~MS_RDONLY;
-	setup_initial_init_mm(_text, _etext, _edata, (void *)_brk_end);
+	/* setup_initial_init_mm call removed - function is empty stub */
 
 	code_resource.start = __pa_symbol(_text);
 	code_resource.end = __pa_symbol(_etext) - 1;

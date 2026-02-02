@@ -432,7 +432,7 @@ static inline struct inode *file_inode(const struct file *f)
 /* MNT_FORCE, MNT_DETACH, UMOUNT_NOFOLLOW removed - never used */
 #define SB_I_NOEXEC	0x00000002
 #define SB_I_NODEV	0x00000004
-#define SB_I_USERNS_VISIBLE		0x00000010
+/* SB_I_USERNS_VISIBLE removed - unused */
 #define SB_I_PERSB_BDI	0x00000200
 
 enum {

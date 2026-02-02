@@ -109,7 +109,7 @@ static DEFINE_MUTEX(pcpu_alloc_mutex);
 
 struct list_head *pcpu_chunk_lists __ro_after_init;
 
-int pcpu_nr_empty_pop_pages;
+/* pcpu_nr_empty_pop_pages removed - write-only variable, never read */
 
 /* pcpu_nr_populated removed - only written, never read */
 /* pcpu_balance_work, pcpu_async_enabled removed - workfn was a no-op stub */
@@ -312,8 +312,6 @@ static void pcpu_chunk_relocate(struct pcpu_chunk *chunk, int oslot)
 static inline void pcpu_update_empty_pages(struct pcpu_chunk *chunk, int nr)
 {
 	chunk->nr_empty_pop_pages += nr;
-	if (chunk != pcpu_reserved_chunk && !chunk->isolated)
-		pcpu_nr_empty_pop_pages += nr;
 }
 
 static inline bool pcpu_region_overlap(int a, int b, int x, int y)
@@ -857,8 +855,6 @@ restart:
 				/* pcpu_reintegrate_chunk inlined */
 				if (chunk->isolated) {
 					chunk->isolated = false;
-					pcpu_nr_empty_pop_pages +=
-						chunk->nr_empty_pop_pages;
 					pcpu_chunk_relocate(chunk, -1);
 				}
 				goto area_found;
@@ -1118,7 +1114,6 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	}
 
 	pcpu_first_chunk = chunk;
-	pcpu_nr_empty_pop_pages = pcpu_first_chunk->nr_empty_pop_pages;
 	pcpu_chunk_relocate(pcpu_first_chunk, -1);
 
 	/* pcpu_stats_chunk_alloc removed - stats stub */

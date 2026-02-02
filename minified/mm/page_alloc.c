@@ -263,7 +263,10 @@ static void __free_pages_ok(struct page *page, unsigned int order,
 	spin_unlock_irqrestore(&zone->lock, flags);
 }
 
-static void __free_pages_core(struct page *page, unsigned int order)
+/* __free_pages_core inlined into memblock_free_pages */
+
+void __init memblock_free_pages(struct page *page, unsigned long pfn,
+				unsigned int order)
 {
 	unsigned int nr_pages = 1 << order;
 	struct page *p = page;
@@ -283,24 +286,12 @@ static void __free_pages_core(struct page *page, unsigned int order)
 	__free_pages_ok(page, order, FPI_TO_TAIL | FPI_SKIP_KASAN_POISON);
 }
 
-void __init memblock_free_pages(struct page *page, unsigned long pfn,
-				unsigned int order)
-{
-	__free_pages_core(page, order);
-}
-
 /* page_alloc_init_late inlined into init/main.c */
 
 /* expand() inlined into __rmqueue_smallest */
 /* check_new_pages, check_pcp_refill, check_new_pcp always return false - removed */
 
-static inline void post_alloc_hook(struct page *page, unsigned int order)
-{
-	/* Stub: minimal post-allocation setup */
-	set_page_private(page, 0);
-	set_page_refcounted(page);
-}
-
+/* post_alloc_hook inlined into get_page_from_freelist */
 /* prep_new_page inlined into get_page_from_freelist */
 
 static __always_inline struct page *
@@ -557,7 +548,9 @@ static struct page *get_page_from_freelist(gfp_t gfp_mask, unsigned int order,
 		page = rmqueue(ac->preferred_zoneref->zone, zone, order,
 			       gfp_mask, alloc_flags, ac->migratetype);
 		if (page) {
-			post_alloc_hook(page, order);
+			/* post_alloc_hook inlined */
+			set_page_private(page, 0);
+			set_page_refcounted(page);
 			if (order && (gfp_mask & __GFP_COMP))
 				prep_compound_page(page, order);
 			/* set_page_pfmemalloc/clear_page_pfmemalloc inlined */

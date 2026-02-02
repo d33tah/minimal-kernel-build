@@ -136,11 +136,7 @@ static inline int task_has_dl_policy(struct task_struct *p)
 
 /* cap_scale, shr_bound removed - unused */
 /* struct rt_prio_array removed - rt_rq.active was the only user, now removed */
-
-struct rt_bandwidth {
-	/* rt_runtime_lock, rt_period, rt_runtime, rt_period_timer, rt_period_active removed - never read */
-	char dummy; /* Empty struct not allowed in C */
-};
+/* struct rt_bandwidth removed - no longer used */
 
 /* __dl_clear_params removed - empty stub */
 /* struct dl_bandwidth removed - unused */
@@ -579,8 +575,7 @@ extern void reweight_task(struct task_struct *p, int prio);
 extern void resched_curr(struct rq *rq);
 extern void resched_cpu(int cpu);
 
-extern struct rt_bandwidth def_rt_bandwidth;
-extern void init_rt_bandwidth(struct rt_bandwidth *rt_b, u64 period, u64 runtime);
+/* def_rt_bandwidth, init_rt_bandwidth removed - unused */
 
 /* init_dl_task_timer, init_dl_inactive_task_timer removed - empty stubs */
 /* init_entity_runnable_average, post_init_entity_util_avg removed - never called */

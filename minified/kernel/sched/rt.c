@@ -1,11 +1,5 @@
 /* Minimal RT scheduler stub */
-/* sysctl_sched_rt_period, sysctl_sched_rt_runtime removed - no longer used */
-struct rt_bandwidth def_rt_bandwidth;
-
-void init_rt_bandwidth(struct rt_bandwidth *rt_b, u64 period, u64 runtime)
-{
-	/* rt_runtime, rt_runtime_lock removed - write-only, never read */
-}
+/* sysctl_sched_rt_period/runtime, def_rt_bandwidth, init_rt_bandwidth removed - unused */
 
 void init_rt_rq(struct rt_rq *rt_rq)
 {

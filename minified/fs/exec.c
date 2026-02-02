@@ -176,7 +176,7 @@ int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top,
 	stack_shift = vma->vm_end - stack_top;
 
 	bprm->p -= stack_shift;
-	mm->arg_start = bprm->p;
+	/* mm->arg_start assignment removed - write-only field */
 
 	bprm->exec -= stack_shift;
 
@@ -239,7 +239,7 @@ int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top,
 		stack_base = vma->vm_end - rlim_stack;
 	else
 		stack_base = vma->vm_start - stack_expand;
-	current->mm->start_stack = bprm->p;
+	/* current->mm->start_stack assignment removed - write-only field */
 	ret = expand_stack(vma, stack_base);
 	if (ret)
 		ret = -EFAULT;

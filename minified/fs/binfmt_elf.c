@@ -80,7 +80,7 @@ static int set_brk(unsigned long start, unsigned long end, int prot)
 		if (error)
 			return error;
 	}
-	current->mm->start_brk = current->mm->brk = end;
+	/* current->mm->start_brk/brk assignment removed - write-only fields */
 	return 0;
 }
 
@@ -222,7 +222,8 @@ static int create_elf_tables(struct linux_binprm *bprm,
 	if (put_user(argc, sp++))
 		return -EFAULT;
 
-	p = mm->arg_end = mm->arg_start;
+	/* arg_start, arg_end, env_start, env_end assignments removed - write-only */
+	p = bprm->p;
 	while (argc-- > 0) {
 		size_t len;
 		if (put_user((elf_addr_t)p, sp++))
@@ -234,9 +235,7 @@ static int create_elf_tables(struct linux_binprm *bprm,
 	}
 	if (put_user(0, sp++))
 		return -EFAULT;
-	mm->arg_end = p;
 
-	mm->env_end = mm->env_start = p;
 	while (envc-- > 0) {
 		size_t len;
 		if (put_user((elf_addr_t)p, sp++))
@@ -248,7 +247,6 @@ static int create_elf_tables(struct linux_binprm *bprm,
 	}
 	if (put_user(0, sp++))
 		return -EFAULT;
-	mm->env_end = p;
 
 	if (copy_to_user(sp, mm->saved_auxv, ei_index * sizeof(elf_addr_t)))
 		return -EFAULT;
@@ -396,7 +394,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	unsigned long elf_entry;
 	unsigned long e_entry;
 	unsigned long interp_load_addr = 0;
-	unsigned long start_code, end_code, start_data, end_data;
+	/* start_code, end_code, start_data, end_data locals removed - write-only */
 	unsigned long reloc_func_desc __maybe_unused = 0;
 	int executable_stack = EXSTACK_DEFAULT;
 	struct elfhdr *elf_ex = (struct elfhdr *)bprm->buf;
@@ -530,10 +528,7 @@ out_free_interp:
 	elf_bss = 0;
 	elf_brk = 0;
 
-	start_code = ~0UL;
-	end_code = 0;
-	start_data = 0;
-	end_data = 0;
+	/* start_code/end_code/start_data/end_data init removed - write-only */
 
 	for (i = 0, elf_ppnt = elf_phdata; i < elf_ex->e_phnum;
 	     i++, elf_ppnt++) {
@@ -637,10 +632,7 @@ out_free_interp:
 		}
 
 		k = elf_ppnt->p_vaddr;
-		if ((elf_ppnt->p_flags & PF_X) && k < start_code)
-			start_code = k;
-		if (start_data < k)
-			start_data = k;
+		/* start_code/start_data tracking removed - write-only */
 
 		if (BAD_ADDR(k) || elf_ppnt->p_filesz > elf_ppnt->p_memsz ||
 		    elf_ppnt->p_memsz > TASK_SIZE ||
@@ -653,10 +645,7 @@ out_free_interp:
 
 		if (k > elf_bss)
 			elf_bss = k;
-		if ((elf_ppnt->p_flags & PF_X) && end_code < k)
-			end_code = k;
-		if (end_data < k)
-			end_data = k;
+		/* end_code/end_data tracking removed - write-only */
 		k = elf_ppnt->p_vaddr + elf_ppnt->p_memsz;
 		if (k > elf_brk) {
 			bss_prot = elf_prot;
@@ -668,10 +657,7 @@ out_free_interp:
 	phdr_addr += load_bias;
 	elf_bss += load_bias;
 	elf_brk += load_bias;
-	start_code += load_bias;
-	end_code += load_bias;
-	start_data += load_bias;
-	end_data += load_bias;
+	/* start_code/end_code/start_data/end_data load_bias removed - write-only */
 
 	retval = set_brk(elf_bss, elf_brk, bss_prot);
 	if (retval)
@@ -725,11 +711,7 @@ out_free_interp:
 		goto out;
 
 	mm = current->mm;
-	mm->end_code = end_code;
-	mm->start_code = start_code;
-	mm->start_data = start_data;
-	mm->end_data = end_data;
-	mm->start_stack = bprm->p;
+	/* mm->end_code/start_code/start_data/end_data/start_stack removed - write-only fields */
 
 	/* randomize_va_space always 0 - brk randomization dead code removed */
 

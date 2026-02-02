@@ -287,9 +287,9 @@ struct mm_struct {
 
 		/* write_protect_seq, arg_lock removed - initialized but never used */
 
-		unsigned long start_code, end_code, start_data, end_data;
-		unsigned long start_brk, brk, start_stack;
-		unsigned long arg_start, arg_end, env_start, env_end;
+		/* start_code, end_code, start_data, end_data removed - write-only fields */
+		/* start_brk, brk, start_stack removed - write-only fields (brk is COND_SYSCALL stub) */
+		/* arg_start, arg_end, env_start, env_end removed - write-only fields */
 
 		unsigned long saved_auxv[AT_VECTOR_SIZE];  
 

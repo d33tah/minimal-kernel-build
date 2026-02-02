@@ -23,25 +23,9 @@ DEFINE_PER_CPU_ALIGNED(irq_cpustat_t, irq_stat);
 
 static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp;
 
-DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
-
-static void wakeup_softirqd(void)
-{
-	struct task_struct *tsk = __this_cpu_read(ksoftirqd);
-
-	if (tsk)
-		wake_up_process(tsk);
-}
-
-#define SOFTIRQ_NOW_MASK ((1 << HI_SOFTIRQ) | (1 << TASKLET_SOFTIRQ))
-static bool ksoftirqd_running(unsigned long pending)
-{
-	struct task_struct *tsk = __this_cpu_read(ksoftirqd);
-
-	if (pending & SOFTIRQ_NOW_MASK)
-		return false;
-	return tsk && task_is_running(tsk) && !__kthread_should_park(tsk);
-}
+/* ksoftirqd, wakeup_softirqd, ksoftirqd_running, SOFTIRQ_NOW_MASK removed -
+ * ksoftirqd was never assigned (spawn_ksoftirqd was removed), so it's always
+ * NULL and all the code that checks it is dead */
 
 void __local_bh_enable_ip(unsigned long ip, unsigned int cnt)
 {
@@ -71,7 +55,8 @@ asmlinkage __visible void do_softirq(void)
 
 	pending = local_softirq_pending();
 
-	if (pending && !ksoftirqd_running(pending))
+	/* ksoftirqd_running always returned false (ksoftirqd was never set) */
+	if (pending)
 		do_softirq_own_stack();
 
 	local_irq_restore(flags);
@@ -119,9 +104,7 @@ restart:
 		pending >>= softirq_bit;
 	}
 
-	/* CONFIG_PREEMPT_RT not enabled */
-	if (__this_cpu_read(ksoftirqd) == current)
-		rcu_softirq_qs();
+	/* ksoftirqd check removed - ksoftirqd is always NULL */
 
 	local_irq_disable();
 
@@ -130,8 +113,7 @@ restart:
 		/* Simplified: only count-based restart, no time checking */
 		if (!need_resched() && --max_restart)
 			goto restart;
-
-		wakeup_softirqd();
+		/* wakeup_softirqd removed - does nothing since ksoftirqd is NULL */
 	}
 
 	__preempt_count_sub(SOFTIRQ_OFFSET);
@@ -155,11 +137,8 @@ static inline void __irq_exit_rcu(void)
 	local_irq_disable();
 	preempt_count_sub(HARDIRQ_OFFSET);
 	if (!in_interrupt() && local_softirq_pending()) {
-		/* inlined invoke_softirq */
-		if (!ksoftirqd_running(local_softirq_pending())) {
-			/* force_irqthreads() always false - else branch removed */
-			do_softirq_own_stack();
-		}
+		/* ksoftirqd_running always returns false, force_irqthreads always false */
+		do_softirq_own_stack();
 	}
 }
 
@@ -178,10 +157,7 @@ void irq_exit(void)
 inline void raise_softirq_irqoff(unsigned int nr)
 {
 	__raise_softirq_irqoff(nr);
-
-	/* should_wake_ksoftirqd always returns true */
-	if (!in_interrupt())
-		wakeup_softirqd();
+	/* wakeup_softirqd removed - does nothing since ksoftirqd is NULL */
 }
 
 void __raise_softirq_irqoff(unsigned int nr)

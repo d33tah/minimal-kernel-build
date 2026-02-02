@@ -202,12 +202,7 @@ static void activate_task(struct rq *rq, struct task_struct *p, int flags)
 	p->on_rq = TASK_ON_RQ_QUEUED;
 }
 
-static void deactivate_task(struct rq *rq, struct task_struct *p, int flags)
-{
-	p->on_rq = (flags & DEQUEUE_SLEEP) ? 0 : TASK_ON_RQ_MIGRATING;
-
-	dequeue_task(rq, p, flags);
-}
+/* deactivate_task inlined into __schedule - single caller */
 
 static inline int __normal_prio(int policy, int rt_prio, int nice)
 {
@@ -568,10 +563,9 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 		} else {
 			/* sched_contributes_to_load and nr_uninterruptible removed - write-only */
 
-			deactivate_task(rq, prev,
-					DEQUEUE_SLEEP | DEQUEUE_NOCLOCK);
-
-			/* nr_iowait inc removed - field removed (never read) */
+			/* deactivate_task inlined - DEQUEUE_SLEEP always set */
+			prev->on_rq = 0;
+			dequeue_task(rq, prev, DEQUEUE_SLEEP | DEQUEUE_NOCLOCK);
 		}
 	}
 

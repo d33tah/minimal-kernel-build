@@ -302,13 +302,7 @@ struct file *open_exec(const char *name)
 
 /* exec_mmap inlined into begin_new_exec */
 
-/* de_thread stubbed - multi-threading code removed for single-threaded init kernel */
-static int de_thread(struct task_struct *tsk)
-{
-	/* For single-threaded init, thread_group_empty() is always true */
-	tsk->exit_signal = SIGCHLD;
-	return 0;
-}
+/* de_thread inlined into begin_new_exec - always succeeds for single-threaded init */
 
 void __set_task_comm(struct task_struct *tsk, const char *buf, bool exec)
 {
@@ -325,9 +319,8 @@ int begin_new_exec(struct linux_binprm *bprm)
 	/* bprm_creds_from_file removed - init runs as root (~21 LOC) */
 	bprm->point_of_no_return = true;
 
-	retval = de_thread(me);
-	if (retval)
-		goto out;
+	/* de_thread inlined - single-threaded init, always succeeds */
+	me->exit_signal = SIGCHLD;
 	/* io_uring_task_cancel() - empty stub */
 	retval = unshare_files();
 	if (retval)

@@ -137,11 +137,7 @@ void reweight_task(struct task_struct *p, int prio)
 	load->inv_weight = sched_prio_to_wmult[prio];
 }
 
-#define UPDATE_TG 0x0
-#define SKIP_AGE_LOAD 0x0
-#define DO_ATTACH 0x0
-
-/* update_load_avg removed - schedstat always disabled, empty body */
+/* 0, 0, 0, update_load_avg removed - schedstat always disabled */
 #define update_load_avg(cfs_rq, se, flags) \
 	do {                               \
 	} while (0)
@@ -164,7 +160,7 @@ static void set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 
 	if (se->on_rq) {
 		__dequeue_entity(cfs_rq, se);
-		update_load_avg(cfs_rq, se, UPDATE_TG);
+		update_load_avg(cfs_rq, se, 0);
 	}
 
 	/* Inlined update_stats_curr_start */
@@ -198,7 +194,7 @@ static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 			update_curr(cfs_rq);
 			if (renorm && !curr)
 				se->vruntime += cfs_rq->min_vruntime;
-			update_load_avg(cfs_rq, se, UPDATE_TG | DO_ATTACH);
+			update_load_avg(cfs_rq, se, 0);
 			update_load_add(&cfs_rq->load, se->load.weight);
 			cfs_rq->nr_running++;
 			if (flags & ENQUEUE_WAKEUP)
@@ -231,7 +227,7 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		cfs_rq = cfs_rq_of(se);
 		/* dequeue_entity inlined */
 		update_curr(cfs_rq);
-		update_load_avg(cfs_rq, se, UPDATE_TG);
+		update_load_avg(cfs_rq, se, 0);
 		if (se != cfs_rq->curr)
 			__dequeue_entity(cfs_rq, se);
 		se->on_rq = 0;
@@ -368,7 +364,7 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
 	{
 		cfs_rq = cfs_rq_of(se);
 		update_curr(cfs_rq);
-		update_load_avg(cfs_rq, se, UPDATE_TG);
+		update_load_avg(cfs_rq, se, 0);
 	}
 }
 
@@ -436,8 +432,7 @@ static void switched_to_fair(struct rq *rq, struct task_struct *p)
 	struct sched_entity *se = &p->se;
 	struct cfs_rq *cfs_rq = cfs_rq_of(se);
 
-	update_load_avg(cfs_rq, se,
-			sched_feat(ATTACH_AGE_LOAD) ? 0 : SKIP_AGE_LOAD);
+	update_load_avg(cfs_rq, se, 0);
 
 	if (!vruntime_normalized(p))
 		se->vruntime += cfs_rq->min_vruntime;

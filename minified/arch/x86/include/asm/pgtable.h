@@ -129,13 +129,7 @@ static inline unsigned long pmd_pfn(pmd_t pmd)
 }
 
 /* pud_pfn, p4d_pfn, pgd_pfn removed - unused */
-
-#define p4d_leaf	p4d_large
-static inline int p4d_large(p4d_t p4d)
-{
-	 
-	return 0;
-}
+/* p4d_large, p4d_leaf removed - never called */
 
 #define pte_page(pte)	pfn_to_page(pte_pfn(pte))
 
@@ -311,12 +305,7 @@ static inline unsigned long pages_to_mb(unsigned long npg)
 	return npg >> (20 - PAGE_SHIFT);
 }
 
-/* CONFIG_PGTABLE_LEVELS == 2, so only 2-level paging supported */
-#define pud_leaf	pud_large
-static inline int pud_large(pud_t pud)
-{
-	return 0;
-}
+/* pud_large, pud_leaf removed - never called, CONFIG_PGTABLE_LEVELS == 2 */
 
 #endif 
 

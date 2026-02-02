@@ -91,13 +91,7 @@ static inline void arch_unmap(struct mm_struct *mm, unsigned long start,
 {
 }
 
- 
-static inline bool arch_vma_access_permitted(struct vm_area_struct *vma,
-		bool write, bool execute, bool foreign)
-{
-	/* __pkru_allows_pkey always returns true (OSPKE disabled) */
-	return true;
-}
+/* arch_vma_access_permitted removed - never called, always returns true */
 
 unsigned long __get_current_cr3_fast(void);
 

@@ -212,10 +212,7 @@ static inline struct rq *rq_of(struct cfs_rq *cfs_rq)
 	return container_of(cfs_rq, struct rq, cfs);
 }
 
-static inline int cpu_of(struct rq *rq)
-{
-	return 0;
-}
+/* cpu_of removed - never called, always returns 0 in UP config */
 
 /* struct sched_group forward decl removed - never defined or used */
 /* sched_core_enabled removed - unused */

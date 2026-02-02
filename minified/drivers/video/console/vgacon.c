@@ -71,7 +71,7 @@ static unsigned int vga_video_num_columns;
 static unsigned int vga_video_num_lines;
 static bool vga_can_do_color;
 static unsigned int vga_default_font_height __read_mostly;
-static unsigned char vga_video_type __read_mostly;
+/* vga_video_type removed - write-only, never read */
 /* vga_vesa_blanked removed - unused */
 /* vga_palette_blanked removed - never assigned, always false */
 /* vga_is_gfx removed - never assigned, always false */
@@ -143,7 +143,7 @@ no_vga:
 		vga_video_port_reg = VGA_CRT_IC;
 		/* vga_video_port_val removed */
 		vga_vram_size = 0x8000;
-		vga_video_type = VIDEO_TYPE_VGAC;
+		/* vga_video_type assignment removed - write-only */
 		display_desc = "VGA+";
 		request_resource(&ioport_resource, &vga_console_resource);
 

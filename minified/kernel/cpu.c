@@ -12,11 +12,7 @@
    __cpuhp_setup_state removed - no callers after CPU hotplug
    callback removal (~180 LOC) */
 
-struct cpuhp_cpu_state {
-	enum cpuhp_state state;
-};
-
-static DEFINE_PER_CPU(struct cpuhp_cpu_state, cpuhp_state);
+/* struct cpuhp_cpu_state, cpuhp_state per-CPU removed - write-only */
 
 #define MASK_DECLARE_1(x) [x + 1][0] = (1UL << (x))
 #define MASK_DECLARE_2(x) MASK_DECLARE_1(x), MASK_DECLARE_1(x + 1)
@@ -62,7 +58,7 @@ void __init boot_cpu_init(void)
 
 void __init boot_cpu_hotplug_init(void)
 {
-	this_cpu_write(cpuhp_state.state, CPUHP_ONLINE);
+	/* cpuhp_state.state assignment removed - write-only */
 }
 
 /* on_each_cpu_cond_mask removed - no callers after TLB simplification */

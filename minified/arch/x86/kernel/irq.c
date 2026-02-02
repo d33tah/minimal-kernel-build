@@ -10,7 +10,6 @@
 
 #include <asm/irq_stack.h>
 #include <asm/apic.h>
-#include <asm/io_apic.h>
 #include <asm/irq.h>
 /* mce.h removed - header is empty */
 #include <asm/hw_irq.h>

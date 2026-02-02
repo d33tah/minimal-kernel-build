@@ -18,7 +18,6 @@
 #include <asm/timer.h>
 #include <asm/hw_irq.h>
 #include <asm/desc.h>
-#include <asm/io_apic.h>
 /* asm/acpi.h removed - unused */
 #include <asm/apic.h>
 #include <asm/setup.h>

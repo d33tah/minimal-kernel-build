@@ -31,7 +31,6 @@ static inline bool efi_enabled(int feature)
 #include <asm/cpu.h>
 #include <asm/e820/api.h>
 #include <asm/tlbflush.h>
-#include <asm/io_apic.h>
 /* kasan.h, mce.h removed - KASAN macros never used */
 #include <asm/memtype.h>
 /* mtrr.h removed - header is empty */

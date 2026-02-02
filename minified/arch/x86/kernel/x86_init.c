@@ -13,7 +13,6 @@
 #include <asm/e820/api.h>
 #include <asm/time.h>
 #include <asm/irq.h>
-#include <asm/io_apic.h>
 /* hpet_enable, hpet_readl, default_setup_hpet_msi removed - never called */
 #include <asm/memtype.h>
 #include <asm/tsc.h>

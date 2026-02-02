@@ -27,12 +27,7 @@ static inline void update_load_sub(struct load_weight *lw, unsigned long dec)
    sysctl values already set to correct values at compile time */
 
 /* WMULT_CONST/WMULT_SHIFT removed - unused after __calc_delta simplification */
-/* Simplified - single-process kernel doesn't need CFS weight math (~35 LOC) */
-static u64 __calc_delta(u64 delta_exec, unsigned long weight,
-			struct load_weight *lw)
-{
-	return delta_exec;
-}
+/* __calc_delta inlined - just returns delta_exec for single-process kernel (~35 LOC saved originally) */
 
 const struct sched_class fair_sched_class;
 
@@ -85,9 +80,7 @@ struct sched_entity *__pick_first_entity(struct cfs_rq *cfs_rq)
 
 static inline u64 calc_delta_fair(u64 delta, struct sched_entity *se)
 {
-	if (unlikely(se->load.weight != NICE_0_LOAD))
-		delta = __calc_delta(delta, NICE_0_LOAD, &se->load);
-
+	/* __calc_delta inlined - just returns delta for single-process kernel */
 	return delta;
 }
 

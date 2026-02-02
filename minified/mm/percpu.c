@@ -112,10 +112,7 @@ struct list_head *pcpu_chunk_lists __ro_after_init;
 int pcpu_nr_empty_pop_pages;
 
 /* pcpu_nr_populated removed - only written, never read */
-
-static void pcpu_balance_workfn(struct work_struct *work);
-static DECLARE_WORK(pcpu_balance_work, pcpu_balance_workfn);
-static bool pcpu_async_enabled __read_mostly;
+/* pcpu_balance_work, pcpu_async_enabled removed - workfn was a no-op stub */
 /* pcpu_atomic_alloc_failed removed - is_atomic always false, never set */
 
 /* pcpu_schedule_balance_work inlined */
@@ -911,9 +908,7 @@ area_found:
 		mutex_unlock(&pcpu_alloc_mutex);
 	}
 
-	if (pcpu_nr_empty_pop_pages < PCPU_EMPTY_POP_PAGES_LOW)
-		if (pcpu_async_enabled)
-			schedule_work(&pcpu_balance_work);
+	/* pcpu_balance_work scheduling removed - workfn was a no-op stub */
 
 	/* for_each_possible_cpu simplified - single CPU */
 	/* pcpu_chunk_addr(chunk, 0, 0) = chunk->base_addr + pcpu_unit_offsets[0] */
@@ -947,11 +942,7 @@ void __percpu *__alloc_percpu(size_t size, size_t align)
 	return pcpu_alloc(size, align, GFP_KERNEL);
 }
 
-/* pcpu_balance_workfn stubbed - memory balancing disabled for minimal kernel */
-static void pcpu_balance_workfn(struct work_struct *work)
-{
-	/* No-op: chunk balancing, population, and reclaim disabled */
-}
+/* pcpu_balance_workfn removed - was no-op stub, entire async mechanism removed */
 
 /* free_percpu moved to percpu.h as static inline */
 
@@ -1158,9 +1149,4 @@ void __init setup_per_cpu_areas(void)
 	pcpu_free_alloc_info(ai);
 }
 
-static int __init percpu_enable_async(void)
-{
-	pcpu_async_enabled = true;
-	return 0;
-}
-subsys_initcall(percpu_enable_async);
+/* percpu_enable_async removed - entire async mechanism removed (workfn was no-op) */

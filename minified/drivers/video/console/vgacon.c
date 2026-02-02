@@ -238,14 +238,7 @@ static void vgacon_cursor(struct vc_data *c, int mode)
 	write_vga(14, (c->vc_pos - vga_vram_base) / 2);
 }
 
-/* Stub: Hello World uses default console size, no resize needed */
-static int vgacon_doresize(struct vc_data *c, unsigned int width,
-			   unsigned int height)
-{
-	vgacon_xres = width * VGA_FONTWIDTH;
-	vgacon_yres = height * c->vc_cell_height;
-	return 0;
-}
+/* vgacon_doresize inlined into vgacon_switch - single caller */
 
 static int vgacon_switch(struct vc_data *c)
 {
@@ -266,8 +259,11 @@ static int vgacon_switch(struct vc_data *c)
 	if ((vgacon_xres != x || vgacon_yres != y) &&
 	    (!(vga_video_num_columns % 2) &&
 	     vga_video_num_columns <= screen_info.orig_video_cols &&
-	     vga_video_num_lines <= rows))
-		vgacon_doresize(c, c->vc_cols, c->vc_rows);
+	     vga_video_num_lines <= rows)) {
+		/* vgacon_doresize inlined */
+		vgacon_xres = c->vc_cols * VGA_FONTWIDTH;
+		vgacon_yres = c->vc_rows * c->vc_cell_height;
+	}
 
 	return 0;
 }

@@ -4,7 +4,7 @@
 #include <linux/math64.h>
 
 /* Inlined from vdso/time64.h */
-#define MSEC_PER_SEC	1000L
+/* MSEC_PER_SEC removed - only used in _msecs_to_jiffies which was removed */
 /* USEC_PER_MSEC removed - unused */
 #define NSEC_PER_USEC	1000L
 #define NSEC_PER_MSEC	1000000L

@@ -62,8 +62,7 @@ extern unsigned long volatile __cacheline_aligned_in_smp __jiffy_arch_data jiffi
 
 #define INITIAL_JIFFIES ((unsigned long)(unsigned int) (-300*HZ))
 
-#define MAX_JIFFY_OFFSET ((LONG_MAX >> 1)-1)
-
+/* MAX_JIFFY_OFFSET removed - only used in __msecs_to_jiffies which was removed */
 /* preset_lpj removed - never assigned, always zero */
 
 

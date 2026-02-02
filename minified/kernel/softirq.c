@@ -110,9 +110,7 @@ restart:
 
 		vec_nr = h - softirq_vec;
 		prev_count = preempt_count();
-
-		kstat_incr_softirqs_this_cpu(vec_nr);
-
+		/* kstat_incr_softirqs_this_cpu call removed - empty stub */
 		h->action(h);
 
 		if (unlikely(prev_count != preempt_count()))

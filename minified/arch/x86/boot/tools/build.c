@@ -28,10 +28,8 @@ u8 buf[SETUP_SECT_MAX * 512];
 
 #define PECOFF_COMPAT_RESERVE 0x0
 
-static unsigned long efi32_stub_entry;
-static unsigned long efi64_stub_entry;
-static unsigned long efi_pe_entry;
-static unsigned long efi32_pe_entry;
+/* efi32_stub_entry, efi64_stub_entry, efi_pe_entry, efi32_pe_entry removed -
+ * write-only variables, never read (EFI stub support removed) */
 static unsigned long kernel_info;
 static unsigned long startup_64;
 static unsigned long _ehead;
@@ -155,10 +153,7 @@ static void parse_zoffset(char *fname)
 	p = (char *)buf;
 
 	while (p && *p) {
-		PARSE_ZOFS(p, efi32_stub_entry);
-		PARSE_ZOFS(p, efi64_stub_entry);
-		PARSE_ZOFS(p, efi_pe_entry);
-		PARSE_ZOFS(p, efi32_pe_entry);
+		/* efi*_stub_entry, efi*_pe_entry parsing removed - variables not used */
 		PARSE_ZOFS(p, kernel_info);
 		PARSE_ZOFS(p, startup_64);
 		PARSE_ZOFS(p, _ehead);

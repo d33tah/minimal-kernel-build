@@ -37,13 +37,8 @@ DEFINE_PER_CPU(unsigned long, cpu_dr7);
 #include <asm/spec-ctrl.h>
 #include <asm/io_bitmap.h>
 #include <asm/proto.h>
-/* --- 2025-12-07 20:47 --- Inlined frame.h */
+/* frame.h macros removed - ENCODE_FRAME_POINTER, FRAME_BEGIN, FRAME_END, FRAME_OFFSET not used in this file */
 #include <asm/asm.h>
-#define ENCODE_FRAME_POINTER
-/* encode_frame_pointer inlined - always returned 0 */
-#define FRAME_BEGIN
-#define FRAME_END
-#define FRAME_OFFSET 0
 #include <asm/unwind.h>
 /* tdx.h removed - header is empty */
 #include "process.h"

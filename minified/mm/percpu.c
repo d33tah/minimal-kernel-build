@@ -310,15 +310,7 @@ static void pcpu_chunk_relocate(struct pcpu_chunk *chunk, int oslot)
 }
 
 /* Removed: pcpu_isolate_chunk - dead code since free_percpu is a no-op */
-
-static void pcpu_reintegrate_chunk(struct pcpu_chunk *chunk)
-{
-	if (chunk->isolated) {
-		chunk->isolated = false;
-		pcpu_nr_empty_pop_pages += chunk->nr_empty_pop_pages;
-		pcpu_chunk_relocate(chunk, -1);
-	}
-}
+/* pcpu_reintegrate_chunk inlined into pcpu_alloc - single caller */
 
 static inline void pcpu_update_empty_pages(struct pcpu_chunk *chunk, int nr)
 {
@@ -865,7 +857,13 @@ restart:
 
 			off = pcpu_alloc_area(chunk, bits, bit_align, off);
 			if (off >= 0) {
-				pcpu_reintegrate_chunk(chunk);
+				/* pcpu_reintegrate_chunk inlined */
+				if (chunk->isolated) {
+					chunk->isolated = false;
+					pcpu_nr_empty_pop_pages +=
+						chunk->nr_empty_pop_pages;
+					pcpu_chunk_relocate(chunk, -1);
+				}
 				goto area_found;
 			}
 		}

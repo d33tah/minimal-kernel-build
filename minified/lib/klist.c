@@ -12,13 +12,7 @@ static bool knode_dead(struct klist_node *knode)
 	return (unsigned long)knode->n_klist & KNODE_DEAD;
 }
 
-static void knode_set_klist(struct klist_node *knode, struct klist *klist)
-{
-	knode->n_klist = klist;
-
-	WARN_ON(knode_dead(knode));
-}
-
+/* knode_set_klist inlined into klist_release - single caller */
 /* knode_kill inlined - set KNODE_DEAD bit in n_klist */
 
 void klist_init(struct klist *k, void (*get)(struct klist_node *),
@@ -60,7 +54,8 @@ static void klist_release(struct kref *kref)
 		wake_up_process(waiter->process);
 	}
 	spin_unlock(&klist_remove_lock);
-	knode_set_klist(n, NULL);
+	/* knode_set_klist(n, NULL) inlined */
+	n->n_klist = NULL;
 }
 
 static int klist_dec_and_del(struct klist_node *n)

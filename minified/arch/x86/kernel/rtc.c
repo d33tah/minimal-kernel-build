@@ -11,11 +11,9 @@ extern spinlock_t rtc_lock;
 #define RTC_DAY_OF_MONTH 7
 #define RTC_MONTH 8
 #define RTC_YEAR 9
-#define RTC_REG_A 10
-#define RTC_REG_B 11
-#define RTC_FREQ_SELECT RTC_REG_A
+#define RTC_FREQ_SELECT 10
 #define RTC_UIP 0x80
-#define RTC_CONTROL RTC_REG_B
+/* RTC_REG_A, RTC_REG_B, RTC_CONTROL removed - unused */
 /* RTC_DM_BINARY and RTC_ALWAYS_BCD not needed - always BCD mode */
 /* end mc146818rtc.h */
 /* Inlined from linux/bcd.h */

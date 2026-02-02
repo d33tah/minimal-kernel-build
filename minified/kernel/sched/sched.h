@@ -84,9 +84,7 @@ extern unsigned long calc_load_update;
 /* calc_global_load_tick, calc_load_fold_active removed - never called */
 
 /* call_trace_sched_update_nr_running removed - unused */
-
-extern unsigned int sysctl_sched_rt_period;
-extern int sysctl_sched_rt_runtime;
+/* sysctl_sched_rt_period, sysctl_sched_rt_runtime removed - no longer used */
 
  
 #define NS_TO_JIFFIES(TIME)	((unsigned long)(TIME) / (NSEC_PER_SEC / HZ))

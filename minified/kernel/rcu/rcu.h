@@ -9,7 +9,7 @@
  * rcu_seq_endval, rcu_seq_end, rcu_seq_snap, rcu_seq_current,
  * rcu_seq_started, rcu_seq_done, rcu_seq_completed_gp, rcu_seq_new_gp, rcu_seq_diff */
 
-extern int sysctl_sched_rt_runtime;
+/* sysctl_sched_rt_runtime removed - no longer used */
 
 /* debug_rcu_head_queue, debug_rcu_head_unqueue removed - never called */
 /* rcu_stall_is_suppressed_at_boot and rcu_stall_is_suppressed removed - unused */

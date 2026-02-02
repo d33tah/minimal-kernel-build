@@ -929,16 +929,7 @@ void __init sched_init(void)
 	wait_bit_init();
 
 	/* dead if (ptr) block removed - ptr was always 0 */
-
-	/* global_rt_period and global_rt_runtime inlined - single caller */
-	{
-		u64 period = (u64)sysctl_sched_rt_period * NSEC_PER_USEC;
-		u64 runtime =
-			(sysctl_sched_rt_runtime < 0) ?
-				RUNTIME_INF :
-				(u64)sysctl_sched_rt_runtime * NSEC_PER_USEC;
-		init_rt_bandwidth(&def_rt_bandwidth, period, runtime);
-	}
+	/* global_rt_period/runtime calc removed - init_rt_bandwidth is now empty */
 
 	/* for_each_possible_cpu simplified - single CPU */
 	{

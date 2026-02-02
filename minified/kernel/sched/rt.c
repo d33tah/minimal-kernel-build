@@ -1,7 +1,5 @@
 /* Minimal RT scheduler stub */
-
-unsigned int sysctl_sched_rt_period = 1000000;
-int sysctl_sched_rt_runtime = 950000;
+/* sysctl_sched_rt_period, sysctl_sched_rt_runtime removed - no longer used */
 struct rt_bandwidth def_rt_bandwidth;
 
 void init_rt_bandwidth(struct rt_bandwidth *rt_b, u64 period, u64 runtime)

@@ -96,21 +96,7 @@ static void i_callback(struct rcu_head *head)
 	kmem_cache_free(inode_cachep, inode);
 }
 
-static struct inode *alloc_inode(struct super_block *sb)
-{
-	struct inode *inode;
-
-	/* alloc_inode callback removed - never assigned */
-	inode = alloc_inode_sb(sb, inode_cachep, GFP_KERNEL);
-
-	if (!inode)
-		return NULL;
-
-	inode_init_always(sb, inode);
-
-	return inode;
-}
-
+/* alloc_inode inlined into new_inode_pseudo - single caller */
 /* __destroy_inode inlined into evict - single caller */
 
 /* drop_nlink, clear_nlink removed - never called */
@@ -310,14 +296,18 @@ unsigned int get_next_ino(void)
 
 static struct inode *new_inode_pseudo(struct super_block *sb)
 {
-	struct inode *inode = alloc_inode(sb);
+	struct inode *inode;
 
-	if (inode) {
-		spin_lock(&inode->i_lock);
-		inode->i_state = 0;
-		spin_unlock(&inode->i_lock);
-		INIT_LIST_HEAD(&inode->i_sb_list);
-	}
+	/* alloc_inode inlined */
+	inode = alloc_inode_sb(sb, inode_cachep, GFP_KERNEL);
+	if (!inode)
+		return NULL;
+	inode_init_always(sb, inode);
+
+	spin_lock(&inode->i_lock);
+	inode->i_state = 0;
+	spin_unlock(&inode->i_lock);
+	INIT_LIST_HEAD(&inode->i_sb_list);
 	return inode;
 }
 

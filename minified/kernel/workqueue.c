@@ -28,11 +28,7 @@ bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
 }
 
 /* flush_work moved to workqueue.h as static inline */
-
-bool flush_delayed_work(struct delayed_work *dwork)
-{
-	return false; /* flush_work always returns false */
-}
+/* flush_delayed_work removed - always returns false, single caller removed */
 
 bool cancel_delayed_work(struct delayed_work *dwork)
 {

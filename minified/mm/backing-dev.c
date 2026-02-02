@@ -99,7 +99,7 @@ void bdi_unregister(struct backing_dev_info *bdi)
 		/* mod_delayed_work inlined */
 		cancel_delayed_work(&bdi->wb.dwork);
 		queue_delayed_work(bdi_wq, &bdi->wb.dwork, 0);
-		flush_delayed_work(&bdi->wb.dwork);
+		/* flush_delayed_work removed - always returns false */
 		WARN_ON(!list_empty(&bdi->wb.work_list));
 		/* flush_delayed_work bw_dwork removed - never scheduled */
 	} else {

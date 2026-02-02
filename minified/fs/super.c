@@ -23,14 +23,8 @@ static char *sb_writers_name[SB_FREEZE_LEVELS] = {
 static unsigned long super_cache_scan(struct shrinker *shrink,
 				      struct shrink_control *sc)
 {
-	struct super_block *sb;
-	/* fs_objects removed - was unused */
-	long total_objects;
-	long freed = 0;
-	long dentries;
-	long inodes;
-
-	sb = container_of(shrink, struct super_block, s_shrink);
+	struct super_block *sb =
+		container_of(shrink, struct super_block, s_shrink);
 
 	if (!(sc->gfp_mask & __GFP_FS))
 		return SHRINK_STOP;
@@ -38,24 +32,9 @@ static unsigned long super_cache_scan(struct shrinker *shrink,
 	if (!trylock_super(sb))
 		return SHRINK_STOP;
 
-	/* nr_cached_objects/free_cached_objects removed - never set */
-
-	inodes = list_lru_shrink_count(&sb->s_inode_lru, sc);
-	dentries = list_lru_shrink_count(&sb->s_dentry_lru, sc);
-	total_objects = dentries + inodes + 1;
-	if (!total_objects)
-		total_objects = 1;
-
-	dentries = mult_frac(sc->nr_to_scan, dentries, total_objects);
-	inodes = mult_frac(sc->nr_to_scan, inodes, total_objects);
-
-	sc->nr_to_scan = dentries + 1;
-	freed = prune_dcache_sb(sb, sc);
-	sc->nr_to_scan = inodes + 1;
-	freed += prune_icache_sb(sb, sc);
-
+	/* Simplified: prune_dcache_sb and prune_icache_sb are stubs returning 0 */
 	up_read(&sb->s_umount);
-	return freed;
+	return 0;
 }
 
 static unsigned long super_cache_count(struct shrinker *shrink,

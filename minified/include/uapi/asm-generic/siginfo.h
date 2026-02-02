@@ -72,7 +72,7 @@ typedef struct siginfo {
    si_stime, si_value, si_int, si_ptr, si_trapno, si_addr_lsb, si_lower,
    si_upper, si_pkey, si_band, si_fd */
 
-#define SI_USER		0
+/* SI_USER removed - unused */
 #define SI_KERNEL	0x80
 
 /* SI_FROMUSER, SI_FROMKERNEL removed - never used */

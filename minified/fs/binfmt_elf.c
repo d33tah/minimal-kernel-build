@@ -357,16 +357,7 @@ static inline int make_prot(u32 p_flags, struct arch_elf_state *arch_state,
 	return prot; /* arch_elf_adjust_prot inlined - just returns prot unchanged */
 }
 
-/* Stub: init is statically linked, no interpreter needed */
-static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
-				     struct file *interpreter,
-				     unsigned long no_base,
-				     struct elf_phdr *interp_elf_phdata,
-				     struct arch_elf_state *arch_state)
-{
-	return -EINVAL;
-}
-
+/* load_elf_interp inlined - init is statically linked, always returns -EINVAL */
 /* parse_elf_properties removed - always returned 0 */
 
 static int load_elf_binary(struct linux_binprm *bprm)
@@ -664,9 +655,8 @@ out_free_interp:
 	}
 
 	if (interpreter) {
-		elf_entry = load_elf_interp(interp_elf_ex, interpreter,
-					    load_bias, interp_elf_phdata,
-					    &arch_state);
+		/* load_elf_interp inlined - always returns -EINVAL */
+		elf_entry = -EINVAL;
 		if (!IS_ERR((void *)elf_entry)) {
 			interp_load_addr = elf_entry;
 			elf_entry += interp_elf_ex->e_entry;

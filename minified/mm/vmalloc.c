@@ -727,20 +727,7 @@ alloc_done:
 #define VMAP_BBMAP_BITS_MIN (VMAP_MAX_ALLOC * 2)
 #define VMAP_MIN(x, y) ((x) < (y) ? (x) : (y))
 #define VMAP_MAX(x, y) ((x) > (y) ? (x) : (y))
-#define VMAP_BBMAP_BITS                        \
-	VMAP_MIN(VMAP_BBMAP_BITS_MAX,          \
-		 VMAP_MAX(VMAP_BBMAP_BITS_MIN, \
-			  VMALLOC_PAGES / roundup_pow_of_two(NR_CPUS) / 16))
-/* VMAP_BLOCK_SIZE removed - unused */
-
-struct vmap_block_queue {
-	spinlock_t lock;
-	struct list_head free;
-};
-
-/* struct vmap_block removed - never used */
-
-static DEFINE_PER_CPU(struct vmap_block_queue, vmap_block_queue);
+/* VMAP_BBMAP_BITS, vmap_block_queue struct and per-CPU var removed - only initialized, never used */
 
 /* purge_fragmented_blocks_allcpus definition removed - already inlined in stubs above */
 
@@ -753,13 +740,6 @@ void __init vmalloc_init(void)
 	/* va, tmp removed - vmlist loop removed (vmlist always NULL) */
 
 	vmap_area_cachep = KMEM_CACHE(vmap_area, SLAB_PANIC);
-
-	/* for_each_possible_cpu simplified - single CPU */
-	{
-		struct vmap_block_queue *vbq = &per_cpu(vmap_block_queue, 0);
-		spin_lock_init(&vbq->lock);
-		INIT_LIST_HEAD(&vbq->free);
-	}
 
 	/* vmlist loop removed - vmlist was never assigned, always NULL */
 

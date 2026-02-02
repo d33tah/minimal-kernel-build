@@ -21,34 +21,31 @@ struct ioremap_desc {
 	unsigned int flags;
 };
 
-static unsigned int __ioremap_check_ram(struct resource *res)
-{
-	unsigned long start_pfn, stop_pfn;
-	unsigned long i;
-
-	if ((res->flags & IORESOURCE_SYSTEM_RAM) != IORESOURCE_SYSTEM_RAM)
-		return 0;
-
-	start_pfn = (res->start + PAGE_SIZE - 1) >> PAGE_SHIFT;
-	stop_pfn = (res->end + 1) >> PAGE_SHIFT;
-	if (stop_pfn > start_pfn) {
-		for (i = 0; i < (stop_pfn - start_pfn); ++i)
-			if (pfn_valid(start_pfn + i) &&
-			    !PageReserved(pfn_to_page(start_pfn + i)))
-				return IORES_MAP_SYSTEM_RAM;
-	}
-
-	return 0;
-}
-
+/* __ioremap_check_ram inlined into __ioremap_collect_map_flags - single caller */
 /* __ioremap_check_encrypted removed - cc_platform_has always returned false */
 
 static int __ioremap_collect_map_flags(struct resource *res, void *arg)
 {
 	struct ioremap_desc *desc = arg;
 
-	if (!(desc->flags & IORES_MAP_SYSTEM_RAM))
-		desc->flags |= __ioremap_check_ram(res);
+	/* __ioremap_check_ram inlined */
+	if (!(desc->flags & IORES_MAP_SYSTEM_RAM)) {
+		if ((res->flags & IORESOURCE_SYSTEM_RAM) ==
+		    IORESOURCE_SYSTEM_RAM) {
+			unsigned long start_pfn, stop_pfn;
+			unsigned long i;
+			start_pfn = (res->start + PAGE_SIZE - 1) >> PAGE_SHIFT;
+			stop_pfn = (res->end + 1) >> PAGE_SHIFT;
+			if (stop_pfn > start_pfn) {
+				for (i = 0; i < (stop_pfn - start_pfn); ++i)
+					if (pfn_valid(start_pfn + i) &&
+					    !PageReserved(
+						    pfn_to_page(start_pfn + i)))
+						desc->flags |=
+							IORES_MAP_SYSTEM_RAM;
+			}
+		}
+	}
 
 	/* IORES_MAP_ENCRYPTED check removed - cc_platform_has always returns false */
 	return (desc->flags & IORES_MAP_SYSTEM_RAM);

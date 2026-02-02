@@ -179,13 +179,7 @@ static void inode_lru_list_del(struct inode *inode)
 	/* nr_unused counter removed */
 }
 
-static void inode_sb_list_add(struct inode *inode)
-{
-	spin_lock(&inode->i_sb->s_inode_list_lock);
-	list_add(&inode->i_sb_list, &inode->i_sb->s_inodes);
-	spin_unlock(&inode->i_sb->s_inode_list_lock);
-}
-
+/* inode_sb_list_add inlined into new_inode - single caller */
 /* inode_sb_list_del inlined into evict() */
 
 static void __remove_inode_hash(struct inode *inode)
@@ -342,8 +336,12 @@ struct inode *new_inode(struct super_block *sb)
 	spin_lock_prefetch(&sb->s_inode_list_lock);
 
 	inode = new_inode_pseudo(sb);
-	if (inode)
-		inode_sb_list_add(inode);
+	if (inode) {
+		/* inode_sb_list_add inlined */
+		spin_lock(&inode->i_sb->s_inode_list_lock);
+		list_add(&inode->i_sb_list, &inode->i_sb->s_inodes);
+		spin_unlock(&inode->i_sb->s_inode_list_lock);
+	}
 	return inode;
 }
 

@@ -479,8 +479,7 @@ static __always_inline struct rq *context_switch(struct rq *rq,
 /* nr_running() removed - never called */
 
 /* nr_iowait and nr_iowait_cpu removed - never called */
-
-DEFINE_PER_CPU(struct kernel_stat, kstat);
+/* DEFINE_PER_CPU kstat removed - write-only */
 
 /* cpu_resched_latency removed - always returned 0, only used by removed code */
 

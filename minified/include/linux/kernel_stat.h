@@ -6,22 +6,8 @@
 #include <linux/interrupt.h>
 
 /* enum cpu_usage_stat, struct kernel_cpustat removed - never used (~16 LOC) */
-
-struct kernel_stat {
-	unsigned long irqs_sum;
-	unsigned int softirqs[NR_SOFTIRQS];
-};
-
-DECLARE_PER_CPU(struct kernel_stat, kstat);
-
-/* kstat_this_cpu, kcpustat_this_cpu, kstat_cpu, kcpustat_cpu removed - unused */
-
-
-
-static inline void kstat_incr_softirqs_this_cpu(unsigned int irq)
-{
-	__this_cpu_inc(kstat.softirqs[irq]);
-}
+/* struct kernel_stat, kstat per-CPU, kstat_incr_softirqs_this_cpu removed - write-only */
+static inline void kstat_incr_softirqs_this_cpu(unsigned int irq) { }
 
 
 #endif  

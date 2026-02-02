@@ -589,8 +589,7 @@ extern void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags);
 extern struct sched_entity *__pick_first_entity(struct cfs_rq *cfs_rq);
 /* resched_latency_warn removed - empty stub, never called */
 extern void init_cfs_rq(struct cfs_rq *cfs_rq);
-extern void init_rt_rq(struct rt_rq *rt_rq);
-extern void init_dl_rq(struct dl_rq *dl_rq);
+/* init_rt_rq, init_dl_rq removed - all rt_rq/dl_rq fields removed */
 /* cpufreq_update_util, uclamp_rq_util_with, perf_domain_span, membarrier_switch_mm removed - unused stubs */
 
 /* swake_up_all_locked removed - unused */

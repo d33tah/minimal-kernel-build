@@ -937,9 +937,7 @@ void __init sched_init(void)
 		raw_spin_lock_init(&rq->__lock);
 		rq->nr_running = 0;
 		init_cfs_rq(&rq->cfs);
-		init_rt_rq(&rq->rt);
-		init_dl_rq(&rq->dl);
-		/* rq->rt.rt_runtime removed - write-only, never read */
+		/* init_rt_rq, init_dl_rq removed - were empty stubs */
 		atomic_set(&rq->nr_iowait, 0);
 	}
 

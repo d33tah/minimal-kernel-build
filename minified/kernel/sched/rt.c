@@ -1,10 +1,6 @@
 /* Minimal RT scheduler stub */
-/* sysctl_sched_rt_period/runtime, def_rt_bandwidth, init_rt_bandwidth removed - unused */
-
-void init_rt_rq(struct rt_rq *rt_rq)
-{
-	/* All fields removed - rt_rq never read, only initialized */
-}
+/* sysctl_sched_rt_period/runtime, def_rt_bandwidth, init_rt_bandwidth,
+   init_rt_rq removed - all rt_rq fields removed */
 
 /* Stub functions - RT scheduler not used */
 static void enqueue_task_rt(struct rq *rq, struct task_struct *p, int f)
@@ -54,10 +50,7 @@ DEFINE_SCHED_CLASS(rt) = {
 };
 
 /* Merged from deadline.c */
-void init_dl_rq(struct dl_rq *dl_rq)
-{
-	/* All fields removed - dl_rq never read */
-}
+/* init_dl_rq removed - all dl_rq fields removed */
 static void enqueue_task_dl(struct rq *rq, struct task_struct *p, int flags)
 {
 }

@@ -61,7 +61,7 @@ __visible DEFINE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw) = {
 	 },
 };
 
-DEFINE_PER_CPU(bool, __tss_limit_invalid);
+/* __tss_limit_invalid removed - write-only variable, never read */
 
 int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)
 {

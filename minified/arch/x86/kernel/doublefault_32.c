@@ -29,7 +29,7 @@ asmlinkage noinstr void __noreturn doublefault_shim(void)
 		tss.type = DESC_TSS;
 		write_gdt_entry(d, GDT_ENTRY_TSS, &tss, DESC_TSS);
 		load_TR_desc();
-		this_cpu_write(__tss_limit_invalid, false);
+		/* this_cpu_write(__tss_limit_invalid, false) removed - write-only variable */
 	}
 	/* inlined set_df_gdt_entry */
 	__set_tss_desc(

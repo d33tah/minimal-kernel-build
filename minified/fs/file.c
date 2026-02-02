@@ -446,14 +446,7 @@ static inline struct file *__fget_files_rcu(struct files_struct *files,
 	}
 }
 
-static inline struct file *__fget(unsigned int fd, fmode_t mask)
-{
-	struct file *file;
-	rcu_read_lock();
-	file = __fget_files_rcu(current->files, fd, mask);
-	rcu_read_unlock();
-	return file;
-}
+/* __fget inlined into __fdget - single caller */
 
 unsigned long __fdget(unsigned int fd)
 {
@@ -466,7 +459,10 @@ unsigned long __fdget(unsigned int fd)
 			return 0;
 		return (unsigned long)file;
 	} else {
-		file = __fget(fd, FMODE_PATH);
+		/* __fget inlined */
+		rcu_read_lock();
+		file = __fget_files_rcu(current->files, fd, FMODE_PATH);
+		rcu_read_unlock();
 		if (!file)
 			return 0;
 		return FDPUT_FPUT | (unsigned long)file;

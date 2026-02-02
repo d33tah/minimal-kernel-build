@@ -383,11 +383,7 @@ void update_wall_time(void)
 
 /* ktime_get_coarse_real_ts64 removed - never called (~11 LOC) */
 
-void do_timer(unsigned long ticks)
-{
-	jiffies_64 += ticks;
-	/* calc_global_load removed - was empty stub */
-}
+/* do_timer removed - never called (~5 LOC) */
 
 /* ktime_get_update_offsets_now removed - never called (~28 LOC) */
 /* random_get_entropy_fallback removed - random_get_entropy() is never called (~8 LOC) */

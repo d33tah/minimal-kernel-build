@@ -73,13 +73,7 @@ extern unsigned long volatile __cacheline_aligned_in_smp __jiffy_arch_data jiffi
 /* jiffies_to_usecs removed - never called */
 
 
-extern unsigned long __msecs_to_jiffies(const unsigned int m);
-/* HZ=250, MSEC_PER_SEC=1000: HZ <= MSEC_PER_SEC && !(MSEC_PER_SEC % HZ) */
-static inline unsigned long _msecs_to_jiffies(const unsigned int m)
-{
-	return (m + (MSEC_PER_SEC / HZ) - 1) / (MSEC_PER_SEC / HZ);
-}
-/* msecs_to_jiffies, __usecs_to_jiffies, usecs_to_jiffies removed - never called */
+/* __msecs_to_jiffies, _msecs_to_jiffies, msecs_to_jiffies, __usecs_to_jiffies, usecs_to_jiffies removed - never called */
 /* timespec64_to_jiffies, nsecs_to_jiffies64, nsecs_to_jiffies removed - never called */
 
 #endif

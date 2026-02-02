@@ -23,7 +23,7 @@ struct klist_node {
 	struct kref		n_ref;
 };
 
-extern void klist_add_tail(struct klist_node *n, struct klist *k);
+/* klist_add_tail removed - never called */
 
 extern void klist_del(struct klist_node *n);
 extern void klist_remove(struct klist_node *n);

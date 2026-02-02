@@ -69,9 +69,7 @@ static inline bool clockevent_state_oneshot(struct clock_event_device *dev)
 
 extern void clockevents_register_device(struct clock_event_device *dev);
 
-extern void clockevents_config_and_register(struct clock_event_device *dev,
-					    u32 freq, unsigned long min_delta,
-					    unsigned long max_delta);
+/* clockevents_config_and_register removed - never called */
 
 static inline void
 clockevents_calc_mult_shift(struct clock_event_device *ce, u32 freq, u32 maxsec)

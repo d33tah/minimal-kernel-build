@@ -214,33 +214,7 @@ void clockevents_register_device(struct clock_event_device *dev)
 	raw_spin_unlock_irqrestore(&clockevents_lock, flags);
 }
 
-/* clockevents_config inlined into clockevents_config_and_register */
-void clockevents_config_and_register(struct clock_event_device *dev, u32 freq,
-				     unsigned long min_delta,
-				     unsigned long max_delta)
-{
-	u64 sec;
-
-	dev->min_delta_ticks = min_delta;
-	dev->max_delta_ticks = max_delta;
-
-	/* clockevents_config inlined */
-	if (dev->features & CLOCK_EVT_FEAT_ONESHOT) {
-		sec = dev->max_delta_ticks;
-		do_div(sec, freq);
-		if (!sec)
-			sec = 1;
-		else if (sec > 600 && dev->max_delta_ticks > UINT_MAX)
-			sec = 600;
-
-		clockevents_calc_mult_shift(dev, freq, sec);
-		dev->min_delta_ns =
-			cev_delta2ns(dev->min_delta_ticks, dev, false);
-		dev->max_delta_ns =
-			cev_delta2ns(dev->max_delta_ticks, dev, true);
-	}
-	clockevents_register_device(dev);
-}
+/* clockevents_config_and_register removed - never called (~26 LOC) */
 
 void clockevents_exchange_device(struct clock_event_device *old,
 				 struct clock_event_device *new)

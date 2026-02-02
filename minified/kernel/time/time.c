@@ -67,12 +67,7 @@ time64_t mktime64(const unsigned int year0, const unsigned int mon0,
 
 /* ns_to_timespec64 removed - never called */
 
-unsigned long __msecs_to_jiffies(const unsigned int m)
-{
-	if ((int)m < 0)
-		return MAX_JIFFY_OFFSET;
-	return _msecs_to_jiffies(m);
-}
+/* __msecs_to_jiffies removed - never called (~6 LOC) */
 
 /* Removed: __usecs_to_jiffies, timespec64_to_jiffies, nsecs_to_jiffies64,
    nsecs_to_jiffies, get_timespec64, put_timespec64 - dead code */

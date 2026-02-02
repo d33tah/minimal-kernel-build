@@ -301,15 +301,7 @@ static struct clocksource clocksource_tsc = {
 	.list = LIST_HEAD_INIT(clocksource_tsc.list),
 };
 
-void mark_tsc_unstable(char *reason)
-{
-	if (tsc_unstable)
-		return;
-
-	tsc_unstable = 1;
-	/* clear_sched_clock_stable, clocksource_mark_unstable removed - empty stubs */
-	pr_info("Marking TSC unstable due to %s\n", reason);
-}
+/* mark_tsc_unstable removed - never called (~8 LOC) */
 
 /* tsc_disable_clocksource_watchdog, unsynchronized_tsc removed - never called */
 

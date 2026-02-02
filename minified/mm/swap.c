@@ -64,10 +64,8 @@ void __put_page(struct page *page)
 	if (unlikely(PageCompound(page))) {
 		/* PageHuge is always false */
 		destroy_compound_page(page);
-	} else {
-		/* mem_cgroup_uncharge is empty stub */
-		free_unref_page(page, 0);
 	}
+	/* free_unref_page removed - no-op stub for bump allocator */
 }
 
 /* pagevec_lru_move_fn, pagevec_move_tail_fn removed - lru_rotate and lru_deactivate removed */
@@ -175,8 +173,7 @@ void release_pages(struct page **pages, int nr)
 	}
 	if (lruvec)
 		unlock_page_lruvec_irqrestore(lruvec, flags);
-	/* mem_cgroup_uncharge_list is empty stub */
-	free_unref_page_list(&pages_to_free);
+	/* mem_cgroup_uncharge_list, free_unref_page_list removed - no-op stubs */
 }
 
 void __pagevec_release(struct pagevec *pvec)

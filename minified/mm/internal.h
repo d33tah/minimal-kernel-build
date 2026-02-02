@@ -112,10 +112,7 @@ extern void memblock_free_pages(struct page *page, unsigned long pfn,
 					unsigned int order);
 /* user_min_free_kbytes removed - unused */
 
-/* free_unref_page/free_unref_page_list - no-op stubs for bump allocator */
-static inline void free_unref_page(struct page *page, unsigned int order) {}
-static inline void free_unref_page_list(struct list_head *list) {}
-
+/* free_unref_page/free_unref_page_list removed - no callers remain */
 
 extern void *memmap_alloc(phys_addr_t size, phys_addr_t align,
 			  phys_addr_t min_addr,

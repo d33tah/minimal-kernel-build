@@ -557,12 +557,7 @@ struct vc_draw_region {
 
 /* con_flush inlined into vt_write */
 
-/* Stub: Hello World only uses ASCII, no UTF-8 decoding needed */
-static int vc_translate_unicode(struct vc_data *vc, int c, bool *rescan)
-{
-	return c;
-}
-
+/* vc_translate_unicode inlined into con_write - was stub returning c */
 /* do_con_write inlined into con_write */
 
 struct tty_driver *console_driver;
@@ -644,7 +639,7 @@ static int con_write(struct tty_struct *tty, const unsigned char *buf,
 		if (vc->vc_state != ESnormal)
 			tc = c;
 		else if (vc->vc_utf && !vc->vc_disp_ctrl)
-			tc = c = vc_translate_unicode(vc, c, NULL);
+			tc = c; /* vc_translate_unicode inlined - stub returns c */
 		else
 			tc = c;
 		is_control = vc->vc_state != ESnormal || !tc ||

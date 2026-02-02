@@ -101,14 +101,7 @@ static inline void vga_set_mem_top(struct vc_data *c)
 }
 
 /* --- 2026-01-26 05:02 --- vgacon_scrolldelta inlined */
-static void vgacon_restore_screen(struct vc_data *c)
-{
-	if (c->vc_origin != c->vc_visible_origin) {
-		vc_scrolldelta_helper(c, 0, vga_rolled_over,
-				      (void *)vga_vram_base, vga_vram_size);
-		vga_set_mem_top(c);
-	}
-}
+/* vgacon_restore_screen inlined into vgacon_cursor - single caller */
 
 static const char *vgacon_startup(void)
 {
@@ -236,7 +229,12 @@ static void vgacon_cursor(struct vc_data *c, int mode)
 {
 	if (c->vc_mode != KD_TEXT)
 		return;
-	vgacon_restore_screen(c);
+	/* vgacon_restore_screen inlined */
+	if (c->vc_origin != c->vc_visible_origin) {
+		vc_scrolldelta_helper(c, 0, vga_rolled_over,
+				      (void *)vga_vram_base, vga_vram_size);
+		vga_set_mem_top(c);
+	}
 	write_vga(14, (c->vc_pos - vga_vram_base) / 2);
 }
 

@@ -132,16 +132,7 @@ unsigned long bitmap_find_next_zero_area_off(unsigned long *map,
 					     unsigned long align_mask,
 					     unsigned long align_offset);
 
-static inline unsigned long
-bitmap_find_next_zero_area(unsigned long *map,
-			   unsigned long size,
-			   unsigned long start,
-			   unsigned int nr,
-			   unsigned long align_mask)
-{
-	return bitmap_find_next_zero_area_off(map, size, start, nr,
-					      align_mask, 0);
-}
+/* bitmap_find_next_zero_area removed - never called */
 
 int bitmap_parse(const char *buf, unsigned int buflen,
 			unsigned long *dst, int nbits);

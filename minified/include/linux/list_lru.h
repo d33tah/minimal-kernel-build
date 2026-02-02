@@ -65,13 +65,7 @@ unsigned long list_lru_walk_one(struct list_lru *lru,
 				list_lru_walk_cb isolate, void *cb_arg,
 				unsigned long *nr_to_walk);
 
-static inline unsigned long
-list_lru_shrink_walk(struct list_lru *lru, struct shrink_control *sc,
-		     list_lru_walk_cb isolate, void *cb_arg)
-{
-	return list_lru_walk_one(lru, sc->nid, sc->memcg, isolate, cb_arg,
-				 &sc->nr_to_scan);
-}
+/* list_lru_shrink_walk removed - never called */
 
 
 #endif

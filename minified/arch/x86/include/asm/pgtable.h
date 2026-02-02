@@ -332,21 +332,7 @@ static inline pte_t native_local_ptep_get_and_clear(pte_t *ptep)
 	return res;
 }
 
-static inline pmd_t native_local_pmdp_get_and_clear(pmd_t *pmdp)
-{
-	pmd_t res = *pmdp;
-
-	native_pmd_clear(pmdp);
-	return res;
-}
-
-static inline pud_t native_local_pudp_get_and_clear(pud_t *pudp)
-{
-	pud_t res = *pudp;
-
-	native_pud_clear(pudp);
-	return res;
-}
+/* native_local_pmdp_get_and_clear, native_local_pudp_get_and_clear removed - never called */
 
 static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
 			      pte_t *ptep, pte_t pte)

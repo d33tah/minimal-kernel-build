@@ -53,8 +53,7 @@ static inline void native_pte_clear(struct mm_struct *mm,
 	*xp = native_make_pte(0);
 }
 #define native_ptep_get_and_clear(xp) native_local_ptep_get_and_clear(xp)
-#define native_pmdp_get_and_clear(xp) native_local_pmdp_get_and_clear(xp)
-#define native_pudp_get_and_clear(xp) native_local_pudp_get_and_clear(xp)
+/* native_pmdp_get_and_clear, native_pudp_get_and_clear removed - never called */
 /* Swap/protnone/invert macros removed - unused */
 /* kpte_clear_flush removed - unused */
 

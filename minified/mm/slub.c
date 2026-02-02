@@ -505,11 +505,7 @@ static void free_kmem_cache_nodes(struct kmem_cache *s)
 	}
 }
 
-static void __kmem_cache_release(struct kmem_cache *s)
-{
-	/* free_percpu removed - empty stub */
-	free_kmem_cache_nodes(s);
-}
+/* __kmem_cache_release inlined into kmem_cache_open - single caller */
 
 /* init_kmem_cache_nodes inlined into kmem_cache_open */
 
@@ -609,7 +605,8 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 	}
 
 error:
-	__kmem_cache_release(s);
+	/* __kmem_cache_release inlined */
+	free_kmem_cache_nodes(s);
 	return -EINVAL;
 }
 

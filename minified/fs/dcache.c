@@ -154,12 +154,7 @@ static void __d_drop(struct dentry *dentry)
 	}
 }
 
-static void d_drop(struct dentry *dentry)
-{
-	spin_lock(&dentry->d_lock);
-	__d_drop(dentry);
-	spin_unlock(&dentry->d_lock);
-}
+/* d_drop inlined into do_one_tree - single caller */
 
 /* dentry_unlist inlined into __dentry_kill */
 
@@ -437,7 +432,10 @@ int d_set_mounted(struct dentry *dentry)
 static void do_one_tree(struct dentry *dentry)
 {
 	/* d_walk is empty stub - just drop and put */
-	d_drop(dentry);
+	/* d_drop inlined */
+	spin_lock(&dentry->d_lock);
+	__d_drop(dentry);
+	spin_unlock(&dentry->d_lock);
 	dput(dentry);
 }
 

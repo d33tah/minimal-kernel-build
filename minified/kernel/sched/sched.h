@@ -203,7 +203,7 @@ struct rq {
 	u64			clock;
 	u64			clock_task ____cacheline_aligned;
 
-	atomic_t		nr_iowait;
+	/* nr_iowait removed - only incremented/decremented, never read */
 };
 
 

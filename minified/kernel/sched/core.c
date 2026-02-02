@@ -285,8 +285,7 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state,
 		struct rq *rq = cpu_rq(cpu);
 		rq_lock(rq, &rf);
 		update_rq_clock(rq);
-		if (p->in_iowait)
-			atomic_dec(&task_rq(p)->nr_iowait);
+		/* nr_iowait dec removed - field removed (never read) */
 		activate_task(rq, p, ENQUEUE_WAKEUP | ENQUEUE_NOCLOCK);
 		ttwu_do_wakeup(rq, p, wake_flags, &rf);
 		rq_unlock(rq, &rf);
@@ -572,8 +571,7 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 			deactivate_task(rq, prev,
 					DEQUEUE_SLEEP | DEQUEUE_NOCLOCK);
 
-			if (prev->in_iowait)
-				atomic_inc(&rq->nr_iowait);
+			/* nr_iowait inc removed - field removed (never read) */
 		}
 	}
 
@@ -937,7 +935,7 @@ void __init sched_init(void)
 		rq->nr_running = 0;
 		init_cfs_rq(&rq->cfs);
 		/* init_rt_rq, init_dl_rq removed - were empty stubs */
-		atomic_set(&rq->nr_iowait, 0);
+		/* nr_iowait init removed - field removed (never read) */
 	}
 
 	set_load_weight(&init_task, false);

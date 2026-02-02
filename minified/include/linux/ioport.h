@@ -16,7 +16,7 @@ struct resource {
 	struct resource *parent, *sibling, *child;
 };
 
-#define IORESOURCE_TYPE_BITS	0x00001f00
+/* IORESOURCE_TYPE_BITS removed - unused */
 #define IORESOURCE_IO		0x00000100
 #define IORESOURCE_MEM		0x00000200
 

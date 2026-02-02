@@ -84,7 +84,7 @@ struct signal_struct {
 	struct rw_semaphore exec_update_lock;	 
 } __randomize_layout;
 
-#define SIGNAL_GROUP_EXIT	0x00000004
+/* SIGNAL_GROUP_EXIT removed - unused */
 #define SIGNAL_UNKILLABLE	0x00000040
 /* SIGNAL_STOP_*, SIGNAL_CLD_*, SIGNAL_STOP_MASK removed - never used */
 

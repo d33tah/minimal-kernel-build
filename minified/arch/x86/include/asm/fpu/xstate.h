@@ -39,10 +39,6 @@
 
 /* xstate_fx_sw_bytes removed - never used */
 /* xfeature_size, xsaves, xrstors, xfd_enable_feature declarations removed - no implementations */
-
-static __always_inline __pure bool fpu_state_size_dynamic(void)
-{
-	return false;
-}
+/* fpu_state_size_dynamic removed - never called */
 
 #endif

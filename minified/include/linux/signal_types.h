@@ -22,7 +22,7 @@ struct sigqueue {
 	struct ucounts *ucounts;
 };
 
-#define SIGQUEUE_PREALLOC	1
+/* SIGQUEUE_PREALLOC removed - unused */
 
 struct sigpending {
 	struct list_head list;

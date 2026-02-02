@@ -35,8 +35,7 @@
 /* STATX_BASIC_STATS removed - unused */
 #define S_IRWXUGO	(S_IRWXU|S_IRWXG|S_IRWXO)
 #define S_IALLUGO	(S_ISUID|S_ISGID|S_ISVTX|S_IRWXUGO)
-/* S_IRUGO, S_IWUGO removed - unused */
-#define S_IXUGO		(S_IXUSR|S_IXGRP|S_IXOTH)
+/* S_IRUGO, S_IWUGO, S_IXUGO removed - unused */
 #include <linux/time.h>
 #include <linux/uidgid.h>
 /* struct kstat removed - unused */

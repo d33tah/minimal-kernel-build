@@ -144,12 +144,8 @@ struct rt_prio_array {
 };
 
 struct rt_bandwidth {
-	 
-	raw_spinlock_t		rt_runtime_lock;
-	ktime_t			rt_period;
-	u64			rt_runtime;
-	struct hrtimer		rt_period_timer;
-	unsigned int		rt_period_active;
+	/* rt_runtime_lock, rt_period, rt_runtime, rt_period_timer, rt_period_active removed - never read */
+	char dummy; /* Empty struct not allowed in C */
 };
 
 /* __dl_clear_params removed - empty stub */
@@ -194,10 +190,7 @@ struct rt_rq {
 
 	int			rt_throttled;
 	u64			rt_time;
-	u64			rt_runtime;
-	 
-	raw_spinlock_t		rt_runtime_lock;
-
+	/* rt_runtime, rt_runtime_lock removed - write-only, never read */
 };
 
 struct dl_rq {

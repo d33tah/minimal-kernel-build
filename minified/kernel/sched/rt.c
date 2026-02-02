@@ -6,8 +6,7 @@ struct rt_bandwidth def_rt_bandwidth;
 
 void init_rt_bandwidth(struct rt_bandwidth *rt_b, u64 period, u64 runtime)
 {
-	rt_b->rt_runtime = runtime;
-	raw_spin_lock_init(&rt_b->rt_runtime_lock);
+	/* rt_runtime, rt_runtime_lock removed - write-only, never read */
 }
 
 void init_rt_rq(struct rt_rq *rt_rq)
@@ -24,8 +23,7 @@ void init_rt_rq(struct rt_rq *rt_rq)
 	rt_rq->rt_queued = 0;
 	rt_rq->rt_time = 0;
 	rt_rq->rt_throttled = 0;
-	rt_rq->rt_runtime = 0;
-	raw_spin_lock_init(&rt_rq->rt_runtime_lock);
+	/* rt_runtime, rt_runtime_lock removed - write-only, never read */
 }
 
 /* Stub functions - RT scheduler not used */

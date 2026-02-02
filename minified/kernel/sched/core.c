@@ -948,7 +948,7 @@ void __init sched_init(void)
 		init_cfs_rq(&rq->cfs);
 		init_rt_rq(&rq->rt);
 		init_dl_rq(&rq->dl);
-		rq->rt.rt_runtime = def_rt_bandwidth.rt_runtime;
+		/* rq->rt.rt_runtime removed - write-only, never read */
 		atomic_set(&rq->nr_iowait, 0);
 	}
 

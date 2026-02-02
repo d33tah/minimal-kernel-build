@@ -389,13 +389,7 @@ static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
    pudp_test_and_clear_young, pmdp_clear_flush_young removed - unused */
 
 
-/* pmd_write, pmdp_huge_get_and_clear, pudp_huge_get_and_clear, pmdp_set_wrprotect removed - unused */
-
-#define pud_write pud_write
-static inline int pud_write(pud_t pud)
-{
-	return pud_flags(pud) & _PAGE_RW;
-}
+/* pmd_write, pmdp_huge_get_and_clear, pudp_huge_get_and_clear, pmdp_set_wrprotect, pud_write removed - unused */
 
 /* pmdp_establish removed - never called */
 

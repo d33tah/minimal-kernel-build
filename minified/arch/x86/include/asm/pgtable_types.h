@@ -307,39 +307,7 @@ static inline pmdval_t native_pmd_val(pmd_t pmd)
 	return native_pgd_val(pmd.pud.p4d.pgd);
 }
 
-static inline p4dval_t p4d_pfn_mask(p4d_t p4d)
-{
-	 
-	return PTE_PFN_MASK;
-}
-
-static inline p4dval_t p4d_flags_mask(p4d_t p4d)
-{
-	return ~p4d_pfn_mask(p4d);
-}
-
-static inline p4dval_t p4d_flags(p4d_t p4d)
-{
-	return native_p4d_val(p4d) & p4d_flags_mask(p4d);
-}
-
-static inline pudval_t pud_pfn_mask(pud_t pud)
-{
-	if (native_pud_val(pud) & _PAGE_PSE)
-		return PHYSICAL_PUD_PAGE_MASK;
-	else
-		return PTE_PFN_MASK;
-}
-
-static inline pudval_t pud_flags_mask(pud_t pud)
-{
-	return ~pud_pfn_mask(pud);
-}
-
-static inline pudval_t pud_flags(pud_t pud)
-{
-	return native_pud_val(pud) & pud_flags_mask(pud);
-}
+/* p4d_pfn_mask, p4d_flags_mask, p4d_flags, pud_pfn_mask, pud_flags_mask, pud_flags removed - never called */
 
 static inline pmdval_t pmd_pfn_mask(pmd_t pmd)
 {

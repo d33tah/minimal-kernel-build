@@ -77,11 +77,7 @@ void __put_page(struct page *page)
 /* folio_rotate_reclaimable removed - orphaned after folio_end_writeback removal */
 
 /* folio_activate, __lru_cache_activate_folio, activate_page_drain inlined/removed */
-
-/* Stubbed - LRU tracking not needed for single-process init (~35 LOC) */
-void folio_mark_accessed(struct folio *folio)
-{
-}
+/* folio_mark_accessed removed - was empty stub (~35 LOC removed originally, callers now removed) */
 
 void folio_add_lru(struct folio *folio)
 {

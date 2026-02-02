@@ -33,8 +33,7 @@ extern struct list_lru shadow_nodes;
 
 extern void folio_add_lru(struct folio *);
 /* lru_cache_add inlined into single caller */
-/* mark_page_accessed inlined into single caller */
-void folio_mark_accessed(struct folio *);
+/* mark_page_accessed, folio_mark_accessed removed - empty stubs */
 
 /* lru_disable_count, lru_cache_disabled removed - never used, always 0/false */
 

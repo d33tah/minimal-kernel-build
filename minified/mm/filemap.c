@@ -483,8 +483,7 @@ out_rcu:
 		}
 	}
 
-	if (fgp_flags & FGP_ACCESSED)
-		folio_mark_accessed(folio);
+	/* folio_mark_accessed removed - was empty stub (LRU tracking not needed) */
 
 	/* FGP_STABLE / folio_wait_stable removed - was empty stub */
 no_page:
@@ -872,11 +871,7 @@ ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
 
 		/* pos_same_folio inlined, folio_shift inlined */
 		{
-			unsigned int shift =
-				PAGE_SHIFT + folio_order(fbatch.folios[0]);
-			if (!(iocb->ki_pos >> shift ==
-			      (ra->prev_pos - 1) >> shift))
-				folio_mark_accessed(fbatch.folios[0]);
+			/* folio_mark_accessed removed - was empty stub */
 		}
 
 		for (i = 0; i < folio_batch_count(&fbatch); i++) {
@@ -889,8 +884,7 @@ ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
 
 			if (end_offset < folio_pos(folio))
 				break;
-			if (i > 0)
-				folio_mark_accessed(folio);
+			/* folio_mark_accessed removed - was empty stub */
 
 			copied = copy_folio_to_iter(folio, offset, bytes, iter);
 

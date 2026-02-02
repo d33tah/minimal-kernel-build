@@ -22,7 +22,7 @@ enum cpuhp_state {
 /* struct cpu removed - never instantiated */
 
 extern void boot_cpu_init(void);
-extern void boot_cpu_hotplug_init(void);
+/* boot_cpu_hotplug_init removed - empty stub */
 extern void cpu_init(void);
 extern void trap_init(void);
 

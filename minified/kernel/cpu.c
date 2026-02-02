@@ -56,9 +56,5 @@ void __init boot_cpu_init(void)
 	set_cpu_possible(cpu, true);
 }
 
-void __init boot_cpu_hotplug_init(void)
-{
-	/* cpuhp_state.state assignment removed - write-only */
-}
-
+/* boot_cpu_hotplug_init removed - was empty stub */
 /* on_each_cpu_cond_mask removed - no callers after TLB simplification */

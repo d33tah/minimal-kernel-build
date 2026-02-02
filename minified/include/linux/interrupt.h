@@ -124,7 +124,7 @@ asmlinkage void do_softirq(void);
 asmlinkage void __do_softirq(void);
 
 extern void open_softirq(int nr, void (*action)(struct softirq_action *));
-extern void softirq_init(void);
+/* softirq_init removed - empty stub */
 extern void __raise_softirq_irqoff(unsigned int nr);
 
 extern void raise_softirq_irqoff(unsigned int nr);

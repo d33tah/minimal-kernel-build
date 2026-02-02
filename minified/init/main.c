@@ -393,9 +393,8 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 		strcpy(saved_command_line, boot_command_line);
 		strcpy(static_command_line, command_line);
 	}
-	/* setup_nr_cpu_ids, smp_prepare_boot_cpu removed - empty stubs */
+	/* setup_nr_cpu_ids, smp_prepare_boot_cpu, boot_cpu_hotplug_init removed - empty stubs */
 	setup_per_cpu_areas();
-	boot_cpu_hotplug_init();
 
 	build_all_zonelists(NULL);
 	/* page_alloc_init removed - empty stub */
@@ -438,11 +437,10 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	early_irq_init();
 	init_IRQ();
 	tick_init();
-	/* rcu_init_nohz removed - empty stub */
+	/* rcu_init_nohz, softirq_init removed - empty stubs */
 	init_timers();
 	srcu_init();
 	hrtimers_init();
-	softirq_init();
 	timekeeping_init();
 	/* kfence_init removed - empty stub */
 	time_init();

@@ -196,11 +196,7 @@ void open_softirq(int nr, void (*action)(struct softirq_action *))
 	softirq_vec[nr].action = action;
 }
 
-void __init softirq_init(void)
-{
-	/* No tasklets needed in minimal kernel */
-}
-
+/* softirq_init removed - was empty stub (no tasklets needed) */
 /* ksoftirqd_should_run, run_ksoftirqd, spawn_ksoftirqd removed -
    CPU never goes offline, so no takeover_tasklets needed (~8 LOC) */
 

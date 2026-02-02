@@ -86,25 +86,7 @@ static inline void local_irq_disable_exit_to_user(void)
 }
 #endif
 
-static inline void arch_exit_to_user_mode_work(struct pt_regs *regs,
-					       unsigned long ti_work);
-
-#ifndef arch_exit_to_user_mode_work
-static inline void arch_exit_to_user_mode_work(struct pt_regs *regs,
-					       unsigned long ti_work)
-{
-}
-#endif
-
-static inline void arch_exit_to_user_mode_prepare(struct pt_regs *regs,
-						  unsigned long ti_work);
-
-#ifndef arch_exit_to_user_mode_prepare
-static inline void arch_exit_to_user_mode_prepare(struct pt_regs *regs,
-						  unsigned long ti_work)
-{
-}
-#endif
+/* arch_exit_to_user_mode_work, arch_exit_to_user_mode_prepare removed - never called */
 
 static __always_inline void arch_exit_to_user_mode(void);
 

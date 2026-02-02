@@ -136,21 +136,7 @@ int rcuwait_wake_up(struct rcuwait *w)
 }
 
 /* coredump_task_exit inlined into do_exit */
-
-/* Reaper functions simplified - minimal kernel init has no children */
-static struct task_struct *find_child_reaper(struct task_struct *father,
-					     struct list_head *dead)
-	__releases(&tasklist_lock) __acquires(&tasklist_lock)
-{
-	return task_active_pid_ns(father)->child_reaper;
-}
-
-static struct task_struct *find_new_reaper(struct task_struct *father,
-					   struct task_struct *child_reaper)
-{
-	return child_reaper;
-}
-
+/* find_child_reaper, find_new_reaper inlined into do_exit */
 /* reparent_leader, forget_original_parent, exit_notify inlined into do_exit */
 
 void __noreturn do_exit(long code)
@@ -204,10 +190,9 @@ void __noreturn do_exit(long code)
 
 		write_lock_irq(&tasklist_lock);
 
-		/* Inlined forget_original_parent */
-		reaper = find_child_reaper(tsk, &dead);
+		/* Inlined forget_original_parent, find_child_reaper, find_new_reaper */
+		reaper = task_active_pid_ns(tsk)->child_reaper;
 		if (!list_empty(&tsk->children)) {
-			reaper = find_new_reaper(tsk, reaper);
 			list_for_each_entry(p, &tsk->children, sibling) {
 				for_each_thread(p, t) {
 					RCU_INIT_POINTER(t->real_parent,

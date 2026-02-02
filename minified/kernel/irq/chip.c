@@ -220,7 +220,7 @@ void __irq_set_handler(unsigned int irq, irq_flow_handler_t handle,
 		irq_state_set_disabled(desc);
 		if (is_chained) {
 			desc->action = NULL;
-			WARN_ON(irq_chip_pm_put(irq_desc_get_irq_data(desc)));
+			/* irq_chip_pm_put removed - always returns 0 */
 		}
 		desc->depth = 1;
 	}
@@ -240,7 +240,7 @@ void __irq_set_handler(unsigned int irq, irq_flow_handler_t handle,
 		desc->status_use_accessors |= _IRQ_NOREQUEST;
 		desc->status_use_accessors |= _IRQ_NOTHREAD;
 		desc->action = &chained_action;
-		WARN_ON(irq_chip_pm_get(irq_desc_get_irq_data(desc)));
+		/* irq_chip_pm_get removed - always returns 0 */
 		irq_activate_and_startup(desc, IRQ_RESEND);
 	}
 
@@ -257,15 +257,4 @@ void irq_set_chip_and_handler_name(unsigned int irq,
 }
 
 /* irq_modify_status removed - never called */
-
-int irq_chip_pm_get(struct irq_data *data)
-{
-	/* CONFIG_PM not enabled */
-	return 0;
-}
-
-int irq_chip_pm_put(struct irq_data *data)
-{
-	/* CONFIG_PM not enabled */
-	return 0;
-}
+/* irq_chip_pm_get/irq_chip_pm_put removed - always return 0, calls removed */

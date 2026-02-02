@@ -221,9 +221,7 @@ extern void handle_level_irq(struct irq_desc *desc);
 extern void handle_bad_irq(struct irq_desc *desc);
 
 
-extern int irq_chip_pm_get(struct irq_data *data);
-extern int irq_chip_pm_put(struct irq_data *data);
-
+/* irq_chip_pm_get/irq_chip_pm_put removed - always returned 0, no callers */
 /* note_interrupt removed - declared but never called */
 
 extern struct irq_chip no_irq_chip;

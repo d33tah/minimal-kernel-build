@@ -568,13 +568,11 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 	action->name = devname;
 	action->dev_id = dev_id;
 
-	/* irq_chip_pm_get always returns 0, skip error check */
-	irq_chip_pm_get(&desc->irq_data);
+	/* irq_chip_pm_get/irq_chip_pm_put removed - always returns 0 */
 
 	retval = __setup_irq(irq, desc, action);
 
 	if (retval) {
-		irq_chip_pm_put(&desc->irq_data);
 		kfree(action->secondary);
 		kfree(action);
 	}

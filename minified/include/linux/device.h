@@ -92,9 +92,7 @@ struct device {
 	struct dev_pm_domain	*pm_domain;
 
 
-	/* dev_msi_info msi, dma_mask, coherent_dma_mask, bus_dma_limit, dma_range_map removed - never accessed */
-
-	struct list_head	dma_pools;
+	/* dev_msi_info msi, dma_mask, coherent_dma_mask, bus_dma_limit, dma_range_map, dma_pools, of_node removed - never accessed */
 
 	/* of_node removed - never accessed */
 	struct fwnode_handle	*fwnode;  

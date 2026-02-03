@@ -134,7 +134,7 @@ void device_initialize(struct device *dev)
 {
 	dev->kobj.kset = devices_kset;
 	kobject_init(&dev->kobj, &device_ktype);
-	INIT_LIST_HEAD(&dev->dma_pools);
+	/* INIT_LIST_HEAD(&dev->dma_pools) removed - field removed */
 	mutex_init(&dev->mutex);
 	spin_lock_init(&dev->devres_lock);
 	INIT_LIST_HEAD(&dev->devres_head);

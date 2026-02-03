@@ -718,10 +718,7 @@ alloc_done:
 /* free_vmap_area_noflush removed - inlined into single caller (~7 LOC) */
 /* find_vmap_area inlined - single caller */
 
-/* BITS_PER_LONG == 32 (i386) */
-#define VMALLOC_SPACE (128UL * 1024 * 1024)
-
-/* VMALLOC_PAGES, VMAP_MAX_ALLOC, VMAP_BBMAP_BITS_MAX, VMAP_BBMAP_BITS_MIN, VMAP_MIN, VMAP_MAX removed - never used */
+/* VMALLOC_SPACE, VMALLOC_PAGES, VMAP_MAX_ALLOC, VMAP_BBMAP_BITS_MAX, VMAP_BBMAP_BITS_MIN, VMAP_MIN, VMAP_MAX removed - never used */
 /* VMAP_BBMAP_BITS, vmap_block_queue struct and per-CPU var removed - only initialized, never used */
 
 /* purge_fragmented_blocks_allcpus definition removed - already inlined in stubs above */

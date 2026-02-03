@@ -25,14 +25,7 @@ LIST_HEAD(slab_caches);
 DEFINE_MUTEX(slab_mutex);
 struct kmem_cache *kmem_cache;
 
-#define SLAB_NEVER_MERGE                                              \
-	(SLAB_RED_ZONE | SLAB_POISON | SLAB_STORE_USER | SLAB_TRACE | \
-	 SLAB_TYPESAFE_BY_RCU | SLAB_NOLEAKTRACE | SLAB_FAILSLAB)
-
-#define SLAB_MERGE_SAME                                             \
-	(SLAB_RECLAIM_ACCOUNT | SLAB_CACHE_DMA | SLAB_CACHE_DMA32 | \
-	 SLAB_ACCOUNT)
-
+/* SLAB_NEVER_MERGE, SLAB_MERGE_SAME removed - never used */
 /* slab_nomerge removed - was always true (CONFIG_SLAB_MERGE_DEFAULT not set) */
 
 static unsigned int calculate_alignment(slab_flags_t flags, unsigned int align,

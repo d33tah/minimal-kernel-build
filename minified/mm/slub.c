@@ -20,16 +20,12 @@
 #define MIN_PARTIAL 5
 
 #define MAX_PARTIAL 10
-/* DEBUG_DEFAULT_FLAGS removed - unused */
-#define SLAB_NO_CMPXCHG (SLAB_CONSISTENCY_CHECKS | SLAB_STORE_USER | SLAB_TRACE)
-/* DEBUG_METADATA_FLAGS removed - never used */
+/* DEBUG_DEFAULT_FLAGS, SLAB_NO_CMPXCHG, DEBUG_METADATA_FLAGS removed - unused */
 
 #define OO_SHIFT 16
 #define OO_MASK ((1 << OO_SHIFT) - 1)
 #define MAX_OBJS_PER_PAGE 32767
-/* __OBJECT_POISON removed - never used */
-
-#define __CMPXCHG_DOUBLE ((slab_flags_t __force)0x40000000U)
+/* __OBJECT_POISON, __CMPXCHG_DOUBLE removed - never used */
 /* TRACK_ADDRS_COUNT, struct track, enum track_item removed - unused */
 /* Removed: sysfs_slab_add, sysfs_slab_alias, debugfs_slab_add - empty stubs */
 

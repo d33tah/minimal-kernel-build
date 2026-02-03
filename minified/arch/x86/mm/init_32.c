@@ -287,8 +287,7 @@ pteval_t __default_kernel_pte_mask __read_mostly = DEFAULT_PTE_MASK;
 
 static unsigned int highmem_pages = -1;
 
-#define MSG_HIGHMEM_TOO_BIG \
-	"highmem size (%luMB) is bigger than pages available (%luMB)!\n"
+/* MSG_HIGHMEM_TOO_BIG removed - never used */
 
 /* lowmem_pfn_init and highmem_pfn_init inlined - single callers */
 void __init find_low_pfn_range(void)

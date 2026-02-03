@@ -30,16 +30,7 @@
 #include <asm/param.h>
 #include <asm/page.h>
 
-#ifndef ELF_COMPAT
-#define ELF_COMPAT 0
-#endif
-
-#ifndef user_long_t
-#define user_long_t long
-#endif
-#ifndef user_siginfo_t
-#define user_siginfo_t siginfo_t
-#endif
+/* ELF_COMPAT, user_long_t, user_siginfo_t removed - never used */
 
 #ifndef elf_check_fdpic
 #define elf_check_fdpic(ex) false
@@ -48,15 +39,10 @@
 static int load_elf_binary(struct linux_binprm *bprm);
 
 #define load_elf_library NULL
-
-#define elf_core_dump NULL
+/* elf_core_dump, ELF_CORE_EFLAGS removed - never used */
 
 /* ELF_EXEC_PAGESIZE = PAGE_SIZE = 4096 on x86 */
 #define ELF_MIN_ALIGN PAGE_SIZE
-
-#ifndef ELF_CORE_EFLAGS
-#define ELF_CORE_EFLAGS 0
-#endif
 
 #define ELF_PAGESTART(_v) ((_v) & ~(int)(ELF_MIN_ALIGN - 1))
 #define ELF_PAGEOFFSET(_v) ((_v) & (ELF_MIN_ALIGN - 1))

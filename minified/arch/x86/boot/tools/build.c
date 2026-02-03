@@ -30,10 +30,8 @@ u8 buf[SETUP_SECT_MAX * 512];
 
 /* efi32_stub_entry, efi64_stub_entry, efi_pe_entry, efi32_pe_entry removed -
  * write-only variables, never read (EFI stub support removed) */
+/* startup_64, _ehead, _end removed - write-only variables, never read */
 static unsigned long kernel_info;
-static unsigned long startup_64;
-static unsigned long _ehead;
-static unsigned long _end;
 
 static const u32 crctab32[] = {
 	0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
@@ -153,11 +151,8 @@ static void parse_zoffset(char *fname)
 	p = (char *)buf;
 
 	while (p && *p) {
-		/* efi*_stub_entry, efi*_pe_entry parsing removed - variables not used */
+		/* efi*_stub_entry, efi*_pe_entry, startup_64, _ehead, _end parsing removed - variables not used */
 		PARSE_ZOFS(p, kernel_info);
-		PARSE_ZOFS(p, startup_64);
-		PARSE_ZOFS(p, _ehead);
-		PARSE_ZOFS(p, _end);
 
 		p = strchr(p, '\n');
 		while (p && (*p == '\r' || *p == '\n'))

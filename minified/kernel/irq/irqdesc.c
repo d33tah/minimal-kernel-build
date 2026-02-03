@@ -50,8 +50,7 @@ static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
 	init_waitqueue_head(&desc->wait_for_threads);
 
 	/* desc_set_defaults inlined */
-	desc->irq_common_data.handler_data = NULL;
-	desc->irq_common_data.msi_desc = NULL;
+	/* handler_data and msi_desc removed - never read */
 	desc->irq_data.common = &desc->irq_common_data;
 	desc->irq_data.irq = irq;
 	desc->irq_data.chip = &no_irq_chip;

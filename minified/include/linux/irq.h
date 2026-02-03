@@ -61,18 +61,18 @@ enum {
 	IRQ_SET_MASK_OK_DONE,
 };
 
-struct msi_desc;
+/* struct msi_desc forward decl removed - msi_desc field removed */
 struct irq_domain;
 
 struct irq_common_data {
 	unsigned int		__private state_use_accessors;
-	void			*handler_data;
-	struct msi_desc		*msi_desc;
+	/* handler_data removed - only set to NULL, never read */
+	/* msi_desc removed - only set to NULL, never read */
 	cpumask_var_t		affinity;
 };
 
 struct irq_data {
-	u32			mask;
+	/* mask removed - never accessed */
 	unsigned int		irq;
 	unsigned long		hwirq;
 	struct irq_common_data	*common;

@@ -75,9 +75,8 @@ struct delayed_work {
 	struct work_struct work;
 	struct timer_list timer;
 
-	 
 	struct workqueue_struct *wq;
-	int cpu;
+	/* cpu field removed - never assigned or read */
 };
 
 #define __WORK_INIT_LOCKDEP_MAP(n, k)

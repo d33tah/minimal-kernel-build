@@ -79,7 +79,7 @@ struct vc_data {
 	/* vc_decom removed - always 0 (origin mode disabled) */
 	unsigned int	vc_decawm	: 1;
 	unsigned int	vc_deccm	: 1;
-	unsigned int	vc_decim	: 1;
+	/* vc_decim removed - write-only (insert mode never used) */
 	unsigned int	vc_priv		: 3;
 	unsigned int	vc_need_wrap	: 1;
 	unsigned int	vc_can_do_color	: 1;

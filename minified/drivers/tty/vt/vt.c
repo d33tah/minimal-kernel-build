@@ -500,7 +500,7 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 	/* vc_decom assignment removed - field removed */
 	vc->vc_decawm = 1;
 	vc->vc_deccm = global_cursor_default;
-	vc->vc_decim = 0;
+	/* vc_decim assignment removed - field removed */
 	/* vt_reset_keyboard call removed - empty stub */
 	vc->vc_cursor_type = cur_default;
 	vc->vc_complement_mask = vc->vc_s_complement_mask;

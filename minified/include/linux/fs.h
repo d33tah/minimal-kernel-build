@@ -71,10 +71,9 @@ static inline void do_delayed_call(struct delayed_call *call)
 /* end uapi/linux/fs.h */
 
 /* Unused forward decls removed: bdi_writeback, bio, iovec, kobject,
-   poll_table_struct, kstatfs, vfsmount, seq_file, workqueue_struct */
+   poll_table_struct, kstatfs, vfsmount, seq_file, workqueue_struct, pipe_inode_info */
 struct backing_dev_info;
 struct kiocb;
-struct pipe_inode_info;
 struct vm_area_struct;
 struct cred;
 struct iov_iter;

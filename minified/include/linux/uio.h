@@ -7,7 +7,7 @@
 #include <linux/types.h>
 struct iovec { void __user *iov_base; __kernel_size_t iov_len; };
 struct page;
-struct pipe_inode_info;
+/* pipe_inode_info forward decl removed - unused */
 struct kvec { void *iov_base; size_t iov_len; };
 /* Only ITER_IOVEC and ITER_KVEC are used - others never initialized */
 enum iter_type { ITER_IOVEC, ITER_KVEC, ITER_BVEC, ITER_PIPE, ITER_XARRAY, ITER_DISCARD, };

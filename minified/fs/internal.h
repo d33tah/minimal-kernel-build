@@ -10,7 +10,7 @@ struct mount;
 struct shrink_control;
 struct fs_context;
 struct user_namespace;
-struct pipe_inode_info;
+/* pipe_inode_info forward decl removed - unused */
 
 /* __block_write_begin_int removed - never defined or called */
 

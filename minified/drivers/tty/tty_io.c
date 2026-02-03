@@ -80,18 +80,7 @@ static inline struct tty_struct *file_tty(struct file *file)
 	return ((struct tty_file_private *)file->private_data)->tty;
 }
 
-static int tty_alloc_file(struct file *file)
-{
-	struct tty_file_private *priv;
-
-	priv = kmalloc(sizeof(*priv), GFP_KERNEL);
-	if (!priv)
-		return -ENOMEM;
-
-	file->private_data = priv;
-
-	return 0;
-}
+/* tty_alloc_file inlined into tty_open */
 
 /* tty_add_file inlined into tty_open - single caller */
 
@@ -666,8 +655,10 @@ static int tty_open(struct inode *inode, struct file *filp)
 	nonseekable_open(inode, filp);
 
 retry_open:
-	retval = tty_alloc_file(filp);
-	if (retval)
+	/* Inlined tty_alloc_file */
+	filp->private_data =
+		kmalloc(sizeof(struct tty_file_private), GFP_KERNEL);
+	if (!filp->private_data)
 		return -ENOMEM;
 
 	/* Inlined tty_open_current_tty - returns NULL unless MKDEV(TTYAUX_MAJOR, 0) */

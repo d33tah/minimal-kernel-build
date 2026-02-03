@@ -135,13 +135,8 @@ struct sched_entity {
 	/* prev_sum_exec_runtime removed - write-only */
 };
 
-struct sched_rt_entity {
-	/* run_list, timeout, watchdog_stamp, time_slice, on_rq, on_list, back removed - write-only/unused */
-} __randomize_layout;
-
-struct sched_dl_entity {
-	/* rb_node removed - deadline scheduler stubbed, never used */
-};
+/* sched_rt_entity removed - RT scheduler stubbed, struct was empty */
+/* sched_dl_entity removed - DL scheduler stubbed, struct was empty */
 
 
 /* union rcu_special removed - never used */
@@ -179,8 +174,7 @@ struct task_struct {
 	unsigned int			rt_priority;
 
 	struct sched_entity		se;
-	struct sched_rt_entity		rt;
-	struct sched_dl_entity		dl;
+	/* rt/dl fields removed - structs were empty */
 	const struct sched_class	*sched_class;
 	/* stats field removed - schedstat_enabled() always 0 */
 
@@ -221,9 +215,9 @@ struct task_struct {
 	unsigned			in_iowait:1;
 	unsigned			restore_sigmask:1;
 
-	unsigned long			atomic_flags;  
+	unsigned long			atomic_flags;
 
-	struct restart_block		restart_block;
+	/* restart_block removed - never accessed */
 
 	pid_t				pid;
 	pid_t				tgid;

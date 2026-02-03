@@ -308,10 +308,7 @@ SYSCALL_DEFINE0(restart_syscall)
 	return -EINTR;
 }
 
-long do_no_restart_syscall(struct restart_block *param)
-{
-	return -EINTR;
-}
+/* do_no_restart_syscall removed - restart_block removed from task_struct */
 
 /* Stub: single-threaded init, no thread group signal retargeting */
 void __set_current_blocked(const sigset_t *newset)

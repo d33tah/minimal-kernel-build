@@ -54,14 +54,9 @@ struct task_struct init_task
 	/* nr_cpus_allowed removed - never read */
 	.mm		= NULL,
 	.active_mm	= &init_mm,
-	.restart_block	= {
-		.fn = do_no_restart_syscall,
-	},
+	/* .restart_block, .rt, .dl removed - fields removed from task_struct */
 	.se		= {
 		/* .group_node removed - field removed from sched_entity */
-	},
-	.rt		= {
-		/* .run_list, .time_slice removed - fields removed from sched_rt_entity */
 	},
 	.tasks		= LIST_HEAD_INIT(init_task.tasks),
 	.ptraced	= LIST_HEAD_INIT(init_task.ptraced),

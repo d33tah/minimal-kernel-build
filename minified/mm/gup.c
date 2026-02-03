@@ -140,39 +140,7 @@ no_page:
 /* get_gate_page removed - in_gate_area always returns 0 */
 /* faultin_page inlined into __get_user_pages */
 
-static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
-{
-	vm_flags_t vm_flags = vma->vm_flags;
-	int write = (gup_flags & FOLL_WRITE);
-	/* foreign removed - never used after FOLL_REMOTE simplification */
-
-	if (vm_flags & (VM_IO | VM_PFNMAP))
-		return -EFAULT;
-
-	if (gup_flags & FOLL_ANON && !vma_is_anonymous(vma))
-		return -EFAULT;
-
-	/* vma_is_fsdax always returns false */
-
-	if (write) {
-		if (!(vm_flags & VM_WRITE)) {
-			if (!(gup_flags & FOLL_FORCE))
-				return -EFAULT;
-
-			if (!is_cow_mapping(vm_flags))
-				return -EFAULT;
-		}
-	} else if (!(vm_flags & VM_READ)) {
-		if (!(gup_flags & FOLL_FORCE))
-			return -EFAULT;
-
-		if (!(vm_flags & VM_MAYREAD))
-			return -EFAULT;
-	}
-
-	/* arch_vma_access_permitted always returns true (OSPKE disabled) */
-	return 0;
-}
+/* check_vma_flags inlined into __get_user_pages */
 
 static long __get_user_pages(struct mm_struct *mm, unsigned long start,
 			     unsigned long nr_pages, unsigned int gup_flags,
@@ -201,9 +169,41 @@ static long __get_user_pages(struct mm_struct *mm, unsigned long start,
 				ret = -EFAULT;
 				goto out;
 			}
-			ret = check_vma_flags(vma, gup_flags);
-			if (ret)
-				goto out;
+			/* Inlined check_vma_flags */
+			{
+				vm_flags_t vm_flags = vma->vm_flags;
+				int write = (gup_flags & FOLL_WRITE);
+				if (vm_flags & (VM_IO | VM_PFNMAP)) {
+					ret = -EFAULT;
+					goto out;
+				}
+				if (gup_flags & FOLL_ANON &&
+				    !vma_is_anonymous(vma)) {
+					ret = -EFAULT;
+					goto out;
+				}
+				if (write) {
+					if (!(vm_flags & VM_WRITE)) {
+						if (!(gup_flags & FOLL_FORCE)) {
+							ret = -EFAULT;
+							goto out;
+						}
+						if (!is_cow_mapping(vm_flags)) {
+							ret = -EFAULT;
+							goto out;
+						}
+					}
+				} else if (!(vm_flags & VM_READ)) {
+					if (!(gup_flags & FOLL_FORCE)) {
+						ret = -EFAULT;
+						goto out;
+					}
+					if (!(vm_flags & VM_MAYREAD)) {
+						ret = -EFAULT;
+						goto out;
+					}
+				}
+			}
 			/* hugetlb page handling removed - is_vm_hugetlb_page always returns false */
 		}
 retry:

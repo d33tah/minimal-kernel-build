@@ -60,9 +60,7 @@ struct hrtimer_cpu_base {
 	unsigned int			hres_active		: 1,
 					in_hrtirq		: 1;
 					/* hang_detected, softirq_activated removed - never accessed */
-	ktime_t				expires_next;
-	struct hrtimer			*next_timer;
-	/* softirq_expires_next, softirq_next_timer removed - never accessed */
+	/* expires_next, next_timer removed - never accessed */
 	struct hrtimer_clock_base	clock_base[HRTIMER_MAX_CLOCK_BASES];
 } ____cacheline_aligned;
 

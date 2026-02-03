@@ -395,30 +395,21 @@ unsigned char default_red[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 unsigned char default_grn[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 unsigned char default_blu[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
+/* Simplified gotoxy - vc_decom always 0 (origin mode disabled) */
 static void gotoxy(struct vc_data *vc, int new_x, int new_y)
 {
-	int min_y, max_y;
-
 	if (new_x < 0)
 		vc->state.x = 0;
-	else {
-		if (new_x >= vc->vc_cols)
-			vc->state.x = vc->vc_cols - 1;
-		else
-			vc->state.x = new_x;
-	}
+	else if (new_x >= vc->vc_cols)
+		vc->state.x = vc->vc_cols - 1;
+	else
+		vc->state.x = new_x;
 
-	if (vc->vc_decom) {
-		min_y = vc->vc_top;
-		max_y = vc->vc_bottom;
-	} else {
-		min_y = 0;
-		max_y = vc->vc_rows;
-	}
-	if (new_y < min_y)
-		vc->state.y = min_y;
-	else if (new_y >= max_y)
-		vc->state.y = max_y - 1;
+	/* vc_decom is always 0, so min_y=0 and max_y=vc_rows */
+	if (new_y < 0)
+		vc->state.y = 0;
+	else if (new_y >= vc->vc_rows)
+		vc->state.y = vc->vc_rows - 1;
 	else
 		vc->state.y = new_y;
 	vc->vc_pos = vc->vc_origin + vc->state.y * vc->vc_size_row +

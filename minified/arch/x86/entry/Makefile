@@ -12,7 +12,8 @@ CFLAGS_REMOVE_common.o		= $(CC_FLAGS_FTRACE)
 CFLAGS_common.o			+= -fno-stack-protector
 
 # thunk_$(BITS).o removed - compiled to empty file, no THUNK macro usages
-obj-y				:= entry.o entry_$(BITS).o syscall_$(BITS).o
+# entry.o removed - entry.S is essentially empty (only comment)
+obj-y				:= entry_$(BITS).o syscall_$(BITS).o
 obj-y				+= common.o
 
 obj-y				+= vdso/

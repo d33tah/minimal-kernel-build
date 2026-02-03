@@ -29,10 +29,9 @@ typedef __s64	Elf64_Sxword;
 #define PT_NOTE    4
 /* PT_PHDR removed - unused */
 #define PT_LOOS    0x60000000
-#define PT_LOPROC  0x70000000
-#define PT_HIPROC  0x7fffffff
+/* PT_LOPROC, PT_HIPROC removed - empty switch case removed */
 #define PT_GNU_STACK	(PT_LOOS + 0x474e551)
-#define PT_GNU_PROPERTY	(PT_LOOS + 0x474e553)
+/* PT_GNU_PROPERTY removed - never used */
 
 #define ET_EXEC   2
 #define ET_DYN    3

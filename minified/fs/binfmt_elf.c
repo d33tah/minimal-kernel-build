@@ -450,9 +450,7 @@ out_free_interp:
 				executable_stack = EXSTACK_DISABLE_X;
 			break;
 
-		case PT_LOPROC ... PT_HIPROC:
-			/* arch_elf_pt_proc call and retval check removed - always returns 0 */
-			break;
+			/* PT_LOPROC..PT_HIPROC case removed - arch_elf_pt_proc always returns 0 */
 		}
 
 	if (interpreter) {

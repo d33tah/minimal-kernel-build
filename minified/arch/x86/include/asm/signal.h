@@ -21,8 +21,7 @@ typedef struct {
 
 /* SA_IA32_ABI, SA_X32_ABI removed - never used */
 
-#define compat_sigset_t compat_sigset_t
-typedef sigset_t compat_sigset_t;
+/* compat_sigset_t removed - never used */
 
 #endif  
 #include <uapi/asm/signal.h>

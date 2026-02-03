@@ -116,11 +116,11 @@ struct kmem_cache {
 
  
 enum slab_state {
-	DOWN,			 
-	PARTIAL,		 
-	PARTIAL_NODE,		 
-	UP,			 
-	FULL			 
+	DOWN,
+	PARTIAL,
+	/* PARTIAL_NODE removed - never used */
+	UP,
+	/* FULL removed - never used */
 };
 
 extern enum slab_state slab_state;

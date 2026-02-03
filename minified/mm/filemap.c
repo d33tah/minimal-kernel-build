@@ -891,7 +891,7 @@ ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
 
 			already_read += copied;
 			iocb->ki_pos += copied;
-			ra->prev_pos = iocb->ki_pos;
+			/* ra->prev_pos removed - write-only field */
 
 			if (copied < bytes) {
 				error = -EFAULT;

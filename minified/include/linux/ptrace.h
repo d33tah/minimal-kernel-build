@@ -31,9 +31,7 @@
 /* arch_ptrace, ptrace_disable removed - never called */
 /* ptrace_request removed - never called */
 extern int ptrace_notify(int exit_code, unsigned long message);
-extern void __ptrace_link(struct task_struct *child,
-			  struct task_struct *new_parent,
-			  const struct cred *ptracer_cred);
+/* __ptrace_link removed - declared but never called */
 /* __ptrace_unlink removed - empty stub */
 /* exit_ptrace removed - empty stub never effectively called */
 

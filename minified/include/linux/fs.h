@@ -361,8 +361,7 @@ static inline void i_size_write(struct inode *inode, loff_t i_size)
 /* fown_struct removed - f_owner is never accessed */
 
 struct file_ra_state {
-	/* start, size, async_size, ra_pages, mmap_miss removed - never accessed */
-	loff_t prev_pos;
+	/* start, size, async_size, ra_pages, mmap_miss, prev_pos removed - never accessed */
 };
 
 struct file {

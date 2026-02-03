@@ -75,7 +75,7 @@ extern struct dentry *d_alloc_cursor(struct dentry *);
 extern struct dentry * d_alloc_pseudo(struct super_block *, const struct qstr *);
 /* simple_dname removed - was only in d_path.c */
 extern void dput_to_list(struct dentry *, struct list_head *);
-extern void shrink_dentry_list(struct list_head *);
+/* shrink_dentry_list removed - was empty stub, calls removed */
 
 /* pipefifo_fops moved to inode.c */
 

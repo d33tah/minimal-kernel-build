@@ -406,10 +406,7 @@ repeat:
 	return ret;
 }
 
-/* Dcache shrinking stubbed - not needed for minimal boot */
-void shrink_dentry_list(struct list_head *list)
-{
-}
+/* shrink_dentry_list removed - was empty stub, calls removed */
 
 /* prune_dcache_sb removed - declared/defined but never called */
 

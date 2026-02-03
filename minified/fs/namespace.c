@@ -567,7 +567,7 @@ void mntput(struct vfsmount *mnt)
 		}
 	}
 	unlock_mount_hash();
-	shrink_dentry_list(&list);
+	/* shrink_dentry_list call removed - function is empty stub */
 
 	if (likely(!(m->mnt.mnt_flags & MNT_INTERNAL))) {
 		struct task_struct *task = current;
@@ -610,7 +610,7 @@ static void namespace_unlock(void)
 
 	up_write(&namespace_sem);
 
-	shrink_dentry_list(&list);
+	/* shrink_dentry_list call removed - function is empty stub */
 
 	if (likely(hlist_empty(&head)))
 		return;

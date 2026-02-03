@@ -501,23 +501,7 @@ failed:
 	return NULL;
 }
 
-static bool __zone_watermark_ok(struct zone *z, unsigned int order,
-				unsigned long mark, int highest_zoneidx,
-				unsigned int alloc_flags, long free_pages)
-{
-	/* Simplified watermark check for minimal kernel */
-	long min = mark;
-
-	/* Apply alloc_flags adjustments */
-	if (alloc_flags & ALLOC_HIGH)
-		min -= min / 2;
-	if (alloc_flags & (ALLOC_HARDER | ALLOC_OOM))
-		min -= min / 2;
-
-	/* Basic free pages check */
-	return free_pages > min + z->lowmem_reserve[highest_zoneidx];
-}
-
+/* __zone_watermark_ok inlined into get_page_from_freelist */
 /* zone_watermark_fast inlined into get_page_from_freelist */
 /* alloc_flags_nofragment inlined into __alloc_pages */
 
@@ -538,12 +522,20 @@ static struct page *get_page_from_freelist(gfp_t gfp_mask, unsigned int order,
 			wmark_pages(zone, alloc_flags & ALLOC_WMARK_MASK);
 
 		/* Skip watermark check if NO_WATERMARKS flag set */
-		/* Inlined zone_watermark_fast */
-		if (!(alloc_flags & ALLOC_NO_WATERMARKS) &&
-		    !__zone_watermark_ok(zone, order, mark, ac->highest_zoneidx,
-					 alloc_flags,
-					 zone_page_state(zone, NR_FREE_PAGES)))
-			continue;
+		/* Inlined zone_watermark_fast and __zone_watermark_ok */
+		if (!(alloc_flags & ALLOC_NO_WATERMARKS)) {
+			long min = mark;
+			long free_pages = zone_page_state(zone, NR_FREE_PAGES);
+
+			if (alloc_flags & ALLOC_HIGH)
+				min -= min / 2;
+			if (alloc_flags & (ALLOC_HARDER | ALLOC_OOM))
+				min -= min / 2;
+
+			if (free_pages <=
+			    min + zone->lowmem_reserve[ac->highest_zoneidx])
+				continue;
+		}
 
 		page = rmqueue(ac->preferred_zoneref->zone, zone, order,
 			       gfp_mask, alloc_flags, ac->migratetype);

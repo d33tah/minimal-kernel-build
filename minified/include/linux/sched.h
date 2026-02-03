@@ -373,7 +373,7 @@ static inline int is_global_init(struct task_struct *tsk)
 #define PF_MEMALLOC_NOFS	0x00040000
 #define PF_MEMALLOC_NOIO	0x00080000
 #define PF_KTHREAD		0x00200000
-#define PF_RANDOMIZE		0x00400000
+/* PF_RANDOMIZE removed - ASLR disabled, never set */
 #define PF_NO_SETAFFINITY	0x04000000
 #define PF_MEMALLOC_PIN		0x10000000
 

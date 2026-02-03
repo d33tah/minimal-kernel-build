@@ -69,7 +69,8 @@ static void filemap_unaccount_folio(struct address_space *mapping,
 	/* folio_account_cleaned call removed - was empty stub */
 }
 
-static void __filemap_remove_folio(struct folio *folio, void *shadow)
+/* shadow parameter removed - always NULL */
+static void __filemap_remove_folio(struct folio *folio)
 {
 	struct address_space *mapping = folio->mapping;
 
@@ -83,7 +84,7 @@ static void __filemap_remove_folio(struct folio *folio, void *shadow)
 		xas_set_order(&xas, folio->index, folio_order(folio));
 		nr = folio_nr_pages(folio);
 
-		xas_store(&xas, shadow);
+		xas_store(&xas, NULL);
 		xas_init_marks(&xas);
 
 		folio->mapping = NULL;
@@ -111,7 +112,7 @@ void filemap_remove_folio(struct folio *folio)
 	BUG_ON(!folio_test_locked(folio));
 	spin_lock(&mapping->host->i_lock);
 	xa_lock_irq(&mapping->i_pages);
-	__filemap_remove_folio(folio, NULL);
+	__filemap_remove_folio(folio);
 	xa_unlock_irq(&mapping->i_pages);
 	if (mapping_shrinkable(mapping))
 		inode_add_lru(mapping->host);

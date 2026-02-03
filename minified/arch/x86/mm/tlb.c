@@ -34,7 +34,7 @@ DEFINE_STATIC_KEY_FALSE(rdpmc_always_available_key);
 
 #define LAST_USER_MM_INIT LAST_USER_MM_IBPB
 
-#define CR3_HW_ASID_BITS 12
+/* CR3_HW_ASID_BITS removed - never used */
 
 #define PTI_CONSUMED_PCID_BITS 0
 

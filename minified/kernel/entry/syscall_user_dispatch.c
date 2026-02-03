@@ -1,9 +1,7 @@
 #include <linux/sched.h>
 /* syscall_user_dispatch.h removed - struct inlined into sched.h */
 
-/* Inlined from prctl.h */
-#define PR_SYS_DISPATCH_OFF 0
-#define PR_SYS_DISPATCH_ON 1
+/* Inlined from prctl.h - PR_SYS_DISPATCH_OFF, PR_SYS_DISPATCH_ON removed (never used) */
 #define SYSCALL_DISPATCH_FILTER_ALLOW 0
 #define SYSCALL_DISPATCH_FILTER_BLOCK 1
 #include <linux/uaccess.h>

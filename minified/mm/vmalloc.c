@@ -721,12 +721,7 @@ alloc_done:
 /* BITS_PER_LONG == 32 (i386) */
 #define VMALLOC_SPACE (128UL * 1024 * 1024)
 
-#define VMALLOC_PAGES (VMALLOC_SPACE / PAGE_SIZE)
-#define VMAP_MAX_ALLOC BITS_PER_LONG
-#define VMAP_BBMAP_BITS_MAX 1024
-#define VMAP_BBMAP_BITS_MIN (VMAP_MAX_ALLOC * 2)
-#define VMAP_MIN(x, y) ((x) < (y) ? (x) : (y))
-#define VMAP_MAX(x, y) ((x) > (y) ? (x) : (y))
+/* VMALLOC_PAGES, VMAP_MAX_ALLOC, VMAP_BBMAP_BITS_MAX, VMAP_BBMAP_BITS_MIN, VMAP_MIN, VMAP_MAX removed - never used */
 /* VMAP_BBMAP_BITS, vmap_block_queue struct and per-CPU var removed - only initialized, never used */
 
 /* purge_fragmented_blocks_allcpus definition removed - already inlined in stubs above */

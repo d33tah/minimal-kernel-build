@@ -31,11 +31,7 @@ struct mm_struct *pgd_page_get_mm(struct page *page)
 	return page->pt_mm;
 }
 
-/* PREALLOCATED_PMDS and related are all 0 for 2-level paging */
-#define PREALLOCATED_PMDS 0
-#define MAX_PREALLOCATED_PMDS 0
-#define PREALLOCATED_USER_PMDS 0
-#define MAX_PREALLOCATED_USER_PMDS 0
+/* PREALLOCATED_PMDS, MAX_PREALLOCATED_PMDS, PREALLOCATED_USER_PMDS, MAX_PREALLOCATED_USER_PMDS removed - never used (all 0 for 2-level paging) */
 
 /* Simplified functions removed - free_pmds, preallocate_pmds, pgd_mop_up_pmds,
    pgd_prepopulate_pmd, pgd_prepopulate_user_pmd were empty stubs */

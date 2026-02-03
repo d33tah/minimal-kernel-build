@@ -17,7 +17,7 @@
 struct uni_pagedir;
 struct uni_screen;
 
-#define NPAR 16
+/* NPAR removed - vc_par array removed */
 #define VC_TABSTOPS_COUNT	256U
 
 enum vc_intensity {

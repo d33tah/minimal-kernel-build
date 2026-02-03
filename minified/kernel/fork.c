@@ -490,12 +490,14 @@ static inline void init_task_pid(struct task_struct *task, enum pid_type type,
 
 /* pidfd_release, pidfd_fops removed - CLONE_PIDFD never used (only kernel_thread/user_mode_thread call kernel_clone) */
 
+/* pid parameter removed - always NULL (always allocates new pid)
+ * trace parameter removed - always 0 (ptrace block never executed) */
 static __latent_entropy struct task_struct *
-copy_process(struct pid *pid, int trace, int node,
-	     struct kernel_clone_args *args)
+copy_process(int node, struct kernel_clone_args *args)
 {
 	int retval;
 	struct task_struct *p;
+	struct pid *pid;
 	struct multiprocess_signals delayed;
 	const u64 clone_flags = args->flags;
 	/* Clone flag validation checks removed - only CLONE_FS, CLONE_FILES,
@@ -683,13 +685,12 @@ copy_process(struct pid *pid, int trace, int node,
 	if (retval)
 		goto bad_fork_cleanup_namespaces;
 
-	if (pid != &init_struct_pid) {
-		pid = alloc_pid(p->nsproxy->pid_ns_for_children, args->set_tid,
-				args->set_tid_size);
-		if (IS_ERR(pid)) {
-			retval = PTR_ERR(pid);
-			goto bad_fork_cleanup_thread;
-		}
+	/* Always allocate new pid (pid parameter was always NULL) */
+	pid = alloc_pid(p->nsproxy->pid_ns_for_children, args->set_tid,
+			args->set_tid_size);
+	if (IS_ERR(pid)) {
+		retval = PTR_ERR(pid);
+		goto bad_fork_cleanup_thread;
 	}
 
 	/* CLONE_PIDFD block removed - never used */
@@ -741,11 +742,7 @@ copy_process(struct pid *pid, int trace, int node,
 		p->jobctl = 0;
 		p->ptrace = 0;
 		p->parent = p->real_parent;
-		if (unlikely(trace) && current->ptrace) {
-			p->ptrace = current->ptrace;
-			__ptrace_link(p, current->parent, NULL);
-			sigaddset(&p->pending.signal, SIGSTOP);
-		}
+		/* ptrace block removed - trace was always 0 */
 
 		init_task_pid(p, PIDTYPE_PID, pid);
 		if (thread_group_leader(p)) {
@@ -794,8 +791,8 @@ bad_fork_cancel_cgroup:
 	spin_unlock(&current->sighand->siglock);
 	write_unlock_irq(&tasklist_lock);
 	/* bad_fork_put_pidfd, bad_fork_free_pid removed - never jumped to */
-	if (pid != &init_struct_pid)
-		free_pid(pid);
+	/* Always free pid (was always allocated, never init_struct_pid) */
+	free_pid(pid);
 bad_fork_cleanup_thread:
 	exit_thread(p);
 bad_fork_cleanup_namespaces:
@@ -843,7 +840,7 @@ pid_t kernel_clone(struct kernel_clone_args *args)
 	pid_t nr;
 	/* clone_flags, vfork, trace removed - unused */
 
-	p = copy_process(NULL, 0, NUMA_NO_NODE, args);
+	p = copy_process(NUMA_NO_NODE, args);
 
 	if (IS_ERR(p))
 		return PTR_ERR(p);

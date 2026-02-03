@@ -67,9 +67,4 @@ signed long __sched schedule_timeout_uninterruptible(signed long timeout)
 	return schedule_timeout(timeout);
 }
 
-void __init init_timers(void)
-{
-	/* Minimal init for Hello World */
-}
-
-/* msleep, msleep_interruptible removed - never called */
+/* init_timers, msleep, msleep_interruptible removed - never called */

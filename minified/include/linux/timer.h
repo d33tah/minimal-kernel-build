@@ -45,7 +45,7 @@ void init_timer_key(struct timer_list *timer,
 
 /* timer_pending, del_timer, mod_timer, del_timer_sync removed - no callers */
 
-extern void init_timers(void);
+/* init_timers removed - was empty stub */
 /* timers_prepare_cpu, timers_dead_cpu removed - unused */
 
 #endif

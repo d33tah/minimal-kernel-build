@@ -435,9 +435,9 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	/* initcall_debug_enable removed - empty stub */
 	early_irq_init();
 	init_IRQ();
-	tick_init();
+	/* tick_init() removed - was empty stub */
 	/* rcu_init_nohz, softirq_init removed - empty stubs */
-	init_timers();
+	/* init_timers() removed - was empty stub */
 	srcu_init();
 	/* hrtimers_init() removed - was empty stub */
 	timekeeping_init();

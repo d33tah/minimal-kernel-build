@@ -80,7 +80,4 @@ void tick_check_new_device(struct clock_event_device *newdev)
 		tick_setup_periodic(newdev, 0);
 }
 
-void __init tick_init(void)
-{
-	/* Stubbed for minimal Hello World */
-}
+/* tick_init removed - was empty stub */

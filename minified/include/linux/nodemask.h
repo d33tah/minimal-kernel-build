@@ -42,7 +42,7 @@ enum node_states {
 };
 
 
-extern nodemask_t node_states[NR_NODE_STATES];
+/* node_states array removed - never read, node_state() returns (node == 0) */
 
 /* MAX_NUMNODES=1, simplified node state functions */
 static inline int node_state(int node, enum node_states state)

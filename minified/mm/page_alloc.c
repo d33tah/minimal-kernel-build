@@ -30,11 +30,7 @@ struct alloc_context;
 typedef int __bitwise fpi_t;
 #define FPI_TO_TAIL ((__force fpi_t)BIT(1))
 #define FPI_SKIP_KASAN_POISON ((__force fpi_t)BIT(2))
-nodemask_t node_states[NR_NODE_STATES] __read_mostly = {
-	[N_POSSIBLE] = NODE_MASK_ALL,	       [N_ONLINE] = { { [0] = 1UL } },
-	[N_NORMAL_MEMORY] = { { [0] = 1UL } }, [N_MEMORY] = { { [0] = 1UL } },
-	[N_CPU] = { { [0] = 1UL } },
-};
+/* node_states array removed - never read, node_state() returns (node == 0) */
 
 atomic_long_t _totalram_pages __read_mostly;
 /* totalreserve_pages removed - never read or written */

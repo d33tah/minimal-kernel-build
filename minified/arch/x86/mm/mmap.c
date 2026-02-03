@@ -19,12 +19,10 @@ unsigned long task_size_64bit(int full_addr_space)
 
 #define SIZE_128M (128 * 1024 * 1024UL)
 
+/* mmap_is_legacy simplified - sysctl_legacy_va_layout always 0 */
 static int mmap_is_legacy(void)
 {
-	if (current->personality & ADDR_COMPAT_LAYOUT)
-		return 1;
-
-	return sysctl_legacy_va_layout;
+	return (current->personality & ADDR_COMPAT_LAYOUT) ? 1 : 0;
 }
 
 /* arch_rnd, arch_mmap_rnd removed - no ASLR randomization, PF_RANDOMIZE never set */

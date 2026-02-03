@@ -907,9 +907,7 @@ void __init init_idle(struct task_struct *idle, int cpu)
 }
 
 /* sched_init_smp removed - empty stub, call removed from main.c */
-
-DECLARE_PER_CPU(cpumask_var_t, load_balance_mask);
-DECLARE_PER_CPU(cpumask_var_t, select_idle_mask);
+/* load_balance_mask, select_idle_mask per-CPU decls removed - unused */
 
 void __init sched_init(void)
 {

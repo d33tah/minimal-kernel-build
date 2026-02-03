@@ -25,17 +25,9 @@
 #define VGA_PEL_D 0x3C9
 /* VGA_PEL_MSK removed - unused after vga_set_palette removal */
 #define VGA_CRT_IC 0x3D4
-#define VGA_CRT_IM 0x3B4
+/* VGA_CRT_IM removed - never used */
 #define VGA_PEL_IW 0x3C8
-#define VGA_CRTC_H_DISP 1
-#define VGA_CRTC_OVERFLOW 7
-#define VGA_CRTC_MAX_SCAN 9
-#define VGA_CRTC_CURSOR_START 0x0A
-#define VGA_CRTC_CURSOR_END 0x0B
-#define VGA_CRTC_V_SYNC_END 0x11
-#define VGA_CRTC_V_DISP_END 0x12
-#define VGA_CRTC_OFFSET 0x13
-#define VGA_CRTC_MODE 0x17
+/* VGA_CRTC_H_DISP thru VGA_CRTC_MODE removed - never used */
 
 /* vgastate struct removed - write-only, never read */
 

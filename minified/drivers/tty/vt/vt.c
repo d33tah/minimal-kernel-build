@@ -105,7 +105,7 @@ static inline bool con_should_update(const struct vc_data *vc)
 #define get_vc_uniscr(vc) vc->vc_uni_screen
 #endif
 
-#define VC_UNI_SCREEN_DEBUG 0
+/* VC_UNI_SCREEN_DEBUG removed - never used */
 
 typedef uint32_t char32_t;
 

@@ -10,7 +10,7 @@
 
 #include <asm/kmap_size.h>
 
-#define KM_INCR 1
+/* KM_INCR removed - never used */
 
 #ifndef arch_kmap_local_post_map
 #define arch_kmap_local_post_map(vaddr, pteval) \

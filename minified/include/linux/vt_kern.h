@@ -71,7 +71,7 @@ struct vc_data {
 	struct console_font vc_font;
 	unsigned short	vc_video_erase_char;
 	unsigned int	vc_state;
-	unsigned int	vc_npar,vc_par[NPAR];
+	/* vc_npar, vc_par[NPAR] removed - escape sequence parsing removed */
 	/* vt_mode, vt_pid, vt_newvt, paste_wait removed - write-only (never read) */
 	unsigned int	vc_disp_ctrl	: 1;
 	/* vc_toggle_meta removed - write-only (meta key toggle never used) */

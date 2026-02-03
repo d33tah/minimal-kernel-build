@@ -20,9 +20,7 @@
 extern void resched_cpu(int cpu);
 /* rcu_num_lvls, num_rcu_lvl, rcu_num_nodes removed - unused */
 
-#define RCU_SCHEDULER_INACTIVE	0
-#define RCU_SCHEDULER_INIT	1
-#define RCU_SCHEDULER_RUNNING	2
+/* RCU_SCHEDULER_INACTIVE, RCU_SCHEDULER_INIT, RCU_SCHEDULER_RUNNING removed - never used */
 
 /* Many RCU macros and enums removed - unused in minimal kernel:
  * TPS, rcu_ftrace_dump, RCU_FANOUT, RCU_FANOUT_LEAF, RCU_NUM_LVLS,

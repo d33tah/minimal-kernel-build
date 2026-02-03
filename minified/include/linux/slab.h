@@ -22,7 +22,7 @@
 
 #define SLAB_NOLEAKTRACE	((slab_flags_t __force)0x00800000U)
 
-# define SLAB_FAILSLAB		0
+/* SLAB_FAILSLAB removed - never used */
 # define SLAB_ACCOUNT		0
 /* SLAB_KASAN removed - unused */
 

@@ -8,8 +8,7 @@
 
 #include <linux/types.h>
 
-#define VIDEO_FIRST_BIOS 0x0100
-#define VIDEO_FIRST_VESA 0x0200
+/* VIDEO_FIRST_BIOS, VIDEO_FIRST_VESA removed - never used */
 #define VIDEO_80x25 0x0f00
 #define VIDEO_CURRENT_MODE 0x0f04
 #define VIDEO_RECALC 0x8000

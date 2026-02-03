@@ -18,9 +18,9 @@ static inline void __invpcid(unsigned long pcid, unsigned long addr, unsigned lo
 	asm volatile("invpcid %[desc], %[type]" :: [desc] "m" (desc), [type] "r" (type) : "memory");
 }
 #define INVPCID_TYPE_INDIV_ADDR		0
-#define INVPCID_TYPE_SINGLE_CTXT	1
+/* INVPCID_TYPE_SINGLE_CTXT removed - never used */
 #define INVPCID_TYPE_ALL_INCL_GLOBAL	2
-#define INVPCID_TYPE_ALL_NON_GLOBAL	3
+/* INVPCID_TYPE_ALL_NON_GLOBAL removed - never used */
 static inline void invpcid_flush_one(unsigned long pcid, unsigned long addr) { __invpcid(pcid, addr, INVPCID_TYPE_INDIV_ADDR); }
 static inline void invpcid_flush_all(void) { __invpcid(0, 0, INVPCID_TYPE_ALL_INCL_GLOBAL); }
 

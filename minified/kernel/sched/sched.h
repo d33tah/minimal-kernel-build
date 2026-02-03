@@ -483,7 +483,7 @@ extern const u32		sched_prio_to_wmult[40];
 #define DEQUEUE_NOCLOCK		0x08  
 
 #define ENQUEUE_WAKEUP		0x01
-#define ENQUEUE_RESTORE		0x02
+/* ENQUEUE_RESTORE removed - never used */
 #define ENQUEUE_NOCLOCK		0x08
 #define ENQUEUE_HEAD		0x10
 

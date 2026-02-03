@@ -18,8 +18,7 @@
 #include <asm/vga.h>
 
 /* Inlined from video/vga.h */
-#define VGA_CRT_DC 0x3D5
-#define VGA_CRT_DM 0x3B5
+/* VGA_CRT_DC, VGA_CRT_DM removed - never used */
 #define VGA_ATT_W 0x3C0
 #define VGA_IS1_RC 0x3DA
 #define VGA_PEL_D 0x3C9

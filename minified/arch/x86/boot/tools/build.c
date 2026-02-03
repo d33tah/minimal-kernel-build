@@ -24,7 +24,7 @@ typedef unsigned int u32;
 
 u8 buf[SETUP_SECT_MAX * 512];
 
-#define PECOFF_RELOC_RESERVE 0x20
+/* PECOFF_RELOC_RESERVE removed - never used */
 
 #define PECOFF_COMPAT_RESERVE 0x0
 

@@ -16,10 +16,10 @@ struct irq_desc {
 	unsigned int core_internal_state__do_not_mess_with_it; unsigned int depth;
 	unsigned int irq_count; unsigned int irqs_unhandled;
 	atomic_t threads_handled; raw_spinlock_t lock;
-	struct cpumask *percpu_enabled; const struct cpumask *percpu_affinity;
+	/* percpu_enabled, percpu_affinity removed - never accessed */
 	unsigned long threads_oneshot; atomic_t threads_active;
 	wait_queue_head_t wait_for_threads; struct rcu_head rcu; struct kobject kobj;
-	struct mutex request_mutex; int parent_irq; struct module *owner; const char *name;
+	struct mutex request_mutex; /* parent_irq removed - never accessed */ struct module *owner; const char *name;
 } ____cacheline_internodealigned_in_smp;
 static inline struct irq_desc *irq_data_to_desc(struct irq_data *data) { return container_of(data->common, struct irq_desc, irq_common_data); }
 static inline unsigned int irq_desc_get_irq(struct irq_desc *desc) { return desc->irq_data.irq; }

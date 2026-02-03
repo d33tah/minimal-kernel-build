@@ -497,7 +497,7 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 	vc->vc_toggle_meta = 0;
 
 	vc->vc_decscnm = 0;
-	vc->vc_decom = 0;
+	/* vc_decom assignment removed - field removed */
 	vc->vc_decawm = 1;
 	vc->vc_deccm = global_cursor_default;
 	vc->vc_decim = 0;

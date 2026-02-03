@@ -76,7 +76,7 @@ struct vc_data {
 	unsigned int	vc_disp_ctrl	: 1;
 	unsigned int	vc_toggle_meta	: 1;
 	unsigned int	vc_decscnm	: 1;
-	unsigned int	vc_decom	: 1;
+	/* vc_decom removed - always 0 (origin mode disabled) */
 	unsigned int	vc_decawm	: 1;
 	unsigned int	vc_deccm	: 1;
 	unsigned int	vc_decim	: 1;

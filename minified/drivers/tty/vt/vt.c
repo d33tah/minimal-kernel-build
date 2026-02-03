@@ -383,7 +383,8 @@ int vc_resize(struct vc_data *vc, unsigned int cols, unsigned int rows)
 
 /* vt_resize removed - ops->resize never called */
 
-enum { EPecma = 0, EPdec, EPeq, EPgt, EPlt };
+/* EP enum - only EPecma used, CSI parameter handling removed */
+enum { EPecma = 0 };
 
 /* set_kbd, clr_kbd, is_kbd, decarm, decckm, kbdapplic, lnm removed - unused */
 

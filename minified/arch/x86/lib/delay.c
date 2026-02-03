@@ -8,7 +8,7 @@
 #include <asm/processor.h>
 #include <asm/delay.h>
 #include <asm/timer.h>
-#include <asm/mwait.h>
+/* asm/mwait.h removed - header is empty */
 
 static void delay_loop(u64 __loops);
 

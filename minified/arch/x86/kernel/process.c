@@ -20,7 +20,7 @@
 #include <asm/cpu.h>
 #include <asm/apic.h>
 #include <linux/uaccess.h>
-#include <asm/mwait.h>
+/* asm/mwait.h removed - header is empty */
 #include <asm/fpu/api.h>
 #include <asm/fpu/sched.h>
 #include <asm/fpu/xstate.h>

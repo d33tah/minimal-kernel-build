@@ -910,14 +910,11 @@ void __init vfs_caches_init_early(void)
 	for (i = 0; i < ARRAY_SIZE(in_lookup_hashtable); i++)
 		INIT_HLIST_BL_HEAD(&in_lookup_hashtable[i]);
 
-	/* dcache_init_early inlined */
-	if (!hashdist) {
-		dentry_hashtable = alloc_large_system_hash(
-			"Dentry cache", sizeof(struct hlist_bl_head),
-			dhash_entries, 13, HASH_EARLY | HASH_ZERO,
-			&d_hash_shift, NULL, 0, 0);
-		d_hash_shift = 32 - d_hash_shift;
-	}
+	/* dcache_init_early inlined - hashdist always 0 */
+	dentry_hashtable = alloc_large_system_hash(
+		"Dentry cache", sizeof(struct hlist_bl_head), dhash_entries, 13,
+		HASH_EARLY | HASH_ZERO, &d_hash_shift, NULL, 0, 0);
+	d_hash_shift = 32 - d_hash_shift;
 
 	inode_init_early();
 }
@@ -928,19 +925,12 @@ void __init vfs_caches_init(void)
 		"names_cache", PATH_MAX, 0, SLAB_HWCACHE_ALIGN | SLAB_PANIC, 0,
 		PATH_MAX, NULL);
 
-	/* dcache_init inlined */
+	/* dcache_init inlined - hashdist always 0, hash table allocated in start_kernel_early */
 	dentry_cache =
 		KMEM_CACHE_USERCOPY(dentry,
 				    SLAB_RECLAIM_ACCOUNT | SLAB_PANIC |
 					    SLAB_MEM_SPREAD | SLAB_ACCOUNT,
 				    d_iname);
-	if (hashdist) {
-		dentry_hashtable = alloc_large_system_hash(
-			"Dentry cache", sizeof(struct hlist_bl_head),
-			dhash_entries, 13, HASH_ZERO, &d_hash_shift, NULL, 0,
-			0);
-		d_hash_shift = 32 - d_hash_shift;
-	}
 
 	inode_init();
 	files_init();

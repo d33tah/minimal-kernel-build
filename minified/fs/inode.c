@@ -391,11 +391,9 @@ void iput(struct inode *inode)
 
 static __initdata unsigned long ihash_entries;
 
+/* hashdist always 0, simplified inode_init_early/inode_init */
 void __init inode_init_early(void)
 {
-	if (hashdist)
-		return;
-
 	inode_hashtable = alloc_large_system_hash(
 		"Inode-cache", sizeof(struct hlist_head), ihash_entries, 14,
 		HASH_EARLY | HASH_ZERO, &i_hash_shift, &i_hash_mask, 0, 0);
@@ -407,13 +405,7 @@ void __init inode_init(void)
 					 (SLAB_RECLAIM_ACCOUNT | SLAB_PANIC |
 					  SLAB_MEM_SPREAD | SLAB_ACCOUNT),
 					 init_once);
-
-	if (!hashdist)
-		return;
-
-	inode_hashtable = alloc_large_system_hash(
-		"Inode-cache", sizeof(struct hlist_head), ihash_entries, 14,
-		HASH_ZERO, &i_hash_shift, &i_hash_mask, 0, 0);
+	/* hashdist==0, so hash table allocated in inode_init_early */
 }
 
 void init_special_inode(struct inode *inode, umode_t mode, dev_t rdev)

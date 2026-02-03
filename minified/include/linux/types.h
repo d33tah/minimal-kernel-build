@@ -113,10 +113,8 @@ struct callback_head {
 typedef void (*rcu_callback_t)(struct rcu_head *head);
 typedef void (*call_rcu_func_t)(struct rcu_head *head, rcu_callback_t func);
 
-typedef void (*swap_r_func_t)(void *a, void *b, int size, const void *priv);
+/* swap_r_func_t, cmp_r_func_t moved to lib/sort.c - only used there */
 typedef void (*swap_func_t)(void *a, void *b, int size);
-
-typedef int (*cmp_r_func_t)(const void *a, const void *b, const void *priv);
 typedef int (*cmp_func_t)(const void *a, const void *b);
 
 #endif  

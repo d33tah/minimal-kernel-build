@@ -5,6 +5,10 @@
 #include <linux/export.h>
 #include <linux/sort.h>
 
+/* Local typedefs - only used by sort_r() which is now static */
+typedef void (*swap_r_func_t)(void *a, void *b, int size, const void *priv);
+typedef int (*cmp_r_func_t)(const void *a, const void *b, const void *priv);
+
 __attribute_const__ __always_inline static bool is_aligned(size_t size,
 							   unsigned char align)
 {

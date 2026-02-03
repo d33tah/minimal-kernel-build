@@ -494,7 +494,7 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 	vc->vc_utf_count = 0;
 
 	vc->vc_disp_ctrl = 0;
-	vc->vc_toggle_meta = 0;
+	/* vc_toggle_meta assignment removed - field removed */
 
 	vc->vc_decscnm = 0;
 	/* vc_decom assignment removed - field removed */

@@ -481,24 +481,8 @@ static void csi_J(struct vc_data *vc, int vpar)
 
 /* save_cur inlined into reset_terminal */
 
-enum {
-	ESnormal,
-	ESesc,
-	ESsquare,
-	ESgetpars,
-	ESfunckey,
-	EShash,
-	ESsetG0,
-	ESsetG1,
-	ESpercent,
-	EScsiignore,
-	ESnonstd,
-	ESpalette,
-	ESosc,
-	ESapc,
-	ESpm,
-	ESdcs
-};
+/* ESC state enum - only ESnormal used, escape sequence handling removed */
+enum { ESnormal };
 
 static void reset_terminal(struct vc_data *vc, int do_clear)
 {

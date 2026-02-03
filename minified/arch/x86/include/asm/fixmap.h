@@ -6,8 +6,7 @@
 #include <asm/kmap_size.h>
 
 
-# define FIXMAP_PMD_NUM	2
-/* FIXMAP_PMD_TOP removed - never used */
+/* FIXMAP_PMD_NUM, FIXMAP_PMD_TOP removed - never used */
 
 #ifndef __ASSEMBLY__
 #include <linux/kernel.h>

@@ -26,7 +26,7 @@ typedef	struct {
 	u32 reserved;
 } efi_table_hdr_t;
 
-#define EFI_CONVENTIONAL_MEMORY		 7
+/* EFI_CONVENTIONAL_MEMORY removed - never used */
 
 typedef struct {
 	u32 type;

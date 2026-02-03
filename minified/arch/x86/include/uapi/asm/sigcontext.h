@@ -7,7 +7,7 @@
 #include <linux/compiler.h>
 #include <linux/types.h>
 
-#define FP_XSTATE_MAGIC1		0x46505853U
+/* FP_XSTATE_MAGIC1 removed - never used */
 #define FP_XSTATE_MAGIC2		0x46505845U
 #define FP_XSTATE_MAGIC2_SIZE		sizeof(FP_XSTATE_MAGIC2)
 
@@ -49,7 +49,7 @@ struct _xmmreg {
 	__u32				element[4];
 };
 
-#define X86_FXSR_MAGIC			0x0000
+/* X86_FXSR_MAGIC removed - never used */
 
  
 struct _fpstate_32 {

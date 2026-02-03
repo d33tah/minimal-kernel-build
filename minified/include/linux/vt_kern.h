@@ -107,9 +107,7 @@ extern struct vc vc_cons [MAX_NR_CONSOLES];
 #define CUR_SIZE(c)		 ((c) & 0x00000f)
 # define CUR_NONE			       1
 # define CUR_UNDERLINE			       2
-# define CUR_LOWER_THIRD		       3
-# define CUR_LOWER_HALF			       4
-# define CUR_TWO_THIRDS			       5
+/* CUR_LOWER_THIRD, CUR_LOWER_HALF, CUR_TWO_THIRDS removed - never used */
 #define CUR_SW				0x000010
 #define CUR_ALWAYS_BG			0x000020
 #define CUR_INVERT_FG_BG		0x000040

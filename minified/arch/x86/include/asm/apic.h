@@ -43,7 +43,7 @@ struct apic {
 
 	u32	disable_esr;
 
-	enum apic_delivery_modes delivery_mode;
+	/* delivery_mode removed - never accessed */
 	bool	dest_mode_logical;
 
 	u32	(*calc_dest_apicid)(unsigned int cpu);

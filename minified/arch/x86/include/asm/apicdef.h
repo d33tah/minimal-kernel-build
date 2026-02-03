@@ -8,8 +8,6 @@
 #define MAX_LOCAL_APIC 256
 /* BAD_APICID removed - never used */
 
-enum apic_delivery_modes {
-	APIC_DELIVERY_MODE_FIXED	= 0,
-};
+/* enum apic_delivery_modes removed - delivery_mode field never accessed */
 
 #endif /* _ASM_X86_APICDEF_H */

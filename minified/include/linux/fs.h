@@ -478,9 +478,7 @@ struct super_block {
 	/* s_time_gran, s_time_min, s_time_max removed - timestamp_truncate gone */
 
 	char			s_id[32];
-	/* s_max_links, s_subtype, s_vfs_rename_mutex removed - unused */
-
-	const struct dentry_operations *s_d_op; 
+	/* s_max_links, s_subtype, s_vfs_rename_mutex, s_d_op removed - unused */
 
 	struct shrinker s_shrink;	
 

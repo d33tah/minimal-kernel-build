@@ -32,7 +32,7 @@ void init_timer_key(struct timer_list *timer, void (*func)(struct timer_list *),
 
 void update_process_times(int user_tick)
 {
-	hrtimer_run_queues();
+	/* hrtimer_run_queues() removed - was empty stub */
 	rcu_sched_clock_irq(user_tick);
 	scheduler_tick();
 }

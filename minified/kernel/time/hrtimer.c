@@ -1,25 +1,8 @@
-/* cpu.h, syscalls.h, interrupt.h, err.h, sched/signal.h, sched/sysctl.h,
-   sched/rt.h, sched/debug.h, timer.h, uaccess.h removed - unused */
+/* hrtimer.c now essentially empty - hrtimer_run_queues and hrtimers_init
+   both removed as they were empty stubs. All other functions were previously
+   removed. File kept only for includes needed by hrtimer.h types. */
 #include <linux/export.h>
 #include <linux/percpu.h>
 #include <linux/hrtimer.h>
 
 #include "tick-internal.h"
-
-/* hrtimer_bases DEFINE_PER_CPU removed - never accessed */
-
-/* ktime_add_safe, clock_was_set, clock_was_set_delayed removed - never called or empty stubs */
-
-/* hrtimer_start_range_ns, hrtimer_cancel, hrtimer_init, hrtimer_active removed - never called */
-
-void hrtimer_run_queues(void)
-{
-	/* Stubbed for minimal Hello World */
-}
-
-/* hrtimers_prepare_cpu removed - CPU hotplug disabled, never called (~13 LOC) */
-
-void __init hrtimers_init(void)
-{
-	/* Minimal init for Hello World */
-}

@@ -75,10 +75,7 @@ DECLARE_PER_CPU(struct tick_device, tick_cpu_device);
 
 /* hrtimer_callback_running removed - no callers */
 
-extern void hrtimer_run_queues(void);
-
-extern void __init hrtimers_init(void);
-
+/* hrtimer_run_queues, hrtimers_init removed - both were empty stubs */
 
 /* hrtimers_prepare_cpu, hrtimers_dead_cpu removed - CPU hotplug disabled */
 

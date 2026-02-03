@@ -439,7 +439,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	/* rcu_init_nohz, softirq_init removed - empty stubs */
 	init_timers();
 	srcu_init();
-	hrtimers_init();
+	/* hrtimers_init() removed - was empty stub */
 	timekeeping_init();
 	/* kfence_init removed - empty stub */
 	time_init();

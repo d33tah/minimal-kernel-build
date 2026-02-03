@@ -1,6 +1,6 @@
 #ifndef LINUX_PCI_H
 #define LINUX_PCI_H
-#include <linux/mod_devicetable.h>
+/* mod_devicetable.h removed - was essentially empty */
 #include <linux/types.h>
 #include <linux/init.h>
 #include <linux/ioport.h>

@@ -86,7 +86,7 @@ struct vc_data {
 	/* vc_report_mouse removed - write-only (never read) */
 	unsigned char	vc_utf		: 1;
 	unsigned char	vc_utf_count;
-		 int	vc_utf_char;
+	/* vc_utf_char removed - never used */
 	DECLARE_BITMAP(vc_tab_stop, VC_TABSTOPS_COUNT);
 	unsigned char   vc_palette[16*3];
 	unsigned short * vc_translate;

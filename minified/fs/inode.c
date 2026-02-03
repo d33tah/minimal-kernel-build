@@ -272,11 +272,7 @@ again:
 	dispose_list(&dispose);
 }
 
-/* Inode cache shrinking stubbed - not needed for minimal boot */
-long prune_icache_sb(struct super_block *sb, struct shrink_control *sc)
-{
-	return 0;
-}
+/* prune_icache_sb removed - declared/defined but never called */
 
 static DEFINE_PER_CPU(unsigned int, last_ino);
 

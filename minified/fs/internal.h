@@ -65,14 +65,12 @@ extern int build_open_flags(const struct open_how *how, struct open_flags *op);
 /* chmod_common, do_fchownat, chown_common removed - never called */
 extern int vfs_open(const struct path *, struct file *);
 
- 
-extern long prune_icache_sb(struct super_block *sb, struct shrink_control *sc);
-
+/* prune_icache_sb removed - declared/defined but never called */
 /* dentry_needs_remove_privs, get_nr_dirty_inodes, invalidate_inodes removed - unused */
 
- 
+
 extern int d_set_mounted(struct dentry *dentry);
-extern long prune_dcache_sb(struct super_block *sb, struct shrink_control *sc);
+/* prune_dcache_sb removed - declared/defined but never called */
 extern struct dentry *d_alloc_cursor(struct dentry *);
 extern struct dentry * d_alloc_pseudo(struct super_block *, const struct qstr *);
 /* simple_dname removed - was only in d_path.c */

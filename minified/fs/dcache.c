@@ -411,10 +411,7 @@ void shrink_dentry_list(struct list_head *list)
 {
 }
 
-long prune_dcache_sb(struct super_block *sb, struct shrink_control *sc)
-{
-	return 0;
-}
+/* prune_dcache_sb removed - declared/defined but never called */
 
 int d_set_mounted(struct dentry *dentry)
 {

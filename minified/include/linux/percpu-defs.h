@@ -245,10 +245,10 @@ do {									\
 #define this_cpu_read(pcp)		__pcpu_size_call_return(this_cpu_read_, pcp)
 #define this_cpu_write(pcp, val)	__pcpu_size_call(this_cpu_write_, pcp, val)
 #define this_cpu_add(pcp, val)		__pcpu_size_call(this_cpu_add_, pcp, val)
-#define this_cpu_and(pcp, val)		__pcpu_size_call(this_cpu_and_, pcp, val)
+/* this_cpu_and removed - unused */
 #define this_cpu_or(pcp, val)		__pcpu_size_call(this_cpu_or_, pcp, val)
 #define this_cpu_add_return(pcp, val)	__pcpu_size_call_return2(this_cpu_add_return_, pcp, val)
-#define this_cpu_xchg(pcp, nval)	__pcpu_size_call_return2(this_cpu_xchg_, pcp, nval)
+/* this_cpu_xchg removed - unused */
 #define this_cpu_cmpxchg(pcp, oval, nval) \
 	__pcpu_size_call_return2(this_cpu_cmpxchg_, pcp, oval, nval)
 #define this_cpu_cmpxchg_double(pcp1, pcp2, oval1, oval2, nval1, nval2) \
@@ -257,8 +257,7 @@ do {									\
 #define this_cpu_sub(pcp, val)		this_cpu_add(pcp, -(typeof(pcp))(val))
 #define this_cpu_inc(pcp)		this_cpu_add(pcp, 1)
 #define this_cpu_dec(pcp)		this_cpu_sub(pcp, 1)
-#define this_cpu_sub_return(pcp, val)	this_cpu_add_return(pcp, -(typeof(pcp))(val))
-#define this_cpu_inc_return(pcp)	this_cpu_add_return(pcp, 1)
+/* this_cpu_sub_return, this_cpu_inc_return removed - unused */
 #define this_cpu_dec_return(pcp)	this_cpu_add_return(pcp, -1)
 
 #endif  

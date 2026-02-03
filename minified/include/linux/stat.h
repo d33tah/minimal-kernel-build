@@ -22,14 +22,12 @@
 #define S_ISFIFO(m)	(((m) & S_IFMT) == S_IFIFO)
 #define S_ISSOCK(m)	(((m) & S_IFMT) == S_IFSOCK)
 #define S_IRWXU 00700
-/* S_IRUSR, S_IWUSR removed - unused */
-#define S_IXUSR 00100
+/* S_IRUSR, S_IWUSR, S_IXUSR removed - unused */
 #define S_IRWXG 00070
 /* S_IRGRP, S_IWGRP removed - never used */
 #define S_IXGRP 00010
 #define S_IRWXO 00007
-/* S_IROTH, S_IWOTH removed - never used */
-#define S_IXOTH 00001
+/* S_IROTH, S_IWOTH, S_IXOTH removed - never used */
 #endif
 /* struct statx forward decl removed - unused */
 /* STATX_BASIC_STATS removed - unused */

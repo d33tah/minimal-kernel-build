@@ -77,8 +77,7 @@ struct signal_struct;
 
 #define TASK_NORMAL			(TASK_INTERRUPTIBLE | TASK_UNINTERRUPTIBLE)
 
-#define task_is_running(task)		(READ_ONCE((task)->__state) == TASK_RUNNING)
-
+/* task_is_running removed - unused */
 /* debug_normal/special_state_change removed - empty stubs */
 
 #define __set_current_state(state_value)				\

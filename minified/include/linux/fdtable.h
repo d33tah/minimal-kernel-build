@@ -70,7 +70,7 @@ static inline struct file *files_lookup_fd_raw(struct files_struct *files, unsig
 void put_files_struct(struct files_struct *fs);
 int unshare_files(void);
 struct files_struct *dup_fd(struct files_struct *, unsigned, int *) __latent_entropy;
-void do_close_on_exec(struct files_struct *);
+/* do_close_on_exec removed - was empty stub */
 
 /* close_fd, __close_range, iterate_fd removed - never called */
 

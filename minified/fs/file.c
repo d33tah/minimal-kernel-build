@@ -409,10 +409,7 @@ void fd_install(unsigned int fd, struct file *file)
 
 /* pick_file, close_fd, __close_range removed - never called */
 
-/* Stubbed - init has no close-on-exec files (~31 LOC) */
-void do_close_on_exec(struct files_struct *files)
-{
-}
+/* do_close_on_exec removed - was empty stub, call removed from exec.c */
 
 static inline struct file *__fget_files_rcu(struct files_struct *files,
 					    unsigned int fd, fmode_t mask)

@@ -403,7 +403,7 @@ int begin_new_exec(struct linux_binprm *bprm)
 
 	clear_task_syscall_work(me, SYSCALL_USER_DISPATCH);
 
-	do_close_on_exec(me->files);
+	/* do_close_on_exec call removed - function was empty stub */
 
 	if (bprm->secureexec) {
 		me->pdeath_signal = 0;

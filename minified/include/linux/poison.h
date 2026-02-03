@@ -1,15 +1,13 @@
 #ifndef _LINUX_POISON_H
 #define _LINUX_POISON_H
 
+/* POISON_POINTER_DELTA removed - was 0, inlined into values below */
+#define LIST_POISON1  ((void *) 0x100)
+#define LIST_POISON2  ((void *) 0x122)
 
-# define POISON_POINTER_DELTA 0
+#define TIMER_ENTRY_STATIC	((void *) 0x300)
 
-#define LIST_POISON1  ((void *) 0x100 + POISON_POINTER_DELTA)
-#define LIST_POISON2  ((void *) 0x122 + POISON_POINTER_DELTA)
-
-#define TIMER_ENTRY_STATIC	((void *) 0x300 + POISON_POINTER_DELTA)
-
-#define TAIL_MAPPING	((void *) 0x400 + POISON_POINTER_DELTA)
+#define TAIL_MAPPING	((void *) 0x400)
 
 #define POISON_FREE_INITMEM	0xcc
 

@@ -43,10 +43,9 @@ bool __must_check try_grab_page(struct page *page, unsigned int flags)
 
 /* mm_set_has_pinned_flag inlined into __get_user_pages_locked */
 
-static struct page *no_page_table(struct vm_area_struct *vma,
-				  unsigned int flags)
+/* Parameters removed - vma and flags were never used */
+static struct page *no_page_table(void)
 {
-	/* FOLL_DUMP check removed - never set */
 	return NULL;
 }
 
@@ -76,13 +75,13 @@ static struct page *follow_page_mask(struct vm_area_struct *vma,
 	pmd = pmd_offset(pud, address);
 	pmdval = READ_ONCE(*pmd);
 	if (pmd_none(pmdval))
-		return no_page_table(vma, flags);
+		return no_page_table();
 	if (!pmd_present(pmdval))
-		return no_page_table(vma, flags);
+		return no_page_table();
 
 	/* Inlined follow_page_pte */
 	if (unlikely(pmd_bad(*pmd)))
-		return no_page_table(vma, flags);
+		return no_page_table();
 
 	ptep = pte_offset_map_lock(mm, pmd, address, &ptl);
 	pte = *ptep;
@@ -135,7 +134,7 @@ no_page:
 	pte_unmap_unlock(ptep, ptl);
 	if (!pte_none(pte))
 		return NULL;
-	return no_page_table(vma, flags);
+	return no_page_table();
 }
 
 /* get_gate_page removed - in_gate_area always returns 0 */

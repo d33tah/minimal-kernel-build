@@ -207,8 +207,7 @@ static inline void set_page_private(struct page *page, unsigned long private)
 
 typedef unsigned long vm_flags_t;
 
-/* NULL_VM_UFFD_CTX removed - unused */
-struct vm_userfaultfd_ctx {};
+/* NULL_VM_UFFD_CTX, struct vm_userfaultfd_ctx removed - unused */
 
 /* anon_vma_name fields removed - only used as opaque pointer */
 struct anon_vma_name;

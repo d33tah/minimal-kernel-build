@@ -210,12 +210,7 @@ void *alloc_pages_exact(size_t size, gfp_t gfp_mask) __alloc_size(1);
 #define __get_free_page(gfp_mask) \
 		__get_free_pages((gfp_mask), 0)
 
-/* __free_pages/free_pages - no-op stubs for bump allocator */
-static inline void __free_pages(struct page *page, unsigned int order) {}
-static inline void free_pages(unsigned long addr, unsigned int order) {}
-
-#define __free_page(page) __free_pages((page), 0)
-#define free_page(addr) free_pages((addr), 0)
+/* __free_pages/free_pages/free_page macros removed - never called (bump allocator) */
 
 /* page_alloc_init, page_alloc_init_late inlined into init/main.c */
 

@@ -53,11 +53,11 @@
 /* sysctl_overcommit_* externs already in mm.h */
 extern struct percpu_counter vm_committed_as;
 
-#define vm_committed_as_batch 0
+/* vm_committed_as_batch removed - was 0, inlined below */
 
 static inline void vm_acct_memory(long pages)
 {
-	percpu_counter_add_batch(&vm_committed_as, pages, vm_committed_as_batch);
+	percpu_counter_add_batch(&vm_committed_as, pages, 0);
 }
 
 static inline void vm_unacct_memory(long pages)

@@ -1,7 +1,7 @@
 #include <linux/init_task.h>
 #include <linux/export.h>
 #include <linux/sched.h>
-#include <linux/sched/sysctl.h>
+/* linux/sched/sysctl.h removed - sysctl_hung_task_timeout_secs unused */
 #include <linux/sched/rt.h>
 #include <linux/sched/task.h>
 #include <linux/init.h>

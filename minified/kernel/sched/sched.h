@@ -16,7 +16,7 @@
 extern int nr_threads;
 /* process_counts, nr_running, single_task_running, nr_iowait, nr_iowait_cpu removed/made static */
 /* end sched/stat.h */
-#include <linux/sched/sysctl.h>
+/* linux/sched/sysctl.h removed - sysctl_hung_task_timeout_secs unused */
 
 #include <linux/sched/task.h>
 /* arch_scale_thermal_pressure removed - unused */

@@ -99,11 +99,7 @@ unsigned long get_state_synchronize_srcu(struct srcu_struct *ssp)
 }
 
 /* start_poll_synchronize_srcu, poll_state_synchronize_srcu removed - never called */
-
-void __init rcu_scheduler_starting(void)
-{
-	/* rcu_scheduler_active assignment removed - never read */
-}
+/* rcu_scheduler_starting made inline in rcupdate.h - was empty stub */
 
 void __init srcu_init(void)
 {

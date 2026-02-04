@@ -58,7 +58,7 @@ void rcu_qs(void);
 /* rcu_idle_enter, rcu_idle_exit, rcu_irq_enter, rcu_irq_exit,
    rcu_irq_exit_check_preempt, exit_rcu, rcu_end_inkernel_boot,
    kfree_rcu_scheduler_running removed - call sites removed */
-void rcu_scheduler_starting(void);
+static inline void rcu_scheduler_starting(void) { }
 static inline bool rcu_is_watching(void) { return true; }
 /* rcu_all_qs removed - inlined at single call site */
 

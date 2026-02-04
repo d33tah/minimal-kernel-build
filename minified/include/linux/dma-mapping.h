@@ -2,7 +2,6 @@
 #define _LINUX_DMA_MAPPING_H
 
 /* sizes.h include removed - no macros used here */
-#include <linux/string.h>
 #include <linux/device.h>
 #include <linux/err.h>
 /* enum dma_data_direction removed - never used */

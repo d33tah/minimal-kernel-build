@@ -3,7 +3,6 @@
 #include <linux/compiler.h>
 #include <linux/ktime.h>
 #include <linux/wait.h>
-#include <linux/string.h>
 #include <linux/fs.h>
 #include <linux/uaccess.h>
 /* eventpoll.h inlined */

@@ -22,11 +22,7 @@ typedef struct { DECLARE_BITMAP(bits, MAX_NUMNODES); } nodemask_t;
 
 #define NODE_MASK_LAST_WORD BITMAP_LAST_WORD_MASK(MAX_NUMNODES)
 
-/* MAX_NUMNODES == 1 <= BITS_PER_LONG always */
-#define NODE_MASK_ALL							\
-((nodemask_t) { {							\
-	[BITS_TO_LONGS(MAX_NUMNODES)-1] = NODE_MASK_LAST_WORD		\
-} })
+/* NODE_MASK_ALL removed - never used */
 
 /* MAX_NUMNODES=1 - for_each_node_mask removed as unused */
 

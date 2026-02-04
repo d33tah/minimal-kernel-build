@@ -219,10 +219,7 @@ static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
 #undef  p4d_addr_end
 #define p4d_addr_end(addr, end)			(end)
 
-static inline p4dval_t native_p4d_val(p4d_t p4d)
-{
-	return native_pgd_val(p4d.pgd);
-}
+/* native_p4d_val removed - never called */
 
 /* --- 2025-12-07 10:14 --- Inlined asm-generic/pgtable-nopud.h content */
 #define __PAGETABLE_PUD_FOLDED 1
@@ -259,10 +256,7 @@ static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
 #undef  pud_addr_end
 #define pud_addr_end(addr, end)			(end)
 
-static inline pudval_t native_pud_val(pud_t pud)
-{
-	return native_pgd_val(pud.p4d.pgd);
-}
+/* native_pud_val removed - never called */
 
 /* --- 2025-12-07 10:14 --- Inlined asm-generic/pgtable-nopmd.h content */
 struct mm_struct;
@@ -342,10 +336,7 @@ static inline pteval_t pte_flags(pte_t pte)
 	return native_pte_val(pte) & PTE_FLAGS_MASK;
 }
 
-#define __pte2cm_idx(cb)				\
-	((((cb) >> (_PAGE_BIT_PAT - 2)) & 4) |		\
-	 (((cb) >> (_PAGE_BIT_PCD - 1)) & 2) |		\
-	 (((cb) >> _PAGE_BIT_PWT) & 1))
+/* __pte2cm_idx removed - never used */
 
 unsigned long cachemode2protval(enum page_cache_mode pcm);
 

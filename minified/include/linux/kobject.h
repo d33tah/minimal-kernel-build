@@ -9,10 +9,9 @@
 #include <linux/container_of.h>
 #include <linux/spinlock.h>
 #include <linux/kref.h>
-/* kobject_ns.h removed - never used */
+/* kobject_ns.h, linux/workqueue.h removed - never used */
 #include <linux/wait.h>
 #include <linux/atomic.h>
-#include <linux/workqueue.h>
 #include <linux/uidgid.h>
 
 enum kobject_action {

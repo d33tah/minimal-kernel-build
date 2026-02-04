@@ -1,8 +1,7 @@
 #ifndef WRITEBACK_H
 #define WRITEBACK_H
 
-#include <linux/sched.h>
-#include <linux/workqueue.h>
+/* linux/sched.h, linux/workqueue.h removed - unused */
 #include <linux/fs.h>
 #include <linux/flex_proportions.h>
 #include <linux/backing-dev-defs.h>

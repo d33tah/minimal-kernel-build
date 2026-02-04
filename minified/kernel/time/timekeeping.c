@@ -1,7 +1,7 @@
 
 #include <linux/timekeeper_internal.h>
 #include <linux/module.h>
-#include <linux/interrupt.h>
+/* linux/interrupt.h removed - no interrupt features used */
 #include <linux/percpu.h>
 #include <linux/init.h>
 #include <linux/mm.h>

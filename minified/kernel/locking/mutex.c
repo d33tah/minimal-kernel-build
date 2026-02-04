@@ -5,7 +5,7 @@
 #include <linux/sched/debug.h>
 /* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/spinlock.h>
-#include <linux/interrupt.h>
+/* linux/interrupt.h removed - no interrupt features used */
 #include <linux/debug_locks.h>
 
 /* --- 2026-01-26 01:45 --- Inlined from mutex.h */

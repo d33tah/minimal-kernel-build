@@ -5,7 +5,7 @@
 #include <linux/signal.h>
 #include <linux/fcntl.h>
 #include <linux/sched.h>
-#include <linux/interrupt.h>
+/* linux/interrupt.h removed - no interrupt features used */
 #include <linux/tty.h>
 #include <linux/ctype.h>
 #include <linux/mm.h>

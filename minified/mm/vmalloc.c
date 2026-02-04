@@ -5,7 +5,7 @@
 #include <linux/sched/signal.h>
 #include <linux/slab.h>
 #include <linux/spinlock.h>
-#include <linux/interrupt.h>
+/* linux/interrupt.h removed - no interrupt features used */
 /* proc_fs.h, seq_file.h, kallsyms.h, io.h, memcontrol.h, llist.h removed - unused */
 /* asm/set_memory.h removed - set_memory functions not used */
 #include <linux/list.h>

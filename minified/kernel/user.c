@@ -4,7 +4,7 @@
 #include <linux/slab.h>
 #include <linux/bitops.h>
 #include <linux/sched/user.h>
-#include <linux/interrupt.h>
+/* linux/interrupt.h removed - no interrupt features used */
 #include <linux/user_namespace.h>
 #include <linux/proc_ns.h>
 

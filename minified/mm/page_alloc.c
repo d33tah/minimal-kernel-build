@@ -1,7 +1,7 @@
 
 #include <linux/mm.h>
 #include <linux/swap.h>
-#include <linux/interrupt.h>
+/* linux/interrupt.h removed - no interrupt features used */
 #include <linux/memblock.h>
 #include <linux/compiler.h>
 #include <linux/kernel.h>

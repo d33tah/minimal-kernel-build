@@ -1,7 +1,7 @@
 #include <linux/types.h>
 #include <linux/errno.h>
 #include <linux/sched.h>
-#include <linux/interrupt.h>
+/* linux/interrupt.h removed - no interrupt features used */
 #include <linux/tty.h>
 #include <linux/tty_driver.h>
 #include <linux/file.h>

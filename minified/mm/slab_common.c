@@ -2,7 +2,7 @@
 
 #include <linux/mm.h>
 #include <linux/poison.h>
-#include <linux/interrupt.h>
+/* linux/interrupt.h removed - no interrupt features used */
 #include <linux/cache.h>
 #include <linux/compiler.h>
 /* linux/module.h removed - no module features used */

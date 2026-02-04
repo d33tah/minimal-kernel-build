@@ -19,7 +19,7 @@
 #include <linux/vt_kern.h>
 #include <linux/selection.h> /* includes tiocl defines */
 /* linux/tty.h already included above */
-#include <linux/interrupt.h>
+/* linux/interrupt.h removed - no interrupt features used */
 #include <linux/consolemap.h>
 /* duplicate linux/interrupt.h removed */
 #include <linux/workqueue.h>

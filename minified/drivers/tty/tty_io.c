@@ -6,7 +6,7 @@
 #include <linux/fcntl.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/task.h>
-#include <linux/interrupt.h>
+/* linux/interrupt.h removed - no interrupt features used */
 #include <linux/tty.h>
 #include <linux/tty_driver.h>
 #include <linux/tty_buffer.h>

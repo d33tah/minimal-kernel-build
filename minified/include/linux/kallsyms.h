@@ -1,10 +1,9 @@
 #ifndef _LINUX_KALLSYMS_H
 #define _LINUX_KALLSYMS_H
 
-/* linux/errno.h removed - no errno constants used */
+/* linux/errno.h, linux/mm.h removed - unused */
 #include <linux/kernel.h>
 #include <linux/stddef.h>
-#include <linux/mm.h>
 #include <linux/module.h>
 
 #include <asm/sections.h>

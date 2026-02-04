@@ -10,7 +10,7 @@
 #include <linux/mutex.h>
 #include <linux/wait.h>
 #include <linux/workqueue.h>
-#include <linux/mm.h>
+/* linux/mm.h removed - no mm types used */
 #include <linux/consolemap.h>
 #include <linux/notifier.h>
 

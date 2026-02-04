@@ -85,8 +85,7 @@ static struct vc_data *master_display_fg;
 
 /* console_blank_hook, console_timer removed - never used */
 /* blank_state and blank_* enum removed - was never read */
-
-static struct device *tty0dev;
+/* tty0dev removed - write-only variable, value never used after assignment */
 
 /* Removed: vt_notifier_list, notify_write, notify_update - empty stubs */
 
@@ -875,10 +874,8 @@ int __init vty_init(const struct file_operations *console_fops)
 	if (cdev_add(&vc0_cdev, MKDEV(TTY_MAJOR, 0), 1) ||
 	    register_chrdev_region(MKDEV(TTY_MAJOR, 0), 1, "/dev/vc/0") < 0)
 		panic("Couldn't register /dev/tty0 driver\n");
-	tty0dev = device_create(tty_class, NULL, MKDEV(TTY_MAJOR, 0), NULL,
-				"tty0");
-	if (IS_ERR(tty0dev))
-		tty0dev = NULL;
+	/* tty0dev assignment removed - variable never read */
+	(void)device_create(tty_class, NULL, MKDEV(TTY_MAJOR, 0), NULL, "tty0");
 
 	console_driver = tty_alloc_driver(MAX_NR_CONSOLES,
 					  TTY_DRIVER_REAL_RAW |

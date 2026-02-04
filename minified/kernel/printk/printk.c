@@ -175,15 +175,8 @@ struct tty_driver *console_device(int *index)
 
 /* keep_bootcon removed - never set, always false */
 
-/* try_enable_preferred_console simplified - console_cmdline never populated */
-static int try_enable_preferred_console(struct console *newcon,
-					bool user_specified)
-{
-	/* console_cmdline array is never populated, so loop never executes */
-	if (newcon->flags & CON_ENABLED)
-		return 0;
-	return -ENOENT;
-}
+/* try_enable_preferred_console inlined - console_cmdline never populated,
+   just checks if already enabled (~5 LOC) */
 
 /* try_enable_default_console inlined into register_console */
 
@@ -229,10 +222,8 @@ void register_console(struct console *newcon)
 		}
 	}
 
-	err = try_enable_preferred_console(newcon, true);
-
-	if (err == -ENOENT)
-		err = try_enable_preferred_console(newcon, false);
+	/* try_enable_preferred_console inlined - just checks CON_ENABLED */
+	err = (newcon->flags & CON_ENABLED) ? 0 : -ENOENT;
 
 	if (err || newcon->flags & CON_BRL)
 		return;

@@ -27,8 +27,7 @@ static inline void __rcu_read_unlock(void)
 void rcu_init(void);
 /* rcu_scheduler_active removed - write-only variable */
 void rcu_sched_clock_irq(int user);
-void rcu_report_dead(unsigned int cpu);
-void rcutree_migrate_callbacks(int cpu);
+/* rcu_report_dead, rcutree_migrate_callbacks removed - no definitions or callers */
 
 /* rcu_init_tasks_generic, rcu_init_nohz, exit_tasks_rcu_start,
    exit_tasks_rcu_finish removed - call sites removed */

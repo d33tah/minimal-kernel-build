@@ -23,14 +23,12 @@
  
 #define BUILD_BUG_ON_MSG(cond, msg) compiletime_assert(!(cond), msg)
 
- 
+
 #define BUILD_BUG_ON(condition) \
 	BUILD_BUG_ON_MSG(condition, "BUILD_BUG_ON failed: " #condition)
 
- 
-#define BUILD_BUG() BUILD_BUG_ON_MSG(1, "BUILD_BUG failed")
+/* BUILD_BUG() removed - never called */
 
- 
 #ifndef static_assert
 #define static_assert(expr, ...) __static_assert(expr, ##__VA_ARGS__, #expr)
 #define __static_assert(expr, msg, ...) _Static_assert(expr, msg)

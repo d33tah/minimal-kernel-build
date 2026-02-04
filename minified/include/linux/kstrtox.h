@@ -1,7 +1,7 @@
 #ifndef _LINUX_KSTRTOX_H
 #define _LINUX_KSTRTOX_H
 
-#include <linux/compiler.h>
+#include <linux/compiler_attributes.h>
 #include <linux/types.h>
 
 int __must_check kstrtoull(const char *s, unsigned int base, unsigned long long *res);

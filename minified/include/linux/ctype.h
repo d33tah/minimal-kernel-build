@@ -1,9 +1,6 @@
 #ifndef _LINUX_CTYPE_H
 #define _LINUX_CTYPE_H
 
-#include <linux/compiler.h>
-
-
 #define _U	0x01	 
 #define _L	0x02	 
 #define _D	0x04	 

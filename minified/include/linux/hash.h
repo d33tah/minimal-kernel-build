@@ -3,7 +3,6 @@
 #define _LINUX_HASH_H
 
 #include <asm/types.h>
-#include <linux/compiler.h>
 
 #define GOLDEN_RATIO_32 0x61C88647
 /* GOLDEN_RATIO_PRIME removed - unused */

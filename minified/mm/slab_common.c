@@ -6,7 +6,7 @@
 #include <linux/cache.h>
 #include <linux/compiler.h>
 /* linux/module.h removed - no module features used */
-#include <linux/cpu.h>
+/* linux/cpu.h removed - no cpu features used */
 #include <linux/uaccess.h>
 /* seq_file.h removed - header is empty */
 /* proc_fs.h removed - empty header */

@@ -12,7 +12,7 @@
 #include <linux/smp.h>
 #include <linux/syscalls.h>
 
-#include <linux/cpu.h>
+/* linux/cpu.h removed - no cpu features used */
 /* rculist.h, poll.h, irq_work.h, ctype.h, uio.h removed - unused */
 /* sched/clock.h, sched/debug.h, sched/task_stack.h, uaccess.h, asm/sections.h removed - unused */
 

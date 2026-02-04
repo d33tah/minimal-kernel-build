@@ -8,7 +8,7 @@
 #include <linux/module.h>
 #include <linux/sched.h>
 #include <linux/kthread.h>
-#include <linux/cpu.h>
+/* linux/cpu.h removed - no cpu features used */
 
 #include "tick-internal.h"
 #include "timekeeping_internal.h"

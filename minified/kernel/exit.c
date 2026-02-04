@@ -11,7 +11,7 @@ extern int nr_threads;
 #include <linux/module.h>
 /* linux/capability.h, linux/completion.h, linux/personality.h removed - unused */
 #include <linux/tty.h>
-#include <linux/cpu.h>
+/* linux/cpu.h removed - no cpu features used */
 #include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/binfmts.h>

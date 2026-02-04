@@ -8,7 +8,7 @@
 #include <linux/types.h>
 #include <linux/init.h>
 #include <linux/time.h>
-#include <linux/cpu.h>
+/* linux/cpu.h removed - no cpu features used */
 
 /* linux/slab.h removed - no slab functions */
 #include <linux/mm.h>

@@ -136,10 +136,10 @@
 /* CPU bugs - only keep the used ones */
 #define X86_BUG(x)			(NCAPINTS*32 + (x))
 
-#define X86_BUG_AMD_APIC_C1E		X86_BUG(4)
+/* X86_BUG_AMD_APIC_C1E removed - never used */
 #define X86_BUG_FXSAVE_LEAK		X86_BUG(6)
 #define X86_BUG_ESPFIX			X86_BUG(9)
 #define X86_BUG_NULL_SEG		X86_BUG(10)
-#define X86_BUG_AMD_E400		X86_BUG(13)
+/* X86_BUG_AMD_E400 removed - never set */
 
 #endif

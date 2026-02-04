@@ -1,5 +1,5 @@
 #include <linux/klist.h>
-#include <linux/export.h>
+/* linux/export.h removed - no EXPORT_SYMBOL used */
 #include <linux/sched.h>
 
 #define KNODE_DEAD 1LU

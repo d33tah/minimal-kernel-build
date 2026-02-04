@@ -1,7 +1,7 @@
 
 #include <linux/bitops.h>
 #include <linux/bitmap.h>
-#include <linux/export.h>
+/* linux/export.h removed - no EXPORT_SYMBOL used */
 #include <linux/math.h>
 #include <linux/minmax.h>
 #include <linux/swab.h>

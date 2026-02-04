@@ -1,5 +1,5 @@
 #include <linux/init_task.h>
-#include <linux/export.h>
+/* linux/export.h removed - no EXPORT_SYMBOL used */
 #include <linux/sched.h>
 /* linux/sched/sysctl.h removed - sysctl_hung_task_timeout_secs unused */
 #include <linux/sched/rt.h>

@@ -2,7 +2,7 @@
 
 #include <linux/bug.h>
 #include <linux/kernel.h>
-#include <linux/export.h>
+/* linux/export.h removed - no EXPORT_SYMBOL used */
 #include <linux/ctype.h>
 #include <linux/errno.h>
 #include <linux/string.h>

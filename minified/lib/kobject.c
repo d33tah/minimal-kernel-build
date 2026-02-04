@@ -1,6 +1,6 @@
 /* string.h removed - unused */
 #include <linux/kobject.h>
-#include <linux/export.h>
+/* linux/export.h removed - no EXPORT_SYMBOL used */
 /* stat.h removed - unused */
 #include <linux/slab.h>
 

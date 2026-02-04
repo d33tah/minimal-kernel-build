@@ -4,7 +4,7 @@
 #include <linux/bug.h>
 /* linux/cpu.h removed - CPU hotplug not used */
 #include <linux/errno.h>
-#include <linux/export.h>
+/* linux/export.h removed - no EXPORT_SYMBOL used */
 #include <linux/idr.h>
 #include <linux/init.h>
 #include <linux/kernel.h>

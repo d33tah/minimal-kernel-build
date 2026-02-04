@@ -1,7 +1,7 @@
 
 #include <linux/ctype.h>
 #include <linux/compiler.h>
-#include <linux/export.h>
+/* linux/export.h removed - no EXPORT_SYMBOL used */
 
 const unsigned char _ctype[] = {
 	_C,	  _C,	   _C,	    _C,	     _C,      _C,      _C,	_C,

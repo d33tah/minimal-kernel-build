@@ -1,4 +1,4 @@
-#include <linux/export.h>
+/* linux/export.h removed - no EXPORT_SYMBOL used */
 /* linux/bvec.h removed - ITER_BVEC never initialized */
 #include <linux/uio.h>
 #include <linux/pagemap.h>

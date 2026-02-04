@@ -1,4 +1,4 @@
-#include <linux/export.h>
+/* linux/export.h removed - no EXPORT_SYMBOL used */
 #include <linux/lockref.h>
 #include <linux/bug.h>
 

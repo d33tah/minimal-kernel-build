@@ -1,6 +1,6 @@
 
 #include <linux/bitmap.h>
-#include <linux/export.h>
+/* linux/export.h removed - no EXPORT_SYMBOL used */
 #include <linux/list.h>
 #include <linux/slab.h>
 #include <linux/xarray.h>

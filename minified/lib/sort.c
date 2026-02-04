@@ -2,7 +2,8 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/types.h>
-#include <linux/export.h>
+#include <linux/stddef.h> /* for NULL */
+/* linux/export.h removed - no EXPORT_SYMBOL used */
 #include <linux/sort.h>
 
 /* Local typedefs - only used by sort_r() which is now static */

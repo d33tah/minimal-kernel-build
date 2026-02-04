@@ -41,6 +41,5 @@ struct statfs64 {
 	__statfs_word f_flags;
 	__statfs_word f_spare[4];
 } ARCH_PACK_STATFS64;
-
-typedef __kernel_fsid_t	fsid_t;
+/* fsid_t removed - never used */
 #endif  

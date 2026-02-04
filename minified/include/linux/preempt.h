@@ -3,7 +3,7 @@
 
 
 #include <linux/linkage.h>
-#include <linux/list.h>
+/* linux/list.h removed - no list structures used */
 
 #define PREEMPT_BITS	8
 #define SOFTIRQ_BITS	8

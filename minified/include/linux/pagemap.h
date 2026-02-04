@@ -3,7 +3,7 @@
 
 #include <linux/mm.h>
 #include <linux/fs.h>
-#include <linux/list.h>
+/* linux/list.h removed - no list structures used */
 #include <linux/highmem.h>
 #include <linux/compiler.h>
 #include <linux/uaccess.h>

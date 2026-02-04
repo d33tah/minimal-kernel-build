@@ -4,9 +4,9 @@
 #include <linux/types.h>
 #include <linux/init.h>
 #include <linux/ioport.h>
-#include <linux/list.h>
+/* linux/list.h removed - no list structures used */
 #include <linux/compiler.h>
-#include <linux/errno.h>
+/* linux/errno.h removed - no errno constants used */
 #include <linux/kobject.h>
 #include <linux/atomic.h>
 #include <linux/device.h>

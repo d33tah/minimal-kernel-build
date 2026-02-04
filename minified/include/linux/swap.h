@@ -5,7 +5,7 @@
 #include <linux/spinlock.h>
 #include <linux/linkage.h>
 #include <linux/mmzone.h>
-#include <linux/list.h>
+/* linux/list.h removed - no list structures used */
 #include <linux/memcontrol.h>
 #include <linux/sched.h>
 #include <linux/fs.h>

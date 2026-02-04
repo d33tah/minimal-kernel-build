@@ -3,7 +3,7 @@
 
 
 #include <linux/cache.h>
-#include <linux/spinlock.h>
+/* linux/spinlock.h removed - no spinlock usage */
 #include <linux/cpumask.h>
 struct irq_desc;
 typedef void (*irq_flow_handler_t)(struct irq_desc *desc);

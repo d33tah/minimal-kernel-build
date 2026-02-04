@@ -3,7 +3,7 @@
 
 #include <linux/ratelimit_types.h>
 #include <linux/sched.h>
-#include <linux/spinlock.h>
+/* linux/spinlock.h removed - no spinlock usage */
 
 /* ratelimit_state_init, ratelimit_set_flags removed - never called */
 

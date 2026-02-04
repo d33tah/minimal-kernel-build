@@ -2,7 +2,7 @@
 #ifndef _LINUX_SWAP_H
 #define _LINUX_SWAP_H
 
-#include <linux/spinlock.h>
+/* linux/spinlock.h removed - no spinlock usage */
 #include <linux/linkage.h>
 #include <linux/mmzone.h>
 /* linux/list.h removed - no list structures used */

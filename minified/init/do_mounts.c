@@ -1,4 +1,3 @@
-#include <linux/module.h>
 #include <linux/sched.h>
 #include <linux/ctype.h>
 #include <linux/tty.h>

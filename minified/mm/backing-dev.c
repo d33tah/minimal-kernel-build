@@ -2,7 +2,6 @@
 #include <linux/blkdev.h>
 #include <linux/wait.h>
 #include <linux/rbtree.h>
-#include <linux/kthread.h>
 #include <linux/backing-dev.h>
 #include <linux/fs.h>
 #include <linux/pagemap.h>

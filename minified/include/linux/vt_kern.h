@@ -87,7 +87,7 @@ struct vc_data {
 	unsigned char	vc_utf		: 1;
 	unsigned char	vc_utf_count;
 	/* vc_utf_char removed - never used */
-	DECLARE_BITMAP(vc_tab_stop, VC_TABSTOPS_COUNT);
+	/* vc_tab_stop bitmap removed - tab handling unused, write-only */
 	unsigned char   vc_palette[16*3];
 	unsigned short * vc_translate;
 	/* vc_resize_user, vc_bell_pitch, vc_bell_duration, vc_cur_blink_ms removed - unused */

@@ -514,9 +514,7 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 	vc->state.color = vc->vc_def_color;
 	update_attr(vc);
 
-	bitmap_zero(vc->vc_tab_stop, VC_TABSTOPS_COUNT);
-	for (i = 0; i < VC_TABSTOPS_COUNT; i += 8)
-		set_bit(i, vc->vc_tab_stop);
+	/* vc_tab_stop initialization removed - field removed (tab handling unused) */
 
 	/* vc_bell_pitch, vc_bell_duration, vc_cur_blink_ms removed - fields removed */
 

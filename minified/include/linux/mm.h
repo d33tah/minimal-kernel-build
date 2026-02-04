@@ -2,7 +2,7 @@
 #ifndef _LINUX_MM_H
 #define _LINUX_MM_H
 
-#include <linux/errno.h>
+/* linux/errno.h removed - no errno constants used */
 #include <linux/mmdebug.h>
 #include <linux/gfp.h>
 #include <linux/bug.h>

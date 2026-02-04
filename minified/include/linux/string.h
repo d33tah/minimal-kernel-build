@@ -1,10 +1,10 @@
 #ifndef _LINUX_STRING_H_
 #define _LINUX_STRING_H_
 
-#include <linux/compiler.h>	 
-#include <linux/types.h>	 
-#include <linux/stddef.h>	 
-#include <linux/errno.h>	 
+#include <linux/compiler.h>
+#include <linux/types.h>
+#include <linux/stddef.h>
+/* linux/errno.h removed - no errno constants used */
 #include <linux/stdarg.h>
 
 /* memdup_user removed - never called */

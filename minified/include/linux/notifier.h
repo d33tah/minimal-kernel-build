@@ -1,6 +1,6 @@
 #ifndef _LINUX_NOTIFIER_H
 #define _LINUX_NOTIFIER_H
-#include <linux/errno.h>
+/* linux/errno.h removed - no errno constants used */
 #include <linux/mutex.h>
 #include <linux/rwsem.h>
 #include <linux/srcu.h>

@@ -66,8 +66,7 @@ void memset_io(volatile void __iomem *, int, size_t);
 
 
 
- 
-#define __ISA_IO_base ((char __iomem *)(PAGE_OFFSET))
+/* __ISA_IO_base removed - never used */
 
 #endif  
 

@@ -16,29 +16,7 @@
 
 #include <generated/timeconst.h>
 
-#if HZ >= 12 && HZ < 24
-# define SHIFT_HZ	4
-#elif HZ >= 24 && HZ < 48
-# define SHIFT_HZ	5
-#elif HZ >= 48 && HZ < 96
-# define SHIFT_HZ	6
-#elif HZ >= 96 && HZ < 192
-# define SHIFT_HZ	7
-#elif HZ >= 192 && HZ < 384
-# define SHIFT_HZ	8
-#elif HZ >= 384 && HZ < 768
-# define SHIFT_HZ	9
-#elif HZ >= 768 && HZ < 1536
-# define SHIFT_HZ	10
-#elif HZ >= 1536 && HZ < 3072
-# define SHIFT_HZ	11
-#elif HZ >= 3072 && HZ < 6144
-# define SHIFT_HZ	12
-#elif HZ >= 6144 && HZ < 12288
-# define SHIFT_HZ	13
-#else
-# error Invalid value of HZ.
-#endif
+/* SHIFT_HZ conditionals removed - never used */
 
 /* register_refined_jiffies declaration removed - function removed */
 

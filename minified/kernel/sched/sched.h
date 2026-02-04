@@ -77,26 +77,14 @@ struct rq;
 #define TASK_ON_RQ_QUEUED	1
 #define TASK_ON_RQ_MIGRATING	2
 
-/* scheduler_running removed - write-only variable */
-extern unsigned long calc_load_update;
+/* scheduler_running, calc_load_update removed - write-only variables */
 /* calc_load_tasks, sysctl_sched_child_runs_first removed - never used */
 /* calc_global_load_tick, calc_load_fold_active removed - never called */
 
-/* call_trace_sched_update_nr_running removed - unused */
-/* sysctl_sched_rt_period, sysctl_sched_rt_runtime removed - no longer used */
-
- 
-#define NS_TO_JIFFIES(TIME)	((unsigned long)(TIME) / (NSEC_PER_SEC / HZ))
-
- 
+/* NS_TO_JIFFIES, NICE_0_LOAD, RUNTIME_INF removed - never used */
 # define NICE_0_LOAD_SHIFT	(SCHED_FIXEDPOINT_SHIFT)
 # define scale_load(w)		(w)
 # define scale_load_down(w)	(w)
-
- 
-#define NICE_0_LOAD		(1L << NICE_0_LOAD_SHIFT)
-
-#define RUNTIME_INF		((u64)~0ULL)
 
 static inline int idle_policy(int policy)
 {

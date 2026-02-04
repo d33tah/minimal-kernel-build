@@ -15,7 +15,7 @@
 /* stats.h, pelt.h removed - were empty */
 
 /* loadavg.c removed - calc_global_load/calc_global_load_tick calls removed */
-unsigned long calc_load_update;
+/* calc_load_update removed - write-only variable */
 
 /* completion.c removed - stubs inlined into include/linux/completion.h */
 #include "swait.c"

@@ -938,9 +938,7 @@ void __init sched_init(void)
 	WARN_ON(!set_kthread_struct(current));
 
 	init_idle(current, smp_processor_id());
-
-	calc_load_update = jiffies + LOAD_FREQ;
-	/* scheduler_running assignment removed - never read */
+	/* calc_load_update, scheduler_running assignments removed - never read */
 }
 
 const int sched_prio_to_weight[40] = {

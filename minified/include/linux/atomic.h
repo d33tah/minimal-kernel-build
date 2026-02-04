@@ -1,6 +1,5 @@
 #ifndef _LINUX_ATOMIC_H
 #define _LINUX_ATOMIC_H
-#include <linux/types.h>
 
 #include <asm/atomic.h>
 #include <asm/barrier.h>

@@ -2,7 +2,6 @@
 #define _LINUX_PANIC_H
 
 #include <linux/compiler_attributes.h>
-#include <linux/types.h>
 
 struct pt_regs;
 

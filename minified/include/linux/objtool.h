@@ -2,8 +2,6 @@
 #define _LINUX_OBJTOOL_H
 
 #ifndef __ASSEMBLY__
-
-#include <linux/types.h>
 #endif
 
 #define UNWIND_HINT_TYPE_CALL		0

@@ -527,7 +527,7 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 
 	size = ALIGN(size, s->align);
 	s->size = size;
-	s->reciprocal_size = reciprocal_value(size);
+	/* reciprocal_size assignment removed - field removed (write-only) */
 	order = calculate_order(size);
 
 	if ((int)order < 0)

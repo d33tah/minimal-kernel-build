@@ -60,7 +60,7 @@ static_assert(sizeof(struct slab) <= sizeof(struct page));
 
 
 #include <linux/kobject.h>
-#include <linux/reciprocal_div.h>
+/* reciprocal_div.h include removed - reciprocal_size field removed */
 #include <linux/local_lock.h>
 
 /* enum stat_item removed - SLUB statistics not used (~27 values) */
@@ -85,7 +85,7 @@ struct kmem_cache {
 	unsigned long min_partial;
 	unsigned int size;
 	unsigned int object_size;
-	struct reciprocal_value reciprocal_size;
+	/* reciprocal_size removed - write-only (assigned but never read) */
 	unsigned int offset;
 	struct kmem_cache_order_objects oo;
 	struct kmem_cache_order_objects min;

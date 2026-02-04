@@ -157,11 +157,9 @@ struct cfs_rq {
 	u64			min_vruntime;
 	struct rb_root_cached	tasks_timeline;
 
-	 
+
 	struct sched_entity	*curr;
-	struct sched_entity	*next;
-	struct sched_entity	*last;
-	struct sched_entity	*skip;
+	/* next, last, skip removed - buddy tracking removed for single-task kernel */
 
 
 

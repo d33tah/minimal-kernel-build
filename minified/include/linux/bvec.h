@@ -3,7 +3,7 @@
 
 #include <linux/highmem.h>
 #include <linux/bug.h>
-#include <linux/errno.h>
+/* linux/errno.h removed - no errno constants used */
 #include <linux/limits.h>
 #include <linux/minmax.h>
 #include <linux/mm.h>

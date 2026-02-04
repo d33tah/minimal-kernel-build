@@ -2,7 +2,7 @@
 #define __LINUX_SMP_H
 
 
-#include <linux/errno.h>
+/* linux/errno.h removed - no errno constants used */
 #include <linux/types.h>
 #include <linux/list.h>
 #include <linux/cpumask.h>

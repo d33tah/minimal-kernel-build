@@ -5,7 +5,7 @@
 #include <linux/compiler.h>
 #include <linux/types.h>
 #include <asm/posix_types.h>
-#include <linux/errno.h>
+/* linux/errno.h removed - no errno constants used */
 
 struct file;
 

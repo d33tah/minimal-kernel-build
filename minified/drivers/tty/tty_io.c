@@ -62,7 +62,7 @@ static ssize_t tty_read(struct kiocb *, struct iov_iter *);
 static ssize_t tty_write(struct kiocb *, struct iov_iter *);
 /* tty_poll removed - poll/select syscalls return ENOSYS */
 static int tty_open(struct inode *, struct file *);
-#define tty_compat_ioctl NULL
+/* tty_compat_ioctl removed - never used */
 /* tty_fasync removed - fcntl returns EINVAL, FASYNC never set */
 static void release_tty(struct tty_struct *tty, int idx);
 

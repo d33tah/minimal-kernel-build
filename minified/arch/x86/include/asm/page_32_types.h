@@ -7,8 +7,7 @@
  
 #define __PAGE_OFFSET_BASE	_AC(CONFIG_PAGE_OFFSET, UL)
 #define __PAGE_OFFSET		__PAGE_OFFSET_BASE
-
-#define __START_KERNEL_map	__PAGE_OFFSET
+/* __START_KERNEL_map removed - never used */
 
 #define THREAD_SIZE_ORDER	1
 #define THREAD_SIZE		(PAGE_SIZE << THREAD_SIZE_ORDER)
@@ -20,8 +19,7 @@
 #define __PHYSICAL_MASK_SHIFT	32
 /* __VIRTUAL_MASK_SHIFT removed - never used */
 
- 
-#define IA32_PAGE_OFFSET	__PAGE_OFFSET
+/* IA32_PAGE_OFFSET removed - never used */
 #define TASK_SIZE		__PAGE_OFFSET
 #define TASK_SIZE_LOW		TASK_SIZE
 #define TASK_SIZE_MAX		TASK_SIZE

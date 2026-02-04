@@ -121,9 +121,9 @@ __visible noinstr void func(struct pt_regs *regs,			\
 			    unsigned long address)
 
 
- 
+
 #define DECLARE_IDTENTRY_NMI		DECLARE_IDTENTRY_RAW
-#define DEFINE_IDTENTRY_NMI		DEFINE_IDTENTRY_RAW
+/* DEFINE_IDTENTRY_NMI removed - never used */
 
 
 #else  

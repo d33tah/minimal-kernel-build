@@ -41,10 +41,7 @@ unsigned long shmem_get_unmapped_area(struct file *file, unsigned long addr,
 	return current->mm->get_unmapped_area(file, addr, len, pgoff, flags);
 }
 
-#define shmem_vm_ops generic_file_vm_ops
-#define shmem_file_operations ramfs_file_operations
-#define shmem_get_inode(sb, dir, mode, dev, flags) \
-	ramfs_get_inode(sb, dir, mode, dev)
+/* shmem_vm_ops, shmem_file_operations, shmem_get_inode removed - never used */
 /* shmem_acct_size, shmem_unacct_size removed - always returned 0 / did nothing */
 /* __shmem_file_setup, shmem_kernel_file_setup, shmem_file_setup removed - never called */
 /* shmem_zero_setup removed - never called */

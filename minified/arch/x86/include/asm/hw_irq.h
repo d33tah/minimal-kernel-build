@@ -5,8 +5,7 @@
  
 
 #include <asm/irq_vectors.h>
-
-#define IRQ_MATRIX_BITS		NR_VECTORS
+/* IRQ_MATRIX_BITS removed - never used */
 
 #ifndef __ASSEMBLY__
 

@@ -1,7 +1,7 @@
 #ifndef _LINUX_NAMEI_H
 #define _LINUX_NAMEI_H
 #include <linux/fs.h>
-#include <linux/kernel.h>
+/* linux/kernel.h removed - no kernel.h macros used */
 #include <linux/path.h>
 #include <linux/fcntl.h>
 /* linux/errno.h removed - no errno constants used */

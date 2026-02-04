@@ -1,6 +1,6 @@
 #ifndef _LINUX_BACKING_DEV_H
 #define _LINUX_BACKING_DEV_H
-#include <linux/kernel.h>
+/* linux/kernel.h removed - no kernel.h macros used */
 #include <linux/fs.h>
 #include <linux/sched.h>
 #include <linux/device.h>

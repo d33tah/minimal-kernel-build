@@ -12,7 +12,6 @@
 #include <linux/jiffies.h>
 #include <linux/time.h>
 #include <linux/timex.h>
-#include <linux/tick.h>
 #include <linux/stop_machine.h>
 
 #include <linux/compiler.h>

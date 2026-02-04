@@ -2,7 +2,6 @@
 
 #include <linux/sched.h>
 /* enum cpu_idle_type removed - unused */
-#include <linux/tick.h>
 
 #include "sched.h"
 

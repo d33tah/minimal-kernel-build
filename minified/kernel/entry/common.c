@@ -4,8 +4,6 @@
 #include <linux/highmem.h>
 #include <linux/jump_label.h>
 #include <linux/init_task.h>
-#include <linux/tick.h>
-#include <linux/tracepoint.h>
 
 bool syscall_user_dispatch(struct pt_regs *regs);
 

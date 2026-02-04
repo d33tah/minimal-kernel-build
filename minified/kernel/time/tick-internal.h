@@ -1,7 +1,6 @@
- 
- 
 #include <linux/hrtimer.h>
-#include <linux/tick.h>
+#include <linux/clockchips.h>
+#include <linux/cpumask.h>
 
 #include "timekeeping.h"
 

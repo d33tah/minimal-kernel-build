@@ -55,7 +55,6 @@ extern int nr_threads;
 #include <linux/stop_machine.h>
 
 #include <linux/syscalls.h>
-#include <linux/tick.h>
 #include <linux/topology.h>
 #include <linux/types.h>
 

@@ -3,7 +3,7 @@
 #define _ASM_X86_NUMA_H
 
 #include <linux/nodemask.h>
-#include <linux/errno.h>
+/* linux/errno.h removed - no errno constants used */
 
 #include <asm/topology.h>
 #include <asm/apicdef.h>

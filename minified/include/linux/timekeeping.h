@@ -1,7 +1,7 @@
 #ifndef _LINUX_TIMEKEEPING_H
 #define _LINUX_TIMEKEEPING_H
 
-#include <linux/errno.h>
+/* linux/errno.h removed - no errno constants used */
 
 /* Inlined from clocksource_ids.h */
 enum clocksource_ids {

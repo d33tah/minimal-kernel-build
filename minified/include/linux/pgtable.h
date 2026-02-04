@@ -8,7 +8,7 @@
 
 #include <linux/mm_types.h>
 #include <linux/bug.h>
-#include <linux/errno.h>
+/* linux/errno.h removed - no errno constants used */
 #include <linux/page_table_check.h>
 
 #if 5 - defined(__PAGETABLE_P4D_FOLDED) - defined(__PAGETABLE_PUD_FOLDED) - \

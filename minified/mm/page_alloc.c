@@ -453,8 +453,8 @@ __rmqueue_pcplist(struct zone *zone, unsigned int order, int migratetype,
 
 /* rmqueue_pcplist inlined into rmqueue */
 
-static inline struct page *rmqueue(struct zone *preferred_zone,
-				   struct zone *zone, unsigned int order,
+/* preferred_zone parameter removed - was unused */
+static inline struct page *rmqueue(struct zone *zone, unsigned int order,
 				   gfp_t gfp_flags, unsigned int alloc_flags,
 				   int migratetype)
 {
@@ -533,8 +533,8 @@ static struct page *get_page_from_freelist(gfp_t gfp_mask, unsigned int order,
 				continue;
 		}
 
-		page = rmqueue(ac->preferred_zoneref->zone, zone, order,
-			       gfp_mask, alloc_flags, ac->migratetype);
+		page = rmqueue(zone, order, gfp_mask, alloc_flags,
+			       ac->migratetype);
 		if (page) {
 			/* post_alloc_hook inlined */
 			set_page_private(page, 0);

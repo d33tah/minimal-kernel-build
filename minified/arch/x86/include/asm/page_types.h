@@ -13,9 +13,7 @@
 
 #define PMD_PAGE_SIZE		(_AC(1, UL) << PMD_SHIFT)
 #define PMD_PAGE_MASK		(~(PMD_PAGE_SIZE-1))
-
-#define PUD_PAGE_SIZE		(_AC(1, UL) << PUD_SHIFT)
-#define PUD_PAGE_MASK		(~(PUD_PAGE_SIZE-1))
+/* PUD_PAGE_SIZE, PUD_PAGE_MASK removed - never used */
 
 /* __VIRTUAL_MASK removed - never used */
 

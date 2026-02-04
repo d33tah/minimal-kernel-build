@@ -6,8 +6,7 @@
 #include <linux/types.h>
 #include <linux/blk_types.h>
 #include <linux/device.h>
-/* linux/list.h, linux/sched.h removed - unused */
-#include <linux/workqueue.h>
+/* linux/list.h, linux/sched.h, linux/workqueue.h removed - unused */
 #include <linux/gfp.h>
 #include <linux/kdev_t.h>
 #include <linux/rcupdate.h>

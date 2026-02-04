@@ -9,7 +9,6 @@
 #include <linux/tty.h>
 #include <linux/ctype.h>
 #include <linux/mm.h>
-#include <linux/string.h>
 #include <linux/slab.h>
 #include <linux/poll.h>
 #include <linux/bitops.h>

@@ -7,7 +7,6 @@
 /* linux/export.h removed - no EXPORT_SYMBOL used */
 #include <linux/kernel.h>
 /* linux/slab.h removed - no slab functions */
-#include <linux/string.h>
 
 #include <asm/page.h>
 

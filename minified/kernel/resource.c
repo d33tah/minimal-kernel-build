@@ -3,7 +3,6 @@
 
 #include <linux/errno.h>
 #include <linux/ioport.h>
-#include <linux/init.h>
 /* linux/slab.h removed - no slab functions */
 #include <linux/spinlock.h>
 #include <linux/fs.h>

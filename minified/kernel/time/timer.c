@@ -3,7 +3,6 @@
    slab.h, compat.h, sysctl.h, uaccess.h,
    asm/unistd.h, asm/timex.h, asm/io.h, linux/export.h removed - unused */
 #include <linux/percpu.h>
-#include <linux/init.h>
 #include <linux/mm.h>
 /* linux/swap.h removed - unused */
 /* linux/kallsyms.h removed - unused */

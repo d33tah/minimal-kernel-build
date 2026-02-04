@@ -5,7 +5,6 @@
 /* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/mutex.h>
 #include <linux/sched.h>
-#include <linux/types.h>
 #include <linux/init.h>
 #include <linux/time.h>
 /* linux/cpu.h removed - no cpu features used */

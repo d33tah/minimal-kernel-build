@@ -1,6 +1,5 @@
 
 /* linux/module.h removed - no module features used */
-#include <linux/init.h>
 #include <linux/sort.h>
 #include <linux/uaccess.h>
 #include <linux/extable.h>

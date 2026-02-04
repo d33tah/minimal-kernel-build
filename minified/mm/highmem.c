@@ -2,7 +2,6 @@
 #include <linux/mm.h>
 /* linux/swap.h removed - no swap features used */
 #include <linux/pagemap.h>
-#include <linux/init.h>
 #include <linux/hash.h>
 #include <linux/highmem.h>
 #include <asm/tlbflush.h>

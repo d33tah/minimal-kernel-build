@@ -3,7 +3,6 @@
 #include <linux/device.h>
 /* linux/module.h removed - no module features used */
 #include <linux/init.h>
-#include <linux/string.h>
 #include <linux/kdev_t.h>
 #include <linux/err.h>
 #include <linux/slab.h>

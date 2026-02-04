@@ -20,7 +20,6 @@
 /* swapops.h removed - was empty */
 #include <linux/gfp.h>
 /* linux/migrate.h removed - empty header */
-#include <linux/string.h>
 /* userfaultfd_k.h removed - empty stubs */
 #include <linux/file.h>
 /* numa.h, perf_event.h removed - unused */

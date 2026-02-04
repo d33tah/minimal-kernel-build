@@ -1,5 +1,4 @@
 #include <linux/kernel.h>
-#include <linux/string.h>
 #include <linux/ctype.h>
 #include <asm/setup.h>
 

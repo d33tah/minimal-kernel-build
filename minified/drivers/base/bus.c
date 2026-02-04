@@ -6,7 +6,6 @@
 #include <linux/errno.h>
 #include <linux/slab.h>
 #include <linux/init.h>
-#include <linux/string.h>
 #include <linux/mutex.h>
 #include <linux/sysfs.h>
 #include "base.h"

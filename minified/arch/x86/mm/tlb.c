@@ -1,5 +1,3 @@
-#include <linux/init.h>
-
 #include <linux/mm.h>
 #include <linux/spinlock.h>
 #include <linux/smp.h>

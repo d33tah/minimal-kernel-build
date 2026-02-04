@@ -2,7 +2,6 @@
 #include <linux/device.h>
 #include <linux/delay.h>
 #include <linux/dma-map-ops.h>
-#include <linux/init.h>
 /* linux/module.h removed - no module features used */
 #include <linux/kthread.h>
 #include <linux/wait.h>

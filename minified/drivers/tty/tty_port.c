@@ -1,5 +1,4 @@
 
-#include <linux/types.h>
 #include <linux/errno.h>
 #include <linux/tty.h>
 #include <linux/tty_driver.h>

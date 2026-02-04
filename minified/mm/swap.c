@@ -7,7 +7,6 @@
 #include <linux/mman.h>
 #include <linux/pagemap.h>
 #include <linux/pagevec.h>
-#include <linux/init.h>
 /* linux/tracepoint.h removed - unused */
 #include <linux/mm_inline.h>
 #include <linux/percpu_counter.h>

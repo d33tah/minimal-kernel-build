@@ -5,7 +5,6 @@
 #include <linux/highmem.h>
 #include <linux/time.h>
 #include <linux/init.h>
-#include <linux/string.h>
 #include <linux/backing-dev.h>
 #include <linux/ramfs.h>
 #include <linux/sched.h>

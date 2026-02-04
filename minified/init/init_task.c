@@ -4,7 +4,6 @@
 /* linux/sched/sysctl.h removed - sysctl_hung_task_timeout_secs unused */
 #include <linux/sched/rt.h>
 #include <linux/sched/task.h>
-#include <linux/init.h>
 #include <linux/fs.h>
 #include <linux/mm.h>
 

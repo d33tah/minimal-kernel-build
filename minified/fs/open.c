@@ -1,5 +1,4 @@
 
-#include <linux/string.h>
 #include <linux/mm.h>
 #include <linux/file.h>
 #include <linux/fdtable.h>

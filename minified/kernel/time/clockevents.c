@@ -1,7 +1,6 @@
 
 #include <linux/clockchips.h>
 #include <linux/hrtimer.h>
-#include <linux/init.h>
 #include <linux/module.h>
 #include <linux/smp.h>
 #include <linux/device.h>

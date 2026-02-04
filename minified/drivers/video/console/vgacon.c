@@ -12,7 +12,6 @@
 #include <linux/selection.h>
 #include <linux/spinlock.h>
 #include <linux/ioport.h>
-#include <linux/init.h>
 #include <linux/screen_info.h>
 #include <asm/io.h>
 #include <asm/vga.h>

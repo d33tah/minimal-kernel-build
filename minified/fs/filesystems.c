@@ -2,7 +2,6 @@
 #include <linux/fs.h>
 /* proc_fs.h removed - empty header */
 /* seq_file.h, kmod.h removed - headers empty */
-#include <linux/init.h>
 #include <linux/module.h>
 /* linux/slab.h removed - no slab functions */
 #include <linux/uaccess.h>

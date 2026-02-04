@@ -15,7 +15,6 @@ int debug_locks __read_mostly = 1;
 /* panic_notifier_list extern removed - no registrations */
 #include <linux/sched.h>
 
-#include <linux/init.h>
 #include <linux/console.h>
 #include <linux/bug.h>
 

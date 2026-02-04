@@ -4,7 +4,6 @@
 #include <linux/init.h>
 /* linux/module.h removed - no module features used */
 #include <linux/slab.h>
-#include <linux/string.h>
 #include <linux/kdev_t.h>
 #include <linux/of.h>
 /* of_device.h removed - only has includes, no definitions used */

@@ -10,7 +10,6 @@
 #include <linux/kernel.h>
 /* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/ptrace.h>
-#include <linux/string.h>
 #include <linux/delay.h>
 #include <linux/errno.h>
 #include <linux/sched.h>

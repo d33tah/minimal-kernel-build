@@ -1,4 +1,3 @@
-#include <linux/types.h>
 #include <linux/errno.h>
 #include <linux/sched.h>
 /* linux/interrupt.h removed - no interrupt features used */
@@ -6,7 +5,6 @@
 #include <linux/tty_driver.h>
 #include <linux/file.h>
 #include <linux/mm.h>
-#include <linux/string.h>
 #include <linux/slab.h>
 #include <linux/poll.h>
 /* proc_fs.h removed - empty header */

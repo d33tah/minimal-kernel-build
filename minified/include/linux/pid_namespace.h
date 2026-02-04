@@ -2,8 +2,7 @@
 #define _LINUX_PID_NS_H
 #include <linux/sched.h>
 #include <linux/bug.h>
-#include <linux/mm.h>
-#include <linux/workqueue.h>
+/* linux/mm.h, linux/workqueue.h removed - unused */
 #include <linux/threads.h>
 #include <linux/nsproxy.h>
 #include <linux/ns_common.h>

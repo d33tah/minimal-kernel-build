@@ -18,7 +18,7 @@ typedef enum irqreturn irqreturn_t;
 #include <linux/irqflags.h>
 #include <linux/hrtimer.h>
 #include <linux/kref.h>
-#include <linux/workqueue.h>
+/* linux/workqueue.h removed - no workqueue types used */
 #include <linux/jump_label.h>
 
 #include <linux/atomic.h>

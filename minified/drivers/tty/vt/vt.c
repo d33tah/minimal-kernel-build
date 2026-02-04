@@ -491,7 +491,7 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 	vc->vc_need_wrap = 0;
 	/* vc->vc_report_mouse = 0 removed - field removed */
 	vc->vc_utf = default_utf8;
-	vc->vc_utf_count = 0;
+	/* vc_utf_count assignment removed - field removed */
 
 	vc->vc_disp_ctrl = 0;
 	/* vc_toggle_meta assignment removed - field removed */

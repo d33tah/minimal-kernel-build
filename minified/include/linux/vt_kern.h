@@ -85,7 +85,7 @@ struct vc_data {
 	unsigned int	vc_can_do_color	: 1;
 	/* vc_report_mouse removed - write-only (never read) */
 	unsigned char	vc_utf		: 1;
-	unsigned char	vc_utf_count;
+	/* vc_utf_count removed - write-only, UTF accumulation unused */
 	/* vc_utf_char removed - never used */
 	/* vc_tab_stop bitmap removed - tab handling unused, write-only */
 	unsigned char   vc_palette[16*3];

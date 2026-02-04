@@ -383,8 +383,7 @@ int vc_resize(struct vc_data *vc, unsigned int cols, unsigned int rows)
 
 /* vt_resize removed - ops->resize never called */
 
-/* EP enum - only EPecma used, CSI parameter handling removed */
-enum { EPecma = 0 };
+/* EP enum removed - vc_priv removed (was write-only) */
 
 /* set_kbd, clr_kbd, is_kbd, decarm, decckm, kbdapplic, lnm removed - unused */
 
@@ -483,7 +482,7 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 	vc->vc_top = 0;
 	vc->vc_bottom = vc->vc_rows;
 	vc->vc_state = ESnormal;
-	vc->vc_priv = EPecma;
+	/* vc_priv assignment removed - field removed (was write-only) */
 	vc->vc_translate = set_translate(LAT1_MAP, vc);
 	vc->state.Gx_charset[0] = LAT1_MAP;
 	vc->state.Gx_charset[1] = GRAF_MAP;

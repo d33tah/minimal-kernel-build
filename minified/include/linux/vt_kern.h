@@ -80,7 +80,7 @@ struct vc_data {
 	unsigned int	vc_decawm	: 1;
 	unsigned int	vc_deccm	: 1;
 	/* vc_decim removed - write-only (insert mode never used) */
-	unsigned int	vc_priv		: 3;
+	/* vc_priv removed - write-only, only ever set to EPecma (0) */
 	unsigned int	vc_need_wrap	: 1;
 	unsigned int	vc_can_do_color	: 1;
 	/* vc_report_mouse removed - write-only (never read) */

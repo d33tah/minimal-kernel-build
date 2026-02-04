@@ -1,5 +1,5 @@
 #include <linux/linkage.h>
-#include <linux/errno.h>
+/* linux/errno.h removed - no errno constants used */
 #include <linux/signal.h>
 #include <linux/sched.h>
 #include <linux/ioport.h>

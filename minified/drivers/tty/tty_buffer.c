@@ -1,6 +1,6 @@
 
 #include <linux/types.h>
-#include <linux/errno.h>
+/* linux/errno.h removed - no errno constants used */
 #include <linux/tty.h>
 #include <linux/tty_driver.h>
 #include <linux/tty_buffer.h>

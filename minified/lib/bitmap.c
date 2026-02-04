@@ -3,7 +3,7 @@
 #include <linux/bitops.h>
 #include <linux/bug.h>
 #include <linux/ctype.h>
-#include <linux/errno.h>
+/* linux/errno.h removed - no errno constants used */
 /* linux/export.h removed - no EXPORT_SYMBOL used */
 #include <linux/kernel.h>
 /* linux/slab.h removed - no slab functions */

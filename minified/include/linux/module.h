@@ -2,7 +2,7 @@
 #ifndef _LINUX_MODULE_H
 #define _LINUX_MODULE_H
 
-#include <linux/list.h>
+/* linux/list.h removed - no list structures used */
 #include <linux/stat.h>
 #include <linux/compiler.h>
 #include <linux/cache.h>

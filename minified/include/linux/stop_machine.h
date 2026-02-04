@@ -4,7 +4,7 @@
 #include <linux/cpu.h>
 #include <linux/cpumask.h>
 #include <linux/smp.h>
-#include <linux/list.h>
+/* linux/list.h removed - no list structures used */
 
 typedef int (*cpu_stop_fn_t)(void *arg);
 

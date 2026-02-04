@@ -4,8 +4,7 @@
 
 #include <linux/kernfs.h>
 #include <linux/compiler.h>
-/* linux/errno.h removed - no errno constants used */
-#include <linux/list.h>
+/* linux/errno.h, linux/list.h removed - unused */
 #include <linux/lockdep.h>
 /* kobject_ns.h removed - never used */
 #include <linux/stat.h>

@@ -1,7 +1,7 @@
 #ifndef _LINUX_TASK_WORK_H
 #define _LINUX_TASK_WORK_H
 
-#include <linux/list.h>
+/* linux/list.h removed - no list structures used */
 #include <linux/sched.h>
 
 typedef void (*task_work_func_t)(struct callback_head *);

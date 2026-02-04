@@ -15,6 +15,6 @@ struct fprop_local_percpu {
 };
 
 void fprop_local_init_percpu(struct fprop_local_percpu *pl, gfp_t gfp);
-void fprop_local_destroy_percpu(struct fprop_local_percpu *pl);
+/* fprop_local_destroy_percpu declaration removed - inlined at single call site */
 
 #endif

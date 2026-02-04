@@ -22,10 +22,7 @@ void fprop_local_init_percpu(struct fprop_local_percpu *pl, gfp_t gfp)
 	/* pl->period removed - write-only, never read */
 	raw_spin_lock_init(&pl->lock);
 }
-void fprop_local_destroy_percpu(struct fprop_local_percpu *pl)
-{
-	percpu_counter_destroy(&pl->events);
-}
+/* fprop_local_destroy_percpu inlined at single call site */
 
 struct backing_dev_info noop_backing_dev_info;
 /* bdi_class removed - never used */
@@ -124,7 +121,8 @@ static void release_bdi(struct kref *ref)
 	WARN_ON_ONCE(test_bit(WB_registered, &bdi->wb.state));
 	WARN_ON_ONCE(bdi->dev);
 	WARN_ON(delayed_work_pending(&bdi->wb.dwork));
-	fprop_local_destroy_percpu(&bdi->wb.completions);
+	/* fprop_local_destroy_percpu inlined */
+	percpu_counter_destroy(&bdi->wb.completions.events);
 	kfree(bdi);
 }
 

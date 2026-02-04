@@ -1,6 +1,6 @@
 
 #include <linux/mm.h>
-#include <linux/swap.h>
+/* linux/swap.h removed - no swap features used */
 #include <linux/pagemap.h>
 #include <linux/init.h>
 #include <linux/hash.h>

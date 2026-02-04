@@ -8,7 +8,7 @@
 #include <linux/vmacache.h>
 #include <linux/mman.h>
 #include <linux/pagemap.h>
-#include <linux/swap.h>
+/* linux/swap.h removed - no swap features used */
 #include <linux/syscalls.h>
 #include <linux/init.h>
 #include <linux/file.h>

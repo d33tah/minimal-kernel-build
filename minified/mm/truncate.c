@@ -3,7 +3,7 @@
 #include <linux/backing-dev.h>
 #include <linux/gfp.h>
 #include <linux/mm.h>
-#include <linux/swap.h>
+/* linux/swap.h removed - no swap features used */
 #include <linux/pagemap.h>
 /* linux/highmem.h removed - unused */
 #include <linux/pagevec.h>

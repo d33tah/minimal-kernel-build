@@ -7,7 +7,7 @@
 #include <linux/memremap.h>
 #include <linux/pagemap.h>
 #include <linux/rmap.h>
-#include <linux/swap.h>
+/* linux/swap.h removed - no swap features used */
 /* swapops.h removed - was empty */
 #include <linux/sched/signal.h>
 #include <linux/rwsem.h>

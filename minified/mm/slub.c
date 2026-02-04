@@ -1,6 +1,6 @@
 /* module.h, interrupt.h, swab.h, ctype.h, kallsyms.h removed - unused */
 #include <linux/mm.h>
-#include <linux/swap.h>
+/* linux/swap.h removed - no swap features used */
 #include <linux/bit_spinlock.h>
 #include <linux/bitops.h>
 #include <linux/slab.h>

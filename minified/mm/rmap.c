@@ -3,7 +3,7 @@
 #include <linux/sched/mm.h>
 #include <linux/sched/task.h>
 #include <linux/pagemap.h>
-#include <linux/swap.h>
+/* linux/swap.h removed - no swap features used */
 /* swapops.h removed - was empty */
 #include <linux/slab.h>
 #include <linux/init.h>

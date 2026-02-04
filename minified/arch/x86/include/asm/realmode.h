@@ -2,9 +2,7 @@
 #ifndef _ARCH_X86_REALMODE_H
 #define _ARCH_X86_REALMODE_H
 
- 
-#define TH_FLAGS_SME_ACTIVE_BIT		0
-#define TH_FLAGS_SME_ACTIVE		BIT(TH_FLAGS_SME_ACTIVE_BIT)
+/* TH_FLAGS_SME_ACTIVE_BIT, TH_FLAGS_SME_ACTIVE removed - never used */
 
 #ifndef __ASSEMBLY__
 

@@ -12,7 +12,7 @@
 #include <asm/msr.h>
 /* pvclock.h removed - header is empty */
 #define __vdso_data (VVAR(_vdso_data))
-#define __timens_vdso_data (TIMENS(_vdso_data))
+/* __timens_vdso_data removed - never used */
 
 #define VDSO_HAS_TIME 1
 

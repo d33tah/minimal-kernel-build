@@ -70,7 +70,7 @@ extern int __get_user_nocheck_4(void);
 extern int __get_user_nocheck_8(void);
 extern int __get_user_bad(void);
 
-#define __uaccess_begin() stac()
+/* __uaccess_begin removed - never called */
 #define __uaccess_end()   clac()
 #define __uaccess_begin_nospec()	\
 ({					\

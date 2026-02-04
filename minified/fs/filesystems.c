@@ -4,7 +4,7 @@
 /* seq_file.h, kmod.h removed - headers empty */
 #include <linux/init.h>
 #include <linux/module.h>
-#include <linux/slab.h>
+/* linux/slab.h removed - no slab functions */
 #include <linux/uaccess.h>
 
 static struct file_system_type *file_systems;

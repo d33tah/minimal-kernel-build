@@ -10,7 +10,7 @@
 #include <linux/time.h>
 #include <linux/cpu.h>
 
-#include <linux/slab.h>
+/* linux/slab.h removed - no slab functions */
 #include <linux/mm.h>
 
 #include "rcu.h"

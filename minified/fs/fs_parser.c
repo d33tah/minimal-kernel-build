@@ -1,7 +1,7 @@
 
 #include <linux/fs_context.h>
 #include <linux/fs_parser.h>
-#include <linux/slab.h>
+/* linux/slab.h removed - no slab functions */
 #include <linux/namei.h>
 #include "internal.h"
 

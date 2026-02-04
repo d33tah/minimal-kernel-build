@@ -1,6 +1,6 @@
 /* blkdev.h, types.h, asm/byteorder.h, mutex.h, namei.h, writeback.h, uaccess.h removed - unused */
 #include <linux/pagemap.h>
-#include <linux/slab.h>
+/* linux/slab.h removed - no slab functions */
 #include <linux/cred.h>
 #include <linux/mount.h>
 #include <asm/statfs.h>

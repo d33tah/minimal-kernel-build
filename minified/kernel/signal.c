@@ -1,5 +1,5 @@
 
-#include <linux/slab.h>
+/* linux/slab.h removed - no slab functions */
 #include <linux/syscalls.h>
 #include <linux/sched/task_stack.h>
 #include <linux/sched/signal.h>

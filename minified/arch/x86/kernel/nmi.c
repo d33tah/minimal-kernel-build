@@ -6,7 +6,7 @@
 #include <linux/delay.h>
 #include <linux/hardirq.h>
 #include <linux/ratelimit.h>
-#include <linux/slab.h>
+/* linux/slab.h removed - no slab functions */
 /* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/atomic.h>
 #include <linux/sched/clock.h>

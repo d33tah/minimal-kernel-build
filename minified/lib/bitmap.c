@@ -6,7 +6,7 @@
 #include <linux/errno.h>
 /* linux/export.h removed - no EXPORT_SYMBOL used */
 #include <linux/kernel.h>
-#include <linux/slab.h>
+/* linux/slab.h removed - no slab functions */
 #include <linux/string.h>
 
 #include <asm/page.h>

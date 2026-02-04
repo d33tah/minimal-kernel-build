@@ -2,7 +2,7 @@
 #include <linux/err.h>
 #include <linux/sched.h>
 #include <linux/sched/task_stack.h>
-#include <linux/slab.h>
+/* linux/slab.h removed - no slab functions */
 #include <linux/init.h>
 #include <linux/elf.h>
 #include <linux/cpu.h>

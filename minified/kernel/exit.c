@@ -1,6 +1,6 @@
 
 #include <linux/mm.h>
-#include <linux/slab.h>
+/* linux/slab.h removed - no slab functions */
 #include <linux/sched/mm.h>
 extern int nr_threads;
 /* end sched/stat.h */

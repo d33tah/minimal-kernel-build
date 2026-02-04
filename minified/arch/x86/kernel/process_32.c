@@ -10,7 +10,7 @@
 #include <linux/mm.h>
 #include <linux/smp.h>
 #include <linux/stddef.h>
-#include <linux/slab.h>
+/* linux/slab.h removed - no slab functions */
 #include <linux/vmalloc.h>
 #include <asm/user.h> /* linux/user.h redirect */
 #include <linux/interrupt.h>

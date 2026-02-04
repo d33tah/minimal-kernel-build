@@ -19,7 +19,7 @@
 #include <linux/rcupdate_wait.h>
 #include <linux/sched/isolation.h>
 #include <linux/kprobes.h>
-#include <linux/slab.h>
+/* linux/slab.h removed - no slab functions */
 /* irq_work.h removed - header is now empty */
 
 #include "rcu.h"

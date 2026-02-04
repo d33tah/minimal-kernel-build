@@ -3,7 +3,7 @@
 #include <linux/uio.h>
 #include <linux/pagemap.h>
 #include <linux/highmem.h>
-#include <linux/slab.h>
+/* linux/slab.h removed - no slab functions */
 /* linux/vmalloc.h, linux/splice.h removed - not used */
 /* linux/compat.h removed - compat functions not used */
 /* scatterlist.h removed - unused */

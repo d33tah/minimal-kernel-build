@@ -9,7 +9,7 @@
 #include <linux/mm.h>
 #include <linux/vmalloc.h>
 #include <linux/stop_machine.h>
-#include <linux/slab.h>
+/* linux/slab.h removed - no slab functions */
 #include <linux/mmu_context.h>
 #include <asm/sync_core.h>
 #include <asm/text-patching.h>

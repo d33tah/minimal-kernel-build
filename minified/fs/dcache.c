@@ -242,15 +242,7 @@ again:
 	return parent;
 }
 
-static inline struct dentry *lock_parent(struct dentry *dentry)
-{
-	struct dentry *parent = dentry->d_parent;
-	if (IS_ROOT(dentry))
-		return NULL;
-	if (likely(spin_trylock(&parent->d_lock)))
-		return parent;
-	return __lock_parent(dentry);
-}
+/* lock_parent inlined into dentry_kill (~8 LOC) */
 
 /* Simplified - single-process init doesn't need complex dentry retention (~25 LOC) */
 static inline bool retain_dentry(struct dentry *dentry)
@@ -290,7 +282,13 @@ slow_positive:
 	spin_unlock(&dentry->d_lock);
 	spin_lock(&inode->i_lock);
 	spin_lock(&dentry->d_lock);
-	parent = lock_parent(dentry);
+	{
+		struct dentry *p = dentry->d_parent;
+		parent = IS_ROOT(dentry) ? NULL :
+			 likely(spin_trylock(&p->d_lock)) ?
+					   p :
+					   __lock_parent(dentry);
+	}
 got_locks:
 	if (unlikely(dentry->d_lockref.count != 1)) {
 		dentry->d_lockref.count--;

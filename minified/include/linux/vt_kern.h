@@ -18,7 +18,7 @@ struct uni_pagedir;
 struct uni_screen;
 
 /* NPAR removed - vc_par array removed */
-#define VC_TABSTOPS_COUNT	256U
+/* VC_TABSTOPS_COUNT removed - vc_tab_stop bitmap removed */
 
 enum vc_intensity {
 	VCI_HALF_BRIGHT,

@@ -20,7 +20,7 @@
 #define __bitwise
 #endif
 
-#define __bitwise__ __bitwise
+/* __bitwise__ removed - never used */
 
 typedef __u16 __bitwise __le16;
 typedef __u16 __bitwise __be16;

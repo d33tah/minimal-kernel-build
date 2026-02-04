@@ -41,7 +41,7 @@ typedef unsigned long sigset_t;
 
 #define SA_RESTORER	0x04000000
 
-#define MINSIGSTKSZ	2048
+/* MINSIGSTKSZ removed - never used */
 
 /* Inlined from asm-generic/signal-defs.h */
 #ifndef SA_NOCLDSTOP
@@ -88,7 +88,7 @@ typedef __restorefn_t __user *__sigrestore_t;
 
 #define SIG_DFL	((__force __sighandler_t)0)
 #define SIG_IGN	((__force __sighandler_t)1)
-#define SIG_ERR	((__force __sighandler_t)-1)
+/* SIG_ERR removed - never used */
 #endif
 /* end signal-defs.h inlining */
 

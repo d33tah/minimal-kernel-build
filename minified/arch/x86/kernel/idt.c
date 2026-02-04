@@ -36,8 +36,7 @@
 	G(_vector, NULL, DEFAULT_STACK, GATE_TASK, DPL0, _gdt << 3)
 
 #define IDT_TABLE_SIZE (IDT_ENTRIES * sizeof(gate_desc))
-
-static bool idt_setup_done __initdata;
+/* idt_setup_done removed - was write-only variable */
 
 static const __initconst struct idt_data early_idts[] = {
 	INTG(X86_TRAP_DB, asm_exc_debug),
@@ -143,7 +142,7 @@ void __init idt_setup_apic_and_irq_gates(void)
 	idt_descr.address = CPU_ENTRY_AREA_RO_IDT;
 	load_idt(&idt_descr);
 	/* set_memory_ro removed - stub returning 0 */
-	idt_setup_done = true;
+	/* idt_setup_done assignment removed - variable was never read */
 }
 
 void __init idt_setup_early_handler(void)

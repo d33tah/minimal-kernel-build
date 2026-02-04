@@ -20,7 +20,7 @@
 #include <linux/mmu_notifier.h>
 #include <linux/mmdebug.h>
 #include <linux/rbtree_augmented.h>
-#include <linux/printk.h>
+/* linux/printk.h removed - no printk usage */
 /* userfaultfd_k.h removed - empty stubs */
 #include <linux/sched/mm.h>
 

@@ -1,8 +1,7 @@
 #ifndef _LINUX_MMU_NOTIFIER_H
 #define _LINUX_MMU_NOTIFIER_H
 
-/* linux/list.h removed - no list structures used */
-#include <linux/spinlock.h>
+/* linux/list.h, linux/spinlock.h removed - unused */
 #include <linux/mm_types.h>
 #include <linux/mmap_lock.h>
 #include <linux/srcu.h>

@@ -1,9 +1,8 @@
 #ifndef _LINUX_PERCPU_COUNTER_H
 #define _LINUX_PERCPU_COUNTER_H
 
-#include <linux/spinlock.h>
+/* linux/spinlock.h, linux/list.h removed - unused */
 #include <linux/smp.h>
-/* linux/list.h removed - no list structures used */
 #include <linux/threads.h>
 #include <linux/percpu.h>
 #include <linux/types.h>

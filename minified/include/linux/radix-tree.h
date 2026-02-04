@@ -3,13 +3,12 @@
 
 #include <linux/bitops.h>
 #include <linux/gfp.h>
-/* linux/list.h removed - no list structures used */
+/* linux/list.h, linux/spinlock.h removed - unused */
 #include <linux/lockdep.h>
 #include <linux/math.h>
 #include <linux/percpu.h>
 #include <linux/preempt.h>
 #include <linux/rcupdate.h>
-#include <linux/spinlock.h>
 #include <linux/types.h>
 #include <linux/xarray.h>
 #include <linux/local_lock.h>

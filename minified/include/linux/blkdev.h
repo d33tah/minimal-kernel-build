@@ -6,7 +6,7 @@
 #include <linux/types.h>
 #include <linux/blk_types.h>
 #include <linux/device.h>
-#include <linux/list.h>
+/* linux/list.h removed - no list structures used */
 #include <linux/workqueue.h>
 #include <linux/gfp.h>
 #include <linux/kdev_t.h>

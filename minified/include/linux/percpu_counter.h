@@ -3,7 +3,7 @@
 
 #include <linux/spinlock.h>
 #include <linux/smp.h>
-#include <linux/list.h>
+/* linux/list.h removed - no list structures used */
 #include <linux/threads.h>
 #include <linux/percpu.h>
 #include <linux/types.h>

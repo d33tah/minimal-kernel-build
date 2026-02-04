@@ -1,10 +1,9 @@
 #ifndef _LINUX_ACPI_H
 #define _LINUX_ACPI_H
-/* linux/errno.h removed - no errno constants used */
+/* linux/errno.h, linux/list.h removed - unused */
 #include <linux/ioport.h>
 #include <linux/irqdomain.h>
 #include <linux/device.h>
-#include <linux/list.h>
 /* uuid.h removed - guid_t not used */
 #ifndef _LINUX
 #define _LINUX

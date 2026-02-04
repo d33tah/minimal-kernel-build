@@ -9,7 +9,6 @@
 #include <linux/sched/signal.h>
 #include <linux/wait.h>
 #include <linux/bitops.h>
-#include <linux/delay.h>
 /* linux/module.h removed - no module features used */
 
 #include "tty.h"

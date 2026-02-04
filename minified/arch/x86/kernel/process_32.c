@@ -14,7 +14,6 @@
 #include <linux/vmalloc.h>
 #include <asm/user.h> /* linux/user.h redirect */
 #include <linux/interrupt.h>
-#include <linux/delay.h>
 #include <linux/reboot.h>
 /* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/ptrace.h>

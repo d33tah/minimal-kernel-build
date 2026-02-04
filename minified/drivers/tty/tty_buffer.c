@@ -9,7 +9,6 @@
 #include <linux/sched.h>
 #include <linux/wait.h>
 #include <linux/bitops.h>
-#include <linux/delay.h>
 /* linux/module.h removed - no module features used */
 #include <linux/ratelimit.h>
 #include "tty.h"

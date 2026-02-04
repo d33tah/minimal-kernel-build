@@ -4,7 +4,6 @@
 #include <linux/kernel_stat.h>
 #include <linux/interrupt.h>
 #include <linux/local_lock.h>
-#include <linux/mm.h>
 #include <linux/percpu.h>
 #include <linux/cpu.h>
 #include <linux/kthread.h>

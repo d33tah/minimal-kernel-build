@@ -1,7 +1,6 @@
 
 #include <linux/sched.h>
 #include <linux/slab.h>
-#include <linux/bitops.h>
 #include <linux/sched/user.h>
 /* linux/interrupt.h removed - no interrupt features used */
 #include <linux/user_namespace.h>

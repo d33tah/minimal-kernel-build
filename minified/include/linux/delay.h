@@ -3,7 +3,7 @@
 
 
 #include <linux/math.h>
-#include <linux/sched.h>
+/* linux/sched.h removed - no scheduler types used */
 
 extern unsigned long loops_per_jiffy;
 

@@ -2,8 +2,7 @@
 #define _LINUX_RATELIMIT_H
 
 #include <linux/ratelimit_types.h>
-#include <linux/sched.h>
-/* linux/spinlock.h removed - no spinlock usage */
+/* linux/sched.h, linux/spinlock.h removed - unused */
 
 /* ratelimit_state_init, ratelimit_set_flags removed - never called */
 

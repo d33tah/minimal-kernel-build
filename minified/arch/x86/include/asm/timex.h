@@ -2,6 +2,5 @@
 #define _ASM_X86_TIMEX_H
 #include <asm/processor.h>
 #include <asm/tsc.h>
-/* random_get_entropy removed - never called */
-#define CLOCK_TICK_RATE PIT_TICK_RATE
+/* random_get_entropy, CLOCK_TICK_RATE removed - never used */
 #endif  

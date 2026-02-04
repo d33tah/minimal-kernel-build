@@ -21,7 +21,7 @@
 
 #define PHYSICAL_PAGE_MASK	(((signed long)PAGE_MASK) & __PHYSICAL_MASK)
 #define PHYSICAL_PMD_PAGE_MASK	(((signed long)PMD_PAGE_MASK) & __PHYSICAL_MASK)
-#define PHYSICAL_PUD_PAGE_MASK	(((signed long)PUD_PAGE_MASK) & __PHYSICAL_MASK)
+/* PHYSICAL_PUD_PAGE_MASK removed - never used */
 
 #define HPAGE_SIZE		(_AC(1,UL) << PMD_SHIFT)
 #define HPAGE_MASK		(~(HPAGE_SIZE - 1))

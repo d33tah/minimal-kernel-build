@@ -1,7 +1,6 @@
 #include <asm/early_ioremap.h>
 #include <linux/memblock.h>
 #include <linux/swap.h>
-#include <linux/notifier.h>
 #include <linux/init.h>
 #include <linux/pm.h>
 #include <linux/mm.h>

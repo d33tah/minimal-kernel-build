@@ -8,7 +8,6 @@
 #include <linux/init_task.h>
 #include <linux/slab.h>
 /* linux/swap.h removed - no swap features used */
-#include <linux/notifier.h>
 #include <linux/pm.h>
 #include <linux/mm.h>
 #include <asm/errno.h>

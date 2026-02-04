@@ -78,12 +78,7 @@ struct sched_entity *__pick_first_entity(struct cfs_rq *cfs_rq)
 	return __node_2_se(left);
 }
 
-static inline u64 calc_delta_fair(u64 delta, struct sched_entity *se)
-{
-	/* __calc_delta inlined - just returns delta for single-process kernel */
-	return delta;
-}
-
+/* calc_delta_fair removed - just returned delta, inlined at call sites */
 /* sched_slice inlined into place_entity */
 /* pelt.h removed - was empty stubs */
 
@@ -104,7 +99,8 @@ static void update_curr(struct cfs_rq *cfs_rq)
 	/* schedstat_enabled() always 0, block removed */
 
 	curr->sum_exec_runtime += delta_exec;
-	curr->vruntime += calc_delta_fair(delta_exec, curr);
+	/* calc_delta_fair inlined - just returns delta for single-process kernel */
+	curr->vruntime += delta_exec;
 	update_min_vruntime(cfs_rq);
 }
 
@@ -281,13 +277,10 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p,
 	update_curr(cfs_rq_of(se));
 	/* wakeup_preempt_entity inlined */
 	{
-		s64 gran, vdiff = se->vruntime - pse->vruntime;
-		if (vdiff > 0) {
-			gran = calc_delta_fair(sysctl_sched_wakeup_granularity,
-					       pse);
-			if (vdiff > gran)
-				goto preempt;
-		}
+		/* calc_delta_fair inlined - just returns the constant */
+		s64 vdiff = se->vruntime - pse->vruntime;
+		if (vdiff > (s64)sysctl_sched_wakeup_granularity)
+			goto preempt;
 	}
 
 	return;

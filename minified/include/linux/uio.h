@@ -9,8 +9,8 @@ struct iovec { void __user *iov_base; __kernel_size_t iov_len; };
 struct page;
 /* pipe_inode_info forward decl removed - unused */
 struct kvec { void *iov_base; size_t iov_len; };
-/* Only ITER_IOVEC and ITER_KVEC are used - others never initialized */
-enum iter_type { ITER_IOVEC, ITER_KVEC, ITER_BVEC, ITER_PIPE, ITER_XARRAY, ITER_DISCARD, };
+/* Only ITER_IOVEC and ITER_KVEC are used - others removed */
+enum iter_type { ITER_IOVEC, ITER_KVEC, };
 struct iov_iter {
 	u8 iter_type; bool nofault; bool data_source; size_t iov_offset; size_t count;
 	union { const struct iovec *iov; const struct kvec *kvec; };

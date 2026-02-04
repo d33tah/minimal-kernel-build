@@ -105,11 +105,8 @@ static inline bool __cmpxchg_double_slab(struct kmem_cache *s,
 }
 
 /* Removed: setup_object_debug, setup_slab_debug - empty stubs */
-
 /* kmem_cache_flags removed - just returned flags unchanged */
-#define slub_debug 0
-
-#define disable_higher_order_debug 0
+/* Removed: slub_debug, disable_higher_order_debug macros - never used */
 
 /* slabs_node and inc_slabs_node removed - always return 0 / do nothing */
 /* Removed: kfree_hook, slab_free_hook, slab_free_freelist_hook

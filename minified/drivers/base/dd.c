@@ -303,19 +303,7 @@ void device_initial_probe(struct device *dev)
 	__device_attach(dev, true);
 }
 
-static void __device_driver_lock(struct device *dev, struct device *parent)
-{
-	if (parent && dev->bus->need_parent_lock)
-		device_lock(parent);
-	device_lock(dev);
-}
-
-static void __device_driver_unlock(struct device *dev, struct device *parent)
-{
-	device_unlock(dev);
-	if (parent && dev->bus->need_parent_lock)
-		device_unlock(parent);
-}
+/* __device_driver_lock, __device_driver_unlock inlined into device_release_driver_internal */
 
 /* __driver_attach removed - only caller was driver_attach */
 /* driver_attach removed - only caller was bus_add_driver */
@@ -327,7 +315,10 @@ void device_release_driver_internal(struct device *dev,
 {
 	struct device_driver *drv;
 
-	__device_driver_lock(dev, parent);
+	/* Inlined __device_driver_lock */
+	if (parent && dev->bus->need_parent_lock)
+		device_lock(parent);
+	device_lock(dev);
 
 	if (!drv_arg || drv_arg == dev->driver) {
 		drv = dev->driver;
@@ -353,7 +344,10 @@ void device_release_driver_internal(struct device *dev,
 		}
 	}
 
-	__device_driver_unlock(dev, parent);
+	/* Inlined __device_driver_unlock */
+	device_unlock(dev);
+	if (parent && dev->bus->need_parent_lock)
+		device_unlock(parent);
 }
 
 void device_release_driver(struct device *dev)

@@ -147,9 +147,10 @@ no_vga:
 
 		for (i = 0; i < 16; i++) {
 			outb_p(color_table[i], VGA_PEL_IW);
-			outb_p(default_red[i], VGA_PEL_D);
-			outb_p(default_grn[i], VGA_PEL_D);
-			outb_p(default_blu[i], VGA_PEL_D);
+			/* default_red/grn/blu arrays were all zeros */
+			outb_p(0, VGA_PEL_D);
+			outb_p(0, VGA_PEL_D);
+			outb_p(0, VGA_PEL_D);
 		}
 	}
 

@@ -389,9 +389,7 @@ int vc_resize(struct vc_data *vc, unsigned int cols, unsigned int rows)
 const unsigned char color_table[] = { 0, 4,  2,	 6,  1, 5,  3,	7,
 				      8, 12, 10, 14, 9, 13, 11, 15 };
 
-unsigned char default_red[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-unsigned char default_grn[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-unsigned char default_blu[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+/* default_red/grn/blu arrays removed - all zeros, replaced with memset */
 
 /* Simplified gotoxy - vc_decom always 0 (origin mode disabled) */
 static void gotoxy(struct vc_data *vc, int new_x, int new_y)
@@ -755,11 +753,8 @@ static void vc_init(struct vc_data *vc, unsigned int rows, unsigned int cols,
 	/* reset_vc inlined from vt_ioctl.c */
 	vc->vc_mode = KD_TEXT;
 	reset_palette(vc);
-	for (j = k = 0; j < 16; j++) {
-		vc->vc_palette[k++] = default_red[j];
-		vc->vc_palette[k++] = default_grn[j];
-		vc->vc_palette[k++] = default_blu[j];
-	}
+	/* palette loop replaced with memset - arrays were all zeros */
+	memset(vc->vc_palette, 0, sizeof(vc->vc_palette));
 	vc->vc_def_color = default_color;
 	vc->vc_ulcolor = default_underline_color;
 	vc->vc_itcolor = default_italic_color;
@@ -925,12 +920,8 @@ postcore_initcall(vtconsole_class_init);
 
 void reset_palette(struct vc_data *vc)
 {
-	int j, k;
-	for (j = k = 0; j < 16; j++) {
-		vc->vc_palette[k++] = default_red[j];
-		vc->vc_palette[k++] = default_grn[j];
-		vc->vc_palette[k++] = default_blu[j];
-	}
+	/* Simplified: default_red/grn/blu arrays were all zeros */
+	memset(vc->vc_palette, 0, sizeof(vc->vc_palette));
 	/* set_palette was a no-op stub - inlined away */
 }
 

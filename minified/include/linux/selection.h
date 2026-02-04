@@ -32,9 +32,7 @@ static inline void scr_memmovew(u16 *d, const u16 *s, unsigned int count)
 /* console_blanked removed - never assigned, always 0 */
 
 extern const unsigned char color_table[];
-extern unsigned char default_red[];
-extern unsigned char default_grn[];
-extern unsigned char default_blu[];
+/* default_red/grn/blu declarations removed - arrays removed (all zeros, replaced with memset) */
 
 /* complement_pos, invert_screen, screen_pos, screen_glyph, screen_glyph_unicode,
  * getconsxy, putconsxy, vcs_scr_readw, vcs_scr_writew, vcs_scr_updated removed - never called */

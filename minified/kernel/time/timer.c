@@ -25,7 +25,7 @@ void init_timer_key(struct timer_list *timer, void (*func)(struct timer_list *),
 {
 	timer->entry.pprev = NULL;
 	timer->function = func;
-	timer->flags = flags | raw_smp_processor_id();
+	/* timer->flags removed - write-only (never read) */
 	/* lockdep_init_map removed - empty stub */
 }
 /* mod_timer, del_timer removed - never called */

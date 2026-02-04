@@ -11,7 +11,7 @@ struct timer_list {
 	struct hlist_node	entry;
 	/* expires removed - never accessed (timers are stubbed) */
 	void			(*function)(struct timer_list *);
-	u32			flags;
+	/* flags removed - write-only (never read) */
 
 };
 
@@ -24,7 +24,7 @@ struct timer_list {
 #define __TIMER_INITIALIZER(_function, _flags) {		\
 		.entry = { .next = TIMER_ENTRY_STATIC },	\
 		.function = (_function),			\
-		.flags = (_flags),				\
+		/* .flags removed - write-only */		\
 		__TIMER_LOCKDEP_MAP_INITIALIZER(		\
 			__FILE__ ":" __stringify(__LINE__))	\
 	}

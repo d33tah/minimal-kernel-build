@@ -37,17 +37,7 @@ unsigned long cachemode2protval(enum page_cache_mode pcm)
 	return __cachemode2pte_tbl[pcm];
 }
 
-static uint8_t __pte2cachemode_tbl[8] = {
-	[__pte2cm_idx(0 | 0 | 0)] = _PAGE_CACHE_MODE_WB,
-	[__pte2cm_idx(_PAGE_PWT | 0 | 0)] = _PAGE_CACHE_MODE_UC_MINUS,
-	[__pte2cm_idx(0 | _PAGE_PCD | 0)] = _PAGE_CACHE_MODE_UC_MINUS,
-	[__pte2cm_idx(_PAGE_PWT | _PAGE_PCD | 0)] = _PAGE_CACHE_MODE_UC,
-	[__pte2cm_idx(0 | 0 | _PAGE_PAT)] = _PAGE_CACHE_MODE_WB,
-	[__pte2cm_idx(_PAGE_PWT | 0 | _PAGE_PAT)] = _PAGE_CACHE_MODE_UC_MINUS,
-	[__pte2cm_idx(0 | _PAGE_PCD | _PAGE_PAT)] = _PAGE_CACHE_MODE_UC_MINUS,
-	[__pte2cm_idx(_PAGE_PWT | _PAGE_PCD | _PAGE_PAT)] = _PAGE_CACHE_MODE_UC,
-};
-
+/* __pte2cachemode_tbl removed - was never accessed (~10 LOC) */
 /* x86_has_pat_wp, pgprot2cachemode removed - never called (~15 LOC) */
 
 static unsigned long __initdata pgt_buf_start;

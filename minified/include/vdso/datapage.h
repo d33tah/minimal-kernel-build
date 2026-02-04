@@ -6,7 +6,7 @@
 #include <linux/compiler.h>
 #include <uapi/linux/time.h>
 #include <uapi/linux/types.h>
-#include <linux/errno.h>
+/* linux/errno.h removed - no errno constants used */
 #include <linux/bits.h>
 #include <linux/limits.h>
 #include <linux/clocksource.h>

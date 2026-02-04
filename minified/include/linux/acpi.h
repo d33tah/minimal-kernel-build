@@ -1,6 +1,6 @@
 #ifndef _LINUX_ACPI_H
 #define _LINUX_ACPI_H
-#include <linux/errno.h>
+/* linux/errno.h removed - no errno constants used */
 #include <linux/ioport.h>
 #include <linux/irqdomain.h>
 #include <linux/device.h>

@@ -4,7 +4,7 @@
 #include <linux/kernel.h>
 #include <linux/path.h>
 #include <linux/fcntl.h>
-#include <linux/errno.h>
+/* linux/errno.h removed - no errno constants used */
 /* MAX_NESTED_LINKS, MAXSYMLINKS removed - symlinks not supported */
 enum {LAST_NORM, LAST_ROOT, LAST_DOT, LAST_DOTDOT};
 #define LOOKUP_FOLLOW		0x0001

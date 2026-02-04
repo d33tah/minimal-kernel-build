@@ -9,7 +9,7 @@
 #include <linux/mm.h>
 #include <linux/sched/mm.h>
 #include <linux/sched.h>
-#include <linux/module.h>
+/* linux/module.h removed - no module features used */
 #include <linux/writeback.h>
 #include <linux/device.h>
 #include <linux/flex_proportions.h>

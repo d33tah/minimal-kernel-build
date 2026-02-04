@@ -2,7 +2,7 @@
 #include <linux/async.h>
 #include <linux/device/bus.h>
 #include <linux/device.h>
-#include <linux/module.h>
+/* linux/module.h removed - no module features used */
 #include <linux/errno.h>
 #include <linux/slab.h>
 #include <linux/init.h>

@@ -10,7 +10,7 @@ unsigned long lcm(unsigned long a, unsigned long b) __attribute_const__;
 #include <linux/list.h>
 #include <linux/log2.h>
 #include <linux/mm.h>
-#include <linux/module.h>
+/* linux/module.h removed - no module features used */
 #include <linux/mutex.h>
 #include <linux/percpu.h>
 #include <linux/pfn.h>

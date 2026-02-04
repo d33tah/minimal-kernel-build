@@ -2,7 +2,7 @@
 #include <linux/device.h>
 #include <linux/err.h>
 #include <linux/init.h>
-#include <linux/module.h>
+/* linux/module.h removed - no module features used */
 #include <linux/slab.h>
 #include <linux/string.h>
 #include <linux/kdev_t.h>

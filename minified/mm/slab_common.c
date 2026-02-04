@@ -5,7 +5,7 @@
 #include <linux/interrupt.h>
 #include <linux/cache.h>
 #include <linux/compiler.h>
-#include <linux/module.h>
+/* linux/module.h removed - no module features used */
 #include <linux/cpu.h>
 #include <linux/uaccess.h>
 /* seq_file.h removed - header is empty */

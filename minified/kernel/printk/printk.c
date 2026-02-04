@@ -7,7 +7,7 @@
 #include <linux/tty_driver.h>
 #include <linux/console.h>
 #include <linux/init.h>
-#include <linux/module.h>
+/* linux/module.h removed - no module features used */
 /* moduleparam.h, delay.h, memblock.h, ratelimit.h, kmsg_dump.h removed - unused */
 #include <linux/smp.h>
 #include <linux/syscalls.h>

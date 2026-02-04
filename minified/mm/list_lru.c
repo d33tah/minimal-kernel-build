@@ -1,5 +1,5 @@
 #include <linux/kernel.h>
-#include <linux/module.h>
+/* linux/module.h removed - no module features used */
 #include <linux/mm.h>
 #include <linux/list_lru.h>
 #include <linux/slab.h>

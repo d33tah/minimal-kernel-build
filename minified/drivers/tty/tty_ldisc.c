@@ -10,7 +10,7 @@
 #include <linux/slab.h>
 #include <linux/poll.h>
 /* proc_fs.h removed - empty header */
-#include <linux/module.h>
+/* linux/module.h removed - no module features used */
 #include <linux/device.h>
 #include <linux/wait.h>
 #include <linux/bitops.h>

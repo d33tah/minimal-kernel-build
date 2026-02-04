@@ -1,7 +1,7 @@
 
 #include <linux/device/class.h>
 #include <linux/device.h>
-#include <linux/module.h>
+/* linux/module.h removed - no module features used */
 #include <linux/init.h>
 #include <linux/string.h>
 #include <linux/kdev_t.h>

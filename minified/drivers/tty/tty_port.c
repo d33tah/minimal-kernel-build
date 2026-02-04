@@ -11,7 +11,7 @@
 #include <linux/wait.h>
 #include <linux/bitops.h>
 #include <linux/delay.h>
-#include <linux/module.h>
+/* linux/module.h removed - no module features used */
 
 #include "tty.h"
 

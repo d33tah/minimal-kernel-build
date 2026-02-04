@@ -1,7 +1,7 @@
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/io.h>
-#include <linux/module.h>
+/* linux/module.h removed - no module features used */
 /* linux/slab.h removed - no slab functions */
 #include <linux/mm.h>
 #include <linux/vmalloc.h>

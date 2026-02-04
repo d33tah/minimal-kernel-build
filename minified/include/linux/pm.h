@@ -3,7 +3,7 @@
 #define _LINUX_PM_H
 
 #include <linux/export.h>
-#include <linux/list.h>
+/* linux/list.h removed - no list structures used */
 #include <linux/workqueue.h>
 #include <linux/spinlock.h>
 #include <linux/wait.h>

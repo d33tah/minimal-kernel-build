@@ -2,7 +2,7 @@
 #include <linux/interrupt.h>
 #include <linux/rcupdate_wait.h>
 #include <linux/kernel.h>
-#include <linux/export.h>
+/* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/mutex.h>
 #include <linux/sched.h>
 #include <linux/types.h>

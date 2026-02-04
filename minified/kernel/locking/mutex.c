@@ -3,7 +3,7 @@
 #include <linux/sched/rt.h>
 #include <linux/sched/wake_q.h>
 #include <linux/sched/debug.h>
-#include <linux/export.h>
+/* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/spinlock.h>
 #include <linux/interrupt.h>
 #include <linux/debug_locks.h>

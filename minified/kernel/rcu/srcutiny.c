@@ -1,5 +1,5 @@
 
-#include <linux/export.h>
+/* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/mutex.h>
 #include <linux/preempt.h>
 #include <linux/rcupdate_wait.h>

@@ -16,7 +16,7 @@
 #include <linux/interrupt.h>
 #include <linux/delay.h>
 #include <linux/reboot.h>
-#include <linux/export.h>
+/* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/ptrace.h>
 #include <linux/personality.h>
 #include <linux/percpu.h>

@@ -5,7 +5,7 @@
 #include <linux/linkage.h>
 #include <linux/bitops.h>
 #include <linux/kernel.h>
-#include <linux/export.h>
+/* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/percpu.h>
 #include <linux/string.h>
 #include <linux/ctype.h>

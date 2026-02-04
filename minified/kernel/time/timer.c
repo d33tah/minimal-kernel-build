@@ -1,8 +1,7 @@
 /* kernel_stat.h, interrupt.h, pid_namespace.h, thread_info.h,
    time.h, cpu.h, syscalls.h, sched/signal.h, sched/sysctl.h,
    slab.h, compat.h, sysctl.h, uaccess.h,
-   asm/unistd.h, asm/timex.h, asm/io.h removed - unused */
-#include <linux/export.h>
+   asm/unistd.h, asm/timex.h, asm/io.h, linux/export.h removed - unused */
 #include <linux/percpu.h>
 #include <linux/init.h>
 #include <linux/mm.h>

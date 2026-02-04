@@ -1,7 +1,7 @@
 
 #include <linux/clocksource.h>
 #include <linux/time.h>
-#include <linux/export.h>
+/* linux/export.h removed - no EXPORT_SYMBOL */
 
 /* asm/vsyscall.h removed - empty */
 /* clockchips.h, interrupt.h, irq.h, i8253.h, i8259.h removed - timer init dead */

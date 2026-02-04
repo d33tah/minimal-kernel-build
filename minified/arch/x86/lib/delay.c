@@ -1,5 +1,5 @@
 
-#include <linux/export.h>
+/* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/sched.h>
 #include <linux/timex.h>
 #include <linux/preempt.h>

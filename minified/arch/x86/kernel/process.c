@@ -10,7 +10,7 @@
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
 #include <linux/init.h>
-#include <linux/export.h>
+/* linux/export.h removed - no EXPORT_SYMBOL */
 /* random.h removed - header is empty */
 #include <linux/utsname.h>
 /* boot_init_stack_canary removed - empty stub, never called */

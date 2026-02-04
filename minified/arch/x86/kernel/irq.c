@@ -5,7 +5,7 @@
 /* seq_file.h removed - header is empty */
 #include <linux/smp.h>
 #include <linux/delay.h>
-#include <linux/export.h>
+/* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/irq.h>
 
 #include <asm/irq_stack.h>

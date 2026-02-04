@@ -1,6 +1,6 @@
 #include <linux/irq.h>
 #include <linux/slab.h>
-#include <linux/export.h>
+/* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/interrupt.h>
 #include <linux/kernel_stat.h>
 #include <linux/radix-tree.h>

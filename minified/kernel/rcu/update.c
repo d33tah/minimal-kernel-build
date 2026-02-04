@@ -11,7 +11,7 @@
 #include <linux/percpu.h>
 #include <linux/cpu.h>
 #include <linux/mutex.h>
-#include <linux/export.h>
+/* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/hardirq.h>
 #include <linux/delay.h>
 #include <linux/moduleparam.h>

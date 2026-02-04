@@ -1,5 +1,5 @@
 #include <linux/string.h>
-#include <linux/export.h>
+/* linux/export.h removed - no EXPORT_SYMBOL */
 
 #undef memcpy
 #undef memset

@@ -1,5 +1,5 @@
 /* capability.h, errno.h, uaccess.h removed - unused */
-#include <linux/export.h>
+/* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/kernel.h>
 #include <linux/timex.h>
 #include <linux/timekeeper_internal.h>

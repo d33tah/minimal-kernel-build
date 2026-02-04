@@ -1,4 +1,4 @@
-#include <linux/export.h>
+/* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/uaccess.h>
 #include <asm/asm.h>
 

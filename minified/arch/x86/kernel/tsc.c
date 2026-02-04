@@ -4,7 +4,7 @@
 #include <linux/sched.h>
 #include <linux/sched/clock.h>
 #include <linux/init.h>
-#include <linux/export.h>
+/* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/timer.h>
 /* acpi_pmtmr.h - PMTMR constants removed with pit_hpet_ptimer_calibrate_cpu */
 #include <linux/delay.h>

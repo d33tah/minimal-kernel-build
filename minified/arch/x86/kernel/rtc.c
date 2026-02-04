@@ -24,7 +24,7 @@ static unsigned _bcd2bin(unsigned char val)
 {
 	return (val & 0x0f) + (val >> 4) * 10;
 }
-#include <linux/export.h>
+/* linux/export.h removed - no EXPORT_SYMBOL */
 
 #include <linux/of.h>
 

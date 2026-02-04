@@ -8,7 +8,7 @@
 #include <linux/uaccess.h>
 #include <linux/kdebug.h>
 #include <linux/kernel.h>
-#include <linux/export.h>
+/* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/ptrace.h>
 #include <linux/string.h>
 #include <linux/delay.h>

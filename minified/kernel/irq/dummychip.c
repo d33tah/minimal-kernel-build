@@ -1,6 +1,6 @@
 #include <linux/interrupt.h>
 #include <linux/irq.h>
-#include <linux/export.h>
+/* linux/export.h removed - no EXPORT_SYMBOL */
 
 #include "internals.h"
 

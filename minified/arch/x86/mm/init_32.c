@@ -2,7 +2,7 @@
 #include <linux/signal.h>
 #include <linux/sched.h>
 #include <linux/kernel.h>
-#include <linux/errno.h>
+/* linux/errno.h removed - no errno constants used */
 #include <linux/string.h>
 #include <linux/ptrace.h>
 #include <linux/mman.h>

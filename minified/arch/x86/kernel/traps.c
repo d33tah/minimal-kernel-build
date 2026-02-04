@@ -11,7 +11,7 @@
 /* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/ptrace.h>
 #include <linux/delay.h>
-#include <linux/errno.h>
+/* linux/errno.h removed - no errno constants used */
 #include <linux/sched.h>
 #include <linux/sched/task_stack.h>
 #include <linux/init.h>

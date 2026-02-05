@@ -2,7 +2,7 @@
 
 #include <linux/module.h>
 #include <linux/sched.h>
-#include <linux/mutex.h>
+/* linux/mutex.h removed - no mutex functions */
 #include <linux/list.h>
 #include <linux/stringify.h>
 #include <linux/highmem.h>

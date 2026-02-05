@@ -8,7 +8,7 @@
 #include <asm/errno.h>
 #include <linux/root_dev.h>
 #include <linux/security.h>
-#include <linux/delay.h>
+/* linux/delay.h removed - no delay functions used */
 #include <linux/mount.h>
 #include <linux/device.h>
 #include <linux/init.h>

@@ -1,5 +1,4 @@
-#include <linux/io.h>
-#include <linux/slab.h>
+/* linux/io.h, linux/slab.h removed - unused in stubbed file */
 #include <linux/memblock.h>
 /* cc_attr enum and cc_platform_has removed - unused now that init_real_mode is stubbed */
 #include <linux/pgtable.h>

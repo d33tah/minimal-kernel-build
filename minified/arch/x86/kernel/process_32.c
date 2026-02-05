@@ -13,14 +13,14 @@
 /* linux/slab.h removed - no slab functions */
 #include <linux/vmalloc.h>
 #include <asm/user.h> /* linux/user.h redirect */
-#include <linux/interrupt.h>
+/* linux/interrupt.h removed - no interrupt functions */
 #include <linux/reboot.h>
 /* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/ptrace.h>
 #include <linux/personality.h>
 #include <linux/percpu.h>
 #include <linux/uaccess.h>
-#include <linux/io.h>
+/* linux/io.h removed - no I/O functions */
 #include <linux/kdebug.h>
 #include <linux/syscalls.h>
 

@@ -7,8 +7,7 @@ extern int nr_threads;
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
 #include <linux/sched/signal.h>
-#include <linux/interrupt.h>
-/* linux/capability.h, linux/completion.h, linux/personality.h removed - unused */
+/* linux/interrupt.h, linux/capability.h, linux/completion.h, linux/personality.h removed - unused */
 #include <linux/tty.h>
 /* linux/cpu.h removed - no cpu features used */
 #include <linux/file.h>

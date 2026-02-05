@@ -6,9 +6,7 @@
 #include "sched.h"
 /* stats.h removed - was empty header */
 
-unsigned int sysctl_sched_latency = 6000000ULL;
-unsigned int sysctl_sched_min_granularity = 750000ULL;
-/* sched_nr_latency removed - unused after simplification */
+/* sysctl_sched_latency, sysctl_sched_min_granularity removed - never used */
 unsigned int sysctl_sched_wakeup_granularity = 1000000UL;
 
 static inline void update_load_add(struct load_weight *lw, unsigned long inc)

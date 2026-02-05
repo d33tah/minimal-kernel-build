@@ -41,17 +41,7 @@
 /* Forward declaration for static function used before definition */
 static int tty_lock_interruptible(struct tty_struct *tty);
 
-struct ktermios tty_std_termios = {
-	.c_iflag = ICRNL | IXON,
-	.c_oflag = OPOST | ONLCR,
-	.c_cflag = B38400 | CS8 | CREAD | HUPCL,
-	.c_lflag = ISIG | ICANON | ECHO | ECHOE | ECHOK | ECHOCTL | ECHOKE |
-		   IEXTEN,
-	.c_cc = INIT_C_CC,
-	.c_ispeed = 38400,
-	.c_ospeed = 38400,
-
-};
+/* tty_std_termios removed - never used after vty_init removal */
 
 LIST_HEAD(tty_drivers);
 

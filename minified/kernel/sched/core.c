@@ -648,15 +648,7 @@ int default_wake_function(wait_queue_entry_t *curr, unsigned mode,
 
 /* __setscheduler_prio inlined into __sched_setscheduler */
 
-#ifdef __ARCH_WANT_SYS_NICE
-
-SYSCALL_DEFINE1(nice, int, increment)
-{
-	/* Stub: nice not needed for minimal kernel */
-	return 0;
-}
-
-#endif
+/* nice syscall removed - __ARCH_WANT_SYS_NICE no longer defined */
 
 #define SETPARAM_POLICY -1
 

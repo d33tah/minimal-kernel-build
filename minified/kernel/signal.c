@@ -330,15 +330,7 @@ SYSCALL_DEFINE2(rt_sigpending, sigset_t __user *, uset, size_t, sigsetsize)
 
 /* sigpending replaced with COND_SYSCALL */
 
-#ifdef __ARCH_WANT_SYS_SIGPROCMASK
-
-/* Stub: sigprocmask not needed for Hello World */
-SYSCALL_DEFINE3(sigprocmask, int, how, old_sigset_t __user *, nset,
-		old_sigset_t __user *, oset)
-{
-	return 0;
-}
-#endif
+/* sigprocmask syscall removed - __ARCH_WANT_SYS_SIGPROCMASK no longer defined */
 
 /* Stub: rt_sigaction not needed for Hello World */
 /* CONFIG_ODD_RT_SIGACTION not set - #ifndef removed */

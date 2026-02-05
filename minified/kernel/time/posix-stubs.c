@@ -28,9 +28,7 @@ SYS_NI(clock_adjtime);
 SYS_NI(getitimer);
 SYS_NI(setitimer);
 SYS_NI(clock_adjtime32);
-#ifdef __ARCH_WANT_SYS_ALARM
-SYS_NI(alarm);
-#endif
+/* alarm SYS_NI removed - __ARCH_WANT_SYS_ALARM no longer defined */
 
 /* clock_settime replaced with COND_SYSCALL */
 

@@ -92,18 +92,7 @@ void __wake_up_locked_key_bookmark(struct wait_queue_head *wq_head,
 	__wake_up_common(wq_head, mode, 1, 0, key, bookmark);
 }
 
-void prepare_to_wait(struct wait_queue_head *wq_head,
-		     struct wait_queue_entry *wq_entry, int state)
-{
-	unsigned long flags;
-
-	wq_entry->flags &= ~WQ_FLAG_EXCLUSIVE;
-	spin_lock_irqsave(&wq_head->lock, flags);
-	if (list_empty(&wq_entry->entry))
-		__add_wait_queue(wq_head, wq_entry);
-	set_current_state(state);
-	spin_unlock_irqrestore(&wq_head->lock, flags);
-}
+/* prepare_to_wait removed - only caller was __wait_on_bit (also removed) (~12 LOC) */
 
 void init_wait_entry(struct wait_queue_entry *wq_entry, int flags)
 {

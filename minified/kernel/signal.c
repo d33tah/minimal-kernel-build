@@ -212,19 +212,11 @@ int group_send_sig_info(int sig, struct kernel_siginfo *info,
 	return ret;
 }
 
-int send_sig_info(int sig, struct kernel_siginfo *info, struct task_struct *p)
-{
-	if (!valid_signal(sig))
-		return -EINVAL;
-
-	return do_send_sig_info(sig, info, p, PIDTYPE_PID);
-}
-
 #define __si_special(priv) ((priv) ? SEND_SIG_PRIV : SEND_SIG_NOINFO)
 
 int send_sig(int sig, struct task_struct *p, int priv)
 {
-	return send_sig_info(sig, __si_special(priv), p);
+	return do_send_sig_info(sig, __si_special(priv), p, PIDTYPE_PID);
 }
 
 void force_sig(int sig)

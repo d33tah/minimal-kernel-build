@@ -275,7 +275,8 @@ static void *pcpu_mem_zalloc(size_t size, gfp_t gfp)
 	if (size <= PAGE_SIZE)
 		return kzalloc(size, gfp);
 	else
-		return __vmalloc(size, gfp | __GFP_ZERO);
+		return __vmalloc_node(size, 1, gfp | __GFP_ZERO, NUMA_NO_NODE,
+				      __builtin_return_address(0));
 }
 
 static void pcpu_mem_free(void *ptr)

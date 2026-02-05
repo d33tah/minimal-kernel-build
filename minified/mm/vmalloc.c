@@ -943,13 +943,7 @@ void *__vmalloc_node(unsigned long size, unsigned long align, gfp_t gfp_mask,
 				    gfp_mask, PAGE_KERNEL, 0, node, caller);
 }
 
-void *__vmalloc(unsigned long size, gfp_t gfp_mask)
-{
-	return __vmalloc_node(size, 1, gfp_mask, NUMA_NO_NODE,
-			      __builtin_return_address(0));
-}
-
-/* vmalloc removed - never called */
+/* __vmalloc, vmalloc removed - never called */
 
 void free_vm_area(struct vm_struct *area)
 {

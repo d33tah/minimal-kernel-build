@@ -330,8 +330,7 @@ extern void cpu_init(void);
 extern void cpu_init_exception_handling(void);
 /* cr4_init, set_task_blockstep, bootloader_type, bootloader_version removed - unused */
 
-#define HAVE_ARCH_PICK_MMAP_LAYOUT 1
-/* ARCH_HAS_PREFETCHW, ARCH_HAS_SPINLOCK_PREFETCH, ARCH_HAS_PREFETCH removed - unused */
+/* HAVE_ARCH_PICK_MMAP_LAYOUT, ARCH_HAS_PREFETCHW, ARCH_HAS_SPINLOCK_PREFETCH, ARCH_HAS_PREFETCH removed - unused */
 
 # define BASE_PREFETCH		""
 

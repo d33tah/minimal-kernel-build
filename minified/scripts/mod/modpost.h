@@ -55,27 +55,7 @@
 #define ELF_R_TYPE  ELF64_R_TYPE
 #endif
 
- 
-typedef struct
-{
-	Elf32_Word    r_sym;	 
-	unsigned char r_ssym;	 
-	unsigned char r_type3;	 
-	unsigned char r_type2;	 
-	unsigned char r_type1;	 
-} _Elf64_Mips_R_Info;
-
-typedef union
-{
-	Elf64_Xword		r_info_number;
-	_Elf64_Mips_R_Info	r_info_fields;
-} _Elf64_Mips_R_Info_union;
-
-#define ELF64_MIPS_R_SYM(i) \
-  ((__extension__ (_Elf64_Mips_R_Info_union)(i)).r_info_fields.r_sym)
-
-#define ELF64_MIPS_R_TYPE(i) \
-  ((__extension__ (_Elf64_Mips_R_Info_union)(i)).r_info_fields.r_type1)
+/* MIPS ELF64 relocation structures and macros removed - x86-only kernel */
 
 #if KERNEL_ELFDATA != HOST_ELFDATA
 

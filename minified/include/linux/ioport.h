@@ -62,10 +62,7 @@ extern int insert_resource(struct resource *parent, struct resource *new);
 /* release_region, release_mem_region, __release_region removed - never called */
 /* struct device forward decl removed - unused */
 /* iomem_map_sanity_check removed - was stub returning 0 */
-
-extern int
-walk_mem_res(u64 start, u64 end, void *arg,
-	     int (*func)(struct resource *, void *));
+/* walk_mem_res removed - only caller (ioremap) was removed */
 
 #endif
 #endif	 

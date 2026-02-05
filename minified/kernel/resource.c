@@ -77,54 +77,7 @@ int request_resource(struct resource *root, struct resource *new)
 	return conflict ? -EBUSY : 0;
 }
 
-/* find_next_iomem_res inlined into walk_mem_res */
-
-int walk_mem_res(u64 start, u64 end, void *arg,
-		 int (*func)(struct resource *, void *))
-{
-	unsigned long flags = IORESOURCE_MEM | IORESOURCE_BUSY;
-	struct resource res;
-	struct resource *p;
-	int ret = -EINVAL;
-
-	while (start < end) {
-		read_lock(&resource_lock);
-		for (p = iomem_resource.child; p;
-		     p = (p->child) ? p->child : (({
-			     struct resource *__p = p;
-			     while (!__p->sibling && __p->parent)
-				     __p = __p->parent;
-			     __p->sibling;
-		     }))) {
-			if (p->start > end) {
-				p = NULL;
-				break;
-			}
-			if (p->end < start)
-				continue;
-			if ((p->flags & flags) != flags)
-				continue;
-			break;
-		}
-		if (p) {
-			res = (struct resource){
-				.start = max(start, p->start),
-				.end = min(end, p->end),
-				.flags = p->flags,
-				.desc = p->desc,
-				.parent = p->parent,
-			};
-		}
-		read_unlock(&resource_lock);
-		if (!p)
-			break;
-		ret = (*func)(&res, arg);
-		if (ret)
-			break;
-		start = res.end + 1;
-	}
-	return ret;
-}
+/* walk_mem_res removed - only caller (ioremap) was removed */
 
 /* STUB: unused resource allocation/lookup functions */
 static struct resource *__insert_resource(struct resource *parent,

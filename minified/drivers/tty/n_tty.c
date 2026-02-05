@@ -7,10 +7,10 @@
 #include <linux/sched.h>
 /* linux/interrupt.h removed - no interrupt features used */
 #include <linux/tty.h>
-#include <linux/ctype.h>
+/* linux/ctype.h removed - no ctype functions used */
 #include <linux/mm.h>
 #include <linux/slab.h>
-#include <linux/poll.h>
+/* linux/poll.h removed - no poll functions used */
 #include <linux/bitops.h>
 #include <linux/file.h>
 #include <linux/uaccess.h>

@@ -1,6 +1,6 @@
 
-#include <linux/stat.h>
-#include <linux/sysctl.h>
+/* linux/stat.h removed - no stat features used */
+/* linux/sysctl.h removed - no sysctl features used */
 #include <linux/slab.h>
 #include <linux/cred.h>
 #include <linux/hash.h>

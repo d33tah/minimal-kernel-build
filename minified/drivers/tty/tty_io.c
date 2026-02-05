@@ -14,7 +14,7 @@
 #include <linux/file.h>
 /* fdtable.h removed - not used */
 #include <linux/console.h>
-#include <linux/ctype.h>
+/* linux/ctype.h removed - no ctype functions used */
 #include <linux/kd.h>
 #include <linux/mm.h>
 #include <linux/slab.h>

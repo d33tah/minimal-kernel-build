@@ -6,7 +6,7 @@
 #include <linux/file.h>
 #include <linux/mm.h>
 #include <linux/slab.h>
-#include <linux/poll.h>
+/* linux/poll.h removed - no poll functions used */
 /* proc_fs.h removed - empty header */
 /* linux/module.h removed - no module features used */
 #include <linux/device.h>

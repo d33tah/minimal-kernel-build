@@ -16,7 +16,7 @@ int debug_locks __read_mostly = 1;
 #include <linux/sched.h>
 
 #include <linux/console.h>
-#include <linux/bug.h>
+/* linux/bug.h removed - BUG/WARN not used */
 
 #define PANIC_TIMER_STEP 100
 /* PANIC_BLINK_SPD removed - unused after panic_blink removal */

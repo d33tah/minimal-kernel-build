@@ -5,7 +5,7 @@
 #include <linux/interrupt.h>
 #include <linux/local_lock.h>
 #include <linux/percpu.h>
-#include <linux/cpu.h>
+/* linux/cpu.h removed - cpu hotplug not used */
 #include <linux/rcupdate.h>
 #include <linux/smp.h>
 #include <linux/irq.h>

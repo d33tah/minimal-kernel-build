@@ -323,16 +323,4 @@ __visible int memcmp(const void *cs, const void *ct, size_t count)
 #endif
 
 /* strstr removed - never called in runtime kernel */
-
-#ifndef __HAVE_ARCH_MEMCHR
-void *memchr(const void *s, int c, size_t n)
-{
-	const unsigned char *p = s;
-	while (n-- != 0) {
-		if ((unsigned char)c == *p++) {
-			return (void *)(p - 1);
-		}
-	}
-	return NULL;
-}
-#endif
+/* memchr removed - never called in runtime kernel */

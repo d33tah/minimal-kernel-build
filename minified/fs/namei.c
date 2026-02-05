@@ -5,7 +5,7 @@
 #include <linux/namei.h>
 /* linux/pagemap.h removed - page operations not used */
 #include <linux/sched/mm.h>
-#include <linux/security.h>
+/* linux/security.h removed - stubs unused */
 /* Removed: ima_file_check, devcgroup_inode_permission, devcgroup_inode_mknod
  * - Always returned 0 (no-op stubs) */
 /* linux/syscalls.h removed - no syscall entry points */

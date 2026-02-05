@@ -13,9 +13,7 @@
 /* linux/slab.h removed - no slab functions */
 #include <linux/vmalloc.h>
 #include <asm/user.h> /* linux/user.h redirect */
-/* linux/interrupt.h removed - no interrupt functions */
-#include <linux/reboot.h>
-/* linux/export.h removed - no EXPORT_SYMBOL */
+/* linux/interrupt.h, linux/reboot.h, linux/export.h removed - unused */
 #include <linux/ptrace.h>
 #include <linux/personality.h>
 #include <linux/percpu.h>

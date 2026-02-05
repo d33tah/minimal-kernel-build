@@ -2,7 +2,7 @@
 #include <linux/memblock.h>
 #include <linux/swap.h>
 #include <linux/init.h>
-#include <linux/pm.h>
+/* linux/pm.h removed - no pm functions used */
 #include <linux/mm.h>
 #include <asm/errno.h>
 #include <linux/acpi.h>

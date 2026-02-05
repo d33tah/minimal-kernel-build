@@ -3,12 +3,11 @@
 #include <linux/tty.h>
 #include <linux/swap.h>
 #include <linux/init.h>
-#include <linux/pm.h>
+/* linux/pm.h removed - no pm functions used */
 #include <linux/mm.h>
 #include <asm/errno.h>
 #include <linux/root_dev.h>
-#include <linux/security.h>
-/* linux/delay.h removed - no delay functions used */
+/* linux/security.h, linux/delay.h removed - unused */
 #include <linux/mount.h>
 #include <linux/device.h>
 #include <linux/init.h>

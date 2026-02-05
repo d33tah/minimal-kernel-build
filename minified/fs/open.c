@@ -5,7 +5,7 @@
 #include <linux/namei.h>
 #include <linux/capability.h>
 #include <linux/init_task.h> /* for securebits defines */
-#include <linux/security.h>
+/* linux/security.h removed - no security functions used */
 #include <linux/mount.h>
 #include <linux/fcntl.h>
 /* linux/slab.h removed - no slab functions */

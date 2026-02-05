@@ -6,7 +6,7 @@
 #include <linux/compiler.h>
 #include <linux/kernel.h>
 #include <linux/slab.h>
-#include <linux/cpu.h>
+/* linux/cpu.h removed - cpu hotplug not used */
 #include <linux/nodemask.h>
 #include <linux/pfn.h>
 

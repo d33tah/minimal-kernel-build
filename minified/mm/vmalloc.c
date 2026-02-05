@@ -10,9 +10,9 @@
 /* asm/set_memory.h removed - set_memory functions not used */
 #include <linux/list.h>
 #include <linux/rbtree.h>
-#include <linux/rcupdate.h>
+/* linux/rcupdate.h removed - no RCU used */
 #include <linux/pfn.h>
-#include <linux/atomic.h>
+/* linux/atomic.h removed - no atomic ops used directly */
 #include <linux/rbtree_augmented.h>
 /* linux/overflow.h removed - no overflow macros used */
 #include <linux/pgtable.h>

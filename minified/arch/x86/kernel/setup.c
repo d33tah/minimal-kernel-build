@@ -14,7 +14,7 @@ static inline bool efi_enabled(int feature)
 /* panic_notifier_list extern removed - never registered into */
 #include <linux/pci.h>
 #include <linux/root_dev.h>
-#include <linux/hugetlb.h>
+/* linux/hugetlb.h removed - hugetlb_cma_reserve stubbed */
 #define tboot_probe() \
 	do {          \
 	} while (0)
@@ -41,9 +41,7 @@ static inline bool efi_enabled(int feature)
 #include <asm/setup.h>
 #include <asm/proto.h>
 #include <asm/unwind.h>
-/* asm/vsyscall.h removed - empty */
-#include <linux/vmalloc.h>
-
+/* asm/vsyscall.h, linux/vmalloc.h removed - not used */
 unsigned long max_low_pfn_mapped;
 unsigned long max_pfn_mapped;
 

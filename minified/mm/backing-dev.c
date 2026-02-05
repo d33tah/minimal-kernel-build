@@ -1,7 +1,7 @@
 
 #include <linux/blkdev.h>
 #include <linux/wait.h>
-#include <linux/rbtree.h>
+/* linux/rbtree.h removed - no rbtree structures used */
 #include <linux/backing-dev.h>
 #include <linux/fs.h>
 /* linux/pagemap.h removed - no page cache functions used */

@@ -13,7 +13,7 @@
 #include <linux/fs.h>
 #include <linux/personality.h>
 #include <linux/rcupdate.h>
-#include <linux/fs_struct.h>
+/* linux/fs_struct.h removed - no fs_struct functions used */
 #include <linux/mnt_idmapping.h>
 
 #include "internal.h"

@@ -2,10 +2,8 @@
 #include <linux/spinlock.h>
 #include <linux/smp.h>
 #include <linux/interrupt.h>
-/* linux/export.h removed - no EXPORT_SYMBOL */
+/* linux/export.h, linux/task_work.h removed - not used */
 #include <linux/cpu.h>
-#include <linux/task_work.h>
-
 #include <asm/tlbflush.h>
 #include <asm/mmu_context.h>
 #include <asm/nospec-branch.h>

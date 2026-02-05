@@ -6,13 +6,13 @@
 /* linux/slab.h removed - no slab functions */
 #include <linux/spinlock.h>
 /* linux/fs.h removed - no fs types used */
-#include <linux/fs_context.h>
+/* linux/fs_context.h removed - no fs_context types used */
 /* proc_fs.h removed - empty header */
 #include <linux/sched.h>
-#include <linux/device.h>
+/* linux/device.h removed - no device types used */
 #include <linux/pfn.h>
 #include <linux/mm.h>
-#include <linux/mount.h>
+/* linux/mount.h removed - no mount types used */
 /* magic.h removed - not used */
 #include <asm/io.h>
 

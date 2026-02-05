@@ -5,8 +5,7 @@
 #include <linux/swap.h>
 /* linux/capability.h removed - no capability functions used */
 #include <linux/fs.h>
-/* swapops.h removed - was empty */
-#include <linux/highmem.h>
+/* swapops.h, linux/highmem.h removed - unused */
 #include <linux/syscalls.h>
 #include <linux/mmu_notifier.h>
 #include <linux/uaccess.h>

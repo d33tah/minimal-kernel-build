@@ -2,8 +2,7 @@
 #include <linux/mnt_namespace.h>
 #include <linux/user_namespace.h>
 #include <linux/namei.h>
-/* linux/security.h removed - no security functions used */
-#include <linux/cred.h>
+/* linux/security.h, linux/cred.h removed - unused */
 #include <linux/idr.h>
 #include <linux/init.h>
 #include <linux/fs_struct.h>

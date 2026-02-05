@@ -4,7 +4,7 @@
 #include <linux/rbtree.h>
 #include <linux/backing-dev.h>
 #include <linux/fs.h>
-#include <linux/pagemap.h>
+/* linux/pagemap.h removed - no page cache functions used */
 #include <linux/mm.h>
 #include <linux/sched/mm.h>
 #include <linux/sched.h>

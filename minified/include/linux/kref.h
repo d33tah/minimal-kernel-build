@@ -2,7 +2,6 @@
 #ifndef _KREF_H_
 #define _KREF_H_
 
-#include <linux/spinlock.h>
 #include <linux/refcount.h>
 
 struct kref {

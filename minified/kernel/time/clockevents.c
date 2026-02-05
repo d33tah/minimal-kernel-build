@@ -1,6 +1,6 @@
 
 #include <linux/clockchips.h>
-#include <linux/hrtimer.h>
+/* linux/hrtimer.h removed - no hrtimer types used */
 #include <linux/module.h>
 #include <linux/smp.h>
 /* linux/device.h removed - no device types used */

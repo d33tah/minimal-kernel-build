@@ -11,10 +11,9 @@
 #include <linux/swap.h>
 /* swapops.h removed - was empty */
 #include <linux/mman.h>
-#include <linux/hugetlb.h>
+/* linux/hugetlb.h removed - hugetlb stubs in header */
 #include <linux/vmalloc.h>
-/* userfaultfd_k.h removed - empty stubs */
-#include <linux/elf.h>
+/* userfaultfd_k.h, linux/elf.h removed - not used */
 #include <linux/personality.h>
 /* Removed: linux/random.h - randomization disabled */
 

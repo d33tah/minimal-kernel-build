@@ -292,18 +292,7 @@ void __cpuidle default_idle(void)
 	raw_safe_halt();
 }
 
-void __noreturn stop_this_cpu(void *dummy)
-{
-	local_irq_disable();
-
-	set_cpu_online(smp_processor_id(), false);
-	/* disable_local_APIC removed - empty stub */
-	if (cpuid_eax(0x8000001f) & BIT(0))
-		native_wbinvd();
-	for (;;) {
-		native_halt();
-	}
-}
+/* stop_this_cpu removed - never called (~10 LOC) */
 
 /* Simplified: just use default_idle for minimal kernel */
 void select_idle_routine(const struct cpuinfo_x86 *c)

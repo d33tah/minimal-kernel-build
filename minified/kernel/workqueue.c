@@ -36,19 +36,7 @@ bool cancel_delayed_work(struct delayed_work *dwork)
 				  work_data_bits(&dwork->work));
 }
 
-__printf(1, 4) struct workqueue_struct *alloc_workqueue(const char *fmt,
-							unsigned int flags,
-							int max_active, ...)
-{
-	struct workqueue_struct *wq;
-
-	wq = kzalloc(sizeof(*wq), GFP_KERNEL);
-	if (!wq)
-		return NULL;
-
-	wq->name = fmt;
-	return wq;
-}
+/* alloc_workqueue removed - never called (~12 LOC) */
 
 static struct workqueue_struct system_wq_storage = { .name = "events" };
 static struct workqueue_struct system_unbound_wq_storage = {

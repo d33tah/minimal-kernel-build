@@ -21,7 +21,6 @@
 #include <linux/static_call_types.h>
 
 
-#include <linux/percpu.h>
 /* --- 2025-12-07 20:50 --- Inlined asm/module.h */
 #define Elf_Shdr	Elf32_Shdr
 #define Elf_Phdr	Elf32_Phdr

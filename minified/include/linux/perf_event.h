@@ -7,8 +7,7 @@
 /* hw_breakpoint.h inlined */
 #define	__ARCH_HW_BREAKPOINT_H
 #include <linux/kdebug.h>
-#include <linux/percpu.h>
-/* linux/list.h removed - no list structures used */
+/* linux/list.h, linux/percpu.h removed - no percpu usage */
 
 /* perf_sample_data, perf_overflow_handler_t removed - never used */
 

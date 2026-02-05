@@ -4,8 +4,7 @@
 
 #include <linux/kernfs.h>
 #include <linux/compiler.h>
-/* linux/errno.h, linux/list.h removed - unused */
-#include <linux/lockdep.h>
+/* linux/errno.h, linux/list.h, linux/lockdep.h removed - unused */
 /* kobject_ns.h removed - never used */
 #include <linux/stat.h>
 #include <linux/atomic.h>

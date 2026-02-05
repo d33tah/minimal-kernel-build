@@ -2,8 +2,7 @@
 #define _LINUX_RADIX_TREE_H
 
 #include <linux/gfp.h>
-/* linux/list.h, linux/spinlock.h removed - unused */
-#include <linux/lockdep.h>
+/* linux/list.h, linux/spinlock.h, linux/lockdep.h removed - unused */
 #include <linux/math.h>
 #include <linux/percpu.h>
 #include <linux/rcupdate.h>

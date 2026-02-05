@@ -1,5 +1,5 @@
 #include <linux/init.h>
-#include <linux/mount.h>
+/* linux/mount.h removed - no mount types used */
 #include <linux/namei.h>
 #include <linux/fs.h>
 #include <linux/fs_struct.h>

@@ -11,7 +11,7 @@
 #include <linux/smp.h>
 #include <linux/stddef.h>
 /* linux/slab.h removed - no slab functions */
-#include <linux/vmalloc.h>
+/* linux/vmalloc.h removed - no vmalloc functions */
 #include <asm/user.h> /* linux/user.h redirect */
 /* linux/interrupt.h, linux/reboot.h, linux/export.h removed - unused */
 #include <linux/ptrace.h>

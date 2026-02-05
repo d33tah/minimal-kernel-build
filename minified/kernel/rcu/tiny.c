@@ -6,8 +6,7 @@
 #include <linux/mutex.h>
 #include <linux/sched.h>
 #include <linux/init.h>
-#include <linux/time.h>
-/* linux/cpu.h removed - no cpu features used */
+/* linux/time.h, linux/cpu.h removed - not used */
 
 /* linux/slab.h removed - no slab functions */
 #include <linux/mm.h>

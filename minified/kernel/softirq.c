@@ -9,8 +9,7 @@
 #include <linux/rcupdate.h>
 #include <linux/smp.h>
 #include <linux/irq.h>
-#include <linux/wait_bit.h>
-
+/* linux/wait_bit.h removed - not used */
 void do_softirq_own_stack(void);
 
 #ifndef __ARCH_IRQ_STAT

@@ -1,9 +1,8 @@
-/* sched/coredump.h, security.h, uidgid.h removed - unused */
+/* sched/coredump.h, security.h, uidgid.h, linux/binfmts.h removed - unused */
 #include <linux/cred.h>
 #include <linux/slab.h>
 #include <linux/sched.h>
 #include <linux/init_task.h>
-#include <linux/binfmts.h>
 
 /* kdebug macro removed - was always no-op (if (0)) */
 

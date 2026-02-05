@@ -32,7 +32,7 @@
 
 /* linux/tty.h and linux/interrupt.h already included above */
 #include <linux/vt_kern.h>
-#include <linux/selection.h>
+/* linux/selection.h removed - no selection functions used */
 
 #include "tty.h"
 

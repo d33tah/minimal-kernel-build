@@ -5,7 +5,7 @@
 #include <linux/ioport.h>
 /* linux/slab.h removed - no slab functions */
 #include <linux/spinlock.h>
-#include <linux/fs.h>
+/* linux/fs.h removed - no fs types used */
 #include <linux/fs_context.h>
 /* proc_fs.h removed - empty header */
 #include <linux/sched.h>

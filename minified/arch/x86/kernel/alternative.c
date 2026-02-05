@@ -5,9 +5,8 @@
 /* linux/mutex.h removed - no mutex functions */
 #include <linux/list.h>
 #include <linux/stringify.h>
-#include <linux/highmem.h>
+/* linux/highmem.h, linux/vmalloc.h removed - unused */
 #include <linux/mm.h>
-#include <linux/vmalloc.h>
 #include <linux/stop_machine.h>
 /* linux/slab.h removed - no slab functions */
 #include <linux/mmu_context.h>

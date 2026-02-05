@@ -16,7 +16,7 @@
 #include <linux/uaccess.h>
 #include <linux/module.h>
 #include <linux/ratelimit.h>
-#include <linux/vmalloc.h>
+/* linux/vmalloc.h removed - no vmalloc functions */
 #include "tty.h"
 
 struct n_tty_data {

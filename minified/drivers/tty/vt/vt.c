@@ -10,7 +10,7 @@
 #include <linux/errno.h>
 #include <linux/kd.h>
 #include <linux/slab.h>
-#include <linux/vmalloc.h>
+/* linux/vmalloc.h removed - no vmalloc functions */
 #include <linux/major.h>
 #include <linux/mm.h>
 #include <linux/console.h>

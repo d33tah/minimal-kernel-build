@@ -2,7 +2,6 @@
 #define _LINUX_BACKING_DEV_H
 /* linux/kernel.h removed - no kernel.h macros used */
 #include <linux/fs.h>
-#include <linux/sched.h>
 #include <linux/device.h>
 #include <linux/writeback.h>
 #include <linux/backing-dev-defs.h>

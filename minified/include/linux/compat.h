@@ -11,7 +11,6 @@
 #include <linux/uaccess.h>
 #include <asm/unistd.h>
 /* asm/compat.h inlined - just provides includes */
-#include <linux/sched.h>
 #include <linux/sched/task_stack.h>
 #include <asm/processor.h>
 #include <asm/unistd.h>

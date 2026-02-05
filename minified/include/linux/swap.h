@@ -7,7 +7,6 @@
 #include <linux/mmzone.h>
 /* linux/list.h removed - no list structures used */
 #include <linux/memcontrol.h>
-#include <linux/sched.h>
 #include <linux/fs.h>
 #include <linux/pagemap.h>
 #include <linux/atomic.h>

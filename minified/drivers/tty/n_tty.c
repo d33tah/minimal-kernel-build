@@ -15,7 +15,7 @@
 #include <linux/file.h>
 #include <linux/uaccess.h>
 #include <linux/module.h>
-#include <linux/ratelimit.h>
+/* linux/ratelimit.h removed - no ratelimit macros used */
 /* linux/vmalloc.h removed - no vmalloc functions */
 #include "tty.h"
 

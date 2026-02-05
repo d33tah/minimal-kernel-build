@@ -15,7 +15,7 @@
 /* fdtable.h removed - not used */
 #include <linux/console.h>
 /* linux/ctype.h removed - no ctype functions used */
-#include <linux/kd.h>
+/* linux/kd.h removed - no kd definitions used */
 #include <linux/mm.h>
 #include <linux/slab.h>
 #include <linux/poll.h>

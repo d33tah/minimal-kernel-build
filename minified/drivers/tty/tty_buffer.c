@@ -10,7 +10,7 @@
 #include <linux/wait.h>
 #include <linux/bitops.h>
 /* linux/module.h removed - no module features used */
-#include <linux/ratelimit.h>
+/* linux/ratelimit.h removed - no ratelimit macros used */
 #include "tty.h"
 
 /* TTYB_DEFAULT_MEM_LIMIT removed - mem_limit field removed */

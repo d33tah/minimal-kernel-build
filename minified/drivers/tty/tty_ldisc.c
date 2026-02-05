@@ -13,7 +13,7 @@
 #include <linux/wait.h>
 #include <linux/bitops.h>
 #include <linux/uaccess.h>
-#include <linux/ratelimit.h>
+/* linux/ratelimit.h removed - no ratelimit macros used */
 #include "tty.h"
 
 /* tty_ldisc_debug removed - was empty macro */

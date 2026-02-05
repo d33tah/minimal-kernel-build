@@ -16,9 +16,7 @@
 /* userfaultfd_k.h, linux/elf.h removed - not used */
 #include <linux/personality.h>
 /* Removed: linux/random.h - randomization disabled */
-
-#include <linux/compat.h>
-
+/* linux/compat.h removed - no compat functions used */
 #include <linux/uaccess.h>
 
 #include "internal.h"

@@ -13,7 +13,7 @@
 /* proc_fs.h removed - empty header */
 #include <linux/proc_ns.h>
 #include <linux/file.h>
-#include <linux/syscalls.h>
+/* linux/syscalls.h removed - no syscall definitions used */
 #include <linux/cgroup.h>
 /* linux/perf_event.h removed - unused */
 

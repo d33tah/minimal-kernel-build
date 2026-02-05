@@ -10,8 +10,7 @@
 /* linux/module.h removed - no module features used */
 /* moduleparam.h, delay.h, memblock.h, ratelimit.h, kmsg_dump.h removed - unused */
 #include <linux/smp.h>
-#include <linux/syscalls.h>
-
+/* linux/syscalls.h removed - no syscall definitions used */
 /* linux/cpu.h removed - no cpu features used */
 /* rculist.h, poll.h, irq_work.h, ctype.h, uio.h removed - unused */
 /* sched/clock.h, sched/debug.h, sched/task_stack.h, uaccess.h, asm/sections.h removed - unused */

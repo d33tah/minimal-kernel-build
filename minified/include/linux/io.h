@@ -12,8 +12,7 @@ struct device;
 struct resource;
 
 
-int ioremap_page_range(unsigned long addr, unsigned long end,
-		       phys_addr_t phys_addr, pgprot_t prot);
+/* ioremap_page_range removed - never called */
 
 
 /* IOMEM_ERR_PTR, arch_has_dev_port, MEMREMAP_*, memremap, memunmap removed - unused */

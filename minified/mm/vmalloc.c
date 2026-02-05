@@ -24,117 +24,7 @@
 #include "internal.h"
 #include "pgalloc-track.h"
 
-static const unsigned int ioremap_max_page_shift = PAGE_SHIFT;
-/* vmap_allow_huge removed - was always false, huge vmap code removed */
-
-/* is_vmalloc_addr removed - never called */
-
-/* Removed: struct vfree_deferred, vfree_deferred, free_work
- * - Dead code since vfree is a no-op (~17 lines) */
-
-/* Removed: vmap_try_huge_pmd - stub always returned 0 */
-
-static int vmap_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
-			  phys_addr_t phys_addr, pgprot_t prot,
-			  unsigned int max_page_shift, pgtbl_mod_mask *mask)
-{
-	pmd_t *pmd;
-	unsigned long next;
-
-	pmd = pmd_alloc_track(&init_mm, pud, addr, mask);
-	if (!pmd)
-		return -ENOMEM;
-	do {
-		next = pmd_addr_end(addr, end);
-		/* Inlined vmap_pte_range */
-		{
-			pte_t *pte;
-			u64 pfn;
-			unsigned long size = PAGE_SIZE;
-			unsigned long pte_addr = addr;
-
-			pfn = phys_addr >> PAGE_SHIFT;
-			pte = pte_alloc_kernel_track(pmd, pte_addr, mask);
-			if (!pte)
-				return -ENOMEM;
-			do {
-				BUG_ON(!pte_none(*pte));
-				set_pte_at(&init_mm, pte_addr, pte,
-					   pfn_pte(pfn, prot));
-				pfn++;
-			} while (pte += PFN_DOWN(size), pte_addr += size,
-				 pte_addr != next);
-			*mask |= PGTBL_PTE_MODIFIED;
-		}
-	} while (pmd++, phys_addr += (next - addr), addr = next, addr != end);
-	return 0;
-}
-
-/* Removed: vmap_try_huge_pud - stub always returned 0 */
-
-/* vmap_pud_range inlined into vmap_p4d_range */
-
-static int vmap_p4d_range(pgd_t *pgd, unsigned long addr, unsigned long end,
-			  phys_addr_t phys_addr, pgprot_t prot,
-			  unsigned int max_page_shift, pgtbl_mod_mask *mask)
-{
-	p4d_t *p4d;
-	unsigned long next;
-
-	p4d = p4d_alloc_track(&init_mm, pgd, addr, mask);
-	if (!p4d)
-		return -ENOMEM;
-	do {
-		next = p4d_addr_end(addr, end);
-		/* Inlined vmap_pud_range */
-		{
-			pud_t *pud;
-			unsigned long pud_next;
-			unsigned long pud_addr = addr;
-			phys_addr_t pud_phys = phys_addr;
-
-			pud = pud_alloc_track(&init_mm, p4d, pud_addr, mask);
-			if (!pud)
-				return -ENOMEM;
-			do {
-				pud_next = pud_addr_end(pud_addr, next);
-				if (vmap_pmd_range(pud, pud_addr, pud_next,
-						   pud_phys, prot,
-						   max_page_shift, mask))
-					return -ENOMEM;
-			} while (pud++, pud_phys += (pud_next - pud_addr),
-				 pud_addr = pud_next, pud_addr != next);
-		}
-	} while (p4d++, phys_addr += (next - addr), addr = next, addr != end);
-	return 0;
-}
-
-int ioremap_page_range(unsigned long addr, unsigned long end,
-		       phys_addr_t phys_addr, pgprot_t prot)
-{
-	pgd_t *pgd;
-	unsigned long start = addr;
-	unsigned long next;
-	int err;
-	pgtbl_mod_mask mask = 0;
-
-	BUG_ON(addr >= end);
-
-	prot = pgprot_nx(prot);
-	pgd = pgd_offset_k(addr);
-	do {
-		next = pgd_addr_end(addr, end);
-		err = vmap_p4d_range(pgd, addr, next, phys_addr, prot,
-				     ioremap_max_page_shift, &mask);
-		if (err)
-			break;
-	} while (pgd++, phys_addr += (next - addr), addr = next, addr != end);
-
-	if (mask & ARCH_PAGE_TABLE_SYNC_MASK)
-		arch_sync_kernel_mappings(start, end);
-	/* flush_cache_vmap - empty stub on x86 */
-	return err;
-}
+/* ioremap_page_range, vmap_pmd_range, vmap_p4d_range removed - never called */
 
 static void vunmap_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
 			     pgtbl_mod_mask *mask)
@@ -815,26 +705,7 @@ __get_vm_area_node(unsigned long size, unsigned long align, unsigned long shift,
 	return area;
 }
 
-struct vm_struct *get_vm_area_caller(unsigned long size, unsigned long flags,
-				     const void *caller)
-{
-	return __get_vm_area_node(size, 1, PAGE_SHIFT, flags, VMALLOC_START,
-				  VMALLOC_END, NUMA_NO_NODE, GFP_KERNEL,
-				  caller);
-}
-
-struct vm_struct *find_vm_area(const void *addr)
-{
-	struct vmap_area *va;
-
-	spin_lock(&vmap_area_lock);
-	va = __find_vmap_area((unsigned long)addr);
-	spin_unlock(&vmap_area_lock);
-	if (!va)
-		return NULL;
-
-	return va->vm;
-}
+/* get_vm_area_caller, find_vm_area removed - never called */
 
 struct vm_struct *remove_vm_area(const void *addr)
 {

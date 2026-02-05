@@ -5,7 +5,6 @@
 #include <linux/device.h>
 #include <linux/writeback.h>
 #include <linux/backing-dev-defs.h>
-#include <linux/slab.h>
 void bdi_put(struct backing_dev_info *bdi);
 void bdi_unregister(struct backing_dev_info *bdi);
 void wb_workfn(struct work_struct *work);

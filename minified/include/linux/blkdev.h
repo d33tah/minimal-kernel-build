@@ -9,7 +9,6 @@
 /* linux/list.h, linux/sched.h, linux/workqueue.h removed - unused */
 #include <linux/gfp.h>
 #include <linux/kdev_t.h>
-#include <linux/rcupdate.h>
 
 /* struct module, kiocb, request_queue, gendisk, blk_plug removed - unused */
 

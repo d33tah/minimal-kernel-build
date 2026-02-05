@@ -4,8 +4,6 @@
 
 #include <linux/compiler.h>
 #include <linux/rbtree.h>
-#include <linux/rcupdate.h>
-
 
 struct rb_augment_callbacks {
 	void (*propagate)(struct rb_node *node, struct rb_node *stop);

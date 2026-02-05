@@ -7,7 +7,6 @@ struct rb_root_cached { struct rb_root rb_root; struct rb_node *rb_leftmost; };
 #define RB_ROOT_CACHED (struct rb_root_cached) { {NULL, }, NULL }
 #include <linux/kernel.h>
 #include <linux/stddef.h>
-#include <linux/rcupdate.h>
 #define rb_parent(r)   ((struct rb_node *)((r)->__rb_parent_color & ~3))
 #define rb_entry(ptr, type, member) container_of(ptr, type, member)
 #define RB_EMPTY_ROOT(root)  (READ_ONCE((root)->rb_node) == NULL)

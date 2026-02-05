@@ -4,9 +4,7 @@
 
 #include <linux/wait_bit.h>
 #include <linux/jiffies.h>
-
-#include <linux/hardirq.h>
-
+/* linux/hardirq.h removed - irq_enter/exit not used */
 #include <linux/sched/clock.h>
 
 /* linux/sched/signal.h already included above */

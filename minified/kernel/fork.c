@@ -18,17 +18,16 @@
 #include <linux/fdtable.h>
 #include <linux/binfmts.h>
 #include <linux/mman.h>
-#include <linux/mmu_notifier.h>
+/* mmu_notifier.h removed - mmu_notifier_* calls removed */
 #include <linux/fs.h>
 #include <linux/mm.h>
 #include <linux/mm_inline.h>
 #include <linux/vmacache.h>
 #include <linux/nsproxy.h>
-/* linux/capability.h removed - cap_* functions not used */
+/* linux/capability.h, linux/hugetlb.h removed - not used */
 #include <linux/cpu.h>
 #include <linux/cgroup.h>
 #include <linux/security.h>
-#include <linux/hugetlb.h>
 /* linux/swap.h removed - swap functions not used */
 #include <linux/syscalls.h>
 /* futex.h inlined - only FUTEX_TID_MASK used for MAX_THREADS */

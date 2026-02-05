@@ -17,7 +17,7 @@
 #include <linux/security.h>
 #include <linux/shmem_fs.h>
 #include <linux/rmap.h>
-#include <linux/mmu_notifier.h>
+/* linux/mmu_notifier.h removed - mmu_notifier_release stubbed out */
 #include <linux/mmdebug.h>
 #include <linux/rbtree_augmented.h>
 /* linux/printk.h removed - no printk usage */

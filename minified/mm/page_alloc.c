@@ -93,11 +93,7 @@ __get_pfnblock_flags_mask(const struct page *page, unsigned long pfn,
 	return (word >> bitidx) & mask;
 }
 
-unsigned long get_pfnblock_flags_mask(const struct page *page,
-				      unsigned long pfn, unsigned long mask)
-{
-	return __get_pfnblock_flags_mask(page, pfn, mask);
-}
+/* get_pfnblock_flags_mask removed - never called externally */
 
 static void set_pfnblock_flags_mask(struct page *page, unsigned long flags,
 				    unsigned long pfn, unsigned long mask)
@@ -402,14 +398,7 @@ retry:
 
 /* free_unref_page, free_unref_page_list moved to internal.h as static inline */
 
-void split_page(struct page *page, unsigned int order)
-{
-	int i;
-	for (i = 1; i < (1 << order); i++)
-		set_page_refcounted(page + i);
-}
-
-/* Removed: zone_statistics - NUMA stats not needed */
+/* split_page removed - only caller was alloc_pages_exact (also removed) */
 
 static inline struct page *
 __rmqueue_pcplist(struct zone *zone, unsigned int order, int migratetype,
@@ -711,9 +700,6 @@ void *alloc_pages_exact(size_t size, gfp_t gfp_mask)
 		gfp_mask &= ~(__GFP_COMP | __GFP_HIGHMEM);
 
 	addr = __get_free_pages(gfp_mask, order);
-	/* Inlined make_alloc_exact - free_page loop removed (bump allocator) */
-	if (addr)
-		split_page(virt_to_page((void *)addr), order);
 	return (void *)addr;
 }
 

@@ -356,12 +356,4 @@ void device_release_driver(struct device *dev)
 
 /* driver_detach removed - only called from bus_remove_driver which is never called (~22 LOC) */
 
-/* Merged from kernel/async.c - stub async scheduler runs synchronously */
-struct async_domain async_dfl_domain = { .pending = LIST_HEAD_INIT(
-						 async_dfl_domain.pending) };
-async_cookie_t async_schedule_node_domain(async_func_t func, void *data,
-					  int node, struct async_domain *domain)
-{
-	func(data, 0);
-	return 0;
-}
+/* async_schedule_node_domain, async_dfl_domain removed - never called */

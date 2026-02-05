@@ -2,7 +2,7 @@
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-#include <linux/device.h>
+/* linux/device.h removed - no device types used */
 #include <linux/clocksource.h>
 #include <linux/init.h>
 #include <linux/module.h>

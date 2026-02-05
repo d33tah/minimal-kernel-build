@@ -3,7 +3,7 @@
 #include <linux/hrtimer.h>
 #include <linux/module.h>
 #include <linux/smp.h>
-#include <linux/device.h>
+/* linux/device.h removed - no device types used */
 
 #include "tick-internal.h"
 

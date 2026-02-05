@@ -14,7 +14,7 @@
 #include <linux/pfn.h>
 #include <linux/atomic.h>
 #include <linux/rbtree_augmented.h>
-#include <linux/overflow.h>
+/* linux/overflow.h removed - no overflow macros used */
 #include <linux/pgtable.h>
 #include <linux/uaccess.h>
 /* hugetlb.h removed - unused */

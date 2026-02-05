@@ -23,8 +23,7 @@
 #include <linux/security.h>
 #include <linux/syscalls.h>
 #include <linux/fs_struct.h>
-#include <linux/vmalloc.h>
-/* syscall_user_dispatch.h removed - macro inlined */
+/* linux/vmalloc.h, syscall_user_dispatch.h removed - not used */
 #include <linux/ptrace.h>
 
 #include <linux/uaccess.h>

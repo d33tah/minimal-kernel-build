@@ -2,9 +2,7 @@
 #include <linux/initrd.h>
 #include <linux/ioport.h>
 #include <linux/memblock.h>
-#include <linux/sched/task.h>
-
-/* set_memory.h removed - header is empty */
+/* linux/sched/task.h, set_memory.h removed - not used */
 #include <asm/e820/api.h>
 #include <asm/page.h>
 #include <asm/page_types.h>

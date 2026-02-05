@@ -1,6 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 #include <linux/linkage.h>
 #include <asm/unistd_32.h>
+/* Hardcoded syscall numbers - syscall table reduced */
+#ifndef __NR_sigreturn
+#define __NR_sigreturn 119
+#endif
+#ifndef __NR_rt_sigreturn
+#define __NR_rt_sigreturn 173
+#endif
 #include <asm/asm-offsets.h>
 
 #ifndef SYSCALL_ENTER_KERNEL

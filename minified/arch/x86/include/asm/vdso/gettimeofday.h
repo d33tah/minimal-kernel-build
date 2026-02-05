@@ -9,6 +9,23 @@
 #include <asm/vgtod.h>
 #include <asm/vvar.h>
 #include <asm/unistd.h>
+
+/* Hardcoded syscall numbers for vDSO fallbacks - syscall table reduced */
+#ifndef __NR_gettimeofday
+#define __NR_gettimeofday 78
+#endif
+#ifndef __NR_clock_gettime
+#define __NR_clock_gettime 265
+#endif
+#ifndef __NR_clock_getres
+#define __NR_clock_getres 266
+#endif
+#ifndef __NR_clock_gettime64
+#define __NR_clock_gettime64 403
+#endif
+#ifndef __NR_clock_getres_time64
+#define __NR_clock_getres_time64 406
+#endif
 #include <asm/msr.h>
 /* pvclock.h removed - header is empty */
 #define __vdso_data (VVAR(_vdso_data))

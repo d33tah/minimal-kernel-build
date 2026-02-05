@@ -3,7 +3,6 @@
 
 
 #include <linux/rbtree.h>
-#include <linux/init.h>
 #include <linux/list.h>
 #include <linux/percpu.h>
 #include <linux/seqlock.h>

@@ -2,7 +2,6 @@
 #define LINUX_PCI_H
 /* mod_devicetable.h removed - was essentially empty */
 #include <linux/types.h>
-#include <linux/init.h>
 #include <linux/ioport.h>
 /* linux/list.h removed - no list structures used */
 #include <linux/compiler.h>

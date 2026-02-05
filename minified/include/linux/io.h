@@ -3,7 +3,6 @@
 #define _LINUX_IO_H
 
 #include <linux/types.h>
-#include <linux/init.h>
 #include <linux/bug.h>
 #include <linux/err.h>
 #include <asm/io.h>

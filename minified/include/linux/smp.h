@@ -6,7 +6,6 @@
 #include <linux/types.h>
 #include <linux/list.h>
 #include <linux/cpumask.h>
-#include <linux/init.h>
 /* smp_types.h removed - empty file after irq_work removal */
 /* smp_call_func_t, smp_cond_func_t typedefs removed - never used */
 /* on_each_cpu_cond_mask, on_each_cpu_mask, on_each_cpu removed - no callers after TLB simplification */

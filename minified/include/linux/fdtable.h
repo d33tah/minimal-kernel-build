@@ -8,7 +8,6 @@
 #include <linux/rcupdate.h>
 #include <linux/nospec.h>
 #include <linux/types.h>
-#include <linux/init.h>
 #include <linux/fs.h>
 
 #include <linux/atomic.h>

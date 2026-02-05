@@ -763,186 +763,20 @@ struct tty_struct *alloc_tty_struct(struct tty_driver *driver, int idx)
 
 struct class *tty_class;
 
-static int tty_cdev_add(struct tty_driver *driver, dev_t dev,
-			unsigned int index, unsigned int count)
-{
-	int err;
+/* tty_cdev_add removed - only called from tty_register_driver/tty_register_device_attr (~14 LOC) */
 
-	driver->cdevs[index] = cdev_alloc();
-	if (!driver->cdevs[index])
-		return -ENOMEM;
-	driver->cdevs[index]->ops = &tty_fops;
-	driver->cdevs[index]->owner = driver->owner;
-	err = cdev_add(driver->cdevs[index], dev, count);
-	if (err)
-		kobject_put(&driver->cdevs[index]->kobj);
-	return err;
-}
-
-struct device *tty_register_device(struct tty_driver *driver, unsigned index,
-				   struct device *device)
-{
-	return tty_register_device_attr(driver, index, device, NULL);
-}
-
-static void tty_device_create_release(struct device *dev)
-{
-	kfree(dev);
-}
-
-struct device *tty_register_device_attr(struct tty_driver *driver,
-					unsigned index, struct device *device,
-					void *drvdata)
-{
-	char name[64];
-	dev_t devt = MKDEV(driver->major, driver->minor_start) + index;
-	struct ktermios *tp;
-	struct device *dev;
-	int retval;
-
-	if (index >= driver->num) {
-		pr_err("%s: Attempt to register invalid tty line number (%d)\n",
-		       driver->name, index);
-		return ERR_PTR(-EINVAL);
-	}
-
-	if (driver->type == TTY_DRIVER_TYPE_PTY) {
-		/* pty_line_name inlined */
-		static const char ptychar[] = "pqrstuvwxyzabcde";
-		int i = index + driver->name_base;
-		sprintf(name, "%s%c%x",
-			driver->subtype == PTY_TYPE_SLAVE ? "tty" :
-							    driver->name,
-			ptychar[i >> 4 & 0xf], i & 0xf);
-	} else
-		tty_line_name(driver, index, name);
-
-	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
-	if (!dev)
-		return ERR_PTR(-ENOMEM);
-
-	dev->devt = devt;
-	dev->class = tty_class;
-	dev->parent = device;
-	dev->release = tty_device_create_release;
-	dev_set_name(dev, "%s", name);
-	/* dev->groups removed - field no longer exists */
-	dev_set_drvdata(dev, drvdata);
-	retval = device_register(dev);
-	if (retval)
-		goto err_put;
-
-	if (!(driver->flags & TTY_DRIVER_DYNAMIC_ALLOC)) {
-		tp = driver->termios[index];
-		if (tp) {
-			driver->termios[index] = NULL;
-			kfree(tp);
-		}
-
-		retval = tty_cdev_add(driver, devt, index, 1);
-		if (retval)
-			goto err_del;
-	}
-
-	kobject_uevent(&dev->kobj, KOBJ_ADD);
-
-	return dev;
-
-err_del:
-	device_del(dev);
-err_put:
-	put_device(dev);
-
-	return ERR_PTR(retval);
-}
+/* tty_register_device, tty_device_create_release, tty_register_device_attr
+   removed - only called from tty_register_driver which was removed (~72 LOC) */
 
 /* Only used internally, make it static */
-static void tty_unregister_device(struct tty_driver *driver, unsigned index)
-{
-	device_destroy(tty_class,
-		       MKDEV(driver->major, driver->minor_start) + index);
-	if (!(driver->flags & TTY_DRIVER_DYNAMIC_ALLOC)) {
-		cdev_del(driver->cdevs[index]);
-		driver->cdevs[index] = NULL;
-	}
-}
+/* tty_unregister_device removed - only called from tty_register_driver and destruct_tty_driver (~8 LOC) */
 
-struct tty_driver *__tty_alloc_driver(unsigned int lines, struct module *owner,
-				      unsigned long flags)
-{
-	struct tty_driver *driver;
-	unsigned int cdevs = 1;
-	int err;
-
-	if (!lines || (flags & TTY_DRIVER_UNNUMBERED_NODE && lines > 1))
-		return ERR_PTR(-EINVAL);
-
-	driver = kzalloc(sizeof(*driver), GFP_KERNEL);
-	if (!driver)
-		return ERR_PTR(-ENOMEM);
-
-	kref_init(&driver->kref);
-	/* driver->magic assignment removed - field was write-only */
-	driver->num = lines;
-	driver->owner = owner;
-	driver->flags = flags;
-
-	if (!(flags & TTY_DRIVER_DEVPTS_MEM)) {
-		driver->ttys =
-			kcalloc(lines, sizeof(*driver->ttys), GFP_KERNEL);
-		driver->termios =
-			kcalloc(lines, sizeof(*driver->termios), GFP_KERNEL);
-		if (!driver->ttys || !driver->termios) {
-			err = -ENOMEM;
-			goto err_free_all;
-		}
-	}
-
-	if (!(flags & TTY_DRIVER_DYNAMIC_ALLOC)) {
-		driver->ports =
-			kcalloc(lines, sizeof(*driver->ports), GFP_KERNEL);
-		if (!driver->ports) {
-			err = -ENOMEM;
-			goto err_free_all;
-		}
-		cdevs = lines;
-	}
-
-	driver->cdevs = kcalloc(cdevs, sizeof(*driver->cdevs), GFP_KERNEL);
-	if (!driver->cdevs) {
-		err = -ENOMEM;
-		goto err_free_all;
-	}
-
-	return driver;
-err_free_all:
-	kfree(driver->ports);
-	kfree(driver->ttys);
-	kfree(driver->termios);
-	kfree(driver->cdevs);
-	kfree(driver);
-	return ERR_PTR(err);
-}
+/* __tty_alloc_driver removed - only called from vty_init which was removed (~55 LOC) */
 
 static void destruct_tty_driver(struct kref *kref)
 {
 	struct tty_driver *driver = container_of(kref, struct tty_driver, kref);
-	int i;
-	struct ktermios *tp;
 
-	if (driver->flags & TTY_DRIVER_INSTALLED) {
-		for (i = 0; i < driver->num; i++) {
-			tp = driver->termios[i];
-			if (tp) {
-				driver->termios[i] = NULL;
-				kfree(tp);
-			}
-			if (!(driver->flags & TTY_DRIVER_DYNAMIC_DEV))
-				tty_unregister_device(driver, i);
-		}
-		if (driver->flags & TTY_DRIVER_DYNAMIC_ALLOC)
-			cdev_del(driver->cdevs[0]);
-	}
 	kfree(driver->cdevs);
 	kfree(driver->ports);
 	kfree(driver->termios);
@@ -955,85 +789,11 @@ void tty_driver_kref_put(struct tty_driver *driver)
 	kref_put(&driver->kref, destruct_tty_driver);
 }
 
-int tty_register_driver(struct tty_driver *driver)
-{
-	int error;
-	int i;
-	dev_t dev;
-	struct device *d;
-
-	if (!driver->major) {
-		error = alloc_chrdev_region(&dev, driver->minor_start,
-					    driver->num, driver->name);
-		if (!error) {
-			driver->major = MAJOR(dev);
-			driver->minor_start = MINOR(dev);
-		}
-	} else {
-		dev = MKDEV(driver->major, driver->minor_start);
-		error = register_chrdev_region(dev, driver->num, driver->name);
-	}
-	if (error < 0)
-		goto err;
-
-	if (driver->flags & TTY_DRIVER_DYNAMIC_ALLOC) {
-		error = tty_cdev_add(driver, dev, 0, driver->num);
-		if (error)
-			goto err_unreg_char;
-	}
-
-	mutex_lock(&tty_mutex);
-	list_add(&driver->tty_drivers, &tty_drivers);
-	mutex_unlock(&tty_mutex);
-
-	if (!(driver->flags & TTY_DRIVER_DYNAMIC_DEV)) {
-		for (i = 0; i < driver->num; i++) {
-			d = tty_register_device(driver, i, NULL);
-			if (IS_ERR(d)) {
-				error = PTR_ERR(d);
-				goto err_unreg_devs;
-			}
-		}
-	}
-	driver->flags |= TTY_DRIVER_INSTALLED;
-	return 0;
-
-err_unreg_devs:
-	for (i--; i >= 0; i--)
-		tty_unregister_device(driver, i);
-
-	mutex_lock(&tty_mutex);
-	list_del(&driver->tty_drivers);
-	mutex_unlock(&tty_mutex);
-
-err_unreg_char:
-	unregister_chrdev_region(dev, driver->num);
-err:
-	return error;
-}
+/* tty_register_driver removed - only called from vty_init which was removed (~55 LOC) */
 
 /* tty_class_init removed - class_create hangs with low memory */
 
-static struct cdev tty_cdev, console_cdev;
-/* console_sysfs_notify removed - empty stub, call removed from printk.c */
-int __init tty_init(void)
-{
-	cdev_init(&tty_cdev, &tty_fops);
-	if (cdev_add(&tty_cdev, MKDEV(TTYAUX_MAJOR, 0), 1) ||
-	    register_chrdev_region(MKDEV(TTYAUX_MAJOR, 0), 1, "/dev/tty") < 0)
-		panic("Couldn't register /dev/tty driver\n");
-	device_create(tty_class, NULL, MKDEV(TTYAUX_MAJOR, 0), NULL, "tty");
-
-	cdev_init(&console_cdev, &console_fops);
-	if (cdev_add(&console_cdev, MKDEV(TTYAUX_MAJOR, 1), 1) ||
-	    register_chrdev_region(MKDEV(TTYAUX_MAJOR, 1), 1, "/dev/console") <
-		    0)
-		panic("Couldn't register /dev/console driver\n");
-	device_create(tty_class, NULL, MKDEV(TTYAUX_MAJOR, 1), NULL, "console");
-
-	vty_init(&console_fops);
-	return 0;
-}
+/* tty_init removed - never called (~18 LOC) */
 
 /* Merged from tty_mutex.c */
 void tty_lock(struct tty_struct *tty)

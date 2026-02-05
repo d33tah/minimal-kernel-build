@@ -859,39 +859,7 @@ static const struct tty_operations con_ops = {
 	.cleanup = con_cleanup,
 };
 
-static struct cdev vc0_cdev;
-
-/* show_tty_active, dev_attr_active, vt_dev_attrs removed - groups not stored anymore */
-
-int __init vty_init(const struct file_operations *console_fops)
-{
-	cdev_init(&vc0_cdev, console_fops);
-	if (cdev_add(&vc0_cdev, MKDEV(TTY_MAJOR, 0), 1) ||
-	    register_chrdev_region(MKDEV(TTY_MAJOR, 0), 1, "/dev/vc/0") < 0)
-		panic("Couldn't register /dev/tty0 driver\n");
-	/* tty0dev assignment removed - variable never read */
-	(void)device_create(tty_class, NULL, MKDEV(TTY_MAJOR, 0), NULL, "tty0");
-
-	console_driver = tty_alloc_driver(MAX_NR_CONSOLES,
-					  TTY_DRIVER_REAL_RAW |
-						  TTY_DRIVER_RESET_TERMIOS);
-	if (IS_ERR(console_driver))
-		panic("Couldn't allocate console driver\n");
-
-	console_driver->name = "tty";
-	console_driver->name_base = 1;
-	console_driver->major = TTY_MAJOR;
-	console_driver->minor_start = 1;
-	console_driver->type = TTY_DRIVER_TYPE_CONSOLE;
-	console_driver->init_termios = tty_std_termios;
-	if (default_utf8)
-		console_driver->init_termios.c_iflag |= IUTF8;
-	console_driver->ops = &con_ops;
-	if (tty_register_driver(console_driver))
-		panic("Couldn't register console driver\n");
-	/* kbd_init removed - empty stub */
-	return 0;
-}
+/* vty_init removed - only called from tty_init which was removed (~28 LOC) */
 
 #ifndef VT_SINGLE_DRIVER
 

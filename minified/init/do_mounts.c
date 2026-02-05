@@ -1,5 +1,5 @@
 #include <linux/sched.h>
-#include <linux/ctype.h>
+/* linux/ctype.h removed - no ctype functions used */
 #include <linux/tty.h>
 #include <linux/swap.h>
 #include <linux/init.h>
@@ -14,7 +14,7 @@
 #include <linux/init.h>
 #include <linux/fs.h>
 #include <linux/initrd.h>
-#include <linux/async.h>
+/* linux/async.h removed - no async functions used */
 #include <linux/fs_struct.h>
 #include <linux/slab.h>
 #include <linux/ramfs.h>

@@ -7,9 +7,7 @@
 #include <linux/stringify.h>
 /* linux/highmem.h, linux/vmalloc.h removed - unused */
 #include <linux/mm.h>
-#include <linux/stop_machine.h>
-/* linux/slab.h removed - no slab functions */
-#include <linux/mmu_context.h>
+/* linux/stop_machine.h, linux/slab.h, linux/mmu_context.h removed - unused */
 #include <asm/sync_core.h>
 #include <asm/text-patching.h>
 #include <asm/alternative.h>

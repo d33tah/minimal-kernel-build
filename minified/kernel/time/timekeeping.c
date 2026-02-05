@@ -12,7 +12,7 @@
 #include <linux/jiffies.h>
 #include <linux/time.h>
 #include <linux/timex.h>
-#include <linux/stop_machine.h>
+/* linux/stop_machine.h removed - unused */
 
 #include <linux/compiler.h>
 

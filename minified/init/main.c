@@ -46,7 +46,7 @@ extern void sched_init(void);
 #include <linux/signal.h>
 #include <linux/idr.h>
 /* dbg_late_init, kgdb_free_init_mem, kprobe_free_init_mem removed - empty stubs */
-#include <linux/async.h>
+/* linux/async.h removed - async_synchronize_full is stubbed */
 #include <linux/shmem_fs.h>
 #include <linux/slab.h>
 #include <linux/perf_event.h>

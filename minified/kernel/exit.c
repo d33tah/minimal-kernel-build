@@ -19,7 +19,7 @@ extern int nr_threads;
 /* linux/mount.h removed - vfsmount not used */
 /* proc_fs.h removed - empty header */
 /* mempolicy.h removed - forward decl in mm.h */
-#include <linux/cgroup.h>
+/* linux/cgroup.h removed - no cgroup features used */
 #include <linux/syscalls.h>
 #include <linux/signal.h>
 #include <linux/mutex.h>
@@ -27,9 +27,9 @@ extern int nr_threads;
 #include <linux/task_work.h>
 #include <linux/fs_struct.h>
 #include <linux/init_task.h>
-#include <linux/writeback.h>
+/* linux/writeback.h removed - no writeback features used */
 #include <linux/rcuwait.h>
-#include <linux/compat.h>
+/* linux/compat.h removed - no compat features used */
 
 #include <linux/uaccess.h>
 #include <asm/unistd.h>

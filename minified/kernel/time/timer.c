@@ -6,9 +6,8 @@
 #include <linux/mm.h>
 /* linux/swap.h removed - unused */
 /* linux/kallsyms.h removed - unused */
-/* irq_work.h removed - header is now empty */
+/* irq_work.h, linux/delay.h removed - not used */
 #include <linux/jiffies.h>
-#include <linux/delay.h>
 #include <linux/printk.h>
 #include <linux/sched/debug.h>
 #include <asm/div64.h>

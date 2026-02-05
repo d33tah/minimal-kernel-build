@@ -7,7 +7,7 @@
 #include <linux/smp.h>
 #include <linux/kernel.h>
 #include <linux/errno.h>
-#include <linux/wait.h>
+/* linux/wait.h removed - wait macros not used */
 #include <asm/unistd.h>
 #include <linux/stddef.h>
 #include <linux/personality.h>

@@ -10,8 +10,7 @@
 #include <linux/kernel.h>
 /* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/ptrace.h>
-#include <linux/delay.h>
-/* linux/errno.h removed - no errno constants used */
+/* linux/delay.h, linux/errno.h removed - not used */
 #include <linux/sched.h>
 #include <linux/sched/task_stack.h>
 #include <linux/init.h>

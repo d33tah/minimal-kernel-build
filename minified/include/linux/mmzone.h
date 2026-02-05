@@ -7,7 +7,6 @@
 #include <linux/spinlock.h>
 #include <linux/list.h>
 #include <linux/wait.h>
-#include <linux/bitops.h>
 #include <linux/cache.h>
 #include <linux/threads.h>
 #include <linux/numa.h>

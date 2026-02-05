@@ -3,7 +3,7 @@
 #include <linux/hugetlb.h>
 #include <linux/mman.h>
 #include <linux/swap.h>
-#include <linux/capability.h>
+/* linux/capability.h removed - no capability functions used */
 #include <linux/fs.h>
 /* swapops.h removed - was empty */
 #include <linux/highmem.h>

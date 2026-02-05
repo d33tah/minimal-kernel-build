@@ -8,7 +8,7 @@
 #include <linux/mman.h>
 #include <linux/mm.h>
 #include <linux/hugetlb.h>
-#include <linux/swap.h>
+/* linux/swap.h removed - no swap functions used */
 #include <linux/smp.h>
 #include <linux/init.h>
 #include <linux/highmem.h>

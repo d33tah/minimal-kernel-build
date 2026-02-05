@@ -1,6 +1,6 @@
 #include <asm/early_ioremap.h>
 #include <linux/memblock.h>
-#include <linux/swap.h>
+/* linux/swap.h removed - no swap functions used */
 #include <linux/init.h>
 /* linux/pm.h removed - no pm functions used */
 #include <linux/mm.h>

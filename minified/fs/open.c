@@ -3,7 +3,7 @@
 #include <linux/fdtable.h>
 #include <linux/module.h>
 #include <linux/namei.h>
-#include <linux/capability.h>
+/* linux/capability.h removed - no capability functions used */
 #include <linux/init_task.h> /* for securebits defines */
 /* linux/security.h removed - no security functions used */
 #include <linux/mount.h>

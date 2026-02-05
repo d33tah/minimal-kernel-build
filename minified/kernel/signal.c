@@ -315,37 +315,8 @@ void __set_current_blocked(const sigset_t *newset)
 	spin_unlock_irq(&tsk->sighand->siglock);
 }
 
-/* Stub: rt_sigprocmask not needed for Hello World */
-SYSCALL_DEFINE4(rt_sigprocmask, int, how, sigset_t __user *, nset,
-		sigset_t __user *, oset, size_t, sigsetsize)
-{
-	return 0;
-}
-
-/* Stub: rt_sigpending not needed for Hello World */
-SYSCALL_DEFINE2(rt_sigpending, sigset_t __user *, uset, size_t, sigsetsize)
-{
-	return 0;
-}
-
-/* sigpending replaced with COND_SYSCALL */
-
-/* sigprocmask syscall removed - __ARCH_WANT_SYS_SIGPROCMASK no longer defined */
-
-/* Stub: rt_sigaction not needed for Hello World */
-/* CONFIG_ODD_RT_SIGACTION not set - #ifndef removed */
-SYSCALL_DEFINE4(rt_sigaction, int, sig, const struct sigaction __user *, act,
-		struct sigaction __user *, oact, size_t, sigsetsize)
-{
-	return 0;
-}
-
-/* Stub: sigaction not needed for Hello World */
-SYSCALL_DEFINE3(sigaction, int, sig, const struct old_sigaction __user *, act,
-		struct old_sigaction __user *, oact)
-{
-	return 0;
-}
+/* rt_sigprocmask, rt_sigpending, rt_sigaction, sigaction syscalls removed
+   - not in syscall table */
 
 /* signal and pause syscalls replaced with COND_SYSCALL */
 

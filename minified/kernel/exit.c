@@ -267,9 +267,6 @@ SYSCALL_DEFINE1(exit, int, error_code)
 	return 0;
 }
 
-SYSCALL_DEFINE1(exit_group, int, error_code)
-{
-	return 0;
-}
+/* exit_group syscall removed - not in syscall table */
 
 /* wait syscalls replaced with COND_SYSCALL */

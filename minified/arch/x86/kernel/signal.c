@@ -35,17 +35,7 @@
 #define FRAME_ALIGNMENT 16UL
 #define MAX_FRAME_PADDING (FRAME_ALIGNMENT - 1)
 
-/* Stub: sigreturn not needed for Hello World */
-SYSCALL_DEFINE0(sigreturn)
-{
-	return 0;
-}
-
-/* Stub: rt_sigreturn not needed for Hello World */
-SYSCALL_DEFINE0(rt_sigreturn)
-{
-	return 0;
-}
+/* sigreturn, rt_sigreturn syscalls removed - not in syscall table */
 
 #define MAX_FRAME_SIGINFO_UCTXT_SIZE sizeof(struct sigframe_ia32)
 

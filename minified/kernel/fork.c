@@ -470,11 +470,7 @@ void __cleanup_sighand(struct sighand_struct *sighand)
 
 /* copy_signal inlined into copy_process */
 
-/* Stub: set_tid_address not needed for Hello World */
-SYSCALL_DEFINE1(set_tid_address, int __user *, tidptr)
-{
-	return 1;
-}
+/* set_tid_address syscall removed - not in syscall table */
 
 /* init_task_pid_links inlined into copy_process */
 
@@ -925,11 +921,7 @@ void __init proc_caches_init(void)
 	nsproxy_cache_init();
 }
 
-SYSCALL_DEFINE1(unshare, unsigned long, unshare_flags)
-{
-	/* Stubbed: namespace unsharing not needed for minimal boot */
-	return -EINVAL;
-}
+/* unshare syscall removed - not in syscall table */
 
 int unshare_files(void)
 {

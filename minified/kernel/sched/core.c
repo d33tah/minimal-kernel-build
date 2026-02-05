@@ -791,40 +791,8 @@ void sched_set_fifo(struct task_struct *p)
 	WARN_ON_ONCE(sched_setscheduler_nocheck(p, SCHED_FIFO, &sp) != 0);
 }
 
-SYSCALL_DEFINE3(sched_setscheduler, pid_t, pid, int, policy,
-		struct sched_param __user *, param)
-{
-	/* Stub: sched_setscheduler not needed for minimal kernel */
-	return 0;
-}
-
-SYSCALL_DEFINE2(sched_setparam, pid_t, pid, struct sched_param __user *, param)
-{
-	/* Stub: sched_setparam not needed for minimal kernel */
-	return 0;
-}
-
-/* sched_setattr replaced with COND_SYSCALL */
-
-SYSCALL_DEFINE1(sched_getscheduler, pid_t, pid)
-{
-	/* Stub: sched_getscheduler not needed for minimal kernel */
-	return SCHED_NORMAL;
-}
-
-SYSCALL_DEFINE2(sched_getparam, pid_t, pid, struct sched_param __user *, param)
-{
-	/* Stub: sched_getparam not needed for Hello World */
-	return 0;
-}
-
-/* sched_getattr, sched_setaffinity, sched_getaffinity replaced with COND_SYSCALL */
-
-/* Stub: sched_yield not needed for Hello World */
-SYSCALL_DEFINE0(sched_yield)
-{
-	return 0;
-}
+/* sched_setscheduler, sched_setparam, sched_getscheduler, sched_getparam,
+   sched_yield syscalls removed - not in syscall table */
 
 int __sched __cond_resched(void)
 {
@@ -851,17 +819,7 @@ void __sched io_schedule(void)
 	current->in_iowait = old_iowait;
 }
 
-SYSCALL_DEFINE1(sched_get_priority_max, int, policy)
-{
-	/* Stub: just return 0 for minimal kernel */
-	return 0;
-}
-
-SYSCALL_DEFINE1(sched_get_priority_min, int, policy)
-{
-	/* Stub: just return 0 for minimal kernel */
-	return 0;
-}
+/* sched_get_priority_max, sched_get_priority_min syscalls removed - not in table */
 
 /* sched_rr_get_interval replaced with COND_SYSCALL */
 

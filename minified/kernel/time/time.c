@@ -28,19 +28,7 @@ SYSCALL_DEFINE1(stime, __kernel_old_time_t __user *, tptr)
 
 #endif
 
-SYSCALL_DEFINE2(gettimeofday, struct __kernel_old_timeval __user *, tv,
-		struct timezone __user *, tz)
-{
-	/* Stub: gettimeofday not needed for Hello World */
-	return 0;
-}
-
-SYSCALL_DEFINE2(settimeofday, struct __kernel_old_timeval __user *, tv,
-		struct timezone __user *, tz)
-{
-	/* Stub: setting time not needed for minimal kernel */
-	return -EPERM;
-}
+/* gettimeofday, settimeofday syscalls removed - not in syscall table */
 
 /* jiffies_to_msecs removed - never called */
 /* jiffies_to_usecs removed - never called */

@@ -9,12 +9,10 @@
 #define __irq_enter()	preempt_count_add(HARDIRQ_OFFSET)
 #define __irq_enter_raw() __irq_enter()
 
-void irq_enter(void);
+/* irq_enter removed - only irq_enter_rcu is called */
 void irq_enter_rcu(void);
 
-/* __irq_exit, __irq_exit_raw removed - never used */
-
-void irq_exit(void);
+/* __irq_exit, __irq_exit_raw, irq_exit removed - never used */
 void irq_exit_rcu(void);
 
 /* arch_nmi_enter/exit, rcu_nmi_enter/exit removed - empty stubs */

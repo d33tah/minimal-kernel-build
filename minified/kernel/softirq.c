@@ -121,10 +121,7 @@ void irq_enter_rcu(void)
 	__irq_enter_raw();
 }
 
-void irq_enter(void)
-{
-	irq_enter_rcu();
-}
+/* irq_enter removed - only irq_enter_rcu is called */
 
 static inline void __irq_exit_rcu(void)
 {
@@ -143,11 +140,7 @@ void irq_exit_rcu(void)
 	/* lockdep_hardirq_exit is empty do{}while(0) */
 }
 
-void irq_exit(void)
-{
-	__irq_exit_rcu();
-	/* rcu_irq_exit, lockdep_hardirq_exit are empty stubs */
-}
+/* irq_exit removed - only irq_exit_rcu is called */
 
 inline void raise_softirq_irqoff(unsigned int nr)
 {

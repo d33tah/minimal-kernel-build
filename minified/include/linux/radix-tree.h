@@ -6,7 +6,6 @@
 #include <linux/lockdep.h>
 #include <linux/math.h>
 #include <linux/percpu.h>
-#include <linux/preempt.h>
 #include <linux/rcupdate.h>
 #include <linux/types.h>
 #include <linux/xarray.h>

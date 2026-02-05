@@ -124,13 +124,7 @@ unsigned long find_last_bit(const unsigned long *addr, unsigned long size)
 /* __bitmap_equal removed - bitmap_equal never called */
 void __bitmap_set(unsigned long *map, unsigned int start, int len);
 void __bitmap_clear(unsigned long *map, unsigned int start, int len);
-
-unsigned long bitmap_find_next_zero_area_off(unsigned long *map,
-					     unsigned long size,
-					     unsigned long start,
-					     unsigned int nr,
-					     unsigned long align_mask,
-					     unsigned long align_offset);
+/* bitmap_find_next_zero_area_off removed - never called */
 
 /* bitmap_find_next_zero_area removed - never called */
 

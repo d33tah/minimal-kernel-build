@@ -54,26 +54,6 @@ void __bitmap_clear(unsigned long *map, unsigned int start, int len)
 	}
 }
 
-unsigned long bitmap_find_next_zero_area_off(
-	unsigned long *map, unsigned long size, unsigned long start,
-	unsigned int nr, unsigned long align_mask, unsigned long align_offset)
-{
-	unsigned long index, end, i;
-again:
-	index = find_next_zero_bit(map, size, start);
-
-	index = __ALIGN_MASK(index + align_offset, align_mask) - align_offset;
-
-	end = index + nr;
-	if (end > size)
-		return end;
-	i = find_next_bit(map, end, index);
-	if (i < end) {
-		start = i + 1;
-		goto again;
-	}
-	return index;
-}
-
+/* bitmap_find_next_zero_area_off removed - never called */
 /* bitmap_print_to_pagebuf, bitmap_parselist, bitmap_parselist_user, bitmap_parse,
    bitmap_from_arr32, bitmap_to_arr32, bitmap_from_arr64, bitmap_to_arr64 removed - never called */

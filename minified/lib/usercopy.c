@@ -1,4 +1,3 @@
-#include <linux/bitops.h>
 #include <linux/instrumented.h>
 #include <linux/uaccess.h>
 

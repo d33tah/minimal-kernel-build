@@ -1,7 +1,6 @@
 #ifndef _LINUX_RADIX_TREE_H
 #define _LINUX_RADIX_TREE_H
 
-#include <linux/bitops.h>
 #include <linux/gfp.h>
 /* linux/list.h, linux/spinlock.h removed - unused */
 #include <linux/lockdep.h>

@@ -7,9 +7,7 @@
 #include <asm/errno.h>
 #include <linux/acpi.h>
 #include <linux/sort.h>
-
-#include <linux/memory_hotplug.h>
-
+/* linux/memory_hotplug.h removed - not used */
 #include <asm/e820/api.h>
 #include <asm/setup.h>
 

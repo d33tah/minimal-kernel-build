@@ -10,7 +10,7 @@
 /* linux/swap.h removed - no swap features used */
 /* swapops.h removed - was empty */
 #include <linux/sched/signal.h>
-#include <linux/rwsem.h>
+/* linux/rwsem.h removed - not used */
 #include <linux/hugetlb.h>
 /* linux/migrate.h removed - empty header */
 #include <linux/mm_inline.h>

@@ -699,22 +699,7 @@ next:
 	return found;
 }
 
-void d_delete(struct dentry *dentry)
-{
-	struct inode *inode = dentry->d_inode;
-
-	spin_lock(&inode->i_lock);
-	spin_lock(&dentry->d_lock);
-
-	if (dentry->d_lockref.count == 1) {
-		dentry->d_flags &= ~DCACHE_CANT_MOUNT;
-		dentry_unlink_inode(dentry);
-	} else {
-		__d_drop(dentry);
-		spin_unlock(&dentry->d_lock);
-		spin_unlock(&inode->i_lock);
-	}
-}
+/* d_delete removed - never called (~16 LOC) */
 
 /* end_dir_add and start_dir_add inlined into callers */
 /* d_wait_lookup removed - inlined into single caller (~12 LOC) */

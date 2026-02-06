@@ -106,10 +106,7 @@ static inline struct page *folio_file_page(struct folio *folio, pgoff_t index)
 
 /* folio_contains removed - never called */
 
-unsigned find_get_pages_range_tag(struct address_space *mapping, pgoff_t *index,
-			pgoff_t end, xa_mark_t tag, unsigned int nr_pages,
-			struct page **pages);
-/* grab_cache_page_write_begin, read_cache_folio, read_cache_page, read_mapping_page removed - never called */
+/* find_get_pages_range_tag, grab_cache_page_write_begin, read_cache_folio, read_cache_page, read_mapping_page removed - never called */
 
 /* page_to_pgoff removed - never called */
 

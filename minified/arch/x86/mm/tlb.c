@@ -10,7 +10,7 @@
 #include <asm/cache.h>
 #include <asm/cacheflush.h>
 #include <asm/apic.h>
-#include <asm/perf_event.h>
+/* asm/perf_event.h removed - no perf symbols used */
 
 #include "mm_internal.h"
 

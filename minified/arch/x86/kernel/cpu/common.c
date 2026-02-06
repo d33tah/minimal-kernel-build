@@ -19,7 +19,7 @@
 #include <linux/io.h>
 #include <linux/pgtable.h>
 
-#include <asm/perf_event.h>
+/* asm/perf_event.h removed - no perf symbols used */
 #include <asm/mmu_context.h>
 /* x86_init_rdrand removed - empty function (~3 LOC) */
 

@@ -97,8 +97,6 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 	p->thread.sp = (unsigned long)fork_frame;
 	p->thread.io_bitmap = NULL;
 	p->thread.iopl_warn = 0;
-	memset(p->thread.ptrace_bps, 0, sizeof(p->thread.ptrace_bps));
-
 	p->thread.sp0 = (unsigned long)(childregs + 1);
 	savesegment(gs, p->thread.gs);
 

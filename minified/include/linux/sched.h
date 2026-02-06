@@ -110,8 +110,7 @@ extern void schedule_preempt_disabled(void);
 extern void io_schedule(void);
 
 /* struct prev_cputime removed - write-only (only initialized, never read) */
-
-# define SCHED_FIXEDPOINT_SHIFT		10
+/* SCHED_FIXEDPOINT_SHIFT removed - unused */
 
 struct load_weight {
 	unsigned long			weight;

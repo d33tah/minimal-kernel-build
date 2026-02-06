@@ -48,7 +48,7 @@ extern void sched_init(void);
 /* linux/async.h removed - async_synchronize_full is stubbed */
 #include <linux/shmem_fs.h>
 #include <linux/slab.h>
-#include <linux/perf_event.h>
+/* linux/perf_event.h removed - no perf symbols used */
 
 #include <linux/sched/clock.h>
 #include <linux/sched/task.h>

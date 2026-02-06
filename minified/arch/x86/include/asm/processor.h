@@ -43,7 +43,7 @@ static __always_inline void cpu_relax(void) { rep_nop(); }
 #include <linux/irqflags.h>
 #include <linux/mem_encrypt.h>
 
-#define HBP_NUM 4
+/* HBP_NUM removed - ptrace_bps field removed */
 
 # define ARCH_MIN_TASKALIGN		__alignof__(union fpregs_state)
 # define ARCH_MIN_MMSTRUCT_ALIGN	0
@@ -212,25 +212,21 @@ DECLARE_PER_CPU(unsigned long, cpu_current_top_of_stack);
 DECLARE_PER_CPU(struct irq_stack *, hardirq_stack_ptr);
 DECLARE_PER_CPU(struct irq_stack *, softirq_stack_ptr);
 
-struct perf_event;
-
 struct thread_struct {
-	 
+
 	struct desc_struct	tls_array[GDT_ENTRY_TLS_ENTRIES];
 	unsigned long		sp0;
 	unsigned long		sp;
 	unsigned long		sysenter_cs;
 
-	 
+
 	unsigned long fs;
 	unsigned long gs;
 
-	 
-	struct perf_event	*ptrace_bps[HBP_NUM];
-	 
+	/* ptrace_bps removed - write-only */
+
 	unsigned long           virtual_dr6;
-	 
-	unsigned long           ptrace_dr7;
+	/* ptrace_dr7 removed - unused */
 	 
 	unsigned long		cr2;
 	unsigned long		trap_nr;

@@ -2,7 +2,7 @@
 #define __LINUX_BLK_TYPES_H
 
 #include <linux/types.h>
-#include <linux/bvec.h>
+/* linux/bvec.h removed - bio_vec/bvec_iter never used */
 #include <linux/device.h>
 
 /* struct bio forward decl removed - unused */

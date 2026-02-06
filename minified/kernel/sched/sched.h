@@ -49,7 +49,7 @@
 
 
 #include <linux/jump_label.h>
-#include <linux/stop_machine.h>
+#include <linux/cpu.h>
 
 #include <linux/syscalls.h>
 #include <linux/topology.h>

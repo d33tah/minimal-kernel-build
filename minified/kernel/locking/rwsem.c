@@ -563,17 +563,14 @@ void up_write(struct rw_semaphore *sem)
 		rwsem_wake(sem);
 }
 
-/* downgrade_write - called by __do_munmap */
 void downgrade_write(struct rw_semaphore *sem)
 {
-	/* __downgrade_write inlined */
 	long tmp;
 
 	tmp = atomic_long_fetch_add_release(
 		-RWSEM_WRITER_LOCKED + RWSEM_READER_BIAS, &sem->count);
 	rwsem_set_reader_owned(sem);
 	if (tmp & RWSEM_FLAG_WAITERS) {
-		/* rwsem_downgrade_wake inlined */
 		unsigned long flags;
 		DEFINE_WAKE_Q(wake_q);
 		raw_spin_lock_irqsave(&sem->wait_lock, flags);

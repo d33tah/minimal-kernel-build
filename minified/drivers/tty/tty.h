@@ -1,55 +1,9 @@
- 
- 
+/* --- 2026-02-06 22:40 --- Gutted: most declarations dead after tty_io.c removal */
 
 #ifndef _TTY_INTERNAL_H
 #define _TTY_INTERNAL_H
 
-#define tty_msg(fn, tty, f, ...) \
-	fn("%s %s: " f, tty_driver_name(tty), tty_name(tty), ##__VA_ARGS__)
-
-/* tty_debug, tty_notice, tty_warn, tty_err removed - never called */
-
-#define tty_info_ratelimited(tty, f, ...) \
-		tty_msg(pr_info_ratelimited, tty, f, ##__VA_ARGS__)
-
- 
-enum {
-	TTY_LOCK_NORMAL = 0,
-	TTY_LOCK_SLAVE,
-};
-
-/* TTY_THROTTLE_SAFE, TTY_UNTHROTTLE_SAFE removed - unused */
-/* __tty_set_flow_change, tty_set_flow_change removed - unused */
-
-int tty_ldisc_lock(struct tty_struct *tty, unsigned long timeout);
-void tty_ldisc_unlock(struct tty_struct *tty);
-
-/* __tty_check_change, tty_check_change, __stop_tty, __start_tty,
- * tty_open_proc_set_tty, tty_vhangup_session, tty_signal_session_leader removed - never called */
-void tty_buffer_free_all(struct tty_port *port);
-/* tty_buffer_flush removed - empty stub */
 void tty_buffer_init(struct tty_port *port);
-/* tty_buffer_set_lock_subclass, tty_buffer_restart_work removed - never called */
-/* tty_buffer_cancel_work - stub, always returns false */
 static inline bool tty_buffer_cancel_work(struct tty_port *port) { return false; }
-/* tty_buffer_flush_work, tty_ldisc_hangup removed - unused */
-speed_t tty_termios_input_baud_rate(struct ktermios *termios);
-int tty_ldisc_reinit(struct tty_struct *tty, int disc);
-/* tty_ioctl removed - ioctl syscall returns ENOTTY */
-/* tty_jobctrl_ioctl removed - never called */
-struct tty_struct *alloc_tty_struct(struct tty_driver *driver, int idx);
-int tty_release(struct inode *inode, struct file *filp);
-
-/* tty_is_writelocked removed - unused */
-
-int tty_ldisc_setup(struct tty_struct *tty, struct tty_struct *o_tty);
-void tty_ldisc_release(struct tty_struct *tty);
-int __must_check tty_ldisc_init(struct tty_struct *tty);
-void tty_ldisc_deinit(struct tty_struct *tty);
-
-/* tty_sysctl_init removed - empty stub */
-/* tty_audit_add_data, tty_audit_tiocsti removed - unused */
-
-/* redirected_tty_write removed - only used by dead console_fops */
 
 #endif

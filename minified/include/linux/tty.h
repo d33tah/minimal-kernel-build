@@ -1,3 +1,6 @@
+/* --- 2026-02-06 22:45 --- Gutted: most of TTY subsystem dead after
+ * tty_io.c removal. Keep struct tty_struct (for fork.c tty_kref_get),
+ * tty_kref_put (for exit.c), and n_tty_init/tty_register_ldisc. */
 #ifndef _LINUX_TTY_H
 #define _LINUX_TTY_H
 
@@ -9,12 +12,13 @@
 #include <linux/tty_buffer.h>
 #include <linux/tty_driver.h>
 #include <linux/tty_port.h>
-
 #include <linux/wait.h>
 #include <linux/atomic.h>
 #include <linux/list.h>
 #include <linux/lockdep.h>
-/* seq_file.h removed - header is empty */
+#include <linux/mutex.h>
+#include <linux/rwsem.h>
+#include <linux/llist.h>
 
 struct ld_semaphore {
 	atomic_long_t		count;
@@ -37,7 +41,6 @@ do {								\
 int ldsem_down_read(struct ld_semaphore *sem, long timeout);
 int ldsem_down_read_trylock(struct ld_semaphore *sem);
 int ldsem_down_write(struct ld_semaphore *sem, long timeout);
-/* ldsem_down_write_trylock removed - never called */
 void ldsem_up_read(struct ld_semaphore *sem);
 void ldsem_up_write(struct ld_semaphore *sem);
 
@@ -47,15 +50,6 @@ void ldsem_up_write(struct ld_semaphore *sem);
 struct tty_ldisc_ops {
 	char	*name;
 	int	num;
-	int	(*open)(struct tty_struct *tty);
-	void	(*close)(struct tty_struct *tty);
-	/* flush_buffer removed - ldisc op never called */
-	ssize_t	(*read)(struct tty_struct *tty, struct file *file,
-			unsigned char *buf, size_t nr,
-			void **cookie, unsigned long offset);
-	ssize_t	(*write)(struct tty_struct *tty, struct file *file,
-			 const unsigned char *buf, size_t nr);
-	/* ioctl, compat_ioctl, set_termios, poll, hangup, dcd_change, receive_buf, write_wakeup, receive_buf2 removed - never called */
 	struct  module *owner;
 };
 
@@ -64,23 +58,12 @@ struct tty_ldisc {
 	struct tty_struct *tty;
 };
 
-
-void tty_ldisc_deref(struct tty_ldisc *);
-struct tty_ldisc *tty_ldisc_ref_wait(struct tty_struct *);
-/* tty_ldisc_flush removed - never called */
 int tty_register_ldisc(struct tty_ldisc_ops *new_ldisc);
-#include <linux/mutex.h>
-#include <linux/rwsem.h>
 
-/* From uapi/linux/tty.h - reduced to only used values */
 #define N_TTY		0
 #define NR_LDISCS	31
-#include <linux/llist.h>
-
-/* All C_* and L_* flag accessor macros removed - none were used */
 
 struct device;
-/* struct signal_struct forward decl removed - unused */
 struct tty_operations;
 
 struct tty_struct {
@@ -96,10 +79,8 @@ struct tty_struct {
 
 	struct mutex atomic_write_lock;
 	struct mutex legacy_mutex;
-	/* throttle_mutex, winsize_mutex removed - never locked */
 	struct rw_semaphore termios_rwsem;
 	struct ktermios termios;
-	/* termios_locked removed - never accessed */
 	char name[64];
 	unsigned long flags;
 	int count;
@@ -108,7 +89,6 @@ struct tty_struct {
 	struct {
 		spinlock_t lock;
 		bool stopped;
-		/* tco_stopped removed - never accessed */
 		unsigned long unused[0];
 	} __aligned(sizeof(unsigned long)) flow;
 
@@ -116,14 +96,10 @@ struct tty_struct {
 		spinlock_t lock;
 		struct pid *pgrp;
 		struct pid *session;
-		/* pktstatus, packet removed - never accessed */
 		unsigned long unused[0];
 	} __aligned(sizeof(unsigned long)) ctrl;
 
-	/* hw_stopped, flow_change, receive_room removed - unused/write-only */
-
 	struct tty_struct *link;
-	/* fasync removed - fcntl returns EINVAL, FASYNC never set */
 	wait_queue_head_t write_wait;
 	wait_queue_head_t read_wait;
 	struct work_struct hangup_work;
@@ -131,44 +107,21 @@ struct tty_struct {
 	void *driver_data;
 	spinlock_t files_lock;
 	struct list_head tty_files;
-	/* closing removed - never accessed */
 	unsigned char *write_buf;
 	int write_cnt;
-	/* SAK_work removed - initialized but never scheduled */
 	struct tty_port *port;
 } __randomize_layout;
 
 struct tty_file_private {
 	struct tty_struct *tty;
-	/* file field removed - write-only, never read */
 	struct list_head list;
 };
 
 #define TTY_MAGIC		0x5401
 
-#define TTY_IO_ERROR		1
-/* TTY_DO_WRITE_WAKEUP removed - never used */
-#define TTY_LDISC_OPEN		11
-#define TTY_NO_WRITE_SPLIT	17
-#define TTY_HUPPED		18
-#define TTY_LDISC_CHANGING	20
-#define TTY_LDISC_HALTED	22
-
-static inline bool tty_io_error(struct tty_struct *tty)
-{
-	return test_bit(TTY_IO_ERROR, &tty->flags);
-}
-
 void tty_kref_put(struct tty_struct *tty);
-/* disassociate_ctty removed - unused stub */
-int __init tty_init(void);
-const char *tty_name(const struct tty_struct *tty);
-
-/* tty_std_termios extern removed - variable already deleted */
-/* vcs_init removed - uncalled */
 
 extern struct class *tty_class;
-
 
 static inline struct tty_struct *tty_kref_get(struct tty_struct *tty)
 {
@@ -177,18 +130,6 @@ static inline struct tty_struct *tty_kref_get(struct tty_struct *tty)
 	return tty;
 }
 
-const char *tty_driver_name(const struct tty_struct *tty);
-/* tty_wait_until_sent, tty_chars_in_buffer, tty_write_room,
-   tty_driver_flush_buffer, tty_unthrottle, tty_hangup, tty_hung_up_p removed - only internal */
-speed_t tty_termios_baud_rate(struct ktermios *termios);
-/* tty_get_char_size, tty_get_frame_size, tty_termios_copy_hw, tty_termios_hw_change,
-   tty_wakeup removed - never called */
-
-struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx);
-/* tty_mutex extern removed - only used within tty_io.c */
-
 void __init n_tty_init(void);
-
-int vt_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg);
 
 #endif

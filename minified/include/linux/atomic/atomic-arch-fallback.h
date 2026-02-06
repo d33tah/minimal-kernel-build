@@ -5,28 +5,7 @@
 
 #include <linux/compiler.h>
 
-#ifndef arch_xchg_relaxed
-#define arch_xchg_acquire arch_xchg
-#define arch_xchg_release arch_xchg
-#define arch_xchg_relaxed arch_xchg
-#else  
-
-#ifndef arch_xchg_acquire
-#define arch_xchg_acquire(...) \
-	__atomic_op_acquire(arch_xchg, __VA_ARGS__)
-#endif
-
-#ifndef arch_xchg_release
-#define arch_xchg_release(...) \
-	__atomic_op_release(arch_xchg, __VA_ARGS__)
-#endif
-
-#ifndef arch_xchg
-#define arch_xchg(...) \
-	__atomic_op_fence(arch_xchg, __VA_ARGS__)
-#endif
-
-#endif  
+/* arch_xchg ordering variants removed - zero callers */
 
 #ifndef arch_cmpxchg_relaxed
 #define arch_cmpxchg_acquire arch_cmpxchg
@@ -51,35 +30,7 @@
 
 #endif  
 
-#ifndef arch_cmpxchg64_relaxed
-#define arch_cmpxchg64_acquire arch_cmpxchg64
-#define arch_cmpxchg64_release arch_cmpxchg64
-#define arch_cmpxchg64_relaxed arch_cmpxchg64
-#else  
-
-#ifndef arch_cmpxchg64_acquire
-#define arch_cmpxchg64_acquire(...) \
-	__atomic_op_acquire(arch_cmpxchg64, __VA_ARGS__)
-#endif
-
-#ifndef arch_cmpxchg64_release
-#define arch_cmpxchg64_release(...) \
-	__atomic_op_release(arch_cmpxchg64, __VA_ARGS__)
-#endif
-
-#ifndef arch_cmpxchg64
-#define arch_cmpxchg64(...) \
-	__atomic_op_fence(arch_cmpxchg64, __VA_ARGS__)
-#endif
-
-#endif  
-
-#ifndef arch_try_cmpxchg_relaxed
-#ifdef arch_try_cmpxchg
-#define arch_try_cmpxchg_acquire arch_try_cmpxchg
-#define arch_try_cmpxchg_release arch_try_cmpxchg
-#define arch_try_cmpxchg_relaxed arch_try_cmpxchg
-#endif  
+/* arch_cmpxchg64 ordering variants removed - zero callers */
 
 #ifndef arch_try_cmpxchg
 #define arch_try_cmpxchg(_ptr, _oldp, _new) \
@@ -90,129 +41,9 @@
 		*___op = ___r; \
 	likely(___r == ___o); \
 })
-#endif  
-
-#ifndef arch_try_cmpxchg_acquire
-#define arch_try_cmpxchg_acquire(_ptr, _oldp, _new) \
-({ \
-	typeof(*(_ptr)) *___op = (_oldp), ___o = *___op, ___r; \
-	___r = arch_cmpxchg_acquire((_ptr), ___o, (_new)); \
-	if (unlikely(___r != ___o)) \
-		*___op = ___r; \
-	likely(___r == ___o); \
-})
-#endif  
-
-#ifndef arch_try_cmpxchg_release
-#define arch_try_cmpxchg_release(_ptr, _oldp, _new) \
-({ \
-	typeof(*(_ptr)) *___op = (_oldp), ___o = *___op, ___r; \
-	___r = arch_cmpxchg_release((_ptr), ___o, (_new)); \
-	if (unlikely(___r != ___o)) \
-		*___op = ___r; \
-	likely(___r == ___o); \
-})
-#endif  
-
-#ifndef arch_try_cmpxchg_relaxed
-#define arch_try_cmpxchg_relaxed(_ptr, _oldp, _new) \
-({ \
-	typeof(*(_ptr)) *___op = (_oldp), ___o = *___op, ___r; \
-	___r = arch_cmpxchg_relaxed((_ptr), ___o, (_new)); \
-	if (unlikely(___r != ___o)) \
-		*___op = ___r; \
-	likely(___r == ___o); \
-})
-#endif  
-
-#else  
-
-#ifndef arch_try_cmpxchg_acquire
-#define arch_try_cmpxchg_acquire(...) \
-	__atomic_op_acquire(arch_try_cmpxchg, __VA_ARGS__)
 #endif
 
-#ifndef arch_try_cmpxchg_release
-#define arch_try_cmpxchg_release(...) \
-	__atomic_op_release(arch_try_cmpxchg, __VA_ARGS__)
-#endif
-
-#ifndef arch_try_cmpxchg
-#define arch_try_cmpxchg(...) \
-	__atomic_op_fence(arch_try_cmpxchg, __VA_ARGS__)
-#endif
-
-#endif  
-
-#ifndef arch_try_cmpxchg64_relaxed
-#ifdef arch_try_cmpxchg64
-#define arch_try_cmpxchg64_acquire arch_try_cmpxchg64
-#define arch_try_cmpxchg64_release arch_try_cmpxchg64
-#define arch_try_cmpxchg64_relaxed arch_try_cmpxchg64
-#endif  
-
-#ifndef arch_try_cmpxchg64
-#define arch_try_cmpxchg64(_ptr, _oldp, _new) \
-({ \
-	typeof(*(_ptr)) *___op = (_oldp), ___o = *___op, ___r; \
-	___r = arch_cmpxchg64((_ptr), ___o, (_new)); \
-	if (unlikely(___r != ___o)) \
-		*___op = ___r; \
-	likely(___r == ___o); \
-})
-#endif  
-
-#ifndef arch_try_cmpxchg64_acquire
-#define arch_try_cmpxchg64_acquire(_ptr, _oldp, _new) \
-({ \
-	typeof(*(_ptr)) *___op = (_oldp), ___o = *___op, ___r; \
-	___r = arch_cmpxchg64_acquire((_ptr), ___o, (_new)); \
-	if (unlikely(___r != ___o)) \
-		*___op = ___r; \
-	likely(___r == ___o); \
-})
-#endif  
-
-#ifndef arch_try_cmpxchg64_release
-#define arch_try_cmpxchg64_release(_ptr, _oldp, _new) \
-({ \
-	typeof(*(_ptr)) *___op = (_oldp), ___o = *___op, ___r; \
-	___r = arch_cmpxchg64_release((_ptr), ___o, (_new)); \
-	if (unlikely(___r != ___o)) \
-		*___op = ___r; \
-	likely(___r == ___o); \
-})
-#endif  
-
-#ifndef arch_try_cmpxchg64_relaxed
-#define arch_try_cmpxchg64_relaxed(_ptr, _oldp, _new) \
-({ \
-	typeof(*(_ptr)) *___op = (_oldp), ___o = *___op, ___r; \
-	___r = arch_cmpxchg64_relaxed((_ptr), ___o, (_new)); \
-	if (unlikely(___r != ___o)) \
-		*___op = ___r; \
-	likely(___r == ___o); \
-})
-#endif  
-
-#else  
-
-#ifndef arch_try_cmpxchg64_acquire
-#define arch_try_cmpxchg64_acquire(...) \
-	__atomic_op_acquire(arch_try_cmpxchg64, __VA_ARGS__)
-#endif
-
-#ifndef arch_try_cmpxchg64_release
-#define arch_try_cmpxchg64_release(...) \
-	__atomic_op_release(arch_try_cmpxchg64, __VA_ARGS__)
-#endif
-
-#ifndef arch_try_cmpxchg64
-#define arch_try_cmpxchg64(...) \
-	__atomic_op_fence(arch_try_cmpxchg64, __VA_ARGS__)
-#endif
-
-#endif  
+/* arch_try_cmpxchg64 and all ordering variants removed - zero callers */
 
 #ifndef arch_atomic_read_acquire
 static __always_inline int

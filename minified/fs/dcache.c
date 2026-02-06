@@ -528,7 +528,6 @@ struct dentry *d_alloc_cursor(struct dentry *parent)
 	return NULL;
 }
 
-
 /* d_alloc_pseudo removed - only caller was alloc_file_pseudo which was also removed (~7 LOC) */
 
 void d_set_d_op(struct dentry *dentry, const struct dentry_operations *op)

@@ -56,7 +56,6 @@ struct file *alloc_empty_file(int flags, const struct cred *cred)
 
 /* alloc_file_pseudo removed - declared/defined but never called (~35 LOC) */
 
-
 static void __fput(struct file *file)
 {
 	struct dentry *dentry = file->f_path.dentry;

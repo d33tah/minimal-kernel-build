@@ -23,8 +23,6 @@ extern int parse_monolithic_mount_data(struct fs_context *, void *);
 /* vfs_clean_context, finish_clean_context removed - unused */
 
  
-extern int filename_lookup(int dfd, struct filename *name, unsigned flags,
-			   struct path *path, struct path *root);
 /* vfs_path_lookup removed - never called */
 /* do_rmdir, do_unlinkat, may_linkat, do_renameat2, do_mkdirat, do_symlinkat, do_linkat removed */
 

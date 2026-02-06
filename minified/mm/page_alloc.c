@@ -1211,31 +1211,7 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 	}
 }
 
-void adjust_managed_page_count(struct page *page, long count)
-{
-	atomic_long_add(count, &page_zone(page)->managed_pages);
-	totalram_pages_add(count);
-}
-
-unsigned long free_reserved_area(void *start, void *end, int poison,
-				 const char *s)
-{
-	void *pos;
-	unsigned long pages = 0;
-
-	/* Simplified: skip poisoning for minimal system */
-	start = (void *)PAGE_ALIGN((unsigned long)start);
-	end = (void *)((unsigned long)end & PAGE_MASK);
-	for (pos = start; pos < end; pos += PAGE_SIZE, pages++) {
-		/* free_reserved_page inlined - single caller */
-		struct page *page = virt_to_page(pos);
-		ClearPageReserved(page);
-		init_page_count(page);
-		adjust_managed_page_count(page, 1);
-	}
-
-	return pages;
-}
+/* adjust_managed_page_count, free_reserved_area removed - dead code (free_initmem is stubbed) */
 
 /* page_alloc_cpu_dead, page_alloc_cpu_online, page_alloc_init moved to gfp.h */
 /* calculate_totalreserve_pages, setup_per_zone_lowmem_reserve, __setup_per_zone_wmarks,

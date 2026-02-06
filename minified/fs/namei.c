@@ -73,14 +73,7 @@ void putname(struct filename *name)
 		__putname(name);
 }
 
-/* Stub: init runs as root, always allow access */
-int generic_permission(struct user_namespace *mnt_userns, struct inode *inode,
-		       int mask)
-{
-	return 0;
-}
-
-/* do_inode_permission inlined into inode_permission */
+/* generic_permission inlined into inode_permission - always returns 0 (init runs as root) */
 
 int inode_permission(struct user_namespace *mnt_userns, struct inode *inode,
 		     int mask)
@@ -91,13 +84,11 @@ int inode_permission(struct user_namespace *mnt_userns, struct inode *inode,
 			return -EROFS;
 		if (IS_IMMUTABLE(inode))
 			return -EPERM;
-		/* HAS_UNMAPPED_ID inlined - single caller */
 		if (!uid_valid(i_uid_into_mnt(mnt_userns, inode)) ||
 		    !gid_valid(i_gid_into_mnt(mnt_userns, inode)))
 			return -EACCES;
 	}
 
-	/* do_inode_permission inlined */
 	if (unlikely(!(inode->i_opflags & IOP_FASTPERM))) {
 		if (likely(inode->i_op->permission))
 			return inode->i_op->permission(mnt_userns, inode, mask);
@@ -106,7 +97,7 @@ int inode_permission(struct user_namespace *mnt_userns, struct inode *inode,
 		inode->i_opflags |= IOP_FASTPERM;
 		spin_unlock(&inode->i_lock);
 	}
-	return generic_permission(mnt_userns, inode, mask);
+	return 0;
 }
 
 void path_get(const struct path *path)
@@ -879,32 +870,23 @@ static int path_lookupat(struct nameidata *nd, unsigned flags,
 	return err;
 }
 
-int filename_lookup(int dfd, struct filename *name, unsigned flags,
-		    struct path *path, struct path *root)
-{
-	int retval;
-	struct nameidata nd;
-	if (IS_ERR(name))
-		return PTR_ERR(name);
-	set_nameidata(&nd, dfd, name, root);
-	retval = path_lookupat(&nd, flags | LOOKUP_RCU, path);
-	if (unlikely(retval == -ECHILD))
-		retval = path_lookupat(&nd, flags, path);
-	if (unlikely(retval == -ESTALE))
-		retval = path_lookupat(&nd, flags | LOOKUP_REVAL, path);
-
-	/* audit_inode - empty stub */
-	restore_nameidata();
-	return retval;
-}
-
-/* path_parentat, filename_parentat removed - only caller was filename_create */
+/* filename_lookup inlined into kern_path - its only caller */
 
 int kern_path(const char *name, unsigned int flags, struct path *path)
 {
 	struct filename *filename = getname_kernel(name);
-	int ret = filename_lookup(AT_FDCWD, filename, flags, path, NULL);
+	int ret;
+	struct nameidata nd;
 
+	if (IS_ERR(filename))
+		return PTR_ERR(filename);
+	set_nameidata(&nd, AT_FDCWD, filename, NULL);
+	ret = path_lookupat(&nd, flags | LOOKUP_RCU, path);
+	if (unlikely(ret == -ECHILD))
+		ret = path_lookupat(&nd, flags, path);
+	if (unlikely(ret == -ESTALE))
+		ret = path_lookupat(&nd, flags | LOOKUP_REVAL, path);
+	restore_nameidata();
 	putname(filename);
 	return ret;
 }

@@ -662,10 +662,6 @@ static inline spinlock_t *pud_lock(struct mm_struct *mm, pud_t *pud)
 extern void __init pagecache_init(void);
 extern void free_initmem(void);
 
-extern unsigned long free_reserved_area(void *start, void *end,
-					int poison, const char *s);
-
-extern void adjust_managed_page_count(struct page *page, long count);
 
 extern void reserve_bootmem_region(phys_addr_t start, phys_addr_t end);
 

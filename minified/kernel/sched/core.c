@@ -614,18 +614,7 @@ void __sched schedule_preempt_disabled(void)
 
 /* preempt_schedule_common removed - inlined into single caller (~9 LOC) */
 
-asmlinkage __visible void __sched preempt_schedule_irq(void)
-{
-	BUG_ON(preempt_count() || !irqs_disabled());
-
-	do {
-		preempt_disable();
-		local_irq_enable();
-		__schedule(SM_PREEMPT);
-		local_irq_disable();
-		sched_preempt_enable_no_resched();
-	} while (need_resched());
-}
+/* preempt_schedule_irq removed - unused */
 
 int default_wake_function(wait_queue_entry_t *curr, unsigned mode,
 			  int wake_flags, void *key)

@@ -106,8 +106,7 @@ extern long schedule_timeout(long timeout);
 extern long schedule_timeout_uninterruptible(long timeout);
 asmlinkage void schedule(void);
 extern void schedule_preempt_disabled(void);
-asmlinkage void preempt_schedule_irq(void);
-
+/* preempt_schedule_irq removed - unused */
 extern void io_schedule(void);
 
 /* struct prev_cputime removed - write-only (only initialized, never read) */

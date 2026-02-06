@@ -123,7 +123,6 @@ extern int fg_console;
 /* last_console, want_console removed - never read */
 
 
-int vc_allocate(unsigned int console);
 int vc_cons_allocated(unsigned int console);
 int vc_resize(struct vc_data *vc, unsigned int cols, unsigned int lines);
 void reset_palette(struct vc_data *vc);

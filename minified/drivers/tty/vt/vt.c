@@ -59,13 +59,11 @@ struct vc vc_cons[MAX_NR_CONSOLES];
 static const struct consw *con_driver_map[MAX_NR_CONSOLES];
 #endif
 
-static int con_open(struct tty_struct *, struct file *);
 static void vc_init(struct vc_data *vc, unsigned int rows, unsigned int cols,
 		    int do_clear);
 static void gotoxy(struct vc_data *vc, int new_x, int new_y);
 /* save_cur forward decl removed - inlined */
 static void reset_terminal(struct vc_data *vc, int do_clear);
-static void con_flush_chars(struct tty_struct *tty);
 static void set_cursor(struct vc_data *vc);
 static void hide_cursor(struct vc_data *vc);
 /* blank_screen_t forward decl removed - function unused */
@@ -311,66 +309,7 @@ static void visual_init(struct vc_data *vc, int num, int init)
 
 /* visual_deinit inlined */
 
-static void vc_port_destruct(struct tty_port *port)
-{
-	struct vc_data *vc = container_of(port, struct vc_data, port);
-
-	kfree(vc);
-}
-
-static const struct tty_port_operations vc_port_ops = {
-	.destruct = vc_port_destruct,
-};
-
-#define VC_MAXCOL (32767)
-#define VC_MAXROW (32767)
-
-int vc_allocate(unsigned int currcons)
-{
-	struct vc_data *vc;
-	int err;
-
-	WARN_CONSOLE_UNLOCKED();
-
-	if (currcons >= MAX_NR_CONSOLES)
-		return -ENXIO;
-
-	if (vc_cons[currcons].d)
-		return 0;
-
-	vc = kzalloc(sizeof(struct vc_data), GFP_KERNEL);
-	if (!vc)
-		return -ENOMEM;
-
-	vc_cons[currcons].d = vc;
-	tty_port_init(&vc->port);
-	vc->port.ops = &vc_port_ops;
-	/* INIT_WORK SAK_work removed - never scheduled */
-
-	visual_init(vc, currcons, 1);
-
-	err = -EINVAL;
-	if (vc->vc_cols > VC_MAXCOL || vc->vc_rows > VC_MAXROW ||
-	    vc->vc_screenbuf_size > KMALLOC_MAX_SIZE || !vc->vc_screenbuf_size)
-		goto err_free;
-	err = -ENOMEM;
-	vc->vc_screenbuf = kzalloc(vc->vc_screenbuf_size, GFP_KERNEL);
-	if (!vc->vc_screenbuf)
-		goto err_free;
-
-	if (global_cursor_default == -1)
-		global_cursor_default = 1;
-
-	vc_init(vc, vc->vc_rows, vc->vc_cols, 1);
-
-	return 0;
-err_free:
-	vc->vc_sw->con_deinit(vc);
-	module_put(vc->vc_sw->owner);
-	kfree(vc);
-	vc_cons[currcons].d = NULL;
-	return err;
-}
+/* vc_port_destruct, vc_port_ops, vc_allocate removed - only used by dead con_ops path */
 
 /* vc_do_resize inlined - was a stub returning 0 */
 
@@ -520,15 +459,7 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 		csi_J(vc, 2);
 }
 
-struct vc_draw_region {
-	unsigned long from, to;
-	int x;
-};
-
-/* con_flush inlined into vt_write */
-
-/* vc_translate_unicode inlined into con_write - was stub returning c */
-/* do_con_write inlined into con_write */
+/* vc_draw_region removed - only used in dead con_write */
 
 struct tty_driver *console_driver;
 
@@ -582,157 +513,8 @@ static struct console vt_console_driver = {
 	.index = -1,
 };
 
-static int con_write(struct tty_struct *tty, const unsigned char *buf,
-		     int count)
-{
-	/* do_con_write inlined */
-	static const u32 CTRL_ACTION = 0x0d00ff81;
-	static const u32 CTRL_ALWAYS = 0x0800f501;
-	struct vc_draw_region draw = { .x = -1 };
-	struct vc_data *vc;
-	int c, tc, n = 0;
-
-	if (in_interrupt())
-		return count;
-
-	console_lock();
-	vc = tty->driver_data;
-	if (!vc || !vc_cons_allocated(vc->vc_num)) {
-		console_unlock();
-		return 0;
-	}
-
-	while (!tty->flow.stopped && count--) {
-		bool is_control;
-		c = *buf++;
-		n++;
-		if (vc->vc_state != ESnormal)
-			tc = c;
-		else if (vc->vc_utf && !vc->vc_disp_ctrl)
-			tc = c; /* vc_translate_unicode inlined - stub returns c */
-		else
-			tc = c;
-		is_control = vc->vc_state != ESnormal || !tc ||
-			     (c < 32 &&
-			      (vc->vc_disp_ctrl ? (CTRL_ALWAYS & BIT(c)) :
-						  (vc->vc_utf ||
-						   (CTRL_ACTION & BIT(c))))) ||
-			     (c == 127 && !vc->vc_disp_ctrl) || (c == 128 + 27);
-		if (tc != -1 && !is_control) {
-			u16 himask = vc->vc_hi_font_mask;
-			if (vc->vc_need_wrap) {
-				cr(vc);
-				lf(vc);
-			}
-			tc = conv_uni_to_pc(vc, tc);
-			if (tc < 0)
-				tc = c;
-			if (himask)
-				tc = ((tc & 0x100) ? himask : 0) | (tc & 0xff);
-			tc |= (vc->vc_attr << 8) & ~himask;
-			scr_writew(tc, (u16 *)vc->vc_pos);
-			if (con_should_update(vc) && draw.x < 0) {
-				draw.x = vc->state.x;
-				draw.from = vc->vc_pos;
-			}
-			if (vc->state.x == vc->vc_cols - 1) {
-				vc->vc_need_wrap = vc->vc_decawm;
-				draw.to = vc->vc_pos + 2;
-			} else {
-				vc->state.x++;
-				draw.to = (vc->vc_pos += 2);
-			}
-		}
-	}
-	if (draw.x >= 0) {
-		vc->vc_sw->con_putcs(vc, (u16 *)draw.from,
-				     (u16 *)draw.to - (u16 *)draw.from,
-				     vc->state.y, draw.x);
-	}
-	set_cursor(vc);
-	console_unlock();
-	return n;
-}
-
-/* con_put_char, con_write_room removed - ops->put_char, ops->write_room never called */
-
-/* con_throttle, con_unthrottle, con_stop, con_start removed - ops callbacks never called */
-
-static void con_flush_chars(struct tty_struct *tty)
-{
-	struct vc_data *vc;
-
-	if (in_interrupt())
-		return;
-
-	console_lock();
-	vc = tty->driver_data;
-	if (vc)
-		set_cursor(vc);
-	console_unlock();
-}
-
-static int con_install(struct tty_driver *driver, struct tty_struct *tty)
-{
-	unsigned int currcons = tty->index;
-	struct vc_data *vc;
-	int ret;
-
-	console_lock();
-	ret = vc_allocate(currcons);
-	if (ret)
-		goto unlock;
-
-	vc = vc_cons[currcons].d;
-
-	if (vc->port.tty) {
-		ret = -ERESTARTSYS;
-		goto unlock;
-	}
-
-	ret = tty_port_install(&vc->port, driver, tty);
-	if (ret)
-		goto unlock;
-
-	tty->driver_data = vc;
-	vc->port.tty = tty;
-	tty_port_get(&vc->port);
-
-	if (!tty->winsize.ws_row && !tty->winsize.ws_col) {
-		tty->winsize.ws_row = vc_cons[currcons].d->vc_rows;
-		tty->winsize.ws_col = vc_cons[currcons].d->vc_cols;
-	}
-	if (vc->vc_utf)
-		tty->termios.c_iflag |= IUTF8;
-	else
-		tty->termios.c_iflag &= ~IUTF8;
-unlock:
-	console_unlock();
-	return ret;
-}
-
-static int con_open(struct tty_struct *tty, struct file *filp)
-{
-	return 0;
-}
-
-/* con_close removed - empty stub, set to NULL in ops */
-
-static void con_shutdown(struct tty_struct *tty)
-{
-	struct vc_data *vc = tty->driver_data;
-	BUG_ON(vc == NULL);
-	console_lock();
-	vc->port.tty = NULL;
-	console_unlock();
-}
-
-static void con_cleanup(struct tty_struct *tty)
-{
-	struct vc_data *vc = tty->driver_data;
-
-	tty_port_put(&vc->port);
-}
+/* con_write, con_flush_chars, con_install, con_open, con_shutdown, con_cleanup
+   all removed - only referenced from dead con_ops struct */
 
 static int default_color = 7;
 static int default_italic_color = 2;
@@ -847,19 +629,7 @@ static int __init con_init(void)
 }
 console_initcall(con_init);
 
-static const struct tty_operations con_ops = {
-	.install = con_install,
-	.open = con_open,
-	/* .close = NULL - con_close was empty */
-	.write = con_write,
-	/* .write_room, .put_char removed - never called */
-	.flush_chars = con_flush_chars,
-	/* .ioctl, .stop, .start, .throttle, .unthrottle, .resize removed */
-	.shutdown = con_shutdown,
-	.cleanup = con_cleanup,
-};
-
-/* vty_init removed - only called from tty_init which was removed (~28 LOC) */
+/* con_ops struct removed - vty_init was removed, so no tty_driver ever uses it */
 
 #ifndef VT_SINGLE_DRIVER
 

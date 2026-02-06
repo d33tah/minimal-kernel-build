@@ -9,16 +9,16 @@
 
 #define istate core_internal_state__do_not_mess_with_it
 
-extern bool noirqdebug;
+/* noirqdebug removed - always false */
 
-extern struct irqaction chained_action;
+/* chained_action removed - is_chained path never taken */
 
  
 enum {
 	IRQTF_RUNTHREAD,
 	IRQTF_WARNED,
 	IRQTF_AFFINITY,
-	IRQTF_FORCED_THREAD,
+	/* IRQTF_FORCED_THREAD removed - never used */
 	IRQTF_READY,
 };
 
@@ -26,13 +26,13 @@ enum {
 enum {
 	IRQS_AUTODETECT		= 0x00000001,
 	IRQS_SPURIOUS_DISABLED	= 0x00000002,
-	IRQS_POLL_INPROGRESS	= 0x00000008,
+	/* IRQS_POLL_INPROGRESS removed - never used */
 	IRQS_ONESHOT		= 0x00000020,
 	IRQS_REPLAY		= 0x00000040,
 	IRQS_WAITING		= 0x00000080,
 	IRQS_PENDING		= 0x00000200,
 	IRQS_SUSPENDED		= 0x00000800,
-	IRQS_TIMINGS		= 0x00001000,
+	/* IRQS_TIMINGS removed - never used */
 	IRQS_NMI		= 0x00002000,
 };
 
@@ -76,13 +76,13 @@ enum {
 	_IRQ_NOREQUEST		= IRQ_NOREQUEST,
 	_IRQ_NOTHREAD		= IRQ_NOTHREAD,
 	_IRQ_NOAUTOEN		= IRQ_NOAUTOEN,
-	_IRQ_MOVE_PCNTXT	= IRQ_MOVE_PCNTXT,
+	/* _IRQ_MOVE_PCNTXT removed - never used */
 	_IRQ_NO_BALANCING	= IRQ_NO_BALANCING,
 	_IRQ_NESTED_THREAD	= IRQ_NESTED_THREAD,
 	_IRQ_PER_CPU_DEVID	= IRQ_PER_CPU_DEVID,
-	_IRQ_IS_POLLED		= IRQ_IS_POLLED,
-	_IRQ_DISABLE_UNLAZY	= IRQ_DISABLE_UNLAZY,
-	_IRQ_HIDDEN		= IRQ_HIDDEN,
+	/* _IRQ_IS_POLLED removed - never used */
+	/* _IRQ_DISABLE_UNLAZY removed - never used */
+	/* _IRQ_HIDDEN removed - never used */
 	_IRQ_NO_DEBUG		= IRQ_NO_DEBUG,
 	_IRQF_MODIFY_MASK	= IRQF_MODIFY_MASK,
 };
@@ -165,7 +165,7 @@ extern void __enable_irq(struct irq_desc *desc);
 /* IRQ_NORESEND removed - unused */
 
 extern int irq_activate(struct irq_desc *desc);
-extern int irq_activate_and_startup(struct irq_desc *desc, bool resend);
+/* irq_activate_and_startup removed - only called from is_chained path */
 extern int irq_startup(struct irq_desc *desc, bool resend, bool force);
 
 /* irq_shutdown, irq_shutdown_and_deactivate removed - never called */

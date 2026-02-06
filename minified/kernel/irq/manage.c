@@ -16,8 +16,7 @@
 
 #include "internals.h"
 
-/* noirqdebug moved from spurious.c */
-bool noirqdebug __read_mostly;
+/* noirqdebug removed - always false, no way to set it */
 
 /* force_irqthreads_key removed - macro never called */
 
@@ -345,17 +344,7 @@ static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 
 	chip_bus_lock(desc);
 
-	if (!desc->action) {
-		struct irq_data *d = &desc->irq_data;
-		struct irq_chip *c = d->chip;
-		ret = c->irq_request_resources ? c->irq_request_resources(d) :
-						 0;
-		if (ret) {
-			pr_err("Failed to request resources for %s (irq %d) on irqchip %s\n",
-			       new->name, irq, desc->irq_data.chip->name);
-			goto out_bus_unlock;
-		}
-	}
+	/* irq_request_resources removed - no chip sets this callback */
 
 	raw_spin_lock_irqsave(&desc->lock, flags);
 	old_ptr = &desc->action;
@@ -432,8 +421,7 @@ static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 				irq_settings_set_no_debug(desc);
 		}
 
-		if (noirqdebug)
-			irq_settings_set_no_debug(desc);
+		/* noirqdebug removed - always false */
 
 		if (new->flags & IRQF_ONESHOT)
 			desc->istate |= IRQS_ONESHOT;
@@ -495,12 +483,6 @@ mismatch:
 out_unlock:
 	raw_spin_unlock_irqrestore(&desc->lock, flags);
 
-	if (!desc->action) {
-		struct irq_data *d = &desc->irq_data;
-		struct irq_chip *c = d->chip;
-		if (c->irq_release_resources)
-			c->irq_release_resources(d);
-	}
 out_bus_unlock:
 	chip_bus_sync_unlock(desc);
 	mutex_unlock(&desc->request_mutex);

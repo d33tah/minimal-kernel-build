@@ -4,9 +4,9 @@
 #include <linux/interrupt.h>
 #include <linux/kernel_stat.h>
 #include <linux/radix-tree.h>
-#include <linux/bitmap.h>
+/* linux/bitmap.h removed - no bitmap usage */
 #include <linux/irqdomain.h>
-#include <linux/sysfs.h>
+/* linux/sysfs.h removed - no sysfs usage */
 
 #include "internals.h"
 
@@ -14,8 +14,8 @@
 
 int nr_irqs = NR_IRQS;
 
-static DEFINE_MUTEX(sparse_irq_lock);
-static DECLARE_BITMAP(allocated_irqs, IRQ_BITMAP_BITS);
+/* sparse_irq_lock removed - never used */
+/* allocated_irqs removed - only written, never read */
 
 static void irq_kobj_release(struct kobject *kobj);
 
@@ -54,7 +54,6 @@ static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
 	desc->irq_data.common = &desc->irq_common_data;
 	desc->irq_data.irq = irq;
 	desc->irq_data.chip = &no_irq_chip;
-	desc->irq_data.chip_data = NULL;
 	irq_settings_clr_and_set(desc, ~0, _IRQ_DEFAULT_INIT_FLAGS);
 	irqd_set(&desc->irq_data, IRQD_IRQ_DISABLED);
 	irqd_set(&desc->irq_data, IRQD_IRQ_MASKED);
@@ -106,22 +105,12 @@ int __init early_irq_init(void)
 	for (i = 0; i < initcnt; i++) {
 		desc = alloc_desc(i, 0, 0,
 				  NULL); /* node=0 (first_online_node) */
-		set_bit(i, allocated_irqs);
 		radix_tree_insert(&irq_desc_tree, i, desc);
 	}
 	return 0; /* arch_early_irq_init inlined */
 }
 
-int handle_irq_desc(struct irq_desc *desc)
-{
-	if (!desc)
-		return -EINVAL;
-
-	/* handle_enforce_irqctx always returns false - check removed */
-	generic_handle_irq_desc(desc);
-	return 0;
-}
-
+/* handle_irq_desc removed - never called (~9 LOC) */
 /* generic_handle_irq removed - never called (~4 LOC) */
 /* generic_handle_irq_safe, irq_free_descs, __irq_alloc_descs removed - never called */
 /* irq_get_next_irq removed - only used by for_each_active_irq macro (unused) */

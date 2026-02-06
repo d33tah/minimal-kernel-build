@@ -25,6 +25,6 @@ static inline struct irq_desc *irq_data_to_desc(struct irq_data *data) { return 
 static inline unsigned int irq_desc_get_irq(struct irq_desc *desc) { return desc->irq_data.irq; }
 static inline struct irq_data *irq_desc_get_irq_data(struct irq_desc *desc) { return &desc->irq_data; }
 static inline void generic_handle_irq_desc(struct irq_desc *desc) { desc->handle_irq(desc); }
-int handle_irq_desc(struct irq_desc *desc);
+/* handle_irq_desc removed - never called */
 /* generic_handle_irq, generic_handle_irq_safe removed - never called */
 #endif

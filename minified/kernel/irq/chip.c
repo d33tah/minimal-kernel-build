@@ -1,6 +1,6 @@
 /* --- 2025-12-22 04:20 --- Stripped MSI infrastructure - unused */
 #include <linux/irq.h>
-#include <linux/module.h>
+/* linux/module.h removed - no module usage */
 #include <linux/cpumask.h>
 #include <asm/hw_irq.h>
 #include <linux/irqdomain.h>
@@ -9,30 +9,9 @@
 
 #include "internals.h"
 
-static irqreturn_t bad_chained_irq(int irq, void *dev_id)
-{
-	WARN_ONCE(1, "Chained irq %d should not call an action\n", irq);
-	return IRQ_NONE;
-}
+/* bad_chained_irq, chained_action removed - is_chained path never taken (~8 LOC) */
 
-struct irqaction chained_action = {
-	.handler = bad_chained_irq,
-};
-
-int irq_set_chip(unsigned int irq, const struct irq_chip *chip)
-{
-	unsigned long flags;
-	struct irq_desc *desc = irq_get_desc_lock(irq, &flags, 0);
-
-	if (!desc)
-		return -EINVAL;
-
-	desc->irq_data.chip = (struct irq_chip *)(chip ?: &no_irq_chip);
-	irq_put_desc_unlock(desc, flags);
-	/* irq_mark_irq removed - empty stub */
-	return 0;
-}
-
+/* irq_set_chip removed - inlined into irq_set_chip_and_handler_name (~11 LOC) */
 /* irq_set_irq_type, irq_set_chip_data, irq_get_irq_data removed - never called */
 /* irq_state_clr_disabled, irq_state_clr_masked removed - inlined into callers (~8 LOC) */
 /* __irq_startup removed - inlined into single caller (~16 LOC) */
@@ -72,12 +51,7 @@ int irq_activate(struct irq_desc *desc)
 	return irq_domain_activate_irq(d, false);
 }
 
-int irq_activate_and_startup(struct irq_desc *desc, bool resend)
-{
-	/* irq_activate always returns 0, WARN_ON never triggers */
-	irq_activate(desc);
-	return irq_startup(desc, resend, IRQ_START_FORCE);
-}
+/* irq_activate_and_startup removed - only called from is_chained path (~5 LOC) */
 
 /* __irq_disable, irq_disable removed - zero callers */
 
@@ -132,11 +106,7 @@ void unmask_irq(struct irq_desc *desc)
 
 void unmask_threaded_irq(struct irq_desc *desc)
 {
-	struct irq_chip *chip = desc->irq_data.chip;
-
-	if (chip->flags & IRQCHIP_EOI_THREADED)
-		chip->irq_eoi(&desc->irq_data);
-
+	/* IRQCHIP_EOI_THREADED check removed - never set by any chip */
 	unmask_irq(desc);
 }
 
@@ -172,7 +142,7 @@ out_unlock:
 /* __irq_do_set_handler inlined into __irq_set_handler */
 
 void __irq_set_handler(unsigned int irq, irq_flow_handler_t handle,
-		       int is_chained, const char *name)
+		       const char *name)
 {
 	unsigned long flags;
 	struct irq_desc *desc = irq_get_desc_buslock(irq, &flags, 0);
@@ -180,7 +150,6 @@ void __irq_set_handler(unsigned int irq, irq_flow_handler_t handle,
 	if (!desc)
 		return;
 
-	/* __irq_do_set_handler inlined */
 	if (!handle) {
 		handle = handle_bad_irq;
 	} else {
@@ -193,31 +162,12 @@ void __irq_set_handler(unsigned int irq, irq_flow_handler_t handle,
 		if (desc->irq_data.chip != &no_irq_chip)
 			mask_ack_irq(desc);
 		irq_state_set_disabled(desc);
-		if (is_chained) {
-			desc->action = NULL;
-			/* irq_chip_pm_put removed - always returns 0 */
-		}
 		desc->depth = 1;
 	}
 	desc->handle_irq = handle;
 	desc->name = name;
 
-	if (handle != handle_bad_irq && is_chained) {
-		unsigned int type = irqd_get_trigger_type(&desc->irq_data);
-
-		if (type != IRQ_TYPE_NONE) {
-			__irq_set_trigger(desc, type);
-			desc->handle_irq = handle;
-		}
-
-		irq_settings_set_noprobe(desc);
-		/* irq_settings_set_norequest and irq_settings_set_nothread inlined - single caller */
-		desc->status_use_accessors |= _IRQ_NOREQUEST;
-		desc->status_use_accessors |= _IRQ_NOTHREAD;
-		desc->action = &chained_action;
-		/* irq_chip_pm_get removed - always returns 0 */
-		irq_activate_and_startup(desc, IRQ_RESEND);
-	}
+	/* is_chained path removed - always called with is_chained=0 (~15 LOC) */
 
 out:
 	irq_put_desc_busunlock(desc, flags);
@@ -227,8 +177,15 @@ void irq_set_chip_and_handler_name(unsigned int irq,
 				   const struct irq_chip *chip,
 				   irq_flow_handler_t handle, const char *name)
 {
-	irq_set_chip(irq, chip);
-	__irq_set_handler(irq, handle, 0, name);
+	/* irq_set_chip inlined */
+	unsigned long flags;
+	struct irq_desc *desc = irq_get_desc_lock(irq, &flags, 0);
+
+	if (desc) {
+		desc->irq_data.chip = (struct irq_chip *)(chip ?: &no_irq_chip);
+		irq_put_desc_unlock(desc, flags);
+	}
+	__irq_set_handler(irq, handle, name);
 }
 
 /* irq_modify_status removed - never called */

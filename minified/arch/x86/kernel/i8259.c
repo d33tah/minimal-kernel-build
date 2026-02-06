@@ -122,7 +122,6 @@ spurious_8259A_irq:
 struct irq_chip i8259A_chip = {
 	.name = "XT-PIC",
 	.irq_mask = disable_8259A_irq,
-	.irq_disable = disable_8259A_irq,
 	.irq_unmask = enable_8259A_irq,
 	.irq_mask_ack = mask_and_ack_8259A,
 };

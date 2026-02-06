@@ -66,17 +66,17 @@ struct irq_common_data {
 	unsigned int		__private state_use_accessors;
 	/* handler_data removed - only set to NULL, never read */
 	/* msi_desc removed - only set to NULL, never read */
-	cpumask_var_t		affinity;
+	/* affinity removed - never accessed */
 };
 
 struct irq_data {
 	/* mask removed - never accessed */
 	unsigned int		irq;
-	unsigned long		hwirq;
+	/* hwirq removed - never accessed */
 	struct irq_common_data	*common;
 	struct irq_chip		*chip;
-	struct irq_domain	*domain;
-	void			*chip_data;
+	/* domain removed - never accessed */
+	/* chip_data removed - only set to NULL, never read */
 };
 
 enum {
@@ -159,27 +159,26 @@ static inline bool irqd_is_started(struct irq_data *d)
 struct irq_chip {
 	const char	*name;
 	unsigned int	(*irq_startup)(struct irq_data *data);
-	void		(*irq_shutdown)(struct irq_data *data);
+	/* irq_shutdown removed - never called */
 	void		(*irq_enable)(struct irq_data *data);
-	void		(*irq_disable)(struct irq_data *data);
+	/* irq_disable removed - never called through function pointer */
 
 	void		(*irq_ack)(struct irq_data *data);
 	void		(*irq_mask)(struct irq_data *data);
 	void		(*irq_mask_ack)(struct irq_data *data);
 	void		(*irq_unmask)(struct irq_data *data);
-	void		(*irq_eoi)(struct irq_data *data);
+	/* irq_eoi removed - never called (IRQCHIP_EOI_THREADED never set) */
 
-	int		(*irq_set_affinity)(struct irq_data *data, const struct cpumask *dest, bool force);
-	int		(*irq_retrigger)(struct irq_data *data);
+	/* irq_set_affinity removed - never called */
+	/* irq_retrigger removed - never called */
 	int		(*irq_set_type)(struct irq_data *data, unsigned int flow_type);
-	int		(*irq_set_wake)(struct irq_data *data, unsigned int on);
+	/* irq_set_wake removed - never called */
 
 	void		(*irq_bus_lock)(struct irq_data *data);
 	void		(*irq_bus_sync_unlock)(struct irq_data *data);
 	/* irq_suspend, irq_resume, irq_pm_shutdown removed - never used */
 	/* irq_calc_mask, irq_print_chip removed - never used */
-	int		(*irq_request_resources)(struct irq_data *data);
-	void		(*irq_release_resources)(struct irq_data *data);
+	/* irq_request_resources, irq_release_resources removed - never set by any chip */
 	/* irq_compose_msi_msg, irq_write_msi_msg removed - never used */
 	/* irq_get_irqchip_state, irq_set_irqchip_state removed - never used */
 	/* irq_set_vcpu_affinity, ipi_send_*, irq_nmi_* removed - never used */
@@ -191,7 +190,7 @@ enum {
 	/* IRQCHIP_EOI_IF_HANDLED, IRQCHIP_MASK_ON_SUSPEND, IRQCHIP_ONOFFLINE_ENABLED removed - unused */
 	IRQCHIP_SKIP_SET_WAKE			= (1 <<  4),
 	IRQCHIP_ONESHOT_SAFE			= (1 <<  5),
-	IRQCHIP_EOI_THREADED			= (1 <<  6),
+	/* IRQCHIP_EOI_THREADED removed - never set by any chip */
 	/* IRQCHIP_SUPPORTS_LEVEL_MSI, IRQCHIP_SUPPORTS_NMI, IRQCHIP_ENABLE_WAKEUP_ON_SUSPEND,
 	   IRQCHIP_AFFINITY_PRE_STARTUP, IRQCHIP_IMMUTABLE removed - unused */
 };
@@ -235,14 +234,14 @@ static inline void irq_set_chip_and_handler(unsigned int irq,
 
 
 extern void
-__irq_set_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained,
+__irq_set_handler(unsigned int irq, irq_flow_handler_t handle,
 		  const char *name);
 
 
 /* irq_modify_status removed - never called */
 
 
-extern int irq_set_chip(unsigned int irq, const struct irq_chip *chip);
+/* irq_set_chip removed - inlined into irq_set_chip_and_handler_name */
 /* irq_set_chip_data, irq_set_irq_type, irq_get_irq_data, irq_data_get_irq_chip, irq_data_get_affinity_mask, arch_dynirq_lower_bound removed - unused */
 
 /* __irq_alloc_descs, irq_free_descs removed - never called */

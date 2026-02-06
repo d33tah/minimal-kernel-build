@@ -184,7 +184,6 @@ speed_t tty_termios_baud_rate(struct ktermios *termios);
 /* tty_get_char_size, tty_get_frame_size, tty_termios_copy_hw, tty_termios_hw_change,
    tty_wakeup removed - never called */
 
-int tty_mode_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg);
 struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx);
 extern struct mutex tty_mutex;
 

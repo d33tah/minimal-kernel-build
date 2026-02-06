@@ -70,16 +70,4 @@ static const int early_serial_base;
 /* kernel_add_identity_map removed - never defined */
 extern pteval_t __default_kernel_pte_mask;
 
-
-extern gate_desc boot_idt[BOOT_IDT_ENTRIES];
-/* boot_idt_desc, cleanup_exception_handling removed - never used */
-
- 
-void boot_page_fault(void);
-void boot_stage1_vc(void);
-void boot_stage2_vc(void);
-
-unsigned long sev_verify_cbit(unsigned long cr3);
-/* enum efi_type removed - unused */
-
 #endif  

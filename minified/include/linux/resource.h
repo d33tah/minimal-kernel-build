@@ -89,9 +89,4 @@ struct rlimit {
 	[RLIMIT_RTPRIO]		= { 0, 0 },				\
 	[RLIMIT_RTTIME]		= {  RLIM_INFINITY,  RLIM_INFINITY },	\
 }
-
-struct task_struct;
-
-void getrusage(struct task_struct *p, int who, struct rusage *ru);
-
 #endif

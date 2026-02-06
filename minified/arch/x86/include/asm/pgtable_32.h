@@ -17,7 +17,6 @@ struct vm_area_struct;
 
 extern pgd_t swapper_pg_dir[1024];
 extern pgd_t initial_page_table[1024];
-extern pmd_t initial_pg_pmd[];
 
 void paging_init(void);
 void sync_initial_page_table(void);

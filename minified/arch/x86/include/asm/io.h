@@ -54,21 +54,6 @@ void __iomem *ioremap(resource_size_t offset, unsigned long size);
 extern void iounmap(volatile void __iomem *addr);
 #define iounmap iounmap
 
-#ifdef __KERNEL__
-
-void memcpy_fromio(void *, const volatile void __iomem *, size_t);
-void memcpy_toio(volatile void __iomem *, const void *, size_t);
-void memset_io(volatile void __iomem *, int, size_t);
-
-#define memcpy_fromio memcpy_fromio
-#define memcpy_toio memcpy_toio
-#define memset_io memset_io
-
-
-
-/* __ISA_IO_base removed - never used */
-
-#endif  
 
 /* io_delay.c removed - native_io_delay inlined */
 static inline void native_io_delay(void)

@@ -323,12 +323,6 @@ struct rq_flags {
 #define rq_pin_lock(rq, rf) do { } while (0)
 #define rq_unpin_lock(rq, rf) do { } while (0)
 
-struct rq *__task_rq_lock(struct task_struct *p, struct rq_flags *rf)
-	__acquires(rq->lock);
-
-struct rq *task_rq_lock(struct task_struct *p, struct rq_flags *rf)
-	__acquires(p->pi_lock)
-	__acquires(rq->lock);
 
 static inline void __task_rq_unlock(struct rq *rq, struct rq_flags *rf)
 	__releases(rq->lock)

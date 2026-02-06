@@ -52,7 +52,7 @@ void raw_spin_rq_unlock(struct rq *rq)
 }
 
 /* Migration wait loops removed - TASK_ON_RQ_MIGRATING never set in UP kernel */
-struct rq *__task_rq_lock(struct task_struct *p, struct rq_flags *rf)
+static struct rq *__task_rq_lock(struct task_struct *p, struct rq_flags *rf)
 	__acquires(rq->lock)
 {
 	struct rq *rq;
@@ -63,7 +63,7 @@ struct rq *__task_rq_lock(struct task_struct *p, struct rq_flags *rf)
 	return rq;
 }
 
-struct rq *task_rq_lock(struct task_struct *p, struct rq_flags *rf)
+static struct rq *task_rq_lock(struct task_struct *p, struct rq_flags *rf)
 	__acquires(p->pi_lock) __acquires(rq->lock)
 {
 	struct rq *rq;
@@ -801,7 +801,7 @@ void __sched io_schedule(void)
 
 /* sched_rr_get_interval replaced with COND_SYSCALL */
 
-void __init init_idle(struct task_struct *idle, int cpu)
+static void __init init_idle(struct task_struct *idle, int cpu)
 {
 	struct rq *rq = cpu_rq(cpu);
 	unsigned long flags;

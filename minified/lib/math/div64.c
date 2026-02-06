@@ -7,43 +7,7 @@
 
 #if BITS_PER_LONG == 32
 
-#ifndef __div64_32
-uint32_t __attribute__((weak)) __div64_32(uint64_t *n, uint32_t base)
-{
-	uint64_t rem = *n;
-	uint64_t b = base;
-	uint64_t res, d = 1;
-	uint32_t high = rem >> 32;
-
-	res = 0;
-	if (high >= base) {
-		high /= base;
-		res = (uint64_t)high << 32;
-		rem -= (uint64_t)(high * base) << 32;
-	}
-
-	while ((int64_t)b > 0 && b < rem) {
-		b = b + b;
-		d = d + d;
-	}
-
-	do {
-		if (rem >= b) {
-			rem -= b;
-			res += d;
-		}
-		b >>= 1;
-		d >>= 1;
-	} while (d);
-
-	*n = res;
-	return rem;
-}
-#endif
-
-/* div_s64_rem removed - never called */
-
-/* div64_u64_rem removed - never called */
+/* __div64_32 removed - x86 do_div uses inline asm, never calls this fallback */
 
 #ifndef div64_u64
 u64 div64_u64(u64 dividend, u64 divisor)

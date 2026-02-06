@@ -11,8 +11,6 @@
 #include <asm/tlbflush.h>
 #include <asm/tlb.h>
 #include <asm/proto.h>
-unsigned long kaslr_get_random_long(const char *purpose);
-/* end kaslr.h */
 #include <asm/cpufeature.h>
 /* pti_check_boottime_disable removed - empty stub */
 #include <asm/text-patching.h>

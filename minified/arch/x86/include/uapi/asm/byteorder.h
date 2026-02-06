@@ -1,4 +1,3 @@
-
 #ifndef _ASM_X86_BYTEORDER_H
 #define _ASM_X86_BYTEORDER_H
 
@@ -43,32 +42,7 @@
 #define __cpu_to_be16(x) ((__force __be16)__swab16((x)))
 #define __be16_to_cpu(x) __swab16((__force __u16)(__be16)(x))
 
-static __always_inline __le64 __cpu_to_le64p(const __u64 *p)
-{
-	return (__force __le64)*p;
-}
-static __always_inline __u64 __le64_to_cpup(const __le64 *p)
-{
-	return (__force __u64)*p;
-}
-static __always_inline __le32 __cpu_to_le32p(const __u32 *p)
-{
-	return (__force __le32)*p;
-}
-static __always_inline __u32 __le32_to_cpup(const __le32 *p)
-{
-	return (__force __u32)*p;
-}
-static __always_inline __le16 __cpu_to_le16p(const __u16 *p)
-{
-	return (__force __le16)*p;
-}
-static __always_inline __u16 __le16_to_cpup(const __le16 *p)
-{
-	return (__force __u16)*p;
-}
-/* be*p functions removed - unused */
-/* *s macros removed - unused */
+/* le*p/be*p/s pointer-based functions and macros removed - unused */
 /* end little_endian.h */
 
 /* Inlined from linux/byteorder/generic.h */
@@ -84,13 +58,6 @@ static __always_inline __u16 __le16_to_cpup(const __le16 *p)
 #define be32_to_cpu __be32_to_cpu
 #define cpu_to_be16 __cpu_to_be16
 #define be16_to_cpu __be16_to_cpu
-#define cpu_to_le64p __cpu_to_le64p
-#define le64_to_cpup __le64_to_cpup
-#define cpu_to_le32p __cpu_to_le32p
-#define le32_to_cpup __le32_to_cpup
-#define cpu_to_le16p __cpu_to_le16p
-#define le16_to_cpup __le16_to_cpup
-/* be*p, *s macros removed - unused */
 
 #undef ntohl
 #undef ntohs
@@ -107,4 +74,4 @@ static __always_inline __u16 __le16_to_cpup(const __le16 *p)
 #define htons(x) ___htons(x)
 #define ntohs(x) ___ntohs(x)
 
-#endif  
+#endif

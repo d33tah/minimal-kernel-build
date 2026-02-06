@@ -1,4 +1,3 @@
- 
 #ifndef _ASM_X86_ATOMIC_H
 #define _ASM_X86_ATOMIC_H
 
@@ -136,16 +135,6 @@ static __always_inline void arch_atomic_and(int i, atomic_t *v)
 			: "memory");
 }
 
-static __always_inline int arch_atomic_fetch_and(int i, atomic_t *v)
-{
-	int val = arch_atomic_read(v);
-
-	do { } while (!arch_atomic_try_cmpxchg(v, &val, val & i));
-
-	return val;
-}
-#define arch_atomic_fetch_and arch_atomic_fetch_and
-
 static __always_inline void arch_atomic_or(int i, atomic_t *v)
 {
 	asm volatile(LOCK_PREFIX "orl %1,%0"
@@ -154,34 +143,9 @@ static __always_inline void arch_atomic_or(int i, atomic_t *v)
 			: "memory");
 }
 
-static __always_inline int arch_atomic_fetch_or(int i, atomic_t *v)
-{
-	int val = arch_atomic_read(v);
-
-	do { } while (!arch_atomic_try_cmpxchg(v, &val, val | i));
-
-	return val;
-}
-#define arch_atomic_fetch_or arch_atomic_fetch_or
-
-static __always_inline void arch_atomic_xor(int i, atomic_t *v)
-{
-	asm volatile(LOCK_PREFIX "xorl %1,%0"
-			: "+m" (v->counter)
-			: "ir" (i)
-			: "memory");
-}
-
-static __always_inline int arch_atomic_fetch_xor(int i, atomic_t *v)
-{
-	int val = arch_atomic_read(v);
-
-	do { } while (!arch_atomic_try_cmpxchg(v, &val, val ^ i));
-
-	return val;
-}
-#define arch_atomic_fetch_xor arch_atomic_fetch_xor
+/* Removed unused: arch_atomic_fetch_and, arch_atomic_fetch_or,
+ * arch_atomic_xor, arch_atomic_fetch_xor (~30 LOC) */
 
 # include <asm/atomic64_32.h>
 
-#endif  
+#endif

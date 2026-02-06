@@ -7,13 +7,10 @@
 #include <linux/sched.h>
 /* dl_prio, dl_task removed - always returned false */
 #define MAX_DL_PRIO 0
-/* loadavg.h inlined - LOAD_FREQ is the only macro used */
-#define LOAD_FREQ (5*HZ+1)
 #include <linux/sched/mm.h>
 
 #include <linux/sched/signal.h>
 /* extern total_forks removed - only incremented, never read */
-extern int nr_threads;
 /* process_counts, nr_running, single_task_running, nr_iowait, nr_iowait_cpu removed/made static */
 /* end sched/stat.h */
 /* linux/sched/sysctl.h removed - sysctl_hung_task_timeout_secs unused */
@@ -75,16 +72,8 @@ struct rq;
 
  
 #define TASK_ON_RQ_QUEUED	1
-#define TASK_ON_RQ_MIGRATING	2
-
-/* scheduler_running, calc_load_update removed - write-only variables */
-/* calc_load_tasks, sysctl_sched_child_runs_first removed - never used */
-/* calc_global_load_tick, calc_load_fold_active removed - never called */
-
-/* NS_TO_JIFFIES, NICE_0_LOAD, RUNTIME_INF removed - never used */
-# define NICE_0_LOAD_SHIFT	(SCHED_FIXEDPOINT_SHIFT)
+/* TASK_ON_RQ_MIGRATING, NICE_0_LOAD_SHIFT, scale_load_down removed - never used */
 # define scale_load(w)		(w)
-# define scale_load_down(w)	(w)
 
 static inline int idle_policy(int policy)
 {
@@ -163,7 +152,6 @@ struct dl_rq {
 	char dummy; /* Empty struct not allowed in C */
 };
 
-#define entity_is_task(se)	1
 /* se_update_runnable removed - empty stub */
 struct rq {
 	 
@@ -202,10 +190,6 @@ static inline struct rq *rq_of(struct cfs_rq *cfs_rq)
 /* struct sched_group forward decl removed - never defined or used */
 /* sched_core_enabled removed - unused */
 
-static inline bool sched_core_disabled(void)
-{
-	return true;
-}
 
 static inline raw_spinlock_t *rq_lockp(struct rq *rq)
 {
@@ -260,8 +244,7 @@ DECLARE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
 #define cpu_rq(cpu)		(&per_cpu(runqueues, (cpu)))
 #define this_rq()		this_cpu_ptr(&runqueues)
 #define task_rq(p)		cpu_rq(task_cpu(p))
-#define cpu_curr(cpu)		(cpu_rq(cpu)->curr)
-#define raw_rq()		raw_cpu_ptr(&runqueues)
+/* cpu_curr, raw_rq removed - no callers */
 
 
 static inline struct task_struct *task_of(struct sched_entity *se)
@@ -341,21 +324,7 @@ task_rq_unlock(struct rq *rq, struct task_struct *p, struct rq_flags *rf)
 	raw_spin_unlock_irqrestore(&p->pi_lock, rf->flags);
 }
 
-static inline void
-rq_lock_irqsave(struct rq *rq, struct rq_flags *rf)
-	__acquires(rq->lock)
-{
-	raw_spin_rq_lock_irqsave(rq, rf->flags);
-	rq_pin_lock(rq, rf);
-}
-
-static inline void
-rq_lock_irq(struct rq *rq, struct rq_flags *rf)
-	__acquires(rq->lock)
-{
-	raw_spin_rq_lock_irq(rq);
-	rq_pin_lock(rq, rf);
-}
+/* rq_lock_irqsave, rq_lock_irq removed - no callers */
 
 static inline void
 rq_lock(struct rq *rq, struct rq_flags *rf)
@@ -365,21 +334,7 @@ rq_lock(struct rq *rq, struct rq_flags *rf)
 	rq_pin_lock(rq, rf);
 }
 
-static inline void
-rq_unlock_irqrestore(struct rq *rq, struct rq_flags *rf)
-	__releases(rq->lock)
-{
-	rq_unpin_lock(rq, rf);
-	raw_spin_rq_unlock_irqrestore(rq, rf->flags);
-}
-
-static inline void
-rq_unlock_irq(struct rq *rq, struct rq_flags *rf)
-	__releases(rq->lock)
-{
-	rq_unpin_lock(rq, rf);
-	raw_spin_rq_unlock_irq(rq);
-}
+/* rq_unlock_irqrestore, rq_unlock_irq removed - no callers */
 
 static inline void
 rq_unlock(struct rq *rq, struct rq_flags *rf)

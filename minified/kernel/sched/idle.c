@@ -5,8 +5,6 @@
 
 #include "sched.h"
 
-extern char __cpuidle_text_start[], __cpuidle_text_end[];
-
 /* arch_cpu_idle_prepare, arch_cpu_idle_exit removed - empty weak funcs, no overrides */
 /* do_idle, default_idle_call inlined - single callers */
 void cpu_startup_entry(enum cpuhp_state state)

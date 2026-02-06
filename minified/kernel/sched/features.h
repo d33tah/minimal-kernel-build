@@ -1,10 +1,5 @@
-/* Scheduler features - reduced to only those used in fair.c */
-SCHED_FEAT(GENTLE_FAIR_SLEEPERS, true)
-SCHED_FEAT(START_DEBIT, true)
+/* Only WAKEUP_PREEMPTION is actually checked in fair.c */
 SCHED_FEAT(WAKEUP_PREEMPTION, true)
-SCHED_FEAT(ATTACH_AGE_LOAD, true)
-SCHED_FEAT(ALT_PERIOD, true)
-SCHED_FEAT(BASE_SLICE, true)
 /* Removed unused features (~25 LOC):
  * NEXT_BUDDY, LAST_BUDDY, CACHE_HOT_BUDDY, HRTICK, HRTICK_DL, DOUBLE_TICK,
  * NONTASK_CAPACITY, TTWU_QUEUE, SIS_PROP, WARN_DOUBLE_CLOCK, RT_PUSH_IPI,

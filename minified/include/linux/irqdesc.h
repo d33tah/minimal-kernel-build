@@ -11,10 +11,10 @@ struct irq_domain;
 struct pt_regs;
 struct irq_desc {
 	struct irq_common_data irq_common_data; struct irq_data irq_data;
-	unsigned int __percpu *kstat_irqs; irq_flow_handler_t handle_irq;
+	/* kstat_irqs removed - percpu counter is write-only */ irq_flow_handler_t handle_irq;
 	struct irqaction *action; unsigned int status_use_accessors;
 	unsigned int core_internal_state__do_not_mess_with_it; unsigned int depth;
-	unsigned int irq_count; unsigned int irqs_unhandled;
+	/* irq_count, irqs_unhandled removed - write-only */
 	/* threads_handled removed - write-only (note_interrupt removed) */ raw_spinlock_t lock;
 	/* percpu_enabled, percpu_affinity removed - never accessed */
 	unsigned long threads_oneshot; atomic_t threads_active;

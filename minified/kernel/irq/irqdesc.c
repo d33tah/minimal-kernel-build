@@ -40,10 +40,7 @@ static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
 	if (!desc)
 		return NULL;
 
-	desc->kstat_irqs = alloc_percpu(unsigned int);
-	if (!desc->kstat_irqs)
-		goto err_desc;
-
+	/* kstat_irqs allocation removed - percpu counter is write-only */
 	raw_spin_lock_init(&desc->lock);
 	/* lockdep_set_class removed - empty stub */
 	mutex_init(&desc->request_mutex);
@@ -59,19 +56,14 @@ static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
 	irqd_set(&desc->irq_data, IRQD_IRQ_MASKED);
 	desc->handle_irq = handle_bad_irq;
 	desc->depth = 1;
-	desc->irq_count = 0;
-	desc->irqs_unhandled = 0;
+	/* irq_count, irqs_unhandled init removed - fields removed */
 	desc->name = NULL;
 	desc->owner = owner;
-	*per_cpu_ptr(desc->kstat_irqs, 0) = 0;
+	/* kstat_irqs per-cpu init removed - field removed */
 	irqd_set(&desc->irq_data, flags);
 	kobject_init(&desc->kobj, &irq_kobj_type);
 
 	return desc;
-
-err_desc:
-	kfree(desc);
-	return NULL;
 }
 
 static void irq_kobj_release(struct kobject *kobj)

@@ -41,8 +41,8 @@ enum {
 #define ___PS(f) if (desc->istate & f) printk("%14s set\n", #f)
 static inline void print_irq_desc(unsigned int irq, struct irq_desc *desc)
 {
-	printk("irq %d, desc: %p, depth: %d, count: %d, unhandled: %d\n",
-		irq, desc, desc->depth, desc->irq_count, desc->irqs_unhandled);
+	printk("irq %d, desc: %p, depth: %d\n",
+		irq, desc, desc->depth);
 	printk("->handle_irq():  %p, %pS\n",
 		desc->handle_irq, desc->handle_irq);
 	printk("->irq_data.chip(): %p, %pS\n",
@@ -277,8 +277,7 @@ static inline void irq_state_set_masked(struct irq_desc *desc)
 
 static inline void kstat_incr_irqs_this_cpu(struct irq_desc *desc)
 {
-	__this_cpu_inc(*desc->kstat_irqs);
-	/* kstat.irqs_sum removed - write-only */
+	/* kstat_irqs inc removed - percpu counter is write-only */
 }
 
 /* irq_desc_get_node, irq_desc_is_chained, irq_pm_check_wakeup, irq_pm_remove_action removed - unused */

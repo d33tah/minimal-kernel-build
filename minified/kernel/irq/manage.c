@@ -454,8 +454,7 @@ static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 	*old_ptr = new;
 
 	/* irq_pm_install_action removed - empty stub */
-	desc->irq_count = 0;
-	desc->irqs_unhandled = 0;
+	/* irq_count, irqs_unhandled zeroing removed - fields removed */
 
 	if (shared && (desc->istate & IRQS_SPURIOUS_DISABLED)) {
 		desc->istate &= ~IRQS_SPURIOUS_DISABLED;

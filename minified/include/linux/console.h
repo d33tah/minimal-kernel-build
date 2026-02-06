@@ -90,7 +90,7 @@ extern int console_trylock(void);
 extern void console_unlock(void);
 extern void console_unblank(void);
 extern void console_flush_on_panic(enum con_flush_mode mode);
-extern struct tty_driver *console_device(int *);
+/* console_device removed - never called */
 extern int is_console_locked(void);
 /* console_sysfs_notify, vcs_make_sysfs removed - unused */
 

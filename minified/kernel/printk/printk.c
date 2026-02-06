@@ -155,22 +155,7 @@ void console_flush_on_panic(enum con_flush_mode mode)
 	console_unlock();
 }
 
-struct tty_driver *console_device(int *index)
-{
-	struct console *c;
-	struct tty_driver *driver = NULL;
-
-	console_lock();
-	for_each_console(c) {
-		if (!c->device)
-			continue;
-		driver = c->device(c, index);
-		if (driver)
-			break;
-	}
-	console_unlock();
-	return driver;
-}
+/* console_device removed - never called (~16 LOC) */
 
 /* keep_bootcon removed - never set, always false */
 

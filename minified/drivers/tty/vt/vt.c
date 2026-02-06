@@ -459,7 +459,7 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 
 /* vc_draw_region removed - only used in dead con_write */
 
-struct tty_driver *console_driver;
+/* console_driver removed - never initialized (vty_init removed) */
 
 static void vt_console_print(struct console *co, const char *b, unsigned count)
 {
@@ -496,17 +496,11 @@ quit:
 	spin_unlock(&printing_lock);
 }
 
-static struct tty_driver *vt_console_device(struct console *c, int *index)
-{
-	*index = c->index ? c->index - 1 : fg_console;
-	return console_driver;
-}
+/* vt_console_device removed - console_device() never called */
 
 static struct console vt_console_driver = {
 	.name = "tty",
 	.write = vt_console_print,
-	.device = vt_console_device,
-	/* .unblank removed - was empty stub */
 	.flags = CON_PRINTBUFFER,
 	.index = -1,
 };

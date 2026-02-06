@@ -380,17 +380,7 @@ void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 
 /* flush_tlb_all and do_flush_tlb_all removed - never called (~11 LOC) */
 
-unsigned long __get_current_cr3_fast(void)
-{
-	unsigned long cr3 =
-		build_cr3(this_cpu_read(cpu_tlbstate.loaded_mm)->pgd,
-			  this_cpu_read(cpu_tlbstate.loaded_mm_asid));
-
-	VM_WARN_ON(in_nmi() || preemptible());
-
-	VM_BUG_ON(cr3 != __read_cr3());
-	return cr3;
-}
+/* __get_current_cr3_fast removed - never called (~11 LOC) */
 
 void flush_tlb_one_kernel(unsigned long addr)
 {

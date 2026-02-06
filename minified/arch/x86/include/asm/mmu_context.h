@@ -93,7 +93,7 @@ static inline void arch_unmap(struct mm_struct *mm, unsigned long start,
 
 /* arch_vma_access_permitted removed - never called, always returns true */
 
-unsigned long __get_current_cr3_fast(void);
+/* __get_current_cr3_fast removed - never called */
 
 
 

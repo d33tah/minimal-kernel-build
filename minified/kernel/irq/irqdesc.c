@@ -122,11 +122,7 @@ int handle_irq_desc(struct irq_desc *desc)
 	return 0;
 }
 
-int generic_handle_irq(unsigned int irq)
-{
-	return handle_irq_desc(irq_to_desc(irq));
-}
-
+/* generic_handle_irq removed - never called (~4 LOC) */
 /* generic_handle_irq_safe, irq_free_descs, __irq_alloc_descs removed - never called */
 /* irq_get_next_irq removed - only used by for_each_active_irq macro (unused) */
 

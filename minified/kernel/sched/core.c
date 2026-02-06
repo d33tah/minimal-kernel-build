@@ -774,10 +774,7 @@ int sched_setscheduler(struct task_struct *p, int policy,
 	return _sched_setscheduler(p, policy, param, true);
 }
 
-int sched_setattr(struct task_struct *p, const struct sched_attr *attr)
-{
-	return __sched_setscheduler(p, attr, true, true);
-}
+/* sched_setattr removed - never called (~4 LOC) */
 
 int sched_setscheduler_nocheck(struct task_struct *p, int policy,
 			       const struct sched_param *param)

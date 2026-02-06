@@ -374,12 +374,7 @@ out:
 	return !!clock_set;
 }
 
-void update_wall_time(void)
-{
-	timekeeping_advance(TK_ADV_TICK);
-	/* clock_was_set_delayed() call removed - function was empty stub */
-}
-
+/* update_wall_time removed - never called (~5 LOC) */
 /* ktime_get_coarse_real_ts64 removed - never called (~11 LOC) */
 
 /* do_timer removed - never called (~5 LOC) */

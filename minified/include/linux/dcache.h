@@ -128,7 +128,7 @@ extern seqlock_t rename_lock;
 
 extern void d_instantiate(struct dentry *, struct inode *);
 /* __d_drop, d_drop made static - only used in dcache.c */
-extern void d_delete(struct dentry *);
+/* d_delete removed - never called */
 extern void d_set_d_op(struct dentry *dentry, const struct dentry_operations *op);
 
 

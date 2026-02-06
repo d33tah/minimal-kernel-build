@@ -6,9 +6,7 @@
 /* timekeeping_warp_clock, timekeeping_suspend, timekeeping_resume,
    sched_clock_suspend, sched_clock_resume removed - unused */
 
-extern void update_process_times(int user);
-/* do_timer removed - never called */
-extern void update_wall_time(void);
+/* update_process_times, do_timer, update_wall_time removed - never called */
 
 extern raw_spinlock_t jiffies_lock;
 extern seqcount_raw_spinlock_t jiffies_seq;

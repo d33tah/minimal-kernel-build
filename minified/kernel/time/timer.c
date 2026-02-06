@@ -27,12 +27,7 @@ void init_timer_key(struct timer_list *timer, void (*func)(struct timer_list *),
 }
 /* mod_timer, del_timer removed - never called */
 
-void update_process_times(int user_tick)
-{
-	/* hrtimer_run_queues() removed - was empty stub */
-	rcu_sched_clock_irq(user_tick);
-	scheduler_tick();
-}
+/* update_process_times removed - never called (~6 LOC) */
 
 signed long __sched schedule_timeout(signed long timeout)
 {

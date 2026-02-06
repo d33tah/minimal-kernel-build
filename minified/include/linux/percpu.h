@@ -37,8 +37,6 @@ struct pcpu_alloc_info {
 	size_t			reserved_size;
 	size_t			dyn_size;
 	size_t			unit_size;
-	size_t			atom_size;
-	size_t			alloc_size;
 	size_t			__ai_size;	 
 	int			nr_groups;	 
 	struct pcpu_group_info	groups[];

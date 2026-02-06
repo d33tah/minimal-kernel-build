@@ -47,7 +47,6 @@ struct pcpu_chunk {
 	struct pcpu_block_md *md_blocks;
 	void *data;
 	bool immutable;
-	bool isolated;
 	int start_offset;
 	int end_offset;
 	int nr_pages;
@@ -87,8 +86,7 @@ static int pcpu_unit_size __ro_after_init;
 /* pcpu_atom_size removed - only written, never read */
 int pcpu_nr_slots __ro_after_init;
 static int pcpu_free_slot __ro_after_init;
-int pcpu_sidelined_slot __ro_after_init;
-int pcpu_to_depopulate_slot __ro_after_init;
+/* pcpu_sidelined_slot, pcpu_to_depopulate_slot removed - write-only */
 static size_t pcpu_chunk_struct_size __ro_after_init;
 
 /* pcpu_low_unit_cpu, pcpu_high_unit_cpu removed - only written, never read */
@@ -101,7 +99,7 @@ static const size_t *pcpu_group_sizes __ro_after_init;
 
 struct pcpu_chunk *pcpu_first_chunk __ro_after_init;
 
-struct pcpu_chunk *pcpu_reserved_chunk __ro_after_init;
+/* pcpu_reserved_chunk removed - always NULL (reserved_size always 0) */
 
 DEFINE_SPINLOCK(pcpu_lock);
 static DEFINE_MUTEX(pcpu_alloc_mutex);
@@ -287,20 +285,15 @@ static void pcpu_mem_free(void *ptr)
 static void __pcpu_chunk_move(struct pcpu_chunk *chunk, int slot,
 			      bool move_front)
 {
-	if (chunk != pcpu_reserved_chunk) {
-		if (move_front)
-			list_move(&chunk->list, &pcpu_chunk_lists[slot]);
-		else
-			list_move_tail(&chunk->list, &pcpu_chunk_lists[slot]);
-	}
+	if (move_front)
+		list_move(&chunk->list, &pcpu_chunk_lists[slot]);
+	else
+		list_move_tail(&chunk->list, &pcpu_chunk_lists[slot]);
 }
 
 static void pcpu_chunk_relocate(struct pcpu_chunk *chunk, int oslot)
 {
 	int nslot = pcpu_chunk_slot(chunk);
-
-	if (chunk->isolated)
-		return;
 
 	if (oslot != nslot)
 		__pcpu_chunk_move(chunk, nslot, oslot < nslot);
@@ -852,11 +845,6 @@ restart:
 
 			off = pcpu_alloc_area(chunk, bits, bit_align, off);
 			if (off >= 0) {
-				/* pcpu_reintegrate_chunk inlined */
-				if (chunk->isolated) {
-					chunk->isolated = false;
-					pcpu_chunk_relocate(chunk, -1);
-				}
 				goto area_found;
 			}
 		}
@@ -988,7 +976,6 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	size_t size_sum = ai->static_size + ai->reserved_size + ai->dyn_size;
 	size_t static_size, dyn_size;
 	struct pcpu_chunk *chunk;
-	unsigned long *group_offsets;
 	size_t *group_sizes;
 	unsigned long *unit_off;
 	unsigned int cpu;
@@ -1024,11 +1011,7 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	PCPU_SETUP_BUG_ON(ai->nr_groups !=
 			  1); /* pcpu_verify_alloc_info inlined */
 
-	alloc_size = ai->nr_groups * sizeof(group_offsets[0]);
-	group_offsets = memblock_alloc(alloc_size, SMP_CACHE_BYTES);
-	if (!group_offsets)
-		panic("%s: Failed to allocate %zu bytes\n", __func__,
-		      alloc_size);
+	/* group_offsets allocation removed - allocated but never read */
 
 	alloc_size = ai->nr_groups * sizeof(group_sizes[0]);
 	group_sizes = memblock_alloc(alloc_size, SMP_CACHE_BYTES);
@@ -1054,7 +1037,6 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	for (group = 0, unit = 0; group < ai->nr_groups; group++, unit += i) {
 		const struct pcpu_group_info *gi = &ai->groups[group];
 
-		group_offsets[group] = gi->base_offset;
 		group_sizes[group] = gi->nr_units * ai->unit_size;
 
 		for (i = 0; i < gi->nr_units; i++) {
@@ -1084,10 +1066,8 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	pcpu_chunk_struct_size =
 		struct_size(chunk, populated, BITS_TO_LONGS(pcpu_unit_pages));
 	/* pcpu_stats_save_ai removed - stats stub */
-	pcpu_sidelined_slot = __pcpu_size_to_slot(pcpu_unit_size) + 1;
-	pcpu_free_slot = pcpu_sidelined_slot + 1;
-	pcpu_to_depopulate_slot = pcpu_free_slot + 1;
-	pcpu_nr_slots = pcpu_to_depopulate_slot + 1;
+	pcpu_free_slot = __pcpu_size_to_slot(pcpu_unit_size) + 2;
+	pcpu_nr_slots = pcpu_free_slot + 2;
 	pcpu_chunk_lists = memblock_alloc(
 		pcpu_nr_slots * sizeof(pcpu_chunk_lists[0]), SMP_CACHE_BYTES);
 	if (!pcpu_chunk_lists)
@@ -1104,14 +1084,7 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	map_size = ai->reserved_size ?: dyn_size;
 	chunk = pcpu_alloc_first_chunk(tmp_addr, map_size);
 
-	if (ai->reserved_size) {
-		pcpu_reserved_chunk = chunk;
-
-		tmp_addr = (unsigned long)base_addr + static_size +
-			   ai->reserved_size;
-		map_size = dyn_size;
-		chunk = pcpu_alloc_first_chunk(tmp_addr, map_size);
-	}
+	/* reserved_size branch removed - always 0 in our setup */
 
 	pcpu_first_chunk = chunk;
 	pcpu_chunk_relocate(pcpu_first_chunk, -1);
@@ -1135,8 +1108,7 @@ void __init setup_per_cpu_areas(void)
 
 	ai->dyn_size = unit_size;
 	ai->unit_size = unit_size;
-	ai->atom_size = unit_size;
-	ai->alloc_size = unit_size;
+	/* ai->atom_size, ai->alloc_size removed - write-only fields */
 	ai->groups[0].nr_units = 1;
 	ai->groups[0].cpu_map[0] = 0;
 

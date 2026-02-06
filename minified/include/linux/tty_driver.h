@@ -61,7 +61,6 @@ extern struct list_head tty_drivers;
 struct tty_driver *__tty_alloc_driver(unsigned int lines, struct module *owner,
 		unsigned long flags);
 
-void tty_driver_kref_put(struct tty_driver *driver);
 
 #define tty_alloc_driver(lines, flags) \
 		__tty_alloc_driver(lines, THIS_MODULE, flags)

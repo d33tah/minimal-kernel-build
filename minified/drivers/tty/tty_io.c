@@ -38,8 +38,11 @@
 
 /* tty_debug_hangup removed - was empty macro */
 
-/* Forward declaration for static function used before definition */
+/* Forward declarations for static functions used before definition */
 static int tty_lock_interruptible(struct tty_struct *tty);
+static void tty_lock(struct tty_struct *tty);
+static void tty_unlock(struct tty_struct *tty);
+static void tty_driver_kref_put(struct tty_driver *driver);
 
 /* tty_std_termios removed - never used after vty_init removal */
 
@@ -278,7 +281,7 @@ static ssize_t tty_line_name(struct tty_driver *driver, int index, char *p)
 
 /* tty_driver_lookup_tty inlined into tty_open_by_driver */
 
-void tty_init_termios(struct tty_struct *tty)
+static void tty_init_termios(struct tty_struct *tty)
 {
 	struct ktermios *tp;
 	int idx = tty->index;
@@ -298,7 +301,8 @@ void tty_init_termios(struct tty_struct *tty)
 	tty->termios.c_ospeed = tty_termios_baud_rate(&tty->termios);
 }
 
-int tty_standard_install(struct tty_driver *driver, struct tty_struct *tty)
+static int tty_standard_install(struct tty_driver *driver,
+				struct tty_struct *tty)
 {
 	tty_init_termios(tty);
 	tty_driver_kref_get(driver);
@@ -760,7 +764,7 @@ static void destruct_tty_driver(struct kref *kref)
 	kfree(driver);
 }
 
-void tty_driver_kref_put(struct tty_driver *driver)
+static void tty_driver_kref_put(struct tty_driver *driver)
 {
 	kref_put(&driver->kref, destruct_tty_driver);
 }
@@ -772,7 +776,7 @@ void tty_driver_kref_put(struct tty_driver *driver)
 /* tty_init removed - never called (~18 LOC) */
 
 /* Merged from tty_mutex.c */
-void tty_lock(struct tty_struct *tty)
+static void tty_lock(struct tty_struct *tty)
 {
 	if (WARN(tty->magic != TTY_MAGIC, "L Bad %p\n", tty))
 		return;
@@ -790,7 +794,7 @@ static int tty_lock_interruptible(struct tty_struct *tty)
 		tty_kref_put(tty);
 	return ret;
 }
-void tty_unlock(struct tty_struct *tty)
+static void tty_unlock(struct tty_struct *tty)
 {
 	if (WARN(tty->magic != TTY_MAGIC, "U Bad %p\n", tty))
 		return;

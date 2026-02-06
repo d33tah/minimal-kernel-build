@@ -187,19 +187,10 @@ speed_t tty_termios_baud_rate(struct ktermios *termios);
 
 int tty_mode_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg);
 struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx);
-void tty_init_termios(struct tty_struct *tty);
-int tty_standard_install(struct tty_driver *driver,
-		struct tty_struct *tty);
-
 extern struct mutex tty_mutex;
 
 void __init n_tty_init(void);
 
-/* tty_audit_exit, tty_audit_fork, n_tty_ioctl_helper removed - unused */
-
 int vt_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg);
-
-void tty_lock(struct tty_struct *tty);
-void tty_unlock(struct tty_struct *tty);
 
 #endif

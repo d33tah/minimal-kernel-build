@@ -724,7 +724,6 @@ extern int register_filesystem(struct file_system_type *);
 
 /* current_umask() inlined into single call site */
 
-extern void ihold(struct inode * inode);
 extern void iput(struct inode *);
 
 #define MAX_RW_COUNT (INT_MAX & PAGE_MASK)

@@ -133,10 +133,7 @@ static void init_once(void *foo)
 	inode_init_once(inode);
 }
 
-void ihold(struct inode *inode)
-{
-	WARN_ON(atomic_inc_return(&inode->i_count) < 2);
-}
+/* ihold removed - no callers */
 
 static void __inode_add_lru(struct inode *inode, bool rotate)
 {

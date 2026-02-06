@@ -139,12 +139,7 @@ struct warn_args {
 	va_list args;
 };
 
-void __warn(const char *file, int line, void *caller, unsigned taint,
-	    struct pt_regs *regs, struct warn_args *args)
-{
-	/* Stub: panic_on_warn check removed (always 0) */
-	add_taint(taint, LOCKDEP_STILL_OK);
-}
+/* __warn removed - no callers (WARN macros simplified to not call it) */
 
 /* machine_restart inlined - just calls halt() in a loop */
 void emergency_restart(void)

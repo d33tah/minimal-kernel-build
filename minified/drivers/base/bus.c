@@ -30,55 +30,7 @@ static struct kset *bus_kset;
 /* unbind_store, bind_store, driver_attr_unbind, driver_attr_bind removed -
    driver_create_file is a stub that doesn't actually create files */
 
-static struct device *next_device(struct klist_iter *i)
-{
-	struct klist_node *n = klist_next(i);
-	struct device *dev = NULL;
-	struct device_private *dev_prv;
-
-	if (n) {
-		dev_prv = to_device_private_bus(n);
-		dev = dev_prv->device;
-	}
-	return dev;
-}
-
-int bus_for_each_dev(struct bus_type *bus, struct device *start, void *data,
-		     int (*fn)(struct device *, void *))
-{
-	struct klist_iter i;
-	struct device *dev;
-	int error = 0;
-
-	if (!bus || !bus->p)
-		return -EINVAL;
-
-	klist_iter_init_node(&bus->p->klist_devices, &i,
-			     (start ? &start->p->knode_bus : NULL));
-	while (!error && (dev = next_device(&i)))
-		error = fn(dev, data);
-	klist_iter_exit(&i);
-	return error;
-}
-
-struct device *
-bus_find_device(struct bus_type *bus, struct device *start, const void *data,
-		int (*match)(struct device *dev, const void *data))
-{
-	struct klist_iter i;
-	struct device *dev;
-
-	if (!bus || !bus->p)
-		return NULL;
-
-	klist_iter_init_node(&bus->p->klist_devices, &i,
-			     (start ? &start->p->knode_bus : NULL));
-	while ((dev = next_device(&i)))
-		if (match(dev, data) && get_device(dev))
-			break;
-	klist_iter_exit(&i);
-	return dev;
-}
+/* next_device, bus_for_each_dev, bus_find_device removed - no callers */
 
 static struct device_driver *next_driver(struct klist_iter *i)
 {

@@ -165,7 +165,6 @@ static inline void device_unlock(struct device *dev)
 
 /* device_lock_assert removed - was empty stub */
 
-int __must_check device_register(struct device *dev);
 void device_unregister(struct device *dev);
 void device_initialize(struct device *dev);
 int __must_check device_add(struct device *dev);
@@ -181,11 +180,7 @@ void device_release_driver(struct device *dev);
 /* driver_attach removed - only caller was bus_add_driver */
 void device_initial_probe(struct device *dev);
 
-__printf(5, 6) struct device *
-device_create(struct class *cls, struct device *parent, dev_t devt,
-	      void *drvdata, const char *fmt, ...);
-/* device_create_with_groups removed - groups field no longer stored */
-void device_destroy(struct class *cls, dev_t devt);
+/* device_create, device_destroy removed - no callers */
 
 /* device_add_groups, device_remove_groups removed - calls removed */
 

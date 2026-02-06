@@ -13,10 +13,7 @@ static __always_inline void __enter_from_user_mode(struct pt_regs *regs)
 	/* lockdep_hardirqs_off is empty, CT_WARN_ON is dead - context_tracking_enabled always false */
 }
 
-void noinstr enter_from_user_mode(struct pt_regs *regs)
-{
-	__enter_from_user_mode(regs);
-}
+/* enter_from_user_mode removed - no callers */
 
 /* syscall_enter_audit, syscall_trace_enter inlined */
 
@@ -73,10 +70,7 @@ static __always_inline void __exit_to_user_mode(void)
 	arch_exit_to_user_mode();
 }
 
-void noinstr exit_to_user_mode(void)
-{
-	__exit_to_user_mode();
-}
+/* exit_to_user_mode removed - no callers */
 
 /* arch_do_signal_or_restart - x86 provides its own in arch/x86/kernel/signal.c */
 /* exit_to_user_mode_loop inlined into exit_to_user_mode_prepare */
@@ -145,10 +139,7 @@ done_exit_work:
 	exit_to_user_mode_prepare(regs);
 }
 
-void syscall_exit_to_user_mode_work(struct pt_regs *regs)
-{
-	__syscall_exit_to_user_mode_work(regs);
-}
+/* syscall_exit_to_user_mode_work removed - no callers */
 
 __visible noinstr void syscall_exit_to_user_mode(struct pt_regs *regs)
 {
@@ -182,14 +173,7 @@ noinstr irqentry_state_t irqentry_enter(struct pt_regs *regs)
 	return ret;
 }
 
-void raw_irqentry_exit_cond_resched(void)
-{
-	if (!preempt_count()) {
-		/* rcu_irq_exit_check_preempt is empty stub */
-		if (need_resched())
-			preempt_schedule_irq();
-	}
-}
+/* raw_irqentry_exit_cond_resched removed - no callers */
 
 noinstr void irqentry_exit(struct pt_regs *regs, irqentry_state_t state)
 {

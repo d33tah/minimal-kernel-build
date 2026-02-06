@@ -46,13 +46,7 @@ void srcu_drive_gp(struct work_struct *wp);
 
 /* DEFINE_STATIC_SRCU removed - never used */
 
-void synchronize_srcu(struct srcu_struct *ssp);
-
-void call_srcu(struct srcu_struct *ssp, struct rcu_head *head,
-		void (*func)(struct rcu_head *head));
-/* cleanup_srcu_struct, start_poll_synchronize_srcu, poll_state_synchronize_srcu removed - never called */
-/* __srcu_read_lock, __srcu_read_unlock, srcu_read_lock, srcu_read_unlock removed - never called */
-unsigned long get_state_synchronize_srcu(struct srcu_struct *ssp);
+/* synchronize_srcu, call_srcu, get_state_synchronize_srcu removed - no callers */
 
 void srcu_init(void);
 

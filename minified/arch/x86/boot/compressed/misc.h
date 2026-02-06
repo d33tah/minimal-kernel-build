@@ -45,7 +45,6 @@ void *malloc(int size);
 void free(void *where);
 extern struct boot_params *boot_params;
 void __putstr(const char *s);
-void __puthex(unsigned long value);
 #define error_putstr(__x)  __putstr(__x)
 /* error_puthex removed - never used */
 

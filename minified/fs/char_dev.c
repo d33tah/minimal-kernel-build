@@ -112,104 +112,15 @@ void cd_forget(struct inode *inode)
 	spin_unlock(&cdev_lock);
 }
 
-static void cdev_purge(struct cdev *cdev)
-{
-	spin_lock(&cdev_lock);
-	while (!list_empty(&cdev->list)) {
-		struct inode *inode;
-		inode = container_of(cdev->list.next, struct inode, i_devices);
-		list_del_init(&inode->i_devices);
-		inode->i_cdev = NULL;
-	}
-	spin_unlock(&cdev_lock);
-}
+/* cdev_purge removed - only callers were cdev_default_release and cdev_dynamic_release */
 
 const struct file_operations def_chr_fops = {
 	.open = chrdev_open,
 };
 
-static struct kobject *exact_match(dev_t dev, int *part, void *data)
-{
-	struct cdev *p = data;
-	return &p->kobj;
-}
-
-static int exact_lock(dev_t dev, void *data)
-{
-	struct cdev *p = data;
-	return cdev_get(p) ? 0 : -1;
-}
-
-int cdev_add(struct cdev *p, dev_t dev, unsigned count)
-{
-	int error;
-
-	p->dev = dev;
-	p->count = count;
-
-	if (WARN_ON(dev == WHITEOUT_DEV))
-		return -EBUSY;
-
-	error = kobj_map(cdev_map, dev, count, NULL, exact_match, exact_lock,
-			 p);
-	if (error)
-		return error;
-
-	kobject_get(p->kobj.parent);
-
-	return 0;
-}
-
-void cdev_del(struct cdev *p)
-{
-	kobj_unmap(cdev_map, p->dev, p->count);
-	kobject_put(&p->kobj);
-}
-
-static void cdev_default_release(struct kobject *kobj)
-{
-	struct cdev *p = container_of(kobj, struct cdev, kobj);
-	struct kobject *parent = kobj->parent;
-
-	cdev_purge(p);
-	kobject_put(parent);
-}
-
-static void cdev_dynamic_release(struct kobject *kobj)
-{
-	struct cdev *p = container_of(kobj, struct cdev, kobj);
-	struct kobject *parent = kobj->parent;
-
-	cdev_purge(p);
-	kfree(p);
-	kobject_put(parent);
-}
-
-static struct kobj_type ktype_cdev_default = {
-	.release = cdev_default_release,
-};
-
-static struct kobj_type ktype_cdev_dynamic = {
-	.release = cdev_dynamic_release,
-};
-
-struct cdev *cdev_alloc(void)
-{
-	struct cdev *p = kzalloc(sizeof(struct cdev), GFP_KERNEL);
-	if (p) {
-		INIT_LIST_HEAD(&p->list);
-		kobject_init(&p->kobj, &ktype_cdev_dynamic);
-	}
-	return p;
-}
-
-void cdev_init(struct cdev *cdev, const struct file_operations *fops)
-{
-	memset(cdev, 0, sizeof *cdev);
-	INIT_LIST_HEAD(&cdev->list);
-	kobject_init(&cdev->kobj, &ktype_cdev_default);
-	cdev->ops = fops;
-}
+/* exact_match, exact_lock, cdev_default_release, cdev_dynamic_release,
+   ktype_cdev_default, ktype_cdev_dynamic, cdev_add, cdev_del,
+   cdev_alloc, cdev_init removed - no callers */
 
 static struct kobject *base_probe(dev_t dev, int *part, void *data)
 {

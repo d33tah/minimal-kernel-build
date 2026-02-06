@@ -54,49 +54,7 @@ void srcu_drive_gp(struct work_struct *wp)
 		schedule_work(&ssp->srcu_work);
 }
 
-void call_srcu(struct srcu_struct *ssp, struct rcu_head *rhp,
-	       rcu_callback_t func)
-{
-	unsigned long flags;
-	unsigned short cookie;
-
-	rhp->func = func;
-	rhp->next = NULL;
-	local_irq_save(flags);
-	*ssp->srcu_cb_tail = rhp;
-	ssp->srcu_cb_tail = &rhp->next;
-	local_irq_restore(flags);
-
-	cookie = get_state_synchronize_srcu(ssp);
-	if (USHORT_CMP_GE(READ_ONCE(ssp->srcu_idx_max), cookie))
-		return;
-	WRITE_ONCE(ssp->srcu_idx_max, cookie);
-	if (!READ_ONCE(ssp->srcu_gp_running)) {
-		if (likely(srcu_init_done))
-			schedule_work(&ssp->srcu_work);
-		else if (list_empty(&ssp->srcu_work.entry))
-			list_add(&ssp->srcu_work.entry, &srcu_boot_list);
-	}
-}
-
-void synchronize_srcu(struct srcu_struct *ssp)
-{
-	struct rcu_synchronize rs;
-
-	init_completion(&rs.completion);
-	call_srcu(ssp, &rs.head, wakeme_after_rcu);
-	wait_for_completion(&rs.completion);
-}
-
-unsigned long get_state_synchronize_srcu(struct srcu_struct *ssp)
-{
-	unsigned long ret;
-
-	barrier();
-	ret = (READ_ONCE(ssp->srcu_idx) + 3) & ~0x1;
-	barrier();
-	return ret & USHRT_MAX;
-}
+/* call_srcu, synchronize_srcu, get_state_synchronize_srcu removed - no callers */
 
 /* start_poll_synchronize_srcu, poll_state_synchronize_srcu removed - never called */
 /* rcu_scheduler_starting made inline in rcupdate.h - was empty stub */

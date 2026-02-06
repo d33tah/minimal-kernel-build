@@ -44,15 +44,7 @@ void rcu_qs(void)
 	local_irq_restore(flags);
 }
 
-void rcu_sched_clock_irq(int user)
-{
-	if (user) {
-		rcu_qs();
-	} else if (rcu_ctrlblk.donetail != rcu_ctrlblk.curtail) {
-		set_tsk_need_resched(current);
-		set_preempt_need_resched();
-	}
-}
+/* rcu_sched_clock_irq removed - no callers */
 
 /* rcu_reclaim_tiny inlined into rcu_process_callbacks */
 

@@ -24,10 +24,7 @@
 #define EMIT_VVAR(name, offset) const size_t name##_offset = offset;
 #include <asm/vvar.h>
 
-struct vdso_data *arch_get_vdso_data(void *vvar_page)
-{
-	return (struct vdso_data *)(vvar_page + _vdso_data_offset);
-}
+/* arch_get_vdso_data removed - no callers */
 #undef EMIT_VVAR
 
 unsigned int vclocks_used __read_mostly;

@@ -220,11 +220,7 @@ done:
 	return error;
 }
 
-int device_register(struct device *dev)
-{
-	device_initialize(dev);
-	return device_add(dev);
-}
+/* device_register removed - no callers */
 
 struct device *get_device(struct device *dev)
 {
@@ -305,75 +301,8 @@ int __init devices_init(void)
 
 /* Removed: root_device struct, __root_device_register, root_device_unregister - no callers */
 
-static void device_create_release(struct device *dev)
-{
-	kfree(dev);
-}
-
-static __printf(6, 0) struct device *device_create_groups_vargs(
-	struct class *class, struct device *parent, dev_t devt, void *drvdata,
-	const struct attribute_group **groups, const char *fmt, va_list args)
-{
-	struct device *dev = NULL;
-	int retval = -ENODEV;
-
-	if (class == NULL || IS_ERR(class))
-		goto error;
-
-	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
-	if (!dev) {
-		retval = -ENOMEM;
-		goto error;
-	}
-
-	device_initialize(dev);
-	dev->devt = devt;
-	dev->class = class;
-	dev->parent = parent;
-	/* dev->groups removed - field no longer exists (sysfs stubbed) */
-	dev->release = device_create_release;
-	dev_set_drvdata(dev, drvdata);
-
-	retval = kobject_set_name_vargs(&dev->kobj, fmt, args);
-	if (retval)
-		goto error;
-
-	retval = device_add(dev);
-	if (retval)
-		goto error;
-
-	return dev;
-
-error:
-	put_device(dev);
-	return ERR_PTR(retval);
-}
-
-struct device *device_create(struct class *class, struct device *parent,
-			     dev_t devt, void *drvdata, const char *fmt, ...)
-{
-	va_list vargs;
-	struct device *dev;
-
-	va_start(vargs, fmt);
-	dev = device_create_groups_vargs(class, parent, devt, drvdata, NULL,
-					 fmt, vargs);
-	va_end(vargs);
-	return dev;
-}
-
-/* device_create_with_groups removed - groups parameter now ignored (sysfs stubbed) */
-
-void device_destroy(struct class *class, dev_t devt)
-{
-	struct device *dev;
-
-	dev = class_find_device_by_devt(class, devt);
-	if (dev) {
-		put_device(dev);
-		device_unregister(dev);
-	}
-}
+/* device_create_release, device_create_groups_vargs, device_create,
+   device_destroy removed - no callers */
 
 /* dev_err_probe removed - never called */
 

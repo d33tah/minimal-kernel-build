@@ -104,22 +104,7 @@ void __putstr(const char *s)
 	outb(0xff & (pos >> 1), vidport + 1);
 }
 
-void __puthex(unsigned long value)
-{
-	char alpha[2] = "0";
-	int bits;
-
-	for (bits = sizeof(value) * 8 - 4; bits >= 0; bits -= 4) {
-		unsigned long digit = (value >> bits) & 0xf;
-
-		if (digit < 0xA)
-			alpha[0] = '0' + digit;
-		else
-			alpha[0] = 'a' + (digit - 0xA);
-
-		__putstr(alpha);
-	}
-}
+/* __puthex removed - no callers */
 
 static inline void handle_relocations(void *output, unsigned long output_len,
 				      unsigned long virt_addr)
@@ -246,7 +231,4 @@ asmlinkage __visible void *extract_kernel(void *rmode, memptr heap,
 	return output;
 }
 
-void fortify_panic(const char *name)
-{
-	error("detected buffer overflow");
-}
+/* fortify_panic removed - no callers */

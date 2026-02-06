@@ -528,28 +528,7 @@ extern unsigned long move_page_tables(struct vm_area_struct *vma,
 		bool need_rmap_locks);
 /* mprotect_fixup removed - was a no-op stub, call removed from exec.c */
 
-/* get_mm_counter, mm_trace_rss_stat removed - unused */
-
-static inline void add_mm_counter(struct mm_struct *mm, int member, long value)
-{
-	atomic_long_add(value, &mm->rss_stat.count[member]);
-}
-
-static inline void inc_mm_counter(struct mm_struct *mm, int member)
-{
-	atomic_long_inc(&mm->rss_stat.count[member]);
-}
-
-static inline void dec_mm_counter(struct mm_struct *mm, int member)
-{
-	atomic_long_dec(&mm->rss_stat.count[member]);
-}
-
-/* mm_counter_file inlined at mm/memory.c - single caller */
-
-
-/* get_mm_rss removed - never called */
-/* update_hiwater_rss/vm removed - no callers, were empty stubs */
+/* rss_stat counters removed - write-only (never read back) */
 
 /* setmax_mm_hiwater_rss removed - callers removed, maxrss unused */
 

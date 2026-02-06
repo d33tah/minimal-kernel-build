@@ -360,9 +360,7 @@ static inline void i_size_write(struct inode *inode, loff_t i_size)
 
 /* fown_struct removed - f_owner is never accessed */
 
-struct file_ra_state {
-	/* start, size, async_size, ra_pages, mmap_miss, prev_pos removed - never accessed */
-};
+/* struct file_ra_state removed - empty struct, f_ra field unused */
 
 struct file {
 	union {
@@ -381,8 +379,7 @@ struct file {
 	loff_t			f_pos;
 	/* f_owner field removed - never accessed */
 	const struct cred	*f_cred;
-	struct file_ra_state	f_ra;
-
+	/* f_ra removed - empty struct, never read or written */
 	void			*private_data;
 
 	struct address_space	*f_mapping;
@@ -452,13 +449,13 @@ struct super_block {
 	struct list_head	s_list;		
 	dev_t			s_dev;		
 	unsigned char		s_blocksize_bits;
-	unsigned long		s_blocksize;
-	loff_t			s_maxbytes;	
+	/* s_blocksize removed - write-only (only s_blocksize_bits is read) */
+	loff_t			s_maxbytes;
 	struct file_system_type	*s_type;
 	const struct super_operations	*s_op;
 	unsigned long		s_flags;
 	unsigned long		s_iflags;	
-	unsigned long		s_magic;
+	/* s_magic removed - write-only (set but never read) */
 	struct dentry		*s_root;
 	struct rw_semaphore	s_umount;
 	int			s_count;
@@ -670,10 +667,7 @@ extern void inc_nlink(struct inode *inode);
 
 struct file_system_type {
 	const char *name;
-	int fs_flags;
-#define FS_REQUIRES_DEV		1
-/* FS_BINARY_MOUNTDATA, FS_HAS_SUBTYPE removed - unused */
-#define FS_USERNS_MOUNT		8
+	/* fs_flags removed - write-only (never read); FS_REQUIRES_DEV, FS_USERNS_MOUNT removed */
 	int (*init_fs_context)(struct fs_context *);
 	const struct fs_parameter_spec *parameters;
 	struct dentry *(*mount) (struct file_system_type *, int,

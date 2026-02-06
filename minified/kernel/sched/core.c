@@ -165,7 +165,6 @@ static void set_load_weight(struct task_struct *p, bool update_load)
 
 	if (task_has_idle_policy(p)) {
 		load->weight = scale_load(WEIGHT_IDLEPRIO);
-		load->inv_weight = WMULT_IDLEPRIO;
 		return;
 	}
 
@@ -173,7 +172,6 @@ static void set_load_weight(struct task_struct *p, bool update_load)
 		reweight_task(p, prio);
 	} else {
 		load->weight = scale_load(sched_prio_to_weight[prio]);
-		load->inv_weight = sched_prio_to_wmult[prio];
 	}
 }
 
@@ -863,12 +861,4 @@ const int sched_prio_to_weight[40] = {
 	110,   87,    70,    56,    45,	   36,	  29,	 23,	18,    15,
 };
 
-const u32 sched_prio_to_wmult[40] = {
-	48388,	   59856,     76040,	 92818,	    118348,   147320,
-	184698,	   229616,    287308,	 360437,    449829,   563644,
-	704093,	   875809,    1099582,	 1376151,   1717300,  2157191,
-	2708050,   3363326,   4194304,	 5237765,   6557202,  8165337,
-	10153587,  12820798,  15790321,	 19976592,  24970740, 31350126,
-	39045157,  49367440,  61356676,	 76695844,  95443717, 119304647,
-	148102320, 186737708, 238609294, 286331153,
-};
+/* sched_prio_to_wmult[40] removed - inv_weight is write-only */

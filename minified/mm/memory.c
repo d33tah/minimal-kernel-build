@@ -58,11 +58,7 @@ static int __init init_zero_pfn(void)
 }
 early_initcall(init_zero_pfn);
 
-/* --- 2025-12-22 04:35 --- Removed #if SPLIT_RSS_COUNTING - not defined */
-#define inc_mm_counter_fast(mm, member) inc_mm_counter(mm, member)
-#define dec_mm_counter_fast(mm, member) dec_mm_counter(mm, member)
-
-/* Removed: check_sync_rss_stat - empty stub */
+/* rss_stat counter macros removed - counters are write-only */
 
 static inline void free_pmd_range(struct mmu_gather *tlb, pud_t *pud,
 				  unsigned long addr, unsigned long end,
@@ -640,7 +636,7 @@ static vm_fault_t do_anonymous_page(struct vm_fault *vmf)
 		goto unlock;
 	}
 
-	inc_mm_counter_fast(vma->vm_mm, MM_ANONPAGES);
+	/* inc_mm_counter_fast removed - rss_stat write-only */
 	page_add_new_anon_rmap(page, vma, vmf->address);
 	lru_cache_add_inactive_or_unevictable(page, vma);
 	set_pte_at(vma->vm_mm, vmf->address, vmf->pte, entry);
@@ -693,14 +689,9 @@ static void do_set_pte(struct vm_fault *vmf, struct page *page,
 	/* pte_marker_uffd_wp() always false - userfaultfd disabled */
 
 	if (write && !(vma->vm_flags & VM_SHARED)) {
-		inc_mm_counter_fast(vma->vm_mm, MM_ANONPAGES);
 		page_add_new_anon_rmap(page, vma, addr);
 		lru_cache_add_inactive_or_unevictable(page, vma);
 	} else {
-		/* mm_counter_file inlined - single caller */
-		int counter = PageSwapBacked(page) ? MM_SHMEMPAGES :
-						     MM_FILEPAGES;
-		inc_mm_counter_fast(vma->vm_mm, counter);
 		page_add_file_rmap(page, vma, false);
 	}
 	set_pte_at(vma->vm_mm, addr, vmf->pte, entry);

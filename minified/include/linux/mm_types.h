@@ -292,7 +292,7 @@ struct mm_struct {
 		unsigned long saved_auxv[AT_VECTOR_SIZE];  
 
 		 
-		struct mm_rss_stat rss_stat;
+		/* rss_stat removed - write-only (counters never read back) */
 
 		struct linux_binfmt *binfmt;
 

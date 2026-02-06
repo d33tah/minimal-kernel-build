@@ -115,7 +115,7 @@ extern void io_schedule(void);
 
 struct load_weight {
 	unsigned long			weight;
-	u32				inv_weight;
+	/* inv_weight removed - write-only (never read after __calc_delta simplification) */
 };
 
 /* struct sched_statistics removed - schedstat_enabled() always 0 */

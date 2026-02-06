@@ -60,7 +60,7 @@ static void acct_arg_size(struct linux_binprm *bprm, unsigned long pages)
 		return;
 
 	bprm->vma_pages = pages;
-	add_mm_counter(mm, MM_ANONPAGES, diff);
+	/* add_mm_counter removed - rss_stat counters are write-only */
 }
 
 /* get_arg_page, put_arg_page and flush_arg_page inlined */

@@ -28,19 +28,7 @@ struct vmacache {
 	struct vm_area_struct *vmas[VMACACHE_SIZE];
 };
 
-enum {
-	MM_FILEPAGES,
-	MM_ANONPAGES,
-	MM_SWAPENTS,
-	MM_SHMEMPAGES,
-	NR_MM_COUNTERS
-};
-
-/* USE_SPLIT_PTE_PTLOCKS=0, no SPLIT_RSS_COUNTING */
-
-struct mm_rss_stat {
-	atomic_long_t count[NR_MM_COUNTERS];
-};
+/* MM_FILEPAGES/ANONPAGES/SWAPENTS/SHMEMPAGES enum, mm_rss_stat struct removed - write-only */
 
 /* struct page_frag removed - never instantiated */
 

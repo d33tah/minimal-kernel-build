@@ -404,10 +404,8 @@ static inline int task_on_rq_queued(struct task_struct *p)
 /* WF_SYNC removed - unused */
 
 #define WEIGHT_IDLEPRIO		3
-#define WMULT_IDLEPRIO		1431655765
-
+/* WMULT_IDLEPRIO, sched_prio_to_wmult removed - inv_weight is write-only */
 extern const int		sched_prio_to_weight[40];
-extern const u32		sched_prio_to_wmult[40];
 
  
 

@@ -12,13 +12,11 @@ unsigned int sysctl_sched_wakeup_granularity = 1000000UL;
 static inline void update_load_add(struct load_weight *lw, unsigned long inc)
 {
 	lw->weight += inc;
-	lw->inv_weight = 0;
 }
 
 static inline void update_load_sub(struct load_weight *lw, unsigned long dec)
 {
 	lw->weight -= dec;
-	lw->inv_weight = 0;
 }
 
 /* sched_init_granularity, get_update_sysctl_factor, update_sysctl, normalized_sysctl_* removed -
@@ -125,10 +123,8 @@ void reweight_task(struct task_struct *p, int prio)
 		update_load_sub(&cfs_rq->load, se->load.weight);
 	}
 	se->load.weight = weight;
-	se->load.inv_weight = 0;
 	if (se->on_rq)
 		update_load_add(&cfs_rq->load, se->load.weight);
-	load->inv_weight = sched_prio_to_wmult[prio];
 }
 
 /* 0, 0, 0, update_load_avg removed - schedstat always disabled */

@@ -8,8 +8,7 @@
 #include <linux/backing-dev.h>
 #include <linux/ramfs.h>
 #include <linux/sched.h>
-/* magic.h inlined - only RAMFS_MAGIC used */
-#define RAMFS_MAGIC 0x858458f6
+/* RAMFS_MAGIC removed - s_magic is write-only */
 #include <linux/slab.h>
 #include <linux/uaccess.h>
 #include <linux/fs_context.h>
@@ -160,9 +159,8 @@ static int ramfs_fill_super(struct super_block *sb, struct fs_context *fc)
 	struct inode *inode;
 
 	sb->s_maxbytes = MAX_LFS_FILESIZE;
-	sb->s_blocksize = PAGE_SIZE;
+	/* s_blocksize, s_magic removed - write-only fields */
 	sb->s_blocksize_bits = PAGE_SHIFT;
-	sb->s_magic = RAMFS_MAGIC;
 	sb->s_op = &ramfs_ops;
 	/* s_time_gran removed - field removed */
 
@@ -215,7 +213,7 @@ static struct file_system_type ramfs_fs_type = {
 	.init_fs_context = ramfs_init_fs_context,
 	.parameters = ramfs_fs_parameters,
 	.kill_sb = ramfs_kill_sb,
-	.fs_flags = FS_USERNS_MOUNT,
+	/* .fs_flags removed - write-only field */
 };
 
 static int __init init_ramfs_fs(void)

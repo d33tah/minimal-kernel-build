@@ -24,27 +24,8 @@
 static inline u32 read_pkru(void) { if (cpu_feature_enabled(X86_FEATURE_OSPKE)) return rdpkru(); return 0; }
 static inline void pkru_write_default(void) { if (!cpu_feature_enabled(X86_FEATURE_OSPKE)) return; wrpkru(pkru_get_init_value()); }
 /* End of pkru.h */
-/* --- 2025-12-07 20:42 --- Inlined coco.h */
-#include <asm/types.h>
-/* cc_vendor enum, cc_set_vendor, cc_set_mask removed - unused */
-static inline u64 cc_mkenc(u64 val)
-{
-	return val;
-}
-static inline u64 cc_mkdec(u64 val)
-{
-	return val;
-}
+/* cc_mkenc, cc_mkdec, cc_vendor, pgprot_encrypted, pgprot_decrypted removed - unused */
 #include <linux/page_table_check.h>
-
-/* uffd stubs all removed - never called in any .c file */
-/* early_top_pgt removed - unused (only declaration, no usage in .c or .S) */
-/* __early_make_pgtable, ptdump_walk_* declarations removed - unused */
-
- 
-#define pgprot_encrypted(prot)	__pgprot(cc_mkenc(pgprot_val(prot)))
-#define pgprot_decrypted(prot)	__pgprot(cc_mkdec(pgprot_val(prot)))
-/* debug_checkwx, debug_checkwx_user removed - no-op stubs never used */
 
 extern unsigned long empty_zero_page[PAGE_SIZE / sizeof(unsigned long)]
 	__visible;
@@ -86,11 +67,7 @@ static inline int pte_dirty(pte_t pte)
 	return pte_flags(pte) & _PAGE_DIRTY;
 }
 
-static inline int pte_young(pte_t pte)
-{
-	return pte_flags(pte) & _PAGE_ACCESSED;
-}
-
+/* pte_young removed - unused (only caller ptep_test_and_clear_young has no callers) */
 /* pmd_dirty, pmd_young, pud_dirty, pud_young removed - unused */
 
 static inline int pte_write(pte_t pte)
@@ -147,20 +124,7 @@ static inline pte_t pte_set_flags(pte_t pte, pteval_t set)
 	return native_make_pte(v | set);
 }
 
-static inline pte_t pte_clear_flags(pte_t pte, pteval_t clear)
-{
-	pteval_t v = native_pte_val(pte);
-
-	return native_make_pte(v & ~clear);
-}
-
-
-/* pte_mkclean removed - unused */
-
-static inline pte_t pte_mkold(pte_t pte)
-{
-	return pte_clear_flags(pte, _PAGE_ACCESSED);
-}
+/* pte_clear_flags, pte_mkold removed - unused (only caller ptep_test_and_clear_young has no callers) */
 
 /* pte_wrprotect, pte_mkexec removed - unused */
 

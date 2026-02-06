@@ -112,28 +112,7 @@ extern int ptep_set_access_flags(struct vm_area_struct *vma,
 				 unsigned long address, pte_t *ptep,
 				 pte_t entry, int dirty);
 #endif
-
-
-#ifndef __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
-static inline int ptep_test_and_clear_young(struct vm_area_struct *vma,
-					    unsigned long address,
-					    pte_t *ptep)
-{
-	pte_t pte = *ptep;
-	int r = 1;
-	if (!pte_young(pte))
-		r = 0;
-	else
-		set_pte_at(vma->vm_mm, address, ptep, pte_mkold(pte));
-	return r;
-}
-#endif
-
-
-#ifndef __HAVE_ARCH_PTEP_CLEAR_YOUNG_FLUSH
-int ptep_clear_flush_young(struct vm_area_struct *vma,
-			   unsigned long address, pte_t *ptep);
-#endif
+/* ptep_test_and_clear_young, ptep_clear_flush_young removed - no callers */
 
 
 #ifndef __HAVE_ARCH_PTEP_GET_AND_CLEAR
@@ -274,14 +253,7 @@ static inline int pmd_none_or_clear_bad(pmd_t *pmd)
 
 /* pgprot_modify removed - never called */
 
-#ifndef pgprot_encrypted
-#define pgprot_encrypted(prot)	(prot)
-#endif
-
-#ifndef pgprot_decrypted
-#define pgprot_decrypted(prot)	(prot)
-#endif
-
+/* pgprot_encrypted, pgprot_decrypted removed - no callers */
 /* arch_enter/leave_lazy_mmu_mode, arch_start_context_switch removed - no callers */
 
 /* pte_swp_exclusive, pte_swp_clear_exclusive,

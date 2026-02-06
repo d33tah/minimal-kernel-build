@@ -475,20 +475,7 @@ static __always_inline struct rq *context_switch(struct rq *rq,
 
 /* cpu_resched_latency removed - always returned 0, only used by removed code */
 
-void scheduler_tick(void)
-{
-	int cpu = smp_processor_id();
-	struct rq *rq = cpu_rq(cpu);
-	struct task_struct *curr = rq->curr;
-	struct rq_flags rf;
-
-	rq_lock(rq, &rf);
-
-	update_rq_clock(rq);
-	/* thermal_pressure/update_thermal_load_avg removed - always 0 */
-	curr->sched_class->task_tick(rq, curr, 0);
-	rq_unlock(rq, &rf);
-}
+/* scheduler_tick removed - caller update_process_times was previously removed */
 
 static inline struct task_struct *
 __pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
@@ -768,13 +755,7 @@ static int _sched_setscheduler(struct task_struct *p, int policy,
 	return __sched_setscheduler(p, &attr, check, true);
 }
 
-int sched_setscheduler(struct task_struct *p, int policy,
-		       const struct sched_param *param)
-{
-	return _sched_setscheduler(p, policy, param, true);
-}
-
-/* sched_setattr removed - never called (~4 LOC) */
+/* sched_setscheduler removed - zero callers */
 
 int sched_setscheduler_nocheck(struct task_struct *p, int policy,
 			       const struct sched_param *param)

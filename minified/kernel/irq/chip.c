@@ -79,10 +79,7 @@ int irq_activate_and_startup(struct irq_desc *desc, bool resend)
 	return irq_startup(desc, resend, IRQ_START_FORCE);
 }
 
-static void __irq_disable(struct irq_desc *desc, bool mask);
-
-/* irq_shutdown removed - never called (~13 LOC) */
-/* irq_shutdown_and_deactivate removed - never called */
+/* __irq_disable, irq_disable removed - zero callers */
 
 void irq_enable(struct irq_desc *desc)
 {
@@ -97,28 +94,6 @@ void irq_enable(struct irq_desc *desc)
 			unmask_irq(desc);
 		}
 	}
-}
-
-static void __irq_disable(struct irq_desc *desc, bool mask)
-{
-	if (irqd_irq_disabled(&desc->irq_data)) {
-		if (mask)
-			mask_irq(desc);
-	} else {
-		irq_state_set_disabled(desc);
-		if (desc->irq_data.chip->irq_disable) {
-			desc->irq_data.chip->irq_disable(&desc->irq_data);
-			irq_state_set_masked(desc);
-		} else if (mask) {
-			mask_irq(desc);
-		}
-	}
-}
-
-void irq_disable(struct irq_desc *desc)
-{
-	/* irq_settings_disable_unlazy inlined - single caller */
-	__irq_disable(desc, desc->status_use_accessors & _IRQ_DISABLE_UNLAZY);
 }
 
 static inline void mask_ack_irq(struct irq_desc *desc)

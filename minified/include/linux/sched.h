@@ -99,8 +99,6 @@ enum {
 	TASK_COMM_LEN = 16,
 };
 
-extern void scheduler_tick(void);
-
 #define	MAX_SCHEDULE_TIMEOUT		LONG_MAX
 
 extern long schedule_timeout(long timeout);
@@ -417,7 +415,6 @@ static inline int set_cpus_allowed_ptr(struct task_struct *p, const struct cpuma
 
 /* task_nice inlined into sched/core.c (~3 LOC) */
 
-extern int sched_setscheduler(struct task_struct *, int, const struct sched_param *);
 extern int sched_setscheduler_nocheck(struct task_struct *, int, const struct sched_param *);
 extern void sched_set_fifo(struct task_struct *p);
 

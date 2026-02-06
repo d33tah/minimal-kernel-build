@@ -104,195 +104,11 @@ static irqreturn_t irq_default_primary_handler(int irq, void *dev_id)
 	return IRQ_WAKE_THREAD;
 }
 
-static irqreturn_t irq_nested_primary_handler(int irq, void *dev_id)
-{
-	WARN(1, "Primary handler called for nested irq %d\n", irq);
-	return IRQ_NONE;
-}
-
-static irqreturn_t irq_forced_secondary_handler(int irq, void *dev_id)
-{
-	WARN(1, "Secondary action handler called for irq %d\n", irq);
-	return IRQ_NONE;
-}
-
-/* irq_wait_for_interrupt inlined into irq_thread */
-
-static void irq_finalize_oneshot(struct irq_desc *desc,
-				 struct irqaction *action)
-{
-	if (!(desc->istate & IRQS_ONESHOT) ||
-	    action->handler == irq_forced_secondary_handler)
-		return;
-again:
-	chip_bus_lock(desc);
-	raw_spin_lock_irq(&desc->lock);
-
-	if (unlikely(irqd_irq_inprogress(&desc->irq_data))) {
-		raw_spin_unlock_irq(&desc->lock);
-		chip_bus_sync_unlock(desc);
-		cpu_relax();
-		goto again;
-	}
-
-	if (test_bit(IRQTF_RUNTHREAD, &action->thread_flags))
-		goto out_unlock;
-
-	desc->threads_oneshot &= ~action->thread_mask;
-
-	if (!desc->threads_oneshot && !irqd_irq_disabled(&desc->irq_data) &&
-	    irqd_irq_masked(&desc->irq_data))
-		unmask_threaded_irq(desc);
-
-out_unlock:
-	raw_spin_unlock_irq(&desc->lock);
-	chip_bus_sync_unlock(desc);
-}
-
-/* irq_thread_check_affinity removed - empty function, CONFIG_SMP not enabled */
-/* irq_forced_thread_fn removed - never called (~16 LOC) */
-
-static irqreturn_t irq_thread_fn(struct irq_desc *desc,
-				 struct irqaction *action)
-{
-	irqreturn_t ret;
-
-	ret = action->thread_fn(action->irq, action->dev_id);
-	if (ret == IRQ_HANDLED)
-		/* threads_handled inc removed - field removed */
-
-		irq_finalize_oneshot(desc, action);
-	return ret;
-}
-
-/* wake_threads_waitq inlined - just atomic_dec_and_test + wake_up */
-
-static void irq_thread_dtor(struct callback_head *unused)
-{
-	struct task_struct *tsk = current;
-	struct irq_desc *desc;
-	struct irqaction *action;
-
-	if (WARN_ON_ONCE(!(current->flags & PF_EXITING)))
-		return;
-
-	action = kthread_data(tsk);
-
-	pr_err("exiting task \"%s\" (%d) is an active IRQ thread (irq %d)\n",
-	       tsk->comm, tsk->pid, action->irq);
-
-	desc = irq_to_desc(action->irq);
-
-	if (test_and_clear_bit(IRQTF_RUNTHREAD, &action->thread_flags))
-		if (atomic_dec_and_test(&desc->threads_active))
-			wake_up(&desc->wait_for_threads);
-
-	irq_finalize_oneshot(desc, action);
-}
-
-/* irq_wake_secondary inlined - single caller */
-
-static void wake_up_and_wait_for_irq_thread_ready(struct irq_desc *desc,
-						  struct irqaction *action)
-{
-	if (!action || !action->thread)
-		return;
-
-	wake_up_process(action->thread);
-	wait_event(desc->wait_for_threads,
-		   test_bit(IRQTF_READY, &action->thread_flags));
-}
-
-static int irq_thread(void *data)
-{
-	struct callback_head on_exit_work;
-	struct irqaction *action = data;
-	struct irq_desc *desc = irq_to_desc(action->irq);
-	irqreturn_t (*handler_fn)(struct irq_desc *desc,
-				  struct irqaction *action);
-
-	/* irq_thread_set_ready inlined */
-	set_bit(IRQTF_READY, &action->thread_flags);
-	wake_up(&desc->wait_for_threads);
-
-	sched_set_fifo(current);
-
-	/* force_irqthreads() always false - simplified */
-	handler_fn = irq_thread_fn;
-
-	init_task_work(&on_exit_work, irq_thread_dtor);
-	task_work_add(current, &on_exit_work, TWA_NONE);
-
-	/* irq_thread_check_affinity calls removed - empty function */
-
-	/* irq_wait_for_interrupt inlined */
-	for (;;) {
-		irqreturn_t action_ret;
-		int should_exit;
-
-		set_current_state(TASK_INTERRUPTIBLE);
-		if (kthread_should_stop()) {
-			if (test_and_clear_bit(IRQTF_RUNTHREAD,
-					       &action->thread_flags)) {
-				__set_current_state(TASK_RUNNING);
-				should_exit = 0;
-			} else {
-				__set_current_state(TASK_RUNNING);
-				should_exit = -1;
-			}
-		} else if (test_and_clear_bit(IRQTF_RUNTHREAD,
-					      &action->thread_flags)) {
-			__set_current_state(TASK_RUNNING);
-			should_exit = 0;
-		} else {
-			schedule();
-			continue;
-		}
-		if (should_exit)
-			break;
-
-		action_ret = handler_fn(desc, action);
-		if (action_ret == IRQ_WAKE_THREAD) {
-			struct irqaction *secondary = action->secondary;
-			if (!WARN_ON_ONCE(!secondary)) {
-				raw_spin_lock_irq(&desc->lock);
-				__irq_wake_thread(desc, secondary);
-				raw_spin_unlock_irq(&desc->lock);
-			}
-		}
-
-		if (atomic_dec_and_test(&desc->threads_active))
-			wake_up(&desc->wait_for_threads);
-	}
-
-	task_work_cancel(current, irq_thread_dtor);
-	return 0;
-}
-
-/* irq_setup_forced_threading removed - always returned 0, caller check removed (~5 LOC) */
-/* irq_request_resources and irq_release_resources inlined into __setup_irq */
-
-static int setup_irq_thread(struct irqaction *new, unsigned int irq,
-			    bool secondary)
-{
-	struct task_struct *t;
-
-	if (!secondary) {
-		t = kthread_create(irq_thread, new, "irq/%d-%s", irq,
-				   new->name);
-	} else {
-		t = kthread_create(irq_thread, new, "irq/%d-s-%s", irq,
-				   new->name);
-	}
-
-	if (IS_ERR(t))
-		return PTR_ERR(t);
-
-	new->thread = get_task_struct(t);
-
-	set_bit(IRQTF_AFFINITY, &new->thread_flags);
-	return 0;
-}
+/* IRQ threading infrastructure removed - no threaded IRQs in minimal kernel:
+   irq_nested_primary_handler, irq_forced_secondary_handler,
+   irq_finalize_oneshot, irq_thread_fn, irq_thread_dtor,
+   wake_up_and_wait_for_irq_thread_ready, irq_thread,
+   setup_irq_thread (~194 LOC) */
 
 static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 		       struct irqaction *new)
@@ -313,29 +129,8 @@ static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 	if (!(new->flags &IRQF_TRIGGER_MASK))
 		new->flags |= irqd_get_trigger_type(&desc->irq_data);
 
-	/* irq_settings_is_nested_thread inlined - single caller */
-	nested = desc->status_use_accessors & _IRQ_NESTED_THREAD;
-	if (nested) {
-		if (!new->thread_fn) {
-			ret = -EINVAL;
-			goto out_mput;
-		}
-
-		new->handler = irq_nested_primary_handler;
-	} else {
-		/* irq_setup_forced_threading always returned 0, dead check removed */
-	}
-
-	if (new->thread_fn && !nested) {
-		ret = setup_irq_thread(new, irq, false);
-		if (ret)
-			goto out_mput;
-		if (new->secondary) {
-			ret = setup_irq_thread(new->secondary, irq, true);
-			if (ret)
-				goto out_thread;
-		}
-	}
+	/* Threading paths removed - no threaded IRQs in minimal kernel */
+	nested = 0;
 
 	if (desc->irq_data.chip->flags & IRQCHIP_ONESHOT_SAFE)
 		new->flags &= ~IRQF_ONESHOT;
@@ -465,9 +260,7 @@ static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 	chip_bus_sync_unlock(desc);
 	mutex_unlock(&desc->request_mutex);
 
-	/* irq_setup_timings removed - empty stub */
-	wake_up_and_wait_for_irq_thread_ready(desc, new);
-	wake_up_and_wait_for_irq_thread_ready(desc, new->secondary);
+	/* irq_setup_timings, wake_up_and_wait_for_irq_thread_ready removed */
 
 	/* register_irq_proc, register_handler_proc removed - empty stubs */
 	return 0;
@@ -486,21 +279,7 @@ out_bus_unlock:
 	chip_bus_sync_unlock(desc);
 	mutex_unlock(&desc->request_mutex);
 
-out_thread:
-	if (new->thread) {
-		struct task_struct *t = new->thread;
-
-		new->thread = NULL;
-		kthread_stop(t);
-		put_task_struct(t);
-	}
-	if (new->secondary &&new->secondary->thread) {
-		struct task_struct *t = new->secondary->thread;
-
-		new->secondary->thread = NULL;
-		kthread_stop(t);
-		put_task_struct(t);
-	}
+	/* out_thread cleanup removed - no threading */
 out_mput:
 	module_put(desc->owner);
 	return ret;

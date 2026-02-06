@@ -22,22 +22,7 @@ irqreturn_t no_action(int cpl, void *dev_id)
 	return IRQ_NONE;
 }
 
-/* warn_no_thread inlined into handle_irq_event_percpu */
-
-void __irq_wake_thread(struct irq_desc *desc, struct irqaction *action)
-{
-	if (action->thread->flags & PF_EXITING)
-		return;
-
-	if (test_and_set_bit(IRQTF_RUNTHREAD, &action->thread_flags))
-		return;
-
-	desc->threads_oneshot |= action->thread_mask;
-
-	atomic_inc(&desc->threads_active);
-
-	wake_up_process(action->thread);
-}
+/* __irq_wake_thread removed - no threaded IRQs in minimal kernel */
 
 irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc)
 {
@@ -45,12 +30,9 @@ irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc)
 	unsigned int irq = desc->irq_data.irq;
 	struct irqaction *action;
 
-	/* record_irq_time removed - empty stub */
 	for_each_action_of_desc(desc, action)
 	{
 		irqreturn_t res;
-
-		/* lockdep_hardirq_threaded removed - empty stub */
 
 		res = action->handler(irq, action->dev_id);
 
@@ -60,21 +42,6 @@ irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc)
 			local_irq_disable();
 
 		switch (res) {
-		case IRQ_WAKE_THREAD:
-
-			if (unlikely(!action->thread_fn)) {
-				/* inlined warn_no_thread */
-				if (!test_and_set_bit(IRQTF_WARNED,
-						      &action->thread_flags))
-					printk(KERN_WARNING
-					       "IRQ %d device %s returned IRQ_WAKE_THREAD but no thread function available.",
-					       irq, action->name);
-				break;
-			}
-
-			__irq_wake_thread(desc, action);
-			break;
-
 		default:
 			break;
 		}

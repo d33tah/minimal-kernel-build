@@ -172,7 +172,7 @@ extern int irq_startup(struct irq_desc *desc, bool resend, bool force);
 extern void irq_enable(struct irq_desc *desc);
 extern void mask_irq(struct irq_desc *desc);
 extern void unmask_irq(struct irq_desc *desc);
-extern void unmask_threaded_irq(struct irq_desc *desc);
+/* unmask_threaded_irq removed - no threaded IRQs */
 
 /* irq_mark_irq, __irq_get_irqchip_state, init_kstat_irqs removed - never called */
 
@@ -185,8 +185,7 @@ static inline int check_irq_resend(struct irq_desc *desc, bool inject)
 	desc->istate &= ~IRQS_PENDING;
 	return 0;
 }
-/* irq_wait_for_poll removed - never defined or called */
-void __irq_wake_thread(struct irq_desc *desc, struct irqaction *action);
+/* irq_wait_for_poll, __irq_wake_thread removed - no threaded IRQs */
 
 /* register_irq_proc, unregister_irq_proc, register_handler_proc,
    unregister_handler_proc removed - never called */

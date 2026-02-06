@@ -104,11 +104,7 @@ void unmask_irq(struct irq_desc *desc)
 	}
 }
 
-void unmask_threaded_irq(struct irq_desc *desc)
-{
-	/* IRQCHIP_EOI_THREADED check removed - never set by any chip */
-	unmask_irq(desc);
-}
+/* unmask_threaded_irq removed - no threaded IRQs */
 
 void handle_level_irq(struct irq_desc *desc)
 {

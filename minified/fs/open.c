@@ -175,8 +175,4 @@ int filp_close(struct file *filp, fl_owner_t id)
 	return 0;
 }
 
-int nonseekable_open(struct inode *inode, struct file *filp)
-{
-	filp->f_mode &= ~(FMODE_LSEEK | FMODE_PREAD | FMODE_PWRITE);
-	return 0;
-}
+/* nonseekable_open removed - never called */

@@ -159,9 +159,9 @@ static irqreturn_t irq_thread_fn(struct irq_desc *desc,
 
 	ret = action->thread_fn(action->irq, action->dev_id);
 	if (ret == IRQ_HANDLED)
-		atomic_inc(&desc->threads_handled);
+		/* threads_handled inc removed - field removed */
 
-	irq_finalize_oneshot(desc, action);
+		irq_finalize_oneshot(desc, action);
 	return ret;
 }
 

@@ -68,9 +68,7 @@ void unlink_file_vma(struct vm_area_struct *vma)
 	if (file) {
 		struct address_space *mapping = file->f_mapping;
 		i_mmap_lock_write(mapping);
-		if (vma->vm_flags & VM_SHARED)
-			atomic_dec(
-				&mapping->i_mmap_writable); /* inlined mapping_unmap_writable */
+		/* i_mmap_writable dec removed - write-only */
 		vma_interval_tree_remove(vma, &mapping->i_mmap);
 		i_mmap_unlock_write(mapping);
 	}
@@ -201,11 +199,7 @@ static void vma_link(struct mm_struct *mm, struct vm_area_struct *vma,
 	if (file) {
 		struct address_space *file_mapping = file->f_mapping;
 
-		if (vma->vm_flags & VM_SHARED)
-			atomic_inc(
-				&file_mapping
-					 ->i_mmap_writable); /* inlined mapping_allow_writable */
-
+		/* i_mmap_writable inc removed - write-only */
 		vma_interval_tree_insert(vma, &file_mapping->i_mmap);
 	}
 

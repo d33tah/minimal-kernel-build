@@ -193,10 +193,7 @@ static inline atomic_t *compound_mapcount_ptr(struct page *page)
 	return &page[1].compound_mapcount;
 }
 
-static inline atomic_t *compound_pincount_ptr(struct page *page)
-{
-	return &page[1].compound_pincount;
-}
+/* compound_pincount_ptr removed - write-only (folio_pincount_ptr removed) */
 
 #define page_private(page)		((page)->private)
 

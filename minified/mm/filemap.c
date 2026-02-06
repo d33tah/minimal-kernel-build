@@ -88,7 +88,7 @@ static void __filemap_remove_folio(struct folio *folio)
 		xas_init_marks(&xas);
 
 		folio->mapping = NULL;
-		mapping->nrpages -= nr;
+		/* nrpages update removed - field removed (write-only) */
 	}
 }
 
@@ -154,7 +154,7 @@ void delete_from_page_cache_batch(struct address_space *mapping,
 		xas_store(&xas, NULL);
 		total_pages += folio_nr_pages(folio);
 	}
-	mapping->nrpages -= total_pages;
+	/* nrpages update removed - field removed */
 	xa_unlock_irq(&mapping->i_pages);
 	if (mapping_shrinkable(mapping))
 		inode_add_lru(mapping->host);
@@ -193,7 +193,7 @@ noinline int __filemap_add_folio(struct address_space *mapping,
 		if (xas_error(&xas))
 			goto unlock;
 
-		mapping->nrpages += nr;
+		/* nrpages update removed - field removed */
 
 		/* huge (folio_test_hugetlb) is always false */
 		__lruvec_stat_mod_folio(folio, NR_FILE_PAGES, nr);

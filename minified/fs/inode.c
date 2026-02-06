@@ -79,7 +79,7 @@ static void inode_init_always(struct super_block *sb, struct inode *inode)
 	mapping->host = inode;
 	mapping->flags = 0;
 	/* mapping->wb_err initialization removed - field removed */
-	atomic_set(&mapping->i_mmap_writable, 0);
+	/* i_mmap_writable init removed - write-only field */
 	mapping_set_gfp_mask(mapping, GFP_HIGHUSER_MOVABLE);
 	/* mapping->private_data removed - field removed */
 	init_rwsem(&mapping->invalidate_lock);
@@ -121,8 +121,7 @@ static void inode_init_once(struct inode *inode)
 	/* Inlined __address_space_init_once */
 	xa_init_flags(&mapping->i_pages, XA_FLAGS_LOCK_IRQ | XA_FLAGS_ACCOUNT);
 	init_rwsem(&mapping->i_mmap_rwsem);
-	INIT_LIST_HEAD(&mapping->private_list);
-	/* spin_lock_init(&mapping->private_lock) removed - field removed */
+	/* private_list, private_lock init removed - fields removed */
 	mapping->i_mmap = RB_ROOT_CACHED;
 }
 
@@ -185,9 +184,8 @@ static void evict(struct inode *inode)
 	truncate_inode_pages_final(&inode->i_data);
 	/* clear_inode inlined */
 	xa_lock_irq(&inode->i_data.i_pages);
-	BUG_ON(inode->i_data.nrpages);
 	xa_unlock_irq(&inode->i_data.i_pages);
-	BUG_ON(!list_empty(&inode->i_data.private_list));
+	/* nrpages BUG_ON, private_list BUG_ON removed - fields removed */
 	BUG_ON(!(inode->i_state & I_FREEING));
 	BUG_ON(inode->i_state & I_CLEAR);
 	inode->i_state = I_FREEING | I_CLEAR;

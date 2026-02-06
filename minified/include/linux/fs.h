@@ -202,15 +202,13 @@ struct address_space {
 	struct xarray		i_pages;
 	struct rw_semaphore	invalidate_lock;
 	gfp_t			gfp_mask;
-	atomic_t		i_mmap_writable;
+	/* i_mmap_writable removed - write-only counter (mapping_writably_mapped removed) */
 	struct rb_root_cached	i_mmap;
 	struct rw_semaphore	i_mmap_rwsem;
-	unsigned long		nrpages;
+	/* nrpages removed - write-only (maintained but never queried) */
 	const struct address_space_operations *a_ops;
 	unsigned long		flags;
-	/* wb_err removed - only written, never read */
-	/* private_lock removed - only initialized, never used */
-	struct list_head	private_list;
+	/* wb_err, private_lock, private_list removed - write-only */
 	/* private_data removed - only set to NULL, never used */
 } __attribute__((aligned(sizeof(long)))) __randomize_layout;
 

@@ -50,16 +50,13 @@ struct signal_struct {
 	struct sigpending	shared_pending;
 
 	 
-	struct hlist_head	multiprocess;
+	/* multiprocess removed - list maintained but never iterated */
 
-	 
 	int			group_exit_code;
-	 
 	int			notify_count;
 	struct task_struct	*group_exec_task;
 
-	/* group_stop_count removed - write-only field, never read */
-	unsigned int		flags;
+	/* group_stop_count, flags removed - write-only */
 
 
 	unsigned int		is_child_subreaper:1;
@@ -84,9 +81,7 @@ struct signal_struct {
 	struct rw_semaphore exec_update_lock;	 
 } __randomize_layout;
 
-/* SIGNAL_GROUP_EXIT removed - unused */
-#define SIGNAL_UNKILLABLE	0x00000040
-/* SIGNAL_STOP_*, SIGNAL_CLD_*, SIGNAL_STOP_MASK removed - never used */
+/* SIGNAL_GROUP_EXIT, SIGNAL_UNKILLABLE, SIGNAL_STOP_*, SIGNAL_CLD_* removed - signal_struct.flags removed */
 
 
 extern void ignore_signals(struct task_struct *);

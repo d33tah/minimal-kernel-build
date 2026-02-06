@@ -15,7 +15,7 @@ struct irq_desc {
 	struct irqaction *action; unsigned int status_use_accessors;
 	unsigned int core_internal_state__do_not_mess_with_it; unsigned int depth;
 	unsigned int irq_count; unsigned int irqs_unhandled;
-	atomic_t threads_handled; raw_spinlock_t lock;
+	/* threads_handled removed - write-only (note_interrupt removed) */ raw_spinlock_t lock;
 	/* percpu_enabled, percpu_affinity removed - never accessed */
 	unsigned long threads_oneshot; atomic_t threads_active;
 	wait_queue_head_t wait_for_threads; struct rcu_head rcu; struct kobject kobj;

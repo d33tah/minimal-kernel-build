@@ -506,8 +506,7 @@ copy_process(int node, struct kernel_clone_args *args)
 	INIT_HLIST_NODE(&delayed.node);
 
 	spin_lock_irq(&current->sighand->siglock);
-	/* CLONE_THREAD never set - always add to multiprocess */
-	hlist_add_head(&delayed.node, &current->signal->multiprocess);
+	/* multiprocess hlist_add_head removed - list never iterated */
 	recalc_sigpending();
 	spin_unlock_irq(&current->sighand->siglock);
 	retval = -ERESTARTNOINTR;
@@ -651,7 +650,7 @@ copy_process(int node, struct kernel_clone_args *args)
 			(struct list_head)LIST_HEAD_INIT(sig->thread_head);
 		sig->curr_target = p;
 		init_sigpending(&sig->shared_pending);
-		INIT_HLIST_HEAD(&sig->multiprocess);
+		/* multiprocess init removed - field removed */
 		task_lock(current->group_leader);
 		memcpy(sig->rlim, current->signal->rlim, sizeof sig->rlim);
 		task_unlock(current->group_leader);
@@ -746,7 +745,7 @@ copy_process(int node, struct kernel_clone_args *args)
 
 			if (is_child_reaper(pid)) {
 				ns_of_pid(pid)->child_reaper = p;
-				p->signal->flags |= SIGNAL_UNKILLABLE;
+				/* signal->flags write removed - flags field removed */
 			}
 			p->signal->shared_pending.signal = delayed.signal;
 			p->signal->tty = tty_kref_get(current->signal->tty);

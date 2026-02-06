@@ -50,8 +50,6 @@ void tty_ldisc_deinit(struct tty_struct *tty);
 /* tty_sysctl_init removed - empty stub */
 /* tty_audit_add_data, tty_audit_tiocsti removed - unused */
 
-ssize_t redirected_tty_write(struct kiocb *, struct iov_iter *);
-
-/* tty_insert_flip_string_and_push_buffer removed - unused */
+/* redirected_tty_write removed - only used by dead console_fops */
 
 #endif

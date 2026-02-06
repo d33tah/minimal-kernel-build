@@ -413,8 +413,6 @@ enum { ESnormal };
 
 static void reset_terminal(struct vc_data *vc, int do_clear)
 {
-	unsigned int i;
-
 	vc->vc_top = 0;
 	vc->vc_bottom = vc->vc_rows;
 	vc->vc_state = ESnormal;
@@ -523,8 +521,6 @@ static int default_underline_color = 3;
 static void vc_init(struct vc_data *vc, unsigned int rows, unsigned int cols,
 		    int do_clear)
 {
-	int j, k;
-
 	vc->vc_cols = cols;
 	vc->vc_rows = rows;
 	vc->vc_size_row = cols << 1;

@@ -133,8 +133,7 @@ void reset_palette(struct vc_data *vc);
    con_get_unimap, con_set_default_unimap, con_free_unimap, con_copy_unimap */
 
 
-/* reset_vc inlined into vt.c - single caller */
-int vty_init(const struct file_operations *console_fops);
+/* vty_init removed - tty_init was removed, so vty_init is dead */
 
 /* default_utf8 removed - only used in vt.c */
 extern int global_cursor_default;

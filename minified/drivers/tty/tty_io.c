@@ -126,17 +126,7 @@ static const struct file_operations tty_fops = {
 	/* fasync removed - fcntl returns EINVAL, FASYNC never set */
 };
 
-static const struct file_operations console_fops = {
-	/* llseek removed - lseek syscall returns ENOSYS */
-	.read_iter = tty_read,
-	.write_iter = redirected_tty_write,
-	/* splice_read/write removed - splice syscall returns ENOSYS */
-	/* poll removed - poll/select syscalls return ENOSYS */
-	/* unlocked_ioctl/compat_ioctl removed - ioctl returns ENOTTY */
-	.open = tty_open,
-	.release = tty_release,
-	/* fasync removed - fcntl returns EINVAL, FASYNC never set */
-};
+/* console_fops removed - only used by removed vty_init/tty_init */
 
 static const struct file_operations hung_up_tty_fops = {
 	/* llseek removed - lseek syscall returns ENOSYS */
@@ -273,11 +263,7 @@ static ssize_t tty_write(struct kiocb *iocb, struct iov_iter *from)
 	return ret;
 }
 
-/* redirect is never set, so just call tty_write directly */
-ssize_t redirected_tty_write(struct kiocb *iocb, struct iov_iter *iter)
-{
-	return tty_write(iocb, iter);
-}
+/* redirected_tty_write removed - only used by dead console_fops */
 
 /* pty_line_name inlined into tty_register_device_attr */
 

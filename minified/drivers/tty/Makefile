@@ -2,7 +2,7 @@
 # tty_ioctl.o removed - file is empty stub
 obj-$(CONFIG_TTY)		+= tty_io.o n_tty.o tty_ldisc.o \
 				   tty_buffer.o tty_port.o \
-				   tty_ldsem.o tty_baudrate.o
+				   tty_ldsem.o
 # tty_mutex.o merged into tty_io.c
 obj-$(CONFIG_LEGACY_PTYS)	+= pty.o
 obj-$(CONFIG_UNIX98_PTYS)	+= pty.o

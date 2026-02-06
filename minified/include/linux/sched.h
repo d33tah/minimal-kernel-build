@@ -43,8 +43,7 @@
 /* end sched/prio.h */
 #include <linux/sched/types.h>
 #include <linux/signal_types.h>
-/* syscall_user_dispatch.h inlined */
-struct syscall_user_dispatch { char __user *selector; unsigned long offset; unsigned long len; bool on_dispatch; };
+/* syscall_user_dispatch removed - never configured in minimal kernel */
 #include <linux/mm_types_task.h>
 /* struct task_io_accounting, posix-timers.h removed - empty structs no longer needed */
 #include <linux/seqlock.h>
@@ -289,9 +288,7 @@ struct task_struct {
 
 	struct callback_head		*task_works;
 
-	struct syscall_user_dispatch	syscall_dispatch;
-
-	/* parent_exec_id, self_exec_id removed - write-only fields */
+	/* syscall_dispatch, parent_exec_id, self_exec_id removed */
 
 	 
 	spinlock_t			alloc_lock;

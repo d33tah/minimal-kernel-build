@@ -39,13 +39,7 @@ $(offsets-file): arch/$(SRCARCH)/kernel/asm-offsets.s FORCE
 #####
 # Check for missing system calls
 
-always-y += missing-syscalls
-
-quiet_cmd_syscalls = CALL    $<
-      cmd_syscalls = $(CONFIG_SHELL) $< $(CC) $(c_flags) $(missing_syscalls_flags)
-
-missing-syscalls: scripts/checksyscalls.sh $(offsets-file) FORCE
-	$(call cmd,syscalls)
+# missing-syscalls check removed - checksyscalls.sh deleted
 
 #####
 # Check atomic headers are up-to-date

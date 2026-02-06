@@ -399,7 +399,7 @@ int begin_new_exec(struct linux_binprm *bprm)
 	flush_thread();
 	me->personality &= ~bprm->per_clear;
 
-	clear_task_syscall_work(me, SYSCALL_USER_DISPATCH);
+	/* clear_task_syscall_work SYSCALL_USER_DISPATCH removed */
 
 	/* do_close_on_exec call removed - function was empty stub */
 

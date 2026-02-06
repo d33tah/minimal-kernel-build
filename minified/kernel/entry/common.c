@@ -5,7 +5,7 @@
 #include <linux/jump_label.h>
 #include <linux/init_task.h>
 
-bool syscall_user_dispatch(struct pt_regs *regs);
+/* syscall_user_dispatch removed - never configured in minimal kernel */
 
 static __always_inline void __enter_from_user_mode(struct pt_regs *regs)
 {
@@ -24,11 +24,6 @@ static __always_inline long __syscall_enter_from_user_work(struct pt_regs *regs,
 
 	if (work & SYSCALL_WORK_ENTER) {
 		/* Inlined syscall_trace_enter */
-		if (work & SYSCALL_WORK_SYSCALL_USER_DISPATCH) {
-			if (syscall_user_dispatch(regs))
-				return -1L;
-		}
-
 		if (work &
 		    (SYSCALL_WORK_SYSCALL_TRACE | SYSCALL_WORK_SYSCALL_EMU)) {
 			if (ptrace_report_syscall_entry(regs) ||
@@ -122,19 +117,11 @@ __syscall_exit_to_user_mode_work(struct pt_regs *regs)
 	if (unlikely(work & SYSCALL_WORK_EXIT)) {
 		bool step;
 
-		if (work & SYSCALL_WORK_SYSCALL_USER_DISPATCH) {
-			if (unlikely(current->syscall_dispatch.on_dispatch)) {
-				current->syscall_dispatch.on_dispatch = false;
-				goto done_exit_work;
-			}
-		}
-
 		step = !(work & SYSCALL_WORK_SYSCALL_EMU) &&
 		       (work & SYSCALL_WORK_SYSCALL_EXIT_TRAP);
 		if (step || work & SYSCALL_WORK_SYSCALL_TRACE)
 			ptrace_report_syscall_exit(regs, step);
 	}
-done_exit_work:
 	local_irq_disable_exit_to_user();
 	exit_to_user_mode_prepare(regs);
 }

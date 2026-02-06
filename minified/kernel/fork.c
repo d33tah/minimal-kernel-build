@@ -530,7 +530,6 @@ copy_process(int node, struct kernel_clone_args *args)
 	mod_lruvec_kmem_state(p->stack, NR_KERNEL_STACK_KB, THREAD_SIZE / 1024);
 	clear_tsk_need_resched(p);
 	set_task_stack_end_magic(p);
-	clear_task_syscall_work(p, SYSCALL_USER_DISPATCH);
 	if (current->cpus_ptr == &current->cpus_mask)
 		p->cpus_ptr = &p->cpus_mask;
 	refcount_set(&p->rcu_users, 2);

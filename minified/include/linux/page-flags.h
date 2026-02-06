@@ -169,80 +169,45 @@ static __always_inline int TestClearPage##uname(struct page *page)	\
 	__SETPAGEFLAG(uname, lname, policy)				\
 	__CLEARPAGEFLAG(uname, lname, policy)
 
-#define TESTSCFLAG(uname, lname, policy)				\
-	TESTSETFLAG(uname, lname, policy)				\
-	TESTCLEARFLAG(uname, lname, policy)
-
-#define TESTPAGEFLAG_FALSE(uname, lname)				\
-static inline bool folio_test_##lname(const struct folio *folio) { return false; } \
-static inline int Page##uname(const struct page *page) { return 0; }
-
-#define SETPAGEFLAG_NOOP(uname, lname)					\
-static inline void folio_set_##lname(struct folio *folio) { }		\
-static inline void SetPage##uname(struct page *page) {  }
-
-#define CLEARPAGEFLAG_NOOP(uname, lname)				\
-static inline void folio_clear_##lname(struct folio *folio) { }		\
-static inline void ClearPage##uname(struct page *page) {  }
-
-#define TESTSETFLAG_FALSE(uname, lname)					\
-static inline bool folio_test_set_##lname(struct folio *folio)		\
-{ return 0; }								\
-static inline int TestSetPage##uname(struct page *page) { return 0; }
-
-#define TESTCLEARFLAG_FALSE(uname, lname)				\
-static inline bool folio_test_clear_##lname(struct folio *folio)	\
-{ return 0; }								\
-static inline int TestClearPage##uname(struct page *page) { return 0; }
-
-#define PAGEFLAG_FALSE(uname, lname) TESTPAGEFLAG_FALSE(uname, lname)	\
-	SETPAGEFLAG_NOOP(uname, lname) CLEARPAGEFLAG_NOOP(uname, lname)
-
-#define TESTSCFLAG_FALSE(uname, lname)					\
-	TESTSETFLAG_FALSE(uname, lname) TESTCLEARFLAG_FALSE(uname, lname)
+/* TESTSCFLAG, TESTPAGEFLAG_FALSE, CLEARPAGEFLAG_NOOP, TESTCLEARFLAG_FALSE,
+   PAGEFLAG_FALSE, TESTSCFLAG_FALSE macro templates removed - no invocations */
 
 __PAGEFLAG(Locked, locked, PF_NO_TAIL)
-PAGEFLAG(Waiters, waiters, PF_ONLY_HEAD)
-PAGEFLAG(Error, error, PF_NO_TAIL) TESTCLEARFLAG(Error, error, PF_NO_TAIL)
-PAGEFLAG(Referenced, referenced, PF_HEAD)
-	TESTCLEARFLAG(Referenced, referenced, PF_HEAD)
-	__SETPAGEFLAG(Referenced, referenced, PF_HEAD)
-PAGEFLAG(Dirty, dirty, PF_HEAD) TESTSCFLAG(Dirty, dirty, PF_HEAD)
-	__CLEARPAGEFLAG(Dirty, dirty, PF_HEAD)
-PAGEFLAG(LRU, lru, PF_HEAD) __CLEARPAGEFLAG(LRU, lru, PF_HEAD)
-	TESTCLEARFLAG(LRU, lru, PF_HEAD)
-PAGEFLAG(Active, active, PF_HEAD) __CLEARPAGEFLAG(Active, active, PF_HEAD)
-	TESTCLEARFLAG(Active, active, PF_HEAD)
-/* Workingset flag removed - zero callers */
-__PAGEFLAG(Slab, slab, PF_NO_TAIL)
+SETPAGEFLAG(Waiters, waiters, PF_ONLY_HEAD)
+	CLEARPAGEFLAG(Waiters, waiters, PF_ONLY_HEAD)
+CLEARPAGEFLAG(Error, error, PF_NO_TAIL)
+__SETPAGEFLAG(Referenced, referenced, PF_HEAD)
+TESTPAGEFLAG(Dirty, dirty, PF_HEAD)
+TESTPAGEFLAG(LRU, lru, PF_HEAD)
+	SETPAGEFLAG(LRU, lru, PF_HEAD)
+	__CLEARPAGEFLAG(LRU, lru, PF_HEAD)
+TESTPAGEFLAG(Active, active, PF_HEAD)
+	SETPAGEFLAG(Active, active, PF_HEAD)
+	__CLEARPAGEFLAG(Active, active, PF_HEAD)
+__SETPAGEFLAG(Slab, slab, PF_NO_TAIL)
 
-PAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
+CLEARPAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
 	__CLEARPAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
 	__SETPAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
-PAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
-	__CLEARPAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
+TESTPAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
 	__SETPAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
 
 /* Private flag removed - zero callers */
 
 TESTPAGEFLAG(Writeback, writeback, PF_NO_TAIL)
-	TESTSCFLAG(Writeback, writeback, PF_NO_TAIL)
-PAGEFLAG(MappedToDisk, mappedtodisk, PF_NO_TAIL)
+CLEARPAGEFLAG(MappedToDisk, mappedtodisk, PF_NO_TAIL)
 
-/* Reclaim flag removed - zero callers */
-PAGEFLAG(Readahead, readahead, PF_NO_COMPOUND)
+TESTPAGEFLAG(Readahead, readahead, PF_NO_COMPOUND)
 	/* TESTCLEARFLAG(Readahead, ...) removed - never used */
 
 /* PAGEFLAG_FALSE(HighMem) removed - never used */
 /* PAGEFLAG_FALSE(SwapCache) removed - never used */
 
-PAGEFLAG(Unevictable, unevictable, PF_HEAD)
+TESTPAGEFLAG(Unevictable, unevictable, PF_HEAD)
 	__CLEARPAGEFLAG(Unevictable, unevictable, PF_HEAD)
-	TESTCLEARFLAG(Unevictable, unevictable, PF_HEAD)
 
-PAGEFLAG(Mlocked, mlocked, PF_NO_TAIL)
+TESTPAGEFLAG(Mlocked, mlocked, PF_NO_TAIL)
 	__CLEARPAGEFLAG(Mlocked, mlocked, PF_NO_TAIL)
-	TESTSCFLAG(Mlocked, mlocked, PF_NO_TAIL)
 
 
 /* HWPoison, Reported flags removed - zero callers */

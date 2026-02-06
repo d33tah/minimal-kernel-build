@@ -11,7 +11,10 @@
 #include <linux/wait.h>
 #include <linux/workqueue.h>
 /* linux/mm.h removed - no mm types used */
-#include <linux/consolemap.h>
+/* consolemap.h inlined - only LAT1_MAP, GRAF_MAP and set_translate used */
+#define LAT1_MAP 0
+#define GRAF_MAP 1
+static inline unsigned short *set_translate(int m, struct vc_data *vc) { return NULL; }
 #include <linux/notifier.h>
 
 struct uni_pagedir;

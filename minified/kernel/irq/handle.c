@@ -2,7 +2,7 @@
 #include <linux/irq.h>
 #include <linux/sched.h>
 #include <linux/interrupt.h>
-#include <linux/kernel_stat.h>
+/* kernel_stat.h removed - empty */
 
 #include <asm/irq_regs.h>
 

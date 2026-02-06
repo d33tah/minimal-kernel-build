@@ -5,7 +5,7 @@
 #include <asm/hw_irq.h>
 #include <linux/irqdomain.h>
 #include <linux/interrupt.h>
-#include <linux/kernel_stat.h>
+/* kernel_stat.h removed - empty */
 
 #include "internals.h"
 

@@ -1,7 +1,7 @@
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-#include <linux/kernel_stat.h>
+/* kernel_stat.h removed - empty */
 #include <linux/interrupt.h>
 #include <linux/local_lock.h>
 #include <linux/percpu.h>

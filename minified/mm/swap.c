@@ -2,7 +2,7 @@
 
 #include <linux/mm.h>
 #include <linux/sched.h>
-#include <linux/kernel_stat.h>
+/* kernel_stat.h removed - empty */
 #include <linux/swap.h>
 #include <linux/mman.h>
 #include <linux/pagemap.h>

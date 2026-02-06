@@ -310,7 +310,7 @@ static inline unsigned long pgdat_end_pfn(pg_data_t *pgdat)
 	return pgdat->node_start_pfn + pgdat->node_spanned_pages;
 }
 
-#include <linux/memory_hotplug.h>
+/* memory_hotplug.h removed - empty, only had forward decl of vmem_altmap */
 
 void build_all_zonelists(pg_data_t *pgdat);
 enum meminit_context {

@@ -2,7 +2,7 @@
 /* seq_file.h removed - header is empty */
 #include <linux/interrupt.h>
 #include <linux/irq.h>
-#include <linux/kernel_stat.h>
+/* kernel_stat.h removed - empty */
 #include <linux/cpu.h>
 #include <linux/delay.h>
 #include <linux/uaccess.h>

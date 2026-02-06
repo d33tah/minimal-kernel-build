@@ -1,6 +1,6 @@
 #include <linux/cpu.h>
 #include <linux/interrupt.h>
-#include <linux/kernel_stat.h>
+/* kernel_stat.h removed - empty, only had smp.h/interrupt.h includes */
 #include <linux/of.h>
 /* seq_file.h removed - header is empty */
 #include <linux/smp.h>

@@ -1,4 +1,5 @@
 #include <linux/mm.h>
+#include <asm/sections.h>
 #include <linux/slab.h>
 #include <linux/string.h>
 #include <linux/compiler.h>

@@ -6,7 +6,7 @@
 #include <linux/interrupt.h>
 #include <linux/irq.h>
 #include <linux/timex.h>
-#include <linux/kernel_stat.h>
+/* kernel_stat.h removed - empty */
 #include <linux/bitops.h>
 #include <linux/io.h>
 #include <linux/delay.h>

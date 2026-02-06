@@ -20,7 +20,7 @@
 #include <linux/selection.h> /* includes tiocl defines */
 /* linux/tty.h already included above */
 /* linux/interrupt.h removed - no interrupt features used */
-#include <linux/consolemap.h>
+/* consolemap.h inlined into vt_kern.h */
 /* duplicate linux/interrupt.h removed */
 #include <linux/workqueue.h>
 

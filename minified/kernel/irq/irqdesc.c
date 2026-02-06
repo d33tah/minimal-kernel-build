@@ -2,7 +2,7 @@
 #include <linux/slab.h>
 /* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/interrupt.h>
-#include <linux/kernel_stat.h>
+/* kernel_stat.h removed - empty */
 #include <linux/radix-tree.h>
 /* linux/bitmap.h removed - no bitmap usage */
 #include <linux/irqdomain.h>

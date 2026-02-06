@@ -13,7 +13,7 @@
 #include <linux/nsproxy.h>
 #include <linux/user_namespace.h>
 #include <linux/refcount.h>
-#include <linux/kernel_stat.h>
+/* kernel_stat.h removed - empty */
 /* struct kernel_clone_args, cgroup_subsys_state, cgroup forward decls removed - unused */
 struct cgroup_namespace { struct ns_common ns; struct user_namespace *user_ns; struct ucounts *ucounts; struct css_set *root_cset; };
 static inline void free_cgroup_ns(struct cgroup_namespace *ns) { }

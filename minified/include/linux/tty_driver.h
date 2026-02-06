@@ -56,7 +56,7 @@ struct tty_driver {
 	struct list_head tty_drivers;
 } __randomize_layout;
 
-extern struct list_head tty_drivers;
+/* tty_drivers extern removed - only used within tty_io.c */
 
 struct tty_driver *__tty_alloc_driver(unsigned int lines, struct module *owner,
 		unsigned long flags);

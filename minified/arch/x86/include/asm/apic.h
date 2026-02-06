@@ -82,13 +82,8 @@ struct apic {
 	char	*name;
 };
 
- 
-extern struct apic *apic;
-
- 
+/* struct apic *apic, __apicdrivers[], __apicdrivers_end[] externs removed - unused */
 /* apic_driver, apic_drivers macros removed - unused */
-
-extern struct apic *__apicdrivers[], *__apicdrivers_end[];
 
  
 

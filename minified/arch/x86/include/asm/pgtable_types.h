@@ -349,9 +349,7 @@ extern pteval_t __supported_pte_mask;
 extern pteval_t __default_kernel_pte_mask;
 /* set_nx, nx_enabled removed - unused */
 
-#define pgprot_writecombine	pgprot_writecombine
-extern pgprot_t pgprot_writecombine(pgprot_t prot);
-/* pgprot_writethrough removed - never called (fallback in linux/pgtable.h) */
+/* pgprot_writecombine, pgprot_writethrough removed - never called */
 
 /* __HAVE_PFNMAP_TRACKING removed - track_pfn_* functions never called */
 

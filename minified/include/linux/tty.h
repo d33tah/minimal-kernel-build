@@ -164,7 +164,7 @@ void tty_kref_put(struct tty_struct *tty);
 int __init tty_init(void);
 const char *tty_name(const struct tty_struct *tty);
 
-extern struct ktermios tty_std_termios;
+/* tty_std_termios extern removed - variable already deleted */
 /* vcs_init removed - uncalled */
 
 extern struct class *tty_class;
@@ -185,7 +185,7 @@ speed_t tty_termios_baud_rate(struct ktermios *termios);
    tty_wakeup removed - never called */
 
 struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx);
-extern struct mutex tty_mutex;
+/* tty_mutex extern removed - only used within tty_io.c */
 
 void __init n_tty_init(void);
 

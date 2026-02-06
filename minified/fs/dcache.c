@@ -528,13 +528,8 @@ struct dentry *d_alloc_cursor(struct dentry *parent)
 	return NULL;
 }
 
-struct dentry *d_alloc_pseudo(struct super_block *sb, const struct qstr *name)
-{
-	struct dentry *dentry = __d_alloc(sb, name);
-	if (likely(dentry))
-		dentry->d_flags |= DCACHE_NORCU;
-	return dentry;
-}
+
+/* d_alloc_pseudo removed - only caller was alloc_file_pseudo which was also removed (~7 LOC) */
 
 void d_set_d_op(struct dentry *dentry, const struct dentry_operations *op)
 {

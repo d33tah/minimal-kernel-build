@@ -54,43 +54,8 @@ struct file *alloc_empty_file(int flags, const struct cred *cred)
 	return f;
 }
 
-struct file *alloc_file_pseudo(struct inode *inode, struct vfsmount *mnt,
-			       const char *name, int flags,
-			       const struct file_operations *fops)
-{
-	static const struct dentry_operations anon_ops = {
-		/* d_dname assignment removed - callback never called */
-	};
-	struct qstr this = QSTR_INIT(name, strlen(name));
-	struct path path;
-	struct file *file;
+/* alloc_file_pseudo removed - declared/defined but never called (~35 LOC) */
 
-	path.dentry = d_alloc_pseudo(mnt->mnt_sb, &this);
-	if (!path.dentry)
-		return ERR_PTR(-ENOMEM);
-	/* s_d_op check removed - always NULL (dops never set) */
-	d_set_d_op(path.dentry, &anon_ops);
-	path.mnt = mntget(mnt);
-	d_instantiate(path.dentry, inode);
-	/* alloc_file inlined */
-	file = alloc_empty_file(flags, current_cred());
-	if (IS_ERR(file)) {
-		ihold(inode);
-		path_put(&path);
-		return file;
-	}
-	file->f_path = path;
-	file->f_inode = path.dentry->d_inode;
-	file->f_mapping = path.dentry->d_inode->i_mapping;
-	/* .read/.write callbacks removed - only read_iter/write_iter used */
-	if ((file->f_mode & FMODE_READ) && likely(fops->read_iter))
-		file->f_mode |= FMODE_CAN_READ;
-	if ((file->f_mode & FMODE_WRITE) && likely(fops->write_iter))
-		file->f_mode |= FMODE_CAN_WRITE;
-	file->f_mode |= FMODE_OPENED;
-	file->f_op = fops;
-	return file;
-}
 
 static void __fput(struct file *file)
 {

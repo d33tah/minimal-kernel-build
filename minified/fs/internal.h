@@ -70,7 +70,7 @@ extern int vfs_open(const struct path *, struct file *);
 extern int d_set_mounted(struct dentry *dentry);
 /* prune_dcache_sb removed - declared/defined but never called */
 extern struct dentry *d_alloc_cursor(struct dentry *);
-extern struct dentry * d_alloc_pseudo(struct super_block *, const struct qstr *);
+/* d_alloc_pseudo extern removed - function removed (only caller was alloc_file_pseudo) */
 /* simple_dname removed - was only in d_path.c */
 extern void dput_to_list(struct dentry *, struct list_head *);
 /* shrink_dentry_list removed - was empty stub, calls removed */

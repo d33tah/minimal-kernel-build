@@ -11,12 +11,7 @@ struct file;
 
 extern void fput(struct file *);
 
-struct file_operations;
-/* struct task_struct, dentry, path forward decls removed - unused */
-struct vfsmount;
-struct inode;
-extern struct file *alloc_file_pseudo(struct inode *, struct vfsmount *,
-	const char *, int flags, const struct file_operations *);
+/* alloc_file_pseudo extern + forward decls removed - never called */
 
 
 struct fd {

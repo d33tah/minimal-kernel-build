@@ -1,3 +1,5 @@
+/* --- 2026-02-06 23:00 --- Trimmed: no TTY devices created,
+ * most operations dead. Keep struct definitions for type references. */
 #ifndef _LINUX_TTY_DRIVER_H
 #define _LINUX_TTY_DRIVER_H
 
@@ -8,31 +10,16 @@
 #include <linux/cdev.h>
 #include <linux/types.h>
 #include <asm/termios.h>
-/* seq_file.h removed - header is empty */
 
 struct tty_struct;
 struct tty_driver;
 
 struct tty_operations {
-	struct tty_struct *(*lookup)(struct tty_driver *driver, struct file *filp, int idx);
-	int (*install)(struct tty_driver *driver, struct tty_struct *tty);
-	void (*remove)(struct tty_driver *driver, struct tty_struct *tty);
-	int (*open)(struct tty_struct *tty, struct file *filp);
-	void (*close)(struct tty_struct *tty, struct file *filp);
-	void (*shutdown)(struct tty_struct *tty);
-	void (*cleanup)(struct tty_struct *tty);
 	int (*write)(struct tty_struct *tty, const unsigned char *buf, int count);
-	/* put_char removed - never called */
 	void (*flush_chars)(struct tty_struct *tty);
-	/* write_room, chars_in_buffer, ioctl, compat_ioctl, set_termios removed - never called */
-	/* throttle, unthrottle, stop, start removed - never called */
-	void (*hangup)(struct tty_struct *tty);
-	/* break_ctl, flush_buffer, set_ldisc, wait_until_sent, send_xchar, resize removed */
-	/* tiocmget, tiocmset, get_icount, get_serial, set_serial, show_fdinfo, proc_show removed */
 } __randomize_layout;
 
 struct tty_driver {
-	/* magic field removed - write-only, never checked */
 	struct kref kref;
 	struct cdev **cdevs;
 	struct module	*owner;
@@ -46,51 +33,11 @@ struct tty_driver {
 	short	subtype;
 	struct ktermios init_termios;
 	unsigned long	flags;
-	/* proc_entry, other, driver_state removed - never used */
-
 	struct tty_struct **ttys;
 	struct tty_port **ports;
 	struct ktermios **termios;
-
 	const struct tty_operations *ops;
 	struct list_head tty_drivers;
 } __randomize_layout;
 
-/* tty_drivers extern removed - only used within tty_io.c */
-
-struct tty_driver *__tty_alloc_driver(unsigned int lines, struct module *owner,
-		unsigned long flags);
-
-
-#define tty_alloc_driver(lines, flags) \
-		__tty_alloc_driver(lines, THIS_MODULE, flags)
-
-static inline struct tty_driver *tty_driver_kref_get(struct tty_driver *d)
-{
-	kref_get(&d->kref);
-	return d;
-}
-
-/* TTY_DRIVER_MAGIC removed - never used (magic field removed) */
-
-#define TTY_DRIVER_INSTALLED		0x0001
-#define TTY_DRIVER_RESET_TERMIOS	0x0002
-#define TTY_DRIVER_REAL_RAW		0x0004
-#define TTY_DRIVER_DYNAMIC_DEV		0x0008
-#define TTY_DRIVER_DEVPTS_MEM		0x0010
-#define TTY_DRIVER_DYNAMIC_ALLOC	0x0040
-#define TTY_DRIVER_UNNUMBERED_NODE	0x0080
-
-#define TTY_DRIVER_TYPE_CONSOLE		0x0002
-#define TTY_DRIVER_TYPE_PTY		0x0004
-
-#define PTY_TYPE_MASTER			0x0001
-#define PTY_TYPE_SLAVE			0x0002
-
-int tty_register_driver(struct tty_driver *driver);
-struct device *tty_register_device(struct tty_driver *driver, unsigned index,
-		struct device *dev);
-struct device *tty_register_device_attr(struct tty_driver *driver,
-		unsigned index, struct device *device, void *drvdata);
-
-#endif  
+#endif

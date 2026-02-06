@@ -147,7 +147,7 @@ extern void __init files_init(void);
 #define ATTR_OPEN	(1 << 15) 
 #define ATTR_TIMES_SET	(1 << 16)
 
-#define WHITEOUT_DEV 0
+/* WHITEOUT_DEV removed - unused */
 
 struct iattr {
 	unsigned int	ia_valid;
@@ -763,14 +763,7 @@ extern struct kmem_cache *names_cachep;
 
 extern const struct file_operations def_chr_fops;
 
-#define CHRDEV_MAJOR_MAX 512
-
-#define CHRDEV_MAJOR_DYN_END 234
-
-#define CHRDEV_MAJOR_DYN_EXT_START 511
-#define CHRDEV_MAJOR_DYN_EXT_END 384
-
-/* chrdev region functions removed - no definitions exist */
+/* CHRDEV_MAJOR_MAX/DYN macros removed - unused */
 
 extern void init_special_inode(struct inode *, umode_t, dev_t);
 

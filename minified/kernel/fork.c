@@ -75,7 +75,6 @@ static inline void free_task_struct(struct task_struct *tsk)
 	kmem_cache_free(task_struct_cachep, tsk);
 }
 
-/* CONFIG_ARCH_THREAD_STACK_ALLOCATOR not set, THREAD_SIZE >= PAGE_SIZE on x86 - conditionals removed */
 static void thread_stack_free_rcu(struct rcu_head *rh)
 {
 	/* __free_pages removed - empty stub (bump allocator doesn't free) */

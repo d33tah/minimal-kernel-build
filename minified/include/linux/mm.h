@@ -651,13 +651,7 @@ static inline spinlock_t *pud_lockptr(struct mm_struct *mm, pud_t *pud)
 	return &mm->page_table_lock;
 }
 
-static inline spinlock_t *pud_lock(struct mm_struct *mm, pud_t *pud)
-{
-	spinlock_t *ptl = pud_lockptr(mm, pud);
-
-	spin_lock(ptl);
-	return ptl;
-}
+/* pud_lock removed - unused */
 
 extern void __init pagecache_init(void);
 extern void free_initmem(void);

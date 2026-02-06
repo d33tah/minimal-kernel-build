@@ -771,10 +771,7 @@ extern const struct file_operations def_chr_fops;
 #define CHRDEV_MAJOR_DYN_EXT_START 511
 #define CHRDEV_MAJOR_DYN_EXT_END 384
 
-extern int alloc_chrdev_region(dev_t *, unsigned, unsigned, const char *);
-extern int register_chrdev_region(dev_t, unsigned, const char *);
-/* __register_chrdev, __unregister_chrdev, register_chrdev removed - never called */
-extern void unregister_chrdev_region(dev_t, unsigned);
+/* chrdev region functions removed - no definitions exist */
 
 extern void init_special_inode(struct inode *, umode_t, dev_t);
 
@@ -813,7 +810,7 @@ static inline void allow_write_access(struct file *file)
 		atomic_inc(&file_inode(file)->i_writecount);
 }
 extern ssize_t kernel_read(struct file *, void *, size_t, loff_t *);
-ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos);
+/* __kernel_read removed - no definition exists */
 /* kernel_write and __kernel_write removed - never called */
 extern struct file * open_exec(const char *);
 

@@ -99,8 +99,7 @@ int force_sig_fault(int sig, int code, void __user *addr);
    force_sig_ptrace_errno_trap, force_sig_fault_trapno, send_sig_fault_trapno,
    force_sig_seccomp, force_sig_pkuerr removed - unused */
 
-extern int send_sig_info(int, struct kernel_siginfo *, struct task_struct *);
-/* kill_pid_info, do_notify_parent removed - never called */
+/* send_sig_info, kill_pid_info, do_notify_parent removed - never called */
 /* force_sigsegv now static in signal.c */
 extern int force_sig_info(struct kernel_siginfo *);
 extern void force_sig(int);

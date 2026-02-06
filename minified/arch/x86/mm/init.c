@@ -441,27 +441,7 @@ void __init poking_init(void)
 	pte_unmap_unlock(ptep, ptl);
 }
 
-void free_init_pages(const char *what, unsigned long begin, unsigned long end)
-{
-	unsigned long begin_aligned, end_aligned;
-
-	begin_aligned = PAGE_ALIGN(begin);
-	end_aligned = end & PAGE_MASK;
-
-	if (WARN_ON(begin_aligned != begin || end_aligned != end)) {
-		begin = begin_aligned;
-		end = end_aligned;
-	}
-
-	if (begin >= end)
-		return;
-
-	/* set_memory_nx, set_memory_rw removed - stubs returning 0 */
-	free_reserved_area((void *)begin, (void *)end, POISON_FREE_INITMEM,
-			   what);
-}
-
-/* free_kernel_image_pages removed - never called in minimal kernel */
+/* free_init_pages, free_kernel_image_pages removed - zero callers */
 
 void __ref free_initmem(void)
 {

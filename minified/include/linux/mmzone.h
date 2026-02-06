@@ -27,9 +27,7 @@ enum pageblock_bits {
 #define pageblock_order (MAX_ORDER - 1)
 #define pageblock_nr_pages (1UL << pageblock_order)
 
-unsigned long get_pfnblock_flags_mask(const struct page *page,
-				      unsigned long pfn, unsigned long mask);
-/* end pageblock-flags.h */
+/* get_pfnblock_flags_mask removed - renamed to __get_pfnblock_flags_mask (static) */
 #include <linux/atomic.h>
 #include <linux/mm_types.h>
 #include <linux/page-flags.h>

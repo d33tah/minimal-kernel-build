@@ -75,23 +75,7 @@ int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,
 	return changed;
 }
 
-int ptep_test_and_clear_young(struct vm_area_struct *vma, unsigned long addr,
-			      pte_t *ptep)
-{
-	int ret = 0;
-
-	if (pte_young(*ptep))
-		ret = test_and_clear_bit(_PAGE_BIT_ACCESSED,
-					 (unsigned long *)&ptep->pte);
-
-	return ret;
-}
-
-int ptep_clear_flush_young(struct vm_area_struct *vma, unsigned long address,
-			   pte_t *ptep)
-{
-	return ptep_test_and_clear_young(vma, address, ptep);
-}
+/* ptep_test_and_clear_young, ptep_clear_flush_young removed - zero callers */
 
 void __native_set_fixmap(enum fixed_addresses idx, pte_t pte)
 {

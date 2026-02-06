@@ -383,8 +383,7 @@ extern void start_thread(struct pt_regs *regs, unsigned long new_ip,
 DECLARE_PER_CPU(u64, msr_misc_features_shadow);
 
 extern unsigned long arch_align_stack(unsigned long sp);
-void free_init_pages(const char *what, unsigned long begin, unsigned long end);
-/* free_kernel_image_pages removed - never called */
+/* free_init_pages, free_kernel_image_pages removed - zero callers */
 
 void default_idle(void);
 

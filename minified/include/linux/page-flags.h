@@ -213,8 +213,7 @@ PAGEFLAG(LRU, lru, PF_HEAD) __CLEARPAGEFLAG(LRU, lru, PF_HEAD)
 	TESTCLEARFLAG(LRU, lru, PF_HEAD)
 PAGEFLAG(Active, active, PF_HEAD) __CLEARPAGEFLAG(Active, active, PF_HEAD)
 	TESTCLEARFLAG(Active, active, PF_HEAD)
-PAGEFLAG(Workingset, workingset, PF_HEAD)
-	TESTCLEARFLAG(Workingset, workingset, PF_HEAD)
+/* Workingset flag removed - zero callers */
 __PAGEFLAG(Slab, slab, PF_NO_TAIL)
 
 PAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
@@ -224,15 +223,13 @@ PAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
 	__CLEARPAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
 	__SETPAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
 
-PAGEFLAG(Private, private, PF_ANY)
-/* Private2 removed - never used */
+/* Private flag removed - zero callers */
 
 TESTPAGEFLAG(Writeback, writeback, PF_NO_TAIL)
 	TESTSCFLAG(Writeback, writeback, PF_NO_TAIL)
 PAGEFLAG(MappedToDisk, mappedtodisk, PF_NO_TAIL)
 
-PAGEFLAG(Reclaim, reclaim, PF_NO_TAIL)
-	/* TESTCLEARFLAG(Reclaim, ...) removed - never used */
+/* Reclaim flag removed - zero callers */
 PAGEFLAG(Readahead, readahead, PF_NO_COMPOUND)
 	/* TESTCLEARFLAG(Readahead, ...) removed - never used */
 
@@ -248,9 +245,7 @@ PAGEFLAG(Mlocked, mlocked, PF_NO_TAIL)
 	TESTSCFLAG(Mlocked, mlocked, PF_NO_TAIL)
 
 
-PAGEFLAG_FALSE(HWPoison, hwpoison)
-
-__PAGEFLAG(Reported, reported, PF_NO_COMPOUND)
+/* HWPoison, Reported flags removed - zero callers */
 
 #define PAGE_MAPPING_ANON	0x1
 #define PAGE_MAPPING_FLAGS	0x3
@@ -271,7 +266,7 @@ static __always_inline bool PageAnon(struct page *page)
 }
 
 
-TESTPAGEFLAG_FALSE(Ksm, ksm)
+/* Ksm flag removed - zero callers */
 
 
 static inline bool folio_test_uptodate(struct folio *folio)
@@ -338,13 +333,7 @@ static inline bool folio_test_large(struct folio *folio)
 
 /* set_compound_head inlined into page_alloc.c */
 
-TESTPAGEFLAG_FALSE(Huge, hugetlb)
-
-TESTPAGEFLAG_FALSE(TransHuge, transhuge)
-TESTPAGEFLAG_FALSE(TransCompound, transcompound)
-TESTPAGEFLAG_FALSE(TransTail, transtail)
-PAGEFLAG_FALSE(DoubleMap, double_map)
-	TESTSCFLAG_FALSE(DoubleMap, double_map)
+/* Huge, TransHuge, TransCompound, TransTail, DoubleMap flags removed - zero callers */
 
 
 

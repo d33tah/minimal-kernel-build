@@ -32,7 +32,6 @@
 #include <asm/tlb.h>
 #include <asm/tlbflush.h>
 
-#include "pgalloc-track.h"
 #include "internal.h"
 /* struct swap_iocb forward decl removed - unused */
 

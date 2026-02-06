@@ -806,7 +806,6 @@ ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
 		     ssize_t already_read)
 {
 	struct file *filp = iocb->ki_filp;
-	struct file_ra_state *ra = &filp->f_ra;
 	struct address_space *mapping = filp->f_mapping;
 	struct inode *inode = mapping->host;
 	struct folio_batch fbatch;

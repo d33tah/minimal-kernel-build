@@ -110,7 +110,6 @@ static void move_ptes(struct vm_area_struct *vma, pmd_t *old_pmd,
 
 enum pgt_entry {
 	NORMAL_PMD,
-	NORMAL_PUD,
 };
 
 static __always_inline unsigned long get_extent(enum pgt_entry entry,
@@ -124,10 +123,6 @@ static __always_inline unsigned long get_extent(enum pgt_entry entry,
 	case NORMAL_PMD:
 		mask = PMD_MASK;
 		size = PMD_SIZE;
-		break;
-	case NORMAL_PUD:
-		mask = PUD_MASK;
-		size = PUD_SIZE;
 		break;
 	}
 
@@ -173,25 +168,8 @@ static bool move_pgt_entry(enum pgt_entry entry, struct vm_area_struct *vma,
 		moved = true;
 		break;
 	}
-	case NORMAL_PUD: {
-		pud_t *old_pud = old_entry, *new_pud = new_entry;
-		pud_t pud;
-		/* pud_none always returns 0, so !pud_none is always true */
-		if (WARN_ON_ONCE(1))
-			break;
-		old_ptl = pud_lock(mm, old_pud);
-		new_ptl = pud_lockptr(mm, new_pud);
-		if (new_ptl != old_ptl)
-			spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
-		pud = *old_pud;
-		pud_populate(mm, new_pud, pud_pgtable(pud));
-		flush_tlb_range(vma, old_addr, old_addr + PUD_SIZE);
-		if (new_ptl != old_ptl)
-			spin_unlock(new_ptl);
-		spin_unlock(old_ptl);
-		moved = true;
-		break;
-	}
+		/* NORMAL_PUD case removed - pud_none always returns 0
+	 * and pud_populate is a no-op on x86 */
 	}
 
 	if (need_rmap_locks)
@@ -209,7 +187,6 @@ unsigned long move_page_tables(struct vm_area_struct *vma,
 	unsigned long extent, old_end;
 	struct mmu_notifier_range range;
 	pmd_t *old_pmd, *new_pmd;
-	pud_t *old_pud, *new_pud;
 
 	if (!len)
 		return 0;
@@ -223,22 +200,6 @@ unsigned long move_page_tables(struct vm_area_struct *vma,
 
 	for (; old_addr < old_end; old_addr += extent, new_addr += extent) {
 		cond_resched();
-
-		extent = get_extent(NORMAL_PUD, old_addr, old_end, new_addr);
-
-		old_pud = get_old_pud(vma->vm_mm, old_addr);
-		if (!old_pud)
-			continue;
-		new_pud = alloc_new_pud(vma->vm_mm, vma, new_addr);
-		if (!new_pud)
-			break;
-		/* pud_trans_huge and pud_devmap always return 0 */
-		/* CONFIG_HAVE_MOVE_PUD is always enabled */
-		if (extent == PUD_SIZE) {
-			if (move_pgt_entry(NORMAL_PUD, vma, old_addr, new_addr,
-					   old_pud, new_pud, true))
-				continue;
-		}
 
 		extent = get_extent(NORMAL_PMD, old_addr, old_end, new_addr);
 		/* get_old_pmd inlined */

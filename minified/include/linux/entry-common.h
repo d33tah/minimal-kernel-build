@@ -67,8 +67,6 @@ static __always_inline void arch_enter_from_user_mode(struct pt_regs *regs);
 static __always_inline void arch_enter_from_user_mode(struct pt_regs *regs) {}
 #endif
 
-void enter_from_user_mode(struct pt_regs *regs);
-
 void syscall_enter_from_user_mode_prepare(struct pt_regs *regs);
 
 long syscall_enter_from_user_mode_work(struct pt_regs *regs, long syscall);
@@ -96,10 +94,6 @@ static __always_inline void arch_exit_to_user_mode(void) { }
 
 void arch_do_signal_or_restart(struct pt_regs *regs);
 
-void exit_to_user_mode(void);
-
-void syscall_exit_to_user_mode_work(struct pt_regs *regs);
-
 void syscall_exit_to_user_mode(struct pt_regs *regs);
 
 void irqentry_enter_from_user_mode(struct pt_regs *regs);
@@ -116,15 +110,10 @@ typedef struct irqentry_state {
 #endif
 
 irqentry_state_t noinstr irqentry_enter(struct pt_regs *regs);
-
-void raw_irqentry_exit_cond_resched(void);
-
 void noinstr irqentry_exit(struct pt_regs *regs, irqentry_state_t state);
 
 irqentry_state_t noinstr irqentry_nmi_enter(struct pt_regs *regs);
 
 void noinstr irqentry_nmi_exit(struct pt_regs *regs, irqentry_state_t irq_state);
-
-
 
 #endif

@@ -884,21 +884,7 @@ int do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 	return __do_munmap(mm, start, len, uf, false);
 }
 
-int vm_munmap(unsigned long start, size_t len)
-{
-	int ret;
-	struct mm_struct *mm = current->mm;
-	LIST_HEAD(uf);
-
-	if (mmap_write_lock_killable(mm))
-		return -EINTR;
-
-	ret = __do_munmap(mm, start, len, &uf, false);
-	mmap_write_unlock(mm);
-	/* userfaultfd_unmap_complete call removed - empty stub */
-	return ret;
-}
-
+/* vm_munmap removed - never called (~14 LOC) */
 /* remap_file_pages removed - COND_SYSCALL provides stub */
 /* do_brk_flags inlined into vm_brk_flags */
 

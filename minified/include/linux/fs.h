@@ -795,7 +795,7 @@ static inline void allow_write_access(struct file *file)
 extern ssize_t kernel_read(struct file *, void *, size_t, loff_t *);
 /* __kernel_read removed - no definition exists */
 /* kernel_write and __kernel_write removed - never called */
-extern struct file * open_exec(const char *);
+/* open_exec removed - never called */
 
 extern bool is_subdir(struct dentry *, struct dentry *);
 /* vfs_llseek removed - never called */

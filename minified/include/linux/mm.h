@@ -719,7 +719,7 @@ static inline void mm_populate(unsigned long addr, unsigned long len)
 }
 
 extern int __must_check vm_brk_flags(unsigned long, unsigned long, unsigned long);
-extern int vm_munmap(unsigned long, size_t);
+/* vm_munmap removed - never called */
 extern unsigned long __must_check vm_mmap(struct file *, unsigned long,
         unsigned long, unsigned long,
         unsigned long, unsigned long);

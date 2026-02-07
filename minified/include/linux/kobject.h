@@ -35,10 +35,7 @@ struct kobject {
 	/* uevent_suppress removed - write-only, never checked */
 };
 
-/* kobject_set_name removed - inlined into single caller */
-extern __printf(2, 0)
-int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
-			   va_list vargs);
+/* kobject_set_name, kobject_set_name_vargs removed - never called */
 
 static inline const char *kobject_name(const struct kobject *kobj)
 {

@@ -67,23 +67,7 @@ static int kobject_add_internal(struct kobject *kobj)
 	return 0;
 }
 
-/* Stub: minimal boot doesn't need sysfs name escaping */
-int kobject_set_name_vargs(struct kobject *kobj, const char *fmt, va_list vargs)
-{
-	const char *s;
-
-	if (kobj->name && !fmt)
-		return 0;
-
-	s = kvasprintf_const(GFP_KERNEL, fmt, vargs);
-	if (!s)
-		return -ENOMEM;
-
-	kfree_const(kobj->name);
-	kobj->name = s;
-	return 0;
-}
-
+/* kobject_set_name_vargs removed - never called (~15 LOC) */
 /* kobject_set_name inlined into single caller - kset_create */
 
 void kobject_init(struct kobject *kobj, const struct kobj_type *ktype)

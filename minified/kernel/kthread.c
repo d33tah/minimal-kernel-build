@@ -82,17 +82,9 @@ void free_kthread_struct(struct task_struct *k)
 	kfree(kthread);
 }
 
-bool kthread_should_stop(void)
-{
-	return test_bit(KTHREAD_SHOULD_STOP, &to_kthread(current)->flags);
-}
-
+/* kthread_should_stop removed - never called (~4 LOC) */
 /* __kthread_should_park, kthread_should_park removed - never called */
-
-void *kthread_data(struct task_struct *task)
-{
-	return to_kthread(task)->data;
-}
+/* kthread_data removed - never called (~4 LOC) */
 
 /* __kthread_parkme inlined into kthread */
 

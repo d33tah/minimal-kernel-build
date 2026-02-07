@@ -85,46 +85,7 @@ static void cpio_trailer(void)
 	}
 }
 
-static int cpio_mkslink(const char *name, const char *target, unsigned int mode,
-			uid_t uid, gid_t gid)
-{
-	char s[256];
-
-	if (name[0] == '/')
-		name++;
-	sprintf(s,
-		"%s%08X%08X%08lX%08lX%08X%08lX"
-		"%08X%08X%08X%08X%08X%08X%08X",
-		do_csum ? "070702" : "070701", ino++, S_IFLNK | mode, (long)uid,
-		(long)gid, 1, (long)default_mtime, (unsigned)strlen(target) + 1,
-		3, 1, 0, 0, (unsigned)strlen(name) + 1, 0);
-	push_hdr(s);
-	push_string(name);
-	push_pad();
-	push_string(target);
-	push_pad();
-	return 0;
-}
-
-static int cpio_mkslink_line(const char *line)
-{
-	char name[PATH_MAX + 1];
-	char target[PATH_MAX + 1];
-	unsigned int mode;
-	int uid;
-	int gid;
-	int rc = -1;
-
-	if (5 != sscanf(line,
-			"%" str(PATH_MAX) "s %" str(PATH_MAX) "s %o %d %d",
-			name, target, &mode, &uid, &gid)) {
-		fprintf(stderr, "Unrecognized dir format '%s'", line);
-		goto fail;
-	}
-	rc = cpio_mkslink(name, target, mode, uid, gid);
-fail:
-	return rc;
-}
+/* cpio_mkslink, cpio_mkslink_line removed - no symlinks in initramfs */
 
 static int cpio_mkgeneric(const char *name, unsigned int mode, uid_t uid,
 			  gid_t gid)
@@ -144,53 +105,22 @@ static int cpio_mkgeneric(const char *name, unsigned int mode, uid_t uid,
 	return 0;
 }
 
-enum generic_types { GT_DIR, GT_PIPE, GT_SOCK };
-
-struct generic_type {
-	const char *type;
-	mode_t mode;
-};
-
-static const struct generic_type generic_type_table[] = {
-	[GT_DIR] = { .type = "dir", .mode = S_IFDIR },
-	[GT_PIPE] = { .type = "pipe", .mode = S_IFIFO },
-	[GT_SOCK] = { .type = "sock", .mode = S_IFSOCK }
-};
-
-static int cpio_mkgeneric_line(const char *line, enum generic_types gt)
+static int cpio_mkdir_line(const char *line)
 {
 	char name[PATH_MAX + 1];
 	unsigned int mode;
 	int uid;
 	int gid;
-	int rc = -1;
 
 	if (4 != sscanf(line, "%" str(PATH_MAX) "s %o %d %d", name, &mode, &uid,
 			&gid)) {
-		fprintf(stderr, "Unrecognized %s format '%s'", line,
-			generic_type_table[gt].type);
-		goto fail;
+		fprintf(stderr, "Unrecognized dir format '%s'", line);
+		return -1;
 	}
-	mode |= generic_type_table[gt].mode;
-	rc = cpio_mkgeneric(name, mode, uid, gid);
-fail:
-	return rc;
+	return cpio_mkgeneric(name, mode | S_IFDIR, uid, gid);
 }
 
-static int cpio_mkdir_line(const char *line)
-{
-	return cpio_mkgeneric_line(line, GT_DIR);
-}
-
-static int cpio_mkpipe_line(const char *line)
-{
-	return cpio_mkgeneric_line(line, GT_PIPE);
-}
-
-static int cpio_mksock_line(const char *line)
-{
-	return cpio_mkgeneric_line(line, GT_SOCK);
-}
+/* cpio_mkpipe_line, cpio_mksock_line removed - not used in initramfs */
 
 static int cpio_mknod(const char *name, unsigned int mode, uid_t uid, gid_t gid,
 		      char dev_type, unsigned int maj, unsigned int min)
@@ -443,18 +373,6 @@ static const struct file_handler file_handler_table[] = {
 	{
 		.type = "dir",
 		.handler = cpio_mkdir_line,
-	},
-	{
-		.type = "slink",
-		.handler = cpio_mkslink_line,
-	},
-	{
-		.type = "pipe",
-		.handler = cpio_mkpipe_line,
-	},
-	{
-		.type = "sock",
-		.handler = cpio_mksock_line,
 	},
 	{
 		.type = NULL,

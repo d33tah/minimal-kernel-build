@@ -74,14 +74,7 @@ static int copyout(void __user *to, const void *from, size_t n)
 	return n;
 }
 
-static int copyin(void *to, const void __user *from, size_t n)
-{
-	if (access_ok(from, n)) {
-		instrument_copy_from_user(to, from, n);
-		n = raw_copy_from_user(to, from, n);
-	}
-	return n;
-}
+/* copyin removed - only caller was _copy_from_iter which was removed */
 
 /* copy_page_to_iter_iovec and copy_page_to_iter_pipe inlined into
  * __copy_page_to_iter below */

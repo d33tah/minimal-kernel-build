@@ -1,5 +1,4 @@
 
-#include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <ctype.h>
@@ -16,67 +15,7 @@
 
 #include "lkc.h"
 
-static bool is_present(const char *path)
-{
-	struct stat st;
-
-	return !stat(path, &st);
-}
-
-static bool is_dir(const char *path)
-{
-	struct stat st;
-
-	if (stat(path, &st))
-		return false;
-
-	return S_ISDIR(st.st_mode);
-}
-
-static bool is_same(const char *file1, const char *file2)
-{
-	int fd1, fd2;
-	struct stat st1, st2;
-	void *map1, *map2;
-	bool ret = false;
-
-	fd1 = open(file1, O_RDONLY);
-	if (fd1 < 0)
-		return ret;
-
-	fd2 = open(file2, O_RDONLY);
-	if (fd2 < 0)
-		goto close1;
-
-	ret = fstat(fd1, &st1);
-	if (ret)
-		goto close2;
-	ret = fstat(fd2, &st2);
-	if (ret)
-		goto close2;
-
-	if (st1.st_size != st2.st_size)
-		goto close2;
-
-	map1 = mmap(NULL, st1.st_size, PROT_READ, MAP_PRIVATE, fd1, 0);
-	if (map1 == MAP_FAILED)
-		goto close2;
-
-	map2 = mmap(NULL, st2.st_size, PROT_READ, MAP_PRIVATE, fd2, 0);
-	if (map2 == MAP_FAILED)
-		goto close2;
-
-	if (bcmp(map1, map2, st1.st_size))
-		goto close2;
-
-	ret = true;
-close2:
-	close(fd2);
-close1:
-	close(fd1);
-
-	return ret;
-}
+/* is_present, is_dir, is_same, make_parent_dir, conf_touch_dep removed - not needed for minimal build */
 
 static int make_parent_dir(const char *path)
 {
@@ -96,35 +35,15 @@ static int make_parent_dir(const char *path)
 		p++;
 
 	while ((p = strchr(p, '/'))) {
+		struct stat st;
+
 		*p = 0;
-
-		if (!is_dir(tmp) && mkdir(tmp, 0755))
+		if (stat(tmp, &st) && mkdir(tmp, 0755))
 			return -1;
-
 		*p = '/';
 		while (*p == '/')
 			p++;
 	}
-
-	return 0;
-}
-
-static char depfile_path[PATH_MAX];
-static size_t depfile_prefix_len;
-
-static int conf_touch_dep(const char *name)
-{
-	int fd;
-
-	if (depfile_prefix_len + strlen(name) + 1 > sizeof(depfile_path))
-		return -1;
-
-	strcpy(depfile_path + depfile_prefix_len, name);
-
-	fd = open(depfile_path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	if (fd == -1)
-		return -1;
-	close(fd);
 
 	return 0;
 }
@@ -222,37 +141,31 @@ static int conf_set_sym_val(struct symbol *sym, int def, int def_flags, char *p)
 			sym->flags |= def_flags;
 			break;
 		}
-		if (def != S_DEF_AUTO)
-			conf_warning("symbol value '%s' invalid for %s", p,
-				     sym->name);
+		conf_warning("symbol value '%s' invalid for %s", p, sym->name);
 		return 1;
 	case S_STRING:
-
-		if (def != S_DEF_AUTO) {
-			if (*p++ != '"')
+		if (*p++ != '"')
+			break;
+		for (p2 = p; (p2 = strpbrk(p2, "\"\\")); p2++) {
+			if (*p2 == '"') {
+				*p2 = 0;
 				break;
-			for (p2 = p; (p2 = strpbrk(p2, "\"\\")); p2++) {
-				if (*p2 == '"') {
-					*p2 = 0;
-					break;
-				}
-				memmove(p2, p2 + 1, strlen(p2));
 			}
-			if (!p2) {
-				conf_warning("invalid string found");
-				return 1;
-			}
+			memmove(p2, p2 + 1, strlen(p2));
 		}
-
+		if (!p2) {
+			conf_warning("invalid string found");
+			return 1;
+		}
+	/* fall through */
 	case S_INT:
 	case S_HEX:
 		if (sym_string_valid(sym, p)) {
 			sym->def[def].val = xstrdup(p);
 			sym->flags |= def_flags;
 		} else {
-			if (def != S_DEF_AUTO)
-				conf_warning("symbol value '%s' invalid for %s",
-					     p, sym->name);
+			conf_warning("symbol value '%s' invalid for %s", p,
+				     sym->name);
 			return 1;
 		}
 		break;
@@ -447,11 +360,7 @@ load:
 
 			sym = sym_find(line + strlen(CONFIG_));
 			if (!sym) {
-				if (def == S_DEF_AUTO)
-
-					conf_touch_dep(line + strlen(CONFIG_));
-				else
-					conf_set_changed(true);
+				conf_set_changed(true);
 				continue;
 			}
 
@@ -729,36 +638,16 @@ int conf_write(const char *name)
 	struct symbol *sym;
 	struct menu *menu;
 	const char *str;
-	char tmpname[PATH_MAX + 1], oldname[PATH_MAX + 1];
-	char *env;
 	int i;
 	bool need_newline = false;
 
 	if (!name)
 		name = conf_get_configname();
 
-	if (!*name) {
-		fprintf(stderr, "config name is empty\n");
-		return -1;
-	}
-
-	if (is_dir(name)) {
-		fprintf(stderr, "%s: Is a directory\n", name);
-		return -1;
-	}
-
 	if (make_parent_dir(name))
 		return -1;
 
-	env = getenv("KCONFIG_OVERWRITECONFIG");
-	if (env && *env) {
-		*tmpname = 0;
-		out = fopen(name, "w");
-	} else {
-		snprintf(tmpname, sizeof(tmpname), "%s.%d.tmp", name,
-			 (int)getpid());
-		out = fopen(tmpname, "w");
-	}
+	out = fopen(name, "w");
 	if (!out)
 		return 1;
 
@@ -774,12 +663,7 @@ int conf_write(const char *name)
 			if (!menu_is_visible(menu))
 				goto next;
 			str = menu_get_prompt(menu);
-			fprintf(out,
-				"\n"
-				"#\n"
-				"# %s\n"
-				"#\n",
-				str);
+			fprintf(out, "\n#\n# %s\n#\n", str);
 			need_newline = false;
 		} else if (!(sym->flags & SYMBOL_CHOICE) &&
 			   !(sym->flags & SYMBOL_WRITTEN)) {
@@ -819,22 +703,7 @@ end_check:
 
 	for_all_symbols(i, sym) sym->flags &= ~SYMBOL_WRITTEN;
 
-	if (*tmpname) {
-		if (is_same(name, tmpname)) {
-			conf_message("No change to %s", name);
-			unlink(tmpname);
-			conf_set_changed(false);
-			return 0;
-		}
-
-		snprintf(oldname, sizeof(oldname), "%s.old", name);
-		rename(name, oldname);
-		if (rename(tmpname, name))
-			return 1;
-	}
-
 	conf_message("configuration written to %s", name);
-
 	conf_set_changed(false);
 
 	return 0;
@@ -888,70 +757,7 @@ static int conf_write_autoconf_cmd(const char *autoconf_name)
 	return 0;
 }
 
-static int conf_touch_deps(void)
-{
-	const char *name, *tmp;
-	struct symbol *sym;
-	int res, i;
-
-	name = conf_get_autoconfig_name();
-	tmp = strrchr(name, '/');
-	depfile_prefix_len = tmp ? tmp - name + 1 : 0;
-	if (depfile_prefix_len + 1 > sizeof(depfile_path))
-		return -1;
-
-	strncpy(depfile_path, name, depfile_prefix_len);
-	depfile_path[depfile_prefix_len] = 0;
-
-	conf_read_simple(name, S_DEF_AUTO);
-	sym_calc_value(modules_sym);
-
-	for_all_symbols(i, sym)
-	{
-		sym_calc_value(sym);
-		if ((sym->flags & SYMBOL_NO_WRITE) || !sym->name)
-			continue;
-		if (sym->flags & SYMBOL_WRITE) {
-			if (sym->flags & SYMBOL_DEF_AUTO) {
-				switch (sym->type) {
-				case S_BOOLEAN:
-				case S_TRISTATE:
-					if (sym_get_tristate_value(sym) ==
-					    sym->def[S_DEF_AUTO].tri)
-						continue;
-					break;
-				case S_STRING:
-				case S_HEX:
-				case S_INT:
-					if (!strcmp(sym_get_string_value(sym),
-						    sym->def[S_DEF_AUTO].val))
-						continue;
-					break;
-				default:
-					break;
-				}
-			} else {
-				switch (sym->type) {
-				case S_BOOLEAN:
-				case S_TRISTATE:
-					if (sym_get_tristate_value(sym) == no)
-						continue;
-					break;
-				default:
-					break;
-				}
-			}
-		} else if (!(sym->flags & SYMBOL_DEF_AUTO))
-
-			continue;
-
-		res = conf_touch_dep(sym->name);
-		if (res)
-			return res;
-	}
-
-	return 0;
-}
+/* conf_touch_deps removed - only needed for incremental syncconfig builds */
 
 static int __conf_write_autoconf(const char *filename,
 				 void (*print_symbol)(FILE *, struct symbol *),
@@ -1001,15 +807,9 @@ int conf_write_autoconf(int overwrite)
 	const char *autoconf_name = conf_get_autoconfig_name();
 	int ret, i;
 
-	if (!overwrite && is_present(autoconf_name))
-		return 0;
-
 	ret = conf_write_autoconf_cmd(autoconf_name);
 	if (ret)
 		return -1;
-
-	if (conf_touch_deps())
-		return 1;
 
 	for_all_symbols(i, sym) sym_calc_value(sym);
 

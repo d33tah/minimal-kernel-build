@@ -32,12 +32,7 @@ void __mutex_init(struct mutex *lock, const char *name,
 
 #define MUTEX_FLAGS 0x07
 
-/* __mutex_owner and __owner_task inlined */
-
-bool mutex_is_locked(struct mutex *lock)
-{
-	return (atomic_long_read(&lock->owner) & ~MUTEX_FLAGS) != 0;
-}
+/* mutex_is_locked removed - no callers */
 
 static inline unsigned long __owner_flags(unsigned long owner)
 {
@@ -290,10 +285,4 @@ int __sched mutex_lock_killable(struct mutex *lock)
 	return __mutex_lock(lock, TASK_KILLABLE, 0, NULL, _RET_IP_);
 }
 
-int __sched mutex_trylock(struct mutex *lock)
-{
-	bool locked;
-
-	locked = __mutex_trylock(lock);
-	return locked;
-}
+/* mutex_trylock removed - no callers */

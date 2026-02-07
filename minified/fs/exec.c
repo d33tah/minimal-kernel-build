@@ -319,10 +319,7 @@ int begin_new_exec(struct linux_binprm *bprm)
 
 	/* de_thread inlined - single-threaded init, always succeeds */
 	me->exit_signal = SIGCHLD;
-	/* io_uring_task_cancel() - empty stub */
-	retval = unshare_files();
-	if (retval)
-		goto out;
+	/* unshare_files() inlined - always returns 0 */
 
 	retval = set_mm_exe_file(bprm->mm, bprm->file);
 	if (retval)

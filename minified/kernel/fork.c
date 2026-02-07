@@ -492,18 +492,8 @@ copy_process(int node, struct kernel_clone_args *args)
 	int retval;
 	struct task_struct *p;
 	struct pid *pid;
-	struct multiprocess_signals delayed;
 	const u64 clone_flags = args->flags;
-	/* Clone flag validation checks removed - only CLONE_FS, CLONE_FILES,
-	 * CLONE_VM, CLONE_UNTRACED are ever used (from kernel_thread/user_mode_thread) */
-	struct nsproxy *nsp = current->nsproxy;
-
-	/* time_ns check kept - CLONE_VM is always set */
-	if (nsp->time_ns != nsp->time_ns_for_children)
-		return ERR_PTR(-EINVAL);
-
-	sigemptyset(&delayed.signal);
-	INIT_HLIST_NODE(&delayed.node);
+	/* time_ns check, delayed signal mechanism, nsproxy check removed - dead code */
 
 	spin_lock_irq(&current->sighand->siglock);
 	/* multiprocess hlist_add_head removed - list never iterated */
@@ -746,7 +736,7 @@ copy_process(int node, struct kernel_clone_args *args)
 				ns_of_pid(pid)->child_reaper = p;
 				/* signal->flags write removed - flags field removed */
 			}
-			p->signal->shared_pending.signal = delayed.signal;
+			sigemptyset(&p->signal->shared_pending.signal);
 			p->signal->tty = tty_kref_get(current->signal->tty);
 
 			p->signal->has_child_subreaper =
@@ -771,7 +761,6 @@ copy_process(int node, struct kernel_clone_args *args)
 		nr_threads++;
 	}
 	/* total_forks++ removed */
-	hlist_del_init(&delayed.node);
 	spin_unlock(&current->sighand->siglock);
 	write_unlock_irq(&tasklist_lock);
 
@@ -814,9 +803,6 @@ bad_fork_free:
 bad_fork_free_tsk:
 	free_task_struct(p);
 fork_out:
-	spin_lock_irq(&current->sighand->siglock);
-	hlist_del_init(&delayed.node);
-	spin_unlock_irq(&current->sighand->siglock);
 	return ERR_PTR(retval);
 }
 
@@ -918,10 +904,4 @@ void __init proc_caches_init(void)
 	nsproxy_cache_init();
 }
 
-/* unshare syscall removed - not in syscall table */
-
-int unshare_files(void)
-{
-	/* unshare_fd always returns 0 with copy=NULL, so condition true */
-	return 0;
-}
+/* unshare_files removed - always returned 0, inlined at caller */

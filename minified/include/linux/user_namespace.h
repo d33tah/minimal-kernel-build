@@ -7,7 +7,7 @@
 #include <linux/sched.h>
 #include <linux/workqueue.h>
 #include <linux/rwsem.h>
-#include <linux/sysctl.h>
+#include <linux/uidgid.h>
 #include <linux/err.h>
 
 #define UID_GID_MAP_MAX_BASE_EXTENTS 5

@@ -1,83 +1,9 @@
-#include <linux/cpu.h>
-#include <linux/err.h>
-#include <linux/hrtimer.h>
-#include <linux/interrupt.h>
-#include <linux/percpu.h>
-#include <linux/sched.h>
-/* linux/module.h removed - unused */
 
-#include <asm/irq_regs.h>
-
-#include "tick-internal.h"
-
-DEFINE_PER_CPU(struct tick_device, tick_cpu_device);
-ktime_t tick_next_period;
-int tick_do_timer_cpu __read_mostly = TICK_DO_TIMER_BOOT;
-
-/* tick_get_device, tick_periodic, tick_handle_periodic removed - never called */
-
-static void tick_setup_periodic(struct clock_event_device *dev, int broadcast)
-{
-	/* event_handler assignment removed - callback never invoked */
-
-	if (dev->features & CLOCK_EVT_FEAT_DUMMY)
-		return;
-
-	if (dev->features & CLOCK_EVT_FEAT_PERIODIC) {
-		clockevents_switch_state(dev, CLOCK_EVT_STATE_PERIODIC);
-	} else {
-		unsigned int seq;
-		ktime_t next;
-
-		do {
-			seq = read_seqcount_begin(&jiffies_seq);
-			next = tick_next_period;
-		} while (read_seqcount_retry(&jiffies_seq, seq));
-
-		clockevents_switch_state(dev, CLOCK_EVT_STATE_ONESHOT);
-
-		for (;;) {
-			if (!clockevents_program_event(dev, next, false))
-				return;
-			next = ktime_add_ns(next, TICK_NSEC);
-		}
-	}
-}
-
-/* tick_setup_device removed - inlined into single caller (~19 LOC) */
-
-void tick_check_new_device(struct clock_event_device *newdev)
-{
-	struct clock_event_device *curdev;
-	struct tick_device *td;
-	int cpu;
-
-	cpu = smp_processor_id();
-	td = &per_cpu(tick_cpu_device, cpu);
-	curdev = td->evtdev;
-
-	/* Simplified: just accept new device */
-	if (!cpumask_test_cpu(cpu, newdev->cpumask))
-		return;
-
-	/* try_module_get always returns true - dead check removed */
-
-	clockevents_exchange_device(curdev, newdev);
-
-	/* Inlined tick_setup_device */
-	if (!td->evtdev) {
-		if (tick_do_timer_cpu == TICK_DO_TIMER_BOOT) {
-			tick_do_timer_cpu = cpu;
-			tick_next_period = ktime_get();
-		}
-		td->mode = TICKDEV_MODE_PERIODIC;
-	} else {
-		/* event_handler assignment removed - callback never invoked */
-	}
-	td->evtdev = newdev;
-	/* cpumask_equal stub always returns false, irq_set_affinity is no-op */
-	if (td->mode == TICKDEV_MODE_PERIODIC)
-		tick_setup_periodic(newdev, 0);
-}
-
-/* tick_init removed - was empty stub */
+/* All tick-common functions and globals removed - the entire file was dead.
+   tick_check_new_device was only called from clockevents_register_device
+   (now removed), making tick_setup_periodic also dead.
+   Removed:
+   - tick_setup_periodic (~27 LOC)
+   - tick_check_new_device (~33 LOC)
+   - tick_cpu_device, tick_next_period, tick_do_timer_cpu globals
+*/

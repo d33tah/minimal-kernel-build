@@ -10,6 +10,6 @@ typedef s64 ktime_t;
 /* ktime_to_ns removed - inlined at single call site (returns kt unchanged) */
 /* ktime_add_safe removed - never called */
 #define LOW_RES_NSEC		TICK_NSEC
-static inline ktime_t ns_to_ktime(u64 ns) { return ns; }
+/* ns_to_ktime removed - never called */
 #include <linux/timekeeping.h>
 #endif

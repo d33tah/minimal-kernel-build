@@ -133,13 +133,7 @@ static inline const char *dev_name(const struct device *dev)
 
 /* dev_set_name removed - no callers */
 
-static inline int dev_to_node(struct device *dev)
-{
-	return NUMA_NO_NODE;
-}
-static inline void set_dev_node(struct device *dev, int node)
-{
-}
+/* dev_to_node, set_dev_node removed - never called */
 
 static inline void dev_set_drvdata(struct device *dev, void *data)
 {

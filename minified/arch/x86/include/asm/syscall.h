@@ -5,9 +5,7 @@
 #include <linux/elf.h>
 #include <linux/sched.h>
 
-/* __AUDIT_ARCH_64BIT removed - never used */
-#define __AUDIT_ARCH_LE	   0x40000000
-#define AUDIT_ARCH_I386		(EM_386|__AUDIT_ARCH_LE)
+/* __AUDIT_ARCH_LE, AUDIT_ARCH_I386 removed - never used */
 #include <linux/err.h>
 #include <asm/thread_info.h>	 
 #include <asm/unistd.h>
@@ -32,10 +30,6 @@ static inline long syscall_get_error(struct task_struct *task,
 	return IS_ERR_VALUE(error) ? error : 0;
 }
 
-static inline int syscall_get_arch(struct task_struct *task)
-{
-	return AUDIT_ARCH_I386;
-}
-
+/* syscall_get_arch removed - never called */
 
 #endif	 

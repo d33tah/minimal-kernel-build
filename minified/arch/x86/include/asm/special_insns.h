@@ -69,12 +69,7 @@ static inline void wrpkru(u32 pkru)
 {
 }
 
-static inline void native_wbinvd(void)
-{
-	asm volatile("wbinvd": : :"memory");
-}
-
-/* native_load_gs_index, asm_load_gs_index removed - unused */
+/* native_wbinvd, native_load_gs_index, asm_load_gs_index removed - unused */
 
 static inline unsigned long __read_cr4(void)
 {

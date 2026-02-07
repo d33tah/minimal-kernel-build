@@ -58,10 +58,7 @@ struct user_namespace;
 /* CAP_BOP_ALL, CAP_UOP_ALL removed - unused */
 /* cap_drop, cap_isclear, cap_issubset inlined at kernel/cred.c - single callers */
 
-static inline bool capable(int cap)
-{
-	return true;
-}
+/* capable removed - never called */
 static inline bool ns_capable(struct user_namespace *ns, int cap)
 {
 	return true;

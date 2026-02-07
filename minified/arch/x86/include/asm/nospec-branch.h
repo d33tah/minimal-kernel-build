@@ -74,17 +74,7 @@
 /* Removed unused spectre_v2_mitigation, spectre_v2_user_mitigation,
    ssb_mitigation enums, __indirect_thunk_start/end */
 
-static __always_inline
-void alternative_msr_write(unsigned int msr, u64 val, unsigned int feature)
-{
-	asm volatile(ALTERNATIVE("", "wrmsr", %c[feature])
-		: : "c" (msr),
-		    "a" ((u32)val),
-		    "d" ((u32)(val >> 32)),
-		    [feature] "i" (feature)
-		: "memory");
-}
-
+/* alternative_msr_write removed - never called */
 /* x86_spec_ctrl_base, x86_spec_ctrl_current, write_spec_ctrl_current removed - never used */
 
 /* switch_to_cond_stibp, switch_mm_cond_ibpb, switch_mm_always_ibpb,

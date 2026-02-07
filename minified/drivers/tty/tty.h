@@ -4,6 +4,6 @@
 #define _TTY_INTERNAL_H
 
 void tty_buffer_init(struct tty_port *port);
-static inline bool tty_buffer_cancel_work(struct tty_port *port) { return false; }
+/* tty_buffer_cancel_work removed - never called */
 
 #endif

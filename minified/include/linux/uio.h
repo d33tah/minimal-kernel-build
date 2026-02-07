@@ -23,10 +23,8 @@ static inline bool iov_iter_is_kvec(const struct iov_iter *i) { return iov_iter_
 /* copy_page_from_iter_atomic, iov_iter_advance, iov_iter_revert removed - never called */
 size_t copy_page_to_iter(struct page *page, size_t offset, size_t bytes, struct iov_iter *i);
 size_t _copy_to_iter(const void *addr, size_t bytes, struct iov_iter *i);
-size_t _copy_from_iter(void *addr, size_t bytes, struct iov_iter *i);
+/* _copy_from_iter, copy_from_iter removed - never called */
 static inline size_t copy_folio_to_iter(struct folio *folio, size_t offset, size_t bytes, struct iov_iter *i) { return copy_page_to_iter(&folio->page, offset, bytes, i); }
-/* copy_to_iter removed - never called */
-static __always_inline __must_check size_t copy_from_iter(void *addr, size_t bytes, struct iov_iter *i) { if (unlikely(!check_copy_size(addr, bytes, false))) return 0; else return _copy_from_iter(addr, bytes, i); }
 /* copy_from_iter_full, _copy_mc_to_iter, iov_iter_zero,
    iov_iter_alignment, iov_iter_gap_alignment removed - unused */
 void iov_iter_init(struct iov_iter *i, unsigned int direction, const struct iovec *iov, unsigned long nr_segs, size_t count);

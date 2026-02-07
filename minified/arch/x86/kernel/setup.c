@@ -2,12 +2,8 @@
 #include <linux/acpi.h>
 #include <linux/console.h>
 #include <linux/dma-map-ops.h>
-/* efi.h inlined - only efi_enabled stub used */
+/* efi_enabled removed - never called */
 #include <linux/screen_info.h>
-static inline bool efi_enabled(int feature)
-{
-	return false;
-}
 
 #include <linux/initrd.h>
 #include <linux/memblock.h>

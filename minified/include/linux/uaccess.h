@@ -11,39 +11,11 @@
 #include <asm/uaccess.h>
 
 
-/* __copy_from_user_inatomic removed - only caller was copy_from_user_nmi */
+/* __copy_from_user_inatomic, __copy_from_user, __copy_to_user removed - never called */
+/* copy_from_user, _copy_from_user removed - never called */
 
-static __always_inline __must_check unsigned long
-__copy_from_user(void *to, const void __user *from, unsigned long n)
-{
-	/* might_fault() removed - empty stub */
-	instrument_copy_from_user(to, from, n);
-	check_object_size(to, n, false);
-	return raw_copy_from_user(to, from, n);
-}
-
-static __always_inline __must_check unsigned long
-__copy_to_user(void __user *to, const void *from, unsigned long n)
-{
-	/* might_fault() removed - empty stub */
-	instrument_copy_to_user(to, from, n);
-	check_object_size(from, n, true);
-	return raw_copy_to_user(to, from, n);
-}
-
-/* INLINE_COPY_* not defined - use extern declarations */
-extern __must_check unsigned long
-_copy_from_user(void *, const void __user *, unsigned long);
 extern __must_check unsigned long
 _copy_to_user(void __user *, const void *, unsigned long);
-
-static __always_inline unsigned long __must_check
-copy_from_user(void *to, const void __user *from, unsigned long n)
-{
-	if (likely(check_copy_size(to, n, false)))
-		n = _copy_from_user(to, from, n);
-	return n;
-}
 
 static __always_inline unsigned long __must_check
 copy_to_user(void __user *to, const void *from, unsigned long n)

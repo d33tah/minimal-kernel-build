@@ -114,15 +114,7 @@ size_t _copy_to_iter(const void *addr, size_t bytes, struct iov_iter *i)
 		return bytes;
 }
 
-size_t _copy_from_iter(void *addr, size_t bytes, struct iov_iter *i)
-{
-	/* ITER_PIPE check removed - never initialized */
-	iterate_and_advance(i, bytes, base, len, off,
-			    copyin(addr + off, base, len),
-			    memcpy(addr + off, base, len))
-
-		return bytes;
-}
+/* _copy_from_iter removed - never called */
 
 static inline bool page_copy_sane(struct page *page, size_t offset, size_t n)
 {

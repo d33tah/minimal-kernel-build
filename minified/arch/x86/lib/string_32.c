@@ -121,24 +121,7 @@ size_t strlen(const char *s)
 }
 #endif
 
-#ifdef __HAVE_ARCH_MEMCHR
-void *memchr(const void *cs, int c, size_t count)
-{
-	int d0;
-	void *res;
-	if (!count)
-		return NULL;
-	asm volatile("repne\n\t"
-		     "scasb\n\t"
-		     "je 1f\n\t"
-		     "movl $1,%0\n"
-		     "1:\tdecl %0"
-		     : "=D"(res), "=&c"(d0)
-		     : "a"(c), "0"(cs), "1"(count)
-		     : "memory");
-	return res;
-}
-#endif
+/* memchr removed - never called (~16 LOC) */
 
 #ifdef __HAVE_ARCH_STRNLEN
 size_t strnlen(const char *s, size_t count)

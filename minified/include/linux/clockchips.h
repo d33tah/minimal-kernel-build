@@ -52,23 +52,10 @@ struct clock_event_device {
 	struct module		*owner;
 } ____cacheline_aligned;
 
-/* clockevent_state_detached removed - inlined at single call site */
-
-static inline bool clockevent_state_shutdown(struct clock_event_device *dev)
-{
-	return dev->state_use_accessors == CLOCK_EVT_STATE_SHUTDOWN;
-}
-
-/* clockevent_state_periodic removed - never called */
-
-static inline bool clockevent_state_oneshot(struct clock_event_device *dev)
-{
-	return dev->state_use_accessors == CLOCK_EVT_STATE_ONESHOT;
-}
-
-extern void clockevents_register_device(struct clock_event_device *dev);
-
-/* clockevents_config_and_register, clockevents_calc_mult_shift removed - never called */
+/* clockevent_state_detached, clockevent_state_shutdown,
+   clockevent_state_periodic, clockevent_state_oneshot,
+   clockevents_register_device, clockevents_config_and_register,
+   clockevents_calc_mult_shift removed - entire clockevents subsystem dead */
 
 
 

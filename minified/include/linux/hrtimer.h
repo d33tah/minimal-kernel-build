@@ -67,8 +67,7 @@ struct hrtimer_cpu_base {
 /* hrtimer_set_expires_range_ns, hrtimer_get_expires, hrtimer_get_expires_tv64,
    hrtimer_get_softexpires_tv64, hrtimer_cancel_wait_running, hrtimer_resolution removed - unused */
 
-DECLARE_PER_CPU(struct tick_device, tick_cpu_device);
-
+/* tick_cpu_device declaration removed - entire tick subsystem is dead */
 
 /* hrtimer_init, hrtimer_start_range_ns, hrtimer_cancel, hrtimer_active removed - never called */
 

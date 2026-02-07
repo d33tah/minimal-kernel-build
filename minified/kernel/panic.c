@@ -10,7 +10,6 @@ int debug_locks __read_mostly = 1;
 /* kmsg_dump removed - was empty inline stub */
 #include <linux/notifier.h>
 #include <linux/vt_kern.h>
-#include <linux/reboot.h>
 #include <linux/delay.h>
 /* panic_notifier_list extern removed - no registrations */
 #include <linux/sched.h>
@@ -19,6 +18,8 @@ int debug_locks __read_mostly = 1;
 /* linux/bug.h removed - BUG/WARN not used */
 
 #define PANIC_TIMER_STEP 100
+
+static void emergency_restart(void);
 /* PANIC_BLINK_SPD removed - unused after panic_blink removal */
 
 /* panic_on_oops removed - CONFIG_PANIC_ON_OOPS_VALUE=0, sysctl disabled */
@@ -142,9 +143,8 @@ struct warn_args {
 /* __warn removed - no callers (WARN macros simplified to not call it) */
 
 /* machine_restart inlined - just calls halt() in a loop */
-void emergency_restart(void)
+static void emergency_restart(void)
 {
-	/* kmsg_dump call removed - was empty */
 	while (1)
 		halt();
 }

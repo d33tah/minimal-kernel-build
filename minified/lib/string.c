@@ -10,7 +10,7 @@
 #include <linux/errno.h>
 /* slab.h removed - unused */
 
-#include <asm/unaligned.h>
+#include <asm-generic/unaligned.h>
 #include <asm/byteorder.h>
 #include <asm/word-at-a-time.h>
 #include <asm/page.h>

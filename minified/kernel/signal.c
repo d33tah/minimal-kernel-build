@@ -192,21 +192,7 @@ struct sighand_struct *__lock_task_sighand(struct task_struct *tsk,
 	return sighand;
 }
 
-int group_send_sig_info(int sig, struct kernel_siginfo *info,
-			struct task_struct *p, enum pid_type type)
-{
-	int ret;
-
-	rcu_read_lock();
-	/* Simplified: else branches both set ret=0 */
-	ret = valid_signal(sig) ? 0 : -EINVAL;
-	rcu_read_unlock();
-
-	if (!ret && sig)
-		ret = do_send_sig_info(sig, info, p, type);
-
-	return ret;
-}
+/* group_send_sig_info removed - do_exit gutted, no callers */
 
 #define __si_special(priv) ((priv) ? SEND_SIG_PRIV : SEND_SIG_NOINFO)
 

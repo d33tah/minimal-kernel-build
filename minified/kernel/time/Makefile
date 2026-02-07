@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
-obj-y += time.o timer.o hrtimer.o
+obj-y += time.o timer.o
+# hrtimer.o removed - entire hrtimer subsystem dead
 obj-y += timekeeping.o clocksource.o jiffies.o
 # ntp.o removed - functions inlined into timekeeping.c
 # timeconv.o removed

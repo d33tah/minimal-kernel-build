@@ -15,7 +15,7 @@ typedef enum irqreturn irqreturn_t;
 #include <linux/irqnr.h>
 #include <linux/hardirq.h>
 #include <linux/irqflags.h>
-#include <linux/hrtimer.h>
+/* linux/hrtimer.h removed - entire hrtimer subsystem dead */
 #include <linux/kref.h>
 /* linux/workqueue.h removed - no workqueue types used */
 #include <linux/jump_label.h>

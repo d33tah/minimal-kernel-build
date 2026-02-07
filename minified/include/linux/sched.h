@@ -27,7 +27,8 @@
 #include <linux/pid.h>
 #include <linux/mutex.h>
 /* plist.h, irqflags.h, nodemask.h removed - unused in sched.h */
-#include <linux/hrtimer.h>
+/* linux/hrtimer.h removed - entire hrtimer subsystem dead */
+#include <linux/rbtree.h>
 /* seccomp.h removed - header is empty */
 #include <linux/rcupdate.h>
 #include <linux/refcount.h>

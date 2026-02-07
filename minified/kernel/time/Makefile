@@ -4,24 +4,9 @@ obj-y += time.o timer.o
 obj-y += timekeeping.o clocksource.o jiffies.o
 # ntp.o removed - functions inlined into timekeeping.c
 # timeconv.o removed
+# posix-stubs.o removed - had no symbols (only includes)
+# clockevents.o, tick-common.o removed - all functions were dead (only comments remained)
 
-ifeq ($(CONFIG_POSIX_TIMERS),y)
- obj-y += posix-timers.o posix-cpu-timers.o posix-clock.o itimer.o
-else
- obj-y += posix-stubs.o
-endif
-
-obj-$(CONFIG_GENERIC_CLOCKEVENTS)		+= clockevents.o tick-common.o
-ifeq ($(CONFIG_GENERIC_CLOCKEVENTS_BROADCAST),y)
- obj-y						+= tick-broadcast.o
- obj-$(CONFIG_TICK_ONESHOT)			+= tick-broadcast-hrtimer.o
-endif
 obj-$(CONFIG_GENERIC_SCHED_CLOCK)		+= sched_clock.o
-obj-$(CONFIG_TICK_ONESHOT)			+= tick-oneshot.o tick-sched.o
 obj-$(CONFIG_LEGACY_TIMER_TICK)			+= tick-legacy.o
 # vsyscall.o removed - update_vsyscall was empty stub
-obj-$(CONFIG_DEBUG_FS)				+= timekeeping_debug.o
-obj-$(CONFIG_TEST_UDELAY)			+= test_udelay.o
-obj-$(CONFIG_TIME_NS)				+= namespace.o
-obj-$(CONFIG_TEST_CLOCKSOURCE_WATCHDOG)		+= clocksource-wdtest.o
-obj-$(CONFIG_TIME_KUNIT_TEST)			+= time_test.o

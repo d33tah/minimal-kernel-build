@@ -28,7 +28,7 @@ mmu-$(CONFIG_MMU)		:= init.o init_$(BITS).o mmap.o pgtable.o tlb.o cpu_entry_are
 
 obj-y				+= $(mmu-y)
 
-obj-y				+= pat/
+# pat/ removed - memtype.c had no symbols (only includes and comments)
 
 # Make sure mem_encrypt_identity has no stackprotector
 CFLAGS_mem_encrypt_identity.o	:= -fno-stack-protector

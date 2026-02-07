@@ -54,8 +54,9 @@ obj-y			+= setup.o x86_init.o i8259.o irqinit.o
 obj-$(CONFIG_JUMP_LABEL)	+= jump_label.o
 obj-$(CONFIG_IRQ_WORK)  += irq_work.o
 # probe_roms.o removed - probe_roms was empty stub
-obj-$(CONFIG_X86_32)	+= sys_ia32.o
-obj-$(CONFIG_IA32_EMULATION)	+= sys_ia32.o
+# sys_ia32.o removed - all IA32 compat syscalls were dead (only a comment remained)
+# obj-$(CONFIG_X86_32)	+= sys_ia32.o
+# obj-$(CONFIG_IA32_EMULATION)	+= sys_ia32.o
 obj-$(CONFIG_X86_64)	+= sys_x86_64.o
 obj-$(CONFIG_X86_ESPFIX64)	+= espfix_64.o
 obj-$(CONFIG_SYSFS)	+= ksysfs.o

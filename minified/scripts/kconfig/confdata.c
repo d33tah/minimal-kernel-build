@@ -1107,11 +1107,6 @@ bool conf_get_changed(void)
 	return conf_changed;
 }
 
-void conf_set_changed_callback(void (*fn)(void))
-{
-	conf_changed_callback = fn;
-}
-
 void set_all_choice_values(struct symbol *csym)
 {
 	struct property *prop;

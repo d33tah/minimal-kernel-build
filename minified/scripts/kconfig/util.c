@@ -32,14 +32,6 @@ struct gstr str_new(void)
 	return gs;
 }
 
-void str_free(struct gstr *gs)
-{
-	if (gs->s)
-		free(gs->s);
-	gs->s = NULL;
-	gs->len = 0;
-}
-
 void str_append(struct gstr *gs, const char *s)
 {
 	size_t l;

@@ -509,29 +509,6 @@ bool sym_set_tristate_value(struct symbol *sym, tristate val)
 	return true;
 }
 
-tristate sym_toggle_tristate_value(struct symbol *sym)
-{
-	tristate oldval, newval;
-
-	oldval = newval = sym_get_tristate_value(sym);
-	do {
-		switch (newval) {
-		case no:
-			newval = mod;
-			break;
-		case mod:
-			newval = yes;
-			break;
-		case yes:
-			newval = no;
-			break;
-		}
-		if (sym_set_tristate_value(sym, newval))
-			break;
-	} while (oldval != newval);
-	return newval;
-}
-
 bool sym_string_valid(struct symbol *sym, const char *str)
 {
 	signed char ch;
@@ -621,58 +598,6 @@ bool sym_string_within_range(struct symbol *sym, const char *str)
 	default:
 		return false;
 	}
-}
-
-bool sym_set_string_value(struct symbol *sym, const char *newval)
-{
-	const char *oldval;
-	char *val;
-	int size;
-
-	switch (sym->type) {
-	case S_BOOLEAN:
-	case S_TRISTATE:
-		switch (newval[0]) {
-		case 'y':
-		case 'Y':
-			return sym_set_tristate_value(sym, yes);
-		case 'm':
-		case 'M':
-			return sym_set_tristate_value(sym, mod);
-		case 'n':
-		case 'N':
-			return sym_set_tristate_value(sym, no);
-		}
-		return false;
-	default:;
-	}
-
-	if (!sym_string_within_range(sym, newval))
-		return false;
-
-	if (!(sym->flags & SYMBOL_DEF_USER)) {
-		sym->flags |= SYMBOL_DEF_USER;
-		sym_set_changed(sym);
-	}
-
-	oldval = sym->def[S_DEF_USER].val;
-	size = strlen(newval) + 1;
-	if (sym->type == S_HEX &&
-	    (newval[0] != '0' || (newval[1] != 'x' && newval[1] != 'X'))) {
-		size += 2;
-		sym->def[S_DEF_USER].val = val = xmalloc(size);
-		*val++ = '0';
-		*val++ = 'x';
-	} else if (!oldval || strcmp(oldval, newval))
-		sym->def[S_DEF_USER].val = val = xmalloc(size);
-	else
-		return true;
-
-	strcpy(val, newval);
-	free((void *)oldval);
-	sym_clear_all_valid();
-
-	return true;
 }
 
 const char *sym_get_string_default(struct symbol *sym)
@@ -848,81 +773,6 @@ struct symbol *sym_find(const char *name)
 	}
 
 	return symbol;
-}
-
-struct sym_match {
-	struct symbol *sym;
-	off_t so, eo;
-};
-
-static int sym_rel_comp(const void *sym1, const void *sym2)
-{
-	const struct sym_match *s1 = sym1;
-	const struct sym_match *s2 = sym2;
-	int exact1, exact2;
-
-	exact1 = (s1->eo - s1->so) == strlen(s1->sym->name);
-	exact2 = (s2->eo - s2->so) == strlen(s2->sym->name);
-	if (exact1 && !exact2)
-		return -1;
-	if (!exact1 && exact2)
-		return 1;
-
-	return strcmp(s1->sym->name, s2->sym->name);
-}
-
-struct symbol **sym_re_search(const char *pattern)
-{
-	struct symbol *sym, **sym_arr = NULL;
-	struct sym_match *sym_match_arr = NULL;
-	int i, cnt, size;
-	regex_t re;
-	regmatch_t match[1];
-
-	cnt = size = 0;
-
-	if (strlen(pattern) == 0)
-		return NULL;
-	if (regcomp(&re, pattern, REG_EXTENDED | REG_ICASE))
-		return NULL;
-
-	for_all_symbols(i, sym)
-	{
-		if (sym->flags & SYMBOL_CONST || !sym->name)
-			continue;
-		if (regexec(&re, sym->name, 1, match, 0))
-			continue;
-		if (cnt >= size) {
-			void *tmp;
-			size += 16;
-			tmp = realloc(sym_match_arr,
-				      size * sizeof(struct sym_match));
-			if (!tmp)
-				goto sym_re_search_free;
-			sym_match_arr = tmp;
-		}
-		sym_calc_value(sym);
-
-		sym_match_arr[cnt].so = match[0].rm_so;
-		sym_match_arr[cnt].eo = match[0].rm_eo;
-		sym_match_arr[cnt++].sym = sym;
-	}
-	if (sym_match_arr) {
-		qsort(sym_match_arr, cnt, sizeof(struct sym_match),
-		      sym_rel_comp);
-		sym_arr = malloc((cnt + 1) * sizeof(struct symbol *));
-		if (!sym_arr)
-			goto sym_re_search_free;
-		for (i = 0; i < cnt; i++)
-			sym_arr[i] = sym_match_arr[i].sym;
-		sym_arr[cnt] = NULL;
-	}
-sym_re_search_free:
-
-	free(sym_match_arr);
-	regfree(&re);
-
-	return sym_arr;
 }
 
 static struct dep_stack {

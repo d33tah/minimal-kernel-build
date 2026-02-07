@@ -111,21 +111,7 @@ error:
 	pr_err("kobject (%p): %s\n", kobj, err_str);
 }
 
-static __printf(3, 0) int kobject_add_varg(struct kobject *kobj,
-					   struct kobject *parent,
-					   const char *fmt, va_list vargs)
-{
-	int retval;
-
-	retval = kobject_set_name_vargs(kobj, fmt, vargs);
-	if (retval) {
-		pr_err("kobject: can not set name properly!\n");
-		return retval;
-	}
-	kobj->parent = parent;
-	return kobject_add_internal(kobj);
-}
-
+/* kobject_add_varg removed - never called (~14 LOC) */
 /* kobject_add removed - no callers */
 
 /* kobject_init_and_add removed - never called */

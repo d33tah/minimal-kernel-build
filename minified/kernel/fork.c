@@ -414,12 +414,7 @@ int set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file)
 }
 
 /* get_mm_exe_file removed - no callers after dup_mmap simplification */
-/* mm_release removed - inlined into exit_mm_release and exec_mm_release */
-
-void exit_mm_release(struct task_struct *tsk, struct mm_struct *mm)
-{
-	deactivate_mm(tsk, mm);
-}
+/* exit_mm_release removed - do_exit gutted, no callers */
 
 void exec_mm_release(struct task_struct *tsk, struct mm_struct *mm)
 {

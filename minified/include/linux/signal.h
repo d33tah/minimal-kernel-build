@@ -82,7 +82,7 @@ static inline void init_sigpending(struct sigpending *sig)
 	INIT_LIST_HEAD(&sig->list);
 }
 
-extern void flush_sigqueue(struct sigpending *queue);
+/* flush_sigqueue removed - do_exit gutted */
 
 static inline int valid_signal(unsigned long sig)
 {
@@ -103,7 +103,7 @@ extern void __set_current_blocked(const sigset_t *);
 /* show_unhandled_signals removed - never used */
 
 /* get_signal, signal_setup_done removed - never called */
-extern void exit_signals(struct task_struct *tsk);
+/* exit_signals removed - do_exit gutted */
 
 /* SIG_KTHREAD_KERNEL removed - unused */
 

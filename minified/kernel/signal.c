@@ -56,11 +56,7 @@ void calculate_sigpending(void)
 
 /* __sigqueue_alloc inlined into send_signal_locked (~5 LOC) */
 
-/* Stub: init doesn't exit cleanly, no signal queue cleanup needed */
-void flush_sigqueue(struct sigpending *queue)
-{
-	sigemptyset(&queue->signal);
-}
+/* flush_sigqueue removed - do_exit gutted, no callers */
 
 void ignore_signals(struct task_struct *t)
 {
@@ -276,10 +272,7 @@ int ptrace_notify(int exit_code, unsigned long message)
 
 /* Removed: retarget_shared_pending - inlined into __set_current_blocked */
 
-void exit_signals(struct task_struct *tsk)
-{
-	tsk->flags |= PF_EXITING;
-}
+/* exit_signals removed - do_exit gutted, no callers */
 
 /* Stub: restart_syscall not needed for Hello World */
 SYSCALL_DEFINE0(restart_syscall)

@@ -58,8 +58,7 @@ static inline bool pid_has_task(struct pid *pid, enum pid_type type)
 extern struct pid *get_task_pid(struct task_struct *task, enum pid_type type);
 
 extern void attach_pid(struct task_struct *task, enum pid_type);
-extern void detach_pid(struct task_struct *task, enum pid_type);
-/* exchange_tids, transfer_pid removed - never called */
+/* detach_pid, exchange_tids, transfer_pid removed - do_exit gutted */
 
 struct pid_namespace;
 extern struct pid_namespace init_pid_ns;

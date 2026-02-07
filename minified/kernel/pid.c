@@ -222,27 +222,7 @@ void attach_pid(struct task_struct *task, enum pid_type type)
 	hlist_add_head_rcu(&task->pid_links[type], &pid->tasks[type]);
 }
 
-void detach_pid(struct task_struct *task, enum pid_type type)
-{
-	struct pid **pid_ptr = task_pid_ptr(task, type);
-	struct pid *pid;
-	int tmp;
-
-	pid = *pid_ptr;
-
-	/* hlist_del_rcu inlined */
-	__hlist_del(&task->pid_links[type]);
-	WRITE_ONCE(task->pid_links[type].pprev, LIST_POISON2);
-	*pid_ptr = NULL;
-
-	for (tmp = PIDTYPE_MAX; --tmp >= 0;)
-		if (pid_has_task(pid, tmp))
-			return;
-
-	free_pid(pid);
-}
-
-/* exchange_tids, transfer_pid removed - never called */
+/* detach_pid, exchange_tids, transfer_pid removed - do_exit gutted, no callers */
 
 struct task_struct *pid_task(struct pid *pid, enum pid_type type)
 {

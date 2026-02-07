@@ -38,7 +38,7 @@ static inline void mmget(struct mm_struct *mm)
 
 extern void mmput(struct mm_struct *);
 
-extern void exit_mm_release(struct task_struct *, struct mm_struct *);
+/* exit_mm_release removed - do_exit gutted */
 extern void exec_mm_release(struct task_struct *, struct mm_struct *);
 /* mm_update_next_owner removed - empty stub, no callers */
 

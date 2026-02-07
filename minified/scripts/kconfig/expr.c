@@ -7,8 +7,6 @@
 
 #include "lkc.h"
 
-#define DEBUG_EXPR 0
-
 static struct expr *expr_eliminate_yn(struct expr *e);
 
 struct expr *expr_alloc_symbol(struct symbol *sym)
@@ -237,13 +235,6 @@ int expr_eq(struct expr *e1, struct expr *e2)
 	case E_NONE:;
 	}
 
-	if (DEBUG_EXPR) {
-		expr_fprint(e1, stdout);
-		printf(" = ");
-		expr_fprint(e2, stdout);
-		printf(" ?\n");
-	}
-
 	return 0;
 }
 
@@ -421,13 +412,6 @@ static struct expr *expr_join_or(struct expr *e1, struct expr *e2)
 			return expr_alloc_symbol(&symbol_yes);
 	}
 
-	if (DEBUG_EXPR) {
-		printf("optimize (");
-		expr_fprint(e1, stdout);
-		printf(") || (");
-		expr_fprint(e2, stdout);
-		printf(")?\n");
-	}
 	return NULL;
 }
 
@@ -538,13 +522,6 @@ static struct expr *expr_join_and(struct expr *e1, struct expr *e2)
 			return NULL;
 	}
 
-	if (DEBUG_EXPR) {
-		printf("optimize (");
-		expr_fprint(e1, stdout);
-		printf(") && (");
-		expr_fprint(e2, stdout);
-		printf(")?\n");
-	}
 	return NULL;
 }
 
@@ -1146,19 +1123,7 @@ void expr_print(struct expr *e,
 		fn(data, NULL, ")");
 }
 
-static void expr_print_file_helper(void *data, struct symbol *sym,
-				   const char *str)
-{
-	/* xfwrite inlined */
-	size_t len = strlen(str);
-	if (len != 0 && fwrite(str, len, 1, data) != 1)
-		fprintf(stderr, "Error in writing or end of file.\n");
-}
-
-void expr_fprint(struct expr *e, FILE *out)
-{
-	expr_print(e, expr_print_file_helper, out, E_NONE);
-}
+/* expr_fprint, expr_print_file_helper removed - only used by DEBUG_EXPR */
 
 static void expr_print_gstr_helper(void *data, struct symbol *sym,
 				   const char *str)

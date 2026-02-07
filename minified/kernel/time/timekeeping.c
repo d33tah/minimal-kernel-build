@@ -21,16 +21,8 @@
 #define NTP_TICK_LENGTH ((u64)TICK_NSEC << 32)
 #include "timekeeping_internal.h"
 
-#define TK_CLEAR_NTP (1 << 0)
-#define TK_MIRROR (1 << 1)
-#define TK_CLOCK_WAS_SET (1 << 2)
-
-enum timekeeping_adv_mode {
-
-	TK_ADV_TICK,
-
-	TK_ADV_FREQ
-};
+/* TK_CLEAR_NTP, TK_MIRROR, TK_CLOCK_WAS_SET, enum timekeeping_adv_mode
+   removed - only used by timekeeping_advance (now removed) */
 
 DEFINE_RAW_SPINLOCK(timekeeper_lock);
 
@@ -41,8 +33,7 @@ static struct {
 	.seq = SEQCNT_RAW_SPINLOCK_ZERO(tk_core.seq, &timekeeper_lock),
 };
 
-static struct timekeeper shadow_timekeeper;
-
+/* shadow_timekeeper removed - only used by timekeeping_update (now removed) */
 /* timekeeping_suspended removed - never set, always 0 */
 
 /* struct tk_fast, cycles_at_suspend, dummy_clock_read, dummy_clock, FAST_TK_INIT,
@@ -122,46 +113,7 @@ static void tk_setup_internals(struct timekeeper *tk, struct clocksource *clock)
    ktime_get_fast_timestamps - no callers */
 
 /* pvclock_gtod_chain removed - no registrations */
-/* tk_update_ktime_data inlined into timekeeping_update */
-
-static void timekeeping_update(struct timekeeper *tk, unsigned int action)
-{
-	if (action & TK_CLEAR_NTP) {
-		tk->ntp_error = 0;
-		/* ntp_clear removed - was empty stub */
-	}
-
-	tk->next_leap_ktime = KTIME_MAX; /* tk_update_leap_state inlined */
-	/* tk_update_ktime_data inlined */
-	{
-		u64 seconds;
-		u32 nsec;
-
-		seconds = (u64)(tk->xtime_sec + tk->wall_to_monotonic.tv_sec);
-		nsec = (u32)tk->wall_to_monotonic.tv_nsec;
-		tk->tkr_mono.base = ns_to_ktime(seconds * NSEC_PER_SEC + nsec);
-
-		nsec += (u32)(tk->tkr_mono.xtime_nsec >> tk->tkr_mono.shift);
-		if (nsec >= NSEC_PER_SEC)
-			seconds++;
-		tk->ktime_sec = seconds;
-
-		tk->tkr_raw.base = ns_to_ktime(tk->raw_sec * NSEC_PER_SEC);
-	}
-
-	/* update_vsyscall, raw_notifier_call_chain(pvclock_gtod_chain),
-	   update_fast_timekeeper calls removed - empty stubs */
-
-	tk->tkr_mono.base_real = tk->tkr_mono.base + tk->offs_real;
-
-	if (action & TK_CLOCK_WAS_SET)
-		tk->clock_was_set_seq++;
-
-	if (action & TK_MIRROR)
-		memcpy(&shadow_timekeeper, &tk_core.timekeeper,
-		       sizeof(tk_core.timekeeper));
-}
-
+/* timekeeping_update removed - only called from timekeeping_advance (now removed) (~37 LOC) */
 /* timekeeping_forward_now inlined into change_clocksource */
 
 /* ktime_get_real_ts64 removed - never called */
@@ -225,159 +177,10 @@ void __init timekeeping_init(void)
 	raw_spin_unlock_irqrestore(&timekeeper_lock, flags);
 }
 
-/* timekeeping_apply_adjustment inlined into timekeeping_adjust, which is inlined into timekeeping_advance */
-
-static inline unsigned int accumulate_nsecs_to_secs(struct timekeeper *tk)
-{
-	u64 nsecps = (u64)NSEC_PER_SEC << tk->tkr_mono.shift;
-	unsigned int clock_set = 0;
-
-	while (tk->tkr_mono.xtime_nsec >= nsecps) {
-		tk->tkr_mono.xtime_nsec -= nsecps;
-		tk->xtime_sec++;
-
-		if (unlikely(tk->skip_second_overflow)) {
-			tk->skip_second_overflow = 0;
-			continue;
-		}
-		/* second_overflow removed - always returned 0, no leap handling */
-	}
-	return clock_set;
-}
-
-/* logarithmic_accumulation inlined into timekeeping_advance */
-
-static bool timekeeping_advance(enum timekeeping_adv_mode mode)
-{
-	struct timekeeper *real_tk = &tk_core.timekeeper;
-	struct timekeeper *tk = &shadow_timekeeper;
-	u64 offset;
-	int shift = 0, maxshift;
-	unsigned int clock_set = 0;
-	unsigned long flags;
-
-	raw_spin_lock_irqsave(&timekeeper_lock, flags);
-
-	offset = clocksource_delta(tk_clock_read(&tk->tkr_mono),
-				   tk->tkr_mono.cycle_last, tk->tkr_mono.mask);
-
-	if (offset < real_tk->cycle_interval && mode == TK_ADV_TICK)
-		goto out;
-
-	shift = ilog2(offset) - ilog2(tk->cycle_interval);
-	shift = max(0, shift);
-
-	maxshift = (64 - (ilog2(NTP_TICK_LENGTH) + 1)) - 1;
-	shift = min(shift, maxshift);
-	while (offset >= tk->cycle_interval) {
-		/* logarithmic_accumulation inlined */
-		u64 interval = tk->cycle_interval << shift;
-		u64 snsec_per_sec;
-
-		if (offset < interval)
-			break;
-
-		offset -= interval;
-		tk->tkr_mono.cycle_last += interval;
-		tk->tkr_raw.cycle_last += interval;
-
-		tk->tkr_mono.xtime_nsec += tk->xtime_interval << shift;
-		clock_set |= accumulate_nsecs_to_secs(tk);
-
-		tk->tkr_raw.xtime_nsec += tk->raw_interval << shift;
-		snsec_per_sec = (u64)NSEC_PER_SEC << tk->tkr_raw.shift;
-		while (tk->tkr_raw.xtime_nsec >= snsec_per_sec) {
-			tk->tkr_raw.xtime_nsec -= snsec_per_sec;
-			tk->raw_sec++;
-		}
-
-		tk->ntp_error += tk->ntp_tick << shift;
-		tk->ntp_error -= (tk->xtime_interval + tk->xtime_remainder)
-				 << (tk->ntp_error_shift + shift);
-
-		if (offset < tk->cycle_interval << shift)
-			shift--;
-	}
-
-	/* Inlined timekeeping_adjust */
-	{
-		u32 mult;
-		s32 mult_adj;
-		s64 interval;
-
-		if (likely(tk->ntp_tick == NTP_TICK_LENGTH)) {
-			mult = tk->tkr_mono.mult - tk->ntp_err_mult;
-		} else {
-			tk->ntp_tick = NTP_TICK_LENGTH;
-			mult = div64_u64((tk->ntp_tick >> tk->ntp_error_shift) -
-						 tk->xtime_remainder,
-					 tk->cycle_interval);
-		}
-
-		tk->ntp_err_mult = tk->ntp_error > 0 ? 1 : 0;
-		mult += tk->ntp_err_mult;
-
-		mult_adj = mult - tk->tkr_mono.mult;
-		interval = tk->cycle_interval;
-
-		if (mult_adj != 0) {
-			if (mult_adj == -1) {
-				interval = -interval;
-				offset = -offset;
-			} else if (mult_adj != 1) {
-				interval *= mult_adj;
-				offset *= mult_adj;
-			}
-
-			if (!((mult_adj > 0) &&
-			      (tk->tkr_mono.mult + mult_adj < mult_adj))) {
-				tk->tkr_mono.mult += mult_adj;
-				tk->xtime_interval += interval;
-				tk->tkr_mono.xtime_nsec -= offset;
-			} else {
-				WARN_ON_ONCE(1);
-			}
-		}
-
-		if (unlikely(
-			    tk->tkr_mono.clock->maxadj &&
-			    (abs(tk->tkr_mono.mult - tk->tkr_mono.clock->mult) >
-			     tk->tkr_mono.clock->maxadj))) {
-			printk_once(
-				KERN_WARNING
-				"Adjusting %s more than 11%% (%ld vs %ld)\n",
-				tk->tkr_mono.clock->name,
-				(long)tk->tkr_mono.mult,
-				(long)tk->tkr_mono.clock->mult +
-					tk->tkr_mono.clock->maxadj);
-		}
-
-		if (unlikely((s64)tk->tkr_mono.xtime_nsec < 0)) {
-			tk->tkr_mono.xtime_nsec += (u64)NSEC_PER_SEC
-						   << tk->tkr_mono.shift;
-			tk->xtime_sec--;
-			tk->skip_second_overflow = 1;
-		}
-	}
-
-	clock_set |= accumulate_nsecs_to_secs(tk);
-
-	write_seqcount_begin(&tk_core.seq);
-
-	timekeeping_update(tk, clock_set);
-	memcpy(real_tk, tk, sizeof(*tk));
-
-	write_seqcount_end(&tk_core.seq);
-out:
-	raw_spin_unlock_irqrestore(&timekeeper_lock, flags);
-
-	return !!clock_set;
-}
-
+/* timekeeping_advance, accumulate_nsecs_to_secs, timekeeping_adjust,
+   logarithmic_accumulation removed - never called (~140 LOC) */
 /* update_wall_time removed - never called (~5 LOC) */
 /* ktime_get_coarse_real_ts64 removed - never called (~11 LOC) */
-
 /* do_timer removed - never called (~5 LOC) */
-
 /* ktime_get_update_offsets_now removed - never called (~28 LOC) */
 /* random_get_entropy_fallback removed - random_get_entropy() is never called (~8 LOC) */

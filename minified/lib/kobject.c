@@ -126,26 +126,7 @@ static __printf(3, 0) int kobject_add_varg(struct kobject *kobj,
 	return kobject_add_internal(kobj);
 }
 
-int kobject_add(struct kobject *kobj, struct kobject *parent, const char *fmt,
-		...)
-{
-	va_list args;
-	int retval;
-
-	if (!kobj)
-		return -EINVAL;
-
-	if (!kobj->state_initialized) {
-		pr_err("kobject '%s' (%p): tried to add an uninitialized object, something is seriously wrong.\n",
-		       kobject_name(kobj), kobj);
-		return -EINVAL;
-	}
-	va_start(args, fmt);
-	retval = kobject_add_varg(kobj, parent, fmt, args);
-	va_end(args);
-
-	return retval;
-}
+/* kobject_add removed - no callers */
 
 /* kobject_init_and_add removed - never called */
 

@@ -46,10 +46,7 @@ static inline const char *kobject_name(const struct kobject *kobj)
 }
 
 extern void kobject_init(struct kobject *kobj, const struct kobj_type *ktype);
-extern __printf(3, 4) __must_check
-int kobject_add(struct kobject *kobj, struct kobject *parent,
-		const char *fmt, ...);
-/* kobject_init_and_add removed - never called */
+/* kobject_add, kobject_init_and_add removed - never called */
 
 extern void kobject_del(struct kobject *kobj);
 

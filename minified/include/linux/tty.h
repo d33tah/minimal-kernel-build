@@ -28,24 +28,7 @@ struct ld_semaphore {
 	struct list_head	write_wait;
 };
 
-void __init_ldsem(struct ld_semaphore *sem, const char *name,
-			 struct lock_class_key *key);
-
-#define init_ldsem(sem)						\
-do {								\
-	static struct lock_class_key __key;			\
-								\
-	__init_ldsem((sem), #sem, &__key);			\
-} while (0)
-
-int ldsem_down_read(struct ld_semaphore *sem, long timeout);
-int ldsem_down_read_trylock(struct ld_semaphore *sem);
-int ldsem_down_write(struct ld_semaphore *sem, long timeout);
-void ldsem_up_read(struct ld_semaphore *sem);
-void ldsem_up_write(struct ld_semaphore *sem);
-
-# define ldsem_down_write_nested(sem, subclass, timeout)	\
-		ldsem_down_write(sem, timeout)
+/* ldsem functions removed - tty_ldsem.c deleted, no callers */
 
 struct tty_ldisc_ops {
 	char	*name;

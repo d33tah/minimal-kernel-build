@@ -14,8 +14,7 @@ struct klist {
 	void			(*put)(struct klist_node *);
 } __attribute__ ((aligned (sizeof(void *))));
 
-extern void klist_init(struct klist *k, void (*get)(struct klist_node *),
-		       void (*put)(struct klist_node *));
+/* klist_init removed - never called */
 
 struct klist_node {
 	void			*n_klist;	 

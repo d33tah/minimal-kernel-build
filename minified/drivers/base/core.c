@@ -113,23 +113,7 @@ static struct kobj_type device_ktype = {
 
 struct kset *devices_kset;
 
-static void klist_children_get(struct klist_node *n)
-{
-	struct device_private *p = to_device_private_parent(n);
-	struct device *dev = p->device;
-
-	get_device(dev);
-}
-
-static void klist_children_put(struct klist_node *n)
-{
-	struct device_private *p = to_device_private_parent(n);
-	struct device *dev = p->device;
-
-	put_device(dev);
-}
-
-/* device_initialize, dev_set_name, device_add, device_register removed - no callers */
+/* klist_children_get/put, device_initialize, dev_set_name, device_add, device_register removed - no callers */
 
 static DEFINE_MUTEX(gdp_mutex);
 

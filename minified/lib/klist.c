@@ -15,16 +15,7 @@ static bool knode_dead(struct klist_node *knode)
 /* knode_set_klist inlined into klist_release - single caller */
 /* knode_kill inlined - set KNODE_DEAD bit in n_klist */
 
-void klist_init(struct klist *k, void (*get)(struct klist_node *),
-		void (*put)(struct klist_node *))
-{
-	INIT_LIST_HEAD(&k->k_list);
-	spin_lock_init(&k->k_lock);
-	k->get = get;
-	k->put = put;
-}
-
-/* klist_add_tail removed - never called (~12 LOC) */
+/* klist_init, klist_add_tail removed - never called */
 
 struct klist_waiter {
 	struct list_head list;

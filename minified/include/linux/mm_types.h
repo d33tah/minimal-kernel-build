@@ -75,19 +75,7 @@ struct page {
 			 
 			unsigned long private;
 		};
-		struct {	 
-			 
-			unsigned long pp_magic;
-			struct page_pool *pp;
-			unsigned long _pp_mapping_pad;
-			unsigned long dma_addr;
-			union {
-				 
-				unsigned long dma_addr_upper;
-				 
-				atomic_long_t pp_frag_count;
-			};
-		};
+		/* page_pool sub-struct removed - never used */
 		struct {	 
 			unsigned long compound_head;	 
 
@@ -95,14 +83,9 @@ struct page {
 			unsigned char compound_dtor;
 			unsigned char compound_order;
 			atomic_t compound_mapcount;
-			atomic_t compound_pincount;
+			/* compound_pincount removed - write-only */
 		};
-		struct {	 
-			unsigned long _compound_pad_1;	 
-			unsigned long _compound_pad_2;
-			 
-			struct list_head deferred_list;
-		};
+		/* deferred_list sub-struct removed - never used */
 		struct {	 
 			unsigned long _pt_pad_1;	 
 			pgtable_t pmd_huge_pte;  
@@ -117,12 +100,7 @@ struct page {
 			spinlock_t ptl;
 #endif
 		};
-		struct {	 
-			 
-			struct dev_pagemap *pgmap;
-			void *zone_device_data;
-			 
-		};
+		/* zone_device sub-struct removed - never used */
 
 		 
 		struct rcu_head rcu_head;

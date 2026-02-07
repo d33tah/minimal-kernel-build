@@ -958,15 +958,15 @@ int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 		vm_unacct_memory(len >> PAGE_SHIFT);
 		ret = -ENOMEM;
 		goto out_unlock;
-
-		vma_set_anonymous(vma);
-		vma->vm_start = addr;
-		vma->vm_end = addr + len;
-		vma->vm_pgoff = pgoff;
-		vma->vm_flags = flags;
-		vma->vm_page_prot = vm_get_page_prot(flags);
-		vma_link(mm, vma, prev, rb_link, rb_parent);
 	}
+
+	vma_set_anonymous(vma);
+	vma->vm_start = addr;
+	vma->vm_end = addr + len;
+	vma->vm_pgoff = pgoff;
+	vma->vm_flags = flags;
+	vma->vm_page_prot = vm_get_page_prot(flags);
+	vma_link(mm, vma, prev, rb_link, rb_parent);
 	mm->total_vm += len >> PAGE_SHIFT;
 	vma->vm_flags |= VM_SOFTDIRTY;
 

@@ -681,11 +681,6 @@ static void print_symbol_for_autoconf(FILE *fp, struct symbol *sym)
 	__print_symbol(fp, sym, OUTPUT_N_NONE, false);
 }
 
-void print_symbol_for_listconfig(struct symbol *sym)
-{
-	__print_symbol(stdout, sym, OUTPUT_N, true);
-}
-
 static void print_symbol_for_c(FILE *fp, struct symbol *sym)
 {
 	const char *val;

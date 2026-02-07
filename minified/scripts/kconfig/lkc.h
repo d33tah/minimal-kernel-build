@@ -29,7 +29,6 @@ static inline const char *CONFIG_prefix(void)
 #define CONFIG_ CONFIG_prefix()
 
 extern int yylineno;
-void zconfdump(FILE *out);
 void zconf_starthelp(void);
 FILE *zconf_fopen(const char *name);
 void zconf_initscan(const char *name);
@@ -90,7 +89,6 @@ const char *menu_get_prompt(struct menu *menu);
 void sym_clear_all_valid(void);
 struct symbol *sym_choice_default(struct symbol *sym);
 struct property *sym_get_range_prop(struct symbol *sym);
-const char *sym_get_string_default(struct symbol *sym);
 struct symbol *sym_check_deps(struct symbol *sym);
 struct symbol *prop_get_symbol(struct property *prop);
 
@@ -99,16 +97,6 @@ static inline tristate sym_get_tristate_value(struct symbol *sym)
 	return sym->curr.tri;
 }
 
-
-static inline struct symbol *sym_get_choice_value(struct symbol *sym)
-{
-	return (struct symbol *)sym->curr.val;
-}
-
-static inline bool sym_set_choice_value(struct symbol *ch, struct symbol *chval)
-{
-	return sym_set_tristate_value(chval, yes);
-}
 
 static inline bool sym_is_choice(struct symbol *sym)
 {

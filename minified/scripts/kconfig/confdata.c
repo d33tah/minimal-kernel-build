@@ -723,70 +723,6 @@ static void print_symbol_for_c(FILE *fp, struct symbol *sym)
 	free(escaped);
 }
 
-int conf_write_defconfig(const char *filename)
-{
-	struct symbol *sym;
-	struct menu *menu;
-	FILE *out;
-
-	out = fopen(filename, "w");
-	if (!out)
-		return 1;
-
-	sym_clear_all_valid();
-
-	menu = rootmenu.list;
-
-	while (menu != NULL) {
-		sym = menu->sym;
-		if (sym == NULL) {
-			if (!menu_is_visible(menu))
-				goto next_menu;
-		} else if (!sym_is_choice(sym)) {
-			sym_calc_value(sym);
-			if (!(sym->flags & SYMBOL_WRITE))
-				goto next_menu;
-			sym->flags &= ~SYMBOL_WRITE;
-
-			if (!sym_is_changeable(sym))
-				goto next_menu;
-
-			if (strcmp(sym_get_string_value(sym),
-				   sym_get_string_default(sym)) == 0)
-				goto next_menu;
-
-			if (sym_is_choice_value(sym)) {
-				struct symbol *cs;
-				struct symbol *ds;
-
-				cs = prop_get_symbol(sym_get_choice_prop(sym));
-				ds = sym_choice_default(cs);
-				if (!sym_is_optional(cs) && sym == ds) {
-					if ((sym->type == S_BOOLEAN) &&
-					    sym_get_tristate_value(sym) == yes)
-						goto next_menu;
-				}
-			}
-			print_symbol_for_dotconfig(out, sym);
-		}
-next_menu:
-		if (menu->list != NULL) {
-			menu = menu->list;
-		} else if (menu->next != NULL) {
-			menu = menu->next;
-		} else {
-			while ((menu = menu->parent)) {
-				if (menu->next != NULL) {
-					menu = menu->next;
-					break;
-				}
-			}
-		}
-	}
-	fclose(out);
-	return 0;
-}
-
 int conf_write(const char *name)
 {
 	FILE *out;
@@ -1092,13 +1028,9 @@ int conf_write_autoconf(int overwrite)
 }
 
 static bool conf_changed;
-static void (*conf_changed_callback)(void);
 
 void conf_set_changed(bool val)
 {
-	if (conf_changed_callback && conf_changed != val)
-		conf_changed_callback();
-
 	conf_changed = val;
 }
 

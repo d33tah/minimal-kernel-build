@@ -476,39 +476,6 @@ bool sym_tristate_within_range(struct symbol *sym, tristate val)
 	return val >= sym->rev_dep.tri && val <= sym->visible;
 }
 
-bool sym_set_tristate_value(struct symbol *sym, tristate val)
-{
-	tristate oldval = sym_get_tristate_value(sym);
-
-	if (oldval != val && !sym_tristate_within_range(sym, val))
-		return false;
-
-	if (!(sym->flags & SYMBOL_DEF_USER)) {
-		sym->flags |= SYMBOL_DEF_USER;
-		sym_set_changed(sym);
-	}
-
-	if (sym_is_choice_value(sym) && val == yes) {
-		struct symbol *cs = prop_get_symbol(sym_get_choice_prop(sym));
-		struct property *prop;
-		struct expr *e;
-
-		cs->def[S_DEF_USER].val = sym;
-		cs->flags |= SYMBOL_DEF_USER;
-		prop = sym_get_choice_prop(cs);
-		for (e = prop->expr; e; e = e->left.expr) {
-			if (e->right.sym->visible != no)
-				e->right.sym->flags |= SYMBOL_DEF_USER;
-		}
-	}
-
-	sym->def[S_DEF_USER].tri = val;
-	if (oldval != val)
-		sym_clear_all_valid();
-
-	return true;
-}
-
 bool sym_string_valid(struct symbol *sym, const char *str)
 {
 	signed char ch;
@@ -600,71 +567,6 @@ bool sym_string_within_range(struct symbol *sym, const char *str)
 	}
 }
 
-const char *sym_get_string_default(struct symbol *sym)
-{
-	struct property *prop;
-	struct symbol *ds;
-	const char *str;
-	tristate val;
-
-	sym_calc_visibility(sym);
-	sym_calc_value(modules_sym);
-	val = symbol_no.curr.tri;
-	str = symbol_empty.curr.val;
-
-	prop = sym_get_default_prop(sym);
-	if (prop != NULL) {
-		switch (sym->type) {
-		case S_BOOLEAN:
-		case S_TRISTATE:
-
-			val = EXPR_AND(expr_calc_value(prop->expr),
-				       prop->visible.tri);
-			break;
-		default:
-
-			ds = prop_get_symbol(prop);
-			if (ds != NULL) {
-				sym_calc_value(ds);
-				str = (const char *)ds->curr.val;
-			}
-		}
-	}
-
-	val = EXPR_OR(val, sym->rev_dep.tri);
-
-	if (val == mod)
-		if (!sym_is_choice_value(sym) && modules_sym->curr.tri == no)
-			val = yes;
-
-	if (sym->type == S_BOOLEAN && val == mod)
-		val = yes;
-
-	if (val < sym->implied.tri)
-		val = sym->implied.tri;
-
-	switch (sym->type) {
-	case S_BOOLEAN:
-	case S_TRISTATE:
-		switch (val) {
-		case no:
-			return "n";
-		case mod:
-			return "m";
-		case yes:
-			return "y";
-		}
-	case S_INT:
-	case S_HEX:
-		return str;
-	case S_STRING:
-		return str;
-	case S_UNKNOWN:
-		break;
-	}
-	return "";
-}
-
 const char *sym_get_string_value(struct symbol *sym)
 {
 	tristate val;
@@ -686,11 +588,6 @@ const char *sym_get_string_value(struct symbol *sym)
 	default:;
 	}
 	return (const char *)sym->curr.val;
-}
-
-bool sym_is_changeable(struct symbol *sym)
-{
-	return sym->visible > sym->rev_dep.tri;
 }
 
 static unsigned strhash(const char *s)

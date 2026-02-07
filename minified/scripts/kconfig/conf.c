@@ -245,14 +245,7 @@ int main(int ac, char **av)
 		break;
 	}
 
-	if (input_mode == savedefconfig) {
-		if (conf_write_defconfig(defconfig_file)) {
-			fprintf(stderr,
-				"n*** Error while saving defconfig to: %s\n\n",
-				defconfig_file);
-			return 1;
-		}
-	} else {
+	{
 		if (!no_conf_write && conf_write(NULL)) {
 			fprintf(stderr,
 				"\n*** Error during writing of the configuration.\n\n");

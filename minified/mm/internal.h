@@ -55,14 +55,7 @@ void free_pgtables(struct mmu_gather *tlb, struct vm_area_struct *start_vma,
 
 /* page_cache_ra_order, force_page_cache_ra removed - unused */
 
-unsigned find_lock_entries(struct address_space *mapping, pgoff_t start,
-		pgoff_t end, struct folio_batch *fbatch, pgoff_t *indices);
-unsigned find_get_entries(struct address_space *mapping, pgoff_t start,
-		pgoff_t end, struct folio_batch *fbatch, pgoff_t *indices);
-/* filemap_free_folio made static in filemap.c */
-/* truncate_inode_folio, truncate_inode_partial_folio made static in truncate.c */
-/* invalidate_inode_page removed - no callers */
-/* invalidate_mapping_pagevec removed - never called */
+/* find_lock_entries, find_get_entries, filemap_free_folio, truncate functions removed */
 
  
 /* folio_evictable inlined at mm/swap.c - single caller */
@@ -125,7 +118,7 @@ void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 		struct vm_area_struct *prev);
 /* __vma_unlink_list, folio_anon_vma removed - never called */
 
-void unmap_mapping_folio(struct folio *folio);
+/* unmap_mapping_folio removed - truncate.c stubbed */
 extern long populate_vma_page_range(struct vm_area_struct *vma,
 		unsigned long start, unsigned long end, int *locked);
 /* faultin_vma_page_range, mlock_future_check removed - unused */

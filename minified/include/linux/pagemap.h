@@ -193,11 +193,7 @@ static inline int folio_wait_locked_killable(struct folio *folio)
 
 int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 		pgoff_t index, gfp_t gfp);
-void filemap_remove_folio(struct folio *folio);
-/* __filemap_remove_folio made static - only used in mm/filemap.c */
-void delete_from_page_cache_batch(struct address_space *mapping,
-				  struct folio_batch *fbatch);
-/* filemap_release_folio removed - never called */
+/* filemap_remove_folio, delete_from_page_cache_batch removed - truncate.c stubbed */
 
 int __filemap_add_folio(struct address_space *mapping, struct folio *folio,
 		pgoff_t index, gfp_t gfp, void **shadowp);

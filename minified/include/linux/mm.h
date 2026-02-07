@@ -505,9 +505,7 @@ extern void truncate_setsize(struct inode *inode, loff_t newsize);
 extern vm_fault_t handle_mm_fault(struct vm_area_struct *vma,
 				  unsigned long address, unsigned int flags,
 				  struct pt_regs *regs);
-/* unmap_mapping_pages made static - only used in mm/memory.c */
-void unmap_mapping_range(struct address_space *mapping,
-		loff_t const holebegin, loff_t const holelen, int even_cows);
+/* unmap_mapping_pages, unmap_mapping_range removed - truncate.c stubbed */
 
 long get_user_pages_remote(struct mm_struct *mm,
 			    unsigned long start, unsigned long nr_pages,

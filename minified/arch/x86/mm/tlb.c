@@ -73,21 +73,7 @@ static void choose_new_asid(struct mm_struct *next, u64 next_tlb_gen,
 		return;
 	}
 
-	/* Inlined clear_asid_other */
-	if (this_cpu_read(cpu_tlbstate.invalidate_other)) {
-		if (!static_cpu_has(X86_FEATURE_PTI)) {
-			WARN_ON_ONCE(1);
-		} else {
-			for (asid = 0; asid < TLB_NR_DYN_ASIDS; asid++) {
-				if (asid !=
-				    this_cpu_read(cpu_tlbstate.loaded_mm_asid))
-					this_cpu_write(
-						cpu_tlbstate.ctxs[asid].ctx_id,
-						0);
-			}
-			this_cpu_write(cpu_tlbstate.invalidate_other, false);
-		}
-	}
+	/* clear_asid_other removed - single-CPU kernel, no other CPU sets invalidate_other */
 
 	for (asid = 0; asid < TLB_NR_DYN_ASIDS; asid++) {
 		if (this_cpu_read(cpu_tlbstate.ctxs[asid].ctx_id) !=
@@ -108,17 +94,13 @@ static void choose_new_asid(struct mm_struct *next, u64 next_tlb_gen,
 	*need_flush = true;
 }
 
-/* PAGE_TABLE_ISOLATION disabled */
-static inline void invalidate_user_asid(u16 asid)
-{
-}
+/* invalidate_user_asid removed - PAGE_TABLE_ISOLATION disabled, was empty */
 
 static void load_new_mm_cr3(pgd_t *pgdir, u16 new_asid, bool need_flush)
 {
 	unsigned long new_mm_cr3;
 
 	if (need_flush) {
-		invalidate_user_asid(new_asid);
 		new_mm_cr3 = build_cr3(pgdir, new_asid);
 	} else {
 		/* Inlined build_cr3_noflush */
@@ -271,15 +253,9 @@ static void flush_tlb_func(void *info)
 	u64 mm_tlb_gen = atomic64_read(&loaded_mm->context.tlb_gen);
 	u64 local_tlb_gen =
 		this_cpu_read(cpu_tlbstate.ctxs[loaded_mm_asid].tlb_gen);
-	bool local = smp_processor_id() == f->initiating_cpu;
+	/* local variable and remote CPU check removed - always local in single-CPU kernel */
 
 	VM_WARN_ON(!irqs_disabled());
-
-	if (!local) {
-		/* inc_irq_stat, count_vm_tlb_event removed - counters never read */
-		if (f->mm && f->mm != loaded_mm)
-			return;
-	}
 
 	if (unlikely(loaded_mm == &init_mm))
 		return;
@@ -390,7 +366,7 @@ void flush_tlb_one_kernel(unsigned long addr)
 	if (!static_cpu_has(X86_FEATURE_PTI))
 		return;
 
-	this_cpu_write(cpu_tlbstate.invalidate_other, true);
+	/* invalidate_other write removed - no other CPU to read it */
 }
 
 STATIC_NOPV void native_flush_tlb_one_user(unsigned long addr)
@@ -403,7 +379,7 @@ STATIC_NOPV void native_flush_tlb_one_user(unsigned long addr)
 		return;
 
 	if (!this_cpu_has(X86_FEATURE_INVPCID_SINGLE))
-		invalidate_user_asid(loaded_mm_asid);
+		/* invalidate_user_asid removed - was empty (PTI disabled) */;
 	else
 		invpcid_flush_one(kern_pcid(loaded_mm_asid), addr);
 }
@@ -433,7 +409,7 @@ STATIC_NOPV void native_flush_tlb_local(void)
 {
 	WARN_ON_ONCE(preemptible());
 
-	invalidate_user_asid(this_cpu_read(cpu_tlbstate.loaded_mm_asid));
+	/* invalidate_user_asid call removed - was empty (PTI disabled) */
 
 	native_write_cr3(__native_read_cr3());
 }

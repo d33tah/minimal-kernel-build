@@ -261,7 +261,7 @@ out:
 	return NULL;
 }
 
-void put_files_struct(struct files_struct *files)
+static void put_files_struct(struct files_struct *files)
 {
 	if (atomic_dec_and_test(&files->count)) {
 		struct fdtable *fdt = rcu_dereference_raw(files->fdt);
@@ -445,7 +445,7 @@ static inline struct file *__fget_files_rcu(struct files_struct *files,
 
 /* __fget inlined into __fdget - single caller */
 
-unsigned long __fdget(unsigned int fd)
+static unsigned long __fdget(unsigned int fd)
 {
 	struct files_struct *files = current->files;
 	struct file *file;

@@ -260,7 +260,7 @@ struct mount *__lookup_mnt(struct vfsmount *mnt, struct dentry *dentry)
 	return NULL;
 }
 
-struct vfsmount *lookup_mnt(const struct path *path)
+static struct vfsmount *lookup_mnt(const struct path *path)
 {
 	struct mount *child_mnt;
 	struct vfsmount *m;
@@ -413,7 +413,7 @@ static struct mount *next_mnt(struct mount *p, struct mount *root)
 	return list_entry(next, struct mount, mnt_child);
 }
 
-struct vfsmount *vfs_create_mount(struct fs_context *fc)
+static struct vfsmount *vfs_create_mount(struct fs_context *fc)
 {
 	struct mount *mnt;
 	struct user_namespace *fs_userns;
@@ -444,7 +444,7 @@ struct vfsmount *vfs_create_mount(struct fs_context *fc)
 	return &mnt->mnt;
 }
 
-struct vfsmount *fc_mount(struct fs_context *fc)
+static struct vfsmount *fc_mount(struct fs_context *fc)
 {
 	int err = vfs_get_tree(fc);
 	if (!err) {
@@ -455,8 +455,8 @@ struct vfsmount *fc_mount(struct fs_context *fc)
 }
 
 /* data parameter removed - always NULL at all call sites */
-struct vfsmount *vfs_kern_mount(struct file_system_type *type, int flags,
-				const char *name)
+static struct vfsmount *vfs_kern_mount(struct file_system_type *type, int flags,
+				       const char *name)
 {
 	struct fs_context *fc;
 	struct vfsmount *mnt;
@@ -846,8 +846,7 @@ retry:
 
 /* do_change_type, do_add_mount inlined into path_mount */
 
-static bool mount_too_revealing(const struct super_block *sb,
-				int *new_mnt_flags);
+/* mount_too_revealing removed - always returned false (~6 LOC) */
 
 /* do_new_mount inlined into path_mount */
 
@@ -960,10 +959,8 @@ int path_mount(const char *dev_name, struct path *path, const char *type_page,
 		struct mountpoint *mp;
 		struct super_block *sb = fc->root->d_sb;
 
-		if (mount_too_revealing(sb, &mnt_flags)) {
-			fc_drop_locked(fc);
-			err = -EPERM;
-		} else {
+		/* mount_too_revealing always returned false - removed */
+		{
 			up_write(&sb->s_umount);
 			mnt = vfs_create_mount(fc);
 			if (IS_ERR(mnt)) {
@@ -1153,14 +1150,7 @@ struct vfsmount *kern_mount(struct file_system_type *type)
 	return mnt;
 }
 
-/* mnt_already_visible removed - only called by mount_too_revealing which is stubbed */
-
-static bool mount_too_revealing(const struct super_block *sb,
-				int *new_mnt_flags)
-{
-	/* User namespace mount visibility check disabled - minimal kernel runs as init_user_ns */
-	return false;
-}
+/* mnt_already_visible, mount_too_revealing removed - stubbed/never needed */
 
 /* mnt_may_suid removed - never called (~5 LOC) */
 /* mntns_get, mntns_put, mntns_install, mntns_owner, mntns_operations removed - ns.ops never read */

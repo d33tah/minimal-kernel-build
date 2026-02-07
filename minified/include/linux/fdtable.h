@@ -66,7 +66,7 @@ static inline struct file *files_lookup_fd_raw(struct files_struct *files, unsig
 
 /* task_lookup_fd_rcu, task_lookup_next_fd_rcu, struct task_struct forward decl removed - never used */
 
-void put_files_struct(struct files_struct *fs);
+/* put_files_struct made static - only used in file.c */
 struct files_struct *dup_fd(struct files_struct *, unsigned, int *) __latent_entropy;
 /* do_close_on_exec removed - was empty stub */
 

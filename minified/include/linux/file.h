@@ -31,7 +31,7 @@ static inline void fdput(struct fd fd)
 }
 extern void fput(struct file *file);
 
-extern unsigned long __fdget(unsigned int fd);
+/* __fdget made static - only used in file.c */
 extern unsigned long __fdget_raw(unsigned int fd);
 extern unsigned long __fdget_pos(unsigned int fd);
 

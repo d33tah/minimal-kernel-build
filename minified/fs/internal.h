@@ -26,7 +26,7 @@ extern int parse_monolithic_mount_data(struct fs_context *, void *);
 /* vfs_path_lookup removed - never called */
 /* do_rmdir, do_unlinkat, may_linkat, do_renameat2, do_mkdirat, do_symlinkat, do_linkat removed */
 
-extern struct vfsmount *lookup_mnt(const struct path *);
+/* lookup_mnt made static - only used in namespace.c */
 /* finish_automount, sb_prepare_remount_readonly removed - unused */
 
 extern void __init mnt_init(void);

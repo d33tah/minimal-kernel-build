@@ -505,7 +505,7 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 	return dentry;
 }
 
-struct dentry *d_alloc(struct dentry *parent, const struct qstr *name)
+static struct dentry *d_alloc(struct dentry *parent, const struct qstr *name)
 {
 	struct dentry *dentry = __d_alloc(parent->d_sb, name);
 	if (!dentry)

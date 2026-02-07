@@ -77,7 +77,7 @@ extern void setup_new_exec(struct linux_binprm * bprm);
 extern int setup_arg_pages(struct linux_binprm * bprm,
 			   unsigned long stack_top,
 			   int executable_stack);
-int copy_string_kernel(const char *arg, struct linux_binprm *bprm);
+/* copy_string_kernel made static - only used in exec.c */
 extern void set_binfmt(struct linux_binfmt *new);
 
 int kernel_execve(const char *filename,

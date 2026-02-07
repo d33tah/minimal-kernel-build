@@ -132,7 +132,7 @@ extern void d_instantiate(struct dentry *, struct inode *);
 extern void d_set_d_op(struct dentry *dentry, const struct dentry_operations *op);
 
 
-extern struct dentry * d_alloc(struct dentry *, const struct qstr *);
+/* d_alloc made static - only used in dcache.c */
 /* d_alloc_anon removed - inlined into d_make_root */
 extern struct dentry * d_alloc_parallel(struct dentry *, const struct qstr *,
 					wait_queue_head_t *);

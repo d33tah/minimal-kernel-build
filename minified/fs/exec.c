@@ -87,7 +87,7 @@ static int count_strings_kernel(const char *const *argv)
 
 /* Removed: copy_strings() - only used by removed do_execveat_common */
 
-int copy_string_kernel(const char *arg, struct linux_binprm *bprm)
+static int copy_string_kernel(const char *arg, struct linux_binprm *bprm)
 {
 	int len = strnlen(arg, MAX_ARG_STRLEN) + 1;
 	unsigned long pos = bprm->p;

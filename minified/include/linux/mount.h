@@ -67,11 +67,7 @@ extern struct vfsmount *mntget(struct vfsmount *mnt);
 extern int __mnt_want_write(struct vfsmount *);
 extern void __mnt_drop_write(struct vfsmount *);
 
-extern struct vfsmount *fc_mount(struct fs_context *fc);
-extern struct vfsmount *vfs_create_mount(struct fs_context *fc);
-/* data parameter removed - always NULL */
-extern struct vfsmount *vfs_kern_mount(struct file_system_type *type,
-				      int flags, const char *name);
+/* fc_mount, vfs_create_mount, vfs_kern_mount made static - only used in namespace.c */
 
 
 extern dev_t name_to_dev_t(const char *name);

@@ -194,8 +194,8 @@ TESTPAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
 
 /* Private flag removed - zero callers */
 
-TESTPAGEFLAG(Writeback, writeback, PF_NO_TAIL)
-CLEARPAGEFLAG(MappedToDisk, mappedtodisk, PF_NO_TAIL)
+/* TESTPAGEFLAG(Writeback) removed - no callers after truncate stubbing */
+/* CLEARPAGEFLAG(MappedToDisk) removed - no callers after truncate stubbing */
 
 TESTPAGEFLAG(Readahead, readahead, PF_NO_COMPOUND)
 	/* TESTCLEARFLAG(Readahead, ...) removed - never used */
@@ -272,8 +272,7 @@ static __always_inline void SetPageUptodate(struct page *page)
 	folio_mark_uptodate((struct folio *)page);
 }
 
-CLEARPAGEFLAG(Uptodate, uptodate, PF_NO_TAIL)
-
+/* CLEARPAGEFLAG(Uptodate) removed - no callers */
 /* __folio_start_writeback removed - never called */
 
 static __always_inline bool folio_test_head(struct folio *folio)
@@ -295,7 +294,6 @@ static inline bool folio_test_large(struct folio *folio)
 {
 	return folio_test_head(folio);
 }
-
 /* set_compound_head inlined into page_alloc.c */
 
 /* Huge, TransHuge, TransCompound, TransTail, DoubleMap flags removed - zero callers */

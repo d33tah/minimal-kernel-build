@@ -225,17 +225,8 @@ static inline void i_mmap_unlock_write(struct address_space *mapping)
 }
 
 
-static inline void i_mmap_lock_read(struct address_space *mapping)
-{
-	down_read(&mapping->i_mmap_rwsem);
-}
-
-static inline void i_mmap_unlock_read(struct address_space *mapping)
-{
-	up_read(&mapping->i_mmap_rwsem);
-}
-
-/* mapping_writably_mapped, mapping_unmap_writable, mapping_allow_writable removed - never called or inlined */
+/* i_mmap_lock_read, i_mmap_unlock_read removed - no callers after truncate stubbing */
+/* mapping_writably_mapped, mapping_unmap_writable, mapping_allow_writable removed */
 
 /* i_size_ordered_init removed - never called */
 /* struct posix_acl removed - unused */

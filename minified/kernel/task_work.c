@@ -37,27 +37,7 @@ int task_work_add(struct task_struct *task, struct callback_head *work,
 	return 0;
 }
 
-struct callback_head *task_work_cancel(struct task_struct *task,
-				       task_work_func_t func)
-{
-	struct callback_head **pprev = &task->task_works;
-	struct callback_head *work;
-	unsigned long flags;
-
-	if (likely(!task_work_pending(task)))
-		return NULL;
-
-	raw_spin_lock_irqsave(&task->pi_lock, flags);
-	while ((work = READ_ONCE(*pprev))) {
-		if (work->func != func)
-			pprev = &work->next;
-		else if (cmpxchg(pprev, work, work->next) == work)
-			break;
-	}
-	raw_spin_unlock_irqrestore(&task->pi_lock, flags);
-
-	return work;
-}
+/* task_work_cancel removed - never called */
 
 void task_work_run(void)
 {

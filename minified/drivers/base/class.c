@@ -14,63 +14,8 @@
 
 static struct kset *class_kset;
 
-void class_dev_iter_init(struct class_dev_iter *iter, struct class *class,
-			 struct device *start, const struct device_type *type)
-{
-	struct klist_node *start_knode = NULL;
-
-	if (start)
-		start_knode = &start->p->knode_class;
-	klist_iter_init_node(&class->p->klist_devices, &iter->ki, start_knode);
-	iter->type = type;
-}
-
-struct device *class_dev_iter_next(struct class_dev_iter *iter)
-{
-	struct klist_node *knode;
-	struct device *dev;
-
-	while (1) {
-		knode = klist_next(&iter->ki);
-		if (!knode)
-			return NULL;
-		dev = to_device_private_class(knode)->device;
-		if (!iter->type || iter->type == dev->type)
-			return dev;
-	}
-}
-
-void class_dev_iter_exit(struct class_dev_iter *iter)
-{
-	klist_iter_exit(&iter->ki);
-}
-
-struct device *class_find_device(struct class *class, struct device *start,
-				 const void *data,
-				 int (*match)(struct device *, const void *))
-{
-	struct class_dev_iter iter;
-	struct device *dev;
-
-	if (!class)
-		return NULL;
-	if (!class->p) {
-		WARN(1, "%s called for class '%s' before it was initialized",
-		     __func__, class->name);
-		return NULL;
-	}
-
-	class_dev_iter_init(&iter, class, start, NULL);
-	while ((dev = class_dev_iter_next(&iter))) {
-		if (match(dev, data)) {
-			get_device(dev);
-			break;
-		}
-	}
-	class_dev_iter_exit(&iter);
-
-	return dev;
-}
+/* class_dev_iter_init, class_dev_iter_next, class_dev_iter_exit,
+   class_find_device removed - never called */
 
 /* class_interface_register, class_interface_unregister, show_class_attr_string, class_compat_register,
    class_compat_unregister, class_compat_create_link, class_compat_remove_link removed - unused */

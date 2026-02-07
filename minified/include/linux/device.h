@@ -131,7 +131,7 @@ static inline const char *dev_name(const struct device *dev)
 }
 
 
-__printf(2, 3) int dev_set_name(struct device *dev, const char *name, ...);
+/* dev_set_name removed - no callers */
 
 static inline int dev_to_node(struct device *dev)
 {
@@ -166,8 +166,7 @@ static inline void device_unlock(struct device *dev)
 /* device_lock_assert removed - was empty stub */
 
 void device_unregister(struct device *dev);
-void device_initialize(struct device *dev);
-int __must_check device_add(struct device *dev);
+/* device_initialize, device_add removed - no callers */
 void device_del(struct device *dev);
 
 

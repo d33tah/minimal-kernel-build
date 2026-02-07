@@ -230,33 +230,7 @@ size_t copy_page_to_iter(struct page *page, size_t offset, size_t bytes,
 	return res;
 }
 
-/* iov_iter_zero, copy_page_from_iter_atomic, iov_iter_advance removed - never called (~34 LOC) */
-
-void iov_iter_revert(struct iov_iter *i, size_t unroll)
-{
-	if (!unroll)
-		return;
-	if (WARN_ON(unroll > MAX_RW_COUNT))
-		return;
-	i->count += unroll;
-	/* Only ITER_IOVEC and ITER_KVEC used - others never initialized */
-	if (unroll <= i->iov_offset) {
-		i->iov_offset -= unroll;
-		return;
-	}
-	unroll -= i->iov_offset;
-	const struct iovec *iov = i->iov;
-	while (1) {
-		size_t n = (--iov)->iov_len;
-		i->nr_segs++;
-		if (unroll <= n) {
-			i->iov = iov;
-			i->iov_offset = n - unroll;
-			return;
-		}
-		unroll -= n;
-	}
-}
+/* iov_iter_zero, copy_page_from_iter_atomic, iov_iter_advance, iov_iter_revert removed - never called */
 
 void iov_iter_kvec(struct iov_iter *i, unsigned int direction,
 		   const struct kvec *kvec, unsigned long nr_segs, size_t count)

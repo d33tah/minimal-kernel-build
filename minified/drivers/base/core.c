@@ -129,98 +129,9 @@ static void klist_children_put(struct klist_node *n)
 	put_device(dev);
 }
 
-void device_initialize(struct device *dev)
-{
-	dev->kobj.kset = devices_kset;
-	kobject_init(&dev->kobj, &device_ktype);
-	/* INIT_LIST_HEAD(&dev->dma_pools) removed - field removed */
-	mutex_init(&dev->mutex);
-	spin_lock_init(&dev->devres_lock);
-	INIT_LIST_HEAD(&dev->devres_head);
-	device_pm_init(dev);
-	set_dev_node(dev, NUMA_NO_NODE);
-	INIT_LIST_HEAD(&dev->links.consumers);
-	INIT_LIST_HEAD(&dev->links.suppliers);
-	INIT_LIST_HEAD(&dev->links.defer_sync);
-	dev->links.status = DL_DEV_NO_DRIVER;
-	/* DMA coherent init removed - CONFIG_ARCH_HAS_SYNC_DMA_* not defined */
-}
+/* device_initialize, dev_set_name, device_add, device_register removed - no callers */
 
 static DEFINE_MUTEX(gdp_mutex);
-
-/* device_remove_class_symlinks was empty stub - removed */
-
-int dev_set_name(struct device *dev, const char *fmt, ...)
-{
-	va_list vargs;
-	int err;
-
-	va_start(vargs, fmt);
-	err = kobject_set_name_vargs(&dev->kobj, fmt, vargs);
-	va_end(vargs);
-	return err;
-}
-
-int device_add(struct device *dev)
-{
-	struct device *parent;
-	int error = -EINVAL;
-
-	/* Minimal stub: simplified device registration */
-	dev = get_device(dev);
-	if (!dev)
-		return error;
-
-	if (!dev->p) {
-		dev->p = kzalloc(sizeof(*dev->p), GFP_KERNEL);
-		if (!dev->p) {
-			error = -ENOMEM;
-			goto done;
-		}
-		dev->p->device = dev;
-		klist_init(&dev->p->klist_children, klist_children_get,
-			   klist_children_put);
-		INIT_LIST_HEAD(&dev->p->deferred_probe);
-	}
-
-	if (dev->init_name) {
-		dev_set_name(dev, "%s", dev->init_name);
-		dev->init_name = NULL;
-	}
-
-	if (!dev_name(dev) && dev->bus && dev->bus->dev_name)
-		dev_set_name(dev, "%s%u", dev->bus->dev_name, dev->id);
-
-	if (!dev_name(dev)) {
-		error = -EINVAL;
-		goto name_error;
-	}
-
-	parent = get_device(dev->parent);
-	if (parent && (dev_to_node(dev) == NUMA_NO_NODE))
-		set_dev_node(dev, dev_to_node(parent));
-
-	error = kobject_add(&dev->kobj, dev->kobj.parent, NULL);
-	if (error)
-		goto parent_error;
-
-	bus_probe_device(dev);
-
-	error = 0;
-	put_device(dev);
-	return error;
-
-parent_error:
-	put_device(parent);
-name_error:
-	kfree(dev->p);
-	dev->p = NULL;
-done:
-	put_device(dev);
-	return error;
-}
-
-/* device_register removed - no callers */
 
 struct device *get_device(struct device *dev)
 {
@@ -304,9 +215,4 @@ int __init devices_init(void)
 /* device_create_release, device_create_groups_vargs, device_create,
    device_destroy removed - no callers */
 
-/* dev_err_probe removed - never called */
-
-int device_match_devt(struct device *dev, const void *pdevt)
-{
-	return 0;
-}
+/* dev_err_probe, device_match_devt removed - never called */

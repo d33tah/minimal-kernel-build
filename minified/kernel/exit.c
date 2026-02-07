@@ -39,80 +39,13 @@ extern int nr_threads;
 /* __ptrace_unlink removed - empty stub, call site removed */
 /* exit_ptrace removed - empty stub */
 
-/* __exit_signal inlined into release_task (~48 LOC) */
-
-static void delayed_put_task_struct(struct rcu_head *rhp)
-{
-	struct task_struct *tsk = container_of(rhp, struct task_struct, rcu);
-
-	put_task_struct(tsk);
-}
+/* release_task, delayed_put_task_struct, put_task_struct_rcu_user removed -
+ * only called from do_exit which is now a panic stub.
+ * Hello World kernel never exits processes. */
 
 void put_task_struct_rcu_user(struct task_struct *task)
 {
-	if (refcount_dec_and_test(&task->rcu_users))
-		call_rcu(&task->rcu, delayed_put_task_struct);
-}
-
-static void release_task(struct task_struct *p)
-{
-	struct pid *thread_pid;
-	struct signal_struct *sig;
-	bool group_dead;
-	struct sighand_struct *sighand;
-	struct tty_struct *tty = NULL;
-
-	rcu_read_lock();
-	dec_rlimit_ucounts(task_ucounts(p), UCOUNT_RLIMIT_NPROC, 1);
-	rcu_read_unlock();
-
-	write_lock_irq(&tasklist_lock);
-	ptrace_release_task(p);
-	thread_pid = get_pid(p->thread_pid);
-
-	/* inlined __exit_signal */
-	sig = p->signal;
-	group_dead = thread_group_leader(p);
-	sighand = rcu_dereference_check(p->sighand,
-					lockdep_tasklist_lock_is_held());
-	spin_lock(&sighand->siglock);
-	if (group_dead) {
-		tty = sig->tty;
-		sig->tty = NULL;
-	} else {
-		if (sig->notify_count > 0 && !--sig->notify_count)
-			wake_up_process(sig->group_exec_task);
-		if (p == sig->curr_target)
-			sig->curr_target = next_thread(p);
-	}
-	sig->nr_threads--;
-	nr_threads--;
-	detach_pid(p, PIDTYPE_PID);
-	if (group_dead) {
-		detach_pid(p, PIDTYPE_TGID);
-		detach_pid(p, PIDTYPE_PGID);
-		detach_pid(p, PIDTYPE_SID);
-		list_del_rcu(&p->tasks);
-		list_del_init(&p->sibling);
-	}
-	list_del_rcu(&p->thread_group);
-	list_del_rcu(&p->thread_node);
-	flush_sigqueue(&p->pending);
-	p->sighand = NULL;
-	spin_unlock(&sighand->siglock);
-	__cleanup_sighand(sighand);
-	clear_tsk_thread_flag(p, TIF_SIGPENDING);
-	if (group_dead) {
-		flush_sigqueue(&sig->shared_pending);
-		tty_kref_put(tty);
-	}
-
-	/* do_notify_parent always returns false, so zap_leader logic removed */
-
-	write_unlock_irq(&tasklist_lock);
-	put_pid(thread_pid);
-	release_thread(p);
-	put_task_struct_rcu_user(p);
+	/* Stub - never called during Hello World boot */
 }
 
 int rcuwait_wake_up(struct rcuwait *w)
@@ -132,110 +65,12 @@ int rcuwait_wake_up(struct rcuwait *w)
 	return ret;
 }
 
-/* coredump_task_exit inlined into do_exit */
-/* find_child_reaper, find_new_reaper inlined into do_exit */
-/* reparent_leader, forget_original_parent, exit_notify inlined into do_exit */
-
+/* do_exit gutted - Hello World kernel never exits processes.
+ * init loops forever, kthreadd loops forever, no kthreads created.
+ * Only reachable via make_task_dead (fatal errors). */
 void __noreturn do_exit(long code)
 {
-	struct task_struct *tsk = current;
-	int group_dead;
-
-	/* coredump_task_exit removed - PF_POSTCOREDUMP never tested */
-	ptrace_event(PTRACE_EVENT_EXIT, code);
-
-	/* validate_creds_for_do_exit(), io_uring_files_cancel() - empty stubs */
-	exit_signals(tsk);
-
-	group_dead = atomic_dec_and_test(&tsk->signal->live);
-	if (group_dead) {
-		if (unlikely(is_global_init(tsk)))
-			panic("Attempted to kill init! exitcode=0x%08x\n",
-			      tsk->signal->group_exit_code ?: (int)code);
-	}
-	/* exit_code removed - write-only field */
-
-	/* Inlined exit_mm */
-	{
-		struct mm_struct *mm = current->mm;
-		exit_mm_release(current, mm);
-		if (mm) {
-			mmap_read_lock(mm);
-			mmgrab(mm);
-			BUG_ON(mm != current->active_mm);
-			task_lock(current);
-			local_irq_disable();
-			current->mm = NULL;
-			enter_lazy_tlb(mm, current);
-			local_irq_enable();
-			task_unlock(current);
-			mmap_read_unlock(mm);
-			mmput(mm);
-		}
-	}
-	exit_files(tsk);
-	exit_fs(tsk);
-	exit_task_namespaces(tsk);
-	exit_task_work(tsk);
-	exit_thread(tsk);
-
-	/* Inlined exit_notify with forget_original_parent */
-	{
-		bool autoreap;
-		struct task_struct *p, *n, *t, *reaper;
-		LIST_HEAD(dead);
-
-		write_lock_irq(&tasklist_lock);
-
-		/* Inlined forget_original_parent, find_child_reaper, find_new_reaper */
-		reaper = task_active_pid_ns(tsk)->child_reaper;
-		if (!list_empty(&tsk->children)) {
-			list_for_each_entry(p, &tsk->children, sibling) {
-				for_each_thread(p, t) {
-					RCU_INIT_POINTER(t->real_parent,
-							 reaper);
-					BUG_ON((!t->ptrace) !=
-					       (rcu_access_pointer(t->parent) ==
-						tsk));
-					if (likely(!t->ptrace))
-						t->parent = t->real_parent;
-					if (t->pdeath_signal)
-						group_send_sig_info(
-							t->pdeath_signal,
-							SEND_SIG_NOINFO, t,
-							PIDTYPE_TGID);
-				}
-				if (!same_thread_group(reaper, tsk) &&
-				    likely(p->exit_state != EXIT_DEAD))
-					p->exit_signal = SIGCHLD;
-			}
-			list_splice_tail_init(&tsk->children,
-					      &reaper->children);
-		}
-
-		tsk->exit_state = EXIT_ZOMBIE;
-		autoreap = !tsk->ptrace && !thread_group_leader(tsk);
-
-		if (autoreap) {
-			tsk->exit_state = EXIT_DEAD;
-			list_add(&tsk->ptrace_entry, &dead);
-		}
-
-		if (unlikely(tsk->signal->notify_count < 0))
-			wake_up_process(tsk->signal->group_exec_task);
-		write_unlock_irq(&tasklist_lock);
-
-		list_for_each_entry_safe(p, n, &dead, ptrace_entry) {
-			list_del_init(&p->ptrace_entry);
-			release_task(p);
-		}
-	}
-
-	/* validate_creds_for_do_exit call removed - empty stub */
-	exit_task_stack_account(tsk);
-	preempt_disable();
-
-	do_task_dead();
+	panic("do_exit called with code %ld\n", code);
 }
 
 void __noreturn make_task_dead(int signr)

@@ -211,35 +211,9 @@ u64 __init e820__range_remove(u64 start, u64 size, enum e820_type old_type,
 
 /* e820__update_table_print removed - never called */
 
-#define MAX_GAP_END 0x100000000ull
-
+/* e820__setup_pci_gap removed - PCI gap search not needed for minimal boot */
 __init void e820__setup_pci_gap(void)
 {
-	unsigned long gapstart = 0x10000000;
-	unsigned long gapsize = 0x400000;
-	unsigned long long last = MAX_GAP_END;
-	int i = e820_table->nr_entries;
-
-	/* Inlined e820_search_gap */
-	while (--i >= 0) {
-		unsigned long long start = e820_table->entries[i].addr;
-		unsigned long long end = start + e820_table->entries[i].size;
-
-		if (last > end) {
-			unsigned long gap = last - end;
-			if (gap >= gapsize) {
-				gapsize = gap;
-				gapstart = end;
-			}
-		}
-		if (start < last)
-			last = start;
-	}
-
-	/* pci_mem_start removed - never read */
-
-	pr_info("[mem %#010lx-%#010lx] available for PCI devices\n", gapstart,
-		gapstart + gapsize - 1);
 }
 
 /* e820__reallocate_tables removed - never called */
@@ -366,39 +340,9 @@ void __init e820__reserve_setup_data(void)
 /* e820_type_to_string, e820_type_to_iomem_type, e820_type_to_iores_desc, do_mark_busy
    inlined into e820__reserve_resources */
 
-/* e820_res removed - only written, never read */
-
+/* e820__reserve_resources removed - resource tracking not needed for minimal boot */
 void __init e820__reserve_resources(void)
 {
-	int i;
-	struct resource *res;
-	u64 end;
-
-	res = memblock_alloc(sizeof(*res) * e820_table->nr_entries,
-			     SMP_CACHE_BYTES);
-	if (!res)
-		panic("%s: Failed to allocate %zu bytes\n", __func__,
-		      sizeof(*res) * e820_table->nr_entries);
-
-	for (i = 0; i < e820_table->nr_entries; i++) {
-		struct e820_entry *entry = e820_table->entries + i;
-		bool is_ram = entry->type == E820_TYPE_RESERVED_KERN ||
-			      entry->type == E820_TYPE_RAM;
-
-		end = entry->addr + entry->size - 1;
-		if (end != (resource_size_t)end) {
-			res++;
-			continue;
-		}
-		res->start = entry->addr;
-		res->end = end;
-		res->name = is_ram ? "System RAM" : "Reserved";
-		res->flags = is_ram ? IORESOURCE_SYSTEM_RAM : IORESOURCE_MEM;
-		res->desc = IORES_DESC_NONE;
-		res->flags |= IORESOURCE_BUSY;
-		insert_resource(&iomem_resource, res);
-		res++;
-	}
 }
 
 char *__init e820__memory_setup_default(void)

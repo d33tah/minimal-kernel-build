@@ -136,55 +136,10 @@ static u64 __init get_ramdisk_size(void)
 
 /* parse_setup_data, memblock_x86_reserve_range_setup_data inlined into setup_arch/early_reserve_memory */
 
-static struct resource standard_io_resources[] = {
-	{ .name = "dma1",
-	  .start = 0x00,
-	  .end = 0x1f,
-	  .flags = IORESOURCE_BUSY | IORESOURCE_IO },
-	{ .name = "pic1",
-	  .start = 0x20,
-	  .end = 0x21,
-	  .flags = IORESOURCE_BUSY | IORESOURCE_IO },
-	{ .name = "timer0",
-	  .start = 0x40,
-	  .end = 0x43,
-	  .flags = IORESOURCE_BUSY | IORESOURCE_IO },
-	{ .name = "timer1",
-	  .start = 0x50,
-	  .end = 0x53,
-	  .flags = IORESOURCE_BUSY | IORESOURCE_IO },
-	{ .name = "keyboard",
-	  .start = 0x60,
-	  .end = 0x60,
-	  .flags = IORESOURCE_BUSY | IORESOURCE_IO },
-	{ .name = "keyboard",
-	  .start = 0x64,
-	  .end = 0x64,
-	  .flags = IORESOURCE_BUSY | IORESOURCE_IO },
-	{ .name = "dma page reg",
-	  .start = 0x80,
-	  .end = 0x8f,
-	  .flags = IORESOURCE_BUSY | IORESOURCE_IO },
-	{ .name = "pic2",
-	  .start = 0xa0,
-	  .end = 0xa1,
-	  .flags = IORESOURCE_BUSY | IORESOURCE_IO },
-	{ .name = "dma2",
-	  .start = 0xc0,
-	  .end = 0xdf,
-	  .flags = IORESOURCE_BUSY | IORESOURCE_IO },
-	{ .name = "fpu",
-	  .start = 0xf0,
-	  .end = 0xff,
-	  .flags = IORESOURCE_BUSY | IORESOURCE_IO }
-};
-
+/* standard_io_resources and reserve_standard_io_resources removed
+ * - legacy I/O resource reservation not needed for minimal boot */
 void __init reserve_standard_io_resources(void)
 {
-	int i;
-
-	for (i = 0; i < ARRAY_SIZE(standard_io_resources); i++)
-		request_resource(&ioport_resource, &standard_io_resources[i]);
 }
 
 /* trim_snb_memory removed - empty stub */
@@ -466,16 +421,9 @@ void __init setup_arch(char **cmdline_p)
 	/* x86_init.timers.wallclock_init, register_refined_jiffies removed */
 }
 
-static struct resource video_ram_resource = { .name = "Video RAM area",
-					      .start = 0xa0000,
-					      .end = 0xbffff,
-					      .flags = IORESOURCE_BUSY |
-						       IORESOURCE_MEM };
-
+/* video_ram_resource removed - not needed for minimal boot */
 void __init i386_reserve_resources(void)
 {
-	request_resource(&iomem_resource, &video_ram_resource);
-	reserve_standard_io_resources();
 }
 
 /* register_kernel_offset_dumper initcall removed - callback was empty stub */

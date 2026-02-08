@@ -19,21 +19,11 @@ static char *sb_writers_name[SB_FREEZE_LEVELS] = {
 	"sb_internal",
 };
 
+/* super_cache_scan simplified - prune functions are all stubs */
 static unsigned long super_cache_scan(struct shrinker *shrink,
 				      struct shrink_control *sc)
 {
-	struct super_block *sb =
-		container_of(shrink, struct super_block, s_shrink);
-
-	if (!(sc->gfp_mask & __GFP_FS))
-		return SHRINK_STOP;
-
-	if (!trylock_super(sb))
-		return SHRINK_STOP;
-
-	/* Simplified: prune_dcache_sb and prune_icache_sb are stubs returning 0 */
-	up_read(&sb->s_umount);
-	return 0;
+	return SHRINK_STOP;
 }
 
 static unsigned long super_cache_count(struct shrinker *shrink,
@@ -193,11 +183,7 @@ void deactivate_super(struct super_block *s)
 
 /* grab_super removed - inlined into single caller (~12 LOC) */
 
-bool trylock_super(struct super_block *sb)
-{
-	return down_read_trylock(&sb->s_umount) && sb->s_root &&
-	       (sb->s_flags & SB_BORN);
-}
+/* trylock_super removed - only caller was super_cache_scan (simplified) */
 
 void generic_shutdown_super(struct super_block *sb)
 {
@@ -222,44 +208,28 @@ void generic_shutdown_super(struct super_block *sb)
 	hlist_del_init(&sb->s_instances);
 	spin_unlock(&sb_lock);
 	up_write(&sb->s_umount);
-	if (sb->s_bdi != &noop_backing_dev_info) {
-		if (sb->s_iflags & SB_I_PERSB_BDI)
-			bdi_unregister(sb->s_bdi);
-		bdi_put(sb->s_bdi);
-		sb->s_bdi = &noop_backing_dev_info;
-	}
+	/* BDI cleanup removed - s_bdi is always noop_backing_dev_info */
 }
 
 /* mount_capable removed - never called (capable()/ns_capable() always return true) */
 
+/* sget_fc simplified: test is always NULL (only vfs_get_independent_super used),
+   share_extant_sb path removed */
 struct super_block *
 sget_fc(struct fs_context *fc,
 	int (*test)(struct super_block *, struct fs_context *),
 	int (*set)(struct super_block *, struct fs_context *))
 {
 	struct super_block *s = NULL;
-	struct super_block *old;
 	struct user_namespace *user_ns = fc->global ? &init_user_ns :
 						      fc->user_ns;
 	int err;
 
-retry:
-	spin_lock(&sb_lock);
-	if (test) {
-		hlist_for_each_entry(old, &fc->fs_type->fs_supers,
-				     s_instances) {
-			if (test(old, fc))
-				goto share_extant_sb;
-		}
-	}
-	if (!s) {
-		spin_unlock(&sb_lock);
-		s = alloc_super(fc->fs_type, fc->sb_flags, user_ns);
-		if (!s)
-			return ERR_PTR(-ENOMEM);
-		goto retry;
-	}
+	s = alloc_super(fc->fs_type, fc->sb_flags, user_ns);
+	if (!s)
+		return ERR_PTR(-ENOMEM);
 
+	spin_lock(&sb_lock);
 	s->s_fs_info = fc->s_fs_info;
 	err = set(s, fc);
 	if (err) {
@@ -276,27 +246,7 @@ retry:
 	hlist_add_head(&s->s_instances, &s->s_type->fs_supers);
 	spin_unlock(&sb_lock);
 	get_filesystem(s->s_type);
-	/* register_shrinker_prepared is empty stub - call removed */
 	return s;
-
-share_extant_sb:
-	if (user_ns != old->s_user_ns) {
-		spin_unlock(&sb_lock);
-		destroy_unused_super(s);
-		return ERR_PTR(-EBUSY);
-	}
-	/* Inlined grab_super */
-	old->s_count++;
-	spin_unlock(&sb_lock);
-	down_write(&old->s_umount);
-	if ((old->s_flags & SB_BORN) && atomic_inc_not_zero(&old->s_active)) {
-		put_super(old);
-		destroy_unused_super(s);
-		return old;
-	}
-	up_write(&old->s_umount);
-	put_super(old);
-	goto retry;
 }
 
 /* sget, drop_super removed - never called */
@@ -345,58 +295,30 @@ static int set_anon_super_fc(struct super_block *sb, struct fs_context *fc)
 	return get_anon_bdev(&sb->s_dev);
 }
 
-static int test_keyed_super(struct super_block *sb, struct fs_context *fc)
-{
-	return sb->s_fs_info == fc->s_fs_info;
-}
+/* test_keyed_super, test_single_super removed - only independent_super used */
 
-static int test_single_super(struct super_block *s, struct fs_context *fc)
-{
-	return 1;
-}
-
+/* vfs_get_super simplified: only vfs_get_independent_super keying used,
+   s_root always NULL for new independent super */
 int vfs_get_super(struct fs_context *fc, enum vfs_get_super_keying keying,
 		  int (*fill_super)(struct super_block *sb,
 				    struct fs_context *fc))
 {
-	int (*test)(struct super_block *, struct fs_context *);
 	struct super_block *sb;
 	int err;
 
-	switch (keying) {
-	case vfs_get_single_super:
-		test = test_single_super;
-		break;
-	case vfs_get_keyed_super:
-		test = test_keyed_super;
-		break;
-	case vfs_get_independent_super:
-		test = NULL;
-		break;
-	default:
-		BUG();
-	}
-
-	sb = sget_fc(fc, test, set_anon_super_fc);
+	sb = sget_fc(fc, NULL, set_anon_super_fc);
 	if (IS_ERR(sb))
 		return PTR_ERR(sb);
 
-	if (!sb->s_root) {
-		err = fill_super(sb, fc);
-		if (err)
-			goto error;
-
-		sb->s_flags |= SB_ACTIVE;
-		fc->root = dget(sb->s_root);
-	} else {
-		fc->root = dget(sb->s_root);
+	err = fill_super(sb, fc);
+	if (err) {
+		deactivate_locked_super(sb);
+		return err;
 	}
 
+	sb->s_flags |= SB_ACTIVE;
+	fc->root = dget(sb->s_root);
 	return 0;
-
-error:
-	deactivate_locked_super(sb);
-	return err;
 }
 
 int get_tree_nodev(struct fs_context *fc,

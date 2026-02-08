@@ -44,7 +44,7 @@ int path_mount(const char *dev_name, struct path *path,
 extern struct file *alloc_empty_file(int, const struct cred *);
 
 /* reconfigure_super, user_get_super, mount_capable removed - unused */
-extern bool trylock_super(struct super_block *sb);
+/* trylock_super removed - only caller was super_cache_scan */
 void put_super(struct super_block *sb);
 
 

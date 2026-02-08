@@ -86,29 +86,14 @@ static inline void __add_wait_queue_entry_tail(struct wait_queue_head *wq_head, 
 	list_add_tail(&wq_entry->entry, &wq_head->head);
 }
 
-static inline void
-__remove_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
-{
-	list_del(&wq_entry->entry);
-}
-
 void __wake_up(struct wait_queue_head *wq_head, unsigned int mode, int nr, void *key);
 /* __wake_up_locked_key removed - no callers */
 void __wake_up_locked_key_bookmark(struct wait_queue_head *wq_head,
 		unsigned int mode, void *key, wait_queue_entry_t *bookmark);
 /* __wake_up_sync_key, __wake_up_locked removed - no callers */
 
-#define wake_up(x)			__wake_up(x, TASK_NORMAL, 1, NULL)
 #define wake_up_all(x)			__wake_up(x, TASK_NORMAL, 0, NULL)
-/* wake_up_locked removed - never used */
-
 #define wake_up_interruptible(x)	__wake_up(x, TASK_INTERRUPTIBLE, 1, NULL)
-#define wake_up_interruptible_all(x)	__wake_up(x, TASK_INTERRUPTIBLE, 0, NULL)
-
-#define poll_to_key(m) ((void *)(__force uintptr_t)(__poll_t)(m))
-/* key_to_poll, wake_up_poll removed - unused */
-#define wake_up_interruptible_poll(x, m)					\
-	__wake_up(x, TASK_INTERRUPTIBLE, 1, poll_to_key(m))
 
 /* ___wait_cond_timeout removed - never used */
 
@@ -161,14 +146,6 @@ void prepare_to_wait(struct wait_queue_head *wq_head, struct wait_queue_entry *w
 long prepare_to_wait_event(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry, int state);
 void finish_wait(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry);
 int autoremove_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, int sync, void *key);
-
-#define DEFINE_WAIT_FUNC(name, function)					\
-	struct wait_queue_entry name = {					\
-		.private	= current,					\
-		.func		= function,					\
-		.entry		= LIST_HEAD_INIT((name).entry),			\
-	}
-/* DEFINE_WAIT removed - unused */
 
 #define init_wait(wait)								\
 	do {									\

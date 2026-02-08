@@ -107,17 +107,7 @@ struct vc {
 
 extern struct vc vc_cons [MAX_NR_CONSOLES];
 
-#define CUR_SIZE(c)		 ((c) & 0x00000f)
-# define CUR_NONE			       1
 # define CUR_UNDERLINE			       2
-/* CUR_LOWER_THIRD, CUR_LOWER_HALF, CUR_TWO_THIRDS removed - never used */
-#define CUR_SW				0x000010
-#define CUR_ALWAYS_BG			0x000020
-#define CUR_INVERT_FG_BG		0x000040
-#define CUR_FG				0x000700
-#define CUR_BG				0x007000
-#define CUR_CHANGE(c)		 ((c) & 0x00ff00)
-#define CUR_SET(c)		(((c) & 0xff0000) >> 8)
 
 bool con_is_visible(const struct vc_data *vc);
 

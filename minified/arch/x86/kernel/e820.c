@@ -489,6 +489,8 @@ void __init e820__reserve_resources(void)
 
 	for (i = 0; i < e820_table->nr_entries; i++) {
 		struct e820_entry *entry = e820_table->entries + i;
+		bool is_ram = entry->type == E820_TYPE_RESERVED_KERN ||
+			      entry->type == E820_TYPE_RAM;
 
 		end = entry->addr + entry->size - 1;
 		if (end != (resource_size_t)end) {
@@ -497,90 +499,13 @@ void __init e820__reserve_resources(void)
 		}
 		res->start = entry->addr;
 		res->end = end;
-		/* e820_type_to_string inlined */
-		switch (entry->type) {
-		case E820_TYPE_RESERVED_KERN:
-		case E820_TYPE_RAM:
-			res->name = "System RAM";
-			break;
-		case E820_TYPE_ACPI:
-			res->name = "ACPI Tables";
-			break;
-		case E820_TYPE_NVS:
-			res->name = "ACPI Non-volatile Storage";
-			break;
-		case E820_TYPE_UNUSABLE:
-			res->name = "Unusable memory";
-			break;
-		case E820_TYPE_PRAM:
-			res->name = "Persistent Memory (legacy)";
-			break;
-		case E820_TYPE_PMEM:
-			res->name = "Persistent Memory";
-			break;
-		case E820_TYPE_RESERVED:
-			res->name = "Reserved";
-			break;
-		case E820_TYPE_SOFT_RESERVED:
-			res->name = "Soft Reserved";
-			break;
-		default:
-			res->name = "Unknown E820 type";
-			break;
-		}
-		/* e820_type_to_iomem_type inlined */
-		res->flags = (entry->type == E820_TYPE_RESERVED_KERN ||
-			      entry->type == E820_TYPE_RAM) ?
-				     IORESOURCE_SYSTEM_RAM :
-				     IORESOURCE_MEM;
-		/* e820_type_to_iores_desc inlined */
-		switch (entry->type) {
-		case E820_TYPE_ACPI:
-			res->desc = IORES_DESC_ACPI_TABLES;
-			break;
-		case E820_TYPE_NVS:
-			res->desc = IORES_DESC_ACPI_NV_STORAGE;
-			break;
-		case E820_TYPE_PMEM:
-			res->desc = IORES_DESC_PERSISTENT_MEMORY;
-			break;
-		case E820_TYPE_PRAM:
-			res->desc = IORES_DESC_PERSISTENT_MEMORY_LEGACY;
-			break;
-		case E820_TYPE_RESERVED:
-			res->desc = IORES_DESC_RESERVED;
-			break;
-		case E820_TYPE_SOFT_RESERVED:
-			res->desc = IORES_DESC_SOFT_RESERVED;
-			break;
-		default:
-			res->desc = IORES_DESC_NONE;
-			break;
-		}
-		/* do_mark_busy inlined */
-		{
-			bool busy = true;
-			if (res->start >= (1ULL << 20)) {
-				switch (entry->type) {
-				case E820_TYPE_RESERVED:
-				case E820_TYPE_SOFT_RESERVED:
-				case E820_TYPE_PRAM:
-				case E820_TYPE_PMEM:
-					busy = false;
-					break;
-				default:
-					break;
-				}
-			}
-			if (busy) {
-				res->flags |= IORESOURCE_BUSY;
-				insert_resource(&iomem_resource, res);
-			}
-		}
+		res->name = is_ram ? "System RAM" : "Reserved";
+		res->flags = is_ram ? IORESOURCE_SYSTEM_RAM : IORESOURCE_MEM;
+		res->desc = IORES_DESC_NONE;
+		res->flags |= IORESOURCE_BUSY;
+		insert_resource(&iomem_resource, res);
 		res++;
 	}
-
-	/* firmware_map_add_early, MAX_RESOURCE_SIZE removed - unused */
 }
 
 char *__init e820__memory_setup_default(void)

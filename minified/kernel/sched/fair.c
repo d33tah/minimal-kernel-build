@@ -6,8 +6,7 @@
 #include "sched.h"
 /* stats.h removed - was empty header */
 
-/* sysctl_sched_latency, sysctl_sched_min_granularity removed - never used */
-unsigned int sysctl_sched_wakeup_granularity = 1000000UL;
+/* sysctl_sched_latency, sysctl_sched_min_granularity, sysctl_sched_wakeup_granularity removed - unused */
 
 static inline void update_load_add(struct load_weight *lw, unsigned long inc)
 {
@@ -247,40 +246,10 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 /* set_next_buddy removed - buddy tracking dead with single task (~10 LOC) */
 /* stub function also removed - never called */
 
-/* check_preempt_wakeup simplified - removed buddy code, dead scale variable (~17 LOC) */
+/* Stubbed - single-task kernel never needs preemption checking */
 static void check_preempt_wakeup(struct rq *rq, struct task_struct *p,
 				 int wake_flags)
 {
-	struct task_struct *curr = rq->curr;
-	struct sched_entity *se = &curr->se, *pse = &p->se;
-
-	if (unlikely(se == pse))
-		return;
-
-	if (test_tsk_need_resched(curr))
-		return;
-
-	if (unlikely(task_has_idle_policy(curr)) &&
-	    likely(!task_has_idle_policy(p)))
-		goto preempt;
-
-	if (unlikely(p->policy != SCHED_NORMAL) ||
-	    !sched_feat(WAKEUP_PREEMPTION))
-		return;
-
-	update_curr(cfs_rq_of(se));
-	/* wakeup_preempt_entity inlined */
-	{
-		/* calc_delta_fair inlined - just returns the constant */
-		s64 vdiff = se->vruntime - pse->vruntime;
-		if (vdiff > (s64)sysctl_sched_wakeup_granularity)
-			goto preempt;
-	}
-
-	return;
-
-preempt:
-	resched_curr(rq);
 }
 
 struct task_struct *pick_next_task_fair(struct rq *rq, struct task_struct *prev,
@@ -382,54 +351,13 @@ static void prio_changed_fair(struct rq *rq, struct task_struct *p, int oldprio)
 {
 }
 
-static inline bool vruntime_normalized(struct task_struct *p)
-{
-	struct sched_entity *se = &p->se;
-
-	if (p->on_rq)
-		return true;
-
-	if (!se->sum_exec_runtime ||
-	    (READ_ONCE(p->__state) == TASK_WAKING && p->sched_remote_wakeup))
-		return true;
-
-	return false;
-}
-
-/* detach_entity_cfs_rq, attach_entity_cfs_rq inlined */
-/* detach_task_cfs_rq, attach_task_cfs_rq inlined */
-
+/* Stubbed - single-task kernel never switches scheduling classes */
 static void switched_from_fair(struct rq *rq, struct task_struct *p)
 {
-	/* detach_task_cfs_rq inlined */
-	struct sched_entity *se = &p->se;
-	struct cfs_rq *cfs_rq = cfs_rq_of(se);
-
-	if (!vruntime_normalized(p)) {
-		place_entity(cfs_rq, se, 0);
-		se->vruntime -= cfs_rq->min_vruntime;
-	}
-
-	update_load_avg(cfs_rq, se, 0);
 }
 
 static void switched_to_fair(struct rq *rq, struct task_struct *p)
 {
-	/* attach_task_cfs_rq inlined */
-	struct sched_entity *se = &p->se;
-	struct cfs_rq *cfs_rq = cfs_rq_of(se);
-
-	update_load_avg(cfs_rq, se, 0);
-
-	if (!vruntime_normalized(p))
-		se->vruntime += cfs_rq->min_vruntime;
-
-	if (task_on_rq_queued(p)) {
-		if (task_current(rq, p))
-			resched_curr(rq);
-		else
-			check_preempt_curr(rq, p, 0);
-	}
 }
 
 static void set_next_task_fair(struct rq *rq, struct task_struct *p, bool first)

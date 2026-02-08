@@ -77,29 +77,16 @@ NOKPROBE_SYMBOL(nmi_handle);
 /* __register_nmi_handler removed - never called (~21 LOC) */
 /* pci_serr_error, io_check_error, unknown_nmi_error inlined into default_do_nmi */
 
-static DEFINE_PER_CPU(bool, swallow_nmi);
 static DEFINE_PER_CPU(unsigned long, last_nmi_rip);
 
 static noinstr void default_do_nmi(struct pt_regs *regs)
 {
 	unsigned char reason = 0;
-	int handled;
-	bool b2b = false;
-
-	if (regs->ip == __this_cpu_read(last_nmi_rip))
-		b2b = true;
-	else
-		__this_cpu_write(swallow_nmi, false);
 
 	__this_cpu_write(last_nmi_rip, regs->ip);
 
-	handled = nmi_handle(NMI_LOCAL, regs);
-	/* nmi_stats.normal increment removed */
-	if (handled) {
-		if (handled > 1)
-			__this_cpu_write(swallow_nmi, true);
-		goto out;
-	}
+	if (nmi_handle(NMI_LOCAL, regs))
+		return;
 
 	while (!raw_spin_trylock(&nmi_reason_lock))
 		cpu_relax();
@@ -108,67 +95,22 @@ static noinstr void default_do_nmi(struct pt_regs *regs)
 
 	if (reason & NMI_REASON_MASK) {
 		if (reason & NMI_REASON_SERR) {
-			/* pci_serr_error inlined */
-			if (!nmi_handle(NMI_SERR, regs)) {
-				pr_emerg(
-					"NMI: PCI system error (SERR) for reason %02x on CPU %d.\n",
-					reason, smp_processor_id());
-				pr_emerg(
-					"Dazed and confused, but trying to continue\n");
-			}
+			nmi_handle(NMI_SERR, regs);
 			outb((reason & NMI_REASON_CLEAR_MASK) |
 				     NMI_REASON_CLEAR_SERR,
 			     NMI_REASON_PORT);
 		} else if (reason & NMI_REASON_IOCHK) {
-			/* io_check_error inlined */
-			unsigned long i;
-			if (!nmi_handle(NMI_IO_CHECK, regs)) {
-				pr_emerg(
-					"NMI: IOCK error (debug interrupt?) for reason %02x on CPU %d.\n",
-					reason, smp_processor_id());
-				show_regs(regs);
-			}
+			nmi_handle(NMI_IO_CHECK, regs);
 			outb((reason & NMI_REASON_CLEAR_MASK) |
 				     NMI_REASON_CLEAR_IOCHK,
 			     NMI_REASON_PORT);
-			for (i = 0; i < 20000; i++)
-				udelay(100);
-			outb(reason & ~NMI_REASON_CLEAR_IOCHK, NMI_REASON_PORT);
-		}
-		/* reassert_nmi inlined */
-		{
-			int old_reg = -1;
-			if (do_i_have_lock_cmos())
-				old_reg = current_lock_cmos_reg();
-			else
-				lock_cmos(0);
-			outb(0x8f, 0x70);
-			inb(0x71);
-			outb(0x0f, 0x70);
-			inb(0x71);
-			if (old_reg >= 0)
-				outb(old_reg, 0x70);
-			else
-				unlock_cmos();
 		}
 		raw_spin_unlock(&nmi_reason_lock);
-		goto out;
+		return;
 	}
 	raw_spin_unlock(&nmi_reason_lock);
 
-	if (b2b && __this_cpu_read(swallow_nmi)) {
-	} else {
-		/* unknown_nmi_error inlined */
-		if (!nmi_handle(NMI_UNKNOWN, regs)) {
-			pr_emerg(
-				"Uhhuh. NMI received for unknown reason %02x on CPU %d.\n",
-				reason, smp_processor_id());
-			pr_emerg(
-				"Dazed and confused, but trying to continue\n");
-		}
-	}
-
-out:;
+	nmi_handle(NMI_UNKNOWN, regs);
 }
 
 enum nmi_states {

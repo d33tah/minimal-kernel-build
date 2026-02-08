@@ -526,10 +526,7 @@ copy_process(int node, struct kernel_clone_args *args)
 	p->flags &= ~PF_KTHREAD;
 	if (args->kthread)
 		p->flags |= PF_KTHREAD;
-	if (args->io_thread) {
-		p->flags |= PF_IO_WORKER;
-		siginitsetinv(&p->blocked, sigmask(SIGKILL) | sigmask(SIGSTOP));
-	}
+	/* io_thread check removed - never set */
 
 	/* CLONE_CHILD_SETTID never set, clear_child_tid removed */
 	p->set_child_tid = NULL;
@@ -732,26 +729,16 @@ copy_process(int node, struct kernel_clone_args *args)
 				/* signal->flags write removed - flags field removed */
 			}
 			sigemptyset(&p->signal->shared_pending.signal);
-			p->signal->tty = tty_kref_get(current->signal->tty);
-
-			p->signal->has_child_subreaper =
-				p->real_parent->signal->has_child_subreaper ||
-				p->real_parent->signal->is_child_subreaper;
+			/* signal->tty removed - write-only */
+			/* has_child_subreaper removed - write-only */
 			list_add_tail(&p->sibling, &p->real_parent->children);
 			list_add_tail_rcu(&p->tasks, &init_task.tasks);
 			attach_pid(p, PIDTYPE_TGID);
 			attach_pid(p, PIDTYPE_PGID);
 			attach_pid(p, PIDTYPE_SID);
 			/* process_counts increment removed */
-		} else {
-			current->signal->nr_threads++;
-			atomic_inc(&current->signal->live);
-			refcount_inc(&current->signal->sigcnt);
-			list_add_tail_rcu(&p->thread_group,
-					  &p->group_leader->thread_group);
-			list_add_tail_rcu(&p->thread_node,
-					  &p->signal->thread_head);
 		}
+		/* CLONE_THREAD else branch removed - never set */
 		attach_pid(p, PIDTYPE_PID);
 		nr_threads++;
 	}

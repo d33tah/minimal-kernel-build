@@ -96,11 +96,11 @@ int force_sig_fault(int sig, int code, void __user *addr);
 
 /* send_sig_info, kill_pid_info, do_notify_parent removed - never called */
 /* force_sigsegv now static in signal.c */
-extern int force_sig_info(struct kernel_siginfo *);
+/* force_sig_info made static in signal.c */
 extern void force_sig(int);
 extern void force_fatal_sig(int);
 /* force_exit_sig removed - never called */
-extern int send_sig(int, struct task_struct *, int);
+/* send_sig removed - no callers */
 /* zap_other_threads removed - never called */
 
 static inline bool __set_notify_signal(struct task_struct *task)

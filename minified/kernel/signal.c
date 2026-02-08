@@ -121,19 +121,7 @@ int send_signal_locked(int sig, struct kernel_siginfo *info,
 
 /* Removed: setup_print_fatal_signals and __setup - never used */
 
-int do_send_sig_info(int sig, struct kernel_siginfo *info,
-		     struct task_struct *p, enum pid_type type)
-{
-	unsigned long flags;
-	int ret = -ESRCH;
-
-	if (lock_task_sighand(p, &flags)) {
-		ret = send_signal_locked(sig, info, p, type);
-		unlock_task_sighand(p, &flags);
-	}
-
-	return ret;
-}
+/* do_send_sig_info removed - only caller was send_sig (also removed) */
 
 enum sig_handler {
 	HANDLER_CURRENT,
@@ -171,7 +159,7 @@ static int force_sig_info_to_task(struct kernel_siginfo *info,
 	return ret;
 }
 
-int force_sig_info(struct kernel_siginfo *info)
+static int force_sig_info(struct kernel_siginfo *info)
 {
 	return force_sig_info_to_task(info, current, HANDLER_CURRENT);
 }
@@ -194,12 +182,7 @@ struct sighand_struct *__lock_task_sighand(struct task_struct *tsk,
 
 /* group_send_sig_info removed - do_exit gutted, no callers */
 
-#define __si_special(priv) ((priv) ? SEND_SIG_PRIV : SEND_SIG_NOINFO)
-
-int send_sig(int sig, struct task_struct *p, int priv)
-{
-	return do_send_sig_info(sig, __si_special(priv), p, PIDTYPE_PID);
-}
+/* send_sig and __si_special removed - no callers */
 
 void force_sig(int sig)
 {
@@ -246,15 +229,7 @@ int force_sig_fault(int sig, int code, void __user *addr)
 /* force_sig_pkuerr, kill_pgrp, do_notify_parent, get_signal,
    signal_setup_done removed - never called */
 
-int ptrace_notify(int exit_code, unsigned long message)
-{
-	BUG_ON((exit_code & (0x7f | ~0xffff)) != SIGTRAP);
-	if (unlikely(task_work_pending(current)))
-		task_work_run();
-
-	/* ptrace_do_notify and ptrace_stop inlined away - lock/unlock was empty */
-	return exit_code;
-}
+/* ptrace_notify removed - only called from dead ptrace_event_pid inline */
 
 /* Removed: retarget_shared_pending - inlined into __set_current_blocked */
 

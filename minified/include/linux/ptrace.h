@@ -30,7 +30,7 @@
 
 /* arch_ptrace, ptrace_disable removed - never called */
 /* ptrace_request removed - never called */
-extern int ptrace_notify(int exit_code, unsigned long message);
+/* ptrace_notify removed - no callers */
 /* __ptrace_link removed - declared but never called */
 /* __ptrace_unlink removed - empty stub */
 /* exit_ptrace removed - empty stub never effectively called */
@@ -41,20 +41,14 @@ extern int ptrace_notify(int exit_code, unsigned long message);
 
 
 
+/* ptrace_event_enabled, ptrace_event stubbed - ptrace is always 0 */
 static inline bool ptrace_event_enabled(struct task_struct *task, int event)
 {
-	return task->ptrace & PT_EVENT_FLAG(event);
+	return false;
 }
 
 static inline void ptrace_event(int event, unsigned long message)
 {
-	if (unlikely(ptrace_event_enabled(current, event))) {
-		ptrace_notify((event << 8) | SIGTRAP, message);
-	} else if (event == PTRACE_EVENT_EXEC) {
-		 
-		if ((current->ptrace & (PT_PTRACED|PT_SEIZED)) == PT_PTRACED)
-			send_sig(SIGTRAP, current, 0);
-	}
 }
 
 /* ptrace_event_pid removed - never called */
@@ -74,7 +68,7 @@ static inline void ptrace_release_task(struct task_struct *task)
 /* user_enable_single_step, user_enable_block_step,
    user_disable_single_step, arch_ptrace_stop_needed, arch_ptrace_stop
    removed - declared but never called */
-extern void user_single_step_report(struct pt_regs *regs);
+/* user_single_step_report removed - ptrace_report_syscall_exit stubbed */
 
 #ifndef current_pt_regs
 #define current_pt_regs() task_pt_regs(current)
@@ -87,35 +81,14 @@ extern void user_single_step_report(struct pt_regs *regs);
 /* current_user_stack_pointer removed - never used */
 
 
-static inline int ptrace_report_syscall(unsigned long message)
-{
-	int ptrace = current->ptrace;
-	int signr;
-
-	if (!(ptrace & PT_PTRACED))
-		return 0;
-
-	signr = ptrace_notify(SIGTRAP | ((ptrace & PT_TRACESYSGOOD) ? 0x80 : 0),
-			      message);
-
-	 
-	if (signr)
-		send_sig(signr, current, 1);
-
-	return fatal_signal_pending(current);
-}
-
+/* ptrace_report_syscall* stubbed - ptrace is always 0 */
 static inline __must_check int ptrace_report_syscall_entry(
 	struct pt_regs *regs)
 {
-	return ptrace_report_syscall(PTRACE_EVENTMSG_SYSCALL_ENTRY);
+	return 0;
 }
 
 static inline void ptrace_report_syscall_exit(struct pt_regs *regs, int step)
 {
-	if (step)
-		user_single_step_report(regs);
-	else
-		ptrace_report_syscall(PTRACE_EVENTMSG_SYSCALL_EXIT);
 }
 #endif

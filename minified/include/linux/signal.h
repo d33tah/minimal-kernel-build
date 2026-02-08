@@ -92,10 +92,7 @@ static inline int valid_signal(unsigned long sig)
 /* struct timespec, pt_regs forward decls removed - unused */
 enum pid_type;
 
-extern int do_send_sig_info(int sig, struct kernel_siginfo *info,
-				struct task_struct *p, enum pid_type type);
-extern int group_send_sig_info(int sig, struct kernel_siginfo *info,
-			       struct task_struct *p, enum pid_type type);
+/* do_send_sig_info, group_send_sig_info removed - no callers */
 extern int send_signal_locked(int sig, struct kernel_siginfo *info,
 			      struct task_struct *p, enum pid_type type);
 /* sigprocmask, set_current_blocked removed - never called */

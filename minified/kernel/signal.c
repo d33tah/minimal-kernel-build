@@ -166,23 +166,9 @@ static int force_sig_info(struct kernel_siginfo *info)
 
 /* zap_other_threads removed - never called (~5 LOC) */
 
-struct sighand_struct *__lock_task_sighand(struct task_struct *tsk,
-					   unsigned long *flags)
-{
-	struct sighand_struct *sighand;
+/* __lock_task_sighand removed - lock_task_sighand never called */
 
-	rcu_read_lock();
-	sighand = rcu_dereference(tsk->sighand);
-	if (sighand)
-		spin_lock_irqsave(&sighand->siglock, *flags);
-	rcu_read_unlock();
-
-	return sighand;
-}
-
-/* group_send_sig_info removed - do_exit gutted, no callers */
-
-/* send_sig and __si_special removed - no callers */
+/* group_send_sig_info, send_sig, __si_special removed - no callers */
 
 void force_sig(int sig)
 {

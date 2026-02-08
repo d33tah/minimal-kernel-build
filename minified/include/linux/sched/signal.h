@@ -224,24 +224,7 @@ static inline struct task_struct *next_thread(const struct task_struct *p)
 
 /* thread_group_empty removed - never called (single-threaded init) */
 
-extern struct sighand_struct *__lock_task_sighand(struct task_struct *task,
-							unsigned long *flags);
-
-static inline struct sighand_struct *lock_task_sighand(struct task_struct *task,
-						       unsigned long *flags)
-{
-	struct sighand_struct *ret;
-
-	ret = __lock_task_sighand(task, flags);
-	(void)__cond_lock(&task->sighand->siglock, ret);
-	return ret;
-}
-
-static inline void unlock_task_sighand(struct task_struct *task,
-						unsigned long *flags)
-{
-	spin_unlock_irqrestore(&task->sighand->siglock, *flags);
-}
+/* __lock_task_sighand, lock_task_sighand, unlock_task_sighand removed - never called */
 
 
 static inline unsigned long task_rlimit(const struct task_struct *task,

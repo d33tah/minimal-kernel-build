@@ -22,7 +22,7 @@ extern void sched_init(void);
 
 #include <linux/mmu_context.h>
 /* nospec.h removed - unused, psi_init stub removed */
-#include <linux/sched/wake_q.h>
+/* linux/sched/wake_q.h removed - wake_q functions removed */
 #include <linux/slab.h>
 #include <linux/syscalls.h>
 
@@ -94,47 +94,7 @@ void update_rq_clock(struct rq *rq)
 
 /* fetch_or macro removed - only used by removed set_nr_and_not_polling */
 
-/* __wake_q_add inlined into wake_q_add and wake_q_add_safe */
-
-void wake_q_add(struct wake_q_head *head, struct task_struct *task)
-{
-	struct wake_q_node *node = &task->wake_q;
-	smp_mb__before_atomic();
-	if (unlikely(cmpxchg_relaxed(&node->next, NULL, WAKE_Q_TAIL)))
-		return;
-	*head->lastp = node;
-	head->lastp = &node->next;
-	get_task_struct(task);
-}
-
-void wake_q_add_safe(struct wake_q_head *head, struct task_struct *task)
-{
-	struct wake_q_node *node = &task->wake_q;
-	smp_mb__before_atomic();
-	if (unlikely(cmpxchg_relaxed(&node->next, NULL, WAKE_Q_TAIL))) {
-		put_task_struct(task);
-		return;
-	}
-	*head->lastp = node;
-	head->lastp = &node->next;
-}
-
-void wake_up_q(struct wake_q_head *head)
-{
-	struct wake_q_node *node = head->first;
-
-	while (node != WAKE_Q_TAIL) {
-		struct task_struct *task;
-
-		task = container_of(node, struct task_struct, wake_q);
-
-		node = node->next;
-		task->wake_q.next = NULL;
-
-		wake_up_process(task);
-		put_task_struct(task);
-	}
-}
+/* wake_q_add, wake_q_add_safe, wake_up_q removed - never called */
 
 void resched_curr(struct rq *rq)
 {

@@ -138,9 +138,7 @@ struct sched_entity {
 /* union rcu_special removed - never used */
 /* enum perf_event_task_context removed - PERF_EVENTS disabled */
 
-struct wake_q_node {
-	struct wake_q_node *next;
-};
+/* wake_q_node removed - wake_q functions removed */
 
 struct kmap_ctrl {
 	int				idx;
@@ -297,7 +295,7 @@ struct task_struct {
 	 
 	raw_spinlock_t			pi_lock;
 
-	struct wake_q_node		wake_q;
+	/* wake_q field removed - wake_q functions removed */
 
 
 

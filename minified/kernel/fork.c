@@ -519,7 +519,6 @@ copy_process(int node, struct kernel_clone_args *args)
 		p->cpus_ptr = &p->cpus_mask;
 	refcount_set(&p->rcu_users, 2);
 	refcount_set(&p->usage, 1);
-	p->wake_q.next = NULL;
 	p->worker_private = NULL;
 	kmap_local_fork(p);
 

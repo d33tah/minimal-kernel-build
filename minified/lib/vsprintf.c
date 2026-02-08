@@ -487,22 +487,8 @@ static noinline_for_stack char *pointer(const char *fmt, char *buf, char *end,
 			va_end(va);
 			return buf;
 		}
-	case 'a':
-		/* address_val inlined - stub */
-		return error_string(buf, end, "(addr)", spec);
-	case 'd':
-		/* dentry_name inlined - stub */
-		return error_string(buf, end, "(dentry)", spec);
-	case 'D':
-		/* file_dentry_name inlined - stub */
-		return error_string(buf, end, "(file)", spec);
-	case 'G':
-		/* flags_string inlined - stub */
-		return error_string(buf, end, "(flags)", spec);
-	case 'x':
-		return pointer_string(buf, end, ptr, spec);
 	default:
-		/* inlined default_pointer */
+		/* %pa, %pd, %pD, %pG, %px all fall through to default pointer */
 		return pointer_string(buf, end, ptr, spec);
 	}
 }

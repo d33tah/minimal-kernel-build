@@ -51,17 +51,7 @@ bool path_noexec(const struct path *path)
 	       (path->mnt->mnt_sb->s_iflags & SB_I_NOEXEC);
 }
 
-static void acct_arg_size(struct linux_binprm *bprm, unsigned long pages)
-{
-	struct mm_struct *mm = current->mm;
-	long diff = (long)(pages - bprm->vma_pages);
-
-	if (!mm || !diff)
-		return;
-
-	bprm->vma_pages = pages;
-	/* add_mm_counter removed - rss_stat counters are write-only */
-}
+/* acct_arg_size removed - was a no-op (add_mm_counter removed) */
 
 /* get_arg_page, put_arg_page and flush_arg_page inlined */
 /* bprm_mm_init inlined into alloc_bprm */
@@ -124,7 +114,7 @@ static int copy_string_kernel(const char *arg, struct linux_binprm *bprm)
 			mmap_read_unlock(bprm->mm);
 			if (ret <= 0)
 				return -E2BIG;
-			acct_arg_size(bprm, vma_pages(bprm->vma));
+			/* acct_arg_size call removed - was no-op */
 		}
 		kaddr = kmap_atomic(page);
 		memcpy(kaddr + offset_in_page(pos), arg, bytes_to_copy);
@@ -258,12 +248,7 @@ static struct file *do_open_execat(int fd, struct filename *name, int flags)
 		.lookup_flags = LOOKUP_FOLLOW,
 	};
 
-	if ((flags & ~(AT_SYMLINK_NOFOLLOW | AT_EMPTY_PATH)) != 0)
-		return ERR_PTR(-EINVAL);
-	if (flags & AT_SYMLINK_NOFOLLOW)
-		open_exec_flags.lookup_flags &= ~LOOKUP_FOLLOW;
-	if (flags & AT_EMPTY_PATH)
-		open_exec_flags.lookup_flags |= LOOKUP_EMPTY;
+	/* flags handling removed - always called with flags=0 */
 
 	file = do_filp_open(fd, name, &open_exec_flags);
 	if (IS_ERR(file))
@@ -314,7 +299,7 @@ int begin_new_exec(struct linux_binprm *bprm)
 	if (retval)
 		goto out;
 
-	acct_arg_size(bprm, 0);
+	/* acct_arg_size call removed - was no-op */
 	/* Inlined exec_mmap */
 	{
 		struct mm_struct *mm = bprm->mm;
@@ -383,18 +368,13 @@ int begin_new_exec(struct linux_binprm *bprm)
 	/* PF_RANDOMIZE removed - never set */
 	me->flags &= ~(PF_FORKNOEXEC | PF_NOFREEZE | PF_NO_SETAFFINITY);
 	flush_thread();
-	me->personality &= ~bprm->per_clear;
+	/* personality per_clear removed - always 0 (kzalloc) */
 
 	/* clear_task_syscall_work SYSCALL_USER_DISPATCH removed */
 
 	/* do_close_on_exec call removed - function was empty stub */
 
-	if (bprm->secureexec) {
-		me->pdeath_signal = 0;
-
-		if (bprm->rlim_stack.rlim_cur > _STK_LIM)
-			bprm->rlim_stack.rlim_cur = _STK_LIM;
-	}
+	/* secureexec check removed - never set (bprm_creds_from_file removed) */
 
 	/* me->sas_ss_sp = me->sas_ss_size = 0; removed - write-only fields */
 
@@ -441,7 +421,6 @@ void setup_new_exec(struct linux_binprm *bprm)
 static void free_bprm(struct linux_binprm *bprm)
 {
 	if (bprm->mm) {
-		acct_arg_size(bprm, 0);
 		mmput(bprm->mm);
 	}
 	if (bprm->cred) {
@@ -469,19 +448,8 @@ static struct linux_binprm *alloc_bprm(int fd, struct filename *filename)
 	if (!bprm)
 		goto out;
 
-	if (fd == AT_FDCWD || filename->name[0] == '/') {
-		bprm->filename = filename->name;
-	} else {
-		if (filename->name[0] == '\0')
-			bprm->fdpath = kasprintf(GFP_KERNEL, "/dev/fd/%d", fd);
-		else
-			bprm->fdpath = kasprintf(GFP_KERNEL, "/dev/fd/%d/%s",
-						 fd, filename->name);
-		if (!bprm->fdpath)
-			goto out_free;
-
-		bprm->filename = bprm->fdpath;
-	}
+	/* fdpath branch removed - fd is always AT_FDCWD */
+	bprm->filename = filename->name;
 	bprm->interp = bprm->filename;
 
 	/* Inlined bprm_mm_init */
@@ -589,34 +557,11 @@ static int bprm_execve(struct linux_binprm *bprm, int fd,
 		return -ENOMEM;
 	}
 
-	/* inlined check_unsafe_exec */
-	{
-		struct task_struct *p = current, *t;
-		unsigned n_fs;
-
-		if (p->ptrace)
-			bprm->unsafe |= LSM_UNSAFE_PTRACE;
-
-		if (task_no_new_privs(current))
-			bprm->unsafe |= LSM_UNSAFE_NO_NEW_PRIVS;
-
-		t = p;
-		n_fs = 1;
-		spin_lock(&p->fs->lock);
-		rcu_read_lock();
-		while_each_thread(p, t)
-		{
-			if (t->fs == p->fs)
-				n_fs++;
-		}
-		rcu_read_unlock();
-
-		if (p->fs->users > n_fs)
-			bprm->unsafe |= LSM_UNSAFE_SHARE;
-		else
-			p->fs->in_exec = 1;
-		spin_unlock(&p->fs->lock);
-	}
+	/* check_unsafe_exec simplified: ptrace always 0, no_new_privs never set,
+	   single-threaded so n_fs==1 and users==1, only need to set in_exec */
+	spin_lock(&current->fs->lock);
+	current->fs->in_exec = 1;
+	spin_unlock(&current->fs->lock);
 
 	file = do_open_execat(fd, filename, flags);
 	retval = PTR_ERR(file);
@@ -626,22 +571,12 @@ static int bprm_execve(struct linux_binprm *bprm, int fd,
 	/* sched_exec() - empty stub removed */
 	bprm->file = file;
 
-	if (bprm->fdpath && get_close_on_exec(fd))
-		bprm->interp_flags |= BINPRM_FLAGS_PATH_INACCESSIBLE;
+	/* fdpath/close_on_exec check removed - fdpath always NULL */
 
 	/* security_bprm_creds_for_exec always returns 0 - dead code removed */
-	/* exec_binprm inlined */
+	/* exec_binprm inlined, old_pid/old_vpid/ptrace_event removed (ptrace stubbed) */
 	{
-		pid_t old_pid, old_vpid;
 		int depth;
-
-		old_pid = current->pid;
-		rcu_read_lock();
-		/* task_pid_nr_ns inlined */
-		old_vpid =
-			__task_pid_nr_ns(current, PIDTYPE_PID,
-					 task_active_pid_ns(current->parent));
-		rcu_read_unlock();
 
 		for (depth = 0;; depth++) {
 			struct file *exec;
@@ -664,8 +599,6 @@ static int bprm_execve(struct linux_binprm *bprm, int fd,
 			allow_write_access(exec);
 			fput(exec);
 		}
-
-		ptrace_event(PTRACE_EVENT_EXEC, old_vpid);
 	}
 
 	current->fs->in_exec = 0;

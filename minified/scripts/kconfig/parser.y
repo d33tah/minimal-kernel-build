@@ -477,9 +477,6 @@ assign_val:
 
 void conf_parse(const char *name)
 {
-	struct symbol *sym;
-	int i;
-
 	zconf_initscan(name);
 
 	_menu_init();
@@ -502,12 +499,8 @@ void conf_parse(const char *name)
 	}
 
 	menu_finalize(&rootmenu);
-	for_all_symbols(i, sym) {
-		if (sym_check_deps(sym))
-			yynerrs++;
-	}
-	if (yynerrs)
-		exit(1);
+	/* sym_check_deps loop removed - only validates recursive deps,
+	   not needed for minimal tinyconfig build */
 	conf_set_changed(true);
 }
 

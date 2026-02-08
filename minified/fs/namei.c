@@ -73,30 +73,10 @@ void putname(struct filename *name)
 		__putname(name);
 }
 
-/* generic_permission inlined into inode_permission - always returns 0 (init runs as root) */
-
+/* inode_permission simplified: init runs as root, always returns 0 */
 int inode_permission(struct user_namespace *mnt_userns, struct inode *inode,
 		     int mask)
 {
-	if (unlikely(mask & MAY_WRITE)) {
-		umode_t mode = inode->i_mode;
-		if (sb_rdonly(inode->i_sb) && (S_ISREG(mode) || S_ISDIR(mode)))
-			return -EROFS;
-		if (IS_IMMUTABLE(inode))
-			return -EPERM;
-		if (!uid_valid(i_uid_into_mnt(mnt_userns, inode)) ||
-		    !gid_valid(i_gid_into_mnt(mnt_userns, inode)))
-			return -EACCES;
-	}
-
-	if (unlikely(!(inode->i_opflags & IOP_FASTPERM))) {
-		if (likely(inode->i_op->permission))
-			return inode->i_op->permission(mnt_userns, inode, mask);
-
-		spin_lock(&inode->i_lock);
-		inode->i_opflags |= IOP_FASTPERM;
-		spin_unlock(&inode->i_lock);
-	}
 	return 0;
 }
 
@@ -899,17 +879,13 @@ int kern_path(const char *name, unsigned int flags, struct path *path)
 
 /* atomic_open removed - i_op->atomic_open is never set (~40 LOC) */
 
+/* lookup_open simplified: no O_CREAT support */
 static struct dentry *lookup_open(struct nameidata *nd, struct file *file,
 				  const struct open_flags *op)
 {
-	/* Simplified: basic lookup with minimal revalidation */
-	struct user_namespace *mnt_userns;
 	struct dentry *dir = nd->path.dentry;
 	struct inode *dir_inode = dir->d_inode;
-	int open_flag = op->open_flag;
 	struct dentry *dentry;
-	int error;
-	umode_t mode = op->mode;
 	DECLARE_WAIT_QUEUE_HEAD_ONSTACK(wq);
 
 	if (unlikely(IS_DEADDIR(dir_inode)))
@@ -922,51 +898,26 @@ static struct dentry *lookup_open(struct nameidata *nd, struct file *file,
 		if (IS_ERR(dentry))
 			return dentry;
 	}
-
-	if (dentry->d_inode)
-		return dentry;
-
-	/* Simplified creation logic */
-	mnt_userns = mnt_user_ns(nd->path.mnt);
-	if (open_flag & O_CREAT) {
-		if (!IS_POSIXACL(dir->d_inode))
-			mode &= ~current->fs->umask;
-
-		if (d_in_lookup(dentry)) {
-			struct dentry *res = dir_inode->i_op->lookup(
-				dir_inode, dentry, nd->flags);
-			d_lookup_done(dentry);
-			if (IS_ERR(res)) {
-				dput(dentry);
-				return res;
-			}
-			if (res) {
-				dput(dentry);
-				dentry = res;
-			}
+	if (d_in_lookup(dentry)) {
+		struct dentry *res =
+			dir_inode->i_op->lookup(dir_inode, dentry, nd->flags);
+		d_lookup_done(dentry);
+		if (IS_ERR(res)) {
+			dput(dentry);
+			return res;
 		}
-
-		if (!dentry->d_inode && dir_inode->i_op->create) {
-			file->f_mode |= FMODE_CREATED;
-			error = dir_inode->i_op->create(mnt_userns, dir_inode,
-							dentry, mode,
-							open_flag & O_EXCL);
-			if (error) {
-				dput(dentry);
-				return ERR_PTR(error);
-			}
+		if (res) {
+			dput(dentry);
+			dentry = res;
 		}
 	}
-
 	return dentry;
 }
 
+/* open_last_lookups simplified: no O_CREAT, no write access needed */
 static const char *open_last_lookups(struct nameidata *nd, struct file *file,
 				     const struct open_flags *op)
 {
-	struct dentry *dir = nd->path.dentry;
-	int open_flag = op->open_flag;
-	bool got_write = false;
 	unsigned seq;
 	struct inode *inode;
 	struct dentry *dentry;
@@ -980,42 +931,24 @@ static const char *open_last_lookups(struct nameidata *nd, struct file *file,
 		return handle_dots(nd, nd->last_type);
 	}
 
-	if (!(open_flag & O_CREAT)) {
-		if (nd->last.name[nd->last.len])
-			nd->flags |= LOOKUP_FOLLOW | LOOKUP_DIRECTORY;
+	if (nd->last.name[nd->last.len])
+		nd->flags |= LOOKUP_FOLLOW | LOOKUP_DIRECTORY;
 
-		dentry = lookup_fast(nd, &inode, &seq);
-		if (IS_ERR(dentry))
-			return ERR_CAST(dentry);
-		if (likely(dentry))
-			goto finish_lookup;
+	dentry = lookup_fast(nd, &inode, &seq);
+	if (IS_ERR(dentry))
+		return ERR_CAST(dentry);
+	if (likely(dentry))
+		goto finish_lookup;
 
-		BUG_ON(nd->flags & LOOKUP_RCU);
-	} else {
-		if (nd->flags & LOOKUP_RCU) {
-			if (!try_to_unlazy(nd))
-				return ERR_PTR(-ECHILD);
-		}
-		/* audit_inode - empty stub */
-		if (unlikely(nd->last.name[nd->last.len]))
-			return ERR_PTR(-EISDIR);
-	}
+	BUG_ON(nd->flags & LOOKUP_RCU);
 
-	if (open_flag & (O_CREAT | O_TRUNC | O_WRONLY | O_RDWR)) {
-		got_write = !mnt_want_write(nd->path.mnt);
-	}
-	if (open_flag & O_CREAT)
-		inode_lock(dir->d_inode);
-	else
+	/* Slow path lookup - no O_CREAT needed */
+	{
+		struct dentry *dir = nd->path.dentry;
 		inode_lock_shared(dir->d_inode);
-	dentry = lookup_open(nd, file, op);
-	if (open_flag & O_CREAT)
-		inode_unlock(dir->d_inode);
-	else
+		dentry = lookup_open(nd, file, op);
 		inode_unlock_shared(dir->d_inode);
-
-	if (got_write)
-		mnt_drop_write(nd->path.mnt);
+	}
 
 	if (IS_ERR(dentry))
 		return ERR_CAST(dentry);
@@ -1035,13 +968,10 @@ finish_lookup:
 	return res;
 }
 
+/* do_open simplified: no truncate, no permission checks (init runs as root) */
 static int do_open(struct nameidata *nd, struct file *file,
 		   const struct open_flags *op)
 {
-	struct user_namespace *mnt_userns;
-	int open_flag = op->open_flag;
-	bool need_truncate;
-	int acc_mode;
 	int error;
 
 	if (!(file->f_mode & (FMODE_OPENED | FMODE_CREATED))) {
@@ -1049,100 +979,22 @@ static int do_open(struct nameidata *nd, struct file *file,
 		if (error)
 			return error;
 	}
-	/* audit_inode - empty stub */
-	mnt_userns = mnt_user_ns(nd->path.mnt);
-	if (open_flag & O_CREAT) {
-		if ((open_flag & O_EXCL) && !(file->f_mode & FMODE_CREATED))
-			return -EEXIST;
-		if (d_can_lookup(nd->path.dentry))
-			return -EISDIR;
-	}
 	if ((nd->flags & LOOKUP_DIRECTORY) && !d_can_lookup(nd->path.dentry))
 		return -ENOTDIR;
 
-	need_truncate = false;
-	acc_mode = op->acc_mode;
-	if (file->f_mode & FMODE_CREATED) {
-		open_flag &= ~O_TRUNC;
-		acc_mode = 0;
-	} else if ((nd->path.dentry->d_flags & DCACHE_ENTRY_TYPE) ==
-			   DCACHE_REGULAR_TYPE &&
-		   open_flag & O_TRUNC) { /* d_is_reg inlined */
-		error = mnt_want_write(nd->path.mnt);
-		if (error)
-			return error;
-		need_truncate = true;
-	}
-	/* Inlined may_open */
-	{
-		struct inode *inode = nd->path.dentry->d_inode;
+	if (!nd->path.dentry->d_inode)
+		return -ENOENT;
 
-		if (!inode)
-			error = -ENOENT;
-		else {
-			switch (inode->i_mode & S_IFMT) {
-			case S_IFDIR:
-				if (acc_mode & MAY_WRITE)
-					error = -EISDIR;
-				else if (acc_mode & MAY_EXEC)
-					error = -EACCES;
-				break;
-			case S_IFBLK:
-			case S_IFCHR:
-				fallthrough;
-			case S_IFIFO:
-			case S_IFSOCK:
-				if (acc_mode & MAY_EXEC)
-					error = -EACCES;
-				open_flag &= ~O_TRUNC;
-				break;
-			case S_IFREG:
-				if ((acc_mode & MAY_EXEC) &&
-				    path_noexec(&nd->path))
-					error = -EACCES;
-				break;
-			}
-
-			if (!error)
-				error = inode_permission(mnt_userns, inode,
-							 MAY_OPEN | acc_mode);
-
-			if (!error && IS_APPEND(inode)) {
-				if ((open_flag & O_ACCMODE) != O_RDONLY &&
-				    !(open_flag & O_APPEND))
-					error = -EPERM;
-				else if (open_flag & O_TRUNC)
-					error = -EPERM;
-			}
-
-			if (!error && (open_flag & O_NOATIME) &&
-			    !inode_owner_or_capable(mnt_userns, inode))
-				error = -EPERM;
-		}
-	}
-	if (!error && !(file->f_mode & FMODE_OPENED))
+	if (!(file->f_mode & FMODE_OPENED))
 		error = vfs_open(&nd->path, file);
-	if (!error && need_truncate) {
-		struct inode *inode = file->f_path.dentry->d_inode;
-		error = get_write_access(inode);
-		if (!error) {
-			error = do_truncate(mnt_userns, file->f_path.dentry, 0,
-					    ATTR_MTIME | ATTR_CTIME | ATTR_OPEN,
-					    file);
-			put_write_access(inode);
-		}
-	}
-	if (unlikely(error > 0)) {
-		WARN_ON(1);
-		error = -EINVAL;
-	}
-	if (need_truncate)
-		mnt_drop_write(nd->path.mnt);
+	else
+		error = 0;
 	return error;
 }
 
 /* Removed: do_tmpfile - always returned -EOPNOTSUPP */
 
+/* path_openat simplified: no O_TMPFILE, no O_PATH */
 static struct file *path_openat(struct nameidata *nd,
 				const struct open_flags *op, unsigned flags)
 {
@@ -1153,16 +1005,7 @@ static struct file *path_openat(struct nameidata *nd,
 	if (IS_ERR(file))
 		return file;
 
-	if (unlikely(file->f_flags & __O_TMPFILE)) {
-		error = -EOPNOTSUPP;
-	} else if (unlikely(file->f_flags & O_PATH)) {
-		struct path path;
-		error = path_lookupat(nd, flags, &path);
-		if (!error) {
-			error = vfs_open(&path, file);
-			path_put(&path);
-		}
-	} else {
+	{
 		const char *s = path_init(nd, flags);
 		while (!(error = link_path_walk(s, nd)) &&
 		       (s = open_last_lookups(nd, file, op)) != NULL)

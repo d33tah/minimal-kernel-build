@@ -681,6 +681,7 @@ retry:
 
 /* do_new_mount inlined into path_mount */
 
+/* path_mount simplified: only new mount supported, no remount/bind/move */
 int path_mount(const char *dev_name, struct path *path, const char *type_page,
 	       unsigned long flags, void *data_page)
 {
@@ -691,59 +692,25 @@ int path_mount(const char *dev_name, struct path *path, const char *type_page,
 
 	if ((flags & MS_MGC_MSK) == MS_MGC_VAL)
 		flags &= ~MS_MGC_MSK;
-
 	if (data_page)
 		((char *)data_page)[PAGE_SIZE - 1] = 0;
-
 	if (flags & MS_NOUSER)
+		return -EINVAL;
+	if (flags & (MS_REMOUNT | MS_BIND | MS_SHARED | MS_PRIVATE | MS_SLAVE |
+		     MS_UNBINDABLE | MS_MOVE))
 		return -EINVAL;
 
 	if (!(flags & MS_NOATIME))
 		mnt_flags |= MNT_RELATIME;
-
-	if (flags & MS_NOSUID)
-		mnt_flags |= MNT_NOSUID;
-	if (flags & MS_NODEV)
-		mnt_flags |= MNT_NODEV;
-	if (flags & MS_NOEXEC)
-		mnt_flags |= MNT_NOEXEC;
-	if (flags & MS_NOATIME)
-		mnt_flags |= MNT_NOATIME;
-	if (flags & MS_NODIRATIME)
-		mnt_flags |= MNT_NODIRATIME;
-	if (flags & MS_STRICTATIME)
-		mnt_flags &= ~(MNT_RELATIME | MNT_NOATIME);
 	if (flags & MS_RDONLY)
 		mnt_flags |= MNT_READONLY;
-	if (flags & MS_NOSYMFOLLOW)
-		mnt_flags |= MNT_NOSYMFOLLOW;
-
-	if ((flags & MS_REMOUNT) &&
-	    ((flags & (MS_NOATIME | MS_NODIRATIME | MS_RELATIME |
-		       MS_STRICTATIME)) == 0)) {
-		mnt_flags &= ~MNT_ATIME_MASK;
-		mnt_flags |= path->mnt->mnt_flags & MNT_ATIME_MASK;
-	}
 
 	sb_flags = flags &
 		   (SB_RDONLY | SB_SYNCHRONOUS | SB_MANDLOCK | SB_DIRSYNC |
 		    SB_SILENT | SB_POSIXACL | SB_LAZYTIME | SB_I_VERSION);
 
-	if ((flags & (MS_REMOUNT | MS_BIND)) == (MS_REMOUNT | MS_BIND))
-		return -ENOSYS;
-	if (flags & MS_REMOUNT)
-		return -ENOSYS;
-	if (flags & MS_BIND)
-		return -EINVAL;
-	/* do_change_type block removed - these flags never passed during boot */
-	if (flags &
-	    (MS_SHARED | MS_PRIVATE | MS_SLAVE | MS_UNBINDABLE | MS_MOVE))
-		return -EINVAL;
-
-	/* Inlined do_new_mount */
 	if (!type_page)
 		return -EINVAL;
-
 	type = get_fs_type(type_page);
 	if (!type)
 		return -ENODEV;
@@ -763,70 +730,34 @@ int path_mount(const char *dev_name, struct path *path, const char *type_page,
 	if (!err) {
 		struct vfsmount *mnt;
 		struct mountpoint *mp;
-		struct super_block *sb = fc->root->d_sb;
 
-		/* mount_too_revealing always returned false - removed */
-		{
-			up_write(&sb->s_umount);
-			mnt = vfs_create_mount(fc);
-			if (IS_ERR(mnt)) {
-				err = PTR_ERR(mnt);
+		up_write(&fc->root->d_sb->s_umount);
+		mnt = vfs_create_mount(fc);
+		if (IS_ERR(mnt)) {
+			err = PTR_ERR(mnt);
+		} else {
+			mp = lock_mount(path);
+			if (IS_ERR(mp)) {
+				mntput(mnt);
+				err = PTR_ERR(mp);
 			} else {
-				mp = lock_mount(path);
-				if (IS_ERR(mp)) {
-					mntput(mnt);
-					err = PTR_ERR(mp);
-				} else {
-					/* Inlined do_add_mount */
-					struct mount *newmnt = real_mount(mnt);
-					struct mount *parent =
-						real_mount(path->mnt);
-					int m_flags = mnt_flags &
-						      ~MNT_INTERNAL_FLAGS;
+				struct mount *newmnt = real_mount(mnt);
+				struct mount *parent = real_mount(path->mnt);
 
-					/* check_mnt inlined */
-					if (unlikely(
-						    parent->mnt_ns !=
-						    current->nsproxy->mnt_ns)) {
-						if (!(m_flags & MNT_SHRINKABLE))
-							err = -EINVAL;
-						else if (!parent->mnt_ns)
-							err = -EINVAL;
-					}
-					if (!err &&
-					    path->mnt->mnt_sb ==
-						    newmnt->mnt.mnt_sb &&
-					    path->mnt->mnt_root == path->dentry)
-						err = -EBUSY;
-					if (!err) {
-						newmnt->mnt.mnt_flags = m_flags;
-						if (newmnt->mnt.mnt_sb->s_flags &
-						    SB_NOUSER)
-							err = -EINVAL;
-						else if (d_can_lookup(
-								 mp->m_dentry) !=
-							 d_can_lookup(
-								 newmnt->mnt
-									 .mnt_root))
-							err = -ENOTDIR;
-						else
-							err = attach_recursive_mnt(
-								newmnt, parent,
-								mp, false);
-					}
-					{
-						struct dentry *dentry =
-							mp->m_dentry;
-						read_seqlock_excl(&mount_lock);
-						put_mountpoint(mp);
-						read_sequnlock_excl(
-							&mount_lock);
-						namespace_unlock();
-						inode_unlock(dentry->d_inode);
-					}
-					if (err < 0)
-						mntput(mnt);
+				newmnt->mnt.mnt_flags = mnt_flags &
+							~MNT_INTERNAL_FLAGS;
+				err = attach_recursive_mnt(newmnt, parent, mp,
+							   false);
+				{
+					struct dentry *dentry = mp->m_dentry;
+					read_seqlock_excl(&mount_lock);
+					put_mountpoint(mp);
+					read_sequnlock_excl(&mount_lock);
+					namespace_unlock();
+					inode_unlock(dentry->d_inode);
 				}
+				if (err < 0)
+					mntput(mnt);
 			}
 		}
 	}

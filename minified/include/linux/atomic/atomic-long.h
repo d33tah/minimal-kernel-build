@@ -68,14 +68,6 @@ arch_atomic_long_cmpxchg(atomic_long_t *v, long old, long new)
 }
 
 static __always_inline bool
-arch_atomic_long_try_cmpxchg(atomic_long_t *v, long *old, long new)
-{
-	return arch_atomic_try_cmpxchg(v, (int *)old, new);
-}
-
-/* arch_atomic_long_try_cmpxchg_acquire/release removed - unused */
-
-static __always_inline bool
 arch_atomic_long_sub_and_test(long i, atomic_long_t *v)
 {
 	return arch_atomic_sub_and_test(i, v);

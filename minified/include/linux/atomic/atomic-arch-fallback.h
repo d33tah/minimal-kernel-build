@@ -5,15 +5,6 @@
 
 #include <linux/compiler.h>
 
-/* x86 provides arch_cmpxchg natively - ordering variants alias to it */
-#ifndef arch_cmpxchg_relaxed
-#define arch_cmpxchg_acquire arch_cmpxchg
-#define arch_cmpxchg_release arch_cmpxchg
-#define arch_cmpxchg_relaxed arch_cmpxchg
-#endif
-
-/* arch_cmpxchg64 ordering variants removed - zero callers */
-
 #ifndef arch_try_cmpxchg
 #define arch_try_cmpxchg(_ptr, _oldp, _new) \
 ({ \
@@ -29,23 +20,10 @@
 
 /* arch_atomic_read_acquire removed - unused */
 
-/* x86 provides arch_atomic_add_return natively - ordering variants alias to it */
-#ifndef arch_atomic_add_return_relaxed
-#define arch_atomic_add_return_acquire arch_atomic_add_return
-#define arch_atomic_add_return_release arch_atomic_add_return
-#define arch_atomic_add_return_relaxed arch_atomic_add_return
-#endif
-
 #ifndef arch_atomic_fetch_add_relaxed
 #define arch_atomic_fetch_add_acquire arch_atomic_fetch_add
 #define arch_atomic_fetch_add_release arch_atomic_fetch_add
 #define arch_atomic_fetch_add_relaxed arch_atomic_fetch_add
-#endif
-
-#ifndef arch_atomic_sub_return_relaxed
-#define arch_atomic_sub_return_acquire arch_atomic_sub_return
-#define arch_atomic_sub_return_release arch_atomic_sub_return
-#define arch_atomic_sub_return_relaxed arch_atomic_sub_return
 #endif
 
 #ifndef arch_atomic_fetch_sub_relaxed
@@ -75,29 +53,6 @@ arch_atomic_dec(atomic_t *v)
 #endif
 
 /* arch_atomic_fetch_and ordering variants removed - zero callers */
-
-#ifndef arch_atomic_andnot
-static __always_inline void
-arch_atomic_andnot(int i, atomic_t *v)
-{
-	arch_atomic_and(~i, v);
-}
-#define arch_atomic_andnot arch_atomic_andnot
-#endif
-
-/* arch_atomic_fetch_or and arch_atomic_fetch_xor ordering variants removed - zero callers */
-
-#ifndef arch_atomic_xchg_relaxed
-#define arch_atomic_xchg_acquire arch_atomic_xchg
-#define arch_atomic_xchg_release arch_atomic_xchg
-#define arch_atomic_xchg_relaxed arch_atomic_xchg
-#endif
-
-#ifndef arch_atomic_cmpxchg_relaxed
-#define arch_atomic_cmpxchg_acquire arch_atomic_cmpxchg
-#define arch_atomic_cmpxchg_release arch_atomic_cmpxchg
-#define arch_atomic_cmpxchg_relaxed arch_atomic_cmpxchg
-#endif
 
 /* x86 provides arch_atomic_try_cmpxchg natively - aliases for ordering variants */
 #ifndef arch_atomic_try_cmpxchg_relaxed

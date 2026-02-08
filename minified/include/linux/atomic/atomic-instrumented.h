@@ -234,16 +234,6 @@ atomic_long_cmpxchg(atomic_long_t *v, long old, long new)
 }
 
 static __always_inline bool
-atomic_long_try_cmpxchg(atomic_long_t *v, long *old, long new)
-{
-	instrument_atomic_read_write(v, sizeof(*v));
-	instrument_atomic_read_write(old, sizeof(*old));
-	return arch_atomic_long_try_cmpxchg(v, old, new);
-}
-
-/* atomic_long_try_cmpxchg_acquire/release removed - unused */
-
-static __always_inline bool
 atomic_long_sub_and_test(long i, atomic_long_t *v)
 {
 	instrument_atomic_read_write(v, sizeof(*v));

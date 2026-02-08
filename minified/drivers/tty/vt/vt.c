@@ -64,10 +64,7 @@ static void vc_init(struct vc_data *vc, unsigned int rows, unsigned int cols,
 static void gotoxy(struct vc_data *vc, int new_x, int new_y);
 /* save_cur forward decl removed - inlined */
 static void reset_terminal(struct vc_data *vc, int do_clear);
-static void set_cursor(struct vc_data *vc);
-static void hide_cursor(struct vc_data *vc);
-/* blank_screen_t forward decl removed - function unused */
-/* set_palette forward decl removed - stub inlined */
+/* set_cursor, hide_cursor forward decls removed - now trivial stubs defined above */
 
 static int printable;
 int default_utf8 = true;
@@ -172,98 +169,30 @@ static void do_update_region(struct vc_data *vc, unsigned long start, int count)
 	}
 }
 
+/* Stubbed build_attr - minimal kernel uses white-on-black (0x07) */
 static u8 build_attr(struct vc_data *vc, u8 _color,
 		     enum vc_intensity _intensity, bool _blink, bool _underline,
 		     bool _reverse, bool _italic)
 {
-	if (vc->vc_sw->con_build_attr)
-		return vc->vc_sw->con_build_attr(vc, _color, _intensity, _blink,
-						 _underline, _reverse, _italic);
-
-	{
-		u8 a = _color;
-		if (!vc->vc_can_do_color)
-			return _intensity | (_italic << 1) | (_underline << 2) |
-			       (_reverse << 3) | (_blink << 7);
-		if (_italic)
-			a = (a & 0xF0) | vc->vc_itcolor;
-		else if (_underline)
-			a = (a & 0xf0) | vc->vc_ulcolor;
-		else if (_intensity == VCI_HALF_BRIGHT)
-			a = (a & 0xf0) | vc->vc_halfcolor;
-		if (_reverse)
-			a = (a & 0x88) | (((a >> 4) | (a << 4)) & 0x77);
-		if (_blink)
-			a ^= 0x80;
-		if (_intensity == VCI_BOLD)
-			a ^= 0x08;
-		if (vc->vc_hi_font_mask == 0x100)
-			a <<= 1;
-		return a;
-	}
+	return _color;
 }
 
 static void update_attr(struct vc_data *vc)
 {
-	vc->vc_attr = build_attr(vc, vc->state.color, vc->state.intensity,
-				 vc->state.blink, vc->state.underline,
-				 vc->state.reverse ^ vc->vc_decscnm,
-				 vc->state.italic);
-	vc->vc_video_erase_char =
-		' ' | (build_attr(vc, vc->state.color, VCI_NORMAL,
-				  vc->state.blink, false, vc->vc_decscnm, false)
-		       << 8);
+	vc->vc_attr = vc->state.color;
+	vc->vc_video_erase_char = ' ' | (vc->state.color << 8);
 }
 
-static int softcursor_original = -1;
-
+/* Stubbed cursor functions - minimal kernel doesn't need cursor display */
 static void hide_cursor(struct vc_data *vc)
 {
-	vc->vc_sw->con_cursor(vc, CM_ERASE);
-	/* Inlined hide_softcursor */
-	if (softcursor_original != -1) {
-		scr_writew(softcursor_original, (u16 *)vc->vc_pos);
-		if (con_should_update(vc))
-			vc->vc_sw->con_putc(vc, softcursor_original,
-					    vc->state.y, vc->state.x);
-		softcursor_original = -1;
-	}
 }
-
 static void set_cursor(struct vc_data *vc)
 {
-	/* console_blanked check removed - never assigned, always 0 */
-	if (vc->vc_num != fg_console || vc->vc_mode == KD_GRAPHICS)
-		return;
-	if (vc->vc_deccm) {
-		/* Inlined add_softcursor */
-		int i = scr_readw((u16 *)vc->vc_pos);
-		u32 type = vc->vc_cursor_type;
-		if ((type & CUR_SW) && softcursor_original == -1) {
-			softcursor_original = i;
-			i |= CUR_SET(type);
-			i ^= CUR_CHANGE(type);
-			if ((type & CUR_ALWAYS_BG) &&
-			    (softcursor_original & CUR_BG) == (i & CUR_BG))
-				i ^= CUR_BG;
-			if ((type & CUR_INVERT_FG_BG) &&
-			    (i & CUR_FG) == ((i & CUR_BG) >> 4))
-				i ^= CUR_FG;
-			scr_writew(i, (u16 *)vc->vc_pos);
-			if (con_should_update(vc))
-				vc->vc_sw->con_putc(vc, i, vc->state.y,
-						    vc->state.x);
-		}
-		if (CUR_SIZE(vc->vc_cursor_type) != CUR_NONE)
-			vc->vc_sw->con_cursor(vc, CM_DRAW);
-	} else
-		hide_cursor(vc);
 }
 
 static void set_origin(struct vc_data *vc)
 {
-	WARN_CONSOLE_UNLOCKED();
-
 	if (!con_is_visible(vc) || !vc->vc_sw->con_set_origin ||
 	    !vc->vc_sw->con_set_origin(vc))
 		vc->vc_origin = (unsigned long)vc->vc_screenbuf;
@@ -374,31 +303,12 @@ static void csi_J(struct vc_data *vc, int vpar)
 	unsigned int count;
 	unsigned short *start;
 
-	switch (vpar) {
-	case 0:
+	if (vpar == 0) {
 		count = (vc->vc_scr_end - vc->vc_pos) >> 1;
 		start = (unsigned short *)vc->vc_pos;
-		break;
-	case 1:
-		count = ((vc->vc_pos - vc->vc_origin) >> 1) + 1;
-		start = (unsigned short *)vc->vc_origin;
-		break;
-	case 3:
-		/* flush_scrollback inlined */
-		WARN_CONSOLE_UNLOCKED();
-		set_origin(vc);
-		if (con_is_visible(vc)) {
-			hide_cursor(vc);
-			vc->vc_sw->con_switch(vc);
-			set_cursor(vc);
-		}
-		fallthrough;
-	case 2:
+	} else {
 		count = vc->vc_cols * vc->vc_rows;
 		start = (unsigned short *)vc->vc_origin;
-		break;
-	default:
-		return;
 	}
 	scr_memsetw(start, vc->vc_video_erase_char, 2 * count);
 	if (con_should_update(vc))

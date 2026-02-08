@@ -33,29 +33,7 @@ arch_atomic_long_add_return(long i, atomic_long_t *v)
 	return arch_atomic_add_return(i, v);
 }
 
-static __always_inline long
-arch_atomic_long_add_return_acquire(long i, atomic_long_t *v)
-{
-	return arch_atomic_add_return_acquire(i, v);
-}
-
-static __always_inline long
-arch_atomic_long_add_return_release(long i, atomic_long_t *v)
-{
-	return arch_atomic_add_return_release(i, v);
-}
-
-static __always_inline long
-arch_atomic_long_fetch_add(long i, atomic_long_t *v)
-{
-	return arch_atomic_fetch_add(i, v);
-}
-
-static __always_inline long
-arch_atomic_long_fetch_add_release(long i, atomic_long_t *v)
-{
-	return arch_atomic_fetch_add_release(i, v);
-}
+/* arch_atomic_long_add_return_acquire/release, fetch_add/release removed - unused */
 
 static __always_inline void
 arch_atomic_long_sub(long i, atomic_long_t *v)
@@ -81,17 +59,7 @@ arch_atomic_long_dec(atomic_long_t *v)
 	arch_atomic_dec(v);
 }
 
-static __always_inline void
-arch_atomic_long_andnot(long i, atomic_long_t *v)
-{
-	arch_atomic_andnot(i, v);
-}
-
-static __always_inline void
-arch_atomic_long_or(long i, atomic_long_t *v)
-{
-	arch_atomic_or(i, v);
-}
+/* arch_atomic_long_andnot, arch_atomic_long_or removed - unused */
 
 static __always_inline long
 arch_atomic_long_cmpxchg(atomic_long_t *v, long old, long new)
@@ -105,17 +73,7 @@ arch_atomic_long_try_cmpxchg(atomic_long_t *v, long *old, long new)
 	return arch_atomic_try_cmpxchg(v, (int *)old, new);
 }
 
-static __always_inline bool
-arch_atomic_long_try_cmpxchg_acquire(atomic_long_t *v, long *old, long new)
-{
-	return arch_atomic_try_cmpxchg_acquire(v, (int *)old, new);
-}
-
-static __always_inline bool
-arch_atomic_long_try_cmpxchg_release(atomic_long_t *v, long *old, long new)
-{
-	return arch_atomic_try_cmpxchg_release(v, (int *)old, new);
-}
+/* arch_atomic_long_try_cmpxchg_acquire/release removed - unused */
 
 static __always_inline bool
 arch_atomic_long_sub_and_test(long i, atomic_long_t *v)

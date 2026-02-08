@@ -27,23 +27,7 @@
 
 /* arch_try_cmpxchg64 and all ordering variants removed - zero callers */
 
-#ifndef arch_atomic_read_acquire
-static __always_inline int
-arch_atomic_read_acquire(const atomic_t *v)
-{
-	int ret;
-
-	if (__native_word(atomic_t)) {
-		ret = smp_load_acquire(&(v)->counter);
-	} else {
-		ret = arch_atomic_read(v);
-		__atomic_acquire_fence();
-	}
-
-	return ret;
-}
-#define arch_atomic_read_acquire arch_atomic_read_acquire
-#endif
+/* arch_atomic_read_acquire removed - unused */
 
 /* x86 provides arch_atomic_add_return natively - ordering variants alias to it */
 #ifndef arch_atomic_add_return_relaxed
@@ -79,15 +63,7 @@ arch_atomic_inc(atomic_t *v)
 #define arch_atomic_inc arch_atomic_inc
 #endif
 
-/* x86 doesn't define arch_atomic_inc_return_relaxed - use add_return fallback */
-#ifndef arch_atomic_inc_return
-static __always_inline int
-arch_atomic_inc_return(atomic_t *v)
-{
-	return arch_atomic_add_return(1, v);
-}
-#define arch_atomic_inc_return arch_atomic_inc_return
-#endif
+/* arch_atomic_inc_return removed - unused */
 
 #ifndef arch_atomic_dec
 static __always_inline void

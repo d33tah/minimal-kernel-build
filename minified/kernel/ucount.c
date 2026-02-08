@@ -181,18 +181,7 @@ bool dec_rlimit_ucounts(struct ucounts *ucounts, enum ucount_type type, long v)
 	return (new == 0);
 }
 
-/* do_dec_rlimit_put_ucounts inlined into dec_rlimit_put_ucounts */
-void dec_rlimit_put_ucounts(struct ucounts *ucounts, enum ucount_type type)
-{
-	struct ucounts *iter, *next;
-	for (iter = ucounts; iter != NULL; iter = next) {
-		long dec = atomic_long_sub_return(1, &iter->ucount[type]);
-		WARN_ON_ONCE(dec < 0);
-		next = iter->ns->ucounts;
-		if (dec == 0)
-			put_ucounts(iter);
-	}
-}
+/* dec_rlimit_put_ucounts removed - no callers */
 
 /* inc_rlimit_get_ucounts removed - never called */
 

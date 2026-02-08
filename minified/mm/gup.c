@@ -295,100 +295,8 @@ out:
 	return i ? i : ret;
 }
 
-static __always_inline long
-__get_user_pages_locked(struct mm_struct *mm, unsigned long start,
-			unsigned long nr_pages, struct page **pages,
-			struct vm_area_struct **vmas, int *locked,
-			unsigned int flags)
-{
-	long ret, pages_done;
-	bool lock_dropped;
-
-	if (locked) {
-		BUG_ON(vmas);
-
-		BUG_ON(*locked != 1);
-	}
-
-	/* FOLL_PIN MMF_HAS_PINNED check removed - FOLL_PIN never set */
-
-	if (pages)
-		flags |= FOLL_GET;
-
-	pages_done = 0;
-	lock_dropped = false;
-	for (;;) {
-		ret = __get_user_pages(mm, start, nr_pages, flags, pages, vmas,
-				       locked);
-		if (!locked)
-
-			return ret;
-
-		if (!*locked) {
-			BUG_ON(ret < 0);
-			BUG_ON(ret >= nr_pages);
-		}
-
-		if (ret > 0) {
-			nr_pages -= ret;
-			pages_done += ret;
-			if (!nr_pages)
-				break;
-		}
-		if (*locked) {
-			if (!pages_done)
-				pages_done = ret;
-			break;
-		}
-
-		if (likely(pages))
-			pages += ret;
-		start += ret << PAGE_SHIFT;
-		lock_dropped = true;
-
-retry:
-
-		if (fatal_signal_pending(current)) {
-			if (!pages_done)
-				pages_done = -EINTR;
-			break;
-		}
-
-		ret = mmap_read_lock_killable(mm);
-		if (ret) {
-			BUG_ON(ret > 0);
-			if (!pages_done)
-				pages_done = ret;
-			break;
-		}
-
-		*locked = 1;
-		ret = __get_user_pages(mm, start, 1, flags | FOLL_TRIED, pages,
-				       NULL, locked);
-		if (!*locked) {
-			BUG_ON(ret != 0);
-			goto retry;
-		}
-		if (ret != 1) {
-			BUG_ON(ret > 1);
-			if (!pages_done)
-				pages_done = ret;
-			break;
-		}
-		nr_pages--;
-		pages_done++;
-		if (!nr_pages)
-			break;
-		if (likely(pages))
-			pages++;
-		start += PAGE_SIZE;
-	}
-	if (lock_dropped && *locked) {
-		mmap_read_unlock(mm);
-		*locked = 0;
-	}
-	return pages_done;
-}
+/* __get_user_pages_locked removed - only caller was get_user_pages_remote
+ * which always passed locked=NULL, making the retry loop dead code */
 
 long populate_vma_page_range(struct vm_area_struct *vma, unsigned long start,
 			     unsigned long end, int *locked)
@@ -461,16 +369,16 @@ int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)
 
 /* __gup_longterm_locked removed - FOLL_LONGTERM never set, function never called */
 
-/* is_valid_gup_flags, __get_user_pages_remote inlined */
-
 long get_user_pages_remote(struct mm_struct *mm, unsigned long start,
 			   unsigned long nr_pages, unsigned int gup_flags,
 			   struct page **pages, struct vm_area_struct **vmas,
 			   int *locked)
 {
-	/* FOLL_PIN and FOLL_LONGTERM checks removed - never set */
-	return __get_user_pages_locked(mm, start, nr_pages, pages, vmas, locked,
-				       gup_flags | FOLL_TOUCH | FOLL_REMOTE);
+	if (pages)
+		gup_flags |= FOLL_GET;
+	return __get_user_pages(mm, start, nr_pages,
+				gup_flags | FOLL_TOUCH | FOLL_REMOTE, pages,
+				vmas, locked);
 }
 
 /* get_user_pages_unlocked, get_user_pages_fast_only, get_user_pages_fast,

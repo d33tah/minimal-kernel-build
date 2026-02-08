@@ -1,66 +1,40 @@
 
 #include <linux/blkdev.h>
 #include <linux/wait.h>
-/* linux/rbtree.h removed - no rbtree structures used */
 #include <linux/backing-dev.h>
 #include <linux/fs.h>
-/* linux/pagemap.h removed - no page cache functions used */
 #include <linux/mm.h>
 #include <linux/sched/mm.h>
 #include <linux/sched.h>
-/* linux/module.h removed - no module features used */
 #include <linux/writeback.h>
 #include <linux/device.h>
 #include <linux/flex_proportions.h>
 
 /* Merged from lib/flex_proportions.c */
-/* percpu_counter_init always returns 0 - simplified */
 void fprop_local_init_percpu(struct fprop_local_percpu *pl, gfp_t gfp)
 {
 	percpu_counter_init(&pl->events, 0, gfp);
-	/* pl->period removed - write-only, never read */
 	raw_spin_lock_init(&pl->lock);
 }
-/* fprop_local_destroy_percpu inlined at single call site */
 
 struct backing_dev_info noop_backing_dev_info;
-/* bdi_class removed - never used */
 
-DEFINE_SPINLOCK(bdi_lock);
-/* bdi_tree removed - never inserted into, only erased from */
-LIST_HEAD(bdi_list);
-
-struct workqueue_struct *bdi_wq;
-
-/* K(x) macro removed - unused */
-/* bdi_debug_init, bdi_debug_unregister, bdi sysfs attrs, bdi_class_init removed - unused */
-
-/* default_bdi_init removed - alloc_workqueue hangs with low memory */
-/* wb_update_bandwidth_workfn removed - bw_dwork never scheduled, only initialized */
-
-/* From fs-writeback.c - stub for wb dwork */
+/* Stub for wb dwork - never actually runs */
 void wb_workfn(struct work_struct *work)
 {
 }
-
-/* INIT_BW removed - no longer used after field removal */
-/* wb_init inlined into bdi_init */
-/* wb_shutdown, cgwb_remove_from_bdi_list, wb_exit inlined */
 
 int bdi_init(struct backing_dev_info *bdi)
 {
 	struct bdi_writeback *wb = &bdi->wb;
 
 	bdi->dev = NULL;
-
 	kref_init(&bdi->refcnt);
 	INIT_LIST_HEAD(&bdi->bdi_list);
 	INIT_LIST_HEAD(&bdi->wb_list);
 	init_waitqueue_head(&bdi->wb_waitq);
 
-	/* Inlined wb_init */
 	memset(wb, 0, sizeof(*wb));
-	/* wb->bdi removed - write-only, never read */
 	INIT_LIST_HEAD(&wb->b_dirty);
 	INIT_LIST_HEAD(&wb->b_io);
 	INIT_LIST_HEAD(&wb->b_more_io);
@@ -70,64 +44,18 @@ int bdi_init(struct backing_dev_info *bdi)
 	spin_lock_init(&wb->work_lock);
 	INIT_LIST_HEAD(&wb->work_list);
 	INIT_DELAYED_WORK(&wb->dwork, wb_workfn);
-	/* INIT_DELAYED_WORK bw_dwork removed - never scheduled */
 	fprop_local_init_percpu(&wb->completions, GFP_KERNEL);
 
 	return 0;
 }
 
-/* bdi_remove_from_list removed - inlined into single caller (~8 LOC) */
-
+/* bdi_unregister/bdi_put/release_bdi - no callers in minimal kernel */
 void bdi_unregister(struct backing_dev_info *bdi)
 {
-	/* del_timer_sync laptop_mode_wb_timer removed - field removed */
-
-	/* Inlined bdi_remove_from_list */
-	spin_lock_bh(&bdi_lock);
-	list_del_rcu(&bdi->bdi_list);
-	spin_unlock_bh(&bdi_lock);
-	/* synchronize_rcu_expedited call removed - empty stub */
-	/* wb_shutdown inlined */
-	spin_lock_bh(&bdi->wb.work_lock);
-	if (test_and_clear_bit(WB_registered, &bdi->wb.state)) {
-		spin_unlock_bh(&bdi->wb.work_lock);
-		list_del_rcu(&bdi->wb.bdi_node);
-		/* mod_delayed_work inlined */
-		cancel_delayed_work(&bdi->wb.dwork);
-		queue_delayed_work(bdi_wq, &bdi->wb.dwork, 0);
-		/* flush_delayed_work removed - always returns false */
-		WARN_ON(!list_empty(&bdi->wb.work_list));
-		/* flush_delayed_work bw_dwork removed - never scheduled */
-	} else {
-		spin_unlock_bh(&bdi->wb.work_lock);
-	}
-	if (bdi->dev) {
-		device_unregister(bdi->dev);
-		bdi->dev = NULL;
-	}
-
-	if (bdi->owner) {
-		put_device(bdi->owner);
-		bdi->owner = NULL;
-	}
-}
-
-static void release_bdi(struct kref *ref)
-{
-	struct backing_dev_info *bdi =
-		container_of(ref, struct backing_dev_info, refcnt);
-
-	WARN_ON_ONCE(test_bit(WB_registered, &bdi->wb.state));
-	WARN_ON_ONCE(bdi->dev);
-	WARN_ON(delayed_work_pending(&bdi->wb.dwork));
-	/* fprop_local_destroy_percpu inlined */
-	percpu_counter_destroy(&bdi->wb.completions.events);
-	kfree(bdi);
 }
 
 void bdi_put(struct backing_dev_info *bdi)
 {
-	kref_put(&bdi->refcnt, release_bdi);
 }
 
 struct backing_dev_info *inode_to_bdi(struct inode *inode)

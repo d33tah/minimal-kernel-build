@@ -453,59 +453,29 @@ static int filemap_update_page(struct kiocb *iocb,
 {
 	int error;
 
-	if (iocb->ki_flags & IOCB_NOWAIT) {
-		if (!down_read_trylock(&mapping->invalidate_lock))
-			return -EAGAIN;
-	} else {
-		filemap_invalidate_lock_shared(mapping);
-	}
+	filemap_invalidate_lock_shared(mapping);
 
 	if (!folio_trylock(folio)) {
-		error = -EAGAIN;
-		if (iocb->ki_flags & (IOCB_NOWAIT | IOCB_NOIO))
-			goto unlock_mapping;
-		if (!(iocb->ki_flags & IOCB_WAITQ)) {
-			filemap_invalidate_unlock_shared(mapping);
-			/* folio_put_wait_locked removed - returns 0 */
-			return AOP_TRUNCATED_PAGE;
-		}
-		/* inlined __folio_lock_async */
-		{
-			struct wait_page_queue *wait = iocb->ki_waitq;
-			struct wait_queue_head *q = folio_waitqueue(folio);
-			wait->folio = folio;
-			wait->bit_nr = PG_locked;
-			spin_lock_irq(&q->lock);
-			__add_wait_queue_entry_tail(q, &wait->wait);
-			folio_set_waiters(folio);
-			error = !folio_trylock(folio);
-			if (!error)
-				__remove_wait_queue(q, &wait->wait);
-			else
-				error = -EIOCBQUEUED;
-			spin_unlock_irq(&q->lock);
-			if (error)
-				goto unlock_mapping;
-		}
+		filemap_invalidate_unlock_shared(mapping);
+		return AOP_TRUNCATED_PAGE;
 	}
 
-	error = AOP_TRUNCATED_PAGE;
-	if (!folio->mapping)
+	if (!folio->mapping) {
+		error = AOP_TRUNCATED_PAGE;
 		goto unlock;
-
-	error = 0;
-	if (folio_test_uptodate(folio))
+	}
+	if (folio_test_uptodate(folio)) {
+		error = 0;
 		goto unlock;
-
-	error = -EAGAIN;
-	if (iocb->ki_flags & (IOCB_NOIO | IOCB_NOWAIT | IOCB_WAITQ))
-		goto unlock;
+	}
 
 	error = filemap_read_folio(iocb->ki_filp, mapping, folio);
-	goto unlock_mapping;
+	filemap_invalidate_unlock_shared(mapping);
+	if (error == AOP_TRUNCATED_PAGE)
+		folio_put(folio);
+	return error;
 unlock:
 	folio_unlock(folio);
-unlock_mapping:
 	filemap_invalidate_unlock_shared(mapping);
 	if (error == AOP_TRUNCATED_PAGE)
 		folio_put(folio);
@@ -531,14 +501,6 @@ retry:
 
 	filemap_get_read_batch(mapping, index, last_index, fbatch);
 	if (!folio_batch_count(fbatch)) {
-		if (iocb->ki_flags & IOCB_NOIO)
-			return -EAGAIN;
-		filemap_get_read_batch(mapping, index, last_index, fbatch);
-	}
-	if (!folio_batch_count(fbatch)) {
-		if (iocb->ki_flags & (IOCB_NOWAIT | IOCB_WAITQ))
-			return -EAGAIN;
-		/* filemap_create_folio inlined */
 		folio = filemap_alloc_folio(mapping_gfp_mask(mapping), 0);
 		if (!folio)
 			return -ENOMEM;
@@ -563,11 +525,7 @@ retry:
 	}
 
 	folio = fbatch->folios[folio_batch_count(fbatch) - 1];
-	/* Removed: filemap_readahead - stub always returned 0 */
 	if (!folio_test_uptodate(folio)) {
-		if ((iocb->ki_flags & IOCB_WAITQ) &&
-		    folio_batch_count(fbatch) > 1)
-			iocb->ki_flags |= IOCB_NOWAIT;
 		err = filemap_update_page(iocb, mapping, iter, folio);
 		if (err)
 			goto err;
@@ -606,9 +564,6 @@ ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
 
 	do {
 		cond_resched();
-
-		if ((iocb->ki_flags & IOCB_WAITQ) && already_read)
-			iocb->ki_flags |= IOCB_NOWAIT;
 
 		if (unlikely(iocb->ki_pos >= i_size_read(inode)))
 			break;
@@ -695,26 +650,10 @@ vm_fault_t filemap_fault(struct vm_fault *vmf)
 
 /* next_uptodate_page and filemap_map_pages removed (~108 LOC) */
 
+/* Stubbed - do_shared_fault returns VM_FAULT_SIGBUS, so this is never called */
 vm_fault_t filemap_page_mkwrite(struct vm_fault *vmf)
 {
-	struct address_space *mapping = vmf->vma->vm_file->f_mapping;
-	struct folio *folio = page_folio(vmf->page);
-	vm_fault_t ret = VM_FAULT_LOCKED;
-
-	sb_start_pagefault(mapping->host->i_sb);
-	/* file_update_time removed - stub returns 0 */
-	folio_lock(folio);
-	if (folio->mapping != mapping) {
-		folio_unlock(folio);
-		ret = VM_FAULT_NOPAGE;
-		goto out;
-	}
-
-	folio_mark_dirty(folio);
-	/* folio_wait_stable removed - was empty stub */
-out:
-	sb_end_pagefault(mapping->host->i_sb);
-	return ret;
+	return VM_FAULT_SIGBUS;
 }
 
 const struct vm_operations_struct generic_file_vm_ops = {

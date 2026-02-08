@@ -14,10 +14,7 @@
 #include <linux/list_lru.h>
 #include "internal.h"
 
-static unsigned int i_hash_mask __read_mostly;
-static unsigned int i_hash_shift __read_mostly;
-static struct hlist_head *inode_hashtable __read_mostly;
-static __cacheline_aligned_in_smp DEFINE_SPINLOCK(inode_hash_lock);
+/* inode hash table removed - never used for lookups/inserts */
 
 const struct address_space_operations empty_aops = {};
 
@@ -56,8 +53,7 @@ static void inode_init_always(struct super_block *sb, struct inode *inode)
 	inode->i_ino = 0;
 	inode->__i_nlink = 1;
 	inode->i_opflags = 0;
-	if (sb->s_xattr)
-		inode->i_opflags |= IOP_XATTR;
+	/* s_xattr check removed - never assigned */
 	/* i_uid_write, i_gid_write inlined */
 	inode->i_uid = make_kuid(i_user_ns(inode), 0);
 	inode->i_gid = make_kgid(i_user_ns(inode), 0);
@@ -134,26 +130,8 @@ static void init_once(void *foo)
 
 /* ihold removed - no callers */
 
-static void __inode_add_lru(struct inode *inode, bool rotate)
-{
-	if (inode->i_state & (I_DIRTY_ALL | I_SYNC | I_FREEING | I_WILL_FREE))
-		return;
-	if (atomic_read(&inode->i_count))
-		return;
-	if (!(inode->i_sb->s_flags & SB_ACTIVE))
-		return;
-	if (!mapping_shrinkable(&inode->i_data))
-		return;
-
-	if (!list_lru_add(&inode->i_sb->s_inode_lru, &inode->i_lru) && rotate)
-		inode->i_state |= I_REFERENCED;
-	/* nr_unused counter removed */
-}
-
-void inode_add_lru(struct inode *inode)
-{
-	__inode_add_lru(inode, false);
-}
+/* __inode_add_lru, inode_add_lru removed - drop is always true in iput,
+   LRU path never reached */
 
 static void inode_lru_list_del(struct inode *inode)
 {
@@ -193,16 +171,7 @@ static void evict(struct inode *inode)
 	if (S_ISCHR(inode->i_mode) && inode->i_cdev)
 		cd_forget(inode);
 
-	/* remove_inode_hash inlined, hlist_fake inlined */
-	if (!inode_unhashed(inode) &&
-	    !(inode->i_hash.pprev == &inode->i_hash.next)) {
-		/* __remove_inode_hash inlined */
-		spin_lock(&inode_hash_lock);
-		spin_lock(&inode->i_lock);
-		hlist_del_init_rcu(&inode->i_hash);
-		spin_unlock(&inode->i_lock);
-		spin_unlock(&inode_hash_lock);
-	}
+	/* inode hash removal removed - hash table never populated */
 
 	spin_lock(&inode->i_lock);
 	wake_up_bit(&inode->i_state, __I_NEW);
@@ -324,51 +293,19 @@ int generic_delete_inode(struct inode *inode)
 	return 1;
 }
 
+/* iput simplified: drop is always true (ramfs uses generic_delete_inode,
+   default uses generic_drop_inode which returns true when unhashed) */
 void iput(struct inode *inode)
 {
-	struct super_block *sb;
-	const struct super_operations *op;
-	unsigned long state;
-	int drop;
-
 	if (!inode)
 		return;
 	BUG_ON(inode->i_state & I_CLEAR);
 	if (!atomic_dec_and_lock(&inode->i_count, &inode->i_lock))
 		return;
 
-	sb = inode->i_sb;
-	op = inode->i_sb->s_op;
-
 	WARN_ON(inode->i_state & I_NEW);
 
-	if (op->drop_inode)
-		drop = op->drop_inode(inode);
-	else
-		/* generic_drop_inode inlined */
-		drop = !inode->i_nlink || inode_unhashed(inode);
-
-	if (!drop && !(inode->i_state & I_DONTCACHE) &&
-	    (sb->s_flags & SB_ACTIVE)) {
-		__inode_add_lru(inode, true);
-		spin_unlock(&inode->i_lock);
-		return;
-	}
-
-	state = inode->i_state;
-	if (!drop) {
-		WRITE_ONCE(inode->i_state, state | I_WILL_FREE);
-		spin_unlock(&inode->i_lock);
-
-		/* write_inode_now removed - returns 0 stub */
-
-		spin_lock(&inode->i_lock);
-		state = inode->i_state;
-		WARN_ON(state & I_NEW);
-		state &= ~I_WILL_FREE;
-	}
-
-	WRITE_ONCE(inode->i_state, state | I_FREEING);
+	WRITE_ONCE(inode->i_state, inode->i_state | I_FREEING);
 	if (!list_empty(&inode->i_lru))
 		inode_lru_list_del(inode);
 	spin_unlock(&inode->i_lock);
@@ -380,14 +317,11 @@ void iput(struct inode *inode)
 /* dentry_needs_remove_privs, file_remove_privs removed - no callers */
 /* file_update_time removed - inlined into fs.h as 0 return stub */
 
-static __initdata unsigned long ihash_entries;
+/* ihash_entries removed - inode hash table removed */
 
-/* hashdist always 0, simplified inode_init_early/inode_init */
 void __init inode_init_early(void)
 {
-	inode_hashtable = alloc_large_system_hash(
-		"Inode-cache", sizeof(struct hlist_head), ihash_entries, 14,
-		HASH_EARLY | HASH_ZERO, &i_hash_shift, &i_hash_mask, 0, 0);
+	/* inode hash table allocation removed - never used */
 }
 
 void __init inode_init(void)

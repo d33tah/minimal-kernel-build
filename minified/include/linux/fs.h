@@ -809,7 +809,7 @@ alloc_inode_sb(struct super_block *sb, struct kmem_cache *cache, gfp_t gfp)
 /* remove_inode_hash inlined at fs/inode.c - single caller */
 
 /* inode_sb_list_add made static in inode.c */
-extern void inode_add_lru(struct inode *inode);
+/* inode_add_lru removed - LRU path never reached */
 
 extern int generic_file_mmap(struct file *, struct vm_area_struct *);
 /* generic_write_checks removed - never called */

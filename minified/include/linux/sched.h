@@ -220,13 +220,7 @@ struct task_struct {
 
 	 
 	struct task_struct __rcu	*real_parent;
-
-	 
-	struct task_struct __rcu	*parent;
-
-	 
-	struct list_head		children;
-	struct list_head		sibling;
+	/* parent, children, sibling removed - write-only in single-task kernel */
 	struct task_struct		*group_leader;
 
 	 

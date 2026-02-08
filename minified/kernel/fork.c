@@ -542,8 +542,7 @@ copy_process(int node, struct kernel_clone_args *args)
 	p->flags &=
 		~(PF_SUPERPRIV | PF_WQ_WORKER | PF_IDLE | PF_NO_SETAFFINITY);
 	p->flags |= PF_FORKNOEXEC;
-	INIT_LIST_HEAD(&p->children);
-	INIT_LIST_HEAD(&p->sibling);
+	/* children, sibling init removed - fields removed */
 	/* vfork_done removed - write-only field */
 	spin_lock_init(&p->alloc_lock);
 
@@ -710,7 +709,7 @@ copy_process(int node, struct kernel_clone_args *args)
 	if (likely(p->pid)) {
 		/* ptrace_init_task inlined - ptrace fields removed */
 		p->jobctl = 0;
-		p->parent = p->real_parent;
+		/* p->parent removed - write-only field */
 		/* ptrace block removed - trace was always 0 */
 
 		init_task_pid(p, PIDTYPE_PID, pid);
@@ -726,7 +725,7 @@ copy_process(int node, struct kernel_clone_args *args)
 			sigemptyset(&p->signal->shared_pending.signal);
 			/* signal->tty removed - write-only */
 			/* has_child_subreaper removed - write-only */
-			list_add_tail(&p->sibling, &p->real_parent->children);
+			/* sibling/children list linkage removed - fields removed */
 			list_add_tail_rcu(&p->tasks, &init_task.tasks);
 			attach_pid(p, PIDTYPE_TGID);
 			attach_pid(p, PIDTYPE_PGID);

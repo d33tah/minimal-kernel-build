@@ -1,1 +1,1 @@
-/* device_pm_init_common, device_pm_init removed - never called */
+/* Stub: power management removed for minimal kernel */

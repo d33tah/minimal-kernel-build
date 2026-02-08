@@ -60,9 +60,7 @@ struct task_struct init_task
 	.tasks		= LIST_HEAD_INIT(init_task.tasks),
 	/* .ptraced, .ptrace_entry removed - ptrace fully stubbed */
 	.real_parent	= &init_task,
-	.parent		= &init_task,
-	.children	= LIST_HEAD_INIT(init_task.children),
-	.sibling	= LIST_HEAD_INIT(init_task.sibling),
+	/* .parent, .children, .sibling removed - write-only fields */
 	.group_leader	= &init_task,
 	RCU_POINTER_INITIALIZER(real_cred, &init_cred),
 	RCU_POINTER_INITIALIZER(cred, &init_cred),

@@ -1,5 +1,4 @@
-#include <linux/hrtimer.h>
-#include <linux/clockchips.h>
+/* linux/hrtimer.h, linux/clockchips.h removed - empty headers deleted */
 #include <linux/cpumask.h>
 
 #include "timekeeping.h"

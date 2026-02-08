@@ -1,11 +1,10 @@
-#include <linux/atomic.h>
+/* --- 2026-02-08 05:55 --- */
+/* Simplified percpu-rwsem for single-task kernel: no contention. */
+
 #include <linux/percpu.h>
-#include <linux/wait.h>
-#include <linux/lockdep.h>
 #include <linux/percpu-rwsem.h>
 #include <linux/rcupdate.h>
 #include <linux/sched.h>
-#include <linux/sched/task.h>
 #include <linux/sched/debug.h>
 #include <linux/errno.h>
 
@@ -17,7 +16,7 @@ int __percpu_init_rwsem(struct percpu_rw_semaphore *sem, const char *name,
 		return -ENOMEM;
 
 	rcu_sync_init(&sem->rss);
-	sem->writer.task = NULL; /* rcuwait_init inlined */
+	sem->writer.task = NULL;
 	init_waitqueue_head(&sem->waiters);
 	atomic_set(&sem->block, 0);
 	return 0;
@@ -27,99 +26,12 @@ void percpu_free_rwsem(struct percpu_rw_semaphore *sem)
 {
 	if (!sem->read_count)
 		return;
-
 	rcu_sync_dtor(&sem->rss);
-	/* free_percpu removed - empty stub */
 	sem->read_count = NULL;
 }
 
-static bool __percpu_down_read_trylock(struct percpu_rw_semaphore *sem)
-{
-	this_cpu_inc(*sem->read_count);
-
-	smp_mb();
-
-	if (likely(!atomic_read_acquire(&sem->block)))
-		return true;
-
-	this_cpu_dec(*sem->read_count);
-
-	rcuwait_wake_up(&sem->writer);
-
-	return false;
-}
-
-/* __percpu_down_write_trylock inlined into __percpu_rwsem_trylock */
-
-static bool __percpu_rwsem_trylock(struct percpu_rw_semaphore *sem, bool reader)
-{
-	if (reader) {
-		bool ret;
-
-		preempt_disable();
-		ret = __percpu_down_read_trylock(sem);
-		preempt_enable();
-
-		return ret;
-	}
-	/* __percpu_down_write_trylock inlined */
-	if (atomic_read(&sem->block))
-		return false;
-	return atomic_xchg(&sem->block, 1) == 0;
-}
-
-static int percpu_rwsem_wake_function(struct wait_queue_entry *wq_entry,
-				      unsigned int mode, int wake_flags,
-				      void *key)
-{
-	bool reader = wq_entry->flags & WQ_FLAG_CUSTOM;
-	struct percpu_rw_semaphore *sem = key;
-	struct task_struct *p;
-
-	if (!__percpu_rwsem_trylock(sem, reader))
-		return 1;
-
-	p = get_task_struct(wq_entry->private);
-	list_del_init(&wq_entry->entry);
-	smp_store_release(&wq_entry->private, NULL);
-
-	wake_up_process(p);
-	put_task_struct(p);
-
-	return !reader;
-}
-
-/* percpu_rwsem_wait inlined into __percpu_down_read */
-
 bool __sched __percpu_down_read(struct percpu_rw_semaphore *sem, bool try)
 {
-	DEFINE_WAIT_FUNC(wq_entry, percpu_rwsem_wake_function);
-	bool wait;
-
-	if (__percpu_down_read_trylock(sem))
-		return true;
-
-	if (try)
-		return false;
-
-	preempt_enable();
-
-	/* percpu_rwsem_wait inlined with reader=true */
-	spin_lock_irq(&sem->waiters.lock);
-	wait = !__percpu_rwsem_trylock(sem, true);
-	if (wait) {
-		wq_entry.flags |= WQ_FLAG_EXCLUSIVE | WQ_FLAG_CUSTOM;
-		__add_wait_queue_entry_tail(&sem->waiters, &wq_entry);
-	}
-	spin_unlock_irq(&sem->waiters.lock);
-	while (wait) {
-		set_current_state(TASK_UNINTERRUPTIBLE);
-		if (!smp_load_acquire(&wq_entry.private))
-			break;
-		schedule();
-	}
-	__set_current_state(TASK_RUNNING);
-
-	preempt_disable();
+	this_cpu_inc(*sem->read_count);
 	return true;
 }

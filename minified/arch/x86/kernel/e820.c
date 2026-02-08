@@ -57,119 +57,12 @@ void __init e820__range_add(u64 start, u64 size, enum e820_type type)
 
 /* e820_print_type, e820__print_table stubs removed - never called */
 
-struct change_member {
-	struct e820_entry *entry;
+/* change_member, change_point_list, overlap_list, new_entries, cpcompare
+ * removed - e820__update_table stubbed for QEMU */
 
-	unsigned long long addr;
-};
-
-static struct change_member change_point_list[2 * E820_MAX_ENTRIES] __initdata;
-static struct change_member *change_point[2 * E820_MAX_ENTRIES] __initdata;
-static struct e820_entry *overlap_list[E820_MAX_ENTRIES] __initdata;
-static struct e820_entry new_entries[E820_MAX_ENTRIES] __initdata;
-
-static int __init cpcompare(const void *a, const void *b)
-{
-	struct change_member *const *app = a, *const *bpp = b;
-	const struct change_member *ap = *app, *bp = *bpp;
-
-	if (ap->addr != bp->addr)
-		return ap->addr > bp->addr ? 1 : -1;
-
-	return (ap->addr != ap->entry->addr) - (bp->addr != bp->entry->addr);
-}
-
-/* e820_nomerge inlined into e820__update_table */
-
+/* e820 table merging stubbed - QEMU provides clean non-overlapping map */
 int __init e820__update_table(struct e820_table *table)
 {
-	struct e820_entry *entries = table->entries;
-	u32 max_nr_entries = ARRAY_SIZE(table->entries);
-	enum e820_type current_type, last_type;
-	unsigned long long last_addr;
-	u32 new_nr_entries, overlap_entries;
-	u32 i, chg_idx, chg_nr;
-
-	if (table->nr_entries < 2)
-		return -1;
-
-	BUG_ON(table->nr_entries > max_nr_entries);
-
-	for (i = 0; i < table->nr_entries; i++) {
-		if (entries[i].addr + entries[i].size < entries[i].addr)
-			return -1;
-	}
-
-	for (i = 0; i < 2 * table->nr_entries; i++)
-		change_point[i] = &change_point_list[i];
-
-	chg_idx = 0;
-	for (i = 0; i < table->nr_entries; i++) {
-		if (entries[i].size != 0) {
-			change_point[chg_idx]->addr = entries[i].addr;
-			change_point[chg_idx++]->entry = &entries[i];
-			change_point[chg_idx]->addr =
-				entries[i].addr + entries[i].size;
-			change_point[chg_idx++]->entry = &entries[i];
-		}
-	}
-	chg_nr = chg_idx;
-
-	sort(change_point, chg_nr, sizeof(*change_point), cpcompare, NULL);
-
-	overlap_entries = 0;
-	new_nr_entries = 0;
-	last_type = 0;
-	last_addr = 0;
-
-	for (chg_idx = 0; chg_idx < chg_nr; chg_idx++) {
-		if (change_point[chg_idx]->addr ==
-		    change_point[chg_idx]->entry->addr) {
-			overlap_list[overlap_entries++] =
-				change_point[chg_idx]->entry;
-		} else {
-			for (i = 0; i < overlap_entries; i++) {
-				if (overlap_list[i] ==
-				    change_point[chg_idx]->entry)
-					overlap_list[i] =
-						overlap_list[overlap_entries -
-							     1];
-			}
-			overlap_entries--;
-		}
-
-		current_type = 0;
-		for (i = 0; i < overlap_entries; i++) {
-			if (overlap_list[i]->type > current_type)
-				current_type = overlap_list[i]->type;
-		}
-
-		/* e820_nomerge inlined */
-		if (current_type != last_type ||
-		    current_type == E820_TYPE_PRAM ||
-		    current_type == E820_TYPE_SOFT_RESERVED) {
-			if (last_type != 0) {
-				new_entries[new_nr_entries].size =
-					change_point[chg_idx]->addr - last_addr;
-
-				if (new_entries[new_nr_entries].size != 0)
-
-					if (++new_nr_entries >= max_nr_entries)
-						break;
-			}
-			if (current_type != 0) {
-				new_entries[new_nr_entries].addr =
-					change_point[chg_idx]->addr;
-				new_entries[new_nr_entries].type = current_type;
-				last_addr = change_point[chg_idx]->addr;
-			}
-			last_type = current_type;
-		}
-	}
-
-	memcpy(entries, new_entries, new_nr_entries * sizeof(*entries));
-	table->nr_entries = new_nr_entries;
-
 	return 0;
 }
 

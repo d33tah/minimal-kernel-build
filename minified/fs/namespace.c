@@ -396,22 +396,7 @@ static void __attach_mnt(struct mount *mnt, struct mount *parent)
 /* attach_mnt inlined into do_move_mount - called only once */
 
 /* commit_tree inlined into graft_tree */
-
-static struct mount *next_mnt(struct mount *p, struct mount *root)
-{
-	struct list_head *next = p->mnt_mounts.next;
-	if (next == &p->mnt_mounts) {
-		while (1) {
-			if (p == root)
-				return NULL;
-			next = p->mnt_child.next;
-			if (next != &p->mnt_parent->mnt_mounts)
-				break;
-			p = p->mnt_parent;
-		}
-	}
-	return list_entry(next, struct mount, mnt_child);
-}
+/* next_mnt removed - never called in minimal kernel */
 
 static struct vfsmount *vfs_create_mount(struct fs_context *fc)
 {

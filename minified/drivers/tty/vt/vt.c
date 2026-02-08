@@ -169,13 +169,7 @@ static void do_update_region(struct vc_data *vc, unsigned long start, int count)
 	}
 }
 
-/* Stubbed build_attr - minimal kernel uses white-on-black (0x07) */
-static u8 build_attr(struct vc_data *vc, u8 _color,
-		     enum vc_intensity _intensity, bool _blink, bool _underline,
-		     bool _reverse, bool _italic)
-{
-	return _color;
-}
+/* build_attr removed - never called in minimal kernel */
 
 static void update_attr(struct vc_data *vc)
 {

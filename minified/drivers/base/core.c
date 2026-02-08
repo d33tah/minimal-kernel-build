@@ -35,73 +35,7 @@ void __init driver_init(void)
 
 /* device_pm_move_to_tail removed - was empty stub (lock/unlock with no work) */
 
-/* devlink_class and related functions removed - devlink_class_init was removed so class is never registered */
-
-#define to_dev_attr(_attr) container_of(_attr, struct device_attribute, attr)
-
-static ssize_t dev_attr_show(struct kobject *kobj, struct attribute *attr,
-			     char *buf)
-{
-	struct device_attribute *dev_attr = to_dev_attr(attr);
-	struct device *dev = kobj_to_dev(kobj);
-	ssize_t ret = -EIO;
-
-	if (dev_attr->show)
-		ret = dev_attr->show(dev, dev_attr, buf);
-	if (ret >= (ssize_t)PAGE_SIZE) {
-		printk("dev_attr_show: %pS returned bad count\n",
-		       dev_attr->show);
-	}
-	return ret;
-}
-
-static ssize_t dev_attr_store(struct kobject *kobj, struct attribute *attr,
-			      const char *buf, size_t count)
-{
-	struct device_attribute *dev_attr = to_dev_attr(attr);
-	struct device *dev = kobj_to_dev(kobj);
-	ssize_t ret = -EIO;
-
-	if (dev_attr->store)
-		ret = dev_attr->store(dev, dev_attr, buf, count);
-	return ret;
-}
-
-static const struct sysfs_ops dev_sysfs_ops = {
-	.show = dev_attr_show,
-	.store = dev_attr_store,
-};
-
-static void device_release(struct kobject *kobj)
-{
-	struct device *dev = kobj_to_dev(kobj);
-	struct device_private *p = dev->p;
-
-	if (dev->release)
-		dev->release(dev);
-	else if (dev->type && dev->type->release)
-		dev->type->release(dev);
-	else if (dev->class && dev->class->dev_release)
-		dev->class->dev_release(dev);
-	else
-		WARN(1,
-		     KERN_ERR
-		     "Device '%s' does not have a release() function, it is broken and must be fixed. See Documentation/core-api/kobject.rst.\n",
-		     dev_name(dev));
-	kfree(p);
-}
-
-/* device_namespace, device_get_ownership removed - callbacks never invoked */
-
-static struct kobj_type device_ktype = {
-	.release = device_release,
-	.sysfs_ops = &dev_sysfs_ops,
-	/* .namespace, .get_ownership removed - never invoked */
-};
-
-/* dev_uevent_filter, dev_uevent_name, dev_uevent, device_uevent_ops removed - never invoked */
-
-/* uevent_show, uevent_store, dev_attr_uevent removed - only caller was empty device_remove_file stub */
+/* device_ktype, device_release, dev_sysfs_ops, dev_attr_show/store removed - unused */
 
 /* Stub: online sysfs attributes simplified for minimal kernel */
 

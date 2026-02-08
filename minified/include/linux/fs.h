@@ -66,8 +66,7 @@ static inline void do_delayed_call(struct delayed_call *call)
 #define SEEK_SET	0
 #define SEEK_END	2
 /* SEEK_DATA, SEEK_HOLE, RENAME_NOREPLACE removed - unused */
-/* rwf_t typedef removed - unused, RWF_NOWAIT kept for IOCB_NOWAIT */
-#define RWF_NOWAIT	0x00000008
+/* rwf_t, RWF_NOWAIT removed - unused */
 /* end uapi/linux/fs.h */
 
 /* Unused forward decls removed: bdi_writeback, bio, iovec, kobject,
@@ -167,10 +166,8 @@ struct page;
 struct address_space;
 /* struct writeback_control forward decl removed - unused */
 
-#define IOCB_NOWAIT		(__force int) RWF_NOWAIT
 #define IOCB_DIRECT		(1 << 17)
-#define IOCB_WAITQ		(1 << 19)
-#define IOCB_NOIO		(1 << 20)
+/* IOCB_NOWAIT, IOCB_WAITQ, IOCB_NOIO removed - no callers */
 
 struct kiocb {
 	struct file		*ki_filp;
@@ -234,7 +231,6 @@ static inline void i_mmap_unlock_write(struct address_space *mapping)
 #define IOP_FASTPERM	0x0001
 #define IOP_LOOKUP	0x0002
 #define IOP_NOFOLLOW	0x0004
-#define IOP_XATTR	0x0008
 
 struct inode {
 	umode_t			i_mode;
@@ -413,7 +409,7 @@ static inline struct inode *file_inode(const struct file *f)
 #define SB_I_NOEXEC	0x00000002
 #define SB_I_NODEV	0x00000004
 /* SB_I_USERNS_VISIBLE removed - unused */
-#define SB_I_PERSB_BDI	0x00000200
+/* SB_I_PERSB_BDI removed - unused */
 
 enum {
 	SB_UNFROZEN = 0,		

@@ -124,11 +124,7 @@ struct delayed_work {
 #define INIT_DELAYED_WORK(_work, _func)					\
 	__INIT_DELAYED_WORK(_work, _func, 0)
 
-#define work_pending(work) \
-	test_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))
-
-#define delayed_work_pending(w) \
-	work_pending(&(w)->work)
+/* work_pending, delayed_work_pending removed - no callers */
 
 /* All WQ_* flags removed - unused:
    WQ_UNBOUND, WQ_MEM_RECLAIM, WQ_SYSFS, WQ_FREEZABLE, WQ_HIGHPRI,

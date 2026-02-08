@@ -33,7 +33,7 @@ extern void __init mnt_init(void);
 
 /* __mnt_want_write_file, __mnt_drop_write_file removed - never called */
 
-extern void dissolve_on_fput(struct vfsmount *);
+/* dissolve_on_fput removed - FMODE_NEED_UNMOUNT never set */
 /* may_mount removed - never called (~4 LOC) */
 
 int path_mount(const char *dev_name, struct path *path,

@@ -19,8 +19,8 @@
 
 /* --- 2026-01-26 01:10 --- Inlined from pnode.h */
 #include "mount.h"
-#define IS_MNT_SHARED(m) ((m)->mnt.mnt_flags & MNT_SHARED)
-#define IS_MNT_LOCKED(m) ((m)->mnt.mnt_flags & MNT_LOCKED)
+/* IS_MNT_SHARED removed - invent_group_ids removed, never shared */
+/* IS_MNT_LOCKED removed - only used in umount_tree (removed) */
 /* set_mnt_shared inlined into attach_recursive_mnt - single caller */
 static int mnt_get_count(struct mount *mnt);
 static void mnt_set_mountpoint(struct mount *, struct mountpoint *,
@@ -39,13 +39,13 @@ static __initdata unsigned long mphash_entries;
 
 static u64 event;
 static DEFINE_IDA(mnt_id_ida);
-static DEFINE_IDA(mnt_group_ida);
+/* mnt_group_ida removed - invent_group_ids removed */
 
 static struct hlist_head *mount_hashtable __read_mostly;
 static struct hlist_head *mountpoint_hashtable __read_mostly;
 static struct kmem_cache *mnt_cache __read_mostly;
 static DECLARE_RWSEM(namespace_sem);
-static HLIST_HEAD(unmounted);
+/* HLIST_HEAD(unmounted) removed - umount_tree removed */
 static LIST_HEAD(ex_mountpoints);
 
 /* Removed: struct mount_kattr - never used */
@@ -590,33 +590,15 @@ struct vfsmount *mntget(struct vfsmount *mnt)
 
 static void namespace_unlock(void)
 {
-	struct hlist_head head;
-	struct hlist_node *p;
-	struct mount *m;
 	LIST_HEAD(list);
 
-	/* hlist_move_list inlined */
-	head.first = unmounted.first;
-	if (head.first)
-		head.first->pprev = &head.first;
-	unmounted.first = NULL;
-	/* list_splice_init inlined */
+	/* unmounted hlist handling removed - umount_tree removed, never populated */
 	if (!list_empty(&ex_mountpoints)) {
 		__list_splice(&ex_mountpoints, &list, list.next);
 		INIT_LIST_HEAD(&ex_mountpoints);
 	}
 
 	up_write(&namespace_sem);
-
-	/* shrink_dentry_list call removed - function is empty stub */
-
-	if (likely(hlist_empty(&head)))
-		return;
-	/* synchronize_rcu_expedited call removed - empty stub (single task) */
-	hlist_for_each_entry_safe(m, p, &head, mnt_umount) {
-		hlist_del(&m->mnt_umount);
-		mntput(&m->mnt);
-	}
 }
 
 static inline void namespace_lock(void)
@@ -624,191 +606,55 @@ static inline void namespace_lock(void)
 	down_write(&namespace_sem);
 }
 
-enum umount_tree_flags {
-	UMOUNT_SYNC = 1,
-	UMOUNT_PROPAGATE = 2,
-	UMOUNT_CONNECTED = 4,
-};
-
-/* disconnect_mount inlined into umount_tree */
-
-static void umount_tree(struct mount *mnt, enum umount_tree_flags how)
-{
-	LIST_HEAD(tmp_list);
-	struct mount *p;
-
-	for (p = mnt; p; p = next_mnt(p, mnt)) {
-		p->mnt.mnt_flags |= MNT_UMOUNT;
-		list_move(&p->mnt_list, &tmp_list);
-	}
-
-	list_for_each_entry(p, &tmp_list, mnt_list) {
-		list_del_init(&p->mnt_child);
-	}
-
-	/* propagate_umount call removed - always returns 0, no side effects */
-
-	while (!list_empty(&tmp_list)) {
-		struct mnt_namespace *ns;
-		bool disconnect;
-		p = list_first_entry(&tmp_list, struct mount, mnt_list);
-		list_del_init(&p->mnt_expire);
-		list_del_init(&p->mnt_list);
-		ns = p->mnt_ns;
-		if (ns) {
-			ns->mounts--;
-			if (ns->event != event) {
-				ns->event = event;
-				wake_up_interruptible(&ns->poll);
-			}
-		}
-		p->mnt_ns = NULL;
-		if (how & UMOUNT_SYNC)
-			p->mnt.mnt_flags |= MNT_SYNC_UMOUNT;
-
-		/* disconnect_mount inlined */
-		disconnect = (how & UMOUNT_SYNC) || !mnt_has_parent(p) ||
-			     !(p->mnt_parent->mnt.mnt_flags & MNT_UMOUNT) ||
-			     (!(how & UMOUNT_CONNECTED) && !IS_MNT_LOCKED(p));
-		if (mnt_has_parent(p)) {
-			mnt_add_count(p->mnt_parent, -1);
-			if (!disconnect) {
-				list_add_tail(&p->mnt_child,
-					      &p->mnt_parent->mnt_mounts);
-			} else {
-				put_mountpoint(
-					unhash_mnt(p)); /* inlined umount_mnt */
-			}
-		}
-		if (disconnect)
-			hlist_add_head(&p->mnt_umount, &unmounted);
-	}
-}
-
-/* do_umount, can_umount, path_umount removed - cascading removal after path_umount's only caller removed */
-
-/* __detach_mounts removed - empty stub moved inline to mount.h */
-/* may_mount removed - never called (~4 LOC) */
-/* to_mnt_ns removed - no callers after mntns_* cleanup */
+/* umount_tree, dissolve_on_fput, invent_group_ids removed -
+   dissolve_on_fput only called when FMODE_NEED_UNMOUNT set (never set),
+   invent_group_ids only called from IS_MNT_SHARED path (never shared) */
 
 static void free_mnt_ns(struct mnt_namespace *);
 static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *, bool);
 
-void dissolve_on_fput(struct vfsmount *mnt)
-{
-	struct mnt_namespace *ns;
-	namespace_lock();
-	lock_mount_hash();
-	ns = real_mount(mnt)->mnt_ns;
-	if (ns) {
-		if (is_anon_ns(ns))
-			umount_tree(real_mount(mnt), UMOUNT_CONNECTED);
-		else
-			ns = NULL;
-	}
-	unlock_mount_hash();
-	namespace_unlock();
-	if (ns)
-		free_mnt_ns(ns);
-}
-
-/* lock_mnt_tree removed - only caller was in dead tree_list loop */
-
-static int invent_group_ids(struct mount *mnt, bool recurse)
-{
-	struct mount *p;
-
-	for (p = mnt; p; p = recurse ? next_mnt(p, mnt) : NULL) {
-		if (!p->mnt_group_id && !IS_MNT_SHARED(p)) {
-			/* mnt_alloc_group_id inlined, ida_alloc_min inlined */
-			int res = ida_alloc_range(&mnt_group_ida, 1, ~0,
-						  GFP_KERNEL);
-			if (res < 0)
-				return res;
-			p->mnt_group_id = res;
-		}
-	}
-
-	return 0;
-}
-
+/* attach_recursive_mnt simplified: IS_MNT_SHARED branch removed (never shared),
+   moving branch removed (only called with moving=false) */
 static int attach_recursive_mnt(struct mount *source_mnt,
 				struct mount *dest_mnt,
 				struct mountpoint *dest_mp, bool moving)
 {
-	struct mnt_namespace *ns = dest_mnt->mnt_ns;
 	struct mountpoint *smp;
-	struct mount *p;
-	int err;
 
 	smp = get_mountpoint(source_mnt->mnt.mnt_root);
 	if (IS_ERR(smp))
 		return PTR_ERR(smp);
 
-	/* count_mounts call removed - always returned 0 */
+	lock_mount_hash();
+	if (source_mnt->mnt_ns)
+		list_del_init(&source_mnt->mnt_ns->list);
+	mnt_set_mountpoint(dest_mnt, dest_mp, source_mnt);
+	/* Inlined commit_tree */
+	{
+		struct mount *parent = source_mnt->mnt_parent;
+		struct mount *m;
+		LIST_HEAD(head);
+		struct mnt_namespace *n = parent->mnt_ns;
 
-	if (IS_MNT_SHARED(dest_mnt)) {
-		err = invent_group_ids(source_mnt, true);
-		if (err)
-			goto out;
-		/* propagate_mnt call removed - always returns 0 */
-		lock_mount_hash();
-		for (p = source_mnt; p; p = next_mnt(p, source_mnt)) {
-			/* set_mnt_shared inlined */
-			p->mnt.mnt_flags &= ~MNT_SHARED_MASK;
-			p->mnt.mnt_flags |= MNT_SHARED;
-		}
-	} else {
-		lock_mount_hash();
-	}
-	if (moving) {
-		unhash_mnt(source_mnt);
-		/* attach_mnt inlined */
-		mnt_set_mountpoint(dest_mnt, dest_mp, source_mnt);
-		__attach_mnt(source_mnt, dest_mnt);
-		touch_mnt_namespace(source_mnt->mnt_ns);
-	} else {
-		if (source_mnt->mnt_ns) {
-			list_del_init(&source_mnt->mnt_ns->list);
-		}
-		mnt_set_mountpoint(dest_mnt, dest_mp, source_mnt);
-		/* Inlined commit_tree */
-		{
-			struct mount *parent = source_mnt->mnt_parent;
-			struct mount *m;
-			LIST_HEAD(head);
-			struct mnt_namespace *n = parent->mnt_ns;
+		BUG_ON(parent == source_mnt);
 
-			BUG_ON(parent == source_mnt);
+		list_add_tail(&head, &source_mnt->mnt_list);
+		list_for_each_entry(m, &head, mnt_list)
+			m->mnt_ns = n;
 
-			list_add_tail(&head, &source_mnt->mnt_list);
-			list_for_each_entry(m, &head, mnt_list)
-				m->mnt_ns = n;
+		list_splice(&head, n->list.prev);
 
-			list_splice(&head, n->list.prev);
+		n->mounts += n->pending_mounts;
+		n->pending_mounts = 0;
 
-			n->mounts += n->pending_mounts;
-			n->pending_mounts = 0;
-
-			__attach_mnt(source_mnt, parent);
-			touch_mnt_namespace(n);
-		}
+		__attach_mnt(source_mnt, parent);
+		touch_mnt_namespace(n);
 	}
 
 	put_mountpoint(smp);
 	unlock_mount_hash();
 
 	return 0;
-
-out:
-	/* out_cleanup_ids unreachable now (propagate_mnt always returned 0) */
-	ns->pending_mounts = 0;
-
-	read_seqlock_excl(&mount_lock);
-	put_mountpoint(smp);
-	read_sequnlock_excl(&mount_lock);
-
-	return err;
 }
 
 static struct mountpoint *lock_mount(struct path *path)
@@ -904,34 +750,9 @@ int path_mount(const char *dev_name, struct path *path, const char *type_page,
 		return -ENOSYS;
 	if (flags & MS_BIND)
 		return -EINVAL;
-	if (flags & (MS_SHARED | MS_PRIVATE | MS_SLAVE | MS_UNBINDABLE)) {
-		/* Inlined do_change_type */
-		struct mount *mnt = real_mount(path->mnt);
-		int recurse = flags & MS_REC;
-		int prop_type = flags & ~(MS_REC | MS_SILENT);
-		int err = 0;
-
-		if (path->dentry != path->mnt->mnt_root)
-			return -EINVAL;
-		if ((prop_type &
-		     ~(MS_SHARED | MS_PRIVATE | MS_SLAVE | MS_UNBINDABLE)) ||
-		    !is_power_of_2(prop_type))
-			return -EINVAL;
-		namespace_lock();
-		if (prop_type == MS_SHARED) {
-			err = invent_group_ids(mnt, recurse);
-			if (!err) {
-				lock_mount_hash();
-				unlock_mount_hash();
-			}
-		} else {
-			lock_mount_hash();
-			unlock_mount_hash();
-		}
-		namespace_unlock();
-		return err;
-	}
-	if (flags & MS_MOVE)
+	/* do_change_type block removed - these flags never passed during boot */
+	if (flags &
+	    (MS_SHARED | MS_PRIVATE | MS_SLAVE | MS_UNBINDABLE | MS_MOVE))
 		return -EINVAL;
 
 	/* Inlined do_new_mount */

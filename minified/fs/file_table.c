@@ -80,8 +80,7 @@ static void __fput(struct file *file)
 		__mnt_drop_write(mnt);
 	}
 	dput(dentry);
-	if (unlikely(mode & FMODE_NEED_UNMOUNT))
-		dissolve_on_fput(mnt);
+	/* dissolve_on_fput removed - FMODE_NEED_UNMOUNT never set */
 	mntput(mnt);
 out:
 	call_rcu(&file->f_u.fu_rcuhead, file_free_rcu);

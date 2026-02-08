@@ -106,11 +106,6 @@ extern void __xadd_wrong_size(void)
 #define __cmpxchg(ptr, old, new, size)					\
 	__raw_cmpxchg((ptr), (old), (new), (size), LOCK_PREFIX)
 
-#define __sync_cmpxchg(ptr, old, new, size)				\
-	__raw_cmpxchg((ptr), (old), (new), (size), "lock; ")
-
-#define __cmpxchg_local(ptr, old, new, size)				\
-	__raw_cmpxchg((ptr), (old), (new), (size), "")
 
 /* --- 2025-12-07 20:12 --- Inlined cmpxchg_32.h */
 /* set_64bit removed - unused */
@@ -118,9 +113,6 @@ extern void __xadd_wrong_size(void)
 #define arch_cmpxchg64(ptr, o, n)					\
 	((__typeof__(*(ptr)))__cmpxchg64((ptr), (unsigned long long)(o), \
 					 (unsigned long long)(n)))
-#define arch_cmpxchg64_local(ptr, o, n)					\
-	((__typeof__(*(ptr)))__cmpxchg64_local((ptr), (unsigned long long)(o), \
-					       (unsigned long long)(n)))
 #define arch_try_cmpxchg64(ptr, po, n)					\
 	__try_cmpxchg64((ptr), (unsigned long long *)(po), \
 			(unsigned long long)(n))
@@ -141,11 +133,6 @@ static inline u64 __cmpxchg64(volatile u64 *ptr, u64 old, u64 new)
 	return prev;
 }
 
-static inline u64 __cmpxchg64_local(volatile u64 *ptr, u64 old, u64 new)
-{
-	return __cmpxchg64(ptr, old, new);
-}
-
 static inline bool __try_cmpxchg64(volatile u64 *ptr, u64 *pold, u64 new)
 {
 	u64 old = *pold;
@@ -161,13 +148,6 @@ static inline bool __try_cmpxchg64(volatile u64 *ptr, u64 *pold, u64 new)
 
 #define arch_cmpxchg(ptr, old, new)					\
 	__cmpxchg(ptr, old, new, sizeof(*(ptr)))
-
-#define arch_sync_cmpxchg(ptr, old, new)				\
-	__sync_cmpxchg(ptr, old, new, sizeof(*(ptr)))
-
-#define arch_cmpxchg_local(ptr, old, new)				\
-	__cmpxchg_local(ptr, old, new, sizeof(*(ptr)))
-
 
 #define __raw_try_cmpxchg(_ptr, _pold, _new, size, lock)		\
 ({									\
@@ -263,8 +243,5 @@ static inline bool __try_cmpxchg64(volatile u64 *ptr, u64 *pold, u64 new)
 
 #define arch_cmpxchg_double(p1, p2, o1, o2, n1, n2) \
 	__cmpxchg_double(LOCK_PREFIX, p1, p2, o1, o2, n1, n2)
-
-#define arch_cmpxchg_double_local(p1, p2, o1, o2, n1, n2) \
-	__cmpxchg_double(, p1, p2, o1, o2, n1, n2)
 
 #endif	 

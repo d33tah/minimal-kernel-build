@@ -239,9 +239,7 @@ bool expr_depends_symbol(struct expr *dep, struct symbol *sym);
 struct expr *expr_trans_compare(struct expr *e, enum expr_type type, struct symbol *sym);
 
 struct gstr;
-void expr_gstr_print(struct expr *e, struct gstr *gs);
-void expr_gstr_print_revdep(struct expr *e, struct gstr *gs,
-			    tristate pr_type, const char *title);
+/* expr_gstr_print, expr_gstr_print_revdep removed - no callers */
 
 static inline int expr_is_yes(struct expr *e)
 {

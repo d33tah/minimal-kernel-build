@@ -25,7 +25,7 @@ bool sym_string_within_range(struct symbol *sym, const char *str);
 struct property * sym_get_choice_prop(struct symbol *sym);
 const char * sym_get_string_value(struct symbol *sym);
 
-const char * prop_get_type_name(enum prop_type type);
+/* prop_get_type_name removed - no callers */
 
  
 enum variable_flavor {
@@ -41,4 +41,4 @@ char *expand_dollar(const char **str);
 char *expand_one_token(const char **str);
 
  
-void expr_print(struct expr *e, void (*fn)(void *, struct symbol *, const char *), void *data, int prevtoken);
+/* expr_print removed - no callers after sym_warn_unmet_dep simplification */

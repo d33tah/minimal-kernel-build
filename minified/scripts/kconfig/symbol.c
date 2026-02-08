@@ -284,22 +284,10 @@ static struct symbol *sym_calc_choice(struct symbol *sym)
 
 static void sym_warn_unmet_dep(struct symbol *sym)
 {
-	struct gstr gs = str_new();
-
-	str_printf(&gs,
-		   "\nWARNING: unmet direct dependencies detected for %s\n",
-		   sym->name);
-	str_printf(&gs,
-		   "  Depends on [%c]: ", sym->dir_dep.tri == mod ? 'm' : 'n');
-	expr_gstr_print(sym->dir_dep.expr, &gs);
-	str_printf(&gs, "\n");
-
-	expr_gstr_print_revdep(sym->rev_dep.expr, &gs, yes,
-			       "  Selected by [y]:\n");
-	expr_gstr_print_revdep(sym->rev_dep.expr, &gs, mod,
-			       "  Selected by [m]:\n");
-
-	fputs(str_get(&gs), stderr);
+	fprintf(stderr,
+		"\nWARNING: unmet direct dependencies detected for %s\n"
+		"  Depends on [%c]\n",
+		sym->name, sym->dir_dep.tri == mod ? 'm' : 'n');
 }
 
 void sym_calc_value(struct symbol *sym)
@@ -685,29 +673,4 @@ struct symbol *prop_get_symbol(struct property *prop)
 	return NULL;
 }
 
-const char *prop_get_type_name(enum prop_type type)
-{
-	switch (type) {
-	case P_PROMPT:
-		return "prompt";
-	case P_COMMENT:
-		return "comment";
-	case P_MENU:
-		return "menu";
-	case P_DEFAULT:
-		return "default";
-	case P_CHOICE:
-		return "choice";
-	case P_SELECT:
-		return "select";
-	case P_IMPLY:
-		return "imply";
-	case P_RANGE:
-		return "range";
-	case P_SYMBOL:
-		return "symbol";
-	case P_UNKNOWN:
-		break;
-	}
-	return "unknown";
-}
+/* prop_get_type_name removed - only used by removed sym_check_print_recursive */

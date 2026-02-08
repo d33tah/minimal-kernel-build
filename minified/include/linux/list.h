@@ -105,10 +105,7 @@ static inline int list_empty_careful(const struct list_head *head)
 }
 
 
-static inline int list_is_singular(const struct list_head *head)
-{
-	return !list_empty(head) && (head->next == head->prev);
-}
+/* list_is_singular removed - never called */
 
 static inline void __list_splice(const struct list_head *list,
 				 struct list_head *prev,

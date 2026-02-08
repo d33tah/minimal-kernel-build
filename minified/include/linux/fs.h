@@ -517,20 +517,14 @@ static inline void sb_end_write(struct super_block *sb)
 	__sb_end_write(sb, SB_FREEZE_WRITE);
 }
 
-static inline void sb_end_pagefault(struct super_block *sb)
-{
-	__sb_end_write(sb, SB_FREEZE_PAGEFAULT);
-}
+/* sb_end_pagefault removed - never called */
 
 static inline void sb_start_write(struct super_block *sb)
 {
 	__sb_start_write(sb, SB_FREEZE_WRITE);
 }
 
-static inline void sb_start_pagefault(struct super_block *sb)
-{
-	__sb_start_write(sb, SB_FREEZE_PAGEFAULT);
-}
+/* sb_start_pagefault removed - never called */
 
 bool inode_owner_or_capable(struct user_namespace *mnt_userns,
 			    const struct inode *inode);

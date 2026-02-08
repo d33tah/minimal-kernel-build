@@ -57,7 +57,6 @@ static inline int page_ref_dec_and_test(struct page *page)
 	return atomic_dec_and_test(&page->_refcount);
 }
 
-
 /* folio_ref_add_unless inlined into folio_try_get_rcu */
 static inline bool folio_try_get_rcu(struct folio *folio)
 {
@@ -286,7 +285,6 @@ static inline int folio_put_testzero(struct folio *folio)
 {
 	return put_page_testzero(&folio->page);
 }
-
 
 /* vmalloc_to_page removed - no callers */
 /* is_vmalloc_addr removed - no callers */

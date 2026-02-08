@@ -45,7 +45,7 @@ static void inode_init_always(struct super_block *sb, struct inode *inode)
 	struct address_space *const mapping = &inode->i_data;
 
 	inode->i_sb = sb;
-	inode->i_blkbits = sb->s_blocksize_bits;
+	/* i_blkbits init removed - field removed */
 	inode->i_flags = 0;
 	atomic_set(&inode->i_count, 1);
 	inode->i_op = &empty_iops;
@@ -111,7 +111,7 @@ static void inode_init_once(struct inode *inode)
 {
 	struct address_space *mapping = &inode->i_data;
 	memset(inode, 0, sizeof(*inode));
-	INIT_HLIST_NODE(&inode->i_hash);
+	/* INIT_HLIST_NODE(&inode->i_hash) removed - field removed */
 	INIT_LIST_HEAD(&inode->i_devices);
 	INIT_LIST_HEAD(&inode->i_lru);
 	/* Inlined __address_space_init_once */

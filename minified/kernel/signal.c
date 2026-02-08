@@ -150,9 +150,8 @@ static int force_sig_info_to_task(struct kernel_siginfo *info,
 			sigdelset(&t->blocked, sig);
 	}
 
-	if (action->sa.sa_handler == SIG_DFL &&
-	    (!t->ptrace || (handler == HANDLER_EXIT)))
-		/* signal->flags write removed - flags field removed */
+	/* ptrace check removed - ptrace always 0 */
+	if (action->sa.sa_handler == SIG_DFL)
 		ret = send_signal_locked(sig, info, t, PIDTYPE_PID);
 	spin_unlock_irqrestore(&t->sighand->siglock, flags);
 

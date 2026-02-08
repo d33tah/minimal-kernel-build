@@ -58,8 +58,7 @@ struct task_struct init_task
 		/* .group_node removed - field removed from sched_entity */
 	},
 	.tasks		= LIST_HEAD_INIT(init_task.tasks),
-	.ptraced	= LIST_HEAD_INIT(init_task.ptraced),
-	.ptrace_entry	= LIST_HEAD_INIT(init_task.ptrace_entry),
+	/* .ptraced, .ptrace_entry removed - ptrace fully stubbed */
 	.real_parent	= &init_task,
 	.parent		= &init_task,
 	.children	= LIST_HEAD_INIT(init_task.children),

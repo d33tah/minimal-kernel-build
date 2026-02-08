@@ -677,8 +677,7 @@ copy_process(int node, struct kernel_clone_args *args)
 	p->group_leader = p;
 	p->tgid = p->pid;
 
-	/* p->nr_dirtied removed - write-only */
-	p->pdeath_signal = 0;
+	/* p->nr_dirtied, p->pdeath_signal removed - write-only */
 	INIT_LIST_HEAD(&p->thread_group);
 	p->task_works = NULL;
 
@@ -709,11 +708,8 @@ copy_process(int node, struct kernel_clone_args *args)
 			INIT_HLIST_NODE(&p->pid_links[type]);
 	}
 	if (likely(p->pid)) {
-		/* ptrace_init_task inlined */
-		INIT_LIST_HEAD(&p->ptrace_entry);
-		INIT_LIST_HEAD(&p->ptraced);
+		/* ptrace_init_task inlined - ptrace fields removed */
 		p->jobctl = 0;
-		p->ptrace = 0;
 		p->parent = p->real_parent;
 		/* ptrace block removed - trace was always 0 */
 

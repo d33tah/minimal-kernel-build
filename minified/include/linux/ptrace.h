@@ -55,12 +55,7 @@ static inline void ptrace_event(int event, unsigned long message)
 
 /* ptrace_init_task inlined at single call site in fork.c */
 
-static inline void ptrace_release_task(struct task_struct *task)
-{
-	BUG_ON(!list_empty(&task->ptraced));
-	/* ptrace_unlink call removed - it called empty __ptrace_unlink */
-	BUG_ON(!list_empty(&task->ptrace_entry));
-}
+/* ptrace_release_task removed - never called, ptrace fields removed */
 /* force_successful_syscall_return, is_syscall_success removed - never called */
 
 /* x86 defines arch_has_single_step, arch_has_block_step,

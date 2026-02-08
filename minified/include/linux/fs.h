@@ -258,13 +258,12 @@ struct inode {
 	loff_t			i_size;
 	/* i_atime, i_mtime removed - only written, never read */
 	spinlock_t		i_lock;
-	u8			i_blkbits;
+	/* i_blkbits removed - write-only, never read */
 
-	
 	unsigned long		i_state;
 	struct rw_semaphore	i_rwsem;
 
-	struct hlist_node	i_hash;
+	/* i_hash removed - inode_unhashed never called */
 	struct list_head	i_lru;
 	struct list_head	i_sb_list;
 	/* i_wb_list removed - only initialized, never used */
@@ -292,10 +291,7 @@ struct inode {
 /* timestamp_truncate removed - no longer called */
 /* i_blocksize inlined into truncate.c (~3 LOC) */
 
-static inline int inode_unhashed(struct inode *inode)
-{
-	return hlist_unhashed(&inode->i_hash);
-}
+/* inode_unhashed removed - never called, i_hash field removed */
 
 /* enum inode_i_mutex_lock_class (I_MUTEX_NORMAL, I_MUTEX_PARENT) removed - never used */
 
@@ -823,7 +819,7 @@ extern ssize_t generic_file_write_iter(struct kiocb *, struct iov_iter *);
 
 /* llseek functions removed - llseek callback removed from file_operations */
 /* rw_verify_area removed - no callers */
-extern int nonseekable_open(struct inode * inode, struct file * filp);
+/* nonseekable_open declaration removed - never called */
 /* Removed: stream_open - never called */
 
 #define special_file(m) (S_ISCHR(m)||S_ISBLK(m)||S_ISFIFO(m)||S_ISSOCK(m))

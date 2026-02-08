@@ -183,7 +183,7 @@ int commit_creds(struct cred *new)
 		    !gid_eq(old->egid, new->egid) ||
 		    !uid_eq(old->fsuid, new->fsuid) ||
 		    !gid_eq(old->fsgid, new->fsgid) || !cap_subset) {
-			task->pdeath_signal = 0;
+			/* pdeath_signal zeroing removed - field removed */
 			smp_wmb();
 		}
 	}

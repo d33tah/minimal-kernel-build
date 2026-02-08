@@ -158,7 +158,7 @@ struct task_struct {
 	refcount_t			usage;
 	 
 	unsigned int			flags;
-	unsigned int			ptrace;
+	/* ptrace field removed - always 0, ptrace fully stubbed */
 
 	int				on_rq;
 
@@ -189,8 +189,8 @@ struct task_struct {
 	/* exit_code removed - write-only field (never read) */
 	int				exit_signal;
 	 
-	int				pdeath_signal;
-	 
+	/* pdeath_signal removed - write-only, never read */
+
 	unsigned long			jobctl;
 
 	 
@@ -230,8 +230,7 @@ struct task_struct {
 	struct task_struct		*group_leader;
 
 	 
-	struct list_head		ptraced;
-	struct list_head		ptrace_entry;
+	/* ptraced, ptrace_entry removed - ptrace fully stubbed */
 
 	 
 	struct pid			*thread_pid;
@@ -410,7 +409,7 @@ static inline int set_cpus_allowed_ptr(struct task_struct *p, const struct cpuma
 /* task_nice inlined into sched/core.c (~3 LOC) */
 
 extern int sched_setscheduler_nocheck(struct task_struct *, int, const struct sched_param *);
-extern void sched_set_fifo(struct task_struct *p);
+/* sched_set_fifo declaration removed - never called */
 
 /* is_idle_task inlined at kernel/rcu/tiny.c - single caller */
 

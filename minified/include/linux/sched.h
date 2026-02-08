@@ -65,12 +65,9 @@ struct signal_struct;
 #define TASK_UNINTERRUPTIBLE		0x0002
 /* __TASK_STOPPED, __TASK_TRACED removed - unused */
 #define EXIT_DEAD			0x0010
-#define EXIT_ZOMBIE			0x0020
 #define TASK_PARKED			0x0040
 #define TASK_DEAD			0x0080
 #define TASK_WAKEKILL			0x0100
-#define TASK_WAKING			0x0200
-/* TASK_NOLOAD removed - never used */
 #define TASK_NEW			0x0800
 
 #define TASK_KILLABLE			(TASK_WAKEKILL | TASK_UNINTERRUPTIBLE)
@@ -347,7 +344,6 @@ static inline int is_global_init(struct task_struct *tsk)
 #define PF_IDLE			0x00000002
 #define PF_EXITING		0x00000004
 /* PF_POSTCOREDUMP removed - never used */
-#define PF_IO_WORKER		0x00000010
 #define PF_WQ_WORKER		0x00000020
 #define PF_FORKNOEXEC		0x00000040
 #define PF_SUPERPRIV		0x00000100
@@ -362,7 +358,6 @@ static inline int is_global_init(struct task_struct *tsk)
 #define PF_NO_SETAFFINITY	0x04000000
 #define PF_MEMALLOC_PIN		0x10000000
 
-#define PFA_NO_NEW_PRIVS		0
 #define PFA_SPEC_SSB_DISABLE		3
 #define PFA_SPEC_IB_DISABLE		5
 #define PFA_SPEC_SSB_NOEXEC		7
@@ -374,8 +369,6 @@ static inline int is_global_init(struct task_struct *tsk)
 #define TASK_PFA_CLEAR(name, func)					\
 	static inline void task_clear_##func(struct task_struct *p)	\
 	{ clear_bit(PFA_##name, &p->atomic_flags); }
-
-TASK_PFA_TEST(NO_NEW_PRIVS, no_new_privs)
 
 TASK_PFA_TEST(SPEC_SSB_DISABLE, spec_ssb_disable)
 TASK_PFA_CLEAR(SPEC_SSB_DISABLE, spec_ssb_disable)

@@ -88,10 +88,7 @@ extern void __init files_init(void);
 /* struct buffer_head, get_block_t removed - only used by block device code */
 
 #define MAY_EXEC		0x00000001
-#define MAY_WRITE		0x00000002
-/* MAY_READ removed - unused */
 #define MAY_ACCESS		0x00000010
-#define MAY_OPEN		0x00000020
 #define MAY_CHDIR		0x00000040
 
 #define MAY_NOT_BLOCK		0x00000080
@@ -135,7 +132,6 @@ extern void __init files_init(void);
 #define ATTR_SIZE	(1 << 3)
 #define ATTR_ATIME	(1 << 4)
 #define ATTR_MTIME	(1 << 5)
-#define ATTR_CTIME	(1 << 6)
 #define ATTR_ATIME_SET	(1 << 7)
 #define ATTR_MTIME_SET	(1 << 8)
 #define ATTR_FORCE	(1 << 9) 
@@ -143,7 +139,6 @@ extern void __init files_init(void);
 #define ATTR_KILL_SGID	(1 << 12)
 /* ATTR_FILE removed - never read */
 #define ATTR_KILL_PRIV	(1 << 14)
-#define ATTR_OPEN	(1 << 15) 
 #define ATTR_TIMES_SET	(1 << 16)
 
 /* WHITEOUT_DEV removed - unused */
@@ -228,7 +223,6 @@ static inline void i_mmap_unlock_write(struct address_space *mapping)
 /* i_size_ordered_init removed - never called */
 /* struct posix_acl removed - unused */
 
-#define IOP_FASTPERM	0x0001
 #define IOP_LOOKUP	0x0002
 #define IOP_NOFOLLOW	0x0004
 
@@ -404,8 +398,7 @@ static inline struct inode *file_inode(const struct file *f)
 /* SB_SUBMOUNT removed - unused */
 #define SB_BORN		(1<<29)
 #define SB_ACTIVE	(1<<30)
-#define SB_NOUSER	(1<<31)
-/* MNT_FORCE, MNT_DETACH, UMOUNT_NOFOLLOW removed - never used */
+/* SB_NOUSER removed - unused */
 #define SB_I_NOEXEC	0x00000002
 #define SB_I_NODEV	0x00000004
 /* SB_I_USERNS_VISIBLE removed - unused */
@@ -583,23 +576,15 @@ struct super_operations {
 };
 
 #define S_APPEND	(1 << 2)
-#define S_IMMUTABLE	(1 << 3)
 #define S_DEAD		(1 << 4)
 #define S_SWAPFILE	(1 << 8)
-/* S_PRIVATE removed - unused */
 #define S_AUTOMOUNT	(1 << 11)
-/* S_NOSEC, S_DAX removed - never tested */
-
-#define __IS_FLG(inode, flg)	((inode)->i_sb->s_flags & (flg))
 
 static inline bool sb_rdonly(const struct super_block *sb) { return sb->s_flags & SB_RDONLY; }
 #define IS_APPEND(inode)	((inode)->i_flags & S_APPEND)
-#define IS_IMMUTABLE(inode)	((inode)->i_flags & S_IMMUTABLE)
-#define IS_POSIXACL(inode)	__IS_FLG(inode, SB_POSIXACL)
 #define IS_DEADDIR(inode)	((inode)->i_flags & S_DEAD)
 #define IS_SWAPFILE(inode)	((inode)->i_flags & S_SWAPFILE)
 #define IS_AUTOMOUNT(inode)	((inode)->i_flags & S_AUTOMOUNT)
-/* IS_DAX removed - S_DAX was always 0 */
 
 /* HAS_UNMAPPED_ID inlined at fs/namei.c - single caller */
 
@@ -614,24 +599,12 @@ static inline void init_sync_kiocb(struct kiocb *kiocb, struct file *filp)
 	};
 }
 
-#define I_DIRTY_SYNC		(1 << 0)
-#define I_DIRTY_DATASYNC	(1 << 1)
-#define I_DIRTY_PAGES		(1 << 2)
 #define __I_NEW			3
 #define I_NEW			(1 << __I_NEW)
 #define I_WILL_FREE		(1 << 4)
 #define I_FREEING		(1 << 5)
 #define I_CLEAR			(1 << 6)
-/* __I_SYNC removed - unused, inlined */
-#define I_SYNC			(1 << 7)
-#define I_REFERENCED		(1 << 8)
 #define I_LINKABLE		(1 << 10)
-#define I_DIRTY_TIME		(1 << 11)
-#define I_DONTCACHE		(1 << 16)
-
-#define I_DIRTY_INODE (I_DIRTY_SYNC | I_DIRTY_DATASYNC)
-/* I_DIRTY removed - never used, inlined into I_DIRTY_ALL */
-#define I_DIRTY_ALL (I_DIRTY_INODE | I_DIRTY_PAGES | I_DIRTY_TIME)
 
 /* __mark_inode_dirty, mark_inode_dirty removed - empty stubs, no callers */
 

@@ -171,28 +171,11 @@ int __mnt_want_write(struct vfsmount *m)
 	return ret;
 }
 
-int mnt_want_write(struct vfsmount *m)
-{
-	int ret;
-
-	sb_start_write(m->mnt_sb);
-	ret = __mnt_want_write(m);
-	if (ret)
-		sb_end_write(m->mnt_sb);
-	return ret;
-}
-
 void __mnt_drop_write(struct vfsmount *mnt)
 {
 	preempt_disable();
 	mnt_dec_writers(real_mount(mnt));
 	preempt_enable();
-}
-
-void mnt_drop_write(struct vfsmount *mnt)
-{
-	__mnt_drop_write(mnt);
-	sb_end_write(mnt->mnt_sb);
 }
 
 /* free_vfsmnt removed - inlined into delayed_free_vfsmnt (~9 LOC) */

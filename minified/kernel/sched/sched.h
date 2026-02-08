@@ -360,33 +360,7 @@ static inline void __set_task_cpu(struct task_struct *p, unsigned int cpu)
 	/* set_task_rq removed - empty stub */
 }
 
- 
-# define const_debug const
-
-#define SCHED_FEAT(name, enabled)	\
-	__SCHED_FEAT_##name ,
-
-enum {
-#include "features.h"
-	__SCHED_FEAT_NR,
-};
-
-#undef SCHED_FEAT
-
-
- 
-#define SCHED_FEAT(name, enabled)	\
-	(1UL << __SCHED_FEAT_##name) * enabled |
-static const_debug __maybe_unused unsigned int sysctl_sched_features =
-#include "features.h"
-	0;
-#undef SCHED_FEAT
-
-#define sched_feat(x) !!(sysctl_sched_features & (1UL << __SCHED_FEAT_##x))
-
-/* sched_numa_balancing removed - defined but never used */
-
-/* global_rt_period and global_rt_runtime inlined at core.c - single caller */
+/* sched_feat machinery, features.h removed - never called */
 
 static inline int task_current(struct rq *rq, struct task_struct *p)
 {

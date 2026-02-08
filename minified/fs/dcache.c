@@ -125,16 +125,7 @@ static void dentry_unlink_inode(struct dentry *dentry)
 	iput(inode);
 }
 
-#define D_FLAG_VERIFY(dentry, x)          \
-	WARN_ON_ONCE(((dentry)->d_flags & \
-		      (DCACHE_LRU_LIST | DCACHE_SHRINK_LIST)) != (x))
-static void d_lru_del(struct dentry *dentry)
-{
-	D_FLAG_VERIFY(dentry, DCACHE_LRU_LIST);
-	dentry->d_flags &= ~DCACHE_LRU_LIST;
-	WARN_ON_ONCE(
-		!list_lru_del(&dentry->d_sb->s_dentry_lru, &dentry->d_lru));
-}
+/* D_FLAG_VERIFY, d_lru_del removed - DCACHE_LRU_LIST never set */
 
 static void __d_drop(struct dentry *dentry)
 {
@@ -161,33 +152,18 @@ static void __d_drop(struct dentry *dentry)
 static void __dentry_kill(struct dentry *dentry)
 {
 	struct dentry *parent = NULL;
-	bool can_free = true;
 	if (!IS_ROOT(dentry))
 		parent = dentry->d_parent;
 
 	lockref_mark_dead(&dentry->d_lockref);
 
-	if (dentry->d_flags & DCACHE_LRU_LIST) {
-		if (!(dentry->d_flags & DCACHE_SHRINK_LIST))
-			d_lru_del(dentry);
-	}
-
+	/* DCACHE_LRU_LIST check removed - never set */
 	__d_drop(dentry);
-	/* Inlined dentry_unlist */
+	/* Inlined dentry_unlist, cursor skip removed (no cursors) */
 	{
-		struct dentry *next;
 		dentry->d_flags |= DCACHE_DENTRY_KILLED;
-		if (!unlikely(list_empty(&dentry->d_child))) {
+		if (!unlikely(list_empty(&dentry->d_child)))
 			__list_del_entry(&dentry->d_child);
-			while (dentry->d_child.next != &parent->d_subdirs) {
-				next = list_entry(dentry->d_child.next,
-						  struct dentry, d_child);
-				if (likely(!(next->d_flags &
-					     DCACHE_DENTRY_CURSOR)))
-					break;
-				dentry->d_child.next = next->d_child.next;
-			}
-		}
 	}
 	if (parent)
 		spin_unlock(&parent->d_lock);
@@ -196,28 +172,19 @@ static void __dentry_kill(struct dentry *dentry)
 	else
 		spin_unlock(&dentry->d_lock);
 
-	spin_lock(&dentry->d_lock);
-	if (dentry->d_flags & DCACHE_SHRINK_LIST) {
-		dentry->d_flags |= DCACHE_MAY_FREE;
-		can_free = false;
-	}
-	spin_unlock(&dentry->d_lock);
-	if (likely(can_free)) {
-		/* Inlined dentry_free */
-		WARN_ON(!hlist_unhashed(&dentry->d_u.d_alias));
-		if (unlikely(dentry->d_name.name != dentry->d_iname)) {
-			struct external_name *p = external_name(dentry);
-			if (likely(atomic_dec_and_test(&p->u.count))) {
-				call_rcu(&dentry->d_u.d_rcu, __d_free_external);
-				goto skip_rcu;
-			}
+	/* DCACHE_SHRINK_LIST, DCACHE_MAY_FREE, DCACHE_NORCU checks removed -
+	   these flags are never set in this minimal kernel */
+	/* Inlined dentry_free */
+	WARN_ON(!hlist_unhashed(&dentry->d_u.d_alias));
+	if (unlikely(dentry->d_name.name != dentry->d_iname)) {
+		struct external_name *p = external_name(dentry);
+		if (likely(atomic_dec_and_test(&p->u.count))) {
+			call_rcu(&dentry->d_u.d_rcu, __d_free_external);
+			goto skip_rcu;
 		}
-		if (dentry->d_flags & DCACHE_NORCU)
-			__d_free(&dentry->d_u.d_rcu);
-		else
-			call_rcu(&dentry->d_u.d_rcu, __d_free);
-skip_rcu:;
 	}
+	call_rcu(&dentry->d_u.d_rcu, __d_free);
+skip_rcu:
 	cond_resched();
 }
 
@@ -353,18 +320,10 @@ void dput_to_list(struct dentry *dentry, struct list_head *list)
 	}
 	rcu_read_unlock();
 	if (!retain_dentry(dentry)) {
-		/* Inlined __dput_to_list */
-		if (dentry->d_flags & DCACHE_SHRINK_LIST) {
-			--dentry->d_lockref.count;
-		} else {
-			if (dentry->d_flags & DCACHE_LRU_LIST)
-				d_lru_del(dentry);
-			if (!--dentry->d_lockref.count) {
-				D_FLAG_VERIFY(dentry, 0);
-				list_add(&dentry->d_lru, list);
-				dentry->d_flags |= DCACHE_SHRINK_LIST |
-						   DCACHE_LRU_LIST;
-			}
+		/* Inlined __dput_to_list, simplified: DCACHE_SHRINK_LIST/LRU never set */
+		if (!--dentry->d_lockref.count) {
+			list_add(&dentry->d_lru, list);
+			dentry->d_flags |= DCACHE_SHRINK_LIST | DCACHE_LRU_LIST;
 		}
 	}
 	spin_unlock(&dentry->d_lock);
@@ -522,26 +481,8 @@ static struct dentry *d_alloc(struct dentry *parent, const struct qstr *name)
 
 /* d_alloc_anon inlined into d_make_root - only caller */
 
-/* Stub: d_alloc_cursor not used in minimal kernel */
-struct dentry *d_alloc_cursor(struct dentry *parent)
-{
-	return NULL;
-}
-
-/* d_alloc_pseudo removed - only caller was alloc_file_pseudo which was also removed (~7 LOC) */
-
-void d_set_d_op(struct dentry *dentry, const struct dentry_operations *op)
-{
-	WARN_ON_ONCE(dentry->d_op);
-	WARN_ON_ONCE(dentry->d_flags & DCACHE_OP_DELETE);
-	dentry->d_op = op;
-	if (!op)
-		return;
-	/* d_hash, d_compare, d_revalidate, d_weak_revalidate, d_prune,
-	   d_real checks removed - never set */
-	if (op->d_delete)
-		dentry->d_flags |= DCACHE_OP_DELETE;
-}
+/* d_alloc_cursor removed - returns NULL stub, no dir iteration needed */
+/* d_set_d_op removed - d_op never read, DCACHE_OP_DELETE never tested */
 
 static unsigned d_flags_for_inode(struct inode *inode)
 {

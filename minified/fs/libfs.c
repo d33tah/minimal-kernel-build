@@ -10,36 +10,27 @@
 
 /* simple_getattr, simple_statfs removed - callbacks removed */
 
-int always_delete_dentry(const struct dentry *dentry)
-{
-	return 1;
-}
-
-const struct dentry_operations simple_dentry_operations = {
-	.d_delete = always_delete_dentry,
-};
+/* always_delete_dentry, simple_dentry_operations removed -
+   d_op never read, DCACHE_OP_DELETE never tested */
 
 struct dentry *simple_lookup(struct inode *dir, struct dentry *dentry,
 			     unsigned int flags)
 {
 	if (dentry->d_name.len > NAME_MAX)
 		return ERR_PTR(-ENAMETOOLONG);
-	/* s_d_op check removed - always NULL (dops never set) */
-	d_set_d_op(dentry, &simple_dentry_operations);
+	/* d_set_d_op call removed - d_op never read */
 	d_add(dentry, NULL);
 	return NULL;
 }
 
+/* dcache_dir_open/close simplified - d_alloc_cursor removed, dirs can't be opened */
 int dcache_dir_open(struct inode *inode, struct file *file)
 {
-	file->private_data = d_alloc_cursor(file->f_path.dentry);
-
-	return file->private_data ? 0 : -ENOMEM;
+	return -ENOMEM;
 }
 
 int dcache_dir_close(struct inode *inode, struct file *file)
 {
-	dput(file->private_data);
 	return 0;
 }
 

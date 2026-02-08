@@ -850,9 +850,7 @@ extern int simple_write_begin(struct file *file, struct address_space *mapping,
 			loff_t pos, unsigned len,
 			struct page **pagep, void **fsdata);
 extern const struct address_space_operations ram_aops;
-extern int always_delete_dentry(const struct dentry *);
-/* alloc_anon_inode removed - never called */
-extern const struct dentry_operations simple_dentry_operations;
+/* always_delete_dentry, simple_dentry_operations removed - d_op never read */
 
 extern struct dentry *simple_lookup(struct inode *, struct dentry *, unsigned int flags);
 /* generic_read_dir removed - .read callback no longer exists */

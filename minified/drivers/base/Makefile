@@ -1,33 +1,3 @@
 # SPDX-License-Identifier: GPL-2.0
-# Makefile for the Linux device tree
-
-obj-y			:= core.o bus.o dd.o \
-			   class.o \
-			   map.o
-# platform.o removed - platform_bus_type never used (platform_bus_init removed)
-# driver.o merged into platform.c
-# cpu.o removed - cpu_subsys was defined but never used
-# init.o merged into core.c
-obj-$(CONFIG_AUXILIARY_BUS) += auxiliary.o
-obj-$(CONFIG_DEVTMPFS)	+= devtmpfs.o
-obj-y			+= power/
-obj-$(CONFIG_ISA_BUS_API)	+= isa.o
-obj-$(CONFIG_NUMA)	+= node.o
-obj-$(CONFIG_MEMORY_HOTPLUG) += memory.o
-ifeq ($(CONFIG_SYSFS),y)
-obj-$(CONFIG_MODULES)	+= module.o
-endif
-obj-$(CONFIG_SYS_HYPERVISOR) += hypervisor.o
-obj-$(CONFIG_SOC_BUS) += soc.o
-obj-$(CONFIG_PINCTRL) += pinctrl.o
-obj-$(CONFIG_DEV_COREDUMP) += devcoredump.o
-obj-$(CONFIG_GENERIC_MSI_IRQ_DOMAIN) += platform-msi.o
-obj-$(CONFIG_GENERIC_ARCH_TOPOLOGY) += arch_topology.o
-obj-$(CONFIG_GENERIC_ARCH_NUMA) += arch_numa.o
-obj-$(CONFIG_ACPI) += physical_location.o
-
-ccflags-$(CONFIG_DEBUG_DRIVER) := -DDEBUG
-
-# define_trace.h needs to know how to find our header
-CFLAGS_trace.o		:= -I$(src)
-obj-$(CONFIG_TRACING)	+= trace.o
+obj-y := core.o bus.o dd.o class.o map.o
+obj-y += power/

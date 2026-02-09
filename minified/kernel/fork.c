@@ -235,7 +235,6 @@ static inline void free_signal_struct(struct signal_struct *sig)
 	kmem_cache_free(signal_cachep, sig);
 }
 
-
 int arch_task_struct_size __read_mostly;
 
 void __init fork_init(void)

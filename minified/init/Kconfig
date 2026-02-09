@@ -1612,7 +1612,6 @@ config FUTEX
 	bool "Enable futex support" if EXPERT
 	depends on !(SPARC32 && SMP)
 	default y
-	imply RT_MUTEXES
 	help
 	  Disabling this option will cause the kernel to be built without
 	  support for "fast userspace mutexes".  The resulting kernel may not

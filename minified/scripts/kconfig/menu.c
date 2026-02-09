@@ -180,11 +180,6 @@ struct property *menu_add_prompt(enum prop_type type, char *prompt,
 	return prop;
 }
 
-void menu_add_visibility(struct expr *expr)
-{
-	current_entry->visibility =
-		expr_alloc_and(current_entry->visibility, expr);
-}
 
 void menu_add_expr(enum prop_type type, struct expr *expr, struct expr *dep)
 {
@@ -240,8 +235,7 @@ static void sym_check_prop(struct symbol *sym)
 			}
 			break;
 		case P_SELECT:
-		case P_IMPLY:
-			use = prop->type == P_SELECT ? "select" : "imply";
+			use = "select";
 			sym2 = prop_get_symbol(prop);
 			if (sym->type != S_BOOLEAN && sym->type != S_TRISTATE)
 				prop_warn(prop,
@@ -335,15 +329,6 @@ void menu_finalize(struct menu *parent)
 						prop_get_symbol(prop);
 					es->rev_dep.expr = expr_alloc_or(
 						es->rev_dep.expr,
-						expr_alloc_and(
-							expr_alloc_symbol(
-								menu->sym),
-							expr_copy(dep)));
-				} else if (prop->type == P_IMPLY) {
-					struct symbol *es =
-						prop_get_symbol(prop);
-					es->implied.expr = expr_alloc_or(
-						es->implied.expr,
 						expr_alloc_and(
 							expr_alloc_symbol(
 								menu->sym),

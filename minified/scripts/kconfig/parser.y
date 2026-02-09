@@ -54,7 +54,6 @@ struct menu *current_menu, *current_entry;
 %token T_CONFIG
 %token T_DEFAULT
 %token T_DEF_BOOL
-%token T_DEF_TRISTATE
 %token T_DEPENDS
 %token T_ENDCHOICE
 %token T_ENDIF
@@ -62,7 +61,6 @@ struct menu *current_menu, *current_entry;
 %token T_HELP
 %token T_HEX
 %token T_IF
-%token T_IMPLY
 %token T_INT
 %token T_MAINMENU
 %token T_MENU
@@ -70,7 +68,6 @@ struct menu *current_menu, *current_entry;
 %token T_MODULES
 %token T_ON
 %token T_OPEN_PAREN
-%token T_OPTIONAL
 %token T_PLUS_EQUAL
 %token T_PROMPT
 %token T_RANGE
@@ -78,7 +75,6 @@ struct menu *current_menu, *current_entry;
 %token T_SOURCE
 %token T_STRING
 %token T_TRISTATE
-%token T_VISIBLE
 %token T_EOL
 %token <string> T_ASSIGN_VAL
 
@@ -204,12 +200,6 @@ config_option: T_SELECT nonconst_symbol if_expr T_EOL
 	printd(DEBUG_PARSE, "%s:%d:select\n", zconf_curname(), zconf_lineno());
 };
 
-config_option: T_IMPLY nonconst_symbol if_expr T_EOL
-{
-	menu_add_symbol(P_IMPLY, $2, $3);
-	printd(DEBUG_PARSE, "%s:%d:imply\n", zconf_curname(), zconf_lineno());
-};
-
 config_option: T_RANGE symbol symbol if_expr T_EOL
 {
 	menu_add_expr(P_RANGE, expr_alloc_comp(E_RANGE,$2, $3), $4);
@@ -272,12 +262,6 @@ choice_option: logic_type prompt_stmt_opt T_EOL
 	       zconf_curname(), zconf_lineno(), $1);
 };
 
-choice_option: T_OPTIONAL T_EOL
-{
-	current_entry->sym->flags |= SYMBOL_OPTIONAL;
-	printd(DEBUG_PARSE, "%s:%d:optional\n", zconf_curname(), zconf_lineno());
-};
-
 choice_option: T_DEFAULT nonconst_symbol if_expr T_EOL
 {
 	menu_add_symbol(P_DEFAULT, $2, $3);
@@ -298,7 +282,6 @@ logic_type:
 default:
 	  T_DEFAULT		{ $$ = S_UNKNOWN; }
 	| T_DEF_BOOL		{ $$ = S_BOOLEAN; }
-	| T_DEF_TRISTATE	{ $$ = S_TRISTATE; }
 
 /* if entry */
 
@@ -350,8 +333,6 @@ menu_stmt: menu_entry stmt_list menu_end
 ;
 
 menu_option_list:
-	  /* empty */
-	| menu_option_list visible
 	| menu_option_list depends
 ;
 
@@ -409,12 +390,6 @@ depends: T_DEPENDS T_ON expr T_EOL
 {
 	menu_add_dep($3);
 	printd(DEBUG_PARSE, "%s:%d:depends on\n", zconf_curname(), zconf_lineno());
-};
-
-/* visibility option */
-visible: T_VISIBLE if_expr T_EOL
-{
-	menu_add_visibility($2);
 };
 
 /* prompt statement */

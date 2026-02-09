@@ -126,38 +126,6 @@ struct sigcontext_32 {
 #define sigcontext sigcontext_32
 #endif
 
- 
-#ifndef __KERNEL__
-
-#define _fpstate_ia32			_fpstate_32
-#define sigcontext_ia32			sigcontext_32
-
-
-/* 32-bit only - removed 64-bit sigcontext */
-struct sigcontext {
-	__u16				gs, __gsh;
-	__u16				fs, __fsh;
-	__u16				es, __esh;
-	__u16				ds, __dsh;
-	__u32				edi;
-	__u32				esi;
-	__u32				ebp;
-	__u32				esp;
-	__u32				ebx;
-	__u32				edx;
-	__u32				ecx;
-	__u32				eax;
-	__u32				trapno;
-	__u32				err;
-	__u32				eip;
-	__u16				cs, __csh;
-	__u32				eflags;
-	__u32				esp_at_signal;
-	__u16				ss, __ssh;
-	struct _fpstate __user		*fpstate;
-	__u32				oldmask;
-	__u32				cr2;
-};
-#endif  
+/* Userspace-only sigcontext struct removed - __KERNEL__ always defined */
 
 #endif  

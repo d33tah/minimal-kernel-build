@@ -10,14 +10,8 @@
  
 struct siginfo;
 
-#ifndef __KERNEL__
- 
-
-#define NSIG		32
-typedef unsigned long sigset_t;
-
-#endif  
-#endif  
+/* NSIG, sigset_t removed - userspace only (#ifndef __KERNEL__) */
+#endif
 
 
 /* Unused signals removed: SIGHUP, SIGINT, SIGQUIT, SIGABRT, SIGIOT,
@@ -95,22 +89,7 @@ typedef __restorefn_t __user *__sigrestore_t;
 #ifndef __ASSEMBLY__
 
 
-# ifndef __KERNEL__
-/* 32-bit only kernel - removed x86_64 sigaction */
-struct sigaction {
-	union {
-	  __sighandler_t _sa_handler;
-	  void (*_sa_sigaction)(int, struct siginfo *, void *);
-	} _u;
-	sigset_t sa_mask;
-	unsigned long sa_flags;
-	void (*sa_restorer)(void);
-};
-
-#define sa_handler	_u._sa_handler
-#define sa_sigaction	_u._sa_sigaction
-
-# endif  
+/* Userspace-only struct sigaction removed - __KERNEL__ always defined */
 
 typedef struct sigaltstack {
 	void __user *ss_sp;

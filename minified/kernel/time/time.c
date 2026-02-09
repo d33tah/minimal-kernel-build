@@ -13,20 +13,7 @@
 
 /* struct timezone sys_tz removed - never used */
 
-#ifdef __ARCH_WANT_SYS_TIME
-
-SYSCALL_DEFINE1(time, __kernel_old_time_t __user *, tloc)
-{
-	/* Stub: time not needed for Hello World */
-	return 0;
-}
-
-SYSCALL_DEFINE1(stime, __kernel_old_time_t __user *, tptr)
-{
-	return -EPERM;
-}
-
-#endif
+/* time/stime syscalls removed - __ARCH_WANT_SYS_TIME not defined */
 
 /* gettimeofday, settimeofday syscalls removed - not in syscall table */
 

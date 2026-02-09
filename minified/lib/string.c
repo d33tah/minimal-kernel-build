@@ -23,31 +23,9 @@
 #include <asm/word-at-a-time.h>
 #include <asm/page.h>
 
-#ifndef __HAVE_ARCH_STRCPY
-char *strcpy(char *dest, const char *src)
-{
-	char *tmp = dest;
-
-	while ((*dest++ = *src++) != '\0')
-		;
-	return tmp;
-}
-#endif
-
-#ifndef __HAVE_ARCH_STRNCPY
-char *strncpy(char *dest, const char *src, size_t count)
-{
-	char *tmp = dest;
-
-	while (count) {
-		if ((*tmp = *src) != 0)
-			src++;
-		tmp++;
-		count--;
-	}
-	return dest;
-}
-#endif
+/* strcpy, strncpy, strcmp, strncmp, strchr, strlen, strnlen, memset,
+   memcpy, memmove removed - x86 provides arch-specific implementations
+   via __HAVE_ARCH_* defines in asm/string_32.h */
 
 #ifndef __HAVE_ARCH_STRLCPY
 size_t strlcpy(char *dest, const char *src, size_t size)
@@ -133,51 +111,6 @@ size_t strlcat(char *dest, const char *src, size_t count)
 }
 #endif
 
-#ifndef __HAVE_ARCH_STRCMP
-int strcmp(const char *cs, const char *ct)
-{
-	unsigned char c1, c2;
-
-	while (1) {
-		c1 = *cs++;
-		c2 = *ct++;
-		if (c1 != c2)
-			return c1 < c2 ? -1 : 1;
-		if (!c1)
-			break;
-	}
-	return 0;
-}
-#endif
-
-#ifndef __HAVE_ARCH_STRNCMP
-int strncmp(const char *cs, const char *ct, size_t count)
-{
-	unsigned char c1, c2;
-
-	while (count) {
-		c1 = *cs++;
-		c2 = *ct++;
-		if (c1 != c2)
-			return c1 < c2 ? -1 : 1;
-		if (!c1)
-			break;
-		count--;
-	}
-	return 0;
-}
-#endif
-
-#ifndef __HAVE_ARCH_STRCHR
-char *strchr(const char *s, int c)
-{
-	for (; *s != (char)c; ++s)
-		if (*s == '\0')
-			return NULL;
-	return (char *)s;
-}
-#endif
-
 #ifndef __HAVE_ARCH_STRRCHR
 char *strrchr(const char *s, int c)
 {
@@ -200,28 +133,6 @@ char *strnchr(const char *s, size_t count, int c)
 			break;
 	}
 	return NULL;
-}
-#endif
-
-#ifndef __HAVE_ARCH_STRLEN
-size_t strlen(const char *s)
-{
-	const char *sc;
-
-	for (sc = s; *sc != '\0'; ++sc)
-		;
-	return sc - s;
-}
-#endif
-
-#ifndef __HAVE_ARCH_STRNLEN
-size_t strnlen(const char *s, size_t count)
-{
-	const char *sc;
-
-	for (sc = s; count-- && *sc != '\0'; ++sc)
-		;
-	return sc - s;
 }
 #endif
 
@@ -254,52 +165,6 @@ char *strsep(char **s, const char *ct)
 		*end++ = '\0';
 	*s = end;
 	return sbegin;
-}
-#endif
-
-#ifndef __HAVE_ARCH_MEMSET
-void *memset(void *s, int c, size_t count)
-{
-	char *xs = s;
-
-	while (count--)
-		*xs++ = c;
-	return s;
-}
-#endif
-
-#ifndef __HAVE_ARCH_MEMCPY
-void *memcpy(void *dest, const void *src, size_t count)
-{
-	char *tmp = dest;
-	const char *s = src;
-
-	while (count--)
-		*tmp++ = *s++;
-	return dest;
-}
-#endif
-
-#ifndef __HAVE_ARCH_MEMMOVE
-void *memmove(void *dest, const void *src, size_t count)
-{
-	char *tmp;
-	const char *s;
-
-	if (dest <= src) {
-		tmp = dest;
-		s = src;
-		while (count--)
-			*tmp++ = *s++;
-	} else {
-		tmp = dest;
-		tmp += count;
-		s = src;
-		s += count;
-		while (count--)
-			*--tmp = *--s;
-	}
-	return dest;
 }
 #endif
 

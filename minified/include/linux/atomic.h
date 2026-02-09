@@ -4,44 +4,6 @@
 #include <asm/atomic.h>
 #include <asm/barrier.h>
 
-#ifndef __atomic_acquire_fence
-#define __atomic_acquire_fence		smp_mb__after_atomic
-#endif
-
-#ifndef __atomic_release_fence
-#define __atomic_release_fence		smp_mb__before_atomic
-#endif
-
-#ifndef __atomic_pre_full_fence
-#define __atomic_pre_full_fence		smp_mb__before_atomic
-#endif
-
-#ifndef __atomic_post_full_fence
-#define __atomic_post_full_fence	smp_mb__after_atomic
-#endif
-
-#define __atomic_op_acquire(op, args...)				\
-({									\
-	typeof(op##_relaxed(args)) __ret  = op##_relaxed(args);		\
-	__atomic_acquire_fence();					\
-	__ret;								\
-})
-
-#define __atomic_op_release(op, args...)				\
-({									\
-	__atomic_release_fence();					\
-	op##_relaxed(args);						\
-})
-
-#define __atomic_op_fence(op, args...)					\
-({									\
-	typeof(op##_relaxed(args)) __ret;				\
-	__atomic_pre_full_fence();					\
-	__ret = op##_relaxed(args);					\
-	__atomic_post_full_fence();					\
-	__ret;								\
-})
-
 /* Inlined from linux/atomic/atomic-arch-fallback.h */
 #include <linux/compiler.h>
 
@@ -61,35 +23,13 @@
 /* arch_atomic_read_acquire removed - unused */
 
 #ifndef arch_atomic_fetch_add_relaxed
-#define arch_atomic_fetch_add_acquire arch_atomic_fetch_add
 #define arch_atomic_fetch_add_release arch_atomic_fetch_add
 #define arch_atomic_fetch_add_relaxed arch_atomic_fetch_add
 #endif
 
 #ifndef arch_atomic_fetch_sub_relaxed
-#define arch_atomic_fetch_sub_acquire arch_atomic_fetch_sub
 #define arch_atomic_fetch_sub_release arch_atomic_fetch_sub
 #define arch_atomic_fetch_sub_relaxed arch_atomic_fetch_sub
-#endif
-
-#ifndef arch_atomic_inc
-static __always_inline void
-arch_atomic_inc(atomic_t *v)
-{
-	arch_atomic_add(1, v);
-}
-#define arch_atomic_inc arch_atomic_inc
-#endif
-
-/* arch_atomic_inc_return removed - unused */
-
-#ifndef arch_atomic_dec
-static __always_inline void
-arch_atomic_dec(atomic_t *v)
-{
-	arch_atomic_sub(1, v);
-}
-#define arch_atomic_dec arch_atomic_dec
 #endif
 
 /* arch_atomic_fetch_and ordering variants removed - zero callers */
@@ -97,46 +37,9 @@ arch_atomic_dec(atomic_t *v)
 /* x86 provides arch_atomic_try_cmpxchg natively - aliases for ordering variants */
 #ifndef arch_atomic_try_cmpxchg_relaxed
 #ifdef arch_atomic_try_cmpxchg
-#define arch_atomic_try_cmpxchg_acquire arch_atomic_try_cmpxchg
 #define arch_atomic_try_cmpxchg_release arch_atomic_try_cmpxchg
 #define arch_atomic_try_cmpxchg_relaxed arch_atomic_try_cmpxchg
 #endif
-#endif
-
-#ifndef arch_atomic_sub_and_test
-static __always_inline bool
-arch_atomic_sub_and_test(int i, atomic_t *v)
-{
-	return arch_atomic_sub_return(i, v) == 0;
-}
-#define arch_atomic_sub_and_test arch_atomic_sub_and_test
-#endif
-
-#ifndef arch_atomic_dec_and_test
-static __always_inline bool
-arch_atomic_dec_and_test(atomic_t *v)
-{
-	return arch_atomic_dec_return(v) == 0;
-}
-#define arch_atomic_dec_and_test arch_atomic_dec_and_test
-#endif
-
-#ifndef arch_atomic_inc_and_test
-static __always_inline bool
-arch_atomic_inc_and_test(atomic_t *v)
-{
-	return arch_atomic_inc_return(v) == 0;
-}
-#define arch_atomic_inc_and_test arch_atomic_inc_and_test
-#endif
-
-#ifndef arch_atomic_add_negative
-static __always_inline bool
-arch_atomic_add_negative(int i, atomic_t *v)
-{
-	return arch_atomic_add_return(i, v) < 0;
-}
-#define arch_atomic_add_negative arch_atomic_add_negative
 #endif
 
 #ifndef arch_atomic_fetch_add_unless
@@ -584,12 +487,5 @@ atomic_long_dec_if_positive(atomic_long_t *v)
 })
 
 /* cmpxchg_relaxed removed - unused */
-
-#define cmpxchg_double(ptr, ...) \
-({ \
-	typeof(ptr) __ai_ptr = (ptr); \
-	instrument_atomic_write(__ai_ptr, 2 * sizeof(*__ai_ptr)); \
-	arch_cmpxchg_double(__ai_ptr, __VA_ARGS__); \
-})
 
 #endif  

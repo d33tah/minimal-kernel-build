@@ -96,15 +96,6 @@ __visible noinstr void func(struct pt_regs *regs,			\
 									\
 static noinline void __##func(struct pt_regs *regs, u32 vector)
 
- 
-#define DECLARE_IDTENTRY_SYSVEC(vector, func)				\
-	DECLARE_IDTENTRY(vector, func)
-
-/* DEFINE_IDTENTRY_SYSVEC and DEFINE_IDTENTRY_SYSVEC_SIMPLE removed - unused */
-
-
-#define DECLARE_IDTENTRY_XENCB(vector, func)				\
-	DECLARE_IDTENTRY(vector, func)
 
 
  
@@ -149,17 +140,7 @@ __visible noinstr void func(struct pt_regs *regs,			\
 	idtentry_irq vector func
 
  
-#define DECLARE_IDTENTRY_SYSVEC(vector, func)				\
-	idtentry_sysvec vector func
-
-# define DECLARE_IDTENTRY_MCE(vector, func)				\
-	DECLARE_IDTENTRY(vector, func)
-
- 
 # define DECLARE_IDTENTRY_DF(vector, func)
-
- 
-# define DECLARE_IDTENTRY_XENCB(vector, func)
 
 
  

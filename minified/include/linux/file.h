@@ -54,7 +54,7 @@ static inline struct fd fdget_pos(int fd)
 
 /* fdput_pos inlined at fs/read_write.c - single caller */
 
-extern bool get_close_on_exec(unsigned int fd);
+/* get_close_on_exec removed - never called */
 extern int get_unused_fd_flags(unsigned flags);
 
 extern void fd_install(unsigned int fd, struct file *file);

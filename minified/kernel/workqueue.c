@@ -30,12 +30,7 @@ bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
 /* flush_work moved to workqueue.h as static inline */
 /* flush_delayed_work removed - always returns false, single caller removed */
 
-bool cancel_delayed_work(struct delayed_work *dwork)
-{
-	return test_and_clear_bit(WORK_STRUCT_PENDING_BIT,
-				  work_data_bits(&dwork->work));
-}
-
+/* cancel_delayed_work removed - never called */
 /* alloc_workqueue removed - never called (~12 LOC) */
 
 static struct workqueue_struct system_wq_storage = { .name = "events" };

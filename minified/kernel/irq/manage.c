@@ -1,4 +1,3 @@
-
 #define pr_fmt(fmt) "genirq: " fmt
 
 #include <linux/irq.h>
@@ -76,15 +75,12 @@ int __irq_set_trigger(struct irq_desc *desc, unsigned long flags)
 
 	case IRQ_SET_MASK_OK_NOCOPY:
 		flags = irqd_get_trigger_type(&desc->irq_data);
-		/* irq_settings_set_trigger_mask inlined - single caller */
 		desc->status_use_accessors &= ~IRQ_TYPE_SENSE_MASK;
 		desc->status_use_accessors |= flags & IRQ_TYPE_SENSE_MASK;
 		irqd_clear(&desc->irq_data, IRQD_LEVEL);
-		desc->status_use_accessors &=
-			~_IRQ_LEVEL; /* irq_settings_clr_level inlined */
+		desc->status_use_accessors &= ~_IRQ_LEVEL;
 		if (flags & IRQ_TYPE_LEVEL_MASK) {
-			desc->status_use_accessors |=
-				_IRQ_LEVEL; /* irq_settings_set_level inlined */
+			desc->status_use_accessors |= _IRQ_LEVEL;
 			irqd_set(&desc->irq_data, IRQD_LEVEL);
 		}
 
@@ -104,11 +100,7 @@ static irqreturn_t irq_default_primary_handler(int irq, void *dev_id)
 	return IRQ_WAKE_THREAD;
 }
 
-/* IRQ threading infrastructure removed - no threaded IRQs in minimal kernel:
-   irq_nested_primary_handler, irq_forced_secondary_handler,
-   irq_finalize_oneshot, irq_thread_fn, irq_thread_dtor,
-   wake_up_and_wait_for_irq_thread_ready, irq_thread,
-   setup_irq_thread (~194 LOC) */
+/* IRQ threading infrastructure removed - no threaded IRQs in minimal kernel */
 
 static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 		       struct irqaction *new)
@@ -122,14 +114,12 @@ static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 
 	if (desc->irq_data.chip == &no_irq_chip)
 		return -ENOSYS;
-	/* try_module_get always returns true - dead check removed */
 
 	new->irq = irq;
 
 	if (!(new->flags &IRQF_TRIGGER_MASK))
 		new->flags |= irqd_get_trigger_type(&desc->irq_data);
 
-	/* Threading paths removed - no threaded IRQs in minimal kernel */
 	nested = 0;
 
 	if (desc->irq_data.chip->flags & IRQCHIP_ONESHOT_SAFE)
@@ -138,8 +128,6 @@ static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 	mutex_lock(&desc->request_mutex);
 
 	chip_bus_lock(desc);
-
-	/* irq_request_resources removed - no chip sets this callback */
 
 	raw_spin_lock_irqsave(&desc->lock, flags);
 	old_ptr = &desc->action;
@@ -202,7 +190,6 @@ static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 				goto out_unlock;
 		}
 
-		/* irq_activate always returns 0 - error check removed */
 		irq_activate(desc);
 
 		desc->istate &= ~(IRQS_AUTODETECT | IRQS_SPURIOUS_DISABLED |
@@ -216,8 +203,6 @@ static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 				irq_settings_set_no_debug(desc);
 		}
 
-		/* noirqdebug removed - always false */
-
 		if (new->flags & IRQF_ONESHOT)
 			desc->istate |= IRQS_ONESHOT;
 
@@ -226,7 +211,6 @@ static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 			irqd_set(&desc->irq_data, IRQD_NO_BALANCING);
 		}
 
-		/* irq_settings_can_autoenable inlined - single caller */
 		if (!(new->flags &IRQF_NO_AUTOEN) &&
 		    !(desc->status_use_accessors & _IRQ_NOAUTOEN)) {
 			irq_startup(desc, IRQ_RESEND, IRQ_START_COND);
@@ -248,9 +232,6 @@ static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 
 	*old_ptr = new;
 
-	/* irq_pm_install_action removed - empty stub */
-	/* irq_count, irqs_unhandled zeroing removed - fields removed */
-
 	if (shared && (desc->istate & IRQS_SPURIOUS_DISABLED)) {
 		desc->istate &= ~IRQS_SPURIOUS_DISABLED;
 		__enable_irq(desc);
@@ -260,9 +241,6 @@ static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 	chip_bus_sync_unlock(desc);
 	mutex_unlock(&desc->request_mutex);
 
-	/* irq_setup_timings, wake_up_and_wait_for_irq_thread_ready removed */
-
-	/* register_irq_proc, register_handler_proc removed - empty stubs */
 	return 0;
 
 mismatch:
@@ -324,8 +302,6 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 	action->flags = irqflags;
 	action->name = devname;
 	action->dev_id = dev_id;
-
-	/* irq_chip_pm_get/irq_chip_pm_put removed - always returns 0 */
 
 	retval = __setup_irq(irq, desc, action);
 

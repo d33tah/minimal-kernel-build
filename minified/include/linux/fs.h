@@ -522,11 +522,6 @@ static inline void __sb_start_write(struct super_block *sb, int level)
 	percpu_down_read(sb->s_writers.rw_sem + level - 1);
 }
 
-static inline void sb_end_write(struct super_block *sb)
-{
-	__sb_end_write(sb, SB_FREEZE_WRITE);
-}
-
 /* sb_end_pagefault removed - never called */
 
 static inline void sb_start_write(struct super_block *sb)

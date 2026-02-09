@@ -82,9 +82,4 @@ static inline struct lruvec *folio_lruvec_relock_irqsave(struct folio *folio,
 /* set_shrinker_bit, __memcg_kmem_charge_page, __memcg_kmem_uncharge_page,
    memcg_kmem_enabled, task_in_memcg_oom removed - callers already removed */
 
-static inline int memcg_kmem_id(struct mem_cgroup *memcg)
-{
-	return -1;
-}
-
 #endif /* _LINUX_MEMCONTROL_H */

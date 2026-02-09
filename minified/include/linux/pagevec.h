@@ -41,12 +41,6 @@ static inline unsigned pagevec_add(struct pagevec *pvec, struct page *page)
 	return PAGEVEC_SIZE - pvec->nr;
 }
 
-static inline void pagevec_release(struct pagevec *pvec)
-{
-	if (pagevec_count(pvec))
-		__pagevec_release(pvec);
-}
-
 struct folio_batch {
 	unsigned char nr;
 	bool percpu_pvec_drained;
@@ -78,11 +72,6 @@ static inline unsigned folio_batch_add(struct folio_batch *fbatch,
 {
 	fbatch->folios[fbatch->nr++] = folio;
 	return fbatch_space(fbatch);
-}
-
-static inline void folio_batch_release(struct folio_batch *fbatch)
-{
-	pagevec_release((struct pagevec *)fbatch);
 }
 
 /* folio_batch_remove_exceptionals removed - never called */

@@ -32,12 +32,6 @@ static inline void list_add_tail_rcu(struct list_head *new,
 	__list_add_rcu(new, head->prev, head);
 }
 
-static inline void list_del_rcu(struct list_head *entry)
-{
-	__list_del_entry(entry);
-	entry->prev = LIST_POISON2;
-}
-
 static inline void hlist_del_init_rcu(struct hlist_node *n)
 {
 	if (!hlist_unhashed(n)) {

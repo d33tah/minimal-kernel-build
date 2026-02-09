@@ -29,9 +29,4 @@ int task_work_add(struct task_struct *task, struct callback_head *twork,
 
 void task_work_run(void);
 
-static inline void exit_task_work(struct task_struct *task)
-{
-	task_work_run();
-}
-
 #endif	 

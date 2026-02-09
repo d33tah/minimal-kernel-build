@@ -68,12 +68,6 @@ static inline void sigemptyset(sigset_t *set)
 /* sigdelsetmask removed - never called */
 
 /* Simplified - _NSIG_WORDS is 2 on x86-32 (~9 LOC) */
-static inline void siginitsetinv(sigset_t *set, unsigned long mask)
-{
-	set->sig[0] = ~mask;
-	set->sig[1] = -1;
-}
-
 #endif  
 
 static inline void init_sigpending(struct sigpending *sig)
@@ -83,11 +77,6 @@ static inline void init_sigpending(struct sigpending *sig)
 }
 
 /* flush_sigqueue removed - do_exit gutted */
-
-static inline int valid_signal(unsigned long sig)
-{
-	return sig <= _NSIG ? 1 : 0;
-}
 
 /* struct timespec, pt_regs forward decls removed - unused */
 enum pid_type;

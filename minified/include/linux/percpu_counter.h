@@ -20,10 +20,6 @@ static inline int percpu_counter_init(struct percpu_counter *fbc, s64 amount,
 	return 0;
 }
 
-static inline void percpu_counter_destroy(struct percpu_counter *fbc)
-{
-}
-
 
 static inline void
 percpu_counter_add(struct percpu_counter *fbc, s64 amount)

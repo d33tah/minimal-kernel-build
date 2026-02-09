@@ -74,20 +74,6 @@ extern pid_t user_mode_thread(int (*fn)(void *), void *arg, unsigned long flags)
 /* free_task made static in kernel/fork.c */
 /* sched_exec() macro removed - no callers */
 
-static inline struct task_struct *get_task_struct(struct task_struct *t)
-{
-	refcount_inc(&t->usage);
-	return t;
-}
-
-extern void __put_task_struct(struct task_struct *t);
-
-static inline void put_task_struct(struct task_struct *t)
-{
-	if (refcount_dec_and_test(&t->usage))
-		__put_task_struct(t);
-}
-
 
 void put_task_struct_rcu_user(struct task_struct *task);
 

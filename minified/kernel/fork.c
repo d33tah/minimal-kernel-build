@@ -235,18 +235,6 @@ static inline void free_signal_struct(struct signal_struct *sig)
 	kmem_cache_free(signal_cachep, sig);
 }
 
-void __put_task_struct(struct task_struct *tsk)
-{
-	WARN_ON(!tsk->exit_state);
-	WARN_ON(refcount_read(&tsk->usage));
-	WARN_ON(tsk == current);
-
-	/* io_uring_free, security_task_free - empty stubs */
-	exit_creds(tsk);
-	if (refcount_dec_and_test(&tsk->signal->sigcnt))
-		free_signal_struct(tsk->signal);
-	free_task(tsk);
-}
 
 int arch_task_struct_size __read_mostly;
 

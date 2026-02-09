@@ -256,11 +256,6 @@ static __always_inline void SetPageUptodate(struct page *page)
 /* CLEARPAGEFLAG(Uptodate) removed - no callers */
 /* __folio_start_writeback removed - never called */
 
-static __always_inline bool folio_test_head(struct folio *folio)
-{
-	return test_bit(PG_head, folio_flags(folio, FOLIO_PF_ANY));
-}
-
 static __always_inline int PageHead(struct page *page)
 {
 	PF_POISONED_CHECK(page);
@@ -271,10 +266,6 @@ __SETPAGEFLAG(Head, head, PF_ANY)
 __CLEARPAGEFLAG(Head, head, PF_ANY)
 CLEARPAGEFLAG(Head, head, PF_ANY)
 
-static inline bool folio_test_large(struct folio *folio)
-{
-	return folio_test_head(folio);
-}
 /* set_compound_head inlined into page_alloc.c */
 
 /* Huge, TransHuge, TransCompound, TransTail, DoubleMap flags removed - zero callers */

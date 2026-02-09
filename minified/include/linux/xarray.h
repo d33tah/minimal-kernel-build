@@ -100,11 +100,6 @@ static inline void xa_init_flags(struct xarray *xa, gfp_t flags)
 	xa->xa_head = NULL;
 }
 
-static inline bool xa_empty(const struct xarray *xa)
-{
-	return xa->xa_head == NULL;
-}
-
 static inline bool xa_marked(const struct xarray *xa, xa_mark_t mark)
 {
 	return xa->xa_flags & XA_FLAGS_MARK(mark);

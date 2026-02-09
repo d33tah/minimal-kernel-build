@@ -18,25 +18,6 @@ struct folio_batch;
 /* invalidate_mapping_pages, invalidate_inode_pages2_range removed - never called */
 /* write_inode_now, filemap_fdatawait_range removed - never called */
 /* filemap_write_and_wait_range, filemap_fdatawrite_wbc, filemap_sample_wb_err removed - never called */
-static inline bool mapping_empty(struct address_space *mapping)
-{
-	return xa_empty(&mapping->i_pages);
-}
-
-static inline bool mapping_shrinkable(struct address_space *mapping)
-{
-	void *head;
-
-	head = rcu_access_pointer(mapping->i_pages.xa_head);
-	if (!head)
-		return true;
-
-	if (!xa_is_node(head) && xa_is_value(head))
-		return true;
-
-	return false;
-}
-
 enum mapping_flags {
 	AS_EIO		= 0,
 	AS_ENOSPC	= 1,

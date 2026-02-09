@@ -127,22 +127,6 @@ static __always_inline int arch_atomic_xchg(atomic_t *v, int new)
 }
 #define arch_atomic_xchg arch_atomic_xchg
 
-static __always_inline void arch_atomic_and(int i, atomic_t *v)
-{
-	asm volatile(LOCK_PREFIX "andl %1,%0"
-			: "+m" (v->counter)
-			: "ir" (i)
-			: "memory");
-}
-
-static __always_inline void arch_atomic_or(int i, atomic_t *v)
-{
-	asm volatile(LOCK_PREFIX "orl %1,%0"
-			: "+m" (v->counter)
-			: "ir" (i)
-			: "memory");
-}
-
 /* Removed unused: arch_atomic_fetch_and, arch_atomic_fetch_or,
  * arch_atomic_xor, arch_atomic_fetch_xor (~30 LOC) */
 

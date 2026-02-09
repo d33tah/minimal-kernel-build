@@ -168,43 +168,7 @@ void kvfree(const void *addr)
 	/* Both vfree and kfree are empty stubs - nothing to do */
 }
 
-/* page_rmapping removed - only caller discarded result */
-
-bool folio_mapped(struct folio *folio)
-{
-	long i, nr;
-
-	if (!folio_test_large(folio))
-		return atomic_read(&folio->_mapcount) >= 0;
-	/* folio_mapcount_ptr inlined */
-	if (atomic_read(&(&folio->page + 1)->compound_mapcount) >= 0)
-		return true;
-	/* folio_test_hugetlb always returns false, skip check */
-
-	nr = folio_nr_pages(folio);
-	for (i = 0; i < nr; i++) {
-		if (atomic_read(&folio_page(folio, i)->_mapcount) >= 0)
-			return true;
-	}
-	return false;
-}
-
-/* folio_anon_vma, folio_mapping removed - never called */
-
-int __page_mapcount(struct page *page)
-{
-	int ret;
-
-	ret = atomic_read(&page->_mapcount) + 1;
-
-	/* PageHuge always returns false */
-	if (!PageAnon(page))
-		return ret;
-	page = compound_head(page);
-	/* PageDoubleMap always returns false */
-	ret += atomic_read(compound_mapcount_ptr(page)) + 1;
-	return ret;
-}
+/* folio_mapped, __page_mapcount removed - no callers */
 
 int sysctl_overcommit_memory __read_mostly = OVERCOMMIT_GUESS;
 int sysctl_overcommit_ratio __read_mostly = 50;

@@ -5,8 +5,7 @@
 #include <linux/device.h>
 #include <linux/writeback.h>
 #include <linux/backing-dev-defs.h>
-void bdi_put(struct backing_dev_info *bdi);
-void bdi_unregister(struct backing_dev_info *bdi);
+/* bdi_put, bdi_unregister removed - no callers */
 void wb_workfn(struct work_struct *work);
 /* bdi_set_min_ratio, bdi_set_max_ratio removed - never called */
 #define BDI_CAP_WRITEBACK		(1 << 0)

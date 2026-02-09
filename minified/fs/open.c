@@ -18,26 +18,7 @@
 
 #include "internal.h"
 
-int do_truncate(struct user_namespace *mnt_userns, struct dentry *dentry,
-		loff_t length, unsigned int time_attrs, struct file *filp)
-{
-	int ret;
-	struct iattr newattrs;
-
-	if (length < 0)
-		return -EINVAL;
-
-	newattrs.ia_size = length;
-	newattrs.ia_valid = ATTR_SIZE | time_attrs;
-	/* ATTR_FILE and ia_file writes removed - never read */
-	(void)filp;
-
-	inode_lock(dentry->d_inode);
-
-	ret = notify_change(mnt_userns, dentry, &newattrs, NULL);
-	inode_unlock(dentry->d_inode);
-	return ret;
-}
+/* do_truncate removed - no callers */
 
 int vfs_open(const struct path *path, struct file *file)
 {

@@ -49,14 +49,7 @@ int bdi_init(struct backing_dev_info *bdi)
 	return 0;
 }
 
-/* bdi_unregister/bdi_put/release_bdi - no callers in minimal kernel */
-void bdi_unregister(struct backing_dev_info *bdi)
-{
-}
-
-void bdi_put(struct backing_dev_info *bdi)
-{
-}
+/* bdi_unregister, bdi_put removed - no callers */
 
 struct backing_dev_info *inode_to_bdi(struct inode *inode)
 {

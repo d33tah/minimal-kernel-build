@@ -17,7 +17,7 @@ struct srcu_struct;
 
 /* init_srcu_struct removed - never called */
 
-#define __SRCU_DEP_MAP_INIT(srcu_name)
+/* __SRCU_DEP_MAP_INIT removed - only user was __SRCU_STRUCT_INIT */
 
 /* Inlined from srcutiny.h */
 #include <linux/swait.h>
@@ -36,13 +36,7 @@ struct srcu_struct {
 
 void srcu_drive_gp(struct work_struct *wp);
 
-#define __SRCU_STRUCT_INIT(name, __ignored)				\
-{									\
-	.srcu_wq = __SWAIT_QUEUE_HEAD_INITIALIZER(name.srcu_wq),	\
-	.srcu_cb_tail = &name.srcu_cb_head,				\
-	.srcu_work = __WORK_INITIALIZER(name.srcu_work, srcu_drive_gp),	\
-	__SRCU_DEP_MAP_INIT(name)					\
-}
+/* __SRCU_STRUCT_INIT removed - never used */
 
 /* DEFINE_STATIC_SRCU removed - never used */
 

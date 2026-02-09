@@ -10,7 +10,7 @@
 
 /* nmi_uaccess_okay macro removed - no callers */
 
-#define tlb_remove_table(tlb, page) tlb_remove_page((tlb), (page))
+/* tlb_remove_table removed - unused */
 
 #ifdef tlb_needs_table_invalidate
 #error tlb_needs_table_invalidate() requires MMU_GATHER_RCU_TABLE_FREE
@@ -201,16 +201,7 @@ static inline void tlb_flush_p4d_range(struct mmu_gather *tlb,
 	__tlb_adjust_range(tlb, address, size);
 	tlb->cleared_p4ds = 1;
 }
-
-#ifndef __tlb_remove_tlb_entry
-#define __tlb_remove_tlb_entry(tlb, ptep, address) do { } while (0)
-#endif
-
-#define tlb_remove_tlb_entry(tlb, ptep, address)		\
-	do {							\
-		tlb_flush_pte_range(tlb, address, PAGE_SIZE);	\
-		__tlb_remove_tlb_entry(tlb, ptep, address);	\
-	} while (0)
+/* __tlb_remove_tlb_entry, tlb_remove_tlb_entry removed - never used */
 
 /* tlb_remove_huge_tlb_entry, tlb_remove_pmd_tlb_entry, tlb_remove_pud_tlb_entry removed - never used */
 

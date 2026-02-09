@@ -28,16 +28,7 @@ extern void __init wait_bit_init(void);
 
 int wake_bit_function(struct wait_queue_entry *wq_entry, unsigned mode, int sync, void *key);
 
-#define DEFINE_WAIT_BIT(name, word, bit)					\
-	struct wait_bit_queue_entry name = {					\
-		.key = __WAIT_BIT_KEY_INITIALIZER(word, bit),			\
-		.wq_entry = {							\
-			.private	= current,				\
-			.func		= wake_bit_function,			\
-			.entry		=					\
-				LIST_HEAD_INIT((name).wq_entry.entry),		\
-		},								\
-	}
+/* DEFINE_WAIT_BIT removed - never used */
 
 /* wait_on_bit removed - never called */
 /* wait_on_bit_io, wait_on_bit_timeout, wait_on_bit_lock,

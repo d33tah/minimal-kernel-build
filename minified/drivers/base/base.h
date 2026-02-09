@@ -42,13 +42,8 @@ struct device_private {
 	struct device *device;
 	u8 dead:1;
 };
-#define to_device_private_parent(obj)	\
-	container_of(obj, struct device_private, knode_parent)
-/* to_device_private_driver macro removed - never called */
-#define to_device_private_bus(obj)	\
-	container_of(obj, struct device_private, knode_bus)
-#define to_device_private_class(obj)	\
-	container_of(obj, struct device_private, knode_class)
+/* to_device_private_parent, to_device_private_driver, to_device_private_bus,
+   to_device_private_class macros removed - never called */
 
  
 extern int devices_init(void);

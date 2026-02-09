@@ -217,54 +217,7 @@ do {									\
 		     : [umem] "m" (__m(addr))				\
 		     : : label)
 
-
-#define __try_cmpxchg_user_asm(itype, ltype, _ptr, _pold, _new, label)	({ \
-	int __err = 0;							\
-	bool success;							\
-	__typeof__(_ptr) _old = (__typeof__(_ptr))(_pold);		\
-	__typeof__(*(_ptr)) __old = *_old;				\
-	__typeof__(*(_ptr)) __new = (_new);				\
-	asm volatile("\n"						\
-		     "1: " LOCK_PREFIX "cmpxchg"itype" %[new], %[ptr]\n"\
-		     CC_SET(z)						\
-		     "2:\n"						\
-		     _ASM_EXTABLE_TYPE_REG(1b, 2b, EX_TYPE_EFAULT_REG,	\
-					   %[errout])			\
-		     : CC_OUT(z) (success),				\
-		       [errout] "+r" (__err),				\
-		       [ptr] "+m" (*_ptr),				\
-		       [old] "+a" (__old)				\
-		     : [new] ltype (__new)				\
-		     : "memory");					\
-	if (unlikely(__err))						\
-		goto label;						\
-	if (unlikely(!success))						\
-		*_old = __old;						\
-	likely(success);					})
-
- 
-#define __try_cmpxchg64_user_asm(_ptr, _pold, _new, label)	({	\
-	int __result;							\
-	__typeof__(_ptr) _old = (__typeof__(_ptr))(_pold);		\
-	__typeof__(*(_ptr)) __old = *_old;				\
-	__typeof__(*(_ptr)) __new = (_new);				\
-	asm volatile("\n"						\
-		     "1: " LOCK_PREFIX "cmpxchg8b %[ptr]\n"		\
-		     "mov $0, %%ecx\n\t"				\
-		     "setz %%cl\n"					\
-		     "2:\n"						\
-		     _ASM_EXTABLE_TYPE_REG(1b, 2b, EX_TYPE_EFAULT_REG, %%ecx) \
-		     : [result]"=c" (__result),				\
-		       "+A" (__old),					\
-		       [ptr] "+m" (*_ptr)				\
-		     : "b" ((u32)__new),				\
-		       "c" ((u32)((u64)__new >> 32))			\
-		     : "memory", "cc");					\
-	if (unlikely(__result < 0))					\
-		goto label;						\
-	if (unlikely(!__result))					\
-		*_old = __old;						\
-	likely(__result);					})
+/* __try_cmpxchg_user_asm, __try_cmpxchg64_user_asm removed - never used */
 
  
 struct __large_struct { unsigned long buf[100]; };
@@ -322,43 +275,9 @@ do {										\
 	__get_user_size(__gu_val, (ptr), sizeof(*(ptr)), err_label);		\
 	(x) = (__force __typeof__(*(ptr)))__gu_val;				\
 } while (0)
+/* unsafe_try_cmpxchg_user, __try_cmpxchg_user_wrong_size removed - never used */
 
-extern void __try_cmpxchg_user_wrong_size(void);
-
-
- 
-#define unsafe_try_cmpxchg_user(_ptr, _oldp, _nval, _label) ({			\
-	bool __ret;								\
-	__chk_user_ptr(_ptr);							\
-	switch (sizeof(*(_ptr))) {						\
-	case 1:	__ret = __try_cmpxchg_user_asm("b", "q",			\
-					       (__force u8 *)(_ptr), (_oldp),	\
-					       (_nval), _label);		\
-		break;								\
-	case 2:	__ret = __try_cmpxchg_user_asm("w", "r",			\
-					       (__force u16 *)(_ptr), (_oldp),	\
-					       (_nval), _label);		\
-		break;								\
-	case 4:	__ret = __try_cmpxchg_user_asm("l", "r",			\
-					       (__force u32 *)(_ptr), (_oldp),	\
-					       (_nval), _label);		\
-		break;								\
-	case 8:	__ret = __try_cmpxchg64_user_asm((__force u64 *)(_ptr), (_oldp),\
-						 (_nval), _label);		\
-		break;								\
-	default: __try_cmpxchg_user_wrong_size();				\
-	}									\
-	__ret;						})
-
- 
-#define __try_cmpxchg_user(_ptr, _oldp, _nval, _label)	({		\
-	int __ret = -EFAULT;						\
-	__uaccess_begin_nospec();					\
-	__ret = !unsafe_try_cmpxchg_user(_ptr, _oldp, _nval, _label);	\
-_label:									\
-	__uaccess_end();						\
-	__ret;								\
-							})
+/* __try_cmpxchg_user removed - never used */
 
  
 #define unsafe_copy_loop(dst, src, len, type, label)				\

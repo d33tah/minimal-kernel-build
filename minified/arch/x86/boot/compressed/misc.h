@@ -44,10 +44,7 @@ typedef struct {
 
 typedef guid_t efi_guid_t __aligned(__alignof__(u32));
 
-#define EFI_GUID(a, b, c, d...) (efi_guid_t){ {					\
-	(a) & 0xff, ((a) >> 8) & 0xff, ((a) >> 16) & 0xff, ((a) >> 24) & 0xff,	\
-	(b) & 0xff, ((b) >> 8) & 0xff,						\
-	(c) & 0xff, ((c) >> 8) & 0xff, d } }
+/* EFI_GUID removed - never used */
 
 typedef	struct {
 	u64 signature;
@@ -58,18 +55,7 @@ typedef	struct {
 } efi_table_hdr_t;
 
 /* EFI_CONVENTIONAL_MEMORY removed - never used */
-
-typedef struct {
-	u32 type;
-	u32 pad;
-	u64 phys_addr;
-	u64 virt_addr;
-	u64 num_pages;
-	u64 attribute;
-} efi_memory_desc_t;
-
-#define efi_early_memdesc_ptr(map, desc_size, n)			\
-	(efi_memory_desc_t *)((void *)(map) + ((n) * (desc_size)))
+/* efi_memory_desc_t, efi_early_memdesc_ptr removed - never used */
 
 typedef struct {
 	efi_guid_t guid;

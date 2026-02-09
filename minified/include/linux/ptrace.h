@@ -10,12 +10,8 @@
 #include <linux/types.h>
 #include <asm/ptrace.h>
 /* seccomp.h removed - header is empty */
-
-/* PTRACE_EVENT_FORK, VFORK, CLONE, VFORK_DONE removed - never used */
-#define PTRACE_EVENT_EXEC	4
-#define PTRACE_EVENT_EXIT	6
-#define PTRACE_EVENTMSG_SYSCALL_ENTRY	1
-#define PTRACE_EVENTMSG_SYSCALL_EXIT	2
+/* PTRACE_EVENT_FORK, VFORK, CLONE, VFORK_DONE, EXEC, EXIT removed - never used */
+/* PTRACE_EVENTMSG_SYSCALL_ENTRY, PTRACE_EVENTMSG_SYSCALL_EXIT removed - never used */
 
 
 /* ptrace_access_vm removed - declared but never implemented */

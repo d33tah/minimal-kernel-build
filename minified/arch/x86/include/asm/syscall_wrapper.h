@@ -57,11 +57,7 @@ extern long __ia32_sys_ni_syscall(const struct pt_regs *regs);
 #define __IA32_SYS_NI(name)						\
 	__SYS_NI(ia32, sys_##name)
 
-/* __IA32_COMPAT_SYS_* and __X32_COMPAT_SYS_* macros removed - compat disabled */
-#define __IA32_COMPAT_SYS_STUB0(name)
-#define __IA32_COMPAT_SYS_STUBx(x, name, ...)
-#define __X32_COMPAT_SYS_STUB0(name)
-#define __X32_COMPAT_SYS_STUBx(x, name, ...)
+/* __IA32_COMPAT_SYS_*, __X32_COMPAT_SYS_* macros removed - compat disabled */
 
 
 

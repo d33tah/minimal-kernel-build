@@ -5,7 +5,8 @@
 /* Inlined from vt_buffer.h */
 #include <linux/string.h>
 
-#include <asm/vga.h>
+/* Inlined from asm/vga.h */
+#define VGA_MAP_MEM(x, s) ((unsigned long)phys_to_virt(x))
 
 /* VT_BUF_HAVE_RW, VT_BUF_HAVE_MEMSETW, VT_BUF_HAVE_MEMCPYW,
  * VT_BUF_HAVE_MEMMOVEW not defined - use simple implementations */

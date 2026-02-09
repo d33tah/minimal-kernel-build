@@ -24,7 +24,13 @@
 #include <linux/gfp.h>
 #include <linux/overflow.h>
 #include <linux/device/bus.h>
-#include <linux/device/class.h>
+/* Inlined from linux/device/class.h */
+struct class {
+	const char		*name;
+	struct module		*owner;
+	void (*dev_release)(struct device *dev);
+	struct subsys_private *p;
+};
 #include <linux/device/driver.h>
 /* struct dev_archdata, pdev_archdata removed - unused */
 

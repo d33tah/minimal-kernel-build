@@ -34,7 +34,21 @@ DEFINE_PER_CPU(unsigned long, cpu_dr7);
 #include <asm/switch_to.h>
 #include <asm/desc.h>
 /* prctl.h removed - header is empty */
-#include <asm/spec-ctrl.h>
+/* Inlined from asm/spec-ctrl.h */
+#include <linux/thread_info.h>
+#include <asm/nospec-branch.h>
+extern u64 x86_amd_ls_cfg_base;
+extern u64 x86_amd_ls_cfg_ssbd_mask;
+static inline u64 ssbd_tif_to_spec_ctrl(u64 tifn)
+{
+	BUILD_BUG_ON(TIF_SSBD < SPEC_CTRL_SSBD_SHIFT);
+	return (tifn & _TIF_SSBD) >> (TIF_SSBD - SPEC_CTRL_SSBD_SHIFT);
+}
+static inline u64 ssbd_tif_to_amd_ls_cfg(u64 tifn)
+{
+	return (tifn & _TIF_SSBD) ? x86_amd_ls_cfg_ssbd_mask : 0ULL;
+}
+extern void speculation_ctrl_update(unsigned long tif);
 #include <asm/io_bitmap.h>
 #include <asm/proto.h>
 /* frame.h macros removed - ENCODE_FRAME_POINTER, FRAME_BEGIN, FRAME_END, FRAME_OFFSET not used in this file */

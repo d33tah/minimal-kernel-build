@@ -5,7 +5,7 @@
 #include <linux/init.h>
 #include <linux/hash.h>
 #include <linux/memblock.h>
-#include <linux/bit_spinlock.h>
+/* bit_spinlock.h inlined into rculist_bl.h */
 #include <linux/rculist_bl.h>
 #include <linux/list_lru.h>
 #include "internal.h"

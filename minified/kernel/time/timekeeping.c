@@ -19,7 +19,13 @@
 #include "tick-internal.h"
 /* ntp.c functions inlined - ntp_init/ntp_clear are empty, others return constants */
 #define NTP_TICK_LENGTH ((u64)TICK_NSEC << 32)
-#include "timekeeping_internal.h"
+/* Inlined from timekeeping_internal.h */
+static inline u64 clocksource_delta(u64 now, u64 last, u64 mask)
+{
+	u64 ret = (now - last) & mask;
+	return ret & ~(mask >> 1) ? 0 : ret;
+}
+extern raw_spinlock_t timekeeper_lock;
 
 /* TK_CLEAR_NTP, TK_MIRROR, TK_CLOCK_WAS_SET, enum timekeeping_adv_mode
    removed - only used by timekeeping_advance (now removed) */

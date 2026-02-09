@@ -36,7 +36,7 @@
 
 /* resctrl_sched_in removed - empty stub */
 
-#include <asm/spec-ctrl.h>
+/* spec-ctrl.h inlined into process.c - unused here */
 #include <asm/kdebug.h>
 void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p);
 

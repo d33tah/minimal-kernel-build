@@ -6,7 +6,7 @@
 #include <asm/page_types.h>
 /* Inlined from uapi/asm/ptrace.h (kernel-only parts) */
 #include <linux/compiler.h>
-#include <asm/ptrace-abi.h>
+/* ptrace-abi.h inlined - was empty (all ptrace constants removed) */
 #include <asm/processor-flags.h>
 
 #ifndef __ASSEMBLY__

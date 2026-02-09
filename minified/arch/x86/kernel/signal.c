@@ -16,7 +16,7 @@
 #include <linux/syscalls.h>
 
 #include <asm/processor.h>
-#include <asm/ucontext.h>
+/* ucontext.h inlined into sigframe.h */
 #include <asm/fpu/signal.h>
 #include <asm/fpu/xstate.h>
 #include <asm/vdso.h>

@@ -14,7 +14,8 @@
 #include <linux/ioport.h>
 #include <linux/screen_info.h>
 #include <asm/io.h>
-#include <asm/vga.h>
+/* Inlined from asm/vga.h */
+#define VGA_MAP_MEM(x, s) ((unsigned long)phys_to_virt(x))
 
 /* Inlined from video/vga.h */
 /* VGA_CRT_DC, VGA_CRT_DM removed - never used */

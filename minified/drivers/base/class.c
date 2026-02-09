@@ -1,5 +1,5 @@
 
-#include <linux/device/class.h>
+/* class.h inlined into device.h */
 #include <linux/device.h>
 /* linux/module.h removed - no module features used */
 #include <linux/init.h>

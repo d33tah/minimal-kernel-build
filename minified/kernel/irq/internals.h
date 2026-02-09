@@ -1,6 +1,7 @@
  
  
-#include <linux/irqdesc.h>
+/* irqdesc.h inlined into irq.h */
+#include <linux/irq.h>
 /* kernel_stat.h removed - empty */
 #include <linux/pm_runtime.h>
 #include <linux/sched/clock.h>

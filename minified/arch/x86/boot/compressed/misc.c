@@ -4,7 +4,11 @@
 /* --- 2026-01-26 04:10 --- pgtable.h was empty (just guards), removed */
 #include "../string.h"
 #include "../voffset.h"
-#include <asm/bootparam_utils.h>
+/* Inlined from asm/bootparam_utils.h */
+static void sanitize_boot_params(struct boot_params *boot_params)
+{
+	(void)boot_params;
+}
 
 #define STATIC static
 #define MALLOC_VISIBLE

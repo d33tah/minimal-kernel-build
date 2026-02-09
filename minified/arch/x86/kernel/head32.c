@@ -13,7 +13,11 @@ extern asmlinkage void __init start_kernel(void);
 #include <asm/apic.h>
 #include <asm/bios_ebda.h>
 #include <asm/tlbflush.h>
-#include <asm/bootparam_utils.h>
+/* Inlined from asm/bootparam_utils.h */
+static void sanitize_boot_params(struct boot_params *boot_params)
+{
+	(void)boot_params;
+}
 
 /* i386_default_early_setup inlined - single caller */
 

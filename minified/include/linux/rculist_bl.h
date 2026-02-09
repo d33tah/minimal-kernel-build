@@ -2,7 +2,25 @@
 #define _LINUX_RCULIST_BL_H
 
 /* linux/list.h removed - no list structures used */
-#include <linux/bit_spinlock.h>
+/* Inlined from linux/bit_spinlock.h */
+#include <linux/kernel.h>
+#include <linux/preempt.h>
+#include <linux/atomic.h>
+#include <linux/bug.h>
+static inline void bit_spin_lock(int bitnum, unsigned long *addr)
+{
+	preempt_disable();
+	__acquire(bitlock);
+}
+static inline void __bit_spin_unlock(int bitnum, unsigned long *addr)
+{
+	preempt_enable();
+	__release(bitlock);
+}
+static inline int bit_spin_is_locked(int bitnum, unsigned long *addr)
+{
+	return 1;
+}
 #include <linux/rcupdate.h>
 
 /* Inlined from list_bl.h */

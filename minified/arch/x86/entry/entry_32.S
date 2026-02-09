@@ -57,7 +57,7 @@
 #include <asm/unwind_hints.h>
 #include <asm/page_types.h>
 #include <generated/asm-offsets.h>
-#include <asm/ptrace-abi.h>
+/* ptrace-abi.h inlined - was empty (all ptrace constants removed) */
 #include <asm/msr.h>
 # undef		UNWIND_HINT_IRET_REGS
 # define	UNWIND_HINT_IRET_REGS

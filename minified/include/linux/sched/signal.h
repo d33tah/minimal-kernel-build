@@ -31,37 +31,20 @@ struct sighand_struct {
 
 /* pacct_struct, cpu_itimer, task_cputime_atomic, thread_group_cputimer removed - never used */
 
-struct multiprocess_signals {
-	sigset_t signal;
-	struct hlist_node node;
-};
+/* multiprocess_signals struct removed - never used */
 
 struct signal_struct {
 	refcount_t		sigcnt;
 	atomic_t		live;
-	int			nr_threads;
+	/* nr_threads removed from struct - only global nr_threads used */
 	struct list_head	thread_head;
 
-	/* wait_chldexit removed - only initialized, never used */
+	/* curr_target, wait_chldexit removed - write-only */
 
-	struct task_struct	*curr_target;
-
-	 
 	struct sigpending	shared_pending;
 
-	 
-	/* multiprocess removed - list maintained but never iterated */
-
-	int			group_exit_code;
-	int			notify_count;
-	struct task_struct	*group_exec_task;
-
-	/* group_stop_count, flags removed - write-only */
-
-
-	unsigned int		is_child_subreaper:1;
-	unsigned int		has_child_subreaper:1;
-
+	/* group_exit_code, notify_count, group_exec_task removed - never used */
+	/* is_child_subreaper, has_child_subreaper removed - never used */
 
 	struct pid *pids[PIDTYPE_MAX];
 
@@ -181,19 +164,8 @@ static inline void restore_saved_sigmask(void)
 
 extern void __cleanup_sighand(struct sighand_struct *);
 
-/* next_task, for_each_process, do_each_thread removed - never called */
-
-#define while_each_thread(g, t) \
-	while ((t = next_thread(t)) != g)
-
-#define __for_each_thread(signal, t)	\
-	list_for_each_entry_rcu(t, &(signal)->thread_head, thread_node)
-
-#define for_each_thread(p, t)		\
-	__for_each_thread((p)->signal, t)
-
-
-/* task_pid_type removed - unused */
+/* while_each_thread, __for_each_thread, for_each_thread, next_task,
+ * for_each_process, do_each_thread removed - never called */
 
 static inline struct pid *task_pgrp(struct task_struct *task)
 {
@@ -210,20 +182,7 @@ static inline bool thread_group_leader(struct task_struct *p)
 	return p->exit_signal >= 0;
 }
 
-static inline
-bool same_thread_group(struct task_struct *p1, struct task_struct *p2)
-{
-	return p1->signal == p2->signal;
-}
-
-static inline struct task_struct *next_thread(const struct task_struct *p)
-{
-	return list_entry_rcu(p->thread_group.next,
-			      struct task_struct, thread_group);
-}
-
-/* thread_group_empty removed - never called (single-threaded init) */
-
+/* same_thread_group, next_thread, thread_group_empty removed - never called */
 /* __lock_task_sighand, lock_task_sighand, unlock_task_sighand removed - never called */
 
 

@@ -8,7 +8,7 @@
 #include <linux/mm.h>
 
 static struct signal_struct init_signals = {
-	.nr_threads	= 1,
+	/* .nr_threads removed - field removed from struct */
 	.thread_head	= LIST_HEAD_INIT(init_task.thread_node),
 	/* wait_chldexit removed */
 	.shared_pending	= {

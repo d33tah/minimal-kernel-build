@@ -620,14 +620,13 @@ copy_process(int node, struct kernel_clone_args *args)
 			retval = -ENOMEM;
 			goto bad_fork_cleanup_sighand;
 		}
-		sig->nr_threads = 1;
+		/* sig->nr_threads, sig->curr_target removed - fields removed */
 		atomic_set(&sig->live, 1);
 		refcount_set(&sig->sigcnt, 1);
 		sig->thread_head =
 			(struct list_head)LIST_HEAD_INIT(p->thread_node);
 		p->thread_node =
 			(struct list_head)LIST_HEAD_INIT(sig->thread_head);
-		sig->curr_target = p;
 		init_sigpending(&sig->shared_pending);
 		/* multiprocess init removed - field removed */
 		task_lock(current->group_leader);

@@ -112,7 +112,7 @@ static int deferred_probe_initcall(void)
 }
 late_initcall(deferred_probe_initcall);
 
-bool device_is_bound(struct device *dev)
+static bool device_is_bound(struct device *dev)
 {
 	return dev->p && klist_node_attached(&dev->p->knode_driver);
 }

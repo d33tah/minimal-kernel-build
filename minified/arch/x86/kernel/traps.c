@@ -57,7 +57,7 @@ static inline void cond_local_irq_disable(struct pt_regs *regs)
 		local_irq_disable();
 }
 
-__always_inline int is_valid_bugaddr(unsigned long addr)
+static __always_inline int is_valid_bugaddr(unsigned long addr)
 {
 	if (addr < TASK_SIZE_MAX)
 		return 0;

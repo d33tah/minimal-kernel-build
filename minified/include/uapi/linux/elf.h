@@ -25,7 +25,6 @@ typedef __s64	Elf64_Sxword;
 /* PT_NULL removed - unused */
 #define PT_LOAD    1
 #define PT_DYNAMIC 2
-#define PT_INTERP  3
 #define PT_NOTE    4
 /* PT_PHDR removed - unused */
 #define PT_LOOS    0x60000000
@@ -44,17 +43,10 @@ typedef __s64	Elf64_Sxword;
 #define DT_RELENT	19
 #define DT_TEXTREL	22
 
-#define STB_LOCAL  0
-#define STB_GLOBAL 1
-#define STB_WEAK   2
 
 #define STT_NOTYPE  0
 #define STT_OBJECT  1
 #define STT_FUNC    2
-#define STT_SECTION 3
-#define STT_FILE    4
-#define STT_COMMON  5
-#define STT_TLS     6
 
 #define ELF_ST_BIND(x)		((x) >> 4)
 #define ELF_ST_TYPE(x)		((x) & 0xf)
@@ -248,11 +240,6 @@ typedef struct elf64_shdr {
 #define ELFDATA2MSB	2
 
 #define EV_CURRENT	1
-
-#define ELFOSABI_NONE	0
-#ifndef ELF_OSABI
-#define ELF_OSABI ELFOSABI_NONE
-#endif
 
 /* Note types removed - all unused: NT_PRSTATUS, NT_PRFPREG, NT_PRXFPREG,
    NT_386_TLS, NT_386_IOPERM, NT_X86_XSTATE */

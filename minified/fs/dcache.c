@@ -28,15 +28,7 @@ static inline struct hlist_bl_head *d_hash(unsigned int hash)
 	return dentry_hashtable + (hash >> d_hash_shift);
 }
 
-#define IN_LOOKUP_SHIFT 4 /* Reduced from 10 for minimal boot */
-static struct hlist_bl_head in_lookup_hashtable[1 << IN_LOOKUP_SHIFT];
-
-static inline struct hlist_bl_head *in_lookup_hash(const struct dentry *parent,
-						   unsigned int hash)
-{
-	hash += (unsigned long)parent / L1_CACHE_BYTES;
-	return in_lookup_hashtable + hash_32(hash, IN_LOOKUP_SHIFT);
-}
+/* in_lookup_hashtable removed - simplified d_alloc_parallel doesn't use it */
 
 /* nr_dentry, nr_dentry_unused, nr_dentry_negative removed - only written, never read */
 
@@ -639,120 +631,33 @@ next:
 /* end_dir_add and start_dir_add inlined into callers */
 /* d_wait_lookup removed - inlined into single caller (~12 LOC) */
 
+/* Simplified for single-process minimal kernel: no concurrent lookups,
+   no need for parallel-creation table or retry loops */
 struct dentry *d_alloc_parallel(struct dentry *parent, const struct qstr *name,
 				wait_queue_head_t *wq)
 {
-	unsigned int hash = name->hash;
-	struct hlist_bl_head *b = in_lookup_hash(parent, hash);
-	struct hlist_bl_node *node;
-	struct dentry *new = d_alloc(parent, name);
 	struct dentry *dentry;
-	unsigned seq, r_seq, d_seq;
 
-	if (unlikely(!new))
+	/* Check if already cached */
+	dentry = d_lookup(parent, name);
+	if (dentry)
+		return dentry;
+
+	/* Allocate new dentry and mark for lookup */
+	dentry = d_alloc(parent, name);
+	if (unlikely(!dentry))
 		return ERR_PTR(-ENOMEM);
-
-retry:
-	rcu_read_lock();
-	seq = smp_load_acquire(&parent->d_inode->i_dir_seq);
-	r_seq = read_seqbegin(&rename_lock);
-	dentry = __d_lookup_rcu(parent, name, &d_seq);
-	if (unlikely(dentry)) {
-		if (!lockref_get_not_dead(&dentry->d_lockref)) {
-			rcu_read_unlock();
-			goto retry;
-		}
-		if (read_seqcount_retry(&dentry->d_seq, d_seq)) {
-			rcu_read_unlock();
-			dput(dentry);
-			goto retry;
-		}
-		rcu_read_unlock();
-		dput(new);
-		return dentry;
-	}
-	if (unlikely(read_seqretry(&rename_lock, r_seq))) {
-		rcu_read_unlock();
-		goto retry;
-	}
-
-	if (unlikely(seq & 1)) {
-		rcu_read_unlock();
-		goto retry;
-	}
-
-	hlist_bl_lock(b);
-	if (unlikely(READ_ONCE(parent->d_inode->i_dir_seq) != seq)) {
-		hlist_bl_unlock(b);
-		rcu_read_unlock();
-		goto retry;
-	}
-
-	hlist_bl_for_each_entry(dentry, node, b, d_u.d_in_lookup_hash) {
-		if (dentry->d_name.hash != hash)
-			continue;
-		if (dentry->d_parent != parent)
-			continue;
-		if (!d_same_name(dentry, parent, name))
-			continue;
-		hlist_bl_unlock(b);
-
-		if (!lockref_get_not_dead(&dentry->d_lockref)) {
-			rcu_read_unlock();
-			goto retry;
-		}
-
-		rcu_read_unlock();
-
-		spin_lock(&dentry->d_lock);
-		/* Inlined d_wait_lookup */
-		if (d_in_lookup(dentry)) {
-			DECLARE_WAITQUEUE(wait, current);
-			add_wait_queue(dentry->d_wait, &wait);
-			do {
-				set_current_state(TASK_UNINTERRUPTIBLE);
-				spin_unlock(&dentry->d_lock);
-				schedule();
-				spin_lock(&dentry->d_lock);
-			} while (d_in_lookup(dentry));
-		}
-
-		if (unlikely(dentry->d_name.hash != hash))
-			goto mismatch;
-		if (unlikely(dentry->d_parent != parent))
-			goto mismatch;
-		if (unlikely(d_unhashed(dentry)))
-			goto mismatch;
-		if (unlikely(!d_same_name(dentry, parent, name)))
-			goto mismatch;
-
-		spin_unlock(&dentry->d_lock);
-		dput(new);
-		return dentry;
-	}
-	rcu_read_unlock();
-
-	new->d_flags |= DCACHE_PAR_LOOKUP;
-	new->d_wait = wq;
-	hlist_bl_add_head_rcu(&new->d_u.d_in_lookup_hash, b);
-	hlist_bl_unlock(b);
-	return new;
-mismatch:
-	spin_unlock(&dentry->d_lock);
-	dput(dentry);
-	goto retry;
+	dentry->d_flags |= DCACHE_PAR_LOOKUP;
+	dentry->d_wait = wq;
+	return dentry;
 }
 
+/* Simplified: no in_lookup_hash table used in minimal d_alloc_parallel */
 void __d_lookup_done(struct dentry *dentry)
 {
-	struct hlist_bl_head *b =
-		in_lookup_hash(dentry->d_parent, dentry->d_name.hash);
-	hlist_bl_lock(b);
 	dentry->d_flags &= ~DCACHE_PAR_LOOKUP;
-	__hlist_bl_del(&dentry->d_u.d_in_lookup_hash);
 	wake_up_all(dentry->d_wait);
 	dentry->d_wait = NULL;
-	hlist_bl_unlock(b);
 	INIT_HLIST_NODE(&dentry->d_u.d_alias);
 	INIT_LIST_HEAD(&dentry->d_lru);
 }
@@ -817,11 +722,6 @@ struct kmem_cache *names_cachep __read_mostly;
 
 void __init vfs_caches_init_early(void)
 {
-	int i;
-
-	for (i = 0; i < ARRAY_SIZE(in_lookup_hashtable); i++)
-		INIT_HLIST_BL_HEAD(&in_lookup_hashtable[i]);
-
 	/* dcache_init_early inlined - hashdist always 0 */
 	dentry_hashtable = alloc_large_system_hash(
 		"Dentry cache", sizeof(struct hlist_bl_head), dhash_entries, 13,

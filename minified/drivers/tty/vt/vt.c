@@ -538,12 +538,7 @@ bool con_is_visible(const struct vc_data *vc)
 	return *vc->vc_display_fg == vc;
 }
 
-/* vtconsole_class_init simplified - sysfs entries not needed for minimal kernel */
-static int __init vtconsole_class_init(void)
-{
-	return 0;
-}
-postcore_initcall(vtconsole_class_init);
+/* vtconsole_class_init removed - empty initcall (~5 LOC) */
 
 #endif
 

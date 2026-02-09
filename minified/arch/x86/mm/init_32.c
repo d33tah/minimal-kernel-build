@@ -372,23 +372,8 @@ void __init mem_init(void)
 	clear_fixmap(FIX_WP_TEST);
 }
 
-/* mark_nxdata_nx inlined - single caller */
+/* mark_rodata_ro simplified - set_pages_ro and set_memory_nx were stubs,
+ * LTO eliminated entire body to ret (~15 LOC removed) */
 void mark_rodata_ro(void)
 {
-	unsigned long start = PFN_ALIGN(_text);
-	unsigned long size = (unsigned long)__end_rodata - start;
-	unsigned long nx_start, nx_size;
-
-	/* set_pages_ro removed - stub returning 0 */
-	pr_info("Write protecting kernel text and read-only data: %luk\n",
-		size >> 10);
-
-	/* mark_nxdata_nx inlined */
-	nx_start = PFN_ALIGN(_etext);
-	nx_size = (((unsigned long)__init_end + HPAGE_SIZE) & HPAGE_MASK) -
-		  nx_start;
-	if (__supported_pte_mask & _PAGE_NX)
-		printk(KERN_INFO "NX-protecting the kernel data: %luk\n",
-		       nx_size >> 10);
-	/* set_memory_nx removed - stub returning 0 */
 }

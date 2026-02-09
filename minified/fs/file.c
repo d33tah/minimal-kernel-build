@@ -18,9 +18,7 @@ unsigned int sysctl_nr_open __read_mostly = 1024 * 1024;
 
 static void __free_fdtable(struct fdtable *fdt)
 {
-	kvfree(fdt->fd);
-	kvfree(fdt->open_fds);
-	kfree(fdt);
+	/* kvfree/kfree are no-ops (bump allocator) */
 }
 
 static void free_fdtable_rcu(struct rcu_head *rcu)
@@ -85,9 +83,9 @@ static struct fdtable *alloc_fdtable(unsigned int nr)
 	return fdt;
 
 out_arr:
-	kvfree(fdt->fd);
+	/* kvfree is no-op */
 out_fdt:
-	kfree(fdt);
+	/* kfree is no-op */
 out:
 	return NULL;
 }

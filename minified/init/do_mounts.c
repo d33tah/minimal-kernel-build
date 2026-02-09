@@ -65,42 +65,9 @@ dev_t name_to_dev_t(const char *name)
 	return devt;
 }
 
-/* Stub: root= cmdline not needed for minimal kernel */
-static int __init root_dev_setup(char *line)
-{
-	return 1;
-}
-__setup("root=", root_dev_setup);
-
-/* Stub: rootwait cmdline not needed for minimal kernel */
-static int __init rootwait_setup(char *str)
-{
-	return 1;
-}
-__setup("rootwait", rootwait_setup);
-
 static char *__initdata root_mount_data;
-/* Stub: rootflags= not needed for minimal kernel */
-static int __init root_data_setup(char *str)
-{
-	return 1;
-}
-
-/* root_fs_names, root_delay removed - stubs never assigned them */
-/* Stub: rootfstype= not needed for minimal kernel */
-static int __init fs_names_setup(char *str)
-{
-	return 1;
-}
-/* Stub: rootdelay= not needed for minimal kernel */
-static int __init root_delay_setup(char *str)
-{
-	return 1;
-}
-
-__setup("rootflags=", root_data_setup);
-__setup("rootfstype=", fs_names_setup);
-__setup("rootdelay=", root_delay_setup);
+/* root_dev_setup, rootwait_setup, root_data_setup, fs_names_setup,
+ * root_delay_setup __setup handlers removed (~30 LOC) */
 
 /* split_fs_names removed - only caller mount_nodev_root was removed */
 

@@ -73,8 +73,7 @@ static void destroy_unused_super(struct super_block *s)
 	if (!s)
 		return;
 	up_write(&s->s_umount);
-	list_lru_destroy(&s->s_dentry_lru);
-	list_lru_destroy(&s->s_inode_lru);
+	/* list_lru_destroy calls removed - empty stubs */
 	/* security_sb_free() - empty stub */
 	put_user_ns(s->s_user_ns);
 	/* kfree(s->s_subtype) removed - field removed, always NULL */

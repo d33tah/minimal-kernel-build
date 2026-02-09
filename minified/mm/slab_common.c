@@ -255,30 +255,10 @@ const struct kmalloc_info_struct kmalloc_info[] __initconst = {
 	INIT_KMALLOC_INFO(16777216, 16M), INIT_KMALLOC_INFO(33554432, 32M)
 };
 
+/* setup_kmalloc_cache_index_table simplified - all loops were dead code
+ * (KMALLOC_MIN_SIZE=8 on this config) (~18 LOC removed) */
 void __init setup_kmalloc_cache_index_table(void)
 {
-	unsigned int i;
-
-	BUILD_BUG_ON(KMALLOC_MIN_SIZE > 256 ||
-		     !is_power_of_2(KMALLOC_MIN_SIZE));
-
-	for (i = 8; i < KMALLOC_MIN_SIZE; i += 8) {
-		unsigned int elem = size_index_elem(i);
-
-		if (elem >= ARRAY_SIZE(size_index))
-			break;
-		size_index[elem] = KMALLOC_SHIFT_LOW;
-	}
-
-	if (KMALLOC_MIN_SIZE >= 64) {
-		for (i = 64 + 8; i <= 96; i += 8)
-			size_index[size_index_elem(i)] = 7;
-	}
-
-	if (KMALLOC_MIN_SIZE >= 128) {
-		for (i = 128 + 8; i <= 192; i += 8)
-			size_index[size_index_elem(i)] = 8;
-	}
 }
 
 static void __init new_kmalloc_cache(int idx, enum kmalloc_cache_type type,

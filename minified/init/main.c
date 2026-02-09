@@ -96,7 +96,7 @@ enum system_states system_state __read_mostly;
 #define MAX_INIT_ENVS CONFIG_INIT_ENV_ARG_LIMIT
 
 extern void time_init(void);
-void (*__initdata late_time_init)(void);
+/* late_time_init removed - never assigned */
 
 char __initdata boot_command_line[COMMAND_LINE_SIZE];
 char *saved_command_line;
@@ -123,31 +123,7 @@ extern const struct obs_kernel_param __setup_start[], __setup_end[];
 
 unsigned long loops_per_jiffy = (1 << 12);
 
-/* Stub: debug/quiet/loglevel cmdline not needed for minimal kernel */
-static int __init debug_kernel(char *str)
-{
-	return 0;
-}
-static int __init quiet_kernel(char *str)
-{
-	return 0;
-}
-early_param("debug", debug_kernel);
-early_param("quiet", quiet_kernel);
-
-static int __init loglevel(char *str)
-{
-	return 0;
-}
-early_param("loglevel", loglevel);
-
-/* setup_boot_config removed - was empty stub */
-static int __init warn_bootconfig(char *str)
-{
-	return 0;
-}
-/* exit_boot_config removed - empty stub */
-early_param("bootconfig", warn_bootconfig);
+/* debug_kernel, quiet_kernel, loglevel, warn_bootconfig early_params removed (~20 LOC) */
 
 static void __init repair_env_string(char *param, char *val)
 {
@@ -338,9 +314,8 @@ void __init parse_early_param(void)
 	done = 1;
 }
 
-void __init arch_post_acpi_subsys_init(void); /* in arch/x86/kernel/process.c */
-
 void __init poking_init(void); /* in arch/x86/mm/init.c */
+void __init arch_post_acpi_subsys_init(void); /* in arch/x86/kernel/process.c */
 
 /* smp_setup_processor_id, thread_stack_cache_init, mem_encrypt_init, pgtable_cache_init removed - empty weak stubs */
 
@@ -463,8 +438,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	}
 	setup_per_cpu_pageset();
 	/* acpi_early_init removed - empty stub */
-	if (late_time_init)
-		late_time_init();
+	/* late_time_init removed - was never assigned */
 	/* sched_clock_init call removed - empty stub */
 	calibrate_delay();
 	pid_idr_init();
@@ -563,7 +537,7 @@ static int try_to_run_init_process(const char *init_filename)
 
 static noinline void __init kernel_init_freeable(void);
 
-bool rodata_enabled __ro_after_init = true;
+/* rodata_enabled removed - mark_rodata_ro is LTO-eliminated */
 
 /* free_initmem provided by arch/x86/mm/init.c */
 
@@ -581,11 +555,8 @@ static int __ref kernel_init(void *unused)
 	/* kprobe_free_init_mem, kgdb_free_init_mem, exit_boot_config removed - empty stubs */
 	free_initmem();
 	/* Inlined mark_readonly */
-	if (rodata_enabled) {
-		rcu_barrier();
-		mark_rodata_ro();
-	} else
-		pr_info("Kernel memory protection disabled.\n");
+	/* mark_readonly block removed - mark_rodata_ro is LTO-eliminated */
+	rcu_barrier();
 
 	system_state = SYSTEM_RUNNING;
 

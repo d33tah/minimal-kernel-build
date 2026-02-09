@@ -26,8 +26,6 @@
 #define printk_safe_exit_irqrestore(flags) local_irq_restore(flags)
 /* end internal.h */
 
-static int unregister_console(struct console *console);
-
 int console_printk[4] = {
 	CONSOLE_LOGLEVEL_DEFAULT,
 	MESSAGE_LOGLEVEL_DEFAULT,
@@ -234,19 +232,7 @@ void register_console(struct console *newcon)
 	console_unlock();
 	/* console_sysfs_notify call removed - empty stub */
 	con_printk(KERN_INFO, newcon, "enabled\n");
-	/* keep_bootcon check removed - never set, always unregister boot consoles */
-	if (bootcon_enabled &&
-	    ((newcon->flags & (CON_CONSDEV | CON_BOOT)) == CON_CONSDEV)) {
-		for_each_console(con)
-			if (con->flags & CON_BOOT)
-				unregister_console(con);
-	}
-}
-
-static int unregister_console(struct console *console)
-{
-	/* Stub: console unregistration not needed for minimal kernel */
-	return 0;
+	/* boot console unregistration loop removed - unregister_console was empty (~8 LOC) */
 }
 
 void __init console_init(void)

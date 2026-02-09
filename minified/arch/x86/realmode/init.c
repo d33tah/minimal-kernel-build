@@ -20,12 +20,4 @@ void __init reserve_real_mode(void)
 	memblock_reserve(0, SZ_1M);
 }
 
-/* sme_sev_setup_real_mode, setup_real_mode, set_real_mode_permissions removed
-   - init_real_mode is stubbed and never calls them */
-
-static int __init init_real_mode(void)
-{
-	/* Stubbed - not needed for Hello World */
-	return 0;
-}
-early_initcall(init_real_mode);
+/* init_real_mode, setup_real_mode removed - not needed (~8 LOC) */

@@ -306,13 +306,7 @@ void put_fs_context(struct fs_context *fc)
 
 static void legacy_fs_context_free(struct fs_context *fc)
 {
-	struct legacy_fs_context *ctx = fc->fs_private;
-
-	if (ctx) {
-		if (ctx->param_type == LEGACY_FS_INDIVIDUAL_PARAMS)
-			kfree(ctx->legacy_data);
-		kfree(ctx);
-	}
+	/* Body removed - all kfree calls are no-ops (bump allocator) */
 }
 
 static int legacy_fs_context_dup(struct fs_context *fc,

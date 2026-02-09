@@ -26,8 +26,7 @@ static struct pt_regs exec_summary_regs;
 
 void show_stack_regs(struct pt_regs *regs)
 {
-	/* Stub: stack trace printing not needed for minimal kernel */
-	printk("%sCall Trace: <stubbed>\n", KERN_DEFAULT);
+	/* printk removed - LTO eliminates this anyway */
 }
 
 static arch_spinlock_t die_lock = __ARCH_SPIN_LOCK_UNLOCKED;
@@ -123,6 +122,5 @@ void die_addr(const char *str, struct pt_regs *regs, long err, long gp_addr)
 
 void show_regs(struct pt_regs *regs)
 {
-	/* Stub: minimal register display for crash */
-	__show_regs(regs, SHOW_REGS_ALL, KERN_DEFAULT);
+	/* __show_regs call removed - it's an empty stub */
 }

@@ -600,10 +600,7 @@ qualifier:
 
 	spec->base = 10;
 	switch (*fmt) {
-	case 'c':
-		spec->type = FORMAT_TYPE_CHAR;
-		return ++fmt - start;
-
+	/* %c removed - unused in kernel printk */
 	case 's':
 		spec->type = FORMAT_TYPE_STR;
 		return ++fmt - start;
@@ -727,27 +724,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 			break;
 		}
 
-		case FORMAT_TYPE_CHAR: {
-			char c;
-
-			if (!(spec.flags & LEFT)) {
-				while (--spec.field_width > 0) {
-					if (str < end)
-						*str = ' ';
-					++str;
-				}
-			}
-			c = (unsigned char)va_arg(args, int);
-			if (str < end)
-				*str = c;
-			++str;
-			while (--spec.field_width > 0) {
-				if (str < end)
-					*str = ' ';
-				++str;
-			}
-			break;
-		}
+			/* FORMAT_TYPE_CHAR removed - %c unused in kernel */
 
 		case FORMAT_TYPE_STR:
 			str = string(str, end, va_arg(args, char *), spec);

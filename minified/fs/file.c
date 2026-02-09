@@ -21,10 +21,7 @@ static void __free_fdtable(struct fdtable *fdt)
 	/* kvfree/kfree are no-ops (bump allocator) */
 }
 
-static void free_fdtable_rcu(struct rcu_head *rcu)
-{
-	__free_fdtable(container_of(rcu, struct fdtable, rcu));
-}
+/* free_fdtable_rcu, alloc_fdtable removed - no fdtable expansion needed */
 
 #define BITBIT_NR(nr) BITS_TO_LONGS(BITS_TO_LONGS(nr))
 #define BITBIT_SIZE(nr) (BITBIT_NR(nr) * sizeof(long))
@@ -47,133 +44,19 @@ static void copy_fd_bitmaps(struct fdtable *nfdt, struct fdtable *ofdt,
 	memset((char *)nfdt->full_fds_bits + cpy, 0, set);
 }
 
-static struct fdtable *alloc_fdtable(unsigned int nr)
-{
-	struct fdtable *fdt;
-	void *data;
-
-	nr /= (1024 / sizeof(struct file *));
-	nr = roundup_pow_of_two(nr + 1);
-	nr *= (1024 / sizeof(struct file *));
-	nr = ALIGN(nr, BITS_PER_LONG);
-
-	if (unlikely(nr > sysctl_nr_open))
-		nr = ((sysctl_nr_open - 1) | (BITS_PER_LONG - 1)) + 1;
-
-	fdt = kmalloc(sizeof(struct fdtable), GFP_KERNEL_ACCOUNT);
-	if (!fdt)
-		goto out;
-	fdt->max_fds = nr;
-	data = kvmalloc_array(nr, sizeof(struct file *), GFP_KERNEL_ACCOUNT);
-	if (!data)
-		goto out_fdt;
-	fdt->fd = data;
-
-	data = kvmalloc(max_t(size_t, 2 * nr / BITS_PER_BYTE + BITBIT_SIZE(nr),
-			      L1_CACHE_BYTES),
-			GFP_KERNEL_ACCOUNT);
-	if (!data)
-		goto out_arr;
-	fdt->open_fds = data;
-	data += nr / BITS_PER_BYTE;
-	fdt->close_on_exec = data;
-	data += nr / BITS_PER_BYTE;
-	fdt->full_fds_bits = data;
-
-	return fdt;
-
-out_arr:
-	/* kvfree is no-op */
-out_fdt:
-	/* kfree is no-op */
-out:
-	return NULL;
-}
-
-/* expand_fdtable inlined into expand_files */
-
+/* Simplified: init never exceeds NR_OPEN_DEFAULT fds, no expansion needed */
 static int expand_files(struct files_struct *files, unsigned int nr)
 	__releases(files->file_lock) __acquires(files->file_lock)
 {
-	struct fdtable *fdt;
-	int expanded = 0;
-
-repeat:
-	fdt = files_fdtable(files);
+	struct fdtable *fdt = files_fdtable(files);
 
 	if (nr < fdt->max_fds)
-		return expanded;
-
-	if (nr >= sysctl_nr_open)
-		return -EMFILE;
-
-	if (unlikely(files->resize_in_progress)) {
-		spin_unlock(&files->file_lock);
-		expanded = 1;
-		wait_event(files->resize_wait, !files->resize_in_progress);
-		spin_lock(&files->file_lock);
-		goto repeat;
-	}
-
-	files->resize_in_progress = true;
-	/* Inlined expand_fdtable */
-	{
-		struct fdtable *new_fdt, *cur_fdt;
-
-		spin_unlock(&files->file_lock);
-		new_fdt = alloc_fdtable(nr);
-		/* synchronize_rcu call removed - empty stub (single task) */
-		spin_lock(&files->file_lock);
-		if (!new_fdt) {
-			expanded = -ENOMEM;
-		} else if (unlikely(new_fdt->max_fds <= nr)) {
-			__free_fdtable(new_fdt);
-			expanded = -EMFILE;
-		} else {
-			cur_fdt = files_fdtable(files);
-			BUG_ON(nr < cur_fdt->max_fds);
-			{
-				size_t cpy = cur_fdt->max_fds *
-					     sizeof(struct file *);
-				size_t set =
-					(new_fdt->max_fds - cur_fdt->max_fds) *
-					sizeof(struct file *);
-				BUG_ON(new_fdt->max_fds < cur_fdt->max_fds);
-				memcpy(new_fdt->fd, cur_fdt->fd, cpy);
-				memset((char *)new_fdt->fd + cpy, 0, set);
-				copy_fd_bitmaps(new_fdt, cur_fdt,
-						cur_fdt->max_fds);
-			}
-			rcu_assign_pointer(files->fdt, new_fdt);
-			if (cur_fdt != &files->fdtab)
-				call_rcu(&cur_fdt->rcu, free_fdtable_rcu);
-			smp_wmb();
-			expanded = 1;
-		}
-	}
-	files->resize_in_progress = false;
-
-	wake_up_all(&files->resize_wait);
-	return expanded;
+		return 0;
+	return -EMFILE;
 }
 
-/* __clear_open_fd inlined into dup_fd - single caller */
-
-static unsigned int sane_fdtable_size(struct fdtable *fdt, unsigned int max_fds)
-{
-	unsigned int size = fdt->max_fds;
-	unsigned int i, count;
-
-	for (i = size / BITS_PER_LONG; i > 0;) {
-		if (fdt->open_fds[--i])
-			break;
-	}
-	count = (i + 1) * BITS_PER_LONG;
-	if (max_fds < NR_OPEN_DEFAULT)
-		max_fds = NR_OPEN_DEFAULT;
-	return ALIGN(min(count, max_fds), BITS_PER_LONG);
-}
-
+/* sane_fdtable_size removed - no fdtable expansion */
+/* Simplified: open_files always fits in NR_OPEN_DEFAULT, no expansion needed */
 struct files_struct *dup_fd(struct files_struct *oldf, unsigned int max_fds,
 			    int *errorp)
 {
@@ -185,10 +68,9 @@ struct files_struct *dup_fd(struct files_struct *oldf, unsigned int max_fds,
 	*errorp = -ENOMEM;
 	newf = kmem_cache_alloc(files_cachep, GFP_KERNEL);
 	if (!newf)
-		goto out;
+		return NULL;
 
 	atomic_set(&newf->count, 1);
-
 	spin_lock_init(&newf->file_lock);
 	newf->resize_in_progress = false;
 	init_waitqueue_head(&newf->resize_wait);
@@ -202,30 +84,9 @@ struct files_struct *dup_fd(struct files_struct *oldf, unsigned int max_fds,
 
 	spin_lock(&oldf->file_lock);
 	old_fdt = files_fdtable(oldf);
-	open_files = sane_fdtable_size(old_fdt, max_fds);
-
-	while (unlikely(open_files > new_fdt->max_fds)) {
-		spin_unlock(&oldf->file_lock);
-
-		if (new_fdt != &newf->fdtab)
-			__free_fdtable(new_fdt);
-
-		new_fdt = alloc_fdtable(open_files - 1);
-		if (!new_fdt) {
-			*errorp = -ENOMEM;
-			goto out_release;
-		}
-
-		if (unlikely(new_fdt->max_fds < open_files)) {
-			__free_fdtable(new_fdt);
-			*errorp = -EMFILE;
-			goto out_release;
-		}
-
-		spin_lock(&oldf->file_lock);
-		old_fdt = files_fdtable(oldf);
-		open_files = sane_fdtable_size(old_fdt, max_fds);
-	}
+	open_files = old_fdt->max_fds;
+	if (open_files > NR_OPEN_DEFAULT)
+		open_files = NR_OPEN_DEFAULT;
 
 	copy_fd_bitmaps(new_fdt, old_fdt, open_files);
 
@@ -237,7 +98,6 @@ struct files_struct *dup_fd(struct files_struct *oldf, unsigned int max_fds,
 		if (f) {
 			get_file(f);
 		} else {
-			/* __clear_open_fd inlined */
 			unsigned int fd = open_files - i;
 			__clear_bit(fd, new_fdt->open_fds);
 			__clear_bit(fd / BITS_PER_LONG, new_fdt->full_fds_bits);
@@ -248,15 +108,9 @@ struct files_struct *dup_fd(struct files_struct *oldf, unsigned int max_fds,
 
 	memset(new_fds, 0,
 	       (new_fdt->max_fds - open_files) * sizeof(struct file *));
-
 	rcu_assign_pointer(newf->fdt, new_fdt);
 
 	return newf;
-
-out_release:
-	kmem_cache_free(files_cachep, newf);
-out:
-	return NULL;
 }
 
 static void put_files_struct(struct files_struct *files)
@@ -381,24 +235,13 @@ out:
 
 /* __put_unused_fd removed - never called */
 
+/* Simplified: resize never happens in minimal kernel */
 void fd_install(unsigned int fd, struct file *file)
 {
 	struct files_struct *files = current->files;
 	struct fdtable *fdt;
 
 	rcu_read_lock_sched();
-
-	if (unlikely(files->resize_in_progress)) {
-		rcu_read_unlock_sched();
-		spin_lock(&files->file_lock);
-		fdt = files_fdtable(files);
-		BUG_ON(fdt->fd[fd] != NULL);
-		rcu_assign_pointer(fdt->fd[fd], file);
-		spin_unlock(&files->file_lock);
-		return;
-	}
-
-	smp_rmb();
 	fdt = rcu_dereference_sched(files->fdt);
 	BUG_ON(fdt->fd[fd] != NULL);
 	rcu_assign_pointer(fdt->fd[fd], file);

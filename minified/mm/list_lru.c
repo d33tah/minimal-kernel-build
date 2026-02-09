@@ -3,10 +3,7 @@
 #include <linux/list_lru.h>
 #include <linux/slab.h>
 
-bool list_lru_add(struct list_lru *lru, struct list_head *item)
-{
-	return false;
-}
+/* list_lru_add removed - no callers */
 
 bool list_lru_del(struct list_lru *lru, struct list_head *item)
 {
@@ -29,10 +26,4 @@ void list_lru_destroy(struct list_lru *lru)
 {
 }
 
-unsigned long list_lru_walk_one(struct list_lru *lru, int nid,
-				struct mem_cgroup *memcg,
-				list_lru_walk_cb isolate, void *cb_arg,
-				unsigned long *nr_to_walk)
-{
-	return 0;
-}
+/* list_lru_walk_one removed - no callers */

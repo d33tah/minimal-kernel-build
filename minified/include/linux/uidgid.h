@@ -53,10 +53,6 @@ static inline bool uid_valid(kuid_t uid)
 	return __kuid_val(uid) != (uid_t) -1;
 }
 
-static inline bool gid_valid(kgid_t gid)
-{
-	return __kgid_val(gid) != (gid_t) -1;
-}
 
 
 static inline kuid_t make_kuid(struct user_namespace *from, uid_t uid)
@@ -100,10 +96,6 @@ static inline bool kuid_has_mapping(struct user_namespace *ns, kuid_t uid)
 	return uid_valid(uid);
 }
 
-static inline bool kgid_has_mapping(struct user_namespace *ns, kgid_t gid)
-{
-	return gid_valid(gid);
-}
 
 
 #endif  

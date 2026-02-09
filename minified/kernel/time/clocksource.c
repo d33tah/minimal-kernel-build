@@ -10,12 +10,6 @@
 /* linux/kthread.h, linux/cpu.h removed - unused */
 
 #include "tick-internal.h"
-/* Inlined from timekeeping_internal.h */
-static inline u64 clocksource_delta(u64 now, u64 last, u64 mask)
-{
-	u64 ret = (now - last) & mask;
-	return ret & ~(mask >> 1) ? 0 : ret;
-}
 extern raw_spinlock_t timekeeper_lock;
 
 void clocks_calc_mult_shift(u32 *mult, u32 *shift, u32 from, u32 to, u32 maxsec)

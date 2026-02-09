@@ -113,9 +113,6 @@ extern void __xadd_wrong_size(void)
 #define arch_cmpxchg64(ptr, o, n)					\
 	((__typeof__(*(ptr)))__cmpxchg64((ptr), (unsigned long long)(o), \
 					 (unsigned long long)(n)))
-#define arch_try_cmpxchg64(ptr, po, n)					\
-	__try_cmpxchg64((ptr), (unsigned long long *)(po), \
-			(unsigned long long)(n))
 
 /* CONFIG_X86_CMPXCHG64 not set - use cmpxchg8b emulation (~43 LOC removed) */
 extern void cmpxchg8b_emu(void);
@@ -133,16 +130,6 @@ static inline u64 __cmpxchg64(volatile u64 *ptr, u64 old, u64 new)
 	return prev;
 }
 
-static inline bool __try_cmpxchg64(volatile u64 *ptr, u64 *pold, u64 new)
-{
-	u64 old = *pold;
-	u64 prev = __cmpxchg64(ptr, old, new);
-	if (prev != old) {
-		*pold = prev;
-		return false;
-	}
-	return true;
-}
 
 /* system_has_cmpxchg_double removed - never used */
 

@@ -174,12 +174,6 @@ static inline void tlb_end_vma(struct mmu_gather *tlb, struct vm_area_struct *vm
 	}
 }
 
-static inline void tlb_flush_pte_range(struct mmu_gather *tlb,
-				     unsigned long address, unsigned long size)
-{
-	__tlb_adjust_range(tlb, address, size);
-	tlb->cleared_ptes = 1;
-}
 
 static inline void tlb_flush_pmd_range(struct mmu_gather *tlb,
 				     unsigned long address, unsigned long size)

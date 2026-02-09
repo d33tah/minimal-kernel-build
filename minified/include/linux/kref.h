@@ -13,10 +13,6 @@ static inline void kref_init(struct kref *kref)
 	refcount_set(&kref->refcount, 1);
 }
 
-static inline unsigned int kref_read(const struct kref *kref)
-{
-	return refcount_read(&kref->refcount);
-}
 
 static inline void kref_get(struct kref *kref)
 {

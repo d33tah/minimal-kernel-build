@@ -196,18 +196,13 @@ static inline bool d_mountpoint(const struct dentry *dentry)
 	return dentry->d_flags & DCACHE_MOUNTED;
 }
 
-static inline unsigned __d_entry_type(const struct dentry *dentry)
-{
-	return dentry->d_flags & DCACHE_ENTRY_TYPE;
+static inline unsigned __d_entry_type(const struct dentry *dentry) {
+  return dentry->d_flags & DCACHE_ENTRY_TYPE;
 }
 
-/* d_is_miss removed - never called */
-
-static inline bool d_can_lookup(const struct dentry *dentry)
-{
-	return __d_entry_type(dentry) == DCACHE_DIRECTORY_TYPE;
+static inline bool d_can_lookup(const struct dentry *dentry) {
+  return __d_entry_type(dentry) == DCACHE_DIRECTORY_TYPE;
 }
-
 /* d_is_dir removed - alias for d_can_lookup, use it directly */
 /* d_is_symlink, d_is_reg, d_flags_negative removed - inlined at single call site */
 /* d_really_is_positive removed - never called */

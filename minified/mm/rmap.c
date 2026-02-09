@@ -223,21 +223,6 @@ void __init anon_vma_init(void)
 #define TLB_FLUSH_BATCH_PENDING_MASK \
 	((1 << (TLB_FLUSH_BATCH_FLUSHED_SHIFT - 1)) - 1)
 
-void flush_tlb_batched_pending(struct mm_struct *mm)
-{
-	int batch = atomic_read(&mm->tlb_flush_batched);
-	int pending = batch & TLB_FLUSH_BATCH_PENDING_MASK;
-	int flushed = batch >> TLB_FLUSH_BATCH_FLUSHED_SHIFT;
-
-	if (pending != flushed) {
-		flush_tlb_mm(mm);
-
-		atomic_cmpxchg(&mm->tlb_flush_batched, batch,
-			       pending | (pending
-					  << TLB_FLUSH_BATCH_FLUSHED_SHIFT));
-	}
-}
-
 /* folio_referenced_arg struct removed - never used */
 /* folio_mkclean removed - always returned 0, inlined into page_mkclean */
 

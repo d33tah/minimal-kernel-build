@@ -63,63 +63,6 @@ void put_device(struct device *dev)
 
 /* kill_device inlined - sets dev->p->dead = true */
 
-void device_del(struct device *dev)
-{
-	struct device *parent = dev->parent;
-	struct kobject *glue_dir = NULL;
-	unsigned int noio_flag;
-
-	device_lock(dev);
-	dev->p->dead = true;
-	device_unlock(dev);
-
-	if (dev->fwnode && dev->fwnode->dev == dev)
-		dev->fwnode->dev = NULL;
-
-	noio_flag = memalloc_noio_save();
-
-	if (parent)
-		klist_del(&dev->p->knode_parent);
-	/* MAJOR(dev->devt) check removed - device_remove_file is empty stub */
-	if (dev->class) {
-		/* device_remove_class_symlinks was empty stub */
-		mutex_lock(&dev->class->p->mutex);
-		/* class_intf loop removed - interfaces list never populated */
-		klist_del(&dev->p->knode_class);
-		mutex_unlock(&dev->class->p->mutex);
-	}
-	/* device_remove_attrs call removed - function now empty */
-	bus_remove_device(dev);
-	driver_deferred_probe_del(dev);
-	/* device_platform_notify_remove, device_links_purge, bus_notifier calls removed */
-	kobject_uevent(&dev->kobj, KOBJ_REMOVE);
-	glue_dir = dev->kobj.parent; /* Inlined get_glue_dir */
-	kobject_del(&dev->kobj);
-
-	/* Inlined cleanup_glue_dir */
-	if (glue_dir && dev->class &&
-	    glue_dir->kset == &dev->class->p->glue_dirs) {
-		unsigned int ref;
-
-		mutex_lock(&gdp_mutex);
-		ref = kref_read(&glue_dir->kref);
-		WARN_ON_ONCE(kref_read(&glue_dir->kref) == 0);
-		if (!(glue_dir->sd && glue_dir->sd->dir.subdirs) && !--ref)
-			kobject_del(glue_dir);
-		kobject_put(glue_dir);
-		mutex_unlock(&gdp_mutex);
-	}
-
-	memalloc_noio_restore(noio_flag);
-	put_device(parent);
-}
-
-void device_unregister(struct device *dev)
-{
-	device_del(dev);
-	put_device(dev);
-}
-
 /* Simplified - kobject_create_and_add returns NULL (stub), return ignored */
 int __init devices_init(void)
 {

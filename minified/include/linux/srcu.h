@@ -34,7 +34,6 @@ struct srcu_struct {
 	struct work_struct srcu_work;
 };
 
-void srcu_drive_gp(struct work_struct *wp);
 
 /* __SRCU_STRUCT_INIT removed - never used */
 

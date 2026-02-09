@@ -620,8 +620,6 @@ void free_area_init(unsigned long *max_zone_pfn);
 /* init_per_zone_wmark_min extern removed - never directly called */
 extern void mem_init(void);
 extern void __init mmap_init(void);
-
-extern __printf(3, 4)
 void warn_alloc(gfp_t gfp_mask, nodemask_t *nodemask, const char *fmt, ...);
 
 extern void setup_per_cpu_pageset(void);

@@ -725,8 +725,6 @@ extern void init_special_inode(struct inode *, umode_t, dev_t);
 /* generic_write_sync removed - was stub returning count unchanged */
 
 
-int notify_change(struct user_namespace *, struct dentry *,
-		  struct iattr *, struct inode **);
 int inode_permission(struct user_namespace *, struct inode *, int);
 static inline int path_permission(const struct path *path, int mask)
 {

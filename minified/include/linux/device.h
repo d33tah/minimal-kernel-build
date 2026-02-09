@@ -165,9 +165,7 @@ static inline void device_unlock(struct device *dev)
 
 /* device_lock_assert removed - was empty stub */
 
-void device_unregister(struct device *dev);
 /* device_initialize, device_add removed - no callers */
-void device_del(struct device *dev);
 
 
 /* lock_device_hotplug, unlock_device_hotplug, lock_device_hotplug_sysfs,

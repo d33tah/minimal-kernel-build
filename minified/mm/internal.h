@@ -160,7 +160,6 @@ extern unsigned long  __must_check vm_mmap_pgoff(struct file *, unsigned long,
 
 /* mm_percpu_wq removed - was allocated but never used */
 
-void flush_tlb_batched_pending(struct mm_struct *mm);
 
 /* pageflag_names, vmaflag_names, gfpflag_names removed - unused (tracing disabled) */
 /* is_migrate_highatomic, is_migrate_highatomic_page removed - unused */

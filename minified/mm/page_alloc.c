@@ -542,11 +542,6 @@ static struct page *get_page_from_freelist(gfp_t gfp_mask, unsigned int order,
 	return NULL;
 }
 
-void warn_alloc(gfp_t gfp_mask, nodemask_t *nodemask, const char *fmt, ...)
-{
-	/* Stub: allocation warning not needed for minimal kernel */
-}
-
 bool gfp_pfmemalloc_allowed(gfp_t gfp_mask)
 {
 	/* Inlined __gfp_pfmemalloc_flags */

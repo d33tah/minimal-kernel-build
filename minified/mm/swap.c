@@ -175,16 +175,6 @@ void release_pages(struct page **pages, int nr)
 	/* mem_cgroup_uncharge_list, free_unref_page_list removed - no-op stubs */
 }
 
-void __pagevec_release(struct pagevec *pvec)
-{
-	if (!pvec->percpu_pvec_drained) {
-		lru_add_drain();
-		pvec->percpu_pvec_drained = true;
-	}
-	release_pages(pvec->pages, pagevec_count(pvec));
-	pagevec_reinit(pvec);
-}
-
 /* Simplified - minimal LRU add for single-process init (~22 LOC) */
 void __pagevec_lru_add(struct pagevec *pvec)
 {

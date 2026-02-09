@@ -16,7 +16,6 @@ struct pagevec {
 	struct page *pages[PAGEVEC_SIZE];
 };
 
-void __pagevec_release(struct pagevec *pvec);
 void __pagevec_lru_add(struct pagevec *pvec);
 
 unsigned pagevec_lookup_range_tag(struct pagevec *pvec,

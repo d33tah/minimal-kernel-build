@@ -201,7 +201,6 @@ struct task_struct {
 	 
 
 	 
-	unsigned			sched_remote_wakeup:1;
 	/* in_execve removed - write-only field */
 	unsigned			in_iowait:1;
 	unsigned			restore_sigmask:1;

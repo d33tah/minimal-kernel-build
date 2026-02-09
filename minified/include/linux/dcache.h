@@ -128,7 +128,6 @@ struct dentry_operations {
 /* DCACHE_OP_REAL removed - unused */
 
 #define DCACHE_PAR_LOOKUP		0x10000000  
-#define DCACHE_DENTRY_CURSOR		0x20000000
 #define DCACHE_NORCU			0x40000000  
 
 extern seqlock_t rename_lock;

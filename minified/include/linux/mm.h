@@ -174,10 +174,6 @@ void vm_area_free(struct vm_area_struct *);
 
 #define VM_STACK_INCOMPLETE_SETUP	(VM_RAND_READ | VM_SEQ_READ)
 
-#define TASK_EXEC ((current->personality & READ_IMPLIES_EXEC) ? VM_EXEC : 0)
-
-#define VM_DATA_FLAGS_TSK_EXEC	(VM_READ | VM_WRITE | TASK_EXEC | \
-				 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
 #define VM_DATA_FLAGS_EXEC	(VM_READ | VM_WRITE | VM_EXEC | \
 				 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
 

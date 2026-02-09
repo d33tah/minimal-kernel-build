@@ -62,9 +62,6 @@ struct sysinfo {
 /* upper_32_bits removed - unused */
 #define lower_32_bits(n) ((u32)((n) & 0xffffffff))
 
-
-struct completion;
-
 #define might_sleep() do { } while (0)
 #define might_sleep_if(cond) do { } while (0)
 /* might_resched, might_fault removed - no callers */
@@ -99,7 +96,6 @@ extern char *next_arg(char *args, char **param, char **val);
 extern void bust_spinlocks(int yes);
 
 extern int root_mountflags;
-
 
 extern enum system_states {
 	SYSTEM_BOOTING,

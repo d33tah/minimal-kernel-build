@@ -56,7 +56,6 @@ static inline void __const_sigaddset(sigset_t *set, int _sig)
 	 ? __const_sigdelset((set), (sig))  \
 	 : __gen_sigdelset((set), (sig)))
 
-
 static inline void __gen_sigdelset(sigset_t *set, int _sig)
 {
 	asm("btrl %1,%0" : "+m"(*set) : "Ir"(_sig - 1) : "cc");
@@ -86,8 +85,6 @@ static inline int __gen_sigismember(sigset_t *set, int _sig)
 	(__builtin_constant_p(sig)		\
 	 ? __const_sigismember((set), (sig))	\
 	 : __gen_sigismember((set), (sig)))
-
-struct pt_regs;
 
 #endif  
 #endif  

@@ -24,8 +24,6 @@ extern unsigned int cached_irq_mask;
 #define SLAVE_ICW4_DEFAULT	0x01
 #define PIC_ICW4_AEOI		2
 
-extern raw_spinlock_t i8259A_lock;
-
  
 
 static inline void outb_pic(unsigned char value, unsigned int port)
@@ -34,8 +32,6 @@ static inline void outb_pic(unsigned char value, unsigned int port)
 	 
 	udelay(2);
 }
-
-extern struct irq_chip i8259A_chip;
 
 struct legacy_pic {
 	int nr_legacy_irqs;

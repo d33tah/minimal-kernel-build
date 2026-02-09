@@ -28,7 +28,6 @@ extern int lockref_get_not_dead(struct lockref *);
 
 /* struct path, vfsmount forward decls removed - unused */
 
-
 #define IS_ROOT(x) ((x) == (x)->d_parent)
 
 #define HASH_LEN_DECLARE u32 hash; u32 len
@@ -46,7 +45,6 @@ struct qstr {
 
 #define QSTR_INIT(n,l) { { { .len = l } }, .name = n }
 
-
 #  define DNAME_INLINE_LEN 40  
 
 #define d_lock	d_lockref.lock
@@ -60,7 +58,6 @@ struct dentry {
 	struct qstr d_name;
 	struct inode *d_inode;		 
 	unsigned char d_iname[DNAME_INLINE_LEN];	 
-
 
 	struct lockref d_lockref;
 	const struct dentry_operations *d_op;
@@ -91,7 +88,6 @@ struct dentry_operations {
 	int (*d_delete)(const struct dentry *);
 	/* d_init, d_release, d_prune, d_iput, d_dname, d_automount, d_manage, d_real removed - never called/set */
 } ____cacheline_aligned;
-
 
 #define DCACHE_OP_HASH			0x00000001
 #define DCACHE_OP_COMPARE		0x00000002
@@ -130,13 +126,10 @@ struct dentry_operations {
 #define DCACHE_PAR_LOOKUP		0x10000000  
 #define DCACHE_NORCU			0x40000000  
 
-extern seqlock_t rename_lock;
-
 extern void d_instantiate(struct dentry *, struct inode *);
 /* __d_drop, d_drop made static - only used in dcache.c */
 /* d_delete removed - never called */
 /* d_set_d_op removed - d_op never read */
-
 
 /* d_alloc made static - only used in dcache.c */
 /* d_alloc_anon removed - inlined into d_make_root */
@@ -145,7 +138,6 @@ extern struct dentry * d_alloc_parallel(struct dentry *, const struct qstr *,
 /* shrink_dcache_parent removed - never called */
 extern void shrink_dcache_for_umount(struct super_block *);
 /* d_invalidate removed - never called */
-
 
 extern struct dentry * d_make_root(struct inode *);
 
@@ -157,7 +149,6 @@ extern struct dentry *d_lookup(const struct dentry *, const struct qstr *);
 extern struct dentry *__d_lookup(const struct dentry *, const struct qstr *);
 extern struct dentry *__d_lookup_rcu(const struct dentry *parent,
 				const struct qstr *name, unsigned *seq);
-
 
 /* d_path and dynamic_dname removed - fs/d_path.c was removed */
 

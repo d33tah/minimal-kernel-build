@@ -6,9 +6,6 @@
 #include <linux/ioport.h>
 #include <linux/percpu-refcount.h>
 
-struct resource;
-struct device;
-
 struct vmem_altmap {
 	unsigned long base_pfn;
 	const unsigned long end_pfn;
@@ -47,7 +44,6 @@ struct dev_pagemap {
 		struct range ranges[0];
 	};
 };
-
 
 /* get_dev_pagemap removed - never called */
 

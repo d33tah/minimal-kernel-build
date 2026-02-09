@@ -18,7 +18,6 @@ typedef struct cpumask { DECLARE_BITMAP(bits, NR_CPUS); } cpumask_t;
 
 #define nr_cpumask_bits	((unsigned int)NR_CPUS)
 
-
 extern struct cpumask __cpu_possible_mask;
 extern struct cpumask __cpu_online_mask;
 extern struct cpumask __cpu_present_mask;
@@ -46,12 +45,10 @@ static __always_inline unsigned int cpumask_check(unsigned int cpu)
 	[0 ... BITS_TO_LONGS(NR_CPUS)-1] = 0UL			\
 }
 
-
 static __always_inline void cpumask_set_cpu(unsigned int cpu, struct cpumask *dstp)
 {
 	set_bit(cpumask_check(cpu), cpumask_bits(dstp));
 }
-
 
 static __always_inline void cpumask_clear_cpu(int cpu, struct cpumask *dstp)
 {
@@ -73,25 +70,20 @@ static __always_inline int cpumask_test_and_clear_cpu(int cpu, struct cpumask *c
 	return test_and_clear_bit(cpumask_check(cpu), cpumask_bits(cpumask));
 }
 
-
 static inline void cpumask_clear(struct cpumask *dstp)
 {
 	bitmap_zero(cpumask_bits(dstp), nr_cpumask_bits);
 }
 
-
-
-
 /* cpumask_equal, cpumask_empty, cpumask_any removed - no callers */
 #define cpumask_of(cpu) (get_cpu_mask(cpu))
-
 
 static inline unsigned int cpumask_size(void)
 {
 	return BITS_TO_LONGS(nr_cpumask_bits) * sizeof(long);
 }
 
-typedef struct cpumask cpumask_var_t[1];
+/* cpumask_var_t typedef removed - unused */
 
 /* __cpumask_var_read_mostly, alloc_bootmem_cpumask_var removed - never used */
 
@@ -129,8 +121,6 @@ set_cpu_active(unsigned int cpu, bool active)
 		cpumask_clear_cpu(cpu, &__cpu_active_mask);
 }
 
-
-
 #define to_cpumask(bitmap)						\
 	((struct cpumask *)(1 ? (bitmap)				\
 			    : (void *)sizeof(__check_is_bitmap(bitmap))))
@@ -139,7 +129,6 @@ static inline int __check_is_bitmap(const unsigned long *bitmap)
 {
 	return 1;
 }
-
 
 extern const unsigned long
 	cpu_bit_bitmap[BITS_PER_LONG+1][BITS_TO_LONGS(NR_CPUS)];
@@ -173,12 +162,10 @@ static inline bool cpu_possible(unsigned int cpu)
 
 /* cpumap_print_to_pagebuf removed - never called */
 
-
 /* NR_CPUS <= BITS_PER_LONG always true */
 #define CPU_MASK_ALL							\
 (cpumask_t) { {								\
 	[BITS_TO_LONGS(NR_CPUS)-1] = BITMAP_LAST_WORD_MASK(NR_CPUS)	\
 } }
-
 
 #endif  

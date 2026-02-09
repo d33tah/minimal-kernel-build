@@ -5,7 +5,6 @@
 #include <linux/mm.h>
 
 /* Inlined from asm-generic/cacheflush.h */
-struct vm_area_struct;
 struct page;
 
 /* flush_cache_all, flush_cache_mm, flush_cache_page removed - unused */

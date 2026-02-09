@@ -7,7 +7,6 @@
 
 /* --- Inlined linux/tracepoint.h --- */
 
-
 #include <linux/smp.h>
 #include <linux/srcu.h>
 #include <linux/errno.h>
@@ -19,21 +18,17 @@
 #include <linux/cpu.h>
 #include <linux/static_call_types.h>
 
-struct module;
 struct tracepoint;
-struct notifier_block;
 
 #ifndef PARAMS
 #define PARAMS(args...) args
 
 #endif
 
-
 #ifndef DECLARE_TRACE
 
 #define TP_PROTO(args...)	args
 #define TP_ARGS(args...)	args
-
 
 /* TRACEPOINTS_ENABLED is not defined - use stub implementations */
 #define __DECLARE_TRACE(name, proto, args, cond, data_proto)		\
@@ -81,8 +76,6 @@ struct notifier_block;
 	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
 
 #endif
-
-
 
 DECLARE_EVENT_CLASS(x86_fpu,
 	TP_PROTO(struct fpu *fpu),

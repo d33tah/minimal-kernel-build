@@ -50,13 +50,11 @@ static inline pgtable_t pte_alloc_one(struct mm_struct *mm)
 }
 #endif
 
-
 static inline void pte_free(struct mm_struct *mm, struct page *pte_page)
 {
 	pgtable_pte_page_dtor(pte_page);
 	/* __free_page removed - empty stub */
 }
-
 
 /* CONFIG_PGTABLE_LEVELS == 2, so no PMD/PUD/P4D allocation needed */
 
@@ -75,7 +73,6 @@ static inline void paravirt_alloc_pmd(struct mm_struct *mm, unsigned long pfn)	{
 static inline void paravirt_release_pte(unsigned long pfn) {}
 
  
-extern gfp_t __userpte_alloc_gfp;
 
 #define PGD_ALLOCATION_ORDER 0
 

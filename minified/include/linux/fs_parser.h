@@ -4,8 +4,6 @@
 
 #include <linux/fs_context.h>
 
-struct path;
-
 struct constant_table {
 	const char	*name;
 	int		value;

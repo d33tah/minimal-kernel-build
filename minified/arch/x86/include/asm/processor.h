@@ -8,7 +8,6 @@
 struct task_struct;
 /* struct mm_struct forward decl removed - unused */
 struct io_bitmap;
-struct vm86;
 
 /* Inlined from asm/math_emu.h */
 struct math_emu_info {
@@ -219,7 +218,6 @@ struct thread_struct {
 	unsigned long		sp;
 	unsigned long		sysenter_cs;
 
-
 	unsigned long fs;
 	unsigned long gs;
 
@@ -265,10 +263,8 @@ static inline void load_sp0(unsigned long sp0)
 	this_cpu_write(cpu_tss_rw.x86_tss.sp0, sp0);
 }
 
-
  
 extern void release_thread(struct task_struct *);
-
 
 static inline void cpuid(unsigned int op,
 			 unsigned int *eax, unsigned int *ebx,
@@ -313,9 +309,7 @@ extern void select_idle_routine(const struct cpuinfo_x86 *c);
 extern void enable_sep_cpu(void);
 extern int sysenter_setup(void);
 
-
  
-extern struct desc_ptr		early_gdt_descr;
 
 extern void switch_to_new_gdt(int);
 extern void load_direct_gdt(int);

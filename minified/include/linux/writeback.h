@@ -10,8 +10,6 @@
 
 /* dirty_throttle_leaks DECLARE removed - counter never read */
 
-struct backing_dev_info;
-
 /* enum writeback_sync_modes and struct writeback_control removed - never used */
 
 /* wb_domain struct removed - never used */

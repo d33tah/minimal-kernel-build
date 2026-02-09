@@ -13,8 +13,6 @@
 
 /* is_vm_hugetlb_page removed - callers removed */
 
-struct folio_batch;
-
 /* invalidate_mapping_pages, invalidate_inode_pages2_range removed - never called */
 /* write_inode_now, filemap_fdatawait_range removed - never called */
 /* filemap_write_and_wait_range, filemap_fdatawrite_wbc, filemap_sample_wb_err removed - never called */
@@ -46,13 +44,11 @@ static inline void mapping_set_gfp_mask(struct address_space *m, gfp_t mask)
 	m->gfp_mask = mask;
 }
 
-
 /* filemap_nr_thps removed - never called */
 
 void release_pages(struct page **pages, int nr);
 
 /* page_mapping, folio_mapping removed - never called */
-
 
 static inline struct folio *filemap_alloc_folio(gfp_t gfp, unsigned int order)
 {

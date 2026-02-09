@@ -8,7 +8,6 @@ struct super_block;
 struct dentry;
 struct user_namespace;
 struct file_system_type;
-struct fs_context;
 /* struct file, path forward decls removed - unused */
 
 #define MNT_NOEXEC	0x04
@@ -45,7 +44,6 @@ extern int __mnt_want_write(struct vfsmount *);
 extern void __mnt_drop_write(struct vfsmount *);
 
 /* fc_mount, vfs_create_mount, vfs_kern_mount made static - only used in namespace.c */
-
 
 extern dev_t name_to_dev_t(const char *name);
 

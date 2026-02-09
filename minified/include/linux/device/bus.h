@@ -7,7 +7,6 @@
 #include <linux/pm.h>
 
 struct device_driver;
-struct fwnode_handle;
 
 struct bus_type {
 	const char		*name;
@@ -38,7 +37,6 @@ struct bus_type {
 /* BUS_ATTR_RW, BUS_ATTR_WO, device_match_name, device_match_of_node, device_match_fwnode,
    device_match_acpi_dev, device_match_acpi_handle, device_match_any removed - unused */
 int device_match_devt(struct device *dev, const void *pdevt);
-
 
 /* bus_find_device_by_name, bus_find_device_by_of_node, bus_find_device_by_fwnode,
  * bus_find_device_by_devt, bus_find_next_device, bus_find_device_by_acpi_dev,

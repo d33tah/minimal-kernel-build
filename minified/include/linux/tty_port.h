@@ -9,7 +9,6 @@
 #include <linux/tty_buffer.h>
 #include <linux/wait.h>
 
-struct tty_driver;
 struct tty_struct;
 
 struct tty_port {

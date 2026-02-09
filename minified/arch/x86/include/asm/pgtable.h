@@ -122,7 +122,6 @@ static inline int pmd_large(pmd_t pte)
 	return pmd_flags(pte) & _PAGE_PSE;
 }
 
-
 static inline pte_t pte_set_flags(pte_t pte, pteval_t set)
 {
 	pteval_t v = native_pte_val(pte);
@@ -163,7 +162,6 @@ static inline pte_t pte_mkspecial(pte_t pte)
 
 /* pud_set_flags, pud_clear_flags removed - unused */
 /* pud_mkold, pud_mkclean, pud_wrprotect, pud_mkdirty, pud_mkdevmap, pud_mkhuge, pud_mkyoung, pud_mkwrite removed - unused */
-
 
  
 static inline pgprotval_t massage_pgprot(pgprot_t pgprot)
@@ -212,7 +210,6 @@ pte_t *populate_extra_pte(unsigned long vaddr);
 
 #endif	 
 
-
 # include <asm/pgtable_32.h>
 
 #ifndef __ASSEMBLY__
@@ -237,7 +234,6 @@ static inline int pte_present(pte_t a)
 	return pte_flags(a) & (_PAGE_PRESENT | _PAGE_PROTNONE);
 }
 
-
 /* pte_accessible removed - not called from any .c file */
 
 static inline int pmd_present(pmd_t pmd)
@@ -245,7 +241,6 @@ static inline int pmd_present(pmd_t pmd)
 	 
 	return pmd_flags(pmd) & (_PAGE_PRESENT | _PAGE_PROTNONE | _PAGE_PSE);
 }
-
 
 static inline int pmd_none(pmd_t pmd)
 {
@@ -284,13 +279,11 @@ static inline unsigned long pages_to_mb(unsigned long npg)
 
 #ifndef __ASSEMBLY__
 
-extern int direct_gbpages;
 void init_mem_mapping(void);
 void early_alloc_pgt_buf(void);
 void __init poking_init(void);
 unsigned long init_memory_mapping(unsigned long start,
 				  unsigned long end, pgprot_t prot);
-
 
  
 static inline pte_t native_local_ptep_get_and_clear(pte_t *ptep)
@@ -312,7 +305,6 @@ static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
 }
 
 /* set_pmd_at, set_pud_at removed - unused */
-
 
 struct vm_area_struct;
 
@@ -338,13 +330,11 @@ static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
 /* pmdp_set_access_flags, pudp_set_access_flags, pmdp_test_and_clear_young,
    pudp_test_and_clear_young, pmdp_clear_flush_young removed - unused */
 
-
 /* pmd_write, pmdp_huge_get_and_clear, pudp_huge_get_and_clear, pmdp_set_wrprotect, pud_write removed - unused */
 
 /* pmdp_establish removed - never called */
 
 /* pmdp_invalidate_ad, pgdp_maps_userspace, pgd_large removed - unused */
-
 
 static inline void clone_pgd_range(pgd_t *dst, pgd_t *src, int count)
 {
@@ -354,8 +344,6 @@ static inline void clone_pgd_range(pgd_t *dst, pgd_t *src, int count)
 /* page_level_shift, page_level_size, page_level_mask removed - unused */
 /* update_mmu_cache, update_mmu_cache_pmd, update_mmu_cache_pud removed - unused */
 /* pte_swp_exclusive, pte_swp_clear_exclusive removed - unused (entire _PAGE_SWP_EXCLUSIVE block) */
-
-
 
 /* pte_flags_pkey, __pkru_allows_pkey, __pte_access_permitted,
    pte_access_permitted, pmd_access_permitted, pud_access_permitted,

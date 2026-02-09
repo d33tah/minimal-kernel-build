@@ -5,7 +5,6 @@ struct mnt_namespace;
 struct uts_namespace;
 struct pid_namespace;
 struct cgroup_namespace;
-struct fs_struct;
 struct nsproxy {
 	atomic_t count;
 	struct uts_namespace *uts_ns;

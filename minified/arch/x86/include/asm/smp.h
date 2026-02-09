@@ -14,7 +14,5 @@
 
 /* x86_cpu_to_apicid, x86_cpu_to_acpiid, x86_bios_cpu_apicid removed - never used */
 
-struct task_struct;
-
 #endif
 #endif  

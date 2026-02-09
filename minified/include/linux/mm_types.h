@@ -50,7 +50,6 @@
 #define AT_VECTOR_SIZE (2*(AT_VECTOR_SIZE_ARCH + AT_VECTOR_SIZE_BASE + 1))
 
 struct address_space;
-struct mem_cgroup;
 
 #define _struct_page_alignment	__aligned(2 * sizeof(unsigned long))
 
@@ -116,7 +115,6 @@ struct page {
 
 	 
 	atomic_t _refcount;
-
 
 	/* WANT_PAGE_VIRTUAL virtual field removed - never defined */
 
@@ -237,7 +235,6 @@ struct mm_struct {
 		unsigned long mmap_legacy_base;	 
 		unsigned long highest_vm_end;	 
 		pgd_t * pgd;
-
 
 		 
 		atomic_t mm_users;

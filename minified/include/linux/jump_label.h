@@ -1,7 +1,6 @@
 #ifndef _LINUX_JUMP_LABEL_H
 #define _LINUX_JUMP_LABEL_H
 
-
 #ifndef __ASSEMBLY__
 
 #include <linux/types.h>
@@ -19,13 +18,9 @@ struct static_key {
 
 #endif  
 
-
 #ifndef __ASSEMBLY__
 
 /* enum jump_label_type removed - never used */
-
-struct module;
-
 
 #include <linux/atomic.h>
 #include <linux/bug.h>
@@ -41,7 +36,6 @@ static __always_inline void jump_label_init(void)
 }
 
 /* static_key_slow_inc, static_key_slow_dec, static_key_slow_inc_cpuslocked, static_key_slow_dec_cpuslocked removed - never used */
-
 
 static inline void static_key_enable(struct static_key *key)
 {
@@ -71,8 +65,6 @@ static inline void static_key_disable(struct static_key *key)
 #define STATIC_KEY_INIT_FALSE	{ .enabled = ATOMIC_INIT(0) }
 /* STATIC_KEY_INIT removed - never used */
 
-
-
 struct static_key_true {
 	struct static_key key;
 };
@@ -99,7 +91,6 @@ struct static_key_false {
 #define DECLARE_STATIC_KEY_FALSE(name)	\
 	extern struct static_key_false name
 
-
 #define _DEFINE_STATIC_KEY_1(name)	DEFINE_STATIC_KEY_TRUE(name)
 #define _DEFINE_STATIC_KEY_0(name)	DEFINE_STATIC_KEY_FALSE(name)
 #define DEFINE_STATIC_KEY_MAYBE(cfg, name)			\
@@ -123,18 +114,14 @@ extern bool ____wrong_branch_error(void);
 	static_key_count((struct static_key *)x) > 0;				\
 })
 
-
 #define static_branch_likely(x)		likely_notrace(static_key_enabled(&(x)->key))
 #define static_branch_unlikely(x)	unlikely_notrace(static_key_enabled(&(x)->key))
-
 
 #define static_branch_maybe(config, x)					\
 	(IS_ENABLED(config) ? static_branch_likely(x)			\
 			    : static_branch_unlikely(x))
 
-
 /* static_branch_inc, static_branch_dec, static_branch_inc_cpuslocked, static_branch_dec_cpuslocked removed - never used */
-
 
 #define static_branch_enable(x)			static_key_enable(&(x)->key)
 #define static_branch_disable(x)		static_key_disable(&(x)->key)

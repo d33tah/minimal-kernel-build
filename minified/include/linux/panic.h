@@ -3,8 +3,6 @@
 
 #include <linux/compiler_attributes.h>
 
-struct pt_regs;
-
 /* panic_blink removed - no_blink always returned 0 */
 __printf(1, 2)
 void panic(const char *fmt, ...) __noreturn __cold;

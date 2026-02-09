@@ -54,7 +54,6 @@ extern unsigned int vdso32_enabled;
 #define ELF_PLATFORM	(utsname()->machine)
 #define set_personality_64bit()	do { } while (0)
 
-
 #define ELF_EXEC_PAGESIZE	4096
 
  
@@ -78,8 +77,6 @@ extern u32 elf_hwcap2;
 #define elf_read_implies_exec(ex, executable_stack)	\
 	(mmap_is_ia32() && executable_stack == EXSTACK_DEFAULT)
 
-struct task_struct;
-
 #define	ARCH_DLINFO_IA32						\
 do {									\
 	if (VDSO_CURRENT_BASE) {					\
@@ -100,13 +97,11 @@ extern unsigned long task_size_64bit(int full_addr_space);
 /* get_mmap_base, mmap_address_hint_valid removed - never called */
 extern unsigned long get_sigframe_size(void);
 
-
 /* __STACK_RND_MASK, STACK_RND_MASK removed - no ASLR */
 
 #define ARCH_DLINFO		ARCH_DLINFO_IA32
 
  
-
 
 #define VDSO_CURRENT_BASE	((unsigned long)current->mm->context.vdso)
 

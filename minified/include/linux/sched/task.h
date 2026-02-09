@@ -1,7 +1,6 @@
 #ifndef _LINUX_SCHED_TASK_H
 #define _LINUX_SCHED_TASK_H
 
-
 #include <linux/sched.h>
 #include <linux/uaccess.h>
 
@@ -33,7 +32,6 @@ struct kernel_clone_args {
 };
 
 extern rwlock_t tasklist_lock;
-extern spinlock_t mmlist_lock;
 
 extern union thread_union init_thread_union;
 extern struct task_struct init_task;
@@ -73,7 +71,6 @@ extern pid_t user_mode_thread(int (*fn)(void *), void *arg, unsigned long flags)
 
 /* free_task made static in kernel/fork.c */
 /* sched_exec() macro removed - no callers */
-
 
 void put_task_struct_rcu_user(struct task_struct *task);
 

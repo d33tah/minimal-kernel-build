@@ -105,18 +105,12 @@ struct vc {
 	/* SAK_work removed - work was initialized but never scheduled */
 };
 
-extern struct vc vc_cons [MAX_NR_CONSOLES];
-
 # define CUR_UNDERLINE			       2
 
 bool con_is_visible(const struct vc_data *vc);
 
-
-extern int fg_console;
 /* last_console, want_console removed - never read */
 
-
-int vc_cons_allocated(unsigned int console);
 int vc_resize(struct vc_data *vc, unsigned int cols, unsigned int lines);
 void reset_palette(struct vc_data *vc);
 /* do_unblank_screen, unblank_screen removed - never called */
@@ -125,12 +119,10 @@ void reset_palette(struct vc_data *vc);
    con_set_trans_new, con_get_trans_new, con_clear_unimap, con_set_unimap,
    con_get_unimap, con_set_default_unimap, con_free_unimap, con_copy_unimap */
 
-
 /* vty_init removed - tty_init was removed, so vty_init is dead */
 
 /* default_utf8 removed - only used in vt.c */
 extern int global_cursor_default;
-
 
 /* struct vt_notifier_param removed - never used */
 

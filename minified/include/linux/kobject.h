@@ -75,8 +75,6 @@ struct kobj_attribute {
 			 const char *buf, size_t count);
 };
 
-extern const struct sysfs_ops kobj_sysfs_ops;
-
 struct kset {
 	struct list_head list;
 	spinlock_t list_lock;

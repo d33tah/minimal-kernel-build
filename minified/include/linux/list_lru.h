@@ -20,13 +20,7 @@ struct shrinker {
 
 struct mem_cgroup;
 
-enum lru_status {
-	LRU_REMOVED,		 
-	LRU_REMOVED_RETRY,	 
-	LRU_ROTATE,		 
-	LRU_SKIP,		 
-	LRU_RETRY,		 
-};
+/* lru_status enum removed - never used */
 
 struct list_lru_one {
 	struct list_head	list;
@@ -54,7 +48,7 @@ int __list_lru_init(struct list_lru *lru, bool memcg_aware,
 #define list_lru_init_memcg(lru, shrinker)		\
 	__list_lru_init((lru), true, NULL, shrinker)
 
-bool list_lru_add(struct list_lru *lru, struct list_head *item);
+/* list_lru_add removed - no callers */
 
 bool list_lru_del(struct list_lru *lru, struct list_head *item);
 
@@ -68,16 +62,6 @@ static inline unsigned long list_lru_shrink_count(struct list_lru *lru,
 }
 
 /* list_lru_isolate, list_lru_isolate_move inlined into single call sites */
-
-typedef enum lru_status (*list_lru_walk_cb)(struct list_head *item,
-		struct list_lru_one *list, spinlock_t *lock, void *cb_arg);
-
-unsigned long list_lru_walk_one(struct list_lru *lru,
-				int nid, struct mem_cgroup *memcg,
-				list_lru_walk_cb isolate, void *cb_arg,
-				unsigned long *nr_to_walk);
-
-/* list_lru_shrink_walk removed - never called */
-
+/* list_lru_walk_cb typedef, list_lru_walk_one, list_lru_shrink_walk removed - no callers */
 
 #endif

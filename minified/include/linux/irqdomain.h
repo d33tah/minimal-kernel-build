@@ -9,9 +9,7 @@ typedef void (*irq_flow_handler_t)(struct irq_desc *desc);
 struct device_node;
 struct fwnode_handle;
 struct irq_domain;
-struct irq_chip;
 struct irq_data;
-struct cpumask;
 /* struct irq_affinity_desc removed - never used */
 #define IRQ_DOMAIN_IRQ_SPEC_PARAMS 16
 struct irq_fwspec { struct fwnode_handle *fwnode; int param_count; u32 param[IRQ_DOMAIN_IRQ_SPEC_PARAMS]; };

@@ -51,7 +51,6 @@ struct vmap_area {
 	};
 };
 
-
 /* arch_vmap_pmd_supported, arch_vmap_pte_supported_shift removed - no callers */
 
 extern void __init vmalloc_init(void);
@@ -66,7 +65,6 @@ void *__vmalloc_node(unsigned long size, unsigned long align, gfp_t gfp_mask,
 
 /* vfree, vunmap removed - callers stubbed out */
 /* vmap removed - never called */
-
 
 #ifndef ARCH_PAGE_TABLE_SYNC_MASK
 #define ARCH_PAGE_TABLE_SYNC_MASK 0

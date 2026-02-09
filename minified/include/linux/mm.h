@@ -34,7 +34,6 @@ static inline void set_page_count(struct page *page, int v)
 	atomic_set(&page->_refcount, v);
 }
 
-
 static inline void init_page_count(struct page *page)
 {
 	set_page_count(page, 1);
@@ -45,7 +44,6 @@ static inline void folio_ref_inc(struct folio *folio)
 {
 	atomic_inc(&folio->page._refcount);
 }
-
 
 static inline int folio_ref_sub_and_test(struct folio *folio, int nr)
 {
@@ -68,8 +66,6 @@ static inline bool folio_try_get_rcu(struct folio *folio)
 #include <linux/sched.h>
 #include <linux/pgtable.h>
 
-struct mempolicy;
-struct anon_vma;
 struct anon_vma_chain;
 /* struct user_struct forward decl removed - unused */
 struct pt_regs;
@@ -170,7 +166,6 @@ void vm_area_free(struct vm_area_struct *);
 #ifndef VM_GROWSUP
 # define VM_GROWSUP	VM_NONE
 #endif
-
 
 #define VM_STACK_INCOMPLETE_SETUP	(VM_RAND_READ | VM_SEQ_READ)
 
@@ -284,7 +279,6 @@ static inline int folio_put_testzero(struct folio *folio)
 
 /* vmalloc_to_page removed - no callers */
 /* is_vmalloc_addr removed - no callers */
-
 
 static inline void page_mapcount_reset(struct page *page)
 {
@@ -434,7 +428,6 @@ static inline pg_data_t *page_pgdat(const struct page *page)
 	return NODE_DATA(page_to_nid(page));
 }
 
-
 static inline pg_data_t *folio_pgdat(const struct folio *folio)
 {
 	return page_pgdat(&folio->page);
@@ -449,7 +442,6 @@ static inline long folio_nr_pages(struct folio *folio)
 {
 	return compound_nr(&folio->page);
 }
-
 
 /* folio_shift inlined into filemap.c (~3 LOC) */
 
@@ -507,8 +499,6 @@ long get_user_pages_remote(struct mm_struct *mm,
 			    struct vm_area_struct **vmas, int *locked);
 /* pin_user_pages_remote, get_user_pages, pin_user_pages, get_user_pages_unlocked,
    pin_user_pages_unlocked, get_user_pages_fast, pin_user_pages_fast removed - unused */
-
-
 
 /* folio_mark_dirty inlined from mm/page-writeback.c - stub */
 static inline bool folio_mark_dirty(struct folio *folio) { return true; }
@@ -622,7 +612,6 @@ static inline spinlock_t *pmd_lock(struct mm_struct *mm, pmd_t *pmd)
 extern void __init pagecache_init(void);
 extern void free_initmem(void);
 
-
 extern void reserve_bootmem_region(phys_addr_t start, phys_addr_t end);
 
 /* free_reserved_page inlined at mm/page_alloc.c - single caller */
@@ -678,7 +667,6 @@ extern struct vm_area_struct *_install_special_mapping(struct mm_struct *mm,
 				   unsigned long addr, unsigned long len,
 				   unsigned long flags,
 				   const struct vm_special_mapping *spec);
-
 
 /* randomize_stack_top, randomize_page removed - inlined to PAGE_ALIGN */
 
@@ -749,7 +737,6 @@ struct vm_area_struct *find_vma_intersection(struct mm_struct *mm,
 	return vma;
 }
 
-
 static inline unsigned long vm_start_gap(struct vm_area_struct *vma)
 {
 	unsigned long vm_start = vma->vm_start;
@@ -781,7 +768,6 @@ static inline unsigned long vma_pages(struct vm_area_struct *vma)
 
 pgprot_t vm_get_page_prot(unsigned long vm_flags);
 /* Removed: vma_set_page_prot - never called */
-
 
 struct vm_area_struct *find_extend_vma(struct mm_struct *, unsigned long addr);
 vm_fault_t vmf_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
@@ -822,7 +808,6 @@ DECLARE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_FREE_DEFAULT_ON, init_on_free);
 
 /* MAX_NUMNODES == 1, always inline */
 /* Removed: setup_nr_node_ids - never called */
-
 
 #define  ZAP_FLAG_DROP_MARKER        ((__force zap_flags_t) BIT(0))
 

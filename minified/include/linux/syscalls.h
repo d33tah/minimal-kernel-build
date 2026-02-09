@@ -1,19 +1,7 @@
 #ifndef _LINUX_SYSCALLS_H
 #define _LINUX_SYSCALLS_H
 
-/* Minimal forward declarations for syscalls.h */
-struct iattr;
-struct inode;
-struct iovec;
-struct list_head;
-struct new_utsname;
-struct rlimit;
-struct stat;
-struct statfs;
-struct statfs64;
-struct sysinfo;
-struct __kernel_old_timeval;
-struct timeval;
+/* Forward declarations removed - none were used */
 
 #include <linux/types.h>
 #include <linux/capability.h>

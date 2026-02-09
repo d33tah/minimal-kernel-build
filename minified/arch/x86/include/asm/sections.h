@@ -10,10 +10,8 @@ extern char _text[], _stext[], _etext[];
 extern char _data[], _sdata[], _edata[];
 extern char __bss_start[], __bss_stop[];
 extern char __init_begin[], __init_end[];
-extern char _sinittext[], _einittext[];
-extern char __start_ro_after_init[], __end_ro_after_init[];
 extern char _end[];
-extern char __per_cpu_load[], __per_cpu_start[], __per_cpu_end[];
+extern char __per_cpu_load[];
 /* __kprobes_text_*, __entry_text_*, __softirqentry_text_*, __start_once, __end_once, __noinstr_text_*, __nosave_* removed - unused */
 extern char __start_rodata[], __end_rodata[];
 extern char __irqentry_text_start[], __irqentry_text_end[];

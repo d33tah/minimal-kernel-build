@@ -9,10 +9,8 @@
 #include <linux/writeback.h>
 
 struct mem_cgroup;
-struct obj_cgroup;
 struct page;
-struct mm_struct;
-struct kmem_cache;
+struct obj_cgroup;
 
 /* enum memcg_stat_item, enum memcg_memory_event removed - unused */
 
@@ -20,7 +18,6 @@ static inline struct mem_cgroup *folio_memcg(struct folio *folio)
 {
 	return NULL;
 }
-
 
 /* PageMemcgKmem, mem_cgroup_charge, mem_cgroup_uncharge,
    mem_cgroup_uncharge_list, folio_lruvec_lock_irq removed - callers already removed */
@@ -44,7 +41,6 @@ static inline struct mem_cgroup *lruvec_memcg(struct lruvec *lruvec)
    mem_cgroup_enter_user_fault, mem_cgroup_exit_user_fault,
    mem_cgroup_oom_synchronize, mod_memcg_page_state removed - callers removed */
 
-
 static inline void mod_lruvec_kmem_state(void *p, enum node_stat_item idx,
 					 int val)
 {
@@ -66,7 +62,6 @@ static inline bool folio_matches_lruvec(struct folio *folio,
 	return lruvec_pgdat(lruvec) == folio_pgdat(folio) &&
 	       lruvec_memcg(lruvec) == folio_memcg(folio);
 }
-
 
 static inline struct lruvec *folio_lruvec_relock_irqsave(struct folio *folio,
 		struct lruvec *locked_lruvec, unsigned long *flags)

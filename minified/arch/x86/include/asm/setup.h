@@ -24,10 +24,6 @@
 #include <asm/bootparam.h>
 #include <asm/x86_init.h>
 
-extern u64 relocated_ramdisk;
-
-struct pt_regs;
-
 /* early_platform_quirks, saved_video_mode removed - unused */
 
 extern void reserve_standard_io_resources(void);

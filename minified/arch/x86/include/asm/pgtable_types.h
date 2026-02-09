@@ -1,8 +1,8 @@
  
 #ifndef _ASM_X86_PGTABLE_DEFS_H
 #define _ASM_X86_PGTABLE_DEFS_H
-
 #include <linux/const.h>
+
 #include <linux/mem_encrypt.h>
 
 #include <asm/page_types.h>
@@ -46,8 +46,8 @@
 
 /* _PAGE_CHG_MASK, _HPAGE_CHG_MASK removed - unused */
 
-
 #ifndef __ASSEMBLY__
+struct mm_struct;
 enum page_cache_mode {
 	_PAGE_CACHE_MODE_WB       = 0,
 	_PAGE_CACHE_MODE_WC       = 1,
@@ -63,7 +63,6 @@ enum page_cache_mode {
 #define _PAGE_ENC		(_AT(pteval_t, sme_me_mask))
 
 /* _PAGE_CACHE_MASK, _PAGE_LARGE_CACHE_MASK removed - unused */
-
 
 #define __PP _PAGE_PRESENT
 #define __RW _PAGE_RW
@@ -225,7 +224,6 @@ static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
 #define p4d_val(x)				(pgd_val((x).pgd))
 #define __p4d(x)				((p4d_t) { __pgd(x) })
 
-
 /* p4d_alloc_one removed - no callers */
 #define p4d_free_tlb(tlb, x, a)			do { } while (0)
 
@@ -271,7 +269,6 @@ static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
 /* native_pud_val removed - never called */
 
 /* --- 2025-12-07 10:14 --- Inlined asm-generic/pgtable-nopmd.h content */
-struct mm_struct;
 
 #define __PAGETABLE_PMD_FOLDED 1
 
@@ -285,7 +282,6 @@ typedef struct { pud_t pud; } pmd_t;
 /* pud_none, pud_bad, pud_clear, pud_user, pud_leaf removed - always return 0/0/empty/0/0 */
 /* pud_present removed - always returns 1, inlined at call site */
 #define pmd_ERROR(pmd)				(pud_ERROR((pmd).pud))
-
 
 #define set_pud(pudptr, pudval)			set_pmd((pmd_t *)(pudptr), (pmd_t) { pudval })
 
@@ -351,7 +347,6 @@ static inline pteval_t pte_flags(pte_t pte)
 unsigned long cachemode2protval(enum page_cache_mode pcm);
 
 /* protval_4k_2_large, pgprot_4k_2_large, protval_large_2_4k, pgprot_large_2_4k removed - unused */
-
 
 typedef struct page *pgtable_t;
 

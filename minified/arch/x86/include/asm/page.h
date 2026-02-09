@@ -36,8 +36,6 @@ static inline void copy_page(void *to, void *from)
 struct page;
 
 #include <linux/range.h>
-extern struct range pfn_mapped[];
-extern int nr_pfn_mapped;
 
 /* clear_user_page removed - never called */
 

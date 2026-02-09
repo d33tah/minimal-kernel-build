@@ -104,7 +104,7 @@ struct tty_file_private {
 
 void tty_kref_put(struct tty_struct *tty);
 
-extern struct class *tty_class;
+/* extern tty_class removed - never used outside tty_io.c */
 
 static inline struct tty_struct *tty_kref_get(struct tty_struct *tty)
 {

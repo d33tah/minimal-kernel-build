@@ -44,22 +44,11 @@ struct section {
 static struct section *secs;
 
 static const char *const sym_regex_kernel[S_NSYMTYPES] = {
-	[S_ABS] = "^(xen_irq_disable_direct_reloc$|"
-		  "xen_save_fl_direct_reloc$|"
-		  "VDSO|"
-		  "__crc_)",
+	[S_ABS] = "^(VDSO|__crc_)",
 
 	[S_REL] = "^(__init_(begin|end)|"
 		  "__x86_cpu_dev_(start|end)|"
 		  "(__parainstructions|__alt_instructions)(_end)?|"
-		  "(__iommu_table|__apicdrivers|__smp_locks)(_end)?|"
-		  "__(start|end)_pci_.*|"
-		  "__(start|stop)___ksymtab(_gpl)?|"
-		  "__(start|stop)___kcrctab(_gpl)?|"
-		  "__(start|stop)___param|"
-		  "__(start|stop)___modver|"
-		  "__(start|stop)___bug_table|"
-		  "__tracedata_(start|end)|"
 		  "__(start|stop)_notes|"
 		  "__end_rodata|"
 		  "__end_rodata_aligned|"
@@ -116,39 +105,11 @@ static void regex_init(int use_real_mode)
 	}
 }
 
-/* sym_type, sym_bind, sym_visibility removed - only used by --abs-syms mode (not used in build) */
-
 static const char *rel_type(unsigned type)
 {
-	static const char *type_name[] = {
-#define REL_TYPE(X) [X] = #X
-#if ELF_BITS == 64
-		REL_TYPE(R_X86_64_NONE),      REL_TYPE(R_X86_64_64),
-		REL_TYPE(R_X86_64_PC64),      REL_TYPE(R_X86_64_PC32),
-		REL_TYPE(R_X86_64_GOT32),     REL_TYPE(R_X86_64_PLT32),
-		REL_TYPE(R_X86_64_COPY),      REL_TYPE(R_X86_64_GLOB_DAT),
-		REL_TYPE(R_X86_64_JUMP_SLOT), REL_TYPE(R_X86_64_RELATIVE),
-		REL_TYPE(R_X86_64_GOTPCREL),  REL_TYPE(R_X86_64_32),
-		REL_TYPE(R_X86_64_32S),	      REL_TYPE(R_X86_64_16),
-		REL_TYPE(R_X86_64_PC16),      REL_TYPE(R_X86_64_8),
-		REL_TYPE(R_X86_64_PC8),
-#else
-		REL_TYPE(R_386_NONE),	  REL_TYPE(R_386_32),
-		REL_TYPE(R_386_PC32),	  REL_TYPE(R_386_GOT32),
-		REL_TYPE(R_386_PLT32),	  REL_TYPE(R_386_COPY),
-		REL_TYPE(R_386_GLOB_DAT), REL_TYPE(R_386_JMP_SLOT),
-		REL_TYPE(R_386_RELATIVE), REL_TYPE(R_386_GOTOFF),
-		REL_TYPE(R_386_GOTPC),	  REL_TYPE(R_386_8),
-		REL_TYPE(R_386_PC8),	  REL_TYPE(R_386_16),
-		REL_TYPE(R_386_PC16),
-#endif
-#undef REL_TYPE
-	};
-	const char *name = "unknown type rel type name";
-	if (type < ARRAY_SIZE(type_name) && type_name[type]) {
-		name = type_name[type];
-	}
-	return name;
+	static char buf[32];
+	snprintf(buf, sizeof(buf), "reloc type %u", type);
+	return buf;
 }
 
 static const char *sec_name(unsigned shndx)
@@ -482,18 +443,9 @@ static void read_relocs(FILE *fp)
 	}
 }
 
-/* print_absolute_symbols removed - --abs-syms not used in build */
-
 static void print_absolute_relocs(void)
 {
 	int i, printed = 0;
-	const char *format;
-
-	if (ELF_BITS == 64)
-		format = "%016" PRIx64 " %016" PRIx64 " %10s %016" PRIx64
-			 "  %s\n";
-	else
-		format = "%08" PRIx32 " %08" PRIx32 " %10s %08" PRIx32 "  %s\n";
 
 	for (i = 0; i < shnum; i++) {
 		struct section *sec = &secs[i];
@@ -533,9 +485,7 @@ static void print_absolute_relocs(void)
 				printed = 1;
 			}
 
-			printf(format, rel->r_offset, rel->r_info,
-			       rel_type(ELF_R_TYPE(rel->r_info)), sym->st_value,
-			       name);
+			printf("%s\n", name);
 		}
 	}
 
@@ -885,8 +835,6 @@ static void emit_relocs(int as_text, int use_real_mode)
 			write_reloc(relocs32.offset[i], stdout);
 	}
 }
-
-/* do_reloc_info, print_reloc_info removed - --reloc-info not used in build */
 
 #if ELF_BITS == 64
 #define process process_64

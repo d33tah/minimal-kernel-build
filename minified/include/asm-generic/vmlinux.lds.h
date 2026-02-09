@@ -22,7 +22,6 @@
 /* CONFIG_LTO_CLANG is enabled - use expanded section definitions */
 #define TEXT_MAIN .text .text.[0-9a-zA-Z_]*
 #define DATA_MAIN .data .data.[0-9a-zA-Z_]* .data..L* .data..compoundliteral* .data.$__unnamed_* .data.$L*
-/* SDATA_MAIN, RODATA_MAIN, SBSS_MAIN removed - unused */
 #define BSS_MAIN .bss .bss.[0-9a-zA-Z_]* .bss..compoundliteral*
 
 #define STRUCT_ALIGNMENT 32
@@ -38,56 +37,13 @@
 	*(__idle_sched_class)			\
 	__sched_class_lowest = .;
 
-/* CPU_KEEP, CPU_DISCARD removed - unused */
-
 #define MEM_KEEP(sec)
 #define MEM_DISCARD(sec) *(.mem##sec)
 
-#  define MCOUNT_REC()
-
-#define LIKELY_PROFILE()
-
-#define BRANCH_PROFILE()
-
-#define KPROBE_BLACKLIST()
-
-#define ERROR_INJECT_WHITELIST()
-
-#define FTRACE_EVENTS()
-
-#define TRACE_PRINTKS()
-#define TRACEPOINT_STR()
-
-#define TRACE_SYSCALLS()
-
-#define BPF_RAW_TP()
-
-#define EARLYCON_TABLE()
-
-#define LSM_TABLE()
-#define EARLY_LSM_TABLE()
-
-#define ___OF_TABLE(cfg, name)	_OF_TABLE_##cfg(name)
-#define __OF_TABLE(cfg, name)	___OF_TABLE(cfg, name)
-#define OF_TABLE(cfg, name)	__OF_TABLE(IS_ENABLED(cfg), name)
-#define _OF_TABLE_0(name)
-#define _OF_TABLE_1(name)						\
-	. = ALIGN(8);							\
-	__##name##_of_table = .;					\
-	KEEP(*(__##name##_of_table))					\
-	KEEP(*(__##name##_of_table_end))
-
-#define TIMER_OF_TABLES()	OF_TABLE(CONFIG_TIMER_OF, timer)
-#define IRQCHIP_OF_MATCH_TABLE() OF_TABLE(CONFIG_IRQCHIP, irqchip)
-#define CLK_OF_TABLES()		OF_TABLE(CONFIG_COMMON_CLK, clk)
-#define RESERVEDMEM_OF_TABLES()	OF_TABLE(CONFIG_OF_RESERVED_MEM, reservedmem)
-#define CPU_METHOD_OF_TABLES()	OF_TABLE(CONFIG_SMP, cpu_method)
-#define CPUIDLE_METHOD_OF_TABLES() OF_TABLE(CONFIG_CPU_IDLE, cpuidle_method)
-
-#define ACPI_PROBE_TABLE(name)
-
-#define THERMAL_TABLE(name)
-
+/*
+ * KERNEL_DTB: reserve space for flattened device tree blob.
+ * Empty in practice for x86 tinyconfig, but defines needed symbols.
+ */
 #define KERNEL_DTB()							\
 	STRUCT_ALIGN();							\
 	__dtb_start = .;						\
@@ -111,12 +67,7 @@
 	. = ALIGN(8);							\
 	__start___dyndbg = .;						\
 	KEEP(*(__dyndbg))						\
-	__stop___dyndbg = .;						\
-	LIKELY_PROFILE()		       				\
-	BRANCH_PROFILE()						\
-	TRACE_PRINTKS()							\
-	BPF_RAW_TP()							\
-	TRACEPOINT_STR()
+	__stop___dyndbg = .;
 
 #define NOSAVE_DATA							\
 	. = ALIGN(PAGE_SIZE);						\
@@ -155,15 +106,12 @@
 	KEEP(*(__jump_table))						\
 	__stop___jump_table = .;
 
-#define STATIC_CALL_DATA
-
 #ifndef RO_AFTER_INIT_DATA
 #define RO_AFTER_INIT_DATA						\
 	. = ALIGN(8);							\
 	__start_ro_after_init = .;					\
 	*(.data..ro_after_init)						\
 	JUMP_TABLE_DATA							\
-	STATIC_CALL_DATA						\
 	__end_ro_after_init = .;
 #endif
 
@@ -212,11 +160,6 @@
 		KEEP(*(.pci_fixup_suspend_late))			\
 		__end_pci_fixups_suspend_late = .;			\
 	}								\
-									\
-	FW_LOADER_BUILT_IN_DATA						\
-	TRACEDATA							\
-									\
-	PRINTK_INDEX							\
 									\
 	 			\
 	__ksymtab         : AT(ADDR(__ksymtab) - LOAD_OFFSET) {		\
@@ -274,13 +217,10 @@
 									\
 	RO_EXCEPTION_TABLE						\
 	NOTES								\
-	BTF								\
 									\
 	. = ALIGN((align));						\
 	__end_rodata = .;
 
-
-#define TEXT_CFI_JT
 
 #define NOINSTR_TEXT							\
 		ALIGN_FUNCTION();					\
@@ -298,7 +238,6 @@
 		*(.text..refcount)					\
 		*(.ref.text)						\
 		*(.text.asan.* .text.tsan.*)				\
-		TEXT_CFI_JT						\
 	MEM_KEEP(init.text*)						\
 	MEM_KEEP(exit.text*)						\
 
@@ -333,8 +272,6 @@
 		*(.entry.text)						\
 		__entry_text_end = .;
 
-/* IRQENTRY_TEXT removed - unused */
-
 #define SOFTIRQENTRY_TEXT						\
 		ALIGN_FUNCTION();					\
 		__softirqentry_text_start = .;				\
@@ -349,8 +286,6 @@
 
 #define HEAD_TEXT  KEEP(*(.head.text))
 
-/* HEAD_TEXT_SECTION removed - unused */
-
 #define EXCEPTION_TABLE(align)						\
 	. = ALIGN(align);						\
 	__ex_table : AT(ADDR(__ex_table) - LOAD_OFFSET) {		\
@@ -359,37 +294,13 @@
 		__stop___ex_table = .;					\
 	}
 
-#define BTF
-
-/* INIT_TASK_DATA_SECTION removed - unused */
-
-#define KERNEL_CTORS()
-
 #define INIT_DATA							\
 	KEEP(*(SORT(___kentry+*)))					\
 	*(.init.data init.data.*)					\
 	MEM_DISCARD(init.data*)						\
-	KERNEL_CTORS()							\
-	MCOUNT_REC()							\
 	*(.init.rodata .init.rodata.*)					\
-	FTRACE_EVENTS()							\
-	TRACE_SYSCALLS()						\
-	KPROBE_BLACKLIST()						\
-	ERROR_INJECT_WHITELIST()					\
 	MEM_DISCARD(init.rodata)					\
-	CLK_OF_TABLES()							\
-	RESERVEDMEM_OF_TABLES()						\
-	TIMER_OF_TABLES()						\
-	CPU_METHOD_OF_TABLES()						\
-	CPUIDLE_METHOD_OF_TABLES()					\
 	KERNEL_DTB()							\
-	IRQCHIP_OF_MATCH_TABLE()					\
-	ACPI_PROBE_TABLE(irqchip)					\
-	ACPI_PROBE_TABLE(timer)						\
-	THERMAL_TABLE(governor)						\
-	EARLYCON_TABLE()						\
-	LSM_TABLE()							\
-	EARLY_LSM_TABLE()						\
 	KUNIT_TABLE()
 
 #define INIT_TEXT							\
@@ -411,24 +322,6 @@
 
 #define EXIT_CALL							\
 	*(.exitcall.exit)
-
-/* SBSS removed - unused */
-
-#ifndef BSS_FIRST_SECTIONS
-#define BSS_FIRST_SECTIONS
-#endif
-
-#define BSS(bss_align)							\
-	. = ALIGN(bss_align);						\
-	.bss : AT(ADDR(.bss) - LOAD_OFFSET) {				\
-		BSS_FIRST_SECTIONS					\
-		. = ALIGN(PAGE_SIZE);					\
-		*(.bss..page_aligned)					\
-		. = ALIGN(PAGE_SIZE);					\
-		*(.dynbss)						\
-		*(BSS_MAIN)						\
-		*(COMMON)						\
-	}
 
 #define DWARF_DEBUG							\
 		 						\
@@ -485,16 +378,6 @@
 		.strtab 0 : { *(.strtab) }				\
 		.shstrtab 0 : { *(.shstrtab) }
 
-#define BUG_TABLE
-
-#define ORC_UNWIND_TABLE
-
-#define FW_LOADER_BUILT_IN_DATA
-
-#define TRACEDATA
-
-#define PRINTK_INDEX
-
 #define NOTES								\
 	.notes : AT(ADDR(.notes) - LOAD_OFFSET) {			\
 		__start_notes = .;					\
@@ -546,22 +429,7 @@
 	. = ALIGN(8);							\
 	KEEP(*(.init.ramfs.info))
 
-#define PERCPU_DECRYPTED_SECTION
-
-
-#ifdef RUNTIME_DISCARD_EXIT
-#define EXIT_DISCARDS
-#else
-#define EXIT_DISCARDS							\
-	EXIT_TEXT							\
-	EXIT_DATA
-#endif
-
-/* GCOV, KASAN, KCSAN, CFI not enabled - SANITIZER_DISCARDS empty */
-#define SANITIZER_DISCARDS
-
 #define COMMON_DISCARDS							\
-	SANITIZER_DISCARDS						\
 	*(.discard)							\
 	*(.discard.*)							\
 	*(.modinfo)							\
@@ -570,7 +438,6 @@
 
 #define DISCARDS							\
 	/DISCARD/ : {							\
-	EXIT_DISCARDS							\
 	EXIT_CALL							\
 	COMMON_DISCARDS							\
 	}
@@ -585,15 +452,7 @@
 	. = ALIGN(cacheline);						\
 	*(.data..percpu)						\
 	*(.data..percpu..shared_aligned)				\
-	PERCPU_DECRYPTED_SECTION					\
 	__per_cpu_end = .;
-
-#define PERCPU_VADDR(cacheline, vaddr, phdr)				\
-	__per_cpu_load = .;						\
-	.data..percpu vaddr : AT(__per_cpu_load - LOAD_OFFSET) {	\
-		PERCPU_INPUT(cacheline)					\
-	} phdr								\
-	. = __per_cpu_load + SIZEOF(.data..percpu);
 
 #define PERCPU_SECTION(cacheline)					\
 	. = ALIGN(PAGE_SIZE);						\
@@ -601,11 +460,6 @@
 		__per_cpu_load = .;					\
 		PERCPU_INPUT(cacheline)					\
 	}
-
-
-
-
-/* RW_DATA removed - never used */
 
 #define INIT_TEXT_SECTION(inittext_align)				\
 	. = ALIGN(inittext_align);					\
@@ -623,5 +477,3 @@
 		CON_INITCALL						\
 		INIT_RAM_FS						\
 	}
-
-/* BSS_SECTION removed - never used */

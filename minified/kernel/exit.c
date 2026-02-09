@@ -28,7 +28,6 @@ extern int nr_threads;
 #include <linux/fs_struct.h>
 #include <linux/init_task.h>
 /* linux/writeback.h removed - no writeback features used */
-#include <linux/rcuwait.h>
 /* linux/compat.h removed - no compat features used */
 
 #include <linux/uaccess.h>

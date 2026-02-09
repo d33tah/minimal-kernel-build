@@ -17,7 +17,6 @@
 #include <linux/backing-dev.h>
 
 #include "base.h"
-#include "power/power.h"
 
 /* Merged from init.c */
 void __init driver_init(void)

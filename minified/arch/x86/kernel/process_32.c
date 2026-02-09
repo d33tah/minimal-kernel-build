@@ -12,14 +12,12 @@
 #include <linux/stddef.h>
 /* linux/slab.h removed - no slab functions */
 /* linux/vmalloc.h removed - no vmalloc functions */
-#include <asm/user.h> /* linux/user.h redirect */
 /* linux/interrupt.h, linux/reboot.h, linux/export.h removed - unused */
 #include <linux/ptrace.h>
 #include <linux/personality.h>
 #include <linux/percpu.h>
 #include <linux/uaccess.h>
 /* linux/io.h removed - no I/O functions */
-#include <linux/kdebug.h>
 #include <linux/syscalls.h>
 
 #include <asm/ldt.h>
@@ -38,7 +36,9 @@
 
 /* resctrl_sched_in removed - empty stub */
 
-#include "process.h"
+#include <asm/spec-ctrl.h>
+#include <asm/kdebug.h>
+void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p);
 
 void __show_regs(struct pt_regs *regs, enum show_regs_mode mode,
 		 const char *log_lvl)

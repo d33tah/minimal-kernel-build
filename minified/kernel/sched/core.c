@@ -20,7 +20,8 @@ extern void sched_init(void);
 #include <linux/init_task.h>
 #include <linux/interrupt.h>
 
-#include <linux/mmu_context.h>
+#include <asm/mmu_context.h>
+#include <asm/mmu.h>
 /* nospec.h removed - unused, psi_init stub removed */
 /* linux/sched/wake_q.h removed - wake_q functions removed */
 #include <linux/slab.h>

@@ -4,7 +4,6 @@
 #define _ASM_X86_FPU_SIGNAL_H
 
 #include <linux/compat.h>
-#include <asm/user.h> /* linux/user.h redirect */
 
 #include <asm/fpu/types.h>
 

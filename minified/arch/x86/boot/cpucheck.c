@@ -4,7 +4,7 @@
 #include "boot.h"
 #endif
 #include <linux/types.h>
-#include <asm/intel-family.h>
+#define INTEL_FAM6_XEON_PHI_KNL 0x57
 #include <asm/processor-flags.h>
 #include <asm/required-features.h>
 #include <asm/msr-index.h>

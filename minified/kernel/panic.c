@@ -1,7 +1,7 @@
 /* debug_locks.h, kallsyms.h, module.h, ratelimit.h, asm/sections.h removed - unused */
 #include <linux/sched/debug.h>
 #include <linux/printk.h>
-#include <linux/kdebug.h> /* for notify_die */
+#include <asm/kdebug.h>
 #include <linux/kprobes.h> /* for NOKPROBE_SYMBOL */
 
 /* Merged from lib/debug_locks.c */

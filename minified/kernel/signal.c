@@ -8,7 +8,7 @@
 /* linux/tty.h removed - unused */
 
 /* linux/uaccess.h removed - unused */
-#include <asm/siginfo.h>
+#include <asm-generic/siginfo.h>
 #include <asm/syscall.h>
 
 /* sigqueue_cachep removed - was assigned but never read */

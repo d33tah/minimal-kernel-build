@@ -50,7 +50,6 @@ extern void doublefault_init_cpu_tss(void);
 #include <asm/msr.h>
 #include <asm/memtype.h>
 /* show_ucode_info_early removed - microcode support disabled */
-#include <asm/intel-family.h>
 #include <asm/sigframe.h>
 #include <asm/traps.h>
 /* asm/sev.h include removed - file is stub, nothing used */

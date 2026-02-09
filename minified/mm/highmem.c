@@ -7,7 +7,7 @@
 #include <asm/tlbflush.h>
 #include <linux/vmalloc.h>
 
-#include <asm/kmap_size.h>
+#define KM_MAX_IDX 16
 
 /* KM_INCR removed - never used */
 

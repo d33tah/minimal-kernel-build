@@ -4,7 +4,8 @@
 #include <linux/types.h>
 #include <linux/stddef.h> /* for NULL */
 /* linux/export.h removed - no EXPORT_SYMBOL used */
-#include <linux/sort.h>
+void sort(void *base, size_t num, size_t size, cmp_func_t cmp_func,
+	  swap_func_t swap_func);
 
 /* Local typedefs - only used by sort_r() which is now static */
 typedef void (*swap_r_func_t)(void *a, void *b, int size, const void *priv);

@@ -7,7 +7,6 @@
 
 #include <asm/processor.h>
 #include <asm/fpu/api.h>
-#include <asm/user.h>
 
 /* XFEATURE_MASK_EXTEND, FXSAVE_SIZE, XSAVE_HDR_SIZE, XSAVE_HDR_OFFSET removed - never used */
 

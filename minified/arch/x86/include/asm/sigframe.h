@@ -3,7 +3,7 @@
 #define _ASM_X86_SIGFRAME_H
 
 #include <uapi/asm/sigcontext.h>
-#include <asm/siginfo.h>
+#include <asm-generic/siginfo.h>
 #include <asm/ucontext.h>
 #include <linux/compat.h>
 

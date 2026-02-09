@@ -48,7 +48,7 @@
 #include <linux/mm_types_task.h>
 /* struct task_io_accounting, posix-timers.h removed - empty structs no longer needed */
 #include <linux/seqlock.h>
-#include <asm/kmap_size.h>
+#define KM_MAX_IDX 16
 
 /* Unused forward declarations removed: cfs_rq, mempolicy, pipe_inode_info, rq, sched_attr, seq_file */
 struct fs_struct;

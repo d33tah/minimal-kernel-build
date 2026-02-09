@@ -19,12 +19,11 @@ struct module;
 /* CONFIG_ARCH_CLOCKSOURCE_DATA/GENERIC_GETTIMEOFDAY not defined */
 
 #include <linux/limits.h>
-#include <asm/vdso/clocksource.h>
 
 /* Inlined from vdso/clocksource.h */
 enum vdso_clock_mode {
 	VDSO_CLOCKMODE_NONE,
-	VDSO_ARCH_CLOCKMODES,
+	VDSO_CLOCKMODE_TSC, /* from asm/vdso/clocksource.h */
 	VDSO_CLOCKMODE_MAX,
 };
 

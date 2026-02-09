@@ -1,9 +1,10 @@
 /* linux/init.h removed - unused */
 #include <linux/minmax.h>
 /* linux/printk.h removed - unused */
-#include <linux/sort.h>
 #include <linux/string.h>
 #include <linux/range.h>
+void sort(void *base, size_t num, size_t size, cmp_func_t cmp_func,
+	  swap_func_t swap_func);
 
 int add_range_with_merge(struct range *range, int az, int nr_range, u64 start,
 			 u64 end)

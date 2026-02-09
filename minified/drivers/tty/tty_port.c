@@ -9,7 +9,7 @@
 #include <linux/bitops.h>
 /* linux/module.h removed - no module features used */
 
-#include "tty.h"
+void tty_buffer_init(struct tty_port *port);
 
 /* tty_port_default_receive_buf, tty_port_default_wakeup removed - client_ops never read */
 /* tty_port_default_client_ops removed - only read from removed receive_buf in tty_buffer.c */

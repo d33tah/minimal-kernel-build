@@ -9,7 +9,6 @@
 #include <linux/mutex.h>
 #include <linux/sysfs.h>
 #include "base.h"
-#include "power/power.h"
 
 static struct kset *system_kset;
 

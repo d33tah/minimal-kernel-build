@@ -14,7 +14,7 @@
 #include <linux/sched/task_stack.h>
 #include <asm/processor.h>
 #include <asm/unistd.h>
-#include <asm/siginfo.h>
+#include <asm-generic/siginfo.h>
 #include <asm/signal.h>
 #include <asm/syscall_wrapper.h>
 /* __SC_DELOUSE, compat_sigset_t typedef, _COMPAT_NSIG_WORDS removed - unused */

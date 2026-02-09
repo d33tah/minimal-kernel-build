@@ -26,7 +26,7 @@ struct old_linux_dirent;
 #include <linux/signal.h>
 #include <linux/list.h>
 #include <linux/bug.h>
-#include <asm/siginfo.h>
+#include <asm-generic/siginfo.h>
 #include <asm/unistd.h>
 #include <linux/personality.h>
 #include <linux/fcntl.h>

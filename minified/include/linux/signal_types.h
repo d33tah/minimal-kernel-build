@@ -4,7 +4,7 @@
 
 #include <linux/list.h>
 #include <asm/signal.h>
-#include <asm/siginfo.h>
+#include <asm-generic/siginfo.h>
 
 /* SS_DISABLE, SS_ONSTACK, SS_AUTODISARM, SS_FLAG_BITS removed - unused */
 

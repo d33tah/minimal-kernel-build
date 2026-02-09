@@ -6,7 +6,9 @@
 #include <linux/spinlock.h>
 #include <linux/kprobes.h>
 #include <linux/uaccess.h>
-#include <linux/kdebug.h>
+#include <asm/kdebug.h>
+int notify_die(enum die_val val, const char *str, struct pt_regs *regs,
+	       long err, int trap, int sig);
 #include <linux/kernel.h>
 /* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/ptrace.h>

@@ -3,7 +3,7 @@
 #ifndef _ASM_X86_FIXMAP_H
 #define _ASM_X86_FIXMAP_H
 
-#include <asm/kmap_size.h>
+#define KM_MAX_IDX 16
 
 
 /* FIXMAP_PMD_NUM, FIXMAP_PMD_TOP removed - never used */

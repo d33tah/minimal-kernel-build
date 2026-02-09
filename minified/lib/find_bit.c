@@ -4,7 +4,7 @@
 /* linux/export.h removed - no EXPORT_SYMBOL used */
 #include <linux/math.h>
 #include <linux/minmax.h>
-#include <linux/swab.h>
+#include <uapi/linux/swab.h>
 
 #if !defined(find_next_bit) || !defined(find_next_zero_bit) ||           \
 	!defined(find_next_bit_le) || !defined(find_next_zero_bit_le) || \
@@ -26,7 +26,7 @@ unsigned long _find_next_bit(const unsigned long *addr1,
 
 	mask = BITMAP_FIRST_WORD_MASK(start);
 	if (le)
-		mask = swab(mask);
+		mask = __swab(mask);
 
 	tmp &= mask;
 
@@ -44,7 +44,7 @@ unsigned long _find_next_bit(const unsigned long *addr1,
 	}
 
 	if (le)
-		tmp = swab(tmp);
+		tmp = __swab(tmp);
 
 	return min(start + __ffs(tmp), nbits);
 }

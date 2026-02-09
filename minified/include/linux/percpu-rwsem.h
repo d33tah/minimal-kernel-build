@@ -3,7 +3,10 @@
 
 #include <linux/atomic.h>
 #include <linux/percpu.h>
-#include <linux/rcuwait.h>
+#include <linux/sched/signal.h>
+struct rcuwait { struct task_struct __rcu *task; };
+#include <linux/sched/signal.h>
+extern int rcuwait_wake_up(struct rcuwait *w);
 #include <linux/wait.h>
 #include <linux/rcu_sync.h>
 #include <linux/lockdep.h>
@@ -11,6 +14,7 @@
 struct percpu_rw_semaphore {
 	struct rcu_sync		rss;
 	unsigned int __percpu	*read_count;
+#include <linux/sched/signal.h>
 	struct rcuwait		writer;
 	wait_queue_head_t	waiters;
 	atomic_t		block;

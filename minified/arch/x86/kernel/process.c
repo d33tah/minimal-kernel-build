@@ -41,7 +41,6 @@ DEFINE_PER_CPU(unsigned long, cpu_dr7);
 #include <asm/asm.h>
 #include <asm/unwind.h>
 /* tdx.h removed - header is empty */
-#include "process.h"
 
 __visible DEFINE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw) = {
 	.x86_tss = {

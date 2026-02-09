@@ -2,7 +2,6 @@
  * used since no TTY devices are opened. Keep n_tty_init stub for printk.c. */
 
 #include <linux/tty.h>
-#include "tty.h"
 
 static struct tty_ldisc_ops n_tty_ops = {
 	.owner = THIS_MODULE,

@@ -24,7 +24,8 @@
 #include <asm/nmi.h>
 #include <asm/x86_init.h>
 #include <asm/apic.h>
-#include <asm/intel-family.h>
+#define INTEL_FAM6_ATOM_GOLDMONT 0x5C
+#define INTEL_FAM6_ATOM_GOLDMONT_D 0x5F
 #include <asm/i8259.h>
 /* is_early_uv_system removed - always returned false */
 

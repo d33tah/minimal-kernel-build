@@ -6,7 +6,7 @@
 
 #include <asm/debugreg.h>
 #include <asm/idtentry.h>
-#include <asm/siginfo.h>
+#include <asm-generic/siginfo.h>
 
 /* Inlined from asm/trap_pf.h */
 enum x86_pf_error_code {

@@ -6,7 +6,8 @@
 #include <linux/mm.h>
 #include <asm/errno.h>
 #include <linux/acpi.h>
-#include <linux/sort.h>
+void sort(void *base, size_t num, size_t size, cmp_func_t cmp_func,
+	  swap_func_t swap_func);
 /* linux/memory_hotplug.h removed - not used */
 #include <asm/e820/api.h>
 #include <asm/setup.h>

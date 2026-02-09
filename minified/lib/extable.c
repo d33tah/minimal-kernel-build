@@ -1,6 +1,8 @@
+#include <linux/types.h>
 
 /* linux/module.h removed - no module features used */
-#include <linux/sort.h>
+void sort(void *base, size_t num, size_t size, cmp_func_t cmp_func,
+	  swap_func_t swap_func);
 #include <linux/uaccess.h>
 #include <linux/extable.h>
 

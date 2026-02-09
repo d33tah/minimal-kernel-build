@@ -3,7 +3,9 @@
 #include <linux/uaccess.h>
 #include <linux/utsname.h>
 #include <linux/hardirq.h>
-#include <linux/kdebug.h>
+#include <asm/kdebug.h>
+int notify_die(enum die_val val, const char *str, struct pt_regs *regs,
+	       long err, int trap, int sig);
 #include <linux/module.h>
 #include <linux/ptrace.h>
 #include <linux/sched/debug.h>

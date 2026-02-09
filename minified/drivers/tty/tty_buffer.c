@@ -6,7 +6,6 @@
 #include <linux/tty_buffer.h>
 #include <linux/tty_port.h>
 #include <linux/slab.h>
-#include "tty.h"
 
 static void tty_buffer_reset(struct tty_buffer *p, size_t size)
 {

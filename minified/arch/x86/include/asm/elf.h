@@ -6,7 +6,6 @@
 #include <linux/thread_info.h>
 
 #include <asm/ptrace.h>
-#include <asm/user.h>
 #include <asm/auxvec.h>
 
 /* elf_greg_t, ELF_NGREG, elf_gregset_t removed - never used */

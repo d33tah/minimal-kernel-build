@@ -15,7 +15,6 @@
 #define _PAGE_BIT_ACCESSED	5	 
 #define _PAGE_BIT_DIRTY		6	 
 #define _PAGE_BIT_PSE		7	 
-#define _PAGE_BIT_PAT		7	 
 #define _PAGE_BIT_GLOBAL	8	 
 #define _PAGE_BIT_SOFTW1	9
 /* _PAGE_BIT_SOFTW2, _PAGE_BIT_SOFTW3, _PAGE_BIT_PAT_LARGE, _PAGE_BIT_NX removed - unused */
@@ -32,7 +31,6 @@
 #define _PAGE_PSE	(_AT(pteval_t, 1) << _PAGE_BIT_PSE)
 #define _PAGE_GLOBAL	(_AT(pteval_t, 1) << _PAGE_BIT_GLOBAL)
 /* _PAGE_SOFTW1, _PAGE_SOFTW2, _PAGE_SOFTW3 removed - unused */
-#define _PAGE_PAT	(_AT(pteval_t, 1) << _PAGE_BIT_PAT)
 /* _PAGE_PAT_LARGE removed - unused */
 #define _PAGE_SPECIAL	(_AT(pteval_t, 1) << _PAGE_BIT_SPECIAL)
 /* _PAGE_PKEY_BIT0-3 removed - unused */
@@ -41,12 +39,8 @@
 
 #define _PAGE_SOFT_DIRTY	(_AT(pteval_t, 0))
 /* _PAGE_SWP_SOFT_DIRTY removed - unused */
-#define _PAGE_UFFD_WP		(_AT(pteval_t, 0))
-/* _PAGE_SWP_UFFD_WP removed - unused */
 
 #define _PAGE_NX	(_AT(pteval_t, 0))
-#define _PAGE_DEVMAP	(_AT(pteval_t, 0))
-/* _PAGE_SOFTW4 removed - unused */
 
 #define _PAGE_PROTNONE	(_AT(pteval_t, 1) << _PAGE_BIT_PROTNONE)
 
@@ -70,8 +64,6 @@ enum page_cache_mode {
 
 /* _PAGE_CACHE_MASK, _PAGE_LARGE_CACHE_MASK removed - unused */
 
-#define _PAGE_NOCACHE		(cachemode2protval(_PAGE_CACHE_MODE_UC))
-/* _PAGE_CACHE_WP removed - unused */
 
 #define __PP _PAGE_PRESENT
 #define __RW _PAGE_RW
@@ -224,7 +216,6 @@ typedef struct { pgd_t pgd; } p4d_t;
 #define p4d_ERROR(p4d)				(pgd_ERROR((p4d).pgd))
 
 /* pgd_populate, pgd_populate_safe removed - no callers */
-#define set_pgd(pgdptr, pgdval)	set_p4d((p4d_t *)(pgdptr), (p4d_t) { pgdval })
 
 static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
 {
@@ -234,11 +225,8 @@ static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
 #define p4d_val(x)				(pgd_val((x).pgd))
 #define __p4d(x)				((p4d_t) { __pgd(x) })
 
-#define pgd_page(pgd)				(p4d_page((p4d_t){ pgd }))
-/* pgd_page_vaddr removed - unused */
 
 /* p4d_alloc_one removed - no callers */
-#define p4d_free(mm, x)				do { } while (0)
 #define p4d_free_tlb(tlb, x, a)			do { } while (0)
 
 #undef  p4d_addr_end
@@ -271,7 +259,6 @@ static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
 #define pud_val(x)				(p4d_val((x).p4d))
 #define __pud(x)				((pud_t) { __p4d(x) })
 
-#define p4d_page(p4d)				(pud_page((pud_t){ p4d }))
 #define p4d_pgtable(p4d)			((pud_t *)(pud_pgtable((pud_t){ p4d })))
 
 /* pud_alloc_one removed - no callers */
@@ -299,7 +286,6 @@ typedef struct { pud_t pud; } pmd_t;
 /* pud_present removed - always returns 1, inlined at call site */
 #define pmd_ERROR(pmd)				(pud_ERROR((pmd).pud))
 
-#define pud_populate(mm, pmd, pte)		do { } while (0)
 
 #define set_pud(pudptr, pudval)			set_pmd((pmd_t *)(pudptr), (pmd_t) { pudval })
 
@@ -312,7 +298,6 @@ static inline pmd_t * pmd_offset(pud_t * pud, unsigned long address)
 #define pmd_val(x)				(pud_val((x).pud))
 #define __pmd(x)				((pmd_t) { __pud(x) } )
 
-#define pud_page(pud)				(pmd_page((pmd_t){ pud }))
 #define pud_pgtable(pud)			((pmd_t *)(pmd_page_vaddr((pmd_t){ pud })))
 
 /* pmd_alloc_one removed - no callers */

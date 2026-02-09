@@ -180,7 +180,6 @@ struct property *menu_add_prompt(enum prop_type type, char *prompt,
 	return prop;
 }
 
-
 void menu_add_expr(enum prop_type type, struct expr *expr, struct expr *dep)
 {
 	menu_add_prop(type, expr, dep);

@@ -41,7 +41,23 @@
 #include <linux/module.h>
 
 /* plist.h removed - unused */
-#include <linux/poll.h>
+/* Inlined from poll.h */
+#include <linux/compiler.h>
+#include <linux/ktime.h>
+#include <linux/wait.h>
+#include <linux/fs.h>
+#include <linux/uaccess.h>
+/* eventpoll.h inlined */
+#define EPOLLOUT	(__force __poll_t)0x00000004
+
+typedef void (*poll_queue_proc)(struct file *, wait_queue_head_t *, struct poll_table_struct *);
+
+struct poll_table_struct {
+	poll_queue_proc _qproc;
+	__poll_t _key;
+};
+
+/* poll_wait removed - never called */
 /* proc_fs.h removed - empty header */
 #include <linux/rcupdate.h>
 /* seq_file.h removed - header is empty */

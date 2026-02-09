@@ -8,7 +8,32 @@
 #include <linux/errno.h>
 #include <linux/ptrace.h>
 /* linux/export.h removed - no EXPORT_SYMBOL */
-#include <linux/nospec.h>
+/* Inlined from nospec.h */
+#include <linux/compiler.h>
+#include <asm/barrier.h>
+
+struct task_struct;
+
+#ifndef array_index_mask_nospec
+static inline unsigned long array_index_mask_nospec(unsigned long index,
+						    unsigned long size)
+{
+	OPTIMIZER_HIDE_VAR(index);
+	return ~(long)(index | (size - 1UL - index)) >> (BITS_PER_LONG - 1);
+}
+#endif
+
+#define array_index_nospec(index, size)                                \
+	({                                                             \
+		typeof(index) _i = (index);                            \
+		typeof(size) _s = (size);                              \
+		unsigned long _mask = array_index_mask_nospec(_i, _s); \
+                                                                       \
+		BUILD_BUG_ON(sizeof(_i) > sizeof(long));               \
+		BUILD_BUG_ON(sizeof(_s) > sizeof(long));               \
+                                                                       \
+		(typeof(_i))(_i & _mask);                              \
+	})
 #include <linux/syscalls.h>
 #include <linux/uaccess.h>
 

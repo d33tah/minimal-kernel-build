@@ -1,6 +1,5 @@
 #include <linux/mm.h>
 #include <linux/gfp.h>
-#include <linux/hugetlb.h>
 #include <asm/pgalloc.h>
 #include <asm/tlb.h>
 #include <asm/fixmap.h>

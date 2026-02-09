@@ -10,7 +10,15 @@
 #include <linux/errno.h>
 /* slab.h removed - unused */
 
-#include <asm-generic/unaligned.h>
+/* get_unaligned inlined from asm-generic/unaligned.h */
+#define __get_unaligned_t(type, ptr)                        \
+	({                                                  \
+		const struct {                              \
+			type x;                             \
+		} __packed *__pptr = (typeof(__pptr))(ptr); \
+		__pptr->x;                                  \
+	})
+#define get_unaligned(ptr) __get_unaligned_t(typeof(*(ptr)), (ptr))
 #include <asm/byteorder.h>
 #include <asm/word-at-a-time.h>
 #include <asm/page.h>

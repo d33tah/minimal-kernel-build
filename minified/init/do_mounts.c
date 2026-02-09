@@ -6,7 +6,18 @@
 /* linux/pm.h removed - no pm functions used */
 #include <linux/mm.h>
 #include <asm/errno.h>
-#include <linux/root_dev.h>
+/* Inlined from root_dev.h */
+#include <linux/major.h>
+#include <linux/types.h>
+#include <linux/kdev_t.h>
+
+enum {
+	Root_NFS = MKDEV(UNNAMED_MAJOR, 255),
+	Root_CIFS = MKDEV(UNNAMED_MAJOR, 254),
+	Root_RAM0 = MKDEV(RAMDISK_MAJOR, 0),
+};
+
+extern dev_t ROOT_DEV;
 /* linux/security.h, linux/delay.h removed - unused */
 #include <linux/mount.h>
 #include <linux/device.h>

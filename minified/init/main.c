@@ -23,7 +23,7 @@
 /* profile_init, kfence_alloc_pool, kfence_init removed - empty stubs */
 #include <linux/rcupdate.h>
 #include <linux/srcu.h>
-#include <linux/kallsyms.h>
+/* kallsyms.h removed - only forwarded other includes */
 /* init_vmlinux_build_id removed - empty stub */
 #include <linux/cpu.h>
 /* linux/cpuset.h removed - empty header */

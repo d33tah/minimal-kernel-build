@@ -1,4 +1,4 @@
-#include <linux/kallsyms.h>
+/* kallsyms.h removed - only forwarded other includes */
 #include <linux/kprobes.h>
 #include <linux/uaccess.h>
 #include <linux/utsname.h>

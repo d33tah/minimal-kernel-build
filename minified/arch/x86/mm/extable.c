@@ -1,4 +1,5 @@
 #include <linux/extable.h>
+#include <asm/extable.h>
 #include <linux/uaccess.h>
 #include <linux/sched/debug.h>
 

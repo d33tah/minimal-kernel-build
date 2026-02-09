@@ -9,7 +9,13 @@
 #include <linux/mm_types.h>
 #include <linux/bug.h>
 /* linux/errno.h removed - no errno constants used */
-#include <linux/page_table_check.h>
+#ifndef __PAGE_TABLE_CHECK_STUBS
+#define __PAGE_TABLE_CHECK_STUBS
+static inline void page_table_check_pte_clear(struct mm_struct *mm,
+					      unsigned long addr, pte_t pte) { }
+static inline void page_table_check_pte_set(struct mm_struct *mm,
+					    unsigned long addr, pte_t *ptep, pte_t pte) { }
+#endif
 
 #if 5 - defined(__PAGETABLE_P4D_FOLDED) - defined(__PAGETABLE_PUD_FOLDED) - \
 	defined(__PAGETABLE_PMD_FOLDED) != CONFIG_PGTABLE_LEVELS
@@ -334,5 +340,8 @@ typedef unsigned int pgtbl_mod_mask;
 #endif  
 
 /* pgd_leaf, p4d_leaf, pud_leaf, pmd_leaf removed - never called */
+#ifndef p4d_huge
+#define p4d_huge(x)	0
+#endif
 
 #endif  

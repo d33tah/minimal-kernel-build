@@ -7,7 +7,6 @@
 #include <linux/ptrace.h>
 #include <linux/mman.h>
 #include <linux/mm.h>
-#include <linux/hugetlb.h>
 /* linux/swap.h removed - no swap functions used */
 #include <linux/smp.h>
 #include <linux/init.h>

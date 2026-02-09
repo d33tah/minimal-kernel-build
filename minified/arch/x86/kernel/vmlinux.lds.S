@@ -23,7 +23,7 @@
 #define RO_EXCEPTION_TABLE_ALIGN	16
 
 #include <asm-generic/vmlinux.lds.h>
-#include <asm/asm-offsets.h>
+#include <generated/asm-offsets.h>
 #include <asm/thread_info.h>
 #include <asm/page_types.h>
 /* orc_lookup.h include removed - header was empty */

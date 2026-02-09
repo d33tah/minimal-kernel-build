@@ -8,7 +8,7 @@
 
 #include <asm/asm.h>
 #include <asm/errno.h>
-#include <asm/cpumask.h>
+#include <linux/cpumask.h>
 /* uapi/asm/msr.h was empty stub, removed */
 #include <asm/shared/msr.h>
 

@@ -6,7 +6,6 @@
 /* linux/errno.h removed - no errno constants used */
 
 #include <asm/topology.h>
-#include <asm/apicdef.h>
 
 /* set_highmem_pages_init, init_cpu_to_node, init_gi_nodes removed - never called */
 

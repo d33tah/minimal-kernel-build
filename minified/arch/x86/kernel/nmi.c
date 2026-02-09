@@ -4,7 +4,7 @@
 #include <linux/sched/debug.h>
 #include <linux/delay.h>
 #include <linux/hardirq.h>
-#include <linux/ratelimit.h>
+/* ratelimit.h removed - WARN_RATELIMIT available via printk.h */
 /* linux/slab.h removed - no slab functions */
 /* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/atomic.h>

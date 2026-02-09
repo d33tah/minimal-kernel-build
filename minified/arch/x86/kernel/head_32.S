@@ -16,7 +16,7 @@
 #include <asm/pgtable_types.h>
 #include <asm/cache.h>
 #include <asm/thread_info.h>
-#include <asm/asm-offsets.h>
+#include <generated/asm-offsets.h>
 #include <asm/setup.h>
 #include <asm/processor-flags.h>
 #include <asm/msr-index.h>

@@ -8,7 +8,7 @@
 #ifndef __NR_rt_sigreturn
 #define __NR_rt_sigreturn 173
 #endif
-#include <asm/asm-offsets.h>
+#include <generated/asm-offsets.h>
 
 #ifndef SYSCALL_ENTER_KERNEL
 #define	SYSCALL_ENTER_KERNEL	int $0x80

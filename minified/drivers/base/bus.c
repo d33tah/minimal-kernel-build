@@ -1,5 +1,4 @@
 
-#include <linux/async.h>
 #include <linux/device/bus.h>
 #include <linux/device.h>
 /* linux/module.h removed - no module features used */

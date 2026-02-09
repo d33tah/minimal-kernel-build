@@ -3,7 +3,7 @@
 #define _ASM_X86_MPSPEC_H
 
 #include <asm/x86_init.h>
-#include <asm/apicdef.h>
+#define MAX_LOCAL_APIC 256
 
 /* pic_mode, mp_bus_not_pci, phys_cpu_present_map,
    generic_processor_info, MAX_MP_BUSSES, smp_found_config,

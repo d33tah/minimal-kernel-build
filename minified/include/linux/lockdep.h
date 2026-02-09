@@ -2,7 +2,7 @@
 #ifndef __LINUX_LOCKDEP_H
 #define __LINUX_LOCKDEP_H
 
-#include <linux/lockdep_types.h>
+/* lockdep_types: lock_class_key and lockdep_map defined in spinlock_types_raw.h */
 
 /* lockdep_init_task, lock_acquire, lock_release, lockdep_init,
    lockdep_init_map*, lockdep_set_class* all removed - no callers */

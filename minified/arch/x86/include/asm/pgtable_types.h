@@ -150,7 +150,32 @@ enum page_cache_mode {
 #define PDE_IDENT_ATTR	 0x063
 /* PGD_IDENT_ATTR removed - unused */
 
-# include <asm/pgtable_32_types.h>
+/* Inlined from pgtable_32_types.h */
+#ifndef __ASSEMBLY__
+#include <linux/types.h>
+
+typedef unsigned long	pteval_t;
+typedef unsigned long	pmdval_t;
+typedef unsigned long	pudval_t;
+typedef unsigned long	p4dval_t;
+typedef unsigned long	pgdval_t;
+typedef unsigned long	pgprotval_t;
+
+typedef union {
+	pteval_t pte;
+	pteval_t pte_low;
+} pte_t;
+#endif
+
+#define ARCH_PAGE_TABLE_SYNC_MASK	PGTBL_PMD_MODIFIED
+#define PGDIR_SHIFT	22
+#define PTRS_PER_PGD	1024
+#define PTRS_PER_PTE	1024
+
+#define pgtable_l5_enabled() 0
+
+#define PGDIR_SIZE	(1UL << PGDIR_SHIFT)
+#define PGDIR_MASK	(~(PGDIR_SIZE - 1))
 
 #ifndef __ASSEMBLY__
 

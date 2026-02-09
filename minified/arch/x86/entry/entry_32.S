@@ -56,7 +56,7 @@
 #include <linux/jump_label.h>
 #include <asm/unwind_hints.h>
 #include <asm/page_types.h>
-#include <asm/asm-offsets.h>
+#include <generated/asm-offsets.h>
 #include <asm/ptrace-abi.h>
 #include <asm/msr.h>
 # undef		UNWIND_HINT_IRET_REGS

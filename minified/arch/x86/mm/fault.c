@@ -3,7 +3,6 @@
 #include <linux/extable.h>
 #include <linux/memblock.h>
 #include <linux/kprobes.h>
-#include <linux/hugetlb.h>
 
 #include <linux/uaccess.h>
 #include <linux/mm_types.h>

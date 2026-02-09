@@ -4,7 +4,10 @@
 
 #include <asm/segment.h>
 #include <asm/page_types.h>
-#include <uapi/asm/ptrace.h>
+/* Inlined from uapi/asm/ptrace.h (kernel-only parts) */
+#include <linux/compiler.h>
+#include <asm/ptrace-abi.h>
+#include <asm/processor-flags.h>
 
 #ifndef __ASSEMBLY__
 /* 32-bit only kernel - removed x86_64 pt_regs */

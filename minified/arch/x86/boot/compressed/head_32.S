@@ -29,7 +29,7 @@
 #include <asm/segment.h>
 #include <asm/page_types.h>
 #include <asm/boot.h>
-#include <asm/asm-offsets.h>
+#include <generated/asm-offsets.h>
 #include <asm/bootparam.h>
 
 /*

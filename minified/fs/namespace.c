@@ -5,6 +5,7 @@
 /* linux/security.h, linux/cred.h removed - unused */
 #include <linux/idr.h>
 #include <linux/init.h>
+#include <linux/sysfs.h>
 #include <linux/fs_struct.h>
 #include <linux/file.h>
 #include <linux/uaccess.h>

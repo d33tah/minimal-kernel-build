@@ -3,7 +3,6 @@
 #define _ASM_X86_UACCESS_H
  
 #include <linux/compiler.h>
-#include <linux/kasan-checks.h>
 #include <linux/string.h>
 #include <asm/asm.h>
 #include <asm/page.h>

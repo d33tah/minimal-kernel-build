@@ -4,7 +4,7 @@
 #include <linux/types.h>
 #include <linux/time.h>
 #include <linux/stat.h>
-#include <linux/param.h>
+#include <asm/param.h>
 #include <linux/uio.h>
 #include <linux/compiler.h>
 #include <linux/fs.h>

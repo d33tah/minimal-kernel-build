@@ -3,7 +3,7 @@
 #define _LINUX_INSTRUMENTED_H
 
 #include <linux/compiler.h>
-#include <linux/kasan-checks.h>
+/* kasan_check_read/write provided by asm-generic/rwonce.h */
 #include <linux/types.h>
 
 static __always_inline void instrument_write(const volatile void *v, size_t size)

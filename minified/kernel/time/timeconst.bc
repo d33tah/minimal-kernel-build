@@ -48,7 +48,7 @@ define timeconst(hz) {
 	print "#ifndef KERNEL_TIMECONST_H\n"
 	print "#define KERNEL_TIMECONST_H\n\n"
 
-	print "#include <linux/param.h>\n"
+	print "#include <asm/param.h>\n"
 	print "#include <linux/types.h>\n\n"
 
 	print "#if HZ != ", hz, "\n"

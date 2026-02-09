@@ -31,7 +31,6 @@
 #define Elf_Rel		Elf32_Rel
 #define ELF_R_TYPE(X)	ELF32_R_TYPE(X)
 #define ELF_R_SYM(X)	ELF32_R_SYM(X)
-#include <asm/orc_types.h>
 /* struct mod_arch_specific, MODULE_NAME_LEN removed - unused */
 
 struct module;

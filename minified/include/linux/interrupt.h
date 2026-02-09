@@ -12,7 +12,6 @@ enum irqreturn {
 };
 typedef enum irqreturn irqreturn_t;
 
-#include <linux/irqnr.h>
 #include <linux/hardirq.h>
 #include <linux/irqflags.h>
 /* linux/hrtimer.h removed - entire hrtimer subsystem dead */

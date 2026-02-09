@@ -3,6 +3,5 @@
 #ifndef __ASSEMBLY__
 #include <asm/mem_encrypt.h>
 #define __sme_set(x) (x)
-/* __sme_clr removed - unused */
 #endif
-#endif 
+#endif

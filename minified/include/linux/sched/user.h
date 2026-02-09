@@ -5,7 +5,8 @@
 #include <linux/atomic.h>
 #include <linux/percpu_counter.h>
 #include <linux/refcount.h>
-#include <linux/ratelimit.h>
+/* ratelimit_state defined in printk.h */
+#include <linux/printk.h>
 
 struct user_struct {
 	refcount_t __count;	 

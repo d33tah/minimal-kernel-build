@@ -9,7 +9,9 @@ typedef struct { } arch_rwlock_t;
 #define __ARCH_RW_LOCK_UNLOCKED { }
 /* end spinlock_types_up.h */
 
-#include <linux/lockdep_types.h>
+/* lockdep stubs inlined from lockdep_types.h */
+struct lock_class_key { };
+struct lockdep_map { };
 
 typedef struct raw_spinlock {
 	arch_spinlock_t raw_lock;

@@ -26,7 +26,8 @@
 #include <linux/fcntl.h>
 #include <linux/rculist_bl.h>
 #include <linux/atomic.h>
-#include <linux/shrinker.h>
+/* shrinker types defined in list_lru.h */
+#include <linux/list_lru.h>
 /* enum migrate_mode, migrate_reason removed - unused */
 #include <linux/uidgid.h>
 #include <linux/lockdep.h>

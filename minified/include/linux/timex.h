@@ -4,9 +4,10 @@
 /* struct __kernel_timex_timeval, __kernel_timex removed - never used */
 #include <linux/compiler.h>
 #include <linux/types.h>
-#include <linux/param.h>
+#include <asm/param.h>
 /* random_get_entropy_fallback declaration removed - function never called */
-#include <asm/timex.h>
+#include <asm/processor.h>
+#include <asm/tsc.h>
 /* random_get_entropy macros removed - never called */
 /* shift_right removed - never used */
 #define NTP_SCALE_SHIFT		32

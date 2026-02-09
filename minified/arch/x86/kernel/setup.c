@@ -1,7 +1,7 @@
 /* sadbg debug function removed */
 #include <linux/acpi.h>
 #include <linux/console.h>
-#include <linux/dma-map-ops.h>
+#include <linux/dma-mapping.h>
 /* efi_enabled removed - never called */
 #include <linux/screen_info.h>
 
@@ -9,7 +9,18 @@
 #include <linux/memblock.h>
 /* panic_notifier_list extern removed - never registered into */
 #include <linux/pci.h>
-#include <linux/root_dev.h>
+/* Inlined from root_dev.h */
+#include <linux/major.h>
+#include <linux/types.h>
+#include <linux/kdev_t.h>
+
+enum {
+	Root_NFS = MKDEV(UNNAMED_MAJOR, 255),
+	Root_CIFS = MKDEV(UNNAMED_MAJOR, 254),
+	Root_RAM0 = MKDEV(RAMDISK_MAJOR, 0),
+};
+
+extern dev_t ROOT_DEV;
 /* linux/hugetlb.h removed - hugetlb_cma_reserve stubbed */
 #define tboot_probe() \
 	do {          \

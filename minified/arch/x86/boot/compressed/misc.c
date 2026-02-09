@@ -8,7 +8,53 @@
 
 #define STATIC static
 #define MALLOC_VISIBLE
-#include <linux/decompress/mm.h>
+/* Inlined from linux/decompress/mm.h */
+#ifdef STATIC
+
+#ifndef STATIC_RW_DATA
+#define STATIC_RW_DATA static
+#endif
+
+#ifndef MALLOC_VISIBLE
+#define MALLOC_VISIBLE static
+#endif
+
+STATIC_RW_DATA unsigned long malloc_ptr;
+STATIC_RW_DATA int malloc_count;
+
+MALLOC_VISIBLE void *malloc(int size)
+{
+	void *p;
+
+	if (size < 0)
+		return NULL;
+	if (!malloc_ptr)
+		malloc_ptr = free_mem_ptr;
+
+	malloc_ptr = (malloc_ptr + 3) & ~3;
+
+	p = (void *)malloc_ptr;
+	malloc_ptr += size;
+
+	if (free_mem_end_ptr && malloc_ptr >= free_mem_end_ptr)
+		return NULL;
+
+	malloc_count++;
+	return p;
+}
+
+MALLOC_VISIBLE void free(void *where)
+{
+	malloc_count--;
+	if (!malloc_count)
+		malloc_ptr = free_mem_ptr;
+}
+
+/* large_malloc/large_free removed - never used (was for compression formats) */
+
+#define INIT
+
+#endif /* STATIC */
 
 #define memzero(s, n) memset((s), 0, (n))
 #ifndef memmove

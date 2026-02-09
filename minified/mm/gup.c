@@ -11,7 +11,6 @@
 /* swapops.h removed - was empty */
 #include <linux/sched/signal.h>
 /* linux/rwsem.h removed - not used */
-#include <linux/hugetlb.h>
 /* linux/migrate.h removed - empty header */
 #include <linux/mm_inline.h>
 #include <linux/sched/mm.h>

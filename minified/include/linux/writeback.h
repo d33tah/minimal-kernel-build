@@ -5,7 +5,6 @@
 #include <linux/fs.h>
 #include <linux/flex_proportions.h>
 #include <linux/backing-dev-defs.h>
-#include <linux/blk_types.h>
 
 /* struct bio forward decl removed - already in blk_types.h */
 

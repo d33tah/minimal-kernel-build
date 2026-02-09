@@ -1,11 +1,10 @@
 
 #include <linux/device.h>
 #include <linux/delay.h>
-#include <linux/dma-map-ops.h>
+#include <linux/dma-mapping.h>
 /* linux/module.h removed - unused */
 #include <linux/kthread.h>
 #include <linux/wait.h>
-#include <linux/async.h>
 #include <linux/pm_runtime.h>
 #include <linux/slab.h>
 

@@ -10,7 +10,14 @@
 #include <linux/seqlock.h>
 #include <linux/cache.h>
 #include <linux/rcupdate.h>
-#include <linux/lockref.h>
+/* Inlined from lockref.h */
+#include <generated/bounds.h>
+struct lockref { spinlock_t lock; int count; };
+extern void lockref_get(struct lockref *);
+extern int lockref_put_return(struct lockref *);
+extern int lockref_get_not_zero(struct lockref *);
+extern void lockref_mark_dead(struct lockref *);
+extern int lockref_get_not_dead(struct lockref *);
 #include <linux/hash.h>
 
 #define hashlen_hash(hashlen) ((u32)(hashlen))

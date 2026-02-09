@@ -6,7 +6,6 @@
 #include <asm/percpu.h>
 
 #include <asm/thread_info.h>
-#include <asm/cpumask.h>
 
 /* smp_num_siblings removed - never used */
 

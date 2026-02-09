@@ -4,7 +4,6 @@
 #define _LINUX_BLKDEV_H
 
 #include <linux/types.h>
-#include <linux/blk_types.h>
 #include <linux/device.h>
 /* linux/list.h, linux/sched.h, linux/workqueue.h removed - unused */
 #include <linux/gfp.h>

@@ -6,9 +6,10 @@
 /* linux/spinlock.h removed - no spinlock usage */
 #include <linux/cpumask.h>
 struct irq_desc;
+extern struct irq_desc *irq_to_desc(unsigned int irq);
+extern int nr_irqs;
 typedef void (*irq_flow_handler_t)(struct irq_desc *desc);
 #include <linux/interrupt.h>
-#include <linux/irqnr.h>
 #include <linux/topology.h>
 #include <linux/io.h>
 #include <linux/slab.h>

@@ -4,7 +4,9 @@
 #ifndef __ASSEMBLY__
 
 #include <linux/compiler_types.h>
-#include <linux/kasan-checks.h>
+#include <linux/stddef.h>
+static inline int kasan_check_read(const volatile void *p, unsigned int size) { return 1; }
+static inline int kasan_check_write(const volatile void *p, unsigned int size) { return 1; }
 
 #define compiletime_assert_rwonce_type(t)					\
 	compiletime_assert(__native_word(t) || sizeof(t) == sizeof(long long),	\

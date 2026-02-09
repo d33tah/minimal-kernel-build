@@ -4,7 +4,48 @@
 #include <linux/compiler_types.h>
 #include <linux/stringify.h>
 #include <linux/export.h>
-#include <asm/linkage.h>
+/* Inlined from asm/linkage.h */
+#include <linux/stringify.h>
+#include <asm/ibt.h>
+
+#undef notrace
+#define notrace __attribute__((no_instrument_function))
+
+#define asmlinkage CPP_ASMLINKAGE __attribute__((regparm(0)))
+
+#ifdef __ASSEMBLY__
+
+/* X86_32 without X86_ALIGNMENT_16 - use default alignment */
+
+#define RET	ret
+
+#else
+
+/* ASM_RET removed - unused */
+
+#endif
+
+ 
+#define SYM_FUNC_START(name)				\
+	SYM_START(name, SYM_L_GLOBAL, SYM_A_ALIGN)	\
+	ENDBR
+
+ 
+#define SYM_FUNC_START_NOALIGN(name)			\
+	SYM_START(name, SYM_L_GLOBAL, SYM_A_NONE)	\
+	ENDBR
+
+ 
+#define SYM_FUNC_START_LOCAL(name)			\
+	SYM_START(name, SYM_L_LOCAL, SYM_A_ALIGN)	\
+	ENDBR
+
+ 
+#define SYM_FUNC_START_LOCAL_NOALIGN(name)		\
+	SYM_START(name, SYM_L_LOCAL, SYM_A_NONE)	\
+	ENDBR
+
+/* SYM_FUNC_START_WEAK, SYM_FUNC_START_WEAK_NOALIGN removed - never used */
 
 #ifndef ASM_NL
 #define ASM_NL		 ;

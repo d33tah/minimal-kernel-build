@@ -10,7 +10,6 @@
 
 #ifndef __ASSEMBLY__
 #include <linux/kernel.h>
-#include <asm/apicdef.h>
 #include <asm/page.h>
 #include <asm/pgtable_types.h>
 #include <linux/threads.h>

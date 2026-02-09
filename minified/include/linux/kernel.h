@@ -17,7 +17,10 @@
 #include <linux/compiler.h>
 #include <linux/container_of.h>
 #include <linux/bitops.h>
-#include <linux/kstrtox.h>
+/* Inlined from kstrtox.h */
+int __must_check kstrtoull(const char *s, unsigned int base, unsigned long long *res);
+int __must_check kstrtouint(const char *s, unsigned int base, unsigned int *res);
+extern unsigned long simple_strtoul(const char *,char **,unsigned int);
 #include <linux/log2.h>
 #include <linux/math.h>
 #include <linux/minmax.h>

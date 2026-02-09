@@ -58,7 +58,7 @@ void get_cpuflags(void)
 
 	if (loaded_flags)
 		return;
-	loaded_flags = true;
+	loaded_flags = 1;
 
 	/* has_fpu inlined */
 	{

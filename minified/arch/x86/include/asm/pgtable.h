@@ -25,7 +25,13 @@ static inline u32 read_pkru(void) { if (cpu_feature_enabled(X86_FEATURE_OSPKE)) 
 static inline void pkru_write_default(void) { if (!cpu_feature_enabled(X86_FEATURE_OSPKE)) return; wrpkru(pkru_get_init_value()); }
 /* End of pkru.h */
 /* cc_mkenc, cc_mkdec, cc_vendor, pgprot_encrypted, pgprot_decrypted removed - unused */
-#include <linux/page_table_check.h>
+#ifndef __PAGE_TABLE_CHECK_STUBS
+#define __PAGE_TABLE_CHECK_STUBS
+static inline void page_table_check_pte_clear(struct mm_struct *mm,
+					      unsigned long addr, pte_t pte) { }
+static inline void page_table_check_pte_set(struct mm_struct *mm,
+					    unsigned long addr, pte_t *ptep, pte_t pte) { }
+#endif
 
 extern unsigned long empty_zero_page[PAGE_SIZE / sizeof(unsigned long)]
 	__visible;

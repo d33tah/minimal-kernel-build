@@ -31,7 +31,7 @@ struct thread_info {
 
 #else  
 
-#include <asm/asm-offsets.h>
+#include <generated/asm-offsets.h>
 
 #endif
 

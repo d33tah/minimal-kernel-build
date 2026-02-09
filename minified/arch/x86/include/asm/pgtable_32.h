@@ -2,7 +2,8 @@
 #ifndef _ASM_X86_PGTABLE_32_H
 #define _ASM_X86_PGTABLE_32_H
 
-#include <asm/pgtable_32_types.h>
+/* pgtable_32_types.h content moved to pgtable_types.h */
+/* pgtable_32_types.h content moved to pgtable_types.h */
 
  
 #ifndef __ASSEMBLY__

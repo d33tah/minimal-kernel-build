@@ -103,27 +103,6 @@ static char *do_error_if(int argc, char *argv[])
 	return xstrdup("");
 }
 
-static char *do_filename(int argc, char *argv[])
-{
-	return xstrdup(current_file->name);
-}
-
-static char *do_info(int argc, char *argv[])
-{
-	printf("%s\n", argv[0]);
-
-	return xstrdup("");
-}
-
-static char *do_lineno(int argc, char *argv[])
-{
-	char buf[16];
-
-	sprintf(buf, "%d", yylineno);
-
-	return xstrdup(buf);
-}
-
 static char *do_shell(int argc, char *argv[])
 {
 	FILE *p;
@@ -162,23 +141,10 @@ static char *do_shell(int argc, char *argv[])
 	return xstrdup(buf);
 }
 
-static char *do_warning_if(int argc, char *argv[])
-{
-	if (!strcmp(argv[0], "y"))
-		fprintf(stderr, "%s:%d: %s\n", current_file->name, yylineno,
-			argv[1]);
-
-	return xstrdup("");
-}
-
 static const struct function function_table[] = {
 
 	{ "error-if", 2, 2, do_error_if },
-	{ "filename", 0, 0, do_filename },
-	{ "info", 1, 1, do_info },
-	{ "lineno", 0, 0, do_lineno },
 	{ "shell", 1, 1, do_shell },
-	{ "warning-if", 2, 2, do_warning_if },
 };
 
 #define FUNCTION_MAX_ARGS 16

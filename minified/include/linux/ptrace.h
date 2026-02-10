@@ -38,11 +38,6 @@
 
 
 /* ptrace_event_enabled, ptrace_event stubbed - ptrace is always 0 */
-static inline bool ptrace_event_enabled(struct task_struct *task, int event)
-{
-	return false;
-}
-
 static inline void ptrace_event(int event, unsigned long message)
 {
 }

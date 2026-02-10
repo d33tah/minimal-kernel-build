@@ -182,19 +182,6 @@ static inline void tlb_flush_pmd_range(struct mmu_gather *tlb,
 	tlb->cleared_pmds = 1;
 }
 
-static inline void tlb_flush_pud_range(struct mmu_gather *tlb,
-				     unsigned long address, unsigned long size)
-{
-	__tlb_adjust_range(tlb, address, size);
-	tlb->cleared_puds = 1;
-}
-
-static inline void tlb_flush_p4d_range(struct mmu_gather *tlb,
-				     unsigned long address, unsigned long size)
-{
-	__tlb_adjust_range(tlb, address, size);
-	tlb->cleared_p4ds = 1;
-}
 /* __tlb_remove_tlb_entry, tlb_remove_tlb_entry removed - never used */
 
 /* tlb_remove_huge_tlb_entry, tlb_remove_pmd_tlb_entry, tlb_remove_pud_tlb_entry removed - never used */

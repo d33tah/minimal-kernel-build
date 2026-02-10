@@ -106,13 +106,6 @@ void tty_kref_put(struct tty_struct *tty);
 
 /* extern tty_class removed - never used outside tty_io.c */
 
-static inline struct tty_struct *tty_kref_get(struct tty_struct *tty)
-{
-	if (tty)
-		kref_get(&tty->kref);
-	return tty;
-}
-
 void __init n_tty_init(void);
 
 #endif

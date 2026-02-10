@@ -39,10 +39,6 @@ static inline u64 div_u64(u64 dividend, u32 divisor)
 /* iter_div_u64_rem declaration removed - inline version used */
 
 #ifndef mul_u32_u32
-static inline u64 mul_u32_u32(u32 a, u32 b)
-{
-	return (u64)a * b;
-}
 #endif
 
 #ifndef mul_u64_u32_shr

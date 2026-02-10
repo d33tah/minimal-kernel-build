@@ -11,10 +11,6 @@
 /* linux/errno.h removed - no errno constants used */
 #ifndef __PAGE_TABLE_CHECK_STUBS
 #define __PAGE_TABLE_CHECK_STUBS
-static inline void page_table_check_pte_clear(struct mm_struct *mm,
-					      unsigned long addr, pte_t pte) { }
-static inline void page_table_check_pte_set(struct mm_struct *mm,
-					    unsigned long addr, pte_t *ptep, pte_t pte) { }
 #endif
 
 #if 5 - defined(__PAGETABLE_P4D_FOLDED) - defined(__PAGETABLE_PUD_FOLDED) - \
@@ -50,10 +46,6 @@ static inline unsigned long pmd_index(unsigned long address)
 #endif
 
 #ifndef pud_index
-static inline unsigned long pud_index(unsigned long address)
-{
-	return (address >> PUD_SHIFT) & (PTRS_PER_PUD - 1);
-}
 #define pud_index pud_index
 #endif
 

@@ -108,19 +108,6 @@ extern void __xadd_wrong_size(void)
 
 extern void cmpxchg8b_emu(void);
 
-static inline u64 __cmpxchg64(volatile u64 *ptr, u64 old, u64 new)
-{
-	u64 prev;
-	asm volatile("call cmpxchg8b_emu"
-		     : "=A" (prev)
-		     : "S" (ptr),
-		       "b" ((u32)new),
-		       "c" ((u32)(new >> 32)),
-		       "0" (old)
-		     : "memory");
-	return prev;
-}
-
 #define cmpxchg(ptr, old, new)						\
 	__cmpxchg(ptr, old, new, sizeof(*(ptr)))
 
@@ -311,11 +298,6 @@ static __always_inline bool atomic_try_cmpxchg(atomic_t *v, int *old, int new)
 	return try_cmpxchg(&v->counter, old, new);
 }
 #define atomic_try_cmpxchg atomic_try_cmpxchg
-
-static __always_inline int atomic_xchg(atomic_t *v, int new)
-{
-	return xchg(&v->counter, new);
-}
 
 # include <asm/atomic64_32.h>
 

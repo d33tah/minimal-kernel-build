@@ -263,8 +263,6 @@ static __always_inline int PageHead(struct page *page)
 }
 
 __SETPAGEFLAG(Head, head, PF_ANY)
-__CLEARPAGEFLAG(Head, head, PF_ANY)
-CLEARPAGEFLAG(Head, head, PF_ANY)
 
 /* set_compound_head inlined into page_alloc.c */
 

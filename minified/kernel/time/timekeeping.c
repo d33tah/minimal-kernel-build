@@ -134,7 +134,7 @@ ktime_t ktime_get(void)
 	/* WARN_ON(timekeeping_suspended) removed - never suspended */
 
 	do {
-		seq = read_seqcount_begin(&tk_core.seq);
+		seq = raw_read_seqcount_begin(&tk_core.seq);
 		base = tk->tkr_mono.base;
 		/* timekeeping_get_ns, timekeeping_get_delta, timekeeping_delta_to_ns inlined */
 		{

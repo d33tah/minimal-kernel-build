@@ -312,7 +312,7 @@ static int set_root(struct nameidata *nd)
 		unsigned seq;
 
 		do {
-			seq = read_seqcount_begin(&fs->seq);
+			seq = raw_read_seqcount_begin(&fs->seq);
 			nd->root = fs->root;
 			nd->root_seq =
 				__read_seqcount_begin(&nd->root.dentry->d_seq);
@@ -373,7 +373,7 @@ static inline int handle_mounts(struct nameidata *nd, struct dentry *dentry,
 						rcu_dentry = path->dentry =
 							mounted->mnt.mnt_root;
 						nd->state |= ND_JUMPED;
-						*seqp = read_seqcount_begin(
+						*seqp = raw_read_seqcount_begin(
 							&rcu_dentry->d_seq);
 						*inode = rcu_dentry->d_inode;
 						flags = rcu_dentry->d_flags;
@@ -508,7 +508,7 @@ static const char *handle_dots(struct nameidata *nd, int type)
 				struct dentry *old = nd->path.dentry;
 				parent = old->d_parent;
 				inode = parent->d_inode;
-				seq = read_seqcount_begin(&parent->d_seq);
+				seq = raw_read_seqcount_begin(&parent->d_seq);
 				if (unlikely(read_seqcount_retry(&old->d_seq,
 								 nd->seq)))
 					parent = ERR_PTR(-ECHILD);

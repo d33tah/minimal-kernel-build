@@ -177,7 +177,7 @@ static void vgacon_init(struct vc_data *c, int init)
 
 	c->vc_can_do_color = vga_can_do_color;
 	/* vc_scan_lines assignment removed - field removed */
-	c->vc_font.height = c->vc_cell_height = vga_video_font_height;
+	c->vc_cell_height = vga_video_font_height;
 
 	if (init) {
 		c->vc_cols = vga_video_num_columns;
@@ -191,9 +191,7 @@ static void vgacon_init(struct vc_data *c, int init)
 	if (c->vc_uni_pagedir_loc != &vgacon_uni_pagedir)
 		c->vc_uni_pagedir_loc = &vgacon_uni_pagedir;
 	/* vgacon_refcount inc removed */
-	if (global_cursor_default == -1)
-		global_cursor_default =
-			!(screen_info.flags & VIDEO_FLAGS_NOCURSOR);
+	/* global_cursor_default removed - vc_deccm field removed */
 }
 
 static void vgacon_deinit(struct vc_data *c)

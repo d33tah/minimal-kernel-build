@@ -67,10 +67,6 @@ static void reset_terminal(struct vc_data *vc, int do_clear);
 /* set_cursor, hide_cursor forward decls removed - now trivial stubs defined above */
 
 static int printable;
-int default_utf8 = true;
-int global_cursor_default = -1;
-static int cur_default = CUR_UNDERLINE;
-/* console_blanked removed - never assigned, always 0 */
 
 int fg_console;
 /* last_console removed - never read or written */
@@ -91,23 +87,6 @@ static inline bool con_should_update(const struct vc_data *vc)
 	/* console_blanked check removed - never assigned, always 0 */
 	return con_is_visible(vc);
 }
-
-#ifdef NO_VC_UNI_SCREEN
-
-#define get_vc_uniscr(vc) NULL
-#else
-#define get_vc_uniscr(vc) vc->vc_uni_screen
-#endif
-
-/* VC_UNI_SCREEN_DEBUG removed - never used */
-
-typedef uint32_t char32_t;
-
-struct uni_screen {
-	char32_t *lines[0];
-};
-
-/* Removed: vc_uniscr_clear_line, vc_uniscr_clear_lines, vc_uniscr_scroll - empty stubs */
 
 static void con_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
 		       enum con_scroll dir, unsigned int nr)
@@ -218,10 +197,8 @@ static void visual_init(struct vc_data *vc, int num, int init)
 	vc->vc_display_fg = &master_display_fg;
 	vc->vc_uni_pagedir_loc = &vc->vc_uni_pagedir;
 	vc->vc_uni_pagedir = NULL;
-	vc->vc_hi_font_mask = 0;
 	vc->vc_complement_mask = 0;
 	vc->vc_can_do_color = 0;
-	/* vc->vc_cur_blink_ms removed - field removed */
 	vc->vc_sw->con_init(vc, init);
 	if (!vc->vc_complement_mask)
 		vc->vc_complement_mask = vc->vc_can_do_color ? 0x7700 : 0x0800;
@@ -310,53 +287,18 @@ static void csi_J(struct vc_data *vc, int vpar)
 	vc->vc_need_wrap = 0;
 }
 
-/* save_cur inlined into reset_terminal */
-
-/* ESC state enum - only ESnormal used, escape sequence handling removed */
-enum { ESnormal };
-
 static void reset_terminal(struct vc_data *vc, int do_clear)
 {
 	vc->vc_top = 0;
 	vc->vc_bottom = vc->vc_rows;
-	vc->vc_state = ESnormal;
-	/* vc_priv assignment removed - field removed (was write-only) */
-	vc->vc_translate = set_translate(LAT1_MAP, vc);
-	vc->state.Gx_charset[0] = LAT1_MAP;
-	vc->state.Gx_charset[1] = GRAF_MAP;
-	vc->state.charset = 0;
+	vc->vc_state = 0;
 	vc->vc_need_wrap = 0;
-	/* vc->vc_report_mouse = 0 removed - field removed */
-	vc->vc_utf = default_utf8;
-	/* vc_utf_count assignment removed - field removed */
-
-	vc->vc_disp_ctrl = 0;
-	/* vc_toggle_meta assignment removed - field removed */
-
-	vc->vc_decscnm = 0;
-	/* vc_decom assignment removed - field removed */
-	vc->vc_decawm = 1;
-	vc->vc_deccm = global_cursor_default;
-	/* vc_decim assignment removed - field removed */
-	/* vt_reset_keyboard call removed - empty stub */
-	vc->vc_cursor_type = cur_default;
 	vc->vc_complement_mask = vc->vc_s_complement_mask;
 
-	/* Inlined default_attr */
-	vc->state.intensity = VCI_NORMAL;
-	vc->state.italic = false;
-	vc->state.underline = false;
-	vc->state.reverse = false;
-	vc->state.blink = false;
 	vc->state.color = vc->vc_def_color;
 	update_attr(vc);
 
-	/* vc_tab_stop initialization removed - field removed (tab handling unused) */
-
-	/* vc_bell_pitch, vc_bell_duration, vc_cur_blink_ms removed - fields removed */
-
 	gotoxy(vc, 0, 0);
-	memcpy(&vc->saved_state, &vc->state, sizeof(vc->state));
 	if (do_clear)
 		csi_J(vc, 2);
 }
@@ -413,8 +355,6 @@ static struct console vt_console_driver = {
    all removed - only referenced from dead con_ops struct */
 
 static int default_color = 7;
-static int default_italic_color = 2;
-static int default_underline_color = 3;
 
 static void vc_init(struct vc_data *vc, unsigned int rows, unsigned int cols,
 		    int do_clear)
@@ -426,16 +366,8 @@ static void vc_init(struct vc_data *vc, unsigned int rows, unsigned int cols,
 
 	set_origin(vc);
 	vc->vc_pos = vc->vc_origin;
-	/* reset_vc inlined from vt_ioctl.c */
 	vc->vc_mode = KD_TEXT;
-	reset_palette(vc);
-	/* palette loop replaced with memset - arrays were all zeros */
-	memset(vc->vc_palette, 0, sizeof(vc->vc_palette));
 	vc->vc_def_color = default_color;
-	vc->vc_ulcolor = default_underline_color;
-	vc->vc_itcolor = default_italic_color;
-	vc->vc_halfcolor = 0x08;
-	/* init_waitqueue_head(&vc->paste_wait) removed - field removed */
 	reset_terminal(vc, do_clear);
 }
 
@@ -542,14 +474,8 @@ bool con_is_visible(const struct vc_data *vc)
 
 #endif
 
-/* do_unblank_screen, unblank_screen, blank_screen_t removed - never called */
-/* set_palette stub inlined into reset_palette */
-
 void reset_palette(struct vc_data *vc)
 {
-	/* Simplified: default_red/grn/blu arrays were all zeros */
-	memset(vc->vc_palette, 0, sizeof(vc->vc_palette));
-	/* set_palette was a no-op stub - inlined away */
 }
 
 void vc_scrolldelta_helper(struct vc_data *c, int lines,

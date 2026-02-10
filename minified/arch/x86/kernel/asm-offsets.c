@@ -8,6 +8,7 @@
 /* suspend.h removed - only needed for pbe offsets */
 #include <linux/kbuild.h>
 #include <asm/processor.h>
+#include <asm/ptrace.h>
 #include <asm/thread_info.h>
 #include <asm/sigframe.h>
 #include <asm/bootparam.h>

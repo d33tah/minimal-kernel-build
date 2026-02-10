@@ -8,7 +8,6 @@
 #include <asm/mmu_context.h>
 #include <asm/nospec-branch.h>
 #include <asm/cache.h>
-#include <asm/cacheflush.h>
 #include <asm/apic.h>
 /* asm/perf_event.h removed - no perf symbols used */
 

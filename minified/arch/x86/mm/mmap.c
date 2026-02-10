@@ -4,7 +4,6 @@
 #include <linux/limits.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/mm.h>
-#include <linux/compat.h>
 #include <asm/elf.h>
 #include <asm/io.h>
 

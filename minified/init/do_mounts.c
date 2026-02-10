@@ -28,7 +28,6 @@ extern dev_t ROOT_DEV;
 #include <linux/fs_struct.h>
 #include <linux/slab.h>
 #include <linux/ramfs.h>
-#include <linux/shmem_fs.h>
 #include <linux/major.h>
 #include <linux/blkdev.h>
 #include <linux/init_syscalls.h>

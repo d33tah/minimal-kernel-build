@@ -13,7 +13,6 @@
 #include <linux/uio.h>
 /* error-injection.h removed - unused */
 #include <linux/hash.h>
-#include <linux/writeback.h>
 #include <linux/backing-dev.h>
 #include <linux/pagevec.h>
 /* cpuset.h removed - unused */

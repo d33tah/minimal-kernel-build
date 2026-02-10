@@ -1,7 +1,6 @@
 #include <linux/init.h>
 #include <linux/ioport.h>
 /* linux/export.h removed - no EXPORT_SYMBOL */
-#include <linux/pci.h>
 
 /* asm/acpi.h removed - unused */
 #include <asm/bios_ebda.h>

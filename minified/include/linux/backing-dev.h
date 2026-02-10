@@ -3,7 +3,6 @@
 /* linux/kernel.h removed - no kernel.h macros used */
 #include <linux/fs.h>
 #include <linux/device.h>
-#include <linux/writeback.h>
 #include <linux/backing-dev-defs.h>
 /* bdi_put, bdi_unregister removed - no callers */
 void wb_workfn(struct work_struct *work);

@@ -11,6 +11,7 @@
 #include <linux/delay.h>
 #include <linux/ioport.h>
 #include <linux/init.h>
+#include <linux/file.h>
 #include <linux/initrd.h>
 #include <linux/memblock.h>
 
@@ -45,7 +46,6 @@ extern void sched_init(void);
 #include <linux/idr.h>
 /* dbg_late_init, kgdb_free_init_mem, kprobe_free_init_mem removed - empty stubs */
 /* linux/async.h removed - async_synchronize_full is stubbed */
-#include <linux/shmem_fs.h>
 #include <linux/slab.h>
 /* linux/perf_event.h removed - no perf symbols used */
 
@@ -70,7 +70,6 @@ extern void sched_init(void);
 extern void check_bugs(void);
 #include <asm/setup.h>
 #include <asm/sections.h>
-#include <asm/cacheflush.h>
 
 static int kernel_init(void *);
 

@@ -22,7 +22,6 @@ unsigned long lcm(unsigned long a, unsigned long b) __attribute_const__;
 #include <linux/sched/mm.h>
 /* linux/memcontrol.h removed - memcg hooks are empty stubs */
 
-#include <asm/cacheflush.h>
 #include <asm/sections.h>
 #include <asm/tlbflush.h>
 

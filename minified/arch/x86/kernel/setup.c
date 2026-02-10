@@ -1,12 +1,12 @@
 /* sadbg debug function removed */
 #include <linux/console.h>
+#include <asm/sections.h>
 /* efi_enabled removed - never called */
 #include <linux/screen_info.h>
 
 #include <linux/initrd.h>
 #include <linux/memblock.h>
 /* panic_notifier_list extern removed - never registered into */
-#include <linux/pci.h>
 /* Inlined from root_dev.h */
 #include <linux/major.h>
 #include <linux/types.h>

@@ -15,7 +15,11 @@
 #include <linux/fs.h>
 #include <linux/personality.h>
 #include <linux/security.h>
-#include <linux/shmem_fs.h>
+/* shmem_fs.h inlined */
+extern unsigned long shmem_get_unmapped_area(struct file *, unsigned long addr,
+					     unsigned long len,
+					     unsigned long pgoff,
+					     unsigned long flags);
 #include <linux/rmap.h>
 /* linux/mmu_notifier.h removed - mmu_notifier_release stubbed out */
 #include <linux/mmdebug.h>
@@ -25,7 +29,6 @@
 #include <linux/sched/mm.h>
 
 #include <linux/uaccess.h>
-#include <asm/cacheflush.h>
 #include <asm/tlb.h>
 #include <asm/mmu_context.h>
 

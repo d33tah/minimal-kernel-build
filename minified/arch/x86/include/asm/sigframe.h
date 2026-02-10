@@ -12,7 +12,6 @@ struct ucontext {
 	struct sigcontext uc_mcontext;
 	sigset_t	  uc_sigmask;
 };
-#include <linux/compat.h>
 
 #define sigframe_ia32		sigframe
 #define rt_sigframe_ia32	rt_sigframe

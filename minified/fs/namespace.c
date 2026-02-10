@@ -17,7 +17,8 @@ extern void put_mnt_ns(struct mnt_namespace *ns);
 #include <linux/sched/task.h>
 #include <uapi/linux/mount.h>
 #include <linux/fs_context.h>
-#include <linux/shmem_fs.h>
+/* shmem_fs.h inlined */
+extern void shmem_init(void);
 #include <linux/mnt_idmapping.h>
 
 /* --- 2026-01-26 01:10 --- Inlined from pnode.h */

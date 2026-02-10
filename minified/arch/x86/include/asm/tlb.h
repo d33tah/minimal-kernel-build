@@ -6,7 +6,6 @@
 #include <linux/swap.h>
 #include <linux/pagemap.h>
 #include <asm/tlbflush.h>
-#include <asm/cacheflush.h>
 
 /* nmi_uaccess_okay macro removed - no callers */
 

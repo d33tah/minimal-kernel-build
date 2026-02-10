@@ -2,7 +2,6 @@
 // Original: ~396 LOC, current: ~22 LOC
 // Most functions removed since signals/sigframes are not used in this minimal build
 
-#include <linux/compat.h>
 #include <linux/cpu.h>
 #include <linux/pagemap.h>
 

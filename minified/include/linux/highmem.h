@@ -4,7 +4,9 @@
 #include <linux/fs.h>
 #include <linux/kernel.h>
 #include <linux/bug.h>
-#include <asm/cacheflush.h>
+/* asm/cacheflush.h inlined - flush_dcache_page is empty on x86 */
+struct page;
+static inline void flush_dcache_page(struct page *page) { }
 struct folio;
 /* flush_dcache_folio, ARCH_IMPLEMENTS_FLUSH_DCACHE_FOLIO removed - unused */
 #include <linux/mm.h>

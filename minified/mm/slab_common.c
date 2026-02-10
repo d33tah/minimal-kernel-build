@@ -10,7 +10,6 @@
 #include <linux/uaccess.h>
 /* seq_file.h removed - header is empty */
 /* proc_fs.h removed - empty header */
-#include <asm/cacheflush.h>
 #include <asm/tlbflush.h>
 #include <asm/page.h>
 #include <linux/memcontrol.h>

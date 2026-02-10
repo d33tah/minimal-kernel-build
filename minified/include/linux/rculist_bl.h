@@ -94,13 +94,6 @@ static inline bool hlist_bl_is_locked(struct hlist_bl_head *b)
 	return bit_spin_is_locked(0, (unsigned long *)b);
 }
 
-#define hlist_bl_for_each_entry(tpos, pos, head, member)		\
-	for (pos = hlist_bl_first(head);				\
-	     pos &&							\
-		({ tpos = hlist_bl_entry(pos, typeof(*tpos), member); 1;}); \
-	     pos = pos->next)
-
-/* hlist_bl_for_each_entry_safe removed - unused */
 
 
 /* RCU-specific functions */

@@ -7,8 +7,6 @@
 #include <linux/preempt.h>
 #include <linux/bottom_half.h>
 
-#define USHORT_CMP_GE(a, b)	(USHRT_MAX / 2 >= (unsigned short)((a) - (b)))
-#define USHORT_CMP_LT(a, b)	(USHRT_MAX / 2 < (unsigned short)((a) - (b)))
 
 void call_rcu(struct rcu_head *head, rcu_callback_t func);
 /* synchronize_rcu removed - empty stub, all call sites removed */
@@ -93,12 +91,6 @@ static inline int rcu_read_lock_any_held(void)
 #define rcu_check_sparse(p, space)
 #endif  
 
-#define __rcu_access_pointer(p, local, space) \
-({ \
-	typeof(*p) *local = (typeof(*p) *__force)READ_ONCE(p); \
-	rcu_check_sparse(p, space); \
-	((typeof(*p) __force __kernel *)(local)); \
-})
 #define __rcu_dereference_check(p, local, c, space) \
 ({ \
 	  \
@@ -134,8 +126,6 @@ do {									      \
 		smp_store_release(&p, RCU_INITIALIZER((typeof(p))_r_a_p__v)); \
 } while (0)
 
-
-#define rcu_access_pointer(p) __rcu_access_pointer((p), __UNIQUE_ID(rcu), __rcu)
 
 #define rcu_dereference_check(p, c) \
 	__rcu_dereference_check((p), __UNIQUE_ID(rcu), \

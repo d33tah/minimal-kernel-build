@@ -194,32 +194,6 @@ static inline void tlb_flush_pmd_range(struct mmu_gather *tlb,
 	} while (0)
 #endif
 
-#ifndef pmd_free_tlb
-#define pmd_free_tlb(tlb, pmdp, address)			\
-	do {							\
-		tlb_flush_pud_range(tlb, address, PAGE_SIZE);	\
-		tlb->freed_tables = 1;				\
-		__pmd_free_tlb(tlb, pmdp, address);		\
-	} while (0)
-#endif
-
-#ifndef pud_free_tlb
-#define pud_free_tlb(tlb, pudp, address)			\
-	do {							\
-		tlb_flush_p4d_range(tlb, address, PAGE_SIZE);	\
-		tlb->freed_tables = 1;				\
-		__pud_free_tlb(tlb, pudp, address);		\
-	} while (0)
-#endif
-
-#ifndef p4d_free_tlb
-#define p4d_free_tlb(tlb, pudp, address)			\
-	do {							\
-		__tlb_adjust_range(tlb, address, PAGE_SIZE);	\
-		tlb->freed_tables = 1;				\
-		__p4d_free_tlb(tlb, pudp, address);		\
-	} while (0)
-#endif
 
 /* pte_needs_flush, huge_pmd_needs_flush removed - never called */
 

@@ -27,7 +27,7 @@ struct static_key {
 
 static __always_inline int static_key_count(struct static_key *key)
 {
-	return arch_atomic_read(&key->enabled);
+	return atomic_read(&key->enabled);
 }
 
 static __always_inline void jump_label_init(void)

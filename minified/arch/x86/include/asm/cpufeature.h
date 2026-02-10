@@ -41,7 +41,7 @@ enum cpuid_leafs
 #define x86_cap_flag x86_cap_flag_num
 
 #define test_cpu_cap(c, bit)						\
-	 arch_test_bit(bit, (unsigned long *)((c)->x86_capability))
+	 test_bit(bit, (unsigned long *)((c)->x86_capability))
 
  
 #define CHECK_BIT_IN_MASK_WORD(maskname, word, bit)	\

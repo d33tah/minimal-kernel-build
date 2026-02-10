@@ -3,9 +3,7 @@
 
 #include <linux/compiler.h>
 #include <linux/types.h>
- 
 
- 
 
 typedef struct {
 	s64 __aligned(8) counter;
@@ -41,8 +39,7 @@ ATOMIC64_DECL(inc_return);
 #undef __ATOMIC64_DECL
 #undef ATOMIC64_EXPORT
 
- 
-static inline void arch_atomic64_set(atomic64_t *v, s64 i)
+static inline void atomic64_set(atomic64_t *v, s64 i)
 {
 	unsigned high = (unsigned)(i >> 32);
 	unsigned low = (unsigned)i;
@@ -51,38 +48,30 @@ static inline void arch_atomic64_set(atomic64_t *v, s64 i)
 			     : "eax", "edx", "memory");
 }
 
- 
-static inline s64 arch_atomic64_read(const atomic64_t *v)
+static inline s64 atomic64_read(const atomic64_t *v)
 {
 	s64 r;
 	alternative_atomic64(read, "=&A" (r), "c" (v) : "memory");
 	return r;
 }
 
- 
-static inline s64 arch_atomic64_add_return(s64 i, atomic64_t *v)
+static inline s64 atomic64_add_return(s64 i, atomic64_t *v)
 {
 	alternative_atomic64(add_return,
 			     ASM_OUTPUT2("+A" (i), "+c" (v)),
 			     ASM_NO_INPUT_CLOBBER("memory"));
 	return i;
 }
-#define arch_atomic64_add_return arch_atomic64_add_return
 
-static inline s64 arch_atomic64_inc_return(atomic64_t *v)
+static inline s64 atomic64_inc_return(atomic64_t *v)
 {
 	s64 a;
 	alternative_atomic64(inc_return, "=&A" (a),
 			     "S" (v) : "memory", "ecx");
 	return a;
 }
-#define arch_atomic64_inc_return arch_atomic64_inc_return
 
 #undef alternative_atomic64
 #undef __alternative_atomic64
-
-/* Removed unused arch_atomic64_* functions: cmpxchg, xchg, sub_return,
- * dec_return, add, sub, inc, dec, add_unless, inc_not_zero, dec_if_positive,
- * and, fetch_and, or, fetch_or, xor, fetch_xor, fetch_add (~170 LOC) */
 
 #endif

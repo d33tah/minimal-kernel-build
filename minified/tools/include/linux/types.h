@@ -23,9 +23,7 @@ typedef enum {
 	__GFP_HIGH
 } gfp_t;
 
- 
-typedef uint64_t u64;
-typedef int64_t s64;
+/* u64/s64 provided by asm/types.h as __u64/__s64 */
 
 typedef __u32 u32;
 typedef __s32 s32;

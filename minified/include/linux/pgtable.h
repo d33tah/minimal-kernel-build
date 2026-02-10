@@ -167,7 +167,6 @@ static inline int pte_same(pte_t pte_a, pte_t pte_b)
 /* pgd_offset_gate removed - never used */
 
 #ifndef __HAVE_ARCH_MOVE_PTE
-#define move_pte(pte, prot, old_addr, new_addr)	(pte)
 #endif
 
 #ifndef pte_accessible

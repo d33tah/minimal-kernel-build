@@ -367,7 +367,6 @@ extern void start_thread(struct pt_regs *regs, unsigned long new_ip,
 #define __TASK_UNMAPPED_BASE(task_size)	(PAGE_ALIGN(task_size / 3))
 #define TASK_UNMAPPED_BASE		__TASK_UNMAPPED_BASE(TASK_SIZE_LOW)
 
-#define KSTK_EIP(task)		(task_pt_regs(task)->ip)
 
 DECLARE_PER_CPU(u64, msr_misc_features_shadow);
 

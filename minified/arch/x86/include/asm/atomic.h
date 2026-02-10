@@ -102,9 +102,6 @@ extern void __xadd_wrong_size(void)
 #define __cmpxchg(ptr, old, new, size)					\
 	__raw_cmpxchg((ptr), (old), (new), (size), LOCK_PREFIX)
 
-#define cmpxchg64(ptr, o, n)						\
-	((__typeof__(*(ptr)))__cmpxchg64((ptr), (unsigned long long)(o), \
-					 (unsigned long long)(n)))
 
 extern void cmpxchg8b_emu(void);
 

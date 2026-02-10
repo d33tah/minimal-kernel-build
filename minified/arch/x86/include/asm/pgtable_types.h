@@ -238,7 +238,6 @@ static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
 typedef struct { p4d_t p4d; } pud_t;
 
 #define PUD_SHIFT	P4D_SHIFT
-#define PTRS_PER_PUD	1
 #define PUD_SIZE  	(1UL << PUD_SHIFT)
 #define PUD_MASK  	(~(PUD_SIZE-1))
 

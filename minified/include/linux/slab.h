@@ -91,7 +91,6 @@ static inline void kfree(const void *objp) {}
 #endif
 
 
-#define KMALLOC_MAX_SIZE	(1UL << KMALLOC_SHIFT_MAX)
 #define KMALLOC_MAX_CACHE_SIZE	(1UL << KMALLOC_SHIFT_HIGH)
 
 #ifndef KMALLOC_MIN_SIZE

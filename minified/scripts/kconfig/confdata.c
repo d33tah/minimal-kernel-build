@@ -15,7 +15,7 @@
 
 #include "lkc.h"
 
-/* is_present, is_dir, is_same, make_parent_dir, conf_touch_dep removed - not needed for minimal build */
+/* is_present, is_dir, is_same, conf_touch_dep removed - not needed for minimal build */
 
 static int make_parent_dir(const char *path)
 {
@@ -68,32 +68,23 @@ static void conf_warning(const char *fmt, ...)
 	conf_warnings++;
 }
 
-static void conf_default_message_callback(const char *s)
-{
-	printf("#\n# ");
-	printf("%s", s);
-	printf("\n#\n");
-}
-
-static void (*conf_message_callback)(const char *s) =
-	conf_default_message_callback;
+static bool conf_messages_enabled = true;
 void conf_set_message_callback(void (*fn)(const char *s))
 {
-	conf_message_callback = fn;
+	conf_messages_enabled = (fn != NULL);
 }
 
 static void conf_message(const char *fmt, ...)
 {
 	va_list ap;
-	char buf[4096];
 
-	if (!conf_message_callback)
+	if (!conf_messages_enabled)
 		return;
 
 	va_start(ap, fmt);
-
-	vsnprintf(buf, sizeof(buf), fmt, ap);
-	conf_message_callback(buf);
+	printf("#\n# ");
+	vprintf(fmt, ap);
+	printf("\n#\n");
 	va_end(ap);
 }
 

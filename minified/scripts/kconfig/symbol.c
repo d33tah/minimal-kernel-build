@@ -47,24 +47,7 @@ enum symbol_type sym_get_type(struct symbol *sym)
 	return type;
 }
 
-const char *sym_type_name(enum symbol_type type)
-{
-	switch (type) {
-	case S_BOOLEAN:
-		return "bool";
-	case S_TRISTATE:
-		return "tristate";
-	case S_INT:
-		return "integer";
-	case S_HEX:
-		return "hex";
-	case S_STRING:
-		return "string";
-	case S_UNKNOWN:
-		return "unknown";
-	}
-	return "???";
-}
+/* sym_type_name removed - only caller was removed menu_warn in menu_set_type */
 
 struct property *sym_get_choice_prop(struct symbol *sym)
 {
@@ -116,39 +99,7 @@ static long long sym_get_range_val(struct symbol *sym, int base)
 	return strtoll(sym->curr.val, NULL, base);
 }
 
-static void sym_validate_range(struct symbol *sym)
-{
-	struct property *prop;
-	int base;
-	long long val, val2;
-	char str[64];
-
-	switch (sym->type) {
-	case S_INT:
-		base = 10;
-		break;
-	case S_HEX:
-		base = 16;
-		break;
-	default:
-		return;
-	}
-	prop = sym_get_range_prop(sym);
-	if (!prop)
-		return;
-	val = strtoll(sym->curr.val, NULL, base);
-	val2 = sym_get_range_val(prop->expr->left.sym, base);
-	if (val >= val2) {
-		val2 = sym_get_range_val(prop->expr->right.sym, base);
-		if (val <= val2)
-			return;
-	}
-	if (sym->type == S_INT)
-		sprintf(str, "%lld", val2);
-	else
-		sprintf(str, "0x%llx", val2);
-	sym->curr.val = xstrdup(str);
-}
+/* sym_validate_range removed - INT/HEX range clamping not needed for allnoconfig */
 
 static void sym_set_changed(struct symbol *sym)
 {
@@ -276,19 +227,12 @@ static struct symbol *sym_calc_choice(struct symbol *sym)
 	def_sym = sym_choice_default(sym);
 
 	if (def_sym == NULL)
-
 		sym->curr.tri = no;
 
 	return def_sym;
 }
 
-static void sym_warn_unmet_dep(struct symbol *sym)
-{
-	fprintf(stderr,
-		"\nWARNING: unmet direct dependencies detected for %s\n"
-		"  Depends on [%c]\n",
-		sym->name, sym->dir_dep.tri == mod ? 'm' : 'n');
-}
+/* sym_warn_unmet_dep removed - warning not needed for allnoconfig */
 
 void sym_calc_value(struct symbol *sym)
 {
@@ -374,8 +318,6 @@ void sym_calc_value(struct symbol *sym)
 				}
 			}
 calc_newval:
-			if (sym->dir_dep.tri < sym->rev_dep.tri)
-				sym_warn_unmet_dep(sym);
 			newval.tri = EXPR_OR(newval.tri, sym->rev_dep.tri);
 		}
 		if (newval.tri == mod && sym_get_type(sym) == S_BOOLEAN)
@@ -404,7 +346,6 @@ calc_newval:
 	sym->curr = newval;
 	if (sym_is_choice(sym) && newval.tri == yes)
 		sym->curr.val = sym_calc_choice(sym);
-	sym_validate_range(sym);
 
 	if (memcmp(&oldval, &sym->curr, sizeof(oldval))) {
 		sym_set_changed(sym);
@@ -673,4 +614,4 @@ struct symbol *prop_get_symbol(struct property *prop)
 	return NULL;
 }
 
-/* prop_get_type_name removed - only used by removed sym_check_print_recursive */
+/* prop_get_type_name, sym_type_name removed - only used by removed warning/validation code */

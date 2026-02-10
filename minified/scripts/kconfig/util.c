@@ -22,43 +22,7 @@ struct file *file_lookup(const char *name)
 	return file;
 }
 
-struct gstr str_new(void)
-{
-	struct gstr gs;
-	gs.s = xmalloc(sizeof(char) * 64);
-	gs.len = 64;
-	gs.max_width = 0;
-	strcpy(gs.s, "\0");
-	return gs;
-}
-
-void str_append(struct gstr *gs, const char *s)
-{
-	size_t l;
-	if (s) {
-		l = strlen(gs->s) + strlen(s) + 1;
-		if (l > gs->len) {
-			gs->s = xrealloc(gs->s, l);
-			gs->len = l;
-		}
-		strcat(gs->s, s);
-	}
-}
-
-void str_printf(struct gstr *gs, const char *fmt, ...)
-{
-	va_list ap;
-	char s[10000];
-	va_start(ap, fmt);
-	vsnprintf(s, sizeof(s), fmt, ap);
-	str_append(gs, s);
-	va_end(ap);
-}
-
-const char *str_get(struct gstr *gs)
-{
-	return gs->s;
-}
+/* gstr functions (str_new, str_append, str_printf, str_get) removed - never called */
 
 void *xmalloc(size_t size)
 {

@@ -8,7 +8,12 @@
 #include <asm/cpufeature.h>
 #include <linux/atomic.h>
 #include <asm/fixmap.h>
-#include <asm/mpspec.h>
+/* mpspec.h inlined */
+#include <asm/x86_init.h>
+#define MAX_LOCAL_APIC 256
+#define PHYSID_ARRAY_SIZE BITS_TO_LONGS(MAX_LOCAL_APIC)
+struct physid_mask { unsigned long mask[PHYSID_ARRAY_SIZE]; };
+typedef struct physid_mask physid_mask_t;
 #include <asm/msr.h>
 #include <asm/hardirq.h>
 

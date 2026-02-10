@@ -1,5 +1,7 @@
 /* linux/syscalls.h, linux/capability.h removed - unused */
-#include <linux/mnt_namespace.h>
+/* mnt_namespace.h inlined */
+struct mnt_namespace;
+extern void put_mnt_ns(struct mnt_namespace *ns);
 #include <linux/user_namespace.h>
 #include <linux/namei.h>
 /* linux/security.h, linux/cred.h removed - unused */

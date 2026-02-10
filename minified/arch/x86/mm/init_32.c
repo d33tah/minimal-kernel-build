@@ -27,7 +27,6 @@
 #include <asm/fixmap.h>
 #include <asm/e820/api.h>
 #include <asm/apic.h>
-#include <asm/bugs.h>
 #include <asm/tlb.h>
 #include <asm/tlbflush.h>
 /* olpc_dt_build_devicetree removed - empty stub */
@@ -39,7 +38,9 @@
 #include <asm/page_types.h>
 #include <asm/cpu_entry_area.h>
 #include <asm/pgtable_areas.h>
-#include <asm/numa.h>
+/* asm/numa.h inlined */
+#include <linux/nodemask.h>
+#include <asm/topology.h>
 
 #include "mm_internal.h"
 

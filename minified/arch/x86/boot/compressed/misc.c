@@ -1,6 +1,8 @@
 
 #include "misc.h"
-#include "error.h"
+/* error.h inlined */
+void warn(char *m);
+void error(char *m) __noreturn;
 /* --- 2026-01-26 04:10 --- pgtable.h was empty (just guards), removed */
 #include "../string.h"
 #include "../voffset.h"

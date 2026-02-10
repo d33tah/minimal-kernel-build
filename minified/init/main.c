@@ -66,7 +66,9 @@ extern void sched_init(void);
 /* stackdepot.h removed - unused */
 
 /* asm/io.h removed - I/O port functions not used */
-#include <asm/bugs.h>
+/* bugs.h inlined */
+#include <asm/processor.h>
+extern void check_bugs(void);
 #include <asm/setup.h>
 #include <asm/sections.h>
 #include <asm/cacheflush.h>

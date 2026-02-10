@@ -2,7 +2,8 @@
 #include <linux/cpu.h>
 #include <linux/module.h>
 #include <linux/utsname.h>
-#include <asm/bugs.h>
+/* bugs.h inlined */
+extern void check_bugs(void);
 #include <asm/processor.h>
 #include <asm/fpu/api.h>
 #include <asm/msr.h>

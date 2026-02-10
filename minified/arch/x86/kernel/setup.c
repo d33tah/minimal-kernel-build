@@ -32,9 +32,10 @@ extern dev_t ROOT_DEV;
 #include <uapi/linux/mount.h>
 
 #include <asm/apic.h>
-#include <asm/numa.h>
+/* asm/numa.h inlined */
+#include <linux/nodemask.h>
+#include <asm/topology.h>
 #include <asm/bios_ebda.h>
-#include <asm/bugs.h>
 #include <asm/cpu.h>
 #include <asm/e820/api.h>
 #include <asm/tlbflush.h>

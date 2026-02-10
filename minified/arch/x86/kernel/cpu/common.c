@@ -42,9 +42,9 @@ extern void doublefault_init_cpu_tss(void);
 /* hwcap2.h inlined */
 #define HWCAP2_FSGSBASE _BITUL(1)
 #include <linux/numa.h>
-#include <asm/numa.h>
+/* asm/numa.h inlined */
+#include <linux/nodemask.h>
 #include <asm/asm.h>
-#include <asm/bugs.h>
 #include <asm/cpu.h>
 /* mce.h removed - header is empty */
 #include <asm/msr.h>

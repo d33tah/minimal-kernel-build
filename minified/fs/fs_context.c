@@ -8,7 +8,6 @@
 #include <linux/slab.h>
 /* magic.h removed - not used */
 #include <linux/security.h>
-#include <linux/mnt_namespace.h>
 #include <linux/pid_namespace.h>
 #include <linux/user_namespace.h>
 #include <net/net_namespace.h>

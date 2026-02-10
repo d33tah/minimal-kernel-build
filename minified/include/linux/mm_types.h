@@ -3,7 +3,8 @@
 
 #include <linux/mm_types_task.h>
 
-#include <asm/auxvec.h>
+/* auxvec.h inlined - AT_VECTOR_SIZE_ARCH */
+#define AT_VECTOR_SIZE_ARCH 3
 /* AT_EXECFD removed - unused */
 #define AT_PHDR   3
 #define AT_PHENT  4
@@ -44,9 +45,6 @@
 
 #include <asm/mmu.h>
 
-#ifndef AT_VECTOR_SIZE_ARCH
-#define AT_VECTOR_SIZE_ARCH 0
-#endif
 #define AT_VECTOR_SIZE (2*(AT_VECTOR_SIZE_ARCH + AT_VECTOR_SIZE_BASE + 1))
 
 struct address_space;

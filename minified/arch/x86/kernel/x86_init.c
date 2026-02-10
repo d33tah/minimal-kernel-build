@@ -7,7 +7,6 @@
 #include <asm/bios_ebda.h>
 /* paravirt.h removed - header is empty */
 /* asm/pci_x86.h removed - file was empty stub */
-#include <asm/mpspec.h>
 #include <asm/setup.h>
 #include <asm/apic.h>
 #include <asm/e820/api.h>

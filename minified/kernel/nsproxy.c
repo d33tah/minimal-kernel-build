@@ -2,7 +2,9 @@
 #include <linux/slab.h>
 #include <linux/nsproxy.h>
 #include <linux/init_task.h>
-#include <linux/mnt_namespace.h>
+/* mnt_namespace.h inlined */
+struct mnt_namespace;
+extern void put_mnt_ns(struct mnt_namespace *ns);
 #include <linux/utsname.h>
 #include <linux/pid_namespace.h>
 #include <net/net_namespace.h>

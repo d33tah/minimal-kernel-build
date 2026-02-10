@@ -6,7 +6,9 @@
 #include <linux/thread_info.h>
 
 #include <asm/ptrace.h>
-#include <asm/auxvec.h>
+/* auxvec.h inlined */
+#define AT_SYSINFO		32
+#define AT_SYSINFO_EHDR		33
 
 /* elf_greg_t, ELF_NGREG, elf_gregset_t removed - never used */
 

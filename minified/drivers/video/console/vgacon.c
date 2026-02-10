@@ -69,7 +69,6 @@ static unsigned int vga_default_font_height __read_mostly;
 /* vga_512_chars removed - always false, never set */
 static int vga_video_font_height;
 static int vga_scan_lines __read_mostly;
-static unsigned int vga_rolled_over;
 
 /* vga_hardscroll_enabled, vga_hardscroll_user_enable removed - write-only */
 
@@ -194,42 +193,6 @@ static void vgacon_init(struct vc_data *c, int init)
 	/* global_cursor_default removed - vc_deccm field removed */
 }
 
-static void vgacon_deinit(struct vc_data *c)
-{
-	if (con_is_visible(c)) {
-		c->vc_visible_origin = vga_vram_base;
-		vga_set_mem_top(c);
-	}
-	/* vgacon_refcount dec removed */
-	c->vc_uni_pagedir_loc = &c->vc_uni_pagedir;
-}
-
-/* Stub: simple attribute, no fancy colors/styles needed */
-static u8 vgacon_build_attr(struct vc_data *c, u8 color,
-			    enum vc_intensity intensity, bool blink,
-			    bool underline, bool reverse, bool italic)
-{
-	return color;
-}
-
-/* vgacon_set_cursor_size removed - never called (~29 LOC) */
-
-/* Stub: simple cursor positioning, no fancy shapes needed */
-static void vgacon_cursor(struct vc_data *c, int mode)
-{
-	if (c->vc_mode != KD_TEXT)
-		return;
-	/* vgacon_restore_screen inlined */
-	if (c->vc_origin != c->vc_visible_origin) {
-		vc_scrolldelta_helper(c, 0, vga_rolled_over,
-				      (void *)vga_vram_base, vga_vram_size);
-		vga_set_mem_top(c);
-	}
-	write_vga(14, (c->vc_pos - vga_vram_base) / 2);
-}
-
-/* vgacon_doresize inlined into vgacon_switch - single caller */
-
 static int vgacon_switch(struct vc_data *c)
 {
 	int x = c->vc_cols * VGA_FONTWIDTH;
@@ -270,7 +233,6 @@ static int vgacon_set_origin(struct vc_data *c)
 	/* vga_is_gfx check removed - always false */
 	c->vc_origin = c->vc_visible_origin = vga_vram_base;
 	vga_set_mem_top(c);
-	vga_rolled_over = 0;
 	return 1;
 }
 
@@ -298,10 +260,6 @@ static bool vgacon_scroll(struct vc_data *c, unsigned int t, unsigned int b,
 	return false;
 }
 
-/* vgacon_clear removed - con_clear callback never invoked */
-static void vgacon_putc(struct vc_data *vc, int c, int ypos, int xpos)
-{
-}
 static void vgacon_putcs(struct vc_data *vc, const unsigned short *s, int count,
 			 int ypos, int xpos)
 {
@@ -311,17 +269,11 @@ const struct consw vga_con = {
 	.owner = THIS_MODULE,
 	.con_startup = vgacon_startup,
 	.con_init = vgacon_init,
-	.con_deinit = vgacon_deinit,
-	.con_putc = vgacon_putc,
 	.con_putcs = vgacon_putcs,
-	.con_cursor = vgacon_cursor,
 	.con_scroll = vgacon_scroll,
 	.con_switch = vgacon_switch,
-	/* .con_blank, .con_font_set, .con_font_get, .con_resize, .con_set_palette, .con_scrolldelta removed - never invoked */
 	.con_set_origin = vgacon_set_origin,
 	.con_save_screen = vgacon_save_screen,
-	.con_build_attr = vgacon_build_attr,
-	/* .con_invert_region removed - never called through struct */
 };
 
 MODULE_LICENSE("GPL");

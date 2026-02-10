@@ -477,12 +477,3 @@ bool con_is_visible(const struct vc_data *vc)
 void reset_palette(struct vc_data *vc)
 {
 }
-
-void vc_scrolldelta_helper(struct vc_data *c, int lines,
-			   unsigned int rolled_over, void *base,
-			   unsigned int size)
-{
-	/* Stubbed: scrollback not needed for minimal boot */
-	if (!lines)
-		c->vc_visible_origin = c->vc_origin;
-}

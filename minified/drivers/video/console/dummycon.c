@@ -1,20 +1,14 @@
-/* Minimal includes for dummycon */
 #include <linux/console.h>
 #include <linux/vt_kern.h>
 #include <linux/module.h>
 
-/* x86 only - arm version removed */
 #define DUMMY_COLUMNS CONFIG_DUMMY_CONSOLE_COLUMNS
 #define DUMMY_ROWS CONFIG_DUMMY_CONSOLE_ROWS
 
-static void dummycon_putc(struct vc_data *vc, int c, int ypos, int xpos)
-{
-}
 static void dummycon_putcs(struct vc_data *vc, const unsigned short *s,
 			   int count, int ypos, int xpos)
 {
 }
-/* dummycon_blank removed - con_blank callback never invoked */
 
 static const char *dummycon_startup(void)
 {
@@ -29,14 +23,6 @@ static void dummycon_init(struct vc_data *vc, int init)
 		vc->vc_rows = DUMMY_ROWS;
 	} else
 		vc_resize(vc, DUMMY_COLUMNS, DUMMY_ROWS);
-}
-
-static void dummycon_deinit(struct vc_data *vc)
-{
-}
-/* dummycon_clear removed - con_clear callback never invoked */
-static void dummycon_cursor(struct vc_data *vc, int mode)
-{
 }
 
 static bool dummycon_scroll(struct vc_data *vc, unsigned int top,
@@ -55,11 +41,7 @@ const struct consw dummy_con = {
 	.owner = THIS_MODULE,
 	.con_startup = dummycon_startup,
 	.con_init = dummycon_init,
-	.con_deinit = dummycon_deinit,
-	.con_putc = dummycon_putc,
 	.con_putcs = dummycon_putcs,
-	.con_cursor = dummycon_cursor,
 	.con_scroll = dummycon_scroll,
 	.con_switch = dummycon_switch,
-	/* .con_blank removed - callback never invoked */
 };

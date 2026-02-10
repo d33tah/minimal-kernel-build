@@ -192,14 +192,9 @@ enum format_type {
 	FORMAT_TYPE_LONG_LONG,
 	FORMAT_TYPE_ULONG,
 	FORMAT_TYPE_LONG,
-	FORMAT_TYPE_UBYTE,
-	FORMAT_TYPE_BYTE,
-	FORMAT_TYPE_USHORT,
-	FORMAT_TYPE_SHORT,
 	FORMAT_TYPE_UINT,
 	FORMAT_TYPE_INT,
-	FORMAT_TYPE_SIZE_T,
-	FORMAT_TYPE_PTRDIFF
+	FORMAT_TYPE_SIZE_T
 };
 
 struct printf_spec {
@@ -651,14 +646,7 @@ qualifier:
 		spec->type = FORMAT_TYPE_ULONG + (spec->flags & SIGN);
 	} else if (qualifier == 'z') {
 		spec->type = FORMAT_TYPE_SIZE_T;
-	} else if (qualifier == 't') {
-		spec->type = FORMAT_TYPE_PTRDIFF;
-	} else if (qualifier == 'H') {
-		BUILD_BUG_ON(FORMAT_TYPE_UBYTE + SIGN != FORMAT_TYPE_BYTE);
-		spec->type = FORMAT_TYPE_UBYTE + (spec->flags & SIGN);
-	} else if (qualifier == 'h') {
-		BUILD_BUG_ON(FORMAT_TYPE_USHORT + SIGN != FORMAT_TYPE_SHORT);
-		spec->type = FORMAT_TYPE_USHORT + (spec->flags & SIGN);
+		/* FORMAT_TYPE_PTRDIFF, BYTE, SHORT qualifiers removed - unused */
 	} else {
 		BUILD_BUG_ON(FORMAT_TYPE_UINT + SIGN != FORMAT_TYPE_INT);
 		spec->type = FORMAT_TYPE_UINT + (spec->flags & SIGN);
@@ -764,21 +752,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 				else
 					num = va_arg(args, size_t);
 				break;
-			case FORMAT_TYPE_PTRDIFF:
-				num = va_arg(args, ptrdiff_t);
-				break;
-			case FORMAT_TYPE_UBYTE:
-				num = (unsigned char)va_arg(args, int);
-				break;
-			case FORMAT_TYPE_BYTE:
-				num = (signed char)va_arg(args, int);
-				break;
-			case FORMAT_TYPE_USHORT:
-				num = (unsigned short)va_arg(args, int);
-				break;
-			case FORMAT_TYPE_SHORT:
-				num = (short)va_arg(args, int);
-				break;
+			/* FORMAT_TYPE_PTRDIFF, BYTE, SHORT cases removed - unused */
 			case FORMAT_TYPE_INT:
 				num = (int)va_arg(args, int);
 				break;

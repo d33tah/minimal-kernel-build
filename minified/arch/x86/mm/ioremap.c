@@ -14,7 +14,6 @@
 #include <asm/fixmap.h>
 #include <asm/tlbflush.h>
 #include <asm/pgalloc.h>
-#include <asm/memtype.h>
 #include <asm/setup.h>
 
 /* ioremap_desc, __ioremap_collect_map_flags, __ioremap_caller, ioremap, iounmap

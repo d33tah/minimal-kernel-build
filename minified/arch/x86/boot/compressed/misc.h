@@ -25,7 +25,6 @@
 /* early_tdx_detect removed - TDX not needed */
 
 #define BOOT_CTYPE_H
-#include <linux/acpi.h>
 
 #define BOOT_BOOT_H
 #include "../ctype.h"

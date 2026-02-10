@@ -8,7 +8,6 @@
 #include <asm/processor.h>
 #include <asm/cpufeature.h>
 #include <asm/special_insns.h>
-#include <asm/smp.h>
 #include <asm/processor-flags.h>
 
 /* Inlined from asm/invpcid.h */

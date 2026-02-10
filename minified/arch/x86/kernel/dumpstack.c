@@ -14,8 +14,6 @@ int notify_die(enum die_val val, const char *str, struct pt_regs *regs,
 #include <linux/sysfs.h>
 
 #include <asm/cpu_entry_area.h>
-#include <asm/stacktrace.h>
-#include <asm/unwind.h>
 
 /* panic_on_unrecovered_nmi, panic_on_io_nmi removed - never set to non-zero */
 static int die_counter;

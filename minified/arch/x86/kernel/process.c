@@ -1,6 +1,7 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/errno.h>
+#include <linux/ptrace.h>
 #include <linux/kernel.h>
 #include <linux/mm.h>
 #include <linux/smp.h>
@@ -15,7 +16,6 @@
 #include <linux/utsname.h>
 /* boot_init_stack_canary removed - empty stub, never called */
 /* end stackprotector.h */
-#include <linux/acpi.h>
 /* flush_ptrace_hw_breakpoint removed - was empty stub */
 #include <asm/cpu.h>
 #include <asm/apic.h>
@@ -53,7 +53,6 @@ extern void speculation_ctrl_update(unsigned long tif);
 #include <asm/proto.h>
 /* frame.h macros removed - ENCODE_FRAME_POINTER, FRAME_BEGIN, FRAME_END, FRAME_OFFSET not used in this file */
 #include <asm/asm.h>
-#include <asm/unwind.h>
 /* tdx.h removed - header is empty */
 
 __visible DEFINE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw) = {

@@ -5,7 +5,6 @@
 /* linux/pm.h removed - no pm functions used */
 #include <linux/mm.h>
 #include <asm/errno.h>
-#include <linux/acpi.h>
 void sort(void *base, size_t num, size_t size, cmp_func_t cmp_func,
 	  swap_func_t swap_func);
 /* linux/memory_hotplug.h removed - not used */

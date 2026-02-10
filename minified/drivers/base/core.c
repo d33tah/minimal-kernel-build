@@ -13,7 +13,6 @@
 #include <linux/sched/signal.h>
 #include <linux/sched/mm.h>
 #include <linux/sysfs.h>
-#include <linux/dma-mapping.h>
 #include <linux/backing-dev.h>
 
 #include "base.h"

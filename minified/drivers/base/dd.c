@@ -1,7 +1,6 @@
 
 #include <linux/device.h>
 #include <linux/delay.h>
-#include <linux/dma-mapping.h>
 /* linux/module.h removed - unused */
 #include <linux/kthread.h>
 #include <linux/wait.h>

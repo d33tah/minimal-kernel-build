@@ -23,7 +23,6 @@ int notify_die(enum die_val val, const char *str, struct pt_regs *regs,
 #include <linux/hardirq.h>
 #include <linux/atomic.h>
 
-#include <asm/stacktrace.h>
 #include <asm/processor.h>
 #include <asm/debugreg.h>
 #include <asm/realmode.h>

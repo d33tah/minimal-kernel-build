@@ -1,7 +1,5 @@
 /* sadbg debug function removed */
-#include <linux/acpi.h>
 #include <linux/console.h>
-#include <linux/dma-mapping.h>
 /* efi_enabled removed - never called */
 #include <linux/screen_info.h>
 
@@ -40,7 +38,6 @@ extern dev_t ROOT_DEV;
 #include <asm/e820/api.h>
 #include <asm/tlbflush.h>
 /* kasan.h, mce.h removed - KASAN macros never used */
-#include <asm/memtype.h>
 /* mtrr.h removed - header is empty */
 #include <asm/realmode.h>
 /* pci-direct.h inlined - extern declarations removed as never called */
@@ -48,7 +45,6 @@ extern dev_t ROOT_DEV;
 /* prom.h inlined - only asm/setup.h needed for COMMAND_LINE_SIZE */
 #include <asm/setup.h>
 #include <asm/proto.h>
-#include <asm/unwind.h>
 /* asm/vsyscall.h, linux/vmalloc.h removed - not used */
 unsigned long max_low_pfn_mapped;
 unsigned long max_pfn_mapped;

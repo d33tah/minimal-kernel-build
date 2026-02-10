@@ -48,7 +48,6 @@ extern void doublefault_init_cpu_tss(void);
 #include <asm/cpu.h>
 /* mce.h removed - header is empty */
 #include <asm/msr.h>
-#include <asm/memtype.h>
 /* show_ucode_info_early removed - microcode support disabled */
 #include <asm/sigframe.h>
 #include <asm/traps.h>

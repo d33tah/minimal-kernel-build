@@ -13,7 +13,6 @@
 #include <linux/init.h>
 #include <linux/initrd.h>
 #include <linux/memblock.h>
-#include <linux/acpi.h>
 
 /* BOOTCONFIG_MAGIC, BOOTCONFIG_MAGIC_LEN removed - never used */
 #include <linux/console.h>

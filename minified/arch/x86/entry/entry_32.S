@@ -35,7 +35,6 @@
 #include <asm/irqflags.h>
 #include <asm/errno.h>
 #include <asm/segment.h>
-#include <asm/smp.h>
 #include <asm/percpu.h>
 #include <asm/processor-flags.h>
 #include <asm/irq_vectors.h>

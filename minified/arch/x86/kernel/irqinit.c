@@ -9,7 +9,6 @@
 /* linux/kprobes.h removed - not used */
 #include <linux/init.h>
 /* kernel_stat.h removed - empty */
-#include <linux/acpi.h>
 #include <linux/io.h>
 #include <linux/delay.h>
 #include <linux/pgtable.h>

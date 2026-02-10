@@ -5,8 +5,6 @@
 
 #include <linux/compiler_types.h>
 #include <linux/stddef.h>
-static inline int kasan_check_read(const volatile void *p, unsigned int size) { return 1; }
-static inline int kasan_check_write(const volatile void *p, unsigned int size) { return 1; }
 
 #define compiletime_assert_rwonce_type(t)					\
 	compiletime_assert(__native_word(t) || sizeof(t) == sizeof(long long),	\
@@ -49,7 +47,6 @@ unsigned long __read_once_word_nocheck(const void *addr)
 static __no_kasan_or_inline
 unsigned long read_word_at_a_time(const void *addr)
 {
-	kasan_check_read(addr, 1);
 	return *(unsigned long *)addr;
 }
 

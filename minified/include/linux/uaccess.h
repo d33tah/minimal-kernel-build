@@ -3,7 +3,6 @@
 
 #include <linux/types.h>
 #include <linux/stddef.h>
-#include <linux/instrumented.h>
 #include <linux/minmax.h>
 #include <linux/sched.h>
 #include <linux/thread_info.h>

@@ -11,7 +11,6 @@
 /* Inlined from net/checksum.h */
 typedef __u16 __sum16;
 typedef __u32 __wsum;
-#include <linux/instrumented.h>
 
 #define iterate_iovec(i, n, base, len, off, __p, STEP)       \
 	{                                                    \
@@ -67,10 +66,8 @@ typedef __u32 __wsum;
 
 static int copyout(void __user *to, const void *from, size_t n)
 {
-	if (access_ok(to, n)) {
-		instrument_copy_to_user(to, from, n);
+	if (access_ok(to, n))
 		n = raw_copy_to_user(to, from, n);
-	}
 	return n;
 }
 

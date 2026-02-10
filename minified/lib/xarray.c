@@ -10,10 +10,7 @@ static inline bool xa_track_free(const struct xarray *xa)
 	return xa->xa_flags & XA_FLAGS_TRACK_FREE;
 }
 
-static inline bool xa_zero_busy(const struct xarray *xa)
-{
-	return xa->xa_flags & XA_FLAGS_ZERO_BUSY;
-}
+/* xa_zero_busy removed - XA_FLAGS_ZERO_BUSY never set */
 
 static inline void xa_mark_set(struct xarray *xa, xa_mark_t mark)
 {
@@ -121,8 +118,7 @@ void *xas_load(struct xa_state *xas)
 	while (xa_is_node(entry)) {
 		struct xa_node *node = xa_to_node(entry);
 
-		if (xas->xa_shift > node->shift)
-			break;
+		/* xa_shift is always 0 - check removed */
 		entry = xas_descend(xas, node);
 		if (node->shift == 0)
 			break;
@@ -141,7 +137,7 @@ static void xa_node_free(struct xa_node *node)
 	call_rcu(&node->rcu_head, radix_tree_node_rcu_free);
 }
 
-void xas_destroy(struct xa_state *xas)
+static void xas_destroy(struct xa_state *xas)
 {
 	struct xa_node *next, *node = xas->xa_alloc;
 
@@ -169,10 +165,9 @@ bool xas_nomem(struct xa_state *xas, gfp_t gfp)
 	return true;
 }
 
-static void xas_update(struct xa_state *xas, struct xa_node *node)
+/* xas_update: xa_update callback is always NULL in this codebase */
+static inline void xas_update(struct xa_state *xas, struct xa_node *node)
 {
-	if (xas->xa_update)
-		xas->xa_update(node);
 }
 
 static void *xas_alloc(struct xa_state *xas, unsigned int shift)
@@ -264,8 +259,7 @@ static void xas_delete_node(struct xa_state *xas)
 				break;
 			if (!xa_is_node(entry) && node->shift)
 				break;
-			if (xa_is_zero(entry) && xa_zero_busy(xa))
-				entry = NULL;
+			/* xa_zero_busy never set - check removed */
 			xas->xa_node = XAS_BOUNDS;
 
 			RCU_INIT_POINTER(xa->xa_head, entry);
@@ -388,13 +382,11 @@ static void *xas_create(struct xa_state *xas, bool allow_root)
 	void __rcu **slot;
 	struct xa_node *node = xas->xa_node;
 	int shift;
-	unsigned int order = xas->xa_shift;
 
 	if (xas_top(node)) {
 		entry = xa_head_locked(xa);
 		xas->xa_node = NULL;
-		if (!entry && xa_zero_busy(xa))
-			entry = XA_ZERO_ENTRY;
+		/* xa_zero_busy never set - check removed */
 		shift = xas_expand(xas, entry);
 		if (shift < 0)
 			return NULL;
@@ -416,7 +408,7 @@ static void *xas_create(struct xa_state *xas, bool allow_root)
 		slot = &xa->xa_head;
 	}
 
-	while (shift > order) {
+	while (shift > 0) {
 		shift -= XA_CHUNK_SHIFT;
 		if (!entry) {
 			node = xas_alloc(xas, shift);
@@ -437,14 +429,15 @@ static void *xas_create(struct xa_state *xas, bool allow_root)
 	return entry;
 }
 
+static void xas_init_marks(const struct xa_state *xas);
+
 void *xas_store(struct xa_state *xas, void *entry)
 {
 	struct xa_node *node;
 	void __rcu **slot = &xas->xa->xa_head;
-	unsigned int offset, max;
 	int count = 0;
 	int values = 0;
-	void *first, *next;
+	void *first;
 	bool value = xa_is_value(entry);
 
 	if (entry) {
@@ -457,58 +450,22 @@ void *xas_store(struct xa_state *xas, void *entry)
 	if (xas_invalid(xas))
 		return first;
 	node = xas->xa_node;
-	if (node && (xas->xa_shift < node->shift))
-		xas->xa_sibs = 0;
-	if ((first == entry) && !xas->xa_sibs)
+	/* xa_sibs is always 0 in this codebase */
+	if (first == entry)
 		return first;
 
-	next = first;
-	offset = xas->xa_offset;
-	max = xas->xa_offset + xas->xa_sibs;
-	if (node) {
-		slot = &node->slots[offset];
-		/* xas_squash_marks inlined */
-		if (xas->xa_sibs) {
-			unsigned int mark = 0;
-			unsigned int limit = xas->xa_offset + xas->xa_sibs + 1;
-			do {
-				unsigned long *marks =
-					xas->xa_node->marks[mark];
-				if (find_next_bit(marks, limit,
-						  xas->xa_offset + 1) == limit)
-					continue;
-				__set_bit(xas->xa_offset, marks);
-				bitmap_clear(marks, xas->xa_offset + 1,
-					     xas->xa_sibs);
-			} while (mark++ != (__force unsigned)XA_MARK_MAX);
-		}
-	}
+	if (node)
+		slot = &node->slots[xas->xa_offset];
 	if (!entry)
 		xas_init_marks(xas);
 
-	for (;;) {
-		rcu_assign_pointer(*slot, entry);
-		if (xa_is_node(next) && (!node || node->shift))
-			xas_free_nodes(xas, xa_to_node(next));
-		if (!node)
-			break;
-		count += !next - !entry;
-		values += !xa_is_value(first) - !value;
-		if (entry) {
-			if (offset == max)
-				break;
-			/* xa_is_sibling always returns false */
-			entry = xa_mk_sibling(xas->xa_offset);
-		} else {
-			if (offset == XA_CHUNK_MASK)
-				break;
-		}
-		next = xa_entry_locked(xas->xa, node, ++offset);
-		/* xa_is_sibling always returns false */
-		if (!entry && (offset > max))
-			break;
-		first = next;
-		slot++;
+	rcu_assign_pointer(*slot, entry);
+	if (xa_is_node(first) && (!node || node->shift))
+		xas_free_nodes(xas, xa_to_node(first));
+
+	if (node) {
+		count = !first - !entry;
+		values = !xa_is_value(first) - !value;
 	}
 
 	/* update_node inlined */
@@ -563,7 +520,7 @@ void xas_clear_mark(const struct xa_state *xas, xa_mark_t mark)
 		xa_mark_clear(xas->xa, mark);
 }
 
-void xas_init_marks(const struct xa_state *xas)
+static void xas_init_marks(const struct xa_state *xas)
 {
 	xa_mark_t mark = 0;
 

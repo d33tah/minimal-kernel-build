@@ -194,10 +194,7 @@ static inline bool xa_is_node(const void *entry)
 	return xa_is_internal(entry) && (unsigned long)entry > 4096;
 }
 
-static inline void *xa_mk_sibling(unsigned int offset)
-{
-	return xa_mk_internal(offset);
-}
+/* xa_mk_sibling, xa_to_sibling, xa_is_sibling removed - unused */
 
 /* xa_to_sibling, xa_is_sibling removed - unused/always false */
 
@@ -313,10 +310,8 @@ void *xas_store(struct xa_state *, void *entry);
 void xas_set_mark(const struct xa_state *, xa_mark_t);
 void xas_clear_mark(const struct xa_state *, xa_mark_t);
 void *xas_find_marked(struct xa_state *, unsigned long max, xa_mark_t);
-void xas_init_marks(const struct xa_state *);
 
 bool xas_nomem(struct xa_state *, gfp_t);
-void xas_destroy(struct xa_state *);
 
 
 /* xa_get_order, xas_split, xas_split_alloc removed - never called */

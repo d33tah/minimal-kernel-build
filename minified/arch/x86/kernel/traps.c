@@ -4,7 +4,9 @@
 
 #include <linux/interrupt.h>
 #include <linux/spinlock.h>
-#include <linux/kprobes.h>
+#ifndef NOKPROBE_SYMBOL
+#define NOKPROBE_SYMBOL(fname) /* kprobes disabled */
+#endif
 #include <linux/uaccess.h>
 #include <asm/kdebug.h>
 int notify_die(enum die_val val, const char *str, struct pt_regs *regs,

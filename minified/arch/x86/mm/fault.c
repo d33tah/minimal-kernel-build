@@ -2,7 +2,9 @@
 #include <linux/sched/task_stack.h>
 #include <linux/extable.h>
 #include <linux/memblock.h>
-#include <linux/kprobes.h>
+#ifndef NOKPROBE_SYMBOL
+#define NOKPROBE_SYMBOL(fname) /* kprobes disabled */
+#endif
 
 #include <linux/uaccess.h>
 #include <linux/mm_types.h>

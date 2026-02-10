@@ -8,7 +8,11 @@
 #include <linux/kernel.h>
 #include <linux/string.h>
 #include <linux/errno.h>
-#include <linux/kd.h>
+/* inlined from linux/kd.h */
+#ifndef KD_TEXT
+#define KD_TEXT 0x00
+#define KD_GRAPHICS 0x01
+#endif
 #include <linux/slab.h>
 /* linux/vmalloc.h removed - no vmalloc functions */
 #include <linux/major.h>

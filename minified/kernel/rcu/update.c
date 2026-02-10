@@ -13,7 +13,9 @@
 #include <linux/kthread.h>
 #include <linux/rcupdate_wait.h>
 #include <linux/sched/isolation.h>
-#include <linux/kprobes.h>
+#ifndef NOKPROBE_SYMBOL
+#define NOKPROBE_SYMBOL(fname) /* kprobes disabled */
+#endif
 /* linux/slab.h removed - no slab functions */
 /* irq_work.h removed - header is now empty */
 

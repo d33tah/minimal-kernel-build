@@ -1,5 +1,7 @@
 /* kallsyms.h removed - only forwarded other includes */
-#include <linux/kprobes.h>
+#ifndef NOKPROBE_SYMBOL
+#define NOKPROBE_SYMBOL(fname) /* kprobes disabled */
+#endif
 #include <linux/uaccess.h>
 #include <linux/utsname.h>
 #include <linux/hardirq.h>

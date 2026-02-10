@@ -2,7 +2,9 @@
 #include <linux/sched/debug.h>
 #include <linux/printk.h>
 #include <asm/kdebug.h>
-#include <linux/kprobes.h> /* for NOKPROBE_SYMBOL */
+#ifndef NOKPROBE_SYMBOL
+#define NOKPROBE_SYMBOL(fname) /* kprobes disabled */
+#endif
 
 /* Merged from lib/debug_locks.c */
 int debug_locks __read_mostly = 1;

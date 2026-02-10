@@ -1,6 +1,8 @@
 
 #include <linux/spinlock.h>
-#include <linux/kprobes.h>
+#ifndef NOKPROBE_SYMBOL
+#define NOKPROBE_SYMBOL(fname) /* kprobes disabled */
+#endif
 #include <linux/sched/debug.h>
 #include <linux/delay.h>
 #include <linux/hardirq.h>

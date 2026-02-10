@@ -20,7 +20,9 @@
 /* linux/io.h removed - no I/O functions */
 #include <linux/syscalls.h>
 
-#include <asm/ldt.h>
+#ifndef LDT_ENTRY_SIZE
+#define LDT_ENTRY_SIZE 8 /* inlined from asm/ldt.h */
+#endif
 #include <asm/processor.h>
 #include <asm/fpu/sched.h>
 #include <asm/desc.h>

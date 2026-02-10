@@ -2,7 +2,9 @@
 #ifndef _ASM_X86_PROTO_H
 #define _ASM_X86_PROTO_H
 
-#include <asm/ldt.h>
+#ifndef LDT_ENTRY_SIZE
+#define LDT_ENTRY_SIZE 8 /* inlined from asm/ldt.h */
+#endif
 
 void entry_INT80_32(void);
 void entry_SYSENTER_32(void);

@@ -3,7 +3,9 @@
 #define _ASM_X86_DESC_H
 
 #include <asm/desc_defs.h>
-#include <asm/ldt.h>
+#ifndef LDT_ENTRY_SIZE
+#define LDT_ENTRY_SIZE 8 /* inlined from asm/ldt.h */
+#endif
 #include <asm/mmu.h>
 #include <asm/fixmap.h>
 #include <asm/irq_vectors.h>

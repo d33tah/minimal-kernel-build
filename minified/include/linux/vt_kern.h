@@ -4,7 +4,11 @@
 #define MIN_NR_CONSOLES 1
 #define MAX_NR_CONSOLES	2
 
-#include <linux/kd.h>
+/* inlined from linux/kd.h */
+#ifndef KD_TEXT
+#define KD_TEXT		0x00
+#define KD_GRAPHICS	0x01
+#endif
 #include <linux/tty.h>
 #include <linux/mutex.h>
 #include <linux/wait.h>

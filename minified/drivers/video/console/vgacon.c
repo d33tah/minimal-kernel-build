@@ -5,7 +5,11 @@
 #include <linux/kernel.h>
 #include <linux/console.h>
 #include <linux/string.h>
-#include <linux/kd.h>
+/* inlined from linux/kd.h */
+#ifndef KD_TEXT
+#define KD_TEXT 0x00
+#define KD_GRAPHICS 0x01
+#endif
 #include <linux/slab.h>
 #include <linux/vt_kern.h>
 #include <linux/sched.h>

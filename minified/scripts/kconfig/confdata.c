@@ -174,60 +174,7 @@ static int conf_set_sym_val(struct symbol *sym, int def, int def_flags, char *p)
 	return 0;
 }
 
-#define LINE_GROWTH 16
-static int add_byte(int c, char **lineptr, size_t slen, size_t *n)
-{
-	char *nline;
-	size_t new_size = slen + 1;
-	if (new_size > *n) {
-		new_size += LINE_GROWTH - 1;
-		new_size *= 2;
-		nline = xrealloc(*lineptr, new_size);
-		if (!nline)
-			return -1;
-
-		*lineptr = nline;
-		*n = new_size;
-	}
-
-	(*lineptr)[slen] = c;
-
-	return 0;
-}
-
-static ssize_t compat_getline(char **lineptr, size_t *n, FILE *stream)
-{
-	char *line = *lineptr;
-	size_t slen = 0;
-
-	for (;;) {
-		int c = getc(stream);
-
-		switch (c) {
-		case '\n':
-			if (add_byte(c, &line, slen, n) < 0)
-				goto e_out;
-			slen++;
-
-		case EOF:
-			if (add_byte('\0', &line, slen, n) < 0)
-				goto e_out;
-			*lineptr = line;
-			if (slen == 0)
-				return -1;
-			return slen;
-		default:
-			if (add_byte(c, &line, slen, n) < 0)
-				goto e_out;
-			slen++;
-		}
-	}
-
-e_out:
-	line[slen - 1] = '\0';
-	*lineptr = line;
-	return -1;
-}
+/* compat_getline/add_byte replaced with standard getline() */
 
 int conf_read_simple(const char *name, int def)
 {
@@ -310,7 +257,7 @@ load:
 		}
 	}
 
-	while (compat_getline(&line, &line_asize, in) != -1) {
+	while (getline(&line, &line_asize, in) != -1) {
 		conf_lineno++;
 		sym = NULL;
 		if (line[0] == '#') {

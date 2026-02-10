@@ -61,7 +61,7 @@ struct dentry {
 	unsigned char d_iname[DNAME_INLINE_LEN];
 
 	struct lockref d_lockref;
-	const struct dentry_operations *d_op;
+	/* d_op field removed - dentry_operations never read */
 	struct super_block *d_sb;
 
 	union {
@@ -84,13 +84,7 @@ enum dentry_d_lock_class
 	DENTRY_D_LOCK_NESTED
 };
 
-struct dentry_operations {
-	int (*d_delete)(const struct dentry *);
-} ____cacheline_aligned;
-
-#define DCACHE_OP_HASH			0x00000001
-#define DCACHE_OP_COMPARE		0x00000002
-#define DCACHE_OP_DELETE		0x00000008
+/* dentry_operations struct, DCACHE_OP_* macros removed - d_op never read */
 
 #define DCACHE_CANT_MOUNT		0x00000100
 #define DCACHE_SHRINK_LIST		0x00000400
@@ -334,10 +328,7 @@ extern void __init files_init(void);
 #define ATTR_ATIME_SET	(1 << 7)
 #define ATTR_MTIME_SET	(1 << 8)
 #define ATTR_FORCE	(1 << 9) 
-#define ATTR_KILL_SUID	(1 << 11)
-#define ATTR_KILL_SGID	(1 << 12)
-/* ATTR_FILE removed - never read */
-#define ATTR_KILL_PRIV	(1 << 14)
+/* ATTR_KILL_SUID, ATTR_KILL_SGID, ATTR_KILL_PRIV removed - unused */
 #define ATTR_TIMES_SET	(1 << 16)
 
 /* WHITEOUT_DEV removed - unused */
@@ -606,8 +597,7 @@ static inline struct inode *file_inode(const struct file *f)
 enum {
 	SB_UNFROZEN = 0,		
 	SB_FREEZE_WRITE	= 1,		
-	SB_FREEZE_PAGEFAULT = 2,	
-	SB_FREEZE_FS = 3,		
+	/* SB_FREEZE_PAGEFAULT, SB_FREEZE_FS removed - unused */
 	SB_FREEZE_COMPLETE = 4,		
 };
 

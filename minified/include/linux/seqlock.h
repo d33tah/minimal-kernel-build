@@ -1,7 +1,6 @@
 #ifndef __LINUX_SEQLOCK_H
 #define __LINUX_SEQLOCK_H
 
-
 #include <linux/compiler.h>
 #include <linux/lockdep.h>
 #include <linux/mutex.h>
@@ -14,23 +13,11 @@ typedef struct seqcount {
 	unsigned sequence;
 } seqcount_t;
 
-static inline void __seqcount_init(seqcount_t *s, const char *name,
-					  struct lock_class_key *key)
-{
-	/* lockdep_init_map removed - empty stub */
-	s->sequence = 0;
-}
+#define seqcount_init(s) do { (s)->sequence = 0; } while (0)
 
-# define SEQCOUNT_DEP_MAP_INIT(lockname)
-# define seqcount_init(s) __seqcount_init(s, NULL, NULL)
-# define seqcount_lockdep_reader_access(x)
-
-#define SEQCNT_ZERO(name) { .sequence = 0, SEQCOUNT_DEP_MAP_INIT(name) }
-
+#define SEQCNT_ZERO(name) { .sequence = 0 }
 
 #define __SEQ_LOCK(expr)
-
-
 
 #define seqcount_LOCKNAME_init(s, _lock, lockname)			\
 	do {								\
@@ -95,7 +82,6 @@ static inline void __seqprop_assert(const seqcount_t *s)
 SEQCOUNT_LOCKNAME(raw_spinlock, raw_spinlock_t,  false,    s->lock,        raw_spin, raw_spin_lock(s->lock))
 SEQCOUNT_LOCKNAME(spinlock,     spinlock_t,      __SEQ_RT, s->lock,        spin,     spin_lock(s->lock))
 
-
 #define SEQCOUNT_LOCKNAME_ZERO(seq_name, assoc_lock) {			\
 	.seqcount		= SEQCNT_ZERO(seq_name.seqcount),	\
 	__SEQ_LOCK(.lock	= (assoc_lock))				\
@@ -137,7 +123,6 @@ SEQCOUNT_LOCKNAME(spinlock,     spinlock_t,      __SEQ_RT, s->lock,        spin,
 
 #define read_seqcount_begin(s)						\
 ({									\
-	seqcount_lockdep_reader_access(seqprop_ptr(s));			\
 	raw_read_seqcount_begin(s);					\
 })
 
@@ -200,13 +185,6 @@ static inline void do_raw_write_seqcount_end(seqcount_t *s)
 	s->sequence++;
 }
 
-
-static inline void do_write_seqcount_begin_nested(seqcount_t *s, int subclass)
-{
-	do_raw_write_seqcount_begin(s);
-	/* seqcount_acquire removed - empty stub */
-}
-
 #define write_seqcount_begin(s)						\
 do {									\
 	seqprop_assert(s);						\
@@ -219,7 +197,7 @@ do {									\
 
 static inline void do_write_seqcount_begin(seqcount_t *s)
 {
-	do_write_seqcount_begin_nested(s, 0);
+	do_raw_write_seqcount_begin(s);
 }
 
 #define write_seqcount_end(s)						\
@@ -254,7 +232,6 @@ typedef struct {
 /* SEQCNT_LATCH_ZERO removed - never used */
 
 #define seqcount_latch_init(s) seqcount_init(&(s)->seqcount)
-
 
 static inline void raw_write_seqcount_latch(seqcount_latch_t *s)
 {
@@ -294,13 +271,11 @@ static inline unsigned read_seqretry(const seqlock_t *sl, unsigned start)
 	return read_seqcount_retry(&sl->seqcount, start);
 }
 
-
 static inline void write_seqlock(seqlock_t *sl)
 {
 	spin_lock(&sl->lock);
 	do_write_seqcount_begin(&sl->seqcount.seqcount);
 }
-
 
 static inline void write_sequnlock(seqlock_t *sl)
 {
@@ -308,12 +283,10 @@ static inline void write_sequnlock(seqlock_t *sl)
 	spin_unlock(&sl->lock);
 }
 
-
 static inline void read_seqlock_excl(seqlock_t *sl)
 {
 	spin_lock(&sl->lock);
 }
-
 
 static inline void read_sequnlock_excl(seqlock_t *sl)
 {

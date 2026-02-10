@@ -74,7 +74,6 @@ void arch_sync_kernel_mappings(unsigned long start, unsigned long end);
 
 /* get_vm_area_size inlined at mm/vmalloc.c - single caller */
 
-void free_vm_area(struct vm_struct *area);
-extern struct vm_struct *remove_vm_area(const void *addr);
+/* free_vm_area, remove_vm_area made static in vmalloc.c - no external callers */
 
 #endif  

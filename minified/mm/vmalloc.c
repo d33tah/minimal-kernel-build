@@ -738,7 +738,8 @@ __get_vm_area_node(unsigned long size, unsigned long align, unsigned long shift,
 
 /* get_vm_area_caller, find_vm_area removed - never called */
 
-struct vm_struct *remove_vm_area(const void *addr)
+static void free_vm_area(struct vm_struct *area);
+static struct vm_struct *remove_vm_area(const void *addr)
 {
 	struct vmap_area *va;
 
@@ -958,7 +959,7 @@ void *__vmalloc_node(unsigned long size, unsigned long align, gfp_t gfp_mask,
 
 /* __vmalloc, vmalloc removed - never called */
 
-void free_vm_area(struct vm_struct *area)
+static void free_vm_area(struct vm_struct *area)
 {
 	struct vm_struct *ret;
 	ret = remove_vm_area(area->addr);

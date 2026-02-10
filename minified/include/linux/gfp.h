@@ -205,7 +205,7 @@ static inline struct page *alloc_page_vma(gfp_t gfp,
 extern unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order);
 /* get_zeroed_page removed - never called */
 
-void *alloc_pages_exact(size_t size, gfp_t gfp_mask) __alloc_size(1);
+/* alloc_pages_exact made static in page_alloc.c - no external callers */
 
 #define __get_free_page(gfp_mask) \
 		__get_free_pages((gfp_mask), 0)

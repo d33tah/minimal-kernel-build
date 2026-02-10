@@ -686,7 +686,7 @@ unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order)
 
 /* __free_pages, free_pages moved to gfp.h as static inline */
 
-void *alloc_pages_exact(size_t size, gfp_t gfp_mask)
+static void *alloc_pages_exact(size_t size, gfp_t gfp_mask)
 {
 	unsigned int order = get_order(size);
 	unsigned long addr;

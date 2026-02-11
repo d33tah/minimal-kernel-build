@@ -13,6 +13,6 @@
 
 /* blk_flush_plug, printk_all_partitions removed - no callers */
 
-#define BDEVNAME_SIZE	32
+/* BDEVNAME_SIZE removed - zero callers */
 
 #endif

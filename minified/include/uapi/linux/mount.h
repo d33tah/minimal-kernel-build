@@ -8,7 +8,7 @@
 #define MS_NOATIME	1024
 #define MS_BIND		4096
 #define MS_MOVE		8192
-#define MS_SILENT	32768
+/* MS_SILENT removed - zero callers */
 #define MS_UNBINDABLE	(1<<17)
 #define MS_PRIVATE	(1<<18)
 #define MS_SLAVE	(1<<19)

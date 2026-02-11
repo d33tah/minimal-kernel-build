@@ -44,8 +44,6 @@ else
 
 # Some diagnostics enabled by default are noisy.
 # Suppress them by using -Wno... except for W=1.
-
-ifdef CONFIG_CC_IS_CLANG
 KBUILD_CFLAGS += -Wno-initializer-overrides
 KBUILD_CFLAGS += -Wno-format
 KBUILD_CFLAGS += -Wno-sign-compare
@@ -53,53 +51,5 @@ KBUILD_CFLAGS += -Wno-format-zero-length
 KBUILD_CFLAGS += $(call cc-disable-warning, pointer-to-enum-cast)
 KBUILD_CFLAGS += -Wno-tautological-constant-out-of-range-compare
 KBUILD_CFLAGS += $(call cc-disable-warning, unaligned-access)
-endif
-
-endif
-
-#
-# W=2 - warnings which occur quite often but may still be relevant
-#
-ifneq ($(findstring 2, $(KBUILD_EXTRA_WARN)),)
-
-KBUILD_CFLAGS += -Wdisabled-optimization
-KBUILD_CFLAGS += -Wshadow
-KBUILD_CFLAGS += $(call cc-option, -Wlogical-op)
-KBUILD_CFLAGS += -Wmissing-field-initializers
-KBUILD_CFLAGS += -Wtype-limits
-KBUILD_CFLAGS += $(call cc-option, -Wmaybe-uninitialized)
-KBUILD_CFLAGS += $(call cc-option, -Wunused-macros)
-
-KBUILD_CPPFLAGS += -DKBUILD_EXTRA_WARN2
-
-endif
-
-#
-# W=3 - more obscure warnings, can most likely be ignored
-#
-ifneq ($(findstring 3, $(KBUILD_EXTRA_WARN)),)
-
-KBUILD_CFLAGS += -Wbad-function-cast
-KBUILD_CFLAGS += -Wcast-align
-KBUILD_CFLAGS += -Wcast-qual
-KBUILD_CFLAGS += -Wconversion
-KBUILD_CFLAGS += -Wpacked
-KBUILD_CFLAGS += -Wpadded
-KBUILD_CFLAGS += -Wpointer-arith
-KBUILD_CFLAGS += -Wredundant-decls
-KBUILD_CFLAGS += -Wsign-compare
-KBUILD_CFLAGS += -Wswitch-default
-KBUILD_CFLAGS += $(call cc-option, -Wpacked-bitfield-compat)
-
-KBUILD_CPPFLAGS += -DKBUILD_EXTRA_WARN3
-
-endif
-
-#
-# W=e - error out on warnings
-#
-ifneq ($(findstring e, $(KBUILD_EXTRA_WARN)),)
-
-KBUILD_CFLAGS += -Werror
 
 endif

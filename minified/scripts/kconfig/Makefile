@@ -109,12 +109,8 @@ tinyconfig:
 
 # ===========================================================================
 # object files used by all kconfig flavours
-common-objs	:= confdata.o expr.o lexer.lex.o menu.o parser.tab.o \
+common-objs	:= confdata.o expr.o kconf_parse.o menu.o \
 		   preprocess.o symbol.o util.o
-
-$(obj)/lexer.lex.o: $(obj)/parser.tab.h
-HOSTCFLAGS_lexer.lex.o	:= -I $(srctree)/$(src)
-HOSTCFLAGS_parser.tab.o	:= -I $(srctree)/$(src)
 
 # conf: Used for defconfig, oldconfig and related targets
 hostprogs	+= conf

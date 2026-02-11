@@ -19,6 +19,7 @@ linux/atomic/atomic-long.h
 linux/atomic/atomic-arch-fallback.h
 EOF
 while read header; do
+	[ -f "${LINUXDIR}/include/${header}" ] || continue
 	OLDSUM="$(tail -n 1 ${LINUXDIR}/include/${header})"
 	OLDSUM="${OLDSUM#// }"
 

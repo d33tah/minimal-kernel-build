@@ -73,6 +73,6 @@ void arch_sync_kernel_mappings(unsigned long start, unsigned long end);
 
 /* get_vm_area_size inlined at mm/vmalloc.c - single caller */
 
-/* free_vm_area, remove_vm_area made static in vmalloc.c - no external callers */
+/* free_vm_area, remove_vm_area removed - error path replaced with BUG() */
 
 #endif  

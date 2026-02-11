@@ -56,79 +56,9 @@ static inline pmd_t *pmd_alloc_track(struct mm_struct *mm, pud_t *pud,
 		 pte_offset_kernel(pmd, address))
 
 /* ioremap_page_range, vmap_pmd_range, vmap_p4d_range removed - never called */
+/* vunmap_pmd_range removed - only caller was vunmap_range_noflush which is now dead */
 
-static void vunmap_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
-			     pgtbl_mod_mask *mask)
-{
-	pmd_t *pmd;
-	unsigned long next;
-
-	pmd = pmd_offset(pud, addr);
-	do {
-		next = pmd_addr_end(addr, end);
-		/* pmd_clear_huge always returns 0, cleared logic removed */
-		if (pmd_bad(*pmd))
-			*mask |= PGTBL_PMD_MODIFIED;
-		if (pmd_none_or_clear_bad(pmd))
-			continue;
-		/* Inlined vunmap_pte_range */
-		{
-			pte_t *pte = pte_offset_kernel(pmd, addr);
-			unsigned long pte_addr = addr;
-			do {
-				pte_t ptent = ptep_get_and_clear(&init_mm,
-								 pte_addr, pte);
-				WARN_ON(!pte_none(ptent) &&
-					!pte_present(ptent));
-			} while (pte++, pte_addr += PAGE_SIZE,
-				 pte_addr != next);
-			*mask |= PGTBL_PTE_MODIFIED;
-		}
-		cond_resched();
-	} while (pmd++, addr = next, addr != end);
-}
-
-/* vunmap_pud_range, vunmap_p4d_range inlined into vunmap_range_noflush */
-
-static void vunmap_range_noflush(unsigned long start, unsigned long end)
-{
-	unsigned long next;
-	pgd_t *pgd;
-	unsigned long addr = start;
-	pgtbl_mod_mask mask = 0;
-
-	BUG_ON(addr >= end);
-	/* pgd_none_or_clear_bad, pgd_bad always return 0 - folded paging */
-	pgd = pgd_offset_k(addr);
-	do {
-		next = pgd_addr_end(addr, end);
-		/* vunmap_p4d_range inlined */
-		{
-			p4d_t *p4d = p4d_offset(pgd, addr);
-			unsigned long p4d_next, p4d_addr = addr;
-			do {
-				p4d_next = p4d_addr_end(p4d_addr, next);
-				/* vunmap_pud_range inlined */
-				{
-					pud_t *pud = pud_offset(p4d, p4d_addr);
-					unsigned long pud_next,
-						pud_addr = p4d_addr;
-					do {
-						pud_next = pud_addr_end(
-							pud_addr, p4d_next);
-						vunmap_pmd_range(pud, pud_addr,
-								 pud_next,
-								 &mask);
-					} while (pud++, pud_addr = pud_next,
-						 pud_addr != p4d_next);
-				}
-			} while (p4d++, p4d_addr = p4d_next, p4d_addr != next);
-		}
-	} while (pgd++, addr = next, addr != end);
-
-	if (mask & ARCH_PAGE_TABLE_SYNC_MASK)
-		arch_sync_kernel_mappings(start, end);
-}
+/* vunmap_range_noflush removed - only caller was remove_vm_area which is now dead */
 
 static int vmap_pages_pmd_range(pud_t *pud, unsigned long addr,
 				unsigned long end, pgprot_t prot,
@@ -267,24 +197,7 @@ RB_DECLARE_CALLBACKS_MAX(static, free_vmap_area_rb_augment_cb, struct vmap_area,
 /* purge_vmap_area_lazy removed - lazy purge dead, retry now pointless (~5 LOC) */
 /* nr_vmalloc_pages removed - only added to, never read */
 
-static struct vmap_area *__find_vmap_area(unsigned long addr)
-{
-	struct rb_node *n = vmap_area_root.rb_node;
-
-	while (n) {
-		struct vmap_area *va;
-
-		va = rb_entry(n, struct vmap_area, rb_node);
-		if (addr < va->va_start)
-			n = n->rb_left;
-		else if (addr >= va->va_end)
-			n = n->rb_right;
-		else
-			return va;
-	}
-
-	return NULL;
-}
+/* __find_vmap_area removed - only caller was remove_vm_area which is now dead */
 
 static __always_inline struct rb_node **find_va_links(struct vmap_area *va,
 						      struct rb_root *root,
@@ -736,32 +649,7 @@ __get_vm_area_node(unsigned long size, unsigned long align, unsigned long shift,
 
 /* get_vm_area_caller, find_vm_area removed - never called */
 
-static void free_vm_area(struct vm_struct *area);
-static struct vm_struct *remove_vm_area(const void *addr)
-{
-	struct vmap_area *va;
-
-	spin_lock(&vmap_area_lock);
-	va = __find_vmap_area((unsigned long)addr);
-	if (va && va->vm) {
-		struct vm_struct *vm = va->vm;
-
-		va->vm = NULL;
-		spin_unlock(&vmap_area_lock);
-
-		vunmap_range_noflush(va->va_start, va->va_end);
-
-		/* Inlined free_vmap_area_noflush */
-		spin_lock(&vmap_area_lock);
-		unlink_va(va, &vmap_area_root);
-		spin_unlock(&vmap_area_lock);
-
-		return vm;
-	}
-
-	spin_unlock(&vmap_area_lock);
-	return NULL;
-}
+/* remove_vm_area removed - only caller was free_vm_area which is now dead */
 
 /* vfree, vunmap moved to vmalloc.h as static inline */
 /* vmap removed - never called */
@@ -841,8 +729,8 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 	}
 
 	if (!area->pages) {
-		free_vm_area(area);
-		return NULL;
+		/* free_vm_area chain removed - OOM at boot is fatal anyway */
+		BUG();
 	}
 
 	area->nr_pages = vm_area_alloc_pages(gfp_mask | __GFP_NOWARN, node, 0,
@@ -927,10 +815,4 @@ void *__vmalloc_node(unsigned long size, unsigned long align, gfp_t gfp_mask,
 
 /* __vmalloc, vmalloc removed - never called */
 
-static void free_vm_area(struct vm_struct *area)
-{
-	struct vm_struct *ret;
-	ret = remove_vm_area(area->addr);
-	BUG_ON(ret != area);
-	kfree(area);
-}
+/* free_vm_area removed - only called from error path, replaced with BUG() */

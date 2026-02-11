@@ -10,7 +10,7 @@ copy:
 	chown 1000:1000 -R minified
 
 vm:
-	cd minified && find -name '*.h' -or -name '*.c' -exec clang-format -i {} \; && find . -name '*.o' -delete && find . -name '.*.d' -delete && cloc . > /tmp/cloc && make LLVM=1 tinyconfig -j1 && make LLVM=1 -j1
+	cd minified && find -name '*.h' -or -name '*.c' -exec clang-format -i {} \; && find . -ignore_readdir_race -name '*.o' -delete && find . -ignore_readdir_race -name '.*.d' -delete && cloc . > /tmp/cloc && make LLVM=1 tinyconfig -j1 && make LLVM=1 -j1
 	./vmtest.tcl
 	ls -lh minified/arch/x86/boot/bzImage*
 	cat /tmp/cloc

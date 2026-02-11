@@ -107,7 +107,7 @@ static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 {
 	struct irqaction *old, **old_ptr;
 	unsigned long flags, thread_mask = 0;
-	int ret, nested, shared = 0;
+	int ret, shared = 0;
 
 	if (!desc)
 		return -EINVAL;
@@ -119,8 +119,6 @@ static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 
 	if (!(new->flags &IRQF_TRIGGER_MASK))
 		new->flags |= irqd_get_trigger_type(&desc->irq_data);
-
-	nested = 0;
 
 	if (desc->irq_data.chip->flags & IRQCHIP_ONESHOT_SAFE)
 		new->flags &= ~IRQF_ONESHOT;

@@ -477,7 +477,3 @@ bool con_is_visible(const struct vc_data *vc)
 /* vtconsole_class_init removed - empty initcall (~5 LOC) */
 
 #endif
-
-void reset_palette(struct vc_data *vc)
-{
-}

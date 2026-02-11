@@ -74,24 +74,6 @@ void bus_probe_device(struct device *dev)
 }
 
 /* Simplified: sysfs functions are stubs */
-void bus_remove_device(struct device *dev)
-{
-	struct bus_type *bus = dev->bus;
-
-	if (!bus)
-		return;
-
-	/* interfaces loop removed - subsys_interface_register never called */
-
-	if (klist_node_attached(&dev->p->knode_bus))
-		klist_del(&dev->p->knode_bus);
-
-	device_release_driver(dev);
-	/* bus_put inlined */
-	if (dev->bus)
-		kset_put(&dev->bus->p->subsys);
-}
-
 /* uevent_store, driver_attr_uevent, add_bind_files, remove_bind_files removed -
    driver_create_file was removed so these attributes are never used */
 

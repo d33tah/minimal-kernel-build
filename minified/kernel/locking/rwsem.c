@@ -70,9 +70,3 @@ void up_write(struct rw_semaphore *sem)
 	rwsem_clear_owner(sem);
 	atomic_long_set(&sem->count, RWSEM_UNLOCKED_VALUE);
 }
-
-void downgrade_write(struct rw_semaphore *sem)
-{
-	rwsem_clear_owner(sem);
-	atomic_long_set(&sem->count, RWSEM_READER_BIAS);
-}

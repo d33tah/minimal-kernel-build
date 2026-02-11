@@ -173,7 +173,6 @@ static inline void device_unlock(struct device *dev)
    device_set_of_node_from_dev, device_set_node, __root_device_register,
    root_device_unregister removed - unused */
 
-void device_release_driver(struct device *dev);
 /* driver_attach removed - only caller was bus_add_driver */
 void device_initial_probe(struct device *dev);
 

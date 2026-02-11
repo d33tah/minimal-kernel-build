@@ -294,15 +294,6 @@ static inline unsigned int cpuid_eax(unsigned int op)
 	return eax;
 }
 
-static inline unsigned int cpuid_edx(unsigned int op)
-{
-	unsigned int eax, ebx, ecx, edx;
-
-	cpuid(op, &eax, &ebx, &ecx, &edx);
-
-	return edx;
-}
-
 extern void select_idle_routine(const struct cpuinfo_x86 *c);
 
 extern void enable_sep_cpu(void);

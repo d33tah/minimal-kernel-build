@@ -65,16 +65,6 @@ static void driver_deferred_probe_add(struct device *dev)
 	mutex_unlock(&deferred_probe_mutex);
 }
 
-void driver_deferred_probe_del(struct device *dev)
-{
-	mutex_lock(&deferred_probe_mutex);
-	if (!list_empty(&dev->p->deferred_probe)) {
-		list_del_init(&dev->p->deferred_probe);
-		__device_set_deferred_probe_reason(dev, NULL);
-	}
-	mutex_unlock(&deferred_probe_mutex);
-}
-
 static bool driver_deferred_probe_enable;
 static void driver_deferred_probe_trigger(void)
 {
@@ -297,58 +287,6 @@ out_unlock:
 void device_initial_probe(struct device *dev)
 {
 	__device_attach(dev, true);
-}
-
-/* __device_driver_lock, __device_driver_unlock inlined into device_release_driver_internal */
-
-/* __driver_attach removed - only caller was driver_attach */
-/* driver_attach removed - only caller was bus_add_driver */
-
-/* __device_release_driver inlined into device_release_driver_internal (~5 LOC) */
-void device_release_driver_internal(struct device *dev,
-				    struct device_driver *drv_arg,
-				    struct device *parent)
-{
-	struct device_driver *drv;
-
-	/* Inlined __device_driver_lock */
-	if (parent && dev->bus->need_parent_lock)
-		device_lock(parent);
-	device_lock(dev);
-
-	if (!drv_arg || drv_arg == dev->driver) {
-		drv = dev->driver;
-		if (drv) {
-			pm_runtime_get_sync(dev);
-			/* device_links_busy always false - removed dead while loop */
-
-			pm_runtime_put_sync(dev);
-
-			if (dev->bus && dev->bus->remove)
-				dev->bus->remove(dev);
-			else if (dev->driver->remove)
-				dev->driver->remove(dev);
-
-			if (dev->bus && dev->bus->dma_cleanup)
-				dev->bus->dma_cleanup(dev);
-
-			device_unbind_cleanup(dev);
-
-			klist_remove(&dev->p->knode_driver);
-
-			kobject_uevent(&dev->kobj, KOBJ_UNBIND);
-		}
-	}
-
-	/* Inlined __device_driver_unlock */
-	device_unlock(dev);
-	if (parent && dev->bus->need_parent_lock)
-		device_unlock(parent);
-}
-
-void device_release_driver(struct device *dev)
-{
-	device_release_driver_internal(dev, NULL, NULL);
 }
 
 /* driver_detach removed - only called from bus_remove_driver which is never called (~22 LOC) */

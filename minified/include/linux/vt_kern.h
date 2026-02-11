@@ -60,5 +60,4 @@ struct vc {
 
 bool con_is_visible(const struct vc_data *vc);
 int vc_resize(struct vc_data *vc, unsigned int cols, unsigned int lines);
-void reset_palette(struct vc_data *vc);
 #endif

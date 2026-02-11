@@ -80,7 +80,6 @@ static int create_elf_tables(struct linux_binprm *bprm,
 			     unsigned long interp_load_addr,
 			     unsigned long e_entry, unsigned long phdr_addr)
 {
-	struct mm_struct *mm = current->mm;
 	unsigned long p = bprm->p;
 	int argc = bprm->argc;
 	int envc = bprm->envc;
@@ -95,6 +94,7 @@ static int create_elf_tables(struct linux_binprm *bprm,
 	elf_addr_t *elf_info;
 	elf_addr_t flags = 0;
 	int ei_index;
+	struct mm_struct *mm = current->mm;
 	const struct cred *cred = current_cred();
 	struct vm_area_struct *vma;
 
@@ -324,7 +324,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	unsigned long reloc_func_desc __maybe_unused = 0;
 	int executable_stack = EXSTACK_DEFAULT;
 	struct elfhdr *elf_ex = (struct elfhdr *)bprm->buf;
-	struct mm_struct *mm;
 	struct pt_regs *regs;
 
 	retval = -ENOEXEC;
@@ -493,7 +492,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	if (retval < 0)
 		goto out;
 
-	mm = current->mm;
 	/* mm->end_code/start_code/start_data/end_data/start_stack removed - write-only fields */
 
 	/* randomize_va_space always 0 - brk randomization dead code removed */

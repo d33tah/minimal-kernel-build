@@ -57,7 +57,6 @@ static inline int waitqueue_active(struct wait_queue_head *wq_head)
 	return !list_empty(&wq_head->head);
 }
 
-extern void add_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry);
 /* remove_wait_queue removed - never called */
 
 static inline void __add_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)

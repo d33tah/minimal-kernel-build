@@ -236,7 +236,6 @@ struct __large_struct { unsigned long buf[100]; };
 extern __must_check long strnlen_user(const char __user *str, long n);
 
 unsigned long __must_check clear_user(void __user *mem, unsigned long len);
-unsigned long __must_check __clear_user(void __user *mem, unsigned long len);
 
 
  

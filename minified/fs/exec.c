@@ -148,7 +148,6 @@ int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top,
 	unsigned long stack_shift;
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *vma = bprm->vma;
-	unsigned long vm_flags;
 	unsigned long stack_base;
 	unsigned long stack_size;
 	unsigned long stack_expand;
@@ -170,15 +169,6 @@ int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top,
 
 	if (mmap_write_lock_killable(mm))
 		return -EINTR;
-
-	vm_flags = VM_STACK_FLAGS;
-
-	if (unlikely(executable_stack == EXSTACK_ENABLE_X))
-		vm_flags |= VM_EXEC;
-	else if (executable_stack == EXSTACK_DISABLE_X)
-		vm_flags &= ~VM_EXEC;
-	vm_flags |= mm->def_flags;
-	vm_flags |= VM_STACK_INCOMPLETE_SETUP;
 
 	if (stack_shift) {
 		/* shift_arg_pages inlined */

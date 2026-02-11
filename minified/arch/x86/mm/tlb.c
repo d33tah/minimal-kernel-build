@@ -327,9 +327,8 @@ void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 {
 	struct flush_tlb_info *info;
 	u64 new_tlb_gen;
-	int cpu;
 
-	cpu = get_cpu();
+	get_cpu();
 
 	if ((end == TLB_FLUSH_ALL) ||
 	    ((end - start) >> stride_shift) > tlb_single_page_flush_ceiling) {

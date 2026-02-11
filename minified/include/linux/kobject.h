@@ -45,7 +45,6 @@ static inline const char *kobject_name(const struct kobject *kobj)
 extern void kobject_init(struct kobject *kobj, const struct kobj_type *ktype);
 /* kobject_add, kobject_init_and_add removed - never called */
 
-extern void kobject_del(struct kobject *kobj);
 
 /* kobject_create_and_add removed - never called */
 

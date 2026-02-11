@@ -30,12 +30,6 @@ unsigned long clear_user(void __user *to, unsigned long n)
 	return n;
 }
 
-unsigned long __clear_user(void __user *to, unsigned long n)
-{
-	__do_clear_user(to, n);
-	return n;
-}
-
 /* __copy_user_intel declaration removed - never called (movsl_is_ok always 1) */
 
 /* d33tah: disabled clang-format because extra spaces break inline asm */

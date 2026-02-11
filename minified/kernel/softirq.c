@@ -83,12 +83,10 @@ restart:
 	h = softirq_vec;
 
 	while ((softirq_bit = ffs(pending))) {
-		unsigned int vec_nr;
 		int prev_count;
 
 		h += softirq_bit - 1;
 
-		vec_nr = h - softirq_vec;
 		prev_count = preempt_count();
 		/* kstat_incr_softirqs_this_cpu call removed - empty stub */
 		h->action(h);

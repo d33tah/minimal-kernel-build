@@ -96,7 +96,7 @@ static void __init page_table_range_init(unsigned long start, unsigned long end,
 	unsigned long vaddr;
 	pgd_t *pgd;
 	pmd_t *pmd;
-	pte_t *pte = NULL;
+
 	/* count and adr removed - page_table_range_init_count always returned 0 */
 
 	vaddr = start;
@@ -110,7 +110,7 @@ static void __init page_table_range_init(unsigned long start, unsigned long end,
 		for (; (pmd_idx < PTRS_PER_PMD) && (vaddr != end);
 		     pmd++, pmd_idx++) {
 			/* page_table_kmap_check removed - just returned pte */
-			pte = one_page_table_init(pmd);
+			one_page_table_init(pmd);
 			vaddr += PMD_SIZE;
 		}
 		pmd_idx = 0;
@@ -138,7 +138,6 @@ unsigned long __init kernel_physical_mapping_init(unsigned long start,
 	pgd_t *pgd;
 	pmd_t *pmd;
 	pte_t *pte;
-	unsigned pages_2m, pages_4k;
 	int mapping_iter;
 
 	start_pfn = start >> PAGE_SHIFT;
@@ -150,7 +149,6 @@ unsigned long __init kernel_physical_mapping_init(unsigned long start,
 		use_pse = 0;
 
 repeat:
-	pages_2m = pages_4k = 0;
 	pfn = start_pfn;
 	pgd_idx = pgd_index((pfn << PAGE_SHIFT) + PAGE_OFFSET);
 	pgd = pgd_base + pgd_idx;
@@ -179,7 +177,6 @@ repeat:
 				    is_x86_32_kernel_text(addr2))
 					prot = PAGE_KERNEL_LARGE_EXEC;
 
-				pages_2m++;
 				if (mapping_iter == 1)
 					set_pmd(pmd, pfn_pmd(pfn, init_prot));
 				else
@@ -188,7 +185,7 @@ repeat:
 				pfn += PTRS_PER_PTE;
 				continue;
 			}
-			pte = one_page_table_init(pmd);
+			one_page_table_init(pmd);
 
 			pte_ofs = pte_index((pfn << PAGE_SHIFT) + PAGE_OFFSET);
 			pte += pte_ofs;
@@ -201,7 +198,6 @@ repeat:
 				if (is_x86_32_kernel_text(addr))
 					prot = PAGE_KERNEL_EXEC;
 
-				pages_4k++;
 				if (mapping_iter == 1) {
 					set_pte(pte, pfn_pte(pfn, init_prot));
 					last_map_addr =

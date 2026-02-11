@@ -47,7 +47,6 @@ static u32 vgacon_yres;
 
 static const char *vgacon_startup(void);
 static void vgacon_init(struct vc_data *c, int init);
-static void vgacon_cursor(struct vc_data *c, int mode);
 static int vgacon_switch(struct vc_data *c);
 /* vgacon_blank removed - con_blank never invoked */
 /* vgacon_scrolldelta inlined into vgacon_restore_screen */
@@ -175,8 +174,6 @@ no_vga:
 
 static void vgacon_init(struct vc_data *c, int init)
 {
-	struct uni_pagedir *p;
-
 	c->vc_can_do_color = vga_can_do_color;
 	/* vc_scan_lines assignment removed - field removed */
 	c->vc_cell_height = vga_video_font_height;
@@ -189,7 +186,6 @@ static void vgacon_init(struct vc_data *c, int init)
 
 	c->vc_complement_mask = 0x7700;
 	/* vga_512_chars check removed - always false */
-	p = *c->vc_uni_pagedir_loc;
 	if (c->vc_uni_pagedir_loc != &vgacon_uni_pagedir)
 		c->vc_uni_pagedir_loc = &vgacon_uni_pagedir;
 	/* vgacon_refcount inc removed */

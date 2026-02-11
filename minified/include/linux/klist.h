@@ -24,8 +24,6 @@ struct klist_node {
 
 /* klist_add_tail removed - never called */
 
-extern void klist_del(struct klist_node *n);
-extern void klist_remove(struct klist_node *n);
 
 extern int klist_node_attached(struct klist_node *n);
 

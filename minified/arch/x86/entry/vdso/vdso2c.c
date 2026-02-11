@@ -114,10 +114,8 @@ static void BITSFUNC(copy)(FILE *outfile, const unsigned char *data, size_t len)
 	}
 }
 
-
-
 static void BITSFUNC(extract)(const unsigned char *data, size_t data_len,
-			      FILE *outfile, ELF(Shdr) *sec, const char *name)
+			      FILE *outfile, ELF(Shdr) * sec, const char *name)
 {
 	unsigned long offset;
 	size_t len;
@@ -133,9 +131,9 @@ static void BITSFUNC(extract)(const unsigned char *data, size_t data_len,
 	fprintf(outfile, "\n};\n\n");
 }
 
-static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
-			 void *stripped_addr, size_t stripped_len,
-			 FILE *outfile, const char *image_name)
+static void BITSFUNC(go)(void *raw_addr, size_t raw_len, void *stripped_addr,
+			 size_t stripped_len, FILE *outfile,
+			 const char *image_name)
 {
 	int found_load = 0;
 	unsigned long load_size = -1;
@@ -143,7 +141,7 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
 	ELF(Ehdr) *hdr = (ELF(Ehdr) *)raw_addr;
 	unsigned long i, syms_nr;
 	ELF(Shdr) *symtab_hdr = NULL, *strtab_hdr, *secstrings_hdr,
-		*alt_sec = NULL, *extable_sec = NULL;
+		  *alt_sec = NULL, *extable_sec = NULL;
 	ELF(Dyn) *dyn = 0, *dyn_end = 0;
 	const char *secstrings;
 	INT_BITS syms[NSYMS] = {};
@@ -152,7 +150,6 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
 
 	if (GET_LE(&hdr->e_type) != ET_DYN)
 		fail("input is not a shared object\n");
-
 
 	for (i = 0; i < GET_LE(&hdr->e_phnum); i++) {
 		if (GET_LE(&pt[i].p_type) == PT_LOAD) {
@@ -171,7 +168,7 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
 		} else if (GET_LE(&pt[i].p_type) == PT_DYNAMIC) {
 			dyn = raw_addr + GET_LE(&pt[i].p_offset);
 			dyn_end = raw_addr + GET_LE(&pt[i].p_offset) +
-				GET_LE(&pt[i].p_memsz);
+				  GET_LE(&pt[i].p_memsz);
 		}
 	}
 	if (!found_load)
@@ -183,22 +180,20 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
 	if (!dyn)
 		fail("input has no PT_DYNAMIC section -- your toolchain is buggy\n");
 
-
-	for (i = 0; dyn + i < dyn_end &&
-		     GET_LE(&dyn[i].d_tag) != DT_NULL; i++) {
+	for (i = 0; dyn + i < dyn_end && GET_LE(&dyn[i].d_tag) != DT_NULL;
+	     i++) {
 		typeof(dyn[i].d_tag) tag = GET_LE(&dyn[i].d_tag);
 		if (tag == DT_REL || tag == DT_RELSZ || tag == DT_RELA ||
 		    tag == DT_RELENT || tag == DT_TEXTREL)
 			fail("vdso image contains dynamic relocations\n");
 	}
 
-
 	secstrings_hdr = raw_addr + GET_LE(&hdr->e_shoff) +
-		GET_LE(&hdr->e_shentsize)*GET_LE(&hdr->e_shstrndx);
+			 GET_LE(&hdr->e_shentsize) * GET_LE(&hdr->e_shstrndx);
 	secstrings = raw_addr + GET_LE(&secstrings_hdr->sh_offset);
 	for (i = 0; i < GET_LE(&hdr->e_shnum); i++) {
 		ELF(Shdr) *sh = raw_addr + GET_LE(&hdr->e_shoff) +
-			GET_LE(&hdr->e_shentsize) * i;
+				GET_LE(&hdr->e_shentsize) * i;
 		if (GET_LE(&sh->sh_type) == SHT_SYMTAB)
 			symtab_hdr = sh;
 
@@ -213,14 +208,15 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
 		fail("no symbol table\n");
 
 	strtab_hdr = raw_addr + GET_LE(&hdr->e_shoff) +
-		GET_LE(&hdr->e_shentsize) * GET_LE(&symtab_hdr->sh_link);
+		     GET_LE(&hdr->e_shentsize) * GET_LE(&symtab_hdr->sh_link);
 
-	syms_nr = GET_LE(&symtab_hdr->sh_size) / GET_LE(&symtab_hdr->sh_entsize);
+	syms_nr =
+		GET_LE(&symtab_hdr->sh_size) / GET_LE(&symtab_hdr->sh_entsize);
 
 	for (i = 0; i < syms_nr; i++) {
 		unsigned int k;
 		ELF(Sym) *sym = raw_addr + GET_LE(&symtab_hdr->sh_offset) +
-			GET_LE(&symtab_hdr->sh_entsize) * i;
+				GET_LE(&symtab_hdr->sh_entsize) * i;
 		const char *sym_name = raw_addr +
 				       GET_LE(&strtab_hdr->sh_offset) +
 				       GET_LE(&sym->st_name);
@@ -232,12 +228,10 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
 					     required_syms[k].name);
 				}
 
-
 				syms[k] = GET_LE(&sym->st_value);
 			}
 		}
 	}
-
 
 	for (i = 0; i < sizeof(special_pages) / sizeof(special_pages[0]); i++) {
 		INT_BITS symval = syms[special_pages[i]];
@@ -281,8 +275,8 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
 	}
 	fprintf(outfile, "\n};\n\n");
 	if (extable_sec)
-		BITSFUNC(extract)(raw_addr, raw_len, outfile,
-				  extable_sec, "extable");
+		BITSFUNC(extract)(raw_addr, raw_len, outfile, extable_sec,
+				  "extable");
 
 	fprintf(outfile, "const struct vdso_image %s = {\n", image_name);
 	fprintf(outfile, "\t.data = raw_data,\n");
@@ -324,10 +318,8 @@ static void BITSFUNC(copy)(FILE *outfile, const unsigned char *data, size_t len)
 	}
 }
 
-
-
 static void BITSFUNC(extract)(const unsigned char *data, size_t data_len,
-			      FILE *outfile, ELF(Shdr) *sec, const char *name)
+			      FILE *outfile, ELF(Shdr) * sec, const char *name)
 {
 	unsigned long offset;
 	size_t len;
@@ -343,9 +335,9 @@ static void BITSFUNC(extract)(const unsigned char *data, size_t data_len,
 	fprintf(outfile, "\n};\n\n");
 }
 
-static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
-			 void *stripped_addr, size_t stripped_len,
-			 FILE *outfile, const char *image_name)
+static void BITSFUNC(go)(void *raw_addr, size_t raw_len, void *stripped_addr,
+			 size_t stripped_len, FILE *outfile,
+			 const char *image_name)
 {
 	int found_load = 0;
 	unsigned long load_size = -1;
@@ -353,7 +345,7 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
 	ELF(Ehdr) *hdr = (ELF(Ehdr) *)raw_addr;
 	unsigned long i, syms_nr;
 	ELF(Shdr) *symtab_hdr = NULL, *strtab_hdr, *secstrings_hdr,
-		*alt_sec = NULL, *extable_sec = NULL;
+		  *alt_sec = NULL, *extable_sec = NULL;
 	ELF(Dyn) *dyn = 0, *dyn_end = 0;
 	const char *secstrings;
 	INT_BITS syms[NSYMS] = {};
@@ -362,7 +354,6 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
 
 	if (GET_LE(&hdr->e_type) != ET_DYN)
 		fail("input is not a shared object\n");
-
 
 	for (i = 0; i < GET_LE(&hdr->e_phnum); i++) {
 		if (GET_LE(&pt[i].p_type) == PT_LOAD) {
@@ -381,7 +372,7 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
 		} else if (GET_LE(&pt[i].p_type) == PT_DYNAMIC) {
 			dyn = raw_addr + GET_LE(&pt[i].p_offset);
 			dyn_end = raw_addr + GET_LE(&pt[i].p_offset) +
-				GET_LE(&pt[i].p_memsz);
+				  GET_LE(&pt[i].p_memsz);
 		}
 	}
 	if (!found_load)
@@ -393,22 +384,20 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
 	if (!dyn)
 		fail("input has no PT_DYNAMIC section -- your toolchain is buggy\n");
 
-
-	for (i = 0; dyn + i < dyn_end &&
-		     GET_LE(&dyn[i].d_tag) != DT_NULL; i++) {
+	for (i = 0; dyn + i < dyn_end && GET_LE(&dyn[i].d_tag) != DT_NULL;
+	     i++) {
 		typeof(dyn[i].d_tag) tag = GET_LE(&dyn[i].d_tag);
 		if (tag == DT_REL || tag == DT_RELSZ || tag == DT_RELA ||
 		    tag == DT_RELENT || tag == DT_TEXTREL)
 			fail("vdso image contains dynamic relocations\n");
 	}
 
-
 	secstrings_hdr = raw_addr + GET_LE(&hdr->e_shoff) +
-		GET_LE(&hdr->e_shentsize)*GET_LE(&hdr->e_shstrndx);
+			 GET_LE(&hdr->e_shentsize) * GET_LE(&hdr->e_shstrndx);
 	secstrings = raw_addr + GET_LE(&secstrings_hdr->sh_offset);
 	for (i = 0; i < GET_LE(&hdr->e_shnum); i++) {
 		ELF(Shdr) *sh = raw_addr + GET_LE(&hdr->e_shoff) +
-			GET_LE(&hdr->e_shentsize) * i;
+				GET_LE(&hdr->e_shentsize) * i;
 		if (GET_LE(&sh->sh_type) == SHT_SYMTAB)
 			symtab_hdr = sh;
 
@@ -423,14 +412,15 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
 		fail("no symbol table\n");
 
 	strtab_hdr = raw_addr + GET_LE(&hdr->e_shoff) +
-		GET_LE(&hdr->e_shentsize) * GET_LE(&symtab_hdr->sh_link);
+		     GET_LE(&hdr->e_shentsize) * GET_LE(&symtab_hdr->sh_link);
 
-	syms_nr = GET_LE(&symtab_hdr->sh_size) / GET_LE(&symtab_hdr->sh_entsize);
+	syms_nr =
+		GET_LE(&symtab_hdr->sh_size) / GET_LE(&symtab_hdr->sh_entsize);
 
 	for (i = 0; i < syms_nr; i++) {
 		unsigned int k;
 		ELF(Sym) *sym = raw_addr + GET_LE(&symtab_hdr->sh_offset) +
-			GET_LE(&symtab_hdr->sh_entsize) * i;
+				GET_LE(&symtab_hdr->sh_entsize) * i;
 		const char *sym_name = raw_addr +
 				       GET_LE(&strtab_hdr->sh_offset) +
 				       GET_LE(&sym->st_name);
@@ -442,12 +432,10 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
 					     required_syms[k].name);
 				}
 
-
 				syms[k] = GET_LE(&sym->st_value);
 			}
 		}
 	}
-
 
 	for (i = 0; i < sizeof(special_pages) / sizeof(special_pages[0]); i++) {
 		INT_BITS symval = syms[special_pages[i]];
@@ -491,8 +479,8 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
 	}
 	fprintf(outfile, "\n};\n\n");
 	if (extable_sec)
-		BITSFUNC(extract)(raw_addr, raw_len, outfile,
-				  extable_sec, "extable");
+		BITSFUNC(extract)(raw_addr, raw_len, outfile, extable_sec,
+				  "extable");
 
 	fprintf(outfile, "const struct vdso_image %s = {\n", image_name);
 	fprintf(outfile, "\t.data = raw_data,\n");

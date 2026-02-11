@@ -2,7 +2,35 @@
 #ifndef _SYSFS_H_
 #define _SYSFS_H_
 
-#include <linux/kernfs.h>
+/* --- Inlined from linux/kernfs.h --- */
+#ifndef __LINUX_KERNFS_H
+#define __LINUX_KERNFS_H
+#include <linux/types.h>
+#include <linux/atomic.h>
+struct rb_node;
+struct rb_root;
+struct kernfs_elem_dir {
+	unsigned long		subdirs;
+	struct rb_root		*children;
+	struct kernfs_root	*root;
+	unsigned long		rev;
+};
+struct kernfs_node {
+	atomic_t		count;
+	atomic_t		active;
+	struct kernfs_node	*parent;
+	const char		*name;
+	struct rb_node		*rb;
+	const void		*ns;
+	unsigned int		hash;
+	struct kernfs_elem_dir	dir;
+	void			*priv;
+	u64			id;
+	unsigned short		flags;
+	umode_t			mode;
+	void			*iattr;
+};
+#endif /* __LINUX_KERNFS_H */
 #include <linux/compiler.h>
 /* linux/errno.h, linux/list.h, linux/lockdep.h removed - unused */
 /* kobject_ns.h removed - never used */

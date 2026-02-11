@@ -7,7 +7,31 @@
 #include <linux/fs.h>
 #include <linux/major.h>
 #include <linux/types.h>
-#include <asm/termios.h>
+/* --- Inlined from asm-generic/termios.h --- */
+#ifndef _ASM_GENERIC_TERMIOS_H
+#define _ASM_GENERIC_TERMIOS_H
+#include <linux/uaccess.h>
+typedef unsigned char	cc_t;
+typedef unsigned int	speed_t;
+typedef unsigned int	tcflag_t;
+#define NCCS 19
+struct ktermios {
+	tcflag_t c_iflag;
+	tcflag_t c_oflag;
+	tcflag_t c_cflag;
+	tcflag_t c_lflag;
+	cc_t c_line;
+	cc_t c_cc[NCCS];
+	speed_t c_ispeed;
+	speed_t c_ospeed;
+};
+struct winsize {
+	unsigned short ws_row;
+	unsigned short ws_col;
+	unsigned short ws_xpixel;
+	unsigned short ws_ypixel;
+};
+#endif /* _ASM_GENERIC_TERMIOS_H */
 #include <linux/workqueue.h>
 #include <linux/tty_buffer.h>
 #include <linux/tty_driver.h>

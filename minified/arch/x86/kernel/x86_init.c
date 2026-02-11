@@ -12,7 +12,21 @@
 #include <asm/time.h>
 #include <asm/irq.h>
 /* hpet_enable, hpet_readl, default_setup_hpet_msi removed - never called */
-#include <asm/tsc.h>
+/* --- Inlined from asm/tsc.h --- */
+#ifndef _ASM_X86_TSC_H
+#define _ASM_X86_TSC_H
+#include <asm/processor.h>
+#include <asm/cpufeature.h>
+typedef unsigned long long cycles_t;
+static inline cycles_t get_cycles(void)
+{
+	return rdtsc();
+}
+#define get_cycles get_cycles
+extern void tsc_early_init(void);
+extern unsigned long native_calibrate_cpu_early(void);
+extern unsigned long native_calibrate_tsc(void);
+#endif /* _ASM_X86_TSC_H */
 #include <asm/mach_traps.h>
 /* native_create_pci_msi_domain removed - never called */
 

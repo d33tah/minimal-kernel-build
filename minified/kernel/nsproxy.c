@@ -8,7 +8,36 @@ extern void put_mnt_ns(struct mnt_namespace *ns);
 #include <linux/utsname.h>
 #include <linux/pid_namespace.h>
 #include <net/net_namespace.h>
-#include <linux/time_namespace.h>
+/* time_namespace.h inlined */
+#include <linux/ns_common.h>
+#include <linux/err.h>
+
+#ifndef _LINUX_TIMENS_H
+#define _LINUX_TIMENS_H
+
+struct user_namespace;
+extern struct user_namespace init_user_ns;
+
+struct timens_offsets {
+	struct timespec64 monotonic;
+	struct timespec64 boottime;
+};
+
+struct time_namespace {
+	struct user_namespace	*user_ns;
+	struct ucounts		*ucounts;
+	struct ns_common	ns;
+	struct timens_offsets	offsets;
+	struct page		*vvar_page;
+
+	bool			frozen_offsets;
+} __randomize_layout;
+
+static inline void put_time_ns(struct time_namespace *ns)
+{
+}
+
+#endif /* _LINUX_TIMENS_H */
 
 /* struct ipc_namespace removed - never used */
 #include <linux/fs_struct.h>

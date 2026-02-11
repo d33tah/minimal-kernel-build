@@ -15,6 +15,5 @@ mandatory-y += setup.h
 mandatory-y += sigcontext.h
 mandatory-y += signal.h
 mandatory-y += statfs.h
-mandatory-y += termios.h
 mandatory-y += types.h
 mandatory-y += unistd.h

@@ -11,11 +11,7 @@
 
 /* struct module, kiocb, request_queue, gendisk, blk_plug removed - unused */
 
-/* blk_flush_plug removed - no callers */
-
-static inline void printk_all_partitions(void)
-{
-}
+/* blk_flush_plug, printk_all_partitions removed - no callers */
 
 #define BDEVNAME_SIZE	32
 

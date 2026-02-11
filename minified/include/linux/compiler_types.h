@@ -10,8 +10,7 @@
 # define __percpu	BTF_TYPE_TAG(percpu)
 # define __rcu
 # define __chk_user_ptr(x)	(void)0
-# define __chk_io_ptr(x)	(void)0
-# define __must_hold(x)
+/* __chk_io_ptr, __must_hold removed - no callers */
 # define __acquires(x)
 # define __cond_acquires(x)
 # define __releases(x)
@@ -19,11 +18,10 @@
 # define __release(x)	(void)0
 # define __cond_lock(x,c) (c)
 # define __force
-# define __nocast
-# define __safe
+/* __nocast, __safe removed - no callers */
 # define __private
 # define ACCESS_PRIVATE(p, member) ((p)->member)
-# define __builtin_warning(x, y...) (1)
+/* __builtin_warning removed - no callers */
 
 #define ___PASTE(a,b) a##b
 #define __PASTE(a,b) ___PASTE(a,b)

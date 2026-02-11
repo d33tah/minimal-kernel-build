@@ -57,7 +57,7 @@
 #define X86_FEATURE_TSC			( 0*32+ 4)
 #define X86_FEATURE_PAE			( 0*32+ 6)
 #define X86_FEATURE_CX8			( 0*32+ 8)
-#define X86_FEATURE_SEP			( 0*32+11)
+/* X86_FEATURE_SEP removed - SYSENTER not used */
 #define X86_FEATURE_PGE			( 0*32+13)
 #define X86_FEATURE_PSE36		( 0*32+17)
 #define X86_FEATURE_FXSR		( 0*32+24)

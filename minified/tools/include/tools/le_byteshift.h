@@ -57,4 +57,4 @@ static inline uint64_t get_unaligned_le64(const void *p)
 	return __get_unaligned_le64((const uint8_t *)p);
 }
 
-#endif  
+#endif

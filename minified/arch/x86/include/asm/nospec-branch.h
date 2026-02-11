@@ -69,7 +69,7 @@
 #else  
 
 # define CALL_NOSPEC "call *%[thunk_target]\n"
-# define THUNK_TARGET(addr) [thunk_target] "rm" (addr)
+/* THUNK_TARGET removed - callers use [thunk_target] directly */
 
 /* Removed unused spectre_v2_mitigation, spectre_v2_user_mitigation,
    ssb_mitigation enums, __indirect_thunk_start/end */

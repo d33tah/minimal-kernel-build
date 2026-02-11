@@ -256,7 +256,7 @@ static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
 #define pud_val(x)				(p4d_val((x).p4d))
 #define __pud(x)				((pud_t) { __p4d(x) })
 
-#define p4d_pgtable(p4d)			((pud_t *)(pud_pgtable((pud_t){ p4d })))
+/* p4d_pgtable removed - no callers */
 
 /* pud_alloc_one removed - no callers */
 /* pud_free removed - never called */
@@ -293,7 +293,7 @@ static inline pmd_t * pmd_offset(pud_t * pud, unsigned long address)
 #define pmd_val(x)				(pud_val((x).pud))
 #define __pmd(x)				((pmd_t) { __pud(x) } )
 
-#define pud_pgtable(pud)			((pmd_t *)(pmd_page_vaddr((pmd_t){ pud })))
+/* pud_pgtable removed - only caller was p4d_pgtable (also removed) */
 
 /* pmd_alloc_one removed - no callers */
 #define pmd_free_tlb(tlb, x, a)		do { } while (0)

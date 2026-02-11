@@ -30,11 +30,7 @@ extern unsigned long volatile __cacheline_aligned_in_smp __jiffy_arch_data jiffi
 /* BITS_PER_LONG == 32 */
 /* get_jiffies_64 declaration removed - function removed */
 
-#define time_after(a,b)		\
-	(typecheck(unsigned long, a) && \
-	 typecheck(unsigned long, b) && \
-	 ((long)((b) - (a)) < 0))
-/* time_before removed - never used */
+/* time_after removed - no callers */
 
 /* time_after_eq, time_before_eq removed - never used */
 

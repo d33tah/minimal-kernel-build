@@ -18,7 +18,7 @@
 
 
 
-#define PT_OPT_FLAG_SHIFT	3
+/* PT_OPT_FLAG_SHIFT removed - no callers */
 
 /* arch_ptrace, ptrace_disable removed - never called */
 /* ptrace_request removed - never called */

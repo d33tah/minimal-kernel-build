@@ -20,9 +20,7 @@
 #define __MAP1(m,t,a,...) m(t,a)
 #define __MAP2(m,t,a,...) m(t,a), __MAP1(m,__VA_ARGS__)
 #define __MAP3(m,t,a,...) m(t,a), __MAP2(m,__VA_ARGS__)
-#define __MAP4(m,t,a,...) m(t,a), __MAP3(m,__VA_ARGS__)
-#define __MAP5(m,t,a,...) m(t,a), __MAP4(m,__VA_ARGS__)
-#define __MAP6(m,t,a,...) m(t,a), __MAP5(m,__VA_ARGS__)
+/* __MAP4/5/6 removed - no SYSCALL_DEFINE4/5/6 in codebase */
 #define __MAP(n,...) __MAP##n(__VA_ARGS__)
 
 #define __SC_DECL(t, a)	t a

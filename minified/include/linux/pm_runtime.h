@@ -13,5 +13,5 @@ static inline int __pm_runtime_resume(struct device *dev, int rpmflags) { return
 static inline int pm_request_idle(struct device *dev) { return __pm_runtime_idle(dev, RPM_ASYNC); }
 static inline int pm_runtime_get_sync(struct device *dev) { return __pm_runtime_resume(dev, RPM_GET_PUT); }
 static inline int pm_runtime_put(struct device *dev) { return __pm_runtime_idle(dev, RPM_GET_PUT | RPM_ASYNC); }
-static inline int pm_runtime_put_sync(struct device *dev) { return __pm_runtime_idle(dev, RPM_GET_PUT); }
+/* pm_runtime_put_sync removed - no callers */
 #endif

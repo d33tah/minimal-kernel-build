@@ -7,8 +7,7 @@
 #include <linux/wait.h>
 #include <linux/fs.h>
 #include <linux/uaccess.h>
-/* eventpoll.h inlined */
-#define EPOLLOUT	(__force __poll_t)0x00000004
+/* eventpoll.h inlined, EPOLLOUT removed - no callers */
 
 typedef void (*poll_queue_proc)(struct file *, wait_queue_head_t *, struct poll_table_struct *);
 

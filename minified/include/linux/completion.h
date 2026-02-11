@@ -15,7 +15,7 @@ struct completion {
 #define DECLARE_COMPLETION(work) \
 	struct completion work = COMPLETION_INITIALIZER(work)
 
-# define DECLARE_COMPLETION_ONSTACK(work) DECLARE_COMPLETION(work)
+/* DECLARE_COMPLETION_ONSTACK removed - no callers */
 
 static inline void init_completion(struct completion *x)
 {

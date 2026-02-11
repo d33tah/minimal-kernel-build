@@ -26,11 +26,7 @@
 
 /* lock_contended/lock_acquired removed - no callers */
 
-#define LOCK_CONTENDED(_lock, try, lock) \
-	lock(_lock)
-
-#define LOCK_CONTENDED_RETURN(_lock, try, lock) \
-	lock(_lock)
+/* LOCK_CONTENDED, LOCK_CONTENDED_RETURN removed - no callers */
 
 #define SINGLE_DEPTH_NESTING			1
 

@@ -2,7 +2,7 @@
 #ifndef _ASM_X86_PERCPU_H
 #define _ASM_X86_PERCPU_H
 
-#define __percpu_seg		fs
+/* __percpu_seg removed - __percpu_prefix is "" */
 
 #ifdef __ASSEMBLY__
 

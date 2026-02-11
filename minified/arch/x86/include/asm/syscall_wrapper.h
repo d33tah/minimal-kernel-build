@@ -35,14 +35,12 @@ extern long __ia32_sys_ni_syscall(const struct pt_regs *regs);
 		return sys_ni_syscall();				\
 	}
 
-#define __SYS_NI(abi, name)						\
-	SYSCALL_ALIAS(__##abi##_##name, sys_ni_posix_timers);
+/* __SYS_NI, __X64_SYS_NI, __IA32_SYS_NI removed - no callers */
 
 /* __X64_SYS_* macros removed - not used on 32-bit kernel */
 #define __X64_SYS_STUB0(name)
 #define __X64_SYS_STUBx(x, name, ...)
 #define __X64_COND_SYSCALL(name)
-#define __X64_SYS_NI(name)
 
 #define __IA32_SYS_STUB0(name)						\
 	__SYS_STUB0(ia32, sys_##name)
@@ -53,9 +51,6 @@ extern long __ia32_sys_ni_syscall(const struct pt_regs *regs);
 
 #define __IA32_COND_SYSCALL(name)					\
 	__COND_SYSCALL(ia32, sys_##name)
-
-#define __IA32_SYS_NI(name)						\
-	__SYS_NI(ia32, sys_##name)
 
 /* __IA32_COMPAT_SYS_*, __X32_COMPAT_SYS_* macros removed - compat disabled */
 

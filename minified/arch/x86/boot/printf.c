@@ -2,154 +2,60 @@
 
 #include "boot.h"
 
-static int skip_atoi(const char **s)
+/* Minimal number output: base-10 only, signed or unsigned */
+static char *number(char *str, long num, int is_signed)
 {
+	char tmp[22];
 	int i = 0;
 
-	while (isdigit(**s))
-		i = i * 10 + *((*s)++) - '0';
-	return i;
-}
-
-#define ZEROPAD 1
-#define SIGN 2
-#define LEFT 16
-
-#define __do_div(n, base)                                    \
-	({                                                   \
-		int __res;                                   \
-		__res = ((unsigned long)n) % (unsigned)base; \
-		n = ((unsigned long)n) / (unsigned)base;     \
-		__res;                                       \
-	})
-
-/* Simplified number(): only supports base 10, no SPECIAL/PLUS/SPACE */
-static char *number(char *str, long num, int base, int size, int precision,
-		    int type)
-{
-	static const char digits[16] = "0123456789ABCDEF";
-
-	char tmp[66];
-	char c, sign;
-	int i;
-
-	if (type & LEFT)
-		type &= ~ZEROPAD;
-	c = (type & ZEROPAD) ? '0' : ' ';
-	sign = 0;
-	if (type & SIGN) {
-		if (num < 0) {
-			sign = '-';
-			num = -num;
-			size--;
-		}
+	if (is_signed && num < 0) {
+		*str++ = '-';
+		num = -num;
 	}
-	i = 0;
 	if (num == 0)
 		tmp[i++] = '0';
 	else
-		while (num != 0)
-			tmp[i++] = digits[__do_div(num, base)];
-	if (i > precision)
-		precision = i;
-	size -= precision;
-	if (!(type & (ZEROPAD + LEFT)))
-		while (size-- > 0)
-			*str++ = ' ';
-	if (sign)
-		*str++ = sign;
-	if (!(type & LEFT))
-		while (size-- > 0)
-			*str++ = c;
-	while (i < precision--)
-		*str++ = '0';
+		while (num != 0) {
+			tmp[i++] = '0' + ((unsigned long)num) % 10;
+			num = ((unsigned long)num) / 10;
+		}
 	while (i-- > 0)
 		*str++ = tmp[i];
-	while (size-- > 0)
-		*str++ = ' ';
 	return str;
 }
 
-/* Simplified vsprintf: only %d, %s, %u, %% supported (boot code only uses %d and %s) */
+/* Minimal vsprintf: only %d, %s, %lu, %u, %% (all boot code needs) */
 int vsprintf(char *buf, const char *fmt, va_list args)
 {
-	int len;
-	unsigned long num;
-	int i, base;
 	char *str;
 	const char *s;
-
-	int flags;
-
-	int field_width;
-	int precision;
-	int qualifier;
 
 	for (str = buf; *fmt; ++fmt) {
 		if (*fmt != '%') {
 			*str++ = *fmt;
 			continue;
 		}
-
-		flags = 0;
-repeat:
 		++fmt;
-		switch (*fmt) {
-		case '-':
-			flags |= LEFT;
-			goto repeat;
-		case '0':
-			flags |= ZEROPAD;
-			goto repeat;
-		}
-
-		field_width = -1;
-		if (isdigit(*fmt))
-			field_width = skip_atoi(&fmt);
-
-		precision = -1;
-		if (*fmt == '.') {
-			++fmt;
-			if (isdigit(*fmt))
-				precision = skip_atoi(&fmt);
-			if (precision < 0)
-				precision = 0;
-		}
-
-		qualifier = -1;
-		if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L') {
-			qualifier = *fmt;
-			++fmt;
-		}
-
-		base = 10;
-
 		switch (*fmt) {
 		case 's':
 			s = va_arg(args, char *);
-			len = strnlen(s, precision);
-
-			if (!(flags & LEFT))
-				while (len < field_width--)
-					*str++ = ' ';
-			for (i = 0; i < len; ++i)
+			while (*s)
 				*str++ = *s++;
-			while (len < field_width--)
-				*str++ = ' ';
 			continue;
-
 		case '%':
 			*str++ = '%';
 			continue;
-
-			/* %c, %p, %n, %o, %x, %X removed - unused in boot code */
-
+		case 'l':
+			++fmt; /* skip 'u' after 'l' */
+			str = number(str, va_arg(args, unsigned long), 0);
+			continue;
 		case 'd':
 		case 'i':
-			flags |= SIGN;
+			str = number(str, va_arg(args, int), 1);
+			continue;
 		case 'u':
-			break;
-
+			str = number(str, va_arg(args, unsigned int), 0);
+			continue;
 		default:
 			*str++ = '%';
 			if (*fmt)
@@ -158,17 +64,6 @@ repeat:
 				--fmt;
 			continue;
 		}
-		if (qualifier == 'l')
-			num = va_arg(args, unsigned long);
-		else if (qualifier == 'h') {
-			num = (unsigned short)va_arg(args, int);
-			if (flags & SIGN)
-				num = (short)num;
-		} else if (flags & SIGN)
-			num = va_arg(args, int);
-		else
-			num = va_arg(args, unsigned int);
-		str = number(str, num, base, field_width, precision, flags);
 	}
 	*str = '\0';
 	return str - buf;

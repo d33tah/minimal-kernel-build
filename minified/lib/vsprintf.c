@@ -30,38 +30,7 @@
 
 /* no_hash_pointers removed - always false, never set */
 
-/* simple_strntoull inlined into simple_strtoull */
-
-/* Inlined simple_strntoull */
-static noinline unsigned long long
-simple_strtoull(const char *startp, char **endp, unsigned int base)
-{
-	const char *cp;
-	unsigned long long result = 0ULL;
-	size_t prefix_chars;
-	unsigned int rv;
-	size_t max_chars = INT_MAX;
-
-	cp = _parse_integer_fixup_radix(startp, &base);
-	prefix_chars = cp - startp;
-	if (prefix_chars < max_chars) {
-		rv = _parse_integer_limit(cp, base, &result,
-					  max_chars - prefix_chars);
-		cp += (rv & ~KSTRTOX_OVERFLOW);
-	} else {
-		cp = startp + max_chars;
-	}
-
-	if (endp)
-		*endp = (char *)cp;
-
-	return result;
-}
-
-unsigned long simple_strtoul(const char *cp, char **endp, unsigned int base)
-{
-	return simple_strtoull(cp, endp, base);
-}
+/* simple_strtoull, simple_strtoul removed - only caller was name_to_dev_t (removed from do_mounts.c) */
 
 static noinline_for_stack int skip_atoi(const char **s)
 {
@@ -802,17 +771,7 @@ int snprintf(char *buf, size_t size, const char *fmt, ...)
 	return i;
 }
 
-int scnprintf(char *buf, size_t size, const char *fmt, ...)
-{
-	va_list args;
-	int i;
-
-	va_start(args, fmt);
-	i = vscnprintf(buf, size, fmt, args);
-	va_end(args);
-
-	return i;
-}
+/* scnprintf removed - only caller was mount_block_root (removed from do_mounts.c) */
 
 /* vsprintf removed - no callers in main kernel */
 
@@ -828,9 +787,4 @@ int sprintf(char *buf, const char *fmt, ...)
 	return i;
 }
 
-/* vsscanf removed - never called */
-
-int sscanf(const char *buf, const char *fmt, ...)
-{
-	return 0;
-}
+/* sscanf removed - only caller was name_to_dev_t (removed from do_mounts.c) */

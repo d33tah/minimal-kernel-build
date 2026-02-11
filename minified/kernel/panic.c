@@ -137,11 +137,7 @@ void bust_spinlocks(int yes)
 	}
 }
 
-struct warn_args {
-	const char *fmt;
-	va_list args;
-};
-
+/* struct warn_args removed - unused after __warn removal */
 /* __warn removed - no callers (WARN macros simplified to not call it) */
 
 /* machine_restart inlined - just calls halt() in a loop */

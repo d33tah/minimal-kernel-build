@@ -20,7 +20,7 @@
 /* Inlined from kstrtox.h */
 int __must_check kstrtoull(const char *s, unsigned int base, unsigned long long *res);
 int __must_check kstrtouint(const char *s, unsigned int base, unsigned int *res);
-extern unsigned long simple_strtoul(const char *,char **,unsigned int);
+/* simple_strtoul removed - no callers after do_mounts cleanup */
 #include <linux/log2.h>
 #include <linux/math.h>
 #include <linux/minmax.h>
@@ -75,15 +75,14 @@ int snprintf(char *buf, size_t size, const char *fmt, ...);
 extern __printf(3, 0)
 int vsnprintf(char *buf, size_t size, const char *fmt, va_list args);
 extern __printf(3, 4)
-int scnprintf(char *buf, size_t size, const char *fmt, ...);
+/* scnprintf removed - no callers after do_mounts cleanup */
 extern __printf(3, 0)
 int vscnprintf(char *buf, size_t size, const char *fmt, va_list args);
 extern __printf(2, 3) __malloc
 char *kasprintf(gfp_t gfp, const char *fmt, ...);
 extern __printf(2, 0) __malloc
 char *kvasprintf(gfp_t gfp, const char *fmt, va_list args);
-extern __scanf(2, 3)
-int sscanf(const char *, const char *, ...);
+/* sscanf removed - no callers after do_mounts cleanup */
 /* vsscanf removed - never called */
 
 extern char *next_arg(char *args, char **param, char **val);
@@ -92,7 +91,7 @@ extern char *next_arg(char *args, char **param, char **val);
 
 extern void bust_spinlocks(int yes);
 
-extern int root_mountflags;
+/* root_mountflags removed - never read */
 
 extern enum system_states {
 	SYSTEM_BOOTING,

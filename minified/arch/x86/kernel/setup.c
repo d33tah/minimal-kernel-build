@@ -12,11 +12,7 @@
 #include <linux/types.h>
 #include <linux/kdev_t.h>
 
-enum {
-	Root_NFS = MKDEV(UNNAMED_MAJOR, 255),
-	Root_CIFS = MKDEV(UNNAMED_MAJOR, 254),
-	Root_RAM0 = MKDEV(RAMDISK_MAJOR, 0),
-};
+/* Root_NFS, Root_CIFS, Root_RAM0 enum removed - never used */
 
 extern dev_t ROOT_DEV;
 /* linux/hugetlb.h removed - hugetlb_cma_reserve stubbed */
@@ -88,7 +84,7 @@ __visible unsigned long mmu_cr4_features __ro_after_init;
 
 struct screen_info screen_info;
 
-extern int root_mountflags;
+/* root_mountflags removed - never read */
 
 /* saved_video_mode, RAMDISK_* macros removed - never used */
 
@@ -262,8 +258,7 @@ void __init setup_arch(char **cmdline_p)
 	}
 	/* copy_edd removed - empty stub */
 
-	if (!boot_params.hdr.root_flags)
-		root_mountflags &= ~MS_RDONLY;
+	/* root_flags check removed - root_mountflags no longer used */
 	/* setup_initial_init_mm call removed - function is empty stub */
 
 	code_resource.start = __pa_symbol(_text);

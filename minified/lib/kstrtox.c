@@ -6,7 +6,7 @@ int __must_check kstrtoull(const char *s, unsigned int base,
 			   unsigned long long *res);
 int __must_check kstrtouint(const char *s, unsigned int base,
 			    unsigned int *res);
-extern unsigned long simple_strtoul(const char *, char **, unsigned int);
+/* simple_strtoul declaration removed - function removed from vsprintf.c */
 #include <linux/math64.h>
 #include <linux/types.h>
 #include <linux/uaccess.h>

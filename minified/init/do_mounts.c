@@ -11,11 +11,7 @@
 #include <linux/types.h>
 #include <linux/kdev_t.h>
 
-enum {
-	Root_NFS = MKDEV(UNNAMED_MAJOR, 255),
-	Root_CIFS = MKDEV(UNNAMED_MAJOR, 254),
-	Root_RAM0 = MKDEV(RAMDISK_MAJOR, 0),
-};
+/* Root_RAM0 enum removed - never used */
 
 extern dev_t ROOT_DEV;
 /* linux/security.h, linux/delay.h removed - unused */
@@ -34,10 +30,7 @@ extern dev_t ROOT_DEV;
 #include <uapi/linux/mount.h>
 /* --- 2026-01-26 01:00 --- Inlined from do_mounts.h */
 
-int root_mountflags = MS_RDONLY | MS_SILENT;
-static char *__initdata root_device_name;
-static char __initdata saved_root_name[64];
-/* root_wait removed - never assigned, always 0 */
+/* root_mountflags removed - never read after mount_block_root removal */
 
 dev_t ROOT_DEV;
 
@@ -47,151 +40,27 @@ int initrd_below_start_ok;
 phys_addr_t phys_initrd_start __initdata;
 unsigned long phys_initrd_size __initdata;
 
-/* devt_from_devnum inlined into name_to_dev_t */
+/* name_to_dev_t, do_mount_root, mount_block_root removed -
+ * saved_root_name was never written (root= __setup handler removed),
+ * so the entire root device mounting path was dead code.
+ * The kernel boots via initramfs, not block device root. */
 
+/* name_to_dev_t stub for header declaration */
 dev_t name_to_dev_t(const char *name)
 {
-	unsigned maj, min, offset;
-	dev_t devt = 0;
-	char *p, dummy;
-
-	if (strcmp(name, "/dev/nfs") == 0)
-		return Root_NFS;
-	if (strcmp(name, "/dev/cifs") == 0)
-		return Root_CIFS;
-	if (strcmp(name, "/dev/ram") == 0)
-		return Root_RAM0;
-	/* devt_from_devnum inlined */
-	if (sscanf(name, "%u:%u%c", &maj, &min, &dummy) == 2 ||
-	    sscanf(name, "%u:%u:%u:%c", &maj, &min, &offset, &dummy) == 3) {
-		devt = MKDEV(maj, min);
-		if (maj != MAJOR(devt) || min != MINOR(devt))
-			return 0;
-	} else {
-		devt = new_decode_dev(simple_strtoul(name, &p, 16));
-		if (*p)
-			return 0;
-	}
-	return devt;
-}
-
-static char *__initdata root_mount_data;
-/* root_dev_setup, rootwait_setup, root_data_setup, fs_names_setup,
- * root_delay_setup __setup handlers removed (~30 LOC) */
-
-/* split_fs_names removed - only caller mount_nodev_root was removed */
-
-static int __init do_mount_root(const char *name, const char *fs,
-				const int flags, const void *data)
-{
-	struct super_block *s;
-	struct page *p = NULL;
-	char *data_page = NULL;
-	int ret;
-
-	if (data) {
-		p = alloc_page(GFP_KERNEL);
-		if (!p)
-			return -ENOMEM;
-		data_page = page_address(p);
-
-		strncpy(data_page, data, PAGE_SIZE);
-	}
-
-	ret = init_mount(name, "/root", fs, flags, data_page);
-	if (ret)
-		goto out;
-
-	init_chdir("/root");
-	s = current->fs->pwd.dentry->d_sb;
-	ROOT_DEV = s->s_dev;
-	printk(KERN_INFO
-	       "VFS: Mounted root (%s filesystem)%s on device %u:%u.\n",
-	       s->s_type->name, sb_rdonly(s) ? " readonly" : "",
-	       MAJOR(ROOT_DEV), MINOR(ROOT_DEV));
-
-out:
-	if (p)
-		put_page(p);
-	return ret;
-}
-
-void __init mount_block_root(char *name, int flags)
-{
-	struct page *page = alloc_page(GFP_KERNEL);
-	char *fs_names = page_address(page);
-	char *p;
-	char b[BDEVNAME_SIZE];
-	int num_fs, i;
-
-	scnprintf(b, BDEVNAME_SIZE, "unknown-block(%u,%u)", MAJOR(ROOT_DEV),
-		  MINOR(ROOT_DEV));
-	/* root_fs_names always NULL - stub never assigns it */
-	num_fs = list_bdev_fs_names(fs_names, PAGE_SIZE);
-retry:
-	for (i = 0, p = fs_names; i < num_fs; i++, p += strlen(p) + 1) {
-		int err;
-
-		if (!*p)
-			continue;
-		err = do_mount_root(name, p, flags, root_mount_data);
-		switch (err) {
-		case 0:
-			goto out;
-		case -EACCES:
-		case -EINVAL:
-			continue;
-		}
-
-		printk("VFS: Cannot open root device \"%s\" or %s: error %d\n",
-		       root_device_name, b, err);
-		printk("Please append a correct \"root=\" boot option; here are the available partitions:\n");
-
-		printk_all_partitions();
-		panic("VFS: Unable to mount root fs on %s", b);
-	}
-	if (!(flags & SB_RDONLY)) {
-		flags |= SB_RDONLY;
-		goto retry;
-	}
-
-	printk("List of all partitions:\n");
-	printk_all_partitions();
-	printk("No filesystem could mount root, tried: ");
-	for (i = 0, p = fs_names; i < num_fs; i++, p += strlen(p) + 1)
-		printk(" %s", p);
-	printk("\n");
-	panic("VFS: Unable to mount root fs on %s", b);
-out:
-	put_page(page);
+	return 0;
 }
 
 /* fs_is_nodev, mount_nodev_root, mount_root removed - all stubs */
 
 void __init prepare_namespace(void)
 {
-	/* root_delay always 0 - stub never assigns it */
-
 	wait_for_device_probe();
 
-	if (saved_root_name[0]) {
-		root_device_name = saved_root_name;
-		if (!strncmp(root_device_name, "mtd", 3) ||
-		    !strncmp(root_device_name, "ubi", 3)) {
-			mount_block_root(root_device_name, root_mountflags);
-			goto out;
-		}
-		ROOT_DEV = name_to_dev_t(root_device_name);
-		if (strncmp(root_device_name, "/dev/", 5) == 0)
-			root_device_name += 5;
-	}
+	/* saved_root_name was never written (root= __setup handler removed),
+	 * so root device name check and mount_block_root are dead code.
+	 * The kernel boots via initramfs only. */
 
-	/* initrd_load() always returns false, call removed */
-
-	/* root_wait block removed - root_wait was never assigned (always 0) */
-
-	/* mount_root() removed - was empty */
-out:
 	init_mount(".", "/", NULL, MS_MOVE, NULL);
 	init_chroot(".");
 }

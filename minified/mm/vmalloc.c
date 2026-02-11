@@ -707,9 +707,7 @@ __get_vm_area_node(unsigned long size, unsigned long align, unsigned long shift,
 	if (unlikely(!size))
 		return NULL;
 
-	if (flags & VM_IOREMAP)
-		align = 1ul << clamp_t(int, get_count_order_long(size),
-				       PAGE_SHIFT, IOREMAP_MAX_ORDER);
+	/* VM_IOREMAP branch removed - never passed by only caller */
 
 	area = kzalloc_node(sizeof(*area), gfp_mask & GFP_RECLAIM_MASK, node);
 	if (unlikely(!area))
@@ -774,48 +772,41 @@ static inline unsigned int vm_area_alloc_pages(gfp_t gfp, int nid,
 					       struct page **pages)
 {
 	unsigned int nr_allocated = 0;
-	struct page *page;
-	int i;
-
-	if (!order) {
-		gfp_t bulk_gfp = gfp & ~__GFP_NOFAIL;
-
-		while (nr_allocated < nr_pages) {
-			unsigned int nr, nr_pages_request;
-
-			nr_pages_request = min(100U, nr_pages - nr_allocated);
-
-			nr = alloc_pages_bulk_array_node(bulk_gfp, nid,
-							 nr_pages_request,
-							 pages + nr_allocated);
-
-			nr_allocated += nr;
-			cond_resched();
-
-			if (nr != nr_pages_request)
-				break;
-		}
-	}
+	/* order is always 0 - use bulk allocation */
+	gfp_t bulk_gfp = gfp & ~__GFP_NOFAIL;
 
 	while (nr_allocated < nr_pages) {
+		unsigned int nr, nr_pages_request;
+
+		nr_pages_request = min(100U, nr_pages - nr_allocated);
+
+		nr = alloc_pages_bulk_array_node(
+			bulk_gfp, nid, nr_pages_request, pages + nr_allocated);
+
+		nr_allocated += nr;
+		cond_resched();
+
+		if (nr != nr_pages_request)
+			break;
+	}
+
+	/* Fallback: allocate remaining pages one at a time */
+	while (nr_allocated < nr_pages) {
+		struct page *page;
+
 		if (fatal_signal_pending(current))
 			break;
 
 		if (nid == NUMA_NO_NODE)
-			page = alloc_pages(gfp, order);
+			page = alloc_pages(gfp, 0);
 		else
-			page = alloc_pages_node(nid, gfp, order);
+			page = alloc_pages_node(nid, gfp, 0);
 		if (unlikely(!page))
 			break;
 
-		if (order)
-			split_page(page, order);
-
-		for (i = 0; i < (1U << order); i++)
-			pages[nr_allocated + i] = page + i;
-
+		pages[nr_allocated] = page;
 		cond_resched();
-		nr_allocated += 1U << order;
+		nr_allocated++;
 	}
 
 	return nr_allocated;
@@ -834,7 +825,6 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 				     area->size - PAGE_SIZE;
 	unsigned long array_size;
 	unsigned int nr_small_pages = size >> PAGE_SHIFT;
-	unsigned int page_order;
 	unsigned int flags;
 	int ret;
 
@@ -855,12 +845,8 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 		return NULL;
 	}
 
-	/* set_vm_area_page_order, vm_area_page_order removed - page_order always 0 */
-	page_order = 0;
-
-	area->nr_pages = vm_area_alloc_pages(gfp_mask | __GFP_NOWARN, node,
-					     page_order, nr_small_pages,
-					     area->pages);
+	area->nr_pages = vm_area_alloc_pages(gfp_mask | __GFP_NOWARN, node, 0,
+					     nr_small_pages, area->pages);
 
 	/* nr_vmalloc_pages addition removed - counter never read */
 	/* mod_memcg_page_state is empty stub */
@@ -903,10 +889,6 @@ void *__vmalloc_node_range(unsigned long size, unsigned long align,
 			   unsigned long vm_flags, int node, const void *caller)
 {
 	struct vm_struct *area;
-	void *ret;
-	unsigned long real_size = size;
-	unsigned long real_align = align;
-	unsigned int shift = PAGE_SHIFT;
 
 	if (WARN_ON_ONCE(!size))
 		return NULL;
@@ -915,39 +897,25 @@ void *__vmalloc_node_range(unsigned long size, unsigned long align,
 		return NULL;
 	}
 
-	/* vmap_allow_huge is false - huge vmap block removed */
-
 again:
-	area = __get_vm_area_node(real_size, align, shift,
+	area = __get_vm_area_node(size, align, PAGE_SHIFT,
 				  VM_ALLOC | VM_UNINITIALIZED | vm_flags, start,
 				  end, node, gfp_mask, caller);
 	if (!area) {
-		bool nofail = gfp_mask & __GFP_NOFAIL;
-		if (nofail) {
+		if (gfp_mask & __GFP_NOFAIL) {
 			schedule_timeout_uninterruptible(1);
 			goto again;
 		}
-		goto fail;
+		return NULL;
 	}
 
-	ret = __vmalloc_area_node(area, gfp_mask, prot, shift, node);
-	if (!ret)
-		goto fail;
+	if (!__vmalloc_area_node(area, gfp_mask, prot, PAGE_SHIFT, node))
+		return NULL;
 
 	smp_wmb();
 	area->flags &= ~VM_UNINITIALIZED;
 
 	return area->addr;
-
-fail:
-	if (shift > PAGE_SHIFT) {
-		shift = PAGE_SHIFT;
-		align = real_align;
-		size = real_size;
-		goto again;
-	}
-
-	return NULL;
 }
 
 void *__vmalloc_node(unsigned long size, unsigned long align, gfp_t gfp_mask,

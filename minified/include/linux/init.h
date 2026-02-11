@@ -112,7 +112,6 @@ extern void (*late_time_init)(void);
 /* pure_initcall removed - unused */
 #define core_initcall(fn)		__define_initcall(fn, 1)
 /* core_initcall_sync removed - unused */
-#define postcore_initcall(fn)		__define_initcall(fn, 2)
 /* postcore_initcall_sync, arch_initcall, arch_initcall_sync removed - unused */
 #define subsys_initcall(fn)		__define_initcall(fn, 4)
 /* subsys_initcall_sync removed - unused */

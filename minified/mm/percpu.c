@@ -819,13 +819,9 @@ static void __percpu *pcpu_alloc(size_t size, size_t align, gfp_t gfp)
 		return NULL;
 	}
 
-	/* pcpu_memcg_pre_alloc_hook always returns true, post_alloc_hook is empty */
-	/* is_atomic always false - always take mutex */
-	if (gfp & __GFP_NOFAIL) {
-		mutex_lock(&pcpu_alloc_mutex);
-	} else if (mutex_lock_killable(&pcpu_alloc_mutex)) {
+	/* is_atomic always false, __GFP_NOFAIL never set - always take mutex */
+	if (mutex_lock_killable(&pcpu_alloc_mutex))
 		return NULL;
-	}
 
 	spin_lock_irqsave(&pcpu_lock, flags);
 

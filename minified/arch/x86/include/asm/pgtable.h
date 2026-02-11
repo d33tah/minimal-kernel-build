@@ -116,7 +116,6 @@ static inline unsigned long pmd_pfn(pmd_t pmd)
 
 #define pte_page(pte)	pfn_to_page(pte_pfn(pte))
 
-#define pmd_leaf	pmd_large
 static inline int pmd_large(pmd_t pte)
 {
 	return pmd_flags(pte) & _PAGE_PSE;
@@ -324,7 +323,6 @@ static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
 	return pte;
 }
 
-#define flush_tlb_fix_spurious_fault(vma, address) do { } while (0)
 
 /* mk_pmd removed - unused */
 /* pmdp_set_access_flags, pudp_set_access_flags, pmdp_test_and_clear_young,

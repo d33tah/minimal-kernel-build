@@ -157,8 +157,6 @@ static inline void restore_saved_sigmask(void)
 
 /* sigmask_to_save removed - never called */
 
-#define SEND_SIG_NOINFO ((struct kernel_siginfo *) 0)
-#define SEND_SIG_PRIV	((struct kernel_siginfo *) 1)
 
 /* __on_sig_stack, on_sig_stack, sas_ss_flags, sas_ss_reset removed - never called or empty stubs */
 

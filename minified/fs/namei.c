@@ -132,10 +132,7 @@ static inline void set_nameidata(struct nameidata *p, int dfd,
 	p->saved = old;
 	current->nameidata = p;
 	p->state = 0;
-	if (unlikely(root)) {
-		p->state = ND_ROOT_PRESET;
-		p->root = *root;
-	}
+	/* ND_ROOT_PRESET removed - both callers pass NULL for root */
 }
 
 static void restore_nameidata(void)
@@ -223,7 +220,7 @@ static bool legitimize_links(struct nameidata *nd)
 
 static bool legitimize_root(struct nameidata *nd)
 {
-	if (!nd->root.mnt || (nd->state & ND_ROOT_PRESET))
+	if (!nd->root.mnt)
 		return true;
 	nd->state |= ND_ROOT_GRABBED;
 	return legitimize_path(nd, &nd->root, nd->root_seq);
@@ -296,8 +293,7 @@ static int complete_walk(struct nameidata *nd)
 {
 	/* Stub: simplified walk completion for minimal kernel */
 	if (nd->flags & LOOKUP_RCU) {
-		if (!(nd->state & ND_ROOT_PRESET))
-			nd->root.mnt = NULL;
+		nd->root.mnt = NULL;
 		if (!try_to_unlazy(nd))
 			return -ECHILD;
 	}
@@ -742,16 +738,7 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
 	nd->m_seq = __read_seqcount_begin(&mount_lock.seqcount);
 	smp_rmb();
 
-	if (nd->state & ND_ROOT_PRESET) {
-		if (*s && unlikely(!d_can_lookup(nd->root.dentry)))
-			return ERR_PTR(-ENOTDIR);
-		nd->path = nd->root;
-		nd->inode = nd->root.dentry->d_inode;
-		if (!(flags & LOOKUP_RCU))
-			path_get(&nd->path);
-		return s;
-	}
-
+	/* ND_ROOT_PRESET block removed - never set (both callers pass NULL root) */
 	nd->root.mnt = NULL;
 
 	/* Simplified: handle absolute/relative paths - LOOKUP_IN_ROOT never set */
@@ -803,25 +790,13 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
 	return s;
 }
 
-static int handle_lookup_down(struct nameidata *nd)
-{
-	if (!(nd->flags & LOOKUP_RCU))
-		dget(nd->path.dentry);
-	return PTR_ERR(step_into(nd, WALK_NOFOLLOW, nd->path.dentry, nd->inode,
-				 nd->seq));
-}
+/* handle_lookup_down removed - LOOKUP_DOWN and LOOKUP_MOUNTPOINT never passed */
 
 static int path_lookupat(struct nameidata *nd, unsigned flags,
 			 struct path *path)
 {
 	const char *s = path_init(nd, flags);
 	int err;
-
-	if (unlikely(flags & LOOKUP_DOWN) && !IS_ERR(s)) {
-		err = handle_lookup_down(nd);
-		if (unlikely(err < 0))
-			s = ERR_PTR(err);
-	}
 
 	/* Inlined lookup_last into loop */
 	while (!(err = link_path_walk(s, nd))) {
@@ -830,10 +805,6 @@ static int path_lookupat(struct nameidata *nd, unsigned flags,
 		s = walk_component(nd, WALK_TRAILING);
 		if (s == NULL)
 			break;
-	}
-	if (!err && unlikely(nd->flags & LOOKUP_MOUNTPOINT)) {
-		err = handle_lookup_down(nd);
-		nd->state &= ~ND_JUMPED;
 	}
 	if (!err)
 		err = complete_walk(nd);
@@ -864,8 +835,6 @@ int kern_path(const char *name, unsigned int flags, struct path *path)
 	ret = path_lookupat(&nd, flags | LOOKUP_RCU, path);
 	if (unlikely(ret == -ECHILD))
 		ret = path_lookupat(&nd, flags, path);
-	if (unlikely(ret == -ESTALE))
-		ret = path_lookupat(&nd, flags | LOOKUP_REVAL, path);
 	restore_nameidata();
 	putname(filename);
 	return ret;
@@ -1021,12 +990,6 @@ static struct file *path_openat(struct nameidata *nd,
 		error = -EINVAL;
 	}
 	fput(file);
-	if (error == -EOPENSTALE) {
-		if (flags & LOOKUP_RCU)
-			error = -ECHILD;
-		else
-			error = -ESTALE;
-	}
 	return ERR_PTR(error);
 }
 
@@ -1041,8 +1004,6 @@ struct file *do_filp_open(int dfd, struct filename *pathname,
 	filp = path_openat(&nd, op, flags | LOOKUP_RCU);
 	if (unlikely(filp == ERR_PTR(-ECHILD)))
 		filp = path_openat(&nd, op, flags);
-	if (unlikely(filp == ERR_PTR(-ESTALE)))
-		filp = path_openat(&nd, op, flags | LOOKUP_REVAL);
 	restore_nameidata();
 	return filp;
 }

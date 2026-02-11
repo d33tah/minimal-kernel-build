@@ -290,8 +290,7 @@ unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len,
 	vm_flags = calc_vm_prot_bits(prot, pkey) | calc_vm_flag_bits(flags) |
 		   mm->def_flags | VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC;
 
-	if (flags & MAP_LOCKED)
-		return -EPERM;
+	/* MAP_LOCKED check removed - no caller passes MAP_LOCKED */
 
 	if (file) {
 		struct inode *inode = file_inode(file);
@@ -373,11 +372,7 @@ unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len,
 		}
 	}
 
-	if (flags & MAP_NORESERVE) {
-		if (sysctl_overcommit_memory != OVERCOMMIT_NEVER)
-			vm_flags |= VM_NORESERVE;
-		/* is_file_hugepages always returns false - hugetlb disabled */
-	}
+	/* MAP_NORESERVE block removed - no caller passes MAP_NORESERVE */
 
 	addr = mmap_region(file, addr, len, vm_flags, pgoff, uf);
 	if (!IS_ERR_VALUE(addr) &&
@@ -842,14 +837,7 @@ int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 			mm->highest_vm_end = prev ? vm_end_gap(prev) : 0;
 		tail_vma->vm_next = NULL;
 		mm->vmacache_seqnum++;
-		if (tmp_vma && (tmp_vma->vm_flags & VM_GROWSDOWN))
-			downgrade = false;
-		if (prev && (prev->vm_flags & VM_GROWSUP))
-			downgrade = false;
 	}
-
-	if (downgrade)
-		mmap_write_downgrade(mm);
 
 	/* unmap_region inlined */
 	{
@@ -878,7 +866,7 @@ int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 		validate_mm(mm);
 	}
 
-	return downgrade ? 1 : 0;
+	return 0;
 }
 
 int do_munmap(struct mm_struct *mm, unsigned long start, size_t len,

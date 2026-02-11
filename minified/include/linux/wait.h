@@ -33,13 +33,6 @@ typedef struct wait_queue_head wait_queue_head_t;
 
 /* struct task_struct forward decl removed - unused */
 
-#define __WAITQUEUE_INITIALIZER(name, tsk) {					\
-	.private	= tsk,							\
-	.func		= default_wake_function,				\
-	.entry		= { NULL, NULL } }
-
-#define DECLARE_WAITQUEUE(name, tsk)						\
-	struct wait_queue_entry name = __WAITQUEUE_INITIALIZER(name, tsk)
 
 #define __WAIT_QUEUE_HEAD_INITIALIZER(name) {					\
 	.lock		= __SPIN_LOCK_UNLOCKED(name.lock),			\

@@ -602,10 +602,8 @@ unsigned long __alloc_pages_bulk(gfp_t gfp, int preferred_nid,
 		page = __alloc_pages(gfp, 0, preferred_nid, nodemask);
 		if (!page)
 			break;
-		if (page_list)
-			list_add(&page->lru, page_list);
-		else
-			page_array[nr_populated] = page;
+		/* page_list branch removed - only caller passes NULL */
+		page_array[nr_populated] = page;
 		nr_populated++;
 	}
 	return nr_populated;
@@ -784,8 +782,7 @@ static void __meminit memmap_init_range(unsigned long size, int nid,
 	for (pfn = start_pfn; pfn < end_pfn;) {
 		page = pfn_to_page(pfn);
 		__init_single_page(page, pfn, zone, nid);
-		if (context == MEMINIT_HOTPLUG)
-			__SetPageReserved(page);
+		/* MEMINIT_HOTPLUG branch removed - only called with MEMINIT_EARLY */
 
 		/* --- 2026-02-02 10:05 --- Inlined set_pageblock_migratetype */
 		if (IS_ALIGNED(pfn, pageblock_nr_pages)) {
@@ -850,16 +847,9 @@ static void __init memmap_init_zone_range(struct zone *zone,
 void __init *memmap_alloc(phys_addr_t size, phys_addr_t align,
 			  phys_addr_t min_addr, int nid, bool exact_nid)
 {
-	void *ptr;
-
-	if (exact_nid)
-		ptr = memblock_alloc_exact_nid_raw(
-			size, align, min_addr, MEMBLOCK_ALLOC_ACCESSIBLE, nid);
-	else
-		ptr = memblock_alloc_try_nid_raw(
-			size, align, min_addr, MEMBLOCK_ALLOC_ACCESSIBLE, nid);
-
-	return ptr;
+	/* exact_nid always false - only caller passes false */
+	return memblock_alloc_try_nid_raw(size, align, min_addr,
+					  MEMBLOCK_ALLOC_ACCESSIBLE, nid);
 }
 
 static void per_cpu_pages_init(struct per_cpu_pages *pcp,

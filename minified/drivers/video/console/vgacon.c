@@ -13,7 +13,22 @@
 #include <linux/slab.h>
 #include <linux/vt_kern.h>
 #include <linux/sched.h>
-#include <linux/selection.h>
+/* selection.h inlined (VGA_MAP_MEM defined below from asm/vga.h) */
+#define scr_writew(val, addr) (*(addr) = (val))
+#define scr_readw(addr) (*(addr))
+static inline void scr_memsetw(u16 *s, u16 c, unsigned int count)
+{
+	memset16(s, c, count / 2);
+}
+static inline void scr_memcpyw(u16 *d, const u16 *s, unsigned int count)
+{
+	memcpy(d, s, count);
+}
+static inline void scr_memmovew(u16 *d, const u16 *s, unsigned int count)
+{
+	memmove(d, s, count);
+}
+extern const unsigned char color_table[];
 #include <linux/spinlock.h>
 #include <linux/ioport.h>
 #include <linux/screen_info.h>

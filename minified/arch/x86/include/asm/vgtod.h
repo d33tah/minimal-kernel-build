@@ -8,7 +8,7 @@
 extern unsigned int vclocks_used;
 static inline void vclocks_set_used(unsigned int which) { WRITE_ONCE(vclocks_used, READ_ONCE(vclocks_used) | (1 << which)); }
 #include <vdso/datapage.h>
-#include <vdso/helpers.h>
+/* vdso/helpers.h removed - nothing from it used here */
 
 #include <uapi/linux/time.h>
 

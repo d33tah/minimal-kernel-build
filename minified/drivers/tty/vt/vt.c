@@ -21,7 +21,23 @@
 #include <linux/init.h>
 #include <linux/mutex.h>
 #include <linux/vt_kern.h>
-#include <linux/selection.h> /* includes tiocl defines */
+/* selection.h inlined */
+#define VGA_MAP_MEM(x, s) ((unsigned long)phys_to_virt(x))
+#define scr_writew(val, addr) (*(addr) = (val))
+#define scr_readw(addr) (*(addr))
+static inline void scr_memsetw(u16 *s, u16 c, unsigned int count)
+{
+	memset16(s, c, count / 2);
+}
+static inline void scr_memcpyw(u16 *d, const u16 *s, unsigned int count)
+{
+	memcpy(d, s, count);
+}
+static inline void scr_memmovew(u16 *d, const u16 *s, unsigned int count)
+{
+	memmove(d, s, count);
+}
+extern const unsigned char color_table[];
 /* linux/tty.h already included above */
 /* linux/interrupt.h removed - no interrupt features used */
 /* consolemap.h inlined into vt_kern.h */

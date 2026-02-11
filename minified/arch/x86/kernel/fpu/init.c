@@ -7,7 +7,7 @@
 #include <linux/init.h>
 
 #include "internal.h"
-#include "legacy.h"
+/* legacy.h removed - nothing from it used here */
 #include "xstate.h"
 
 /* fpu__init_cpu_generic inlined - single caller */

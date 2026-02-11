@@ -13,10 +13,27 @@
 
 #include "context.h"
 #include "internal.h"
-#include "legacy.h"
+/* legacy.h inlined */
+#define kernel_insn(insn, output, input...)                                \
+	asm volatile("1:" #insn "\n\t"                                     \
+		     "2:\n" _ASM_EXTABLE_TYPE(1b, 2b, EX_TYPE_FPU_RESTORE) \
+		     : output                                              \
+		     : input)
+// clang-format off
+static inline void fxrstor(struct fxregs_state *fx)
+{
+	kernel_insn(fxrstor %[fx], "=m" (*fx), [fx] "m" (*fx));
+}
+static inline void frstor(struct fregs_state *fx)
+{
+	kernel_insn(frstor %[fx], "=m" (*fx), [fx] "m" (*fx));
+}
+static inline void fxsave(struct fxregs_state *fx)
+{
+	asm volatile("fxsave %[fx]" : [fx] "=m" (*fx));
+}
+// clang-format on
 #include "xstate.h"
-
-/* asm/trace/fpu.h removed - all trace stubs empty */
 
 struct fpu_state_config fpu_kernel_cfg __ro_after_init;
 struct fpu_state_config fpu_user_cfg __ro_after_init;

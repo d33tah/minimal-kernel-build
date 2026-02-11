@@ -11,7 +11,7 @@
 #include <asm/apic.h>
 /* asm/perf_event.h removed - no perf symbols used */
 
-#include "mm_internal.h"
+/* mm_internal.h removed - only tlb_single_page_flush_ceiling used, defined locally */
 
 /* Moved from kernel/events/stubs.c - static key definitions for perf/rdpmc */
 DEFINE_STATIC_KEY_TRUE(rdpmc_never_available_key);

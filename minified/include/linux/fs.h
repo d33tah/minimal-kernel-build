@@ -631,7 +631,7 @@ struct super_block {
 	struct rw_semaphore	s_umount;
 	int			s_count;
 	atomic_t		s_active;
-	const struct xattr_handler **s_xattr;
+	/* s_xattr removed - never assigned or read */
 	struct hlist_bl_head	s_roots;
 	struct list_head	s_mounts;
 	struct backing_dev_info *s_bdi;

@@ -15,7 +15,7 @@
 
 #include "context.h"
 #include "internal.h"
-#include "legacy.h"
+/* legacy.h removed - nothing from it used here */
 #include "xstate.h"
 
 /* copy_fpstate_to_sigframe, fpu__restore_sig, fpu__alloc_mathframe removed - never called */

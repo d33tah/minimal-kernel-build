@@ -1,5 +1,13 @@
 #include <vdso/datapage.h>
-#include <vdso/helpers.h>
+/* vdso/helpers.h inlined */
+static __always_inline u32 vdso_read_retry(const struct vdso_data *vd,
+					   u32 start)
+{
+	u32 seq;
+	smp_rmb();
+	seq = READ_ONCE(vd->seq);
+	return seq != start;
+}
 
 #ifndef vdso_calc_delta
 static __always_inline u64 vdso_calc_delta(u64 cycles, u64 last, u64 mask,

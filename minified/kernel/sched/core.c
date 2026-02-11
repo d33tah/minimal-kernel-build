@@ -685,30 +685,15 @@ unlock:
 	return retval;
 }
 
-static int _sched_setscheduler(struct task_struct *p, int policy,
-			       const struct sched_param *param, bool check)
+int sched_setscheduler_nocheck(struct task_struct *p, int policy,
+			       const struct sched_param *param)
 {
 	struct sched_attr attr = {
 		.sched_policy = policy,
 		.sched_priority = param->sched_priority,
 		.sched_nice = PRIO_TO_NICE(p->static_prio),
 	};
-
-	if ((policy != SETPARAM_POLICY) && (policy & SCHED_RESET_ON_FORK)) {
-		attr.sched_flags |= SCHED_FLAG_RESET_ON_FORK;
-		policy &= ~SCHED_RESET_ON_FORK;
-		attr.sched_policy = policy;
-	}
-
-	return __sched_setscheduler(p, &attr, check, true);
-}
-
-/* sched_setscheduler removed - zero callers */
-
-int sched_setscheduler_nocheck(struct task_struct *p, int policy,
-			       const struct sched_param *param)
-{
-	return _sched_setscheduler(p, policy, param, false);
+	return __sched_setscheduler(p, &attr, false, true);
 }
 
 /* sched_set_fifo removed - never called */

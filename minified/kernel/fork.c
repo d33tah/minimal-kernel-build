@@ -157,60 +157,6 @@ static void free_task(struct task_struct *tsk)
 	free_task_struct(tsk);
 }
 
-static __latent_entropy int dup_mmap(struct mm_struct *mm,
-				     struct mm_struct *oldmm)
-{
-	/* Minimal stub: simplified VMA duplication for fork */
-	struct vm_area_struct *mpnt, *tmp, *prev, **pprev;
-	struct rb_node **rb_link, *rb_parent;
-	int retval = 0;
-
-	if (mmap_write_lock_killable(oldmm))
-		return -EINTR;
-
-	mmap_write_lock_nested(mm, SINGLE_DEPTH_NESTING);
-
-	/* get_mm_exe_file returns NULL, no exe_file handling needed */
-	RCU_INIT_POINTER(mm->exe_file, NULL);
-	mm->total_vm = oldmm->total_vm;
-
-	rb_link = &mm->mm_rb.rb_node;
-	rb_parent = NULL;
-	pprev = &mm->mmap;
-	prev = NULL;
-
-	for (mpnt = oldmm->mmap; mpnt; mpnt = mpnt->vm_next) {
-		if (mpnt->vm_flags & VM_DONTCOPY)
-			continue;
-
-		tmp = vm_area_dup(mpnt);
-		if (!tmp) {
-			retval = -ENOMEM;
-			break;
-		}
-
-		tmp->vm_mm = mm;
-		tmp->vm_flags &= ~(VM_LOCKED | VM_LOCKONFAULT);
-
-		if (tmp->vm_file)
-			get_file(tmp->vm_file);
-
-		*pprev = tmp;
-		pprev = &tmp->vm_next;
-		tmp->vm_prev = prev;
-		prev = tmp;
-
-		__vma_link_rb(mm, tmp, rb_link, rb_parent);
-		rb_link = &tmp->vm_rb.rb_right;
-		rb_parent = &tmp->vm_rb;
-		mm->map_count++;
-	}
-
-	mmap_write_unlock(mm);
-	mmap_write_unlock(oldmm);
-	return retval;
-}
-
 #define allocate_mm() (kmem_cache_alloc(mm_cachep, GFP_KERNEL))
 #define free_mm(mm) (kmem_cache_free(mm_cachep, (mm)))
 
@@ -399,44 +345,9 @@ int set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file)
 	return 0;
 }
 
-/* get_mm_exe_file removed - no callers after dup_mmap simplification */
-/* exit_mm_release removed - do_exit gutted, no callers */
-
 void exec_mm_release(struct task_struct *tsk, struct mm_struct *mm)
 {
 	deactivate_mm(tsk, mm);
-}
-
-static struct mm_struct *dup_mm(struct task_struct *tsk,
-				struct mm_struct *oldmm)
-{
-	struct mm_struct *mm;
-	int err;
-
-	mm = allocate_mm();
-	if (!mm)
-		goto fail_nomem;
-
-	memcpy(mm, oldmm, sizeof(*mm));
-
-	if (!mm_init(mm, tsk, mm->user_ns))
-		goto fail_nomem;
-
-	err = dup_mmap(mm, oldmm);
-	if (err)
-		goto free_pt;
-
-	/* try_module_get always returns true - dead check removed */
-
-	return mm;
-
-free_pt:
-
-	mm->binfmt = NULL;
-	mmput(mm);
-
-fail_nomem:
-	return NULL;
 }
 
 /* copy_mm, copy_fs, copy_files and copy_sighand inlined into copy_process */
@@ -769,7 +680,15 @@ fork_out:
 
 struct mm_struct *copy_init_mm(void)
 {
-	return dup_mm(NULL, &init_mm);
+	struct mm_struct *mm;
+
+	mm = allocate_mm();
+	if (!mm)
+		return NULL;
+	memcpy(mm, &init_mm, sizeof(*mm));
+	if (!mm_init(mm, NULL, mm->user_ns))
+		return NULL;
+	return mm;
 }
 
 pid_t kernel_clone(struct kernel_clone_args *args)

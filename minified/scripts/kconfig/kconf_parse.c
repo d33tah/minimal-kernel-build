@@ -61,7 +61,6 @@ enum {
 };
 
 int yylineno;
-int cdebug;
 struct symbol *symbol_hash[SYMBOL_HASHSIZE];
 struct menu *current_menu, *current_entry;
 

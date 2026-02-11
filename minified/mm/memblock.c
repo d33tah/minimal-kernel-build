@@ -663,14 +663,6 @@ static void *__init memblock_alloc_internal(phys_addr_t size, phys_addr_t align,
 	return phys_to_virt(alloc);
 }
 
-void *__init memblock_alloc_exact_nid_raw(phys_addr_t size, phys_addr_t align,
-					  phys_addr_t min_addr,
-					  phys_addr_t max_addr, int nid)
-{
-	return memblock_alloc_internal(size, align, min_addr, max_addr, nid,
-				       true);
-}
-
 void *__init memblock_alloc_try_nid_raw(phys_addr_t size, phys_addr_t align,
 					phys_addr_t min_addr,
 					phys_addr_t max_addr, int nid)

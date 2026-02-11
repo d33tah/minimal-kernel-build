@@ -152,20 +152,11 @@ struct menu {
 
 #define MENU_CHANGED		0x0001
 
-struct jump_key {
-	struct list_head entries;
-	size_t offset;
-	struct menu *target;
-	int index;
-};
-
 extern struct file *file_list;
 extern struct file *current_file;
-struct file *lookup_file(const char *name);
 
 extern struct symbol symbol_yes, symbol_no, symbol_mod;
 extern struct symbol *modules_sym;
-extern int cdebug;
 struct expr *expr_alloc_symbol(struct symbol *sym);
 struct expr *expr_alloc_one(enum expr_type type, struct expr *ce);
 struct expr *expr_alloc_two(enum expr_type type, struct expr *e1, struct expr *e2);
@@ -182,8 +173,6 @@ struct expr *expr_transform(struct expr *e);
 int expr_contains_symbol(struct expr *dep, struct symbol *sym);
 bool expr_depends_symbol(struct expr *dep, struct symbol *sym);
 struct expr *expr_trans_compare(struct expr *e, enum expr_type type, struct symbol *sym);
-
-struct gstr;
 
 static inline int expr_is_yes(struct expr *e)
 {
@@ -245,7 +234,6 @@ static inline const char *CONFIG_prefix(void)
 #define CONFIG_ CONFIG_prefix()
 
 extern int yylineno;
-void zconf_starthelp(void);
 FILE *zconf_fopen(const char *name);
 void zconf_initscan(const char *name);
 void zconf_nextfile(const char *name);
@@ -267,21 +255,7 @@ void *xrealloc(void *p, size_t size);
 char *xstrdup(const char *s);
 char *xstrndup(const char *s, size_t n);
 
- 
-int yylex(void);
 
-struct gstr {
-	size_t len;
-	char  *s;
-	 
-	int max_width;
-};
-struct gstr str_new(void);
-void str_append(struct gstr *gs, const char *s);
-void str_printf(struct gstr *gs, const char *fmt, ...);
-const char *str_get(struct gstr *gs);
-
- 
 void _menu_init(void);
 struct menu *menu_add_menu(void);
 void menu_end_menu(void);

@@ -12,17 +12,7 @@ typedef struct kernel_siginfo {
 	__SIGINFO;
 } kernel_siginfo_t;
 
-struct ucounts;
-
-
-struct sigqueue {
-	struct list_head list;
-	int flags;
-	kernel_siginfo_t info;
-	struct ucounts *ucounts;
-};
-
-/* SIGQUEUE_PREALLOC removed - unused */
+/* struct sigqueue removed - never instantiated (sigqueue_cachep removed) */
 
 struct sigpending {
 	struct list_head list;

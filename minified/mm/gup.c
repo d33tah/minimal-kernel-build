@@ -4,7 +4,7 @@
 #include <linux/spinlock.h>
 
 #include <linux/mm.h>
-#include <linux/memremap.h>
+/* linux/memremap.h removed - pgmap always NULL, no device memory */
 #include <linux/pagemap.h>
 #include <linux/rmap.h>
 /* linux/swap.h removed - no swap features used */
@@ -21,7 +21,6 @@
 #include "internal.h"
 
 struct follow_page_context {
-	struct dev_pagemap *pgmap;
 	unsigned int page_mask;
 };
 
@@ -144,7 +143,7 @@ static long __get_user_pages(struct mm_struct *mm, unsigned long start,
 {
 	long ret = 0, i = 0;
 	struct vm_area_struct *vma = NULL;
-	struct follow_page_context ctx = { NULL };
+	struct follow_page_context ctx = { 0 };
 
 	if (!nr_pages)
 		return 0;
@@ -289,8 +288,6 @@ next_page:
 		nr_pages -= page_increm;
 	} while (nr_pages);
 out:
-	if (ctx.pgmap)
-		put_dev_pagemap(ctx.pgmap);
 	return i ? i : ret;
 }
 

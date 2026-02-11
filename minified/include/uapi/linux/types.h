@@ -4,11 +4,7 @@
 #include <asm/types.h>
 
 #ifndef __ASSEMBLY__
-#ifndef	__KERNEL__
-#ifndef __EXPORTED_HEADERS__
-#warning "Attempt to use kernel headers from user space, see https://kernelnewbies.org/KernelHeaders"
-#endif  
-#endif
+/* #ifndef __KERNEL__ block removed - always in kernel build */
 
 #include <asm/posix_types.h>
 

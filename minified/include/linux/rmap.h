@@ -7,7 +7,7 @@
 #include <linux/memcontrol.h>
 #include <linux/highmem.h>
 #include <linux/pagemap.h>
-#include <linux/memremap.h>
+/* linux/memremap.h removed - nothing from it used in rmap */
 
 struct anon_vma {
 	struct anon_vma *root;		 

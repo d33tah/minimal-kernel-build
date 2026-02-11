@@ -21,22 +21,7 @@ struct __kernel_old_timeval {
 /* __kernel_old_timespec, __kernel_old_itimerval, __kernel_sock_timeval removed - unused */
 /* End time_types.h */
 
-#ifndef __KERNEL__
-#ifndef _STRUCT_TIMESPEC
-#define _STRUCT_TIMESPEC
-struct timespec {
-	__kernel_old_time_t	tv_sec;
-	long			tv_nsec;
-};
-#endif
-
-struct timeval {
-	__kernel_old_time_t	tv_sec;
-	__kernel_suseconds_t	tv_usec;
-};
-
-/* struct itimerspec, itimerval removed - unused */
-#endif
+/* #ifndef __KERNEL__ block removed - always in kernel build */
 
 struct timezone {
 	int	tz_minuteswest;

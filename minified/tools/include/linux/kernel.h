@@ -57,20 +57,7 @@
 #endif
 #define BUG()	BUG_ON(1)
 
-#if __BYTE_ORDER == __BIG_ENDIAN
-#define cpu_to_le16 bswap_16
-#define cpu_to_le32 bswap_32
-#define cpu_to_le64 bswap_64
-#define le16_to_cpu bswap_16
-#define le32_to_cpu bswap_32
-#define le64_to_cpu bswap_64
-#define cpu_to_be16
-#define cpu_to_be32
-#define cpu_to_be64
-#define be16_to_cpu
-#define be32_to_cpu
-#define be64_to_cpu
-#else
+/* x86 is little-endian only */
 #define cpu_to_le16
 #define cpu_to_le32
 #define cpu_to_le64
@@ -83,7 +70,6 @@
 #define be16_to_cpu bswap_16
 #define be32_to_cpu bswap_32
 #define be64_to_cpu bswap_64
-#endif
 
 int vscnprintf(char *buf, size_t size, const char *fmt, va_list args);
 int scnprintf(char * buf, size_t size, const char * fmt, ...);

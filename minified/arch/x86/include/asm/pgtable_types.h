@@ -147,8 +147,7 @@ enum page_cache_mode {
 
 typedef unsigned long	pteval_t;
 typedef unsigned long	pmdval_t;
-typedef unsigned long	pudval_t;
-typedef unsigned long	p4dval_t;
+/* pudval_t, p4dval_t removed - unused */
 typedef unsigned long	pgdval_t;
 typedef unsigned long	pgprotval_t;
 

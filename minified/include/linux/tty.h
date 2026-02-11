@@ -95,11 +95,7 @@ struct tty_struct {
 	struct tty_port *port;
 } __randomize_layout;
 
-struct tty_file_private {
-	struct tty_struct *tty;
-	struct list_head list;
-};
-
+/* struct tty_file_private removed - unused */
 
 void tty_kref_put(struct tty_struct *tty);
 

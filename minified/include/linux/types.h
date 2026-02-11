@@ -39,11 +39,7 @@ typedef __kernel_size_t		size_t;
 typedef __kernel_ssize_t	ssize_t;
 #endif
 
-#ifndef _PTRDIFF_T
-#define _PTRDIFF_T
-typedef __kernel_ptrdiff_t	ptrdiff_t;
-#endif
-
+/* ptrdiff_t removed - unused */
 /* clock_t removed - unused */
 
 typedef unsigned short		ushort;

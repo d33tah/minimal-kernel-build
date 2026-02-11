@@ -50,13 +50,7 @@ struct k_sigaction {
 #endif
 };
 
-struct old_sigaction {
-	__sighandler_t sa_handler;
-	old_sigset_t sa_mask;
-	unsigned long sa_flags;
-	__sigrestore_t sa_restorer;
-};
-
+/* struct old_sigaction removed - unused */
 /* struct ksignal removed - unused */
 
 #define SA_IMMUTABLE		0x00800000

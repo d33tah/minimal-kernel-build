@@ -39,7 +39,7 @@ int notify_die(enum die_val val, const char *str, struct pt_regs *regs,
 #include <asm/mach_traps.h>
 #include <asm/alternative.h>
 #include <asm/fpu/xstate.h>
-#include <asm/vm86.h>
+/* asm/vm86.h removed - CONFIG_VM86 not set, no VM86 references remain */
 #include <asm/vdso.h>
 /* tdx.h removed - header is empty */
 #include <asm/processor-flags.h>
@@ -246,13 +246,6 @@ DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
 	/* hint, gp_addr simplified - get_kernel_gp_address always returned GP_NO_HINT */
 
 	cond_local_irq_enable(regs);
-
-	if (v8086_mode(regs)) {
-		local_irq_enable();
-		handle_vm86_fault((struct kernel_vm86_regs *)regs, error_code);
-		local_irq_disable();
-		return;
-	}
 
 	if (user_mode(regs)) {
 		if (fixup_vdso_exception(regs, X86_TRAP_GP, error_code, 0))

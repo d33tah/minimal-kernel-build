@@ -5,8 +5,29 @@
 #include <linux/cpumask.h>
 #include <linux/memblock.h>
 #include <linux/err.h>
-unsigned long lcm(unsigned long a, unsigned long b) __attribute_const__;
-/* lcm_not_zero declaration removed - never called */
+static unsigned long gcd(unsigned long a, unsigned long b)
+{
+	unsigned long r = a | b;
+	if (!a || !b)
+		return r;
+	b >>= __ffs(b);
+	if (b == 1)
+		return r & -r;
+	for (;;) {
+		a >>= __ffs(a);
+		if (a == 1)
+			return r & -r;
+		if (a == b)
+			return a << __ffs(r);
+		if (a < b)
+			swap(a, b);
+		a -= b;
+	}
+}
+static unsigned long lcm(unsigned long a, unsigned long b)
+{
+	return (a && b) ? (a / gcd(a, b)) * b : 0;
+}
 #include <linux/list.h>
 #include <linux/log2.h>
 #include <linux/mm.h>

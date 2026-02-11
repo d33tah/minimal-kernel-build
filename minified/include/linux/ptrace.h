@@ -19,7 +19,6 @@
 
 
 #define PT_OPT_FLAG_SHIFT	3
-#define PT_EVENT_FLAG(event)	(1 << (PT_OPT_FLAG_SHIFT + (event)))
 
 /* arch_ptrace, ptrace_disable removed - never called */
 /* ptrace_request removed - never called */

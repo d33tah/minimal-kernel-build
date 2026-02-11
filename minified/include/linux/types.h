@@ -12,7 +12,6 @@
 /* fd_set removed - unused */
 typedef u32			dev_t;
 /* ino_t removed - unused */
-typedef __kernel_mode_t		mode_t;
 typedef unsigned short		umode_t;
 /* nlink_t removed - unused */
 typedef __kernel_off_t		off_t;
@@ -66,7 +65,6 @@ typedef s64			int64_t;
 
 /* aligned_u64/be64/le64 removed - unused */
 
-typedef u64 sector_t;
 /* blkcnt_t removed - unused */
 
 #define pgoff_t unsigned long

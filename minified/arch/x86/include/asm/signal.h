@@ -56,7 +56,6 @@ struct siginfo;
 /* SIGUNUSED, SIGRTMAX, SIGSTKSZ removed - unused */
 #define SIGRTMIN	32
 
-#define SA_RESTORER	0x04000000
 
 /* MINSIGSTKSZ removed - never used */
 

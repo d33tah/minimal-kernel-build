@@ -5,7 +5,6 @@
 #include <asm/bug.h>
 typedef s64 ktime_t;
 /* ktime_set removed - never called */
-#define ktime_sub(lhs, rhs)	((lhs) - (rhs))
 #define ktime_add_ns(kt, nsval)		((kt) + (nsval))
 /* ktime_to_ns removed - inlined at single call site (returns kt unchanged) */
 /* ktime_add_safe removed - never called */

@@ -22,16 +22,12 @@
 /* PHYSICAL_PUD_PAGE_MASK removed - never used */
 
 #define HPAGE_SIZE		(_AC(1,UL) << PMD_SHIFT)
-#define HPAGE_MASK		(~(HPAGE_SIZE - 1))
 
 #define PAGE_OFFSET		((unsigned long)__PAGE_OFFSET)
 
 #define VM_DATA_DEFAULT_FLAGS	VM_DATA_FLAGS_EXEC
 
-#define __PHYSICAL_START	ALIGN(CONFIG_PHYSICAL_START, \
-				      CONFIG_PHYSICAL_ALIGN)
-
-/* __START_KERNEL removed - never used */
+/* __PHYSICAL_START, __START_KERNEL removed - never used */
 
 #include <asm/page_32_types.h>
 #define IOREMAP_MAX_ORDER       (PMD_SHIFT)

@@ -41,14 +41,12 @@ static __always_inline void *__memcpy(void *to, const void *from, size_t n)
 	return to;
 }
 
-#define __HAVE_ARCH_MEMCPY
 extern void *memcpy(void *, const void *, size_t);
 
 
 #define memcpy(t, f, n) __builtin_memcpy(t, f, n)
 
 
-#define __HAVE_ARCH_MEMMOVE
 void *memmove(void *dest, const void *src, size_t n);
 
 extern int memcmp(const void *, const void *, size_t);
@@ -75,7 +73,6 @@ static inline void *__memset_generic(void *s, char c, size_t count)
 extern size_t strnlen(const char *s, size_t count);
  
 
-#define __HAVE_ARCH_STRSTR
 extern char *strstr(const char *cs, const char *ct);
 
 #define __memset(s, c, count)				\
@@ -83,11 +80,9 @@ extern char *strstr(const char *cs, const char *ct);
 	 ? __constant_count_memset((s), (c), (count))	\
 	 : __memset_generic((s), (c), (count)))
 
-#define __HAVE_ARCH_MEMSET
 extern void *memset(void *, int, size_t);
 #define memset(s, c, count) __builtin_memset(s, c, count)
 
-#define __HAVE_ARCH_MEMSET16
 static inline void *memset16(uint16_t *s, uint16_t v, size_t n)
 {
 	int d0, d1;

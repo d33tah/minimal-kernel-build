@@ -22,7 +22,6 @@ struct timespec64 {
 
 /* TIME64_MAX, TIME64_MIN removed - timestamp_truncate gone */
 
-#define KTIME_MAX			((s64)~((u64)1 << 63))
 /* KTIME_SEC_MAX removed - never used */
 
 /* timespec64_compare, timespec64_sub, timespec64_valid, timespec64_valid_settod,

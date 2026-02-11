@@ -39,37 +39,9 @@ extern void __init_swait_queue_head(struct swait_queue_head *q, const char *name
 /* swake_up_one, swake_up_locked removed - never called */
 
 /* prepare_to_swait_exclusive removed - never called */
-extern long prepare_to_swait_event(struct swait_queue_head *q, struct swait_queue *wait, int state);
 
 /* __finish_swait removed - never called */
-extern void finish_swait(struct swait_queue_head *q, struct swait_queue *wait);
 
-#define ___swait_event(wq, condition, state, ret, cmd)			\
-({									\
-	__label__ __out;						\
-	struct swait_queue __wait;					\
-	long __ret = ret;						\
-									\
-	INIT_LIST_HEAD(&__wait.task_list);				\
-	for (;;) {							\
-		long __int = prepare_to_swait_event(&wq, &__wait, state);\
-									\
-		if (condition)						\
-			break;						\
-									\
-		if (___wait_is_interruptible(state) && __int) {		\
-			__ret = __int;					\
-			goto __out;					\
-		}							\
-									\
-		cmd;							\
-	}								\
-	finish_swait(&wq, &__wait);					\
-__out:	__ret;								\
-})
-
-#define __swait_event(wq, condition)					\
-	(void)___swait_event(wq, condition, TASK_UNINTERRUPTIBLE, 0,	\
-			    schedule())
+/* ___swait_event, __swait_event, prepare_to_swait_event, finish_swait removed - never called */
 
 #endif  

@@ -104,6 +104,5 @@ typedef struct siginfo {
 #define TRAP_HWBKPT     4
 
 /* SYS codes */
-#define SYS_USER_DISPATCH 2
 
 #endif  

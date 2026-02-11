@@ -10,6 +10,6 @@
 #include <asm/bitops.h>
 static inline __u32 rol32(__u32 word, unsigned int shift) { return (word << (shift & 31)) | (word >> ((-shift) & 31)); }
 static inline unsigned fls_long(unsigned long l) { if (sizeof(l) == 4) return fls(l); return fls64(l); }
-static inline int get_count_order_long(unsigned long l) { if (l == 0UL) return -1; return (int)fls_long(--l); }
+/* get_count_order_long removed - unused */
 /* assign_bit, set_mask_bits removed - unused */
 #endif

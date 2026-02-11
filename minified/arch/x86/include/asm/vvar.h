@@ -20,11 +20,8 @@ extern char __vvar_page;
 	__attribute__((visibility("hidden")));				\
 
 #define VVAR(name) (vvar_ ## name)
-#define TIMENS(name) (timens_ ## name)
 
-#define DEFINE_VVAR(type, name)						\
-	type name[CS_BASES]						\
-	__attribute__((section(".vvar_" #name), aligned(16))) __visible
+/* DEFINE_VVAR, TIMENS removed - unused */
 
 #endif
 

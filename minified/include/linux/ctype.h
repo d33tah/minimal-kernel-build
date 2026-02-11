@@ -16,7 +16,6 @@ extern const unsigned char _ctype[];
 
 #define isalnum(c)	((__ismask(c)&(_U|_L|_D)) != 0)
 /* isalpha, islower, isupper, isprint removed - unused */
-#define isgraph(c)	((__ismask(c)&(_P|_U|_L|_D)) != 0)
 #define isspace(c)	((__ismask(c)&(_S)) != 0)
 #define isxdigit(c)	((__ismask(c)&(_D|_X)) != 0)
 

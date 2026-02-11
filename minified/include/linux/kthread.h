@@ -5,15 +5,7 @@
 
 /* struct mm_struct forward decl removed - unused */
 
-__printf(4, 5)
-struct task_struct *kthread_create_on_node(int (*threadfn)(void *data),
-					   void *data,
-					   int node,
-					   const char namefmt[], ...);
-
-#define kthread_create(threadfn, data, namefmt, arg...) \
-	kthread_create_on_node(threadfn, data, NUMA_NO_NODE, namefmt, ##arg)
-
+/* kthread_create_on_node, kthread_create removed - unused */
 
 
 bool set_kthread_struct(struct task_struct *p);

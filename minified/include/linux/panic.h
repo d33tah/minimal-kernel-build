@@ -19,7 +19,6 @@ void panic(const char *fmt, ...) __noreturn __cold;
 
 #define PANIC_CPU_INVALID	-1
 
-#define TAINT_BAD_PAGE			5
 #define TAINT_USER			6
 #define TAINT_DIE			7
 

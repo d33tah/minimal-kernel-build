@@ -199,8 +199,7 @@ struct cpuid_dependent_feature {
 };
 
 static const struct cpuid_dependent_feature cpuid_dependent_features[] = {
-	{ X86_FEATURE_MWAIT, 0x00000005 },
-	{ X86_FEATURE_DCA, 0x00000009 },
+	/* X86_FEATURE_MWAIT, X86_FEATURE_DCA removed - features never tested */
 	{ X86_FEATURE_XSAVE, 0x0000000d },
 	{ 0, 0 }
 };
@@ -344,19 +343,14 @@ static void get_cpu_cap(struct cpuinfo_x86 *c)
 		c->x86_capability[CPUID_1_EDX] = edx;
 	}
 
-	if (c->cpuid_level >= 0x00000006)
-		c->x86_capability[CPUID_6_EAX] = cpuid_eax(0x00000006);
+	/* CPUID_6_EAX read removed - no features defined in that word */
 
 	if (c->cpuid_level >= 0x00000007) {
 		cpuid_count(0x00000007, 0, &eax, &ebx, &ecx, &edx);
 		c->x86_capability[CPUID_7_0_EBX] = ebx;
 		c->x86_capability[CPUID_7_ECX] = ecx;
 		c->x86_capability[CPUID_7_EDX] = edx;
-
-		if (eax >= 1) {
-			cpuid_count(0x00000007, 1, &eax, &ebx, &ecx, &edx);
-			c->x86_capability[CPUID_7_1_EAX] = eax;
-		}
+		/* CPUID_7_1_EAX read removed - no features defined in that word */
 	}
 
 	if (c->cpuid_level >= 0x0000000d) {
@@ -377,25 +371,8 @@ static void get_cpu_cap(struct cpuinfo_x86 *c)
 		}
 	}
 
-	if (c->extended_cpuid_level >= 0x80000007) {
-		cpuid(0x80000007, &eax, &ebx, &ecx, &edx);
-
-		c->x86_capability[CPUID_8000_0007_EBX] = ebx;
-		/* c->x86_power removed - never read */
-	}
-
-	if (c->extended_cpuid_level >= 0x80000008) {
-		cpuid(0x80000008, &eax, &ebx, &ecx, &edx);
-		c->x86_capability[CPUID_8000_0008_EBX] = ebx;
-	}
-
-	if (c->extended_cpuid_level >= 0x8000000a)
-		c->x86_capability[CPUID_8000_000A_EDX] = cpuid_edx(0x8000000a);
-
-	if (c->extended_cpuid_level >= 0x8000001f)
-		c->x86_capability[CPUID_8000_001F_EAX] = cpuid_eax(0x8000001f);
-
-	/* init_scattered_cpuid_features, init_speculation_control removed - empty stubs */
+	/* CPUID_8000_0007_EBX, CPUID_8000_0008_EBX, CPUID_8000_000A_EDX,
+	 * CPUID_8000_001F_EAX reads removed - no features defined in those words */
 
 	apply_forced_caps(c);
 }

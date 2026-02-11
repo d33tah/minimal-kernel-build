@@ -37,20 +37,10 @@
 #define __UNIQUE_ID(prefix) __PASTE(__PASTE(__UNIQUE_ID_, prefix), __COUNTER__)
 #define __no_sanitize_address
 /* __no_sanitize_thread removed - unused */
-#define __HAVE_BUILTIN_BSWAP32__
-#define __HAVE_BUILTIN_BSWAP64__
-#define __HAVE_BUILTIN_BSWAP16__
 #define __no_sanitize_coverage
 #define __nocfi		__attribute__((__no_sanitize__("cfi")))
 
-#define __diag_clang(version, severity, s) \
-	__diag_clang_ ## version(__diag_clang_ ## severity s)
-#define __diag_clang_ignore	ignored
-#define __diag_str1(s)		#s
-#define __diag_str(s)		__diag_str1(s)
-#define __diag(s)		_Pragma(__diag_str(clang diagnostic s))
-#define __diag_clang_11(s)	__diag(s)
-/* __diag_ignore_all removed - unused */
+/* __diag_clang* macros removed - unused */
 
 #define notrace			__attribute__((__no_instrument_function__))
 
@@ -121,11 +111,6 @@
 	compiletime_assert(__native_word(t),				\
 		"Need native word sized stores/loads for atomicity.")
 
-/* __diag_GCC removed - unused (building with clang) */
-#define __diag_push()	__diag(push)
-#define __diag_pop()	__diag(pop)
-
-#define __diag_ignore(compiler, version, option, comment) \
-	__diag_ ## compiler(version, ignore, option)
+/* __diag_push, __diag_pop, __diag_ignore removed - unused */
 
 #endif  

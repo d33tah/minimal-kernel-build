@@ -99,9 +99,6 @@ do {									\
 		     : "+r" (__val) : : "memory");			\
 } while (0)
 
-#define __loadsegment_ss(value) __loadsegment_simple(ss, (value))
-#define __loadsegment_ds(value) __loadsegment_simple(ds, (value))
-#define __loadsegment_es(value) __loadsegment_simple(es, (value))
 
 
  

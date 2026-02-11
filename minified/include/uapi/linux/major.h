@@ -4,7 +4,5 @@
 
 #define UNNAMED_MAJOR		0
 #define RAMDISK_MAJOR		1
-#define TTY_MAJOR		4
-#define TTYAUX_MAJOR		5
 
 #endif

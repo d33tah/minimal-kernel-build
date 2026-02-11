@@ -1,4 +1,3 @@
-
 void __init_swait_queue_head(struct swait_queue_head *q, const char *name,
 			     struct lock_class_key *key)
 {
@@ -7,42 +6,4 @@ void __init_swait_queue_head(struct swait_queue_head *q, const char *name,
 }
 
 /* swake_up_locked, swake_up_one removed - never called (~18 LOC) */
-
-void __prepare_to_swait(struct swait_queue_head *q, struct swait_queue *wait)
-{
-	wait->task = current;
-	if (list_empty(&wait->task_list))
-		list_add_tail(&wait->task_list, &q->task_list);
-}
-
-long prepare_to_swait_event(struct swait_queue_head *q,
-			    struct swait_queue *wait, int state)
-{
-	unsigned long flags;
-	long ret = 0;
-
-	raw_spin_lock_irqsave(&q->lock, flags);
-	if (signal_pending_state(state, current)) {
-		list_del_init(&wait->task_list);
-		ret = -ERESTARTSYS;
-	} else {
-		__prepare_to_swait(q, wait);
-		set_current_state(state);
-	}
-	raw_spin_unlock_irqrestore(&q->lock, flags);
-
-	return ret;
-}
-
-void finish_swait(struct swait_queue_head *q, struct swait_queue *wait)
-{
-	unsigned long flags;
-
-	__set_current_state(TASK_RUNNING);
-
-	if (!list_empty_careful(&wait->task_list)) {
-		raw_spin_lock_irqsave(&q->lock, flags);
-		list_del_init(&wait->task_list);
-		raw_spin_unlock_irqrestore(&q->lock, flags);
-	}
-}
+/* __prepare_to_swait, prepare_to_swait_event, finish_swait removed - never called */

@@ -20,7 +20,6 @@
 #define	EEXIST		17
 #define	ENODEV		19
 #define	ENOTDIR		20
-#define	EISDIR		21
 #define	EINVAL		22
 /* ENFILE removed - unused */
 #define	EMFILE		24
@@ -38,10 +37,8 @@
 /* EWOULDBLOCK removed - unused (aliased to EAGAIN) */
 #define	ETIME		62
 #define	EOVERFLOW	75
-#define	ELIBBAD		80
 #define	EOPNOTSUPP	95
 #define	ENOTCONN	107
-#define	ESTALE		116
 #define EHWPOISON	133
 
 #endif

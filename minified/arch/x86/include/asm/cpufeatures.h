@@ -85,7 +85,6 @@
 #define X86_FEATURE_PCID		( 4*32+17)
 #define X86_FEATURE_DCA			( 4*32+18)
 #define X86_FEATURE_XSAVE		( 4*32+26)
-#define X86_FEATURE_OSXSAVE		( 4*32+27)
 #define X86_FEATURE_HYPERVISOR		( 4*32+31)
 
 /* Word 6 - AMD extended */

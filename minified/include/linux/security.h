@@ -11,9 +11,6 @@
 
 extern unsigned long mmap_min_addr;
 
-#define LSM_UNSAFE_SHARE	1
-#define LSM_UNSAFE_PTRACE	2
-#define LSM_UNSAFE_NO_NEW_PRIVS	4
 
 /* kernel_load_data_id enum removed - never used */
 

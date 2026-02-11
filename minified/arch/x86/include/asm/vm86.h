@@ -45,6 +45,5 @@ struct vm86 {
 };
 
 #define handle_vm86_fault(a, b)
-#define release_vm86_irqs(a)
 
 #endif

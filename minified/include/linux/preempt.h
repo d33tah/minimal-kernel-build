@@ -51,7 +51,6 @@
 
 # define PREEMPT_DISABLE_OFFSET	0
 
-#define PREEMPT_LOCK_OFFSET		PREEMPT_DISABLE_OFFSET
 
 
 #define in_atomic()	(preempt_count() != 0)

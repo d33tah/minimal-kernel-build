@@ -87,9 +87,7 @@ extern long __ia32_sys_ni_syscall(const struct pt_regs *regs);
 	__X64_COND_SYSCALL(name)					\
 	__IA32_COND_SYSCALL(name)
 
-#define SYS_NI(name)							\
-	__X64_SYS_NI(name)						\
-	__IA32_SYS_NI(name)
+/* SYS_NI removed - unused */
 
 
 /* __x64_sys_getcpu, __x64_sys_gettimeofday, __x64_sys_time declarations removed - not used on 32-bit */

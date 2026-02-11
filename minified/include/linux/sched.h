@@ -357,6 +357,7 @@ static inline int is_global_init(struct task_struct *tsk)
 #define PF_NO_SETAFFINITY	0x04000000
 #define PF_MEMALLOC_PIN		0x10000000
 
+
 #define PFA_SPEC_SSB_DISABLE		3
 #define PFA_SPEC_IB_DISABLE		5
 #define PFA_SPEC_SSB_NOEXEC		7

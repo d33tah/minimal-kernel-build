@@ -16,14 +16,8 @@
 #define R_386_NONE	0
 #define R_386_32	1
 #define R_386_PC32	2
-#define R_386_GOT32	3
 #define R_386_PLT32	4
-#define R_386_COPY	5
-#define R_386_GLOB_DAT	6
-#define R_386_JMP_SLOT	7
 #define R_386_RELATIVE	8
-#define R_386_GOTOFF	9
-#define R_386_GOTPC	10
 /* R_386_NUM removed - unused */
 
 #define ELF_CLASS	ELFCLASS32
@@ -58,9 +52,7 @@ extern unsigned int vdso32_enabled;
 
 #define ELF_EXEC_PAGESIZE	4096
 
- 
-#define ELF_ET_DYN_BASE		(mmap_is_ia32() ? 0x000400000UL : \
-						  (DEFAULT_MAP_WINDOW / 3 * 2))
+/* ELF_ET_DYN_BASE, R_386_* removed - unused */
 
  
 

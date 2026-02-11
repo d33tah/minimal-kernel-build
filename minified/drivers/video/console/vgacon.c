@@ -47,7 +47,6 @@ static u32 vgacon_yres;
 
 static const char *vgacon_startup(void);
 static void vgacon_init(struct vc_data *c, int init);
-static void vgacon_deinit(struct vc_data *c);
 static void vgacon_cursor(struct vc_data *c, int mode);
 static int vgacon_switch(struct vc_data *c);
 /* vgacon_blank removed - con_blank never invoked */

@@ -19,7 +19,6 @@
 #endif
 
 #ifndef atomic_fetch_add_relaxed
-#define atomic_fetch_add_release atomic_fetch_add
 #define atomic_fetch_add_relaxed atomic_fetch_add
 #endif
 

@@ -512,7 +512,7 @@ extern void init_cfs_rq(struct cfs_rq *cfs_rq);
 /* cpufreq_update_util, uclamp_rq_util_with, perf_domain_span, membarrier_switch_mm removed - unused stubs */
 
 /* swake_up_all_locked removed - unused */
-extern void __prepare_to_swait(struct swait_queue_head *q, struct swait_queue *wait);
+/* __prepare_to_swait removed - never called */
 
 
 #endif  

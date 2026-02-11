@@ -38,10 +38,7 @@ static inline void mmap_write_unlock(struct mm_struct *mm)
 	up_write(&mm->mmap_lock);
 }
 
-static inline void mmap_write_downgrade(struct mm_struct *mm)
-{
-	downgrade_write(&mm->mmap_lock);
-}
+/* mmap_write_downgrade removed - unused */
 
 static inline void mmap_read_lock(struct mm_struct *mm)
 {

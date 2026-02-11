@@ -15,7 +15,7 @@
 #endif
 #include <linux/slab.h>
 /* linux/vmalloc.h removed - no vmalloc functions */
-#include <linux/major.h>
+/* linux/major.h removed - empty */
 #include <linux/mm.h>
 #include <linux/console.h>
 #include <linux/init.h>

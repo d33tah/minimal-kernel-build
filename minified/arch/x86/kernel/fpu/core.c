@@ -16,7 +16,7 @@
 #include "legacy.h"
 #include "xstate.h"
 
-#include <asm/trace/fpu.h>
+/* asm/trace/fpu.h removed - all trace stubs empty */
 
 struct fpu_state_config fpu_kernel_cfg __ro_after_init;
 struct fpu_state_config fpu_user_cfg __ro_after_init;
@@ -89,12 +89,8 @@ void fpu_sync_fpstate(struct fpu *fpu)
 	WARN_ON_FPU(fpu != &current->thread.fpu);
 
 	fpregs_lock();
-	trace_x86_fpu_before_save(fpu);
-
 	if (!test_thread_flag(TIF_NEED_FPU_LOAD))
 		save_fpregs_to_fpstate(fpu);
-
-	trace_x86_fpu_after_save(fpu);
 	fpregs_unlock();
 }
 
@@ -183,9 +179,6 @@ int fpu_clone(struct task_struct *dst, unsigned long clone_flags, bool minimal)
 		dst_fpu->fpstate->regs.xsave.header.xfeatures &=
 			~XFEATURE_MASK_PASID;
 
-	trace_x86_fpu_copy_src(src_fpu);
-	trace_x86_fpu_copy_dst(dst_fpu);
-
 	return 0;
 }
 
@@ -205,8 +198,6 @@ void fpu__drop(struct fpu *fpu)
 			     "2:\n" _ASM_EXTABLE(1b, 2b));
 		fpregs_deactivate(fpu);
 	}
-
-	trace_x86_fpu_dropped(fpu);
 
 	preempt_enable();
 }

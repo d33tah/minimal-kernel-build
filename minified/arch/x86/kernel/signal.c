@@ -20,10 +20,7 @@
 #include <asm/fpu/signal.h>
 #include <asm/fpu/xstate.h>
 #include <asm/vdso.h>
-/* mce.h removed - header is empty */
-#include <asm/vm86.h>
-
-/* FIX_EFLAGS removed - never used */
+/* mce.h, vm86.h removed - empty */
 #include <asm/syscall.h>
 #include <asm/sigframe.h>
 #include <asm/signal.h>

@@ -33,7 +33,7 @@
 #include <asm/cpu.h>
 #include <asm/debugreg.h>
 #include <asm/switch_to.h>
-#include <asm/vm86.h>
+/* asm/vm86.h removed - empty */
 #include <asm/proto.h>
 
 /* resctrl_sched_in removed - empty stub */

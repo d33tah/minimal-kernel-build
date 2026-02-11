@@ -7,7 +7,7 @@
 #include <linux/mm.h>
 #include <asm/errno.h>
 /* Inlined from root_dev.h */
-#include <linux/major.h>
+/* linux/major.h removed - empty */
 #include <linux/types.h>
 #include <linux/kdev_t.h>
 
@@ -24,7 +24,6 @@ extern dev_t ROOT_DEV;
 #include <linux/fs_struct.h>
 #include <linux/slab.h>
 #include <linux/ramfs.h>
-#include <linux/major.h>
 /* linux/blkdev.h removed - empty stub */
 #include <linux/init_syscalls.h>
 #include <uapi/linux/mount.h>

@@ -7,7 +7,7 @@
 #include <asm/cpufeature.h>
 #include <asm/fpu/types.h>
 
-#include <asm/trace/fpu.h>
+/* asm/trace/fpu.h removed - all trace stubs empty */
 
 extern void save_fpregs_to_fpstate(struct fpu *fpu);
 extern void fpu__drop(struct fpu *fpu);
@@ -23,7 +23,6 @@ static inline void switch_fpu_prepare(struct fpu *old_fpu, int cpu)
 		 
 		old_fpu->last_cpu = cpu;
 
-		trace_x86_fpu_regs_deactivated(old_fpu);
 	}
 }
 

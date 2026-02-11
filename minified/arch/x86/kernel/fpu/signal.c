@@ -11,7 +11,7 @@
 
 #include <asm/sigframe.h>
 #include <asm/trapnr.h>
-#include <asm/trace/fpu.h>
+/* asm/trace/fpu.h removed - all trace stubs empty */
 
 #include "context.h"
 #include "internal.h"

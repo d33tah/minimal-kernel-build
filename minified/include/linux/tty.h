@@ -5,7 +5,7 @@
 #define _LINUX_TTY_H
 
 #include <linux/fs.h>
-#include <linux/major.h>
+/* linux/major.h removed - empty */
 #include <linux/types.h>
 /* --- Inlined from asm-generic/termios.h --- */
 #ifndef _ASM_GENERIC_TERMIOS_H

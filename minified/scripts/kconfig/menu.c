@@ -4,7 +4,8 @@
 #include <string.h>
 
 #include "lkc.h"
-#include "internal.h"
+/* internal.h inlined */
+extern struct menu *current_menu, *current_entry;
 
 /* menu_warn, prop_warn, sym_check_prop, menu_validate_number removed -
    validation warnings not needed for allnoconfig builds */

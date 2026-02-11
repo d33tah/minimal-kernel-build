@@ -29,8 +29,7 @@
 DEFINE_PER_CPU(unsigned long, cpu_dr7);
 #include <asm/nmi.h>
 #include <asm/tlbflush.h>
-/* mce.h removed - header is empty */
-#include <asm/vm86.h>
+/* mce.h, vm86.h removed - empty */
 #include <asm/switch_to.h>
 #include <asm/desc.h>
 /* prctl.h removed - header is empty */

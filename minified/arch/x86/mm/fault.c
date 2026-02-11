@@ -13,8 +13,7 @@
 #include <asm/cpufeature.h>
 #include <asm/traps.h>
 #include <asm/fixmap.h>
-/* asm/vsyscall.h removed - empty */
-#include <asm/vm86.h>
+/* asm/vsyscall.h, asm/vm86.h removed - empty */
 #include <asm/mmu_context.h>
 #include <asm/desc.h>
 #include <asm/cpu_entry_area.h>

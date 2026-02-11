@@ -3,8 +3,7 @@
 #include <linux/fs.h>
 #include <linux/kdev_t.h>
 #include <linux/slab.h>
-#include <linux/major.h>
-/* seq_file.h removed - header is empty */
+/* linux/major.h removed - empty */
 
 #include <linux/kobject.h>
 typedef struct kobject *kobj_probe_t(dev_t, int *, void *);

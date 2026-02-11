@@ -8,7 +8,7 @@
 #include <linux/memblock.h>
 /* panic_notifier_list extern removed - never registered into */
 /* Inlined from root_dev.h */
-#include <linux/major.h>
+/* linux/major.h removed - empty */
 #include <linux/types.h>
 #include <linux/kdev_t.h>
 

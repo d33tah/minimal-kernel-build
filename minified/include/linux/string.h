@@ -51,7 +51,7 @@ extern int memcmp(const void *,const void *,__kernel_size_t);
 
 extern void kfree_const(const void *x);
 
-extern char *kstrdup(const char *s, gfp_t gfp) __malloc;
+/* kstrdup removed - only used in mm/util.c */
 extern const char *kstrdup_const(const char *s, gfp_t gfp);
 extern void *kmemdup(const void *src, size_t len, gfp_t gfp);
 extern char *kmemdup_nul(const char *s, size_t len, gfp_t gfp);

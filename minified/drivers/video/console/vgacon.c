@@ -5,17 +5,9 @@
 #include <linux/kernel.h>
 #include <linux/console.h>
 #include <linux/string.h>
-/* inlined from linux/kd.h */
-#ifndef KD_TEXT
-#define KD_TEXT 0x00
-#define KD_GRAPHICS 0x01
-#endif
 #include <linux/slab.h>
 #include <linux/vt_kern.h>
 #include <linux/sched.h>
-/* selection.h inlined (VGA_MAP_MEM defined below from asm/vga.h) */
-#define scr_writew(val, addr) (*(addr) = (val))
-#define scr_readw(addr) (*(addr))
 static inline void scr_memcpyw(u16 *d, const u16 *s, unsigned int count)
 {
 	memcpy(d, s, count);

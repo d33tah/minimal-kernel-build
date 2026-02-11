@@ -1,6 +1,4 @@
 
-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-
 /* kernel_stat.h removed - empty */
 #include <linux/interrupt.h>
 #include <linux/local_lock.h>
@@ -140,15 +138,15 @@ void irq_exit_rcu(void)
 
 /* irq_exit removed - only irq_exit_rcu is called */
 
+void __raise_softirq_irqoff(unsigned int nr)
+{
+	or_softirq_pending(1UL << nr);
+}
+
 inline void raise_softirq_irqoff(unsigned int nr)
 {
 	__raise_softirq_irqoff(nr);
 	/* wakeup_softirqd removed - does nothing since ksoftirqd is NULL */
-}
-
-void __raise_softirq_irqoff(unsigned int nr)
-{
-	or_softirq_pending(1UL << nr);
 }
 
 void open_softirq(int nr, void (*action)(struct softirq_action *))

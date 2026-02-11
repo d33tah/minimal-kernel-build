@@ -62,7 +62,6 @@ MALLOC_VISIBLE void free(void *where)
 
 #endif /* STATIC */
 
-#define memzero(s, n) memset((s), 0, (n))
 #ifndef memmove
 #define memmove memmove
 void *memmove(void *dest, const void *src, size_t n);

@@ -37,7 +37,7 @@ extern void folio_add_lru(struct folio *);
 /* lru_disable_count, lru_cache_disabled removed - never used, always 0/false */
 
 extern void lru_add_drain(void);
-extern void lru_add_drain_cpu(int cpu);
+/* lru_add_drain_cpu removed - only used in mm/swap.c */
 extern void lru_cache_add_inactive_or_unevictable(struct page *page,
 						struct vm_area_struct *vma);
 

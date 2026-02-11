@@ -22,7 +22,6 @@
 #include <linux/mutex.h>
 #include <linux/vt_kern.h>
 /* selection.h inlined */
-#define VGA_MAP_MEM(x, s) ((unsigned long)phys_to_virt(x))
 #define scr_writew(val, addr) (*(addr) = (val))
 #define scr_readw(addr) (*(addr))
 static inline void scr_memsetw(u16 *s, u16 c, unsigned int count)

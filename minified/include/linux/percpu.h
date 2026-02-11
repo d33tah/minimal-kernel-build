@@ -45,9 +45,7 @@ struct pcpu_alloc_info {
 /* enum pcpu_fc removed - never used */
 /* pcpu_fc_cpu_to_node_fn_t and pcpu_fc_cpu_distance_fn_t removed - unused */
 
-extern struct pcpu_alloc_info * __init pcpu_alloc_alloc_info(int nr_groups,
-							     int nr_units);
-extern void __init pcpu_free_alloc_info(struct pcpu_alloc_info *ai);
+/* pcpu_alloc_alloc_info, pcpu_free_alloc_info removed - only used in mm/percpu.c */
 
 extern void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 					 void *base_addr);

@@ -54,11 +54,7 @@ struct vmap_area {
 
 extern void __init vmalloc_init(void);
 
-/* vmalloc, __vmalloc removed - never called */
-extern void *__vmalloc_node_range(unsigned long size, unsigned long align,
-			unsigned long start, unsigned long end, gfp_t gfp_mask,
-			pgprot_t prot, unsigned long vm_flags, int node,
-			const void *caller) __alloc_size(1);
+/* vmalloc, __vmalloc, __vmalloc_node_range removed - only used in mm/vmalloc.c */
 void *__vmalloc_node(unsigned long size, unsigned long align, gfp_t gfp_mask,
 		int node, const void *caller) __alloc_size(1);
 

@@ -705,8 +705,7 @@ static inline int vma_adjust(struct vm_area_struct *vma, unsigned long start,
 extern int __split_vma(struct mm_struct *, struct vm_area_struct *,
 	unsigned long addr, int new_below);
 extern int insert_vm_struct(struct mm_struct *, struct vm_area_struct *);
-extern void __vma_link_rb(struct mm_struct *, struct vm_area_struct *,
-	struct rb_node **, struct rb_node *);
+/* __vma_link_rb removed - only used in mm/mmap.c */
 extern void unlink_file_vma(struct vm_area_struct *);
 extern void exit_mmap(struct mm_struct *);
 
@@ -763,9 +762,7 @@ extern unsigned long vm_unmapped_area(struct vm_unmapped_area_info *info);
 /* truncate_inode_pages, truncate_inode_pages_range made static - only used within truncate.c */
 extern void truncate_inode_pages_final(struct address_space *);
 
-extern vm_fault_t filemap_fault(struct vm_fault *vmf);
-/* filemap_map_pages removed - never called */
-extern vm_fault_t filemap_page_mkwrite(struct vm_fault *vmf);
+/* filemap_fault, filemap_page_mkwrite, filemap_map_pages removed - only used in mm/filemap.c */
 
 extern unsigned long stack_guard_gap;
 

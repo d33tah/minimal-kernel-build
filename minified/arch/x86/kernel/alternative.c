@@ -1,5 +1,3 @@
-#define pr_fmt(fmt) "SMP alternatives: " fmt
-
 #include <linux/module.h>
 #include <linux/sched.h>
 /* linux/mutex.h removed - no mutex functions */

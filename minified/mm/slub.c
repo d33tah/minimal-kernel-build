@@ -43,9 +43,6 @@ static inline void set_freepointer(struct kmem_cache *s, void *object, void *fp)
 }
 
 /* fixup_red_left removed - always returned p unchanged (no red zone) */
-#define for_each_object(__p, __s, __addr, __objects)                     \
-	for (__p = (__addr); __p < (__addr) + (__objects) * (__s)->size; \
-	     __p += (__s)->size)
 
 static inline unsigned int order_objects(unsigned int order, unsigned int size)
 {

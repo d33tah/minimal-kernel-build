@@ -1,6 +1,4 @@
 
-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-
 #include <linux/errno.h>
 #include <linux/ioport.h>
 /* linux/slab.h removed - no slab functions */

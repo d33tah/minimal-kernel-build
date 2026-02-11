@@ -1,6 +1,4 @@
 
-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-
 #include <linux/types.h>
 #include <linux/stddef.h> /* for NULL */
 /* linux/export.h removed - no EXPORT_SYMBOL used */

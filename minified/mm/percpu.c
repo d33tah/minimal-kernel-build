@@ -77,7 +77,6 @@ static inline int pcpu_chunk_map_bits(struct pcpu_chunk *chunk)
 /* PCPU_EMPTY_POP_PAGES_LOW, PCPU_EMPTY_POP_PAGES_HIGH removed - never used */
 
 #define __addr_to_pcpu_ptr(addr) (void __percpu *)(addr)
-#define __pcpu_ptr_to_addr(ptr) (void __force *)(ptr)
 
 static int pcpu_unit_pages __ro_after_init;
 static int pcpu_unit_size __ro_after_init;

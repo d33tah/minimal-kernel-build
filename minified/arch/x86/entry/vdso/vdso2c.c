@@ -78,17 +78,6 @@ extern void bad_get_le(void);
 
 #define GET_LE(x) GLE(x, 64, GLE(x, 32, GLE(x, 16, LAST_GLE(x))))
 
-#define PLE(x, val, bits, ifnot)                          \
-	__builtin_choose_expr((sizeof(*(x)) == bits / 8), \
-			      put_unaligned_le##bits((val), (x)), ifnot)
-
-extern void bad_put_le(void);
-#define LAST_PLE(x, val) \
-	__builtin_choose_expr(sizeof(*(x)) == 1, *(x) = (val), bad_put_le())
-
-#define PUT_LE(x, val) \
-	PLE(x, val, 64, PLE(x, val, 32, PLE(x, val, 16, LAST_PLE(x, val))))
-
 #define NSYMS ARRAY_SIZE(required_syms)
 
 #define BITSFUNC3(name, bits, suffix) name##bits##suffix

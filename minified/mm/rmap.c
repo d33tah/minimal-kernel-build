@@ -219,10 +219,6 @@ void __init anon_vma_init(void)
 		KMEM_CACHE(anon_vma_chain, SLAB_PANIC | SLAB_ACCOUNT);
 }
 
-#define TLB_FLUSH_BATCH_FLUSHED_SHIFT 16
-#define TLB_FLUSH_BATCH_PENDING_MASK \
-	((1 << (TLB_FLUSH_BATCH_FLUSHED_SHIFT - 1)) - 1)
-
 /* folio_referenced_arg struct removed - never used */
 /* folio_mkclean removed - always returned 0, inlined into page_mkclean */
 

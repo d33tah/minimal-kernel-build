@@ -1,5 +1,3 @@
-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-
 #include <linux/errno.h>
 #include <linux/ptrace.h>
 #include <linux/kernel.h>

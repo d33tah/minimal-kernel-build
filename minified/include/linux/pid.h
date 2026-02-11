@@ -48,8 +48,7 @@ static inline struct pid *get_pid(struct pid *pid)
 }
 
 extern void put_pid(struct pid *pid);
-extern struct task_struct *pid_task(struct pid *pid, enum pid_type);
-/* get_pid_task removed - never called */
+/* pid_task, get_pid_task removed - only used in kernel/pid.c */
 
 extern struct pid *get_task_pid(struct task_struct *task, enum pid_type type);
 
@@ -59,8 +58,7 @@ extern void attach_pid(struct task_struct *task, enum pid_type);
 struct pid_namespace;
 extern struct pid_namespace init_pid_ns;
 
-extern struct pid *find_pid_ns(int nr, struct pid_namespace *ns);
-/* find_vpid, find_get_pid removed - never called */
+/* find_pid_ns, find_vpid, find_get_pid removed - only used in kernel/pid.c */
 
 extern struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 			     size_t set_tid_size);

@@ -114,7 +114,7 @@ asmlinkage void __do_softirq(void);
 
 extern void open_softirq(int nr, void (*action)(struct softirq_action *));
 /* softirq_init removed - empty stub */
-extern void __raise_softirq_irqoff(unsigned int nr);
+/* __raise_softirq_irqoff removed - only used in kernel/softirq.c */
 
 extern void raise_softirq_irqoff(unsigned int nr);
 /* raise_softirq removed - never called */

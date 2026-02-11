@@ -322,9 +322,7 @@ enum meminit_context {
 	MEMINIT_HOTPLUG,
 };
 
-extern void init_currently_empty_zone(struct zone *zone,
-				      unsigned long start_pfn,
-				      unsigned long size);
+/* init_currently_empty_zone removed - only used in mm/page_alloc.c */
 
 extern void lruvec_init(struct lruvec *lruvec);
 

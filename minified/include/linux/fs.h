@@ -989,15 +989,12 @@ extern struct file_system_type *get_fs_type(const char *name);
    iterate_supers, iterate_supers_type, drop_super - never called */
 
 extern int dcache_dir_open(struct inode *, struct file *);
-extern int dcache_dir_close(struct inode *, struct file *);
-/* dcache_dir_lseek, dcache_readdir removed - iterate_shared removed */
+/* dcache_dir_close, dcache_dir_lseek, dcache_readdir removed - only used in fs/libfs.c */
 extern int simple_setattr(struct user_namespace *, struct dentry *,
 			  struct iattr *);
 /* simple_getattr, simple_statfs removed - callbacks removed */
 /* simple_link, simple_unlink, simple_rmdir, simple_rename, noop_fsync removed - syscalls return ENOSYS */
-extern int simple_write_begin(struct file *file, struct address_space *mapping,
-			loff_t pos, unsigned len,
-			struct page **pagep, void **fsdata);
+/* simple_write_begin removed - only used in fs/libfs.c */
 extern const struct address_space_operations ram_aops;
 /* always_delete_dentry, simple_dentry_operations removed - d_op never read */
 

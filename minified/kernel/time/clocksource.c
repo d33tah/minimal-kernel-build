@@ -1,7 +1,5 @@
 /* Stub: Clocksource - minimal for single-CPU hello-world kernel */
 
-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-
 /* linux/device.h removed - no device types used */
 #include <linux/clocksource.h>
 #include <linux/init.h>

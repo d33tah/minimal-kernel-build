@@ -28,9 +28,6 @@ const struct sched_class fair_sched_class;
 
 #define for_each_sched_entity(se) for (; se; se = NULL)
 
-#define for_each_leaf_cfs_rq_safe(rq, cfs_rq, pos) \
-	for (cfs_rq = &rq->cfs, pos = NULL; cfs_rq; cfs_rq = pos)
-
 /* max_vruntime, min_vruntime, entity_before inlined into callers */
 
 #define __node_2_se(node) rb_entry((node), struct sched_entity, run_node)

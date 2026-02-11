@@ -117,7 +117,7 @@ static inline __must_check bool refcount_dec_and_test(refcount_t *r)
 }
 
 
-extern __must_check bool refcount_dec_not_one(refcount_t *r);
+/* refcount_dec_not_one removed - only used in lib/refcount.c */
 extern __must_check bool refcount_dec_and_lock_irqsave(refcount_t *r,
 						       spinlock_t *lock,
 						       unsigned long *flags) __cond_acquires(lock);

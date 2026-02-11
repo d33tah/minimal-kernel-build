@@ -11,7 +11,10 @@
 
 #include <linux/stddef.h>
 #include <linux/types.h>
-#include <uapi/linux/swab.h>
+/* Inlined from swab.h */
+#define __swab16(x) (__u16)__builtin_bswap16((__u16)(x))
+#define __swab32(x) (__u32)__builtin_bswap32((__u32)(x))
+#define __swab64(x) (__u64)__builtin_bswap64((__u64)(x))
 
 /* __constant_htonl/ntohl/htons/ntohs, __constant_cpu_to_{le,be}{64,32,16},
    __constant_{le,be}{64,32,16}_to_cpu removed - all unused */

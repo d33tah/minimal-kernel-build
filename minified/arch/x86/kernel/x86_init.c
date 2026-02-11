@@ -27,7 +27,13 @@ extern void tsc_early_init(void);
 extern unsigned long native_calibrate_cpu_early(void);
 extern unsigned long native_calibrate_tsc(void);
 #endif /* _ASM_X86_TSC_H */
-#include <asm/mach_traps.h>
+#include <asm/io.h>
+/* Inlined from mach_traps.h */
+#define NMI_REASON_PORT 0x61
+static inline unsigned char default_get_nmi_reason(void)
+{
+	return inb(NMI_REASON_PORT);
+}
 /* native_create_pci_msi_domain removed - never called */
 
 /* x86_init_noop removed - never called */

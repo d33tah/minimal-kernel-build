@@ -8,7 +8,11 @@
 #include <linux/atomic.h>
 #include <asm/processor.h>
 
-#include <linux/debug_locks.h>
+/* Inlined from debug_locks.h */
+extern int debug_locks;
+static __always_inline int __debug_locks_off(void) { return xchg(&debug_locks, 0); }
+extern int debug_locks_off(void);
+#define DEBUG_LOCKS_WARN_ON(c) ({ int __ret = 0; if (!oops_in_progress && unlikely(c)) { if (debug_locks_off()) WARN(1, "DEBUG_LOCKS_WARN_ON(%s)", #c); __ret = 1; } __ret; })
 
 # define __DEP_MAP_MUTEX_INITIALIZER(lockname)
 

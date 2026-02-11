@@ -26,7 +26,6 @@
 /* asm/unaligned.h removed - get_unaligned not used */
 
 /* string_helpers.h removed - unused */
-#include "kstrtox.h"
 
 /* no_hash_pointers removed - always false, never set */
 

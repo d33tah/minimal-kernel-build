@@ -9,7 +9,6 @@
 /* of_device.h removed - only has includes, no definitions used */
 /* linux/blkdev.h removed - empty stub */
 #include <linux/mutex.h>
-#include <linux/pm_runtime.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/mm.h>
 #include <linux/sysfs.h>

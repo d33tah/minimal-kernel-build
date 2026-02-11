@@ -6,7 +6,11 @@
 #include <linux/stddef.h>
 #include <linux/hardirq.h>
 /* suspend.h removed - only needed for pbe offsets */
-#include <linux/kbuild.h>
+/* Inlined from kbuild.h */
+#define DEFINE(sym, val) \
+	asm volatile("\n.ascii \"->" #sym " %0 " #val "\"" : : "i"(val))
+#define BLANK() asm volatile("\n.ascii \"->\"" : :)
+#define OFFSET(sym, str, mem) DEFINE(sym, offsetof(struct str, mem))
 #include <asm/processor.h>
 #include <asm/ptrace.h>
 #include <asm/thread_info.h>

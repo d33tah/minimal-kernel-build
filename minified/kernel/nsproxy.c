@@ -7,7 +7,18 @@ struct mnt_namespace;
 extern void put_mnt_ns(struct mnt_namespace *ns);
 #include <linux/utsname.h>
 #include <linux/pid_namespace.h>
-#include <net/net_namespace.h>
+/* Inlined from net_namespace.h */
+struct net {
+	atomic_t count;
+	struct user_namespace *user_ns;
+};
+static inline struct net *get_net(struct net *net)
+{
+	return net;
+}
+static inline void put_net(struct net *net)
+{
+}
 /* time_namespace.h inlined */
 #include <linux/ns_common.h>
 #include <linux/err.h>

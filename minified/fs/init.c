@@ -4,7 +4,6 @@
 #include <linux/fs.h>
 #include <linux/fs_struct.h>
 #include <linux/file.h>
-#include <linux/init_syscalls.h>
 /* security.h removed - unused */
 #include "internal.h"
 

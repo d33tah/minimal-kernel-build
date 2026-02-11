@@ -10,8 +10,6 @@
 
 #include <asm/page.h>
 
-#include "kstrtox.h"
-
 /* __bitmap_equal removed - bitmap_equal never called */
 
 void __bitmap_set(unsigned long *map, unsigned int start, int len)

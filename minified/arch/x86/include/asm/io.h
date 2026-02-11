@@ -7,7 +7,15 @@
 #include <linux/string.h>
 #include <linux/compiler.h>
 #include <asm/page.h>
-#include <asm/early_ioremap.h>
+/* Inlined from early_ioremap.h */
+extern void __iomem *early_ioremap(resource_size_t phys_addr, unsigned long size);
+extern void *early_memremap(resource_size_t phys_addr, unsigned long size);
+extern void early_iounmap(void __iomem *addr, unsigned long size);
+extern void early_memunmap(void *addr, unsigned long size);
+extern void early_ioremap_init(void);
+extern void early_ioremap_setup(void);
+extern void early_ioremap_reset(void);
+extern void copy_from_early_mem(void *dest, phys_addr_t src, unsigned long size);
 #include <asm/pgtable_types.h>
 #include <asm/shared/io.h>
 

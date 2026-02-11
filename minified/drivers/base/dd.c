@@ -4,7 +4,30 @@
 /* linux/module.h removed - unused */
 #include <linux/kthread.h>
 #include <linux/wait.h>
-#include <linux/pm_runtime.h>
+/* Inlined from pm_runtime.h */
+#define RPM_ASYNC 0x01
+#define RPM_GET_PUT 0x04
+static inline int __pm_runtime_idle(struct device *dev, int rpmflags)
+{
+	return -ENOSYS;
+}
+static inline int __pm_runtime_resume(struct device *dev, int rpmflags)
+{
+	return 1;
+}
+static inline int pm_request_idle(struct device *dev)
+{
+	return __pm_runtime_idle(dev, RPM_ASYNC);
+}
+static inline int pm_runtime_get_sync(struct device *dev)
+{
+	return __pm_runtime_resume(dev, RPM_GET_PUT);
+}
+static inline int pm_runtime_put(struct device *dev)
+{
+	return __pm_runtime_idle(dev, RPM_GET_PUT | RPM_ASYNC);
+}
+
 #include <linux/slab.h>
 
 #include "base.h"

@@ -28,7 +28,6 @@ int notify_die(enum die_val val, const char *str, struct pt_regs *regs,
 #include <asm/processor.h>
 #include <asm/debugreg.h>
 #include <asm/realmode.h>
-#include <asm/text-patching.h>
 #include <asm/traps.h>
 #include <asm/desc.h>
 #include <asm/fpu/api.h>
@@ -36,7 +35,6 @@ int notify_die(enum die_val val, const char *str, struct pt_regs *regs,
 #include <asm/cpu_entry_area.h>
 /* mce.h removed - header is empty */
 #include <asm/fixmap.h>
-#include <asm/mach_traps.h>
 #include <asm/alternative.h>
 #include <asm/fpu/xstate.h>
 /* asm/vm86.h removed - CONFIG_VM86 not set, no VM86 references remain */

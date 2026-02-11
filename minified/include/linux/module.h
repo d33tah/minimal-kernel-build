@@ -16,7 +16,6 @@
 #include <linux/export.h>
 
 /* error-injection.h macros removed - unused */
-#include <linux/tracepoint-defs.h>
 #include <linux/srcu.h>
 #include <linux/static_call_types.h>
 

@@ -4,7 +4,6 @@
 #include <asm/statfs.h>
 #include <asm/byteorder.h>
 #include <linux/mount.h>
-#include <linux/ramfs.h>
 #include <linux/pagemap.h>
 #include <linux/file.h>
 #include <linux/mm.h>
@@ -13,6 +12,11 @@
 #include <linux/uio.h>
 /* hugetlb.h removed - unused */
 #include <linux/fs_parser.h>
+/* Inlined from ramfs.h */
+extern int ramfs_init_fs_context(struct fs_context *fc);
+extern const struct fs_parameter_spec ramfs_fs_parameters[];
+extern const struct file_operations ramfs_file_operations;
+extern const struct vm_operations_struct generic_file_vm_ops;
 /* struct swap_iocb forward decl removed - unused */
 
 static struct vfsmount *shm_mnt;

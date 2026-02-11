@@ -23,9 +23,16 @@ extern dev_t ROOT_DEV;
 /* linux/async.h removed - no async functions used */
 #include <linux/fs_struct.h>
 #include <linux/slab.h>
-#include <linux/ramfs.h>
+/* Inlined from ramfs.h */
+extern int ramfs_init_fs_context(struct fs_context *fc);
 /* linux/blkdev.h removed - empty stub */
-#include <linux/init_syscalls.h>
+/* Inlined from init_syscalls.h */
+int __init init_mount(const char *dev_name, const char *dir_name,
+		      const char *type_page, unsigned long flags,
+		      void *data_page);
+int __init init_chroot(const char *filename);
+int __init init_eaccess(const char *filename);
+int __init init_dup(struct file *file);
 #include <uapi/linux/mount.h>
 /* --- 2026-01-26 01:00 --- Inlined from do_mounts.h */
 

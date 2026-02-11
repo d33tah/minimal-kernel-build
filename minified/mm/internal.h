@@ -7,7 +7,6 @@
 #include <linux/mm.h>
 #include <linux/pagemap.h>
 #include <linux/rmap.h>
-#include <linux/tracepoint-defs.h>
 
 struct folio_batch;
 

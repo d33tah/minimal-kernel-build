@@ -13,7 +13,6 @@
 #include <linux/highmem.h>
 #include <linux/pagemap.h>
 #include <linux/pfn.h>
-#include <linux/poison.h>
 #include <linux/memblock.h>
 /* proc_fs.h removed - empty header */
 #include <linux/initrd.h>

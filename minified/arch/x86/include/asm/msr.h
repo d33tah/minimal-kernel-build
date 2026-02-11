@@ -21,7 +21,6 @@
 
  
 #include <asm/atomic.h>
-#include <linux/tracepoint-defs.h>
 
 /* do_trace_write_msr, do_trace_read_msr, do_trace_rdpmc removed - tracepoint_enabled always false */
 

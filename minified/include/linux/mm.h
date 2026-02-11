@@ -10,7 +10,6 @@
 #include <linux/mmzone.h>
 #include <linux/rbtree.h>
 #include <linux/atomic.h>
-#include <linux/debug_locks.h>
 #include <linux/mm_types.h>
 /* mmap_lock.h inlined - single includer */
 /* lockdep.h, rwsem.h, types.h included elsewhere; mm_types.h, mmdebug.h already above */
@@ -75,7 +74,6 @@ static inline void mmap_assert_locked(struct mm_struct *mm)
 {
 	VM_BUG_ON_MM(!rwsem_is_locked(&mm->mmap_lock), mm);
 }
-#include <linux/range.h>
 #include <linux/pfn.h>
 /* percpu-refcount.h, bit_spinlock.h, shrinker.h, resource.h,
    err.h, tracepoint-defs.h, overflow.h, page_ext.h removed - unused */

@@ -10,7 +10,18 @@
 #include <linux/security.h>
 #include <linux/pid_namespace.h>
 #include <linux/user_namespace.h>
-#include <net/net_namespace.h>
+/* Inlined from net_namespace.h */
+struct net {
+	atomic_t count;
+	struct user_namespace *user_ns;
+};
+static inline struct net *get_net(struct net *net)
+{
+	return net;
+}
+static inline void put_net(struct net *net)
+{
+}
 #include <asm/sections.h>
 #include "mount.h"
 #include "internal.h"

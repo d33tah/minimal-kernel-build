@@ -4,7 +4,12 @@
 /* linux/export.h removed - no EXPORT_SYMBOL used */
 #include <linux/math.h>
 #include <linux/minmax.h>
-#include <uapi/linux/swab.h>
+/* Inlined from swab.h */
+#define __swab32(x) (__u32) __builtin_bswap32((__u32)(x))
+static __always_inline unsigned long __swab(const unsigned long y)
+{
+	return __swab32(y);
+}
 
 #if !defined(find_next_bit) || !defined(find_next_zero_bit) ||           \
 	!defined(find_next_bit_le) || !defined(find_next_zero_bit_le) || \

@@ -6,7 +6,6 @@
 #include <linux/time.h>
 #include <linux/init.h>
 #include <linux/backing-dev.h>
-#include <linux/ramfs.h>
 #include <linux/sched.h>
 /* RAMFS_MAGIC removed - s_magic is write-only */
 #include <linux/slab.h>

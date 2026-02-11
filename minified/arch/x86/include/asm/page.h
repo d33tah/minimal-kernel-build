@@ -68,7 +68,10 @@ static inline void copy_page(void *to, void *from)
 
 struct page;
 
-#include <linux/range.h>
+/* Inlined from range.h */
+struct range { u64 start; u64 end; };
+int add_range_with_merge(struct range *range, int az, int nr_range, u64 start, u64 end);
+int clean_sort_range(struct range *range, int az);
 
 /* clear_user_page removed - never called */
 

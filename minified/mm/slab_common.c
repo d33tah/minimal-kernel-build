@@ -1,7 +1,6 @@
 #include <linux/slab.h>
 
 #include <linux/mm.h>
-#include <linux/poison.h>
 /* linux/interrupt.h removed - no interrupt features used */
 #include <linux/cache.h>
 #include <linux/compiler.h>

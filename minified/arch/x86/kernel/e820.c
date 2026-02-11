@@ -1,4 +1,6 @@
-#include <asm/early_ioremap.h>
+/* Inlined from early_ioremap.h */
+extern void *early_memremap(unsigned long phys_addr, unsigned long size);
+extern void early_memunmap(void *addr, unsigned long size);
 #include <linux/memblock.h>
 /* linux/swap.h removed - no swap functions used */
 #include <linux/init.h>

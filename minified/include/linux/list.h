@@ -4,7 +4,11 @@
 #include <linux/container_of.h>
 #include <linux/types.h>
 #include <linux/stddef.h>
-#include <linux/poison.h>
+/* Inlined from poison.h */
+#define LIST_POISON1  ((void *) 0x100)
+#define LIST_POISON2  ((void *) 0x122)
+#define TIMER_ENTRY_STATIC ((void *) 0x300)
+#define TAIL_MAPPING ((void *) 0x400)
 #include <linux/const.h>
 
 #include <asm/barrier.h>

@@ -48,7 +48,6 @@ static inline u64 ssbd_tif_to_amd_ls_cfg(u64 tifn)
 	return (tifn & _TIF_SSBD) ? x86_amd_ls_cfg_ssbd_mask : 0ULL;
 }
 extern void speculation_ctrl_update(unsigned long tif);
-#include <asm/io_bitmap.h>
 #include <asm/proto.h>
 /* frame.h macros removed - ENCODE_FRAME_POINTER, FRAME_BEGIN, FRAME_END, FRAME_OFFSET not used in this file */
 #include <asm/asm.h>

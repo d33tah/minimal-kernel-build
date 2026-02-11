@@ -13,7 +13,13 @@
 #include <asm/proto.h>
 #include <asm/cpufeature.h>
 /* pti_check_boottime_disable removed - empty stub */
-#include <asm/text-patching.h>
+/* Inlined from text-patching.h */
+#define __parainstructions NULL
+#define __parainstructions_end NULL
+extern void text_poke_early(void *addr, const void *opcode, size_t len);
+extern int after_bootmem;
+extern __ro_after_init struct mm_struct *poking_mm;
+extern __ro_after_init unsigned long poking_addr;
 
 /* mm_internal.h inlined */
 void *alloc_low_pages(unsigned int num);

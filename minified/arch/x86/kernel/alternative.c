@@ -9,7 +9,13 @@
 #include <linux/mm.h>
 /* linux/stop_machine.h, linux/slab.h, linux/mmu_context.h removed - unused */
 #include <asm/sync_core.h>
-#include <asm/text-patching.h>
+/* Inlined from text-patching.h */
+#define __parainstructions NULL
+#define __parainstructions_end NULL
+extern void text_poke_early(void *addr, const void *opcode, size_t len);
+extern int after_bootmem;
+extern __ro_after_init struct mm_struct *poking_mm;
+extern __ro_after_init unsigned long poking_addr;
 #include <asm/alternative.h>
 #include <asm/sections.h>
 /* mce.h removed - header is empty */

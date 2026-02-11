@@ -6,7 +6,6 @@
 #include <linux/mm.h>
 #include <linux/vmalloc.h>
 #include <asm/fixmap.h>
-#include <asm/early_ioremap.h>
 #include "internal.h"
 
 /* early_ioremap_debug removed - never enabled */

@@ -11,7 +11,7 @@ int __must_check kstrtouint(const char *s, unsigned int base,
 #include <linux/types.h>
 #include <linux/uaccess.h>
 
-#include "kstrtox.h"
+#define KSTRTOX_OVERFLOW (1U << 31)
 
 noinline const char *_parse_integer_fixup_radix(const char *s,
 						unsigned int *base)

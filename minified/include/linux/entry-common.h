@@ -10,7 +10,6 @@
 /* --- 2026-01-26 04:40 --- Inlined from asm/entry-common.h */
 #include <linux/sched/task_stack.h>
 #include <asm/nospec-branch.h>
-#include <asm/io_bitmap.h>
 #include <asm/fpu/api.h>
 static __always_inline void arch_enter_from_user_mode(struct pt_regs *regs)
 {

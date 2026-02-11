@@ -24,13 +24,13 @@ struct timens_offsets {
 };
 
 struct time_namespace {
-	struct user_namespace	*user_ns;
-	struct ucounts		*ucounts;
-	struct ns_common	ns;
-	struct timens_offsets	offsets;
-	struct page		*vvar_page;
+	struct user_namespace *user_ns;
+	struct ucounts *ucounts;
+	struct ns_common ns;
+	struct timens_offsets offsets;
+	struct page *vvar_page;
 
-	bool			frozen_offsets;
+	bool frozen_offsets;
 } __randomize_layout;
 
 static inline void put_time_ns(struct time_namespace *ns)

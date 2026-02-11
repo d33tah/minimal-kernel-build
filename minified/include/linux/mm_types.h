@@ -1,7 +1,54 @@
 #ifndef _LINUX_MM_TYPES_H
 #define _LINUX_MM_TYPES_H
 
-#include <linux/mm_types_task.h>
+/* mm_types_task.h inlined */
+#ifndef _LINUX_MM_TYPES_TASK_H
+#define _LINUX_MM_TYPES_TASK_H
+
+
+#include <linux/types.h>
+#include <linux/threads.h>
+#include <linux/atomic.h>
+#include <linux/cpumask.h>
+
+#include <asm/page.h>
+
+/* Inlined from asm/tlbbatch.h */
+struct arch_tlbflush_unmap_batch {
+	struct cpumask cpumask;
+};
+
+/* NR_CPUS=1 < CONFIG_SPLIT_PTLOCK_CPUS=4, so USE_SPLIT_*=0 */
+#define USE_SPLIT_PTE_PTLOCKS	0
+#define USE_SPLIT_PMD_PTLOCKS	0
+#define ALLOC_SPLIT_PTLOCKS	0
+
+#define VMACACHE_BITS 2
+#define VMACACHE_SIZE (1U << VMACACHE_BITS)
+#define VMACACHE_MASK (VMACACHE_SIZE - 1)
+
+struct vmacache {
+	u64 seqnum;
+	struct vm_area_struct *vmas[VMACACHE_SIZE];
+};
+
+/* MM_FILEPAGES/ANONPAGES/SWAPENTS/SHMEMPAGES enum, mm_rss_stat struct removed - write-only */
+
+/* struct page_frag removed - never instantiated */
+
+struct tlbflush_unmap_batch {
+	 
+	struct arch_tlbflush_unmap_batch arch;
+
+	 
+	bool flush_required;
+
+	 
+	bool writable;
+};
+
+
+#endif /* _LINUX_MM_TYPES_TASK_H */
 
 /* auxvec.h inlined - AT_VECTOR_SIZE_ARCH */
 #define AT_VECTOR_SIZE_ARCH 3

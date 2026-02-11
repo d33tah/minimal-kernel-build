@@ -2,7 +2,33 @@
 #ifndef _ASM_X86_TLB_H
 #define _ASM_X86_TLB_H
 
-#include <linux/mmu_notifier.h>
+/* mmu_notifier.h inlined - only 2 includers */
+
+struct mmu_notifier_range {
+	unsigned long start;
+	unsigned long end;
+};
+
+static inline void _mmu_notifier_range_init(struct mmu_notifier_range *range,
+					    unsigned long start,
+					    unsigned long end)
+{
+	range->start = start;
+	range->end = end;
+}
+
+#define mmu_notifier_range_init(range, event, flags, vma, mm, start, end)      \
+	_mmu_notifier_range_init(range, start, end)
+
+static inline void
+mmu_notifier_invalidate_range_start(struct mmu_notifier_range *range)
+{
+}
+
+static inline void
+mmu_notifier_invalidate_range_end(struct mmu_notifier_range *range)
+{
+}
 #include <linux/swap.h>
 #include <linux/pagemap.h>
 #include <asm/tlbflush.h>

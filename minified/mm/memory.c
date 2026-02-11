@@ -16,7 +16,7 @@
 	(((u64)(~PAGE_MASK)) << (BITS_PER_LONG_LONG - PAGE_SHIFT))
 #define PFN_DEV (1ULL << (BITS_PER_LONG_LONG - 3))
 /* memcontrol.h removed - unused */
-#include <linux/mmu_notifier.h>
+/* mmu_notifier.h removed - inlined into asm/tlb.h, included below */
 /* swapops.h removed - was empty */
 #include <linux/gfp.h>
 /* linux/migrate.h removed - empty header */

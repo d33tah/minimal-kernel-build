@@ -210,8 +210,7 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_SEQ_READ	0x00008000	
 #define VM_RAND_READ	0x00010000	
 
-#define VM_DONTCOPY	0x00020000      
-#define VM_DONTEXPAND	0x00040000	
+#define VM_DONTEXPAND	0x00040000
 #define VM_LOCKONFAULT	0x00080000	
 #define VM_ACCOUNT	0x00100000
 #define VM_SYNC		0x00800000

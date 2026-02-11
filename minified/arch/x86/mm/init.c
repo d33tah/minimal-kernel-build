@@ -23,10 +23,6 @@ extern __ro_after_init unsigned long poking_addr;
 
 /* mm_internal.h inlined */
 void *alloc_low_pages(unsigned int num);
-static inline void *alloc_low_page(void)
-{
-	return alloc_low_pages(1);
-}
 void early_ioremap_page_table_range_init(void);
 unsigned long kernel_physical_mapping_init(unsigned long start,
 					   unsigned long end,

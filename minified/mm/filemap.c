@@ -26,23 +26,6 @@ struct pagevec {
 	bool percpu_pvec_drained;
 	struct page *pages[PAGEVEC_SIZE];
 };
-void __pagevec_lru_add(struct pagevec *pvec);
-unsigned pagevec_lookup_range_tag(struct pagevec *pvec,
-				  struct address_space *mapping, pgoff_t *index,
-				  pgoff_t end, xa_mark_t tag);
-static inline void pagevec_reinit(struct pagevec *pvec)
-{
-	pvec->nr = 0;
-}
-static inline unsigned pagevec_count(struct pagevec *pvec)
-{
-	return pvec->nr;
-}
-static inline unsigned pagevec_add(struct pagevec *pvec, struct page *page)
-{
-	pvec->pages[pvec->nr++] = page;
-	return PAGEVEC_SIZE - pvec->nr;
-}
 struct folio_batch {
 	unsigned char nr;
 	bool percpu_pvec_drained;

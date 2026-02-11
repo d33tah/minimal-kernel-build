@@ -32,10 +32,6 @@ struct time_namespace {
 	bool frozen_offsets;
 } __randomize_layout;
 
-static inline void put_time_ns(struct time_namespace *ns)
-{
-}
-
 #endif /* _LINUX_TIMENS_H */
 
 /* pvclock.h removed - header is empty */

@@ -7,7 +7,7 @@
 #include <linux/sched/mm.h>
 #include <linux/sched.h>
 #include <linux/device.h>
-#include <linux/flex_proportions.h>
+/* flex_proportions.h - inlined into backing-dev.h */
 
 /* Merged from lib/flex_proportions.c */
 void fprop_local_init_percpu(struct fprop_local_percpu *pl, gfp_t gfp)

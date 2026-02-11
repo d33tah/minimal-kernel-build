@@ -9,7 +9,12 @@
 #include <linux/spinlock.h>
 #include <linux/percpu_counter.h>
 #include <linux/percpu-refcount.h>
-#include <linux/flex_proportions.h>
+/* flex_proportions.h inlined */
+struct fprop_local_percpu {
+	struct percpu_counter events;
+	raw_spinlock_t lock;
+};
+void fprop_local_init_percpu(struct fprop_local_percpu *pl, gfp_t gfp);
 #include <linux/timer.h>
 #include <linux/workqueue.h>
 #include <linux/kref.h>

@@ -12,7 +12,69 @@
 #include <linux/atomic.h>
 #include <linux/debug_locks.h>
 #include <linux/mm_types.h>
-#include <linux/mmap_lock.h>
+/* mmap_lock.h inlined - single includer */
+/* lockdep.h, rwsem.h, types.h included elsewhere; mm_types.h, mmdebug.h already above */
+
+#define MMAP_LOCK_INITIALIZER(name) \
+	.mmap_lock = __RWSEM_INITIALIZER((name).mmap_lock),
+
+
+/* __mmap_lock_trace_* functions removed - empty tracing stubs */
+
+static inline void mmap_init_lock(struct mm_struct *mm)
+{
+	init_rwsem(&mm->mmap_lock);
+}
+
+static inline void mmap_write_lock(struct mm_struct *mm)
+{
+	down_write(&mm->mmap_lock);
+}
+
+static inline void mmap_write_lock_nested(struct mm_struct *mm, int subclass)
+{
+	down_write_nested(&mm->mmap_lock, subclass);
+}
+
+static inline int mmap_write_lock_killable(struct mm_struct *mm)
+{
+	return down_write_killable(&mm->mmap_lock);
+}
+
+static inline void mmap_write_unlock(struct mm_struct *mm)
+{
+	up_write(&mm->mmap_lock);
+}
+
+/* mmap_write_downgrade removed - unused */
+
+static inline void mmap_read_lock(struct mm_struct *mm)
+{
+	down_read(&mm->mmap_lock);
+}
+
+static inline int mmap_read_lock_killable(struct mm_struct *mm)
+{
+	return down_read_killable(&mm->mmap_lock);
+}
+
+static inline bool mmap_read_trylock(struct mm_struct *mm)
+{
+	return down_read_trylock(&mm->mmap_lock) != 0;
+}
+
+static inline void mmap_read_unlock(struct mm_struct *mm)
+{
+	up_read(&mm->mmap_lock);
+}
+
+/* mmap_read_unlock_non_owner, mmap_assert_write_locked,
+ * mmap_lock_is_contended removed - unused */
+
+static inline void mmap_assert_locked(struct mm_struct *mm)
+{
+	VM_BUG_ON_MM(!rwsem_is_locked(&mm->mmap_lock), mm);
+}
 #include <linux/range.h>
 #include <linux/pfn.h>
 /* percpu-refcount.h, bit_spinlock.h, shrinker.h, resource.h,

@@ -36,7 +36,6 @@ union __sifields {
 	/* Removed: _timer, _rt, _sigchld, _sigpoll - never accessed */
 };
 
-#ifndef __ARCH_HAS_SWAPPED_SIGINFO
 #define __SIGINFO 			\
 struct {				\
 	int si_signo;			\
@@ -44,15 +43,6 @@ struct {				\
 	int si_code;			\
 	union __sifields _sifields;	\
 }
-#else
-#define __SIGINFO 			\
-struct {				\
-	int si_signo;			\
-	int si_code;			\
-	int si_errno;			\
-	union __sifields _sifields;	\
-}
-#endif  
 
 typedef struct siginfo {
 	union {

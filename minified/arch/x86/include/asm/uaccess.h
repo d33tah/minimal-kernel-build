@@ -14,12 +14,6 @@
 #define __ASM_CLAC	".byte 0x0f,0x01,0xca"
 #define __ASM_STAC	".byte 0x0f,0x01,0xcb"
 
-#ifdef __ASSEMBLY__
-#define ASM_CLAC \
-	ALTERNATIVE "", __ASM_CLAC, X86_FEATURE_SMAP
-#define ASM_STAC \
-	ALTERNATIVE "", __ASM_STAC, X86_FEATURE_SMAP
-#else
 static __always_inline void clac(void)
 {
 	alternative("", __ASM_CLAC, X86_FEATURE_SMAP);
@@ -32,7 +26,6 @@ static __always_inline void stac(void)
 	ALTERNATIVE("", __ASM_CLAC, X86_FEATURE_SMAP)
 #define ASM_STAC \
 	ALTERNATIVE("", __ASM_STAC, X86_FEATURE_SMAP)
-#endif
 #include <asm/extable.h>
 
 # define WARN_ON_IN_IRQ()

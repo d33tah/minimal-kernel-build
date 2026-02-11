@@ -64,11 +64,6 @@ static inline void native_io_delay(void)
 static inline void slow_down_io(void)
 {
 	native_io_delay();
-#ifdef REALLY_SLOW_IO
-	native_io_delay();
-	native_io_delay();
-	native_io_delay();
-#endif
 }
 
 

@@ -284,8 +284,7 @@ static inline void page_mapcount_reset(struct page *page)
 	atomic_set(&(page)->_mapcount, -1);
 }
 
-int __page_mapcount(struct page *page);
-
+/* __page_mapcount removed - no implementation */
 /* page_mapcount inlined at mm/filemap.c - single caller */
 
 static inline struct page *virt_to_head_page(const void *x)
@@ -299,7 +298,7 @@ static inline struct page *virt_to_head_page(const void *x)
 
 void __put_page(struct page *page);
 
-void split_page(struct page *page, unsigned int order);
+/* split_page removed - no implementation */
 
 /* nr_free_buffer_pages removed - never called */
 
@@ -466,7 +465,7 @@ static __always_inline void *lowmem_page_address(const struct page *page)
 
 /* page_rmapping, page_mapped removed - never called */
 
-bool folio_mapped(struct folio *folio);
+/* folio_mapped removed - no implementation */
 
 /* page_is_pfmemalloc inlined at mm/slub.c - single caller */
 /* set_page_pfmemalloc, clear_page_pfmemalloc inlined at single call site */
@@ -619,7 +618,7 @@ void free_area_init(unsigned long *max_zone_pfn);
 /* init_per_zone_wmark_min extern removed - never directly called */
 extern void mem_init(void);
 extern void __init mmap_init(void);
-void warn_alloc(gfp_t gfp_mask, nodemask_t *nodemask, const char *fmt, ...);
+/* warn_alloc removed - no implementation */
 
 extern void setup_per_cpu_pageset(void);
 

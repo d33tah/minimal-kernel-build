@@ -365,6 +365,6 @@ extern unsigned long arch_align_stack(unsigned long sp);
 
 void default_idle(void);
 
-void __noreturn stop_this_cpu(void *dummy);
+/* stop_this_cpu removed - no implementation */
 
 #endif  

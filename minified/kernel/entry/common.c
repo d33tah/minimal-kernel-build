@@ -37,10 +37,7 @@ static __always_inline long __syscall_enter_from_user_work(struct pt_regs *regs,
 	return syscall;
 }
 
-long syscall_enter_from_user_mode_work(struct pt_regs *regs, long syscall)
-{
-	return __syscall_enter_from_user_work(regs, syscall);
-}
+/* syscall_enter_from_user_mode_work removed - only combined version used */
 
 noinstr long syscall_enter_from_user_mode(struct pt_regs *regs, long syscall)
 {
@@ -54,11 +51,7 @@ noinstr long syscall_enter_from_user_mode(struct pt_regs *regs, long syscall)
 	return ret;
 }
 
-noinstr void syscall_enter_from_user_mode_prepare(struct pt_regs *regs)
-{
-	__enter_from_user_mode(regs);
-	local_irq_enable();
-}
+/* syscall_enter_from_user_mode_prepare removed - only combined version used */
 
 static __always_inline void __exit_to_user_mode(void)
 {

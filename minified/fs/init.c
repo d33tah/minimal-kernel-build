@@ -23,22 +23,7 @@ int __init init_mount(const char *dev_name, const char *dir_name,
 	return ret;
 }
 
-/* init_umount removed - never called */
-
-int __init init_chdir(const char *filename)
-{
-	struct path path;
-	int error;
-
-	error = kern_path(filename, LOOKUP_FOLLOW | LOOKUP_DIRECTORY, &path);
-	if (error)
-		return error;
-	error = path_permission(&path, MAY_EXEC | MAY_CHDIR);
-	if (!error)
-		set_fs_pwd(current->fs, &path);
-	path_put(&path);
-	return error;
-}
+/* init_umount, init_chdir removed - never called */
 
 int __init init_chroot(const char *filename)
 {

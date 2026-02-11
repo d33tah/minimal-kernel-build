@@ -23,9 +23,7 @@
 #ifndef __NR_clock_gettime64
 #define __NR_clock_gettime64 403
 #endif
-#ifndef __NR_clock_getres_time64
-#define __NR_clock_getres_time64 406
-#endif
+/* __NR_clock_getres_time64 removed - clock_getres_fallback removed */
 #include <asm/msr.h>
 /* pvclock.h removed - header is empty */
 #define __vdso_data (VVAR(_vdso_data))
@@ -66,17 +64,7 @@ long gettimeofday_fallback(struct __kernel_old_timeval *_tv,
 	return ret;
 }
 
-static __always_inline
-long clock_getres_fallback(clockid_t _clkid, struct __kernel_timespec *_ts)
-{
-	long ret;
-
-	asm ("syscall" : "=a" (ret), "=m" (*_ts) :
-	     "0" (__NR_clock_getres), "D" (_clkid), "S" (_ts) :
-	     "rcx", "r11");
-
-	return ret;
-}
+/* clock_getres_fallback removed - never called */
 
 #else
 
@@ -132,22 +120,7 @@ long gettimeofday_fallback(struct __kernel_old_timeval *_tv,
 	return ret;
 }
 
-static __always_inline long
-clock_getres_fallback(clockid_t _clkid, struct __kernel_timespec *_ts)
-{
-	long ret;
-
-	asm (
-		"mov %%ebx, %%edx \n"
-		"mov %[clock], %%ebx \n"
-		"call __kernel_vsyscall \n"
-		"mov %%edx, %%ebx \n"
-		: "=a" (ret), "=m" (*_ts)
-		: "0" (__NR_clock_getres_time64), [clock] "g" (_clkid), "c" (_ts)
-		: "edx");
-
-	return ret;
-}
+/* clock_getres_fallback removed - never called */
 
 static __always_inline
 long clock_getres32_fallback(clockid_t _clkid, struct old_timespec32 *_ts)

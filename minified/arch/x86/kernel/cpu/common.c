@@ -545,32 +545,13 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 	select_idle_routine(c);
 }
 
-void enable_sep_cpu(void)
-{
-	struct tss_struct *tss;
-	int cpu;
-
-	if (!boot_cpu_has(X86_FEATURE_SEP))
-		return;
-
-	cpu = get_cpu();
-	tss = &per_cpu(cpu_tss_rw, cpu);
-
-	tss->x86_tss.ss1 = __KERNEL_CS;
-	wrmsr(MSR_IA32_SYSENTER_CS, tss->x86_tss.ss1, 0);
-	wrmsr(MSR_IA32_SYSENTER_ESP, (unsigned long)(cpu_entry_stack(cpu) + 1),
-	      0);
-	wrmsr(MSR_IA32_SYSENTER_EIP, (unsigned long)entry_SYSENTER_32, 0);
-
-	put_cpu();
-}
+/* enable_sep_cpu removed - SYSENTER not used, init uses INT $0x80 */
 
 void __init identify_boot_cpu(void)
 {
 	identify_cpu(&boot_cpu_data);
 	/* HAS_KERNEL_IBT is 0 */
 	sysenter_setup();
-	enable_sep_cpu();
 	/* cpu_detect_tlb removed - TLB info never used */
 	/* setup_cr_pinning inlined */
 	cr4_pinned_bits = this_cpu_read(cpu_tlbstate.cr4) & cr4_pinned_mask;

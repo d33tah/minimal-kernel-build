@@ -311,7 +311,7 @@ DEFINE_IDTENTRY_RAW(exc_int3)
 	}
 }
 
-/* is_sysenter_singlestep inlined into exc_debug_kernel */
+/* is_sysenter_singlestep removed - SYSENTER not used */
 /* debug_read_clear_dr6 inlined into exc_debug_user */
 
 /* notify_die always returns NOTIFY_DONE, so notify_debug always returns false */
@@ -337,12 +337,7 @@ static __always_inline void exc_debug_kernel(struct pt_regs *regs,
 		wrmsrl(MSR_IA32_DEBUGCTLMSR, debugctl);
 	}
 
-	/* is_sysenter_singlestep inlined */
-	if ((dr6 & DR_STEP) &&
-	    (regs->ip - (unsigned long)__begin_SYSENTER_singlestep_region) <
-		    (unsigned long)__end_SYSENTER_singlestep_region -
-			    (unsigned long)__begin_SYSENTER_singlestep_region)
-		dr6 &= ~DR_STEP;
+	/* is_sysenter_singlestep check removed - SYSENTER not used */
 
 	if (!dr6)
 		goto out;

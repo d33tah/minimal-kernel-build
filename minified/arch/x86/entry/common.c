@@ -76,57 +76,7 @@ __visible noinstr void do_int80_syscall_32(struct pt_regs *regs)
 	syscall_exit_to_user_mode(regs);
 }
 
-static noinstr bool __do_fast_syscall_32(struct pt_regs *regs)
-{
-	int nr = syscall_32_enter(regs);
-	int res;
-
-	syscall_enter_from_user_mode_prepare(regs);
-
-	/* X86_32: use get_user */
-	res = get_user(*(u32 *)&regs->bp,
-		       (u32 __user __force *)(unsigned long)(u32)regs->sp);
-
-	if (res) {
-		regs->ax = -EFAULT;
-
-		local_irq_disable();
-		irqentry_exit_to_user_mode(regs);
-		return false;
-	}
-
-	nr = syscall_enter_from_user_mode_work(regs, nr);
-
-	do_syscall_32_irqs_on(regs, nr);
-
-	syscall_exit_to_user_mode(regs);
-	return true;
-}
-
-__visible noinstr long do_fast_syscall_32(struct pt_regs *regs)
-{
-	unsigned long landing_pad = (unsigned long)current->mm->context.vdso +
-				    vdso_image_32.sym_int80_landing_pad;
-
-	regs->ip = landing_pad;
-
-	if (!__do_fast_syscall_32(regs))
-		return 0;
-
-	return static_cpu_has(X86_FEATURE_SEP) && regs->cs == __USER_CS &&
-	       regs->ss == __USER_DS && regs->ip == landing_pad &&
-	       (regs->flags &
-		(X86_EFLAGS_RF | X86_EFLAGS_TF | X86_EFLAGS_VM)) == 0;
-}
-
-__visible noinstr long do_SYSENTER_32(struct pt_regs *regs)
-{
-	regs->sp = regs->bp;
-
-	regs->flags |= X86_EFLAGS_IF;
-
-	return do_fast_syscall_32(regs);
-}
+/* do_fast_syscall_32, do_SYSENTER_32 removed - init uses INT $0x80 only */
 
 SYSCALL_DEFINE0(ni_syscall)
 {

@@ -16,10 +16,7 @@
 
 /* MSR_IA32_FLUSH_CMD, L1D_FLUSH removed - never used */
 
-/* SYSENTER MSRs */
-#define MSR_IA32_SYSENTER_CS		0x00000174
-#define MSR_IA32_SYSENTER_ESP		0x00000175
-#define MSR_IA32_SYSENTER_EIP		0x00000176
+/* SYSENTER MSRs removed - SYSENTER not used */
 
 /* Debug control */
 #define MSR_IA32_DEBUGCTLMSR		0x000001d9

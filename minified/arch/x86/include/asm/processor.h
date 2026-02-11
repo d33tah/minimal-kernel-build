@@ -216,7 +216,7 @@ struct thread_struct {
 	struct desc_struct	tls_array[GDT_ENTRY_TLS_ENTRIES];
 	unsigned long		sp0;
 	unsigned long		sp;
-	unsigned long		sysenter_cs;
+	/* sysenter_cs removed - SYSENTER not used */
 
 	unsigned long fs;
 	unsigned long gs;
@@ -296,7 +296,7 @@ static inline unsigned int cpuid_eax(unsigned int op)
 
 extern void select_idle_routine(const struct cpuinfo_x86 *c);
 
-extern void enable_sep_cpu(void);
+/* enable_sep_cpu removed - SYSENTER not used */
 extern int sysenter_setup(void);
 
  
@@ -348,7 +348,6 @@ static inline void spin_lock_prefetch(const void *x)
 
 #define INIT_THREAD  {							  \
 	.sp0			= TOP_OF_INIT_STACK,			  \
-	.sysenter_cs		= __KERNEL_CS,				  \
 }
 
 extern void start_thread(struct pt_regs *regs, unsigned long new_ip,

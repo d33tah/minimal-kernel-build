@@ -65,11 +65,7 @@ __kernel_vsyscall:
 	CFI_ADJUST_CFA_OFFSET	4
 	CFI_REL_OFFSET		ebp, 0
 
-	#define SYSENTER_SEQUENCE	"movl %esp, %ebp; sysenter"
-	#define SYSCALL_SEQUENCE	"movl %ecx, %ebp; syscall"
-
-	/* X86_32 - use SYSENTER if available (X86_FEATURE_SEP) */
-	ALTERNATIVE "", SYSENTER_SEQUENCE, X86_FEATURE_SEP
+	/* SYSENTER_SEQUENCE removed - init uses INT $0x80 only */
 
 	/* Enter using int $0x80 */
 	int	$0x80

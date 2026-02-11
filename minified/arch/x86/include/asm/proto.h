@@ -7,9 +7,7 @@
 #endif
 
 void entry_INT80_32(void);
-void entry_SYSENTER_32(void);
-void __begin_SYSENTER_singlestep_region(void);
-void __end_SYSENTER_singlestep_region(void);
+/* entry_SYSENTER_32 declarations removed - SYSENTER not used */
 
 void x86_configure_nx(void);
 

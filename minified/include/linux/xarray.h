@@ -5,7 +5,7 @@
 #include <linux/bug.h>
 #include <linux/compiler.h>
 #include <linux/gfp.h>
-#include <linux/kconfig.h>
+/* linux/kconfig.h removed - force-included via Makefile -include */
 #include <linux/kernel.h>
 #include <linux/rcupdate.h>
 #include <linux/spinlock.h>

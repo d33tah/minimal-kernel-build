@@ -10,10 +10,9 @@
 #include <asm/fpu/xstate.h>
 
 #include <asm/sigframe.h>
-#include <asm/trapnr.h>
+/* asm/trapnr.h removed - no X86_TRAP_ constants used */
 /* asm/trace/fpu.h removed - all trace stubs empty */
-
-#include "context.h"
+/* context.h removed - no functions from it used */
 #include "internal.h"
 /* legacy.h removed - nothing from it used here */
 #include "xstate.h"

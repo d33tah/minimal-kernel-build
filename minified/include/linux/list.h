@@ -163,10 +163,6 @@ static inline void list_splice_tail_init(struct list_head *list,
 #define list_prev_entry(pos, member) \
 	list_entry((pos)->member.prev, typeof(*(pos)), member)
 
-#define list_for_each_safe(pos, n, head) \
-	for (pos = (head)->next, n = pos->next; \
-	     !list_is_head(pos, (head)); \
-	     pos = n, n = pos->next)
 
 
 #define list_entry_is_head(pos, head, member)				\
@@ -196,7 +192,6 @@ static inline void list_splice_tail_init(struct list_head *list,
 
 
 
-#define HLIST_HEAD_INIT { .first = NULL }
 #define HLIST_HEAD(name) struct hlist_head name = {  .first = NULL }
 #define INIT_HLIST_HEAD(ptr) ((ptr)->first = NULL)
 static inline void INIT_HLIST_NODE(struct hlist_node *h)

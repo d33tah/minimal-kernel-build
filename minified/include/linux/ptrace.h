@@ -17,12 +17,9 @@
 /* ptrace_access_vm removed - declared but never implemented */
 
 
-#define PT_SEIZED	0x00010000	 
-#define PT_PTRACED	0x00000001
 
 #define PT_OPT_FLAG_SHIFT	3
 #define PT_EVENT_FLAG(event)	(1 << (PT_OPT_FLAG_SHIFT + (event)))
-#define PT_TRACESYSGOOD		PT_EVENT_FLAG(0)
 
 /* arch_ptrace, ptrace_disable removed - never called */
 /* ptrace_request removed - never called */

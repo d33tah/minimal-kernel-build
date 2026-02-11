@@ -87,7 +87,6 @@ struct symbol {
 #define for_all_symbols(i, sym) for (i = 0; i < SYMBOL_HASHSIZE; i++) for (sym = symbol_hash[i]; sym; sym = sym->next)
 
 #define SYMBOL_CONST      0x0001
-#define SYMBOL_CHECK      0x0008
 #define SYMBOL_CHOICE     0x0010
 #define SYMBOL_CHOICEVAL  0x0020
 #define SYMBOL_VALID      0x0080
@@ -96,12 +95,10 @@ struct symbol {
 #define SYMBOL_CHANGED    0x0400
 #define SYMBOL_WRITTEN    0x0800
 #define SYMBOL_NO_WRITE   0x1000
-#define SYMBOL_CHECKED    0x2000
 #define SYMBOL_WARNED     0x8000
 
 #define SYMBOL_DEF        0x10000
 #define SYMBOL_DEF_USER   0x10000
-#define SYMBOL_DEF_AUTO   0x20000
 #define SYMBOL_NEED_SET_CHOICE_VALUES  0x100000
 #define SYMBOL_HASHSIZE		9973
 

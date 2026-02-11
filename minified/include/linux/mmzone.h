@@ -80,7 +80,6 @@ static inline bool free_area_empty(struct free_area *area, int migratetype)
 
 struct pglist_data;
 
-#define ZONE_PADDING(name)
 
 /* NR_VM_NUMA_EVENT_ITEMS removed - unused */
 
@@ -198,7 +197,6 @@ struct zone {
 
 	const char *name;
 
-	ZONE_PADDING(_pad1_)
 
 	struct free_area free_area[MAX_ORDER];
 
@@ -208,7 +206,6 @@ struct zone {
 
 	/* contiguous removed - write-only */
 
-	ZONE_PADDING(_pad2_)
 
 	atomic_long_t vm_stat[NR_VM_ZONE_STAT_ITEMS];
 } ____cacheline_internodealigned_in_smp;
@@ -246,13 +243,11 @@ typedef struct pglist_data {
 	/* kswapd_wait, pfmemalloc_wait, reclaim_wait, nr_writeback_throttled,
 	   kswapd_order, kswapd_highest_zoneidx, totalreserve_pages, kswapd removed */
 
-	ZONE_PADDING(_pad1_)
 
 	struct lruvec __lruvec;
 
 	/* flags removed - never used */
 
-	ZONE_PADDING(_pad2_)
 
 	/* per_cpu_nodestats removed - only assigned, never read */
 	atomic_long_t vm_stat[NR_VM_NODE_STAT_ITEMS];

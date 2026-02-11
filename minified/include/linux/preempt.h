@@ -53,7 +53,6 @@
 
 #define PREEMPT_LOCK_OFFSET		PREEMPT_DISABLE_OFFSET
 
-#define SOFTIRQ_LOCK_OFFSET (SOFTIRQ_DISABLE_OFFSET + PREEMPT_LOCK_OFFSET)
 
 #define in_atomic()	(preempt_count() != 0)
 

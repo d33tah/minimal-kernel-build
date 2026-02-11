@@ -100,7 +100,6 @@ struct tty_file_private {
 	struct list_head list;
 };
 
-#define TTY_MAGIC		0x5401
 
 void tty_kref_put(struct tty_struct *tty);
 

@@ -134,35 +134,6 @@ unsigned long vm_mmap(struct file *file, unsigned long addr, unsigned long len,
 	return vm_mmap_pgoff(file, addr, len, prot, flag, offset >> PAGE_SHIFT);
 }
 
-void *kvmalloc_node(size_t size, gfp_t flags, int node)
-{
-	gfp_t kmalloc_flags = flags;
-	void *ret;
-
-	if (size > PAGE_SIZE) {
-		kmalloc_flags |= __GFP_NOWARN;
-
-		if (!(kmalloc_flags & __GFP_RETRY_MAYFAIL))
-			kmalloc_flags |= __GFP_NORETRY;
-
-		kmalloc_flags &= ~__GFP_NOFAIL;
-	}
-
-	ret = kmalloc_node(size, kmalloc_flags, node);
-
-	if (ret || size <= PAGE_SIZE)
-		return ret;
-
-	if (unlikely(size > INT_MAX)) {
-		WARN_ON_ONCE(!(flags & __GFP_NOWARN));
-		return NULL;
-	}
-
-	return __vmalloc_node_range(size, 1, VMALLOC_START, VMALLOC_END, flags,
-				    PAGE_KERNEL, VM_ALLOW_HUGE_VMAP, node,
-				    __builtin_return_address(0));
-}
-
 void kvfree(const void *addr)
 {
 	/* Both vfree and kfree are empty stubs - nothing to do */

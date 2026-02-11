@@ -47,7 +47,6 @@ struct linux_binprm {
 } __randomize_layout;
 
 /* BINPRM_FLAGS_ENFORCE_NONDUMP removed - never used */
-#define BINPRM_FLAGS_PATH_INACCESSIBLE (1 << 2)
 #define BINPRM_FLAGS_PRESERVE_ARGV0 (1 << 3)
 
 struct linux_binfmt {

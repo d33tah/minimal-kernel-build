@@ -88,7 +88,6 @@ static inline unsigned int cpumask_size(void)
 /* __cpumask_var_read_mostly, alloc_bootmem_cpumask_var removed - never used */
 
 extern const DECLARE_BITMAP(cpu_all_bits, NR_CPUS);
-#define cpu_all_mask to_cpumask(cpu_all_bits)
 
 /* for_each_possible_cpu, for_each_online_cpu, for_each_present_cpu removed - code simplified */
 

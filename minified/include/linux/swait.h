@@ -72,11 +72,4 @@ __out:	__ret;								\
 	(void)___swait_event(wq, condition, TASK_UNINTERRUPTIBLE, 0,	\
 			    schedule())
 
-#define swait_event_exclusive(wq, condition)				\
-do {									\
-	if (condition)							\
-		break;							\
-	__swait_event(wq, condition);					\
-} while (0)
-
 #endif  

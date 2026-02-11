@@ -25,7 +25,7 @@ extern dev_t ROOT_DEV;
 #include <linux/slab.h>
 #include <linux/ramfs.h>
 #include <linux/major.h>
-#include <linux/blkdev.h>
+/* linux/blkdev.h removed - empty stub */
 #include <linux/init_syscalls.h>
 #include <uapi/linux/mount.h>
 /* --- 2026-01-26 01:00 --- Inlined from do_mounts.h */

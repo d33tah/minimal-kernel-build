@@ -1,5 +1,5 @@
 
-#include <linux/blkdev.h>
+/* linux/blkdev.h removed - empty stub */
 #include <linux/wait.h>
 #include <linux/backing-dev.h>
 #include <linux/fs.h>

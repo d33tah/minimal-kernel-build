@@ -37,8 +37,6 @@ struct device_private {
 	struct klist_node knode_bus;
 	struct klist_node knode_class;
 	struct list_head deferred_probe;
-	/* async_driver removed - never used */
-	char *deferred_probe_reason;
 	struct device *device;
 	u8 dead:1;
 };

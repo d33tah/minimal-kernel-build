@@ -37,15 +37,6 @@ static LIST_HEAD(deferred_probe_pending_list);
 static LIST_HEAD(deferred_probe_active_list);
 static atomic_t deferred_trigger_count = ATOMIC_INIT(0);
 
-static bool defer_all_probes;
-
-static void __device_set_deferred_probe_reason(const struct device *dev,
-					       char *reason)
-{
-	kfree(dev->p->deferred_probe_reason);
-	dev->p->deferred_probe_reason = reason;
-}
-
 static void deferred_probe_work_func(struct work_struct *work)
 {
 	struct device *dev;
@@ -59,16 +50,9 @@ static void deferred_probe_work_func(struct work_struct *work)
 		list_del_init(&private->deferred_probe);
 
 		get_device(dev);
-
-		__device_set_deferred_probe_reason(dev, NULL);
-
 		mutex_unlock(&deferred_probe_mutex);
-
-		/* device_pm_move_to_tail call removed - was empty stub */
-
 		bus_probe_device(dev);
 		mutex_lock(&deferred_probe_mutex);
-
 		put_device(dev);
 	}
 	mutex_unlock(&deferred_probe_mutex);
@@ -102,17 +86,6 @@ static void driver_deferred_probe_trigger(void)
 
 	queue_work(system_unbound_wq, &deferred_probe_work);
 }
-
-/* driver_deferred_probe_timeout removed - write-only variable */
-
-static void deferred_probe_timeout_work_func(struct work_struct *work)
-{
-	driver_deferred_probe_trigger();
-}
-static DECLARE_DELAYED_WORK(deferred_probe_timeout_work,
-			    deferred_probe_timeout_work_func);
-
-/* deferred_probe_extend_timeout removed - never called */
 
 /* Stub: simplified deferred probe for minimal kernel */
 static int deferred_probe_initcall(void)
@@ -176,48 +149,44 @@ static int driver_probe_device(struct device_driver *drv, struct device *dev)
 	if (dev->parent)
 		pm_runtime_get_sync(dev->parent);
 
-	if (defer_all_probes) {
-		ret = -EPROBE_DEFER;
+	dev->links.status = DL_DEV_PROBING;
+
+	if (!list_empty(&dev->devres_head)) {
+		ret = -EBUSY;
 	} else {
-		dev->links.status = DL_DEV_PROBING;
+		dev->driver = drv;
 
-		if (!list_empty(&dev->devres_head)) {
-			ret = -EBUSY;
-		} else {
-			dev->driver = drv;
+		if (dev->bus->dma_configure) {
+			ret = dev->bus->dma_configure(dev);
+			if (ret)
+				goto really_probe_pinctrl_failed;
+		}
 
-			if (dev->bus->dma_configure) {
-				ret = dev->bus->dma_configure(dev);
-				if (ret)
-					goto really_probe_pinctrl_failed;
-			}
-
-			if (dev->pm_domain && dev->pm_domain->activate) {
-				ret = dev->pm_domain->activate(dev);
-				if (ret)
-					goto really_probe_failed;
-			}
-
-			if (dev->bus->probe)
-				ret = dev->bus->probe(dev);
-			else if (drv->probe)
-				ret = drv->probe(dev);
-			if (ret) {
-				ret = -ret;
+		if (dev->pm_domain && dev->pm_domain->activate) {
+			ret = dev->pm_domain->activate(dev);
+			if (ret)
 				goto really_probe_failed;
-			}
+		}
 
-			if (dev->pm_domain && dev->pm_domain->sync)
-				dev->pm_domain->sync(dev);
-			goto really_probe_done;
+		if (dev->bus->probe)
+			ret = dev->bus->probe(dev);
+		else if (drv->probe)
+			ret = drv->probe(dev);
+		if (ret) {
+			ret = -ret;
+			goto really_probe_failed;
+		}
+
+		if (dev->pm_domain && dev->pm_domain->sync)
+			dev->pm_domain->sync(dev);
+		goto really_probe_done;
 
 really_probe_failed:
-			if (dev->bus && dev->bus->dma_cleanup)
-				dev->bus->dma_cleanup(dev);
+		if (dev->bus && dev->bus->dma_cleanup)
+			dev->bus->dma_cleanup(dev);
 really_probe_pinctrl_failed:
-			device_unbind_cleanup(dev);
+		device_unbind_cleanup(dev);
 really_probe_done:;
-		}
 	}
 	pm_request_idle(dev);
 
@@ -228,8 +197,7 @@ out:
 	if (ret == -EPROBE_DEFER || ret == EPROBE_DEFER) {
 		driver_deferred_probe_add(dev);
 
-		if (trigger_count != atomic_read(&deferred_trigger_count) &&
-		    !defer_all_probes)
+		if (trigger_count != atomic_read(&deferred_trigger_count))
 			driver_deferred_probe_trigger();
 	}
 	atomic_dec(&probe_count);

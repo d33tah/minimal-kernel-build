@@ -33,10 +33,6 @@
 #define USER_RPL		0x3
 
  
-#define SEGMENT_TI_MASK		0x4
- 
-#define SEGMENT_LDT		0x4
-
 
 #define GDT_ENTRY_TLS_MIN		6
 

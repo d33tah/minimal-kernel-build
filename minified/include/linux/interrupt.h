@@ -99,16 +99,7 @@ request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
 
 enum
 {
-	HI_SOFTIRQ=0,
-	TIMER_SOFTIRQ,
-	NET_TX_SOFTIRQ,
-	NET_RX_SOFTIRQ,
-	BLOCK_SOFTIRQ,
-	IRQ_POLL_SOFTIRQ,
-	TASKLET_SOFTIRQ,
-	SCHED_SOFTIRQ,
-	HRTIMER_SOFTIRQ,
-	RCU_SOFTIRQ,     
+	RCU_SOFTIRQ = 0,
 
 	NR_SOFTIRQS
 };

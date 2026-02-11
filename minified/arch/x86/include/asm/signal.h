@@ -13,7 +13,6 @@
 
 #define _NSIG_WORDS	(_NSIG / _NSIG_BPW)
 
-typedef unsigned long old_sigset_t;		 
 
 typedef struct {
 	unsigned long sig[_NSIG_WORDS];

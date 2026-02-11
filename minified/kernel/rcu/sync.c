@@ -18,8 +18,6 @@ extern void rcu_sync_dtor(struct rcu_sync *);
 
 enum { GP_IDLE = 0, GP_ENTER, GP_PASSED, GP_EXIT, GP_REPLAY };
 
-#define rss_lock gp_wait.lock
-
 void rcu_sync_init(struct rcu_sync *rsp)
 {
 	memset(rsp, 0, sizeof(*rsp));

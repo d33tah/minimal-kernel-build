@@ -176,7 +176,6 @@ struct x86_hw_tss {
 
  
 #define IO_BITMAP_BYTES			(65536 / BITS_PER_BYTE)
-#define IO_BITMAP_LONGS			(IO_BITMAP_BYTES / sizeof(long))
 
 # define __KERNEL_TSS_LIMIT	\
 	(offsetof(struct tss_struct, x86_tss) + sizeof(struct x86_hw_tss) - 1)

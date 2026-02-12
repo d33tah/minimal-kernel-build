@@ -41,7 +41,7 @@ static __initdata unsigned long mhash_entries;
 
 static __initdata unsigned long mphash_entries;
 
-static u64 event;
+/* event variable removed - touch_mnt_namespace removed */
 static DEFINE_IDA(mnt_id_ida);
 /* mnt_group_ida removed - invent_group_ids removed */
 
@@ -339,13 +339,7 @@ static void put_mountpoint(struct mountpoint *mp)
 
 /* check_mnt inlined into path_mount - single caller */
 
-static void touch_mnt_namespace(struct mnt_namespace *ns)
-{
-	if (ns) {
-		ns->event = ++event;
-		wake_up_interruptible(&ns->poll);
-	}
-}
+/* touch_mnt_namespace removed - namespace polling never used in minimal kernel */
 
 static struct mountpoint *unhash_mnt(struct mount *mnt)
 {
@@ -476,16 +470,7 @@ static void __cleanup_mnt(struct rcu_head *head)
 	cleanup_mnt(container_of(head, struct mount, mnt_rcu));
 }
 
-static LLIST_HEAD(delayed_mntput_list);
-static void delayed_mntput(struct work_struct *unused)
-{
-	struct llist_node *node = llist_del_all(&delayed_mntput_list);
-	struct mount *m, *t;
-
-	llist_for_each_entry_safe(m, t, node, mnt_llist)
-		cleanup_mnt(m);
-}
-static DECLARE_DELAYED_WORK(delayed_mntput_work, delayed_mntput);
+/* delayed_mntput work queue removed - unused in minimal kernel */
 
 /* mntput_no_expire inlined into mntput */
 
@@ -546,8 +531,7 @@ void mntput(struct vfsmount *mnt)
 			if (!task_work_add(task, &m->mnt_rcu, TWA_RESUME))
 				return;
 		}
-		if (llist_add(&m->mnt_llist, &delayed_mntput_list))
-			schedule_delayed_work(&delayed_mntput_work, 1);
+		cleanup_mnt(m);
 		return;
 	}
 	cleanup_mnt(m);
@@ -620,7 +604,7 @@ static int attach_recursive_mnt(struct mount *source_mnt,
 		n->pending_mounts = 0;
 
 		__attach_mnt(source_mnt, parent);
-		touch_mnt_namespace(n);
+		/* touch_mnt_namespace removed - namespace polling never used */
 	}
 
 	put_mountpoint(smp);
@@ -793,7 +777,7 @@ static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns,
 		new_ns->seq = atomic64_add_return(1, &mnt_ns_seq);
 	refcount_set(&new_ns->ns.count, 1);
 	INIT_LIST_HEAD(&new_ns->list);
-	init_waitqueue_head(&new_ns->poll);
+	/* init_waitqueue_head(&new_ns->poll) removed - poll never used */
 	spin_lock_init(&new_ns->ns_lock);
 	new_ns->user_ns = get_user_ns(user_ns);
 	new_ns->ucounts = ucounts;

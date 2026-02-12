@@ -1,27 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0
-# tty_ioctl.o removed - file is empty stub
-# n_tty.o, tty_ldisc.o removed - ldisc registration is dead code
-# tty_buffer.o removed - inlined into tty_port.c
-obj-$(CONFIG_TTY)		+= tty_io.o tty_port.o
-# tty_mutex.o merged into tty_io.c
-obj-$(CONFIG_LEGACY_PTYS)	+= pty.o
-obj-$(CONFIG_UNIX98_PTYS)	+= pty.o
-obj-$(CONFIG_AUDIT)		+= tty_audit.o
-obj-$(CONFIG_MAGIC_SYSRQ)	+= sysrq.o
-obj-$(CONFIG_N_HDLC)		+= n_hdlc.o
-obj-$(CONFIG_N_GSM)		+= n_gsm.o
+# Most TTY files removed - only tty_port needed for VT console init
+obj-$(CONFIG_TTY)		+= tty_port.o
 
 obj-y				+= vt/
-
-# tty drivers
-obj-$(CONFIG_AMIGA_BUILTIN_SERIAL) += amiserial.o
-obj-$(CONFIG_MOXA_INTELLIO)	+= moxa.o
-obj-$(CONFIG_MOXA_SMARTIO)	+= mxser.o
-obj-$(CONFIG_NOZOMI)		+= nozomi.o
-obj-$(CONFIG_NULL_TTY)	        += ttynull.o
-obj-$(CONFIG_SYNCLINK_GT)	+= synclink_gt.o
-obj-$(CONFIG_PPC_EPAPR_HV_BYTECHAN) += ehv_bytechan.o
-obj-$(CONFIG_GOLDFISH_TTY)	+= goldfish.o
-obj-$(CONFIG_MIPS_EJTAG_FDC_TTY) += mips_ejtag_fdc.o
-obj-$(CONFIG_VCC)		+= vcc.o
-obj-$(CONFIG_RPMSG_TTY)		+= rpmsg_tty.o

@@ -256,7 +256,6 @@ struct expr *expr_transform(struct expr *e)
 			break;
 		case E_LEQ:
 		case E_GEQ:
-
 			tmp = e->left.expr;
 			free(e);
 			e = tmp;
@@ -264,7 +263,6 @@ struct expr *expr_transform(struct expr *e)
 			break;
 		case E_LTH:
 		case E_GTH:
-
 			tmp = e->left.expr;
 			free(e);
 			e = tmp;
@@ -444,56 +442,12 @@ struct expr *expr_trans_compare(struct expr *e, enum expr_type type,
 	return NULL;
 }
 
-enum string_value_kind {
-	k_string,
-	k_signed,
-	k_unsigned,
-};
-
-union string_value {
-	unsigned long long u;
-	signed long long s;
-};
-
-static enum string_value_kind expr_parse_string(const char *str,
-						enum symbol_type type,
-						union string_value *val)
-{
-	char *tail;
-	enum string_value_kind kind;
-
-	errno = 0;
-	switch (type) {
-	case S_BOOLEAN:
-	case S_TRISTATE:
-		val->s = !strcmp(str, "n") ? 0 :
-			 !strcmp(str, "m") ? 1 :
-			 !strcmp(str, "y") ? 2 :
-					     -1;
-		return k_signed;
-	case S_INT:
-		val->s = strtoll(str, &tail, 10);
-		kind = k_signed;
-		break;
-	case S_HEX:
-		val->u = strtoull(str, &tail, 16);
-		kind = k_unsigned;
-		break;
-	default:
-		val->s = strtoll(str, &tail, 0);
-		kind = k_signed;
-		break;
-	}
-	return !errno && !*tail && tail > str && isxdigit(tail[-1]) ? kind :
-								      k_string;
-}
+/* string_value_kind, expr_parse_string removed - only EQUAL/UNEQUAL needed */
 
 tristate expr_calc_value(struct expr *e)
 {
 	tristate val1, val2;
 	const char *str1, *str2;
-	enum string_value_kind k1 = k_string, k2 = k_string;
-	union string_value lval = {}, rval = {};
 	int res;
 
 	if (!e)
@@ -515,14 +469,13 @@ tristate expr_calc_value(struct expr *e)
 		val1 = expr_calc_value(e->left.expr);
 		return EXPR_NOT(val1);
 	case E_EQUAL:
-	case E_GEQ:
-	case E_GTH:
-	case E_LEQ:
-	case E_LTH:
 	case E_UNEQUAL:
+	case E_LTH:
+	case E_LEQ:
+	case E_GTH:
+	case E_GEQ:
 		break;
 	default:
-		printf("expr_calc_value: %d?\n", e->type);
 		return no;
 	}
 
@@ -530,18 +483,7 @@ tristate expr_calc_value(struct expr *e)
 	sym_calc_value(e->right.sym);
 	str1 = sym_get_string_value(e->left.sym);
 	str2 = sym_get_string_value(e->right.sym);
-
-	if (e->left.sym->type != S_STRING || e->right.sym->type != S_STRING) {
-		k1 = expr_parse_string(str1, e->left.sym->type, &lval);
-		k2 = expr_parse_string(str2, e->right.sym->type, &rval);
-	}
-
-	if (k1 == k_string || k2 == k_string)
-		res = strcmp(str1, str2);
-	else if (k1 == k_unsigned || k2 == k_unsigned)
-		res = (lval.u > rval.u) - (lval.u < rval.u);
-	else
-		res = (lval.s > rval.s) - (lval.s < rval.s);
+	res = strcmp(str1, str2);
 
 	switch (e->type) {
 	case E_EQUAL:
@@ -557,7 +499,6 @@ tristate expr_calc_value(struct expr *e)
 	case E_UNEQUAL:
 		return res ? yes : no;
 	default:
-		printf("expr_calc_value: relation %d?\n", e->type);
 		return no;
 	}
 }

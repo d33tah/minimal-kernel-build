@@ -276,8 +276,7 @@ const char *menu_get_prompt(struct menu *menu);
  
 void sym_clear_all_valid(void);
 struct symbol *sym_choice_default(struct symbol *sym);
-struct property *sym_get_range_prop(struct symbol *sym);
-/* sym_check_deps removed - recursive dep validation not needed */
+/* sym_get_range_prop removed - range checks not used */
 struct symbol *prop_get_symbol(struct property *prop);
 
 static inline tristate sym_get_tristate_value(struct symbol *sym)

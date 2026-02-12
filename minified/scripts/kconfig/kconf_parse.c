@@ -780,11 +780,9 @@ static void parse_config_options(void)
 			menu_add_symbol(P_SELECT, sym, d);
 			expect(T_EOL);
 		} else if (eat(T_RANGE)) {
-			struct symbol *lo = parse_symbol(),
-				      *hi = parse_symbol();
-			struct expr *d = parse_if_expr();
-			menu_add_expr(P_RANGE, expr_alloc_comp(E_RANGE, lo, hi),
-				      d);
+			parse_symbol();
+			parse_symbol();
+			parse_if_expr();
 			expect(T_EOL);
 		} else if (eat(T_MODULES)) {
 			if (modules_sym)

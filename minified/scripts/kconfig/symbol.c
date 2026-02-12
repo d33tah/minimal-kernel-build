@@ -70,34 +70,7 @@ static struct property *sym_get_default_prop(struct symbol *sym)
 	return NULL;
 }
 
-struct property *sym_get_range_prop(struct symbol *sym)
-{
-	struct property *prop;
-
-	for_all_properties(sym, prop, P_RANGE)
-	{
-		prop->visible.tri = expr_calc_value(prop->visible.expr);
-		if (prop->visible.tri != no)
-			return prop;
-	}
-	return NULL;
-}
-
-static long long sym_get_range_val(struct symbol *sym, int base)
-{
-	sym_calc_value(sym);
-	switch (sym->type) {
-	case S_INT:
-		base = 10;
-		break;
-	case S_HEX:
-		base = 16;
-		break;
-	default:
-		break;
-	}
-	return strtoll(sym->curr.val, NULL, base);
-}
+/* sym_get_range_prop, sym_get_range_val removed - range checks not used */
 
 /* sym_validate_range removed - INT/HEX range clamping not needed for allnoconfig */
 
@@ -453,30 +426,12 @@ bool sym_string_valid(struct symbol *sym, const char *str)
 
 bool sym_string_within_range(struct symbol *sym, const char *str)
 {
-	struct property *prop;
-	long long val;
-
 	switch (sym->type) {
 	case S_STRING:
 		return sym_string_valid(sym, str);
 	case S_INT:
-		if (!sym_string_valid(sym, str))
-			return false;
-		prop = sym_get_range_prop(sym);
-		if (!prop)
-			return true;
-		val = strtoll(str, NULL, 10);
-		return val >= sym_get_range_val(prop->expr->left.sym, 10) &&
-		       val <= sym_get_range_val(prop->expr->right.sym, 10);
 	case S_HEX:
-		if (!sym_string_valid(sym, str))
-			return false;
-		prop = sym_get_range_prop(sym);
-		if (!prop)
-			return true;
-		val = strtoll(str, NULL, 16);
-		return val >= sym_get_range_val(prop->expr->left.sym, 16) &&
-		       val <= sym_get_range_val(prop->expr->right.sym, 16);
+		return sym_string_valid(sym, str);
 	case S_BOOLEAN:
 	case S_TRISTATE:
 		switch (str[0]) {

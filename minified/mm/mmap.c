@@ -32,6 +32,14 @@ extern unsigned long shmem_get_unmapped_area(struct file *, unsigned long addr,
 
 #include "internal.h"
 
+static struct vm_area_struct *find_vma_prev(struct mm_struct *mm,
+					    unsigned long addr,
+					    struct vm_area_struct **pprev);
+static int __split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
+		       unsigned long addr, int new_below);
+static int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
+		       struct list_head *uf, bool downgrade);
+
 /* mmap_min_addr moved from security/min_addr.c */
 unsigned long mmap_min_addr = CONFIG_DEFAULT_MMAP_MIN_ADDR;
 
@@ -619,8 +627,9 @@ struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
 }
 
 /* Used by generic_get_unmapped_area and generic_get_unmapped_area_topdown */
-struct vm_area_struct *find_vma_prev(struct mm_struct *mm, unsigned long addr,
-				     struct vm_area_struct **pprev)
+static struct vm_area_struct *find_vma_prev(struct mm_struct *mm,
+					    unsigned long addr,
+					    struct vm_area_struct **pprev)
 {
 	*pprev = NULL;
 	return find_vma(mm, addr);
@@ -718,8 +727,8 @@ struct vm_area_struct *find_extend_vma(struct mm_struct *mm, unsigned long addr)
 /* Removed: unmap_region - inlined into __do_munmap */
 /* Removed: detach_vmas_to_be_unmapped - inlined into __do_munmap */
 
-int __split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
-		unsigned long addr, int new_below)
+static int __split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
+		       unsigned long addr, int new_below)
 {
 	struct vm_area_struct *new;
 	int err;
@@ -770,8 +779,8 @@ out_free_vma:
 	return err;
 }
 
-int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
-		struct list_head *uf, bool downgrade)
+static int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
+		       struct list_head *uf, bool downgrade)
 {
 	unsigned long end;
 	struct vm_area_struct *vma, *prev, *last;

@@ -57,8 +57,7 @@ void prepare_namespace(void);
 /* init_rootfs removed - was empty stub */
 extern struct file_system_type rootfs_fs_type;
 
-void mark_rodata_ro(void);
-
+/* mark_rodata_ro removed - never called */
 extern void (*late_time_init)(void);
 
 

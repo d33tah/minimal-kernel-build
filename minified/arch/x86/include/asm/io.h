@@ -8,7 +8,7 @@
 #include <linux/compiler.h>
 #include <asm/page.h>
 /* Inlined from early_ioremap.h */
-extern void __iomem *early_ioremap(resource_size_t phys_addr, unsigned long size);
+/* early_ioremap removed - never called */
 extern void *early_memremap(resource_size_t phys_addr, unsigned long size);
 extern void early_iounmap(void __iomem *addr, unsigned long size);
 extern void early_memunmap(void *addr, unsigned long size);

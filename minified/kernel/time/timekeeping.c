@@ -170,30 +170,7 @@ static void tk_setup_internals(struct timekeeper *tk, struct clocksource *clock)
 
 /* ktime_get_real_ts64 removed - never called */
 
-ktime_t ktime_get(void)
-{
-	struct timekeeper *tk = &tk_core.timekeeper;
-	unsigned int seq;
-	ktime_t base;
-	u64 nsecs;
-
-	/* WARN_ON(timekeeping_suspended) removed - never suspended */
-
-	do {
-		seq = raw_read_seqcount_begin(&tk_core.seq);
-		base = tk->tkr_mono.base;
-		/* timekeeping_get_ns, timekeeping_get_delta, timekeeping_delta_to_ns inlined */
-		{
-			const struct tk_read_base *tkr = &tk->tkr_mono;
-			u64 delta = clocksource_delta(
-				tk_clock_read(tkr), tkr->cycle_last, tkr->mask);
-			nsecs = (delta * tkr->mult + tkr->xtime_nsec) >>
-				tkr->shift;
-		}
-	} while (read_seqcount_retry(&tk_core.seq, seq));
-
-	return ktime_add_ns(base, nsecs);
-}
+/* ktime_get removed - never called */
 
 /* ktime_get_resolution_ns removed - never called (~15 LOC) */
 

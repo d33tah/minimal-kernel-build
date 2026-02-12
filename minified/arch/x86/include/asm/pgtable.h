@@ -27,8 +27,6 @@ static inline void pkru_write_default(void) { if (!cpu_feature_enabled(X86_FEATU
 /* cc_mkenc, cc_mkdec, cc_vendor, pgprot_encrypted, pgprot_decrypted removed - unused */
 #ifndef __PAGE_TABLE_CHECK_STUBS
 #define __PAGE_TABLE_CHECK_STUBS
-static inline void page_table_check_pte_clear(struct mm_struct *mm,
-					      unsigned long addr, pte_t pte) { }
 static inline void page_table_check_pte_set(struct mm_struct *mm,
 					    unsigned long addr, pte_t *ptep, pte_t pte) { }
 #endif
@@ -247,7 +245,7 @@ static inline void native_pte_clear(struct mm_struct *mm,
 {
 	*xp = native_make_pte(0);
 }
-#define native_ptep_get_and_clear(xp) native_local_ptep_get_and_clear(xp)
+/* native_ptep_get_and_clear removed - ptep_get_and_clear never called */
 #endif
 
 #if PTRS_PER_PMD > 1
@@ -333,14 +331,7 @@ unsigned long init_memory_mapping(unsigned long start,
 				  unsigned long end, pgprot_t prot);
 
  
-static inline pte_t native_local_ptep_get_and_clear(pte_t *ptep)
-{
-	pte_t res = *ptep;
-
-	 
-	native_pte_clear(NULL, 0, ptep);
-	return res;
-}
+/* native_local_ptep_get_and_clear removed - ptep_get_and_clear never called */
 
 /* native_local_pmdp_get_and_clear, native_local_pudp_get_and_clear removed - never called */
 
@@ -362,14 +353,7 @@ extern int ptep_set_access_flags(struct vm_area_struct *vma,
 
 /* ptep_test_and_clear_young, ptep_clear_flush_young removed - zero callers */
 
-#define __HAVE_ARCH_PTEP_GET_AND_CLEAR
-static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
-				       pte_t *ptep)
-{
-	pte_t pte = native_ptep_get_and_clear(ptep);
-	page_table_check_pte_clear(mm, addr, pte);
-	return pte;
-}
+/* ptep_get_and_clear removed - never called from any .c file */
 
 
 /* mk_pmd removed - unused */

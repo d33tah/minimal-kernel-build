@@ -648,8 +648,7 @@ static inline int vma_adjust(struct vm_area_struct *vma, unsigned long start,
 }
 /* vma_merge made static in mmap.c - only used internally */
 /* find_mergeable_anon_vma removed - inlined into rmap.c */
-extern int __split_vma(struct mm_struct *, struct vm_area_struct *,
-	unsigned long addr, int new_below);
+/* __split_vma made static in mmap.c */
 extern int insert_vm_struct(struct mm_struct *, struct vm_area_struct *);
 /* __vma_link_rb removed - only used in mm/mmap.c */
 extern void unlink_file_vma(struct vm_area_struct *);
@@ -674,8 +673,7 @@ extern unsigned long mmap_region(struct file *file, unsigned long addr,
 extern unsigned long do_mmap(struct file *file, unsigned long addr,
 	unsigned long len, unsigned long prot, unsigned long flags,
 	unsigned long pgoff, unsigned long *populate, struct list_head *uf);
-extern int __do_munmap(struct mm_struct *, unsigned long, size_t,
-		       struct list_head *uf, bool downgrade);
+/* __do_munmap made static in mmap.c */
 extern int do_munmap(struct mm_struct *, unsigned long, size_t,
 		     struct list_head *uf);
 
@@ -716,8 +714,7 @@ extern int expand_stack(struct vm_area_struct *vma, unsigned long address);
 /* expand_downwards made static in mm/mmap.c */
 
 extern struct vm_area_struct * find_vma(struct mm_struct * mm, unsigned long addr);
-extern struct vm_area_struct * find_vma_prev(struct mm_struct * mm, unsigned long addr,
-					     struct vm_area_struct **pprev);
+/* find_vma_prev made static in mmap.c */
 
 static inline
 struct vm_area_struct *find_vma_intersection(struct mm_struct *mm,

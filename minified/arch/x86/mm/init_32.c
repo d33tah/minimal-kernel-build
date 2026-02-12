@@ -379,8 +379,4 @@ void __init mem_init(void)
 	clear_fixmap(FIX_WP_TEST);
 }
 
-/* mark_rodata_ro simplified - set_pages_ro and set_memory_nx were stubs,
- * LTO eliminated entire body to ret (~15 LOC removed) */
-void mark_rodata_ro(void)
-{
-}
+/* mark_rodata_ro removed - never called (call in main.c was removed) */

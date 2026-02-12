@@ -110,7 +110,4 @@ unsigned char rtc_cmos_read(unsigned char addr)
 	return val;
 }
 
-void read_persistent_clock64(struct timespec64 *ts)
-{
-	x86_platform.get_wallclock(ts);
-}
+/* read_persistent_clock64 removed - never called */

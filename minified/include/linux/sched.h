@@ -413,10 +413,7 @@ struct task_struct {
 	 
 };
 
-static inline struct pid *task_pid(struct task_struct *task)
-{
-	return task->thread_pid;
-}
+/* task_pid removed - inlined into pid.c */
 
 pid_t __task_pid_nr_ns(struct task_struct *task, enum pid_type type, struct pid_namespace *ns);
 
@@ -424,10 +421,7 @@ pid_t __task_pid_nr_ns(struct task_struct *task, enum pid_type type, struct pid_
 /* task_pid_nr_ns inlined into exec.c (~3 LOC) */
 /* task_pid_vnr inlined into sched/core.c (~3 LOC) */
 
-static inline int is_global_init(struct task_struct *tsk)
-{
-	return tsk->tgid == 1;
-}
+/* is_global_init removed - inlined into signal.c */
 
 
 #define PF_IDLE			0x00000002
@@ -511,10 +505,7 @@ extern void wake_up_new_task(struct task_struct *tsk);
 
 extern void __set_task_comm(struct task_struct *tsk, const char *from, bool exec);
 
-static inline void set_task_comm(struct task_struct *tsk, const char *from)
-{
-	__set_task_comm(tsk, from, false);
-}
+/* set_task_comm removed - inlined into kthread.c */
 
 static inline void set_tsk_thread_flag(struct task_struct *tsk, int flag)
 {
@@ -531,20 +522,14 @@ static inline int test_and_set_tsk_thread_flag(struct task_struct *tsk, int flag
 	return test_and_set_ti_thread_flag(task_thread_info(tsk), flag);
 }
 
-static inline int test_and_clear_tsk_thread_flag(struct task_struct *tsk, int flag)
-{
-	return test_and_clear_ti_thread_flag(task_thread_info(tsk), flag);
-}
+/* test_and_clear_tsk_thread_flag removed - inlined into process.c */
 
 static inline int test_tsk_thread_flag(struct task_struct *tsk, int flag)
 {
 	return test_ti_thread_flag(task_thread_info(tsk), flag);
 }
 
-static inline void set_tsk_need_resched(struct task_struct *tsk)
-{
-	set_tsk_thread_flag(tsk,TIF_NEED_RESCHED);
-}
+/* set_tsk_need_resched removed - inlined into sched/core.c */
 
 static inline void clear_tsk_need_resched(struct task_struct *tsk)
 {

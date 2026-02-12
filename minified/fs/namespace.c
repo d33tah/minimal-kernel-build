@@ -166,7 +166,7 @@ int __mnt_want_write(struct vfsmount *m)
 		cpu_relax();
 
 	smp_rmb();
-	if ((m->mnt_flags & MNT_READONLY) || sb_rdonly(m->mnt_sb)) {
+	if ((m->mnt_flags & MNT_READONLY) || (m->mnt_sb->s_flags & SB_RDONLY)) {
 		mnt_dec_writers(mnt);
 		ret = -EROFS;
 	}
@@ -634,7 +634,7 @@ static struct mountpoint *lock_mount(struct path *path)
 	struct vfsmount *mnt;
 	struct dentry *dentry = path->dentry;
 retry:
-	inode_lock(dentry->d_inode);
+	down_write(&dentry->d_inode->i_rwsem); /* inode_lock inlined */
 	if (unlikely(dentry->d_flags &
 		     DCACHE_CANT_MOUNT)) { /* cant_mount inlined */
 		inode_unlock(dentry->d_inode);

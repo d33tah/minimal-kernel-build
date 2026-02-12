@@ -43,7 +43,7 @@ static inline struct mem_cgroup *lruvec_memcg(struct lruvec *lruvec)
 static inline void mod_lruvec_kmem_state(void *p, enum node_stat_item idx,
 					 int val)
 {
-	struct page *page = virt_to_head_page(p);
+	struct page *page = compound_head(virt_to_page(p));
 	mod_node_page_state(page_pgdat(page), idx, val);
 }
 

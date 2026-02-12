@@ -78,7 +78,7 @@ int send_signal_locked(int sig, struct kernel_siginfo *info,
 	if (handler == SIG_IGN ||
 	    (handler == SIG_DFL && sig_kernel_ignore(sig)))
 		return 0;
-	if (is_global_init(t) && sig_kernel_only(sig))
+	if (t->tgid == 1 && sig_kernel_only(sig)) /* is_global_init inlined */
 		return 0;
 
 	pending = (type != PIDTYPE_PID) ? &t->signal->shared_pending :

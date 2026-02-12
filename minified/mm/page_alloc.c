@@ -212,8 +212,8 @@ static void __meminit __init_single_page(struct page *page, unsigned long pfn,
 	page->flags |= (zone & ZONES_MASK) << ZONES_PGSHIFT;
 	page->flags &= ~(NODES_MASK << NODES_PGSHIFT);
 	page->flags |= (nid & NODES_MASK) << NODES_PGSHIFT;
-	init_page_count(page);
-	page_mapcount_reset(page);
+	set_page_count(page, 1); /* init_page_count inlined */
+	atomic_set(&page->_mapcount, -1); /* page_mapcount_reset inlined */
 
 	INIT_LIST_HEAD(&page->lru);
 	/* WANT_PAGE_VIRTUAL not defined */
@@ -356,7 +356,7 @@ static __always_inline bool __rmqueue_fallback(struct zone *zone, int order,
 				int mt = fallbacks[start_migratetype][i];
 				if (mt == MIGRATE_TYPES)
 					break;
-				if (!free_area_empty(area, mt)) {
+				if (!list_empty(&area->free_list[mt])) { /* free_area_empty inlined */
 					fallback_mt = mt;
 					break;
 				}

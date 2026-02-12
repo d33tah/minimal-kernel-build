@@ -111,7 +111,9 @@ error:
 	/* mem_cgroup_uncharge is empty stub */
 	folio->mapping = NULL;
 
-	folio_put_refs(folio, nr);
+	/* folio_put_refs inlined */
+	if (atomic_sub_and_test(nr, &folio->page._refcount))
+		__put_page(&folio->page);
 	return xas_error(&xas);
 }
 

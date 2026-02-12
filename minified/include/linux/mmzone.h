@@ -123,10 +123,7 @@ static inline struct page *get_page_from_free_area(struct free_area *area,
 					struct page, lru);
 }
 
-static inline bool free_area_empty(struct free_area *area, int migratetype)
-{
-	return list_empty(&area->free_list[migratetype]);
-}
+/* free_area_empty removed - inlined into page_alloc.c */
 
 struct pglist_data;
 
@@ -155,10 +152,7 @@ enum node_stat_item {
 	NR_VM_NODE_STAT_ITEMS
 };
 
-static __always_inline bool vmstat_item_in_bytes(int idx)
-{
-	return (idx == NR_SLAB_RECLAIMABLE_B || idx == NR_SLAB_UNRECLAIMABLE_B);
-}
+/* vmstat_item_in_bytes removed - inlined into vmstat.h */
 
 #define LRU_BASE 0
 #define LRU_ACTIVE 1

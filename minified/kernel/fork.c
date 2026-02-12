@@ -258,7 +258,7 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	mm->vmacache_seqnum = 0;
 	atomic_set(&mm->mm_users, 1);
 	atomic_set(&mm->mm_count, 1);
-	mmap_init_lock(mm);
+	init_rwsem(&mm->mmap_lock); /* mmap_init_lock inlined */
 	INIT_LIST_HEAD(&mm->mmlist);
 	atomic_long_set(&mm->pgtables_bytes,
 			0); /* mm_pgtables_bytes_init inlined */

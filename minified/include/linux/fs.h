@@ -482,10 +482,7 @@ struct inode {
 
 /* enum inode_i_mutex_lock_class (I_MUTEX_NORMAL, I_MUTEX_PARENT) removed - never used */
 
-static inline void inode_lock(struct inode *inode)
-{
-	down_write(&inode->i_rwsem);
-}
+/* inode_lock removed - inlined into namespace.c */
 
 static inline void inode_unlock(struct inode *inode)
 {
@@ -691,22 +688,7 @@ static inline kgid_t i_gid_into_mnt(struct user_namespace *mnt_userns,
 /* inode_fsuid_set, inode_fsgid_set inlined into inode.c (~8 LOC) */
 /* fsuidgid_has_mapping, current_time removed - not called */
 
-static inline void __sb_end_write(struct super_block *sb, int level)
-{
-	percpu_up_read(sb->s_writers.rw_sem + level-1);
-}
-
-static inline void __sb_start_write(struct super_block *sb, int level)
-{
-	percpu_down_read(sb->s_writers.rw_sem + level - 1);
-}
-
-/* sb_end_pagefault removed - never called */
-
-static inline void sb_start_write(struct super_block *sb)
-{
-	__sb_start_write(sb, SB_FREEZE_WRITE);
-}
+/* __sb_end_write, __sb_start_write, sb_start_write removed - inlined into read_write.c */
 
 /* sb_start_pagefault removed - never called */
 
@@ -771,7 +753,7 @@ struct super_operations {
 #define S_SWAPFILE	(1 << 8)
 #define S_AUTOMOUNT	(1 << 11)
 
-static inline bool sb_rdonly(const struct super_block *sb) { return sb->s_flags & SB_RDONLY; }
+/* sb_rdonly removed - inlined into namespace.c */
 #define IS_APPEND(inode)	((inode)->i_flags & S_APPEND)
 #define IS_DEADDIR(inode)	((inode)->i_flags & S_DEAD)
 #define IS_SWAPFILE(inode)	((inode)->i_flags & S_SWAPFILE)
@@ -779,16 +761,7 @@ static inline bool sb_rdonly(const struct super_block *sb) { return sb->s_flags 
 
 /* HAS_UNMAPPED_ID inlined at fs/namei.c - single caller */
 
-static inline int iocb_flags(struct file *file);
-
-static inline void init_sync_kiocb(struct kiocb *kiocb, struct file *filp)
-{
-	*kiocb = (struct kiocb) {
-		.ki_filp = filp,
-		.ki_flags = iocb_flags(filp),
-		/* ki_ioprio removed - write-only field */
-	};
-}
+/* iocb_flags, init_sync_kiocb removed - inlined into read_write.c */
 
 #define __I_NEW			3
 #define I_NEW			(1 << __I_NEW)
@@ -913,10 +886,7 @@ static inline int path_permission(const struct path *path, int mask)
 
 /* file_start_write and file_end_write inlined at fs/read_write.c - single caller each */
 
-static inline int get_write_access(struct inode *inode)
-{
-	return atomic_inc_unless_negative(&inode->i_writecount) ? 0 : -ETXTBSY;
-}
+/* get_write_access removed - inlined into open.c */
 static inline int deny_write_access(struct file *file)
 {
 	struct inode *inode = file_inode(file);
@@ -1011,13 +981,7 @@ void setattr_copy(struct user_namespace *, struct inode *inode,
 
 /* vma_is_fsdax removed - never called */
 
-static inline int iocb_flags(struct file *file)
-{
-	int res = 0;
-	if (file->f_flags & O_DIRECT)
-		res |= IOCB_DIRECT;
-	return res;
-}
+/* iocb_flags removed - inlined into read_write.c */
 
 
 /* parent_ino removed - never called */

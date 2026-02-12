@@ -20,15 +20,9 @@
 
 /* __mmap_lock_trace_* functions removed - empty tracing stubs */
 
-static inline void mmap_init_lock(struct mm_struct *mm)
-{
-	init_rwsem(&mm->mmap_lock);
-}
+/* mmap_init_lock removed - inlined into fork.c */
 
-static inline void mmap_write_lock(struct mm_struct *mm)
-{
-	down_write(&mm->mmap_lock);
-}
+/* mmap_write_lock removed - inlined into mmap.c */
 
 
 static inline int mmap_write_lock_killable(struct mm_struct *mm)
@@ -53,10 +47,7 @@ static inline int mmap_read_lock_killable(struct mm_struct *mm)
 	return down_read_killable(&mm->mmap_lock);
 }
 
-static inline bool mmap_read_trylock(struct mm_struct *mm)
-{
-	return down_read_trylock(&mm->mmap_lock) != 0;
-}
+/* mmap_read_trylock removed - inlined into fault.c */
 
 static inline void mmap_read_unlock(struct mm_struct *mm)
 {
@@ -90,10 +81,7 @@ static inline void set_page_count(struct page *page, int v)
 	atomic_set(&page->_refcount, v);
 }
 
-static inline void init_page_count(struct page *page)
-{
-	set_page_count(page, 1);
-}
+/* init_page_count removed - inlined into page_alloc.c */
 
 /* page_ref_add, page_ref_sub, page_ref_inc, folio_ref_add, folio_ref_sub inlined */
 static inline void folio_ref_inc(struct folio *folio)
@@ -101,15 +89,9 @@ static inline void folio_ref_inc(struct folio *folio)
 	atomic_inc(&folio->page._refcount);
 }
 
-static inline int folio_ref_sub_and_test(struct folio *folio, int nr)
-{
-	return atomic_sub_and_test(nr, &folio->page._refcount);
-}
+/* folio_ref_sub_and_test removed - inlined into folio_put_refs */
 
-static inline int page_ref_dec_and_test(struct page *page)
-{
-	return atomic_dec_and_test(&page->_refcount);
-}
+/* page_ref_dec_and_test removed - inlined into put_page_testzero */
 
 /* folio_ref_add_unless inlined into folio_try_get_rcu */
 static inline bool folio_try_get_rcu(struct folio *folio)
@@ -138,10 +120,7 @@ static inline unsigned long totalram_pages(void)
 
 /* totalram_pages_inc removed - inlined at single call site */
 
-static inline void totalram_pages_add(long count)
-{
-	atomic_long_add(count, &_totalram_pages);
-}
+/* totalram_pages_add removed - inlined into memblock.c */
 
 extern void * high_memory;
 
@@ -323,31 +302,20 @@ static inline unsigned int folio_order(struct folio *folio)
 static inline int put_page_testzero(struct page *page)
 {
 	VM_BUG_ON_PAGE(page_ref_count(page) == 0, page);
-	return page_ref_dec_and_test(page);
+	return atomic_dec_and_test(&page->_refcount);
 }
 
-static inline int folio_put_testzero(struct folio *folio)
-{
-	return put_page_testzero(&folio->page);
-}
+/* folio_put_testzero removed - inlined into folio_put */
 
 /* vmalloc_to_page removed - no callers */
 /* is_vmalloc_addr removed - no callers */
 
-static inline void page_mapcount_reset(struct page *page)
-{
-	atomic_set(&(page)->_mapcount, -1);
-}
+/* page_mapcount_reset removed - inlined into page_alloc.c */
 
 /* __page_mapcount removed - no implementation */
 /* page_mapcount inlined at mm/filemap.c - single caller */
 
-static inline struct page *virt_to_head_page(const void *x)
-{
-	struct page *page = virt_to_page(x);
-
-	return compound_head(page);
-}
+/* virt_to_head_page removed - inlined into memcontrol.h */
 
 /* virt_to_folio removed - never called */
 
@@ -439,15 +407,11 @@ bool __must_check try_grab_page(struct page *page, unsigned int flags);
 
 static inline void folio_put(struct folio *folio)
 {
-	if (folio_put_testzero(folio))
+	if (put_page_testzero(&folio->page))
 		__put_page(&folio->page);
 }
 
-static inline void folio_put_refs(struct folio *folio, int refs)
-{
-	if (folio_ref_sub_and_test(folio, refs))
-		__put_page(&folio->page);
-}
+/* folio_put_refs removed - inlined into filemap.c */
 
 static inline void put_page(struct page *page)
 {
@@ -507,13 +471,8 @@ static inline size_t folio_size(struct folio *folio)
 
 #include <linux/vmstat.h>
 
-static __always_inline void *lowmem_page_address(const struct page *page)
-{
-	return page_to_virt(page);
-}
-
-/* WANT_PAGE_VIRTUAL and HASHED_PAGE_VIRTUAL blocks removed - never defined */
-#define page_address(page) lowmem_page_address(page)
+/* lowmem_page_address removed - inlined into page_address macro */
+#define page_address(page) page_to_virt(page)
 /* set_page_address, page_address_init removed - never used */
 
 /* folio_address removed - inlined at single call site */
@@ -645,20 +604,8 @@ static inline void pgtable_pte_page_dtor(struct page *page)
 	(pte_alloc(mm, pmd) ?			\
 		 NULL : pte_offset_map_lock(mm, pmd, address, ptlp))
 
-/* USE_SPLIT_PMD_PTLOCKS is 0, use simple page_table_lock */
-static inline spinlock_t *pmd_lockptr(struct mm_struct *mm, pmd_t *pmd)
-{
-	return &mm->page_table_lock;
-}
-
-/* pmd_huge_pte macro removed - never used */
-
-static inline spinlock_t *pmd_lock(struct mm_struct *mm, pmd_t *pmd)
-{
-	spinlock_t *ptl = pmd_lockptr(mm, pmd);
-	spin_lock(ptl);
-	return ptl;
-}
+/* pmd_lockptr removed - inlined into pmd_lock */
+/* pmd_lock removed - inlined into memory.c */
 
 /* pud_lockptr, pud_lock removed - unused */
 

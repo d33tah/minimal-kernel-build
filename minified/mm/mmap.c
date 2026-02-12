@@ -960,7 +960,7 @@ void exit_mmap(struct mm_struct *mm)
 	unsigned long nr_accounted = 0;
 
 	/* mmu_notifier_release, mm_is_oom_victim() removed - OOM killer disabled, empty stub */
-	mmap_write_lock(mm);
+	down_write(&mm->mmap_lock); /* mmap_write_lock inlined */
 	arch_exit_mmap(mm);
 
 	vma = mm->mmap;

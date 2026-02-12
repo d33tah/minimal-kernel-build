@@ -44,7 +44,7 @@ static inline void __mod_zone_page_state(struct zone *zone,
 static inline void __mod_node_page_state(struct pglist_data *pgdat,
 			enum node_stat_item item, int delta)
 {
-	if (vmstat_item_in_bytes(item)) {
+	if (item == NR_SLAB_RECLAIMABLE_B || item == NR_SLAB_UNRECLAIMABLE_B) { /* vmstat_item_in_bytes inlined */
 		 
 		VM_WARN_ON_ONCE(delta & (PAGE_SIZE - 1));
 		delta >>= PAGE_SHIFT;

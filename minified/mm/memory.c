@@ -221,7 +221,9 @@ void free_pgtables(struct mmu_gather *tlb, struct vm_area_struct *vma,
 
 static void pmd_install(struct mm_struct *mm, pmd_t *pmd, pgtable_t *pte)
 {
-	spinlock_t *ptl = pmd_lock(mm, pmd);
+	/* pmd_lock + pmd_lockptr inlined */
+	spinlock_t *ptl = &mm->page_table_lock;
+	spin_lock(ptl);
 
 	if (likely(pmd_none(*pmd))) {
 		/* mm_inc_nr_ptes inlined - single caller */

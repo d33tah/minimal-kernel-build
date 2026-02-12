@@ -287,7 +287,7 @@ pid_t __task_pid_nr_ns(struct task_struct *task, enum pid_type type,
 
 struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
 {
-	return ns_of_pid(task_pid(tsk));
+	return ns_of_pid(tsk->thread_pid); /* task_pid inlined */
 }
 
 /* pidfd_open replaced with COND_SYSCALL */

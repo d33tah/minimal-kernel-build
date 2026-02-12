@@ -5,7 +5,6 @@
 #include <asm/alternative.h>
 #include <asm/asm.h>
 #include <linux/compiler.h>
-#include <asm/rwonce.h>
 
 #define mb() asm volatile(ALTERNATIVE("lock; addl $0,-4(%%esp)", "mfence", \
 				      X86_FEATURE_XMM2) ::: "memory", "cc")

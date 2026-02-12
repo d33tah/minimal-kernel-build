@@ -4,16 +4,45 @@
 #define MIN_NR_CONSOLES 1
 #define MAX_NR_CONSOLES	2
 
-/* inlined from linux/kd.h */
 #ifndef KD_TEXT
 #define KD_TEXT		0x00
 #define KD_GRAPHICS	0x01
 #endif
-#include <linux/tty.h>
+
+#include <linux/fs.h>
+#include <linux/types.h>
+#include <linux/kref.h>
 #include <linux/mutex.h>
+#include <linux/spinlock.h>
 #include <linux/wait.h>
 #include <linux/workqueue.h>
 #include <linux/notifier.h>
+
+/* inlined from tty_driver.h */
+struct tty_struct;
+struct tty_driver;
+struct tty_operations;
+
+/* inlined from tty_buffer.h */
+struct tty_bufhead {
+	int dummy;
+};
+
+/* inlined from tty_port.h */
+struct tty_port {
+	struct tty_bufhead	buf;
+	spinlock_t		lock;
+	struct mutex		mutex;
+	struct mutex		buf_mutex;
+	struct kref		kref;
+};
+
+void tty_port_init(struct tty_port *port);
+
+/* inlined from tty.h */
+struct tty_struct {
+	struct kref kref;
+} __randomize_layout;
 
 struct uni_pagedir;
 

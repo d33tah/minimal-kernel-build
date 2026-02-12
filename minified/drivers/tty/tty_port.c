@@ -1,5 +1,4 @@
-#include <linux/spinlock.h>
-#include <linux/tty_port.h>
+#include <linux/vt_kern.h>
 #include <linux/string.h>
 
 void tty_port_init(struct tty_port *port)

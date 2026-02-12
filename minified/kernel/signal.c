@@ -62,8 +62,8 @@ void recalc_sigpending(void)
 /* complete_signal was empty stub - removed */
 /* __send_signal_locked inlined into send_signal_locked */
 
-int send_signal_locked(int sig, struct kernel_siginfo *info,
-		       struct task_struct *t, enum pid_type type)
+static int send_signal_locked(int sig, struct kernel_siginfo *info,
+			      struct task_struct *t, enum pid_type type)
 {
 	/* Simplified stub for minimal hello-world kernel
 	 * - Skip complex ignored signal check (init ignores most anyway)

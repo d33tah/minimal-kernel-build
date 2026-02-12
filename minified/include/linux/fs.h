@@ -957,7 +957,6 @@ extern struct file_system_type *get_fs_type(const char *name);
 /* Removed: get_super, get_active_super, drop_super_exclusive,
    iterate_supers, iterate_supers_type, drop_super - never called */
 
-extern int dcache_dir_open(struct inode *, struct file *);
 /* dcache_dir_close, dcache_dir_lseek, dcache_readdir removed - only used in fs/libfs.c */
 extern int simple_setattr(struct user_namespace *, struct dentry *,
 			  struct iattr *);

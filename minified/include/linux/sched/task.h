@@ -63,7 +63,6 @@ extern void exit_thread(struct task_struct *tsk);
 
 extern void exit_files(struct task_struct *);
 
-extern pid_t kernel_clone(struct kernel_clone_args *kargs);
 struct mm_struct *copy_init_mm(void);
 extern pid_t kernel_thread(int (*fn)(void *), void *arg, unsigned long flags);
 extern pid_t user_mode_thread(int (*fn)(void *), void *arg, unsigned long flags);

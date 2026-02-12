@@ -24,7 +24,7 @@ struct dentry *simple_lookup(struct inode *dir, struct dentry *dentry,
 }
 
 /* dcache_dir_open/close simplified - d_alloc_cursor removed, dirs can't be opened */
-int dcache_dir_open(struct inode *inode, struct file *file)
+static int dcache_dir_open(struct inode *inode, struct file *file)
 {
 	return -ENOMEM;
 }

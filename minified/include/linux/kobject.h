@@ -108,7 +108,6 @@ static inline const struct kobj_type *get_ktype(struct kobject *kobj)
 
 /* kset_find_obj removed - no callers */
 
-int kobject_uevent(struct kobject *kobj, enum kobject_action action);
 /* kobject_uevent_env made static - only used in lib/kobject.c */
 /* kobject_synth_uevent removed - no callers */
 

@@ -84,7 +84,6 @@ char *kvasprintf(gfp_t gfp, const char *fmt, va_list args);
 /* sscanf removed - no callers after do_mounts cleanup */
 /* vsscanf removed - never called */
 
-extern char *next_arg(char *args, char **param, char **val);
 
 /* kernel_text_address removed - never called */
 

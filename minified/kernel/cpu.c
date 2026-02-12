@@ -38,7 +38,7 @@ struct cpumask __cpu_active_mask __read_mostly;
 
 /* __num_online_cpus removed - write-only variable, num_online_cpus() not called */
 
-void set_cpu_online(unsigned int cpu, bool online)
+static void set_cpu_online(unsigned int cpu, bool online)
 {
 	if (online)
 		cpumask_test_and_set_cpu(cpu, &__cpu_online_mask);

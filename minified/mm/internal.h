@@ -106,9 +106,6 @@ extern void memblock_free_pages(struct page *page, unsigned long pfn,
 
 /* free_unref_page/free_unref_page_list removed - no callers remain */
 
-extern void *memmap_alloc(phys_addr_t size, phys_addr_t align,
-			  phys_addr_t min_addr,
-			  int nid, bool exact_nid);
 
 /* split_free_page, find_suitable_fallback declaration removed - unused */
 /* is_exec_mapping, is_stack_mapping, is_data_mapping removed - unused */
@@ -133,9 +130,6 @@ extern long populate_vma_page_range(struct vm_area_struct *vma,
 
 /* mminit_level enum, mminit_dprintk, mminit_verify_zonelist, hwpoison_filter removed - unused */
 
-extern unsigned long  __must_check vm_mmap_pgoff(struct file *, unsigned long,
-        unsigned long, unsigned long,
-        unsigned long, unsigned long);
 
 /* set_pageblock_order removed - empty stub */
 

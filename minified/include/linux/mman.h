@@ -98,5 +98,4 @@ calc_vm_flag_bits(unsigned long flags)
 	       arch_calc_vm_flag_bits(flags);
 }
 
-unsigned long vm_commit_limit(void);
 #endif  

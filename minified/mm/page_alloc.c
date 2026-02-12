@@ -49,6 +49,7 @@ static char *const zone_names[MAX_NR_ZONES] = {
 	"Movable",
 };
 
+static void free_compound_page(struct page *page);
 compound_page_dtor *const compound_page_dtors[NR_COMPOUND_DTORS] = {
 	[NULL_COMPOUND_DTOR] = NULL,
 	[COMPOUND_PAGE_DTOR] = free_compound_page,
@@ -127,7 +128,7 @@ static void set_pfnblock_flags_mask(struct page *page, unsigned long flags,
 
 /* bad_range removed - only used in VM_BUG_ON which are no-ops */
 
-void free_compound_page(struct page *page)
+static void free_compound_page(struct page *page)
 {
 	/* No-op: bump allocator style - no deallocation */
 }
@@ -846,8 +847,8 @@ static void __init memmap_init_zone_range(struct zone *zone,
 
 /* memmap_init inlined into free_area_init */
 
-void __init *memmap_alloc(phys_addr_t size, phys_addr_t align,
-			  phys_addr_t min_addr, int nid, bool exact_nid)
+static void __init *memmap_alloc(phys_addr_t size, phys_addr_t align,
+				 phys_addr_t min_addr, int nid, bool exact_nid)
 {
 	/* exact_nid always false - only caller passes false */
 	return memblock_alloc_try_nid_raw(size, align, min_addr,

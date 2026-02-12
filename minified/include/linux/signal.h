@@ -82,8 +82,6 @@ static inline void init_sigpending(struct sigpending *sig)
 enum pid_type;
 
 /* do_send_sig_info, group_send_sig_info removed - no callers */
-extern int send_signal_locked(int sig, struct kernel_siginfo *info,
-			      struct task_struct *p, enum pid_type type);
 /* sigprocmask, set_current_blocked removed - never called */
 extern void __set_current_blocked(const sigset_t *);
 /* show_unhandled_signals removed - never used */

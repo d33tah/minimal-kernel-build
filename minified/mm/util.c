@@ -102,9 +102,9 @@ void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 
 /* arch_pick_mmap_layout removed - HAVE_ARCH_PICK_MMAP_LAYOUT is defined on x86 */
 
-unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
-			    unsigned long len, unsigned long prot,
-			    unsigned long flag, unsigned long pgoff)
+static unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
+				   unsigned long len, unsigned long prot,
+				   unsigned long flag, unsigned long pgoff)
 {
 	unsigned long ret;
 	struct mm_struct *mm = current->mm;
@@ -148,7 +148,7 @@ int sysctl_max_map_count __read_mostly = DEFAULT_MAX_MAP_COUNT;
 unsigned long sysctl_user_reserve_kbytes __read_mostly = 1UL << 17;
 unsigned long sysctl_admin_reserve_kbytes __read_mostly = 1UL << 13;
 
-unsigned long vm_commit_limit(void)
+static unsigned long vm_commit_limit(void)
 {
 	unsigned long allowed;
 

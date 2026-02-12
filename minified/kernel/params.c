@@ -10,7 +10,7 @@
 /* linux/security.h removed - unused */
 
 /* Merged from lib/cmdline.c - only used here */
-char *next_arg(char *args, char **param, char **val)
+static char *next_arg(char *args, char **param, char **val)
 {
 	unsigned int i, equals = 0;
 	int in_quote = 0, quoted = 0;

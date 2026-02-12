@@ -358,7 +358,6 @@ static inline unsigned long page_size(struct page *page)
 
 /* thp_nr_pages inlined at mm/swap.c - single caller */
 
-void free_compound_page(struct page *page);
 
 static inline pte_t maybe_mkwrite(pte_t pte, struct vm_area_struct *vma)
 {

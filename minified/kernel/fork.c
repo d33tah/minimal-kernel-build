@@ -691,7 +691,7 @@ struct mm_struct *copy_init_mm(void)
 	return mm;
 }
 
-pid_t kernel_clone(struct kernel_clone_args *args)
+static pid_t kernel_clone(struct kernel_clone_args *args)
 {
 	struct pid *pid;
 	struct task_struct *p;

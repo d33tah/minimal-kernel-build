@@ -95,7 +95,7 @@ void console_lock(void)
 	/* console_may_schedule = 1 removed - write-only */
 }
 
-int console_trylock(void)
+static int console_trylock(void)
 {
 	if (down_trylock_console_sem())
 		return 0;

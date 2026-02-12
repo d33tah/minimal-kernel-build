@@ -14,7 +14,7 @@ static int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 		kobj->state_add_uevent_sent = 1;
 	return 0;
 }
-int kobject_uevent(struct kobject *kobj, enum kobject_action action)
+static int kobject_uevent(struct kobject *kobj, enum kobject_action action)
 {
 	return kobject_uevent_env(kobj, action, NULL);
 }

@@ -9,6 +9,14 @@
 #include <linux/ctype.h>
 /* linux/security.h removed - unused */
 
+/* skip_spaces inlined from string_helpers.c */
+static inline char *skip_spaces(const char *str)
+{
+	while (isspace(*str))
+		++str;
+	return (char *)str;
+}
+
 /* Merged from lib/cmdline.c - only used here */
 static char *next_arg(char *args, char **param, char **val)
 {

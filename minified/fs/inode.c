@@ -159,7 +159,7 @@ static void evict(struct inode *inode)
 	}
 
 	/* evict_inode callback removed - never assigned */
-	truncate_inode_pages_final(&inode->i_data);
+	/* truncate_inode_pages_final inlined - empty stub */
 	/* clear_inode inlined */
 	xa_lock_irq(&inode->i_data.i_pages);
 	xa_unlock_irq(&inode->i_data.i_pages);

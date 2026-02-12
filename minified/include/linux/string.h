@@ -93,7 +93,7 @@ size_t strlcpy(char *, const char *, size_t);
 ssize_t strscpy(char *, const char *, size_t);
 #endif
 
-ssize_t strscpy_pad(char *dest, const char *src, size_t count);
+/* strscpy_pad removed - inlined into exec.c */
 
 #ifndef __HAVE_ARCH_STRLCAT
 extern size_t strlcat(char *, const char *, __kernel_size_t);
@@ -104,7 +104,7 @@ extern char * strnchr(const char *, size_t, int);
 #ifndef __HAVE_ARCH_STRRCHR
 extern char * strrchr(const char *,int);
 #endif
-extern char * __must_check skip_spaces(const char *);
+/* skip_spaces removed - inlined into params.c */
 
 #ifndef __HAVE_ARCH_STRPBRK
 extern char * strpbrk(const char *,const char *);

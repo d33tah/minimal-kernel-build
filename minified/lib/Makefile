@@ -21,7 +21,7 @@ obj-y += sort.o \
 	 iov_iter.o \
 	 find_bit.o \
 	 refcount.o usercopy.o
-obj-y += string_helpers.o
+# string_helpers.o removed - functions inlined into callers
 obj-y += kstrtox.o
 
 obj-y += math/ crypto/

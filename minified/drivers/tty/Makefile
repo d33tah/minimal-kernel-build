@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0
 # tty_ioctl.o removed - file is empty stub
 # n_tty.o, tty_ldisc.o removed - ldisc registration is dead code
-obj-$(CONFIG_TTY)		+= tty_io.o \
-				   tty_buffer.o tty_port.o
+# tty_buffer.o removed - inlined into tty_port.c
+obj-$(CONFIG_TTY)		+= tty_io.o tty_port.o
 # tty_mutex.o merged into tty_io.c
 obj-$(CONFIG_LEGACY_PTYS)	+= pty.o
 obj-$(CONFIG_UNIX98_PTYS)	+= pty.o

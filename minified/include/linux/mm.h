@@ -497,7 +497,7 @@ void unmap_vmas(struct mmu_gather *tlb, struct vm_area_struct *start_vma,
 void free_pgd_range(struct mmu_gather *tlb, unsigned long addr,
 		unsigned long end, unsigned long floor, unsigned long ceiling);
 
-extern void truncate_setsize(struct inode *inode, loff_t newsize);
+/* truncate_setsize removed - inlined into libfs.c */
 
 extern vm_fault_t handle_mm_fault(struct vm_area_struct *vma,
 				  unsigned long address, unsigned int flags,
@@ -706,7 +706,7 @@ struct vm_unmapped_area_info {
 extern unsigned long vm_unmapped_area(struct vm_unmapped_area_info *info);
 
 /* truncate_inode_pages, truncate_inode_pages_range made static - only used within truncate.c */
-extern void truncate_inode_pages_final(struct address_space *);
+/* truncate_inode_pages_final removed - empty stub inlined into inode.c */
 
 /* filemap_fault, filemap_page_mkwrite, filemap_map_pages removed - only used in mm/filemap.c */
 

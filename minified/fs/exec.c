@@ -269,7 +269,12 @@ exit:
 void __set_task_comm(struct task_struct *tsk, const char *buf, bool exec)
 {
 	task_lock(tsk);
-	strscpy_pad(tsk->comm, buf, sizeof(tsk->comm));
+	/* strscpy_pad inlined from string_helpers.c */
+	{
+		size_t len = strlcpy(tsk->comm, buf, sizeof(tsk->comm));
+		if (len < sizeof(tsk->comm))
+			memset(tsk->comm + len, 0, sizeof(tsk->comm) - len);
+	}
 	task_unlock(tsk);
 }
 

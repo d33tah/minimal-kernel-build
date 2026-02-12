@@ -12,7 +12,7 @@ mmu-$(CONFIG_MMU)	:= highmem.o memory.o \
 
 obj-y			:= filemap.o \
 			   maccess.o \
-			   swap.o truncate.o shmem.o \
+			   swap.o shmem.o \
 			   util.o mmzone.o backing-dev.o \
 			   percpu.o slab_common.o \
 			   vmacache.o \

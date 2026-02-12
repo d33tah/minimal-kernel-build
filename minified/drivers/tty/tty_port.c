@@ -9,15 +9,24 @@
 #include <linux/bitops.h>
 /* linux/module.h removed - no module features used */
 
-void tty_buffer_init(struct tty_port *port);
-
 /* tty_port_default_receive_buf, tty_port_default_wakeup removed - client_ops never read */
 /* tty_port_default_client_ops removed - only read from removed receive_buf in tty_buffer.c */
 
 void tty_port_init(struct tty_port *port)
 {
 	memset(port, 0, sizeof(*port));
-	tty_buffer_init(port);
+	/* tty_buffer_init inlined from tty_buffer.c */
+	{
+		struct tty_bufhead *buf = &port->buf;
+		mutex_init(&buf->lock);
+		buf->sentinel.size = 0;
+		buf->sentinel.next = NULL;
+		buf->head = &buf->sentinel;
+		buf->tail = &buf->sentinel;
+		buf->free.first = NULL;
+		atomic_set(&buf->mem_used, 0);
+		atomic_set(&buf->priority, 0);
+	}
 	mutex_init(&port->mutex);
 	mutex_init(&port->buf_mutex);
 	spin_lock_init(&port->lock);

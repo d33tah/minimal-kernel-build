@@ -224,7 +224,6 @@ extern void down(struct semaphore *sem);
 extern int __must_check down_trylock(struct semaphore *sem);
 extern void up(struct semaphore *sem);
 #include <linux/fcntl.h>
-#include <linux/rculist_bl.h>
 #include <linux/atomic.h>
 /* shrinker types defined in list_lru.h */
 #include <linux/list_lru.h>

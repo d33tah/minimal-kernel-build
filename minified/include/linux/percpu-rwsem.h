@@ -5,7 +5,6 @@
 #include <linux/percpu.h>
 #include <linux/sched/signal.h>
 struct rcuwait { struct task_struct __rcu *task; };
-#include <linux/sched/signal.h>
 extern int rcuwait_wake_up(struct rcuwait *w);
 #include <linux/wait.h>
 /* Inlined from linux/rcu_sync.h */
@@ -26,7 +25,6 @@ extern void rcu_sync_dtor(struct rcu_sync *);
 struct percpu_rw_semaphore {
 	struct rcu_sync		rss;
 	unsigned int __percpu	*read_count;
-#include <linux/sched/signal.h>
 	struct rcuwait		writer;
 	wait_queue_head_t	waiters;
 	atomic_t		block;

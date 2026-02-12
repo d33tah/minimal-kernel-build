@@ -23,7 +23,6 @@ extern int nr_threads;
 #include <linux/syscalls.h>
 #include <linux/signal.h>
 #include <linux/mutex.h>
-#include <linux/resource.h>
 #include <linux/task_work.h>
 #include <linux/fs_struct.h>
 #include <linux/init_task.h>

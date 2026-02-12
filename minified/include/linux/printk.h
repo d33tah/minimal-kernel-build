@@ -19,7 +19,7 @@
 /* Inlined from ratelimit_types.h */
 #include <linux/bits.h>
 #include <asm/param.h>
-#include <linux/spinlock_types_raw.h>
+#include <linux/spinlock_types.h>
 struct ratelimit_state { raw_spinlock_t lock; int interval; int burst; int printed; int missed; unsigned long begin; unsigned long flags; };
 #define RATELIMIT_STATE_INIT_FLAGS(name, interval_init, burst_init, flags_init) { .lock = __RAW_SPIN_LOCK_UNLOCKED(name.lock), .interval = interval_init, .burst = burst_init, .flags = flags_init, }
 #define RATELIMIT_STATE_INIT(name, interval_init, burst_init) RATELIMIT_STATE_INIT_FLAGS(name, interval_init, burst_init, 0)

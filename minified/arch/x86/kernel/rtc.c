@@ -1,10 +1,13 @@
 /* linux/platform_device.h removed - nothing from it was used */
-/* --- 2026-01-26 04:30 --- Inlined from linux/mc146818rtc.h */
+/* --- Inlined from linux/mc146818rtc.h + asm/mc146818rtc.h --- */
 #include <asm/io.h>
-#include <asm/mc146818rtc.h>
+#include <asm/processor.h>
+#include <linux/smp.h>
+#include <linux/time64.h> /* for struct timespec64 */
 #include <linux/delay.h>
 #include <linux/spinlock.h>
 extern spinlock_t rtc_lock;
+#define RTC_PORT(x) (0x70 + (x))
 #define RTC_SECONDS 0
 #define RTC_MINUTES 2
 #define RTC_HOURS 4
@@ -13,8 +16,36 @@ extern spinlock_t rtc_lock;
 #define RTC_YEAR 9
 #define RTC_FREQ_SELECT 10
 #define RTC_UIP 0x80
-/* RTC_REG_A, RTC_REG_B, RTC_CONTROL removed - unused */
-/* RTC_DM_BINARY and RTC_ALWAYS_BCD not needed - always BCD mode */
+#define CMOS_READ(addr) rtc_cmos_read(addr)
+unsigned char rtc_cmos_read(unsigned char addr);
+volatile unsigned long cmos_lock;
+static inline void lock_cmos(unsigned char reg)
+{
+	unsigned long new;
+	new = ((smp_processor_id() + 1) << 8) | reg;
+	for (;;) {
+		if (cmos_lock) {
+			cpu_relax();
+			continue;
+		}
+		if (__cmpxchg(&cmos_lock, 0, new, sizeof(cmos_lock)) == 0)
+			return;
+	}
+}
+static inline void unlock_cmos(void)
+{
+	cmos_lock = 0;
+}
+#define lock_cmos_prefix(reg)               \
+	do {                                \
+		unsigned long cmos_flags;   \
+		local_irq_save(cmos_flags); \
+	lock_cmos(reg)
+#define lock_cmos_suffix(reg)          \
+	unlock_cmos();                 \
+	local_irq_restore(cmos_flags); \
+	}                              \
+	while (0)
 /* end mc146818rtc.h */
 /* Inlined from linux/bcd.h */
 #define bcd2bin(x) \
@@ -24,22 +55,16 @@ static unsigned _bcd2bin(unsigned char val)
 {
 	return (val & 0x0f) + (val >> 4) * 10;
 }
-/* linux/export.h removed - no EXPORT_SYMBOL */
 
 #include <linux/of.h>
 
-/* asm/vsyscall.h removed - empty */
 #include <asm/x86_init.h>
 #include <asm/time.h>
 #include <asm/setup.h>
 
-volatile unsigned long cmos_lock;
-
 #define CMOS_YEARS_OFFS 2000
 
 DEFINE_SPINLOCK(rtc_lock);
-
-/* mach_set_rtc_mmss removed - x86_platform.set_wallclock never called */
 
 void mach_get_cmos_time(struct timespec64 *now)
 {
@@ -58,11 +83,8 @@ void mach_get_cmos_time(struct timespec64 *now)
 	mon = CMOS_READ(RTC_MONTH);
 	year = CMOS_READ(RTC_YEAR);
 
-	/* RTC_ALWAYS_BCD is always 1, removed conditional */
-
 	spin_unlock_irqrestore(&rtc_lock, flags);
 
-	/* RTC_ALWAYS_BCD is always 1, so always convert from BCD */
 	sec = bcd2bin(sec);
 	min = bcd2bin(min);
 	hour = bcd2bin(hour);
@@ -70,7 +92,6 @@ void mach_get_cmos_time(struct timespec64 *now)
 	mon = bcd2bin(mon);
 	year = bcd2bin(year);
 
-	/* century is always 0 - dead code removed */
 	year += CMOS_YEARS_OFFS;
 
 	now->tv_sec = mktime64(year, mon, day, hour, min, sec);
@@ -89,11 +110,7 @@ unsigned char rtc_cmos_read(unsigned char addr)
 	return val;
 }
 
-/* rtc_cmos_write removed - mc146818_set_time (only caller) is now a stub */
-
 void read_persistent_clock64(struct timespec64 *ts)
 {
 	x86_platform.get_wallclock(ts);
 }
-
-/* add_rtc_cmos removed - was empty stub initcall */

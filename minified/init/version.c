@@ -1,17 +1,37 @@
 
 #include <generated/compile.h>
+/* --- Inlined from linux/elfnote.h (C branch) --- */
+#include <uapi/linux/elf.h>
+#define _ELFNOTE_PASTE(a, b) a##b
+#define _ELFNOTE(size, name, unique, type, desc)                            \
+	static const struct {                                               \
+		struct elf##size##_note _nhdr;                              \
+		unsigned char _name[sizeof(name)]                           \
+			__attribute__((aligned(sizeof(Elf##size##_Word)))); \
+		typeof(desc) _desc                                          \
+			__attribute__((aligned(sizeof(Elf##size##_Word)))); \
+	} _ELFNOTE_PASTE(_note_, unique) __used                             \
+		__attribute__((section(".note." name),                      \
+			       aligned(sizeof(Elf##size##_Word)),           \
+			       unused)) = { {                               \
+						    sizeof(name),           \
+						    sizeof(desc),           \
+						    type,                   \
+					    },                              \
+					    name,                           \
+					    desc }
+#define ELFNOTE(size, name, type, desc) \
+	_ELFNOTE(size, name, __LINE__, type, desc)
+#define ELFNOTE32(name, type, desc) ELFNOTE(32, name, type, desc)
+/* end elfnote.h */
+
 /* Inlined from build-salt.h */
-#include <linux/elfnote.h>
-
 #define LINUX_ELFNOTE_BUILD_SALT 0x100
-
 #define BUILD_SALT \
 	ELFNOTE32("Linux", LINUX_ELFNOTE_BUILD_SALT, CONFIG_BUILD_SALT)
-#include <linux/elfnote.h>
+/* Inlined from elfnote-lto.h */
 #define LINUX_ELFNOTE_LTO_INFO 0x101
 #define BUILD_LTO_INFO ELFNOTE32("Linux", LINUX_ELFNOTE_LTO_INFO, 0)
-/* end elfnote-lto.h */
-/* linux/export.h removed - no EXPORT_SYMBOL used */
 
 #ifndef UTS_SYSNAME
 #define UTS_SYSNAME "Linux"

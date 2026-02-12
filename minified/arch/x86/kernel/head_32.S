@@ -26,7 +26,14 @@
 #include <asm/nospec-branch.h>
 #include <asm/bootparam.h>
 #include <asm/export.h>
-#include <asm/pgtable_32.h>
+/* --- Inlined from asm/pgtable_32.h (asm-visible part) --- */
+#if PTRS_PER_PMD > 1
+#define PAGE_TABLE_SIZE(pages) (((pages) / PTRS_PER_PMD) + PTRS_PER_PGD)
+#else
+#define PAGE_TABLE_SIZE(pages) ((pages) / PTRS_PER_PGD)
+#endif
+#define LOWMEM_PAGES (2 * 1024 * 1024 / 4096)
+/* end pgtable_32.h */
 
 /* Physical address */
 #define pa(X) ((X) - __PAGE_OFFSET)

@@ -30,7 +30,53 @@
 /* seccomp.h removed - header is empty */
 #include <linux/rcupdate.h>
 #include <linux/refcount.h>
-#include <linux/resource.h>
+/* --- Inlined from linux/resource.h --- */
+#include <linux/time.h>
+struct rlimit {
+	__kernel_ulong_t	rlim_cur;
+	__kernel_ulong_t	rlim_max;
+};
+#define _STK_LIM	(8*1024*1024)
+#define MLOCK_LIMIT	(8*1024*1024)
+#define RLIMIT_CPU		0
+#define RLIMIT_FSIZE		1
+#define RLIMIT_DATA		2
+#define RLIMIT_STACK		3
+#define RLIMIT_CORE		4
+#define RLIMIT_RSS		5
+#define RLIMIT_NPROC		6
+#define RLIMIT_NOFILE		7
+#define RLIMIT_MEMLOCK		8
+#define RLIMIT_AS		9
+#define RLIMIT_LOCKS		10
+#define RLIMIT_SIGPENDING	11
+#define RLIMIT_MSGQUEUE		12
+#define RLIMIT_NICE		13
+#define RLIMIT_RTPRIO		14
+#define RLIMIT_RTTIME		15
+#define RLIM_NLIMITS		16
+#define RLIM_INFINITY		(~0UL)
+#define MQ_BYTES_MAX	819200
+#define INIT_RLIMITS							\
+{									\
+	[RLIMIT_CPU]		= {  RLIM_INFINITY,  RLIM_INFINITY },	\
+	[RLIMIT_FSIZE]		= {  RLIM_INFINITY,  RLIM_INFINITY },	\
+	[RLIMIT_DATA]		= {  RLIM_INFINITY,  RLIM_INFINITY },	\
+	[RLIMIT_STACK]		= {       _STK_LIM,  RLIM_INFINITY },	\
+	[RLIMIT_CORE]		= {              0,  RLIM_INFINITY },	\
+	[RLIMIT_RSS]		= {  RLIM_INFINITY,  RLIM_INFINITY },	\
+	[RLIMIT_NPROC]		= {              0,              0 },	\
+	[RLIMIT_NOFILE]		= {   INR_OPEN_CUR,   INR_OPEN_MAX },	\
+	[RLIMIT_MEMLOCK]	= {    MLOCK_LIMIT,    MLOCK_LIMIT },	\
+	[RLIMIT_AS]		= {  RLIM_INFINITY,  RLIM_INFINITY },	\
+	[RLIMIT_LOCKS]		= {  RLIM_INFINITY,  RLIM_INFINITY },	\
+	[RLIMIT_SIGPENDING]	= { 		0,	       0 },	\
+	[RLIMIT_MSGQUEUE]	= {   MQ_BYTES_MAX,   MQ_BYTES_MAX },	\
+	[RLIMIT_NICE]		= { 0, 0 },				\
+	[RLIMIT_RTPRIO]		= { 0, 0 },				\
+	[RLIMIT_RTTIME]		= {  RLIM_INFINITY,  RLIM_INFINITY },	\
+}
+/* end resource.h */
 #define MAX_NICE	19
 #define MIN_NICE	-20
 #define NICE_WIDTH	(MAX_NICE - MIN_NICE + 1)

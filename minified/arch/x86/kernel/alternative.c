@@ -6,7 +6,27 @@
 /* linux/highmem.h, linux/vmalloc.h removed - unused */
 #include <linux/mm.h>
 /* linux/stop_machine.h, linux/slab.h, linux/mmu_context.h removed - unused */
-#include <asm/sync_core.h>
+/* --- Inlined from asm/sync_core.h --- */
+static inline void iret_to_self(void)
+{
+	asm volatile("pushfl\n\t"
+		     "pushl %%cs\n\t"
+		     "pushl $1f\n\t"
+		     "iret\n\t"
+		     "1:"
+		     : ASM_CALL_CONSTRAINT
+		     :
+		     : "memory");
+}
+static inline void sync_core(void)
+{
+	if (static_cpu_has(X86_FEATURE_SERIALIZE)) {
+		serialize();
+		return;
+	}
+	iret_to_self();
+}
+/* end sync_core.h */
 /* Inlined from text-patching.h */
 #define __parainstructions NULL
 #define __parainstructions_end NULL
@@ -25,7 +45,6 @@ extern __ro_after_init unsigned long poking_addr;
 /* --- 2025-12-07 20:55 --- Inlined asm-prototypes.h */
 #include <linux/uaccess.h>
 #include <linux/pgtable.h>
-#include <asm/string_32.h>
 #include <asm/page.h>
 /* mce.h removed - header is empty */
 #include <asm/special_insns.h>

@@ -4,15 +4,87 @@
 #include <linux/compiler.h>
 #include <linux/types.h>
 #include <linux/stddef.h>
-/* linux/errno.h removed - no errno constants used */
 #include <linux/stdarg.h>
 
-/* memdup_user removed - never called */
-#include <asm/string_32.h>
+/* --- Inlined from asm/string_32.h --- */
+#define __HAVE_ARCH_STRCPY
+extern char *strcpy(char *dest, const char *src);
 
-/* strcpy, strncpy, strcmp, strncmp, strchr, strlen, strnlen, strstr,
-   memset, memcpy, memmove declarations removed - provided by
-   asm/string_32.h via __HAVE_ARCH_* defines */
+#define __HAVE_ARCH_STRNCPY
+extern char *strncpy(char *dest, const char *src, size_t count);
+
+#define __HAVE_ARCH_STRCMP
+extern int strcmp(const char *cs, const char *ct);
+
+#define __HAVE_ARCH_STRNCMP
+extern int strncmp(const char *cs, const char *ct, size_t count);
+
+#define __HAVE_ARCH_STRCHR
+extern char *strchr(const char *s, int c);
+
+#define __HAVE_ARCH_STRLEN
+extern size_t strlen(const char *s);
+
+static __always_inline void *__memcpy(void *to, const void *from, size_t n)
+{
+	int d0, d1, d2;
+	asm volatile("rep ; movsl\n\t"
+		     "movl %4,%%ecx\n\t"
+		     "andl $3,%%ecx\n\t"
+		     "jz 1f\n\t"
+		     "rep ; movsb\n\t"
+		     "1:"
+		     : "=&c" (d0), "=&D" (d1), "=&S" (d2)
+		     : "0" (n / 4), "g" (n), "1" ((long)to), "2" ((long)from)
+		     : "memory");
+	return to;
+}
+
+extern void *memcpy(void *, const void *, size_t);
+#define memcpy(t, f, n) __builtin_memcpy(t, f, n)
+
+void *memmove(void *dest, const void *src, size_t n);
+
+extern int memcmp(const void *, const void *, size_t);
+#define memcmp __builtin_memcmp
+
+static inline void *__memset_generic(void *s, char c, size_t count)
+{
+	int d0, d1;
+	asm volatile("rep\n\t"
+		     "stosb"
+		     : "=&c" (d0), "=&D" (d1)
+		     : "a" (c), "1" (s), "0" (count)
+		     : "memory");
+	return s;
+}
+
+#define __constant_count_memset(s, c, count) __memset_generic((s), (c), (count))
+
+#define __HAVE_ARCH_STRNLEN
+extern size_t strnlen(const char *s, size_t count);
+
+extern char *strstr(const char *cs, const char *ct);
+
+#define __memset(s, c, count)				\
+	(__builtin_constant_p(count)			\
+	 ? __constant_count_memset((s), (c), (count))	\
+	 : __memset_generic((s), (c), (count)))
+
+extern void *memset(void *, int, size_t);
+#define memset(s, c, count) __builtin_memset(s, c, count)
+
+static inline void *memset16(uint16_t *s, uint16_t v, size_t n)
+{
+	int d0, d1;
+	asm volatile("rep\n\t"
+		     "stosw"
+		     : "=&c" (d0), "=&D" (d1)
+		     : "a" (v), "1" (s), "0" (n)
+		     : "memory");
+	return s;
+}
+/* end string_32.h */
 
 #ifndef __HAVE_ARCH_STRLCPY
 size_t strlcpy(char *, const char *, size_t);
@@ -40,23 +112,10 @@ extern char * strpbrk(const char *,const char *);
 #ifndef __HAVE_ARCH_STRSEP
 extern char * strsep(char **,const char *);
 #endif
-/* strcspn removed - never called or implemented */
-
-#ifndef __HAVE_ARCH_MEMCMP
-extern int memcmp(const void *,const void *,__kernel_size_t);
-#endif
-/* memchr removed - never called */
-
-/* strreplace removed - never called */
 
 extern void kfree_const(const void *x);
-
-/* kstrdup removed - only used in mm/util.c */
 extern const char *kstrdup_const(const char *s, gfp_t gfp);
 extern void *kmemdup(const void *src, size_t len, gfp_t gfp);
 extern char *kmemdup_nul(const char *s, size_t len, gfp_t gfp);
-
-
-/* memzero_explicit, kbasename inlined at single call sites */
 
 #endif

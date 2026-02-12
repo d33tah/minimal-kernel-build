@@ -209,7 +209,55 @@ pte_t *populate_extra_pte(unsigned long vaddr);
 
 #endif	 
 
-# include <asm/pgtable_32.h>
+/* --- Inlined from asm/pgtable_32.h --- */
+#ifndef __ASSEMBLY__
+#include <asm/processor.h>
+#include <linux/threads.h>
+#include <linux/list.h>
+#include <linux/spinlock.h>
+
+struct mm_struct;
+
+extern pgd_t swapper_pg_dir[1024];
+extern pgd_t initial_page_table[1024];
+
+void paging_init(void);
+void sync_initial_page_table(void);
+
+#define pgd_ERROR(e) \
+	pr_err("%s:%d: bad pgd %08lx\n", __FILE__, __LINE__, pgd_val(e))
+
+static inline void native_set_pte(pte_t *ptep , pte_t pte)
+{
+	*ptep = pte;
+}
+static inline void native_set_pmd(pmd_t *pmdp, pmd_t pmd)
+{
+	*pmdp = pmd;
+}
+static inline void native_set_pud(pud_t *pudp, pud_t pud)
+{
+}
+static inline void native_pmd_clear(pmd_t *pmdp)
+{
+	native_set_pmd(pmdp, __pmd(0));
+}
+static inline void native_pte_clear(struct mm_struct *mm,
+				    unsigned long addr, pte_t *xp)
+{
+	*xp = native_make_pte(0);
+}
+#define native_ptep_get_and_clear(xp) native_local_ptep_get_and_clear(xp)
+#endif
+
+#if PTRS_PER_PMD > 1
+#define PAGE_TABLE_SIZE(pages) (((pages) / PTRS_PER_PMD) + PTRS_PER_PGD)
+#else
+#define PAGE_TABLE_SIZE(pages) ((pages) / PTRS_PER_PGD)
+#endif
+
+#define LOWMEM_PAGES (2 * 1024 * 1024 / 4096)
+/* end pgtable_32.h */
 
 #ifndef __ASSEMBLY__
 #include <linux/mm_types.h>

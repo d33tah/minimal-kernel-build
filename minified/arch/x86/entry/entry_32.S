@@ -49,7 +49,6 @@
 #define FRAME_END
 #define FRAME_OFFSET 0
 /* end frame.h */
-#include <asm/trapnr.h>
 #include <asm/nospec-branch.h>
 /* --- 2026-01-26 01:25 --- Inlined from calling.h */
 #include <linux/jump_label.h>

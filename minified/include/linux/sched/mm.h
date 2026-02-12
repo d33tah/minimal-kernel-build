@@ -6,7 +6,6 @@
 #include <linux/sched.h>
 #include <linux/mm_types.h>
 #include <linux/gfp.h>
-#include <asm/sync_core.h>
 
 
 extern struct mm_struct *mm_alloc(void);

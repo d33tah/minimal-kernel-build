@@ -150,10 +150,7 @@ static_assert(SMALL == ('a' ^ 'A'));
 
 enum format_type {
 	FORMAT_TYPE_NONE,
-	FORMAT_TYPE_WIDTH,
-	FORMAT_TYPE_PRECISION,
-	FORMAT_TYPE_CHAR,
-	FORMAT_TYPE_STR,
+	FORMAT_TYPE_STR = 4,
 	FORMAT_TYPE_PTR,
 	FORMAT_TYPE_PERCENT_CHAR,
 	FORMAT_TYPE_INVALID,
@@ -197,12 +194,6 @@ number(char *buf, char *end, unsigned long long num, struct printf_spec spec)
 		if ((signed long long)num < 0) {
 			sign = '-';
 			num = -(signed long long)num;
-			field_width--;
-		} else if (spec.flags & PLUS) {
-			sign = '+';
-			field_width--;
-		} else if (spec.flags & SPACE) {
-			sign = ' ';
 			field_width--;
 		}
 	}
@@ -462,23 +453,6 @@ static noinline_for_stack int format_decode(const char *fmt,
 	const char *start = fmt;
 	char qualifier;
 
-	if (spec->type == FORMAT_TYPE_WIDTH) {
-		if (spec->field_width < 0) {
-			spec->field_width = -spec->field_width;
-			spec->flags |= LEFT;
-		}
-		spec->type = FORMAT_TYPE_NONE;
-		goto precision;
-	}
-
-	if (spec->type == FORMAT_TYPE_PRECISION) {
-		if (spec->precision < 0)
-			spec->precision = 0;
-
-		spec->type = FORMAT_TYPE_NONE;
-		goto qualifier;
-	}
-
 	spec->type = FORMAT_TYPE_NONE;
 
 	for (; *fmt; ++fmt) {
@@ -500,12 +474,7 @@ static noinline_for_stack int format_decode(const char *fmt,
 		case '-':
 			spec->flags |= LEFT;
 			break;
-		case '+':
-			spec->flags |= PLUS;
-			break;
-		case ' ':
-			spec->flags |= SPACE;
-			break;
+		/* PLUS and SPACE flags removed - never used in kernel */
 		case '#':
 			spec->flags |= SPECIAL;
 			break;
@@ -524,10 +493,6 @@ static noinline_for_stack int format_decode(const char *fmt,
 
 	if (isdigit(*fmt))
 		spec->field_width = skip_atoi(&fmt);
-	else if (*fmt == '*') {
-		spec->type = FORMAT_TYPE_WIDTH;
-		return ++fmt - start;
-	}
 
 precision:
 
@@ -538,9 +503,6 @@ precision:
 			spec->precision = skip_atoi(&fmt);
 			if (spec->precision < 0)
 				spec->precision = 0;
-		} else if (*fmt == '*') {
-			spec->type = FORMAT_TYPE_PRECISION;
-			return ++fmt - start;
 		}
 	}
 
@@ -660,25 +622,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 			break;
 		}
 
-		case FORMAT_TYPE_WIDTH: {
-			int width = va_arg(args, int);
-			spec.field_width = width;
-			if (WARN_ONCE(spec.field_width != width,
-				      "field width %d too large", width))
-				spec.field_width = clamp(width,
-							 -FIELD_WIDTH_MAX,
-							 FIELD_WIDTH_MAX);
-			break;
-		}
-
-		case FORMAT_TYPE_PRECISION: {
-			int prec = va_arg(args, int);
-			spec.precision = prec;
-			if (WARN_ONCE(spec.precision != prec,
-				      "precision %d too large", prec))
-				spec.precision = clamp(prec, 0, PRECISION_MAX);
-			break;
-		}
+			/* FORMAT_TYPE_WIDTH and FORMAT_TYPE_PRECISION removed - %*d never used */
 
 			/* FORMAT_TYPE_CHAR removed - %c unused in kernel */
 

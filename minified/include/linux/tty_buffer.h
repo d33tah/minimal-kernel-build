@@ -1,36 +1,9 @@
 #ifndef _LINUX_TTY_BUFFER_H
 #define _LINUX_TTY_BUFFER_H
 
-#include <linux/atomic.h>
-#include <linux/llist.h>
-#include <linux/mutex.h>
-#include <linux/workqueue.h>
-
-struct tty_buffer {
-	union {
-		struct tty_buffer *next;
-		struct llist_node free;
-	};
-	/* used, commit, read, flags removed - write-only, never read */
-	int size;
-	unsigned long data[];
-};
-
-/* TTYB_NORMAL removed - never used */
-/* char_buf_ptr, flag_buf_ptr removed - never called */
-
+/* Minimal stub - tty buffers never used after initialization */
 struct tty_bufhead {
-	struct tty_buffer *head;	 
-	struct work_struct work;
-	struct mutex	   lock;
-	atomic_t	   priority;
-	struct tty_buffer sentinel;
-	struct llist_head free;
-	atomic_t	   mem_used;
-	/* mem_limit removed - write-only, never read */
-	struct tty_buffer *tail;	 
+	int dummy;
 };
-
-/* TTY_NORMAL removed - never used */
 
 #endif

@@ -16,7 +16,6 @@ struct kobj_map *kobj_map_init(kobj_probe_t *, struct mutex *);
 /* end kobj_map.h */
 #include <linux/cdev.h>
 #include <linux/mutex.h>
-#include <linux/tty.h>
 
 #include "internal.h"
 

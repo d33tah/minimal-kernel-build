@@ -3,8 +3,7 @@
 
 #include <linux/kernel.h>
 /* mm.h removed - unused */
-#include <linux/tty.h>
-#include <linux/tty_driver.h>
+#include <linux/fs.h>
 #include <linux/console.h>
 #include <linux/init.h>
 /* linux/module.h removed - no module features used */

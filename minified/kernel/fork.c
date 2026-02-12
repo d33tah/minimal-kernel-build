@@ -38,7 +38,6 @@
 /* linux/mount.h removed - vfsmount not used */
 /* proc_fs.h removed - empty header */
 /* rmap.h, userfaultfd_k.h removed - functions not used */
-#include <linux/tty.h>
 #include <linux/fs_struct.h>
 /* magic.h inlined - only STACK_END_MAGIC used */
 #define STACK_END_MAGIC 0x57AC6E9D

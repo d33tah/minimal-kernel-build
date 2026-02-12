@@ -67,8 +67,8 @@ struct signal_struct {
 /* SIGNAL_GROUP_EXIT, SIGNAL_UNKILLABLE, SIGNAL_STOP_*, SIGNAL_CLD_* removed - signal_struct.flags removed */
 
 
-extern void ignore_signals(struct task_struct *);
-extern void flush_signal_handlers(struct task_struct *, int force_default);
+/* ignore_signals inlined into kthread.c */
+/* flush_signal_handlers inlined into exec.c */
 
 /* ___ARCH_SI_IA64 removed - x86 only, no ia64 support */
 
@@ -81,8 +81,7 @@ int force_sig_fault(int sig, int code, void __user *addr);
 /* force_sigsegv now static in signal.c */
 /* force_sig_info made static in signal.c */
 extern void force_sig(int);
-extern void force_fatal_sig(int);
-/* force_exit_sig removed - never called */
+/* force_fatal_sig removed - replaced with force_sig at call site */
 /* send_sig removed - no callers */
 /* zap_other_threads removed - never called */
 
@@ -135,7 +134,7 @@ static inline int signal_pending_state(unsigned int state, struct task_struct *p
 
 /* recalc_sigpending_and_wake only used internally in signal.c */
 extern void recalc_sigpending(void);
-extern void calculate_sigpending(void);
+/* calculate_sigpending removed - inlined into sched/core.c */
 
 /* signal_wake_up_state, signal_wake_up, task_join_group_stop removed - never called */
 

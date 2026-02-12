@@ -386,7 +386,11 @@ asmlinkage __visible void schedule_tail(struct task_struct *prev)
 		put_user(__task_pid_nr_ns(current, PIDTYPE_PID, NULL),
 			 current->set_child_tid);
 
-	calculate_sigpending();
+	/* calculate_sigpending inlined */
+	spin_lock_irq(&current->sighand->siglock);
+	set_tsk_thread_flag(current, TIF_SIGPENDING);
+	recalc_sigpending();
+	spin_unlock_irq(&current->sighand->siglock);
 }
 
 static __always_inline struct rq *context_switch(struct rq *rq,

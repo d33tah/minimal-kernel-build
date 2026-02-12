@@ -43,13 +43,7 @@ void recalc_sigpending(void)
 	}
 }
 
-void calculate_sigpending(void)
-{
-	spin_lock_irq(&current->sighand->siglock);
-	set_tsk_thread_flag(current, TIF_SIGPENDING);
-	recalc_sigpending();
-	spin_unlock_irq(&current->sighand->siglock);
-}
+/* calculate_sigpending removed - inlined into sched/core.c */
 
 /* Removed: print_dropped_signal - empty stub */
 /* task_set_jobctl_pending removed - always returned false, callers simplified */
@@ -58,29 +52,9 @@ void calculate_sigpending(void)
 
 /* flush_sigqueue removed - do_exit gutted, no callers */
 
-void ignore_signals(struct task_struct *t)
-{
-	int i;
+/* ignore_signals removed - inlined into kthread.c */
 
-	for (i = 0; i < _NSIG; ++i)
-		t->sighand->action[i].sa.sa_handler = SIG_IGN;
-}
-
-void flush_signal_handlers(struct task_struct *t, int force_default)
-{
-	int i;
-	struct k_sigaction *ka = &t->sighand->action[0];
-	for (i = _NSIG; i != 0; i--) {
-		if (force_default || ka->sa.sa_handler != SIG_IGN)
-			ka->sa.sa_handler = SIG_DFL;
-		ka->sa.sa_flags = 0;
-#ifdef __ARCH_HAS_SA_RESTORER
-		ka->sa.sa_restorer = NULL;
-#endif
-		sigemptyset(&ka->sa.sa_mask);
-		ka++;
-	}
-}
+/* flush_signal_handlers removed - inlined into exec.c */
 
 /* signal_wake_up_state, signal_wake_up removed - never called */
 
@@ -126,7 +100,6 @@ int send_signal_locked(int sig, struct kernel_siginfo *info,
 enum sig_handler {
 	HANDLER_CURRENT,
 	HANDLER_SIG_DFL,
-	HANDLER_EXIT,
 };
 
 static int force_sig_info_to_task(struct kernel_siginfo *info,
@@ -144,8 +117,6 @@ static int force_sig_info_to_task(struct kernel_siginfo *info,
 	blocked = sigismember(&t->blocked, sig);
 	if (blocked || ignored || (handler != HANDLER_CURRENT)) {
 		action->sa.sa_handler = SIG_DFL;
-		if (handler == HANDLER_EXIT)
-			action->sa.sa_flags |= SA_IMMUTABLE;
 		if (blocked)
 			sigdelset(&t->blocked, sig);
 	}
@@ -158,16 +129,8 @@ static int force_sig_info_to_task(struct kernel_siginfo *info,
 	return ret;
 }
 
-static int force_sig_info(struct kernel_siginfo *info)
-{
-	return force_sig_info_to_task(info, current, HANDLER_CURRENT);
-}
-
-/* zap_other_threads removed - never called (~5 LOC) */
-
-/* __lock_task_sighand removed - lock_task_sighand never called */
-
-/* group_send_sig_info, send_sig, __si_special removed - no callers */
+/* force_sig_info inlined into force_sig */
+/* force_fatal_sig removed - replaced with force_sig(SIGSEGV) at call site */
 
 void force_sig(int sig)
 {
@@ -179,20 +142,7 @@ void force_sig(int sig)
 	info.si_code = SI_KERNEL;
 	info.si_pid = 0;
 	info.si_uid = 0;
-	force_sig_info(&info);
-}
-
-void force_fatal_sig(int sig)
-{
-	struct kernel_siginfo info;
-
-	clear_siginfo(&info);
-	info.si_signo = sig;
-	info.si_errno = 0;
-	info.si_code = SI_KERNEL;
-	info.si_pid = 0;
-	info.si_uid = 0;
-	force_sig_info_to_task(&info, current, HANDLER_SIG_DFL);
+	force_sig_info_to_task(&info, current, HANDLER_CURRENT);
 }
 
 /* force_exit_sig removed - never called (~12 LOC) */

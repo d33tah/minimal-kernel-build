@@ -375,7 +375,21 @@ int begin_new_exec(struct linux_binprm *bprm)
 	}
 
 	/* self_exec_id increment removed - write-only field */
-	flush_signal_handlers(me, 0);
+	/* flush_signal_handlers inlined */
+	{
+		int i;
+		struct k_sigaction *ka = &me->sighand->action[0];
+		for (i = _NSIG; i != 0; i--) {
+			if (ka->sa.sa_handler != SIG_IGN)
+				ka->sa.sa_handler = SIG_DFL;
+			ka->sa.sa_flags = 0;
+#ifdef __ARCH_HAS_SA_RESTORER
+			ka->sa.sa_restorer = NULL;
+#endif
+			sigemptyset(&ka->sa.sa_mask);
+			ka++;
+		}
+	}
 
 	retval = set_cred_ucounts(bprm->cred);
 	if (retval < 0)
@@ -597,7 +611,7 @@ static int bprm_execve(struct linux_binprm *bprm, int fd,
 out:
 
 	if (bprm->point_of_no_return && !fatal_signal_pending(current))
-		force_fatal_sig(SIGSEGV);
+		force_sig(SIGSEGV);
 
 out_unmark:
 	current->fs->in_exec = 0;

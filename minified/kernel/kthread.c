@@ -170,7 +170,12 @@ int kthreadd(void *unused)
 	struct task_struct *tsk = current;
 
 	set_task_comm(tsk, "kthreadd");
-	ignore_signals(tsk);
+	/* ignore_signals inlined */
+	{
+		int i;
+		for (i = 0; i < _NSIG; ++i)
+			tsk->sighand->action[i].sa.sa_handler = SIG_IGN;
+	}
 	set_cpus_allowed_ptr(tsk, housekeeping_cpumask(HK_TYPE_KTHREAD));
 
 	current->flags |= PF_NOFREEZE;

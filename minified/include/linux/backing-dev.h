@@ -41,40 +41,7 @@ struct percpu_ref {
 	struct percpu_ref_data *data;
 };
 
-static inline bool __ref_is_percpu(struct percpu_ref *ref,
-				   unsigned long __percpu **percpu_countp)
-{
-	unsigned long percpu_ptr;
-
-	percpu_ptr = READ_ONCE(ref->percpu_count_ptr);
-
-	if (unlikely(percpu_ptr & __PERCPU_REF_ATOMIC_DEAD))
-		return false;
-
-	*percpu_countp = (unsigned long __percpu *)percpu_ptr;
-	return true;
-}
-
-static inline void percpu_ref_put_many(struct percpu_ref *ref,
-				       unsigned long nr)
-{
-	unsigned long __percpu *percpu_count;
-
-	rcu_read_lock();
-
-	if (__ref_is_percpu(ref, &percpu_count))
-		this_cpu_sub(*percpu_count, nr);
-	else if (unlikely(atomic_long_sub_and_test(nr, &ref->data->count)))
-		ref->data->release(ref);
-
-	rcu_read_unlock();
-}
-
-static inline void percpu_ref_put(struct percpu_ref *ref)
-{
-	percpu_ref_put_many(ref, 1);
-}
-/* end percpu-refcount.h */
+/* __ref_is_percpu, percpu_ref_put_many, percpu_ref_put removed - never called */
 /* flex_proportions.h inlined */
 struct fprop_local_percpu {
 	struct percpu_counter events;

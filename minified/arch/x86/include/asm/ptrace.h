@@ -39,8 +39,7 @@ struct pt_regs {
 
 #include <asm/proto.h>
 
-/* profile_pc, regs_return_value removed - never called */
-extern void send_sigtrap(struct pt_regs *regs, int error_code, int si_code);
+/* profile_pc, regs_return_value, send_sigtrap removed - inlined into traps.c */
 
 static __always_inline int user_mode(struct pt_regs *regs)
 {

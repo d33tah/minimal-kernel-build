@@ -22,7 +22,7 @@ obj-y			+= tsc.o rtc.o
 obj-y			+= irqflags.o
 obj-y			+= process.o
 obj-y			+= fpu/
-obj-y			+= ptrace.o
+# ptrace.o removed - send_sigtrap inlined into traps.c
 obj-y			+= cpu/
 obj-y			+= apic/
 obj-$(CONFIG_X86_32)	+= doublefault_32.o

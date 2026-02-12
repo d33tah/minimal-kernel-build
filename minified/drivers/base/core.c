@@ -22,7 +22,8 @@ void __init driver_init(void)
 	bdi_init(&noop_backing_dev_info);
 	devices_init();
 	buses_init();
-	classes_init();
+	/* classes_init inlined - creates "class" kset */
+	kset_create_and_add("class", NULL);
 }
 
 /* Removed: fwnode_link_add, fwnode_links_purge, fw_devlink_purge_absent_suppliers - no callers */

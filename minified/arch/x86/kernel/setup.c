@@ -26,6 +26,10 @@ extern dev_t ROOT_DEV;
 #include <uapi/linux/mount.h>
 
 #include <asm/apic.h>
+/* realmode/init.c variables moved here */
+#include <asm/realmode.h>
+struct real_mode_header *real_mode_header;
+u32 *trampoline_cr4_features;
 /* asm/numa.h inlined */
 #include <linux/nodemask.h>
 #include <asm/topology.h>
@@ -331,7 +335,8 @@ void __init setup_arch(char **cmdline_p)
 	printk(KERN_DEBUG "initial memory mapped: [mem 0x00000000-%#010lx]\n",
 	       (max_pfn_mapped << PAGE_SHIFT) - 1);
 
-	reserve_real_mode();
+	/* reserve_real_mode inlined from realmode/init.c */
+	memblock_reserve(0, SZ_1M);
 
 	init_mem_mapping();
 

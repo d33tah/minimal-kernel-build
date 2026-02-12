@@ -13,7 +13,7 @@ KCSAN_SANITIZE			:= n
 
 subdir- := rm
 
-obj-y += init.o
+# init.o removed - inlined into setup.c
 obj-y += rmpiggy.o
 
 $(obj)/rmpiggy.o: $(obj)/rm/realmode.bin

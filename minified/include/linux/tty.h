@@ -65,10 +65,7 @@ struct tty_ldisc {
 	struct tty_struct *tty;
 };
 
-int tty_register_ldisc(struct tty_ldisc_ops *new_ldisc);
-
-#define N_TTY		0
-#define NR_LDISCS	31
+/* tty_register_ldisc, N_TTY, NR_LDISCS removed - ldisc chain is dead code */
 
 struct device;
 struct tty_operations;
@@ -125,6 +122,6 @@ void tty_kref_put(struct tty_struct *tty);
 
 /* extern tty_class removed - never used outside tty_io.c */
 
-void __init n_tty_init(void);
+/* n_tty_init removed - ldisc chain is dead code */
 
 #endif

@@ -380,7 +380,16 @@ static __always_inline void exc_debug_user(struct pt_regs *regs,
 			si_code = TRAP_HWBKPT;
 		else
 			si_code = TRAP_BRKPT;
-		send_sigtrap(regs, 0, si_code);
+		/* send_sigtrap inlined from ptrace.c */
+		{
+			struct task_struct *tsk = current;
+			tsk->thread.trap_nr = X86_TRAP_DB;
+			tsk->thread.error_code = 0;
+			force_sig_fault(SIGTRAP, si_code,
+					user_mode(regs) ?
+						(void __user *)regs->ip :
+						NULL);
+		}
 	}
 
 out_irq:

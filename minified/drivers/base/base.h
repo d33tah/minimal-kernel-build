@@ -46,7 +46,7 @@ struct device_private {
  
 extern int devices_init(void);
 extern int buses_init(void);
-extern int classes_init(void);
+/* classes_init removed - inlined into core.c */
 /* firmware_init, hypervisor_init removed - never called */
 /* platform_bus_init, cpu_dev_init, container_dev_init, auxiliary_bus_init removed - never called */
 

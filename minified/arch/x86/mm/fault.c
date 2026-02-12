@@ -388,7 +388,8 @@ static inline void do_user_addr_fault(struct pt_regs *regs,
 		flags |= FAULT_FLAG_WRITE;
 	/* FAULT_FLAG_INSTRUCTION removed - never tested */
 
-	if (unlikely(!down_read_trylock(&mm->mmap_lock))) { /* mmap_read_trylock inlined */
+	if (unlikely(!down_read_trylock(
+		    &mm->mmap_lock))) { /* mmap_read_trylock inlined */
 		if (!user_mode(regs) && !search_exception_tables(regs->ip)) {
 			bad_area_nosemaphore(regs, error_code, address);
 			return;

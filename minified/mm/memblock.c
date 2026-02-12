@@ -808,5 +808,6 @@ void __init memblock_free_all(void)
 		}
 	}
 
-	atomic_long_add(count, &_totalram_pages); /* totalram_pages_add inlined */
+	atomic_long_add(count,
+			&_totalram_pages); /* totalram_pages_add inlined */
 }

@@ -104,7 +104,8 @@ void resched_curr(struct rq *rq)
 		return;
 
 	/* cpu_of always returns 0, smp_processor_id() returns 0 in UP, so always true */
-	set_tsk_thread_flag(curr, TIF_NEED_RESCHED); /* set_tsk_need_resched inlined */
+	set_tsk_thread_flag(
+		curr, TIF_NEED_RESCHED); /* set_tsk_need_resched inlined */
 	set_preempt_need_resched();
 }
 

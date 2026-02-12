@@ -356,7 +356,9 @@ static __always_inline bool __rmqueue_fallback(struct zone *zone, int order,
 				int mt = fallbacks[start_migratetype][i];
 				if (mt == MIGRATE_TYPES)
 					break;
-				if (!list_empty(&area->free_list[mt])) { /* free_area_empty inlined */
+				if (!list_empty(
+					    &area->free_list
+						     [mt])) { /* free_area_empty inlined */
 					fallback_mt = mt;
 					break;
 				}

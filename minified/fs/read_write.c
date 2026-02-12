@@ -37,7 +37,7 @@ ssize_t kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
 	}
 
 	/* init_sync_kiocb + iocb_flags inlined */
-	kiocb = (struct kiocb) {
+	kiocb = (struct kiocb){
 		.ki_filp = file,
 		.ki_flags = (file->f_flags & O_DIRECT) ? IOCB_DIRECT : 0,
 	};
@@ -65,7 +65,8 @@ static ssize_t vfs_write(struct file *file, const char __user *buf,
 		count = MAX_RW_COUNT;
 	/* file_start_write + sb_start_write + __sb_start_write inlined */
 	if (S_ISREG(file_inode(file)->i_mode))
-		percpu_down_read(file_inode(file)->i_sb->s_writers.rw_sem + SB_FREEZE_WRITE - 1);
+		percpu_down_read(file_inode(file)->i_sb->s_writers.rw_sem +
+				 SB_FREEZE_WRITE - 1);
 	/* .write callback removed - only write_iter used */
 	if (file->f_op->write_iter) {
 		struct iovec iov = { .iov_base = (void __user *)buf,
@@ -73,9 +74,10 @@ static ssize_t vfs_write(struct file *file, const char __user *buf,
 		struct kiocb kiocb;
 		struct iov_iter iter;
 		/* init_sync_kiocb + iocb_flags inlined */
-		kiocb = (struct kiocb) {
+		kiocb = (struct kiocb){
 			.ki_filp = file,
-			.ki_flags = (file->f_flags & O_DIRECT) ? IOCB_DIRECT : 0,
+			.ki_flags = (file->f_flags & O_DIRECT) ? IOCB_DIRECT :
+								 0,
 		};
 		kiocb.ki_pos = (pos ? *pos : 0);
 		iov_iter_init(&iter, WRITE, &iov, 1, count);
@@ -88,7 +90,8 @@ static ssize_t vfs_write(struct file *file, const char __user *buf,
 		ret = -EINVAL;
 	/* file_end_write + __sb_end_write inlined */
 	if (S_ISREG(file_inode(file)->i_mode))
-		percpu_up_read(file_inode(file)->i_sb->s_writers.rw_sem + SB_FREEZE_WRITE - 1);
+		percpu_up_read(file_inode(file)->i_sb->s_writers.rw_sem +
+			       SB_FREEZE_WRITE - 1);
 	return ret;
 }
 

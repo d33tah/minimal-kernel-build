@@ -207,7 +207,8 @@ static __always_inline void __speculation_ctrl_update(unsigned long tifp,
 
 static unsigned long speculation_ctrl_update_tif(struct task_struct *tsk)
 {
-	if (test_and_clear_ti_thread_flag(task_thread_info(tsk), TIF_SPEC_FORCE_UPDATE)) {
+	if (test_and_clear_ti_thread_flag(task_thread_info(tsk),
+					  TIF_SPEC_FORCE_UPDATE)) {
 		if (task_spec_ssb_disable(tsk))
 			set_tsk_thread_flag(tsk, TIF_SSBD);
 		else

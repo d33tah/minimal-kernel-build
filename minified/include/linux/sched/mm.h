@@ -77,28 +77,4 @@ static inline void might_alloc(gfp_t gfp_mask)
 	might_sleep_if(gfpflags_allow_blocking(gfp_mask));
 }
 
-static inline unsigned int memalloc_noio_save(void)
-{
-	unsigned int flags = current->flags & PF_MEMALLOC_NOIO;
-	current->flags |= PF_MEMALLOC_NOIO;
-	return flags;
-}
-
-static inline void memalloc_noio_restore(unsigned int flags)
-{
-	current->flags = (current->flags & ~PF_MEMALLOC_NOIO) | flags;
-}
-
-static inline unsigned int memalloc_nofs_save(void)
-{
-	unsigned int flags = current->flags & PF_MEMALLOC_NOFS;
-	current->flags |= PF_MEMALLOC_NOFS;
-	return flags;
-}
-
-static inline void memalloc_nofs_restore(unsigned int flags)
-{
-	current->flags = (current->flags & ~PF_MEMALLOC_NOFS) | flags;
-}
-
 #endif

@@ -547,18 +547,6 @@ static inline struct user_namespace *i_user_ns(const struct inode *inode)
 	return inode->i_sb->s_user_ns;
 }
 
-static inline kuid_t i_uid_into_mnt(struct user_namespace *mnt_userns,
-				    const struct inode *inode)
-{
-	return mapped_kuid_fs(mnt_userns, i_user_ns(inode), inode->i_uid);
-}
-
-static inline kgid_t i_gid_into_mnt(struct user_namespace *mnt_userns,
-				    const struct inode *inode)
-{
-	return mapped_kgid_fs(mnt_userns, i_user_ns(inode), inode->i_gid);
-}
-
 void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,
 		      const struct inode *dir, umode_t mode);
 

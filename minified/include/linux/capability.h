@@ -35,9 +35,4 @@ struct user_namespace;
 
 /* cap_drop, cap_isclear, cap_issubset inlined at kernel/cred.c - single callers */
 
-static inline bool ns_capable(struct user_namespace *ns, int cap)
-{
-	return true;
-}
-
 #endif

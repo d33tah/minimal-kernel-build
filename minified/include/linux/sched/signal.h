@@ -132,11 +132,6 @@ static inline struct pid *task_session(struct task_struct *task)
 	return task->signal->pids[PIDTYPE_SID];
 }
 
-static inline bool thread_group_leader(struct task_struct *p)
-{
-	return p->exit_signal >= 0;
-}
-
 static inline unsigned long task_rlimit(const struct task_struct *task,
 		unsigned int limit)
 {

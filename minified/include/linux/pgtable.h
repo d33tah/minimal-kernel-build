@@ -132,18 +132,6 @@ static inline pmd_t pmd_read_atomic(pmd_t *pmdp)
 }
 #endif
 
-static inline int pmd_none_or_trans_huge_or_clear_bad(pmd_t *pmd)
-{
-	pmd_t pmdval = pmd_read_atomic(pmd);
-	if (pmd_none(pmdval))
-		return 1;
-	if (unlikely(pmd_bad(pmdval))) {
-		pmd_clear_bad(pmd);
-		return 1;
-	}
-	return 0;
-}
-
 /* PAGE_KERNEL_RO, PAGE_KERNEL_EXEC - x86 defines its own */
 
 #define		__PGTBL_PMD_MODIFIED	3

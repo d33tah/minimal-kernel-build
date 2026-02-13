@@ -254,12 +254,6 @@ static unsigned long __fdget(unsigned int fd)
 	return (unsigned long)file;
 }
 
-/* Stub: __fdget_raw not called in minimal kernel */
-unsigned long __fdget_raw(unsigned int fd)
-{
-	return 0;
-}
-
 /* Simplified: file_count never > 1, no pos locking needed */
 unsigned long __fdget_pos(unsigned int fd)
 {

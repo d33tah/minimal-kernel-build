@@ -64,45 +64,6 @@ struct rq;
 #define TASK_ON_RQ_QUEUED	1
 # define scale_load(w)		(w)
 
-static inline int idle_policy(int policy)
-{
-	return policy == SCHED_IDLE;
-}
-static inline int fair_policy(int policy)
-{
-	return policy == SCHED_NORMAL || policy == SCHED_BATCH;
-}
-
-static inline int rt_policy(int policy)
-{
-	return policy == SCHED_FIFO || policy == SCHED_RR;
-}
-
-static inline int dl_policy(int policy)
-{
-	return policy == SCHED_DEADLINE;
-}
-/* valid_policy inlined at core.c - single caller */
-
-static inline int task_has_idle_policy(struct task_struct *p)
-{
-	return idle_policy(p->policy);
-}
-
-static inline int task_has_rt_policy(struct task_struct *p)
-{
-	return rt_policy(p->policy);
-}
-
-static inline int task_has_dl_policy(struct task_struct *p)
-{
-	return dl_policy(p->policy);
-}
-
-/* init_dl_bw, sched_dl_global_validate, sched_dl_do_global, sched_dl_overflow,
-   __getparam_dl, __checkparam_dl, __setparam_dl, dl_param_changed, dl_cpuset_cpumask_can_shrink,
-   dl_cpu_busy removed - never defined/called */
-
 struct cfs_rq {
 	struct load_weight	load;
 	unsigned int		nr_running;
@@ -280,11 +241,6 @@ rq_unlock(struct rq *rq, struct rq_flags *rf)
 
 static inline void __set_task_cpu(struct task_struct *p, unsigned int cpu)
 {
-}
-
-static inline int task_current(struct rq *rq, struct task_struct *p)
-{
-	return rq->curr == p;
 }
 
 static inline int task_on_rq_queued(struct task_struct *p)

@@ -128,11 +128,6 @@ static inline const struct cpumask *get_cpu_mask(unsigned int cpu)
 	return to_cpumask(p);
 }
 
-static inline bool cpu_online(unsigned int cpu)
-{
-	return cpu == 0;
-}
-
 static inline bool cpu_possible(unsigned int cpu)
 {
 	return cpu == 0;

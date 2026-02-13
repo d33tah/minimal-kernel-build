@@ -67,31 +67,6 @@ static inline bool irq_settings_is_per_cpu_devid(struct irq_desc *desc)
 	return desc->status_use_accessors & _IRQ_PER_CPU_DEVID;
 }
 
-static inline void irq_settings_set_no_balancing(struct irq_desc *desc)
-{
-	desc->status_use_accessors |= _IRQ_NO_BALANCING;
-}
-
-/* irq_settings_set_trigger_mask inlined at manage.c - single caller */
-/* irq_settings_clr_level inlined at manage.c - single caller */
-/* irq_settings_set_level inlined at manage.c - single caller */
-/* irq_settings_set_norequest inlined at chip.c - single caller */
-/* irq_settings_set_nothread inlined at chip.c - single caller */
-
-static inline void irq_settings_set_noprobe(struct irq_desc *desc)
-{
-	desc->status_use_accessors |= _IRQ_NOPROBE;
-}
-
-/* irq_settings_can_autoenable inlined at manage.c - single caller */
-/* irq_settings_is_nested_thread inlined at manage.c - single caller */
-/* irq_settings_disable_unlazy inlined at chip.c - single caller */
-
-static inline void irq_settings_set_no_debug(struct irq_desc *desc)
-{
-	desc->status_use_accessors |= _IRQ_NO_DEBUG;
-}
-
 extern int __irq_set_trigger(struct irq_desc *desc, unsigned long flags);
 
 #define IRQ_RESEND	true

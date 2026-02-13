@@ -84,21 +84,9 @@ enum {
 
 #define __irqd_to_state(d) ACCESS_PRIVATE((d)->common, state_use_accessors)
 
-static inline bool irqd_trigger_type_was_set(struct irq_data *d)
-{
-	return __irqd_to_state(d) & IRQD_DEFAULT_TRIGGER_SET;
-}
-
 static inline u32 irqd_get_trigger_type(struct irq_data *d)
 {
 	return __irqd_to_state(d) & IRQD_TRIGGER_MASK;
-}
-
-static inline void irqd_set_trigger_type(struct irq_data *d, u32 type)
-{
-	__irqd_to_state(d) &= ~IRQD_TRIGGER_MASK;
-	__irqd_to_state(d) |= type & IRQD_TRIGGER_MASK;
-	__irqd_to_state(d) |= IRQD_DEFAULT_TRIGGER_SET;
 }
 
 static inline bool irqd_irq_disabled(struct irq_data *d)

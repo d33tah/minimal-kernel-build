@@ -54,12 +54,6 @@ struct alloc_context {
 	enum zone_type highest_zoneidx;
 };
 
-static inline unsigned int buddy_order(struct page *page)
-{
-	 
-	return page_private(page);
-}
-
 extern void memblock_free_pages(struct page *page, unsigned long pfn,
 					unsigned int order);
 

@@ -70,25 +70,4 @@ static inline gid_t from_kgid(struct user_namespace *to, kgid_t kgid)
 	return __kgid_val(kgid);
 }
 
-static inline uid_t from_kuid_munged(struct user_namespace *to, kuid_t kuid)
-{
-	uid_t uid = from_kuid(to, kuid);
-	if (uid == (uid_t)-1)
-		uid = DEFAULT_OVERFLOWUID;
-	return uid;
-}
-
-static inline gid_t from_kgid_munged(struct user_namespace *to, kgid_t kgid)
-{
-	gid_t gid = from_kgid(to, kgid);
-	if (gid == (gid_t)-1)
-		gid = DEFAULT_OVERFLOWGID;
-	return gid;
-}
-
-static inline bool kuid_has_mapping(struct user_namespace *ns, kuid_t uid)
-{
-	return uid_valid(uid);
-}
-
 #endif  

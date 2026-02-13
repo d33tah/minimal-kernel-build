@@ -268,12 +268,6 @@ PAGE_TYPE_OPS(Buddy, buddy)
 
 PAGE_TYPE_OPS(Table, table)
 
-static __always_inline int PageAnonExclusive(struct page *page)
-{
-	VM_BUG_ON_PGFLAGS(!PageAnon(page), page);
-	return test_bit(PG_anon_exclusive, &PF_ANY(page, 1)->flags);
-}
-
 static __always_inline void SetPageAnonExclusive(struct page *page)
 {
 	/* PageKsm and PageHuge always return false */

@@ -11,10 +11,6 @@ struct net {
 	atomic_t count;
 	struct user_namespace *user_ns;
 };
-static inline struct net *get_net(struct net *net)
-{
-	return net;
-}
 static inline void put_net(struct net *net)
 {
 }

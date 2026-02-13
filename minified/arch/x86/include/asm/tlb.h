@@ -166,25 +166,6 @@ static inline void tlb_change_page_size(struct mmu_gather *tlb,
 {
 }
 
-static inline void tlb_start_vma(struct mmu_gather *tlb, struct vm_area_struct *vma)
-{
-	if (tlb->fullmm)
-		return;
-
-	tlb_update_vma_flags(tlb, vma);
-}
-
-static inline void tlb_end_vma(struct mmu_gather *tlb, struct vm_area_struct *vma)
-{
-	if (tlb->fullmm)
-		return;
-
-	/* CONFIG_MMU_GATHER_MERGE_VMAS=y, so only flush if vma_pfn */
-	if (tlb->vma_pfn) {
-		tlb_flush_mmu_tlbonly(tlb);
-	}
-}
-
 static inline void tlb_flush_pmd_range(struct mmu_gather *tlb,
 				     unsigned long address, unsigned long size)
 {

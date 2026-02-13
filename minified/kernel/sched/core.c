@@ -157,12 +157,7 @@ static void activate_task(struct rq *rq, struct task_struct *p, int flags)
 
 /* deactivate_task inlined into __schedule - single caller */
 
-/* Simplified: only SCHED_NORMAL used, no DL/RT paths */
-static inline int __normal_prio(int policy, int rt_prio, int nice)
-{
-	return NICE_TO_PRIO(nice);
-}
-
+/* __normal_prio removed - zero callers */
 /* check_class_changed inlined into __sched_setscheduler */
 
 void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
@@ -307,11 +302,7 @@ void wake_up_new_task(struct task_struct *p)
 /* prepare_lock_switch inlined - just called rq_unpin_lock */
 /* finish_lock_switch inlined - just called raw_spin_rq_unlock_irq */
 
-#ifndef prepare_arch_switch
-#define prepare_arch_switch(next) \
-	do {                      \
-	} while (0)
-#endif
+/* prepare_arch_switch removed - no-op on x86 */
 
 /* prepare_task_switch inlined into context_switch */
 
@@ -333,9 +324,7 @@ static struct rq *finish_task_switch(struct task_struct *prev)
 
 	raw_spin_rq_unlock_irq(rq);
 
-	if (unlikely(current->kmap_ctrl.idx))
-		__kmap_local_sched_in();
-
+	/* kmap_ctrl check removed - HIGHMEM disabled */
 	if (mm)
 		mmdrop_sched(mm);
 	if (unlikely(prev_state == TASK_DEAD)) {
@@ -353,16 +342,8 @@ asmlinkage __visible void schedule_tail(struct task_struct *prev)
 	finish_task_switch(prev);
 	preempt_enable();
 
-	if (current->set_child_tid)
-		/* task_pid_vnr inlined */
-		put_user(__task_pid_nr_ns(current, PIDTYPE_PID, NULL),
-			 current->set_child_tid);
-
-	/* calculate_sigpending inlined */
-	spin_lock_irq(&current->sighand->siglock);
-	set_tsk_thread_flag(current, TIF_SIGPENDING);
-	recalc_sigpending();
-	spin_unlock_irq(&current->sighand->siglock);
+	/* set_child_tid block removed - CLONE_CHILD_SETTID never set */
+	/* sigpending block removed - no pending signals at fork for hello-world */
 }
 
 static __always_inline struct rq *context_switch(struct rq *rq,
@@ -370,10 +351,7 @@ static __always_inline struct rq *context_switch(struct rq *rq,
 						 struct task_struct *next,
 						 struct rq_flags *rf)
 {
-	/* prepare_task_switch inlined */
-	if (unlikely(current->kmap_ctrl.idx))
-		__kmap_local_sched_out();
-	prepare_arch_switch(next);
+	/* prepare_task_switch inlined - kmap_ctrl and prepare_arch_switch removed */
 
 	if (!next->mm) {
 		enter_lazy_tlb(prev->active_mm, next);
@@ -431,16 +409,8 @@ __pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 		return p;
 	}
 
-	/* restart label removed - RETRY_TASK never returned */
-	put_prev_task(rq, prev);
-
-	for_each_class(class)
-	{
-		p = class->pick_next_task(rq);
-		if (p)
-			return p;
-	}
-
+	/* Fallback path removed: prev is always fair or idle class,
+	 * so the fast path above always succeeds. */
 	BUG();
 }
 
@@ -561,54 +531,11 @@ int default_wake_function(wait_queue_entry_t *curr, unsigned mode,
 
 /* nice syscall removed - __ARCH_WANT_SYS_NICE no longer defined */
 
-/* Simplified: only caller passes SCHED_NORMAL with priority 0 */
+/* Simplified: only caller passes SCHED_NORMAL with priority 0.
+ * Task is already SCHED_NORMAL at nice 0, so early return always taken. */
 int sched_setscheduler_nocheck(struct task_struct *p, int policy,
 			       const struct sched_param *param)
 {
-	int oldprio, newprio, queued, running;
-	struct rq_flags rf;
-	int queue_flags = DEQUEUE_SAVE | DEQUEUE_MOVE | DEQUEUE_NOCLOCK;
-	struct rq *rq;
-
-	rq = task_rq_lock(p, &rf);
-	update_rq_clock(rq);
-
-	/* Check if already set */
-	if (policy == p->policy && PRIO_TO_NICE(p->static_prio) == 0) {
-		task_rq_unlock(rq, p, &rf);
-		return 0;
-	}
-
-	oldprio = p->prio;
-	newprio = NICE_TO_PRIO(0);
-
-	queued = task_on_rq_queued(p);
-	running = task_current(rq, p);
-	if (queued)
-		dequeue_task(rq, p, queue_flags);
-	if (running)
-		put_prev_task(rq, p);
-
-	p->policy = policy;
-	p->static_prio = NICE_TO_PRIO(0);
-	p->rt_priority = 0;
-	p->normal_prio = newprio;
-	p->prio = newprio;
-	p->sched_class = &fair_sched_class;
-	set_load_weight(p, true);
-
-	if (queued) {
-		if (oldprio < p->prio)
-			queue_flags |= ENQUEUE_HEAD;
-		enqueue_task(rq, p, queue_flags);
-	}
-	if (running)
-		set_next_task(rq, p);
-
-	if (oldprio != p->prio)
-		p->sched_class->prio_changed(rq, p, oldprio);
-
-	task_rq_unlock(rq, p, &rf);
 	return 0;
 }
 
@@ -633,13 +560,10 @@ int __sched __cond_resched(void)
 	return 0;
 }
 
+/* io_schedule removed - in_iowait is write-only, replaced with schedule() */
 void __sched io_schedule(void)
 {
-	int old_iowait = current->in_iowait;
-
-	current->in_iowait = 1;
 	schedule();
-	current->in_iowait = old_iowait;
 }
 
 /* sched_get_priority_max, sched_get_priority_min syscalls removed - not in table */

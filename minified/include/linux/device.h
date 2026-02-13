@@ -23,7 +23,26 @@
 #include <linux/uidgid.h>
 #include <linux/gfp.h>
 #include <linux/overflow.h>
-#include <linux/device/bus.h>
+/* Inlined from device/bus.h */
+struct device_driver;
+
+struct bus_type {
+	const char		*name;
+	const char		*dev_name;
+	int (*match)(struct device *dev, struct device_driver *drv);
+	int (*probe)(struct device *dev);
+	void (*remove)(struct device *dev);
+	void (*shutdown)(struct device *dev);
+	int (*dma_configure)(struct device *dev);
+	void (*dma_cleanup)(struct device *dev);
+	struct subsys_private *p;
+	struct lock_class_key lock_key;
+	bool need_parent_lock;
+};
+
+int bus_for_each_drv(struct bus_type *bus, struct device_driver *start,
+		     void *data, int (*fn)(struct device_driver *, void *));
+/* End device/bus.h */
 /* Inlined from linux/device/class.h */
 struct class {
 	const char		*name;

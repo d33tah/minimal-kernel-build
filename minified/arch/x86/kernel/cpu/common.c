@@ -84,32 +84,6 @@ DEFINE_PER_CPU_PAGE_ALIGNED(
 								  0xfffff),
 		      } };
 
-static inline int flag_is_changeable_p(u32 flag)
-{
-	u32 f1, f2;
-
-	asm volatile("pushfl		\n\t"
-		     "pushfl		\n\t"
-		     "popl %0		\n\t"
-		     "movl %0, %1	\n\t"
-		     "xorl %2, %0	\n\t"
-		     "pushl %0		\n\t"
-		     "popfl		\n\t"
-		     "pushfl		\n\t"
-		     "popl %0		\n\t"
-		     "popfl		\n\t"
-
-		     : "=&r"(f1), "=&r"(f2)
-		     : "ir"(flag));
-
-	return ((f1 ^ f2) & flag) != 0;
-}
-
-int have_cpuid_p(void)
-{
-	return flag_is_changeable_p(X86_EFLAGS_ID);
-}
-
 static const unsigned long cr4_pinned_mask = X86_CR4_SMEP | X86_CR4_SMAP |
 					     X86_CR4_UMIP | X86_CR4_FSGSBASE |
 					     X86_CR4_CET;
@@ -168,39 +142,6 @@ void cr4_update_irqsoff(unsigned long set, unsigned long clear)
 unsigned long cr4_read_shadow(void)
 {
 	return this_cpu_read(cpu_tlbstate.cr4);
-}
-
-struct cpuid_dependent_feature {
-	u32 feature;
-	u32 level;
-};
-
-static const struct cpuid_dependent_feature cpuid_dependent_features[] = {
-	{ X86_FEATURE_XSAVE, 0x0000000d },
-	{ 0, 0 }
-};
-
-static void filter_cpuid_features(struct cpuinfo_x86 *c, bool warn)
-{
-	const struct cpuid_dependent_feature *df;
-
-	for (df = cpuid_dependent_features; df->feature; df++) {
-		if (!cpu_has(c, df->feature))
-			continue;
-
-		if (!((s32)df->level<0 ? (u32)df->level >
-						     (u32)c->extended_cpuid_level :
-					 (s32)df->level>(s32) c->cpuid_level))
-			continue;
-
-		clear_cpu_cap(c, df->feature);
-		if (!warn)
-			continue;
-
-		pr_warn("CPU: CPU feature " X86_CAP_FMT
-			" disabled, no CPUID level 0x%x\n",
-			x86_cap_flag(df->feature), df->level);
-	}
 }
 
 __u32 cpu_caps_cleared[NCAPINTS + NBUGINTS] __aligned(sizeof(unsigned long));
@@ -355,26 +296,6 @@ static void get_cpu_address_sizes(struct cpuinfo_x86 *c)
 		c->x86_phys_bits = 36;
 }
 
-static void identify_cpu_without_cpuid(struct cpuinfo_x86 *c)
-{
-	int i;
-
-	if (flag_is_changeable_p(X86_EFLAGS_AC))
-		c->x86 = 4;
-	else
-		c->x86 = 3;
-
-	for (i = 0; i < X86_VENDOR_NUM; i++)
-		if (cpu_devs[i] && cpu_devs[i]->c_identify) {
-			c->x86_vendor_id[0] = 0;
-			cpu_devs[i]->c_identify(c);
-			if (c->x86_vendor_id[0]) {
-				get_cpu_vendor(c);
-				break;
-			}
-		}
-}
-
 void __init early_cpu_init(void)
 {
 	const struct cpu_dev *const *cdev;
@@ -399,26 +320,18 @@ void __init early_cpu_init(void)
 		memset(&c->x86_capability, 0, sizeof(c->x86_capability));
 		c->extended_cpuid_level = 0;
 
-		if (!have_cpuid_p())
-			identify_cpu_without_cpuid(c);
+		/* CPUID always present on supported CPUs */
+		cpu_detect(c);
+		get_cpu_vendor(c);
+		get_cpu_cap(c);
+		get_cpu_address_sizes(c);
+		setup_force_cpu_cap(X86_FEATURE_CPUID);
 
-		if (have_cpuid_p()) {
-			cpu_detect(c);
-			get_cpu_vendor(c);
-			get_cpu_cap(c);
-			get_cpu_address_sizes(c);
-			setup_force_cpu_cap(X86_FEATURE_CPUID);
+		if (this_cpu->c_early_init)
+			this_cpu->c_early_init(c);
 
-			if (this_cpu->c_early_init)
-				this_cpu->c_early_init(c);
-
-			filter_cpuid_features(c, false);
-
-			if (this_cpu->c_bsp_init)
-				this_cpu->c_bsp_init(c);
-		} else {
-			setup_clear_cpu_cap(X86_FEATURE_CPUID);
-		}
+		if (this_cpu->c_bsp_init)
+			this_cpu->c_bsp_init(c);
 
 		setup_force_cpu_cap(X86_FEATURE_ALWAYS);
 
@@ -436,8 +349,6 @@ void __init early_cpu_init(void)
 
 static void identify_cpu(struct cpuinfo_x86 *c)
 {
-	int i;
-
 	c->loops_per_jiffy = loops_per_jiffy;
 	c->x86_vendor = X86_VENDOR_UNKNOWN;
 	c->x86_model = c->x86_stepping = 0;
@@ -449,17 +360,13 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 	c->x86_cache_alignment = c->x86_clflush_size;
 	memset(&c->x86_capability, 0, sizeof(c->x86_capability));
 
-	/* generic_identify inlined */
+	/* generic_identify inlined - CPUID always present */
 	c->extended_cpuid_level = 0;
-	if (!have_cpuid_p())
-		identify_cpu_without_cpuid(c);
-	if (have_cpuid_p()) {
-		cpu_detect(c);
-		get_cpu_vendor(c);
-		get_cpu_cap(c);
-		get_cpu_address_sizes(c);
-		set_cpu_bug(c, X86_BUG_ESPFIX);
-	}
+	cpu_detect(c);
+	get_cpu_vendor(c);
+	get_cpu_cap(c);
+	get_cpu_address_sizes(c);
+	set_cpu_bug(c, X86_BUG_ESPFIX);
 
 	if (this_cpu->c_identify)
 		this_cpu->c_identify(c);
@@ -484,17 +391,9 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 		elf_hwcap2 |= HWCAP2_FSGSBASE;
 	}
 
-	filter_cpuid_features(c, true);
-
 	apply_forced_caps(c);
 
-	if (c != &boot_cpu_data) {
-		for (i = 0; i < NCAPINTS; i++)
-			boot_cpu_data.x86_capability[i] &= c->x86_capability[i];
-
-		for (i = NCAPINTS; i < NCAPINTS + NBUGINTS; i++)
-			c->x86_capability[i] |= boot_cpu_data.x86_capability[i];
-	}
+	/* Single CPU: no secondary CPU capability merging needed */
 
 	select_idle_routine(c);
 }

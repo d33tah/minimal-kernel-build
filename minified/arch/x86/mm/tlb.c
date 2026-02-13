@@ -24,75 +24,19 @@ DEFINE_STATIC_KEY_FALSE(rdpmc_always_available_key);
 
 #define LAST_USER_MM_INIT LAST_USER_MM_IBPB
 
-#define PTI_CONSUMED_PCID_BITS 0
-
-#define CR3_AVAIL_PCID_BITS (X86_CR3_PCID_BITS - PTI_CONSUMED_PCID_BITS)
-
-#define MAX_ASID_AVAILABLE ((1 << CR3_AVAIL_PCID_BITS) - 2)
-
-static inline u16 kern_pcid(u16 asid)
-{
-	VM_WARN_ON_ONCE(asid > MAX_ASID_AVAILABLE);
-
-	return asid + 1;
-}
-
-static inline unsigned long build_cr3(pgd_t *pgd, u16 asid)
-{
-	if (static_cpu_has(X86_FEATURE_PCID)) {
-		return __sme_pa(pgd) | kern_pcid(asid);
-	} else {
-		VM_WARN_ON_ONCE(asid != 0);
-		return __sme_pa(pgd);
-	}
-}
-
+/* PCID/PTI disabled on X86_32 - simplified */
 atomic64_t last_mm_ctx_id = ATOMIC64_INIT(1);
 
 static void choose_new_asid(struct mm_struct *next, u64 next_tlb_gen,
 			    u16 *new_asid, bool *need_flush)
 {
-	u16 asid;
-
-	if (!static_cpu_has(X86_FEATURE_PCID)) {
-		*new_asid = 0;
-		*need_flush = true;
-		return;
-	}
-
-	for (asid = 0; asid < TLB_NR_DYN_ASIDS; asid++) {
-		if (this_cpu_read(cpu_tlbstate.ctxs[asid].ctx_id) !=
-		    next->context.ctx_id)
-			continue;
-
-		*new_asid = asid;
-		*need_flush = (this_cpu_read(cpu_tlbstate.ctxs[asid].tlb_gen) <
-			       next_tlb_gen);
-		return;
-	}
-
-	*new_asid = this_cpu_add_return(cpu_tlbstate.next_asid, 1) - 1;
-	if (*new_asid >= TLB_NR_DYN_ASIDS) {
-		*new_asid = 0;
-		this_cpu_write(cpu_tlbstate.next_asid, 1);
-	}
+	*new_asid = 0;
 	*need_flush = true;
 }
 
 static void load_new_mm_cr3(pgd_t *pgdir, u16 new_asid, bool need_flush)
 {
-	unsigned long new_mm_cr3;
-
-	if (need_flush) {
-		new_mm_cr3 = build_cr3(pgdir, new_asid);
-	} else {
-		VM_WARN_ON_ONCE(new_asid > MAX_ASID_AVAILABLE);
-		VM_WARN_ON_ONCE(!boot_cpu_has(X86_FEATURE_PCID));
-		new_mm_cr3 = __sme_pa(pgdir) | kern_pcid(new_asid) |
-			     CR3_NOFLUSH;
-	}
-
-	write_cr3(new_mm_cr3);
+	write_cr3(__sme_pa(pgdir));
 }
 
 void switch_mm(struct mm_struct *prev, struct mm_struct *next,
@@ -205,10 +149,7 @@ void initialize_tlbstate_and_flush(void)
 
 	WARN_ON((cr3 & CR3_ADDR_MASK) != __pa(mm->pgd));
 
-	WARN_ON(boot_cpu_has(X86_FEATURE_PCID) &&
-		!(cr4_read_shadow() & X86_CR4_PCIDE));
-
-	write_cr3(build_cr3(mm->pgd, 0));
+	write_cr3(__sme_pa(mm->pgd));
 
 	this_cpu_write(cpu_tlbstate.last_user_mm_spec, LAST_USER_MM_INIT);
 	this_cpu_write(cpu_tlbstate.loaded_mm_asid, 0);
@@ -319,27 +260,15 @@ void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 	put_cpu();
 }
 
+/* PTI disabled on X86_32 - simplified */
 void flush_tlb_one_kernel(unsigned long addr)
 {
 	flush_tlb_one_user(addr);
-
-	if (!static_cpu_has(X86_FEATURE_PTI))
-		return;
 }
 
 STATIC_NOPV void native_flush_tlb_one_user(unsigned long addr)
 {
-	u32 loaded_mm_asid = this_cpu_read(cpu_tlbstate.loaded_mm_asid);
-
 	asm volatile("invlpg (%0)" ::"r"(addr) : "memory");
-
-	if (!static_cpu_has(X86_FEATURE_PTI))
-		return;
-
-	if (!this_cpu_has(X86_FEATURE_INVPCID_SINGLE))
-		/* invalidate_user_asid removed - was empty (PTI disabled) */;
-	else
-		invpcid_flush_one(kern_pcid(loaded_mm_asid), addr);
 }
 
 void flush_tlb_one_user(unsigned long addr)

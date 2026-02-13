@@ -44,21 +44,7 @@ extern const unsigned char color_table[];
 
 /* ctype.h removed - character classification not used */
 
-#define MAX_NR_CON_DRIVER 16
-
-#define CON_DRIVER_FLAG_INIT 2
-
-struct con_driver {
-	const struct consw *con;
-	const char *desc;
-	struct device *dev;
-	int node;
-	int first;
-	int last;
-	int flag;
-};
-
-static struct con_driver registered_con_driver[MAX_NR_CON_DRIVER];
+/* con_driver struct, registered_con_driver array removed - write-only, never read */
 const struct consw *conswitchp;
 
 /* DEFAULT_BELL_PITCH, DEFAULT_BELL_DURATION, DEFAULT_CURSOR_BLINK_MS removed - unused */
@@ -92,11 +78,7 @@ static struct vc_data *master_display_fg;
 
 /* con_is_fg inlined - returned vc->vc_num == fg_console */
 
-static inline bool con_should_update(const struct vc_data *vc)
-{
-	/* console_blanked check removed - never assigned, always 0 */
-	return con_is_visible(vc);
-}
+/* con_should_update inlined at call site - was just con_is_visible(vc) */
 
 static void con_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
 		       enum con_scroll dir, unsigned int nr)
@@ -166,13 +148,7 @@ static void update_attr(struct vc_data *vc)
 	vc->vc_video_erase_char = ' ' | (vc->state.color << 8);
 }
 
-/* Stubbed cursor functions - minimal kernel doesn't need cursor display */
-static void hide_cursor(struct vc_data *vc)
-{
-}
-static void set_cursor(struct vc_data *vc)
-{
-}
+/* hide_cursor, set_cursor removed - empty stubs, calls removed */
 
 static void set_origin(struct vc_data *vc)
 {
@@ -188,10 +164,7 @@ static void set_origin(struct vc_data *vc)
 /* save_screen inlined into con_init */
 /* flush_scrollback, redraw_screen inlined into con_init (~6 LOC) */
 
-int vc_cons_allocated(unsigned int i)
-{
-	return (i < MAX_NR_CONSOLES && vc_cons[i].d);
-}
+/* vc_cons_allocated inlined at call site */
 
 static void visual_init(struct vc_data *vc, int num, int init)
 {
@@ -292,7 +265,7 @@ static void csi_J(struct vc_data *vc, int vpar)
 		start = (unsigned short *)vc->vc_origin;
 	}
 	scr_memsetw(start, vc->vc_video_erase_char, 2 * count);
-	if (con_should_update(vc))
+	if (con_is_visible(vc))
 		do_update_region(vc, (unsigned long)start, count);
 	vc->vc_need_wrap = 0;
 }
@@ -327,7 +300,7 @@ static void vt_console_print(struct console *co, const char *b, unsigned count)
 	if (!printable || !spin_trylock(&printing_lock))
 		return;
 
-	if (!vc_cons_allocated(fg_console))
+	if (!(fg_console < MAX_NR_CONSOLES && vc_cons[fg_console].d))
 		goto quit;
 
 	start = (ushort *)vc->vc_pos;
@@ -398,19 +371,7 @@ static int __init con_init(void)
 		return 0;
 	}
 
-	for (i = 0; i < MAX_NR_CON_DRIVER; i++) {
-		struct con_driver *con_driver = &registered_con_driver[i];
-
-		if (con_driver->con == NULL) {
-			con_driver->con = conswitchp;
-			con_driver->desc = display_desc;
-			con_driver->flag = CON_DRIVER_FLAG_INIT;
-			con_driver->first = 0;
-			con_driver->last = MAX_NR_CONSOLES - 1;
-			break;
-		}
-	}
-
+	/* registered_con_driver init loop removed - array was write-only */
 	for (i = 0; i < MAX_NR_CONSOLES; i++)
 		con_driver_map[i] = conswitchp;
 
@@ -436,26 +397,11 @@ static int __init con_init(void)
 		vc->vc_sw->con_save_screen(vc);
 	gotoxy(vc, vc->state.x, vc->state.y);
 	csi_J(vc, 0);
-	/* Inlined redraw_screen */
-	{
-		int update;
-		int old_was_color;
-
-		hide_cursor(vc);
-
-		old_was_color = vc->vc_can_do_color;
-		set_origin(vc);
-		update = vc->vc_sw->con_switch(vc);
-
-		if (old_was_color != vc->vc_can_do_color)
-			update_attr(vc);
-
-		if (update && vc->vc_mode != KD_GRAPHICS)
-			do_update_region(vc, vc->vc_origin,
-					 vc->vc_screenbuf_size / 2);
-
-		set_cursor(vc);
-	}
+	/* Inlined redraw_screen (simplified: cursor stubs removed) */
+	set_origin(vc);
+	if (vc->vc_sw->con_switch(vc) && vc->vc_mode != KD_GRAPHICS)
+		do_update_region(vc, vc->vc_origin,
+				 vc->vc_screenbuf_size / 2);
 	printable = 1;
 
 	console_unlock();

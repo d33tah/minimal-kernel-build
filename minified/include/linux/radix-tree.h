@@ -68,8 +68,7 @@ void __radix_tree_replace(struct radix_tree_root *, struct radix_tree_node *,
 			  void __rcu **slot, void *entry);
 void radix_tree_iter_replace(struct radix_tree_root *,
 		const struct radix_tree_iter *, void __rcu **slot, void *entry);
-void *radix_tree_delete_item(struct radix_tree_root *, unsigned long, void *);
-/* radix_tree_delete removed - never called */
+/* radix_tree_delete_item + radix_tree_delete removed - idr_remove stubbed */
 void radix_tree_init(void);
 int radix_tree_tag_get(const struct radix_tree_root *,
 			unsigned long index, unsigned int tag);

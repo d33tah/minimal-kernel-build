@@ -66,9 +66,10 @@ int idr_alloc_cyclic(struct idr *idr, void *ptr, int start, int end, gfp_t gfp)
 	return id;
 }
 
+/* idr_remove stubbed: PIDs are never freed in single-process hello-world */
 void *idr_remove(struct idr *idr, unsigned long id)
 {
-	return radix_tree_delete_item(&idr->idr_rt, id - idr->idr_base, NULL);
+	return NULL;
 }
 
 void *idr_find(const struct idr *idr, unsigned long id)

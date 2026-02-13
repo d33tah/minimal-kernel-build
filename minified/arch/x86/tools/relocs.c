@@ -155,19 +155,9 @@ static uint32_t elf32_to_cpu(uint32_t val)
 #define elf_half_to_cpu(x) elf16_to_cpu(x)
 #define elf_word_to_cpu(x) elf32_to_cpu(x)
 
-#if ELF_BITS == 64
-static uint64_t elf64_to_cpu(uint64_t val)
-{
-	return le64_to_cpu(val);
-}
-#define elf_addr_to_cpu(x) elf64_to_cpu(x)
-#define elf_off_to_cpu(x) elf64_to_cpu(x)
-#define elf_xword_to_cpu(x) elf64_to_cpu(x)
-#else
 #define elf_addr_to_cpu(x) elf32_to_cpu(x)
 #define elf_off_to_cpu(x) elf32_to_cpu(x)
 #define elf_xword_to_cpu(x) elf32_to_cpu(x)
-#endif
 
 static int sym_index(Elf_Sym *sym)
 {

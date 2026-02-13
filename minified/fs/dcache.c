@@ -57,30 +57,12 @@ static inline int dentry_cmp(const struct dentry *dentry,
 	return unlikely(!!((a ^ b) & mask));
 }
 
-struct external_name {
-	union {
-		atomic_t count;
-		struct rcu_head head;
-	} u;
-	unsigned char name[];
-};
-
-static inline struct external_name *external_name(struct dentry *dentry)
-{
-	return container_of(dentry->d_name.name, struct external_name, name[0]);
-}
+/* external_name struct + __d_free_external removed: initramfs names
+ * ("/" and "init") always fit in dentry->d_iname inline buffer */
 
 static void __d_free(struct rcu_head *head)
 {
 	struct dentry *dentry = container_of(head, struct dentry, d_u.d_rcu);
-
-	kmem_cache_free(dentry_cache, dentry);
-}
-
-static void __d_free_external(struct rcu_head *head)
-{
-	struct dentry *dentry = container_of(head, struct dentry, d_u.d_rcu);
-	kfree(external_name(dentry));
 	kmem_cache_free(dentry_cache, dentry);
 }
 
@@ -166,17 +148,9 @@ static void __dentry_kill(struct dentry *dentry)
 
 	/* DCACHE_SHRINK_LIST, DCACHE_MAY_FREE, DCACHE_NORCU checks removed -
 	   these flags are never set in this minimal kernel */
-	/* Inlined dentry_free */
+	/* dentry_free inlined - external names impossible (initramfs names are short) */
 	WARN_ON(!hlist_unhashed(&dentry->d_u.d_alias));
-	if (unlikely(dentry->d_name.name != dentry->d_iname)) {
-		struct external_name *p = external_name(dentry);
-		if (likely(atomic_dec_and_test(&p->u.count))) {
-			call_rcu(&dentry->d_u.d_rcu, __d_free_external);
-			goto skip_rcu;
-		}
-	}
 	call_rcu(&dentry->d_u.d_rcu, __d_free);
-skip_rcu:
 	cond_resched();
 }
 
@@ -321,39 +295,7 @@ void dput_to_list(struct dentry *dentry, struct list_head *list)
 	spin_unlock(&dentry->d_lock);
 }
 
-struct dentry *dget_parent(struct dentry *dentry)
-{
-	int gotref;
-	struct dentry *ret;
-	unsigned seq;
-
-	rcu_read_lock();
-	seq = raw_seqcount_begin(&dentry->d_seq);
-	ret = READ_ONCE(dentry->d_parent);
-	gotref = lockref_get_not_zero(&ret->d_lockref);
-	rcu_read_unlock();
-	if (likely(gotref)) {
-		if (!read_seqcount_retry(&dentry->d_seq, seq))
-			return ret;
-		dput(ret);
-	}
-
-repeat:
-
-	rcu_read_lock();
-	ret = dentry->d_parent;
-	spin_lock(&ret->d_lock);
-	if (unlikely(ret != dentry->d_parent)) {
-		spin_unlock(&ret->d_lock);
-		rcu_read_unlock();
-		goto repeat;
-	}
-	rcu_read_unlock();
-	BUG_ON(!ret->d_lockref.count);
-	ret->d_lockref.count++;
-	spin_unlock(&ret->d_lock);
-	return ret;
-}
+/* dget_parent removed - zero callers (handle_dots DOTDOT was removed) */
 
 /* shrink_dentry_list removed - was empty stub, calls removed */
 
@@ -413,24 +355,12 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 	if (!dentry)
 		return NULL;
 
+	/* External name allocation removed - initramfs names always fit inline */
 	dentry->d_iname[DNAME_INLINE_LEN - 1] = 0;
 	if (unlikely(!name)) {
 		name = &slash_name;
-		dname = dentry->d_iname;
-	} else if (name->len > DNAME_INLINE_LEN - 1) {
-		size_t size = offsetof(struct external_name, name[1]);
-		struct external_name *p =
-			kmalloc(size + name->len,
-				GFP_KERNEL_ACCOUNT | __GFP_RECLAIMABLE);
-		if (!p) {
-			kmem_cache_free(dentry_cache, dentry);
-			return NULL;
-		}
-		atomic_set(&p->u.count, 1);
-		dname = p->name;
-	} else {
-		dname = dentry->d_iname;
 	}
+	dname = dentry->d_iname;
 
 	dentry->d_name.len = name->len;
 	dentry->d_name.hash = name->hash;

@@ -654,50 +654,14 @@ __get_vm_area_node(unsigned long size, unsigned long align, unsigned long shift,
 /* vfree, vunmap moved to vmalloc.h as static inline */
 /* vmap removed - never called */
 
+/* vm_area_alloc_pages simplified: order always 0, just bulk alloc */
 static inline unsigned int vm_area_alloc_pages(gfp_t gfp, int nid,
 					       unsigned int order,
 					       unsigned int nr_pages,
 					       struct page **pages)
 {
-	unsigned int nr_allocated = 0;
-	/* order is always 0 - use bulk allocation */
-	gfp_t bulk_gfp = gfp & ~__GFP_NOFAIL;
-
-	while (nr_allocated < nr_pages) {
-		unsigned int nr, nr_pages_request;
-
-		nr_pages_request = min(100U, nr_pages - nr_allocated);
-
-		nr = alloc_pages_bulk_array_node(
-			bulk_gfp, nid, nr_pages_request, pages + nr_allocated);
-
-		nr_allocated += nr;
-		cond_resched();
-
-		if (nr != nr_pages_request)
-			break;
-	}
-
-	/* Fallback: allocate remaining pages one at a time */
-	while (nr_allocated < nr_pages) {
-		struct page *page;
-
-		if (fatal_signal_pending(current))
-			break;
-
-		if (nid == NUMA_NO_NODE)
-			page = alloc_pages(gfp, 0);
-		else
-			page = alloc_pages_node(nid, gfp, 0);
-		if (unlikely(!page))
-			break;
-
-		pages[nr_allocated] = page;
-		cond_resched();
-		nr_allocated++;
-	}
-
-	return nr_allocated;
+	return alloc_pages_bulk_array_node(gfp & ~__GFP_NOFAIL, nid, nr_pages,
+					   pages);
 }
 
 static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
@@ -705,15 +669,10 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 				 int node)
 {
 	const gfp_t nested_gfp = (gfp_mask & GFP_RECLAIM_MASK) | __GFP_ZERO;
-	bool nofail = gfp_mask & __GFP_NOFAIL;
 	unsigned long addr = (unsigned long)area->addr;
-	/* get_vm_area_size inlined */
-	unsigned long size = (area->flags & VM_NO_GUARD) ?
-				     area->size :
-				     area->size - PAGE_SIZE;
+	unsigned long size = area->size - PAGE_SIZE;
 	unsigned long array_size;
 	unsigned int nr_small_pages = size >> PAGE_SHIFT;
-	unsigned int flags;
 	int ret;
 
 	array_size = (unsigned long)nr_small_pages * sizeof(struct page *);
@@ -721,54 +680,27 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 	if (!(gfp_mask & (GFP_DMA | GFP_DMA32)))
 		gfp_mask |= __GFP_HIGHMEM;
 
-	if (array_size > PAGE_SIZE) {
+	if (array_size > PAGE_SIZE)
 		area->pages = __vmalloc_node(array_size, 1, nested_gfp, node,
 					     area->caller);
-	} else {
+	else
 		area->pages = kmalloc_node(array_size, nested_gfp, node);
-	}
 
-	if (!area->pages) {
-		/* free_vm_area chain removed - OOM at boot is fatal anyway */
+	if (!area->pages)
 		BUG();
-	}
 
 	area->nr_pages = vm_area_alloc_pages(gfp_mask | __GFP_NOWARN, node, 0,
 					     nr_small_pages, area->pages);
+	if (area->nr_pages != nr_small_pages)
+		return NULL;
 
-	/* nr_vmalloc_pages addition removed - counter never read */
-	/* mod_memcg_page_state is empty stub */
-	if (area->nr_pages != nr_small_pages) {
-		goto fail;
-	}
-
-	if ((gfp_mask & (__GFP_FS | __GFP_IO)) == __GFP_IO)
-		flags = memalloc_nofs_save();
-	else if ((gfp_mask & (__GFP_FS | __GFP_IO)) == 0)
-		flags = memalloc_noio_save();
-
-	/* vmap_pages_range inlined - flush_cache_vmap is empty stub on x86 */
-	do {
-		ret = vmap_pages_range_noflush(addr, addr + size, prot,
-					       area->pages, page_shift);
-		if (nofail && (ret < 0))
-			schedule_timeout_uninterruptible(1);
-	} while (nofail && (ret < 0));
-
-	if ((gfp_mask & (__GFP_FS | __GFP_IO)) == __GFP_IO)
-		memalloc_nofs_restore(flags);
-	else if ((gfp_mask & (__GFP_FS | __GFP_IO)) == 0)
-		memalloc_noio_restore(flags);
-
-	if (ret < 0) {
-		goto fail;
-	}
+	/* memalloc_nofs/noio save/restore removed - never triggered at boot */
+	ret = vmap_pages_range_noflush(addr, addr + size, prot, area->pages,
+				       page_shift);
+	if (ret < 0)
+		return NULL;
 
 	return area->addr;
-
-fail:
-	/* __vfree was no-op */
-	return NULL;
 }
 
 static void *__vmalloc_node_range(unsigned long size, unsigned long align,
@@ -786,17 +718,12 @@ static void *__vmalloc_node_range(unsigned long size, unsigned long align,
 		return NULL;
 	}
 
-again:
+	/* __GFP_NOFAIL retry removed - never passed */
 	area = __get_vm_area_node(size, align, PAGE_SHIFT,
 				  VM_ALLOC | VM_UNINITIALIZED | vm_flags, start,
 				  end, node, gfp_mask, caller);
-	if (!area) {
-		if (gfp_mask & __GFP_NOFAIL) {
-			schedule_timeout_uninterruptible(1);
-			goto again;
-		}
+	if (!area)
 		return NULL;
-	}
 
 	if (!__vmalloc_area_node(area, gfp_mask, prot, PAGE_SHIFT, node))
 		return NULL;

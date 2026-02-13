@@ -97,8 +97,6 @@ static inline unsigned long totalram_pages(void)
 
 extern void * high_memory;
 
-#define sysctl_legacy_va_layout 0
-
 #include <asm/page.h>
 #include <asm/processor.h>
 
@@ -635,7 +633,5 @@ DECLARE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_ALLOC_DEFAULT_ON, init_on_alloc);
 DECLARE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_FREE_DEFAULT_ON, init_on_free);
 
 /* MAX_NUMNODES == 1, always inline */
-
-#define  ZAP_FLAG_DROP_MARKER        ((__force zap_flags_t) BIT(0))
 
 #endif

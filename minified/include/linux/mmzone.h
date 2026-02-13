@@ -96,8 +96,6 @@ enum migratetype {
 	MIGRATE_TYPES
 };
 
-#define is_migrate_cma(migratetype) false
-
 #define for_each_migratetype_order(order, type)     \
 	for (order = 0; order < MAX_ORDER; order++) \
 		for (type = 0; type < MIGRATE_TYPES; type++)

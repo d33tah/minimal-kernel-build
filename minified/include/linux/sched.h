@@ -11,12 +11,6 @@
    CLONE_VFORK, CLONE_PARENT, CLONE_THREAD, CLONE_SETTLS, CLONE_PARENT_SETTID,
    CLONE_CHILD_CLEARTID, CLONE_CHILD_SETTID, CLONE_NEWUSER, CLONE_CLEAR_SIGHAND */
 #define SCHED_NORMAL		0
-#define SCHED_FIFO		1
-#define SCHED_RR		2
-#define SCHED_BATCH		3
-#define SCHED_IDLE		5
-#define SCHED_DEADLINE		6
-#define SCHED_FLAG_KEEP_PARAMS		0x10
 /* End uapi/linux/sched.h */
 
 #include <asm/current.h>
@@ -78,8 +72,6 @@ struct rlimit {
 #define MAX_RT_PRIO		100
 #define MAX_PRIO		(MAX_RT_PRIO + NICE_WIDTH)
 #define DEFAULT_PRIO		(MAX_RT_PRIO + NICE_WIDTH / 2)
-#define NICE_TO_PRIO(nice)	((nice) + DEFAULT_PRIO)
-#define PRIO_TO_NICE(prio)	((prio) - DEFAULT_PRIO)
 /* end sched/prio.h */
 #include <linux/sched/types.h>
 #ifndef _LINUX_SIGNAL_TYPES_INLINED

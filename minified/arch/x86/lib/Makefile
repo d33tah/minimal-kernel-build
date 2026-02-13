@@ -7,7 +7,7 @@ KCOV_INSTRUMENT_delay.o := n
 KCSAN_SANITIZE_delay.o := n
 
 lib-y := delay.o cpu.o
-lib-y += usercopy_$(BITS).o getuser.o putuser.o
+lib-y += usercopy_$(BITS).o putuser.o
 lib-y += memcpy_$(BITS).o
 
 ifeq ($(CONFIG_X86_32),y)

@@ -34,10 +34,8 @@ const struct file_operations ramfs_file_operations = {
 	.get_unmapped_area = ramfs_mmu_get_unmapped_area,
 };
 
-static const struct inode_operations ramfs_file_inode_operations = {
-	.setattr = simple_setattr,
-	/* getattr removed - callback removed from inode_operations */
-};
+/* ramfs_file_inode_operations: setattr removed - no chmod/chown syscalls */
+static const struct inode_operations ramfs_file_inode_operations = {};
 
 struct ramfs_mount_opts {
 	umode_t mode;

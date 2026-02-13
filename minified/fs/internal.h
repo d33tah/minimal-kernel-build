@@ -18,7 +18,7 @@ struct user_namespace;
 extern void __init chrdev_init(void);
 
  
-extern const struct fs_context_operations legacy_fs_context_ops;
+/* legacy_fs_context_ops removed - all fs types have init_fs_context */
 extern int parse_monolithic_mount_data(struct fs_context *, void *);
 /* vfs_clean_context, finish_clean_context removed - unused */
 

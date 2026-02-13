@@ -56,23 +56,7 @@ const struct file_operations simple_dir_operations = {
 /* simple_link, simple_empty, simple_unlink, simple_rmdir, simple_rename removed
    - link/unlink/rmdir/rename syscalls return ENOSYS */
 
-int simple_setattr(struct user_namespace *mnt_userns, struct dentry *dentry,
-		   struct iattr *iattr)
-{
-	struct inode *inode = d_inode(dentry);
-	int error;
-
-	error = setattr_prepare(mnt_userns, dentry, iattr);
-	if (error)
-		return error;
-
-	if (iattr->ia_valid & ATTR_SIZE)
-		/* truncate_setsize inlined */
-		i_size_write(inode, iattr->ia_size);
-	setattr_copy(mnt_userns, inode, iattr);
-	/* mark_inode_dirty removed - __mark_inode_dirty is empty stub */
-	return 0;
-}
+/* simple_setattr removed - no chmod/chown/utimes syscalls, attr.c removed */
 
 static int simple_read_folio(struct file *file, struct folio *folio)
 {

@@ -16,9 +16,8 @@ struct super_block;
 struct user_namespace;
 
 enum fs_context_purpose {
-	FS_CONTEXT_FOR_MOUNT,		 
-	FS_CONTEXT_FOR_SUBMOUNT,	 
-	FS_CONTEXT_FOR_RECONFIGURE,	 
+	FS_CONTEXT_FOR_MOUNT,
+	/* FOR_SUBMOUNT, FOR_RECONFIGURE removed - only FOR_MOUNT used */
 };
 
 /* enum fs_context_phase removed - never used */
@@ -75,11 +74,11 @@ struct fs_context {
 
 struct fs_context_operations {
 	void (*free)(struct fs_context *fc);
-	int (*dup)(struct fs_context *fc, struct fs_context *src_fc);
+	/* dup removed - clone_fs_context never called */
 	int (*parse_param)(struct fs_context *fc, struct fs_parameter *param);
 	int (*parse_monolithic)(struct fs_context *fc, void *data);
 	int (*get_tree)(struct fs_context *fc);
-	int (*reconfigure)(struct fs_context *fc);
+	/* reconfigure removed - remount never happens */
 };
 
 extern struct fs_context *fs_context_for_mount(struct file_system_type *fs_type,

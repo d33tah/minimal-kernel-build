@@ -336,28 +336,7 @@ extern void __init files_init(void);
 #define FMODE_NEED_UNMOUNT	((__force fmode_t)0x10000000)
 /* FMODE_NOACCOUNT removed - never used */
 
-#define ATTR_MODE	(1 << 0)
-#define ATTR_UID	(1 << 1)
-#define ATTR_GID	(1 << 2)
-#define ATTR_SIZE	(1 << 3)
-#define ATTR_ATIME	(1 << 4)
-#define ATTR_MTIME	(1 << 5)
-#define ATTR_ATIME_SET	(1 << 7)
-#define ATTR_MTIME_SET	(1 << 8)
-#define ATTR_FORCE	(1 << 9) 
-/* ATTR_KILL_SUID, ATTR_KILL_SGID, ATTR_KILL_PRIV removed - unused */
-#define ATTR_TIMES_SET	(1 << 16)
-
-/* WHITEOUT_DEV removed - unused */
-
-struct iattr {
-	unsigned int	ia_valid;
-	umode_t		ia_mode;
-	kuid_t		ia_uid;
-	kgid_t		ia_gid;
-	loff_t		ia_size;
-	/* ia_atime, ia_mtime, ia_ctime, ia_file removed - never read */
-};
+/* ATTR_* defines, struct iattr removed - attr.c deleted, no setattr callers */
 
 /* linux/quota.h removed - empty stub */
 
@@ -739,9 +718,7 @@ struct inode_operations {
 
 	int (*create) (struct user_namespace *, struct inode *,struct dentry *,
 		       umode_t, bool);
-	/* link, unlink, symlink, mkdir, rmdir, mknod, rename removed - syscalls return ENOSYS */
-	int (*setattr) (struct user_namespace *, struct dentry *,
-			struct iattr *);
+	/* link, unlink, symlink, mkdir, rmdir, mknod, rename, setattr removed */
 	/* getattr, listxattr, update_time, tmpfile removed - never called */
 	/* fiemap, atomic_open, set_acl, fileattr_set, fileattr_get removed - unused */
 } ____cacheline_aligned;
@@ -968,9 +945,7 @@ extern struct file_system_type *get_fs_type(const char *name);
    iterate_supers, iterate_supers_type, drop_super - never called */
 
 /* dcache_dir_close, dcache_dir_lseek, dcache_readdir removed - only used in fs/libfs.c */
-extern int simple_setattr(struct user_namespace *, struct dentry *,
-			  struct iattr *);
-/* simple_getattr, simple_statfs removed - callbacks removed */
+/* simple_setattr, simple_getattr, simple_statfs removed - callbacks removed */
 /* simple_link, simple_unlink, simple_rmdir, simple_rename, noop_fsync removed - syscalls return ENOSYS */
 /* simple_write_begin removed - only used in fs/libfs.c */
 extern const struct address_space_operations ram_aops;
@@ -981,10 +956,7 @@ extern struct dentry *simple_lookup(struct inode *, struct dentry *, unsigned in
 extern const struct file_operations simple_dir_operations;
 /* is_empty_dir_inode removed - never called */
 /* simple_pin_fs, simple_release_fs removed - never called */
-/* may_setattr, inode_newsize_ok removed - always returned 0 */
-int setattr_prepare(struct user_namespace *, struct dentry *, struct iattr *);
-void setattr_copy(struct user_namespace *, struct inode *inode,
-		  const struct iattr *attr);
+/* may_setattr, inode_newsize_ok, setattr_prepare, setattr_copy removed - attr.c deleted */
 
 /* file_update_time removed - callers inlined */
 

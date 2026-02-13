@@ -869,7 +869,7 @@ static void per_cpu_pages_init(struct per_cpu_pages *pcp,
 	pcp->batch = BOOT_PAGESET_BATCH;
 }
 
-void __meminit setup_zone_pageset(struct zone *zone)
+static void __meminit setup_zone_pageset(struct zone *zone)
 {
 	struct per_cpu_pages *pcp;
 
@@ -900,9 +900,9 @@ void __init setup_per_cpu_pageset(void)
 
 /* zone_pcp_init inlined into free_area_init_core */
 
-void __meminit init_currently_empty_zone(struct zone *zone,
-					 unsigned long zone_start_pfn,
-					 unsigned long size)
+static void __meminit init_currently_empty_zone(struct zone *zone,
+						unsigned long zone_start_pfn,
+						unsigned long size)
 {
 	struct pglist_data *pgdat = zone->zone_pgdat;
 	int zone_idx = zone_idx(zone) + 1;

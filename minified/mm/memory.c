@@ -436,8 +436,9 @@ pte_t *__get_locked_pte(struct mm_struct *mm, unsigned long addr,
 
 /* insert_pfn inlined into vmf_insert_pfn_prot */
 
-vm_fault_t vmf_insert_pfn_prot(struct vm_area_struct *vma, unsigned long addr,
-			       unsigned long pfn, pgprot_t pgprot)
+static vm_fault_t vmf_insert_pfn_prot(struct vm_area_struct *vma,
+				      unsigned long addr, unsigned long pfn,
+				      pgprot_t pgprot)
 {
 	BUG_ON(!(vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP)));
 	BUG_ON((vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP)) ==
@@ -613,7 +614,7 @@ static void do_set_pte(struct vm_fault *vmf, struct page *page,
 	set_pte_at(vma->vm_mm, addr, vmf->pte, entry);
 }
 
-vm_fault_t finish_fault(struct vm_fault *vmf)
+static vm_fault_t finish_fault(struct vm_fault *vmf)
 {
 	struct vm_area_struct *vma = vmf->vma;
 	struct page *page;

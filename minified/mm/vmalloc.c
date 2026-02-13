@@ -771,10 +771,11 @@ fail:
 	return NULL;
 }
 
-void *__vmalloc_node_range(unsigned long size, unsigned long align,
-			   unsigned long start, unsigned long end,
-			   gfp_t gfp_mask, pgprot_t prot,
-			   unsigned long vm_flags, int node, const void *caller)
+static void *__vmalloc_node_range(unsigned long size, unsigned long align,
+				  unsigned long start, unsigned long end,
+				  gfp_t gfp_mask, pgprot_t prot,
+				  unsigned long vm_flags, int node,
+				  const void *caller)
 {
 	struct vm_struct *area;
 

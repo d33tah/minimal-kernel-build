@@ -368,7 +368,7 @@ static inline pte_t maybe_mkwrite(pte_t pte, struct vm_area_struct *vma)
 
 /* do_set_pmd, do_set_pte made static - only used in mm/memory.c */
 
-vm_fault_t finish_fault(struct vm_fault *vmf);
+/* finish_fault made static in mm/memory.c */
 
 #define SECTIONS_PGOFF		((sizeof(unsigned long)*8) - SECTIONS_WIDTH)
 #define NODES_PGOFF		(SECTIONS_PGOFF - NODES_WIDTH)
@@ -667,9 +667,7 @@ extern struct vm_area_struct *_install_special_mapping(struct mm_struct *mm,
 
 extern unsigned long get_unmapped_area(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
 
-extern unsigned long mmap_region(struct file *file, unsigned long addr,
-	unsigned long len, vm_flags_t vm_flags, unsigned long pgoff,
-	struct list_head *uf);
+/* mmap_region made static in mm/mmap.c */
 extern unsigned long do_mmap(struct file *file, unsigned long addr,
 	unsigned long len, unsigned long prot, unsigned long flags,
 	unsigned long pgoff, unsigned long *populate, struct list_head *uf);
@@ -701,7 +699,7 @@ struct vm_unmapped_area_info {
 	unsigned long align_offset;
 };
 
-extern unsigned long vm_unmapped_area(struct vm_unmapped_area_info *info);
+/* vm_unmapped_area made static in mm/mmap.c */
 
 /* truncate_inode_pages, truncate_inode_pages_range made static - only used within truncate.c */
 /* truncate_inode_pages_final removed - empty stub inlined into inode.c */
@@ -763,8 +761,7 @@ pgprot_t vm_get_page_prot(unsigned long vm_flags);
 struct vm_area_struct *find_extend_vma(struct mm_struct *, unsigned long addr);
 vm_fault_t vmf_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
 			unsigned long pfn);
-vm_fault_t vmf_insert_pfn_prot(struct vm_area_struct *vma, unsigned long addr,
-			unsigned long pfn, pgprot_t pgprot);
+/* vmf_insert_pfn_prot made static in mm/memory.c */
 
 #define FOLL_WRITE	0x01
 #define FOLL_TOUCH	0x02

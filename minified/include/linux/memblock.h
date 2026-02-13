@@ -71,7 +71,7 @@ void __next_mem_range_rev(u64 *idx, int nid, enum memblock_flags flags,
 			  struct memblock_type *type_b, phys_addr_t *out_start,
 			  phys_addr_t *out_end, int *out_nid);
 
-void memblock_free_late(phys_addr_t base, phys_addr_t size);
+/* memblock_free_late made static in mm/memblock.c */
 
 
 #define __for_each_mem_range(i, type_a, type_b, nid, flags,		\
@@ -142,9 +142,7 @@ void __next_mem_pfn_range(int *idx, int nid, unsigned long *out_start_pfn,
 
 phys_addr_t memblock_phys_alloc_range(phys_addr_t size, phys_addr_t align,
 				      phys_addr_t start, phys_addr_t end);
-phys_addr_t memblock_alloc_range_nid(phys_addr_t size,
-				      phys_addr_t align, phys_addr_t start,
-				      phys_addr_t end, int nid, bool exact_nid);
+/* memblock_alloc_range_nid made static in mm/memblock.c */
 
 void *memblock_alloc_try_nid_raw(phys_addr_t size, phys_addr_t align,
 				 phys_addr_t min_addr, phys_addr_t max_addr,

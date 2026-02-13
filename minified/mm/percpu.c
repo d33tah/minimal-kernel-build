@@ -951,8 +951,8 @@ phys_addr_t per_cpu_ptr_to_phys(void *addr)
 	return __pa(addr);
 }
 
-struct pcpu_alloc_info *__init pcpu_alloc_alloc_info(int nr_groups,
-						     int nr_units)
+static struct pcpu_alloc_info *__init pcpu_alloc_alloc_info(int nr_groups,
+							    int nr_units)
 {
 	struct pcpu_alloc_info *ai;
 	size_t base_size, ai_size;
@@ -980,7 +980,7 @@ struct pcpu_alloc_info *__init pcpu_alloc_alloc_info(int nr_groups,
 	return ai;
 }
 
-void __init pcpu_free_alloc_info(struct pcpu_alloc_info *ai)
+static void __init pcpu_free_alloc_info(struct pcpu_alloc_info *ai)
 {
 	memblock_free(ai, ai->__ai_size);
 }

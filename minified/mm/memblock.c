@@ -11,6 +11,8 @@
 
 #include "internal.h"
 
+static void __init memblock_free_late(phys_addr_t base, phys_addr_t size);
+
 #define INIT_MEMBLOCK_REGIONS 16 /* Reduced from 128 for minimal boot */
 
 #ifndef INIT_MEMBLOCK_RESERVED_REGIONS
@@ -599,9 +601,11 @@ void __init_memblock __next_mem_pfn_range(int *idx, int nid,
 
 /* memblock_set_node removed - always returns 0 */
 
-phys_addr_t __init memblock_alloc_range_nid(phys_addr_t size, phys_addr_t align,
-					    phys_addr_t start, phys_addr_t end,
-					    int nid, bool exact_nid)
+static phys_addr_t __init memblock_alloc_range_nid(phys_addr_t size,
+						   phys_addr_t align,
+						   phys_addr_t start,
+						   phys_addr_t end, int nid,
+						   bool exact_nid)
 {
 	/* choose_memblock_flags always returns MEMBLOCK_NONE, mirror check removed */
 	phys_addr_t found;
@@ -685,7 +689,7 @@ void *__init memblock_alloc_try_nid(phys_addr_t size, phys_addr_t align,
 	return ptr;
 }
 
-void __init memblock_free_late(phys_addr_t base, phys_addr_t size)
+static void __init memblock_free_late(phys_addr_t base, phys_addr_t size)
 {
 	phys_addr_t cursor, end;
 

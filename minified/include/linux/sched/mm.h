@@ -59,14 +59,7 @@ arch_get_unmapped_area_topdown(struct file *filp, unsigned long addr,
 			  unsigned long len, unsigned long pgoff,
 			  unsigned long flags);
 
-unsigned long
-generic_get_unmapped_area(struct file *filp, unsigned long addr,
-			  unsigned long len, unsigned long pgoff,
-			  unsigned long flags);
-unsigned long
-generic_get_unmapped_area_topdown(struct file *filp, unsigned long addr,
-				  unsigned long len, unsigned long pgoff,
-				  unsigned long flags);
+/* generic_get_unmapped_area, generic_get_unmapped_area_topdown made static in mm/mmap.c */
 
 
 static inline gfp_t current_gfp_context(gfp_t flags)

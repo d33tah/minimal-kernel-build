@@ -175,8 +175,8 @@ munmap_vma_range(struct mm_struct *mm, unsigned long start, unsigned long len,
 	return 0;
 }
 
-void __vma_link_rb(struct mm_struct *mm, struct vm_area_struct *vma,
-		   struct rb_node **rb_link, struct rb_node *rb_parent)
+static void __vma_link_rb(struct mm_struct *mm, struct vm_area_struct *vma,
+			  struct rb_node **rb_link, struct rb_node *rb_parent)
 {
 	if (vma->vm_next)
 		vma_gap_update(vma->vm_next);
@@ -240,6 +240,10 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
 
 /* mlock_future_check removed - always returned 0 */
 /* file_mmap_ok inlined into do_mmap - only called once */
+
+static unsigned long mmap_region(struct file *file, unsigned long addr,
+				 unsigned long len, vm_flags_t vm_flags,
+				 unsigned long pgoff, struct list_head *uf);
 
 unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len,
 		      unsigned long prot, unsigned long flags,
@@ -390,9 +394,9 @@ unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len,
 
 /* Removed: vma_wants_writenotify - was used only by vma_set_page_prot (~4 LOC) */
 
-unsigned long mmap_region(struct file *file, unsigned long addr,
-			  unsigned long len, vm_flags_t vm_flags,
-			  unsigned long pgoff, struct list_head *uf)
+static unsigned long mmap_region(struct file *file, unsigned long addr,
+				 unsigned long len, vm_flags_t vm_flags,
+				 unsigned long pgoff, struct list_head *uf)
 {
 	/* Minimal stub: simplified mmap without complex VMA merging/splitting */
 	struct mm_struct *mm = current->mm;
@@ -429,7 +433,7 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 	return addr;
 }
 
-unsigned long vm_unmapped_area(struct vm_unmapped_area_info *info)
+static unsigned long vm_unmapped_area(struct vm_unmapped_area_info *info)
 {
 	struct mm_struct *mm = current->mm;
 
@@ -461,9 +465,11 @@ unsigned long vm_unmapped_area(struct vm_unmapped_area_info *info)
 	}
 }
 
-unsigned long generic_get_unmapped_area(struct file *filp, unsigned long addr,
-					unsigned long len, unsigned long pgoff,
-					unsigned long flags)
+static unsigned long generic_get_unmapped_area(struct file *filp,
+					       unsigned long addr,
+					       unsigned long len,
+					       unsigned long pgoff,
+					       unsigned long flags)
 {
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *vma, *prev;
@@ -503,11 +509,11 @@ unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr,
 }
 #endif
 
-unsigned long generic_get_unmapped_area_topdown(struct file *filp,
-						unsigned long addr,
-						unsigned long len,
-						unsigned long pgoff,
-						unsigned long flags)
+static unsigned long generic_get_unmapped_area_topdown(struct file *filp,
+						       unsigned long addr,
+						       unsigned long len,
+						       unsigned long pgoff,
+						       unsigned long flags)
 {
 	struct vm_area_struct *vma, *prev;
 	struct mm_struct *mm = current->mm;

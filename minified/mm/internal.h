@@ -157,7 +157,7 @@ extern long populate_vma_page_range(struct vm_area_struct *vma,
 /* pageflag_names, vmaflag_names, gfpflag_names removed - unused (tracing disabled) */
 /* is_migrate_highatomic, is_migrate_highatomic_page removed - unused */
 
-void setup_zone_pageset(struct zone *zone);
+/* setup_zone_pageset made static in page_alloc.c */
 
 /* boot_nodestats removed - per_cpu_nodestats field removed */
 

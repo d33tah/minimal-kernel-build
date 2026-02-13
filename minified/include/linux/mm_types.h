@@ -31,12 +31,7 @@ struct vmacache {
 };
 
 struct tlbflush_unmap_batch {
-	 
 	struct arch_tlbflush_unmap_batch arch;
-
-	bool flush_required;
-
-	bool writable;
 };
 
 #endif /* _LINUX_MM_TYPES_TASK_H */
@@ -166,14 +161,11 @@ struct page {
 			unsigned char compound_order;
 			atomic_t compound_mapcount;
 		};
-		struct {	 
-			unsigned long _pt_pad_1;	 
-			pgtable_t pmd_huge_pte;  
-			unsigned long _pt_pad_2;	 
-			union {
-				struct mm_struct *pt_mm;  
-				atomic_t pt_frag_refcount;  
-			};
+		struct {
+			unsigned long _pt_pad_1;
+			unsigned long _pt_pad_2;
+			unsigned long _pt_pad_3;
+			struct mm_struct *pt_mm;
 #if ALLOC_SPLIT_PTLOCKS
 			spinlock_t *ptl;
 #else
@@ -192,10 +184,6 @@ struct page {
 	};
 
 	atomic_t _refcount;
-
-#ifdef LAST_CPUPID_NOT_IN_PAGE_FLAGS
-	int _last_cpupid;
-#endif
 } _struct_page_alignment;
 
 struct folio {

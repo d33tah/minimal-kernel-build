@@ -141,12 +141,7 @@ struct vmacache {
 };
 
 struct tlbflush_unmap_batch {
-	 
 	struct arch_tlbflush_unmap_batch arch;
-
-	bool flush_required;
-
-	bool writable;
 };
 
 #endif /* _LINUX_MM_TYPES_TASK_H */
@@ -260,11 +255,6 @@ struct task_struct {
 
 	unsigned int			personality;
 
-	unsigned			sched_reset_on_fork:1;
-
-	unsigned			:0;
-
-	unsigned			in_iowait:1;
 	unsigned			restore_sigmask:1;
 
 	unsigned long			atomic_flags;

@@ -323,7 +323,6 @@ struct kiocb {
 
 	loff_t			ki_pos;
 	int			ki_flags;
-	struct wait_page_queue	*ki_waitq; 
 	randomized_struct_fields_end
 };
 

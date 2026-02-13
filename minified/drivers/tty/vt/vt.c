@@ -400,8 +400,7 @@ static int __init con_init(void)
 	/* Inlined redraw_screen (simplified: cursor stubs removed) */
 	set_origin(vc);
 	if (vc->vc_sw->con_switch(vc) && vc->vc_mode != KD_GRAPHICS)
-		do_update_region(vc, vc->vc_origin,
-				 vc->vc_screenbuf_size / 2);
+		do_update_region(vc, vc->vc_origin, vc->vc_screenbuf_size / 2);
 	printable = 1;
 
 	console_unlock();

@@ -69,11 +69,9 @@ static int set_brk(unsigned long start, unsigned long end, int prot)
 
 #define STACK_ADD(sp, items) ((elf_addr_t __user *)(sp) - (items))
 #define STACK_ROUND(sp, items) (((unsigned long)(sp - items)) & ~15UL)
-#define STACK_ALLOC(sp, len) (sp -= len)
+/* STACK_ALLOC removed - platform/random strings no longer placed on stack */
 
-#ifndef ELF_BASE_PLATFORM
-#define ELF_BASE_PLATFORM NULL
-#endif
+/* ELF_BASE_PLATFORM removed - platform strings not used */
 
 static int create_elf_tables(struct linux_binprm *bprm,
 			     const struct elfhdr *exec,
@@ -84,46 +82,15 @@ static int create_elf_tables(struct linux_binprm *bprm,
 	int argc = bprm->argc;
 	int envc = bprm->envc;
 	elf_addr_t __user *sp;
-	elf_addr_t __user *u_platform;
-	elf_addr_t __user *u_base_platform;
-	elf_addr_t __user *u_rand_bytes;
-	const char *k_platform = ELF_PLATFORM;
-	const char *k_base_platform = ELF_BASE_PLATFORM;
-	unsigned char k_rand_bytes[16];
 	int items;
 	elf_addr_t *elf_info;
-	elf_addr_t flags = 0;
 	int ei_index;
 	struct mm_struct *mm = current->mm;
-	const struct cred *cred = current_cred();
 	struct vm_area_struct *vma;
 
 	p = arch_align_stack(p);
 
-	u_platform = NULL;
-	if (k_platform) {
-		size_t len = strlen(k_platform) + 1;
-
-		u_platform = (elf_addr_t __user *)STACK_ALLOC(p, len);
-		if (copy_to_user(u_platform, k_platform, len))
-			return -EFAULT;
-	}
-
-	u_base_platform = NULL;
-	if (k_base_platform) {
-		size_t len = strlen(k_base_platform) + 1;
-
-		u_base_platform = (elf_addr_t __user *)STACK_ALLOC(p, len);
-		if (copy_to_user(u_base_platform, k_base_platform, len))
-			return -EFAULT;
-	}
-
-	/* Simplified: no randomness needed for minimal kernel */
-	memset(k_rand_bytes, 0, sizeof(k_rand_bytes));
-	u_rand_bytes =
-		(elf_addr_t __user *)STACK_ALLOC(p, sizeof(k_rand_bytes));
-	if (copy_to_user(u_rand_bytes, k_rand_bytes, sizeof(k_rand_bytes)))
-		return -EFAULT;
+	/* platform strings, random bytes removed - /init doesn't read auxv */
 
 	elf_info = (elf_addr_t *)mm->saved_auxv;
 
@@ -133,39 +100,12 @@ static int create_elf_tables(struct linux_binprm *bprm,
 		*elf_info++ = val; \
 	} while (0)
 
-#ifdef ARCH_DLINFO
-
-	ARCH_DLINFO;
-#endif
-	NEW_AUX_ENT(AT_HWCAP, ELF_HWCAP);
+	/* Minimal aux vector - /init is bare asm, doesn't read these */
 	NEW_AUX_ENT(AT_PAGESZ, ELF_EXEC_PAGESIZE);
-	NEW_AUX_ENT(AT_CLKTCK, CLOCKS_PER_SEC);
 	NEW_AUX_ENT(AT_PHDR, phdr_addr);
 	NEW_AUX_ENT(AT_PHENT, sizeof(struct elf_phdr));
 	NEW_AUX_ENT(AT_PHNUM, exec->e_phnum);
-	NEW_AUX_ENT(AT_BASE, interp_load_addr);
-	if (bprm->interp_flags & BINPRM_FLAGS_PRESERVE_ARGV0)
-		flags |= AT_FLAGS_PRESERVE_ARGV0;
-	NEW_AUX_ENT(AT_FLAGS, flags);
 	NEW_AUX_ENT(AT_ENTRY, e_entry);
-	NEW_AUX_ENT(AT_UID, from_kuid_munged(cred->user_ns, cred->uid));
-	NEW_AUX_ENT(AT_EUID, from_kuid_munged(cred->user_ns, cred->euid));
-	NEW_AUX_ENT(AT_GID, from_kgid_munged(cred->user_ns, cred->gid));
-	NEW_AUX_ENT(AT_EGID, from_kgid_munged(cred->user_ns, cred->egid));
-	NEW_AUX_ENT(AT_SECURE, bprm->secureexec);
-	NEW_AUX_ENT(AT_RANDOM, (elf_addr_t)(unsigned long)u_rand_bytes);
-#ifdef ELF_HWCAP2
-	NEW_AUX_ENT(AT_HWCAP2, ELF_HWCAP2);
-#endif
-	NEW_AUX_ENT(AT_EXECFN, bprm->exec);
-	if (k_platform) {
-		NEW_AUX_ENT(AT_PLATFORM, (elf_addr_t)(unsigned long)u_platform);
-	}
-	if (k_base_platform) {
-		NEW_AUX_ENT(AT_BASE_PLATFORM,
-			    (elf_addr_t)(unsigned long)u_base_platform);
-	}
-	/* bprm->have_execfd check removed - never set */
 #undef NEW_AUX_ENT
 
 	memset(elf_info, 0,

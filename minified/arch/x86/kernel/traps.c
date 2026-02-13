@@ -72,32 +72,21 @@ static void do_trap(int trapnr, int signr, char *str, struct pt_regs *regs,
 		    long error_code, int sicode, void __user *addr)
 {
 	struct task_struct *tsk = current;
-	int no_sig_result;
 
-	/* Inlined do_trap_no_signal */
-	no_sig_result = -1;
-	if (v8086_mode(regs)) {
-		if (trapnr < X86_TRAP_UD)
-			no_sig_result = 0;
-	} else if (!user_mode(regs)) {
+	if (!user_mode(regs)) {
 		if (fixup_exception(regs, trapnr, error_code, 0))
-			no_sig_result = 0;
-		else {
-			tsk->thread.error_code = error_code;
-			tsk->thread.trap_nr = trapnr;
-			die(str, regs, error_code);
-		}
-	} else {
-		if (fixup_vdso_exception(regs, trapnr, error_code, 0))
-			no_sig_result = 0;
-	}
-	if (no_sig_result == -1) {
+			return;
 		tsk->thread.error_code = error_code;
 		tsk->thread.trap_nr = trapnr;
+		die(str, regs, error_code);
+		return;
 	}
 
-	if (!no_sig_result)
+	if (fixup_vdso_exception(regs, trapnr, error_code, 0))
 		return;
+
+	tsk->thread.error_code = error_code;
+	tsk->thread.trap_nr = trapnr;
 
 	if (!sicode)
 		force_sig(signr);
@@ -117,15 +106,10 @@ static void do_error_trap(struct pt_regs *regs, long error_code, char *str,
 	cond_local_irq_disable(regs);
 }
 
-static __always_inline void __user *error_get_trap_addr(struct pt_regs *regs)
-{
-	return (void __user *)uprobe_get_trap_addr(regs);
-}
-
 DEFINE_IDTENTRY(exc_divide_error)
 {
 	do_error_trap(regs, 0, "divide error", X86_TRAP_DE, SIGFPE, FPE_INTDIV,
-		      error_get_trap_addr(regs));
+		      (void __user *)regs->ip);
 }
 
 DEFINE_IDTENTRY(exc_overflow)
@@ -156,7 +140,7 @@ DEFINE_IDTENTRY_RAW(exc_invalid_op)
 	state = irqentry_enter(regs);
 	/* Inlined handle_invalid_op */
 	do_error_trap(regs, 0, "invalid opcode", X86_TRAP_UD, SIGILL,
-		      ILL_ILLOPN, error_get_trap_addr(regs));
+		      ILL_ILLOPN, (void __user *)regs->ip);
 	irqentry_exit(regs, state);
 }
 
@@ -272,31 +256,18 @@ exit:
 	cond_local_irq_disable(regs);
 }
 
-/* notify_die always returns NOTIFY_DONE, so do_int3 always returns false */
-static bool do_int3(struct pt_regs *regs)
-{
-	notify_die(DIE_INT3, "int3", regs, 0, X86_TRAP_BP, SIGTRAP);
-	return false;
-}
-NOKPROBE_SYMBOL(do_int3);
-
-/* do_int3_user inlined - single caller */
-
 DEFINE_IDTENTRY_RAW(exc_int3)
 {
-	/* poke_int3_handler check removed - always returned 0 */
 	if (user_mode(regs)) {
 		irqentry_enter_from_user_mode(regs);
-		do_int3(regs);
+		notify_die(DIE_INT3, "int3", regs, 0, X86_TRAP_BP, SIGTRAP);
 		cond_local_irq_enable(regs);
 		do_trap(X86_TRAP_BP, SIGTRAP, "int3", regs, 0, 0, NULL);
 		cond_local_irq_disable(regs);
 		irqentry_exit_to_user_mode(regs);
 	} else {
 		irqentry_state_t irq_state = irqentry_nmi_enter(regs);
-
-		/* do_int3 always returns false - unconditional die */
-		do_int3(regs);
+		notify_die(DIE_INT3, "int3", regs, 0, X86_TRAP_BP, SIGTRAP);
 		die("int3", regs, 0);
 		irqentry_nmi_exit(regs, irq_state);
 	}
@@ -305,74 +276,42 @@ DEFINE_IDTENTRY_RAW(exc_int3)
 /* is_sysenter_singlestep removed - SYSENTER not used */
 /* debug_read_clear_dr6 inlined into exc_debug_user */
 
-/* notify_die always returns NOTIFY_DONE, so notify_debug always returns false */
-static bool notify_debug(struct pt_regs *regs, unsigned long *dr6)
-{
-	notify_die(DIE_DEBUG, "debug", regs, (long)dr6, 0, SIGTRAP);
-	return false;
-}
-
 static __always_inline void exc_debug_kernel(struct pt_regs *regs,
 					     unsigned long dr6)
 {
 	unsigned long dr7 = local_db_save();
 	irqentry_state_t irq_state = irqentry_nmi_enter(regs);
 
-	WARN_ON_ONCE(user_mode(regs));
-
 	if (test_thread_flag(TIF_BLOCKSTEP)) {
 		unsigned long debugctl;
-
 		rdmsrl(MSR_IA32_DEBUGCTLMSR, debugctl);
 		debugctl |= DEBUGCTLMSR_BTF;
 		wrmsrl(MSR_IA32_DEBUGCTLMSR, debugctl);
 	}
 
-	/* is_sysenter_singlestep check removed - SYSENTER not used */
+	if (dr6) {
+		notify_die(DIE_DEBUG, "debug", regs, (long)&dr6, 0, SIGTRAP);
+		if (WARN_ON_ONCE(dr6 & DR_STEP))
+			regs->flags &= ~X86_EFLAGS_TF;
+	}
 
-	if (!dr6)
-		goto out;
-
-	/* notify_debug always returns false - check removed */
-	notify_debug(regs, &dr6);
-
-	if (WARN_ON_ONCE(dr6 & DR_STEP))
-		regs->flags &= ~X86_EFLAGS_TF;
-out:
 	irqentry_nmi_exit(regs, irq_state);
-
 	local_db_restore(dr7);
 }
 
 static __always_inline void exc_debug_user(struct pt_regs *regs,
 					   unsigned long dr6)
 {
-	bool icebp;
-
-	WARN_ON_ONCE(!user_mode(regs));
+	bool icebp = !dr6;
 
 	irqentry_enter_from_user_mode(regs);
-
 	current->thread.virtual_dr6 = (dr6 & DR_STEP);
-
 	clear_thread_flag(TIF_BLOCKSTEP);
-
-	icebp = !dr6;
-
-	if (notify_debug(regs, &dr6))
-		goto out;
-
+	notify_die(DIE_DEBUG, "debug", regs, (long)&dr6, 0, SIGTRAP);
 	local_irq_enable();
-
-	if (v8086_mode(regs))
-		/* handle_vm86_trap always returns 0 */
-		goto out_irq;
-
-	/* handle_bus_lock removed - was empty stub in intel.c */
 
 	dr6 |= current->thread.virtual_dr6;
 	if (dr6 & (DR_STEP | DR_TRAP_BITS) || icebp) {
-		/* get_si_code inlined */
 		int si_code;
 		if (dr6 & DR_STEP)
 			si_code = TRAP_TRACE;
@@ -380,21 +319,12 @@ static __always_inline void exc_debug_user(struct pt_regs *regs,
 			si_code = TRAP_HWBKPT;
 		else
 			si_code = TRAP_BRKPT;
-		/* send_sigtrap inlined from ptrace.c */
-		{
-			struct task_struct *tsk = current;
-			tsk->thread.trap_nr = X86_TRAP_DB;
-			tsk->thread.error_code = 0;
-			force_sig_fault(SIGTRAP, si_code,
-					user_mode(regs) ?
-						(void __user *)regs->ip :
-						NULL);
-		}
+		current->thread.trap_nr = X86_TRAP_DB;
+		current->thread.error_code = 0;
+		force_sig_fault(SIGTRAP, si_code, (void __user *)regs->ip);
 	}
 
-out_irq:
 	local_irq_disable();
-out:
 	irqentry_exit_to_user_mode(regs);
 }
 
@@ -449,8 +379,7 @@ static void math_error(struct pt_regs *regs, int trapnr)
 	if (fixup_vdso_exception(regs, trapnr, 0, 0))
 		goto exit;
 
-	force_sig_fault(SIGFPE, si_code,
-			(void __user *)uprobe_get_trap_addr(regs));
+	force_sig_fault(SIGFPE, si_code, (void __user *)regs->ip);
 exit:
 	cond_local_irq_disable(regs);
 }

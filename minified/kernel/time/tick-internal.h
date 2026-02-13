@@ -1,6 +1,8 @@
 #include <linux/cpumask.h>
 
-#include "timekeeping.h"
+/* timekeeping.h inlined */
+extern raw_spinlock_t jiffies_lock;
+extern seqcount_raw_spinlock_t jiffies_seq;
 
 /* tick_device struct, enum tick_device_mode, TICK_DO_TIMER_BOOT,
    tick_cpu_device, tick_next_period, tick_do_timer_cpu,

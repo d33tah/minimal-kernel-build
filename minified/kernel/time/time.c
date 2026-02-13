@@ -53,7 +53,9 @@ struct timekeeper {
 #include <asm/unistd.h>
 
 #include <generated/timeconst.h>
-#include "timekeeping.h"
+/* timekeeping.h inlined */
+extern raw_spinlock_t jiffies_lock;
+extern seqcount_raw_spinlock_t jiffies_seq;
 
 time64_t mktime64(const unsigned int year0, const unsigned int mon0,
 		  const unsigned int day, const unsigned int hour,

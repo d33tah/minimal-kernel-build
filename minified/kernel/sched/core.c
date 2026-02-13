@@ -51,18 +51,6 @@ static struct rq *__task_rq_lock(struct task_struct *p, struct rq_flags *rf)
 	return rq;
 }
 
-static struct rq *task_rq_lock(struct task_struct *p, struct rq_flags *rf)
-	__acquires(p->pi_lock) __acquires(rq->lock)
-{
-	struct rq *rq;
-
-	raw_spin_lock_irqsave(&p->pi_lock, rf->flags);
-	rq = task_rq(p);
-	raw_spin_rq_lock(rq);
-	rq_pin_lock(rq, rf);
-	return rq;
-}
-
 void update_rq_clock(struct rq *rq)
 {
 	s64 delta;

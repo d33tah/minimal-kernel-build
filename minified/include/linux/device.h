@@ -35,11 +35,19 @@ extern struct klist_node *klist_next(struct klist_iter *i);
 #include <linux/compiler.h>
 #include <linux/types.h>
 #include <linux/mutex.h>
-#include <linux/pm.h>
+/* pm.h inlined */
+struct dev_pm_ops {
+};
+struct dev_pm_info {
+	u32			driver_flags;
+};
+struct dev_pm_domain {
+};
 #include <linux/atomic.h>
 #include <linux/uidgid.h>
 #include <linux/gfp.h>
 #include <linux/overflow.h>
+struct device;
 struct device_driver;
 
 struct bus_type {

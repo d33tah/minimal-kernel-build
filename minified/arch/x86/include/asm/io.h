@@ -13,7 +13,27 @@ extern void early_ioremap_setup(void);
 extern void early_ioremap_reset(void);
 extern void copy_from_early_mem(void *dest, phys_addr_t src, unsigned long size);
 #include <asm/pgtable_types.h>
-#include <asm/shared/io.h>
+/* shared/io.h inlined */
+#define BUILDIO(bwl, bw, type)						\
+static inline void __out##bwl(type value, u16 port)			\
+{									\
+	asm volatile("out" #bwl " %" #bw "0, %w1"			\
+		     : : "a"(value), "Nd"(port));			\
+}									\
+static inline type __in##bwl(u16 port)					\
+{									\
+	type value;							\
+	asm volatile("in" #bwl " %w1, %" #bw "0"			\
+		     : "=a"(value) : "Nd"(port));			\
+	return value;							\
+}
+BUILDIO(b, b, u8)
+BUILDIO(w, w, u16)
+BUILDIO(l,  , u32)
+#undef BUILDIO
+#define inb __inb
+#define outb __outb
+#define outw __outw
 
 #define build_mmio_read(name, size, type, reg, barrier) \
 static inline type name(const volatile void __iomem *addr) \

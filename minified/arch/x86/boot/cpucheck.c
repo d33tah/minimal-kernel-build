@@ -8,7 +8,16 @@
 #include <asm/required-features.h>
 #include <asm/msr-index.h>
 #include "string.h"
-#include <asm/shared/msr.h>
+/* shared/msr.h inlined */
+struct msr {
+	union {
+		struct {
+			u32 l;
+			u32 h;
+		};
+		u64 q;
+	};
+};
 static inline void boot_rdmsr(unsigned int reg, struct msr *m)
 {
 	asm volatile("rdmsr" : "=a"(m->l), "=d"(m->h) : "c"(reg));

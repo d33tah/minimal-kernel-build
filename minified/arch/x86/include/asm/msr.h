@@ -9,7 +9,16 @@
 #include <asm/asm.h>
 #include <asm/errno.h>
 #include <linux/cpumask.h>
-#include <asm/shared/msr.h>
+/* shared/msr.h inlined */
+struct msr {
+	union {
+		struct {
+			u32 l;
+			u32 h;
+		};
+		u64 q;
+	};
+};
 
 #define DECLARE_ARGS(val, low, high)	unsigned long long val
 #define EAX_EDX_VAL(val, low, high)	(val)

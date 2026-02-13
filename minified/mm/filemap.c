@@ -618,43 +618,9 @@ ssize_t generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 	return filemap_read(iocb, iter, 0);
 }
 
-vm_fault_t filemap_fault(struct vm_fault *vmf)
-{
-	struct file *file = vmf->vma->vm_file;
-	struct address_space *mapping = file->f_mapping;
-	pgoff_t index = vmf->pgoff;
-	struct folio *folio;
-
-	folio = __filemap_get_folio(mapping, index, FGP_CREAT | FGP_FOR_MMAP,
-				    vmf->gfp_mask);
-	if (!folio)
-		return VM_FAULT_OOM;
-
-	if (!folio_test_locked(folio))
-		folio_lock(folio);
-
-	vmf->page = folio_file_page(folio, index);
-	return VM_FAULT_LOCKED;
-}
-
-vm_fault_t filemap_page_mkwrite(struct vm_fault *vmf)
-{
-	return VM_FAULT_SIGBUS;
-}
-
-const struct vm_operations_struct generic_file_vm_ops = {
-	.fault = filemap_fault,
-	.page_mkwrite = filemap_page_mkwrite,
-};
-
 int generic_file_mmap(struct file *file, struct vm_area_struct *vma)
 {
-	struct address_space *mapping = file->f_mapping;
-
-	if (!mapping->a_ops->read_folio)
-		return -ENOEXEC;
-	vma->vm_ops = &generic_file_vm_ops;
-	return 0;
+	return -ENOEXEC;
 }
 
 /* Write operations stubbed - minimal kernel is read-only during boot */

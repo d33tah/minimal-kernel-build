@@ -437,24 +437,15 @@ static void cleanup_mnt(struct mount *mnt)
 	call_rcu(&mnt->mnt_rcu, delayed_free_vfsmnt);
 }
 
-static void __cleanup_mnt(struct rcu_head *head)
-{
-	cleanup_mnt(container_of(head, struct mount, mnt_rcu));
-}
-
 void mntput(struct vfsmount *mnt)
 {
 	struct mount *m;
-	LIST_HEAD(list);
 	int count;
 
 	if (!mnt)
 		return;
 
 	m = real_mount(mnt);
-	if (unlikely(m->mnt_expiry_mark))
-		m->mnt_expiry_mark = 0;
-
 	rcu_read_lock();
 	if (likely(READ_ONCE(m->mnt_ns))) {
 		mnt_add_count(m, -1);
@@ -481,26 +472,8 @@ void mntput(struct vfsmount *mnt)
 	rcu_read_unlock();
 
 	list_del(&m->mnt_instance);
-
-	if (unlikely(!list_empty(&m->mnt_mounts))) {
-		struct mount *p, *tmp;
-		list_for_each_entry_safe(p, tmp, &m->mnt_mounts, mnt_child) {
-			__put_mountpoint(unhash_mnt(p), &list);
-			hlist_add_head(&p->mnt_umount, &m->mnt_stuck_children);
-		}
-	}
 	unlock_mount_hash();
 
-	if (likely(!(m->mnt.mnt_flags & MNT_INTERNAL))) {
-		struct task_struct *task = current;
-		if (likely(!(task->flags & PF_KTHREAD))) {
-			init_task_work(&m->mnt_rcu, __cleanup_mnt);
-			if (!task_work_add(task, &m->mnt_rcu, TWA_RESUME))
-				return;
-		}
-		cleanup_mnt(m);
-		return;
-	}
 	cleanup_mnt(m);
 }
 
@@ -513,13 +486,6 @@ struct vfsmount *mntget(struct vfsmount *mnt)
 
 static void namespace_unlock(void)
 {
-	LIST_HEAD(list);
-
-	if (!list_empty(&ex_mountpoints)) {
-		__list_splice(&ex_mountpoints, &list, list.next);
-		INIT_LIST_HEAD(&ex_mountpoints);
-	}
-
 	up_write(&namespace_sem);
 }
 

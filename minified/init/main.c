@@ -28,6 +28,7 @@
 
 #include <linux/module.h>
 extern void driver_init(void);
+extern void timekeeping_init(void);
 #include <linux/kthread.h>
 #include <linux/sched.h>
 extern void sched_init(void);

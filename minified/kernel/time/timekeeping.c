@@ -61,12 +61,6 @@ struct timekeeper {
 #include <linux/compiler.h>
 
 #include "tick-internal.h"
-/* ntp.c functions inlined - ntp_init/ntp_clear are empty, others return constants */
-static inline u64 clocksource_delta(u64 now, u64 last, u64 mask)
-{
-	u64 ret = (now - last) & mask;
-	return ret & ~(mask >> 1) ? 0 : ret;
-}
 extern raw_spinlock_t timekeeper_lock;
 
 /* TK_CLEAR_NTP, TK_MIRROR, TK_CLOCK_WAS_SET, enum timekeeping_adv_mode

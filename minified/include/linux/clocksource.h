@@ -9,7 +9,12 @@
 #include <linux/timer.h>
 #include <linux/init.h>
 #include <linux/of.h>
-#include <linux/timekeeping.h>
+/* timekeeping.h inlined */
+enum clocksource_ids {
+	CSID_GENERIC		= 0,
+	CSID_MAX,
+};
+void timekeeping_init(void);
 #include <asm/div64.h>
 #include <asm/io.h>
 

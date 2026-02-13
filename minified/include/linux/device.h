@@ -31,7 +31,21 @@ struct class {
 	void (*dev_release)(struct device *dev);
 	struct subsys_private *p;
 };
-#include <linux/device/driver.h>
+#include <linux/module.h>
+/* Inlined from device/driver.h */
+struct device_driver {
+	const char		*name;
+	struct bus_type		*bus;
+	struct module		*owner;
+	int (*probe) (struct device *dev);
+	int (*remove) (struct device *dev);
+	void (*shutdown) (struct device *dev);
+	struct driver_private *p;
+};
+
+extern void wait_for_device_probe(void);
+void driver_init(void);
+/* End device/driver.h */
 /* struct dev_archdata, pdev_archdata removed - unused */
 
 /* Unused forward decls removed: driver_private, module, subsys_private, iommu_ops, device_node, fwnode_handle */

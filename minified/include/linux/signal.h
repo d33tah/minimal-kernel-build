@@ -2,8 +2,39 @@
 #define _LINUX_SIGNAL_H
 
 #include <linux/bug.h>
-#include <linux/signal_types.h>
+#include <linux/list.h>
+#include <asm/signal.h>
+#include <asm-generic/siginfo.h>
 #include <linux/string.h>
+
+/* Inlined from signal_types.h (guarded to avoid redefinition with sched.h) */
+#ifndef _LINUX_SIGNAL_TYPES_INLINED
+#define _LINUX_SIGNAL_TYPES_INLINED
+
+typedef struct kernel_siginfo {
+	__SIGINFO;
+} kernel_siginfo_t;
+
+struct sigpending {
+	struct list_head list;
+	sigset_t signal;
+};
+
+struct sigaction {
+	__sighandler_t	sa_handler;
+	unsigned long	sa_flags;
+#ifdef __ARCH_HAS_SA_RESTORER
+	__sigrestore_t sa_restorer;
+#endif
+	sigset_t	sa_mask;
+};
+
+struct k_sigaction {
+	struct sigaction sa;
+};
+
+#define SA_IMMUTABLE		0x00800000
+#endif /* _LINUX_SIGNAL_TYPES_INLINED */
 
 struct task_struct;
 

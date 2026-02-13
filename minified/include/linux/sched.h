@@ -87,7 +87,37 @@ struct rlimit {
 #define PRIO_TO_NICE(prio)	((prio) - DEFAULT_PRIO)
 /* end sched/prio.h */
 #include <linux/sched/types.h>
-#include <linux/signal_types.h>
+/* Inlined from signal_types.h (guarded to avoid redefinition with signal.h) */
+#ifndef _LINUX_SIGNAL_TYPES_INLINED
+#define _LINUX_SIGNAL_TYPES_INLINED
+#include <linux/list.h>
+#include <asm/signal.h>
+#include <asm-generic/siginfo.h>
+
+typedef struct kernel_siginfo {
+	__SIGINFO;
+} kernel_siginfo_t;
+
+struct sigpending {
+	struct list_head list;
+	sigset_t signal;
+};
+
+struct sigaction {
+	__sighandler_t	sa_handler;
+	unsigned long	sa_flags;
+#ifdef __ARCH_HAS_SA_RESTORER
+	__sigrestore_t sa_restorer;
+#endif
+	sigset_t	sa_mask;
+};
+
+struct k_sigaction {
+	struct sigaction sa;
+};
+
+#define SA_IMMUTABLE		0x00800000
+#endif /* _LINUX_SIGNAL_TYPES_INLINED */
 /* syscall_user_dispatch removed - never configured in minimal kernel */
 /* mm_types_task.h inlined */
 #ifndef _LINUX_MM_TYPES_TASK_H

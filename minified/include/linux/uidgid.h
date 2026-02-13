@@ -45,11 +45,6 @@ static inline bool gid_eq(kgid_t left, kgid_t right)
 	return __kgid_val(left) == __kgid_val(right);
 }
 
-static inline bool uid_valid(kuid_t uid)
-{
-	return __kuid_val(uid) != (uid_t) -1;
-}
-
 static inline kuid_t make_kuid(struct user_namespace *from, uid_t uid)
 {
 	return KUIDT_INIT(uid);

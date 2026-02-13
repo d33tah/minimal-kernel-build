@@ -28,14 +28,6 @@ static inline void list_add_tail_rcu(struct list_head *new,
 	__list_add_rcu(new, head->prev, head);
 }
 
-static inline void hlist_del_init_rcu(struct hlist_node *n)
-{
-	if (!hlist_unhashed(n)) {
-		__hlist_del(n);
-		WRITE_ONCE(n->pprev, NULL);
-	}
-}
-
 /* list_replace_rcu inlined at fs/exec.c - single caller */
 
 #define list_entry_rcu(ptr, type, member) \

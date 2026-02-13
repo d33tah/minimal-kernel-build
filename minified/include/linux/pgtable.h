@@ -125,13 +125,6 @@ static inline int is_zero_pfn(unsigned long pfn)
 	return pfn == zero_pfn;
 }
 
-#ifndef pmd_read_atomic
-static inline pmd_t pmd_read_atomic(pmd_t *pmdp)
-{
-	return *pmdp;
-}
-#endif
-
 /* PAGE_KERNEL_RO, PAGE_KERNEL_EXEC - x86 defines its own */
 
 #define		__PGTBL_PMD_MODIFIED	3

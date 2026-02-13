@@ -45,10 +45,6 @@ extern struct mm_struct *pgd_page_get_mm(struct page *page);
 # define set_p4d(p4dp, p4d)		native_set_p4d(p4dp, p4d)
 #endif
 
-#ifndef set_pud
-# define set_pud(pudp, pud)		native_set_pud(pudp, pud)
-#endif
-
 #define pte_clear(mm, addr, ptep)	native_pte_clear(mm, addr, ptep)
 #define pmd_clear(pmd)			native_pmd_clear(pmd)
 
@@ -188,9 +184,6 @@ static inline void native_set_pte(pte_t *ptep , pte_t pte)
 static inline void native_set_pmd(pmd_t *pmdp, pmd_t pmd)
 {
 	*pmdp = pmd;
-}
-static inline void native_set_pud(pud_t *pudp, pud_t pud)
-{
 }
 static inline void native_pmd_clear(pmd_t *pmdp)
 {

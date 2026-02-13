@@ -223,33 +223,6 @@ do {									\
 #define raw_cpu_cmpxchg_double_4	percpu_cmpxchg8b_double
 #define this_cpu_cmpxchg_double_4	percpu_cmpxchg8b_double
 
-static __always_inline bool x86_this_cpu_constant_test_bit(unsigned int nr,
-                        const unsigned long __percpu *addr)
-{
-	unsigned long __percpu *a =
-		(unsigned long __percpu *)addr + nr / BITS_PER_LONG;
-
-	return ((1UL << (nr % BITS_PER_LONG)) & raw_cpu_read_4(*a)) != 0;
-}
-
-static inline bool x86_this_cpu_variable_test_bit(int nr,
-                        const unsigned long __percpu *addr)
-{
-	bool oldbit;
-
-	asm volatile("btl "__percpu_arg(2)",%1"
-			CC_SET(c)
-			: CC_OUT(c) (oldbit)
-			: "m" (*(unsigned long __percpu *)addr), "Ir" (nr));
-
-	return oldbit;
-}
-
-#define x86_this_cpu_test_bit(nr, addr)			\
-	(__builtin_constant_p((nr))			\
-	 ? x86_this_cpu_constant_test_bit((nr), (addr))	\
-	 : x86_this_cpu_variable_test_bit((nr), (addr)))
-
 #include <linux/compiler.h>
 #include <linux/threads.h>
 #include <linux/percpu-defs.h>

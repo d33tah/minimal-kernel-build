@@ -183,7 +183,6 @@ struct vfsmount;
 struct path { struct vfsmount *mnt; struct dentry *dentry; } __randomize_layout;
 extern void path_get(const struct path *);
 extern void path_put(const struct path *);
-static inline int path_equal(const struct path *path1, const struct path *path2) { return path1->mnt == path2->mnt && path1->dentry == path2->dentry; }
 #endif
 #include <linux/stat.h>
 #include <linux/cache.h>
@@ -733,9 +732,6 @@ extern const struct address_space_operations ram_aops;
 
 extern struct dentry *simple_lookup(struct inode *, struct dentry *, unsigned int flags);
 extern const struct file_operations simple_dir_operations;
-
-/* list_bdev_fs_names - stub, no filesystem sets FS_REQUIRES_DEV */
-static inline int __init list_bdev_fs_names(char *buf, size_t size) { return 0; }
 
 #define __FMODE_EXEC		((__force int) FMODE_EXEC)
 #define __FMODE_NONOTIFY	((__force int) FMODE_NONOTIFY)

@@ -297,119 +297,17 @@ check_pfn:
  * since simplified dup_mmap doesn't use them (~230 LOC removed)
  */
 
-struct zap_details {
-	struct folio *single_folio;
-	bool even_cows;
-	zap_flags_t zap_flags;
-};
-
-/* zap_pte_range, zap_pmd_range, zap_pud_range inlined */
-
-static inline unsigned long zap_p4d_range(struct mmu_gather *tlb,
-					  struct vm_area_struct *vma,
-					  pgd_t *pgd, unsigned long addr,
-					  unsigned long end,
-					  struct zap_details *details)
-{
-	p4d_t *p4d;
-	unsigned long next;
-
-	/* p4d_none_or_clear_bad always returns 0 - folded paging */
-	p4d = p4d_offset(pgd, addr);
-	do {
-		next = p4d_addr_end(addr, end);
-		/* Inlined zap_pud_range */
-		{
-			pud_t *pud;
-			unsigned long pud_next;
-			unsigned long pud_addr = addr;
-			pud = pud_offset(p4d, pud_addr);
-			do {
-				pud_next = pud_addr_end(pud_addr, next);
-				/* zap_pmd_range inlined */
-				{
-					pmd_t *pmd = pmd_offset(pud, pud_addr);
-					unsigned long pmd_next,
-						pmd_addr = pud_addr;
-					do {
-						pmd_next = pmd_addr_end(
-							pmd_addr, pud_next);
-						if (!pmd_none_or_trans_huge_or_clear_bad(
-							    pmd)) {
-							spinlock_t *ptl;
-							pte_t *pte =
-								pte_offset_map_lock(
-									tlb->mm,
-									pmd,
-									pmd_addr,
-									&ptl);
-							pte_unmap_unlock(pte,
-									 ptl);
-						}
-						cond_resched();
-					} while (pmd++, pmd_addr = pmd_next,
-						 pmd_addr != pud_next);
-					pud_next = pmd_addr;
-				}
-				cond_resched();
-			} while (pud++, pud_addr = pud_next, pud_addr != next);
-			next = pud_addr;
-		}
-	} while (p4d++, addr = next, addr != end);
-
-	return addr;
-}
-
-static void unmap_page_range(struct mmu_gather *tlb, struct vm_area_struct *vma,
-			     unsigned long addr, unsigned long end,
-			     struct zap_details *details)
-{
-	pgd_t *pgd;
-	unsigned long next;
-
-	/* pgd_none_or_clear_bad always returns 0 - folded paging */
-	BUG_ON(addr >= end);
-	tlb_start_vma(tlb, vma);
-	pgd = pgd_offset(vma->vm_mm, addr);
-	do {
-		next = pgd_addr_end(addr, end);
-		next = zap_p4d_range(tlb, vma, pgd, addr, next, details);
-	} while (pgd++, addr = next, addr != end);
-	tlb_end_vma(tlb, vma);
-}
-
-static void unmap_single_vma(struct mmu_gather *tlb, struct vm_area_struct *vma,
-			     unsigned long start_addr, unsigned long end_addr,
-			     struct zap_details *details)
-{
-	unsigned long start = max(vma->vm_start, start_addr);
-	unsigned long end;
-
-	if (start >= vma->vm_end)
-		return;
-	end = min(vma->vm_end, end_addr);
-	if (end <= vma->vm_start)
-		return;
-	/* untrack_pfn is empty stub, call removed */
-	if (start != end)
-		unmap_page_range(tlb, vma, start, end, details);
-}
+/* zap chain collapsed: zap_pte_range was a no-op (lock+unlock with no action),
+ * so the entire zap_p4d_range -> unmap_page_range -> unmap_single_vma chain
+ * is dead. unmap_vmas just does the mmu_notifier calls. */
 
 void unmap_vmas(struct mmu_gather *tlb, struct vm_area_struct *vma,
 		unsigned long start_addr, unsigned long end_addr)
 {
 	struct mmu_notifier_range range;
-	struct zap_details details = {
-		.zap_flags = ZAP_FLAG_DROP_MARKER,
-
-		.even_cows = true,
-	};
-
 	mmu_notifier_range_init(&range, MMU_NOTIFY_UNMAP, 0, vma, vma->vm_mm,
 				start_addr, end_addr);
 	mmu_notifier_invalidate_range_start(&range);
-	for (; vma && vma->vm_start < end_addr; vma = vma->vm_next)
-		unmap_single_vma(tlb, vma, start_addr, end_addr, &details);
 	mmu_notifier_invalidate_range_end(&range);
 }
 
@@ -484,36 +382,20 @@ vm_fault_t vmf_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
 
 /* do_page_mkwrite inlined into do_shared_fault */
 
-/* wp_page_reuse inlined into do_wp_page */
-
-static vm_fault_t wp_page_copy(struct vm_fault *vmf)
-{
-	/* Minimal stub: init doesn't fork, so no COW faults */
-	return VM_FAULT_OOM;
-}
+/* wp_page_copy removed - no fork means no COW.
+ * do_wp_page simplified to just reuse path for AnonExclusive pages. */
 
 static vm_fault_t do_wp_page(struct vm_fault *vmf) __releases(vmf->ptl)
 {
+	pte_t entry;
 	vmf->page = vm_normal_page(vmf->vma, vmf->address, vmf->orig_pte);
-	if (!vmf->page) {
-		pte_unmap_unlock(vmf->pte, vmf->ptl);
-		return wp_page_copy(vmf);
-	}
 
-	if (PageAnon(vmf->page) && PageAnonExclusive(vmf->page)) {
-		pte_t entry;
-		/* page_cpupid_xchg_last call removed - no effect (function returns page_to_nid, result unused) */
-		entry = pte_mkyoung(vmf->orig_pte);
-		entry = maybe_mkwrite(pte_mkdirty(entry), vmf->vma);
-		ptep_set_access_flags(vmf->vma, vmf->address, vmf->pte, entry,
-				      1);
-		pte_unmap_unlock(vmf->pte, vmf->ptl);
-		return VM_FAULT_WRITE;
-	}
-
-	get_page(vmf->page);
+	/* All writable anon pages should be AnonExclusive (no fork = no sharing) */
+	entry = pte_mkyoung(vmf->orig_pte);
+	entry = maybe_mkwrite(pte_mkdirty(entry), vmf->vma);
+	ptep_set_access_flags(vmf->vma, vmf->address, vmf->pte, entry, 1);
 	pte_unmap_unlock(vmf->pte, vmf->ptl);
-	return wp_page_copy(vmf);
+	return VM_FAULT_WRITE;
 }
 
 /* unmap_mapping_range_tree, unmap_mapping_folio, unmap_mapping_pages,

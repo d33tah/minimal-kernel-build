@@ -50,7 +50,7 @@
 #include <asm/mmu_context.h>
 #include <asm/tlbflush.h>
 
-#define MIN_THREADS 20
+/* MIN_THREADS removed - max_threads hardcoded to MAX_THREADS */
 
 #define MAX_THREADS FUTEX_TID_MASK
 
@@ -183,17 +183,12 @@ int arch_task_struct_size __read_mostly;
 
 void __init fork_init(void)
 {
-	int i;
-	u64 threads;
-	unsigned long nr_pages = totalram_pages();
-	/* CONFIG_ARCH_TASK_STRUCT_ALLOCATOR not set - #ifndef removed */
 #ifndef ARCH_MIN_TASKALIGN
 #define ARCH_MIN_TASKALIGN 0
 #endif
 	int align = max_t(int, L1_CACHE_BYTES, ARCH_MIN_TASKALIGN);
 	unsigned long useroffset, usersize;
 
-	/* Inlined task_struct_whitelist */
 	arch_thread_struct_whitelist(&useroffset, &usersize);
 	if (unlikely(usersize == 0))
 		useroffset = 0;
@@ -203,26 +198,8 @@ void __init fork_init(void)
 		"task_struct", arch_task_struct_size, align,
 		SLAB_PANIC | SLAB_ACCOUNT, useroffset, usersize, NULL);
 
-	/* Inlined set_max_threads */
-	if (fls64(nr_pages) + fls64(PAGE_SIZE) > 64)
-		threads = MAX_THREADS;
-	else
-		threads = div64_u64((u64)nr_pages * (u64)PAGE_SIZE,
-				    (u64)THREAD_SIZE * 8UL);
-	if (threads > MAX_THREADS)
-		threads = MAX_THREADS;
-	max_threads = clamp_t(u64, threads, MIN_THREADS, MAX_THREADS);
-
-	init_task.signal->rlim[RLIMIT_NPROC].rlim_cur = max_threads / 2;
-	init_task.signal->rlim[RLIMIT_NPROC].rlim_max = max_threads / 2;
-	/* RLIMIT_SIGPENDING removed - never read */
-
-	for (i = 0; i < MAX_PER_NAMESPACE_UCOUNTS; i++)
-		init_user_ns.ucount_max[i] = max_threads / 2;
-
-	set_rlimit_ucount_max(&init_user_ns, UCOUNT_RLIMIT_NPROC,
-			      RLIM_INFINITY);
-	/* MSGQUEUE, SIGPENDING, MEMLOCK rlimit_ucount_max removed - never checked */
+	/* Hardcode max_threads - no need to compute from RAM for hello-world */
+	max_threads = MAX_THREADS;
 }
 
 /* arch_dup_task_struct provided by arch/x86/kernel/process.c */

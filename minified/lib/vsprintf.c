@@ -137,9 +137,6 @@ static char *put_dec(char *buf, unsigned long long n)
 }
 
 #define SIGN 1
-#define LEFT 2
-#define PLUS 4
-#define SPACE 8
 #define ZEROPAD 16
 #define SMALL 32
 #define SPECIAL 64
@@ -187,8 +184,6 @@ number(char *buf, char *end, unsigned long long num, struct printf_spec spec)
 	int precision = spec.precision;
 
 	locase = (spec.flags & SMALL);
-	if (spec.flags & LEFT)
-		spec.flags &= ~ZEROPAD;
 	sign = 0;
 	if (spec.flags & SIGN) {
 		if ((signed long long)num < 0) {
@@ -226,7 +221,7 @@ number(char *buf, char *end, unsigned long long num, struct printf_spec spec)
 		precision = i;
 
 	field_width -= precision;
-	if (!(spec.flags & (ZEROPAD | LEFT))) {
+	if (!(spec.flags & ZEROPAD)) {
 		while (--field_width >= 0) {
 			if (buf < end)
 				*buf = ' ';
@@ -253,7 +248,7 @@ number(char *buf, char *end, unsigned long long num, struct printf_spec spec)
 		}
 	}
 
-	if (!(spec.flags & LEFT)) {
+	{
 		char c = ' ' + (spec.flags & ZEROPAD);
 
 		while (--field_width >= 0) {
@@ -272,12 +267,6 @@ number(char *buf, char *end, unsigned long long num, struct printf_spec spec)
 	while (--i >= 0) {
 		if (buf < end)
 			*buf = tmp[i];
-		++buf;
-	}
-
-	while (--field_width >= 0) {
-		if (buf < end)
-			*buf = ' ';
 		++buf;
 	}
 
@@ -309,8 +298,8 @@ static noinline_for_stack char *widen_string(char *buf, int n, char *end,
 		return buf;
 
 	spaces = spec.field_width - n;
-	if (!(spec.flags & LEFT)) {
-		/* Inlined move_right(buf - n, end, n, spaces) */
+	/* Inlined move_right(buf - n, end, n, spaces) */
+	{
 		char *mr_buf = buf - n;
 		unsigned mr_len = n;
 		if (mr_buf < end) {
@@ -327,14 +316,8 @@ static noinline_for_stack char *widen_string(char *buf, int n, char *end,
 				memset(mr_buf, ' ', spaces);
 			}
 		}
-		return buf + spaces;
 	}
-	while (spaces--) {
-		if (buf < end)
-			*buf = ' ';
-		++buf;
-	}
-	return buf;
+	return buf + spaces;
 }
 
 static char *string_nocheck(char *buf, char *end, const char *s,
@@ -471,10 +454,7 @@ static noinline_for_stack int format_decode(const char *fmt,
 		++fmt;
 
 		switch (*fmt) {
-		case '-':
-			spec->flags |= LEFT;
-			break;
-		/* PLUS and SPACE flags removed - never used in kernel */
+		/* LEFT, PLUS, SPACE flags removed - never used in kernel */
 		case '#':
 			spec->flags |= SPECIAL;
 			break;
@@ -494,8 +474,6 @@ static noinline_for_stack int format_decode(const char *fmt,
 	if (isdigit(*fmt))
 		spec->field_width = skip_atoi(&fmt);
 
-precision:
-
 	spec->precision = -1;
 	if (*fmt == '.') {
 		++fmt;
@@ -506,20 +484,12 @@ precision:
 		}
 	}
 
-qualifier:
-
 	qualifier = 0;
-	if (*fmt == 'h' || _tolower(*fmt) == 'l' || *fmt == 'z' ||
-	    *fmt == 't') {
+	if (_tolower(*fmt) == 'l' || *fmt == 'z') {
 		qualifier = *fmt++;
-		if (unlikely(qualifier == *fmt)) {
-			if (qualifier == 'l') {
-				qualifier = 'L';
-				++fmt;
-			} else if (qualifier == 'h') {
-				qualifier = 'H';
-				++fmt;
-			}
+		if (qualifier == 'l' && *fmt == 'l') {
+			qualifier = 'L';
+			++fmt;
 		}
 	}
 
@@ -556,10 +526,6 @@ qualifier:
 		break;
 	case 'u':
 		break;
-
-	case 'n':
-
-		fallthrough;
 
 	default:
 		WARN_ONCE(1,

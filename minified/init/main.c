@@ -110,7 +110,7 @@ char *saved_command_line;
 static char *static_command_line;
 /* extra_command_line, extra_init_args removed - never assigned */
 
-static char *execute_command;
+/* execute_command removed - init= not supported */
 static char *ramdisk_execute_command = "/init";
 
 bool static_key_initialized __read_mostly;
@@ -227,29 +227,7 @@ static int __init unknown_bootoption(char *param, char *val, const char *unused,
 	return 0;
 }
 
-static int __init init_setup(char *str)
-{
-	unsigned int i;
-
-	execute_command = str;
-
-	for (i = 1; i < MAX_INIT_ARGS; i++)
-		argv_init[i] = NULL;
-	return 1;
-}
-__setup("init=", init_setup);
-
-static int __init rdinit_setup(char *str)
-{
-	unsigned int i;
-
-	ramdisk_execute_command = str;
-
-	for (i = 1; i < MAX_INIT_ARGS; i++)
-		argv_init[i] = NULL;
-	return 1;
-}
-__setup("rdinit=", rdinit_setup);
+/* init_setup, rdinit_setup removed - always use /init from initramfs */
 
 /* setup_max_cpus, setup_nr_cpu_ids, smp_prepare_cpus removed - unused */
 /* setup_command_line inlined into start_kernel */
@@ -528,19 +506,7 @@ static int run_init_process(const char *init_filename)
 	return kernel_execve(init_filename, argv_init, envp_init);
 }
 
-static int try_to_run_init_process(const char *init_filename)
-{
-	int ret;
-
-	ret = run_init_process(init_filename);
-
-	if (ret && ret != -ENOENT) {
-		pr_err("Starting init: %s exists but couldn't execute it (error %d)\n",
-		       init_filename, ret);
-	}
-
-	return ret;
-}
+/* try_to_run_init_process removed - fallback paths removed */
 
 static noinline void __init kernel_init_freeable(void);
 
@@ -567,44 +533,12 @@ static int __ref kernel_init(void *unused)
 
 	system_state = SYSTEM_RUNNING;
 
-	/* Direct VGA Hello World - write directly to VGA text buffer */
-	{
-		volatile char *vga = (volatile char *)0xC00B8000;
-		const char *msg = "Hello, World!";
-		int i;
-		for (i = 0; msg[i]; i++) {
-			vga[i * 2] = msg[i];
-			vga[i * 2 + 1] = 0x0f; /* white on black */
-		}
-	}
-
+	/* VGA Hello World removed - /init prints via tty/vt */
 	/* rcu_end_inkernel_boot, do_sysctl_args removed - empty stubs */
-	if (ramdisk_execute_command) {
-		ret = run_init_process(ramdisk_execute_command);
-		if (!ret)
-			return 0;
-		pr_err("Failed to execute %s (error %d)\n",
-		       ramdisk_execute_command, ret);
-	}
-
-	if (execute_command) {
-		ret = run_init_process(execute_command);
-		if (!ret)
-			return 0;
-		panic("Requested init %s failed (error %d).", execute_command,
-		      ret);
-	}
-
-	/* CONFIG_DEFAULT_INIT="" - dead code removed */
-
-	if (!try_to_run_init_process("/sbin/init") ||
-	    !try_to_run_init_process("/etc/init") ||
-	    !try_to_run_init_process("/bin/init") ||
-	    !try_to_run_init_process("/bin/sh"))
+	ret = run_init_process(ramdisk_execute_command);
+	if (!ret)
 		return 0;
-
-	panic("No working init found.  Try passing init= option to kernel. "
-	      "See Linux Documentation/admin-guide/init.rst for guidance.");
+	panic("Failed to execute %s (error %d).", ramdisk_execute_command, ret);
 }
 
 void __init console_on_rootfs(void)

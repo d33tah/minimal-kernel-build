@@ -215,20 +215,14 @@ void __init fork_init(void)
 
 	init_task.signal->rlim[RLIMIT_NPROC].rlim_cur = max_threads / 2;
 	init_task.signal->rlim[RLIMIT_NPROC].rlim_max = max_threads / 2;
-	init_task.signal->rlim[RLIMIT_SIGPENDING] =
-		init_task.signal->rlim[RLIMIT_NPROC];
+	/* RLIMIT_SIGPENDING removed - never read */
 
 	for (i = 0; i < MAX_PER_NAMESPACE_UCOUNTS; i++)
 		init_user_ns.ucount_max[i] = max_threads / 2;
 
 	set_rlimit_ucount_max(&init_user_ns, UCOUNT_RLIMIT_NPROC,
 			      RLIM_INFINITY);
-	set_rlimit_ucount_max(&init_user_ns, UCOUNT_RLIMIT_MSGQUEUE,
-			      RLIM_INFINITY);
-	set_rlimit_ucount_max(&init_user_ns, UCOUNT_RLIMIT_SIGPENDING,
-			      RLIM_INFINITY);
-	set_rlimit_ucount_max(&init_user_ns, UCOUNT_RLIMIT_MEMLOCK,
-			      RLIM_INFINITY);
+	/* MSGQUEUE, SIGPENDING, MEMLOCK rlimit_ucount_max removed - never checked */
 }
 
 /* arch_dup_task_struct provided by arch/x86/kernel/process.c */
@@ -245,7 +239,7 @@ void set_task_stack_end_magic(struct task_struct *tsk)
 
 __cacheline_aligned_in_smp DEFINE_SPINLOCK(mmlist_lock);
 
-static unsigned long default_dump_filter = MMF_DUMP_FILTER_DEFAULT;
+/* default_dump_filter removed - inlined constant */
 
 /* duplicate init_task.h include removed - already included at line 67 */
 
@@ -278,7 +272,7 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 		mm->flags = current->mm->flags & MMF_INIT_MASK;
 		mm->def_flags = current->mm->def_flags & VM_INIT_DEF_MASK;
 	} else {
-		mm->flags = default_dump_filter;
+		mm->flags = MMF_DUMP_FILTER_DEFAULT;
 		mm->def_flags = 0;
 	}
 
@@ -314,11 +308,7 @@ void mmput(struct mm_struct *mm)
 
 		exit_mmap(mm);
 		set_mm_exe_file(mm, NULL);
-		if (!list_empty(&mm->mmlist)) {
-			spin_lock(&mmlist_lock);
-			list_del(&mm->mmlist);
-			spin_unlock(&mmlist_lock);
-		}
+		/* mmlist cleanup removed - no swap, mmlist never populated */
 		if (mm->binfmt)
 			module_put(mm->binfmt->module);
 		mmdrop(mm);
@@ -386,13 +376,7 @@ copy_process(int node, struct kernel_clone_args *args)
 	const u64 clone_flags = args->flags;
 	/* time_ns check, delayed signal mechanism, nsproxy check removed - dead code */
 
-	spin_lock_irq(&current->sighand->siglock);
-	/* multiprocess hlist_add_head removed - list never iterated */
-	recalc_sigpending();
-	spin_unlock_irq(&current->sighand->siglock);
-	retval = -ERESTARTNOINTR;
-	if (task_sigpending(current))
-		goto fork_out;
+	/* Signal-pending check removed - no signals during boot */
 
 	/* dup_task_struct inlined */
 	retval = -ENOMEM;
@@ -471,25 +455,17 @@ copy_process(int node, struct kernel_clone_args *args)
 			}
 		}
 	}
-	/* Inlined copy_fs */
+	/* Inlined copy_fs - CLONE_FS always set */
 	{
 		struct fs_struct *fs = current->fs;
-		if (clone_flags & CLONE_FS) {
-			spin_lock(&fs->lock);
-			if (fs->in_exec) {
-				spin_unlock(&fs->lock);
-				retval = -EAGAIN;
-				goto bad_fork_cleanup_files;
-			}
-			fs->users++;
+		spin_lock(&fs->lock);
+		if (fs->in_exec) {
 			spin_unlock(&fs->lock);
-		} else {
-			p->fs = copy_fs_struct(fs);
-			if (!p->fs) {
-				retval = -ENOMEM;
-				goto bad_fork_cleanup_files;
-			}
+			retval = -EAGAIN;
+			goto bad_fork_cleanup_files;
 		}
+		fs->users++;
+		spin_unlock(&fs->lock);
 	}
 	/* Inlined copy_sighand - CLONE_SIGHAND never set */
 	{
@@ -591,10 +567,7 @@ copy_process(int node, struct kernel_clone_args *args)
 		goto bad_fork_cancel_cgroup;
 	}
 
-	if (fatal_signal_pending(current)) {
-		retval = -EINTR;
-		goto bad_fork_cancel_cgroup;
-	}
+	/* fatal_signal_pending check removed - no signals during boot */
 
 	{
 		enum pid_type type;
@@ -608,26 +581,18 @@ copy_process(int node, struct kernel_clone_args *args)
 		/* ptrace block removed - trace was always 0 */
 
 		init_task_pid(p, PIDTYPE_PID, pid);
-		if (thread_group_leader(p)) {
-			init_task_pid(p, PIDTYPE_TGID, pid);
-			init_task_pid(p, PIDTYPE_PGID, task_pgrp(current));
-			init_task_pid(p, PIDTYPE_SID, task_session(current));
+		/* thread_group_leader check removed - CLONE_THREAD never set */
+		init_task_pid(p, PIDTYPE_TGID, pid);
+		init_task_pid(p, PIDTYPE_PGID, task_pgrp(current));
+		init_task_pid(p, PIDTYPE_SID, task_session(current));
 
-			if (is_child_reaper(pid)) {
-				ns_of_pid(pid)->child_reaper = p;
-				/* signal->flags write removed - flags field removed */
-			}
-			sigemptyset(&p->signal->shared_pending.signal);
-			/* signal->tty removed - write-only */
-			/* has_child_subreaper removed - write-only */
-			/* sibling/children list linkage removed - fields removed */
-			list_add_tail_rcu(&p->tasks, &init_task.tasks);
-			attach_pid(p, PIDTYPE_TGID);
-			attach_pid(p, PIDTYPE_PGID);
-			attach_pid(p, PIDTYPE_SID);
-			/* process_counts increment removed */
-		}
-		/* CLONE_THREAD else branch removed - never set */
+		if (is_child_reaper(pid))
+			ns_of_pid(pid)->child_reaper = p;
+		sigemptyset(&p->signal->shared_pending.signal);
+		list_add_tail_rcu(&p->tasks, &init_task.tasks);
+		attach_pid(p, PIDTYPE_TGID);
+		attach_pid(p, PIDTYPE_PGID);
+		attach_pid(p, PIDTYPE_SID);
 		attach_pid(p, PIDTYPE_PID);
 		nr_threads++;
 	}
@@ -712,7 +677,8 @@ static pid_t kernel_clone(struct kernel_clone_args *args)
 	return nr;
 }
 
-pid_t kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
+static pid_t __kernel_thread(int (*fn)(void *), void *arg, unsigned long flags,
+			     int kthread)
 {
 	struct kernel_clone_args args = {
 		.flags = ((lower_32_bits(flags) | CLONE_VM | CLONE_UNTRACED) &
@@ -720,23 +686,19 @@ pid_t kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
 		.exit_signal = (lower_32_bits(flags) & CSIGNAL),
 		.fn = fn,
 		.fn_arg = arg,
-		.kthread = 1,
+		.kthread = kthread,
 	};
-
 	return kernel_clone(&args);
+}
+
+pid_t kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
+{
+	return __kernel_thread(fn, arg, flags, 1);
 }
 
 pid_t user_mode_thread(int (*fn)(void *), void *arg, unsigned long flags)
 {
-	struct kernel_clone_args args = {
-		.flags = ((lower_32_bits(flags) | CLONE_VM | CLONE_UNTRACED) &
-			  ~CSIGNAL),
-		.exit_signal = (lower_32_bits(flags) & CSIGNAL),
-		.fn = fn,
-		.fn_arg = arg,
-	};
-
-	return kernel_clone(&args);
+	return __kernel_thread(fn, arg, flags, 0);
 }
 
 /* fork/vfork/clone/clone3 syscalls replaced with COND_SYSCALL */

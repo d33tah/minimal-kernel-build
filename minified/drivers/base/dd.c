@@ -110,8 +110,7 @@ static void device_unbind_cleanup(struct device *dev)
 	/* arch_teardown_dma_ops inlined - empty function */
 	dev->driver = NULL;
 	dev_set_drvdata(dev, NULL);
-	if (dev->pm_domain && dev->pm_domain->dismiss)
-		dev->pm_domain->dismiss(dev);
+	/* pm_domain->dismiss removed - pm_domain never assigned */
 	dev->power.driver_flags = 0; /* dev_pm_set_driver_flags inlined */
 }
 
@@ -162,11 +161,7 @@ static int driver_probe_device(struct device_driver *drv, struct device *dev)
 				goto really_probe_pinctrl_failed;
 		}
 
-		if (dev->pm_domain && dev->pm_domain->activate) {
-			ret = dev->pm_domain->activate(dev);
-			if (ret)
-				goto really_probe_failed;
-		}
+		/* pm_domain->activate removed - pm_domain never assigned */
 
 		if (dev->bus->probe)
 			ret = dev->bus->probe(dev);
@@ -177,8 +172,7 @@ static int driver_probe_device(struct device_driver *drv, struct device *dev)
 			goto really_probe_failed;
 		}
 
-		if (dev->pm_domain && dev->pm_domain->sync)
-			dev->pm_domain->sync(dev);
+		/* pm_domain->sync removed - pm_domain never assigned */
 		goto really_probe_done;
 
 really_probe_failed:

@@ -6,11 +6,8 @@
 
 struct device;
 
-typedef struct pm_message {
-	int event;
-} pm_message_t;
-
-/* All dev_pm_ops callbacks removed - never called */
+/* pm_message_t removed - never used */
+/* dev_pm_ops callbacks all removed - never called */
 struct dev_pm_ops {
 };
 

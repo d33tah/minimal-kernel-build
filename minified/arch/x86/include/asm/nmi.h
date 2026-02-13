@@ -3,7 +3,7 @@
 #define _ASM_X86_NMI_H
 
 /* irq_work.h removed - header is now empty */
-#include <linux/pm.h>
+/* linux/pm.h removed - nothing used from it */
 #include <asm/irq.h>
 #include <asm/io.h>
 

@@ -34,15 +34,12 @@
 
 /* suid_dumpable removed - never used */
 
-static LIST_HEAD(formats);
-static DEFINE_RWLOCK(binfmt_lock);
+/* Single binfmt (ELF) - list/lock replaced with direct pointer */
+static struct linux_binfmt *the_binfmt;
 
-/* insert parameter removed - only caller passes 0 */
 void __register_binfmt(struct linux_binfmt *fmt)
 {
-	write_lock(&binfmt_lock);
-	list_add_tail(&fmt->lh, &formats);
-	write_unlock(&binfmt_lock);
+	the_binfmt = fmt;
 }
 
 bool path_noexec(const struct path *path)
@@ -381,7 +378,7 @@ void setup_new_exec(struct linux_binprm *bprm)
 	arch_pick_mmap_layout(me->mm, &bprm->rlim_stack);
 
 	up_write(&me->signal->exec_update_lock);
-	mutex_unlock(&me->signal->cred_guard_mutex);
+	/* cred_guard_mutex unlock removed - never locked */
 }
 
 /* finalize_exec removed - inlined into binfmt_elf.c */
@@ -393,10 +390,8 @@ static void free_bprm(struct linux_binprm *bprm)
 	if (bprm->mm) {
 		mmput(bprm->mm);
 	}
-	if (bprm->cred) {
-		mutex_unlock(&current->signal->cred_guard_mutex);
+	if (bprm->cred)
 		abort_creds(bprm->cred);
-	}
 	if (bprm->file) {
 		allow_write_access(bprm->file);
 		fput(bprm->file);
@@ -480,34 +475,16 @@ out:
 
 static int search_binary_handler(struct linux_binprm *bprm)
 {
-	struct linux_binfmt *fmt;
 	int retval;
 	loff_t pos = 0;
 
-	/* Inlined prepare_binprm */
 	memset(bprm->buf, 0, BINPRM_BUF_SIZE);
 	retval = kernel_read(bprm->file, bprm->buf, BINPRM_BUF_SIZE, &pos);
 	if (retval < 0)
 		return retval;
 
-	/* security_bprm_check always returns 0 - dead code removed */
-	/* try_module_get always returns true - dead check removed */
-	retval = -ENOENT;
-	read_lock(&binfmt_lock);
-	list_for_each_entry(fmt, &formats, lh) {
-		read_unlock(&binfmt_lock);
-
-		retval = fmt->load_binary(bprm);
-
-		read_lock(&binfmt_lock);
-		module_put(fmt->module);
-		if (bprm->point_of_no_return || (retval != -ENOEXEC)) {
-			read_unlock(&binfmt_lock);
-			return retval;
-		}
-	}
-	read_unlock(&binfmt_lock);
-	return retval;
+	/* Single binfmt (ELF) - direct call replaces list iteration */
+	return the_binfmt->load_binary(bprm);
 }
 
 /* exec_binprm inlined into bprm_execve */
@@ -518,25 +495,15 @@ static int bprm_execve(struct linux_binprm *bprm, int fd,
 	struct file *file;
 	int retval;
 
-	/* Inlined prepare_bprm_creds */
-	if (mutex_lock_interruptible(&current->signal->cred_guard_mutex))
-		return -ERESTARTNOINTR;
+	/* cred_guard_mutex and in_exec removed: single process, no concurrent exec */
 	bprm->cred = prepare_exec_creds();
-	if (unlikely(!bprm->cred)) {
-		mutex_unlock(&current->signal->cred_guard_mutex);
+	if (unlikely(!bprm->cred))
 		return -ENOMEM;
-	}
-
-	/* check_unsafe_exec simplified: ptrace always 0, no_new_privs never set,
-	   single-threaded so n_fs==1 and users==1, only need to set in_exec */
-	spin_lock(&current->fs->lock);
-	current->fs->in_exec = 1;
-	spin_unlock(&current->fs->lock);
 
 	file = do_open_execat(fd, filename, flags);
 	retval = PTR_ERR(file);
 	if (IS_ERR(file))
-		goto out_unmark;
+		return retval;
 
 	/* sched_exec() - empty stub removed */
 	bprm->file = file;
@@ -548,17 +515,11 @@ static int bprm_execve(struct linux_binprm *bprm, int fd,
 	if (retval < 0)
 		goto out;
 
-	current->fs->in_exec = 0;
 	return retval;
 
 out:
-
 	if (bprm->point_of_no_return && !fatal_signal_pending(current))
 		force_sig(SIGSEGV);
-
-out_unmark:
-	current->fs->in_exec = 0;
-
 	return retval;
 }
 

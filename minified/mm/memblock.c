@@ -41,7 +41,6 @@ struct memblock memblock __initdata_memblock = {
 	.reserved.max = INIT_MEMBLOCK_RESERVED_REGIONS,
 	.reserved.name = "reserved",
 
-	.bottom_up = false,
 	.current_limit = MEMBLOCK_ALLOC_ANYWHERE,
 };
 
@@ -77,29 +76,18 @@ static phys_addr_t __init_memblock memblock_find_in_range_node(
 	start = max_t(phys_addr_t, start, PAGE_SIZE);
 	end = max(start, end);
 
-	if (memblock_bottom_up()) {
-		for_each_free_mem_range(i, nid, flags, &this_start, &this_end,
+	/* bottom_up branch removed: memblock.bottom_up is always false */
+	for_each_free_mem_range_reverse(i, nid, flags, &this_start, &this_end,
 					NULL) {
-			this_start = clamp(this_start, start, end);
-			this_end = clamp(this_end, start, end);
+		this_start = clamp(this_start, start, end);
+		this_end = clamp(this_end, start, end);
 
-			cand = round_up(this_start, align);
-			if (cand < this_end && this_end - cand >= size)
-				return cand;
-		}
-	} else {
-		for_each_free_mem_range_reverse(i, nid, flags, &this_start,
-						&this_end, NULL) {
-			this_start = clamp(this_start, start, end);
-			this_end = clamp(this_end, start, end);
+		if (this_end < size)
+			continue;
 
-			if (this_end < size)
-				continue;
-
-			cand = round_down(this_end - size, align);
-			if (cand >= this_start)
-				return cand;
-		}
+		cand = round_down(this_end - size, align);
+		if (cand >= this_start)
+			return cand;
 	}
 
 	return 0;

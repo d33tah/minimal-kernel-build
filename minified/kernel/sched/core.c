@@ -320,7 +320,6 @@ static __always_inline struct rq *context_switch(struct rq *rq,
 static inline struct task_struct *
 __pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 {
-	const struct sched_class *class;
 	struct task_struct *p;
 
 	if (likely(!sched_class_above(prev->sched_class, &fair_sched_class) &&

@@ -524,7 +524,6 @@ inside:
 static int link_path_walk(const char *name, struct nameidata *nd)
 {
 	int depth = 0;
-	int err;
 
 	nd->last_type = LAST_ROOT;
 	nd->flags |= LOOKUP_PARENT;

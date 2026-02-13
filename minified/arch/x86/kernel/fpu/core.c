@@ -181,7 +181,6 @@ void fpstate_reset(struct fpu *fpu)
 
 int fpu_clone(struct task_struct *dst, unsigned long clone_flags, bool minimal)
 {
-	struct fpu *src_fpu = &current->thread.fpu;
 	struct fpu *dst_fpu = &dst->thread.fpu;
 
 	dst_fpu->last_cpu = -1;

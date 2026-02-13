@@ -117,7 +117,7 @@ struct nameidata {
 
 #define ND_ROOT_PRESET 1
 #define ND_ROOT_GRABBED 2
-#define ND_JUMPED 4
+/* ND_JUMPED removed - only written, never read */
 
 static inline void set_nameidata(struct nameidata *p, int dfd,
 				 struct filename *name, const struct path *root)
@@ -146,16 +146,7 @@ static void restore_nameidata(void)
 
 /* nd_alloc_stack removed - only called from pick_link which was removed */
 
-/* Simplified: is_subdir inlined (was just equality check) */
-static bool path_connected(struct vfsmount *mnt, struct dentry *dentry)
-{
-	struct super_block *sb = mnt->mnt_sb;
-
-	if (mnt->mnt_root == sb->s_root)
-		return true;
-
-	return dentry == mnt->mnt_root;
-}
+/* path_connected removed - only called from handle_dots DOTDOT path (removed) */
 
 static void drop_links(struct nameidata *nd)
 {
@@ -369,7 +360,7 @@ static inline int handle_mounts(struct nameidata *nd, struct dentry *dentry,
 						path->mnt = &mounted->mnt;
 						rcu_dentry = path->dentry =
 							mounted->mnt.mnt_root;
-						nd->state |= ND_JUMPED;
+
 						*seqp = raw_read_seqcount_begin(
 							&rcu_dentry->d_seq);
 						*inode = rcu_dentry->d_inode;
@@ -480,69 +471,8 @@ static const char *step_into(struct nameidata *nd, int flags,
 
 static const char *handle_dots(struct nameidata *nd, int type)
 {
-	if (type == LAST_DOTDOT) {
-		const char *error = NULL;
-		struct dentry *parent;
-		struct inode *inode;
-		unsigned seq;
-
-		if (!nd->root.mnt) {
-			error = ERR_PTR(set_root(nd));
-			if (error)
-				return error;
-		}
-		if (nd->flags & LOOKUP_RCU) {
-			/* follow_dotdot_rcu inlined */
-			if (path_equal(&nd->path, &nd->root) ||
-			    unlikely(nd->path.dentry ==
-				     nd->path.mnt->mnt_root)) {
-				if (unlikely(read_seqretry(&mount_lock,
-							   nd->m_seq)))
-					parent = ERR_PTR(-ECHILD);
-				else
-					parent = NULL;
-			} else {
-				struct dentry *old = nd->path.dentry;
-				parent = old->d_parent;
-				inode = parent->d_inode;
-				seq = raw_read_seqcount_begin(&parent->d_seq);
-				if (unlikely(read_seqcount_retry(&old->d_seq,
-								 nd->seq)))
-					parent = ERR_PTR(-ECHILD);
-				else if (unlikely(!path_connected(nd->path.mnt,
-								  parent)))
-					parent = ERR_PTR(-ECHILD);
-			}
-		} else {
-			/* follow_dotdot inlined */
-			if (path_equal(&nd->path, &nd->root) ||
-			    unlikely(nd->path.dentry ==
-				     nd->path.mnt->mnt_root)) {
-				dget(nd->path.dentry);
-				parent = NULL;
-			} else {
-				parent = dget_parent(nd->path.dentry);
-				if (unlikely(!path_connected(nd->path.mnt,
-							     parent))) {
-					dput(parent);
-					parent = ERR_PTR(-ENOENT);
-				} else {
-					seq = 0;
-					inode = parent->d_inode;
-				}
-			}
-		}
-		if (IS_ERR(parent))
-			return ERR_CAST(parent);
-		if (unlikely(!parent))
-			error = step_into(nd, WALK_NOFOLLOW, nd->path.dentry,
-					  nd->inode, nd->seq);
-		else
-			error = step_into(nd, WALK_NOFOLLOW, parent, inode,
-					  seq);
-		if (unlikely(error))
-			return error;
-	}
+	/* LAST_DOTDOT handling removed: /init path has no ".." components.
+	 * LAST_DOT is a no-op (stay in same directory). */
 	return NULL;
 }
 
@@ -641,26 +571,11 @@ static int link_path_walk(const char *name, struct nameidata *nd)
 		return 0;
 
 	for (;;) {
-		struct user_namespace *mnt_userns;
 		const char *link;
 		u64 hash_len;
 		int type;
 
-		mnt_userns = mnt_user_ns(nd->path.mnt);
-		/* may_lookup inlined */
-		if (nd->flags & LOOKUP_RCU) {
-			err = inode_permission(mnt_userns, nd->inode,
-					       MAY_EXEC | MAY_NOT_BLOCK);
-			if (err != -ECHILD || !try_to_unlazy(nd)) {
-				if (err)
-					return err;
-				goto past_may_lookup;
-			}
-		}
-		err = inode_permission(mnt_userns, nd->inode, MAY_EXEC);
-		if (err)
-			return err;
-past_may_lookup:
+		/* inode_permission always returns 0 - may_lookup removed */
 
 		hash_len = hash_name(nd->path.dentry, name);
 
@@ -670,16 +585,12 @@ past_may_lookup:
 			case 2:
 				if (name[1] == '.') {
 					type = LAST_DOTDOT;
-					nd->state |= ND_JUMPED;
 				}
 				break;
 			case 1:
 				type = LAST_DOT;
 			}
-		if (likely(type == LAST_NORM)) {
-			nd->state &= ~ND_JUMPED;
-			/* DCACHE_OP_HASH check removed - d_hash never set */
-		}
+		/* DCACHE_OP_HASH check removed - d_hash never set */
 
 		nd->last.hash_len = hash_len;
 		nd->last.name = name;
@@ -734,7 +645,6 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
 		rcu_read_lock();
 
 	nd->flags = flags;
-	nd->state |= ND_JUMPED;
 
 	nd->m_seq = __read_seqcount_begin(&mount_lock.seqcount);
 	smp_rmb();
@@ -762,31 +672,15 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
 			path_get(&nd->path);
 			nd->inode = nd->path.dentry->d_inode;
 		}
-		nd->state |= ND_JUMPED;
 		return s;
 	}
 
-	if (nd->dfd == AT_FDCWD) {
-		spin_lock(&current->fs->lock);
-		nd->path = current->fs->pwd;
-		path_get(&nd->path);
-		spin_unlock(&current->fs->lock);
-		nd->inode = nd->path.dentry->d_inode;
-	} else {
-		struct fd f = fdget_raw(nd->dfd);
-		if (!f.file)
-			return ERR_PTR(-EBADF);
-
-		if (*s && unlikely(!d_can_lookup(f.file->f_path.dentry))) {
-			fdput(f);
-			return ERR_PTR(-ENOTDIR);
-		}
-
-		nd->path = f.file->f_path;
-		path_get(&nd->path);
-		nd->inode = nd->path.dentry->d_inode;
-		fdput(f);
-	}
+	/* All callers pass AT_FDCWD - non-AT_FDCWD branch removed */
+	spin_lock(&current->fs->lock);
+	nd->path = current->fs->pwd;
+	path_get(&nd->path);
+	spin_unlock(&current->fs->lock);
+	nd->inode = nd->path.dentry->d_inode;
 
 	return s;
 }

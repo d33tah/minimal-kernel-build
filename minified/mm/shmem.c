@@ -1,8 +1,8 @@
 
 #include <linux/fs.h>
 #include <linux/init.h>
-#include <asm/statfs.h>
-#include <asm/byteorder.h>
+/* asm/statfs.h removed - struct statfs/statfs64 not used */
+/* asm/byteorder.h removed - no byte-swapping used */
 #include <linux/mount.h>
 #include <linux/pagemap.h>
 #include <linux/file.h>

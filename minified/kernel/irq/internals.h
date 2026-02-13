@@ -127,8 +127,7 @@ static inline void irq_settings_set_no_debug(struct irq_desc *desc)
 /* irq_settings_no_debug removed - unused */
 
 extern int __irq_set_trigger(struct irq_desc *desc, unsigned long flags);
-/* __disable_irq removed - never called */
-extern void __enable_irq(struct irq_desc *desc);
+/* __disable_irq, __enable_irq removed - never called */
 
 #define IRQ_RESEND	true
 #define IRQ_START_FORCE	true

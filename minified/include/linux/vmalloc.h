@@ -3,7 +3,7 @@
 
 #include <linux/init.h>
 #include <linux/list.h>
-#include <linux/llist.h>
+/* llist.h removed - not used by vmalloc */
 #include <asm/page.h>
 #include <linux/rbtree.h>
 #include <linux/overflow.h>

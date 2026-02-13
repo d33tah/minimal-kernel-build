@@ -12,7 +12,28 @@
 
 #include <linux/ioport.h>
 #include <linux/kobject.h>
-#include <linux/klist.h>
+/* klist.h inlined */
+struct klist_node;
+struct klist {
+	spinlock_t		k_lock;
+	struct list_head	k_list;
+	void			(*get)(struct klist_node *);
+	void			(*put)(struct klist_node *);
+} __attribute__ ((aligned (sizeof(void *))));
+struct klist_node {
+	void			*n_klist;
+	struct list_head	n_node;
+	struct kref		n_ref;
+};
+extern int klist_node_attached(struct klist_node *n);
+struct klist_iter {
+	struct klist		*i_klist;
+	struct klist_node	*i_cur;
+};
+extern void klist_iter_init_node(struct klist *k, struct klist_iter *i,
+				 struct klist_node *n);
+extern void klist_iter_exit(struct klist_iter *i);
+extern struct klist_node *klist_next(struct klist_iter *i);
 #include <linux/list.h>
 #include <linux/lockdep.h>
 #include <linux/compiler.h>

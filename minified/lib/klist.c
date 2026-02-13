@@ -1,4 +1,5 @@
-#include <linux/klist.h>
+/* klist.h inlined via device.h */
+#include <linux/device.h>
 /* linux/export.h removed - no EXPORT_SYMBOL used */
 #include <linux/sched.h>
 

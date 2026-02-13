@@ -3,7 +3,7 @@
 /* linux/slab.h removed - no slab functions */
 #include <linux/cred.h>
 #include <linux/mount.h>
-#include <asm/statfs.h>
+/* asm/statfs.h removed - struct statfs/statfs64 not used */
 #include <linux/fs_context.h>
 
 #include "internal.h"

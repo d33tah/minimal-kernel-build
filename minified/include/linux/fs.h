@@ -195,7 +195,17 @@ static inline int path_equal(const struct path *path1, const struct path *path2)
 #include <linux/cache.h>
 #include <linux/list.h>
 #include <linux/list_lru.h>
-#include <linux/llist.h>
+/* llist.h inlined */
+struct llist_head { struct llist_node *first; };
+struct llist_node { struct llist_node *next; };
+#define LLIST_HEAD_INIT(name)	{ NULL }
+#define LLIST_HEAD(name)	struct llist_head name = LLIST_HEAD_INIT(name)
+#define llist_entry(ptr, type, member) container_of(ptr, type, member)
+#define member_address_is_nonnull(ptr, member) ((uintptr_t)(ptr) + offsetof(typeof(*(ptr)), member) != 0)
+#define llist_for_each_entry_safe(pos, n, node, member) for (pos = llist_entry((node), typeof(*pos), member); member_address_is_nonnull(pos, member) && (n = llist_entry(pos->member.next, typeof(*n), member), true); pos = n)
+extern bool llist_add_batch(struct llist_node *new_first, struct llist_node *new_last, struct llist_head *head);
+static inline bool llist_add(struct llist_node *new, struct llist_head *head) { return llist_add_batch(new, new, head); }
+static inline struct llist_node *llist_del_all(struct llist_head *head) { return xchg(&head->first, NULL); }
 /* radix-tree.h removed - unused */
 #include <linux/xarray.h>
 #include <linux/rbtree.h>

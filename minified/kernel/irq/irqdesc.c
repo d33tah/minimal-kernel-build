@@ -1,21 +1,12 @@
 #include <linux/irq.h>
 #include <linux/slab.h>
-/* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/interrupt.h>
-/* kernel_stat.h removed - empty */
 #include <linux/radix-tree.h>
-/* linux/bitmap.h removed - no bitmap usage */
 #include <linux/irqdomain.h>
-/* linux/sysfs.h removed - no sysfs usage */
 
 #include "internals.h"
 
-/* desc_set_defaults inlined into alloc_desc */
-
 int nr_irqs = NR_IRQS;
-
-/* sparse_irq_lock removed - never used */
-/* allocated_irqs removed - only written, never read */
 
 static void irq_kobj_release(struct kobject *kobj);
 
@@ -24,7 +15,6 @@ static struct kobj_type irq_kobj_type = {
 };
 
 static RADIX_TREE(irq_desc_tree, GFP_KERNEL);
-/* irq_insert_desc removed - inlined into 2 callers (~4 LOC) */
 
 struct irq_desc *irq_to_desc(unsigned int irq)
 {
@@ -40,14 +30,11 @@ static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
 	if (!desc)
 		return NULL;
 
-	/* kstat_irqs allocation removed - percpu counter is write-only */
 	raw_spin_lock_init(&desc->lock);
-	/* lockdep_set_class removed - empty stub */
 	mutex_init(&desc->request_mutex);
 	init_waitqueue_head(&desc->wait_for_threads);
 
 	/* desc_set_defaults inlined */
-	/* handler_data and msi_desc removed - never read */
 	desc->irq_data.common = &desc->irq_common_data;
 	desc->irq_data.irq = irq;
 	desc->irq_data.chip = &no_irq_chip;
@@ -56,10 +43,8 @@ static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
 	irqd_set(&desc->irq_data, IRQD_IRQ_MASKED);
 	desc->handle_irq = handle_bad_irq;
 	desc->depth = 1;
-	/* irq_count, irqs_unhandled init removed - fields removed */
 	desc->name = NULL;
 	desc->owner = owner;
-	/* kstat_irqs per-cpu init removed - field removed */
 	irqd_set(&desc->irq_data, flags);
 	kobject_init(&desc->kobj, &irq_kobj_type);
 
@@ -69,7 +54,6 @@ static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
 static void irq_kobj_release(struct kobject *kobj)
 {
 	struct irq_desc *desc = container_of(kobj, struct irq_desc, kobj);
-	/* free_percpu removed - empty stub */
 	kfree(desc);
 }
 
@@ -101,11 +85,6 @@ int __init early_irq_init(void)
 	}
 	return 0; /* arch_early_irq_init inlined */
 }
-
-/* handle_irq_desc removed - never called (~9 LOC) */
-/* generic_handle_irq removed - never called (~4 LOC) */
-/* generic_handle_irq_safe, irq_free_descs, __irq_alloc_descs removed - never called */
-/* irq_get_next_irq removed - only used by for_each_active_irq macro (unused) */
 
 struct irq_desc *__irq_get_desc_lock(unsigned int irq, unsigned long *flags,
 				     bool bus, unsigned int check)

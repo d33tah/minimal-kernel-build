@@ -1,7 +1,4 @@
-/* string.h removed - unused */
 #include <linux/kobject.h>
-/* linux/export.h removed - no EXPORT_SYMBOL used */
-/* stat.h removed - unused */
 #include <linux/slab.h>
 
 /* Merged from kobject_uevent.c */
@@ -18,9 +15,6 @@ static int kobject_uevent(struct kobject *kobj, enum kobject_action action)
 {
 	return kobject_uevent_env(kobj, action, NULL);
 }
-
-/* kobject_get_ownership inlined into kset_get_ownership */
-/* kobj_kset_join, kobj_kset_leave removed - inlined into single callers (~16 LOC) */
 
 static void kobject_init_internal(struct kobject *kobj)
 {
@@ -53,7 +47,6 @@ static int kobject_add_internal(struct kobject *kobj)
 	if (kobj->kset) {
 		if (!parent)
 			parent = kobject_get(&kobj->kset->kobj);
-		/* Inlined kobj_kset_join */
 		kset_get(kobj->kset);
 		spin_lock(&kobj->kset->list_lock);
 		list_add_tail(&kobj->entry, &kobj->kset->list);
@@ -66,9 +59,6 @@ static int kobject_add_internal(struct kobject *kobj)
 
 	return 0;
 }
-
-/* kobject_set_name_vargs removed - never called (~15 LOC) */
-/* kobject_set_name inlined into single caller - kset_create */
 
 void kobject_init(struct kobject *kobj, const struct kobj_type *ktype)
 {
@@ -95,11 +85,6 @@ error:
 	pr_err("kobject (%p): %s\n", kobj, err_str);
 }
 
-/* kobject_add_varg removed - never called (~14 LOC) */
-/* kobject_add removed - no callers */
-
-/* kobject_init_and_add removed - never called */
-
 /* Simplified: sysfs functions are already stubs */
 static void __kobject_del(struct kobject *kobj)
 {
@@ -108,7 +93,6 @@ static void __kobject_del(struct kobject *kobj)
 		kobject_uevent(kobj, KOBJ_REMOVE);
 
 	kobj->state_in_sysfs = 0;
-	/* Inlined kobj_kset_leave */
 	if (kobj->kset) {
 		spin_lock(&kobj->kset->list_lock);
 		list_del_init(&kobj->entry);
@@ -139,8 +123,6 @@ struct kobject *__must_check kobject_get_unless_zero(struct kobject *kobj)
 		kobj = NULL;
 	return kobj;
 }
-
-/* kobject_cleanup inlined into kobject_release */
 
 static void kobject_release(struct kref *kref)
 {
@@ -177,7 +159,6 @@ void kobject_put(struct kobject *kobj)
 
 /* dynamic_kobj_release, dynamic_kobj_ktype, kobject_create,
    kobject_create_and_add removed - never called */
-/* kset_init inlined into kset_register - single caller */
 
 static ssize_t kobj_attr_show(struct kobject *kobj, struct attribute *attr,
 			      char *buf)
@@ -227,9 +208,6 @@ int kset_register(struct kset *k)
 	return 0;
 }
 
-/* kset_unregister removed - no callers */
-/* kset_find_obj removed - no callers after driver_find removal */
-
 static void kset_release(struct kobject *kobj)
 {
 	struct kset *kset = container_of(kobj, struct kset, kobj);
@@ -267,7 +245,6 @@ static struct kset *kset_create(const char *name, struct kobject *parent_kobj)
 		kfree(kset);
 		return NULL;
 	}
-	/* uevent_ops removed - always NULL */
 	kset->kobj.parent = parent_kobj;
 
 	kset->kobj.ktype = &kset_ktype;

@@ -1,8 +1,6 @@
 #ifndef __LINUX_COMPLETION_H
 #define __LINUX_COMPLETION_H
 
-
-/* --- Inlined from swait.h --- */
 #ifndef _LINUX_SWAIT_H
 #define _LINUX_SWAIT_H
 
@@ -52,8 +50,6 @@ struct completion {
 #define DECLARE_COMPLETION(work) \
 	struct completion work = COMPLETION_INITIALIZER(work)
 
-/* DECLARE_COMPLETION_ONSTACK removed - no callers */
-
 static inline void init_completion(struct completion *x)
 {
 	x->done = 0;
@@ -62,7 +58,6 @@ static inline void init_completion(struct completion *x)
 
 /* Stubs from kernel/sched/completion.c - inlined */
 static inline void wait_for_completion(struct completion *x) { }
-/* wait_for_completion_killable removed - never called */
 static inline void complete(struct completion *x) { }
 
 #endif

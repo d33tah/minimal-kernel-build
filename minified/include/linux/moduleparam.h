@@ -7,14 +7,10 @@
 #define MODULE_PARAM_PREFIX KBUILD_MODNAME "."
 #define __MODULE_INFO_PREFIX KBUILD_MODNAME "."
 
-/* MAX_PARAM_PREFIX_LEN removed - unused */
-
 #define __MODULE_INFO(tag, name, info)					  \
 	static const char __UNIQUE_ID(name)[]				  \
 		__used __section(".modinfo") __aligned(1)		  \
 		= __MODULE_INFO_PREFIX __stringify(tag) "=" info
-
-/* __MODULE_PARM_TYPE removed - unused */
 
 struct kernel_param;
 
@@ -54,9 +50,6 @@ struct kernel_param {
 
 extern const struct kernel_param __start___param[], __stop___param[];
 
-
-/* All module_param macros, __moduleparam_const removed - never used */
-
 extern bool parameq(const char *name1, const char *name2);
 
 extern bool parameqn(const char *name1, const char *name2, size_t n);
@@ -70,12 +63,6 @@ extern char *parse_args(const char *name,
 		      void *arg,
 		      int (*unknown)(char *param, char *val,
 				     const char *doing, void *arg));
-
-
-/* __param_check, param_check_int, param_check_uint, etc. removed - unused */
-
-/* param_ops_charp, param_ops_bool removed - never used */
-
 
 struct module;
 

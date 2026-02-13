@@ -10,8 +10,6 @@ extern void check_bugs(void);
 #include <asm/alternative.h>
 #include <asm/nospec-branch.h>
 
-/* x86_spec_ctrl_base, x86_spec_ctrl_current removed - never used */
-
 u64 __ro_after_init x86_amd_ls_cfg_base;
 u64 __ro_after_init x86_amd_ls_cfg_ssbd_mask;
 

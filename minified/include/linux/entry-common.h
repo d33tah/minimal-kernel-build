@@ -4,10 +4,8 @@
 #include <linux/static_call_types.h>
 #include <linux/ptrace.h>
 #include <linux/syscalls.h>
-/* seccomp.h removed - header is empty */
 #include <linux/sched.h>
 
-/* --- 2026-01-26 04:40 --- Inlined from asm/entry-common.h */
 #include <linux/sched/task_stack.h>
 #include <asm/nospec-branch.h>
 #include <asm/fpu/api.h>
@@ -64,11 +62,7 @@ static __always_inline void arch_enter_from_user_mode(struct pt_regs *regs);
 static __always_inline void arch_enter_from_user_mode(struct pt_regs *regs) {}
 #endif
 
-/* syscall_enter_from_user_mode_prepare/work removed - only combined version used */
-
 long syscall_enter_from_user_mode(struct pt_regs *regs, long syscall);
-
-/* local_irq_enable_exit_to_user inlined into common.c */
 
 static inline void local_irq_disable_exit_to_user(void);
 
@@ -78,8 +72,6 @@ static inline void local_irq_disable_exit_to_user(void)
 	local_irq_disable();
 }
 #endif
-
-/* arch_exit_to_user_mode_work, arch_exit_to_user_mode_prepare removed - never called */
 
 static __always_inline void arch_exit_to_user_mode(void);
 

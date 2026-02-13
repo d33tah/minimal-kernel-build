@@ -1,18 +1,14 @@
 #ifndef _LINUX_LOCAL_LOCK_H
 #define _LINUX_LOCAL_LOCK_H
 
-/* Inlined from local_lock_internal.h */
 #include <linux/percpu-defs.h>
 #include <linux/lockdep.h>
-
 
 typedef struct {
 } local_lock_t;
 
 #define INIT_LOCAL_LOCK(lockname)	{ }
 
-/* __local_lock_init, local_lock_init removed - never called */
-/* local_lock_acquire/release are empty stubs - simplified macros */
 #define __local_lock(lock)		preempt_disable()
 #define __local_lock_irqsave(lock, flags) local_irq_save(flags)
 #define __local_unlock(lock)		preempt_enable()

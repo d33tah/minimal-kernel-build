@@ -15,7 +15,6 @@
 # define __ASM_REGPFX			%%
 #endif
 
-/* _ASM_BYTES removed - unused */
 /* 32-bit only kernel */
 #define __ASM_SEL(a,b)		__ASM_FORM(a)
 #define __ASM_SEL_RAW(a,b)	__ASM_FORM_RAW(a)
@@ -23,8 +22,6 @@
 #define __ASM_SIZE(inst, ...)	__ASM_SEL(inst##l##__VA_ARGS__, \
 					  inst##q##__VA_ARGS__)
 #define __ASM_REG(reg)         __ASM_SEL_RAW(e##reg, r##reg)
-
-/* _ASM_PTR, _ASM_ALIGN removed - never used */
 
 /* Keep only used register macros */
 #define _ASM_AX		__ASM_REG(ax)
@@ -35,7 +32,6 @@
 
 #define _ASM_RIP(x)	__ASM_SEL_RAW(x, x (__ASM_REGPFX rip))
 
- 
 # define CC_SET(c) "\n\t/* output condition code " #c "*/\n"
 # define CC_OUT(c) "=@cc" #c
 
@@ -74,7 +70,6 @@
 #define	EX_TYPE_UCOPY_LEN1		(EX_TYPE_UCOPY_LEN | EX_DATA_IMM(1))
 #define	EX_TYPE_UCOPY_LEN4		(EX_TYPE_UCOPY_LEN | EX_DATA_IMM(4))
 
- 
 #ifdef __ASSEMBLY__
 
 # define _ASM_EXTABLE_TYPE(from, to, type)			\
@@ -134,9 +129,6 @@
 	UNDEFINE_EXTABLE_TYPE_REG						\
 	" .popsection\n"
 
- 
-
- 
 register unsigned long current_stack_pointer asm(_ASM_SP);
 #define ASM_CALL_CONSTRAINT "+r" (current_stack_pointer)
 #endif  

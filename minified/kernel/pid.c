@@ -11,7 +11,6 @@
 #include <linux/refcount.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/task.h>
-/* linux/ptrace.h, linux/file.h removed - unused */
 #include <linux/idr.h>
 
 struct pid init_struct_pid = {
@@ -127,7 +126,6 @@ struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 
 			if (tid != 1 && !tmp->child_reaper)
 				goto out_free;
-			/* checkpoint_restore_ns_capable always true - removed check */
 			set_tid_size--;
 		}
 
@@ -208,8 +206,6 @@ struct pid *find_pid_ns(int nr, struct pid_namespace *ns)
 	return idr_find(&ns->idr, nr);
 }
 
-/* find_vpid removed - only used by find_get_pid which is also unused */
-
 static struct pid **task_pid_ptr(struct task_struct *task, enum pid_type type)
 {
 	return (type == PIDTYPE_PID) ? &task->thread_pid :
@@ -221,8 +217,6 @@ void attach_pid(struct task_struct *task, enum pid_type type)
 	struct pid *pid = *task_pid_ptr(task, type);
 	hlist_add_head_rcu(&task->pid_links[type], &pid->tasks[type]);
 }
-
-/* detach_pid, exchange_tids, transfer_pid removed - do_exit gutted, no callers */
 
 struct task_struct *pid_task(struct pid *pid, enum pid_type type)
 {

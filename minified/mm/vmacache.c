@@ -17,8 +17,6 @@ void vmacache_update(unsigned long addr, struct vm_area_struct *newvma)
 		current->vmacache.vmas[VMACACHE_HASH(addr)] = newvma;
 }
 
-/* vmacache_valid inlined into vmacache_find */
-
 struct vm_area_struct *vmacache_find(struct mm_struct *mm, unsigned long addr)
 {
 	int idx = VMACACHE_HASH(addr);
@@ -38,7 +36,6 @@ struct vm_area_struct *vmacache_find(struct mm_struct *mm, unsigned long addr)
 
 		if (vma) {
 			if (vma->vm_start <= addr && vma->vm_end > addr) {
-				/* count_vm_vmacache_event removed */
 				return vma;
 			}
 		}

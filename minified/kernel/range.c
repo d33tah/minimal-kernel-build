@@ -1,8 +1,5 @@
-/* linux/init.h removed - unused */
 #include <linux/minmax.h>
-/* linux/printk.h removed - unused */
 #include <linux/string.h>
-/* Inlined from range.h */
 struct range {
 	u64 start;
 	u64 end;

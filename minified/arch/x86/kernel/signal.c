@@ -7,7 +7,6 @@
 #include <linux/smp.h>
 #include <linux/kernel.h>
 #include <linux/errno.h>
-/* linux/wait.h removed - wait macros not used */
 #include <asm/unistd.h>
 #include <linux/stddef.h>
 #include <linux/personality.h>
@@ -16,11 +15,9 @@
 #include <linux/syscalls.h>
 
 #include <asm/processor.h>
-/* ucontext.h inlined into sigframe.h */
 #include <asm/fpu/signal.h>
 #include <asm/fpu/xstate.h>
 #include <asm/vdso.h>
-/* mce.h, vm86.h removed - empty */
 #include <asm/syscall.h>
 #include <asm/sigframe.h>
 #include <asm/signal.h>
@@ -31,8 +28,6 @@
 
 #define FRAME_ALIGNMENT 16UL
 #define MAX_FRAME_PADDING (FRAME_ALIGNMENT - 1)
-
-/* sigreturn, rt_sigreturn syscalls removed - not in syscall table */
 
 #define MAX_FRAME_SIGINFO_UCTXT_SIZE sizeof(struct sigframe_ia32)
 
@@ -59,14 +54,8 @@ unsigned long get_sigframe_size(void)
 	return max_frame_size;
 }
 
-/* setup_rt_frame, handle_signal removed - get_signal always returns false */
-
-/* get_nr_restart_syscall inlined - always returns __NR_restart_syscall */
-
 void arch_do_signal_or_restart(struct pt_regs *regs)
 {
-	/* get_signal always returns false - signal handling dead code removed */
-
 	if (syscall_get_nr(current, regs) != -1) {
 		switch (syscall_get_error(current, regs)) {
 		case -ERESTARTNOHAND:
@@ -85,5 +74,3 @@ void arch_do_signal_or_restart(struct pt_regs *regs)
 
 	restore_saved_sigmask();
 }
-
-/* signal_fault removed - never called */

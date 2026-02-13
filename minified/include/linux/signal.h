@@ -7,7 +7,6 @@
 #include <asm-generic/siginfo.h>
 #include <linux/string.h>
 
-/* Inlined from signal_types.h (guarded to avoid redefinition with sched.h) */
 #ifndef _LINUX_SIGNAL_TYPES_INLINED
 #define _LINUX_SIGNAL_TYPES_INLINED
 
@@ -38,15 +37,10 @@ struct k_sigaction {
 
 struct task_struct;
 
-/* Removed: print_fatal_signals, copy_siginfo - never used */
-
 static inline void clear_siginfo(kernel_siginfo_t *info)
 {
 	memset(info, 0, sizeof(*info));
 }
-
-
-/* copy_siginfo_to_user removed - never called */
 
 #ifndef __HAVE_ARCH_SIG_BITOPS
 #include <linux/bitops.h>
@@ -69,10 +63,7 @@ static inline void sigdelset(sigset_t *set, int _sig)
 		set->sig[sig / _NSIG_BPW] &= ~(1UL << (sig % _NSIG_BPW));
 }
 
-
 #endif  
-
-/* sigisemptyset removed - never called */
 
 static inline int sigequalsets(const sigset_t *set1, const sigset_t *set2)
 {
@@ -83,20 +74,12 @@ static inline int sigequalsets(const sigset_t *set1, const sigset_t *set2)
 
 #ifndef __HAVE_ARCH_SIG_SETOPS
 
-/* sigandsets, sigandnsets removed - never called */
-
-/* _SIG_SET_OP and _sig_not macros removed - never used to generate functions */
-
 /* Simplified - _NSIG_WORDS is 2 on x86-32 (~10 LOC) */
 static inline void sigemptyset(sigset_t *set)
 {
 	set->sig[1] = 0;
 	set->sig[0] = 0;
 }
-
-
-
-/* sigdelsetmask removed - never called */
 
 /* Simplified - _NSIG_WORDS is 2 on x86-32 (~9 LOC) */
 #endif  
@@ -107,20 +90,9 @@ static inline void init_sigpending(struct sigpending *sig)
 	INIT_LIST_HEAD(&sig->list);
 }
 
-/* flush_sigqueue removed - do_exit gutted */
-
-/* struct timespec, pt_regs forward decls removed - unused */
 enum pid_type;
 
-/* do_send_sig_info, group_send_sig_info removed - no callers */
-/* sigprocmask, set_current_blocked removed - never called */
 extern void __set_current_blocked(const sigset_t *);
-/* show_unhandled_signals removed - never used */
-
-/* get_signal, signal_setup_done removed - never called */
-/* exit_signals removed - do_exit gutted */
-
-/* SIG_KTHREAD_KERNEL removed - unused */
 
 extern struct kmem_cache *sighand_cachep;
 
@@ -141,7 +113,5 @@ extern struct kmem_cache *sighand_cachep;
 #define sig_kernel_ignore(sig)		siginmask(sig, SIG_KERNEL_IGNORE_MASK)
 
 void signals_init(void);
-
-/* __save_altstack and unsafe_save_altstack removed - never called */
 
 #endif  

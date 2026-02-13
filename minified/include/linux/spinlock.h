@@ -1,7 +1,6 @@
 #ifndef __LINUX_SPINLOCK_H
 #define __LINUX_SPINLOCK_H
 
-
 #include <linux/typecheck.h>
 #include <linux/preempt.h>
 #include <linux/linkage.h>
@@ -13,13 +12,10 @@
 #include <linux/lockdep.h>
 #include <asm/barrier.h>
 
-
-
 #include <linux/spinlock_types.h>
 
 #include <asm/processor.h>
 #include <asm/barrier.h>
-/* arch_spin_is_locked removed - never used */
 #define arch_spin_lock(lock)		do { barrier(); (void)(lock); } while (0)
 #define arch_spin_unlock(lock)		do { barrier(); (void)(lock); } while (0)
 #define arch_spin_trylock(lock)		({ barrier(); (void)(lock); 1; })
@@ -28,9 +24,6 @@
 # define raw_spin_lock_init(lock)				\
 	do { *(lock) = __RAW_SPIN_LOCK_UNLOCKED(lock); } while (0)
 
-/* raw_spin_is_locked, smp_mb__after_spinlock removed - unused */
-
-
 #define raw_spin_trylock(lock)	__cond_lock(lock, _raw_spin_trylock(lock))
 
 #define raw_spin_lock(lock)	_raw_spin_lock(lock)
@@ -38,13 +31,11 @@
 # define raw_spin_lock_nested(lock, subclass)		\
 	_raw_spin_lock(((void)(subclass), (lock)))
 
-
 #define raw_spin_lock_irqsave(lock, flags)		\
 	do {						\
 		typecheck(unsigned long, flags);	\
 		_raw_spin_lock_irqsave(lock, flags);	\
 	} while (0)
-
 
 #define raw_spin_lock_irq(lock)		_raw_spin_lock_irq(lock)
 #define raw_spin_unlock(lock)		_raw_spin_unlock(lock)
@@ -56,29 +47,17 @@
 		_raw_spin_unlock_irqrestore(lock, flags);	\
 	} while (0)
 
-
-/* raw_spin_trylock_irqsave removed - unused */
-
-/* rwlock_init removed - unused */
-
 /* do_raw_read_lock, do_raw_read_trylock, do_raw_read_unlock,
    do_raw_write_lock, do_raw_write_trylock, do_raw_write_unlock removed - unused */
 
-/* read_trylock, write_trylock removed - unused */
-
 #define write_lock(lock)	_raw_write_lock(lock)
 #define read_lock(lock)		_raw_read_lock(lock)
-
-/* write_lock_irqsave removed - unused */
-
 
 #define write_lock_irq(lock)		_raw_write_lock_irq(lock)
 #define read_unlock(lock)		_raw_read_unlock(lock)
 #define write_unlock(lock)		_raw_write_unlock(lock)
 #define write_unlock_irq(lock)		_raw_write_unlock_irq(lock)
 
-
-/* Inlined from spinlock_api_up.h */
 #define assert_raw_spin_locked(lock)	do { (void)(lock); } while (0)
 #define ___LOCK(lock) do { __acquire(lock); (void)(lock); } while (0)
 #define __LOCK(lock) do { preempt_disable(); ___LOCK(lock); } while (0)
@@ -103,20 +82,16 @@
 #define _raw_spin_unlock_irqrestore(lock, flags) __UNLOCK_IRQRESTORE(lock, flags)
 /* End of spinlock_api_up.h */
 
-
-
 static __always_inline raw_spinlock_t *spinlock_check(spinlock_t *lock)
 {
 	return &lock->rlock;
 }
-
 
 # define spin_lock_init(_lock)			\
 do {						\
 	spinlock_check(_lock);			\
 	*(_lock) = __SPIN_LOCK_UNLOCKED(_lock);	\
 } while (0)
-
 
 static __always_inline void spin_lock(spinlock_t *lock)
 {
@@ -158,10 +133,7 @@ static __always_inline void spin_unlock_irqrestore(spinlock_t *lock, unsigned lo
 	raw_spin_unlock_irqrestore(&lock->rlock, flags);
 }
 
-/* spin_trylock_irqsave removed - unused */
-
 #define assert_spin_locked(lock)	assert_raw_spin_locked(&(lock)->rlock)
-
 
 #include <linux/atomic.h>
 extern int _atomic_dec_and_lock(atomic_t *atomic, spinlock_t *lock);

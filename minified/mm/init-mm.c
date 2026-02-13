@@ -24,17 +24,13 @@ struct mm_struct init_mm = { .mm_rb = RB_ROOT,
 			     .pgd = swapper_pg_dir,
 			     .mm_users = ATOMIC_INIT(2),
 			     .mm_count = ATOMIC_INIT(1),
-			     /* write_protect_seq removed - never used */
 			     MMAP_LOCK_INITIALIZER(init_mm).page_table_lock =
 				     __SPIN_LOCK_UNLOCKED(
 					     init_mm.page_table_lock),
-			     /* .arg_lock init removed - field was removed */
 			     .mmlist = LIST_HEAD_INIT(init_mm.mmlist),
 			     .user_ns = &init_user_ns,
 			     .cpu_bitmap = CPU_BITS_NONE,
 			     INIT_MM_CONTEXT(init_mm) };
-
-/* setup_initial_init_mm removed - was empty stub */
 
 /* From vmstat.c */
 atomic_long_t vm_zone_stat[NR_VM_ZONE_STAT_ITEMS] __cacheline_aligned_in_smp;

@@ -1,5 +1,4 @@
 
-
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/interrupt.h>
@@ -12,9 +11,7 @@
 int notify_die(enum die_val val, const char *str, struct pt_regs *regs,
 	       long err, int trap, int sig);
 #include <linux/kernel.h>
-/* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/ptrace.h>
-/* linux/delay.h, linux/errno.h removed - not used */
 #include <linux/sched.h>
 #include <linux/sched/task_stack.h>
 #include <linux/init.h>
@@ -33,13 +30,10 @@ int notify_die(enum die_val val, const char *str, struct pt_regs *regs,
 #include <asm/fpu/api.h>
 #include <asm/cpu.h>
 #include <asm/cpu_entry_area.h>
-/* mce.h removed - header is empty */
 #include <asm/fixmap.h>
 #include <asm/alternative.h>
 #include <asm/fpu/xstate.h>
-/* asm/vm86.h removed - CONFIG_VM86 not set, no VM86 references remain */
 #include <asm/vdso.h>
-/* tdx.h removed - header is empty */
 #include <asm/processor-flags.h>
 #include <asm/setup.h>
 #include <asm/proto.h>
@@ -65,8 +59,6 @@ static __always_inline int is_valid_bugaddr(unsigned long addr)
 
 	return *(unsigned short *)addr == INSN_UD2;
 }
-
-/* do_trap_no_signal inlined into do_trap */
 
 static void do_trap(int trapnr, int signr, char *str, struct pt_regs *regs,
 		    long error_code, int sicode, void __user *addr)
@@ -99,7 +91,6 @@ static void do_error_trap(struct pt_regs *regs, long error_code, char *str,
 			  unsigned long trapnr, int signr, int sicode,
 			  void __user *addr)
 {
-	/* notify_die always returns NOTIFY_DONE - check removed */
 	notify_die(DIE_TRAP, str, regs, error_code, trapnr, signr);
 	cond_local_irq_enable(regs);
 	do_trap(trapnr, signr, str, regs, error_code, sicode, addr);
@@ -116,8 +107,6 @@ DEFINE_IDTENTRY(exc_overflow)
 {
 	do_error_trap(regs, 0, "overflow", X86_TRAP_OF, SIGSEGV, 0, NULL);
 }
-
-/* handle_invalid_op, handle_bug inlined into exc_invalid_op */
 
 DEFINE_IDTENTRY_RAW(exc_invalid_op)
 {
@@ -138,7 +127,6 @@ DEFINE_IDTENTRY_RAW(exc_invalid_op)
 	}
 
 	state = irqentry_enter(regs);
-	/* Inlined handle_invalid_op */
 	do_error_trap(regs, 0, "invalid opcode", X86_TRAP_UD, SIGILL,
 		      ILL_ILLOPN, (void __user *)regs->ip);
 	irqentry_exit(regs, state);
@@ -170,7 +158,6 @@ DEFINE_IDTENTRY_ERRORCODE(exc_stack_segment)
 
 DEFINE_IDTENTRY_ERRORCODE(exc_alignment_check)
 {
-	/* notify_die always returns NOTIFY_DONE - check removed */
 	notify_die(DIE_TRAP, "alignment check", regs, error_code, X86_TRAP_AC,
 		   SIGBUS);
 
@@ -203,7 +190,6 @@ DEFINE_IDTENTRY_DF(exc_double_fault)
 
 DEFINE_IDTENTRY(exc_bounds)
 {
-	/* notify_die always returns NOTIFY_DONE - check removed */
 	notify_die(DIE_TRAP, "bounds", regs, 0, X86_TRAP_BR, SIGSEGV);
 	cond_local_irq_enable(regs);
 
@@ -215,11 +201,8 @@ DEFINE_IDTENTRY(exc_bounds)
 	cond_local_irq_disable(regs);
 }
 
-/* get_kernel_gp_address and enum kernel_gp_hint removed - always returned GP_NO_HINT (~8 LOC) */
-
 #define GPFSTR "general protection fault"
 
-/* gp_try_fixup_and_notify inlined into exc_general_protection (~14 LOC) */
 /* gp_user_force_sig_segv inlined - single caller */
 
 DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
@@ -248,7 +231,6 @@ DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
 
 	if (error_code)
 		snprintf(desc, sizeof(desc), "segment-related " GPFSTR);
-	/* get_kernel_gp_address call and hint conditionals removed - always GP_NO_HINT (~10 LOC) */
 
 	die_addr(desc, regs, error_code, 0);
 
@@ -272,9 +254,6 @@ DEFINE_IDTENTRY_RAW(exc_int3)
 		irqentry_nmi_exit(regs, irq_state);
 	}
 }
-
-/* is_sysenter_singlestep removed - SYSENTER not used */
-/* debug_read_clear_dr6 inlined into exc_debug_user */
 
 static __always_inline void exc_debug_kernel(struct pt_regs *regs,
 					     unsigned long dr6)
@@ -360,7 +339,6 @@ static void math_error(struct pt_regs *regs, int trapnr)
 		task->thread.error_code = 0;
 		task->thread.trap_nr = trapnr;
 
-		/* notify_die always returns NOTIFY_DONE - check removed */
 		notify_die(DIE_TRAP, str, regs, 0, trapnr, SIGFPE);
 		die(str, regs, 0);
 		goto exit;
@@ -391,7 +369,6 @@ DEFINE_IDTENTRY(exc_coprocessor_error)
 
 DEFINE_IDTENTRY(exc_simd_coprocessor_error)
 {
-	/* X86_INVD_BUG disabled */
 	math_error(regs, X86_TRAP_XF);
 }
 
@@ -399,12 +376,9 @@ DEFINE_IDTENTRY(exc_spurious_interrupt_bug)
 {
 }
 
-/* handle_xfd_event removed - always returned false (~5 LOC) */
-
 DEFINE_IDTENTRY(exc_device_not_available)
 {
 	unsigned long cr0 = read_cr0();
-	/* handle_xfd_event check removed - function always returned false */
 
 	if (WARN(cr0 & X86_CR0_TS, "CR0.TS was set")) {
 		write_cr0(cr0 & ~X86_CR0_TS);
@@ -416,7 +390,6 @@ DEFINE_IDTENTRY(exc_device_not_available)
 DEFINE_IDTENTRY_SW(iret_error)
 {
 	local_irq_enable();
-	/* notify_die always returns NOTIFY_DONE - check removed */
 	notify_die(DIE_TRAP, "iret exception", regs, 0, X86_TRAP_IRET, SIGILL);
 	do_trap(X86_TRAP_IRET, SIGILL, "iret exception", regs, 0, ILL_BADSTK,
 		(void __user *)NULL);
@@ -426,8 +399,6 @@ DEFINE_IDTENTRY_SW(iret_error)
 void __init trap_init(void)
 {
 	setup_cpu_entry_areas();
-
-	/* sev_es_init_vc_handling removed - empty stub */
 
 	cpu_init_exception_handling();
 

@@ -7,14 +7,11 @@
 #include <asm/cpufeature.h>
 #include <asm/fpu/types.h>
 
-/* asm/trace/fpu.h removed - all trace stubs empty */
-
 extern void save_fpregs_to_fpstate(struct fpu *fpu);
 extern void fpu__drop(struct fpu *fpu);
 extern int  fpu_clone(struct task_struct *dst, unsigned long clone_flags, bool minimal);
 extern void fpu_flush_thread(void);
 
- 
 static inline void switch_fpu_prepare(struct fpu *old_fpu, int cpu)
 {
 	if (cpu_feature_enabled(X86_FEATURE_FPU) &&
@@ -26,7 +23,6 @@ static inline void switch_fpu_prepare(struct fpu *old_fpu, int cpu)
 	}
 }
 
- 
 static inline void switch_fpu_finish(void)
 {
 	if (cpu_feature_enabled(X86_FEATURE_FPU))

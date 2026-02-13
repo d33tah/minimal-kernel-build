@@ -2,12 +2,9 @@
 #ifndef _ASM_X86_PERCPU_H
 #define _ASM_X86_PERCPU_H
 
-/* __percpu_seg removed - __percpu_prefix is "" */
-
 #ifdef __ASSEMBLY__
 
 #define PER_CPU_VAR(var)	var
-/* INIT_PER_CPU_VAR removed - never used */
 
 #else  
 
@@ -17,10 +14,6 @@
 #define __percpu_prefix		""
 
 #define __percpu_arg(x)		__percpu_prefix "%" #x
-
-/* DECLARE_INIT_PER_CPU and init_per_cpu_var removed - unused */
-
-
 
 #define __pcpu_type_1 u8
 #define __pcpu_type_2 u16
@@ -71,7 +64,6 @@ do {									\
 	    : [var] "+m" (_var));					\
 })
 
- 
 #define percpu_add_op(size, qual, var, val)				\
 do {									\
 	const int pao_ID__ = (__builtin_constant_p(val) &&		\
@@ -108,7 +100,6 @@ do {									\
 	(typeof(_var))(unsigned long) pfo_val__;			\
 })
 
- 
 #define percpu_add_return_op(size, qual, _var, _val)			\
 ({									\
 	__pcpu_type_##size paro_tmp__ = __pcpu_cast_##size(_val);	\
@@ -120,7 +111,6 @@ do {									\
 	(typeof(_var))(unsigned long) (paro_tmp__ + _val);		\
 })
 
- 
 #define percpu_xchg_op(size, qual, _var, _nval)				\
 ({									\
 	__pcpu_type_##size pxo_old__;					\
@@ -138,7 +128,6 @@ do {									\
 	(typeof(_var))(unsigned long) pxo_old__;			\
 })
 
- 
 #define percpu_cmpxchg_op(size, qual, _var, _oval, _nval)		\
 ({									\
 	__pcpu_type_##size pco_old__ = __pcpu_cast_##size(_oval);	\
@@ -152,7 +141,6 @@ do {									\
 	(typeof(_var))(unsigned long) pco_old__;			\
 })
 
- 
 #define this_cpu_read_stable_1(pcp)	percpu_stable_op(1, "mov", pcp)
 #define this_cpu_read_stable_2(pcp)	percpu_stable_op(2, "mov", pcp)
 #define this_cpu_read_stable_4(pcp)	percpu_stable_op(4, "mov", pcp)
@@ -176,7 +164,6 @@ do {									\
 #define raw_cpu_or_2(pcp, val)		percpu_to_op(2, , "or", (pcp), val)
 #define raw_cpu_or_4(pcp, val)		percpu_to_op(4, , "or", (pcp), val)
 
- 
 #define raw_percpu_xchg_op(var, nval)					\
 ({									\
 	typeof(var) pxo_ret__ = raw_cpu_read(var);			\
@@ -236,8 +223,6 @@ do {									\
 #define raw_cpu_cmpxchg_double_4	percpu_cmpxchg8b_double
 #define this_cpu_cmpxchg_double_4	percpu_cmpxchg8b_double
 
- 
-
 static __always_inline bool x86_this_cpu_constant_test_bit(unsigned int nr,
                         const unsigned long __percpu *addr)
 {
@@ -265,8 +250,6 @@ static inline bool x86_this_cpu_variable_test_bit(int nr,
 	 ? x86_this_cpu_constant_test_bit((nr), (addr))	\
 	 : x86_this_cpu_variable_test_bit((nr), (addr)))
 
-
-/* Inlined from asm-generic/percpu.h */
 #include <linux/compiler.h>
 #include <linux/threads.h>
 #include <linux/percpu-defs.h>
@@ -483,13 +466,8 @@ do {									\
 #endif
 /* End inlined from asm-generic/percpu.h */
 
- 
 DECLARE_PER_CPU_READ_MOSTLY(unsigned long, this_cpu_off);
 
 #endif  
-
-/* EARLY_PER_CPU macros removed - unused */
- 
-
 
 #endif  

@@ -1,4 +1,3 @@
-/* linux/export.h removed - no EXPORT_SYMBOL used */
 #include <linux/spinlock.h>
 #include <linux/atomic.h>
 int _atomic_dec_and_lock(atomic_t *atomic, spinlock_t *lock)

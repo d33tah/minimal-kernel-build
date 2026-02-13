@@ -31,9 +31,6 @@ struct wait_queue_head {
 };
 typedef struct wait_queue_head wait_queue_head_t;
 
-/* struct task_struct forward decl removed - unused */
-
-
 #define __WAIT_QUEUE_HEAD_INITIALIZER(name) {					\
 	.lock		= __SPIN_LOCK_UNLOCKED(name.lock),			\
 	.head		= LIST_HEAD_INIT(name.head) }
@@ -57,8 +54,6 @@ static inline int waitqueue_active(struct wait_queue_head *wq_head)
 	return !list_empty(&wq_head->head);
 }
 
-/* remove_wait_queue removed - never called */
-
 static inline void __add_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
 {
 	struct list_head *head = &wq_head->head;
@@ -72,29 +67,23 @@ static inline void __add_wait_queue(struct wait_queue_head *wq_head, struct wait
 	list_add(&wq_entry->entry, head);
 }
 
-
 static inline void __add_wait_queue_entry_tail(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
 {
 	list_add_tail(&wq_entry->entry, &wq_head->head);
 }
 
 void __wake_up(struct wait_queue_head *wq_head, unsigned int mode, int nr, void *key);
-/* __wake_up_locked_key removed - no callers */
 void __wake_up_locked_key_bookmark(struct wait_queue_head *wq_head,
 		unsigned int mode, void *key, wait_queue_entry_t *bookmark);
-/* __wake_up_sync_key, __wake_up_locked removed - no callers */
 
 #define wake_up_all(x)			__wake_up(x, TASK_NORMAL, 0, NULL)
 #define wake_up_interruptible(x)	__wake_up(x, TASK_INTERRUPTIBLE, 1, NULL)
-
-/* ___wait_cond_timeout removed - never used */
 
 #define ___wait_is_interruptible(state)						\
 	(!__builtin_constant_p(state) ||					\
 		state == TASK_INTERRUPTIBLE || state == TASK_KILLABLE)		\
 
 extern void init_wait_entry(struct wait_queue_entry *wq_entry, int flags);
-
 
 #define ___wait_event(wq_head, condition, state, exclusive, ret, cmd)		\
 ({										\
@@ -132,8 +121,6 @@ do {										\
 	__wait_event(wq_head, condition);					\
 } while (0)
 
-/* __wait_event_interruptible removed - unused */
-
 void prepare_to_wait(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry, int state);
 long prepare_to_wait_event(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry, int state);
 void finish_wait(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry);
@@ -146,6 +133,5 @@ int autoremove_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, i
 		INIT_LIST_HEAD(&(wait)->entry);					\
 		(wait)->flags = 0;						\
 	} while (0)
-
 
 #endif  

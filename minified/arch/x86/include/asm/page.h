@@ -8,7 +8,6 @@
 
 #include <asm/page_types.h>
 
-/* --- 2025-12-08 00:22 --- Inlined from page_32.h */
 /* page_32_types.h inlined */
 #ifndef _ASM_X86_PAGE_32_DEFS_H
 #define _ASM_X86_PAGE_32_DEFS_H
@@ -68,12 +67,9 @@ static inline void copy_page(void *to, void *from)
 
 struct page;
 
-/* Inlined from range.h */
 struct range { u64 start; u64 end; };
 int add_range_with_merge(struct range *range, int az, int nr_range, u64 start, u64 end);
 int clean_sort_range(struct range *range, int az);
-
-/* clear_user_page removed - never called */
 
 static inline void copy_user_page(void *to, void *from, unsigned long vaddr,
 				  struct page *topage)
@@ -89,8 +85,6 @@ static inline void copy_user_page(void *to, void *from, unsigned long vaddr,
 #define __pa(x)		__phys_addr((unsigned long)(x))
 #endif
 
-/* __pa_nodebug removed - no callers */
-
 #define __pa_symbol(x) \
 	__phys_addr_symbol(__phys_reloc_hide((unsigned long)(x)))
 
@@ -98,14 +92,10 @@ static inline void copy_user_page(void *to, void *from, unsigned long vaddr,
 #define __va(x)			((void *)((unsigned long)(x)+PAGE_OFFSET))
 #endif
 
-/* __boot_va, __boot_pa removed - unused */
-
 #define virt_to_page(kaddr)	pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
-/* pfn_to_kaddr, __virt_addr_valid, virt_addr_valid removed - unused */
 
 #endif
 
-/* Inlined from asm-generic/memory_model.h */
 #include <linux/pfn.h>
 #ifndef ARCH_PFN_OFFSET
 #define ARCH_PFN_OFFSET		(0UL)
@@ -115,9 +105,7 @@ static inline void copy_user_page(void *to, void *from, unsigned long vaddr,
 				 ARCH_PFN_OFFSET)
 #define page_to_pfn __page_to_pfn
 #define pfn_to_page __pfn_to_page
-/* __phys_to_pfn, __pfn_to_phys, HAVE_ARCH_HUGETLB_UNMAPPED_AREA removed - unused */
 
-/* --- 2026-01-26 00:50 --- Inlined from asm-generic/getorder.h */
 #ifndef __ASSEMBLY__
 #include <linux/log2.h>
 static __always_inline __attribute_const__ int get_order(unsigned long size)

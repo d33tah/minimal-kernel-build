@@ -9,10 +9,7 @@
 #define ARCH_DEFAULT_PKEY 0
 #define execute_only_pkey(mm) (0)
 
-
-
 #include <asm/tlbflush.h>
-/* paravirt.h removed - header is empty */
 #include <asm/debugreg.h>
 
 extern atomic64_t last_mm_ctx_id;
@@ -24,8 +21,6 @@ static inline void paravirt_activate_mm(struct mm_struct *prev,
 
 DECLARE_STATIC_KEY_TRUE(rdpmc_never_available_key);
 DECLARE_STATIC_KEY_FALSE(rdpmc_always_available_key);
-
-/* init_new_context_ldt, ldt_dup_context, destroy_context_ldt, ldt_arch_exit_mmap removed - unused */
 
 static inline void load_mm_ldt(struct mm_struct *mm)
 {
@@ -39,7 +34,6 @@ static inline void switch_ldt(struct mm_struct *prev, struct mm_struct *next)
 #define enter_lazy_tlb enter_lazy_tlb
 extern void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk);
 
- 
 #define init_new_context init_new_context
 static inline int init_new_context(struct task_struct *tsk,
 				   struct mm_struct *mm)
@@ -49,14 +43,12 @@ static inline int init_new_context(struct task_struct *tsk,
 	mm->context.ctx_id = atomic64_inc_return(&last_mm_ctx_id);
 	atomic64_set(&mm->context.tlb_gen, 0);
 
-	/* init_new_context_ldt - empty stub */
 	return 0;
 }
 
 #define destroy_context destroy_context
 static inline void destroy_context(struct mm_struct *mm)
 {
-	/* destroy_context_ldt - empty stub */
 }
 
 extern void switch_mm(struct mm_struct *prev, struct mm_struct *next,
@@ -77,24 +69,13 @@ do {						\
 	loadsegment(gs, 0);			\
 } while (0)
 
-/* arch_dup_pkeys, arch_dup_mmap removed - unused */
-
 static inline void arch_exit_mmap(struct mm_struct *mm)
 {
-	/* paravirt_arch_exit_mmap and ldt_arch_exit_mmap - empty stubs, inlined */
 }
-
-/* is_64bit_mm removed - unused */
 
 static inline void arch_unmap(struct mm_struct *mm, unsigned long start,
 			      unsigned long end)
 {
 }
-
-/* arch_vma_access_permitted removed - never called, always returns true */
-
-/* __get_current_cr3_fast removed - never called */
-
-
 
 #endif  

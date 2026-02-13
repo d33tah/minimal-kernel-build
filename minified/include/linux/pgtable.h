@@ -92,7 +92,6 @@ static inline pte_t pte_sw_mkyoung(pte_t pte)
 #endif
 
 /* pte_same - x86 defines __HAVE_ARCH_PTE_SAME */
-/* pte_access_permitted, pte_accessible, flush_tlb_fix_spurious_fault removed - unused */
 
 #define pgd_addr_end(addr, end)						\
 ({	unsigned long __boundary = ((addr) + PGDIR_SIZE) & PGDIR_MASK;	\
@@ -119,7 +118,6 @@ static inline int pmd_none_or_clear_bad(pmd_t *pmd)
 }
 
 /* pgprot_nx, pgprot_noncached - x86 defines its own versions */
-/* pgprot_writecombine, pgprot_writethrough, pgprot_device removed - unused */
 
 static inline int is_zero_pfn(unsigned long pfn)
 {

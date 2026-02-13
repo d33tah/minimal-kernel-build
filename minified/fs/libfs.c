@@ -1,14 +1,9 @@
-/* blkdev.h, types.h, asm/byteorder.h, mutex.h, namei.h, writeback.h, uaccess.h removed - unused */
 #include <linux/pagemap.h>
-/* linux/slab.h removed - no slab functions */
 #include <linux/cred.h>
 #include <linux/mount.h>
-/* asm/statfs.h removed - struct statfs/statfs64 not used */
 #include <linux/fs_context.h>
 
 #include "internal.h"
-
-/* simple_getattr, simple_statfs removed - callbacks removed */
 
 /* always_delete_dentry, simple_dentry_operations removed -
    d_op never read, DCACHE_OP_DELETE never tested */
@@ -18,12 +13,10 @@ struct dentry *simple_lookup(struct inode *dir, struct dentry *dentry,
 {
 	if (dentry->d_name.len > NAME_MAX)
 		return ERR_PTR(-ENAMETOOLONG);
-	/* d_set_d_op call removed - d_op never read */
 	d_add(dentry, NULL);
 	return NULL;
 }
 
-/* dcache_dir_open/close simplified - d_alloc_cursor removed, dirs can't be opened */
 static int dcache_dir_open(struct inode *inode, struct file *file)
 {
 	return -ENOMEM;
@@ -37,26 +30,16 @@ int dcache_dir_close(struct inode *inode, struct file *file)
 /* scan_positives, dcache_dir_lseek, dcache_readdir removed -
    iterate_shared removed from file_operations */
 
-/* generic_read_dir removed - .read callback no longer exists */
-
 const struct file_operations simple_dir_operations = {
 	.open = dcache_dir_open,
 	.release = dcache_dir_close,
-	/* llseek removed - lseek syscall returns ENOSYS */
-	/* read removed - .read callback no longer exists in file_operations */
-	/* iterate_shared removed - getdents syscalls return 0 */
-	/* fsync removed - fsync syscall returns ENOSYS */
 };
-
-/* simple_super_operations removed - never used */
 
 /* init_pseudo, pseudo_fs_fill_super, pseudo_fs_get_tree, pseudo_fs_free,
    pseudo_fs_context_ops removed - init_pseudo never called (~55 LOC) */
 
 /* simple_link, simple_empty, simple_unlink, simple_rmdir, simple_rename removed
    - link/unlink/rmdir/rename syscalls return ENOSYS */
-
-/* simple_setattr removed - no chmod/chown/utimes syscalls, attr.c removed */
 
 static int simple_read_folio(struct file *file, struct folio *folio)
 {
@@ -124,11 +107,8 @@ const struct address_space_operations ram_aops = {
 	.write_end = simple_write_end,
 };
 
-/* simple_pin_fs, simple_release_fs removed - never called */
 /* simple_read_from_buffer, __generic_file_fsync, generic_file_fsync,
  * generic_check_addressable, noop_fsync removed - unused */
-
-/* alloc_anon_inode removed - never called */
 
 /* empty_dir_lookup, empty_dir_setattr, empty_dir_inode_operations,
  * empty_dir_operations, is_empty_dir_inode removed - never used */

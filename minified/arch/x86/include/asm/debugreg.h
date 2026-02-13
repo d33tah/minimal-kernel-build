@@ -2,7 +2,6 @@
 #ifndef _ASM_X86_DEBUGREG_H
 #define _ASM_X86_DEBUGREG_H
 
-
 #include <linux/bug.h>
 /* DR6 - debug status register (inlined from uapi/asm/debugreg.h) */
 #define DR6_RESERVED	(0xFFFF0FF0)
@@ -16,7 +15,6 @@
 
 DECLARE_PER_CPU(unsigned long, cpu_dr7);
 
- 
 #define get_debugreg(var, register)				\
 	(var) = native_get_debugreg(register)
 #define set_debugreg(value, register)				\
@@ -82,8 +80,6 @@ static __always_inline bool hw_breakpoint_active(void)
 	return __this_cpu_read(cpu_dr7) & DR_GLOBAL_ENABLE_MASK;
 }
 
-/* hw_breakpoint_restore removed - unused */
-
 static __always_inline unsigned long local_db_save(void)
 {
 	unsigned long dr7;
@@ -108,7 +104,5 @@ static __always_inline void local_db_restore(unsigned long dr7)
 	if (dr7)
 		set_debugreg(dr7, 7);
 }
-
-/* set_dr_addr_mask removed - never defined/used */
 
 #endif  

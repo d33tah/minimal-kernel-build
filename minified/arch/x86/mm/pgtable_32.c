@@ -1,6 +1,5 @@
 #include <linux/sched.h>
 #include <linux/kernel.h>
-/* linux/errno.h removed - no errno constants used */
 #include <linux/mm.h>
 #include <linux/swap.h>
 #include <linux/smp.h>

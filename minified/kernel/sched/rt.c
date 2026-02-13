@@ -2,7 +2,6 @@
 /* sysctl_sched_rt_period/runtime, def_rt_bandwidth, init_rt_bandwidth,
    init_rt_rq removed - all rt_rq fields removed */
 
-/* Stub functions - RT scheduler not used */
 static void enqueue_task_rt(struct rq *rq, struct task_struct *p, int f)
 {
 }
@@ -25,7 +24,6 @@ static void set_next_task_rt(struct rq *rq, struct task_struct *p, bool f)
 static void task_tick_rt(struct rq *rq, struct task_struct *p, int q)
 {
 }
-/* get_rr_interval_rt removed - callback never called (~4 LOC) */
 static void prio_changed_rt(struct rq *rq, struct task_struct *p, int o)
 {
 }
@@ -49,8 +47,6 @@ DEFINE_SCHED_CLASS(rt) = {
 	.update_curr = update_curr_rt,
 };
 
-/* Merged from deadline.c */
-/* init_dl_rq removed - all dl_rq fields removed */
 static void enqueue_task_dl(struct rq *rq, struct task_struct *p, int flags)
 {
 }

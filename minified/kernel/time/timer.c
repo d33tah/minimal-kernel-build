@@ -4,9 +4,6 @@
    asm/unistd.h, asm/timex.h, asm/io.h, linux/export.h removed - unused */
 #include <linux/percpu.h>
 #include <linux/mm.h>
-/* linux/swap.h removed - unused */
-/* linux/kallsyms.h removed - unused */
-/* irq_work.h, linux/delay.h removed - not used */
 #include <linux/jiffies.h>
 #include <linux/printk.h>
 #include <linux/sched/debug.h>
@@ -22,12 +19,7 @@ void init_timer_key(struct timer_list *timer, void (*func)(struct timer_list *),
 {
 	timer->entry.pprev = NULL;
 	timer->function = func;
-	/* timer->flags removed - write-only (never read) */
-	/* lockdep_init_map removed - empty stub */
 }
-/* mod_timer, del_timer removed - never called */
-
-/* update_process_times removed - never called (~6 LOC) */
 
 signed long __sched schedule_timeout(signed long timeout)
 {
@@ -51,12 +43,9 @@ signed long __sched schedule_timeout(signed long timeout)
 out:
 	return timeout < 0 ? 0 : timeout;
 }
-/* schedule_timeout_interruptible removed - never called */
 
 signed long __sched schedule_timeout_uninterruptible(signed long timeout)
 {
 	__set_current_state(TASK_UNINTERRUPTIBLE);
 	return schedule_timeout(timeout);
 }
-
-/* init_timers, msleep, msleep_interruptible removed - never called */

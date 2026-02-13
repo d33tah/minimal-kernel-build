@@ -3,10 +3,8 @@
 /* error.h inlined */
 void warn(char *m);
 void error(char *m) __noreturn;
-/* --- 2026-01-26 04:10 --- pgtable.h was empty (just guards), removed */
 #include "../string.h"
 #include "../voffset.h"
-/* Inlined from asm/bootparam_utils.h */
 static void sanitize_boot_params(struct boot_params *boot_params)
 {
 	(void)boot_params;
@@ -14,7 +12,6 @@ static void sanitize_boot_params(struct boot_params *boot_params)
 
 #define STATIC static
 #define MALLOC_VISIBLE
-/* Inlined from linux/decompress/mm.h */
 #ifdef STATIC
 
 #ifndef STATIC_RW_DATA
@@ -55,8 +52,6 @@ MALLOC_VISIBLE void free(void *where)
 	if (!malloc_count)
 		malloc_ptr = free_mem_ptr;
 }
-
-/* large_malloc/large_free removed - never used (was for compression formats) */
 
 #define INIT
 
@@ -155,8 +150,6 @@ void __putstr(const char *s)
 	outb(0xff & (pos >> 1), vidport + 1);
 }
 
-/* __puthex removed - no callers */
-
 static inline void handle_relocations(void *output, unsigned long output_len,
 				      unsigned long virt_addr)
 {
@@ -230,8 +223,6 @@ asmlinkage __visible void *extract_kernel(void *rmode, memptr heap,
 	cols = boot_params->screen_info.orig_video_cols;
 
 	init_default_io_ops();
-	/* early_tdx_detect removed - was empty stub */
-	/* console_init removed - was empty stub */
 
 	/* Ultra-early VGA Hello World - in decompressor */
 	{
@@ -244,7 +235,6 @@ asmlinkage __visible void *extract_kernel(void *rmode, memptr heap,
 		}
 	}
 
-	/* get_rsdp_addr always returns 0 */
 	boot_params->acpi_rsdp_addr = 0;
 
 	debug_putstr("early console in extract_kernel\n");
@@ -261,8 +251,6 @@ asmlinkage __visible void *extract_kernel(void *rmode, memptr heap,
 	debug_putaddr(kernel_total_size);
 	debug_putaddr(needed_size);
 
-	/* choose_random_location removed - was empty stub (no KASLR) */
-
 	if ((unsigned long)output & (MIN_KERNEL_ALIGN - 1))
 		error("Destination physical address inappropriately aligned");
 	if (virt_addr & (MIN_KERNEL_ALIGN - 1))
@@ -278,8 +266,5 @@ asmlinkage __visible void *extract_kernel(void *rmode, memptr heap,
 	parse_elf(output);
 	handle_relocations(output, output_len, virt_addr);
 	debug_putstr("done.\nBooting the kernel.\n");
-	/* cleanup_exception_handling removed - was empty stub */
 	return output;
 }
-
-/* fortify_panic removed - no callers */

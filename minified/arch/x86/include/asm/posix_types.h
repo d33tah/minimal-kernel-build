@@ -15,7 +15,6 @@ typedef unsigned short	__kernel_gid_t;
 typedef unsigned short	__kernel_old_dev_t;
 #define __kernel_old_dev_t __kernel_old_dev_t
 
-/* Inlined from asm-generic/posix_types.h */
 #include <asm/bitsperlong.h>
 
 #ifndef __kernel_long_t

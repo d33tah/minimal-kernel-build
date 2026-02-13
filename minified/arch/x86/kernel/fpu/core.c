@@ -1,15 +1,11 @@
 #include <asm/fpu/api.h>
-/* asm/fpu/regset.h removed - not used */
 #include <asm/fpu/sched.h>
 #include <asm/fpu/signal.h>
 #include <asm/fpu/types.h>
 #include <asm/traps.h>
 #include <asm/irq_regs.h>
 
-/* Removed: #include <uapi/asm/kvm.h> - not needed for minimal kernel */
-
 #include <linux/hardirq.h>
-/* linux/vmalloc.h removed - no vmalloc functions used */
 
 /* context.h inlined */
 #include <asm/fpu/xstate.h>
@@ -76,21 +72,14 @@ struct fpu_state_config fpu_user_cfg __ro_after_init;
 
 struct fpstate init_fpstate __ro_after_init;
 
-/* in_kernel_fpu removed - only used by removed kernel_fpu_begin_mask/end */
-
 DEFINE_PER_CPU(struct fpu *, fpu_fpregs_owner_ctx);
 
-/* irq_fpu_usable removed - only called from removed kernel_fpu_begin_mask */
-
 #define AVX512_TRACKING_MASK (XFEATURE_MASK_ZMM_Hi256 | XFEATURE_MASK_Hi16_ZMM)
-
-/* update_avx_timestamp inlined into save_fpregs_to_fpstate */
 
 void save_fpregs_to_fpstate(struct fpu *fpu)
 {
 	if (likely(use_xsave())) {
 		os_xsave(fpu->fpstate);
-		/* Inlined update_avx_timestamp */
 		if (fpu->fpstate->regs.xsave.header.xfeatures &
 		    AVX512_TRACKING_MASK)
 			fpu->avx512_timestamp = jiffies;
@@ -134,9 +123,6 @@ void fpu_reset_from_exception_fixup(void)
 	restore_fpregs_from_fpstate(&init_fpstate, XFEATURE_MASK_FPSTATE);
 }
 
-/* kernel_fpu_begin_mask removed - never called */
-/* kernel_fpu_end removed - never called */
-
 void fpu_sync_fpstate(struct fpu *fpu)
 {
 	WARN_ON_FPU(fpu != &current->thread.fpu);
@@ -154,8 +140,6 @@ static inline unsigned int init_fpstate_copy_size(void)
 
 	return sizeof(init_fpstate.regs.xsave);
 }
-
-/* fpstate_init_fxstate, fpstate_init_fstate inlined into fpstate_init_user */
 
 void fpstate_init_user(struct fpstate *fpstate)
 {
@@ -177,8 +161,6 @@ void fpstate_init_user(struct fpstate *fpstate)
 	}
 }
 
-/* __fpstate_reset inlined into fpstate_reset - single caller */
-
 void fpstate_reset(struct fpu *fpu)
 {
 	struct fpstate *fpstate;
@@ -196,8 +178,6 @@ void fpstate_reset(struct fpu *fpu)
 
 	fpu->guest_perm = fpu->perm;
 }
-
-/* fpu_inherit_perms removed - was empty stub */
 
 int fpu_clone(struct task_struct *dst, unsigned long clone_flags, bool minimal)
 {
@@ -225,7 +205,6 @@ int fpu_clone(struct task_struct *dst, unsigned long clone_flags, bool minimal)
 	if (test_thread_flag(TIF_NEED_FPU_LOAD))
 		fpregs_restore_userregs();
 	save_fpregs_to_fpstate(dst_fpu);
-	/* CLONE_THREAD never set - fpu_inherit_perms call removed (was empty) */
 	fpregs_unlock();
 
 	if (use_xsave())
@@ -235,7 +214,6 @@ int fpu_clone(struct task_struct *dst, unsigned long clone_flags, bool minimal)
 	return 0;
 }
 
-/* Stub: fpu_thread_struct_whitelist not used externally */
 void fpu_thread_struct_whitelist(unsigned long *offset, unsigned long *size)
 {
 	*offset = 0;
@@ -254,8 +232,6 @@ void fpu__drop(struct fpu *fpu)
 
 	preempt_enable();
 }
-
-/* restore_fpregs_from_init_fpstate, fpu_reset_fpregs removed/inlined */
 
 void fpu_flush_thread(void)
 {
@@ -276,8 +252,6 @@ void switch_fpu_return(void)
 
 	fpregs_restore_userregs();
 }
-
-/* fpregs_mark_activate removed - never called */
 
 int fpu__exception_code(struct fpu *fpu, int trap_nr)
 {

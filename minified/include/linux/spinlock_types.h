@@ -1,7 +1,6 @@
 #ifndef __LINUX_SPINLOCK_TYPES_H
 #define __LINUX_SPINLOCK_TYPES_H
 
-/* --- Inlined from spinlock_types_raw.h --- */
 #include <linux/types.h>
 
 typedef struct { } arch_spinlock_t;
@@ -53,8 +52,6 @@ typedef struct spinlock {
 
 #define DEFINE_SPINLOCK(x)	spinlock_t x = __SPIN_LOCK_UNLOCKED(x)
 
-
-/* Inlined from rwlock_types.h */
 # define RW_DEP_MAP_INIT(lockname)
 typedef struct {
 	arch_rwlock_t raw_lock;

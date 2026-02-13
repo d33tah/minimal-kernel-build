@@ -2,10 +2,7 @@
 #ifndef _ASM_X86_HW_IRQ_H
 #define _ASM_X86_HW_IRQ_H
 
- 
-
 #include <asm/irq_vectors.h>
-/* IRQ_MATRIX_BITS removed - never used */
 
 #ifndef __ASSEMBLY__
 
@@ -16,9 +13,6 @@
 #include <asm/irq.h>
 #include <asm/sections.h>
 
-
- 
-/* irq_err_count removed - only incremented, never read */
 extern char irq_entries_start[];
 
 #define VECTOR_UNUSED		NULL

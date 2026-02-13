@@ -42,22 +42,14 @@ struct pcpu_alloc_info {
 	struct pcpu_group_info	groups[];
 };
 
-/* enum pcpu_fc removed - never used */
-/* pcpu_fc_cpu_to_node_fn_t and pcpu_fc_cpu_distance_fn_t removed - unused */
-
-/* pcpu_alloc_alloc_info, pcpu_free_alloc_info removed - only used in mm/percpu.c */
-
 extern void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 					 void *base_addr);
-
 
 extern void __init setup_per_cpu_areas(void);
 
 extern void __percpu *__alloc_percpu(size_t size, size_t align) __alloc_size(1);
-/* free_percpu removed - unused */
 extern phys_addr_t per_cpu_ptr_to_phys(void *addr);
 
-/* alloc_percpu_gfp removed - unused */
 #define alloc_percpu(type)						\
 	(typeof(type) __percpu *)__alloc_percpu(sizeof(type),		\
 						__alignof__(type))

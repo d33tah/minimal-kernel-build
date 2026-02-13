@@ -8,16 +8,12 @@
 /* __noretpoline is never defined, so __noinitretpoline is always empty */
 #define __noinitretpoline
 
-
 #define __init		__section(".init.text") __cold  __latent_entropy __noinitretpoline __nocfi
 #define __initdata	__section(".init.data")
 #define __initconst	__section(".init.rodata")
-/* __exitdata, __exit_call removed - never used (no modules) */
 
 #define __ref            __section(".ref.text") noinline
 #define __refdata        __section(".ref.data")
-
-/* __exit removed - never used (no modules) */
 
 #define __meminit        __section(".meminit.text") __cold notrace \
 						  __latent_entropy
@@ -27,14 +23,11 @@
 #define __INIT		.section	".init.text","ax"
 
 #define __INITDATA	.section	".init.data","aw",%progbits
-/* __INITRODATA removed - never used */
 
-/* __REF removed - never used */
 #define __REFDATA        .section       ".ref.data", "aw"
 
 #ifndef __ASSEMBLY__
 typedef int (*initcall_t)(void);
-/* exitcall_t removed - never used (no modules) */
 
 typedef int initcall_entry_t;
 
@@ -45,8 +38,6 @@ static inline initcall_t initcall_from_entry(initcall_entry_t *entry)
 
 extern initcall_entry_t __con_initcall_start[], __con_initcall_end[];
 
-/* typedef ctor_fn_t removed - never used */
-
 struct file_system_type;
 
 extern int do_one_initcall(initcall_t fn);
@@ -54,17 +45,13 @@ extern char __initdata boot_command_line[];
 
 void setup_arch(char **);
 void prepare_namespace(void);
-/* init_rootfs removed - was empty stub */
 extern struct file_system_type rootfs_fs_type;
 
-/* mark_rodata_ro removed - never called */
 extern void (*late_time_init)(void);
-
 
 #endif
 
 #ifndef __ASSEMBLY__
-
 
 #define __initcall_id(fn)					\
 	__PASTE(__KBUILD_MODNAME,				\
@@ -108,22 +95,13 @@ extern void (*late_time_init)(void);
 #define __define_initcall(fn, id) ___define_initcall(fn, id, .initcall##id)
 
 #define early_initcall(fn)		__define_initcall(fn, early)
-/* pure_initcall removed - unused */
 #define core_initcall(fn)		__define_initcall(fn, 1)
-/* core_initcall_sync removed - unused */
-/* postcore_initcall_sync, arch_initcall, arch_initcall_sync removed - unused */
 #define subsys_initcall(fn)		__define_initcall(fn, 4)
-/* subsys_initcall_sync removed - unused */
 #define fs_initcall(fn)			__define_initcall(fn, 5)
-/* fs_initcall_sync, rootfs_initcall removed - unused */
 #define device_initcall(fn)		__define_initcall(fn, 6)
-/* device_initcall_sync removed - unused */
 #define late_initcall(fn)		__define_initcall(fn, 7)
-/* late_initcall_sync removed - unused */
 
 #define __initcall(fn) device_initcall(fn)
-
-/* __exitcall removed - never used (no modules) */
 
 #define console_initcall(fn)	___define_initcall(fn, con, .con_initcall)
 
@@ -168,7 +146,5 @@ struct obs_kernel_param {
 void __init parse_early_param(void);
 void __init parse_early_options(char *cmdline);
 #endif  /* __ASSEMBLY__ */
-
-/* __nosavedata, __exit_p removed - never used */
 
 #endif  /* _LINUX_INIT_H */

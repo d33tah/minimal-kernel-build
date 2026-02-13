@@ -18,10 +18,8 @@ extern void __delay(unsigned long loops);
 			__udelay(n);					\
 		}							\
 	})
-/* ndelay macro and __ndelay removed - never called */
 #include <linux/init.h>
 
 void __init use_tsc_delay(void);
-/* use_tpause_delay removed - never called */
 
 #endif  

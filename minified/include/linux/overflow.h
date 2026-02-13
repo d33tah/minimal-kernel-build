@@ -5,8 +5,6 @@
 #include <linux/limits.h>
 #include <linux/const.h>
 
-/* is_signed_type, __type_half_max, type_max, type_min, is_non_negative, is_negative removed - unused */
-
 static inline bool __must_check __must_check_overflow(bool overflow)
 {
 	return unlikely(overflow);
@@ -20,8 +18,6 @@ static inline bool __must_check __must_check_overflow(bool overflow)
 	(void) (&__a == __d);			\
 	__builtin_add_overflow(__a, __b, __d);	\
 }))
-
-/* check_sub_overflow removed - unused */
 
 #define check_mul_overflow(a, b, d) __must_check_overflow(({	\
 	typeof(a) __a = (a);			\

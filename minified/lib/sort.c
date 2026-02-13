@@ -1,7 +1,6 @@
 
 #include <linux/types.h>
 #include <linux/stddef.h> /* for NULL */
-/* linux/export.h removed - no EXPORT_SYMBOL used */
 void sort(void *base, size_t num, size_t size, cmp_func_t cmp_func,
 	  swap_func_t swap_func);
 
@@ -16,8 +15,6 @@ __attribute_const__ __always_inline static bool is_aligned(size_t size,
 
 	return (lsbits & (align - 1)) == 0;
 }
-
-/* swap_words_32, swap_words_64, swap_bytes inlined into do_swap */
 
 #define SWAP_WORDS_64 (swap_r_func_t)0
 #define SWAP_WORDS_32 (swap_r_func_t)1
@@ -37,7 +34,6 @@ static void do_swap(void *a, void *b, size_t size, swap_r_func_t swap_func,
 		return;
 	}
 
-	/* Inlined swap functions */
 	if (swap_func == SWAP_WORDS_64) {
 		size_t n = size;
 		do {

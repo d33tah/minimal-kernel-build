@@ -5,11 +5,8 @@
 #include <linux/ioport.h>
 #include <linux/slab.h>
 #include <linux/vmalloc.h>
-/* mmiotrace_ioremap, mmiotrace_iounmap removed - empty stubs */
-/* cc_platform_has, cc_attr enum, phys_addr_valid removed - always false/1 */
 #include <linux/pgtable.h>
 
-/* set_memory.h removed - header is empty */
 #include <asm/e820/api.h>
 #include <asm/fixmap.h>
 #include <asm/tlbflush.h>

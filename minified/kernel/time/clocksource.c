@@ -1,11 +1,9 @@
 /* Stub: Clocksource - minimal for single-CPU hello-world kernel */
 
-/* linux/device.h removed - no device types used */
 #include <linux/clocksource.h>
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/sched.h>
-/* linux/kthread.h, linux/cpu.h removed - unused */
 
 #include "tick-internal.h"
 extern raw_spinlock_t timekeeper_lock;
@@ -35,11 +33,9 @@ void clocks_calc_mult_shift(u32 *mult, u32 *shift, u32 from, u32 to, u32 maxsec)
 static struct clocksource *curr_clocksource;
 static LIST_HEAD(clocksource_list);
 static DEFINE_MUTEX(clocksource_mutex);
-/* override_name removed - always empty, never set */
 static int finished_booting;
 static DEFINE_SPINLOCK(watchdog_lock);
 
-/* Stub: watchdog functions - not needed for minimal single-CPU kernel */
 static inline void clocksource_watchdog_lock(unsigned long *flags)
 {
 	spin_lock_irqsave(&watchdog_lock, *flags);
@@ -49,8 +45,6 @@ static inline void clocksource_watchdog_unlock(unsigned long *flags)
 {
 	spin_unlock_irqrestore(&watchdog_lock, *flags);
 }
-
-/* clocksource_mark_unstable removed - empty stub */
 
 static u32 clocksource_max_adjustment(struct clocksource *cs)
 {
@@ -79,13 +73,10 @@ u64 clocks_calc_max_nsecs(u32 mult, u32 shift, u32 maxadj, u64 mask,
 	return max_nsecs;
 }
 
-/* clocksource_find_best removed - inlined into single caller (~13 LOC) */
-
 static void __clocksource_select(bool skipcur)
 {
 	struct clocksource *best = NULL, *cs;
 
-	/* Inlined clocksource_find_best */
 	if (finished_booting && !list_empty(&clocksource_list)) {
 		list_for_each_entry(cs, &clocksource_list, list) {
 			if (skipcur && cs == curr_clocksource)
@@ -97,7 +88,6 @@ static void __clocksource_select(bool skipcur)
 	if (!best)
 		return;
 
-	/* override_name was always empty - override logic removed */
 	/* timekeeping_notify call inlined - always returned 0 (success) */
 	if (curr_clocksource != best) {
 		curr_clocksource = best;
@@ -114,9 +104,6 @@ static int __init clocksource_done_booting(void)
 	return 0;
 }
 fs_initcall(clocksource_done_booting);
-
-/* clocksource_enqueue inlined into __clocksource_register_scale */
-/* clocksource_enqueue_watchdog removed - inlined into single caller (~5 LOC) */
 
 void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale,
 				     u32 freq)
@@ -152,8 +139,6 @@ void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale,
 		cs->maxadj = clocksource_max_adjustment(cs);
 	}
 
-	/* Inlined clocksource_update_max_deferment */
-	/* max_idle_ns assignment removed - field was write-only */
 	clocks_calc_max_nsecs(cs->mult, cs->shift, cs->maxadj, cs->mask,
 			      &cs->max_cycles);
 }
@@ -187,7 +172,6 @@ int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq)
 		}
 		list_add(&cs->list, entry);
 	}
-	/* Inlined clocksource_enqueue_watchdog - wd_list removed */
 	if (cs->flags & CLOCK_SOURCE_IS_CONTINUOUS)
 		cs->flags |= CLOCK_SOURCE_VALID_FOR_HRES;
 	clocksource_watchdog_unlock(&flags);
@@ -196,8 +180,6 @@ int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq)
 	mutex_unlock(&clocksource_mutex);
 	return 0;
 }
-
-/* __clocksource_change_rating removed - unused in minimal kernel */
 
 int clocksource_unregister(struct clocksource *cs)
 {

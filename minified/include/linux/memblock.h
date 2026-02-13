@@ -1,11 +1,9 @@
 #ifndef _LINUX_MEMBLOCK_H
 #define _LINUX_MEMBLOCK_H
 
-
 #include <linux/init.h>
 #include <linux/mm.h>
 
-/* Inlined from asm/dma.h */
 #ifndef MAX_DMA_ADDRESS
 #define MAX_DMA_ADDRESS      (PAGE_OFFSET + 0x1000000)
 #endif
@@ -17,7 +15,6 @@ extern unsigned long max_pfn;
 
 enum memblock_flags {
 	MEMBLOCK_NONE		= 0x0,
-	/* MEMBLOCK_HOTPLUG removed - never used */
 	MEMBLOCK_MIRROR		= 0x2,
 	MEMBLOCK_NOMAP		= 0x4,
 	MEMBLOCK_DRIVER_MANAGED = 0x8,
@@ -51,12 +48,10 @@ extern struct memblock memblock;
 void memblock_discard(void);
 
 void memblock_allow_resize(void);
-/* memblock_add_node, memblock_remove removed - never called */
 int memblock_add(phys_addr_t base, phys_addr_t size);
 int memblock_phys_free(phys_addr_t base, phys_addr_t size);
 int memblock_reserve(phys_addr_t base, phys_addr_t size);
 void memblock_trim_memory(phys_addr_t align);
-/* memblock_overlaps_region removed - never called */
 
 void memblock_free_all(void);
 void memblock_free(void *ptr, size_t size);
@@ -70,9 +65,6 @@ void __next_mem_range_rev(u64 *idx, int nid, enum memblock_flags flags,
 			  struct memblock_type *type_a,
 			  struct memblock_type *type_b, phys_addr_t *out_start,
 			  phys_addr_t *out_end, int *out_nid);
-
-/* memblock_free_late made static in mm/memblock.c */
-
 
 #define __for_each_mem_range(i, type_a, type_b, nid, flags,		\
 			   p_start, p_end, p_nid)			\
@@ -91,13 +83,9 @@ void __next_mem_range_rev(u64 *idx, int nid, enum memblock_flags flags,
 	     __next_mem_range_rev(&i, nid, flags, type_a, type_b,	\
 				  p_start, p_end, p_nid))
 
-/* for_each_mem_range, for_each_mem_range_rev removed - never called */
-
 #define for_each_reserved_mem_range(i, p_start, p_end)			\
 	__for_each_mem_range(i, &memblock.reserved, NULL, NUMA_NO_NODE,	\
 			     MEMBLOCK_NONE, p_start, p_end, NULL)
-
-/* memblock_is_hotpluggable removed - never called */
 
 static inline bool memblock_is_mirror(struct memblock_region *m)
 {
@@ -121,7 +109,6 @@ void __next_mem_pfn_range(int *idx, int nid, unsigned long *out_start_pfn,
 	for (i = -1, __next_mem_pfn_range(&i, nid, p_start, p_end, p_nid); \
 	     i >= 0; __next_mem_pfn_range(&i, nid, p_start, p_end, p_nid))
 
-
 #define for_each_free_mem_range(i, nid, flags, p_start, p_end, p_nid)	\
 	__for_each_mem_range(i, &memblock.memory, &memblock.reserved,	\
 			     nid, flags, p_start, p_end, p_nid)
@@ -131,18 +118,14 @@ void __next_mem_pfn_range(int *idx, int nid, unsigned long *out_start_pfn,
 	__for_each_mem_range_rev(i, &memblock.memory, &memblock.reserved, \
 				 nid, flags, p_start, p_end, p_nid)
 
-/* memblock_set_node, memblock_set_region_node, memblock_get_region_node removed */
-
 #define MEMBLOCK_ALLOC_ANYWHERE	(~(phys_addr_t)0)
 #define MEMBLOCK_ALLOC_ACCESSIBLE	0
 #define MEMBLOCK_ALLOC_NOLEAKTRACE	1
 
 #define MEMBLOCK_LOW_LIMIT 0
-/* ARCH_LOW_ADDRESS_LIMIT removed - unused */
 
 phys_addr_t memblock_phys_alloc_range(phys_addr_t size, phys_addr_t align,
 				      phys_addr_t start, phys_addr_t end);
-/* memblock_alloc_range_nid made static in mm/memblock.c */
 
 void *memblock_alloc_try_nid_raw(phys_addr_t size, phys_addr_t align,
 				 phys_addr_t min_addr, phys_addr_t max_addr,
@@ -156,7 +139,6 @@ static __always_inline void *memblock_alloc(phys_addr_t size, phys_addr_t align)
 	return memblock_alloc_try_nid(size, align, MEMBLOCK_LOW_LIMIT,
 				      MEMBLOCK_ALLOC_ACCESSIBLE, NUMA_NO_NODE);
 }
-
 
 /* memblock_alloc_from, memblock_alloc_node inlined at single call sites */
 
@@ -172,15 +154,10 @@ bool memblock_is_region_memory(phys_addr_t base, phys_addr_t size);
 
 void memblock_set_current_limit(phys_addr_t limit);
 
-
-
-
 #define for_each_mem_region(region)					\
 	for (region = memblock.memory.regions;				\
 	     region < (memblock.memory.regions + memblock.memory.cnt);	\
 	     region++)
-
-/* for_each_reserved_mem_region removed - never called */
 
 extern void *alloc_large_system_hash(const char *tablename,
 				     unsigned long bucketsize,
@@ -196,7 +173,5 @@ extern void *alloc_large_system_hash(const char *tablename,
 #define HASH_ZERO	0x00000004	 
 
 #define hashdist (0)
-
-/* early_memtest removed - empty stub, no callers */
 
 #endif  

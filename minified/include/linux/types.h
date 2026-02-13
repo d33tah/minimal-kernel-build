@@ -9,11 +9,8 @@
 #define DECLARE_BITMAP(name,bits) \
 	unsigned long name[BITS_TO_LONGS(bits)]
 
-/* fd_set removed - unused */
 typedef u32			dev_t;
-/* ino_t removed - unused */
 typedef unsigned short		umode_t;
-/* nlink_t removed - unused */
 typedef __kernel_off_t		off_t;
 typedef __kernel_pid_t		pid_t;
 typedef __kernel_clockid_t	clockid_t;
@@ -39,11 +36,7 @@ typedef __kernel_size_t		size_t;
 typedef __kernel_ssize_t	ssize_t;
 #endif
 
-/* ptrdiff_t removed - unused */
-/* clock_t removed - unused */
-
 typedef unsigned short		ushort;
-/* typedef uint, ulong removed - never used */
 
 #ifndef __BIT_TYPES_DEFINED__
 #define __BIT_TYPES_DEFINED__
@@ -59,13 +52,7 @@ typedef u64			uint64_t;
 typedef s64			int64_t;
 #endif
 
-/* aligned_u64/be64/le64 removed - unused */
-
-/* blkcnt_t removed - unused */
-
 #define pgoff_t unsigned long
-
-/* dma_addr_t removed - unused */
 
 typedef unsigned int __bitwise gfp_t;
 typedef unsigned int __bitwise slab_flags_t;
@@ -83,7 +70,6 @@ typedef struct {
 
 #define ATOMIC_INIT(i) { (i) }
 
-
 struct list_head {
 	struct list_head *next, *prev;
 };
@@ -96,8 +82,6 @@ struct hlist_node {
 	struct hlist_node *next, **pprev;
 };
 
-/* struct ustat removed - ustat syscall is COND_SYSCALL */
-
 struct callback_head {
 	struct callback_head *next;
 	void (*func)(struct callback_head *head);
@@ -107,7 +91,6 @@ struct callback_head {
 typedef void (*rcu_callback_t)(struct rcu_head *head);
 typedef void (*call_rcu_func_t)(struct rcu_head *head, rcu_callback_t func);
 
-/* swap_r_func_t, cmp_r_func_t moved to lib/sort.c - only used there */
 typedef void (*swap_func_t)(void *a, void *b, int size);
 typedef int (*cmp_func_t)(const void *a, const void *b);
 

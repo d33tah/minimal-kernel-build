@@ -5,7 +5,6 @@
 #include <linux/linkage.h>
 #include <linux/bitops.h>
 #include <linux/kernel.h>
-/* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/percpu.h>
 #include <linux/string.h>
 #include <linux/ctype.h>
@@ -14,22 +13,17 @@
 #include <linux/sched/clock.h>
 #include <linux/sched/task.h>
 #include <linux/init.h>
-/* linux/kprobes.h removed - kprobes not used */
 #include <linux/smp.h>
 #include <linux/io.h>
 #include <linux/pgtable.h>
 
-/* asm/perf_event.h removed - no perf symbols used */
 #include <asm/mmu_context.h>
-/* x86_init_rdrand removed - empty function (~3 LOC) */
 
-/* Inlined from asm/doublefault.h */
 extern void doublefault_init_cpu_tss(void);
 #include <asm/processor.h>
 #include <asm/tlbflush.h>
 #include <asm/debugreg.h>
 #include <asm/sections.h>
-/* asm/vsyscall.h removed - empty */
 #include <linux/topology.h>
 #include <linux/cpumask.h>
 #include <linux/atomic.h>
@@ -38,7 +32,6 @@ extern void doublefault_init_cpu_tss(void);
 #include <asm/apic.h>
 #include <asm/desc.h>
 #include <asm/fpu/api.h>
-/* mtrr.h removed - header is empty */
 /* hwcap2.h inlined */
 #define HWCAP2_FSGSBASE _BITUL(1)
 #include <linux/numa.h>
@@ -46,14 +39,10 @@ extern void doublefault_init_cpu_tss(void);
 #include <linux/nodemask.h>
 #include <asm/asm.h>
 #include <asm/cpu.h>
-/* mce.h removed - header is empty */
 #include <asm/msr.h>
-/* show_ucode_info_early removed - microcode support disabled */
 #include <asm/sigframe.h>
 #include <asm/traps.h>
-/* asm/sev.h include removed - file is stub, nothing used */
 
-/* --- 2026-01-26 04:35 --- Inlined from cpu.h */
 struct cpu_dev {
 	const char *c_vendor;
 	const char *c_ident[2];
@@ -69,10 +58,6 @@ extern const struct cpu_dev *const __x86_cpu_dev_start[],
 
 u32 elf_hwcap2 __read_mostly;
 
-/* cpu_initialized_mask, smp_num_siblings, cpu_llc_id, cpu_l2c_id removed - never used */
-/* ppin_init removed - empty function */
-
-/* default_init removed - was empty stub */
 static const struct cpu_dev default_cpu = {
 	.c_init = NULL,
 	.c_vendor = "Unknown",
@@ -92,8 +77,6 @@ DEFINE_PER_CPU_PAGE_ALIGNED(
 				      GDT_ENTRY_INIT(0xc0fa, 0, 0xfffff),
 			      [GDT_ENTRY_DEFAULT_USER_DS] =
 				      GDT_ENTRY_INIT(0xc0f2, 0, 0xfffff),
-
-			      /* PNPBIOS and APMBIOS GDT entries removed - unused */
 
 			      [GDT_ENTRY_ESPFIX_SS] = GDT_ENTRY_INIT(0xc092, 0,
 								     0xfffff),
@@ -126,8 +109,6 @@ int have_cpuid_p(void)
 {
 	return flag_is_changeable_p(X86_EFLAGS_ID);
 }
-
-/* setup_smep, setup_smap, setup_umip inlined into identify_cpu */
 
 static const unsigned long cr4_pinned_mask = X86_CR4_SMEP | X86_CR4_SMAP |
 					     X86_CR4_UMIP | X86_CR4_FSGSBASE |
@@ -189,17 +170,12 @@ unsigned long cr4_read_shadow(void)
 	return this_cpu_read(cpu_tlbstate.cr4);
 }
 
-/* cr4_init removed - never called */
-/* setup_cr_pinning inlined into identify_boot_cpu */
-/* setup_pku, setup_cet removed - empty functions, features disabled */
-
 struct cpuid_dependent_feature {
 	u32 feature;
 	u32 level;
 };
 
 static const struct cpuid_dependent_feature cpuid_dependent_features[] = {
-	/* X86_FEATURE_MWAIT, X86_FEATURE_DCA removed - features never tested */
 	{ X86_FEATURE_XSAVE, 0x0000000d },
 	{ 0, 0 }
 };
@@ -226,8 +202,6 @@ static void filter_cpuid_features(struct cpuinfo_x86 *c, bool warn)
 			x86_cap_flag(df->feature), df->level);
 	}
 }
-
-/* table_lookup_model removed - x86_model_id is never read */
 
 __u32 cpu_caps_cleared[NCAPINTS + NBUGINTS] __aligned(sizeof(unsigned long));
 __u32 cpu_caps_set[NCAPINTS + NBUGINTS] __aligned(sizeof(unsigned long));
@@ -265,10 +239,6 @@ void switch_to_new_gdt(int cpu)
 }
 
 static const struct cpu_dev *cpu_devs[X86_VENDOR_NUM] = {};
-
-/* get_model_name removed - x86_model_id is never read */
-
-/* detect_num_cpu_cores, cpu_detect_cache_sizes removed - never called */
 
 static void get_cpu_vendor(struct cpuinfo_x86 *c)
 {
@@ -330,8 +300,6 @@ static void apply_forced_caps(struct cpuinfo_x86 *c)
 	}
 }
 
-/* init_speculation_control removed - empty stub (~3 LOC) */
-
 static void get_cpu_cap(struct cpuinfo_x86 *c)
 {
 	u32 eax, ebx, ecx, edx;
@@ -343,14 +311,11 @@ static void get_cpu_cap(struct cpuinfo_x86 *c)
 		c->x86_capability[CPUID_1_EDX] = edx;
 	}
 
-	/* CPUID_6_EAX read removed - no features defined in that word */
-
 	if (c->cpuid_level >= 0x00000007) {
 		cpuid_count(0x00000007, 0, &eax, &ebx, &ecx, &edx);
 		c->x86_capability[CPUID_7_0_EBX] = ebx;
 		c->x86_capability[CPUID_7_ECX] = ecx;
 		c->x86_capability[CPUID_7_EDX] = edx;
-		/* CPUID_7_1_EAX read removed - no features defined in that word */
 	}
 
 	if (c->cpuid_level >= 0x0000000d) {
@@ -388,7 +353,6 @@ static void get_cpu_address_sizes(struct cpuinfo_x86 *c)
 		c->x86_phys_bits = eax & 0xff;
 	} else if (cpu_has(c, X86_FEATURE_PAE) || cpu_has(c, X86_FEATURE_PSE36))
 		c->x86_phys_bits = 36;
-	/* c->x86_cache_bits assignment removed - field removed */
 }
 
 static void identify_cpu_without_cpuid(struct cpuinfo_x86 *c)
@@ -411,9 +375,6 @@ static void identify_cpu_without_cpuid(struct cpuinfo_x86 *c)
 		}
 }
 
-/* cpu_set_bug_bits and cpu_parse_early_param removed - empty stubs, calls removed */
-/* detect_nopl, early_identify_cpu inlined into early_cpu_init */
-
 void __init early_cpu_init(void)
 {
 	const struct cpu_dev *const *cdev;
@@ -427,7 +388,6 @@ void __init early_cpu_init(void)
 		cpu_devs[count] = cpudev;
 		count++;
 	}
-	/* Inlined early_identify_cpu */
 	{
 		struct cpuinfo_x86 *c = &boot_cpu_data;
 
@@ -474,17 +434,14 @@ void __init early_cpu_init(void)
 	}
 }
 
-/* generic_identify inlined into identify_cpu */
 static void identify_cpu(struct cpuinfo_x86 *c)
 {
 	int i;
 
 	c->loops_per_jiffy = loops_per_jiffy;
-	/* c->x86_cache_size removed - never read */
 	c->x86_vendor = X86_VENDOR_UNKNOWN;
 	c->x86_model = c->x86_stepping = 0;
 	c->x86_vendor_id[0] = '\0';
-	/* c->x86_model_id, c->x86_max_cores, c->x86_coreid_bits, c->cu_id removed - never read */
 	c->cpuid_level = -1;
 	c->x86_clflush_size = 32;
 	c->x86_phys_bits = 32;
@@ -512,7 +469,6 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 	if (this_cpu->c_init)
 		this_cpu->c_init(c);
 
-	/* Inlined setup_smep, setup_smap, setup_umip */
 	if (cpu_has(c, X86_FEATURE_SMEP))
 		cr4_set_bits(X86_CR4_SMEP);
 	{
@@ -530,8 +486,6 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 
 	filter_cpuid_features(c, true);
 
-	/* x86_model_id population removed - field is never read */
-	/* x86_init_rdrand call removed - function was empty */
 	apply_forced_caps(c);
 
 	if (c != &boot_cpu_data) {
@@ -545,18 +499,14 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 	select_idle_routine(c);
 }
 
-/* enable_sep_cpu removed - SYSENTER not used, init uses INT $0x80 */
-
 void __init identify_boot_cpu(void)
 {
 	identify_cpu(&boot_cpu_data);
 	/* HAS_KERNEL_IBT is 0 */
 	sysenter_setup();
-	/* cpu_detect_tlb removed - TLB info never used */
 	/* setup_cr_pinning inlined */
 	cr4_pinned_bits = this_cpu_read(cpu_tlbstate.cr4) & cr4_pinned_mask;
 	static_key_enable(&cr_pinning.key);
-	/* tsx_init removed - was empty stub */
 }
 
 DEFINE_PER_CPU(struct task_struct *, current_task) = &init_task;
@@ -567,8 +517,6 @@ DEFINE_PER_CPU(unsigned long,
 					   + THREAD_SIZE;
 
 /* clear_all_debug_regs inlined below, dbg_restore_debug_regs is no-op */
-
-/* wait_for_master_cpu, setup_getcpu, ucode_cpu_init, tss_setup_ist, tss_setup_io_bitmap removed/inlined */
 
 void cpu_init_exception_handling(void)
 {
@@ -594,7 +542,6 @@ void cpu_init(void)
 			       X86_CR4_DE);
 
 	switch_to_new_gdt(cpu);
-	/* X86_64 block removed */
 
 	mmgrab(&init_mm);
 	cur->active_mm = &init_mm;

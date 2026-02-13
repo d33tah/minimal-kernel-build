@@ -3,12 +3,10 @@
 
 #include <linux/init.h>
 #include <linux/list.h>
-/* llist.h removed - not used by vmalloc */
 #include <asm/page.h>
 #include <linux/rbtree.h>
 #include <linux/overflow.h>
 
-/* Inlined from asm/vmalloc.h */
 #include <asm/cpufeature.h>
 #include <asm/pgtable_areas.h>
 
@@ -19,7 +17,6 @@ struct notifier_block;
 #define VM_ALLOC		0x00000002
 #define VM_UNINITIALIZED	0x00000020
 #define VM_NO_GUARD		0x00000040
-/* VM_MAP_PUT_PAGES removed - never used */
 
 #ifndef IOREMAP_MAX_ORDER
 #define IOREMAP_MAX_ORDER	(7 + PAGE_SHIFT)	 
@@ -43,23 +40,16 @@ struct vmap_area {
 	struct rb_node rb_node;          
 	struct list_head list;           
 
-	 
 	union {
 		unsigned long subtree_max_size;  
 		struct vm_struct *vm;            
 	};
 };
 
-/* arch_vmap_pmd_supported, arch_vmap_pte_supported_shift removed - no callers */
-
 extern void __init vmalloc_init(void);
 
-/* vmalloc, __vmalloc, __vmalloc_node_range removed - only used in mm/vmalloc.c */
 void *__vmalloc_node(unsigned long size, unsigned long align, gfp_t gfp_mask,
 		int node, const void *caller) __alloc_size(1);
-
-/* vfree, vunmap removed - callers stubbed out */
-/* vmap removed - never called */
 
 #ifndef ARCH_PAGE_TABLE_SYNC_MASK
 #define ARCH_PAGE_TABLE_SYNC_MASK 0
@@ -68,7 +58,5 @@ void *__vmalloc_node(unsigned long size, unsigned long align, gfp_t gfp_mask,
 void arch_sync_kernel_mappings(unsigned long start, unsigned long end);
 
 /* get_vm_area_size inlined at mm/vmalloc.c - single caller */
-
-/* free_vm_area, remove_vm_area removed - error path replaced with BUG() */
 
 #endif  

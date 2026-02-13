@@ -15,22 +15,17 @@ typedef __u32	Elf32_Word;
 
 typedef __u64	Elf64_Addr;
 typedef __u16	Elf64_Half;
-/* Elf64_SHalf removed - unused */
 typedef __u64	Elf64_Off;
 typedef __s32	Elf64_Sword;
 typedef __u32	Elf64_Word;
 typedef __u64	Elf64_Xword;
 typedef __s64	Elf64_Sxword;
 
-/* PT_NULL removed - unused */
 #define PT_LOAD    1
 #define PT_DYNAMIC 2
 #define PT_NOTE    4
-/* PT_PHDR removed - unused */
 #define PT_LOOS    0x60000000
-/* PT_LOPROC, PT_HIPROC removed - empty switch case removed */
 #define PT_GNU_STACK	(PT_LOOS + 0x474e551)
-/* PT_GNU_PROPERTY removed - never used */
 
 #define ET_EXEC   2
 #define ET_DYN    3
@@ -42,7 +37,6 @@ typedef __s64	Elf64_Sxword;
 #define DT_RELSZ	18
 #define DT_RELENT	19
 #define DT_TEXTREL	22
-
 
 #define STT_NOTYPE  0
 #define STT_OBJECT  1
@@ -117,7 +111,6 @@ typedef struct elf64_sym {
   Elf64_Xword st_size;		 
 } Elf64_Sym;
 
-
 #define EI_NIDENT	16
 
 typedef struct elf32_hdr{
@@ -186,7 +179,6 @@ typedef struct elf64_phdr {
 #define SHT_REL		9
 
 #define SHF_ALLOC		0x2
-/* SHF_EXECINSTR removed - unused */
 
 #define SHN_UNDEF	0
 #define SHN_ABS		0xfff1
@@ -224,7 +216,6 @@ typedef struct elf64_shdr {
 #define	EI_CLASS	4
 #define	EI_DATA		5
 #define	EI_VERSION	6
-/* EI_OSABI, EI_PAD removed - unused */
 
 #define	ELFMAG0		0x7f		 
 #define	ELFMAG1		'E'

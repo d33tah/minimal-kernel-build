@@ -10,7 +10,6 @@
 # define __percpu	BTF_TYPE_TAG(percpu)
 # define __rcu
 # define __chk_user_ptr(x)	(void)0
-/* __chk_io_ptr, __must_hold removed - no callers */
 # define __acquires(x)
 # define __cond_acquires(x)
 # define __releases(x)
@@ -18,10 +17,8 @@
 # define __release(x)	(void)0
 # define __cond_lock(x,c) (c)
 # define __force
-/* __nocast, __safe removed - no callers */
 # define __private
 # define ACCESS_PRIVATE(p, member) ((p)->member)
-/* __builtin_warning removed - no callers */
 
 #define ___PASTE(a,b) a##b
 #define __PASTE(a,b) ___PASTE(a,b)
@@ -30,21 +27,15 @@
 
 #include <linux/compiler_attributes.h>
 
-
 /* Clang-specific definitions - inlined from compiler-clang.h */
 #define __UNIQUE_ID(prefix) __PASTE(__PASTE(__UNIQUE_ID_, prefix), __COUNTER__)
 #define __no_sanitize_address
-/* __no_sanitize_thread removed - unused */
 #define __no_sanitize_coverage
 #define __nocfi		__attribute__((__no_sanitize__("cfi")))
-
-/* __diag_clang* macros removed - unused */
 
 #define notrace			__attribute__((__no_instrument_function__))
 
 #define inline inline __gnu_inline __inline_maybe_unused notrace
-
-/* __inline__ removed - unused */
 
 #define __inline_maybe_unused __maybe_unused
 #define noinline_for_stack noinline
@@ -108,7 +99,5 @@
 #define compiletime_assert_atomic_type(t)				\
 	compiletime_assert(__native_word(t),				\
 		"Need native word sized stores/loads for atomicity.")
-
-/* __diag_push, __diag_pop, __diag_ignore removed - unused */
 
 #endif  

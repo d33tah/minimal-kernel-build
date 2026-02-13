@@ -5,7 +5,6 @@
 #include <linux/uaccess.h>
 
 struct task_struct;
-/* struct rusage forward decl removed - unused */
 union thread_union;
 struct css_set;
 
@@ -44,7 +43,6 @@ extern asmlinkage void schedule_tail(struct task_struct *prev);
 
 extern int sched_fork(unsigned long clone_flags, struct task_struct *p);
 extern void sched_cgroup_fork(struct task_struct *p, struct kernel_clone_args *kargs);
-/* sched_post_fork removed - empty function */
 
 void __noreturn do_task_dead(void);
 void __noreturn make_task_dead(int signr);
@@ -52,7 +50,6 @@ void __noreturn make_task_dead(int signr);
 extern void proc_caches_init(void);
 
 extern void fork_init(void);
-/* release_task made static in kernel/exit.c */
 
 extern int copy_thread(struct task_struct *, const struct kernel_clone_args *);
 
@@ -67,9 +64,6 @@ struct mm_struct *copy_init_mm(void);
 extern pid_t kernel_thread(int (*fn)(void *), void *arg, unsigned long flags);
 extern pid_t user_mode_thread(int (*fn)(void *), void *arg, unsigned long flags);
 /* kernel_wait4 now static in exit.c */
-
-/* free_task made static in kernel/fork.c */
-/* sched_exec() macro removed - no callers */
 
 void put_task_struct_rcu_user(struct task_struct *task);
 

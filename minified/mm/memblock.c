@@ -51,19 +51,14 @@ static __refdata struct memblock_type *memblock_memory = &memblock.memory;
 	for (i = 0, rgn = &memblock_type->regions[0]; i < memblock_type->cnt; \
 	     i++, rgn = &memblock_type->regions[i])
 
-/* memblock_dbg, memblock_debug, system_has_some_mirror removed - always no-op/0/false */
 static int memblock_can_resize __initdata_memblock;
 static int memblock_memory_in_slab __initdata_memblock = 0;
 static int memblock_reserved_in_slab __initdata_memblock = 0;
-
-/* choose_memblock_flags removed - always returned MEMBLOCK_NONE */
 
 static inline phys_addr_t memblock_cap_size(phys_addr_t base, phys_addr_t *size)
 {
 	return *size = min(*size, PHYS_ADDR_MAX - base);
 }
-
-/* memblock_overlaps_region removed - never called */
 
 /* __memblock_find_range_bottom_up, __memblock_find_range_top_down
  * inlined into memblock_find_in_range_node */
@@ -115,7 +110,6 @@ static phys_addr_t __init_memblock memblock_find_in_range(phys_addr_t start,
 							  phys_addr_t size,
 							  phys_addr_t align)
 {
-	/* choose_memblock_flags always returns MEMBLOCK_NONE, mirror check removed */
 	return memblock_find_in_range_node(size, align, start, end,
 					   NUMA_NO_NODE, MEMBLOCK_NONE);
 }
@@ -230,8 +224,6 @@ static int __init_memblock memblock_double_array(struct memblock_type *type,
 
 	return 0;
 }
-
-/* memblock_merge_regions inlined into memblock_add_range */
 
 static void __init_memblock memblock_insert_region(struct memblock_type *type,
 						   int idx, phys_addr_t base,
@@ -405,7 +397,6 @@ int __init_memblock memblock_reserve(phys_addr_t base, phys_addr_t size)
 static bool should_skip_region(struct memblock_type *type,
 			       struct memblock_region *m, int nid, int flags)
 {
-	/* memblock_get_region_node always returns 0 - inlined */
 	if (type != memblock_memory)
 		return false;
 
@@ -442,7 +433,6 @@ void __next_mem_range(u64 *idx, int nid, enum memblock_flags flags,
 
 		phys_addr_t m_start = m->base;
 		phys_addr_t m_end = m->base + m->size;
-		/* memblock_get_region_node always returns 0 */
 
 		if (should_skip_region(type_a, m, nid, flags))
 			continue;
@@ -520,7 +510,6 @@ void __init_memblock __next_mem_range_rev(u64 *idx, int nid,
 
 		phys_addr_t m_start = m->base;
 		phys_addr_t m_end = m->base + m->size;
-		/* memblock_get_region_node always returns 0 */
 
 		if (should_skip_region(type_a, m, nid, flags))
 			continue;
@@ -576,7 +565,6 @@ void __init_memblock __next_mem_pfn_range(int *idx, int nid,
 {
 	struct memblock_type *type = &memblock.memory;
 	struct memblock_region *r;
-	/* memblock_get_region_node always returns 0 */
 
 	while (++*idx < type->cnt) {
 		r = &type->regions[*idx];
@@ -599,15 +587,12 @@ void __init_memblock __next_mem_pfn_range(int *idx, int nid,
 		*out_nid = 0;
 }
 
-/* memblock_set_node removed - always returns 0 */
-
 static phys_addr_t __init memblock_alloc_range_nid(phys_addr_t size,
 						   phys_addr_t align,
 						   phys_addr_t start,
 						   phys_addr_t end, int nid,
 						   bool exact_nid)
 {
-	/* choose_memblock_flags always returns MEMBLOCK_NONE, mirror check removed */
 	phys_addr_t found;
 
 	if (WARN_ONCE(
@@ -769,8 +754,6 @@ void __init memblock_allow_resize(void)
 {
 	memblock_can_resize = 1;
 }
-
-/* __free_pages_memory, __free_memory_core inlined into memblock_free_all */
 
 void __init memblock_free_all(void)
 {

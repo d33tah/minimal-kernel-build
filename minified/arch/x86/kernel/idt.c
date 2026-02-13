@@ -1,7 +1,6 @@
 #include <linux/interrupt.h>
 
 #include <asm/cpu_entry_area.h>
-/* set_memory.h removed - header is empty */
 #include <asm/traps.h>
 #include <asm/proto.h>
 #include <asm/desc.h>
@@ -36,7 +35,6 @@
 	G(_vector, NULL, DEFAULT_STACK, GATE_TASK, DPL0, _gdt << 3)
 
 #define IDT_TABLE_SIZE (IDT_ENTRIES * sizeof(gate_desc))
-/* idt_setup_done removed - was write-only variable */
 
 static const __initconst struct idt_data early_idts[] = {
 	INTG(X86_TRAP_DB, asm_exc_debug),
@@ -67,8 +65,6 @@ static const __initconst struct idt_data def_idts[] = {
 	SYSG(X86_TRAP_OF, asm_exc_overflow),
 	SYSG(IA32_SYSCALL_VECTOR, entry_INT80_32),
 };
-
-/* apic_idts array removed - was empty, APIC not used in minimal kernel */
 
 static gate_desc idt_table[IDT_ENTRIES] __page_aligned_bss;
 
@@ -129,8 +125,6 @@ void __init idt_setup_apic_and_irq_gates(void)
 	int i = FIRST_EXTERNAL_VECTOR;
 	void *entry;
 
-	/* apic_idts call removed - array was empty */
-
 	for_each_clear_bit_from(i, system_vectors, FIRST_SYSTEM_VECTOR) {
 		entry = irq_entries_start +
 			IDT_ALIGN * (i - FIRST_EXTERNAL_VECTOR);
@@ -141,8 +135,6 @@ void __init idt_setup_apic_and_irq_gates(void)
 		    PAGE_KERNEL_RO);
 	idt_descr.address = CPU_ENTRY_AREA_RO_IDT;
 	load_idt(&idt_descr);
-	/* set_memory_ro removed - stub returning 0 */
-	/* idt_setup_done assignment removed - variable was never read */
 }
 
 void __init idt_setup_early_handler(void)
@@ -155,5 +147,3 @@ void __init idt_setup_early_handler(void)
 		set_intr_gate(i, early_ignore_irq);
 	load_idt(&idt_descr);
 }
-
-/* alloc_intr_gate removed - never called */

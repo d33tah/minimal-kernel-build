@@ -10,7 +10,6 @@
 #include <linux/sched/user.h>
 
 struct cred;
-/* struct inode forward decl removed - unused */
 
 struct group_info {
 	atomic_t	usage;
@@ -34,18 +33,14 @@ static inline void groups_free(struct group_info *group_info)
 {
 }
 
-/* in_group_p removed - no callers */
-
 struct cred {
 	atomic_t	usage;
 	kuid_t		uid;
 	kgid_t		gid;
-	/* suid, sgid removed - write-only, never read */
 	kuid_t		euid;
 	kgid_t		egid;
 	kuid_t		fsuid;
 	kgid_t		fsgid;
-	/* securebits, cap_inheritable, cap_effective, cap_bset, cap_ambient removed - never read */
 	kernel_cap_t	cap_permitted;
 	struct user_struct *user;
 	struct user_namespace *user_ns;
@@ -68,8 +63,6 @@ extern void abort_creds(struct cred *);
 extern void __init cred_init(void);
 extern int set_cred_ucounts(struct cred *);
 
-/* validate_creds, validate_creds_for_do_exit, validate_process_creds removed - empty stubs, no callers */
-
 static inline struct cred *get_new_cred(struct cred *cred)
 {
 	atomic_inc(&cred->usage);
@@ -81,7 +74,6 @@ static inline const struct cred *get_cred(const struct cred *cred)
 	struct cred *nonconst_cred = (struct cred *) cred;
 	if (!cred)
 		return cred;
-	/* validate_creds call removed - empty stub */
 	nonconst_cred->non_rcu = 0;
 	return get_new_cred(nonconst_cred);
 }
@@ -91,7 +83,6 @@ static inline void put_cred(const struct cred *_cred)
 	struct cred *cred = (struct cred *) _cred;
 
 	if (cred) {
-		/* validate_creds call removed - empty stub */
 		if (atomic_dec_and_test(&(cred)->usage))
 			__put_cred(cred);
 	}
@@ -99,8 +90,6 @@ static inline void put_cred(const struct cred *_cred)
 
 #define current_cred() \
 	rcu_dereference_protected(current->cred, 1)
-
-/* current_real_cred removed - never used */
 
 #define __task_cred(task)	\
 	rcu_dereference((task)->real_cred)
@@ -124,12 +113,9 @@ static inline void put_cred(const struct cred *_cred)
 	current_cred()->xxx;			\
 })
 
-/* current_uid, current_gid removed - never used */
 #define current_euid()		(current_cred_xxx(euid))
-/* current_egid removed - never used */
 #define current_fsuid() 	(current_cred_xxx(fsuid))
 #define current_fsgid() 	(current_cred_xxx(fsgid))
-/* current_ucounts removed - never used */
 /* init_user_ns extern from uidgid.h */
 static inline struct user_namespace *current_user_ns(void)
 {

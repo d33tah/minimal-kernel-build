@@ -1,5 +1,4 @@
  
- 
 #ifndef __MM_INTERNAL_H
 #define __MM_INTERNAL_H
 
@@ -10,22 +9,17 @@
 
 struct folio_batch;
 
- 
 #define GFP_RECLAIM_MASK (__GFP_RECLAIM|__GFP_HIGH|__GFP_IO|__GFP_FS|\
 			__GFP_NOWARN|__GFP_RETRY_MAYFAIL|__GFP_NOFAIL|\
 			__GFP_NORETRY|__GFP_MEMALLOC|__GFP_NOMEMALLOC|\
 			__GFP_ATOMIC)
 
- 
 #define GFP_BOOT_MASK (__GFP_BITS_MASK & ~(__GFP_RECLAIM|__GFP_IO|__GFP_FS))
 
- 
 #define GFP_CONSTRAINT_MASK (__GFP_HARDWALL|__GFP_THISNODE)
 
- 
 #define GFP_SLAB_BUG_MASK (__GFP_DMA32|__GFP_HIGHMEM|~__GFP_BITS_MASK)
 
- 
 #define WARN_ON_ONCE_GFP(cond, gfp)	({				\
 	static bool __section(".data.once") __warned;			\
 	int __ret_warn_once = !!(cond);					\
@@ -37,29 +31,10 @@ struct folio_batch;
 	unlikely(__ret_warn_once);					\
 })
 
-/* page_writeback_init removed - empty stub that was never called */
-
-/* folio_raw_mapping removed - only caller (page_rmapping) removed */
-/* __acct_reclaim_writeback, acct_reclaim_writeback removed - no callers/definition */
-/* wake_throttle_isolated removed - unused */
-
-/* do_swap_page made static in memory.c */
-/* folio_rotate_reclaimable, __folio_end_writeback, deactivate_file_folio removed - never called */
-
 void free_pgtables(struct mmu_gather *tlb, struct vm_area_struct *start_vma,
 		unsigned long floor, unsigned long ceiling);
-/* pmd_install made static in memory.c */
 
-/* unmap_page_range made static in memory.c */
-
-/* page_cache_ra_order, force_page_cache_ra removed - unused */
-
-/* find_lock_entries, find_get_entries, filemap_free_folio, truncate functions removed */
-
- 
 /* folio_evictable inlined at mm/swap.c - single caller */
-
-/* page_evictable removed - unused */
 
 static inline void set_page_refcounted(struct page *page)
 {
@@ -70,95 +45,44 @@ static inline void set_page_refcounted(struct page *page)
 
 extern unsigned long highest_memmap_pfn;
 
-/* early_memremap_pgprot_adjust removed - inlined */
-/* isolate_lru_page, putback_lru_page removed - never called */
-
- 
-
- 
 struct alloc_context {
 	struct zonelist *zonelist;
 	nodemask_t *nodemask;
 	struct zoneref *preferred_zoneref;
 	int migratetype;
 
-
 	enum zone_type highest_zoneidx;
-	/* spread_dirty_pages removed - write-only, never read */
 };
 
- 
 static inline unsigned int buddy_order(struct page *page)
 {
 	 
 	return page_private(page);
 }
 
-/* page_is_buddy removed - unused */
-/* __find_buddy_pfn, find_buddy_page_pfn removed - unused */
-
-/* __pageblock_pfn_to_page, pageblock_pfn_to_page removed - unused */
-
-/* __isolate_free_page, __putback_isolated_page removed - unused */
 extern void memblock_free_pages(struct page *page, unsigned long pfn,
 					unsigned int order);
-/* user_min_free_kbytes removed - unused */
-
-/* free_unref_page/free_unref_page_list removed - no callers remain */
-
-
-/* split_free_page, find_suitable_fallback declaration removed - unused */
-/* is_exec_mapping, is_stack_mapping, is_data_mapping removed - unused */
 
 void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 		struct vm_area_struct *prev);
-/* __vma_unlink_list, folio_anon_vma removed - never called */
 
-/* unmap_mapping_folio removed - truncate.c stubbed */
 extern long populate_vma_page_range(struct vm_area_struct *vma,
 		unsigned long start, unsigned long end, int *locked);
-/* faultin_vma_page_range, mlock_future_check removed - unused */
 
 /* mlock_folio, munlock_page, mlock_new_page, mlock_page_drain_local,
    mlock_page_drain_remote removed - never called */
 
-/* maybe_pmd_mkwrite removed - unused */
-
-/* vma_pgoff_address, vma_address, vma_address_end removed - never called */
-
-/* maybe_unlock_mmap_for_io removed - unused */
-
-/* mminit_level enum, mminit_dprintk, mminit_verify_zonelist, hwpoison_filter removed - unused */
-
-
-/* set_pageblock_order removed - empty stub */
-
 #define ALLOC_WMARK_MIN		WMARK_MIN
 #define ALLOC_WMARK_LOW		WMARK_LOW
-/* ALLOC_WMARK_HIGH removed - unused */
 #define ALLOC_NO_WATERMARKS	0x04  
 
- 
 #define ALLOC_WMARK_MASK	(ALLOC_NO_WATERMARKS-1)
 
- 
 #define ALLOC_OOM		0x08
 
 #define ALLOC_HARDER		 0x10
 #define ALLOC_HIGH		 0x20
 #define ALLOC_CPUSET		 0x40
 #define ALLOC_KSWAPD		0x800
-
-/* enum ttu_flags, struct tlbflush_unmap_batch forward declarations removed - unused */
-
-/* mm_percpu_wq removed - was allocated but never used */
-
-
-/* pageflag_names, vmaflag_names, gfpflag_names removed - unused (tracing disabled) */
-/* is_migrate_highatomic, is_migrate_highatomic_page removed - unused */
-
-/* setup_zone_pageset made static in page_alloc.c */
-
-/* boot_nodestats removed - per_cpu_nodestats field removed */
 
 #endif

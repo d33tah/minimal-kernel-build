@@ -17,16 +17,11 @@ struct user_namespace;
 
 enum fs_context_purpose {
 	FS_CONTEXT_FOR_MOUNT,
-	/* FOR_SUBMOUNT, FOR_RECONFIGURE removed - only FOR_MOUNT used */
 };
 
-/* enum fs_context_phase removed - never used */
-
 enum fs_value_type {
-	/* fs_value_is_undefined removed - never used */
 	fs_value_is_flag = 1,
 	fs_value_is_string,
-	/* fs_value_is_blob, fs_value_is_filename, fs_value_is_file removed - never used */
 };
 
 struct fs_parameter {
@@ -66,7 +61,6 @@ struct fs_context {
 	unsigned int		s_iflags;	 
 	unsigned int		lsm_flags;	 
 	enum fs_context_purpose	purpose:8;
-	/* phase field removed - never read */
 	bool			need_free:1;	 
 	bool			global:1;	 
 	bool			oldapi:1;	 
@@ -74,16 +68,13 @@ struct fs_context {
 
 struct fs_context_operations {
 	void (*free)(struct fs_context *fc);
-	/* dup removed - clone_fs_context never called */
 	int (*parse_param)(struct fs_context *fc, struct fs_parameter *param);
 	int (*parse_monolithic)(struct fs_context *fc, void *data);
 	int (*get_tree)(struct fs_context *fc);
-	/* reconfigure removed - remount never happens */
 };
 
 extern struct fs_context *fs_context_for_mount(struct file_system_type *fs_type,
 						unsigned int sb_flags);
-/* fs_context_for_reconfigure removed - never called */
 
 extern int vfs_parse_fs_param(struct fs_context *fc, struct fs_parameter *param);
 extern int vfs_parse_fs_string(struct fs_context *fc, const char *key,
@@ -93,7 +84,6 @@ extern int vfs_get_tree(struct fs_context *fc);
 extern void put_fs_context(struct fs_context *fc);
 extern int vfs_parse_fs_param_source(struct fs_context *fc,
 				     struct fs_parameter *param);
-/* fc_drop_locked removed - never called */
 
 enum vfs_get_super_keying {
 	vfs_get_single_super,
@@ -108,8 +98,6 @@ extern int vfs_get_super(struct fs_context *fc,
 extern int get_tree_nodev(struct fs_context *fc,
 			 int (*fill_super)(struct super_block *sb,
 					   struct fs_context *fc));
-
-/* get_tree_bdev removed - declared but never implemented */
 
 struct fc_log {
 	refcount_t	usage;
@@ -128,7 +116,6 @@ void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt, 
 #define __plog(p, l, fmt, ...) logfc((p)->log, (p)->prefix, \
 					l, fmt, ## __VA_ARGS__)
 
-/* warnf removed - never used */
 #define warn_plog(p, fmt, ...) __plog(p, 'w', fmt, ## __VA_ARGS__)
 
 #define errorf(fc, fmt, ...) __logfc(fc, 'e', fmt, ## __VA_ARGS__)
@@ -136,7 +123,5 @@ void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt, 
 
 #define invalf(fc, fmt, ...) (errorf(fc, fmt, ## __VA_ARGS__), -EINVAL)
 #define inval_plog(p, fmt, ...) (error_plog(p, fmt, ## __VA_ARGS__), -EINVAL)
-
-/* pseudo_fs_context struct and init_pseudo removed - init_pseudo never called */
 
 #endif

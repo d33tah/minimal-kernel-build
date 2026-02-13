@@ -1,5 +1,4 @@
 
-/* linux/blkdev.h removed - empty stub */
 #include <linux/wait.h>
 #include <linux/backing-dev.h>
 #include <linux/fs.h>
@@ -7,7 +6,6 @@
 #include <linux/sched/mm.h>
 #include <linux/sched.h>
 #include <linux/device.h>
-/* flex_proportions.h - inlined into backing-dev.h */
 
 /* Merged from lib/flex_proportions.c */
 void fprop_local_init_percpu(struct fprop_local_percpu *pl, gfp_t gfp)
@@ -47,8 +45,6 @@ int bdi_init(struct backing_dev_info *bdi)
 
 	return 0;
 }
-
-/* bdi_unregister, bdi_put removed - no callers */
 
 struct backing_dev_info *inode_to_bdi(struct inode *inode)
 {

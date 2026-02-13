@@ -6,11 +6,9 @@
 #include <linux/mount.h>
 #include <linux/nsproxy.h>
 #include <linux/slab.h>
-/* magic.h removed - not used */
 #include <linux/security.h>
 #include <linux/pid_namespace.h>
 #include <linux/user_namespace.h>
-/* Inlined from net_namespace.h */
 struct net {
 	atomic_t count;
 	struct user_namespace *user_ns;
@@ -25,10 +23,6 @@ static inline void put_net(struct net *net)
 #include <asm/sections.h>
 #include "mount.h"
 #include "internal.h"
-
-/* legacy_fs_context, legacy_fs_param removed - all fs types have init_fs_context */
-
-/* common_set_sb_flag, common_clear_sb_flag tables removed - no mount options during boot */
 
 int vfs_parse_fs_param_source(struct fs_context *fc, struct fs_parameter *param)
 {
@@ -52,10 +46,6 @@ int vfs_parse_fs_param(struct fs_context *fc, struct fs_parameter *param)
 
 	if (!param->key)
 		return invalf(fc, "Unnamed parameter\n");
-
-	/* vfs_parse_sb_flag removed - no mount options like ro/sync during boot */
-
-	/* security_fs_context_parse_param always returns -ENOPARAM */
 
 	if (fc->ops->parse_param) {
 		ret = fc->ops->parse_param(fc, param);
@@ -94,7 +84,6 @@ int vfs_parse_fs_string(struct fs_context *fc, const char *key,
 	return ret;
 }
 
-/* generic_parse_monolithic option-parsing loop removed - data is always NULL */
 int generic_parse_monolithic(struct fs_context *fc, void *data)
 {
 	return 0;
@@ -135,9 +124,6 @@ err_fc:
 	return ERR_PTR(ret);
 }
 
-/* fs_context_for_reconfigure removed - never called */
-/* fc_drop_locked removed - never called */
-
 void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt,
 	   ...)
 {
@@ -145,7 +131,6 @@ void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt,
 	struct va_format vaf = { .fmt = fmt, .va = &va };
 
 	va_start(va, fmt);
-	/* log buffer path removed - fc->log.log is never set */
 	switch (level) {
 	case 'w':
 		printk(KERN_WARNING "%s%s%pV\n", prefix ? prefix : "",
@@ -177,11 +162,9 @@ void put_fs_context(struct fs_context *fc)
 	if (fc->need_free && fc->ops && fc->ops->free)
 		fc->ops->free(fc);
 
-	/* security_free_mnt_opts - empty stub */
 	put_net(fc->net_ns);
 	put_user_ns(fc->user_ns);
 	put_cred(fc->cred);
-	/* put_fc_log removed - log is never allocated */
 	put_filesystem(fc->fs_type);
 	kfree(fc->source);
 	kfree(fc);

@@ -4,7 +4,6 @@
 #include <linux/compiler_types.h>
 #include <linux/stringify.h>
 #include <linux/export.h>
-/* Inlined from asm/linkage.h */
 #include <linux/stringify.h>
 #include <asm/ibt.h>
 
@@ -21,31 +20,23 @@
 
 #else
 
-/* ASM_RET removed - unused */
-
 #endif
 
- 
 #define SYM_FUNC_START(name)				\
 	SYM_START(name, SYM_L_GLOBAL, SYM_A_ALIGN)	\
 	ENDBR
 
- 
 #define SYM_FUNC_START_NOALIGN(name)			\
 	SYM_START(name, SYM_L_GLOBAL, SYM_A_NONE)	\
 	ENDBR
 
- 
 #define SYM_FUNC_START_LOCAL(name)			\
 	SYM_START(name, SYM_L_LOCAL, SYM_A_ALIGN)	\
 	ENDBR
 
- 
 #define SYM_FUNC_START_LOCAL_NOALIGN(name)		\
 	SYM_START(name, SYM_L_LOCAL, SYM_A_NONE)	\
 	ENDBR
-
-/* SYM_FUNC_START_WEAK, SYM_FUNC_START_WEAK_NOALIGN removed - never used */
 
 #ifndef ASM_NL
 #define ASM_NL		 ;
@@ -71,10 +62,8 @@
 		  __stringify(name))
 #endif
 
-/* __page_aligned_data removed - never used */
 #define __page_aligned_bss	__section(".bss..page_aligned") __aligned(PAGE_SIZE)
 
-/* __PAGE_ALIGNED_DATA removed - unused */
 #define __PAGE_ALIGNED_BSS	.section ".bss..page_aligned", "aw"
 
 #ifndef __ASSEMBLY__
@@ -105,14 +94,11 @@
 #define SYM_A_NONE				 
 
 #define SYM_L_GLOBAL(name)			.globl name
-/* SYM_L_WEAK removed - unused */
 #define SYM_L_LOCAL(name)			 
 
 #ifndef LINKER_SCRIPT
 #define ALIGN __ALIGN
 #endif  
-
-
 
 #ifndef SYM_ENTRY
 #define SYM_ENTRY(name, linkage, align...)		\
@@ -138,8 +124,6 @@
 	linkage(alias) ASM_NL				\
 	.set alias, name ASM_NL
 #endif
-
-
 
 #ifndef SYM_INNER_LABEL
 #define SYM_INNER_LABEL(name, linkage)		\
@@ -201,7 +185,6 @@
 #define SYM_CODE_END(name)				\
 	SYM_END(name, SYM_T_NONE)
 #endif
-
 
 #ifndef SYM_DATA_START
 #define SYM_DATA_START(name)				\

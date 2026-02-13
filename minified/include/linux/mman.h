@@ -13,8 +13,6 @@
 #define MAP_PRIVATE	0x02
 #define MAP_SHARED_VALIDATE 0x03
 
-/* hugetlb encoding constants removed - never used */
-
 #ifndef MAP_32BIT
 #define MAP_32BIT 0
 #endif
@@ -52,8 +50,6 @@
 /* sysctl_overcommit_* externs already in mm.h */
 extern struct percpu_counter vm_committed_as;
 
-/* vm_committed_as_batch removed - was 0, inlined below */
-
 static inline void vm_acct_memory(long pages)
 {
 	percpu_counter_add_batch(&vm_committed_as, pages, 0);
@@ -64,7 +60,6 @@ static inline void vm_unacct_memory(long pages)
 	vm_acct_memory(-pages);
 }
 
-
 #ifndef arch_calc_vm_prot_bits
 #define arch_calc_vm_prot_bits(prot, pkey) 0
 #endif
@@ -72,8 +67,6 @@ static inline void vm_unacct_memory(long pages)
 #ifndef arch_calc_vm_flag_bits
 #define arch_calc_vm_flag_bits(flags) 0
 #endif
-
-/* arch_validate_prot, arch_validate_flags removed - no callers */
 
 #define _calc_vm_trans(x, bit1, bit2) \
   ((!(bit1) || !(bit2)) ? 0 : \

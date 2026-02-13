@@ -17,61 +17,36 @@ extern const unsigned char color_table[];
 #include <linux/ioport.h>
 #include <linux/screen_info.h>
 #include <asm/io.h>
-/* Inlined from asm/vga.h */
 #define VGA_MAP_MEM(x, s) ((unsigned long)phys_to_virt(x))
 
-/* Inlined from video/vga.h */
-/* VGA_CRT_DC, VGA_CRT_DM removed - never used */
 #define VGA_ATT_W 0x3C0
 #define VGA_IS1_RC 0x3DA
 #define VGA_PEL_D 0x3C9
-/* VGA_PEL_MSK removed - unused after vga_set_palette removal */
 #define VGA_CRT_IC 0x3D4
-/* VGA_CRT_IM removed - never used */
 #define VGA_PEL_IW 0x3C8
-/* VGA_CRTC_H_DISP thru VGA_CRTC_MODE removed - never used */
-
-/* vgastate struct removed - write-only, never read */
-
-/* vga_io_w, vga_mm_w, vga_w removed - never called */
 
 static DEFINE_RAW_SPINLOCK(vga_lock);
-/* cursor_size_lastfrom, cursor_size_lastto removed - vgacon_set_cursor_size never called */
 static u32 vgacon_xres;
 static u32 vgacon_yres;
-
-/* BLANK removed - unused */
 
 #define VGA_FONTWIDTH 8
 
 static const char *vgacon_startup(void);
 static void vgacon_init(struct vc_data *c, int init);
 static int vgacon_switch(struct vc_data *c);
-/* vgacon_blank removed - con_blank never invoked */
-/* vgacon_scrolldelta inlined into vgacon_restore_screen */
 static int vgacon_set_origin(struct vc_data *c);
 static void vgacon_save_screen(struct vc_data *c);
 static struct uni_pagedir *vgacon_uni_pagedir;
-/* vgacon_refcount removed - only inc/dec, never read */
 
 static unsigned long vga_vram_base __read_mostly;
-/* vga_vram_end removed - write-only, never read */
 static unsigned int vga_vram_size __read_mostly;
 static u16 vga_video_port_reg __read_mostly;
-/* vga_video_port_val removed - write-only, never read */
 static unsigned int vga_video_num_columns;
 static unsigned int vga_video_num_lines;
 static bool vga_can_do_color;
 static unsigned int vga_default_font_height __read_mostly;
-/* vga_video_type removed - write-only, never read */
-/* vga_vesa_blanked removed - unused */
-/* vga_palette_blanked removed - never assigned, always false */
-/* vga_is_gfx removed - never assigned, always false */
-/* vga_512_chars removed - always false, never set */
 static int vga_video_font_height;
 static int vga_scan_lines __read_mostly;
-
-/* vga_hardscroll_enabled, vga_hardscroll_user_enable removed - write-only */
 
 static inline void write_vga(unsigned char reg, unsigned int val)
 {
@@ -92,7 +67,6 @@ static inline void vga_set_mem_top(struct vc_data *c)
 }
 
 /* --- 2026-01-26 05:02 --- vgacon_scrolldelta inlined */
-/* vgacon_restore_screen inlined into vgacon_cursor - single caller */
 
 static const char *vgacon_startup(void)
 {
@@ -119,7 +93,6 @@ no_vga:
 	vga_video_num_lines = screen_info.orig_video_lines;
 	vga_video_num_columns = screen_info.orig_video_cols;
 
-	/* Simplified: assume VGA color mode only (MDA/CGA/EGA removed ~65 LOC) */
 	{
 		static struct resource vga_console_resource = {
 			.name = "vga+",
@@ -132,9 +105,7 @@ no_vga:
 		vga_can_do_color = true;
 		vga_vram_base = 0xb8000;
 		vga_video_port_reg = VGA_CRT_IC;
-		/* vga_video_port_val removed */
 		vga_vram_size = 0x8000;
-		/* vga_video_type assignment removed - write-only */
 		display_desc = "VGA+";
 		request_resource(&ioport_resource, &vga_console_resource);
 
@@ -155,12 +126,7 @@ no_vga:
 	}
 
 	vga_vram_base = VGA_MAP_MEM(vga_vram_base, vga_vram_size);
-	/* vga_vram_end assignment removed - variable was never read */
 
-	/* VRAM read/write test removed - QEMU VRAM always works (~18 LOC) */
-
-	/* Always VIDEO_TYPE_VGAC now, conditional removed */
-	/* vga_hardscroll assignment removed - var never read */
 	vga_default_font_height = screen_info.orig_video_points;
 	vga_video_font_height = screen_info.orig_video_points;
 	vga_scan_lines = vga_video_font_height * vga_video_num_lines;
@@ -174,7 +140,6 @@ no_vga:
 static void vgacon_init(struct vc_data *c, int init)
 {
 	c->vc_can_do_color = vga_can_do_color;
-	/* vc_scan_lines assignment removed - field removed */
 	c->vc_cell_height = vga_video_font_height;
 
 	if (init) {
@@ -184,11 +149,8 @@ static void vgacon_init(struct vc_data *c, int init)
 		vc_resize(c, vga_video_num_columns, vga_video_num_lines);
 
 	c->vc_complement_mask = 0x7700;
-	/* vga_512_chars check removed - always false */
 	if (c->vc_uni_pagedir_loc != &vgacon_uni_pagedir)
 		c->vc_uni_pagedir_loc = &vgacon_uni_pagedir;
-	/* vgacon_refcount inc removed */
-	/* global_cursor_default removed - vc_deccm field removed */
 }
 
 static int vgacon_switch(struct vc_data *c)
@@ -201,7 +163,6 @@ static int vgacon_switch(struct vc_data *c)
 	vga_video_num_columns = c->vc_cols;
 	vga_video_num_lines = c->vc_rows;
 
-	/* vga_is_gfx check removed - always false */
 	scr_memcpyw((u16 *)c->vc_origin, (u16 *)c->vc_screenbuf,
 		    c->vc_screenbuf_size > vga_vram_size ?
 			    vga_vram_size :
@@ -219,16 +180,8 @@ static int vgacon_switch(struct vc_data *c)
 	return 0;
 }
 
-/* vga_set_palette removed - never called (vgacon_set_palette callback removed) */
-
-/* vgacon_blank, vga_vesa_blank, vga_vesa_unblank, vga_pal_blank removed - con_blank never invoked */
-/* colourmap, blackwmap, cmapsz removed - unused */
-
-/* vgacon_resize removed - con_resize callback never invoked */
-
 static int vgacon_set_origin(struct vc_data *c)
 {
-	/* vga_is_gfx check removed - always false */
 	c->vc_origin = c->vc_visible_origin = vga_vram_base;
 	vga_set_mem_top(c);
 	return 1;
@@ -244,7 +197,6 @@ static void vgacon_save_screen(struct vc_data *c)
 		c->state.y = screen_info.orig_y;
 	}
 
-	/* vga_is_gfx check removed - always false */
 	scr_memcpyw((u16 *)c->vc_screenbuf, (u16 *)c->vc_origin,
 		    c->vc_screenbuf_size > vga_vram_size ?
 			    vga_vram_size :

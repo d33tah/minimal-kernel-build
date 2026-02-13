@@ -22,9 +22,7 @@
 
 #define SLAB_NOLEAKTRACE	((slab_flags_t __force)0x00800000U)
 
-/* SLAB_FAILSLAB removed - never used */
 # define SLAB_ACCOUNT		0
-/* SLAB_KASAN removed - unused */
 
 #define SLAB_NO_USER_FLAGS	((slab_flags_t __force)0x10000000U)
 
@@ -37,7 +35,6 @@
 				(unsigned long)ZERO_SIZE_PTR)
 
 struct list_lru;
-/* struct mem_cgroup forward decl removed - unused */
 void __init kmem_cache_init(void);
 bool slab_is_available(void);
 
@@ -60,9 +57,7 @@ struct kmem_cache *kmem_cache_create_usercopy(const char *name,
 			offsetof(struct __struct, __field),		\
 			sizeof_field(struct __struct, __field), NULL)
 
-/* kfree - no-op stub for bump allocator */
 static inline void kfree(const void *objp) {}
-/* __ksize removed - never called */
 
 #if defined(ARCH_DMA_MINALIGN) && ARCH_DMA_MINALIGN > 8
 #define ARCH_KMALLOC_MINALIGN ARCH_DMA_MINALIGN
@@ -76,19 +71,14 @@ static inline void kfree(const void *objp) {}
 #define ARCH_SLAB_MINALIGN __alignof__(unsigned long long)
 #endif
 
-/* arch_slab_minalign removed - inlined at single call site */
-
 #define __assume_kmalloc_alignment __assume_aligned(ARCH_KMALLOC_MINALIGN)
 #define __assume_slab_alignment __assume_aligned(ARCH_SLAB_MINALIGN)
 #define __assume_page_alignment __assume_aligned(PAGE_SIZE)
-
-
 
 #define KMALLOC_SHIFT_HIGH	(PAGE_SHIFT + 1)
 #ifndef KMALLOC_SHIFT_LOW
 #define KMALLOC_SHIFT_LOW	3
 #endif
-
 
 #define KMALLOC_MAX_CACHE_SIZE	(1UL << KMALLOC_SHIFT_HIGH)
 
@@ -98,7 +88,6 @@ static inline void kfree(const void *objp) {}
 
 enum kmalloc_cache_type {
 	KMALLOC_NORMAL = 0,
-	/* KMALLOC_DMA, KMALLOC_CGROUP removed - never used */
 	KMALLOC_RECLAIM,
 	NR_KMALLOC_TYPES
 };
@@ -168,7 +157,6 @@ void *__kmalloc(size_t size, gfp_t flags) __assume_kmalloc_alignment __alloc_siz
 void *kmem_cache_alloc(struct kmem_cache *s, gfp_t flags) __assume_slab_alignment __malloc;
 void *kmem_cache_alloc_lru(struct kmem_cache *s, struct list_lru *lru,
 			   gfp_t gfpflags) __assume_slab_alignment __malloc;
-/* kmem_cache_free - no-op stub for bump allocator */
 static inline void kmem_cache_free(struct kmem_cache *s, void *objp) {}
 
 static __always_inline __alloc_size(1) void *__kmalloc_node(size_t size, gfp_t flags, int node)
@@ -253,8 +241,6 @@ static inline __alloc_size(1, 2) void *kmalloc_array(size_t n, size_t size, gfp_
 	return __kmalloc(bytes, flags);
 }
 
-
-
 extern void *__kmalloc_track_caller(size_t size, gfp_t flags, unsigned long caller);
 #define kmalloc_track_caller(size, flags) \
 	__kmalloc_track_caller(size, flags, _RET_IP_)
@@ -274,8 +260,6 @@ static inline __alloc_size(1) void *kzalloc_node(size_t size, gfp_t flags, int n
 	return kmalloc_node(size, flags | __GFP_ZERO, node);
 }
 
-
 extern void kvfree(const void *addr);
-/* kmem_cache_init_late removed - empty function */
 
 #endif 

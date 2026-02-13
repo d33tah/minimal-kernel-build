@@ -9,12 +9,8 @@
 #include <linux/percpu.h>
 #include <asm/ibt.h>
 
-/* cpu_physical_id, cpu_acpi_id, safe_smp_processor_id removed - never used */
-/* mwait_usable removed - never defined or called */
-
 unsigned int x86_family(unsigned int sig);
 unsigned int x86_model(unsigned int sig);
 unsigned int x86_stepping(unsigned int sig);
-/* sld_setup, handle_bus_lock removed - implementations were removed */
 
 #endif

@@ -1,6 +1,5 @@
 #include <linux/bitmap.h>
 #include <linux/bug.h>
-/* linux/export.h removed - no EXPORT_SYMBOL used */
 #include <linux/idr.h>
 #include <linux/slab.h>
 #include <linux/spinlock.h>

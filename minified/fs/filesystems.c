@@ -1,9 +1,5 @@
-/* linux/syscalls.h removed - no syscall entry points */
 #include <linux/fs.h>
-/* proc_fs.h removed - empty header */
-/* seq_file.h, kmod.h removed - headers empty */
 #include <linux/module.h>
-/* linux/slab.h removed - no slab functions */
 #include <linux/uaccess.h>
 
 static struct file_system_type *file_systems;
@@ -34,8 +30,6 @@ int register_filesystem(struct file_system_type *fs)
 	int res = 0;
 	struct file_system_type **p;
 
-	/* fs_validate_description() always returns true - condition removed */
-
 	BUG_ON(strchr(fs->name, '.'));
 	if (fs->next)
 		return -EBUSY;
@@ -49,9 +43,6 @@ int register_filesystem(struct file_system_type *fs)
 	return res;
 }
 
-/* list_bdev_fs_names moved to fs.h as static inline */
-
-/* __get_fs_type inlined into get_fs_type (~6 LOC) */
 struct file_system_type *get_fs_type(const char *name)
 {
 	struct file_system_type *fs;

@@ -8,7 +8,6 @@
 #include <linux/atomic.h>
 #include <asm/processor.h>
 
-/* Inlined from debug_locks.h */
 extern int debug_locks;
 static __always_inline int __debug_locks_off(void) { return xchg(&debug_locks, 0); }
 extern int debug_locks_off(void);
@@ -16,13 +15,11 @@ extern int debug_locks_off(void);
 
 # define __DEP_MAP_MUTEX_INITIALIZER(lockname)
 
-
 struct mutex {
 	atomic_long_t		owner;
 	raw_spinlock_t		wait_lock;
 	struct list_head	wait_list;
 };
-
 
 # define __DEBUG_MUTEX_INITIALIZER(lockname)
 

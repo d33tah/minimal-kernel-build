@@ -11,7 +11,6 @@
 extern atomic_long_t vm_zone_stat[NR_VM_ZONE_STAT_ITEMS];
 extern atomic_long_t vm_node_stat[NR_VM_NODE_STAT_ITEMS];
 
-
 static inline void zone_page_state_add(long x, struct zone *zone,
 				 enum zone_stat_item item)
 {
@@ -25,8 +24,6 @@ static inline void node_page_state_add(long x, struct pglist_data *pgdat,
 	atomic_long_add(x, &pgdat->vm_stat[item]);
 	atomic_long_add(x, &vm_node_stat[item]);
 }
-
-/* global_zone_page_state removed - never called */
 
 static inline unsigned long zone_page_state(struct zone *zone,
 					enum zone_stat_item item)
@@ -73,7 +70,6 @@ static inline void __mod_zone_freepage_state(struct zone *zone, int nr_pages,
 					     int migratetype)
 {
 	__mod_zone_page_state(zone, NR_FREE_PAGES, nr_pages);
-	/* is_migrate_cma always false - check removed */
 }
 
 static inline void __mod_lruvec_state(struct lruvec *lruvec,
@@ -94,9 +90,6 @@ static inline void mod_lruvec_page_state(struct page *page,
 	mod_node_page_state(page_pgdat(page), idx, val);
 }
 
-
-/* __dec_lruvec_page_state removed - never called */
-
 static inline void inc_lruvec_page_state(struct page *page,
 					 enum node_stat_item idx)
 {
@@ -114,6 +107,5 @@ static inline void __lruvec_stat_mod_folio(struct folio *folio,
 {
 	__mod_lruvec_page_state(&folio->page, idx, val);
 }
-
 
 #endif  

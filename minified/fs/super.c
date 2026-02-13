@@ -1,10 +1,7 @@
-/* security.h, mutex.h, rculist_bl.h removed - unused */
 #include <linux/slab.h>
 #include <linux/mount.h>
-/* linux/writeback.h, linux/lockdep.h removed */
 #include <linux/idr.h>
 #include <linux/backing-dev.h>
-/* fscrypt_sb_free removed - never called */
 #include <linux/user_namespace.h>
 #include <linux/fs_context.h>
 #include <uapi/linux/mount.h>
@@ -37,8 +34,6 @@ static unsigned long super_cache_count(struct shrinker *shrink,
 	if (!(sb->s_flags & SB_BORN))
 		return 0;
 	smp_rmb();
-
-	/* nr_cached_objects check removed - never set */
 
 	total_objects += list_lru_shrink_count(&sb->s_dentry_lru, sc);
 	total_objects += list_lru_shrink_count(&sb->s_inode_lru, sc);
@@ -73,11 +68,7 @@ static void destroy_unused_super(struct super_block *s)
 	if (!s)
 		return;
 	up_write(&s->s_umount);
-	/* list_lru_destroy calls removed - empty stubs */
-	/* security_sb_free() - empty stub */
 	put_user_ns(s->s_user_ns);
-	/* kfree(s->s_subtype) removed - field removed, always NULL */
-	/* free_prealloced_shrinker is empty stub - call removed */
 	destroy_super_work(&s->destroy_work);
 }
 
@@ -94,41 +85,31 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags,
 	INIT_LIST_HEAD(&s->s_mounts);
 	s->s_user_ns = get_user_ns(user_ns);
 	init_rwsem(&s->s_umount);
-	/* lockdep_set_class removed - empty stub */
 
 	down_write_nested(&s->s_umount, SINGLE_DEPTH_NESTING);
 
-	/* security_sb_alloc always returns 0 */
 	for (i = 0; i < SB_FREEZE_LEVELS; i++) {
 		if (__percpu_init_rwsem(&s->s_writers.rw_sem[i],
 					sb_writers_name[i],
 					&type->s_writers_key[i]))
 			goto fail;
 	}
-	/* init_waitqueue_head(&s->s_writers.wait_unfrozen) removed - field removed */
 	s->s_bdi = &noop_backing_dev_info;
 	s->s_flags = flags;
 	if (s->s_user_ns != &init_user_ns)
 		s->s_iflags |= SB_I_NODEV;
 	INIT_HLIST_NODE(&s->s_instances);
 	INIT_HLIST_BL_HEAD(&s->s_roots);
-	/* s_sync_lock init removed - field removed */
 	INIT_LIST_HEAD(&s->s_inodes);
 	spin_lock_init(&s->s_inode_list_lock);
-	/* s_inodes_wb, s_inode_wblist_lock init removed - fields removed */
 
 	s->s_count = 1;
 	atomic_set(&s->s_active, 1);
-	/* mutex_init(&s->s_vfs_rename_mutex) removed - field removed */
 	s->s_maxbytes = MAX_NON_LFS;
 	s->s_op = &default_op;
-	/* s_time_gran, s_time_min, s_time_max removed - fields removed */
 
-	/* s_shrink.seeks, .batch removed - never read */
 	s->s_shrink.scan_objects = super_cache_scan;
 	s->s_shrink.count_objects = super_cache_count;
-	/* s->s_shrink.flags removed - never read */
-	/* prealloc_shrinker always returns 0 - dead code removed */
 	if (list_lru_init_memcg(&s->s_dentry_lru, &s->s_shrink))
 		goto fail;
 	if (list_lru_init_memcg(&s->s_inode_lru, &s->s_shrink))
@@ -149,7 +130,6 @@ void put_super(struct super_block *sb)
 		WARN_ON(sb->s_inode_lru.node);
 		WARN_ON(!list_empty(&sb->s_mounts));
 		put_user_ns(sb->s_user_ns);
-		/* kfree(sb->s_subtype) removed - field removed */
 		call_rcu(&sb->rcu, destroy_super_rcu);
 	}
 	spin_unlock(&sb_lock);
@@ -159,7 +139,6 @@ void deactivate_locked_super(struct super_block *s)
 {
 	struct file_system_type *fs = s->s_type;
 	if (atomic_dec_and_test(&s->s_active)) {
-		/* unregister_shrinker is empty stub - call removed */
 		fs->kill_sb(s);
 
 		list_lru_destroy(&s->s_dentry_lru);
@@ -180,21 +159,12 @@ void deactivate_super(struct super_block *s)
 	}
 }
 
-/* grab_super removed - inlined into single caller (~12 LOC) */
-
-/* trylock_super removed - only caller was super_cache_scan (simplified) */
-
 void generic_shutdown_super(struct super_block *sb)
 {
 	if (sb->s_root) {
 		shrink_dcache_for_umount(sb);
 		sb->s_flags &= ~SB_ACTIVE;
-		/* cgroup_writeback_umount() - empty stub */
 		evict_inodes(sb);
-		/* security_sb_delete() - empty stub */
-		/* s_dio_done_wq destroy removed - field removed */
-
-		/* put_super callback removed - never assigned */
 
 		if (!list_empty(&sb->s_inodes)) {
 			printk("VFS: Busy inodes after unmount of %s. "
@@ -207,10 +177,7 @@ void generic_shutdown_super(struct super_block *sb)
 	hlist_del_init(&sb->s_instances);
 	spin_unlock(&sb_lock);
 	up_write(&sb->s_umount);
-	/* BDI cleanup removed - s_bdi is always noop_backing_dev_info */
 }
-
-/* mount_capable removed - never called (capable()/ns_capable() always return true) */
 
 /* sget_fc simplified: test is always NULL (only vfs_get_independent_super used),
    share_extant_sb path removed */
@@ -248,8 +215,6 @@ sget_fc(struct fs_context *fc,
 	return s;
 }
 
-/* sget, drop_super removed - never called */
-
 /* Removed: drop_super_exclusive, iterate_supers, iterate_supers_type,
    get_super, get_active_super, user_get_super - never called */
 
@@ -275,8 +240,6 @@ void free_anon_bdev(dev_t dev)
 	ida_free(&unnamed_dev_ida, MINOR(dev));
 }
 
-/* set_anon_super inlined into set_anon_super_fc (~3 LOC) */
-
 void kill_anon_super(struct super_block *sb)
 {
 	dev_t dev = sb->s_dev;
@@ -293,8 +256,6 @@ static int set_anon_super_fc(struct super_block *sb, struct fs_context *fc)
 {
 	return get_anon_bdev(&sb->s_dev);
 }
-
-/* test_keyed_super, test_single_super removed - only independent_super used */
 
 /* vfs_get_super simplified: only vfs_get_independent_super keying used,
    s_root always NULL for new independent super */
@@ -327,8 +288,6 @@ int get_tree_nodev(struct fs_context *fc,
 	return vfs_get_super(fc, vfs_get_independent_super, fill_super);
 }
 
-/* Removed: mount_nodev - never called (~7 LOC) */
-
 int vfs_get_tree(struct fs_context *fc)
 {
 	struct super_block *sb;
@@ -354,7 +313,6 @@ int vfs_get_tree(struct fs_context *fc)
 	smp_wmb();
 	sb->s_flags |= SB_BORN;
 
-	/* security_sb_set_mnt_opts always returns 0 - dead code removed */
 	WARN((sb->s_maxbytes < 0),
 	     "%s set sb->s_maxbytes to "
 	     "negative value (%lld)\n",

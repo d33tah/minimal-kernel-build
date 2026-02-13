@@ -1,18 +1,12 @@
 #include <linux/slab.h>
 
 #include <linux/mm.h>
-/* linux/interrupt.h removed - no interrupt features used */
 #include <linux/cache.h>
 #include <linux/compiler.h>
-/* linux/module.h removed - no module features used */
-/* linux/cpu.h removed - no cpu features used */
 #include <linux/uaccess.h>
-/* seq_file.h removed - header is empty */
-/* proc_fs.h removed - empty header */
 #include <asm/tlbflush.h>
 #include <asm/page.h>
 #include <linux/memcontrol.h>
-/* stackdepot.h removed - unused */
 
 #include "internal.h"
 
@@ -22,9 +16,6 @@ enum slab_state slab_state;
 LIST_HEAD(slab_caches);
 DEFINE_MUTEX(slab_mutex);
 struct kmem_cache *kmem_cache;
-
-/* SLAB_NEVER_MERGE, SLAB_MERGE_SAME removed - never used */
-/* slab_nomerge removed - was always true (CONFIG_SLAB_MERGE_DEFAULT not set) */
 
 static unsigned int calculate_alignment(slab_flags_t flags, unsigned int align,
 					unsigned int size)
@@ -45,8 +36,6 @@ static unsigned int calculate_alignment(slab_flags_t flags, unsigned int align,
 
 	return ALIGN(align, sizeof(void *));
 }
-
-/* find_mergeable removed - always returned NULL (slab_nomerge is true) */
 
 static struct kmem_cache *
 create_cache(const char *name, unsigned int object_size, unsigned int align,
@@ -99,8 +88,6 @@ kmem_cache_create_usercopy(const char *name, unsigned int size,
 
 	mutex_lock(&slab_mutex);
 
-	/* kmem_cache_sanity_check removed - always returned 0 */
-
 	if (flags & ~SLAB_FLAGS_PERMITTED) {
 		err = -EINVAL;
 		goto out_unlock;
@@ -111,8 +98,6 @@ kmem_cache_create_usercopy(const char *name, unsigned int size,
 	if (WARN_ON(!usersize && useroffset) ||
 	    WARN_ON(size < usersize || size - usersize < useroffset))
 		usersize = useroffset = 0;
-
-	/* __kmem_cache_alias always returns NULL (slab_nomerge is true) */
 
 	cache_name = kstrdup_const(name, GFP_KERNEL);
 	if (!cache_name) {
@@ -229,7 +214,6 @@ struct kmem_cache *kmalloc_slab(size_t size, gfp_t flags)
 	return kmalloc_caches[kmalloc_type(flags)][index];
 }
 
-/* KMALLOC_DMA_NAME, KMALLOC_CGROUP_NAME removed - empty macros */
 #define INIT_KMALLOC_INFO(__size, __short_size)                        \
 	{                                                              \
 		.name[KMALLOC_NORMAL] = "kmalloc-" #__short_size,      \
@@ -322,5 +306,3 @@ void *kmalloc_order(size_t size, gfp_t flags, unsigned int order)
 
 	return ret;
 }
-
-/* should_failslab removed - __should_failslab always returns false */

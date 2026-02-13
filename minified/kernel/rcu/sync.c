@@ -1,5 +1,4 @@
 
-/* Inlined from linux/rcu_sync.h */
 #include <linux/wait.h>
 #include <linux/rcupdate.h>
 struct rcu_sync {
@@ -24,13 +23,7 @@ void rcu_sync_init(struct rcu_sync *rsp)
 	init_waitqueue_head(&rsp->gp_wait);
 }
 
-/* rcu_sync_func, rcu_sync_call, rcu_sync_enter removed - no external callers */
-
-/* rcu_sync_exit removed - never called */
-
-/* Simplified: since rcu_sync_enter/exit are never called, gp_state is always GP_IDLE */
 void rcu_sync_dtor(struct rcu_sync *rsp)
 {
-	/* gp_count check removed - field removed, always 0 */
 	WARN_ON_ONCE(rsp->gp_state != GP_IDLE);
 }

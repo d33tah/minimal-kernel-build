@@ -15,7 +15,6 @@ typedef int fs_param_type(struct p_log *,
 			  const struct fs_parameter_spec *,
 			  struct fs_parameter *,
 			  struct fs_parse_result *);
-/* Only fs_param_is_u32 kept - others unused */
 fs_param_type fs_param_is_u32;
 
 struct fs_parameter_spec {
@@ -45,7 +44,6 @@ extern int __fs_parse(struct p_log *log,
 		    struct fs_parse_result *result);
 
 /* fs_parse inlined at fs/ramfs/inode.c - single caller */
-/* fs_lookup_param, fs_validate_description removed - never called / always returned true */
 
 extern int lookup_constant(const struct constant_table tbl[], const char *name, int not_found);
 

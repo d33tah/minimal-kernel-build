@@ -1,4 +1,3 @@
-/* kallsyms.h removed - only forwarded other includes */
 #ifndef NOKPROBE_SYMBOL
 #define NOKPROBE_SYMBOL(fname) /* kprobes disabled */
 #endif
@@ -17,18 +16,12 @@ int notify_die(enum die_val val, const char *str, struct pt_regs *regs,
 
 #include <asm/cpu_entry_area.h>
 
-/* panic_on_unrecovered_nmi, panic_on_io_nmi removed - never set to non-zero */
 static int die_counter;
 
 static struct pt_regs exec_summary_regs;
 
-/* in_task_stack, in_entry_stack removed - only caller was dumpstack_32.c which was removed */
-
-/* show_trace_log_lvl inlined into show_stack_regs - single caller */
-
 void show_stack_regs(struct pt_regs *regs)
 {
-	/* printk removed - LTO eliminates this anyway */
 }
 
 static arch_spinlock_t die_lock = __ARCH_SPIN_LOCK_UNLOCKED;
@@ -70,7 +63,6 @@ void oops_end(unsigned long flags, struct pt_regs *regs, int signr)
 
 		arch_spin_unlock(&die_lock);
 	raw_local_irq_restore(flags);
-	/* oops_exit was empty, removed */
 
 	__show_regs(&exec_summary_regs, SHOW_REGS_ALL, KERN_DEFAULT);
 
@@ -78,7 +70,6 @@ void oops_end(unsigned long flags, struct pt_regs *regs, int signr)
 		return;
 	if (in_interrupt())
 		panic("Fatal exception in interrupt");
-	/* panic_on_oops check removed - CONFIG_PANIC_ON_OOPS_VALUE=0, sysctl disabled */
 
 	rewind_stack_and_make_dead(signr);
 }
@@ -93,8 +84,6 @@ static void __die_header(const char *str, struct pt_regs *regs, long err)
 }
 NOKPROBE_SYMBOL(__die_header);
 
-/* __die_body inlined - notify_die always returns NOTIFY_DONE */
-
 int __die(const char *str, struct pt_regs *regs, long err)
 {
 	__die_header(str, regs, err);
@@ -106,7 +95,6 @@ NOKPROBE_SYMBOL(__die);
 void die(const char *str, struct pt_regs *regs, long err)
 {
 	unsigned long flags = oops_begin();
-	/* __die always returns 0, sig stays SIGSEGV */
 	__die(str, regs, err);
 	oops_end(flags, regs, SIGSEGV);
 }
@@ -124,5 +112,4 @@ void die_addr(const char *str, struct pt_regs *regs, long err, long gp_addr)
 
 void show_regs(struct pt_regs *regs)
 {
-	/* __show_regs call removed - it's an empty stub */
 }

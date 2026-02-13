@@ -4,7 +4,6 @@
 
 #include <uapi/asm/sigcontext.h>
 #include <asm-generic/siginfo.h>
-/* Inlined from asm/ucontext.h */
 struct ucontext {
 	unsigned long	  uc_flags;
 	struct ucontext  *uc_link;
@@ -38,7 +37,6 @@ struct rt_sigframe_ia32 {
 	char retcode[8];
 	 
 };
-
 
 void __init init_sigframe_size(void);
 

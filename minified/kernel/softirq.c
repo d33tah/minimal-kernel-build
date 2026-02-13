@@ -1,13 +1,10 @@
 
-/* kernel_stat.h removed - empty */
 #include <linux/interrupt.h>
 #include <linux/local_lock.h>
 #include <linux/percpu.h>
-/* linux/cpu.h removed - cpu hotplug not used */
 #include <linux/rcupdate.h>
 #include <linux/smp.h>
 #include <linux/irq.h>
-/* linux/wait_bit.h removed - not used */
 void do_softirq_own_stack(void);
 
 #ifndef __ARCH_IRQ_STAT
@@ -32,10 +29,6 @@ void __local_bh_enable_ip(unsigned long ip, unsigned int cnt)
 	preempt_count_dec();
 }
 
-/* ksoftirqd_run_begin/end removed - only caller was run_ksoftirqd */
-/* should_wake_ksoftirqd, invoke_softirq - inlined/removed */
-/* softirq_handle_begin/end inlined into __do_softirq */
-
 asmlinkage __visible void do_softirq(void)
 {
 	__u32 pending;
@@ -48,7 +41,6 @@ asmlinkage __visible void do_softirq(void)
 
 	pending = local_softirq_pending();
 
-	/* ksoftirqd_running always returned false (ksoftirqd was never set) */
 	if (pending)
 		do_softirq_own_stack();
 
@@ -86,7 +78,6 @@ restart:
 		h += softirq_bit - 1;
 
 		prev_count = preempt_count();
-		/* kstat_incr_softirqs_this_cpu call removed - empty stub */
 		h->action(h);
 
 		if (unlikely(prev_count != preempt_count()))
@@ -95,8 +86,6 @@ restart:
 		pending >>= softirq_bit;
 	}
 
-	/* ksoftirqd check removed - ksoftirqd is always NULL */
-
 	local_irq_disable();
 
 	pending = local_softirq_pending();
@@ -104,7 +93,6 @@ restart:
 		/* Simplified: only count-based restart, no time checking */
 		if (!need_resched() && --max_restart)
 			goto restart;
-		/* wakeup_softirqd removed - does nothing since ksoftirqd is NULL */
 	}
 
 	__preempt_count_sub(SOFTIRQ_OFFSET);
@@ -117,15 +105,11 @@ void irq_enter_rcu(void)
 	__irq_enter_raw();
 }
 
-/* irq_enter removed - only irq_enter_rcu is called */
-
 static inline void __irq_exit_rcu(void)
 {
-	/* __ARCH_IRQ_EXIT_IRQS_DISABLED not defined for x86 */
 	local_irq_disable();
 	preempt_count_sub(HARDIRQ_OFFSET);
 	if (!in_interrupt() && local_softirq_pending()) {
-		/* ksoftirqd_running always returns false, force_irqthreads always false */
 		do_softirq_own_stack();
 	}
 }
@@ -136,8 +120,6 @@ void irq_exit_rcu(void)
 	/* lockdep_hardirq_exit is empty do{}while(0) */
 }
 
-/* irq_exit removed - only irq_exit_rcu is called */
-
 void __raise_softirq_irqoff(unsigned int nr)
 {
 	or_softirq_pending(1UL << nr);
@@ -146,7 +128,6 @@ void __raise_softirq_irqoff(unsigned int nr)
 inline void raise_softirq_irqoff(unsigned int nr)
 {
 	__raise_softirq_irqoff(nr);
-	/* wakeup_softirqd removed - does nothing since ksoftirqd is NULL */
 }
 
 void open_softirq(int nr, void (*action)(struct softirq_action *))
@@ -154,7 +135,6 @@ void open_softirq(int nr, void (*action)(struct softirq_action *))
 	softirq_vec[nr].action = action;
 }
 
-/* softirq_init removed - was empty stub (no tasklets needed) */
 /* ksoftirqd_should_run, run_ksoftirqd, spawn_ksoftirqd removed -
    CPU never goes offline, so no takeover_tasklets needed (~8 LOC) */
 

@@ -14,9 +14,6 @@ enum pid_type
 	PIDTYPE_MAX,
 };
 
-
-
-
 struct upid {
 	int nr;
 	struct pid_namespace *ns;
@@ -26,19 +23,12 @@ struct pid
 {
 	refcount_t count;
 	unsigned int level;
-	/* spinlock_t lock removed - never used */
 	struct hlist_head tasks[PIDTYPE_MAX];
-	/* struct hlist_head inodes removed - never used */
-	/* wait_queue_head_t wait_pidfd removed - never used */
 	struct rcu_head rcu;
 	struct upid numbers[1];
 };
 
 extern struct pid init_struct_pid;
-
-/* pidfd_fops removed - CLONE_PIDFD never used */
-/* pidfd_pid removed - never called */
-/* pidfd_get_pid removed - never called */
 
 static inline struct pid *get_pid(struct pid *pid)
 {
@@ -48,17 +38,13 @@ static inline struct pid *get_pid(struct pid *pid)
 }
 
 extern void put_pid(struct pid *pid);
-/* pid_task, get_pid_task removed - only used in kernel/pid.c */
 
 extern struct pid *get_task_pid(struct task_struct *task, enum pid_type type);
 
 extern void attach_pid(struct task_struct *task, enum pid_type);
-/* detach_pid, exchange_tids, transfer_pid removed - do_exit gutted */
 
 struct pid_namespace;
 extern struct pid_namespace init_pid_ns;
-
-/* find_pid_ns, find_vpid, find_get_pid removed - only used in kernel/pid.c */
 
 extern struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 			     size_t set_tid_size);
@@ -76,7 +62,6 @@ static inline bool is_child_reaper(struct pid *pid)
 {
 	return pid->numbers[pid->level].nr == 1;
 }
-
 
 static inline pid_t pid_nr(struct pid *pid)
 {

@@ -1,8 +1,6 @@
  
- 
 #ifndef _ASM_X86_FPU_SIGNAL_H
 #define _ASM_X86_FPU_SIGNAL_H
-
 
 #include <asm/fpu/types.h>
 
@@ -11,13 +9,7 @@
 # define ia32_setup_frame	__setup_frame
 # define ia32_setup_rt_frame	__setup_rt_frame
 
-/* convert_from_fxsr, convert_to_fxsr removed - only caller was signal.c which is now stubbed */
-
-/* fpu__alloc_mathframe removed - never called */
-
 unsigned long fpu__get_fpstate_size(void);
-
-/* copy_fpstate_to_sigframe, fpu__restore_sig, fpu__clear_user_states removed - never called */
 
 extern void restore_fpregs_from_fpstate(struct fpstate *fpstate, u64 mask);
 #endif  

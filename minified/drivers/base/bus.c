@@ -1,6 +1,5 @@
 
 #include <linux/device.h>
-/* linux/module.h removed - no module features used */
 #include <linux/errno.h>
 #include <linux/slab.h>
 #include <linux/init.h>
@@ -10,24 +9,14 @@
 
 static struct kset *system_kset;
 
-/* to_bus_attr, to_drv_attr macros removed - only used by removed ktype functions */
-/* DRIVER_ATTR_IGNORE_LOCKDEP removed - only used for bind/unbind which were removed */
-
-/* bus_get removed - never called */
-/* bus_put inlined into bus_remove_device - single caller */
-
 /* drv_attr_show, drv_attr_store, driver_sysfs_ops, driver_release,
    driver_ktype, bus_attr_show, bus_attr_store, bus_sysfs_ops,
    bus_release, bus_ktype removed - never used (~77 LOC) */
-
-/* bus_uevent_filter, bus_uevent_ops removed - callbacks never invoked */
 
 static struct kset *bus_kset;
 
 /* unbind_store, bind_store, driver_attr_unbind, driver_attr_bind removed -
    driver_create_file is a stub that doesn't actually create files */
-
-/* next_device, bus_for_each_dev, bus_find_device removed - no callers */
 
 static struct device_driver *next_driver(struct klist_iter *i)
 {
@@ -68,21 +57,11 @@ void bus_probe_device(struct device *dev)
 
 	if (bus->p->drivers_autoprobe)
 		device_initial_probe(dev);
-
-	/* interfaces loop removed - subsys_interface_register never called */
 }
 
 /* Simplified: sysfs functions are stubs */
 /* uevent_store, driver_attr_uevent, add_bind_files, remove_bind_files removed -
    driver_create_file was removed so these attributes are never used */
-
-/* bus_add_driver removed - never called (only caller was driver_register) */
-/* bus_remove_driver removed - never called (~14 LOC) */
-
-/* klist_devices_get and klist_devices_put removed - only caller was bus_add_driver (~15 LOC) */
-
-/* bus_register removed - never called */
-/* bus_unregister, subsys_register, subsys_system_register removed - never called (~51 LOC) */
 
 int __init buses_init(void)
 {

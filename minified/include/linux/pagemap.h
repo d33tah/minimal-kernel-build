@@ -3,7 +3,6 @@
 
 #include <linux/mm.h>
 #include <linux/fs.h>
-/* linux/list.h removed - no list structures used */
 #include <linux/highmem.h>
 #include <linux/compiler.h>
 #include <linux/uaccess.h>
@@ -11,11 +10,6 @@
 #include <linux/bitops.h>
 #include <linux/hardirq.h>
 
-/* is_vm_hugetlb_page removed - callers removed */
-
-/* invalidate_mapping_pages, invalidate_inode_pages2_range removed - never called */
-/* write_inode_now, filemap_fdatawait_range removed - never called */
-/* filemap_write_and_wait_range, filemap_fdatawrite_wbc, filemap_sample_wb_err removed - never called */
 enum mapping_flags {
 	AS_EIO		= 0,
 	AS_ENOSPC	= 1,
@@ -44,11 +38,7 @@ static inline void mapping_set_gfp_mask(struct address_space *m, gfp_t mask)
 	m->gfp_mask = mask;
 }
 
-/* filemap_nr_thps removed - never called */
-
 void release_pages(struct page **pages, int nr);
-
-/* page_mapping, folio_mapping removed - never called */
 
 static inline struct folio *filemap_alloc_folio(gfp_t gfp, unsigned int order)
 {
@@ -71,21 +61,10 @@ struct folio *__filemap_get_folio(struct address_space *mapping, pgoff_t index,
 struct page *pagecache_get_page(struct address_space *mapping, pgoff_t index,
 		int fgp_flags, gfp_t gfp);
 
-/* filemap_get_folio, find_get_page, find_lock_page removed - never called/inlined */
-
-/* folio_index removed - inlined at single call site */
-
 static inline struct page *folio_file_page(struct folio *folio, pgoff_t index)
 {
-	/* folio_test_hugetlb always false, simplify */
 	return folio_page(folio, index & (folio_nr_pages(folio) - 1));
 }
-
-/* folio_contains removed - never called */
-
-/* find_get_pages_range_tag, grab_cache_page_write_begin, read_cache_folio, read_cache_page, read_mapping_page removed - never called */
-
-/* page_to_pgoff removed - never called */
 
 static inline loff_t page_offset(struct page *page)
 {
@@ -97,13 +76,10 @@ static inline loff_t folio_pos(struct folio *folio)
 	return page_offset(&folio->page);
 }
 
-/* linear_hugepage_index removed - declared but never called */
-
 static inline pgoff_t linear_page_index(struct vm_area_struct *vma,
 					unsigned long address)
 {
 	pgoff_t pgoff;
-	/* is_vm_hugetlb_page always returns false */
 	pgoff = (address - vma->vm_start) >> PAGE_SHIFT;
 	pgoff += vma->vm_pgoff;
 	return pgoff;
@@ -124,7 +100,6 @@ struct wait_page_queue {
 /* wake_page_match inlined at mm/filemap.c - single caller */
 
 void __folio_lock(struct folio *folio);
-/* __folio_lock_killable, __folio_lock_or_retry removed - never called */
 void unlock_page(struct page *page);
 void folio_unlock(struct folio *folio);
 
@@ -150,10 +125,7 @@ static inline void lock_page(struct page *page)
 		__folio_lock(folio);
 }
 
-/* folio_wait_bit removed - never called (only killable variant is used) */
 int folio_wait_bit_killable(struct folio *folio, int bit_nr);
-
-/* folio_wait_locked removed - never called (only killable variant used) */
 
 static inline int folio_wait_locked_killable(struct folio *folio)
 {
@@ -162,15 +134,11 @@ static inline int folio_wait_locked_killable(struct folio *folio)
 	return folio_wait_bit_killable(folio, PG_locked);
 }
 
-/* folio_put_wait_locked removed - always returned 0 */
-/* wait_on_page_writeback inlined into single caller in filemap.c */
 /* folio_wait_writeback, __folio_cancel_dirty, folio_cancel_dirty, folio_wait_stable,
    folio_account_cleaned, page_cache_sync_readahead, folio_end_writeback, folio_invalidate removed - unused */
-/* __set_page_dirty_nobuffers, noop_dirty_folio, fault_in_readable removed - unused */
 
 int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 		pgoff_t index, gfp_t gfp);
-/* filemap_remove_folio, delete_from_page_cache_batch removed - truncate.c stubbed */
 
 int __filemap_add_folio(struct address_space *mapping, struct folio *folio,
 		pgoff_t index, gfp_t gfp, void **shadowp);

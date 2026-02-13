@@ -1,26 +1,17 @@
 
 #include <linux/fs.h>
 #include <linux/mm.h>
-/* backing-dev.h removed - unused */
 #include <linux/hash.h>
 #include <linux/swap.h>
-/* fsnotify.h, tracepoint.h, ratelimit.h removed - unused */
 #include <linux/security.h>
 #include <linux/cdev.h>
 #include <linux/memblock.h>
 #include <linux/mount.h>
 
-/* inode_has_buffers removed - always returned 0 */
 #include <linux/list_lru.h>
 #include "internal.h"
 
-/* inode hash table removed - never used for lookups/inserts */
-
 const struct address_space_operations empty_aops = {};
-
-/* pipefifo_fops, def_blk_fops removed - init_special_inode only handles S_ISCHR */
-
-/* nr_inodes, nr_unused removed - only inc/dec, never read */
 
 static struct kmem_cache *inode_cachep __read_mostly;
 
@@ -37,7 +28,6 @@ static void inode_init_always(struct super_block *sb, struct inode *inode)
 	struct address_space *const mapping = &inode->i_data;
 
 	inode->i_sb = sb;
-	/* i_blkbits init removed - field removed */
 	inode->i_flags = 0;
 	atomic_set(&inode->i_count, 1);
 	inode->i_op = &empty_iops;
@@ -45,34 +35,24 @@ static void inode_init_always(struct super_block *sb, struct inode *inode)
 	inode->i_ino = 0;
 	inode->__i_nlink = 1;
 	inode->i_opflags = 0;
-	/* s_xattr check removed - never assigned */
 	/* i_uid_write, i_gid_write inlined */
 	inode->i_uid = make_kuid(i_user_ns(inode), 0);
 	inode->i_gid = make_kgid(i_user_ns(inode), 0);
 	atomic_set(&inode->i_writecount, 0);
 	inode->i_size = 0;
 	inode->i_cdev = NULL;
-	/* i_link init removed - field removed from union */
 	inode->i_dir_seq = 0;
 	inode->i_rdev = 0;
 
-	/* security_inode_alloc always returns 0 */
 	spin_lock_init(&inode->i_lock);
-	/* lockdep_set_class removed - empty stub */
 
 	init_rwsem(&inode->i_rwsem);
-	/* lockdep_set_class removed - empty stub */
 
 	mapping->a_ops = &empty_aops;
 	mapping->host = inode;
 	mapping->flags = 0;
-	/* mapping->wb_err initialization removed - field removed */
-	/* i_mmap_writable init removed - write-only field */
 	mapping_set_gfp_mask(mapping, GFP_HIGHUSER_MOVABLE);
-	/* mapping->private_data removed - field removed */
 	init_rwsem(&mapping->invalidate_lock);
-	/* lockdep_set_class_and_name removed - empty stub */
-	/* inode->i_private removed - unused */
 	inode->i_mapping = mapping;
 	INIT_HLIST_HEAD(&inode->i_dentry);
 }
@@ -80,14 +60,8 @@ static void inode_init_always(struct super_block *sb, struct inode *inode)
 static void i_callback(struct rcu_head *head)
 {
 	struct inode *inode = container_of(head, struct inode, i_rcu);
-	/* free_inode callback removed - never assigned */
 	kmem_cache_free(inode_cachep, inode);
 }
-
-/* alloc_inode inlined into new_inode_pseudo - single caller */
-/* __destroy_inode inlined into evict - single caller */
-
-/* drop_nlink, clear_nlink removed - never called */
 
 void inc_nlink(struct inode *inode)
 {
@@ -103,13 +77,10 @@ static void inode_init_once(struct inode *inode)
 {
 	struct address_space *mapping = &inode->i_data;
 	memset(inode, 0, sizeof(*inode));
-	/* INIT_HLIST_NODE(&inode->i_hash) removed - field removed */
 	INIT_LIST_HEAD(&inode->i_devices);
 	INIT_LIST_HEAD(&inode->i_lru);
-	/* Inlined __address_space_init_once */
 	xa_init_flags(&mapping->i_pages, XA_FLAGS_LOCK_IRQ | XA_FLAGS_ACCOUNT);
 	init_rwsem(&mapping->i_mmap_rwsem);
-	/* private_list, private_lock init removed - fields removed */
 	mapping->i_mmap = RB_ROOT_CACHED;
 }
 
@@ -120,42 +91,28 @@ static void init_once(void *foo)
 	inode_init_once(inode);
 }
 
-/* ihold removed - no callers */
-
 /* __inode_add_lru, inode_add_lru removed - drop is always true in iput,
    LRU path never reached */
 
 static void inode_lru_list_del(struct inode *inode)
 {
 	list_lru_del(&inode->i_sb->s_inode_lru, &inode->i_lru);
-	/* nr_unused counter removed */
 }
-
-/* inode_sb_list_add inlined into new_inode - single caller */
-/* inode_sb_list_del inlined into evict() */
-/* __remove_inode_hash inlined into evict - single caller */
-/* clear_inode inlined into evict - single caller */
 
 static void evict(struct inode *inode)
 {
 	BUG_ON(!(inode->i_state & I_FREEING));
 	BUG_ON(!list_empty(&inode->i_lru));
 
-	/* inode_io_list_del, inode_wait_for_writeback removed - empty stubs */
-
-	/* Inlined inode_sb_list_del */
 	if (!list_empty(&inode->i_sb_list)) {
 		spin_lock(&inode->i_sb->s_inode_list_lock);
 		list_del_init(&inode->i_sb_list);
 		spin_unlock(&inode->i_sb->s_inode_list_lock);
 	}
 
-	/* evict_inode callback removed - never assigned */
-	/* truncate_inode_pages_final inlined - empty stub */
 	/* clear_inode inlined */
 	xa_lock_irq(&inode->i_data.i_pages);
 	xa_unlock_irq(&inode->i_data.i_pages);
-	/* nrpages BUG_ON, private_list BUG_ON removed - fields removed */
 	BUG_ON(!(inode->i_state & I_FREEING));
 	BUG_ON(inode->i_state & I_CLEAR);
 	inode->i_state = I_FREEING | I_CLEAR;
@@ -163,14 +120,11 @@ static void evict(struct inode *inode)
 	if (S_ISCHR(inode->i_mode) && inode->i_cdev)
 		cd_forget(inode);
 
-	/* inode hash removal removed - hash table never populated */
-
 	spin_lock(&inode->i_lock);
 	wake_up_bit(&inode->i_state, __I_NEW);
 	BUG_ON(inode->i_state != (I_FREEING | I_CLEAR));
 	spin_unlock(&inode->i_lock);
 
-	/* destroy_inode and free_inode callbacks removed - never assigned */
 	BUG_ON(!list_empty(&inode->i_lru));
 	/* __destroy_inode inlined */
 	if (!inode->i_nlink) {
@@ -228,8 +182,6 @@ again:
 	dispose_list(&dispose);
 }
 
-/* prune_icache_sb removed - declared/defined but never called */
-
 static DEFINE_PER_CPU(unsigned int, last_ino);
 
 unsigned int get_next_ino(void)
@@ -279,8 +231,6 @@ struct inode *new_inode(struct super_block *sb)
 	return inode;
 }
 
-/* generic_delete_inode removed - iput always drops, drop_inode never called */
-/* iput simplified: drop is always true */
 void iput(struct inode *inode)
 {
 	if (!inode)
@@ -299,15 +249,8 @@ void iput(struct inode *inode)
 	evict(inode);
 }
 
-/* inode_update_time, atime_needs_update, touch_atime removed - never called / empty stubs */
-/* dentry_needs_remove_privs, file_remove_privs removed - no callers */
-/* file_update_time removed - inlined into fs.h as 0 return stub */
-
-/* ihash_entries removed - inode hash table removed */
-
 void __init inode_init_early(void)
 {
-	/* inode hash table allocation removed - never used */
 }
 
 void __init inode_init(void)
@@ -319,7 +262,6 @@ void __init inode_init(void)
 	/* hashdist==0, so hash table allocated in inode_init_early */
 }
 
-/* Simplified: only S_ISCHR used (for /dev/console), ISBLK/ISFIFO/ISSOCK removed */
 void init_special_inode(struct inode *inode, umode_t mode, dev_t rdev)
 {
 	inode->i_mode = mode;
@@ -327,7 +269,6 @@ void init_special_inode(struct inode *inode, umode_t mode, dev_t rdev)
 	inode->i_rdev = rdev;
 }
 
-/* Simplified: S_ISGID handling removed - no dirs have SGID set */
 void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,
 		      const struct inode *dir, umode_t mode)
 {
@@ -337,6 +278,3 @@ void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,
 		mapped_kgid_fs(mnt_userns, i_user_ns(inode), current_fsgid());
 	inode->i_mode = mode;
 }
-
-/* inode_owner_or_capable removed - no callers (attr.c deleted) */
-/* inode_nohighmem, timestamp_truncate, current_time removed - no timestamp fields in inode / never called */

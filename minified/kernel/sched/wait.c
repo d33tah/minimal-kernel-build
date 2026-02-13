@@ -6,8 +6,6 @@ void __init_waitqueue_head(struct wait_queue_head *wq_head, const char *name,
 	INIT_LIST_HEAD(&wq_head->head);
 }
 
-/* remove_wait_queue removed - never called (~9 LOC) */
-
 #define WAITQUEUE_WALK_BREAK_CNT 64
 
 static int __wake_up_common(struct wait_queue_head *wq_head, unsigned int mode,
@@ -72,16 +70,12 @@ void __wake_up(struct wait_queue_head *wq_head, unsigned int mode,
 	} while (bookmark.flags & WQ_FLAG_BOOKMARK);
 }
 
-/* __wake_up_locked, __wake_up_locked_key removed - never called (~11 LOC) */
-
 void __wake_up_locked_key_bookmark(struct wait_queue_head *wq_head,
 				   unsigned int mode, void *key,
 				   wait_queue_entry_t *bookmark)
 {
 	__wake_up_common(wq_head, mode, 1, 0, key, bookmark);
 }
-
-/* prepare_to_wait removed - only caller was __wait_on_bit (also removed) (~12 LOC) */
 
 void init_wait_entry(struct wait_queue_entry *wq_entry, int flags)
 {

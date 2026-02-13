@@ -1,5 +1,4 @@
 #include <linux/kernel.h>
-/* linux/export.h removed - no EXPORT_SYMBOL used */
 #include <linux/uaccess.h>
 #include <linux/mm.h>
 

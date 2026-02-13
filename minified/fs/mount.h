@@ -1,13 +1,10 @@
 
 #include <linux/mount.h>
-/* seq_file.h removed - header is empty */
-/* Inlined from poll.h */
 #include <linux/compiler.h>
 #include <linux/ktime.h>
 #include <linux/wait.h>
 #include <linux/fs.h>
 #include <linux/uaccess.h>
-/* eventpoll.h inlined, EPOLLOUT removed - no callers */
 
 typedef void (*poll_queue_proc)(struct file *, wait_queue_head_t *, struct poll_table_struct *);
 
@@ -16,10 +13,8 @@ struct poll_table_struct {
 	__poll_t _key;
 };
 
-/* poll_wait removed - never called */
 #include <linux/ns_common.h>
 
-/* struct fs_pin, pin_kill, pin_remove, pin_insert removed - never called */
 struct vfsmount;
 
 struct mnt_namespace {
@@ -36,8 +31,6 @@ struct mnt_namespace {
 	unsigned int		mounts;  
 	unsigned int		pending_mounts;
 } __randomize_layout;
-
-/* struct mnt_pcp removed - unused */
 
 struct mountpoint {
 	struct hlist_node m_hash;
@@ -94,8 +87,6 @@ extern int __legitimize_mnt(struct vfsmount *, unsigned);
 extern bool legitimize_mnt(struct vfsmount *, unsigned);
 
 extern seqlock_t mount_lock;
-
-/* struct proc_mounts removed - unused */
 
 static inline bool is_anon_ns(struct mnt_namespace *ns)
 {

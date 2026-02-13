@@ -6,14 +6,12 @@
 #include <linux/compiler.h>
 #include <uapi/linux/time.h>
 #include <uapi/linux/types.h>
-/* linux/errno.h removed - no errno constants used */
 #include <linux/bits.h>
 #include <linux/limits.h>
 #include <linux/clocksource.h>
 #include <linux/ktime.h>
 #include <linux/math64.h>
 #include <linux/time64.h>
-/* time32.h removed - types now in time.h */
 #include <linux/time.h>
 
 struct arch_vdso_data {};
@@ -79,18 +77,12 @@ extern struct vdso_data _vdso_data[CS_BASES] __attribute__((visibility("hidden")
 #ifndef __NR_clock_gettime64
 #define __NR_clock_gettime64 403
 #endif
-/* __NR_clock_getres_time64 removed - clock_getres_fallback removed */
 #include <asm/msr.h>
-/* pvclock.h removed - header is empty */
 #define __vdso_data (VVAR(_vdso_data))
-/* __timens_vdso_data removed - never used */
 
 #define VDSO_HAS_TIME 1
 
 #define VDSO_HAS_CLOCK_GETRES 1
-
-
-
 
 #ifndef BUILD_VDSO32
 
@@ -117,8 +109,6 @@ long gettimeofday_fallback(struct __kernel_old_timeval *_tv,
 
 	return ret;
 }
-
-/* clock_getres_fallback removed - never called */
 
 #else
 
@@ -174,8 +164,6 @@ long gettimeofday_fallback(struct __kernel_old_timeval *_tv,
 	return ret;
 }
 
-/* clock_getres_fallback removed - never called */
-
 static __always_inline
 long clock_getres32_fallback(clockid_t _clkid, struct old_timespec32 *_ts)
 {
@@ -208,13 +196,11 @@ static inline bool arch_vdso_clocksource_ok(const struct vdso_data *vd)
 }
 #define vdso_clocksource_ok arch_vdso_clocksource_ok
 
-
 static inline bool arch_vdso_cycles_ok(u64 cycles)
 {
 	return (s64)cycles >= 0;
 }
 #define vdso_cycles_ok arch_vdso_cycles_ok
-
 
 static __always_inline
 u64 vdso_calc_delta(u64 cycles, u64 last, u64 mask, u32 mult)

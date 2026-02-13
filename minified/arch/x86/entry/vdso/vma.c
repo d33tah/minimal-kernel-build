@@ -2,10 +2,8 @@
 #include <linux/err.h>
 #include <linux/sched.h>
 #include <linux/sched/task_stack.h>
-/* linux/slab.h removed - no slab functions */
 #include <linux/init.h>
 #include <linux/elf.h>
-/* linux/cpu.h removed - no cpu features used */
 #include <linux/ptrace.h>
 /* time_namespace.h inlined */
 #include <linux/nsproxy.h>
@@ -34,7 +32,6 @@ struct time_namespace {
 
 #endif /* _LINUX_TIMENS_H */
 
-/* pvclock.h removed - header is empty */
 #include <asm/vgtod.h>
 #include <asm/proto.h>
 #include <asm/vdso.h>
@@ -43,13 +40,10 @@ struct time_namespace {
 #include <asm/desc.h>
 #include <asm/cpufeature.h>
 
-/* hv_get_tsc_page removed - branch that called it was removed */
-
 #undef _ASM_X86_VVAR_H
 #define EMIT_VVAR(name, offset) const size_t name##_offset = offset;
 #include <asm/vvar.h>
 
-/* arch_get_vdso_data removed - no callers */
 #undef EMIT_VVAR
 
 unsigned int vclocks_used __read_mostly;
@@ -79,10 +73,6 @@ static vm_fault_t vdso_fault(const struct vm_special_mapping *sm,
 	return 0;
 }
 
-/* vdso_fix_landing, vdso_mremap removed - mremap syscall returns ENOSYS */
-
-/* find_timens_vvar_page removed - always returns NULL, timens code simplified */
-
 static vm_fault_t vvar_fault(const struct vm_special_mapping *sm,
 			     struct vm_area_struct *vma, struct vm_fault *vmf)
 {
@@ -99,7 +89,6 @@ static vm_fault_t vvar_fault(const struct vm_special_mapping *sm,
 		return VM_FAULT_SIGBUS;
 
 	if (sym_offset == image->sym_vvar_page) {
-		/* timens_page handling removed - always NULL */
 		pfn = __pa_symbol(&__vvar_page) >> PAGE_SHIFT;
 		return vmf_insert_pfn(vma, vmf->address, pfn);
 	}
@@ -112,9 +101,7 @@ static vm_fault_t vvar_fault(const struct vm_special_mapping *sm,
 }
 
 static const struct vm_special_mapping vdso_mapping = {
-	/* .name removed - never read */
 	.fault = vdso_fault,
-	/* mremap removed - mremap syscall returns ENOSYS */
 };
 static const struct vm_special_mapping vvar_mapping = {
 	.fault = vvar_fault,

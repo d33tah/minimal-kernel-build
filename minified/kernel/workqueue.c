@@ -27,12 +27,6 @@ bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
 	return queue_work_on(cpu, wq, &dwork->work);
 }
 
-/* flush_work moved to workqueue.h as static inline */
-/* flush_delayed_work removed - always returns false, single caller removed */
-
-/* cancel_delayed_work removed - never called */
-/* alloc_workqueue removed - never called (~12 LOC) */
-
 static struct workqueue_struct system_wq_storage = { .name = "events" };
 static struct workqueue_struct system_unbound_wq_storage = {
 	.name = "events_unbound"

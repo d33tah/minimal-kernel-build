@@ -65,7 +65,6 @@
 #endif
 #endif /* PAGE_FLAGS_LAYOUT_H */
 
-/* --- 2025-12-08 00:16 --- Inlined from pageblock-flags.h */
 #define PB_migratetype_bits 3
 enum pageblock_bits {
 	PB_migrate,
@@ -77,14 +76,12 @@ enum pageblock_bits {
 #define pageblock_order (MAX_ORDER - 1)
 #define pageblock_nr_pages (1UL << pageblock_order)
 
-/* get_pfnblock_flags_mask removed - renamed to __get_pfnblock_flags_mask (static) */
 #include <linux/atomic.h>
 #include <linux/mm_types.h>
 #include <linux/page-flags.h>
 #include <linux/local_lock.h>
 #include <asm/page.h>
 
-/* CONFIG_FORCE_MAX_ZONEORDER not defined */
 #define MAX_ORDER 11
 #define MAX_ORDER_NR_PAGES (1 << (MAX_ORDER - 1))
 
@@ -105,11 +102,7 @@ enum migratetype {
 	for (order = 0; order < MAX_ORDER; order++) \
 		for (type = 0; type < MIGRATE_TYPES; type++)
 
-/* page_group_by_mobility_disabled extern removed - only used in page_alloc.c */
-
 #define MIGRATETYPE_MASK ((1UL << PB_migratetype_bits) - 1)
-
-/* get_pageblock_migratetype removed - unused */
 
 struct free_area {
 	struct list_head free_list[MIGRATE_TYPES];
@@ -123,14 +116,8 @@ static inline struct page *get_page_from_free_area(struct free_area *area,
 					struct page, lru);
 }
 
-/* free_area_empty removed - inlined into page_alloc.c */
-
 struct pglist_data;
 
-
-/* NR_VM_NUMA_EVENT_ITEMS removed - unused */
-
-/* --- 2026-02-07 08:55 --- Reduced from 12 to 4 entries - unused stats removed */
 enum zone_stat_item {
 	NR_FREE_PAGES,
 	NR_ZONE_LRU_BASE,
@@ -138,7 +125,6 @@ enum zone_stat_item {
 	NR_VM_ZONE_STAT_ITEMS
 };
 
-/* --- 2026-02-07 08:55 --- Reduced from 44 to 10 entries - unused stats removed */
 enum node_stat_item {
 	NR_LRU_BASE,
 	NR_SLAB_RECLAIMABLE_B,
@@ -151,8 +137,6 @@ enum node_stat_item {
 	NR_PAGETABLE,
 	NR_VM_NODE_STAT_ITEMS
 };
-
-/* vmstat_item_in_bytes removed - inlined into vmstat.h */
 
 #define LRU_BASE 0
 #define LRU_ACTIVE 1
@@ -167,8 +151,6 @@ enum lru_list {
 	NR_LRU_LISTS
 };
 
-/* vmscan_throttle_state enum removed - reclaim_wait removed */
-
 #define for_each_lru(lru) for (lru = 0; lru < NR_LRU_LISTS; lru++)
 
 struct lruvec {
@@ -176,33 +158,26 @@ struct lruvec {
 
 	spinlock_t lru_lock;
 
-	/* anon_cost, file_cost, nonresident_age, flags removed - never used */
 };
-
-/* isolate_mode_t removed - unused */
 
 enum zone_watermarks {
 	WMARK_MIN,
 	WMARK_LOW,
 	WMARK_HIGH,
-	/* WMARK_PROMO removed - unused */
 	NR_WMARK
 };
 
 #define NR_PCP_LISTS (MIGRATE_PCPTYPES * (PAGE_ALLOC_COSTLY_ORDER + 1))
 
-/* high_wmark_pages removed - unused */
 #define wmark_pages(z, i) (z->_watermark[i] + z->watermark_boost)
 
 struct per_cpu_pages {
 	int count;
-	/* high removed - write-only, never read */
 	int batch;
 	struct list_head lists[NR_PCP_LISTS];
 };
 
 struct per_cpu_zonestat {};
-/* per_cpu_nodestat removed - never referenced */
 
 #endif
 
@@ -221,15 +196,11 @@ struct zone {
 	unsigned long _watermark[NR_WMARK];
 	unsigned long watermark_boost;
 
-	/* nr_reserved_highatomic removed - never used */
-
 	long lowmem_reserve[MAX_NR_ZONES];
 
 	struct pglist_data *zone_pgdat;
 	struct per_cpu_pages __percpu *per_cpu_pageset;
 	struct per_cpu_zonestat __percpu *per_cpu_zonestats;
-
-	/* pageset_high, pageset_batch removed - write-only cache fields */
 
 	unsigned long *pageblock_flags;
 
@@ -241,21 +212,12 @@ struct zone {
 
 	const char *name;
 
-
 	struct free_area free_area[MAX_ORDER];
-
-	/* flags removed - never used */
 
 	spinlock_t lock;
 
-	/* contiguous removed - write-only */
-
-
 	atomic_long_t vm_stat[NR_VM_ZONE_STAT_ITEMS];
 } ____cacheline_internodealigned_in_smp;
-
-/* pgdat_flags and zone_flags enums removed - unused */
-/* zone_managed_pages, zone_end_pfn, zone_spans_pfn removed - never called */
 
 #define MAX_ZONES_PER_ZONELIST (MAX_NUMNODES * MAX_NR_ZONES)
 
@@ -287,13 +249,8 @@ typedef struct pglist_data {
 	/* kswapd_wait, pfmemalloc_wait, reclaim_wait, nr_writeback_throttled,
 	   kswapd_order, kswapd_highest_zoneidx, totalreserve_pages, kswapd removed */
 
-
 	struct lruvec __lruvec;
 
-	/* flags removed - never used */
-
-
-	/* per_cpu_nodestats removed - only assigned, never read */
 	atomic_long_t vm_stat[NR_VM_NODE_STAT_ITEMS];
 } pg_data_t;
 
@@ -308,15 +265,11 @@ static inline unsigned long pgdat_end_pfn(pg_data_t *pgdat)
 	return pgdat->node_start_pfn + pgdat->node_spanned_pages;
 }
 
-/* memory_hotplug.h removed - empty, only had forward decl of vmem_altmap */
-
 void build_all_zonelists(pg_data_t *pgdat);
 enum meminit_context {
 	MEMINIT_EARLY,
 	MEMINIT_HOTPLUG,
 };
-
-/* init_currently_empty_zone removed - only used in mm/page_alloc.c */
 
 extern void lruvec_init(struct lruvec *lruvec);
 
@@ -337,10 +290,6 @@ static inline int zone_to_nid(struct zone *zone)
 	return 0;
 }
 
-/* movable_zone extern removed - only used in page_alloc.c */
-
-/* is_highmem_idx removed - never called */
-
 extern struct pglist_data contig_page_data;
 static inline struct pglist_data *NODE_DATA(int nid)
 {
@@ -348,10 +297,7 @@ static inline struct pglist_data *NODE_DATA(int nid)
 }
 
 extern struct pglist_data *first_online_pgdat(void);
-/* next_online_pgdat removed - never called */
 extern struct zone *next_zone(struct zone *zone);
-
-/* for_each_online_pgdat, for_each_zone removed - never used */
 
 #define for_each_populated_zone(zone)                         \
 	for (zone = (first_online_pgdat())->node_zones; zone; \
@@ -395,9 +341,6 @@ first_zones_zonelist(struct zonelist *zonelist, enum zone_type highest_zoneidx,
 	     z = next_zones_zonelist(++z, highidx, nodemask),       \
 	    zone = zonelist_zone(z))
 
-/* for_each_zone_zonelist_nodemask, for_each_zone_zonelist removed - unused */
-
-/* pfn_to_nid removed - unused */
 #define sparse_init() \
 	do {          \
 	} while (0)

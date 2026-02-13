@@ -1,6 +1,4 @@
  
- 
-
 #ifndef LKC_H
 #define LKC_H
 
@@ -240,21 +238,15 @@ void zconf_nextfile(const char *name);
 int zconf_lineno(void);
 const char *zconf_curname(void);
 
- 
 const char *conf_get_configname(void);
 void set_all_choice_values(struct symbol *csym);
 
- 
-/* xfwrite inlined into expr.c */
-
- 
 struct file *file_lookup(const char *name);
 void *xmalloc(size_t size);
 void *xcalloc(size_t nmemb, size_t size);
 void *xrealloc(void *p, size_t size);
 char *xstrdup(const char *s);
 char *xstrndup(const char *s, size_t n);
-
 
 void _menu_init(void);
 struct menu *menu_add_menu(void);
@@ -273,17 +265,14 @@ bool menu_is_visible(struct menu *menu);
 bool menu_has_prompt(struct menu *menu);
 const char *menu_get_prompt(struct menu *menu);
 
- 
 void sym_clear_all_valid(void);
 struct symbol *sym_choice_default(struct symbol *sym);
-/* sym_get_range_prop removed - range checks not used */
 struct symbol *prop_get_symbol(struct property *prop);
 
 static inline tristate sym_get_tristate_value(struct symbol *sym)
 {
 	return sym->curr.tri;
 }
-
 
 static inline bool sym_is_choice(struct symbol *sym)
 {

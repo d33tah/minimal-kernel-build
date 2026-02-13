@@ -2,7 +2,6 @@
 #include <linux/initrd.h>
 #include <linux/ioport.h>
 #include <linux/memblock.h>
-/* linux/sched/task.h, set_memory.h removed - not used */
 #include <asm/e820/api.h>
 #include <asm/page.h>
 #include <asm/page_types.h>
@@ -12,8 +11,6 @@
 #include <asm/tlb.h>
 #include <asm/proto.h>
 #include <asm/cpufeature.h>
-/* pti_check_boottime_disable removed - empty stub */
-/* Inlined from text-patching.h */
 #define __parainstructions NULL
 #define __parainstructions_end NULL
 extern void text_poke_early(void *addr, const void *opcode, size_t len);
@@ -47,9 +44,6 @@ unsigned long cachemode2protval(enum page_cache_mode pcm)
 		return 0;
 	return __cachemode2pte_tbl[pcm];
 }
-
-/* __pte2cachemode_tbl removed - was never accessed (~10 LOC) */
-/* x86_has_pat_wp, pgprot2cachemode removed - never called (~15 LOC) */
 
 static unsigned long __initdata pgt_buf_start;
 static unsigned long __initdata pgt_buf_end;
@@ -140,8 +134,6 @@ static inline void cr4_set_bits_and_update_boot(unsigned long mask)
 		*trampoline_cr4_features = mmu_cr4_features;
 	cr4_set_bits(mask);
 }
-
-/* probe_page_size_mask inlined into init_mem_mapping, setup_pcid is empty */
 
 #define NR_RANGE_MR 3
 
@@ -245,8 +237,6 @@ static int __meminit split_mem_range(struct map_range *mr, int nr_range,
 
 struct range pfn_mapped[E820_MAX_ENTRIES];
 int nr_pfn_mapped;
-
-/* add_pfn_range_mapped inlined into init_memory_mapping */
 
 bool pfn_range_is_mapped(unsigned long start_pfn, unsigned long end_pfn)
 {
@@ -386,8 +376,6 @@ static void __init memory_map_bottom_up(unsigned long map_start,
 	}
 }
 
-/* init_trampoline removed - empty stub */
-
 void __init init_mem_mapping(void)
 {
 	unsigned long end;
@@ -430,9 +418,6 @@ void __init init_mem_mapping(void)
 
 	load_cr3(swapper_pg_dir);
 	__flush_tlb_all();
-
-	/* x86_init.hyper.init_mem_mapping removed - is x86_init_noop */
-	/* early_memtest removed - empty stub */
 }
 
 void __init poking_init(void)
@@ -454,14 +439,10 @@ void __init poking_init(void)
 	pte_unmap_unlock(ptep, ptl);
 }
 
-/* free_init_pages, free_kernel_image_pages removed - zero callers */
-
 void __ref free_initmem(void)
 {
 	/* Skip freeing init memory - hangs with 4MB RAM */
 }
-
-/* free_initrd_mem removed - never called (~4 LOC) */
 
 void __init zone_sizes_init(void)
 {

@@ -1,21 +1,13 @@
-/* sadbg debug function removed */
 #include <linux/console.h>
 #include <asm/sections.h>
-/* efi_enabled removed - never called */
 #include <linux/screen_info.h>
 
 #include <linux/initrd.h>
 #include <linux/memblock.h>
-/* panic_notifier_list extern removed - never registered into */
-/* Inlined from root_dev.h */
-/* linux/major.h removed - empty */
 #include <linux/types.h>
 #include <linux/kdev_t.h>
 
-/* Root_NFS, Root_CIFS, Root_RAM0 enum removed - never used */
-
 extern dev_t ROOT_DEV;
-/* linux/hugetlb.h removed - hugetlb_cma_reserve stubbed */
 #define tboot_probe() \
 	do {          \
 	} while (0)
@@ -37,15 +29,11 @@ u32 *trampoline_cr4_features;
 #include <asm/cpu.h>
 #include <asm/e820/api.h>
 #include <asm/tlbflush.h>
-/* kasan.h, mce.h removed - KASAN macros never used */
-/* mtrr.h removed - header is empty */
 #include <asm/realmode.h>
-/* pci-direct.h inlined - extern declarations removed as never called */
 #include <linux/types.h>
 /* prom.h inlined - only asm/setup.h needed for COMMAND_LINE_SIZE */
 #include <asm/setup.h>
 #include <asm/proto.h>
-/* asm/vsyscall.h, linux/vmalloc.h removed - not used */
 unsigned long max_low_pfn_mapped;
 unsigned long max_pfn_mapped;
 
@@ -82,15 +70,9 @@ struct cpuinfo_x86 new_cpu_data;
 
 struct cpuinfo_x86 boot_cpu_data __read_mostly;
 
-/* def_to_bigsmp, apm_info, ist_info, edid_info removed - set but never read */
-
 __visible unsigned long mmu_cr4_features __ro_after_init;
 
 struct screen_info screen_info;
-
-/* root_mountflags removed - never read */
-
-/* saved_video_mode, RAMDISK_* macros removed - never used */
 
 static char __initdata command_line[COMMAND_LINE_SIZE];
 
@@ -112,8 +94,6 @@ void *__init extend_brk(size_t size, size_t align)
 
 	return ret;
 }
-
-/* reserve_brk inlined into setup_arch */
 
 u64 relocated_ramdisk;
 
@@ -140,22 +120,11 @@ static u64 __init get_ramdisk_size(void)
 	return ramdisk_size;
 }
 
-/* relocate_initrd, early_reserve_initrd, reserve_initrd inlined into setup_arch */
-
-/* parse_setup_data, memblock_x86_reserve_range_setup_data inlined into setup_arch/early_reserve_memory */
-
 /* standard_io_resources and reserve_standard_io_resources removed
  * - legacy I/O resource reservation not needed for minimal boot */
 void __init reserve_standard_io_resources(void)
 {
 }
-
-/* trim_snb_memory removed - empty stub */
-
-/* trim_bios_range inlined into setup_arch */
-/* e820_add_kernel_range, early_reserve_memory inlined into setup_arch */
-
-/* dump_kernel_offset and kernel_offset_notifier removed - stub that did nothing */
 
 void x86_configure_nx(void)
 {
@@ -164,8 +133,6 @@ void x86_configure_nx(void)
 	else
 		__supported_pte_mask &= ~_PAGE_NX;
 }
-
-/* x86_report_nx removed - empty stub */
 
 void __init setup_arch(char **cmdline_p)
 {
@@ -179,20 +146,14 @@ void __init setup_arch(char **cmdline_p)
 
 	__flush_tlb_all();
 
-	/* olpc_ofw_detect removed - empty stub */
 	idt_setup_early_traps();
 	early_cpu_init();
 	jump_label_init();
 	early_ioremap_init();
-	/* setup_olpc_ofw_pgd removed - empty stub */
 
 	ROOT_DEV = old_decode_dev(boot_params.hdr.root_dev);
 	screen_info = boot_params.screen_info;
-	/* edid_info, apm_info, ist_info, saved_video_mode, bootloader_type/version removed - never read */
 
-	/* x86_init.oem.arch_setup removed - is x86_init_noop */
-
-	/* Inlined early_reserve_memory */
 	memblock_reserve(__pa_symbol(_text),
 			 (unsigned long)__end_of_kernel_reserve -
 				 (unsigned long)_text);
@@ -260,10 +221,6 @@ void __init setup_arch(char **cmdline_p)
 			pa_data = pa_next;
 		}
 	}
-	/* copy_edd removed - empty stub */
-
-	/* root_flags check removed - root_mountflags no longer used */
-	/* setup_initial_init_mm call removed - function is empty stub */
 
 	code_resource.start = __pa_symbol(_text);
 	code_resource.end = __pa_symbol(_etext) - 1;
@@ -280,23 +237,16 @@ void __init setup_arch(char **cmdline_p)
 	x86_configure_nx();
 
 	parse_early_param();
-	/* efi_enabled(EFI_BOOT) always false - efi_memblock_x86_reserve_range call removed */
-	/* x86_report_nx removed - was empty stub */
 
 	e820__reserve_setup_data();
-	/* e820__finish_early_params removed - function was empty */
-
-	/* dmi_setup, init_hypervisor_platform removed - empty stubs */
 
 	tsc_early_init();
-	/* x86_init.resources.probe_roms removed - was empty stub */
 
 	insert_resource(&iomem_resource, &code_resource);
 	insert_resource(&iomem_resource, &rodata_resource);
 	insert_resource(&iomem_resource, &data_resource);
 	insert_resource(&iomem_resource, &bss_resource);
 
-	/* Inlined e820_add_kernel_range */
 	{
 		u64 start = __pa_symbol(_text);
 		u64 size = __pa_symbol(_end) - start;
@@ -306,31 +256,23 @@ void __init setup_arch(char **cmdline_p)
 			e820__range_add(start, size, E820_TYPE_RAM);
 		}
 	}
-	/* Inlined trim_bios_range */
 	e820__range_update(0, PAGE_SIZE, E820_TYPE_RAM, E820_TYPE_RESERVED);
 	e820__range_remove(BIOS_BEGIN, BIOS_END - BIOS_BEGIN, E820_TYPE_RAM, 1);
 	e820__update_table(e820_table);
 
 	max_pfn = e820__end_of_ram_pfn();
 
-	/* MTRR disabled - pat_disable, init_cache_modes removed (empty stubs) */
-
 	find_low_pfn_range();
-
-	/* find_smp_config removed - default_find_smp_config is x86_init_noop */
 
 	early_alloc_pgt_buf();
 
-	/* Inlined reserve_brk */
 	if (_brk_end > _brk_start)
 		memblock_reserve(__pa_symbol(_brk_start),
 				 _brk_end - _brk_start);
 	_brk_start = 0;
-	/* cleanup_highmap removed - empty stub */
 
 	memblock_set_current_limit(ISA_END_ADDRESS);
 	e820__memblock_setup();
-	/* sev_setup_arch, e820__memblock_alloc_reserved_mpc_new - empty stubs */
 
 	printk(KERN_DEBUG "initial memory mapped: [mem 0x00000000-%#010lx]\n",
 	       (max_pfn_mapped << PAGE_SHIFT) - 1);
@@ -340,14 +282,10 @@ void __init setup_arch(char **cmdline_p)
 
 	init_mem_mapping();
 
-	/* idt_setup_early_pf removed - empty stub */
-
 	mmu_cr4_features = __read_cr4() & ~X86_CR4_PCIDE;
 
 	memblock_set_current_limit(get_max_mapped());
 
-	/* setup_log_buf removed - empty stub */
-	/* efi_enabled always false - secure boot switch removed */
 	/* reserve_initrd inlined */
 	{
 		u64 ramdisk_image = get_ramdisk_image();
@@ -392,10 +330,6 @@ void __init setup_arch(char **cmdline_p)
 			}
 		}
 	}
-	/* acpi_table_upgrade is empty stub */
-	/* io_delay_init removed - was empty stub */
-
-	/* early_platform_quirks removed - was empty stub */
 
 	initmem_init();
 
@@ -403,35 +337,20 @@ void __init setup_arch(char **cmdline_p)
 
 	x86_init.paging.pagetable_init();
 
-	/* kasan_init removed - empty stub */
 	sync_initial_page_table();
 
 	tboot_probe();
 
 	generic_apic_probe();
 
-	/* x86_dtb_init, get_smp_config, init_apic_mappings - empty stubs */
-
-	/* init_cpu_to_node and init_gi_nodes - empty stubs */
-
-	/* io_apic_init_mappings removed - empty stub */
-
-	/* x86_init.hyper.guest_late_init removed - is x86_init_noop */
-
 	e820__reserve_resources();
-	/* e820__register_nosave_regions call removed - stub function */
 
 	x86_init.resources.reserve_resources();
 
 	e820__setup_pci_gap();
-	/* efi_enabled always false - condition simplified */
 	conswitchp = &vga_con;
-	/* x86_init.timers.wallclock_init, register_refined_jiffies removed */
 }
 
-/* video_ram_resource removed - not needed for minimal boot */
 void __init i386_reserve_resources(void)
 {
 }
-
-/* register_kernel_offset_dumper initcall removed - callback was empty stub */

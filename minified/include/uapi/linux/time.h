@@ -3,13 +3,10 @@
 
 #include <linux/types.h>
 
-/* Inlined from time_types.h */
 struct __kernel_timespec {
 	__kernel_time64_t       tv_sec;
 	long long               tv_nsec;
 };
-
-/* struct __kernel_itimerspec removed - never instantiated */
 
 #ifndef __kernel_old_timeval
 struct __kernel_old_timeval {
@@ -18,10 +15,7 @@ struct __kernel_old_timeval {
 };
 #endif
 
-/* __kernel_old_timespec, __kernel_old_itimerval, __kernel_sock_timeval removed - unused */
 /* End time_types.h */
-
-/* #ifndef __KERNEL__ block removed - always in kernel build */
 
 struct timezone {
 	int	tz_minuteswest;

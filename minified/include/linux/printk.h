@@ -6,7 +6,6 @@
 #include <linux/linkage.h>
 
 #define KERN_SOH	"\001"
-/* KERN_SOH_ASCII removed - unused */
 #define KERN_EMERG	KERN_SOH "0"
 #define KERN_ALERT	KERN_SOH "1"
 #define KERN_CRIT	KERN_SOH "2"
@@ -16,14 +15,12 @@
 #define KERN_INFO	KERN_SOH "6"
 #define KERN_DEBUG	KERN_SOH "7"
 #define KERN_DEFAULT	""
-/* Inlined from ratelimit_types.h */
 #include <linux/bits.h>
 #include <asm/param.h>
 #include <linux/spinlock_types.h>
 struct ratelimit_state { raw_spinlock_t lock; int interval; int burst; int printed; int missed; unsigned long begin; unsigned long flags; };
 #define RATELIMIT_STATE_INIT_FLAGS(name, interval_init, burst_init, flags_init) { .lock = __RAW_SPIN_LOCK_UNLOCKED(name.lock), .interval = interval_init, .burst = burst_init, .flags = flags_init, }
 #define RATELIMIT_STATE_INIT(name, interval_init, burst_init) RATELIMIT_STATE_INIT_FLAGS(name, interval_init, burst_init, 0)
-
 
 extern const char linux_banner[];
 
@@ -39,7 +36,6 @@ extern int oops_in_progress;
 extern int console_printk[];
 
 #define console_loglevel (console_printk[0])
-/* default_message_loglevel, minimum_console_loglevel, default_console_loglevel removed - unused */
 
 extern void console_verbose(void);
 
@@ -55,8 +51,6 @@ struct va_format {
 	0;						\
 })
 
-/* early_printk removed - no callers */
-/* vprintk removed - never called */
 static inline __printf(1, 2) __cold
 int _printk(const char *s, ...)
 {
@@ -68,14 +62,9 @@ int _printk_deferred(const char *s, ...)
 	return 0;
 }
 
-/* pr_flush removed - always returns true */
-/* printk_ratelimit removed - never called */
-
 #ifndef pr_fmt
 #define pr_fmt(fmt) fmt
 #endif
-
-/* printk_index_emit, printk_index_wrap removed - simplified direct calls */
 
 #define printk(fmt, ...) _printk(fmt, ##__VA_ARGS__)
 #define printk_deferred(fmt, ...) _printk_deferred(fmt, ##__VA_ARGS__)
@@ -95,7 +84,6 @@ int _printk_deferred(const char *s, ...)
 #define pr_info(fmt, ...) \
 	printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
 
-/* pr_devel, pr_cont, pr_debug, printk_deferred_once removed - unused */
 #define printk_once(fmt, ...)					\
 	no_printk(fmt, ##__VA_ARGS__)
 
@@ -103,8 +91,6 @@ int _printk_deferred(const char *s, ...)
 	printk_once(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
 #define pr_warn_once(fmt, ...)					\
 	printk_once(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)
-/* pr_info_once removed - unused */
-
 
 #define printk_ratelimited(fmt, ...)					\
 	no_printk(fmt, ##__VA_ARGS__)
@@ -113,7 +99,5 @@ int _printk_deferred(const char *s, ...)
 	printk_ratelimited(KERN_EMERG pr_fmt(fmt), ##__VA_ARGS__)
 #define pr_warn_ratelimited(fmt, ...)					\
 	printk_ratelimited(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)
-/* pr_err_ratelimited removed - unused */
-
 
 #endif

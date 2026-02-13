@@ -1,22 +1,16 @@
 /* klist.h inlined via device.h */
 #include <linux/device.h>
-/* linux/export.h removed - no EXPORT_SYMBOL used */
 #include <linux/sched.h>
 
 #define KNODE_DEAD 1LU
 #define KNODE_KLIST_MASK ~KNODE_DEAD
-
-/* knode_klist inlined into klist_put */
 
 static bool knode_dead(struct klist_node *knode)
 {
 	return (unsigned long)knode->n_klist & KNODE_DEAD;
 }
 
-/* knode_set_klist inlined into klist_release - single caller */
 /* knode_kill inlined - set KNODE_DEAD bit in n_klist */
-
-/* klist_init, klist_add_tail removed - never called */
 
 static void klist_release(struct kref *kref)
 {
@@ -24,7 +18,6 @@ static void klist_release(struct kref *kref)
 
 	WARN_ON(!knode_dead(n));
 	list_del(&n->n_node);
-	/* klist_remove_waiters handling removed - klist_remove was removed */
 	n->n_klist = NULL;
 }
 
@@ -35,7 +28,6 @@ static int klist_dec_and_del(struct klist_node *n)
 
 static void klist_put(struct klist_node *n, bool kill)
 {
-	/* Inlined knode_klist */
 	struct klist *k =
 		(struct klist *)((unsigned long)n->n_klist & KNODE_KLIST_MASK);
 	void (*put)(struct klist_node *) = k->put;
@@ -65,8 +57,6 @@ void klist_iter_init_node(struct klist *k, struct klist_iter *i,
 	if (n && kref_get_unless_zero(&n->n_ref))
 		i->i_cur = n;
 }
-
-/* klist_iter_init removed - never called */
 
 void klist_iter_exit(struct klist_iter *i)
 {

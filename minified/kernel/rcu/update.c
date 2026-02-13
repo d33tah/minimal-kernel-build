@@ -6,7 +6,6 @@
 #include <linux/bitops.h>
 #include <linux/cpu.h>
 #include <linux/mutex.h>
-/* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/hardirq.h>
 #include <linux/delay.h>
 #include <linux/moduleparam.h>
@@ -16,8 +15,6 @@
 #ifndef NOKPROBE_SYMBOL
 #define NOKPROBE_SYMBOL(fname) /* kprobes disabled */
 #endif
-/* linux/slab.h removed - no slab functions */
-/* irq_work.h removed - header is now empty */
 
 #include "rcu.h"
 
@@ -25,9 +22,6 @@
 #undef MODULE_PARAM_PREFIX
 #endif
 #define MODULE_PARAM_PREFIX "rcupdate."
-
-/* rcu_test_sync_prims removed - PROVE_RCU disabled */
-/* rcu_set_runtime_mode removed - was empty stub (rcu_scheduler_active was write-only) */
 
 void wakeme_after_rcu(struct rcu_head *head)
 {
@@ -66,7 +60,3 @@ void __wait_rcu_gp(bool checktiny, int n, call_rcu_func_t *crcu_array,
 		}
 	}
 }
-
-/* finish_rcuwait removed - unused */
-/* rcu_cpu_stall_suppress_at_boot removed - unused */
-/* rcu_early_boot_tests removed - empty stub */

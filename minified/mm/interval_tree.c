@@ -4,7 +4,6 @@
 #include <linux/rmap.h>
 #include <linux/rbtree_augmented.h>
 
-/* Inlined from interval_tree_generic.h */
 #define INTERVAL_TREE_DEFINE(ITSTRUCT, ITRB, ITTYPE, ITSUBTREE, ITSTART,      \
 			     ITLAST, ITSTATIC, ITPREFIX)                      \
                                                                               \
@@ -160,4 +159,3 @@ void anon_vma_interval_tree_remove(struct anon_vma_chain *node,
 {
 	__anon_vma_interval_tree_remove(node, root);
 }
-/* anon_vma_interval_tree_iter_first/next removed - never called */

@@ -36,8 +36,6 @@ void set_fs_pwd(struct fs_struct *fs, const struct path *path)
 		path_put(&old_pwd);
 }
 
-/* free_fs_struct inlined into exit_fs - single caller */
-
 void exit_fs(struct task_struct *tsk)
 {
 	struct fs_struct *fs = tsk->fs;
@@ -79,8 +77,6 @@ struct fs_struct *copy_fs_struct(struct fs_struct *old)
 	}
 	return fs;
 }
-
-/* current_umask inlined into single call site in namei.c */
 
 struct fs_struct init_fs = {
 	.users = 1,

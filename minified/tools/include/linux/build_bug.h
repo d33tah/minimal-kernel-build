@@ -11,23 +11,17 @@
 #define BUILD_BUG_ON_ZERO(e) ((int)(sizeof(struct { int:(-!!(e)); })))
 #endif  
 
- 
 #define __BUILD_BUG_ON_NOT_POWER_OF_2(n)	\
 	BUILD_BUG_ON(((n) & ((n) - 1)) != 0)
 #define BUILD_BUG_ON_NOT_POWER_OF_2(n)			\
 	BUILD_BUG_ON((n) == 0 || (((n) & ((n) - 1)) != 0))
 
- 
 #define BUILD_BUG_ON_INVALID(e) ((void)(sizeof((__force long)(e))))
 
- 
 #define BUILD_BUG_ON_MSG(cond, msg) compiletime_assert(!(cond), msg)
-
 
 #define BUILD_BUG_ON(condition) \
 	BUILD_BUG_ON_MSG(condition, "BUILD_BUG_ON failed: " #condition)
-
-/* BUILD_BUG() removed - never called */
 
 #ifndef static_assert
 #define static_assert(expr, ...) __static_assert(expr, ##__VA_ARGS__, #expr)

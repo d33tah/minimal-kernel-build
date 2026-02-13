@@ -1,4 +1,3 @@
-/* linux/kernel.h removed - no kernel.h macros used */
 #include <linux/init.h>
 #include <linux/memblock.h>
 

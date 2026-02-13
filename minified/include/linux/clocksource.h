@@ -16,11 +16,8 @@
 struct clocksource;
 struct module;
 
-/* CONFIG_ARCH_CLOCKSOURCE_DATA/GENERIC_GETTIMEOFDAY not defined */
-
 #include <linux/limits.h>
 
-/* Inlined from vdso/clocksource.h */
 enum vdso_clock_mode {
 	VDSO_CLOCKMODE_NONE,
 	VDSO_CLOCKMODE_TSC, /* from asm/vdso/clocksource.h */
@@ -32,7 +29,6 @@ struct clocksource {
 	u64			mask;
 	u32			mult;
 	u32			shift;
-	/* max_idle_ns removed - write-only, never read */
 	u32			maxadj;
 	u32			uncertainty_margin;
 	u64			max_cycles;
@@ -45,15 +41,12 @@ struct clocksource {
 
 	int			(*enable)(struct clocksource *cs);
 	void			(*disable)(struct clocksource *cs);
-	/* suspend, resume, mark_unstable, tick_stable, wd_list removed - never used */
-	/* cs_last, wd_last removed - never accessed */
 	struct module		*owner;
 };
 
 #define CLOCK_SOURCE_IS_CONTINUOUS		0x01
 #define CLOCK_SOURCE_MUST_VERIFY		0x02
 #define CLOCK_SOURCE_VALID_FOR_HRES		0x20
-/* CLOCK_SOURCE_UNSTABLE removed - never used */
 #define CLOCK_SOURCE_SUSPEND_NONSTOP		0x80
 #define CLOCK_SOURCE_VERIFY_PERCPU		0x200
 #define CLOCKSOURCE_MASK(bits) GENMASK_ULL((bits) - 1, 0)
@@ -81,8 +74,6 @@ static inline int clocksource_register_khz(struct clocksource *cs, u32 khz)
 	return __clocksource_register_scale(cs, 1000, khz);
 }
 
-
 extern void clocksource_arch_init(struct clocksource *cs);
-/* timekeeping_notify declaration removed - inlined */
 
 #endif

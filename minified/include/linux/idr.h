@@ -24,13 +24,10 @@ struct idr {
 }
 
 #define IDR_INIT(name) IDR_INIT_BASE(name, 0)
-/* idr_get_cursor inlined into pid.c (~2 LOC) */
-/* idr_set_cursor inlined into pid.c (~2 LOC) */
 
 void idr_preload(gfp_t gfp_mask);
 
 int idr_alloc(struct idr *, void *ptr, int start, int end, gfp_t);
-/* idr_alloc_u32 made static in lib/idr.c */
 int idr_alloc_cyclic(struct idr *, void *ptr, int start, int end, gfp_t);
 void *idr_remove(struct idr *, unsigned long id);
 void *idr_find(const struct idr *, unsigned long id);
@@ -42,9 +39,6 @@ static inline void idr_init_base(struct idr *idr, int base)
 	idr->idr_base = base;
 	idr->idr_next = 0;
 }
-
-/* idr_init inlined into pid.c (~2 LOC) */
-/* idr_preload_end inlined into pid.c (~2 LOC) */
 
 #define IDA_CHUNK_SIZE		128
 #define IDA_BITMAP_LONGS	(IDA_CHUNK_SIZE / sizeof(long))
@@ -67,8 +61,5 @@ struct ida {
 
 int ida_alloc_range(struct ida *, unsigned int min, unsigned int max, gfp_t);
 void ida_free(struct ida *, unsigned int id);
-
-/* ida_alloc inlined into namespace.c (~3 LOC) */
-/* ida_alloc_min inlined into namespace.c (~3 LOC) */
 
 #endif  

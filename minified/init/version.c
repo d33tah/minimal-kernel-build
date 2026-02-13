@@ -1,6 +1,5 @@
 
 #include <generated/compile.h>
-/* --- Inlined from linux/elfnote.h (C branch) --- */
 #include <uapi/linux/elf.h>
 #define _ELFNOTE_PASTE(a, b) a##b
 #define _ELFNOTE(size, name, unique, type, desc)                            \
@@ -25,11 +24,9 @@
 #define ELFNOTE32(name, type, desc) ELFNOTE(32, name, type, desc)
 /* end elfnote.h */
 
-/* Inlined from build-salt.h */
 #define LINUX_ELFNOTE_BUILD_SALT 0x100
 #define BUILD_SALT \
 	ELFNOTE32("Linux", LINUX_ELFNOTE_BUILD_SALT, CONFIG_BUILD_SALT)
-/* Inlined from elfnote-lto.h */
 #define LINUX_ELFNOTE_LTO_INFO 0x101
 #define BUILD_LTO_INFO ELFNOTE32("Linux", LINUX_ELFNOTE_LTO_INFO, 0)
 

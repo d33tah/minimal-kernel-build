@@ -1,6 +1,5 @@
 
 #include <linux/mm.h>
-/* linux/swap.h removed - no swap features used */
 #include <linux/pagemap.h>
 #include <linux/hash.h>
 #include <linux/highmem.h>
@@ -8,8 +7,6 @@
 #include <linux/vmalloc.h>
 
 #define KM_MAX_IDX 16
-
-/* KM_INCR removed - never used */
 
 #ifndef arch_kmap_local_post_map
 #define arch_kmap_local_post_map(vaddr, pteval) \
@@ -37,8 +34,6 @@
 #define arch_kmap_local_unmap_idx(idx, vaddr) kmap_local_calc_idx(idx)
 #endif
 
-/* arch_kmap_local_high_get stub removed - never called */
-
 #ifndef arch_kmap_local_set_pte
 #define arch_kmap_local_set_pte(mm, vaddr, ptep, ptev) \
 	set_pte_at(mm, vaddr, ptep, ptev)
@@ -57,8 +52,6 @@ static pte_t *kmap_get_pte(unsigned long vaddr, int idx)
 		__kmap_pte = virt_to_kpte(__fix_to_virt(FIX_KMAP_BEGIN));
 	return &__kmap_pte[-idx];
 }
-
-/* __kmap_local_pfn_prot, __kmap_local_page_prot removed - never called */
 
 void __kmap_local_sched_out(void)
 {
@@ -110,5 +103,3 @@ void kmap_local_fork(struct task_struct *tsk)
 	if (WARN_ON_ONCE(tsk->kmap_ctrl.idx))
 		memset(&tsk->kmap_ctrl, 0, sizeof(tsk->kmap_ctrl));
 }
-
-/* HASHED_PAGE_VIRTUAL not defined - page address hash table removed (~88 LOC) */

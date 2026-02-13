@@ -1,11 +1,9 @@
 /* Simplified idle scheduler for minimal kernel */
 
 #include <linux/sched.h>
-/* enum cpu_idle_type removed - unused */
 
 #include "sched.h"
 
-/* arch_cpu_idle_prepare, arch_cpu_idle_exit removed - empty weak funcs, no overrides */
 /* do_idle, default_idle_call inlined - single callers */
 void cpu_startup_entry(enum cpuhp_state state)
 {

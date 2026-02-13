@@ -18,11 +18,7 @@
 
 #include "internal.h"
 
-/* files_stat removed - only written, never read */
-
 static struct kmem_cache *filp_cachep __read_mostly;
-
-/* nr_files counter removed - only written, never read */
 
 static void file_free_rcu(struct rcu_head *head)
 {
@@ -32,29 +28,21 @@ static void file_free_rcu(struct rcu_head *head)
 	kmem_cache_free(filp_cachep, f);
 }
 
-/* get_nr_files removed - unused */
-
 struct file *alloc_empty_file(int flags, const struct cred *cred)
 {
 	struct file *f;
 
-	/* capable() always returns true - file limit check removed */
 	f = kmem_cache_zalloc(filp_cachep, GFP_KERNEL);
 	if (unlikely(!f))
 		return ERR_PTR(-ENOMEM);
 
 	f->f_cred = get_cred(cred);
-	/* security_file_alloc always returns 0 - dead code removed */
 	atomic_long_set(&f->f_count, 1);
-	/* f_owner struct removed - never accessed */
-	/* f_lock initialization removed - f_lock removed from struct file */
 	mutex_init(&f->f_pos_lock);
 	f->f_flags = flags;
 	f->f_mode = OPEN_FMODE(flags);
 	return f;
 }
-
-/* alloc_file_pseudo removed - declared/defined but never called (~35 LOC) */
 
 static void __fput(struct file *file)
 {
@@ -66,7 +54,6 @@ static void __fput(struct file *file)
 	if (unlikely(!(file->f_mode & FMODE_OPENED)))
 		goto out;
 
-	/* FASYNC handling removed - fcntl returns EINVAL, FASYNC never set */
 	if (file->f_op->release)
 		file->f_op->release(inode, file);
 	if (unlikely(S_ISCHR(inode->i_mode) && inode->i_cdev != NULL &&
@@ -74,13 +61,11 @@ static void __fput(struct file *file)
 		cdev_put(inode->i_cdev);
 	}
 	fops_put(file->f_op);
-	/* f_owner struct removed entirely */
 	if (mode & FMODE_WRITER) {
 		put_write_access(inode);
 		__mnt_drop_write(mnt);
 	}
 	dput(dentry);
-	/* dissolve_on_fput removed - FMODE_NEED_UNMOUNT never set */
 	mntput(mnt);
 out:
 	call_rcu(&file->f_u.fu_rcuhead, file_free_rcu);
@@ -100,8 +85,6 @@ static void ____fput(struct callback_head *work)
 {
 	__fput(container_of(work, struct file, f_u.fu_rcuhead));
 }
-
-/* flush_delayed_fput removed - never called */
 
 static DECLARE_DELAYED_WORK(delayed_fput_work, delayed_fput);
 
@@ -128,8 +111,6 @@ void __init files_init(void)
 		"filp", sizeof(struct file), 0,
 		SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT, NULL);
 }
-
-/* files_maxfiles_init removed entirely - was empty stub */
 
 /* Merged from lib/llist.c */
 bool llist_add_batch(struct llist_node *new_first, struct llist_node *new_last,

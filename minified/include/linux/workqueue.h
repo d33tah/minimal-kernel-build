@@ -33,32 +33,26 @@ enum {
 
 	WORK_NR_COLORS		= (1 << WORK_STRUCT_COLOR_BITS),
 
-	 
 	WORK_CPU_UNBOUND	= NR_CPUS,
 
-	 
 	WORK_STRUCT_FLAG_BITS	= WORK_STRUCT_COLOR_SHIFT +
 				  WORK_STRUCT_COLOR_BITS,
 
-	 
 	WORK_OFFQ_FLAG_BASE	= WORK_STRUCT_COLOR_SHIFT,
 
 	__WORK_OFFQ_CANCELING	= WORK_OFFQ_FLAG_BASE,
 	WORK_OFFQ_CANCELING	= (1 << __WORK_OFFQ_CANCELING),
 
-	 
 	WORK_OFFQ_FLAG_BITS	= 1,
 	WORK_OFFQ_POOL_SHIFT	= WORK_OFFQ_FLAG_BASE + WORK_OFFQ_FLAG_BITS,
 	WORK_OFFQ_LEFT		= BITS_PER_LONG - WORK_OFFQ_POOL_SHIFT,
 	WORK_OFFQ_POOL_BITS	= WORK_OFFQ_LEFT <= 31 ? WORK_OFFQ_LEFT : 31,
 	WORK_OFFQ_POOL_NONE	= (1LU << WORK_OFFQ_POOL_BITS) - 1,
 
-	 
 	WORK_STRUCT_FLAG_MASK	= (1UL << WORK_STRUCT_FLAG_BITS) - 1,
 	WORK_STRUCT_WQ_DATA_MASK = ~WORK_STRUCT_FLAG_MASK,
 	WORK_STRUCT_NO_POOL	= (unsigned long)WORK_OFFQ_POOL_NONE << WORK_OFFQ_POOL_SHIFT,
 
-	/* WORK_BUSY_PENDING, WORK_BUSY_RUNNING, WORKER_DESC_LEN removed - unused */
 };
 
 struct work_struct {
@@ -76,7 +70,6 @@ struct delayed_work {
 	struct timer_list timer;
 
 	struct workqueue_struct *wq;
-	/* cpu field removed - never assigned or read */
 };
 
 #define __WORK_INIT_LOCKDEP_MAP(n, k)
@@ -100,8 +93,6 @@ struct delayed_work {
 #define DECLARE_DELAYED_WORK(n, f)					\
 	struct delayed_work n = __DELAYED_WORK_INITIALIZER(n, f, 0)
 
-/* __init_work removed - empty stub */
-
 #define __INIT_WORK(_work, _func, _onstack)				\
 	do {								\
 		/* __init_work call removed - empty stub */		\
@@ -124,8 +115,6 @@ struct delayed_work {
 #define INIT_DELAYED_WORK(_work, _func)					\
 	__INIT_DELAYED_WORK(_work, _func, 0)
 
-/* work_pending, delayed_work_pending removed - no callers */
-
 /* All WQ_* flags removed - unused:
    WQ_UNBOUND, WQ_MEM_RECLAIM, WQ_SYSFS, WQ_FREEZABLE, WQ_HIGHPRI,
    WQ_CPU_INTENSIVE, WQ_POWER_EFFICIENT, __WQ_DRAINING, __WQ_ORDERED,
@@ -133,21 +122,15 @@ struct delayed_work {
    WQ_DFL_ACTIVE */
 
 extern struct workqueue_struct *system_wq;
-/* system_long_wq removed - never used */
 extern struct workqueue_struct *system_unbound_wq;
 
 __printf(1, 4) struct workqueue_struct *
 alloc_workqueue(const char *fmt, unsigned int flags, int max_active, ...);
 
-
-/* destroy_workqueue removed - never called */
 extern bool queue_work_on(int cpu, struct workqueue_struct *wq,
 			struct work_struct *work);
 extern bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
 			struct delayed_work *work, unsigned long delay);
-
-
-/* flush_work, cancel_work_sync, flush_delayed_work, cancel_delayed_work removed - never called */
 
 static inline bool queue_work(struct workqueue_struct *wq,
 			      struct work_struct *work)
@@ -162,21 +145,15 @@ static inline bool queue_delayed_work(struct workqueue_struct *wq,
 	return queue_delayed_work_on(WORK_CPU_UNBOUND, wq, dwork, delay);
 }
 
-/* mod_delayed_work inlined into backing-dev.c (~4 LOC) */
-/* schedule_work_on inlined into slub.c (~3 LOC) */
-
 static inline bool schedule_work(struct work_struct *work)
 {
 	return queue_work(system_wq, work);
 }
-
 
 static inline bool schedule_delayed_work(struct delayed_work *dwork,
 					 unsigned long delay)
 {
 	return queue_delayed_work(system_wq, dwork, delay);
 }
-
-/* workqueue_init_early, workqueue_init removed - unused */
 
 #endif

@@ -6,7 +6,6 @@
 #include <linux/compiler.h>
 #include <linux/spinlock.h>
 #include <linux/rcupdate.h>
-/* Inlined from nospec.h */
 #include <linux/compiler.h>
 #include <asm/barrier.h>
 
@@ -71,8 +70,6 @@ struct files_struct {
 	struct file __rcu * fd_array[NR_OPEN_DEFAULT];
 };
 
-/* struct file_operations, vfsmount, dentry forward decls removed - unused */
-
 #define rcu_dereference_check_fdtable(files, fdtfd) \
 	rcu_dereference_check((fdtfd), lockdep_is_held(&(files)->file_lock))
 
@@ -90,13 +87,7 @@ static inline struct file *files_lookup_fd_raw(struct files_struct *files, unsig
 	return NULL;
 }
 
-/* task_lookup_fd_rcu, task_lookup_next_fd_rcu, struct task_struct forward decl removed - never used */
-
-/* put_files_struct made static - only used in file.c */
 struct files_struct *dup_fd(struct files_struct *, unsigned, int *) __latent_entropy;
-/* do_close_on_exec removed - was empty stub */
-
-/* close_fd, __close_range, iterate_fd removed - never called */
 
 extern struct kmem_cache *files_cachep;
 

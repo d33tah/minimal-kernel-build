@@ -2,13 +2,10 @@
 #include <linux/interrupt.h>
 #include <linux/rcupdate_wait.h>
 #include <linux/kernel.h>
-/* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/mutex.h>
 #include <linux/sched.h>
 #include <linux/init.h>
-/* linux/time.h, linux/cpu.h removed - not used */
 
-/* linux/slab.h removed - no slab functions */
 #include <linux/mm.h>
 
 #include "rcu.h"
@@ -44,10 +41,6 @@ void rcu_qs(void)
 	local_irq_restore(flags);
 }
 
-/* rcu_sched_clock_irq removed - no callers */
-
-/* rcu_reclaim_tiny inlined into rcu_process_callbacks */
-
 static __latent_entropy void
 rcu_process_callbacks(struct softirq_action *unused)
 {
@@ -70,7 +63,6 @@ rcu_process_callbacks(struct softirq_action *unused)
 	while (list) {
 		next = list->next;
 		prefetch(next);
-		/* debug_rcu_head_unqueue removed - empty stub */
 		local_bh_disable();
 		/* rcu_reclaim_tiny inlined */
 		{
@@ -88,13 +80,10 @@ rcu_process_callbacks(struct softirq_action *unused)
 	}
 }
 
-/* synchronize_rcu removed - empty stub, all call sites removed */
-
 void call_rcu(struct rcu_head *head, rcu_callback_t func)
 {
 	unsigned long flags;
 
-	/* debug_rcu_head_queue removed - empty stub */
 	head->func = func;
 	head->next = NULL;
 
@@ -112,5 +101,4 @@ void call_rcu(struct rcu_head *head, rcu_callback_t func)
 void __init rcu_init(void)
 {
 	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
-	/* rcu_early_boot_tests removed - empty stub */
 }

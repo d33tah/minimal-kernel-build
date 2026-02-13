@@ -2,7 +2,6 @@
 #ifndef BOOT_COMPRESSED_MISC_H
 #define BOOT_COMPRESSED_MISC_H
 
- 
 #undef CONFIG_PARAVIRT
 #undef CONFIG_PARAVIRT_XXL
 #undef CONFIG_PARAVIRT_SPINLOCKS
@@ -11,7 +10,6 @@
 
 #define __NO_FORTIFY
 
- 
 #define USE_EARLY_PGTABLE_L5
 
 #include <linux/linkage.h>
@@ -22,15 +20,11 @@
 #include <asm/bootparam.h>
 #include <asm/desc_defs.h>
 
-/* early_tdx_detect removed - TDX not needed */
-
 #define BOOT_CTYPE_H
 
 #define BOOT_BOOT_H
 #include "../ctype.h"
 #include "../io.h"
-
-/* --- Inlined efi.h --- */
 
 #if defined(_LINUX_EFI_H) || defined(_ASM_X86_EFI_H)
 #error Please do not include kernel proper namespace headers
@@ -43,8 +37,6 @@ typedef struct {
 
 typedef guid_t efi_guid_t __aligned(__alignof__(u32));
 
-/* EFI_GUID removed - never used */
-
 typedef	struct {
 	u64 signature;
 	u32 revision;
@@ -52,9 +44,6 @@ typedef	struct {
 	u32 crc32;
 	u32 reserved;
 } efi_table_hdr_t;
-
-/* EFI_CONVENTIONAL_MEMORY removed - never used */
-/* efi_memory_desc_t, efi_early_memdesc_ptr removed - never used */
 
 typedef struct {
 	efi_guid_t guid;
@@ -100,14 +89,10 @@ typedef struct {
 	u32 tables;
 } efi_system_table_32_t;
 
-/* struct efi_setup_data removed - never instantiated */
-
 #define memptr unsigned
 
- 
 extern char _head[], _end[];
 
- 
 extern memptr free_mem_ptr;
 extern memptr free_mem_end_ptr;
 void *malloc(int size);
@@ -115,28 +100,16 @@ void free(void *where);
 extern struct boot_params *boot_params;
 void __putstr(const char *s);
 #define error_putstr(__x)  __putstr(__x)
-/* error_puthex removed - never used */
-
 
 static inline void debug_putstr(const char *s)
 { while (*s) asm volatile("outb %0, $0xe9" : : "a"(*s++)); }
 #define debug_putaddr(x)  
 
-
- 
 int cmdline_find_option(const char *option, char *buffer, int bufsize);
 int cmdline_find_option_bool(const char *option);
 
-/* struct mem_vector removed - never instantiated */
-/* choose_random_location removed - call deleted (no KASLR) */
-
 static const int early_serial_base;
-/* console_init removed - was empty stub */
 
-/* get_rsdp_addr removed - replaced with inline 0 */
-
-
-/* kernel_add_identity_map removed - never defined */
 extern pteval_t __default_kernel_pte_mask;
 
 #endif  

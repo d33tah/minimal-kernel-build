@@ -17,8 +17,6 @@
 # define barrier() __asm__ __volatile__("": : :"memory")
 #endif
 
-/* barrier_data, unreachable() macros removed - never used */
-
 #ifndef RELOC_HIDE
 # define RELOC_HIDE(ptr, off)					\
   ({ unsigned long __ptr;					\
@@ -46,8 +44,6 @@
 						\
 	__v;								\
 })
-
-/* ASSERT_EXCLUSIVE_BITS, ASSERT_EXCLUSIVE_WRITER removed - unused */
 
 #endif
 

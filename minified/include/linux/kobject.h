@@ -9,7 +9,6 @@
 #include <linux/container_of.h>
 #include <linux/spinlock.h>
 #include <linux/kref.h>
-/* kobject_ns.h, linux/workqueue.h removed - never used */
 #include <linux/wait.h>
 #include <linux/atomic.h>
 #include <linux/uidgid.h>
@@ -32,10 +31,7 @@ struct kobject {
 	unsigned int state_in_sysfs:1;
 	unsigned int state_add_uevent_sent:1;
 	unsigned int state_remove_uevent_sent:1;
-	/* uevent_suppress removed - write-only, never checked */
 };
-
-/* kobject_set_name, kobject_set_name_vargs removed - never called */
 
 static inline const char *kobject_name(const struct kobject *kobj)
 {
@@ -43,10 +39,6 @@ static inline const char *kobject_name(const struct kobject *kobj)
 }
 
 extern void kobject_init(struct kobject *kobj, const struct kobj_type *ktype);
-/* kobject_add, kobject_init_and_add removed - never called */
-
-
-/* kobject_create_and_add removed - never called */
 
 extern struct kobject *kobject_get(struct kobject *kobj);
 extern struct kobject * __must_check kobject_get_unless_zero(
@@ -59,12 +51,9 @@ struct kobj_type {
 	void (*release)(struct kobject *kobj);
 	const struct sysfs_ops *sysfs_ops;
 	const struct attribute_group **default_groups;
-	/* child_ns_type removed - never called */
 	const void *(*namespace)(struct kobject *kobj);
 	void (*get_ownership)(struct kobject *kobj, kuid_t *uid, kgid_t *gid);
 };
-
-/* kobj_uevent_env and kset_uevent_ops removed - never used, always NULL */
 
 struct kobj_attribute {
 	struct attribute attr;
@@ -78,16 +67,12 @@ struct kset {
 	struct list_head list;
 	spinlock_t list_lock;
 	struct kobject kobj;
-	/* uevent_ops removed - always NULL */
 } __randomize_layout;
 
-/* kset_init made static - only used in lib/kobject.c */
 extern int __must_check kset_register(struct kset *kset);
-/* kset_unregister removed - no callers */
 extern struct kset * __must_check kset_create_and_add(const char *name,
 						struct kobject *parent_kobj);
 
-/* to_kset inlined into kset_get */
 static inline struct kset *kset_get(struct kset *k)
 {
 	if (!k)
@@ -105,10 +90,5 @@ static inline const struct kobj_type *get_ktype(struct kobject *kobj)
 {
 	return kobj->ktype;
 }
-
-/* kset_find_obj removed - no callers */
-
-/* kobject_uevent_env made static - only used in lib/kobject.c */
-/* kobject_synth_uevent removed - no callers */
 
 #endif  

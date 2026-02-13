@@ -31,7 +31,6 @@ static unsigned long lcm(unsigned long a, unsigned long b)
 #include <linux/list.h>
 #include <linux/log2.h>
 #include <linux/mm.h>
-/* linux/module.h removed - no module features used */
 #include <linux/mutex.h>
 #include <linux/percpu.h>
 #include <linux/pfn.h>
@@ -41,7 +40,6 @@ static unsigned long lcm(unsigned long a, unsigned long b)
 #include <linux/workqueue.h>
 #include <linux/sched.h>
 #include <linux/sched/mm.h>
-/* linux/memcontrol.h removed - memcg hooks are empty stubs */
 
 #include <asm/sections.h>
 #include <asm/tlbflush.h>
@@ -75,8 +73,6 @@ struct pcpu_chunk {
 	unsigned long populated[];
 };
 
-/* Redundant extern declarations removed - all defined in same file below */
-
 static inline int pcpu_chunk_nr_blocks(struct pcpu_chunk *chunk)
 {
 	return chunk->nr_pages * PAGE_SIZE / PCPU_BITMAP_BLOCK_SIZE;
@@ -88,48 +84,30 @@ static inline int pcpu_chunk_map_bits(struct pcpu_chunk *chunk)
 	return chunk->nr_pages * PAGE_SIZE / PCPU_MIN_ALLOC_SIZE;
 }
 
-/* pcpu_stats_* stubs removed - statistics tracking disabled */
 /* end percpu-internal.h */
 
 #define PCPU_SLOT_BASE_SHIFT 5
 
 #define PCPU_SLOT_FAIL_THRESHOLD 3
 
-/* PCPU_EMPTY_POP_PAGES_LOW, PCPU_EMPTY_POP_PAGES_HIGH removed - never used */
-
 #define __addr_to_pcpu_ptr(addr) (void __percpu *)(addr)
 
 static int pcpu_unit_pages __ro_after_init;
 static int pcpu_unit_size __ro_after_init;
-/* pcpu_nr_units removed - only written, never read */
-/* pcpu_atom_size removed - only written, never read */
 int pcpu_nr_slots __ro_after_init;
 static int pcpu_free_slot __ro_after_init;
-/* pcpu_sidelined_slot, pcpu_to_depopulate_slot removed - write-only */
 static size_t pcpu_chunk_struct_size __ro_after_init;
 
-/* pcpu_low_unit_cpu, pcpu_high_unit_cpu removed - only written, never read */
-
-/* pcpu_unit_map removed - only written, never read */
 const unsigned long *pcpu_unit_offsets __ro_after_init;
 
-/* pcpu_nr_groups, pcpu_group_offsets removed - only written, never read */
 static const size_t *pcpu_group_sizes __ro_after_init;
 
 struct pcpu_chunk *pcpu_first_chunk __ro_after_init;
-
-/* pcpu_reserved_chunk removed - always NULL (reserved_size always 0) */
 
 DEFINE_SPINLOCK(pcpu_lock);
 static DEFINE_MUTEX(pcpu_alloc_mutex);
 
 struct list_head *pcpu_chunk_lists __ro_after_init;
-
-/* pcpu_nr_empty_pop_pages removed - write-only variable, never read */
-
-/* pcpu_nr_populated removed - only written, never read */
-/* pcpu_balance_work, pcpu_async_enabled removed - workfn was a no-op stub */
-/* pcpu_atomic_alloc_failed removed - is_atomic always false, never set */
 
 /* pcpu_schedule_balance_work inlined */
 
@@ -318,9 +296,6 @@ static void pcpu_chunk_relocate(struct pcpu_chunk *chunk, int oslot)
 		__pcpu_chunk_move(chunk, nslot, oslot < nslot);
 }
 
-/* Removed: pcpu_isolate_chunk - dead code since free_percpu is a no-op */
-/* pcpu_reintegrate_chunk inlined into pcpu_alloc - single caller */
-
 static inline void pcpu_update_empty_pages(struct pcpu_chunk *chunk, int nr)
 {
 	chunk->nr_empty_pop_pages += nr;
@@ -379,8 +354,6 @@ static void pcpu_block_update(struct pcpu_block_md *block, int start, int end)
 		}
 	}
 }
-
-/* pcpu_block_update_scan, pcpu_chunk_refresh_hint inlined into pcpu_alloc_area */
 
 static void pcpu_block_refresh_hint(struct pcpu_chunk *chunk, int index)
 {
@@ -517,8 +490,6 @@ static void pcpu_block_update_hint_alloc(struct pcpu_chunk *chunk, int bit_off,
 	}
 }
 
-/* pcpu_is_populated removed - only called when pop_only was true, which was always false */
-/* pop_only parameter removed - always false, so condition always breaks immediately */
 static int pcpu_find_block_fit(struct pcpu_chunk *chunk, int alloc_bits,
 			       size_t align)
 {
@@ -541,8 +512,6 @@ static int pcpu_find_block_fit(struct pcpu_chunk *chunk, int alloc_bits,
 
 	return bit_off;
 }
-
-/* pcpu_find_zero_area inlined into pcpu_alloc_area */
 
 static int pcpu_alloc_area(struct pcpu_chunk *chunk, int alloc_bits,
 			   size_t align, int start)
@@ -586,7 +555,6 @@ check_end:
 	if (bit_off >= end)
 		return -1;
 
-	/* Inlined pcpu_block_update_scan */
 	if (area_bits) {
 		int s_off = pcpu_off_to_block_off(area_off);
 		int e_off = s_off + area_bits;
@@ -624,8 +592,6 @@ check_end:
 
 	return bit_off * PCPU_MIN_ALLOC_SIZE;
 }
-
-/* pcpu_free_area removed - never called */
 
 static void pcpu_init_md_block(struct pcpu_block_md *block, int nr_bits)
 {
@@ -781,8 +747,6 @@ alloc_map_fail:
 	return NULL;
 }
 
-/* pcpu_free_chunk inlined into pcpu_create_chunk */
-
 static void pcpu_chunk_populated(struct pcpu_chunk *chunk, int page_start,
 				 int page_end)
 {
@@ -794,27 +758,21 @@ static void pcpu_chunk_populated(struct pcpu_chunk *chunk, int page_start,
 	pcpu_update_empty_pages(chunk, nr);
 }
 
-/* Removed: pcpu_chunk_depopulated - dead code since no chunk depopulation */
-/* Removed: pcpu_populate_chunk - always returned 0, call sites simplified */
-
 static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp);
 
 #include "percpu-km.c"
 
 /* Removed: pcpu_chunk_addr_search, pcpu_memcg_pre_alloc_hook,
  * pcpu_memcg_post_alloc_hook - dead code */
-/* reserved parameter removed - only caller passes false */
 
 static void __percpu *pcpu_alloc(size_t size, size_t align, gfp_t gfp)
 {
 	gfp_t pcpu_gfp;
-	/* is_atomic removed - only caller is __alloc_percpu with GFP_KERNEL, always false */
 	bool do_warn;
 	static int warn_limit = 10;
 	struct pcpu_chunk *chunk, *next;
 	const char *err;
 	int slot, off;
-	/* cpu, ret removed - unused after pcpu simplifications */
 	unsigned long flags;
 	void __percpu *ptr;
 	size_t bits, bit_align;
@@ -839,13 +797,11 @@ static void __percpu *pcpu_alloc(size_t size, size_t align, gfp_t gfp)
 		return NULL;
 	}
 
-	/* is_atomic always false, __GFP_NOFAIL never set - always take mutex */
 	if (mutex_lock_killable(&pcpu_alloc_mutex))
 		return NULL;
 
 	spin_lock_irqsave(&pcpu_lock, flags);
 
-	/* reserved block removed - only caller passes false */
 restart:
 
 	for (slot = pcpu_size_to_slot(size); slot <= pcpu_free_slot; slot++) {
@@ -867,7 +823,6 @@ restart:
 
 	spin_unlock_irqrestore(&pcpu_lock, flags);
 
-	/* is_atomic always false - removed dead branch */
 	if (list_empty(&pcpu_chunk_lists[pcpu_free_slot])) {
 		chunk = pcpu_create_chunk(pcpu_gfp);
 		if (!chunk) {
@@ -884,10 +839,8 @@ restart:
 	goto restart;
 
 area_found:
-	/* pcpu_stats_area_alloc removed - stats stub */
 	spin_unlock_irqrestore(&pcpu_lock, flags);
 
-	/* is_atomic always false - block always executed */
 	{
 		unsigned int page_end, rs, re;
 
@@ -898,7 +851,6 @@ area_found:
 					     page_end) {
 			WARN_ON(chunk->immutable);
 
-			/* pcpu_populate_chunk always returns 0 - dead error path removed */
 			spin_lock_irqsave(&pcpu_lock, flags);
 			pcpu_chunk_populated(chunk, rs, re);
 			spin_unlock_irqrestore(&pcpu_lock, flags);
@@ -906,8 +858,6 @@ area_found:
 
 		mutex_unlock(&pcpu_alloc_mutex);
 	}
-
-	/* pcpu_balance_work scheduling removed - workfn was a no-op stub */
 
 	/* for_each_possible_cpu simplified - single CPU */
 	/* pcpu_chunk_addr(chunk, 0, 0) = chunk->base_addr + pcpu_unit_offsets[0] */
@@ -921,9 +871,7 @@ area_found:
 	return ptr;
 
 fail:
-	/* fail_unlock label removed - no goto references it */
 
-	/* is_atomic always false - only caller is __alloc_percpu with GFP_KERNEL */
 	if (do_warn && warn_limit) {
 		pr_warn("allocation failed, size=%zu align=%zu, %s\n", size,
 			align, err);
@@ -934,18 +882,11 @@ fail:
 	return NULL;
 }
 
-/* __alloc_percpu_gfp removed - only used by alloc_percpu_gfp macro which was unused */
-
 void __percpu *__alloc_percpu(size_t size, size_t align)
 {
 	return pcpu_alloc(size, align, GFP_KERNEL);
 }
 
-/* pcpu_balance_workfn removed - was no-op stub, entire async mechanism removed */
-
-/* free_percpu moved to percpu.h as static inline */
-
-/* Stub: per_cpu_ptr_to_phys not used in minimal kernel */
 phys_addr_t per_cpu_ptr_to_phys(void *addr)
 {
 	return __pa(addr);
@@ -1026,8 +967,6 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	PCPU_SETUP_BUG_ON(ai->nr_groups !=
 			  1); /* pcpu_verify_alloc_info inlined */
 
-	/* group_offsets allocation removed - allocated but never read */
-
 	alloc_size = ai->nr_groups * sizeof(group_sizes[0]);
 	group_sizes = memblock_alloc(alloc_size, SMP_CACHE_BYTES);
 	if (!group_sizes)
@@ -1071,7 +1010,6 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	PCPU_SETUP_BUG_ON(unit_map[0] == UINT_MAX);
 
 #undef PCPU_SETUP_BUG_ON
-	/* pcpu_dump_alloc_info removed */
 
 	pcpu_group_sizes = group_sizes;
 	pcpu_unit_offsets = unit_off;
@@ -1080,7 +1018,6 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	pcpu_unit_size = pcpu_unit_pages << PAGE_SHIFT;
 	pcpu_chunk_struct_size =
 		struct_size(chunk, populated, BITS_TO_LONGS(pcpu_unit_pages));
-	/* pcpu_stats_save_ai removed - stats stub */
 	pcpu_free_slot = __pcpu_size_to_slot(pcpu_unit_size) + 2;
 	pcpu_nr_slots = pcpu_free_slot + 2;
 	pcpu_chunk_lists = memblock_alloc(
@@ -1099,12 +1036,8 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	map_size = ai->reserved_size ?: dyn_size;
 	chunk = pcpu_alloc_first_chunk(tmp_addr, map_size);
 
-	/* reserved_size branch removed - always 0 in our setup */
-
 	pcpu_first_chunk = chunk;
 	pcpu_chunk_relocate(pcpu_first_chunk, -1);
-
-	/* pcpu_stats_chunk_alloc removed - stats stub */
 }
 
 void __init setup_per_cpu_areas(void)
@@ -1123,12 +1056,9 @@ void __init setup_per_cpu_areas(void)
 
 	ai->dyn_size = unit_size;
 	ai->unit_size = unit_size;
-	/* ai->atom_size, ai->alloc_size removed - write-only fields */
 	ai->groups[0].nr_units = 1;
 	ai->groups[0].cpu_map[0] = 0;
 
 	pcpu_setup_first_chunk(ai, fc);
 	pcpu_free_alloc_info(ai);
 }
-
-/* percpu_enable_async removed - entire async mechanism removed (workfn was no-op) */

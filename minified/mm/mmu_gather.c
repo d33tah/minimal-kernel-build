@@ -75,7 +75,6 @@ static void __tlb_gather_mmu(struct mmu_gather *tlb, struct mm_struct *mm,
 	tlb->local.max = ARRAY_SIZE(tlb->__pages);
 	tlb->active = &tlb->local;
 	tlb->batch_count = 0;
-	/* tlb_table_init removed - empty stub */
 
 	__tlb_reset_range(tlb);
 	atomic_inc(
@@ -107,7 +106,6 @@ void tlb_finish_mmu(struct mmu_gather *tlb)
 
 	for (batch = tlb->local.next; batch; batch = next) {
 		next = batch->next;
-		/* free_pages removed - empty stub */
 	}
 	tlb->local.next = NULL;
 	atomic_dec(

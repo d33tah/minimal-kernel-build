@@ -1,14 +1,9 @@
  
- 
-
- 
-
 #ifndef BOOT_VIDEO_H
 #define BOOT_VIDEO_H
 
 #include <linux/types.h>
 
-/* VIDEO_FIRST_BIOS, VIDEO_FIRST_VESA removed - never used */
 #define VIDEO_80x25 0x0f00
 #define VIDEO_CURRENT_MODE 0x0f04
 #define VIDEO_RECALC 0x8000
@@ -39,9 +34,6 @@ extern struct card_info video_cards[], video_cards_end[];
 
 extern int adapter;
 extern int force_x, force_y;
-/* do_restore removed - never read */
 extern int graphic_mode;
-
-/* in_idx, out_idx removed - never called */
 
 #endif

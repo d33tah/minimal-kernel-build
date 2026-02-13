@@ -2,9 +2,7 @@
 #define LINUX_MM_INLINE_H
 
 #include <linux/atomic.h>
-/* huge_mm.h removed - was empty stub */
 #include <linux/swap.h>
-/* swapops.h removed - was empty */
 
 static inline int folio_is_file_lru(struct folio *folio)
 {
@@ -28,7 +26,6 @@ static __always_inline void __folio_clear_lru_flags(struct folio *folio)
 
 	__folio_clear_lru(folio);
 
-	 
 	if (folio_test_active(folio) && folio_test_unevictable(folio))
 		return;
 
@@ -68,8 +65,6 @@ void lruvec_add_folio(struct lruvec *lruvec, struct folio *folio)
 		list_add(&folio->lru, &lruvec->lists[lru]);
 }
 
-/* add_page_to_lru_list, lruvec_add_folio_tail, add_page_to_lru_list_tail removed - never called */
-
 static __always_inline
 void lruvec_del_folio(struct lruvec *lruvec, struct folio *folio)
 {
@@ -87,7 +82,6 @@ static __always_inline void del_page_from_lru_list(struct page *page,
 	lruvec_del_folio(lruvec, page_folio(page));
 }
 
-/* anon_vma_name, anon_vma_name_eq, dup_anon_vma_name, free_anon_vma_name removed - never called */
 /* init_tlb_flush_pending, inc_tlb_flush_pending, dec_tlb_flush_pending, mm_tlb_flush_nested inlined at call sites */
 
 #endif

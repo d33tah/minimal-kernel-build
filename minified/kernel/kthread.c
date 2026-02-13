@@ -1,4 +1,3 @@
-/* sched/types.h, mmu_context.h, file.h, mutex.h, uaccess.h removed - unused */
 #include <linux/mm.h>
 #include <linux/sched.h>
 #include <linux/sched/mm.h>
@@ -63,7 +62,6 @@ bool set_kthread_struct(struct task_struct *p)
 
 	init_completion(&kthread->exited);
 	init_completion(&kthread->parked);
-	/* vfork_done removed - write-only field */
 
 	p->worker_private = kthread;
 	return true;
@@ -81,12 +79,6 @@ void free_kthread_struct(struct task_struct *k)
 	kfree(kthread->full_name);
 	kfree(kthread);
 }
-
-/* kthread_should_stop removed - never called (~4 LOC) */
-/* __kthread_should_park, kthread_should_park removed - never called */
-/* kthread_data removed - never called (~4 LOC) */
-
-/* __kthread_parkme inlined into kthread */
 
 static void __noreturn kthread_exit(long result)
 {
@@ -130,7 +122,6 @@ static int kthread(void *_create)
 
 	ret = -EINTR;
 	if (!test_bit(KTHREAD_SHOULD_STOP, &self->flags)) {
-		/* Inlined __kthread_parkme */
 		for (;;) {
 			set_special_state(TASK_PARKED);
 			if (!test_bit(KTHREAD_SHOULD_PARK, &self->flags))
@@ -145,8 +136,6 @@ static int kthread(void *_create)
 	}
 	kthread_exit(ret);
 }
-
-/* __kthread_create_on_node, kthread_create_on_node, kthread_stop removed - no callers */
 
 void kthread_set_per_cpu(struct task_struct *k, int cpu)
 {
@@ -219,5 +208,3 @@ int kthreadd(void *unused)
 
 	return 0;
 }
-
-/* Kthread worker infrastructure - stubbed (not used) */

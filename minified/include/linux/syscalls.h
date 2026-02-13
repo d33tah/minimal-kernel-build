@@ -11,7 +11,6 @@
 #include <linux/personality.h>
 #include <linux/fcntl.h>
 
-/* --- Inlined from asm/syscall_wrapper.h --- */
 struct pt_regs;
 
 extern long __ia32_sys_ni_syscall(const struct pt_regs *regs);

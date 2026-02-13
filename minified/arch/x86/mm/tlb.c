@@ -2,16 +2,12 @@
 #include <linux/spinlock.h>
 #include <linux/smp.h>
 #include <linux/interrupt.h>
-/* linux/export.h, linux/task_work.h removed - not used */
 #include <linux/cpu.h>
 #include <asm/tlbflush.h>
 #include <asm/mmu_context.h>
 #include <asm/nospec-branch.h>
 #include <asm/cache.h>
 #include <asm/apic.h>
-/* asm/perf_event.h removed - no perf symbols used */
-
-/* mm_internal.h removed - only tlb_single_page_flush_ceiling used, defined locally */
 
 /* Moved from kernel/events/stubs.c - static key definitions for perf/rdpmc */
 DEFINE_STATIC_KEY_TRUE(rdpmc_never_available_key);
@@ -21,15 +17,12 @@ DEFINE_STATIC_KEY_FALSE(rdpmc_always_available_key);
 #define __flush_tlb_local native_flush_tlb_local
 #define __flush_tlb_global native_flush_tlb_global
 #define __flush_tlb_one_user(addr) native_flush_tlb_one_user(addr)
-/* __flush_tlb_multi removed - single-CPU kernel */
 
 #define LAST_USER_MM_IBPB 0x1UL
 #define LAST_USER_MM_L1D_FLUSH 0x2UL
 #define LAST_USER_MM_SPEC_MASK (LAST_USER_MM_IBPB | LAST_USER_MM_L1D_FLUSH)
 
 #define LAST_USER_MM_INIT LAST_USER_MM_IBPB
-
-/* CR3_HW_ASID_BITS removed - never used */
 
 #define PTI_CONSUMED_PCID_BITS 0
 
@@ -44,8 +37,6 @@ static inline u16 kern_pcid(u16 asid)
 	return asid + 1;
 }
 
-/* user_pcid removed - was identical to kern_pcid */
-
 static inline unsigned long build_cr3(pgd_t *pgd, u16 asid)
 {
 	if (static_cpu_has(X86_FEATURE_PCID)) {
@@ -55,9 +46,6 @@ static inline unsigned long build_cr3(pgd_t *pgd, u16 asid)
 		return __sme_pa(pgd);
 	}
 }
-
-/* build_cr3_noflush inlined into load_new_mm_cr3 */
-/* clear_asid_other inlined into choose_new_asid */
 
 atomic64_t last_mm_ctx_id = ATOMIC64_INIT(1);
 
@@ -71,8 +59,6 @@ static void choose_new_asid(struct mm_struct *next, u64 next_tlb_gen,
 		*need_flush = true;
 		return;
 	}
-
-	/* clear_asid_other removed - single-CPU kernel, no other CPU sets invalidate_other */
 
 	for (asid = 0; asid < TLB_NR_DYN_ASIDS; asid++) {
 		if (this_cpu_read(cpu_tlbstate.ctxs[asid].ctx_id) !=
@@ -93,8 +79,6 @@ static void choose_new_asid(struct mm_struct *next, u64 next_tlb_gen,
 	*need_flush = true;
 }
 
-/* invalidate_user_asid removed - PAGE_TABLE_ISOLATION disabled, was empty */
-
 static void load_new_mm_cr3(pgd_t *pgdir, u16 new_asid, bool need_flush)
 {
 	unsigned long new_mm_cr3;
@@ -102,7 +86,6 @@ static void load_new_mm_cr3(pgd_t *pgdir, u16 new_asid, bool need_flush)
 	if (need_flush) {
 		new_mm_cr3 = build_cr3(pgdir, new_asid);
 	} else {
-		/* Inlined build_cr3_noflush */
 		VM_WARN_ON_ONCE(new_asid > MAX_ASID_AVAILABLE);
 		VM_WARN_ON_ONCE(!boot_cpu_has(X86_FEATURE_PCID));
 		new_mm_cr3 = __sme_pa(pgdir) | kern_pcid(new_asid) |
@@ -111,8 +94,6 @@ static void load_new_mm_cr3(pgd_t *pgdir, u16 new_asid, bool need_flush)
 
 	write_cr3(new_mm_cr3);
 }
-
-/* leave_mm removed - never called (~11 LOC) */
 
 void switch_mm(struct mm_struct *prev, struct mm_struct *next,
 	       struct task_struct *tsk)
@@ -124,8 +105,6 @@ void switch_mm(struct mm_struct *prev, struct mm_struct *next,
 	local_irq_restore(flags);
 }
 
-/* l1d_flush_force_sigbus, l1d_flush_evaluate removed - never called (~18 LOC) */
-/* mm_mangle_tif_spec_bits inlined into cond_mitigation, which is inlined into switch_mm_irqs_off */
 /* cr4_update_pce_mm inlined - PCE is always cleared */
 
 void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
@@ -138,8 +117,6 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 	u64 next_tlb_gen;
 	bool need_flush;
 	u16 new_asid;
-
-	/* PROVE_LOCKING disabled */
 
 	if (was_lazy)
 		this_cpu_write(cpu_tlbstate_shared.is_lazy, false);
@@ -164,7 +141,6 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 		new_asid = prev_asid;
 		need_flush = true;
 	} else {
-		/* Inlined cond_mitigation */
 		if (tsk && tsk->mm) {
 			unsigned long next_tif = read_task_thread_flags(tsk);
 			unsigned long spec_bits = (next_tif >> TIF_SPEC_IB) &
@@ -252,7 +228,6 @@ static void flush_tlb_func(void *info)
 	u64 mm_tlb_gen = atomic64_read(&loaded_mm->context.tlb_gen);
 	u64 local_tlb_gen =
 		this_cpu_read(cpu_tlbstate.ctxs[loaded_mm_asid].tlb_gen);
-	/* local variable and remote CPU check removed - always local in single-CPU kernel */
 
 	VM_WARN_ON(!irqs_disabled());
 
@@ -282,10 +257,8 @@ static void flush_tlb_func(void *info)
 			flush_tlb_one_user(addr);
 			addr += 1UL << f->stride_shift;
 		}
-		/* count_vm_tlb_events removed - empty stub */
 	} else {
 		flush_tlb_local();
-		/* count_vm_tlb_event(NR_TLB_LOCAL_FLUSH_ALL) removed - empty stub */
 	}
 
 	this_cpu_write(cpu_tlbstate.ctxs[loaded_mm_asid].tlb_gen, mm_tlb_gen);
@@ -294,8 +267,6 @@ done:;
 }
 
 DEFINE_PER_CPU_SHARED_ALIGNED(struct tlb_state_shared, cpu_tlbstate_shared);
-
-/* tlb_is_not_lazy, native_flush_tlb_multi, flush_tlb_multi removed - single-CPU kernel */
 
 unsigned long tlb_single_page_flush_ceiling __read_mostly = 33;
 
@@ -319,8 +290,6 @@ get_flush_tlb_info(struct mm_struct *mm, unsigned long start, unsigned long end,
 	return info;
 }
 
-/* put_flush_tlb_info removed - empty stub */
-
 void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 			unsigned long end, unsigned int stride_shift,
 			bool freed_tables)
@@ -341,30 +310,21 @@ void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 	info = get_flush_tlb_info(mm, start, end, stride_shift, freed_tables,
 				  new_tlb_gen);
 
-	/* Single-CPU: cpumask_any_but returns 1 and nr_cpu_ids is 1, so check is always false */
 	if (mm == this_cpu_read(cpu_tlbstate.loaded_mm)) {
 		local_irq_disable();
 		flush_tlb_func(info);
 		local_irq_enable();
 	}
 
-	/* put_flush_tlb_info removed - empty stub */
 	put_cpu();
 }
 
-/* flush_tlb_all and do_flush_tlb_all removed - never called (~11 LOC) */
-
-/* __get_current_cr3_fast removed - never called (~11 LOC) */
-
 void flush_tlb_one_kernel(unsigned long addr)
 {
-	/* count_vm_tlb_event removed - empty stub */
 	flush_tlb_one_user(addr);
 
 	if (!static_cpu_has(X86_FEATURE_PTI))
 		return;
-
-	/* invalidate_other write removed - no other CPU to read it */
 }
 
 STATIC_NOPV void native_flush_tlb_one_user(unsigned long addr)
@@ -407,8 +367,6 @@ STATIC_NOPV void native_flush_tlb_local(void)
 {
 	WARN_ON_ONCE(preemptible());
 
-	/* invalidate_user_asid call removed - was empty (PTI disabled) */
-
 	native_write_cr3(__native_read_cr3());
 }
 
@@ -427,7 +385,3 @@ void __flush_tlb_all(void)
 		flush_tlb_local();
 	}
 }
-
-/* nmi_uaccess_okay removed - only caller was copy_from_user_nmi */
-
-/* Stub: TLB flush debugfs tuning not needed for minimal kernel */

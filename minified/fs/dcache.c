@@ -1,11 +1,9 @@
-/* string.h, cache.h, security.h removed - unused */
 #include <linux/mm.h>
 #include <linux/fs.h>
 #include <linux/slab.h>
 #include <linux/init.h>
 #include <linux/hash.h>
 #include <linux/memblock.h>
-/* bit_spinlock.h inlined into rculist_bl.h */
 #include <linux/rculist_bl.h>
 #include <linux/list_lru.h>
 #include "internal.h"
@@ -27,10 +25,6 @@ static inline struct hlist_bl_head *d_hash(unsigned int hash)
 {
 	return dentry_hashtable + (hash >> d_hash_shift);
 }
-
-/* in_lookup_hashtable removed - simplified d_alloc_parallel doesn't use it */
-
-/* nr_dentry, nr_dentry_unused, nr_dentry_negative removed - only written, never read */
 
 #include <asm/word-at-a-time.h>
 
@@ -99,8 +93,6 @@ static void dentry_unlink_inode(struct dentry *dentry)
 	iput(inode);
 }
 
-/* D_FLAG_VERIFY, d_lru_del removed - DCACHE_LRU_LIST never set */
-
 static void __d_drop(struct dentry *dentry)
 {
 	if (!d_unhashed(dentry)) {
@@ -119,10 +111,6 @@ static void __d_drop(struct dentry *dentry)
 	}
 }
 
-/* d_drop inlined into do_one_tree - single caller */
-
-/* dentry_unlist inlined into __dentry_kill */
-
 static void __dentry_kill(struct dentry *dentry)
 {
 	struct dentry *parent = NULL;
@@ -131,9 +119,7 @@ static void __dentry_kill(struct dentry *dentry)
 
 	lockref_mark_dead(&dentry->d_lockref);
 
-	/* DCACHE_LRU_LIST check removed - never set */
 	__d_drop(dentry);
-	/* Inlined dentry_unlist, cursor skip removed (no cursors) */
 	{
 		dentry->d_flags |= DCACHE_DENTRY_KILLED;
 		if (!unlikely(list_empty(&dentry->d_child)))
@@ -174,8 +160,6 @@ again:
 		parent = NULL;
 	return parent;
 }
-
-/* lock_parent inlined into dentry_kill (~8 LOC) */
 
 /* Simplified - single-process init doesn't need complex dentry retention (~25 LOC) */
 static inline bool retain_dentry(struct dentry *dentry)
@@ -275,8 +259,6 @@ void dput(struct dentry *dentry)
 	}
 }
 
-/* __dput_to_list removed - inlined into single caller (~11 LOC) */
-
 void dput_to_list(struct dentry *dentry, struct list_head *list)
 {
 	rcu_read_lock();
@@ -286,7 +268,6 @@ void dput_to_list(struct dentry *dentry, struct list_head *list)
 	}
 	rcu_read_unlock();
 	if (!retain_dentry(dentry)) {
-		/* Inlined __dput_to_list, simplified: DCACHE_SHRINK_LIST/LRU never set */
 		if (!--dentry->d_lockref.count) {
 			list_add(&dentry->d_lru, list);
 			dentry->d_flags |= DCACHE_SHRINK_LIST | DCACHE_LRU_LIST;
@@ -294,12 +275,6 @@ void dput_to_list(struct dentry *dentry, struct list_head *list)
 	}
 	spin_unlock(&dentry->d_lock);
 }
-
-/* dget_parent removed - zero callers (handle_dots DOTDOT was removed) */
-
-/* shrink_dentry_list removed - was empty stub, calls removed */
-
-/* prune_dcache_sb removed - declared/defined but never called */
 
 int d_set_mounted(struct dentry *dentry)
 {
@@ -316,7 +291,6 @@ int d_set_mounted(struct dentry *dentry)
 
 static void do_one_tree(struct dentry *dentry)
 {
-	/* d_walk is empty stub - just drop and put */
 	/* d_drop inlined */
 	spin_lock(&dentry->d_lock);
 	__d_drop(dentry);
@@ -342,20 +316,16 @@ void shrink_dcache_for_umount(struct super_block *sb)
 	}
 }
 
-/* d_invalidate removed - never called */
-
 static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 {
 	struct dentry *dentry;
 	char *dname;
-	/* int err; - removed, was unused */
 
 	dentry = kmem_cache_alloc_lru(dentry_cache, &sb->s_dentry_lru,
 				      GFP_KERNEL);
 	if (!dentry)
 		return NULL;
 
-	/* External name allocation removed - initramfs names always fit inline */
 	dentry->d_iname[DNAME_INLINE_LEN - 1] = 0;
 	if (unlikely(!name)) {
 		name = &slash_name;
@@ -381,7 +351,6 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 	INIT_LIST_HEAD(&dentry->d_subdirs);
 	INIT_HLIST_NODE(&dentry->d_u.d_alias);
 	INIT_LIST_HEAD(&dentry->d_child);
-	/* d_set_d_op call removed - s_d_op is always NULL (dops never set) */
 	return dentry;
 }
 
@@ -399,11 +368,6 @@ static struct dentry *d_alloc(struct dentry *parent, const struct qstr *name)
 
 	return dentry;
 }
-
-/* d_alloc_anon inlined into d_make_root - only caller */
-
-/* d_alloc_cursor removed - returns NULL stub, no dir iteration needed */
-/* d_set_d_op removed - d_op never read, DCACHE_OP_DELETE never tested */
 
 static unsigned d_flags_for_inode(struct inode *inode)
 {
@@ -423,7 +387,6 @@ static unsigned d_flags_for_inode(struct inode *inode)
 		goto type_determined;
 	}
 
-	/* get_link check removed - symlinks never created (get_link never set) */
 	inode->i_opflags |= IOP_NOFOLLOW;
 
 	if (unlikely(!S_ISREG(inode->i_mode)))
@@ -442,7 +405,6 @@ void d_instantiate(struct dentry *entry, struct inode *inode)
 		unsigned add_flags = d_flags_for_inode(inode);
 		WARN_ON(d_in_lookup(entry));
 
-		/* security_d_instantiate - empty stub */
 		spin_lock(&inode->i_lock);
 		spin_lock(&entry->d_lock);
 		hlist_add_head(&entry->d_u.d_alias, &inode->i_dentry);
@@ -495,7 +457,6 @@ struct dentry *__d_lookup_rcu(const struct dentry *parent,
 		if (d_unhashed(dentry))
 			continue;
 
-		/* DCACHE_OP_COMPARE branch removed - d_compare never set */
 		if (dentry->d_name.hash_len != hashlen)
 			continue;
 		if (dentry_cmp(dentry, str, hashlen_len(hashlen)) != 0)
@@ -555,11 +516,6 @@ next:
 	return found;
 }
 
-/* d_delete removed - never called (~16 LOC) */
-
-/* end_dir_add and start_dir_add inlined into callers */
-/* d_wait_lookup removed - inlined into single caller (~12 LOC) */
-
 /* Simplified for single-process minimal kernel: no concurrent lookups,
    no need for parallel-creation table or retry loops */
 struct dentry *d_alloc_parallel(struct dentry *parent, const struct qstr *name,
@@ -591,21 +547,17 @@ void __d_lookup_done(struct dentry *dentry)
 	INIT_LIST_HEAD(&dentry->d_lru);
 }
 
-/* __d_add inlined into d_add */
-
 void d_add(struct dentry *entry, struct inode *inode)
 {
 	struct inode *dir = NULL;
 	unsigned n;
 
 	if (inode) {
-		/* security_d_instantiate - empty stub */
 		spin_lock(&inode->i_lock);
 	}
 	spin_lock(&entry->d_lock);
 	if (unlikely(d_in_lookup(entry))) {
 		dir = entry->d_parent->d_inode;
-		/* Inlined start_dir_add */
 		for (;;) {
 			n = dir->i_dir_seq;
 			if (!(n & 1) && cmpxchg(&dir->i_dir_seq, n, n + 1) == n)
@@ -634,19 +586,12 @@ void d_add(struct dentry *entry, struct inode *inode)
 		spin_unlock(&inode->i_lock);
 }
 
-/* is_subdir removed - inlined into namei.c (was just equality check) */
-/* d_tmpfile removed - tmpfile callback removed from inode_operations */
-
 static __initdata unsigned long dhash_entries;
-
-/* dcache_init_early inlined into vfs_caches_init_early */
-/* dcache_init inlined into vfs_caches_init */
 
 struct kmem_cache *names_cachep __read_mostly;
 
 void __init vfs_caches_init_early(void)
 {
-	/* dcache_init_early inlined - hashdist always 0 */
 	dentry_hashtable = alloc_large_system_hash(
 		"Dentry cache", sizeof(struct hlist_bl_head), dhash_entries, 13,
 		HASH_EARLY | HASH_ZERO, &d_hash_shift, NULL, 0, 0);
@@ -661,7 +606,6 @@ void __init vfs_caches_init(void)
 		"names_cache", PATH_MAX, 0, SLAB_HWCACHE_ALIGN | SLAB_PANIC, 0,
 		PATH_MAX, NULL);
 
-	/* dcache_init inlined - hashdist always 0, hash table allocated in start_kernel_early */
 	dentry_cache =
 		KMEM_CACHE_USERCOPY(dentry,
 				    SLAB_RECLAIM_ACCOUNT | SLAB_PANIC |

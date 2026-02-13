@@ -5,15 +5,10 @@
 #include <linux/jump_label.h>
 #include <linux/init_task.h>
 
-/* syscall_user_dispatch removed - never configured in minimal kernel */
-
 static __always_inline void __enter_from_user_mode(struct pt_regs *regs)
 {
 	arch_enter_from_user_mode(regs);
-	/* lockdep_hardirqs_off is empty, CT_WARN_ON is dead - context_tracking_enabled always false */
 }
-
-/* enter_from_user_mode removed - no callers */
 
 /* syscall_enter_audit, syscall_trace_enter inlined */
 
@@ -23,7 +18,6 @@ static __always_inline long __syscall_enter_from_user_work(struct pt_regs *regs,
 	unsigned long work = READ_ONCE(current_thread_info()->syscall_work);
 
 	if (work & SYSCALL_WORK_ENTER) {
-		/* Inlined syscall_trace_enter */
 		if (work &
 		    (SYSCALL_WORK_SYSCALL_TRACE | SYSCALL_WORK_SYSCALL_EMU)) {
 			if (ptrace_report_syscall_entry(regs) ||
@@ -37,8 +31,6 @@ static __always_inline long __syscall_enter_from_user_work(struct pt_regs *regs,
 	return syscall;
 }
 
-/* syscall_enter_from_user_mode_work removed - only combined version used */
-
 noinstr long syscall_enter_from_user_mode(struct pt_regs *regs, long syscall)
 {
 	long ret;
@@ -51,25 +43,17 @@ noinstr long syscall_enter_from_user_mode(struct pt_regs *regs, long syscall)
 	return ret;
 }
 
-/* syscall_enter_from_user_mode_prepare removed - only combined version used */
-
 static __always_inline void __exit_to_user_mode(void)
 {
 	arch_exit_to_user_mode();
 }
 
-/* exit_to_user_mode removed - no callers */
-
 /* arch_do_signal_or_restart - x86 provides its own in arch/x86/kernel/signal.c */
-/* exit_to_user_mode_loop inlined into exit_to_user_mode_prepare */
 
 static void exit_to_user_mode_prepare(struct pt_regs *regs)
 {
 	unsigned long ti_work = read_thread_flags();
 
-	/* tick_nohz_user_enter_prepare is empty stub */
-
-	/* Inlined exit_to_user_mode_loop */
 	while (ti_work & EXIT_TO_USER_MODE_WORK) {
 		local_irq_enable();
 
@@ -94,7 +78,6 @@ static void exit_to_user_mode_prepare(struct pt_regs *regs)
 	if (unlikely(ti_work & _TIF_NEED_FPU_LOAD))
 		switch_fpu_return();
 
-	/* addr_limit_user_check removed - empty stub */
 	/* kmap_assert_nomap inlined */
 	DEBUG_LOCKS_WARN_ON(current->kmap_ctrl.idx);
 	/* lockdep_sys_exit is empty do{}while(0) */
@@ -118,8 +101,6 @@ __syscall_exit_to_user_mode_work(struct pt_regs *regs)
 	local_irq_disable_exit_to_user();
 	exit_to_user_mode_prepare(regs);
 }
-
-/* syscall_exit_to_user_mode_work removed - no callers */
 
 __visible noinstr void syscall_exit_to_user_mode(struct pt_regs *regs)
 {
@@ -149,24 +130,19 @@ noinstr irqentry_state_t irqentry_enter(struct pt_regs *regs)
 		return ret;
 	}
 
-	/* TINY_RCU, lockdep disabled - simplified path */
 	return ret;
 }
-
-/* raw_irqentry_exit_cond_resched removed - no callers */
 
 noinstr void irqentry_exit(struct pt_regs *regs, irqentry_state_t state)
 {
 	if (user_mode(regs)) {
 		irqentry_exit_to_user_mode(regs);
 	}
-	/* rcu_irq_exit is empty - state.exit_rcu branches removed */
 }
 
 irqentry_state_t noinstr irqentry_nmi_enter(struct pt_regs *regs)
 {
 	irqentry_state_t irq_state = {};
-	/* lockdep_hardirqs_enabled always 0, lockdep_hardirqs_off is empty */
 	__nmi_enter();
 	return irq_state;
 }

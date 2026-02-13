@@ -1,22 +1,12 @@
 
-/* linux/slab.h, linux/cgroup.h removed - not used */
 #include <linux/syscalls.h>
 #include <linux/sched/task_stack.h>
 #include <linux/sched/signal.h>
 #include <linux/pid_namespace.h>
 #include <linux/task_work.h>
-/* linux/tty.h removed - unused */
 
-/* linux/uaccess.h removed - unused */
 #include <asm-generic/siginfo.h>
 #include <asm/syscall.h>
-
-/* sigqueue_cachep removed - was assigned but never read */
-
-/* Removed: print_fatal_signals - never used */
-/* sig_handler removed - inlined into single caller (~4 LOC) */
-
-/* sig_ignored inlined into __send_signal_locked */
 
 /* Simplified - _NSIG_WORDS is always 2 on x86-32 (~22 LOC) */
 static inline bool has_pending_signals(sigset_t *signal, sigset_t *blocked)
@@ -29,8 +19,6 @@ static inline bool has_pending_signals(sigset_t *signal, sigset_t *blocked)
 
 #define PENDING(p, b) has_pending_signals(&(p)->signal, (b))
 
-/* Removed: recalc_sigpending_and_wake - empty stub */
-
 void recalc_sigpending(void)
 {
 	struct task_struct *t = current;
@@ -42,25 +30,6 @@ void recalc_sigpending(void)
 		clear_thread_flag(TIF_SIGPENDING);
 	}
 }
-
-/* calculate_sigpending removed - inlined into sched/core.c */
-
-/* Removed: print_dropped_signal - empty stub */
-/* task_set_jobctl_pending removed - always returned false, callers simplified */
-
-/* __sigqueue_alloc inlined into send_signal_locked (~5 LOC) */
-
-/* flush_sigqueue removed - do_exit gutted, no callers */
-
-/* ignore_signals removed - inlined into kthread.c */
-
-/* flush_signal_handlers removed - inlined into exec.c */
-
-/* signal_wake_up_state, signal_wake_up removed - never called */
-
-/* check_kill_permission inlined into kill_something_info caller */
-/* complete_signal was empty stub - removed */
-/* __send_signal_locked inlined into send_signal_locked */
 
 static int send_signal_locked(int sig, struct kernel_siginfo *info,
 			      struct task_struct *t, enum pid_type type)
@@ -93,10 +62,6 @@ static int send_signal_locked(int sig, struct kernel_siginfo *info,
 	return 0;
 }
 
-/* Removed: setup_print_fatal_signals and __setup - never used */
-
-/* do_send_sig_info removed - only caller was send_sig (also removed) */
-
 enum sig_handler {
 	HANDLER_CURRENT,
 	HANDLER_SIG_DFL,
@@ -121,16 +86,12 @@ static int force_sig_info_to_task(struct kernel_siginfo *info,
 			sigdelset(&t->blocked, sig);
 	}
 
-	/* ptrace check removed - ptrace always 0 */
 	if (action->sa.sa_handler == SIG_DFL)
 		ret = send_signal_locked(sig, info, t, PIDTYPE_PID);
 	spin_unlock_irqrestore(&t->sighand->siglock, flags);
 
 	return ret;
 }
-
-/* force_sig_info inlined into force_sig */
-/* force_fatal_sig removed - replaced with force_sig(SIGSEGV) at call site */
 
 void force_sig(int sig)
 {
@@ -145,9 +106,6 @@ void force_sig(int sig)
 	force_sig_info_to_task(&info, current, HANDLER_CURRENT);
 }
 
-/* force_exit_sig removed - never called (~12 LOC) */
-/* Removed: force_sigsegv - empty stub */
-
 int force_sig_fault(int sig, int code, void __user *addr)
 {
 	struct kernel_siginfo info;
@@ -157,26 +115,16 @@ int force_sig_fault(int sig, int code, void __user *addr)
 	info.si_errno = 0;
 	info.si_code = code;
 	info.si_addr = addr;
-	/* ia64-specific fields removed - x86 only */
 	return force_sig_info_to_task(&info, current, HANDLER_CURRENT);
 }
 
 /* force_sig_pkuerr, kill_pgrp, do_notify_parent, get_signal,
    signal_setup_done removed - never called */
 
-/* ptrace_notify removed - only called from dead ptrace_event_pid inline */
-
-/* Removed: retarget_shared_pending - inlined into __set_current_blocked */
-
-/* exit_signals removed - do_exit gutted, no callers */
-
-/* Stub: restart_syscall not needed for Hello World */
 SYSCALL_DEFINE0(restart_syscall)
 {
 	return -EINTR;
 }
-
-/* do_no_restart_syscall removed - restart_block removed from task_struct */
 
 /* Stub: single-threaded init, no thread group signal retargeting */
 void __set_current_blocked(const sigset_t *newset)
@@ -199,6 +147,4 @@ void __set_current_blocked(const sigset_t *newset)
 
 void __init signals_init(void)
 {
-	/* siginfo_buildtime_checks was empty stub - removed */
-	/* sigqueue_cachep initialization removed - variable was never read */
 }

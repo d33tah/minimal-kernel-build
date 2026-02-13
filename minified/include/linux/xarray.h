@@ -5,12 +5,10 @@
 #include <linux/bug.h>
 #include <linux/compiler.h>
 #include <linux/gfp.h>
-/* linux/kconfig.h removed - force-included via Makefile -include */
 #include <linux/kernel.h>
 #include <linux/rcupdate.h>
 #include <linux/spinlock.h>
 #include <linux/types.h>
-
 
 #define BITS_PER_XA_VALUE	(BITS_PER_LONG - 1)
 
@@ -35,8 +33,6 @@ static inline void *xa_mk_internal(unsigned long v)
 	return (void *)((v << 2) | 2);
 }
 
-/* xa_to_internal removed - no callers */
-
 static inline bool xa_is_internal(const void *entry)
 {
 	return ((unsigned long)entry & 3) == 2;
@@ -56,17 +52,13 @@ static inline int xa_err(void *entry)
 	return 0;
 }
 
-/* struct xa_limit removed - unused */
-
 typedef unsigned __bitwise xa_mark_t;
 #define XA_MARK_0		((__force xa_mark_t)0U)
-/* XA_MARK_1 removed - unused */
 #define XA_MARK_MAX		((__force xa_mark_t)2U)
 #define XA_FREE_MARK		XA_MARK_0
 
 enum xa_lock_type {
 	XA_LOCK_IRQ = 1,
-	/* XA_LOCK_BH removed - unused */
 };
 
 #define XA_FLAGS_LOCK_IRQ	((__force gfp_t)XA_LOCK_IRQ)
@@ -90,8 +82,6 @@ struct xarray {
 	.xa_head = NULL,					\
 }
 
-/* xa_load removed - no callers */
-
 static inline void xa_init_flags(struct xarray *xa, gfp_t flags)
 {
 	spin_lock_init(&xa->xa_lock);
@@ -104,7 +94,6 @@ static inline bool xa_marked(const struct xarray *xa, xa_mark_t mark)
 	return xa->xa_flags & XA_FLAGS_MARK(mark);
 }
 
-/* xa_trylock, xa_lock, xa_unlock removed - only irq versions used */
 #define xa_lock_irq(xa)		spin_lock_irq(&(xa)->xa_lock)
 #define xa_unlock_irq(xa)	spin_unlock_irq(&(xa)->xa_lock)
 #define xa_lock_irqsave(xa, flags) \
@@ -136,8 +125,6 @@ struct xa_node {
 		unsigned long	marks[XA_MAX_MARKS][XA_MARK_LONGS];
 	};
 };
-
-/* XA_NODE_BUG_ON removed - no callers */
 
 static inline void *xa_head(const struct xarray *xa)
 {
@@ -194,10 +181,6 @@ static inline bool xa_is_node(const void *entry)
 	return xa_is_internal(entry) && (unsigned long)entry > 4096;
 }
 
-/* xa_mk_sibling, xa_to_sibling, xa_is_sibling removed - unused */
-
-/* xa_to_sibling, xa_is_sibling removed - unused/always false */
-
 #define XA_RETRY_ENTRY		xa_mk_internal(256)
 
 static inline bool xa_is_retry(const void *entry)
@@ -240,7 +223,6 @@ struct xa_state {
 #define XA_STATE(name, array, index)				\
 	struct xa_state name = __XA_STATE(array, index, 0, 0)
 
-/* xas_lock, xas_unlock removed - unused */
 #define xas_lock_irq(xas)	xa_lock_irq((xas)->xa)
 #define xas_unlock_irq(xas)	xa_unlock_irq((xas)->xa)
 #define xas_lock_irqsave(xas, flags) \
@@ -305,16 +287,12 @@ static inline bool xas_retry(struct xa_state *xas, const void *entry)
 
 void *xas_load(struct xa_state *);
 void *xas_store(struct xa_state *, void *entry);
-/* xas_find, xas_find_conflict removed - no callers */
 
 void xas_set_mark(const struct xa_state *, xa_mark_t);
 void xas_clear_mark(const struct xa_state *, xa_mark_t);
 void *xas_find_marked(struct xa_state *, unsigned long max, xa_mark_t);
 
 bool xas_nomem(struct xa_state *, gfp_t);
-
-
-/* xa_get_order, xas_split, xas_split_alloc removed - never called */
 
 static inline void *xas_reload(struct xa_state *xas)
 {
@@ -379,8 +357,6 @@ static inline unsigned int xas_find_chunk(struct xa_state *xas, bool advance,
 enum {
 	XA_CHECK_SCHED = 4096,
 };
-
-/* xas_for_each, xas_for_each_conflict removed - no callers */
 
 void *__xas_next(struct xa_state *);
 

@@ -7,14 +7,11 @@
 
 #include <asm/processor.h>
 
-/* run_sysvec_on_irqstack_cond removed - never used */
-
 #define run_irq_on_irqstack_cond(func, regs, vector)			\
 {									\
 	irq_enter_rcu();						\
 	func(regs, vector);						\
 	irq_exit_rcu();							\
 }
-
 
 #endif

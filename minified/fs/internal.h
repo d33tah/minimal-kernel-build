@@ -1,52 +1,25 @@
  
- 
-
 struct super_block;
 struct file_system_type;
-/* struct iomap and struct iomap_ops forward decls removed - never defined */
 struct linux_binprm;
 struct path;
 struct mount;
 struct shrink_control;
 struct fs_context;
 struct user_namespace;
-/* pipe_inode_info forward decl removed - unused */
 
-/* __block_write_begin_int removed - never defined or called */
-
- 
 extern void __init chrdev_init(void);
 
- 
-/* legacy_fs_context_ops removed - all fs types have init_fs_context */
 extern int parse_monolithic_mount_data(struct fs_context *, void *);
-/* vfs_clean_context, finish_clean_context removed - unused */
-
- 
-/* vfs_path_lookup removed - never called */
-/* do_rmdir, do_unlinkat, may_linkat, do_renameat2, do_mkdirat, do_symlinkat, do_linkat removed */
-
-/* lookup_mnt made static - only used in namespace.c */
-/* finish_automount, sb_prepare_remount_readonly removed - unused */
 
 extern void __init mnt_init(void);
 
-/* __mnt_want_write_file, __mnt_drop_write_file removed - never called */
-
-/* dissolve_on_fput removed - FMODE_NEED_UNMOUNT never set */
-/* may_mount removed - never called (~4 LOC) */
-
 int path_mount(const char *dev_name, struct path *path,
 		const char *type_page, unsigned long flags, void *data_page);
-/* path_umount, chroot_fs_refs removed - unused */
 
- 
 extern struct file *alloc_empty_file(int, const struct cred *);
 
-/* reconfigure_super, user_get_super, mount_capable removed - unused */
-/* trylock_super removed - only caller was super_cache_scan */
 void put_super(struct super_block *sb);
-
 
 struct open_flags {
 	int open_flag;
@@ -60,23 +33,8 @@ extern struct file *do_filp_open(int dfd, struct filename *pathname,
 extern struct open_how build_open_how(int flags, umode_t mode);
 extern int build_open_flags(const struct open_how *how, struct open_flags *op);
 
-/* chmod_common, do_fchownat, chown_common removed - never called */
 extern int vfs_open(const struct path *, struct file *);
 
-/* prune_icache_sb removed - declared/defined but never called */
-/* dentry_needs_remove_privs, get_nr_dirty_inodes, invalidate_inodes removed - unused */
-
-
 extern int d_set_mounted(struct dentry *dentry);
-/* prune_dcache_sb removed - declared/defined but never called */
-/* d_alloc_cursor removed - no dir iteration needed */
-/* d_alloc_pseudo extern removed - function removed (only caller was alloc_file_pseudo) */
-/* simple_dname removed - was only in d_path.c */
 extern void dput_to_list(struct dentry *, struct list_head *);
-/* shrink_dentry_list removed - was empty stub, calls removed */
 
-/* pipefifo_fops moved to inode.c */
-
-/* group_pin_kill, mnt_pin_kill removed - pin_insert never called, mnt_pins always empty */
-
-/* ns_dentry_operations, sb_init_dio_done_wq removed - unused */

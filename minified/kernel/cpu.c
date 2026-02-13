@@ -12,8 +12,6 @@
    __cpuhp_setup_state removed - no callers after CPU hotplug
    callback removal (~180 LOC) */
 
-/* struct cpuhp_cpu_state, cpuhp_state per-CPU removed - write-only */
-
 #define MASK_DECLARE_1(x) [x + 1][0] = (1UL << (x))
 #define MASK_DECLARE_2(x) MASK_DECLARE_1(x), MASK_DECLARE_1(x + 1)
 #define MASK_DECLARE_4(x) MASK_DECLARE_2(x), MASK_DECLARE_2(x + 2)
@@ -36,8 +34,6 @@ struct cpumask __cpu_present_mask __read_mostly;
 
 struct cpumask __cpu_active_mask __read_mostly;
 
-/* __num_online_cpus removed - write-only variable, num_online_cpus() not called */
-
 static void set_cpu_online(unsigned int cpu, bool online)
 {
 	if (online)
@@ -55,6 +51,3 @@ void __init boot_cpu_init(void)
 	set_cpu_present(cpu, true);
 	set_cpu_possible(cpu, true);
 }
-
-/* boot_cpu_hotplug_init removed - was empty stub */
-/* on_each_cpu_cond_mask removed - no callers after TLB simplification */

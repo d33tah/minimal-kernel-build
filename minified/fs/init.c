@@ -1,10 +1,8 @@
 #include <linux/init.h>
-/* linux/mount.h removed - no mount types used */
 #include <linux/namei.h>
 #include <linux/fs.h>
 #include <linux/fs_struct.h>
 #include <linux/file.h>
-/* security.h removed - unused */
 #include "internal.h"
 
 int __init init_mount(const char *dev_name, const char *dir_name,
@@ -22,8 +20,6 @@ int __init init_mount(const char *dev_name, const char *dir_name,
 	return ret;
 }
 
-/* init_umount, init_chdir removed - never called */
-
 int __init init_chroot(const char *filename)
 {
 	struct path path;
@@ -35,16 +31,12 @@ int __init init_chroot(const char *filename)
 	error = path_permission(&path, MAY_EXEC | MAY_CHDIR);
 	if (error)
 		goto dput_and_out;
-	/* ns_capable always returns true - removed dead capability check */
-	/* security_path_chroot always returns 0 - dead code removed */
 	error = 0;
 	set_fs_root(current->fs, &path);
 dput_and_out:
 	path_put(&path);
 	return error;
 }
-
-/* init_chown, init_chmod removed - never called after initramfs.c gutting */
 
 int __init init_eaccess(const char *filename)
 {

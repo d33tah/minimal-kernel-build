@@ -9,13 +9,9 @@
 #define __irq_enter()	preempt_count_add(HARDIRQ_OFFSET)
 #define __irq_enter_raw() __irq_enter()
 
-/* irq_enter removed - only irq_enter_rcu is called */
 void irq_enter_rcu(void);
 
-/* __irq_exit, __irq_exit_raw, irq_exit removed - never used */
 void irq_exit_rcu(void);
-
-/* arch_nmi_enter/exit, rcu_nmi_enter/exit removed - empty stubs */
 
 #define __nmi_enter()						\
 	do {							\
@@ -24,15 +20,11 @@ void irq_exit_rcu(void);
 		__preempt_count_add(NMI_OFFSET + HARDIRQ_OFFSET);	\
 	} while (0)
 
-/* nmi_enter removed - only __nmi_enter used directly */
-
 #define __nmi_exit()						\
 	do {							\
 		BUG_ON(!in_nmi());				\
 		__preempt_count_sub(NMI_OFFSET + HARDIRQ_OFFSET);	\
 		/* lockdep_on() removed - empty stub */		\
 	} while (0)
-
-/* nmi_exit removed - only __nmi_exit used directly */
 
 #endif  

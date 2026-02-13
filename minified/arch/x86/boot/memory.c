@@ -3,7 +3,6 @@
 
 #define SMAP 0x534d4150
 
-/* --- 2026-01-26 05:12 --- Inlined detect_memory_e820/e801/88 */
 void detect_memory(void)
 {
 	int count = 0;

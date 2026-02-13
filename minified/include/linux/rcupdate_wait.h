@@ -1,7 +1,6 @@
 #ifndef _LINUX_SCHED_RCUPDATE_WAIT_H
 #define _LINUX_SCHED_RCUPDATE_WAIT_H
 
-
 #include <linux/rcupdate.h>
 #include <linux/completion.h>
 
@@ -23,6 +22,5 @@ do {									\
 } while (0)
 
 #define wait_rcu_gp(...) _wait_rcu_gp(false, __VA_ARGS__)
-/* synchronize_rcu_mult removed - never used (TINY_RCU=y) */
 
 #endif  

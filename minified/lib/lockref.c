@@ -1,6 +1,4 @@
-/* linux/export.h removed - no EXPORT_SYMBOL used */
 #include <linux/spinlock.h>
-/* Inlined from lockref.h */
 #include <generated/bounds.h>
 struct lockref {
 	spinlock_t lock;
@@ -13,7 +11,6 @@ extern void lockref_mark_dead(struct lockref *);
 extern int lockref_get_not_dead(struct lockref *);
 #include <linux/bug.h>
 
-/* --- 2025-12-22 04:40 --- Removed USE_CMPXCHG_LOCKREF branch - not enabled for 32-bit */
 #define CMPXCHG_LOOP(CODE, SUCCESS) \
 	do {                        \
 	} while (0)
@@ -49,8 +46,6 @@ int lockref_put_return(struct lockref *lockref)
 		     , return new.count;);
 	return -1;
 }
-
-/* lockref_put_or_lock removed - never called (~11 LOC) */
 
 void lockref_mark_dead(struct lockref *lockref)
 {

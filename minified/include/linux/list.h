@@ -4,7 +4,6 @@
 #include <linux/container_of.h>
 #include <linux/types.h>
 #include <linux/stddef.h>
-/* Inlined from poison.h */
 #define LIST_POISON1  ((void *) 0x100)
 #define LIST_POISON2  ((void *) 0x122)
 #define TIMER_ENTRY_STATIC ((void *) 0x300)
@@ -12,7 +11,6 @@
 #include <linux/const.h>
 
 #include <asm/barrier.h>
-
 
 #define LIST_HEAD_INIT(name) { &(name), &(name) }
 
@@ -40,7 +38,6 @@ static inline void list_add(struct list_head *new, struct list_head *head)
 	__list_add(new, head, head->next);
 }
 
-
 static inline void list_add_tail(struct list_head *new, struct list_head *head)
 {
 	__list_add(new, head->prev, head);
@@ -63,8 +60,6 @@ static inline void list_del(struct list_head *entry)
 	entry->next = LIST_POISON1;
 	entry->prev = LIST_POISON2;
 }
-
-/* list_replace removed - never called (list_replace_init inlined into exec.c) */
 
 static inline void list_del_init(struct list_head *entry)
 {
@@ -108,9 +103,6 @@ static inline int list_empty_careful(const struct list_head *head)
 	return list_is_head(next, head) && (next == READ_ONCE(head->prev));
 }
 
-
-/* list_is_singular removed - never called */
-
 static inline void __list_splice(const struct list_head *list,
 				 struct list_head *prev,
 				 struct list_head *next)
@@ -131,10 +123,6 @@ static inline void list_splice(const struct list_head *list,
 	if (!list_empty(list))
 		__list_splice(list, head, head->next);
 }
-
-
-
-/* list_splice_init inlined into namespace.c */
 
 static inline void list_splice_tail_init(struct list_head *list,
 					 struct list_head *head)
@@ -163,11 +151,8 @@ static inline void list_splice_tail_init(struct list_head *list,
 #define list_next_entry(pos, member) \
 	list_entry((pos)->member.next, typeof(*(pos)), member)
 
-
 #define list_prev_entry(pos, member) \
 	list_entry((pos)->member.prev, typeof(*(pos)), member)
-
-
 
 #define list_entry_is_head(pos, head, member)				\
 	(&pos->member == (head))
@@ -182,7 +167,6 @@ static inline void list_splice_tail_init(struct list_head *list,
 	     !list_entry_is_head(pos, head, member); 			\
 	     pos = list_prev_entry(pos, member))
 
-
 #define list_for_each_entry_safe(pos, n, head, member)			\
 	for (pos = list_first_entry(head, typeof(*pos), member),	\
 		n = list_next_entry(pos, member);			\
@@ -193,8 +177,6 @@ static inline void list_splice_tail_init(struct list_head *list,
 	for (n = list_next_entry(pos, member);					\
 	     !list_entry_is_head(pos, head, member);				\
 	     pos = n, n = list_next_entry(n, member))
-
-
 
 #define HLIST_HEAD(name) struct hlist_head name = {  .first = NULL }
 #define INIT_HLIST_HEAD(ptr) ((ptr)->first = NULL)
@@ -249,13 +231,7 @@ static inline void hlist_add_head(struct hlist_node *n, struct hlist_head *h)
 	WRITE_ONCE(n->pprev, &h->first);
 }
 
-/* hlist_fake inlined into inode.c */
-
-/* hlist_move_list inlined into namespace.c */
-
 #define hlist_entry(ptr, type, member) container_of(ptr,type,member)
-
-/* hlist_for_each removed - unused */
 
 #define hlist_entry_safe(ptr, type, member) \
 	({ typeof(ptr) ____ptr = (ptr); \

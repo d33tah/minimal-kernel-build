@@ -8,7 +8,6 @@ struct super_block;
 struct dentry;
 struct user_namespace;
 struct file_system_type;
-/* struct file, path forward decls removed - unused */
 
 #define MNT_NOEXEC	0x04
 #define MNT_RELATIME	0x20
@@ -38,12 +37,9 @@ static inline struct user_namespace *mnt_user_ns(const struct vfsmount *mnt)
 
 extern void mntput(struct vfsmount *mnt);
 extern struct vfsmount *mntget(struct vfsmount *mnt);
-/* mnt_may_suid removed - never called */
 
 extern int __mnt_want_write(struct vfsmount *);
 extern void __mnt_drop_write(struct vfsmount *);
-
-/* fc_mount, vfs_create_mount, vfs_kern_mount made static - only used in namespace.c */
 
 extern dev_t name_to_dev_t(const char *name);
 

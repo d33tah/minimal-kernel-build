@@ -2,7 +2,6 @@
 #define _LINUX_RADIX_TREE_H
 
 #include <linux/gfp.h>
-/* linux/list.h, linux/spinlock.h, linux/lockdep.h removed - unused */
 #include <linux/math.h>
 #include <linux/percpu.h>
 #include <linux/rcupdate.h>
@@ -30,15 +29,12 @@ static inline bool radix_tree_is_internal_node(void *ptr)
 				RADIX_TREE_INTERNAL_NODE;
 }
 
-
 #define RADIX_TREE_MAP_SHIFT	XA_CHUNK_SHIFT
 #define RADIX_TREE_MAP_SIZE	(1UL << RADIX_TREE_MAP_SHIFT)
 #define RADIX_TREE_MAP_MASK	(RADIX_TREE_MAP_SIZE-1)
 
 #define RADIX_TREE_MAX_TAGS	XA_MAX_MARKS
 #define RADIX_TREE_TAG_LONGS	XA_MARK_LONGS
-
-/* RADIX_TREE_INDEX_BITS, RADIX_TREE_MAX_PATH removed - never used */
 
 #define ROOT_IS_IDR	((__force gfp_t)4)
 #define ROOT_TAG_SHIFT	(__GFP_BITS_SHIFT)
@@ -50,14 +46,12 @@ static inline bool radix_tree_is_internal_node(void *ptr)
 
 #define INIT_RADIX_TREE(root, mask) xa_init_flags(root, mask)
 
-
 struct radix_tree_iter {
 	unsigned long	index;
 	unsigned long	next_index;
 	unsigned long	tags;
 	struct radix_tree_node *node;
 };
-
 
 int radix_tree_insert(struct radix_tree_root *, unsigned long index,
 			void *);
@@ -68,7 +62,6 @@ void __radix_tree_replace(struct radix_tree_root *, struct radix_tree_node *,
 			  void __rcu **slot, void *entry);
 void radix_tree_iter_replace(struct radix_tree_root *,
 		const struct radix_tree_iter *, void __rcu **slot, void *entry);
-/* radix_tree_delete_item + radix_tree_delete removed - idr_remove stubbed */
 void radix_tree_init(void);
 int radix_tree_tag_get(const struct radix_tree_root *,
 			unsigned long index, unsigned int tag);
@@ -78,8 +71,6 @@ void radix_tree_iter_tag_clear(struct radix_tree_root *,
 void __rcu **idr_get_free(struct radix_tree_root *root,
 			      struct radix_tree_iter *iter, gfp_t gfp,
 			      unsigned long max);
-
-/* RADIX_TREE_ITER enum removed - never used */
 
 static __always_inline void __rcu **
 radix_tree_iter_init(struct radix_tree_iter *iter, unsigned long start)
@@ -95,6 +86,5 @@ __radix_tree_iter_add(struct radix_tree_iter *iter, unsigned long slots)
 {
 	return iter->index + slots;
 }
-
 
 #endif  

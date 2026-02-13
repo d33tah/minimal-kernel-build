@@ -1,11 +1,8 @@
-/* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/uaccess.h>
 #include <asm/asm.h>
 
-/* __movsl_is_ok removed - always returned 1, movsl_is_ok now constant true */
 #define movsl_is_ok(a1, a2, n) 1
 
-/* d33tah: disabled clang-format because extra spaces break inline asm */
 /* clang-format off */
 #define __do_clear_user(addr,size)					\
 do {									\
@@ -30,9 +27,6 @@ unsigned long clear_user(void __user *to, unsigned long n)
 	return n;
 }
 
-/* __copy_user_intel declaration removed - never called (movsl_is_ok always 1) */
-
-/* d33tah: disabled clang-format because extra spaces break inline asm */
 /* clang-format off */
 #define __copy_user(to, from, size)					\
 do {									\
@@ -69,5 +63,3 @@ unsigned long __copy_user_ll(void *to, const void *from, unsigned long n)
 	__uaccess_end();
 	return n;
 }
-
-/* __copy_from_user_ll_nocache_nozero removed - never called */

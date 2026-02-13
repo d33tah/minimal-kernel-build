@@ -16,18 +16,14 @@ struct resource {
 	struct resource *parent, *sibling, *child;
 };
 
-/* IORESOURCE_TYPE_BITS removed - unused */
 #define IORESOURCE_IO		0x00000100
 #define IORESOURCE_MEM		0x00000200
 
-/* IORESOURCE_MUXED removed - unused */
-/* IORESOURCE_EXT_TYPE_BITS removed - unused */
 #define IORESOURCE_SYSRAM	0x01000000
 
 #define IORESOURCE_BUSY		0x80000000	 
 
 #define IORESOURCE_SYSTEM_RAM		(IORESOURCE_MEM|IORESOURCE_SYSRAM)
-
 
 enum {
 	IORES_DESC_NONE				= 0,
@@ -43,26 +39,13 @@ enum {
 
 enum {
 	IORES_MAP_SYSTEM_RAM		= BIT(0),
-	/* IORES_MAP_ENCRYPTED removed - never used */
 };
 
 extern struct resource ioport_resource;
 extern struct resource iomem_resource;
 
-/* request_resource_conflict inlined into request_resource */
 extern int request_resource(struct resource *root, struct resource *new);
-/* release_resource, insert_resource_conflict removed - inlined/never called */
 extern int insert_resource(struct resource *parent, struct resource *new);
-/* resource_type, resource_ext_type removed - never called */
-
-
-
-/* request_region, request_muxed_region, request_mem_region, __request_region removed - never used */
-
-/* release_region, release_mem_region, __release_region removed - never called */
-/* struct device forward decl removed - unused */
-/* iomem_map_sanity_check removed - was stub returning 0 */
-/* walk_mem_res removed - only caller (ioremap) was removed */
 
 #endif
 #endif	 

@@ -2,7 +2,6 @@
 #ifndef _ASM_E820_API_H
 #define _ASM_E820_API_H
 
-/* --- 2025-12-07 20:10 --- Inlined e820/types.h */
 #include <uapi/asm/bootparam.h>
 
 enum e820_type {
@@ -39,8 +38,6 @@ struct e820_table {
 #define HIGH_MEMORY		0x00100000
 
 extern struct e820_table *e820_table;
-/* e820_table_kexec/firmware removed - unused in minimal kernel */
-/* pci_mem_start removed - never read */
 
 extern bool e820__mapped_all(u64 start, u64 end, enum e820_type type);
 
@@ -48,26 +45,19 @@ extern void e820__range_add   (u64 start, u64 size, enum e820_type type);
 extern u64  e820__range_update(u64 start, u64 size, enum e820_type old_type, enum e820_type new_type);
 extern u64  e820__range_remove(u64 start, u64 size, enum e820_type old_type, bool check_type);
 
-/* e820__print_table removed - never called */
 extern int  e820__update_table(struct e820_table *table);
-/* e820__update_table_print removed - never called */
 
 extern unsigned long e820__end_of_ram_pfn(void);
-/* e820__end_of_low_ram_pfn removed - never called */
 
 extern void e820__memblock_setup(void);
 
 extern void e820__reserve_setup_data(void);
-/* e820__finish_early_params removed - function was empty */
 extern void e820__reserve_resources(void);
 
 extern void e820__memory_setup(void);
 extern void e820__memory_setup_extended(u64 phys_addr, u32 data_len);
 extern char *e820__memory_setup_default(void);
 extern void e820__setup_pci_gap(void);
-
-/* e820__reallocate_tables removed - never called */
-/* e820__register_nosave_regions removed - call site eliminated */
 
 static inline bool is_ISA_range(u64 start, u64 end)
 {

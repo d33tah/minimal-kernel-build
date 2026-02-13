@@ -281,5 +281,3 @@ struct rb_node *rb_next(const struct rb_node *node)
 
 	return parent;
 }
-
-/* Removed: rb_prev, rb_replace_node - never called (~10 LOC) */

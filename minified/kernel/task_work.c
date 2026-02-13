@@ -37,8 +37,6 @@ int task_work_add(struct task_struct *task, struct callback_head *work,
 	return 0;
 }
 
-/* task_work_cancel removed - never called */
-
 void task_work_run(void)
 {
 	struct task_struct *task = current;

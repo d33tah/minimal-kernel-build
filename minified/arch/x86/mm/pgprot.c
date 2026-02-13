@@ -1,5 +1,4 @@
 
-/* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/mm.h>
 #include <asm/pgtable.h>
 

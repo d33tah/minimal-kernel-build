@@ -1,14 +1,11 @@
 
-
 #define __NO_FORTIFY
 #include <linux/types.h>
 #include <linux/string.h>
 #include <linux/ctype.h>
 #include <linux/kernel.h>
-/* linux/export.h removed - no EXPORT_SYMBOL used */
 #include <linux/bug.h>
 #include <linux/errno.h>
-/* slab.h removed - unused */
 
 /* get_unaligned inlined from asm-generic/unaligned.h */
 #define __get_unaligned_t(type, ptr)                        \
@@ -194,6 +191,3 @@ __visible int memcmp(const void *cs, const void *ct, size_t count)
 	return res;
 }
 #endif
-
-/* strstr removed - never called in runtime kernel */
-/* memchr removed - never called in runtime kernel */

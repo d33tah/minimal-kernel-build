@@ -23,7 +23,6 @@ static int vga_set_mode(struct mode_info *mode)
 		vmode = 3;
 	ireg.ax = vmode;
 	intcall(0x10, &ireg, NULL);
-	/* do_restore = 1 removed - never read */
 
 	force_x = mode->x;
 	force_y = mode->y;

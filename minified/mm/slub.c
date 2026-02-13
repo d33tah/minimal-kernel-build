@@ -1,34 +1,21 @@
-/* module.h, interrupt.h, swab.h, ctype.h, kallsyms.h, linux/bit_spinlock.h removed - unused */
 #include <linux/mm.h>
-/* linux/swap.h removed - no swap features used */
 #include <linux/bitops.h>
 #include <linux/slab.h>
 #include "slab.h"
-/* proc_fs.h, seq_file.h, cpuset.h, mempolicy.h, stackdepot.h, math64.h, stacktrace.h, sort.h, memcontrol.h removed - unused */
 #include <linux/cpu.h>
 
 #include "internal.h"
 
-/* slub_dbg debug function removed - not needed for production */
-
 #define slub_get_cpu_ptr(var) get_cpu_ptr(var)
 #define slub_put_cpu_ptr(var) put_cpu_ptr(var)
-
-/* fixup_red_left removed - always returned p unchanged (no red zone) */
 
 #define MIN_PARTIAL 5
 
 #define MAX_PARTIAL 10
-/* DEBUG_DEFAULT_FLAGS, SLAB_NO_CMPXCHG, DEBUG_METADATA_FLAGS removed - unused */
 
 #define OO_SHIFT 16
 #define OO_MASK ((1 << OO_SHIFT) - 1)
 #define MAX_OBJS_PER_PAGE 32767
-/* __OBJECT_POISON, __CMPXCHG_DOUBLE removed - never used */
-/* TRACK_ADDRS_COUNT, struct track, enum track_item removed - unused */
-/* Removed: sysfs_slab_add, sysfs_slab_alias, debugfs_slab_add - empty stubs */
-
-/* slab_nodes removed - only written, never read */
 
 /* freelist_ptr inlined - always returned ptr unchanged (no obfuscation) */
 
@@ -41,8 +28,6 @@ static inline void set_freepointer(struct kmem_cache *s, void *object, void *fp)
 {
 	*(void **)((unsigned long)object + s->offset) = fp;
 }
-
-/* fixup_red_left removed - always returned p unchanged (no red zone) */
 
 static inline unsigned int order_objects(unsigned int order, unsigned int size)
 {
@@ -68,9 +53,6 @@ static inline unsigned int oo_objects(struct kmem_cache_order_objects x)
 	return x.x & OO_MASK;
 }
 
-/* __slab_lock/__slab_unlock inlined into slab_lock/slab_unlock */
-/* slab_lock inlined into __cmpxchg_double_slab */
-
 static __always_inline void slab_unlock(struct slab *slab, unsigned long *flags)
 {
 	__bit_spin_unlock(PG_locked, &slab_page(slab)->flags);
@@ -84,7 +66,6 @@ static inline bool __cmpxchg_double_slab(struct kmem_cache *s,
 					 unsigned long counters_new,
 					 const char *n)
 {
-	/* CONFIG_HAVE_CMPXCHG_DOUBLE block removed - not enabled in tinyconfig */
 	unsigned long flags = 0;
 
 	bit_spin_lock(PG_locked, &slab_page(slab)->flags);
@@ -100,15 +81,9 @@ static inline bool __cmpxchg_double_slab(struct kmem_cache *s,
 	return false;
 }
 
-/* Removed: setup_object_debug, setup_slab_debug - empty stubs */
-/* kmem_cache_flags removed - just returned flags unchanged */
-/* Removed: slub_debug, disable_higher_order_debug macros - never used */
-
-/* slabs_node and inc_slabs_node removed - always return 0 / do nothing */
 /* Removed: kfree_hook, slab_free_hook, slab_free_freelist_hook
  * - No longer needed since kfree/kmem_cache_free are no-ops */
 
-/* setup_object removed - inlined into 2 callers (~5 LOC) */
 #define setup_object(s, obj)             \
 	({                               \
 		if (unlikely((s)->ctor)) \
@@ -142,8 +117,6 @@ static inline struct slab *alloc_slab_page(gfp_t flags, int node,
 
 /* Removed: init_cache_random_seq, init_freelist_randomization
  * - Slab freelist randomization disabled for minimal kernel */
-
-/* allocate_slab inlined into new_slab */
 
 static struct slab *new_slab(struct kmem_cache *s, gfp_t flags, int node)
 {
@@ -205,9 +178,6 @@ static struct slab *new_slab(struct kmem_cache *s, gfp_t flags, int node)
 
 	return slab;
 }
-
-/* __add_partial inlined into early_kmem_cache_node_alloc */
-/* add_partial and remove_partial inlined into callers */
 
 static inline void *acquire_slab(struct kmem_cache *s,
 				 struct kmem_cache_node *n, struct slab *slab,
@@ -271,9 +241,6 @@ static void *get_partial_node(struct kmem_cache *s, struct kmem_cache_node *n,
 	return object;
 }
 
-/* get_any_partial removed - always returned NULL */
-/* get_partial inlined into ___slab_alloc */
-
 #define TID_STEP 1
 
 static inline unsigned long next_tid(unsigned long tid)
@@ -282,17 +249,6 @@ static inline unsigned long next_tid(unsigned long tid)
 }
 
 /* init_tid, __flush_cpu_slab inlined */
-/* slub_flush_work struct, flush_cpu_slab removed - no CPU hotplug */
-/* flush_lock mutex removed - never used */
-
-/* flush_all_cpus_locked inlined into __kmem_cache_shutdown */
-/* slub_cpu_dead removed - CPU never goes offline in single-CPU kernel (~10 LOC) */
-
-/* node_match removed - always returned 1 */
-/* slab_out_of_memory removed - was empty stub */
-/* pfmemalloc_match inlined into get_partial_node (~7 LOC) */
-/* get_freelist removed - never called (~19 LOC) */
-/* ___slab_alloc inlined into slab_alloc_node */
 
 static __always_inline void *slab_alloc_node(struct kmem_cache *s,
 					     struct list_lru *lru,
@@ -319,7 +275,6 @@ redo:
 
 	object = c->freelist;
 	slab = c->slab;
-	/* CONFIG_PREEMPT_RT not enabled, node_match always returns 1 */
 	if (unlikely(!object || !slab)) {
 		/* ___slab_alloc inlined */
 		void *freelist;
@@ -401,8 +356,6 @@ void *kmem_cache_alloc_lru(struct kmem_cache *s, struct list_lru *lru,
 	return __kmem_cache_alloc_lru(s, lru, gfpflags);
 }
 
-/* kmem_cache_free, kfree moved to slab.h as static inline */
-
 static unsigned int slub_min_order;
 static unsigned int slub_max_order = PAGE_ALLOC_COSTLY_ORDER;
 static unsigned int slub_min_objects;
@@ -476,11 +429,7 @@ static void init_kmem_cache_node(struct kmem_cache_node *n)
 	INIT_LIST_HEAD(&n->partial);
 }
 
-/* alloc_kmem_cache_cpus inlined into __kmem_cache_create */
-
 static struct kmem_cache *kmem_cache_node;
-
-/* early_kmem_cache_node_alloc inlined into init_kmem_cache_nodes */
 
 static void free_kmem_cache_nodes(struct kmem_cache *s)
 {
@@ -493,10 +442,6 @@ static void free_kmem_cache_nodes(struct kmem_cache *s)
 		kmem_cache_free(kmem_cache_node, n);
 	}
 }
-
-/* __kmem_cache_release inlined into kmem_cache_open - single caller */
-
-/* init_kmem_cache_nodes inlined into kmem_cache_open */
 
 static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 {
@@ -520,7 +465,6 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 
 	size = ALIGN(size, s->align);
 	s->size = size;
-	/* reciprocal_size assignment removed - field removed (write-only) */
 	order = calculate_order(size);
 
 	if ((int)order < 0)
@@ -544,8 +488,6 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 
 	if (!oo_objects(s->oo))
 		goto error;
-
-	/* CONFIG_HAVE_CMPXCHG_DOUBLE block removed - not enabled in tinyconfig */
 
 	s->min_partial = min_t(unsigned long, MAX_PARTIAL, ilog2(s->size) / 2);
 	s->min_partial = max_t(unsigned long, MIN_PARTIAL, s->min_partial);
@@ -599,8 +541,6 @@ error:
 	return -EINVAL;
 }
 
-/* __kmem_cache_shutdown removed - never called */
-
 /* setup_slub_min_order, setup_slub_max_order, setup_slub_min_objects and __setup
  * handlers removed - not needed for minimal kernel (~21 LOC) */
 
@@ -621,10 +561,6 @@ void *__kmalloc(size_t size, gfp_t flags)
 
 	return ret;
 }
-
-/* __ksize removed - never called */
-
-/* kfree moved to slab.h as static inline */
 
 /* Memory hotplug callbacks removed - not needed for minimal kernel
  * (register_hotmemory_notifier is already a no-op) */
@@ -660,20 +596,12 @@ void __init kmem_cache_init(void)
 	static __initdata struct kmem_cache boot_kmem_cache,
 		boot_kmem_cache_node;
 
-	/* debug_guardpage_minorder() always returns 0 - removed check */
-
-	/* no_hash_pointers_enable call removed - slub debug disabled */
-
 	kmem_cache_node = &boot_kmem_cache_node;
 	kmem_cache = &boot_kmem_cache;
-
-	/* for_each_node_state, node_set removed - slab_nodes was never read */
 
 	create_boot_cache(kmem_cache_node, "kmem_cache_node",
 			  sizeof(struct kmem_cache_node), SLAB_HWCACHE_ALIGN, 0,
 			  0);
-
-	/* Memory hotplug notifier removed - not needed for minimal kernel */
 
 	slab_state = PARTIAL;
 
@@ -688,12 +616,7 @@ void __init kmem_cache_init(void)
 
 	setup_kmalloc_cache_index_table();
 	create_kmalloc_caches(0);
-	/* cpuhp_setup_state_nocalls for slub_cpu_dead removed - CPU never goes offline */
 }
-
-/* kmem_cache_init_late removed - empty function */
-
-/* __kmem_cache_alias removed - always returned NULL (slab_nomerge is true) */
 
 int __kmem_cache_create(struct kmem_cache *s, slab_flags_t flags)
 {
@@ -703,11 +626,9 @@ int __kmem_cache_create(struct kmem_cache *s, slab_flags_t flags)
 	if (err)
 		return err;
 
-	/* sysfs_slab_add, debugfs_slab_add removed - empty stubs */
 	return 0;
 }
 
-/* Stub: __kmalloc_track_caller not used in minimal kernel */
 void *__kmalloc_track_caller(size_t size, gfp_t gfpflags, unsigned long caller)
 {
 	return __kmalloc(size, gfpflags);

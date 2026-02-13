@@ -10,9 +10,6 @@
 #define __ARCH_SI_ATTRIBUTES
 #endif
 
-/* sigval_t removed - never used */
-/* __ARCH_SI_BAND_T, __ARCH_SI_CLOCK_T removed - never used */
-
 /* Simplified __sifields - only keep struct members actually accessed */
 union __sifields {
 	/* _kill: used by si_pid, si_uid */
@@ -21,7 +18,6 @@ union __sifields {
 		__kernel_uid32_t _uid;
 	} _kill;
 
-	/* _sigfault: used by si_addr (nested union removed - unused) */
 	struct {
 		void __user *_addr;
 	} _sigfault;
@@ -33,7 +29,6 @@ union __sifields {
 		unsigned int _arch;
 	} _sigsys;
 
-	/* Removed: _timer, _rt, _sigchld, _sigpoll - never accessed */
 };
 
 #define __SIGINFO 			\
@@ -62,10 +57,7 @@ typedef struct siginfo {
    si_stime, si_value, si_int, si_ptr, si_trapno, si_addr_lsb, si_lower,
    si_upper, si_pkey, si_band, si_fd */
 
-/* SI_USER removed - unused */
 #define SI_KERNEL	0x80
-
-/* SI_FROMUSER, SI_FROMKERNEL removed - never used */
 
 /* Only keep signal sub-codes actually used */
 #define ILL_ILLOPN	2

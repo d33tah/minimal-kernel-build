@@ -3,14 +3,9 @@
 #include <linux/bitops.h>
 #include <linux/bug.h>
 #include <linux/ctype.h>
-/* linux/errno.h removed - no errno constants used */
-/* linux/export.h removed - no EXPORT_SYMBOL used */
 #include <linux/kernel.h>
-/* linux/slab.h removed - no slab functions */
 
 #include <asm/page.h>
-
-/* __bitmap_equal removed - bitmap_equal never called */
 
 void __bitmap_set(unsigned long *map, unsigned int start, int len)
 {
@@ -52,6 +47,5 @@ void __bitmap_clear(unsigned long *map, unsigned int start, int len)
 	}
 }
 
-/* bitmap_find_next_zero_area_off removed - never called */
 /* bitmap_print_to_pagebuf, bitmap_parselist, bitmap_parselist_user, bitmap_parse,
    bitmap_from_arr32, bitmap_to_arr32, bitmap_from_arr64, bitmap_to_arr64 removed - never called */

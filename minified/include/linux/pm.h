@@ -6,8 +6,6 @@
 
 struct device;
 
-/* pm_message_t removed - never used */
-/* dev_pm_ops callbacks all removed - never called */
 struct dev_pm_ops {
 };
 

@@ -3,8 +3,6 @@
 
 #include <linux/types.h>
 
-/* struct task_cputime removed - never used */
-
 struct sched_param {
 	int sched_priority;
 };

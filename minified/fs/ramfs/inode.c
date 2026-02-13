@@ -1,5 +1,4 @@
 
-
 #include <linux/fs.h>
 #include <linux/pagemap.h>
 #include <linux/highmem.h>
@@ -7,12 +6,10 @@
 #include <linux/init.h>
 #include <linux/backing-dev.h>
 #include <linux/sched.h>
-/* RAMFS_MAGIC removed - s_magic is write-only */
 #include <linux/slab.h>
 #include <linux/uaccess.h>
 #include <linux/fs_context.h>
 #include <linux/fs_parser.h>
-/* seq_file.h removed - header is empty */
 
 /* Merged from file-mmu.c */
 static unsigned long ramfs_mmu_get_unmapped_area(struct file *file,
@@ -28,13 +25,9 @@ const struct file_operations ramfs_file_operations = {
 	.read_iter = generic_file_read_iter,
 	.write_iter = generic_file_write_iter,
 	.mmap = generic_file_mmap,
-	/* fsync removed - fsync syscall returns ENOSYS */
-	/* splice_read/write removed - splice syscall returns ENOSYS */
-	/* llseek removed - lseek syscall returns ENOSYS */
 	.get_unmapped_area = ramfs_mmu_get_unmapped_area,
 };
 
-/* ramfs_file_inode_operations: setattr removed - no chmod/chown syscalls */
 static const struct inode_operations ramfs_file_inode_operations = {};
 
 struct ramfs_mount_opts {
@@ -63,7 +56,6 @@ struct inode *ramfs_get_inode(struct super_block *sb, const struct inode *dir,
 		set_bit(AS_UNEVICTABLE,
 			&inode->i_mapping
 				 ->flags); /* mapping_set_unevictable inlined */
-		/* i_atime, i_mtime assignment removed - never read */
 		switch (mode & S_IFMT) {
 		default:
 			init_special_inode(inode, mode, dev);
@@ -78,13 +70,10 @@ struct inode *ramfs_get_inode(struct super_block *sb, const struct inode *dir,
 
 			inc_nlink(inode);
 			break;
-			/* S_IFLNK case removed - symlinks never created */
 		}
 	}
 	return inode;
 }
-
-/* ramfs_mkdir, ramfs_symlink, ramfs_tmpfile removed - syscalls return ENOSYS */
 
 static int ramfs_create(struct user_namespace *mnt_userns, struct inode *dir,
 			struct dentry *dentry, umode_t mode, bool excl)
@@ -96,19 +85,14 @@ static int ramfs_create(struct user_namespace *mnt_userns, struct inode *dir,
 		return -ENOSPC;
 	d_instantiate(dentry, inode);
 	dget(dentry);
-	/* dir->i_mtime assignment removed - never read */
 	return 0;
 }
 
 static const struct inode_operations ramfs_dir_inode_operations = {
 	.create = ramfs_create,
 	.lookup = simple_lookup,
-	/* link, unlink, symlink, mkdir, rmdir, mknod, rename, tmpfile removed - syscalls return ENOSYS */
 };
 
-/* ramfs_show_options removed - show_options callback never called */
-
-/* ramfs_ops: drop_inode removed - iput always drops without calling callback */
 static const struct super_operations ramfs_ops = {};
 
 enum ramfs_param {
@@ -153,10 +137,8 @@ static int ramfs_fill_super(struct super_block *sb, struct fs_context *fc)
 	struct inode *inode;
 
 	sb->s_maxbytes = MAX_LFS_FILESIZE;
-	/* s_blocksize, s_magic removed - write-only fields */
 	sb->s_blocksize_bits = PAGE_SHIFT;
 	sb->s_op = &ramfs_ops;
-	/* s_time_gran removed - field removed */
 
 	inode = ramfs_get_inode(sb, NULL, S_IFDIR | fsi->mount_opts.mode, 0);
 	sb->s_root = d_make_root(inode);
@@ -207,7 +189,6 @@ static struct file_system_type ramfs_fs_type = {
 	.init_fs_context = ramfs_init_fs_context,
 	.parameters = ramfs_fs_parameters,
 	.kill_sb = ramfs_kill_sb,
-	/* .fs_flags removed - write-only field */
 };
 
 static int __init init_ramfs_fs(void)

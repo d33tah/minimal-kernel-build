@@ -24,7 +24,6 @@ extern struct cpumask __cpu_present_mask;
 extern struct cpumask __cpu_active_mask;
 #define cpu_possible_mask ((const struct cpumask *)&__cpu_possible_mask)
 #define cpu_online_mask   ((const struct cpumask *)&__cpu_online_mask)
-/* cpu_present_mask, cpu_active_mask, __num_online_cpus removed - never used */
 
 static __always_inline void cpu_max_bits_warn(unsigned int cpu, unsigned int bits)
 {
@@ -37,7 +36,6 @@ static __always_inline unsigned int cpumask_check(unsigned int cpu)
 }
 
 #if NR_CPUS == 1
-/* cpumask_first, cpumask_any_but, for_each_cpu removed - never called */
 #endif
 
 #define CPU_BITS_NONE						\
@@ -75,7 +73,6 @@ static inline void cpumask_clear(struct cpumask *dstp)
 	bitmap_zero(cpumask_bits(dstp), nr_cpumask_bits);
 }
 
-/* cpumask_equal, cpumask_empty, cpumask_any removed - no callers */
 #define cpumask_of(cpu) (get_cpu_mask(cpu))
 
 static inline unsigned int cpumask_size(void)
@@ -83,13 +80,7 @@ static inline unsigned int cpumask_size(void)
 	return BITS_TO_LONGS(nr_cpumask_bits) * sizeof(long);
 }
 
-/* cpumask_var_t typedef removed - unused */
-
-/* __cpumask_var_read_mostly, alloc_bootmem_cpumask_var removed - never used */
-
 extern const DECLARE_BITMAP(cpu_all_bits, NR_CPUS);
-
-/* for_each_possible_cpu, for_each_online_cpu, for_each_present_cpu removed - code simplified */
 
 static inline void
 set_cpu_possible(unsigned int cpu, bool possible)
@@ -108,7 +99,6 @@ set_cpu_present(unsigned int cpu, bool present)
 	else
 		cpumask_clear_cpu(cpu, &__cpu_present_mask);
 }
-
 
 static inline void
 set_cpu_active(unsigned int cpu, bool active)
@@ -138,8 +128,6 @@ static inline const struct cpumask *get_cpu_mask(unsigned int cpu)
 	return to_cpumask(p);
 }
 
-/* num_online_cpus, num_possible_cpus, num_present_cpus removed - NR_CPUS == 1 */
-
 static inline bool cpu_online(unsigned int cpu)
 {
 	return cpu == 0;
@@ -150,17 +138,11 @@ static inline bool cpu_possible(unsigned int cpu)
 	return cpu == 0;
 }
 
-/* cpu_is_offline removed - unused */
-
-/* NR_CPUS <= BITS_PER_LONG always true */
 #define CPU_BITS_ALL						\
 {								\
 	[BITS_TO_LONGS(NR_CPUS)-1] = BITMAP_LAST_WORD_MASK(NR_CPUS)	\
 }
 
-/* cpumap_print_to_pagebuf removed - never called */
-
-/* NR_CPUS <= BITS_PER_LONG always true */
 #define CPU_MASK_ALL							\
 (cpumask_t) { {								\
 	[BITS_TO_LONGS(NR_CPUS)-1] = BITMAP_LAST_WORD_MASK(NR_CPUS)	\

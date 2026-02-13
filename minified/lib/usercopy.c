@@ -8,5 +8,3 @@ unsigned long _copy_to_user(void __user *to, const void *from, unsigned long n)
 	return n;
 }
 #endif
-
-/* check_zeroed_user moved to inline in uaccess.h */

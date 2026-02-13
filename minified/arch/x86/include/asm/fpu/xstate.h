@@ -8,8 +8,6 @@
 #include <asm/processor.h>
 #include <asm/fpu/api.h>
 
-/* XFEATURE_MASK_EXTEND, FXSAVE_SIZE, XSAVE_HDR_SIZE, XSAVE_HDR_OFFSET removed - never used */
-
 #define XFEATURE_MASK_USER_SUPPORTED (XFEATURE_MASK_FP | \
 				      XFEATURE_MASK_SSE | \
 				      XFEATURE_MASK_YMM | \
@@ -21,11 +19,9 @@
 				      XFEATURE_MASK_BNDCSR | \
 				      XFEATURE_MASK_XTILE)
 
- 
 #define XFEATURE_MASK_USER_RESTORE	\
 	(XFEATURE_MASK_USER_SUPPORTED & ~XFEATURE_MASK_PKRU)
 
- 
 #define XFEATURE_MASK_USER_DYNAMIC	XFEATURE_MASK_XTILE_DATA
 
 #define XFEATURE_MASK_SUPERVISOR_SUPPORTED (XFEATURE_MASK_PASID)
@@ -35,9 +31,5 @@
 
 #define XFEATURE_MASK_FPSTATE	(XFEATURE_MASK_USER_RESTORE | \
 				 XFEATURE_MASK_SUPERVISOR_SUPPORTED)
-
-/* xstate_fx_sw_bytes removed - never used */
-/* xfeature_size, xsaves, xrstors, xfd_enable_feature declarations removed - no implementations */
-/* fpu_state_size_dynamic removed - never called */
 
 #endif

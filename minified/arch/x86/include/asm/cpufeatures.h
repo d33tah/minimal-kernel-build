@@ -6,7 +6,6 @@
 #include <asm/required-features.h>
 #endif
 
-/* Inlined from asm/disabled-features.h */
 # define DISABLE_UMIP	(1<<(X86_FEATURE_UMIP & 31))
 # define DISABLE_VME		0
 # define DISABLE_K6_MTRR	0
@@ -44,7 +43,6 @@
 #define DISABLED_MASK18	0
 #define DISABLED_MASK19	0
 #define DISABLED_MASK_CHECK BUILD_BUG_ON_ZERO(NCAPINTS != 20)
-/* End of disabled-features.h */
 
 #define NCAPINTS			20
 #define NBUGINTS			1
@@ -57,7 +55,6 @@
 #define X86_FEATURE_TSC			( 0*32+ 4)
 #define X86_FEATURE_PAE			( 0*32+ 6)
 #define X86_FEATURE_CX8			( 0*32+ 8)
-/* X86_FEATURE_SEP removed - SYSENTER not used */
 #define X86_FEATURE_PGE			( 0*32+13)
 #define X86_FEATURE_PSE36		( 0*32+17)
 #define X86_FEATURE_FXSR		( 0*32+24)
@@ -75,7 +72,6 @@
 #define X86_FEATURE_NOPL		( 3*32+20)
 #define X86_FEATURE_ALWAYS		( 3*32+21)
 #define X86_FEATURE_TSC_RELIABLE	( 3*32+23)
-/* X86_FEATURE_NONSTOP_TSC removed - never checked */
 #define X86_FEATURE_CPUID		( 3*32+25)
 #define X86_FEATURE_NONSTOP_TSC_S3	( 3*32+30)
 #define X86_FEATURE_TSC_KNOWN_FREQ	( 3*32+31)
@@ -135,10 +131,8 @@
 /* CPU bugs - only keep the used ones */
 #define X86_BUG(x)			(NCAPINTS*32 + (x))
 
-/* X86_BUG_AMD_APIC_C1E removed - never used */
 #define X86_BUG_FXSAVE_LEAK		X86_BUG(6)
 #define X86_BUG_ESPFIX			X86_BUG(9)
 #define X86_BUG_NULL_SEG		X86_BUG(10)
-/* X86_BUG_AMD_E400 removed - never set */
 
 #endif

@@ -3,7 +3,6 @@
 #include <linux/uaccess.h>
 #include <linux/sched/debug.h>
 
-/* Inlined from bitfield.h */
 #include <linux/build_bug.h>
 #include <asm/byteorder.h>
 
@@ -48,10 +47,8 @@
 	})
 
 #include <asm/fpu/api.h>
-/* asm/sev.h include removed - file is stub, nothing used */
 #include <asm/traps.h>
 #include <asm/kdebug.h>
-/* pt_regs_offset inlined - always returns -1, so pt_regs_nr always returns &__dummy */
 
 static inline unsigned long *pt_regs_nr(struct pt_regs *regs, int nr)
 {
@@ -85,9 +82,6 @@ static bool ex_handler_fault(const struct exception_table_entry *fixup,
 	return ex_handler_default(fixup, regs);
 }
 
-/* ex_handler_sgx removed - no SGX in minimal kernel */
-/* ex_handler_fprestore inlined into fixup_exception */
-
 static bool ex_handler_uaccess(const struct exception_table_entry *fixup,
 			       struct pt_regs *regs, int trapnr)
 {
@@ -96,8 +90,6 @@ static bool ex_handler_uaccess(const struct exception_table_entry *fixup,
 		"General protection fault in user access. Non-canonical address?");
 	return ex_handler_default(fixup, regs);
 }
-
-/* ex_handler_copy inlined into fixup_exception */
 
 static bool ex_handler_msr(const struct exception_table_entry *fixup,
 			   struct pt_regs *regs, bool wrmsr, bool safe, int reg)
@@ -125,11 +117,6 @@ static bool ex_handler_msr(const struct exception_table_entry *fixup,
 
 	return ex_handler_default(fixup, regs);
 }
-
-/* ex_handler_clear_fs inlined into fixup_exception */
-/* ex_handler_imm_reg inlined into fixup_exception */
-/* ex_handler_ucopy_len inlined into fixup_exception */
-/* ex_get_fixup_type removed - never called */
 
 int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code,
 		    unsigned long fault_addr)
@@ -175,7 +162,6 @@ int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code,
 			(void *)instruction_pointer(regs));
 		fpu_reset_from_exception_fixup();
 		return true;
-	/* EX_TYPE_BPF removed - never used in this minimal kernel */
 	case EX_TYPE_WRMSR:
 		return ex_handler_msr(e, regs, true, false, reg);
 	case EX_TYPE_RDMSR:
@@ -184,7 +170,6 @@ int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code,
 		return ex_handler_msr(e, regs, true, true, reg);
 	case EX_TYPE_RDMSR_SAFE:
 		return ex_handler_msr(e, regs, false, true, reg);
-	/* EX_TYPE_WRMSR_IN_MCE, EX_TYPE_RDMSR_IN_MCE removed - never used */
 	case EX_TYPE_POP_REG:
 		regs->sp += sizeof(long);
 		fallthrough;
@@ -192,7 +177,6 @@ int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code,
 		/* ex_handler_imm_reg inlined */
 		*pt_regs_nr(regs, reg) = (long)imm;
 		return ex_handler_default(e, regs);
-	/* EX_TYPE_FAULT_SGX removed - no SGX in minimal kernel */
 	case EX_TYPE_UCOPY_LEN:
 		/* ex_handler_ucopy_len inlined */
 		regs->cx = imm * regs->cx + *pt_regs_nr(regs, reg);
@@ -225,7 +209,6 @@ void __init early_fixup_exception(struct pt_regs *regs, int trapnr)
 	}
 
 fail:
-	/* early_printk removed - function is empty stub */
 	show_regs(regs);
 
 halt_loop:

@@ -59,8 +59,6 @@ struct user_namespace {
 	 
 	bool			parent_could_setfcap;
 
-
-	 
 	struct work_struct	work;
 	struct ucounts		*ucounts;
 	long ucount_max[UCOUNT_COUNTS];
@@ -77,18 +75,14 @@ struct ucounts {
 extern struct user_namespace init_user_ns;
 extern struct ucounts init_ucounts;
 
-/* setup_userns_sysctls and retire_userns_sysctls removed - no callers */
 struct ucounts *inc_ucount(struct user_namespace *ns, kuid_t uid, enum ucount_type type);
 void dec_ucount(struct ucounts *ucounts, enum ucount_type type);
 struct ucounts *alloc_ucounts(struct user_namespace *ns, kuid_t uid);
 struct ucounts * __must_check get_ucounts(struct ucounts *ucounts);
 void put_ucounts(struct ucounts *ucounts);
 
-/* get_ucounts_value removed - never called */
-
 long inc_rlimit_ucounts(struct ucounts *ucounts, enum ucount_type type, long v);
 bool dec_rlimit_ucounts(struct ucounts *ucounts, enum ucount_type type, long v);
-/* inc_rlimit_get_ucounts, dec_rlimit_put_ucounts removed - never called */
 
 static inline void set_rlimit_ucount_max(struct user_namespace *ns,
 		enum ucount_type type, unsigned long max)
@@ -96,19 +90,13 @@ static inline void set_rlimit_ucount_max(struct user_namespace *ns,
 	ns->ucount_max[type] = max <= LONG_MAX ? max : LONG_MAX;
 }
 
-
 static inline struct user_namespace *get_user_ns(struct user_namespace *ns)
 {
 	return &init_user_ns;
 }
 
-/* create_user_ns removed - CLONE_NEWUSER never used */
-
 static inline void put_user_ns(struct user_namespace *ns)
 {
 }
-
-
-/* current_in_userns removed - never called */
 
 #endif  

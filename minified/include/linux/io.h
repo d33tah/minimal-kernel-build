@@ -8,8 +8,4 @@
 #include <asm/io.h>
 #include <asm/page.h>
 
-/* ioremap_page_range removed - never called */
-
-/* IOMEM_ERR_PTR, arch_has_dev_port, MEMREMAP_*, memremap, memunmap removed - unused */
-
 #endif  

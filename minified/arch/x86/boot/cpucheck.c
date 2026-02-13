@@ -1,5 +1,4 @@
 
-
 #ifdef _SETUP
 #include "boot.h"
 #endif
@@ -9,7 +8,6 @@
 #include <asm/required-features.h>
 #include <asm/msr-index.h>
 #include "string.h"
-/* --- 2026-01-26 01:05 --- Inlined from msr.h */
 #include <asm/shared/msr.h>
 static inline void boot_rdmsr(unsigned int reg, struct msr *m)
 {
@@ -46,8 +44,6 @@ static const u32 req_flags[NCAPINTS] = {
 };
 
 #define A32(a, b, c, d) (((d) << 24) + ((c) << 16) + ((b) << 8) + (a))
-
-/* is_amd, is_centaur, is_transmeta inlined into check_cpu */
 
 static int is_intel(void)
 {

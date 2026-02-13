@@ -17,7 +17,6 @@
 #define _PAGE_BIT_PSE		7	 
 #define _PAGE_BIT_GLOBAL	8	 
 #define _PAGE_BIT_SOFTW1	9
-/* _PAGE_BIT_SOFTW2, _PAGE_BIT_SOFTW3, _PAGE_BIT_PAT_LARGE, _PAGE_BIT_NX removed - unused */
 #define _PAGE_BIT_SPECIAL	_PAGE_BIT_SOFTW1
 #define _PAGE_BIT_PROTNONE	_PAGE_BIT_GLOBAL
 
@@ -30,21 +29,15 @@
 #define _PAGE_DIRTY	(_AT(pteval_t, 1) << _PAGE_BIT_DIRTY)
 #define _PAGE_PSE	(_AT(pteval_t, 1) << _PAGE_BIT_PSE)
 #define _PAGE_GLOBAL	(_AT(pteval_t, 1) << _PAGE_BIT_GLOBAL)
-/* _PAGE_SOFTW1, _PAGE_SOFTW2, _PAGE_SOFTW3 removed - unused */
-/* _PAGE_PAT_LARGE removed - unused */
 #define _PAGE_SPECIAL	(_AT(pteval_t, 1) << _PAGE_BIT_SPECIAL)
-/* _PAGE_PKEY_BIT0-3 removed - unused */
 
 #define _PAGE_KNL_ERRATUM_MASK 0
 
 #define _PAGE_SOFT_DIRTY	(_AT(pteval_t, 0))
-/* _PAGE_SWP_SOFT_DIRTY removed - unused */
 
 #define _PAGE_NX	(_AT(pteval_t, 0))
 
 #define _PAGE_PROTNONE	(_AT(pteval_t, 1) << _PAGE_BIT_PROTNONE)
-
-/* _PAGE_CHG_MASK, _HPAGE_CHG_MASK removed - unused */
 
 #ifndef __ASSEMBLY__
 struct mm_struct;
@@ -62,8 +55,6 @@ enum page_cache_mode {
 
 #define _PAGE_ENC		(_AT(pteval_t, sme_me_mask))
 
-/* _PAGE_CACHE_MASK, _PAGE_LARGE_CACHE_MASK removed - unused */
-
 #define __PP _PAGE_PRESENT
 #define __RW _PAGE_RW
 #define _USR _PAGE_USER
@@ -73,7 +64,6 @@ enum page_cache_mode {
 #define __NX _PAGE_NX
 
 #define _ENC _PAGE_ENC
-/* __WP, __NC removed - unused */
 #define _PSE _PAGE_PSE
 
 #define pgprot_val(x)		((x).pgprot)
@@ -83,7 +73,6 @@ enum page_cache_mode {
 #define PAGE_NONE	     __pg(   0|   0|   0|___A|   0|   0|   0|___G)
 #define PAGE_SHARED	     __pg(__PP|__RW|_USR|___A|__NX|   0|   0|   0)
 #define PAGE_SHARED_EXEC     __pg(__PP|__RW|_USR|___A|   0|   0|   0|   0)
-/* PAGE_COPY_NOEXEC removed - unused */
 #define PAGE_COPY_EXEC	     __pg(__PP|   0|_USR|___A|   0|   0|   0|   0)
 #define PAGE_COPY	     __pg(__PP|   0|_USR|___A|__NX|   0|   0|   0)
 #define PAGE_READONLY	     __pg(__PP|   0|_USR|___A|__NX|   0|   0|   0)
@@ -94,12 +83,10 @@ enum page_cache_mode {
 #define _KERNPG_TABLE		 (__PP|__RW|   0|___A|   0|___D|   0|   0| _ENC)
 #define _PAGE_TABLE		 (__PP|__RW|_USR|___A|   0|___D|   0|   0| _ENC)
 #define __PAGE_KERNEL_RO	 (__PP|   0|   0|___A|__NX|___D|   0|___G)
-/* __PAGE_KERNEL_NOCACHE removed - unused */
 #define __PAGE_KERNEL_LARGE	 (__PP|__RW|   0|___A|__NX|___D|_PSE|___G)
 #define __PAGE_KERNEL_LARGE_EXEC (__PP|__RW|   0|___A|   0|___D|_PSE|___G)
 
 #define __PAGE_KERNEL_IO		__PAGE_KERNEL
-/* __PAGE_KERNEL_IO_NOCACHE removed - unused */
 
 #ifndef __ASSEMBLY__
 
@@ -108,16 +95,13 @@ enum page_cache_mode {
 #define PAGE_KERNEL		__pgprot_mask(__PAGE_KERNEL            | _ENC)
 #define PAGE_KERNEL_RO		__pgprot_mask(__PAGE_KERNEL_RO         | _ENC)
 #define PAGE_KERNEL_EXEC	__pgprot_mask(__PAGE_KERNEL_EXEC       | _ENC)
-/* PAGE_KERNEL_NOCACHE removed - unused */
 #define PAGE_KERNEL_LARGE	__pgprot_mask(__PAGE_KERNEL_LARGE      | _ENC)
 #define PAGE_KERNEL_LARGE_EXEC	__pgprot_mask(__PAGE_KERNEL_LARGE_EXEC | _ENC)
 
 #define PAGE_KERNEL_IO		__pgprot_mask(__PAGE_KERNEL_IO)
-/* PAGE_KERNEL_IO_NOCACHE removed - unused */
 
 #endif	 
 
- 
 #define __P000	PAGE_NONE
 #define __P001	PAGE_READONLY
 #define __P010	PAGE_COPY
@@ -136,18 +120,14 @@ enum page_cache_mode {
 #define __S110	PAGE_SHARED_EXEC
 #define __S111	PAGE_SHARED_EXEC
 
- 
 #define PTE_IDENT_ATTR	 0x003
 #define PDE_IDENT_ATTR	 0x063
-/* PGD_IDENT_ATTR removed - unused */
 
-/* Inlined from pgtable_32_types.h */
 #ifndef __ASSEMBLY__
 #include <linux/types.h>
 
 typedef unsigned long	pteval_t;
 typedef unsigned long	pmdval_t;
-/* pudval_t, p4dval_t removed - unused */
 typedef unsigned long	pgdval_t;
 typedef unsigned long	pgprotval_t;
 
@@ -171,10 +151,8 @@ typedef union {
 
 #include <linux/types.h>
 
- 
 #define PTE_PFN_MASK		((pteval_t)PHYSICAL_PAGE_MASK)
 
- 
 #define PTE_FLAGS_MASK		(~PTE_PFN_MASK)
 
 typedef struct pgprot { pgprotval_t pgprot; } pgprot_t;
@@ -187,7 +165,6 @@ static inline pgprot_t pgprot_nx(pgprot_t prot)
 }
 #define pgprot_nx pgprot_nx
 
- 
 #define PGD_ALLOWED_BITS	(~0ULL)
 
 static inline pgd_t native_make_pgd(pgdval_t val)
@@ -200,20 +177,15 @@ static inline pgdval_t native_pgd_val(pgd_t pgd)
 	return pgd.pgd & PGD_ALLOWED_BITS;
 }
 
-/* --- 2025-12-07 10:14 --- Inlined asm-generic/pgtable-nop4d.h content */
 #define __PAGETABLE_P4D_FOLDED 1
 
 typedef struct { pgd_t pgd; } p4d_t;
 
 #define P4D_SHIFT		PGDIR_SHIFT
-/* PTRS_PER_P4D removed - unused */
 #define P4D_SIZE		(1UL << P4D_SHIFT)
 #define P4D_MASK		(~(P4D_SIZE-1))
 
-/* pgd_none, pgd_bad, pgd_present, pgd_clear removed - always return 0/0/1/empty, never called */
 #define p4d_ERROR(p4d)				(pgd_ERROR((p4d).pgd))
-
-/* pgd_populate, pgd_populate_safe removed - no callers */
 
 static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
 {
@@ -223,15 +195,11 @@ static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
 #define p4d_val(x)				(pgd_val((x).pgd))
 #define __p4d(x)				((p4d_t) { __pgd(x) })
 
-/* p4d_alloc_one removed - no callers */
 #define p4d_free_tlb(tlb, x, a)			do { } while (0)
 
 #undef  p4d_addr_end
 #define p4d_addr_end(addr, end)			(end)
 
-/* native_p4d_val removed - never called */
-
-/* --- 2025-12-07 10:14 --- Inlined asm-generic/pgtable-nopud.h content */
 #define __PAGETABLE_PUD_FOLDED 1
 
 typedef struct { p4d_t p4d; } pud_t;
@@ -240,10 +208,8 @@ typedef struct { p4d_t p4d; } pud_t;
 #define PUD_SIZE  	(1UL << PUD_SHIFT)
 #define PUD_MASK  	(~(PUD_SIZE-1))
 
-/* p4d_none, p4d_bad, p4d_clear, p4d_present removed - always return 0/0/empty/1, never called */
 #define pud_ERROR(pud)				(p4d_ERROR((pud).p4d))
 
-/* p4d_populate, p4d_populate_safe removed - no callers */
 #define set_p4d(p4dptr, p4dval)	set_pud((pud_t *)(p4dptr), (pud_t) { p4dval })
 
 static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
@@ -255,18 +221,10 @@ static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
 #define pud_val(x)				(p4d_val((x).p4d))
 #define __pud(x)				((pud_t) { __p4d(x) })
 
-/* p4d_pgtable removed - no callers */
-
-/* pud_alloc_one removed - no callers */
-/* pud_free removed - never called */
 #define pud_free_tlb(tlb, x, a)		        do { } while (0)
 
 #undef  pud_addr_end
 #define pud_addr_end(addr, end)			(end)
-
-/* native_pud_val removed - never called */
-
-/* --- 2025-12-07 10:14 --- Inlined asm-generic/pgtable-nopmd.h content */
 
 #define __PAGETABLE_PMD_FOLDED 1
 
@@ -277,8 +235,6 @@ typedef struct { pud_t pud; } pmd_t;
 #define PMD_SIZE  	(1UL << PMD_SHIFT)
 #define PMD_MASK  	(~(PMD_SIZE-1))
 
-/* pud_none, pud_bad, pud_clear, pud_user, pud_leaf removed - always return 0/0/empty/0/0 */
-/* pud_present removed - always returns 1, inlined at call site */
 #define pmd_ERROR(pmd)				(pud_ERROR((pmd).pud))
 
 #define set_pud(pudptr, pudval)			set_pmd((pmd_t *)(pudptr), (pmd_t) { pudval })
@@ -292,9 +248,6 @@ static inline pmd_t * pmd_offset(pud_t * pud, unsigned long address)
 #define pmd_val(x)				(pud_val((x).pud))
 #define __pmd(x)				((pmd_t) { __pud(x) } )
 
-/* pud_pgtable removed - only caller was p4d_pgtable (also removed) */
-
-/* pmd_alloc_one removed - no callers */
 #define pmd_free_tlb(tlb, x, a)		do { } while (0)
 
 #undef  pmd_addr_end
@@ -304,8 +257,6 @@ static inline pmdval_t native_pmd_val(pmd_t pmd)
 {
 	return native_pgd_val(pmd.pud.p4d.pgd);
 }
-
-/* p4d_pfn_mask, p4d_flags_mask, p4d_flags, pud_pfn_mask, pud_flags_mask, pud_flags removed - never called */
 
 static inline pmdval_t pmd_pfn_mask(pmd_t pmd)
 {
@@ -340,27 +291,16 @@ static inline pteval_t pte_flags(pte_t pte)
 	return native_pte_val(pte) & PTE_FLAGS_MASK;
 }
 
-/* __pte2cm_idx removed - never used */
-
 unsigned long cachemode2protval(enum page_cache_mode pcm);
-
-/* protval_4k_2_large, pgprot_4k_2_large, protval_large_2_4k, pgprot_large_2_4k removed - unused */
 
 typedef struct page *pgtable_t;
 
 extern pteval_t __supported_pte_mask;
 extern pteval_t __default_kernel_pte_mask;
-/* set_nx, nx_enabled removed - unused */
-
-/* pgprot_writecombine, pgprot_writethrough removed - never called */
-
-/* __HAVE_PFNMAP_TRACKING removed - track_pfn_* functions never called */
 
 void set_pte_vaddr(unsigned long vaddr, pte_t pte);
 
 extern void native_pagetable_init(void);
-
-/* arch_report_meminfo removed - unused */
 
 enum pg_level {
 	PG_LEVEL_NONE,

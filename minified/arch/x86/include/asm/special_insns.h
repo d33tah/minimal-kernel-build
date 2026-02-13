@@ -2,15 +2,12 @@
 #ifndef _ASM_X86_SPECIAL_INSNS_H
 #define _ASM_X86_SPECIAL_INSNS_H
 
-
 #ifdef __KERNEL__
 
 #include <asm/asm.h>
 #include <asm/processor-flags.h>
 #include <linux/irqflags.h>
 #include <linux/jump_label.h>
-
- 
 
 #define __FORCE_ORDER "m"(*(unsigned int *)0x1000UL)
 
@@ -69,13 +66,10 @@ static inline void wrpkru(u32 pkru)
 {
 }
 
-/* native_wbinvd, native_load_gs_index, asm_load_gs_index removed - unused */
-
 static inline unsigned long __read_cr4(void)
 {
 	return native_read_cr4();
 }
-
 
 static inline unsigned long read_cr0(void)
 {
@@ -97,7 +91,6 @@ static __always_inline void write_cr2(unsigned long x)
 	native_write_cr2(x);
 }
 
- 
 static inline unsigned long __read_cr3(void)
 {
 	return __native_read_cr3();
@@ -113,9 +106,6 @@ static inline void __write_cr4(unsigned long x)
 	native_write_cr4(x);
 }
 
-/* wbinvd removed - unused wrapper, native_wbinvd called directly */
-/* load_gs_index, clflush removed - unused */
-
 #define nop() asm volatile ("nop")
 
 /* Used by sync_core.h */
@@ -123,8 +113,6 @@ static inline void serialize(void)
 {
 	asm volatile(".byte 0xf, 0x1, 0xe8" ::: "memory");
 }
-
-/* movdir64b removed - unused */
 
 #endif
 

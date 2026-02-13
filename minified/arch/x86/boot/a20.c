@@ -1,5 +1,4 @@
 
-
 #include "boot.h"
 
 #define MAX_8042_LOOPS 100000
@@ -56,7 +55,6 @@ static int a20_test(int loops)
 	return ok;
 }
 
-/* --- 2026-01-26 05:08 --- Inlined a20_test_short/long, enable_a20_* */
 #define A20_ENABLE_LOOPS 255
 
 int enable_a20(void)

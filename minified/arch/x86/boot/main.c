@@ -11,9 +11,6 @@ struct port_io_ops pio_ops;
 char *HEAP = _end;
 char *heap_end = _end;
 
-/* copy_boot_params, keyboard_init, query_ist, init_heap inlined into main */
-/* set_bios_mode removed - was empty stub */
-
 void main(void)
 {
 	struct biosregs ireg, oreg;
@@ -42,7 +39,6 @@ void main(void)
 		}
 	}
 
-	/* console_init removed - was empty stub (no serial console) */
 	if (cmdline_find_option_bool("debug"))
 		puts("early console in setup code\n");
 
@@ -62,8 +58,6 @@ void main(void)
 		puts("Unable to boot - please use a kernel appropriate for your CPU.\n");
 		die();
 	}
-
-	/* set_bios_mode removed - was empty stub */
 
 	detect_memory();
 

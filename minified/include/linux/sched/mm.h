@@ -7,7 +7,6 @@
 #include <linux/mm_types.h>
 #include <linux/gfp.h>
 
-
 extern struct mm_struct *mm_alloc(void);
 
 static inline void mmgrab(struct mm_struct *mm)
@@ -34,12 +33,9 @@ static inline void mmget(struct mm_struct *mm)
 	atomic_inc(&mm->mm_users);
 }
 
-
 extern void mmput(struct mm_struct *);
 
-/* exit_mm_release removed - do_exit gutted */
 extern void exec_mm_release(struct task_struct *, struct mm_struct *);
-/* mm_update_next_owner removed - empty stub, no callers */
 
 #ifndef arch_get_mmap_end
 #define arch_get_mmap_end(addr, len, flags)	(TASK_SIZE)
@@ -59,9 +55,6 @@ arch_get_unmapped_area_topdown(struct file *filp, unsigned long addr,
 			  unsigned long len, unsigned long pgoff,
 			  unsigned long flags);
 
-/* generic_get_unmapped_area, generic_get_unmapped_area_topdown made static in mm/mmap.c */
-
-
 static inline gfp_t current_gfp_context(gfp_t flags)
 {
 	unsigned int pflags = READ_ONCE(current->flags);
@@ -79,11 +72,8 @@ static inline gfp_t current_gfp_context(gfp_t flags)
 	return flags;
 }
 
-/* fs_reclaim_acquire/release removed - empty stubs */
-
 static inline void might_alloc(gfp_t gfp_mask)
 {
-	/* fs_reclaim_acquire/release calls removed - empty stubs */
 	might_sleep_if(gfpflags_allow_blocking(gfp_mask));
 }
 
@@ -110,8 +100,5 @@ static inline void memalloc_nofs_restore(unsigned int flags)
 {
 	current->flags = (current->flags & ~PF_MEMALLOC_NOFS) | flags;
 }
-
-/* memalloc_pin_save, memalloc_pin_restore removed - no callers */
-/* membarrier stubs removed - no callers */
 
 #endif

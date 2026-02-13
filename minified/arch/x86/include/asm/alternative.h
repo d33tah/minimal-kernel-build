@@ -20,11 +20,8 @@ struct alt_instr {
 	u8  replacementlen;	 
 } __packed;
 
- 
 extern int alternatives_patched;
-/* alternative_instructions declaration removed - inlined */
 extern void apply_alternatives(struct alt_instr *start, struct alt_instr *end);
-/* apply_retpolines, apply_returns, apply_ibt_endbr removed - unused stubs */
 
 #define b_replacement(num)	"664"#num
 #define e_replacement(num)	"665"#num
@@ -42,10 +39,8 @@ extern void apply_alternatives(struct alt_instr *start, struct alt_instr *end);
 		"((" alt_rlen(num) ")-(" alt_slen ")),0x90\n"		\
 	alt_end_marker ":\n"
 
- 
 #define alt_max_short(a, b)	"((" a ") ^ (((" a ") ^ (" b ")) & -(-((" a ") < (" b ")))))"
 
- 
 #define OLDINSTR_2(oldinstr, num1, num2) \
 	"# ALT: oldinstr2\n"									\
 	"661:\n\t" oldinstr "\n662:\n"								\
@@ -75,7 +70,6 @@ extern void apply_alternatives(struct alt_instr *start, struct alt_instr *end);
 	"# ALT: replacement " #num "\n"						\
 	b_replacement(num)":\n\t" newinstr "\n" e_replacement(num) ":\n"
 
- 
 #define ALTERNATIVE(oldinstr, newinstr, feature)			\
 	OLDINSTR(oldinstr, 1)						\
 	".pushsection .altinstructions,\"a\"\n"				\
@@ -96,7 +90,6 @@ extern void apply_alternatives(struct alt_instr *start, struct alt_instr *end);
 	ALTINSTR_REPLACEMENT(newinstr2, 2)				\
 	".popsection\n"
 
- 
 #define ALTERNATIVE_TERNARY(oldinstr, feature, newinstr_yes, newinstr_no) \
 	ALTERNATIVE_2(oldinstr, newinstr_no, X86_FEATURE_ALWAYS,	\
 		      newinstr_yes, feature)
@@ -114,21 +107,15 @@ extern void apply_alternatives(struct alt_instr *start, struct alt_instr *end);
 	ALTINSTR_REPLACEMENT(newinsn3, 3)					\
 	".popsection\n"
 
- 
 #define alternative(oldinstr, newinstr, feature)			\
 	asm_inline volatile (ALTERNATIVE(oldinstr, newinstr, feature) : : : "memory")
-
-/* alternative_2, alternative_ternary removed - never used */
 
 #define alternative_input(oldinstr, newinstr, feature, input...)	\
 	asm_inline volatile (ALTERNATIVE(oldinstr, newinstr, feature)	\
 		: : "i" (0), ## input)
 
-/* alternative_input_2, alternative_io removed - never used */
-
 #define ASM_OUTPUT2(a...) a
 
- 
 #define ASM_NO_INPUT_CLOBBER(clbr...) "i" (0) : clbr
 
 #else  
@@ -144,7 +131,6 @@ extern void apply_alternatives(struct alt_instr *start, struct alt_instr *end);
 	.byte \alt_len
 .endm
 
- 
 .macro ALTERNATIVE oldinstr, newinstr, feature
 140:
 	\oldinstr
@@ -167,11 +153,8 @@ extern void apply_alternatives(struct alt_instr *start, struct alt_instr *end);
 #define new_len1		144f-143f
 #define new_len2		145f-144f
 
- 
 #define alt_max_short(a, b)	((a) ^ (((a) ^ (b)) & -(-((a) < (b)))))
 
-
- 
 .macro ALTERNATIVE_2 oldinstr, newinstr1, feature1, newinstr2, feature2
 140:
 	\oldinstr
@@ -194,7 +177,6 @@ extern void apply_alternatives(struct alt_instr *start, struct alt_instr *end);
 	.popsection
 .endm
 
- 
 #define ALTERNATIVE_TERNARY(oldinstr, feature, newinstr_yes, newinstr_no) \
 	ALTERNATIVE_2 oldinstr, newinstr_no, X86_FEATURE_ALWAYS,	\
 	newinstr_yes, feature

@@ -7,8 +7,6 @@
 #include <linux/smp.h>
 #include <linux/errno.h>
 #include <linux/ptrace.h>
-/* linux/export.h removed - no EXPORT_SYMBOL */
-/* Inlined from nospec.h */
 #include <linux/compiler.h>
 #include <asm/barrier.h>
 
@@ -48,7 +46,6 @@ static inline unsigned long array_index_mask_nospec(unsigned long index,
 
 static __always_inline int syscall_32_enter(struct pt_regs *regs)
 {
-	/* IA32_EMULATION disabled - skip TS_COMPAT */
 	return (int)regs->orig_ax;
 }
 
@@ -74,8 +71,6 @@ __visible noinstr void do_int80_syscall_32(struct pt_regs *regs)
 
 	syscall_exit_to_user_mode(regs);
 }
-
-/* do_fast_syscall_32, do_SYSENTER_32 removed - init uses INT $0x80 only */
 
 SYSCALL_DEFINE0(ni_syscall)
 {

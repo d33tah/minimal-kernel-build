@@ -56,8 +56,6 @@ int kobj_map(struct kobj_map *domain, dev_t dev, unsigned long range,
 	return 0;
 }
 
-/* kobj_unmap removed - never called (~26 LOC) */
-
 struct kobject *kobj_lookup(struct kobj_map *domain, dev_t dev, int *index)
 {
 	struct kobject *kobj;
@@ -75,7 +73,6 @@ retry:
 			continue;
 		if (p->range - 1 >= best)
 			break;
-		/* try_module_get always returns true - dead check removed */
 		owner = p->owner;
 		data = p->data;
 		probe = p->get;

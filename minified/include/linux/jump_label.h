@@ -20,8 +20,6 @@ struct static_key {
 
 #ifndef __ASSEMBLY__
 
-/* enum jump_label_type removed - never used */
-
 #include <linux/atomic.h>
 #include <linux/bug.h>
 
@@ -34,8 +32,6 @@ static __always_inline void jump_label_init(void)
 {
 	static_key_initialized = true;
 }
-
-/* static_key_slow_inc, static_key_slow_dec, static_key_slow_inc_cpuslocked, static_key_slow_dec_cpuslocked removed - never used */
 
 static inline void static_key_enable(struct static_key *key)
 {
@@ -59,11 +55,8 @@ static inline void static_key_disable(struct static_key *key)
 	atomic_set(&key->enabled, 0);
 }
 
-/* static_key_enable_cpuslocked, static_key_disable_cpuslocked removed - never used */
-
 #define STATIC_KEY_INIT_TRUE	{ .enabled = ATOMIC_INIT(1) }
 #define STATIC_KEY_INIT_FALSE	{ .enabled = ATOMIC_INIT(0) }
-/* STATIC_KEY_INIT removed - never used */
 
 struct static_key_true {
 	struct static_key key;
@@ -96,8 +89,6 @@ struct static_key_false {
 #define DEFINE_STATIC_KEY_MAYBE(cfg, name)			\
 	__PASTE(_DEFINE_STATIC_KEY_, IS_ENABLED(cfg))(name)
 
-/* DEFINE_STATIC_KEY_MAYBE_RO, _DEFINE_STATIC_KEY_RO_* removed - never used */
-
 #define _DECLARE_STATIC_KEY_1(name)	DECLARE_STATIC_KEY_TRUE(name)
 #define _DECLARE_STATIC_KEY_0(name)	DECLARE_STATIC_KEY_FALSE(name)
 #define DECLARE_STATIC_KEY_MAYBE(cfg, name)			\
@@ -121,11 +112,8 @@ extern bool ____wrong_branch_error(void);
 	(IS_ENABLED(config) ? static_branch_likely(x)			\
 			    : static_branch_unlikely(x))
 
-/* static_branch_inc, static_branch_dec, static_branch_inc_cpuslocked, static_branch_dec_cpuslocked removed - never used */
-
 #define static_branch_enable(x)			static_key_enable(&(x)->key)
 #define static_branch_disable(x)		static_key_disable(&(x)->key)
-/* static_branch_enable_cpuslocked, static_branch_disable_cpuslocked removed - never used */
 
 #endif  
 

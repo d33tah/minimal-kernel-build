@@ -5,7 +5,6 @@
 #include <asm/types.h>
 
 #define GOLDEN_RATIO_32 0x61C88647
-/* GOLDEN_RATIO_PRIME removed - unused */
 #define hash_long(val, bits) hash_32(val, bits)
 
 #ifndef HAVE_ARCH__HASH_32
@@ -20,8 +19,6 @@ static inline u32 hash_32(u32 val, unsigned int bits)
 {
 	return __hash_32(val) >> (32 - bits);
 }
-
-/* hash_64, hash_64_generic removed - never used in 32-bit kernel */
 
 static inline u32 hash_ptr(const void *ptr, unsigned int bits)
 {

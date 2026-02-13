@@ -3,8 +3,6 @@
 #include <linux/list_lru.h>
 #include <linux/slab.h>
 
-/* list_lru_add removed - no callers */
-
 bool list_lru_del(struct list_lru *lru, struct list_head *item)
 {
 	return false;
@@ -25,5 +23,3 @@ int __list_lru_init(struct list_lru *lru, bool memcg_aware,
 void list_lru_destroy(struct list_lru *lru)
 {
 }
-
-/* list_lru_walk_one removed - no callers */

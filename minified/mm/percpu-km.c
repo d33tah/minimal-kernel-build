@@ -3,7 +3,6 @@
 
 /* Removed: pcpu_post_unmap_tlb_flush, pcpu_depopulate_chunk
  * - Dead code since no chunk depopulation (~10 LOC) */
-/* Removed: pcpu_populate_chunk - always returned 0, call sites simplified */
 
 static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp)
 {
@@ -36,9 +35,5 @@ static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp)
 	pcpu_chunk_populated(chunk, 0, nr_pages);
 	spin_unlock_irqrestore(&pcpu_lock, flags);
 
-	/* pcpu_stats_chunk_alloc removed - stats stub */
 	return chunk;
 }
-
-/* Removed: pcpu_destroy_chunk, pcpu_addr_to_page - never called */
-/* Removed: pcpu_verify_alloc_info - inlined into pcpu_setup_first_chunk */

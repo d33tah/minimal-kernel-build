@@ -1,9 +1,7 @@
 #ifndef __LINUX_PREEMPT_H
 #define __LINUX_PREEMPT_H
 
-
 #include <linux/linkage.h>
-/* linux/list.h removed - no list structures used */
 
 #define PREEMPT_BITS	8
 #define SOFTIRQ_BITS	8
@@ -36,7 +34,6 @@
 
 #include <asm/preempt.h>
 
-
 #define nmi_count()	(preempt_count() & NMI_MASK)
 #define hardirq_count()	(preempt_count() & HARDIRQ_MASK)
 # define softirq_count()	(preempt_count() & SOFTIRQ_MASK)
@@ -51,32 +48,22 @@
 
 # define PREEMPT_DISABLE_OFFSET	0
 
-
-
 #define in_atomic()	(preempt_count() != 0)
 
 #define in_atomic_preempt_off() (preempt_count() != PREEMPT_DISABLE_OFFSET)
 
 #define preempt_count_add(val)	__preempt_count_add(val)
 #define preempt_count_sub(val)	__preempt_count_sub(val)
-/* preempt_count_dec_and_test removed - never used (no preemption) */
 
-/* __preempt_count_inc, __preempt_count_dec removed - never used */
 #define preempt_count_dec() preempt_count_sub(1)
-
 
 #define preempt_disable()			barrier()
 #define sched_preempt_enable_no_resched()	barrier()
 #define preempt_enable_no_resched()		barrier()
 #define preempt_enable()			barrier()
-/* preempt_check_resched removed - no-op, never called */
 #define preempt_disable_notrace()		barrier()
 #define preempt_enable_no_resched_notrace()	barrier()
 #define preempt_enable_notrace()		barrier()
 #define preemptible()				0
-
-/* preempt_set_need_resched, preempt_fold_need_resched removed - never called */
-
-/* migrate_disable removed - call site removed */
 
 #endif  

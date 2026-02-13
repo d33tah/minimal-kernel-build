@@ -13,21 +13,15 @@ struct user_struct {
 	unsigned long unix_inflight;	 
 	atomic_long_t pipe_bufs;   
 
-	 
 	struct hlist_node uidhash_node;
 	kuid_t uid;
-
-	/* locked_vm removed - PERF_EVENTS/BPF_SYSCALL/NET/IO_URING all disabled */
 
 	struct ratelimit_state ratelimit;
 };
 
-
 extern struct user_struct root_user;
 #define INIT_USER (&root_user)
 
-
-/* alloc_uid removed - never called */
 static inline struct user_struct *get_uid(struct user_struct *u)
 {
 	refcount_inc(&u->__count);

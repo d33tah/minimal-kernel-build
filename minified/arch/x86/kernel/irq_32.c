@@ -1,8 +1,6 @@
 
-/* seq_file.h removed - header is empty */
 #include <linux/interrupt.h>
 #include <linux/irq.h>
-/* kernel_stat.h removed - empty */
 #include <linux/cpu.h>
 #include <linux/delay.h>
 #include <linux/uaccess.h>
@@ -13,13 +11,9 @@
 #include <asm/nospec-branch.h>
 void do_softirq_own_stack(void);
 
-/* check_stack_overflow and print_stack_overflow removed - always 0/empty */
-
 DEFINE_PER_CPU(struct irq_stack *, hardirq_stack_ptr);
 DEFINE_PER_CPU(struct irq_stack *, softirq_stack_ptr);
 
-/* call_on_stack inlined into do_softirq_own_stack */
-/* current_stack inlined into execute_on_irq_stack */
 static inline int execute_on_irq_stack(struct irq_desc *desc)
 {
 	struct irq_stack *curstk, *irqstk;
@@ -36,8 +30,6 @@ static inline int execute_on_irq_stack(struct irq_desc *desc)
 
 	prev_esp = (u32 *)irqstk;
 	*prev_esp = current_stack_pointer;
-
-	/* overflow check removed - always 0 */
 
 	asm volatile("xchgl	%%ebx,%%esp	\n" CALL_NOSPEC
 		     "movl	%%ebx,%%esp	\n"
@@ -60,7 +52,6 @@ int irq_init_percpu_irqstack(unsigned int cpu)
 		return -ENOMEM;
 	ps = alloc_pages_node(node, THREADINFO_GFP, THREAD_SIZE_ORDER);
 	if (!ps) {
-		/* __free_pages removed - empty stub */
 		return -ENOMEM;
 	}
 
@@ -91,7 +82,6 @@ void do_softirq_own_stack(void)
 
 void __handle_irq(struct irq_desc *desc, struct pt_regs *regs)
 {
-	/* overflow checks removed - check_stack_overflow always returned 0 */
 	if (user_mode(regs) || !execute_on_irq_stack(desc))
 		generic_handle_irq_desc(desc);
 }

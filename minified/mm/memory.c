@@ -2,27 +2,18 @@
 #include <linux/mm.h>
 #include <linux/mm_inline.h>
 #include <linux/sched/mm.h>
-/* linux/sched/coredump.h removed - unused */
 #include <linux/sched/task.h>
 #include <linux/mman.h>
 #include <linux/swap.h>
 #include <linux/highmem.h>
 #include <linux/pagemap.h>
-/* linux/memremap.h removed - unused */
 #include <linux/rmap.h>
 #include <linux/init.h>
-/* pfn_t.h removed - all functions inlined */
 #define PFN_FLAGS_MASK \
 	(((u64)(~PAGE_MASK)) << (BITS_PER_LONG_LONG - PAGE_SHIFT))
 #define PFN_DEV (1ULL << (BITS_PER_LONG_LONG - 3))
-/* memcontrol.h removed - unused */
-/* mmu_notifier.h removed - inlined into asm/tlb.h, included below */
-/* swapops.h removed - was empty */
 #include <linux/gfp.h>
-/* linux/migrate.h removed - empty header */
-/* userfaultfd_k.h removed - empty stubs */
 #include <linux/file.h>
-/* numa.h, perf_event.h removed - unused */
 #include <linux/vmalloc.h>
 
 #include <asm/io.h>
@@ -33,9 +24,6 @@
 #include <asm/tlbflush.h>
 
 #include "internal.h"
-/* struct swap_iocb forward decl removed - unused */
-
-/* LAST_CPUPID warning removed - not triggered on x86 tinyconfig */
 
 unsigned long max_mapnr;
 
@@ -44,8 +32,6 @@ struct page *mem_map;
 static vm_fault_t do_fault(struct vm_fault *vmf);
 
 void *high_memory;
-
-/* randomize_va_space removed - no readers */
 
 unsigned long zero_pfn __read_mostly;
 
@@ -57,8 +43,6 @@ static int __init init_zero_pfn(void)
 	return 0;
 }
 early_initcall(init_zero_pfn);
-
-/* rss_stat counter macros removed - counters are write-only */
 
 static inline void free_pmd_range(struct mmu_gather *tlb, pud_t *pud,
 				  unsigned long addr, unsigned long end,
@@ -74,7 +58,6 @@ static inline void free_pmd_range(struct mmu_gather *tlb, pud_t *pud,
 		next = pmd_addr_end(addr, end);
 		if (pmd_none_or_clear_bad(pmd))
 			continue;
-		/* Inlined free_pte_range */
 		{
 			pgtable_t token = pmd_pgtable(*pmd);
 			pmd_clear(pmd);
@@ -97,7 +80,6 @@ static inline void free_pmd_range(struct mmu_gather *tlb, pud_t *pud,
 		return;
 
 	pmd = pmd_offset(pud, start);
-	/* pud_clear removed - empty stub */
 	pmd_free_tlb(tlb, pmd, start);
 }
 
@@ -109,7 +91,6 @@ static inline void free_pud_range(struct mmu_gather *tlb, p4d_t *p4d,
 	unsigned long next;
 	unsigned long start;
 
-	/* pud_none_or_clear_bad always returns 0 - folded paging */
 	start = addr;
 	pud = pud_offset(p4d, addr);
 	do {
@@ -129,7 +110,6 @@ static inline void free_pud_range(struct mmu_gather *tlb, p4d_t *p4d,
 		return;
 
 	pud = pud_offset(p4d, start);
-	/* p4d_clear removed - empty stub */
 	pud_free_tlb(tlb, pud, start);
 }
 
@@ -141,7 +121,6 @@ static inline void free_p4d_range(struct mmu_gather *tlb, pgd_t *pgd,
 	unsigned long next;
 	unsigned long start;
 
-	/* p4d_none_or_clear_bad always returns 0 - folded paging */
 	start = addr;
 	p4d = p4d_offset(pgd, addr);
 	do {
@@ -161,7 +140,6 @@ static inline void free_p4d_range(struct mmu_gather *tlb, pgd_t *pgd,
 		return;
 
 	p4d = p4d_offset(pgd, start);
-	/* pgd_clear removed - empty stub */
 	p4d_free_tlb(tlb, p4d, start);
 }
 
@@ -188,7 +166,6 @@ void free_pgd_range(struct mmu_gather *tlb, unsigned long addr,
 	if (addr > end - 1)
 		return;
 
-	/* pgd_none_or_clear_bad always returns 0 - folded paging */
 	tlb_change_page_size(tlb, PAGE_SIZE);
 	pgd = pgd_offset(tlb->mm, addr);
 	do {
@@ -274,12 +251,10 @@ struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 	/* CONFIG_ARCH_HAS_PTE_SPECIAL is always enabled */
 	if (likely(!pte_special(pte)))
 		goto check_pfn;
-	/* find_special_page removed - never set */
 	if (vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP))
 		return NULL;
 	if (is_zero_pfn(pfn))
 		return NULL;
-	/* pte_devmap always returns 0, check removed */
 	return NULL;
 
 	/* Dead code removed: the #else branch of CONFIG_ARCH_HAS_PTE_SPECIAL
@@ -289,7 +264,6 @@ check_pfn:
 	if (unlikely(pfn > highest_memmap_pfn))
 		return NULL;
 
-	/* 'out' label removed - unused */
 	return pfn_to_page(pfn);
 }
 
@@ -332,8 +306,6 @@ pte_t *__get_locked_pte(struct mm_struct *mm, unsigned long addr,
 	return pte_alloc_map_lock(mm, pmd, addr, ptl);
 }
 
-/* insert_pfn inlined into vmf_insert_pfn_prot */
-
 static vm_fault_t vmf_insert_pfn_prot(struct vm_area_struct *vma,
 				      unsigned long addr, unsigned long pfn,
 				      pgprot_t pgprot)
@@ -347,9 +319,6 @@ static vm_fault_t vmf_insert_pfn_prot(struct vm_area_struct *vma,
 	if (addr < vma->vm_start || addr >= vma->vm_end)
 		return VM_FAULT_SIGBUS;
 
-	/* pfn_modify_allowed check removed - always returned true */
-	/* track_pfn_insert is empty stub, call removed */
-	/* Inlined insert_pfn */
 	{
 		struct mm_struct *mm = vma->vm_mm;
 		pte_t *pte, entry;
@@ -379,8 +348,6 @@ vm_fault_t vmf_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
 {
 	return vmf_insert_pfn_prot(vma, addr, pfn, vma->vm_page_prot);
 }
-
-/* do_page_mkwrite inlined into do_shared_fault */
 
 /* wp_page_copy removed - no fork means no COW.
  * do_wp_page simplified to just reuse path for AnonExclusive pages. */
@@ -435,11 +402,9 @@ static vm_fault_t do_anonymous_page(struct vm_fault *vmf)
 		goto unlock;
 	}
 
-	/* inc_mm_counter_fast removed - rss_stat write-only */
 	page_add_new_anon_rmap(page, vma, vmf->address);
 	lru_cache_add_inactive_or_unevictable(page, vma);
 	set_pte_at(vma->vm_mm, vmf->address, vmf->pte, entry);
-	/* update_mmu_cache - empty stub on x86 */
 unlock:
 	pte_unmap_unlock(vmf->pte, vmf->ptl);
 	return 0;
@@ -461,15 +426,11 @@ static vm_fault_t __do_fault(struct vm_fault *vmf)
 			    VM_FAULT_DONE_COW)))
 		return ret;
 
-	/* PageHWPoison always returns false - removed dead code block */
-
 	if (unlikely(!(ret & VM_FAULT_LOCKED)))
 		lock_page(vmf->page);
 
 	return ret;
 }
-
-/* do_set_pmd removed - never called */
 
 static void do_set_pte(struct vm_fault *vmf, struct page *page,
 		       unsigned long addr)
@@ -478,14 +439,12 @@ static void do_set_pte(struct vm_fault *vmf, struct page *page,
 	bool write = vmf->flags & FAULT_FLAG_WRITE;
 	pte_t entry;
 
-	/* flush_icache_page - empty stub on x86 */
 	entry = mk_pte(page, vma->vm_page_prot);
 
 	entry = pte_sw_mkyoung(entry);
 
 	if (write)
 		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
-	/* pte_marker_uffd_wp() always false - userfaultfd disabled */
 
 	if (write && !(vma->vm_flags & VM_SHARED)) {
 		page_add_new_anon_rmap(page, vma, addr);
@@ -507,17 +466,12 @@ static vm_fault_t finish_fault(struct vm_fault *vmf)
 	else
 		page = vmf->page;
 
-	/* check_stable_address_space always 0 - MMF_UNSTABLE never set */
-
 	if (pmd_none(*vmf->pmd)) {
-		/* PageTransCompound always returns false */
 		if (vmf->prealloc_pte)
 			pmd_install(vma->vm_mm, vmf->pmd, &vmf->prealloc_pte);
 		else if (unlikely(pte_alloc(vma->vm_mm, vmf->pmd)))
 			return VM_FAULT_OOM;
 	}
-
-	/* pmd_devmap_trans_unstable always returns 0 */
 
 	vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd, vmf->address,
 				       &vmf->ptl);
@@ -530,15 +484,12 @@ static vm_fault_t finish_fault(struct vm_fault *vmf)
 	else
 		ret = VM_FAULT_NOPAGE;
 
-	/* update_mmu_tlb removed - empty stub */
 	pte_unmap_unlock(vmf->pte, vmf->ptl);
 	return ret;
 }
 
 /* Removed: fault_around_bytes, do_fault_around, should_fault_around
  * - Optimization path always returned 0 for minimal kernel */
-
-/* do_read_fault inlined into do_fault */
 
 static vm_fault_t do_cow_fault(struct vm_fault *vmf)
 {
@@ -551,7 +502,6 @@ static vm_fault_t do_cow_fault(struct vm_fault *vmf)
 	vmf->cow_page = alloc_page_vma(GFP_HIGHUSER_MOVABLE, vma, vmf->address);
 	if (!vmf->cow_page)
 		return VM_FAULT_OOM;
-	/* mem_cgroup_charge always returns 0, cgroup_throttle_swaprate is empty */
 
 	ret = __do_fault(vmf);
 	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE | VM_FAULT_RETRY)))
@@ -605,7 +555,6 @@ static vm_fault_t do_fault(struct vm_fault *vmf)
 			pte_unmap_unlock(vmf->pte, vmf->ptl);
 		}
 	} else if (!(vmf->flags & FAULT_FLAG_WRITE)) {
-		/* Inlined do_read_fault */
 		ret = __do_fault(vmf);
 		if (likely(!(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE |
 				    VM_FAULT_RETRY)))) {
@@ -626,8 +575,6 @@ static vm_fault_t do_fault(struct vm_fault *vmf)
 	}
 	return ret;
 }
-
-/* handle_pte_fault inlined into __handle_mm_fault */
 
 static vm_fault_t __handle_mm_fault(struct vm_area_struct *vma,
 				    unsigned long address, unsigned int flags)
@@ -691,12 +638,9 @@ vm_fault_t handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
 	vm_fault_t ret;
 
 	__set_current_state(TASK_RUNNING);
-	/* arch_vma_access_permitted always returns true (OSPKE disabled) */
-	/* mem_cgroup_enter_user_fault removed - empty stub */
 	ret = __handle_mm_fault(vma, address, flags);
 	/* mem_cgroup_exit_user_fault, task_in_memcg_oom (always false),
 	 * mem_cgroup_oom_synchronize removed - all stubs */
-	/* current->maj_flt/min_flt increments removed - write-only fields */
 
 	return ret;
 }

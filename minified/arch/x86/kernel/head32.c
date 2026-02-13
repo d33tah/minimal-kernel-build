@@ -13,7 +13,6 @@ extern asmlinkage void __init start_kernel(void);
 #include <asm/apic.h>
 #include <asm/bios_ebda.h>
 #include <asm/tlbflush.h>
-/* Inlined from asm/bootparam_utils.h */
 static void sanitize_boot_params(struct boot_params *boot_params)
 {
 	(void)boot_params;
@@ -32,7 +31,6 @@ asmlinkage __visible void __init i386_start_kernel(void)
 	if (boot_params.hdr.hardware_subarch == X86_SUBARCH_PC)
 		x86_platform.legacy.reserve_bios_regions = 1;
 
-	/* x86_intel_mid_early_setup and x86_ce4100_early_setup are empty stubs */
 	if (boot_params.hdr.hardware_subarch != X86_SUBARCH_INTEL_MID &&
 	    boot_params.hdr.hardware_subarch != X86_SUBARCH_CE4100)
 		x86_init.resources.reserve_resources = i386_reserve_resources;

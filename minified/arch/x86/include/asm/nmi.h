@@ -2,13 +2,8 @@
 #ifndef _ASM_X86_NMI_H
 #define _ASM_X86_NMI_H
 
-/* irq_work.h removed - header is now empty */
-/* linux/pm.h removed - nothing used from it */
 #include <asm/irq.h>
 #include <asm/io.h>
-
-
-/* NMI_FLAG_FIRST removed - unused */
 
 enum {
 	NMI_LOCAL=0,
@@ -17,8 +12,6 @@ enum {
 	NMI_IO_CHECK,
 	NMI_MAX
 };
-
-/* NMI_DONE, NMI_HANDLED removed - unused */
 
 typedef int (*nmi_handler_t)(unsigned int, struct pt_regs *);
 
@@ -29,8 +22,6 @@ struct nmiaction {
 	unsigned long		flags;
 	const char		*name;
 };
-
-/* register_nmi_handler and __register_nmi_handler removed - never called */
 
 void local_touch_nmi(void);
 

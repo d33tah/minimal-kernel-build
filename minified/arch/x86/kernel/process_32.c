@@ -1,5 +1,4 @@
 
-
 #include <linux/cpu.h>
 #include <linux/errno.h>
 #include <linux/sched.h>
@@ -10,14 +9,10 @@
 #include <linux/mm.h>
 #include <linux/smp.h>
 #include <linux/stddef.h>
-/* linux/slab.h removed - no slab functions */
-/* linux/vmalloc.h removed - no vmalloc functions */
-/* linux/interrupt.h, linux/reboot.h, linux/export.h removed - unused */
 #include <linux/ptrace.h>
 #include <linux/personality.h>
 #include <linux/percpu.h>
 #include <linux/uaccess.h>
-/* linux/io.h removed - no I/O functions */
 #include <linux/syscalls.h>
 
 #ifndef LDT_ENTRY_SIZE
@@ -33,19 +28,14 @@
 #include <asm/cpu.h>
 #include <asm/debugreg.h>
 #include <asm/switch_to.h>
-/* asm/vm86.h removed - empty */
 #include <asm/proto.h>
 
-/* resctrl_sched_in removed - empty stub */
-
-/* spec-ctrl.h inlined into process.c - unused here */
 #include <asm/kdebug.h>
 void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p);
 
 void __show_regs(struct pt_regs *regs, enum show_regs_mode mode,
 		 const char *log_lvl)
 {
-	/* Stub: register dump not needed for minimal kernel */
 }
 
 void start_thread(struct pt_regs *regs, unsigned long new_ip,
@@ -91,7 +81,6 @@ __visible struct task_struct *__switch_to(struct task_struct *prev_p,
 		load_sp0(next_p->thread.sp0);
 	else
 		this_cpu_write(cpu_tss_rw.x86_tss.sp1, next_p->thread.sp0);
-	/* refresh_sysenter_cs removed - SYSENTER not used */
 	this_cpu_write(cpu_current_top_of_stack,
 		       (unsigned long)task_stack_page(next_p) + THREAD_SIZE);
 
@@ -101,7 +90,6 @@ __visible struct task_struct *__switch_to(struct task_struct *prev_p,
 	this_cpu_write(current_task, next_p);
 
 	switch_fpu_finish();
-	/* resctrl_sched_in removed - empty stub */
 	return prev_p;
 }
 

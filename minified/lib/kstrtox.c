@@ -1,12 +1,9 @@
 #include <linux/ctype.h>
 #include <linux/errno.h>
-/* linux/export.h removed - no EXPORT_SYMBOL used */
-/* Inlined from kstrtox.h */
 int __must_check kstrtoull(const char *s, unsigned int base,
 			   unsigned long long *res);
 int __must_check kstrtouint(const char *s, unsigned int base,
 			    unsigned int *res);
-/* simple_strtoul declaration removed - function removed from vsprintf.c */
 #include <linux/math64.h>
 #include <linux/types.h>
 #include <linux/uaccess.h>
@@ -95,8 +92,6 @@ noinline int kstrtoull(const char *s, unsigned int base,
 	return 0;
 }
 
-/* kstrtoll, _kstrtoul, _kstrtol removed - no callers */
-
 noinline int kstrtouint(const char *s, unsigned int base, unsigned int *res)
 {
 	unsigned long long tmp;
@@ -110,4 +105,3 @@ noinline int kstrtouint(const char *s, unsigned int base, unsigned int *res)
 	*res = tmp;
 	return 0;
 }
-/* kstrtoint, kstrtou16, kstrtos16, kstrtou8, kstrtobool removed - no callers */

@@ -5,7 +5,6 @@
 #include <asm/unistd.h>
 #include <linux/capability.h>
 
-/* struct pt_regs and filename forward decls removed - unused */
 #define MAX_ARG_STRLEN (PAGE_SIZE * 32)
 #define MAX_ARG_STRINGS 0x7FFFFFFF
 #define BINPRM_BUF_SIZE 256
@@ -21,11 +20,9 @@ struct linux_binprm {
 		 
 		have_execfd:1,
 
-		 
 		execfd_creds:1,
 		 
 		secureexec:1,
-		/* x86 only - alpha taso field removed */
 		point_of_no_return:1;
 	struct file *executable;  
 	struct file *interpreter;
@@ -46,7 +43,6 @@ struct linux_binprm {
 	char buf[BINPRM_BUF_SIZE];
 } __randomize_layout;
 
-/* BINPRM_FLAGS_ENFORCE_NONDUMP removed - never used */
 #define BINPRM_FLAGS_PRESERVE_ARGV0 (1 << 3)
 
 struct linux_binfmt {
@@ -56,7 +52,6 @@ struct linux_binfmt {
 	int (*load_shlib)(struct file *);
 } __randomize_layout;
 
-/* insert parameter removed - only caller passed 0 */
 extern void __register_binfmt(struct linux_binfmt *fmt);
 
 static inline void register_binfmt(struct linux_binfmt *fmt)
@@ -66,8 +61,6 @@ static inline void register_binfmt(struct linux_binfmt *fmt)
 
 extern int begin_new_exec(struct linux_binprm * bprm);
 extern void setup_new_exec(struct linux_binprm * bprm);
-/* finalize_exec removed - inlined into binfmt_elf.c */
-/* suid_dumpable removed - never used */
 
 #define EXSTACK_DEFAULT   0	 
 #define EXSTACK_DISABLE_X 1	 
@@ -76,7 +69,6 @@ extern void setup_new_exec(struct linux_binprm * bprm);
 extern int setup_arg_pages(struct linux_binprm * bprm,
 			   unsigned long stack_top,
 			   int executable_stack);
-/* copy_string_kernel made static - only used in exec.c */
 extern void set_binfmt(struct linux_binfmt *new);
 
 int kernel_execve(const char *filename,

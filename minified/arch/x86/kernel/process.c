@@ -3,22 +3,16 @@
 #include <linux/kernel.h>
 #include <linux/mm.h>
 #include <linux/smp.h>
-/* linux/slab.h removed - no slab functions */
 #include <linux/sched.h>
 #include <linux/sched/debug.h>
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
 #include <linux/init.h>
-/* linux/export.h removed - no EXPORT_SYMBOL */
-/* random.h removed - header is empty */
 #include <linux/utsname.h>
-/* boot_init_stack_canary removed - empty stub, never called */
 /* end stackprotector.h */
-/* flush_ptrace_hw_breakpoint removed - was empty stub */
 #include <asm/cpu.h>
 #include <asm/apic.h>
 #include <linux/uaccess.h>
-/* asm/mwait.h removed - header is empty */
 #include <asm/fpu/api.h>
 #include <asm/fpu/sched.h>
 #include <asm/fpu/xstate.h>
@@ -27,11 +21,8 @@
 DEFINE_PER_CPU(unsigned long, cpu_dr7);
 #include <asm/nmi.h>
 #include <asm/tlbflush.h>
-/* mce.h, vm86.h removed - empty */
 #include <asm/switch_to.h>
 #include <asm/desc.h>
-/* prctl.h removed - header is empty */
-/* Inlined from asm/spec-ctrl.h */
 #include <linux/thread_info.h>
 #include <asm/nospec-branch.h>
 extern u64 x86_amd_ls_cfg_base;
@@ -47,9 +38,7 @@ static inline u64 ssbd_tif_to_amd_ls_cfg(u64 tifn)
 }
 extern void speculation_ctrl_update(unsigned long tif);
 #include <asm/proto.h>
-/* frame.h macros removed - ENCODE_FRAME_POINTER, FRAME_BEGIN, FRAME_END, FRAME_OFFSET not used in this file */
 #include <asm/asm.h>
-/* tdx.h removed - header is empty */
 
 __visible DEFINE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw) = {
 	.x86_tss = {
@@ -63,8 +52,6 @@ __visible DEFINE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw) = {
 		.io_bitmap_base	= IO_BITMAP_OFFSET_INVALID,
 	 },
 };
-
-/* __tss_limit_invalid removed - write-only variable, never read */
 
 int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)
 {
@@ -80,12 +67,8 @@ void exit_thread(struct task_struct *tsk)
 	struct thread_struct *t = &tsk->thread;
 	struct fpu *fpu = &t->fpu;
 
-	/* io_bitmap_exit, free_vm86 removed - empty stubs */
-
 	fpu__drop(fpu);
 }
-
-/* set_new_tls removed - CLONE_SETTLS never used */
 
 int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 {
@@ -134,19 +117,13 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 		return 0;
 	}
 
-	/* CLONE_SETTLS check removed - kernel_thread/user_mode_thread never set it */
-	/* io_bitmap_share removed - empty stub */
-
 	return ret;
 }
-
-/* pkru_flush_thread inlined into flush_thread */
 
 void flush_thread(void)
 {
 	struct task_struct *tsk = current;
 
-	/* flush_ptrace_hw_breakpoint removed - was empty stub */
 	memset(tsk->thread.tls_array, 0, sizeof(tsk->thread.tls_array));
 
 	fpu_flush_thread();
@@ -184,9 +161,6 @@ void arch_setup_new_exec(void)
 		speculation_ctrl_update(read_thread_flags());
 	}
 }
-
-/* switch_to_bitmap removed - was empty stub */
-/* amd_set_core_ssb_state, amd_set_ssb_virt_state inlined into __speculation_ctrl_update */
 
 static __always_inline void __speculation_ctrl_update(unsigned long tifp,
 						      unsigned long tifn)
@@ -232,16 +206,12 @@ void speculation_ctrl_update(unsigned long tif)
 	local_irq_restore(flags);
 }
 
-/* cr4_toggle_bits_irqsoff inlined into __switch_to_xtra */
-
 void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
 {
 	unsigned long tifp, tifn;
 
 	tifn = read_task_thread_flags(next_p);
 	tifp = read_task_thread_flags(prev_p);
-
-	/* switch_to_bitmap call removed - was empty stub */
 
 	if ((tifp & _TIF_BLOCKSTEP || tifn & _TIF_BLOCKSTEP) &&
 	    arch_has_block_step()) {
@@ -255,7 +225,6 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
 	}
 
 	if ((tifp ^ tifn) & _TIF_NOTSC) {
-		/* Inlined cr4_toggle_bits_irqsoff(X86_CR4_TSD) */
 		unsigned long newval, cr4 = this_cpu_read(cpu_tlbstate.cr4);
 		newval = cr4 ^ X86_CR4_TSD;
 		if (newval != cr4) {
@@ -279,15 +248,10 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
 
 static void (*x86_idle)(void);
 
-/* play_dead removed - never called */
-
 void arch_cpu_idle_enter(void)
 {
-	/* tsc_verify_tsc_adjust removed - was empty stub */
 	local_touch_nmi();
 }
-
-/* arch_cpu_idle_dead removed - declared but never called */
 
 void arch_cpu_idle(void)
 {
@@ -299,8 +263,6 @@ void __cpuidle default_idle(void)
 	raw_safe_halt();
 }
 
-/* stop_this_cpu removed - never called (~10 LOC) */
-
 /* Simplified: just use default_idle for minimal kernel */
 void select_idle_routine(const struct cpuinfo_x86 *c)
 {
@@ -310,15 +272,9 @@ void select_idle_routine(const struct cpuinfo_x86 *c)
 
 void __init arch_post_acpi_subsys_init(void)
 {
-	/* X86_BUG_AMD_E400 never set (no AMD detection), function was no-op */
 }
 
 unsigned long arch_align_stack(unsigned long sp)
 {
-	/* randomize_va_space always 0 - dead branch removed */
 	return sp & ~0xf;
 }
-
-/* arch_randomize_brk removed - randomize_va_space always 0, never called */
-
-/* do_arch_prctl_common removed - arch_prctl syscall uses COND_SYSCALL */

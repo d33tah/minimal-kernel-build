@@ -22,8 +22,6 @@ struct file *file_lookup(const char *name)
 	return file;
 }
 
-/* gstr functions (str_new, str_append, str_printf, str_get) removed - never called */
-
 void *xmalloc(size_t size)
 {
 	void *p = malloc(size);

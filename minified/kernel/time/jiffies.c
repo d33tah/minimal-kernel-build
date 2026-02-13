@@ -26,8 +26,6 @@ __cacheline_aligned_in_smp DEFINE_RAW_SPINLOCK(jiffies_lock);
 __cacheline_aligned_in_smp seqcount_raw_spinlock_t jiffies_seq =
 	SEQCNT_RAW_SPINLOCK_ZERO(jiffies_seq, &jiffies_lock);
 
-/* get_jiffies_64 removed - never called */
-
 static int __init init_jiffies_clocksource(void)
 {
 	return __clocksource_register(&clocksource_jiffies);
@@ -39,5 +37,3 @@ struct clocksource *__init __weak clocksource_default_clock(void)
 {
 	return &clocksource_jiffies;
 }
-
-/* register_refined_jiffies removed - basic jiffies clocksource sufficient */

@@ -7,7 +7,6 @@
 #include <linux/init.h>
 
 #include "internal.h"
-/* legacy.h removed - nothing from it used here */
 #include "xstate.h"
 
 /* fpu__init_cpu_generic inlined - single caller */
@@ -31,9 +30,6 @@ void fpu__init_cpu(void)
 
 	asm volatile("fninit");
 }
-
-/* fpu__probe_without_cpuid, fpu__init_system_early_generic removed/inlined */
-/* mxcsr_feature_mask removed - only written, never read */
 
 /* fpu__init_system_mxcsr, fpu__init_task_struct_size,
  * fpu__init_system_xstate_size_legacy all inlined below */
@@ -61,8 +57,6 @@ void __init fpu__init_system(struct cpuinfo_x86 *c)
 	fpu__init_cpu();
 
 	fpstate_init_user(&init_fpstate);
-
-	/* fpu__init_system_mxcsr removed - mxcsr_feature_mask was write-only */
 
 	/* fpu__init_system_xstate_size_legacy inlined */
 	if (!cpu_feature_enabled(X86_FEATURE_FPU)) {

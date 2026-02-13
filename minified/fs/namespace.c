@@ -1,10 +1,8 @@
-/* linux/syscalls.h, linux/capability.h removed - unused */
 /* mnt_namespace.h inlined */
 struct mnt_namespace;
 extern void put_mnt_ns(struct mnt_namespace *ns);
 #include <linux/user_namespace.h>
 #include <linux/namei.h>
-/* linux/security.h, linux/cred.h removed - unused */
 #include <linux/idr.h>
 #include <linux/init.h>
 #include <linux/sysfs.h>
@@ -21,11 +19,7 @@ extern void put_mnt_ns(struct mnt_namespace *ns);
 extern void shmem_init(void);
 #include <linux/mnt_idmapping.h>
 
-/* --- 2026-01-26 01:10 --- Inlined from pnode.h */
 #include "mount.h"
-/* IS_MNT_SHARED removed - invent_group_ids removed, never shared */
-/* IS_MNT_LOCKED removed - only used in umount_tree (removed) */
-/* set_mnt_shared inlined into attach_recursive_mnt - single caller */
 static int mnt_get_count(struct mount *mnt);
 static void mnt_set_mountpoint(struct mount *, struct mountpoint *,
 			       struct mount *);
@@ -41,18 +35,13 @@ static __initdata unsigned long mhash_entries;
 
 static __initdata unsigned long mphash_entries;
 
-/* event variable removed - touch_mnt_namespace removed */
 static DEFINE_IDA(mnt_id_ida);
-/* mnt_group_ida removed - invent_group_ids removed */
 
 static struct hlist_head *mount_hashtable __read_mostly;
 static struct hlist_head *mountpoint_hashtable __read_mostly;
 static struct kmem_cache *mnt_cache __read_mostly;
 static DECLARE_RWSEM(namespace_sem);
-/* HLIST_HEAD(unmounted) removed - umount_tree removed */
 static LIST_HEAD(ex_mountpoints);
-
-/* Removed: struct mount_kattr - never used */
 
 __cacheline_aligned_in_smp DEFINE_SEQLOCK(mount_lock);
 
@@ -86,8 +75,6 @@ static void mnt_free_id(struct mount *mnt)
 {
 	ida_free(&mnt_id_ida, mnt->mnt_id);
 }
-
-/* mnt_alloc_group_id inlined into invent_group_ids */
 
 static inline void mnt_add_count(struct mount *mnt, int n)
 {
@@ -181,8 +168,6 @@ void __mnt_drop_write(struct vfsmount *mnt)
 	mnt_dec_writers(real_mount(mnt));
 	preempt_enable();
 }
-
-/* free_vfsmnt removed - inlined into delayed_free_vfsmnt (~9 LOC) */
 
 static void delayed_free_vfsmnt(struct rcu_head *head)
 {
@@ -337,10 +322,6 @@ static void put_mountpoint(struct mountpoint *mp)
 	__put_mountpoint(mp, &ex_mountpoints);
 }
 
-/* check_mnt inlined into path_mount - single caller */
-
-/* touch_mnt_namespace removed - namespace polling never used in minimal kernel */
-
 static struct mountpoint *unhash_mnt(struct mount *mnt)
 {
 	struct mountpoint *mp;
@@ -353,8 +334,6 @@ static struct mountpoint *unhash_mnt(struct mount *mnt)
 	mnt->mnt_mp = NULL;
 	return mp;
 }
-
-/* umount_mnt inlined into do_umount - put_mountpoint(unhash_mnt(mnt)) */
 
 static void mnt_set_mountpoint(struct mount *mnt, struct mountpoint *mp,
 			       struct mount *child_mnt)
@@ -373,11 +352,6 @@ static void __attach_mnt(struct mount *mnt, struct mount *parent)
 			   m_hash(&parent->mnt, mnt->mnt_mountpoint));
 	list_add_tail(&mnt->mnt_child, &parent->mnt_mounts);
 }
-
-/* attach_mnt inlined into do_move_mount - called only once */
-
-/* commit_tree inlined into graft_tree */
-/* next_mnt removed - never called in minimal kernel */
 
 static struct vfsmount *vfs_create_mount(struct fs_context *fc)
 {
@@ -420,7 +394,6 @@ static struct vfsmount *fc_mount(struct fs_context *fc)
 	return ERR_PTR(err);
 }
 
-/* data parameter removed - always NULL at all call sites */
 static struct vfsmount *vfs_kern_mount(struct file_system_type *type, int flags,
 				       const char *name)
 {
@@ -454,7 +427,6 @@ static void cleanup_mnt(struct mount *mnt)
 	struct mount *m;
 
 	WARN_ON(mnt->mnt_writers);
-	/* mnt_pin_kill call removed - pin_insert never called, mnt_pins always empty */
 	hlist_for_each_entry_safe(m, p, &mnt->mnt_stuck_children, mnt_umount) {
 		hlist_del(&m->mnt_umount);
 		mntput(&m->mnt);
@@ -469,10 +441,6 @@ static void __cleanup_mnt(struct rcu_head *head)
 {
 	cleanup_mnt(container_of(head, struct mount, mnt_rcu));
 }
-
-/* delayed_mntput work queue removed - unused in minimal kernel */
-
-/* mntput_no_expire inlined into mntput */
 
 void mntput(struct vfsmount *mnt)
 {
@@ -522,7 +490,6 @@ void mntput(struct vfsmount *mnt)
 		}
 	}
 	unlock_mount_hash();
-	/* shrink_dentry_list call removed - function is empty stub */
 
 	if (likely(!(m->mnt.mnt_flags & MNT_INTERNAL))) {
 		struct task_struct *task = current;
@@ -548,7 +515,6 @@ static void namespace_unlock(void)
 {
 	LIST_HEAD(list);
 
-	/* unmounted hlist handling removed - umount_tree removed, never populated */
 	if (!list_empty(&ex_mountpoints)) {
 		__list_splice(&ex_mountpoints, &list, list.next);
 		INIT_LIST_HEAD(&ex_mountpoints);
@@ -585,7 +551,6 @@ static int attach_recursive_mnt(struct mount *source_mnt,
 	if (source_mnt->mnt_ns)
 		list_del_init(&source_mnt->mnt_ns->list);
 	mnt_set_mountpoint(dest_mnt, dest_mp, source_mnt);
-	/* Inlined commit_tree */
 	{
 		struct mount *parent = source_mnt->mnt_parent;
 		struct mount *m;
@@ -604,7 +569,6 @@ static int attach_recursive_mnt(struct mount *source_mnt,
 		n->pending_mounts = 0;
 
 		__attach_mnt(source_mnt, parent);
-		/* touch_mnt_namespace removed - namespace polling never used */
 	}
 
 	put_mountpoint(smp);
@@ -643,14 +607,7 @@ retry:
 	goto retry;
 }
 
-/* unlock_mount inlined into do_loopback */
 /* graft_tree inlined at call site - only called once */
-
-/* do_change_type, do_add_mount inlined into path_mount */
-
-/* mount_too_revealing removed - always returned false (~6 LOC) */
-
-/* do_new_mount inlined into path_mount */
 
 /* path_mount simplified: only new mount supported, no remount/bind/move */
 int path_mount(const char *dev_name, struct path *path, const char *type_page,
@@ -772,19 +729,15 @@ static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns,
 	}
 	if (!anon)
 		ns_alloc_inum(&new_ns->ns);
-	/* ns.ops assignment removed - never read */
 	if (!anon)
 		new_ns->seq = atomic64_add_return(1, &mnt_ns_seq);
 	refcount_set(&new_ns->ns.count, 1);
 	INIT_LIST_HEAD(&new_ns->list);
-	/* init_waitqueue_head(&new_ns->poll) removed - poll never used */
 	spin_lock_init(&new_ns->ns_lock);
 	new_ns->user_ns = get_user_ns(user_ns);
 	new_ns->ucounts = ucounts;
 	return new_ns;
 }
-
-/* copy_mnt_ns removed - create_new_namespaces no longer called */
 
 void __init mnt_init(void)
 {
@@ -808,9 +761,7 @@ void __init mnt_init(void)
 	if (err)
 		printk(KERN_WARNING "%s: sysfs_init error: %d\n", __func__,
 		       err);
-	/* Stub: fs_kobj not used in minimal kernel */
 	shmem_init();
-	/* Inlined init_mount_tree */
 	{
 		struct vfsmount *mnt;
 		struct mount *m;
@@ -857,8 +808,3 @@ struct vfsmount *kern_mount(struct file_system_type *type)
 	}
 	return mnt;
 }
-
-/* mnt_already_visible, mount_too_revealing removed - stubbed/never needed */
-
-/* mnt_may_suid removed - never called (~5 LOC) */
-/* mntns_get, mntns_put, mntns_install, mntns_owner, mntns_operations removed - ns.ops never read */

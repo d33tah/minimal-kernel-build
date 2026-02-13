@@ -1,10 +1,8 @@
 
 #include <linux/device.h>
 #include <linux/delay.h>
-/* linux/module.h removed - unused */
 #include <linux/kthread.h>
 #include <linux/wait.h>
-/* Inlined from pm_runtime.h */
 #define RPM_ASYNC 0x01
 #define RPM_GET_PUT 0x04
 static inline int __pm_runtime_idle(struct device *dev, int rpmflags)
@@ -103,27 +101,18 @@ static bool device_is_bound(struct device *dev)
 static atomic_t probe_count = ATOMIC_INIT(0);
 static DECLARE_WAIT_QUEUE_HEAD(probe_waitqueue);
 
-/* Stub: state_synced_show not needed for minimal kernel */
-
 static void device_unbind_cleanup(struct device *dev)
 {
 	/* arch_teardown_dma_ops inlined - empty function */
 	dev->driver = NULL;
 	dev_set_drvdata(dev, NULL);
-	/* pm_domain->dismiss removed - pm_domain never assigned */
 	dev->power.driver_flags = 0; /* dev_pm_set_driver_flags inlined */
 }
 
-/* device_remove, call_driver_probe, really_probe inlined into single caller */
-/* driver_probe_done removed - never called */
-
 void wait_for_device_probe(void)
 {
-	/* flush_work removed - stub returning false */
 	wait_event(probe_waitqueue, atomic_read(&probe_count) == 0);
 }
-
-/* __driver_probe_device inlined into driver_probe_device */
 
 static int driver_probe_device(struct device_driver *drv, struct device *dev)
 {
@@ -132,7 +121,6 @@ static int driver_probe_device(struct device_driver *drv, struct device *dev)
 
 	atomic_inc(&probe_count);
 
-	/* Inlined __driver_probe_device */
 	if (dev->p->dead ||
 	    !dev->kobj.state_in_sysfs) { /* device_is_registered inlined */
 		ret = -ENODEV;
@@ -161,8 +149,6 @@ static int driver_probe_device(struct device_driver *drv, struct device *dev)
 				goto really_probe_pinctrl_failed;
 		}
 
-		/* pm_domain->activate removed - pm_domain never assigned */
-
 		if (dev->bus->probe)
 			ret = dev->bus->probe(dev);
 		else if (drv->probe)
@@ -172,7 +158,6 @@ static int driver_probe_device(struct device_driver *drv, struct device *dev)
 			goto really_probe_failed;
 		}
 
-		/* pm_domain->sync removed - pm_domain never assigned */
 		goto really_probe_done;
 
 really_probe_failed:
@@ -230,8 +215,6 @@ static int __device_attach_driver(struct device_driver *drv, void *_data)
 	return ret == 0;
 }
 
-/* __device_attach_async_helper removed - have_async never set, async scheduling never happens */
-
 static int __device_attach(struct device *dev, bool allow_async)
 {
 	int ret = 0;
@@ -244,7 +227,6 @@ static int __device_attach(struct device *dev, bool allow_async)
 			ret = 1;
 			goto out_unlock;
 		}
-		/* device_bind_driver call removed - always returns 0 and does nothing */
 		ret = 1;
 	} else {
 		struct device_attach_data data = {
@@ -258,7 +240,6 @@ static int __device_attach(struct device *dev, bool allow_async)
 
 		ret = bus_for_each_drv(dev->bus, NULL, &data,
 				       __device_attach_driver);
-		/* have_async never set, so async branch removed */
 		pm_request_idle(dev);
 
 		if (dev->parent)
@@ -273,7 +254,3 @@ void device_initial_probe(struct device *dev)
 {
 	__device_attach(dev, true);
 }
-
-/* driver_detach removed - only called from bus_remove_driver which is never called (~22 LOC) */
-
-/* async_schedule_node_domain, async_dfl_domain removed - never called */

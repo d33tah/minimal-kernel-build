@@ -1,4 +1,3 @@
-/* linux/export.h removed - no EXPORT_SYMBOL */
 #include <asm/cpu.h>
 
 unsigned int x86_family(unsigned int sig)

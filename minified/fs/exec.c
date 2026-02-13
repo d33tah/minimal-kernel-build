@@ -23,7 +23,6 @@
 #include <linux/security.h>
 #include <linux/syscalls.h>
 #include <linux/fs_struct.h>
-/* linux/vmalloc.h, syscall_user_dispatch.h removed - not used */
 #include <linux/ptrace.h>
 
 #include <linux/uaccess.h>
@@ -31,8 +30,6 @@
 #include <asm/tlb.h>
 
 #include "internal.h"
-
-/* suid_dumpable removed - never used */
 
 /* Single binfmt (ELF) - list/lock replaced with direct pointer */
 static struct linux_binfmt *the_binfmt;
@@ -48,12 +45,7 @@ bool path_noexec(const struct path *path)
 	       (path->mnt->mnt_sb->s_iflags & SB_I_NOEXEC);
 }
 
-/* acct_arg_size removed - was a no-op (add_mm_counter removed) */
-
 /* get_arg_page, put_arg_page and flush_arg_page inlined */
-/* bprm_mm_init inlined into alloc_bprm */
-
-/* Removed: user_arg_ptr, get_user_arg_ptr, count - only used by removed do_execveat_common */
 
 static int count_strings_kernel(const char *const *argv)
 {
@@ -72,8 +64,6 @@ static int count_strings_kernel(const char *const *argv)
 	return i;
 }
 
-/* Removed: copy_strings() - only used by removed do_execveat_common */
-
 static int copy_string_kernel(const char *arg, struct linux_binprm *bprm)
 {
 	int len = strnlen(arg, MAX_ARG_STRLEN) + 1;
@@ -86,7 +76,6 @@ static int copy_string_kernel(const char *arg, struct linux_binprm *bprm)
 
 	arg += len;
 	bprm->p -= len;
-	/* CONFIG_MMU=y, so IS_ENABLED is always true */
 	if (bprm->p < bprm->argmin)
 		return -E2BIG;
 
@@ -111,7 +100,6 @@ static int copy_string_kernel(const char *arg, struct linux_binprm *bprm)
 			mmap_read_unlock(bprm->mm);
 			if (ret <= 0)
 				return -E2BIG;
-			/* acct_arg_size call removed - was no-op */
 		}
 		kaddr = kmap_atomic(page);
 		memcpy(kaddr + offset_in_page(pos), arg, bytes_to_copy);
@@ -136,8 +124,6 @@ static int copy_strings_kernel(int argc, const char *const *argv,
 	return 0;
 }
 
-/* shift_arg_pages inlined into setup_arg_pages */
-
 int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top,
 		    int executable_stack)
 {
@@ -160,7 +146,6 @@ int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top,
 	stack_shift = vma->vm_end - stack_top;
 
 	bprm->p -= stack_shift;
-	/* mm->arg_start assignment removed - write-only field */
 
 	bprm->exec -= stack_shift;
 
@@ -214,7 +199,6 @@ int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top,
 		stack_base = vma->vm_end - rlim_stack;
 	else
 		stack_base = vma->vm_start - stack_expand;
-	/* current->mm->start_stack assignment removed - write-only field */
 	ret = expand_stack(vma, stack_base);
 	if (ret)
 		ret = -EFAULT;
@@ -234,8 +218,6 @@ static struct file *do_open_execat(int fd, struct filename *name, int flags)
 		.intent = LOOKUP_OPEN,
 		.lookup_flags = LOOKUP_FOLLOW,
 	};
-
-	/* flags handling removed - always called with flags=0 */
 
 	file = do_filp_open(fd, name, &open_exec_flags);
 	if (IS_ERR(file))
@@ -258,11 +240,6 @@ exit:
 	return ERR_PTR(err);
 }
 
-/* open_exec removed - never called (~11 LOC) */
-/* exec_mmap inlined into begin_new_exec */
-
-/* de_thread inlined into begin_new_exec - always succeeds for single-threaded init */
-
 void __set_task_comm(struct task_struct *tsk, const char *buf, bool exec)
 {
 	task_lock(tsk);
@@ -280,19 +257,15 @@ int begin_new_exec(struct linux_binprm *bprm)
 	struct task_struct *me = current;
 	int retval;
 
-	/* bprm_creds_from_file removed - init runs as root (~21 LOC) */
 	bprm->point_of_no_return = true;
 
 	/* de_thread inlined - single-threaded init, always succeeds */
 	me->exit_signal = SIGCHLD;
-	/* unshare_files() inlined - always returns 0 */
 
 	retval = set_mm_exe_file(bprm->mm, bprm->file);
 	if (retval)
 		goto out;
 
-	/* acct_arg_size call removed - was no-op */
-	/* Inlined exec_mmap */
 	{
 		struct mm_struct *mm = bprm->mm;
 		struct task_struct *tsk = current;
@@ -330,20 +303,8 @@ int begin_new_exec(struct linux_binprm *bprm)
 
 	bprm->mm = NULL;
 
-	/* unshare_sighand removed - sighand refcount is 1 at boot (single thread) */
-
-	/* PF_RANDOMIZE removed - never set */
 	me->flags &= ~(PF_FORKNOEXEC | PF_NOFREEZE | PF_NO_SETAFFINITY);
 	flush_thread();
-	/* personality per_clear removed - always 0 (kzalloc) */
-
-	/* clear_task_syscall_work SYSCALL_USER_DISPATCH removed */
-
-	/* do_close_on_exec call removed - function was empty stub */
-
-	/* secureexec check removed - never set (bprm_creds_from_file removed) */
-
-	/* me->sas_ss_sp = me->sas_ss_size = 0; removed - write-only fields */
 
 	/* kbasename inlined */
 	{
@@ -351,18 +312,13 @@ int begin_new_exec(struct linux_binprm *bprm)
 		__set_task_comm(me, tail ? tail + 1 : bprm->filename, true);
 	}
 
-	/* self_exec_id increment removed - write-only field */
-	/* flush_signal_handlers removed - all handlers already SIG_DFL at boot */
-
 	retval = set_cred_ucounts(bprm->cred);
 	if (retval < 0)
 		goto out_unlock;
 
-	/* security_bprm_committing_creds - empty stub */
 	commit_creds(bprm->cred);
 	bprm->cred = NULL;
 	/* security_bprm_committed_creds, perf_event_exec/exit_task - stubs */
-	/* bprm->have_execfd check removed - never set (kzalloc zeros) */
 	return 0;
 
 out_unlock:
@@ -378,12 +334,7 @@ void setup_new_exec(struct linux_binprm *bprm)
 	arch_pick_mmap_layout(me->mm, &bprm->rlim_stack);
 
 	up_write(&me->signal->exec_update_lock);
-	/* cred_guard_mutex unlock removed - never locked */
 }
-
-/* finalize_exec removed - inlined into binfmt_elf.c */
-
-/* prepare_bprm_creds inlined into bprm_execve */
 
 static void free_bprm(struct linux_binprm *bprm)
 {
@@ -396,7 +347,6 @@ static void free_bprm(struct linux_binprm *bprm)
 		allow_write_access(bprm->file);
 		fput(bprm->file);
 	}
-	/* bprm->executable check removed - never set (kzalloc zeros) */
 
 	if (bprm->interp != bprm->filename)
 		kfree(bprm->interp);
@@ -413,11 +363,9 @@ static struct linux_binprm *alloc_bprm(int fd, struct filename *filename)
 	if (!bprm)
 		goto out;
 
-	/* fdpath branch removed - fd is always AT_FDCWD */
 	bprm->filename = filename->name;
 	bprm->interp = bprm->filename;
 
-	/* Inlined bprm_mm_init */
 	bprm->mm = mm = mm_alloc();
 	if (!mm)
 		goto out_free;
@@ -468,11 +416,6 @@ out:
 	return ERR_PTR(retval);
 }
 
-/* Removed: bprm_change_interp - never called */
-
-/* check_unsafe_exec inlined into bprm_execve */
-/* bprm_creds_from_file inlined into begin_new_exec */
-
 static int search_binary_handler(struct linux_binprm *bprm)
 {
 	int retval;
@@ -487,15 +430,12 @@ static int search_binary_handler(struct linux_binprm *bprm)
 	return the_binfmt->load_binary(bprm);
 }
 
-/* exec_binprm inlined into bprm_execve */
-
 static int bprm_execve(struct linux_binprm *bprm, int fd,
 		       struct filename *filename, int flags)
 {
 	struct file *file;
 	int retval;
 
-	/* cred_guard_mutex and in_exec removed: single process, no concurrent exec */
 	bprm->cred = prepare_exec_creds();
 	if (unlikely(!bprm->cred))
 		return -ENOMEM;
@@ -505,10 +445,7 @@ static int bprm_execve(struct linux_binprm *bprm, int fd,
 	if (IS_ERR(file))
 		return retval;
 
-	/* sched_exec() - empty stub removed */
 	bprm->file = file;
-
-	/* fdpath/close_on_exec check removed - fdpath always NULL */
 
 	/* exec_binprm simplified: no interpreter support (static ELF only) */
 	retval = search_binary_handler(bprm);
@@ -522,8 +459,6 @@ out:
 		force_sig(SIGSEGV);
 	return retval;
 }
-
-/* Removed: do_execveat_common - execve syscall is stubbed */
 
 int kernel_execve(const char *kernel_filename, const char *const *argv,
 		  const char *const *envp)
@@ -558,7 +493,6 @@ int kernel_execve(const char *kernel_filename, const char *const *argv,
 		goto out_free;
 	bprm->envc = retval;
 
-	/* Inlined bprm_stack_limits */
 	{
 		unsigned long limit = _STK_LIM / 4 * 3;
 		unsigned long ptr_size;
@@ -593,8 +527,6 @@ out_ret:
 	return retval;
 }
 
-/* Removed: do_execve - execve syscall is stubbed */
-
 void set_binfmt(struct linux_binfmt *new)
 {
 	struct mm_struct *mm = current->mm;
@@ -607,5 +539,4 @@ void set_binfmt(struct linux_binfmt *new)
 		__module_get(new->module);
 }
 
-/* set_dumpable removed - was empty stub, call sites also removed */
 /* execve/execveat replaced with COND_SYSCALL */

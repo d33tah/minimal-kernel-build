@@ -7,7 +7,6 @@
 #include <linux/sched.h>
 #include <linux/thread_info.h>
 
-/* Inlined from asm/uaccess.h */
 #include <linux/compiler.h>
 #include <linux/string.h>
 #include <asm/asm.h>
@@ -236,9 +235,6 @@ do {										\
 	__get_user_size(__gu_val, (ptr), sizeof(*(ptr)), err_label);		\
 	(x) = (__force __typeof__(*(ptr)))__gu_val;				\
 } while (0)
-
-/* unsafe_copy_loop, unsafe_copy_to_user removed - never called */
-/* __get_kernel_nofault removed - never called */
 
 #define __put_kernel_nofault(dst, src, type, err_label)			\
 	__put_user_size(*((type *)(src)), (__force type __user *)(dst),	\

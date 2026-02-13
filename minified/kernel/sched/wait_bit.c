@@ -1,5 +1,4 @@
 
-
 #define WAIT_TABLE_BITS 4 /* Reduced from 8 for minimal boot */
 #define WAIT_TABLE_SIZE (1 << WAIT_TABLE_BITS)
 
@@ -12,8 +11,6 @@ wait_queue_head_t *bit_waitqueue(void *word, int bit)
 
 	return bit_wait_table + hash_long(val, WAIT_TABLE_BITS);
 }
-
-/* wake_bit_function, __wait_on_bit, out_of_line_wait_on_bit removed - never called (~35 LOC) */
 
 void __wake_up_bit(struct wait_queue_head *wq_head, void *word, int bit)
 {

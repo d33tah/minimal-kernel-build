@@ -2,19 +2,16 @@
 #include <linux/signal.h>
 #include <linux/sched.h>
 #include <linux/kernel.h>
-/* linux/errno.h removed - no errno constants used */
 #include <linux/string.h>
 #include <linux/ptrace.h>
 #include <linux/mman.h>
 #include <linux/mm.h>
-/* linux/swap.h removed - no swap functions used */
 #include <linux/smp.h>
 #include <linux/init.h>
 #include <linux/highmem.h>
 #include <linux/pagemap.h>
 #include <linux/pfn.h>
 #include <linux/memblock.h>
-/* proc_fs.h removed - empty header */
 #include <linux/initrd.h>
 #include <linux/gfp.h>
 
@@ -27,12 +24,9 @@
 #include <asm/apic.h>
 #include <asm/tlb.h>
 #include <asm/tlbflush.h>
-/* olpc_dt_build_devicetree removed - empty stub */
 #include <asm/pgalloc.h>
 #include <asm/sections.h>
-/* paravirt.h removed - header is empty */
 #include <asm/setup.h>
-/* set_memory.h removed - header is empty */
 #include <asm/page_types.h>
 #include <asm/cpu_entry_area.h>
 #include <asm/pgtable_areas.h>
@@ -98,9 +92,6 @@ pte_t *__init populate_extra_pte(unsigned long vaddr)
 	return one_page_table_init(pmd) + pte_idx;
 }
 
-/* page_table_range_init_count removed - always returned 0 */
-/* page_table_kmap_check removed - just returned pte unchanged */
-
 static void __init page_table_range_init(unsigned long start, unsigned long end,
 					 pgd_t *pgd_base)
 {
@@ -108,8 +99,6 @@ static void __init page_table_range_init(unsigned long start, unsigned long end,
 	unsigned long vaddr;
 	pgd_t *pgd;
 	pmd_t *pmd;
-
-	/* count and adr removed - page_table_range_init_count always returned 0 */
 
 	vaddr = start;
 	pgd_idx = pgd_index(vaddr);
@@ -121,7 +110,6 @@ static void __init page_table_range_init(unsigned long start, unsigned long end,
 		pmd = pmd + pmd_index(vaddr);
 		for (; (pmd_idx < PTRS_PER_PMD) && (vaddr != end);
 		     pmd++, pmd_idx++) {
-			/* page_table_kmap_check removed - just returned pte */
 			one_page_table_init(pmd);
 			vaddr += PMD_SIZE;
 		}
@@ -220,8 +208,6 @@ repeat:
 		}
 	}
 	if (mapping_iter == 1) {
-		/* update_page_count removed - empty stub */
-
 		__flush_tlb_all();
 
 		mapping_iter = 2;
@@ -229,8 +215,6 @@ repeat:
 	}
 	return last_map_addr;
 }
-
-/* permanent_kmaps_init removed - empty function */
 
 void __init sync_initial_page_table(void)
 {
@@ -254,7 +238,6 @@ void __init native_pagetable_init(void)
 	for (pfn = max_low_pfn; pfn < 1 << (32 - PAGE_SHIFT); pfn++) {
 		va = PAGE_OFFSET + (pfn << PAGE_SHIFT);
 		pgd = base + pgd_index(va);
-		/* pgd_present always returns 1, skip check */
 
 		p4d = p4d_offset(pgd, va);
 		pud = pud_offset(p4d, va);
@@ -285,15 +268,11 @@ void __init early_ioremap_page_table_range_init(void)
 	early_ioremap_reset();
 }
 
-/* pagetable_init inlined into paging_init */
-
 #define DEFAULT_PTE_MASK ~(_PAGE_NX | _PAGE_GLOBAL)
 pteval_t __supported_pte_mask __read_mostly = DEFAULT_PTE_MASK;
 pteval_t __default_kernel_pte_mask __read_mostly = DEFAULT_PTE_MASK;
 
 static unsigned int highmem_pages = -1;
-
-/* MSG_HIGHMEM_TOO_BIG removed - never used */
 
 /* lowmem_pfn_init and highmem_pfn_init inlined - single callers */
 void __init find_low_pfn_range(void)
@@ -332,23 +311,16 @@ void __init find_low_pfn_range(void)
 	}
 }
 
-/* imdbg debug function removed */
 void __init initmem_init(void)
 {
 	high_memory = (void *)__va(max_low_pfn * PAGE_SIZE - 1) + 1;
 
-	/* memblock_set_node removed - returns 0 */
-
 	max_mapnr = max_low_pfn; /* !HIGHMEM */
-	/* setup_bootmem_allocator removed - empty stub */
 }
 
-/* pidbg debug function removed */
 void __init paging_init(void)
 {
-	/* pagetable_init inlined, permanent_kmaps_init removed - empty */
 	__flush_tlb_all();
-	/* olpc_dt_build_devicetree removed - empty stub */
 	sparse_init();
 	zone_sizes_init();
 }
@@ -358,7 +330,6 @@ void __init mem_init(void)
 {
 	char z = 0;
 
-	/* pci_iommu_alloc() - empty stub, call removed */
 	BUG_ON(!mem_map);
 	memblock_free_all();
 	after_bootmem = 1;
@@ -378,5 +349,3 @@ void __init mem_init(void)
 		panic("Linux doesn't support CPUs with broken WP.");
 	clear_fixmap(FIX_WP_TEST);
 }
-
-/* mark_rodata_ro removed - never called (call in main.c was removed) */

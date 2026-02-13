@@ -17,7 +17,6 @@ typedef struct physid_mask physid_mask_t;
 #include <asm/msr.h>
 #include <asm/hardirq.h>
 
-
 static inline void generic_apic_probe(void)
 {
 }
@@ -26,7 +25,6 @@ static inline void generic_apic_probe(void)
    apic_intr_mode_select, apic_intr_mode_init, lapic_assign_system_vectors,
    lapic_assign_legacy_vector, apic_needs_pit removed - never called */
 
-
 struct apic {
 	 
 	void	(*eoi_write)(u32 reg, u32 v);
@@ -34,7 +32,6 @@ struct apic {
 	void	(*write)(u32 reg, u32 v);
 	u32	(*read)(u32 reg);
 
-	 
 	void	(*wait_icr_idle)(void);
 	u32	(*safe_wait_icr_idle)(void);
 
@@ -47,16 +44,13 @@ struct apic {
 
 	u32	disable_esr;
 
-	/* delivery_mode removed - never accessed */
 	bool	dest_mode_logical;
 
 	u32	(*calc_dest_apicid)(unsigned int cpu);
 
-	 
 	u64	(*icr_read)(void);
 	void	(*icr_write)(u32 low, u32 high);
 
-	 
 	int	(*probe)(void);
 	int	(*acpi_madt_oem_check)(char *oem_id, char *oem_table_id);
 	int	(*apic_id_valid)(u32 apicid);
@@ -74,24 +68,14 @@ struct apic {
 	u32	(*get_apic_id)(unsigned long x);
 	u32	(*set_apic_id)(unsigned int id);
 
-	 
 	int	(*wakeup_secondary_cpu)(int apicid, unsigned long start_eip);
 	 
 	int	(*wakeup_secondary_cpu_64)(int apicid, unsigned long start_eip);
 
 	void	(*inquire_remote_apic)(int apicid);
 
-	 
 	int (*x86_32_early_logical_apicid)(int cpu);
 	char	*name;
 };
-
-/* struct apic *apic, __apicdrivers[], __apicdrivers_end[] externs removed - unused */
-/* apic_driver, apic_drivers macros removed - unused */
-
- 
-
-
-/* apic_read, apic_eoi, ack_APIC_irq removed - unused stubs */
 
 #endif

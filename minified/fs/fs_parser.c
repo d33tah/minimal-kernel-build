@@ -1,7 +1,6 @@
 
 #include <linux/fs_context.h>
 #include <linux/fs_parser.h>
-/* linux/slab.h removed - no slab functions */
 #include <linux/namei.h>
 #include "internal.h"
 
@@ -21,8 +20,6 @@ static inline bool is_flag(const struct fs_parameter_spec *p)
 	return p->type == NULL;
 }
 
-/* fs_lookup_key inlined into __fs_parse */
-
 int __fs_parse(struct p_log *log, const struct fs_parameter_spec *desc,
 	       struct fs_parameter *param, struct fs_parse_result *result)
 {
@@ -33,7 +30,6 @@ int __fs_parse(struct p_log *log, const struct fs_parameter_spec *desc,
 	result->uint_64 = 0;
 	result->negated = false;
 
-	/* Inlined fs_lookup_key */
 	for (p = desc; p->name; p++) {
 		if (strcmp(p->name, name) != 0)
 			continue;
@@ -74,14 +70,10 @@ found:
 	return p->opt;
 }
 
-/* fs_lookup_param removed - never called */
-
 static int fs_param_bad_value(struct p_log *log, struct fs_parameter *param)
 {
 	return inval_plog(log, "Bad value for '%s'", param->key);
 }
-
-/* fs_param_is_bool removed - unused */
 
 int fs_param_is_u32(struct p_log *log, const struct fs_parameter_spec *p,
 		    struct fs_parameter *param, struct fs_parse_result *result)

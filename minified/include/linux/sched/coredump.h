@@ -3,16 +3,11 @@
 
 #include <linux/mm_types.h>
 
-/* SUID_DUMP_USER and SUID_DUMP_ROOT removed - unused */
-
 #define MMF_DUMPABLE_BITS 2
 #define MMF_DUMPABLE_MASK ((1 << MMF_DUMPABLE_BITS) - 1)
 
-/* set_dumpable, __get_dumpable and get_dumpable removed - never called */
-
 #define MMF_DUMP_ANON_PRIVATE	2
 #define MMF_DUMP_ANON_SHARED	3
-/* MMF_DUMP_MAPPED_PRIVATE, MMF_DUMP_MAPPED_SHARED, MMF_DUMP_ELF_HEADERS removed - unused */
 #define MMF_DUMP_HUGETLB_PRIVATE 7
 
 #define MMF_DUMP_FILTER_SHIFT	MMF_DUMPABLE_BITS
@@ -24,9 +19,6 @@
 	 (1 << MMF_DUMP_HUGETLB_PRIVATE) | MMF_DUMP_MASK_DEFAULT_ELF)
 
 # define MMF_DUMP_MASK_DEFAULT_ELF	0
-
-/* MMF_DISABLE_THP, MMF_DISABLE_THP_MASK removed - THP disabled */
-/* MMF_OOM_SKIP, MMF_UNSTABLE, MMF_OOM_VICTIM, MMF_HAS_PINNED removed - unused */
 
 #define MMF_INIT_MASK		(MMF_DUMPABLE_MASK | MMF_DUMP_FILTER_MASK)
 

@@ -5,7 +5,6 @@
 
 int adapter;
 int force_x, force_y;
-/* do_restore removed - never read */
 int graphic_mode;
 
 void probe_cards(int unsafe)

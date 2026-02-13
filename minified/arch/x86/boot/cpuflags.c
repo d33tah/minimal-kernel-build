@@ -4,7 +4,6 @@
 #include <asm/processor-flags.h>
 #include <asm/required-features.h>
 #include <asm/msr-index.h>
-/* Inlined from cpuflags.h */
 #include <asm/cpufeatures.h>
 #include <asm/processor-flags.h>
 struct cpu_features {
@@ -23,8 +22,6 @@ struct cpu_features cpu;
 u32 cpu_vendor[3];
 
 static bool loaded_flags;
-
-/* has_fpu inlined into get_cpuflags */
 
 /* 32-bit only kernel */
 #define PUSHF "pushfl"

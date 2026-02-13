@@ -1,4 +1,3 @@
-/* Minimal memcontrol.h - stub for CONFIG_MEMCG disabled */
 
 #ifndef _LINUX_MEMCONTROL_H
 #define _LINUX_MEMCONTROL_H
@@ -10,8 +9,6 @@
 struct mem_cgroup;
 struct page;
 struct obj_cgroup;
-
-/* enum memcg_stat_item, enum memcg_memory_event removed - unused */
 
 static inline struct mem_cgroup *folio_memcg(struct folio *folio)
 {
@@ -29,8 +26,6 @@ static inline struct lruvec *folio_lruvec_lock_irqsave(struct folio *folio,
 	return &pgdat->__lruvec;
 }
 
-/* mem_cgroup_iter, mem_cgroup_get_zone_lru_size removed - callers removed */
-
 static inline struct mem_cgroup *lruvec_memcg(struct lruvec *lruvec)
 {
 	return NULL;
@@ -46,8 +41,6 @@ static inline void mod_lruvec_kmem_state(void *p, enum node_stat_item idx,
 	struct page *page = compound_head(virt_to_page(p));
 	mod_node_page_state(page_pgdat(page), idx, val);
 }
-
-/* unlock_page_lruvec_irq removed - only irqrestore variant is used */
 
 static inline void unlock_page_lruvec_irqrestore(struct lruvec *lruvec,
 		unsigned long flags)

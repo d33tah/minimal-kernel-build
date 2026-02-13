@@ -4,7 +4,6 @@
 #include <linux/kernel.h>
 #include <linux/cpumask.h>
 
-/* Inlined from irqreturn.h */
 enum irqreturn {
 	IRQ_NONE		= (0 << 0),
 	IRQ_HANDLED		= (1 << 0),
@@ -14,9 +13,7 @@ typedef enum irqreturn irqreturn_t;
 
 #include <linux/hardirq.h>
 #include <linux/irqflags.h>
-/* linux/hrtimer.h removed - entire hrtimer subsystem dead */
 #include <linux/kref.h>
-/* linux/workqueue.h removed - no workqueue types used */
 #include <linux/jump_label.h>
 
 #include <linux/atomic.h>
@@ -28,20 +25,14 @@ typedef enum irqreturn irqreturn_t;
 
 #define IRQF_SHARED		0x00000080
 #define IRQF_PROBE_SHARED	0x00000100
-/* __IRQF_TIMER removed - unused */
 #define IRQF_PERCPU		0x00000400
 #define IRQF_NOBALANCING	0x00000800
-/* IRQF_IRQPOLL removed - unused */
 #define IRQF_ONESHOT		0x00002000
 #define IRQF_NO_SUSPEND		0x00004000
 #define IRQF_NO_THREAD		0x00010000
 #define IRQF_COND_SUSPEND	0x00040000
 #define IRQF_NO_AUTOEN		0x00080000
 #define IRQF_NO_DEBUG		0x00100000
-
-/* IRQF_TIMER removed - unused */
-
-/* IRQC_IS_HARDIRQ, IRQC_IS_NESTED enum removed - unused */
 
 typedef irqreturn_t (*irq_handler_t)(int, void *);
 
@@ -75,13 +66,6 @@ request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
 	return request_threaded_irq(irq, handler, NULL, flags, name, dev);
 }
 
-/* free_irq, disable_irq_nosync, enable_irq removed - never called */
-/* struct device forward decl removed - unused */
-/* struct irq_affinity_desc, irq_set_affinity, irq_can_set_affinity removed - never used */
-
-/* irqchip_irq_state enum removed - unused */
-/* force_irqthreads_key and force_irqthreads() removed - never called */
-
 #ifndef local_softirq_pending
 
 #ifndef local_softirq_pending_ref
@@ -93,9 +77,6 @@ request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
 #define or_softirq_pending(x)	(__this_cpu_or(local_softirq_pending_ref, (x)))
 
 #endif  
-
-/* hard_irq_disable removed - never called */
-
 
 enum
 {
@@ -113,19 +94,10 @@ asmlinkage void do_softirq(void);
 asmlinkage void __do_softirq(void);
 
 extern void open_softirq(int nr, void (*action)(struct softirq_action *));
-/* softirq_init removed - empty stub */
-/* __raise_softirq_irqoff removed - only used in kernel/softirq.c */
 
 extern void raise_softirq_irqoff(unsigned int nr);
-/* raise_softirq removed - never called */
-/* ksoftirqd DECLARE_PER_CPU removed - definition removed from softirq.c */
-
-
-
-/* init_irq_proc removed - unused */
 
 extern int early_irq_init(void);
-/* arch_probe_nr_irqs, arch_early_irq_init removed - inlined at call sites */
 
 #ifndef __irq_entry
 # define __irq_entry	 __section(".irqentry.text")

@@ -7,7 +7,6 @@
 #include <linux/memcontrol.h>
 #include <linux/highmem.h>
 #include <linux/pagemap.h>
-/* linux/memremap.h removed - nothing from it used in rmap */
 
 struct anon_vma {
 	struct anon_vma *root;		 
@@ -15,14 +14,10 @@ struct anon_vma {
 	 
 	atomic_t refcount;
 
-	 
 	unsigned degree;
 
 	struct anon_vma *parent;	 
 
-	 
-
-	 
 	struct rb_root_cached rb_root;
 };
 
@@ -33,8 +28,6 @@ struct anon_vma_chain {
 	struct rb_node rb;			 
 	unsigned long rb_subtree_last;
 };
-
-/* get_anon_vma removed - never called */
 
 void __put_anon_vma(struct anon_vma *anon_vma);
 
@@ -58,7 +51,6 @@ void anon_vma_init(void);
 int  __anon_vma_prepare(struct vm_area_struct *);
 void unlink_anon_vmas(struct vm_area_struct *);
 int anon_vma_clone(struct vm_area_struct *, struct vm_area_struct *);
-/* anon_vma_fork removed - never called */
 
 static inline int anon_vma_prepare(struct vm_area_struct *vma)
 {
@@ -68,18 +60,12 @@ static inline int anon_vma_prepare(struct vm_area_struct *vma)
 	return __anon_vma_prepare(vma);
 }
 
-/* rmap_t typedef and RMAP_EXCLUSIVE removed - unused */
-
-/* page_add_anon_rmap removed - never called */
 void page_add_new_anon_rmap(struct page *, struct vm_area_struct *,
 		unsigned long address);
 void page_add_file_rmap(struct page *, struct vm_area_struct *,
 		bool compound);
-/* page_remove_rmap removed - never called */
 
 /* PVMW_SYNC, page_vma_mapped_walk struct and functions removed - never used
  * (page_vma_mapped.c was removed) */
 
-
-/* folio_mkclean, remove_migration_ptes, page_mapped_in_vma, page_mkclean removed - never called */
 #endif	 

@@ -1,6 +1,5 @@
 
 #include <linux/bitmap.h>
-/* linux/export.h removed - no EXPORT_SYMBOL used */
 #include <linux/list.h>
 #include <linux/slab.h>
 #include <linux/xarray.h>
@@ -9,8 +8,6 @@ static inline bool xa_track_free(const struct xarray *xa)
 {
 	return xa->xa_flags & XA_FLAGS_TRACK_FREE;
 }
-
-/* xa_zero_busy removed - XA_FLAGS_ZERO_BUSY never set */
 
 static inline void xa_mark_set(struct xarray *xa, xa_mark_t mark)
 {
@@ -106,7 +103,6 @@ static void *xas_descend(struct xa_state *xas, struct xa_node *node)
 	void *entry = xa_entry(xas->xa, node, offset);
 
 	xas->xa_node = node;
-	/* xa_is_sibling always returns false - sibling block removed */
 	xas->xa_offset = offset;
 	return entry;
 }
@@ -118,7 +114,6 @@ void *xas_load(struct xa_state *xas)
 	while (xa_is_node(entry)) {
 		struct xa_node *node = xa_to_node(entry);
 
-		/* xa_shift is always 0 - check removed */
 		entry = xas_descend(xas, node);
 		if (node->shift == 0)
 			break;
@@ -208,16 +203,12 @@ static void *xas_alloc(struct xa_state *xas, unsigned int shift)
 	return node;
 }
 
-/* xas_max removed - trivial wrapper returning xas->xa_index (~5 LOC) */
-
 static unsigned long max_index(void *entry)
 {
 	if (!xa_is_node(entry))
 		return 0;
 	return (XA_CHUNK_SIZE << xa_to_node(entry)->shift) - 1;
 }
-
-/* xas_shrink inlined into xas_delete_node */
 
 static void xas_delete_node(struct xa_state *xas)
 {
@@ -247,7 +238,6 @@ static void xas_delete_node(struct xa_state *xas)
 	}
 
 	if (!node->parent) {
-		/* Inlined xas_shrink */
 		struct xarray *xa = xas->xa;
 		for (;;) {
 			void *entry;
@@ -259,7 +249,6 @@ static void xas_delete_node(struct xa_state *xas)
 				break;
 			if (!xa_is_node(entry) && node->shift)
 				break;
-			/* xa_zero_busy never set - check removed */
 			xas->xa_node = XAS_BOUNDS;
 
 			RCU_INIT_POINTER(xa->xa_head, entry);
@@ -386,7 +375,6 @@ static void *xas_create(struct xa_state *xas, bool allow_root)
 	if (xas_top(node)) {
 		entry = xa_head_locked(xa);
 		xas->xa_node = NULL;
-		/* xa_zero_busy never set - check removed */
 		shift = xas_expand(xas, entry);
 		if (shift < 0)
 			return NULL;
@@ -450,7 +438,6 @@ void *xas_store(struct xa_state *xas, void *entry)
 	if (xas_invalid(xas))
 		return first;
 	node = xas->xa_node;
-	/* xa_sibs is always 0 in this codebase */
 	if (first == entry)
 		return first;
 
@@ -606,8 +593,6 @@ void *xas_find_marked(struct xa_state *xas, unsigned long max, xa_mark_t mark)
 			continue;
 		}
 
-		/* xa_is_sibling always returns false - sibling block removed */
-
 		offset = xas_find_chunk(xas, advance, mark);
 		if (offset > xas->xa_offset) {
 			advance = false;
@@ -637,8 +622,3 @@ max:
 	xas->xa_node = XAS_RESTART;
 	return NULL;
 }
-
-/* xas_find_conflict removed - no callers after filemap simplification */
-
-/* xa_load removed - no callers */
-/* Removed: __xa_store, xa_store, __xa_cmpxchg, __xa_insert, __xa_alloc, xa_load - no callers */

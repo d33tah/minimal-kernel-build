@@ -15,8 +15,6 @@
 
 #include "lkc.h"
 
-/* is_present, is_dir, is_same, conf_touch_dep removed - not needed for minimal build */
-
 static int make_parent_dir(const char *path)
 {
 	char tmp[PATH_MAX + 1];
@@ -694,8 +692,6 @@ static int conf_write_autoconf_cmd(const char *autoconf_name)
 
 	return 0;
 }
-
-/* conf_touch_deps removed - only needed for incremental syncconfig builds */
 
 static int __conf_write_autoconf(const char *filename,
 				 void (*print_symbol)(FILE *, struct symbol *),

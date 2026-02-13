@@ -8,7 +8,6 @@
 #define __release(x)	(void)0
 #define __cond_lock(x,c) (c)
 
-/* --- Inlined compiler-gcc.h --- */
 #ifndef GCC_VERSION
 #define GCC_VERSION (__GNUC__ * 10000		\
 		     + __GNUC_MINOR__ * 100	\
@@ -23,7 +22,6 @@
 # define __compiletime_error(message) __attribute__((error(message)))
 #endif
 
- 
 #define __must_be_array(a)	BUILD_BUG_ON_ZERO(__same_type((a), &(a)[0]))
 
 #ifndef __pure

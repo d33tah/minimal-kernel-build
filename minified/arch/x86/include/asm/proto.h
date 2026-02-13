@@ -7,10 +7,7 @@
 #endif
 
 void entry_INT80_32(void);
-/* entry_SYSENTER_32 declarations removed - SYSENTER not used */
 
 void x86_configure_nx(void);
-
-/* do_arch_prctl_common removed - arch_prctl uses COND_SYSCALL */
 
 #endif  

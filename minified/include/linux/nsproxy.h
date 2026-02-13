@@ -8,7 +8,6 @@ struct cgroup_namespace;
 struct nsproxy {
 	atomic_t count;
 	struct uts_namespace *uts_ns;
-	/* ipc_ns removed - never used */
 	struct mnt_namespace *mnt_ns;
 	struct pid_namespace *pid_ns_for_children;
 	struct net 	     *net_ns;
@@ -17,11 +16,9 @@ struct nsproxy {
 	struct cgroup_namespace *cgroup_ns;
 };
 extern struct nsproxy init_nsproxy;
-/* struct nsset removed - never used */
 int copy_namespaces(struct task_struct *tsk);
 void exit_task_namespaces(struct task_struct *tsk);
 void free_nsproxy(struct nsproxy *ns);
 int __init nsproxy_cache_init(void);
 static inline void put_nsproxy(struct nsproxy *ns) { if (atomic_dec_and_test(&ns->count)) free_nsproxy(ns); }
-/* get_nsproxy removed - inlined at single call site */
 #endif

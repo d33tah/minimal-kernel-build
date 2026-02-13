@@ -7,8 +7,6 @@
 
 #include "lkc.h"
 
-/* expr_eliminate_yn forward decl removed - function removed */
-
 struct expr *expr_alloc_symbol(struct symbol *sym)
 {
 	struct expr *e = xcalloc(1, sizeof(*e));
@@ -441,8 +439,6 @@ struct expr *expr_trans_compare(struct expr *e, enum expr_type type,
 	}
 	return NULL;
 }
-
-/* string_value_kind, expr_parse_string removed - only EQUAL/UNEQUAL needed */
 
 tristate expr_calc_value(struct expr *e)
 {

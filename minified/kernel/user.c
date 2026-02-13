@@ -2,7 +2,6 @@
 #include <linux/sched.h>
 #include <linux/slab.h>
 #include <linux/sched/user.h>
-/* linux/interrupt.h removed - no interrupt features used */
 #include <linux/user_namespace.h>
 #include <linux/proc_ns.h>
 
@@ -54,7 +53,6 @@ struct user_struct root_user = {
 	.ratelimit = RATELIMIT_STATE_INIT(root_user.ratelimit, 0, 0),
 };
 
-/* free_user inlined into free_uid */
 void free_uid(struct user_struct *up)
 {
 	unsigned long flags;
@@ -69,5 +67,3 @@ void free_uid(struct user_struct *up)
 		kmem_cache_free(uid_cachep, up);
 	}
 }
-
-/* uid_cache_init removed - kmem_cache_create hangs with low memory */

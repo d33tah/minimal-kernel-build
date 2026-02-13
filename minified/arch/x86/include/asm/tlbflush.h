@@ -10,16 +10,13 @@
 #include <asm/special_insns.h>
 #include <asm/processor-flags.h>
 
-/* Inlined from asm/invpcid.h */
 static inline void __invpcid(unsigned long pcid, unsigned long addr, unsigned long type)
 {
 	struct { u64 d[2]; } desc = { { pcid, addr } };
 	asm volatile("invpcid %[desc], %[type]" :: [desc] "m" (desc), [type] "r" (type) : "memory");
 }
 #define INVPCID_TYPE_INDIV_ADDR		0
-/* INVPCID_TYPE_SINGLE_CTXT removed - never used */
 #define INVPCID_TYPE_ALL_INCL_GLOBAL	2
-/* INVPCID_TYPE_ALL_NON_GLOBAL removed - never used */
 static inline void invpcid_flush_one(unsigned long pcid, unsigned long addr) { __invpcid(pcid, addr, INVPCID_TYPE_INDIV_ADDR); }
 static inline void invpcid_flush_all(void) { __invpcid(0, 0, INVPCID_TYPE_ALL_INCL_GLOBAL); }
 
@@ -30,19 +27,16 @@ void __flush_tlb_all(void);
 void cr4_update_irqsoff(unsigned long set, unsigned long clear);
 unsigned long cr4_read_shadow(void);
 
- 
 static inline void cr4_set_bits_irqsoff(unsigned long mask)
 {
 	cr4_update_irqsoff(mask, 0);
 }
 
- 
 static inline void cr4_clear_bits_irqsoff(unsigned long mask)
 {
 	cr4_update_irqsoff(0, mask);
 }
 
- 
 static inline void cr4_set_bits(unsigned long mask)
 {
 	unsigned long flags;
@@ -52,7 +46,6 @@ static inline void cr4_set_bits(unsigned long mask)
 	local_irq_restore(flags);
 }
 
- 
 static inline void cr4_clear_bits(unsigned long mask)
 {
 	unsigned long flags;
@@ -77,7 +70,6 @@ struct tlb_state {
 
 #define LOADED_MM_SWITCHING ((struct mm_struct *)1UL)
 
-	 
 	union {
 		struct mm_struct	*last_user_mm;
 		unsigned long		last_user_mm_spec;
@@ -86,16 +78,12 @@ struct tlb_state {
 	u16 loaded_mm_asid;
 	u16 next_asid;
 
-	 
 	bool invalidate_other;
 
-	 
 	unsigned short user_pcid_flush_mask;
 
-	 
 	unsigned long cr4;
 
-	 
 	struct tlb_context ctxs[TLB_NR_DYN_ASIDS];
 };
 DECLARE_PER_CPU_ALIGNED(struct tlb_state, cpu_tlbstate);
@@ -106,9 +94,6 @@ struct tlb_state_shared {
 };
 DECLARE_PER_CPU_SHARED_ALIGNED(struct tlb_state_shared, cpu_tlbstate_shared);
 
-/* nmi_uaccess_okay removed - only caller was copy_from_user_nmi */
-
- 
 static inline void cr4_init_shadow(void)
 {
 	this_cpu_write(cpu_tlbstate.cr4, __read_cr4());
@@ -119,7 +104,6 @@ extern u32 *trampoline_cr4_features;
 
 extern void initialize_tlbstate_and_flush(void);
 
- 
 struct flush_tlb_info {
 	 
 	struct mm_struct	*mm;
@@ -137,11 +121,6 @@ void flush_tlb_one_kernel(unsigned long addr);
 void flush_tlb_multi(const struct cpumask *cpumask,
 		      const struct flush_tlb_info *info);
 
-/* flush_tlb_mm removed - unused */
-
-/* flush_tlb_range removed - unused */
-
-/* flush_tlb_all removed - never called */
 extern void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 				unsigned long end, unsigned int stride_shift,
 				bool freed_tables);
@@ -150,8 +129,6 @@ static inline u64 inc_mm_tlb_gen(struct mm_struct *mm)
 	 
 	return atomic64_inc_return(&mm->context.tlb_gen);
 }
-
-/* pte_flags_need_flush, pte_needs_flush, huge_pmd_needs_flush removed - never called */
 
 #endif  
 

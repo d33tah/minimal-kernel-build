@@ -1,20 +1,10 @@
-/* --- 2025-12-22 04:20 --- Stripped MSI infrastructure - unused */
 #include <linux/irq.h>
-/* linux/module.h removed - no module usage */
 #include <linux/cpumask.h>
 #include <asm/hw_irq.h>
 #include <linux/irqdomain.h>
 #include <linux/interrupt.h>
-/* kernel_stat.h removed - empty */
 
 #include "internals.h"
-
-/* bad_chained_irq, chained_action removed - is_chained path never taken (~8 LOC) */
-
-/* irq_set_chip removed - inlined into irq_set_chip_and_handler_name (~11 LOC) */
-/* irq_set_irq_type, irq_set_chip_data, irq_get_irq_data removed - never called */
-/* irq_state_clr_disabled, irq_state_clr_masked removed - inlined into callers (~8 LOC) */
-/* __irq_startup removed - inlined into single caller (~16 LOC) */
 
 int irq_startup(struct irq_desc *desc, bool resend, bool force)
 {
@@ -26,7 +16,6 @@ int irq_startup(struct irq_desc *desc, bool resend, bool force)
 	if (irqd_is_started(d)) {
 		irq_enable(desc);
 	} else {
-		/* Inlined __irq_startup */
 		WARN_ON_ONCE(!irqd_is_activated(d));
 		if (d->chip->irq_startup) {
 			ret = d->chip->irq_startup(d);
@@ -47,13 +36,8 @@ int irq_activate(struct irq_desc *desc)
 {
 	struct irq_data *d = irq_desc_get_irq_data(desc);
 
-	/* irqd_affinity_is_managed always false - IRQD_AFFINITY_MANAGED never set */
 	return irq_domain_activate_irq(d, false);
 }
-
-/* irq_activate_and_startup removed - only called from is_chained path (~5 LOC) */
-
-/* __irq_disable, irq_disable removed - zero callers */
 
 void irq_enable(struct irq_desc *desc)
 {
@@ -104,8 +88,6 @@ void unmask_irq(struct irq_desc *desc)
 	}
 }
 
-/* unmask_threaded_irq removed - no threaded IRQs */
-
 void handle_level_irq(struct irq_desc *desc)
 {
 	raw_spin_lock(&desc->lock);
@@ -135,8 +117,6 @@ out_unlock:
 	raw_spin_unlock(&desc->lock);
 }
 
-/* __irq_do_set_handler inlined into __irq_set_handler */
-
 void __irq_set_handler(unsigned int irq, irq_flow_handler_t handle,
 		       const char *name)
 {
@@ -163,8 +143,6 @@ void __irq_set_handler(unsigned int irq, irq_flow_handler_t handle,
 	desc->handle_irq = handle;
 	desc->name = name;
 
-	/* is_chained path removed - always called with is_chained=0 (~15 LOC) */
-
 out:
 	irq_put_desc_busunlock(desc, flags);
 }
@@ -183,6 +161,3 @@ void irq_set_chip_and_handler_name(unsigned int irq,
 	}
 	__irq_set_handler(irq, handle, name);
 }
-
-/* irq_modify_status removed - never called */
-/* irq_chip_pm_get/irq_chip_pm_put removed - always return 0, calls removed */

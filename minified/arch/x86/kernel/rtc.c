@@ -1,5 +1,3 @@
-/* linux/platform_device.h removed - nothing from it was used */
-/* --- Inlined from linux/mc146818rtc.h + asm/mc146818rtc.h --- */
 #include <asm/io.h>
 #include <asm/processor.h>
 #include <linux/smp.h>
@@ -47,7 +45,6 @@ static inline void unlock_cmos(void)
 	}                              \
 	while (0)
 /* end mc146818rtc.h */
-/* Inlined from linux/bcd.h */
 #define bcd2bin(x) \
 	(__builtin_constant_p((u8)(x)) ? const_bcd2bin(x) : _bcd2bin(x))
 #define const_bcd2bin(x) (((x) & 0x0f) + ((x) >> 4) * 10)
@@ -109,5 +106,3 @@ unsigned char rtc_cmos_read(unsigned char addr)
 
 	return val;
 }
-
-/* read_persistent_clock64 removed - never called */

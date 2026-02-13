@@ -1,10 +1,7 @@
-/* sched/coredump.h, security.h, uidgid.h, linux/binfmts.h removed - unused */
 #include <linux/cred.h>
 #include <linux/slab.h>
 #include <linux/sched.h>
 #include <linux/init_task.h>
-
-/* kdebug macro removed - was always no-op (if (0)) */
 
 static struct kmem_cache *cred_jar;
 
@@ -14,12 +11,10 @@ struct cred init_cred = {
 	.usage = ATOMIC_INIT(4),
 	.uid = GLOBAL_ROOT_UID,
 	.gid = GLOBAL_ROOT_GID,
-	/* suid, sgid removed - write-only */
 	.euid = GLOBAL_ROOT_UID,
 	.egid = GLOBAL_ROOT_GID,
 	.fsuid = GLOBAL_ROOT_UID,
 	.fsgid = GLOBAL_ROOT_GID,
-	/* securebits, cap_inheritable, cap_effective, cap_bset removed */
 	.cap_permitted = CAP_FULL_SET,
 	.user = INIT_USER,
 	.user_ns = &init_user_ns,
@@ -35,7 +30,6 @@ static void put_cred_rcu(struct rcu_head *rcu)
 		panic("CRED: put_cred_rcu() sees %p with usage %d\n", cred,
 		      atomic_read(&cred->usage));
 
-	/* security_cred_free - empty stub */
 	if (cred->group_info)
 		put_group_info(cred->group_info);
 	free_uid(cred->user);
@@ -63,12 +57,10 @@ void exit_creds(struct task_struct *tsk)
 
 	cred = (struct cred *)tsk->real_cred;
 	tsk->real_cred = NULL;
-	/* validate_creds call removed - empty stub */
 	put_cred(cred);
 
 	cred = (struct cred *)tsk->cred;
 	tsk->cred = NULL;
-	/* validate_creds call removed - empty stub */
 	put_cred(cred);
 }
 
@@ -77,7 +69,6 @@ struct cred *prepare_creds(void)
 	struct task_struct *task = current;
 	const struct cred *old;
 	struct cred *new;
-	/* validate_process_creds() - empty stub */
 	new = kmem_cache_alloc(cred_jar, GFP_KERNEL);
 	if (!new)
 		return NULL;
@@ -95,7 +86,6 @@ struct cred *prepare_creds(void)
 	if (!new->ucounts)
 		goto error;
 
-	/* security_prepare_creds always returns 0, validate_creds removed - empty stub */
 	return new;
 
 error:
@@ -111,7 +101,6 @@ struct cred *prepare_exec_creds(void)
 	if (!new)
 		return new;
 
-	/* suid, sgid assignments removed - fields removed (write-only) */
 	new->fsuid = new->euid;
 	new->fsgid = new->egid;
 
@@ -121,7 +110,6 @@ struct cred *prepare_exec_creds(void)
 int copy_creds(struct task_struct *p)
 {
 	struct cred *new;
-	/* CLONE_THREAD, CLONE_NEWUSER never set */
 
 	new = prepare_creds();
 	if (!new)
@@ -129,9 +117,7 @@ int copy_creds(struct task_struct *p)
 
 	p->cred = p->real_cred = get_cred(new);
 	inc_rlimit_ucounts(task_ucounts(p), UCOUNT_RLIMIT_NPROC, 1);
-	/* validate_creds call removed - empty stub */
 	return 0;
-	/* error_put label removed - CLONE_NEWUSER never used */
 }
 
 /* cred_cap_issubset inlined - single caller */
@@ -183,7 +169,6 @@ int commit_creds(struct cred *new)
 		    !gid_eq(old->egid, new->egid) ||
 		    !uid_eq(old->fsuid, new->fsuid) ||
 		    !gid_eq(old->fsgid, new->fsgid) || !cap_subset) {
-			/* pdeath_signal zeroing removed - field removed */
 			smp_wmb();
 		}
 	}

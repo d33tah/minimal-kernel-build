@@ -2,7 +2,6 @@
 #ifndef _LINUX_MM_H
 #define _LINUX_MM_H
 
-/* linux/errno.h removed - no errno constants used */
 #include <linux/mmdebug.h>
 #include <linux/gfp.h>
 #include <linux/bug.h>
@@ -17,14 +16,6 @@
 #define MMAP_LOCK_INITIALIZER(name) \
 	.mmap_lock = __RWSEM_INITIALIZER((name).mmap_lock),
 
-
-/* __mmap_lock_trace_* functions removed - empty tracing stubs */
-
-/* mmap_init_lock removed - inlined into fork.c */
-
-/* mmap_write_lock removed - inlined into mmap.c */
-
-
 static inline int mmap_write_lock_killable(struct mm_struct *mm)
 {
 	return down_write_killable(&mm->mmap_lock);
@@ -35,8 +26,6 @@ static inline void mmap_write_unlock(struct mm_struct *mm)
 	up_write(&mm->mmap_lock);
 }
 
-/* mmap_write_downgrade removed - unused */
-
 static inline void mmap_read_lock(struct mm_struct *mm)
 {
 	down_read(&mm->mmap_lock);
@@ -46,8 +35,6 @@ static inline int mmap_read_lock_killable(struct mm_struct *mm)
 {
 	return down_read_killable(&mm->mmap_lock);
 }
-
-/* mmap_read_trylock removed - inlined into fault.c */
 
 static inline void mmap_read_unlock(struct mm_struct *mm)
 {
@@ -81,19 +68,12 @@ static inline void set_page_count(struct page *page, int v)
 	atomic_set(&page->_refcount, v);
 }
 
-/* init_page_count removed - inlined into page_alloc.c */
-
 /* page_ref_add, page_ref_sub, page_ref_inc, folio_ref_add, folio_ref_sub inlined */
 static inline void folio_ref_inc(struct folio *folio)
 {
 	atomic_inc(&folio->page._refcount);
 }
 
-/* folio_ref_sub_and_test removed - inlined into folio_put_refs */
-
-/* page_ref_dec_and_test removed - inlined into put_page_testzero */
-
-/* folio_ref_add_unless inlined into folio_try_get_rcu */
 static inline bool folio_try_get_rcu(struct folio *folio)
 {
 	return atomic_add_unless(&folio->page._refcount, 1, 0);
@@ -105,10 +85,7 @@ static inline bool folio_try_get_rcu(struct folio *folio)
 #include <linux/pgtable.h>
 
 struct anon_vma_chain;
-/* struct user_struct forward decl removed - unused */
 struct pt_regs;
-
-/* init_mm_internals declaration removed - function removed as empty stub */
 
 extern unsigned long max_mapnr;
 
@@ -118,14 +95,9 @@ static inline unsigned long totalram_pages(void)
 	return (unsigned long)atomic_long_read(&_totalram_pages);
 }
 
-/* totalram_pages_inc removed - inlined at single call site */
-
-/* totalram_pages_add removed - inlined into memblock.c */
-
 extern void * high_memory;
 
 #define sysctl_legacy_va_layout 0
-/* mmap_rnd_bits removed - no ASLR */
 
 #include <asm/page.h>
 #include <asm/processor.h>
@@ -150,13 +122,10 @@ extern void * high_memory;
 extern int sysctl_max_map_count;
 
 extern int sysctl_overcommit_memory;
-/* sysctl_overcommit_ratio, sysctl_overcommit_kbytes externs removed - only used in util.c */
 
 #define nth_page(page,n) ((page) + (n))
 
 #define PAGE_ALIGN(addr) ALIGN(addr, PAGE_SIZE)
-/* PAGE_ALIGNED removed - unused */
-/* setup_initial_init_mm removed - was empty stub */
 
 struct vm_area_struct *vm_area_alloc(struct mm_struct *);
 struct vm_area_struct *vm_area_dup(struct vm_area_struct *);
@@ -176,12 +145,10 @@ void vm_area_free(struct vm_area_struct *);
 
 #define VM_GROWSDOWN	0x00000100
 #define VM_PFNMAP	0x00000400
-/* VM_UFFD_WP (0x1000) removed - unused */	
 
 #define VM_LOCKED	0x00002000
 #define VM_IO           0x00004000	
 
-					
 #define VM_SEQ_READ	0x00008000	
 #define VM_RAND_READ	0x00010000	
 
@@ -219,8 +186,6 @@ void vm_area_free(struct vm_area_struct *);
 
 #define VM_ACCESS_FLAGS (VM_READ | VM_WRITE | VM_EXEC)
 
-/* VM_SPECIAL removed - unused */
-
 #define VM_INIT_DEF_MASK	VM_NOHUGEPAGE
 
 #define VM_LOCKED_CLEAR_MASK	(~(VM_LOCKED | VM_LOCKONFAULT))
@@ -229,8 +194,6 @@ extern pgprot_t protection_map[16];
 
 #define FAULT_FLAG_DEFAULT  (FAULT_FLAG_ALLOW_RETRY | \
 			     FAULT_FLAG_KILLABLE)
-/* FAULT_FLAG_INTERRUPTIBLE removed from default - never tested */
-/* fault_flag_allow_retry_first inlined into __folio_lock_or_retry (~4 LOC) */
 
 struct vm_fault {
 	const struct {
@@ -257,12 +220,9 @@ struct vm_fault {
 };
 
 struct vm_operations_struct {
-	/* open, close removed - never assigned */
 	int (*may_split)(struct vm_area_struct *area, unsigned long addr);
-	/* mremap, mprotect, map_pages removed - never called */
 	vm_fault_t (*fault)(struct vm_fault *vmf);
 	vm_fault_t (*page_mkwrite)(struct vm_fault *vmf);
-	/* find_special_page removed - never set/called */
 };
 
 /* vma_init inlined at kernel/fork.c - single caller */
@@ -297,33 +257,15 @@ static inline unsigned int folio_order(struct folio *folio)
 	return compound_order(&folio->page);
 }
 
-/* huge_mm.h removed - was empty stub */
-
 static inline int put_page_testzero(struct page *page)
 {
 	VM_BUG_ON_PAGE(page_ref_count(page) == 0, page);
 	return atomic_dec_and_test(&page->_refcount);
 }
 
-/* folio_put_testzero removed - inlined into folio_put */
-
-/* vmalloc_to_page removed - no callers */
-/* is_vmalloc_addr removed - no callers */
-
-/* page_mapcount_reset removed - inlined into page_alloc.c */
-
-/* __page_mapcount removed - no implementation */
 /* page_mapcount inlined at mm/filemap.c - single caller */
 
-/* virt_to_head_page removed - inlined into memcontrol.h */
-
-/* virt_to_folio removed - never called */
-
 void __put_page(struct page *page);
-
-/* split_page removed - no implementation */
-
-/* nr_free_buffer_pages removed - never called */
 
 typedef void compound_page_dtor(struct page *);
 
@@ -334,15 +276,11 @@ enum compound_dtor_id {
 };
 extern compound_page_dtor * const compound_page_dtors[NR_COMPOUND_DTORS];
 
-/* set_compound_page_dtor inlined into page_alloc.c */
-
 static inline void destroy_compound_page(struct page *page)
 {
 	VM_BUG_ON_PAGE(page[1].compound_dtor >= NR_COMPOUND_DTORS, page);
 	compound_page_dtors[page[1].compound_dtor](page);
 }
-
-/* set_compound_order inlined into page_alloc.c */
 
 static inline unsigned long compound_nr(struct page *page)
 {
@@ -358,17 +296,12 @@ static inline unsigned long page_size(struct page *page)
 
 /* thp_nr_pages inlined at mm/swap.c - single caller */
 
-
 static inline pte_t maybe_mkwrite(pte_t pte, struct vm_area_struct *vma)
 {
 	if (likely(vma->vm_flags & VM_WRITE))
 		pte = pte_mkwrite(pte);
 	return pte;
 }
-
-/* do_set_pmd, do_set_pte made static - only used in mm/memory.c */
-
-/* finish_fault made static in mm/memory.c */
 
 #define SECTIONS_PGOFF		((sizeof(unsigned long)*8) - SECTIONS_WIDTH)
 #define NODES_PGOFF		(SECTIONS_PGOFF - NODES_WIDTH)
@@ -390,7 +323,6 @@ static inline enum zone_type folio_zonenum(const struct folio *folio)
 	return page_zonenum(&folio->page);
 }
 
-/* folio_ref_zero_or_close_to_overflow inlined into folio_get */
 static inline void folio_get(struct folio *folio)
 {
 	VM_BUG_ON_FOLIO((unsigned int) folio_ref_count(folio) + 127u <= 127u, folio);
@@ -410,14 +342,10 @@ static inline void folio_put(struct folio *folio)
 		__put_page(&folio->page);
 }
 
-/* folio_put_refs removed - inlined into filemap.c */
-
 static inline void put_page(struct page *page)
 {
-	/* put_devmap_managed_page always returns false */
 	folio_put(page_folio(page));
 }
-/* GUP_PIN_COUNTING_BIAS removed - FOLL_PIN never set */
 
 static inline bool is_cow_mapping(vm_flags_t flags)
 {
@@ -429,10 +357,6 @@ static inline int page_to_nid(const struct page *page)
 	struct page *p = (struct page *)page;
 	return (PF_POISONED_CHECK(p)->flags >> NODES_PGSHIFT) & NODES_MASK;
 }
-
-/* folio_nid removed - inlined at single call site */
-
-/* page_cpupid_xchg_last, page_cpupid_reset_last, page_kasan_tag_reset removed - unused */
 
 static inline struct zone *page_zone(const struct page *page)
 {
@@ -449,42 +373,24 @@ static inline pg_data_t *folio_pgdat(const struct folio *folio)
 	return page_pgdat(&folio->page);
 }
 
-/* folio_pfn removed - inlined at single call site */
-/* folio_pincount_ptr removed - unused */
-
-/* set_page_links inlined into page_alloc.c */
-
 static inline long folio_nr_pages(struct folio *folio)
 {
 	return compound_nr(&folio->page);
 }
-
-/* folio_shift inlined into filemap.c (~3 LOC) */
 
 static inline size_t folio_size(struct folio *folio)
 {
 	return PAGE_SIZE << folio_order(folio);
 }
 
-/* arch_make_page_accessible removed - never called */
-
 #include <linux/vmstat.h>
 
-/* lowmem_page_address removed - inlined into page_address macro */
 #define page_address(page) page_to_virt(page)
-/* set_page_address, page_address_init removed - never used */
-
-/* folio_address removed - inlined at single call site */
-
-/* page_rmapping, page_mapped removed - never called */
-
-/* folio_mapped removed - no implementation */
 
 /* page_is_pfmemalloc inlined at mm/slub.c - single caller */
 /* set_page_pfmemalloc, clear_page_pfmemalloc inlined at single call site */
 
 #define offset_in_page(p)	((unsigned long)(p) & ~PAGE_MASK)
-/* offset_in_folio removed - unused */
 
 struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 			     pte_t pte);
@@ -492,17 +398,12 @@ struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 void unmap_vmas(struct mmu_gather *tlb, struct vm_area_struct *start_vma,
 		unsigned long start, unsigned long end);
 
-/* struct mmu_notifier_range forward decl removed - unused */
-
 void free_pgd_range(struct mmu_gather *tlb, unsigned long addr,
 		unsigned long end, unsigned long floor, unsigned long ceiling);
-
-/* truncate_setsize removed - inlined into libfs.c */
 
 extern vm_fault_t handle_mm_fault(struct vm_area_struct *vma,
 				  unsigned long address, unsigned int flags,
 				  struct pt_regs *regs);
-/* unmap_mapping_pages, unmap_mapping_range removed - truncate.c stubbed */
 
 long get_user_pages_remote(struct mm_struct *mm,
 			    unsigned long start, unsigned long nr_pages,
@@ -519,15 +420,6 @@ extern unsigned long move_page_tables(struct vm_area_struct *vma,
 		unsigned long old_addr, struct vm_area_struct *new_vma,
 		unsigned long new_addr, unsigned long len,
 		bool need_rmap_locks);
-/* mprotect_fixup removed - was a no-op stub, call removed from exec.c */
-
-/* rss_stat counters removed - write-only (never read back) */
-
-/* setmax_mm_hiwater_rss removed - callers removed, maxrss unused */
-
-/* pte_devmap removed - callers removed */
-
-/* Removed: vma_wants_writenotify - never called */
 
 extern pte_t *__get_locked_pte(struct mm_struct *mm, unsigned long addr,
 			       spinlock_t **ptl);
@@ -538,8 +430,6 @@ static inline pte_t *get_locked_pte(struct mm_struct *mm, unsigned long addr,
 	__cond_lock(*ptl, ptep = __get_locked_pte(mm, addr, ptl));
 	return ptep;
 }
-
-/* __p4d_alloc, __pud_alloc, __pmd_alloc removed - never called (folded) */
 
 /* mm_pgtables_bytes_init inlined at kernel/fork.c - single caller */
 /* mm_inc_nr_ptes and mm_dec_nr_ptes inlined at mm/memory.c - single caller each */
@@ -571,9 +461,6 @@ static inline spinlock_t *pte_lockptr(struct mm_struct *mm, pmd_t *pmd)
 {
 	return &mm->page_table_lock;
 }
-/* Removed: ptlock_cache_init, ptlock_init, ptlock_free - not needed for minimal kernel */
-
-/* pgtable_init removed - unused */
 
 /* pgtable_pte_page_ctor inlined at arch/x86/include/asm/pgalloc.h - single caller */
 
@@ -603,11 +490,6 @@ static inline void pgtable_pte_page_dtor(struct page *page)
 	(pte_alloc(mm, pmd) ?			\
 		 NULL : pte_offset_map_lock(mm, pmd, address, ptlp))
 
-/* pmd_lockptr removed - inlined into pmd_lock */
-/* pmd_lock removed - inlined into memory.c */
-
-/* pud_lockptr, pud_lock removed - unused */
-
 extern void __init pagecache_init(void);
 extern void free_initmem(void);
 
@@ -616,26 +498,20 @@ extern void reserve_bootmem_region(phys_addr_t start, phys_addr_t end);
 /* free_reserved_page inlined at mm/page_alloc.c - single caller */
 
 void free_area_init(unsigned long *max_zone_pfn);
-/* init_per_zone_wmark_min extern removed - never directly called */
 extern void mem_init(void);
 extern void __init mmap_init(void);
-/* warn_alloc removed - no implementation */
 
 extern void setup_per_cpu_pageset(void);
-
-/* min_free_kbytes removed - unused */
 
 void vma_interval_tree_insert(struct vm_area_struct *node,
 			      struct rb_root_cached *root);
 void vma_interval_tree_remove(struct vm_area_struct *node,
 			      struct rb_root_cached *root);
-/* vma_interval_tree_iter_first/next/foreach removed - never called */
 
 void anon_vma_interval_tree_insert(struct anon_vma_chain *node,
 				   struct rb_root_cached *root);
 void anon_vma_interval_tree_remove(struct anon_vma_chain *node,
 				   struct rb_root_cached *root);
-/* anon_vma_interval_tree_iter_first/next removed - never called */
 
 extern int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin);
 extern int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
@@ -646,32 +522,22 @@ static inline int vma_adjust(struct vm_area_struct *vma, unsigned long start,
 {
 	return __vma_adjust(vma, start, end, pgoff, insert, NULL);
 }
-/* vma_merge made static in mmap.c - only used internally */
-/* find_mergeable_anon_vma removed - inlined into rmap.c */
-/* __split_vma made static in mmap.c */
 extern int insert_vm_struct(struct mm_struct *, struct vm_area_struct *);
-/* __vma_link_rb removed - only used in mm/mmap.c */
 extern void unlink_file_vma(struct vm_area_struct *);
 extern void exit_mmap(struct mm_struct *);
 
 extern int set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file);
-/* get_mm_exe_file removed - no callers */
 
-/* vma_is_special_mapping removed - never called */
 extern struct vm_area_struct *_install_special_mapping(struct mm_struct *mm,
 				   unsigned long addr, unsigned long len,
 				   unsigned long flags,
 				   const struct vm_special_mapping *spec);
 
-/* randomize_stack_top, randomize_page removed - inlined to PAGE_ALIGN */
-
 extern unsigned long get_unmapped_area(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
 
-/* mmap_region made static in mm/mmap.c */
 extern unsigned long do_mmap(struct file *file, unsigned long addr,
 	unsigned long len, unsigned long prot, unsigned long flags,
 	unsigned long pgoff, unsigned long *populate, struct list_head *uf);
-/* __do_munmap made static in mmap.c */
 extern int do_munmap(struct mm_struct *, unsigned long, size_t,
 		     struct list_head *uf);
 
@@ -684,7 +550,6 @@ static inline void mm_populate(unsigned long addr, unsigned long len)
 }
 
 extern int __must_check vm_brk_flags(unsigned long, unsigned long, unsigned long);
-/* vm_munmap removed - never called */
 extern unsigned long __must_check vm_mmap(struct file *, unsigned long,
         unsigned long, unsigned long,
         unsigned long, unsigned long);
@@ -699,20 +564,11 @@ struct vm_unmapped_area_info {
 	unsigned long align_offset;
 };
 
-/* vm_unmapped_area made static in mm/mmap.c */
-
-/* truncate_inode_pages, truncate_inode_pages_range made static - only used within truncate.c */
-/* truncate_inode_pages_final removed - empty stub inlined into inode.c */
-
-/* filemap_fault, filemap_page_mkwrite, filemap_map_pages removed - only used in mm/filemap.c */
-
 extern unsigned long stack_guard_gap;
 
 extern int expand_stack(struct vm_area_struct *vma, unsigned long address);
-/* expand_downwards made static in mm/mmap.c */
 
 extern struct vm_area_struct * find_vma(struct mm_struct * mm, unsigned long addr);
-/* find_vma_prev made static in mmap.c */
 
 static inline
 struct vm_area_struct *find_vma_intersection(struct mm_struct *mm,
@@ -756,49 +612,30 @@ static inline unsigned long vma_pages(struct vm_area_struct *vma)
 }
 
 pgprot_t vm_get_page_prot(unsigned long vm_flags);
-/* Removed: vma_set_page_prot - never called */
 
 struct vm_area_struct *find_extend_vma(struct mm_struct *, unsigned long addr);
 vm_fault_t vmf_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
 			unsigned long pfn);
-/* vmf_insert_pfn_prot made static in mm/memory.c */
 
 #define FOLL_WRITE	0x01
 #define FOLL_TOUCH	0x02
 #define FOLL_GET	0x04
-/* FOLL_DUMP removed - never set */
 #define FOLL_FORCE	0x10
-/* FOLL_NOWAIT, FOLL_NOFAULT removed - never set */
 #define FOLL_HWPOISON	0x100
-/* FOLL_NUMA removed - never tested */
 #define FOLL_TRIED	0x800
 #define FOLL_REMOTE	0x2000
 #define FOLL_COW	0x4000
 #define FOLL_ANON	0x8000
-/* FOLL_LONGTERM, FOLL_PIN removed - never set */
 
 /* vm_fault_to_errno inlined at mm/gup.c - single caller */
-
-/* gup_must_unshare removed - FOLL_PIN never set, always false, never called */
-
-/* typedef pte_fn_t removed - never used */
 
 extern void init_mem_debugging_and_hardening(void);
 
 DECLARE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_ALLOC_DEFAULT_ON, init_on_alloc);
 DECLARE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_FREE_DEFAULT_ON, init_on_free);
 
-/* debug_pagealloc_enabled[_static] removed - always false, not called */
-
-/* randomize_va_space removed - no readers */
-
-/* debug_guardpage_minorder removed - callers removed */
-
 /* MAX_NUMNODES == 1, always inline */
-/* Removed: setup_nr_node_ids - never called */
 
 #define  ZAP_FLAG_DROP_MARKER        ((__force zap_flags_t) BIT(0))
-
-/* Inlined from elf-randomize.h - arch_mmap_rnd, arch_randomize_brk removed (no ASLR) */
 
 #endif

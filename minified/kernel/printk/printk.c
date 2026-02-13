@@ -2,24 +2,14 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/kernel.h>
-/* mm.h removed - unused */
 #include <linux/fs.h>
 #include <linux/console.h>
 #include <linux/init.h>
-/* linux/module.h removed - no module features used */
-/* moduleparam.h, delay.h, memblock.h, ratelimit.h, kmsg_dump.h removed - unused */
 #include <linux/smp.h>
-/* linux/syscalls.h removed - no syscall definitions used */
-/* linux/cpu.h removed - no cpu features used */
-/* rculist.h, poll.h, irq_work.h, ctype.h, uio.h removed - unused */
-/* sched/clock.h, sched/debug.h, sched/task_stack.h, uaccess.h, asm/sections.h removed - unused */
 
 /* printk_ringbuffer.h structs, macros, and function declarations removed
    since all prb_* functions are now stubbed as macros below */
 /* end printk_ringbuffer.h */
-/* struct console_cmdline removed - never populated */
-/* _braille_register_console removed - always returned 0 */
-/* --- 2026-01-26 01:50 --- Inlined from internal.h */
 #include <linux/percpu.h>
 #define printk_safe_enter_irqsave(flags) local_irq_save(flags)
 #define printk_safe_exit_irqrestore(flags) local_irq_restore(flags)
@@ -38,7 +28,6 @@ int oops_in_progress;
 
 static DEFINE_SEMAPHORE(console_sem);
 struct console *console_drivers;
-/* suppress_panic_printk, nr_ext_console_drivers removed - write-only */
 
 #define down_console_sem() down(&console_sem)
 
@@ -53,32 +42,10 @@ static int down_trylock_console_sem(void)
 
 	if (lock_failed)
 		return 1;
-	/* mutex_acquire removed - empty stub */
 	return 0;
 }
 
-/* up_console_sem inlined into console_unlock - single caller */
-
-/* panic_in_progress inlined into console_trylock */
-
 static int console_locked;
-/* console_suspended removed - never written, always 0 */
-
-/* console_cmdline array, preferred_console removed - never populated/used */
-
-/* console_may_schedule removed - write-only variable, never read */
-
-/* console_msg_format, enum con_msg_format_flags removed - unused */
-
-/* syslog_lock removed - never used */
-
-/* CONSOLE_LOG_MAX, DROPPED_TEXT_MAX, printk_time removed - unused */
-
-/* prb_read_valid, prb_first_valid_seq, prb_next_seq removed - inlined */
-/* syslog_seq removed - unused */
-/* call_console_driver removed - was empty stub */
-
-/* printk_console_no_auto_verbose removed - never set, condition simplified */
 
 void console_verbose(void)
 {
@@ -89,18 +56,14 @@ void console_verbose(void)
 void console_lock(void)
 {
 	down_console_sem();
-	/* console_suspended check removed - never set */
 	console_locked = 1;
-	/* console_may_schedule = 1 removed - write-only */
 }
 
 static int console_trylock(void)
 {
 	if (down_trylock_console_sem())
 		return 0;
-	/* console_suspended check removed - never set */
 	console_locked = 1;
-	/* console_may_schedule = 0 removed - write-only */
 	return 1;
 }
 
@@ -115,8 +78,6 @@ int is_console_locked(void)
 void console_unlock(void)
 {
 	unsigned long flags;
-	/* console_suspended check removed - never set */
-	/* console_may_schedule = 0 removed - write-only */
 	console_locked = 0;
 	/* up_console_sem inlined */
 	printk_safe_enter_irqsave(flags);
@@ -135,31 +96,21 @@ void console_unblank(void)
 		console_lock();
 
 	console_locked = 1;
-	/* console_may_schedule = 0 removed - write-only */
 	for_each_console(c)
 		if ((c->flags & CON_ENABLED) && c->unblank)
 			c->unblank();
 	console_unlock();
-
-	/* pr_flush removed - always returns true, return value unused */
 }
 
 /* console_flush_on_panic simplified - only called with CONSOLE_FLUSH_PENDING */
 void console_flush_on_panic(enum con_flush_mode mode)
 {
 	console_trylock();
-	/* console_may_schedule = 0 removed - write-only */
 	console_unlock();
 }
 
-/* console_device removed - never called (~16 LOC) */
-
-/* keep_bootcon removed - never set, always false */
-
 /* try_enable_preferred_console inlined - console_cmdline never populated,
    just checks if already enabled (~5 LOC) */
-
-/* try_enable_default_console inlined into register_console */
 
 #define con_printk(lvl, con, fmt, ...)                                       \
 	printk(lvl pr_fmt("%sconsole [%s%d] " fmt),                          \
@@ -190,7 +141,6 @@ void register_console(struct console *newcon)
 		return;
 	}
 
-	/* preferred_console always -1, so condition always true */
 	if (!console_drivers || !console_drivers->device ||
 	    console_drivers->flags & CON_BOOT) {
 		/* inlined try_enable_default_console */
@@ -227,19 +177,14 @@ void register_console(struct console *newcon)
 		console_drivers->next = newcon;
 	}
 
-	/* newcon->dropped, newcon->seq writes removed - fields removed (write-only) */
 	console_unlock();
-	/* console_sysfs_notify call removed - empty stub */
 	con_printk(KERN_INFO, newcon, "enabled\n");
-	/* boot console unregistration loop removed - unregister_console was empty (~8 LOC) */
 }
 
 void __init console_init(void)
 {
 	initcall_t call;
 	initcall_entry_t *ce;
-
-	/* n_tty_init() removed - ldisc registration is dead code */
 
 	ce = __con_initcall_start;
 

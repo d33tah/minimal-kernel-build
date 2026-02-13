@@ -1,6 +1,5 @@
 #include <linux/types.h>
 
-/* linux/module.h removed - no module features used */
 void sort(void *base, size_t num, size_t size, cmp_func_t cmp_func,
 	  swap_func_t swap_func);
 #include <linux/uaccess.h>
@@ -42,9 +41,6 @@ void sort_extable(struct exception_table_entry *start,
 	     cmp_ex_sort, swap_ex);
 }
 
-/* cmp_ex_search inlined into search_extable - single caller */
-
-/* bsearch inlined into search_extable - was its only caller */
 const struct exception_table_entry *
 search_extable(const struct exception_table_entry *base, const size_t num,
 	       unsigned long value)

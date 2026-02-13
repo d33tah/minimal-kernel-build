@@ -9,7 +9,6 @@
 #include <asm/desc.h>
 #include <asm/traps.h>
 
-/* ptr_ok, set_df_gdt_entry removed - inlined or unused */
 #define TSS(x) this_cpu_read(cpu_tss_rw.x86_tss.x)
 
 asmlinkage noinstr void __noreturn doublefault_shim(void)
@@ -29,7 +28,6 @@ asmlinkage noinstr void __noreturn doublefault_shim(void)
 		tss.type = DESC_TSS;
 		write_gdt_entry(d, GDT_ENTRY_TSS, &tss, DESC_TSS);
 		load_TR_desc();
-		/* this_cpu_write(__tss_limit_invalid, false) removed - write-only variable */
 	}
 	/* inlined set_df_gdt_entry */
 	__set_tss_desc(
@@ -66,12 +64,8 @@ asmlinkage noinstr void __noreturn doublefault_shim(void)
 	panic("cannot return from double fault\n");
 }
 
-/* Stubbed - doublefault_stack not needed for Hello World */
 DEFINE_PER_CPU_PAGE_ALIGNED(struct doublefault_stack, doublefault_stack) = {};
-
-/* set_df_gdt_entry inlined into doublefault_shim (~5 LOC) */
 
 void doublefault_init_cpu_tss(void)
 {
-	/* Stubbed - double fault handling not needed for Hello World */
 }

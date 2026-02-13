@@ -1,28 +1,19 @@
 
 #include <linux/vmalloc.h>
 #include <linux/mm.h>
-/* highmem.h removed - unused */
 #include <linux/sched/signal.h>
 #include <linux/slab.h>
 #include <linux/spinlock.h>
-/* linux/interrupt.h removed - no interrupt features used */
-/* proc_fs.h, seq_file.h, kallsyms.h, io.h, memcontrol.h, llist.h removed - unused */
-/* asm/set_memory.h removed - set_memory functions not used */
 #include <linux/list.h>
 #include <linux/rbtree.h>
-/* linux/rcupdate.h removed - no RCU used */
 #include <linux/pfn.h>
-/* linux/atomic.h removed - no atomic ops used directly */
 #include <linux/rbtree_augmented.h>
-/* linux/overflow.h removed - no overflow macros used */
 #include <linux/pgtable.h>
 #include <linux/uaccess.h>
-/* hugetlb.h removed - unused */
 #include <linux/sched/mm.h>
 #include <asm/tlbflush.h>
 
 #include "internal.h"
-/* --- Inlined pgalloc-track.h --- */
 
 /* pgd_none/p4d_none/pud_none always return 0 - folded paging */
 static inline p4d_t *p4d_alloc_track(struct mm_struct *mm, pgd_t *pgd,
@@ -55,11 +46,6 @@ static inline pmd_t *pmd_alloc_track(struct mm_struct *mm, pud_t *pud,
 		 NULL :                                                      \
 		 pte_offset_kernel(pmd, address))
 
-/* ioremap_page_range, vmap_pmd_range, vmap_p4d_range removed - never called */
-/* vunmap_pmd_range removed - only caller was vunmap_range_noflush which is now dead */
-
-/* vunmap_range_noflush removed - only caller was remove_vm_area which is now dead */
-
 static int vmap_pages_pmd_range(pud_t *pud, unsigned long addr,
 				unsigned long end, pgprot_t prot,
 				struct page **pages, int *nr,
@@ -73,7 +59,6 @@ static int vmap_pages_pmd_range(pud_t *pud, unsigned long addr,
 		return -ENOMEM;
 	do {
 		next = pmd_addr_end(addr, end);
-		/* Inlined vmap_pages_pte_range */
 		{
 			pte_t *pte;
 			unsigned long pte_addr = addr;
@@ -99,8 +84,6 @@ static int vmap_pages_pmd_range(pud_t *pud, unsigned long addr,
 	return 0;
 }
 
-/* vmap_pages_p4d_range inlined into vmap_pages_range_noflush */
-
 static int vmap_pages_range_noflush(unsigned long addr, unsigned long end,
 				    pgprot_t prot, struct page **pages,
 				    unsigned int page_shift)
@@ -117,7 +100,6 @@ static int vmap_pages_range_noflush(unsigned long addr, unsigned long end,
 	pgd = pgd_offset_k(addr);
 	do {
 		next = pgd_addr_end(addr, end);
-		/* Inlined vmap_pages_p4d_range */
 		{
 			p4d_t *p4d;
 			unsigned long p4d_next;
@@ -158,17 +140,12 @@ static int vmap_pages_range_noflush(unsigned long addr, unsigned long end,
 	return 0;
 }
 
-/* vmap_pages_range inlined into __vmalloc_area_node - single caller */
-/* vmalloc_to_page removed - no callers */
-
 static DEFINE_SPINLOCK(vmap_area_lock);
 static DEFINE_SPINLOCK(free_vmap_area_lock);
 
 LIST_HEAD(vmap_area_list);
 static struct rb_root vmap_area_root = RB_ROOT;
 static bool vmap_initialized __read_mostly;
-
-/* purge_vmap_area_root, purge_vmap_area_list, purge_vmap_area_lock removed - lazy purge dead (~3 LOC) */
 
 static struct kmem_cache *vmap_area_cachep;
 
@@ -193,11 +170,6 @@ static __always_inline unsigned long get_subtree_max_size(struct rb_node *node)
 
 RB_DECLARE_CALLBACKS_MAX(static, free_vmap_area_rb_augment_cb, struct vmap_area,
 			 rb_node, unsigned long, subtree_max_size, va_size)
-
-/* purge_vmap_area_lazy removed - lazy purge dead, retry now pointless (~5 LOC) */
-/* nr_vmalloc_pages removed - only added to, never read */
-
-/* __find_vmap_area removed - only caller was remove_vm_area which is now dead */
 
 static __always_inline struct rb_node **find_va_links(struct vmap_area *va,
 						      struct rb_root *root,
@@ -304,8 +276,6 @@ static void insert_vmap_area_augment(struct vmap_area *va, struct rb_node *from,
 	}
 }
 
-/* merge_or_add_vmap_area removed - unused */
-
 static __always_inline bool is_within_this_va(struct vmap_area *va,
 					      unsigned long size,
 					      unsigned long align,
@@ -378,8 +348,6 @@ enum fit_type {
 	NE_FIT_TYPE = 4
 };
 
-/* classify_va_fit_type inlined into alloc_vmap_area */
-
 static __always_inline int adjust_va_to_fit_type(struct vmap_area *va,
 						 unsigned long nva_start_addr,
 						 unsigned long size,
@@ -422,16 +390,11 @@ static __always_inline int adjust_va_to_fit_type(struct vmap_area *va,
 	return 0;
 }
 
-/* __alloc_vmap_area inlined into alloc_vmap_area */
-
-/* preload_this_cpu_lock inlined into alloc_vmap_area */
-
 static struct vmap_area *
 alloc_vmap_area(unsigned long size, unsigned long align, unsigned long vstart,
 		unsigned long vend, int node, gfp_t gfp_mask)
 {
 	struct vmap_area *va;
-	/* freed, purged removed - vmap_notify_list call removed, purge_vmap_area_lazy dead */
 	unsigned long addr;
 
 	BUG_ON(!size);
@@ -447,7 +410,6 @@ alloc_vmap_area(unsigned long size, unsigned long align, unsigned long vstart,
 	if (unlikely(!va))
 		return ERR_PTR(-ENOMEM);
 
-	/* retry label removed - purge_vmap_area_lazy was empty, no point retrying */
 	/* preload_this_cpu_lock inlined */
 	{
 		struct vmap_area *pva = NULL;
@@ -458,7 +420,6 @@ alloc_vmap_area(unsigned long size, unsigned long align, unsigned long vstart,
 		if (pva && __this_cpu_cmpxchg(ne_fit_preload_node, NULL, pva))
 			kmem_cache_free(vmap_area_cachep, pva);
 	}
-	/* Inlined __alloc_vmap_area */
 	{
 		bool adjust_search_size = true;
 		unsigned long nva_start_addr;
@@ -518,7 +479,6 @@ alloc_done:
 	spin_unlock(&free_vmap_area_lock);
 
 	if (unlikely(addr == vend)) {
-		/* retry label removed - purge_vmap_area_lazy was empty, no point retrying */
 		kmem_cache_free(vmap_area_cachep, va);
 		return ERR_PTR(-EBUSY);
 	}
@@ -544,32 +504,16 @@ alloc_done:
 
 	return va;
 }
-/* overflow label, retry logic, purge_vmap_area_lazy call removed (~13 LOC) */
 
 /* lazy_max_pages, vmap_lazy_nr, purge_vmap_area_lazy, drain_vmap_area_work
    and lazy purge infrastructure removed - all stubs that do nothing (~35 LOC) */
 
-/* free_vmap_area_noflush removed - inlined into single caller (~7 LOC) */
 /* find_vmap_area inlined - single caller */
-
-/* VMALLOC_SPACE, VMALLOC_PAGES, VMAP_MAX_ALLOC, VMAP_BBMAP_BITS_MAX, VMAP_BBMAP_BITS_MIN, VMAP_MIN, VMAP_MAX removed - never used */
-/* VMAP_BBMAP_BITS, vmap_block_queue struct and per-CPU var removed - only initialized, never used */
-
-/* purge_fragmented_blocks_allcpus definition removed - already inlined in stubs above */
-
-/* vmlist, vm_area_page_order, set_vm_area_page_order removed - page order always 0 */
-
-/* vmap_init_free_space inlined into vmalloc_init */
 
 void __init vmalloc_init(void)
 {
-	/* va, tmp removed - vmlist loop removed (vmlist always NULL) */
-
 	vmap_area_cachep = KMEM_CACHE(vmap_area, SLAB_PANIC);
 
-	/* vmlist loop removed - vmlist was never assigned, always NULL */
-
-	/* Inlined vmap_init_free_space */
 	{
 		unsigned long vmap_start = 1;
 		const unsigned long vmap_end = ULONG_MAX;
@@ -605,8 +549,6 @@ void __init vmalloc_init(void)
 	vmap_initialized = true;
 }
 
-/* setup_vmalloc_vm inlined into __get_vm_area_node */
-
 static struct vm_struct *
 __get_vm_area_node(unsigned long size, unsigned long align, unsigned long shift,
 		   unsigned long flags, unsigned long start, unsigned long end,
@@ -619,8 +561,6 @@ __get_vm_area_node(unsigned long size, unsigned long align, unsigned long shift,
 	size = ALIGN(size, 1ul << shift);
 	if (unlikely(!size))
 		return NULL;
-
-	/* VM_IOREMAP branch removed - never passed by only caller */
 
 	area = kzalloc_node(sizeof(*area), gfp_mask & GFP_RECLAIM_MASK, node);
 	if (unlikely(!area))
@@ -647,14 +587,6 @@ __get_vm_area_node(unsigned long size, unsigned long align, unsigned long shift,
 	return area;
 }
 
-/* get_vm_area_caller, find_vm_area removed - never called */
-
-/* remove_vm_area removed - only caller was free_vm_area which is now dead */
-
-/* vfree, vunmap moved to vmalloc.h as static inline */
-/* vmap removed - never called */
-
-/* vm_area_alloc_pages simplified: order always 0, just bulk alloc */
 static inline unsigned int vm_area_alloc_pages(gfp_t gfp, int nid,
 					       unsigned int order,
 					       unsigned int nr_pages,
@@ -694,7 +626,6 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 	if (area->nr_pages != nr_small_pages)
 		return NULL;
 
-	/* memalloc_nofs/noio save/restore removed - never triggered at boot */
 	ret = vmap_pages_range_noflush(addr, addr + size, prot, area->pages,
 				       page_shift);
 	if (ret < 0)
@@ -718,7 +649,6 @@ static void *__vmalloc_node_range(unsigned long size, unsigned long align,
 		return NULL;
 	}
 
-	/* __GFP_NOFAIL retry removed - never passed */
 	area = __get_vm_area_node(size, align, PAGE_SHIFT,
 				  VM_ALLOC | VM_UNINITIALIZED | vm_flags, start,
 				  end, node, gfp_mask, caller);
@@ -740,7 +670,3 @@ void *__vmalloc_node(unsigned long size, unsigned long align, gfp_t gfp_mask,
 	return __vmalloc_node_range(size, align, VMALLOC_START, VMALLOC_END,
 				    gfp_mask, PAGE_KERNEL, 0, node, caller);
 }
-
-/* __vmalloc, vmalloc removed - never called */
-
-/* free_vm_area removed - only called from error path, replaced with BUG() */

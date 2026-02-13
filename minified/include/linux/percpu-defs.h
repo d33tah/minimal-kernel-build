@@ -2,16 +2,13 @@
 #ifndef _LINUX_PERCPU_DEFS_H
 #define _LINUX_PERCPU_DEFS_H
 
-
 #define PER_CPU_SHARED_ALIGNED_SECTION ""
 #define PER_CPU_ALIGNED_SECTION "..shared_aligned"
-
 
 #define __PCPU_ATTRS(sec)						\
 	__percpu __attribute__((section(PER_CPU_BASE_SECTION sec)))	\
 	PER_CPU_ATTRIBUTES
 
-/* __PCPU_DUMMY_ATTRS, WEAK_PER_CPU not needed */
 #define DECLARE_PER_CPU_SECTION(type, name, sec)			\
 	extern __PCPU_ATTRS(sec) __typeof__(type) name
 
@@ -23,7 +20,6 @@
 
 #define DEFINE_PER_CPU(type, name)					\
 	DEFINE_PER_CPU_SECTION(type, name, "")
-
 
 #define DECLARE_PER_CPU_SHARED_ALIGNED(type, name)			\
 	DECLARE_PER_CPU_SECTION(type, name, PER_CPU_SHARED_ALIGNED_SECTION) \
@@ -60,7 +56,6 @@ do {									\
 	(void)__vpp_verify;						\
 } while (0)
 
-
 #define VERIFY_PERCPU_PTR(__p)						\
 ({									\
 	__verify_pcpu_ptr(__p);						\
@@ -70,7 +65,6 @@ do {									\
 #define per_cpu_ptr(ptr, cpu)	({ (void)(cpu); VERIFY_PERCPU_PTR(ptr); })
 #define raw_cpu_ptr(ptr)	per_cpu_ptr(ptr, 0)
 #define this_cpu_ptr(ptr)	raw_cpu_ptr(ptr)
-
 
 #define per_cpu(var, cpu)	(*per_cpu_ptr(&(var), cpu))
 
@@ -97,7 +91,6 @@ do {									\
 	(void)(var);							\
 	preempt_enable();						\
 } while (0)
-
 
 extern void __bad_size_call_parameter(void);
 
@@ -165,16 +158,12 @@ do {									\
 	}								\
 } while (0)
 
-
 #define raw_cpu_read(pcp)		__pcpu_size_call_return(raw_cpu_read_, pcp)
 #define raw_cpu_write(pcp, val)		__pcpu_size_call(raw_cpu_write_, pcp, val)
 #define raw_cpu_or(pcp, val)		__pcpu_size_call(raw_cpu_or_, pcp, val)
 #define raw_cpu_xchg(pcp, nval)		__pcpu_size_call_return2(raw_cpu_xchg_, pcp, nval)
 #define raw_cpu_cmpxchg(pcp, oval, nval) \
 	__pcpu_size_call_return2(raw_cpu_cmpxchg_, pcp, oval, nval)
-
-/* raw_cpu_add, raw_cpu_and, raw_cpu_add_return, raw_cpu_cmpxchg_double removed - unused */
-/* raw_cpu_sub, raw_cpu_inc, raw_cpu_dec removed - unused */
 
 #define __this_cpu_read(pcp)						\
 ({									\
@@ -206,19 +195,12 @@ do {									\
 	raw_cpu_cmpxchg(pcp, oval, nval);				\
 })
 
-/* __this_cpu_add, __this_cpu_and, __this_cpu_add_return removed - unused */
-/* __this_cpu_cmpxchg_double removed - unused */
-/* __this_cpu_sub, __this_cpu_inc, __this_cpu_dec removed - unused */
-/* __this_cpu_sub_return, __this_cpu_inc_return, __this_cpu_dec_return removed - unused */
-
 #define this_cpu_read(pcp)		__pcpu_size_call_return(this_cpu_read_, pcp)
 #define this_cpu_write(pcp, val)	__pcpu_size_call(this_cpu_write_, pcp, val)
 #define this_cpu_add(pcp, val)		__pcpu_size_call(this_cpu_add_, pcp, val)
 #define this_cpu_add_return(pcp, val)	__pcpu_size_call_return2(this_cpu_add_return_, pcp, val)
 #define this_cpu_cmpxchg_double(pcp1, pcp2, oval1, oval2, nval1, nval2) \
 	__pcpu_double_call_return_bool(this_cpu_cmpxchg_double_, pcp1, pcp2, oval1, oval2, nval1, nval2)
-
-/* this_cpu_and, this_cpu_or, this_cpu_cmpxchg removed - unused */
 
 #define this_cpu_sub(pcp, val)		this_cpu_add(pcp, -(typeof(pcp))(val))
 #define this_cpu_inc(pcp)		this_cpu_add(pcp, 1)

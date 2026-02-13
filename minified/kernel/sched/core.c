@@ -1,29 +1,23 @@
 
-
 #include <linux/sched/signal.h>
 
 #include <linux/wait_bit.h>
 #include <linux/jiffies.h>
-/* linux/hardirq.h removed - irq_enter/exit not used */
 #include <linux/sched/clock.h>
 
 /* linux/sched/signal.h already included above */
 #include <linux/sched/debug.h>
 
 extern void sched_init(void);
-/* sched_init_smp removed - empty stub */
 #include <linux/sched/mm.h>
 
 #include <linux/sched/rt.h>
 
-/* Removed: delayacct_blkio_start/end - empty stubs */
 #include <linux/init_task.h>
 #include <linux/interrupt.h>
 
 #include <asm/mmu_context.h>
 #include <asm/mmu.h>
-/* nospec.h removed - unused, psi_init stub removed */
-/* linux/sched/wake_q.h removed - wake_q functions removed */
 #include <linux/slab.h>
 #include <linux/syscalls.h>
 
@@ -31,17 +25,11 @@ extern void sched_init(void);
 #include <asm/tlb.h>
 
 #include "sched.h"
-/* stats.h, pelt.h removed - were empty */
-
-/* Removed: io_wq_worker_sleeping/running, sched_core_enqueue/dequeue - empty stubs */
 
 DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
 
-/* scheduler_running removed - write-only variable */
-
 void raw_spin_rq_lock_nested(struct rq *rq, int subclass)
 {
-	/* sched_core_disabled() always true - dead loop removed */
 	preempt_disable();
 	raw_spin_lock_nested(&rq->__lock, subclass);
 	preempt_enable_no_resched();
@@ -52,7 +40,6 @@ void raw_spin_rq_unlock(struct rq *rq)
 	raw_spin_unlock(rq_lockp(rq));
 }
 
-/* Migration wait loops removed - TASK_ON_RQ_MIGRATING never set in UP kernel */
 static struct rq *__task_rq_lock(struct task_struct *p, struct rq_flags *rf)
 	__acquires(rq->lock)
 {
@@ -69,7 +56,6 @@ static struct rq *task_rq_lock(struct task_struct *p, struct rq_flags *rf)
 {
 	struct rq *rq;
 
-	/* Migration wait loops removed - UP kernel, no migration */
 	raw_spin_lock_irqsave(&p->pi_lock, rf->flags);
 	rq = task_rq(p);
 	raw_spin_rq_lock(rq);
@@ -84,18 +70,12 @@ void update_rq_clock(struct rq *rq)
 	if (rq->clock_update_flags & RQCF_ACT_SKIP)
 		return;
 
-	/* cpu_of always returns 0 in UP config */
 	delta = sched_clock_cpu(0) - rq->clock;
 	if (delta < 0)
 		return;
 	rq->clock += delta;
 	rq->clock_task += delta;
-	/* update_rq_clock_pelt removed - was empty stub */
 }
-
-/* fetch_or macro removed - only used by removed set_nr_and_not_polling */
-
-/* wake_q_add, wake_q_add_safe, wake_up_q removed - never called */
 
 void resched_curr(struct rq *rq)
 {
@@ -103,13 +83,11 @@ void resched_curr(struct rq *rq)
 	if (test_tsk_need_resched(curr))
 		return;
 
-	/* cpu_of always returns 0, smp_processor_id() returns 0 in UP, so always true */
 	set_tsk_thread_flag(
 		curr, TIF_NEED_RESCHED); /* set_tsk_need_resched inlined */
 	set_preempt_need_resched();
 }
 
-/* Simplified - only caller passes cpu=0, and cpu_online(0) is always true in UP */
 void resched_cpu(int cpu)
 {
 	struct rq *rq = cpu_rq(cpu);
@@ -125,7 +103,6 @@ static void set_load_weight(struct task_struct *p, bool update_load)
 	int prio = p->static_prio - MAX_RT_PRIO;
 	struct load_weight *load = &p->se.load;
 
-	/* task_has_idle_policy check removed - never SCHED_IDLE */
 	if (update_load && p->sched_class == &fair_sched_class)
 		reweight_task(p, prio);
 	else
@@ -155,11 +132,6 @@ static void activate_task(struct rq *rq, struct task_struct *p, int flags)
 	p->on_rq = TASK_ON_RQ_QUEUED;
 }
 
-/* deactivate_task inlined into __schedule - single caller */
-
-/* __normal_prio removed - zero callers */
-/* check_class_changed inlined into __sched_setscheduler */
-
 void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 {
 	if (p->sched_class == rq->curr->sched_class)
@@ -177,8 +149,6 @@ static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags,
 	check_preempt_curr(rq, p, wake_flags);
 	WRITE_ONCE(p->__state, TASK_RUNNING);
 }
-
-/* ttwu_state_match inlined into try_to_wake_up */
 
 static int try_to_wake_up(struct task_struct *p, unsigned int state,
 			  int wake_flags)
@@ -201,7 +171,6 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state,
 		goto out;
 
 	smp_rmb();
-	/* Inlined ttwu_runnable */
 	if (READ_ONCE(p->on_rq)) {
 		rq = __task_rq_lock(p, &rf);
 		if (task_on_rq_queued(p)) {
@@ -215,12 +184,10 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state,
 
 	cpu = task_cpu(p);
 
-	/* Inlined ttwu_queue */
 	{
 		struct rq *rq = cpu_rq(cpu);
 		rq_lock(rq, &rf);
 		update_rq_clock(rq);
-		/* nr_iowait dec removed - field removed (never read) */
 		activate_task(rq, p, ENQUEUE_WAKEUP | ENQUEUE_NOCLOCK);
 		ttwu_do_wakeup(rq, p, wake_flags, &rf);
 		rq_unlock(rq, &rf);
@@ -248,11 +215,7 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 	p->se.on_rq = 0;
 	p->se.exec_start = 0;
 	p->se.sum_exec_runtime = 0;
-	/* prev_sum_exec_runtime removed - write-only field */
 	p->se.vruntime = 0;
-
-	/* p->rt.run_list, timeout, time_slice, on_rq, on_list removed - write-only fields */
-	/* init_numa_balancing - empty stub removed */
 }
 
 int sched_fork(unsigned long clone_flags, struct task_struct *p)
@@ -262,8 +225,6 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
 	p->__state = TASK_NEW;
 	p->prio = current->normal_prio;
 
-	/* sched_reset_on_fork removed - never set to 1 */
-	/* RT/DL class assignment removed - always SCHED_NORMAL */
 	p->sched_class = &fair_sched_class;
 
 	return 0;
@@ -280,8 +241,6 @@ void sched_cgroup_fork(struct task_struct *p, struct kernel_clone_args *kargs)
 		p->sched_class->task_fork(p);
 	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
 }
-
-/* sched_post_fork removed - empty function (~3 LOC) */
 
 void wake_up_new_task(struct task_struct *p)
 {
@@ -302,10 +261,6 @@ void wake_up_new_task(struct task_struct *p)
 /* prepare_lock_switch inlined - just called rq_unpin_lock */
 /* finish_lock_switch inlined - just called raw_spin_rq_unlock_irq */
 
-/* prepare_arch_switch removed - no-op on x86 */
-
-/* prepare_task_switch inlined into context_switch */
-
 static struct rq *finish_task_switch(struct task_struct *prev)
 	__releases(rq->lock)
 {
@@ -324,7 +279,6 @@ static struct rq *finish_task_switch(struct task_struct *prev)
 
 	raw_spin_rq_unlock_irq(rq);
 
-	/* kmap_ctrl check removed - HIGHMEM disabled */
 	if (mm)
 		mmdrop_sched(mm);
 	if (unlikely(prev_state == TASK_DEAD)) {
@@ -341,9 +295,6 @@ asmlinkage __visible void schedule_tail(struct task_struct *prev)
 {
 	finish_task_switch(prev);
 	preempt_enable();
-
-	/* set_child_tid block removed - CLONE_CHILD_SETTID never set */
-	/* sigpending block removed - no pending signals at fork for hello-world */
 }
 
 static __always_inline struct rq *context_switch(struct rq *rq,
@@ -351,8 +302,6 @@ static __always_inline struct rq *context_switch(struct rq *rq,
 						 struct task_struct *next,
 						 struct rq_flags *rf)
 {
-	/* prepare_task_switch inlined - kmap_ctrl and prepare_arch_switch removed */
-
 	if (!next->mm) {
 		enter_lazy_tlb(prev->active_mm, next);
 
@@ -362,7 +311,6 @@ static __always_inline struct rq *context_switch(struct rq *rq,
 		else
 			prev->active_mm = NULL;
 	} else {
-		/* membarrier_switch_mm removed - empty stub */
 		switch_mm_irqs_off(prev->active_mm, next->mm, next);
 
 		if (!prev->mm) {
@@ -381,15 +329,6 @@ static __always_inline struct rq *context_switch(struct rq *rq,
 	return finish_task_switch(prev);
 }
 
-/* nr_running() removed - never called */
-
-/* nr_iowait and nr_iowait_cpu removed - never called */
-/* DEFINE_PER_CPU kstat removed - write-only */
-
-/* cpu_resched_latency removed - always returned 0, only used by removed code */
-
-/* scheduler_tick removed - caller update_process_times was previously removed */
-
 static inline struct task_struct *
 __pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 {
@@ -399,7 +338,6 @@ __pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 	if (likely(!sched_class_above(prev->sched_class, &fair_sched_class) &&
 		   rq->nr_running == rq->cfs.h_nr_running)) {
 		p = pick_next_task_fair(rq, prev, rf);
-		/* RETRY_TASK check removed - pick_next_task_fair never returns it */
 
 		if (!p) {
 			put_prev_task(rq, prev);
@@ -414,8 +352,6 @@ __pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 	BUG();
 }
 
-/* pick_next_task inlined - was just a wrapper around __pick_next_task */
-
 #define SM_NONE 0x0
 #define SM_PREEMPT 0x1
 
@@ -424,7 +360,6 @@ __pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 static void __sched notrace __schedule(unsigned int sched_mode)
 {
 	struct task_struct *prev, *next;
-	/* switch_count removed - write-only field */
 	unsigned long prev_state;
 	struct rq_flags rf;
 	struct rq *rq;
@@ -434,7 +369,6 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 	rq = cpu_rq(cpu);
 	prev = rq->curr;
 
-	/* Inlined schedule_debug - panic_on_warn check removed (always 0) */
 	if (unlikely(in_atomic_preempt_off()))
 		preempt_count_set(PREEMPT_DISABLED);
 	local_irq_disable();
@@ -444,15 +378,11 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 	rq->clock_update_flags <<= 1;
 	update_rq_clock(rq);
 
-	/* switch_count pointing to nivcsw/nvcsw removed - write-only fields */
-
 	prev_state = READ_ONCE(prev->__state);
 	if (!(sched_mode & SM_MASK_PREEMPT) && prev_state) {
 		if (signal_pending_state(prev_state, prev)) {
 			WRITE_ONCE(prev->__state, TASK_RUNNING);
 		} else {
-			/* sched_contributes_to_load and nr_uninterruptible removed - write-only */
-
 			/* deactivate_task inlined - DEQUEUE_SLEEP always set */
 			prev->on_rq = 0;
 			dequeue_task(rq, prev, DEQUEUE_SLEEP | DEQUEUE_NOCLOCK);
@@ -465,7 +395,6 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 
 	if (likely(prev != next)) {
 		RCU_INIT_POINTER(rq->curr, next);
-		/* ++*switch_count removed - write-only field */
 
 		rq = context_switch(rq, prev, next, &rf);
 	} else {
@@ -488,8 +417,6 @@ void __noreturn do_task_dead(void)
 	for (;;)
 		cpu_relax();
 }
-
-/* sched_submit_work inlined - now essentially empty after stubs removed */
 
 asmlinkage __visible void __sched schedule(void)
 {
@@ -517,19 +444,11 @@ void __sched schedule_preempt_disabled(void)
 	preempt_disable();
 }
 
-/* preempt_schedule_common removed - inlined into single caller (~9 LOC) */
-
-/* preempt_schedule_irq removed - unused */
-
 int default_wake_function(wait_queue_entry_t *curr, unsigned mode,
 			  int wake_flags, void *key)
 {
 	return try_to_wake_up(curr->private, mode, wake_flags);
 }
-
-/* __setscheduler_prio inlined into __sched_setscheduler */
-
-/* nice syscall removed - __ARCH_WANT_SYS_NICE no longer defined */
 
 /* Simplified: only caller passes SCHED_NORMAL with priority 0.
  * Task is already SCHED_NORMAL at nice 0, so early return always taken. */
@@ -539,15 +458,12 @@ int sched_setscheduler_nocheck(struct task_struct *p, int policy,
 	return 0;
 }
 
-/* sched_set_fifo removed - never called */
-
 /* sched_setscheduler, sched_setparam, sched_getscheduler, sched_getparam,
    sched_yield syscalls removed - not in syscall table */
 
 int __sched __cond_resched(void)
 {
 	if (should_resched(0)) {
-		/* Inlined preempt_schedule_common */
 		do {
 			preempt_disable_notrace();
 			__schedule(SM_PREEMPT);
@@ -560,13 +476,10 @@ int __sched __cond_resched(void)
 	return 0;
 }
 
-/* io_schedule removed - in_iowait is write-only, replaced with schedule() */
 void __sched io_schedule(void)
 {
 	schedule();
 }
-
-/* sched_get_priority_max, sched_get_priority_min syscalls removed - not in table */
 
 /* sched_rr_get_interval replaced with COND_SYSCALL */
 
@@ -601,9 +514,6 @@ static void __init init_idle(struct task_struct *idle, int cpu)
 	idle->sched_class = &idle_sched_class;
 }
 
-/* sched_init_smp removed - empty stub, call removed from main.c */
-/* load_balance_mask, select_idle_mask per-CPU decls removed - unused */
-
 void __init sched_init(void)
 {
 	BUG_ON(&idle_sched_class != &fair_sched_class + 1 ||
@@ -612,17 +522,12 @@ void __init sched_init(void)
 
 	wait_bit_init();
 
-	/* dead if (ptr) block removed - ptr was always 0 */
-	/* global_rt_period/runtime calc removed - init_rt_bandwidth is now empty */
-
 	/* for_each_possible_cpu simplified - single CPU */
 	{
 		struct rq *rq = cpu_rq(0);
 		raw_spin_lock_init(&rq->__lock);
 		rq->nr_running = 0;
 		init_cfs_rq(&rq->cfs);
-		/* init_rt_rq, init_dl_rq removed - were empty stubs */
-		/* nr_iowait init removed - field removed (never read) */
 	}
 
 	set_load_weight(&init_task, false);
@@ -633,7 +538,6 @@ void __init sched_init(void)
 	WARN_ON(!set_kthread_struct(current));
 
 	init_idle(current, smp_processor_id());
-	/* calc_load_update, scheduler_running assignments removed - never read */
 }
 
 const int sched_prio_to_weight[40] = {
@@ -642,5 +546,3 @@ const int sched_prio_to_weight[40] = {
 	1024,  820,   655,   526,   423,   335,	  272,	 215,	172,   137,
 	110,   87,    70,    56,    45,	   36,	  29,	 23,	18,    15,
 };
-
-/* sched_prio_to_wmult[40] removed - inv_weight is write-only */

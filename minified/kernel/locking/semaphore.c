@@ -1,12 +1,9 @@
 
-
 #include <linux/compiler.h>
 #include <linux/kernel.h>
-/* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/sched.h>
 #include <linux/sched/debug.h>
 #include <linux/sched/signal.h>
-/* Inlined from linux/semaphore.h */
 struct semaphore {
 	raw_spinlock_t lock;
 	unsigned int count;
@@ -26,7 +23,6 @@ extern void up(struct semaphore *sem);
 static inline int __sched ___down_common(struct semaphore *sem, long state,
 					 long timeout);
 
-/* __down inlined into down (~3 LOC) */
 void down(struct semaphore *sem)
 {
 	unsigned long flags;
@@ -59,7 +55,6 @@ struct semaphore_waiter {
 	bool up;
 };
 
-/* __up inlined into up (~3 LOC) */
 void up(struct semaphore *sem)
 {
 	unsigned long flags;

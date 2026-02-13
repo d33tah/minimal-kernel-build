@@ -1,8 +1,6 @@
 #include <linux/mm.h>
 #include <linux/uaccess.h>
 
-/* copy_from_kernel_nofault removed - never called (get_kernel_nofault macro unused) */
-
 #define copy_to_kernel_nofault_loop(dst, src, len, type, err_label) \
 	while (len >= sizeof(type)) {                               \
 		__put_kernel_nofault(dst, src, type, err_label);    \

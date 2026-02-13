@@ -7,9 +7,7 @@
 #include <linux/preempt.h>
 #include <linux/bottom_half.h>
 
-
 void call_rcu(struct rcu_head *head, rcu_callback_t func);
-/* synchronize_rcu removed - empty stub, all call sites removed */
 
 static inline void __rcu_read_lock(void)
 {
@@ -21,30 +19,19 @@ static inline void __rcu_read_unlock(void)
 	preempt_enable();
 }
 
-
 void rcu_init(void);
-/* rcu_scheduler_active removed - write-only variable */
-/* rcu_report_dead, rcutree_migrate_callbacks removed - no definitions or callers */
 
 /* rcu_init_tasks_generic, rcu_init_nohz, exit_tasks_rcu_start,
    exit_tasks_rcu_finish removed - call sites removed */
-
-/* rcu_tasks_qs removed - no callers */
-
 
 /* TINY_RCU only */
 #include <asm/param.h>
 
 extern void rcu_barrier(void);
 
-/* synchronize_rcu_expedited removed - called synchronize_rcu which was empty */
-
 extern void kvfree(const void *addr);
 
-
 void rcu_qs(void);
-
-/* rcu_softirq_qs removed - never called */
 
 #define rcu_note_context_switch(preempt) \
 	do { \
@@ -56,9 +43,7 @@ void rcu_qs(void);
    kfree_rcu_scheduler_running removed - call sites removed */
 static inline void rcu_scheduler_starting(void) { }
 static inline bool rcu_is_watching(void) { return true; }
-/* rcu_all_qs removed - inlined at single call site */
 
-/* rcu_*_lock_map externs removed - rcu_lock_acquire/release are empty stubs */
 # define rcu_lock_acquire(a)		do { } while (0)
 # define rcu_lock_release(a)		do { } while (0)
 
@@ -66,7 +51,6 @@ static inline int rcu_read_lock_held(void)
 {
 	return 1;
 }
-
 
 static inline int rcu_read_lock_sched_held(void)
 {
@@ -78,11 +62,7 @@ static inline int rcu_read_lock_any_held(void)
 	return !preemptible();
 }
 
-
-
 #define RCU_LOCKDEP_WARN(c, s) do { } while (0 && (c))
-/* rcu_sleep_check removed - unused */
-
 
 #ifdef __CHECKER__
 #define rcu_check_sparse(p, space) \
@@ -126,24 +106,19 @@ do {									      \
 		smp_store_release(&p, RCU_INITIALIZER((typeof(p))_r_a_p__v)); \
 } while (0)
 
-
 #define rcu_dereference_check(p, c) \
 	__rcu_dereference_check((p), __UNIQUE_ID(rcu), \
 				(c) || rcu_read_lock_held(), __rcu)
-
 
 #define rcu_dereference_sched_check(p, c) \
 	__rcu_dereference_check((p), __UNIQUE_ID(rcu), \
 				(c) || rcu_read_lock_sched_held(), \
 				__rcu)
 
-
 #define rcu_dereference_protected(p, c) \
 	__rcu_dereference_protected((p), __UNIQUE_ID(rcu), (c), __rcu)
 
-
 #define rcu_dereference(p) rcu_dereference_check(p, 0)
-
 
 #define rcu_dereference_sched(p) rcu_dereference_sched_check(p, 0)
 
@@ -155,7 +130,6 @@ static __always_inline void rcu_read_lock(void)
 	RCU_LOCKDEP_WARN(!rcu_is_watching(),
 			 "rcu_read_lock() used illegally while idle");
 }
-
 
 static inline void rcu_read_unlock(void)
 {
@@ -194,6 +168,5 @@ static inline void rcu_read_unlock_sched(void)
 		.p = RCU_INITIALIZER(v)
 
 #define __is_kvfree_rcu_offset(offset) ((offset) < 4096)
-/* smp_mb__after_unlock_lock removed - unused */
 
 #endif

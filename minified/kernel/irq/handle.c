@@ -2,7 +2,6 @@
 #include <linux/irq.h>
 #include <linux/sched.h>
 #include <linux/interrupt.h>
-/* kernel_stat.h removed - empty */
 
 #include <asm/irq_regs.h>
 
@@ -17,8 +16,6 @@ irqreturn_t no_action(int cpl, void *dev_id)
 {
 	return IRQ_NONE;
 }
-
-/* __irq_wake_thread removed - no threaded IRQs in minimal kernel */
 
 irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc)
 {
@@ -54,8 +51,6 @@ irqreturn_t handle_irq_event_percpu(struct irq_desc *desc)
 
 	retval = __handle_irq_event_percpu(desc);
 
-	/* Removed: add_interrupt_randomness - not needed for minimal kernel */
-	/* note_interrupt removed - was empty stub */
 	return retval;
 }
 

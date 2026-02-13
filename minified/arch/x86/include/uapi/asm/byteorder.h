@@ -1,7 +1,6 @@
 #ifndef _ASM_X86_BYTEORDER_H
 #define _ASM_X86_BYTEORDER_H
 
-/* --- 2025-12-07 23:55 --- Inlined from uapi/linux/byteorder/little_endian.h */
 #ifndef __LITTLE_ENDIAN
 #define __LITTLE_ENDIAN 1234
 #endif
@@ -11,7 +10,6 @@
 
 #include <linux/stddef.h>
 #include <linux/types.h>
-/* Inlined from swab.h */
 #define __swab16(x) (__u16)__builtin_bswap16((__u16)(x))
 #define __swab32(x) (__u32)__builtin_bswap32((__u32)(x))
 #define __swab64(x) (__u64)__builtin_bswap64((__u64)(x))
@@ -32,10 +30,8 @@
 #define __cpu_to_be16(x) ((__force __be16)__swab16((x)))
 #define __be16_to_cpu(x) __swab16((__force __u16)(__be16)(x))
 
-/* le*p/be*p/s pointer-based functions and macros removed - unused */
 /* end little_endian.h */
 
-/* Inlined from linux/byteorder/generic.h */
 #define cpu_to_le64 __cpu_to_le64
 #define le64_to_cpu __le64_to_cpu
 #define cpu_to_le32 __cpu_to_le32

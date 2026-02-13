@@ -1,6 +1,4 @@
  
- 
-
 #ifndef _ASM_X86_VVAR_H
 #define _ASM_X86_VVAR_H
 
@@ -21,11 +19,7 @@ extern char __vvar_page;
 
 #define VVAR(name) (vvar_ ## name)
 
-/* DEFINE_VVAR, TIMENS removed - unused */
-
 #endif
-
- 
 
 DECLARE_VVAR(128, struct vdso_data, _vdso_data)
 

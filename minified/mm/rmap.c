@@ -3,19 +3,10 @@
 #include <linux/sched/mm.h>
 #include <linux/sched/task.h>
 #include <linux/pagemap.h>
-/* linux/swap.h removed - no swap features used */
-/* swapops.h removed - was empty */
 #include <linux/slab.h>
 #include <linux/init.h>
 #include <linux/rmap.h>
 #include <linux/rcupdate.h>
-/* memcontrol.h removed - unused */
-/* linux/mmu_notifier.h removed - unused */
-/* linux/migrate.h removed - empty header */
-/* hugetlb.h, huge_mm.h removed - unused */
-/* linux/backing-dev.h removed - unused */
-/* linux/memremap.h removed - unused */
-/* userfaultfd_k.h removed - empty stubs */
 #include <linux/mm_inline.h>
 
 #include <asm/tlbflush.h>
@@ -24,8 +15,6 @@
 
 static struct kmem_cache *anon_vma_cachep;
 static struct kmem_cache *anon_vma_chain_cachep;
-
-/* anon_vma_alloc inlined into anon_vma_prepare */
 
 static inline void anon_vma_free(struct anon_vma *anon_vma)
 {
@@ -164,8 +153,6 @@ enomem_failure:
 	return -ENOMEM;
 }
 
-/* anon_vma_fork removed - never called in minimal kernel */
-
 void unlink_anon_vmas(struct vm_area_struct *vma)
 {
 	struct anon_vma_chain *avc, *next;
@@ -219,9 +206,6 @@ void __init anon_vma_init(void)
 		KMEM_CACHE(anon_vma_chain, SLAB_PANIC | SLAB_ACCOUNT);
 }
 
-/* folio_referenced_arg struct removed - never used */
-/* folio_mkclean removed - always returned 0, inlined into page_mkclean */
-
 static void __page_set_anon_rmap(struct page *page, struct vm_area_struct *vma,
 				 unsigned long address, int exclusive)
 {
@@ -243,12 +227,9 @@ out:
 		SetPageAnonExclusive(page);
 }
 
-/* page_add_anon_rmap removed - never called */
-
 void page_add_new_anon_rmap(struct page *page, struct vm_area_struct *vma,
 			    unsigned long address)
 {
-	/* THP not enabled - PageCompound always false for anon pages */
 	__SetPageSwapBacked(page);
 	atomic_set(&page->_mapcount, 0);
 	__mod_lruvec_page_state(page, NR_ANON_MAPPED, 1);
@@ -266,8 +247,6 @@ void page_add_file_rmap(struct page *page, struct vm_area_struct *vma,
 	if (nr)
 		__mod_lruvec_page_state(page, NR_FILE_MAPPED, nr);
 }
-
-/* page_remove_rmap removed - never called */
 
 void __put_anon_vma(struct anon_vma *anon_vma)
 {

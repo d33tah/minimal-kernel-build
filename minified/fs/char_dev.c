@@ -1,16 +1,13 @@
-/* string.h, errno.h, module.h removed - unused */
 #include <linux/init.h>
 #include <linux/fs.h>
 #include <linux/kdev_t.h>
 #include <linux/slab.h>
-/* linux/major.h removed - empty */
 
 #include <linux/kobject.h>
 typedef struct kobject *kobj_probe_t(dev_t, int *, void *);
 struct kobj_map;
 int kobj_map(struct kobj_map *, dev_t, unsigned long, struct module *,
 	     kobj_probe_t *, int (*)(dev_t, void *), void *);
-/* kobj_unmap removed - never called */
 struct kobject *kobj_lookup(struct kobj_map *, dev_t, int *);
 struct kobj_map *kobj_map_init(kobj_probe_t *, struct mutex *);
 /* end kobj_map.h */
@@ -33,7 +30,6 @@ static struct kobject *cdev_get(struct cdev *p)
 	struct module *owner = p->owner;
 	struct kobject *kobj;
 
-	/* try_module_get always returns true - dead check removed */
 	kobj = kobject_get_unless_zero(&p->kobj);
 	if (!kobj)
 		module_put(owner);
@@ -110,8 +106,6 @@ void cd_forget(struct inode *inode)
 	spin_unlock(&cdev_lock);
 }
 
-/* cdev_purge removed - only callers were cdev_default_release and cdev_dynamic_release */
-
 const struct file_operations def_chr_fops = {
 	.open = chrdev_open,
 };
@@ -122,7 +116,6 @@ const struct file_operations def_chr_fops = {
 
 static struct kobject *base_probe(dev_t dev, int *part, void *data)
 {
-	/* request_module always returns -ENOSYS, so module loading is dead */
 	return NULL;
 }
 

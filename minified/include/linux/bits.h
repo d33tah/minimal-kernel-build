@@ -4,7 +4,6 @@
 #include <linux/const.h>
 #include <asm/bitsperlong.h>
 
-/* Inlined from vdso/bits.h */
 #define BIT(nr)			(UL(1) << (nr))
 
 #define BIT_ULL(nr)		(ULL(1) << (nr))

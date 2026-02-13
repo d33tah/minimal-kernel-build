@@ -2,8 +2,6 @@
 #include <linux/fs.h>
 #include <linux/sched/signal.h>
 #include <linux/uaccess.h>
-/* capability.h removed - unused */
-/* kernel_stat.h removed - unused */
 #include <linux/gfp.h>
 #include <linux/mm.h>
 #include <linux/swap.h>
@@ -11,7 +9,6 @@
 #include <linux/pagemap.h>
 #include <linux/file.h>
 #include <linux/uio.h>
-/* error-injection.h removed - unused */
 #include <linux/hash.h>
 #include <linux/backing-dev.h>
 #ifndef _LINUX_PAGEVEC_H
@@ -54,10 +51,6 @@ static inline unsigned folio_batch_add(struct folio_batch *fbatch,
 	return fbatch_space(fbatch);
 }
 #endif
-/* cpuset.h removed - unused */
-/* linux/hugetlb.h removed - folio_test_hugetlb always false */
-/* memcontrol.h removed - unused */
-/* rmap.h, ramfs.h, migrate.h removed - unused */
 #include "internal.h"
 
 #include <asm/mman.h>
@@ -66,19 +59,15 @@ static inline unsigned folio_batch_add(struct folio_batch *fbatch,
  * filemap_remove_folio, delete_from_page_cache_batch removed -
  * only callers were in truncate.c which was stubbed */
 
-/* filemap_check_errors, filemap_fdatawrite_wbc, filemap_fdatawait_range removed - never called */
-/* filemap_write_and_wait_range, file_check_and_advance_wb_err, file_write_and_wait_range removed - never called */
 noinline int __filemap_add_folio(struct address_space *mapping,
 				 struct folio *folio, pgoff_t index, gfp_t gfp,
 				 void **shadowp)
 {
 	XA_STATE(xas, &mapping->i_pages, index);
-	/* folio_test_hugetlb always false, simplify */
 	long nr;
 
 	mapping_set_update(&xas, mapping);
 
-	/* mem_cgroup_charge always returns 0 */
 	xas_set_order(&xas, index, folio_order(folio));
 	nr = folio_nr_pages(folio);
 
@@ -95,9 +84,6 @@ noinline int __filemap_add_folio(struct address_space *mapping,
 		if (xas_error(&xas))
 			goto unlock;
 
-		/* nrpages update removed - field removed */
-
-		/* huge (folio_test_hugetlb) is always false */
 		__lruvec_stat_mod_folio(folio, NR_FILE_PAGES, nr);
 unlock:
 		xas_unlock_irq(&xas);
@@ -108,7 +94,6 @@ unlock:
 
 	return 0;
 error:
-	/* mem_cgroup_uncharge is empty stub */
 	folio->mapping = NULL;
 
 	/* folio_put_refs inlined */
@@ -129,7 +114,6 @@ int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 		__folio_clear_locked(folio);
 	else {
 		WARN_ON_ONCE(folio_test_active(folio));
-		/* workingset_refault removed - was empty stub */
 		folio_add_lru(folio);
 	}
 	return ret;
@@ -151,7 +135,6 @@ void __init pagecache_init(void)
 
 	for (i = 0; i < PAGE_WAIT_TABLE_SIZE; i++)
 		init_waitqueue_head(&folio_wait_table[i]);
-	/* page_writeback_init removed - empty stub */
 }
 
 static int wake_page_function(wait_queue_entry_t *wait, unsigned mode, int sync,
@@ -224,8 +207,6 @@ enum behavior {
 	SHARED,
 	DROP,
 };
-
-/* folio_trylock_flag inlined into folio_wait_bit_common */
 
 int sysctl_page_lock_unfairness = 5;
 
@@ -308,14 +289,10 @@ repeat:
 	return wait->flags & WQ_FLAG_WOKEN ? 0 : -EINTR;
 }
 
-/* folio_wait_bit removed - never called (only killable variant is used) */
-
 int folio_wait_bit_killable(struct folio *folio, int bit_nr)
 {
 	return folio_wait_bit_common(folio, bit_nr, TASK_KILLABLE, SHARED);
 }
-
-/* folio_put_wait_locked removed - always returns 0 */
 
 void folio_unlock(struct folio *folio)
 {
@@ -327,17 +304,11 @@ void folio_unlock(struct folio *folio)
 		folio_wake_bit(folio, PG_locked);
 }
 
-/* folio_end_writeback removed - never called */
-
 void __folio_lock(struct folio *folio)
 {
 	folio_wait_bit_common(folio, PG_locked, TASK_UNINTERRUPTIBLE,
 			      EXCLUSIVE);
 }
-
-/* __folio_lock_killable and __folio_lock_or_retry removed - never called */
-/* __folio_lock_async inlined into filemap_update_page (~20 LOC) */
-/* mapping_get_entry inlined into __filemap_get_folio */
 
 struct folio *__filemap_get_folio(struct address_space *mapping, pgoff_t index,
 				  int fgp_flags, gfp_t gfp)
@@ -388,9 +359,6 @@ out_rcu:
 		}
 	}
 
-	/* folio_mark_accessed removed - was empty stub (LRU tracking not needed) */
-
-	/* FGP_STABLE / folio_wait_stable removed - was empty stub */
 no_page:
 	if (!folio && (fgp_flags & FGP_CREAT)) {
 		int err;
@@ -427,10 +395,6 @@ no_page:
 /* find_get_entry, find_get_entries, find_lock_entries removed -
  * only callers were in truncate_inode_pages_range which was stubbed */
 
-/* folio_more_pages removed - orphaned after filemap_map_pages removal (~10 LOC) */
-
-/* find_get_pages_range_tag removed - never called (~32 LOC) */
-
 static void filemap_get_read_batch(struct address_space *mapping, pgoff_t index,
 				   pgoff_t max, struct folio_batch *fbatch)
 {
@@ -443,7 +407,6 @@ static void filemap_get_read_batch(struct address_space *mapping, pgoff_t index,
 			continue;
 		if (xas.xa_index > max || xa_is_value(folio))
 			break;
-		/* xa_is_sibling always returns false - check removed */
 		if (!folio_try_get_rcu(folio))
 			goto retry;
 
@@ -485,8 +448,6 @@ static int filemap_read_folio(struct file *file, struct address_space *mapping,
 	return -EIO;
 }
 
-/* filemap_range_uptodate inlined - is_partially_uptodate never set */
-
 static int filemap_update_page(struct kiocb *iocb,
 			       struct address_space *mapping,
 			       struct iov_iter *iter, struct folio *folio)
@@ -521,8 +482,6 @@ unlock:
 		folio_put(folio);
 	return error;
 }
-
-/* filemap_create_folio inlined into filemap_get_pages */
 
 static int filemap_get_pages(struct kiocb *iocb, struct iov_iter *iter,
 			     struct folio_batch *fbatch)
@@ -582,8 +541,6 @@ err:
 	return err;
 }
 
-/* pos_same_folio inlined into filemap_read */
-
 ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
 		     ssize_t already_read)
 {
@@ -619,7 +576,6 @@ ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
 
 		/* pos_same_folio inlined, folio_shift inlined */
 		{
-			/* folio_mark_accessed removed - was empty stub */
 		}
 
 		for (i = 0; i < folio_batch_count(&fbatch); i++) {
@@ -632,13 +588,11 @@ ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
 
 			if (end_offset < folio_pos(folio))
 				break;
-			/* folio_mark_accessed removed - was empty stub */
 
 			copied = copy_folio_to_iter(folio, offset, bytes, iter);
 
 			already_read += copied;
 			iocb->ki_pos += copied;
-			/* ra->prev_pos removed - write-only field */
 
 			if (copied < bytes) {
 				error = -EFAULT;
@@ -651,8 +605,6 @@ put_folios:
 		folio_batch_init(&fbatch);
 	} while (iov_iter_count(iter) && iocb->ki_pos < isize && !error);
 
-	/* file_accessed removed - touch_atime is empty stub */
-
 	return already_read ? already_read : error;
 }
 
@@ -663,11 +615,8 @@ ssize_t generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 	if (!count)
 		return 0;
 
-	/* IOCB_DIRECT block removed - a_ops->direct_IO is never set (~30 LOC) */
-
 	return filemap_read(iocb, iter, 0);
 }
-/* MMAP_LOTSAMISS removed - unused */
 
 vm_fault_t filemap_fault(struct vm_fault *vmf)
 {
@@ -688,9 +637,6 @@ vm_fault_t filemap_fault(struct vm_fault *vmf)
 	return VM_FAULT_LOCKED;
 }
 
-/* next_uptodate_page and filemap_map_pages removed (~108 LOC) */
-
-/* Stubbed - do_shared_fault returns VM_FAULT_SIGBUS, so this is never called */
 vm_fault_t filemap_page_mkwrite(struct vm_fault *vmf)
 {
 	return VM_FAULT_SIGBUS;
@@ -707,22 +653,15 @@ int generic_file_mmap(struct file *file, struct vm_area_struct *vma)
 
 	if (!mapping->a_ops->read_folio)
 		return -ENOEXEC;
-	/* file_accessed removed - touch_atime is empty stub */
 	vma->vm_ops = &generic_file_vm_ops;
 	return 0;
 }
-
-/* do_read_cache_folio, read_cache_folio, do_read_cache_page, read_cache_page, read_cache_page_gfp, generic_file_direct_write removed - never called */
-
-/* generic_perform_write, __generic_file_write_iter removed - never called */
 
 /* Write operations stubbed - minimal kernel is read-only during boot */
 ssize_t generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 {
 	return -EROFS;
 }
-
-/* filemap_release_folio removed - never called */
 
 /* Merged from folio-compat.c */
 void unlock_page(struct page *page)

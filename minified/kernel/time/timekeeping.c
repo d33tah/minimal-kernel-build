@@ -48,24 +48,20 @@ struct timekeeper {
 
 #endif /* _LINUX_TIMEKEEPER_INTERNAL_H */
 #include <linux/module.h>
-/* linux/interrupt.h removed - no interrupt features used */
 #include <linux/percpu.h>
 #include <linux/init.h>
 #include <linux/mm.h>
 #include <linux/sched.h>
-/* loadavg.h include removed - LOAD_FREQ not used here */
 #include <linux/sched/clock.h>
 #include <linux/clocksource.h>
 #include <linux/jiffies.h>
 #include <linux/time.h>
 #include <linux/timex.h>
-/* linux/stop_machine.h removed - unused */
 
 #include <linux/compiler.h>
 
 #include "tick-internal.h"
 /* ntp.c functions inlined - ntp_init/ntp_clear are empty, others return constants */
-/* Inlined from timekeeping_internal.h */
 static inline u64 clocksource_delta(u64 now, u64 last, u64 mask)
 {
 	u64 ret = (now - last) & mask;
@@ -85,13 +81,8 @@ static struct {
 	.seq = SEQCNT_RAW_SPINLOCK_ZERO(tk_core.seq, &timekeeper_lock),
 };
 
-/* shadow_timekeeper removed - only used by timekeeping_update (now removed) */
-/* timekeeping_suspended removed - never set, always 0 */
-
 /* struct tk_fast, cycles_at_suspend, dummy_clock_read, dummy_clock, FAST_TK_INIT,
    tk_fast_mono, tk_fast_raw removed - fast timekeeper path is stubbed out */
-/* tk_normalize_xtime inlined into change_clocksource */
-/* tk_xtime, tk_set_xtime, tk_set_wall_to_mono removed - never called */
 
 static inline u64 tk_clock_read(const struct tk_read_base *tkr)
 {
@@ -99,8 +90,6 @@ static inline u64 tk_clock_read(const struct tk_read_base *tkr)
 
 	return clock->read(clock);
 }
-
-/* timekeeping_get_delta inlined into ktime_get (via timekeeping_get_ns) */
 
 static void tk_setup_internals(struct timekeeper *tk, struct clocksource *clock)
 {
@@ -157,37 +146,10 @@ static void tk_setup_internals(struct timekeeper *tk, struct clocksource *clock)
 	tk->skip_second_overflow = 0;
 }
 
-/* timekeeping_delta_to_ns, timekeeping_get_ns inlined into ktime_get */
-
-/* update_fast_timekeeper removed - fast path functions are stubbed */
-
 /* Removed: ktime_get_boot_fast_ns, ktime_get_tai_fast_ns, ktime_get_real_fast_ns,
    ktime_get_fast_timestamps - no callers */
 
-/* pvclock_gtod_chain removed - no registrations */
-/* timekeeping_update removed - only called from timekeeping_advance (now removed) (~37 LOC) */
-/* timekeeping_forward_now inlined into change_clocksource */
-
-/* ktime_get_real_ts64 removed - never called */
-
-/* ktime_get removed - never called */
-
-/* ktime_get_resolution_ns removed - never called (~15 LOC) */
-
-/* offsets array removed - only used by ktime_get_with_offset */
-/* ktime_get_with_offset removed - never called (~17 LOC) */
-
-/* Removed: ktime_get_coarse_with_offset, ktime_mono_to_any, ktime_get_raw - no callers */
-
-/* ktime_get_ts64 removed - never called */
-
-/* ktime_get_seconds, ktime_get_real_seconds removed - never called (~20 LOC) */
-
-/* __timekeeping_set_tai_offset removed - unused after second_overflow removal */
-/* timekeeping_notify removed - stub inlined into clocksource_select */
-/* timekeeping_valid_for_hres removed - never called */
 /* read_persistent_clock64 provided by arch/x86/kernel/rtc.c */
-/* read_persistent_wall_and_boot_offset removed - never called */
 
 void __init timekeeping_init(void)
 {
@@ -208,8 +170,3 @@ void __init timekeeping_init(void)
 
 /* timekeeping_advance, accumulate_nsecs_to_secs, timekeeping_adjust,
    logarithmic_accumulation removed - never called (~140 LOC) */
-/* update_wall_time removed - never called (~5 LOC) */
-/* ktime_get_coarse_real_ts64 removed - never called (~11 LOC) */
-/* do_timer removed - never called (~5 LOC) */
-/* ktime_get_update_offsets_now removed - never called (~28 LOC) */
-/* random_get_entropy_fallback removed - random_get_entropy() is never called (~8 LOC) */

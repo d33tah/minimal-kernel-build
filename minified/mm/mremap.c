@@ -1,4 +1,3 @@
-/* mremap - stubbed, move_page_tables never called in minimal kernel */
 #include <linux/mm.h>
 
 unsigned long move_page_tables(struct vm_area_struct *vma,

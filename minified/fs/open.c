@@ -3,22 +3,16 @@
 #include <linux/fdtable.h>
 #include <linux/module.h>
 #include <linux/namei.h>
-/* linux/capability.h removed - no capability functions used */
 #include <linux/init_task.h> /* for securebits defines */
-/* linux/security.h removed - no security functions used */
 #include <linux/mount.h>
 #include <linux/fcntl.h>
-/* linux/slab.h removed - no slab functions */
 #include <linux/uaccess.h>
 #include <linux/fs.h>
 #include <linux/personality.h>
 #include <linux/rcupdate.h>
-/* linux/fs_struct.h removed - no fs_struct functions used */
 #include <linux/mnt_idmapping.h>
 
 #include "internal.h"
-
-/* do_truncate removed - no callers */
 
 int vfs_open(const struct path *path, struct file *file)
 {
@@ -71,7 +65,6 @@ int vfs_open(const struct path *path, struct file *file)
 			goto cleanup_all;
 	}
 	file->f_mode |= FMODE_OPENED;
-	/* .read/.write callbacks removed - only read_iter/write_iter used */
 	if ((file->f_mode & FMODE_READ) && likely(file->f_op->read_iter))
 		file->f_mode |= FMODE_CAN_READ;
 	if ((file->f_mode & FMODE_WRITE) && likely(file->f_op->write_iter))
@@ -158,5 +151,3 @@ int filp_close(struct file *filp, fl_owner_t id)
 	fput(filp);
 	return 0;
 }
-
-/* nonseekable_open removed - never called */

@@ -6,7 +6,6 @@
 #include <linux/stddef.h>
 #include <linux/stdarg.h>
 
-/* --- Inlined from asm/string_32.h --- */
 #define __HAVE_ARCH_STRCPY
 extern char *strcpy(char *dest, const char *src);
 
@@ -93,8 +92,6 @@ size_t strlcpy(char *, const char *, size_t);
 ssize_t strscpy(char *, const char *, size_t);
 #endif
 
-/* strscpy_pad removed - inlined into exec.c */
-
 #ifndef __HAVE_ARCH_STRLCAT
 extern size_t strlcat(char *, const char *, __kernel_size_t);
 #endif
@@ -104,7 +101,6 @@ extern char * strnchr(const char *, size_t, int);
 #ifndef __HAVE_ARCH_STRRCHR
 extern char * strrchr(const char *,int);
 #endif
-/* skip_spaces removed - inlined into params.c */
 
 #ifndef __HAVE_ARCH_STRPBRK
 extern char * strpbrk(const char *,const char *);

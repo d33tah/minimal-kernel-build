@@ -14,9 +14,7 @@
 #include <linux/ptrace.h>
 #include <linux/init.h>
 #include <linux/compiler.h>
-/* linux/highmem.h removed - unused */
 #include <linux/pagemap.h>
-/* linux/vmalloc.h removed - unused */
 #include <linux/elf.h>
 #include <linux/utsname.h>
 #include <linux/sched.h>
@@ -29,12 +27,9 @@
 #include <asm/param.h>
 #include <asm/page.h>
 
-/* ELF_COMPAT, user_long_t, user_siginfo_t removed - never used */
-
 static int load_elf_binary(struct linux_binprm *bprm);
 
 #define load_elf_library NULL
-/* elf_core_dump, ELF_CORE_EFLAGS removed - never used */
 
 /* ELF_EXEC_PAGESIZE = PAGE_SIZE = 4096 on x86 */
 #define ELF_MIN_ALIGN PAGE_SIZE
@@ -61,17 +56,11 @@ static int set_brk(unsigned long start, unsigned long end, int prot)
 		if (error)
 			return error;
 	}
-	/* current->mm->start_brk/brk assignment removed - write-only fields */
 	return 0;
 }
 
-/* padzero inlined into load_elf_binary - single caller */
-
 #define STACK_ADD(sp, items) ((elf_addr_t __user *)(sp) - (items))
 #define STACK_ROUND(sp, items) (((unsigned long)(sp - items)) & ~15UL)
-/* STACK_ALLOC removed - platform/random strings no longer placed on stack */
-
-/* ELF_BASE_PLATFORM removed - platform strings not used */
 
 static int create_elf_tables(struct linux_binprm *bprm,
 			     const struct elfhdr *exec,
@@ -89,8 +78,6 @@ static int create_elf_tables(struct linux_binprm *bprm,
 	struct vm_area_struct *vma;
 
 	p = arch_align_stack(p);
-
-	/* platform strings, random bytes removed - /init doesn't read auxv */
 
 	elf_info = (elf_addr_t *)mm->saved_auxv;
 
@@ -132,7 +119,6 @@ static int create_elf_tables(struct linux_binprm *bprm,
 	if (put_user(argc, sp++))
 		return -EFAULT;
 
-	/* arg_start, arg_end, env_start, env_end assignments removed - write-only */
 	p = bprm->p;
 	while (argc-- > 0) {
 		size_t len;
@@ -197,8 +183,6 @@ static int elf_read(struct file *file, void *buf, size_t len, loff_t pos)
 	return 0;
 }
 
-/* maximum_alignment inlined into load_elf_binary */
-
 static struct elf_phdr *load_elf_phdrs(const struct elfhdr *elf_ex,
 				       struct file *elf_file)
 {
@@ -232,8 +216,6 @@ out:
 	return elf_phdata;
 }
 
-/* arch_elf_state removed - empty on x86 */
-
 static inline int make_prot(u32 p_flags)
 {
 	int prot = 0;
@@ -247,8 +229,6 @@ static inline int make_prot(u32 p_flags)
 
 	return prot;
 }
-
-/* --- 2026-02-07 07:25 --- Removed interpreter/ET_DYN support - init is static ET_EXEC */
 
 static int load_elf_binary(struct linux_binprm *bprm)
 {
@@ -301,8 +281,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	if (elf_read_implies_exec(*elf_ex, executable_stack))
 		current->personality |= READ_IMPLIES_EXEC;
 
-	/* randomize_va_space always 0 - PF_RANDOMIZE dead code removed */
-
 	setup_new_exec(bprm);
 
 	retval = setup_arg_pages(bprm, PAGE_ALIGN(STACK_TOP), executable_stack);
@@ -311,8 +289,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 
 	elf_bss = 0;
 	elf_brk = 0;
-
-	/* start_code/end_code/start_data/end_data init removed - write-only */
 
 	for (i = 0, elf_ppnt = elf_phdata; i < elf_ex->e_phnum;
 	     i++, elf_ppnt++) {
@@ -371,7 +347,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		}
 
 		k = elf_ppnt->p_vaddr;
-		/* start_code/start_data tracking removed - write-only */
 
 		if (BAD_ADDR(k) || elf_ppnt->p_filesz > elf_ppnt->p_memsz ||
 		    elf_ppnt->p_memsz > TASK_SIZE ||
@@ -384,7 +359,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 
 		if (k > elf_bss)
 			elf_bss = k;
-		/* end_code/end_data tracking removed - write-only */
 		k = elf_ppnt->p_vaddr + elf_ppnt->p_memsz;
 		if (k > elf_brk) {
 			bss_prot = elf_prot;
@@ -396,7 +370,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	phdr_addr += load_bias;
 	elf_bss += load_bias;
 	elf_brk += load_bias;
-	/* start_code/end_code/start_data/end_data load_bias removed - write-only */
 
 	retval = set_brk(elf_bss, elf_brk, bss_prot);
 	if (retval)
@@ -431,10 +404,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	retval = create_elf_tables(bprm, elf_ex, 0, e_entry, phdr_addr);
 	if (retval < 0)
 		goto out;
-
-	/* mm->end_code/start_code/start_data/end_data/start_stack removed - write-only fields */
-
-	/* randomize_va_space always 0 - brk randomization dead code removed */
 
 	if (current->personality & MMAP_PAGE_ZERO) {
 		error = vm_mmap(NULL, 0, PAGE_SIZE, PROT_READ | PROT_EXEC,

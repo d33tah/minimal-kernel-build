@@ -7,7 +7,6 @@
 struct rcuwait { struct task_struct __rcu *task; };
 extern int rcuwait_wake_up(struct rcuwait *w);
 #include <linux/wait.h>
-/* Inlined from linux/rcu_sync.h */
 #include <linux/rcupdate.h>
 struct rcu_sync {
 	int gp_state;
@@ -36,8 +35,6 @@ static inline void percpu_down_read(struct percpu_rw_semaphore *sem)
 {
 	might_sleep();
 
-	/* rwsem_acquire_read removed - empty stub */
-
 	preempt_disable();
 	 
 	if (likely(rcu_sync_is_idle(&sem->rss)))
@@ -48,11 +45,8 @@ static inline void percpu_down_read(struct percpu_rw_semaphore *sem)
 	preempt_enable();
 }
 
-/* percpu_down_read_trylock removed - never called */
-
 static inline void percpu_up_read(struct percpu_rw_semaphore *sem)
 {
-	/* rwsem_release removed - empty stub */
 
 	preempt_disable();
 	 
@@ -68,13 +62,9 @@ static inline void percpu_up_read(struct percpu_rw_semaphore *sem)
 	preempt_enable();
 }
 
-/* percpu_down_write removed - never called */
-
 extern int __percpu_init_rwsem(struct percpu_rw_semaphore *,
 				const char *, struct lock_class_key *);
 
 extern void percpu_free_rwsem(struct percpu_rw_semaphore *);
-
-/* percpu_init_rwsem removed - never called */
 
 #endif

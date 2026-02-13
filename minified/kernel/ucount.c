@@ -1,6 +1,4 @@
 
-/* linux/stat.h removed - no stat features used */
-/* linux/sysctl.h removed - no sysctl features used */
 #include <linux/slab.h>
 #include <linux/cred.h>
 #include <linux/hash.h>
@@ -180,12 +178,6 @@ bool dec_rlimit_ucounts(struct ucounts *ucounts, enum ucount_type type, long v)
 	}
 	return (new == 0);
 }
-
-/* dec_rlimit_put_ucounts removed - no callers */
-
-/* inc_rlimit_get_ucounts removed - never called */
-
-/* is_ucounts_overlimit removed - no callers */
 
 static __init int user_namespace_sysctl_init(void)
 {

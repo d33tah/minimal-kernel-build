@@ -1,5 +1,4 @@
 
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -24,13 +23,10 @@ typedef unsigned int u32;
 
 u8 buf[SETUP_SECT_MAX * 512];
 
-/* PECOFF_RELOC_RESERVE removed - never used */
-
 #define PECOFF_COMPAT_RESERVE 0x0
 
 /* efi32_stub_entry, efi64_stub_entry, efi_pe_entry, efi32_pe_entry removed -
  * write-only variables, never read (EFI stub support removed) */
-/* startup_64, _ehead, _end removed - write-only variables, never read */
 static unsigned long kernel_info;
 
 static const u32 crctab32[] = {
@@ -114,7 +110,6 @@ static inline void update_pecoff_text(unsigned int text_start,
 				      unsigned int init_sz)
 {
 }
-/* efi_stub_defaults, efi_stub_entry_update removed - empty stubs */
 
 static inline int reserve_pecoff_reloc_section(int c)
 {
@@ -151,7 +146,6 @@ static void parse_zoffset(char *fname)
 	p = (char *)buf;
 
 	while (p && *p) {
-		/* efi*_stub_entry, efi*_pe_entry, startup_64, _ehead, _end parsing removed - variables not used */
 		PARSE_ZOFS(p, kernel_info);
 
 		p = strchr(p, '\n');
@@ -171,7 +165,6 @@ int main(int argc, char **argv)
 	void *kernel;
 	u32 crc = 0xffffffffUL;
 
-	/* efi_stub_defaults removed - empty stub */
 	if (argc != 5)
 		usage();
 	parse_zoffset(argv[3]);
@@ -223,7 +216,6 @@ int main(int argc, char **argv)
 	init_sz = get_unaligned_le32(&buf[0x260]);
 	update_pecoff_text(setup_sectors * 512, i + (sys_size * 16), init_sz);
 
-	/* efi_stub_entry_update removed - empty stub */
 	put_unaligned_le32(kernel_info, &buf[0x268]);
 
 	crc = partial_crc32(buf, i, crc);

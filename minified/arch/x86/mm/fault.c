@@ -13,17 +13,13 @@
 #include <asm/cpufeature.h>
 #include <asm/traps.h>
 #include <asm/fixmap.h>
-/* asm/vsyscall.h, asm/vm86.h removed - empty */
 #include <asm/mmu_context.h>
 #include <asm/desc.h>
 #include <asm/cpu_entry_area.h>
 #include <asm/pgtable_areas.h>
-/* Removed: #include <asm/kvm_para.h> - stub below */
 #include <asm/vdso.h>
 
 #include <asm/irq_stack.h>
-
-/* kvm_handle_async_pf, trace_page_fault_*, kmmio_fault removed - unused */
 
 DEFINE_SPINLOCK(pgd_lock);
 LIST_HEAD(pgd_list);
@@ -38,15 +34,12 @@ static inline pmd_t *vmalloc_sync_one(pgd_t *pgd, unsigned long address)
 
 	pgd += index;
 	pgd_k = init_mm.pgd + index;
-	/* pgd_present always returns 1, skip check */
 
 	p4d = p4d_offset(pgd, address);
 	p4d_k = p4d_offset(pgd_k, address);
-	/* p4d_present always returns 1, skip check */
 
 	pud = pud_offset(p4d, address);
 	pud_k = pud_offset(p4d_k, address);
-	/* pud_present always returns 1, skip check */
 
 	pmd = pmd_offset(pud, address);
 	pmd_k = pmd_offset(pud_k, address);
@@ -138,7 +131,6 @@ static noinline void page_fault_oops(struct pt_regs *regs,
 {
 	/* Simplified: just die with minimal output */
 	unsigned long flags = oops_begin();
-	/* __die always returns 0, sig stays SIGKILL */
 	__die("Oops", regs, error_code);
 	oops_end(flags, regs, SIGKILL);
 }
@@ -157,7 +149,6 @@ static noinline void kernelmode_fixup_or_oops(struct pt_regs *regs,
 		if (current->thread.sig_on_uaccess_err && signal) {
 			sanitize_error_code(address, &error_code);
 			set_signal_archinfo(address, error_code);
-			/* SEGV_PKUERR never occurs - PKU disabled */
 			force_sig_fault(signal, si_code,
 					(void __user *)address);
 		}
@@ -167,8 +158,6 @@ static noinline void kernelmode_fixup_or_oops(struct pt_regs *regs,
 
 	page_fault_oops(regs, error_code, address);
 }
-
-/* show_signal_msg removed - empty stub */
 
 static void __bad_area_nosemaphore(struct pt_regs *regs,
 				   unsigned long error_code,
@@ -192,11 +181,8 @@ static void __bad_area_nosemaphore(struct pt_regs *regs,
 	if (fixup_vdso_exception(regs, X86_TRAP_PF, error_code, address))
 		return;
 
-	/* show_signal_msg call removed - was empty */
-
 	set_signal_archinfo(address, error_code);
 
-	/* SEGV_PKUERR can never occur - PKU disabled, use force_sig_fault */
 	force_sig_fault(SIGSEGV, si_code, (void __user *)address);
 
 	local_irq_disable();
@@ -225,14 +211,11 @@ static noinline void bad_area(struct pt_regs *regs, unsigned long error_code,
 	__bad_area(regs, error_code, address, 0, SEGV_MAPERR);
 }
 
-/* bad_area_access_from_pkeys removed - X86_FEATURE_OSPKE disabled */
-
 static noinline void bad_area_access_error(struct pt_regs *regs,
 					   unsigned long error_code,
 					   unsigned long address,
 					   struct vm_area_struct *vma)
 {
-	/* X86_FEATURE_OSPKE disabled, bad_area_access_from_pkeys always returns false */
 	__bad_area(regs, error_code, address, 0, SEGV_ACCERR);
 }
 
@@ -281,13 +264,10 @@ static noinline int spurious_kernel_fault(unsigned long error_code,
 		return 0;
 
 	pgd = init_mm.pgd + pgd_index(address);
-	/* pgd_present always returns 1, skip check */
 
 	p4d = p4d_offset(pgd, address);
-	/* p4d_present always returns 1, p4d_large always 0, skip checks */
 
 	pud = pud_offset(p4d, address);
-	/* pud_present always returns 1, pud_large always 0, skip checks */
 
 	pmd = pmd_offset(pud, address);
 	if (!pmd_present(*pmd))
@@ -311,7 +291,6 @@ static noinline int spurious_kernel_fault(unsigned long error_code,
 }
 NOKPROBE_SYMBOL(spurious_kernel_fault);
 
-/* show_unhandled_signals removed - never used */
 /* access_error inlined at single call site */
 
 bool fault_in_kernel_space(unsigned long address)
@@ -333,8 +312,6 @@ static void do_kern_addr_fault(struct pt_regs *regs,
 
 	if (spurious_kernel_fault(hw_error_code, address))
 		return;
-
-	/* kprobe_page_fault always returns false when CONFIG_KPROBES is disabled */
 
 	bad_area_nosemaphore(regs, hw_error_code, address);
 }
@@ -359,8 +336,6 @@ static inline void do_user_addr_fault(struct pt_regs *regs,
 		return;
 	}
 
-	/* kprobe_page_fault always returns false when CONFIG_KPROBES is disabled */
-
 	if (unlikely(error_code & X86_PF_RSVD))
 		pgtable_bad(regs, error_code, address);
 
@@ -378,7 +353,6 @@ static inline void do_user_addr_fault(struct pt_regs *regs,
 
 	if (user_mode(regs)) {
 		local_irq_enable();
-		/* FAULT_FLAG_USER removed - never tested */
 	} else {
 		if (regs->flags & X86_EFLAGS_IF)
 			local_irq_enable();
@@ -386,7 +360,6 @@ static inline void do_user_addr_fault(struct pt_regs *regs,
 
 	if (error_code & X86_PF_WRITE)
 		flags |= FAULT_FLAG_WRITE;
-	/* FAULT_FLAG_INSTRUCTION removed - never tested */
 
 	if (unlikely(!down_read_trylock(
 		    &mm->mmap_lock))) { /* mmap_read_trylock inlined */
@@ -464,7 +437,6 @@ good_area:
 			return;
 		}
 
-		/* pagefault_out_of_memory removed - was empty stub */
 	} else {
 		if (fault & (VM_FAULT_SIGBUS | VM_FAULT_HWPOISON |
 			     VM_FAULT_HWPOISON_LARGE))
@@ -477,14 +449,10 @@ good_area:
 }
 NOKPROBE_SYMBOL(do_user_addr_fault);
 
-/* trace_page_fault_entries removed - empty stub */
-
 static __always_inline void handle_page_fault(struct pt_regs *regs,
 					      unsigned long error_code,
 					      unsigned long address)
 {
-	/* kmmio_fault always returns 0, removed */
-
 	if (unlikely(fault_in_kernel_space(address))) {
 		do_kern_addr_fault(regs, error_code, address);
 	} else {

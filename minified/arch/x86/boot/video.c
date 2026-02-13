@@ -2,10 +2,6 @@
 #include "boot.h"
 #include "video.h"
 
-/* video_segment removed - only written, never read */
-
-/* store_cursor_position and store_video_mode inlined into store_mode_params */
-
 static void store_mode_params(void)
 {
 	struct biosregs ireg, oreg;
@@ -32,8 +28,6 @@ static void store_mode_params(void)
 	intcall(0x10, &ireg, &oreg);
 	boot_params.screen_info.orig_video_mode = oreg.al & 0x7f;
 	boot_params.screen_info.orig_video_page = oreg.bh;
-
-	/* video_segment assignment removed - variable was never read */
 
 	set_fs(0);
 	font_size = rdfs16(0x485);
@@ -69,6 +63,5 @@ void set_video(void)
 	}
 
 	boot_params.hdr.vid_mode = mode;
-	/* vesa_store_edid removed - empty stub */
 	store_mode_params();
 }

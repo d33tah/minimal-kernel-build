@@ -10,7 +10,6 @@
 #include <asm/idtentry.h>
 #include <asm-generic/siginfo.h>
 
-/* Inlined from asm/trap_pf.h */
 enum x86_pf_error_code {
 	X86_PF_PROT	=		1 << 0,
 	X86_PF_WRITE	=		1 << 1,
@@ -21,11 +20,8 @@ enum x86_pf_error_code {
 	X86_PF_SGX	=		1 << 15,
 };
 
-/* ibt_selftest removed - declared but never defined or called */
 /* get_si_code inlined at arch/x86/kernel/traps.c - single caller */
-/* panic_on_unrecovered_nmi removed - never set to non-zero */
 
 bool fault_in_kernel_space(unsigned long address);
-
 
 #endif  

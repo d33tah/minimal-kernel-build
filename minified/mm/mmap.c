@@ -6,7 +6,6 @@
 #include <linux/vmacache.h>
 #include <linux/mman.h>
 #include <linux/pagemap.h>
-/* linux/swap.h removed - no swap features used */
 #include <linux/syscalls.h>
 #include <linux/init.h>
 #include <linux/file.h>
@@ -19,11 +18,8 @@ extern unsigned long shmem_get_unmapped_area(struct file *, unsigned long addr,
 					     unsigned long pgoff,
 					     unsigned long flags);
 #include <linux/rmap.h>
-/* linux/mmu_notifier.h removed - mmu_notifier_release stubbed out */
 #include <linux/mmdebug.h>
 #include <linux/rbtree_augmented.h>
-/* linux/printk.h removed - no printk usage */
-/* userfaultfd_k.h removed - empty stubs */
 #include <linux/sched/mm.h>
 
 #include <linux/uaccess.h>
@@ -47,8 +43,6 @@ unsigned long mmap_min_addr = CONFIG_DEFAULT_MMAP_MIN_ADDR;
 #define arch_mmap_check(addr, len, flags) (0)
 #endif
 
-/* mmap_rnd_bits removed - no ASLR */
-
 pgprot_t protection_map[16] __ro_after_init = {
 	[VM_NONE] = __P000,
 	[VM_READ] = __P001,
@@ -68,8 +62,6 @@ pgprot_t protection_map[16] __ro_after_init = {
 	[VM_SHARED | VM_EXEC | VM_WRITE | VM_READ] = __S111
 };
 
-/* Removed: vm_pgprot_modify, vma_set_page_prot - never called */
-
 void unlink_file_vma(struct vm_area_struct *vma)
 {
 	struct file *file = vma->vm_file;
@@ -77,7 +69,6 @@ void unlink_file_vma(struct vm_area_struct *vma)
 	if (file) {
 		struct address_space *mapping = file->f_mapping;
 		i_mmap_lock_write(mapping);
-		/* i_mmap_writable dec removed - write-only */
 		vma_interval_tree_remove(vma, &mapping->i_mmap);
 		i_mmap_unlock_write(mapping);
 	}
@@ -107,7 +98,6 @@ static inline unsigned long vma_compute_gap(struct vm_area_struct *vma)
 	return gap;
 }
 
-/* validate_mm_rb macro removed - never called */
 #define validate_mm(mm) \
 	do {            \
 	} while (0)
@@ -115,10 +105,7 @@ static inline unsigned long vma_compute_gap(struct vm_area_struct *vma)
 RB_DECLARE_CALLBACKS_MAX(static, vma_gap_callbacks, struct vm_area_struct,
 			 vm_rb, unsigned long, rb_subtree_gap, vma_compute_gap)
 
-/* vma_gap_update removed - converted to macro for 4 callers (~4 LOC) */
 #define vma_gap_update(vma) vma_gap_callbacks_propagate(&(vma)->vm_rb, NULL)
-
-/* anon_vma_interval_tree_pre/post_update_vma inlined into expand_stack (~16 LOC) */
 
 static int find_vma_links(struct mm_struct *mm, unsigned long addr,
 			  unsigned long end, struct vm_area_struct **pprev,
@@ -208,7 +195,6 @@ static void vma_link(struct mm_struct *mm, struct vm_area_struct *vma,
 	if (file) {
 		struct address_space *file_mapping = file->f_mapping;
 
-		/* i_mmap_writable inc removed - write-only */
 		vma_interval_tree_insert(vma, &file_mapping->i_mmap);
 	}
 
@@ -229,17 +215,6 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
 	vma->vm_pgoff = pgoff;
 	return 0;
 }
-
-/* VMA merging disabled - always return NULL/allocate new VMAs */
-/* Removed: is_mergeable_vma, is_mergeable_anon_vma, can_vma_merge_before */
-/* Removed: reusable_anon_vma - only used by find_mergeable_anon_vma */
-
-/* vma_merge inlined into mmap_region - VMA merging disabled */
-
-/* find_mergeable_anon_vma inlined into rmap.c - VMA merging disabled */
-
-/* mlock_future_check removed - always returned 0 */
-/* file_mmap_ok inlined into do_mmap - only called once */
 
 static unsigned long mmap_region(struct file *file, unsigned long addr,
 				 unsigned long len, vm_flags_t vm_flags,
@@ -300,14 +275,11 @@ unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len,
 	vm_flags = calc_vm_prot_bits(prot, pkey) | calc_vm_flag_bits(flags) |
 		   mm->def_flags | VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC;
 
-	/* MAP_LOCKED check removed - no caller passes MAP_LOCKED */
-
 	if (file) {
 		struct inode *inode = file_inode(file);
 		unsigned long flags_mask;
 		u64 maxsize;
 
-		/* Inlined file_mmap_ok */
 		if (S_ISREG(inode->i_mode) || S_ISBLK(inode->i_mode) ||
 		    S_ISSOCK(inode->i_mode))
 			maxsize = MAX_LFS_FILESIZE;
@@ -382,8 +354,6 @@ unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len,
 		}
 	}
 
-	/* MAP_NORESERVE block removed - no caller passes MAP_NORESERVE */
-
 	addr = mmap_region(file, addr, len, vm_flags, pgoff, uf);
 	if (!IS_ERR_VALUE(addr) &&
 	    ((vm_flags & VM_LOCKED) ||
@@ -391,8 +361,6 @@ unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len,
 		*populate = len;
 	return addr;
 }
-
-/* Removed: vma_wants_writenotify - was used only by vma_set_page_prot (~4 LOC) */
 
 static unsigned long mmap_region(struct file *file, unsigned long addr,
 				 unsigned long len, vm_flags_t vm_flags,
@@ -444,7 +412,6 @@ static unsigned long vm_unmapped_area(struct vm_unmapped_area_info *info)
 		return -ENOMEM;
 
 	if (info->flags & VM_UNMAPPED_AREA_TOPDOWN) {
-		/* Inlined unmapped_area_topdown */
 		unsigned long gap_end = info->high_limit;
 		if (mm->highest_vm_end <= info->high_limit)
 			gap_end = mm->highest_vm_end;
@@ -454,7 +421,6 @@ static unsigned long vm_unmapped_area(struct vm_unmapped_area_info *info)
 			return -ENOMEM;
 		return gap_end;
 	} else {
-		/* Inlined unmapped_area */
 		unsigned long gap_start =
 			max(mm->highest_vm_end, info->low_limit);
 		gap_start += (info->align_offset - gap_start) &
@@ -596,7 +562,6 @@ unsigned long get_unmapped_area(struct file *file, unsigned long addr,
 	if (offset_in_page(addr))
 		return -EINVAL;
 
-	/* security_mmap_addr always returns 0 */
 	return addr;
 }
 
@@ -730,9 +695,6 @@ struct vm_area_struct *find_extend_vma(struct mm_struct *mm, unsigned long addr)
 	return vma;
 }
 
-/* Removed: unmap_region - inlined into __do_munmap */
-/* Removed: detach_vmas_to_be_unmapped - inlined into __do_munmap */
-
 static int __split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
 		       unsigned long addr, int new_below)
 {
@@ -763,8 +725,6 @@ static int __split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
 	if (new->vm_file)
 		get_file(new->vm_file);
 
-	/* vm_ops->open call removed - never assigned */
-
 	if (new_below)
 		err = vma_adjust(vma, addr, vma->vm_end,
 				 vma->vm_pgoff +
@@ -776,7 +736,6 @@ static int __split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
 	if (!err)
 		return 0;
 
-	/* vm_ops->close call removed - never assigned */
 	if (new->vm_file)
 		fput(new->vm_file);
 	unlink_anon_vmas(new);
@@ -827,7 +786,6 @@ static int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 	}
 	vma = vma_next(mm, prev);
 
-	/* userfaultfd_unmap_prep always returns 0 - dead code removed */
 	/* detach_vmas_to_be_unmapped inlined */
 	{
 		struct vm_area_struct **insertion_point;
@@ -865,7 +823,6 @@ static int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 		tlb_finish_mmu(&tlb);
 	}
 
-	/* Inlined remove_vma_list */
 	{
 		unsigned long nr_accounted = 0;
 		struct vm_area_struct *tmp_vma = vma;
@@ -888,10 +845,6 @@ int do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 	return __do_munmap(mm, start, len, uf, false);
 }
 
-/* vm_munmap removed - never called (~14 LOC) */
-/* remap_file_pages removed - COND_SYSCALL provides stub */
-/* do_brk_flags inlined into vm_brk_flags */
-
 int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 {
 	struct mm_struct *mm = current->mm;
@@ -912,7 +865,6 @@ int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 	if (mmap_write_lock_killable(mm))
 		return -EINTR;
 
-	/* Inlined do_brk_flags */
 	pgoff = addr >> PAGE_SHIFT;
 
 	if ((flags & (~VM_EXEC)) != 0) {
@@ -942,7 +894,6 @@ int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 		goto out_unlock;
 	}
 
-	/* vma_merge inlined - VMA merging disabled, always allocate new */
 	vma = vm_area_alloc(mm);
 	if (!vma) {
 		vm_unacct_memory(len >> PAGE_SHIFT);
@@ -974,7 +925,6 @@ void exit_mmap(struct mm_struct *mm)
 	struct vm_area_struct *vma;
 	unsigned long nr_accounted = 0;
 
-	/* mmu_notifier_release, mm_is_oom_victim() removed - OOM killer disabled, empty stub */
 	down_write(&mm->mmap_lock); /* mmap_write_lock inlined */
 	arch_exit_mmap(mm);
 
@@ -985,7 +935,6 @@ void exit_mmap(struct mm_struct *mm)
 	}
 
 	lru_add_drain();
-	/* flush_cache_mm - empty stub on x86 */
 	tlb_gather_mmu_fullmm(&tlb, mm);
 
 	unmap_vmas(&tlb, vma, 0, -1);
@@ -1026,8 +975,6 @@ int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)
 
 static vm_fault_t special_mapping_fault(struct vm_fault *vmf);
 
-/* special_mapping_mremap removed - mremap syscall returns ENOSYS */
-
 static int special_mapping_split(struct vm_area_struct *vma, unsigned long addr)
 {
 	return -EINVAL;
@@ -1035,7 +982,6 @@ static int special_mapping_split(struct vm_area_struct *vma, unsigned long addr)
 
 static const struct vm_operations_struct special_mapping_vmops = {
 	.fault = special_mapping_fault,
-	/* mremap removed - mremap syscall returns ENOSYS */
 	.may_split = special_mapping_split,
 };
 
@@ -1072,8 +1018,6 @@ static vm_fault_t special_mapping_fault(struct vm_fault *vmf)
 
 	return VM_FAULT_SIGBUS;
 }
-
-/* __install_special_mapping inlined into _install_special_mapping */
 
 struct vm_area_struct *
 _install_special_mapping(struct mm_struct *mm, unsigned long addr,

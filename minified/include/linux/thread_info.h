@@ -7,15 +7,12 @@
 #include <linux/bug.h>
 #include <linux/time64.h>
 
-/* restart_block struct removed - never accessed */
-
 #include <linux/errno.h>
 
 #include <asm/current.h>
 #define current_thread_info() ((struct thread_info *)current)
 
 #include <linux/bitops.h>
-
 
 enum syscall_work_bit {
 	SYSCALL_WORK_BIT_SECCOMP,
@@ -42,7 +39,6 @@ enum syscall_work_bit {
 #endif
 
 #define THREADINFO_GFP		(GFP_KERNEL_ACCOUNT | __GFP_ZERO)
-
 
 static inline void set_ti_thread_flag(struct thread_info *ti, int flag)
 {
@@ -78,7 +74,6 @@ static __always_inline unsigned long read_ti_thread_flags(struct thread_info *ti
 	set_ti_thread_flag(current_thread_info(), flag)
 #define clear_thread_flag(flag) \
 	clear_ti_thread_flag(current_thread_info(), flag)
-/* test_and_set_thread_flag removed - never used */
 #define test_and_clear_thread_flag(flag) \
 	test_and_clear_ti_thread_flag(current_thread_info(), flag)
 #define test_thread_flag(flag) \
@@ -94,9 +89,7 @@ static __always_inline unsigned long read_ti_thread_flags(struct thread_info *ti
 #define clear_task_syscall_work(t, fl) \
 	clear_bit(SYSCALL_WORK_BIT_##fl, &task_thread_info(t)->syscall_work)
 
-
 #define tif_need_resched() test_thread_flag(TIF_NEED_RESCHED)
-
 
 static inline void check_object_size(const void *ptr, unsigned long n,
 				     bool to_user)
@@ -129,8 +122,6 @@ check_copy_size(const void *addr, size_t bytes, bool is_source)
 	check_object_size(addr, bytes, is_source);
 	return true;
 }
-
-/* arch_setup_new_exec removed - call site removed in exec.c */
 
 #endif
 

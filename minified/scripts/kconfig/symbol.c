@@ -47,8 +47,6 @@ enum symbol_type sym_get_type(struct symbol *sym)
 	return type;
 }
 
-/* sym_type_name removed - only caller was removed menu_warn in menu_set_type */
-
 struct property *sym_get_choice_prop(struct symbol *sym)
 {
 	struct property *prop;
@@ -69,10 +67,6 @@ static struct property *sym_get_default_prop(struct symbol *sym)
 	}
 	return NULL;
 }
-
-/* sym_get_range_prop, sym_get_range_val removed - range checks not used */
-
-/* sym_validate_range removed - INT/HEX range clamping not needed for allnoconfig */
 
 static void sym_set_changed(struct symbol *sym)
 {
@@ -204,8 +198,6 @@ static struct symbol *sym_calc_choice(struct symbol *sym)
 
 	return def_sym;
 }
-
-/* sym_warn_unmet_dep removed - warning not needed for allnoconfig */
 
 void sym_calc_value(struct symbol *sym)
 {
@@ -568,5 +560,3 @@ struct symbol *prop_get_symbol(struct property *prop)
 		return prop->expr->left.sym;
 	return NULL;
 }
-
-/* prop_get_type_name, sym_type_name removed - only used by removed warning/validation code */

@@ -8,6 +8,4 @@
 	1; \
 })
 
-/* typecheck_fn, typecheck_pointer removed - never used */
-
 #endif		 

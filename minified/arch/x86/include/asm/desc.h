@@ -14,42 +14,31 @@
 #include <linux/smp.h>
 #include <linux/percpu.h>
 
-/* fill_ldt removed - never called */
-
 struct gdt_page {
 	struct desc_struct gdt[GDT_ENTRIES];
 } __attribute__((aligned(PAGE_SIZE)));
 
 DECLARE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page);
 
- 
 static inline struct desc_struct *get_cpu_gdt_rw(unsigned int cpu)
 {
 	return per_cpu(gdt_page, cpu).gdt;
 }
 
- 
 static inline struct desc_struct *get_current_gdt_rw(void)
 {
 	return this_cpu_ptr(&gdt_page)->gdt;
 }
 
- 
 static inline struct desc_struct *get_cpu_gdt_ro(int cpu)
 {
 	return (struct desc_struct *)&get_cpu_entry_area(cpu)->gdt;
 }
 
-/* get_current_gdt_ro removed - unused */
-
 static inline phys_addr_t get_cpu_gdt_paddr(unsigned int cpu)
 {
 	return per_cpu_ptr_to_phys(get_cpu_gdt_rw(cpu));
 }
-
-/* pack_gate removed - unused */
-
-/* desc_empty removed - unused */
 
 #define load_TR_desc()				native_load_tr_desc()
 #define load_gdt(dtr)				native_load_gdt(dtr)
@@ -132,8 +121,6 @@ static __always_inline void native_load_idt(const struct desc_ptr *dtr)
 	asm volatile("lidt %0"::"m" (*dtr));
 }
 
-/* native_store_gdt, store_idt, native_store_tr removed - unused */
-
 static inline void native_load_tr_desc(void)
 {
 	asm volatile("ltr %w0"::"q" (GDT_ENTRY_TSS*8));
@@ -148,19 +135,13 @@ static inline void native_load_tls(struct thread_struct *t, unsigned int cpu)
 		gdt[GDT_ENTRY_TLS_MIN + i] = t->tls_array[i];
 }
 
-/* DECLARE_PER_CPU(bool, __tss_limit_invalid) removed - write-only variable */
-
 /* force_reload_TR inlined at arch/x86/kernel/doublefault_32.c - single caller */
-
-/* refresh_tss_limit, invalidate_tss_limit removed - unused */
-/* get_desc_base, set_desc_base, get_desc_limit, set_desc_limit removed - unused */
 
 static inline void clear_LDT(void)
 {
 	set_ldt(NULL, 0);
 }
 
-/* alloc_intr_gate removed - never called */
 /* init_idt_data inlined at arch/x86/kernel/idt.c - single caller */
 
 static inline void idt_init_desc(gate_desc *gate, const struct idt_data *d)
@@ -180,6 +161,5 @@ extern void idt_setup_early_handler(void);
 extern void idt_setup_early_traps(void);
 extern void idt_setup_traps(void);
 extern void idt_setup_apic_and_irq_gates(void);
-/* idt_is_f00f_address, idt_setup_early_pf, idt_invalidate removed - unused */
 
 #endif  

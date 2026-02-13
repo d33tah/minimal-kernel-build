@@ -7,7 +7,6 @@ struct mnt_namespace;
 extern void put_mnt_ns(struct mnt_namespace *ns);
 #include <linux/utsname.h>
 #include <linux/pid_namespace.h>
-/* Inlined from net_namespace.h */
 struct net {
 	atomic_t count;
 	struct user_namespace *user_ns;
@@ -50,14 +49,10 @@ static inline void put_time_ns(struct time_namespace *ns)
 
 #endif /* _LINUX_TIMENS_H */
 
-/* struct ipc_namespace removed - never used */
 #include <linux/fs_struct.h>
-/* proc_fs.h removed - empty header */
 #include <linux/proc_ns.h>
 #include <linux/file.h>
-/* linux/syscalls.h removed - no syscall definitions used */
 #include <linux/cgroup.h>
-/* linux/perf_event.h removed - unused */
 
 static struct kmem_cache *nsproxy_cachep;
 
@@ -67,8 +62,6 @@ struct nsproxy init_nsproxy = {
 	.mnt_ns = NULL,
 	.pid_ns_for_children = &init_pid_ns,
 };
-
-/* create_new_namespaces removed - no CLONE_NEW* flags ever used */
 
 int copy_namespaces(struct task_struct *tsk)
 {
@@ -90,8 +83,6 @@ void free_nsproxy(struct nsproxy *ns)
 	put_net(ns->net_ns);
 	kmem_cache_free(nsproxy_cachep, ns);
 }
-
-/* switch_task_namespaces inlined into exit_task_namespaces */
 
 void exit_task_namespaces(struct task_struct *p)
 {

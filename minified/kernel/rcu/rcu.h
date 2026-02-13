@@ -1,6 +1,4 @@
  
- 
-
 #ifndef __LINUX_RCU_H
 #define __LINUX_RCU_H
 
@@ -9,18 +7,7 @@
  * rcu_seq_endval, rcu_seq_end, rcu_seq_snap, rcu_seq_current,
  * rcu_seq_started, rcu_seq_done, rcu_seq_completed_gp, rcu_seq_new_gp, rcu_seq_diff */
 
-/* sysctl_sched_rt_runtime removed - no longer used */
-
-/* debug_rcu_head_queue, debug_rcu_head_unqueue removed - never called */
-/* rcu_stall_is_suppressed_at_boot and rcu_stall_is_suppressed removed - unused */
-/* rcu_ftrace_dump_stall_suppress, rcu_ftrace_dump_stall_unsuppress removed - unused */
-
-/* rcu_early_boot_tests, rcu_test_sync_prims removed - empty stubs */
-
 extern void resched_cpu(int cpu);
-/* rcu_num_lvls, num_rcu_lvl, rcu_num_nodes removed - unused */
-
-/* RCU_SCHEDULER_INACTIVE, RCU_SCHEDULER_INIT, RCU_SCHEDULER_RUNNING removed - never used */
 
 /* Many RCU macros and enums removed - unused in minimal kernel:
  * TPS, rcu_ftrace_dump, RCU_FANOUT, RCU_FANOUT_LEAF, RCU_NUM_LVLS,

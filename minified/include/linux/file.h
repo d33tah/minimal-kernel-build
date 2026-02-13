@@ -5,14 +5,10 @@
 #include <linux/compiler.h>
 #include <linux/types.h>
 #include <asm/posix_types.h>
-/* linux/errno.h removed - no errno constants used */
 
 struct file;
 
 extern void fput(struct file *);
-
-/* alloc_file_pseudo extern + forward decls removed - never called */
-
 
 struct fd {
 	struct file *file;
@@ -31,7 +27,6 @@ static inline void fdput(struct fd fd)
 }
 extern void fput(struct file *file);
 
-/* __fdget made static - only used in file.c */
 extern unsigned long __fdget_raw(unsigned int fd);
 extern unsigned long __fdget_pos(unsigned int fd);
 
@@ -39,8 +34,6 @@ static inline struct fd __to_fd(unsigned long v)
 {
 	return (struct fd){(struct file *)(v & ~3),v & 3};
 }
-
-/* fdget removed - never called */
 
 static inline struct fd fdget_raw(unsigned int fd)
 {
@@ -54,11 +47,8 @@ static inline struct fd fdget_pos(int fd)
 
 /* fdput_pos inlined at fs/read_write.c - single caller */
 
-/* get_close_on_exec removed - never called */
 extern int get_unused_fd_flags(unsigned flags);
 
 extern void fd_install(unsigned int fd, struct file *file);
-
-/* flush_delayed_fput removed - never called */
 
 #endif

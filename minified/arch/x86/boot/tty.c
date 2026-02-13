@@ -1,5 +1,4 @@
 
-
 #include "boot.h"
 
 int early_serial_base;
@@ -47,5 +46,3 @@ void __section(".inittext") puts(const char *str)
 	while (*str)
 		putchar(*str++);
 }
-
-/* getchar removed - never called */

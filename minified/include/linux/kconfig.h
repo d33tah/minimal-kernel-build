@@ -8,12 +8,9 @@
 #define __ARG_PLACEHOLDER_1 0,
 #define __take_second_arg(__ignored, val, ...) val
 
-/* __and removed - never used */
-
 #define __or(x, y)			___or(x, y)
 #define ___or(x, y)			____or(__ARG_PLACEHOLDER_##x, y)
 #define ____or(arg1_or_junk, y)		__take_second_arg(arg1_or_junk 1, y)
-
 
 #define __is_defined(x)			___is_defined(x)
 #define ___is_defined(val)		____is_defined(__ARG_PLACEHOLDER_##val)

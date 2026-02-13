@@ -1,8 +1,6 @@
 #ifndef _LINUX_RCULIST_BL_H
 #define _LINUX_RCULIST_BL_H
 
-/* linux/list.h removed - no list structures used */
-/* Inlined from linux/bit_spinlock.h */
 #include <linux/kernel.h>
 #include <linux/preempt.h>
 #include <linux/atomic.h>
@@ -23,11 +21,9 @@ static inline int bit_spin_is_locked(int bitnum, unsigned long *addr)
 }
 #include <linux/rcupdate.h>
 
-/* Inlined from list_bl.h */
 #define LIST_BL_LOCKMASK	0UL
 
 #define LIST_BL_BUG_ON(x)
-
 
 struct hlist_bl_head {
 	struct hlist_bl_node *first;
@@ -70,7 +66,6 @@ static inline void __hlist_bl_del(struct hlist_bl_node *n)
 
 	LIST_BL_BUG_ON((unsigned long)n & LIST_BL_LOCKMASK);
 
-
 	WRITE_ONCE(*pprev,
 		   (struct hlist_bl_node *)
 			((unsigned long)next |
@@ -94,8 +89,6 @@ static inline bool hlist_bl_is_locked(struct hlist_bl_head *b)
 	return bit_spin_is_locked(0, (unsigned long *)b);
 }
 
-
-
 /* RCU-specific functions */
 static inline void hlist_bl_set_first_rcu(struct hlist_bl_head *h,
 					struct hlist_bl_node *n)
@@ -118,14 +111,12 @@ static inline void hlist_bl_add_head_rcu(struct hlist_bl_node *n,
 {
 	struct hlist_bl_node *first;
 
-
 	first = hlist_bl_first(h);
 
 	n->next = first;
 	if (first)
 		first->pprev = &n->next;
 	n->pprev = &h->first;
-
 
 	hlist_bl_set_first_rcu(h, n);
 }

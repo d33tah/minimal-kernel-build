@@ -9,29 +9,19 @@ struct wait_bit_key {
 	unsigned long		timeout;
 };
 
-/* struct wait_bit_queue_entry removed - unused */
-
 #define __WAIT_BIT_KEY_INITIALIZER(word, bit)					\
 	{ .flags = word, .bit_nr = bit, }
 
-/* typedef wait_bit_action_f removed - only user was __wait_on_bit (removed) */
-
 void __wake_up_bit(struct wait_queue_head *wq_head, void *word, int bit);
-/* __wait_on_bit declaration removed - implementation was already removed */
 void wake_up_bit(void *word, int bit);
-/* out_of_line_wait_on_bit, wake_bit_function removed - no implementation */
 struct wait_queue_head *bit_waitqueue(void *word, int bit);
 extern void __init wait_bit_init(void);
 
-/* DEFINE_WAIT_BIT removed - never used */
-
-/* wait_on_bit removed - never called */
 /* wait_on_bit_io, wait_on_bit_timeout, wait_on_bit_lock,
    wait_on_bit_lock_io, wait_on_bit_lock_action removed - unused */
 
 /* wait_var_event family removed - unused (init_wait_var_entry, wake_up_var,
    __var_waitqueue, ___wait_var_event, wait_var_event, wait_var_event_killable,
    wait_var_event_timeout, wait_var_event_interruptible removed) */
-
 
 #endif  

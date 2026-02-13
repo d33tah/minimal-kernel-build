@@ -55,8 +55,6 @@
 #define ELF_R_TYPE  ELF64_R_TYPE
 #endif
 
-/* MIPS ELF64 relocation structures and macros removed - x86-only kernel */
-
 #if KERNEL_ELFDATA != HOST_ELFDATA
 
 static inline void __endian(const void *src, void *dest, unsigned int size)
@@ -126,8 +124,6 @@ struct elf_info {
 	char	     *modinfo;
 	unsigned int modinfo_len;
 
-	 
-
 	unsigned int num_sections;  
 	unsigned int secindex_strings;
 	 
@@ -135,16 +131,12 @@ struct elf_info {
 	Elf32_Word   *symtab_shndx_stop;
 };
 
-/* is_shndx_special, SPECIAL macro and get_secindex removed - never used */
-
 void handle_moddevtable(struct module *mod, struct elf_info *info,
 			Elf_Sym *sym, const char *symname);
 void add_moddevtable(struct buffer *buf, struct module *mod);
 
- 
 void get_src_version(const char *modname, char sum[], unsigned sumlen);
 
- 
 char *read_text_file(const char *filename);
 char *get_line(char **stringp);
 
@@ -156,7 +148,6 @@ enum loglevel {
 
 void modpost_log(enum loglevel loglevel, const char *fmt, ...);
 
- 
 #define warn(fmt, args...)	modpost_log(LOG_WARN, fmt, ##args)
 #define error(fmt, args...)	modpost_log(LOG_ERROR, fmt, ##args)
 #define fatal(fmt, args...)	modpost_log(LOG_FATAL, fmt, ##args)

@@ -1,21 +1,11 @@
 
 #include <linux/stdarg.h>
 #include <linux/build_bug.h>
-/* errname removed - unused */
-/* linux/module.h removed - no EXPORT_SYMBOL */
 #include <linux/types.h>
 #include <linux/string.h>
 #include <linux/ctype.h>
 #include <linux/kernel.h>
-/* kallsyms.h removed - only dereference_symbol_descriptor was used (no-op) */
-/* math64.h removed - unused */
 #include <linux/uaccess.h>
-/* ioport.h, dcache.h, cred.h, rtc.h, time.h removed - unused */
-/* uuid.h removed - guid_t not used */
-/* of.h removed - device_node not used in vsprintf */
-
-/* Removed: linux/random.h, linux/siphash.h - ptr hashing disabled */
-/* IPV6_FLOWINFO_MASK removed - unused */
 
 #include <linux/compiler.h>
 
@@ -23,13 +13,6 @@
 
 #include <asm/page.h>
 #include <asm/byteorder.h>
-/* asm/unaligned.h removed - get_unaligned not used */
-
-/* string_helpers.h removed - unused */
-
-/* no_hash_pointers removed - always false, never set */
-
-/* simple_strtoull, simple_strtoul removed - only caller was name_to_dev_t (removed from do_mounts.c) */
 
 static noinline_for_stack int skip_atoi(const char **s)
 {
@@ -96,7 +79,6 @@ out_r:
 static noinline_for_stack unsigned put_dec_helper4(char *buf, unsigned x)
 {
 	uint32_t q = (x * (uint64_t)0x346DC5D7) >> 43;
-	/* Inlined put_dec_full4 */
 	unsigned r = x - q * 10000;
 	unsigned rq = (r * 0x147b) >> 19;
 	*((u16 *)buf) = decpair[r - 100 * rq];
@@ -287,8 +269,6 @@ special_hex_number(char *buf, char *end, unsigned long long num, int size)
 	return number(buf, end, num, spec);
 }
 
-/* move_right inlined into widen_string */
-
 static noinline_for_stack char *widen_string(char *buf, int n, char *end,
 					     struct printf_spec spec)
 {
@@ -298,7 +278,6 @@ static noinline_for_stack char *widen_string(char *buf, int n, char *end,
 		return buf;
 
 	spaces = spec.field_width - n;
-	/* Inlined move_right(buf - n, end, n, spaces) */
 	{
 		char *mr_buf = buf - n;
 		unsigned mr_len = n;
@@ -350,7 +329,6 @@ static char *error_string(char *buf, char *end, const char *s,
 static int check_pointer(char **buf, char *end, const void *ptr,
 			 struct printf_spec spec)
 {
-	/* Inlined check_pointer_msg */
 	const char *err_msg = NULL;
 	if (!ptr)
 		err_msg = "(null)";
@@ -388,8 +366,6 @@ static char *pointer_string(char *buf, char *end, const void *ptr,
 }
 
 /* Simplified for minimal kernel - no pointer hashing */
-/* ptr_to_id, default_pointer removed - just called pointer_string */
-/* restricted_pointer removed - never called */
 
 /* dentry_name, file_dentry_name, symbol_string, va_format, address_val, flags_string inlined */
 
@@ -399,7 +375,6 @@ static noinline_for_stack char *pointer(const char *fmt, char *buf, char *end,
 	switch (*fmt) {
 	case 'S':
 	case 's':
-		/* dereference_symbol_descriptor removed - was no-op (just returned ptr) */
 		fallthrough;
 	case 'B':
 		/* symbol_string inlined */
@@ -454,7 +429,6 @@ static noinline_for_stack int format_decode(const char *fmt,
 		++fmt;
 
 		switch (*fmt) {
-		/* LEFT, PLUS, SPACE flags removed - never used in kernel */
 		case '#':
 			spec->flags |= SPECIAL;
 			break;
@@ -495,7 +469,6 @@ static noinline_for_stack int format_decode(const char *fmt,
 
 	spec->base = 10;
 	switch (*fmt) {
-	/* %c removed - unused in kernel printk */
 	case 's':
 		spec->type = FORMAT_TYPE_STR;
 		return ++fmt - start;
@@ -542,7 +515,6 @@ static noinline_for_stack int format_decode(const char *fmt,
 		spec->type = FORMAT_TYPE_ULONG + (spec->flags & SIGN);
 	} else if (qualifier == 'z') {
 		spec->type = FORMAT_TYPE_SIZE_T;
-		/* FORMAT_TYPE_PTRDIFF, BYTE, SHORT qualifiers removed - unused */
 	} else {
 		BUILD_BUG_ON(FORMAT_TYPE_UINT + SIGN != FORMAT_TYPE_INT);
 		spec->type = FORMAT_TYPE_UINT + (spec->flags & SIGN);
@@ -550,8 +522,6 @@ static noinline_for_stack int format_decode(const char *fmt,
 
 	return ++fmt - start;
 }
-
-/* set_field_width and set_precision inlined into vsnprintf */
 
 int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 {
@@ -587,10 +557,6 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 			str += read;
 			break;
 		}
-
-			/* FORMAT_TYPE_WIDTH and FORMAT_TYPE_PRECISION removed - %*d never used */
-
-			/* FORMAT_TYPE_CHAR removed - %c unused in kernel */
 
 		case FORMAT_TYPE_STR:
 			str = string(str, end, va_arg(args, char *), spec);
@@ -630,7 +596,6 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 				else
 					num = va_arg(args, size_t);
 				break;
-			/* FORMAT_TYPE_PTRDIFF, BYTE, SHORT cases removed - unused */
 			case FORMAT_TYPE_INT:
 				num = (int)va_arg(args, int);
 				break;
@@ -680,10 +645,6 @@ int snprintf(char *buf, size_t size, const char *fmt, ...)
 	return i;
 }
 
-/* scnprintf removed - only caller was mount_block_root (removed from do_mounts.c) */
-
-/* vsprintf removed - no callers in main kernel */
-
 int sprintf(char *buf, const char *fmt, ...)
 {
 	va_list args;
@@ -695,5 +656,3 @@ int sprintf(char *buf, const char *fmt, ...)
 
 	return i;
 }
-
-/* sscanf removed - only caller was name_to_dev_t (removed from do_mounts.c) */

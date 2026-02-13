@@ -1,14 +1,7 @@
-/* linux/export.h removed - no EXPORT_SYMBOL used */
-/* linux/bvec.h removed - ITER_BVEC never initialized */
 #include <linux/uio.h>
 #include <linux/pagemap.h>
 #include <linux/highmem.h>
-/* linux/slab.h removed - no slab functions */
-/* linux/vmalloc.h, linux/splice.h removed - not used */
-/* linux/compat.h removed - compat functions not used */
-/* scatterlist.h removed - unused */
 
-/* Inlined from net/checksum.h */
 typedef __u16 __sum16;
 typedef __u32 __wsum;
 
@@ -33,9 +26,6 @@ typedef __u32 __wsum;
 		i->iov_offset = skip;                        \
 		n = off;                                     \
 	}
-
-/* iterate_bvec macro removed - ITER_BVEC never initialized (~28 LOC) */
-/* iterate_xarray macro removed - ITER_XARRAY never initialized (~40 LOC) */
 
 #define __iterate_and_advance(i, n, base, len, off, I, K)                      \
 	{                                                                      \
@@ -71,13 +61,8 @@ static int copyout(void __user *to, const void *from, size_t n)
 	return n;
 }
 
-/* copyin removed - only caller was _copy_from_iter which was removed */
-
 /* copy_page_to_iter_iovec and copy_page_to_iter_pipe inlined into
  * __copy_page_to_iter below */
-
-/* --- 2025-12-22 04:58 --- Removed PIPE_PARANOIA dead code (~40 LOC) */
-/* sanity(i) macro removed - always returned true, callers removed (~1 LOC) */
 
 void iov_iter_init(struct iov_iter *i, unsigned int direction,
 		   const struct iovec *iov, unsigned long nr_segs, size_t count)
@@ -92,19 +77,14 @@ void iov_iter_init(struct iov_iter *i, unsigned int direction,
 				.count = count };
 }
 
-/* push_pipe, copy_pipe_to_iter removed - iov_iter_pipe never called (~60 LOC) */
-
 size_t _copy_to_iter(const void *addr, size_t bytes, struct iov_iter *i)
 {
-	/* ITER_PIPE removed - iov_iter_pipe never called in minimal kernel */
 	iterate_and_advance(i, bytes, base, len, off,
 			    copyout(base, addr + off, len),
 			    memcpy(base, addr + off, len))
 
 		return bytes;
 }
-
-/* _copy_from_iter removed - never called */
 
 static inline bool page_copy_sane(struct page *page, size_t offset, size_t n)
 {
@@ -127,7 +107,6 @@ static size_t __copy_page_to_iter(struct page *page, size_t offset,
 				  size_t bytes, struct iov_iter *i)
 {
 	if (likely(iter_is_iovec(i))) {
-		/* Inlined copy_page_to_iter_iovec */
 		size_t skip, copy, left, wanted;
 		const struct iovec *iov;
 		char __user *buf;
@@ -181,8 +160,6 @@ static size_t __copy_page_to_iter(struct page *page, size_t offset,
 		kunmap_local(kaddr);
 		return wanted;
 	}
-	/* ITER_BVEC removed - never initialized */
-	/* ITER_PIPE, ITER_XARRAY, ITER_DISCARD removed - never initialized */
 	WARN_ON(1);
 	return 0;
 }
@@ -211,8 +188,6 @@ size_t copy_page_to_iter(struct page *page, size_t offset, size_t bytes,
 	}
 	return res;
 }
-
-/* iov_iter_zero, copy_page_from_iter_atomic, iov_iter_advance, iov_iter_revert removed - never called */
 
 void iov_iter_kvec(struct iov_iter *i, unsigned int direction,
 		   const struct kvec *kvec, unsigned long nr_segs, size_t count)

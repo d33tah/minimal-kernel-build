@@ -25,7 +25,6 @@ BUILDIO(l,  , u32)
 #undef BUILDIO
 
 #define inb __inb
-/* inw, inl, outl removed - no callers */
 #define outb __outb
 #define outw __outw
 

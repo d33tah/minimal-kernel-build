@@ -10,7 +10,6 @@
 #include <generated/bounds.h>
 #endif  
 
-
 enum pageflags {
 	PG_locked,		 
 	PG_referenced,
@@ -37,15 +36,12 @@ enum pageflags {
 	__NR_PAGEFLAGS,
 	PG_readahead = PG_reclaim,
 	PG_anon_exclusive = PG_mappedtodisk,
-	/* PG_checked, PG_swapcache, PG_fscache, PG_double_map, PG_isolated removed - unused aliases */
 	PG_reported = PG_uptodate,
 };
 
 #define PAGEFLAGS_MASK		((1UL << NR_PAGEFLAGS) - 1)
 
 #ifndef __GENERATING_BOUNDS_H
-
-/* Removed: page_is_fake_head - always returned 0 */
 
 static inline unsigned long _compound_head(const struct page *page)
 {
@@ -173,25 +169,13 @@ CLEARPAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
 TESTPAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
 	__SETPAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
 
-/* Private flag removed - zero callers */
-
-/* TESTPAGEFLAG(Writeback) removed - no callers after truncate stubbing */
-/* CLEARPAGEFLAG(MappedToDisk) removed - no callers after truncate stubbing */
-
 TESTPAGEFLAG(Readahead, readahead, PF_NO_COMPOUND)
-	/* TESTCLEARFLAG(Readahead, ...) removed - never used */
-
-/* PAGEFLAG_FALSE(HighMem) removed - never used */
-/* PAGEFLAG_FALSE(SwapCache) removed - never used */
 
 TESTPAGEFLAG(Unevictable, unevictable, PF_HEAD)
 	__CLEARPAGEFLAG(Unevictable, unevictable, PF_HEAD)
 
 TESTPAGEFLAG(Mlocked, mlocked, PF_NO_TAIL)
 	__CLEARPAGEFLAG(Mlocked, mlocked, PF_NO_TAIL)
-
-
-/* HWPoison, Reported flags removed - zero callers */
 
 #define PAGE_MAPPING_ANON	0x1
 #define PAGE_MAPPING_FLAGS	0x3
@@ -210,10 +194,6 @@ static __always_inline bool PageAnon(struct page *page)
 {
 	return folio_test_anon(page_folio(page));
 }
-
-
-/* Ksm flag removed - zero callers */
-
 
 static inline bool folio_test_uptodate(struct folio *folio)
 {
@@ -253,9 +233,6 @@ static __always_inline void SetPageUptodate(struct page *page)
 	folio_mark_uptodate((struct folio *)page);
 }
 
-/* CLEARPAGEFLAG(Uptodate) removed - no callers */
-/* __folio_start_writeback removed - never called */
-
 static __always_inline int PageHead(struct page *page)
 {
 	PF_POISONED_CHECK(page);
@@ -263,13 +240,6 @@ static __always_inline int PageHead(struct page *page)
 }
 
 __SETPAGEFLAG(Head, head, PF_ANY)
-
-/* set_compound_head inlined into page_alloc.c */
-
-/* Huge, TransHuge, TransCompound, TransTail, DoubleMap flags removed - zero callers */
-
-
-
 
 #define PAGE_TYPE_BASE	0xf0000000
 #define PG_buddy	0x00000080
@@ -298,13 +268,8 @@ PAGE_TYPE_OPS(Buddy, buddy)
 
 PAGE_TYPE_OPS(Table, table)
 
-
-
-/* PAGEFLAG(Isolated) removed - never used */
-
 static __always_inline int PageAnonExclusive(struct page *page)
 {
-	/* PageHuge always returns false */
 	VM_BUG_ON_PGFLAGS(!PageAnon(page), page);
 	return test_bit(PG_anon_exclusive, &PF_ANY(page, 1)->flags);
 }
@@ -317,9 +282,6 @@ static __always_inline void SetPageAnonExclusive(struct page *page)
 }
 
 #define PAGE_FLAGS_CHECK_AT_PREP	PAGEFLAGS_MASK
-
-/* PAGE_FLAGS_PRIVATE and page_has_private removed - never called */
-/* folio_has_private removed - never called */
 
 #undef PF_ANY
 #undef PF_HEAD

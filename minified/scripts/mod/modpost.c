@@ -1,4 +1,3 @@
-/* Minimal modpost stub - modules not used in minimal build */
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -15,12 +14,10 @@ void *do_nofail(void *ptr, const char *expr)
 
 void buf_printf(struct buffer *buf, const char *fmt, ...)
 {
-	/* Empty implementation - not used */
 }
 
 void buf_write(struct buffer *buf, const char *s, int len)
 {
-	/* Empty implementation - not used */
 }
 
 void modpost_log(enum loglevel loglevel, const char *fmt, ...)
@@ -42,6 +39,5 @@ int main(int argc, char **argv)
 		/* Ignore all options */
 	}
 
-	/* Modpost is not needed for monolithic kernel without modules */
 	return 0;
 }

@@ -10,7 +10,6 @@ struct device_node;
 struct fwnode_handle;
 struct irq_domain;
 struct irq_data;
-/* struct irq_affinity_desc removed - never used */
 #define IRQ_DOMAIN_IRQ_SPEC_PARAMS 16
 struct irq_fwspec { struct fwnode_handle *fwnode; int param_count; u32 param[IRQ_DOMAIN_IRQ_SPEC_PARAMS]; };
 enum irq_domain_bus_token { DOMAIN_BUS_ANY = 0, };
@@ -21,7 +20,6 @@ struct irq_domain_ops {
 	void (*unmap)(struct irq_domain *d, unsigned int virq);
 	int (*xlate)(struct irq_domain *d, struct device_node *node, const u32 *intspec, unsigned int intsize, unsigned long *out_hwirq, unsigned int *out_type);
 };
-/* struct irq_domain_chip_generic forward decl and gc field removed - never accessed */
 struct irq_domain {
 	struct list_head link; const char *name; const struct irq_domain_ops *ops;
 	void *host_data; unsigned int flags; unsigned int mapcount;

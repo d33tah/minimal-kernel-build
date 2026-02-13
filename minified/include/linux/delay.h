@@ -1,14 +1,11 @@
 #ifndef _LINUX_DELAY_H
 #define _LINUX_DELAY_H
 
-
 #include <linux/math.h>
-/* linux/sched.h removed - no scheduler types used */
 
 extern unsigned long loops_per_jiffy;
 
 #include <asm/delay.h>
-
 
 #ifndef MAX_UDELAY_MS
 #define MAX_UDELAY_MS	5
@@ -19,9 +16,7 @@ extern unsigned long loops_per_jiffy;
 	(__builtin_constant_p(n) && (n)<=MAX_UDELAY_MS) ? udelay((n)*1000) : \
 	({unsigned long __ms=(n); while (__ms--) udelay(1000);}))
 #endif
-/* ndelay macro removed - never called */
 
 void calibrate_delay(void);
-/* msleep, msleep_interruptible, ssleep removed - never called */
 
 #endif

@@ -3,19 +3,14 @@
 #define _ASM_X86_BOOTPARAM_H
 
 #define SETUP_E820_EXT			1
-/* SETUP_DTB, SETUP_EFI, SETUP_APPLE_PROPERTIES, SETUP_JAILHOUSE - unused */
 #define SETUP_CC_BLOB			7
 
 #define SETUP_INDIRECT			(1<<31)
 #define SETUP_TYPE_MAX			(SETUP_INDIRECT | SETUP_CC_BLOB)
 
-/* RAMDISK_* macros removed - never used */
-
 #define LOADED_HIGH	(1<<0)
 #define KASLR_FLAG	(1<<1)
 #define CAN_USE_HEAP	(1<<7)
-
- 
 
 #ifndef __ASSEMBLY__
 
@@ -75,22 +70,16 @@ struct apm_bios_info {
 	__u16	dseg_len;
 };
 
-
-/* struct apm_info removed - was never used, only apm_bios_info needed for boot_params */
-
 struct ist_info {
 	__u32 signature;
 	__u32 command;
 	__u32 event;
 	__u32 perf_level;
 };
-/* ist_info extern removed - variable removed, only struct definition needed for boot_params */
 
-/* Inlined from video/edid.h */
 struct edid_info {
 	unsigned char dummy[128];
 };
-/* edid_info extern removed - variable removed, only struct definition needed for boot_params */
 
 struct setup_data {
 	__u64 next;
@@ -99,7 +88,6 @@ struct setup_data {
 	__u8 data[0];
 };
 
- 
 struct setup_indirect {
 	__u32 type;
 	__u32 reserved;   
@@ -154,7 +142,6 @@ struct sys_desc_table {
 	__u8  table[14];
 };
 
- 
 struct olpc_ofw_header {
 	__u32 ofw_magic;	 
 	__u32 ofw_version;
@@ -173,10 +160,8 @@ struct efi_info {
 	__u32 efi_memmap_hi;
 };
 
- 
 #define E820_MAX_ENTRIES_ZEROPAGE 128
 
- 
 struct boot_e820_entry {
 	__u64 addr;
 	__u64 size;
@@ -222,7 +207,6 @@ struct boot_params {
 	__u8  _pad9[276];				 
 } __attribute__((packed));
 
- 
 enum x86_hardware_subarch {
 	X86_SUBARCH_PC = 0,
 	X86_SUBARCH_LGUEST,

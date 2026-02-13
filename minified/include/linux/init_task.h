@@ -9,7 +9,6 @@
 #include <linux/user_namespace.h>
 #include <linux/seqlock.h>
 
-/* SECUREBITS_DEFAULT removed - never used */
 #include <linux/rbtree.h>
 #include <linux/refcount.h>
 #include <linux/sched/rt.h>
@@ -22,10 +21,6 @@ extern struct fs_struct init_fs;
 extern struct nsproxy init_nsproxy;
 extern struct cred init_cred;
 
-/* INIT_PREV_CPUTIME removed - prev_cputime removed from task_struct */
-
 #define INIT_TASK_COMM "swapper"
-
-/* __init_task_data, __init_thread_info removed - unused */
 
 #endif

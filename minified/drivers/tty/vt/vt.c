@@ -9,8 +9,6 @@
 #define KD_GRAPHICS 0x01
 #endif
 #include <linux/slab.h>
-/* linux/vmalloc.h removed - no vmalloc functions */
-/* linux/major.h removed - empty */
 #include <linux/mm.h>
 #include <linux/console.h>
 #include <linux/init.h>
@@ -29,25 +27,14 @@ static inline void scr_memmovew(u16 *d, const u16 *s, unsigned int count)
 }
 extern const unsigned char color_table[];
 /* linux/tty.h already included above */
-/* linux/interrupt.h removed - no interrupt features used */
-/* consolemap.h inlined into vt_kern.h */
-/* duplicate linux/interrupt.h removed */
 #include <linux/workqueue.h>
 
 #include <linux/bitops.h>
-/* notifier.h removed - notifiers not used */
 
-/* vc_SAK removed - work was initialized but never scheduled */
 #include <linux/device.h>
-/* io.h removed - I/O port functions not used */
 #include <linux/uaccess.h>
 
-/* ctype.h removed - character classification not used */
-
-/* con_driver struct, registered_con_driver array removed - write-only, never read */
 const struct consw *conswitchp;
-
-/* DEFAULT_BELL_PITCH, DEFAULT_BELL_DURATION, DEFAULT_CURSOR_BLINK_MS removed - unused */
 
 struct vc vc_cons[MAX_NR_CONSOLES];
 
@@ -58,27 +45,15 @@ static const struct consw *con_driver_map[MAX_NR_CONSOLES];
 static void vc_init(struct vc_data *vc, unsigned int rows, unsigned int cols,
 		    int do_clear);
 static void gotoxy(struct vc_data *vc, int new_x, int new_y);
-/* save_cur forward decl removed - inlined */
 static void reset_terminal(struct vc_data *vc, int do_clear);
-/* set_cursor, hide_cursor forward decls removed - now trivial stubs defined above */
 
 static int printable;
 
 int fg_console;
-/* last_console removed - never read or written */
-/* want_console removed - never read */
 
 static struct vc_data *master_display_fg;
 
-/* console_blank_hook, console_timer removed - never used */
-/* blank_state and blank_* enum removed - was never read */
-/* tty0dev removed - write-only variable, value never used after assignment */
-
-/* Removed: vt_notifier_list, notify_write, notify_update - empty stubs */
-
 /* con_is_fg inlined - returned vc->vc_num == fg_console */
-
-/* con_should_update inlined at call site - was just con_is_visible(vc) */
 
 static void con_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
 		       enum con_scroll dir, unsigned int nr)
@@ -109,7 +84,6 @@ static void do_update_region(struct vc_data *vc, unsigned long start, int count)
 	u16 *p;
 
 	p = (u16 *)start;
-	/* con_getxy is never set, so always use this path */
 	offset = (start - vc->vc_origin) / 2;
 	xx = offset % vc->vc_cols;
 	yy = offset / vc->vc_cols;
@@ -136,19 +110,14 @@ static void do_update_region(struct vc_data *vc, unsigned long start, int count)
 			break;
 		xx = 0;
 		yy++;
-		/* con_getxy check removed - never set (~4 LOC) */
 	}
 }
-
-/* build_attr removed - never called in minimal kernel */
 
 static void update_attr(struct vc_data *vc)
 {
 	vc->vc_attr = vc->state.color;
 	vc->vc_video_erase_char = ' ' | (vc->state.color << 8);
 }
-
-/* hide_cursor, set_cursor removed - empty stubs, calls removed */
 
 static void set_origin(struct vc_data *vc)
 {
@@ -160,9 +129,6 @@ static void set_origin(struct vc_data *vc)
 	vc->vc_pos =
 		vc->vc_origin + vc->vc_size_row * vc->state.y + 2 * vc->state.x;
 }
-
-/* save_screen inlined into con_init */
-/* flush_scrollback, redraw_screen inlined into con_init (~6 LOC) */
 
 /* vc_cons_allocated inlined at call site */
 
@@ -192,8 +158,6 @@ static void visual_init(struct vc_data *vc, int num, int init)
 
 /* visual_deinit inlined */
 
-/* vc_port_destruct, vc_port_ops, vc_allocate removed - only used by dead con_ops path */
-
 /* vc_do_resize inlined - was a stub returning 0 */
 
 int vc_resize(struct vc_data *vc, unsigned int cols, unsigned int rows)
@@ -202,18 +166,9 @@ int vc_resize(struct vc_data *vc, unsigned int cols, unsigned int rows)
 	return 0;
 }
 
-/* vt_resize removed - ops->resize never called */
-
-/* EP enum removed - vc_priv removed (was write-only) */
-
-/* set_kbd, clr_kbd, is_kbd, decarm, decckm, kbdapplic, lnm removed - unused */
-
 const unsigned char color_table[] = { 0, 4,  2,	 6,  1, 5,  3,	7,
 				      8, 12, 10, 14, 9, 13, 11, 15 };
 
-/* default_red/grn/blu arrays removed - all zeros, replaced with memset */
-
-/* Simplified gotoxy - vc_decom always 0 (origin mode disabled) */
 static void gotoxy(struct vc_data *vc, int new_x, int new_y)
 {
 	if (new_x < 0)
@@ -223,7 +178,6 @@ static void gotoxy(struct vc_data *vc, int new_x, int new_y)
 	else
 		vc->state.x = new_x;
 
-	/* vc_decom is always 0, so min_y=0 and max_y=vc_rows */
 	if (new_y < 0)
 		vc->state.y = 0;
 	else if (new_y >= vc->vc_rows)
@@ -286,10 +240,6 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 		csi_J(vc, 2);
 }
 
-/* vc_draw_region removed - only used in dead con_write */
-
-/* console_driver removed - never initialized (vty_init removed) */
-
 static void vt_console_print(struct console *co, const char *b, unsigned count)
 {
 	struct vc_data *vc = vc_cons[fg_console].d;
@@ -324,8 +274,6 @@ static void vt_console_print(struct console *co, const char *b, unsigned count)
 quit:
 	spin_unlock(&printing_lock);
 }
-
-/* vt_console_device removed - console_device() never called */
 
 static struct console vt_console_driver = {
 	.name = "tty",
@@ -371,16 +319,12 @@ static int __init con_init(void)
 		return 0;
 	}
 
-	/* registered_con_driver init loop removed - array was write-only */
 	for (i = 0; i < MAX_NR_CONSOLES; i++)
 		con_driver_map[i] = conswitchp;
-
-	/* blankinterval check removed - always 0 */
 
 	for (currcons = 0; currcons < MIN_NR_CONSOLES; currcons++) {
 		vc_cons[currcons].d = vc =
 			kzalloc(sizeof(struct vc_data), GFP_NOWAIT);
-		/* INIT_WORK SAK_work removed - never scheduled */
 		tty_port_init(&vc->port);
 		visual_init(vc, currcons, 1);
 
@@ -397,7 +341,6 @@ static int __init con_init(void)
 		vc->vc_sw->con_save_screen(vc);
 	gotoxy(vc, vc->state.x, vc->state.y);
 	csi_J(vc, 0);
-	/* Inlined redraw_screen (simplified: cursor stubs removed) */
 	set_origin(vc);
 	if (vc->vc_sw->con_switch(vc) && vc->vc_mode != KD_GRAPHICS)
 		do_update_region(vc, vc->vc_origin, vc->vc_screenbuf_size / 2);
@@ -409,8 +352,6 @@ static int __init con_init(void)
 	return 0;
 }
 console_initcall(con_init);
-
-/* con_ops struct removed - vty_init was removed, so no tty_driver ever uses it */
 
 #ifndef VT_SINGLE_DRIVER
 
@@ -424,7 +365,5 @@ bool con_is_visible(const struct vc_data *vc)
 
 	return *vc->vc_display_fg == vc;
 }
-
-/* vtconsole_class_init removed - empty initcall (~5 LOC) */
 
 #endif

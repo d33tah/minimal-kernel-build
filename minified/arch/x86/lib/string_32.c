@@ -1,7 +1,6 @@
 
 #define __NO_FORTIFY
 #include <linux/string.h>
-/* linux/export.h removed - no EXPORT_SYMBOL */
 
 #ifdef __HAVE_ARCH_STRCPY
 char *strcpy(char *dest, const char *src)
@@ -37,8 +36,6 @@ char *strncpy(char *dest, const char *src, size_t count)
 	return dest;
 }
 #endif
-
-/* strcat, strncat removed - never used in kernel proper */
 
 #ifdef __HAVE_ARCH_STRCMP
 int strcmp(const char *cs, const char *ct)
@@ -120,8 +117,6 @@ size_t strlen(const char *s)
 	return ~res - 1;
 }
 #endif
-
-/* memchr removed - never called (~16 LOC) */
 
 #ifdef __HAVE_ARCH_STRNLEN
 size_t strnlen(const char *s, size_t count)

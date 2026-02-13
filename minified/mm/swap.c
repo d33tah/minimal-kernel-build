@@ -1,8 +1,6 @@
 
-
 #include <linux/mm.h>
 #include <linux/sched.h>
-/* kernel_stat.h removed - empty */
 #include <linux/swap.h>
 #include <linux/mman.h>
 #include <linux/pagemap.h>
@@ -19,7 +17,6 @@ struct pagevec {
 	struct page *pages[PAGEVEC_SIZE];
 };
 void __pagevec_lru_add(struct pagevec *pvec);
-/* pagevec_lookup_range_tag removed - never called */
 static inline void pagevec_reinit(struct pagevec *pvec)
 {
 	pvec->nr = 0;
@@ -34,27 +31,19 @@ static inline unsigned pagevec_add(struct pagevec *pvec, struct page *page)
 	return PAGEVEC_SIZE - pvec->nr;
 }
 #endif
-/* linux/tracepoint.h removed - unused */
 #include <linux/mm_inline.h>
 #include <linux/percpu_counter.h>
-/* linux/memremap.h removed - unused */
 #include <linux/percpu.h>
 #include <linux/cpu.h>
 #include <linux/backing-dev.h>
-/* memcontrol.h removed - unused */
 #include <linux/gfp.h>
-/* linux/uio.h removed - unused */
-/* hugetlb.h removed - unused */
 #include <linux/local_lock.h>
 
 #include "internal.h"
 
-/* lru_rotate struct removed - only producer was folio_rotate_reclaimable which is gone */
-
 struct lru_pvecs {
 	local_lock_t lock;
 	struct pagevec lru_add;
-	/* lru_deactivate_file, lru_deactivate, lru_lazyfree removed - pvecs never populated */
 };
 static DEFINE_PER_CPU(struct lru_pvecs, lru_pvecs) = {
 	.lock = INIT_LOCAL_LOCK(lock),
@@ -85,23 +74,11 @@ static void __page_cache_release(struct page *page)
 
 void __put_page(struct page *page)
 {
-	/* is_zone_device_page always returns false */
 	__page_cache_release(page);
 	if (unlikely(PageCompound(page))) {
-		/* PageHuge is always false */
 		destroy_compound_page(page);
 	}
-	/* free_unref_page removed - no-op stub for bump allocator */
 }
-
-/* pagevec_lru_move_fn, pagevec_move_tail_fn removed - lru_rotate and lru_deactivate removed */
-
-/* pagevec_add_and_need_flush inlined into folio_add_lru */
-
-/* folio_rotate_reclaimable removed - orphaned after folio_end_writeback removal */
-
-/* folio_activate, __lru_cache_activate_folio, activate_page_drain inlined/removed */
-/* folio_mark_accessed removed - was empty stub (~35 LOC removed originally, callers now removed) */
 
 void folio_add_lru(struct folio *folio)
 {
@@ -118,12 +95,9 @@ void folio_add_lru(struct folio *folio)
 void lru_cache_add_inactive_or_unevictable(struct page *page,
 					   struct vm_area_struct *vma)
 {
-	/* mlock_new_page removed - empty stub */
 	/* lru_cache_add inlined */
 	folio_add_lru(page_folio(page));
 }
-
-/* lru_deactivate_file_fn, lru_deactivate_fn, lru_lazyfree_fn removed - pvecs never populated */
 
 void lru_add_drain_cpu(int cpu)
 {
@@ -131,11 +105,7 @@ void lru_add_drain_cpu(int cpu)
 
 	if (pagevec_count(pvec))
 		__pagevec_lru_add(pvec);
-
-	/* lru_rotate, lru_deactivate_file, lru_deactivate, lru_lazyfree, activate_page_drain removed - never populated */
 }
-
-/* deactivate_file_folio removed - never called */
 
 void lru_add_drain(void)
 {
@@ -143,8 +113,6 @@ void lru_add_drain(void)
 	lru_add_drain_cpu(smp_processor_id());
 	local_unlock(&lru_pvecs.lock);
 }
-
-/* lru_disable_count removed - never modified, always 0 */
 
 void release_pages(struct page **pages, int nr)
 {
@@ -164,7 +132,6 @@ void release_pages(struct page **pages, int nr)
 		}
 
 		page = &folio->page;
-		/* is_zone_device_page always returns false */
 		if (!put_page_testzero(page))
 			continue;
 
@@ -199,7 +166,6 @@ void release_pages(struct page **pages, int nr)
 	}
 	if (lruvec)
 		unlock_page_lruvec_irqrestore(lruvec, flags);
-	/* mem_cgroup_uncharge_list, free_unref_page_list removed - no-op stubs */
 }
 
 /* Simplified - minimal LRU add for single-process init (~22 LOC) */
@@ -220,7 +186,3 @@ void __pagevec_lru_add(struct pagevec *pvec)
 	release_pages(pvec->pages, pvec->nr);
 	pagevec_reinit(pvec);
 }
-
-/* folio_batch_remove_exceptionals removed - never called */
-
-/* pagevec_lookup_range_tag removed - never called */

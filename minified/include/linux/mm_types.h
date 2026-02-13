@@ -5,7 +5,6 @@
 #ifndef _LINUX_MM_TYPES_TASK_H
 #define _LINUX_MM_TYPES_TASK_H
 
-
 #include <linux/types.h>
 #include <linux/threads.h>
 #include <linux/atomic.h>
@@ -13,7 +12,6 @@
 
 #include <asm/page.h>
 
-/* Inlined from asm/tlbbatch.h */
 struct arch_tlbflush_unmap_batch {
 	struct cpumask cpumask;
 };
@@ -32,27 +30,19 @@ struct vmacache {
 	struct vm_area_struct *vmas[VMACACHE_SIZE];
 };
 
-/* MM_FILEPAGES/ANONPAGES/SWAPENTS/SHMEMPAGES enum, mm_rss_stat struct removed - write-only */
-
-/* struct page_frag removed - never instantiated */
-
 struct tlbflush_unmap_batch {
 	 
 	struct arch_tlbflush_unmap_batch arch;
 
-	 
 	bool flush_required;
 
-	 
 	bool writable;
 };
-
 
 #endif /* _LINUX_MM_TYPES_TASK_H */
 
 /* auxvec.h inlined - AT_VECTOR_SIZE_ARCH */
 #define AT_VECTOR_SIZE_ARCH 3
-/* AT_EXECFD removed - unused */
 #define AT_PHDR   3
 #define AT_PHENT  4
 #define AT_PHNUM  5
@@ -161,7 +151,6 @@ struct page {
 				struct {
 
 					void *__filler;
-					/* mlock_count removed - only written, never read */
 				};
 			};
 			 
@@ -170,17 +159,13 @@ struct page {
 			 
 			unsigned long private;
 		};
-		/* page_pool sub-struct removed - never used */
 		struct {	 
 			unsigned long compound_head;	 
 
-			 
 			unsigned char compound_dtor;
 			unsigned char compound_order;
 			atomic_t compound_mapcount;
-			/* compound_pincount removed - write-only */
 		};
-		/* deferred_list sub-struct removed - never used */
 		struct {	 
 			unsigned long _pt_pad_1;	 
 			pgtable_t pmd_huge_pte;  
@@ -195,9 +180,7 @@ struct page {
 			spinlock_t ptl;
 #endif
 		};
-		/* zone_device sub-struct removed - never used */
 
-		 
 		struct rcu_head rcu_head;
 	};
 
@@ -205,14 +188,10 @@ struct page {
 		 
 		atomic_t _mapcount;
 
-		 
 		unsigned int page_type;
 	};
 
-	 
 	atomic_t _refcount;
-
-	/* WANT_PAGE_VIRTUAL virtual field removed - never defined */
 
 #ifdef LAST_CPUPID_NOT_IN_PAGE_FLAGS
 	int _last_cpupid;
@@ -230,7 +209,6 @@ struct folio {
 
 				struct {
 					void *__filler;
-					/* mlock_count removed - write-only */
 				};
 
 			};
@@ -258,14 +236,10 @@ FOLIO_MATCH(_mapcount, _mapcount);
 FOLIO_MATCH(_refcount, _refcount);
 #undef FOLIO_MATCH
 
-/* folio_mapcount_ptr inlined into util.c */
-
 static inline atomic_t *compound_mapcount_ptr(struct page *page)
 {
 	return &page[1].compound_mapcount;
 }
-
-/* compound_pincount_ptr removed - write-only (folio_pincount_ptr removed) */
 
 #define page_private(page)		((page)->private)
 
@@ -276,29 +250,19 @@ static inline void set_page_private(struct page *page, unsigned long private)
 
 typedef unsigned long vm_flags_t;
 
-/* NULL_VM_UFFD_CTX, struct vm_userfaultfd_ctx removed - unused */
-
-/* anon_vma_name forward decl and fields removed - never used */
-
 struct vm_area_struct {
 	 
-
 	unsigned long vm_start;		 
 	unsigned long vm_end;		 
 
-	 
 	struct vm_area_struct *vm_next, *vm_prev;
 
 	struct rb_node vm_rb;
 
-	 
 	unsigned long rb_subtree_gap;
-
-	 
 
 	struct mm_struct *vm_mm;	 
 
-	 
 	pgprot_t vm_page_prot;
 	unsigned long vm_flags;
 
@@ -310,10 +274,8 @@ struct vm_area_struct {
 	struct list_head anon_vma_chain;
 	struct anon_vma *anon_vma;	 
 
-	 
 	const struct vm_operations_struct *vm_ops;
 
-	 
 	unsigned long vm_pgoff;		 
 	struct file * vm_file;
 	void * vm_private_data;
@@ -332,10 +294,8 @@ struct mm_struct {
 		unsigned long highest_vm_end;	 
 		pgd_t * pgd;
 
-		 
 		atomic_t mm_users;
 
-		 
 		atomic_t mm_count;
 
 		atomic_long_t pgtables_bytes;	 
@@ -346,48 +306,32 @@ struct mm_struct {
 		struct rw_semaphore mmap_lock;
 
 		struct list_head mmlist;
-		/* hiwater_rss, hiwater_vm removed - write-only fields */
 
 		unsigned long total_vm;
 		unsigned long def_flags;
 
-		/* write_protect_seq, arg_lock removed - initialized but never used */
-
-		/* start_code, end_code, start_data, end_data removed - write-only fields */
-		/* start_brk, brk, start_stack removed - write-only fields (brk is COND_SYSCALL stub) */
-		/* arg_start, arg_end, env_start, env_end removed - write-only fields */
-
 		unsigned long saved_auxv[AT_VECTOR_SIZE];  
-
-		 
-		/* rss_stat removed - write-only (counters never read back) */
 
 		struct linux_binfmt *binfmt;
 
-		 
 		mm_context_t context;
 
 		unsigned long flags;  
 
 		struct user_namespace *user_ns;
 
-		 
 		struct file __rcu *exe_file;
 		 
 		atomic_t tlb_flush_pending;
 
 		atomic_t tlb_flush_batched;
-		/* async_put_work removed - never scheduled */
 
 	} __randomize_layout;
 
-	 
 	unsigned long cpu_bitmap[];
 };
 
 extern struct mm_struct init_mm;
-
-/* mm_init_cpumask inlined into fork.c */
 
 static inline cpumask_t *mm_cpumask(struct mm_struct *mm)
 {
@@ -415,7 +359,6 @@ enum vm_fault_reason {
 	VM_FAULT_RETRY          = (__force vm_fault_t)0x000400,
 	VM_FAULT_FALLBACK       = (__force vm_fault_t)0x000800,
 	VM_FAULT_DONE_COW       = (__force vm_fault_t)0x001000,
-	/* VM_FAULT_NEEDDSYNC and VM_FAULT_HINDEX_MASK removed - unused */
 };
 
 #define VM_FAULT_ERROR (VM_FAULT_OOM | VM_FAULT_SIGBUS |	\
@@ -423,29 +366,18 @@ enum vm_fault_reason {
 			VM_FAULT_HWPOISON_LARGE | VM_FAULT_FALLBACK)
 
 struct vm_special_mapping {
-	/* name field removed - never read */
 	struct page **pages;
 	vm_fault_t (*fault)(const struct vm_special_mapping *sm, struct vm_area_struct *vma,
 			    struct vm_fault *vmf);
-	/* mremap removed - mremap syscall returns ENOSYS */
 };
-
-/* enum tlb_flush_reason removed - never used */
-
-/* swp_entry_t removed - never used */
 
 enum fault_flag {
 	FAULT_FLAG_WRITE =		1 << 0,
 	FAULT_FLAG_MKWRITE =		1 << 1,
 	FAULT_FLAG_ALLOW_RETRY =	1 << 2,
-	/* FAULT_FLAG_RETRY_NOWAIT removed - never set */
 	FAULT_FLAG_KILLABLE =		1 << 4,
 	FAULT_FLAG_TRIED =		1 << 5,
-	/* FAULT_FLAG_USER removed - never tested */
 	FAULT_FLAG_REMOTE =		1 << 7,
-	/* FAULT_FLAG_INSTRUCTION removed - never tested */
-	/* FAULT_FLAG_INTERRUPTIBLE removed - never tested */
-	/* FAULT_FLAG_UNSHARE removed - never set */
 	FAULT_FLAG_ORIG_PTE_VALID =	1 << 11,
 };
 

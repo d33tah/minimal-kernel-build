@@ -2,14 +2,11 @@
 #include <linux/bitmap.h>
 #include <linux/bitops.h>
 #include <linux/bug.h>
-/* linux/cpu.h removed - CPU hotplug not used */
 #include <linux/errno.h>
-/* linux/export.h removed - no EXPORT_SYMBOL used */
 #include <linux/idr.h>
 #include <linux/init.h>
 #include <linux/kernel.h>
 #include <linux/percpu.h>
-/* linux/preempt.h removed - preempt_* functions not used */
 #include <linux/radix-tree.h>
 #include <linux/rcupdate.h>
 #include <linux/slab.h>
@@ -197,8 +194,6 @@ static inline void radix_tree_node_free(struct radix_tree_node *node)
 	call_rcu(&node->rcu_head, radix_tree_node_rcu_free);
 }
 
-/* __radix_tree_preload inlined into idr_preload */
-
 static unsigned radix_tree_load_root(const struct radix_tree_root *root,
 				     struct radix_tree_node **nodep,
 				     unsigned long *maxindex)
@@ -345,8 +340,6 @@ static bool delete_node(struct radix_tree_root *root,
 	return deleted;
 }
 
-/* __radix_tree_create inlined into radix_tree_insert */
-
 int radix_tree_insert(struct radix_tree_root *root, unsigned long index,
 		      void *item)
 {
@@ -384,7 +377,6 @@ int radix_tree_insert(struct radix_tree_root *root, unsigned long index,
 		slot = &node->slots[offset];
 	}
 
-	/* Inlined insert_entries */
 	if (*slot)
 		return -EEXIST;
 	rcu_assign_pointer(*slot, item);
@@ -505,8 +497,6 @@ void radix_tree_iter_replace(struct radix_tree_root *root,
 	__radix_tree_replace(root, iter->node, slot, item);
 }
 
-/* node_tag_set removed - only caller was __radix_tree_delete (now dead) */
-
 static void node_tag_clear(struct radix_tree_root *root,
 			   struct radix_tree_node *node, unsigned int tag,
 			   unsigned int offset)
@@ -518,7 +508,6 @@ static void node_tag_clear(struct radix_tree_root *root,
 		if (!tag_get(node, tag, offset))
 			return;
 		tag_clear(node, tag, offset);
-		/* Inlined any_tag_set */
 		any_set = false;
 		for (idx = 0; idx < RADIX_TREE_TAG_LONGS; idx++) {
 			if (node->tags[tag][idx]) {
@@ -598,10 +587,6 @@ static void set_iter_tags(struct radix_tree_iter *iter,
 
 /* __radix_tree_delete + radix_tree_delete_item removed:
  * idr_remove was stubbed (PIDs never freed in hello-world kernel) */
-
-/* radix_tree_delete removed - never called */
-
-/* radix_tree_tagged inlined into idr_get_free */
 
 void idr_preload(gfp_t gfp_mask)
 {
@@ -713,8 +698,6 @@ static void radix_tree_node_ctor(void *arg)
 	INIT_LIST_HEAD(&node->private_list);
 }
 
-/* radix_tree_cpu_dead removed - CPU never goes offline (~14 LOC) */
-
 void __init radix_tree_init(void)
 {
 	BUILD_BUG_ON(RADIX_TREE_MAX_TAGS + __GFP_BITS_SHIFT > 32);
@@ -723,5 +706,4 @@ void __init radix_tree_init(void)
 	radix_tree_node_cachep = kmem_cache_create(
 		"radix_tree_node", sizeof(struct radix_tree_node), 0,
 		SLAB_PANIC | SLAB_RECLAIM_ACCOUNT, radix_tree_node_ctor);
-	/* cpuhp_setup_state_nocalls for radix_tree_cpu_dead removed - CPU never goes offline */
 }

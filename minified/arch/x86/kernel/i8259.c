@@ -1,12 +1,10 @@
 #include <linux/linkage.h>
-/* linux/errno.h removed - no errno constants used */
 #include <linux/signal.h>
 #include <linux/sched.h>
 #include <linux/ioport.h>
 #include <linux/interrupt.h>
 #include <linux/irq.h>
 #include <linux/timex.h>
-/* kernel_stat.h removed - empty */
 #include <linux/bitops.h>
 #include <linux/io.h>
 #include <linux/delay.h>
@@ -21,12 +19,9 @@
 
 static void init_8259A(int auto_eoi);
 
-/* i8259A_auto_eoi removed - write-only variable, never read */
 DEFINE_RAW_SPINLOCK(i8259A_lock);
 
 unsigned int cached_irq_mask = 0xffff;
-
-/* unsigned long io_apic_irqs removed - never used */
 
 static void disable_8259A_irq(struct irq_data *data)
 {
@@ -114,7 +109,6 @@ spurious_8259A_irq:
 					irq);
 			spurious_irq_mask |= irqmask;
 		}
-		/* irq_err_count increment removed */
 		goto handle_real_irq;
 	}
 }

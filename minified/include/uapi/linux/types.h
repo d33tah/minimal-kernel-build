@@ -4,19 +4,14 @@
 #include <asm/types.h>
 
 #ifndef __ASSEMBLY__
-/* #ifndef __KERNEL__ block removed - always in kernel build */
 
 #include <asm/posix_types.h>
-
-
 
 #ifdef __CHECKER__
 #define __bitwise	__attribute__((bitwise))
 #else
 #define __bitwise
 #endif
-
-/* __bitwise__ removed - never used */
 
 typedef __u16 __bitwise __le16;
 typedef __u16 __bitwise __be16;
@@ -29,7 +24,6 @@ typedef __u16 __bitwise __sum16;
 typedef __u32 __bitwise __wsum;
 
 #define __aligned_u64 __u64 __attribute__((aligned(8)))
-/* __aligned_be64, __aligned_le64 removed - unused */
 
 typedef unsigned __bitwise __poll_t;
 

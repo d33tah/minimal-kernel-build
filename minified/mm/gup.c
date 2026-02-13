@@ -4,14 +4,9 @@
 #include <linux/spinlock.h>
 
 #include <linux/mm.h>
-/* linux/memremap.h removed - pgmap always NULL, no device memory */
 #include <linux/pagemap.h>
 #include <linux/rmap.h>
-/* linux/swap.h removed - no swap features used */
-/* swapops.h removed - was empty */
 #include <linux/sched/signal.h>
-/* linux/rwsem.h removed - not used */
-/* linux/migrate.h removed - empty header */
 #include <linux/mm_inline.h>
 #include <linux/sched/mm.h>
 
@@ -24,24 +19,17 @@ struct follow_page_context {
 	unsigned int page_mask;
 };
 
-/* try_get_folio removed - never called */
 bool __must_check try_grab_page(struct page *page, unsigned int flags)
 {
 	struct folio *folio = page_folio(page);
-	/* FOLL_PIN never set, simplified */
 	if (WARN_ON_ONCE(folio_ref_count(folio) <= 0))
 		return false;
 
 	if (flags & FOLL_GET)
 		folio_ref_inc(folio);
-	/* FOLL_PIN branch removed - never set */
 
 	return true;
 }
-
-/* mm_set_has_pinned_flag inlined into __get_user_pages_locked */
-
-/* NULL inlined as NULL - was just returning NULL (~3 LOC) */
 
 /* follow_pfn_pte, follow_page_pte, follow_pmd_mask, follow_pud_mask, follow_p4d_mask inlined */
 
@@ -65,7 +53,6 @@ static struct page *follow_page_mask(struct vm_area_struct *vma,
 	BUILD_BUG_ON(p4d_huge(*p4d));
 	pud = pud_offset(p4d, address);
 
-	/* Inlined follow_pmd_mask */
 	pmd = pmd_offset(pud, address);
 	pmdval = READ_ONCE(*pmd);
 	if (pmd_none(pmdval))
@@ -73,7 +60,6 @@ static struct page *follow_page_mask(struct vm_area_struct *vma,
 	if (!pmd_present(pmdval))
 		return NULL;
 
-	/* Inlined follow_page_pte */
 	if (unlikely(pmd_bad(*pmd)))
 		return NULL;
 
@@ -82,7 +68,6 @@ static struct page *follow_page_mask(struct vm_area_struct *vma,
 	if (!pte_present(pte))
 		goto no_page;
 
-	/* Inlined can_follow_write_pte */
 	if ((flags & FOLL_WRITE) &&
 	    !(pte_write(pte) ||
 	      ((flags & FOLL_FORCE) && (flags & FOLL_COW) && pte_dirty(pte)))) {
@@ -119,7 +104,6 @@ static struct page *follow_page_mask(struct vm_area_struct *vma,
 	if (flags & FOLL_TOUCH) {
 		if ((flags & FOLL_WRITE) && !pte_dirty(pte) && !PageDirty(page))
 			set_page_dirty(page);
-		/* folio_mark_accessed removed - was empty stub */
 	}
 out:
 	pte_unmap_unlock(ptep, ptl);
@@ -130,11 +114,6 @@ no_page:
 		return NULL;
 	return NULL;
 }
-
-/* get_gate_page removed - in_gate_area always returns 0 */
-/* faultin_page inlined into __get_user_pages */
-
-/* check_vma_flags inlined into __get_user_pages */
 
 static long __get_user_pages(struct mm_struct *mm, unsigned long start,
 			     unsigned long nr_pages, unsigned int gup_flags,
@@ -149,7 +128,6 @@ static long __get_user_pages(struct mm_struct *mm, unsigned long start,
 		return 0;
 
 	start = untagged_addr(start);
-	/* FOLL_NUMA setting removed - never tested */
 
 	do {
 		struct page *page;
@@ -158,12 +136,10 @@ static long __get_user_pages(struct mm_struct *mm, unsigned long start,
 
 		if (!vma || start >= vma->vm_end) {
 			vma = find_extend_vma(mm, start);
-			/* in_gate_area always returns 0, gate page code removed */
 			if (!vma) {
 				ret = -EFAULT;
 				goto out;
 			}
-			/* Inlined check_vma_flags */
 			{
 				vm_flags_t vm_flags = vma->vm_flags;
 				int write = (gup_flags & FOLL_WRITE);
@@ -198,7 +174,6 @@ static long __get_user_pages(struct mm_struct *mm, unsigned long start,
 					}
 				}
 			}
-			/* hugetlb page handling removed - is_vm_hugetlb_page always returns false */
 		}
 retry:
 
@@ -209,7 +184,6 @@ retry:
 		cond_resched();
 
 		page = follow_page_mask(vma, start, foll_flags, &ctx);
-		/* -EMLINK check removed - gup_must_unshare always false */
 		if (!page) {
 			/* faultin_page inlined */
 			unsigned int fault_flags = 0;
@@ -272,7 +246,6 @@ retry:
 		}
 		if (pages) {
 			pages[i] = page;
-			/* flush_anon_page and flush_dcache_page - empty stubs on x86 */
 			ctx.page_mask = 0;
 		}
 next_page:
@@ -303,7 +276,6 @@ long populate_vma_page_range(struct vm_area_struct *vma, unsigned long start,
 	long ret;
 
 	mmap_assert_locked(mm);
-	/* VM_LOCKONFAULT check removed - never set */
 
 	gup_flags = FOLL_TOUCH;
 
@@ -360,10 +332,6 @@ int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)
 		mmap_read_unlock(mm);
 	return ret;
 }
-
-/* fault_in_readable removed - never called */
-
-/* __gup_longterm_locked removed - FOLL_LONGTERM never set, function never called */
 
 long get_user_pages_remote(struct mm_struct *mm, unsigned long start,
 			   unsigned long nr_pages, unsigned int gup_flags,

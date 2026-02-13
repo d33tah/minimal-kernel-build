@@ -51,6 +51,4 @@ static inline kgid_t mapped_kgid_fs(struct user_namespace *mnt_userns,
 	return make_kgid(mnt_userns, gid);
 }
 
-/* mapped_fsuid, mapped_fsgid, mapped_kuid_user, mapped_kgid_user inlined/removed */
-
 #endif  

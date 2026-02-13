@@ -6,28 +6,19 @@
 #include <linux/types.h>
 #include <linux/mem_encrypt.h>
 
- 
 #define PAGE_SHIFT		12
 #define PAGE_SIZE		(_AC(1,UL) << PAGE_SHIFT)
 #define PAGE_MASK		(~(PAGE_SIZE-1))
 
 #define PMD_PAGE_SIZE		(_AC(1, UL) << PMD_SHIFT)
 #define PMD_PAGE_MASK		(~(PMD_PAGE_SIZE-1))
-/* PUD_PAGE_SIZE, PUD_PAGE_MASK removed - never used */
-
-/* __VIRTUAL_MASK removed - never used */
 
 #define PHYSICAL_PAGE_MASK	(((signed long)PAGE_MASK) & __PHYSICAL_MASK)
 #define PHYSICAL_PMD_PAGE_MASK	(((signed long)PMD_PAGE_MASK) & __PHYSICAL_MASK)
-/* PHYSICAL_PUD_PAGE_MASK removed - never used */
-
-/* HPAGE_SIZE removed - no callers */
 
 #define PAGE_OFFSET		((unsigned long)__PAGE_OFFSET)
 
 #define VM_DATA_DEFAULT_FLAGS	VM_DATA_FLAGS_EXEC
-
-/* __PHYSICAL_START, __START_KERNEL removed - never used */
 
 /* page_32_types.h inlined */
 #ifndef _ASM_X86_PAGE_32_DEFS_H

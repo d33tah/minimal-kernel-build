@@ -1,5 +1,4 @@
 
-/* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/sched.h>
 #include <linux/timex.h>
 #include <linux/preempt.h>
@@ -8,7 +7,6 @@
 #include <asm/processor.h>
 #include <asm/delay.h>
 #include <asm/timer.h>
-/* asm/mwait.h removed - header is empty */
 
 static void delay_loop(u64 __loops);
 
@@ -89,4 +87,3 @@ void __udelay(unsigned long usecs)
 {
 	__const_udelay(usecs * 0x000010c7);
 }
-/* __ndelay removed - never called */

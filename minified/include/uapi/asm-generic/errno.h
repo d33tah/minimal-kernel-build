@@ -1,7 +1,6 @@
 #ifndef _ASM_GENERIC_ERRNO_H
 #define _ASM_GENERIC_ERRNO_H
 
-/* Inlined from asm-generic/errno-base.h */
 #define	EPERM		 1
 #define	ENOENT		 2
 #define	ESRCH		 3
@@ -21,7 +20,6 @@
 #define	ENODEV		19
 #define	ENOTDIR		20
 #define	EINVAL		22
-/* ENFILE removed - unused */
 #define	EMFILE		24
 #define	ENOTTY		25
 #define	ETXTBSY		26
@@ -32,9 +30,7 @@
 
 #define	ENAMETOOLONG	36
 #define	ENOSYS		38
-/* ENOTEMPTY removed - unused */
 #define	ELOOP		40
-/* EWOULDBLOCK removed - unused (aliased to EAGAIN) */
 #define	ETIME		62
 #define	EOVERFLOW	75
 #define	EOPNOTSUPP	95

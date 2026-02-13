@@ -7,7 +7,6 @@
 #include <linux/bitops.h>
 #include <linux/limits.h>
 
-/* Inlined from find.h */
 extern unsigned long _find_next_bit(const unsigned long *addr1,
 		const unsigned long *addr2, unsigned long nbits,
 		unsigned long start, unsigned long invert, unsigned long le);
@@ -33,7 +32,6 @@ unsigned long find_next_bit(const unsigned long *addr, unsigned long size,
 	return _find_next_bit(addr, NULL, size, offset, 0UL, 0);
 }
 #endif
-
 
 #ifndef find_next_zero_bit
 static inline
@@ -68,7 +66,6 @@ unsigned long find_first_bit(const unsigned long *addr, unsigned long size)
 }
 #endif
 
-
 #ifndef find_first_zero_bit
 static inline
 unsigned long find_first_zero_bit(const unsigned long *addr, unsigned long size)
@@ -97,7 +94,6 @@ unsigned long find_last_bit(const unsigned long *addr, unsigned long size)
 }
 #endif
 
-
 /* _le bitmap functions (find_next_zero_bit_le, find_next_bit_le, find_first_zero_bit_le)
    removed - never called */
 
@@ -105,8 +101,6 @@ unsigned long find_last_bit(const unsigned long *addr, unsigned long size)
 	for ((bit) = find_next_zero_bit((addr), (size), (bit));	\
 	     (bit) < (size);					\
 	     (bit) = find_next_zero_bit((addr), (size), (bit) + 1))
-
-/* for_each_clear_bitrange removed - never used */
 
 #define for_each_clear_bitrange_from(b, e, addr, size)		\
 	for ((b) = find_next_zero_bit((addr), (size), (b)),	\
@@ -118,22 +112,14 @@ unsigned long find_last_bit(const unsigned long *addr, unsigned long size)
 #include <linux/string.h>
 #include <linux/types.h>
 
-/* struct device forward decl removed - unused */
-
-
-/* __bitmap_equal removed - bitmap_equal never called */
 void __bitmap_set(unsigned long *map, unsigned int start, int len);
 void __bitmap_clear(unsigned long *map, unsigned int start, int len);
-/* bitmap_find_next_zero_area_off removed - never called */
-
-/* bitmap_find_next_zero_area removed - never called */
 
 int bitmap_parse(const char *buf, unsigned int buflen,
 			unsigned long *dst, int nbits);
 /* bitmap_parse_user, bitmap_parselist, bitmap_parselist_user, bitmap_remap,
  * bitmap_bitremap, bitmap_onto, bitmap_fold, bitmap_find_free_region,
  * bitmap_release_region, bitmap_allocate_region, bitmap_print_to_pagebuf removed - never called */
-
 
 #define BITMAP_FIRST_WORD_MASK(start) (~0UL << ((start) & (BITS_PER_LONG - 1)))
 #define BITMAP_LAST_WORD_MASK(nbits) (~0UL >> (-(nbits) & (BITS_PER_LONG - 1)))
@@ -152,8 +138,6 @@ static inline void bitmap_fill(unsigned long *dst, unsigned int nbits)
 
 #define BITMAP_MEM_ALIGNMENT 8
 #define BITMAP_MEM_MASK (BITMAP_MEM_ALIGNMENT - 1)
-
-/* bitmap_equal removed - never called */
 
 static inline bool bitmap_empty(const unsigned long *src, unsigned nbits)
 {

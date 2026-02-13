@@ -8,19 +8,13 @@
 struct page;
 static inline void flush_dcache_page(struct page *page) { }
 struct folio;
-/* flush_dcache_folio, ARCH_IMPLEMENTS_FLUSH_DCACHE_FOLIO removed - unused */
 #include <linux/mm.h>
 #include <linux/uaccess.h>
 #include <linux/hardirq.h>
 
-/* Inlined from highmem-internal.h */
-/* __kmap_local_pfn_prot, __kmap_local_page_prot removed - never called */
 void kmap_local_fork(struct task_struct *tsk);
 void __kmap_local_sched_out(void);
 void __kmap_local_sched_in(void);
-/* kmap_assert_nomap inlined into entry/common.c (~2 LOC) */
-
-/* kmap inlined into iov_iter.c (~3 LOC) */
 
 static inline void kunmap(struct page *page)
 {
@@ -30,8 +24,6 @@ static inline void *kmap_local_page(struct page *page)
 {
 	return page_address(page);
 }
-
-/* kmap_local_folio removed - never called (only kmap_local_page used) */
 
 static inline void __kunmap_local(void *addr)
 {
@@ -84,7 +76,6 @@ static inline void zero_user_segments(struct page *page,
 	for (i = 0; i < compound_nr(page); i++)
 		flush_dcache_page(page + i);
 }
-
 
 static inline void zero_user(struct page *page,
 	unsigned start, unsigned size)

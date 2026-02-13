@@ -3,7 +3,6 @@
 #include <asm/pgalloc.h>
 #include <asm/tlb.h>
 #include <asm/fixmap.h>
-/* mtrr.h removed - header is empty */
 
 #define PGTABLE_HIGHMEM 0
 
@@ -23,14 +22,10 @@ void ___pte_free_tlb(struct mmu_gather *tlb, struct page *pte)
 	tlb_remove_page(tlb, pte);
 }
 
-/* pgd_list_add, pgd_list_del, _pgd_alloc, _pgd_free inlined into callers */
-
 struct mm_struct *pgd_page_get_mm(struct page *page)
 {
 	return page->pt_mm;
 }
-
-/* PREALLOCATED_PMDS, MAX_PREALLOCATED_PMDS, PREALLOCATED_USER_PMDS, MAX_PREALLOCATED_USER_PMDS removed - never used (all 0 for 2-level paging) */
 
 /* Simplified functions removed - free_pmds, preallocate_pmds, pgd_mop_up_pmds,
    pgd_prepopulate_pmd, pgd_prepopulate_user_pmd were empty stubs */
@@ -60,7 +55,6 @@ void pgd_free(struct mm_struct *mm, pgd_t *pgd)
 	spin_lock(&pgd_lock);
 	list_del(&virt_to_page(pgd)->lru);
 	spin_unlock(&pgd_lock);
-	/* free_pages removed - empty stub */
 }
 
 int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,
@@ -73,8 +67,6 @@ int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,
 
 	return changed;
 }
-
-/* ptep_test_and_clear_young, ptep_clear_flush_young removed - zero callers */
 
 void __native_set_fixmap(enum fixed_addresses idx, pte_t pte)
 {

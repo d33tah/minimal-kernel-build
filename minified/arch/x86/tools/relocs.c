@@ -129,8 +129,6 @@ static const char *sym_name(const char *sym_strtab, Elf_Sym *sym)
 	return name;
 }
 
-/* sym_lookup removed - only used by 64-bit percpu_init */
-
 #if BYTE_ORDER == LITTLE_ENDIAN
 #define le16_to_cpu(val) (val)
 #define le32_to_cpu(val) (val)
@@ -397,8 +395,6 @@ static void read_relocs(FILE *fp)
 	}
 }
 
-/* print_absolute_relocs removed - --abs-relocs never used in this config */
-
 static void add_reloc(struct relocs *r, uint32_t offset)
 {
 	if (r->count == r->size) {
@@ -445,8 +441,6 @@ static void walk_relocs(int (*process)(struct section *sec, Elf_Rel *rel,
 		}
 	}
 }
-
-/* percpu_init, is_percpu_sym, do_reloc64 removed - 64-bit support removed */
 
 static int do_reloc32(struct section *sec, Elf_Rel *rel, Elf_Sym *sym,
 		      const char *symname)
@@ -566,8 +560,6 @@ static int write32(uint32_t v, FILE *f)
 	put_unaligned_le32(v, buf);
 	return fwrite(buf, 1, 4, f) == 4 ? 0 : -1;
 }
-
-/* write32_as_text removed - --text never used */
 
 static void emit_relocs(int use_real_mode)
 {

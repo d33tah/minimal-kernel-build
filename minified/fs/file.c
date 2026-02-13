@@ -10,7 +10,6 @@
 #include <linux/bitops.h>
 #include <linux/spinlock.h>
 #include <linux/rcupdate.h>
-/* CLOSE_RANGE_UNSHARE, CLOSE_RANGE_CLOEXEC, security.h removed - unused */
 
 #include "internal.h"
 
@@ -20,8 +19,6 @@ static void __free_fdtable(struct fdtable *fdt)
 {
 	/* kvfree/kfree are no-ops (bump allocator) */
 }
-
-/* free_fdtable_rcu, alloc_fdtable removed - no fdtable expansion needed */
 
 #define BITBIT_NR(nr) BITS_TO_LONGS(BITS_TO_LONGS(nr))
 #define BITBIT_SIZE(nr) (BITBIT_NR(nr) * sizeof(long))
@@ -55,7 +52,6 @@ static int expand_files(struct files_struct *files, unsigned int nr)
 	return -EMFILE;
 }
 
-/* sane_fdtable_size removed - no fdtable expansion */
 /* Simplified: open_files always fits in NR_OPEN_DEFAULT, no expansion needed */
 struct files_struct *dup_fd(struct files_struct *oldf, unsigned int max_fds,
 			    int *errorp)
@@ -233,8 +229,6 @@ out:
 	return error;
 }
 
-/* __put_unused_fd removed - never called */
-
 /* Simplified: resize never happens in minimal kernel */
 void fd_install(unsigned int fd, struct file *file)
 {
@@ -247,12 +241,6 @@ void fd_install(unsigned int fd, struct file *file)
 	rcu_assign_pointer(fdt->fd[fd], file);
 	rcu_read_unlock_sched();
 }
-
-/* pick_file, close_fd, __close_range removed - never called */
-
-/* do_close_on_exec removed - was empty stub, call removed from exec.c */
-
-/* __fget_files_rcu removed - files->count is always 1 (single process) */
 
 static unsigned long __fdget(unsigned int fd)
 {
@@ -282,5 +270,4 @@ void __f_unlock_pos(struct file *f)
 {
 }
 
-/* get_close_on_exec removed - never called */
 /* dup/dup2/dup3 replaced with COND_SYSCALL */

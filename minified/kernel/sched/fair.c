@@ -1,12 +1,8 @@
 
 #include <linux/jiffies.h>
 #include <linux/sched/clock.h>
-/* topology.h, sched/signal.h, sched/isolation.h, interrupt.h, switch_to.h removed - unused */
 
 #include "sched.h"
-/* stats.h removed - was empty header */
-
-/* sysctl_sched_latency, sysctl_sched_min_granularity, sysctl_sched_wakeup_granularity removed - unused */
 
 static inline void update_load_add(struct load_weight *lw, unsigned long inc)
 {
@@ -21,14 +17,11 @@ static inline void update_load_sub(struct load_weight *lw, unsigned long dec)
 /* sched_init_granularity, get_update_sysctl_factor, update_sysctl, normalized_sysctl_* removed -
    sysctl values already set to correct values at compile time */
 
-/* WMULT_CONST/WMULT_SHIFT removed - unused after __calc_delta simplification */
 /* __calc_delta inlined - just returns delta_exec for single-process kernel (~35 LOC saved originally) */
 
 const struct sched_class fair_sched_class;
 
 #define for_each_sched_entity(se) for (; se; se = NULL)
-
-/* max_vruntime, min_vruntime, entity_before inlined into callers */
 
 #define __node_2_se(node) rb_entry((node), struct sched_entity, run_node)
 
@@ -46,7 +39,6 @@ static void update_min_vruntime(struct cfs_rq *cfs_rq)
 
 static inline bool __entity_less(struct rb_node *a, const struct rb_node *b)
 {
-	/* Inlined entity_before */
 	return (s64)(__node_2_se(a)->vruntime - __node_2_se(b)->vruntime) < 0;
 }
 
@@ -70,10 +62,6 @@ struct sched_entity *__pick_first_entity(struct cfs_rq *cfs_rq)
 	return __node_2_se(left);
 }
 
-/* calc_delta_fair removed - just returned delta, inlined at call sites */
-/* sched_slice inlined into place_entity */
-/* pelt.h removed - was empty stubs */
-
 static void update_curr(struct cfs_rq *cfs_rq)
 {
 	struct sched_entity *curr = cfs_rq->curr;
@@ -88,7 +76,6 @@ static void update_curr(struct cfs_rq *cfs_rq)
 		return;
 
 	curr->exec_start = now;
-	/* schedstat_enabled() always 0, block removed */
 
 	curr->sum_exec_runtime += delta_exec;
 	/* calc_delta_fair inlined - just returns delta for single-process kernel */
@@ -100,8 +87,6 @@ static void update_curr_fair(struct rq *rq)
 {
 	update_curr(cfs_rq_of(&rq->curr->se));
 }
-
-/* update_stats_* macros removed - schedstat_enabled() always 0, no calls needed */
 
 /* update_stats_curr_start, account_entity_enqueue/dequeue, reweight_entity inlined */
 
@@ -122,7 +107,6 @@ void reweight_task(struct task_struct *p, int prio)
 		update_load_add(&cfs_rq->load, se->load.weight);
 }
 
-/* 0, 0, 0, update_load_avg removed - schedstat always disabled */
 #define update_load_avg(cfs_rq, se, flags) \
 	do {                               \
 	} while (0)
@@ -134,29 +118,19 @@ static void place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 	se->vruntime = cfs_rq->min_vruntime;
 }
 
-/* enqueue_entity, dequeue_entity, clear_buddies inlined/removed */
-
 /* check_preempt_tick removed - only called when nr_running > 1, which never happens
    in single-task kernel (~27 LOC) */
 
 static void set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
-	/* clear_buddies call removed - empty stub */
-
 	if (se->on_rq) {
 		__dequeue_entity(cfs_rq, se);
 		update_load_avg(cfs_rq, se, 0);
 	}
 
-	/* Inlined update_stats_curr_start */
 	se->exec_start = rq_clock_task(rq_of(cfs_rq));
 	cfs_rq->curr = se;
-	/* schedstat_enabled() always 0, block removed */
-	/* se->prev_sum_exec_runtime assignment removed - write-only field removed */
 }
-
-/* pick_next_entity inlined - buddy selection code removed for single-task kernel */
-/* put_prev_entity inlined into put_prev_task_fair */
 
 /* entity_tick inlined */
 
@@ -190,22 +164,16 @@ static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		}
 
 		cfs_rq->h_nr_running++;
-		/* idle_h_nr_running, cfs_rq_is_idle, cfs_rq_throttled always 0 - removed */
 		flags = ENQUEUE_WAKEUP;
 	}
-	/* Second for_each_sched_entity loop removed - se is already NULL after first loop */
 
 	rq->nr_running++; /* add_nr_running inlined - single caller */
-	/* enqueue_throttle label and assert_list_leaf_cfs_rq removed */
 }
-
-/* set_next_buddy forward decl removed - function never called */
 
 static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 {
 	struct cfs_rq *cfs_rq;
 	struct sched_entity *se = &p->se;
-	/* task_sleep, was_sched_idle, idle_h_nr_running removed - write-only */
 
 	for_each_sched_entity(se)
 	{
@@ -224,7 +192,6 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 			update_min_vruntime(cfs_rq);
 
 		cfs_rq->h_nr_running--;
-		/* idle_h_nr_running, cfs_rq_is_idle, cfs_rq_throttled always 0 - removed */
 
 		if (cfs_rq->load.weight) {
 			/* parent_entity always NULL - break is always taken */
@@ -232,15 +199,11 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		}
 		flags |= DEQUEUE_SLEEP;
 	}
-	/* Second for_each_sched_entity loop removed - se is already NULL after first loop */
 
 	rq->nr_running--; /* sub_nr_running inlined - single caller */
-	/* dequeue_throttle label and util_est_update removed */
 }
 
 /* wakeup_preempt_entity inlined - single caller */
-/* set_next_buddy removed - buddy tracking dead with single task (~10 LOC) */
-/* stub function also removed - never called */
 
 /* Stubbed - single-task kernel never needs preemption checking */
 static void check_preempt_wakeup(struct rq *rq, struct task_struct *p,
@@ -254,7 +217,6 @@ struct task_struct *pick_next_task_fair(struct rq *rq, struct task_struct *prev,
 	struct cfs_rq *cfs_rq = &rq->cfs;
 	struct sched_entity *se;
 	struct task_struct *p;
-	/* new_tasks removed - newidle_balance always returns 0 */
 
 	if (!sched_fair_runnable(rq))
 		goto idle;
@@ -262,20 +224,16 @@ struct task_struct *pick_next_task_fair(struct rq *rq, struct task_struct *prev,
 	if (prev)
 		put_prev_task(rq, prev);
 
-	/* group_cfs_rq always returns NULL, loop simplified */
 	se = __pick_first_entity(cfs_rq);
 	set_next_entity(cfs_rq, se);
 
 	p = task_of(se);
 
-	/* hrtick_enabled_fair always returns 0, dead if block removed */
 	return p;
 
 idle:
 	if (!rf)
 		return NULL;
-	/* newidle_balance always returns 0, dead branches removed */
-	/* update_idle_rq_clock_pelt removed - was empty stub */
 	return NULL;
 }
 
@@ -302,10 +260,6 @@ static void put_prev_task_fair(struct rq *rq, struct task_struct *prev)
 		cfs_rq->curr = NULL;
 	}
 }
-
-/* yield_task_fair removed - callback never called (~20 LOC) */
-
-/* yield_to_task_fair removed - callback never called (~12 LOC) */
 
 static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
 {
@@ -337,7 +291,6 @@ static void task_fork_fair(struct task_struct *p)
 		se->vruntime = curr->vruntime;
 	}
 	place_entity(cfs_rq, se, 1);
-	/* sysctl_sched_child_runs_first check removed - always 0 (~4 LOC) */
 	se->vruntime -= cfs_rq->min_vruntime;
 	rq_unlock(rq, &rf);
 }
@@ -373,8 +326,6 @@ void init_cfs_rq(struct cfs_rq *cfs_rq)
 	cfs_rq->tasks_timeline = RB_ROOT_CACHED;
 	cfs_rq->min_vruntime = (u64)(-(1LL << 20));
 }
-
-/* get_rr_interval_fair removed - callback never called (~10 LOC) */
 
 DEFINE_SCHED_CLASS(fair) = {
 

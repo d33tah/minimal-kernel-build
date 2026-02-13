@@ -1,4 +1,3 @@
-/* --- 2025-12-07 10:45 --- Inlined asm-generic/tlb.h content */
 #ifndef _ASM_X86_TLB_H
 #define _ASM_X86_TLB_H
 
@@ -33,15 +32,10 @@ mmu_notifier_invalidate_range_end(struct mmu_notifier_range *range)
 #include <linux/pagemap.h>
 #include <asm/tlbflush.h>
 
-/* nmi_uaccess_okay macro removed - no callers */
-
-/* tlb_remove_table removed - unused */
-
 #ifdef tlb_needs_table_invalidate
 #error tlb_needs_table_invalidate() requires MMU_GATHER_RCU_TABLE_FREE
 #endif
 
-/* CONFIG_MMU_GATHER_NO_GATHER not set - #ifndef removed */
 #define MMU_GATHER_BUNDLE	8
 
 struct mmu_gather_batch {
@@ -78,7 +72,6 @@ struct mmu_gather {
 
 	unsigned int		batch_count;
 
-	/* CONFIG_MMU_GATHER_NO_GATHER not set - #ifndef removed */
 	struct mmu_gather_batch *active;
 	struct mmu_gather_batch	local;
 	struct page		*__pages[MMU_GATHER_BUNDLE];
@@ -109,7 +102,6 @@ static inline void __tlb_reset_range(struct mmu_gather *tlb)
 	tlb->cleared_p4ds = 0;
 }
 
-/* is_vm_hugetlb_page always returns false */
 static inline void
 tlb_update_vma_flags(struct mmu_gather *tlb, struct vm_area_struct *vma)
 {
@@ -131,8 +123,6 @@ static inline unsigned long tlb_get_unmap_shift(struct mmu_gather *tlb)
 
 	return PAGE_SHIFT;
 }
-
-/* tlb_get_unmap_size removed - unused */
 
 /* X86-specific tlb_flush - defined before generic version would be */
 #define tlb_flush tlb_flush
@@ -156,7 +146,6 @@ static inline void tlb_flush_mmu_tlbonly(struct mmu_gather *tlb)
 		return;
 
 	tlb_flush(tlb);
-	/* mmu_notifier_invalidate_range call removed - empty stub */
 	__tlb_reset_range(tlb);
 }
 
@@ -166,8 +155,6 @@ static inline void tlb_remove_page_size(struct mmu_gather *tlb,
 	if (__tlb_remove_page_size(tlb, page, page_size))
 		tlb_flush_mmu(tlb);
 }
-
-/* __tlb_remove_page removed - unused */
 
 static inline void tlb_remove_page(struct mmu_gather *tlb, struct page *page)
 {
@@ -185,7 +172,6 @@ static inline void tlb_start_vma(struct mmu_gather *tlb, struct vm_area_struct *
 		return;
 
 	tlb_update_vma_flags(tlb, vma);
-	/* flush_cache_range is empty stub on x86, call removed */
 }
 
 static inline void tlb_end_vma(struct mmu_gather *tlb, struct vm_area_struct *vma)
@@ -199,17 +185,12 @@ static inline void tlb_end_vma(struct mmu_gather *tlb, struct vm_area_struct *vm
 	}
 }
 
-
 static inline void tlb_flush_pmd_range(struct mmu_gather *tlb,
 				     unsigned long address, unsigned long size)
 {
 	__tlb_adjust_range(tlb, address, size);
 	tlb->cleared_pmds = 1;
 }
-
-/* __tlb_remove_tlb_entry, tlb_remove_tlb_entry removed - never used */
-
-/* tlb_remove_huge_tlb_entry, tlb_remove_pmd_tlb_entry, tlb_remove_pud_tlb_entry removed - never used */
 
 #ifndef pte_free_tlb
 #define pte_free_tlb(tlb, ptep, address)			\
@@ -219,10 +200,5 @@ static inline void tlb_flush_pmd_range(struct mmu_gather *tlb,
 		__pte_free_tlb(tlb, ptep, address);		\
 	} while (0)
 #endif
-
-
-/* pte_needs_flush, huge_pmd_needs_flush removed - never called */
-
-/* __tlb_remove_table removed - unused */
 
 #endif /* _ASM_X86_TLB_H */

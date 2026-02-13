@@ -7,9 +7,7 @@
 #include <linux/linkage.h>
 #include <linux/topology.h>
 
-
 struct vm_area_struct;
-
 
 #define ___GFP_DMA		0x01u
 #define ___GFP_HIGHMEM		0x02u
@@ -34,7 +32,6 @@ struct vm_area_struct;
 #define ___GFP_HARDWALL		0x100000u
 #define ___GFP_THISNODE		0x200000u
 #define ___GFP_ACCOUNT		0x400000u
-/* ___GFP_SKIP_ZERO, ___GFP_SKIP_KASAN_*, ___GFP_NOLOCKDEP removed - always 0 and unused */
 
 #define __GFP_DMA	((__force gfp_t)___GFP_DMA)
 #define __GFP_HIGHMEM	((__force gfp_t)___GFP_HIGHMEM)
@@ -65,7 +62,6 @@ struct vm_area_struct;
 #define __GFP_NOWARN	((__force gfp_t)___GFP_NOWARN)
 #define __GFP_COMP	((__force gfp_t)___GFP_COMP)
 #define __GFP_ZERO	((__force gfp_t)___GFP_ZERO)
-/* __GFP_SKIP_ZERO, __GFP_SKIP_KASAN_*, __GFP_NOLOCKDEP removed - always 0 and unused */
 
 /* CONFIG_LOCKDEP not enabled */
 #define __GFP_BITS_SHIFT 27
@@ -87,7 +83,6 @@ static inline bool gfpflags_allow_blocking(const gfp_t gfp_flags)
 {
 	return !!(gfp_flags & __GFP_DIRECT_RECLAIM);
 }
-
 
 #define OPT_ZONE_HIGHMEM ZONE_NORMAL
 
@@ -134,15 +129,10 @@ static inline enum zone_type gfp_zone(gfp_t flags)
 	return z;
 }
 
-
-/* gfp_zonelist inlined - always returns ZONELIST_FALLBACK */
-
 static inline struct zonelist *node_zonelist(int nid, gfp_t flags)
 {
 	return NODE_DATA(nid)->node_zonelists + ZONELIST_FALLBACK;
 }
-
-/* Removed: arch_free_page, arch_alloc_page - never called */
 
 struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid,
 		nodemask_t *nodemask);
@@ -171,8 +161,6 @@ __alloc_pages_node(int nid, gfp_t gfp_mask, unsigned int order)
 
 	return __alloc_pages(gfp_mask, order, nid, NULL);
 }
-
-/* __folio_alloc_node removed - never called */
 
 static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
 						unsigned int order)
@@ -203,20 +191,12 @@ static inline struct page *alloc_page_vma(gfp_t gfp,
 }
 
 extern unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order);
-/* get_zeroed_page removed - never called */
-
-/* alloc_pages_exact made static in page_alloc.c - no external callers */
 
 #define __get_free_page(gfp_mask) \
 		__get_free_pages((gfp_mask), 0)
 
-/* __free_pages/free_pages/free_page macros removed - never called (bump allocator) */
-
-/* page_alloc_init, page_alloc_init_late inlined into init/main.c */
-
 extern gfp_t gfp_allowed_mask;
 
 bool gfp_pfmemalloc_allowed(gfp_t gfp_mask);
-
 
 #endif  

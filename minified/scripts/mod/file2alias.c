@@ -1,4 +1,3 @@
-/* Stubs - modules disabled */
 #include "modpost.h"
 void handle_moddevtable(struct module *mod, struct elf_info *info, Elf_Sym *sym,
 			const char *symname)

@@ -1,13 +1,9 @@
 #include <linux/kernel.h>
 #include <linux/string.h>
 #include <linux/errno.h>
-/* linux/module.h removed - unused */
 #include <linux/moduleparam.h>
-/* linux/device.h removed - unused */
 #include <linux/err.h>
-/* linux/slab.h removed - unused */
 #include <linux/ctype.h>
-/* linux/security.h removed - unused */
 
 /* skip_spaces inlined from string_helpers.c */
 static inline char *skip_spaces(const char *str)
@@ -65,8 +61,6 @@ static char *next_arg(char *args, char **param, char **val)
 	return skip_spaces(args);
 }
 
-/* dash2underscore inlined into parameqn */
-
 bool parameqn(const char *a, const char *b, size_t n)
 {
 	size_t i;
@@ -84,8 +78,6 @@ bool parameq(const char *a, const char *b)
 {
 	return parameqn(a, b, strlen(a) + 1);
 }
-
-/* parse_one inlined into parse_args */
 
 char *
 parse_args(const char *doing, char *args, const struct kernel_param *params,

@@ -5,7 +5,6 @@
 #include <linux/types.h>
 #include <linux/bitops.h>
 
-/* CONFIG_ARCH_HAS_ILOG2_* not defined - using generic fallbacks */
 static __always_inline __attribute__((const))
 int __ilog2_u32(u32 n)
 {
@@ -30,8 +29,6 @@ unsigned long __roundup_pow_of_two(unsigned long n)
 	return 1UL << fls_long(n - 1);
 }
 
-/* __rounddown_pow_of_two removed - unused */
-
 #define ilog2(n) \
 ( \
 	__builtin_constant_p(n) ?	\
@@ -50,8 +47,6 @@ unsigned long __roundup_pow_of_two(unsigned long n)
 				   ) :		\
 	__roundup_pow_of_two(n)			\
  )
-
-/* rounddown_pow_of_two removed - unused */
 
 static inline __attribute_const__
 int __order_base_2(unsigned long n)

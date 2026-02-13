@@ -6,21 +6,11 @@
 #include <linux/rcupdate.h>
 #include <linux/workqueue.h>
 
-/* --- Inlined from rcu_segcblist.h (2025-12-08 02:00) --- */
 #include <linux/types.h>
 #include <linux/atomic.h>
 
-/* RCU_CBLIST_NSEGS, struct rcu_segcblist removed - unused */
-
 struct srcu_struct;
 
-
-/* init_srcu_struct removed - never called */
-
-/* __SRCU_DEP_MAP_INIT removed - only user was __SRCU_STRUCT_INIT */
-
-/* Inlined from srcutiny.h */
-/* --- Inlined from swait.h --- */
 #ifndef _LINUX_SWAIT_H
 #define _LINUX_SWAIT_H
 
@@ -70,13 +60,6 @@ struct srcu_struct {
 	struct rcu_head **srcu_cb_tail;
 	struct work_struct srcu_work;
 };
-
-
-/* __SRCU_STRUCT_INIT removed - never used */
-
-/* DEFINE_STATIC_SRCU removed - never used */
-
-/* synchronize_srcu, call_srcu, get_state_synchronize_srcu removed - no callers */
 
 void srcu_init(void);
 

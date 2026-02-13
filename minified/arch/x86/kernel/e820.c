@@ -1,15 +1,11 @@
-/* Inlined from early_ioremap.h */
 extern void *early_memremap(unsigned long phys_addr, unsigned long size);
 extern void early_memunmap(void *addr, unsigned long size);
 #include <linux/memblock.h>
-/* linux/swap.h removed - no swap functions used */
 #include <linux/init.h>
-/* linux/pm.h removed - no pm functions used */
 #include <linux/mm.h>
 #include <asm/errno.h>
 void sort(void *base, size_t num, size_t size, cmp_func_t cmp_func,
 	  swap_func_t swap_func);
-/* linux/memory_hotplug.h removed - not used */
 #include <asm/e820/api.h>
 #include <asm/setup.h>
 
@@ -56,8 +52,6 @@ void __init e820__range_add(u64 start, u64 size, enum e820_type type)
 {
 	__e820__range_add(e820_table, start, size, type);
 }
-
-/* e820_print_type, e820__print_table stubs removed - never called */
 
 /* change_member, change_point_list, overlap_list, new_entries, cpcompare
  * removed - e820__update_table stubbed for QEMU */
@@ -106,7 +100,6 @@ static u64 __init __e820__range_update(struct e820_table *table, u64 start,
 		size = ULLONG_MAX - start;
 
 	end = start + size;
-	/* Debug printk and e820_print_type calls removed - not needed */
 
 	for (i = 0; i < table->nr_entries; i++) {
 		struct e820_entry *entry = &table->entries[i];
@@ -170,7 +163,6 @@ u64 __init e820__range_remove(u64 start, u64 size, enum e820_type old_type,
 		size = ULLONG_MAX - start;
 
 	end = start + size;
-	/* Debug printk and e820_print_type calls removed - not needed */
 
 	for (i = 0; i < e820_table->nr_entries; i++) {
 		struct e820_entry *entry = &e820_table->entries[i];
@@ -211,14 +203,9 @@ u64 __init e820__range_remove(u64 start, u64 size, enum e820_type old_type,
 	return real_removed_size;
 }
 
-/* e820__update_table_print removed - never called */
-
-/* e820__setup_pci_gap removed - PCI gap search not needed for minimal boot */
 __init void e820__setup_pci_gap(void)
 {
 }
-
-/* e820__reallocate_tables removed - never called */
 
 void __init e820__memory_setup_extended(u64 phys_addr, u32 data_len)
 {
@@ -232,12 +219,9 @@ void __init e820__memory_setup_extended(u64 phys_addr, u32 data_len)
 
 	__append_e820_table(extmap, entries);
 	e820__update_table(e820_table);
-	/* kexec/firmware table copy removed - unused in minimal kernel */
 
 	early_memunmap(sdata, data_len);
 }
-
-/* e820__register_nosave_regions removed - call site eliminated */
 
 #define MAX_ARCH_PFN (1ULL << (32 - PAGE_SHIFT))
 
@@ -282,10 +266,6 @@ unsigned long __init e820__end_of_ram_pfn(void)
 	return e820_end_pfn(MAX_ARCH_PFN, E820_TYPE_RAM);
 }
 
-/* e820__end_of_low_ram_pfn removed - never called */
-
-/* userdef removed - never written, always 0 */
-
 void __init e820__reserve_setup_data(void)
 {
 	struct setup_data *data;
@@ -307,8 +287,6 @@ void __init e820__reserve_setup_data(void)
 		e820__range_update(pa_data, sizeof(*data) + data->len,
 				   E820_TYPE_RAM, E820_TYPE_RESERVED_KERN);
 
-		/* SETUP_INDIRECT handling removed - QEMU never provides indirect entries */
-
 		pa_data = pa_next;
 		early_memunmap(data, sizeof(*data));
 	}
@@ -316,11 +294,9 @@ void __init e820__reserve_setup_data(void)
 	e820__update_table(e820_table);
 }
 
-/* e820__finish_early_params removed - body was empty (~3 LOC) */
 /* e820_type_to_string, e820_type_to_iomem_type, e820_type_to_iores_desc, do_mark_busy
    inlined into e820__reserve_resources */
 
-/* e820__reserve_resources removed - resource tracking not needed for minimal boot */
 void __init e820__reserve_resources(void)
 {
 }
@@ -329,7 +305,6 @@ char *__init e820__memory_setup_default(void)
 {
 	char *who = "BIOS-e820";
 
-	/* Inlined append_e820_table check */
 	if (boot_params.e820_entries < 2 ||
 	    __append_e820_table(boot_params.e820_table,
 				boot_params.e820_entries) < 0) {
@@ -358,7 +333,6 @@ void __init e820__memory_setup(void)
 	BUILD_BUG_ON(sizeof(struct boot_e820_entry) != 20);
 
 	x86_init.resources.memory_setup();
-	/* kexec/firmware table copies removed - unused in minimal kernel */
 }
 
 void __init e820__memblock_setup(void)
@@ -386,5 +360,4 @@ void __init e820__memblock_setup(void)
 	}
 
 	memblock_trim_memory(PAGE_SIZE);
-	/* memblock_dump_all removed - was empty stub */
 }

@@ -8,15 +8,10 @@
 /* AMD64 MSRs */
 #define MSR_EFER		0xc0000080
 
-/* EFER bits - EFER_NX, MSR_IA32_PRED_CMD, PRED_CMD_IBPB, SPEC_CTRL_SSBD removed - never used */
 #define _EFER_NX		11
 
 /* SPEC_CTRL_SSBD_SHIFT still used by spec-ctrl.h */
 #define SPEC_CTRL_SSBD_SHIFT		2
-
-/* MSR_IA32_FLUSH_CMD, L1D_FLUSH removed - never used */
-
-/* SYSENTER MSRs removed - SYSENTER not used */
 
 /* Debug control */
 #define MSR_IA32_DEBUGCTLMSR		0x000001d9
@@ -31,13 +26,10 @@
 #define MSR_MISC_FEATURES_ENABLES_CPUID_FAULT_BIT	0
 #define MSR_MISC_FEATURES_ENABLES_CPUID_FAULT		BIT_ULL(MSR_MISC_FEATURES_ENABLES_CPUID_FAULT_BIT)
 
-/* CET (MSR_IA32_S_CET, CET_ENDBR_EN) removed - unused */
-
 /* AMD specific */
 #define MSR_AMD64_LS_CFG		0xc0011020
 #define MSR_AMD64_VIRT_SPEC_CTRL	0xc001011f
 #define MSR_K7_HWCR			0xc0010015
-/* MSR_K8_INT_PENDING_MSG, K8_INTP_C1E_ACTIVE_MASK removed - never used */
 
 /* VIA specific */
 #define MSR_VIA_FCR			0x00001107

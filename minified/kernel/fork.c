@@ -1,4 +1,3 @@
-/* anon_inode_getfile declaration removed - function never called */
 #include <linux/slab.h>
 #include <linux/sched/mm.h>
 #include <linux/sched/coredump.h>
@@ -11,33 +10,24 @@
 #include <linux/init.h>
 #include <asm/unistd.h>
 #include <linux/module.h>
-/* linux/vmalloc.h, linux/completion.h removed - unused */
-/* personality.h removed - no personality functions used */
-/* mempolicy.h removed - forward decl in mm.h */
 #include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/binfmts.h>
 #include <linux/mman.h>
-/* mmu_notifier.h removed - mmu_notifier_* calls removed */
 #include <linux/fs.h>
 #include <linux/mm.h>
 #include <linux/mm_inline.h>
 #include <linux/vmacache.h>
 #include <linux/nsproxy.h>
-/* linux/capability.h, linux/hugetlb.h removed - not used */
 #include <linux/cpu.h>
 #include <linux/cgroup.h>
 #include <linux/security.h>
-/* linux/swap.h removed - swap functions not used */
 #include <linux/syscalls.h>
 /* futex.h inlined - only FUTEX_TID_MASK used for MAX_THREADS */
 #define FUTEX_TID_MASK 0x3fffffff
 #include <linux/kthread.h>
 #include <linux/rcupdate.h>
 #include <linux/ptrace.h>
-/* linux/mount.h removed - vfsmount not used */
-/* proc_fs.h removed - empty header */
-/* rmap.h, userfaultfd_k.h removed - functions not used */
 #include <linux/fs_struct.h>
 /* magic.h inlined - only STACK_END_MAGIC used */
 #define STACK_END_MAGIC 0x57AC6E9D
@@ -50,22 +40,14 @@
 #include <asm/mmu_context.h>
 #include <asm/tlbflush.h>
 
-/* MIN_THREADS removed - max_threads hardcoded to MAX_THREADS */
-
 #define MAX_THREADS FUTEX_TID_MASK
 
-/* total_forks removed - only incremented, never read */
 int nr_threads;
 
 static int max_threads;
 
-/* process_counts removed - only incremented/decremented, never read */
-
 __cacheline_aligned DEFINE_RWLOCK(tasklist_lock);
 
-/* arch_release_task_struct removed - empty weak stub, no x86 override */
-
-/* CONFIG_ARCH_TASK_STRUCT_ALLOCATOR not set - #ifndef removed */
 static struct kmem_cache *task_struct_cachep;
 
 static inline void free_task_struct(struct task_struct *tsk)
@@ -75,7 +57,6 @@ static inline void free_task_struct(struct task_struct *tsk)
 
 static void thread_stack_free_rcu(struct rcu_head *rh)
 {
-	/* __free_pages removed - empty stub (bump allocator doesn't free) */
 }
 
 static struct kmem_cache *signal_cachep;
@@ -116,7 +97,6 @@ struct vm_area_struct *vm_area_dup(struct vm_area_struct *orig)
 		*new = data_race(*orig);
 		INIT_LIST_HEAD(&new->anon_vma_chain);
 		new->vm_next = new->vm_prev = NULL;
-		/* dup_anon_vma_name is empty stub - removed */
 	}
 	return new;
 }
@@ -125,8 +105,6 @@ void vm_area_free(struct vm_area_struct *vma)
 {
 	kmem_cache_free(vm_area_cachep, vma);
 }
-
-/* account_kernel_stack inlined into callers */
 
 void exit_task_stack_account(struct task_struct *tsk)
 {
@@ -166,16 +144,12 @@ void __mmdrop(struct mm_struct *mm)
 	WARN_ON_ONCE(mm == current->active_mm);
 	pgd_free(mm, mm->pgd);
 	destroy_context(mm);
-	/* mmu_notifier_subscriptions_destroy removed - empty stub */
 	put_user_ns(mm->user_ns);
 	free_mm(mm);
 }
 
-/* mmdrop_async_fn removed - async_put_work is never scheduled */
-
 static inline void free_signal_struct(struct signal_struct *sig)
 {
-	/* taskstats_tgid_free, sched_autogroup_exit, oom_mm cleanup - removed */
 	kmem_cache_free(signal_cachep, sig);
 }
 
@@ -212,13 +186,7 @@ void set_task_stack_end_magic(struct task_struct *tsk)
 	*stackend = STACK_END_MAGIC;
 }
 
-/* dup_task_struct inlined into copy_process */
-
 __cacheline_aligned_in_smp DEFINE_SPINLOCK(mmlist_lock);
-
-/* default_dump_filter removed - inlined constant */
-
-/* duplicate init_task.h include removed - already included at line 67 */
 
 static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 				 struct user_namespace *user_ns)
@@ -233,15 +201,12 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	atomic_long_set(&mm->pgtables_bytes,
 			0); /* mm_pgtables_bytes_init inlined */
 	mm->map_count = 0;
-	/* rss_stat init removed - field removed (write-only) */
 	spin_lock_init(&mm->page_table_lock);
-	/* spin_lock_init(&mm->arg_lock) removed - field was removed */
 	/* mm_init_cpumask inlined */
 	cpumask_clear(
 		(struct cpumask *)((unsigned long)mm +
 				   offsetof(struct mm_struct, cpu_bitmap)));
 	RCU_INIT_POINTER(mm->exe_file, NULL);
-	/* mmu_notifier_subscriptions_init, hugetlb_count_init removed - empty stubs */
 	atomic_set(&mm->tlb_flush_pending,
 		   0); /* init_tlb_flush_pending inlined */
 
@@ -259,7 +224,6 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 		return NULL;
 	}
 
-	/* init_new_context always returns 0 - check removed */
 	init_new_context(p, mm);
 
 	mm->user_ns = get_user_ns(user_ns);
@@ -285,7 +249,6 @@ void mmput(struct mm_struct *mm)
 
 		exit_mmap(mm);
 		set_mm_exe_file(mm, NULL);
-		/* mmlist cleanup removed - no swap, mmlist never populated */
 		if (mm->binfmt)
 			module_put(mm->binfmt->module);
 		mmdrop(mm);
@@ -316,20 +279,12 @@ void exec_mm_release(struct task_struct *tsk, struct mm_struct *mm)
 	deactivate_mm(tsk, mm);
 }
 
-/* copy_mm, copy_fs, copy_files and copy_sighand inlined into copy_process */
-
 void __cleanup_sighand(struct sighand_struct *sighand)
 {
 	if (refcount_dec_and_test(&sighand->count)) {
 		kmem_cache_free(sighand_cachep, sighand);
 	}
 }
-
-/* copy_signal inlined into copy_process */
-
-/* set_tid_address syscall removed - not in syscall table */
-
-/* init_task_pid_links inlined into copy_process */
 
 static inline void init_task_pid(struct task_struct *task, enum pid_type type,
 				 struct pid *pid)
@@ -340,8 +295,6 @@ static inline void init_task_pid(struct task_struct *task, enum pid_type type,
 		task->signal->pids[type] = pid;
 }
 
-/* pidfd_release, pidfd_fops removed - CLONE_PIDFD never used (only kernel_thread/user_mode_thread call kernel_clone) */
-
 /* pid parameter removed - always NULL (always allocates new pid)
  * trace parameter removed - always 0 (ptrace block never executed) */
 static __latent_entropy struct task_struct *
@@ -351,9 +304,6 @@ copy_process(int node, struct kernel_clone_args *args)
 	struct task_struct *p;
 	struct pid *pid;
 	const u64 clone_flags = args->flags;
-	/* time_ns check, delayed signal mechanism, nsproxy check removed - dead code */
-
-	/* Signal-pending check removed - no signals during boot */
 
 	/* dup_task_struct inlined */
 	retval = -ENOMEM;
@@ -382,9 +332,7 @@ copy_process(int node, struct kernel_clone_args *args)
 	p->flags &= ~PF_KTHREAD;
 	if (args->kthread)
 		p->flags |= PF_KTHREAD;
-	/* io_thread check removed - never set */
 
-	/* CLONE_CHILD_SETTID never set, clear_child_tid removed */
 	p->set_child_tid = NULL;
 
 	raw_spin_lock_init(&p->pi_lock);
@@ -399,8 +347,6 @@ copy_process(int node, struct kernel_clone_args *args)
 	p->flags &=
 		~(PF_SUPERPRIV | PF_WQ_WORKER | PF_IDLE | PF_NO_SETAFFINITY);
 	p->flags |= PF_FORKNOEXEC;
-	/* children, sibling init removed - fields removed */
-	/* vfork_done removed - write-only field */
 	spin_lock_init(&p->alloc_lock);
 
 	init_sigpending(&p->pending);
@@ -415,9 +361,6 @@ copy_process(int node, struct kernel_clone_args *args)
 	retval = sched_fork(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_count;
-	/* perf_event_init_task removed - empty stub that always returns 0 */
-	/* security_task_alloc always returns 0 - dead code removed */
-	/* Inlined copy_files */
 	{
 		struct files_struct *oldf = current->files;
 		if (oldf) {
@@ -432,7 +375,6 @@ copy_process(int node, struct kernel_clone_args *args)
 			}
 		}
 	}
-	/* Inlined copy_fs - CLONE_FS always set */
 	{
 		struct fs_struct *fs = current->fs;
 		spin_lock(&fs->lock);
@@ -444,7 +386,6 @@ copy_process(int node, struct kernel_clone_args *args)
 		fs->users++;
 		spin_unlock(&fs->lock);
 	}
-	/* Inlined copy_sighand - CLONE_SIGHAND never set */
 	{
 		struct sighand_struct *sig;
 		sig = kmem_cache_alloc(sighand_cachep, GFP_KERNEL);
@@ -458,9 +399,7 @@ copy_process(int node, struct kernel_clone_args *args)
 		memcpy(sig->action, current->sighand->action,
 		       sizeof(sig->action));
 		spin_unlock_irq(&current->sighand->siglock);
-		/* CLONE_CLEAR_SIGHAND never set */
 	}
-	/* Inlined copy_signal - CLONE_THREAD never set, always alloc */
 	{
 		struct signal_struct *sig;
 		sig = kmem_cache_zalloc(signal_cachep, GFP_KERNEL);
@@ -469,7 +408,6 @@ copy_process(int node, struct kernel_clone_args *args)
 			retval = -ENOMEM;
 			goto bad_fork_cleanup_sighand;
 		}
-		/* sig->nr_threads, sig->curr_target removed - fields removed */
 		atomic_set(&sig->live, 1);
 		refcount_set(&sig->sigcnt, 1);
 		sig->thread_head =
@@ -477,15 +415,12 @@ copy_process(int node, struct kernel_clone_args *args)
 		p->thread_node =
 			(struct list_head)LIST_HEAD_INIT(sig->thread_head);
 		init_sigpending(&sig->shared_pending);
-		/* multiprocess init removed - field removed */
 		task_lock(current->group_leader);
 		memcpy(sig->rlim, current->signal->rlim, sizeof sig->rlim);
 		task_unlock(current->group_leader);
 		mutex_init(&sig->cred_guard_mutex);
 		init_rwsem(&sig->exec_update_lock);
 	}
-	/* Inlined copy_mm */
-	/* Inlined copy_mm - CLONE_VM always set, no dup_mm needed */
 	{
 		struct mm_struct *oldmm;
 		p->mm = NULL;
@@ -513,27 +448,20 @@ copy_process(int node, struct kernel_clone_args *args)
 		goto bad_fork_cleanup_thread;
 	}
 
-	/* CLONE_PIDFD block removed - never used */
-	/* sas_ss_reset removed - empty stub */
-
 	clear_task_syscall_work(p, SYSCALL_TRACE);
 	clear_task_syscall_work(p, SYSCALL_EMU);
 
 	p->pid = pid_nr(pid);
-	/* CLONE_THREAD never set - always own group_leader */
 	p->group_leader = p;
 	p->tgid = p->pid;
 
-	/* p->nr_dirtied, p->pdeath_signal removed - write-only */
 	INIT_LIST_HEAD(&p->thread_group);
 	p->task_works = NULL;
 
 	sched_cgroup_fork(p, args);
-	/* start_time removed - write-only field */
 
 	write_lock_irq(&tasklist_lock);
 
-	/* CLONE_PARENT, CLONE_THREAD never set */
 	p->real_parent = current;
 	p->exit_signal = args->exit_signal;
 
@@ -544,21 +472,15 @@ copy_process(int node, struct kernel_clone_args *args)
 		goto bad_fork_cancel_cgroup;
 	}
 
-	/* fatal_signal_pending check removed - no signals during boot */
-
 	{
 		enum pid_type type;
 		for (type = PIDTYPE_PID; type < PIDTYPE_MAX; ++type)
 			INIT_HLIST_NODE(&p->pid_links[type]);
 	}
 	if (likely(p->pid)) {
-		/* ptrace_init_task inlined - ptrace fields removed */
 		p->jobctl = 0;
-		/* p->parent removed - write-only field */
-		/* ptrace block removed - trace was always 0 */
 
 		init_task_pid(p, PIDTYPE_PID, pid);
-		/* thread_group_leader check removed - CLONE_THREAD never set */
 		init_task_pid(p, PIDTYPE_TGID, pid);
 		init_task_pid(p, PIDTYPE_PGID, task_pgrp(current));
 		init_task_pid(p, PIDTYPE_SID, task_session(current));
@@ -573,18 +495,14 @@ copy_process(int node, struct kernel_clone_args *args)
 		attach_pid(p, PIDTYPE_PID);
 		nr_threads++;
 	}
-	/* total_forks++ removed */
 	spin_unlock(&current->sighand->siglock);
 	write_unlock_irq(&tasklist_lock);
-
-	/* pidfile fd_install, sched_post_fork removed - CLONE_PIDFD never used, function was empty */
 
 	return p;
 
 bad_fork_cancel_cgroup:
 	spin_unlock(&current->sighand->siglock);
 	write_unlock_irq(&tasklist_lock);
-	/* bad_fork_put_pidfd, bad_fork_free_pid removed - never jumped to */
 	/* Always free pid (was always allocated, never init_struct_pid) */
 	free_pid(pid);
 bad_fork_cleanup_thread:
@@ -594,7 +512,6 @@ bad_fork_cleanup_namespaces:
 bad_fork_cleanup_mm:
 	if (p->mm)
 		mmput(p->mm);
-	/* bad_fork_cleanup_signal removed - never jumped to, CLONE_THREAD never set */
 	free_signal_struct(p->signal);
 bad_fork_cleanup_sighand:
 	__cleanup_sighand(p->sighand);
@@ -637,7 +554,6 @@ static pid_t kernel_clone(struct kernel_clone_args *args)
 	struct pid *pid;
 	struct task_struct *p;
 	pid_t nr;
-	/* clone_flags, vfork, trace removed - unused */
 
 	p = copy_process(NUMA_NO_NODE, args);
 
@@ -721,5 +637,3 @@ void __init proc_caches_init(void)
 	mmap_init();
 	nsproxy_cache_init();
 }
-
-/* unshare_files removed - always returned 0, inlined at caller */

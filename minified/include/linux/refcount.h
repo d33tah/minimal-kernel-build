@@ -20,7 +20,6 @@ enum refcount_saturation_type {
 	REFCOUNT_ADD_OVF,
 	REFCOUNT_ADD_UAF,
 	REFCOUNT_SUB_UAF,
-	/* REFCOUNT_DEC_LEAK removed - never used */
 };
 
 void refcount_warn_saturate(refcount_t *r, enum refcount_saturation_type t);
@@ -71,7 +70,6 @@ static inline __must_check bool __refcount_inc_not_zero(refcount_t *r, int *oldp
 	return __refcount_add_not_zero(1, r, oldp);
 }
 
-
 static inline __must_check bool refcount_inc_not_zero(refcount_t *r)
 {
 	return __refcount_inc_not_zero(r, NULL);
@@ -105,7 +103,6 @@ static inline __must_check bool __refcount_sub_and_test(int i, refcount_t *r, in
 	return false;
 }
 
-
 static inline __must_check bool __refcount_dec_and_test(refcount_t *r, int *oldp)
 {
 	return __refcount_sub_and_test(1, r, oldp);
@@ -116,8 +113,6 @@ static inline __must_check bool refcount_dec_and_test(refcount_t *r)
 	return __refcount_dec_and_test(r, NULL);
 }
 
-
-/* refcount_dec_not_one removed - only used in lib/refcount.c */
 extern __must_check bool refcount_dec_and_lock_irqsave(refcount_t *r,
 						       spinlock_t *lock,
 						       unsigned long *flags) __cond_acquires(lock);

@@ -6,16 +6,12 @@
 #include <linux/sched/debug.h>
 #include <linux/delay.h>
 #include <linux/hardirq.h>
-/* ratelimit.h removed - WARN_RATELIMIT available via printk.h */
-/* linux/slab.h removed - no slab functions */
-/* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/atomic.h>
 #include <linux/sched/clock.h>
 
 #include <asm/cpu_entry_area.h>
 #include <asm/traps.h>
 #include <asm/io.h>
-/* Inlined from mach_traps.h */
 #define NMI_REASON_PORT 0x61
 #define NMI_REASON_SERR 0x80
 #define NMI_REASON_IOCHK 0x40
@@ -29,10 +25,8 @@ static inline unsigned char default_get_nmi_reason(void)
 }
 #include <asm/nmi.h>
 #include <asm/x86_init.h>
-/* reboot.h removed - empty header, nothing used */
 #include <asm/cache.h>
 #include <asm/nospec-branch.h>
-/* asm/sev.h include removed - file is stub, nothing used */
 
 struct nmi_desc {
 	raw_spinlock_t lock;
@@ -59,15 +53,9 @@ static struct nmi_desc nmi_desc[NMI_MAX] = {
 
 };
 
-/* nmi_stats struct removed - all fields were write-only, never read */
-
-/* ignore_nmis removed - never written, always 0 */
-/* unknown_nmi_panic removed - never set to non-zero */
 static DEFINE_RAW_SPINLOCK(nmi_reason_lock);
 
 #define nmi_to_desc(type) (&nmi_desc[type])
-
-/* Stub: nmi_warning_debugfs and nmi_check_duration not needed for minimal kernel */
 
 static int nmi_handle(unsigned int type, struct pt_regs *regs)
 {
@@ -86,9 +74,6 @@ static int nmi_handle(unsigned int type, struct pt_regs *regs)
 	return handled;
 }
 NOKPROBE_SYMBOL(nmi_handle);
-
-/* __register_nmi_handler removed - never called (~21 LOC) */
-/* pci_serr_error, io_check_error, unknown_nmi_error inlined into default_do_nmi */
 
 static DEFINE_PER_CPU(unsigned long, last_nmi_rip);
 
@@ -139,8 +124,6 @@ DEFINE_IDTENTRY_RAW(exc_nmi)
 {
 	irqentry_state_t irq_state;
 
-	/* sev_es_nmi_complete removed - empty stub */
-
 	if (this_cpu_read(nmi_state) != NMI_NOT_RUNNING) {
 		this_cpu_write(nmi_state, NMI_LATCHED);
 		return;
@@ -149,20 +132,14 @@ DEFINE_IDTENTRY_RAW(exc_nmi)
 	this_cpu_write(nmi_cr2, read_cr2());
 nmi_restart:
 
-	/* sev_es_ist_enter removed - empty stub */
-
 	this_cpu_write(nmi_dr7, local_db_save());
 
 	irq_state = irqentry_nmi_enter(regs);
-	/* inc_irq_stat(__nmi_count) removed - counter never read */
-	/* ignore_nmis check removed - variable was always 0 */
 	default_do_nmi(regs);
 
 	irqentry_nmi_exit(regs, irq_state);
 
 	local_db_restore(this_cpu_read(nmi_dr7));
-
-	/* sev_es_ist_exit removed - empty stub */
 
 	if (unlikely(this_cpu_read(nmi_cr2) != read_cr2()))
 		write_cr2(this_cpu_read(nmi_cr2));

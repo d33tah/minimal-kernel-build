@@ -4,9 +4,7 @@
 #include <linux/sched.h>
 #include <linux/sched/clock.h>
 #include <linux/init.h>
-/* linux/export.h removed - no EXPORT_SYMBOL */
 #include <linux/timer.h>
-/* acpi_pmtmr.h - PMTMR constants removed with pit_hpet_ptimer_calibrate_cpu */
 #include <linux/delay.h>
 #include <linux/clocksource.h>
 #include <linux/percpu.h>
@@ -16,7 +14,6 @@
 #include <linux/cpu.h>
 #include <linux/static_call_types.h>
 
-/* is_hpet_enabled, hpet_readl, HPET_COUNTER, HPET_PERIOD removed - hpet disabled */
 #include <asm/timer.h>
 #include <asm/vgtod.h>
 #include <asm/time.h>
@@ -27,7 +24,6 @@
 #define INTEL_FAM6_ATOM_GOLDMONT 0x5C
 #define INTEL_FAM6_ATOM_GOLDMONT_D 0x5F
 #include <asm/i8259.h>
-/* is_early_uv_system removed - always returned false */
 
 unsigned int __read_mostly cpu_khz;
 
@@ -35,12 +31,7 @@ unsigned int __read_mostly tsc_khz;
 
 #define KHZ 1000
 
-/* tsc_unstable removed - mark_tsc_unstable was only setter, now removed */
-/* tsc_early_khz removed - never written, check was dead code */
-
 static DEFINE_STATIC_KEY_FALSE(__use_tsc);
-
-/* tsc_clocksource_reliable removed - never used */
 
 /* art_to_tsc_numerator, art_to_tsc_denominator, art_to_tsc_offset,
    art_related_clocksource removed - unused after convert_art_to_tsc removal */
@@ -91,9 +82,6 @@ static __always_inline unsigned long long cycles_2_ns(unsigned long long cyc)
 	return ns;
 }
 
-/* __set_cyc2ns_scale inlined into tsc_early_init */
-/* cyc2ns_init_boot_cpu inlined below, cyc2ns_init_secondary_cpus removed */
-
 u64 native_sched_clock(void)
 {
 	if (static_branch_likely(&__use_tsc)) {
@@ -105,13 +93,8 @@ u64 native_sched_clock(void)
 	return (jiffies_64 - INITIAL_JIFFIES) * (1000000000 / HZ);
 }
 
-/* native_sched_clock_from_tsc removed - never called */
-
 unsigned long long sched_clock(void)
 	__attribute__((alias("native_sched_clock")));
-/* using_native_sched_clock removed - never called (~5 LOC) */
-
-/* no_sched_irq_time, no_tsc_watchdog removed - never used */
 
 /* tsc_read_refs, calc_pmtimer_ref, pit_calibrate_tsc removed with
    pit_hpet_ptimer_calibrate_cpu (~90 LOC) - never called */
@@ -235,13 +218,10 @@ unsigned long native_calibrate_tsc(void)
 	return crystal_khz * ebx_numerator / eax_denominator;
 }
 
-/* cpu_khz_from_cpuid, pit_hpet_ptimer_calibrate_cpu removed - inlined/never called */
-
 unsigned long native_calibrate_cpu_early(void)
 {
 	unsigned long flags, fast_calibrate = 0;
 
-	/* Inlined cpu_khz_from_cpuid() */
 	if (boot_cpu_data.x86_vendor == X86_VENDOR_INTEL &&
 	    boot_cpu_data.cpuid_level >= 0x16) {
 		unsigned int eax_base_mhz, ebx_max_mhz, ecx_bus_mhz, edx;
@@ -250,7 +230,6 @@ unsigned long native_calibrate_cpu_early(void)
 		fast_calibrate = eax_base_mhz * 1000;
 	}
 
-	/* cpu_khz_from_msr removed - was stub returning 0 */
 	if (!fast_calibrate) {
 		local_irq_save(flags);
 		fast_calibrate = quick_pit_calibrate();
@@ -259,18 +238,10 @@ unsigned long native_calibrate_cpu_early(void)
 	return fast_calibrate;
 }
 
-/* native_calibrate_cpu removed - determine_cpu_tsc_frequencies always called with early=true */
-
-/* tsc_save/restore_sched_clock_state removed - never called */
-
-/* tsc_resume removed - callback never invoked */
-
 static u64 read_tsc(struct clocksource *cs)
 {
 	return (u64)rdtsc_ordered();
 }
-
-/* tsc_cs_mark_unstable, tsc_cs_tick_stable removed - callbacks never invoked */
 
 static int tsc_cs_enable(struct clocksource *cs)
 {
@@ -302,15 +273,10 @@ static struct clocksource clocksource_tsc = {
 	.list = LIST_HEAD_INIT(clocksource_tsc.list),
 };
 
-/* mark_tsc_unstable removed - never called (~8 LOC) */
-
-/* tsc_disable_clocksource_watchdog, unsynchronized_tsc removed - never called */
-
 static void tsc_refine_calibration_work(struct work_struct *work);
 static DECLARE_DELAYED_WORK(tsc_irqwork, tsc_refine_calibration_work);
 static void tsc_refine_calibration_work(struct work_struct *work)
 {
-	/* Stub: TSC refinement not needed for minimal kernel */
 	clocksource_register_khz(&clocksource_tsc, tsc_khz);
 	clocksource_unregister(&clocksource_tsc_early);
 }
@@ -319,8 +285,6 @@ static int __init init_tsc_clocksource(void)
 {
 	if (!boot_cpu_has(X86_FEATURE_TSC) || !tsc_khz)
 		return 0;
-
-	/* tsc_unstable check removed - always 0 since mark_tsc_unstable removed */
 
 	if (boot_cpu_has(X86_FEATURE_NONSTOP_TSC_S3))
 		clocksource_tsc.flags |= CLOCK_SOURCE_SUSPEND_NONSTOP;
@@ -335,8 +299,6 @@ static int __init init_tsc_clocksource(void)
 	return 0;
 }
 device_initcall(init_tsc_clocksource);
-
-/* tsc_dbg debug function removed */
 
 /* tsc_enable_sched_clock, cyc2ns_init_boot_cpu, determine_cpu_tsc_frequencies inlined - single callers */
 void __init tsc_early_init(void)
@@ -398,5 +360,3 @@ void __init tsc_early_init(void)
 	}
 	static_branch_enable(&__use_tsc);
 }
-
-/* tsc_init removed - never called */

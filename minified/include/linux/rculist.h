@@ -6,9 +6,7 @@
 #include <linux/list.h>
 #include <linux/rcupdate.h>
 
-
 #define list_next_rcu(list)	(*((struct list_head __rcu **)(&(list)->next)))
-
 
 #define check_arg_count_one(dummy)
 
@@ -23,8 +21,6 @@ static inline void __list_add_rcu(struct list_head *new,
 	rcu_assign_pointer(list_next_rcu(prev), new);
 	next->prev = new;
 }
-
-/* list_add_rcu removed - never called */
 
 static inline void list_add_tail_rcu(struct list_head *new,
 					struct list_head *head)
@@ -45,14 +41,11 @@ static inline void hlist_del_init_rcu(struct hlist_node *n)
 #define list_entry_rcu(ptr, type, member) \
 	container_of(READ_ONCE(ptr), type, member)
 
-
 #define list_for_each_entry_rcu(pos, head, member, cond...)		\
 	for (__list_check_rcu(dummy, ## cond, 0),			\
 	     pos = list_entry_rcu((head)->next, typeof(*pos), member);	\
 		&pos->member != (head);					\
 		pos = list_entry_rcu(pos->member.next, typeof(*pos), member))
-
-
 
 /* hlist_del_rcu inlined at kernel/pid.c - single caller */
 /* hlist_replace_rcu inlined at kernel/pid.c - single caller */
@@ -80,7 +73,6 @@ static inline void hlist_add_head_rcu(struct hlist_node *n,
 		pos;							\
 		pos = hlist_entry_safe(rcu_dereference_raw(hlist_next_rcu(\
 			&(pos)->member)), typeof(*(pos)), member))
-
 
 #endif	 
 #endif

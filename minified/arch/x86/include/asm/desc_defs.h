@@ -1,15 +1,11 @@
  
- 
 #ifndef _ASM_X86_DESC_DEFS_H
 #define _ASM_X86_DESC_DEFS_H
-
- 
 
 #ifndef __ASSEMBLY__
 
 #include <linux/types.h>
 
- 
 struct desc_struct {
 	u16	limit0;
 	u16	base0;
@@ -44,7 +40,6 @@ enum {
 	DESC_LDT = 0x2,
 };
 
- 
 struct ldttss_desc {
 	u16	limit0;
 	u16	base0;
@@ -86,7 +81,5 @@ struct desc_ptr {
 } __attribute__((packed)) ;
 
 #endif
-
-/* BOOT_IDT_ENTRIES removed - no callers */
 
 #endif

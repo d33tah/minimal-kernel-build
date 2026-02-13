@@ -19,9 +19,7 @@ struct pagevec {
 	struct page *pages[PAGEVEC_SIZE];
 };
 void __pagevec_lru_add(struct pagevec *pvec);
-unsigned pagevec_lookup_range_tag(struct pagevec *pvec,
-				  struct address_space *mapping, pgoff_t *index,
-				  pgoff_t end, xa_mark_t tag);
+/* pagevec_lookup_range_tag removed - never called */
 static inline void pagevec_reinit(struct pagevec *pvec)
 {
 	pvec->nr = 0;

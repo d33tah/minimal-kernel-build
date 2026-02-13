@@ -704,12 +704,7 @@ void d_add(struct dentry *entry, struct inode *inode)
 		spin_unlock(&inode->i_lock);
 }
 
-/* Simplified - d_ancestor always returned NULL, so only equality check matters */
-bool is_subdir(struct dentry *new_dentry, struct dentry *old_dentry)
-{
-	return new_dentry == old_dentry;
-}
-
+/* is_subdir removed - inlined into namei.c (was just equality check) */
 /* d_tmpfile removed - tmpfile callback removed from inode_operations */
 
 static __initdata unsigned long dhash_entries;

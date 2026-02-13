@@ -34,11 +34,7 @@ static inline void groups_free(struct group_info *group_info)
 {
 }
 
-static inline int in_group_p(kgid_t grp)
-{
-        return 1;
-}
-
+/* in_group_p removed - no callers */
 
 struct cred {
 	atomic_t	usage;

@@ -885,7 +885,7 @@ extern ssize_t kernel_read(struct file *, void *, size_t, loff_t *);
 /* kernel_write and __kernel_write removed - never called */
 /* open_exec removed - never called */
 
-extern bool is_subdir(struct dentry *, struct dentry *);
+/* is_subdir removed - inlined into namei.c */
 /* vfs_llseek removed - never called */
 /* inode_init_always, inode_init_once made static in inode.c */
 /* generic_delete_inode, generic_drop_inode removed - iput always drops */

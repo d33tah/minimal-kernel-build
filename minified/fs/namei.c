@@ -146,6 +146,7 @@ static void restore_nameidata(void)
 
 /* nd_alloc_stack removed - only called from pick_link which was removed */
 
+/* Simplified: is_subdir inlined (was just equality check) */
 static bool path_connected(struct vfsmount *mnt, struct dentry *dentry)
 {
 	struct super_block *sb = mnt->mnt_sb;
@@ -153,7 +154,7 @@ static bool path_connected(struct vfsmount *mnt, struct dentry *dentry)
 	if (mnt->mnt_root == sb->s_root)
 		return true;
 
-	return is_subdir(dentry, mnt->mnt_root);
+	return dentry == mnt->mnt_root;
 }
 
 static void drop_links(struct nameidata *nd)

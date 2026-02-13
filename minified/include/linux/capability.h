@@ -64,13 +64,7 @@ static inline bool ns_capable(struct user_namespace *ns, int cap)
 	return true;
 }
 
-/* capable_wrt_inode_uidgid simplified - always return true for minimal kernel */
-static inline bool capable_wrt_inode_uidgid(struct user_namespace *mnt_userns,
-					    const struct inode *inode, int cap)
-{
-	return true;
-}
-
+/* capable_wrt_inode_uidgid removed - no callers (attr.c/SGID code deleted) */
 /* checkpoint_restore_ns_capable removed - unused */
 
 #endif

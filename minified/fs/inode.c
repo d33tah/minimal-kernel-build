@@ -333,8 +333,8 @@ void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,
 {
 	inode->i_uid =
 		mapped_kuid_fs(mnt_userns, i_user_ns(inode), current_fsuid());
-	inode->i_gid = mapped_kgid_fs(mnt_userns, i_user_ns(inode),
-				      current_fsgid());
+	inode->i_gid =
+		mapped_kgid_fs(mnt_userns, i_user_ns(inode), current_fsgid());
 	inode->i_mode = mode;
 }
 

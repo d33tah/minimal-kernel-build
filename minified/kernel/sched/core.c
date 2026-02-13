@@ -125,16 +125,11 @@ static void set_load_weight(struct task_struct *p, bool update_load)
 	int prio = p->static_prio - MAX_RT_PRIO;
 	struct load_weight *load = &p->se.load;
 
-	if (task_has_idle_policy(p)) {
-		load->weight = scale_load(WEIGHT_IDLEPRIO);
-		return;
-	}
-
-	if (update_load && p->sched_class == &fair_sched_class) {
+	/* task_has_idle_policy check removed - never SCHED_IDLE */
+	if (update_load && p->sched_class == &fair_sched_class)
 		reweight_task(p, prio);
-	} else {
+	else
 		load->weight = scale_load(sched_prio_to_weight[prio]);
-	}
 }
 
 static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
@@ -162,18 +157,10 @@ static void activate_task(struct rq *rq, struct task_struct *p, int flags)
 
 /* deactivate_task inlined into __schedule - single caller */
 
+/* Simplified: only SCHED_NORMAL used, no DL/RT paths */
 static inline int __normal_prio(int policy, int rt_prio, int nice)
 {
-	int prio;
-
-	if (dl_policy(policy))
-		prio = MAX_DL_PRIO - 1;
-	else if (rt_policy(policy))
-		prio = MAX_RT_PRIO - 1 - rt_prio;
-	else
-		prio = NICE_TO_PRIO(nice);
-
-	return prio;
+	return NICE_TO_PRIO(nice);
 }
 
 /* check_class_changed inlined into __sched_setscheduler */
@@ -278,27 +265,11 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
 	__sched_fork(clone_flags, p);
 
 	p->__state = TASK_NEW;
-
 	p->prio = current->normal_prio;
-	if (unlikely(p->sched_reset_on_fork)) {
-		if (task_has_dl_policy(p) || task_has_rt_policy(p)) {
-			p->policy = SCHED_NORMAL;
-			p->static_prio = NICE_TO_PRIO(0);
-			p->rt_priority = 0;
-		} else if (PRIO_TO_NICE(p->static_prio) < 0)
-			p->static_prio = NICE_TO_PRIO(0);
 
-		p->prio = p->normal_prio = p->static_prio;
-		set_load_weight(p, false);
-
-		p->sched_reset_on_fork = 0;
-	}
-
-	/* dl_prio always returns false since MAX_DL_PRIO=0 */
-	if (rt_prio(p->prio))
-		p->sched_class = &rt_sched_class;
-	else
-		p->sched_class = &fair_sched_class;
+	/* sched_reset_on_fork removed - never set to 1 */
+	/* RT/DL class assignment removed - always SCHED_NORMAL */
+	p->sched_class = &fair_sched_class;
 
 	return 0;
 }
@@ -590,52 +561,26 @@ int default_wake_function(wait_queue_entry_t *curr, unsigned mode,
 
 /* nice syscall removed - __ARCH_WANT_SYS_NICE no longer defined */
 
-#define SETPARAM_POLICY -1
-
-static int __sched_setscheduler(struct task_struct *p,
-				const struct sched_attr *attr, bool user,
-				bool pi)
+/* Simplified: only caller passes SCHED_NORMAL with priority 0 */
+int sched_setscheduler_nocheck(struct task_struct *p, int policy,
+			       const struct sched_param *param)
 {
-	/* Minimal stub: simplified scheduler parameter setting */
-	int policy = attr->sched_policy;
-	int retval, oldprio, newprio, queued, running;
-	const struct sched_class *prev_class;
+	int oldprio, newprio, queued, running;
 	struct rq_flags rf;
 	int queue_flags = DEQUEUE_SAVE | DEQUEUE_MOVE | DEQUEUE_NOCLOCK;
 	struct rq *rq;
 
-	/* Basic validation only */
-	if (policy < 0)
-		policy = p->policy;
-	/* valid_policy inlined - single caller */
-	else if (!(idle_policy(policy) || fair_policy(policy) ||
-		   rt_policy(policy) || dl_policy(policy)))
-		return -EINVAL;
-
-	if (attr->sched_priority > MAX_RT_PRIO - 1)
-		return -EINVAL;
-
-	/* Skip all permission checks for minimal kernel */
-
 	rq = task_rq_lock(p, &rf);
 	update_rq_clock(rq);
 
-	if (p == rq->stop) {
-		retval = -EINVAL;
-		goto unlock;
-	}
-
-	/* Check if already set, task_nice inlined */
-	if (policy == p->policy &&
-	    (!fair_policy(policy) ||
-	     attr->sched_nice == PRIO_TO_NICE(p->static_prio)) &&
-	    (!rt_policy(policy) || attr->sched_priority == p->rt_priority)) {
-		retval = 0;
-		goto unlock;
+	/* Check if already set */
+	if (policy == p->policy && PRIO_TO_NICE(p->static_prio) == 0) {
+		task_rq_unlock(rq, p, &rf);
+		return 0;
 	}
 
 	oldprio = p->prio;
-	newprio = __normal_prio(policy, attr->sched_priority, attr->sched_nice);
+	newprio = NICE_TO_PRIO(0);
 
 	queued = task_on_rq_queued(p);
 	running = task_current(rq, p);
@@ -644,27 +589,14 @@ static int __sched_setscheduler(struct task_struct *p,
 	if (running)
 		put_prev_task(rq, p);
 
-	prev_class = p->sched_class;
+	p->policy = policy;
+	p->static_prio = NICE_TO_PRIO(0);
+	p->rt_priority = 0;
+	p->normal_prio = newprio;
+	p->prio = newprio;
+	p->sched_class = &fair_sched_class;
+	set_load_weight(p, true);
 
-	if (!(attr->sched_flags & SCHED_FLAG_KEEP_PARAMS)) {
-		/* Inlined __setscheduler_params */
-		int sched_policy = attr->sched_policy;
-		if (sched_policy == SETPARAM_POLICY)
-			sched_policy = p->policy;
-		p->policy = sched_policy;
-		if (fair_policy(sched_policy))
-			p->static_prio = NICE_TO_PRIO(attr->sched_nice);
-		p->rt_priority = attr->sched_priority;
-		p->normal_prio = __normal_prio(p->policy, p->rt_priority,
-					       PRIO_TO_NICE(p->static_prio));
-		set_load_weight(p, true);
-		/* Inlined __setscheduler_prio - dl_prio always false */
-		if (rt_prio(newprio))
-			p->sched_class = &rt_sched_class;
-		else
-			p->sched_class = &fair_sched_class;
-		p->prio = newprio;
-	}
 	if (queued) {
 		if (oldprio < p->prio)
 			queue_flags |= ENQUEUE_HEAD;
@@ -673,32 +605,11 @@ static int __sched_setscheduler(struct task_struct *p,
 	if (running)
 		set_next_task(rq, p);
 
-	/* Inlined check_class_changed */
-	if (prev_class != p->sched_class) {
-		if (prev_class->switched_from)
-			prev_class->switched_from(rq, p);
-		p->sched_class->switched_to(rq, p);
-	} else if (oldprio != p->prio) /* dl_task always false */
+	if (oldprio != p->prio)
 		p->sched_class->prio_changed(rq, p, oldprio);
 
 	task_rq_unlock(rq, p, &rf);
-
 	return 0;
-
-unlock:
-	task_rq_unlock(rq, p, &rf);
-	return retval;
-}
-
-int sched_setscheduler_nocheck(struct task_struct *p, int policy,
-			       const struct sched_param *param)
-{
-	struct sched_attr attr = {
-		.sched_policy = policy,
-		.sched_priority = param->sched_priority,
-		.sched_nice = PRIO_TO_NICE(p->static_prio),
-	};
-	return __sched_setscheduler(p, &attr, false, true);
 }
 
 /* sched_set_fifo removed - never called */

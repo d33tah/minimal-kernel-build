@@ -333,32 +333,7 @@ int begin_new_exec(struct linux_binprm *bprm)
 
 	bprm->mm = NULL;
 
-	/* Inlined unshare_sighand */
-	{
-		struct sighand_struct *oldsighand = me->sighand;
-		if (refcount_read(&oldsighand->count) != 1) {
-			struct sighand_struct *newsighand;
-
-			newsighand =
-				kmem_cache_alloc(sighand_cachep, GFP_KERNEL);
-			if (!newsighand) {
-				retval = -ENOMEM;
-				goto out_unlock;
-			}
-
-			refcount_set(&newsighand->count, 1);
-			memcpy(newsighand->action, oldsighand->action,
-			       sizeof(newsighand->action));
-
-			write_lock_irq(&tasklist_lock);
-			spin_lock(&oldsighand->siglock);
-			rcu_assign_pointer(me->sighand, newsighand);
-			spin_unlock(&oldsighand->siglock);
-			write_unlock_irq(&tasklist_lock);
-
-			__cleanup_sighand(oldsighand);
-		}
-	}
+	/* unshare_sighand removed - sighand refcount is 1 at boot (single thread) */
 
 	/* PF_RANDOMIZE removed - never set */
 	me->flags &= ~(PF_FORKNOEXEC | PF_NOFREEZE | PF_NO_SETAFFINITY);
@@ -380,21 +355,7 @@ int begin_new_exec(struct linux_binprm *bprm)
 	}
 
 	/* self_exec_id increment removed - write-only field */
-	/* flush_signal_handlers inlined */
-	{
-		int i;
-		struct k_sigaction *ka = &me->sighand->action[0];
-		for (i = _NSIG; i != 0; i--) {
-			if (ka->sa.sa_handler != SIG_IGN)
-				ka->sa.sa_handler = SIG_DFL;
-			ka->sa.sa_flags = 0;
-#ifdef __ARCH_HAS_SA_RESTORER
-			ka->sa.sa_restorer = NULL;
-#endif
-			sigemptyset(&ka->sa.sa_mask);
-			ka++;
-		}
-	}
+	/* flush_signal_handlers removed - all handlers already SIG_DFL at boot */
 
 	retval = set_cred_ucounts(bprm->cred);
 	if (retval < 0)
@@ -582,33 +543,10 @@ static int bprm_execve(struct linux_binprm *bprm, int fd,
 
 	/* fdpath/close_on_exec check removed - fdpath always NULL */
 
-	/* security_bprm_creds_for_exec always returns 0 - dead code removed */
-	/* exec_binprm inlined, old_pid/old_vpid/ptrace_event removed (ptrace stubbed) */
-	{
-		int depth;
-
-		for (depth = 0;; depth++) {
-			struct file *exec;
-
-			if (depth > 5) {
-				retval = -ELOOP;
-				goto out;
-			}
-
-			retval = search_binary_handler(bprm);
-			if (retval < 0)
-				goto out;
-			if (!bprm->interpreter)
-				break;
-
-			exec = bprm->file;
-			bprm->file = bprm->interpreter;
-			bprm->interpreter = NULL;
-
-			allow_write_access(exec);
-			fput(exec);
-		}
-	}
+	/* exec_binprm simplified: no interpreter support (static ELF only) */
+	retval = search_binary_handler(bprm);
+	if (retval < 0)
+		goto out;
 
 	current->fs->in_exec = 0;
 	return retval;

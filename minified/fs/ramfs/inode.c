@@ -108,11 +108,8 @@ static const struct inode_operations ramfs_dir_inode_operations = {
 
 /* ramfs_show_options removed - show_options callback never called */
 
-static const struct super_operations ramfs_ops = {
-	/* statfs removed - statfs syscalls return ENOSYS */
-	.drop_inode = generic_delete_inode,
-	/* show_options removed - never called */
-};
+/* ramfs_ops: drop_inode removed - iput always drops without calling callback */
+static const struct super_operations ramfs_ops = {};
 
 enum ramfs_param {
 	Opt_mode,

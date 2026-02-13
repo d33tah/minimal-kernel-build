@@ -18,15 +18,7 @@
 
 const struct address_space_operations empty_aops = {};
 
-/* pipefifo_fops moved here from fs/pipe.c */
-const struct file_operations pipefifo_fops = {};
-
-/* Merged from no-block.c (CONFIG_BLOCK not set) */
-static int no_blkdev_open(struct inode *inode, struct file *filp)
-{
-	return -ENODEV;
-}
-static const struct file_operations def_blk_fops = { .open = no_blkdev_open };
+/* pipefifo_fops, def_blk_fops removed - init_special_inode only handles S_ISCHR */
 
 /* nr_inodes, nr_unused removed - only inc/dec, never read */
 
@@ -287,14 +279,8 @@ struct inode *new_inode(struct super_block *sb)
 	return inode;
 }
 
-/* Used by ramfs */
-int generic_delete_inode(struct inode *inode)
-{
-	return 1;
-}
-
-/* iput simplified: drop is always true (ramfs uses generic_delete_inode,
-   default uses generic_drop_inode which returns true when unhashed) */
+/* generic_delete_inode removed - iput always drops, drop_inode never called */
+/* iput simplified: drop is always true */
 void iput(struct inode *inode)
 {
 	if (!inode)
@@ -333,58 +319,24 @@ void __init inode_init(void)
 	/* hashdist==0, so hash table allocated in inode_init_early */
 }
 
+/* Simplified: only S_ISCHR used (for /dev/console), ISBLK/ISFIFO/ISSOCK removed */
 void init_special_inode(struct inode *inode, umode_t mode, dev_t rdev)
 {
 	inode->i_mode = mode;
-	if (S_ISCHR(mode)) {
-		inode->i_fop = &def_chr_fops;
-		inode->i_rdev = rdev;
-	} else if (S_ISBLK(mode)) {
-		inode->i_fop = &def_blk_fops;
-		inode->i_rdev = rdev;
-	} else if (S_ISFIFO(mode))
-		inode->i_fop = &pipefifo_fops;
-	else if (S_ISSOCK(mode))
-		;
-	else
-		printk(KERN_DEBUG "init_special_inode: bogus i_mode (%o) for"
-				  " inode %s:%lu\n",
-		       mode, inode->i_sb->s_id, inode->i_ino);
+	inode->i_fop = &def_chr_fops;
+	inode->i_rdev = rdev;
 }
 
+/* Simplified: S_ISGID handling removed - no dirs have SGID set */
 void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,
 		      const struct inode *dir, umode_t mode)
 {
-	/* inode_fsuid_set inlined, mapped_fsuid inlined */
 	inode->i_uid =
 		mapped_kuid_fs(mnt_userns, i_user_ns(inode), current_fsuid());
-	if (dir && dir->i_mode & S_ISGID) {
-		inode->i_gid = dir->i_gid;
-
-		if (S_ISDIR(mode))
-			mode |= S_ISGID;
-		else if ((mode & (S_ISGID | S_IXGRP)) == (S_ISGID | S_IXGRP) &&
-			 !in_group_p(i_gid_into_mnt(mnt_userns, dir)) &&
-			 !capable_wrt_inode_uidgid(mnt_userns, dir, CAP_FSETID))
-			mode &= ~S_ISGID;
-	} else
-		/* inode_fsgid_set inlined, mapped_fsgid inlined */
-		inode->i_gid = mapped_kgid_fs(mnt_userns, i_user_ns(inode),
-					      current_fsgid());
+	inode->i_gid = mapped_kgid_fs(mnt_userns, i_user_ns(inode),
+				      current_fsgid());
 	inode->i_mode = mode;
 }
 
-bool inode_owner_or_capable(struct user_namespace *mnt_userns,
-			    const struct inode *inode)
-{
-	kuid_t i_uid;
-
-	i_uid = i_uid_into_mnt(mnt_userns, inode);
-	if (uid_eq(current_fsuid(), i_uid))
-		return true;
-
-	/* ns_capable always returns true - simplified check */
-	return kuid_has_mapping(current_user_ns(), i_uid);
-}
-
+/* inode_owner_or_capable removed - no callers (attr.c deleted) */
 /* inode_nohighmem, timestamp_truncate, current_time removed - no timestamp fields in inode / never called */

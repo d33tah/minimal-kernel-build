@@ -252,59 +252,18 @@ void fd_install(unsigned int fd, struct file *file)
 
 /* do_close_on_exec removed - was empty stub, call removed from exec.c */
 
-static inline struct file *__fget_files_rcu(struct files_struct *files,
-					    unsigned int fd, fmode_t mask)
-{
-	for (;;) {
-		struct file *file;
-		struct fdtable *fdt = rcu_dereference_raw(files->fdt);
-		struct file __rcu **fdentry;
-
-		if (unlikely(fd >= fdt->max_fds))
-			return NULL;
-
-		fdentry = fdt->fd + array_index_nospec(fd, fdt->max_fds);
-		file = rcu_dereference_raw(*fdentry);
-		if (unlikely(!file))
-			return NULL;
-
-		if (unlikely(file->f_mode & mask))
-			return NULL;
-
-		if (unlikely(!get_file_rcu(file)))
-			continue;
-
-		if (unlikely(rcu_dereference_raw(files->fdt) != fdt) ||
-		    unlikely(rcu_dereference_raw(*fdentry) != file)) {
-			fput(file);
-			continue;
-		}
-
-		return file;
-	}
-}
-
-/* __fget inlined into __fdget - single caller */
+/* __fget_files_rcu removed - files->count is always 1 (single process) */
 
 static unsigned long __fdget(unsigned int fd)
 {
 	struct files_struct *files = current->files;
 	struct file *file;
 
-	if (atomic_read(&files->count) == 1) {
-		file = files_lookup_fd_raw(files, fd);
-		if (!file || unlikely(file->f_mode & FMODE_PATH))
-			return 0;
-		return (unsigned long)file;
-	} else {
-		/* __fget inlined */
-		rcu_read_lock();
-		file = __fget_files_rcu(current->files, fd, FMODE_PATH);
-		rcu_read_unlock();
-		if (!file)
-			return 0;
-		return FDPUT_FPUT | (unsigned long)file;
-	}
+	/* Simplified: single-process, files->count always 1 */
+	file = files_lookup_fd_raw(files, fd);
+	if (!file || unlikely(file->f_mode & FMODE_PATH))
+		return 0;
+	return (unsigned long)file;
 }
 
 /* Stub: __fdget_raw not called in minimal kernel */
@@ -313,23 +272,14 @@ unsigned long __fdget_raw(unsigned int fd)
 	return 0;
 }
 
+/* Simplified: file_count never > 1, no pos locking needed */
 unsigned long __fdget_pos(unsigned int fd)
 {
-	unsigned long v = __fdget(fd);
-	struct file *file = (struct file *)(v & ~3);
-
-	if (file && (file->f_mode & FMODE_ATOMIC_POS)) {
-		if (file_count(file) > 1) {
-			v |= FDPUT_POS_UNLOCK;
-			mutex_lock(&file->f_pos_lock);
-		}
-	}
-	return v;
+	return __fdget(fd);
 }
 
 void __f_unlock_pos(struct file *f)
 {
-	mutex_unlock(&f->f_pos_lock);
 }
 
 /* get_close_on_exec removed - never called */

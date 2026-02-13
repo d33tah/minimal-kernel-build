@@ -681,9 +681,7 @@ static inline kgid_t i_gid_into_mnt(struct user_namespace *mnt_userns,
 
 /* sb_start_pagefault removed - never called */
 
-bool inode_owner_or_capable(struct user_namespace *mnt_userns,
-			    const struct inode *inode);
-
+/* inode_owner_or_capable removed - no callers (attr.c deleted) */
 /* vfs_mkdir, vfs_mknod, vfs_symlink, vfs_link, vfs_fchown, vfs_fchmod removed - never called */
 
 void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,
@@ -726,14 +724,8 @@ struct inode_operations {
 /* call_mmap inlined at mm/mmap.c - single caller */
 /* vfs_write made static in read_write.c */
 
-struct super_operations {
-	/* alloc_inode, destroy_inode, free_inode, evict_inode, put_super removed - never assigned */
-	/* dirty_inode, write_inode removed - never set/called */
-	int (*drop_inode)(struct inode *);
-	/* sync_fs, freeze_super, freeze_fs, thaw_super, unfreeze_fs removed */
-	/* statfs removed - statfs syscalls return ENOSYS */
-	/* remount_fs, umount_begin, show_options removed - never called */
-};
+/* super_operations: all callbacks removed - none assigned in minimal kernel */
+struct super_operations {};
 
 #define S_APPEND	(1 << 2)
 #define S_DEAD		(1 << 4)
@@ -896,8 +888,7 @@ extern ssize_t kernel_read(struct file *, void *, size_t, loff_t *);
 extern bool is_subdir(struct dentry *, struct dentry *);
 /* vfs_llseek removed - never called */
 /* inode_init_always, inode_init_once made static in inode.c */
-extern int generic_delete_inode(struct inode *inode);
-/* generic_drop_inode inlined at fs/inode.c - single caller */
+/* generic_delete_inode, generic_drop_inode removed - iput always drops */
 extern unsigned int get_next_ino(void);
 extern void evict_inodes(struct super_block *sb);
 

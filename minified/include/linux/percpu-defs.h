@@ -80,18 +80,6 @@ do {									\
 	preempt_enable();						\
 } while (0)
 
-#define get_cpu_ptr(var)						\
-({									\
-	preempt_disable();						\
-	this_cpu_ptr(var);						\
-})
-
-#define put_cpu_ptr(var)						\
-do {									\
-	(void)(var);							\
-	preempt_enable();						\
-} while (0)
-
 extern void __bad_size_call_parameter(void);
 
 static inline void __this_cpu_preempt_check(const char *op) { }
@@ -124,25 +112,6 @@ static inline void __this_cpu_preempt_check(const char *op) { }
 		__bad_size_call_parameter(); break;			\
 	}								\
 	pscr2_ret__;							\
-})
-
-#define __pcpu_double_call_return_bool(stem, pcp1, pcp2, ...)		\
-({									\
-	bool pdcrb_ret__;						\
-	__verify_pcpu_ptr(&(pcp1));					\
-	BUILD_BUG_ON(sizeof(pcp1) != sizeof(pcp2));			\
-	VM_BUG_ON((unsigned long)(&(pcp1)) % (2 * sizeof(pcp1)));	\
-	VM_BUG_ON((unsigned long)(&(pcp2)) !=				\
-		  (unsigned long)(&(pcp1)) + sizeof(pcp1));		\
-	switch(sizeof(pcp1)) {						\
-	case 1: pdcrb_ret__ = stem##1(pcp1, pcp2, __VA_ARGS__); break;	\
-	case 2: pdcrb_ret__ = stem##2(pcp1, pcp2, __VA_ARGS__); break;	\
-	case 4: pdcrb_ret__ = stem##4(pcp1, pcp2, __VA_ARGS__); break;	\
-	case 8: pdcrb_ret__ = stem##8(pcp1, pcp2, __VA_ARGS__); break;	\
-	default:							\
-		__bad_size_call_parameter(); break;			\
-	}								\
-	pdcrb_ret__;							\
 })
 
 #define __pcpu_size_call(stem, variable, ...)				\
@@ -199,8 +168,6 @@ do {									\
 #define this_cpu_write(pcp, val)	__pcpu_size_call(this_cpu_write_, pcp, val)
 #define this_cpu_add(pcp, val)		__pcpu_size_call(this_cpu_add_, pcp, val)
 #define this_cpu_add_return(pcp, val)	__pcpu_size_call_return2(this_cpu_add_return_, pcp, val)
-#define this_cpu_cmpxchg_double(pcp1, pcp2, oval1, oval2, nval1, nval2) \
-	__pcpu_double_call_return_bool(this_cpu_cmpxchg_double_, pcp1, pcp2, oval1, oval2, nval1, nval2)
 
 #define this_cpu_sub(pcp, val)		this_cpu_add(pcp, -(typeof(pcp))(val))
 #define this_cpu_inc(pcp)		this_cpu_add(pcp, 1)

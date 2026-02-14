@@ -50,14 +50,6 @@ static inline int __access_ok(const void __user *ptr, unsigned long size)
 	likely(__access_ok(addr, size));				\
 })
 
-extern int __get_user_1(void);
-extern int __get_user_2(void);
-extern int __get_user_4(void);
-extern int __get_user_8(void);
-extern int __get_user_nocheck_1(void);
-extern int __get_user_nocheck_2(void);
-extern int __get_user_nocheck_4(void);
-extern int __get_user_nocheck_8(void);
 extern int __get_user_bad(void);
 
 #define __uaccess_end()   clac()
@@ -75,22 +67,6 @@ extern int __get_user_bad(void);
 
 #define __typefits(x,type,not) \
 	__builtin_choose_expr(sizeof(x)<=sizeof(type),(unsigned type)0,not)
-
-#define do_get_user_call(fn,x,ptr)					\
-({									\
-	int __ret_gu;							\
-	register __inttype(*(ptr)) __val_gu asm("%"_ASM_DX);		\
-	__chk_user_ptr(ptr);						\
-	asm volatile("call __" #fn "_%P4"				\
-		     : "=a" (__ret_gu), "=r" (__val_gu),		\
-			ASM_CALL_CONSTRAINT				\
-		     : "0" (ptr), "i" (sizeof(*(ptr))));		\
-	(x) = (__force __typeof__(*(ptr))) __val_gu;			\
-	__builtin_expect(__ret_gu, 0);					\
-})
-
-#define get_user(x,ptr) do_get_user_call(get_user,x,ptr)
-#define __get_user(x,ptr) do_get_user_call(get_user_nocheck,x,ptr)
 
 #define __put_user_goto_u64(x, addr, label)			\
 	asm_volatile_goto("\n"					\
@@ -225,9 +201,6 @@ static __must_check __always_inline bool user_access_begin(const void __user *pt
 }
 #define user_access_begin(a,b)	user_access_begin(a,b)
 #define user_access_end()	__uaccess_end()
-
-#define unsafe_put_user(x, ptr, label)	\
-	__put_user_size((__typeof__(*(ptr)))(x), (ptr), sizeof(*(ptr)), label)
 
 #define unsafe_get_user(x, ptr, err_label)					\
 do {										\

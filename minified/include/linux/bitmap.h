@@ -102,13 +102,6 @@ unsigned long find_last_bit(const unsigned long *addr, unsigned long size)
 	     (bit) < (size);					\
 	     (bit) = find_next_zero_bit((addr), (size), (bit) + 1))
 
-#define for_each_clear_bitrange_from(b, e, addr, size)		\
-	for ((b) = find_next_zero_bit((addr), (size), (b)),	\
-	     (e) = find_next_bit((addr), (size), (b) + 1);	\
-	     (b) < (size);					\
-	     (b) = find_next_zero_bit((addr), (size), (e) + 1),	\
-	     (e) = find_next_bit((addr), (size), (b) + 1))
-
 #include <linux/string.h>
 #include <linux/types.h>
 
@@ -132,9 +125,6 @@ static inline void bitmap_fill(unsigned long *dst, unsigned int nbits)
 	unsigned int len = BITS_TO_LONGS(nbits) * sizeof(unsigned long);
 	memset(dst, 0xff, len);
 }
-
-#define BITMAP_MEM_ALIGNMENT 8
-#define BITMAP_MEM_MASK (BITMAP_MEM_ALIGNMENT - 1)
 
 static inline bool bitmap_empty(const unsigned long *src, unsigned nbits)
 {

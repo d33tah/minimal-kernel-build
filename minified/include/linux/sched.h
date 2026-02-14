@@ -71,7 +71,6 @@ struct rlimit {
 #define NICE_WIDTH	(MAX_NICE - MIN_NICE + 1)
 #define MAX_RT_PRIO		100
 #define MAX_PRIO		(MAX_RT_PRIO + NICE_WIDTH)
-#define DEFAULT_PRIO		(MAX_RT_PRIO + NICE_WIDTH / 2)
 /* end sched/prio.h */
 #include <linux/sched/types.h>
 #ifndef _LINUX_SIGNAL_TYPES_INLINED

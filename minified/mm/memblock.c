@@ -11,8 +11,6 @@
 
 #include "internal.h"
 
-static void __init memblock_free_late(phys_addr_t base, phys_addr_t size);
-
 #define INIT_MEMBLOCK_REGIONS 16 /* Reduced from 128 for minimal boot */
 
 #ifndef INIT_MEMBLOCK_RESERVED_REGIONS
@@ -50,9 +48,7 @@ static __refdata struct memblock_type *memblock_memory = &memblock.memory;
 	for (i = 0, rgn = &memblock_type->regions[0]; i < memblock_type->cnt; \
 	     i++, rgn = &memblock_type->regions[i])
 
-static int memblock_can_resize __initdata_memblock;
-static int memblock_memory_in_slab __initdata_memblock = 0;
-static int memblock_reserved_in_slab __initdata_memblock = 0;
+/* memblock_can_resize, in_slab vars removed - array never resized */
 
 static inline phys_addr_t memblock_cap_size(phys_addr_t base, phys_addr_t *size)
 {
@@ -93,15 +89,6 @@ static phys_addr_t __init_memblock memblock_find_in_range_node(
 	return 0;
 }
 
-static phys_addr_t __init_memblock memblock_find_in_range(phys_addr_t start,
-							  phys_addr_t end,
-							  phys_addr_t size,
-							  phys_addr_t align)
-{
-	return memblock_find_in_range_node(size, align, start, end,
-					   NUMA_NO_NODE, MEMBLOCK_NONE);
-}
-
 static void __init_memblock memblock_remove_region(struct memblock_type *type,
 						   unsigned long r)
 {
@@ -121,28 +108,8 @@ static void __init_memblock memblock_remove_region(struct memblock_type *type,
 
 void __init memblock_discard(void)
 {
-	phys_addr_t addr, size;
-
-	if (memblock.reserved.regions != memblock_reserved_init_regions) {
-		addr = __pa(memblock.reserved.regions);
-		size = PAGE_ALIGN(sizeof(struct memblock_region) *
-				  memblock.reserved.max);
-		if (memblock_reserved_in_slab)
-			kfree(memblock.reserved.regions);
-		else
-			memblock_free_late(addr, size);
-	}
-
-	if (memblock.memory.regions != memblock_memory_init_regions) {
-		addr = __pa(memblock.memory.regions);
-		size = PAGE_ALIGN(sizeof(struct memblock_region) *
-				  memblock.memory.max);
-		if (memblock_memory_in_slab)
-			kfree(memblock.memory.regions);
-		else
-			memblock_free_late(addr, size);
-	}
-
+	/* Arrays are never resized, so always equal to init_regions - nothing
+	 * to free */
 	memblock_memory = NULL;
 }
 
@@ -150,67 +117,9 @@ static int __init_memblock memblock_double_array(struct memblock_type *type,
 						 phys_addr_t new_area_start,
 						 phys_addr_t new_area_size)
 {
-	struct memblock_region *new_array, *old_array;
-	phys_addr_t old_alloc_size, new_alloc_size;
-	phys_addr_t old_size, new_size, addr;
-	int use_slab = slab_is_available();
-	int *in_slab;
-
-	if (!memblock_can_resize)
-		return -1;
-
-	old_size = type->max * sizeof(struct memblock_region);
-	new_size = old_size << 1;
-
-	old_alloc_size = PAGE_ALIGN(old_size);
-	new_alloc_size = PAGE_ALIGN(new_size);
-
-	if (type == &memblock.memory)
-		in_slab = &memblock_memory_in_slab;
-	else
-		in_slab = &memblock_reserved_in_slab;
-
-	if (use_slab) {
-		new_array = kmalloc(new_size, GFP_KERNEL);
-		addr = new_array ? __pa(new_array) : 0;
-	} else {
-		if (type != &memblock.reserved)
-			new_area_start = new_area_size = 0;
-
-		addr = memblock_find_in_range(new_area_start + new_area_size,
-					      memblock.current_limit,
-					      new_alloc_size, PAGE_SIZE);
-		if (!addr && new_area_size)
-			addr = memblock_find_in_range(
-				0, min(new_area_start, memblock.current_limit),
-				new_alloc_size, PAGE_SIZE);
-
-		new_array = addr ? __va(addr) : NULL;
-	}
-	if (!addr) {
-		pr_err("memblock: Failed to double %s array from %ld to %ld entries !\n",
-		       type->name, type->max, type->max * 2);
-		return -1;
-	}
-
-	memcpy(new_array, type->regions, old_size);
-	memset(new_array + type->max, 0, old_size);
-	old_array = type->regions;
-	type->regions = new_array;
-	type->max <<= 1;
-
-	if (*in_slab)
-		kfree(old_array);
-	else if (old_array != memblock_memory_init_regions &&
-		 old_array != memblock_reserved_init_regions)
-		memblock_free(old_array, old_alloc_size);
-
-	if (!use_slab)
-		BUG_ON(memblock_reserve(addr, new_alloc_size));
-
-	*in_slab = use_slab;
-
-	return 0;
+	/* Minimal kernel never exceeds INIT_MEMBLOCK_REGIONS (16) */
+	panic("memblock: region array overflow, type=%s cnt=%lu max=%lu\n",
+	      type->name, (unsigned long)type->cnt, (unsigned long)type->max);
 }
 
 static void __init_memblock memblock_insert_region(struct memblock_type *type,
@@ -385,21 +294,7 @@ int __init_memblock memblock_reserve(phys_addr_t base, phys_addr_t size)
 static bool should_skip_region(struct memblock_type *type,
 			       struct memblock_region *m, int nid, int flags)
 {
-	if (type != memblock_memory)
-		return false;
-
-	if (nid != NUMA_NO_NODE && nid != 0)
-		return true;
-
-	if ((flags & MEMBLOCK_MIRROR) && !memblock_is_mirror(m))
-		return true;
-
-	if (!(flags & MEMBLOCK_NOMAP) && memblock_is_nomap(m))
-		return true;
-
-	if (!(flags & MEMBLOCK_DRIVER_MANAGED) && memblock_is_driver_managed(m))
-		return true;
-
+	/* NUMA disabled, MIRROR/NOMAP/DRIVER_MANAGED never set */
 	return false;
 }
 
@@ -662,20 +557,6 @@ void *__init memblock_alloc_try_nid(phys_addr_t size, phys_addr_t align,
 	return ptr;
 }
 
-static void __init memblock_free_late(phys_addr_t base, phys_addr_t size)
-{
-	phys_addr_t cursor, end;
-
-	end = base + size - 1;
-	cursor = PFN_UP(base);
-	end = PFN_DOWN(base + size);
-
-	for (; cursor < end; cursor++) {
-		memblock_free_pages(pfn_to_page(cursor), cursor, 0);
-		atomic_long_inc(&_totalram_pages);
-	}
-}
-
 phys_addr_t __init_memblock memblock_start_of_DRAM(void)
 {
 	return memblock.memory.regions[0].base;
@@ -740,7 +621,7 @@ void __init_memblock memblock_set_current_limit(phys_addr_t limit)
 
 void __init memblock_allow_resize(void)
 {
-	memblock_can_resize = 1;
+	/* no-op: array resizing replaced with panic */
 }
 
 void __init memblock_free_all(void)

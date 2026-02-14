@@ -112,9 +112,6 @@ unsigned long find_last_bit(const unsigned long *addr, unsigned long size)
 #include <linux/string.h>
 #include <linux/types.h>
 
-void __bitmap_set(unsigned long *map, unsigned int start, int len);
-void __bitmap_clear(unsigned long *map, unsigned int start, int len);
-
 int bitmap_parse(const char *buf, unsigned int buflen,
 			unsigned long *dst, int nbits);
 /* bitmap_parse_user, bitmap_parselist, bitmap_parselist_user, bitmap_remap,
@@ -149,33 +146,6 @@ static inline bool bitmap_empty(const unsigned long *src, unsigned nbits)
 
 /* bitmap_full inlined at lib/idr.c - single caller */
 
-static __always_inline void bitmap_set(unsigned long *map, unsigned int start,
-		unsigned int nbits)
-{
-	if (__builtin_constant_p(nbits) && nbits == 1)
-		__set_bit(start, map);
-	else if (__builtin_constant_p(start & BITMAP_MEM_MASK) &&
-		 IS_ALIGNED(start, BITMAP_MEM_ALIGNMENT) &&
-		 __builtin_constant_p(nbits & BITMAP_MEM_MASK) &&
-		 IS_ALIGNED(nbits, BITMAP_MEM_ALIGNMENT))
-		memset((char *)map + start / 8, 0xff, nbits / 8);
-	else
-		__bitmap_set(map, start, nbits);
-}
-
-static __always_inline void bitmap_clear(unsigned long *map, unsigned int start,
-		unsigned int nbits)
-{
-	if (__builtin_constant_p(nbits) && nbits == 1)
-		__clear_bit(start, map);
-	else if (__builtin_constant_p(start & BITMAP_MEM_MASK) &&
-		 IS_ALIGNED(start, BITMAP_MEM_ALIGNMENT) &&
-		 __builtin_constant_p(nbits & BITMAP_MEM_MASK) &&
-		 IS_ALIGNED(nbits, BITMAP_MEM_ALIGNMENT))
-		memset((char *)map + start / 8, 0, nbits / 8);
-	else
-		__bitmap_clear(map, start, nbits);
-}
 
 #endif
 

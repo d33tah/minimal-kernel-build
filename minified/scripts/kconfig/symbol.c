@@ -70,13 +70,7 @@ static struct property *sym_get_default_prop(struct symbol *sym)
 
 static void sym_set_changed(struct symbol *sym)
 {
-	struct property *prop;
-
 	sym->flags |= SYMBOL_CHANGED;
-	for (prop = sym->prop; prop; prop = prop->next) {
-		if (prop->menu)
-			prop->menu->flags |= MENU_CHANGED;
-	}
 }
 
 static void sym_set_all_changed(void)
@@ -133,15 +127,6 @@ static void sym_calc_visibility(struct symbol *sym)
 		tri = yes;
 	if (sym->rev_dep.tri != tri) {
 		sym->rev_dep.tri = tri;
-		sym_set_changed(sym);
-	}
-	tri = no;
-	if (sym->implied.expr)
-		tri = expr_calc_value(sym->implied.expr);
-	if (tri == mod && sym_get_type(sym) == S_BOOLEAN)
-		tri = yes;
-	if (sym->implied.tri != tri) {
-		sym->implied.tri = tri;
 		sym_set_changed(sym);
 	}
 }
@@ -273,13 +258,6 @@ void sym_calc_value(struct symbol *sym)
 						prop->visible.tri);
 					if (newval.tri != no)
 						sym->flags |= SYMBOL_WRITE;
-				}
-				if (sym->implied.tri != no) {
-					sym->flags |= SYMBOL_WRITE;
-					newval.tri = EXPR_OR(newval.tri,
-							     sym->implied.tri);
-					newval.tri = EXPR_AND(newval.tri,
-							      sym->dir_dep.tri);
 				}
 			}
 calc_newval:
@@ -420,7 +398,6 @@ bool sym_string_within_range(struct symbol *sym, const char *str)
 {
 	switch (sym->type) {
 	case S_STRING:
-		return sym_string_valid(sym, str);
 	case S_INT:
 	case S_HEX:
 		return sym_string_valid(sym, str);

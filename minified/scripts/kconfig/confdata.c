@@ -107,26 +107,26 @@ static const char *conf_get_autoheader_name(void)
 	return name ? name : "include/generated/autoconf.h";
 }
 
-static int conf_set_sym_val(struct symbol *sym, int def, int def_flags, char *p)
+static int conf_set_sym_val(struct symbol *sym, int def_flags, char *p)
 {
 	char *p2;
 
 	switch (sym->type) {
 	case S_TRISTATE:
 		if (p[0] == 'm') {
-			sym->def[def].tri = mod;
+			sym->def[S_DEF_USER].tri = mod;
 			sym->flags |= def_flags;
 			break;
 		}
 
 	case S_BOOLEAN:
 		if (p[0] == 'y') {
-			sym->def[def].tri = yes;
+			sym->def[S_DEF_USER].tri = yes;
 			sym->flags |= def_flags;
 			break;
 		}
 		if (p[0] == 'n') {
-			sym->def[def].tri = no;
+			sym->def[S_DEF_USER].tri = no;
 			sym->flags |= def_flags;
 			break;
 		}
@@ -150,7 +150,7 @@ static int conf_set_sym_val(struct symbol *sym, int def, int def_flags, char *p)
 	case S_INT:
 	case S_HEX:
 		if (sym_string_valid(sym, p)) {
-			sym->def[def].val = xstrdup(p);
+			sym->def[S_DEF_USER].val = xstrdup(p);
 			sym->flags |= def_flags;
 		} else {
 			conf_warning("symbol value '%s' invalid for %s", p,
@@ -165,7 +165,7 @@ static int conf_set_sym_val(struct symbol *sym, int def, int def_flags, char *p)
 
 /* compat_getline/add_byte replaced with standard getline() */
 
-int conf_read_simple(const char *name, int def)
+int conf_read_simple(const char *name)
 {
 	FILE *in = NULL;
 	char *line = NULL;
@@ -226,7 +226,7 @@ load:
 	conf_lineno = 0;
 	conf_warnings = 0;
 
-	def_flags = SYMBOL_DEF << def;
+	def_flags = SYMBOL_DEF_USER;
 	for_all_symbols(i, sym)
 	{
 		sym->flags |= SYMBOL_CHANGED;
@@ -237,12 +237,12 @@ load:
 		case S_INT:
 		case S_HEX:
 		case S_STRING:
-			if (sym->def[def].val)
-				free(sym->def[def].val);
+			if (sym->def[S_DEF_USER].val)
+				free(sym->def[S_DEF_USER].val);
 
 		default:
-			sym->def[def].val = NULL;
-			sym->def[def].tri = no;
+			sym->def[S_DEF_USER].val = NULL;
+			sym->def[S_DEF_USER].tri = no;
 		}
 	}
 
@@ -258,16 +258,10 @@ load:
 			*p++ = 0;
 			if (strncmp(p, "is not set", 10))
 				continue;
-			if (def == S_DEF_USER) {
-				sym = sym_find(line + 2 + strlen(CONFIG_));
-				if (!sym) {
-					conf_set_changed(true);
-					continue;
-				}
-			} else {
-				sym = sym_lookup(line + 2 + strlen(CONFIG_), 0);
-				if (sym->type == S_UNKNOWN)
-					sym->type = S_BOOLEAN;
+			sym = sym_find(line + 2 + strlen(CONFIG_));
+			if (!sym) {
+				conf_set_changed(true);
+				continue;
 			}
 			if (sym->flags & def_flags) {
 				conf_warning(
@@ -277,7 +271,7 @@ load:
 			switch (sym->type) {
 			case S_BOOLEAN:
 			case S_TRISTATE:
-				sym->def[def].tri = no;
+				sym->def[S_DEF_USER].tri = no;
 				sym->flags |= def_flags;
 				break;
 			default:;
@@ -305,7 +299,7 @@ load:
 					"override: reassigning to symbol %s",
 					sym->name);
 			}
-			if (conf_set_sym_val(sym, def, def_flags, p))
+			if (conf_set_sym_val(sym, def_flags, p))
 				continue;
 		} else {
 			if (line[0] != '\r' && line[0] != '\n')
@@ -318,11 +312,11 @@ load:
 		if (sym && sym_is_choice_value(sym)) {
 			struct symbol *cs =
 				prop_get_symbol(sym_get_choice_prop(sym));
-			switch (sym->def[def].tri) {
+			switch (sym->def[S_DEF_USER].tri) {
 			case no:
 				break;
 			case mod:
-				if (cs->def[def].tri == yes) {
+				if (cs->def[S_DEF_USER].tri == yes) {
 					conf_warning(
 						"%s creates inconsistent choice state",
 						sym->name);
@@ -330,15 +324,16 @@ load:
 				}
 				break;
 			case yes:
-				if (cs->def[def].tri != no)
+				if (cs->def[S_DEF_USER].tri != no)
 					conf_warning(
 						"override: %s changes choice state",
 						sym->name);
-				cs->def[def].val = sym;
+				cs->def[S_DEF_USER].val = sym;
 				break;
 			}
-			cs->def[def].tri =
-				EXPR_OR(cs->def[def].tri, sym->def[def].tri);
+			cs->def[S_DEF_USER].tri =
+				EXPR_OR(cs->def[S_DEF_USER].tri,
+					sym->def[S_DEF_USER].tri);
 		}
 	}
 	free(line);
@@ -354,7 +349,7 @@ int conf_read(const char *name)
 
 	conf_set_changed(false);
 
-	if (conf_read_simple(name, S_DEF_USER)) {
+	if (conf_read_simple(name)) {
 		sym_calc_value(modules_sym);
 		return 1;
 	}
@@ -735,7 +730,7 @@ static int __conf_write_autoconf(const char *filename,
 	return 0;
 }
 
-int conf_write_autoconf(int overwrite)
+int conf_write_autoconf(void)
 {
 	struct symbol *sym;
 	const char *autoconf_name = conf_get_autoconfig_name();

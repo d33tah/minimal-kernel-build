@@ -26,7 +26,7 @@ typedef enum tristate {
 enum expr_type {
 	E_NONE, E_OR, E_AND, E_NOT,
 	E_EQUAL, E_UNEQUAL, E_LTH, E_LEQ, E_GTH, E_GEQ,
-	E_LIST, E_SYMBOL, E_RANGE
+	E_LIST, E_SYMBOL
 };
 
 union expr_data {
@@ -62,9 +62,6 @@ enum symbol_type {
 
 enum {
 	S_DEF_USER,
-	S_DEF_AUTO,
-	S_DEF_DEF3,
-	S_DEF_DEF4,
 	S_DEF_COUNT
 };
 
@@ -79,7 +76,6 @@ struct symbol {
 	struct property *prop;
 	struct expr_value dir_dep;
 	struct expr_value rev_dep;
-	struct expr_value implied;
 };
 
 #define for_all_symbols(i, sym) for (i = 0; i < SYMBOL_HASHSIZE; i++) for (sym = symbol_hash[i]; sym; sym = sym->next)
@@ -93,9 +89,7 @@ struct symbol {
 #define SYMBOL_CHANGED    0x0400
 #define SYMBOL_WRITTEN    0x0800
 #define SYMBOL_NO_WRITE   0x1000
-#define SYMBOL_WARNED     0x8000
 
-#define SYMBOL_DEF        0x10000
 #define SYMBOL_DEF_USER   0x10000
 #define SYMBOL_NEED_SET_CHOICE_VALUES  0x100000
 #define SYMBOL_HASHSIZE		9973
@@ -108,8 +102,6 @@ enum prop_type {
 	P_DEFAULT,
 	P_CHOICE,
 	P_SELECT,
-	P_IMPLY,
-	P_RANGE,
 	P_SYMBOL,
 };
 
@@ -120,8 +112,6 @@ struct property {
 	struct expr_value visible;
 	struct expr *expr;
 	struct menu *menu;
-	struct file *file;
-	int lineno;
 };
 
 #define for_all_properties(sym, st, tok) \
@@ -139,16 +129,9 @@ struct menu {
 	struct menu *list;
 	struct symbol *sym;
 	struct property *prompt;
-	struct expr *visibility;
 	struct expr *dep;
-	unsigned int flags;
-	char *help;
-	struct file *file;
-	int lineno;
-	void *data;
 };
 
-#define MENU_CHANGED		0x0001
 
 extern struct file *file_list;
 extern struct file *current_file;
@@ -187,9 +170,9 @@ extern "C" {
 
 void conf_parse(const char *name);
 int conf_read(const char *name);
-int conf_read_simple(const char *name, int);
+int conf_read_simple(const char *name);
 int conf_write(const char *name);
-int conf_write_autoconf(int overwrite);
+int conf_write_autoconf(void);
 void conf_set_changed(bool val);
 bool conf_get_changed(void);
 void conf_set_message_callback(void (*fn)(const char *s));
@@ -262,7 +245,6 @@ void menu_set_type(int type);
 extern struct menu rootmenu;
 
 bool menu_is_visible(struct menu *menu);
-bool menu_has_prompt(struct menu *menu);
 const char *menu_get_prompt(struct menu *menu);
 
 void sym_clear_all_valid(void);

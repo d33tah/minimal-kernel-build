@@ -434,7 +434,6 @@ struct expr *expr_trans_compare(struct expr *e, enum expr_type type,
 	case E_SYMBOL:
 		return expr_alloc_comp(type, e->left.sym, sym);
 	case E_LIST:
-	case E_RANGE:
 	case E_NONE:;
 	}
 	return NULL;

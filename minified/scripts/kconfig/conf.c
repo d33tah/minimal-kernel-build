@@ -115,7 +115,7 @@ int main(int ac, char **av)
 		if (!name)
 			break;
 		if ((strcmp(name, "") != 0) && (strcmp(name, "1") != 0)) {
-			if (conf_read_simple(name, S_DEF_USER)) {
+			if (conf_read_simple(name)) {
 				fprintf(stderr,
 					"*** Can't read seed configuration \"%s\"!\n",
 					name);
@@ -124,8 +124,7 @@ int main(int ac, char **av)
 			break;
 		}
 		name = "allno.config";
-		if (conf_read_simple(name, S_DEF_USER) &&
-		    conf_read_simple("all.config", S_DEF_USER)) {
+		if (conf_read_simple(name) && conf_read_simple("all.config")) {
 			fprintf(stderr,
 				"*** KCONFIG_ALLCONFIG set, but no \"%s\" or \"all.config\" file found\n",
 				name);
@@ -155,7 +154,7 @@ int main(int ac, char **av)
 		exit(1);
 	}
 
-	if (conf_write_autoconf(sync_kconfig) && sync_kconfig) {
+	if (conf_write_autoconf() && sync_kconfig) {
 		fprintf(stderr,
 			"\n*** Error during sync of the configuration.\n\n");
 		return 1;

@@ -48,7 +48,6 @@ enum {
 	T_STRING,
 	T_TRISTATE,
 	T_EOL,
-	T_ASSIGN_VAL,
 	T_OR,
 	T_AND,
 	T_EQUAL,
@@ -82,16 +81,6 @@ static char *cur_string;
 static int yynerrs;
 static void parse_stmt_list(bool in_choice);
 static struct expr *parse_expr(void);
-
-static void zconfprint(const char *err, ...)
-{
-	va_list ap;
-	fprintf(stderr, "%s:%d: ", zconf_curname(), zconf_lineno());
-	va_start(ap, err);
-	vfprintf(stderr, err, ap);
-	va_end(ap);
-	fprintf(stderr, "\n");
-}
 
 static void zconf_error(const char *err, ...)
 {
@@ -520,33 +509,12 @@ skip:
 			return T_WORD;
 		}
 		strbuf_addch(c);
-		for (;;) {
-			c = lexchar();
-			if (c == EOF || c == '\n') {
-				if (c != EOF)
-					unlexchar(c);
-				break;
-			}
-			strbuf_addch(c);
-		}
-		{
-			const char *r = strbuf;
-			int rl, i;
-			cur_string = expand_one_token(&r);
-			rl = strlen(r);
-			for (i = rl - 1; i >= 0; i--)
-				unlexchar(r[i]);
-		}
-		if (!cur_string[0]) {
-			free(cur_string);
-			cur_string = NULL;
-			goto skip;
-		}
-		return T_WORD;
+		goto expand_dollar_token;
 	}
 	if (c == '$') {
 		strbuf_reset();
 		strbuf_addch(c);
+expand_dollar_token:
 		for (;;) {
 			c = lexchar();
 			if (c == EOF || c == '\n') {
@@ -696,25 +664,13 @@ static struct expr *parse_if_expr(void)
 
 static void parse_help(void)
 {
-	char *text;
 	if (cur_tok != T_HELP)
 		return;
 	advance();
 	expect(T_EOL);
-	text = lex_helptext();
+	free(lex_helptext());
 	prev_token_type = T_HELPTEXT;
 	advance();
-	if (current_entry->help) {
-		free(current_entry->help);
-		zconfprint("warning: '%s' defined with more than one help text",
-			   current_entry->sym ? current_entry->sym->name :
-						"<choice>");
-	}
-	if (text[strspn(text, " \f\n\r\t\v")] == '\0')
-		zconfprint("warning: '%s' defined with blank help text",
-			   current_entry->sym ? current_entry->sym->name :
-						"<choice>");
-	current_entry->help = text;
 }
 
 static void parse_config_options(void)
@@ -822,7 +778,9 @@ static void parse_menuconfig_stmt(void)
 	if (current_entry->prompt)
 		current_entry->prompt->type = P_MENU;
 	else
-		zconfprint("warning: menuconfig statement without prompt");
+		fprintf(stderr,
+			"%s:%d: warning: menuconfig statement without prompt\n",
+			zconf_curname(), zconf_lineno());
 }
 
 static void parse_choice_options(void)
@@ -1095,7 +1053,7 @@ void conf_parse(const char *name)
 		exit(1);
 	if (!modules_sym)
 		modules_sym = sym_find("n");
-	if (!menu_has_prompt(&rootmenu)) {
+	if (!rootmenu.prompt) {
 		current_entry = &rootmenu;
 		menu_add_prompt(P_MENU, "Main menu", NULL);
 	}

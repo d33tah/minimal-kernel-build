@@ -30,8 +30,6 @@ void menu_add_entry(struct symbol *sym)
 	memset(menu, 0, sizeof(*menu));
 	menu->sym = sym;
 	menu->parent = current_menu;
-	menu->file = current_file;
-	menu->lineno = zconf_lineno();
 
 	*last_entry_ptr = menu;
 	last_entry_ptr = &menu->next;
@@ -105,8 +103,6 @@ static struct property *menu_add_prop(enum prop_type type, struct expr *expr,
 	prop = xmalloc(sizeof(*prop));
 	memset(prop, 0, sizeof(*prop));
 	prop->type = type;
-	prop->file = current_file;
-	prop->lineno = zconf_lineno();
 	prop->menu = current_entry;
 	prop->expr = expr;
 	prop->visible.expr = dep;
@@ -131,22 +127,6 @@ struct property *menu_add_prompt(enum prop_type type, char *prompt,
 	if (isspace(*prompt)) {
 		while (isspace(*prompt))
 			prompt++;
-	}
-
-	if (type == P_PROMPT) {
-		struct menu *menu = current_entry;
-
-		while ((menu = menu->parent) != NULL) {
-			struct expr *dup_expr;
-
-			if (!menu->visibility)
-				continue;
-
-			dup_expr = expr_copy(menu->visibility);
-
-			prop->visible.expr =
-				expr_alloc_and(prop->visible.expr, dup_expr);
-		}
 	}
 
 	current_entry->prompt = prop;
@@ -330,22 +310,12 @@ next:
 		}
 	}
 
-	if (sym && !(sym->flags & SYMBOL_WARNED))
-		sym->flags |= SYMBOL_WARNED;
-
 	if (sym && !sym_is_optional(sym) && parent->prompt) {
 		sym->rev_dep.expr = expr_alloc_or(
 			sym->rev_dep.expr,
 			expr_alloc_and(parent->prompt->visible.expr,
 				       expr_alloc_symbol(&symbol_mod)));
 	}
-}
-
-bool menu_has_prompt(struct menu *menu)
-{
-	if (!menu->prompt)
-		return false;
-	return true;
 }
 
 bool menu_is_visible(struct menu *menu)
@@ -356,11 +326,6 @@ bool menu_is_visible(struct menu *menu)
 
 	if (!menu->prompt)
 		return false;
-
-	if (menu->visibility) {
-		if (expr_calc_value(menu->visibility) == no)
-			return false;
-	}
 
 	sym = menu->sym;
 	if (sym) {

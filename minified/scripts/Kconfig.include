@@ -4,12 +4,8 @@
 # Convenient variables
 comma       := ,
 quote       := "
-squote      := '
 empty       :=
 space       := $(empty) $(empty)
-dollar      := $
-right_paren := )
-left_paren  := (
 
 # $(if-success,<command>,<then>,<else>)
 # Return <then> if <command> exits with 0, <else> otherwise.

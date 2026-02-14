@@ -42,21 +42,7 @@ struct tlbflush_unmap_batch {
 #define AT_PHENT  4
 #define AT_PHNUM  5
 #define AT_PAGESZ 6
-#define AT_BASE   7
-#define AT_FLAGS  8
 #define AT_ENTRY  9
-#define AT_UID    11
-#define AT_EUID   12
-#define AT_GID    13
-#define AT_EGID   14
-#define AT_PLATFORM 15
-#define AT_HWCAP  16
-#define AT_CLKTCK 17
-#define AT_SECURE 23
-#define AT_BASE_PLATFORM 24
-#define AT_RANDOM 25
-#define AT_HWCAP2 26
-#define AT_EXECFN  31
 #ifndef AT_MINSIGSTKSZ
 #define AT_MINSIGSTKSZ	51
 #endif
@@ -68,8 +54,6 @@ struct tlbflush_unmap_batch {
 #include <linux/rwsem.h>
 #include <linux/completion.h>
 #include <linux/cpumask.h>
-/* uprobes.h inlined */
-#define uprobe_get_trap_addr(regs)	instruction_pointer(regs)
 #include <linux/rcupdate.h>
 /* page-flags-layout.h inlined */
 #include <linux/numa.h>
@@ -228,8 +212,6 @@ static inline atomic_t *compound_mapcount_ptr(struct page *page)
 {
 	return &page[1].compound_mapcount;
 }
-
-#define page_private(page)		((page)->private)
 
 static inline void set_page_private(struct page *page, unsigned long private)
 {

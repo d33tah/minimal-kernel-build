@@ -59,15 +59,6 @@ atomic_add_unless(atomic_t *v, int a, int u)
 #define atomic_add_unless atomic_add_unless
 #endif
 
-#ifndef atomic_inc_not_zero
-static __always_inline bool
-atomic_inc_not_zero(atomic_t *v)
-{
-	return atomic_add_unless(v, 1, 0);
-}
-#define atomic_inc_not_zero atomic_inc_not_zero
-#endif
-
 #ifndef atomic_inc_unless_negative
 static __always_inline bool
 atomic_inc_unless_negative(atomic_t *v)
@@ -176,21 +167,9 @@ atomic_long_cmpxchg(atomic_long_t *v, long old, long new)
 }
 
 static __always_inline bool
-atomic_long_sub_and_test(long i, atomic_long_t *v)
-{
-	return atomic_sub_and_test(i, v);
-}
-
-static __always_inline bool
 atomic_long_dec_and_test(atomic_long_t *v)
 {
 	return atomic_dec_and_test(v);
-}
-
-static __always_inline bool
-atomic_long_inc_not_zero(atomic_long_t *v)
-{
-	return atomic_inc_not_zero(v);
 }
 
 static __always_inline long

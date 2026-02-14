@@ -23,16 +23,8 @@ typedef enum irqreturn irqreturn_t;
 
 #define IRQF_TRIGGER_MASK	0x0000000f
 
-#define IRQF_SHARED		0x00000080
-#define IRQF_PROBE_SHARED	0x00000100
-#define IRQF_PERCPU		0x00000400
-#define IRQF_NOBALANCING	0x00000800
-#define IRQF_ONESHOT		0x00002000
-#define IRQF_NO_SUSPEND		0x00004000
 #define IRQF_NO_THREAD		0x00010000
-#define IRQF_COND_SUSPEND	0x00040000
 #define IRQF_NO_AUTOEN		0x00080000
-#define IRQF_NO_DEBUG		0x00100000
 
 typedef irqreturn_t (*irq_handler_t)(int, void *);
 
@@ -51,8 +43,6 @@ struct irqaction {
 } ____cacheline_internodealigned_in_smp;
 
 extern irqreturn_t no_action(int cpl, void *dev_id);
-
-#define IRQ_NOTCONNECTED	(1U << 31)
 
 extern int __must_check
 request_threaded_irq(unsigned int irq, irq_handler_t handler,

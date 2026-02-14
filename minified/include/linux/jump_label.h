@@ -108,10 +108,6 @@ extern bool ____wrong_branch_error(void);
 #define static_branch_likely(x)		likely_notrace(static_key_enabled(&(x)->key))
 #define static_branch_unlikely(x)	unlikely_notrace(static_key_enabled(&(x)->key))
 
-#define static_branch_maybe(config, x)					\
-	(IS_ENABLED(config) ? static_branch_likely(x)			\
-			    : static_branch_unlikely(x))
-
 #define static_branch_enable(x)			static_key_enable(&(x)->key)
 #define static_branch_disable(x)		static_key_disable(&(x)->key)
 

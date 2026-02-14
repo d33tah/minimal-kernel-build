@@ -17,7 +17,6 @@
 struct lockref { spinlock_t lock; int count; };
 extern void lockref_get(struct lockref *);
 extern int lockref_put_return(struct lockref *);
-extern int lockref_get_not_zero(struct lockref *);
 extern void lockref_mark_dead(struct lockref *);
 extern int lockref_get_not_dead(struct lockref *);
 #include <linux/hash.h>
@@ -275,8 +274,6 @@ extern void __init files_init(void);
 #define MAY_ACCESS		0x00000010
 #define MAY_CHDIR		0x00000040
 
-#define MAY_NOT_BLOCK		0x00000080
-
 #define FMODE_READ		((__force fmode_t)0x1)
 
 #define FMODE_WRITE		((__force fmode_t)0x2)
@@ -461,7 +458,6 @@ static inline struct file *get_file(struct file *f)
 	atomic_long_inc(&f->f_count);
 	return f;
 }
-#define get_file_rcu(x) atomic_long_inc_not_zero(&(x)->f_count)
 #define file_count(x)	atomic_long_read(&(x)->f_count)
 
 #define	MAX_NON_LFS	((1UL<<31) - 1)

@@ -6,7 +6,6 @@ struct lockref {
 };
 extern void lockref_get(struct lockref *);
 extern int lockref_put_return(struct lockref *);
-extern int lockref_get_not_zero(struct lockref *);
 extern void lockref_mark_dead(struct lockref *);
 extern int lockref_get_not_dead(struct lockref *);
 #include <linux/bug.h>
@@ -22,22 +21,6 @@ void lockref_get(struct lockref *lockref)
 	spin_lock(&lockref->lock);
 	lockref->count++;
 	spin_unlock(&lockref->lock);
-}
-
-int lockref_get_not_zero(struct lockref *lockref)
-{
-	int retval;
-
-	CMPXCHG_LOOP(new.count++; if (old.count <= 0) return 0;, return 1;);
-
-	spin_lock(&lockref->lock);
-	retval = 0;
-	if (lockref->count > 0) {
-		lockref->count++;
-		retval = 1;
-	}
-	spin_unlock(&lockref->lock);
-	return retval;
 }
 
 int lockref_put_return(struct lockref *lockref)

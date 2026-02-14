@@ -16,8 +16,6 @@
 
 /* X86_32 without X86_ALIGNMENT_16 - use default alignment */
 
-#define RET	ret
-
 #else
 
 #endif
@@ -48,19 +46,6 @@
 #define asmlinkage
 #endif
 
-#ifndef cond_syscall
-#define cond_syscall(x)	asm(				\
-	".weak " __stringify(x) "\n\t"			\
-	".set  " __stringify(x) ","			\
-		 __stringify(sys_ni_syscall))
-#endif
-
-#ifndef SYSCALL_ALIAS
-#define SYSCALL_ALIAS(alias, name) asm(			\
-	".globl " __stringify(alias) "\n\t"		\
-	".set   " __stringify(alias) ","		\
-		  __stringify(name))
-#endif
 
 #define __page_aligned_bss	__section(".bss..page_aligned") __aligned(PAGE_SIZE)
 
@@ -119,11 +104,6 @@
 	.size name, .L__sym_size_##name
 #endif
 
-#ifndef SYM_ALIAS
-#define SYM_ALIAS(alias, name, linkage)			\
-	linkage(alias) ASM_NL				\
-	.set alias, name ASM_NL
-#endif
 
 #ifndef SYM_INNER_LABEL
 #define SYM_INNER_LABEL(name, linkage)		\
@@ -156,19 +136,9 @@
 	SYM_END(name, SYM_T_FUNC)
 #endif
 
-#ifndef SYM_FUNC_ALIAS
-#define SYM_FUNC_ALIAS(alias, name)					\
-	SYM_ALIAS(alias, name, SYM_L_GLOBAL)
-#endif
-
 #ifndef SYM_CODE_START
 #define SYM_CODE_START(name)				\
 	SYM_START(name, SYM_L_GLOBAL, SYM_A_ALIGN)
-#endif
-
-#ifndef SYM_CODE_START_NOALIGN
-#define SYM_CODE_START_NOALIGN(name)			\
-	SYM_START(name, SYM_L_GLOBAL, SYM_A_NONE)
 #endif
 
 #ifndef SYM_CODE_START_LOCAL

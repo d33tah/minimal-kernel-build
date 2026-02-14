@@ -224,7 +224,6 @@ struct task_struct {
 	int				prio;
 	int				static_prio;
 	int				normal_prio;
-	unsigned int			rt_priority;
 
 	struct sched_entity		se;
 	const struct sched_class	*sched_class;

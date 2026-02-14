@@ -6,9 +6,6 @@
 
 #include "internal.h"
 
-#define slub_get_cpu_ptr(var) get_cpu_ptr(var)
-#define slub_put_cpu_ptr(var) put_cpu_ptr(var)
-
 #define MIN_PARTIAL 5
 
 #define MAX_PARTIAL 10
@@ -258,72 +255,36 @@ static __always_inline void *slab_alloc_node(struct kmem_cache *s,
 	void *object;
 	struct kmem_cache_cpu *c;
 	struct slab *slab;
-	unsigned long tid;
 	struct obj_cgroup *objcg = NULL;
-	bool init = false;
 
 	s = slab_pre_alloc_hook(s, lru, &objcg, 1, gfpflags);
 	if (!s)
 		return NULL;
 
-redo:
-
 	c = raw_cpu_ptr(s->cpu_slab);
-	tid = READ_ONCE(c->tid);
-
-	barrier();
-
 	object = c->freelist;
 	slab = c->slab;
-	if (unlikely(!object || !slab)) {
-		/* ___slab_alloc inlined */
+
+	if (likely(object && slab)) {
+		c->freelist = get_freepointer(s, object);
+		c->tid = next_tid(c->tid);
+	} else {
 		void *freelist;
 		int searchnode = (node == NUMA_NO_NODE) ? numa_mem_id() : node;
+
 		freelist = get_partial_node(s, get_node(s, searchnode), &slab,
 					    gfpflags);
 		if (!freelist) {
-			slub_put_cpu_ptr(s->cpu_slab);
 			slab = new_slab(s, gfpflags, node);
-			slub_get_cpu_ptr(s->cpu_slab);
 			if (slab) {
 				freelist = slab->freelist;
 				slab->freelist = NULL;
 			}
 		}
 		object = freelist;
-	} else {
-		void *next_object = get_freepointer(s, object);
-
-		if (unlikely(!this_cpu_cmpxchg_double(
-			    s->cpu_slab->freelist, s->cpu_slab->tid, object,
-			    tid, next_object, next_tid(tid))))
-			goto redo;
-		prefetchw(next_object + s->offset);
 	}
 
-	/* maybe_wipe_obj_freeptr + slab_want_init_on_free inlined */
-	if (static_branch_maybe(CONFIG_INIT_ON_FREE_DEFAULT_ON,
-				&init_on_free) &&
-	    !(s->ctor || (s->flags & (SLAB_TYPESAFE_BY_RCU | SLAB_POISON))) &&
-	    object)
-		memset((void *)((char *)object + s->offset), 0, sizeof(void *));
-
-	/* slab_want_init_on_alloc inlined */
-	if (static_branch_maybe(CONFIG_INIT_ON_ALLOC_DEFAULT_ON,
-				&init_on_alloc)) {
-		if (!s->ctor &&
-		    !(s->flags & (SLAB_TYPESAFE_BY_RCU | SLAB_POISON)))
-			init = true;
-		else if (s->flags & (SLAB_TYPESAFE_BY_RCU | SLAB_POISON))
-			init = gfpflags & __GFP_ZERO;
-		else
-			init = false;
-	} else {
-		init = gfpflags & __GFP_ZERO;
-	}
-
-	/* slab_post_alloc_hook inlined */
-	if (object && init)
+	if (object && (gfpflags & __GFP_ZERO))
 		memset(object, 0, s->object_size);
 
 	return object;
@@ -356,69 +317,15 @@ void *kmem_cache_alloc_lru(struct kmem_cache *s, struct list_lru *lru,
 	return __kmem_cache_alloc_lru(s, lru, gfpflags);
 }
 
-static unsigned int slub_min_order;
-static unsigned int slub_max_order = PAGE_ALLOC_COSTLY_ORDER;
-static unsigned int slub_min_objects;
-
-static inline unsigned int calc_slab_order(unsigned int size,
-					   unsigned int min_objects,
-					   unsigned int max_order,
-					   unsigned int fract_leftover)
-{
-	unsigned int min_order = slub_min_order;
-	unsigned int order;
-
-	if (order_objects(min_order, size) > MAX_OBJS_PER_PAGE)
-		return get_order(size * MAX_OBJS_PER_PAGE) - 1;
-
-	for (order = max(min_order,
-			 (unsigned int)get_order(min_objects * size));
-	     order <= max_order; order++) {
-		unsigned int slab_size = (unsigned int)PAGE_SIZE << order;
-		unsigned int rem;
-
-		rem = slab_size % size;
-
-		if (rem <= slab_size / fract_leftover)
-			break;
-	}
-
-	return order;
-}
-
 static inline int calculate_order(unsigned int size)
 {
 	unsigned int order;
-	unsigned int min_objects;
-	unsigned int max_objects;
 
-	min_objects = slub_min_objects;
-	if (!min_objects)
-		min_objects = 8; /* 4 * (fls(1) + 1), single CPU kernel */
-	max_objects = order_objects(slub_max_order, size);
-	min_objects = min(min_objects, max_objects);
-
-	while (min_objects > 1) {
-		unsigned int fraction;
-
-		fraction = 16;
-		while (fraction >= 4) {
-			order = calc_slab_order(size, min_objects,
-						slub_max_order, fraction);
-			if (order <= slub_max_order)
-				return order;
-			fraction /= 2;
-		}
-		min_objects--;
+	/* Simple: find smallest order that fits at least one object */
+	for (order = 0; order <= MAX_ORDER; order++) {
+		if (order_objects(order, size) >= 1)
+			return order;
 	}
-
-	order = calc_slab_order(size, 1, slub_max_order, 1);
-	if (order <= slub_max_order)
-		return order;
-
-	order = calc_slab_order(size, 1, MAX_ORDER, 1);
-	if (order < MAX_ORDER)
-		return order;
 	return -ENOSYS;
 }
 

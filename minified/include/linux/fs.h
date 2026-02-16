@@ -447,8 +447,6 @@ struct file {
 	struct mutex		f_pos_lock;
 	loff_t			f_pos;
 	const struct cred	*f_cred;
-	void			*private_data;
-
 	struct address_space	*f_mapping;
 } __randomize_layout
   __attribute__((aligned(4)));
@@ -600,14 +598,7 @@ struct file_system_type {
 	struct file_system_type * next;
 	struct hlist_head fs_supers;
 
-	struct lock_class_key s_lock_key;
-	struct lock_class_key s_umount_key;
-	struct lock_class_key s_vfs_rename_key;
 	struct lock_class_key s_writers_key[SB_FREEZE_LEVELS];
-
-	struct lock_class_key i_lock_key;
-	struct lock_class_key i_mutex_key;
-	struct lock_class_key invalidate_lock_key;
 };
 
 void generic_shutdown_super(struct super_block *sb);

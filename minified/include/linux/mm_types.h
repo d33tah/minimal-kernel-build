@@ -294,8 +294,6 @@ struct mm_struct {
 		 
 		atomic_t tlb_flush_pending;
 
-		atomic_t tlb_flush_batched;
-
 	} __randomize_layout;
 
 	unsigned long cpu_bitmap[];

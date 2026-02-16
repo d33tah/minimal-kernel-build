@@ -33,9 +33,6 @@ static __always_inline unsigned int cpumask_check(unsigned int cpu)
 	return cpu;
 }
 
-#if NR_CPUS == 1
-#endif
-
 #define CPU_BITS_NONE						\
 {								\
 	[0 ... BITS_TO_LONGS(NR_CPUS)-1] = 0UL			\
@@ -124,11 +121,6 @@ static inline const struct cpumask *get_cpu_mask(unsigned int cpu)
 	const unsigned long *p = cpu_bit_bitmap[1 + cpu % BITS_PER_LONG];
 	p -= cpu / BITS_PER_LONG;
 	return to_cpumask(p);
-}
-
-static inline bool cpu_possible(unsigned int cpu)
-{
-	return cpu == 0;
 }
 
 #define CPU_BITS_ALL						\

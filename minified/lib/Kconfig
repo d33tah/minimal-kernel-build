@@ -622,10 +622,6 @@ config UCS2_STRING
 	tristate
 
 #
-# generic vdso
-#
-source "lib/vdso/Kconfig"
-
 config SG_SPLIT
 	def_bool n
 	help

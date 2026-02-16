@@ -157,24 +157,13 @@ struct biosregs {
 };
 void intcall(u8 int_no, const struct biosregs *ireg, struct biosregs *oreg);
 
-int __cmdline_find_option(unsigned long cmdline_ptr, const char *option, char *buffer, int bufsize);
 int __cmdline_find_option_bool(unsigned long cmdline_ptr, const char *option);
-static inline int cmdline_find_option(const char *option, char *buffer, int bufsize)
-{
-	unsigned long cmd_line_ptr = boot_params.hdr.cmd_line_ptr;
-
-	if (cmd_line_ptr >= 0x100000)
-		return -1;       
-
-	return __cmdline_find_option(cmd_line_ptr, option, buffer, bufsize);
-}
-
 static inline int cmdline_find_option_bool(const char *option)
 {
 	unsigned long cmd_line_ptr = boot_params.hdr.cmd_line_ptr;
 
 	if (cmd_line_ptr >= 0x100000)
-		return -1;       
+		return -1;
 
 	return __cmdline_find_option_bool(cmd_line_ptr, option);
 }
@@ -182,9 +171,6 @@ static inline int cmdline_find_option_bool(const char *option)
 int check_cpu(int *cpu_level_ptr, int *req_level_ptr, u32 **err_flags_ptr);
 int check_knl_erratum(void);
 int validate_cpu(void);
-
-extern int early_serial_base;
-void console_init(void);
 
 void __attribute__((noreturn)) die(void);
 
@@ -201,11 +187,6 @@ int printf(const char *fmt, ...);
 
 void initregs(struct biosregs *regs);
 
-int strcmp(const char *str1, const char *str2);
-int strncmp(const char *cs, const char *ct, size_t count);
-size_t strnlen(const char *s, size_t maxlen);
-size_t strlen(const char *s);
-char *strchr(const char *s, int c);
 
 void puts(const char *);
 void putchar(int);

@@ -306,48 +306,7 @@ pte_t *__get_locked_pte(struct mm_struct *mm, unsigned long addr,
 	return pte_alloc_map_lock(mm, pmd, addr, ptl);
 }
 
-static vm_fault_t vmf_insert_pfn_prot(struct vm_area_struct *vma,
-				      unsigned long addr, unsigned long pfn,
-				      pgprot_t pgprot)
-{
-	BUG_ON(!(vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP)));
-	BUG_ON((vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP)) ==
-	       (VM_PFNMAP | VM_MIXEDMAP));
-	BUG_ON((vma->vm_flags & VM_PFNMAP) && is_cow_mapping(vma->vm_flags));
-	BUG_ON((vma->vm_flags & VM_MIXEDMAP) && pfn_valid(pfn));
-
-	if (addr < vma->vm_start || addr >= vma->vm_end)
-		return VM_FAULT_SIGBUS;
-
-	{
-		struct mm_struct *mm = vma->vm_mm;
-		pte_t *pte, entry;
-		spinlock_t *ptl;
-		/* __pfn_to_pfn_t, pfn_t_pte, pfn_t_to_pfn all inlined */
-		pfn_t pfn_val = {
-			.val = pfn | (PFN_DEV & PFN_FLAGS_MASK),
-		};
-
-		pte = get_locked_pte(mm, addr, &ptl);
-		if (!pte)
-			return VM_FAULT_OOM;
-		if (!pte_none(*pte))
-			goto pfn_out_unlock;
-
-		entry = pte_mkspecial(
-			pfn_pte(pfn_val.val & ~PFN_FLAGS_MASK, pgprot));
-		set_pte_at(mm, addr, pte, entry);
-pfn_out_unlock:
-		pte_unmap_unlock(pte, ptl);
-		return VM_FAULT_NOPAGE;
-	}
-}
-
-vm_fault_t vmf_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
-			  unsigned long pfn)
-{
-	return vmf_insert_pfn_prot(vma, addr, pfn, vma->vm_page_prot);
-}
+/* vmf_insert_pfn, vmf_insert_pfn_prot removed - no callers */
 
 /* wp_page_copy removed - no fork means no COW.
  * do_wp_page simplified to just reuse path for AnonExclusive pages. */

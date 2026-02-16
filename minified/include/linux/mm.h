@@ -327,11 +327,6 @@ static inline void folio_get(struct folio *folio)
 	folio_ref_inc(folio);
 }
 
-static inline void get_page(struct page *page)
-{
-	folio_get(page_folio(page));
-}
-
 bool __must_check try_grab_page(struct page *page, unsigned int flags);
 
 static inline void folio_put(struct folio *folio)
@@ -612,8 +607,6 @@ static inline unsigned long vma_pages(struct vm_area_struct *vma)
 pgprot_t vm_get_page_prot(unsigned long vm_flags);
 
 struct vm_area_struct *find_extend_vma(struct mm_struct *, unsigned long addr);
-vm_fault_t vmf_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
-			unsigned long pfn);
 
 #define FOLL_WRITE	0x01
 #define FOLL_TOUCH	0x02

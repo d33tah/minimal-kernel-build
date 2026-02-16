@@ -423,7 +423,6 @@ unsigned long __alloc_pages_bulk(gfp_t gfp, int preferred_nid,
 	struct page *page;
 	int nr_populated = 0;
 
-	/* Minimal stub: just allocate pages one at a time */
 	while (nr_populated < nr_pages) {
 		page = __alloc_pages(gfp, 0, preferred_nid, nodemask);
 		if (!page)

@@ -34,33 +34,6 @@ int strcmp(const char *str1, const char *str2)
 	return 0;
 }
 
-int strncmp(const char *cs, const char *ct, size_t count)
-{
-	unsigned char c1, c2;
-
-	while (count) {
-		c1 = *cs++;
-		c2 = *ct++;
-		if (c1 != c2)
-			return c1 < c2 ? -1 : 1;
-		if (!c1)
-			break;
-		count--;
-	}
-	return 0;
-}
-
-size_t strnlen(const char *s, size_t maxlen)
-{
-	const char *es = s;
-	while (*es && maxlen) {
-		es++;
-		maxlen--;
-	}
-
-	return (es - s);
-}
-
 size_t strlen(const char *s)
 {
 	const char *sc;
@@ -68,29 +41,4 @@ size_t strlen(const char *s)
 	for (sc = s; *sc != '\0'; ++sc)
 		;
 	return sc - s;
-}
-
-char *strstr(const char *s1, const char *s2)
-{
-	size_t l1, l2;
-
-	l2 = strlen(s2);
-	if (!l2)
-		return (char *)s1;
-	l1 = strlen(s1);
-	while (l1 >= l2) {
-		l1--;
-		if (!memcmp(s1, s2, l2))
-			return (char *)s1;
-		s1++;
-	}
-	return NULL;
-}
-
-char *strchr(const char *s, int c)
-{
-	while (*s != (char)c)
-		if (*s++ == '\0')
-			return NULL;
-	return (char *)s;
 }

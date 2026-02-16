@@ -70,19 +70,6 @@ __clear_bit(long nr, volatile unsigned long *addr)
 }
 
 static __always_inline bool
-clear_bit_unlock_is_negative_byte(long nr, volatile unsigned long *addr)
-{
-	bool negative;
-	asm volatile(LOCK_PREFIX "andb %2,%1"
-		CC_SET(s)
-		: CC_OUT(s) (negative), WBYTE_ADDR(addr)
-		: "ir" ((char) ~(1 << nr)) : "memory");
-	return negative;
-}
-#define clear_bit_unlock_is_negative_byte                                      \
-	clear_bit_unlock_is_negative_byte
-
-static __always_inline bool
 test_and_set_bit(long nr, volatile unsigned long *addr)
 {
 	return GEN_BINARY_RMWcc(LOCK_PREFIX __ASM_SIZE(bts), *addr, c, "Ir", nr);

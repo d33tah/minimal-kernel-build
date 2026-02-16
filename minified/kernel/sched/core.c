@@ -11,8 +11,6 @@
 extern void sched_init(void);
 #include <linux/sched/mm.h>
 
-#include <linux/sched/rt.h>
-
 #include <linux/init_task.h>
 #include <linux/interrupt.h>
 

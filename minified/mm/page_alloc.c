@@ -13,7 +13,6 @@
 struct alloc_context;
 
 #include <linux/mm_inline.h>
-#include <linux/sched/rt.h>
 #include <linux/sched/mm.h>
 
 /* Removed: reset_page_owner, set_page_owner, split_page_owner

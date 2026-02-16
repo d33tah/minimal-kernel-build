@@ -7,7 +7,6 @@
 #include <linux/irqdomain.h>
 #include <linux/slab.h>
 #include <linux/sched.h>
-#include <linux/sched/rt.h>
 #include <linux/sched/task.h>
 #include <linux/sched/isolation.h>
 #include <linux/sched/types.h>

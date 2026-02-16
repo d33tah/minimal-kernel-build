@@ -53,8 +53,6 @@ static unsigned _bcd2bin(unsigned char val)
 	return (val & 0x0f) + (val >> 4) * 10;
 }
 
-#include <linux/of.h>
-
 #include <asm/x86_init.h>
 #include <asm/time.h>
 #include <asm/setup.h>

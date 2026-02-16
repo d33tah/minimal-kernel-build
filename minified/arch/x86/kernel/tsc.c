@@ -15,7 +15,12 @@
 #include <linux/static_call_types.h>
 
 #include <asm/timer.h>
-#include <asm/vgtod.h>
+/* vgtod.h inlined - single includer */
+extern unsigned int vclocks_used;
+static inline void vclocks_set_used(unsigned int which)
+{
+	WRITE_ONCE(vclocks_used, READ_ONCE(vclocks_used) | (1 << which));
+}
 #include <asm/time.h>
 #include <asm/delay.h>
 #include <asm/nmi.h>

@@ -11,7 +11,6 @@
 #include <linux/moduleparam.h>
 #include <linux/kthread.h>
 #include <linux/rcupdate_wait.h>
-#include <linux/sched/isolation.h>
 #ifndef NOKPROBE_SYMBOL
 #define NOKPROBE_SYMBOL(fname) /* kprobes disabled */
 #endif

@@ -1,6 +1,5 @@
 #include <linux/cpu.h>
 #include <linux/interrupt.h>
-#include <linux/of.h>
 #include <linux/smp.h>
 #include <linux/delay.h>
 #include <linux/irq.h>

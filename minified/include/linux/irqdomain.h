@@ -3,7 +3,6 @@
 #include <linux/types.h>
 struct irq_desc;
 typedef void (*irq_flow_handler_t)(struct irq_desc *desc);
-#include <linux/of.h>
 #include <linux/mutex.h>
 #include <linux/radix-tree.h>
 struct device_node;

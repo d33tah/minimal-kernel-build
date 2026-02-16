@@ -4,7 +4,6 @@
 #include <linux/init.h>
 #include <linux/slab.h>
 #include <linux/kdev_t.h>
-#include <linux/of.h>
 #include <linux/mutex.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/mm.h>

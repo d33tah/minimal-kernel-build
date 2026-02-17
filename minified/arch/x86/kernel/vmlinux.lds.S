@@ -128,7 +128,10 @@ SECTIONS
 #define EMIT_VVAR(name, offset)				\
 		. = __vvar_beginning_hack + offset;	\
 		*(.vvar_ ## name)
-#include <asm/vvar.h>
+#define DECLARE_VVAR(offset, type, name) \
+	EMIT_VVAR(name, offset)
+DECLARE_VVAR(128, struct vdso_data, _vdso_data)
+#undef DECLARE_VVAR
 #undef EMIT_VVAR
 
 		/*

@@ -1,4 +1,4 @@
- 
+
 #ifndef _ASM_X86_BOOTPARAM_H
 #define _ASM_X86_BOOTPARAM_H
 
@@ -89,7 +89,7 @@ struct setup_data {
 
 struct setup_indirect {
 	__u32 type;
-	__u32 reserved;   
+	__u32 reserved;
 	__u64 len;
 	__u64 addr;
 };
@@ -142,9 +142,9 @@ struct sys_desc_table {
 };
 
 struct olpc_ofw_header {
-	__u32 ofw_magic;	 
+	__u32 ofw_magic;
 	__u32 ofw_version;
-	__u32 cif_handler;	 
+	__u32 cif_handler;
 	__u32 irq_desc_table;
 } __attribute__((packed));
 
@@ -168,42 +168,42 @@ struct boot_e820_entry {
 } __attribute__((packed));
 
 struct boot_params {
-	struct screen_info screen_info;			 
-	struct apm_bios_info apm_bios_info;		 
-	__u8  _pad2[4];					 
-	__u64  tboot_addr;				 
-	struct ist_info ist_info;			 
-	__u64 acpi_rsdp_addr;				 
-	__u8  _pad3[8];					 
-	__u8  hd0_info[16];	 		 
-	__u8  hd1_info[16];	 		 
-	struct sys_desc_table sys_desc_table;  	 
-	struct olpc_ofw_header olpc_ofw_header;		 
-	__u32 ext_ramdisk_image;			 
-	__u32 ext_ramdisk_size;				 
-	__u32 ext_cmd_line_ptr;				 
-	__u8  _pad4[112];				 
-	__u32 cc_blob_address;				 
-	struct edid_info edid_info;			 
-	struct efi_info efi_info;			 
-	__u32 alt_mem_k;				 
-	__u32 scratch;		 	 
-	__u8  e820_entries;				 
-	__u8  eddbuf_entries;				 
-	__u8  edd_mbr_sig_buf_entries;			 
-	__u8  kbd_status;				 
-	__u8  secure_boot;				 
-	__u8  _pad5[2];					 
-	 
-	__u8  sentinel;					 
-	__u8  _pad6[1];					 
-	struct setup_header hdr;     	 
+	struct screen_info screen_info;
+	struct apm_bios_info apm_bios_info;
+	__u8  _pad2[4];
+	__u64  tboot_addr;
+	struct ist_info ist_info;
+	__u64 acpi_rsdp_addr;
+	__u8  _pad3[8];
+	__u8  hd0_info[16];
+	__u8  hd1_info[16];
+	struct sys_desc_table sys_desc_table;
+	struct olpc_ofw_header olpc_ofw_header;
+	__u32 ext_ramdisk_image;
+	__u32 ext_ramdisk_size;
+	__u32 ext_cmd_line_ptr;
+	__u8  _pad4[112];
+	__u32 cc_blob_address;
+	struct edid_info edid_info;
+	struct efi_info efi_info;
+	__u32 alt_mem_k;
+	__u32 scratch;
+	__u8  e820_entries;
+	__u8  eddbuf_entries;
+	__u8  edd_mbr_sig_buf_entries;
+	__u8  kbd_status;
+	__u8  secure_boot;
+	__u8  _pad5[2];
+
+	__u8  sentinel;
+	__u8  _pad6[1];
+	struct setup_header hdr;
 	__u8  _pad7[0x290-0x1f1-sizeof(struct setup_header)];
-	__u32 edd_mbr_sig_buffer[EDD_MBR_SIG_MAX];	 
-	struct boot_e820_entry e820_table[E820_MAX_ENTRIES_ZEROPAGE];  
-	__u8  _pad8[48];				 
-	struct edd_info eddbuf[EDDMAXNR];		 
-	__u8  _pad9[276];				 
+	__u32 edd_mbr_sig_buffer[EDD_MBR_SIG_MAX];
+	struct boot_e820_entry e820_table[E820_MAX_ENTRIES_ZEROPAGE];
+	__u8  _pad8[48];
+	struct edd_info eddbuf[EDDMAXNR];
+	__u8  _pad9[276];
 } __attribute__((packed));
 
 enum x86_hardware_subarch {
@@ -215,6 +215,6 @@ enum x86_hardware_subarch {
 	X86_NR_SUBARCHS,
 };
 
-#endif  
+#endif
 
-#endif  
+#endif

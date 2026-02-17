@@ -235,9 +235,8 @@ struct vm_area_struct {
 
 	const struct vm_operations_struct *vm_ops;
 
-	unsigned long vm_pgoff;		 
+	unsigned long vm_pgoff;
 	struct file * vm_file;
-	void * vm_private_data;
 } __randomize_layout;
 
 struct mm_struct {

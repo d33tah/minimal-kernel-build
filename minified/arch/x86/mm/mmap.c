@@ -7,11 +7,6 @@
 #include <asm/elf.h>
 #include <asm/io.h>
 
-unsigned long task_size_64bit(int full_addr_space)
-{
-	return full_addr_space ? TASK_SIZE_MAX : DEFAULT_MAP_WINDOW;
-}
-
 #define SIZE_128M (128 * 1024 * 1024UL)
 
 static int mmap_is_legacy(void)
@@ -38,7 +33,7 @@ static unsigned long mmap_base(unsigned long task_size,
 
 void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
 {
-	unsigned long task_size = task_size_64bit(0);
+	unsigned long task_size = DEFAULT_MAP_WINDOW;
 
 	if (mmap_is_legacy())
 		mm->get_unmapped_area = arch_get_unmapped_area;

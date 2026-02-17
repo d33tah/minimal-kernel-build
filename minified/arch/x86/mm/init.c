@@ -235,18 +235,6 @@ static int __meminit split_mem_range(struct map_range *mr, int nr_range,
 struct range pfn_mapped[E820_MAX_ENTRIES];
 int nr_pfn_mapped;
 
-bool pfn_range_is_mapped(unsigned long start_pfn, unsigned long end_pfn)
-{
-	int i;
-
-	for (i = 0; i < nr_pfn_mapped; i++)
-		if ((start_pfn >= pfn_mapped[i].start) &&
-		    (end_pfn <= pfn_mapped[i].end))
-			return true;
-
-	return false;
-}
-
 unsigned long __ref init_memory_mapping(unsigned long start, unsigned long end,
 					pgprot_t prot)
 {

@@ -99,11 +99,9 @@ enum dentry_d_lock_class
 #define DCACHE_REGULAR_TYPE		0x00400000
 #define DCACHE_SPECIAL_TYPE		0x00500000
 
-#define DCACHE_MAY_FREE			0x00800000
 #define DCACHE_FALLTHRU			0x01000000
 
 #define DCACHE_PAR_LOOKUP		0x10000000
-#define DCACHE_NORCU			0x40000000
 
 extern void d_instantiate(struct dentry *, struct inode *);
 

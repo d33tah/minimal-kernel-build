@@ -30,65 +30,6 @@
 #error Please do not include kernel proper namespace headers
 #endif
 
-/* Local guid_t definition - can't use uuid.h in boot/compressed */
-typedef struct {
-	__u8 b[16];
-} guid_t;
-
-typedef guid_t efi_guid_t __aligned(__alignof__(u32));
-
-typedef	struct {
-	u64 signature;
-	u32 revision;
-	u32 headersize;
-	u32 crc32;
-	u32 reserved;
-} efi_table_hdr_t;
-
-typedef struct {
-	efi_guid_t guid;
-	u64 table;
-} efi_config_table_64_t;
-
-typedef struct {
-	efi_guid_t guid;
-	u32 table;
-} efi_config_table_32_t;
-
-typedef struct {
-	efi_table_hdr_t hdr;
-	u64 fw_vendor;	 
-	u32 fw_revision;
-	u32 __pad1;
-	u64 con_in_handle;
-	u64 con_in;
-	u64 con_out_handle;
-	u64 con_out;
-	u64 stderr_handle;
-	u64 stderr;
-	u64 runtime;
-	u64 boottime;
-	u32 nr_tables;
-	u32 __pad2;
-	u64 tables;
-} efi_system_table_64_t;
-
-typedef struct {
-	efi_table_hdr_t hdr;
-	u32 fw_vendor;	 
-	u32 fw_revision;
-	u32 con_in_handle;
-	u32 con_in;
-	u32 con_out_handle;
-	u32 con_out;
-	u32 stderr_handle;
-	u32 stderr;
-	u32 runtime;
-	u32 boottime;
-	u32 nr_tables;
-	u32 tables;
-} efi_system_table_32_t;
-
 #define memptr unsigned
 
 extern char _head[], _end[];

@@ -386,15 +386,6 @@ int radix_tree_insert(struct radix_tree_root *root, unsigned long index,
 			node->nr_values++;
 	}
 
-	if (node) {
-		unsigned offset = get_slot_offset(node, slot);
-		BUG_ON(tag_get(node, 0, offset));
-		BUG_ON(tag_get(node, 1, offset));
-		BUG_ON(tag_get(node, 2, offset));
-	} else {
-		BUG_ON((__force unsigned)root->xa_flags >> ROOT_TAG_SHIFT);
-	}
-
 	return 0;
 }
 
@@ -562,29 +553,6 @@ int radix_tree_tag_get(const struct radix_tree_root *root, unsigned long index,
 	return 1;
 }
 
-static void set_iter_tags(struct radix_tree_iter *iter,
-			  struct radix_tree_node *node, unsigned offset,
-			  unsigned tag)
-{
-	unsigned tag_long = offset / BITS_PER_LONG;
-	unsigned tag_bit = offset % BITS_PER_LONG;
-
-	if (!node) {
-		iter->tags = 1;
-		return;
-	}
-
-	iter->tags = node->tags[tag][tag_long] >> tag_bit;
-
-	if (tag_long < RADIX_TREE_TAG_LONGS - 1) {
-		if (tag_bit)
-			iter->tags |= node->tags[tag][tag_long + 1]
-				      << (BITS_PER_LONG - tag_bit);
-
-		iter->next_index = __radix_tree_iter_add(iter, BITS_PER_LONG);
-	}
-}
-
 /* __radix_tree_delete + radix_tree_delete_item removed:
  * idr_remove was stubbed (PIDs never freed in hello-world kernel) */
 
@@ -685,7 +653,6 @@ grow:
 	else
 		iter->next_index = 1;
 	iter->node = node;
-	set_iter_tags(iter, node, offset, IDR_FREE);
 
 	return slot;
 }

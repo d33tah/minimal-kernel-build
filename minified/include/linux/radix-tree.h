@@ -49,7 +49,6 @@ static inline bool radix_tree_is_internal_node(void *ptr)
 struct radix_tree_iter {
 	unsigned long	index;
 	unsigned long	next_index;
-	unsigned long	tags;
 	struct radix_tree_node *node;
 };
 
@@ -79,12 +78,6 @@ radix_tree_iter_init(struct radix_tree_iter *iter, unsigned long start)
 	iter->index = 0;
 	iter->next_index = start;
 	return NULL;
-}
-
-static inline unsigned long
-__radix_tree_iter_add(struct radix_tree_iter *iter, unsigned long slots)
-{
-	return iter->index + slots;
 }
 
 #endif  

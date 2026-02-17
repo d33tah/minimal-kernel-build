@@ -147,11 +147,6 @@ static long __get_user_pages(struct mm_struct *mm, unsigned long start,
 					ret = -EFAULT;
 					goto out;
 				}
-				if (gup_flags & FOLL_ANON &&
-				    !vma_is_anonymous(vma)) {
-					ret = -EFAULT;
-					goto out;
-				}
 				if (write) {
 					if (!(vm_flags & VM_WRITE)) {
 						if (!(gup_flags & FOLL_FORCE)) {
@@ -206,15 +201,10 @@ retry:
 					ret = -ENOMEM;
 					goto out;
 				}
-				if (fault_ret & (VM_FAULT_HWPOISON |
-						 VM_FAULT_HWPOISON_LARGE)) {
-					ret = (foll_flags & FOLL_HWPOISON) ?
-						      -EHWPOISON :
-						      -EFAULT;
-					goto out;
-				}
 				if (fault_ret &
-				    (VM_FAULT_SIGBUS | VM_FAULT_SIGSEGV)) {
+				    (VM_FAULT_HWPOISON |
+				     VM_FAULT_HWPOISON_LARGE | VM_FAULT_SIGBUS |
+				     VM_FAULT_SIGSEGV)) {
 					ret = -EFAULT;
 					goto out;
 				}

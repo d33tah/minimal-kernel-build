@@ -150,8 +150,6 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_SEQ_READ	0x00008000	
 #define VM_RAND_READ	0x00010000	
 
-#define VM_DONTEXPAND	0x00040000
-#define VM_LOCKONFAULT	0x00080000	
 #define VM_ACCOUNT	0x00100000
 #define VM_SYNC		0x00800000
 
@@ -184,8 +182,6 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_ACCESS_FLAGS (VM_READ | VM_WRITE | VM_EXEC)
 
 #define VM_INIT_DEF_MASK	VM_NOHUGEPAGE
-
-#define VM_LOCKED_CLEAR_MASK	(~(VM_LOCKED | VM_LOCKONFAULT))
 
 extern pgprot_t protection_map[16];
 
@@ -520,11 +516,6 @@ extern void exit_mmap(struct mm_struct *);
 
 extern int set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file);
 
-extern struct vm_area_struct *_install_special_mapping(struct mm_struct *mm,
-				   unsigned long addr, unsigned long len,
-				   unsigned long flags,
-				   const struct vm_special_mapping *spec);
-
 extern unsigned long get_unmapped_area(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
 
 extern unsigned long do_mmap(struct file *file, unsigned long addr,
@@ -611,11 +602,9 @@ struct vm_area_struct *find_extend_vma(struct mm_struct *, unsigned long addr);
 #define FOLL_TOUCH	0x02
 #define FOLL_GET	0x04
 #define FOLL_FORCE	0x10
-#define FOLL_HWPOISON	0x100
 #define FOLL_TRIED	0x800
 #define FOLL_REMOTE	0x2000
 #define FOLL_COW	0x4000
-#define FOLL_ANON	0x8000
 
 /* vm_fault_to_errno inlined at mm/gup.c - single caller */
 

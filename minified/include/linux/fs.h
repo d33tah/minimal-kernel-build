@@ -252,8 +252,6 @@ static inline void do_delayed_call(struct delayed_call *call)
 #include <linux/limits.h>
 #define INR_OPEN_CUR 1024
 #define INR_OPEN_MAX 4096
-#define SEEK_SET	0
-#define SEEK_END	2
 /* end uapi/linux/fs.h */
 
 /* Unused forward decls removed: bdi_writeback, bio, iovec, kobject,
@@ -485,8 +483,7 @@ static inline struct inode *file_inode(const struct file *f)
 #define SB_I_NODEV	0x00000004
 
 enum {
-	SB_UNFROZEN = 0,		
-	SB_FREEZE_WRITE	= 1,		
+	SB_FREEZE_WRITE	= 1,
 	SB_FREEZE_COMPLETE = 4,		
 };
 
@@ -638,8 +635,6 @@ struct filename {
 };
 static_assert(offsetof(struct filename, iname) % sizeof(long) == 0);
 
-int do_truncate(struct user_namespace *, struct dentry *, loff_t start,
-		unsigned int time_attrs, struct file *filp);
 /* vfs_fallocate, do_sys_open, file_open_name, file_open_root, dentry_open,
    dentry_create, open_with_fake_path removed - unused/internal only */
 extern struct file *filp_open(const char *, int, umode_t);

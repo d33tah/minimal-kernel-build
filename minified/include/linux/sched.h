@@ -26,44 +26,27 @@ struct rlimit {
 	__kernel_ulong_t	rlim_max;
 };
 #define _STK_LIM	(8*1024*1024)
-#define MLOCK_LIMIT	(8*1024*1024)
-#define RLIMIT_CPU		0
-#define RLIMIT_FSIZE		1
-#define RLIMIT_DATA		2
 #define RLIMIT_STACK		3
-#define RLIMIT_CORE		4
-#define RLIMIT_RSS		5
-#define RLIMIT_NPROC		6
 #define RLIMIT_NOFILE		7
-#define RLIMIT_MEMLOCK		8
-#define RLIMIT_AS		9
-#define RLIMIT_LOCKS		10
-#define RLIMIT_SIGPENDING	11
-#define RLIMIT_MSGQUEUE		12
-#define RLIMIT_NICE		13
-#define RLIMIT_RTPRIO		14
-#define RLIMIT_RTTIME		15
 #define RLIM_NLIMITS		16
 #define RLIM_INFINITY		(~0UL)
-#define MQ_BYTES_MAX	819200
-#define INIT_RLIMITS							\
-{									\
-	[RLIMIT_CPU]		= {  RLIM_INFINITY,  RLIM_INFINITY },	\
-	[RLIMIT_FSIZE]		= {  RLIM_INFINITY,  RLIM_INFINITY },	\
-	[RLIMIT_DATA]		= {  RLIM_INFINITY,  RLIM_INFINITY },	\
-	[RLIMIT_STACK]		= {       _STK_LIM,  RLIM_INFINITY },	\
-	[RLIMIT_CORE]		= {              0,  RLIM_INFINITY },	\
-	[RLIMIT_RSS]		= {  RLIM_INFINITY,  RLIM_INFINITY },	\
-	[RLIMIT_NPROC]		= {              0,              0 },	\
-	[RLIMIT_NOFILE]		= {   INR_OPEN_CUR,   INR_OPEN_MAX },	\
-	[RLIMIT_MEMLOCK]	= {    MLOCK_LIMIT,    MLOCK_LIMIT },	\
-	[RLIMIT_AS]		= {  RLIM_INFINITY,  RLIM_INFINITY },	\
-	[RLIMIT_LOCKS]		= {  RLIM_INFINITY,  RLIM_INFINITY },	\
-	[RLIMIT_SIGPENDING]	= { 		0,	       0 },	\
-	[RLIMIT_MSGQUEUE]	= {   MQ_BYTES_MAX,   MQ_BYTES_MAX },	\
-	[RLIMIT_NICE]		= { 0, 0 },				\
-	[RLIMIT_RTPRIO]		= { 0, 0 },				\
-	[RLIMIT_RTTIME]		= {  RLIM_INFINITY,  RLIM_INFINITY },	\
+#define INIT_RLIMITS {							\
+	[0] = { RLIM_INFINITY, RLIM_INFINITY },				\
+	[1] = { RLIM_INFINITY, RLIM_INFINITY },				\
+	[2] = { RLIM_INFINITY, RLIM_INFINITY },				\
+	[RLIMIT_STACK] = { 8*1024*1024, RLIM_INFINITY },		\
+	[4] = { 0, RLIM_INFINITY },					\
+	[5] = { RLIM_INFINITY, RLIM_INFINITY },				\
+	[6] = { 0, 0 },						\
+	[RLIMIT_NOFILE] = { INR_OPEN_CUR, INR_OPEN_MAX },		\
+	[8] = { 8*1024*1024, 8*1024*1024 },				\
+	[9] = { RLIM_INFINITY, RLIM_INFINITY },				\
+	[10] = { RLIM_INFINITY, RLIM_INFINITY },			\
+	[11] = { 0, 0 },						\
+	[12] = { 819200, 819200 },					\
+	[13] = { 0, 0 },						\
+	[14] = { 0, 0 },						\
+	[15] = { RLIM_INFINITY, RLIM_INFINITY },			\
 }
 /* end resource.h */
 #define MAX_NICE	19
@@ -113,10 +96,6 @@ struct k_sigaction {
 
 #include <asm/page.h>
 
-struct arch_tlbflush_unmap_batch {
-	struct cpumask cpumask;
-};
-
 /* NR_CPUS=1 < CONFIG_SPLIT_PTLOCK_CPUS=4, so USE_SPLIT_*=0 */
 #define USE_SPLIT_PTE_PTLOCKS	0
 #define USE_SPLIT_PMD_PTLOCKS	0
@@ -129,10 +108,6 @@ struct arch_tlbflush_unmap_batch {
 struct vmacache {
 	u64 seqnum;
 	struct vm_area_struct *vmas[VMACACHE_SIZE];
-};
-
-struct tlbflush_unmap_batch {
-	struct arch_tlbflush_unmap_batch arch;
 };
 
 #endif /* _LINUX_MM_TYPES_TASK_H */

@@ -973,59 +973,6 @@ int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)
 	return 0;
 }
 
-static vm_fault_t special_mapping_fault(struct vm_fault *vmf);
-
-static int special_mapping_split(struct vm_area_struct *vma, unsigned long addr)
-{
-	return -EINVAL;
-}
-
-static const struct vm_operations_struct special_mapping_vmops = {
-	.fault = special_mapping_fault,
-	.may_split = special_mapping_split,
-};
-
-static vm_fault_t special_mapping_fault(struct vm_fault *vmf)
-{
-	struct vm_special_mapping *sm = vmf->vma->vm_private_data;
-
-	if (sm->fault)
-		return sm->fault(sm, vmf->vma, vmf);
-
-	return VM_FAULT_SIGBUS;
-}
-
-struct vm_area_struct *
-_install_special_mapping(struct mm_struct *mm, unsigned long addr,
-			 unsigned long len, unsigned long vm_flags,
-			 const struct vm_special_mapping *spec)
-{
-	int ret;
-	struct vm_area_struct *vma;
-
-	vma = vm_area_alloc(mm);
-	if (unlikely(vma == NULL))
-		return ERR_PTR(-ENOMEM);
-
-	vma->vm_start = addr;
-	vma->vm_end = addr + len;
-
-	vma->vm_flags = vm_flags | mm->def_flags | VM_DONTEXPAND | VM_SOFTDIRTY;
-	vma->vm_flags &= VM_LOCKED_CLEAR_MASK;
-	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
-
-	vma->vm_ops = &special_mapping_vmops;
-	vma->vm_private_data = (void *)spec;
-
-	ret = insert_vm_struct(mm, vma);
-	if (ret) {
-		vm_area_free(vma);
-		return ERR_PTR(ret);
-	}
-
-	return vma;
-}
-
 void __init mmap_init(void)
 {
 	percpu_counter_init(&vm_committed_as, 0, GFP_KERNEL);

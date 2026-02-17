@@ -12,10 +12,6 @@
 
 #include <asm/page.h>
 
-struct arch_tlbflush_unmap_batch {
-	struct cpumask cpumask;
-};
-
 /* NR_CPUS=1 < CONFIG_SPLIT_PTLOCK_CPUS=4, so USE_SPLIT_*=0 */
 #define USE_SPLIT_PTE_PTLOCKS	0
 #define USE_SPLIT_PMD_PTLOCKS	0
@@ -28,10 +24,6 @@ struct arch_tlbflush_unmap_batch {
 struct vmacache {
 	u64 seqnum;
 	struct vm_area_struct *vmas[VMACACHE_SIZE];
-};
-
-struct tlbflush_unmap_batch {
-	struct arch_tlbflush_unmap_batch arch;
 };
 
 #endif /* _LINUX_MM_TYPES_TASK_H */
@@ -332,12 +324,6 @@ enum vm_fault_reason {
 #define VM_FAULT_ERROR (VM_FAULT_OOM | VM_FAULT_SIGBUS |	\
 			VM_FAULT_SIGSEGV | VM_FAULT_HWPOISON |	\
 			VM_FAULT_HWPOISON_LARGE | VM_FAULT_FALLBACK)
-
-struct vm_special_mapping {
-	struct page **pages;
-	vm_fault_t (*fault)(const struct vm_special_mapping *sm, struct vm_area_struct *vma,
-			    struct vm_fault *vmf);
-};
 
 enum fault_flag {
 	FAULT_FLAG_WRITE =		1 << 0,

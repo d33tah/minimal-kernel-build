@@ -35,13 +35,6 @@
 #include <linux/fs.h>
 #include <linux/uaccess.h>
 
-typedef void (*poll_queue_proc)(struct file *, wait_queue_head_t *, struct poll_table_struct *);
-
-struct poll_table_struct {
-	poll_queue_proc _qproc;
-	__poll_t _key;
-};
-
 #include <linux/rcupdate.h>
 #include <linux/seqlock.h>
 
@@ -288,24 +281,10 @@ static inline void put_prev_task(struct rq *rq, struct task_struct *prev)
 	prev->sched_class->put_prev_task(rq, prev);
 }
 
-static inline void set_next_task(struct rq *rq, struct task_struct *next)
-{
-	next->sched_class->set_next_task(rq, next, false);
-}
-
 #define DEFINE_SCHED_CLASS(name) \
 const struct sched_class name##_sched_class \
 	__aligned(__alignof__(struct sched_class)) \
 	__section("__" #name "_sched_class")
-
-extern struct sched_class __sched_class_highest[];
-extern struct sched_class __sched_class_lowest[];
-
-#define for_class_range(class, _from, _to) \
-	for (class = (_from); class < (_to); class++)
-
-#define for_each_class(class) \
-	for_class_range(class, __sched_class_highest, __sched_class_lowest)
 
 #define sched_class_above(_a, _b)	((_a) < (_b))
 

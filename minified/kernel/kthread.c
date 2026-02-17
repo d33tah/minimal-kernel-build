@@ -8,7 +8,7 @@
 #include <asm/unistd.h>
 #include <linux/slab.h>
 #include <linux/ptrace.h>
-#include <linux/sched/isolation.h>
+#include <linux/cpumask.h>
 
 static DEFINE_SPINLOCK(kthread_create_lock);
 static LIST_HEAD(kthread_create_list);
@@ -110,7 +110,7 @@ static int kthread(void *_create)
 	self->data = data;
 
 	sched_setscheduler_nocheck(current, SCHED_NORMAL, &param);
-	set_cpus_allowed_ptr(current, housekeeping_cpumask(HK_TYPE_KTHREAD));
+	set_cpus_allowed_ptr(current, cpu_possible_mask);
 
 	__set_current_state(TASK_UNINTERRUPTIBLE);
 	create->result = current;
@@ -165,7 +165,7 @@ int kthreadd(void *unused)
 		for (i = 0; i < _NSIG; ++i)
 			tsk->sighand->action[i].sa.sa_handler = SIG_IGN;
 	}
-	set_cpus_allowed_ptr(tsk, housekeeping_cpumask(HK_TYPE_KTHREAD));
+	set_cpus_allowed_ptr(tsk, cpu_possible_mask);
 
 	current->flags |= PF_NOFREEZE;
 

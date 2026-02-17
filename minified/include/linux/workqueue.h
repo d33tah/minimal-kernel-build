@@ -115,12 +115,6 @@ struct delayed_work {
 #define INIT_DELAYED_WORK(_work, _func)					\
 	__INIT_DELAYED_WORK(_work, _func, 0)
 
-/* All WQ_* flags removed - unused:
-   WQ_UNBOUND, WQ_MEM_RECLAIM, WQ_SYSFS, WQ_FREEZABLE, WQ_HIGHPRI,
-   WQ_CPU_INTENSIVE, WQ_POWER_EFFICIENT, __WQ_DRAINING, __WQ_ORDERED,
-   __WQ_LEGACY, __WQ_ORDERED_EXPLICIT, WQ_MAX_ACTIVE, WQ_MAX_UNBOUND_PER_CPU,
-   WQ_DFL_ACTIVE */
-
 extern struct workqueue_struct *system_wq;
 extern struct workqueue_struct *system_unbound_wq;
 

@@ -62,7 +62,6 @@ static inline void free_pmd_range(struct mmu_gather *tlb, pud_t *pud,
 			pgtable_t token = pmd_pgtable(*pmd);
 			pmd_clear(pmd);
 			pte_free_tlb(tlb, token, addr);
-			/* mm_dec_nr_ptes inlined - single caller */
 			atomic_long_sub(PTRS_PER_PTE * sizeof(pte_t),
 					&tlb->mm->pgtables_bytes);
 		}
@@ -198,12 +197,10 @@ void free_pgtables(struct mmu_gather *tlb, struct vm_area_struct *vma,
 
 static void pmd_install(struct mm_struct *mm, pmd_t *pmd, pgtable_t *pte)
 {
-	/* pmd_lock + pmd_lockptr inlined */
 	spinlock_t *ptl = &mm->page_table_lock;
 	spin_lock(ptl);
 
 	if (likely(pmd_none(*pmd))) {
-		/* mm_inc_nr_ptes inlined - single caller */
 		atomic_long_add(PTRS_PER_PTE * sizeof(pte_t),
 				&mm->pgtables_bytes);
 		smp_wmb();
@@ -257,19 +254,12 @@ struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 		return NULL;
 	return NULL;
 
-	/* Dead code removed: the #else branch of CONFIG_ARCH_HAS_PTE_SPECIAL
-	   and is_zero_pfn check were unreachable since the config is always set */
-
 check_pfn:
 	if (unlikely(pfn > highest_memmap_pfn))
 		return NULL;
 
 	return pfn_to_page(pfn);
 }
-
-/* All copy_*_range functions removed - copy_page_range is stubbed
- * since simplified dup_mmap doesn't use them (~230 LOC removed)
- */
 
 /* zap chain collapsed: zap_pte_range was a no-op (lock+unlock with no action),
  * so the entire zap_p4d_range -> unmap_page_range -> unmap_single_vma chain
@@ -306,11 +296,6 @@ pte_t *__get_locked_pte(struct mm_struct *mm, unsigned long addr,
 	return pte_alloc_map_lock(mm, pmd, addr, ptl);
 }
 
-/* vmf_insert_pfn, vmf_insert_pfn_prot removed - no callers */
-
-/* wp_page_copy removed - no fork means no COW.
- * do_wp_page simplified to just reuse path for AnonExclusive pages. */
-
 static vm_fault_t do_wp_page(struct vm_fault *vmf) __releases(vmf->ptl)
 {
 	pte_t entry;
@@ -324,14 +309,8 @@ static vm_fault_t do_wp_page(struct vm_fault *vmf) __releases(vmf->ptl)
 	return VM_FAULT_WRITE;
 }
 
-/* unmap_mapping_range_tree, unmap_mapping_folio, unmap_mapping_pages,
- * unmap_mapping_range removed - only callers were in truncate.c which was stubbed */
-
-/* do_swap_page inlined - stub returns VM_FAULT_SIGBUS */
-
 static vm_fault_t do_anonymous_page(struct vm_fault *vmf)
 {
-	/* Minimal stub: simplified anonymous page fault handling */
 	struct vm_area_struct *vma = vmf->vma;
 	struct page *page;
 	pte_t entry;
@@ -447,9 +426,6 @@ static vm_fault_t finish_fault(struct vm_fault *vmf)
 	return ret;
 }
 
-/* Removed: fault_around_bytes, do_fault_around, should_fault_around
- * - Optimization path always returned 0 for minimal kernel */
-
 static vm_fault_t do_cow_fault(struct vm_fault *vmf)
 {
 	struct vm_area_struct *vma = vmf->vma;
@@ -468,7 +444,6 @@ static vm_fault_t do_cow_fault(struct vm_fault *vmf)
 	if (ret & VM_FAULT_DONE_COW)
 		return ret;
 
-	/* copy_user_highpage inlined - single caller */
 	{
 		char *vfrom = kmap_local_page(vmf->page);
 		char *vto = kmap_local_page(vmf->cow_page);
@@ -490,8 +465,6 @@ uncharge_out:
 }
 
 /* Stub: read-only initramfs has no shared writable mappings */
-/* do_shared_fault inlined - stub returns VM_FAULT_SIGBUS */
-
 static vm_fault_t do_fault(struct vm_fault *vmf)
 {
 	struct vm_area_struct *vma = vmf->vma;
@@ -538,7 +511,6 @@ static vm_fault_t do_fault(struct vm_fault *vmf)
 static vm_fault_t __handle_mm_fault(struct vm_area_struct *vma,
 				    unsigned long address, unsigned int flags)
 {
-	/* Minimal stub: simplified page fault handling without huge pages */
 	struct vm_fault vmf = {
 		.vma = vma,
 		.address = address & PAGE_MASK,
@@ -567,7 +539,6 @@ static vm_fault_t __handle_mm_fault(struct vm_area_struct *vma,
 	if (!vmf.pmd)
 		return VM_FAULT_OOM;
 
-	/* handle_pte_fault inlined */
 	if (unlikely(pmd_none(*vmf.pmd))) {
 		vmf.pte = NULL;
 	} else {
@@ -598,11 +569,5 @@ vm_fault_t handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
 
 	__set_current_state(TASK_RUNNING);
 	ret = __handle_mm_fault(vma, address, flags);
-	/* mem_cgroup_exit_user_fault, task_in_memcg_oom (always false),
-	 * mem_cgroup_oom_synchronize removed - all stubs */
-
 	return ret;
 }
-
-/* USE_SPLIT_PTE_PTLOCKS is 0 (NR_CPUS=1 < SPLIT_PTLOCK_CPUS=4)
- * ptlock_cache_init, ptlock_alloc, ptlock_free removed as dead code */

@@ -5,7 +5,6 @@
 #include <linux/thread_info.h>
 
 #include <asm/ptrace.h>
-/* auxvec.h inlined */
 #define AT_SYSINFO		32
 #define AT_SYSINFO_EHDR		33
 

@@ -8,7 +8,6 @@
 #include <asm/cpufeature.h>
 #include <linux/atomic.h>
 #include <asm/fixmap.h>
-/* mpspec.h inlined */
 #include <asm/x86_init.h>
 #define MAX_LOCAL_APIC 256
 #define PHYSID_ARRAY_SIZE BITS_TO_LONGS(MAX_LOCAL_APIC)
@@ -20,10 +19,6 @@ typedef struct physid_mask physid_mask_t;
 static inline void generic_apic_probe(void)
 {
 }
-
-/* setup_boot_APIC_clock, init_apic_mappings, disable_local_APIC, init_bsp_APIC,
-   apic_intr_mode_select, apic_intr_mode_init, lapic_assign_system_vectors,
-   lapic_assign_legacy_vector, apic_needs_pit removed - never called */
 
 struct apic {
 	 

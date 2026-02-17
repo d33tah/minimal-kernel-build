@@ -43,8 +43,6 @@ extern int __fs_parse(struct p_log *log,
 		    struct fs_parameter *value,
 		    struct fs_parse_result *result);
 
-/* fs_parse inlined at fs/ramfs/inode.c - single caller */
-
 #define __fsparam(TYPE, NAME, OPT, FLAGS, DATA) \
 	{ \
 		.name = NAME, \
@@ -54,9 +52,6 @@ extern int __fs_parse(struct p_log *log,
 		.data = DATA \
 	}
 
-/* Unused fsparam macros removed: fsparam_flag, fsparam_flag_no, fsparam_bool,
-   fsparam_u32, fsparam_u32hex, fsparam_s32, fsparam_u64, fsparam_enum,
-   fsparam_string, fsparam_blob, fsparam_bdev, fsparam_path, fsparam_fd */
 #define fsparam_u32oct(NAME, OPT) \
 			__fsparam(fs_param_is_u32, NAME, OPT, 0, (void *)8)
 

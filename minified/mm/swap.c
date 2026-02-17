@@ -63,7 +63,6 @@ static void __page_cache_release(struct page *page)
 	}
 
 	if (unlikely(PageMlocked(page))) {
-		/* thp_nr_pages inlined - single caller */
 		VM_BUG_ON_PGFLAGS(PageTail(page), page);
 		int nr_pages = compound_nr(page);
 
@@ -86,7 +85,6 @@ void folio_add_lru(struct folio *folio)
 	folio_get(folio);
 	local_lock(&lru_pvecs.lock);
 	pvec = this_cpu_ptr(&lru_pvecs.lru_add);
-	/* pagevec_add_and_need_flush inlined */
 	if (!pagevec_add(pvec, &folio->page) || PageCompound(&folio->page))
 		__pagevec_lru_add(pvec);
 	local_unlock(&lru_pvecs.lock);
@@ -95,7 +93,6 @@ void folio_add_lru(struct folio *folio)
 void lru_cache_add_inactive_or_unevictable(struct page *page,
 					   struct vm_area_struct *vma)
 {
-	/* lru_cache_add inlined */
 	folio_add_lru(page_folio(page));
 }
 
@@ -168,7 +165,6 @@ void release_pages(struct page **pages, int nr)
 		unlock_page_lruvec_irqrestore(lruvec, flags);
 }
 
-/* Simplified - minimal LRU add for single-process init (~22 LOC) */
 void __pagevec_lru_add(struct pagevec *pvec)
 {
 	int i;

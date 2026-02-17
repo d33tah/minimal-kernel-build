@@ -9,7 +9,6 @@
 #include "internal.h"
 #include "xstate.h"
 
-/* fpu__init_cpu_generic inlined - single caller */
 void fpu__init_cpu(void)
 {
 	unsigned long cr0;
@@ -30,9 +29,6 @@ void fpu__init_cpu(void)
 
 	asm volatile("fninit");
 }
-
-/* fpu__init_system_mxcsr, fpu__init_task_struct_size,
- * fpu__init_system_xstate_size_legacy all inlined below */
 
 #define TYPE_ALIGN(TYPE)           \
 	offsetof(                  \
@@ -71,7 +67,6 @@ void __init fpu__init_system(struct cpuinfo_x86 *c)
 	fpu_user_cfg.default_size = size;
 	fpstate_reset(&current->thread.fpu);
 
-	/* fpu__init_task_struct_size inlined */
 	task_size = sizeof(struct task_struct);
 	task_size -= sizeof(current->thread.fpu.__fpstate.regs);
 	task_size += fpu_kernel_cfg.default_size;

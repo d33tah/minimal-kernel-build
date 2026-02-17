@@ -223,9 +223,6 @@ typedef struct elf64_shdr {
 
 #define EV_CURRENT	1
 
-/* Note types removed - all unused: NT_PRSTATUS, NT_PRFPREG, NT_PRXFPREG,
-   NT_386_TLS, NT_386_IOPERM, NT_X86_XSTATE */
-
 typedef struct elf32_note {
   Elf32_Word	n_namesz;	 
   Elf32_Word	n_descsz;	 

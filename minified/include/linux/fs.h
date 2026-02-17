@@ -5,7 +5,6 @@
 #include <linux/linkage.h>
 #include <linux/wait_bit.h>
 #include <linux/kdev_t.h>
-/* dcache.h inlined - single includer */
 #include <linux/atomic.h>
 #include <linux/math.h>
 #include <linux/rculist.h>
@@ -187,7 +186,6 @@ extern void path_put(const struct path *);
 #include <linux/cache.h>
 #include <linux/list.h>
 #include <linux/list_lru.h>
-/* llist.h inlined */
 struct llist_head { struct llist_node *first; };
 struct llist_node { struct llist_node *next; };
 #define LLIST_HEAD_INIT(name)	{ NULL }
@@ -254,8 +252,6 @@ static inline void do_delayed_call(struct delayed_call *call)
 #define INR_OPEN_MAX 4096
 /* end uapi/linux/fs.h */
 
-/* Unused forward decls removed: bdi_writeback, bio, iovec, kobject,
-   poll_table_struct, kstatfs, vfsmount, seq_file, workqueue_struct, pipe_inode_info */
 struct backing_dev_info;
 struct kiocb;
 struct vm_area_struct;
@@ -558,9 +554,6 @@ struct inode_operations {
 	int (*create) (struct user_namespace *, struct inode *,struct dentry *,
 		       umode_t, bool);
 } ____cacheline_aligned;
-/* call_write_iter inlined at fs/read_write.c - single caller */
-/* call_mmap inlined at mm/mmap.c - single caller */
-
 struct super_operations {};
 
 #define S_APPEND	(1 << 2)
@@ -572,8 +565,6 @@ struct super_operations {};
 #define IS_DEADDIR(inode)	((inode)->i_flags & S_DEAD)
 #define IS_SWAPFILE(inode)	((inode)->i_flags & S_SWAPFILE)
 #define IS_AUTOMOUNT(inode)	((inode)->i_flags & S_AUTOMOUNT)
-
-/* HAS_UNMAPPED_ID inlined at fs/namei.c - single caller */
 
 #define __I_NEW			3
 #define I_NEW			(1 << __I_NEW)
@@ -635,8 +626,6 @@ struct filename {
 };
 static_assert(offsetof(struct filename, iname) % sizeof(long) == 0);
 
-/* vfs_fallocate, do_sys_open, file_open_name, file_open_root, dentry_open,
-   dentry_create, open_with_fake_path removed - unused/internal only */
 extern struct file *filp_open(const char *, int, umode_t);
 extern int filp_close(struct file *, fl_owner_t id);
 
@@ -661,8 +650,6 @@ static inline int path_permission(const struct path *path, int mask)
 	return inode_permission(mnt_user_ns(path->mnt),
 				d_inode(path->dentry), mask);
 }
-
-/* file_start_write and file_end_write inlined at fs/read_write.c - single caller each */
 
 static inline int deny_write_access(struct file *file)
 {
@@ -691,8 +678,6 @@ alloc_inode_sb(struct super_block *sb, struct kmem_cache *cache, gfp_t gfp)
 	return kmem_cache_alloc_lru(cache, &sb->s_inode_lru, gfp);
 }
 
-/* remove_inode_hash inlined at fs/inode.c - single caller */
-
 extern int generic_file_mmap(struct file *, struct vm_area_struct *);
 ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *to,
 		ssize_t already_read);
@@ -701,15 +686,9 @@ extern ssize_t generic_file_write_iter(struct kiocb *, struct iov_iter *);
 
 #define special_file(m) (S_ISCHR(m)||S_ISBLK(m)||S_ISFIFO(m)||S_ISSOCK(m))
 
-/* page_get_link, page_put_link, page_symlink, page_symlink_inode_operations
- * removed - symlinks never created */
-
 extern struct file_system_type *get_filesystem(struct file_system_type *fs);
 extern void put_filesystem(struct file_system_type *fs);
 extern struct file_system_type *get_fs_type(const char *name);
-/* Removed: get_super, get_active_super, drop_super_exclusive,
-   iterate_supers, iterate_supers_type, drop_super - never called */
-
 extern const struct address_space_operations ram_aops;
 
 extern struct dentry *simple_lookup(struct inode *, struct dentry *, unsigned int flags);

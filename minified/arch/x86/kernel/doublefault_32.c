@@ -20,7 +20,6 @@ asmlinkage noinstr void __noreturn doublefault_shim(void)
 
 	cr2 = native_read_cr2();
 
-	/* force_reload_TR inlined */
 	{
 		struct desc_struct *d = get_current_gdt_rw();
 		tss_desc tss;
@@ -29,7 +28,6 @@ asmlinkage noinstr void __noreturn doublefault_shim(void)
 		write_gdt_entry(d, GDT_ENTRY_TSS, &tss, DESC_TSS);
 		load_TR_desc();
 	}
-	/* inlined set_df_gdt_entry */
 	__set_tss_desc(
 		smp_processor_id(), GDT_ENTRY_DOUBLEFAULT_TSS,
 		&get_cpu_entry_area(smp_processor_id())->doublefault_stack.tss);

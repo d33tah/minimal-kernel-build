@@ -18,7 +18,6 @@ void __init sort_main_extable(void)
 	}
 }
 
-/* search_kernel_exception_table inlined - single caller */
 const struct exception_table_entry *search_exception_tables(unsigned long addr)
 {
 	/* search_module_extables and search_bpf_extables always return NULL */

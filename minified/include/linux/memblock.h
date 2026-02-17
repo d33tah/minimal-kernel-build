@@ -35,7 +35,6 @@ struct memblock_type {
 };
 
 struct memblock {
-	/* bottom_up field removed: always false */
 	phys_addr_t current_limit;
 	struct memblock_type memory;
 	struct memblock_type reserved;
@@ -131,13 +130,7 @@ static __always_inline void *memblock_alloc(phys_addr_t size, phys_addr_t align)
 				      MEMBLOCK_ALLOC_ACCESSIBLE, NUMA_NO_NODE);
 }
 
-/* memblock_alloc_from, memblock_alloc_node inlined at single call sites */
-
-/* memblock_bottom_up removed: .bottom_up always false, branches eliminated */
-
 phys_addr_t memblock_start_of_DRAM(void);
-/* memblock_end_of_DRAM, memblock_is_region_reserved, memblock_get_current_limit,
-   memblock_dump_all removed - never called */
 bool memblock_is_region_memory(phys_addr_t base, phys_addr_t size);
 
 void memblock_set_current_limit(phys_addr_t limit);

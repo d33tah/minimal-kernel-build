@@ -301,9 +301,6 @@ enum pg_level {
 	PG_LEVEL_NUM
 };
 
-/* update_page_count, lookup_address, lookup_address_in_pgd, lookup_pmd_address,
-   slow_virt_to_phys, kernel_map_pages_in_pgd, kernel_unmap_pages_in_pgd
-   removed - unused */
 #endif 
 
 #endif  

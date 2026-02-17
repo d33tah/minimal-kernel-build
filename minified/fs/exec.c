@@ -45,8 +45,6 @@ bool path_noexec(const struct path *path)
 	       (path->mnt->mnt_sb->s_iflags & SB_I_NOEXEC);
 }
 
-/* get_arg_page, put_arg_page and flush_arg_page inlined */
-
 static int count_strings_kernel(const char *const *argv)
 {
 	int i;
@@ -90,7 +88,6 @@ static int copy_string_kernel(const char *arg, struct linux_binprm *bprm)
 		arg -= bytes_to_copy;
 		len -= bytes_to_copy;
 
-		/* get_arg_page inlined */
 		{
 			int ret;
 			mmap_read_lock(bprm->mm);
@@ -153,7 +150,6 @@ int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top,
 		return -EINTR;
 
 	if (stack_shift) {
-		/* shift_arg_pages inlined */
 		unsigned long old_start = vma->vm_start;
 		unsigned long old_end = vma->vm_end;
 		unsigned long length = old_end - old_start;
@@ -243,7 +239,6 @@ exit:
 void __set_task_comm(struct task_struct *tsk, const char *buf, bool exec)
 {
 	task_lock(tsk);
-	/* strscpy_pad inlined from string_helpers.c */
 	{
 		size_t len = strlcpy(tsk->comm, buf, sizeof(tsk->comm));
 		if (len < sizeof(tsk->comm))
@@ -259,7 +254,6 @@ int begin_new_exec(struct linux_binprm *bprm)
 
 	bprm->point_of_no_return = true;
 
-	/* de_thread inlined - single-threaded init, always succeeds */
 	me->exit_signal = SIGCHLD;
 
 	retval = set_mm_exe_file(bprm->mm, bprm->file);
@@ -306,7 +300,6 @@ int begin_new_exec(struct linux_binprm *bprm)
 	me->flags &= ~(PF_FORKNOEXEC | PF_NOFREEZE | PF_NO_SETAFFINITY);
 	flush_thread();
 
-	/* kbasename inlined */
 	{
 		const char *tail = strrchr(bprm->filename, '/');
 		__set_task_comm(me, tail ? tail + 1 : bprm->filename, true);
@@ -447,7 +440,6 @@ static int bprm_execve(struct linux_binprm *bprm, int fd,
 
 	bprm->file = file;
 
-	/* exec_binprm simplified: no interpreter support (static ELF only) */
 	retval = search_binary_handler(bprm);
 	if (retval < 0)
 		goto out;

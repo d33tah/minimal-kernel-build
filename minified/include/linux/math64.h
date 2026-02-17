@@ -5,8 +5,6 @@
 #include <linux/math.h>
 #include <asm/div64.h>
 
-/* __iter_div_u64_rem inlined at single call site */
-
 #ifndef div_u64_rem
 static inline u64 div_u64_rem(u64 dividend, u32 divisor, u32 *remainder)
 {

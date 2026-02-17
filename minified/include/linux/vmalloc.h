@@ -57,6 +57,4 @@ void *__vmalloc_node(unsigned long size, unsigned long align, gfp_t gfp_mask,
 
 void arch_sync_kernel_mappings(unsigned long start, unsigned long end);
 
-/* get_vm_area_size inlined at mm/vmalloc.c - single caller */
-
 #endif  

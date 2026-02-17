@@ -74,14 +74,12 @@ static inline int sigequalsets(const sigset_t *set1, const sigset_t *set2)
 
 #ifndef __HAVE_ARCH_SIG_SETOPS
 
-/* Simplified - _NSIG_WORDS is 2 on x86-32 (~10 LOC) */
 static inline void sigemptyset(sigset_t *set)
 {
 	set->sig[1] = 0;
 	set->sig[0] = 0;
 }
 
-/* Simplified - _NSIG_WORDS is 2 on x86-32 (~9 LOC) */
 #endif  
 
 static inline void init_sigpending(struct sigpending *sig)

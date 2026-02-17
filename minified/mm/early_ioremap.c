@@ -127,7 +127,6 @@ void __init early_iounmap(void __iomem *addr, unsigned long size)
 
 void __init *early_memremap(resource_size_t phys_addr, unsigned long size)
 {
-	/* early_memremap_pgprot_adjust inlined - returns prot unchanged */
 	return (__force void *)__early_ioremap(phys_addr, size,
 					       FIXMAP_PAGE_NORMAL);
 }

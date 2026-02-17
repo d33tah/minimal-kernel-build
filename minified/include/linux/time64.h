@@ -16,7 +16,4 @@ struct timespec64 {
 	long		tv_nsec;		 
 };
 
-/* timespec64_compare, timespec64_sub, timespec64_valid, timespec64_valid_settod,
-   timespec64_to_ns, set_normalized_timespec64, timespec64_add_ns removed - unused */
-
 #endif  

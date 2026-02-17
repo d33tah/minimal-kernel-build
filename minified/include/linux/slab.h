@@ -95,7 +95,6 @@ enum kmalloc_cache_type {
 extern struct kmem_cache *
 kmalloc_caches[NR_KMALLOC_TYPES][KMALLOC_SHIFT_HIGH + 1];
 
-/* !ZONE_DMA and !MEMCG_KMEM - simplified */
 #define KMALLOC_NOT_NORMAL_BITS	(__GFP_RECLAIMABLE)
 
 static __always_inline enum kmalloc_cache_type kmalloc_type(gfp_t flags)

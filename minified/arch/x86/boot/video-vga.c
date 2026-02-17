@@ -9,7 +9,6 @@ static struct mode_info vga_modes[] = {
 
 static __videocard video_vga;
 
-/* --- 2026-01-26 05:18 --- vga_set_basic_mode inlined */
 static int vga_set_mode(struct mode_info *mode)
 {
 	struct biosregs ireg, oreg;

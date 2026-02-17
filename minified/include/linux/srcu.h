@@ -47,8 +47,6 @@ extern void __init_swait_queue_head(struct swait_queue_head *q, const char *name
 	} while (0)
 
 #endif /* _LINUX_SWAIT_H */
-/* --- End inlined swait.h --- */
-
 struct srcu_struct {
 	short srcu_lock_nesting[2];
 	unsigned short srcu_idx;

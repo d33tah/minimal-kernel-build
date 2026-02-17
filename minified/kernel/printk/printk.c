@@ -7,8 +7,6 @@
 #include <linux/init.h>
 #include <linux/smp.h>
 
-/* printk_ringbuffer.h structs, macros, and function declarations removed
-   since all prb_* functions are now stubbed as macros below */
 /* end printk_ringbuffer.h */
 #include <linux/percpu.h>
 #define printk_safe_enter_irqsave(flags) local_irq_save(flags)
@@ -72,14 +70,10 @@ int is_console_locked(void)
 	return console_locked;
 }
 
-/* console_is_usable, console_emit_next_record, console_flush_all inlined */
-
-/* Simplified - printk buffer is stubbed, no console flushing needed (~15 LOC) */
 void console_unlock(void)
 {
 	unsigned long flags;
 	console_locked = 0;
-	/* up_console_sem inlined */
 	printk_safe_enter_irqsave(flags);
 	up(&console_sem);
 	printk_safe_exit_irqrestore(flags);
@@ -102,15 +96,11 @@ void console_unblank(void)
 	console_unlock();
 }
 
-/* console_flush_on_panic simplified - only called with CONSOLE_FLUSH_PENDING */
 void console_flush_on_panic(enum con_flush_mode mode)
 {
 	console_trylock();
 	console_unlock();
 }
-
-/* try_enable_preferred_console inlined - console_cmdline never populated,
-   just checks if already enabled (~5 LOC) */
 
 #define con_printk(lvl, con, fmt, ...)                                       \
 	printk(lvl pr_fmt("%sconsole [%s%d] " fmt),                          \
@@ -143,7 +133,6 @@ void register_console(struct console *newcon)
 
 	if (!console_drivers || !console_drivers->device ||
 	    console_drivers->flags & CON_BOOT) {
-		/* inlined try_enable_default_console */
 		if (newcon->index < 0)
 			newcon->index = 0;
 		if (!newcon->setup || newcon->setup(newcon, NULL) == 0) {
@@ -153,7 +142,6 @@ void register_console(struct console *newcon)
 		}
 	}
 
-	/* try_enable_preferred_console inlined - just checks CON_ENABLED */
 	err = (newcon->flags & CON_ENABLED) ? 0 : -ENOENT;
 
 	if (err || newcon->flags & CON_BRL)

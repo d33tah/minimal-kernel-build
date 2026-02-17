@@ -1,6 +1,5 @@
 #include <linux/kernel.h>
 #include <linux/timex.h>
-/* timekeeper_internal.h inlined */
 #include <linux/clocksource.h>
 #include <linux/jiffies.h>
 #include <linux/time.h>
@@ -53,7 +52,6 @@ struct timekeeper {
 #include <asm/unistd.h>
 
 #include <generated/timeconst.h>
-/* timekeeping.h inlined */
 extern raw_spinlock_t jiffies_lock;
 extern seqcount_raw_spinlock_t jiffies_seq;
 
@@ -76,6 +74,3 @@ time64_t mktime64(const unsigned int year0, const unsigned int mon0,
 		min) * 60 +
 	       sec;
 }
-
-/* Removed: __usecs_to_jiffies, timespec64_to_jiffies, nsecs_to_jiffies64,
-   nsecs_to_jiffies, get_timespec64, put_timespec64 - dead code */

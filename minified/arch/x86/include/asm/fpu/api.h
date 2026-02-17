@@ -26,12 +26,4 @@ extern void fpu__init_system(struct cpuinfo_x86 *c);
 
 DECLARE_PER_CPU(struct fpu *, fpu_fpregs_owner_ctx);
 
-/* KVM guest FPU functions removed - unused (no KVM support):
-   fpstate_free, fpu_update_guest_xfd, fpu_sync_guest_vmexit_xfd_state,
-   fpstate_set_confidential, fpstate_is_confidential,
-   fpstate_clear_xstate_component, xstate_get_guest_group_perm,
-   fpu_alloc_guest_fpstate, fpu_free_guest_fpstate, fpu_swap_kvm_fpstate,
-   fpu_enable_guest_xfd_features, fpu_copy_guest_fpstate_to_uabi,
-   fpu_copy_uabi_to_guest_fpstate, fpu_xstate_prctl */
-
 #endif  

@@ -14,13 +14,6 @@
 
 #include <asm/sections.h>
 
-/*
- * Simplified percpu allocator: bump pointer only.
- * free_percpu is never called in this minimal kernel,
- * and __alloc_percpu has only one caller (slub.c).
- * No bitmap tracking, no chunk lists, no slot management.
- */
-
 #define __addr_to_pcpu_ptr(addr) (void __percpu *)(addr)
 
 const unsigned long *pcpu_unit_offsets __ro_after_init;

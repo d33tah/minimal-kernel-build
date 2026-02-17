@@ -34,8 +34,6 @@ struct folio_batch;
 void free_pgtables(struct mmu_gather *tlb, struct vm_area_struct *start_vma,
 		unsigned long floor, unsigned long ceiling);
 
-/* folio_evictable inlined at mm/swap.c - single caller */
-
 static inline void set_page_refcounted(struct page *page)
 {
 	VM_BUG_ON_PAGE(PageTail(page), page);
@@ -62,9 +60,6 @@ void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 
 extern long populate_vma_page_range(struct vm_area_struct *vma,
 		unsigned long start, unsigned long end, int *locked);
-
-/* mlock_folio, munlock_page, mlock_new_page, mlock_page_drain_local,
-   mlock_page_drain_remote removed - never called */
 
 #define ALLOC_WMARK_LOW		WMARK_LOW
 #define ALLOC_NO_WATERMARKS	0x04

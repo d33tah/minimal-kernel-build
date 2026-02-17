@@ -8,7 +8,6 @@
 
 #include <asm/page_types.h>
 
-/* page_32_types.h inlined */
 #ifndef _ASM_X86_PAGE_32_DEFS_H
 #define _ASM_X86_PAGE_32_DEFS_H
 

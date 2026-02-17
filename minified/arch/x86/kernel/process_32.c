@@ -76,7 +76,6 @@ __visible struct task_struct *__switch_to(struct task_struct *prev_p,
 
 	arch_end_context_switch(next_p);
 
-	/* update_task_stack inlined */
 	if (static_cpu_has(X86_FEATURE_XENPV))
 		load_sp0(next_p->thread.sp0);
 	else

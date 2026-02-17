@@ -10,7 +10,6 @@
 #include <linux/rbtree.h>
 #include <linux/atomic.h>
 #include <linux/mm_types.h>
-/* mmap_lock.h inlined - single includer */
 /* lockdep.h, rwsem.h, types.h included elsewhere; mm_types.h, mmdebug.h already above */
 
 #define MMAP_LOCK_INITIALIZER(name) \
@@ -41,16 +40,11 @@ static inline void mmap_read_unlock(struct mm_struct *mm)
 	up_read(&mm->mmap_lock);
 }
 
-/* mmap_read_unlock_non_owner, mmap_assert_write_locked,
- * mmap_lock_is_contended removed - unused */
-
 static inline void mmap_assert_locked(struct mm_struct *mm)
 {
 	VM_BUG_ON_MM(!rwsem_is_locked(&mm->mmap_lock), mm);
 }
 #include <linux/pfn.h>
-/* percpu-refcount.h, bit_spinlock.h, shrinker.h, resource.h,
-   err.h, tracepoint-defs.h, overflow.h, page_ext.h removed - unused */
 #include <linux/page-flags.h>
 
 static inline int page_ref_count(const struct page *page)
@@ -68,7 +62,6 @@ static inline void set_page_count(struct page *page, int v)
 	atomic_set(&page->_refcount, v);
 }
 
-/* page_ref_add, page_ref_sub, page_ref_inc, folio_ref_add, folio_ref_sub inlined */
 static inline void folio_ref_inc(struct folio *folio)
 {
 	atomic_inc(&folio->page._refcount);
@@ -78,7 +71,6 @@ static inline bool folio_try_get_rcu(struct folio *folio)
 {
 	return atomic_add_unless(&folio->page._refcount, 1, 0);
 }
-/* sizes.h inlined */
 #define SZ_64K				0x00010000
 #define SZ_1M				0x00100000
 #include <linux/sched.h>
@@ -218,8 +210,6 @@ struct vm_operations_struct {
 	vm_fault_t (*page_mkwrite)(struct vm_fault *vmf);
 };
 
-/* vma_init inlined at kernel/fork.c - single caller */
-
 static inline void vma_set_anonymous(struct vm_area_struct *vma)
 {
 	vma->vm_ops = NULL;
@@ -256,8 +246,6 @@ static inline int put_page_testzero(struct page *page)
 	return atomic_dec_and_test(&page->_refcount);
 }
 
-/* page_mapcount inlined at mm/filemap.c - single caller */
-
 void __put_page(struct page *page);
 
 typedef void compound_page_dtor(struct page *);
@@ -286,8 +274,6 @@ static inline unsigned long page_size(struct page *page)
 {
 	return PAGE_SIZE << compound_order(page);
 }
-
-/* thp_nr_pages inlined at mm/swap.c - single caller */
 
 static inline pte_t maybe_mkwrite(pte_t pte, struct vm_area_struct *vma)
 {
@@ -375,9 +361,6 @@ static inline size_t folio_size(struct folio *folio)
 
 #define page_address(page) page_to_virt(page)
 
-/* page_is_pfmemalloc inlined at mm/slub.c - single caller */
-/* set_page_pfmemalloc, clear_page_pfmemalloc inlined at single call site */
-
 #define offset_in_page(p)	((unsigned long)(p) & ~PAGE_MASK)
 
 struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
@@ -397,10 +380,6 @@ long get_user_pages_remote(struct mm_struct *mm,
 			    unsigned long start, unsigned long nr_pages,
 			    unsigned int gup_flags, struct page **pages,
 			    struct vm_area_struct **vmas, int *locked);
-/* pin_user_pages_remote, get_user_pages, pin_user_pages, get_user_pages_unlocked,
-   pin_user_pages_unlocked, get_user_pages_fast, pin_user_pages_fast removed - unused */
-
-/* folio_mark_dirty inlined from mm/page-writeback.c - stub */
 static inline bool folio_mark_dirty(struct folio *folio) { return true; }
 bool set_page_dirty(struct page *page);
 
@@ -418,9 +397,6 @@ static inline pte_t *get_locked_pte(struct mm_struct *mm, unsigned long addr,
 	__cond_lock(*ptl, ptep = __get_locked_pte(mm, addr, ptl));
 	return ptep;
 }
-
-/* mm_pgtables_bytes_init inlined at kernel/fork.c - single caller */
-/* mm_inc_nr_ptes and mm_dec_nr_ptes inlined at mm/memory.c - single caller each */
 
 int __pte_alloc(struct mm_struct *mm, pmd_t *pmd);
 int __pte_alloc_kernel(pmd_t *pmd);
@@ -449,8 +425,6 @@ static inline spinlock_t *pte_lockptr(struct mm_struct *mm, pmd_t *pmd)
 {
 	return &mm->page_table_lock;
 }
-
-/* pgtable_pte_page_ctor inlined at arch/x86/include/asm/pgalloc.h - single caller */
 
 static inline void pgtable_pte_page_dtor(struct page *page)
 {
@@ -482,8 +456,6 @@ extern void __init pagecache_init(void);
 extern void free_initmem(void);
 
 extern void reserve_bootmem_region(phys_addr_t start, phys_addr_t end);
-
-/* free_reserved_page inlined at mm/page_alloc.c - single caller */
 
 void free_area_init(unsigned long *max_zone_pfn);
 extern void mem_init(void);
@@ -605,8 +577,6 @@ struct vm_area_struct *find_extend_vma(struct mm_struct *, unsigned long addr);
 #define FOLL_TRIED	0x800
 #define FOLL_REMOTE	0x2000
 #define FOLL_COW	0x4000
-
-/* vm_fault_to_errno inlined at mm/gup.c - single caller */
 
 extern void init_mem_debugging_and_hardening(void);
 

@@ -6,7 +6,6 @@
 #include <linux/rbtree.h>
 #include <linux/spinlock.h>
 #include <linux/percpu_counter.h>
-/* percpu-refcount.h inlined */
 #include <linux/atomic.h>
 #include <linux/percpu.h>
 #include <linux/rcupdate.h>
@@ -39,7 +38,6 @@ struct percpu_ref {
 	struct percpu_ref_data *data;
 };
 
-/* flex_proportions.h inlined */
 struct fprop_local_percpu {
 	struct percpu_counter events;
 	raw_spinlock_t lock;
@@ -67,10 +65,6 @@ struct bdi_writeback {
 	spinlock_t list_lock;
 
 	atomic_t writeback_inodes;
-
-	/* bw_time_stamp, dirtied_stamp, written_stamp, write_bandwidth,
-	   avg_write_bandwidth, dirty_ratelimit, balanced_dirty_ratelimit,
-	   dirty_exceeded, dirty_sleep removed - write-only fields */
 
 	struct fprop_local_percpu completions;
 

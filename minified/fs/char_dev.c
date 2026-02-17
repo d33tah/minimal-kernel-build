@@ -20,9 +20,6 @@ static struct kobj_map *cdev_map;
 
 static DEFINE_MUTEX(chrdevs_lock);
 
-/* chrdev region registration/unregistration removed - never called (~160 LOC):
-   __register_chrdev_region, __unregister_chrdev_region,
-   register_chrdev_region, alloc_chrdev_region, unregister_chrdev_region */
 static DEFINE_SPINLOCK(cdev_lock);
 
 static struct kobject *cdev_get(struct cdev *p)
@@ -109,10 +106,6 @@ void cd_forget(struct inode *inode)
 const struct file_operations def_chr_fops = {
 	.open = chrdev_open,
 };
-
-/* exact_match, exact_lock, cdev_default_release, cdev_dynamic_release,
-   ktype_cdev_default, ktype_cdev_dynamic, cdev_add, cdev_del,
-   cdev_alloc, cdev_init removed - no callers */
 
 static struct kobject *base_probe(dev_t dev, int *part, void *data)
 {

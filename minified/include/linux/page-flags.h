@@ -146,9 +146,6 @@ static __always_inline void __ClearPage##uname(struct page *page)	\
 	__SETPAGEFLAG(uname, lname, policy)				\
 	__CLEARPAGEFLAG(uname, lname, policy)
 
-/* TESTSCFLAG, TESTPAGEFLAG_FALSE, CLEARPAGEFLAG_NOOP, TESTCLEARFLAG_FALSE,
-   PAGEFLAG_FALSE, TESTSCFLAG_FALSE macro templates removed - no invocations */
-
 __PAGEFLAG(Locked, locked, PF_NO_TAIL)
 SETPAGEFLAG(Waiters, waiters, PF_ONLY_HEAD)
 	CLEARPAGEFLAG(Waiters, waiters, PF_ONLY_HEAD)

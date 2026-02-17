@@ -525,11 +525,6 @@ struct symbol *sym_find(const char *name)
 	return symbol;
 }
 
-/* dep_stack, dep_stack_insert, dep_stack_remove, sym_check_print_recursive,
-   sym_check_expr_deps, sym_check_sym_deps, sym_check_choice_deps,
-   sym_check_deps removed - recursive dependency validation not needed
-   for minimal tinyconfig build (~265 LOC) */
-
 struct symbol *prop_get_symbol(struct property *prop)
 {
 	if (prop->expr &&

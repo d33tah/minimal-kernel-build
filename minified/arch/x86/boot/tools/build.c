@@ -25,8 +25,6 @@ u8 buf[SETUP_SECT_MAX * 512];
 
 #define PECOFF_COMPAT_RESERVE 0x0
 
-/* efi32_stub_entry, efi64_stub_entry, efi_pe_entry, efi32_pe_entry removed -
- * write-only variables, never read (EFI stub support removed) */
 static unsigned long kernel_info;
 
 static const u32 crctab32[] = {

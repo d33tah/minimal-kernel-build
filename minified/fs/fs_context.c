@@ -89,7 +89,6 @@ int generic_parse_monolithic(struct fs_context *fc, void *data)
 	return 0;
 }
 
-/* alloc_fs_context simplified - only FS_CONTEXT_FOR_MOUNT used */
 struct fs_context *fs_context_for_mount(struct file_system_type *fs_type,
 					unsigned int sb_flags)
 {
@@ -169,11 +168,6 @@ void put_fs_context(struct fs_context *fc)
 	kfree(fc->source);
 	kfree(fc);
 }
-
-/* legacy_fs_context_free, legacy_fs_context_dup, legacy_parse_param,
-   legacy_parse_monolithic, legacy_get_tree, legacy_reconfigure,
-   legacy_fs_context_ops, legacy_init_fs_context all removed -
-   all fs types have init_fs_context set */
 
 int parse_monolithic_mount_data(struct fs_context *fc, void *data)
 {

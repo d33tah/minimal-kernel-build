@@ -17,11 +17,6 @@ enum mapping_flags {
 	AS_EXITING	= 4,
 };
 
-/* mapping_set_unevictable inlined at fs/ramfs/inode.c - single caller */
-/* mapping_unevictable inlined at mm/swap.c - single caller */
-/* mapping_set_exiting inlined at mm/truncate.c - single caller */
-/* mapping_exiting inlined at mm/filemap.c - single caller */
-
 static inline gfp_t mapping_gfp_mask(struct address_space * mapping)
 {
 	return mapping->gfp_mask;
@@ -97,8 +92,6 @@ struct wait_page_queue {
 	wait_queue_entry_t wait;
 };
 
-/* wake_page_match inlined at mm/filemap.c - single caller */
-
 void __folio_lock(struct folio *folio);
 void unlock_page(struct page *page);
 void folio_unlock(struct folio *folio);
@@ -133,9 +126,6 @@ static inline int folio_wait_locked_killable(struct folio *folio)
 		return 0;
 	return folio_wait_bit_killable(folio, PG_locked);
 }
-
-/* folio_wait_writeback, __folio_cancel_dirty, folio_cancel_dirty, folio_wait_stable,
-   folio_account_cleaned, page_cache_sync_readahead, folio_end_writeback, folio_invalidate removed - unused */
 
 int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 		pgoff_t index, gfp_t gfp);

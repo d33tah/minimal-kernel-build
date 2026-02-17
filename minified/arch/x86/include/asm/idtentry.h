@@ -2,7 +2,6 @@
 #ifndef _ASM_X86_IDTENTRY_H
 #define _ASM_X86_IDTENTRY_H
 
-/* inlined from asm/trapnr.h */
 #define X86_TRAP_DE		 0
 #define X86_TRAP_DB		 1
 #define X86_TRAP_NMI		 2

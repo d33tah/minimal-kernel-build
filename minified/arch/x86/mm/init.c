@@ -18,7 +18,6 @@ extern int after_bootmem;
 extern __ro_after_init struct mm_struct *poking_mm;
 extern __ro_after_init unsigned long poking_addr;
 
-/* mm_internal.h inlined */
 void *alloc_low_pages(unsigned int num);
 void early_ioremap_page_table_range_init(void);
 unsigned long kernel_physical_mapping_init(unsigned long start,
@@ -262,7 +261,6 @@ unsigned long __ref init_memory_mapping(unsigned long start, unsigned long end,
 		ret = kernel_physical_mapping_init(mr[i].start, mr[i].end,
 						   mr[i].page_size_mask, prot);
 
-	/* add_pfn_range_mapped inlined */
 	{
 		unsigned long start_pfn = start >> PAGE_SHIFT;
 		unsigned long end_pfn = ret >> PAGE_SHIFT;
@@ -346,13 +344,10 @@ static void __init memory_map_top_down(unsigned long map_start,
 		init_range_memory_mapping(real_end, map_end);
 }
 
-/* memory_map_bottom_up removed: memblock.bottom_up is always false */
-
 void __init init_mem_mapping(void)
 {
 	unsigned long end;
 
-	/* probe_page_size_mask inlined */
 	if (boot_cpu_has(X86_FEATURE_PSE)) {
 		page_size_mask |= 1 << PG_LEVEL_2M;
 		cr4_set_bits_and_update_boot(X86_CR4_PSE);
@@ -377,7 +372,6 @@ void __init init_mem_mapping(void)
 
 	init_memory_mapping(0, ISA_END_ADDRESS, PAGE_KERNEL);
 
-	/* bottom_up branch removed: memblock.bottom_up is always false */
 	memory_map_top_down(ISA_END_ADDRESS, end);
 
 	early_ioremap_page_table_range_init();

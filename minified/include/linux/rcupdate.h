@@ -21,9 +21,6 @@ static inline void __rcu_read_unlock(void)
 
 void rcu_init(void);
 
-/* rcu_init_tasks_generic, rcu_init_nohz, exit_tasks_rcu_start,
-   exit_tasks_rcu_finish removed - call sites removed */
-
 /* TINY_RCU only */
 #include <asm/param.h>
 
@@ -38,9 +35,6 @@ void rcu_qs(void);
 		rcu_qs(); \
 	} while (0)
 
-/* rcu_idle_enter, rcu_idle_exit, rcu_irq_enter, rcu_irq_exit,
-   rcu_irq_exit_check_preempt, exit_rcu, rcu_end_inkernel_boot,
-   kfree_rcu_scheduler_running removed - call sites removed */
 static inline void rcu_scheduler_starting(void) { }
 static inline bool rcu_is_watching(void) { return true; }
 

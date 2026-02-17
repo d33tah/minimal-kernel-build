@@ -141,7 +141,6 @@ struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 		} else {
 			int pid_min = 1;
 
-			/* idr_get_cursor inlined */
 			if (READ_ONCE(tmp->idr.idr_next) > RESERVED_PIDS)
 				pid_min = RESERVED_PIDS;
 
@@ -149,7 +148,6 @@ struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 					      GFP_ATOMIC);
 		}
 		spin_unlock_irq(&pidmap_lock);
-		/* idr_preload_end inlined */
 		local_unlock(&radix_tree_preloads.lock);
 
 		if (nr < 0) {
@@ -191,7 +189,6 @@ out_free:
 		idr_remove(&upid->ns->idr, upid->nr);
 	}
 
-	/* idr_set_cursor inlined */
 	if (ns->pid_allocated == PIDNS_ADDING)
 		WRITE_ONCE(ns->idr.idr_next, 0);
 
@@ -280,7 +277,6 @@ void __init pid_idr_init(void)
 	pid_max = min(pid_max_max, max_t(int, pid_max, PIDS_PER_CPU_DEFAULT));
 	pid_max_min = max_t(int, pid_max_min, PIDS_PER_CPU_MIN);
 
-	/* idr_init inlined */
 	idr_init_base(&init_pid_ns.idr, 0);
 
 	init_pid_ns.pid_cachep =

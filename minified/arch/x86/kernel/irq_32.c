@@ -72,7 +72,6 @@ void do_softirq_own_stack(void)
 	prev_esp = (u32 *)irqstk;
 	*prev_esp = current_stack_pointer;
 
-	/* call_on_stack inlined */
 	asm volatile("xchgl	%%ebx,%%esp	\n" CALL_NOSPEC
 		     "movl	%%ebx,%%esp	\n"
 		     : "=b"(isp)

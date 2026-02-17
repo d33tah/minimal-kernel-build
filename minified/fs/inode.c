@@ -20,7 +20,6 @@ static int no_open(struct inode *inode, struct file *file)
 	return -ENXIO;
 }
 
-/* Changed to void - always returned 0, no callers check return value */
 static void inode_init_always(struct super_block *sb, struct inode *inode)
 {
 	static const struct inode_operations empty_iops;
@@ -35,7 +34,6 @@ static void inode_init_always(struct super_block *sb, struct inode *inode)
 	inode->i_ino = 0;
 	inode->__i_nlink = 1;
 	inode->i_opflags = 0;
-	/* i_uid_write, i_gid_write inlined */
 	inode->i_uid = make_kuid(i_user_ns(inode), 0);
 	inode->i_gid = make_kgid(i_user_ns(inode), 0);
 	atomic_set(&inode->i_writecount, 0);
@@ -91,9 +89,6 @@ static void init_once(void *foo)
 	inode_init_once(inode);
 }
 
-/* __inode_add_lru, inode_add_lru removed - drop is always true in iput,
-   LRU path never reached */
-
 static void inode_lru_list_del(struct inode *inode)
 {
 	list_lru_del(&inode->i_sb->s_inode_lru, &inode->i_lru);
@@ -110,7 +105,6 @@ static void evict(struct inode *inode)
 		spin_unlock(&inode->i_sb->s_inode_list_lock);
 	}
 
-	/* clear_inode inlined */
 	xa_lock_irq(&inode->i_data.i_pages);
 	xa_unlock_irq(&inode->i_data.i_pages);
 	BUG_ON(!(inode->i_state & I_FREEING));
@@ -126,7 +120,6 @@ static void evict(struct inode *inode)
 	spin_unlock(&inode->i_lock);
 
 	BUG_ON(!list_empty(&inode->i_lru));
-	/* __destroy_inode inlined */
 	if (!inode->i_nlink) {
 		WARN_ON(atomic_long_read(&inode->i_sb->s_remove_count) == 0);
 		atomic_long_dec(&inode->i_sb->s_remove_count);
@@ -202,7 +195,6 @@ static struct inode *new_inode_pseudo(struct super_block *sb)
 {
 	struct inode *inode;
 
-	/* alloc_inode inlined */
 	inode = alloc_inode_sb(sb, inode_cachep, GFP_KERNEL);
 	if (!inode)
 		return NULL;
@@ -223,7 +215,6 @@ struct inode *new_inode(struct super_block *sb)
 
 	inode = new_inode_pseudo(sb);
 	if (inode) {
-		/* inode_sb_list_add inlined */
 		spin_lock(&inode->i_sb->s_inode_list_lock);
 		list_add(&inode->i_sb_list, &inode->i_sb->s_inodes);
 		spin_unlock(&inode->i_sb->s_inode_list_lock);

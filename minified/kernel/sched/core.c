@@ -145,7 +145,6 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state,
 
 	preempt_disable();
 	if (p == current) {
-		/* ttwu_state_match inlined */
 		if (READ_ONCE(p->__state) & state) {
 			success = 1;
 			WRITE_ONCE(p->__state, TASK_RUNNING);
@@ -244,9 +243,6 @@ void wake_up_new_task(struct task_struct *p)
 	task_rq_unlock(rq, p, &rf);
 }
 
-/* prepare_lock_switch inlined - just called rq_unpin_lock */
-/* finish_lock_switch inlined - just called raw_spin_rq_unlock_irq */
-
 static struct rq *finish_task_switch(struct task_struct *prev)
 	__releases(rq->lock)
 {
@@ -332,8 +328,6 @@ __pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 		return p;
 	}
 
-	/* Fallback path removed: prev is always fair or idle class,
-	 * so the fast path above always succeeds. */
 	BUG();
 }
 
@@ -368,7 +362,6 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 		if (signal_pending_state(prev_state, prev)) {
 			WRITE_ONCE(prev->__state, TASK_RUNNING);
 		} else {
-			/* deactivate_task inlined - DEQUEUE_SLEEP always set */
 			prev->on_rq = 0;
 			dequeue_task(rq, prev, DEQUEUE_SLEEP | DEQUEUE_NOCLOCK);
 		}
@@ -405,8 +398,6 @@ void __noreturn do_task_dead(void)
 
 asmlinkage __visible void __sched schedule(void)
 {
-	/* sched_submit_work inlined: wq_worker_sleeping, tsk_is_pi_blocked,
-	 * blk_flush_plug all removed as stubs; remaining check is no-op */
 	do {
 		preempt_disable();
 		__schedule(SM_NONE);
@@ -435,16 +426,11 @@ int default_wake_function(wait_queue_entry_t *curr, unsigned mode,
 	return try_to_wake_up(curr->private, mode, wake_flags);
 }
 
-/* Simplified: only caller passes SCHED_NORMAL with priority 0.
- * Task is already SCHED_NORMAL at nice 0, so early return always taken. */
 int sched_setscheduler_nocheck(struct task_struct *p, int policy,
 			       const struct sched_param *param)
 {
 	return 0;
 }
-
-/* sched_setscheduler, sched_setparam, sched_getscheduler, sched_getparam,
-   sched_yield syscalls removed - not in syscall table */
 
 int __sched __cond_resched(void)
 {
@@ -507,7 +493,6 @@ void __init sched_init(void)
 
 	wait_bit_init();
 
-	/* for_each_possible_cpu simplified - single CPU */
 	{
 		struct rq *rq = cpu_rq(0);
 		raw_spin_lock_init(&rq->__lock);

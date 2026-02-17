@@ -2,7 +2,6 @@
 #include <linux/slab.h>
 #include <linux/nsproxy.h>
 #include <linux/init_task.h>
-/* mnt_namespace.h inlined */
 struct mnt_namespace;
 extern void put_mnt_ns(struct mnt_namespace *ns);
 #include <linux/utsname.h>
@@ -14,7 +13,6 @@ struct net {
 static inline void put_net(struct net *net)
 {
 }
-/* time_namespace.h inlined */
 #include <linux/ns_common.h>
 #include <linux/err.h>
 

@@ -8,7 +8,6 @@
 #include <asm/required-features.h>
 #include <asm/msr-index.h>
 #include "string.h"
-/* shared/msr.h inlined */
 struct msr {
 	union {
 		struct {
@@ -92,7 +91,6 @@ int check_cpu(int *cpu_level_ptr, int *req_level_ptr, u32 **err_flags_ptr)
 	if (test_bit(X86_FEATURE_LM, cpu.flags))
 		cpu.level = 64;
 
-	/* is_amd inlined */
 	if (err == 0x01 &&
 	    !(err_flags[0] &
 	      ~((1 << X86_FEATURE_XMM) | (1 << X86_FEATURE_XMM2))) &&
@@ -107,7 +105,6 @@ int check_cpu(int *cpu_level_ptr, int *req_level_ptr, u32 **err_flags_ptr)
 
 		get_cpuflags();
 		err = check_cpuflags();
-		/* is_centaur inlined */
 	} else if (err == 0x01 && !(err_flags[0] & ~(1 << X86_FEATURE_CX8)) &&
 		   cpu_vendor[0] == A32('C', 'e', 'n', 't') &&
 		   cpu_vendor[1] == A32('a', 'u', 'r', 'H') &&
@@ -120,7 +117,6 @@ int check_cpu(int *cpu_level_ptr, int *req_level_ptr, u32 **err_flags_ptr)
 
 		set_bit(X86_FEATURE_CX8, cpu.flags);
 		err = check_cpuflags();
-		/* is_transmeta inlined */
 	} else if (err == 0x01 && cpu_vendor[0] == A32('G', 'e', 'n', 'u') &&
 		   cpu_vendor[1] == A32('i', 'n', 'e', 'T') &&
 		   cpu_vendor[2] == A32('M', 'x', '8', '6')) {

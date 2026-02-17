@@ -9,14 +9,7 @@
 
 static struct kset *system_kset;
 
-/* drv_attr_show, drv_attr_store, driver_sysfs_ops, driver_release,
-   driver_ktype, bus_attr_show, bus_attr_store, bus_sysfs_ops,
-   bus_release, bus_ktype removed - never used (~77 LOC) */
-
 static struct kset *bus_kset;
-
-/* unbind_store, bind_store, driver_attr_unbind, driver_attr_bind removed -
-   driver_create_file is a stub that doesn't actually create files */
 
 static struct device_driver *next_driver(struct klist_iter *i)
 {
@@ -58,10 +51,6 @@ void bus_probe_device(struct device *dev)
 	if (bus->p->drivers_autoprobe)
 		device_initial_probe(dev);
 }
-
-/* Simplified: sysfs functions are stubs */
-/* uevent_store, driver_attr_uevent, add_bind_files, remove_bind_files removed -
-   driver_create_file was removed so these attributes are never used */
 
 int __init buses_init(void)
 {

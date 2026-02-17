@@ -3,7 +3,6 @@
 #define _ASM_X86_DEBUGREG_H
 
 #include <linux/bug.h>
-/* DR6 - debug status register (inlined from uapi/asm/debugreg.h) */
 #define DR6_RESERVED	(0xFFFF0FF0)
 #define DR_TRAP0	(0x1)
 #define DR_TRAP1	(0x2)

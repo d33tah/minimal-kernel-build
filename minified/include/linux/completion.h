@@ -37,8 +37,6 @@ extern void __init_swait_queue_head(struct swait_queue_head *q, const char *name
 	} while (0)
 
 #endif /* _LINUX_SWAIT_H */
-/* --- End inlined swait.h --- */
-
 struct completion {
 	unsigned int done;
 	struct swait_queue_head wait;
@@ -56,7 +54,6 @@ static inline void init_completion(struct completion *x)
 	init_swait_queue_head(&x->wait);
 }
 
-/* Stubs from kernel/sched/completion.c - inlined */
 static inline void wait_for_completion(struct completion *x) { }
 static inline void complete(struct completion *x) { }
 

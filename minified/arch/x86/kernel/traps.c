@@ -111,7 +111,6 @@ DEFINE_IDTENTRY_RAW(exc_invalid_op)
 {
 	irqentry_state_t state;
 
-	/* handle_bug inlined */
 	if (!user_mode(regs) && is_valid_bugaddr(regs->ip)) {
 		if (regs->flags & X86_EFLAGS_IF)
 			raw_local_irq_enable();
@@ -202,13 +201,9 @@ DEFINE_IDTENTRY(exc_bounds)
 
 #define GPFSTR "general protection fault"
 
-/* gp_user_force_sig_segv inlined - single caller */
-
 DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
 {
 	char desc[sizeof(GPFSTR) + 50 + 2 * sizeof(unsigned long) + 1] = GPFSTR;
-	/* hint, gp_addr simplified - get_kernel_gp_address always returned GP_NO_HINT */
-
 	cond_local_irq_enable(regs);
 
 	if (user_mode(regs)) {
@@ -221,7 +216,6 @@ DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
 		goto exit;
 	}
 
-	/* inlined gp_try_fixup_and_notify */
 	if (fixup_exception(regs, X86_TRAP_GP, error_code, 0))
 		goto exit;
 	current->thread.error_code = error_code;
@@ -310,7 +304,6 @@ DEFINE_IDTENTRY_RAW(exc_debug)
 {
 	unsigned long dr6;
 
-	/* debug_read_clear_dr6 inlined */
 	get_debugreg(dr6, 6);
 	set_debugreg(DR6_RESERVED, 6);
 	dr6 ^= DR6_RESERVED;

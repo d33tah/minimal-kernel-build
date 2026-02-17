@@ -3,7 +3,6 @@
 #include <linux/module.h>
 #include <linux/init.h>
 
-/* timekeeping.h inlined */
 extern raw_spinlock_t jiffies_lock;
 extern seqcount_raw_spinlock_t jiffies_seq;
 #include "tick-internal.h"

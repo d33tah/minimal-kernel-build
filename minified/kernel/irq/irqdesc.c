@@ -34,7 +34,6 @@ static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
 	mutex_init(&desc->request_mutex);
 	init_waitqueue_head(&desc->wait_for_threads);
 
-	/* desc_set_defaults inlined */
 	desc->irq_data.common = &desc->irq_common_data;
 	desc->irq_data.irq = irq;
 	desc->irq_data.chip = &no_irq_chip;
@@ -56,9 +55,6 @@ static void irq_kobj_release(struct kobject *kobj)
 	struct irq_desc *desc = container_of(kobj, struct irq_desc, kobj);
 	kfree(desc);
 }
-
-/* delayed_free_desc, free_desc, alloc_descs removed -
-   only caller was __irq_alloc_descs which was never called */
 
 int __init early_irq_init(void)
 {

@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/* expr.h inlined - single includer */
 #include "list.h"
 #ifndef __cplusplus
 #include <stdbool.h>
@@ -165,7 +164,6 @@ static inline int expr_is_yes(struct expr *e)
 extern "C" {
 #endif
 
-/* lkc_proto.h inlined - single includer */
 #include <stdarg.h>
 
 void conf_parse(const char *name);

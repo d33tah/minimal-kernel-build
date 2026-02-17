@@ -1,10 +1,7 @@
-/* Simplified idle scheduler for minimal kernel */
-
 #include <linux/sched.h>
 
 #include "sched.h"
 
-/* do_idle, default_idle_call inlined - single callers */
 void cpu_startup_entry(enum cpuhp_state state)
 {
 	while (1) {
@@ -13,7 +10,6 @@ void cpu_startup_entry(enum cpuhp_state state)
 			rmb();
 			local_irq_disable();
 			arch_cpu_idle_enter();
-			/* inlined default_idle_call */
 			clear_thread_flag(TIF_POLLING_NRFLAG);
 			smp_mb__after_atomic();
 			if (unlikely(tif_need_resched())) {

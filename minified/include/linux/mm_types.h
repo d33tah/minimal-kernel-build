@@ -1,7 +1,6 @@
 #ifndef _LINUX_MM_TYPES_H
 #define _LINUX_MM_TYPES_H
 
-/* mm_types_task.h inlined */
 #ifndef _LINUX_MM_TYPES_TASK_H
 #define _LINUX_MM_TYPES_TASK_H
 
@@ -28,7 +27,6 @@ struct vmacache {
 
 #endif /* _LINUX_MM_TYPES_TASK_H */
 
-/* auxvec.h inlined - AT_VECTOR_SIZE_ARCH */
 #define AT_VECTOR_SIZE_ARCH 3
 #define AT_PHDR   3
 #define AT_PHENT  4
@@ -47,7 +45,6 @@ struct vmacache {
 #include <linux/completion.h>
 #include <linux/cpumask.h>
 #include <linux/rcupdate.h>
-/* page-flags-layout.h inlined */
 #include <linux/numa.h>
 #include <generated/bounds.h>
 

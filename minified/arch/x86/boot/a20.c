@@ -68,7 +68,6 @@ int enable_a20(void)
 		if (a20_test(A20_TEST_SHORT))
 			return 0;
 
-		/* enable_a20_bios inlined */
 		initregs(&ireg);
 		ireg.ax = 0x2401;
 		intcall(0x15, &ireg, NULL);
@@ -82,7 +81,6 @@ int enable_a20(void)
 			return 0;
 
 		if (!kbc_err) {
-			/* enable_a20_kbc inlined */
 			empty_8042();
 			outb(0xd1, 0x64);
 			empty_8042();
@@ -95,7 +93,6 @@ int enable_a20(void)
 				return 0;
 		}
 
-		/* enable_a20_fast inlined */
 		port_a = inb(0x92);
 		port_a |= 0x02;
 		port_a &= ~0x01;

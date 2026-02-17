@@ -18,15 +18,12 @@ static void sanitize_boot_params(struct boot_params *boot_params)
 	(void)boot_params;
 }
 
-/* i386_default_early_setup inlined - single caller */
-
 asmlinkage __visible void __init i386_start_kernel(void)
 {
 	idt_setup_early_handler();
 	cr4_init_shadow();
 	sanitize_boot_params(&boot_params);
 
-	/* x86_early_init_platform_quirks inlined from platform-quirks.c */
 	x86_platform.legacy.reserve_bios_regions = 0;
 	if (boot_params.hdr.hardware_subarch == X86_SUBARCH_PC)
 		x86_platform.legacy.reserve_bios_regions = 1;

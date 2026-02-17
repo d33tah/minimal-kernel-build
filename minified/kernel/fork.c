@@ -2,8 +2,6 @@
 #include <linux/sched/mm.h>
 #include <linux/sched/coredump.h>
 #include <linux/sched/user.h>
-/* Removed: task_numa_free, rt_mutex_debug_task_free, copy_semundo, exit_sem, shm_init_task
- * - All were no-op stubs (~25 LOC) */
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
 #include <linux/sched/signal.h>
@@ -23,13 +21,11 @@
 #include <linux/cgroup.h>
 #include <linux/security.h>
 #include <linux/syscalls.h>
-/* futex.h inlined - only FUTEX_TID_MASK used for MAX_THREADS */
 #define FUTEX_TID_MASK 0x3fffffff
 #include <linux/kthread.h>
 #include <linux/rcupdate.h>
 #include <linux/ptrace.h>
 #include <linux/fs_struct.h>
-/* magic.h inlined - only STACK_END_MAGIC used */
 #define STACK_END_MAGIC 0x57AC6E9D
 #include <linux/compiler.h>
 #include <linux/init_task.h>
@@ -79,7 +75,6 @@ struct vm_area_struct *vm_area_alloc(struct mm_struct *mm)
 
 	vma = kmem_cache_alloc(vm_area_cachep, GFP_KERNEL);
 	if (vma) {
-		/* vma_init inlined - single caller */
 		memset(vma, 0, sizeof(*vma));
 		vma->vm_mm = mm;
 		vma->vm_ops = &dummy_vm_ops;
@@ -108,7 +103,6 @@ void vm_area_free(struct vm_area_struct *vma)
 
 void exit_task_stack_account(struct task_struct *tsk)
 {
-	/* inlined account_kernel_stack(tsk, -1) */
 	void *stack = task_stack_page(tsk);
 	mod_lruvec_kmem_state(stack, NR_KERNEL_STACK_KB,
 			      -1 * (THREAD_SIZE / 1024));
@@ -200,7 +194,6 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 			0); /* mm_pgtables_bytes_init inlined */
 	mm->map_count = 0;
 	spin_lock_init(&mm->page_table_lock);
-	/* mm_init_cpumask inlined */
 	cpumask_clear(
 		(struct cpumask *)((unsigned long)mm +
 				   offsetof(struct mm_struct, cpu_bitmap)));
@@ -293,8 +286,6 @@ static inline void init_task_pid(struct task_struct *task, enum pid_type type,
 		task->signal->pids[type] = pid;
 }
 
-/* pid parameter removed - always NULL (always allocates new pid)
- * trace parameter removed - always 0 (ptrace block never executed) */
 static __latent_entropy struct task_struct *
 copy_process(int node, struct kernel_clone_args *args)
 {
@@ -303,7 +294,6 @@ copy_process(int node, struct kernel_clone_args *args)
 	struct pid *pid;
 	const u64 clone_flags = args->flags;
 
-	/* dup_task_struct inlined */
 	retval = -ENOMEM;
 	p = kmem_cache_alloc_node(task_struct_cachep, GFP_KERNEL, node);
 	if (!p)
@@ -560,8 +550,6 @@ static pid_t kernel_clone(struct kernel_clone_args *args)
 
 	pid = get_task_pid(p, PIDTYPE_PID);
 	nr = pid_vnr(pid);
-	/* CLONE_PARENT_SETTID, CLONE_VFORK never used */
-
 	wake_up_new_task(p);
 
 	put_pid(pid);

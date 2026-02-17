@@ -8,7 +8,6 @@
 #include <asm-generic/siginfo.h>
 #include <asm/syscall.h>
 
-/* Simplified - _NSIG_WORDS is always 2 on x86-32 (~22 LOC) */
 static inline bool has_pending_signals(sigset_t *signal, sigset_t *blocked)
 {
 	unsigned long ready;
@@ -34,11 +33,6 @@ void recalc_sigpending(void)
 static int send_signal_locked(int sig, struct kernel_siginfo *info,
 			      struct task_struct *t, enum pid_type type)
 {
-	/* Simplified stub for minimal hello-world kernel
-	 * - Skip complex ignored signal check (init ignores most anyway)
-	 * - Skip sigqueue allocation (no signal handlers to run)
-	 * - Just mark signal as pending
-	 */
 	struct sigpending *pending;
 	void __user *handler;
 
@@ -118,9 +112,6 @@ int force_sig_fault(int sig, int code, void __user *addr)
 	return force_sig_info_to_task(&info, current, HANDLER_CURRENT);
 }
 
-/* force_sig_pkuerr, kill_pgrp, do_notify_parent, get_signal,
-   signal_setup_done removed - never called */
-
 SYSCALL_DEFINE0(restart_syscall)
 {
 	return -EINTR;
@@ -139,9 +130,6 @@ void __set_current_blocked(const sigset_t *newset)
 	recalc_sigpending();
 	spin_unlock_irq(&tsk->sighand->siglock);
 }
-
-/* rt_sigprocmask, rt_sigpending, rt_sigaction, sigaction syscalls removed
-   - not in syscall table */
 
 /* signal and pause syscalls replaced with COND_SYSCALL */
 

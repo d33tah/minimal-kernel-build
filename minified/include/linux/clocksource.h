@@ -8,7 +8,6 @@
 #include <linux/cache.h>
 #include <linux/timer.h>
 #include <linux/init.h>
-/* timekeeping.h inlined */
 enum clocksource_ids {
 	CSID_GENERIC		= 0,
 	CSID_MAX,

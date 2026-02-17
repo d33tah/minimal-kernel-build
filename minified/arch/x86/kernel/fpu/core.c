@@ -7,7 +7,6 @@
 
 #include <linux/hardirq.h>
 
-/* context.h inlined */
 #include <asm/fpu/xstate.h>
 
 static inline int fpregs_state_valid(struct fpu *fpu, unsigned int cpu)
@@ -45,7 +44,6 @@ static inline void fpregs_restore_userregs(void)
 }
 /* end context.h */
 #include "internal.h"
-/* legacy.h inlined */
 #define kernel_insn(insn, output, input...)                                \
 	asm volatile("1:" #insn "\n\t"                                     \
 		     "2:\n" _ASM_EXTABLE_TYPE(1b, 2b, EX_TYPE_FPU_RESTORE) \

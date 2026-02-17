@@ -5,13 +5,6 @@
 #include <linux/cpumask.h>
 #include <linux/percpu.h>
 
-/* cpuhp_cpu_state, cpuhp_step, cpuhp_hp_states array,
-   cpuhp_get_step, cpuhp_step_empty, cpuhp_invoke_callback,
-   cpuhp_reserve_state, cpuhp_store_callbacks, cpuhp_issue_call,
-   cpuhp_rollback_install, __cpuhp_setup_state_cpuslocked,
-   __cpuhp_setup_state removed - no callers after CPU hotplug
-   callback removal (~180 LOC) */
-
 #define MASK_DECLARE_1(x) [x + 1][0] = (1UL << (x))
 #define MASK_DECLARE_2(x) MASK_DECLARE_1(x), MASK_DECLARE_1(x + 1)
 #define MASK_DECLARE_4(x) MASK_DECLARE_2(x), MASK_DECLARE_2(x + 2)

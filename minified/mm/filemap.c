@@ -55,10 +55,6 @@ static inline unsigned folio_batch_add(struct folio_batch *fbatch,
 
 #include <asm/mman.h>
 
-/* filemap_unaccount_folio, __filemap_remove_folio, filemap_free_folio,
- * filemap_remove_folio, delete_from_page_cache_batch removed -
- * only callers were in truncate.c which was stubbed */
-
 noinline int __filemap_add_folio(struct address_space *mapping,
 				 struct folio *folio, pgoff_t index, gfp_t gfp,
 				 void **shadowp)
@@ -96,7 +92,6 @@ unlock:
 error:
 	folio->mapping = NULL;
 
-	/* folio_put_refs inlined */
 	if (atomic_sub_and_test(nr, &folio->page._refcount))
 		__put_page(&folio->page);
 	return xas_error(&xas);
@@ -145,7 +140,6 @@ static int wake_page_function(wait_queue_entry_t *wait, unsigned mode, int sync,
 	struct wait_page_queue *wait_page =
 		container_of(wait, struct wait_page_queue, wait);
 
-	/* wake_page_match inlined - single caller */
 	if (wait_page->folio != key->folio)
 		return 0;
 	key->page_match = 1;
@@ -235,7 +229,6 @@ repeat:
 
 	spin_lock_irq(&q->lock);
 	folio_set_waiters(folio);
-	/* folio_trylock_flag inlined */
 	{
 		bool locked;
 		if (wait->flags & WQ_FLAG_EXCLUSIVE)
@@ -298,7 +291,6 @@ void folio_unlock(struct folio *folio)
 {
 	BUILD_BUG_ON(PG_waiters != 7);
 	BUILD_BUG_ON(PG_locked > 7);
-	/* inlined clear_bit_unlock_is_negative_byte */
 	clear_bit_unlock(PG_locked, folio_flags(folio, 0));
 	if (test_bit(PG_waiters, folio_flags(folio, 0)))
 		folio_wake_bit(folio, PG_locked);
@@ -317,7 +309,6 @@ struct folio *__filemap_get_folio(struct address_space *mapping, pgoff_t index,
 	struct folio *folio;
 
 repeat:
-	/* mapping_get_entry inlined */
 	rcu_read_lock();
 repeat_xas:
 	xas_reset(&xas);
@@ -391,9 +382,6 @@ no_page:
 
 	return folio;
 }
-
-/* find_get_entry, find_get_entries, find_lock_entries removed -
- * only callers were in truncate_inode_pages_range which was stubbed */
 
 static void filemap_get_read_batch(struct address_space *mapping, pgoff_t index,
 				   pgoff_t max, struct folio_batch *fbatch)
@@ -574,7 +562,6 @@ ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
 			goto put_folios;
 		end_offset = min_t(loff_t, isize, iocb->ki_pos + iter->count);
 
-		/* pos_same_folio inlined, folio_shift inlined */
 		{
 		}
 
@@ -623,7 +610,6 @@ int generic_file_mmap(struct file *file, struct vm_area_struct *vma)
 	return -ENOEXEC;
 }
 
-/* Write operations stubbed - minimal kernel is read-only during boot */
 ssize_t generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 {
 	return -EROFS;

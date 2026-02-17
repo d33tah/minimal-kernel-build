@@ -33,7 +33,6 @@ int vfs_open(const struct path *path, struct file *file)
 	}
 
 	if (file->f_mode & FMODE_WRITE && !special_file(inode->i_mode)) {
-		/* get_write_access inlined */
 		error = atomic_inc_unless_negative(&inode->i_writecount) ?
 				0 :
 				-ETXTBSY;

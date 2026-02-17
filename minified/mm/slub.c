@@ -14,8 +14,6 @@
 #define OO_MASK ((1 << OO_SHIFT) - 1)
 #define MAX_OBJS_PER_PAGE 32767
 
-/* freelist_ptr inlined - always returned ptr unchanged (no obfuscation) */
-
 static inline void *get_freepointer(struct kmem_cache *s, void *object)
 {
 	return *(void **)(object + s->offset);
@@ -78,9 +76,6 @@ static inline bool __cmpxchg_double_slab(struct kmem_cache *s,
 	return false;
 }
 
-/* Removed: kfree_hook, slab_free_hook, slab_free_freelist_hook
- * - No longer needed since kfree/kmem_cache_free are no-ops */
-
 #define setup_object(s, obj)             \
 	({                               \
 		if (unlikely((s)->ctor)) \
@@ -105,15 +100,11 @@ static inline struct slab *alloc_slab_page(gfp_t flags, int node,
 
 	slab = folio_slab(folio);
 	__folio_set_slab(folio);
-	/* page_is_pfmemalloc inlined - single caller */
 	if ((uintptr_t)folio_page(folio, 0)->lru.next & BIT(1))
 		folio_set_active(slab_folio(slab));
 
 	return slab;
 }
-
-/* Removed: init_cache_random_seq, init_freelist_randomization
- * - Slab freelist randomization disabled for minimal kernel */
 
 static struct slab *new_slab(struct kmem_cache *s, gfp_t flags, int node)
 {
@@ -149,7 +140,6 @@ static struct slab *new_slab(struct kmem_cache *s, gfp_t flags, int node)
 
 	slab->objects = oo_objects(oo);
 
-	/* account_slab and cache_vmstat_idx inlined - single caller */
 	mod_node_page_state(folio_pgdat(slab_folio(slab)),
 			    (s->flags & SLAB_RECLAIM_ACCOUNT) ?
 				    NR_SLAB_RECLAIMABLE_B :
@@ -220,7 +210,6 @@ static void *get_partial_node(struct kmem_cache *s, struct kmem_cache_node *n,
 	list_for_each_entry_safe(slab, slab2, &n->partial, slab_list) {
 		void *t;
 
-		/* pfmemalloc_match inlined */
 		if (unlikely(folio_test_active(
 			    (struct folio *)slab_folio(slab))) &&
 		    !gfp_pfmemalloc_allowed(gfpflags))
@@ -244,8 +233,6 @@ static inline unsigned long next_tid(unsigned long tid)
 {
 	return tid + TID_STEP;
 }
-
-/* init_tid, __flush_cpu_slab inlined */
 
 static __always_inline void *slab_alloc_node(struct kmem_cache *s,
 					     struct list_lru *lru,
@@ -357,7 +344,6 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 
 	s->flags = flags;
 
-	/* calculate_sizes inlined */
 	size = ALIGN(size, sizeof(void *));
 	s->inuse = size;
 
@@ -399,7 +385,6 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 	s->min_partial = min_t(unsigned long, MAX_PARTIAL, ilog2(s->size) / 2);
 	s->min_partial = max_t(unsigned long, MIN_PARTIAL, s->min_partial);
 
-	/* init_kmem_cache_nodes inlined */
 	if (slab_state == DOWN) {
 		struct slab *slab;
 		struct kmem_cache_node *n;
@@ -431,7 +416,6 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 		s->node[0] = n;
 	}
 
-	/* alloc_kmem_cache_cpus inlined */
 	BUILD_BUG_ON(PERCPU_DYNAMIC_EARLY_SIZE <
 		     KMALLOC_SHIFT_HIGH * sizeof(struct kmem_cache_cpu));
 	s->cpu_slab = __alloc_percpu(sizeof(struct kmem_cache_cpu),
@@ -443,13 +427,9 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 	}
 
 error:
-	/* __kmem_cache_release inlined */
 	free_kmem_cache_nodes(s);
 	return -EINVAL;
 }
-
-/* setup_slub_min_order, setup_slub_max_order, setup_slub_min_objects and __setup
- * handlers removed - not needed for minimal kernel (~21 LOC) */
 
 void *__kmalloc(size_t size, gfp_t flags)
 {
@@ -468,9 +448,6 @@ void *__kmalloc(size_t size, gfp_t flags)
 
 	return ret;
 }
-
-/* Memory hotplug callbacks removed - not needed for minimal kernel
- * (register_hotmemory_notifier is already a no-op) */
 
 static struct kmem_cache *__init bootstrap(struct kmem_cache *static_cache)
 {

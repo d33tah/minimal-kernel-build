@@ -11,7 +11,6 @@
 #include <string.h>
 
 #include "lkc.h"
-/* internal.h inlined */
 extern struct menu *current_menu, *current_entry;
 
 enum {

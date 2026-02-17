@@ -8,7 +8,6 @@
 
 #include <linux/ioport.h>
 #include <linux/kobject.h>
-/* klist.h inlined */
 struct klist_node;
 struct klist {
 	spinlock_t		k_lock;
@@ -35,7 +34,6 @@ extern struct klist_node *klist_next(struct klist_iter *i);
 #include <linux/compiler.h>
 #include <linux/types.h>
 #include <linux/mutex.h>
-/* pm.h inlined */
 struct dev_pm_ops {
 };
 struct dev_pm_info {
@@ -180,17 +178,9 @@ static inline void device_unlock(struct device *dev)
 	mutex_unlock(&dev->mutex);
 }
 
-/* lock_device_hotplug, unlock_device_hotplug, lock_device_hotplug_sysfs,
-   device_offline, device_online, set_primary_fwnode, set_secondary_fwnode,
-   device_set_of_node_from_dev, device_set_node, __root_device_register,
-   root_device_unregister removed - unused */
-
 void device_initial_probe(struct device *dev);
 
 struct device *get_device(struct device *dev);
 void put_device(struct device *dev);
-
-/* device_link_add, device_link_del, device_link_remove, device_shutdown,
-   device_links_supplier_sync_state_pause, device_links_supplier_sync_state_resume removed - unused */
 
 #endif  

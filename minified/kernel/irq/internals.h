@@ -89,9 +89,6 @@ static inline int check_irq_resend(struct irq_desc *desc, bool inject)
 	return 0;
 }
 
-/* register_irq_proc, unregister_irq_proc, register_handler_proc,
-   unregister_handler_proc removed - never called */
-
 static inline void chip_bus_lock(struct irq_desc *desc)
 {
 	if (unlikely(desc->irq_data.chip->irq_bus_lock))
@@ -172,15 +169,9 @@ static inline void kstat_incr_irqs_this_cpu(struct irq_desc *desc)
 {
 }
 
-/* irq_init_generic_chip, irq_can_move_pcntxt, irq_move_pending,
-   irq_copy_pending, irq_get_pending, irq_desc_get_pending_mask,
-   irq_fixup_move_pending, handle_enforce_irqctx removed - unused */
-
 static inline int irq_domain_activate_irq(struct irq_data *data, bool reserve)
 {
 	irqd_set_activated(data);
 	return 0;
 }
 
-/* irq_add_debugfs_entry, irq_remove_debugfs_entry,
-   irq_debugfs_copy_devname removed - unused */

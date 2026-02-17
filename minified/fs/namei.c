@@ -4,8 +4,6 @@
 #include <linux/fs.h>
 #include <linux/namei.h>
 #include <linux/sched/mm.h>
-/* Removed: ima_file_check, devcgroup_inode_permission, devcgroup_inode_mknod
- * - Always returned 0 (no-op stubs) */
 #include <linux/mount.h>
 #include <linux/capability.h>
 #include <linux/file.h>
@@ -269,7 +267,6 @@ out_dput:
 
 static int complete_walk(struct nameidata *nd)
 {
-	/* Stub: simplified walk completion for minimal kernel */
 	if (nd->flags & LOOKUP_RCU) {
 		nd->root.mnt = NULL;
 		if (!try_to_unlazy(nd))
@@ -292,7 +289,6 @@ static int set_root(struct nameidata *nd)
 				__read_seqcount_begin(&nd->root.dentry->d_seq);
 		} while (read_seqcount_retry(&fs->seq, seq));
 	} else {
-		/* get_fs_root inlined - single caller */
 		spin_lock(&fs->lock);
 		nd->root = fs->root;
 		path_get(&nd->root);
@@ -406,9 +402,6 @@ static struct dentry *lookup_fast(struct nameidata *nd, struct inode **inode,
 	return dentry;
 }
 
-/* pick_link function removed (~80 LOC) - never called since
- * d_is_symlink() is always false (no symlinks created) */
-
 enum { WALK_TRAILING = 1, WALK_MORE = 2, WALK_NOFOLLOW = 4 };
 
 static const char *step_into(struct nameidata *nd, int flags,
@@ -420,9 +413,6 @@ static const char *step_into(struct nameidata *nd, int flags,
 
 	if (err < 0)
 		return ERR_PTR(err);
-	/* Symlink handling removed: d_is_symlink() is always false since
-	 * symlinks are never created (ramfs/shmem only use S_IFREG/S_IFDIR).
-	 * Removed ~10 LOC including pick_link call. */
 	if (!(nd->flags & LOOKUP_RCU)) {
 		dput(nd->path.dentry);
 		if (nd->path.mnt != path.mnt)
@@ -436,8 +426,6 @@ static const char *step_into(struct nameidata *nd, int flags,
 
 static const char *handle_dots(struct nameidata *nd, int type)
 {
-	/* LAST_DOTDOT handling removed: /init path has no ".." components.
-	 * LAST_DOT is a no-op (stay in same directory). */
 	return NULL;
 }
 
@@ -456,7 +444,6 @@ static const char *walk_component(struct nameidata *nd, int flags)
 	if (IS_ERR(dentry))
 		return ERR_CAST(dentry);
 	if (unlikely(!dentry)) {
-		/* __lookup_slow inlined */
 		struct inode *dir_inode = nd->path.dentry->d_inode;
 		struct dentry *old;
 		DECLARE_WAIT_QUEUE_HEAD_ONSTACK(wq);
@@ -613,7 +600,6 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
 	nd->root.mnt = NULL;
 
 	if (*s == '/') {
-		/* inlined nd_jump_root */
 		error = set_root(nd);
 		if (error)
 			return ERR_PTR(error);
@@ -688,7 +674,6 @@ int kern_path(const char *name, unsigned int flags, struct path *path)
 	return ret;
 }
 
-/* lookup_open simplified: no O_CREAT support */
 static struct dentry *lookup_open(struct nameidata *nd, struct file *file,
 				  const struct open_flags *op)
 {
@@ -723,7 +708,6 @@ static struct dentry *lookup_open(struct nameidata *nd, struct file *file,
 	return dentry;
 }
 
-/* open_last_lookups simplified: no O_CREAT, no write access needed */
 static const char *open_last_lookups(struct nameidata *nd, struct file *file,
 				     const struct open_flags *op)
 {
@@ -777,7 +761,6 @@ finish_lookup:
 	return res;
 }
 
-/* do_open simplified: no truncate, no permission checks (init runs as root) */
 static int do_open(struct nameidata *nd, struct file *file,
 		   const struct open_flags *op)
 {
@@ -801,7 +784,6 @@ static int do_open(struct nameidata *nd, struct file *file,
 	return error;
 }
 
-/* path_openat simplified: no O_TMPFILE, no O_PATH */
 static struct file *path_openat(struct nameidata *nd,
 				const struct open_flags *op, unsigned flags)
 {
@@ -845,9 +827,3 @@ struct file *do_filp_open(int dfd, struct filename *pathname,
 	restore_nameidata();
 	return filp;
 }
-
-/* vfs_mknod, vfs_mkdir, do_rmdir, do_unlinkat, vfs_symlink, vfs_link removed
- * - only callers were init_* functions */
-
-/* page_get_link, page_put_link, page_symlink, page_symlink_inode_operations
- * removed - symlinks are never created (ramfs/shmem only use S_IFREG/S_IFDIR) */

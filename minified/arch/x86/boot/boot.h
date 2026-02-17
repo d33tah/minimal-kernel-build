@@ -8,7 +8,6 @@
 
 #include <linux/stdarg.h>
 #include <linux/types.h>
-/* edd.h inlined - structs defined in bootparam.h which is included transitively */
 #include <asm/setup.h>
 #include <asm/asm.h>
 #include "bitops.h"

@@ -36,9 +36,6 @@ struct signal_struct {
 
 	struct tty_struct *tty;
 
-	/* utime, stime, gtime, prev_cputime, nvcsw, nivcsw, min_flt, maj_flt,
-	 * maxrss, sum_sched_runtime all removed - write-only fields */
-
 	struct rlimit rlim[RLIM_NLIMITS];
 
 	struct mutex cred_guard_mutex;	 
@@ -46,10 +43,6 @@ struct signal_struct {
 } __randomize_layout;
 
 int force_sig_fault(int sig, int code, void __user *addr);
-/* send_sig_fault, force_sig_mceerr, send_sig_mceerr, force_sig_bnderr, send_sig_perf,
-   force_sig_ptrace_errno_trap, force_sig_fault_trapno, send_sig_fault_trapno,
-   force_sig_seccomp, force_sig_pkuerr removed - unused */
-
 /* force_sigsegv now static in signal.c */
 extern void force_sig(int);
 
@@ -97,8 +90,6 @@ static inline int signal_pending_state(unsigned int state, struct task_struct *p
 	return (state & TASK_INTERRUPTIBLE) || __fatal_signal_pending(p);
 }
 
-/* fault_signal_pending inlined at arch/x86/mm/fault.c - single caller */
-
 /* recalc_sigpending_and_wake only used internally in signal.c */
 extern void recalc_sigpending(void);
 
@@ -118,9 +109,6 @@ static inline void restore_saved_sigmask(void)
 }
 
 extern void __cleanup_sighand(struct sighand_struct *);
-
-/* while_each_thread, __for_each_thread, for_each_thread, next_task,
- * for_each_process, do_each_thread removed - never called */
 
 static inline struct pid *task_pgrp(struct task_struct *task)
 {

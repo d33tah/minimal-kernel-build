@@ -3,7 +3,6 @@
 
 #include <linux/objtool.h>
 
-/* ORC register defines inlined from orc_types.h */
 #define ORC_REG_DX			2
 #define ORC_REG_DI			3
 #define ORC_REG_BP			4

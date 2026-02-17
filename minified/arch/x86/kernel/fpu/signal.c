@@ -12,11 +12,6 @@
 #include "internal.h"
 #include "xstate.h"
 
-/* All static helpers also removed: check_xstate_in_sigframe, save_fsave_header,
-   save_sw_bytes, save_xstate_epilog, copy_fpregs_to_sigframe,
-   __restore_fpregs_from_user, restore_fpregs_from_user, __fpu_restore_sig,
-   xstate_sigframe_size */
-
 unsigned long __init fpu__get_fpstate_size(void)
 {
 	unsigned long ret = fpu_user_cfg.max_size;

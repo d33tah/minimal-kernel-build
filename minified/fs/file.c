@@ -39,7 +39,6 @@ static void copy_fd_bitmaps(struct fdtable *nfdt, struct fdtable *ofdt,
 	memset((char *)nfdt->full_fds_bits + cpy, 0, set);
 }
 
-/* Simplified: init never exceeds NR_OPEN_DEFAULT fds, no expansion needed */
 static int expand_files(struct files_struct *files, unsigned int nr)
 	__releases(files->file_lock) __acquires(files->file_lock)
 {
@@ -50,7 +49,6 @@ static int expand_files(struct files_struct *files, unsigned int nr)
 	return -EMFILE;
 }
 
-/* Simplified: open_files always fits in NR_OPEN_DEFAULT, no expansion needed */
 struct files_struct *dup_fd(struct files_struct *oldf, unsigned int max_fds,
 			    int *errorp)
 {
@@ -227,7 +225,6 @@ out:
 	return error;
 }
 
-/* Simplified: resize never happens in minimal kernel */
 void fd_install(unsigned int fd, struct file *file)
 {
 	struct files_struct *files = current->files;
@@ -245,14 +242,12 @@ static unsigned long __fdget(unsigned int fd)
 	struct files_struct *files = current->files;
 	struct file *file;
 
-	/* Simplified: single-process, files->count always 1 */
 	file = files_lookup_fd_raw(files, fd);
 	if (!file || unlikely(file->f_mode & FMODE_PATH))
 		return 0;
 	return (unsigned long)file;
 }
 
-/* Simplified: file_count never > 1, no pos locking needed */
 unsigned long __fdget_pos(unsigned int fd)
 {
 	return __fdget(fd);

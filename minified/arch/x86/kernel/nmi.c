@@ -61,7 +61,6 @@ static int nmi_handle(unsigned int type, struct pt_regs *regs)
 
 	rcu_read_lock();
 
-	/* Simplified: no timing check for minimal kernel */
 	list_for_each_entry_rcu(a, &desc->head, list)
 		handled += a->handler(type, regs);
 

@@ -105,7 +105,6 @@ void arch_sync_kernel_mappings(unsigned long start, unsigned long end)
 static noinline void pgtable_bad(struct pt_regs *regs, unsigned long error_code,
 				 unsigned long address)
 {
-	/* Simplified: just die without verbose output */
 	oops_end(oops_begin(), regs, SIGKILL);
 }
 
@@ -129,7 +128,6 @@ static noinline void page_fault_oops(struct pt_regs *regs,
 				     unsigned long error_code,
 				     unsigned long address)
 {
-	/* Simplified: just die with minimal output */
 	unsigned long flags = oops_begin();
 	__die("Oops", regs, error_code);
 	oops_end(flags, regs, SIGKILL);
@@ -291,8 +289,6 @@ static noinline int spurious_kernel_fault(unsigned long error_code,
 }
 NOKPROBE_SYMBOL(spurious_kernel_fault);
 
-/* access_error inlined at single call site */
-
 bool fault_in_kernel_space(unsigned long address)
 {
 	/* X86_32: no vsyscall check needed */
@@ -389,7 +385,6 @@ retry:
 	}
 
 good_area:
-	/* access_error inlined */
 	if (unlikely((error_code & X86_PF_PK) || (error_code & X86_PF_SGX) ||
 		     ((error_code & X86_PF_WRITE) &&
 		      !(vma->vm_flags & VM_WRITE)) ||
@@ -403,7 +398,6 @@ good_area:
 
 	fault = handle_mm_fault(vma, address, flags, regs);
 
-	/* fault_signal_pending inlined */
 	if (unlikely((fault & VM_FAULT_RETRY) &&
 		     (fatal_signal_pending(current) ||
 		      (user_mode(regs) && signal_pending(current))))) {

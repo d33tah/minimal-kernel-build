@@ -6,13 +6,9 @@
 #include <linux/types.h>
 #include <linux/device.h>
 
-/* Simplified - only ONLINE state needed, no hotplug callbacks */
 enum cpuhp_state {
 	CPUHP_ONLINE = 1,
 };
-
-/* __cpuhp_setup_state, __cpuhp_setup_state_cpuslocked,
-   cpuhp_setup_state_nocalls removed - CPU hotplug callbacks never called (~18 LOC) */
 
 extern void boot_cpu_init(void);
 extern void cpu_init(void);

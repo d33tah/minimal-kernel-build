@@ -10,7 +10,6 @@
 #define __ARCH_SI_ATTRIBUTES
 #endif
 
-/* Simplified __sifields - only keep struct members actually accessed */
 union __sifields {
 	/* _kill: used by si_pid, si_uid */
 	struct {
@@ -53,10 +52,6 @@ typedef struct siginfo {
 #define si_call_addr	_sifields._sigsys._call_addr
 #define si_syscall	_sifields._sigsys._syscall
 #define si_arch		_sifields._sigsys._arch
-/* Removed unused: si_tid, si_overrun, si_sys_private, si_status, si_utime,
-   si_stime, si_value, si_int, si_ptr, si_trapno, si_addr_lsb, si_lower,
-   si_upper, si_pkey, si_band, si_fd */
-
 #define SI_KERNEL	0x80
 
 /* Only keep signal sub-codes actually used */

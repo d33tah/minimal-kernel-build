@@ -159,7 +159,6 @@ int kthreadd(void *unused)
 	struct task_struct *tsk = current;
 
 	__set_task_comm(tsk, "kthreadd", false); /* set_task_comm inlined */
-	/* ignore_signals inlined */
 	{
 		int i;
 		for (i = 0; i < _NSIG; ++i)

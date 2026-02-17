@@ -4,7 +4,6 @@
 #include <linux/fs.h>
 #include <linux/kernel.h>
 #include <linux/bug.h>
-/* asm/cacheflush.h inlined - flush_dcache_page is empty on x86 */
 struct page;
 static inline void flush_dcache_page(struct page *page) { }
 struct folio;
@@ -54,9 +53,6 @@ do {								\
 	__kunmap_local(__addr);					\
 } while (0)
 
-/* clear_user_highpage, alloc_zeroed_user_highpage_movable removed -
-   x86 defines __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE_MOVABLE so generic versions unused */
-
 static inline void zero_user_segments(struct page *page,
 		unsigned start1, unsigned end1,
 		unsigned start2, unsigned end2)
@@ -82,10 +78,6 @@ static inline void zero_user(struct page *page,
 {
 	zero_user_segments(page, start, start + size, 0, 0);
 }
-
-/* copy_user_highpage inlined at mm/memory.c - single caller */
-
-/* memcpy_to_page inlined at lib/iov_iter.c - single caller */
 
 static inline void folio_zero_range(struct folio *folio,
 		size_t start, size_t length)

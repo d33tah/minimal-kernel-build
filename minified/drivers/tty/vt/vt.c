@@ -3,7 +3,6 @@
 #include <linux/types.h>
 #include <linux/kernel.h>
 #include <linux/string.h>
-/* inlined from linux/kd.h */
 #ifndef KD_TEXT
 #define KD_TEXT 0x00
 #define KD_GRAPHICS 0x01
@@ -14,7 +13,6 @@
 #include <linux/init.h>
 #include <linux/mutex.h>
 #include <linux/vt_kern.h>
-/* selection.h inlined */
 #define scr_writew(val, addr) (*(addr) = (val))
 #define scr_readw(addr) (*(addr))
 static inline void scr_memsetw(u16 *s, u16 c, unsigned int count)
@@ -52,8 +50,6 @@ static int printable;
 int fg_console;
 
 static struct vc_data *master_display_fg;
-
-/* con_is_fg inlined - returned vc->vc_num == fg_console */
 
 static void con_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
 		       enum con_scroll dir, unsigned int nr)
@@ -130,8 +126,6 @@ static void set_origin(struct vc_data *vc)
 		vc->vc_origin + vc->vc_size_row * vc->state.y + 2 * vc->state.x;
 }
 
-/* vc_cons_allocated inlined at call site */
-
 static void visual_init(struct vc_data *vc, int num, int init)
 {
 	if (vc->vc_sw)
@@ -155,10 +149,6 @@ static void visual_init(struct vc_data *vc, int num, int init)
 	vc->vc_size_row = vc->vc_cols << 1;
 	vc->vc_screenbuf_size = vc->vc_rows * vc->vc_size_row;
 }
-
-/* visual_deinit inlined */
-
-/* vc_do_resize inlined - was a stub returning 0 */
 
 int vc_resize(struct vc_data *vc, unsigned int cols, unsigned int rows)
 {
@@ -282,9 +272,6 @@ static struct console vt_console_driver = {
 	.index = -1,
 };
 
-/* con_write, con_flush_chars, con_install, con_open, con_shutdown, con_cleanup
-   all removed - only referenced from dead con_ops struct */
-
 static int default_color = 7;
 
 static void vc_init(struct vc_data *vc, unsigned int rows, unsigned int cols,
@@ -335,7 +322,6 @@ static int __init con_init(void)
 	currcons = fg_console = 0;
 	master_display_fg = vc = vc_cons[currcons].d;
 	set_origin(vc);
-	/* save_screen inlined */
 	WARN_CONSOLE_UNLOCKED();
 	if (vc->vc_sw->con_save_screen)
 		vc->vc_sw->con_save_screen(vc);
@@ -354,10 +340,6 @@ static int __init con_init(void)
 console_initcall(con_init);
 
 #ifndef VT_SINGLE_DRIVER
-
-/* do_bind_con_driver, vt_bind, vt_unbind, store_bind, show_bind, show_name,
-   dev_attr_bind, dev_attr_name, con_dev_attrs, vtconsole_init_device,
-   vtconsole_class, con_is_bound - all removed, never used */
 
 bool con_is_visible(const struct vc_data *vc)
 {

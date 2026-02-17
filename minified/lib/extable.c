@@ -51,7 +51,6 @@ search_extable(const struct exception_table_entry *base, const size_t num,
 
 	while (n > 0) {
 		pivot = b + (n >> 1);
-		/* cmp_ex_search inlined */
 		if (value > ex_to_insn(pivot)) {
 			b = pivot + 1;
 			n--;

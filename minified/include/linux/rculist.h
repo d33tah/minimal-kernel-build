@@ -28,8 +28,6 @@ static inline void list_add_tail_rcu(struct list_head *new,
 	__list_add_rcu(new, head->prev, head);
 }
 
-/* list_replace_rcu inlined at fs/exec.c - single caller */
-
 #define list_entry_rcu(ptr, type, member) \
 	container_of(READ_ONCE(ptr), type, member)
 
@@ -38,10 +36,6 @@ static inline void list_add_tail_rcu(struct list_head *new,
 	     pos = list_entry_rcu((head)->next, typeof(*pos), member);	\
 		&pos->member != (head);					\
 		pos = list_entry_rcu(pos->member.next, typeof(*pos), member))
-
-/* hlist_del_rcu inlined at kernel/pid.c - single caller */
-/* hlist_replace_rcu inlined at kernel/pid.c - single caller */
-/* hlists_swap_heads_rcu inlined at kernel/pid.c - single caller */
 
 #define hlist_first_rcu(head)	(*((struct hlist_node __rcu **)(&(head)->first)))
 #define hlist_next_rcu(node)	(*((struct hlist_node __rcu **)(&(node)->next)))

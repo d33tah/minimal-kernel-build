@@ -1,6 +1,4 @@
 /* --- 2026-02-08 05:55 --- */
-/* Simplified percpu-rwsem for single-task kernel: no contention. */
-
 #include <linux/percpu.h>
 #include <linux/percpu-rwsem.h>
 #include <linux/rcupdate.h>

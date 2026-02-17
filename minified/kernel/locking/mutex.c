@@ -1,6 +1,4 @@
 /* --- 2026-02-08 05:55 --- */
-/* Simplified mutex for single-task kernel: no contention possible. */
-
 #include <linux/mutex.h>
 #include <linux/spinlock.h>
 #include <linux/sched/debug.h>

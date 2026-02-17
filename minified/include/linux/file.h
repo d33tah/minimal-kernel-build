@@ -39,8 +39,6 @@ static inline struct fd fdget_pos(int fd)
 	return __to_fd(__fdget_pos(fd));
 }
 
-/* fdput_pos inlined at fs/read_write.c - single caller */
-
 extern int get_unused_fd_flags(unsigned flags);
 
 extern void fd_install(unsigned int fd, struct file *file);

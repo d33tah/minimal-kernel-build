@@ -65,7 +65,4 @@ void page_add_new_anon_rmap(struct page *, struct vm_area_struct *,
 void page_add_file_rmap(struct page *, struct vm_area_struct *,
 		bool compound);
 
-/* PVMW_SYNC, page_vma_mapped_walk struct and functions removed - never used
- * (page_vma_mapped.c was removed) */
-
 #endif	 

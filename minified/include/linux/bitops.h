@@ -187,8 +187,6 @@ static __always_inline int fls64(__u64 x)
 		return fls(h) + 32;
 	return fls(x);
 }
-/* End inlined from asm/bitops.h */
-
 static inline __u32 rol32(__u32 word, unsigned int shift) { return (word << (shift & 31)) | (word >> ((-shift) & 31)); }
 static inline unsigned fls_long(unsigned long l) { if (sizeof(l) == 4) return fls(l); return fls64(l); }
 #endif

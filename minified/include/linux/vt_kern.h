@@ -18,17 +18,14 @@
 #include <linux/workqueue.h>
 #include <linux/notifier.h>
 
-/* inlined from tty_driver.h */
 struct tty_struct;
 struct tty_driver;
 struct tty_operations;
 
-/* inlined from tty_buffer.h */
 struct tty_bufhead {
 	int dummy;
 };
 
-/* inlined from tty_port.h */
 struct tty_port {
 	struct tty_bufhead	buf;
 	spinlock_t		lock;
@@ -39,7 +36,6 @@ struct tty_port {
 
 void tty_port_init(struct tty_port *port);
 
-/* inlined from tty.h */
 struct tty_struct {
 	struct kref kref;
 } __randomize_layout;

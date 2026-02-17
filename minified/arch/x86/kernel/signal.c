@@ -22,10 +22,6 @@
 #include <asm/sigframe.h>
 #include <asm/signal.h>
 
-/* signal_fault, __unsafe_setup_sigcontext, unsafe_put_sigcontext,
- * unsafe_put_sigmask, align_sigframe, get_sigframe, retcode, rt_retcode,
- * __setup_frame, __setup_rt_frame removed - get_signal returns false */
-
 #define FRAME_ALIGNMENT 16UL
 #define MAX_FRAME_PADDING (FRAME_ALIGNMENT - 1)
 

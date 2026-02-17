@@ -51,10 +51,6 @@ void __init e820__range_add(u64 start, u64 size, enum e820_type type)
 	__e820__range_add(e820_table, start, size, type);
 }
 
-/* change_member, change_point_list, overlap_list, new_entries, cpcompare
- * removed - e820__update_table stubbed for QEMU */
-
-/* e820 table merging stubbed - QEMU provides clean non-overlapping map */
 int __init e820__update_table(struct e820_table *table)
 {
 	return 0;
@@ -84,7 +80,6 @@ static int __init __append_e820_table(struct boot_e820_entry *entries,
 
 /* append_e820_table merged into e820__memory_setup_default */
 
-/* Simplified: just change matching entry types in-place */
 u64 __init e820__range_update(u64 start, u64 size, enum e820_type old_type,
 			      enum e820_type new_type)
 {
@@ -104,7 +99,6 @@ u64 __init e820__range_update(u64 start, u64 size, enum e820_type old_type,
 	return real_updated_size;
 }
 
-/* Simplified: just zero matching entries */
 u64 __init e820__range_remove(u64 start, u64 size, enum e820_type old_type,
 			      bool check_type)
 {
@@ -171,13 +165,9 @@ unsigned long __init e820__end_of_ram_pfn(void)
 	return e820_end_pfn(MAX_ARCH_PFN, E820_TYPE_RAM);
 }
 
-/* Simplified: QEMU has no setup_data */
 void __init e820__reserve_setup_data(void)
 {
 }
-
-/* e820_type_to_string, e820_type_to_iomem_type, e820_type_to_iores_desc, do_mark_busy
-   inlined into e820__reserve_resources */
 
 void __init e820__reserve_resources(void)
 {

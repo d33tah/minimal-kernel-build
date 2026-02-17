@@ -26,8 +26,6 @@ static inline unsigned long *node_marks(struct xa_node *node, xa_mark_t mark)
 	return node->marks[(__force unsigned)mark];
 }
 
-/* node_get_mark inlined - returned test_bit(offset, node_marks(node, mark)) */
-
 static inline bool node_set_mark(struct xa_node *node, unsigned int offset,
 				 xa_mark_t mark)
 {
@@ -39,8 +37,6 @@ static inline bool node_clear_mark(struct xa_node *node, unsigned int offset,
 {
 	return __test_and_clear_bit(offset, node_marks(node, mark));
 }
-
-/* node_any_mark inlined - returned !bitmap_empty(...) */
 
 static inline void node_mark_all(struct xa_node *node, xa_mark_t mark)
 {
@@ -455,7 +451,6 @@ void *xas_store(struct xa_state *xas, void *entry)
 		values = !xa_is_value(first) - !value;
 	}
 
-	/* update_node inlined */
 	if (node && (count || values)) {
 		node->count += count;
 		node->nr_values += values;

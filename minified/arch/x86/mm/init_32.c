@@ -30,11 +30,9 @@
 #include <asm/page_types.h>
 #include <asm/cpu_entry_area.h>
 #include <asm/pgtable_areas.h>
-/* asm/numa.h inlined */
 #include <linux/nodemask.h>
 #include <asm/topology.h>
 
-/* mm_internal.h inlined */
 void *alloc_low_pages(unsigned int num);
 static inline void *alloc_low_page(void)
 {
@@ -274,7 +272,6 @@ pteval_t __default_kernel_pte_mask __read_mostly = DEFAULT_PTE_MASK;
 
 static unsigned int highmem_pages = -1;
 
-/* lowmem_pfn_init and highmem_pfn_init inlined - single callers */
 void __init find_low_pfn_range(void)
 {
 	if (max_pfn <= MAXMEM_PFN) {
@@ -325,7 +322,6 @@ void __init paging_init(void)
 	zone_sizes_init();
 }
 
-/* test_wp_bit inlined - single caller */
 void __init mem_init(void)
 {
 	char z = 0;
@@ -343,7 +339,6 @@ void __init mem_init(void)
 	BUG_ON(VMALLOC_START >= VMALLOC_END);
 	BUG_ON((unsigned long)high_memory > VMALLOC_START);
 
-	/* test_wp_bit inlined */
 	__set_fixmap(FIX_WP_TEST, __pa_symbol(empty_zero_page), PAGE_KERNEL_RO);
 	if (!copy_to_kernel_nofault((char *)fix_to_virt(FIX_WP_TEST), &z, 1))
 		panic("Linux doesn't support CPUs with broken WP.");

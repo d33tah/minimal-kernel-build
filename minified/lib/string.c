@@ -7,7 +7,6 @@
 #include <linux/bug.h>
 #include <linux/errno.h>
 
-/* get_unaligned inlined from asm-generic/unaligned.h */
 #define __get_unaligned_t(type, ptr)                        \
 	({                                                  \
 		const struct {                              \
@@ -19,10 +18,6 @@
 #include <asm/byteorder.h>
 #include <asm/word-at-a-time.h>
 #include <asm/page.h>
-
-/* strcpy, strncpy, strcmp, strncmp, strchr, strlen, strnlen, memset,
-   memcpy, memmove removed - x86 provides arch-specific implementations
-   via __HAVE_ARCH_* defines in asm/string_32.h */
 
 #ifndef __HAVE_ARCH_STRLCPY
 size_t strlcpy(char *dest, const char *src, size_t size)

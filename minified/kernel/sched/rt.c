@@ -1,7 +1,4 @@
 /* Minimal RT scheduler stub */
-/* sysctl_sched_rt_period/runtime, def_rt_bandwidth, init_rt_bandwidth,
-   init_rt_rq removed - all rt_rq fields removed */
-
 static void enqueue_task_rt(struct rq *rq, struct task_struct *p, int f)
 {
 }

@@ -1,4 +1,3 @@
-/* Minimal video mode setup - simplified for text-only boot */
 #include "boot.h"
 #include "video.h"
 #include <uapi/asm/boot.h>

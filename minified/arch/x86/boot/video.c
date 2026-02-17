@@ -11,7 +11,6 @@ static void store_mode_params(void)
 	if (graphic_mode)
 		return;
 
-	/* store_cursor_position inlined */
 	initregs(&ireg);
 	ireg.ah = 0x03;
 	intcall(0x10, &ireg, &oreg);
@@ -22,7 +21,6 @@ static void store_mode_params(void)
 	if ((oreg.ch & 0x1f) > (oreg.cl & 0x1f))
 		boot_params.screen_info.flags |= VIDEO_FLAGS_NOCURSOR;
 
-	/* store_video_mode inlined */
 	initregs(&ireg);
 	ireg.ah = 0x0f;
 	intcall(0x10, &ireg, &oreg);

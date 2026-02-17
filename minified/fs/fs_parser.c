@@ -76,7 +76,3 @@ int fs_param_is_u32(struct p_log *log, const struct fs_parameter_spec *p,
 		return fs_param_bad_value(log, param);
 	return 0;
 }
-
-/* fs_param_is_s32, fs_param_is_u64, fs_param_is_enum, fs_param_is_string,
-   fs_param_is_blob, fs_param_is_fd, fs_param_is_blockdev, fs_param_is_path
-   removed - unused */

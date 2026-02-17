@@ -213,8 +213,6 @@ do {										\
 	__put_user_size(*((type *)(src)), (__force type __user *)(dst),	\
 			sizeof(type), err_label)
 
-/* End inlined from asm/uaccess.h */
-
 extern __must_check unsigned long
 _copy_to_user(void __user *, const void *, unsigned long);
 

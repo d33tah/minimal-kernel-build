@@ -6,8 +6,6 @@
 
 #define PGTABLE_HIGHMEM 0
 
-/* paravirt_tlb_remove_table inlined */
-
 gfp_t __userpte_alloc_gfp = GFP_PGTABLE_USER | PGTABLE_HIGHMEM;
 
 pgtable_t pte_alloc_one(struct mm_struct *mm)
@@ -26,9 +24,6 @@ struct mm_struct *pgd_page_get_mm(struct page *page)
 {
 	return page->pt_mm;
 }
-
-/* Simplified functions removed - free_pmds, preallocate_pmds, pgd_mop_up_pmds,
-   pgd_prepopulate_pmd, pgd_prepopulate_user_pmd were empty stubs */
 
 pgd_t *pgd_alloc(struct mm_struct *mm)
 {

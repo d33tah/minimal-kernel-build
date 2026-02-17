@@ -22,7 +22,3 @@ Efault:
 	pagefault_enable();
 	return -EFAULT;
 }
-
-/* Removed uncalled functions:
- * strncpy_from_kernel_nofault, copy_from_user_nofault, copy_to_user_nofault,
- * strncpy_from_user_nofault, strnlen_user_nofault, __copy_overflow */

@@ -10,8 +10,6 @@ static __always_inline void __enter_from_user_mode(struct pt_regs *regs)
 	arch_enter_from_user_mode(regs);
 }
 
-/* syscall_enter_audit, syscall_trace_enter inlined */
-
 static __always_inline long __syscall_enter_from_user_work(struct pt_regs *regs,
 							   long syscall)
 {
@@ -74,17 +72,12 @@ static void exit_to_user_mode_prepare(struct pt_regs *regs)
 		ti_work = read_thread_flags();
 	}
 
-	/* arch_exit_to_user_mode_prepare inlined */
 	if (unlikely(ti_work & _TIF_NEED_FPU_LOAD))
 		switch_fpu_return();
 
-	/* kmap_assert_nomap inlined */
 	DEBUG_LOCKS_WARN_ON(current->kmap_ctrl.idx);
 	/* lockdep_sys_exit is empty do{}while(0) */
 }
-
-/* report_single_step inlined */
-/* syscall_exit_to_user_mode_prepare inlined */
 
 static __always_inline void
 __syscall_exit_to_user_mode_work(struct pt_regs *regs)

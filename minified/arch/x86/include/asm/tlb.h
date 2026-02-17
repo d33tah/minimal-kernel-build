@@ -1,8 +1,6 @@
 #ifndef _ASM_X86_TLB_H
 #define _ASM_X86_TLB_H
 
-/* mmu_notifier.h inlined - only 2 includers */
-
 struct mmu_notifier_range {
 	unsigned long start;
 	unsigned long end;

@@ -148,8 +148,6 @@ static inline pmd_t pfn_pmd(unsigned long page_nr, pgprot_t pgprot)
 	return __pmd(pfn | check_pgprot(pgprot));
 }
 
-/* canon_pgprot, is_new_memtype_allowed inlined at single call site */
-
 pmd_t *populate_extra_pmd(unsigned long vaddr);
 pte_t *populate_extra_pte(unsigned long vaddr);
 
@@ -281,17 +279,10 @@ extern int ptep_set_access_flags(struct vm_area_struct *vma,
 				 unsigned long address, pte_t *ptep,
 				 pte_t entry, int dirty);
 
-/* pmdp_set_access_flags, pudp_set_access_flags, pmdp_test_and_clear_young,
-   pudp_test_and_clear_young, pmdp_clear_flush_young removed - unused */
-
 static inline void clone_pgd_range(pgd_t *dst, pgd_t *src, int count)
 {
 	memcpy(dst, src, count * sizeof(pgd_t));
 }
-
-/* pte_flags_pkey, __pkru_allows_pkey, __pte_access_permitted,
-   pte_access_permitted, pmd_access_permitted, pud_access_permitted,
-   pfn_modify_allowed removed - never called or unused */
 
 #endif
 

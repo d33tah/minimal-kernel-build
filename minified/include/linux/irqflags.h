@@ -7,8 +7,6 @@
 #include <linux/types.h>
 #include <asm/percpu.h>
 
-/* --- x86 arch irqflags inlined from asm/irqflags.h --- */
-
 #define __cpuidle __section(".cpuidle.text")
 
 extern __always_inline unsigned long native_save_fl(void)
@@ -84,8 +82,6 @@ static __always_inline void arch_local_irq_restore(unsigned long flags)
 	if (!arch_irqs_disabled_flags(flags))
 		arch_local_irq_enable();
 }
-
-/* --- end inlined asm/irqflags.h --- */
 
 #define lockdep_hardirqs_enabled()		0
 

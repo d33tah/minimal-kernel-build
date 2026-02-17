@@ -13,7 +13,6 @@
 
 #include "internals.h"
 
-/* Simplified __irq_set_trigger - only called for first install */
 int __irq_set_trigger(struct irq_desc *desc, unsigned long flags)
 {
 	struct irq_chip *chip = desc->irq_data.chip;
@@ -59,7 +58,6 @@ int __irq_set_trigger(struct irq_desc *desc, unsigned long flags)
 	return ret;
 }
 
-/* Simplified __setup_irq - no shared IRQ, no threading, no ONESHOT/PERCPU/NMI */
 static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 		       struct irqaction *new)
 {
@@ -110,7 +108,6 @@ out_unlock:
 	return ret;
 }
 
-/* Simplified request_threaded_irq - no thread_fn, no shared IRQ validation */
 int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 			 irq_handler_t thread_fn, unsigned long irqflags,
 			 const char *devname, void *dev_id)

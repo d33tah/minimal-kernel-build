@@ -94,9 +94,6 @@ unsigned long find_last_bit(const unsigned long *addr, unsigned long size)
 }
 #endif
 
-/* _le bitmap functions (find_next_zero_bit_le, find_next_bit_le, find_first_zero_bit_le)
-   removed - never called */
-
 #define for_each_clear_bit_from(bit, addr, size) \
 	for ((bit) = find_next_zero_bit((addr), (size), (bit));	\
 	     (bit) < (size);					\
@@ -107,10 +104,6 @@ unsigned long find_last_bit(const unsigned long *addr, unsigned long size)
 
 int bitmap_parse(const char *buf, unsigned int buflen,
 			unsigned long *dst, int nbits);
-/* bitmap_parse_user, bitmap_parselist, bitmap_parselist_user, bitmap_remap,
- * bitmap_bitremap, bitmap_onto, bitmap_fold, bitmap_find_free_region,
- * bitmap_release_region, bitmap_allocate_region, bitmap_print_to_pagebuf removed - never called */
-
 #define BITMAP_FIRST_WORD_MASK(start) (~0UL << ((start) & (BITS_PER_LONG - 1)))
 #define BITMAP_LAST_WORD_MASK(nbits) (~0UL >> (-(nbits) & (BITS_PER_LONG - 1)))
 
@@ -133,8 +126,6 @@ static inline bool bitmap_empty(const unsigned long *src, unsigned nbits)
 
 	return find_first_bit(src, nbits) == nbits;
 }
-
-/* bitmap_full inlined at lib/idr.c - single caller */
 
 
 #endif

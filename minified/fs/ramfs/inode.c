@@ -78,7 +78,6 @@ struct inode *ramfs_get_inode(struct super_block *sb, const struct inode *dir,
 static int ramfs_create(struct user_namespace *mnt_userns, struct inode *dir,
 			struct dentry *dentry, umode_t mode, bool excl)
 {
-	/* ramfs_mknod inlined */
 	struct inode *inode =
 		ramfs_get_inode(dir->i_sb, dir, mode | S_IFREG, 0);
 	if (!inode)
@@ -110,7 +109,6 @@ static int ramfs_parse_param(struct fs_context *fc, struct fs_parameter *param)
 	struct ramfs_fs_info *fsi = fc->s_fs_info;
 	int opt;
 
-	/* fs_parse inlined */
 	opt = __fs_parse(&fc->log, ramfs_fs_parameters, param, &result);
 	if (opt == -ENOPARAM) {
 		opt = vfs_parse_fs_param_source(fc, param);

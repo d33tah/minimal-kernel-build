@@ -34,9 +34,6 @@ struct module;
 #define MODULE_FILE	MODULE_INFO(file, KBUILD_MODFILE);
 #define MODULE_LICENSE(_license) MODULE_FILE MODULE_INFO(license, _license)
 
-/* __module_address, __module_text_address, is_module_address,
-   is_module_percpu_address, is_module_text_address removed - unused */
-
 static inline void __module_get(struct module *module)
 {
 }

@@ -65,7 +65,6 @@ int idr_alloc_cyclic(struct idr *idr, void *ptr, int start, int end, gfp_t gfp)
 	return id;
 }
 
-/* idr_remove stubbed: PIDs are never freed in single-process hello-world */
 void *idr_remove(struct idr *idr, unsigned long id)
 {
 	return NULL;
@@ -150,7 +149,6 @@ next:
 			goto next;
 
 		__set_bit(bit, bitmap->bitmap);
-		/* bitmap_full inlined - IDA_BITMAP_BITS > BITS_PER_LONG */
 		if (find_first_zero_bit(bitmap->bitmap, IDA_BITMAP_BITS) ==
 		    IDA_BITMAP_BITS)
 			xas_clear_mark(&xas, XA_FREE_MARK);

@@ -13,10 +13,6 @@ DEFINE_PER_CPU_ALIGNED(irq_cpustat_t, irq_stat);
 
 static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp;
 
-/* ksoftirqd, wakeup_softirqd, ksoftirqd_running, SOFTIRQ_NOW_MASK removed -
- * ksoftirqd was never assigned (spawn_ksoftirqd was removed), so it's always
- * NULL and all the code that checks it is dead */
-
 void __local_bh_enable_ip(unsigned long ip, unsigned int cnt)
 {
 	WARN_ON_ONCE(in_hardirq());
@@ -47,7 +43,6 @@ asmlinkage __visible void do_softirq(void)
 	local_irq_restore(flags);
 }
 
-/* Simplified for minimal kernel - no time-based limiting */
 #define MAX_SOFTIRQ_RESTART 10
 
 asmlinkage __visible void __softirq_entry __do_softirq(void)
@@ -90,7 +85,6 @@ restart:
 
 	pending = local_softirq_pending();
 	if (pending) {
-		/* Simplified: only count-based restart, no time checking */
 		if (!need_resched() && --max_restart)
 			goto restart;
 	}
@@ -129,9 +123,3 @@ void open_softirq(int nr, void (*action)(struct softirq_action *))
 {
 	softirq_vec[nr].action = action;
 }
-
-/* ksoftirqd_should_run, run_ksoftirqd, spawn_ksoftirqd removed -
-   CPU never goes offline, so no takeover_tasklets needed (~8 LOC) */
-
-/* early_irq_init removed - non-weak version exists in kernel/irq/irqdesc.c
- * arch_probe_nr_irqs, arch_early_irq_init, arch_dynirq_lower_bound removed - inlined at call sites */

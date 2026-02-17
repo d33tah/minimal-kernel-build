@@ -280,10 +280,6 @@ static char *pointer_string(char *buf, char *end, const void *ptr,
 	return number(buf, end, (unsigned long int)ptr, spec);
 }
 
-/* Simplified for minimal kernel - no pointer hashing */
-
-/* dentry_name, file_dentry_name, symbol_string, va_format, address_val, flags_string inlined */
-
 static noinline_for_stack char *pointer(const char *fmt, char *buf, char *end,
 					void *ptr, struct printf_spec spec)
 {
@@ -291,29 +287,24 @@ static noinline_for_stack char *pointer(const char *fmt, char *buf, char *end,
 	case 'S':
 	case 's':
 		fallthrough;
-	case 'B':
-		/* symbol_string inlined */
-		{
-			unsigned long value;
-			if (fmt[1] == 'R')
-				ptr = __builtin_extract_return_addr(ptr);
-			value = (unsigned long)ptr;
-			return special_hex_number(buf, end, value,
-						  sizeof(void *));
-		}
-	case 'V':
-		/* va_format inlined */
-		{
-			struct va_format *va_fmt = ptr;
-			va_list va;
-			if (check_pointer(&buf, end, va_fmt, spec))
-				return buf;
-			va_copy(va, *va_fmt->va);
-			buf += vsnprintf(buf, end > buf ? end - buf : 0,
-					 va_fmt->fmt, va);
-			va_end(va);
+	case 'B': {
+		unsigned long value;
+		if (fmt[1] == 'R')
+			ptr = __builtin_extract_return_addr(ptr);
+		value = (unsigned long)ptr;
+		return special_hex_number(buf, end, value, sizeof(void *));
+	}
+	case 'V': {
+		struct va_format *va_fmt = ptr;
+		va_list va;
+		if (check_pointer(&buf, end, va_fmt, spec))
 			return buf;
-		}
+		va_copy(va, *va_fmt->va);
+		buf += vsnprintf(buf, end > buf ? end - buf : 0, va_fmt->fmt,
+				 va);
+		va_end(va);
+		return buf;
+	}
 	default:
 		/* %pa, %pd, %pD, %pG, %px all fall through to default pointer */
 		return pointer_string(buf, end, ptr, spec);

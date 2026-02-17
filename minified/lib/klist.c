@@ -1,4 +1,3 @@
-/* klist.h inlined via device.h */
 #include <linux/device.h>
 #include <linux/sched.h>
 
@@ -9,8 +8,6 @@ static bool knode_dead(struct klist_node *knode)
 {
 	return (unsigned long)knode->n_klist & KNODE_DEAD;
 }
-
-/* knode_kill inlined - set KNODE_DEAD bit in n_klist */
 
 static void klist_release(struct kref *kref)
 {

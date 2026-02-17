@@ -32,10 +32,8 @@ extern void doublefault_init_cpu_tss(void);
 #include <asm/apic.h>
 #include <asm/desc.h>
 #include <asm/fpu/api.h>
-/* hwcap2.h inlined */
 #define HWCAP2_FSGSBASE _BITUL(1)
 #include <linux/numa.h>
-/* asm/numa.h inlined */
 #include <linux/nodemask.h>
 #include <asm/asm.h>
 #include <asm/cpu.h>
@@ -270,9 +268,6 @@ static void get_cpu_cap(struct cpuinfo_x86 *c)
 		}
 	}
 
-	/* CPUID_8000_0007_EBX, CPUID_8000_0008_EBX, CPUID_8000_000A_EDX,
-	 * CPUID_8000_001F_EAX reads removed - no features defined in those words */
-
 	apply_forced_caps(c);
 }
 
@@ -353,7 +348,6 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 	c->x86_cache_alignment = c->x86_clflush_size;
 	memset(&c->x86_capability, 0, sizeof(c->x86_capability));
 
-	/* generic_identify inlined - CPUID always present */
 	c->extended_cpuid_level = 0;
 	cpu_detect(c);
 	get_cpu_vendor(c);
@@ -394,7 +388,6 @@ void __init identify_boot_cpu(void)
 	identify_cpu(&boot_cpu_data);
 	/* HAS_KERNEL_IBT is 0 */
 	sysenter_setup();
-	/* setup_cr_pinning inlined */
 	cr4_pinned_bits = this_cpu_read(cpu_tlbstate.cr4) & cr4_pinned_mask;
 	static_key_enable(&cr_pinning.key);
 }
@@ -405,8 +398,6 @@ DEFINE_PER_CPU(int, __preempt_count) = INIT_PREEMPT_COUNT;
 DEFINE_PER_CPU(unsigned long,
 	       cpu_current_top_of_stack) = (unsigned long)&init_thread_union
 					   + THREAD_SIZE;
-
-/* clear_all_debug_regs inlined below, dbg_restore_debug_regs is no-op */
 
 void cpu_init_exception_handling(void)
 {
@@ -443,7 +434,6 @@ void cpu_init(void)
 
 	load_mm_ldt(&init_mm);
 
-	/* clear_all_debug_regs inlined - single caller */
 	{
 		int i;
 		for (i = 0; i < 8; i++) {

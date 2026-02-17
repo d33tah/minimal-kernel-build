@@ -5,7 +5,6 @@
 #include <linux/err.h>
 #include <linux/ctype.h>
 
-/* skip_spaces inlined from string_helpers.c */
 static inline char *skip_spaces(const char *str)
 {
 	while (isspace(*str))
@@ -98,7 +97,6 @@ parse_args(const char *doing, char *args, const struct kernel_param *params,
 			if (!val && strcmp(param, "--") == 0)
 				return err ?: args;
 
-			/* parse_one inlined */
 			for (i = 0; i < num; i++) {
 				if (parameq(param, params[i].name)) {
 					if (params[i].level < min_level ||
@@ -145,6 +143,3 @@ parse_args(const char *doing, char *args, const struct kernel_param *params,
 
 	return err;
 }
-
-/* param_ops_*, to_module_attr, to_module_kobject, param_attribute,
-   module_param_attrs, __modinit removed - module parameters never used */

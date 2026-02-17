@@ -18,7 +18,6 @@ extern dev_t ROOT_DEV;
 #include <uapi/linux/mount.h>
 
 #include <asm/apic.h>
-/* asm/numa.h inlined */
 #include <linux/nodemask.h>
 #include <asm/topology.h>
 #include <asm/bios_ebda.h>
@@ -26,7 +25,6 @@ extern dev_t ROOT_DEV;
 #include <asm/e820/api.h>
 #include <asm/tlbflush.h>
 #include <linux/types.h>
-/* prom.h inlined - only asm/setup.h needed for COMMAND_LINE_SIZE */
 #include <asm/setup.h>
 #include <asm/proto.h>
 unsigned long max_low_pfn_mapped;
@@ -113,8 +111,6 @@ static u64 __init get_ramdisk_size(void)
 	return ramdisk_size;
 }
 
-/* standard_io_resources and reserve_standard_io_resources removed
- * - legacy I/O resource reservation not needed for minimal boot */
 void __init reserve_standard_io_resources(void)
 {
 }
@@ -160,7 +156,6 @@ void __init setup_arch(char **cmdline_p)
 			memblock_reserve(ramdisk_image,
 					 ramdisk_end - ramdisk_image);
 	}
-	/* setup_data processing removed - QEMU has no setup_data */
 	reserve_bios_regions();
 
 	iomem_resource.end = (1ULL << boot_cpu_data.x86_phys_bits) - 1;
@@ -220,7 +215,6 @@ void __init setup_arch(char **cmdline_p)
 	printk(KERN_DEBUG "initial memory mapped: [mem 0x00000000-%#010lx]\n",
 	       (max_pfn_mapped << PAGE_SHIFT) - 1);
 
-	/* reserve_real_mode inlined from realmode/init.c */
 	memblock_reserve(0, SZ_1M);
 
 	init_mem_mapping();
@@ -229,7 +223,6 @@ void __init setup_arch(char **cmdline_p)
 
 	memblock_set_current_limit(get_max_mapped());
 
-	/* reserve_initrd inlined - simplified for QEMU (always mapped) */
 	{
 		u64 ramdisk_image = get_ramdisk_image();
 		u64 ramdisk_size = get_ramdisk_size();

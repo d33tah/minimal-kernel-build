@@ -60,7 +60,6 @@ int __anon_vma_prepare(struct vm_area_struct *vma)
 		NULL; /* find_mergeable_anon_vma inlined - VMA merging disabled */
 	allocated = NULL;
 	if (!anon_vma) {
-		/* inlined anon_vma_alloc */
 		anon_vma = kmem_cache_alloc(anon_vma_cachep, GFP_KERNEL);
 		if (unlikely(!anon_vma))
 			goto out_enomem_free_avc;

@@ -24,7 +24,6 @@ DEFINE_STATIC_KEY_FALSE(rdpmc_always_available_key);
 
 #define LAST_USER_MM_INIT LAST_USER_MM_IBPB
 
-/* PCID/PTI disabled on X86_32 - simplified */
 atomic64_t last_mm_ctx_id = ATOMIC64_INIT(1);
 
 static void choose_new_asid(struct mm_struct *next, u64 next_tlb_gen,
@@ -48,8 +47,6 @@ void switch_mm(struct mm_struct *prev, struct mm_struct *next,
 	switch_mm_irqs_off(prev, next, tsk);
 	local_irq_restore(flags);
 }
-
-/* cr4_update_pce_mm inlined - PCE is always cleared */
 
 void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 			struct task_struct *tsk)
@@ -260,7 +257,6 @@ void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 	put_cpu();
 }
 
-/* PTI disabled on X86_32 - simplified */
 void flush_tlb_one_kernel(unsigned long addr)
 {
 	flush_tlb_one_user(addr);

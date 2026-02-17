@@ -88,7 +88,6 @@ static void __clocksource_select(bool skipcur)
 	if (!best)
 		return;
 
-	/* timekeeping_notify call inlined - always returned 0 (success) */
 	if (curr_clocksource != best) {
 		curr_clocksource = best;
 	}
@@ -161,7 +160,6 @@ int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq)
 	mutex_lock(&clocksource_mutex);
 
 	clocksource_watchdog_lock(&flags);
-	/* clocksource_enqueue inlined */
 	{
 		struct list_head *entry = &clocksource_list;
 		struct clocksource *tmp;

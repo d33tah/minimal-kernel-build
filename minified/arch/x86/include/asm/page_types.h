@@ -20,7 +20,6 @@
 
 #define VM_DATA_DEFAULT_FLAGS	VM_DATA_FLAGS_EXEC
 
-/* page_32_types.h inlined */
 #ifndef _ASM_X86_PAGE_32_DEFS_H
 #define _ASM_X86_PAGE_32_DEFS_H
 

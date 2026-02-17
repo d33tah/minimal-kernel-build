@@ -15,7 +15,6 @@
 #include <linux/static_call_types.h>
 
 #include <asm/timer.h>
-/* vgtod.h inlined - single includer */
 extern unsigned int vclocks_used;
 static inline void vclocks_set_used(unsigned int which)
 {
@@ -37,9 +36,6 @@ unsigned int __read_mostly tsc_khz;
 #define KHZ 1000
 
 static DEFINE_STATIC_KEY_FALSE(__use_tsc);
-
-/* art_to_tsc_numerator, art_to_tsc_denominator, art_to_tsc_offset,
-   art_related_clocksource removed - unused after convert_art_to_tsc removal */
 
 struct cyc2ns {
 	struct cyc2ns_data data[2];
@@ -100,9 +96,6 @@ u64 native_sched_clock(void)
 
 unsigned long long sched_clock(void)
 	__attribute__((alias("native_sched_clock")));
-
-/* tsc_read_refs, calc_pmtimer_ref, pit_calibrate_tsc removed with
-   pit_hpet_ptimer_calibrate_cpu (~90 LOC) - never called */
 
 static inline int pit_verify_msb(unsigned char val)
 {
@@ -305,7 +298,6 @@ static int __init init_tsc_clocksource(void)
 }
 device_initcall(init_tsc_clocksource);
 
-/* tsc_enable_sched_clock, cyc2ns_init_boot_cpu, determine_cpu_tsc_frequencies inlined - single callers */
 void __init tsc_early_init(void)
 {
 	u64 lpj;
@@ -314,7 +306,6 @@ void __init tsc_early_init(void)
 	if (!boot_cpu_has(X86_FEATURE_TSC))
 		return;
 
-	/* determine_cpu_tsc_frequencies inlined */
 	WARN_ON(cpu_khz || tsc_khz);
 	cpu_khz = x86_platform.calibrate_cpu();
 	tsc_khz = x86_platform.calibrate_tsc();
@@ -332,13 +323,11 @@ void __init tsc_early_init(void)
 			(unsigned long)tsc_khz % KHZ);
 	}
 
-	/* tsc_enable_sched_clock inlined */
 	lpj = (u64)tsc_khz * KHZ;
 	do_div(lpj, HZ);
 	loops_per_jiffy = lpj;
 	use_tsc_delay();
 
-	/* cyc2ns_init_boot_cpu, __set_cyc2ns_scale inlined */
 	c2n = this_cpu_ptr(&cyc2ns);
 	seqcount_latch_init(&c2n->seq);
 	{

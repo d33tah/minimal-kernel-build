@@ -25,10 +25,6 @@ extern int nr_threads;
 
 /* ptrace stubs (merged from ptrace.c) */
 
-/* release_task, delayed_put_task_struct, put_task_struct_rcu_user removed -
- * only called from do_exit which is now a panic stub.
- * Hello World kernel never exits processes. */
-
 void put_task_struct_rcu_user(struct task_struct *task)
 {
 }

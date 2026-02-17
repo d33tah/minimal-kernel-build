@@ -12,9 +12,4 @@ void free_kthread_struct(struct task_struct *k);
 int kthreadd(void *unused);
 extern struct task_struct *kthreadd_task;
 
-/* kthread_worker, kthread_work, kthread_delayed_work structs and
-   kthread_create_worker, kthread_create_worker_on_cpu, kthread_queue_work,
-   kthread_queue_delayed_work, kthread_destroy_worker, kthread_delayed_work_timer_fn,
-   KTW_FREEZABLE all removed - never used */
-
 #endif  

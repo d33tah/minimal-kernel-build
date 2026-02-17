@@ -16,7 +16,6 @@
 
 #include <linux/types.h>
 #include <linux/screen_info.h>
-/* edd.h inlined */
 #ifndef _LINUX_EDD_H
 #define _LINUX_EDD_H
 #define EDDMAXNR 6

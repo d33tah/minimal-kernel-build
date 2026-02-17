@@ -54,7 +54,6 @@ static int kobject_add_internal(struct kobject *kobj)
 		kobj->parent = parent;
 	}
 
-	/* create_dir always returned 0 - simplified */
 	kobj->state_in_sysfs = 1;
 
 	return 0;
@@ -85,7 +84,6 @@ error:
 	pr_err("kobject (%p): %s\n", kobj, err_str);
 }
 
-/* Simplified: sysfs functions are already stubs */
 static void __kobject_del(struct kobject *kobj)
 {
 	/* Send uevent for removal if needed */
@@ -157,9 +155,6 @@ void kobject_put(struct kobject *kobj)
 	}
 }
 
-/* dynamic_kobj_release, dynamic_kobj_ktype, kobject_create,
-   kobject_create_and_add removed - never called */
-
 static ssize_t kobj_attr_show(struct kobject *kobj, struct attribute *attr,
 			      char *buf)
 {
@@ -196,7 +191,6 @@ int kset_register(struct kset *k)
 	if (!k)
 		return -EINVAL;
 
-	/* kset_init inlined */
 	kobject_init_internal(&k->kobj);
 	INIT_LIST_HEAD(&k->list);
 	spin_lock_init(&k->list_lock);
@@ -217,7 +211,6 @@ static void kset_release(struct kobject *kobj)
 static void kset_get_ownership(struct kobject *kobj, kuid_t *uid, kgid_t *gid)
 {
 	if (kobj->parent) {
-		/* kobject_get_ownership inlined */
 		*uid = GLOBAL_ROOT_UID;
 		*gid = GLOBAL_ROOT_GID;
 		if (kobj->parent->ktype->get_ownership)
@@ -239,7 +232,6 @@ static struct kset *kset_create(const char *name, struct kobject *parent_kobj)
 	kset = kzalloc(sizeof(*kset), GFP_KERNEL);
 	if (!kset)
 		return NULL;
-	/* kobject_set_name inlined - just duplicate the string */
 	kset->kobj.name = kstrdup_const(name, GFP_KERNEL);
 	if (!kset->kobj.name) {
 		kfree(kset);

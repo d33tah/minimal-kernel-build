@@ -6,5 +6,4 @@
 typedef s64 ktime_t;
 #define ktime_add_ns(kt, nsval)		((kt) + (nsval))
 #define LOW_RES_NSEC		TICK_NSEC
-/* timekeeping.h inlined - content in clocksource.h */
 #endif

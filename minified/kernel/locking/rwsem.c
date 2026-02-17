@@ -1,7 +1,4 @@
 /* --- 2026-02-08 05:50 --- */
-/* Simplified rwsem for single-task kernel: no contention possible,
-   so all operations are trivial. */
-
 #include <linux/sched.h>
 #include <linux/sched/debug.h>
 #include <linux/rwsem.h>

@@ -48,15 +48,10 @@ static __refdata struct memblock_type *memblock_memory = &memblock.memory;
 	for (i = 0, rgn = &memblock_type->regions[0]; i < memblock_type->cnt; \
 	     i++, rgn = &memblock_type->regions[i])
 
-/* memblock_can_resize, in_slab vars removed - array never resized */
-
 static inline phys_addr_t memblock_cap_size(phys_addr_t base, phys_addr_t *size)
 {
 	return *size = min(*size, PHYS_ADDR_MAX - base);
 }
-
-/* __memblock_find_range_bottom_up, __memblock_find_range_top_down
- * inlined into memblock_find_in_range_node */
 
 static phys_addr_t __init_memblock memblock_find_in_range_node(
 	phys_addr_t size, phys_addr_t align, phys_addr_t start, phys_addr_t end,
@@ -72,7 +67,6 @@ static phys_addr_t __init_memblock memblock_find_in_range_node(
 	start = max_t(phys_addr_t, start, PAGE_SIZE);
 	end = max(start, end);
 
-	/* bottom_up branch removed: memblock.bottom_up is always false */
 	for_each_free_mem_range_reverse(i, nid, flags, &this_start, &this_end,
 					NULL) {
 		this_start = clamp(this_start, start, end);
@@ -204,7 +198,6 @@ repeat:
 		insert = true;
 		goto repeat;
 	} else {
-		/* memblock_merge_regions inlined */
 		int i = 0;
 		while (i < type->cnt - 1) {
 			struct memblock_region *this = &type->regions[i];
@@ -236,7 +229,6 @@ void __init_memblock memblock_free(void *ptr, size_t size)
 		memblock_phys_free(__pa(ptr), size);
 }
 
-/* memblock_isolate_range and memblock_remove_range inlined */
 int __init_memblock memblock_phys_free(phys_addr_t base, phys_addr_t size)
 {
 	struct memblock_type *type = &memblock.reserved;
@@ -562,7 +554,6 @@ phys_addr_t __init_memblock memblock_start_of_DRAM(void)
 	return memblock.memory.regions[0].base;
 }
 
-/* memblock_search inlined */
 bool __init_memblock memblock_is_region_memory(phys_addr_t base,
 					       phys_addr_t size)
 {
@@ -631,7 +622,6 @@ void __init memblock_free_all(void)
 	phys_addr_t start, end;
 	u64 i;
 
-	/* memmap_init_reserved_pages inlined */
 	for_each_reserved_mem_range(i, &start, &end)
 		reserve_bootmem_region(start, end);
 
@@ -643,7 +633,6 @@ void __init memblock_free_all(void)
 		}
 	}
 
-	/* free_low_memory_core_early and __free_memory_core inlined */
 	for_each_free_mem_range(i, NUMA_NO_NODE, MEMBLOCK_NONE, &start, &end,
 				NULL) {
 		unsigned long start_pfn = PFN_UP(start);

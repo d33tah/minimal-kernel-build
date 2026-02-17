@@ -9,7 +9,6 @@
 #include <asm/asm.h>
 #include <asm/errno.h>
 #include <linux/cpumask.h>
-/* shared/msr.h inlined */
 struct msr {
 	union {
 		struct {

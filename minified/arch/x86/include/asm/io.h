@@ -13,7 +13,6 @@ extern void early_ioremap_setup(void);
 extern void early_ioremap_reset(void);
 extern void copy_from_early_mem(void *dest, phys_addr_t src, unsigned long size);
 #include <asm/pgtable_types.h>
-/* shared/io.h inlined */
 #define BUILDIO(bwl, bw, type)						\
 static inline void __out##bwl(type value, u16 port)			\
 {									\

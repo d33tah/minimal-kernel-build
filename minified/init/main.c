@@ -52,7 +52,6 @@ int __init init_chroot(const char *filename);
 int __init init_eaccess(const char *filename);
 int __init init_dup(struct file *file);
 
-/* bugs.h inlined */
 #include <asm/processor.h>
 extern void check_bugs(void);
 #include <asm/setup.h>
@@ -294,7 +293,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	pr_notice("%s", linux_banner);
 	setup_arch(&command_line);
-	/* setup_command_line inlined */
 	{
 		size_t len = strlen(boot_command_line) + 1;
 		saved_command_line = memblock_alloc(len, SMP_CACHE_BYTES);

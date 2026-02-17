@@ -33,9 +33,6 @@ struct device_private {
 	struct device *device;
 	u8 dead:1;
 };
-/* to_device_private_parent, to_device_private_driver, to_device_private_bus,
-   to_device_private_class macros removed - never called */
-
 extern int devices_init(void);
 extern int buses_init(void);
 

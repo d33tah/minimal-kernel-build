@@ -51,16 +51,11 @@ static inline int dentry_cmp(const struct dentry *dentry,
 	return unlikely(!!((a ^ b) & mask));
 }
 
-/* external_name struct + __d_free_external removed: initramfs names
- * ("/" and "init") always fit in dentry->d_iname inline buffer */
-
 static void __d_free(struct rcu_head *head)
 {
 	struct dentry *dentry = container_of(head, struct dentry, d_u.d_rcu);
 	kmem_cache_free(dentry_cache, dentry);
 }
-
-/* dname_external inlined - just compares dentry->d_name.name != dentry->d_iname */
 
 static inline void __d_set_inode_and_type(struct dentry *dentry,
 					  struct inode *inode,
@@ -132,9 +127,6 @@ static void __dentry_kill(struct dentry *dentry)
 	else
 		spin_unlock(&dentry->d_lock);
 
-	/* DCACHE_SHRINK_LIST, DCACHE_MAY_FREE, DCACHE_NORCU checks removed -
-	   these flags are never set in this minimal kernel */
-	/* dentry_free inlined - external names impossible (initramfs names are short) */
 	WARN_ON(!hlist_unhashed(&dentry->d_u.d_alias));
 	call_rcu(&dentry->d_u.d_rcu, __d_free);
 	cond_resched();
@@ -161,7 +153,6 @@ again:
 	return parent;
 }
 
-/* Simplified - single-process init doesn't need complex dentry retention (~25 LOC) */
 static inline bool retain_dentry(struct dentry *dentry)
 {
 	if (unlikely(d_unhashed(dentry)))
@@ -222,7 +213,6 @@ got_locks:
 	return NULL;
 }
 
-/* Simplified - no LRU list management, no d_delete callbacks (~25 LOC) */
 static inline bool fast_dput(struct dentry *dentry)
 {
 	int ret = lockref_put_return(&dentry->d_lockref);
@@ -278,7 +268,6 @@ void dput_to_list(struct dentry *dentry, struct list_head *list)
 
 int d_set_mounted(struct dentry *dentry)
 {
-	/* Stub: simplified mount point marking for minimal kernel */
 	spin_lock(&dentry->d_lock);
 	if (!d_unlinked(dentry) && !d_mountpoint(dentry)) {
 		dentry->d_flags |= DCACHE_MOUNTED;
@@ -291,7 +280,6 @@ int d_set_mounted(struct dentry *dentry)
 
 static void do_one_tree(struct dentry *dentry)
 {
-	/* d_drop inlined */
 	spin_lock(&dentry->d_lock);
 	__d_drop(dentry);
 	spin_unlock(&dentry->d_lock);
@@ -516,8 +504,6 @@ next:
 	return found;
 }
 
-/* Simplified for single-process minimal kernel: no concurrent lookups,
-   no need for parallel-creation table or retry loops */
 struct dentry *d_alloc_parallel(struct dentry *parent, const struct qstr *name,
 				wait_queue_head_t *wq)
 {
@@ -537,7 +523,6 @@ struct dentry *d_alloc_parallel(struct dentry *parent, const struct qstr *name,
 	return dentry;
 }
 
-/* Simplified: no in_lookup_hash table used in minimal d_alloc_parallel */
 void __d_lookup_done(struct dentry *dentry)
 {
 	dentry->d_flags &= ~DCACHE_PAR_LOOKUP;

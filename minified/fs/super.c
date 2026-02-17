@@ -16,7 +16,6 @@ static char *sb_writers_name[SB_FREEZE_LEVELS] = {
 	"sb_internal",
 };
 
-/* super_cache_scan simplified - prune functions are all stubs */
 static unsigned long super_cache_scan(struct shrinker *shrink,
 				      struct shrink_control *sc)
 {
@@ -179,8 +178,6 @@ void generic_shutdown_super(struct super_block *sb)
 	up_write(&sb->s_umount);
 }
 
-/* sget_fc simplified: test is always NULL (only vfs_get_independent_super used),
-   share_extant_sb path removed */
 struct super_block *
 sget_fc(struct fs_context *fc,
 	int (*test)(struct super_block *, struct fs_context *),
@@ -214,9 +211,6 @@ sget_fc(struct fs_context *fc,
 	get_filesystem(s->s_type);
 	return s;
 }
-
-/* Removed: drop_super_exclusive, iterate_supers, iterate_supers_type,
-   get_super, get_active_super, user_get_super - never called */
 
 static DEFINE_IDA(unnamed_dev_ida);
 
@@ -257,8 +251,6 @@ static int set_anon_super_fc(struct super_block *sb, struct fs_context *fc)
 	return get_anon_bdev(&sb->s_dev);
 }
 
-/* vfs_get_super simplified: only vfs_get_independent_super keying used,
-   s_root always NULL for new independent super */
 int vfs_get_super(struct fs_context *fc, enum vfs_get_super_keying keying,
 		  int (*fill_super)(struct super_block *sb,
 				    struct fs_context *fc))

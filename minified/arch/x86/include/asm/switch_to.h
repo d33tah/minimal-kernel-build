@@ -36,8 +36,6 @@ do {									\
 	((last) = __switch_to_asm((prev), (next)));			\
 } while (0)
 
-/* refresh_sysenter_cs, update_task_stack inlined at single call site */
-
 static inline void kthread_frame_init(struct inactive_task_frame *frame,
 				      int (*fun)(void *), void *arg)
 {

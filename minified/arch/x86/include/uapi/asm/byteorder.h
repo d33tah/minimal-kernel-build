@@ -14,9 +14,6 @@
 #define __swab32(x) (__u32)__builtin_bswap32((__u32)(x))
 #define __swab64(x) (__u64)__builtin_bswap64((__u64)(x))
 
-/* __constant_htonl/ntohl/htons/ntohs, __constant_cpu_to_{le,be}{64,32,16},
-   __constant_{le,be}{64,32,16}_to_cpu removed - all unused */
-
 #define __cpu_to_le64(x) ((__force __le64)(__u64)(x))
 #define __le64_to_cpu(x) ((__force __u64)(__le64)(x))
 #define __cpu_to_le32(x) ((__force __le32)(__u32)(x))

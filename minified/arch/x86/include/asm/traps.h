@@ -20,8 +20,6 @@ enum x86_pf_error_code {
 	X86_PF_SGX	=		1 << 15,
 };
 
-/* get_si_code inlined at arch/x86/kernel/traps.c - single caller */
-
 bool fault_in_kernel_space(unsigned long address);
 
 #endif  

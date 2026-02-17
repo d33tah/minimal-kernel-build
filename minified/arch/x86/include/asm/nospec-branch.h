@@ -64,13 +64,6 @@
 
 # define CALL_NOSPEC "call *%[thunk_target]\n"
 
-/* Removed unused spectre_v2_mitigation, spectre_v2_user_mitigation,
-   ssb_mitigation enums, __indirect_thunk_start/end */
-
-/* switch_to_cond_stibp, switch_mm_cond_ibpb, switch_mm_always_ibpb,
-   mds_user_clear, mds_idle_clear, switch_mm_cond_l1d_flush static keys
-   are DEFINE_STATIC_KEY_FALSE and never enabled - declarations removed */
-
 #endif
 
 #endif  

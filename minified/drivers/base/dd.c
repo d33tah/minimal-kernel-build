@@ -85,7 +85,6 @@ static void driver_deferred_probe_trigger(void)
 	queue_work(system_unbound_wq, &deferred_probe_work);
 }
 
-/* Stub: simplified deferred probe for minimal kernel */
 static int deferred_probe_initcall(void)
 {
 	driver_deferred_probe_enable = true;
@@ -103,7 +102,6 @@ static DECLARE_WAIT_QUEUE_HEAD(probe_waitqueue);
 
 static void device_unbind_cleanup(struct device *dev)
 {
-	/* arch_teardown_dma_ops inlined - empty function */
 	dev->driver = NULL;
 	dev_set_drvdata(dev, NULL);
 	dev->power.driver_flags = 0; /* dev_pm_set_driver_flags inlined */

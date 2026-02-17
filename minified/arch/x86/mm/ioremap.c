@@ -13,9 +13,6 @@
 #include <asm/pgalloc.h>
 #include <asm/setup.h>
 
-/* ioremap_desc, __ioremap_collect_map_flags, __ioremap_caller, ioremap, iounmap
-   all removed - never called in this minimal kernel */
-
 static pte_t bm_pte[PAGE_SIZE / sizeof(pte_t)] __page_aligned_bss;
 
 static inline pmd_t *__init early_ioremap_pmd(unsigned long addr)
@@ -28,8 +25,6 @@ static inline pmd_t *__init early_ioremap_pmd(unsigned long addr)
 
 	return pmd;
 }
-
-/* early_ioremap_pte inlined */
 
 void __init early_ioremap_init(void)
 {

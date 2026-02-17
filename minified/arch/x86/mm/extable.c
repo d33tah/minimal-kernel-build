@@ -142,19 +142,16 @@ int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code,
 	case EX_TYPE_UACCESS:
 		return ex_handler_uaccess(e, regs, trapnr);
 	case EX_TYPE_COPY:
-		/* ex_handler_copy inlined */
 		WARN_ONCE(
 			trapnr == X86_TRAP_GP,
 			"General protection fault in user access. Non-canonical address?");
 		return ex_handler_fault(e, regs, trapnr);
 	case EX_TYPE_CLEAR_FS:
-		/* ex_handler_clear_fs inlined */
 		if (static_cpu_has(X86_BUG_NULL_SEG))
 			asm volatile("mov %0, %%fs" : : "rm"(__USER_DS));
 		asm volatile("mov %0, %%fs" : : "rm"(0));
 		return ex_handler_default(e, regs);
 	case EX_TYPE_FPU_RESTORE:
-		/* ex_handler_fprestore inlined */
 		regs->ip = ex_fixup_addr(e);
 		WARN_ONCE(
 			1,
@@ -174,11 +171,9 @@ int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code,
 		regs->sp += sizeof(long);
 		fallthrough;
 	case EX_TYPE_IMM_REG:
-		/* ex_handler_imm_reg inlined */
 		*pt_regs_nr(regs, reg) = (long)imm;
 		return ex_handler_default(e, regs);
 	case EX_TYPE_UCOPY_LEN:
-		/* ex_handler_ucopy_len inlined */
 		regs->cx = imm * regs->cx + *pt_regs_nr(regs, reg);
 		return ex_handler_uaccess(e, regs, trapnr);
 	}

@@ -82,6 +82,4 @@ static __always_inline void del_page_from_lru_list(struct page *page,
 	lruvec_del_folio(lruvec, page_folio(page));
 }
 
-/* init_tlb_flush_pending, inc_tlb_flush_pending, dec_tlb_flush_pending, mm_tlb_flush_nested inlined at call sites */
-
 #endif

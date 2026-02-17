@@ -9,7 +9,6 @@
 
 void handle_bad_irq(struct irq_desc *desc)
 {
-	/* Body simplified - all callees were LTO-eliminated stubs */
 }
 
 irqreturn_t no_action(int cpl, void *dev_id)

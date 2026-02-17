@@ -237,8 +237,6 @@ const struct kmalloc_info_struct kmalloc_info[] __initconst = {
 	INIT_KMALLOC_INFO(16777216, 16M), INIT_KMALLOC_INFO(33554432, 32M)
 };
 
-/* setup_kmalloc_cache_index_table simplified - all loops were dead code
- * (KMALLOC_MIN_SIZE=8 on this config) (~18 LOC removed) */
 void __init setup_kmalloc_cache_index_table(void)
 {
 }

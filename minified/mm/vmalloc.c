@@ -256,8 +256,6 @@ static __always_inline void augment_tree_propagate_from(struct vmap_area *va)
 	free_vmap_area_rb_augment_cb_propagate(&va->rb_node, NULL);
 }
 
-/* insert_vmap_area inlined */
-
 static void insert_vmap_area_augment(struct vmap_area *va, struct rb_node *from,
 				     struct rb_root *root,
 				     struct list_head *head)
@@ -410,7 +408,6 @@ alloc_vmap_area(unsigned long size, unsigned long align, unsigned long vstart,
 	if (unlikely(!va))
 		return ERR_PTR(-ENOMEM);
 
-	/* preload_this_cpu_lock inlined */
 	{
 		struct vmap_area *pva = NULL;
 		if (!this_cpu_read(ne_fit_preload_node))
@@ -448,7 +445,6 @@ alloc_vmap_area(unsigned long size, unsigned long align, unsigned long vstart,
 			goto alloc_done;
 		}
 
-		/* classify_va_fit_type inlined */
 		if (nva_start_addr < found_va->va_start ||
 		    nva_start_addr + size > found_va->va_end)
 			type = NOTHING_FIT;
@@ -504,11 +500,6 @@ alloc_done:
 
 	return va;
 }
-
-/* lazy_max_pages, vmap_lazy_nr, purge_vmap_area_lazy, drain_vmap_area_work
-   and lazy purge infrastructure removed - all stubs that do nothing (~35 LOC) */
-
-/* find_vmap_area inlined - single caller */
 
 void __init vmalloc_init(void)
 {
@@ -575,7 +566,6 @@ __get_vm_area_node(unsigned long size, unsigned long align, unsigned long shift,
 		return NULL;
 	}
 
-	/* setup_vmalloc_vm inlined */
 	spin_lock(&vmap_area_lock);
 	area->flags = flags;
 	area->addr = (void *)va->va_start;

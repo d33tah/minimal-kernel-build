@@ -103,7 +103,6 @@ void bust_spinlocks(int yes)
 	}
 }
 
-/* machine_restart inlined - just calls halt() in a loop */
 static void emergency_restart(void)
 {
 	while (1)

@@ -52,8 +52,6 @@ static unsigned int radix_tree_descend(const struct radix_tree_node *parent,
 	return offset;
 }
 
-/* root_gfp_mask inlined - returned root->xa_flags & (__GFP_BITS_MASK & ~GFP_ZONEMASK) */
-
 static inline void tag_set(struct radix_tree_node *node, unsigned int tag,
 			   int offset)
 {
@@ -82,14 +80,10 @@ static inline void root_tag_clear(struct radix_tree_root *root, unsigned tag)
 	root->xa_flags &= (__force gfp_t) ~(1 << (tag + ROOT_TAG_SHIFT));
 }
 
-/* root_tag_clear_all inlined - cleared tags in xa_flags */
-
 static inline int root_tag_get(const struct radix_tree_root *root, unsigned tag)
 {
 	return (__force int)root->xa_flags & (1 << (tag + ROOT_TAG_SHIFT));
 }
-
-/* root_tags_get inlined - returned root->xa_flags >> ROOT_TAG_SHIFT */
 
 static inline bool is_idr(const struct radix_tree_root *root)
 {
@@ -125,8 +119,6 @@ radix_tree_find_next_bit(struct radix_tree_node *node, unsigned int tag,
 	return RADIX_TREE_MAP_SIZE;
 }
 
-/* iter_offset inlined - returned iter->index & RADIX_TREE_MAP_MASK */
-
 static inline unsigned long shift_maxindex(unsigned int shift)
 {
 	return (RADIX_TREE_MAP_SIZE << shift) - 1;
@@ -136,8 +128,6 @@ static inline unsigned long node_maxindex(const struct radix_tree_node *node)
 {
 	return shift_maxindex(node->shift);
 }
-
-/* next_index inlined - returned (index & ~node_maxindex(node)) + (offset << node->shift) */
 
 static struct radix_tree_node *
 radix_tree_node_alloc(gfp_t gfp_mask, struct radix_tree_node *parent,
@@ -552,9 +542,6 @@ int radix_tree_tag_get(const struct radix_tree_root *root, unsigned long index,
 
 	return 1;
 }
-
-/* __radix_tree_delete + radix_tree_delete_item removed:
- * idr_remove was stubbed (PIDs never freed in hello-world kernel) */
 
 void idr_preload(gfp_t gfp_mask)
 {

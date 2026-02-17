@@ -7,9 +7,6 @@
 #define CLONE_FS	0x00000200
 #define CLONE_FILES	0x00000400
 #define CLONE_UNTRACED		0x00800000
-/* Removed unused CLONE_* flags: CLONE_SIGHAND, CLONE_PIDFD, CLONE_PTRACE,
-   CLONE_VFORK, CLONE_PARENT, CLONE_THREAD, CLONE_SETTLS, CLONE_PARENT_SETTID,
-   CLONE_CHILD_CLEARTID, CLONE_CHILD_SETTID, CLONE_NEWUSER, CLONE_CLEAR_SIGHAND */
 #define SCHED_NORMAL		0
 /* End uapi/linux/sched.h */
 
@@ -86,7 +83,6 @@ struct k_sigaction {
 
 #define SA_IMMUTABLE		0x00800000
 #endif /* _LINUX_SIGNAL_TYPES_INLINED */
-/* mm_types_task.h inlined */
 #ifndef _LINUX_MM_TYPES_TASK_H
 #define _LINUX_MM_TYPES_TASK_H
 
@@ -280,8 +276,6 @@ struct task_struct {
 
 };
 
-/* task_pid_nr inlined at fs/binfmt_elf.c - single caller (just tsk->pid) */
-
 #define PF_IDLE			0x00000002
 #define PF_EXITING		0x00000004
 #define PF_WQ_WORKER		0x00000020
@@ -330,8 +324,6 @@ static inline int set_cpus_allowed_ptr(struct task_struct *p, const struct cpuma
 }
 
 extern int sched_setscheduler_nocheck(struct task_struct *, int, const struct sched_param *);
-
-/* is_idle_task inlined at kernel/rcu/tiny.c - single caller */
 
 union thread_union {
 	struct task_struct task;
@@ -393,9 +385,5 @@ static inline unsigned int task_cpu(const struct task_struct *p)
 {
 	return 0;
 }
-
-/* sched_setaffinity extern removed - function replaced with COND_SYSCALL
-   rseq_execve, rseq_handle_notify_resume, rseq_signal_deliver, rseq_preempt, rseq_migrate,
-   rseq_fork, rseq_syscall, sched_core_free, sched_core_fork removed - unused */
 
 #endif

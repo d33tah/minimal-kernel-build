@@ -1,6 +1,5 @@
 #ifndef _ASM_GENERIC_TYPES_H
 #define _ASM_GENERIC_TYPES_H
-/* int-ll64.h inlined - single includer */
 #include <asm/bitsperlong.h>
 
 #ifndef __ASSEMBLY__

@@ -4,11 +4,7 @@
 #include <string.h>
 
 #include "lkc.h"
-/* internal.h inlined */
 extern struct menu *current_menu, *current_entry;
-
-/* menu_warn, prop_warn, sym_check_prop, menu_validate_number removed -
-   validation warnings not needed for allnoconfig builds */
 
 struct menu rootmenu;
 static struct menu **last_entry_ptr;
@@ -360,8 +356,3 @@ const char *menu_get_prompt(struct menu *menu)
 		return menu->sym->name;
 	return NULL;
 }
-
-/* menu_get_root_menu, menu_get_parent_menu, menu_has_help, menu_get_help,
-   get_def_str, get_dep_str, get_prompt_str, get_symbol_props_str,
-   get_symbol_str, get_relations_str, menu_get_ext_help removed -
-   only used by interactive/help modes which were removed */

@@ -70,7 +70,6 @@ void get_cpuflags(void)
 		return;
 	loaded_flags = 1;
 
-	/* has_fpu inlined */
 	{
 		u16 fcw = -1, fsw = -1;
 		unsigned long cr0;

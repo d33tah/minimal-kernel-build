@@ -308,8 +308,6 @@ extern void reweight_task(struct task_struct *p, int prio);
 extern void resched_curr(struct rq *rq);
 extern void resched_cpu(int cpu);
 
-/* add_nr_running and sub_nr_running inlined at fair.c - single caller each */
-
 extern void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags);
 
 extern struct sched_entity *__pick_first_entity(struct cfs_rq *cfs_rq);

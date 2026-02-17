@@ -8,12 +8,6 @@
 
 typedef struct { DECLARE_BITMAP(bits, MAX_NUMNODES); } nodemask_t;
 
-/* node_test_and_set, nodes_and, nodes_or, nodes_andnot, nodes_equal,
- * nodes_intersects, nodes_subset, nodes_empty removed - unused */
-
-/* first_node, next_node, next_node_in, init_nodemask_of_node,
- * nodemask_of_node removed - unused with MAX_NUMNODES=1 */
-
 enum node_states {
 	N_POSSIBLE,
 	N_ONLINE,
@@ -24,7 +18,6 @@ enum node_states {
 	NR_NODE_STATES
 };
 
-/* MAX_NUMNODES=1, simplified node state functions */
 static inline int node_state(int node, enum node_states state)
 {
 	return node == 0;

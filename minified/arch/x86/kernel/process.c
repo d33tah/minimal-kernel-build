@@ -143,8 +143,6 @@ static void set_cpuid_faulting(bool on)
 	wrmsrl(MSR_MISC_FEATURES_ENABLES, msrval);
 }
 
-/* enable_cpuid inlined - single caller */
-
 void arch_setup_new_exec(void)
 {
 	if (test_thread_flag(TIF_NOCPUID)) {
@@ -263,7 +261,6 @@ void __cpuidle default_idle(void)
 	raw_safe_halt();
 }
 
-/* Simplified: just use default_idle for minimal kernel */
 void select_idle_routine(const struct cpuinfo_x86 *c)
 {
 	if (!x86_idle)

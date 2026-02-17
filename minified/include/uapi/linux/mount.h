@@ -17,9 +17,4 @@
 #define MS_MGC_VAL 0xC0ED0000
 #define MS_MGC_MSK 0xffff0000
 
-/* Removed unused MS_NOSUID, MS_NODEV, MS_NOEXEC, MS_NOSYMFOLLOW,
-   MS_NODIRATIME, MS_REC, MS_RELATIME, MS_STRICTATIME,
-   OPEN_TREE_*, MOVE_MOUNT_*, FSOPEN_*, FSPICK_*,
-   enum fsconfig_command, FSMOUNT_CLOEXEC, MOUNT_ATTR_* defines */
-
 #endif

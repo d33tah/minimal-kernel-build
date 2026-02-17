@@ -2,7 +2,6 @@
 #ifndef BOOT_IO_H
 #define BOOT_IO_H
 
-/* shared/io.h inlined */
 #include <linux/types.h>
 #define BUILDIO(bwl, bw, type)						\
 static inline void __out##bwl(type value, u16 port)			\

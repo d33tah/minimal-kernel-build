@@ -17,7 +17,6 @@ void main(void)
 
 	init_default_io_ops();
 
-	/* copy_boot_params inlined */
 	{
 		struct old_cmdline {
 			u16 cl_magic;
@@ -42,7 +41,6 @@ void main(void)
 	if (cmdline_find_option_bool("debug"))
 		puts("early console in setup code\n");
 
-	/* init_heap inlined */
 	if (boot_params.hdr.loadflags & CAN_USE_HEAP) {
 		char *stack_end;
 		asm("leal %P1(%%esp),%0" : "=r"(stack_end) : "i"(-STACK_SIZE));
@@ -61,7 +59,6 @@ void main(void)
 
 	detect_memory();
 
-	/* keyboard_init inlined */
 	initregs(&ireg);
 	ireg.ah = 0x02;
 	intcall(0x16, &ireg, &oreg);
@@ -69,7 +66,6 @@ void main(void)
 	ireg.ax = 0x0305;
 	intcall(0x16, &ireg, NULL);
 
-	/* query_ist inlined */
 	if (cpu.level >= 6) {
 		initregs(&ireg);
 		ireg.ax = 0xe980;

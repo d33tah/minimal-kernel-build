@@ -1,6 +1,5 @@
 
 #include "misc.h"
-/* error.h inlined */
 void warn(char *m);
 void error(char *m) __noreturn;
 #include "../string.h"

@@ -51,9 +51,6 @@ int __init init_eaccess(const char *filename)
 	return error;
 }
 
-/* init_stat, init_mknod, init_link, init_symlink, init_unlink,
- * init_mkdir, init_rmdir removed - never called after initramfs.c gutting */
-
 int __init init_dup(struct file *file)
 {
 	int fd;

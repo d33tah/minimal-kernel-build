@@ -30,11 +30,6 @@ int initrd_below_start_ok;
 phys_addr_t phys_initrd_start __initdata;
 unsigned long phys_initrd_size __initdata;
 
-/* name_to_dev_t, do_mount_root, mount_block_root removed -
- * saved_root_name was never written (root= __setup handler removed),
- * so the entire root device mounting path was dead code.
- * The kernel boots via initramfs, not block device root. */
-
 /* name_to_dev_t stub for header declaration */
 dev_t name_to_dev_t(const char *name)
 {
@@ -44,10 +39,6 @@ dev_t name_to_dev_t(const char *name)
 void __init prepare_namespace(void)
 {
 	wait_for_device_probe();
-
-	/* saved_root_name was never written (root= __setup handler removed),
-	 * so root device name check and mount_block_root are dead code.
-	 * The kernel boots via initramfs only. */
 
 	init_mount(".", "/", NULL, MS_MOVE, NULL);
 	init_chroot(".");

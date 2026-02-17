@@ -10,6 +10,3 @@ asmlinkage long sys_ni_syscall(void)
 {
 	return -ENOSYS;
 }
-
-/* All COND_SYSCALL entries removed - syscall table reduced to 5 entries,
-   only sys_restart_syscall, sys_exit, sys_ni_syscall, and sys_write needed */

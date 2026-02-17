@@ -60,7 +60,6 @@ static inline void *offset_to_ptr(const int *off)
 
 #define prevent_tail_call_optimization()	mb()
 
-/* inlined from asm-generic/rwonce.h (needs stddef.h for NULL) */
 #include <linux/stddef.h>
 #define compiletime_assert_rwonce_type(t)					\
 	compiletime_assert(__native_word(t) || sizeof(t) == sizeof(long long),	\

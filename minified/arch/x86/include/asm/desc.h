@@ -135,14 +135,10 @@ static inline void native_load_tls(struct thread_struct *t, unsigned int cpu)
 		gdt[GDT_ENTRY_TLS_MIN + i] = t->tls_array[i];
 }
 
-/* force_reload_TR inlined at arch/x86/kernel/doublefault_32.c - single caller */
-
 static inline void clear_LDT(void)
 {
 	set_ldt(NULL, 0);
 }
-
-/* init_idt_data inlined at arch/x86/kernel/idt.c - single caller */
 
 static inline void idt_init_desc(gate_desc *gate, const struct idt_data *d)
 {

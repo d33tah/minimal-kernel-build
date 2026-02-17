@@ -1,4 +1,3 @@
-/* mnt_namespace.h inlined */
 struct mnt_namespace;
 extern void put_mnt_ns(struct mnt_namespace *ns);
 #include <linux/user_namespace.h>
@@ -15,7 +14,6 @@ extern void put_mnt_ns(struct mnt_namespace *ns);
 #include <linux/sched/task.h>
 #include <uapi/linux/mount.h>
 #include <linux/fs_context.h>
-/* shmem_fs.h inlined */
 extern void shmem_init(void);
 #include <linux/mnt_idmapping.h>
 
@@ -94,7 +92,6 @@ static struct mount *alloc_vfsmnt(const char *name)
 	if (mnt) {
 		int res;
 
-		/* ida_alloc inlined */
 		res = ida_alloc_range(&mnt_id_ida, 0, ~0, GFP_KERNEL);
 		if (res < 0)
 			goto out_free_cache;
@@ -136,8 +133,6 @@ static inline void mnt_dec_writers(struct mount *mnt)
 {
 	mnt->mnt_writers--;
 }
-
-/* mnt_is_readonly inlined - only called once */
 
 int __mnt_want_write(struct vfsmount *m)
 {
@@ -481,15 +476,9 @@ static inline void namespace_lock(void)
 	down_write(&namespace_sem);
 }
 
-/* umount_tree, dissolve_on_fput, invent_group_ids removed -
-   dissolve_on_fput only called when FMODE_NEED_UNMOUNT set (never set),
-   invent_group_ids only called from IS_MNT_SHARED path (never shared) */
-
 static void free_mnt_ns(struct mnt_namespace *);
 static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *, bool);
 
-/* attach_recursive_mnt simplified: IS_MNT_SHARED branch removed (never shared),
-   moving branch removed (only called with moving=false) */
 static int attach_recursive_mnt(struct mount *source_mnt,
 				struct mount *dest_mnt,
 				struct mountpoint *dest_mp, bool moving)
@@ -560,9 +549,6 @@ retry:
 	goto retry;
 }
 
-/* graft_tree inlined at call site - only called once */
-
-/* path_mount simplified: only new mount supported, no remount/bind/move */
 int path_mount(const char *dev_name, struct path *path, const char *type_page,
 	       unsigned long flags, void *data_page)
 {
@@ -646,8 +632,6 @@ int path_mount(const char *dev_name, struct path *path, const char *type_page,
 	put_fs_context(fc);
 	return err;
 }
-
-/* inc_mnt_namespaces inlined - single caller */
 
 static void dec_mnt_namespaces(struct ucounts *ucounts)
 {

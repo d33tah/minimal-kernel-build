@@ -31,8 +31,6 @@ bool __must_check try_grab_page(struct page *page, unsigned int flags)
 	return true;
 }
 
-/* follow_pfn_pte, follow_page_pte, follow_pmd_mask, follow_pud_mask, follow_p4d_mask inlined */
-
 static struct page *follow_page_mask(struct vm_area_struct *vma,
 				     unsigned long address, unsigned int flags,
 				     struct follow_page_context *ctx)
@@ -80,7 +78,6 @@ static struct page *follow_page_mask(struct vm_area_struct *vma,
 		if (is_zero_pfn(pte_pfn(pte))) {
 			page = pte_page(pte);
 		} else {
-			/* follow_pfn_pte inlined */
 			if (flags & FOLL_TOUCH) {
 				pte_t entry = *ptep;
 
@@ -180,7 +177,6 @@ retry:
 
 		page = follow_page_mask(vma, start, foll_flags, &ctx);
 		if (!page) {
-			/* faultin_page inlined */
 			unsigned int fault_flags = 0;
 			vm_fault_t fault_ret;
 
@@ -253,9 +249,6 @@ next_page:
 out:
 	return i ? i : ret;
 }
-
-/* __get_user_pages_locked removed - only caller was get_user_pages_remote
- * which always passed locked=NULL, making the retry loop dead code */
 
 long populate_vma_page_range(struct vm_area_struct *vma, unsigned long start,
 			     unsigned long end, int *locked)
@@ -334,7 +327,3 @@ long get_user_pages_remote(struct mm_struct *mm, unsigned long start,
 				gup_flags | FOLL_TOUCH | FOLL_REMOTE, pages,
 				vmas, locked);
 }
-
-/* get_user_pages_unlocked, get_user_pages_fast_only, get_user_pages_fast,
-   pin_user_pages_fast, pin_user_pages_fast_only, pin_user_pages_remote,
-   pin_user_pages, pin_user_pages_unlocked, get_user_pages removed - unused */

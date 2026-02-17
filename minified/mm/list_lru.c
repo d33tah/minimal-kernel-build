@@ -1,5 +1,4 @@
 /* --- 2026-02-08 08:40 --- */
-/* Stubbed list_lru for minimal Hello World kernel - no memory reclaim needed */
 #include <linux/list_lru.h>
 #include <linux/slab.h>
 

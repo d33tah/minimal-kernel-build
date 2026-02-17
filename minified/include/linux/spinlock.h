@@ -47,9 +47,6 @@
 		_raw_spin_unlock_irqrestore(lock, flags);	\
 	} while (0)
 
-/* do_raw_read_lock, do_raw_read_trylock, do_raw_read_unlock,
-   do_raw_write_lock, do_raw_write_trylock, do_raw_write_unlock removed - unused */
-
 #define write_lock(lock)	_raw_write_lock(lock)
 #define read_lock(lock)		_raw_read_lock(lock)
 

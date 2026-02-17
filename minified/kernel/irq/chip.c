@@ -93,7 +93,6 @@ void handle_level_irq(struct irq_desc *desc)
 	raw_spin_lock(&desc->lock);
 	mask_ack_irq(desc);
 
-	/* irq_may_run inlined */
 	if (irqd_has_set(&desc->irq_data,
 			 IRQD_IRQ_INPROGRESS | IRQD_WAKEUP_ARMED))
 		goto out_unlock;
@@ -108,7 +107,6 @@ void handle_level_irq(struct irq_desc *desc)
 	kstat_incr_irqs_this_cpu(desc);
 	handle_irq_event(desc);
 
-	/* cond_unmask_irq inlined */
 	if (!irqd_irq_disabled(&desc->irq_data) &&
 	    irqd_irq_masked(&desc->irq_data) && !desc->threads_oneshot)
 		unmask_irq(desc);
@@ -151,7 +149,6 @@ void irq_set_chip_and_handler_name(unsigned int irq,
 				   const struct irq_chip *chip,
 				   irq_flow_handler_t handle, const char *name)
 {
-	/* irq_set_chip inlined */
 	unsigned long flags;
 	struct irq_desc *desc = irq_get_desc_lock(irq, &flags, 0);
 

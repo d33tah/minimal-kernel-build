@@ -76,9 +76,6 @@ static __always_inline unsigned long fix_to_virt(const unsigned int idx)
 	__set_fixmap(idx, 0, FIXMAP_PAGE_CLEAR)
 #endif
 
-/* set_fixmap_offset, set_fixmap_nocache, set_fixmap_offset_nocache,
-   set_fixmap_io, set_fixmap_offset_io removed - unused */
-
 #define __late_set_fixmap(idx, phys, flags) __set_fixmap(idx, phys, flags)
 #define __late_clear_fixmap(idx) __set_fixmap(idx, 0, __pgprot(0))
 

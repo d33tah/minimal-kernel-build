@@ -49,7 +49,6 @@ void exit_fs(struct task_struct *tsk)
 		spin_unlock(&fs->lock);
 		task_unlock(tsk);
 		if (kill) {
-			/* free_fs_struct inlined */
 			path_put(&fs->root);
 			path_put(&fs->pwd);
 			kmem_cache_free(fs_cachep, fs);

@@ -4,7 +4,6 @@
 #include <linux/compiler.h>
 #include <linux/types.h>
 #include <asm/alternative.h>
-/* cmpxchg.h inlined - single includer */
 #include <asm/cpufeatures.h>
 
 extern void __xchg_wrong_size(void)
@@ -273,7 +272,6 @@ static __always_inline bool atomic_try_cmpxchg(atomic_t *v, int *old, int new)
 }
 #define atomic_try_cmpxchg atomic_try_cmpxchg
 
-/* atomic64_32.h inlined - single includer */
 /* compiler.h, types.h already included above */
 
 typedef struct {

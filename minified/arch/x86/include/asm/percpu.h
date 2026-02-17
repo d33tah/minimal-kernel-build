@@ -310,8 +310,6 @@ do {									\
 #ifndef this_cpu_add_return_8
 #define this_cpu_add_return_8(pcp, val)	this_cpu_generic_add_return(pcp, val)
 #endif
-/* End inlined from asm-generic/percpu.h */
-
 DECLARE_PER_CPU_READ_MOSTLY(unsigned long, this_cpu_off);
 
 #endif  

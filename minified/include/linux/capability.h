@@ -33,6 +33,4 @@ struct user_namespace;
 # define CAP_FULL_SET     ((kernel_cap_t){{ ~0, CAP_LAST_U32_VALID_MASK }})
 #endif
 
-/* cap_drop, cap_isclear, cap_issubset inlined at kernel/cred.c - single callers */
-
 #endif

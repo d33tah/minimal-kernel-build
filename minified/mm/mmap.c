@@ -12,7 +12,6 @@
 #include <linux/fs.h>
 #include <linux/personality.h>
 #include <linux/security.h>
-/* shmem_fs.h inlined */
 extern unsigned long shmem_get_unmapped_area(struct file *, unsigned long addr,
 					     unsigned long len,
 					     unsigned long pgoff,
@@ -366,7 +365,6 @@ static unsigned long mmap_region(struct file *file, unsigned long addr,
 				 unsigned long len, vm_flags_t vm_flags,
 				 unsigned long pgoff, struct list_head *uf)
 {
-	/* Minimal stub: simplified mmap without complex VMA merging/splitting */
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *vma;
 	struct rb_node **rb_link, *rb_parent;
@@ -387,7 +385,6 @@ static unsigned long mmap_region(struct file *file, unsigned long addr,
 
 	if (file) {
 		vma->vm_file = get_file(file);
-		/* call_mmap inlined */
 		if (file->f_op->mmap(file, vma)) {
 			fput(vma->vm_file);
 			vm_area_free(vma);
@@ -640,7 +637,6 @@ static int expand_downwards(struct vm_area_struct *vma, unsigned long address)
 		    !security_vm_enough_memory_mm(mm, grow)) {
 			error = 0;
 			spin_lock(&mm->page_table_lock);
-			/* inlined anon_vma_interval_tree_pre_update_vma */
 			{
 				struct anon_vma_chain *avc;
 				list_for_each_entry(avc, &vma->anon_vma_chain,
@@ -650,7 +646,6 @@ static int expand_downwards(struct vm_area_struct *vma, unsigned long address)
 			}
 			vma->vm_start = address;
 			vma->vm_pgoff -= grow;
-			/* inlined anon_vma_interval_tree_post_update_vma */
 			{
 				struct anon_vma_chain *avc;
 				list_for_each_entry(avc, &vma->anon_vma_chain,
@@ -786,7 +781,6 @@ static int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 	}
 	vma = vma_next(mm, prev);
 
-	/* detach_vmas_to_be_unmapped inlined */
 	{
 		struct vm_area_struct **insertion_point;
 		struct vm_area_struct *tail_vma = NULL;
@@ -810,7 +804,6 @@ static int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 		mm->vmacache_seqnum++;
 	}
 
-	/* unmap_region inlined */
 	{
 		struct vm_area_struct *next = vma_next(mm, prev);
 		struct mmu_gather tlb;

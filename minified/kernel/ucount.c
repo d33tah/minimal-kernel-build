@@ -31,8 +31,6 @@ static struct ucounts *find_ucounts(struct user_namespace *ns, kuid_t uid,
 	return NULL;
 }
 
-/* hlist_add_ucounts inlined */
-
 static inline bool get_ucounts_or_wrap(struct ucounts *ucounts)
 {
 	return !atomic_add_negative(1, &ucounts->count);
@@ -99,8 +97,6 @@ void put_ucounts(struct ucounts *ucounts)
 	}
 }
 
-/* atomic_long_inc_below inlined - single caller */
-
 struct ucounts *inc_ucount(struct user_namespace *ns, kuid_t uid,
 			   enum ucount_type type)
 {
@@ -112,7 +108,6 @@ struct ucounts *inc_ucount(struct user_namespace *ns, kuid_t uid,
 		bool inc_ok;
 		tns = iter->ns;
 		max = READ_ONCE(tns->ucount_max[type]);
-		/* atomic_long_inc_below inlined */
 		c = atomic_long_read(&iter->ucount[type]);
 		inc_ok = false;
 		for (;;) {

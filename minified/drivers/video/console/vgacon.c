@@ -66,8 +66,6 @@ static inline void vga_set_mem_top(struct vc_data *c)
 	write_vga(12, (c->vc_visible_origin - vga_vram_base) / 2);
 }
 
-/* --- 2026-01-26 05:02 --- vgacon_scrolldelta inlined */
-
 static const char *vgacon_startup(void)
 {
 	const char *display_desc = NULL;
@@ -172,7 +170,6 @@ static int vgacon_switch(struct vc_data *c)
 	    (!(vga_video_num_columns % 2) &&
 	     vga_video_num_columns <= screen_info.orig_video_cols &&
 	     vga_video_num_lines <= rows)) {
-		/* vgacon_doresize inlined */
 		vgacon_xres = c->vc_cols * VGA_FONTWIDTH;
 		vgacon_yres = c->vc_rows * c->vc_cell_height;
 	}

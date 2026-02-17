@@ -18,7 +18,6 @@ void go_to_protected_mode(void)
 	static struct gdt_ptr gdt;
 	static const struct gdt_ptr null_idt = { 0, 0 };
 
-	/* realmode_switch_hook inlined */
 	if (boot_params.hdr.realmode_swtch) {
 		asm volatile("lcallw *%0"
 			     :
@@ -35,22 +34,18 @@ void go_to_protected_mode(void)
 		die();
 	}
 
-	/* reset_coprocessor inlined */
 	outb(0, 0xf0);
 	io_delay();
 	outb(0, 0xf1);
 	io_delay();
 
-	/* mask_all_interrupts inlined */
 	outb(0xff, 0xa1);
 	io_delay();
 	outb(0xfb, 0x21);
 	io_delay();
 
-	/* setup_idt inlined */
 	asm volatile("lidtl %0" : : "m"(null_idt));
 
-	/* setup_gdt inlined */
 	gdt.len = sizeof(boot_gdt) - 1;
 	gdt.ptr = (u32)&boot_gdt + (ds() << 4);
 	asm volatile("lgdtl %0" : : "m"(gdt));

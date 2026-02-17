@@ -64,7 +64,6 @@ rcu_process_callbacks(struct softirq_action *unused)
 		next = list->next;
 		prefetch(next);
 		local_bh_disable();
-		/* rcu_reclaim_tiny inlined */
 		{
 			unsigned long offset = (unsigned long)list->func;
 			if (__is_kvfree_rcu_offset(offset)) {
@@ -92,7 +91,6 @@ void call_rcu(struct rcu_head *head, rcu_callback_t func)
 	rcu_ctrlblk.curtail = &head->next;
 	local_irq_restore(flags);
 
-	/* is_idle_task inlined - single caller */
 	if (unlikely(current->flags & PF_IDLE)) {
 		resched_cpu(0);
 	}

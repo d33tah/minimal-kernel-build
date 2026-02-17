@@ -120,8 +120,6 @@ int copy_creds(struct task_struct *p)
 	return 0;
 }
 
-/* cred_cap_issubset inlined - single caller */
-
 int commit_creds(struct cred *new)
 {
 	struct task_struct *task = current;
@@ -132,13 +130,11 @@ int commit_creds(struct cred *new)
 
 	get_cred(new);
 
-	/* cred_cap_issubset inlined */
 	{
 		bool cap_subset = false;
 		const struct user_namespace *set_ns = old->user_ns;
 		const struct user_namespace *subset_ns = new->user_ns;
 		if (set_ns == subset_ns) {
-			/* cap_drop + cap_isclear inlined - single callers */
 			kernel_cap_t dropped;
 			unsigned __capi;
 			CAP_FOR_EACH_U32(__capi)

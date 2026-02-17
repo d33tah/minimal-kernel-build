@@ -26,6 +26,4 @@ extern struct kmem_cache *fs_cachep;
 extern void exit_fs(struct task_struct *);
 extern void set_fs_root(struct fs_struct *, const struct path *);
 extern void set_fs_pwd(struct fs_struct *, const struct path *);
-/* get_fs_root inlined at fs/namei.c - single caller */
-
 #endif  

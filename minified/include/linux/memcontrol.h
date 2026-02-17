@@ -15,9 +15,6 @@ static inline struct mem_cgroup *folio_memcg(struct folio *folio)
 	return NULL;
 }
 
-/* PageMemcgKmem, mem_cgroup_charge, mem_cgroup_uncharge,
-   mem_cgroup_uncharge_list, folio_lruvec_lock_irq removed - callers already removed */
-
 static inline struct lruvec *folio_lruvec_lock_irqsave(struct folio *folio,
 		unsigned long *flagsp)
 {
@@ -30,10 +27,6 @@ static inline struct mem_cgroup *lruvec_memcg(struct lruvec *lruvec)
 {
 	return NULL;
 }
-
-/* lock_page_memcg, unlock_page_memcg, mem_cgroup_handle_over_high,
-   mem_cgroup_enter_user_fault, mem_cgroup_exit_user_fault,
-   mem_cgroup_oom_synchronize, mod_memcg_page_state removed - callers removed */
 
 static inline void mod_lruvec_kmem_state(void *p, enum node_stat_item idx,
 					 int val)
@@ -65,8 +58,5 @@ static inline struct lruvec *folio_lruvec_relock_irqsave(struct folio *folio,
 	}
 	return folio_lruvec_lock_irqsave(folio, flags);
 }
-
-/* set_shrinker_bit, __memcg_kmem_charge_page, __memcg_kmem_uncharge_page,
-   memcg_kmem_enabled, task_in_memcg_oom removed - callers already removed */
 
 #endif /* _LINUX_MEMCONTROL_H */

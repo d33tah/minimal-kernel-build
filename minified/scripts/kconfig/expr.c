@@ -128,8 +128,6 @@ void expr_free(struct expr *e)
 	free(e);
 }
 
-/* expr_eliminate_eq, __expr_eliminate_eq, expr_eq, expr_eliminate_yn removed -
-   expression optimization/simplification not needed for minimal tinyconfig */
 void expr_eliminate_eq(struct expr **ep1, struct expr **ep2)
 {
 }
@@ -159,8 +157,6 @@ struct expr *expr_trans_bool(struct expr *e)
 	return e;
 }
 
-/* expr_join_or, expr_join_and, expr_eliminate_dups1 removed -
-   expression deduplication/optimization not needed for minimal build */
 struct expr *expr_eliminate_dups(struct expr *e)
 {
 	return e;
@@ -497,7 +493,3 @@ tristate expr_calc_value(struct expr *e)
 		return no;
 	}
 }
-
-/* expr_compare_type, expr_print, expr_print_gstr_helper,
-   expr_gstr_print, expr_print_revdep, expr_gstr_print_revdep removed -
-   sym_warn_unmet_dep simplified to not need expression printing (~190 LOC) */

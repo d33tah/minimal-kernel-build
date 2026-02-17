@@ -14,22 +14,15 @@ static inline void update_load_sub(struct load_weight *lw, unsigned long dec)
 	lw->weight -= dec;
 }
 
-/* sched_init_granularity, get_update_sysctl_factor, update_sysctl, normalized_sysctl_* removed -
-   sysctl values already set to correct values at compile time */
-
-/* __calc_delta inlined - just returns delta_exec for single-process kernel (~35 LOC saved originally) */
-
 const struct sched_class fair_sched_class;
 
 #define for_each_sched_entity(se) for (; se; se = NULL)
 
 #define __node_2_se(node) rb_entry((node), struct sched_entity, run_node)
 
-/* Simplified - single-process kernel has only one entity (~22 LOC) */
 static void update_min_vruntime(struct cfs_rq *cfs_rq)
 {
 	struct sched_entity *curr = cfs_rq->curr;
-	/* max_vruntime inlined */
 	if (curr && curr->on_rq) {
 		s64 delta = (s64)(curr->vruntime - cfs_rq->min_vruntime);
 		if (delta > 0)
@@ -78,7 +71,6 @@ static void update_curr(struct cfs_rq *cfs_rq)
 	curr->exec_start = now;
 
 	curr->sum_exec_runtime += delta_exec;
-	/* calc_delta_fair inlined - just returns delta for single-process kernel */
 	curr->vruntime += delta_exec;
 	update_min_vruntime(cfs_rq);
 }
@@ -88,15 +80,12 @@ static void update_curr_fair(struct rq *rq)
 	update_curr(cfs_rq_of(&rq->curr->se));
 }
 
-/* update_stats_curr_start, account_entity_enqueue/dequeue, reweight_entity inlined */
-
 void reweight_task(struct task_struct *p, int prio)
 {
 	struct sched_entity *se = &p->se;
 	struct cfs_rq *cfs_rq = cfs_rq_of(se);
 	unsigned long weight = scale_load(sched_prio_to_weight[prio]);
 
-	/* reweight_entity inlined */
 	if (se->on_rq) {
 		if (cfs_rq->curr == se)
 			update_curr(cfs_rq);
@@ -118,9 +107,6 @@ static void place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 	se->vruntime = cfs_rq->min_vruntime;
 }
 
-/* check_preempt_tick removed - only called when nr_running > 1, which never happens
-   in single-task kernel (~27 LOC) */
-
 static void set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
 	if (se->on_rq) {
@@ -132,8 +118,6 @@ static void set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 	cfs_rq->curr = se;
 }
 
-/* entity_tick inlined */
-
 static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 {
 	struct cfs_rq *cfs_rq;
@@ -144,7 +128,6 @@ static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		if (se->on_rq)
 			break;
 		cfs_rq = cfs_rq_of(se);
-		/* enqueue_entity inlined */
 		{
 			bool renorm = !(flags & ENQUEUE_WAKEUP);
 			bool curr = cfs_rq->curr == se;
@@ -178,7 +161,6 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	for_each_sched_entity(se)
 	{
 		cfs_rq = cfs_rq_of(se);
-		/* dequeue_entity inlined */
 		update_curr(cfs_rq);
 		update_load_avg(cfs_rq, se, 0);
 		if (se != cfs_rq->curr)
@@ -203,9 +185,6 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	rq->nr_running--; /* sub_nr_running inlined - single caller */
 }
 
-/* wakeup_preempt_entity inlined - single caller */
-
-/* Stubbed - single-task kernel never needs preemption checking */
 static void check_preempt_wakeup(struct rq *rq, struct task_struct *p,
 				 int wake_flags)
 {
@@ -250,7 +229,6 @@ static void put_prev_task_fair(struct rq *rq, struct task_struct *prev)
 	for_each_sched_entity(se)
 	{
 		cfs_rq = cfs_rq_of(se);
-		/* put_prev_entity inlined */
 		if (se->on_rq)
 			update_curr(cfs_rq);
 		if (se->on_rq) {
@@ -295,12 +273,10 @@ static void task_fork_fair(struct task_struct *p)
 	rq_unlock(rq, &rf);
 }
 
-/* Stubbed - single-task kernel doesn't need priority preemption (~13 LOC) */
 static void prio_changed_fair(struct rq *rq, struct task_struct *p, int oldprio)
 {
 }
 
-/* Stubbed - single-task kernel never switches scheduling classes */
 static void switched_from_fair(struct rq *rq, struct task_struct *p)
 {
 }

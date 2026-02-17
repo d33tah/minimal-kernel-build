@@ -22,7 +22,6 @@ struct vm_area_struct *vmacache_find(struct mm_struct *mm, unsigned long addr)
 	int idx = VMACACHE_HASH(addr);
 	int i;
 	struct task_struct *curr = current;
-	/* vmacache_valid inlined - check validity and seqnum */
 	if (!vmacache_valid_mm(mm))
 		return NULL;
 	if (mm->vmacache_seqnum != curr->vmacache.seqnum) {

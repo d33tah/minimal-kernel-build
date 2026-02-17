@@ -13,7 +13,6 @@
 #include <linux/init.h>
 #include <linux/seqlock.h>
 #include <linux/nodemask.h>
-/* page-flags-layout.h inlined */
 #include <generated/bounds.h>
 
 #ifndef PAGE_FLAGS_LAYOUT_H
@@ -243,9 +242,6 @@ typedef struct pglist_data {
 	unsigned long node_present_pages;
 	unsigned long node_spanned_pages;
 	int node_id;
-
-	/* kswapd_wait, pfmemalloc_wait, reclaim_wait, nr_writeback_throttled,
-	   kswapd_order, kswapd_highest_zoneidx, totalreserve_pages, kswapd removed */
 
 	struct lruvec __lruvec;
 

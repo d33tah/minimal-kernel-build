@@ -1,5 +1,4 @@
 
-/* timekeeper_internal.h inlined */
 #ifndef _LINUX_TIMEKEEPER_INTERNAL_H
 #define _LINUX_TIMEKEEPER_INTERNAL_H
 
@@ -63,9 +62,6 @@ struct timekeeper {
 #include "tick-internal.h"
 extern raw_spinlock_t timekeeper_lock;
 
-/* TK_CLEAR_NTP, TK_MIRROR, TK_CLOCK_WAS_SET, enum timekeeping_adv_mode
-   removed - only used by timekeeping_advance (now removed) */
-
 DEFINE_RAW_SPINLOCK(timekeeper_lock);
 
 static struct {
@@ -74,9 +70,6 @@ static struct {
 } tk_core ____cacheline_aligned = {
 	.seq = SEQCNT_RAW_SPINLOCK_ZERO(tk_core.seq, &timekeeper_lock),
 };
-
-/* struct tk_fast, cycles_at_suspend, dummy_clock_read, dummy_clock, FAST_TK_INIT,
-   tk_fast_mono, tk_fast_raw removed - fast timekeeper path is stubbed out */
 
 static inline u64 tk_clock_read(const struct tk_read_base *tkr)
 {
@@ -140,9 +133,6 @@ static void tk_setup_internals(struct timekeeper *tk, struct clocksource *clock)
 	tk->skip_second_overflow = 0;
 }
 
-/* Removed: ktime_get_boot_fast_ns, ktime_get_tai_fast_ns, ktime_get_real_fast_ns,
-   ktime_get_fast_timestamps - no callers */
-
 /* read_persistent_clock64 provided by arch/x86/kernel/rtc.c */
 
 void __init timekeeping_init(void)
@@ -161,6 +151,3 @@ void __init timekeeping_init(void)
 	write_seqcount_end(&tk_core.seq);
 	raw_spin_unlock_irqrestore(&timekeeper_lock, flags);
 }
-
-/* timekeeping_advance, accumulate_nsecs_to_secs, timekeeping_adjust,
-   logarithmic_accumulation removed - never called (~140 LOC) */

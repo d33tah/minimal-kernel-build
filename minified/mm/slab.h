@@ -144,8 +144,6 @@ extern void create_boot_cache(struct kmem_cache *, const char *name,
 			      SLAB_ACCOUNT | \
 			      SLAB_NO_USER_FLAGS)
 
-/* cache_vmstat_idx and account_slab inlined at slub.c - single caller */
-
 static inline struct kmem_cache *slab_pre_alloc_hook(struct kmem_cache *s,
 						     struct list_lru *lru,
 						     struct obj_cgroup **objcgp,

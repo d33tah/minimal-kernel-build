@@ -1,5 +1,3 @@
-extern void *early_memremap(unsigned long phys_addr, unsigned long size);
-extern void early_memunmap(void *addr, unsigned long size);
 #include <linux/memblock.h>
 #include <linux/init.h>
 #include <linux/mm.h>
@@ -127,10 +125,6 @@ u64 __init e820__range_remove(u64 start, u64 size, enum e820_type old_type,
 }
 
 __init void e820__setup_pci_gap(void)
-{
-}
-
-void __init e820__memory_setup_extended(u64 phys_addr, u32 data_len)
 {
 }
 

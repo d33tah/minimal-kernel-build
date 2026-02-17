@@ -55,7 +55,6 @@ extern void e820__reserve_setup_data(void);
 extern void e820__reserve_resources(void);
 
 extern void e820__memory_setup(void);
-extern void e820__memory_setup_extended(u64 phys_addr, u32 data_len);
 extern char *e820__memory_setup_default(void);
 extern void e820__setup_pci_gap(void);
 

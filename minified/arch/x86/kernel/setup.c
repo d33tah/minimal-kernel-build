@@ -95,8 +95,6 @@ void *__init extend_brk(size_t size, size_t align)
 	return ret;
 }
 
-u64 relocated_ramdisk;
-
 static u64 __init get_ramdisk_image(void)
 {
 	u64 ramdisk_image = boot_params.hdr.ramdisk_image;
@@ -167,61 +165,11 @@ void __init setup_arch(char **cmdline_p)
 			memblock_reserve(ramdisk_image,
 					 ramdisk_end - ramdisk_image);
 	}
-	{
-		struct setup_indirect *indirect;
-		struct setup_data *data;
-		u64 pa_data, pa_next;
-		u32 len;
-
-		pa_data = boot_params.hdr.setup_data;
-		while (pa_data) {
-			data = early_memremap(pa_data, sizeof(*data));
-			if (!data) {
-				pr_warn("setup: failed to memremap setup_data entry\n");
-				break;
-			}
-			len = sizeof(*data);
-			pa_next = data->next;
-			memblock_reserve(pa_data, sizeof(*data) + data->len);
-			if (data->type == SETUP_INDIRECT) {
-				len += data->len;
-				early_memunmap(data, sizeof(*data));
-				data = early_memremap(pa_data, len);
-				if (!data) {
-					pr_warn("setup: failed to memremap indirect setup_data\n");
-					break;
-				}
-				indirect = (struct setup_indirect *)data->data;
-				if (indirect->type != SETUP_INDIRECT)
-					memblock_reserve(indirect->addr,
-							 indirect->len);
-			}
-			pa_data = pa_next;
-			early_memunmap(data, len);
-		}
-	}
+	/* setup_data processing removed - QEMU has no setup_data */
 	reserve_bios_regions();
 
 	iomem_resource.end = (1ULL << boot_cpu_data.x86_phys_bits) - 1;
 	e820__memory_setup();
-	/* parse_setup_data inlined */
-	{
-		struct setup_data *data;
-		u64 pa_data, pa_next;
-
-		pa_data = boot_params.hdr.setup_data;
-		while (pa_data) {
-			data = early_memremap(pa_data, sizeof(*data));
-			pa_next = data->next;
-			if (data->type == SETUP_E820_EXT)
-				e820__memory_setup_extended(
-					pa_data,
-					data->len + sizeof(struct setup_data));
-			early_memunmap(data, sizeof(*data));
-			pa_data = pa_next;
-		}
-	}
-
 	code_resource.start = __pa_symbol(_text);
 	code_resource.end = __pa_symbol(_etext) - 1;
 	rodata_resource.start = __pa_symbol(__start_rodata);
@@ -286,48 +234,15 @@ void __init setup_arch(char **cmdline_p)
 
 	memblock_set_current_limit(get_max_mapped());
 
-	/* reserve_initrd inlined */
+	/* reserve_initrd inlined - simplified for QEMU (always mapped) */
 	{
 		u64 ramdisk_image = get_ramdisk_image();
 		u64 ramdisk_size = get_ramdisk_size();
-		u64 ramdisk_end = PAGE_ALIGN(ramdisk_image + ramdisk_size);
 
 		if (boot_params.hdr.type_of_loader && ramdisk_image &&
 		    ramdisk_size) {
-			initrd_start = 0;
-			printk(KERN_INFO "RAMDISK: [mem %#010llx-%#010llx]\n",
-			       ramdisk_image, ramdisk_end - 1);
-
-			if (pfn_range_is_mapped(PFN_DOWN(ramdisk_image),
-						PFN_DOWN(ramdisk_end))) {
-				initrd_start = ramdisk_image + PAGE_OFFSET;
-				initrd_end = initrd_start + ramdisk_size;
-			} else {
-				u64 area_size = PAGE_ALIGN(ramdisk_size);
-				relocated_ramdisk = memblock_phys_alloc_range(
-					area_size, PAGE_SIZE, 0,
-					PFN_PHYS(max_pfn_mapped));
-				if (!relocated_ramdisk)
-					panic("Cannot find place for new RAMDISK of size %lld\n",
-					      ramdisk_size);
-				initrd_start = relocated_ramdisk + PAGE_OFFSET;
-				initrd_end = initrd_start + ramdisk_size;
-				printk(KERN_INFO
-				       "Allocated new RAMDISK: [mem %#010llx-%#010llx]\n",
-				       relocated_ramdisk,
-				       relocated_ramdisk + ramdisk_size - 1);
-				copy_from_early_mem((void *)initrd_start,
-						    ramdisk_image,
-						    ramdisk_size);
-				printk(KERN_INFO
-				       "Move RAMDISK from [mem %#010llx-%#010llx] to [mem %#010llx-%#010llx]\n",
-				       ramdisk_image,
-				       ramdisk_image + ramdisk_size - 1,
-				       relocated_ramdisk,
-				       relocated_ramdisk + ramdisk_size - 1);
-				memblock_phys_free(ramdisk_image,
-						   ramdisk_end - ramdisk_image);
-			}
+			initrd_start = ramdisk_image + PAGE_OFFSET;
+			initrd_end = initrd_start + ramdisk_size;
 		}
 	}
 

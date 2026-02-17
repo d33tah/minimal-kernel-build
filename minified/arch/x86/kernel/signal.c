@@ -49,11 +49,6 @@ void __init init_sigframe_size(void)
 	pr_info("max sigframe size: %lu\n", max_frame_size);
 }
 
-unsigned long get_sigframe_size(void)
-{
-	return max_frame_size;
-}
-
 void arch_do_signal_or_restart(struct pt_regs *regs)
 {
 	if (syscall_get_nr(current, regs) != -1) {

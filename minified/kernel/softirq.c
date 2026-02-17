@@ -120,14 +120,9 @@ void irq_exit_rcu(void)
 	/* lockdep_hardirq_exit is empty do{}while(0) */
 }
 
-void __raise_softirq_irqoff(unsigned int nr)
-{
-	or_softirq_pending(1UL << nr);
-}
-
 inline void raise_softirq_irqoff(unsigned int nr)
 {
-	__raise_softirq_irqoff(nr);
+	or_softirq_pending(1UL << nr);
 }
 
 void open_softirq(int nr, void (*action)(struct softirq_action *))

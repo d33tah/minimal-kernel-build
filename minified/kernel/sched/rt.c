@@ -21,12 +21,6 @@ static void set_next_task_rt(struct rq *rq, struct task_struct *p, bool f)
 static void task_tick_rt(struct rq *rq, struct task_struct *p, int q)
 {
 }
-static void prio_changed_rt(struct rq *rq, struct task_struct *p, int o)
-{
-}
-static void switched_to_rt(struct rq *rq, struct task_struct *p)
-{
-}
 static void update_curr_rt(struct rq *rq)
 {
 }
@@ -39,8 +33,6 @@ DEFINE_SCHED_CLASS(rt) = {
 	.put_prev_task = put_prev_task_rt,
 	.set_next_task = set_next_task_rt,
 	.task_tick = task_tick_rt,
-	.prio_changed = prio_changed_rt,
-	.switched_to = switched_to_rt,
 	.update_curr = update_curr_rt,
 };
 
@@ -70,15 +62,6 @@ static void task_tick_dl(struct rq *rq, struct task_struct *p, int queued)
 static void task_fork_dl(struct task_struct *p)
 {
 }
-static void prio_changed_dl(struct rq *rq, struct task_struct *p, int oldprio)
-{
-}
-static void switched_from_dl(struct rq *rq, struct task_struct *p)
-{
-}
-static void switched_to_dl(struct rq *rq, struct task_struct *p)
-{
-}
 static void update_curr_dl(struct rq *rq)
 {
 }
@@ -91,8 +74,5 @@ DEFINE_SCHED_CLASS(dl) = {
 	.set_next_task = set_next_task_dl,
 	.task_tick = task_tick_dl,
 	.task_fork = task_fork_dl,
-	.prio_changed = prio_changed_dl,
-	.switched_from = switched_from_dl,
-	.switched_to = switched_to_dl,
 	.update_curr = update_curr_dl,
 };

@@ -57,16 +57,6 @@ static void task_tick_idle(struct rq *rq, struct task_struct *curr, int queued)
 {
 }
 
-static void switched_to_idle(struct rq *rq, struct task_struct *p)
-{
-	BUG();
-}
-
-static void prio_changed_idle(struct rq *rq, struct task_struct *p, int oldprio)
-{
-	BUG();
-}
-
 static void update_curr_idle(struct rq *rq)
 {
 }
@@ -78,7 +68,5 @@ DEFINE_SCHED_CLASS(idle) = {
 	.put_prev_task = put_prev_task_idle,
 	.set_next_task = set_next_task_idle,
 	.task_tick = task_tick_idle,
-	.prio_changed = prio_changed_idle,
-	.switched_to = switched_to_idle,
 	.update_curr = update_curr_idle,
 };

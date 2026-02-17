@@ -178,7 +178,6 @@ void menu_finalize(struct menu *parent)
 			basedep = rewrite_m(menu->dep);
 			basedep = expr_transform(basedep);
 			basedep = expr_alloc_and(expr_copy(parentdep), basedep);
-			basedep = expr_eliminate_dups(basedep);
 			menu->dep = basedep;
 
 			if (menu->sym)
@@ -196,7 +195,6 @@ void menu_finalize(struct menu *parent)
 				dep = rewrite_m(prop->visible.expr);
 				dep = expr_transform(dep);
 				dep = expr_alloc_and(expr_copy(basedep), dep);
-				dep = expr_eliminate_dups(dep);
 				if (menu->sym && menu->sym->type != S_TRISTATE)
 					dep = expr_trans_bool(dep);
 				prop->visible.expr = dep;
@@ -222,7 +220,7 @@ void menu_finalize(struct menu *parent)
 	} else if (sym) {
 		basedep = parent->prompt ? parent->prompt->visible.expr : NULL;
 		basedep = expr_trans_compare(basedep, E_UNEQUAL, &symbol_no);
-		basedep = expr_eliminate_dups(expr_transform(basedep));
+		basedep = expr_transform(basedep);
 
 		last_menu = NULL;
 		for (menu = parent->next; menu; menu = menu->next) {
@@ -236,9 +234,8 @@ void menu_finalize(struct menu *parent)
 				goto next;
 
 			dep = expr_trans_compare(dep, E_UNEQUAL, &symbol_no);
-			dep = expr_eliminate_dups(expr_transform(dep));
+			dep = expr_transform(dep);
 			dep2 = expr_copy(basedep);
-			expr_eliminate_eq(&dep, &dep2);
 			expr_free(dep);
 			if (!expr_is_yes(dep2)) {
 				expr_free(dep2);

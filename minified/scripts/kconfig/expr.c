@@ -128,10 +128,6 @@ void expr_free(struct expr *e)
 	free(e);
 }
 
-void expr_eliminate_eq(struct expr **ep1, struct expr **ep2)
-{
-}
-
 struct expr *expr_trans_bool(struct expr *e)
 {
 	if (!e)
@@ -154,11 +150,6 @@ struct expr *expr_trans_bool(struct expr *e)
 		break;
 	default:;
 	}
-	return e;
-}
-
-struct expr *expr_eliminate_dups(struct expr *e)
-{
 	return e;
 }
 

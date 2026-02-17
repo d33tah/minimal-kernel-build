@@ -30,13 +30,22 @@ void modpost_log(enum loglevel loglevel, const char *fmt, ...)
 		exit(1);
 }
 
+void handle_moddevtable(void *mod, void *info, void *sym, const char *symname)
+{
+}
+void add_moddevtable(struct buffer *buf, void *mod)
+{
+	buf_printf(buf, "\n");
+}
+void get_src_version(const char *modname, char sum[], unsigned sumlen)
+{
+}
+
 int main(int argc, char **argv)
 {
 	int opt;
 
-	/* Parse options to prevent getopt errors */
 	while ((opt = getopt(argc, argv, "ei:mnT:o:awENd:")) != -1) {
-		/* Ignore all options */
 	}
 
 	return 0;

@@ -5,14 +5,6 @@
 #include <asm/cpufeature.h>
 #include <asm/fpu/xstate.h>
 
-/* XCR_XFEATURE_ENABLED_MASK, XCR_XFEATURE_IN_USE_MASK, xgetbv, xsetbv,
-   xfeatures_in_use removed - unused */
-
-/* struct membuf, __copy_xstate_to_uabi_buf, copy_xstate_to_uabi_buf,
- * copy_uabi_from_kernel_to_xstate, get_xsave_addr,
- * copy_sigframe_from_user_to_xstate, fpu__init_cpu_xstate,
- * fpu__init_system_xstate, xfeatures_mask_supervisor removed - unused */
-
 #define REX_PREFIX
 
 #define XSAVE		".byte " REX_PREFIX "0x0f,0xae,0x27"
@@ -63,8 +55,5 @@ static inline void os_xrstor(struct fpstate *fpstate, u64 mask)
 	u32 hmask = mask >> 32;
 	XSTATE_XRESTORE(&fpstate->regs.xsave, lmask, hmask);
 }
-
-/* os_xrstor_supervisor, xsave_to_user_sigframe, xrstor_from_user_sigframe,
-   os_xrstor_safe removed - never called */
 
 #endif

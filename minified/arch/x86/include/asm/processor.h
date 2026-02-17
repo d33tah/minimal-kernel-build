@@ -7,11 +7,6 @@
 struct task_struct;
 struct io_bitmap;
 
-struct math_emu_info {
-	long ___orig_eip;
-	struct pt_regs *regs;
-};
-
 #include <asm/segment.h>
 #include <asm/types.h>
 #include <uapi/asm/sigcontext.h>

@@ -74,15 +74,10 @@ struct fpstate init_fpstate __ro_after_init;
 
 DEFINE_PER_CPU(struct fpu *, fpu_fpregs_owner_ctx);
 
-#define AVX512_TRACKING_MASK (XFEATURE_MASK_ZMM_Hi256 | XFEATURE_MASK_Hi16_ZMM)
-
 void save_fpregs_to_fpstate(struct fpu *fpu)
 {
 	if (likely(use_xsave())) {
 		os_xsave(fpu->fpstate);
-		if (fpu->fpstate->regs.xsave.header.xfeatures &
-		    AVX512_TRACKING_MASK)
-			fpu->avx512_timestamp = jiffies;
 		return;
 	}
 
@@ -169,14 +164,6 @@ void fpstate_reset(struct fpu *fpu)
 	fpstate->size = fpu_kernel_cfg.default_size;
 	fpstate->user_size = fpu_user_cfg.default_size;
 	fpstate->xfeatures = fpu_kernel_cfg.default_features;
-	fpstate->user_xfeatures = fpu_user_cfg.default_features;
-	fpstate->xfd = init_fpstate.xfd;
-
-	fpu->perm.__state_perm = fpu_kernel_cfg.default_features;
-	fpu->perm.__state_size = fpu_kernel_cfg.default_size;
-	fpu->perm.__user_state_size = fpu_user_cfg.default_size;
-
-	fpu->guest_perm = fpu->perm;
 }
 
 int fpu_clone(struct task_struct *dst, unsigned long clone_flags, bool minimal)
@@ -254,40 +241,5 @@ void switch_fpu_return(void)
 
 int fpu__exception_code(struct fpu *fpu, int trap_nr)
 {
-	int err;
-
-	if (trap_nr == X86_TRAP_MF) {
-		unsigned short cwd, swd;
-
-		if (boot_cpu_has(X86_FEATURE_FXSR)) {
-			cwd = fpu->fpstate->regs.fxsave.cwd;
-			swd = fpu->fpstate->regs.fxsave.swd;
-		} else {
-			cwd = (unsigned short)fpu->fpstate->regs.fsave.cwd;
-			swd = (unsigned short)fpu->fpstate->regs.fsave.swd;
-		}
-
-		err = swd & ~cwd;
-	} else {
-		unsigned short mxcsr = MXCSR_DEFAULT;
-
-		if (boot_cpu_has(X86_FEATURE_XMM))
-			mxcsr = fpu->fpstate->regs.fxsave.mxcsr;
-
-		err = ~(mxcsr >> 7) & mxcsr;
-	}
-
-	if (err & 0x001) {
-		return FPE_FLTINV;
-	} else if (err & 0x004) {
-		return FPE_FLTDIV;
-	} else if (err & 0x008) {
-		return FPE_FLTOVF;
-	} else if (err & 0x012) {
-		return FPE_FLTUND;
-	} else if (err & 0x020) {
-		return FPE_FLTRES;
-	}
-
 	return 0;
 }

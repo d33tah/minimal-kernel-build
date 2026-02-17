@@ -77,9 +77,7 @@
 #define X86_FEATURE_TSC_KNOWN_FREQ	( 3*32+31)
 
 /* Word 4 - Intel extended */
-#define X86_FEATURE_MWAIT		( 4*32+ 3)
 #define X86_FEATURE_PCID		( 4*32+17)
-#define X86_FEATURE_DCA			( 4*32+18)
 #define X86_FEATURE_XSAVE		( 4*32+26)
 #define X86_FEATURE_HYPERVISOR		( 4*32+31)
 
@@ -87,7 +85,6 @@
 #define X86_FEATURE_3DNOWPREFETCH	( 6*32+ 8)
 
 /* Word 7 - Kernel-synthesized flags */
-#define X86_FEATURE_INVPCID_SINGLE	( 7*32+ 7)
 #define X86_FEATURE_XCOMPACTED		( 7*32+10)
 #define X86_FEATURE_PTI			( 7*32+11)
 #define X86_FEATURE_RSB_CTXSW		( 7*32+19)

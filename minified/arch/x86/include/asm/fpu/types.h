@@ -51,66 +51,11 @@ struct fxregs_state {
 
 #define MXCSR_DEFAULT		0x1f80
 
-struct swregs_state {
-	u32			cwd;
-	u32			swd;
-	u32			twd;
-	u32			fip;
-	u32			fcs;
-	u32			foo;
-	u32			fos;
-	 
-	u32			st_space[20];
-	u8			ftop;
-	u8			changed;
-	u8			lookahead;
-	u8			no_update;
-	u8			rm;
-	u8			alimit;
-	struct math_emu_info	*info;
-	u32			entry_eip;
-};
-
-enum xfeature {
-	XFEATURE_FP,
-	XFEATURE_SSE,
-	 
-	XFEATURE_YMM,
-	XFEATURE_BNDREGS,
-	XFEATURE_BNDCSR,
-	XFEATURE_OPMASK,
-	XFEATURE_ZMM_Hi256,
-	XFEATURE_Hi16_ZMM,
-	XFEATURE_PT_UNIMPLEMENTED_SO_FAR,
-	XFEATURE_PKRU,
-	XFEATURE_PASID,
-	XFEATURE_RSRVD_COMP_11,
-	XFEATURE_RSRVD_COMP_12,
-	XFEATURE_RSRVD_COMP_13,
-	XFEATURE_RSRVD_COMP_14,
-	XFEATURE_LBR,
-	XFEATURE_RSRVD_COMP_16,
-	XFEATURE_XTILE_CFG,
-	XFEATURE_XTILE_DATA,
-
-	XFEATURE_MAX,
-};
-
-#define XFEATURE_MASK_FP		(1 << XFEATURE_FP)
-#define XFEATURE_MASK_SSE		(1 << XFEATURE_SSE)
-#define XFEATURE_MASK_YMM		(1 << XFEATURE_YMM)
-#define XFEATURE_MASK_BNDREGS		(1 << XFEATURE_BNDREGS)
-#define XFEATURE_MASK_BNDCSR		(1 << XFEATURE_BNDCSR)
-#define XFEATURE_MASK_OPMASK		(1 << XFEATURE_OPMASK)
-#define XFEATURE_MASK_ZMM_Hi256		(1 << XFEATURE_ZMM_Hi256)
-#define XFEATURE_MASK_Hi16_ZMM		(1 << XFEATURE_Hi16_ZMM)
-#define XFEATURE_MASK_PKRU		(1 << XFEATURE_PKRU)
-#define XFEATURE_MASK_PASID		(1 << XFEATURE_PASID)
-#define XFEATURE_MASK_XTILE_DATA	(1 << XFEATURE_XTILE_DATA)
-
-#define XFEATURE_MASK_FPSSE		(XFEATURE_MASK_FP | XFEATURE_MASK_SSE)
-
-# define XFEATURE_MASK_XTILE		(0)
+#define XFEATURE_MASK_FP		0x001
+#define XFEATURE_MASK_SSE		0x002
+#define XFEATURE_MASK_FPSSE		0x003
+#define XFEATURE_MASK_PASID		0x400
+#define XFEATURE_MASK_XTILE_DATA	0x40000
 
 struct xstate_header {
 	u64				xfeatures;
@@ -129,7 +74,6 @@ struct xregs_state {
 union fpregs_state {
 	struct fregs_state		fsave;
 	struct fxregs_state		fxsave;
-	struct swregs_state		soft;
 	struct xregs_state		xsave;
 	u8 __padding[256];  /* Reduced from PAGE_SIZE for minimal boot */
 };
@@ -142,47 +86,16 @@ struct fpstate {
 
 	u64			xfeatures;
 
-	u64			user_xfeatures;
-
-	u64			xfd;
-
-	unsigned int		is_valloc	: 1;
-
-	unsigned int		is_guest	: 1;
-
-	unsigned int		is_confidential	: 1;
-
-	unsigned int		in_use		: 1;
-
 	union fpregs_state	regs;
 
 } __aligned(64);
 
-struct fpu_state_perm {
-	 
-	u64				__state_perm;
-
-	unsigned int			__state_size;
-
-	unsigned int			__user_state_size;
-};
-
 struct fpu {
-	 
 	unsigned int			last_cpu;
-
-	unsigned long			avx512_timestamp;
 
 	struct fpstate			*fpstate;
 
-	struct fpstate			*__task_fpstate;
-
-	struct fpu_state_perm		perm;
-
-	struct fpu_state_perm		guest_perm;
-
 	struct fpstate			__fpstate;
-	 
 };
 
 struct fpu_state_config {

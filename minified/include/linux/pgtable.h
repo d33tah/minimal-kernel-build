@@ -68,11 +68,6 @@ static inline pgd_t *pgd_offset_pgd(pgd_t *pgd, unsigned long address)
 #define pgd_offset_k(address)		pgd_offset(&init_mm, (address))
 #endif
 
-static inline pmd_t *pmd_off_k(unsigned long va)
-{
-	return pmd_offset(pud_offset(p4d_offset(pgd_offset_k(va), va), va), va);
-}
-
 /* ptep_set_access_flags - x86 defines __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS */
 /* ptep_get_and_clear - x86 defines __HAVE_ARCH_PTEP_GET_AND_CLEAR */
 

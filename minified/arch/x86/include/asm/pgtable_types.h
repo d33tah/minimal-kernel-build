@@ -86,8 +86,6 @@ enum page_cache_mode {
 #define __PAGE_KERNEL_LARGE	 (__PP|__RW|   0|___A|__NX|___D|_PSE|___G)
 #define __PAGE_KERNEL_LARGE_EXEC (__PP|__RW|   0|___A|   0|___D|_PSE|___G)
 
-#define __PAGE_KERNEL_IO		__PAGE_KERNEL
-
 #ifndef __ASSEMBLY__
 
 #define __pgprot_mask(x)	__pgprot((x) & __default_kernel_pte_mask)
@@ -97,8 +95,6 @@ enum page_cache_mode {
 #define PAGE_KERNEL_EXEC	__pgprot_mask(__PAGE_KERNEL_EXEC       | _ENC)
 #define PAGE_KERNEL_LARGE	__pgprot_mask(__PAGE_KERNEL_LARGE      | _ENC)
 #define PAGE_KERNEL_LARGE_EXEC	__pgprot_mask(__PAGE_KERNEL_LARGE_EXEC | _ENC)
-
-#define PAGE_KERNEL_IO		__pgprot_mask(__PAGE_KERNEL_IO)
 
 #endif	 
 

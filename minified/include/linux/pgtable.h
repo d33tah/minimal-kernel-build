@@ -73,13 +73,6 @@ static inline pmd_t *pmd_off_k(unsigned long va)
 	return pmd_offset(pud_offset(p4d_offset(pgd_offset_k(va), va), va), va);
 }
 
-static inline pte_t *virt_to_kpte(unsigned long vaddr)
-{
-	pmd_t *pmd = pmd_off_k(vaddr);
-
-	return pmd_none(*pmd) ? NULL : pte_offset_kernel(pmd, vaddr);
-}
-
 /* ptep_set_access_flags - x86 defines __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS */
 /* ptep_get_and_clear - x86 defines __HAVE_ARCH_PTEP_GET_AND_CLEAR */
 

@@ -70,7 +70,6 @@ static inline bool irq_settings_is_per_cpu_devid(struct irq_desc *desc)
 extern int __irq_set_trigger(struct irq_desc *desc, unsigned long flags);
 
 #define IRQ_RESEND	true
-#define IRQ_START_FORCE	true
 #define IRQ_START_COND	false
 
 extern int irq_activate(struct irq_desc *desc);

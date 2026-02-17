@@ -23,15 +23,3 @@ void __sched mutex_unlock(struct mutex *lock)
 {
 	atomic_long_set(&lock->owner, 0UL);
 }
-
-int __sched mutex_lock_interruptible(struct mutex *lock)
-{
-	mutex_lock(lock);
-	return 0;
-}
-
-int __sched mutex_lock_killable(struct mutex *lock)
-{
-	mutex_lock(lock);
-	return 0;
-}

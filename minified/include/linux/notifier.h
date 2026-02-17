@@ -24,10 +24,6 @@ struct atomic_notifier_head {
 		.lock = __SPIN_LOCK_UNLOCKED(name.lock),	\
 		.head = NULL }
 
-#define ATOMIC_NOTIFIER_HEAD(name)				\
-	struct atomic_notifier_head name =			\
-		ATOMIC_NOTIFIER_INIT(name)
-
 #ifdef __KERNEL__
 
 #define NOTIFY_DONE		0x0000

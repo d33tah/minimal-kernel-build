@@ -22,15 +22,6 @@ struct timezone {
 	int	tz_dsttime;
 };
 
-/* Only keep clock IDs actually used */
-#define CLOCK_REALTIME			0
-#define CLOCK_MONOTONIC			1
-#define CLOCK_MONOTONIC_RAW		4
-#define CLOCK_REALTIME_COARSE		5
-#define CLOCK_MONOTONIC_COARSE		6
-#define CLOCK_BOOTTIME			7
 #define CLOCK_TAI			11
-
-#define MAX_CLOCKS			16
 
 #endif

@@ -186,8 +186,6 @@ void set_task_stack_end_magic(struct task_struct *tsk)
 	*stackend = STACK_END_MAGIC;
 }
 
-__cacheline_aligned_in_smp DEFINE_SPINLOCK(mmlist_lock);
-
 static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 				 struct user_namespace *user_ns)
 {

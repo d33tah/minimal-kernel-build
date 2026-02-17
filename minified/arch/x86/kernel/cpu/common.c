@@ -56,8 +56,6 @@ extern const struct cpu_dev *const __x86_cpu_dev_start[],
 	*const __x86_cpu_dev_end[];
 /* end cpu.h */
 
-u32 elf_hwcap2 __read_mostly;
-
 static const struct cpu_dev default_cpu = {
 	.c_init = NULL,
 	.c_vendor = "Unknown",
@@ -137,11 +135,6 @@ void cr4_update_irqsoff(unsigned long set, unsigned long clear)
 		this_cpu_write(cpu_tlbstate.cr4, newval);
 		__write_cr4(newval);
 	}
-}
-
-unsigned long cr4_read_shadow(void)
-{
-	return this_cpu_read(cpu_tlbstate.cr4);
 }
 
 __u32 cpu_caps_cleared[NCAPINTS + NBUGINTS] __aligned(sizeof(unsigned long));
@@ -386,10 +379,8 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 	}
 	cr4_clear_bits(X86_CR4_UMIP);
 
-	if (cpu_has(c, X86_FEATURE_FSGSBASE)) {
+	if (cpu_has(c, X86_FEATURE_FSGSBASE))
 		cr4_set_bits(X86_CR4_FSGSBASE);
-		elf_hwcap2 |= HWCAP2_FSGSBASE;
-	}
 
 	apply_forced_caps(c);
 

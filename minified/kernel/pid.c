@@ -265,20 +265,6 @@ pid_t pid_vnr(struct pid *pid)
 	return pid_nr_ns(pid, task_active_pid_ns(current));
 }
 
-pid_t __task_pid_nr_ns(struct task_struct *task, enum pid_type type,
-		       struct pid_namespace *ns)
-{
-	pid_t nr = 0;
-
-	rcu_read_lock();
-	if (!ns)
-		ns = task_active_pid_ns(current);
-	nr = pid_nr_ns(rcu_dereference(*task_pid_ptr(task, type)), ns);
-	rcu_read_unlock();
-
-	return nr;
-}
-
 struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
 {
 	return ns_of_pid(tsk->thread_pid); /* task_pid inlined */

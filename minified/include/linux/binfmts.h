@@ -8,7 +8,6 @@
 #define MAX_ARG_STRLEN (PAGE_SIZE * 32)
 #define MAX_ARG_STRINGS 0x7FFFFFFF
 #define BINPRM_BUF_SIZE 256
-#define AT_FLAGS_PRESERVE_ARGV0 (1 << 0)
 
 struct linux_binprm {
 	struct vm_area_struct *vma;
@@ -42,8 +41,6 @@ struct linux_binprm {
 
 	char buf[BINPRM_BUF_SIZE];
 } __randomize_layout;
-
-#define BINPRM_FLAGS_PRESERVE_ARGV0 (1 << 3)
 
 struct linux_binfmt {
 	struct list_head lh;

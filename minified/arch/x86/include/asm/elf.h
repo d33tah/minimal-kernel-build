@@ -37,47 +37,14 @@ extern unsigned int vdso32_enabled;
 	_r->ax = 0;				\
 } while (0)
 
-#define ELF_PLATFORM	(utsname()->machine)
 #define set_personality_64bit()	do { } while (0)
 
 #define ELF_EXEC_PAGESIZE	4096
 
-#define ELF_HWCAP		(boot_cpu_data.x86_capability[CPUID_1_EDX])
-
-extern u32 elf_hwcap2;
-
-#define ELF_HWCAP2		(elf_hwcap2)
-
 #define SET_PERSONALITY(ex) set_personality_64bit()
 
 #define elf_read_implies_exec(ex, executable_stack)	\
-	(mmap_is_ia32() && executable_stack == EXSTACK_DEFAULT)
-
-#define	ARCH_DLINFO_IA32						\
-do {									\
-	if (VDSO_CURRENT_BASE) {					\
-		NEW_AUX_ENT(AT_SYSINFO,	VDSO_ENTRY);			\
-		NEW_AUX_ENT(AT_SYSINFO_EHDR, VDSO_CURRENT_BASE);	\
-	}								\
-	NEW_AUX_ENT(AT_MINSIGSTKSZ, get_sigframe_size());		\
-} while (0)
-
-/* CONFIG_X86_32 is enabled, always ia32 */
-static inline int mmap_is_ia32(void)
-{
-	return 1;
-}
-
-extern unsigned long task_size_64bit(int full_addr_space);
-extern unsigned long get_sigframe_size(void);
-
-#define ARCH_DLINFO		ARCH_DLINFO_IA32
-
-#define VDSO_CURRENT_BASE	((unsigned long)current->mm->context.vdso)
-
-#define VDSO_ENTRY							\
-	((unsigned long)current->mm->context.vdso +			\
-	 vdso_image_32.sym___kernel_vsyscall)
+	(executable_stack == EXSTACK_DEFAULT)
 
 struct linux_binprm;
 

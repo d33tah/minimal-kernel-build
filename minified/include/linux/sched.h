@@ -305,8 +305,6 @@ struct task_struct {
 
 };
 
-pid_t __task_pid_nr_ns(struct task_struct *task, enum pid_type type, struct pid_namespace *ns);
-
 /* task_pid_nr inlined at fs/binfmt_elf.c - single caller (just tsk->pid) */
 
 #define PF_IDLE			0x00000002

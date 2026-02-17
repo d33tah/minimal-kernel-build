@@ -66,17 +66,8 @@ extern long populate_vma_page_range(struct vm_area_struct *vma,
 /* mlock_folio, munlock_page, mlock_new_page, mlock_page_drain_local,
    mlock_page_drain_remote removed - never called */
 
-#define ALLOC_WMARK_MIN		WMARK_MIN
 #define ALLOC_WMARK_LOW		WMARK_LOW
-#define ALLOC_NO_WATERMARKS	0x04  
-
+#define ALLOC_NO_WATERMARKS	0x04
 #define ALLOC_WMARK_MASK	(ALLOC_NO_WATERMARKS-1)
-
-#define ALLOC_OOM		0x08
-
-#define ALLOC_HARDER		 0x10
-#define ALLOC_HIGH		 0x20
-#define ALLOC_CPUSET		 0x40
-#define ALLOC_KSWAPD		0x800
 
 #endif

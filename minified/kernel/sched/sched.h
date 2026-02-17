@@ -3,7 +3,6 @@
 #define _KERNEL_SCHED_SCHED_H
 
 #include <linux/sched.h>
-#define MAX_DL_PRIO 0
 #include <linux/sched/mm.h>
 
 #include <linux/sched/signal.h>
@@ -250,7 +249,6 @@ static inline int task_on_rq_queued(struct task_struct *p)
 
 #define WF_FORK     0x04
 
-#define WEIGHT_IDLEPRIO		3
 extern const int		sched_prio_to_weight[40];
 
 #define DEQUEUE_SLEEP		0x01
@@ -260,7 +258,6 @@ extern const int		sched_prio_to_weight[40];
 
 #define ENQUEUE_WAKEUP		0x01
 #define ENQUEUE_NOCLOCK		0x08
-#define ENQUEUE_HEAD		0x10
 
 struct sched_class {
 

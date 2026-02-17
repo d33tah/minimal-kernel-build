@@ -5,7 +5,6 @@
 
 #define EM_386		3
 #define EM_486		6
-#define EM_X86_64	62
 
 typedef __u32	Elf32_Addr;
 typedef __u16	Elf32_Half;
@@ -29,14 +28,6 @@ typedef __s64	Elf64_Sxword;
 
 #define ET_EXEC   2
 #define ET_DYN    3
-
-/* Dynamic section tags - used by vdso2c build tool */
-#define DT_NULL		0
-#define DT_RELA		7
-#define DT_REL	        17
-#define DT_RELSZ	18
-#define DT_RELENT	19
-#define DT_TEXTREL	22
 
 #define STT_NOTYPE  0
 #define STT_OBJECT  1

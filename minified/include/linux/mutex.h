@@ -44,8 +44,6 @@ extern void __mutex_init(struct mutex *lock, const char *name,
 			 struct lock_class_key *key);
 
 extern void mutex_lock(struct mutex *lock);
-extern int __must_check mutex_lock_interruptible(struct mutex *lock);
-extern int __must_check mutex_lock_killable(struct mutex *lock);
 extern void mutex_unlock(struct mutex *lock);
 
 #endif  

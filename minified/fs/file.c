@@ -13,8 +13,6 @@
 
 #include "internal.h"
 
-unsigned int sysctl_nr_open __read_mostly = 1024 * 1024;
-
 static void __free_fdtable(struct fdtable *fdt)
 {
 	/* kvfree/kfree are no-ops (bump allocator) */

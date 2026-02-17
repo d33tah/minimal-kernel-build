@@ -24,7 +24,6 @@ int notify_die(enum die_val val, const char *str, struct pt_regs *regs,
 
 #include <asm/processor.h>
 #include <asm/debugreg.h>
-#include <asm/realmode.h>
 #include <asm/traps.h>
 #include <asm/desc.h>
 #include <asm/fpu/api.h>

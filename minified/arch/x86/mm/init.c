@@ -130,8 +130,6 @@ static int page_size_mask;
 static inline void cr4_set_bits_and_update_boot(unsigned long mask)
 {
 	mmu_cr4_features |= mask;
-	if (trampoline_cr4_features)
-		*trampoline_cr4_features = mmu_cr4_features;
 	cr4_set_bits(mask);
 }
 

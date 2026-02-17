@@ -100,8 +100,7 @@ else
 LDFLAGS_vmlinux :=
 endif
 
-archscripts: scripts_basic
-	$(Q)$(MAKE) $(build)=arch/x86/tools relocs
+archscripts:
 
 archheaders:
 	$(Q)$(MAKE) $(build)=arch/x86/entry/syscalls all

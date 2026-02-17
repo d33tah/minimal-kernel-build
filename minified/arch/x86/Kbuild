@@ -5,7 +5,6 @@ obj-$(CONFIG_PERF_EVENTS) += events/
 
 # Xen paravirtualization support
 
-obj-y += realmode/
 obj-y += kernel/
 obj-y += mm/
 

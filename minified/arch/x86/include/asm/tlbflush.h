@@ -97,7 +97,6 @@ static inline void cr4_init_shadow(void)
 }
 
 extern unsigned long mmu_cr4_features;
-extern u32 *trampoline_cr4_features;
 
 extern void initialize_tlbstate_and_flush(void);
 

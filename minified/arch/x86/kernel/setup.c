@@ -18,10 +18,6 @@ extern dev_t ROOT_DEV;
 #include <uapi/linux/mount.h>
 
 #include <asm/apic.h>
-/* realmode/init.c variables moved here */
-#include <asm/realmode.h>
-struct real_mode_header *real_mode_header;
-u32 *trampoline_cr4_features;
 /* asm/numa.h inlined */
 #include <linux/nodemask.h>
 #include <asm/topology.h>
@@ -29,7 +25,6 @@ u32 *trampoline_cr4_features;
 #include <asm/cpu.h>
 #include <asm/e820/api.h>
 #include <asm/tlbflush.h>
-#include <asm/realmode.h>
 #include <linux/types.h>
 /* prom.h inlined - only asm/setup.h needed for COMMAND_LINE_SIZE */
 #include <asm/setup.h>

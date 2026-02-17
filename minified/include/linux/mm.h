@@ -154,7 +154,6 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_LOCKONFAULT	0x00080000	
 #define VM_ACCOUNT	0x00100000
 #define VM_SYNC		0x00800000
-#define VM_DONTDUMP	0x04000000
 
 # define VM_SOFTDIRTY	0
 

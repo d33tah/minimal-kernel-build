@@ -43,9 +43,3 @@ signed long __sched schedule_timeout(signed long timeout)
 out:
 	return timeout < 0 ? 0 : timeout;
 }
-
-signed long __sched schedule_timeout_uninterruptible(signed long timeout)
-{
-	__set_current_state(TASK_UNINTERRUPTIBLE);
-	return schedule_timeout(timeout);
-}

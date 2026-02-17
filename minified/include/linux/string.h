@@ -106,12 +106,10 @@ extern char * strrchr(const char *,int);
 extern char * strpbrk(const char *,const char *);
 #endif
 #ifndef __HAVE_ARCH_STRSEP
-extern char * strsep(char **,const char *);
 #endif
 
 extern void kfree_const(const void *x);
 extern const char *kstrdup_const(const char *s, gfp_t gfp);
-extern void *kmemdup(const void *src, size_t len, gfp_t gfp);
 extern char *kmemdup_nul(const char *s, size_t len, gfp_t gfp);
 
 #endif

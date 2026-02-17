@@ -46,16 +46,6 @@ const char *kstrdup_const(const char *s, gfp_t gfp)
 	return kstrdup(s, gfp);
 }
 
-void *kmemdup(const void *src, size_t len, gfp_t gfp)
-{
-	void *p;
-
-	p = kmalloc_track_caller(len, gfp);
-	if (p)
-		memcpy(p, src, len);
-	return p;
-}
-
 char *kmemdup_nul(const char *s, size_t len, gfp_t gfp)
 {
 	char *buf;

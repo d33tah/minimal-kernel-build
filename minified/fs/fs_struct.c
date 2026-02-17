@@ -57,27 +57,6 @@ void exit_fs(struct task_struct *tsk)
 	}
 }
 
-struct fs_struct *copy_fs_struct(struct fs_struct *old)
-{
-	struct fs_struct *fs = kmem_cache_alloc(fs_cachep, GFP_KERNEL);
-
-	if (fs) {
-		fs->users = 1;
-		fs->in_exec = 0;
-		spin_lock_init(&fs->lock);
-		seqcount_spinlock_init(&fs->seq, &fs->lock);
-		fs->umask = old->umask;
-
-		spin_lock(&old->lock);
-		fs->root = old->root;
-		path_get(&fs->root);
-		fs->pwd = old->pwd;
-		path_get(&fs->pwd);
-		spin_unlock(&old->lock);
-	}
-	return fs;
-}
-
 struct fs_struct init_fs = {
 	.users = 1,
 	.lock = __SPIN_LOCK_UNLOCKED(init_fs.lock),

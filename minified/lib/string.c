@@ -148,23 +148,6 @@ char *strpbrk(const char *cs, const char *ct)
 }
 #endif
 
-#ifndef __HAVE_ARCH_STRSEP
-char *strsep(char **s, const char *ct)
-{
-	char *sbegin = *s;
-	char *end;
-
-	if (sbegin == NULL)
-		return NULL;
-
-	end = strpbrk(sbegin, ct);
-	if (end)
-		*end++ = '\0';
-	*s = end;
-	return sbegin;
-}
-#endif
-
 #ifndef __HAVE_ARCH_MEMCMP
 #undef memcmp
 __visible int memcmp(const void *cs, const void *ct, size_t count)

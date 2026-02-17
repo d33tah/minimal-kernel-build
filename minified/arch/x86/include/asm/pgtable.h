@@ -117,11 +117,6 @@ static inline pte_t pte_mkwrite(pte_t pte)
 	return pte_set_flags(pte, _PAGE_RW);
 }
 
-static inline pte_t pte_mkspecial(pte_t pte)
-{
-	return pte_set_flags(pte, _PAGE_SPECIAL);
-}
-
 static inline pgprotval_t massage_pgprot(pgprot_t pgprot)
 {
 	pgprotval_t protval = pgprot_val(pgprot);

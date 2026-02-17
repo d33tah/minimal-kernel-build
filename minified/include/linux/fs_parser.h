@@ -45,8 +45,6 @@ extern int __fs_parse(struct p_log *log,
 
 /* fs_parse inlined at fs/ramfs/inode.c - single caller */
 
-extern int lookup_constant(const struct constant_table tbl[], const char *name, int not_found);
-
 #define __fsparam(TYPE, NAME, OPT, FLAGS, DATA) \
 	{ \
 		.name = NAME, \

@@ -17,7 +17,6 @@ lib-y	+= kobject.o klist.o
 obj-y	+= lockref.o
 
 obj-y += sort.o \
-	 kasprintf.o \
 	 iov_iter.o \
 	 find_bit.o \
 	 refcount.o usercopy.o

@@ -111,8 +111,6 @@ extern void * high_memory;
 
 extern int sysctl_max_map_count;
 
-extern int sysctl_overcommit_memory;
-
 #define nth_page(page,n) ((page) + (n))
 
 #define PAGE_ALIGN(addr) ALIGN(addr, PAGE_SIZE)
@@ -579,9 +577,6 @@ struct vm_area_struct *find_extend_vma(struct mm_struct *, unsigned long addr);
 #define FOLL_COW	0x4000
 
 extern void init_mem_debugging_and_hardening(void);
-
-DECLARE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_ALLOC_DEFAULT_ON, init_on_alloc);
-DECLARE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_FREE_DEFAULT_ON, init_on_free);
 
 /* MAX_NUMNODES == 1, always inline */
 

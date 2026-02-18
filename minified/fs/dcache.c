@@ -9,8 +9,6 @@
 #include "internal.h"
 #include "mount.h"
 
-int sysctl_vfs_cache_pressure __read_mostly = 100;
-
 __cacheline_aligned_in_smp DEFINE_SEQLOCK(rename_lock);
 
 static struct kmem_cache *dentry_cache __read_mostly;

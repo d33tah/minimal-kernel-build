@@ -21,9 +21,6 @@ struct alloc_context;
 
 atomic_long_t _totalram_pages __read_mostly;
 gfp_t gfp_allowed_mask __read_mostly = GFP_BOOT_MASK;
-DEFINE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_ALLOC_DEFAULT_ON, init_on_alloc);
-
-DEFINE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_FREE_DEFAULT_ON, init_on_free);
 
 static void __free_pages_ok(struct page *page, unsigned int order);
 
@@ -41,7 +38,7 @@ compound_page_dtor *const compound_page_dtors[NR_COMPOUND_DTORS] = {
 static unsigned long arch_zone_lowest_possible_pfn[MAX_NR_ZONES] __initdata;
 static unsigned long arch_zone_highest_possible_pfn[MAX_NR_ZONES] __initdata;
 
-int page_group_by_mobility_disabled __read_mostly;
+/* page_group_by_mobility_disabled always 1 - hardcoded */
 
 static inline unsigned long *get_pageblock_bitmap(const struct page *page,
 						  unsigned long pfn)
@@ -129,8 +126,6 @@ static void prep_compound_page(struct page *page, unsigned int order)
 
 void init_mem_debugging_and_hardening(void)
 {
-	static_branch_disable(&init_on_alloc);
-	static_branch_disable(&init_on_free);
 }
 
 static inline void set_buddy_order(struct page *page, unsigned int order)
@@ -534,7 +529,6 @@ void __ref build_all_zonelists(pg_data_t *pgdat)
 	} else {
 		__build_all_zonelists(pgdat);
 	}
-	page_group_by_mobility_disabled = 1;
 }
 
 static void __meminit memmap_init_range(unsigned long size, int nid,
@@ -556,10 +550,9 @@ static void __meminit memmap_init_range(unsigned long size, int nid,
 		__init_single_page(page, pfn, zone, nid);
 
 		if (IS_ALIGNED(pfn, pageblock_nr_pages)) {
-			int mt = migratetype;
-			if (unlikely(page_group_by_mobility_disabled &&
-				     mt < MIGRATE_PCPTYPES))
-				mt = MIGRATE_UNMOVABLE;
+			int mt = (migratetype < MIGRATE_PCPTYPES) ?
+					 MIGRATE_UNMOVABLE :
+					 migratetype;
 			set_pfnblock_flags_mask(page, (unsigned long)mt, pfn,
 						MIGRATETYPE_MASK);
 			cond_resched();

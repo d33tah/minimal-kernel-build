@@ -165,8 +165,6 @@ static inline bool d_can_lookup(const struct dentry *dentry) {
   return __d_entry_type(dentry) == DCACHE_DIRECTORY_TYPE;
 }
 
-extern int sysctl_vfs_cache_pressure;
-
 static inline struct inode *d_inode(const struct dentry *dentry)
 {
 	return dentry->d_inode;

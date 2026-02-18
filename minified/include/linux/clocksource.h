@@ -3,23 +3,17 @@
 
 #include <linux/types.h>
 #include <linux/timex.h>
-#include <linux/time.h>
 #include <linux/list.h>
-#include <linux/cache.h>
 #include <linux/timer.h>
-#include <linux/init.h>
 enum clocksource_ids {
 	CSID_GENERIC		= 0,
 	CSID_MAX,
 };
 void timekeeping_init(void);
-#include <asm/div64.h>
-#include <asm/io.h>
 
 struct clocksource;
 struct module;
 
-#include <linux/limits.h>
 
 enum vdso_clock_mode {
 	VDSO_CLOCKMODE_NONE,

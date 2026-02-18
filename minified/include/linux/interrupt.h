@@ -2,7 +2,6 @@
 #define _LINUX_INTERRUPT_H
 
 #include <linux/kernel.h>
-#include <linux/cpumask.h>
 
 enum irqreturn {
 	IRQ_NONE		= (0 << 0),

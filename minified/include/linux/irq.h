@@ -7,14 +7,9 @@ struct irq_desc;
 extern struct irq_desc *irq_to_desc(unsigned int irq);
 extern int nr_irqs;
 typedef void (*irq_flow_handler_t)(struct irq_desc *desc);
-#include <linux/interrupt.h>
 #include <linux/topology.h>
 #include <linux/io.h>
-#include <linux/slab.h>
 
-#include <asm/irq.h>
-#include <asm/ptrace.h>
-#include <asm/irq_regs.h>
 
 struct module;
 
@@ -139,7 +134,6 @@ enum {
 	IRQCHIP_ONESHOT_SAFE			= (1 <<  5),
 };
 
-#include <linux/rcupdate.h>
 #include <linux/kobject.h>
 #include <linux/mutex.h>
 struct module;
@@ -158,7 +152,6 @@ static inline unsigned int irq_desc_get_irq(struct irq_desc *desc) { return desc
 static inline struct irq_data *irq_desc_get_irq_data(struct irq_desc *desc) { return &desc->irq_data; }
 static inline void generic_handle_irq_desc(struct irq_desc *desc) { desc->handle_irq(desc); }
 
-#include <asm/hw_irq.h>
 
 #ifndef NR_IRQS_LEGACY
 # define NR_IRQS_LEGACY 0

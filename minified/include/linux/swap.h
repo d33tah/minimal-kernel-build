@@ -2,17 +2,13 @@
 #ifndef _LINUX_SWAP_H
 #define _LINUX_SWAP_H
 
-#include <linux/linkage.h>
 #include <linux/mmzone.h>
 #include <linux/memcontrol.h>
 #include <linux/fs.h>
 #include <linux/pagemap.h>
 #include <linux/atomic.h>
-#include <linux/page-flags.h>
 #include <asm/page.h>
-
 #ifdef __KERNEL__
-
 #define SWAP_CLUSTER_MAX 32UL
 
 extern struct list_lru shadow_nodes;

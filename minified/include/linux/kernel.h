@@ -22,7 +22,6 @@ int __must_check kstrtouint(const char *s, unsigned int base, unsigned int *res)
 #include <linux/typecheck.h>
 #ifndef _LINUX_PANIC_H
 #define _LINUX_PANIC_H
-#include <linux/compiler_attributes.h>
 __printf(1, 2)
 void panic(const char *fmt, ...) __noreturn __cold;
 #define PANIC_CPU_INVALID	-1

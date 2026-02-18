@@ -3,10 +3,8 @@
 #define _LINUX_SRCU_H
 
 #include <linux/mutex.h>
-#include <linux/rcupdate.h>
 #include <linux/workqueue.h>
 
-#include <linux/types.h>
 #include <linux/atomic.h>
 
 struct srcu_struct;
@@ -15,10 +13,6 @@ struct srcu_struct;
 #define _LINUX_SWAIT_H
 
 #include <linux/list.h>
-#include <linux/stddef.h>
-#include <linux/spinlock.h>
-#include <linux/wait.h>
-#include <asm/current.h>
 
 struct task_struct;
 

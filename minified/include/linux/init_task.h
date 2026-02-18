@@ -2,18 +2,12 @@
 #define _LINUX__INIT_TASK_H
 
 #include <linux/rcupdate.h>
-#include <linux/irqflags.h>
-#include <linux/utsname.h>
 #include <linux/lockdep.h>
 #include <linux/pid_namespace.h>
 #include <linux/user_namespace.h>
-#include <linux/seqlock.h>
 
-#include <linux/rbtree.h>
-#include <linux/refcount.h>
 #include <linux/mm_types.h>
 
-#include <asm/thread_info.h>
 
 extern struct files_struct init_files;
 extern struct fs_struct init_fs;

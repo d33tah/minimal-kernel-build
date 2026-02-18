@@ -4,7 +4,6 @@
 #include <linux/typecheck.h>
 #include <linux/preempt.h>
 #include <linux/linkage.h>
-#include <linux/compiler.h>
 #include <linux/irqflags.h>
 #include <linux/thread_info.h>
 #include <linux/stringify.h>
@@ -12,7 +11,6 @@
 #include <linux/lockdep.h>
 #include <asm/barrier.h>
 
-#include <linux/spinlock_types.h>
 
 #include <asm/processor.h>
 #include <asm/barrier.h>

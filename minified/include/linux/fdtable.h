@@ -2,17 +2,11 @@
 #ifndef __LINUX_FDTABLE_H
 #define __LINUX_FDTABLE_H
 
-#include <asm/posix_types.h>
 #include <linux/compiler.h>
-#include <linux/spinlock.h>
 #include <linux/rcupdate.h>
-#include <linux/compiler.h>
 #include <asm/barrier.h>
-
 struct task_struct;
-
 #ifndef array_index_mask_nospec
-static inline unsigned long array_index_mask_nospec(unsigned long index,
 						    unsigned long size)
 {
 	 

@@ -1,14 +1,9 @@
 #ifndef _LINUX_SYSCALLS_H
 #define _LINUX_SYSCALLS_H
 
-#include <linux/types.h>
-#include <linux/capability.h>
 #include <linux/signal.h>
 #include <linux/list.h>
-#include <linux/bug.h>
 #include <asm-generic/siginfo.h>
-#include <asm/unistd.h>
-#include <linux/personality.h>
 #include <linux/fcntl.h>
 
 struct pt_regs;

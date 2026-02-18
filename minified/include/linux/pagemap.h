@@ -1,17 +1,12 @@
 #ifndef _LINUX_PAGEMAP_H
 #define _LINUX_PAGEMAP_H
 
-#include <linux/mm.h>
 #include <linux/fs.h>
 #include <linux/highmem.h>
 #include <linux/compiler.h>
-#include <linux/uaccess.h>
 #include <linux/gfp.h>
-#include <linux/bitops.h>
 #include <linux/hardirq.h>
-
 enum mapping_flags {
-	AS_EIO		= 0,
 	AS_ENOSPC	= 1,
 	AS_UNEVICTABLE	= 3,
 	AS_EXITING	= 4,

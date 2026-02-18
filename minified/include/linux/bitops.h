@@ -1,8 +1,6 @@
 #ifndef _LINUX_BITOPS_H
 #define _LINUX_BITOPS_H
-#include <asm/types.h>
 #include <linux/bits.h>
-#include <linux/typecheck.h>
 #include <linux/const.h>
 #define aligned_byte_mask(n) ((1UL << 8*(n))-1)
 #define BITS_PER_TYPE(type)	(sizeof(type) * BITS_PER_BYTE)
@@ -11,10 +9,8 @@
 #include <linux/compiler.h>
 #include <asm/alternative.h>
 #include <asm/rmwcc.h>
-#include <asm/barrier.h>
 
 #define _BITOPS_LONG_SHIFT 5
-
 #define RLONG_ADDR(x)			 "m" (*(volatile long *) (x))
 #define WBYTE_ADDR(x)			"+m" (*(volatile char *) (x))
 

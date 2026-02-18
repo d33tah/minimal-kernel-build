@@ -1,7 +1,6 @@
 #ifndef _LINUX_SCHED_SIGNAL_H
 #define _LINUX_SCHED_SIGNAL_H
 
-#include <linux/rculist.h>
 #include <linux/signal.h>
 #include <linux/sched.h>
 #include <linux/sched/task.h>
@@ -16,9 +15,7 @@
 #define JOBCTL_PENDING_MASK	(JOBCTL_STOP_PENDING | JOBCTL_TRAP_MASK)
 #include <linux/cred.h>
 #include <linux/refcount.h>
-#include <linux/mm_types.h>
 #include <asm/ptrace.h>
-
 struct sighand_struct {
 	spinlock_t		siglock;
 	refcount_t		count;

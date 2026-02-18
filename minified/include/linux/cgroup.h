@@ -3,12 +3,10 @@
 #define _LINUX_CGROUP_H
 #include <linux/sched.h>
 #include <linux/cpumask.h>
-#include <linux/nodemask.h>
 #include <linux/rculist.h>
 #include <linux/fs.h>
 #ifndef __LINUX_KERNFS_H
 #define __LINUX_KERNFS_H
-#include <linux/types.h>
 #include <linux/atomic.h>
 struct rb_node;
 struct rb_root;
@@ -35,8 +33,6 @@ struct kernfs_node {
 };
 #endif /* __LINUX_KERNFS_H */
 #include <linux/jump_label.h>
-#include <linux/ns_common.h>
-#include <linux/nsproxy.h>
 #include <linux/user_namespace.h>
 #include <linux/refcount.h>
 struct cgroup_namespace { struct ns_common ns; struct user_namespace *user_ns; struct ucounts *ucounts; struct css_set *root_cset; };

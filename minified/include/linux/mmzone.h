@@ -11,7 +11,6 @@
 #include <linux/threads.h>
 #include <linux/numa.h>
 #include <linux/init.h>
-#include <linux/seqlock.h>
 #include <linux/nodemask.h>
 #include <generated/bounds.h>
 

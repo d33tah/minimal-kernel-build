@@ -2,13 +2,11 @@
 #define _LINUX_JIFFIES_H
 
 #include <linux/cache.h>
-#include <linux/limits.h>
 #include <linux/math64.h>
 #include <linux/minmax.h>
 #include <linux/types.h>
 #include <linux/time.h>
 #include <linux/timex.h>
-#include <linux/time64.h>
 #include <asm/param.h>
 
 #define TICK_NSEC ((NSEC_PER_SEC+HZ/2)/HZ)

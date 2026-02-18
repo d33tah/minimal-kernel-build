@@ -1,17 +1,12 @@
 #ifndef _LINUX_XARRAY_H
 #define _LINUX_XARRAY_H
 
-#include <linux/bitmap.h>
 #include <linux/bug.h>
-#include <linux/compiler.h>
 #include <linux/gfp.h>
-#include <linux/kernel.h>
 #include <linux/rcupdate.h>
 #include <linux/spinlock.h>
-#include <linux/types.h>
 
 #define BITS_PER_XA_VALUE	(BITS_PER_LONG - 1)
-
 static inline void *xa_mk_value(unsigned long v)
 {
 	WARN_ON((long)v < 0);

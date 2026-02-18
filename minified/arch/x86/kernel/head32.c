@@ -2,16 +2,10 @@
 #include <linux/init.h>
 #include <linux/linkage.h>
 extern asmlinkage void __init start_kernel(void);
-#include <linux/mm.h>
-#include <linux/memblock.h>
 
 #include <asm/desc.h>
 #include <asm/setup.h>
 #include <asm/sections.h>
-#include <asm/e820/api.h>
-#include <asm/page.h>
-#include <asm/apic.h>
-#include <asm/bios_ebda.h>
 #include <asm/tlbflush.h>
 static void sanitize_boot_params(struct boot_params *boot_params)
 {

@@ -1,20 +1,8 @@
 /* MM initialization globals - consolidated from init-mm.c, vmstat.c, workingset.c */
 #include <linux/mm.h>
-#include <linux/vmstat.h>
 #include <linux/list_lru.h>
-#include <linux/mm_types.h>
-#include <linux/rbtree.h>
-#include <linux/rwsem.h>
-#include <linux/spinlock.h>
-#include <linux/list.h>
-#include <linux/cpumask.h>
-#include <linux/mman.h>
-#include <linux/pgtable.h>
 
-#include <linux/atomic.h>
 #include <linux/user_namespace.h>
-
-#include <asm/mmu.h>
 
 #ifndef INIT_MM_CONTEXT
 #define INIT_MM_CONTEXT(name)

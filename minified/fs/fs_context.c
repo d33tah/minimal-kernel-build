@@ -1,13 +1,6 @@
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-#include <linux/fs_context.h>
 #include <linux/fs_parser.h>
-#include <linux/fs.h>
-#include <linux/mount.h>
-#include <linux/nsproxy.h>
-#include <linux/slab.h>
-#include <linux/security.h>
-#include <linux/pid_namespace.h>
 #include <linux/user_namespace.h>
 struct net {
 	atomic_t count;
@@ -20,9 +13,6 @@ static inline struct net *get_net(struct net *net)
 static inline void put_net(struct net *net)
 {
 }
-#include <asm/sections.h>
-#include "mount.h"
-#include "internal.h"
 
 int vfs_parse_fs_param_source(struct fs_context *fc, struct fs_parameter *param)
 {

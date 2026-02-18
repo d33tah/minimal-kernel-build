@@ -1,10 +1,5 @@
 
 #include <linux/device.h>
-#include <linux/errno.h>
-#include <linux/slab.h>
-#include <linux/init.h>
-#include <linux/mutex.h>
-#include <linux/sysfs.h>
 #include "base.h"
 
 static struct kset *system_kset;

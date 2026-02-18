@@ -1,9 +1,7 @@
 
 #include <linux/module.h>
 #include <linux/slab.h>
-#include <linux/mutex.h>
 #include <linux/kdev_t.h>
-#include <linux/kobject.h>
 typedef struct kobject *kobj_probe_t(dev_t, int *, void *);
 /* end kobj_map.h */
 

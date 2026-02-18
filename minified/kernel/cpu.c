@@ -1,8 +1,4 @@
 /* Minimal includes for CPU hotplug */
-#include <linux/smp.h>
-#include <linux/init.h>
-#include <linux/cpu.h>
-#include <linux/cpumask.h>
 #include <linux/percpu.h>
 
 #define MASK_DECLARE_1(x) [x + 1][0] = (1UL << (x))

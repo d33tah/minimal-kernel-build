@@ -1,5 +1,3 @@
-#include <linux/sched/debug.h>
-#include <linux/printk.h>
 #include <asm/kdebug.h>
 #ifndef NOKPROBE_SYMBOL
 #define NOKPROBE_SYMBOL(fname) /* kprobes disabled */
@@ -7,10 +5,8 @@
 
 /* Merged from lib/debug_locks.c */
 int debug_locks __read_mostly = 1;
-#include <linux/notifier.h>
 #include <linux/vt_kern.h>
 #include <linux/delay.h>
-#include <linux/sched.h>
 
 #include <linux/console.h>
 

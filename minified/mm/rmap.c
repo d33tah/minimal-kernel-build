@@ -1,15 +1,4 @@
 
-#include <linux/mm.h>
-#include <linux/sched/mm.h>
-#include <linux/sched/task.h>
-#include <linux/pagemap.h>
-#include <linux/slab.h>
-#include <linux/init.h>
-#include <linux/rmap.h>
-#include <linux/rcupdate.h>
-#include <linux/mm_inline.h>
-
-#include <asm/tlbflush.h>
 
 #include "internal.h"
 

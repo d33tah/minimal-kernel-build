@@ -1,16 +1,8 @@
-#include <linux/interrupt.h>
 #include <linux/irq.h>
-#include <linux/timex.h>
-#include <linux/init.h>
 #include <linux/io.h>
-#include <linux/delay.h>
-#include <linux/pgtable.h>
 
-#include <linux/atomic.h>
 #include <asm/timer.h>
 #include <asm/hw_irq.h>
-#include <asm/desc.h>
-#include <asm/apic.h>
 #include <asm/setup.h>
 #include <asm/i8259.h>
 #include <asm/traps.h>

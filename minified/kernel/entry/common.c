@@ -2,8 +2,6 @@
 #include <linux/entry-common.h>
 #include <linux/task_work.h>
 #include <linux/highmem.h>
-#include <linux/jump_label.h>
-#include <linux/init_task.h>
 
 static __always_inline void __enter_from_user_mode(struct pt_regs *regs)
 {

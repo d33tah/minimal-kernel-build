@@ -1,8 +1,5 @@
 #include <asm/io.h>
-#include <asm/processor.h>
 #include <linux/smp.h>
-#include <linux/time64.h> /* for struct timespec64 */
-#include <linux/delay.h>
 #include <linux/spinlock.h>
 extern spinlock_t rtc_lock;
 #define RTC_PORT(x) (0x70 + (x))
@@ -53,9 +50,7 @@ static unsigned _bcd2bin(unsigned char val)
 	return (val & 0x0f) + (val >> 4) * 10;
 }
 
-#include <asm/x86_init.h>
 #include <asm/time.h>
-#include <asm/setup.h>
 
 #define CMOS_YEARS_OFFS 2000
 

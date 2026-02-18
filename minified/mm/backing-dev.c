@@ -1,11 +1,5 @@
 
-#include <linux/wait.h>
 #include <linux/backing-dev.h>
-#include <linux/fs.h>
-#include <linux/mm.h>
-#include <linux/sched/mm.h>
-#include <linux/sched.h>
-#include <linux/device.h>
 
 /* Merged from lib/flex_proportions.c */
 void fprop_local_init_percpu(struct fprop_local_percpu *pl, gfp_t gfp)

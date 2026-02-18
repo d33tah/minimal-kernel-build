@@ -1,11 +1,7 @@
 
-#include <linux/slab.h>
-#include <linux/nsproxy.h>
-#include <linux/init_task.h>
 struct mnt_namespace;
 extern void put_mnt_ns(struct mnt_namespace *ns);
 #include <linux/utsname.h>
-#include <linux/pid_namespace.h>
 struct net {
 	atomic_t count;
 	struct user_namespace *user_ns;
@@ -13,8 +9,6 @@ struct net {
 static inline void put_net(struct net *net)
 {
 }
-#include <linux/ns_common.h>
-#include <linux/err.h>
 
 #ifndef _LINUX_TIMENS_H
 #define _LINUX_TIMENS_H
@@ -43,9 +37,6 @@ static inline void put_time_ns(struct time_namespace *ns)
 
 #endif /* _LINUX_TIMENS_H */
 
-#include <linux/fs_struct.h>
-#include <linux/proc_ns.h>
-#include <linux/file.h>
 #include <linux/cgroup.h>
 
 static struct kmem_cache *nsproxy_cachep;

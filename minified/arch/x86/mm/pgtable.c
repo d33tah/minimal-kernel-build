@@ -1,8 +1,5 @@
-#include <linux/mm.h>
-#include <linux/gfp.h>
 #include <asm/pgalloc.h>
 #include <asm/tlb.h>
-#include <asm/fixmap.h>
 
 #define PGTABLE_HIGHMEM 0
 

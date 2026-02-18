@@ -1,8 +1,5 @@
-#include <linux/elf.h>
 #include <linux/extable.h>
-#include <linux/init.h>
 
-#include <asm/sections.h>
 #include <linux/uaccess.h>
 
 extern struct exception_table_entry __start___ex_table[];

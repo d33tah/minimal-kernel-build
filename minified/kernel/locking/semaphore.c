@@ -1,7 +1,4 @@
 
-#include <linux/compiler.h>
-#include <linux/kernel.h>
-#include <linux/sched.h>
 #include <linux/sched/debug.h>
 #include <linux/sched/signal.h>
 struct semaphore {
@@ -18,7 +15,6 @@ struct semaphore {
 extern void down(struct semaphore *sem);
 extern int __must_check down_trylock(struct semaphore *sem);
 extern void up(struct semaphore *sem);
-#include <linux/spinlock.h>
 
 static inline int __sched ___down_common(struct semaphore *sem, long state,
 					 long timeout);

@@ -1,11 +1,6 @@
-#include <asm/fpu/api.h>
 #include <asm/fpu/sched.h>
 #include <asm/fpu/signal.h>
-#include <asm/fpu/types.h>
-#include <asm/traps.h>
 #include <asm/irq_regs.h>
-
-#include <linux/hardirq.h>
 
 #include <asm/fpu/xstate.h>
 

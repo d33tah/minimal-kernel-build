@@ -1,9 +1,5 @@
 
 #define __NO_FORTIFY
-#include <linux/types.h>
-#include <linux/string.h>
-#include <linux/ctype.h>
-#include <linux/kernel.h>
 #include <linux/bug.h>
 #include <linux/errno.h>
 
@@ -15,7 +11,6 @@
 		__pptr->x;                                  \
 	})
 #define get_unaligned(ptr) __get_unaligned_t(typeof(*(ptr)), (ptr))
-#include <asm/byteorder.h>
 #include <asm/word-at-a-time.h>
 #include <asm/page.h>
 

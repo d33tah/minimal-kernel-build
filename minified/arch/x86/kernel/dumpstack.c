@@ -1,20 +1,10 @@
 #ifndef NOKPROBE_SYMBOL
 #define NOKPROBE_SYMBOL(fname) /* kprobes disabled */
 #endif
-#include <linux/uaccess.h>
-#include <linux/utsname.h>
-#include <linux/hardirq.h>
 #include <asm/kdebug.h>
 int notify_die(enum die_val val, const char *str, struct pt_regs *regs,
 	       long err, int trap, int sig);
-#include <linux/module.h>
 #include <linux/ptrace.h>
-#include <linux/sched/debug.h>
-#include <linux/sched/task_stack.h>
-#include <linux/bug.h>
-#include <linux/sysfs.h>
-
-#include <asm/cpu_entry_area.h>
 
 static int die_counter;
 

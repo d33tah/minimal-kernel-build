@@ -1,14 +1,10 @@
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-#include <linux/kernel.h>
 #include <linux/fs.h>
 #include <linux/console.h>
-#include <linux/init.h>
-#include <linux/smp.h>
 
 /* end printk_ringbuffer.h */
-#include <linux/percpu.h>
 #define printk_safe_enter_irqsave(flags) local_irq_save(flags)
 #define printk_safe_exit_irqrestore(flags) local_irq_restore(flags)
 /* end internal.h */

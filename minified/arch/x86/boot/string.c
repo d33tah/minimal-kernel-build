@@ -1,10 +1,7 @@
 
 
 #include <linux/types.h>
-#include <linux/compiler.h>
 #include <asm/asm.h>
-#include "ctype.h"
-#include "string.h"
 
 #undef memcpy
 #undef memset

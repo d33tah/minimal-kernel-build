@@ -1,15 +1,4 @@
-#include <linux/gfp.h>
-#include <linux/highmem.h>
-#include <linux/kernel.h>
-#include <linux/mmdebug.h>
-#include <linux/mm_types.h>
-#include <linux/mm_inline.h>
-#include <linux/pagemap.h>
-#include <linux/rcupdate.h>
-#include <linux/smp.h>
-#include <linux/swap.h>
 
-#include <asm/pgalloc.h>
 #include <asm/tlb.h>
 
 bool __tlb_remove_page_size(struct mmu_gather *tlb, struct page *page,

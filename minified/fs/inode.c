@@ -1,15 +1,6 @@
 
-#include <linux/fs.h>
-#include <linux/mm.h>
-#include <linux/hash.h>
 #include <linux/swap.h>
-#include <linux/security.h>
 #include <linux/cdev.h>
-#include <linux/memblock.h>
-#include <linux/mount.h>
-
-#include <linux/list_lru.h>
-#include "internal.h"
 
 const struct address_space_operations empty_aops = {};
 

@@ -1,12 +1,5 @@
 
-#include <linux/mutex.h>
-#include <linux/preempt.h>
-#include <linux/rcupdate_wait.h>
-#include <linux/sched.h>
-#include <linux/delay.h>
 #include <linux/srcu.h>
-
-#include "rcu.h"
 
 static LIST_HEAD(srcu_boot_list);
 static bool srcu_init_done;

@@ -1,8 +1,5 @@
-#include <linux/mm.h>
-#include <linux/bitops.h>
 #include <linux/slab.h>
 #include "slab.h"
-#include <linux/cpu.h>
 
 #include "internal.h"
 

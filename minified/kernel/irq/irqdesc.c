@@ -1,7 +1,5 @@
-#include <linux/irq.h>
 #include <linux/slab.h>
 #include <linux/interrupt.h>
-#include <linux/radix-tree.h>
 #include <linux/irqdomain.h>
 
 #include "internals.h"

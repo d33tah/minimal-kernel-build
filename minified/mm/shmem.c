@@ -1,13 +1,4 @@
 
-#include <linux/fs.h>
-#include <linux/init.h>
-#include <linux/mount.h>
-#include <linux/pagemap.h>
-#include <linux/file.h>
-#include <linux/mm.h>
-#include <linux/sched/signal.h>
-#include <linux/swap.h>
-#include <linux/uio.h>
 #include <linux/fs_parser.h>
 extern int ramfs_init_fs_context(struct fs_context *fc);
 extern const struct fs_parameter_spec ramfs_fs_parameters[];

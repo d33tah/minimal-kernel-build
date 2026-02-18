@@ -1,20 +1,6 @@
-#include <linux/linkage.h>
-#include <linux/signal.h>
-#include <linux/sched.h>
-#include <linux/ioport.h>
-#include <linux/interrupt.h>
 #include <linux/irq.h>
-#include <linux/timex.h>
-#include <linux/bitops.h>
-#include <linux/io.h>
-#include <linux/delay.h>
-#include <linux/pgtable.h>
 
-#include <linux/atomic.h>
-#include <asm/timer.h>
-#include <asm/hw_irq.h>
 #include <asm/desc.h>
-#include <asm/apic.h>
 #include <asm/i8259.h>
 
 static void init_8259A(int auto_eoi);

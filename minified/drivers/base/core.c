@@ -1,13 +1,5 @@
 
-#include <linux/device.h>
-#include <linux/err.h>
-#include <linux/init.h>
 #include <linux/slab.h>
-#include <linux/kdev_t.h>
-#include <linux/mutex.h>
-#include <linux/sched/signal.h>
-#include <linux/sched/mm.h>
-#include <linux/sysfs.h>
 #include <linux/backing-dev.h>
 
 #include "base.h"

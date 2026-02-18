@@ -3,8 +3,6 @@
 #define _LINUX_TIMEKEEPER_INTERNAL_H
 
 #include <linux/clocksource.h>
-#include <linux/jiffies.h>
-#include <linux/time.h>
 
 struct tk_read_base {
 	struct clocksource *clock;
@@ -46,20 +44,9 @@ struct timekeeper {
 };
 
 #endif /* _LINUX_TIMEKEEPER_INTERNAL_H */
-#include <linux/module.h>
-#include <linux/percpu.h>
-#include <linux/init.h>
 #include <linux/mm.h>
-#include <linux/sched.h>
-#include <linux/sched/clock.h>
 #include <linux/clocksource.h>
-#include <linux/jiffies.h>
-#include <linux/time.h>
-#include <linux/timex.h>
 
-#include <linux/compiler.h>
-
-#include "tick-internal.h"
 extern raw_spinlock_t timekeeper_lock;
 
 DEFINE_RAW_SPINLOCK(timekeeper_lock);

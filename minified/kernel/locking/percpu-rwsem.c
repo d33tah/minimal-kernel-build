@@ -1,10 +1,6 @@
 /* --- 2026-02-08 05:55 --- */
-#include <linux/percpu.h>
 #include <linux/percpu-rwsem.h>
-#include <linux/rcupdate.h>
-#include <linux/sched.h>
 #include <linux/sched/debug.h>
-#include <linux/errno.h>
 
 int __percpu_init_rwsem(struct percpu_rw_semaphore *sem, const char *name,
 			struct lock_class_key *key)

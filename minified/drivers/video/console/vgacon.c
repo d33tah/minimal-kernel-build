@@ -1,21 +1,13 @@
 
 #include <linux/module.h>
-#include <linux/types.h>
-#include <linux/fs.h>
-#include <linux/kernel.h>
 #include <linux/console.h>
-#include <linux/string.h>
-#include <linux/slab.h>
 #include <linux/vt_kern.h>
-#include <linux/sched.h>
 static inline void scr_memcpyw(u16 *d, const u16 *s, unsigned int count)
 {
 	memcpy(d, s, count);
 }
 extern const unsigned char color_table[];
-#include <linux/spinlock.h>
 #include <linux/ioport.h>
-#include <linux/screen_info.h>
 #include <asm/io.h>
 #define VGA_MAP_MEM(x, s) ((unsigned long)phys_to_virt(x))
 

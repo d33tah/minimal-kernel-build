@@ -1,10 +1,5 @@
 
 #include <linux/interrupt.h>
-#include <linux/local_lock.h>
-#include <linux/percpu.h>
-#include <linux/rcupdate.h>
-#include <linux/smp.h>
-#include <linux/irq.h>
 void do_softirq_own_stack(void);
 
 #ifndef __ARCH_IRQ_STAT

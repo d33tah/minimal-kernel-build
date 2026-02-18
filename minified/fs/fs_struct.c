@@ -1,9 +1,5 @@
-#include <linux/sched/signal.h>
-#include <linux/sched/task.h>
 #include <linux/fs.h>
-#include <linux/slab.h>
 #include <linux/fs_struct.h>
-#include "internal.h"
 
 void set_fs_root(struct fs_struct *fs, const struct path *path)
 {

@@ -1,10 +1,6 @@
 #include <linux/extable.h>
 #include <asm/extable.h>
-#include <linux/uaccess.h>
 #include <linux/sched/debug.h>
-
-#include <linux/build_bug.h>
-#include <asm/byteorder.h>
 
 #define __bf_shf(x) (__builtin_ffsll(x) - 1)
 

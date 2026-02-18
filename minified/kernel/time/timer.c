@@ -1,11 +1,5 @@
-#include <linux/percpu.h>
 #include <linux/mm.h>
-#include <linux/jiffies.h>
-#include <linux/printk.h>
 #include <linux/sched/debug.h>
-#include <asm/div64.h>
-
-#include "tick-internal.h"
 
 __visible u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
 

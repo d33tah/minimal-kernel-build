@@ -1,11 +1,8 @@
 #include <linux/ctype.h>
-#include <linux/errno.h>
 int __must_check kstrtoull(const char *s, unsigned int base,
 			   unsigned long long *res);
 int __must_check kstrtouint(const char *s, unsigned int base,
 			    unsigned int *res);
-#include <linux/math64.h>
-#include <linux/types.h>
 #include <linux/uaccess.h>
 
 #define KSTRTOX_OVERFLOW (1U << 31)

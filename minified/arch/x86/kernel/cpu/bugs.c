@@ -1,13 +1,5 @@
-#include <linux/init.h>
-#include <linux/cpu.h>
-#include <linux/module.h>
 #include <linux/utsname.h>
 extern void check_bugs(void);
-#include <asm/processor.h>
-#include <asm/fpu/api.h>
-#include <asm/msr.h>
-#include <asm/alternative.h>
-#include <asm/nospec-branch.h>
 
 u64 __ro_after_init x86_amd_ls_cfg_base;
 u64 __ro_after_init x86_amd_ls_cfg_ssbd_mask;

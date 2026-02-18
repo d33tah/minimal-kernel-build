@@ -2,13 +2,8 @@
 #include <linux/interrupt.h>
 #include <linux/irq.h>
 #include <linux/cpu.h>
-#include <linux/delay.h>
-#include <linux/uaccess.h>
-#include <linux/percpu.h>
 #include <linux/mm.h>
 
-#include <asm/apic.h>
-#include <asm/nospec-branch.h>
 void do_softirq_own_stack(void);
 
 DEFINE_PER_CPU(struct irq_stack *, hardirq_stack_ptr);

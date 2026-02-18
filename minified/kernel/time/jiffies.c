@@ -1,7 +1,5 @@
 #include <linux/clocksource.h>
-#include <linux/jiffies.h>
 #include <linux/module.h>
-#include <linux/init.h>
 
 extern raw_spinlock_t jiffies_lock;
 extern seqcount_raw_spinlock_t jiffies_seq;

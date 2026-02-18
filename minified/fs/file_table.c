@@ -1,22 +1,7 @@
 
-#include <linux/string.h>
-#include <linux/slab.h>
-#include <linux/file.h>
-#include <linux/fdtable.h>
-#include <linux/init.h>
-#include <linux/fs.h>
 #include <linux/security.h>
-#include <linux/cred.h>
-#include <linux/rcupdate.h>
-#include <linux/mount.h>
 #include <linux/cdev.h>
-#include <linux/percpu_counter.h>
-#include <linux/percpu.h>
 #include <linux/task_work.h>
-
-#include <linux/atomic.h>
-
-#include "internal.h"
 
 static struct kmem_cache *filp_cachep __read_mostly;
 

@@ -1,25 +1,12 @@
-#include <linux/sched.h>
-#include <linux/sched/task_stack.h>
 #include <linux/extable.h>
-#include <linux/memblock.h>
 #ifndef NOKPROBE_SYMBOL
 #define NOKPROBE_SYMBOL(fname) /* kprobes disabled */
 #endif
 
-#include <linux/uaccess.h>
-#include <linux/mm_types.h>
 #include <asm/kdebug.h>
 
-#include <asm/cpufeature.h>
 #include <asm/traps.h>
-#include <asm/fixmap.h>
 #include <asm/mmu_context.h>
-#include <asm/desc.h>
-#include <asm/cpu_entry_area.h>
-#include <asm/pgtable_areas.h>
-#include <asm/vdso.h>
-
-#include <asm/irq_stack.h>
 
 DEFINE_SPINLOCK(pgd_lock);
 LIST_HEAD(pgd_list);

@@ -1,8 +1,6 @@
 
 #include <linux/device.h>
-#include <linux/delay.h>
 #include <linux/kthread.h>
-#include <linux/wait.h>
 #define RPM_ASYNC 0x01
 #define RPM_GET_PUT 0x04
 static inline int __pm_runtime_idle(struct device *dev, int rpmflags)
@@ -25,8 +23,6 @@ static inline int pm_runtime_put(struct device *dev)
 {
 	return __pm_runtime_idle(dev, RPM_GET_PUT | RPM_ASYNC);
 }
-
-#include <linux/slab.h>
 
 #include "base.h"
 

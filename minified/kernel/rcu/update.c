@@ -1,21 +1,7 @@
-#include <linux/kernel.h>
-#include <linux/init.h>
-#include <linux/smp.h>
-#include <linux/sched/signal.h>
-#include <linux/sched/debug.h>
-#include <linux/bitops.h>
-#include <linux/cpu.h>
-#include <linux/mutex.h>
-#include <linux/hardirq.h>
-#include <linux/delay.h>
-#include <linux/moduleparam.h>
-#include <linux/kthread.h>
 #include <linux/rcupdate_wait.h>
 #ifndef NOKPROBE_SYMBOL
 #define NOKPROBE_SYMBOL(fname) /* kprobes disabled */
 #endif
-
-#include "rcu.h"
 
 #ifdef MODULE_PARAM_PREFIX
 #undef MODULE_PARAM_PREFIX

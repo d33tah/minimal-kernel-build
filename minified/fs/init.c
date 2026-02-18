@@ -1,6 +1,4 @@
-#include <linux/init.h>
 #include <linux/namei.h>
-#include <linux/fs.h>
 #include <linux/fs_struct.h>
 #include <linux/file.h>
 #include "internal.h"

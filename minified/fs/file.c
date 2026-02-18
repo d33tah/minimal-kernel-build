@@ -1,17 +1,5 @@
 
-#include <linux/syscalls.h>
-#include <linux/fs.h>
-#include <linux/kernel.h>
-#include <linux/mm.h>
-#include <linux/sched/signal.h>
-#include <linux/slab.h>
-#include <linux/file.h>
 #include <linux/fdtable.h>
-#include <linux/bitops.h>
-#include <linux/spinlock.h>
-#include <linux/rcupdate.h>
-
-#include "internal.h"
 
 static void __free_fdtable(struct fdtable *fdt)
 {

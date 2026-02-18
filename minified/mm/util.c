@@ -1,21 +1,6 @@
-#include <linux/mm.h>
 #include <asm/sections.h>
-#include <linux/slab.h>
-#include <linux/string.h>
-#include <linux/compiler.h>
-#include <linux/err.h>
-#include <linux/sched.h>
-#include <linux/sched/mm.h>
-#include <linux/sched/signal.h>
-#include <linux/sched/task_stack.h>
-#include <linux/security.h>
 #include <linux/swap.h>
 #include <linux/mman.h>
-#include <linux/vmalloc.h>
-#include <linux/personality.h>
-#include <linux/uaccess.h>
-
-#include "internal.h"
 
 void kfree_const(const void *x)
 {

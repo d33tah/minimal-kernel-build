@@ -1,11 +1,6 @@
 
-#include <linux/personality.h>
 #include <linux/mm.h>
-#include <linux/limits.h>
-#include <linux/sched/signal.h>
 #include <linux/sched/mm.h>
-#include <asm/elf.h>
-#include <asm/io.h>
 
 #define SIZE_128M (128 * 1024 * 1024UL)
 

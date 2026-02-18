@@ -1,9 +1,5 @@
-#include <linux/types.h>
 #include "bitops.h"
 
-#include <asm/processor-flags.h>
-#include <asm/required-features.h>
-#include <asm/msr-index.h>
 #include <asm/cpufeatures.h>
 #include <asm/processor-flags.h>
 struct cpu_features {

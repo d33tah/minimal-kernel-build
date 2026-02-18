@@ -1,8 +1,4 @@
-#include <linux/kernel.h>
-#include <linux/timex.h>
 #include <linux/clocksource.h>
-#include <linux/jiffies.h>
-#include <linux/time.h>
 
 #ifndef _LINUX_TIMEKEEPER_INTERNAL_H
 #define _LINUX_TIMEKEEPER_INTERNAL_H
@@ -48,10 +44,7 @@ struct timekeeper {
 
 #endif /* _LINUX_TIMEKEEPER_INTERNAL_H */
 #include <linux/syscalls.h>
-#include <linux/math64.h>
-#include <asm/unistd.h>
 
-#include <generated/timeconst.h>
 extern raw_spinlock_t jiffies_lock;
 extern seqcount_raw_spinlock_t jiffies_seq;
 

@@ -1,11 +1,8 @@
 /* Stub: Clocksource - minimal for single-CPU hello-world kernel */
 
 #include <linux/clocksource.h>
-#include <linux/init.h>
 #include <linux/module.h>
-#include <linux/sched.h>
 
-#include "tick-internal.h"
 extern raw_spinlock_t timekeeper_lock;
 
 void clocks_calc_mult_shift(u32 *mult, u32 *shift, u32 from, u32 to, u32 maxsec)

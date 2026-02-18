@@ -1,14 +1,5 @@
 
-#include <linux/fs.h>
 #include <linux/pagemap.h>
-#include <linux/highmem.h>
-#include <linux/time.h>
-#include <linux/init.h>
-#include <linux/backing-dev.h>
-#include <linux/sched.h>
-#include <linux/slab.h>
-#include <linux/uaccess.h>
-#include <linux/fs_context.h>
 #include <linux/fs_parser.h>
 
 /* Merged from file-mmu.c */

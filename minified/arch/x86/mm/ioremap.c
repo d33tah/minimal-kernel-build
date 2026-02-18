@@ -1,17 +1,7 @@
 
-#include <linux/memblock.h>
-#include <linux/init.h>
 #include <linux/io.h>
-#include <linux/ioport.h>
-#include <linux/slab.h>
-#include <linux/vmalloc.h>
-#include <linux/pgtable.h>
 
-#include <asm/e820/api.h>
-#include <asm/fixmap.h>
-#include <asm/tlbflush.h>
 #include <asm/pgalloc.h>
-#include <asm/setup.h>
 
 static pte_t bm_pte[PAGE_SIZE / sizeof(pte_t)] __page_aligned_bss;
 

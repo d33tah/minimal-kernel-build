@@ -1,18 +1,8 @@
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-#include <linux/bitmap.h>
-#include <linux/cpumask.h>
 #include <linux/memblock.h>
-#include <linux/err.h>
-#include <linux/log2.h>
-#include <linux/mm.h>
-#include <linux/percpu.h>
-#include <linux/pfn.h>
 #include <linux/slab.h>
-#include <linux/sched.h>
-
-#include <asm/sections.h>
 
 #define __addr_to_pcpu_ptr(addr) (void __percpu *)(addr)
 

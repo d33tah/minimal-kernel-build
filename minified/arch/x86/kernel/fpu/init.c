@@ -1,13 +1,8 @@
-#include <asm/fpu/api.h>
 #include <asm/tlbflush.h>
-#include <asm/setup.h>
 
-#include <linux/sched.h>
 #include <linux/sched/task.h>
-#include <linux/init.h>
 
 #include "internal.h"
-#include "xstate.h"
 
 void fpu__init_cpu(void)
 {

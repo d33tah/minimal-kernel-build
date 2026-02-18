@@ -1,17 +1,10 @@
 
-#include <linux/spinlock.h>
 #ifndef NOKPROBE_SYMBOL
 #define NOKPROBE_SYMBOL(fname) /* kprobes disabled */
 #endif
-#include <linux/sched/debug.h>
-#include <linux/delay.h>
 #include <linux/hardirq.h>
-#include <linux/atomic.h>
-#include <linux/sched/clock.h>
 
-#include <asm/cpu_entry_area.h>
 #include <asm/traps.h>
-#include <asm/io.h>
 #define NMI_REASON_PORT 0x61
 #define NMI_REASON_SERR 0x80
 #define NMI_REASON_IOCHK 0x40
@@ -21,8 +14,6 @@
 #define NMI_REASON_CLEAR_MASK 0x0f
 #include <asm/nmi.h>
 #include <asm/x86_init.h>
-#include <asm/cache.h>
-#include <asm/nospec-branch.h>
 
 struct nmi_desc {
 	raw_spinlock_t lock;

@@ -1,7 +1,3 @@
-#include <linux/irq.h>
-#include <linux/cpumask.h>
-#include <asm/hw_irq.h>
-#include <linux/irqdomain.h>
 #include <linux/interrupt.h>
 
 #include "internals.h"

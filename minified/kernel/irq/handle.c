@@ -1,9 +1,5 @@
 
-#include <linux/irq.h>
-#include <linux/sched.h>
 #include <linux/interrupt.h>
-
-#include <asm/irq_regs.h>
 
 #include "internals.h"
 

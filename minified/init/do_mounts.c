@@ -1,18 +1,8 @@
-#include <linux/sched.h>
-#include <linux/init.h>
-#include <linux/mm.h>
-#include <asm/errno.h>
 #include <linux/types.h>
-#include <linux/kdev_t.h>
 
 extern dev_t ROOT_DEV;
-#include <linux/mount.h>
 #include <linux/device.h>
-#include <linux/init.h>
 #include <linux/fs.h>
-#include <linux/initrd.h>
-#include <linux/fs_struct.h>
-#include <linux/slab.h>
 extern int ramfs_init_fs_context(struct fs_context *fc);
 int __init init_mount(const char *dev_name, const char *dir_name,
 		      const char *type_page, unsigned long flags,

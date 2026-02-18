@@ -1,9 +1,4 @@
 #include <linux/pagemap.h>
-#include <linux/cred.h>
-#include <linux/mount.h>
-#include <linux/fs_context.h>
-
-#include "internal.h"
 
 struct dentry *simple_lookup(struct inode *dir, struct dentry *dentry,
 			     unsigned int flags)

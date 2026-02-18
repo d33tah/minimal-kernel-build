@@ -1,8 +1,4 @@
 #include <linux/module.h>
-#include <linux/sched.h>
-#include <linux/list.h>
-#include <linux/stringify.h>
-#include <linux/mm.h>
 static inline void iret_to_self(void)
 {
 	asm volatile("pushfl\n\t"
@@ -29,18 +25,6 @@ extern void text_poke_early(void *addr, const void *opcode, size_t len);
 extern int after_bootmem;
 extern __ro_after_init struct mm_struct *poking_mm;
 extern __ro_after_init unsigned long poking_addr;
-#include <asm/alternative.h>
-#include <asm/sections.h>
-#include <asm/nmi.h>
-#include <asm/tlbflush.h>
-#include <asm/io.h>
-#include <asm/fixmap.h>
-#include <linux/uaccess.h>
-#include <linux/pgtable.h>
-#include <asm/page.h>
-#include <asm/special_insns.h>
-#include <asm/preempt.h>
-#include <asm/asm.h>
 
 int __read_mostly alternatives_patched;
 

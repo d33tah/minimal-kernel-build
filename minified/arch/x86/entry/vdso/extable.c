@@ -1,8 +1,5 @@
-#include <linux/err.h>
 #include <linux/mm.h>
-#include <asm/current.h>
 #include <asm/traps.h>
-#include <asm/vdso.h>
 
 struct vdso_exception_table_entry {
 	int insn, fixup;

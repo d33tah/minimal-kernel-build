@@ -1,9 +1,5 @@
 
-#include <linux/errno.h>
 #include <linux/ioport.h>
-#include <linux/spinlock.h>
-#include <linux/sched.h>
-#include <linux/pfn.h>
 #include <linux/mm.h>
 #include <asm/io.h>
 

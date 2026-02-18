@@ -1,16 +1,10 @@
-#include <linux/init.h>
-#include <linux/ioport.h>
 
-#include <asm/bios_ebda.h>
 #include <asm/setup.h>
-#include <asm/apic.h>
 #include <asm/e820/api.h>
 #include <asm/time.h>
 #include <asm/irq.h>
 #ifndef _ASM_X86_TSC_H
 #define _ASM_X86_TSC_H
-#include <asm/processor.h>
-#include <asm/cpufeature.h>
 typedef unsigned long long cycles_t;
 static inline cycles_t get_cycles(void)
 {

@@ -1,7 +1,4 @@
 #include <linux/memblock.h>
-#include <linux/init.h>
-#include <linux/mm.h>
-#include <asm/errno.h>
 void sort(void *base, size_t num, size_t size, cmp_func_t cmp_func,
 	  swap_func_t swap_func);
 #include <asm/e820/api.h>

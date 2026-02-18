@@ -87,7 +87,6 @@ struct wait_page_queue {
 	wait_queue_entry_t wait;
 };
 
-void __folio_lock(struct folio *folio);
 void unlock_page(struct page *page);
 void folio_unlock(struct folio *folio);
 
@@ -98,28 +97,22 @@ static inline bool folio_trylock(struct folio *folio)
 
 static inline void folio_lock(struct folio *folio)
 {
-	might_sleep();
-	if (!folio_trylock(folio))
-		__folio_lock(folio);
+	while (!folio_trylock(folio))
+		cpu_relax();
 }
 
 static inline void lock_page(struct page *page)
 {
-	struct folio *folio;
-	might_sleep();
-
-	folio = page_folio(page);
-	if (!folio_trylock(folio))
-		__folio_lock(folio);
+	folio_lock(page_folio(page));
 }
-
-int folio_wait_bit_killable(struct folio *folio, int bit_nr);
 
 static inline int folio_wait_locked_killable(struct folio *folio)
 {
 	if (!folio_test_locked(folio))
 		return 0;
-	return folio_wait_bit_killable(folio, PG_locked);
+	folio_lock(folio);
+	folio_unlock(folio);
+	return 0;
 }
 
 int filemap_add_folio(struct address_space *mapping, struct folio *folio,

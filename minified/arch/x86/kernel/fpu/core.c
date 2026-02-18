@@ -2,7 +2,12 @@
 #include <asm/fpu/signal.h>
 #include <asm/irq_regs.h>
 
-#include <asm/fpu/xstate.h>
+/* asm/fpu/xstate.h inlined */
+#include <linux/uaccess.h>
+#include <asm/processor.h>
+#include <asm/fpu/api.h>
+#define XFEATURE_MASK_USER_DYNAMIC XFEATURE_MASK_XTILE_DATA
+#define XFEATURE_MASK_FPSTATE 0x4FF
 
 static inline int fpregs_state_valid(struct fpu *fpu, unsigned int cpu)
 {

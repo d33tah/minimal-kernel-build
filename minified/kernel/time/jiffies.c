@@ -3,7 +3,14 @@
 
 extern raw_spinlock_t jiffies_lock;
 extern seqcount_raw_spinlock_t jiffies_seq;
-#include "tick-internal.h"
+/* tick-internal.h inlined */
+#if HZ < 34
+#define JIFFIES_SHIFT 6
+#elif HZ < 67
+#define JIFFIES_SHIFT 7
+#else
+#define JIFFIES_SHIFT 8
+#endif
 
 static u64 jiffies_read(struct clocksource *cs)
 {

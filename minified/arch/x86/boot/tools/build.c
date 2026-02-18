@@ -3,16 +3,41 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <stdint.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/mman.h>
-#include <tools/le_byteshift.h>
 
 typedef unsigned char u8;
 typedef unsigned short u16;
 typedef unsigned int u32;
+
+static inline uint16_t get_unaligned_le16(const void *p)
+{
+	const uint8_t *b = (const uint8_t *)p;
+	return b[0] | b[1] << 8;
+}
+
+static inline uint32_t get_unaligned_le32(const void *p)
+{
+	const uint8_t *b = (const uint8_t *)p;
+	return b[0] | b[1] << 8 | b[2] << 16 | b[3] << 24;
+}
+
+static inline void put_unaligned_le16(uint16_t val, void *p)
+{
+	uint8_t *b = (uint8_t *)p;
+	b[0] = val;
+	b[1] = val >> 8;
+}
+
+static inline void put_unaligned_le32(uint32_t val, void *p)
+{
+	put_unaligned_le16(val, p);
+	put_unaligned_le16(val >> 16, (uint8_t *)p + 2);
+}
 
 #define DEFAULT_MAJOR_ROOT 0
 #define DEFAULT_MINOR_ROOT 0

@@ -1,10 +1,6 @@
 
-#include <linux/slab.h>
 #include <linux/file.h>
-#include <linux/fdtable.h>
-#include <linux/mm.h>
 #include <linux/vmacache.h>
-#include <linux/stat.h>
 #include <linux/swap.h>
 #include <linux/string.h>
 #include <linux/sched/mm.h>
@@ -12,20 +8,11 @@
 #include <linux/sched/signal.h>
 #include <linux/sched/task.h>
 #include <linux/pagemap.h>
-#include <linux/highmem.h>
-#include <linux/spinlock.h>
-#include <linux/personality.h>
 #include <linux/binfmts.h>
-#include <linux/pid_namespace.h>
 #include <linux/module.h>
 #include <linux/namei.h>
-#include <linux/mount.h>
 #include <linux/security.h>
-#include <linux/syscalls.h>
-#include <linux/fs_struct.h>
-#include <linux/ptrace.h>
 
-#include <linux/uaccess.h>
 #include <asm/mmu_context.h>
 #include <asm/tlb.h>
 

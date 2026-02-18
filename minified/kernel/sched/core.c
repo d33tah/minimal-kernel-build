@@ -1,8 +1,6 @@
 
 #include <linux/sched/signal.h>
 
-#include <linux/wait_bit.h>
-#include <linux/jiffies.h>
 #include <linux/sched/clock.h>
 
 /* linux/sched/signal.h already included above */
@@ -11,16 +9,11 @@
 extern void sched_init(void);
 #include <linux/sched/mm.h>
 
-#include <linux/init_task.h>
-#include <linux/interrupt.h>
-
 #include <asm/mmu_context.h>
 #include <asm/mmu.h>
 #include <linux/slab.h>
-#include <linux/syscalls.h>
 
 #include <asm/switch_to.h>
-#include <asm/tlb.h>
 
 #include "sched.h"
 

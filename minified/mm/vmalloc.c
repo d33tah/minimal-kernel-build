@@ -1,16 +1,7 @@
 
 #include <linux/vmalloc.h>
-#include <linux/mm.h>
 #include <linux/sched/signal.h>
-#include <linux/slab.h>
-#include <linux/spinlock.h>
-#include <linux/list.h>
-#include <linux/rbtree.h>
-#include <linux/pfn.h>
 #include <linux/rbtree_augmented.h>
-#include <linux/pgtable.h>
-#include <linux/uaccess.h>
-#include <linux/sched/mm.h>
 #include <asm/tlbflush.h>
 
 #include "internal.h"

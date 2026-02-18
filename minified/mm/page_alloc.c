@@ -1,12 +1,10 @@
 
-#include <linux/mm.h>
 #include <linux/swap.h>
 #include <linux/memblock.h>
 #include <linux/compiler.h>
 #include <linux/kernel.h>
 #include <linux/slab.h>
 #include <linux/nodemask.h>
-#include <linux/pfn.h>
 
 /* end page-isolation.h */
 
@@ -15,7 +13,6 @@ struct alloc_context;
 #include <linux/mm_inline.h>
 #include <linux/sched/mm.h>
 
-#include <asm/sections.h>
 #include <asm/tlbflush.h>
 #include "internal.h"
 

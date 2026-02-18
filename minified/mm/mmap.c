@@ -5,12 +5,7 @@
 #include <linux/mm_inline.h>
 #include <linux/vmacache.h>
 #include <linux/mman.h>
-#include <linux/pagemap.h>
-#include <linux/syscalls.h>
-#include <linux/init.h>
 #include <linux/file.h>
-#include <linux/fs.h>
-#include <linux/personality.h>
 #include <linux/security.h>
 extern unsigned long shmem_get_unmapped_area(struct file *, unsigned long addr,
 					     unsigned long len,

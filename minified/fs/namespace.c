@@ -7,15 +7,12 @@ extern void put_mnt_ns(struct mnt_namespace *ns);
 #include <linux/sysfs.h>
 #include <linux/fs_struct.h>
 #include <linux/file.h>
-#include <linux/uaccess.h>
 #include <linux/proc_ns.h>
 #include <linux/memblock.h>
 #include <linux/task_work.h>
-#include <linux/sched/task.h>
 #include <uapi/linux/mount.h>
 #include <linux/fs_context.h>
 extern void shmem_init(void);
-#include <linux/mnt_idmapping.h>
 
 #include "mount.h"
 static int mnt_get_count(struct mount *mnt);

@@ -1,13 +1,9 @@
 #include <linux/slab.h>
 #include <linux/sched/mm.h>
 #include <linux/sched/coredump.h>
-#include <linux/sched/user.h>
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
 #include <linux/sched/signal.h>
-#include <linux/init.h>
-#include <asm/unistd.h>
-#include <linux/module.h>
 #include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/binfmts.h>
@@ -16,20 +12,14 @@
 #include <linux/mm.h>
 #include <linux/mm_inline.h>
 #include <linux/vmacache.h>
-#include <linux/nsproxy.h>
 #include <linux/cpu.h>
-#include <linux/cgroup.h>
-#include <linux/security.h>
-#include <linux/syscalls.h>
 #define FUTEX_TID_MASK 0x3fffffff
 #include <linux/kthread.h>
 #include <linux/rcupdate.h>
 #include <linux/ptrace.h>
 #include <linux/fs_struct.h>
 #define STACK_END_MAGIC 0x57AC6E9D
-#include <linux/compiler.h>
 #include <linux/init_task.h>
-#include <linux/thread_info.h>
 
 #include <asm/pgalloc.h>
 #include <linux/uaccess.h>

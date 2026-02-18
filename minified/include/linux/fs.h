@@ -2,17 +2,10 @@
 #ifndef _LINUX_FS_H
 #define _LINUX_FS_H
 
-#include <linux/linkage.h>
 #include <linux/wait_bit.h>
 #include <linux/kdev_t.h>
-#include <linux/atomic.h>
-#include <linux/math.h>
-#include <linux/rculist.h>
 #include <linux/rculist_bl.h>
-#include <linux/spinlock.h>
 #include <linux/seqlock.h>
-#include <linux/rcupdate.h>
-#include <generated/bounds.h>
 struct lockref { spinlock_t lock; int count; };
 extern void lockref_get(struct lockref *);
 extern int lockref_put_return(struct lockref *);
@@ -23,8 +16,6 @@ extern int lockref_get_not_dead(struct lockref *);
 #define hashlen_hash(hashlen) ((u32)(hashlen))
 #define hashlen_len(hashlen)  ((u32)((hashlen) >> 32))
 #define hashlen_create(hash, len) ((u64)(len)<<32 | (u32)(hash))
-
-#include <linux/wait.h>
 
 #define IS_ROOT(x) ((x) == (x)->d_parent)
 
@@ -178,9 +169,6 @@ struct path { struct vfsmount *mnt; struct dentry *dentry; } __randomize_layout;
 extern void path_get(const struct path *);
 extern void path_put(const struct path *);
 #endif
-#include <linux/stat.h>
-#include <linux/cache.h>
-#include <linux/list.h>
 #include <linux/list_lru.h>
 struct llist_head { struct llist_node *first; };
 struct llist_node { struct llist_node *next; };
@@ -192,14 +180,6 @@ struct llist_node { struct llist_node *next; };
 extern bool llist_add_batch(struct llist_node *new_first, struct llist_node *new_last, struct llist_head *head);
 static inline bool llist_add(struct llist_node *new, struct llist_head *head) { return llist_add_batch(new, new, head); }
 static inline struct llist_node *llist_del_all(struct llist_head *head) { return xchg(&head->first, NULL); }
-#include <linux/xarray.h>
-#include <linux/rbtree.h>
-#include <linux/init.h>
-#include <linux/pid.h>
-#include <linux/bug.h>
-#include <linux/mutex.h>
-#include <linux/rwsem.h>
-#include <linux/mm_types.h>
 struct semaphore {
 	raw_spinlock_t		lock;
 	unsigned int		count;
@@ -217,13 +197,7 @@ extern void down(struct semaphore *sem);
 extern int __must_check down_trylock(struct semaphore *sem);
 extern void up(struct semaphore *sem);
 #include <linux/fcntl.h>
-#include <linux/atomic.h>
-/* shrinker types defined in list_lru.h */
-#include <linux/list_lru.h>
-#include <linux/uidgid.h>
-#include <linux/lockdep.h>
 #include <linux/percpu-rwsem.h>
-#include <linux/workqueue.h>
 
 struct delayed_call {
 	void (*fn)(void *);
@@ -235,15 +209,9 @@ static inline void do_delayed_call(struct delayed_call *call)
 		call->fn(call->arg);
 }
 
-#include <linux/build_bug.h>
-
-#include <linux/stddef.h>
 #include <linux/mount.h>
-#include <linux/cred.h>
 #include <linux/mnt_idmapping.h>
 #include <linux/slab.h>
-
-#include <linux/limits.h>
 #define INR_OPEN_CUR 1024
 #define INR_OPEN_MAX 4096
 /* end uapi/linux/fs.h */

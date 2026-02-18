@@ -13,24 +13,7 @@
 struct vm_area_struct;		 
 struct notifier_block;		 
 
-#define VM_ALLOC		0x00000002
-#define VM_UNINITIALIZED	0x00000020
-#define VM_NO_GUARD		0x00000040
-
-#ifndef IOREMAP_MAX_ORDER
-#define IOREMAP_MAX_ORDER	(7 + PAGE_SHIFT)	 
-#endif
-
-struct vm_struct {
-	struct vm_struct	*next;
-	void			*addr;
-	unsigned long		size;
-	unsigned long		flags;
-	struct page		**pages;
-	unsigned int		nr_pages;
-	phys_addr_t		phys_addr;
-	const void		*caller;
-};
+struct vm_struct;
 
 struct vmap_area {
 	unsigned long va_start;
@@ -47,13 +30,8 @@ struct vmap_area {
 
 extern void __init vmalloc_init(void);
 
-void *__vmalloc_node(unsigned long size, unsigned long align, gfp_t gfp_mask,
-		int node, const void *caller) __alloc_size(1);
-
 #ifndef ARCH_PAGE_TABLE_SYNC_MASK
 #define ARCH_PAGE_TABLE_SYNC_MASK 0
 #endif
-
-void arch_sync_kernel_mappings(unsigned long start, unsigned long end);
 
 #endif  

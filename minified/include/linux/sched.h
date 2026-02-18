@@ -1,7 +1,6 @@
 #ifndef _LINUX_SCHED_H
 #define _LINUX_SCHED_H
 
-#include <linux/types.h>
 #define CSIGNAL		0x000000ff
 #define CLONE_VM	0x00000100
 #define CLONE_FS	0x00000200
@@ -10,14 +9,9 @@
 #define SCHED_NORMAL		0
 /* End uapi/linux/sched.h */
 
-#include <asm/current.h>
-
 #include <linux/pid.h>
-#include <linux/mutex.h>
 #include <linux/rbtree.h>
 #include <linux/rcupdate.h>
-#include <linux/refcount.h>
-#include <linux/time.h>
 struct rlimit {
 	__kernel_ulong_t	rlim_cur;
 	__kernel_ulong_t	rlim_max;
@@ -52,10 +46,9 @@ struct rlimit {
 #define MAX_RT_PRIO		100
 #define MAX_PRIO		(MAX_RT_PRIO + NICE_WIDTH)
 /* end sched/prio.h */
-#include <linux/sched/types.h>
+struct sched_param { int sched_priority; };
 #ifndef _LINUX_SIGNAL_TYPES_INLINED
 #define _LINUX_SIGNAL_TYPES_INLINED
-#include <linux/list.h>
 #include <asm/signal.h>
 #include <asm-generic/siginfo.h>
 
@@ -87,10 +80,6 @@ struct k_sigaction {
 #define _LINUX_MM_TYPES_TASK_H
 
 #include <linux/threads.h>
-#include <linux/atomic.h>
-#include <linux/cpumask.h>
-
-#include <asm/page.h>
 
 /* NR_CPUS=1 < CONFIG_SPLIT_PTLOCK_CPUS=4, so USE_SPLIT_*=0 */
 #define USE_SPLIT_PTE_PTLOCKS	0
@@ -107,14 +96,12 @@ struct vmacache {
 };
 
 #endif /* _LINUX_MM_TYPES_TASK_H */
-#include <linux/seqlock.h>
 #define KM_MAX_IDX 16
 
 struct fs_struct;
 struct nameidata;
 struct nsproxy;
 struct pid_namespace;
-struct sched_param;
 struct sighand_struct;
 struct signal_struct;
 

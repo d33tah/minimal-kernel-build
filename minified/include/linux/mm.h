@@ -2,15 +2,8 @@
 #ifndef _LINUX_MM_H
 #define _LINUX_MM_H
 
-#include <linux/mmdebug.h>
-#include <linux/gfp.h>
-#include <linux/bug.h>
-#include <linux/list.h>
 #include <linux/mmzone.h>
-#include <linux/rbtree.h>
-#include <linux/atomic.h>
-#include <linux/mm_types.h>
-/* lockdep.h, rwsem.h, types.h included elsewhere; mm_types.h, mmdebug.h already above */
+#include <linux/page-flags.h>
 
 #define MMAP_LOCK_INITIALIZER(name) \
 	.mmap_lock = __RWSEM_INITIALIZER((name).mmap_lock),
@@ -44,8 +37,6 @@ static inline void mmap_assert_locked(struct mm_struct *mm)
 {
 	VM_BUG_ON_MM(!rwsem_is_locked(&mm->mmap_lock), mm);
 }
-#include <linux/pfn.h>
-#include <linux/page-flags.h>
 
 static inline int page_ref_count(const struct page *page)
 {
@@ -88,9 +79,6 @@ static inline unsigned long totalram_pages(void)
 }
 
 extern void * high_memory;
-
-#include <asm/page.h>
-#include <asm/processor.h>
 
 #ifndef untagged_addr
 #define untagged_addr(addr) (addr)

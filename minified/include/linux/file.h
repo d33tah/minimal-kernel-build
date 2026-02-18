@@ -14,7 +14,6 @@ struct fd {
 	struct file *file;
 	unsigned int flags;
 };
-#define FDPUT_FPUT       1
 #define FDPUT_POS_UNLOCK 2
 
 extern void __f_unlock_pos(struct file *);

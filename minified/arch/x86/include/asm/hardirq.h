@@ -12,7 +12,6 @@ DECLARE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
 
 #define __ARCH_IRQ_STAT
 
-#define inc_irq_stat(member)	this_cpu_inc(irq_stat.member)
 
 extern void ack_bad_irq(unsigned int irq);
 

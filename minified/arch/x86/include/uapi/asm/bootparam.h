@@ -2,7 +2,6 @@
 #ifndef _ASM_X86_BOOTPARAM_H
 #define _ASM_X86_BOOTPARAM_H
 
-#define SETUP_E820_EXT			1
 #define SETUP_CC_BLOB			7
 
 #define SETUP_INDIRECT			(1<<31)

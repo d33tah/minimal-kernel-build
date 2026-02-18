@@ -18,6 +18,5 @@
 #define SIZE_MAX	(~(size_t)0)
 #define PHYS_ADDR_MAX	(~(phys_addr_t)0)
 
-#define U64_MAX		((u64)~0ULL)
 
 #endif  

@@ -1,7 +1,3 @@
-#include <linux/linkage.h>
-#include <linux/signal.h>
-#include <linux/sched.h>
-#include <linux/ioport.h>
 #include <linux/interrupt.h>
 #include <linux/irq.h>
 #include <linux/timex.h>

@@ -40,7 +40,6 @@
 #define noinline_for_stack noinline
 #define __no_kasan_or_inline __always_inline
 #define __no_kcsan
-#define __no_sanitize_or_inline __always_inline
 
 #define noinstr								\
 	noinline notrace __attribute((__section__(".noinstr.text")))	\

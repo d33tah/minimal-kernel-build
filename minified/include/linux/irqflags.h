@@ -83,7 +83,6 @@ static __always_inline void arch_local_irq_restore(unsigned long flags)
 		arch_local_irq_enable();
 }
 
-#define lockdep_hardirqs_enabled()		0
 
 #define raw_local_irq_disable()		arch_local_irq_disable()
 #define raw_local_irq_enable()		arch_local_irq_enable()

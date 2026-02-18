@@ -1,32 +1,21 @@
 #include <linux/console.h>
 #include <asm/sections.h>
-#include <linux/screen_info.h>
 
 #include <linux/initrd.h>
 #include <linux/memblock.h>
-#include <linux/types.h>
 #include <linux/kdev_t.h>
 
 extern dev_t ROOT_DEV;
 #define tboot_probe() \
 	do {          \
 	} while (0)
-#include <linux/types.h>
-#include <linux/cpu.h>
-#include <linux/static_call_types.h>
-
-#include <uapi/linux/mount.h>
 
 #include <asm/apic.h>
-#include <linux/nodemask.h>
-#include <asm/topology.h>
 #include <asm/bios_ebda.h>
 #include <asm/cpu.h>
 #include <asm/e820/api.h>
 #include <asm/tlbflush.h>
-#include <linux/types.h>
 #include <asm/setup.h>
-#include <asm/proto.h>
 unsigned long max_low_pfn_mapped;
 unsigned long max_pfn_mapped;
 

@@ -44,7 +44,6 @@ enum ucount_type {
 	UCOUNT_COUNTS,
 };
 
-#define MAX_PER_NAMESPACE_UCOUNTS UCOUNT_RLIMIT_NPROC
 
 struct user_namespace {
 	struct uid_gid_map	uid_map;

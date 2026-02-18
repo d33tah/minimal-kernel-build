@@ -3,24 +3,10 @@
 
 #include <linux/sched.h>
 #include <linux/sched/task_stack.h>
-#include <linux/mm.h>
-#include <linux/smp.h>
-#include <linux/kernel.h>
-#include <linux/errno.h>
-#include <asm/unistd.h>
-#include <linux/stddef.h>
-#include <linux/personality.h>
-#include <linux/uaccess.h>
 #include <linux/entry-common.h>
-#include <linux/syscalls.h>
 
-#include <asm/processor.h>
 #include <asm/fpu/signal.h>
-#include <asm/fpu/xstate.h>
-#include <asm/vdso.h>
-#include <asm/syscall.h>
 #include <asm/sigframe.h>
-#include <asm/signal.h>
 
 #define FRAME_ALIGNMENT 16UL
 #define MAX_FRAME_PADDING (FRAME_ALIGNMENT - 1)

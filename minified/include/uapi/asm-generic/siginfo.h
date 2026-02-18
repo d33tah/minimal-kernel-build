@@ -60,16 +60,10 @@ typedef struct siginfo {
 
 /* FPE codes used by x86 FPU */
 #define FPE_INTDIV	1
-#define FPE_FLTDIV	3
-#define FPE_FLTOVF	4
-#define FPE_FLTUND	5
-#define FPE_FLTRES	6
-#define FPE_FLTINV	7
 
 /* SEGV codes used by x86 fault handler */
 #define SEGV_MAPERR	1
 #define SEGV_ACCERR	2
-#define SEGV_PKUERR	4
 
 /* BUS codes used by x86 */
 #define BUS_ADRALN	1

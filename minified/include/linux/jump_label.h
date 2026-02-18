@@ -73,15 +73,6 @@ struct static_key_false {
 #define DECLARE_STATIC_KEY_FALSE(name)	\
 	extern struct static_key_false name
 
-#define _DEFINE_STATIC_KEY_1(name)	DEFINE_STATIC_KEY_TRUE(name)
-#define _DEFINE_STATIC_KEY_0(name)	DEFINE_STATIC_KEY_FALSE(name)
-#define DEFINE_STATIC_KEY_MAYBE(cfg, name)			\
-	__PASTE(_DEFINE_STATIC_KEY_, IS_ENABLED(cfg))(name)
-
-#define _DECLARE_STATIC_KEY_1(name)	DECLARE_STATIC_KEY_TRUE(name)
-#define _DECLARE_STATIC_KEY_0(name)	DECLARE_STATIC_KEY_FALSE(name)
-#define DECLARE_STATIC_KEY_MAYBE(cfg, name)			\
-	__PASTE(_DECLARE_STATIC_KEY_, IS_ENABLED(cfg))(name)
 
 extern bool ____wrong_branch_error(void);
 
@@ -95,7 +86,6 @@ extern bool ____wrong_branch_error(void);
 })
 
 #define static_branch_likely(x)		likely_notrace(static_key_enabled(&(x)->key))
-#define static_branch_unlikely(x)	unlikely_notrace(static_key_enabled(&(x)->key))
 
 #define static_branch_enable(x)			static_key_enable(&(x)->key)
 

@@ -65,7 +65,6 @@ struct _fpstate_32 {
 	};
 };
 
-#define _fpstate _fpstate_32
 
 struct _header {
 	__u64				xfeatures;

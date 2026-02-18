@@ -13,7 +13,6 @@
 struct vm_area_struct;		 
 struct notifier_block;		 
 
-#define VM_IOREMAP		0x00000001
 #define VM_ALLOC		0x00000002
 #define VM_UNINITIALIZED	0x00000020
 #define VM_NO_GUARD		0x00000040

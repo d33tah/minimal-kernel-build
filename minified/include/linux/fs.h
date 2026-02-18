@@ -260,7 +260,6 @@ extern void __init files_init(void);
 
 #define FMODE_STREAM		((__force fmode_t)0x200000)
 #define FMODE_NONOTIFY		((__force fmode_t)0x4000000)
-#define FMODE_NEED_UNMOUNT	((__force fmode_t)0x10000000)
 
 /* Reduced positive_aop_returns - only AOP_TRUNCATED_PAGE used */
 enum positive_aop_returns { AOP_TRUNCATED_PAGE = 0x80001 };

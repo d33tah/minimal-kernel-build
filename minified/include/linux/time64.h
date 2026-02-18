@@ -23,7 +23,6 @@ struct timezone {
 	int	tz_minuteswest;
 	int	tz_dsttime;
 };
-#define CLOCK_TAI			11
 
 struct timespec64 {
 	time64_t	tv_sec;			 

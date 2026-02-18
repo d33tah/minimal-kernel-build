@@ -75,7 +75,6 @@ struct stat64 {
 #define S_ISSOCK(m)	(((m) & S_IFMT) == S_IFSOCK)
 #define S_IRWXU 00700
 #define S_IRWXG 00070
-#define S_IXGRP 00010
 #define S_IRWXO 00007
 #endif
 #define S_IRWXUGO	(S_IRWXU|S_IRWXG|S_IRWXO)

@@ -5,16 +5,7 @@
 #include <linux/thread_info.h>
 
 #include <asm/ptrace.h>
-#define AT_SYSINFO		32
-#define AT_SYSINFO_EHDR		33
 
-#define R_386_NONE	0
-#define R_386_32	1
-#define R_386_PC32	2
-#define R_386_PLT32	4
-#define R_386_RELATIVE	8
-
-#define ELF_CLASS	ELFCLASS32
 
 #include <asm/vdso.h>
 

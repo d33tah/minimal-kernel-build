@@ -1,16 +1,7 @@
 
-#include <linux/mm.h>
-#include <linux/sched/mm.h>
 extern int nr_threads;
 /* end sched/stat.h */
-#include <linux/sched/task.h>
-#include <linux/sched/task_stack.h>
-#include <linux/sched/signal.h>
-#include <linux/file.h>
 #include <linux/fdtable.h>
-#include <linux/binfmts.h>
-#include <linux/nsproxy.h>
-#include <linux/pid_namespace.h>
 #include <linux/ptrace.h>
 #include <linux/syscalls.h>
 #include <linux/signal.h>

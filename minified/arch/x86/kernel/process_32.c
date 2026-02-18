@@ -1,34 +1,13 @@
 
-#include <linux/cpu.h>
-#include <linux/errno.h>
-#include <linux/sched.h>
-#include <linux/sched/task.h>
-#include <linux/sched/task_stack.h>
-#include <linux/fs.h>
-#include <linux/kernel.h>
-#include <linux/mm.h>
-#include <linux/smp.h>
-#include <linux/stddef.h>
-#include <linux/ptrace.h>
-#include <linux/personality.h>
-#include <linux/percpu.h>
-#include <linux/uaccess.h>
-#include <linux/syscalls.h>
 
 #ifndef LDT_ENTRY_SIZE
 #define LDT_ENTRY_SIZE 8 /* inlined from asm/ldt.h */
 #endif
-#include <asm/processor.h>
 #include <asm/fpu/sched.h>
-#include <asm/desc.h>
-
-#include <linux/err.h>
 
 #include <asm/tlbflush.h>
 #include <asm/cpu.h>
-#include <asm/debugreg.h>
 #include <asm/switch_to.h>
-#include <asm/proto.h>
 
 #include <asm/kdebug.h>
 void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p);

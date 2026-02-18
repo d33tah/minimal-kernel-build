@@ -1,31 +1,10 @@
 
 #include <linux/module.h>
-#include <linux/kernel.h>
-#include <linux/fs.h>
-#include <linux/mm.h>
 #include <linux/mman.h>
-#include <linux/errno.h>
-#include <linux/signal.h>
 #include <linux/binfmts.h>
-#include <linux/string.h>
-#include <linux/file.h>
-#include <linux/slab.h>
-#include <linux/personality.h>
 #include <linux/ptrace.h>
-#include <linux/init.h>
-#include <linux/compiler.h>
 #include <linux/pagemap.h>
-#include <linux/elf.h>
-#include <linux/utsname.h>
-#include <linux/sched.h>
-#include <linux/sched/coredump.h>
 #include <linux/sched/task_stack.h>
-#include <linux/sched/signal.h>
-#include <linux/types.h>
-#include <linux/cred.h>
-#include <linux/uaccess.h>
-#include <asm/param.h>
-#include <asm/page.h>
 
 static int load_elf_binary(struct linux_binprm *bprm);
 

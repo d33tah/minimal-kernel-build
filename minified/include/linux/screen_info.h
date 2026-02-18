@@ -41,7 +41,6 @@ struct screen_info {
 	__u8  _reserved[2];
 } __attribute__((packed));
 
-#define VIDEO_TYPE_VGAC		0x22
 #define VIDEO_TYPE_VLFB		0x23
 #define VIDEO_TYPE_EFI		0x70
 #define VIDEO_FLAGS_NOCURSOR	(1 << 0)

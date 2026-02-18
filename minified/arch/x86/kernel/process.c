@@ -1,30 +1,11 @@
-#include <linux/errno.h>
 #include <linux/ptrace.h>
-#include <linux/kernel.h>
-#include <linux/mm.h>
-#include <linux/smp.h>
-#include <linux/sched.h>
-#include <linux/sched/debug.h>
-#include <linux/sched/task.h>
-#include <linux/sched/task_stack.h>
-#include <linux/init.h>
-#include <linux/utsname.h>
 /* end stackprotector.h */
-#include <asm/cpu.h>
-#include <asm/apic.h>
-#include <linux/uaccess.h>
-#include <asm/fpu/api.h>
 #include <asm/fpu/sched.h>
-#include <asm/fpu/xstate.h>
-#include <asm/debugreg.h>
 /* Moved from hw_breakpoint.c - just the percpu variable needed for hw_breakpoint_active() */
 DEFINE_PER_CPU(unsigned long, cpu_dr7);
 #include <asm/nmi.h>
 #include <asm/tlbflush.h>
 #include <asm/switch_to.h>
-#include <asm/desc.h>
-#include <linux/thread_info.h>
-#include <asm/nospec-branch.h>
 extern u64 x86_amd_ls_cfg_base;
 extern u64 x86_amd_ls_cfg_ssbd_mask;
 static inline u64 ssbd_tif_to_spec_ctrl(u64 tifn)
@@ -37,8 +18,6 @@ static inline u64 ssbd_tif_to_amd_ls_cfg(u64 tifn)
 	return (tifn & _TIF_SSBD) ? x86_amd_ls_cfg_ssbd_mask : 0ULL;
 }
 extern void speculation_ctrl_update(unsigned long tif);
-#include <asm/proto.h>
-#include <asm/asm.h>
 
 __visible DEFINE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw) = {
 	.x86_tss = {

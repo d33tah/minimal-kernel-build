@@ -7,7 +7,6 @@
 
 #define _LINUX_CAPABILITY_U32S_3     2
 /* Keep only capabilities actually used in the codebase */
-#define CAP_CHOWN            0
 #define CAP_FSETID           4
 #define CAP_LAST_CAP         CAP_FSETID
 #define CAP_TO_MASK(x)      (1 << ((x) & 31))

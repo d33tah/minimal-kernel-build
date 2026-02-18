@@ -23,16 +23,10 @@ static inline int node_state(int node, enum node_states state)
 	return node == 0;
 }
 
-#define for_each_node_state(node, __state) \
-	for ( (node) = 0; (node) == 0; (node) = 1)
 
-#define first_online_node	0
-#define next_online_node(nid)	(MAX_NUMNODES)
 #define nr_node_ids		1U
-#define nr_online_nodes		1U
 
 #define node_online(node)	node_state((node), N_ONLINE)
 
-#define for_each_node(node)	   for_each_node_state(node, N_POSSIBLE)
 
 #endif

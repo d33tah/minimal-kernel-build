@@ -3,7 +3,6 @@
 #include <linux/sched.h>
 #include <linux/swap.h>
 #include <linux/mman.h>
-#include <linux/pagemap.h>
 #ifndef _LINUX_PAGEVEC_H
 #define _LINUX_PAGEVEC_H
 #include <linux/xarray.h>
@@ -38,8 +37,6 @@ static inline unsigned pagevec_add(struct pagevec *pvec, struct page *page)
 #include <linux/backing-dev.h>
 #include <linux/gfp.h>
 #include <linux/local_lock.h>
-
-#include "internal.h"
 
 struct lru_pvecs {
 	local_lock_t lock;

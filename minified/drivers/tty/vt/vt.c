@@ -30,7 +30,6 @@ extern const unsigned char color_table[];
 #include <linux/bitops.h>
 
 #include <linux/device.h>
-#include <linux/uaccess.h>
 
 const struct consw *conswitchp;
 

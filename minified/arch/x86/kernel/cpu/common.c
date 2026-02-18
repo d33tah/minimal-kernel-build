@@ -3,8 +3,6 @@
 
 #include <linux/memblock.h>
 #include <linux/linkage.h>
-#include <linux/bitops.h>
-#include <linux/kernel.h>
 #include <linux/percpu.h>
 #include <linux/string.h>
 #include <linux/ctype.h>
@@ -39,7 +37,6 @@ extern void doublefault_init_cpu_tss(void);
 #include <asm/cpu.h>
 #include <asm/msr.h>
 #include <asm/sigframe.h>
-#include <asm/traps.h>
 
 struct cpu_dev {
 	const char *c_vendor;

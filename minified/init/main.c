@@ -26,25 +26,14 @@
 #include <linux/pid_namespace.h>
 #include <linux/vmalloc.h>
 
-#include <linux/module.h>
 extern void driver_init(void);
 extern void timekeeping_init(void);
 #include <linux/kthread.h>
-#include <linux/sched.h>
 extern void sched_init(void);
-#include <linux/signal.h>
-#include <linux/idr.h>
-#include <linux/slab.h>
 
-#include <linux/sched/clock.h>
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
-#include <linux/list.h>
-#include <linux/proc_ns.h>
 
-#include <linux/cache.h>
-#include <linux/jump_label.h>
-#include <linux/mem_encrypt.h>
 int __init init_mount(const char *dev_name, const char *dir_name,
 		      const char *type_page, unsigned long flags,
 		      void *data_page);
@@ -52,10 +41,8 @@ int __init init_chroot(const char *filename);
 int __init init_eaccess(const char *filename);
 int __init init_dup(struct file *file);
 
-#include <asm/processor.h>
 extern void check_bugs(void);
 #include <asm/setup.h>
-#include <asm/sections.h>
 
 static int kernel_init(void *);
 

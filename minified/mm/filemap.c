@@ -1,19 +1,10 @@
 
-#include <linux/fs.h>
-#include <linux/sched/signal.h>
-#include <linux/uaccess.h>
-#include <linux/gfp.h>
-#include <linux/mm.h>
 #include <linux/swap.h>
-#include <linux/mman.h>
-#include <linux/pagemap.h>
-#include <linux/file.h>
 #include <linux/uio.h>
 #include <linux/hash.h>
 #include <linux/backing-dev.h>
 #ifndef _LINUX_PAGEVEC_H
 #define _LINUX_PAGEVEC_H
-#include <linux/xarray.h>
 #define PAGEVEC_SIZE 15
 struct page;
 struct folio;

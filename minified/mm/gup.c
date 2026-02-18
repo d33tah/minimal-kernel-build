@@ -1,12 +1,9 @@
 #include <linux/kernel.h>
 #include <linux/errno.h>
 #include <linux/err.h>
-#include <linux/spinlock.h>
 
 #include <linux/mm.h>
-#include <linux/pagemap.h>
 #include <linux/rmap.h>
-#include <linux/sched/signal.h>
 #include <linux/mm_inline.h>
 #include <linux/sched/mm.h>
 

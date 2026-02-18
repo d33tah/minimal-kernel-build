@@ -1,14 +1,7 @@
 
 #include <linux/signal.h>
-#include <linux/sched.h>
-#include <linux/kernel.h>
-#include <linux/string.h>
 #include <linux/ptrace.h>
-#include <linux/mman.h>
-#include <linux/mm.h>
-#include <linux/smp.h>
 #include <linux/init.h>
-#include <linux/highmem.h>
 #include <linux/pagemap.h>
 #include <linux/pfn.h>
 #include <linux/memblock.h>
@@ -28,10 +21,8 @@
 #include <asm/sections.h>
 #include <asm/setup.h>
 #include <asm/page_types.h>
-#include <asm/cpu_entry_area.h>
 #include <asm/pgtable_areas.h>
 #include <linux/nodemask.h>
-#include <asm/topology.h>
 
 void *alloc_low_pages(unsigned int num);
 static inline void *alloc_low_page(void)

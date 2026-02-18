@@ -1,15 +1,11 @@
 #include <linux/gfp.h>
 #include <linux/initrd.h>
-#include <linux/ioport.h>
 #include <linux/memblock.h>
 #include <asm/e820/api.h>
 #include <asm/page.h>
-#include <asm/page_types.h>
-#include <asm/sections.h>
 #include <asm/setup.h>
 #include <asm/tlbflush.h>
 #include <asm/tlb.h>
-#include <asm/proto.h>
 #include <asm/cpufeature.h>
 #define __parainstructions NULL
 #define __parainstructions_end NULL

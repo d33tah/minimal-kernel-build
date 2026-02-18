@@ -1,25 +1,11 @@
 
 #include <linux/mm.h>
-#include <linux/mm_inline.h>
-#include <linux/sched/mm.h>
-#include <linux/sched/task.h>
-#include <linux/mman.h>
-#include <linux/swap.h>
 #include <linux/highmem.h>
-#include <linux/pagemap.h>
-#include <linux/rmap.h>
-#include <linux/init.h>
 #define PFN_FLAGS_MASK \
 	(((u64)(~PAGE_MASK)) << (BITS_PER_LONG_LONG - PAGE_SHIFT))
 #define PFN_DEV (1ULL << (BITS_PER_LONG_LONG - 3))
-#include <linux/gfp.h>
-#include <linux/file.h>
-#include <linux/vmalloc.h>
 
-#include <asm/io.h>
-#include <asm/mmu_context.h>
 #include <asm/pgalloc.h>
-#include <linux/uaccess.h>
 #include <asm/tlb.h>
 #include <asm/tlbflush.h>
 

@@ -4,7 +4,6 @@
 #include <linux/cache.h>
 #include <linux/compiler.h>
 #include <linux/uaccess.h>
-#include <asm/tlbflush.h>
 #include <asm/page.h>
 #include <linux/memcontrol.h>
 

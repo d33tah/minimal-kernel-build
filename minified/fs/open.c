@@ -10,7 +10,6 @@
 #include <linux/fs.h>
 #include <linux/personality.h>
 #include <linux/rcupdate.h>
-#include <linux/mnt_idmapping.h>
 
 #include "internal.h"
 

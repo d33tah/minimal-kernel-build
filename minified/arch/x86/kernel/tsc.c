@@ -1,19 +1,5 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-#include <linux/kernel.h>
-#include <linux/sched.h>
-#include <linux/sched/clock.h>
-#include <linux/init.h>
-#include <linux/timer.h>
-#include <linux/delay.h>
-#include <linux/clocksource.h>
-#include <linux/percpu.h>
-#include <linux/timex.h>
-#include <linux/jump_label.h>
-#include <linux/types.h>
-#include <linux/cpu.h>
-#include <linux/static_call_types.h>
-
 #include <asm/timer.h>
 extern unsigned int vclocks_used;
 static inline void vclocks_set_used(unsigned int which)
@@ -21,7 +7,6 @@ static inline void vclocks_set_used(unsigned int which)
 	WRITE_ONCE(vclocks_used, READ_ONCE(vclocks_used) | (1 << which));
 }
 #include <asm/time.h>
-#include <asm/delay.h>
 #include <asm/nmi.h>
 #include <asm/x86_init.h>
 #include <asm/apic.h>

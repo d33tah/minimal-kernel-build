@@ -7,8 +7,6 @@
 #include <linux/atomic.h>
 #include <asm/mman.h>
 
-#define OVERCOMMIT_GUESS		0
-#define OVERCOMMIT_ALWAYS		1
 #define MAP_SHARED	0x01
 #define MAP_PRIVATE	0x02
 #define MAP_SHARED_VALIDATE 0x03

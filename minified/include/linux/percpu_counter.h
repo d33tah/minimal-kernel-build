@@ -32,9 +32,4 @@ percpu_counter_add_batch(struct percpu_counter *fbc, s64 amount, s32 batch)
 	percpu_counter_add(fbc, amount);
 }
 
-static inline s64 percpu_counter_read_positive(struct percpu_counter *fbc)
-{
-	return fbc->count;
-}
-
 #endif  

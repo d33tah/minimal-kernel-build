@@ -20,10 +20,6 @@ struct atomic_notifier_head {
 	struct notifier_block __rcu *head;
 };
 
-#define ATOMIC_NOTIFIER_INIT(name) {				\
-		.lock = __SPIN_LOCK_UNLOCKED(name.lock),	\
-		.head = NULL }
-
 #ifdef __KERNEL__
 
 #define NOTIFY_DONE		0x0000

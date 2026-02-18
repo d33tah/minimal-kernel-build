@@ -18,13 +18,7 @@
 #if defined(ARCH_HAS_SETUP_ADDITIONAL_PAGES) && !defined(ARCH_SETUP_ADDITIONAL_PAGES)
 #define ARCH_SETUP_ADDITIONAL_PAGES(bprm, ex, interpreter) arch_setup_additional_pages(bprm, interpreter)
 #endif
-#if ELF_CLASS == ELFCLASS32
 #define elfhdr		elf32_hdr
 #define elf_phdr	elf32_phdr
 #define elf_addr_t	Elf32_Off
-#else
-#define elfhdr		elf64_hdr
-#define elf_phdr	elf64_phdr
-#define elf_addr_t	Elf64_Off
-#endif
 #endif

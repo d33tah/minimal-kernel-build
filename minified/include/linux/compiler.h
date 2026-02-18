@@ -86,19 +86,6 @@ do {									\
 	__WRITE_ONCE(x, val);						\
 } while (0)
 
-static __no_sanitize_or_inline
-unsigned long __read_once_word_nocheck(const void *addr)
-{
-	return __READ_ONCE(*(unsigned long *)addr);
-}
-
-#define READ_ONCE_NOCHECK(x)						\
-({									\
-	compiletime_assert(sizeof(x) == sizeof(unsigned long),		\
-		"Unsupported access size for READ_ONCE_NOCHECK().");	\
-	(typeof(x))__read_once_word_nocheck(&(x));			\
-})
-
 static __no_kasan_or_inline
 unsigned long read_word_at_a_time(const void *addr)
 {

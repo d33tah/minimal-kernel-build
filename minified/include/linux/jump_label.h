@@ -44,17 +44,6 @@ static inline void static_key_enable(struct static_key *key)
 	atomic_set(&key->enabled, 1);
 }
 
-static inline void static_key_disable(struct static_key *key)
-{
-	STATIC_KEY_CHECK_USE(key);
-
-	if (atomic_read(&key->enabled) != 1) {
-		WARN_ON_ONCE(atomic_read(&key->enabled) != 0);
-		return;
-	}
-	atomic_set(&key->enabled, 0);
-}
-
 #define STATIC_KEY_INIT_TRUE	{ .enabled = ATOMIC_INIT(1) }
 #define STATIC_KEY_INIT_FALSE	{ .enabled = ATOMIC_INIT(0) }
 
@@ -109,7 +98,6 @@ extern bool ____wrong_branch_error(void);
 #define static_branch_unlikely(x)	unlikely_notrace(static_key_enabled(&(x)->key))
 
 #define static_branch_enable(x)			static_key_enable(&(x)->key)
-#define static_branch_disable(x)		static_key_disable(&(x)->key)
 
 #endif  
 

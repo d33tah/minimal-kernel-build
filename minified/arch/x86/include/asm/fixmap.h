@@ -76,11 +76,5 @@ static __always_inline unsigned long fix_to_virt(const unsigned int idx)
 	__set_fixmap(idx, 0, FIXMAP_PAGE_CLEAR)
 #endif
 
-#define __late_set_fixmap(idx, phys, flags) __set_fixmap(idx, phys, flags)
-#define __late_clear_fixmap(idx) __set_fixmap(idx, 0, __pgprot(0))
-
-void __early_set_fixmap(enum fixed_addresses idx,
-			phys_addr_t phys, pgprot_t flags);
-
-#endif  
+#endif
 #endif  

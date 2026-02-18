@@ -5,9 +5,6 @@
 #include <linux/string.h>
 #include <linux/compiler.h>
 #include <asm/page.h>
-extern void *early_memremap(resource_size_t phys_addr, unsigned long size);
-extern void early_iounmap(void __iomem *addr, unsigned long size);
-extern void early_memunmap(void *addr, unsigned long size);
 extern void early_ioremap_init(void);
 extern void early_ioremap_setup(void);
 extern void early_ioremap_reset(void);

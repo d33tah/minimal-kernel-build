@@ -56,24 +56,3 @@ void __init early_ioremap_init(void)
 		       FIX_BTMAP_BEGIN);
 	}
 }
-
-void __init __early_set_fixmap(enum fixed_addresses idx, phys_addr_t phys,
-			       pgprot_t flags)
-{
-	unsigned long addr = __fix_to_virt(idx);
-	pte_t *pte;
-
-	if (idx >= __end_of_fixed_addresses) {
-		BUG();
-		return;
-	}
-	pte = &bm_pte[pte_index(addr)];
-
-	pgprot_val(flags) &= __supported_pte_mask;
-
-	if (pgprot_val(flags))
-		set_pte(pte, pfn_pte(phys >> PAGE_SHIFT, flags));
-	else
-		pte_clear(&init_mm, addr, pte);
-	flush_tlb_one_kernel(addr);
-}

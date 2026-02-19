@@ -96,11 +96,8 @@ struct rlimit {
 	[15] = { RLIM_INFINITY, RLIM_INFINITY },			\
 }
 /* end resource.h */
-#define MAX_NICE	19
-#define MIN_NICE	-20
-#define NICE_WIDTH	(MAX_NICE - MIN_NICE + 1)
 #define MAX_RT_PRIO		100
-#define MAX_PRIO		(MAX_RT_PRIO + NICE_WIDTH)
+#define MAX_PRIO		140
 /* end sched/prio.h */
 struct sched_param { int sched_priority; };
 #ifndef _LINUX_SIGNAL_TYPES_INLINED

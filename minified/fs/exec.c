@@ -1,13 +1,9 @@
 
 #include <linux/file.h>
 #include <linux/vmacache.h>
-#include <linux/swap.h>
 #include <linux/string.h>
 #include <linux/sched/mm.h>
-#include <linux/sched/coredump.h>
 #include <linux/sched/signal.h>
-#include <linux/sched/task.h>
-#include <linux/pagemap.h>
 #include <linux/binfmts.h>
 #include <linux/module.h>
 #include <linux/namei.h>

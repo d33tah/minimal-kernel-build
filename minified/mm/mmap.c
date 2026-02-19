@@ -2,7 +2,6 @@
 #include <linux/kernel.h>
 #include <linux/slab.h>
 #include <linux/mm.h>
-#include <linux/mm_inline.h>
 #include <linux/vmacache.h>
 #include <linux/mman.h>
 #include <linux/file.h>
@@ -12,11 +11,9 @@ extern unsigned long shmem_get_unmapped_area(struct file *, unsigned long addr,
 					     unsigned long pgoff,
 					     unsigned long flags);
 #include <linux/rmap.h>
-#include <linux/mmdebug.h>
 #include <linux/rbtree_augmented.h>
 #include <linux/sched/mm.h>
 
-#include <linux/uaccess.h>
 #include <asm/tlb.h>
 #include <asm/mmu_context.h>
 

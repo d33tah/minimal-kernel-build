@@ -1,13 +1,9 @@
 
-#include <linux/types.h>
 #include <linux/extable.h>
 #include <linux/binfmts.h>
 #include <linux/kernel.h>
-#include <linux/syscalls.h>
 #include <linux/string.h>
-#include <linux/ctype.h>
 #include <linux/delay.h>
-#include <linux/ioport.h>
 #include <linux/init.h>
 #include <linux/file.h>
 #include <linux/initrd.h>
@@ -15,12 +11,10 @@
 
 #include <linux/console.h>
 #include <linux/percpu.h>
-#include <linux/security.h>
 #include <linux/smp.h>
 #include <linux/rcupdate.h>
 #include <linux/srcu.h>
 #include <linux/cpu.h>
-#include <linux/cgroup.h>
 #include <linux/interrupt.h>
 #include <linux/rmap.h>
 #include <linux/pid_namespace.h>

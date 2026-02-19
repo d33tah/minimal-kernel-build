@@ -10,8 +10,6 @@ extern void sched_init(void);
 #include <linux/sched/mm.h>
 
 #include <asm/mmu_context.h>
-#include <asm/mmu.h>
-#include <linux/slab.h>
 
 #include <asm/switch_to.h>
 

@@ -1,41 +1,22 @@
 
 #define USE_EARLY_PGTABLE_L5
 
-#include <linux/memblock.h>
-#include <linux/linkage.h>
 #include <linux/percpu.h>
 #include <linux/string.h>
-#include <linux/ctype.h>
 #include <linux/delay.h>
 #include <linux/sched/mm.h>
-#include <linux/sched/clock.h>
 #include <linux/sched/task.h>
 #include <linux/init.h>
-#include <linux/smp.h>
-#include <linux/io.h>
-#include <linux/pgtable.h>
 
 #include <asm/mmu_context.h>
 
 extern void doublefault_init_cpu_tss(void);
 #include <asm/processor.h>
 #include <asm/tlbflush.h>
-#include <asm/debugreg.h>
-#include <asm/sections.h>
-#include <linux/topology.h>
-#include <linux/cpumask.h>
 #include <linux/atomic.h>
-#include <asm/proto.h>
-#include <asm/setup.h>
-#include <asm/apic.h>
 #include <asm/desc.h>
 #include <asm/fpu/api.h>
-#define HWCAP2_FSGSBASE _BITUL(1)
-#include <linux/numa.h>
-#include <linux/nodemask.h>
-#include <asm/asm.h>
 #include <asm/cpu.h>
-#include <asm/msr.h>
 #include <asm/sigframe.h>
 
 struct cpu_dev {

@@ -1,12 +1,6 @@
 
-#include <linux/bitmap.h>
-#include <linux/bug.h>
-#include <linux/errno.h>
 #include <linux/idr.h>
-#include <linux/init.h>
-#include <linux/kernel.h>
 #include <linux/slab.h>
-#include <linux/xarray.h>
 
 struct kmem_cache *radix_tree_node_cachep;
 

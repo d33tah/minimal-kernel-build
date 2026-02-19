@@ -1,6 +1,4 @@
 
-#include <linux/bitmap.h>
-#include <linux/list.h>
 #include <linux/slab.h>
 #include <linux/xarray.h>
 

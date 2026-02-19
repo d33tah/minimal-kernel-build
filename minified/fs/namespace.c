@@ -1,15 +1,11 @@
 struct mnt_namespace;
 extern void put_mnt_ns(struct mnt_namespace *ns);
 #include <linux/user_namespace.h>
-#include <linux/namei.h>
 #include <linux/idr.h>
-#include <linux/init.h>
 #include <linux/sysfs.h>
 #include <linux/fs_struct.h>
-#include <linux/file.h>
 #include <linux/proc_ns.h>
 #include <linux/memblock.h>
-#include <linux/task_work.h>
 #include <uapi/linux/mount.h>
 #include <linux/fs_context.h>
 extern void shmem_init(void);

@@ -1,24 +1,14 @@
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-#include <linux/interrupt.h>
-#include <linux/spinlock.h>
 #ifndef NOKPROBE_SYMBOL
 #define NOKPROBE_SYMBOL(fname) /* kprobes disabled */
 #endif
 #include <asm/kdebug.h>
 int notify_die(enum die_val val, const char *str, struct pt_regs *regs,
 	       long err, int trap, int sig);
-#include <linux/ptrace.h>
-#include <linux/sched.h>
-#include <linux/sched/task_stack.h>
-#include <linux/init.h>
-#include <linux/bug.h>
-#include <linux/atomic.h>
 
 #include <asm/traps.h>
-#include <asm/fpu/api.h>
-#include <asm/alternative.h>
 
 DECLARE_BITMAP(system_vectors, NR_VECTORS);
 

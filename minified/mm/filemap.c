@@ -1,7 +1,6 @@
 
 #include <linux/swap.h>
 #include <linux/uio.h>
-#include <linux/hash.h>
 #include <linux/backing-dev.h>
 #ifndef _LINUX_PAGEVEC_H
 #define _LINUX_PAGEVEC_H
@@ -43,8 +42,6 @@ static inline unsigned folio_batch_add(struct folio_batch *fbatch,
 }
 #endif
 #include "internal.h"
-
-#include <asm/mman.h>
 
 noinline int __filemap_add_folio(struct address_space *mapping,
 				 struct folio *folio, pgoff_t index, gfp_t gfp,

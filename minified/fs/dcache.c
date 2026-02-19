@@ -1,11 +1,5 @@
-#include <linux/mm.h>
 #include <linux/fs.h>
-#include <linux/slab.h>
-#include <linux/init.h>
-#include <linux/hash.h>
 #include <linux/memblock.h>
-#include <linux/rculist_bl.h>
-#include <linux/list_lru.h>
 #include "internal.h"
 
 __cacheline_aligned_in_smp DEFINE_SEQLOCK(rename_lock);

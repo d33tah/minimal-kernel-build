@@ -1,12 +1,7 @@
 
-#include <linux/kernel.h>
 #include <linux/namei.h>
-#include <linux/sched/mm.h>
 #include <linux/file.h>
-#include <linux/fcntl.h>
 #include <linux/fs_struct.h>
-
-#include <linux/hash.h>
 
 #include "internal.h"
 #include "mount.h"

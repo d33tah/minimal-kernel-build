@@ -1,11 +1,6 @@
 
-#include <linux/build_bug.h>
 #include <linux/ctype.h>
 #include <linux/uaccess.h>
-
-#include <linux/compiler.h>
-
-#include <asm/page.h>
 
 static noinline_for_stack int skip_atoi(const char **s)
 {

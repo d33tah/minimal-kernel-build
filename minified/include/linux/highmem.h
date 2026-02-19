@@ -11,7 +11,7 @@ struct folio;
 #include <linux/uaccess.h>
 #include <linux/hardirq.h>
 
-void kmap_local_fork(struct task_struct *tsk);
+static inline void kmap_local_fork(struct task_struct *tsk) {}
 
 static inline void kunmap(struct page *page)
 {

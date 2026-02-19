@@ -32,22 +32,19 @@ struct list_lru {
 	struct list_lru_node	*node;
 };
 
-void list_lru_destroy(struct list_lru *lru);
-int __list_lru_init(struct list_lru *lru, bool memcg_aware,
-		    struct lock_class_key *key, struct shrinker *shrinker);
+static inline void list_lru_destroy(struct list_lru *lru) {}
+static inline int __list_lru_init(struct list_lru *lru, bool memcg_aware,
+		    struct lock_class_key *key, struct shrinker *shrinker) { return 0; }
 
 #define list_lru_init_memcg(lru, shrinker)		\
 	__list_lru_init((lru), true, NULL, shrinker)
 
-bool list_lru_del(struct list_lru *lru, struct list_head *item);
+static inline bool list_lru_del(struct list_lru *lru, struct list_head *item) { return false; }
 
-unsigned long list_lru_count_one(struct list_lru *lru,
-				 int nid, struct mem_cgroup *memcg);
+static inline unsigned long list_lru_count_one(struct list_lru *lru,
+				 int nid, struct mem_cgroup *memcg) { return 0; }
 
 static inline unsigned long list_lru_shrink_count(struct list_lru *lru,
-						  struct shrink_control *sc)
-{
-	return list_lru_count_one(lru, sc->nid, sc->memcg);
-}
+						  struct shrink_control *sc) { return 0; }
 
 #endif

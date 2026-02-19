@@ -369,10 +369,10 @@ long get_user_pages_remote(struct mm_struct *mm,
 static inline bool folio_mark_dirty(struct folio *folio) { return true; }
 bool set_page_dirty(struct page *page);
 
-extern unsigned long move_page_tables(struct vm_area_struct *vma,
+static inline unsigned long move_page_tables(struct vm_area_struct *vma,
 		unsigned long old_addr, struct vm_area_struct *new_vma,
 		unsigned long new_addr, unsigned long len,
-		bool need_rmap_locks);
+		bool need_rmap_locks) { return 0; }
 
 extern pte_t *__get_locked_pte(struct mm_struct *mm, unsigned long addr,
 			       spinlock_t **ptl);

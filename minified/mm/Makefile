@@ -6,8 +6,8 @@
 CFLAGS_init-mm.o += $(call cc-disable-warning, override-init)
 CFLAGS_init-mm.o += $(call cc-disable-warning, initializer-overrides)
 
-mmu-$(CONFIG_MMU)	:= highmem.o memory.o \
-			   mmap.o mmu_gather.o mremap.o \
+mmu-$(CONFIG_MMU)	:= memory.o \
+			   mmap.o mmu_gather.o \
 			   rmap.o vmalloc.o
 
 obj-y			:= filemap.o \
@@ -16,11 +16,10 @@ obj-y			:= filemap.o \
 			   util.o mmzone.o backing-dev.o \
 			   percpu.o slab_common.o \
 			   vmacache.o \
-			   interval_tree.o list_lru.o \
+			   interval_tree.o \
 			   gup.o $(mmu-y)
 
 obj-y += page_alloc.o
 obj-y += init-mm.o
 obj-y += memblock.o
 obj-$(CONFIG_SLUB) += slub.o
-obj-$(CONFIG_GENERIC_EARLY_IOREMAP) += early_ioremap.o

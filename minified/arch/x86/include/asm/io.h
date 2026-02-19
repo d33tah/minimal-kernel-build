@@ -6,8 +6,8 @@
 #include <linux/compiler.h>
 #include <asm/page.h>
 extern void early_ioremap_init(void);
-extern void early_ioremap_setup(void);
-extern void early_ioremap_reset(void);
+static inline void early_ioremap_setup(void) {}
+static inline void early_ioremap_reset(void) {}
 #include <asm/pgtable_types.h>
 #define BUILDIO(bwl, bw, type)						\
 static inline void __out##bwl(type value, u16 port)			\

@@ -356,10 +356,9 @@ static char *lex_raw_line(void)
 	return strbuf_detach();
 }
 
-static char *lex_helptext(void)
+static void skip_helptext(void)
 {
-	int first_ts = 0, c, ts, rel, i;
-	strbuf_reset();
+	int first_ts = 0, c, ts;
 	for (;;) {
 		c = lexchar();
 		if (c == EOF)
@@ -372,10 +371,8 @@ static char *lex_helptext(void)
 				ts++;
 			c = lexchar();
 		}
-		if (c == '\n') {
-			strbuf_addch('\n');
+		if (c == '\n')
 			continue;
-		}
 		if (c == EOF)
 			break;
 		if (first_ts == 0)
@@ -384,19 +381,9 @@ static char *lex_helptext(void)
 			unlexchar(c);
 			break;
 		}
-		rel = ts - first_ts;
-		for (i = 0; i < rel; i++)
-			strbuf_addch(' ');
-		while (c != '\n' && c != EOF) {
-			strbuf_addch(c);
+		while (c != '\n' && c != EOF)
 			c = lexchar();
-		}
-		while (strbuf_len > 0 && (strbuf[strbuf_len - 1] == ' ' ||
-					  strbuf[strbuf_len - 1] == '\t'))
-			strbuf[--strbuf_len] = 0;
-		strbuf_addch('\n');
 	}
-	return strbuf_detach();
 }
 
 static int next_token(void)
@@ -667,7 +654,7 @@ static void parse_help(void)
 		return;
 	advance();
 	expect(T_EOL);
-	free(lex_helptext());
+	skip_helptext();
 	prev_token_type = T_HELPTEXT;
 	advance();
 }

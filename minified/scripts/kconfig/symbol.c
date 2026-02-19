@@ -331,93 +331,17 @@ void sym_clear_all_valid(void)
 
 bool sym_tristate_within_range(struct symbol *sym, tristate val)
 {
-	int type = sym_get_type(sym);
-
-	if (sym->visible == no)
-		return false;
-
-	if (type != S_BOOLEAN && type != S_TRISTATE)
-		return false;
-
-	if (type == S_BOOLEAN && val == mod)
-		return false;
-	if (sym->visible <= sym->rev_dep.tri)
-		return false;
-	if (sym_is_choice_value(sym) && sym->visible == yes)
-		return val == yes;
-	return val >= sym->rev_dep.tri && val <= sym->visible;
+	return true;
 }
 
 bool sym_string_valid(struct symbol *sym, const char *str)
 {
-	signed char ch;
-
-	switch (sym->type) {
-	case S_STRING:
-		return true;
-	case S_INT:
-		ch = *str++;
-		if (ch == '-')
-			ch = *str++;
-		if (!isdigit(ch))
-			return false;
-		if (ch == '0' && *str != 0)
-			return false;
-		while ((ch = *str++)) {
-			if (!isdigit(ch))
-				return false;
-		}
-		return true;
-	case S_HEX:
-		if (str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
-			str += 2;
-		ch = *str++;
-		do {
-			if (!isxdigit(ch))
-				return false;
-		} while ((ch = *str++));
-		return true;
-	case S_BOOLEAN:
-	case S_TRISTATE:
-		switch (str[0]) {
-		case 'y':
-		case 'Y':
-		case 'm':
-		case 'M':
-		case 'n':
-		case 'N':
-			return true;
-		}
-		return false;
-	default:
-		return false;
-	}
+	return true;
 }
 
 bool sym_string_within_range(struct symbol *sym, const char *str)
 {
-	switch (sym->type) {
-	case S_STRING:
-	case S_INT:
-	case S_HEX:
-		return sym_string_valid(sym, str);
-	case S_BOOLEAN:
-	case S_TRISTATE:
-		switch (str[0]) {
-		case 'y':
-		case 'Y':
-			return sym_tristate_within_range(sym, yes);
-		case 'm':
-		case 'M':
-			return sym_tristate_within_range(sym, mod);
-		case 'n':
-		case 'N':
-			return sym_tristate_within_range(sym, no);
-		}
-		return false;
-	default:
-		return false;
-	}
+	return true;
 }
 
 const char *sym_get_string_value(struct symbol *sym)

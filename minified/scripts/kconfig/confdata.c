@@ -441,43 +441,9 @@ static void conf_write_heading(FILE *fp, const struct comment_style *cs)
 
 static char *escape_string_value(const char *in)
 {
-	const char *p;
-	char *out;
-	size_t len;
-
-	len = strlen(in) + strlen("\"\"") + 1;
-
-	p = in;
-	while (1) {
-		p += strcspn(p, "\"\\");
-
-		if (p[0] == '\0')
-			break;
-
-		len++;
-		p++;
-	}
-
-	out = xmalloc(len);
-	out[0] = '\0';
-
-	strcat(out, "\"");
-
-	p = in;
-	while (1) {
-		len = strcspn(p, "\"\\");
-		strncat(out, p, len);
-		p += len;
-
-		if (p[0] == '\0')
-			break;
-
-		strcat(out, "\\");
-		strncat(out, p++, 1);
-	}
-
-	strcat(out, "\"");
-
+	size_t len = strlen(in) + 3;
+	char *out = xmalloc(len);
+	snprintf(out, len, "\"%s\"", in);
 	return out;
 }
 

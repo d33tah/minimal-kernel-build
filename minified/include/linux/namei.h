@@ -1,7 +1,6 @@
 #ifndef _LINUX_NAMEI_H
 #define _LINUX_NAMEI_H
 #include <linux/fs.h>
-#include <linux/fcntl.h>
 enum {LAST_NORM, LAST_ROOT, LAST_DOT, LAST_DOTDOT};
 #define LOOKUP_FOLLOW		0x0001
 #define LOOKUP_DIRECTORY	0x0002

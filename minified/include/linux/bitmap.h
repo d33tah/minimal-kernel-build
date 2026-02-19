@@ -4,8 +4,6 @@
 #ifndef __ASSEMBLY__
 
 #include <linux/kernel.h>
-#include <linux/bitops.h>
-#include <linux/limits.h>
 
 extern unsigned long _find_next_bit(const unsigned long *addr1,
 		const unsigned long *addr2, unsigned long nbits,
@@ -100,7 +98,6 @@ unsigned long find_last_bit(const unsigned long *addr, unsigned long size)
 	     (bit) = find_next_zero_bit((addr), (size), (bit) + 1))
 
 #include <linux/string.h>
-#include <linux/types.h>
 
 int bitmap_parse(const char *buf, unsigned int buflen,
 			unsigned long *dst, int nbits);

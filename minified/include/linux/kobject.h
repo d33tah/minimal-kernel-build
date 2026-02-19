@@ -2,15 +2,9 @@
 #ifndef _KOBJECT_H_
 #define _KOBJECT_H_
 
-#include <linux/types.h>
-#include <linux/list.h>
 #include <linux/sysfs.h>
-#include <linux/compiler.h>
-#include <linux/container_of.h>
-#include <linux/spinlock.h>
 #include <linux/kref.h>
 #include <linux/wait.h>
-#include <linux/atomic.h>
 #include <linux/uidgid.h>
 
 enum kobject_action {

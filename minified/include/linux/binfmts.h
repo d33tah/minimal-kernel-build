@@ -2,7 +2,6 @@
 #define _LINUX_BINFMTS_H
 
 #include <linux/sched.h>
-#include <asm/unistd.h>
 #include <linux/capability.h>
 
 #define MAX_ARG_STRLEN (PAGE_SIZE * 32)

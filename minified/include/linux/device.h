@@ -2,7 +2,6 @@
 #ifndef _DEVICE_H_
 #define _DEVICE_H_
 
-#include <linux/compiler.h>
 
 /* end dev_printk.h */
 
@@ -29,10 +28,6 @@ extern void klist_iter_init_node(struct klist *k, struct klist_iter *i,
 				 struct klist_node *n);
 extern void klist_iter_exit(struct klist_iter *i);
 extern struct klist_node *klist_next(struct klist_iter *i);
-#include <linux/list.h>
-#include <linux/lockdep.h>
-#include <linux/compiler.h>
-#include <linux/types.h>
 #include <linux/mutex.h>
 struct dev_pm_ops {
 };
@@ -41,8 +36,6 @@ struct dev_pm_info {
 };
 struct dev_pm_domain {
 };
-#include <linux/atomic.h>
-#include <linux/uidgid.h>
 #include <linux/gfp.h>
 #include <linux/overflow.h>
 struct device;

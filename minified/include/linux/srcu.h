@@ -5,14 +5,12 @@
 #include <linux/mutex.h>
 #include <linux/workqueue.h>
 
-#include <linux/atomic.h>
 
 struct srcu_struct;
 
 #ifndef _LINUX_SWAIT_H
 #define _LINUX_SWAIT_H
 
-#include <linux/list.h>
 
 struct task_struct;
 

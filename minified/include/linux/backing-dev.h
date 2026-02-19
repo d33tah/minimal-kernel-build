@@ -2,15 +2,8 @@
 #define _LINUX_BACKING_DEV_H
 #include <linux/fs.h>
 #include <linux/device.h>
-#include <linux/list.h>
-#include <linux/rbtree.h>
 #include <linux/spinlock.h>
 #include <linux/percpu_counter.h>
-#include <linux/atomic.h>
-#include <linux/percpu.h>
-#include <linux/rcupdate.h>
-#include <linux/types.h>
-#include <linux/gfp.h>
 
 struct percpu_ref;
 typedef void(percpu_ref_func_t)(struct percpu_ref *);
@@ -43,10 +36,7 @@ struct fprop_local_percpu {
 	raw_spinlock_t lock;
 };
 void fprop_local_init_percpu(struct fprop_local_percpu *pl, gfp_t gfp);
-#include <linux/timer.h>
 #include <linux/workqueue.h>
-#include <linux/kref.h>
-#include <linux/refcount.h>
 
 struct device;
 

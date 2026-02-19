@@ -1,6 +1,5 @@
 #ifndef _LINUX_NOTIFIER_H
 #define _LINUX_NOTIFIER_H
-#include <linux/mutex.h>
 #include <linux/rwsem.h>
 #include <linux/srcu.h>
 

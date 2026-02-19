@@ -1,7 +1,6 @@
 #ifndef _LINUX_PERCPU_COUNTER_H
 #define _LINUX_PERCPU_COUNTER_H
 
-#include <linux/smp.h>
 #include <linux/threads.h>
 #include <linux/percpu.h>
 #include <linux/types.h>

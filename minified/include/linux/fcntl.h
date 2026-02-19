@@ -2,7 +2,6 @@
 #define _LINUX_FCNTL_H
 
 #include <linux/stat.h>
-#include <linux/types.h>
 
 #define O_ACCMODE	00000003
 #define O_RDONLY	00000000

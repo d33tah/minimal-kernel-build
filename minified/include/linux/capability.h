@@ -1,9 +1,7 @@
 #ifndef _LINUX_CAPABILITY_H
 #define _LINUX_CAPABILITY_H
 
-#include <linux/types.h>
 #include <linux/uidgid.h>
-#include <linux/stddef.h>
 
 #define _LINUX_CAPABILITY_U32S_3     2
 /* Keep only capabilities actually used in the codebase */

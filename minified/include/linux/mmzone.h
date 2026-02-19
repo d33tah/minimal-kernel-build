@@ -4,12 +4,11 @@
 #ifndef __ASSEMBLY__
 #ifndef __GENERATING_BOUNDS_H
 
+#include <linux/wait.h>
 #include <linux/spinlock.h>
 #include <linux/list.h>
-#include <linux/wait.h>
+#include <linux/atomic.h>
 #include <linux/cache.h>
-#include <linux/threads.h>
-#include <linux/numa.h>
 #include <linux/init.h>
 #include <linux/nodemask.h>
 #include <generated/bounds.h>
@@ -72,7 +71,6 @@ enum pageblock_bits {
 #define pageblock_order (MAX_ORDER - 1)
 #define pageblock_nr_pages (1UL << pageblock_order)
 
-#include <linux/atomic.h>
 #include <linux/mm_types.h>
 #include <linux/page-flags.h>
 #include <linux/local_lock.h>

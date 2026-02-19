@@ -4,7 +4,6 @@
 
 #ifndef __LINUX_KERNFS_H
 #define __LINUX_KERNFS_H
-#include <linux/types.h>
 #include <linux/atomic.h>
 struct rb_node;
 struct rb_root;
@@ -30,7 +29,6 @@ struct kernfs_node {
 	void			*iattr;
 };
 #endif /* __LINUX_KERNFS_H */
-#include <linux/compiler.h>
 #include <linux/stat.h>
 #include <linux/atomic.h>
 

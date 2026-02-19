@@ -1,7 +1,6 @@
 #ifndef _LINUX_CPU_H_
 #define _LINUX_CPU_H_
 
-#include <linux/compiler.h>
 #include <linux/cpumask.h>
 #include <linux/types.h>
 #include <linux/device.h>

@@ -3,9 +3,7 @@
 #define _LINUX_MODULE_H
 
 #include <linux/stat.h>
-#include <linux/compiler.h>
 #include <linux/cache.h>
-#include <linux/init.h>
 #include <linux/elf.h>
 #include <linux/kobject.h>
 #include <linux/moduleparam.h>

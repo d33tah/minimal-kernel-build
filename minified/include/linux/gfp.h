@@ -2,9 +2,7 @@
 #define __LINUX_GFP_H
 
 #include <linux/mmdebug.h>
-#include <linux/mmzone.h>
 #include <linux/stddef.h>
-#include <linux/linkage.h>
 #include <linux/topology.h>
 
 struct vm_area_struct;
@@ -82,49 +80,14 @@ static inline bool gfpflags_allow_blocking(const gfp_t gfp_flags)
 	return !!(gfp_flags & __GFP_DIRECT_RECLAIM);
 }
 
-#define OPT_ZONE_HIGHMEM ZONE_NORMAL
-
-#define OPT_ZONE_DMA ZONE_NORMAL
-
-#define OPT_ZONE_DMA32 ZONE_NORMAL
-
-#define GFP_ZONES_SHIFT ZONES_SHIFT
-
-#if 16 * GFP_ZONES_SHIFT > BITS_PER_LONG
-#error GFP_ZONES_SHIFT too large to create GFP_ZONE_TABLE integer
-#endif
-
-#define GFP_ZONE_TABLE ( \
-	(ZONE_NORMAL << 0 * GFP_ZONES_SHIFT)				       \
-	| (OPT_ZONE_DMA << ___GFP_DMA * GFP_ZONES_SHIFT)		       \
-	| (OPT_ZONE_HIGHMEM << ___GFP_HIGHMEM * GFP_ZONES_SHIFT)	       \
-	| (OPT_ZONE_DMA32 << ___GFP_DMA32 * GFP_ZONES_SHIFT)		       \
-	| (ZONE_NORMAL << ___GFP_MOVABLE * GFP_ZONES_SHIFT)		       \
-	| (OPT_ZONE_DMA << (___GFP_MOVABLE | ___GFP_DMA) * GFP_ZONES_SHIFT)    \
-	| (ZONE_MOVABLE << (___GFP_MOVABLE | ___GFP_HIGHMEM) * GFP_ZONES_SHIFT)\
-	| (OPT_ZONE_DMA32 << (___GFP_MOVABLE | ___GFP_DMA32) * GFP_ZONES_SHIFT)\
-)
-
-#define GFP_ZONE_BAD ( \
-	1 << (___GFP_DMA | ___GFP_HIGHMEM)				      \
-	| 1 << (___GFP_DMA | ___GFP_DMA32)				      \
-	| 1 << (___GFP_DMA32 | ___GFP_HIGHMEM)				      \
-	| 1 << (___GFP_DMA | ___GFP_DMA32 | ___GFP_HIGHMEM)		      \
-	| 1 << (___GFP_MOVABLE | ___GFP_HIGHMEM | ___GFP_DMA)		      \
-	| 1 << (___GFP_MOVABLE | ___GFP_DMA32 | ___GFP_DMA)		      \
-	| 1 << (___GFP_MOVABLE | ___GFP_DMA32 | ___GFP_HIGHMEM)		      \
-	| 1 << (___GFP_MOVABLE | ___GFP_DMA32 | ___GFP_DMA | ___GFP_HIGHMEM)  \
-)
-
+/* Only ZONE_NORMAL and ZONE_MOVABLE exist; no DMA/HIGHMEM/DMA32 zones.
+ * MOVABLE+HIGHMEM -> ZONE_MOVABLE, everything else -> ZONE_NORMAL. */
 static inline enum zone_type gfp_zone(gfp_t flags)
 {
-	enum zone_type z;
-	int bit = (__force int) (flags & GFP_ZONEMASK);
-
-	z = (GFP_ZONE_TABLE >> (bit * GFP_ZONES_SHIFT)) &
-					 ((1 << GFP_ZONES_SHIFT) - 1);
-	VM_BUG_ON((GFP_ZONE_BAD >> bit) & 1);
-	return z;
+	if (((__force int)flags & (___GFP_MOVABLE | ___GFP_HIGHMEM)) ==
+	    (___GFP_MOVABLE | ___GFP_HIGHMEM))
+		return ZONE_MOVABLE;
+	return ZONE_NORMAL;
 }
 
 static inline struct zonelist *node_zonelist(int nid, gfp_t flags)

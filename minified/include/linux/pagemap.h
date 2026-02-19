@@ -1,11 +1,9 @@
 #ifndef _LINUX_PAGEMAP_H
 #define _LINUX_PAGEMAP_H
 
-#include <linux/fs.h>
 #include <linux/highmem.h>
 #include <linux/compiler.h>
 #include <linux/gfp.h>
-#include <linux/hardirq.h>
 enum mapping_flags {
 	AS_ENOSPC	= 1,
 	AS_UNEVICTABLE	= 3,

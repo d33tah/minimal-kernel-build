@@ -1,9 +1,7 @@
 #ifndef _LINUX_CLOCKSOURCE_H
 #define _LINUX_CLOCKSOURCE_H
 
-#include <linux/types.h>
 #include <linux/timex.h>
-#include <linux/list.h>
 #include <linux/timer.h>
 enum clocksource_ids {
 	CSID_GENERIC		= 0,

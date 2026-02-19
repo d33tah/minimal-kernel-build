@@ -1,7 +1,6 @@
 #ifndef __LINUX_SMP_H
 #define __LINUX_SMP_H
 
-#include <linux/types.h>
 #include <linux/list.h>
 #include <linux/cpumask.h>
 

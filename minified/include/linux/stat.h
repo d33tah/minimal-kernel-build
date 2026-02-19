@@ -55,7 +55,6 @@ struct stat64 {
 	unsigned long long	st_ino;
 };
 
-#include <linux/types.h>
 #if defined(__KERNEL__) || !defined(__GLIBC__) || (__GLIBC__ < 2)
 #define S_IFMT  00170000
 #define S_IFSOCK 0140000

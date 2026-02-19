@@ -2,7 +2,6 @@
 #ifndef __LINUX_FDTABLE_H
 #define __LINUX_FDTABLE_H
 
-#include <linux/compiler.h>
 #include <linux/rcupdate.h>
 #include <asm/barrier.h>
 struct task_struct;
@@ -26,7 +25,6 @@ struct task_struct;
 									\
 	(typeof(_i)) (_i & _mask);					\
 })
-#include <linux/types.h>
 #include <linux/fs.h>
 
 #include <linux/atomic.h>

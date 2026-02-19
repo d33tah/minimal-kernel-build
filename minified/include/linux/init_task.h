@@ -1,7 +1,6 @@
 #ifndef _LINUX__INIT_TASK_H
 #define _LINUX__INIT_TASK_H
 
-#include <linux/rcupdate.h>
 #include <linux/lockdep.h>
 #include <linux/pid_namespace.h>
 #include <linux/user_namespace.h>

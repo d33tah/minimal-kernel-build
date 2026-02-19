@@ -4,8 +4,6 @@
 
 #include <linux/capability.h>
 #include <linux/init.h>
-#include <linux/atomic.h>
-#include <linux/uidgid.h>
 #include <linux/sched.h>
 #include <linux/sched/user.h>
 

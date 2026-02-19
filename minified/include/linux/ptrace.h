@@ -7,7 +7,6 @@
 #include <linux/err.h>			 
 #include <linux/bug.h>			 
 #include <linux/pid_namespace.h>	 
-#include <linux/types.h>
 #include <asm/ptrace.h>
 
 #ifndef current_pt_regs

@@ -1,12 +1,10 @@
 #ifndef _LINUX_USER_NAMESPACE_H
 #define _LINUX_USER_NAMESPACE_H
 
-#include <linux/kref.h>
 #include <linux/nsproxy.h>
 #include <linux/ns_common.h>
 #include <linux/sched.h>
 #include <linux/workqueue.h>
-#include <linux/rwsem.h>
 #include <linux/uidgid.h>
 #include <linux/err.h>
 
@@ -38,9 +36,6 @@ struct ucounts;
 enum ucount_type {
 	UCOUNT_MNT_NAMESPACES,
 	UCOUNT_RLIMIT_NPROC,
-	UCOUNT_RLIMIT_MSGQUEUE,
-	UCOUNT_RLIMIT_SIGPENDING,
-	UCOUNT_RLIMIT_MEMLOCK,
 	UCOUNT_COUNTS,
 };
 

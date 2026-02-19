@@ -3,7 +3,6 @@
 
 #include <linux/compiler.h>
 #include <linux/types.h>
-#include <linux/stddef.h>
 #include <linux/stdarg.h>
 
 #define __HAVE_ARCH_STRCPY

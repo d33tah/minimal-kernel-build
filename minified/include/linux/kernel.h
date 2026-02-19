@@ -1,19 +1,12 @@
 #ifndef _LINUX_KERNEL_H
 #define _LINUX_KERNEL_H
 
-#include <linux/stdarg.h>
 #include <linux/limits.h>
-#include <linux/const.h>
 
 #define ALIGN(x, a)		__ALIGN_KERNEL((x), (a))
 #define ALIGN_DOWN(x, a)	__ALIGN_KERNEL((x) - ((a) - 1), (a))
 #define IS_ALIGNED(x, a)		(((x) & ((typeof(x))(a) - 1)) == 0)
-#include <linux/linkage.h>
-#include <linux/stddef.h>
-#include <linux/types.h>
-#include <linux/compiler.h>
 #include <linux/container_of.h>
-#include <linux/bitops.h>
 int __must_check kstrtoull(const char *s, unsigned int base, unsigned long long *res);
 int __must_check kstrtouint(const char *s, unsigned int base, unsigned int *res);
 #include <linux/log2.h>
@@ -34,7 +27,6 @@ enum lockdep_ok {
 extern void add_taint(unsigned flag, enum lockdep_ok);
 #endif /* _LINUX_PANIC_H */
 #include <linux/printk.h>
-#include <linux/build_bug.h>
 #include <linux/static_call_types.h>
 #define _RET_IP_		(unsigned long)__builtin_return_address(0)
 #define _THIS_IP_  ({ __label__ __here; __here: (unsigned long)&&__here; })
@@ -85,7 +77,6 @@ extern void add_taint(unsigned flag, enum lockdep_ok);
 #define htons(x) ___htons(x)
 #define ntohs(x) ___ntohs(x)
 
-#include <linux/const.h>
 
 #define REPEAT_BYTE(x)	((~0ul / 0xff) * (x))
 

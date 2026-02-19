@@ -3,7 +3,6 @@
 
 #include <linux/stdarg.h>
 #include <linux/init.h>
-#include <linux/linkage.h>
 
 #define KERN_SOH	"\001"
 #define KERN_EMERG	KERN_SOH "0"

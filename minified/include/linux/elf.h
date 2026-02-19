@@ -1,6 +1,5 @@
 #ifndef _LINUX_ELF_H
 #define _LINUX_ELF_H
-#include <linux/types.h>
 /* asm/elf.h inlined */
 #include <linux/thread_info.h>
 #include <asm/ptrace.h>

@@ -4,7 +4,6 @@
 #include <linux/static_call_types.h>
 #include <linux/ptrace.h>
 #include <linux/syscalls.h>
-#include <linux/sched.h>
 
 #include <linux/sched/task_stack.h>
 #include <asm/nospec-branch.h>

@@ -1,7 +1,6 @@
 #ifndef LINUX_MM_INLINE_H
 #define LINUX_MM_INLINE_H
 
-#include <linux/atomic.h>
 #include <linux/swap.h>
 
 static inline int folio_is_file_lru(struct folio *folio)

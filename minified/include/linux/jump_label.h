@@ -4,7 +4,6 @@
 #ifndef __ASSEMBLY__
 
 #include <linux/types.h>
-#include <linux/compiler.h>
 
 extern bool static_key_initialized;
 

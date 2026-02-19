@@ -1,12 +1,10 @@
 #ifndef __LINUX_SPINLOCK_H
 #define __LINUX_SPINLOCK_H
 
-#include <linux/typecheck.h>
-#include <linux/preempt.h>
-#include <linux/linkage.h>
 #include <linux/irqflags.h>
 #include <linux/thread_info.h>
 #include <linux/stringify.h>
+#include <linux/preempt.h>
 #include <linux/bottom_half.h>
 #include <linux/lockdep.h>
 #include <asm/barrier.h>

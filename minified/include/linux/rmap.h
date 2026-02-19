@@ -1,11 +1,8 @@
 #ifndef _LINUX_RMAP_H
 #define _LINUX_RMAP_H
 
-#include <linux/list.h>
-#include <linux/mm.h>
 #include <linux/rwsem.h>
 #include <linux/memcontrol.h>
-#include <linux/highmem.h>
 #include <linux/pagemap.h>
 
 struct anon_vma {

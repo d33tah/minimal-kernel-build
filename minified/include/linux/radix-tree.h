@@ -1,11 +1,8 @@
 #ifndef _LINUX_RADIX_TREE_H
 #define _LINUX_RADIX_TREE_H
 
-#include <linux/gfp.h>
 #include <linux/math.h>
 #include <linux/percpu.h>
-#include <linux/rcupdate.h>
-#include <linux/types.h>
 #include <linux/xarray.h>
 #include <linux/local_lock.h>
 

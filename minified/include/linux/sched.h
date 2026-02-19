@@ -11,6 +11,7 @@
 
 /* pid.h inlined */
 #include <linux/rculist.h>
+#include <linux/rcupdate.h>
 #include <linux/wait.h>
 #include <linux/refcount.h>
 enum pid_type {
@@ -67,7 +68,6 @@ static inline pid_t pid_nr(struct pid *pid)
 pid_t pid_nr_ns(struct pid *pid, struct pid_namespace *ns);
 pid_t pid_vnr(struct pid *pid);
 #include <linux/rbtree.h>
-#include <linux/rcupdate.h>
 struct rlimit {
 	__kernel_ulong_t	rlim_cur;
 	__kernel_ulong_t	rlim_max;
@@ -75,7 +75,7 @@ struct rlimit {
 #define _STK_LIM	(8*1024*1024)
 #define RLIMIT_STACK		3
 #define RLIMIT_NOFILE		7
-#define RLIM_NLIMITS		16
+#define RLIM_NLIMITS		8
 #define RLIM_INFINITY		(~0UL)
 #define INIT_RLIMITS {							\
 	[0] = { RLIM_INFINITY, RLIM_INFINITY },				\
@@ -86,14 +86,6 @@ struct rlimit {
 	[5] = { RLIM_INFINITY, RLIM_INFINITY },				\
 	[6] = { 0, 0 },						\
 	[RLIMIT_NOFILE] = { INR_OPEN_CUR, INR_OPEN_MAX },		\
-	[8] = { 8*1024*1024, 8*1024*1024 },				\
-	[9] = { RLIM_INFINITY, RLIM_INFINITY },				\
-	[10] = { RLIM_INFINITY, RLIM_INFINITY },			\
-	[11] = { 0, 0 },						\
-	[12] = { 819200, 819200 },					\
-	[13] = { 0, 0 },						\
-	[14] = { 0, 0 },						\
-	[15] = { RLIM_INFINITY, RLIM_INFINITY },			\
 }
 /* end resource.h */
 #define MAX_RT_PRIO		100

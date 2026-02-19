@@ -2,7 +2,6 @@
 #define _LINUX_IRQ_H
 
 #include <linux/cache.h>
-#include <linux/cpumask.h>
 struct irq_desc;
 extern struct irq_desc *irq_to_desc(unsigned int irq);
 extern int nr_irqs;

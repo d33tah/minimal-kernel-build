@@ -4,12 +4,12 @@
 #ifndef _LINUX_MM_TYPES_TASK_H
 #define _LINUX_MM_TYPES_TASK_H
 
-#include <linux/types.h>
-#include <linux/threads.h>
-#include <linux/atomic.h>
-#include <linux/cpumask.h>
 
 #include <asm/page.h>
+#include <linux/atomic.h>
+#include <linux/list.h>
+#include <linux/spinlock.h>
+#include <linux/cpumask.h>
 
 /* NR_CPUS=1 < CONFIG_SPLIT_PTLOCK_CPUS=4, so USE_SPLIT_*=0 */
 #define USE_SPLIT_PTE_PTLOCKS	0
@@ -36,12 +36,9 @@ struct vmacache {
 
 #define AT_VECTOR_SIZE_BASE 20
 #include <linux/kref.h>
-#include <linux/list.h>
-#include <linux/spinlock.h>
 #include <linux/rbtree.h>
 #include <linux/rwsem.h>
 #include <linux/completion.h>
-#include <linux/cpumask.h>
 #include <linux/rcupdate.h>
 #include <linux/numa.h>
 #include <generated/bounds.h>

@@ -2,9 +2,8 @@
 #define __LINUX_SEQLOCK_H
 
 #include <linux/compiler.h>
-#include <linux/lockdep.h>
-#include <linux/mutex.h>
 #include <linux/preempt.h>
+#include <linux/mutex.h>
 #include <linux/spinlock.h>
 
 #include <asm/processor.h>

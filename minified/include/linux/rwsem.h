@@ -1,10 +1,9 @@
 #ifndef _LINUX_RWSEM_H
 #define _LINUX_RWSEM_H
-#include <linux/linkage.h>
-#include <linux/types.h>
 #include <linux/list.h>
-#include <linux/spinlock.h>
+#include <linux/types.h>
 #include <linux/atomic.h>
+#include <linux/spinlock.h>
 #include <linux/err.h>
 #define __RWSEM_DEP_MAP_INIT(lockname)
 struct rw_semaphore { atomic_long_t count; atomic_long_t owner; raw_spinlock_t wait_lock; struct list_head wait_list; };

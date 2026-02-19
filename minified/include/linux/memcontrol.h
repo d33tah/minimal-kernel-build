@@ -4,7 +4,6 @@
 
 #include <linux/cgroup.h>
 #include <linux/mm.h>
-#include <linux/vmstat.h>
 
 struct mem_cgroup;
 struct page;

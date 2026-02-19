@@ -9,20 +9,6 @@
 
 typedef __s64 time64_t;
 
-struct __kernel_timespec {
-	__kernel_time64_t       tv_sec;
-	long long               tv_nsec;
-};
-#ifndef __kernel_old_timeval
-struct __kernel_old_timeval {
-	__kernel_long_t tv_sec;
-	__kernel_long_t tv_usec;
-};
-#endif
-struct timezone {
-	int	tz_minuteswest;
-	int	tz_dsttime;
-};
 
 struct timespec64 {
 	time64_t	tv_sec;			 

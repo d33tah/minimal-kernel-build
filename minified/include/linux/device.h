@@ -29,12 +29,8 @@ extern void klist_iter_init_node(struct klist *k, struct klist_iter *i,
 extern void klist_iter_exit(struct klist_iter *i);
 extern struct klist_node *klist_next(struct klist_iter *i);
 #include <linux/mutex.h>
-struct dev_pm_ops {
-};
 struct dev_pm_info {
 	u32			driver_flags;
-};
-struct dev_pm_domain {
 };
 #include <linux/gfp.h>
 #include <linux/overflow.h>

@@ -12,9 +12,6 @@
 
 #define __static_call(name)	__raw_static_call(name)
 
-struct static_call_key {
-	void *func;
-};
 
 #define static_call(name)	__static_call(name)
 

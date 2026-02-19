@@ -14,10 +14,6 @@ struct notifier_block {
 	int priority;
 };
 
-struct atomic_notifier_head {
-	spinlock_t lock;
-	struct notifier_block __rcu *head;
-};
 
 #ifdef __KERNEL__
 

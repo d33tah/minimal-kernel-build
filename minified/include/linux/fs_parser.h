@@ -4,10 +4,6 @@
 
 #include <linux/fs_context.h>
 
-struct constant_table {
-	const char	*name;
-	int		value;
-};
 
 struct fs_parameter_spec;
 struct fs_parse_result;

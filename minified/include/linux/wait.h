@@ -12,10 +12,7 @@ typedef int (*wait_queue_func_t)(struct wait_queue_entry *wq_entry, unsigned mod
 int default_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, int flags, void *key);
 
 #define WQ_FLAG_EXCLUSIVE	0x01
-#define WQ_FLAG_WOKEN		0x02
 #define WQ_FLAG_BOOKMARK	0x04
-#define WQ_FLAG_CUSTOM		0x08
-#define WQ_FLAG_DONE		0x10
 #define WQ_FLAG_PRIORITY	0x20
 
 struct wait_queue_entry {
@@ -125,12 +122,4 @@ long prepare_to_wait_event(struct wait_queue_head *wq_head, struct wait_queue_en
 void finish_wait(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry);
 int autoremove_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, int sync, void *key);
 
-#define init_wait(wait)								\
-	do {									\
-		(wait)->private = current;					\
-		(wait)->func = autoremove_wake_function;			\
-		INIT_LIST_HEAD(&(wait)->entry);					\
-		(wait)->flags = 0;						\
-	} while (0)
-
-#endif  
+#endif

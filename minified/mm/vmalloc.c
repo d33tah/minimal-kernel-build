@@ -6,11 +6,7 @@
 
 #include "internal.h"
 
-static DEFINE_SPINLOCK(vmap_area_lock);
-static DEFINE_SPINLOCK(free_vmap_area_lock);
-
 LIST_HEAD(vmap_area_list);
-static struct rb_root vmap_area_root = RB_ROOT;
 static bool vmap_initialized __read_mostly;
 
 static struct kmem_cache *vmap_area_cachep;
@@ -18,8 +14,6 @@ static struct kmem_cache *vmap_area_cachep;
 static LIST_HEAD(free_vmap_area_list);
 
 static struct rb_root free_vmap_area_root = RB_ROOT;
-
-static DEFINE_PER_CPU(struct vmap_area *, ne_fit_preload_node);
 
 static __always_inline unsigned long va_size(struct vmap_area *va)
 {

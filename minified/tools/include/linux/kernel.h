@@ -8,8 +8,6 @@
 #include <linux/build_bug.h>
 #include <linux/compiler.h>
 #include <linux/math.h>
-#include <endian.h>
-#include <byteswap.h>
 
 #ifndef UINT_MAX
 #define UINT_MAX	(~0U)
@@ -56,20 +54,6 @@
 #endif
 #endif
 #define BUG()	BUG_ON(1)
-
-/* x86 is little-endian only */
-#define cpu_to_le16
-#define cpu_to_le32
-#define cpu_to_le64
-#define le16_to_cpu
-#define le32_to_cpu
-#define le64_to_cpu
-#define cpu_to_be16 bswap_16
-#define cpu_to_be32 bswap_32
-#define cpu_to_be64 bswap_64
-#define be16_to_cpu bswap_16
-#define be32_to_cpu bswap_32
-#define be64_to_cpu bswap_64
 
 int vscnprintf(char *buf, size_t size, const char *fmt, va_list args);
 int scnprintf(char * buf, size_t size, const char * fmt, ...);

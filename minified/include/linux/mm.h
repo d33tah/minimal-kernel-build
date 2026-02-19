@@ -478,8 +478,6 @@ extern unsigned long get_unmapped_area(struct file *, unsigned long, unsigned lo
 extern unsigned long do_mmap(struct file *file, unsigned long addr,
 	unsigned long len, unsigned long prot, unsigned long flags,
 	unsigned long pgoff, unsigned long *populate, struct list_head *uf);
-extern int do_munmap(struct mm_struct *, unsigned long, size_t,
-		     struct list_head *uf);
 
 extern int __mm_populate(unsigned long addr, unsigned long len,
 			 int ignore_errors);

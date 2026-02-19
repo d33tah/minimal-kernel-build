@@ -150,7 +150,7 @@ munmap_vma_range(struct mm_struct *mm, unsigned long start, unsigned long len,
 		 struct rb_node **parent, struct list_head *uf)
 {
 	while (find_vma_links(mm, start, start + len, pprev, link, parent))
-		if (do_munmap(mm, start, len, uf))
+		if (__do_munmap(mm, start, len, uf, false))
 			return -ENOMEM;
 
 	return 0;
@@ -825,12 +825,6 @@ static int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 	}
 
 	return 0;
-}
-
-int do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
-	      struct list_head *uf)
-{
-	return __do_munmap(mm, start, len, uf, false);
 }
 
 int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)

@@ -32,7 +32,7 @@ struct k_sigaction {
 	struct sigaction sa;
 };
 
-#define SA_IMMUTABLE		0x00800000
+
 #endif /* _LINUX_SIGNAL_TYPES_INLINED */
 
 struct task_struct;

@@ -192,9 +192,6 @@ void putchar(int);
 
 void set_video(void);
 
-int set_mode(u16 mode);
-void probe_cards(int unsafe);
-
-#endif  
+#endif
 
 #endif  

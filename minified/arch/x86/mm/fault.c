@@ -1,6 +1,6 @@
 #include <linux/extable.h>
 #ifndef NOKPROBE_SYMBOL
-#define NOKPROBE_SYMBOL(fname) /* kprobes disabled */
+#define NOKPROBE_SYMBOL(fname)
 #endif
 
 #include <asm/kdebug.h>
@@ -182,78 +182,6 @@ static noinline void bad_area_access_error(struct pt_regs *regs,
 	__bad_area(regs, error_code, address, 0, SEGV_ACCERR);
 }
 
-static void do_sigbus(struct pt_regs *regs, unsigned long error_code,
-		      unsigned long address, vm_fault_t fault)
-{
-	if (!user_mode(regs)) {
-		kernelmode_fixup_or_oops(regs, error_code, address, SIGBUS,
-					 BUS_ADRERR, ARCH_DEFAULT_PKEY);
-		return;
-	}
-
-	sanitize_error_code(address, &error_code);
-
-	if (fixup_vdso_exception(regs, X86_TRAP_PF, error_code, address))
-		return;
-
-	set_signal_archinfo(address, error_code);
-
-	force_sig_fault(SIGBUS, BUS_ADRERR, (void __user *)address);
-}
-
-static int spurious_kernel_fault_check(unsigned long error_code, pte_t *pte)
-{
-	if ((error_code & X86_PF_WRITE) && !pte_write(*pte))
-		return 0;
-
-	if ((error_code & X86_PF_INSTR) && !pte_exec(*pte))
-		return 0;
-
-	return 1;
-}
-
-static noinline int spurious_kernel_fault(unsigned long error_code,
-					  unsigned long address)
-{
-	pgd_t *pgd;
-	p4d_t *p4d;
-	pud_t *pud;
-	pmd_t *pmd;
-	pte_t *pte;
-	int ret;
-
-	if (error_code != (X86_PF_WRITE | X86_PF_PROT) &&
-	    error_code != (X86_PF_INSTR | X86_PF_PROT))
-		return 0;
-
-	pgd = init_mm.pgd + pgd_index(address);
-
-	p4d = p4d_offset(pgd, address);
-
-	pud = pud_offset(p4d, address);
-
-	pmd = pmd_offset(pud, address);
-	if (!pmd_present(*pmd))
-		return 0;
-
-	if (pmd_large(*pmd))
-		return spurious_kernel_fault_check(error_code, (pte_t *)pmd);
-
-	pte = pte_offset_kernel(pmd, address);
-	if (!pte_present(*pte))
-		return 0;
-
-	ret = spurious_kernel_fault_check(error_code, pte);
-	if (!ret)
-		return 0;
-
-	ret = spurious_kernel_fault_check(error_code, (pte_t *)pmd);
-	WARN_ONCE(!ret, "PMD has incorrect permission bits\n");
-
-	return ret;
-}
-NOKPROBE_SYMBOL(spurious_kernel_fault);
-
 bool fault_in_kernel_space(unsigned long address)
 {
 	/* X86_32: no vsyscall check needed */
@@ -264,15 +192,10 @@ static void do_kern_addr_fault(struct pt_regs *regs,
 			       unsigned long hw_error_code,
 			       unsigned long address)
 {
-	WARN_ON_ONCE(hw_error_code & X86_PF_PK);
-
 	if (!(hw_error_code & (X86_PF_RSVD | X86_PF_USER | X86_PF_PROT))) {
 		if (vmalloc_fault(address) >= 0)
 			return;
 	}
-
-	if (spurious_kernel_fault(hw_error_code, address))
-		return;
 
 	bad_area_nosemaphore(regs, hw_error_code, address);
 }
@@ -398,9 +321,7 @@ good_area:
 
 	} else {
 		if (fault & (VM_FAULT_SIGBUS | VM_FAULT_HWPOISON |
-			     VM_FAULT_HWPOISON_LARGE))
-			do_sigbus(regs, error_code, address, fault);
-		else if (fault & VM_FAULT_SIGSEGV)
+			     VM_FAULT_HWPOISON_LARGE | VM_FAULT_SIGSEGV))
 			bad_area_nosemaphore(regs, error_code, address);
 		else
 			BUG();

@@ -385,7 +385,6 @@ static inline pte_t *get_locked_pte(struct mm_struct *mm, unsigned long addr,
 }
 
 int __pte_alloc(struct mm_struct *mm, pmd_t *pmd);
-int __pte_alloc_kernel(pmd_t *pmd);
 
 /* pgd_none/p4d_none/pud_none always return 0 - folded paging */
 static inline p4d_t *p4d_alloc(struct mm_struct *mm, pgd_t *pgd,

@@ -1,7 +1,8 @@
 #include <linux/interrupt.h>
 #include <linux/rcupdate_wait.h>
 
-#include "rcu.h"
+/* rcu.h inlined */
+extern void resched_cpu(int cpu);
 
 struct rcu_ctrlblk {
 	struct rcu_head *rcucblist;

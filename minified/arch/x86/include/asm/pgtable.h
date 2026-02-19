@@ -35,7 +35,7 @@ extern unsigned long empty_zero_page[PAGE_SIZE / sizeof(unsigned long)]
 extern spinlock_t pgd_lock;
 extern struct list_head pgd_list;
 
-extern struct mm_struct *pgd_page_get_mm(struct page *page);
+
 
 #define set_pte(ptep, pte)		native_set_pte(ptep, pte)
 

@@ -12,21 +12,6 @@
 #define GFP_PGTABLE_KERNEL	(GFP_KERNEL | __GFP_ZERO)
 #define GFP_PGTABLE_USER	(GFP_PGTABLE_KERNEL | __GFP_ACCOUNT)
 
-static inline pte_t *__pte_alloc_one_kernel(struct mm_struct *mm)
-{
-	return (pte_t *)__get_free_page(GFP_PGTABLE_KERNEL);
-}
-
-#ifndef __HAVE_ARCH_PTE_ALLOC_ONE_KERNEL
-static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm)
-{
-	return __pte_alloc_one_kernel(mm);
-}
-#endif
-
-static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
-{
-}
 
 static inline pgtable_t __pte_alloc_one(struct mm_struct *mm, gfp_t gfp)
 {

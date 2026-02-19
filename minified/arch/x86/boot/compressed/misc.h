@@ -46,8 +46,6 @@ static inline void debug_putstr(const char *s)
 { while (*s) asm volatile("outb %0, $0xe9" : : "a"(*s++)); }
 #define debug_putaddr(x)  
 
-int cmdline_find_option(const char *option, char *buffer, int bufsize);
-int cmdline_find_option_bool(const char *option);
 
 static const int early_serial_base;
 

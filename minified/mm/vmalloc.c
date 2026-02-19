@@ -26,14 +26,6 @@ static __always_inline unsigned long va_size(struct vmap_area *va)
 	return (va->va_end - va->va_start);
 }
 
-static __always_inline unsigned long get_subtree_max_size(struct rb_node *node)
-{
-	struct vmap_area *va;
-
-	va = rb_entry_safe(node, struct vmap_area, rb_node);
-	return va ? va->subtree_max_size : 0;
-}
-
 RB_DECLARE_CALLBACKS_MAX(static, free_vmap_area_rb_augment_cb, struct vmap_area,
 			 rb_node, unsigned long, subtree_max_size, va_size)
 

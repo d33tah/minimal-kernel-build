@@ -33,11 +33,6 @@ __ro_after_init unsigned long poking_addr;
 
 void text_poke_early(void *addr, const void *opcode, size_t len);
 
-void __init_or_module noinline apply_alternatives(struct alt_instr *start,
-						  struct alt_instr *end)
-{
-}
-
 void __init_or_module text_poke_early(void *addr, const void *opcode,
 				      size_t len)
 {

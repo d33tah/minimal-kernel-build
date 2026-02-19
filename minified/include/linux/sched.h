@@ -198,7 +198,7 @@ enum {
 extern long schedule_timeout(long timeout);
 asmlinkage void schedule(void);
 extern void schedule_preempt_disabled(void);
-extern void io_schedule(void);
+
 
 struct load_weight {
 	unsigned long			weight;

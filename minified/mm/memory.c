@@ -208,24 +208,6 @@ int __pte_alloc(struct mm_struct *mm, pmd_t *pmd)
 	return 0;
 }
 
-int __pte_alloc_kernel(pmd_t *pmd)
-{
-	pte_t *new = pte_alloc_one_kernel(&init_mm);
-	if (!new)
-		return -ENOMEM;
-
-	spin_lock(&init_mm.page_table_lock);
-	if (likely(pmd_none(*pmd))) {
-		smp_wmb();
-		pmd_populate_kernel(&init_mm, pmd, new);
-		new = NULL;
-	}
-	spin_unlock(&init_mm.page_table_lock);
-	if (new)
-		pte_free_kernel(&init_mm, new);
-	return 0;
-}
-
 struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 			    pte_t pte)
 {

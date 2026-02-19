@@ -17,11 +17,6 @@ void ___pte_free_tlb(struct mmu_gather *tlb, struct page *pte)
 	tlb_remove_page(tlb, pte);
 }
 
-struct mm_struct *pgd_page_get_mm(struct page *page)
-{
-	return page->pt_mm;
-}
-
 pgd_t *pgd_alloc(struct mm_struct *mm)
 {
 	pgd_t *pgd;

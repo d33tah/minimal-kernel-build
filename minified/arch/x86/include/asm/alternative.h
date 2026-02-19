@@ -21,7 +21,7 @@ struct alt_instr {
 } __packed;
 
 extern int alternatives_patched;
-extern void apply_alternatives(struct alt_instr *start, struct alt_instr *end);
+
 
 #define b_replacement(num)	"664"#num
 #define e_replacement(num)	"665"#num

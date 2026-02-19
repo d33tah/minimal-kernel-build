@@ -384,24 +384,6 @@ static inline struct page *__alloc_pages_slowpath(gfp_t gfp_mask,
 	return get_page_from_freelist(gfp_mask, order, ALLOC_NO_WATERMARKS, ac);
 }
 
-unsigned long __alloc_pages_bulk(gfp_t gfp, int preferred_nid,
-				 nodemask_t *nodemask, int nr_pages,
-				 struct list_head *page_list,
-				 struct page **page_array)
-{
-	struct page *page;
-	int nr_populated = 0;
-
-	while (nr_populated < nr_pages) {
-		page = __alloc_pages(gfp, 0, preferred_nid, nodemask);
-		if (!page)
-			break;
-		page_array[nr_populated] = page;
-		nr_populated++;
-	}
-	return nr_populated;
-}
-
 struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid,
 			   nodemask_t *nodemask)
 {

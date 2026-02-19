@@ -440,11 +440,6 @@ int __sched __cond_resched(void)
 	return 0;
 }
 
-void __sched io_schedule(void)
-{
-	schedule();
-}
-
 /* sched_rr_get_interval replaced with COND_SYSCALL */
 
 static void __init init_idle(struct task_struct *idle, int cpu)

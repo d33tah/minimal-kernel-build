@@ -1,44 +1,6 @@
-/* Minimal VGA driver - only basic 80x25 text mode needed */
 #include "boot.h"
 #include "video.h"
 
-/* Only support 80x25 mode for minimal kernel */
-static struct mode_info vga_modes[] = {
-	{ VIDEO_80x25, 80, 25, 0 },
-};
-
-static __videocard video_vga;
-
-static int vga_set_mode(struct mode_info *mode)
-{
-	struct biosregs ireg, oreg;
-	u8 vmode;
-
-	initregs(&ireg);
-	ireg.ax = 0x0f00;
-	intcall(0x10, &ireg, &oreg);
-	vmode = oreg.al;
-	if (vmode != 3 && vmode != 7)
-		vmode = 3;
-	ireg.ax = vmode;
-	intcall(0x10, &ireg, NULL);
-
-	force_x = mode->x;
-	force_y = mode->y;
-	return 0;
-}
-
-static int vga_probe(void)
-{
-	adapter = ADAPTER_VGA;
-	boot_params.screen_info.orig_video_isVGA = 1;
-	video_vga.modes = vga_modes;
-	video_vga.card_name = "VGA";
-	return 1;
-}
-
 static __videocard video_vga = {
 	.card_name = "VGA",
-	.probe = vga_probe,
-	.set_mode = vga_set_mode,
 };

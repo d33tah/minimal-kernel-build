@@ -30,36 +30,11 @@ static int vga_set_mode(struct mode_info *mode)
 
 static int vga_probe(void)
 {
-	struct biosregs ireg, oreg;
-
-	initregs(&ireg);
-	ireg.ax = 0x1200;
-	ireg.bl = 0x10;
-	intcall(0x10, &ireg, &oreg);
-
-#ifndef _WAKEUP
-	boot_params.screen_info.orig_video_ega_bx = oreg.bx;
-#endif
-
-	if (oreg.bl != 0x10) {
-		ireg.ax = 0x1a00;
-		intcall(0x10, &ireg, &oreg);
-
-		if (oreg.al == 0x1a) {
-			adapter = ADAPTER_VGA;
-#ifndef _WAKEUP
-			boot_params.screen_info.orig_video_isVGA = 1;
-#endif
-		} else {
-			adapter = ADAPTER_EGA;
-		}
-	} else {
-		adapter = ADAPTER_CGA;
-	}
-
+	adapter = ADAPTER_VGA;
+	boot_params.screen_info.orig_video_isVGA = 1;
 	video_vga.modes = vga_modes;
 	video_vga.card_name = "VGA";
-	return 1; /* Always return 1 mode (80x25) */
+	return 1;
 }
 
 static __videocard video_vga = {

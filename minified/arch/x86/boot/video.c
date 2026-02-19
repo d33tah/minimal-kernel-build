@@ -8,9 +8,6 @@ static void store_mode_params(void)
 	u16 font_size;
 	int x, y;
 
-	if (graphic_mode)
-		return;
-
 	initregs(&ireg);
 	ireg.ah = 0x03;
 	intcall(0x10, &ireg, &oreg);

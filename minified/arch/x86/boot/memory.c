@@ -29,28 +29,4 @@ void detect_memory(void)
 		count++;
 	} while (ireg.ebx && count < ARRAY_SIZE(boot_params.e820_table));
 	boot_params.e820_entries = count;
-
-	/* detect_memory_e801 */
-	initregs(&ireg);
-	ireg.ax = 0xe801;
-	intcall(0x15, &ireg, &oreg);
-	if (!(oreg.eflags & X86_EFLAGS_CF)) {
-		if (oreg.cx || oreg.dx) {
-			oreg.ax = oreg.cx;
-			oreg.bx = oreg.dx;
-		}
-		if (oreg.ax <= 15 * 1024) {
-			if (oreg.ax == 15 * 1024)
-				boot_params.alt_mem_k =
-					(oreg.bx << 6) + oreg.ax;
-			else
-				boot_params.alt_mem_k = oreg.ax;
-		}
-	}
-
-	/* detect_memory_88 */
-	initregs(&ireg);
-	ireg.ah = 0x88;
-	intcall(0x15, &ireg, &oreg);
-	boot_params.screen_info.ext_mem_k = oreg.ax;
 }

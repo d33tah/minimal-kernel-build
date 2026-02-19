@@ -4,7 +4,6 @@
 
 int adapter;
 int force_x, force_y;
-int graphic_mode;
 
 void probe_cards(int unsafe)
 {

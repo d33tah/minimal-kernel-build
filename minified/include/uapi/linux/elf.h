@@ -23,9 +23,6 @@ typedef __u32	Elf32_Word;
 #define STT_OBJECT  1
 #define STT_FUNC    2
 
-#define ELF32_R_SYM(x) ((x) >> 8)
-#define ELF32_R_TYPE(x) ((x) & 0xff)
-
 typedef struct elf32_rel {
   Elf32_Addr	r_offset;
   Elf32_Word	r_info;
@@ -98,8 +95,6 @@ typedef struct elf32_shdr {
 #define	ELFMAG3		'F'
 #define	ELFMAG		"\177ELF"
 #define	SELFMAG		4
-
-#define	ELFCLASS32	1
 
 typedef struct elf32_note {
   Elf32_Word	n_namesz;

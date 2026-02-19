@@ -28,9 +28,5 @@
 /* AMD specific */
 #define MSR_AMD64_LS_CFG		0xc0011020
 #define MSR_AMD64_VIRT_SPEC_CTRL	0xc001011f
-#define MSR_K7_HWCR			0xc0010015
-
-/* VIA specific */
-#define MSR_VIA_FCR			0x00001107
 
 #endif /* _ASM_X86_MSR_INDEX_H */

@@ -12,14 +12,6 @@
 
 #define LOCK_PREFIX ""
 
-struct alt_instr {
-	s32 instr_offset;	 
-	s32 repl_offset;	 
-	u16 cpuid;		 
-	u8  instrlen;		 
-	u8  replacementlen;	 
-} __packed;
-
 extern int alternatives_patched;
 
 

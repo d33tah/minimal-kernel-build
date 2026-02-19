@@ -48,12 +48,6 @@ struct edd_info {
 	__u8 legacy_sectors_per_track;
 	struct edd_device_params params;
 } __attribute__ ((packed));
-struct edd {
-	unsigned int mbr_signature[EDD_MBR_SIG_MAX];
-	struct edd_info edd_info[EDDMAXNR];
-	unsigned char mbr_signature_nr;
-	unsigned char edd_info_nr;
-};
 #endif /* _LINUX_EDD_H */
 
 struct apm_bios_info {
@@ -84,13 +78,6 @@ struct setup_data {
 	__u32 type;
 	__u32 len;
 	__u8 data[0];
-};
-
-struct setup_indirect {
-	__u32 type;
-	__u32 reserved;
-	__u64 len;
-	__u64 addr;
 };
 
 struct setup_header {

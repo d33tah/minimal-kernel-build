@@ -51,7 +51,6 @@ extern void find_low_pfn_range(void);
 #endif
 
 #endif /* _ASM_X86_PAGE_32_DEFS_H */
-#define IOREMAP_MAX_ORDER       (PMD_SHIFT)
 
 #ifndef __ASSEMBLY__
 

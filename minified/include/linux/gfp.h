@@ -140,9 +140,6 @@ static inline struct page *alloc_page_vma(gfp_t gfp,
 
 extern unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order);
 
-#define __get_free_page(gfp_mask) \
-		__get_free_pages((gfp_mask), 0)
-
 extern gfp_t gfp_allowed_mask;
 
 bool gfp_pfmemalloc_allowed(gfp_t gfp_mask);

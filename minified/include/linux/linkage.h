@@ -9,7 +9,6 @@
 #define __EXPORT_SYMBOL(sym, sec, ns)
 #define _EXPORT_SYMBOL(sym, sec)	__EXPORT_SYMBOL(sym, sec, "")
 #define EXPORT_SYMBOL(sym)		_EXPORT_SYMBOL(sym, "")
-#define EXPORT_SYMBOL_GPL(sym)		_EXPORT_SYMBOL(sym, "_gpl")
 #endif
 #include <asm/ibt.h>
 

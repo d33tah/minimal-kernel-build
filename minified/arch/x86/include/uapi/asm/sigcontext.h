@@ -66,12 +66,6 @@ struct _fpstate_32 {
 };
 
 
-struct _header {
-	__u64				xfeatures;
-	__u64				reserved1[2];
-	__u64				reserved2[5];
-};
-
 struct sigcontext_32 {
 	__u16				gs, __gsh;
 	__u16				fs, __fsh;

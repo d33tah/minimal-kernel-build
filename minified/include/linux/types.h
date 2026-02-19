@@ -32,9 +32,7 @@ typedef unsigned __bitwise __poll_t;
 
 typedef u32			dev_t;
 typedef unsigned short		umode_t;
-typedef __kernel_off_t		off_t;
 typedef __kernel_pid_t		pid_t;
-typedef __kernel_clockid_t	clockid_t;
 
 typedef _Bool			bool;
 
@@ -59,19 +57,9 @@ typedef __kernel_ssize_t	ssize_t;
 
 typedef unsigned short		ushort;
 
-#ifndef __BIT_TYPES_DEFINED__
-#define __BIT_TYPES_DEFINED__
-typedef s32			int32_t;
-#endif
-
 typedef u8			uint8_t;
 typedef u16			uint16_t;
 typedef u32			uint32_t;
-
-#if defined(__GNUC__)
-typedef u64			uint64_t;
-typedef s64			int64_t;
-#endif
 
 #define pgoff_t unsigned long
 

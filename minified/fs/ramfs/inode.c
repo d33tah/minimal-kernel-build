@@ -66,20 +66,7 @@ struct inode *ramfs_get_inode(struct super_block *sb, const struct inode *dir,
 	return inode;
 }
 
-static int ramfs_create(struct user_namespace *mnt_userns, struct inode *dir,
-			struct dentry *dentry, umode_t mode, bool excl)
-{
-	struct inode *inode =
-		ramfs_get_inode(dir->i_sb, dir, mode | S_IFREG, 0);
-	if (!inode)
-		return -ENOSPC;
-	d_instantiate(dentry, inode);
-	dget(dentry);
-	return 0;
-}
-
 static const struct inode_operations ramfs_dir_inode_operations = {
-	.create = ramfs_create,
 	.lookup = simple_lookup,
 };
 

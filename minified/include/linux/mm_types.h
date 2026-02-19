@@ -33,9 +33,7 @@ struct vmacache {
 #define AT_PHNUM  5
 #define AT_PAGESZ 6
 #define AT_ENTRY  9
-#ifndef AT_MINSIGSTKSZ
-#define AT_MINSIGSTKSZ	51
-#endif
+
 #define AT_VECTOR_SIZE_BASE 20
 #include <linux/kref.h>
 #include <linux/list.h>
@@ -261,7 +259,6 @@ struct mm_struct {
 		 
 		struct rw_semaphore mmap_lock;
 
-		struct list_head mmlist;
 
 		unsigned long total_vm;
 		unsigned long def_flags;
@@ -321,7 +318,7 @@ enum vm_fault_reason {
 
 enum fault_flag {
 	FAULT_FLAG_WRITE =		1 << 0,
-	FAULT_FLAG_MKWRITE =		1 << 1,
+
 	FAULT_FLAG_ALLOW_RETRY =	1 << 2,
 	FAULT_FLAG_KILLABLE =		1 << 4,
 	FAULT_FLAG_TRIED =		1 << 5,
@@ -329,6 +326,5 @@ enum fault_flag {
 	FAULT_FLAG_ORIG_PTE_VALID =	1 << 11,
 };
 
-typedef unsigned int __bitwise zap_flags_t;
 
 #endif  

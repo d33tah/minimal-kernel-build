@@ -441,7 +441,7 @@ struct file {
 	atomic_long_t		f_count;
 	unsigned int 		f_flags;
 	fmode_t			f_mode;
-	struct mutex		f_pos_lock;
+
 	loff_t			f_pos;
 	const struct cred	*f_cred;
 	struct address_space	*f_mapping;
@@ -552,10 +552,6 @@ struct file_operations {
 
 struct inode_operations {
 	struct dentry *(*lookup)(struct inode *, struct dentry *, unsigned int);
-	int (*permission)(struct user_namespace *, struct inode *, int);
-
-	int (*create) (struct user_namespace *, struct inode *,struct dentry *,
-		       umode_t, bool);
 } ____cacheline_aligned;
 struct super_operations {};
 
@@ -623,7 +619,7 @@ extern void iput(struct inode *);
 
 struct filename {
 	const char *name;
-	const __user char *uptr;
+
 	int refcnt;
 	const char iname[];
 };

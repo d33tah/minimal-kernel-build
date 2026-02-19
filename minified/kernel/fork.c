@@ -169,7 +169,7 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	atomic_set(&mm->mm_users, 1);
 	atomic_set(&mm->mm_count, 1);
 	init_rwsem(&mm->mmap_lock); /* mmap_init_lock inlined */
-	INIT_LIST_HEAD(&mm->mmlist);
+
 	atomic_long_set(&mm->pgtables_bytes,
 			0); /* mm_pgtables_bytes_init inlined */
 	mm->map_count = 0;
@@ -300,8 +300,6 @@ copy_process(int node, struct kernel_clone_args *args)
 	p->flags &= ~PF_KTHREAD;
 	if (args->kthread)
 		p->flags |= PF_KTHREAD;
-
-	p->set_child_tid = NULL;
 
 	raw_spin_lock_init(&p->pi_lock);
 

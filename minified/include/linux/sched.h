@@ -236,7 +236,7 @@ struct task_struct {
 	struct sched_entity		se;
 	const struct sched_class	*sched_class;
 
-	unsigned int			policy;
+
 	const cpumask_t			*cpus_ptr;
 	cpumask_t			cpus_mask;
 
@@ -269,7 +269,7 @@ struct task_struct {
 	struct list_head		thread_group;
 	struct list_head		thread_node;
 
-	int __user			*set_child_tid;
+
 
 	void				*worker_private;
 

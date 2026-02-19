@@ -15,7 +15,7 @@ struct mm_struct init_mm = { .mm_rb = RB_ROOT,
 			     MMAP_LOCK_INITIALIZER(init_mm).page_table_lock =
 				     __SPIN_LOCK_UNLOCKED(
 					     init_mm.page_table_lock),
-			     .mmlist = LIST_HEAD_INIT(init_mm.mmlist),
+
 			     .user_ns = &init_user_ns,
 			     .cpu_bitmap = CPU_BITS_NONE,
 			     INIT_MM_CONTEXT(init_mm) };

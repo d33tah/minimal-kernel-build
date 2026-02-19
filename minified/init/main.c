@@ -79,104 +79,9 @@ const char *envp_init[MAX_INIT_ENVS + 2] = {
 	"TERM=linux",
 	NULL,
 };
-static const char *panic_later, *panic_param;
-
 extern const struct obs_kernel_param __setup_start[], __setup_end[];
 
 unsigned long loops_per_jiffy = (1 << 12);
-
-static void __init repair_env_string(char *param, char *val)
-{
-	if (val) {
-		if (val == param + strlen(param) + 1)
-			val[-1] = '=';
-		else if (val == param + strlen(param) + 2) {
-			val[-2] = '=';
-			memmove(val - 1, val, strlen(val) + 1);
-		} else
-			BUG();
-	}
-}
-
-static int __init set_init_arg(char *param, char *val, const char *unused,
-			       void *arg)
-{
-	unsigned int i;
-
-	if (panic_later)
-		return 0;
-
-	repair_env_string(param, val);
-
-	for (i = 0; argv_init[i]; i++) {
-		if (i == MAX_INIT_ARGS) {
-			panic_later = "init";
-			panic_param = param;
-			return 0;
-		}
-	}
-	argv_init[i] = param;
-	return 0;
-}
-
-static int __init unknown_bootoption(char *param, char *val, const char *unused,
-				     void *arg)
-{
-	size_t len = strlen(param);
-	const struct obs_kernel_param *p;
-	bool had_early_param = false;
-
-	repair_env_string(param, val);
-
-	p = __setup_start;
-	do {
-		int n = strlen(p->str);
-		if (parameqn(param, p->str, n)) {
-			if (p->early) {
-				if (param[n] == '\0' || param[n] == '=')
-					had_early_param = true;
-			} else if (!p->setup_func) {
-				pr_warn("Parameter %s is obsolete, ignored\n",
-					p->str);
-				return 0;
-			} else if (p->setup_func(param + n))
-				return 0;
-		}
-		p++;
-	} while (p < __setup_end);
-
-	if (had_early_param)
-		return 0;
-
-	if (strnchr(param, len, '.'))
-		return 0;
-
-	if (panic_later)
-		return 0;
-
-	if (val) {
-		unsigned int i;
-		for (i = 0; envp_init[i]; i++) {
-			if (i == MAX_INIT_ENVS) {
-				panic_later = "env";
-				panic_param = param;
-			}
-			if (!strncmp(param, envp_init[i], len + 1))
-				break;
-		}
-		envp_init[i] = param;
-	} else {
-		unsigned int i;
-		for (i = 0; argv_init[i]; i++) {
-			if (i == MAX_INIT_ARGS) {
-				panic_later = "init";
-				panic_param = param;
-			}
-		}
-		argv_init[i] = param;
-	}
-	return 0;
-}
 
 static __initdata DECLARE_COMPLETION(kthreadd_done);
 
@@ -253,7 +158,6 @@ void __init trap_init(void); /* in arch/x86/kernel/traps.c */
 asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 {
 	char *command_line;
-	char *after_dashes;
 
 	set_task_stack_end_magic(&init_task);
 
@@ -293,13 +197,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	jump_label_init();
 	parse_early_param();
-	after_dashes = parse_args("Booting kernel", static_command_line,
-				  __start___param,
-				  __stop___param - __start___param, -1, -1,
-				  NULL, &unknown_bootoption);
-	if (!IS_ERR_OR_NULL(after_dashes))
-		parse_args("Setting init args", after_dashes, NULL, 0, -1, -1,
-			   NULL, set_init_arg);
 
 	vfs_caches_init_early();
 	sort_main_extable();
@@ -327,10 +224,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	local_irq_enable();
 	console_init();
-
-	if (panic_later)
-		panic("Too many boot %s vars at `%s'", panic_later,
-		      panic_param);
 
 	if (initrd_start && !initrd_below_start_ok &&
 	    page_to_pfn(virt_to_page((void *)initrd_start)) < min_low_pfn) {

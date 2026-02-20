@@ -15,14 +15,8 @@ static int mnt_get_count(struct mount *mnt);
 /* end pnode.h */
 #include "internal.h"
 
-static unsigned int m_hash_mask __read_mostly;
-static unsigned int m_hash_shift __read_mostly;
-
-static __initdata unsigned long mhash_entries;
-
 static DEFINE_IDA(mnt_id_ida);
 
-static struct hlist_head *mount_hashtable __read_mostly;
 static struct kmem_cache *mnt_cache __read_mostly;
 
 __cacheline_aligned_in_smp DEFINE_SEQLOCK(mount_lock);
@@ -35,15 +29,6 @@ static inline void lock_mount_hash(void)
 static inline void unlock_mount_hash(void)
 {
 	write_sequnlock(&mount_lock);
-}
-
-static inline struct hlist_head *m_hash(struct vfsmount *mnt,
-					struct dentry *dentry)
-{
-	unsigned long tmp = ((unsigned long)mnt / L1_CACHE_BYTES);
-	tmp += ((unsigned long)dentry / L1_CACHE_BYTES);
-	tmp = tmp + (tmp >> m_hash_shift);
-	return &mount_hashtable[tmp & m_hash_mask];
 }
 
 static void mnt_free_id(struct mount *mnt)
@@ -150,57 +135,6 @@ static void delayed_free_vfsmnt(struct rcu_head *head)
 		put_user_ns(mnt_userns);
 	kfree_const(mnt->mnt_devname);
 	kmem_cache_free(mnt_cache, mnt);
-}
-
-int __legitimize_mnt(struct vfsmount *bastard, unsigned seq)
-{
-	struct mount *mnt;
-	if (read_seqretry(&mount_lock, seq))
-		return 1;
-	if (bastard == NULL)
-		return 0;
-	mnt = real_mount(bastard);
-	mnt_add_count(mnt, 1);
-	smp_mb();
-	if (likely(!read_seqretry(&mount_lock, seq)))
-		return 0;
-	if (bastard->mnt_flags & MNT_SYNC_UMOUNT) {
-		mnt_add_count(mnt, -1);
-		return 1;
-	}
-	lock_mount_hash();
-	if (unlikely(bastard->mnt_flags & MNT_DOOMED)) {
-		mnt_add_count(mnt, -1);
-		unlock_mount_hash();
-		return 1;
-	}
-	unlock_mount_hash();
-
-	return -1;
-}
-
-bool legitimize_mnt(struct vfsmount *bastard, unsigned seq)
-{
-	int res = __legitimize_mnt(bastard, seq);
-	if (likely(!res))
-		return true;
-	if (unlikely(res < 0)) {
-		rcu_read_unlock();
-		mntput(bastard);
-		rcu_read_lock();
-	}
-	return false;
-}
-
-struct mount *__lookup_mnt(struct vfsmount *mnt, struct dentry *dentry)
-{
-	struct hlist_head *head = m_hash(mnt, dentry);
-	struct mount *p;
-
-	hlist_for_each_entry_rcu(p, head, mnt_hash)
-		if (&p->mnt_parent->mnt == mnt && p->mnt_mountpoint == dentry)
-			return p;
-	return NULL;
 }
 
 static struct vfsmount *vfs_create_mount(struct fs_context *fc)
@@ -384,13 +318,6 @@ void __init mnt_init(void)
 	mnt_cache = kmem_cache_create(
 		"mnt_cache", sizeof(struct mount), 0,
 		SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT, NULL);
-
-	mount_hashtable = alloc_large_system_hash(
-		"Mount-cache", sizeof(struct hlist_head), mhash_entries, 19,
-		HASH_ZERO, &m_hash_shift, &m_hash_mask, 0, 0);
-
-	if (!mount_hashtable)
-		panic("Failed to allocate mount hash table\n");
 
 	err = sysfs_init();
 	if (err)

@@ -569,13 +569,8 @@ struct file_system_type {
 	struct lock_class_key s_writers_key[SB_FREEZE_LEVELS];
 };
 
-void generic_shutdown_super(struct super_block *sb);
-void kill_anon_super(struct super_block *sb);
 void kill_litter_super(struct super_block *sb);
 void deactivate_super(struct super_block *sb);
-void deactivate_locked_super(struct super_block *sb);
-int get_anon_bdev(dev_t *);
-void free_anon_bdev(dev_t);
 struct super_block *sget_fc(struct fs_context *fc,
 			    int (*test)(struct super_block *, struct fs_context *),
 			    int (*set)(struct super_block *, struct fs_context *));

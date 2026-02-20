@@ -16,8 +16,6 @@ extern void __init mnt_init(void);
 
 extern struct file *alloc_empty_file(int, const struct cred *);
 
-void put_super(struct super_block *sb);
-
 struct open_flags {
 	int open_flag;
 	umode_t mode;

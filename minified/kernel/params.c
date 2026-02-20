@@ -58,8 +58,9 @@ static char *next_arg(char *args, char **param, char **val)
 	return skip_spaces(args);
 }
 
-bool parameqn(const char *a, const char *b, size_t n)
+bool parameq(const char *a, const char *b)
 {
+	size_t n = strlen(a) + 1;
 	size_t i;
 
 	for (i = 0; i < n; i++) {
@@ -69,11 +70,6 @@ bool parameqn(const char *a, const char *b, size_t n)
 			return false;
 	}
 	return true;
-}
-
-bool parameq(const char *a, const char *b)
-{
-	return parameqn(a, b, strlen(a) + 1);
 }
 
 char *

@@ -7,6 +7,12 @@
 #include <uapi/linux/mount.h>
 #include "internal.h"
 
+enum vfs_get_super_keying {
+	vfs_get_single_super,
+	vfs_get_keyed_super,
+	vfs_get_independent_super,
+};
+
 static LIST_HEAD(super_blocks);
 static DEFINE_SPINLOCK(sb_lock);
 
@@ -119,7 +125,7 @@ fail:
 	return NULL;
 }
 
-void put_super(struct super_block *sb)
+static void put_super(struct super_block *sb)
 {
 	spin_lock(&sb_lock);
 	if (!--sb->s_count) {
@@ -133,7 +139,7 @@ void put_super(struct super_block *sb)
 	spin_unlock(&sb_lock);
 }
 
-void deactivate_locked_super(struct super_block *s)
+static void deactivate_locked_super(struct super_block *s)
 {
 	struct file_system_type *fs = s->s_type;
 	if (atomic_dec_and_test(&s->s_active)) {
@@ -157,7 +163,7 @@ void deactivate_super(struct super_block *s)
 	}
 }
 
-void generic_shutdown_super(struct super_block *sb)
+static void generic_shutdown_super(struct super_block *sb)
 {
 	if (sb->s_root) {
 		shrink_dcache_for_umount(sb);
@@ -213,7 +219,7 @@ sget_fc(struct fs_context *fc,
 
 static DEFINE_IDA(unnamed_dev_ida);
 
-int get_anon_bdev(dev_t *p)
+static int get_anon_bdev(dev_t *p)
 {
 	int dev;
 
@@ -228,12 +234,12 @@ int get_anon_bdev(dev_t *p)
 	return 0;
 }
 
-void free_anon_bdev(dev_t dev)
+static void free_anon_bdev(dev_t dev)
 {
 	ida_free(&unnamed_dev_ida, MINOR(dev));
 }
 
-void kill_anon_super(struct super_block *sb)
+static void kill_anon_super(struct super_block *sb)
 {
 	dev_t dev = sb->s_dev;
 	generic_shutdown_super(sb);
@@ -250,9 +256,9 @@ static int set_anon_super_fc(struct super_block *sb, struct fs_context *fc)
 	return get_anon_bdev(&sb->s_dev);
 }
 
-int vfs_get_super(struct fs_context *fc, enum vfs_get_super_keying keying,
-		  int (*fill_super)(struct super_block *sb,
-				    struct fs_context *fc))
+static int
+vfs_get_super(struct fs_context *fc, enum vfs_get_super_keying keying,
+	      int (*fill_super)(struct super_block *sb, struct fs_context *fc))
 {
 	struct super_block *sb;
 	int err;

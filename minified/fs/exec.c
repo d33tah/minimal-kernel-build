@@ -34,14 +34,8 @@ static int count_strings_kernel(const char *const *argv)
 
 	if (!argv)
 		return 0;
-
-	for (i = 0; argv[i]; ++i) {
-		if (i >= MAX_ARG_STRINGS)
-			return -E2BIG;
-		if (fatal_signal_pending(current))
-			return -ERESTARTNOHAND;
-		cond_resched();
-	}
+	for (i = 0; argv[i]; ++i)
+		;
 	return i;
 }
 
@@ -97,9 +91,6 @@ static int copy_strings_kernel(int argc, const char *const *argv,
 		int ret = copy_string_kernel(argv[argc], bprm);
 		if (ret < 0)
 			return ret;
-		if (fatal_signal_pending(current))
-			return -ERESTARTNOHAND;
-		cond_resched();
 	}
 	return 0;
 }
@@ -323,11 +314,6 @@ static void free_bprm(struct linux_binprm *bprm)
 		allow_write_access(bprm->file);
 		fput(bprm->file);
 	}
-
-	if (bprm->interp != bprm->filename)
-		kfree(bprm->interp);
-	kfree(bprm->fdpath);
-	kfree(bprm);
 }
 
 static struct linux_binprm *alloc_bprm(int fd, struct filename *filename)
@@ -468,18 +454,7 @@ int kernel_execve(const char *kernel_filename, const char *const *argv,
 		goto out_free;
 	bprm->envc = retval;
 
-	{
-		unsigned long limit = _STK_LIM / 4 * 3;
-		unsigned long ptr_size;
-		limit = min(limit, bprm->rlim_stack.rlim_cur / 4);
-		limit = max_t(unsigned long, limit, ARG_MAX);
-		ptr_size = (max(bprm->argc, 1) + bprm->envc) * sizeof(void *);
-		if (limit <= ptr_size) {
-			retval = -E2BIG;
-			goto out_free;
-		}
-		bprm->argmin = bprm->p - (limit - ptr_size);
-	}
+	bprm->argmin = bprm->p - PAGE_SIZE;
 
 	retval = copy_string_kernel(bprm->filename, bprm);
 	if (retval < 0)
@@ -504,14 +479,7 @@ out_ret:
 
 void set_binfmt(struct linux_binfmt *new)
 {
-	struct mm_struct *mm = current->mm;
-
-	if (mm->binfmt)
-		module_put(mm->binfmt->module);
-
-	mm->binfmt = new;
-	if (new)
-		__module_get(new->module);
+	current->mm->binfmt = new;
 }
 
 /* execve/execveat replaced with COND_SYSCALL */

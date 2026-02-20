@@ -277,13 +277,6 @@ int __init_memblock memblock_reserve(phys_addr_t base, phys_addr_t size)
 				  0);
 }
 
-static bool should_skip_region(struct memblock_type *type,
-			       struct memblock_region *m, int nid, int flags)
-{
-	/* NUMA disabled, MIRROR/NOMAP/DRIVER_MANAGED never set */
-	return false;
-}
-
 void __next_mem_range(u64 *idx, int nid, enum memblock_flags flags,
 		      struct memblock_type *type_a,
 		      struct memblock_type *type_b, phys_addr_t *out_start,
@@ -302,9 +295,6 @@ void __next_mem_range(u64 *idx, int nid, enum memblock_flags flags,
 
 		phys_addr_t m_start = m->base;
 		phys_addr_t m_end = m->base + m->size;
-
-		if (should_skip_region(type_a, m, nid, flags))
-			continue;
 
 		if (!type_b) {
 			if (out_start)
@@ -379,9 +369,6 @@ void __init_memblock __next_mem_range_rev(u64 *idx, int nid,
 
 		phys_addr_t m_start = m->base;
 		phys_addr_t m_end = m->base + m->size;
-
-		if (should_skip_region(type_a, m, nid, flags))
-			continue;
 
 		if (!type_b) {
 			if (out_start)
@@ -618,14 +605,6 @@ void __init memblock_free_all(void)
 
 	for_each_reserved_mem_range(i, &start, &end)
 		reserve_bootmem_region(start, end);
-
-	for_each_mem_region(region) {
-		if (memblock_is_nomap(region)) {
-			start = region->base;
-			end = start + region->size;
-			reserve_bootmem_region(start, end);
-		}
-	}
 
 	for_each_free_mem_range(i, NUMA_NO_NODE, MEMBLOCK_NONE, &start, &end,
 				NULL) {

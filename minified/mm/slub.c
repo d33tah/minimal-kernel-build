@@ -322,18 +322,6 @@ static void init_kmem_cache_node(struct kmem_cache_node *n)
 
 static struct kmem_cache *kmem_cache_node;
 
-static void free_kmem_cache_nodes(struct kmem_cache *s)
-{
-	int node;
-	struct kmem_cache_node *n;
-
-	for_each_kmem_cache_node(s, node, n)
-	{
-		s->node[node] = NULL;
-		kmem_cache_free(kmem_cache_node, n);
-	}
-}
-
 static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 {
 	unsigned int size = s->object_size;
@@ -363,12 +351,6 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 	s->allocflags = 0;
 	if (order)
 		s->allocflags |= __GFP_COMP;
-
-	if (flags & SLAB_CACHE_DMA)
-		s->allocflags |= GFP_DMA;
-
-	if (flags & SLAB_CACHE_DMA32)
-		s->allocflags |= GFP_DMA32;
 
 	if (flags & SLAB_RECLAIM_ACCOUNT)
 		s->allocflags |= __GFP_RECLAIMABLE;
@@ -406,7 +388,6 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 		struct kmem_cache_node *n =
 			kmem_cache_alloc_node(kmem_cache_node, GFP_KERNEL, 0);
 		if (!n) {
-			free_kmem_cache_nodes(s);
 			goto error;
 		}
 		init_kmem_cache_node(n);
@@ -424,7 +405,6 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 	}
 
 error:
-	free_kmem_cache_nodes(s);
 	return -EINVAL;
 }
 

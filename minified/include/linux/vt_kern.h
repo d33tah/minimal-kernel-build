@@ -34,7 +34,14 @@ struct tty_port {
 	struct kref		kref;
 };
 
-void tty_port_init(struct tty_port *port);
+static inline void tty_port_init(struct tty_port *port)
+{
+	memset(port, 0, sizeof(*port));
+	mutex_init(&port->mutex);
+	mutex_init(&port->buf_mutex);
+	spin_lock_init(&port->lock);
+	kref_init(&port->kref);
+}
 
 struct tty_struct {
 	struct kref kref;

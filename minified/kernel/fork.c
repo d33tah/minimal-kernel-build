@@ -354,17 +354,13 @@ copy_process(int node, struct kernel_clone_args *args)
 	}
 	{
 		struct sighand_struct *sig;
-		sig = kmem_cache_alloc(sighand_cachep, GFP_KERNEL);
+		sig = kmem_cache_zalloc(sighand_cachep, GFP_KERNEL);
 		RCU_INIT_POINTER(p->sighand, sig);
 		if (!sig) {
 			retval = -ENOMEM;
 			goto bad_fork_cleanup_fs;
 		}
 		refcount_set(&sig->count, 1);
-		spin_lock_irq(&current->sighand->siglock);
-		memcpy(sig->action, current->sighand->action,
-		       sizeof(sig->action));
-		spin_unlock_irq(&current->sighand->siglock);
 	}
 	{
 		struct signal_struct *sig;

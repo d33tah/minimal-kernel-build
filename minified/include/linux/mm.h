@@ -493,8 +493,6 @@ extern unsigned long __must_check vm_mmap(struct file *, unsigned long,
         unsigned long, unsigned long);
 
 struct vm_unmapped_area_info {
-#define VM_UNMAPPED_AREA_TOPDOWN 1
-	unsigned long flags;
 	unsigned long length;
 	unsigned long low_limit;
 	unsigned long high_limit;

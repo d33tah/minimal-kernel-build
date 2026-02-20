@@ -6,10 +6,6 @@
 #include <linux/mman.h>
 #include <linux/file.h>
 #include <linux/security.h>
-extern unsigned long shmem_get_unmapped_area(struct file *, unsigned long addr,
-					     unsigned long len,
-					     unsigned long pgoff,
-					     unsigned long flags);
 #include <linux/rmap.h>
 #include <linux/rbtree_augmented.h>
 #include <linux/sched/mm.h>
@@ -393,31 +389,18 @@ static unsigned long mmap_region(struct file *file, unsigned long addr,
 static unsigned long vm_unmapped_area(struct vm_unmapped_area_info *info)
 {
 	struct mm_struct *mm = current->mm;
+	unsigned long gap_start;
 
-	/* Basic bounds checking */
 	if (info->high_limit < info->length)
 		return -ENOMEM;
 	if (info->low_limit > info->high_limit - info->length)
 		return -ENOMEM;
 
-	if (info->flags & VM_UNMAPPED_AREA_TOPDOWN) {
-		unsigned long gap_end = info->high_limit;
-		if (mm->highest_vm_end <= info->high_limit)
-			gap_end = mm->highest_vm_end;
-		gap_end -= info->length;
-		gap_end -= (gap_end - info->align_offset) & info->align_mask;
-		if (gap_end < info->low_limit)
-			return -ENOMEM;
-		return gap_end;
-	} else {
-		unsigned long gap_start =
-			max(mm->highest_vm_end, info->low_limit);
-		gap_start += (info->align_offset - gap_start) &
-			     info->align_mask;
-		if (gap_start + info->length > info->high_limit)
-			return -ENOMEM;
-		return gap_start;
-	}
+	gap_start = max(mm->highest_vm_end, info->low_limit);
+	gap_start += (info->align_offset - gap_start) & info->align_mask;
+	if (gap_start + info->length > info->high_limit)
+		return -ENOMEM;
+	return gap_start;
 }
 
 static unsigned long generic_get_unmapped_area(struct file *filp,
@@ -446,7 +429,6 @@ static unsigned long generic_get_unmapped_area(struct file *filp,
 			return addr;
 	}
 
-	info.flags = 0;
 	info.length = len;
 	info.low_limit = mm->mmap_base;
 	info.high_limit = mmap_end;
@@ -461,61 +443,6 @@ unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr,
 				     unsigned long flags)
 {
 	return generic_get_unmapped_area(filp, addr, len, pgoff, flags);
-}
-#endif
-
-static unsigned long generic_get_unmapped_area_topdown(struct file *filp,
-						       unsigned long addr,
-						       unsigned long len,
-						       unsigned long pgoff,
-						       unsigned long flags)
-{
-	struct vm_area_struct *vma, *prev;
-	struct mm_struct *mm = current->mm;
-	struct vm_unmapped_area_info info;
-	const unsigned long mmap_end = arch_get_mmap_end(addr, len, flags);
-
-	if (len > mmap_end - mmap_min_addr)
-		return -ENOMEM;
-
-	if (flags & MAP_FIXED)
-		return addr;
-
-	if (addr) {
-		addr = PAGE_ALIGN(addr);
-		vma = find_vma_prev(mm, addr, &prev);
-		if (mmap_end - len >= addr && addr >= mmap_min_addr &&
-		    (!vma || addr + len <= vm_start_gap(vma)) &&
-		    (!prev || addr >= vm_end_gap(prev)))
-			return addr;
-	}
-
-	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
-	info.length = len;
-	info.low_limit = max(PAGE_SIZE, mmap_min_addr);
-	info.high_limit = arch_get_mmap_base(addr, mm->mmap_base);
-	info.align_mask = 0;
-	info.align_offset = 0;
-	addr = vm_unmapped_area(&info);
-
-	if (offset_in_page(addr)) {
-		info.flags = 0;
-		info.low_limit = TASK_UNMAPPED_BASE;
-		info.high_limit = mmap_end;
-		addr = vm_unmapped_area(&info);
-	}
-
-	return addr;
-}
-
-#ifndef HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
-unsigned long arch_get_unmapped_area_topdown(struct file *filp,
-					     unsigned long addr,
-					     unsigned long len,
-					     unsigned long pgoff,
-					     unsigned long flags)
-{
-	return generic_get_unmapped_area_topdown(filp, addr, len, pgoff, flags);
 }
 #endif
 
@@ -534,13 +461,8 @@ unsigned long get_unmapped_area(struct file *file, unsigned long addr,
 		return -ENOMEM;
 
 	get_area = current->mm->get_unmapped_area;
-	if (file) {
-		if (file->f_op->get_unmapped_area)
-			get_area = file->f_op->get_unmapped_area;
-	} else if (flags & MAP_SHARED) {
-		pgoff = 0;
-		get_area = shmem_get_unmapped_area;
-	}
+	if (file && file->f_op->get_unmapped_area)
+		get_area = file->f_op->get_unmapped_area;
 
 	addr = get_area(file, addr, len, pgoff, flags);
 	if (IS_ERR_VALUE(addr))

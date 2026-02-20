@@ -329,7 +329,7 @@ type_determined:
 	return add_flags;
 }
 
-void d_instantiate(struct dentry *entry, struct inode *inode)
+static void d_instantiate(struct dentry *entry, struct inode *inode)
 {
 	BUG_ON(!hlist_unhashed(&entry->d_u.d_alias));
 	if (inode) {

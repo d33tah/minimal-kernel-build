@@ -214,9 +214,8 @@ unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len,
 {
 	struct mm_struct *mm = current->mm;
 	vm_flags_t vm_flags;
-	int pkey = 0;
-
-	*populate = 0;
+	if (populate)
+		*populate = 0;
 
 	if (!len)
 		return -EINVAL;
@@ -253,100 +252,24 @@ unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len,
 			return -EEXIST;
 	}
 
-	if (prot == PROT_EXEC) {
-		pkey = execute_only_pkey(mm);
-		if (pkey < 0)
-			pkey = 0;
-	}
-
-	vm_flags = calc_vm_prot_bits(prot, pkey) | calc_vm_flag_bits(flags) |
+	vm_flags = calc_vm_prot_bits(prot, 0) | calc_vm_flag_bits(flags) |
 		   mm->def_flags | VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC;
 
 	if (file) {
-		struct inode *inode = file_inode(file);
-		unsigned long flags_mask;
-		u64 maxsize;
-
-		if (S_ISREG(inode->i_mode) || S_ISBLK(inode->i_mode) ||
-		    S_ISSOCK(inode->i_mode))
-			maxsize = MAX_LFS_FILESIZE;
-		else if (file->f_mode & FMODE_UNSIGNED_OFFSET)
-			maxsize = 0;
-		else
-			maxsize = ULONG_MAX;
-
-		if (maxsize && len > maxsize)
-			return -EOVERFLOW;
-		maxsize -= len;
-		if (pgoff > maxsize >> PAGE_SHIFT)
-			return -EOVERFLOW;
-
-		flags_mask = LEGACY_MAP_MASK | file->f_op->mmap_supported_flags;
-
-		switch (flags & MAP_TYPE) {
-		case MAP_SHARED:
-
-			flags &= LEGACY_MAP_MASK;
-			fallthrough;
-		case MAP_SHARED_VALIDATE:
-			if (flags & ~flags_mask)
-				return -EOPNOTSUPP;
-			if (prot & PROT_WRITE) {
-				if (!(file->f_mode & FMODE_WRITE))
-					return -EACCES;
-				if (IS_SWAPFILE(file->f_mapping->host))
-					return -ETXTBSY;
-			}
-
-			if (IS_APPEND(inode) && (file->f_mode & FMODE_WRITE))
-				return -EACCES;
-
-			vm_flags |= VM_SHARED | VM_MAYSHARE;
-			if (!(file->f_mode & FMODE_WRITE))
-				vm_flags &= ~(VM_MAYWRITE | VM_SHARED);
-			fallthrough;
-		case MAP_PRIVATE:
-			if (!(file->f_mode & FMODE_READ))
-				return -EACCES;
-			if (path_noexec(&file->f_path)) {
-				if (vm_flags & VM_EXEC)
-					return -EPERM;
-				vm_flags &= ~VM_MAYEXEC;
-			}
-
-			if (!file->f_op->mmap)
-				return -ENODEV;
-			if (vm_flags & (VM_GROWSDOWN | VM_GROWSUP))
-				return -EINVAL;
-			break;
-
-		default:
-			return -EINVAL;
+		if (!(file->f_mode & FMODE_READ))
+			return -EACCES;
+		if (path_noexec(&file->f_path)) {
+			if (vm_flags & VM_EXEC)
+				return -EPERM;
+			vm_flags &= ~VM_MAYEXEC;
 		}
+		if (!file->f_op->mmap)
+			return -ENODEV;
 	} else {
-		switch (flags & MAP_TYPE) {
-		case MAP_SHARED:
-			if (vm_flags & (VM_GROWSDOWN | VM_GROWSUP))
-				return -EINVAL;
-
-			pgoff = 0;
-			vm_flags |= VM_SHARED | VM_MAYSHARE;
-			break;
-		case MAP_PRIVATE:
-
-			pgoff = addr >> PAGE_SHIFT;
-			break;
-		default:
-			return -EINVAL;
-		}
+		pgoff = addr >> PAGE_SHIFT;
 	}
 
-	addr = mmap_region(file, addr, len, vm_flags, pgoff, uf);
-	if (!IS_ERR_VALUE(addr) &&
-	    ((vm_flags & VM_LOCKED) ||
-	     (flags & (MAP_POPULATE | MAP_NONBLOCK)) == MAP_POPULATE))
-		*populate = len;
-	return addr;
+	return mmap_region(file, addr, len, vm_flags, pgoff, uf);
 }
 
 static unsigned long mmap_region(struct file *file, unsigned long addr,
@@ -610,12 +533,6 @@ static int __split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
 	struct vm_area_struct *new;
 	int err;
 
-	if (vma->vm_ops && vma->vm_ops->may_split) {
-		err = vma->vm_ops->may_split(vma, addr);
-		if (err)
-			return err;
-	}
-
 	new = vm_area_dup(vma);
 	if (!new)
 		return -ENOMEM;
@@ -754,7 +671,6 @@ int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 	pgoff_t pgoff;
 	unsigned long len, mapped_addr;
 	int ret = 0;
-	bool populate;
 	LIST_HEAD(uf);
 
 	len = PAGE_ALIGN(request);
@@ -813,10 +729,7 @@ int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 	vma->vm_flags |= VM_SOFTDIRTY;
 
 out_unlock:
-	populate = ((mm->def_flags & VM_LOCKED) != 0);
 	mmap_write_unlock(mm);
-	if (populate && !ret)
-		mm_populate(addr, len);
 	return ret;
 }
 

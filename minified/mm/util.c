@@ -70,15 +70,12 @@ static unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
 {
 	unsigned long ret;
 	struct mm_struct *mm = current->mm;
-	unsigned long populate;
 	LIST_HEAD(uf);
 
 	if (mmap_write_lock_killable(mm))
 		return -EINTR;
-	ret = do_mmap(file, addr, len, prot, flag, pgoff, &populate, &uf);
+	ret = do_mmap(file, addr, len, prot, flag, pgoff, NULL, &uf);
 	mmap_write_unlock(mm);
-	if (populate)
-		mm_populate(ret, populate);
 	return ret;
 }
 

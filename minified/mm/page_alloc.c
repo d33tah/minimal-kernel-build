@@ -433,18 +433,6 @@ unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order)
 	return (unsigned long)page_address(page);
 }
 
-static void *alloc_pages_exact(size_t size, gfp_t gfp_mask)
-{
-	unsigned int order = get_order(size);
-	unsigned long addr;
-
-	if (WARN_ON_ONCE(gfp_mask & (__GFP_COMP | __GFP_HIGHMEM)))
-		gfp_mask &= ~(__GFP_COMP | __GFP_HIGHMEM);
-
-	addr = __get_free_pages(gfp_mask, order);
-	return (void *)addr;
-}
-
 static void build_zonelists(pg_data_t *pgdat)
 {
 	struct zoneref *zonerefs;
@@ -475,32 +463,11 @@ static void per_cpu_pages_init(struct per_cpu_pages *pcp,
 static DEFINE_PER_CPU(struct per_cpu_pages, boot_pageset);
 static DEFINE_PER_CPU(struct per_cpu_zonestat, boot_zonestats);
 
-static void __build_all_zonelists(void *data)
-{
-	pg_data_t *self = data;
-	static DEFINE_SPINLOCK(lock);
-
-	spin_lock(&lock);
-
-	if (self && !node_online(self->node_id)) {
-		build_zonelists(self);
-	} else {
-		build_zonelists(NODE_DATA(0));
-	}
-
-	spin_unlock(&lock);
-}
-
-/* Stub: minimal boot has enough RAM, disable page mobility grouping */
 void __ref build_all_zonelists(pg_data_t *pgdat)
 {
-	if (system_state == SYSTEM_BOOTING) {
-		__build_all_zonelists(NULL);
-		per_cpu_pages_init(&per_cpu(boot_pageset, 0),
-				   &per_cpu(boot_zonestats, 0));
-	} else {
-		__build_all_zonelists(pgdat);
-	}
+	build_zonelists(NODE_DATA(0));
+	per_cpu_pages_init(&per_cpu(boot_pageset, 0),
+			   &per_cpu(boot_zonestats, 0));
 }
 
 static void __meminit memmap_init_range(unsigned long size, int nid,
@@ -642,29 +609,6 @@ static void __meminit init_currently_empty_zone(struct zone *zone,
 	}
 }
 
-static unsigned long __init zone_spanned_pages_in_node(
-	int nid, unsigned long zone_type, unsigned long node_start_pfn,
-	unsigned long node_end_pfn, unsigned long *zone_start_pfn,
-	unsigned long *zone_end_pfn)
-{
-	unsigned long zone_low = arch_zone_lowest_possible_pfn[zone_type];
-	unsigned long zone_high = arch_zone_highest_possible_pfn[zone_type];
-
-	if (!node_start_pfn && !node_end_pfn)
-		return 0;
-
-	*zone_start_pfn = clamp(node_start_pfn, zone_low, zone_high);
-	*zone_end_pfn = clamp(node_end_pfn, zone_low, zone_high);
-
-	if (*zone_end_pfn < node_start_pfn || *zone_start_pfn > node_end_pfn)
-		return 0;
-
-	*zone_end_pfn = min(*zone_end_pfn, node_end_pfn);
-	*zone_start_pfn = max(*zone_start_pfn, node_start_pfn);
-
-	return *zone_end_pfn - *zone_start_pfn;
-}
-
 void __init free_area_init(unsigned long *max_zone_pfn)
 {
 	unsigned long start_pfn, end_pfn;
@@ -715,54 +659,32 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 			for (zi = 0; zi < MAX_NR_ZONES; zi++) {
 				struct zone *zone = pgdat->node_zones + zi;
 				unsigned long z_start_pfn, z_end_pfn;
-				unsigned long spanned, absent;
-				unsigned long zsize, real_size;
+				unsigned long zone_low =
+					arch_zone_lowest_possible_pfn[zi];
+				unsigned long zone_high =
+					arch_zone_highest_possible_pfn[zi];
+				unsigned long zsize;
 
-				spanned = zone_spanned_pages_in_node(
-					pgdat->node_id, zi, node_start_pfn,
-					node_end_pfn, &z_start_pfn, &z_end_pfn);
-				{
-					unsigned long z_low =
-						arch_zone_lowest_possible_pfn[zi];
-					unsigned long z_high =
-						arch_zone_highest_possible_pfn
-							[zi];
-					unsigned long zs_pfn, ze_pfn;
-					int j;
-					absent = 0;
-					if (node_start_pfn || node_end_pfn) {
-						zs_pfn = clamp(node_start_pfn,
-							       z_low, z_high);
-						ze_pfn = clamp(node_end_pfn,
-							       z_low, z_high);
-						absent = ze_pfn - zs_pfn;
-						for_each_mem_pfn_range(
-							j, pgdat->node_id,
-							&z_low, &z_high, NULL) {
-							z_low = clamp(z_low,
-								      zs_pfn,
-								      ze_pfn);
-							z_high = clamp(z_high,
-								       zs_pfn,
-								       ze_pfn);
-							absent -=
-								z_high - z_low;
-						}
-					}
-				}
-
-				zsize = spanned;
-				real_size = zsize - absent;
-
-				if (zsize)
-					zone->zone_start_pfn = z_start_pfn;
-				else
+				if (!node_start_pfn && !node_end_pfn) {
 					zone->zone_start_pfn = 0;
+					zone->spanned_pages = 0;
+					zone->present_pages = 0;
+					continue;
+				}
+				z_start_pfn = clamp(node_start_pfn, zone_low,
+						    zone_high);
+				z_end_pfn = clamp(node_end_pfn, zone_low,
+						  zone_high);
+				z_end_pfn = min(z_end_pfn, node_end_pfn);
+				z_start_pfn = max(z_start_pfn, node_start_pfn);
+				zsize = z_end_pfn - z_start_pfn;
+
+				zone->zone_start_pfn = zsize ? z_start_pfn : 0;
 				zone->spanned_pages = zsize;
-				zone->present_pages = real_size;
+				zone->present_pages = zsize;
 
 				totalpages += zsize;
-				realtotalpages += real_size;
+				realtotalpages += zsize;
 			}
 
 			pgdat->node_spanned_pages = totalpages;
@@ -900,21 +822,14 @@ void *__init alloc_large_system_hash(const char *tablename,
 {
 	unsigned long log2qty, size;
 	void *table;
-	gfp_t gfp_flags;
 
-	/* Minimal stub: simple hash table allocation */
 	if (!numentries)
-		numentries = 256; /* Small default */
+		numentries = 256;
 	numentries = roundup_pow_of_two(numentries);
 	log2qty = ilog2(numentries);
 	size = bucketsize << log2qty;
 
-	gfp_flags = (flags & HASH_ZERO) ? GFP_ATOMIC | __GFP_ZERO : GFP_ATOMIC;
-	if (flags & HASH_EARLY)
-		table = memblock_alloc(size, SMP_CACHE_BYTES);
-	else
-		table = alloc_pages_exact(size, gfp_flags);
-
+	table = memblock_alloc(size, SMP_CACHE_BYTES);
 	if (!table)
 		panic("Failed to allocate %s hash table\n", tablename);
 

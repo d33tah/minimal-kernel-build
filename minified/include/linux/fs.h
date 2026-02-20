@@ -93,7 +93,6 @@ enum dentry_d_lock_class
 
 #define DCACHE_PAR_LOOKUP		0x10000000
 
-extern void d_instantiate(struct dentry *, struct inode *);
 
 extern struct dentry * d_alloc_parallel(struct dentry *, const struct qstr *,
 					wait_queue_head_t *);

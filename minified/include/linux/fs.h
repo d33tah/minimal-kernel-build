@@ -653,8 +653,6 @@ alloc_inode_sb(struct super_block *sb, struct kmem_cache *cache, gfp_t gfp)
 }
 
 extern int generic_file_mmap(struct file *, struct vm_area_struct *);
-ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *to,
-		ssize_t already_read);
 extern ssize_t generic_file_read_iter(struct kiocb *, struct iov_iter *);
 extern ssize_t generic_file_write_iter(struct kiocb *, struct iov_iter *);
 

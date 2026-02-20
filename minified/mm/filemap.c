@@ -43,9 +43,9 @@ static inline unsigned folio_batch_add(struct folio_batch *fbatch,
 #endif
 #include "internal.h"
 
-noinline int __filemap_add_folio(struct address_space *mapping,
-				 struct folio *folio, pgoff_t index, gfp_t gfp,
-				 void **shadowp)
+static noinline int __filemap_add_folio(struct address_space *mapping,
+					struct folio *folio, pgoff_t index,
+					gfp_t gfp, void **shadowp)
 {
 	XA_STATE(xas, &mapping->i_pages, index);
 	long nr;
@@ -85,8 +85,8 @@ error:
 	return xas_error(&xas);
 }
 
-int filemap_add_folio(struct address_space *mapping, struct folio *folio,
-		      pgoff_t index, gfp_t gfp)
+static int filemap_add_folio(struct address_space *mapping, struct folio *folio,
+			     pgoff_t index, gfp_t gfp)
 {
 	void *shadow = NULL;
 	int ret;
@@ -161,8 +161,9 @@ void folio_unlock(struct folio *folio)
 		folio_wake_bit(folio, PG_locked);
 }
 
-struct folio *__filemap_get_folio(struct address_space *mapping, pgoff_t index,
-				  int fgp_flags, gfp_t gfp)
+static struct folio *__filemap_get_folio(struct address_space *mapping,
+					 pgoff_t index, int fgp_flags,
+					 gfp_t gfp)
 {
 	XA_STATE(xas, &mapping->i_pages, index);
 	struct folio *folio;
@@ -184,23 +185,13 @@ repeat_xas:
 	}
 out_rcu:
 	rcu_read_unlock();
-	if (xa_is_value(folio)) {
-		if (fgp_flags & FGP_ENTRY)
-			return folio;
+	if (xa_is_value(folio))
 		folio = NULL;
-	}
 	if (!folio)
 		goto no_page;
 
 	if (fgp_flags & FGP_LOCK) {
-		if (fgp_flags & FGP_NOWAIT) {
-			if (!folio_trylock(folio)) {
-				folio_put(folio);
-				return NULL;
-			}
-		} else {
-			folio_lock(folio);
-		}
+		folio_lock(folio);
 
 		if (unlikely(folio->mapping != mapping)) {
 			folio_unlock(folio);
@@ -214,18 +205,13 @@ no_page:
 		int err;
 		if ((fgp_flags & FGP_WRITE) && mapping_can_writeback(mapping))
 			gfp |= __GFP_WRITE;
-		if (fgp_flags & FGP_NOFS)
-			gfp &= ~__GFP_FS;
 
 		folio = filemap_alloc_folio(gfp, 0);
 		if (!folio)
 			return NULL;
 
-		if (WARN_ON_ONCE(!(fgp_flags & (FGP_LOCK | FGP_FOR_MMAP))))
+		if (!(fgp_flags & FGP_LOCK))
 			fgp_flags |= FGP_LOCK;
-
-		if (fgp_flags & FGP_ACCESSED)
-			__folio_set_referenced(folio);
 
 		err = filemap_add_folio(mapping, folio, index, gfp);
 		if (unlikely(err)) {
@@ -234,9 +220,6 @@ no_page:
 			if (err == -EEXIST)
 				goto repeat;
 		}
-
-		if (folio && (fgp_flags & FGP_FOR_MMAP))
-			folio_unlock(folio);
 	}
 
 	return folio;
@@ -388,8 +371,8 @@ err:
 	return err;
 }
 
-ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
-		     ssize_t already_read)
+static ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
+			    ssize_t already_read)
 {
 	struct file *filp = iocb->ki_filp;
 	struct address_space *mapping = filp->f_mapping;
@@ -492,7 +475,7 @@ noinline struct page *pagecache_get_page(struct address_space *mapping,
 	struct folio *folio;
 
 	folio = __filemap_get_folio(mapping, index, fgp_flags, gfp);
-	if ((fgp_flags & FGP_HEAD) || !folio || xa_is_value(folio))
+	if (!folio || xa_is_value(folio))
 		return &folio->page;
 	return folio_file_page(folio, index);
 }

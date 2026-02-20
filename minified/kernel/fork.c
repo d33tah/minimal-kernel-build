@@ -1,5 +1,5 @@
 #include <linux/sched/mm.h>
-#include <linux/sched/coredump.h>
+/* coredump.h removed: MMF_INIT_MASK=0x7FF, MMF_DUMP_FILTER_DEFAULT=0x8C */
 #include <linux/sched/task_stack.h>
 #include <linux/file.h>
 #include <linux/fdtable.h>
@@ -182,10 +182,10 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 		   0); /* init_tlb_flush_pending inlined */
 
 	if (current->mm) {
-		mm->flags = current->mm->flags & MMF_INIT_MASK;
+		mm->flags = current->mm->flags & 0x7FF;
 		mm->def_flags = current->mm->def_flags & VM_INIT_DEF_MASK;
 	} else {
-		mm->flags = MMF_DUMP_FILTER_DEFAULT;
+		mm->flags = 0x8C;
 		mm->def_flags = 0;
 	}
 

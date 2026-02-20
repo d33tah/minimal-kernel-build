@@ -21,7 +21,7 @@ static inline pgtable_t __pte_alloc_one(struct mm_struct *mm, gfp_t gfp)
 	if (!pte)
 		return NULL;
 	__SetPageTable(pte);
-	inc_lruvec_page_state(pte, NR_PAGETABLE);
+	mod_lruvec_page_state(pte, NR_PAGETABLE, 1);
 	return pte;
 }
 

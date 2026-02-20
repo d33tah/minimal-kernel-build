@@ -72,12 +72,6 @@ static inline void __mod_zone_freepage_state(struct zone *zone, int nr_pages,
 	__mod_zone_page_state(zone, NR_FREE_PAGES, nr_pages);
 }
 
-static inline void __mod_lruvec_state(struct lruvec *lruvec,
-				      enum node_stat_item idx, int val)
-{
-	__mod_node_page_state(lruvec_pgdat(lruvec), idx, val);
-}
-
 static inline void __mod_lruvec_page_state(struct page *page,
 					   enum node_stat_item idx, int val)
 {
@@ -88,18 +82,6 @@ static inline void mod_lruvec_page_state(struct page *page,
 					 enum node_stat_item idx, int val)
 {
 	mod_node_page_state(page_pgdat(page), idx, val);
-}
-
-static inline void inc_lruvec_page_state(struct page *page,
-					 enum node_stat_item idx)
-{
-	mod_lruvec_page_state(page, idx, 1);
-}
-
-static inline void dec_lruvec_page_state(struct page *page,
-					 enum node_stat_item idx)
-{
-	mod_lruvec_page_state(page, idx, -1);
 }
 
 static inline void __lruvec_stat_mod_folio(struct folio *folio,

@@ -414,7 +414,7 @@ static inline spinlock_t *pte_lockptr(struct mm_struct *mm, pmd_t *pmd)
 static inline void pgtable_pte_page_dtor(struct page *page)
 {
 	__ClearPageTable(page);
-	dec_lruvec_page_state(page, NR_PAGETABLE);
+	mod_lruvec_page_state(page, NR_PAGETABLE, -1);
 }
 
 #define pte_offset_map_lock(mm, pmd, address, ptlp)	\

@@ -158,40 +158,9 @@ special_hex_number(char *buf, char *end, unsigned long long num, int size)
 	return number(buf, end, num, spec);
 }
 
-static noinline_for_stack char *widen_string(char *buf, int n, char *end,
-					     struct printf_spec spec)
-{
-	unsigned spaces;
-
-	if (likely(n >= spec.field_width))
-		return buf;
-
-	spaces = spec.field_width - n;
-	{
-		char *mr_buf = buf - n;
-		unsigned mr_len = n;
-		if (mr_buf < end) {
-			size_t size = end - mr_buf;
-			if (size <= spaces)
-				memset(mr_buf, ' ', size);
-			else {
-				if (mr_len) {
-					if (mr_len > size - spaces)
-						mr_len = size - spaces;
-					memmove(mr_buf + spaces, mr_buf,
-						mr_len);
-				}
-				memset(mr_buf, ' ', spaces);
-			}
-		}
-	}
-	return buf + spaces;
-}
-
 static char *string_nocheck(char *buf, char *end, const char *s,
 			    struct printf_spec spec)
 {
-	int len = 0;
 	int lim = spec.precision;
 
 	while (lim--) {
@@ -201,9 +170,8 @@ static char *string_nocheck(char *buf, char *end, const char *s,
 		if (buf < end)
 			*buf = c;
 		++buf;
-		++len;
 	}
-	return widen_string(buf, len, end, spec);
+	return buf;
 }
 
 static char *error_string(char *buf, char *end, const char *s,
@@ -261,13 +229,9 @@ static noinline_for_stack char *pointer(const char *fmt, char *buf, char *end,
 	case 'S':
 	case 's':
 		fallthrough;
-	case 'B': {
-		unsigned long value;
-		if (fmt[1] == 'R')
-			ptr = __builtin_extract_return_addr(ptr);
-		value = (unsigned long)ptr;
-		return special_hex_number(buf, end, value, sizeof(void *));
-	}
+	case 'B':
+		return special_hex_number(buf, end, (unsigned long)ptr,
+					  sizeof(void *));
 	case 'V': {
 		struct va_format *va_fmt = ptr;
 		va_list va;

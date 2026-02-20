@@ -105,8 +105,6 @@ static inline void restore_saved_sigmask(void)
 		__set_current_blocked(&current->saved_sigmask);
 }
 
-extern void __cleanup_sighand(struct sighand_struct *);
-
 static inline struct pid *task_pgrp(struct task_struct *task)
 {
 	return task->signal->pids[PIDTYPE_PGID];

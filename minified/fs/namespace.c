@@ -11,8 +11,6 @@ extern void put_mnt_ns(struct mnt_namespace *ns);
 extern void shmem_init(void);
 
 #include "mount.h"
-static int mnt_get_count(struct mount *mnt);
-/* end pnode.h */
 #include "internal.h"
 
 static DEFINE_IDA(mnt_id_ida);
@@ -43,11 +41,6 @@ static inline void mnt_add_count(struct mount *mnt, int n)
 	preempt_enable();
 }
 
-static int mnt_get_count(struct mount *mnt)
-{
-	return mnt->mnt_count;
-}
-
 static struct mount *alloc_vfsmnt(const char *name)
 {
 	struct mount *mnt = kmem_cache_zalloc(mnt_cache, GFP_KERNEL);
@@ -67,19 +60,7 @@ static struct mount *alloc_vfsmnt(const char *name)
 		}
 
 		mnt->mnt_count = 1;
-		mnt->mnt_writers = 0;
-
-		INIT_HLIST_NODE(&mnt->mnt_hash);
-		INIT_LIST_HEAD(&mnt->mnt_child);
-		INIT_LIST_HEAD(&mnt->mnt_mounts);
 		INIT_LIST_HEAD(&mnt->mnt_list);
-		INIT_LIST_HEAD(&mnt->mnt_expire);
-		INIT_LIST_HEAD(&mnt->mnt_share);
-		INIT_LIST_HEAD(&mnt->mnt_slave_list);
-		INIT_LIST_HEAD(&mnt->mnt_slave);
-		INIT_HLIST_NODE(&mnt->mnt_mp_list);
-		INIT_LIST_HEAD(&mnt->mnt_umounting);
-		INIT_HLIST_HEAD(&mnt->mnt_stuck_children);
 		mnt->mnt.mnt_userns = &init_user_ns;
 	}
 	return mnt;
@@ -123,18 +104,6 @@ void __mnt_drop_write(struct vfsmount *mnt)
 	preempt_disable();
 	mnt_dec_writers(real_mount(mnt));
 	preempt_enable();
-}
-
-static void delayed_free_vfsmnt(struct rcu_head *head)
-{
-	struct mount *mnt = container_of(head, struct mount, mnt_rcu);
-	struct user_namespace *mnt_userns;
-
-	mnt_userns = mnt_user_ns(&mnt->mnt);
-	if (!initial_idmapping(mnt_userns))
-		put_user_ns(mnt_userns);
-	kfree_const(mnt->mnt_devname);
-	kmem_cache_free(mnt_cache, mnt);
 }
 
 static struct vfsmount *vfs_create_mount(struct fs_context *fc)
@@ -205,60 +174,11 @@ static struct vfsmount *vfs_kern_mount(struct file_system_type *type, int flags,
 	return mnt;
 }
 
-static void cleanup_mnt(struct mount *mnt)
-{
-	struct hlist_node *p;
-	struct mount *m;
-
-	WARN_ON(mnt->mnt_writers);
-	hlist_for_each_entry_safe(m, p, &mnt->mnt_stuck_children, mnt_umount) {
-		hlist_del(&m->mnt_umount);
-		mntput(&m->mnt);
-	}
-	dput(mnt->mnt.mnt_root);
-	deactivate_super(mnt->mnt.mnt_sb);
-	mnt_free_id(mnt);
-	call_rcu(&mnt->mnt_rcu, delayed_free_vfsmnt);
-}
-
 void mntput(struct vfsmount *mnt)
 {
-	struct mount *m;
-	int count;
-
 	if (!mnt)
 		return;
-
-	m = real_mount(mnt);
-	rcu_read_lock();
-	if (likely(READ_ONCE(m->mnt_ns))) {
-		mnt_add_count(m, -1);
-		rcu_read_unlock();
-		return;
-	}
-	lock_mount_hash();
-
-	smp_mb();
-	mnt_add_count(m, -1);
-	count = mnt_get_count(m);
-	if (count != 0) {
-		WARN_ON(count < 0);
-		rcu_read_unlock();
-		unlock_mount_hash();
-		return;
-	}
-	if (unlikely(m->mnt.mnt_flags & MNT_DOOMED)) {
-		rcu_read_unlock();
-		unlock_mount_hash();
-		return;
-	}
-	m->mnt.mnt_flags |= MNT_DOOMED;
-	rcu_read_unlock();
-
-	list_del(&m->mnt_instance);
-	unlock_mount_hash();
-
-	cleanup_mnt(m);
+	mnt_add_count(real_mount(mnt), -1);
 }
 
 struct vfsmount *mntget(struct vfsmount *mnt)
@@ -275,8 +195,7 @@ static void dec_mnt_namespaces(struct ucounts *ucounts)
 
 static void free_mnt_ns(struct mnt_namespace *ns)
 {
-	if (!is_anon_ns(ns))
-		ns_free_inum(&ns->ns);
+	ns_free_inum(&ns->ns);
 	dec_mnt_namespaces(ns->ucounts);
 	put_user_ns(ns->user_ns);
 	kfree(ns);
@@ -284,8 +203,7 @@ static void free_mnt_ns(struct mnt_namespace *ns)
 
 static atomic64_t mnt_ns_seq = ATOMIC64_INIT(1);
 
-static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns,
-					  bool anon)
+static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns)
 {
 	struct mnt_namespace *new_ns;
 	struct ucounts *ucounts;
@@ -299,10 +217,8 @@ static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns,
 		dec_mnt_namespaces(ucounts);
 		return ERR_PTR(-ENOMEM);
 	}
-	if (!anon)
-		ns_alloc_inum(&new_ns->ns);
-	if (!anon)
-		new_ns->seq = atomic64_add_return(1, &mnt_ns_seq);
+	ns_alloc_inum(&new_ns->ns);
+	new_ns->seq = atomic64_add_return(1, &mnt_ns_seq);
 	refcount_set(&new_ns->ns.count, 1);
 	INIT_LIST_HEAD(&new_ns->list);
 	spin_lock_init(&new_ns->ns_lock);
@@ -334,7 +250,7 @@ void __init mnt_init(void)
 		if (IS_ERR(mnt))
 			panic("Can't create rootfs");
 
-		ns = alloc_mnt_ns(&init_user_ns, false);
+		ns = alloc_mnt_ns(&init_user_ns);
 		if (IS_ERR(ns))
 			panic("Can't allocate initial namespace");
 		m = real_mount(mnt);

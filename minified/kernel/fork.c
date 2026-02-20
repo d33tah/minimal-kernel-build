@@ -81,13 +81,6 @@ void vm_area_free(struct vm_area_struct *vma)
 	kmem_cache_free(vm_area_cachep, vma);
 }
 
-void exit_task_stack_account(struct task_struct *tsk)
-{
-	void *stack = task_stack_page(tsk);
-	mod_lruvec_kmem_state(stack, NR_KERNEL_STACK_KB,
-			      -1 * (THREAD_SIZE / 1024));
-}
-
 void put_task_stack(struct task_struct *tsk)
 {
 	if (refcount_dec_and_test(&tsk->stack_refcount)) {
@@ -98,14 +91,6 @@ void put_task_stack(struct task_struct *tsk)
 		call_rcu(rh, thread_stack_free_rcu);
 		tsk->stack = NULL;
 	}
-}
-
-static void free_task(struct task_struct *tsk)
-{
-	WARN_ON_ONCE(refcount_read(&tsk->stack_refcount) != 0);
-	if (tsk->flags & PF_KTHREAD)
-		free_kthread_struct(tsk);
-	free_task_struct(tsk);
 }
 
 #define allocate_mm() (kmem_cache_alloc(mm_cachep, GFP_KERNEL))
@@ -120,11 +105,6 @@ void __mmdrop(struct mm_struct *mm)
 	destroy_context(mm);
 	put_user_ns(mm->user_ns);
 	free_mm(mm);
-}
-
-static inline void free_signal_struct(struct signal_struct *sig)
-{
-	kmem_cache_free(signal_cachep, sig);
 }
 
 int arch_task_struct_size __read_mostly;
@@ -250,13 +230,6 @@ void exec_mm_release(struct task_struct *tsk, struct mm_struct *mm)
 	deactivate_mm(tsk, mm);
 }
 
-void __cleanup_sighand(struct sighand_struct *sighand)
-{
-	if (refcount_dec_and_test(&sighand->count)) {
-		kmem_cache_free(sighand_cachep, sighand);
-	}
-}
-
 static inline void init_task_pid(struct task_struct *task, enum pid_type type,
 				 struct pid *pid)
 {
@@ -274,16 +247,15 @@ copy_process(int node, struct kernel_clone_args *args)
 	struct pid *pid;
 	const u64 clone_flags = args->flags;
 
-	retval = -ENOMEM;
 	p = kmem_cache_alloc_node(task_struct_cachep, GFP_KERNEL, node);
 	if (!p)
-		goto fork_out;
+		return ERR_PTR(-ENOMEM);
 	arch_dup_task_struct(p, current);
 	{
 		struct page *page = alloc_pages_node(node, THREADINFO_GFP,
 						     THREAD_SIZE_ORDER);
 		if (!page)
-			goto bad_fork_free_tsk;
+			goto bad_fork;
 		p->stack = page_address(page);
 	}
 	refcount_set(&p->stack_refcount, 1);
@@ -305,11 +277,11 @@ copy_process(int node, struct kernel_clone_args *args)
 
 	retval = copy_creds(p);
 	if (retval < 0)
-		goto bad_fork_free;
+		goto bad_fork;
 
 	retval = -EAGAIN;
 	if (data_race(nr_threads >= max_threads))
-		goto bad_fork_cleanup_count;
+		goto bad_fork;
 	p->flags &=
 		~(PF_SUPERPRIV | PF_WQ_WORKER | PF_IDLE | PF_NO_SETAFFINITY);
 	p->flags |= PF_FORKNOEXEC;
@@ -319,14 +291,14 @@ copy_process(int node, struct kernel_clone_args *args)
 
 	if (args->kthread) {
 		if (!set_kthread_struct(p))
-			goto bad_fork_cleanup_count;
+			goto bad_fork;
 	}
 
 	p->pagefault_disabled = 0;
 
 	retval = sched_fork(clone_flags, p);
 	if (retval)
-		goto bad_fork_cleanup_count;
+		goto bad_fork;
 	{
 		struct files_struct *oldf = current->files;
 		if (oldf) {
@@ -336,7 +308,7 @@ copy_process(int node, struct kernel_clone_args *args)
 				struct files_struct *newf =
 					dup_fd(oldf, NR_OPEN_MAX, &retval);
 				if (!newf)
-					goto bad_fork_cleanup_count;
+					goto bad_fork;
 				p->files = newf;
 			}
 		}
@@ -347,7 +319,7 @@ copy_process(int node, struct kernel_clone_args *args)
 		if (fs->in_exec) {
 			spin_unlock(&fs->lock);
 			retval = -EAGAIN;
-			goto bad_fork_cleanup_files;
+			goto bad_fork;
 		}
 		fs->users++;
 		spin_unlock(&fs->lock);
@@ -358,7 +330,7 @@ copy_process(int node, struct kernel_clone_args *args)
 		RCU_INIT_POINTER(p->sighand, sig);
 		if (!sig) {
 			retval = -ENOMEM;
-			goto bad_fork_cleanup_fs;
+			goto bad_fork;
 		}
 		refcount_set(&sig->count, 1);
 	}
@@ -368,7 +340,7 @@ copy_process(int node, struct kernel_clone_args *args)
 		p->signal = sig;
 		if (!sig) {
 			retval = -ENOMEM;
-			goto bad_fork_cleanup_sighand;
+			goto bad_fork;
 		}
 		atomic_set(&sig->live, 1);
 		refcount_set(&sig->sigcnt, 1);
@@ -383,31 +355,21 @@ copy_process(int node, struct kernel_clone_args *args)
 		mutex_init(&sig->cred_guard_mutex);
 		init_rwsem(&sig->exec_update_lock);
 	}
-	{
-		struct mm_struct *oldmm;
-		p->mm = NULL;
-		p->active_mm = NULL;
-		oldmm = current->mm;
-		if (oldmm) {
-			vmacache_flush(p);
-			mmget(oldmm);
-			p->mm = oldmm;
-			p->active_mm = oldmm;
-		}
-	}
+	p->mm = NULL;
+	p->active_mm = NULL;
 	retval = copy_namespaces(p);
 	if (retval)
-		goto bad_fork_cleanup_mm;
+		goto bad_fork;
 	retval = copy_thread(p, args);
 	if (retval)
-		goto bad_fork_cleanup_namespaces;
+		goto bad_fork;
 
 	/* Always allocate new pid (pid parameter was always NULL) */
 	pid = alloc_pid(p->nsproxy->pid_ns_for_children, args->set_tid,
 			args->set_tid_size);
 	if (IS_ERR(pid)) {
 		retval = PTR_ERR(pid);
-		goto bad_fork_cleanup_thread;
+		goto bad_fork;
 	}
 
 	clear_task_syscall_work(p, SYSCALL_TRACE);
@@ -431,7 +393,7 @@ copy_process(int node, struct kernel_clone_args *args)
 
 	if (unlikely(!(ns_of_pid(pid)->pid_allocated & PIDNS_ADDING))) {
 		retval = -ENOMEM;
-		goto bad_fork_cancel_cgroup;
+		goto bad_fork;
 	}
 
 	{
@@ -462,40 +424,8 @@ copy_process(int node, struct kernel_clone_args *args)
 
 	return p;
 
-bad_fork_cancel_cgroup:
-	spin_unlock(&current->sighand->siglock);
-	write_unlock_irq(&tasklist_lock);
-	/* Always free pid (was always allocated, never init_struct_pid) */
-	free_pid(pid);
-bad_fork_cleanup_thread:
-	exit_thread(p);
-bad_fork_cleanup_namespaces:
-	exit_task_namespaces(p);
-bad_fork_cleanup_mm:
-	if (p->mm)
-		mmput(p->mm);
-	free_signal_struct(p->signal);
-bad_fork_cleanup_sighand:
-	__cleanup_sighand(p->sighand);
-bad_fork_cleanup_fs:
-	exit_fs(p);
-bad_fork_cleanup_files:
-	exit_files(p);
-	/* bad_fork_cleanup_security, bad_fork_cleanup_policy, bad_fork_cleanup_delayacct
-	 * labels consolidated here - they had no cleanup code */
-bad_fork_cleanup_count:
-	dec_rlimit_ucounts(task_ucounts(p), UCOUNT_RLIMIT_NPROC, 1);
-	exit_creds(p);
-bad_fork_free:
-	WRITE_ONCE(p->__state, TASK_DEAD);
-	exit_task_stack_account(p);
-	put_task_stack(p);
-	free_task(p);
-	goto fork_out;
-bad_fork_free_tsk:
-	free_task_struct(p);
-fork_out:
-	return ERR_PTR(retval);
+bad_fork:
+	panic("copy_process failed (retval=%d)\n", retval);
 }
 
 struct mm_struct *copy_init_mm(void)
@@ -511,25 +441,6 @@ struct mm_struct *copy_init_mm(void)
 	return mm;
 }
 
-static pid_t kernel_clone(struct kernel_clone_args *args)
-{
-	struct pid *pid;
-	struct task_struct *p;
-	pid_t nr;
-
-	p = copy_process(NUMA_NO_NODE, args);
-
-	if (IS_ERR(p))
-		return PTR_ERR(p);
-
-	pid = get_task_pid(p, PIDTYPE_PID);
-	nr = pid_vnr(pid);
-	wake_up_new_task(p);
-
-	put_pid(pid);
-	return nr;
-}
-
 static pid_t __kernel_thread(int (*fn)(void *), void *arg, unsigned long flags,
 			     int kthread)
 {
@@ -541,7 +452,19 @@ static pid_t __kernel_thread(int (*fn)(void *), void *arg, unsigned long flags,
 		.fn_arg = arg,
 		.kthread = kthread,
 	};
-	return kernel_clone(&args);
+	struct task_struct *p;
+	struct pid *pid;
+	pid_t nr;
+
+	p = copy_process(NUMA_NO_NODE, &args);
+	if (IS_ERR(p))
+		return PTR_ERR(p);
+
+	pid = get_task_pid(p, PIDTYPE_PID);
+	nr = pid_vnr(pid);
+	wake_up_new_task(p);
+	put_pid(pid);
+	return nr;
 }
 
 pid_t kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)

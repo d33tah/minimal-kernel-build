@@ -104,9 +104,6 @@ extern struct dentry * d_make_root(struct inode *);
 extern void d_add(struct dentry *, struct inode *);
 extern struct dentry *d_lookup(const struct dentry *, const struct qstr *);
 extern struct dentry *__d_lookup(const struct dentry *, const struct qstr *);
-extern struct dentry *__d_lookup_rcu(const struct dentry *parent,
-				const struct qstr *name, unsigned *seq);
-
 static inline struct dentry *dget(struct dentry *dentry)
 {
 	if (dentry)
@@ -117,11 +114,6 @@ static inline struct dentry *dget(struct dentry *dentry)
 static inline int d_unhashed(const struct dentry *dentry)
 {
 	return hlist_bl_unhashed(&dentry->d_hash);
-}
-
-static inline int d_unlinked(const struct dentry *dentry)
-{
-	return d_unhashed(dentry) && !IS_ROOT(dentry);
 }
 
 extern void __d_lookup_done(struct dentry *);
@@ -141,11 +133,6 @@ static inline void d_lookup_done(struct dentry *dentry)
 }
 
 extern void dput(struct dentry *);
-
-static inline bool d_mountpoint(const struct dentry *dentry)
-{
-	return dentry->d_flags & DCACHE_MOUNTED;
-}
 
 static inline unsigned __d_entry_type(const struct dentry *dentry) {
   return dentry->d_flags & DCACHE_ENTRY_TYPE;
@@ -391,11 +378,6 @@ struct inode {
 	};
 
 } __randomize_layout;
-
-static inline void inode_unlock(struct inode *inode)
-{
-	up_write(&inode->i_rwsem);
-}
 
 static inline void inode_lock_shared(struct inode *inode)
 {

@@ -104,13 +104,6 @@ static inline void __list_splice(const struct list_head *list,
 	next->prev = last;
 }
 
-static inline void list_splice(const struct list_head *list,
-				struct list_head *head)
-{
-	if (!list_empty(list))
-		__list_splice(list, head, head->next);
-}
-
 static inline void list_splice_tail_init(struct list_head *list,
 					 struct list_head *head)
 {
@@ -175,11 +168,6 @@ static inline void INIT_HLIST_NODE(struct hlist_node *h)
 static inline int hlist_unhashed(const struct hlist_node *h)
 {
 	return !h->pprev;
-}
-
-static inline int hlist_empty(const struct hlist_head *h)
-{
-	return !READ_ONCE(h->first);
 }
 
 static inline void __hlist_del(struct hlist_node *n)

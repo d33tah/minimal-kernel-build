@@ -371,33 +371,6 @@ static inline bool d_same_name(const struct dentry *dentry,
 	return dentry_cmp(dentry, name->name, name->len) == 0;
 }
 
-struct dentry *__d_lookup_rcu(const struct dentry *parent,
-			      const struct qstr *name, unsigned *seqp)
-{
-	u64 hashlen = name->hash_len;
-	const unsigned char *str = name->name;
-	struct hlist_bl_head *b = d_hash(hashlen_hash(hashlen));
-	struct hlist_bl_node *node;
-	struct dentry *dentry;
-
-	hlist_bl_for_each_entry_rcu(dentry, node, b, d_hash) {
-		unsigned seq;
-		seq = raw_seqcount_begin(&dentry->d_seq);
-		if (dentry->d_parent != parent)
-			continue;
-		if (d_unhashed(dentry))
-			continue;
-
-		if (dentry->d_name.hash_len != hashlen)
-			continue;
-		if (dentry_cmp(dentry, str, hashlen_len(hashlen)) != 0)
-			continue;
-		*seqp = seq;
-		return dentry;
-	}
-	return NULL;
-}
-
 struct dentry *d_lookup(const struct dentry *parent, const struct qstr *name)
 {
 	struct dentry *dentry;

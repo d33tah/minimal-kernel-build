@@ -148,34 +148,6 @@ void switch_to_new_gdt(int cpu)
 	load_percpu_segment(cpu);
 }
 
-static const struct cpu_dev *cpu_devs[X86_VENDOR_NUM] = {};
-
-static void get_cpu_vendor(struct cpuinfo_x86 *c)
-{
-	char *v = c->x86_vendor_id;
-	int i;
-
-	for (i = 0; i < X86_VENDOR_NUM; i++) {
-		if (!cpu_devs[i])
-			break;
-
-		if (!strcmp(v, cpu_devs[i]->c_ident[0]) ||
-		    (cpu_devs[i]->c_ident[1] &&
-		     !strcmp(v, cpu_devs[i]->c_ident[1]))) {
-			this_cpu = cpu_devs[i];
-			c->x86_vendor = this_cpu->c_x86_vendor;
-			return;
-		}
-	}
-
-	pr_err_once("CPU: vendor_id '%s' unknown, using generic init.\n"
-		    "CPU: Your system may be unstable.\n",
-		    v);
-
-	c->x86_vendor = X86_VENDOR_UNKNOWN;
-	this_cpu = &default_cpu;
-}
-
 void cpu_detect(struct cpuinfo_x86 *c)
 {
 	cpuid(0x00000000, (unsigned int *)&c->cpuid_level,
@@ -232,17 +204,6 @@ static void get_cpu_address_sizes(struct cpuinfo_x86 *c)
 
 void __init early_cpu_init(void)
 {
-	const struct cpu_dev *const *cdev;
-	int count = 0;
-
-	for (cdev = __x86_cpu_dev_start; cdev < __x86_cpu_dev_end; cdev++) {
-		const struct cpu_dev *cpudev = *cdev;
-
-		if (count >= X86_VENDOR_NUM)
-			break;
-		cpu_devs[count] = cpudev;
-		count++;
-	}
 	{
 		struct cpuinfo_x86 *c = &boot_cpu_data;
 
@@ -254,18 +215,8 @@ void __init early_cpu_init(void)
 		memset(&c->x86_capability, 0, sizeof(c->x86_capability));
 		c->extended_cpuid_level = 0;
 
-		/* CPUID always present on supported CPUs */
 		cpu_detect(c);
-		get_cpu_vendor(c);
 		get_cpu_cap(c);
-		get_cpu_address_sizes(c);
-		setup_force_cpu_cap(X86_FEATURE_CPUID);
-
-		if (this_cpu->c_early_init)
-			this_cpu->c_early_init(c);
-
-		if (this_cpu->c_bsp_init)
-			this_cpu->c_bsp_init(c);
 
 		setup_force_cpu_cap(X86_FEATURE_ALWAYS);
 
@@ -296,36 +247,11 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 
 	c->extended_cpuid_level = 0;
 	cpu_detect(c);
-	get_cpu_vendor(c);
 	get_cpu_cap(c);
-	get_cpu_address_sizes(c);
 	set_cpu_bug(c, X86_BUG_ESPFIX);
-
-	if (this_cpu->c_identify)
-		this_cpu->c_identify(c);
-
 	apply_forced_caps(c);
-
-	if (this_cpu->c_init)
-		this_cpu->c_init(c);
-
-	if (cpu_has(c, X86_FEATURE_SMEP))
-		cr4_set_bits(X86_CR4_SMEP);
-	{
-		unsigned long eflags = native_save_fl();
-		BUG_ON(eflags & X86_EFLAGS_AC);
-		if (cpu_has(c, X86_FEATURE_SMAP))
-			cr4_set_bits(X86_CR4_SMAP);
-	}
 	cr4_clear_bits(X86_CR4_UMIP);
-
-	if (cpu_has(c, X86_FEATURE_FSGSBASE))
-		cr4_set_bits(X86_CR4_FSGSBASE);
-
 	apply_forced_caps(c);
-
-	/* Single CPU: no secondary CPU capability merging needed */
-
 	select_idle_routine(c);
 }
 

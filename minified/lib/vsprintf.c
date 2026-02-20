@@ -64,7 +64,6 @@ number(char *buf, char *end, unsigned long long num, struct printf_spec spec)
 	char locase;
 	int need_pfx = ((spec.flags & SPECIAL) && spec.base != 10);
 	int i;
-	bool is_zero = num == 0LL;
 	int field_width = spec.field_width;
 	int precision = spec.precision;
 
@@ -77,26 +76,17 @@ number(char *buf, char *end, unsigned long long num, struct printf_spec spec)
 			field_width--;
 		}
 	}
-	if (need_pfx) {
-		if (spec.base == 16)
-			field_width -= 2;
-		else if (!is_zero)
-			field_width--;
-	}
+	if (need_pfx)
+		field_width -= 2;
 
 	i = 0;
 	if (num < spec.base)
 		tmp[i++] = hex_asc_upper[num] | locase;
-	else if (spec.base != 10) {
-		int mask = spec.base - 1;
-		int shift = 3;
-
-		if (spec.base == 16)
-			shift = 4;
+	else if (spec.base == 16) {
 		do {
-			tmp[i++] = (hex_asc_upper[((unsigned char)num) & mask] |
+			tmp[i++] = (hex_asc_upper[((unsigned char)num) & 0xf] |
 				    locase);
-			num >>= shift;
+			num >>= 4;
 		} while (num);
 	} else {
 		i = put_dec(tmp, num) - tmp;
@@ -121,16 +111,12 @@ number(char *buf, char *end, unsigned long long num, struct printf_spec spec)
 	}
 
 	if (need_pfx) {
-		if (spec.base == 16 || !is_zero) {
-			if (buf < end)
-				*buf = '0';
-			++buf;
-		}
-		if (spec.base == 16) {
-			if (buf < end)
-				*buf = ('X' | locase);
-			++buf;
-		}
+		if (buf < end)
+			*buf = '0';
+		++buf;
+		if (buf < end)
+			*buf = ('X' | locase);
+		++buf;
 	}
 
 	{
@@ -374,10 +360,6 @@ static noinline_for_stack int format_decode(const char *fmt,
 	case '%':
 		spec->type = FORMAT_TYPE_PERCENT_CHAR;
 		return ++fmt - start;
-
-	case 'o':
-		spec->base = 8;
-		break;
 
 	case 'x':
 		spec->flags |= SMALL;

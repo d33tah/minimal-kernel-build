@@ -12,27 +12,18 @@ extern void shmem_init(void);
 
 #include "mount.h"
 static int mnt_get_count(struct mount *mnt);
-static void mnt_set_mountpoint(struct mount *, struct mountpoint *,
-			       struct mount *);
 /* end pnode.h */
 #include "internal.h"
 
 static unsigned int m_hash_mask __read_mostly;
 static unsigned int m_hash_shift __read_mostly;
-static unsigned int mp_hash_mask __read_mostly;
-static unsigned int mp_hash_shift __read_mostly;
 
 static __initdata unsigned long mhash_entries;
-
-static __initdata unsigned long mphash_entries;
 
 static DEFINE_IDA(mnt_id_ida);
 
 static struct hlist_head *mount_hashtable __read_mostly;
-static struct hlist_head *mountpoint_hashtable __read_mostly;
 static struct kmem_cache *mnt_cache __read_mostly;
-static DECLARE_RWSEM(namespace_sem);
-static LIST_HEAD(ex_mountpoints);
 
 __cacheline_aligned_in_smp DEFINE_SEQLOCK(mount_lock);
 
@@ -53,13 +44,6 @@ static inline struct hlist_head *m_hash(struct vfsmount *mnt,
 	tmp += ((unsigned long)dentry / L1_CACHE_BYTES);
 	tmp = tmp + (tmp >> m_hash_shift);
 	return &mount_hashtable[tmp & m_hash_mask];
-}
-
-static inline struct hlist_head *mp_hash(struct dentry *dentry)
-{
-	unsigned long tmp = ((unsigned long)dentry / L1_CACHE_BYTES);
-	tmp = tmp + (tmp >> mp_hash_shift);
-	return &mountpoint_hashtable[tmp & mp_hash_mask];
 }
 
 static void mnt_free_id(struct mount *mnt)
@@ -136,7 +120,6 @@ int __mnt_want_write(struct vfsmount *m)
 	mnt->mnt_writers++;
 
 	smp_mb();
-	/* CONFIG_PREEMPT_RT not enabled */
 	while (READ_ONCE(mnt->mnt.mnt_flags) & MNT_WRITE_HOLD)
 		cpu_relax();
 
@@ -218,114 +201,6 @@ struct mount *__lookup_mnt(struct vfsmount *mnt, struct dentry *dentry)
 		if (&p->mnt_parent->mnt == mnt && p->mnt_mountpoint == dentry)
 			return p;
 	return NULL;
-}
-
-static struct vfsmount *lookup_mnt(const struct path *path)
-{
-	struct mount *child_mnt;
-	struct vfsmount *m;
-	unsigned seq;
-
-	rcu_read_lock();
-	do {
-		seq = read_seqbegin(&mount_lock);
-		child_mnt = __lookup_mnt(path->mnt, path->dentry);
-		m = child_mnt ? &child_mnt->mnt : NULL;
-	} while (!legitimize_mnt(m, seq));
-	rcu_read_unlock();
-	return m;
-}
-
-static struct mountpoint *get_mountpoint(struct dentry *dentry)
-{
-	struct mountpoint *mp, *new = NULL;
-	int ret;
-
-	if (d_mountpoint(dentry)) {
-		struct hlist_head *chain;
-
-		if (d_unlinked(dentry))
-			return ERR_PTR(-ENOENT);
-mountpoint:
-		read_seqlock_excl(&mount_lock);
-		mp = NULL;
-		chain = mp_hash(dentry);
-		hlist_for_each_entry(mp, chain, m_hash) {
-			if (mp->m_dentry == dentry) {
-				mp->m_count++;
-				break;
-			}
-		}
-		if (mp && mp->m_dentry != dentry)
-			mp = NULL;
-		read_sequnlock_excl(&mount_lock);
-		if (mp)
-			goto done;
-	}
-
-	if (!new)
-		new = kmalloc(sizeof(struct mountpoint), GFP_KERNEL);
-	if (!new)
-		return ERR_PTR(-ENOMEM);
-
-	ret = d_set_mounted(dentry);
-
-	if (ret == -EBUSY)
-		goto mountpoint;
-
-	mp = ERR_PTR(ret);
-	if (ret)
-		goto done;
-
-	read_seqlock_excl(&mount_lock);
-	new->m_dentry = dget(dentry);
-	new->m_count = 1;
-	hlist_add_head(&new->m_hash, mp_hash(dentry));
-	INIT_HLIST_HEAD(&new->m_list);
-	read_sequnlock_excl(&mount_lock);
-
-	mp = new;
-	new = NULL;
-done:
-	kfree(new);
-	return mp;
-}
-
-static void __put_mountpoint(struct mountpoint *mp, struct list_head *list)
-{
-	if (!--mp->m_count) {
-		struct dentry *dentry = mp->m_dentry;
-		BUG_ON(!hlist_empty(&mp->m_list));
-		spin_lock(&dentry->d_lock);
-		dentry->d_flags &= ~DCACHE_MOUNTED;
-		spin_unlock(&dentry->d_lock);
-		dput_to_list(dentry, list);
-		hlist_del(&mp->m_hash);
-		kfree(mp);
-	}
-}
-
-static void put_mountpoint(struct mountpoint *mp)
-{
-	__put_mountpoint(mp, &ex_mountpoints);
-}
-
-static void mnt_set_mountpoint(struct mount *mnt, struct mountpoint *mp,
-			       struct mount *child_mnt)
-{
-	mp->m_count++;
-	mnt_add_count(mnt, 1);
-	child_mnt->mnt_mountpoint = mp->m_dentry;
-	child_mnt->mnt_parent = mnt;
-	child_mnt->mnt_mp = mp;
-	hlist_add_head(&child_mnt->mnt_mp_list, &mp->m_list);
-}
-
-static void __attach_mnt(struct mount *mnt, struct mount *parent)
-{
-	hlist_add_head_rcu(&mnt->mnt_hash,
-			   m_hash(&parent->mnt, mnt->mnt_mountpoint));
-	list_add_tail(&mnt->mnt_child, &parent->mnt_mounts);
 }
 
 static struct vfsmount *vfs_create_mount(struct fs_context *fc)
@@ -459,173 +334,6 @@ struct vfsmount *mntget(struct vfsmount *mnt)
 	return mnt;
 }
 
-static void namespace_unlock(void)
-{
-	up_write(&namespace_sem);
-}
-
-static inline void namespace_lock(void)
-{
-	down_write(&namespace_sem);
-}
-
-static void free_mnt_ns(struct mnt_namespace *);
-static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *, bool);
-
-static int attach_recursive_mnt(struct mount *source_mnt,
-				struct mount *dest_mnt,
-				struct mountpoint *dest_mp, bool moving)
-{
-	struct mountpoint *smp;
-
-	smp = get_mountpoint(source_mnt->mnt.mnt_root);
-	if (IS_ERR(smp))
-		return PTR_ERR(smp);
-
-	lock_mount_hash();
-	if (source_mnt->mnt_ns)
-		list_del_init(&source_mnt->mnt_ns->list);
-	mnt_set_mountpoint(dest_mnt, dest_mp, source_mnt);
-	{
-		struct mount *parent = source_mnt->mnt_parent;
-		struct mount *m;
-		LIST_HEAD(head);
-		struct mnt_namespace *n = parent->mnt_ns;
-
-		BUG_ON(parent == source_mnt);
-
-		list_add_tail(&head, &source_mnt->mnt_list);
-		list_for_each_entry(m, &head, mnt_list)
-			m->mnt_ns = n;
-
-		list_splice(&head, n->list.prev);
-
-		n->mounts += n->pending_mounts;
-		n->pending_mounts = 0;
-
-		__attach_mnt(source_mnt, parent);
-	}
-
-	put_mountpoint(smp);
-	unlock_mount_hash();
-
-	return 0;
-}
-
-static struct mountpoint *lock_mount(struct path *path)
-{
-	struct vfsmount *mnt;
-	struct dentry *dentry = path->dentry;
-retry:
-	down_write(&dentry->d_inode->i_rwsem); /* inode_lock inlined */
-	if (unlikely(dentry->d_flags &
-		     DCACHE_CANT_MOUNT)) { /* cant_mount inlined */
-		inode_unlock(dentry->d_inode);
-		return ERR_PTR(-ENOENT);
-	}
-	namespace_lock();
-	mnt = lookup_mnt(path);
-	if (likely(!mnt)) {
-		struct mountpoint *mp = get_mountpoint(dentry);
-		if (IS_ERR(mp)) {
-			namespace_unlock();
-			inode_unlock(dentry->d_inode);
-			return mp;
-		}
-		return mp;
-	}
-	namespace_unlock();
-	inode_unlock(path->dentry->d_inode);
-	path_put(path);
-	path->mnt = mnt;
-	dentry = path->dentry = dget(mnt->mnt_root);
-	goto retry;
-}
-
-int path_mount(const char *dev_name, struct path *path, const char *type_page,
-	       unsigned long flags, void *data_page)
-{
-	unsigned int mnt_flags = 0, sb_flags;
-	struct file_system_type *type;
-	struct fs_context *fc;
-	int err = 0;
-
-	if ((flags & MS_MGC_MSK) == MS_MGC_VAL)
-		flags &= ~MS_MGC_MSK;
-	if (data_page)
-		((char *)data_page)[PAGE_SIZE - 1] = 0;
-	if (flags & MS_NOUSER)
-		return -EINVAL;
-	if (flags & (MS_REMOUNT | MS_BIND | MS_SHARED | MS_PRIVATE | MS_SLAVE |
-		     MS_UNBINDABLE | MS_MOVE))
-		return -EINVAL;
-
-	if (!(flags & MS_NOATIME))
-		mnt_flags |= MNT_RELATIME;
-	if (flags & MS_RDONLY)
-		mnt_flags |= MNT_READONLY;
-
-	sb_flags = flags &
-		   (SB_RDONLY | SB_SYNCHRONOUS | SB_MANDLOCK | SB_DIRSYNC |
-		    SB_SILENT | SB_POSIXACL | SB_LAZYTIME | SB_I_VERSION);
-
-	if (!type_page)
-		return -EINVAL;
-	type = get_fs_type(type_page);
-	if (!type)
-		return -ENODEV;
-
-	fc = fs_context_for_mount(type, sb_flags);
-	put_filesystem(type);
-	if (IS_ERR(fc))
-		return PTR_ERR(fc);
-
-	if (dev_name)
-		err = vfs_parse_fs_string(fc, "source", dev_name,
-					  strlen(dev_name));
-	if (!err)
-		err = parse_monolithic_mount_data(fc, data_page);
-	if (!err)
-		err = vfs_get_tree(fc);
-	if (!err) {
-		struct vfsmount *mnt;
-		struct mountpoint *mp;
-
-		up_write(&fc->root->d_sb->s_umount);
-		mnt = vfs_create_mount(fc);
-		if (IS_ERR(mnt)) {
-			err = PTR_ERR(mnt);
-		} else {
-			mp = lock_mount(path);
-			if (IS_ERR(mp)) {
-				mntput(mnt);
-				err = PTR_ERR(mp);
-			} else {
-				struct mount *newmnt = real_mount(mnt);
-				struct mount *parent = real_mount(path->mnt);
-
-				newmnt->mnt.mnt_flags = mnt_flags &
-							~MNT_INTERNAL_FLAGS;
-				err = attach_recursive_mnt(newmnt, parent, mp,
-							   false);
-				{
-					struct dentry *dentry = mp->m_dentry;
-					read_seqlock_excl(&mount_lock);
-					put_mountpoint(mp);
-					read_sequnlock_excl(&mount_lock);
-					namespace_unlock();
-					inode_unlock(dentry->d_inode);
-				}
-				if (err < 0)
-					mntput(mnt);
-			}
-		}
-	}
-
-	put_fs_context(fc);
-	return err;
-}
-
 static void dec_mnt_namespaces(struct ucounts *ucounts)
 {
 	dec_ucount(ucounts, UCOUNT_MNT_NAMESPACES);
@@ -680,11 +388,8 @@ void __init mnt_init(void)
 	mount_hashtable = alloc_large_system_hash(
 		"Mount-cache", sizeof(struct hlist_head), mhash_entries, 19,
 		HASH_ZERO, &m_hash_shift, &m_hash_mask, 0, 0);
-	mountpoint_hashtable = alloc_large_system_hash(
-		"Mountpoint-cache", sizeof(struct hlist_head), mphash_entries,
-		19, HASH_ZERO, &mp_hash_shift, &mp_hash_mask, 0, 0);
 
-	if (!mount_hashtable || !mountpoint_hashtable)
+	if (!mount_hashtable)
 		panic("Failed to allocate mount hash table\n");
 
 	err = sysfs_init();

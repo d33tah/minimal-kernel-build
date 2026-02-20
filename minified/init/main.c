@@ -28,9 +28,6 @@ extern void sched_init(void);
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
 
-int __init init_mount(const char *dev_name, const char *dir_name,
-		      const char *type_page, unsigned long flags,
-		      void *data_page);
 int __init init_chroot(const char *filename);
 int __init init_eaccess(const char *filename);
 int __init init_dup(struct file *file);

@@ -14,9 +14,6 @@ extern int parse_monolithic_mount_data(struct fs_context *, void *);
 
 extern void __init mnt_init(void);
 
-int path_mount(const char *dev_name, struct path *path,
-		const char *type_page, unsigned long flags, void *data_page);
-
 extern struct file *alloc_empty_file(int, const struct cred *);
 
 void put_super(struct super_block *sb);
@@ -35,6 +32,4 @@ extern int build_open_flags(const struct open_how *how, struct open_flags *op);
 
 extern int vfs_open(const struct path *, struct file *);
 
-extern int d_set_mounted(struct dentry *dentry);
-extern void dput_to_list(struct dentry *, struct list_head *);
 

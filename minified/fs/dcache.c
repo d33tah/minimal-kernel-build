@@ -221,35 +221,6 @@ void dput(struct dentry *dentry)
 	}
 }
 
-void dput_to_list(struct dentry *dentry, struct list_head *list)
-{
-	rcu_read_lock();
-	if (likely(fast_dput(dentry))) {
-		rcu_read_unlock();
-		return;
-	}
-	rcu_read_unlock();
-	if (!retain_dentry(dentry)) {
-		if (!--dentry->d_lockref.count) {
-			list_add(&dentry->d_lru, list);
-			dentry->d_flags |= DCACHE_SHRINK_LIST | DCACHE_LRU_LIST;
-		}
-	}
-	spin_unlock(&dentry->d_lock);
-}
-
-int d_set_mounted(struct dentry *dentry)
-{
-	spin_lock(&dentry->d_lock);
-	if (!d_unlinked(dentry) && !d_mountpoint(dentry)) {
-		dentry->d_flags |= DCACHE_MOUNTED;
-		spin_unlock(&dentry->d_lock);
-		return 0;
-	}
-	spin_unlock(&dentry->d_lock);
-	return -EBUSY;
-}
-
 static void do_one_tree(struct dentry *dentry)
 {
 	spin_lock(&dentry->d_lock);

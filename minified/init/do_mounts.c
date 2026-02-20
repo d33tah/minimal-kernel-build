@@ -4,13 +4,8 @@ extern dev_t ROOT_DEV;
 #include <linux/device.h>
 #include <linux/fs.h>
 extern int ramfs_init_fs_context(struct fs_context *fc);
-int __init init_mount(const char *dev_name, const char *dir_name,
-		      const char *type_page, unsigned long flags,
-		      void *data_page);
 int __init init_chroot(const char *filename);
-int __init init_eaccess(const char *filename);
 int __init init_dup(struct file *file);
-#include <uapi/linux/mount.h>
 
 dev_t ROOT_DEV;
 
@@ -29,8 +24,6 @@ dev_t name_to_dev_t(const char *name)
 void __init prepare_namespace(void)
 {
 	wait_for_device_probe();
-
-	init_mount(".", "/", NULL, MS_MOVE, NULL);
 	init_chroot(".");
 }
 

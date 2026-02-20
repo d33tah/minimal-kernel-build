@@ -1,22 +1,6 @@
 #include <linux/namei.h>
 #include <linux/fs_struct.h>
 #include <linux/file.h>
-#include "internal.h"
-
-int __init init_mount(const char *dev_name, const char *dir_name,
-		      const char *type_page, unsigned long flags,
-		      void *data_page)
-{
-	struct path path;
-	int ret;
-
-	ret = kern_path(dir_name, LOOKUP_FOLLOW, &path);
-	if (ret)
-		return ret;
-	ret = path_mount(dev_name, &path, type_page, flags, data_page);
-	path_put(&path);
-	return ret;
-}
 
 int __init init_chroot(const char *filename)
 {

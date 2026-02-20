@@ -117,7 +117,6 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_MAYREAD	0x00000010	
 #define VM_MAYWRITE	0x00000020
 #define VM_MAYEXEC	0x00000040
-#define VM_MAYSHARE	0x00000080
 
 #define VM_GROWSDOWN	0x00000100
 #define VM_PFNMAP	0x00000400
@@ -125,8 +124,6 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_LOCKED	0x00002000
 #define VM_IO           0x00004000	
 
-#define VM_SEQ_READ	0x00008000	
-#define VM_RAND_READ	0x00010000	
 
 #define VM_ACCOUNT	0x00100000
 #define VM_SYNC		0x00800000
@@ -140,7 +137,7 @@ void vm_area_free(struct vm_area_struct *);
 # define VM_GROWSUP	VM_NONE
 #endif
 
-#define VM_STACK_INCOMPLETE_SETUP	(VM_RAND_READ | VM_SEQ_READ)
+#define VM_STACK_INCOMPLETE_SETUP	(0x00010000 | 0x00008000)
 
 #define VM_DATA_FLAGS_EXEC	(VM_READ | VM_WRITE | VM_EXEC | \
 				 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)

@@ -52,8 +52,6 @@ extern const struct kernel_param __start___param[], __stop___param[];
 
 extern bool parameq(const char *name1, const char *name2);
 
-extern bool parameqn(const char *name1, const char *name2, size_t n);
-
 extern char *parse_args(const char *name,
 		      char *args,
 		      const struct kernel_param *params,

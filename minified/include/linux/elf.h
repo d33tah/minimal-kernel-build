@@ -22,9 +22,6 @@ extern unsigned int vdso32_enabled;
 #define elf_read_implies_exec(ex, executable_stack)	\
 	(executable_stack == EXSTACK_DEFAULT)
 struct linux_binprm;
-#define ARCH_HAS_SETUP_ADDITIONAL_PAGES 1
-extern int arch_setup_additional_pages(struct linux_binprm *bprm,
-				       int uses_interp);
 #include <uapi/linux/elf.h>
 #ifndef elf_read_implies_exec
 #define elf_read_implies_exec(ex, have_pt_gnu_stack)	0
@@ -37,9 +34,6 @@ extern int arch_setup_additional_pages(struct linux_binprm *bprm,
 #endif
 #ifndef START_THREAD
 #define START_THREAD(elf_ex, regs, elf_entry, start_stack) start_thread(regs, elf_entry, start_stack)
-#endif
-#if defined(ARCH_HAS_SETUP_ADDITIONAL_PAGES) && !defined(ARCH_SETUP_ADDITIONAL_PAGES)
-#define ARCH_SETUP_ADDITIONAL_PAGES(bprm, ex, interpreter) arch_setup_additional_pages(bprm, interpreter)
 #endif
 #define elfhdr		elf32_hdr
 #define elf_phdr	elf32_phdr

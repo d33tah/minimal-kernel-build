@@ -220,7 +220,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	int retval, i;
 	unsigned long elf_entry;
 	unsigned long e_entry;
-	unsigned long reloc_func_desc __maybe_unused = 0;
 	int executable_stack = EXSTACK_DEFAULT;
 	struct elfhdr *elf_ex = (struct elfhdr *)bprm->buf;
 	struct pt_regs *regs;
@@ -374,26 +373,12 @@ static int load_elf_binary(struct linux_binprm *bprm)
 
 	set_binfmt(&elf_format);
 
-#ifdef ARCH_HAS_SETUP_ADDITIONAL_PAGES
-	retval = ARCH_SETUP_ADDITIONAL_PAGES(bprm, elf_ex, false);
-	if (retval < 0)
-		goto out;
-#endif
-
 	retval = create_elf_tables(bprm, elf_ex, 0, e_entry, phdr_addr);
 	if (retval < 0)
 		goto out;
 
-	if (current->personality & MMAP_PAGE_ZERO) {
-		error = vm_mmap(NULL, 0, PAGE_SIZE, PROT_READ | PROT_EXEC,
-				MAP_FIXED | MAP_PRIVATE, 0);
-	}
-
 	regs = current_pt_regs();
-#ifdef ELF_PLAT_INIT
-
-	ELF_PLAT_INIT(regs, reloc_func_desc);
-#endif
+	ELF_PLAT_INIT(regs, 0);
 
 	task_lock(current->group_leader);
 	current->signal->rlim[RLIMIT_STACK] = bprm->rlim_stack;

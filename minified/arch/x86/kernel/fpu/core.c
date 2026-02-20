@@ -163,16 +163,6 @@ void fpu_reset_from_exception_fixup(void)
 	restore_fpregs_from_fpstate(&init_fpstate, XFEATURE_MASK_FPSTATE);
 }
 
-void fpu_sync_fpstate(struct fpu *fpu)
-{
-	WARN_ON_FPU(fpu != &current->thread.fpu);
-
-	fpregs_lock();
-	if (!test_thread_flag(TIF_NEED_FPU_LOAD))
-		save_fpregs_to_fpstate(fpu);
-	fpregs_unlock();
-}
-
 static inline unsigned int init_fpstate_copy_size(void)
 {
 	if (!use_xsave())
@@ -282,9 +272,4 @@ void switch_fpu_return(void)
 		return;
 
 	fpregs_restore_userregs();
-}
-
-int fpu__exception_code(struct fpu *fpu, int trap_nr)
-{
-	return 0;
 }

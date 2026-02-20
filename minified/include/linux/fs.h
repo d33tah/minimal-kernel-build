@@ -517,9 +517,7 @@ struct inode_operations {
 } ____cacheline_aligned;
 struct super_operations {};
 
-#define S_APPEND	(1 << 2)
 #define S_DEAD		(1 << 4)
-#define S_SWAPFILE	(1 << 8)
 #define S_AUTOMOUNT	(1 << 11)
 
 #define IS_DEADDIR(inode)	((inode)->i_flags & S_DEAD)

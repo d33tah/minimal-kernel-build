@@ -85,11 +85,6 @@ static inline void folio_lock(struct folio *folio)
 		cpu_relax();
 }
 
-static inline void lock_page(struct page *page)
-{
-	folio_lock(page_folio(page));
-}
-
 static inline int folio_wait_locked_killable(struct folio *folio)
 {
 	if (!folio_test_locked(folio))

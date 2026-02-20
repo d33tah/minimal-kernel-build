@@ -7,8 +7,3 @@ unsigned int vclocks_used __read_mostly;
 void __init init_vdso_image(const struct vdso_image *image)
 {
 }
-
-int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
-{
-	return 0;
-}

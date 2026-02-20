@@ -28,11 +28,6 @@ static inline void mmdrop_sched(struct mm_struct *mm)
 	mmdrop(mm);
 }
 
-static inline void mmget(struct mm_struct *mm)
-{
-	atomic_inc(&mm->mm_users);
-}
-
 extern void mmput(struct mm_struct *);
 
 extern void exec_mm_release(struct task_struct *, struct mm_struct *);

@@ -282,8 +282,7 @@ copy_process(int node, struct kernel_clone_args *args)
 	retval = -EAGAIN;
 	if (data_race(nr_threads >= max_threads))
 		goto bad_fork;
-	p->flags &=
-		~(PF_SUPERPRIV | PF_WQ_WORKER | PF_IDLE | PF_NO_SETAFFINITY);
+	p->flags &= ~(PF_IDLE | PF_NO_SETAFFINITY);
 	p->flags |= PF_FORKNOEXEC;
 	spin_lock_init(&p->alloc_lock);
 

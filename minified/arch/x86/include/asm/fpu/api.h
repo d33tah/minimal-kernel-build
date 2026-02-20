@@ -17,8 +17,6 @@ static inline void fpregs_unlock(void)
 }
 extern void switch_fpu_return(void);
 
-extern int  fpu__exception_code(struct fpu *fpu, int trap_nr);
-extern void fpu_sync_fpstate(struct fpu *fpu);
 extern void fpu_reset_from_exception_fixup(void);
 
 extern void fpu__init_cpu(void);

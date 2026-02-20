@@ -180,13 +180,6 @@ static inline void __hlist_del(struct hlist_node *n)
 		WRITE_ONCE(next->pprev, pprev);
 }
 
-static inline void hlist_del(struct hlist_node *n)
-{
-	__hlist_del(n);
-	n->next = LIST_POISON1;
-	n->pprev = LIST_POISON2;
-}
-
 static inline void hlist_del_init(struct hlist_node *n)
 {
 	if (!hlist_unhashed(n)) {

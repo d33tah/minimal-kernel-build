@@ -86,12 +86,6 @@ void __next_mem_range_rev(u64 *idx, int nid, enum memblock_flags flags,
 	__for_each_mem_range(i, &memblock.reserved, NULL, NUMA_NO_NODE,	\
 			     MEMBLOCK_NONE, p_start, p_end, NULL)
 
-static inline bool memblock_is_nomap(struct memblock_region *m)
-{
-	return m->flags & MEMBLOCK_NOMAP;
-}
-
-
 void __next_mem_pfn_range(int *idx, int nid, unsigned long *out_start_pfn,
 			  unsigned long *out_end_pfn, int *out_nid);
 

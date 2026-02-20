@@ -243,12 +243,6 @@ typedef struct pglist_data {
 	atomic_long_t vm_stat[NR_VM_NODE_STAT_ITEMS];
 } pg_data_t;
 
-#define node_present_pages(nid) (NODE_DATA(nid)->node_present_pages)
-#define node_spanned_pages(nid) (NODE_DATA(nid)->node_spanned_pages)
-
-#define node_start_pfn(nid) (NODE_DATA(nid)->node_start_pfn)
-#define node_end_pfn(nid) pgdat_end_pfn(NODE_DATA(nid))
-
 static inline unsigned long pgdat_end_pfn(pg_data_t *pgdat)
 {
 	return pgdat->node_start_pfn + pgdat->node_spanned_pages;

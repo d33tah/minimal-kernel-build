@@ -70,12 +70,6 @@ struct range { u64 start; u64 end; };
 int add_range_with_merge(struct range *range, int az, int nr_range, u64 start, u64 end);
 int clean_sort_range(struct range *range, int az);
 
-static inline void copy_user_page(void *to, void *from, unsigned long vaddr,
-				  struct page *topage)
-{
-	copy_page(to, from);
-}
-
 #define alloc_zeroed_user_highpage_movable(vma, vaddr) \
 	alloc_page_vma(GFP_HIGHUSER_MOVABLE | __GFP_ZERO, vma, vaddr)
 

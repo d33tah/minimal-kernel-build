@@ -72,7 +72,6 @@ struct rlimit {
 	__kernel_ulong_t	rlim_cur;
 	__kernel_ulong_t	rlim_max;
 };
-#define _STK_LIM	(8*1024*1024)
 #define RLIMIT_STACK		3
 #define RLIMIT_NOFILE		7
 #define RLIM_NLIMITS		8
@@ -306,9 +305,7 @@ struct task_struct {
 
 #define PF_IDLE			0x00000002
 #define PF_EXITING		0x00000004
-#define PF_WQ_WORKER		0x00000020
 #define PF_FORKNOEXEC		0x00000040
-#define PF_SUPERPRIV		0x00000100
 #define PF_MEMALLOC		0x00000800
 #define PF_NOFREEZE		0x00008000
 #define PF_MEMALLOC_NOFS	0x00040000
@@ -316,26 +313,6 @@ struct task_struct {
 #define PF_KTHREAD		0x00200000
 #define PF_NO_SETAFFINITY	0x04000000
 #define PF_MEMALLOC_PIN		0x10000000
-
-#define PFA_SPEC_SSB_DISABLE		3
-#define PFA_SPEC_IB_DISABLE		5
-#define PFA_SPEC_SSB_NOEXEC		7
-
-#define TASK_PFA_TEST(name, func)					\
-	static inline bool task_##func(struct task_struct *p)		\
-	{ return test_bit(PFA_##name, &p->atomic_flags); }
-
-#define TASK_PFA_CLEAR(name, func)					\
-	static inline void task_clear_##func(struct task_struct *p)	\
-	{ clear_bit(PFA_##name, &p->atomic_flags); }
-
-TASK_PFA_TEST(SPEC_SSB_DISABLE, spec_ssb_disable)
-TASK_PFA_CLEAR(SPEC_SSB_DISABLE, spec_ssb_disable)
-
-TASK_PFA_TEST(SPEC_SSB_NOEXEC, spec_ssb_noexec)
-TASK_PFA_CLEAR(SPEC_SSB_NOEXEC, spec_ssb_noexec)
-
-TASK_PFA_TEST(SPEC_IB_DISABLE, spec_ib_disable)
 
 static inline void
 current_restore_flags(unsigned long orig_flags, unsigned long flags)

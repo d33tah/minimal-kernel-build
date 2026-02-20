@@ -13,7 +13,6 @@ extern void lockref_mark_dead(struct lockref *);
 extern int lockref_get_not_dead(struct lockref *);
 #include <linux/hash.h>
 
-#define hashlen_hash(hashlen) ((u32)(hashlen))
 #define hashlen_len(hashlen)  ((u32)((hashlen) >> 32))
 #define hashlen_create(hash, len) ((u64)(len)<<32 | (u32)(hash))
 
@@ -70,17 +69,8 @@ enum dentry_d_lock_class
 	DENTRY_D_LOCK_NESTED
 };
 
-#define DCACHE_CANT_MOUNT		0x00000100
-#define DCACHE_SHRINK_LIST		0x00000400
-
 #define DCACHE_DENTRY_KILLED		0x00008000
-
-#define DCACHE_MOUNTED			0x00010000
 #define DCACHE_NEED_AUTOMOUNT		0x00020000
-#define DCACHE_MANAGED_DENTRY \
-	(DCACHE_MOUNTED|DCACHE_NEED_AUTOMOUNT|0x00040000)
-
-#define DCACHE_LRU_LIST			0x00080000
 
 #define DCACHE_ENTRY_TYPE		0x00700000
 #define DCACHE_MISS_TYPE		0x00000000
@@ -268,7 +258,6 @@ extern void __init files_init(void);
 #define FMODE_PWRITE		((__force fmode_t)0x10)
 
 #define FMODE_EXEC		((__force fmode_t)0x20)
-#define FMODE_UNSIGNED_OFFSET	((__force fmode_t)0x2000)
 
 #define FMODE_PATH		((__force fmode_t)0x4000)
 
@@ -448,14 +437,7 @@ static inline struct inode *file_inode(const struct file *f)
 }
 
 #define SB_RDONLY	 1
-#define SB_SYNCHRONOUS	16
-#define SB_MANDLOCK	64
-#define SB_DIRSYNC	128
-#define SB_SILENT	32768
-#define SB_POSIXACL	(1<<16)
 #define SB_KERNMOUNT	(1<<22)
-#define SB_I_VERSION	(1<<23)
-#define SB_LAZYTIME	(1<<25)
 #define SB_BORN		(1<<29)
 #define SB_ACTIVE	(1<<30)
 #define SB_I_NOEXEC	0x00000002
@@ -540,9 +522,7 @@ struct super_operations {};
 #define S_SWAPFILE	(1 << 8)
 #define S_AUTOMOUNT	(1 << 11)
 
-#define IS_APPEND(inode)	((inode)->i_flags & S_APPEND)
 #define IS_DEADDIR(inode)	((inode)->i_flags & S_DEAD)
-#define IS_SWAPFILE(inode)	((inode)->i_flags & S_SWAPFILE)
 #define IS_AUTOMOUNT(inode)	((inode)->i_flags & S_AUTOMOUNT)
 
 #define __I_NEW			3

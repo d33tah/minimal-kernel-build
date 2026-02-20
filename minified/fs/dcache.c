@@ -17,29 +17,10 @@ static inline struct hlist_bl_head *d_hash(unsigned int hash)
 	return dentry_hashtable + (hash >> d_hash_shift);
 }
 
-#include <asm/word-at-a-time.h>
-
 static inline int dentry_cmp(const struct dentry *dentry,
 			     const unsigned char *ct, unsigned tcount)
 {
-	const unsigned char *cs = READ_ONCE(dentry->d_name.name);
-	unsigned long a, b, mask;
-
-	for (;;) {
-		a = read_word_at_a_time(cs);
-		b = load_unaligned_zeropad(ct);
-		if (tcount < sizeof(unsigned long))
-			break;
-		if (unlikely(a != b))
-			return 1;
-		cs += sizeof(unsigned long);
-		ct += sizeof(unsigned long);
-		tcount -= sizeof(unsigned long);
-		if (!tcount)
-			return 0;
-	}
-	mask = bytemask_from_count(tcount);
-	return unlikely(!!((a ^ b) & mask));
+	return memcmp(READ_ONCE(dentry->d_name.name), ct, tcount);
 }
 
 static void __d_free(struct rcu_head *head)

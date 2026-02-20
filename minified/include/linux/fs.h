@@ -20,7 +20,6 @@ extern int lockref_get_not_dead(struct lockref *);
 #define IS_ROOT(x) ((x) == (x)->d_parent)
 
 #define HASH_LEN_DECLARE u32 hash; u32 len
-#define bytemask_from_count(cnt)	(~(~0ul << (cnt)*8))
 
 struct qstr {
 	union {

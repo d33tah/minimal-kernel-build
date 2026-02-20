@@ -82,7 +82,7 @@ unsigned long loops_per_jiffy = (1 << 12);
 
 static __initdata DECLARE_COMPLETION(kthreadd_done);
 
-noinline void __ref rest_init(void)
+static noinline void __ref rest_init(void)
 {
 	struct task_struct *tsk;
 	int pid;

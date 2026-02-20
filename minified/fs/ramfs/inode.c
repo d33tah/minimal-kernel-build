@@ -34,8 +34,9 @@ struct ramfs_fs_info {
 static const struct super_operations ramfs_ops;
 static const struct inode_operations ramfs_dir_inode_operations;
 
-struct inode *ramfs_get_inode(struct super_block *sb, const struct inode *dir,
-			      umode_t mode, dev_t dev)
+static struct inode *ramfs_get_inode(struct super_block *sb,
+				     const struct inode *dir, umode_t mode,
+				     dev_t dev)
 {
 	struct inode *inode = new_inode(sb);
 

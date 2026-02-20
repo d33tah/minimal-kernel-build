@@ -15,7 +15,7 @@ struct pagevec {
 	bool percpu_pvec_drained;
 	struct page *pages[PAGEVEC_SIZE];
 };
-void __pagevec_lru_add(struct pagevec *pvec);
+static void __pagevec_lru_add(struct pagevec *pvec);
 static inline void pagevec_reinit(struct pagevec *pvec)
 {
 	pvec->nr = 0;
@@ -93,7 +93,7 @@ void lru_cache_add_inactive_or_unevictable(struct page *page,
 	folio_add_lru(page_folio(page));
 }
 
-void lru_add_drain_cpu(int cpu)
+static void lru_add_drain_cpu(int cpu)
 {
 	struct pagevec *pvec = &per_cpu(lru_pvecs.lru_add, cpu);
 
@@ -162,7 +162,7 @@ void release_pages(struct page **pages, int nr)
 		unlock_page_lruvec_irqrestore(lruvec, flags);
 }
 
-void __pagevec_lru_add(struct pagevec *pvec)
+static void __pagevec_lru_add(struct pagevec *pvec)
 {
 	int i;
 	struct lruvec *lruvec = NULL;

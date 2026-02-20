@@ -189,7 +189,7 @@ out_free:
 	return ERR_PTR(retval);
 }
 
-struct pid *find_pid_ns(int nr, struct pid_namespace *ns)
+static struct pid *find_pid_ns(int nr, struct pid_namespace *ns)
 {
 	return idr_find(&ns->idr, nr);
 }
@@ -206,7 +206,7 @@ void attach_pid(struct task_struct *task, enum pid_type type)
 	hlist_add_head_rcu(&task->pid_links[type], &pid->tasks[type]);
 }
 
-struct task_struct *pid_task(struct pid *pid, enum pid_type type)
+static struct task_struct *pid_task(struct pid *pid, enum pid_type type)
 {
 	struct task_struct *result = NULL;
 	if (pid) {

@@ -7,8 +7,8 @@ int __must_check kstrtouint(const char *s, unsigned int base,
 
 #define KSTRTOX_OVERFLOW (1U << 31)
 
-noinline const char *_parse_integer_fixup_radix(const char *s,
-						unsigned int *base)
+static noinline const char *_parse_integer_fixup_radix(const char *s,
+						       unsigned int *base)
 {
 	if (*base == 0) {
 		if (s[0] == '0') {
@@ -24,9 +24,10 @@ noinline const char *_parse_integer_fixup_radix(const char *s,
 	return s;
 }
 
-noinline unsigned int _parse_integer_limit(const char *s, unsigned int base,
-					   unsigned long long *p,
-					   size_t max_chars)
+static noinline unsigned int _parse_integer_limit(const char *s,
+						  unsigned int base,
+						  unsigned long long *p,
+						  size_t max_chars)
 {
 	unsigned long long res;
 	unsigned int rv;
@@ -60,8 +61,8 @@ noinline unsigned int _parse_integer_limit(const char *s, unsigned int base,
 	return rv;
 }
 
-noinline unsigned int _parse_integer(const char *s, unsigned int base,
-				     unsigned long long *p)
+static noinline unsigned int _parse_integer(const char *s, unsigned int base,
+					    unsigned long long *p)
 {
 	return _parse_integer_limit(s, base, p, INT_MAX);
 }

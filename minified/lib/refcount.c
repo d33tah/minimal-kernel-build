@@ -6,7 +6,7 @@ void refcount_warn_saturate(refcount_t *r, enum refcount_saturation_type t)
 {
 }
 
-bool refcount_dec_not_one(refcount_t *r)
+static bool refcount_dec_not_one(refcount_t *r)
 {
 	unsigned int new, val = atomic_read(&r->refs);
 

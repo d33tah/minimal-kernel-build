@@ -117,7 +117,8 @@ inline int build_open_flags(const struct open_how *how, struct open_flags *op)
 	return 0;
 }
 
-struct file *file_open_name(struct filename *name, int flags, umode_t mode)
+static struct file *file_open_name(struct filename *name, int flags,
+				   umode_t mode)
 {
 	struct open_flags op;
 	struct open_how how = build_open_how(flags, mode);

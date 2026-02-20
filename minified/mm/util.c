@@ -8,7 +8,7 @@ void kfree_const(const void *x)
 		kfree(x);
 }
 
-char *kstrdup(const char *s, gfp_t gfp)
+static char *kstrdup(const char *s, gfp_t gfp)
 {
 	size_t len;
 	char *buf;

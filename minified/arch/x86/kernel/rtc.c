@@ -12,7 +12,7 @@ extern spinlock_t rtc_lock;
 #define RTC_FREQ_SELECT 10
 #define RTC_UIP 0x80
 #define CMOS_READ(addr) rtc_cmos_read(addr)
-unsigned char rtc_cmos_read(unsigned char addr);
+static unsigned char rtc_cmos_read(unsigned char addr);
 volatile unsigned long cmos_lock;
 static inline void lock_cmos(unsigned char reg)
 {
@@ -88,7 +88,7 @@ void mach_get_cmos_time(struct timespec64 *now)
 	now->tv_nsec = 0;
 }
 
-unsigned char rtc_cmos_read(unsigned char addr)
+static unsigned char rtc_cmos_read(unsigned char addr)
 {
 	unsigned char val;
 

@@ -414,11 +414,6 @@ static const char *step_into(struct nameidata *nd, int flags,
 	return NULL;
 }
 
-static const char *handle_dots(struct nameidata *nd, int type)
-{
-	return NULL;
-}
-
 static const char *walk_component(struct nameidata *nd, int flags)
 {
 	struct dentry *dentry;
@@ -428,7 +423,7 @@ static const char *walk_component(struct nameidata *nd, int flags)
 	if (unlikely(nd->last_type != LAST_NORM)) {
 		if (!(flags & WALK_MORE) && nd->depth)
 			put_link(nd);
-		return handle_dots(nd, nd->last_type);
+		return NULL;
 	}
 	dentry = lookup_fast(nd, &inode, &seq);
 	if (IS_ERR(dentry))
@@ -711,7 +706,7 @@ static const char *open_last_lookups(struct nameidata *nd, struct file *file,
 	if (nd->last_type != LAST_NORM) {
 		if (nd->depth)
 			put_link(nd);
-		return handle_dots(nd, nd->last_type);
+		return NULL;
 	}
 
 	if (nd->last.name[nd->last.len])

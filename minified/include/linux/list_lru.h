@@ -41,9 +41,6 @@ static inline int __list_lru_init(struct list_lru *lru, bool memcg_aware,
 
 static inline bool list_lru_del(struct list_lru *lru, struct list_head *item) { return false; }
 
-static inline unsigned long list_lru_count_one(struct list_lru *lru,
-				 int nid, struct mem_cgroup *memcg) { return 0; }
-
 static inline unsigned long list_lru_shrink_count(struct list_lru *lru,
 						  struct shrink_control *sc) { return 0; }
 

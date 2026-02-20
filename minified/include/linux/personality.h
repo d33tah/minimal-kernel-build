@@ -2,8 +2,6 @@
 #define _LINUX_PERSONALITY_H
 
 enum {
-	MMAP_PAGE_ZERO =	0x0100000,
-	ADDR_COMPAT_LAYOUT =	0x0200000,
 	READ_IMPLIES_EXEC =	0x0400000,
 };
 
@@ -13,6 +11,5 @@ enum {
 };
 
 #define personality(pers)	(pers & PER_MASK)
-#define set_personality(pers)	(current->personality = (pers))
 
 #endif  

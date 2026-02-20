@@ -26,10 +26,7 @@ struct siginfo;
 
 #endif
 
-#define SIGILL		 4
-#define SIGTRAP		 5
 #define SIGBUS		 7
-#define SIGFPE		 8
 #define SIGKILL		 9
 #define SIGSEGV		11
 #define SIGCHLD		17

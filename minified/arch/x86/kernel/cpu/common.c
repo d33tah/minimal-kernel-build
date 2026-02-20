@@ -32,14 +32,6 @@ extern const struct cpu_dev *const __x86_cpu_dev_start[],
 	*const __x86_cpu_dev_end[];
 /* end cpu.h */
 
-static const struct cpu_dev default_cpu = {
-	.c_init = NULL,
-	.c_vendor = "Unknown",
-	.c_x86_vendor = X86_VENDOR_UNKNOWN,
-};
-
-static const struct cpu_dev *this_cpu = &default_cpu;
-
 DEFINE_PER_CPU_PAGE_ALIGNED(
 	struct gdt_page,
 	gdt_page) = { .gdt = {
@@ -195,11 +187,6 @@ static void get_cpu_cap(struct cpuinfo_x86 *c)
 
 	c->extended_cpuid_level = cpuid_eax(0x80000000);
 	apply_forced_caps(c);
-}
-
-static void get_cpu_address_sizes(struct cpuinfo_x86 *c)
-{
-	/* 32-bit: defaults (32/32) are sufficient */
 }
 
 void __init early_cpu_init(void)

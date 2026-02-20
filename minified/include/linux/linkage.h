@@ -116,26 +116,6 @@
 	SYM_ENTRY(name, linkage, SYM_A_NONE)
 #endif
 
-#ifndef SYM_FUNC_START
-#define SYM_FUNC_START(name)				\
-	SYM_START(name, SYM_L_GLOBAL, SYM_A_ALIGN)
-#endif
-
-#ifndef SYM_FUNC_START_NOALIGN
-#define SYM_FUNC_START_NOALIGN(name)			\
-	SYM_START(name, SYM_L_GLOBAL, SYM_A_NONE)
-#endif
-
-#ifndef SYM_FUNC_START_LOCAL
-#define SYM_FUNC_START_LOCAL(name)			\
-	SYM_START(name, SYM_L_LOCAL, SYM_A_ALIGN)
-#endif
-
-#ifndef SYM_FUNC_START_LOCAL_NOALIGN
-#define SYM_FUNC_START_LOCAL_NOALIGN(name)		\
-	SYM_START(name, SYM_L_LOCAL, SYM_A_NONE)
-#endif
-
 #ifndef SYM_FUNC_END
 #define SYM_FUNC_END(name)				\
 	SYM_END(name, SYM_T_FUNC)
@@ -191,13 +171,6 @@
 	SYM_DATA_END(name)
 #endif
 
-#ifndef SYM_DATA_LOCAL
-#define SYM_DATA_LOCAL(name, data...)			\
-	SYM_DATA_START_LOCAL(name) ASM_NL			\
-	data ASM_NL						\
-	SYM_DATA_END(name)
 #endif
-
-#endif  
 
 #endif  

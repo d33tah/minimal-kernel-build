@@ -8,20 +8,7 @@ static void dequeue_task_rt(struct rq *rq, struct task_struct *p, int f)
 static void check_preempt_curr_rt(struct rq *rq, struct task_struct *p, int f)
 {
 }
-static struct task_struct *pick_next_task_rt(struct rq *rq)
-{
-	return NULL;
-}
 static void put_prev_task_rt(struct rq *rq, struct task_struct *p)
-{
-}
-static void set_next_task_rt(struct rq *rq, struct task_struct *p, bool f)
-{
-}
-static void task_tick_rt(struct rq *rq, struct task_struct *p, int q)
-{
-}
-static void update_curr_rt(struct rq *rq)
 {
 }
 
@@ -29,11 +16,7 @@ DEFINE_SCHED_CLASS(rt) = {
 	.enqueue_task = enqueue_task_rt,
 	.dequeue_task = dequeue_task_rt,
 	.check_preempt_curr = check_preempt_curr_rt,
-	.pick_next_task = pick_next_task_rt,
 	.put_prev_task = put_prev_task_rt,
-	.set_next_task = set_next_task_rt,
-	.task_tick = task_tick_rt,
-	.update_curr = update_curr_rt,
 };
 
 static void enqueue_task_dl(struct rq *rq, struct task_struct *p, int flags)
@@ -46,33 +29,16 @@ static void check_preempt_curr_dl(struct rq *rq, struct task_struct *p,
 				  int flags)
 {
 }
-static struct task_struct *pick_next_task_dl(struct rq *rq)
-{
-	return NULL;
-}
 static void put_prev_task_dl(struct rq *rq, struct task_struct *p)
 {
 }
-static void set_next_task_dl(struct rq *rq, struct task_struct *p, bool first)
-{
-}
-static void task_tick_dl(struct rq *rq, struct task_struct *p, int queued)
-{
-}
 static void task_fork_dl(struct task_struct *p)
-{
-}
-static void update_curr_dl(struct rq *rq)
 {
 }
 DEFINE_SCHED_CLASS(dl) = {
 	.enqueue_task = enqueue_task_dl,
 	.dequeue_task = dequeue_task_dl,
 	.check_preempt_curr = check_preempt_curr_dl,
-	.pick_next_task = pick_next_task_dl,
 	.put_prev_task = put_prev_task_dl,
-	.set_next_task = set_next_task_dl,
-	.task_tick = task_tick_dl,
 	.task_fork = task_fork_dl,
-	.update_curr = update_curr_dl,
 };

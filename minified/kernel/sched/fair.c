@@ -1,4 +1,3 @@
-
 #include <linux/jiffies.h>
 #include <linux/sched/clock.h>
 
@@ -73,11 +72,6 @@ static void update_curr(struct cfs_rq *cfs_rq)
 	curr->sum_exec_runtime += delta_exec;
 	curr->vruntime += delta_exec;
 	update_min_vruntime(cfs_rq);
-}
-
-static void update_curr_fair(struct rq *rq)
-{
-	update_curr(cfs_rq_of(&rq->curr->se));
 }
 
 void reweight_task(struct task_struct *p, int prio)
@@ -216,11 +210,6 @@ idle:
 	return NULL;
 }
 
-static struct task_struct *__pick_next_task_fair(struct rq *rq)
-{
-	return pick_next_task_fair(rq, NULL, NULL);
-}
-
 static void put_prev_task_fair(struct rq *rq, struct task_struct *prev)
 {
 	struct sched_entity *se = &prev->se;
@@ -236,19 +225,6 @@ static void put_prev_task_fair(struct rq *rq, struct task_struct *prev)
 			update_load_avg(cfs_rq, se, 0);
 		}
 		cfs_rq->curr = NULL;
-	}
-}
-
-static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
-{
-	struct cfs_rq *cfs_rq;
-	struct sched_entity *se = &curr->se;
-
-	for_each_sched_entity(se)
-	{
-		cfs_rq = cfs_rq_of(se);
-		update_curr(cfs_rq);
-		update_load_avg(cfs_rq, se, 0);
 	}
 }
 
@@ -273,18 +249,6 @@ static void task_fork_fair(struct task_struct *p)
 	rq_unlock(rq, &rf);
 }
 
-static void set_next_task_fair(struct rq *rq, struct task_struct *p, bool first)
-{
-	struct sched_entity *se = &p->se;
-
-	for_each_sched_entity(se)
-	{
-		struct cfs_rq *cfs_rq = cfs_rq_of(se);
-
-		set_next_entity(cfs_rq, se);
-	}
-}
-
 void init_cfs_rq(struct cfs_rq *cfs_rq)
 {
 	cfs_rq->tasks_timeline = RB_ROOT_CACHED;
@@ -298,13 +262,8 @@ DEFINE_SCHED_CLASS(fair) = {
 
 	.check_preempt_curr = check_preempt_wakeup,
 
-	.pick_next_task = __pick_next_task_fair,
 	.put_prev_task = put_prev_task_fair,
-	.set_next_task = set_next_task_fair,
 
-	.task_tick = task_tick_fair,
 	.task_fork = task_fork_fair,
-
-	.update_curr = update_curr_fair,
 
 };

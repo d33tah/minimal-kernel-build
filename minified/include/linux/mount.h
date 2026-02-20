@@ -10,13 +10,9 @@ struct user_namespace;
 struct file_system_type;
 
 #define MNT_NOEXEC	0x04
-#define MNT_RELATIME	0x20
 #define MNT_READONLY	0x40
 #define MNT_WRITE_HOLD	0x200
 #define MNT_INTERNAL	0x4000
-
-#define MNT_INTERNAL_FLAGS (MNT_WRITE_HOLD | MNT_INTERNAL | \
-			    MNT_DOOMED | MNT_SYNC_UMOUNT | MNT_LOCKED)
 
 #define MNT_LOCKED		0x800000
 #define MNT_DOOMED		0x1000000

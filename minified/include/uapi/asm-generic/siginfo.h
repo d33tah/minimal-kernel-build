@@ -54,26 +54,11 @@ typedef struct siginfo {
 #define si_arch		_sifields._sigsys._arch
 #define SI_KERNEL	0x80
 
-/* Only keep signal sub-codes actually used */
-#define ILL_ILLOPN	2
-#define ILL_BADSTK	8
-
-/* FPE codes used by x86 FPU */
-#define FPE_INTDIV	1
-
 /* SEGV codes used by x86 fault handler */
 #define SEGV_MAPERR	1
 #define SEGV_ACCERR	2
 
 /* BUS codes used by x86 */
-#define BUS_ADRALN	1
 #define BUS_ADRERR	2
-
-/* TRAP codes used by x86 */
-#define TRAP_BRKPT	1
-#define TRAP_TRACE	2
-#define TRAP_HWBKPT     4
-
-/* SYS codes */
 
 #endif  

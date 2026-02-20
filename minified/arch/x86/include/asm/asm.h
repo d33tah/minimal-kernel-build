@@ -27,7 +27,6 @@
 #define _ASM_AX		__ASM_REG(ax)
 #define _ASM_BX		__ASM_REG(bx)
 #define _ASM_CX		__ASM_REG(cx)
-#define _ASM_DX		__ASM_REG(dx)
 #define _ASM_SP		__ASM_REG(sp)
 
 #define _ASM_RIP(x)	__ASM_SEL_RAW(x, x (__ASM_REGPFX rip))

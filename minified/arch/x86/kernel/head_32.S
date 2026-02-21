@@ -132,29 +132,6 @@ SYM_CODE_START(startup_32)
 	jmp .Ldefault_entry
 SYM_CODE_END(startup_32)
 
-/* CONFIG_HOTPLUG_CPU block (start_cpu0) removed - not set */
-
-/*
- * Non-boot CPU entry point; entered from trampoline.S
- * We can't lgdt here, because lgdt itself uses a data segment, but
- * we know the trampoline has already loaded the boot_gdt for us.
- *
- * If cpu hotplug is not supported then this code can go in init section
- * which will be freed later
- */
-SYM_FUNC_START(startup_32_smp)
-	cld
-	movl $(__BOOT_DS),%eax
-	movl %eax,%ds
-	movl %eax,%es
-	movl %eax,%fs
-	movl %eax,%gs
-	movl pa(initial_stack),%ecx
-	movl %eax,%ss
-	leal -__PAGE_OFFSET(%ecx),%esp
-
-/* CONFIG_MICROCODE block removed - not set */
-
 .Ldefault_entry:
 	movl $(CR0_STATE & ~X86_CR0_PG),%eax
 	movl %eax,%cr0
@@ -306,7 +283,6 @@ SYM_FUNC_START(startup_32_smp)
 
 	call *(initial_code)
 1:	jmp 1b
-SYM_FUNC_END(startup_32_smp)
 
 #include "verify_cpu.S"
 

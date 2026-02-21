@@ -50,41 +50,6 @@ void put_pid(struct pid *pid)
 	}
 }
 
-static void delayed_put_pid(struct rcu_head *rhp)
-{
-	struct pid *pid = container_of(rhp, struct pid, rcu);
-	put_pid(pid);
-}
-
-void free_pid(struct pid *pid)
-{
-	int i;
-	unsigned long flags;
-
-	spin_lock_irqsave(&pidmap_lock, flags);
-	for (i = 0; i <= pid->level; i++) {
-		struct upid *upid = pid->numbers + i;
-		struct pid_namespace *ns = upid->ns;
-		switch (--ns->pid_allocated) {
-		case 2:
-		case 1:
-
-			wake_up_process(ns->child_reaper);
-			break;
-		case PIDNS_ADDING:
-
-			WARN_ON(ns->child_reaper);
-			ns->pid_allocated = 0;
-			break;
-		}
-
-		idr_remove(&ns->idr, upid->nr);
-	}
-	spin_unlock_irqrestore(&pidmap_lock, flags);
-
-	call_rcu(&pid->rcu, delayed_put_pid);
-}
-
 struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 		      size_t set_tid_size)
 {

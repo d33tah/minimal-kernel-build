@@ -51,19 +51,6 @@ void __put_cred(struct cred *cred)
 		call_rcu(&cred->rcu, put_cred_rcu);
 }
 
-void exit_creds(struct task_struct *tsk)
-{
-	struct cred *cred;
-
-	cred = (struct cred *)tsk->real_cred;
-	tsk->real_cred = NULL;
-	put_cred(cred);
-
-	cred = (struct cred *)tsk->cred;
-	tsk->cred = NULL;
-	put_cred(cred);
-}
-
 struct cred *prepare_creds(void)
 {
 	struct task_struct *task = current;

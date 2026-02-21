@@ -224,18 +224,6 @@ void page_add_new_anon_rmap(struct page *page, struct vm_area_struct *vma,
 	__page_set_anon_rmap(page, vma, address, 1);
 }
 
-void page_add_file_rmap(struct page *page, struct vm_area_struct *vma,
-			bool compound)
-{
-	int nr = 0;
-
-	/* PageTransHuge/PageTransCompound always return false */
-	if (atomic_inc_and_test(&page->_mapcount))
-		nr++;
-	if (nr)
-		__mod_lruvec_page_state(page, NR_FILE_MAPPED, nr);
-}
-
 void __put_anon_vma(struct anon_vma *anon_vma)
 {
 	struct anon_vma *root = anon_vma->root;

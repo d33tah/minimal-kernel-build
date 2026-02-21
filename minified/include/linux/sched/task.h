@@ -58,8 +58,6 @@ extern void flush_thread(void);
 extern void exit_thread(struct task_struct *tsk);
 /* do_group_exit now static in exit.c */
 
-extern void exit_files(struct task_struct *);
-
 struct mm_struct *copy_init_mm(void);
 extern pid_t kernel_thread(int (*fn)(void *), void *arg, unsigned long flags);
 extern pid_t user_mode_thread(int (*fn)(void *), void *arg, unsigned long flags);

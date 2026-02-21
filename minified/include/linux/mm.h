@@ -450,16 +450,6 @@ static inline unsigned long move_page_tables(struct vm_area_struct *vma,
 		unsigned long new_addr, unsigned long len,
 		bool need_rmap_locks) { return 0; }
 
-extern pte_t *__get_locked_pte(struct mm_struct *mm, unsigned long addr,
-			       spinlock_t **ptl);
-static inline pte_t *get_locked_pte(struct mm_struct *mm, unsigned long addr,
-				    spinlock_t **ptl)
-{
-	pte_t *ptep;
-	__cond_lock(*ptl, ptep = __get_locked_pte(mm, addr, ptl));
-	return ptep;
-}
-
 int __pte_alloc(struct mm_struct *mm, pmd_t *pmd);
 
 /* pgd_none/p4d_none/pud_none always return 0 - folded paging */

@@ -238,27 +238,6 @@ void unmap_vmas(struct mmu_gather *tlb, struct vm_area_struct *vma,
 	mmu_notifier_invalidate_range_end(&range);
 }
 
-pte_t *__get_locked_pte(struct mm_struct *mm, unsigned long addr,
-			spinlock_t **ptl)
-{
-	pgd_t *pgd;
-	p4d_t *p4d;
-	pud_t *pud;
-	pmd_t *pmd;
-
-	pgd = pgd_offset(mm, addr);
-	p4d = p4d_alloc(mm, pgd, addr);
-	if (!p4d)
-		return NULL;
-	pud = pud_alloc(mm, p4d, addr);
-	if (!pud)
-		return NULL;
-	pmd = pmd_alloc(mm, pud, addr);
-	if (!pmd)
-		return NULL;
-	return pte_alloc_map_lock(mm, pmd, addr, ptl);
-}
-
 static vm_fault_t do_wp_page(struct vm_fault *vmf) __releases(vmf->ptl)
 {
 	pte_t entry;

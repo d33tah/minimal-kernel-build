@@ -71,46 +71,12 @@ static bool ex_handler_default(const struct exception_table_entry *e,
 	return true;
 }
 
-static bool ex_handler_fault(const struct exception_table_entry *fixup,
-			     struct pt_regs *regs, int trapnr)
-{
-	regs->ax = trapnr;
-	return ex_handler_default(fixup, regs);
-}
-
 static bool ex_handler_uaccess(const struct exception_table_entry *fixup,
 			       struct pt_regs *regs, int trapnr)
 {
 	WARN_ONCE(
 		trapnr == X86_TRAP_GP,
 		"General protection fault in user access. Non-canonical address?");
-	return ex_handler_default(fixup, regs);
-}
-
-static bool ex_handler_msr(const struct exception_table_entry *fixup,
-			   struct pt_regs *regs, bool wrmsr, bool safe, int reg)
-{
-	if (!safe && wrmsr &&
-	    pr_warn_once(
-		    "unchecked MSR access error: WRMSR to 0x%x (tried to write 0x%08x%08x) at rIP: 0x%lx (%pS)\n",
-		    (unsigned int)regs->cx, (unsigned int)regs->dx,
-		    (unsigned int)regs->ax, regs->ip, (void *)regs->ip))
-		show_stack_regs(regs);
-
-	if (!safe && !wrmsr &&
-	    pr_warn_once(
-		    "unchecked MSR access error: RDMSR from 0x%x at rIP: 0x%lx (%pS)\n",
-		    (unsigned int)regs->cx, regs->ip, (void *)regs->ip))
-		show_stack_regs(regs);
-
-	if (!wrmsr) {
-		regs->ax = 0;
-		regs->dx = 0;
-	}
-
-	if (safe)
-		*pt_regs_nr(regs, reg) = -EIO;
-
 	return ex_handler_default(fixup, regs);
 }
 
@@ -130,23 +96,9 @@ int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code,
 
 	switch (type) {
 	case EX_TYPE_DEFAULT:
-	case EX_TYPE_DEFAULT_MCE_SAFE:
 		return ex_handler_default(e, regs);
-	case EX_TYPE_FAULT:
-	case EX_TYPE_FAULT_MCE_SAFE:
-		return ex_handler_fault(e, regs, trapnr);
 	case EX_TYPE_UACCESS:
 		return ex_handler_uaccess(e, regs, trapnr);
-	case EX_TYPE_COPY:
-		WARN_ONCE(
-			trapnr == X86_TRAP_GP,
-			"General protection fault in user access. Non-canonical address?");
-		return ex_handler_fault(e, regs, trapnr);
-	case EX_TYPE_CLEAR_FS:
-		if (static_cpu_has(X86_BUG_NULL_SEG))
-			asm volatile("mov %0, %%fs" : : "rm"(__USER_DS));
-		asm volatile("mov %0, %%fs" : : "rm"(0));
-		return ex_handler_default(e, regs);
 	case EX_TYPE_FPU_RESTORE:
 		regs->ip = ex_fixup_addr(e);
 		WARN_ONCE(
@@ -155,14 +107,6 @@ int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code,
 			(void *)instruction_pointer(regs));
 		fpu_reset_from_exception_fixup();
 		return true;
-	case EX_TYPE_WRMSR:
-		return ex_handler_msr(e, regs, true, false, reg);
-	case EX_TYPE_RDMSR:
-		return ex_handler_msr(e, regs, false, false, reg);
-	case EX_TYPE_WRMSR_SAFE:
-		return ex_handler_msr(e, regs, true, true, reg);
-	case EX_TYPE_RDMSR_SAFE:
-		return ex_handler_msr(e, regs, false, true, reg);
 	case EX_TYPE_POP_REG:
 		regs->sp += sizeof(long);
 		fallthrough;

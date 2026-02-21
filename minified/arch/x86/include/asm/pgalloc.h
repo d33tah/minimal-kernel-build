@@ -6,9 +6,6 @@
 #include <linux/mm.h>
 #include <linux/pagemap.h>
 
-#define __HAVE_ARCH_PTE_ALLOC_ONE
-#define __HAVE_ARCH_PGD_FREE
-
 #define GFP_PGTABLE_KERNEL	(GFP_KERNEL | __GFP_ZERO)
 #define GFP_PGTABLE_USER	(GFP_PGTABLE_KERNEL | __GFP_ACCOUNT)
 
@@ -25,25 +22,12 @@ static inline pgtable_t __pte_alloc_one(struct mm_struct *mm, gfp_t gfp)
 	return pte;
 }
 
-#ifndef __HAVE_ARCH_PTE_ALLOC_ONE
-static inline pgtable_t pte_alloc_one(struct mm_struct *mm)
-{
-	return __pte_alloc_one(mm, GFP_PGTABLE_USER);
-}
-#endif
-
 static inline void pte_free(struct mm_struct *mm, struct page *pte_page)
 {
 	pgtable_pte_page_dtor(pte_page);
 }
 
 /* CONFIG_PGTABLE_LEVELS == 2, so no PMD/PUD/P4D allocation needed */
-
-#ifndef __HAVE_ARCH_PGD_FREE
-static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
-{
-}
-#endif
 
 static inline void paravirt_alloc_pte(struct mm_struct *mm, unsigned long pfn)	{}
 static inline void paravirt_alloc_pmd(struct mm_struct *mm, unsigned long pfn)	{}

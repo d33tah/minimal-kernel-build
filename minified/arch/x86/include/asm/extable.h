@@ -23,19 +23,10 @@
 #define EX_FLAG_CLEAR_DX		EX_DATA_FLAG(2)
 
 #define	EX_TYPE_DEFAULT			 1
-#define	EX_TYPE_FAULT			 2
 #define	EX_TYPE_UACCESS			 3
-#define	EX_TYPE_COPY			 4
-#define	EX_TYPE_CLEAR_FS		 5
 #define	EX_TYPE_FPU_RESTORE		 6
-#define	EX_TYPE_WRMSR			 8
-#define	EX_TYPE_RDMSR			 9
-#define	EX_TYPE_WRMSR_SAFE		10  
-#define	EX_TYPE_RDMSR_SAFE		11
-#define	EX_TYPE_DEFAULT_MCE_SAFE	14
-#define	EX_TYPE_FAULT_MCE_SAFE		15
 
-#define	EX_TYPE_POP_REG			16  
+#define	EX_TYPE_POP_REG			16
 #define EX_TYPE_POP_ZERO		(EX_TYPE_POP_REG | EX_DATA_IMM(0))
 
 #define	EX_TYPE_IMM_REG			17  

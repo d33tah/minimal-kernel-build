@@ -22,10 +22,6 @@ struct pt_regs;
 
 enum die_val {
 	DIE_OOPS = 1,
-	DIE_INT3,
-	DIE_DEBUG,
-	DIE_TRAP = 8,
-	DIE_GPF,
 };
 
 enum show_regs_mode {
@@ -33,9 +29,7 @@ enum show_regs_mode {
 };
 
 extern void die(const char *, struct pt_regs *,long);
-void die_addr(const char *str, struct pt_regs *regs, long err, long gp_addr);
 extern int __must_check __die(const char *, struct pt_regs *, long);
-extern void show_stack_regs(struct pt_regs *regs);
 extern void __show_regs(struct pt_regs *regs, enum show_regs_mode,
 			const char *log_lvl);
 extern unsigned long oops_begin(void);

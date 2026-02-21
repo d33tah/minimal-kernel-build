@@ -10,10 +10,6 @@ static int die_counter;
 
 static struct pt_regs exec_summary_regs;
 
-void show_stack_regs(struct pt_regs *regs)
-{
-}
-
 static arch_spinlock_t die_lock = __ARCH_SPIN_LOCK_UNLOCKED;
 static int die_owner = -1;
 static unsigned int die_nest_count;
@@ -87,17 +83,6 @@ void die(const char *str, struct pt_regs *regs, long err)
 	unsigned long flags = oops_begin();
 	__die(str, regs, err);
 	oops_end(flags, regs, SIGSEGV);
-}
-
-void die_addr(const char *str, struct pt_regs *regs, long err, long gp_addr)
-{
-	unsigned long flags = oops_begin();
-	int sig = SIGSEGV;
-
-	__die_header(str, regs, err);
-	notify_die(DIE_OOPS, str, regs, err, current->thread.trap_nr, SIGSEGV);
-	/* __die_body always returned 0, so sig stays SIGSEGV */
-	oops_end(flags, regs, sig);
 }
 
 void show_regs(struct pt_regs *regs)

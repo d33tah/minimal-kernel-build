@@ -10,7 +10,6 @@
 enum kobject_action {
 	KOBJ_ADD,
 	KOBJ_REMOVE,
-	KOBJ_UNBIND,
 };
 
 struct kobject {

@@ -5,9 +5,7 @@
 #include <linux/compiler.h>
 #include <linux/gfp.h>
 enum mapping_flags {
-	AS_ENOSPC	= 1,
 	AS_UNEVICTABLE	= 3,
-	AS_EXITING	= 4,
 };
 
 static inline gfp_t mapping_gfp_mask(struct address_space * mapping)

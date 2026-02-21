@@ -15,8 +15,6 @@ struct file_system_type;
 #define MNT_INTERNAL	0x4000
 
 #define MNT_LOCKED		0x800000
-#define MNT_DOOMED		0x1000000
-#define MNT_SYNC_UMOUNT		0x2000000
 
 struct vfsmount {
 	struct dentry *mnt_root;	 

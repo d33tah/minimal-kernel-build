@@ -149,11 +149,6 @@ void __putstr(const char *s)
 	outb(0xff & (pos >> 1), vidport + 1);
 }
 
-static inline void handle_relocations(void *output, unsigned long output_len,
-				      unsigned long virt_addr)
-{
-}
-
 static void parse_elf(void *output)
 {
 	Elf32_Ehdr ehdr;
@@ -263,7 +258,6 @@ asmlinkage __visible void *extract_kernel(void *rmode, memptr heap,
 	__decompress(input_data, input_len, NULL, NULL, output, output_len,
 		     NULL, error);
 	parse_elf(output);
-	handle_relocations(output, output_len, virt_addr);
 	debug_putstr("done.\nBooting the kernel.\n");
 	return output;
 }

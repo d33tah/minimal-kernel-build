@@ -9,7 +9,5 @@
 # define ia32_setup_frame	__setup_frame
 # define ia32_setup_rt_frame	__setup_rt_frame
 
-unsigned long fpu__get_fpstate_size(void);
-
 extern void restore_fpregs_from_fpstate(struct fpstate *fpstate, u64 mask);
 #endif  

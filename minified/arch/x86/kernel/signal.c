@@ -13,22 +13,8 @@
 
 #define MAX_FRAME_SIGINFO_UCTXT_SIZE sizeof(struct sigframe_ia32)
 
-#define MAX_XSAVE_PADDING 63UL
-
-static unsigned long __ro_after_init max_frame_size;
-static unsigned int __ro_after_init fpu_default_state_size;
-
 void __init init_sigframe_size(void)
 {
-	fpu_default_state_size = fpu__get_fpstate_size();
-
-	max_frame_size = MAX_FRAME_SIGINFO_UCTXT_SIZE + MAX_FRAME_PADDING;
-
-	max_frame_size += fpu_default_state_size + MAX_XSAVE_PADDING;
-
-	max_frame_size = round_up(max_frame_size, FRAME_ALIGNMENT);
-
-	pr_info("max sigframe size: %lu\n", max_frame_size);
 }
 
 void arch_do_signal_or_restart(struct pt_regs *regs)

@@ -158,23 +158,11 @@
 		*(.sched.text)						\
 		__sched_text_end = .;
 
-#define LOCK_TEXT							\
-		ALIGN_FUNCTION();					\
-		__lock_text_start = .;					\
-		*(.spinlock.text)					\
-		__lock_text_end = .;
-
 #define CPUIDLE_TEXT							\
 		ALIGN_FUNCTION();					\
 		__cpuidle_text_start = .;				\
 		*(.cpuidle.text)					\
 		__cpuidle_text_end = .;
-
-#define KPROBES_TEXT							\
-		ALIGN_FUNCTION();					\
-		__kprobes_text_start = .;				\
-		*(.kprobes.text)					\
-		__kprobes_text_end = .;
 
 #define ENTRY_TEXT							\
 		ALIGN_FUNCTION();					\
@@ -187,12 +175,6 @@
 		__softirqentry_text_start = .;				\
 		*(.softirqentry.text)					\
 		__softirqentry_text_end = .;
-
-#define STATIC_CALL_TEXT						\
-		ALIGN_FUNCTION();					\
-		__static_call_text_start = .;				\
-		*(.static_call.text)					\
-		__static_call_text_end = .;
 
 #define HEAD_TEXT  KEEP(*(.head.text))
 
@@ -272,13 +254,7 @@
 		.debug_rnglists	0 : { *(.debug_rnglists) }		\
 		.debug_str_offsets	0 : { *(.debug_str_offsets) }
 
-#define STABS_DEBUG							\
-		.stab 0 : { *(.stab) }					\
-		.stabstr 0 : { *(.stabstr) }				\
-		.stab.excl 0 : { *(.stab.excl) }			\
-		.stab.exclstr 0 : { *(.stab.exclstr) }			\
-		.stab.index 0 : { *(.stab.index) }			\
-		.stab.indexstr 0 : { *(.stab.indexstr) }
+#define STABS_DEBUG
 
 #define ELF_DETAILS							\
 		.comment 0 : { *(.comment) }				\

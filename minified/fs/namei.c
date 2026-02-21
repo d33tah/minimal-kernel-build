@@ -57,12 +57,6 @@ void putname(struct filename *name)
 		__putname(name);
 }
 
-int inode_permission(struct user_namespace *mnt_userns, struct inode *inode,
-		     int mask)
-{
-	return 0;
-}
-
 void path_get(const struct path *path)
 {
 	mntget(path->mnt);

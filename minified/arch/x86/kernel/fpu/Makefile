@@ -3,4 +3,4 @@
 # Build rules for the FPU support code:
 #
 
-obj-y				+= init.o core.o signal.o
+obj-y				+= init.o core.o

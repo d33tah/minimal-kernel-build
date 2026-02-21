@@ -15,8 +15,6 @@ void __init driver_init(void)
 
 struct kset *devices_kset;
 
-static DEFINE_MUTEX(gdp_mutex);
-
 struct device *get_device(struct device *dev)
 {
 	return dev ? kobj_to_dev(kobject_get(&dev->kobj)) : NULL;

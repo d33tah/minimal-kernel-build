@@ -8,8 +8,6 @@ int notify_die(enum die_val val, const char *str, struct pt_regs *regs,
 
 static int die_counter;
 
-static struct pt_regs exec_summary_regs;
-
 static arch_spinlock_t die_lock = __ARCH_SPIN_LOCK_UNLOCKED;
 static int die_owner = -1;
 static unsigned int die_nest_count;
@@ -61,9 +59,6 @@ NOKPROBE_SYMBOL(oops_end);
 
 static void __die_header(const char *str, struct pt_regs *regs, long err)
 {
-	/* Stub: minimal header for crash report */
-	if (!die_counter)
-		exec_summary_regs = *regs;
 	printk(KERN_DEFAULT "%s [#%d]\n", str, ++die_counter);
 }
 NOKPROBE_SYMBOL(__die_header);

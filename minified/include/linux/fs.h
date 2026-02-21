@@ -728,11 +728,9 @@ extern const struct file_operations def_chr_fops;
 
 extern void init_special_inode(struct inode *, umode_t, dev_t);
 
-int inode_permission(struct user_namespace *, struct inode *, int);
 static inline int path_permission(const struct path *path, int mask)
 {
-	return inode_permission(mnt_user_ns(path->mnt),
-				d_inode(path->dentry), mask);
+	return 0;
 }
 
 static inline int deny_write_access(struct file *file)

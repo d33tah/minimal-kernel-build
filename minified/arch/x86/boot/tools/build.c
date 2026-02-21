@@ -20,11 +20,6 @@ static inline uint16_t get_unaligned_le16(const void *p)
 	return b[0] | b[1] << 8;
 }
 
-static inline uint32_t get_unaligned_le32(const void *p)
-{
-	const uint8_t *b = (const uint8_t *)p;
-	return b[0] | b[1] << 8 | b[2] << 16 | b[3] << 24;
-}
 
 static inline void put_unaligned_le16(uint16_t val, void *p)
 {
@@ -125,20 +120,6 @@ static void usage(void)
 	die("Usage: build setup system zoffset.h image");
 }
 
-static inline void update_pecoff_setup_and_reloc(unsigned int size)
-{
-}
-static inline void update_pecoff_text(unsigned int text_start,
-				      unsigned int file_sz,
-				      unsigned int init_sz)
-{
-}
-
-static inline int reserve_pecoff_reloc_section(int c)
-{
-	return 0;
-}
-
 static int reserve_pecoff_compat_section(int c)
 {
 	memset(buf + c, 0, PECOFF_COMPAT_RESERVE);
@@ -179,7 +160,7 @@ static void parse_zoffset(char *fname)
 
 int main(int argc, char **argv)
 {
-	unsigned int i, sz, setup_sectors, init_sz;
+	unsigned int i, sz, setup_sectors;
 	int c;
 	u32 sys_size;
 	struct stat sb;
@@ -209,15 +190,12 @@ int main(int argc, char **argv)
 	fclose(file);
 
 	c += reserve_pecoff_compat_section(c);
-	c += reserve_pecoff_reloc_section(c);
 
 	setup_sectors = (c + 511) / 512;
 	if (setup_sectors < SETUP_SECT_MIN)
 		setup_sectors = SETUP_SECT_MIN;
 	i = setup_sectors * 512;
 	memset(buf + c, 0, i - c);
-
-	update_pecoff_setup_and_reloc(i);
 
 	put_unaligned_le16(DEFAULT_ROOT_DEV, &buf[508]);
 
@@ -235,9 +213,6 @@ int main(int argc, char **argv)
 
 	buf[0x1f1] = setup_sectors - 1;
 	put_unaligned_le32(sys_size, &buf[0x1f4]);
-
-	init_sz = get_unaligned_le32(&buf[0x260]);
-	update_pecoff_text(setup_sectors * 512, i + (sys_size * 16), init_sz);
 
 	put_unaligned_le32(kernel_info, &buf[0x268]);
 

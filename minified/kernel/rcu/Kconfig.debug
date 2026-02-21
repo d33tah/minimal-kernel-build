@@ -1,9 +1,0 @@
-# SPDX-License-Identifier: GPL-2.0-only
-# RCU debugging - minimal for tiny kernel
-
-menu "RCU Debugging"
-
-config PROVE_RCU
-	def_bool PROVE_LOCKING
-
-endmenu # "RCU Debugging"

@@ -47,7 +47,6 @@ KBUILD_CFLAGS += $(call cc-option,-fcf-protection=none)
 ifeq ($(CONFIG_X86_32),y)
         BITS := 32
         UTS_MACHINE := i386
-        CHECKFLAGS += -D__i386__
 
         KBUILD_AFLAGS += -m32
         KBUILD_CFLAGS += -m32
@@ -67,7 +66,6 @@ ifeq ($(CONFIG_X86_32),y)
 else
         BITS := 64
         UTS_MACHINE := x86_64
-        CHECKFLAGS += -D__x86_64__
 
         KBUILD_AFLAGS += -m64
         KBUILD_CFLAGS += -m64

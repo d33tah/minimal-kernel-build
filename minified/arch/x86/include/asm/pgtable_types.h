@@ -148,7 +148,6 @@ typedef union {
 #include <linux/types.h>
 
 #define PTE_PFN_MASK		((pteval_t)PHYSICAL_PAGE_MASK)
-
 #define PTE_FLAGS_MASK		(~PTE_PFN_MASK)
 
 typedef struct pgprot { pgprotval_t pgprot; } pgprot_t;
@@ -172,10 +171,7 @@ static inline pgdval_t native_pgd_val(pgd_t pgd)
 typedef struct { pgd_t pgd; } p4d_t;
 
 #define P4D_SHIFT		PGDIR_SHIFT
-#define P4D_SIZE		(1UL << P4D_SHIFT)
-#define P4D_MASK		(~(P4D_SIZE-1))
-
-#define p4d_ERROR(p4d)				(pgd_ERROR((p4d).pgd))
+#define P4D_MASK		(~((1UL << P4D_SHIFT)-1))
 
 static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
 {
@@ -198,7 +194,7 @@ typedef struct { p4d_t p4d; } pud_t;
 #define PUD_SIZE  	(1UL << PUD_SHIFT)
 #define PUD_MASK  	(~(PUD_SIZE-1))
 
-#define pud_ERROR(pud)				(p4d_ERROR((pud).p4d))
+#define pud_ERROR(pud)				((void)0)
 
 #define set_p4d(p4dptr, p4dval)	set_pud((pud_t *)(p4dptr), (pud_t) { p4dval })
 

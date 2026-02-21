@@ -57,10 +57,6 @@ static inline void clear_page(void *page)
 	memset(page, 0, PAGE_SIZE);
 }
 
-static inline void copy_page(void *to, void *from)
-{
-	memcpy(to, from, PAGE_SIZE);
-}
 /* end page_32.h */
 
 struct page;

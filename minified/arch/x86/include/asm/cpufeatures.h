@@ -89,10 +89,7 @@
 #define X86_FEATURE_DE			( 0*32+ 2)
 #define X86_FEATURE_PSE			( 0*32+ 3)
 #define X86_FEATURE_TSC			( 0*32+ 4)
-#define X86_FEATURE_PAE			( 0*32+ 6)
-#define X86_FEATURE_CX8			( 0*32+ 8)
 #define X86_FEATURE_PGE			( 0*32+13)
-#define X86_FEATURE_PSE36		( 0*32+17)
 #define X86_FEATURE_FXSR		( 0*32+24)
 #define X86_FEATURE_XMM			( 0*32+25)
 #define X86_FEATURE_XMM2		( 0*32+26)
@@ -108,14 +105,12 @@
 #define X86_FEATURE_NOPL		( 3*32+20)
 #define X86_FEATURE_ALWAYS		( 3*32+21)
 #define X86_FEATURE_TSC_RELIABLE	( 3*32+23)
-#define X86_FEATURE_CPUID		( 3*32+25)
 #define X86_FEATURE_NONSTOP_TSC_S3	( 3*32+30)
 #define X86_FEATURE_TSC_KNOWN_FREQ	( 3*32+31)
 
 /* Word 4 - Intel extended */
 #define X86_FEATURE_PCID		( 4*32+17)
 #define X86_FEATURE_XSAVE		( 4*32+26)
-#define X86_FEATURE_HYPERVISOR		( 4*32+31)
 
 /* Word 6 - AMD extended */
 #define X86_FEATURE_3DNOWPREFETCH	( 6*32+ 8)
@@ -124,16 +119,13 @@
 #define X86_FEATURE_XCOMPACTED		( 7*32+10)
 #define X86_FEATURE_PTI			( 7*32+11)
 #define X86_FEATURE_RSB_CTXSW		( 7*32+19)
-#define X86_FEATURE_LS_CFG_SSBD		( 7*32+24)
 
 /* Word 8 - Virtualization flags */
 #define X86_FEATURE_XENPV		( 8*32+16)
 #define X86_FEATURE_TDX_GUEST		( 8*32+22)
 
 /* Word 9 - Extended leaf 7 */
-#define X86_FEATURE_FSGSBASE		( 9*32+ 0)
 #define X86_FEATURE_SGX			( 9*32+ 2)
-#define X86_FEATURE_SMEP		( 9*32+ 7)
 #define X86_FEATURE_INVPCID		( 9*32+10)
 #define X86_FEATURE_SMAP		( 9*32+20)
 
@@ -147,9 +139,6 @@
 #define X86_FEATURE_RETPOLINE_LFENCE	(11*32+13)
 #define X86_FEATURE_RETHUNK		(11*32+14)
 #define X86_FEATURE_UNRET		(11*32+15)
-
-/* Word 13 - AMD extended 2 */
-#define X86_FEATURE_VIRT_SSBD		(13*32+25)
 
 /* Word 16 - Intel extended 2 */
 #define X86_FEATURE_UMIP		(16*32+ 2)

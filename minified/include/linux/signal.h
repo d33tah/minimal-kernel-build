@@ -37,11 +37,6 @@ struct k_sigaction {
 
 struct task_struct;
 
-static inline void clear_siginfo(kernel_siginfo_t *info)
-{
-	memset(info, 0, sizeof(*info));
-}
-
 #ifndef __HAVE_ARCH_SIG_BITOPS
 #include <linux/bitops.h>
 

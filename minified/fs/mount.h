@@ -51,8 +51,3 @@ static inline struct mount *real_mount(struct vfsmount *mnt)
 }
 
 extern seqlock_t mount_lock;
-
-static inline bool is_anon_ns(struct mnt_namespace *ns)
-{
-	return ns->seq == 0;
-}

@@ -73,41 +73,6 @@ static void con_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
 	scr_memsetw(clear, vc->vc_video_erase_char, vc->vc_size_row * nr);
 }
 
-static void do_update_region(struct vc_data *vc, unsigned long start, int count)
-{
-	unsigned int xx, yy, offset;
-	u16 *p;
-
-	p = (u16 *)start;
-	offset = (start - vc->vc_origin) / 2;
-	xx = offset % vc->vc_cols;
-	yy = offset / vc->vc_cols;
-	for (;;) {
-		u16 attrib = scr_readw(p) & 0xff00;
-		int startx = xx;
-		u16 *q = p;
-		while (xx < vc->vc_cols && count) {
-			if (attrib != (scr_readw(p) & 0xff00)) {
-				if (p > q)
-					vc->vc_sw->con_putcs(vc, q, p - q, yy,
-							     startx);
-				startx = xx;
-				q = p;
-				attrib = scr_readw(p) & 0xff00;
-			}
-			p++;
-			xx++;
-			count--;
-		}
-		if (p > q)
-			vc->vc_sw->con_putcs(vc, q, p - q, yy, startx);
-		if (!count)
-			break;
-		xx = 0;
-		yy++;
-	}
-}
-
 static void update_attr(struct vc_data *vc)
 {
 	vc->vc_attr = vc->state.color;
@@ -208,8 +173,6 @@ static void csi_J(struct vc_data *vc, int vpar)
 		start = (unsigned short *)vc->vc_origin;
 	}
 	scr_memsetw(start, vc->vc_video_erase_char, 2 * count);
-	if (con_is_visible(vc))
-		do_update_region(vc, (unsigned long)start, count);
 	vc->vc_need_wrap = 0;
 }
 
@@ -233,17 +196,12 @@ static void vt_console_print(struct console *co, const char *b, unsigned count)
 {
 	struct vc_data *vc = vc_cons[fg_console].d;
 	static DEFINE_SPINLOCK(printing_lock);
-	const ushort *start;
-	ushort start_x;
 
 	if (!printable || !spin_trylock(&printing_lock))
 		return;
 
 	if (!(fg_console < MAX_NR_CONSOLES && vc_cons[fg_console].d))
 		goto quit;
-
-	start = (ushort *)vc->vc_pos;
-	start_x = vc->state.x;
 
 	while (count--) {
 		unsigned char c = *b++;
@@ -257,8 +215,6 @@ static void vt_console_print(struct console *co, const char *b, unsigned count)
 			vc->state.x++;
 		}
 	}
-	if (con_is_visible(vc))
-		vc->vc_sw->con_putcs(vc, start, count, vc->state.y, start_x);
 
 quit:
 	spin_unlock(&printing_lock);
@@ -327,8 +283,7 @@ static int __init con_init(void)
 	gotoxy(vc, vc->state.x, vc->state.y);
 	csi_J(vc, 0);
 	set_origin(vc);
-	if (vc->vc_sw->con_switch(vc) && vc->vc_mode != KD_GRAPHICS)
-		do_update_region(vc, vc->vc_origin, vc->vc_screenbuf_size / 2);
+	vc->vc_sw->con_switch(vc);
 	printable = 1;
 
 	console_unlock();

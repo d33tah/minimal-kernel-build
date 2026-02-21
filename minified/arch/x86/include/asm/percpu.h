@@ -100,17 +100,6 @@ do {									\
 	(typeof(_var))(unsigned long) pfo_val__;			\
 })
 
-#define percpu_add_return_op(size, qual, _var, _val)			\
-({									\
-	__pcpu_type_##size paro_tmp__ = __pcpu_cast_##size(_val);	\
-	asm qual (__pcpu_op2_##size("xadd", "%[tmp]",			\
-				     __percpu_arg([var]))		\
-		  : [tmp] __pcpu_reg_##size("+", paro_tmp__),		\
-		    [var] "+m" (_var)					\
-		  : : "memory");					\
-	(typeof(_var))(unsigned long) (paro_tmp__ + _val);		\
-})
-
 #define percpu_cmpxchg_op(size, qual, _var, _oval, _nval)		\
 ({									\
 	__pcpu_type_##size pco_old__ = __pcpu_cast_##size(_oval);	\
@@ -147,17 +136,6 @@ do {									\
 #define raw_cpu_or_2(pcp, val)		percpu_to_op(2, , "or", (pcp), val)
 #define raw_cpu_or_4(pcp, val)		percpu_to_op(4, , "or", (pcp), val)
 
-#define raw_percpu_xchg_op(var, nval)					\
-({									\
-	typeof(var) pxo_ret__ = raw_cpu_read(var);			\
-	raw_cpu_write(var, (nval));					\
-	pxo_ret__;							\
-})
-
-#define raw_cpu_xchg_1(pcp, val)	raw_percpu_xchg_op(pcp, val)
-#define raw_cpu_xchg_2(pcp, val)	raw_percpu_xchg_op(pcp, val)
-#define raw_cpu_xchg_4(pcp, val)	raw_percpu_xchg_op(pcp, val)
-
 #define this_cpu_read_1(pcp)		percpu_from_op(1, volatile, "mov", pcp)
 #define this_cpu_read_2(pcp)		percpu_from_op(2, volatile, "mov", pcp)
 #define this_cpu_read_4(pcp)		percpu_from_op(4, volatile, "mov", pcp)
@@ -167,16 +145,10 @@ do {									\
 #define this_cpu_add_1(pcp, val)	percpu_add_op(1, volatile, (pcp), val)
 #define this_cpu_add_2(pcp, val)	percpu_add_op(2, volatile, (pcp), val)
 #define this_cpu_add_4(pcp, val)	percpu_add_op(4, volatile, (pcp), val)
-#define raw_cpu_add_return_1(pcp, val)		percpu_add_return_op(1, , pcp, val)
-#define raw_cpu_add_return_2(pcp, val)		percpu_add_return_op(2, , pcp, val)
-#define raw_cpu_add_return_4(pcp, val)		percpu_add_return_op(4, , pcp, val)
 #define raw_cpu_cmpxchg_1(pcp, oval, nval)	percpu_cmpxchg_op(1, , pcp, oval, nval)
 #define raw_cpu_cmpxchg_2(pcp, oval, nval)	percpu_cmpxchg_op(2, , pcp, oval, nval)
 #define raw_cpu_cmpxchg_4(pcp, oval, nval)	percpu_cmpxchg_op(4, , pcp, oval, nval)
 
-#define this_cpu_add_return_1(pcp, val)		percpu_add_return_op(1, volatile, pcp, val)
-#define this_cpu_add_return_2(pcp, val)		percpu_add_return_op(2, volatile, pcp, val)
-#define this_cpu_add_return_4(pcp, val)		percpu_add_return_op(4, volatile, pcp, val)
 #include <linux/compiler.h>
 #include <linux/threads.h>
 #include <linux/percpu-defs.h>
@@ -198,33 +170,6 @@ do {									\
 do {									\
 	*raw_cpu_ptr(&(pcp)) op val;					\
 } while (0)
-
-#define raw_cpu_generic_add_return(pcp, val)				\
-({									\
-	typeof(pcp) *__p = raw_cpu_ptr(&(pcp));				\
-									\
-	*__p += val;							\
-	*__p;								\
-})
-
-#define raw_cpu_generic_xchg(pcp, nval)					\
-({									\
-	typeof(pcp) *__p = raw_cpu_ptr(&(pcp));				\
-	typeof(pcp) __ret;						\
-	__ret = *__p;							\
-	*__p = nval;							\
-	__ret;								\
-})
-
-#define raw_cpu_generic_cmpxchg(pcp, oval, nval)			\
-({									\
-	typeof(pcp) *__p = raw_cpu_ptr(&(pcp));				\
-	typeof(pcp) __ret;						\
-	__ret = *__p;							\
-	if (__ret == (oval))						\
-		*__p = nval;						\
-	__ret;								\
-})
 
 #define __this_cpu_generic_read_nopreempt(pcp)				\
 ({									\
@@ -263,16 +208,6 @@ do {									\
 	raw_local_irq_restore(__flags);					\
 } while (0)
 
-#define this_cpu_generic_add_return(pcp, val)				\
-({									\
-	typeof(pcp) __ret;						\
-	unsigned long __flags;						\
-	raw_local_irq_save(__flags);					\
-	__ret = raw_cpu_generic_add_return(pcp, val);			\
-	raw_local_irq_restore(__flags);					\
-	__ret;								\
-})
-
 #ifndef raw_cpu_read_8
 #define raw_cpu_read_8(pcp)		raw_cpu_generic_read(pcp)
 #endif
@@ -288,16 +223,6 @@ do {									\
 #ifndef raw_cpu_or_8
 #define raw_cpu_or_8(pcp, val)		raw_cpu_generic_to_op(pcp, val, |=)
 #endif
-#ifndef raw_cpu_add_return_8
-#define raw_cpu_add_return_8(pcp, val)	raw_cpu_generic_add_return(pcp, val)
-#endif
-#ifndef raw_cpu_xchg_8
-#define raw_cpu_xchg_8(pcp, nval)	raw_cpu_generic_xchg(pcp, nval)
-#endif
-#ifndef raw_cpu_cmpxchg_8
-#define raw_cpu_cmpxchg_8(pcp, oval, nval) \
-	raw_cpu_generic_cmpxchg(pcp, oval, nval)
-#endif
 #ifndef this_cpu_read_8
 #define this_cpu_read_8(pcp)		this_cpu_generic_read(pcp)
 #endif
@@ -306,9 +231,6 @@ do {									\
 #endif
 #ifndef this_cpu_add_8
 #define this_cpu_add_8(pcp, val)	this_cpu_generic_to_op(pcp, val, +=)
-#endif
-#ifndef this_cpu_add_return_8
-#define this_cpu_add_return_8(pcp, val)	this_cpu_generic_add_return(pcp, val)
 #endif
 DECLARE_PER_CPU_READ_MOSTLY(unsigned long, this_cpu_off);
 

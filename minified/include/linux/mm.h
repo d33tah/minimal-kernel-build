@@ -104,7 +104,6 @@ extern int sysctl_max_map_count;
 #define PAGE_ALIGN(addr) ALIGN(addr, PAGE_SIZE)
 
 struct vm_area_struct *vm_area_alloc(struct mm_struct *);
-struct vm_area_struct *vm_area_dup(struct vm_area_struct *);
 void vm_area_free(struct vm_area_struct *);
 
 #define VM_NONE		0x00000000

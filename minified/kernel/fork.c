@@ -58,19 +58,6 @@ struct vm_area_struct *vm_area_alloc(struct mm_struct *mm)
 	return vma;
 }
 
-struct vm_area_struct *vm_area_dup(struct vm_area_struct *orig)
-{
-	struct vm_area_struct *new =
-		kmem_cache_alloc(vm_area_cachep, GFP_KERNEL);
-
-	if (new) {
-		*new = data_race(*orig);
-		INIT_LIST_HEAD(&new->anon_vma_chain);
-		new->vm_next = new->vm_prev = NULL;
-	}
-	return new;
-}
-
 void vm_area_free(struct vm_area_struct *vma)
 {
 	kmem_cache_free(vm_area_cachep, vma);

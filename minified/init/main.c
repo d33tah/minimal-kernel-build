@@ -29,26 +29,7 @@
 struct vm_area_struct;
 struct notifier_block;
 
-struct vm_struct;
-
-struct vmap_area {
-	unsigned long va_start;
-	unsigned long va_end;
-
-	struct rb_node rb_node;
-	struct list_head list;
-
-	union {
-		unsigned long subtree_max_size;
-		struct vm_struct *vm;
-	};
-};
-
 extern void __init vmalloc_init(void);
-
-#ifndef ARCH_PAGE_TABLE_SYNC_MASK
-#define ARCH_PAGE_TABLE_SYNC_MASK 0
-#endif
 
 extern void driver_init(void);
 extern void timekeeping_init(void);
@@ -93,7 +74,6 @@ static inline void time_init(void)
 
 char __initdata boot_command_line[COMMAND_LINE_SIZE];
 char *saved_command_line;
-static char *static_command_line;
 
 static char *ramdisk_execute_command = "/init";
 
@@ -212,11 +192,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 		saved_command_line = memblock_alloc(len, SMP_CACHE_BYTES);
 		if (!saved_command_line)
 			panic("Failed to allocate saved_command_line\n");
-		static_command_line = memblock_alloc(len, SMP_CACHE_BYTES);
-		if (!static_command_line)
-			panic("Failed to allocate static_command_line\n");
 		strcpy(saved_command_line, boot_command_line);
-		strcpy(static_command_line, command_line);
 	}
 	setup_per_cpu_areas();
 

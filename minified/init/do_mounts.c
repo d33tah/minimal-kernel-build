@@ -15,12 +15,6 @@ int initrd_below_start_ok;
 phys_addr_t phys_initrd_start __initdata;
 unsigned long phys_initrd_size __initdata;
 
-/* name_to_dev_t stub for header declaration */
-dev_t name_to_dev_t(const char *name)
-{
-	return 0;
-}
-
 void __init prepare_namespace(void)
 {
 	wait_for_device_probe();

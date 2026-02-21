@@ -103,10 +103,6 @@ void flush_thread(void)
 	pkru_write_default();
 }
 
-void arch_setup_new_exec(void)
-{
-}
-
 void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
 {
 }

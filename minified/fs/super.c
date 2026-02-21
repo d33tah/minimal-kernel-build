@@ -22,33 +22,6 @@ static char *sb_writers_name[SB_FREEZE_LEVELS] = {
 	"sb_internal",
 };
 
-static unsigned long super_cache_scan(struct shrinker *shrink,
-				      struct shrink_control *sc)
-{
-	return SHRINK_STOP;
-}
-
-static unsigned long super_cache_count(struct shrinker *shrink,
-				       struct shrink_control *sc)
-{
-	struct super_block *sb;
-	long total_objects = 0;
-
-	sb = container_of(shrink, struct super_block, s_shrink);
-
-	if (!(sb->s_flags & SB_BORN))
-		return 0;
-	smp_rmb();
-
-	total_objects += list_lru_shrink_count(&sb->s_dentry_lru, sc);
-	total_objects += list_lru_shrink_count(&sb->s_inode_lru, sc);
-
-	if (!total_objects)
-		return SHRINK_EMPTY;
-
-	return total_objects; /* sysctl_vfs_cache_pressure always 100 */
-}
-
 static void destroy_super_work(struct work_struct *work)
 {
 	struct super_block *s =
@@ -112,8 +85,6 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags,
 	s->s_maxbytes = MAX_NON_LFS;
 	s->s_op = &default_op;
 
-	s->s_shrink.scan_objects = super_cache_scan;
-	s->s_shrink.count_objects = super_cache_count;
 	if (list_lru_init_memcg(&s->s_dentry_lru, &s->s_shrink))
 		goto fail;
 	if (list_lru_init_memcg(&s->s_inode_lru, &s->s_shrink))
@@ -239,16 +210,11 @@ static void free_anon_bdev(dev_t dev)
 	ida_free(&unnamed_dev_ida, MINOR(dev));
 }
 
-static void kill_anon_super(struct super_block *sb)
+void kill_litter_super(struct super_block *sb)
 {
 	dev_t dev = sb->s_dev;
 	generic_shutdown_super(sb);
 	free_anon_bdev(dev);
-}
-
-void kill_litter_super(struct super_block *sb)
-{
-	kill_anon_super(sb);
 }
 
 static int set_anon_super_fc(struct super_block *sb, struct fs_context *fc)

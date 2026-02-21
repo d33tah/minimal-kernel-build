@@ -82,81 +82,6 @@ u64 native_sched_clock(void)
 unsigned long long sched_clock(void)
 	__attribute__((alias("native_sched_clock")));
 
-static inline int pit_verify_msb(unsigned char val)
-{
-	inb(0x42);
-	return inb(0x42) == val;
-}
-
-static inline int pit_expect_msb(unsigned char val, u64 *tscp,
-				 unsigned long *deltap)
-{
-	int count;
-	u64 tsc = 0, prev_tsc = 0;
-
-	for (count = 0; count < 50000; count++) {
-		if (!pit_verify_msb(val))
-			break;
-		prev_tsc = tsc;
-		tsc = get_cycles();
-	}
-	*deltap = get_cycles() - prev_tsc;
-	*tscp = tsc;
-
-	return count > 5;
-}
-
-#define MAX_QUICK_PIT_MS 50
-#define MAX_QUICK_PIT_ITERATIONS (MAX_QUICK_PIT_MS * PIT_TICK_RATE / 1000 / 256)
-
-static unsigned long quick_pit_calibrate(void)
-{
-	int i;
-	u64 tsc, delta;
-	unsigned long d1, d2;
-
-	if (!has_legacy_pic())
-		return 0;
-
-	outb((inb(0x61) & ~0x02) | 0x01, 0x61);
-
-	outb(0xb0, 0x43);
-
-	outb(0xff, 0x42);
-	outb(0xff, 0x42);
-
-	pit_verify_msb(0);
-
-	if (pit_expect_msb(0xff, &tsc, &d1)) {
-		for (i = 1; i <= MAX_QUICK_PIT_ITERATIONS; i++) {
-			if (!pit_expect_msb(0xff - i, &delta, &d2))
-				break;
-
-			delta -= tsc;
-
-			if (i == 1 &&
-			    d1 + d2 >= (delta * MAX_QUICK_PIT_ITERATIONS) >> 11)
-				return 0;
-
-			if (d1 + d2 >= delta >> 11)
-				continue;
-
-			if (!pit_verify_msb(0xfe - i))
-				break;
-			goto success;
-		}
-	}
-	pr_info("Fast TSC calibration failed\n");
-	return 0;
-
-success:
-
-	delta *= PIT_TICK_RATE;
-	do_div(delta, i * 256 * 1000);
-	pr_info("Fast TSC calibration using PIT\n");
-	return delta;
-}
-
 unsigned long native_calibrate_tsc(void)
 {
 	unsigned int eax_denominator, ebx_numerator, ecx_hz, edx;
@@ -203,7 +128,7 @@ unsigned long native_calibrate_tsc(void)
 
 unsigned long native_calibrate_cpu_early(void)
 {
-	unsigned long flags, fast_calibrate = 0;
+	unsigned long fast_calibrate = 0;
 
 	if (boot_cpu_data.x86_vendor == X86_VENDOR_INTEL &&
 	    boot_cpu_data.cpuid_level >= 0x16) {
@@ -213,11 +138,6 @@ unsigned long native_calibrate_cpu_early(void)
 		fast_calibrate = eax_base_mhz * 1000;
 	}
 
-	if (!fast_calibrate) {
-		local_irq_save(flags);
-		fast_calibrate = quick_pit_calibrate();
-		local_irq_restore(flags);
-	}
 	return fast_calibrate;
 }
 
@@ -256,14 +176,6 @@ static struct clocksource clocksource_tsc = {
 	.list = LIST_HEAD_INIT(clocksource_tsc.list),
 };
 
-static void tsc_refine_calibration_work(struct work_struct *work);
-static DECLARE_DELAYED_WORK(tsc_irqwork, tsc_refine_calibration_work);
-static void tsc_refine_calibration_work(struct work_struct *work)
-{
-	clocksource_register_khz(&clocksource_tsc, tsc_khz);
-	clocksource_unregister(&clocksource_tsc_early);
-}
-
 static int __init init_tsc_clocksource(void)
 {
 	if (!boot_cpu_has(X86_FEATURE_TSC) || !tsc_khz)
@@ -272,13 +184,8 @@ static int __init init_tsc_clocksource(void)
 	if (boot_cpu_has(X86_FEATURE_NONSTOP_TSC_S3))
 		clocksource_tsc.flags |= CLOCK_SOURCE_SUSPEND_NONSTOP;
 
-	if (boot_cpu_has(X86_FEATURE_TSC_KNOWN_FREQ)) {
-		clocksource_register_khz(&clocksource_tsc, tsc_khz);
-		clocksource_unregister(&clocksource_tsc_early);
-		return 0;
-	}
-
-	schedule_delayed_work(&tsc_irqwork, 0);
+	clocksource_register_khz(&clocksource_tsc, tsc_khz);
+	clocksource_unregister(&clocksource_tsc_early);
 	return 0;
 }
 device_initcall(init_tsc_clocksource);

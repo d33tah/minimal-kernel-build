@@ -14,8 +14,6 @@ static unsigned long ramfs_mmu_get_unmapped_area(struct file *file,
 
 const struct file_operations ramfs_file_operations = {
 	.read_iter = generic_file_read_iter,
-	.write_iter = generic_file_write_iter,
-	.mmap = generic_file_mmap,
 	.get_unmapped_area = ramfs_mmu_get_unmapped_area,
 };
 

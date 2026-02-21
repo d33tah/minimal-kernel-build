@@ -26,11 +26,6 @@ __cacheline_aligned DEFINE_RWLOCK(tasklist_lock);
 
 static struct kmem_cache *task_struct_cachep;
 
-static inline void free_task_struct(struct task_struct *tsk)
-{
-	kmem_cache_free(task_struct_cachep, tsk);
-}
-
 static void thread_stack_free_rcu(struct rcu_head *rh)
 {
 }

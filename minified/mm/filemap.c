@@ -447,16 +447,6 @@ ssize_t generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 	return filemap_read(iocb, iter, 0);
 }
 
-int generic_file_mmap(struct file *file, struct vm_area_struct *vma)
-{
-	return -ENOEXEC;
-}
-
-ssize_t generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
-{
-	return -EROFS;
-}
-
 /* Merged from folio-compat.c */
 void unlock_page(struct page *page)
 {

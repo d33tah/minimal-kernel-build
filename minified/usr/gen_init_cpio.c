@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <string.h>
@@ -17,11 +16,6 @@
 static unsigned int offset;
 static unsigned int ino = 721;
 static time_t default_mtime;
-
-struct file_handler {
-	const char *type;
-	int (*handler)(const char *line);
-};
 
 static void push_string(const char *name)
 {
@@ -82,36 +76,30 @@ static void cpio_trailer(void)
 	}
 }
 
-static int cpio_mkgeneric(const char *name, unsigned int mode, uid_t uid,
-			  gid_t gid)
-{
-	char s[256];
-
-	if (name[0] == '/')
-		name++;
-	sprintf(s,
-		"070701%08X%08X%08lX%08lX%08X%08lX"
-		"%08X%08X%08X%08X%08X%08X%08X",
-		ino++, mode, (long)uid, (long)gid, 2, (long)default_mtime, 0, 3,
-		1, 0, 0, (unsigned)strlen(name) + 1, 0);
-	push_hdr(s);
-	push_rest(name);
-	return 0;
-}
-
 static int cpio_mkdir_line(const char *line)
 {
 	char name[PATH_MAX + 1];
+	char s[256];
 	unsigned int mode;
 	int uid;
 	int gid;
+	const char *n;
 
 	if (4 != sscanf(line, "%" str(PATH_MAX) "s %o %d %d", name, &mode, &uid,
 			&gid)) {
 		fprintf(stderr, "Unrecognized dir format '%s'", line);
 		return -1;
 	}
-	return cpio_mkgeneric(name, mode | S_IFDIR, uid, gid);
+	n = name[0] == '/' ? name + 1 : name;
+	mode |= S_IFDIR;
+	sprintf(s,
+		"070701%08X%08X%08lX%08lX%08X%08lX"
+		"%08X%08X%08X%08X%08X%08X%08X",
+		ino++, mode, (long)uid, (long)gid, 2, (long)default_mtime, 0, 3,
+		1, 0, 0, (unsigned)strlen(n) + 1, 0);
+	push_hdr(s);
+	push_rest(n);
+	return 0;
 }
 
 static int cpio_mkfile(const char *name, const char *location,
@@ -197,23 +185,6 @@ error:
 	return rc;
 }
 
-static char *cpio_replace_env(char *new_location)
-{
-	char expanded[PATH_MAX + 1];
-	char *start, *end, *var;
-
-	while ((start = strstr(new_location, "${")) &&
-	       (end = strchr(start + 2, '}'))) {
-		*start = *end = 0;
-		var = getenv(start + 2);
-		snprintf(expanded, sizeof expanded, "%s%s%s", new_location,
-			 var ? var : "", end + 1);
-		strcpy(new_location, expanded);
-	}
-
-	return new_location;
-}
-
 static int cpio_mkfile_line(const char *line)
 {
 	char name[PATH_MAX + 1];
@@ -227,28 +198,13 @@ static int cpio_mkfile_line(const char *line)
 		fprintf(stderr, "Unrecognized file format '%s'", line);
 		return -1;
 	}
-	return cpio_mkfile(name, cpio_replace_env(location), mode, uid, gid);
+	return cpio_mkfile(name, location, mode, uid, gid);
 }
 
 static void usage(const char *prog)
 {
 	fprintf(stderr, "Usage: %s [-t <timestamp>] <cpio_list>\n", prog);
 }
-
-static const struct file_handler file_handler_table[] = {
-	{
-		.type = "file",
-		.handler = cpio_mkfile_line,
-	},
-	{
-		.type = "dir",
-		.handler = cpio_mkdir_line,
-	},
-	{
-		.type = NULL,
-		.handler = NULL,
-	}
-};
 
 #define LINE_SIZE (2 * PATH_MAX + 50)
 
@@ -305,14 +261,13 @@ int main(int argc, char *argv[])
 	}
 
 	while (fgets(line, LINE_SIZE, cpio_list)) {
-		int type_idx;
 		size_t slen = strlen(line);
+		int rc;
 
 		line_nr++;
 
-		if ('#' == *line) {
+		if ('#' == *line || '\n' == *line)
 			continue;
-		}
 
 		if (!(type = strtok(line, " \t"))) {
 			fprintf(stderr,
@@ -322,13 +277,11 @@ int main(int argc, char *argv[])
 			break;
 		}
 
-		if ('\n' == *type) {
+		if ('\n' == *type)
 			continue;
-		}
 
-		if (slen == strlen(type)) {
+		if (slen == strlen(type))
 			continue;
-		}
 
 		if (!(args = strtok(NULL, "\n"))) {
 			fprintf(stderr,
@@ -337,22 +290,18 @@ int main(int argc, char *argv[])
 			ec = -1;
 		}
 
-		for (type_idx = 0; file_handler_table[type_idx].type;
-		     type_idx++) {
-			int rc;
-			if (!strcmp(line, file_handler_table[type_idx].type)) {
-				if ((rc = file_handler_table[type_idx].handler(
-					     args))) {
-					ec = rc;
-					fprintf(stderr, " line %d\n", line_nr);
-				}
-				break;
-			}
-		}
-
-		if (NULL == file_handler_table[type_idx].type) {
+		if (!strcmp(type, "file"))
+			rc = cpio_mkfile_line(args);
+		else if (!strcmp(type, "dir"))
+			rc = cpio_mkdir_line(args);
+		else {
 			fprintf(stderr, "unknown file type line %d: '%s'\n",
-				line_nr, line);
+				line_nr, type);
+			rc = 0;
+		}
+		if (rc) {
+			ec = rc;
+			fprintf(stderr, " line %d\n", line_nr);
 		}
 	}
 	if (ec == 0)

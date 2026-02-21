@@ -355,11 +355,6 @@ static struct page *get_page_from_freelist(gfp_t gfp_mask, unsigned int order,
 	return NULL;
 }
 
-bool gfp_pfmemalloc_allowed(gfp_t gfp_mask)
-{
-	return false;
-}
-
 static inline struct page *__alloc_pages_slowpath(gfp_t gfp_mask,
 						  unsigned int order,
 						  struct alloc_context *ac)

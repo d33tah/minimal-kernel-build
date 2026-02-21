@@ -46,7 +46,6 @@ extern struct memblock memblock;
 #define __initdata_memblock __meminitdata
 void memblock_discard(void);
 
-void memblock_allow_resize(void);
 int memblock_add(phys_addr_t base, phys_addr_t size);
 int memblock_phys_free(phys_addr_t base, phys_addr_t size);
 int memblock_reserve(phys_addr_t base, phys_addr_t size);

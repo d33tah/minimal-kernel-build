@@ -591,11 +591,6 @@ void __init_memblock memblock_set_current_limit(phys_addr_t limit)
 	memblock.current_limit = limit;
 }
 
-void __init memblock_allow_resize(void)
-{
-	/* no-op: array resizing replaced with panic */
-}
-
 void __init memblock_free_all(void)
 {
 	unsigned long count = 0;

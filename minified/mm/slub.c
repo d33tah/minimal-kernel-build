@@ -208,8 +208,7 @@ static void *get_partial_node(struct kmem_cache *s, struct kmem_cache_node *n,
 		void *t;
 
 		if (unlikely(folio_test_active(
-			    (struct folio *)slab_folio(slab))) &&
-		    !gfp_pfmemalloc_allowed(gfpflags))
+			    (struct folio *)slab_folio(slab))))
 			continue;
 
 		t = acquire_slab(s, n, slab, true);

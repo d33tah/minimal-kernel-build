@@ -140,6 +140,4 @@ extern unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order);
 
 extern gfp_t gfp_allowed_mask;
 
-bool gfp_pfmemalloc_allowed(gfp_t gfp_mask);
-
-#endif  
+#endif

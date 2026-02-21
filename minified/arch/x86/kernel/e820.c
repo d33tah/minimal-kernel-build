@@ -190,8 +190,6 @@ void __init e820__memblock_setup(void)
 	int i;
 	u64 end;
 
-	memblock_allow_resize();
-
 	for (i = 0; i < e820_table->nr_entries; i++) {
 		struct e820_entry *entry = &e820_table->entries[i];
 

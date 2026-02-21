@@ -71,13 +71,6 @@ static inline pgd_t *pgd_offset_pgd(pgd_t *pgd, unsigned long address)
 /* ptep_set_access_flags - x86 defines __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS */
 /* ptep_get_and_clear - x86 defines __HAVE_ARCH_PTEP_GET_AND_CLEAR */
 
-#ifndef pte_sw_mkyoung
-static inline pte_t pte_sw_mkyoung(pte_t pte)
-{
-	return pte;
-}
-#define pte_sw_mkyoung	pte_sw_mkyoung
-#endif
 
 /* pte_same - x86 defines __HAVE_ARCH_PTE_SAME */
 

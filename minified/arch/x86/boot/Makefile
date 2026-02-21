@@ -36,11 +36,8 @@ setup-y		+= a20.o bioscall.o cmdline.o copy.o cpu.o cpuflags.o cpucheck.o
 # early_serial_console.o removed - console_init was empty stub
 setup-y		+= header.o main.o memory.o
 setup-y		+= pm.o pmjump.o printf.o regs.o string.o tty.o video.o
-setup-y		+= video-mode.o version.o
+setup-y		+= version.o
 setup-$(CONFIG_X86_APM_BOOT) += apm.o
-
-# video-vesa.o, video-bios.o removed - only return 0/error, VGA is sufficient
-setup-y		+= video-vga.o
 
 targets		+= $(setup-y)
 hostprogs	:= tools/build

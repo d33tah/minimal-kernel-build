@@ -1,6 +1,10 @@
 #include "boot.h"
 #include "video.h"
 
+static __videocard video_vga = {
+	.card_name = "VGA",
+};
+
 static void store_mode_params(void)
 {
 	struct biosregs ireg, oreg;

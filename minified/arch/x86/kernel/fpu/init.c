@@ -18,8 +18,6 @@ void fpu__init_cpu(void)
 
 	cr0 = read_cr0();
 	cr0 &= ~(X86_CR0_TS | X86_CR0_EM);
-	if (!boot_cpu_has(X86_FEATURE_FPU))
-		cr0 |= X86_CR0_EM;
 	write_cr0(cr0);
 
 	asm volatile("fninit");

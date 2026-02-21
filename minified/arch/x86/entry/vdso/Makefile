@@ -12,9 +12,4 @@ KCOV_INSTRUMENT		:= n
 obj-y				+= vma.o extable.o
 OBJECT_FILES_NON_STANDARD_vma.o	:= n
 
-# VDSO image stub (no actual .so built)
-obj-y += vdso-image-32.o
-
-obj-$(CONFIG_X86_32)		+= vdso32-setup.o
-
 GCOV_PROFILE := n

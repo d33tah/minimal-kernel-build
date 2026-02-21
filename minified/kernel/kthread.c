@@ -67,8 +67,6 @@ static void __noreturn kthread_exit(long result)
 
 static int kthread(void *_create)
 {
-	static const struct sched_param param = { .sched_priority = 0 };
-
 	struct kthread_create_info *create = _create;
 	int (*threadfn)(void *data) = create->threadfn;
 	void *data = create->data;

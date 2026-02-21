@@ -48,8 +48,6 @@ static inline size_t __must_check size_add(size_t addend1, size_t addend2)
 	return bytes;
 }
 
-#define array_size(a, b)	size_mul(a, b)
-
 #define flex_array_size(p, member, count)				\
 	__builtin_choose_expr(__is_constexpr(count),			\
 		(count) * sizeof(*(p)->member) + __must_be_array((p)->member),	\

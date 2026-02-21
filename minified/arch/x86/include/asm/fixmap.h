@@ -59,16 +59,8 @@ static __always_inline unsigned long fix_to_virt(const unsigned int idx)
 	return __fix_to_virt(idx);
 }
 
-#ifndef FIXMAP_PAGE_NORMAL
-#define FIXMAP_PAGE_NORMAL PAGE_KERNEL
-#endif
 #ifndef FIXMAP_PAGE_CLEAR
 #define FIXMAP_PAGE_CLEAR __pgprot(0)
-#endif
-
-#ifndef set_fixmap
-#define set_fixmap(idx, phys)				\
-	__set_fixmap(idx, phys, FIXMAP_PAGE_NORMAL)
 #endif
 
 #ifndef clear_fixmap

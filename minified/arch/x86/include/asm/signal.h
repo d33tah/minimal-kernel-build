@@ -67,38 +67,6 @@ typedef struct sigaltstack {
 /* __i386__ - 32-bit x86 */
 #define __HAVE_ARCH_SIG_BITOPS
 
-#define sigaddset(set,sig)		    \
-	(__builtin_constant_p(sig)	    \
-	 ? __const_sigaddset((set), (sig))  \
-	 : __gen_sigaddset((set), (sig)))
-
-static inline void __gen_sigaddset(sigset_t *set, int _sig)
-{
-	asm("btsl %1,%0" : "+m"(*set) : "Ir"(_sig - 1) : "cc");
-}
-
-static inline void __const_sigaddset(sigset_t *set, int _sig)
-{
-	unsigned long sig = _sig - 1;
-	set->sig[sig / _NSIG_BPW] |= 1 << (sig % _NSIG_BPW);
-}
-
-#define sigdelset(set, sig)		    \
-	(__builtin_constant_p(sig)	    \
-	 ? __const_sigdelset((set), (sig))  \
-	 : __gen_sigdelset((set), (sig)))
-
-static inline void __gen_sigdelset(sigset_t *set, int _sig)
-{
-	asm("btrl %1,%0" : "+m"(*set) : "Ir"(_sig - 1) : "cc");
-}
-
-static inline void __const_sigdelset(sigset_t *set, int _sig)
-{
-	unsigned long sig = _sig - 1;
-	set->sig[sig / _NSIG_BPW] &= ~(1 << (sig % _NSIG_BPW));
-}
-
 static inline int __const_sigismember(sigset_t *set, int _sig)
 {
 	unsigned long sig = _sig - 1;

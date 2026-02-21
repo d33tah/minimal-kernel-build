@@ -37,28 +37,6 @@ struct k_sigaction {
 
 struct task_struct;
 
-#ifndef __HAVE_ARCH_SIG_BITOPS
-#include <linux/bitops.h>
-
-static inline void sigaddset(sigset_t *set, int _sig)
-{
-	unsigned long sig = _sig - 1;
-	if (_NSIG_WORDS == 1)
-		set->sig[0] |= 1UL << sig;
-	else
-		set->sig[sig / _NSIG_BPW] |= 1UL << (sig % _NSIG_BPW);
-}
-
-static inline void sigdelset(sigset_t *set, int _sig)
-{
-	unsigned long sig = _sig - 1;
-	if (_NSIG_WORDS == 1)
-		set->sig[0] &= ~(1UL << sig);
-	else
-		set->sig[sig / _NSIG_BPW] &= ~(1UL << (sig % _NSIG_BPW));
-}
-
-#endif  
 
 static inline int sigequalsets(const sigset_t *set1, const sigset_t *set2)
 {

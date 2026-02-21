@@ -10,12 +10,6 @@
 #include <asm/switch_to.h>
 
 #include <asm/kdebug.h>
-void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p);
-
-void __show_regs(struct pt_regs *regs, enum show_regs_mode mode,
-		 const char *log_lvl)
-{
-}
 
 void start_thread(struct pt_regs *regs, unsigned long new_ip,
 		  unsigned long new_sp)
@@ -44,14 +38,6 @@ __visible struct task_struct *__switch_to(struct task_struct *prev_p,
 	savesegment(gs, prev->gs);
 
 	load_TLS(next, cpu);
-
-	{
-		unsigned long next_tif = read_task_thread_flags(next_p);
-		unsigned long prev_tif = read_task_thread_flags(prev_p);
-		if (unlikely(next_tif & _TIF_WORK_CTXSW_NEXT ||
-			     prev_tif & _TIF_WORK_CTXSW_PREV))
-			__switch_to_xtra(prev_p, next_p);
-	}
 
 	arch_end_context_switch(next_p);
 

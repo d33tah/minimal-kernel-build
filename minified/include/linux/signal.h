@@ -83,6 +83,4 @@ extern struct kmem_cache *sighand_cachep;
 #define sig_kernel_only(sig)		siginmask(sig, SIG_KERNEL_ONLY_MASK)
 #define sig_kernel_ignore(sig)		siginmask(sig, SIG_KERNEL_IGNORE_MASK)
 
-void signals_init(void);
-
-#endif  
+#endif

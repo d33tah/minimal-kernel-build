@@ -259,6 +259,4 @@ static inline __alloc_size(1) void *kzalloc_node(size_t size, gfp_t flags, int n
 	return kmalloc_node(size, flags | __GFP_ZERO, node);
 }
 
-extern void kvfree(const void *addr);
-
-#endif 
+#endif

@@ -357,8 +357,6 @@ static inline int set_cpus_allowed_ptr(struct task_struct *p, const struct cpuma
 	return 0;
 }
 
-extern int sched_setscheduler_nocheck(struct task_struct *, int, const struct sched_param *);
-
 union thread_union {
 	struct task_struct task;
 	unsigned long stack[THREAD_SIZE/sizeof(long)];

@@ -56,7 +56,3 @@ asmlinkage noinstr void __noreturn doublefault_shim(void)
 }
 
 DEFINE_PER_CPU_PAGE_ALIGNED(struct doublefault_stack, doublefault_stack) = {};
-
-void doublefault_init_cpu_tss(void)
-{
-}

@@ -26,8 +26,6 @@ void rcu_init(void);
 
 extern void rcu_barrier(void);
 
-extern void kvfree(const void *addr);
-
 void rcu_qs(void);
 
 #define rcu_note_context_switch(preempt) \

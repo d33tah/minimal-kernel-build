@@ -104,7 +104,6 @@ extern const struct kmalloc_info_struct {
 	unsigned int size;
 } kmalloc_info[];
 
-void setup_kmalloc_cache_index_table(void);
 void create_kmalloc_caches(slab_flags_t);
 
 struct kmem_cache *kmalloc_slab(size_t, gfp_t);

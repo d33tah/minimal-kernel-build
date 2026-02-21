@@ -92,10 +92,6 @@ unsigned long vm_mmap(struct file *file, unsigned long addr, unsigned long len,
 	return vm_mmap_pgoff(file, addr, len, prot, flag, offset >> PAGE_SHIFT);
 }
 
-void kvfree(const void *addr)
-{
-}
-
 int sysctl_max_map_count __read_mostly = DEFAULT_MAX_MAP_COUNT;
 
 struct percpu_counter vm_committed_as ____cacheline_aligned_in_smp;

@@ -4,7 +4,6 @@
 #include <linux/thread_info.h>
 #include <asm/ptrace.h>
 #include <asm/vdso.h>
-extern unsigned int vdso32_enabled;
 #define elf_check_arch_ia32(x) \
 	(((x)->e_machine == EM_386) || ((x)->e_machine == EM_486))
 #include <asm/processor.h>

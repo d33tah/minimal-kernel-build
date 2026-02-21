@@ -34,6 +34,4 @@ void __init use_tsc_delay(void);
 	({unsigned long __ms=(n); while (__ms--) udelay(1000);}))
 #endif
 
-void calibrate_delay(void);
-
 #endif

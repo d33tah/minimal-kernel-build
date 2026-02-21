@@ -45,18 +45,12 @@ extern void e820__range_add   (u64 start, u64 size, enum e820_type type);
 extern u64  e820__range_update(u64 start, u64 size, enum e820_type old_type, enum e820_type new_type);
 extern u64  e820__range_remove(u64 start, u64 size, enum e820_type old_type, bool check_type);
 
-extern int  e820__update_table(struct e820_table *table);
-
 extern unsigned long e820__end_of_ram_pfn(void);
 
 extern void e820__memblock_setup(void);
 
-extern void e820__reserve_setup_data(void);
-extern void e820__reserve_resources(void);
-
 extern void e820__memory_setup(void);
 extern char *e820__memory_setup_default(void);
-extern void e820__setup_pci_gap(void);
 
 static inline bool is_ISA_range(u64 start, u64 end)
 {

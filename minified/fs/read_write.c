@@ -95,8 +95,6 @@ SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf, size_t,
 		ret = vfs_write(f.file, buf, count, ppos);
 		if (ret >= 0 && ppos)
 			f.file->f_pos = pos;
-		if (f.flags & FDPUT_POS_UNLOCK)
-			__f_unlock_pos(f.file);
 		fdput(f);
 	}
 

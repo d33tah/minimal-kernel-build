@@ -16,10 +16,6 @@ extern int nr_threads;
 
 /* ptrace stubs (merged from ptrace.c) */
 
-void put_task_struct_rcu_user(struct task_struct *task)
-{
-}
-
 int rcuwait_wake_up(struct rcuwait *w)
 {
 	int ret = 0;

@@ -50,8 +50,6 @@ void oops_end(unsigned long flags, struct pt_regs *regs, int signr)
 		arch_spin_unlock(&die_lock);
 	raw_local_irq_restore(flags);
 
-	__show_regs(&exec_summary_regs, SHOW_REGS_ALL, KERN_DEFAULT);
-
 	if (!signr)
 		return;
 	if (in_interrupt())
@@ -83,8 +81,4 @@ void die(const char *str, struct pt_regs *regs, long err)
 	unsigned long flags = oops_begin();
 	__die(str, regs, err);
 	oops_end(flags, regs, SIGSEGV);
-}
-
-void show_regs(struct pt_regs *regs)
-{
 }

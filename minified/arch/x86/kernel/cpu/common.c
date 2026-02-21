@@ -10,7 +10,6 @@
 
 #include <asm/mmu_context.h>
 
-extern void doublefault_init_cpu_tss(void);
 #include <asm/processor.h>
 #include <asm/tlbflush.h>
 #include <linux/atomic.h>
@@ -301,8 +300,6 @@ void cpu_init(void)
 			set_debugreg(0, i);
 		}
 	}
-
-	doublefault_init_cpu_tss();
 
 	fpu__init_cpu();
 

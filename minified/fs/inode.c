@@ -246,10 +246,6 @@ void iput(struct inode *inode)
 	evict(inode);
 }
 
-void __init inode_init_early(void)
-{
-}
-
 void __init inode_init(void)
 {
 	inode_cachep = kmem_cache_create("inode_cache", sizeof(struct inode), 0,

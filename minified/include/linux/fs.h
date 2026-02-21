@@ -379,7 +379,6 @@ struct fs_context;
 struct fs_parameter_spec;
 
 extern void __init inode_init(void);
-extern void __init inode_init_early(void);
 extern void __init files_init(void);
 
 #define MAY_EXEC		0x00000001

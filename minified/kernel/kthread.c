@@ -87,7 +87,6 @@ static int kthread(void *_create)
 	self->threadfn = threadfn;
 	self->data = data;
 
-	sched_setscheduler_nocheck(current, SCHED_NORMAL, &param);
 	set_cpus_allowed_ptr(current, cpu_possible_mask);
 
 	__set_current_state(TASK_UNINTERRUPTIBLE);

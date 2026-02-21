@@ -81,9 +81,7 @@ rcu_process_callbacks(struct softirq_action *unused)
 		local_bh_disable();
 		{
 			unsigned long offset = (unsigned long)list->func;
-			if (__is_kvfree_rcu_offset(offset)) {
-				kvfree((void *)list - offset);
-			} else {
+			if (!__is_kvfree_rcu_offset(offset)) {
 				rcu_callback_t f = list->func;
 				WRITE_ONCE(list->func, (rcu_callback_t)0L);
 				f(list);

@@ -497,8 +497,6 @@ void __init vfs_caches_init_early(void)
 		"Dentry cache", sizeof(struct hlist_bl_head), dhash_entries, 13,
 		HASH_EARLY | HASH_ZERO, &d_hash_shift, NULL, 0, 0);
 	d_hash_shift = 32 - d_hash_shift;
-
-	inode_init_early();
 }
 
 void __init vfs_caches_init(void)

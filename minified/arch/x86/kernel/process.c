@@ -103,10 +103,6 @@ void flush_thread(void)
 	pkru_write_default();
 }
 
-void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
-{
-}
-
 static void (*x86_idle)(void);
 
 void arch_cpu_idle_enter(void)

@@ -143,14 +143,6 @@ static void init_8259A(int auto_eoi)
 	raw_spin_unlock_irqrestore(&i8259A_lock, flags);
 }
 
-static void legacy_pic_int_noop(int unused) {};
-
-struct legacy_pic null_legacy_pic = {
-	.nr_legacy_irqs = 0,
-	.chip = &dummy_irq_chip,
-	.init = legacy_pic_int_noop,
-};
-
 struct legacy_pic default_legacy_pic = {
 	.nr_legacy_irqs = NR_IRQS_LEGACY,
 	.chip = &i8259A_chip,

@@ -48,11 +48,6 @@ void __init e820__range_add(u64 start, u64 size, enum e820_type type)
 	__e820__range_add(e820_table, start, size, type);
 }
 
-int __init e820__update_table(struct e820_table *table)
-{
-	return 0;
-}
-
 static int __init __append_e820_table(struct boot_e820_entry *entries,
 				      u32 nr_entries)
 {
@@ -115,10 +110,6 @@ u64 __init e820__range_remove(u64 start, u64 size, enum e820_type old_type,
 	return real_removed_size;
 }
 
-__init void e820__setup_pci_gap(void)
-{
-}
-
 #define MAX_ARCH_PFN (1ULL << (32 - PAGE_SHIFT))
 
 static unsigned long __init e820_end_pfn(unsigned long limit_pfn,
@@ -162,14 +153,6 @@ unsigned long __init e820__end_of_ram_pfn(void)
 	return e820_end_pfn(MAX_ARCH_PFN, E820_TYPE_RAM);
 }
 
-void __init e820__reserve_setup_data(void)
-{
-}
-
-void __init e820__reserve_resources(void)
-{
-}
-
 char *__init e820__memory_setup_default(void)
 {
 	char *who = "BIOS-e820";
@@ -191,8 +174,6 @@ char *__init e820__memory_setup_default(void)
 		e820__range_add(0, LOWMEMSIZE(), E820_TYPE_RAM);
 		e820__range_add(HIGH_MEMORY, mem_size << 10, E820_TYPE_RAM);
 	}
-
-	e820__update_table(e820_table);
 
 	return who;
 }

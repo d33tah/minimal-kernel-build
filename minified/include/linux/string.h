@@ -59,8 +59,6 @@ static inline void *__memset_generic(void *s, char c, size_t count)
 #define __HAVE_ARCH_STRNLEN
 extern size_t strnlen(const char *s, size_t count);
 
-extern char *strstr(const char *cs, const char *ct);
-
 #define __memset(s, c, count)				\
 	(__builtin_constant_p(count)			\
 	 ? __constant_count_memset((s), (c), (count))	\

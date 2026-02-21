@@ -475,7 +475,6 @@ void __init kmem_cache_init(void)
 	kmem_cache = bootstrap(&boot_kmem_cache);
 	kmem_cache_node = bootstrap(&boot_kmem_cache_node);
 
-	setup_kmalloc_cache_index_table();
 	create_kmalloc_caches(0);
 }
 

@@ -61,8 +61,6 @@ extern pid_t kernel_thread(int (*fn)(void *), void *arg, unsigned long flags);
 extern pid_t user_mode_thread(int (*fn)(void *), void *arg, unsigned long flags);
 /* kernel_wait4 now static in exit.c */
 
-void put_task_struct_rcu_user(struct task_struct *task);
-
 extern int arch_task_struct_size __read_mostly;
 
 static inline void task_lock(struct task_struct *p)

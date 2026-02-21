@@ -166,8 +166,6 @@ void __init setup_arch(char **cmdline_p)
 
 	parse_early_param();
 
-	e820__reserve_setup_data();
-
 	tsc_early_init();
 
 	insert_resource(&iomem_resource, &code_resource);
@@ -186,8 +184,6 @@ void __init setup_arch(char **cmdline_p)
 	}
 	e820__range_update(0, PAGE_SIZE, E820_TYPE_RAM, E820_TYPE_RESERVED);
 	e820__range_remove(BIOS_BEGIN, BIOS_END - BIOS_BEGIN, E820_TYPE_RAM, 1);
-	e820__update_table(e820_table);
-
 	max_pfn = e820__end_of_ram_pfn();
 
 	find_low_pfn_range();
@@ -236,11 +232,7 @@ void __init setup_arch(char **cmdline_p)
 
 	generic_apic_probe();
 
-	e820__reserve_resources();
-
 	x86_init.resources.reserve_resources();
-
-	e820__setup_pci_gap();
 	conswitchp = &vga_con;
 }
 

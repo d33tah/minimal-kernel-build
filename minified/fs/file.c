@@ -192,8 +192,4 @@ unsigned long __fdget_pos(unsigned int fd)
 	return __fdget(fd);
 }
 
-void __f_unlock_pos(struct file *f)
-{
-}
-
 /* dup/dup2/dup3 replaced with COND_SYSCALL */

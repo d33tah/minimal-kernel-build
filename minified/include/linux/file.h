@@ -14,14 +14,8 @@ struct fd {
 	struct file *file;
 	unsigned int flags;
 };
-#define FDPUT_POS_UNLOCK 2
-
-extern void __f_unlock_pos(struct file *);
-
 static inline void fdput(struct fd fd)
 {
-	if (fd.flags & FDPUT_POS_UNLOCK)
-		__f_unlock_pos(fd.file);
 	fput(fd.file);
 }
 extern void fput(struct file *file);

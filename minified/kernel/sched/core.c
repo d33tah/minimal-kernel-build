@@ -261,8 +261,6 @@ static struct rq *finish_task_switch(struct task_struct *prev)
 		mmdrop_sched(mm);
 	if (unlikely(prev_state == TASK_DEAD)) {
 		put_task_stack(prev);
-
-		put_task_struct_rcu_user(prev);
 	}
 
 	return rq;
@@ -420,12 +418,6 @@ int default_wake_function(wait_queue_entry_t *curr, unsigned mode,
 			  int wake_flags, void *key)
 {
 	return try_to_wake_up(curr->private, mode, wake_flags);
-}
-
-int sched_setscheduler_nocheck(struct task_struct *p, int policy,
-			       const struct sched_param *param)
-{
-	return 0;
 }
 
 int __sched __cond_resched(void)

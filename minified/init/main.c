@@ -143,8 +143,6 @@ void __init parse_early_param(void)
 	done = 1;
 }
 
-void __init poking_init(void); /* in arch/x86/mm/init.c */
-
 void __init trap_init(void); /* in arch/x86/kernel/traps.c */
 
 asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
@@ -227,7 +225,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	proc_caches_init();
 	vfs_caches_init();
 	pagecache_init();
-	poking_init();
 	check_bugs();
 	rest_init(); /* was arch_call_rest_init() */
 	prevent_tail_call_optimization();

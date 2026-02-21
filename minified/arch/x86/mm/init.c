@@ -12,8 +12,6 @@
 #define __parainstructions_end NULL
 extern void text_poke_early(void *addr, const void *opcode, size_t len);
 extern int after_bootmem;
-extern __ro_after_init struct mm_struct *poking_mm;
-extern __ro_after_init unsigned long poking_addr;
 
 void *alloc_low_pages(unsigned int num);
 void early_ioremap_page_table_range_init(void);
@@ -363,25 +361,6 @@ void __init init_mem_mapping(void)
 
 	load_cr3(swapper_pg_dir);
 	__flush_tlb_all();
-}
-
-void __init poking_init(void)
-{
-	spinlock_t *ptl;
-	pte_t *ptep;
-
-	poking_mm = copy_init_mm();
-	BUG_ON(!poking_mm);
-
-	/* RANDOMIZE_BASE not enabled */
-	poking_addr = TASK_UNMAPPED_BASE;
-
-	if (((poking_addr + PAGE_SIZE) & ~PMD_MASK) == 0)
-		poking_addr += PAGE_SIZE;
-
-	ptep = get_locked_pte(poking_mm, poking_addr, &ptl);
-	BUG_ON(!ptep);
-	pte_unmap_unlock(ptep, ptl);
 }
 
 void __ref free_initmem(void)

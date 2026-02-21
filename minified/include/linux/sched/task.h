@@ -57,7 +57,6 @@ extern void flush_thread(void);
 
 /* do_group_exit now static in exit.c */
 
-struct mm_struct *copy_init_mm(void);
 extern pid_t kernel_thread(int (*fn)(void *), void *arg, unsigned long flags);
 extern pid_t user_mode_thread(int (*fn)(void *), void *arg, unsigned long flags);
 /* kernel_wait4 now static in exit.c */

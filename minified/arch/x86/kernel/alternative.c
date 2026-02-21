@@ -23,13 +23,8 @@ static inline void sync_core(void)
 #define __parainstructions_end NULL
 extern void text_poke_early(void *addr, const void *opcode, size_t len);
 extern int after_bootmem;
-extern __ro_after_init struct mm_struct *poking_mm;
-extern __ro_after_init unsigned long poking_addr;
 
 int __read_mostly alternatives_patched;
-
-__ro_after_init struct mm_struct *poking_mm;
-__ro_after_init unsigned long poking_addr;
 
 void text_poke_early(void *addr, const void *opcode, size_t len);
 

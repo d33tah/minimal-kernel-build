@@ -409,19 +409,6 @@ bad_fork:
 	panic("copy_process failed (retval=%d)\n", retval);
 }
 
-struct mm_struct *copy_init_mm(void)
-{
-	struct mm_struct *mm;
-
-	mm = allocate_mm();
-	if (!mm)
-		return NULL;
-	memcpy(mm, &init_mm, sizeof(*mm));
-	if (!mm_init(mm, NULL, mm->user_ns))
-		return NULL;
-	return mm;
-}
-
 static pid_t __kernel_thread(int (*fn)(void *), void *arg, unsigned long flags,
 			     int kthread)
 {

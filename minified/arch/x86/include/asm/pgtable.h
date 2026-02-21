@@ -256,7 +256,6 @@ static inline unsigned long pages_to_mb(unsigned long npg)
 
 void init_mem_mapping(void);
 void early_alloc_pgt_buf(void);
-void __init poking_init(void);
 unsigned long init_memory_mapping(unsigned long start,
 				  unsigned long end, pgprot_t prot);
 

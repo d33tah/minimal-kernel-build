@@ -5,6 +5,6 @@
 # The format is:
 # <number> <abi> <name> <entry point> <compat entry point>
 #
-0	i386	restart_syscall		sys_restart_syscall
+0	i386	ni_syscall		sys_ni_syscall
 1	i386	exit			sys_exit
 4	i386	write			sys_write

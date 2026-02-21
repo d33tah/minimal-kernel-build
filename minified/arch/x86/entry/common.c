@@ -42,7 +42,16 @@ static inline unsigned long array_index_mask_nospec(unsigned long index,
 #include <asm/fpu/api.h>
 #include <asm/nospec-branch.h>
 #include <asm/syscall.h>
-#include <asm/irq_stack.h>
+#include <linux/objtool.h>
+#include <asm/processor.h>
+
+/* inlined from asm/irq_stack.h */
+#define run_irq_on_irqstack_cond(func, regs, vector) \
+	{                                            \
+		irq_enter_rcu();                     \
+		func(regs, vector);                  \
+		irq_exit_rcu();                      \
+	}
 
 static __always_inline int syscall_32_enter(struct pt_regs *regs)
 {

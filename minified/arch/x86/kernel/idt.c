@@ -1,7 +1,20 @@
 #include <linux/interrupt.h>
+#include <linux/percpu.h>
+#include <linux/smp.h>
+#include <linux/atomic.h>
 
-#include <asm/hw_irq.h>
+#include <asm/irq_vectors.h>
+#include <asm/irq.h>
+#include <asm/sections.h>
 #include <asm/idtentry.h>
+
+/* inlined from asm/hw_irq.h */
+extern char irq_entries_start[];
+
+#define VECTOR_UNUSED NULL
+
+typedef struct irq_desc *vector_irq_t[NR_VECTORS];
+DECLARE_PER_CPU(vector_irq_t, vector_irq);
 
 #define DPL0 0x0
 #define DPL3 0x3

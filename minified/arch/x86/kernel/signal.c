@@ -43,8 +43,7 @@ void arch_do_signal_or_restart(struct pt_regs *regs)
 			break;
 
 		case -ERESTART_RESTARTBLOCK:
-			regs->ax = __NR_restart_syscall;
-			regs->ip -= 2;
+			panic("ERESTART_RESTARTBLOCK");
 			break;
 		}
 	}

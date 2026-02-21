@@ -28,8 +28,17 @@
 #ifndef __ASSEMBLY__
 #include <linux/entry-common.h>
 #include <linux/hardirq.h>
+#include <linux/ptrace.h>
+#include <linux/objtool.h>
+#include <asm/processor.h>
 
-#include <asm/irq_stack.h>
+/* inlined from asm/irq_stack.h */
+#define run_irq_on_irqstack_cond(func, regs, vector)			\
+{									\
+	irq_enter_rcu();						\
+	func(regs, vector);						\
+	irq_exit_rcu();							\
+}
 
 #define DECLARE_IDTENTRY(vector, func)					\
 	asmlinkage void asm_##func(void);				\

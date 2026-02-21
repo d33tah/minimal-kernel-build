@@ -53,9 +53,6 @@ struct printf_spec {
 } __packed;
 static_assert(sizeof(struct printf_spec) == 8);
 
-#define FIELD_WIDTH_MAX ((1 << 23) - 1)
-#define PRECISION_MAX ((1 << 15) - 1)
-
 static noinline_for_stack char *
 number(char *buf, char *end, unsigned long long num, struct printf_spec spec)
 {
@@ -144,25 +141,15 @@ number(char *buf, char *end, unsigned long long num, struct printf_spec spec)
 	return buf;
 }
 
-static noinline_for_stack char *
-special_hex_number(char *buf, char *end, unsigned long long num, int size)
+static noinline_for_stack char *string(char *buf, char *end, const char *s,
+				       struct printf_spec spec)
 {
-	struct printf_spec spec;
+	int lim;
 
-	spec.type = FORMAT_TYPE_PTR;
-	spec.field_width = 2 + 2 * size;
-	spec.flags = SPECIAL | SMALL | ZEROPAD;
-	spec.base = 16;
-	spec.precision = -1;
+	if (!s)
+		s = "(null)";
 
-	return number(buf, end, num, spec);
-}
-
-static char *string_nocheck(char *buf, char *end, const char *s,
-			    struct printf_spec spec)
-{
-	int lim = spec.precision;
-
+	lim = spec.precision;
 	while (lim--) {
 		char c = *s++;
 		if (!c)
@@ -174,43 +161,8 @@ static char *string_nocheck(char *buf, char *end, const char *s,
 	return buf;
 }
 
-static char *error_string(char *buf, char *end, const char *s,
-			  struct printf_spec spec)
-{
-	if (spec.precision == -1)
-		spec.precision = 2 * sizeof(void *);
-
-	return string_nocheck(buf, end, s, spec);
-}
-
-static int check_pointer(char **buf, char *end, const void *ptr,
-			 struct printf_spec spec)
-{
-	const char *err_msg = NULL;
-	if (!ptr)
-		err_msg = "(null)";
-	else if ((unsigned long)ptr < PAGE_SIZE || IS_ERR_VALUE(ptr))
-		err_msg = "(efault)";
-
-	if (err_msg) {
-		*buf = error_string(*buf, end, err_msg, spec);
-		return -EFAULT;
-	}
-
-	return 0;
-}
-
-static noinline_for_stack char *string(char *buf, char *end, const char *s,
-				       struct printf_spec spec)
-{
-	if (check_pointer(&buf, end, s, spec))
-		return buf;
-
-	return string_nocheck(buf, end, s, spec);
-}
-
-static char *pointer_string(char *buf, char *end, const void *ptr,
-			    struct printf_spec spec)
+static noinline_for_stack char *pointer(const char *fmt, char *buf, char *end,
+					void *ptr, struct printf_spec spec)
 {
 	spec.base = 16;
 	spec.flags |= SMALL;
@@ -220,33 +172,6 @@ static char *pointer_string(char *buf, char *end, const void *ptr,
 	}
 
 	return number(buf, end, (unsigned long int)ptr, spec);
-}
-
-static noinline_for_stack char *pointer(const char *fmt, char *buf, char *end,
-					void *ptr, struct printf_spec spec)
-{
-	switch (*fmt) {
-	case 'S':
-	case 's':
-		fallthrough;
-	case 'B':
-		return special_hex_number(buf, end, (unsigned long)ptr,
-					  sizeof(void *));
-	case 'V': {
-		struct va_format *va_fmt = ptr;
-		va_list va;
-		if (check_pointer(&buf, end, va_fmt, spec))
-			return buf;
-		va_copy(va, *va_fmt->va);
-		buf += vsnprintf(buf, end > buf ? end - buf : 0, va_fmt->fmt,
-				 va);
-		va_end(va);
-		return buf;
-	}
-	default:
-		/* %pa, %pd, %pD, %pG, %px all fall through to default pointer */
-		return pointer_string(buf, end, ptr, spec);
-	}
 }
 
 static noinline_for_stack int format_decode(const char *fmt,
@@ -471,18 +396,6 @@ int vscnprintf(char *buf, size_t size, const char *fmt, va_list args)
 		return i;
 
 	return size - 1;
-}
-
-int snprintf(char *buf, size_t size, const char *fmt, ...)
-{
-	va_list args;
-	int i;
-
-	va_start(args, fmt);
-	i = vsnprintf(buf, size, fmt, args);
-	va_end(args);
-
-	return i;
 }
 
 int sprintf(char *buf, const char *fmt, ...)

@@ -244,8 +244,6 @@ struct task_struct {
 
 	unsigned			restore_sigmask:1;
 
-	unsigned long			atomic_flags;
-
 	pid_t				pid;
 	pid_t				tgid;
 

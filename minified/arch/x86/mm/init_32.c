@@ -9,7 +9,15 @@
 #include <linux/gfp.h>
 
 #include <asm/asm.h>
-#include <asm/bios_ebda.h>
+/* bios_ebda.h inlined */
+#include <asm/io.h>
+static inline unsigned int get_bios_ebda(void)
+{
+	unsigned int address = *(unsigned short *)phys_to_virt(0x40E);
+	address <<= 4;
+	return address;
+}
+void reserve_bios_regions(void);
 #include <asm/processor.h>
 #include <linux/uaccess.h>
 #include <asm/fixmap.h>

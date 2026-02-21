@@ -18,10 +18,6 @@
 static struct vm_area_struct *find_vma_prev(struct mm_struct *mm,
 					    unsigned long addr,
 					    struct vm_area_struct **pprev);
-static int __split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
-		       unsigned long addr, int new_below);
-static int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
-		       struct list_head *uf, bool downgrade);
 
 /* mmap_min_addr moved from security/min_addr.c */
 unsigned long mmap_min_addr = CONFIG_DEFAULT_MMAP_MIN_ADDR;
@@ -128,23 +124,14 @@ static int find_vma_links(struct mm_struct *mm, unsigned long addr,
 	return 0;
 }
 
-static inline struct vm_area_struct *vma_next(struct mm_struct *mm,
-					      struct vm_area_struct *vma)
-{
-	if (!vma)
-		return mm->mmap;
-
-	return vma->vm_next;
-}
-
 static inline int
 munmap_vma_range(struct mm_struct *mm, unsigned long start, unsigned long len,
 		 struct vm_area_struct **pprev, struct rb_node ***link,
 		 struct rb_node **parent, struct list_head *uf)
 {
-	while (find_vma_links(mm, start, start + len, pprev, link, parent))
-		if (__do_munmap(mm, start, len, uf, false))
-			return -ENOMEM;
+	if (find_vma_links(mm, start, start + len, pprev, link, parent))
+		panic("munmap_vma_range: unexpected VMA overlap at %lx+%lx\n",
+		      start, len);
 
 	return 0;
 }
@@ -525,142 +512,6 @@ struct vm_area_struct *find_extend_vma(struct mm_struct *mm, unsigned long addr)
 	if (vma->vm_flags & VM_LOCKED)
 		populate_vma_page_range(vma, addr, start, NULL);
 	return vma;
-}
-
-static int __split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
-		       unsigned long addr, int new_below)
-{
-	struct vm_area_struct *new;
-	int err;
-
-	new = vm_area_dup(vma);
-	if (!new)
-		return -ENOMEM;
-
-	if (new_below)
-		new->vm_end = addr;
-	else {
-		new->vm_start = addr;
-		new->vm_pgoff += ((addr - vma->vm_start) >> PAGE_SHIFT);
-	}
-
-	err = anon_vma_clone(new, vma);
-	if (err)
-		goto out_free_vma;
-
-	if (new->vm_file)
-		get_file(new->vm_file);
-
-	if (new_below)
-		err = vma_adjust(vma, addr, vma->vm_end,
-				 vma->vm_pgoff +
-					 ((addr - new->vm_start) >> PAGE_SHIFT),
-				 new);
-	else
-		err = vma_adjust(vma, vma->vm_start, addr, vma->vm_pgoff, new);
-
-	if (!err)
-		return 0;
-
-	if (new->vm_file)
-		fput(new->vm_file);
-	unlink_anon_vmas(new);
-out_free_vma:
-	vm_area_free(new);
-	return err;
-}
-
-static int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
-		       struct list_head *uf, bool downgrade)
-{
-	unsigned long end;
-	struct vm_area_struct *vma, *prev, *last;
-
-	if ((offset_in_page(start)) || start > TASK_SIZE ||
-	    len > TASK_SIZE - start)
-		return -EINVAL;
-
-	len = PAGE_ALIGN(len);
-	end = start + len;
-	if (len == 0)
-		return -EINVAL;
-
-	arch_unmap(mm, start, end);
-
-	vma = find_vma_intersection(mm, start, end);
-	if (!vma)
-		return 0;
-	prev = vma->vm_prev;
-
-	if (start > vma->vm_start) {
-		int error;
-
-		if (end < vma->vm_end && mm->map_count >= sysctl_max_map_count)
-			return -ENOMEM;
-
-		error = __split_vma(mm, vma, start, 0);
-		if (error)
-			return error;
-		prev = vma;
-	}
-
-	last = find_vma(mm, end);
-	if (last && end > last->vm_start) {
-		int error = __split_vma(mm, last, end, 1);
-		if (error)
-			return error;
-	}
-	vma = vma_next(mm, prev);
-
-	{
-		struct vm_area_struct **insertion_point;
-		struct vm_area_struct *tail_vma = NULL;
-		struct vm_area_struct *tmp_vma = vma;
-		insertion_point = (prev ? &prev->vm_next : &mm->mmap);
-		vma->vm_prev = NULL;
-		do {
-			rb_erase_augmented(&tmp_vma->vm_rb, &mm->mm_rb,
-					   &vma_gap_callbacks);
-			mm->map_count--;
-			tail_vma = tmp_vma;
-			tmp_vma = tmp_vma->vm_next;
-		} while (tmp_vma && tmp_vma->vm_start < end);
-		*insertion_point = tmp_vma;
-		if (tmp_vma) {
-			tmp_vma->vm_prev = prev;
-			vma_gap_update(tmp_vma);
-		} else
-			mm->highest_vm_end = prev ? vm_end_gap(prev) : 0;
-		tail_vma->vm_next = NULL;
-		mm->vmacache_seqnum++;
-	}
-
-	{
-		struct vm_area_struct *next = vma_next(mm, prev);
-		struct mmu_gather tlb;
-		lru_add_drain();
-		tlb_gather_mmu(&tlb, mm);
-		unmap_vmas(&tlb, vma, start, end);
-		free_pgtables(&tlb, vma,
-			      prev ? prev->vm_end : FIRST_USER_ADDRESS,
-			      next ? next->vm_start : USER_PGTABLES_CEILING);
-		tlb_finish_mmu(&tlb);
-	}
-
-	{
-		unsigned long nr_accounted = 0;
-		struct vm_area_struct *tmp_vma = vma;
-		do {
-			long nrpages = vma_pages(tmp_vma);
-			if (tmp_vma->vm_flags & VM_ACCOUNT)
-				nr_accounted += nrpages;
-			tmp_vma = remove_vma(tmp_vma);
-		} while (tmp_vma);
-		vm_unacct_memory(nr_accounted);
-		validate_mm(mm);
-	}
-
-	return 0;
 }
 
 int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)

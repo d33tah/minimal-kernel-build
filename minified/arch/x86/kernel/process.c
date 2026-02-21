@@ -3,7 +3,21 @@
 #include <asm/fpu/sched.h>
 /* Moved from hw_breakpoint.c - just the percpu variable needed for hw_breakpoint_active() */
 DEFINE_PER_CPU(unsigned long, cpu_dr7);
-#include <asm/nmi.h>
+/* nmi.h inlined */
+#include <asm/irq.h>
+#include <asm/io.h>
+enum { NMI_LOCAL = 0, NMI_UNKNOWN, NMI_SERR, NMI_IO_CHECK, NMI_MAX };
+typedef int (*nmi_handler_t)(unsigned int, struct pt_regs *);
+struct nmiaction {
+	struct list_head list;
+	nmi_handler_t handler;
+	u64 max_duration;
+	unsigned long flags;
+	const char *name;
+};
+static inline void local_touch_nmi(void)
+{
+}
 #include <asm/tlbflush.h>
 #include <asm/switch_to.h>
 

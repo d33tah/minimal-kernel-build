@@ -7,7 +7,22 @@ int kobj_map(struct kobj_map *, dev_t, unsigned long, struct module *,
 struct kobject *kobj_lookup(struct kobj_map *, dev_t, int *);
 struct kobj_map *kobj_map_init(kobj_probe_t *, struct mutex *);
 /* end kobj_map.h */
-#include <linux/cdev.h>
+/* cdev.h inlined */
+#include <linux/kdev_t.h>
+#include <linux/device.h>
+struct file_operations;
+struct inode;
+struct module;
+struct cdev {
+	struct kobject kobj;
+	struct module *owner;
+	const struct file_operations *ops;
+	struct list_head list;
+	dev_t dev;
+	unsigned int count;
+} __randomize_layout;
+void cdev_put(struct cdev *p);
+void cd_forget(struct inode *);
 
 static struct kobj_map *cdev_map;
 

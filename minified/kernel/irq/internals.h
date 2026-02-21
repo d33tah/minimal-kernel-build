@@ -1,6 +1,12 @@
  
 #include <linux/irq.h>
-#include <linux/sched/clock.h>
+/* sched/clock.h inlined */
+#include <linux/smp.h>
+extern unsigned long long notrace sched_clock(void);
+static inline u64 sched_clock_cpu(int cpu)
+{
+	return sched_clock();
+}
 
 # define IRQ_BITMAP_BITS	(NR_IRQS + 8196)
 

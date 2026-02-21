@@ -1,7 +1,25 @@
 
 #include <linux/slab.h>
 #include <linux/cred.h>
-#include <linux/hash.h>
+/* hash.h inlined */
+#include <asm/types.h>
+#define GOLDEN_RATIO_32 0x61C88647
+#define hash_long(val, bits) hash_32(val, bits)
+#ifndef HAVE_ARCH__HASH_32
+#define __hash_32 __hash_32_generic
+#endif
+static inline u32 __hash_32_generic(u32 val)
+{
+	return val * GOLDEN_RATIO_32;
+}
+static inline u32 hash_32(u32 val, unsigned int bits)
+{
+	return __hash_32(val) >> (32 - bits);
+}
+static inline u32 hash_ptr(const void *ptr, unsigned int bits)
+{
+	return hash_long((unsigned long)ptr, bits);
+}
 #include <linux/user_namespace.h>
 
 struct ucounts init_ucounts = {

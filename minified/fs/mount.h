@@ -1,7 +1,10 @@
 
 #include <linux/mount.h>
 #include <linux/compiler.h>
-#include <linux/ktime.h>
+/* ktime.h inlined */
+#include <linux/jiffies.h>
+#include <asm/bug.h>
+typedef s64 ktime_t;
 #include <linux/wait.h>
 #include <linux/fs.h>
 #include <linux/uaccess.h>

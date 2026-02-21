@@ -30,7 +30,8 @@
 #include <linux/module.h>
 
 #include <linux/compiler.h>
-#include <linux/ktime.h>
+/* ktime.h inlined */
+typedef s64 ktime_t;
 #include <linux/wait.h>
 #include <linux/fs.h>
 #include <linux/uaccess.h>
@@ -47,7 +48,7 @@
 
 #include <linux/uaccess.h>
 
-#include <linux/wait_bit.h>
+/* wait_bit.h - now inlined in fs.h, included above */
 
 # define SCHED_WARN_ON(x)      ({ (void)(x), 0; })
 

@@ -19,7 +19,9 @@
 #include <generated/asm-offsets.h>
 #include <asm/setup.h>
 #include <asm/processor-flags.h>
-#include <asm/msr-index.h>
+/* msr-index.h inlined */
+#define MSR_EFER		0xc0000080
+#define _EFER_NX		11
 #include <asm/cpufeatures.h>
 #include <asm/percpu.h>
 /* asm/nops.h removed - was empty */

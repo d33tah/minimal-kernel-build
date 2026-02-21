@@ -2,7 +2,15 @@
 #include <linux/memblock.h>
 
 #include <asm/setup.h>
-#include <asm/bios_ebda.h>
+/* bios_ebda.h inlined */
+#include <asm/io.h>
+static inline unsigned int get_bios_ebda(void)
+{
+	unsigned int address = *(unsigned short *)phys_to_virt(0x40E);
+	address <<= 4;
+	return address;
+}
+void reserve_bios_regions(void);
 
 #define BIOS_RAM_SIZE_KB_PTR 0x413
 

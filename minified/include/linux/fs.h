@@ -2,7 +2,19 @@
 #ifndef _LINUX_FS_H
 #define _LINUX_FS_H
 
-#include <linux/wait_bit.h>
+/* wait_bit.h inlined */
+#include <linux/wait.h>
+struct wait_bit_key {
+	void			*flags;
+	int			bit_nr;
+	unsigned long		timeout;
+};
+#define __WAIT_BIT_KEY_INITIALIZER(word, bit)					\
+	{ .flags = word, .bit_nr = bit, }
+void __wake_up_bit(struct wait_queue_head *wq_head, void *word, int bit);
+void wake_up_bit(void *word, int bit);
+struct wait_queue_head *bit_waitqueue(void *word, int bit);
+extern void __init wait_bit_init(void);
 #include <linux/kdev_t.h>
 /* rculist_bl.h inlined */
 #include <linux/kernel.h>
@@ -125,7 +137,25 @@ extern void lockref_get(struct lockref *);
 extern int lockref_put_return(struct lockref *);
 extern void lockref_mark_dead(struct lockref *);
 extern int lockref_get_not_dead(struct lockref *);
-#include <linux/hash.h>
+/* hash.h inlined */
+#include <asm/types.h>
+#define GOLDEN_RATIO_32 0x61C88647
+#define hash_long(val, bits) hash_32(val, bits)
+#ifndef HAVE_ARCH__HASH_32
+#define __hash_32 __hash_32_generic
+#endif
+static inline u32 __hash_32_generic(u32 val)
+{
+	return val * GOLDEN_RATIO_32;
+}
+static inline u32 hash_32(u32 val, unsigned int bits)
+{
+	return __hash_32(val) >> (32 - bits);
+}
+static inline u32 hash_ptr(const void *ptr, unsigned int bits)
+{
+	return hash_long((unsigned long)ptr, bits);
+}
 
 #define hashlen_len(hashlen)  ((u32)((hashlen) >> 32))
 #define hashlen_create(hash, len) ((u64)(len)<<32 | (u32)(hash))

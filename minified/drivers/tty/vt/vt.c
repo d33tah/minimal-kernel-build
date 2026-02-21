@@ -5,7 +5,6 @@
 #include <linux/string.h>
 #ifndef KD_TEXT
 #define KD_TEXT 0x00
-#define KD_GRAPHICS 0x01
 #endif
 #include <linux/slab.h>
 #include <linux/mm.h>
@@ -14,7 +13,6 @@
 #include <linux/mutex.h>
 #include <linux/vt_kern.h>
 #define scr_writew(val, addr) (*(addr) = (val))
-#define scr_readw(addr) (*(addr))
 static inline void scr_memsetw(u16 *s, u16 c, unsigned int count)
 {
 	memset16(s, c, count / 2);

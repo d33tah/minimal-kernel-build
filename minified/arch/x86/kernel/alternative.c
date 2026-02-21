@@ -19,8 +19,6 @@ static inline void sync_core(void)
 	iret_to_self();
 }
 /* end sync_core.h */
-#define __parainstructions NULL
-#define __parainstructions_end NULL
 extern void text_poke_early(void *addr, const void *opcode, size_t len);
 extern int after_bootmem;
 

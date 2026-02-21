@@ -8,8 +8,6 @@
 #include <asm/tlbflush.h>
 #include <asm/tlb.h>
 #include <asm/cpufeature.h>
-#define __parainstructions NULL
-#define __parainstructions_end NULL
 extern void text_poke_early(void *addr, const void *opcode, size_t len);
 extern int after_bootmem;
 

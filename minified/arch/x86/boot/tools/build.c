@@ -20,7 +20,6 @@ static inline uint16_t get_unaligned_le16(const void *p)
 	return b[0] | b[1] << 8;
 }
 
-
 static inline void put_unaligned_le16(uint16_t val, void *p)
 {
 	uint8_t *b = (uint8_t *)p;

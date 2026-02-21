@@ -8,11 +8,6 @@
 #include <asm/fpu/signal.h>
 #include <asm/sigframe.h>
 
-#define FRAME_ALIGNMENT 16UL
-#define MAX_FRAME_PADDING (FRAME_ALIGNMENT - 1)
-
-#define MAX_FRAME_SIGINFO_UCTXT_SIZE sizeof(struct sigframe_ia32)
-
 void __init init_sigframe_size(void)
 {
 }

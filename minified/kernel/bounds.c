@@ -4,8 +4,6 @@
 #include <linux/mmzone.h>
 #define DEFINE(sym, val) \
 	asm volatile("\n.ascii \"->" #sym " %0 " #val "\"" : : "i"(val))
-#define BLANK() asm volatile("\n.ascii \"->\"" : :)
-#define OFFSET(sym, str, mem) DEFINE(sym, offsetof(struct str, mem))
 #include <linux/log2.h>
 #include <linux/spinlock_types.h>
 

@@ -1,8 +1,4 @@
 
-#define PFN_FLAGS_MASK \
-	(((u64)(~PAGE_MASK)) << (BITS_PER_LONG_LONG - PAGE_SHIFT))
-#define PFN_DEV (1ULL << (BITS_PER_LONG_LONG - 3))
-
 #include <asm/pgalloc.h>
 #include <asm/tlb.h>
 

@@ -11,10 +11,6 @@
 #include <linux/spinlock.h>
 #include <linux/cpumask.h>
 
-/* NR_CPUS=1 < CONFIG_SPLIT_PTLOCK_CPUS=4, so USE_SPLIT_*=0 */
-#define USE_SPLIT_PTE_PTLOCKS	0
-#define ALLOC_SPLIT_PTLOCKS	0
-
 #define VMACACHE_BITS 2
 #define VMACACHE_SIZE (1U << VMACACHE_BITS)
 #define VMACACHE_MASK (VMACACHE_SIZE - 1)
@@ -131,11 +127,7 @@ struct page {
 			unsigned long _pt_pad_2;
 			unsigned long _pt_pad_3;
 			struct mm_struct *pt_mm;
-#if ALLOC_SPLIT_PTLOCKS
-			spinlock_t *ptl;
-#else
 			spinlock_t ptl;
-#endif
 		};
 
 		struct rcu_head rcu_head;
@@ -177,17 +169,6 @@ struct folio {
 };
 
 static_assert(sizeof(struct page) == sizeof(struct folio));
-#define FOLIO_MATCH(pg, fl)						\
-	static_assert(offsetof(struct page, pg) == offsetof(struct folio, fl))
-FOLIO_MATCH(flags, flags);
-FOLIO_MATCH(lru, lru);
-FOLIO_MATCH(mapping, mapping);
-FOLIO_MATCH(compound_head, lru);
-FOLIO_MATCH(index, index);
-FOLIO_MATCH(private, private);
-FOLIO_MATCH(_mapcount, _mapcount);
-FOLIO_MATCH(_refcount, _refcount);
-#undef FOLIO_MATCH
 
 static inline atomic_t *compound_mapcount_ptr(struct page *page)
 {

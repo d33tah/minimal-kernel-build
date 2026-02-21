@@ -10,32 +10,7 @@ static inline void put_net(struct net *net)
 {
 }
 
-#ifndef _LINUX_TIMENS_H
-#define _LINUX_TIMENS_H
-
-struct user_namespace;
-extern struct user_namespace init_user_ns;
-
-struct timens_offsets {
-	struct timespec64 monotonic;
-	struct timespec64 boottime;
-};
-
-struct time_namespace {
-	struct user_namespace *user_ns;
-	struct ucounts *ucounts;
-	struct ns_common ns;
-	struct timens_offsets offsets;
-	struct page *vvar_page;
-
-	bool frozen_offsets;
-} __randomize_layout;
-
-static inline void put_time_ns(struct time_namespace *ns)
-{
-}
-
-#endif /* _LINUX_TIMENS_H */
+struct time_namespace;
 
 #include <linux/cgroup.h>
 

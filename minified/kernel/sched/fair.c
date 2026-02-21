@@ -1,12 +1,4 @@
 #include <linux/jiffies.h>
-/* sched/clock.h inlined */
-#include <linux/smp.h>
-extern unsigned long long notrace sched_clock(void);
-static inline u64 sched_clock_cpu(int cpu)
-{
-	return sched_clock();
-}
-
 #include "sched.h"
 
 static inline void update_load_add(struct load_weight *lw, unsigned long inc)

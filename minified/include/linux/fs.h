@@ -560,14 +560,10 @@ static inline struct file *get_file(struct file *f)
 	atomic_long_inc(&f->f_count);
 	return f;
 }
-#define file_count(x)	atomic_long_read(&(x)->f_count)
-
 #define	MAX_NON_LFS	((1UL<<31) - 1)
 
 /* 32-bit only kernel */
 #define MAX_LFS_FILESIZE	((loff_t)ULONG_MAX << PAGE_SHIFT)
-
-typedef void *fl_owner_t;
 
 static inline struct inode *file_inode(const struct file *f)
 {

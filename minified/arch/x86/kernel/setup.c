@@ -11,14 +11,7 @@ extern dev_t ROOT_DEV;
 	} while (0)
 
 #include <asm/apic.h>
-/* bios_ebda.h inlined */
 #include <asm/io.h>
-static inline unsigned int get_bios_ebda(void)
-{
-	unsigned int address = *(unsigned short *)phys_to_virt(0x40E);
-	address <<= 4;
-	return address;
-}
 void reserve_bios_regions(void);
 #include <asm/cpu.h>
 #include <asm/e820/api.h>

@@ -16,10 +16,6 @@ static inline u32 hash_32(u32 val, unsigned int bits)
 {
 	return __hash_32(val) >> (32 - bits);
 }
-static inline u32 hash_ptr(const void *ptr, unsigned int bits)
-{
-	return hash_long((unsigned long)ptr, bits);
-}
 #include <linux/user_namespace.h>
 
 struct ucounts init_ucounts = {

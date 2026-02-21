@@ -40,16 +40,6 @@
 #define MEM_KEEP(sec)
 #define MEM_DISCARD(sec) *(.mem##sec)
 
-/*
- * KERNEL_DTB: reserve space for flattened device tree blob.
- * Empty in practice for x86 tinyconfig, but defines needed symbols.
- */
-#define KERNEL_DTB()							\
-	STRUCT_ALIGN();							\
-	__dtb_start = .;						\
-	KEEP(*(.dtb.init.rodata))					\
-	__dtb_end = .;
-
 #define DATA_DATA							\
 	*(.xiptext)							\
 	*(DATA_MAIN)							\
@@ -62,8 +52,6 @@
 	*(.data.once)							\
 	__end_once = .;							\
 	STRUCT_ALIGN();							\
-	*(__tracepoints)						\
-	 				\
 	. = ALIGN(8);							\
 	__start___dyndbg = .;						\
 	KEEP(*(__dyndbg))						\
@@ -122,79 +110,8 @@
 		*(.rodata) *(.rodata.*)					\
 		SCHED_DATA						\
 		RO_AFTER_INIT_DATA	 	\
-		. = ALIGN(8);						\
-		__start___tracepoints_ptrs = .;				\
-		KEEP(*(__tracepoints_ptrs))   \
-		__stop___tracepoints_ptrs = .;				\
-		*(__tracepoints_strings) 	\
 	}								\
 									\
-	.rodata1          : AT(ADDR(.rodata1) - LOAD_OFFSET) {		\
-		*(.rodata1)						\
-	}								\
-									\
-	 						\
-	.pci_fixup        : AT(ADDR(.pci_fixup) - LOAD_OFFSET) {	\
-		__start_pci_fixups_early = .;				\
-		KEEP(*(.pci_fixup_early))				\
-		__end_pci_fixups_early = .;				\
-		__start_pci_fixups_header = .;				\
-		KEEP(*(.pci_fixup_header))				\
-		__end_pci_fixups_header = .;				\
-		__start_pci_fixups_final = .;				\
-		KEEP(*(.pci_fixup_final))				\
-		__end_pci_fixups_final = .;				\
-		__start_pci_fixups_enable = .;				\
-		KEEP(*(.pci_fixup_enable))				\
-		__end_pci_fixups_enable = .;				\
-		__start_pci_fixups_resume = .;				\
-		KEEP(*(.pci_fixup_resume))				\
-		__end_pci_fixups_resume = .;				\
-		__start_pci_fixups_resume_early = .;			\
-		KEEP(*(.pci_fixup_resume_early))			\
-		__end_pci_fixups_resume_early = .;			\
-		__start_pci_fixups_suspend = .;				\
-		KEEP(*(.pci_fixup_suspend))				\
-		__end_pci_fixups_suspend = .;				\
-		__start_pci_fixups_suspend_late = .;			\
-		KEEP(*(.pci_fixup_suspend_late))			\
-		__end_pci_fixups_suspend_late = .;			\
-	}								\
-									\
-	 			\
-	__ksymtab         : AT(ADDR(__ksymtab) - LOAD_OFFSET) {		\
-		__start___ksymtab = .;					\
-		KEEP(*(SORT(___ksymtab+*)))				\
-		__stop___ksymtab = .;					\
-	}								\
-									\
-	 			\
-	__ksymtab_gpl     : AT(ADDR(__ksymtab_gpl) - LOAD_OFFSET) {	\
-		__start___ksymtab_gpl = .;				\
-		KEEP(*(SORT(___ksymtab_gpl+*)))				\
-		__stop___ksymtab_gpl = .;				\
-	}								\
-									\
-	 			\
-	__kcrctab         : AT(ADDR(__kcrctab) - LOAD_OFFSET) {		\
-		__start___kcrctab = .;					\
-		KEEP(*(SORT(___kcrctab+*)))				\
-		__stop___kcrctab = .;					\
-	}								\
-									\
-	 			\
-	__kcrctab_gpl     : AT(ADDR(__kcrctab_gpl) - LOAD_OFFSET) {	\
-		__start___kcrctab_gpl = .;				\
-		KEEP(*(SORT(___kcrctab_gpl+*)))				\
-		__stop___kcrctab_gpl = .;				\
-	}								\
-									\
-	 				\
-        __ksymtab_strings : AT(ADDR(__ksymtab_strings) - LOAD_OFFSET) {	\
-		*(__ksymtab_strings)					\
-	}								\
-									\
-	 						\
 	__init_rodata : AT(ADDR(__init_rodata) - LOAD_OFFSET) {		\
 		*(.ref.rodata)						\
 		MEM_KEEP(init.rodata)					\
@@ -206,13 +123,6 @@
 		__start___param = .;					\
 		KEEP(*(__param))					\
 		__stop___param = .;					\
-	}								\
-									\
-	 					\
-	__modver : AT(ADDR(__modver) - LOAD_OFFSET) {			\
-		__start___modver = .;					\
-		KEEP(*(__modver))					\
-		__stop___modver = .;					\
 	}								\
 									\
 	RO_EXCEPTION_TABLE						\
@@ -299,9 +209,7 @@
 	*(.init.data init.data.*)					\
 	MEM_DISCARD(init.data*)						\
 	*(.init.rodata .init.rodata.*)					\
-	MEM_DISCARD(init.rodata)					\
-	KERNEL_DTB()							\
-	KUNIT_TABLE()
+	MEM_DISCARD(init.rodata)
 
 #define INIT_TEXT							\
 	*(.init.text .init.text.*)					\
@@ -415,12 +323,6 @@
 		__con_initcall_start = .;				\
 		KEEP(*(.con_initcall.init))				\
 		__con_initcall_end = .;
-
-#define KUNIT_TABLE()							\
-		. = ALIGN(8);						\
-		__kunit_suites_start = .;				\
-		KEEP(*(.kunit_test_suites))				\
-		__kunit_suites_end = .;
 
 #define INIT_RAM_FS							\
 	. = ALIGN(4);							\

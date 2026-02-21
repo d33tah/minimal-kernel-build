@@ -499,10 +499,6 @@ static inline void pgtable_pte_page_dtor(struct page *page)
 
 #define pte_alloc(mm, pmd) (unlikely(pmd_none(*(pmd))) && __pte_alloc(mm, pmd))
 
-#define pte_alloc_map_lock(mm, pmd, address, ptlp)	\
-	(pte_alloc(mm, pmd) ?			\
-		 NULL : pte_offset_map_lock(mm, pmd, address, ptlp))
-
 extern void __init pagecache_init(void);
 extern void free_initmem(void);
 
@@ -616,8 +612,6 @@ struct vm_area_struct *find_extend_vma(struct mm_struct *, unsigned long addr);
 #define FOLL_TRIED	0x800
 #define FOLL_REMOTE	0x2000
 #define FOLL_COW	0x4000
-
-extern void init_mem_debugging_and_hardening(void);
 
 /* MAX_NUMNODES == 1, always inline */
 

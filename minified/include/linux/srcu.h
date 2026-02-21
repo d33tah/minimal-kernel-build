@@ -51,6 +51,4 @@ struct srcu_struct {
 	struct work_struct srcu_work;
 };
 
-void srcu_init(void);
-
 #endif

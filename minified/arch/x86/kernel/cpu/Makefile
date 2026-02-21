@@ -25,7 +25,7 @@ obj-y			:=
 # scattered.o removed - was empty stub
 obj-y			+= common.o
 # match.o removed - x86_match_cpu was never called
-obj-y			+= bugs.o
+# bugs.o removed - inlined into common.c
 # aperfmperf.o removed - inlined in topology.h
 obj-y			+= cpuid-deps.o
 

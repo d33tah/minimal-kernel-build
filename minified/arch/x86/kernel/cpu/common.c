@@ -10,6 +10,7 @@
 
 #include <asm/mmu_context.h>
 
+#include <linux/utsname.h>
 #include <asm/processor.h>
 #include <asm/tlbflush.h>
 #include <linux/atomic.h>
@@ -248,6 +249,20 @@ void __init identify_boot_cpu(void)
 	sysenter_setup();
 	cr4_pinned_bits = this_cpu_read(cpu_tlbstate.cr4) & cr4_pinned_mask;
 	static_key_enable(&cr_pinning.key);
+}
+
+/* inlined from bugs.c */
+void __init check_bugs(void)
+{
+	identify_boot_cpu();
+
+	if (boot_cpu_data.x86 < 4)
+		panic("Kernel requires i486+ for 'invlpg' and other features");
+
+	init_utsname()->machine[1] =
+		'0' + (boot_cpu_data.x86 > 6 ? 6 : boot_cpu_data.x86);
+
+	alternatives_patched = 1;
 }
 
 DEFINE_PER_CPU(struct task_struct *, current_task) = &init_task;

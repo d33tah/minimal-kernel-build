@@ -76,6 +76,23 @@ extern const struct obs_kernel_param __setup_start[], __setup_end[];
 
 unsigned long loops_per_jiffy = (1 << 12);
 
+/* inlined from kernel/rcu/srcutiny.c */
+static LIST_HEAD(srcu_boot_list);
+static bool srcu_init_done;
+
+static void __init srcu_init(void)
+{
+	struct srcu_struct *ssp;
+
+	srcu_init_done = true;
+	while (!list_empty(&srcu_boot_list)) {
+		ssp = list_first_entry(&srcu_boot_list, struct srcu_struct,
+				       srcu_work.entry);
+		list_del_init(&ssp->srcu_work.entry);
+		schedule_work(&ssp->srcu_work);
+	}
+}
+
 static __initdata DECLARE_COMPLETION(kthreadd_done);
 
 static noinline void __ref rest_init(void)

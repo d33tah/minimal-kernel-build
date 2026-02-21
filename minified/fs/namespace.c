@@ -8,7 +8,7 @@ extern void put_mnt_ns(struct mnt_namespace *ns);
 #include <linux/memblock.h>
 #include <uapi/linux/mount.h>
 #include <linux/fs_context.h>
-extern void shmem_init(void);
+#include <linux/fs_parser.h>
 
 #include "mount.h"
 #include "internal.h"
@@ -223,6 +223,30 @@ static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns)
 	new_ns->user_ns = get_user_ns(user_ns);
 	new_ns->ucounts = ucounts;
 	return new_ns;
+}
+
+/* inlined from mm/shmem.c */
+extern int ramfs_init_fs_context(struct fs_context *fc);
+extern const struct fs_parameter_spec ramfs_fs_parameters[];
+extern const struct file_operations ramfs_file_operations;
+
+static struct vfsmount *shm_mnt;
+
+static struct file_system_type shmem_fs_type = {
+	.name = "tmpfs",
+	.init_fs_context = ramfs_init_fs_context,
+	.parameters = ramfs_fs_parameters,
+	.kill_sb = kill_litter_super,
+};
+
+struct vfsmount *kern_mount(struct file_system_type *type);
+
+static void __init shmem_init(void)
+{
+	BUG_ON(register_filesystem(&shmem_fs_type) != 0);
+
+	shm_mnt = kern_mount(&shmem_fs_type);
+	BUG_ON(IS_ERR(shm_mnt));
 }
 
 void __init mnt_init(void)

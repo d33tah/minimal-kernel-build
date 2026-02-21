@@ -11,7 +11,7 @@ mmu-$(CONFIG_MMU)	:= memory.o \
 			   rmap.o vmalloc.o
 
 obj-y			:= filemap.o \
-			   swap.o shmem.o \
+			   swap.o \
 			   util.o mmzone.o backing-dev.o \
 			   percpu.o slab_common.o \
 			   vmacache.o \

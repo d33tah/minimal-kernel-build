@@ -8,7 +8,6 @@
 
 #include <asm/alternative.h>
 #include <asm/cpufeatures.h>
-#include <asm/msr-index.h>
 #include <asm/unwind_hints.h>
 #include <asm/percpu.h>
 

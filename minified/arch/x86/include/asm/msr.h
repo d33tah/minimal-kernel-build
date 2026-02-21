@@ -2,7 +2,10 @@
 #ifndef _ASM_X86_MSR_H
 #define _ASM_X86_MSR_H
 
-#include "msr-index.h"
+/* msr-index.h inlined */
+#include <linux/bits.h>
+#define MSR_EFER		0xc0000080
+#define _EFER_NX		11
 
 #ifndef __ASSEMBLY__
 

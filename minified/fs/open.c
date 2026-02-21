@@ -8,7 +8,6 @@
 #include <linux/fcntl.h>
 #include <linux/uaccess.h>
 #include <linux/fs.h>
-#include <linux/personality.h>
 #include <linux/rcupdate.h>
 
 #include "internal.h"

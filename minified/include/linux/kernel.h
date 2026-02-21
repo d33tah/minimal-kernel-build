@@ -6,13 +6,11 @@
 #define ALIGN(x, a)		__ALIGN_KERNEL((x), (a))
 #define ALIGN_DOWN(x, a)	__ALIGN_KERNEL((x) - ((a) - 1), (a))
 #define IS_ALIGNED(x, a)		(((x) & ((typeof(x))(a) - 1)) == 0)
-#include <linux/container_of.h>
 int __must_check kstrtoull(const char *s, unsigned int base, unsigned long long *res);
 int __must_check kstrtouint(const char *s, unsigned int base, unsigned int *res);
 #include <linux/log2.h>
 #include <linux/math.h>
 #include <linux/minmax.h>
-#include <linux/typecheck.h>
 #ifndef _LINUX_PANIC_H
 #define _LINUX_PANIC_H
 __printf(1, 2)

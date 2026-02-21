@@ -1,7 +1,13 @@
 #ifndef _LINUX_TRACE_IRQFLAGS_H
 #define _LINUX_TRACE_IRQFLAGS_H
 
-#include <linux/typecheck.h>
+/* typecheck.h inlined */
+#define typecheck(type,x) \
+({	type __dummy; \
+	typeof(x) __dummy2; \
+	(void)(&__dummy == &__dummy2); \
+	1; \
+})
 #include <asm/processor-flags.h>
 #include <asm/nospec-branch.h>
 #include <linux/types.h>

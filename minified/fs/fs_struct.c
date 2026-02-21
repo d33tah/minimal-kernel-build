@@ -32,26 +32,6 @@ void set_fs_pwd(struct fs_struct *fs, const struct path *path)
 		path_put(&old_pwd);
 }
 
-void exit_fs(struct task_struct *tsk)
-{
-	struct fs_struct *fs = tsk->fs;
-
-	if (fs) {
-		int kill;
-		task_lock(tsk);
-		spin_lock(&fs->lock);
-		tsk->fs = NULL;
-		kill = !--fs->users;
-		spin_unlock(&fs->lock);
-		task_unlock(tsk);
-		if (kill) {
-			path_put(&fs->root);
-			path_put(&fs->pwd);
-			kmem_cache_free(fs_cachep, fs);
-		}
-	}
-}
-
 struct fs_struct init_fs = {
 	.users = 1,
 	.lock = __SPIN_LOCK_UNLOCKED(init_fs.lock),

@@ -598,7 +598,6 @@ void __init memblock_allow_resize(void)
 
 void __init memblock_free_all(void)
 {
-	struct memblock_region *region;
 	unsigned long count = 0;
 	phys_addr_t start, end;
 	u64 i;

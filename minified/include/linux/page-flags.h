@@ -145,10 +145,8 @@ static __always_inline void __ClearPage##uname(struct page *page)	\
 	__CLEARPAGEFLAG(uname, lname, policy)
 
 __PAGEFLAG(Locked, locked, PF_NO_TAIL)
-SETPAGEFLAG(Waiters, waiters, PF_ONLY_HEAD)
-	CLEARPAGEFLAG(Waiters, waiters, PF_ONLY_HEAD)
+CLEARPAGEFLAG(Waiters, waiters, PF_ONLY_HEAD)
 CLEARPAGEFLAG(Error, error, PF_NO_TAIL)
-__SETPAGEFLAG(Referenced, referenced, PF_HEAD)
 TESTPAGEFLAG(Dirty, dirty, PF_HEAD)
 TESTPAGEFLAG(LRU, lru, PF_HEAD)
 	SETPAGEFLAG(LRU, lru, PF_HEAD)

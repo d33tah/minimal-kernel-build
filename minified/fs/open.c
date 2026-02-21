@@ -138,14 +138,3 @@ struct file *filp_open(const char *filename, int flags, umode_t mode)
 	}
 	return file;
 }
-
-int filp_close(struct file *filp, fl_owner_t id)
-{
-	if (!file_count(filp)) {
-		printk(KERN_ERR "VFS: Close: file count is 0\n");
-		return 0;
-	}
-
-	fput(filp);
-	return 0;
-}

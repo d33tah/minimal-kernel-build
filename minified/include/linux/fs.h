@@ -718,7 +718,6 @@ struct filename {
 static_assert(offsetof(struct filename, iname) % sizeof(long) == 0);
 
 extern struct file *filp_open(const char *, int, umode_t);
-extern int filp_close(struct file *, fl_owner_t id);
 
 extern struct filename *getname_kernel(const char *);
 extern void putname(struct filename *name);
@@ -775,7 +774,6 @@ extern ssize_t generic_file_read_iter(struct kiocb *, struct iov_iter *);
 
 extern struct file_system_type *get_filesystem(struct file_system_type *fs);
 extern void put_filesystem(struct file_system_type *fs);
-extern struct file_system_type *get_fs_type(const char *name);
 extern const struct address_space_operations ram_aops;
 
 extern struct dentry *simple_lookup(struct inode *, struct dentry *, unsigned int flags);

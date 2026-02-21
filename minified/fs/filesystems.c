@@ -42,12 +42,3 @@ int register_filesystem(struct file_system_type *fs)
 	write_unlock(&file_systems_lock);
 	return res;
 }
-
-struct file_system_type *get_fs_type(const char *name)
-{
-	struct file_system_type *fs;
-	read_lock(&file_systems_lock);
-	fs = *(find_filesystem(name, strlen(name)));
-	read_unlock(&file_systems_lock);
-	return fs;
-}

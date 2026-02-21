@@ -55,7 +55,6 @@ extern int copy_thread(struct task_struct *, const struct kernel_clone_args *);
 
 extern void flush_thread(void);
 
-extern void exit_thread(struct task_struct *tsk);
 /* do_group_exit now static in exit.c */
 
 struct mm_struct *copy_init_mm(void);

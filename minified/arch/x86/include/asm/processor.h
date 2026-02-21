@@ -65,8 +65,6 @@ struct cpuinfo_x86 {
 } __randomize_layout;
 
 #define X86_VENDOR_INTEL	0
-#define X86_VENDOR_NUM		12
-
 #define X86_VENDOR_UNKNOWN	0xff
 
 extern struct cpuinfo_x86	boot_cpu_data;

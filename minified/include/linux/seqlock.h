@@ -116,16 +116,6 @@ SEQCOUNT_LOCKNAME(spinlock, spinlock_t, __SEQ_RT, s->lock, spin,
 		_seq;                                     \
 	})
 
-#define raw_read_seqcount(s)                          \
-	({                                            \
-		unsigned __seq = seqprop_sequence(s); \
-                                                      \
-		smp_rmb();                            \
-		__seq;                                \
-	})
-
-#define raw_seqcount_begin(s) ({ raw_read_seqcount(s) & ~1; })
-
 #define __read_seqcount_retry(s, start) \
 	do___read_seqcount_retry(seqprop_ptr(s), start)
 

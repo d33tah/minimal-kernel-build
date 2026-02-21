@@ -1,11 +1,6 @@
 
 #include <linux/fdtable.h>
 
-static void __free_fdtable(struct fdtable *fdt)
-{
-	/* kvfree/kfree are no-ops (bump allocator) */
-}
-
 #define BITBIT_NR(nr) BITS_TO_LONGS(BITS_TO_LONGS(nr))
 #define BITBIT_SIZE(nr) (BITBIT_NR(nr) * sizeof(long))
 

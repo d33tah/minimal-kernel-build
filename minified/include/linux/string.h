@@ -94,17 +94,8 @@ ssize_t strscpy(char *, const char *, size_t);
 #ifndef __HAVE_ARCH_STRLCAT
 extern size_t strlcat(char *, const char *, __kernel_size_t);
 #endif
-#ifndef __HAVE_ARCH_STRNCHR
-extern char * strnchr(const char *, size_t, int);
-#endif
 #ifndef __HAVE_ARCH_STRRCHR
 extern char * strrchr(const char *,int);
-#endif
-
-#ifndef __HAVE_ARCH_STRPBRK
-extern char * strpbrk(const char *,const char *);
-#endif
-#ifndef __HAVE_ARCH_STRSEP
 #endif
 
 extern void kfree_const(const void *x);

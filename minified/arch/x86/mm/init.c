@@ -1,6 +1,7 @@
 #include <linux/gfp.h>
 #include <linux/initrd.h>
 #include <linux/memblock.h>
+#include <linux/sched/mm.h>
 #include <asm/e820/api.h>
 #include <asm/page.h>
 #include <asm/setup.h>
@@ -404,3 +405,10 @@ __visible DEFINE_PER_CPU_ALIGNED(struct tlb_state, cpu_tlbstate) = {
 	.next_asid = 1,
 	.cr4 = ~0UL,
 };
+
+void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
+{
+	mm->get_unmapped_area = arch_get_unmapped_area;
+	mm->mmap_legacy_base = __TASK_UNMAPPED_BASE(DEFAULT_MAP_WINDOW);
+	mm->mmap_base = mm->mmap_legacy_base;
+}

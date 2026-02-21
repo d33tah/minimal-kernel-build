@@ -139,6 +139,18 @@ void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale,
 			      &cs->max_cycles);
 }
 
+void clocksource_arch_init(struct clocksource *cs)
+{
+	if (cs->vdso_clock_mode == VDSO_CLOCKMODE_NONE)
+		return;
+
+	if (cs->mask != CLOCKSOURCE_MASK(64)) {
+		pr_warn("clocksource %s registered with invalid mask %016llx for VDSO. Disabling VDSO support.\n",
+			cs->name, cs->mask);
+		cs->vdso_clock_mode = VDSO_CLOCKMODE_NONE;
+	}
+}
+
 int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq)
 {
 	unsigned long flags;

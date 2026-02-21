@@ -5,6 +5,6 @@
 #include <linux/time64.h>  /* for struct timespec64 */
 extern void mach_get_cmos_time(struct timespec64 *now);
 
-extern void time_init(void);
+static inline void time_init(void) { }
 
 #endif

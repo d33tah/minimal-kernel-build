@@ -1,6 +1,7 @@
 #include <linux/uio.h>
 #include <linux/pagemap.h>
 #include <linux/highmem.h>
+#include <linux/uaccess.h>
 
 typedef __u16 __sum16;
 typedef __u32 __wsum;
@@ -195,4 +196,11 @@ void iov_iter_kvec(struct iov_iter *i, unsigned int direction,
 				.nr_segs = nr_segs,
 				.iov_offset = 0,
 				.count = count };
+}
+
+unsigned long _copy_to_user(void __user *to, const void *from, unsigned long n)
+{
+	if (likely(access_ok(to, n)))
+		n = raw_copy_to_user(to, from, n);
+	return n;
 }

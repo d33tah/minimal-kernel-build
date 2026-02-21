@@ -4,7 +4,7 @@ KCSAN_SANITIZE := n
 
 obj-y := fault.o ioremap.o extable.o pgprot.o
 
-mmu-$(CONFIG_MMU) := init.o init_$(BITS).o mmap.o pgtable.o tlb.o cpu_entry_area.o
+mmu-$(CONFIG_MMU) := init.o init_$(BITS).o pgtable.o tlb.o cpu_entry_area.o
 
 obj-y += $(mmu-y)
 

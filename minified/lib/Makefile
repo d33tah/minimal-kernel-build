@@ -19,7 +19,7 @@ obj-y	+= lockref.o
 obj-y += sort.o \
 	 iov_iter.o \
 	 find_bit.o \
-	 refcount.o usercopy.o
+	 refcount.o
 # string_helpers.o removed - functions inlined into callers
 obj-y += kstrtox.o
 

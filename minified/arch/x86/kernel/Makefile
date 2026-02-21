@@ -10,11 +10,9 @@ CPPFLAGS_vmlinux.lds += -U$(UTS_MACHINE)
 KCSAN_SANITIZE := n
 KCOV_INSTRUMENT := n
 
-CFLAGS_irq.o := -I $(srctree)/$(src)/../include/asm/trace
-
 obj-y			:= process_$(BITS).o signal.o
-obj-y			+= traps.o idt.o irq.o irq_$(BITS).o
-obj-y			+= time.o dumpstack.o nmi.o
+obj-y			+= traps.o idt.o irq_$(BITS).o
+obj-y			+= dumpstack.o
 obj-y			+= setup.o x86_init.o i8259.o irqinit.o
 obj-y			+= e820.o
 obj-y			+= alternative.o

@@ -23,6 +23,6 @@ struct nmiaction {
 	const char		*name;
 };
 
-void local_touch_nmi(void);
+static inline void local_touch_nmi(void) { }
 
 #endif  

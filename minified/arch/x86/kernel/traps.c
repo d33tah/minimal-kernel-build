@@ -123,6 +123,14 @@ DEFINE_IDTENTRY_RAW(exc_int3)
 	irqentry_nmi_exit(regs, irq_state);
 }
 
+DEFINE_IDTENTRY_RAW(exc_nmi)
+{
+	irqentry_state_t irq_state;
+
+	irq_state = irqentry_nmi_enter(regs);
+	irqentry_nmi_exit(regs, irq_state);
+}
+
 DEFINE_IDTENTRY_RAW(exc_debug)
 {
 	set_debugreg(DR6_RESERVED, 6);

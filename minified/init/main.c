@@ -57,7 +57,9 @@ enum system_states system_state __read_mostly;
 #define MAX_INIT_ARGS CONFIG_INIT_ENV_ARG_LIMIT
 #define MAX_INIT_ENVS CONFIG_INIT_ENV_ARG_LIMIT
 
-extern void time_init(void);
+static inline void time_init(void)
+{
+}
 
 char __initdata boot_command_line[COMMAND_LINE_SIZE];
 char *saved_command_line;

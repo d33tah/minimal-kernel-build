@@ -16,11 +16,6 @@
 
 #define list_next_rcu(list)	(*((struct list_head __rcu **)(&(list)->next)))
 
-#define check_arg_count_one(dummy)
-
-#define __list_check_rcu(dummy, cond, extra...)				\
-	({ check_arg_count_one(extra); })
-
 static inline void __list_add_rcu(struct list_head *new,
 		struct list_head *prev, struct list_head *next)
 {
@@ -37,8 +32,6 @@ static inline void list_add_tail_rcu(struct list_head *new,
 }
 
 #define hlist_first_rcu(head)	(*((struct hlist_node __rcu **)(&(head)->first)))
-#define hlist_next_rcu(node)	(*((struct hlist_node __rcu **)(&(node)->next)))
-
 static inline void hlist_add_head_rcu(struct hlist_node *n,
 					struct hlist_head *h)
 {
@@ -51,13 +44,6 @@ static inline void hlist_add_head_rcu(struct hlist_node *n,
 		WRITE_ONCE(first->pprev, &n->next);
 }
 
-#define hlist_for_each_entry_rcu(pos, head, member, cond...)		\
-	for (__list_check_rcu(dummy, ## cond, 0),			\
-	     pos = hlist_entry_safe(rcu_dereference_raw(hlist_first_rcu(head)),\
-			typeof(*(pos)), member);			\
-		pos;							\
-		pos = hlist_entry_safe(rcu_dereference_raw(hlist_next_rcu(\
-			&(pos)->member)), typeof(*(pos)), member))
 #include <linux/wait.h>
 #include <linux/refcount.h>
 enum pid_type {

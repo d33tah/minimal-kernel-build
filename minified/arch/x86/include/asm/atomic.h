@@ -229,11 +229,6 @@ static __always_inline bool atomic_dec_and_test(atomic_t *v)
 	return GEN_UNARY_RMWcc(LOCK_PREFIX "decl", v->counter, e);
 }
 
-static __always_inline bool atomic_inc_and_test(atomic_t *v)
-{
-	return GEN_UNARY_RMWcc(LOCK_PREFIX "incl", v->counter, e);
-}
-
 static __always_inline bool atomic_add_negative(int i, atomic_t *v)
 {
 	return GEN_BINARY_RMWcc(LOCK_PREFIX "addl", v->counter, s, "er", i);

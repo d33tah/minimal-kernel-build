@@ -18,10 +18,6 @@ static inline void __bit_spin_unlock(int bitnum, unsigned long *addr)
 	preempt_enable();
 	__release(bitlock);
 }
-static inline int bit_spin_is_locked(int bitnum, unsigned long *addr)
-{
-	return 1;
-}
 #include <linux/rcupdate.h>
 
 #define LIST_BL_LOCKMASK	0UL
@@ -86,11 +82,6 @@ static inline void hlist_bl_unlock(struct hlist_bl_head *b)
 	__bit_spin_unlock(0, (unsigned long *)b);
 }
 
-static inline bool hlist_bl_is_locked(struct hlist_bl_head *b)
-{
-	return bit_spin_is_locked(0, (unsigned long *)b);
-}
-
 static inline void hlist_bl_set_first_rcu(struct hlist_bl_head *h,
 					struct hlist_bl_node *n)
 {
@@ -104,7 +95,7 @@ static inline void hlist_bl_set_first_rcu(struct hlist_bl_head *h,
 static inline struct hlist_bl_node *hlist_bl_first_rcu(struct hlist_bl_head *h)
 {
 	return (struct hlist_bl_node *)
-		((unsigned long)rcu_dereference_check(h->first, hlist_bl_is_locked(h)) & ~LIST_BL_LOCKMASK);
+		((unsigned long)rcu_dereference_check(h->first, 1) & ~LIST_BL_LOCKMASK);
 }
 
 static inline void hlist_bl_add_head_rcu(struct hlist_bl_node *n,
@@ -246,12 +237,8 @@ static inline void d_lookup_done(struct dentry *dentry)
 
 extern void dput(struct dentry *);
 
-static inline unsigned __d_entry_type(const struct dentry *dentry) {
-  return dentry->d_flags & DCACHE_ENTRY_TYPE;
-}
-
 static inline bool d_can_lookup(const struct dentry *dentry) {
-  return __d_entry_type(dentry) == DCACHE_DIRECTORY_TYPE;
+  return (dentry->d_flags & DCACHE_ENTRY_TYPE) == DCACHE_DIRECTORY_TYPE;
 }
 
 static inline struct inode *d_inode(const struct dentry *dentry)

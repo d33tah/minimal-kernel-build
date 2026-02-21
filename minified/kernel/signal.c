@@ -48,7 +48,3 @@ void __set_current_blocked(const sigset_t *newset)
 }
 
 /* signal and pause syscalls replaced with COND_SYSCALL */
-
-void __init signals_init(void)
-{
-}

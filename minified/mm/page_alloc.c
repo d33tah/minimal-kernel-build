@@ -114,10 +114,6 @@ static void prep_compound_page(struct page *page, unsigned int order)
 	atomic_set(compound_mapcount_ptr(page), -1);
 }
 
-void init_mem_debugging_and_hardening(void)
-{
-}
-
 static inline void set_buddy_order(struct page *page, unsigned int order)
 {
 	set_page_private(page, order);

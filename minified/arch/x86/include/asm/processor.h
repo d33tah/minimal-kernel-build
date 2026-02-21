@@ -77,8 +77,6 @@ extern __u32			cpu_caps_set[NCAPINTS + NBUGINTS];
 
 #define cache_line_size()	(boot_cpu_data.x86_cache_alignment)
 
-extern void cpu_detect(struct cpuinfo_x86 *c);
-
 extern void early_cpu_init(void);
 extern void identify_boot_cpu(void);
 
@@ -241,10 +239,6 @@ extern void select_idle_routine(const struct cpuinfo_x86 *c);
 
 extern int sysenter_setup(void);
 
-extern void switch_to_new_gdt(int);
-extern void load_direct_gdt(int);
-extern void load_fixmap_gdt(int);
-extern void load_percpu_segment(int);
 extern void cpu_init(void);
 extern void cpu_init_exception_handling(void);
 

@@ -130,10 +130,6 @@ void select_idle_routine(const struct cpuinfo_x86 *c)
 		x86_idle = default_idle;
 }
 
-void __init arch_post_acpi_subsys_init(void)
-{
-}
-
 unsigned long arch_align_stack(unsigned long sp)
 {
 	return sp & ~0xf;

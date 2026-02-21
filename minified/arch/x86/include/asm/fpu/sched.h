@@ -8,7 +8,6 @@
 #include <asm/fpu/types.h>
 
 extern void save_fpregs_to_fpstate(struct fpu *fpu);
-extern void fpu__drop(struct fpu *fpu);
 extern int  fpu_clone(struct task_struct *dst, unsigned long clone_flags, bool minimal);
 extern void fpu_flush_thread(void);
 

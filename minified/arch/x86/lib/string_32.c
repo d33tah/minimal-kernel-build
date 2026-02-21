@@ -12,18 +12,6 @@ char *strcpy(char *dest, const char *src)
 }
 #endif
 
-#ifdef __HAVE_ARCH_STRNCPY
-char *strncpy(char *dest, const char *src, size_t count)
-{
-	char *d = dest;
-	while (count-- && (*d++ = *src++) != '\0')
-		;
-	while (count-- > 0)
-		*d++ = '\0';
-	return dest;
-}
-#endif
-
 #ifdef __HAVE_ARCH_STRCMP
 int strcmp(const char *cs, const char *ct)
 {

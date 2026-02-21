@@ -51,26 +51,10 @@ static int kernel_init(void *);
 extern void init_IRQ(void);
 extern void radix_tree_init(void);
 
-/* Merged from init/calibrate.c - delay loop calibration stub */
-static DEFINE_PER_CPU(unsigned long, cpu_loops_per_jiffy) = { 0 };
-void calibrate_delay(void)
-{
-	unsigned long lpj = 12500000;
-	int this_cpu = smp_processor_id();
-	if (per_cpu(cpu_loops_per_jiffy, this_cpu))
-		lpj = per_cpu(cpu_loops_per_jiffy, this_cpu);
-	per_cpu(cpu_loops_per_jiffy, this_cpu) = lpj;
-	loops_per_jiffy = lpj;
-}
-
 enum system_states system_state __read_mostly;
 
 #define MAX_INIT_ARGS CONFIG_INIT_ENV_ARG_LIMIT
 #define MAX_INIT_ENVS CONFIG_INIT_ENV_ARG_LIMIT
-
-static inline void time_init(void)
-{
-}
 
 char __initdata boot_command_line[COMMAND_LINE_SIZE];
 char *saved_command_line;
@@ -160,7 +144,6 @@ void __init parse_early_param(void)
 }
 
 void __init poking_init(void); /* in arch/x86/mm/init.c */
-void __init arch_post_acpi_subsys_init(void); /* in arch/x86/kernel/process.c */
 
 void __init trap_init(void); /* in arch/x86/kernel/traps.c */
 
@@ -206,7 +189,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	vfs_caches_init_early();
 	sort_main_extable();
 	trap_init();
-	init_mem_debugging_and_hardening();
 	mem_init();
 	kmem_cache_init();
 	vmalloc_init();
@@ -223,7 +205,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	init_IRQ();
 	srcu_init();
 	timekeeping_init();
-	time_init();
 
 	WARN(!irqs_disabled(), "Interrupts were enabled early\n");
 
@@ -238,7 +219,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 		initrd_start = 0;
 	}
 	setup_per_cpu_pageset();
-	calibrate_delay();
+	loops_per_jiffy = 12500000;
 	pid_idr_init();
 	anon_vma_init();
 	cred_init();
@@ -246,10 +227,8 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	proc_caches_init();
 	vfs_caches_init();
 	pagecache_init();
-	signals_init();
 	poking_init();
 	check_bugs();
-	arch_post_acpi_subsys_init();
 	rest_init(); /* was arch_call_rest_init() */
 	prevent_tail_call_optimization();
 }

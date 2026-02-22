@@ -5,56 +5,10 @@
 
 #include "internals.h"
 
-int __irq_set_trigger(struct irq_desc *desc, unsigned long flags)
-{
-	struct irq_chip *chip = desc->irq_data.chip;
-	int ret, unmask = 0;
-
-	if (!chip || !chip->irq_set_type)
-		return 0;
-
-	if (chip->flags & IRQCHIP_SET_TYPE_MASKED) {
-		if (!irqd_irq_masked(&desc->irq_data))
-			mask_irq(desc);
-		if (!irqd_irq_disabled(&desc->irq_data))
-			unmask = 1;
-	}
-
-	flags &= IRQ_TYPE_SENSE_MASK;
-	ret = chip->irq_set_type(&desc->irq_data, flags);
-
-	switch (ret) {
-	case IRQ_SET_MASK_OK:
-	case IRQ_SET_MASK_OK_DONE:
-		irqd_clear(&desc->irq_data, IRQD_TRIGGER_MASK);
-		irqd_set(&desc->irq_data, flags);
-		fallthrough;
-	case IRQ_SET_MASK_OK_NOCOPY:
-		flags = irqd_get_trigger_type(&desc->irq_data);
-		desc->status_use_accessors &= ~IRQ_TYPE_SENSE_MASK;
-		desc->status_use_accessors |= flags & IRQ_TYPE_SENSE_MASK;
-		irqd_clear(&desc->irq_data, IRQD_LEVEL);
-		desc->status_use_accessors &= ~_IRQ_LEVEL;
-		if (flags & IRQ_TYPE_LEVEL_MASK) {
-			desc->status_use_accessors |= _IRQ_LEVEL;
-			irqd_set(&desc->irq_data, IRQD_LEVEL);
-		}
-		ret = 0;
-		break;
-	default:
-		pr_err("Setting trigger mode %lu for irq %u failed (%pS)\n",
-		       flags, irq_desc_get_irq(desc), chip->irq_set_type);
-	}
-	if (unmask)
-		unmask_irq(desc);
-	return ret;
-}
-
 static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 		       struct irqaction *new)
 {
 	unsigned long flags;
-	int ret;
 
 	if (!desc)
 		return -EINVAL;
@@ -68,12 +22,6 @@ static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 	mutex_lock(&desc->request_mutex);
 	chip_bus_lock(desc);
 	raw_spin_lock_irqsave(&desc->lock, flags);
-
-	if (new->flags & IRQF_TRIGGER_MASK) {
-		ret = __irq_set_trigger(desc, new->flags &IRQF_TRIGGER_MASK);
-		if (ret)
-			goto out_unlock;
-	}
 
 	irq_activate(desc);
 	desc->istate &= ~(IRQS_AUTODETECT | IRQS_SPURIOUS_DISABLED |
@@ -92,12 +40,6 @@ static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 	chip_bus_sync_unlock(desc);
 	mutex_unlock(&desc->request_mutex);
 	return 0;
-
-out_unlock:
-	raw_spin_unlock_irqrestore(&desc->lock, flags);
-	chip_bus_sync_unlock(desc);
-	mutex_unlock(&desc->request_mutex);
-	return ret;
 }
 
 int request_threaded_irq(unsigned int irq, irq_handler_t handler,

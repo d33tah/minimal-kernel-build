@@ -263,7 +263,6 @@ struct task_struct {
 
 	struct vmacache			vmacache;
 
-	int				exit_state;
 	int				exit_signal;
 	 
 	unsigned long			jobctl;

@@ -193,15 +193,10 @@ struct vm_area_struct {
 
 	unsigned long rb_subtree_gap;
 
-	struct mm_struct *vm_mm;	 
+	struct mm_struct *vm_mm;
 
 	pgprot_t vm_page_prot;
 	unsigned long vm_flags;
-
-	struct {
-		struct rb_node rb;
-		unsigned long rb_subtree_last;
-	} shared;
 
 	struct list_head anon_vma_chain;
 	struct anon_vma *anon_vma;	 

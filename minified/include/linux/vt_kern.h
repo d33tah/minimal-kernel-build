@@ -11,10 +11,6 @@
 #include <linux/mutex.h>
 #include <linux/spinlock.h>
 #include <linux/wait.h>
-#include <linux/workqueue.h>
-/* notifier.h inlined */
-#include <linux/rwsem.h>
-#include <linux/srcu.h>
 #ifndef _LINUX_NOTIFIER_H
 #define _LINUX_NOTIFIER_H
 struct notifier_block;
@@ -29,17 +25,10 @@ struct notifier_block {
 #endif
 
 struct tty_struct;
-struct tty_driver;
-
-struct tty_bufhead {
-	int dummy;
-};
 
 struct tty_port {
-	struct tty_bufhead	buf;
 	spinlock_t		lock;
 	struct mutex		mutex;
-	struct mutex		buf_mutex;
 	struct kref		kref;
 };
 
@@ -47,14 +36,9 @@ static inline void tty_port_init(struct tty_port *port)
 {
 	memset(port, 0, sizeof(*port));
 	mutex_init(&port->mutex);
-	mutex_init(&port->buf_mutex);
 	spin_lock_init(&port->lock);
 	kref_init(&port->kref);
 }
-
-struct tty_struct {
-	struct kref kref;
-} __randomize_layout;
 
 struct vc_state {
 	unsigned int	x, y;

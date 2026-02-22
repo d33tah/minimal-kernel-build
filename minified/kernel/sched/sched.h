@@ -278,8 +278,6 @@ const struct sched_class name##_sched_class \
 
 #define sched_class_above(_a, _b)	((_a) < (_b))
 
-extern const struct sched_class dl_sched_class;
-extern const struct sched_class rt_sched_class;
 extern const struct sched_class fair_sched_class;
 extern const struct sched_class idle_sched_class;
 

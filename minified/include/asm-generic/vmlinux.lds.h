@@ -31,8 +31,6 @@
 	STRUCT_ALIGN();				\
 	__sched_class_highest = .;		\
 	*(__stop_sched_class)			\
-	*(__dl_sched_class)			\
-	*(__rt_sched_class)			\
 	*(__fair_sched_class)			\
 	*(__idle_sched_class)			\
 	__sched_class_lowest = .;

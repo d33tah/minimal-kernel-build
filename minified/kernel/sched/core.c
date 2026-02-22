@@ -470,9 +470,7 @@ static void __init init_idle(struct task_struct *idle, int cpu)
 
 void __init sched_init(void)
 {
-	BUG_ON(&idle_sched_class != &fair_sched_class + 1 ||
-	       &fair_sched_class != &rt_sched_class + 1 ||
-	       &rt_sched_class != &dl_sched_class + 1);
+	BUG_ON(&idle_sched_class != &fair_sched_class + 1);
 
 	wait_bit_init();
 

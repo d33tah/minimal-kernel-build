@@ -11,19 +11,6 @@ static __always_inline void __enter_from_user_mode(struct pt_regs *regs)
 static __always_inline long __syscall_enter_from_user_work(struct pt_regs *regs,
 							   long syscall)
 {
-	unsigned long work = READ_ONCE(current_thread_info()->syscall_work);
-
-	if (work & SYSCALL_WORK_ENTER) {
-		if (work &
-		    (SYSCALL_WORK_SYSCALL_TRACE | SYSCALL_WORK_SYSCALL_EMU)) {
-			if (ptrace_report_syscall_entry(regs) ||
-			    (work & SYSCALL_WORK_SYSCALL_EMU))
-				return -1L;
-		}
-
-		syscall = syscall_get_nr(current, regs);
-	}
-
 	return syscall;
 }
 
@@ -80,15 +67,6 @@ static void exit_to_user_mode_prepare(struct pt_regs *regs)
 static __always_inline void
 __syscall_exit_to_user_mode_work(struct pt_regs *regs)
 {
-	unsigned long work = READ_ONCE(current_thread_info()->syscall_work);
-	if (unlikely(work & SYSCALL_WORK_EXIT)) {
-		bool step;
-
-		step = !(work & SYSCALL_WORK_SYSCALL_EMU) &&
-		       (work & SYSCALL_WORK_SYSCALL_EXIT_TRAP);
-		if (step || work & SYSCALL_WORK_SYSCALL_TRACE)
-			ptrace_report_syscall_exit(regs, step);
-	}
 	local_irq_disable_exit_to_user();
 	exit_to_user_mode_prepare(regs);
 }

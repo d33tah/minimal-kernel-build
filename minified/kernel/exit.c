@@ -1,6 +1,3 @@
-
-extern int nr_threads;
-/* end sched/stat.h */
 #include <linux/fdtable.h>
 #include <linux/ptrace.h>
 #include <linux/syscalls.h>
@@ -43,25 +40,7 @@ void __noreturn do_exit(long code)
 
 void __noreturn make_task_dead(int signr)
 {
-	struct task_struct *tsk = current;
-
-	if (unlikely(in_interrupt()))
-		panic("Aiee, killing interrupt handler!");
-	if (unlikely(!tsk->pid))
-		panic("Attempted to kill the idle task!");
-
-	if (unlikely(in_atomic())) {
-		preempt_count_set(PREEMPT_ENABLED);
-	}
-
-	if (unlikely(tsk->flags & PF_EXITING)) {
-		pr_alert("Fixing recursive fault but reboot is needed!\n");
-		tsk->exit_state = EXIT_DEAD;
-		refcount_inc(&tsk->rcu_users);
-		do_task_dead();
-	}
-
-	do_exit(signr);
+	panic("make_task_dead(%d)\n", signr);
 }
 
 /* Stub: exit syscalls - Hello World doesn't need to exit cleanly */

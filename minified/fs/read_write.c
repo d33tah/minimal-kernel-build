@@ -51,9 +51,6 @@ static ssize_t vfs_write(struct file *file, const char __user *buf,
 
 	if (count > MAX_RW_COUNT)
 		count = MAX_RW_COUNT;
-	if (S_ISREG(file_inode(file)->i_mode))
-		percpu_down_read(file_inode(file)->i_sb->s_writers.rw_sem +
-				 SB_FREEZE_WRITE - 1);
 	if (file->f_op->write_iter) {
 		struct iovec iov = { .iov_base = (void __user *)buf,
 				     .iov_len = count };
@@ -72,9 +69,6 @@ static ssize_t vfs_write(struct file *file, const char __user *buf,
 			*pos = kiocb.ki_pos;
 	} else
 		ret = -EINVAL;
-	if (S_ISREG(file_inode(file)->i_mode))
-		percpu_up_read(file_inode(file)->i_sb->s_writers.rw_sem +
-			       SB_FREEZE_WRITE - 1);
 	return ret;
 }
 

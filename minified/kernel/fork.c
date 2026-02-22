@@ -36,8 +36,6 @@ struct kmem_cache *sighand_cachep;
 
 struct kmem_cache *files_cachep;
 
-struct kmem_cache *fs_cachep;
-
 static struct kmem_cache *vm_area_cachep;
 
 static struct kmem_cache *mm_cachep;
@@ -473,10 +471,6 @@ void __init proc_caches_init(void)
 	files_cachep = kmem_cache_create(
 		"files_cache", sizeof(struct files_struct), 0,
 		SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT, NULL);
-	fs_cachep = kmem_cache_create(
-		"fs_cache", sizeof(struct fs_struct), 0,
-		SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT, NULL);
-
 	mm_size = sizeof(struct mm_struct) + cpumask_size();
 
 	mm_cachep = kmem_cache_create_usercopy(

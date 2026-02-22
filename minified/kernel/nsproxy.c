@@ -1,6 +1,3 @@
-
-struct mnt_namespace;
-extern void put_mnt_ns(struct mnt_namespace *ns);
 #include <linux/utsname.h>
 struct net {
 	atomic_t count;

@@ -1,5 +1,3 @@
-struct mnt_namespace;
-extern void put_mnt_ns(struct mnt_namespace *ns);
 #include <linux/user_namespace.h>
 #include <linux/idr.h>
 #include <linux/sysfs.h>
@@ -191,14 +189,6 @@ static void dec_mnt_namespaces(struct ucounts *ucounts)
 	dec_ucount(ucounts, UCOUNT_MNT_NAMESPACES);
 }
 
-static void free_mnt_ns(struct mnt_namespace *ns)
-{
-	ns_free_inum(&ns->ns);
-	dec_mnt_namespaces(ns->ucounts);
-	put_user_ns(ns->user_ns);
-	kfree(ns);
-}
-
 static atomic64_t mnt_ns_seq = ATOMIC64_INIT(1);
 
 static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns)
@@ -239,7 +229,7 @@ static struct file_system_type shmem_fs_type = {
 	.kill_sb = kill_litter_super,
 };
 
-struct vfsmount *kern_mount(struct file_system_type *type);
+static struct vfsmount *kern_mount(struct file_system_type *type);
 
 static void __init shmem_init(void)
 {
@@ -292,14 +282,7 @@ void __init mnt_init(void)
 	}
 }
 
-void put_mnt_ns(struct mnt_namespace *ns)
-{
-	if (!refcount_dec_and_test(&ns->ns.count))
-		return;
-	free_mnt_ns(ns);
-}
-
-struct vfsmount *kern_mount(struct file_system_type *type)
+static struct vfsmount *kern_mount(struct file_system_type *type)
 {
 	struct vfsmount *mnt;
 	mnt = vfs_kern_mount(type, SB_KERNMOUNT, type->name);

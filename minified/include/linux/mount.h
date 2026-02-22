@@ -29,6 +29,4 @@ extern struct vfsmount *mntget(struct vfsmount *mnt);
 extern int __mnt_want_write(struct vfsmount *);
 extern void __mnt_drop_write(struct vfsmount *);
 
-extern struct vfsmount *kern_mount(struct file_system_type *);
-
-#endif  
+#endif

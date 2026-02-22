@@ -1,5 +1,12 @@
 #include "boot.h"
-#include "video.h"
+/* inlined from video.h */
+#include <linux/types.h>
+struct card_info {
+	const char *card_name;
+};
+#define __videocard \
+	struct card_info __section(".videocards") __attribute__((used))
+extern struct card_info video_cards[], video_cards_end[];
 
 static __videocard video_vga = {
 	.card_name = "VGA",

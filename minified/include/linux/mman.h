@@ -5,7 +5,15 @@
 #include <linux/percpu_counter.h>
 
 #include <linux/atomic.h>
-#include <asm/mman.h>
+/* inlined from asm/mman.h */
+#define PROT_READ	0x1
+#define PROT_WRITE	0x2
+#define PROT_EXEC	0x4
+#define MAP_FIXED	0x10
+#define MAP_SYNC		0x080000
+#define MAP_FIXED_NOREPLACE	0x100000
+#define MAP_GROWSDOWN	0x0100
+#define MAP_LOCKED	0x2000
 
 #define MAP_SHARED	0x01
 #define MAP_PRIVATE	0x02

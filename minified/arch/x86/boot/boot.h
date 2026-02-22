@@ -11,7 +11,19 @@
 #include <asm/setup.h>
 #include <asm/asm.h>
 #include "bitops.h"
-#include "ctype.h"
+/* inlined from ctype.h */
+static inline int isdigit(int ch)
+{
+	return (ch >= '0') && (ch <= '9');
+}
+static inline int isxdigit(int ch)
+{
+	if (isdigit(ch))
+		return 1;
+	if ((ch >= 'a') && (ch <= 'f'))
+		return 1;
+	return (ch >= 'A') && (ch <= 'F');
+}
 #include <asm/cpufeatures.h>
 #include <asm/processor-flags.h>
 struct cpu_features {

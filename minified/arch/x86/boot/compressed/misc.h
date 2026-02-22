@@ -21,9 +21,7 @@
 #include <asm/desc_defs.h>
 
 #define BOOT_CTYPE_H
-
 #define BOOT_BOOT_H
-#include "../ctype.h"
 #include "../io.h"
 
 #if defined(_LINUX_EFI_H) || defined(_ASM_X86_EFI_H)

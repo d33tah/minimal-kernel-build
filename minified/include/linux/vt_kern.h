@@ -1,13 +1,9 @@
 #ifndef _VT_KERN_H
 #define _VT_KERN_H
 
+#define VT_SINGLE_DRIVER
 #define MIN_NR_CONSOLES 1
-#define MAX_NR_CONSOLES	2
-
-#ifndef KD_TEXT
-#define KD_TEXT		0x00
-#define KD_GRAPHICS	0x01
-#endif
+#define MAX_NR_CONSOLES	1
 
 #include <linux/fs.h>
 #include <linux/types.h>
@@ -34,7 +30,6 @@ struct notifier_block {
 
 struct tty_struct;
 struct tty_driver;
-struct tty_operations;
 
 struct tty_bufhead {
 	int dummy;
@@ -61,8 +56,6 @@ struct tty_struct {
 	struct kref kref;
 } __randomize_layout;
 
-struct uni_pagedir;
-
 struct vc_state {
 	unsigned int	x, y;
 	unsigned char	color;
@@ -73,7 +66,6 @@ struct vc_data {
 
 	struct vc_state state;
 
-	unsigned short	vc_num;
 	unsigned int	vc_cols;
 	unsigned int	vc_rows;
 	unsigned int	vc_size_row;
@@ -85,25 +77,18 @@ struct vc_data {
 	const struct consw *vc_sw;
 	unsigned short	*vc_screenbuf;
 	unsigned int	vc_screenbuf_size;
-	unsigned char	vc_mode;
 	unsigned char	vc_attr;
 	unsigned char	vc_def_color;
-	unsigned short	vc_complement_mask;
-	unsigned short	vc_s_complement_mask;
 	unsigned long	vc_pos;
 	unsigned short	vc_video_erase_char;
 	unsigned int	vc_state;
 	unsigned int	vc_need_wrap	: 1;
-	unsigned int	vc_can_do_color	: 1;
-	struct vc_data **vc_display_fg;
-	struct uni_pagedir *vc_uni_pagedir;
-	struct uni_pagedir **vc_uni_pagedir_loc;
 };
 
 struct vc {
 	struct vc_data *d;
 };
 
-bool con_is_visible(const struct vc_data *vc);
+static inline bool con_is_visible(const struct vc_data *vc) { return true; }
 int vc_resize(struct vc_data *vc, unsigned int cols, unsigned int lines);
 #endif

@@ -18,27 +18,19 @@ extern const unsigned char color_table[];
 #define VGA_PEL_IW 0x3C8
 
 static DEFINE_RAW_SPINLOCK(vga_lock);
-static u32 vgacon_xres;
-static u32 vgacon_yres;
-
-#define VGA_FONTWIDTH 8
 
 static const char *vgacon_startup(void);
 static void vgacon_init(struct vc_data *c, int init);
 static int vgacon_switch(struct vc_data *c);
 static int vgacon_set_origin(struct vc_data *c);
 static void vgacon_save_screen(struct vc_data *c);
-static struct uni_pagedir *vgacon_uni_pagedir;
 
 static unsigned long vga_vram_base __read_mostly;
 static unsigned int vga_vram_size __read_mostly;
 static u16 vga_video_port_reg __read_mostly;
 static unsigned int vga_video_num_columns;
 static unsigned int vga_video_num_lines;
-static bool vga_can_do_color;
-static unsigned int vga_default_font_height __read_mostly;
 static int vga_video_font_height;
-static int vga_scan_lines __read_mostly;
 
 static inline void write_vga(unsigned char reg, unsigned int val)
 {
@@ -92,7 +84,6 @@ no_vga:
 		};
 		int i;
 
-		vga_can_do_color = true;
 		vga_vram_base = 0xb8000;
 		vga_video_port_reg = VGA_CRT_IC;
 		vga_vram_size = 0x8000;
@@ -117,19 +108,13 @@ no_vga:
 
 	vga_vram_base = VGA_MAP_MEM(vga_vram_base, vga_vram_size);
 
-	vga_default_font_height = screen_info.orig_video_points;
 	vga_video_font_height = screen_info.orig_video_points;
-	vga_scan_lines = vga_video_font_height * vga_video_num_lines;
-
-	vgacon_xres = screen_info.orig_video_cols * VGA_FONTWIDTH;
-	vgacon_yres = vga_scan_lines;
 
 	return display_desc;
 }
 
 static void vgacon_init(struct vc_data *c, int init)
 {
-	c->vc_can_do_color = vga_can_do_color;
 	c->vc_cell_height = vga_video_font_height;
 
 	if (init) {
@@ -137,19 +122,10 @@ static void vgacon_init(struct vc_data *c, int init)
 		c->vc_rows = vga_video_num_lines;
 	} else
 		vc_resize(c, vga_video_num_columns, vga_video_num_lines);
-
-	c->vc_complement_mask = 0x7700;
-	if (c->vc_uni_pagedir_loc != &vgacon_uni_pagedir)
-		c->vc_uni_pagedir_loc = &vgacon_uni_pagedir;
 }
 
 static int vgacon_switch(struct vc_data *c)
 {
-	int x = c->vc_cols * VGA_FONTWIDTH;
-	int y = c->vc_rows * c->vc_cell_height;
-	int rows = screen_info.orig_video_lines * vga_default_font_height /
-		   c->vc_cell_height;
-
 	vga_video_num_columns = c->vc_cols;
 	vga_video_num_lines = c->vc_rows;
 
@@ -157,14 +133,6 @@ static int vgacon_switch(struct vc_data *c)
 		    c->vc_screenbuf_size > vga_vram_size ?
 			    vga_vram_size :
 			    c->vc_screenbuf_size);
-
-	if ((vgacon_xres != x || vgacon_yres != y) &&
-	    (!(vga_video_num_columns % 2) &&
-	     vga_video_num_columns <= screen_info.orig_video_cols &&
-	     vga_video_num_lines <= rows)) {
-		vgacon_xres = c->vc_cols * VGA_FONTWIDTH;
-		vgacon_yres = c->vc_rows * c->vc_cell_height;
-	}
 
 	return 0;
 }
@@ -199,16 +167,10 @@ static bool vgacon_scroll(struct vc_data *c, unsigned int t, unsigned int b,
 	return false;
 }
 
-static void vgacon_putcs(struct vc_data *vc, const unsigned short *s, int count,
-			 int ypos, int xpos)
-{
-}
-
 const struct consw vga_con = {
 	.owner = THIS_MODULE,
 	.con_startup = vgacon_startup,
 	.con_init = vgacon_init,
-	.con_putcs = vgacon_putcs,
 	.con_scroll = vgacon_scroll,
 	.con_switch = vgacon_switch,
 	.con_set_origin = vgacon_set_origin,

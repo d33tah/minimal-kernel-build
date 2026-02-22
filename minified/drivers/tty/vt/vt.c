@@ -3,14 +3,10 @@
 #include <linux/types.h>
 #include <linux/kernel.h>
 #include <linux/string.h>
-#ifndef KD_TEXT
-#define KD_TEXT 0x00
-#endif
 #include <linux/slab.h>
 #include <linux/mm.h>
 #include <linux/console.h>
 #include <linux/init.h>
-#include <linux/mutex.h>
 #include <linux/vt_kern.h>
 #define scr_writew(val, addr) (*(addr) = (val))
 static inline void scr_memsetw(u16 *s, u16 c, unsigned int count)
@@ -33,10 +29,6 @@ const struct consw *conswitchp;
 
 struct vc vc_cons[MAX_NR_CONSOLES];
 
-#ifndef VT_SINGLE_DRIVER
-static const struct consw *con_driver_map[MAX_NR_CONSOLES];
-#endif
-
 static void vc_init(struct vc_data *vc, unsigned int rows, unsigned int cols,
 		    int do_clear);
 static void gotoxy(struct vc_data *vc, int new_x, int new_y);
@@ -45,8 +37,6 @@ static void reset_terminal(struct vc_data *vc, int do_clear);
 static int printable;
 
 int fg_console;
-
-static struct vc_data *master_display_fg;
 
 static void con_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
 		       enum con_scroll dir, unsigned int nr)
@@ -93,21 +83,8 @@ static void visual_init(struct vc_data *vc, int num, int init)
 	if (vc->vc_sw)
 		module_put(vc->vc_sw->owner);
 	vc->vc_sw = conswitchp;
-#ifndef VT_SINGLE_DRIVER
-	if (con_driver_map[num])
-		vc->vc_sw = con_driver_map[num];
-#endif
 	__module_get(vc->vc_sw->owner);
-	vc->vc_num = num;
-	vc->vc_display_fg = &master_display_fg;
-	vc->vc_uni_pagedir_loc = &vc->vc_uni_pagedir;
-	vc->vc_uni_pagedir = NULL;
-	vc->vc_complement_mask = 0;
-	vc->vc_can_do_color = 0;
 	vc->vc_sw->con_init(vc, init);
-	if (!vc->vc_complement_mask)
-		vc->vc_complement_mask = vc->vc_can_do_color ? 0x7700 : 0x0800;
-	vc->vc_s_complement_mask = vc->vc_complement_mask;
 	vc->vc_size_row = vc->vc_cols << 1;
 	vc->vc_screenbuf_size = vc->vc_rows * vc->vc_size_row;
 }
@@ -180,7 +157,6 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 	vc->vc_bottom = vc->vc_rows;
 	vc->vc_state = 0;
 	vc->vc_need_wrap = 0;
-	vc->vc_complement_mask = vc->vc_s_complement_mask;
 
 	vc->state.color = vc->vc_def_color;
 	update_attr(vc);
@@ -237,7 +213,6 @@ static void vc_init(struct vc_data *vc, unsigned int rows, unsigned int cols,
 
 	set_origin(vc);
 	vc->vc_pos = vc->vc_origin;
-	vc->vc_mode = KD_TEXT;
 	vc->vc_def_color = default_color;
 	reset_terminal(vc, do_clear);
 }
@@ -259,9 +234,6 @@ static int __init con_init(void)
 		return 0;
 	}
 
-	for (i = 0; i < MAX_NR_CONSOLES; i++)
-		con_driver_map[i] = conswitchp;
-
 	for (currcons = 0; currcons < MIN_NR_CONSOLES; currcons++) {
 		vc_cons[currcons].d = vc =
 			kzalloc(sizeof(struct vc_data), GFP_NOWAIT);
@@ -273,7 +245,7 @@ static int __init con_init(void)
 			currcons || !vc->vc_sw->con_save_screen);
 	}
 	currcons = fg_console = 0;
-	master_display_fg = vc = vc_cons[currcons].d;
+	vc = vc_cons[currcons].d;
 	set_origin(vc);
 	WARN_CONSOLE_UNLOCKED();
 	if (vc->vc_sw->con_save_screen)
@@ -290,14 +262,3 @@ static int __init con_init(void)
 	return 0;
 }
 console_initcall(con_init);
-
-#ifndef VT_SINGLE_DRIVER
-
-bool con_is_visible(const struct vc_data *vc)
-{
-	WARN_CONSOLE_UNLOCKED();
-
-	return *vc->vc_display_fg == vc;
-}
-
-#endif

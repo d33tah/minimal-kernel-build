@@ -1,115 +1,21 @@
+/* Simplified kobject - no kset/uevent/sysfs infrastructure needed */
 #include <linux/kobject.h>
 #include <linux/slab.h>
 
-/* Merged from kobject_uevent.c */
-static int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
-			      char *envp_ext[])
+void kobject_init(struct kobject *kobj, const struct kobj_type *ktype)
 {
-	if (action == KOBJ_REMOVE)
-		kobj->state_remove_uevent_sent = 1;
-	if (action == KOBJ_ADD)
-		kobj->state_add_uevent_sent = 1;
-	return 0;
-}
-static int kobject_uevent(struct kobject *kobj, enum kobject_action action)
-{
-	return kobject_uevent_env(kobj, action, NULL);
-}
-
-static void kobject_init_internal(struct kobject *kobj)
-{
-	if (!kobj)
+	if (!kobj || !ktype)
 		return;
 	kref_init(&kobj->kref);
 	INIT_LIST_HEAD(&kobj->entry);
-	kobj->state_in_sysfs = 0;
-	kobj->state_add_uevent_sent = 0;
-	kobj->state_remove_uevent_sent = 0;
 	kobj->state_initialized = 1;
-}
-
-static int kobject_add_internal(struct kobject *kobj)
-{
-	struct kobject *parent;
-
-	if (!kobj)
-		return -ENOENT;
-
-	if (!kobj->name || !kobj->name[0]) {
-		WARN(1,
-		     "kobject: (%p): attempted to be registered with empty name!\n",
-		     kobj);
-		return -EINVAL;
-	}
-
-	parent = kobject_get(kobj->parent);
-
-	if (kobj->kset) {
-		if (!parent)
-			parent = kobject_get(&kobj->kset->kobj);
-		kset_get(kobj->kset);
-		spin_lock(&kobj->kset->list_lock);
-		list_add_tail(&kobj->entry, &kobj->kset->list);
-		spin_unlock(&kobj->kset->list_lock);
-		kobj->parent = parent;
-	}
-
-	kobj->state_in_sysfs = 1;
-
-	return 0;
-}
-
-void kobject_init(struct kobject *kobj, const struct kobj_type *ktype)
-{
-	char *err_str;
-
-	if (!kobj) {
-		err_str = "invalid kobject pointer!";
-		goto error;
-	}
-	if (!ktype) {
-		err_str = "must have a ktype to be initialized properly!\n";
-		goto error;
-	}
-	if (kobj->state_initialized) {
-		pr_err("kobject (%p): tried to init an initialized object, something is seriously wrong.\n",
-		       kobj);
-	}
-
-	kobject_init_internal(kobj);
 	kobj->ktype = ktype;
-	return;
-
-error:
-	pr_err("kobject (%p): %s\n", kobj, err_str);
-}
-
-static void __kobject_del(struct kobject *kobj)
-{
-	/* Send uevent for removal if needed */
-	if (kobj->state_add_uevent_sent && !kobj->state_remove_uevent_sent)
-		kobject_uevent(kobj, KOBJ_REMOVE);
-
-	kobj->state_in_sysfs = 0;
-	if (kobj->kset) {
-		spin_lock(&kobj->kset->list_lock);
-		list_del_init(&kobj->entry);
-		spin_unlock(&kobj->kset->list_lock);
-		kset_put(kobj->kset);
-	}
-	kobj->parent = NULL;
 }
 
 struct kobject *kobject_get(struct kobject *kobj)
 {
-	if (kobj) {
-		if (!kobj->state_initialized)
-			WARN(1,
-			     KERN_WARNING
-			     "kobject: '%s' (%p): is not initialized, yet kobject_get() is being called.\n",
-			     kobject_name(kobj), kobj);
+	if (kobj)
 		kref_get(&kobj->kref);
-	}
 	return kobj;
 }
 
@@ -125,138 +31,28 @@ struct kobject *__must_check kobject_get_unless_zero(struct kobject *kobj)
 static void kobject_release(struct kref *kref)
 {
 	struct kobject *kobj = container_of(kref, struct kobject, kref);
-	struct kobject *parent = kobj->parent;
 	const struct kobj_type *t = get_ktype(kobj);
-	const char *name = kobj->name;
-
-	if (kobj->state_in_sysfs)
-		__kobject_del(kobj);
-	else
-		parent = NULL;
 
 	if (t && t->release)
 		t->release(kobj);
-
-	if (name)
-		kfree_const(name);
-
-	kobject_put(parent);
+	if (kobj->name)
+		kfree_const(kobj->name);
 }
 
 void kobject_put(struct kobject *kobj)
 {
-	if (kobj) {
-		if (!kobj->state_initialized)
-			WARN(1,
-			     KERN_WARNING
-			     "kobject: '%s' (%p): is not initialized, yet kobject_put() is being called.\n",
-			     kobject_name(kobj), kobj);
+	if (kobj)
 		kref_put(&kobj->kref, kobject_release);
-	}
 }
 
-static ssize_t kobj_attr_show(struct kobject *kobj, struct attribute *attr,
-			      char *buf)
-{
-	struct kobj_attribute *kattr;
-	ssize_t ret = -EIO;
-
-	kattr = container_of(attr, struct kobj_attribute, attr);
-	if (kattr->show)
-		ret = kattr->show(kobj, kattr, buf);
-	return ret;
-}
-
-static ssize_t kobj_attr_store(struct kobject *kobj, struct attribute *attr,
-			       const char *buf, size_t count)
-{
-	struct kobj_attribute *kattr;
-	ssize_t ret = -EIO;
-
-	kattr = container_of(attr, struct kobj_attribute, attr);
-	if (kattr->store)
-		ret = kattr->store(kobj, kattr, buf, count);
-	return ret;
-}
-
-const struct sysfs_ops kobj_sysfs_ops = {
-	.show = kobj_attr_show,
-	.store = kobj_attr_store,
-};
-
-int kset_register(struct kset *k)
-{
-	int err;
-
-	if (!k)
-		return -EINVAL;
-
-	kobject_init_internal(&k->kobj);
-	INIT_LIST_HEAD(&k->list);
-	spin_lock_init(&k->list_lock);
-
-	err = kobject_add_internal(&k->kobj);
-	if (err)
-		return err;
-	kobject_uevent(&k->kobj, KOBJ_ADD);
-	return 0;
-}
-
-static void kset_release(struct kobject *kobj)
-{
-	struct kset *kset = container_of(kobj, struct kset, kobj);
-	kfree(kset);
-}
-
-static void kset_get_ownership(struct kobject *kobj, kuid_t *uid, kgid_t *gid)
-{
-	if (kobj->parent) {
-		*uid = GLOBAL_ROOT_UID;
-		*gid = GLOBAL_ROOT_GID;
-		if (kobj->parent->ktype->get_ownership)
-			kobj->parent->ktype->get_ownership(kobj->parent, uid,
-							   gid);
-	}
-}
-
-static struct kobj_type kset_ktype = {
-	.sysfs_ops = &kobj_sysfs_ops,
-	.release = kset_release,
-	.get_ownership = kset_get_ownership,
-};
-
-static struct kset *kset_create(const char *name, struct kobject *parent_kobj)
-{
-	struct kset *kset;
-
-	kset = kzalloc(sizeof(*kset), GFP_KERNEL);
-	if (!kset)
-		return NULL;
-	kset->kobj.name = kstrdup_const(name, GFP_KERNEL);
-	if (!kset->kobj.name) {
-		kfree(kset);
-		return NULL;
-	}
-	kset->kobj.parent = parent_kobj;
-
-	kset->kobj.ktype = &kset_ktype;
-	kset->kobj.kset = NULL;
-
-	return kset;
-}
+const struct sysfs_ops kobj_sysfs_ops = {};
 
 struct kset *kset_create_and_add(const char *name, struct kobject *parent_kobj)
 {
-	struct kset *kset;
-	int error;
+	return NULL;
+}
 
-	kset = kset_create(name, parent_kobj);
-	if (!kset)
-		return NULL;
-	error = kset_register(kset);
-	if (error) {
-		kfree(kset);
-		return NULL;
-	}
-	return kset;
+int kset_register(struct kset *k)
+{
+	return 0;
 }

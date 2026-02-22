@@ -101,7 +101,9 @@ endif
 archscripts:
 
 archheaders:
-	$(Q)$(MAKE) $(build)=arch/x86/entry/syscalls all
+	@mkdir -p arch/x86/include/generated/uapi/asm arch/x86/include/generated/asm
+	@printf '#ifndef _UAPI_ASM_UNISTD_32_H\n#define _UAPI_ASM_UNISTD_32_H\n#define __NR_ni_syscall 0\n#define __NR_exit 1\n#define __NR_write 4\n#ifdef __KERNEL__\n#define __NR_syscalls 5\n#endif\n#endif\n' > arch/x86/include/generated/uapi/asm/unistd_32.h
+	@printf '__SYSCALL(0, sys_ni_syscall)\n__SYSCALL(1, sys_exit)\n__SYSCALL(2, sys_ni_syscall)\n__SYSCALL(3, sys_ni_syscall)\n__SYSCALL(4, sys_write)\n' > arch/x86/include/generated/asm/syscalls_32.h
 
 head-y := arch/x86/kernel/head_$(BITS).o
 head-y += arch/x86/kernel/head$(BITS).o

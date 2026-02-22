@@ -13,21 +13,12 @@ static inline u64 sched_clock_cpu(int cpu)
 #define istate core_internal_state__do_not_mess_with_it
 
 enum {
-	IRQTF_RUNTHREAD,
-	IRQTF_WARNED,
-	IRQTF_AFFINITY,
-	IRQTF_READY,
-};
-
-enum {
 	IRQS_AUTODETECT		= 0x00000001,
 	IRQS_SPURIOUS_DISABLED	= 0x00000002,
 	IRQS_ONESHOT		= 0x00000020,
 	IRQS_REPLAY		= 0x00000040,
 	IRQS_WAITING		= 0x00000080,
 	IRQS_PENDING		= 0x00000200,
-	IRQS_SUSPENDED		= 0x00000800,
-	IRQS_NMI		= 0x00002000,
 };
 
 enum {
@@ -73,8 +64,6 @@ static inline bool irq_settings_is_per_cpu_devid(struct irq_desc *desc)
 	return desc->status_use_accessors & _IRQ_PER_CPU_DEVID;
 }
 
-extern int __irq_set_trigger(struct irq_desc *desc, unsigned long flags);
-
 #define IRQ_RESEND	true
 #define IRQ_START_COND	false
 
@@ -85,8 +74,6 @@ extern void irq_enable(struct irq_desc *desc);
 extern void mask_irq(struct irq_desc *desc);
 extern void unmask_irq(struct irq_desc *desc);
 
-irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc);
-irqreturn_t handle_irq_event_percpu(struct irq_desc *desc);
 irqreturn_t handle_irq_event(struct irq_desc *desc);
 
 static inline int check_irq_resend(struct irq_desc *desc, bool inject)

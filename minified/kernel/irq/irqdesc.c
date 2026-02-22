@@ -1,56 +1,11 @@
 #include <linux/slab.h>
 #include <linux/interrupt.h>
-/* irqdomain.h inlined */
 #include <linux/radix-tree.h>
-struct device_node;
-struct fwnode_handle;
 struct irq_domain;
-#define IRQ_DOMAIN_IRQ_SPEC_PARAMS 16
-struct irq_fwspec {
-	struct fwnode_handle *fwnode;
-	int param_count;
-	u32 param[IRQ_DOMAIN_IRQ_SPEC_PARAMS];
-};
-enum irq_domain_bus_token {
-	DOMAIN_BUS_ANY = 0,
-};
-struct irq_domain_ops {
-	int (*match)(struct irq_domain *d, struct device_node *node,
-		     enum irq_domain_bus_token bus_token);
-	int (*select)(struct irq_domain *d, struct irq_fwspec *fwspec,
-		      enum irq_domain_bus_token bus_token);
-	int (*map)(struct irq_domain *d, unsigned int virq, irq_hw_number_t hw);
-	void (*unmap)(struct irq_domain *d, unsigned int virq);
-	int (*xlate)(struct irq_domain *d, struct device_node *node,
-		     const u32 *intspec, unsigned int intsize,
-		     unsigned long *out_hwirq, unsigned int *out_type);
-};
-struct irq_domain {
-	struct list_head link;
-	const char *name;
-	const struct irq_domain_ops *ops;
-	void *host_data;
-	unsigned int flags;
-	unsigned int mapcount;
-	struct fwnode_handle *fwnode;
-	enum irq_domain_bus_token bus_token;
-	struct device *dev;
-	irq_hw_number_t hwirq_max;
-	unsigned int revmap_size;
-	struct radix_tree_root revmap_tree;
-	struct mutex revmap_mutex;
-	struct irq_data __rcu *revmap[];
-};
 
 #include "internals.h"
 
 int nr_irqs = NR_IRQS;
-
-static void irq_kobj_release(struct kobject *kobj);
-
-static struct kobj_type irq_kobj_type = {
-	.release = irq_kobj_release,
-};
 
 static RADIX_TREE(irq_desc_tree, GFP_KERNEL);
 
@@ -80,24 +35,16 @@ static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
 	irqd_set(&desc->irq_data, IRQD_IRQ_MASKED);
 	desc->handle_irq = handle_bad_irq;
 	desc->depth = 1;
-	desc->name = NULL;
 	desc->owner = owner;
 	irqd_set(&desc->irq_data, flags);
-	kobject_init(&desc->kobj, &irq_kobj_type);
 
 	return desc;
-}
-
-static void irq_kobj_release(struct kobject *kobj)
-{
-	struct irq_desc *desc = container_of(kobj, struct irq_desc, kobj);
-	kfree(desc);
 }
 
 int __init early_irq_init(void)
 {
 	int i;
-	int initcnt = NR_IRQS_LEGACY; /* arch_probe_nr_irqs inlined */
+	int initcnt = NR_IRQS_LEGACY;
 	struct irq_desc *desc;
 
 	printk(KERN_INFO "NR_IRQS: %d, nr_irqs: %d, preallocated irqs: %d\n",
@@ -113,11 +60,10 @@ int __init early_irq_init(void)
 		nr_irqs = initcnt;
 
 	for (i = 0; i < initcnt; i++) {
-		desc = alloc_desc(i, 0, 0,
-				  NULL); /* node=0 (first_online_node) */
+		desc = alloc_desc(i, 0, 0, NULL);
 		radix_tree_insert(&irq_desc_tree, i, desc);
 	}
-	return 0; /* arch_early_irq_init inlined */
+	return 0;
 }
 
 struct irq_desc *__irq_get_desc_lock(unsigned int irq, unsigned long *flags,
@@ -126,16 +72,6 @@ struct irq_desc *__irq_get_desc_lock(unsigned int irq, unsigned long *flags,
 	struct irq_desc *desc = irq_to_desc(irq);
 
 	if (desc) {
-		if (check & _IRQ_DESC_CHECK) {
-			if ((check & _IRQ_DESC_PERCPU) &&
-			    !irq_settings_is_per_cpu_devid(desc))
-				return NULL;
-
-			if (!(check & _IRQ_DESC_PERCPU) &&
-			    irq_settings_is_per_cpu_devid(desc))
-				return NULL;
-		}
-
 		if (bus)
 			chip_bus_lock(desc);
 		raw_spin_lock_irqsave(&desc->lock, *flags);

@@ -1,7 +1,6 @@
 #include <linux/types.h>
 
 extern dev_t ROOT_DEV;
-#include <linux/device.h>
 #include <linux/fs.h>
 extern int ramfs_init_fs_context(struct fs_context *fc);
 int __init init_chroot(const char *filename);
@@ -17,7 +16,7 @@ unsigned long phys_initrd_size __initdata;
 
 void __init prepare_namespace(void)
 {
-	wait_for_device_probe();
+	/* wait_for_device_probe stubbed out - no device drivers */
 	init_chroot(".");
 }
 

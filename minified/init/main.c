@@ -31,7 +31,8 @@ struct notifier_block;
 
 extern void __init vmalloc_init(void);
 
-extern void driver_init(void);
+/* driver_init inlined: only bdi_init needed */
+#include <linux/backing-dev.h>
 extern void timekeeping_init(void);
 #include <linux/kthread.h>
 extern void sched_init(void);
@@ -358,7 +359,7 @@ static noinline void __init kernel_init_freeable(void)
 		static char command_line[256];
 		size_t len = strlen(saved_command_line);
 
-		driver_init();
+		bdi_init(&noop_backing_dev_info);
 
 		if (len >= sizeof(command_line))
 			len = sizeof(command_line) - 1;

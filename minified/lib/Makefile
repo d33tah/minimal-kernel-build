@@ -13,7 +13,7 @@ lib-y := ctype.o string.o vsprintf.o \
 	 idr.o extable.o \
 	 dec_and_lock.o
 
-lib-y	+= kobject.o klist.o
+lib-y	+= kobject.o
 obj-y	+= lockref.o
 
 obj-y += sort.o \

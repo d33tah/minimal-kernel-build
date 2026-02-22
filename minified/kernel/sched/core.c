@@ -377,19 +377,6 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 	}
 }
 
-void __noreturn do_task_dead(void)
-{
-	set_special_state(TASK_DEAD);
-
-	current->flags |= PF_NOFREEZE;
-
-	__schedule(SM_NONE);
-	BUG();
-
-	for (;;)
-		cpu_relax();
-}
-
 asmlinkage __visible void __sched schedule(void)
 {
 	do {

@@ -7,11 +7,6 @@
 #include <linux/wait.h>
 #include <linux/uidgid.h>
 
-enum kobject_action {
-	KOBJ_ADD,
-	KOBJ_REMOVE,
-};
-
 struct kobject {
 	const char		*name;
 	struct list_head	entry;
@@ -26,14 +21,6 @@ struct kobject {
 	unsigned int state_remove_uevent_sent:1;
 };
 
-static inline const char *kobject_name(const struct kobject *kobj)
-{
-	return kobj->name;
-}
-
-extern void kobject_init(struct kobject *kobj, const struct kobj_type *ktype);
-
-extern struct kobject *kobject_get(struct kobject *kobj);
 extern struct kobject * __must_check kobject_get_unless_zero(
 						struct kobject *kobj);
 extern void kobject_put(struct kobject *kobj);
@@ -42,18 +29,6 @@ extern void kobject_put(struct kobject *kobj);
 
 struct kobj_type {
 	void (*release)(struct kobject *kobj);
-	const struct sysfs_ops *sysfs_ops;
-	const struct attribute_group **default_groups;
-	const void *(*namespace)(struct kobject *kobj);
-	void (*get_ownership)(struct kobject *kobj, kuid_t *uid, kgid_t *gid);
-};
-
-struct kobj_attribute {
-	struct attribute attr;
-	ssize_t (*show)(struct kobject *kobj, struct kobj_attribute *attr,
-			char *buf);
-	ssize_t (*store)(struct kobject *kobj, struct kobj_attribute *attr,
-			 const char *buf, size_t count);
 };
 
 struct kset {
@@ -61,19 +36,6 @@ struct kset {
 	spinlock_t list_lock;
 	struct kobject kobj;
 } __randomize_layout;
-
-extern int __must_check kset_register(struct kset *kset);
-extern struct kset * __must_check kset_create_and_add(const char *name,
-						struct kobject *parent_kobj);
-
-static inline struct kset *kset_get(struct kset *k)
-{
-	return k;
-}
-
-static inline void kset_put(struct kset *k)
-{
-}
 
 static inline const struct kobj_type *get_ktype(struct kobject *kobj)
 {

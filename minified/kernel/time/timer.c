@@ -3,14 +3,6 @@
 
 __visible u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
 
-void init_timer_key(struct timer_list *timer, void (*func)(struct timer_list *),
-		    unsigned int flags, const char *name,
-		    struct lock_class_key *key)
-{
-	timer->entry.pprev = NULL;
-	timer->function = func;
-}
-
 signed long __sched schedule_timeout(signed long timeout)
 {
 	switch (timeout) {

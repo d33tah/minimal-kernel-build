@@ -168,7 +168,6 @@ extern void handle_level_irq(struct irq_desc *desc);
 extern void handle_bad_irq(struct irq_desc *desc);
 
 extern struct irq_chip no_irq_chip;
-extern struct irq_chip dummy_irq_chip;
 
 extern void
 irq_set_chip_and_handler_name(unsigned int irq, const struct irq_chip *chip,

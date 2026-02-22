@@ -30,17 +30,17 @@ int rcuwait_wake_up(struct rcuwait *w)
 	return ret;
 }
 
+void __noreturn make_task_dead(int signr)
+{
+	panic("make_task_dead(%d)\n", signr);
+}
+
 /* do_exit gutted - Hello World kernel never exits processes.
  * init loops forever, kthreadd loops forever, no kthreads created.
  * Only reachable via make_task_dead (fatal errors). */
 void __noreturn do_exit(long code)
 {
 	panic("do_exit called with code %ld\n", code);
-}
-
-void __noreturn make_task_dead(int signr)
-{
-	panic("make_task_dead(%d)\n", signr);
 }
 
 /* Stub: exit syscalls - Hello World doesn't need to exit cleanly */

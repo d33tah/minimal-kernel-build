@@ -24,13 +24,3 @@ struct irq_chip no_irq_chip = {
 	.irq_ack = ack_bad,
 	.flags = IRQCHIP_SKIP_SET_WAKE,
 };
-
-struct irq_chip dummy_irq_chip = {
-	.name = "dummy",
-	.irq_startup = noop_ret,
-	.irq_enable = noop,
-	.irq_ack = noop,
-	.irq_mask = noop,
-	.irq_unmask = noop,
-	.flags = IRQCHIP_SKIP_SET_WAKE,
-};

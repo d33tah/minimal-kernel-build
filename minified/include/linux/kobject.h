@@ -68,15 +68,11 @@ extern struct kset * __must_check kset_create_and_add(const char *name,
 
 static inline struct kset *kset_get(struct kset *k)
 {
-	if (!k)
-		return NULL;
-	struct kobject *kobj = kobject_get(&k->kobj);
-	return kobj ? container_of(kobj, struct kset, kobj) : NULL;
+	return k;
 }
 
 static inline void kset_put(struct kset *k)
 {
-	kobject_put(&k->kobj);
 }
 
 static inline const struct kobj_type *get_ktype(struct kobject *kobj)

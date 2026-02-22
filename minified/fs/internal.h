@@ -25,8 +25,6 @@ struct open_flags {
 };
 extern struct file *do_filp_open(int dfd, struct filename *pathname,
 		const struct open_flags *op);
-extern struct open_how build_open_how(int flags, umode_t mode);
-extern int build_open_flags(const struct open_how *how, struct open_flags *op);
 
 extern int vfs_open(const struct path *, struct file *);
 

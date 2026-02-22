@@ -16,22 +16,8 @@ int task_work_add(struct task_struct *task, struct callback_head *work,
 		work->next = head;
 	} while (cmpxchg(&task->task_works, head, work) != head);
 
-	switch (notify) {
-	case TWA_NONE:
-		break;
-	case TWA_RESUME:
-		test_and_set_tsk_thread_flag(task, TIF_NOTIFY_RESUME);
-		break;
-	case TWA_SIGNAL:
-		set_notify_signal(task);
-		break;
-	case TWA_SIGNAL_NO_IPI:
-		__set_notify_signal(task);
-		break;
-	default:
-		WARN_ON_ONCE(1);
-		break;
-	}
+	/* Only TWA_RESUME is used in this kernel */
+	test_and_set_tsk_thread_flag(task, TIF_NOTIFY_RESUME);
 
 	return 0;
 }

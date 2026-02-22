@@ -2,8 +2,8 @@
 #ifndef _LINUX_WORKQUEUE_H
 #define _LINUX_WORKQUEUE_H
 
-#include <linux/timer.h>
 #include <linux/bitops.h>
+#include <linux/timer.h>
 #include <linux/threads.h>
 #include <linux/atomic.h>
 #include <linux/cpumask.h>
@@ -12,16 +12,15 @@ struct workqueue_struct;
 
 struct work_struct;
 typedef void (*work_func_t)(struct work_struct *work);
-void delayed_work_timer_fn(struct timer_list *t);
 
 #define work_data_bits(work) ((unsigned long *)(&(work)->data))
 
 enum {
-	WORK_STRUCT_PENDING_BIT	= 0,	 
-	WORK_STRUCT_INACTIVE_BIT= 1,	 
-	WORK_STRUCT_PWQ_BIT	= 2,	 
-	WORK_STRUCT_LINKED_BIT	= 3,	 
-	WORK_STRUCT_COLOR_SHIFT	= 4,	 
+	WORK_STRUCT_PENDING_BIT	= 0,
+	WORK_STRUCT_INACTIVE_BIT= 1,
+	WORK_STRUCT_PWQ_BIT	= 2,
+	WORK_STRUCT_LINKED_BIT	= 3,
+	WORK_STRUCT_COLOR_SHIFT	= 4,
 
 	WORK_STRUCT_COLOR_BITS	= 4,
 
@@ -65,12 +64,6 @@ struct work_struct {
 #define WORK_DATA_STATIC_INIT()	\
 	ATOMIC_LONG_INIT((unsigned long)(WORK_STRUCT_NO_POOL | WORK_STRUCT_STATIC))
 
-struct delayed_work {
-	struct work_struct work;
-	struct timer_list timer;
-
-	struct workqueue_struct *wq;
-};
 
 #define __WORK_INIT_LOCKDEP_MAP(n, k)
 
@@ -81,21 +74,11 @@ struct delayed_work {
 	__WORK_INIT_LOCKDEP_MAP(#n, &(n))				\
 	}
 
-#define __DELAYED_WORK_INITIALIZER(n, f, tflags) {			\
-	.work = __WORK_INITIALIZER((n).work, (f)),			\
-	.timer = __TIMER_INITIALIZER(delayed_work_timer_fn,\
-				     (tflags) | TIMER_IRQSAFE),		\
-	}
-
 #define DECLARE_WORK(n, f)						\
 	struct work_struct n = __WORK_INITIALIZER(n, f)
 
-#define DECLARE_DELAYED_WORK(n, f)					\
-	struct delayed_work n = __DELAYED_WORK_INITIALIZER(n, f, 0)
-
 #define __INIT_WORK(_work, _func, _onstack)				\
 	do {								\
-		/* __init_work call removed - empty stub */		\
 		(_work)->data = (atomic_long_t) WORK_DATA_INIT();	\
 		INIT_LIST_HEAD(&(_work)->entry);			\
 		(_work)->func = (_func);				\
@@ -104,26 +87,10 @@ struct delayed_work {
 #define INIT_WORK(_work, _func)						\
 	__INIT_WORK((_work), (_func), 0)
 
-#define __INIT_DELAYED_WORK(_work, _func, _tflags)			\
-	do {								\
-		INIT_WORK(&(_work)->work, (_func));			\
-		timer_setup(&(_work)->timer,				\
-			    delayed_work_timer_fn,			\
-			    (_tflags) | TIMER_IRQSAFE);			\
-	} while (0)
-
-#define INIT_DELAYED_WORK(_work, _func)					\
-	__INIT_DELAYED_WORK(_work, _func, 0)
-
 extern struct workqueue_struct *system_wq;
-
-__printf(1, 4) struct workqueue_struct *
-alloc_workqueue(const char *fmt, unsigned int flags, int max_active, ...);
 
 extern bool queue_work_on(int cpu, struct workqueue_struct *wq,
 			struct work_struct *work);
-extern bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
-			struct delayed_work *work, unsigned long delay);
 
 static inline bool queue_work(struct workqueue_struct *wq,
 			      struct work_struct *work)
@@ -131,22 +98,9 @@ static inline bool queue_work(struct workqueue_struct *wq,
 	return queue_work_on(WORK_CPU_UNBOUND, wq, work);
 }
 
-static inline bool queue_delayed_work(struct workqueue_struct *wq,
-				      struct delayed_work *dwork,
-				      unsigned long delay)
-{
-	return queue_delayed_work_on(WORK_CPU_UNBOUND, wq, dwork, delay);
-}
-
 static inline bool schedule_work(struct work_struct *work)
 {
 	return queue_work(system_wq, work);
-}
-
-static inline bool schedule_delayed_work(struct delayed_work *dwork,
-					 unsigned long delay)
-{
-	return queue_delayed_work(system_wq, dwork, delay);
 }
 
 #endif

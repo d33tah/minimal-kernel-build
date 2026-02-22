@@ -1,4 +1,3 @@
-
 #include <linux/fdtable.h>
 
 #define BITBIT_NR(nr) BITS_TO_LONGS(BITS_TO_LONGS(nr))
@@ -20,16 +19,6 @@ static void copy_fd_bitmaps(struct fdtable *nfdt, struct fdtable *ofdt,
 	set = BITBIT_SIZE(nfdt->max_fds) - cpy;
 	memcpy(nfdt->full_fds_bits, ofdt->full_fds_bits, cpy);
 	memset((char *)nfdt->full_fds_bits + cpy, 0, set);
-}
-
-static int expand_files(struct files_struct *files, unsigned int nr)
-	__releases(files->file_lock) __acquires(files->file_lock)
-{
-	struct fdtable *fdt = files_fdtable(files);
-
-	if (nr < fdt->max_fds)
-		return 0;
-	return -EMFILE;
 }
 
 struct files_struct *dup_fd(struct files_struct *oldf, unsigned int max_fds,
@@ -106,12 +95,10 @@ int get_unused_fd_flags(unsigned flags)
 {
 	struct files_struct *files = current->files;
 	unsigned int fd;
-	int error;
 	struct fdtable *fdt;
 	unsigned int end = rlimit(RLIMIT_NOFILE);
 
 	spin_lock(&files->file_lock);
-repeat:
 	fdt = files_fdtable(files);
 	fd = 0;
 	if (fd < files->next_fd)
@@ -134,16 +121,10 @@ repeat:
 		}
 	}
 
-	error = -EMFILE;
-	if (fd >= end)
-		goto out;
-
-	error = expand_files(files, fd);
-	if (error < 0)
-		goto out;
-
-	if (error)
-		goto repeat;
+	if (fd >= end || fd >= fdt->max_fds) {
+		spin_unlock(&files->file_lock);
+		return -EMFILE;
+	}
 
 	files->next_fd = fd + 1;
 
@@ -157,11 +138,9 @@ repeat:
 		__set_bit(fd, fdt->close_on_exec);
 	else if (test_bit(fd, fdt->close_on_exec))
 		__clear_bit(fd, fdt->close_on_exec);
-	error = fd;
 
-out:
 	spin_unlock(&files->file_lock);
-	return error;
+	return fd;
 }
 
 void fd_install(unsigned int fd, struct file *file)
@@ -176,7 +155,7 @@ void fd_install(unsigned int fd, struct file *file)
 	rcu_read_unlock_sched();
 }
 
-static unsigned long __fdget(unsigned int fd)
+unsigned long __fdget_pos(unsigned int fd)
 {
 	struct files_struct *files = current->files;
 	struct file *file;
@@ -186,10 +165,3 @@ static unsigned long __fdget(unsigned int fd)
 		return 0;
 	return (unsigned long)file;
 }
-
-unsigned long __fdget_pos(unsigned int fd)
-{
-	return __fdget(fd);
-}
-
-/* dup/dup2/dup3 replaced with COND_SYSCALL */

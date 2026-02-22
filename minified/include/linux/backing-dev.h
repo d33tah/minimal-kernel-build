@@ -60,7 +60,6 @@ struct bdi_writeback {
 
 	spinlock_t work_lock;
 	struct list_head work_list;
-	struct delayed_work dwork;
 
 	struct list_head bdi_node;
 
@@ -84,7 +83,6 @@ struct backing_dev_info {
 	struct device *owner;
 
 };
-void wb_workfn(struct work_struct *work);
 #define BDI_CAP_WRITEBACK		(1 << 0)
 extern struct backing_dev_info noop_backing_dev_info;
 int bdi_init(struct backing_dev_info *bdi);

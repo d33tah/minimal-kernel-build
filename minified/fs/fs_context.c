@@ -120,20 +120,8 @@ void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt,
 	struct va_format vaf = { .fmt = fmt, .va = &va };
 
 	va_start(va, fmt);
-	switch (level) {
-	case 'w':
-		printk(KERN_WARNING "%s%s%pV\n", prefix ? prefix : "",
-		       prefix ? ": " : "", &vaf);
-		break;
-	case 'e':
-		printk(KERN_ERR "%s%s%pV\n", prefix ? prefix : "",
-		       prefix ? ": " : "", &vaf);
-		break;
-	default:
-		printk(KERN_NOTICE "%s%s%pV\n", prefix ? prefix : "",
-		       prefix ? ": " : "", &vaf);
-		break;
-	}
+	printk(KERN_ERR "%s%s%pV\n", prefix ? prefix : "", prefix ? ": " : "",
+	       &vaf);
 	va_end(va);
 }
 

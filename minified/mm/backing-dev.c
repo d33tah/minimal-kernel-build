@@ -10,11 +10,6 @@ void fprop_local_init_percpu(struct fprop_local_percpu *pl, gfp_t gfp)
 
 struct backing_dev_info noop_backing_dev_info;
 
-/* Stub for wb dwork - never actually runs */
-void wb_workfn(struct work_struct *work)
-{
-}
-
 int bdi_init(struct backing_dev_info *bdi)
 {
 	struct bdi_writeback *wb = &bdi->wb;
@@ -34,7 +29,7 @@ int bdi_init(struct backing_dev_info *bdi)
 	atomic_set(&wb->writeback_inodes, 0);
 	spin_lock_init(&wb->work_lock);
 	INIT_LIST_HEAD(&wb->work_list);
-	INIT_DELAYED_WORK(&wb->dwork, wb_workfn);
+
 	fprop_local_init_percpu(&wb->completions, GFP_KERNEL);
 
 	return 0;

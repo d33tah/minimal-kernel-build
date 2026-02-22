@@ -43,16 +43,6 @@ int force_sig_fault(int sig, int code, void __user *addr);
 /* force_sigsegv now static in signal.c */
 extern void force_sig(int);
 
-static inline bool __set_notify_signal(struct task_struct *task)
-{
-	return !test_and_set_tsk_thread_flag(task, TIF_NOTIFY_SIGNAL) &&
-	       !wake_up_state(task, TASK_INTERRUPTIBLE);
-}
-
-static inline void set_notify_signal(struct task_struct *task)
-{
-	__set_notify_signal(task);
-}
 
 static inline int task_sigpending(struct task_struct *p)
 {

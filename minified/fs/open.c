@@ -1,4 +1,3 @@
-
 #include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/module.h>
@@ -90,7 +89,7 @@ cleanup_file:
 #define WILL_CREATE(flags) (flags & (O_CREAT | __O_TMPFILE))
 #define O_PATH_FLAGS (O_DIRECTORY | O_NOFOLLOW | O_PATH | O_CLOEXEC)
 
-inline struct open_how build_open_how(int flags, umode_t mode)
+static inline struct open_how build_open_how(int flags, umode_t mode)
 {
 	struct open_how how = {
 		.flags = flags & VALID_OPEN_FLAGS,
@@ -105,7 +104,8 @@ inline struct open_how build_open_how(int flags, umode_t mode)
 	return how;
 }
 
-inline int build_open_flags(const struct open_how *how, struct open_flags *op)
+static inline int build_open_flags(const struct open_how *how,
+				   struct open_flags *op)
 {
 	u64 flags = how->flags & ~(FMODE_NONOTIFY | O_CLOEXEC);
 	op->open_flag = flags;
@@ -116,24 +116,22 @@ inline int build_open_flags(const struct open_how *how, struct open_flags *op)
 	return 0;
 }
 
-static struct file *file_open_name(struct filename *name, int flags,
-				   umode_t mode)
+struct file *filp_open(const char *filename, int flags, umode_t mode)
 {
 	struct open_flags op;
 	struct open_how how = build_open_how(flags, mode);
 	int err = build_open_flags(&how, &op);
+	struct filename *name;
+	struct file *file;
+
 	if (err)
 		return ERR_PTR(err);
-	return do_filp_open(AT_FDCWD, name, &op);
-}
 
-struct file *filp_open(const char *filename, int flags, umode_t mode)
-{
-	struct filename *name = getname_kernel(filename);
-	struct file *file = ERR_CAST(name);
+	name = getname_kernel(filename);
+	file = ERR_CAST(name);
 
 	if (!IS_ERR(name)) {
-		file = file_open_name(name, flags, mode);
+		file = do_filp_open(AT_FDCWD, name, &op);
 		putname(name);
 	}
 	return file;

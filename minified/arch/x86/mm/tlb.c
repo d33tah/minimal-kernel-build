@@ -1,8 +1,8 @@
+/* Simplified TLB management for single-CPU hello-world kernel */
 #include <asm/mmu_context.h>
 #include <asm/cache.h>
 #include <asm/apic.h>
 
-/* Moved from kernel/events/stubs.c - static key definitions for perf/rdpmc */
 DEFINE_STATIC_KEY_TRUE(rdpmc_never_available_key);
 DEFINE_STATIC_KEY_FALSE(rdpmc_always_available_key);
 
@@ -11,25 +11,7 @@ DEFINE_STATIC_KEY_FALSE(rdpmc_always_available_key);
 #define __flush_tlb_global native_flush_tlb_global
 #define __flush_tlb_one_user(addr) native_flush_tlb_one_user(addr)
 
-#define LAST_USER_MM_IBPB 0x1UL
-#define LAST_USER_MM_L1D_FLUSH 0x2UL
-#define LAST_USER_MM_SPEC_MASK (LAST_USER_MM_IBPB | LAST_USER_MM_L1D_FLUSH)
-
-#define LAST_USER_MM_INIT LAST_USER_MM_IBPB
-
 atomic64_t last_mm_ctx_id = ATOMIC64_INIT(1);
-
-static void choose_new_asid(struct mm_struct *next, u64 next_tlb_gen,
-			    u16 *new_asid, bool *need_flush)
-{
-	*new_asid = 0;
-	*need_flush = true;
-}
-
-static void load_new_mm_cr3(pgd_t *pgdir, u16 new_asid, bool need_flush)
-{
-	write_cr3(__sme_pa(pgdir));
-}
 
 void switch_mm(struct mm_struct *prev, struct mm_struct *next,
 	       struct task_struct *tsk)
@@ -45,76 +27,24 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 			struct task_struct *tsk)
 {
 	struct mm_struct *real_prev = this_cpu_read(cpu_tlbstate.loaded_mm);
-	u16 prev_asid = this_cpu_read(cpu_tlbstate.loaded_mm_asid);
-	bool was_lazy = this_cpu_read(cpu_tlbstate_shared.is_lazy);
 	unsigned cpu = smp_processor_id();
-	u64 next_tlb_gen;
-	bool need_flush;
-	u16 new_asid;
 
-	if (was_lazy)
-		this_cpu_write(cpu_tlbstate_shared.is_lazy, false);
+	if (real_prev == next)
+		return;
 
-	if (real_prev == next) {
-		VM_WARN_ON(this_cpu_read(cpu_tlbstate.ctxs[prev_asid].ctx_id) !=
-			   next->context.ctx_id);
+	if (real_prev != &init_mm)
+		cpumask_clear_cpu(cpu, mm_cpumask(real_prev));
+	if (next != &init_mm)
+		cpumask_set_cpu(cpu, mm_cpumask(next));
 
-		if (WARN_ON_ONCE(real_prev != &init_mm &&
-				 !cpumask_test_cpu(cpu, mm_cpumask(next))))
-			cpumask_set_cpu(cpu, mm_cpumask(next));
-
-		if (!was_lazy)
-			return;
-
-		smp_mb();
-		next_tlb_gen = atomic64_read(&next->context.tlb_gen);
-		if (this_cpu_read(cpu_tlbstate.ctxs[prev_asid].tlb_gen) ==
-		    next_tlb_gen)
-			return;
-
-		new_asid = prev_asid;
-		need_flush = true;
-	} else {
-		if (tsk && tsk->mm) {
-			unsigned long next_tif = read_task_thread_flags(tsk);
-			unsigned long spec_bits = (next_tif >> TIF_SPEC_IB) &
-						  LAST_USER_MM_SPEC_MASK;
-			BUILD_BUG_ON(TIF_SPEC_L1D_FLUSH != TIF_SPEC_IB + 1);
-			this_cpu_write(cpu_tlbstate.last_user_mm_spec,
-				       (unsigned long)tsk->mm | spec_bits);
-		}
-
-		if (real_prev != &init_mm) {
-			VM_WARN_ON_ONCE(
-				!cpumask_test_cpu(cpu, mm_cpumask(real_prev)));
-			cpumask_clear_cpu(cpu, mm_cpumask(real_prev));
-		}
-
-		if (next != &init_mm)
-			cpumask_set_cpu(cpu, mm_cpumask(next));
-		next_tlb_gen = atomic64_read(&next->context.tlb_gen);
-
-		choose_new_asid(next, next_tlb_gen, &new_asid, &need_flush);
-
-		this_cpu_write(cpu_tlbstate.loaded_mm, LOADED_MM_SWITCHING);
-		barrier();
-	}
-
-	if (need_flush) {
-		this_cpu_write(cpu_tlbstate.ctxs[new_asid].ctx_id,
-			       next->context.ctx_id);
-		this_cpu_write(cpu_tlbstate.ctxs[new_asid].tlb_gen,
-			       next_tlb_gen);
-		load_new_mm_cr3(next->pgd, new_asid, true);
-
-	} else {
-		load_new_mm_cr3(next->pgd, new_asid, false);
-	}
+	this_cpu_write(cpu_tlbstate.ctxs[0].ctx_id, next->context.ctx_id);
+	this_cpu_write(cpu_tlbstate.ctxs[0].tlb_gen,
+		       atomic64_read(&next->context.tlb_gen));
+	write_cr3(__sme_pa(next->pgd));
 
 	barrier();
-
 	this_cpu_write(cpu_tlbstate.loaded_mm, next);
-	this_cpu_write(cpu_tlbstate.loaded_mm_asid, new_asid);
+	this_cpu_write(cpu_tlbstate.loaded_mm_asid, 0);
 
 	if (next != real_prev) {
 		cr4_clear_bits_irqsoff(X86_CR4_PCE);
@@ -124,130 +54,35 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 
 void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
 {
-	if (this_cpu_read(cpu_tlbstate.loaded_mm) == &init_mm)
-		return;
-
-	this_cpu_write(cpu_tlbstate_shared.is_lazy, true);
 }
 
 void initialize_tlbstate_and_flush(void)
 {
 	int i;
 	struct mm_struct *mm = this_cpu_read(cpu_tlbstate.loaded_mm);
-	u64 tlb_gen = atomic64_read(&init_mm.context.tlb_gen);
-	unsigned long cr3 = __read_cr3();
-
-	WARN_ON((cr3 & CR3_ADDR_MASK) != __pa(mm->pgd));
 
 	write_cr3(__sme_pa(mm->pgd));
 
-	this_cpu_write(cpu_tlbstate.last_user_mm_spec, LAST_USER_MM_INIT);
 	this_cpu_write(cpu_tlbstate.loaded_mm_asid, 0);
 	this_cpu_write(cpu_tlbstate.next_asid, 1);
 	this_cpu_write(cpu_tlbstate.ctxs[0].ctx_id, mm->context.ctx_id);
-	this_cpu_write(cpu_tlbstate.ctxs[0].tlb_gen, tlb_gen);
+	this_cpu_write(cpu_tlbstate.ctxs[0].tlb_gen,
+		       atomic64_read(&init_mm.context.tlb_gen));
 
 	for (i = 1; i < TLB_NR_DYN_ASIDS; i++)
 		this_cpu_write(cpu_tlbstate.ctxs[i].ctx_id, 0);
-}
-
-static void flush_tlb_func(void *info)
-{
-	const struct flush_tlb_info *f = info;
-	struct mm_struct *loaded_mm = this_cpu_read(cpu_tlbstate.loaded_mm);
-	u32 loaded_mm_asid = this_cpu_read(cpu_tlbstate.loaded_mm_asid);
-	u64 mm_tlb_gen = atomic64_read(&loaded_mm->context.tlb_gen);
-	u64 local_tlb_gen =
-		this_cpu_read(cpu_tlbstate.ctxs[loaded_mm_asid].tlb_gen);
-
-	VM_WARN_ON(!irqs_disabled());
-
-	if (unlikely(loaded_mm == &init_mm))
-		return;
-
-	VM_WARN_ON(this_cpu_read(cpu_tlbstate.ctxs[loaded_mm_asid].ctx_id) !=
-		   loaded_mm->context.ctx_id);
-
-	if (this_cpu_read(cpu_tlbstate_shared.is_lazy)) {
-		switch_mm_irqs_off(NULL, &init_mm, NULL);
-		return;
-	}
-
-	if (unlikely(local_tlb_gen == mm_tlb_gen)) {
-		goto done;
-	}
-
-	WARN_ON_ONCE(local_tlb_gen > mm_tlb_gen);
-	WARN_ON_ONCE(f->new_tlb_gen > mm_tlb_gen);
-
-	if (f->end != TLB_FLUSH_ALL && f->new_tlb_gen == local_tlb_gen + 1 &&
-	    f->new_tlb_gen == mm_tlb_gen) {
-		unsigned long addr = f->start;
-
-		while (addr < f->end) {
-			flush_tlb_one_user(addr);
-			addr += 1UL << f->stride_shift;
-		}
-	} else {
-		flush_tlb_local();
-	}
-
-	this_cpu_write(cpu_tlbstate.ctxs[loaded_mm_asid].tlb_gen, mm_tlb_gen);
-
-done:;
 }
 
 DEFINE_PER_CPU_SHARED_ALIGNED(struct tlb_state_shared, cpu_tlbstate_shared);
 
 unsigned long tlb_single_page_flush_ceiling __read_mostly = 33;
 
-static DEFINE_PER_CPU_SHARED_ALIGNED(struct flush_tlb_info, flush_tlb_info);
-
-static struct flush_tlb_info *
-get_flush_tlb_info(struct mm_struct *mm, unsigned long start, unsigned long end,
-		   unsigned int stride_shift, bool freed_tables,
-		   u64 new_tlb_gen)
-{
-	struct flush_tlb_info *info = this_cpu_ptr(&flush_tlb_info);
-
-	info->start = start;
-	info->end = end;
-	info->mm = mm;
-	info->stride_shift = stride_shift;
-	info->freed_tables = freed_tables;
-	info->new_tlb_gen = new_tlb_gen;
-	info->initiating_cpu = smp_processor_id();
-
-	return info;
-}
-
 void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 			unsigned long end, unsigned int stride_shift,
 			bool freed_tables)
 {
-	struct flush_tlb_info *info;
-	u64 new_tlb_gen;
-
-	get_cpu();
-
-	if ((end == TLB_FLUSH_ALL) ||
-	    ((end - start) >> stride_shift) > tlb_single_page_flush_ceiling) {
-		start = 0;
-		end = TLB_FLUSH_ALL;
-	}
-
-	new_tlb_gen = inc_mm_tlb_gen(mm);
-
-	info = get_flush_tlb_info(mm, start, end, stride_shift, freed_tables,
-				  new_tlb_gen);
-
-	if (mm == this_cpu_read(cpu_tlbstate.loaded_mm)) {
-		local_irq_disable();
-		flush_tlb_func(info);
-		local_irq_enable();
-	}
-
-	put_cpu();
+	inc_mm_tlb_gen(mm);
+	flush_tlb_local();
 }
 
 void flush_tlb_one_kernel(unsigned long addr)
@@ -275,16 +110,12 @@ STATIC_NOPV void native_flush_tlb_global(void)
 	}
 
 	raw_local_irq_save(flags);
-
 	__native_tlb_flush_global(this_cpu_read(cpu_tlbstate.cr4));
-
 	raw_local_irq_restore(flags);
 }
 
 STATIC_NOPV void native_flush_tlb_local(void)
 {
-	WARN_ON_ONCE(preemptible());
-
 	native_write_cr3(__native_read_cr3());
 }
 
@@ -295,11 +126,8 @@ void flush_tlb_local(void)
 
 void __flush_tlb_all(void)
 {
-	VM_WARN_ON_ONCE(preemptible());
-
-	if (boot_cpu_has(X86_FEATURE_PGE)) {
+	if (boot_cpu_has(X86_FEATURE_PGE))
 		__flush_tlb_global();
-	} else {
+	else
 		flush_tlb_local();
-	}
 }

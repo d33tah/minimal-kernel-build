@@ -11,13 +11,6 @@
 
 struct device {
 	struct kobject kobj;
-	struct device *parent;
-	const char *init_name;
-	struct mutex mutex;
-	dev_t devt;
-	spinlock_t devres_lock;
-	struct list_head devres_head;
-	void (*release)(struct device *dev);
 };
 
 #endif

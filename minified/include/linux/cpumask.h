@@ -73,8 +73,6 @@ static inline unsigned int cpumask_size(void)
 	return BITS_TO_LONGS(nr_cpumask_bits) * sizeof(long);
 }
 
-extern const DECLARE_BITMAP(cpu_all_bits, NR_CPUS);
-
 static inline void
 set_cpu_possible(unsigned int cpu, bool possible)
 {

@@ -26,26 +26,6 @@ static __always_inline void arch_exit_to_user_mode(void)
 # define _TIF_UPROBE			(0)
 #endif
 
-#ifndef ARCH_SYSCALL_WORK_ENTER
-# define ARCH_SYSCALL_WORK_ENTER	(0)
-#endif
-
-#ifndef ARCH_SYSCALL_WORK_EXIT
-# define ARCH_SYSCALL_WORK_EXIT		(0)
-#endif
-
-#define SYSCALL_WORK_ENTER	(SYSCALL_WORK_SECCOMP |			\
-				 SYSCALL_WORK_SYSCALL_TRACEPOINT |	\
-				 SYSCALL_WORK_SYSCALL_TRACE |		\
-				 SYSCALL_WORK_SYSCALL_EMU |		\
-				 SYSCALL_WORK_SYSCALL_AUDIT |		\
-				 ARCH_SYSCALL_WORK_ENTER)
-#define SYSCALL_WORK_EXIT	(SYSCALL_WORK_SYSCALL_TRACEPOINT |	\
-				 SYSCALL_WORK_SYSCALL_TRACE |		\
-				 SYSCALL_WORK_SYSCALL_AUDIT |		\
-				 SYSCALL_WORK_SYSCALL_EXIT_TRAP	|	\
-				 ARCH_SYSCALL_WORK_EXIT)
-
 #ifndef ARCH_EXIT_TO_USER_MODE_WORK
 # define ARCH_EXIT_TO_USER_MODE_WORK		(0)
 #endif
@@ -88,10 +68,7 @@ void irqentry_exit_to_user_mode(struct pt_regs *regs);
 
 #ifndef irqentry_state
 typedef struct irqentry_state {
-	union {
-		bool	exit_rcu;
-		bool	lockdep;
-	};
+	bool	exit_rcu;
 } irqentry_state_t;
 #endif
 

@@ -116,7 +116,6 @@ struct delayed_work {
 	__INIT_DELAYED_WORK(_work, _func, 0)
 
 extern struct workqueue_struct *system_wq;
-extern struct workqueue_struct *system_unbound_wq;
 
 __printf(1, 4) struct workqueue_struct *
 alloc_workqueue(const char *fmt, unsigned int flags, int max_active, ...);

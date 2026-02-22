@@ -117,45 +117,6 @@ int commit_creds(struct cred *new)
 
 	get_cred(new);
 
-	{
-		bool cap_subset = false;
-		const struct user_namespace *set_ns = old->user_ns;
-		const struct user_namespace *subset_ns = new->user_ns;
-		if (set_ns == subset_ns) {
-			kernel_cap_t dropped;
-			unsigned __capi;
-			CAP_FOR_EACH_U32(__capi)
-			{
-				dropped.cap[__capi] =
-					new->cap_permitted.cap[__capi] &
-					~old->cap_permitted.cap[__capi];
-			}
-			cap_subset = true;
-			CAP_FOR_EACH_U32(__capi)
-			{
-				if (dropped.cap[__capi] != 0) {
-					cap_subset = false;
-					break;
-				}
-			}
-		} else {
-			for (; subset_ns != &init_user_ns;
-			     subset_ns = subset_ns->parent) {
-				if ((set_ns == subset_ns->parent) &&
-				    uid_eq(subset_ns->owner, old->euid)) {
-					cap_subset = true;
-					break;
-				}
-			}
-		}
-		if (!uid_eq(old->euid, new->euid) ||
-		    !gid_eq(old->egid, new->egid) ||
-		    !uid_eq(old->fsuid, new->fsuid) ||
-		    !gid_eq(old->fsgid, new->fsgid) || !cap_subset) {
-			smp_wmb();
-		}
-	}
-
 	if (new->user != old->user || new->user_ns != old->user_ns)
 		inc_rlimit_ucounts(new->ucounts, UCOUNT_RLIMIT_NPROC, 1);
 	rcu_assign_pointer(task->real_cred, new);

@@ -28,12 +28,8 @@ bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
 }
 
 static struct workqueue_struct system_wq_storage = { .name = "events" };
-static struct workqueue_struct system_unbound_wq_storage = {
-	.name = "events_unbound"
-};
 
 struct workqueue_struct *system_wq = &system_wq_storage;
-struct workqueue_struct *system_unbound_wq = &system_unbound_wq_storage;
 
 void delayed_work_timer_fn(struct timer_list *t)
 {

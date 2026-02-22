@@ -13,8 +13,6 @@ const unsigned long cpu_bit_bitmap[BITS_PER_LONG + 1][BITS_TO_LONGS(NR_CPUS)] = 
 	/* BITS_PER_LONG == 32, no 64-bit masks */
 };
 
-const DECLARE_BITMAP(cpu_all_bits, NR_CPUS) = CPU_BITS_ALL;
-
 struct cpumask __cpu_possible_mask __read_mostly;
 
 struct cpumask __cpu_online_mask __read_mostly;

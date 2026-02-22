@@ -6,7 +6,6 @@
 #define CLONE_FS	0x00000200
 #define CLONE_FILES	0x00000400
 #define CLONE_UNTRACED		0x00800000
-#define SCHED_NORMAL		0
 /* End uapi/linux/sched.h */
 
 /* pid.h inlined */
@@ -121,7 +120,6 @@ struct rlimit {
 #define MAX_RT_PRIO		100
 #define MAX_PRIO		140
 /* end sched/prio.h */
-struct sched_param { int sched_priority; };
 #ifndef _LINUX_SIGNAL_TYPES_INLINED
 #define _LINUX_SIGNAL_TYPES_INLINED
 #include <asm/signal.h>
@@ -179,7 +177,6 @@ struct signal_struct;
 #define TASK_RUNNING			0x0000
 #define TASK_INTERRUPTIBLE		0x0001
 #define TASK_UNINTERRUPTIBLE		0x0002
-#define EXIT_DEAD			0x0010
 #define TASK_PARKED			0x0040
 #define TASK_DEAD			0x0080
 #define TASK_WAKEKILL			0x0100

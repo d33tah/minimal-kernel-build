@@ -43,7 +43,6 @@ struct console {
 	int	(*setup)(struct console *, char *);
 	short	flags;
 	short	index;
-	void	*data;
 	struct	 console *next;
 };
 

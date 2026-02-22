@@ -1,141 +1,32 @@
-
+/* Simplified rmap - no chain tracking or interval trees needed for hello-world */
 
 #include "internal.h"
 
 static struct kmem_cache *anon_vma_cachep;
-static struct kmem_cache *anon_vma_chain_cachep;
-
-static inline void anon_vma_free(struct anon_vma *anon_vma)
-{
-	if (rwsem_is_locked(&anon_vma->root->rwsem)) {
-		anon_vma_lock_write(anon_vma);
-		anon_vma_unlock_write(anon_vma);
-	}
-
-	kmem_cache_free(anon_vma_cachep, anon_vma);
-}
-
-static inline struct anon_vma_chain *anon_vma_chain_alloc(gfp_t gfp)
-{
-	return kmem_cache_alloc(anon_vma_chain_cachep, gfp);
-}
-
-static void anon_vma_chain_free(struct anon_vma_chain *anon_vma_chain)
-{
-	kmem_cache_free(anon_vma_chain_cachep, anon_vma_chain);
-}
-
-static void anon_vma_chain_link(struct vm_area_struct *vma,
-				struct anon_vma_chain *avc,
-				struct anon_vma *anon_vma)
-{
-	avc->vma = vma;
-	avc->anon_vma = anon_vma;
-	list_add(&avc->same_vma, &vma->anon_vma_chain);
-	anon_vma_interval_tree_insert(avc, &anon_vma->rb_root);
-}
 
 int __anon_vma_prepare(struct vm_area_struct *vma)
 {
-	struct mm_struct *mm = vma->vm_mm;
-	struct anon_vma *anon_vma, *allocated;
-	struct anon_vma_chain *avc;
+	struct anon_vma *anon_vma;
 
-	avc = anon_vma_chain_alloc(GFP_KERNEL);
-	if (!avc)
-		goto out_enomem;
+	if (vma->anon_vma)
+		return 0;
 
-	anon_vma =
-		NULL; /* find_mergeable_anon_vma inlined - VMA merging disabled */
-	allocated = NULL;
-	if (!anon_vma) {
-		anon_vma = kmem_cache_alloc(anon_vma_cachep, GFP_KERNEL);
-		if (unlikely(!anon_vma))
-			goto out_enomem_free_avc;
-		atomic_set(&anon_vma->refcount, 1);
-		anon_vma->degree = 1;
-		anon_vma->parent = anon_vma;
-		anon_vma->root = anon_vma;
-		allocated = anon_vma;
-	}
-
-	anon_vma_lock_write(anon_vma);
-
-	spin_lock(&mm->page_table_lock);
-	if (likely(!vma->anon_vma)) {
-		vma->anon_vma = anon_vma;
-		anon_vma_chain_link(vma, avc, anon_vma);
-
-		anon_vma->degree++;
-		allocated = NULL;
-		avc = NULL;
-	}
-	spin_unlock(&mm->page_table_lock);
-	anon_vma_unlock_write(anon_vma);
-
-	if (unlikely(allocated))
-		put_anon_vma(allocated);
-	if (unlikely(avc))
-		anon_vma_chain_free(avc);
-
+	anon_vma = kmem_cache_alloc(anon_vma_cachep, GFP_KERNEL);
+	if (!anon_vma)
+		return -ENOMEM;
+	atomic_set(&anon_vma->refcount, 1);
+	anon_vma->root = anon_vma;
+	anon_vma->parent = anon_vma;
+	anon_vma->degree = 1;
+	vma->anon_vma = anon_vma;
 	return 0;
-
-out_enomem_free_avc:
-	anon_vma_chain_free(avc);
-out_enomem:
-	return -ENOMEM;
-}
-
-static inline struct anon_vma *lock_anon_vma_root(struct anon_vma *root,
-						  struct anon_vma *anon_vma)
-{
-	struct anon_vma *new_root = anon_vma->root;
-	if (new_root != root) {
-		if (WARN_ON_ONCE(root))
-			up_write(&root->rwsem);
-		root = new_root;
-		down_write(&root->rwsem);
-	}
-	return root;
-}
-
-static inline void unlock_anon_vma_root(struct anon_vma *root)
-{
-	if (root)
-		up_write(&root->rwsem);
 }
 
 void unlink_anon_vmas(struct vm_area_struct *vma)
 {
-	struct anon_vma_chain *avc, *next;
-	struct anon_vma *root = NULL;
-
-	list_for_each_entry_safe(avc, next, &vma->anon_vma_chain, same_vma) {
-		struct anon_vma *anon_vma = avc->anon_vma;
-
-		root = lock_anon_vma_root(root, anon_vma);
-		anon_vma_interval_tree_remove(avc, &anon_vma->rb_root);
-
-		if (RB_EMPTY_ROOT(&anon_vma->rb_root.rb_root)) {
-			anon_vma->parent->degree--;
-			continue;
-		}
-
-		list_del(&avc->same_vma);
-		anon_vma_chain_free(avc);
-	}
 	if (vma->anon_vma) {
-		vma->anon_vma->degree--;
-
+		put_anon_vma(vma->anon_vma);
 		vma->anon_vma = NULL;
-	}
-	unlock_anon_vma_root(root);
-
-	list_for_each_entry_safe(avc, next, &vma->anon_vma_chain, same_vma) {
-		struct anon_vma *anon_vma = avc->anon_vma;
-		put_anon_vma(anon_vma);
-		list_del(&avc->same_vma);
-		anon_vma_chain_free(avc);
 	}
 }
 
@@ -154,45 +45,24 @@ void __init anon_vma_init(void)
 		"anon_vma", sizeof(struct anon_vma), 0,
 		SLAB_TYPESAFE_BY_RCU | SLAB_PANIC | SLAB_ACCOUNT,
 		anon_vma_ctor);
-	anon_vma_chain_cachep =
-		KMEM_CACHE(anon_vma_chain, SLAB_PANIC | SLAB_ACCOUNT);
-}
-
-static void __page_set_anon_rmap(struct page *page, struct vm_area_struct *vma,
-				 unsigned long address, int exclusive)
-{
-	struct anon_vma *anon_vma = vma->anon_vma;
-
-	BUG_ON(!anon_vma);
-
-	if (PageAnon(page))
-		goto out;
-
-	if (!exclusive)
-		anon_vma = anon_vma->root;
-
-	anon_vma = (void *)anon_vma + PAGE_MAPPING_ANON;
-	WRITE_ONCE(page->mapping, (struct address_space *)anon_vma);
-	page->index = linear_page_index(vma, address);
-out:
-	if (exclusive)
-		SetPageAnonExclusive(page);
 }
 
 void page_add_new_anon_rmap(struct page *page, struct vm_area_struct *vma,
 			    unsigned long address)
 {
+	struct anon_vma *anon_vma = vma->anon_vma;
+
+	BUG_ON(!anon_vma);
 	__SetPageSwapBacked(page);
 	atomic_set(&page->_mapcount, 0);
 	__mod_lruvec_page_state(page, NR_ANON_MAPPED, 1);
-	__page_set_anon_rmap(page, vma, address, 1);
+	WRITE_ONCE(page->mapping, (struct address_space *)((void *)anon_vma +
+							   PAGE_MAPPING_ANON));
+	page->index = linear_page_index(vma, address);
+	SetPageAnonExclusive(page);
 }
 
 void __put_anon_vma(struct anon_vma *anon_vma)
 {
-	struct anon_vma *root = anon_vma->root;
-
-	anon_vma_free(anon_vma);
-	if (root != anon_vma && atomic_dec_and_test(&root->refcount))
-		anon_vma_free(root);
+	kmem_cache_free(anon_vma_cachep, anon_vma);
 }

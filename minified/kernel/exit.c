@@ -1,15 +1,4 @@
-#include <linux/fdtable.h>
-#include <linux/ptrace.h>
 #include <linux/syscalls.h>
-#include <linux/signal.h>
-#include <linux/mutex.h>
-#include <linux/task_work.h>
-#include <linux/fs_struct.h>
-#include <linux/init_task.h>
-
-#include <linux/uaccess.h>
-#include <asm/unistd.h>
-#include <asm/mmu_context.h>
 
 /* ptrace stubs (merged from ptrace.c) */
 

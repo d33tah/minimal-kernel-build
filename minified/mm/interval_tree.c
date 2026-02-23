@@ -1,7 +1,5 @@
 /* Stubbed - interval trees not needed for hello-world (no page reclaim/swap) */
 #include <linux/mm.h>
-#include <linux/fs.h>
-#include <linux/rmap.h>
 
 void vma_interval_tree_insert(struct vm_area_struct *node,
 			      struct rb_root_cached *root)

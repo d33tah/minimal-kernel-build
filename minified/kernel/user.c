@@ -1,7 +1,5 @@
-
 #include <linux/sched/user.h>
 #include <linux/user_namespace.h>
-#include <linux/proc_ns.h>
 
 struct user_namespace init_user_ns = {
 	.uid_map = {
@@ -37,7 +35,7 @@ struct user_namespace init_user_ns = {
 	.ns.count = REFCOUNT_INIT(3),
 	.owner = GLOBAL_ROOT_UID,
 	.group = GLOBAL_ROOT_GID,
-	.ns.inum = PROC_USER_INIT_INO,
+	.ns.inum = 0xEFFFFFFDU,
 	.flags = USERNS_INIT_FLAGS,
 };
 

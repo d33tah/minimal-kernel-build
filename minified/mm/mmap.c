@@ -1,12 +1,8 @@
 
-#include <linux/kernel.h>
-#include <linux/slab.h>
-#include <linux/mm.h>
 #include <linux/vmacache.h>
 #include <linux/mman.h>
 #include <linux/file.h>
 #include <linux/security.h>
-#include <linux/rmap.h>
 #include <linux/rbtree_augmented.h>
 #include <linux/sched/mm.h>
 

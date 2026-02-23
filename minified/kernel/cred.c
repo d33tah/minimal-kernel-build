@@ -1,6 +1,5 @@
 #include <linux/cred.h>
 #include <linux/slab.h>
-#include <linux/sched.h>
 #include <linux/init_task.h>
 
 static struct kmem_cache *cred_jar;

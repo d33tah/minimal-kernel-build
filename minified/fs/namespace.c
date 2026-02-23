@@ -3,9 +3,6 @@
 #include <linux/sysfs.h>
 #include <linux/fs_struct.h>
 #include <linux/proc_ns.h>
-#include <linux/memblock.h>
-#include <uapi/linux/mount.h>
-#include <linux/fs_context.h>
 #include <linux/fs_parser.h>
 
 #include "mount.h"

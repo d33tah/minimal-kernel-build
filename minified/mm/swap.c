@@ -1,11 +1,7 @@
 
 #include <linux/mm.h>
-#include <linux/sched.h>
-#include <linux/swap.h>
-#include <linux/mman.h>
 #ifndef _LINUX_PAGEVEC_H
 #define _LINUX_PAGEVEC_H
-#include <linux/xarray.h>
 #define PAGEVEC_SIZE 15
 struct page;
 struct folio;
@@ -31,12 +27,6 @@ static inline unsigned pagevec_add(struct pagevec *pvec, struct page *page)
 }
 #endif
 #include <linux/mm_inline.h>
-#include <linux/percpu_counter.h>
-#include <linux/percpu.h>
-#include <linux/cpu.h>
-#include <linux/backing-dev.h>
-#include <linux/gfp.h>
-#include <linux/local_lock.h>
 
 struct lru_pvecs {
 	local_lock_t lock;

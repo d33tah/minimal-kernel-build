@@ -1,13 +1,5 @@
-#include <linux/file.h>
-#include <linux/fdtable.h>
 #include <linux/module.h>
 #include <linux/namei.h>
-#include <linux/init_task.h> /* for securebits defines */
-#include <linux/mount.h>
-#include <linux/fcntl.h>
-#include <linux/uaccess.h>
-#include <linux/fs.h>
-#include <linux/rcupdate.h>
 
 #include "internal.h"
 

@@ -1,4 +1,3 @@
-
 #include <asm/setup.h>
 #include <asm/e820/api.h>
 #include <asm/time.h>
@@ -15,12 +14,6 @@ extern void tsc_early_init(void);
 extern unsigned long native_calibrate_cpu_early(void);
 extern unsigned long native_calibrate_tsc(void);
 #endif /* _ASM_X86_TSC_H */
-#include <asm/io.h>
-#define NMI_REASON_PORT 0x61
-static inline unsigned char default_get_nmi_reason(void)
-{
-	return inb(NMI_REASON_PORT);
-}
 
 struct x86_init_ops x86_init __initdata = {
 
@@ -44,6 +37,4 @@ struct x86_platform_ops x86_platform __ro_after_init = {
 	.calibrate_cpu = native_calibrate_cpu_early,
 	.calibrate_tsc = native_calibrate_tsc,
 	.get_wallclock = mach_get_cmos_time,
-	.is_untracked_pat_range = is_ISA_range,
-	.get_nmi_reason = default_get_nmi_reason,
 };

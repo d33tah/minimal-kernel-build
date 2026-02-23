@@ -1,12 +1,6 @@
 
 #include <linux/module.h>
-#include <linux/types.h>
-#include <linux/kernel.h>
-#include <linux/string.h>
-#include <linux/slab.h>
-#include <linux/mm.h>
 #include <linux/console.h>
-#include <linux/init.h>
 #include <linux/vt_kern.h>
 #define scr_writew(val, addr) (*(addr) = (val))
 static inline void scr_memsetw(u16 *s, u16 c, unsigned int count)
@@ -19,11 +13,6 @@ static inline void scr_memmovew(u16 *d, const u16 *s, unsigned int count)
 }
 extern const unsigned char color_table[];
 /* linux/tty.h already included above */
-#include <linux/workqueue.h>
-
-#include <linux/bitops.h>
-
-#include <linux/device.h>
 
 const struct consw *conswitchp;
 

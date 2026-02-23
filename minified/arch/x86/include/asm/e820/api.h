@@ -1,4 +1,3 @@
-
 #ifndef _ASM_E820_API_H
 #define _ASM_E820_API_H
 
@@ -7,11 +6,6 @@
 enum e820_type {
 	E820_TYPE_RAM		= 1,
 	E820_TYPE_RESERVED	= 2,
-	E820_TYPE_ACPI		= 3,
-	E820_TYPE_NVS		= 4,
-	E820_TYPE_UNUSABLE	= 5,
-	E820_TYPE_PMEM		= 7,
-	E820_TYPE_PRAM		= 12,
 	E820_TYPE_SOFT_RESERVED	= 0xefffffff,
 	E820_TYPE_RESERVED_KERN	= 128,
 };
@@ -52,9 +46,4 @@ extern void e820__memblock_setup(void);
 extern void e820__memory_setup(void);
 extern char *e820__memory_setup_default(void);
 
-static inline bool is_ISA_range(u64 start, u64 end)
-{
-	return start >= ISA_START_ADDRESS && end <= ISA_END_ADDRESS;
-}
-
-#endif  
+#endif

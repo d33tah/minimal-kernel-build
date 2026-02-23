@@ -1,5 +1,3 @@
-
-#include <linux/syscalls.h>
 #include <linux/sched/signal.h>
 
 static inline bool has_pending_signals(sigset_t *signal, sigset_t *blocked)

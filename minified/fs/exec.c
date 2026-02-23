@@ -1,11 +1,8 @@
 
 #include <linux/file.h>
 #include <linux/vmacache.h>
-#include <linux/string.h>
 #include <linux/sched/mm.h>
-#include <linux/sched/signal.h>
 #include <linux/binfmts.h>
-#include <linux/module.h>
 #include <linux/namei.h>
 #include <linux/security.h>
 

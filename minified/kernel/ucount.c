@@ -1,8 +1,6 @@
 
 #include <linux/slab.h>
-#include <linux/cred.h>
 /* hash.h inlined */
-#include <asm/types.h>
 #define GOLDEN_RATIO_32 0x61C88647
 #define hash_long(val, bits) hash_32(val, bits)
 #ifndef HAVE_ARCH__HASH_32

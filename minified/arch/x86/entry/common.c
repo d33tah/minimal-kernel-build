@@ -1,14 +1,5 @@
 
-#include <linux/kernel.h>
-#include <linux/sched.h>
-#include <linux/sched/task_stack.h>
 #include <linux/entry-common.h>
-#include <linux/mm.h>
-#include <linux/smp.h>
-#include <linux/errno.h>
-#include <linux/ptrace.h>
-#include <linux/compiler.h>
-#include <asm/barrier.h>
 
 struct task_struct;
 
@@ -33,17 +24,8 @@ static inline unsigned long array_index_mask_nospec(unsigned long index,
 		(typeof(_i))(_i & _mask);                              \
 	})
 #include <linux/syscalls.h>
-#include <linux/uaccess.h>
 
-#include <asm/desc.h>
-#include <asm/traps.h>
-#include <asm/vdso.h>
-#include <asm/cpufeature.h>
-#include <asm/fpu/api.h>
-#include <asm/nospec-branch.h>
 #include <asm/syscall.h>
-#include <linux/objtool.h>
-#include <asm/processor.h>
 
 /* inlined from asm/irq_stack.h */
 #define run_irq_on_irqstack_cond(func, regs, vector) \

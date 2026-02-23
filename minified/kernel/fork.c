@@ -5,7 +5,6 @@
 #include <linux/fdtable.h>
 #include <linux/binfmts.h>
 #include <linux/mm_inline.h>
-#include <linux/vmacache.h>
 #include <linux/cpu.h>
 #define FUTEX_TID_MASK 0x3fffffff
 #include <linux/kthread.h>
@@ -222,7 +221,7 @@ static inline void init_task_pid(struct task_struct *task, enum pid_type type,
 static __latent_entropy struct task_struct *
 copy_process(int node, struct kernel_clone_args *args)
 {
-	int retval;
+	int retval = 0;
 	struct task_struct *p;
 	struct pid *pid;
 	const u64 clone_flags = args->flags;

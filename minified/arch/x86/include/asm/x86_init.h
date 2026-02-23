@@ -34,8 +34,6 @@ struct x86_platform_ops {
 	unsigned long (*calibrate_cpu)(void);
 	unsigned long (*calibrate_tsc)(void);
 	void (*get_wallclock)(struct timespec64 *ts);
-	bool (*is_untracked_pat_range)(u64 start, u64 end);
-	unsigned char (*get_nmi_reason)(void);
 	struct x86_legacy_features legacy;
 };
 

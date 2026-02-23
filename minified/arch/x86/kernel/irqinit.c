@@ -1,14 +1,6 @@
 #include <linux/irq.h>
-#include <linux/io.h>
-#include <linux/percpu.h>
-#include <linux/smp.h>
-#include <linux/atomic.h>
 
-#include <asm/apic.h>
 #include <asm/timer.h>
-#include <asm/irq_vectors.h>
-#include <asm/irq.h>
-#include <asm/sections.h>
 #include <asm/setup.h>
 
 /* inlined from asm/hw_irq.h */

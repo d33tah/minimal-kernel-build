@@ -3,10 +3,6 @@ struct net {
 	atomic_t count;
 	struct user_namespace *user_ns;
 };
-static inline void put_net(struct net *net)
-{
-}
-
 struct time_namespace;
 
 #include <linux/cgroup.h>

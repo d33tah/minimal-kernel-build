@@ -9,6 +9,7 @@ typedef s64 ktime_t;
 #include <linux/fs.h>
 #include <linux/uaccess.h>
 
+struct poll_table_struct;
 typedef void (*poll_queue_proc)(struct file *, wait_queue_head_t *, struct poll_table_struct *);
 
 struct poll_table_struct {

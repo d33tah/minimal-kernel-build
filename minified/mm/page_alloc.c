@@ -1,5 +1,5 @@
-
 #include <linux/memblock.h>
+struct vmem_altmap;
 
 /* end page-isolation.h */
 

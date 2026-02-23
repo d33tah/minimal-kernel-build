@@ -130,8 +130,8 @@ static void drop_links(struct nameidata *nd)
 
 static void terminate_walk(struct nameidata *nd)
 {
-	drop_links(nd);
 	int i;
+	drop_links(nd);
 	path_put(&nd->path);
 	for (i = 0; i < nd->depth; i++)
 		path_put(&nd->stack[i].link);

@@ -125,7 +125,7 @@ unsigned long __init kernel_physical_mapping_init(unsigned long start,
 	unsigned long pfn;
 	pgd_t *pgd;
 	pmd_t *pmd;
-	pte_t *pte;
+	pte_t *pte = NULL;
 	int mapping_iter;
 
 	start_pfn = start >> PAGE_SHIFT;

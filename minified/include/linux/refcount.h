@@ -112,7 +112,4 @@ static inline __must_check bool refcount_dec_and_test(refcount_t *r)
 	return __refcount_dec_and_test(r, NULL);
 }
 
-extern __must_check bool refcount_dec_and_lock_irqsave(refcount_t *r,
-						       spinlock_t *lock,
-						       unsigned long *flags) __cond_acquires(lock);
-#endif  
+#endif

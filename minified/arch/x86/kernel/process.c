@@ -1,21 +1,7 @@
 #include <linux/ptrace.h>
-/* end stackprotector.h */
 #include <asm/fpu/sched.h>
-/* nmi.h inlined */
 #include <asm/irq.h>
 #include <asm/io.h>
-enum { NMI_LOCAL = 0, NMI_UNKNOWN, NMI_SERR, NMI_IO_CHECK, NMI_MAX };
-typedef int (*nmi_handler_t)(unsigned int, struct pt_regs *);
-struct nmiaction {
-	struct list_head list;
-	nmi_handler_t handler;
-	u64 max_duration;
-	unsigned long flags;
-	const char *name;
-};
-static inline void local_touch_nmi(void)
-{
-}
 #include <asm/tlbflush.h>
 #include <asm/switch_to.h>
 
@@ -105,7 +91,6 @@ static void (*x86_idle)(void);
 
 void arch_cpu_idle_enter(void)
 {
-	local_touch_nmi();
 }
 
 void arch_cpu_idle(void)

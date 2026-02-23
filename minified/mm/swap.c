@@ -50,9 +50,8 @@ static void __page_cache_release(struct page *page)
 	}
 
 	if (unlikely(PageMlocked(page))) {
-		VM_BUG_ON_PGFLAGS(PageTail(page), page);
 		int nr_pages = compound_nr(page);
-
+		VM_BUG_ON_PGFLAGS(PageTail(page), page);
 		__ClearPageMlocked(page);
 		mod_zone_page_state(page_zone(page), NR_MLOCK, -nr_pages);
 	}

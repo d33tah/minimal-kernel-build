@@ -109,8 +109,6 @@ static inline void put_cred(const struct cred *_cred)
 })
 
 #define current_euid()		(current_cred_xxx(euid))
-#define current_fsuid() 	(current_cred_xxx(fsuid))
-#define current_fsgid() 	(current_cred_xxx(fsgid))
 /* init_user_ns extern from uidgid.h */
 static inline struct user_namespace *current_user_ns(void)
 {

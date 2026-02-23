@@ -347,17 +347,12 @@ copy_process(int node, struct kernel_clone_args *args)
 
 	p->pid = pid_nr(pid);
 	p->group_leader = p;
-	p->tgid = p->pid;
 
-	INIT_LIST_HEAD(&p->thread_group);
 	p->task_works = NULL;
 
 	sched_cgroup_fork(p, args);
 
 	write_lock_irq(&tasklist_lock);
-
-	p->real_parent = current;
-	p->exit_signal = args->exit_signal;
 
 	spin_lock(&current->sighand->siglock);
 
@@ -404,7 +399,6 @@ static pid_t __kernel_thread(int (*fn)(void *), void *arg, unsigned long flags,
 	struct kernel_clone_args args = {
 		.flags = ((lower_32_bits(flags) | CLONE_VM | CLONE_UNTRACED) &
 			  ~CSIGNAL),
-		.exit_signal = (lower_32_bits(flags) & CSIGNAL),
 		.fn = fn,
 		.fn_arg = arg,
 		.kthread = kthread,

@@ -29,7 +29,6 @@ struct ramfs_fs_info {
 
 #define RAMFS_DEFAULT_MODE 0755
 
-static const struct super_operations ramfs_ops;
 static const struct inode_operations ramfs_dir_inode_operations;
 
 static struct inode *ramfs_get_inode(struct super_block *sb,
@@ -39,7 +38,6 @@ static struct inode *ramfs_get_inode(struct super_block *sb,
 	struct inode *inode = new_inode(sb);
 
 	if (inode) {
-		inode->i_ino = get_next_ino();
 		inode_init_owner(&init_user_ns, inode, dir, mode);
 		inode->i_mapping->a_ops = &ram_aops;
 		mapping_set_gfp_mask(inode->i_mapping, GFP_HIGHUSER);
@@ -68,8 +66,6 @@ static struct inode *ramfs_get_inode(struct super_block *sb,
 static const struct inode_operations ramfs_dir_inode_operations = {
 	.lookup = simple_lookup,
 };
-
-static const struct super_operations ramfs_ops = {};
 
 enum ramfs_param {
 	Opt_mode,
@@ -112,9 +108,6 @@ static int ramfs_fill_super(struct super_block *sb, struct fs_context *fc)
 	struct inode *inode;
 
 	sb->s_maxbytes = MAX_LFS_FILESIZE;
-	sb->s_blocksize_bits = PAGE_SHIFT;
-	sb->s_op = &ramfs_ops;
-
 	inode = ramfs_get_inode(sb, NULL, S_IFDIR | fsi->mount_opts.mode, 0);
 	sb->s_root = d_make_root(inode);
 	if (!sb->s_root)

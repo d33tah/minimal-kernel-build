@@ -242,7 +242,6 @@ struct task_struct {
 
 	int				on_rq;
 
-	int				prio;
 	int				static_prio;
 	int				normal_prio;
 
@@ -260,8 +259,6 @@ struct task_struct {
 
 	struct vmacache			vmacache;
 
-	int				exit_signal;
-	 
 	unsigned long			jobctl;
 
 	unsigned int			personality;
@@ -269,14 +266,11 @@ struct task_struct {
 	unsigned			restore_sigmask:1;
 
 	pid_t				pid;
-	pid_t				tgid;
 
-	struct task_struct __rcu	*real_parent;
 	struct task_struct		*group_leader;
 
 	struct pid			*thread_pid;
 	struct hlist_node		pid_links[PIDTYPE_MAX];
-	struct list_head		thread_group;
 	struct list_head		thread_node;
 
 

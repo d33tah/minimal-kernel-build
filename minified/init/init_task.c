@@ -30,7 +30,6 @@ struct task_struct init_task __aligned(L1_CACHE_BYTES) = {
 	.stack = init_stack,
 	.usage = REFCOUNT_INIT(2),
 	.flags = PF_KTHREAD,
-	.prio = MAX_PRIO - 20,
 	.static_prio = MAX_PRIO - 20,
 	.normal_prio = MAX_PRIO - 20,
 
@@ -40,7 +39,6 @@ struct task_struct init_task __aligned(L1_CACHE_BYTES) = {
 	.active_mm = &init_mm,
 	.se = {},
 	.tasks = LIST_HEAD_INIT(init_task.tasks),
-	.real_parent = &init_task,
 	.group_leader = &init_task,
 	RCU_POINTER_INITIALIZER(real_cred, &init_cred),
 	RCU_POINTER_INITIALIZER(cred, &init_cred),
@@ -57,6 +55,5 @@ struct task_struct init_task __aligned(L1_CACHE_BYTES) = {
 	.alloc_lock = __SPIN_LOCK_UNLOCKED(init_task.alloc_lock),
 	.pi_lock = __RAW_SPIN_LOCK_UNLOCKED(init_task.pi_lock),
 	.thread_pid = &init_struct_pid,
-	.thread_group = LIST_HEAD_INIT(init_task.thread_group),
 	.thread_node = LIST_HEAD_INIT(init_signals.thread_head),
 };

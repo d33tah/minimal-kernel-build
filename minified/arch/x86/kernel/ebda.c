@@ -1,7 +1,5 @@
-#include <linux/init.h>
 #include <linux/memblock.h>
 
-#include <asm/setup.h>
 /* bios_ebda.h inlined */
 #include <asm/io.h>
 static inline unsigned int get_bios_ebda(void)

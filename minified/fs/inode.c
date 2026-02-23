@@ -36,11 +36,8 @@ static void inode_init_always(struct super_block *sb, struct inode *inode)
 	atomic_set(&inode->i_count, 1);
 	inode->i_op = &empty_iops;
 	inode->i_fop = &no_open_fops;
-	inode->i_ino = 0;
 	inode->__i_nlink = 1;
 	inode->i_opflags = 0;
-	inode->i_uid = make_kuid(i_user_ns(inode), 0);
-	inode->i_gid = make_kgid(i_user_ns(inode), 0);
 	atomic_set(&inode->i_writecount, 0);
 	inode->i_size = 0;
 	inode->i_cdev = NULL;
@@ -180,22 +177,6 @@ again:
 	dispose_list(&dispose);
 }
 
-static DEFINE_PER_CPU(unsigned int, last_ino);
-
-unsigned int get_next_ino(void)
-{
-	unsigned int *p = &get_cpu_var(last_ino);
-	unsigned int res = *p;
-
-	res++;
-
-	if (unlikely(!res))
-		res++;
-	*p = res;
-	put_cpu_var(last_ino);
-	return res;
-}
-
 static struct inode *new_inode_pseudo(struct super_block *sb)
 {
 	struct inode *inode;
@@ -264,9 +245,5 @@ void init_special_inode(struct inode *inode, umode_t mode, dev_t rdev)
 void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,
 		      const struct inode *dir, umode_t mode)
 {
-	inode->i_uid =
-		mapped_kuid_fs(mnt_userns, i_user_ns(inode), current_fsuid());
-	inode->i_gid =
-		mapped_kgid_fs(mnt_userns, i_user_ns(inode), current_fsgid());
 	inode->i_mode = mode;
 }

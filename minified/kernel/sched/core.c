@@ -195,7 +195,6 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
 	__sched_fork(clone_flags, p);
 
 	p->__state = TASK_NEW;
-	p->prio = current->normal_prio;
 
 	p->sched_class = &fair_sched_class;
 

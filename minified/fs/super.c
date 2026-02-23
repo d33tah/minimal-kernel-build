@@ -49,7 +49,6 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags,
 				       struct user_namespace *user_ns)
 {
 	struct super_block *s = kzalloc(sizeof(struct super_block), GFP_USER);
-	static const struct super_operations default_op;
 	int i;
 
 	if (!s)
@@ -79,7 +78,6 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags,
 	s->s_count = 1;
 	atomic_set(&s->s_active, 1);
 	s->s_maxbytes = MAX_NON_LFS;
-	s->s_op = &default_op;
 
 	if (list_lru_init_memcg(&s->s_dentry_lru, &s->s_shrink))
 		goto fail;

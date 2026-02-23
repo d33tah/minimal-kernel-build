@@ -13,7 +13,6 @@ struct kernel_clone_args {
 	int __user *pidfd;
 	int __user *child_tid;
 	int __user *parent_tid;
-	int exit_signal;
 	unsigned long stack;
 	unsigned long stack_size;
 	unsigned long tls;

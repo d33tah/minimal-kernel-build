@@ -319,41 +319,6 @@ static inline bool initial_idmapping(const struct user_namespace *ns)
 {
 	return ns == &init_user_ns;
 }
-static inline bool no_idmapping(const struct user_namespace *mnt_userns,
-				const struct user_namespace *fs_userns)
-{
-	return initial_idmapping(mnt_userns) || mnt_userns == fs_userns;
-}
-static inline kuid_t mapped_kuid_fs(struct user_namespace *mnt_userns,
-				    struct user_namespace *fs_userns,
-				    kuid_t kuid)
-{
-	uid_t uid;
-	if (no_idmapping(mnt_userns, fs_userns))
-		return kuid;
-	if (initial_idmapping(fs_userns))
-		uid = __kuid_val(kuid);
-	else
-		uid = from_kuid(fs_userns, kuid);
-	if (uid == (uid_t)-1)
-		return INVALID_UID;
-	return make_kuid(mnt_userns, uid);
-}
-static inline kgid_t mapped_kgid_fs(struct user_namespace *mnt_userns,
-				    struct user_namespace *fs_userns,
-				    kgid_t kgid)
-{
-	gid_t gid;
-	if (no_idmapping(mnt_userns, fs_userns))
-		return kgid;
-	if (initial_idmapping(fs_userns))
-		gid = __kgid_val(kgid);
-	else
-		gid = from_kgid(fs_userns, kgid);
-	if (gid == (gid_t)-1)
-		return INVALID_GID;
-	return make_kgid(mnt_userns, gid);
-}
 #include <linux/slab.h>
 #define INR_OPEN_CUR 1024
 #define INR_OPEN_MAX 4096
@@ -452,16 +417,12 @@ static inline void i_mmap_unlock_write(struct address_space *mapping)
 struct inode {
 	umode_t			i_mode;
 	unsigned short		i_opflags;
-	kuid_t			i_uid;
-	kgid_t			i_gid;
 	unsigned int		i_flags;
 
 	const struct inode_operations	*i_op;
 	struct super_block	*i_sb;
 	struct address_space	*i_mapping;
 
-	unsigned long		i_ino;
-	
 	union {
 		const unsigned int i_nlink;
 		unsigned int __i_nlink;
@@ -535,7 +496,6 @@ struct file {
 	fmode_t			f_mode;
 
 	loff_t			f_pos;
-	const struct cred	*f_cred;
 	struct address_space	*f_mapping;
 } __randomize_layout
   __attribute__((aligned(4)));
@@ -576,10 +536,8 @@ struct sb_writers {
 struct super_block {
 	struct list_head	s_list;		
 	dev_t			s_dev;		
-	unsigned char		s_blocksize_bits;
 	loff_t			s_maxbytes;
 	struct file_system_type	*s_type;
-	const struct super_operations	*s_op;
 	unsigned long		s_flags;
 	unsigned long		s_iflags;	
 	struct dentry		*s_root;
@@ -633,7 +591,6 @@ struct file_operations {
 struct inode_operations {
 	struct dentry *(*lookup)(struct inode *, struct dentry *, unsigned int);
 } ____cacheline_aligned;
-struct super_operations {};
 
 #define S_DEAD		(1 << 4)
 #define S_AUTOMOUNT	(1 << 11)
@@ -733,7 +690,6 @@ static inline void allow_write_access(struct file *file)
 }
 extern ssize_t kernel_read(struct file *, void *, size_t, loff_t *);
 
-extern unsigned int get_next_ino(void);
 extern void evict_inodes(struct super_block *sb);
 
 extern struct inode *new_inode(struct super_block *sb);

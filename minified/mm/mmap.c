@@ -572,7 +572,6 @@ int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 	vma->vm_flags = flags;
 	vma->vm_page_prot = vm_get_page_prot(flags);
 	vma_link(mm, vma, prev, rb_link, rb_parent);
-	mm->total_vm += len >> PAGE_SHIFT;
 	vma->vm_flags |= VM_SOFTDIRTY;
 
 out_unlock:

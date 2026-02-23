@@ -225,8 +225,6 @@ int begin_new_exec(struct linux_binprm *bprm)
 
 	bprm->point_of_no_return = true;
 
-	me->exit_signal = SIGCHLD;
-
 	retval = set_mm_exe_file(bprm->mm, bprm->file);
 	if (retval)
 		goto out;
@@ -356,7 +354,6 @@ static struct linux_binprm *alloc_bprm(int fd, struct filename *filename)
 	if (retval)
 		goto err_unlock;
 
-	mm->total_vm = 1;
 	mmap_write_unlock(mm);
 	bprm->p = vma->vm_end - sizeof(void *);
 	return bprm;

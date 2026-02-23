@@ -22,7 +22,6 @@ static void file_free_rcu(struct rcu_head *head)
 {
 	struct file *f = container_of(head, struct file, f_u.fu_rcuhead);
 
-	put_cred(f->f_cred);
 	kmem_cache_free(filp_cachep, f);
 }
 
@@ -34,7 +33,6 @@ struct file *alloc_empty_file(int flags, const struct cred *cred)
 	if (unlikely(!f))
 		return ERR_PTR(-ENOMEM);
 
-	f->f_cred = get_cred(cred);
 	atomic_long_set(&f->f_count, 1);
 
 	f->f_flags = flags;

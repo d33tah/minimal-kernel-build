@@ -210,8 +210,7 @@ struct mm_struct {
 		unsigned long (*get_unmapped_area) (struct file *filp,
 				unsigned long addr, unsigned long len,
 				unsigned long pgoff, unsigned long flags);
-		unsigned long mmap_base;	 
-		unsigned long mmap_legacy_base;	 
+		unsigned long mmap_base;
 		unsigned long highest_vm_end;	 
 		pgd_t * pgd;
 
@@ -227,7 +226,6 @@ struct mm_struct {
 		struct rw_semaphore mmap_lock;
 
 
-		unsigned long total_vm;
 		unsigned long def_flags;
 
 		unsigned long saved_auxv[AT_VECTOR_SIZE];  

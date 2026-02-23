@@ -539,7 +539,7 @@ static struct file *path_openat(struct nameidata *nd,
 	struct file *file;
 	int error;
 
-	file = alloc_empty_file(op->open_flag, current_cred());
+	file = alloc_empty_file(op->open_flag);
 	if (IS_ERR(file))
 		return file;
 

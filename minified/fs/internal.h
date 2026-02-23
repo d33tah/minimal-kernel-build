@@ -13,7 +13,7 @@ extern int parse_monolithic_mount_data(struct fs_context *, void *);
 
 extern void __init mnt_init(void);
 
-extern struct file *alloc_empty_file(int, const struct cred *);
+extern struct file *alloc_empty_file(int);
 
 struct open_flags {
 	int open_flag;

@@ -242,8 +242,3 @@ void init_special_inode(struct inode *inode, umode_t mode, dev_t rdev)
 	inode->i_rdev = rdev;
 }
 
-void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,
-		      const struct inode *dir, umode_t mode)
-{
-	inode->i_mode = mode;
-}

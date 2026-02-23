@@ -570,14 +570,6 @@ struct super_block {
 	struct list_head	s_inodes;
 } __randomize_layout;
 
-static inline struct user_namespace *i_user_ns(const struct inode *inode)
-{
-	return inode->i_sb->s_user_ns;
-}
-
-void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,
-		      const struct inode *dir, umode_t mode);
-
 struct file_operations {
 	struct module *owner;
 	ssize_t (*read_iter)(struct kiocb *, struct iov_iter *);

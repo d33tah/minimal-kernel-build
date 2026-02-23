@@ -38,7 +38,7 @@ static struct inode *ramfs_get_inode(struct super_block *sb,
 	struct inode *inode = new_inode(sb);
 
 	if (inode) {
-		inode_init_owner(&init_user_ns, inode, dir, mode);
+		inode->i_mode = mode;
 		inode->i_mapping->a_ops = &ram_aops;
 		mapping_set_gfp_mask(inode->i_mapping, GFP_HIGHUSER);
 		set_bit(AS_UNEVICTABLE,

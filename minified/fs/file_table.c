@@ -25,7 +25,7 @@ static void file_free_rcu(struct rcu_head *head)
 	kmem_cache_free(filp_cachep, f);
 }
 
-struct file *alloc_empty_file(int flags, const struct cred *cred)
+struct file *alloc_empty_file(int flags)
 {
 	struct file *f;
 

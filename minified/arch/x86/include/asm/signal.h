@@ -28,11 +28,6 @@ typedef struct {
 #define SIGKILL		 9
 #define SIGSEGV		11
 #define SIGCHLD		17
-#define SIGCONT		18
-#define SIGSTOP		19
-#define SIGURG		23
-#define SIGWINCH	28
-#define SIGRTMIN	32
 
 #ifndef __ASSEMBLY__
 typedef void __signalfn_t(int);

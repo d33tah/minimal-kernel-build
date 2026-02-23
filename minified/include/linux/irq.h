@@ -50,8 +50,6 @@ enum {
 	IRQ_SET_MASK_OK_DONE,
 };
 
-struct irq_domain;
-
 struct irq_common_data {
 	unsigned int		__private state_use_accessors;
 };
@@ -136,7 +134,6 @@ enum {
 #include <linux/kobject.h>
 #include <linux/mutex.h>
 struct module;
-struct irq_domain;
 struct irq_desc {
 	struct irq_common_data irq_common_data; struct irq_data irq_data;
 	irq_flow_handler_t handle_irq;

@@ -10,7 +10,6 @@
 #define	E2BIG		 7
 #define	ENOEXEC		 8
 #define	EBADF		 9
-#define	ECHILD		10
 #define	EAGAIN		11
 #define	ENOMEM		12
 #define	EACCES		13
@@ -31,6 +30,4 @@
 #define	ENOSYS		38
 #define	ETIME		62
 #define	EOVERFLOW	75
-#define	EOPNOTSUPP	95
-
 #endif

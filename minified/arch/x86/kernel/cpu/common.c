@@ -28,8 +28,6 @@ struct cpu_dev {
 	void (*c_identify)(struct cpuinfo_x86 *);
 	int c_x86_vendor;
 };
-extern const struct cpu_dev *const __x86_cpu_dev_start[],
-	*const __x86_cpu_dev_end[];
 /* end cpu.h */
 
 DEFINE_PER_CPU_PAGE_ALIGNED(

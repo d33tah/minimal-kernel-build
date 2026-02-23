@@ -259,16 +259,12 @@ static noinline_for_stack int format_decode(const char *fmt,
 		break;
 
 	case 'd':
-	case 'i':
 		spec->flags |= SIGN;
 		break;
 	case 'u':
 		break;
 
 	default:
-		WARN_ONCE(1,
-			  "Please remove unsupported %%%c in format string\n",
-			  *fmt);
 		spec->type = FORMAT_TYPE_INVALID;
 		return fmt - start;
 	}
@@ -396,16 +392,4 @@ int vscnprintf(char *buf, size_t size, const char *fmt, va_list args)
 		return i;
 
 	return size - 1;
-}
-
-int sprintf(char *buf, const char *fmt, ...)
-{
-	va_list args;
-	int i;
-
-	va_start(args, fmt);
-	i = vsnprintf(buf, INT_MAX, fmt, args);
-	va_end(args);
-
-	return i;
 }

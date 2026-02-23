@@ -114,32 +114,6 @@ SECTIONS
 
 
 
-	. = ALIGN(PAGE_SIZE);
-	__vvar_page = .;
-
-	.vvar : AT(ADDR(.vvar) - LOAD_OFFSET) {
-		/* work around gold bug 13023 */
-		__vvar_beginning_hack = .;
-
-		/* Place all vvars at the offsets in asm/vvar.h. */
-#define EMIT_VVAR(name, offset)				\
-		. = __vvar_beginning_hack + offset;	\
-		*(.vvar_ ## name)
-#define DECLARE_VVAR(offset, type, name) \
-	EMIT_VVAR(name, offset)
-DECLARE_VVAR(128, struct vdso_data, _vdso_data)
-#undef DECLARE_VVAR
-#undef EMIT_VVAR
-
-		/*
-		 * Pad the rest of the page with zeros.  Otherwise the loader
-		 * can leave garbage here.
-		 */
-		. = __vvar_beginning_hack + PAGE_SIZE;
-	} :data
-
-	. = ALIGN(__vvar_page + PAGE_SIZE, PAGE_SIZE);
-
 	/* Init code and data - will be freed after init */
 	. = ALIGN(PAGE_SIZE);
 	.init.begin : AT(ADDR(.init.begin) - LOAD_OFFSET) {
@@ -164,32 +138,6 @@ DECLARE_VVAR(128, struct vdso_data, _vdso_data)
 
 	INIT_DATA_SECTION(16)
 
-	.x86_cpu_dev.init : AT(ADDR(.x86_cpu_dev.init) - LOAD_OFFSET) {
-		__x86_cpu_dev_start = .;
-		*(.x86_cpu_dev.init)
-		__x86_cpu_dev_end = .;
-	}
-
-	/* CONFIG_X86_INTEL_MID not set - section removed */
-
-	/*
-	 * start address and size of operations which during runtime
-	 * can be patched with virtualization friendly instructions or
-	 * baremetal native ones. Think page table operations.
-	 * Details in paravirt_types.h
-	 */
-	. = ALIGN(8);
-	.parainstructions : AT(ADDR(.parainstructions) - LOAD_OFFSET) {
-		__parainstructions = .;
-		*(.parainstructions)
-		__parainstructions_end = .;
-	}
-
-	/*
-	 * struct alt_inst entries. From the header (alternative.h):
-	 * "Alternative instructions for different CPU types or capabilities"
-	 * Think locking instructions on spinlocks.
-	 */
 	. = ALIGN(8);
 	.altinstructions : AT(ADDR(.altinstructions) - LOAD_OFFSET) {
 		__alt_instructions = .;
@@ -204,13 +152,6 @@ DECLARE_VVAR(128, struct vdso_data, _vdso_data)
 	 */
 	.altinstr_replacement : AT(ADDR(.altinstr_replacement) - LOAD_OFFSET) {
 		*(.altinstr_replacement)
-	}
-
-	. = ALIGN(8);
-	.apicdrivers : AT(ADDR(.apicdrivers) - LOAD_OFFSET) {
-		__apicdrivers = .;
-		*(.apicdrivers);
-		__apicdrivers_end = .;
 	}
 
 	. = ALIGN(8);
@@ -235,20 +176,6 @@ DECLARE_VVAR(128, struct vdso_data, _vdso_data)
 	.init.end : AT(ADDR(.init.end) - LOAD_OFFSET) {
 		__init_end = .;
 	}
-
-	/*
-	 * smp_locks might be freed after init
-	 * start/end must be page aligned
-	 */
-	. = ALIGN(PAGE_SIZE);
-	.smp_locks : AT(ADDR(.smp_locks) - LOAD_OFFSET) {
-		__smp_locks = .;
-		*(.smp_locks)
-		. = ALIGN(PAGE_SIZE);
-		__smp_locks_end = .;
-	}
-
-	/* .data_nosave removed - X86_32 */
 
 	/* BSS */
 	. = ALIGN(PAGE_SIZE);

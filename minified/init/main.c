@@ -258,7 +258,7 @@ int __init_or_module do_one_initcall(initcall_t fn)
 	msgbuf[0] = 0;
 
 	if (preempt_count() != count) {
-		sprintf(msgbuf, "preemption imbalance ");
+		strcpy(msgbuf, "preemption imbalance ");
 		preempt_count_set(count);
 	}
 	if (irqs_disabled()) {

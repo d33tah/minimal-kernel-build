@@ -2,7 +2,10 @@
 #include <linux/extable.h>
 #include <linux/binfmts.h>
 #include <linux/file.h>
-#include <linux/initrd.h>
+extern int initrd_below_start_ok;
+extern unsigned long initrd_start, initrd_end;
+extern phys_addr_t phys_initrd_start;
+extern unsigned long phys_initrd_size;
 #include <linux/memblock.h>
 
 #include <linux/console.h>

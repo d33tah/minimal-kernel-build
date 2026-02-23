@@ -235,10 +235,3 @@ void __init inode_init(void)
 	/* hashdist==0, so hash table allocated in inode_init_early */
 }
 
-void init_special_inode(struct inode *inode, umode_t mode, dev_t rdev)
-{
-	inode->i_mode = mode;
-	inode->i_fop = &def_chr_fops;
-	inode->i_rdev = rdev;
-}
-

@@ -659,8 +659,6 @@ extern struct kmem_cache *names_cachep;
 
 extern const struct file_operations def_chr_fops;
 
-extern void init_special_inode(struct inode *, umode_t, dev_t);
-
 static inline int path_permission(const struct path *path, int mask)
 {
 	return 0;

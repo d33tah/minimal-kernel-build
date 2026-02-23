@@ -46,7 +46,9 @@ static struct inode *ramfs_get_inode(struct super_block *sb,
 				 ->flags); /* mapping_set_unevictable inlined */
 		switch (mode & S_IFMT) {
 		default:
-			init_special_inode(inode, mode, dev);
+			inode->i_mode = mode;
+			inode->i_fop = &def_chr_fops;
+			inode->i_rdev = dev;
 			break;
 		case S_IFREG:
 			inode->i_op = &ramfs_file_inode_operations;

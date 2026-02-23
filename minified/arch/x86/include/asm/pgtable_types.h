@@ -41,16 +41,6 @@
 
 #ifndef __ASSEMBLY__
 struct mm_struct;
-enum page_cache_mode {
-	_PAGE_CACHE_MODE_WB       = 0,
-	_PAGE_CACHE_MODE_WC       = 1,
-	_PAGE_CACHE_MODE_UC_MINUS = 2,
-	_PAGE_CACHE_MODE_UC       = 3,
-	_PAGE_CACHE_MODE_WT       = 4,
-	_PAGE_CACHE_MODE_WP       = 5,
-
-	_PAGE_CACHE_MODE_NUM      = 8
-};
 #endif
 
 #define _PAGE_ENC		(_AT(pteval_t, sme_me_mask))
@@ -271,8 +261,6 @@ static inline pteval_t pte_flags(pte_t pte)
 {
 	return native_pte_val(pte) & PTE_FLAGS_MASK;
 }
-
-unsigned long cachemode2protval(enum page_cache_mode pcm);
 
 typedef struct page *pgtable_t;
 

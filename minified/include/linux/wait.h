@@ -75,50 +75,5 @@ void __wake_up_locked_key_bookmark(struct wait_queue_head *wq_head,
 
 #define wake_up_all(x)			__wake_up(x, TASK_NORMAL, 0, NULL)
 
-#define ___wait_is_interruptible(state)						\
-	(!__builtin_constant_p(state) ||					\
-		state == TASK_INTERRUPTIBLE || state == TASK_KILLABLE)		\
-
-extern void init_wait_entry(struct wait_queue_entry *wq_entry, int flags);
-
-#define ___wait_event(wq_head, condition, state, exclusive, ret, cmd)		\
-({										\
-	__label__ __out;							\
-	struct wait_queue_entry __wq_entry;					\
-	long __ret = ret;	 				\
-										\
-	init_wait_entry(&__wq_entry, exclusive ? WQ_FLAG_EXCLUSIVE : 0);	\
-	for (;;) {								\
-		long __int = prepare_to_wait_event(&wq_head, &__wq_entry, state);\
-										\
-		if (condition)							\
-			break;							\
-										\
-		if (___wait_is_interruptible(state) && __int) {			\
-			__ret = __int;						\
-			goto __out;						\
-		}								\
-										\
-		cmd;								\
-	}									\
-	finish_wait(&wq_head, &__wq_entry);					\
-__out:	__ret;									\
-})
-
-#define __wait_event(wq_head, condition)					\
-	(void)___wait_event(wq_head, condition, TASK_UNINTERRUPTIBLE, 0, 0,	\
-			    schedule())
-
-#define wait_event(wq_head, condition)						\
-do {										\
-	might_sleep();								\
-	if (condition)								\
-		break;								\
-	__wait_event(wq_head, condition);					\
-} while (0)
-
-long prepare_to_wait_event(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry, int state);
-void finish_wait(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry);
-int autoremove_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, int sync, void *key);
 
 #endif

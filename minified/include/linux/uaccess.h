@@ -82,10 +82,6 @@ extern void __put_user_1(void);
 extern void __put_user_2(void);
 extern void __put_user_4(void);
 extern void __put_user_8(void);
-extern void __put_user_nocheck_1(void);
-extern void __put_user_nocheck_2(void);
-extern void __put_user_nocheck_4(void);
-extern void __put_user_nocheck_8(void);
 
 #define do_put_user_call(fn,x,ptr)					\
 ({									\
@@ -106,7 +102,6 @@ extern void __put_user_nocheck_8(void);
 })
 
 #define put_user(x, ptr) do_put_user_call(put_user,x,ptr)
-#define __put_user(x, ptr) do_put_user_call(put_user_nocheck,x,ptr)
 
 #define __put_user_size(x, ptr, size, label)				\
 do {									\

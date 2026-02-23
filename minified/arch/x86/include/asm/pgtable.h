@@ -6,12 +6,6 @@
 #include <asm/page.h>
 #include <asm/pgtable_types.h>
 
-#define pgprot_noncached(prot)						\
-	((boot_cpu_data.x86 > 3)					\
-	 ? (__pgprot(pgprot_val(prot) |					\
-		     cachemode2protval(_PAGE_CACHE_MODE_UC_MINUS)))	\
-	 : (prot))
-
 #ifndef __ASSEMBLY__
 #include <linux/spinlock.h>
 #include <asm/x86_init.h>

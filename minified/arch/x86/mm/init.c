@@ -18,22 +18,6 @@ unsigned long kernel_physical_mapping_init(unsigned long start,
 					   pgprot_t prot);
 void zone_sizes_init(void);
 
-static uint16_t __cachemode2pte_tbl[_PAGE_CACHE_MODE_NUM] = {
-	[_PAGE_CACHE_MODE_WB] = 0 | 0,
-	[_PAGE_CACHE_MODE_WC] = 0 | _PAGE_PCD,
-	[_PAGE_CACHE_MODE_UC_MINUS] = 0 | _PAGE_PCD,
-	[_PAGE_CACHE_MODE_UC] = _PAGE_PWT | _PAGE_PCD,
-	[_PAGE_CACHE_MODE_WT] = 0 | _PAGE_PCD,
-	[_PAGE_CACHE_MODE_WP] = 0 | _PAGE_PCD,
-};
-
-unsigned long cachemode2protval(enum page_cache_mode pcm)
-{
-	if (likely(pcm == 0))
-		return 0;
-	return __cachemode2pte_tbl[pcm];
-}
-
 static unsigned long __initdata pgt_buf_start;
 static unsigned long __initdata pgt_buf_end;
 static unsigned long __initdata pgt_buf_top;

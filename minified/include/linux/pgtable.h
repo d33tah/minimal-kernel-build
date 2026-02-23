@@ -98,8 +98,6 @@ static inline int pmd_none_or_clear_bad(pmd_t *pmd)
 	return 0;
 }
 
-/* pgprot_nx, pgprot_noncached - x86 defines its own versions */
-
 static inline int is_zero_pfn(unsigned long pfn)
 {
 	extern unsigned long zero_pfn;

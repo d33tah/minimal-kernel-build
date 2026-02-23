@@ -14,7 +14,4 @@ void panic_smp_self_stop(void);
 
 # define smp_processor_id() __smp_processor_id()
 
-#define get_cpu()		({ preempt_disable(); __smp_processor_id(); })
-#define put_cpu()		preempt_enable()
-
 #endif

@@ -16,19 +16,4 @@ struct timer_list {
 
 };
 
-#define __TIMER_LOCKDEP_MAP_INITIALIZER(_kn)
-
-#define TIMER_IRQSAFE		0x00200000
-
-#define __TIMER_INITIALIZER(_function, _flags) {		\
-		.entry = { .next = TIMER_ENTRY_STATIC },	\
-		.function = (_function),			\
-		/* .flags removed - write-only */		\
-		__TIMER_LOCKDEP_MAP_INITIALIZER(		\
-			__FILE__ ":" __stringify(__LINE__))	\
-	}
-
-#define from_timer(var, callback_timer, timer_fieldname) \
-	container_of(callback_timer, typeof(*var), timer_fieldname)
-
 #endif

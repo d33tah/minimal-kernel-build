@@ -65,8 +65,6 @@ struct tlb_state {
 	 
 	struct mm_struct *loaded_mm;
 
-#define LOADED_MM_SWITCHING ((struct mm_struct *)1UL)
-
 	union {
 		struct mm_struct	*last_user_mm;
 		unsigned long		last_user_mm_spec;

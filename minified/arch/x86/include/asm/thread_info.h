@@ -47,10 +47,6 @@ struct thread_info {
 #define _TIF_NEED_FPU_LOAD	(1 << TIF_NEED_FPU_LOAD)
 #define _TIF_NOTIFY_SIGNAL	(1 << TIF_NOTIFY_SIGNAL)
 
-#define _TIF_WORK_CTXSW	(0)
-
-
-
 #ifndef __ASSEMBLY__
 
 #endif   

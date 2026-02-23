@@ -106,9 +106,7 @@ static inline int is_zero_pfn(unsigned long pfn)
 
 /* PAGE_KERNEL_RO, PAGE_KERNEL_EXEC - x86 defines its own */
 
-typedef unsigned int pgtbl_mod_mask;
-
-#endif  
+#endif
 
 #ifndef p4d_huge
 #define p4d_huge(x)	0

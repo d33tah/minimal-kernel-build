@@ -7,5 +7,4 @@ enum {
 	PROC_PID_INIT_INO	= 0xEFFFFFFCU,
 };
 static inline int ns_alloc_inum(struct ns_common *ns) { atomic_long_set(&ns->stashed, 0); ns->inum = 1; return 0; }
-#define ns_free_inum(ns) ((void)(ns)->inum)
 #endif

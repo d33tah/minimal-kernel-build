@@ -43,9 +43,6 @@ struct work_struct {
 	__WORK_INIT_LOCKDEP_MAP(#n, &(n))				\
 	}
 
-#define DECLARE_WORK(n, f)						\
-	struct work_struct n = __WORK_INITIALIZER(n, f)
-
 #define __INIT_WORK(_work, _func, _onstack)				\
 	do {								\
 		(_work)->data = (atomic_long_t) WORK_DATA_INIT();	\

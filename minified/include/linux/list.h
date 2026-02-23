@@ -84,19 +84,6 @@ static inline int list_empty(const struct list_head *head)
 	return READ_ONCE(head->next) == head;
 }
 
-static inline void list_del_init_careful(struct list_head *entry)
-{
-	__list_del_entry(entry);
-	WRITE_ONCE(entry->prev, entry);
-	smp_store_release(&entry->next, entry);
-}
-
-static inline int list_empty_careful(const struct list_head *head)
-{
-	struct list_head *next = smp_load_acquire(&head->next);
-	return list_is_head(next, head) && (next == READ_ONCE(head->prev));
-}
-
 #define list_entry(ptr, type, member) \
 	container_of(ptr, type, member)
 

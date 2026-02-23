@@ -4,8 +4,6 @@
 #include <linux/list.h>
 #include <linux/nodemask.h>
 struct shrink_control { gfp_t gfp_mask; int nid; unsigned long nr_to_scan; /* nr_scanned removed */ struct mem_cgroup *memcg; };
-#define SHRINK_STOP (~0UL)
-#define SHRINK_EMPTY (~0UL - 1)
 struct shrinker {
 	unsigned long (*count_objects)(struct shrinker *, struct shrink_control *sc);
 	unsigned long (*scan_objects)(struct shrinker *, struct shrink_control *sc);

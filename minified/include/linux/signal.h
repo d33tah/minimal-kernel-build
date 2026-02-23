@@ -43,8 +43,6 @@ static inline int sigequalsets(const sigset_t *set1, const sigset_t *set2)
 	return (set1->sig[1] == set2->sig[1]) && (set1->sig[0] == set2->sig[0]);
 }
 
-#define sigmask(sig)	(1UL << ((sig) - 1))
-
 #ifndef __HAVE_ARCH_SIG_SETOPS
 
 static inline void sigemptyset(sigset_t *set)
@@ -66,20 +64,5 @@ enum pid_type;
 extern void __set_current_blocked(const sigset_t *);
 
 extern struct kmem_cache *sighand_cachep;
-
-/* SIGRTMIN == BITS_PER_LONG == 32 */
-#define rt_sigmask(sig)	sigmask(sig)
-
-#define siginmask(sig, mask) \
-	((sig) > 0 && (sig) < SIGRTMIN && (rt_sigmask(sig) & (mask)))
-
-#define SIG_KERNEL_ONLY_MASK (\
-	rt_sigmask(SIGKILL)   |  rt_sigmask(SIGSTOP))
-
-#define SIG_KERNEL_IGNORE_MASK (\
-        rt_sigmask(SIGCONT)   |  rt_sigmask(SIGCHLD)   | \
-	rt_sigmask(SIGWINCH)  |  rt_sigmask(SIGURG)    )
-
-#define sig_kernel_only(sig)		siginmask(sig, SIG_KERNEL_ONLY_MASK)
 
 #endif

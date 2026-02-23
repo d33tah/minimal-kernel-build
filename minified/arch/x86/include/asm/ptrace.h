@@ -51,7 +51,5 @@ static inline unsigned long instruction_pointer(struct pt_regs *regs)
 	return regs->ip;
 }
 
-#define arch_has_block_step()	(1)
-
 #endif /* !__ASSEMBLY__ */
 #endif /* _ASM_X86_PTRACE_H */

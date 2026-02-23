@@ -13,16 +13,6 @@
 #define __bitwise
 #endif
 
-typedef __u16 __bitwise __le16;
-typedef __u16 __bitwise __be16;
-typedef __u32 __bitwise __le32;
-typedef __u32 __bitwise __be32;
-typedef __u64 __bitwise __le64;
-typedef __u64 __bitwise __be64;
-
-typedef __u16 __bitwise __sum16;
-typedef __u32 __bitwise __wsum;
-
 
 typedef unsigned __bitwise __poll_t;
 
@@ -54,8 +44,6 @@ typedef __kernel_size_t		size_t;
 typedef __kernel_ssize_t	ssize_t;
 #endif
 
-typedef unsigned short		ushort;
-
 typedef u8			uint8_t;
 typedef u16			uint16_t;
 typedef u32			uint32_t;
@@ -69,8 +57,6 @@ typedef unsigned int __bitwise fmode_t;
 typedef u32 phys_addr_t;
 
 typedef phys_addr_t resource_size_t;
-
-typedef unsigned long irq_hw_number_t;
 
 typedef struct {
 	int counter;

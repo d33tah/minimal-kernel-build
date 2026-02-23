@@ -37,7 +37,6 @@ extern void __init vmalloc_init(void);
 #include "internal.h"
 
 LIST_HEAD(vmap_area_list);
-static bool vmap_initialized __read_mostly;
 
 static struct kmem_cache *vmap_area_cachep;
 
@@ -176,5 +175,4 @@ void __init vmalloc_init(void)
 			}
 		}
 	}
-	vmap_initialized = true;
 }

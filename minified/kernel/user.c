@@ -1,5 +1,4 @@
 
-#include <linux/slab.h>
 #include <linux/sched/user.h>
 #include <linux/user_namespace.h>
 #include <linux/proc_ns.h>
@@ -42,10 +41,6 @@ struct user_namespace init_user_ns = {
 	.flags = USERNS_INIT_FLAGS,
 };
 
-static struct kmem_cache *uid_cachep;
-
-static DEFINE_SPINLOCK(uidhash_lock);
-
 struct user_struct root_user = {
 	.__count = REFCOUNT_INIT(1),
 	.uid = GLOBAL_ROOT_UID,
@@ -54,15 +49,4 @@ struct user_struct root_user = {
 
 void free_uid(struct user_struct *up)
 {
-	unsigned long flags;
-
-	if (!up)
-		return;
-
-	if (refcount_dec_and_lock_irqsave(&up->__count, &uidhash_lock,
-					  &flags)) {
-		hlist_del_init(&up->uidhash_node);
-		spin_unlock_irqrestore(&uidhash_lock, flags);
-		kmem_cache_free(uid_cachep, up);
-	}
 }

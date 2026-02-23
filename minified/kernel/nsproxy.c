@@ -7,8 +7,6 @@ struct time_namespace;
 
 #include <linux/cgroup.h>
 
-static struct kmem_cache *nsproxy_cachep;
-
 struct nsproxy init_nsproxy = {
 	.count = ATOMIC_INIT(1),
 	.uts_ns = &init_uts_ns,
@@ -24,10 +22,7 @@ int copy_namespaces(struct task_struct *tsk)
 	return 0;
 }
 
-/* setns replaced with COND_SYSCALL */
-
 int __init nsproxy_cache_init(void)
 {
-	nsproxy_cachep = KMEM_CACHE(nsproxy, SLAB_PANIC | SLAB_ACCOUNT);
 	return 0;
 }

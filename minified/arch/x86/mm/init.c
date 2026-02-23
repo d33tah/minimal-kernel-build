@@ -17,7 +17,6 @@ unsigned long kernel_physical_mapping_init(unsigned long start,
 					   unsigned long page_size_mask,
 					   pgprot_t prot);
 void zone_sizes_init(void);
-extern int after_bootmem;
 
 static uint16_t __cachemode2pte_tbl[_PAGE_CACHE_MODE_NUM] = {
 	[_PAGE_CACHE_MODE_WB] = 0 | 0,

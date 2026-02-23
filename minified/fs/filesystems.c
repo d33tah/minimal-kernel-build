@@ -1,6 +1,5 @@
 #include <linux/fs.h>
 #include <linux/module.h>
-#include <linux/uaccess.h>
 
 static struct file_system_type *file_systems;
 static DEFINE_RWLOCK(file_systems_lock);

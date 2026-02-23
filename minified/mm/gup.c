@@ -1,9 +1,7 @@
 
 #include <linux/mm_inline.h>
 
-#include <asm/tlbflush.h>
 
-#include "internal.h"
 
 struct follow_page_context {
 	unsigned int page_mask;

@@ -1,7 +1,6 @@
 #include <asm/sections.h>
 #include <linux/swap.h>
 #include <linux/mman.h>
-#include <linux/uaccess.h>
 
 void kfree_const(const void *x)
 {

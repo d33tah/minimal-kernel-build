@@ -1,10 +1,7 @@
-#include <linux/slab.h>
-#include <linux/mount.h>
 #include <linux/idr.h>
 #include <linux/backing-dev.h>
 #include <linux/user_namespace.h>
 #include <linux/fs_context.h>
-#include "internal.h"
 
 enum vfs_get_super_keying {
 	vfs_get_single_super,

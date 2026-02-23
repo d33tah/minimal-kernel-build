@@ -1,6 +1,5 @@
 /* Stub workqueue - runs work immediately (no threading) */
 #include <linux/workqueue.h>
-#include <linux/slab.h>
 
 struct workqueue_struct {
 	const char *name;

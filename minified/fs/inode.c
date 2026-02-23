@@ -1,7 +1,6 @@
 
 #include <linux/swap.h>
 /* cdev.h inlined */
-#include <linux/kdev_t.h>
 #include <linux/device.h>
 struct file_operations;
 struct inode;

@@ -1,8 +1,5 @@
 
-#include <linux/fs_context.h>
 #include <linux/fs_parser.h>
-#include <linux/namei.h>
-#include "internal.h"
 
 static inline bool is_flag(const struct fs_parameter_spec *p)
 {

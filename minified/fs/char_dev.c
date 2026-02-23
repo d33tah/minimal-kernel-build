@@ -8,7 +8,6 @@ struct kobject *kobj_lookup(struct kobj_map *, dev_t, int *);
 struct kobj_map *kobj_map_init(kobj_probe_t *, struct mutex *);
 /* end kobj_map.h */
 /* cdev.h inlined */
-#include <linux/kdev_t.h>
 #include <linux/device.h>
 struct file_operations;
 struct inode;

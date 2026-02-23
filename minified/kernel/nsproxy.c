@@ -5,7 +5,6 @@ struct net {
 };
 struct time_namespace;
 
-#include <linux/cgroup.h>
 
 struct nsproxy init_nsproxy = {
 	.count = ATOMIC_INIT(1),

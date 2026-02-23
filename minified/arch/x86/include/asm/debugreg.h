@@ -4,10 +4,6 @@
 
 #include <linux/bug.h>
 #define DR6_RESERVED	(0xFFFF0FF0)
-#define DR_GLOBAL_ENABLE_MASK (0xAA)
-
-DECLARE_PER_CPU(unsigned long, cpu_dr7);
-
 #define set_debugreg(value, register)				\
 	native_set_debugreg(register, value)
 

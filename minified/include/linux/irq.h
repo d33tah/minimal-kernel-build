@@ -151,10 +151,6 @@ static inline struct irq_data *irq_desc_get_irq_data(struct irq_desc *desc) { re
 static inline void generic_handle_irq_desc(struct irq_desc *desc) { desc->handle_irq(desc); }
 
 
-#ifndef NR_IRQS_LEGACY
-# define NR_IRQS_LEGACY 0
-#endif
-
 #ifndef ARCH_IRQ_INIT_FLAGS
 # define ARCH_IRQ_INIT_FLAGS	0
 #endif

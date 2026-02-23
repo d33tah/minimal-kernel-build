@@ -1,8 +1,6 @@
 #include <linux/ptrace.h>
 /* end stackprotector.h */
 #include <asm/fpu/sched.h>
-/* Moved from hw_breakpoint.c - just the percpu variable needed for hw_breakpoint_active() */
-DEFINE_PER_CPU(unsigned long, cpu_dr7);
 /* nmi.h inlined */
 #include <asm/irq.h>
 #include <asm/io.h>

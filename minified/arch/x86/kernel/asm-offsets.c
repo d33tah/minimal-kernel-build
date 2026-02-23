@@ -1,6 +1,3 @@
-
-#define COMPILE_OFFSETS
-
 #include <linux/sched.h>
 #include <linux/stddef.h>
 #include <linux/hardirq.h>

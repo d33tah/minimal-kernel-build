@@ -11,7 +11,6 @@
 #include <sys/mman.h>
 
 typedef unsigned char u8;
-typedef unsigned short u16;
 typedef unsigned int u32;
 
 static inline uint16_t get_unaligned_le16(const void *p)

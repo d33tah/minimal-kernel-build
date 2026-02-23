@@ -1,5 +1,3 @@
-#define pr_fmt(fmt) "genirq: " fmt
-
 #include <linux/interrupt.h>
 #include <linux/slab.h>
 

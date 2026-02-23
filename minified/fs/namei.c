@@ -91,7 +91,6 @@ struct nameidata {
 	int dfd;
 } __randomize_layout;
 
-#define ND_ROOT_PRESET 1
 #define ND_ROOT_GRABBED 2
 
 static inline void set_nameidata(struct nameidata *p, int dfd,
@@ -194,7 +193,7 @@ static struct dentry *lookup_fast(struct nameidata *nd, struct inode **inode,
 	return dentry;
 }
 
-enum { WALK_TRAILING = 1, WALK_MORE = 2, WALK_NOFOLLOW = 4 };
+enum { WALK_TRAILING = 1, WALK_MORE = 2 };
 
 static const char *step_into(struct nameidata *nd, int flags,
 			     struct dentry *dentry, struct inode *inode,

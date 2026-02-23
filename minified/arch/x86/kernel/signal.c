@@ -1,6 +1,3 @@
-
-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-
 #include <linux/sched.h>
 #include <linux/sched/task_stack.h>
 #include <linux/entry-common.h>

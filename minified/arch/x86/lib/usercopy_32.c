@@ -1,8 +1,6 @@
 #include <linux/uaccess.h>
 #include <asm/asm.h>
 
-#define movsl_is_ok(a1, a2, n) 1
-
 /* clang-format off */
 #define __do_clear_user(addr,size)					\
 do {									\

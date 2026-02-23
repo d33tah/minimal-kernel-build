@@ -3,9 +3,6 @@
 #include <linux/highmem.h>
 #include <linux/uaccess.h>
 
-typedef __u16 __sum16;
-typedef __u32 __wsum;
-
 #define iterate_iovec(i, n, base, len, off, __p, STEP)       \
 	{                                                    \
 		size_t off = 0;                              \

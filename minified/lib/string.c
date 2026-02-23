@@ -1,5 +1,4 @@
 
-#define __NO_FORTIFY
 #include <linux/bug.h>
 #include <linux/errno.h>
 

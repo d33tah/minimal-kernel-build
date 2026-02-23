@@ -9,7 +9,6 @@
 
 #define OO_SHIFT 16
 #define OO_MASK ((1 << OO_SHIFT) - 1)
-#define MAX_OBJS_PER_PAGE 32767
 
 static inline void *get_freepointer(struct kmem_cache *s, void *object)
 {

@@ -1,6 +1,3 @@
-
-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-
 #ifndef NOKPROBE_SYMBOL
 #define NOKPROBE_SYMBOL(fname)
 #endif

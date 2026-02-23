@@ -1,6 +1,3 @@
-
-#define USE_EARLY_PGTABLE_L5
-
 #include <linux/percpu.h>
 #include <linux/string.h>
 #include <linux/delay.h>
@@ -18,17 +15,6 @@
 #include <asm/fpu/api.h>
 #include <asm/cpu.h>
 #include <asm/sigframe.h>
-
-struct cpu_dev {
-	const char *c_vendor;
-	const char *c_ident[2];
-	void (*c_early_init)(struct cpuinfo_x86 *);
-	void (*c_bsp_init)(struct cpuinfo_x86 *);
-	void (*c_init)(struct cpuinfo_x86 *);
-	void (*c_identify)(struct cpuinfo_x86 *);
-	int c_x86_vendor;
-};
-/* end cpu.h */
 
 DEFINE_PER_CPU_PAGE_ALIGNED(
 	struct gdt_page,

@@ -392,12 +392,6 @@ void __sched schedule_preempt_disabled(void)
 	preempt_disable();
 }
 
-int default_wake_function(wait_queue_entry_t *curr, unsigned mode,
-			  int wake_flags, void *key)
-{
-	return try_to_wake_up(curr->private, mode, wake_flags);
-}
-
 int __sched __cond_resched(void)
 {
 	if (should_resched(0)) {

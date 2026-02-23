@@ -9,6 +9,4 @@ extern unsigned long initrd_start, initrd_end;
 extern phys_addr_t phys_initrd_start;
 extern unsigned long phys_initrd_size;
 
-void console_on_rootfs(void);
-
-#endif  
+#endif

@@ -9,8 +9,6 @@
 typedef struct wait_queue_entry wait_queue_entry_t;
 
 typedef int (*wait_queue_func_t)(struct wait_queue_entry *wq_entry, unsigned mode, int flags, void *key);
-int default_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, int flags, void *key);
-
 #define WQ_FLAG_EXCLUSIVE	0x01
 #define WQ_FLAG_BOOKMARK	0x04
 #define WQ_FLAG_PRIORITY	0x20

@@ -124,7 +124,7 @@ static int __init do_early_param(char *param, char *val, const char *unused,
 	return 0;
 }
 
-void __init parse_early_options(char *cmdline)
+static void __init parse_early_options(char *cmdline)
 {
 	parse_args("early options", cmdline, NULL, 0, 0, 0, NULL,
 		   do_early_param);
@@ -230,7 +230,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	prevent_tail_call_optimization();
 }
 
-int __init_or_module do_one_initcall(initcall_t fn)
+static int __init_or_module do_one_initcall(initcall_t fn)
 {
 	int count = preempt_count();
 	char msgbuf[64];
@@ -310,7 +310,7 @@ static int __ref kernel_init(void *unused)
 	panic("Failed to execute %s (error %d).", ramdisk_execute_command, ret);
 }
 
-void __init console_on_rootfs(void)
+static void __init console_on_rootfs(void)
 {
 	struct file *file = filp_open("/dev/console", O_RDWR, 0);
 

@@ -182,7 +182,7 @@ static noinline void bad_area_access_error(struct pt_regs *regs,
 	__bad_area(regs, error_code, address, 0, SEGV_ACCERR);
 }
 
-bool fault_in_kernel_space(unsigned long address)
+static bool fault_in_kernel_space(unsigned long address)
 {
 	/* X86_32: no vsyscall check needed */
 	return address >= TASK_SIZE_MAX;

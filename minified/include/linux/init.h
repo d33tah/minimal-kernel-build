@@ -40,7 +40,6 @@ extern initcall_entry_t __con_initcall_start[], __con_initcall_end[];
 
 struct file_system_type;
 
-extern int do_one_initcall(initcall_t fn);
 extern char __initdata boot_command_line[];
 
 void setup_arch(char **);
@@ -141,7 +140,6 @@ struct obs_kernel_param {
 	early_param(str_off, parse_##var##_off)
 
 void __init parse_early_param(void);
-void __init parse_early_options(char *cmdline);
 #endif  /* __ASSEMBLY__ */
 
 #endif  /* _LINUX_INIT_H */

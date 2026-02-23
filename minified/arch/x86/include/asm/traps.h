@@ -20,6 +20,4 @@ enum x86_pf_error_code {
 	X86_PF_SGX	=		1 << 15,
 };
 
-bool fault_in_kernel_space(unsigned long address);
-
-#endif  
+#endif

@@ -78,7 +78,6 @@ extern __u32			cpu_caps_set[NCAPINTS + NBUGINTS];
 #define cache_line_size()	(boot_cpu_data.x86_cache_alignment)
 
 extern void early_cpu_init(void);
-extern void identify_boot_cpu(void);
 
 static inline void native_cpuid(unsigned int *eax, unsigned int *ebx,
 				unsigned int *ecx, unsigned int *edx)

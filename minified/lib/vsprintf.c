@@ -284,7 +284,7 @@ static noinline_for_stack int format_decode(const char *fmt,
 	return ++fmt - start;
 }
 
-int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
+static int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 {
 	unsigned long long num;
 	char *str, *end;

@@ -5,7 +5,7 @@ struct follow_page_context {
 	unsigned int page_mask;
 };
 
-bool __must_check try_grab_page(struct page *page, unsigned int flags)
+static bool __must_check try_grab_page(struct page *page, unsigned int flags)
 {
 	struct folio *folio = page_folio(page);
 	if (WARN_ON_ONCE(folio_ref_count(folio) <= 0))

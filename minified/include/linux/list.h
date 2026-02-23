@@ -13,7 +13,6 @@
 #include <linux/stddef.h>
 #define LIST_POISON1  ((void *) 0x100)
 #define LIST_POISON2  ((void *) 0x122)
-#define TIMER_ENTRY_STATIC ((void *) 0x300)
 #define TAIL_MAPPING ((void *) 0x400)
 #include <linux/const.h>
 
@@ -85,9 +84,6 @@ static inline int list_empty(const struct list_head *head)
 #define list_first_entry(ptr, type, member) \
 	list_entry((ptr)->next, type, member)
 
-#define list_last_entry(ptr, type, member) \
-	list_entry((ptr)->prev, type, member)
-
 #define list_first_entry_or_null(ptr, type, member) ({ \
 	struct list_head *head__ = (ptr); \
 	struct list_head *pos__ = READ_ONCE(head__->next); \
@@ -96,9 +92,6 @@ static inline int list_empty(const struct list_head *head)
 
 #define list_next_entry(pos, member) \
 	list_entry((pos)->member.next, typeof(*(pos)), member)
-
-#define list_prev_entry(pos, member) \
-	list_entry((pos)->member.prev, typeof(*(pos)), member)
 
 #define list_entry_is_head(pos, head, member)				\
 	(&pos->member == (head))

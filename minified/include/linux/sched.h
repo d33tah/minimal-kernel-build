@@ -181,8 +181,6 @@ struct signal_struct;
 #define TASK_WAKEKILL			0x0100
 #define TASK_NEW			0x0800
 
-#define TASK_KILLABLE			(TASK_WAKEKILL | TASK_UNINTERRUPTIBLE)
-
 #define TASK_NORMAL			(TASK_INTERRUPTIBLE | TASK_UNINTERRUPTIBLE)
 
 #define __set_current_state(state_value)				\

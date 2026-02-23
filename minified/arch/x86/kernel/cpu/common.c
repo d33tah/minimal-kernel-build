@@ -226,7 +226,7 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 	select_idle_routine(c);
 }
 
-void __init identify_boot_cpu(void)
+static void __init identify_boot_cpu(void)
 {
 	identify_cpu(&boot_cpu_data);
 	/* HAS_KERNEL_IBT is 0 */

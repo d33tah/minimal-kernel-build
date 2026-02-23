@@ -2,7 +2,6 @@
 #ifndef __LINUX_SECURITY_H
 #define __LINUX_SECURITY_H
 
-#include <linux/capability.h>
 #include <linux/fs.h>
 #include <linux/err.h>
 #include <linux/mm.h>

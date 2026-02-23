@@ -97,29 +97,6 @@ static inline int list_empty_careful(const struct list_head *head)
 	return list_is_head(next, head) && (next == READ_ONCE(head->prev));
 }
 
-static inline void __list_splice(const struct list_head *list,
-				 struct list_head *prev,
-				 struct list_head *next)
-{
-	struct list_head *first = list->next;
-	struct list_head *last = list->prev;
-
-	first->prev = prev;
-	prev->next = first;
-
-	last->next = next;
-	next->prev = last;
-}
-
-static inline void list_splice_tail_init(struct list_head *list,
-					 struct list_head *head)
-{
-	if (!list_empty(list)) {
-		__list_splice(list, head->prev, head);
-		INIT_LIST_HEAD(list);
-	}
-}
-
 #define list_entry(ptr, type, member) \
 	container_of(ptr, type, member)
 

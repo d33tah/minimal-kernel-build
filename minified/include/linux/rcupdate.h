@@ -49,11 +49,6 @@ static inline int rcu_read_lock_sched_held(void)
 	return !preemptible();
 }
 
-static inline int rcu_read_lock_any_held(void)
-{
-	return !preemptible();
-}
-
 #define RCU_LOCKDEP_WARN(c, s) do { } while (0 && (c))
 
 #ifdef __CHECKER__

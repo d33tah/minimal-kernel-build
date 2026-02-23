@@ -147,7 +147,6 @@ struct irq_desc {
 	wait_queue_head_t wait_for_threads; struct rcu_head rcu; struct kobject kobj;
 	struct mutex request_mutex; struct module *owner; const char *name;
 } ____cacheline_internodealigned_in_smp;
-static inline unsigned int irq_desc_get_irq(struct irq_desc *desc) { return desc->irq_data.irq; }
 static inline struct irq_data *irq_desc_get_irq_data(struct irq_desc *desc) { return &desc->irq_data; }
 static inline void generic_handle_irq_desc(struct irq_desc *desc) { desc->handle_irq(desc); }
 

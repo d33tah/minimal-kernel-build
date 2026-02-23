@@ -14,16 +14,6 @@ $(bounds-file): kernel/bounds.s FORCE
 	$(call filechk,offsets,__LINUX_BOUNDS_H__)
 
 #####
-# Generate timeconst.h
-
-timeconst-file := include/generated/timeconst.h
-
-filechk_gentimeconst = echo $(if $(CONFIG_HZ),$(CONFIG_HZ),100) | bc -q $<
-
-$(timeconst-file): kernel/time/timeconst.bc FORCE
-	$(call filechk,gentimeconst)
-
-#####
 # Generate asm-offsets.h
 
 offsets-file := include/generated/asm-offsets.h
@@ -31,7 +21,7 @@ offsets-file := include/generated/asm-offsets.h
 always-y += $(offsets-file)
 targets += arch/$(SRCARCH)/kernel/asm-offsets.s
 
-arch/$(SRCARCH)/kernel/asm-offsets.s: $(timeconst-file) $(bounds-file)
+arch/$(SRCARCH)/kernel/asm-offsets.s: $(bounds-file)
 
 $(offsets-file): arch/$(SRCARCH)/kernel/asm-offsets.s FORCE
 	$(call filechk,offsets,__ASM_OFFSETS_H__)

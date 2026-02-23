@@ -7,8 +7,6 @@
 
 #define TICK_NSEC ((NSEC_PER_SEC+HZ/2)/HZ)
 
-#include <generated/timeconst.h>
-
 #ifndef __jiffy_arch_data
 #define __jiffy_arch_data
 #endif

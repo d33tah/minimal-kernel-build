@@ -214,8 +214,6 @@ static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns)
 
 /* inlined from mm/shmem.c */
 extern int ramfs_init_fs_context(struct fs_context *fc);
-extern const struct fs_parameter_spec ramfs_fs_parameters[];
-extern const struct file_operations ramfs_file_operations;
 
 static struct vfsmount *shm_mnt;
 

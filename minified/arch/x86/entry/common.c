@@ -1,8 +1,6 @@
 
 #include <linux/entry-common.h>
 
-struct task_struct;
-
 #ifndef array_index_mask_nospec
 static inline unsigned long array_index_mask_nospec(unsigned long index,
 						    unsigned long size)

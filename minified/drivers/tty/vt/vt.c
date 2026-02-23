@@ -11,9 +11,6 @@ static inline void scr_memmovew(u16 *d, const u16 *s, unsigned int count)
 {
 	memmove(d, s, count);
 }
-extern const unsigned char color_table[];
-/* linux/tty.h already included above */
-
 const struct consw *conswitchp;
 
 struct vc vc_cons[MAX_NR_CONSOLES];

@@ -47,8 +47,6 @@ struct timekeeper {
 #include <linux/mm.h>
 #include <linux/clocksource.h>
 
-extern raw_spinlock_t timekeeper_lock;
-
 DEFINE_RAW_SPINLOCK(timekeeper_lock);
 
 static struct {

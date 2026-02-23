@@ -4,7 +4,6 @@
 
 #include <linux/rcupdate.h>
 #include <asm/barrier.h>
-struct task_struct;
 #ifndef array_index_mask_nospec
 						    unsigned long size)
 {

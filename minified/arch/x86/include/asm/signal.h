@@ -22,8 +22,6 @@ typedef struct {
 #include <linux/time.h>
 #include <linux/compiler.h>
 
-struct siginfo;
-
 #endif
 
 #define SIGBUS		 7

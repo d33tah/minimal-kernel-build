@@ -1,6 +1,5 @@
 #include <linux/types.h>
 
-extern dev_t ROOT_DEV;
 #include <linux/fs.h>
 extern int ramfs_init_fs_context(struct fs_context *fc);
 int __init init_chroot(const char *filename);

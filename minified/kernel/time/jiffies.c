@@ -1,9 +1,6 @@
 #include <linux/clocksource.h>
 #include <linux/module.h>
 
-extern raw_spinlock_t jiffies_lock;
-extern seqcount_raw_spinlock_t jiffies_seq;
-
 /* HZ=100, so JIFFIES_SHIFT=8 */
 #define JIFFIES_SHIFT 8
 

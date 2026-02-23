@@ -14,10 +14,6 @@ struct semaphore {
 		.count = n,                                    \
 		.wait_list = LIST_HEAD_INIT((name).wait_list), \
 	}
-extern void down(struct semaphore *sem);
-extern int __must_check down_trylock(struct semaphore *sem);
-extern void up(struct semaphore *sem);
-
 static inline int __sched ___down_common(struct semaphore *sem, long state,
 					 long timeout);
 

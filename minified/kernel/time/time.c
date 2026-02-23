@@ -45,9 +45,6 @@ struct timekeeper {
 #endif /* _LINUX_TIMEKEEPER_INTERNAL_H */
 #include <linux/syscalls.h>
 
-extern raw_spinlock_t jiffies_lock;
-extern seqcount_raw_spinlock_t jiffies_seq;
-
 time64_t mktime64(const unsigned int year0, const unsigned int mon0,
 		  const unsigned int day, const unsigned int hour,
 		  const unsigned int min, const unsigned int sec)

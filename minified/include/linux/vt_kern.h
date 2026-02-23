@@ -23,8 +23,6 @@ struct notifier_block {
 #define NOTIFY_DONE		0x0000
 #endif
 
-struct tty_struct;
-
 struct tty_port {
 	spinlock_t		lock;
 	struct mutex		mutex;

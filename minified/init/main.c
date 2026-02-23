@@ -12,9 +12,6 @@
 #include <linux/pid_namespace.h>
 /* inlined from linux/vmalloc.h */
 
-struct vm_area_struct;
-struct notifier_block;
-
 extern void __init vmalloc_init(void);
 
 /* driver_init inlined: only bdi_init needed */

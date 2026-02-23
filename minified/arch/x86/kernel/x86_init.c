@@ -10,7 +10,6 @@ static inline cycles_t get_cycles(void)
 	return rdtsc();
 }
 #define get_cycles get_cycles
-extern void tsc_early_init(void);
 extern unsigned long native_calibrate_cpu_early(void);
 extern unsigned long native_calibrate_tsc(void);
 #endif /* _ASM_X86_TSC_H */

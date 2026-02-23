@@ -3,8 +3,6 @@
 #include <linux/clocksource.h>
 #include <linux/module.h>
 
-extern raw_spinlock_t timekeeper_lock;
-
 void clocks_calc_mult_shift(u32 *mult, u32 *shift, u32 from, u32 to, u32 maxsec)
 {
 	u64 tmp;

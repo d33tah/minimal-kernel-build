@@ -261,8 +261,6 @@ extern void tlb_gather_mmu(struct mmu_gather *tlb, struct mm_struct *mm);
 extern void tlb_gather_mmu_fullmm(struct mmu_gather *tlb, struct mm_struct *mm);
 extern void tlb_finish_mmu(struct mmu_gather *tlb);
 
-struct vm_fault;
-
 typedef __bitwise unsigned int vm_fault_t;
 
 enum vm_fault_reason {

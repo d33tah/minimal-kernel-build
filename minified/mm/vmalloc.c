@@ -1,9 +1,6 @@
 
 #include <linux/rbtree_augmented.h>
 
-struct vm_area_struct;
-struct notifier_block;
-
 struct vm_struct;
 
 struct vmap_area {
@@ -18,8 +15,6 @@ struct vmap_area {
 		struct vm_struct *vm;
 	};
 };
-
-extern void __init vmalloc_init(void);
 
 #include "internal.h"
 

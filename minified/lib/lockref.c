@@ -4,9 +4,6 @@ struct lockref {
 	spinlock_t lock;
 	int count;
 };
-extern void lockref_get(struct lockref *);
-extern int lockref_put_return(struct lockref *);
-extern void lockref_mark_dead(struct lockref *);
 #include <linux/bug.h>
 
 #define CMPXCHG_LOOP(CODE, SUCCESS) \

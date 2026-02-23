@@ -1,7 +1,6 @@
 #include <asm/io.h>
 #include <linux/smp.h>
 #include <linux/spinlock.h>
-extern spinlock_t rtc_lock;
 #define RTC_PORT(x) (0x70 + (x))
 #define RTC_SECONDS 0
 #define RTC_MINUTES 2

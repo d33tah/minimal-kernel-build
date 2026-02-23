@@ -5,8 +5,6 @@ struct rcu_sync {
 	int gp_state;
 	wait_queue_head_t gp_wait;
 };
-extern void rcu_sync_init(struct rcu_sync *);
-extern void rcu_sync_dtor(struct rcu_sync *);
 #include <linux/sched.h>
 
 enum { GP_IDLE = 0, GP_ENTER, GP_PASSED, GP_EXIT, GP_REPLAY };

@@ -20,7 +20,6 @@
 #define SET_PERSONALITY(ex) set_personality_64bit()
 #define elf_read_implies_exec(ex, executable_stack)	\
 	(executable_stack == EXSTACK_DEFAULT)
-struct linux_binprm;
 #include <uapi/linux/elf.h>
 #ifndef elf_read_implies_exec
 #define elf_read_implies_exec(ex, have_pt_gnu_stack)	0

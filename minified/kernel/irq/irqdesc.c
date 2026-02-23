@@ -1,8 +1,6 @@
 #include <linux/slab.h>
 #include <linux/interrupt.h>
 #include <linux/radix-tree.h>
-struct irq_domain;
-
 #include "internals.h"
 
 int nr_irqs = NR_IRQS;

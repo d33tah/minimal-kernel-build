@@ -3,9 +3,6 @@ struct net {
 	atomic_t count;
 	struct user_namespace *user_ns;
 };
-struct time_namespace;
-
-
 struct nsproxy init_nsproxy = {
 	.count = ATOMIC_INIT(1),
 	.uts_ns = &init_uts_ns,

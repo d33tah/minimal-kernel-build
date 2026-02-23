@@ -5,7 +5,6 @@
 #define PAGEVEC_SIZE 15
 struct page;
 struct folio;
-struct address_space;
 struct pagevec {
 	unsigned char nr;
 	bool percpu_pvec_drained;

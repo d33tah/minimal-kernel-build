@@ -365,8 +365,6 @@ struct vm_area_struct;
 struct cred;
 struct iov_iter;
 struct fs_context;
-struct fs_parameter_spec;
-
 extern void __init inode_init(void);
 extern void __init files_init(void);
 

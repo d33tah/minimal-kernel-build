@@ -3,9 +3,6 @@
 #include <asm/timer.h>
 #include <asm/setup.h>
 
-/* inlined from asm/hw_irq.h */
-extern char irq_entries_start[];
-
 #define VECTOR_UNUSED NULL
 
 typedef struct irq_desc *vector_irq_t[NR_VECTORS];

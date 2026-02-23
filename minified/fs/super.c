@@ -4,7 +4,6 @@
 #include <linux/backing-dev.h>
 #include <linux/user_namespace.h>
 #include <linux/fs_context.h>
-#include <uapi/linux/mount.h>
 #include "internal.h"
 
 enum vfs_get_super_keying {

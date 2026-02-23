@@ -1,13 +1,9 @@
 #include <linux/gfp.h>
-#include <linux/initrd.h>
 #include <linux/memblock.h>
 #include <linux/sched/mm.h>
 #include <asm/e820/api.h>
-#include <asm/page.h>
 #include <asm/setup.h>
-#include <asm/tlbflush.h>
 #include <asm/tlb.h>
-#include <asm/cpufeature.h>
 extern int after_bootmem;
 
 void *alloc_low_pages(unsigned int num);

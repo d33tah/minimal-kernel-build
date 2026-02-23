@@ -4,7 +4,6 @@
 #include <linux/fs_struct.h>
 
 #include "internal.h"
-#include "mount.h"
 
 #define EMBEDDED_NAME_MAX (PATH_MAX - offsetof(struct filename, iname))
 

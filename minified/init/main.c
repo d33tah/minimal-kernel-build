@@ -1,30 +1,16 @@
 
 #include <linux/extable.h>
 #include <linux/binfmts.h>
-#include <linux/kernel.h>
-#include <linux/string.h>
-#include <linux/delay.h>
-#include <linux/init.h>
 #include <linux/file.h>
 #include <linux/initrd.h>
 #include <linux/memblock.h>
 
 #include <linux/console.h>
-#include <linux/percpu.h>
-#include <linux/smp.h>
-#include <linux/rcupdate.h>
-#include <linux/srcu.h>
 #include <linux/cpu.h>
 #include <linux/interrupt.h>
 #include <linux/rmap.h>
 #include <linux/pid_namespace.h>
 /* inlined from linux/vmalloc.h */
-#include <linux/list.h>
-#include <asm/page.h>
-#include <linux/rbtree.h>
-#include <linux/overflow.h>
-#include <asm/cpufeature.h>
-#include <asm/pgtable_areas.h>
 
 struct vm_area_struct;
 struct notifier_block;
@@ -37,7 +23,6 @@ extern void timekeeping_init(void);
 #include <linux/kthread.h>
 extern void sched_init(void);
 
-#include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
 
 int __init init_chroot(const char *filename);

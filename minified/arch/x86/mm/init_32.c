@@ -1,28 +1,12 @@
 
-#include <linux/signal.h>
-#include <linux/ptrace.h>
-#include <linux/init.h>
-#include <linux/pagemap.h>
-#include <linux/pfn.h>
 #include <linux/memblock.h>
-#include <linux/initrd.h>
-#include <linux/gfp.h>
 
-#include <asm/asm.h>
-#include <asm/io.h>
-#include <asm/processor.h>
-#include <linux/uaccess.h>
-#include <asm/fixmap.h>
-#include <asm/e820/api.h>
-#include <asm/apic.h>
-#include <asm/tlb.h>
 #include <asm/tlbflush.h>
+#include <asm/io.h>
 #include <asm/pgalloc.h>
 #include <asm/sections.h>
 #include <asm/setup.h>
-#include <asm/page_types.h>
 #include <asm/pgtable_areas.h>
-#include <linux/nodemask.h>
 
 void *alloc_low_pages(unsigned int num);
 static inline void *alloc_low_page(void)

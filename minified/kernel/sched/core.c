@@ -2,7 +2,6 @@
 #include <linux/sched/signal.h>
 
 /* sched/clock.h inlined */
-#include <linux/smp.h>
 extern unsigned long long notrace sched_clock(void);
 static inline u64 sched_clock_cpu(int cpu)
 {
@@ -12,7 +11,6 @@ static inline u64 sched_clock_cpu(int cpu)
 #include <linux/sched/debug.h>
 
 extern void sched_init(void);
-#include <linux/sched/mm.h>
 
 #include <asm/mmu_context.h>
 

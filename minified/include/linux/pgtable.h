@@ -108,9 +108,6 @@ static inline int is_zero_pfn(unsigned long pfn)
 
 /* PAGE_KERNEL_RO, PAGE_KERNEL_EXEC - x86 defines its own */
 
-#define		__PGTBL_PMD_MODIFIED	3
-#define		PGTBL_PMD_MODIFIED	BIT(__PGTBL_PMD_MODIFIED)
-
 typedef unsigned int pgtbl_mod_mask;
 
 #endif  

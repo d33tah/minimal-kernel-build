@@ -36,8 +36,6 @@ struct files_struct *dup_fd(struct files_struct *oldf, unsigned int max_fds,
 
 	atomic_set(&newf->count, 1);
 	spin_lock_init(&newf->file_lock);
-	newf->resize_in_progress = false;
-	init_waitqueue_head(&newf->resize_wait);
 	newf->next_fd = 0;
 	new_fdt = &newf->fdtab;
 	new_fdt->max_fds = NR_OPEN_DEFAULT;
@@ -88,7 +86,6 @@ struct files_struct init_files = {
 		.full_fds_bits	= init_files.full_fds_bits_init,
 	},
 	.file_lock	= __SPIN_LOCK_UNLOCKED(init_files.file_lock),
-	.resize_wait	= __WAIT_QUEUE_HEAD_INITIALIZER(init_files.resize_wait),
 };
 
 int get_unused_fd_flags(unsigned flags)

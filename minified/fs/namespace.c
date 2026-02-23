@@ -222,7 +222,6 @@ static struct vfsmount *shm_mnt;
 static struct file_system_type shmem_fs_type = {
 	.name = "tmpfs",
 	.init_fs_context = ramfs_init_fs_context,
-	.parameters = ramfs_fs_parameters,
 	.kill_sb = kill_litter_super,
 };
 

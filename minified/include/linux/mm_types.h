@@ -170,11 +170,6 @@ struct folio {
 
 static_assert(sizeof(struct page) == sizeof(struct folio));
 
-static inline atomic_t *compound_mapcount_ptr(struct page *page)
-{
-	return &page[1].compound_mapcount;
-}
-
 static inline void set_page_private(struct page *page, unsigned long private)
 {
 	page->private = private;

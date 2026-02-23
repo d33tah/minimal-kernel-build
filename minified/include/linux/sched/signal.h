@@ -23,20 +23,15 @@ struct sighand_struct {
 };
 
 struct signal_struct {
-	refcount_t		sigcnt;
-	atomic_t		live;
 	struct list_head	thread_head;
 
 	struct sigpending	shared_pending;
 
 	struct pid *pids[PIDTYPE_MAX];
 
-	struct tty_struct *tty;
-
 	struct rlimit rlim[RLIM_NLIMITS];
 
-	struct mutex cred_guard_mutex;	 
-	struct rw_semaphore exec_update_lock;	 
+	struct rw_semaphore exec_update_lock;
 } __randomize_layout;
 
 int force_sig_fault(int sig, int code, void __user *addr);

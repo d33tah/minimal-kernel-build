@@ -201,7 +201,6 @@ struct dentry {
 
 	union {
 		struct hlist_node d_alias;
-		struct hlist_bl_node d_in_lookup_hash;
 	 	struct rcu_head d_rcu;
 	} d_u;
 } __randomize_layout;
@@ -628,7 +627,6 @@ struct file_operations {
 	ssize_t (*read_iter)(struct kiocb *, struct iov_iter *);
 	ssize_t (*write_iter)(struct kiocb *, struct iov_iter *);
 	int (*mmap)(struct file *, struct vm_area_struct *);
-	unsigned long mmap_supported_flags;
 	int (*open)(struct inode *, struct file *);
 	int (*release)(struct inode *, struct file *);
 	unsigned long (*get_unmapped_area)(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
@@ -657,7 +655,6 @@ extern void inc_nlink(struct inode *inode);
 struct file_system_type {
 	const char *name;
 	int (*init_fs_context)(struct fs_context *);
-	const struct fs_parameter_spec *parameters;
 	struct dentry *(*mount) (struct file_system_type *, int,
 		       const char *, void *);
 	void (*kill_sb) (struct super_block *);

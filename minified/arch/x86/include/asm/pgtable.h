@@ -22,11 +22,8 @@
 static inline u32 read_pkru(void) { if (cpu_feature_enabled(X86_FEATURE_OSPKE)) return rdpkru(); return 0; }
 static inline void pkru_write_default(void) { if (!cpu_feature_enabled(X86_FEATURE_OSPKE)) return; wrpkru(pkru_get_init_value()); }
 /* End of pkru.h */
-#ifndef __PAGE_TABLE_CHECK_STUBS
-#define __PAGE_TABLE_CHECK_STUBS
 static inline void page_table_check_pte_set(struct mm_struct *mm,
 					    unsigned long addr, pte_t *ptep, pte_t pte) { }
-#endif
 
 extern unsigned long empty_zero_page[PAGE_SIZE / sizeof(unsigned long)]
 	__visible;
@@ -40,10 +37,6 @@ extern struct list_head pgd_list;
 #define set_pte(ptep, pte)		native_set_pte(ptep, pte)
 
 #define set_pmd(pmdp, pmd)		native_set_pmd(pmdp, pmd)
-
-#ifndef set_p4d
-# define set_p4d(p4dp, p4d)		native_set_p4d(p4dp, p4d)
-#endif
 
 #define pte_clear(mm, addr, ptep)	native_pte_clear(mm, addr, ptep)
 #define pmd_clear(pmd)			native_pmd_clear(pmd)

@@ -23,10 +23,6 @@ extern void __init vmalloc_init(void);
 
 #include "internal.h"
 
-#ifndef ARCH_PAGE_TABLE_SYNC_MASK
-#define ARCH_PAGE_TABLE_SYNC_MASK 0
-#endif
-
 LIST_HEAD(vmap_area_list);
 
 static struct kmem_cache *vmap_area_cachep;

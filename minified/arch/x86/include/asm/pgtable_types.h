@@ -133,7 +133,6 @@ typedef union {
 } pte_t;
 #endif
 
-#define ARCH_PAGE_TABLE_SYNC_MASK	PGTBL_PMD_MODIFIED
 #define PGDIR_SHIFT	22
 #define PTRS_PER_PGD	1024
 #define PTRS_PER_PTE	1024
@@ -196,8 +195,6 @@ typedef struct { p4d_t p4d; } pud_t;
 
 #define pud_ERROR(pud)				((void)0)
 
-#define set_p4d(p4dptr, p4dval)	set_pud((pud_t *)(p4dptr), (pud_t) { p4dval })
-
 static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
 {
 	return (pud_t *)p4d;
@@ -222,8 +219,6 @@ typedef struct { pud_t pud; } pmd_t;
 #define PMD_MASK  	(~(PMD_SIZE-1))
 
 #define pmd_ERROR(pmd)				(pud_ERROR((pmd).pud))
-
-#define set_pud(pudptr, pudval)			set_pmd((pmd_t *)(pudptr), (pmd_t) { pudval })
 
 static inline pmd_t * pmd_offset(pud_t * pud, unsigned long address)
 {

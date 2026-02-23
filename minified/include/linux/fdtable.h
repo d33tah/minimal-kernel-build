@@ -48,8 +48,6 @@ static inline bool close_on_exec(unsigned int fd, const struct fdtable *fdt)
 struct files_struct {
    
 	atomic_t count;
-	bool resize_in_progress;
-	wait_queue_head_t resize_wait;
 
 	struct fdtable __rcu *fdt;
 	struct fdtable fdtab;

@@ -39,7 +39,6 @@ struct cred {
 	kgid_t		egid;
 	kuid_t		fsuid;
 	kgid_t		fsgid;
-	kernel_cap_t	cap_permitted;
 	struct user_struct *user;
 	struct user_namespace *user_ns;
 	struct ucounts *ucounts;

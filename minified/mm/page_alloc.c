@@ -111,7 +111,6 @@ static void prep_compound_page(struct page *page, unsigned int order)
 	VM_BUG_ON_PAGE(COMPOUND_PAGE_DTOR >= NR_COMPOUND_DTORS, page);
 	page[1].compound_dtor = COMPOUND_PAGE_DTOR;
 	page[1].compound_order = order; /* inlined set_compound_order */
-	atomic_set(compound_mapcount_ptr(page), -1);
 }
 
 static inline void set_buddy_order(struct page *page, unsigned int order)

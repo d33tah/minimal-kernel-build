@@ -14,7 +14,6 @@ struct cred init_cred = {
 	.egid = GLOBAL_ROOT_GID,
 	.fsuid = GLOBAL_ROOT_UID,
 	.fsgid = GLOBAL_ROOT_GID,
-	.cap_permitted = CAP_FULL_SET,
 	.user = INIT_USER,
 	.user_ns = &init_user_ns,
 	.group_info = &init_groups,

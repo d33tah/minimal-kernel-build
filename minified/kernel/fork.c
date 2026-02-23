@@ -294,11 +294,6 @@ copy_process(int node, struct kernel_clone_args *args)
 	{
 		struct fs_struct *fs = current->fs;
 		spin_lock(&fs->lock);
-		if (fs->in_exec) {
-			spin_unlock(&fs->lock);
-			retval = -EAGAIN;
-			goto bad_fork;
-		}
 		fs->users++;
 		spin_unlock(&fs->lock);
 	}
@@ -320,8 +315,6 @@ copy_process(int node, struct kernel_clone_args *args)
 			retval = -ENOMEM;
 			goto bad_fork;
 		}
-		atomic_set(&sig->live, 1);
-		refcount_set(&sig->sigcnt, 1);
 		sig->thread_head =
 			(struct list_head)LIST_HEAD_INIT(p->thread_node);
 		p->thread_node =
@@ -330,7 +323,6 @@ copy_process(int node, struct kernel_clone_args *args)
 		task_lock(current->group_leader);
 		memcpy(sig->rlim, current->signal->rlim, sizeof sig->rlim);
 		task_unlock(current->group_leader);
-		mutex_init(&sig->cred_guard_mutex);
 		init_rwsem(&sig->exec_update_lock);
 	}
 	p->mm = NULL;

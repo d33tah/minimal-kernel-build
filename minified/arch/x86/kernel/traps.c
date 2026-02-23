@@ -88,14 +88,6 @@ DEFINE_IDTENTRY_ERRORCODE(exc_alignment_check)
 	die("alignment check", regs, error_code);
 }
 
-DEFINE_IDTENTRY_DF(exc_double_fault)
-{
-	irqentry_nmi_enter(regs);
-	pr_emerg("PANIC: double fault, error_code: 0x%lx\n", error_code);
-	die("double fault", regs, error_code);
-	panic("Machine halted.");
-}
-
 DEFINE_IDTENTRY(exc_bounds)
 {
 	die("bounds", regs, 0);

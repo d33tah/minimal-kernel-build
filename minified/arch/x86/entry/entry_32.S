@@ -60,9 +60,6 @@
 # define	UNWIND_HINT_IRET_REGS
 .macro STACKLEAK_ERASE
 .endm
-.macro GET_PERCPU_BASE reg:req
-	movq	pcpu_unit_offsets(%rip), \reg
-.endm
 /* end calling.h */
 
 	.section .entry.text, "ax"
@@ -799,46 +796,6 @@ ret_to_user:
 	movl	%esp, %eax
 	jmp	restore_all_switch_stack
 SYM_CODE_END(handle_exception)
-
-SYM_CODE_START(asm_exc_double_fault)
-1:
-	/*
-	 * This is a task gate handler, not an interrupt gate handler.
-	 * The error code is on the stack, but the stack is otherwise
-	 * empty.  Interrupts are off.  Our state is sane with the following
-	 * exceptions:
-	 *
-	 *  - CR0.TS is set.  "TS" literally means "task switched".
-	 *  - EFLAGS.NT is set because we're a "nested task".
-	 *  - The doublefault TSS has back_link set and has been marked busy.
-	 *  - TR points to the doublefault TSS and the normal TSS is busy.
-	 *  - CR3 is the normal kernel PGD.  This would be delightful, except
-	 *    that the CPU didn't bother to save the old CR3 anywhere.  This
-	 *    would make it very awkward to return back to the context we came
-	 *    from.
-	 *
-	 * The rest of EFLAGS is sanitized for us, so we don't need to
-	 * worry about AC or DF.
-	 *
-	 * Don't even bother popping the error code.  It's always zero,
-	 * and ignoring it makes us a bit more robust against buggy
-	 * hypervisor task gate implementations.
-	 *
-	 * We will manually undo the task switch instead of doing a
-	 * task-switching IRET.
-	 */
-
-	clts				/* clear CR0.TS */
-	pushl	$X86_EFLAGS_FIXED
-	popfl				/* clear EFLAGS.NT */
-
-	call	doublefault_shim
-
-	/* We don't support returning, so we have no IRET here. */
-1:
-	hlt
-	jmp 1b
-SYM_CODE_END(asm_exc_double_fault)
 
 /*
  * NMI is doubly nasty.  It can happen on the first instruction of

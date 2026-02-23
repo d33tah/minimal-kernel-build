@@ -112,17 +112,6 @@ __visible noinstr void func(struct pt_regs *regs,			\
 									\
 static noinline void __##func(struct pt_regs *regs, u32 vector)
 
-#define DECLARE_IDTENTRY_DF(vector, func)				\
-	asmlinkage void asm_##func(void);				\
-	__visible void func(struct pt_regs *regs,			\
-			    unsigned long error_code,			\
-			    unsigned long address)
-
-#define DEFINE_IDTENTRY_DF(func)					\
-__visible noinstr void func(struct pt_regs *regs,			\
-			    unsigned long error_code,			\
-			    unsigned long address)
-
 #define DECLARE_IDTENTRY_NMI		DECLARE_IDTENTRY_RAW
 
 #else  
@@ -143,8 +132,6 @@ __visible noinstr void func(struct pt_regs *regs,			\
 
 #define DECLARE_IDTENTRY_IRQ(vector, func)				\
 	idtentry_irq vector func
-
-# define DECLARE_IDTENTRY_DF(vector, func)
 
 #define DECLARE_IDTENTRY_NMI(vector, func)
 
@@ -191,8 +178,6 @@ DECLARE_IDTENTRY_RAW_ERRORCODE(X86_TRAP_PF,	exc_page_fault);
 DECLARE_IDTENTRY_NMI(X86_TRAP_NMI,	exc_nmi);
 
 DECLARE_IDTENTRY_RAW(X86_TRAP_DB,	exc_debug);
-
-DECLARE_IDTENTRY_DF(X86_TRAP_DF,	exc_double_fault);
 
 DECLARE_IDTENTRY_IRQ(X86_TRAP_OTHER,	common_interrupt);
 

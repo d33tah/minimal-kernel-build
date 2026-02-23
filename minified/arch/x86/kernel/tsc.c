@@ -30,7 +30,7 @@ struct cyc2ns {
 
 static DEFINE_PER_CPU_ALIGNED(struct cyc2ns, cyc2ns);
 
-__always_inline void cyc2ns_read_begin(struct cyc2ns_data *data)
+static __always_inline void cyc2ns_read_begin(struct cyc2ns_data *data)
 {
 	int seq, idx;
 
@@ -49,7 +49,7 @@ __always_inline void cyc2ns_read_begin(struct cyc2ns_data *data)
 	} while (unlikely(seq != this_cpu_read(cyc2ns.seq.seqcount.sequence)));
 }
 
-__always_inline void cyc2ns_read_end(void)
+static __always_inline void cyc2ns_read_end(void)
 {
 	preempt_enable_notrace();
 }

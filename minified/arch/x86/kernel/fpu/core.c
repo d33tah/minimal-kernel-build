@@ -241,7 +241,7 @@ void fpu_thread_struct_whitelist(unsigned long *offset, unsigned long *size)
 	*size = 0;
 }
 
-void fpu__drop(struct fpu *fpu)
+static void fpu__drop(struct fpu *fpu)
 {
 	preempt_disable();
 

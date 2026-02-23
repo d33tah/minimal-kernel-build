@@ -106,14 +106,14 @@ void cr4_update_irqsoff(unsigned long set, unsigned long clear)
 __u32 cpu_caps_cleared[NCAPINTS + NBUGINTS] __aligned(sizeof(unsigned long));
 __u32 cpu_caps_set[NCAPINTS + NBUGINTS] __aligned(sizeof(unsigned long));
 
-void load_percpu_segment(int cpu)
+static void load_percpu_segment(int cpu)
 {
 	loadsegment(fs, __KERNEL_PERCPU);
 }
 
 DEFINE_PER_CPU(struct cpu_entry_area *, cpu_entry_area);
 
-void load_direct_gdt(int cpu)
+static void load_direct_gdt(int cpu)
 {
 	struct desc_ptr gdt_descr;
 
@@ -122,7 +122,7 @@ void load_direct_gdt(int cpu)
 	load_gdt(&gdt_descr);
 }
 
-void load_fixmap_gdt(int cpu)
+static void load_fixmap_gdt(int cpu)
 {
 	struct desc_ptr gdt_descr;
 
@@ -131,14 +131,14 @@ void load_fixmap_gdt(int cpu)
 	load_gdt(&gdt_descr);
 }
 
-void switch_to_new_gdt(int cpu)
+static void switch_to_new_gdt(int cpu)
 {
 	load_direct_gdt(cpu);
 
 	load_percpu_segment(cpu);
 }
 
-void cpu_detect(struct cpuinfo_x86 *c)
+static void cpu_detect(struct cpuinfo_x86 *c)
 {
 	cpuid(0x00000000, (unsigned int *)&c->cpuid_level,
 	      (unsigned int *)&c->x86_vendor_id[0],
@@ -262,6 +262,8 @@ void __init check_bugs(void)
 
 	alternatives_patched = 1;
 }
+
+int __read_mostly alternatives_patched;
 
 DEFINE_PER_CPU(struct task_struct *, current_task) = &init_task;
 DEFINE_PER_CPU(int, __preempt_count) = INIT_PREEMPT_COUNT;

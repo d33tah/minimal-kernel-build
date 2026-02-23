@@ -1,12 +1,6 @@
  
 #include <linux/irq.h>
-/* sched/clock.h inlined */
 #include <linux/smp.h>
-extern unsigned long long notrace sched_clock(void);
-static inline u64 sched_clock_cpu(int cpu)
-{
-	return sched_clock();
-}
 
 # define IRQ_BITMAP_BITS	(NR_IRQS + 8196)
 
@@ -57,11 +51,6 @@ irq_settings_clr_and_set(struct irq_desc *desc, u32 clr, u32 set)
 {
 	desc->status_use_accessors &= ~(clr & _IRQF_MODIFY_MASK);
 	desc->status_use_accessors |= (set & _IRQF_MODIFY_MASK);
-}
-
-static inline bool irq_settings_is_per_cpu_devid(struct irq_desc *desc)
-{
-	return desc->status_use_accessors & _IRQ_PER_CPU_DEVID;
 }
 
 #define IRQ_RESEND	true

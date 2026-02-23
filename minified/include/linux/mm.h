@@ -167,29 +167,19 @@ struct vm_fault {
 		struct vm_area_struct *vma;	
 		gfp_t gfp_mask;			
 		pgoff_t pgoff;			
-		unsigned long address;		
-		unsigned long real_address;	
+		unsigned long address;
 	};
 	enum fault_flag flags;		
 	pmd_t *pmd;			
 	pud_t *pud;			
-	union {
-		pte_t orig_pte;		
-		pmd_t orig_pmd;		
-	};
-
-	struct page *cow_page;		
-	struct page *page;		
-	
-	pte_t *pte;			
-	spinlock_t *ptl;		
-	pgtable_t prealloc_pte;		
+	pte_t orig_pte;
+	struct page *page;
+	pte_t *pte;
+	spinlock_t *ptl;
 };
 
 struct vm_operations_struct {
-	int (*may_split)(struct vm_area_struct *area, unsigned long addr);
 	vm_fault_t (*fault)(struct vm_fault *vmf);
-	vm_fault_t (*page_mkwrite)(struct vm_fault *vmf);
 };
 
 static inline void vma_set_anonymous(struct vm_area_struct *vma)

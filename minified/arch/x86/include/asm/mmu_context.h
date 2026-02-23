@@ -18,9 +18,6 @@ static inline void paravirt_activate_mm(struct mm_struct *prev,
 {
 }
 
-DECLARE_STATIC_KEY_TRUE(rdpmc_never_available_key);
-DECLARE_STATIC_KEY_FALSE(rdpmc_always_available_key);
-
 static inline void load_mm_ldt(struct mm_struct *mm)
 {
 	clear_LDT();

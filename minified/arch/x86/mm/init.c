@@ -19,7 +19,6 @@ unsigned long kernel_physical_mapping_init(unsigned long start,
 					   pgprot_t prot);
 void zone_sizes_init(void);
 extern int after_bootmem;
-extern unsigned long tlb_single_page_flush_ceiling;
 
 static uint16_t __cachemode2pte_tbl[_PAGE_CACHE_MODE_NUM] = {
 	[_PAGE_CACHE_MODE_WB] = 0 | 0,

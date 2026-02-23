@@ -1,6 +1,29 @@
 /* Red-Black tree implementation */
 #include <linux/rbtree_augmented.h>
 
+#define RB_RED 0
+#define RB_BLACK 1
+
+#define __rb_parent(pc) ((struct rb_node *)(pc & ~3))
+
+#define __rb_color(pc) ((pc) & 1)
+#define __rb_is_black(pc) __rb_color(pc)
+#define __rb_is_red(pc) (!__rb_color(pc))
+#define rb_color(rb) __rb_color((rb)->__rb_parent_color)
+#define rb_is_red(rb) __rb_is_red((rb)->__rb_parent_color)
+#define rb_is_black(rb) __rb_is_black((rb)->__rb_parent_color)
+
+static inline void rb_set_parent(struct rb_node *rb, struct rb_node *p)
+{
+	rb->__rb_parent_color = rb_color(rb) | (unsigned long)p;
+}
+
+static inline void rb_set_parent_color(struct rb_node *rb, struct rb_node *p,
+				       int color)
+{
+	rb->__rb_parent_color = (unsigned long)p | color;
+}
+
 static inline void rb_set_black(struct rb_node *rb)
 {
 	rb->__rb_parent_color |= RB_BLACK;
@@ -9,6 +32,19 @@ static inline void rb_set_black(struct rb_node *rb)
 static inline struct rb_node *rb_red_parent(struct rb_node *red)
 {
 	return (struct rb_node *)red->__rb_parent_color;
+}
+
+static inline void __rb_change_child(struct rb_node *old, struct rb_node *new,
+				     struct rb_node *parent,
+				     struct rb_root *root)
+{
+	if (parent) {
+		if (parent->rb_left == old)
+			WRITE_ONCE(parent->rb_left, new);
+		else
+			WRITE_ONCE(parent->rb_right, new);
+	} else
+		WRITE_ONCE(root->rb_node, new);
 }
 
 static inline void __rb_rotate_set_parents(struct rb_node *old,
@@ -219,21 +255,71 @@ static __always_inline void ____rb_erase_color(
 	}
 }
 
-static inline void dummy_propagate(struct rb_node *node, struct rb_node *stop)
+/* Simplified erase without augmented callbacks (all callbacks are no-ops) */
+static __always_inline struct rb_node *__rb_erase(struct rb_node *node,
+						  struct rb_root *root)
 {
+	struct rb_node *child = node->rb_right;
+	struct rb_node *tmp = node->rb_left;
+	struct rb_node *parent, *rebalance;
+	unsigned long pc;
+
+	if (!tmp) {
+		pc = node->__rb_parent_color;
+		parent = __rb_parent(pc);
+		__rb_change_child(node, child, parent, root);
+		if (child) {
+			child->__rb_parent_color = pc;
+			rebalance = NULL;
+		} else
+			rebalance = __rb_is_black(pc) ? parent : NULL;
+	} else if (!child) {
+		tmp->__rb_parent_color = pc = node->__rb_parent_color;
+		parent = __rb_parent(pc);
+		__rb_change_child(node, tmp, parent, root);
+		rebalance = NULL;
+	} else {
+		struct rb_node *successor = child, *child2;
+
+		tmp = child->rb_left;
+		if (!tmp) {
+			parent = successor;
+			child2 = successor->rb_right;
+		} else {
+			do {
+				parent = successor;
+				successor = tmp;
+				tmp = tmp->rb_left;
+			} while (tmp);
+			child2 = successor->rb_right;
+			WRITE_ONCE(parent->rb_left, child2);
+			WRITE_ONCE(successor->rb_right, child);
+			rb_set_parent(child, successor);
+		}
+
+		tmp = node->rb_left;
+		WRITE_ONCE(successor->rb_left, tmp);
+		rb_set_parent(tmp, successor);
+
+		pc = node->__rb_parent_color;
+		tmp = __rb_parent(pc);
+		__rb_change_child(node, successor, tmp, root);
+
+		if (child2) {
+			rb_set_parent_color(child2, parent, RB_BLACK);
+			rebalance = NULL;
+		} else {
+			rebalance = rb_is_black(successor) ? parent : NULL;
+		}
+		successor->__rb_parent_color = pc;
+	}
+
+	return rebalance;
 }
-static inline void dummy_copy(struct rb_node *old, struct rb_node *new)
-{
-}
+
 static inline void dummy_rotate(struct rb_node *old, struct rb_node *new)
 {
 }
-
-static const struct rb_augment_callbacks dummy_callbacks = {
-	.propagate = dummy_propagate,
-	.copy = dummy_copy,
-	.rotate = dummy_rotate
-};
 
 void rb_insert_color(struct rb_node *node, struct rb_root *root)
 {
@@ -243,7 +329,7 @@ void rb_insert_color(struct rb_node *node, struct rb_root *root)
 void rb_erase(struct rb_node *node, struct rb_root *root)
 {
 	struct rb_node *rebalance;
-	rebalance = __rb_erase_augmented(node, root, &dummy_callbacks);
+	rebalance = __rb_erase(node, root);
 	if (rebalance)
 		____rb_erase_color(rebalance, root, dummy_rotate);
 }

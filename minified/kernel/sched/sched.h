@@ -298,7 +298,6 @@ extern void resched_cpu(int cpu);
 
 extern void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags);
 
-extern struct sched_entity *__pick_first_entity(struct cfs_rq *cfs_rq);
 extern void init_cfs_rq(struct cfs_rq *cfs_rq);
 
 #endif  

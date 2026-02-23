@@ -42,7 +42,7 @@ static void __dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 	rb_erase_cached(&se->run_node, &cfs_rq->tasks_timeline);
 }
 
-struct sched_entity *__pick_first_entity(struct cfs_rq *cfs_rq)
+static struct sched_entity *__pick_first_entity(struct cfs_rq *cfs_rq)
 {
 	struct rb_node *left = rb_first_cached(&cfs_rq->tasks_timeline);
 

@@ -3,9 +3,6 @@
 #include <asm/cache.h>
 #include <asm/apic.h>
 
-DEFINE_STATIC_KEY_TRUE(rdpmc_never_available_key);
-DEFINE_STATIC_KEY_FALSE(rdpmc_always_available_key);
-
 #define STATIC_NOPV static
 #define __flush_tlb_local native_flush_tlb_local
 #define __flush_tlb_global native_flush_tlb_global
@@ -72,10 +69,6 @@ void initialize_tlbstate_and_flush(void)
 	for (i = 1; i < TLB_NR_DYN_ASIDS; i++)
 		this_cpu_write(cpu_tlbstate.ctxs[i].ctx_id, 0);
 }
-
-DEFINE_PER_CPU_SHARED_ALIGNED(struct tlb_state_shared, cpu_tlbstate_shared);
-
-unsigned long tlb_single_page_flush_ceiling __read_mostly = 33;
 
 void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 			unsigned long end, unsigned int stride_shift,

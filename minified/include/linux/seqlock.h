@@ -116,9 +116,6 @@ SEQCOUNT_LOCKNAME(spinlock, spinlock_t, __SEQ_RT, s->lock, spin,
 		_seq;                                     \
 	})
 
-#define __read_seqcount_retry(s, start) \
-	do___read_seqcount_retry(seqprop_ptr(s), start)
-
 static inline int do___read_seqcount_retry(const seqcount_t *s, unsigned start)
 {
 	return unlikely(READ_ONCE(s->sequence) != start);

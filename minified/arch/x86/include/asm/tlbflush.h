@@ -85,12 +85,6 @@ struct tlb_state {
 };
 DECLARE_PER_CPU_ALIGNED(struct tlb_state, cpu_tlbstate);
 
-struct tlb_state_shared {
-	 
-	bool is_lazy;
-};
-DECLARE_PER_CPU_SHARED_ALIGNED(struct tlb_state_shared, cpu_tlbstate_shared);
-
 static inline void cr4_init_shadow(void)
 {
 	this_cpu_write(cpu_tlbstate.cr4, __read_cr4());

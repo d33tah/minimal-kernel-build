@@ -36,7 +36,6 @@ unsigned long kernel_physical_mapping_init(unsigned long start,
 					   pgprot_t prot);
 void zone_sizes_init(void);
 extern int after_bootmem;
-extern unsigned long tlb_single_page_flush_ceiling;
 
 static pmd_t *__init one_md_table_init(pgd_t *pgd)
 {

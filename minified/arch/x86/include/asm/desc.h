@@ -25,11 +25,6 @@ static inline struct desc_struct *get_cpu_gdt_rw(unsigned int cpu)
 	return per_cpu(gdt_page, cpu).gdt;
 }
 
-static inline struct desc_struct *get_current_gdt_rw(void)
-{
-	return this_cpu_ptr(&gdt_page)->gdt;
-}
-
 static inline struct desc_struct *get_cpu_gdt_ro(int cpu)
 {
 	return (struct desc_struct *)&get_cpu_entry_area(cpu)->gdt;

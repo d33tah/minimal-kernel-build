@@ -162,9 +162,6 @@ extern pgd_t initial_page_table[1024];
 void paging_init(void);
 void sync_initial_page_table(void);
 
-#define pgd_ERROR(e) \
-	pr_err("%s:%d: bad pgd %08lx\n", __FILE__, __LINE__, pgd_val(e))
-
 static inline void native_set_pte(pte_t *ptep , pte_t pte)
 {
 	*ptep = pte;

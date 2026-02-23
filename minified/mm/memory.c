@@ -297,7 +297,6 @@ static vm_fault_t __handle_mm_fault(struct vm_area_struct *vma,
 	struct vm_fault vmf = {
 		.vma = vma,
 		.address = address & PAGE_MASK,
-		.real_address = address,
 		.flags = flags,
 		.pgoff = linear_page_index(vma, address),
 		.gfp_mask = vma->vm_file ?

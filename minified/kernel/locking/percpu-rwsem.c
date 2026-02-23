@@ -23,9 +23,3 @@ void percpu_free_rwsem(struct percpu_rw_semaphore *sem)
 	rcu_sync_dtor(&sem->rss);
 	sem->read_count = NULL;
 }
-
-bool __sched __percpu_down_read(struct percpu_rw_semaphore *sem, bool try)
-{
-	this_cpu_inc(*sem->read_count);
-	return true;
-}

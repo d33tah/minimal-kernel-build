@@ -49,8 +49,6 @@ struct clocksource {
 extern int clocksource_unregister(struct clocksource*);
 extern struct clocksource * __init clocksource_default_clock(void);
 
-extern u64
-clocks_calc_max_nsecs(u32 mult, u32 shift, u32 maxadj, u64 mask, u64 *max_cycles);
 extern void
 clocks_calc_mult_shift(u32 *mult, u32 *shift, u32 from, u32 to, u32 minsec);
 
@@ -68,7 +66,5 @@ static inline int clocksource_register_khz(struct clocksource *cs, u32 khz)
 {
 	return __clocksource_register_scale(cs, 1000, khz);
 }
-
-extern void clocksource_arch_init(struct clocksource *cs);
 
 #endif

@@ -5,7 +5,6 @@
 #include <linux/percpu.h>
 #include <linux/sched/signal.h>
 struct rcuwait { struct task_struct __rcu *task; };
-extern int rcuwait_wake_up(struct rcuwait *w);
 #include <linux/wait.h>
 #include <linux/rcupdate.h>
 struct rcu_sync {
@@ -23,8 +22,6 @@ struct percpu_rw_semaphore {
 	wait_queue_head_t	waiters;
 	atomic_t		block;
 };
-
-extern bool __percpu_down_read(struct percpu_rw_semaphore *, bool);
 
 extern int __percpu_init_rwsem(struct percpu_rw_semaphore *,
 				const char *, struct lock_class_key *);

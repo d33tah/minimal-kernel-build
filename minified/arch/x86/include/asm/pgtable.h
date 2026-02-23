@@ -188,7 +188,6 @@ static inline int pte_none(pte_t pte)
 	return !(pte.pte & ~(_PAGE_KNL_ERRATUM_MASK));
 }
 
-#define __HAVE_ARCH_PTE_SAME
 static inline int pte_same(pte_t a, pte_t b)
 {
 	return a.pte == b.pte;
@@ -252,7 +251,6 @@ static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
 
 struct vm_area_struct;
 
-#define  __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS
 extern int ptep_set_access_flags(struct vm_area_struct *vma,
 				 unsigned long address, pte_t *ptep,
 				 pte_t entry, int dirty);

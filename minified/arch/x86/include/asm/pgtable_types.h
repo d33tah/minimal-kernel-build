@@ -10,8 +10,6 @@
 #define _PAGE_BIT_PRESENT	0	 
 #define _PAGE_BIT_RW		1	 
 #define _PAGE_BIT_USER		2	 
-#define _PAGE_BIT_PWT		3	 
-#define _PAGE_BIT_PCD		4	 
 #define _PAGE_BIT_ACCESSED	5	 
 #define _PAGE_BIT_DIRTY		6	 
 #define _PAGE_BIT_PSE		7	 
@@ -23,8 +21,6 @@
 #define _PAGE_PRESENT	(_AT(pteval_t, 1) << _PAGE_BIT_PRESENT)
 #define _PAGE_RW	(_AT(pteval_t, 1) << _PAGE_BIT_RW)
 #define _PAGE_USER	(_AT(pteval_t, 1) << _PAGE_BIT_USER)
-#define _PAGE_PWT	(_AT(pteval_t, 1) << _PAGE_BIT_PWT)
-#define _PAGE_PCD	(_AT(pteval_t, 1) << _PAGE_BIT_PCD)
 #define _PAGE_ACCESSED	(_AT(pteval_t, 1) << _PAGE_BIT_ACCESSED)
 #define _PAGE_DIRTY	(_AT(pteval_t, 1) << _PAGE_BIT_DIRTY)
 #define _PAGE_PSE	(_AT(pteval_t, 1) << _PAGE_BIT_PSE)

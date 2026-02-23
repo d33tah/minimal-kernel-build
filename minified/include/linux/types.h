@@ -23,7 +23,6 @@ typedef __u64 __bitwise __be64;
 typedef __u16 __bitwise __sum16;
 typedef __u32 __bitwise __wsum;
 
-#define __aligned_u64 __u64 __attribute__((aligned(8)))
 
 typedef unsigned __bitwise __poll_t;
 

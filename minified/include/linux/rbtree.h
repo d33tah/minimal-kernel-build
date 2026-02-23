@@ -9,7 +9,6 @@ struct rb_root_cached { struct rb_root rb_root; struct rb_node *rb_leftmost; };
 #include <linux/stddef.h>
 #define rb_parent(r)   ((struct rb_node *)((r)->__rb_parent_color & ~3))
 #define rb_entry(ptr, type, member) container_of(ptr, type, member)
-#define RB_EMPTY_ROOT(root)  (READ_ONCE((root)->rb_node) == NULL)
 #define RB_EMPTY_NODE(node)  ((node)->__rb_parent_color == (unsigned long)(node))
 extern void rb_insert_color(struct rb_node *, struct rb_root *);
 extern void rb_erase(struct rb_node *, struct rb_root *);

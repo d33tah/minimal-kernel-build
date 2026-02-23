@@ -25,7 +25,6 @@ struct e820_table {
 	struct e820_entry entries[E820_MAX_ENTRIES];
 };
 
-#define ISA_START_ADDRESS	0x000a0000
 #define ISA_END_ADDRESS		0x00100000
 #define BIOS_BEGIN		0x000a0000
 #define BIOS_END		0x00100000

@@ -29,7 +29,6 @@
 
 #ifndef atomic_try_cmpxchg_relaxed
 #ifdef atomic_try_cmpxchg
-#define atomic_try_cmpxchg_release atomic_try_cmpxchg
 #define atomic_try_cmpxchg_relaxed atomic_try_cmpxchg
 #endif
 #endif

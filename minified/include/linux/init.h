@@ -99,7 +99,6 @@ extern void (*late_time_init)(void);
 #define subsys_initcall(fn)		__define_initcall(fn, 4)
 #define fs_initcall(fn)			__define_initcall(fn, 5)
 #define device_initcall(fn)		__define_initcall(fn, 6)
-#define late_initcall(fn)		__define_initcall(fn, 7)
 
 #define __initcall(fn) device_initcall(fn)
 

@@ -18,9 +18,6 @@ typedef struct kernel_cap_struct {
 struct inode;
 struct user_namespace;
 
-#define CAP_FOR_EACH_U32(__capi)  \
-	for (__capi = 0; __capi < _KERNEL_CAPABILITY_U32S; ++__capi)
-
 #if _KERNEL_CAPABILITY_U32S != 2
 # error Fix up hand-coded capability macro initializers
 #else

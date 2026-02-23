@@ -8,9 +8,7 @@
 #undef CONFIG_KASAN
 #undef CONFIG_KASAN_GENERIC
 
-#define __NO_FORTIFY
 
-#define USE_EARLY_PGTABLE_L5
 
 #include <linux/linkage.h>
 #include <linux/screen_info.h>
@@ -20,7 +18,6 @@
 #include <asm/bootparam.h>
 #include <asm/desc_defs.h>
 
-#define BOOT_CTYPE_H
 #define BOOT_BOOT_H
 #include "../io.h"
 

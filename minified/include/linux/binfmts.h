@@ -5,7 +5,6 @@
 #include <linux/capability.h>
 
 #define MAX_ARG_STRLEN (PAGE_SIZE * 32)
-#define MAX_ARG_STRINGS 0x7FFFFFFF
 #define BINPRM_BUF_SIZE 256
 
 struct linux_binprm {

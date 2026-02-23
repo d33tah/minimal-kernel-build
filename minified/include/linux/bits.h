@@ -6,7 +6,6 @@
 
 #define BIT(nr)			(UL(1) << (nr))
 
-#define BIT_ULL(nr)		(ULL(1) << (nr))
 #define BITS_PER_BYTE		8
 
 #if !defined(__ASSEMBLY__)

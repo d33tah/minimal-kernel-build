@@ -13,7 +13,6 @@ static inline int rwsem_is_locked(struct rw_semaphore *sem) { return atomic_long
 #define __RWSEM_DEBUG_INIT(lockname)
 #define __RWSEM_OPT_INIT(lockname)
 #define __RWSEM_INITIALIZER(name) { __RWSEM_COUNT_INIT(name), .owner = ATOMIC_LONG_INIT(0), __RWSEM_OPT_INIT(name) .wait_lock = __RAW_SPIN_LOCK_UNLOCKED(name.wait_lock), .wait_list = LIST_HEAD_INIT((name).wait_list), __RWSEM_DEBUG_INIT(name) __RWSEM_DEP_MAP_INIT(name) }
-#define DECLARE_RWSEM(name) struct rw_semaphore name = __RWSEM_INITIALIZER(name)
 extern void __init_rwsem(struct rw_semaphore *sem, const char *name, struct lock_class_key *key);
 #define init_rwsem(sem) do { static struct lock_class_key __key; __init_rwsem((sem), #sem, &__key); } while (0)
 extern void down_read(struct rw_semaphore *sem);

@@ -48,11 +48,9 @@ typedef struct siginfo {
 /* Only keep si_ accessors that are actually used */
 #define si_pid		_sifields._kill._pid
 #define si_uid		_sifields._kill._uid
-#define si_addr		_sifields._sigfault._addr
 #define si_call_addr	_sifields._sigsys._call_addr
 #define si_syscall	_sifields._sigsys._syscall
 #define si_arch		_sifields._sigsys._arch
-#define SI_KERNEL	0x80
 
 /* SEGV codes used by x86 fault handler */
 #define SEGV_MAPERR	1

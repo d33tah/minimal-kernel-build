@@ -33,8 +33,6 @@ struct thread_info {
 #define TIF_NOTIFY_RESUME	1
 #define TIF_SIGPENDING		2
 #define TIF_NEED_RESCHED	3
-#define TIF_SPEC_IB		9
-#define TIF_SPEC_L1D_FLUSH	10
 #define TIF_UPROBE		12
 #define TIF_PATCH_PENDING	13
 #define TIF_NEED_FPU_LOAD	14
@@ -51,9 +49,7 @@ struct thread_info {
 
 #define _TIF_WORK_CTXSW	(0)
 
-#define _TIF_WORK_CTXSW_PREV	(_TIF_WORK_CTXSW)
 
-#define _TIF_WORK_CTXSW_NEXT	(_TIF_WORK_CTXSW)
 
 #ifndef __ASSEMBLY__
 

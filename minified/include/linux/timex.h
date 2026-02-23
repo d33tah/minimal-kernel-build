@@ -22,5 +22,4 @@ extern unsigned long native_calibrate_tsc(void);
 #define NTP_SCALE_SHIFT		32
 #define NTP_INTERVAL_FREQ  (HZ)
 #define NTP_INTERVAL_LENGTH (NSEC_PER_SEC/NTP_INTERVAL_FREQ)
-#define PIT_TICK_RATE 1193182ul
 #endif

@@ -65,7 +65,6 @@ typedef struct sigaltstack {
 #include <uapi/asm/sigcontext.h>
 
 /* __i386__ - 32-bit x86 */
-#define __HAVE_ARCH_SIG_BITOPS
 
 static inline int __const_sigismember(sigset_t *set, int _sig)
 {

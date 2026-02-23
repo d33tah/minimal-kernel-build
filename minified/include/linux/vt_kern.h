@@ -1,7 +1,6 @@
 #ifndef _VT_KERN_H
 #define _VT_KERN_H
 
-#define VT_SINGLE_DRIVER
 #define MIN_NR_CONSOLES 1
 #define MAX_NR_CONSOLES	1
 

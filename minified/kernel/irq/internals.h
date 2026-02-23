@@ -83,8 +83,6 @@ static inline void chip_bus_sync_unlock(struct irq_desc *desc)
 		desc->irq_data.chip->irq_bus_sync_unlock(&desc->irq_data);
 }
 
-#define _IRQ_DESC_CHECK		(1 << 0)
-#define _IRQ_DESC_PERCPU	(1 << 1)
 
 #define for_each_action_of_desc(desc, act)			\
 	for (act = desc->action; act; act = act->next)

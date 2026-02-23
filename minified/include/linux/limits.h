@@ -1,7 +1,6 @@
 #ifndef _LINUX_LIMITS_H
 #define _LINUX_LIMITS_H
 
-#define ARG_MAX       131072
 #define NAME_MAX         255
 #define PATH_MAX        4096
 

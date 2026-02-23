@@ -44,10 +44,8 @@
 	} while (0)
 
 #define write_lock(lock)	_raw_write_lock(lock)
-#define read_lock(lock)		_raw_read_lock(lock)
 
 #define write_lock_irq(lock)		_raw_write_lock_irq(lock)
-#define read_unlock(lock)		_raw_read_unlock(lock)
 #define write_unlock(lock)		_raw_write_unlock(lock)
 #define write_unlock_irq(lock)		_raw_write_unlock_irq(lock)
 
@@ -61,14 +59,12 @@
 #define __UNLOCK_IRQ(lock) do { local_irq_enable(); __UNLOCK(lock); } while (0)
 #define __UNLOCK_IRQRESTORE(lock, flags) do { local_irq_restore(flags); __UNLOCK(lock); } while (0)
 #define _raw_spin_lock(lock)			__LOCK(lock)
-#define _raw_read_lock(lock)			__LOCK(lock)
 #define _raw_write_lock(lock)			__LOCK(lock)
 #define _raw_spin_lock_irq(lock)		__LOCK_IRQ(lock)
 #define _raw_write_lock_irq(lock)		__LOCK_IRQ(lock)
 #define _raw_spin_lock_irqsave(lock, flags)	__LOCK_IRQSAVE(lock, flags)
 #define _raw_spin_trylock(lock)			({ __LOCK(lock); 1; })
 #define _raw_spin_unlock(lock)			__UNLOCK(lock)
-#define _raw_read_unlock(lock)			__UNLOCK(lock)
 #define _raw_write_unlock(lock)			__UNLOCK(lock)
 #define _raw_spin_unlock_irq(lock)		__UNLOCK_IRQ(lock)
 #define _raw_write_unlock_irq(lock)		__UNLOCK_IRQ(lock)

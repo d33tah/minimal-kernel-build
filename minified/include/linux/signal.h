@@ -81,6 +81,5 @@ extern struct kmem_cache *sighand_cachep;
 	rt_sigmask(SIGWINCH)  |  rt_sigmask(SIGURG)    )
 
 #define sig_kernel_only(sig)		siginmask(sig, SIG_KERNEL_ONLY_MASK)
-#define sig_kernel_ignore(sig)		siginmask(sig, SIG_KERNEL_IGNORE_MASK)
 
 #endif

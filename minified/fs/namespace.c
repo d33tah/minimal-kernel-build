@@ -4,7 +4,38 @@
 #include <linux/fs_struct.h>
 #include <linux/fs_parser.h>
 
-#include "mount.h"
+/* mount.h inlined */
+struct mnt_namespace {
+	struct ns_common ns;
+	struct mount *root;
+	struct list_head list;
+	spinlock_t ns_lock;
+	struct user_namespace *user_ns;
+	struct ucounts *ucounts;
+	u64 seq;
+	unsigned int mounts;
+} __randomize_layout;
+
+struct mount {
+	struct vfsmount mnt;
+	int mnt_count;
+	int mnt_writers;
+	struct list_head mnt_instance;
+	const char *mnt_devname;
+	struct list_head mnt_list;
+	struct mnt_namespace *mnt_ns;
+	int mnt_id;
+} __randomize_layout;
+
+#define MNT_NS_INTERNAL ERR_PTR(-EINVAL)
+
+static inline struct mount *real_mount(struct vfsmount *mnt)
+{
+	return container_of(mnt, struct mount, mnt);
+}
+
+extern seqlock_t mount_lock;
+
 #include "internal.h"
 
 static DEFINE_IDA(mnt_id_ida);

@@ -1,11 +1,6 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <asm/timer.h>
-extern unsigned int vclocks_used;
-static inline void vclocks_set_used(unsigned int which)
-{
-	WRITE_ONCE(vclocks_used, READ_ONCE(vclocks_used) | (1 << which));
-}
 #include <asm/time.h>
 #include <asm/irq.h>
 #include <asm/io.h>
@@ -142,54 +137,7 @@ unsigned long native_calibrate_cpu_early(void)
 	return fast_calibrate;
 }
 
-static u64 read_tsc(struct clocksource *cs)
-{
-	return (u64)rdtsc_ordered();
-}
-
-static int tsc_cs_enable(struct clocksource *cs)
-{
-	vclocks_set_used(VDSO_CLOCKMODE_TSC);
-	return 0;
-}
-
-static struct clocksource clocksource_tsc_early = {
-	.name = "tsc-early",
-	.rating = 299,
-	.uncertainty_margin = 32 * NSEC_PER_MSEC,
-	.read = read_tsc,
-	.mask = CLOCKSOURCE_MASK(64),
-	.flags = CLOCK_SOURCE_IS_CONTINUOUS | CLOCK_SOURCE_MUST_VERIFY,
-	.vdso_clock_mode = VDSO_CLOCKMODE_TSC,
-	.enable = tsc_cs_enable,
-	.list = LIST_HEAD_INIT(clocksource_tsc_early.list),
-};
-
-static struct clocksource clocksource_tsc = {
-	.name = "tsc",
-	.rating = 300,
-	.read = read_tsc,
-	.mask = CLOCKSOURCE_MASK(64),
-	.flags = CLOCK_SOURCE_IS_CONTINUOUS | CLOCK_SOURCE_VALID_FOR_HRES |
-		 CLOCK_SOURCE_MUST_VERIFY | CLOCK_SOURCE_VERIFY_PERCPU,
-	.vdso_clock_mode = VDSO_CLOCKMODE_TSC,
-	.enable = tsc_cs_enable,
-	.list = LIST_HEAD_INIT(clocksource_tsc.list),
-};
-
-static int __init init_tsc_clocksource(void)
-{
-	if (!boot_cpu_has(X86_FEATURE_TSC) || !tsc_khz)
-		return 0;
-
-	if (boot_cpu_has(X86_FEATURE_NONSTOP_TSC_S3))
-		clocksource_tsc.flags |= CLOCK_SOURCE_SUSPEND_NONSTOP;
-
-	clocksource_register_khz(&clocksource_tsc, tsc_khz);
-	clocksource_unregister(&clocksource_tsc_early);
-	return 0;
-}
-device_initcall(init_tsc_clocksource);
+/* Clocksource registration removed - not needed for hello world */
 
 void __init tsc_early_init(void)
 {

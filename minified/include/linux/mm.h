@@ -368,20 +368,6 @@ static inline void __mod_node_page_state(struct pglist_data *pgdat,
 	node_page_state_add(delta, pgdat, item);
 }
 
-static inline void __dec_zone_state(struct zone *zone, enum zone_stat_item item)
-{
-	atomic_long_dec(&zone->vm_stat[item]);
-	atomic_long_dec(&vm_zone_stat[item]);
-}
-
-static inline void __dec_zone_page_state(struct page *page,
-			enum zone_stat_item item)
-{
-	__dec_zone_state(page_zone(page), item);
-}
-
-#define dec_zone_page_state __dec_zone_page_state
-#define mod_zone_page_state __mod_zone_page_state
 #define mod_node_page_state __mod_node_page_state
 
 static inline void __mod_zone_freepage_state(struct zone *zone, int nr_pages,

@@ -119,60 +119,6 @@ void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 		rq_clock_skip_update(rq);
 }
 
-static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags,
-			   struct rq_flags *rf)
-{
-	check_preempt_curr(rq, p, wake_flags);
-	WRITE_ONCE(p->__state, TASK_RUNNING);
-}
-
-static int try_to_wake_up(struct task_struct *p, unsigned int state,
-			  int wake_flags)
-{
-	int cpu, success = 0;
-	struct rq_flags rf;
-	struct rq *rq;
-
-	preempt_disable();
-	if (p == current) {
-		if (READ_ONCE(p->__state) & state) {
-			success = 1;
-			WRITE_ONCE(p->__state, TASK_RUNNING);
-		}
-		goto out;
-	}
-
-	if (READ_ONCE(p->__state) == TASK_RUNNING)
-		goto out;
-
-	smp_rmb();
-	if (READ_ONCE(p->on_rq)) {
-		rq = __task_rq_lock(p, &rf);
-		if (task_on_rq_queued(p)) {
-			update_rq_clock(rq);
-			ttwu_do_wakeup(rq, p, wake_flags, &rf);
-			__task_rq_unlock(rq, &rf);
-			goto out;
-		}
-		__task_rq_unlock(rq, &rf);
-	}
-
-	cpu = task_cpu(p);
-
-	{
-		struct rq *rq = cpu_rq(cpu);
-		rq_lock(rq, &rf);
-		update_rq_clock(rq);
-		activate_task(rq, p, ENQUEUE_WAKEUP | ENQUEUE_NOCLOCK);
-		ttwu_do_wakeup(rq, p, wake_flags, &rf);
-		rq_unlock(rq, &rf);
-	}
-out:
-	preempt_enable();
-
-	return success;
-}
-
 static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 {
 	p->on_rq = 0;

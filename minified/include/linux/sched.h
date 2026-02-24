@@ -177,7 +177,6 @@ struct signal_struct;
 #define TASK_RUNNING			0x0000
 #define TASK_INTERRUPTIBLE		0x0001
 #define TASK_UNINTERRUPTIBLE		0x0002
-#define TASK_PARKED			0x0040
 #define TASK_DEAD			0x0080
 #define TASK_WAKEKILL			0x0100
 #define TASK_NEW			0x0800

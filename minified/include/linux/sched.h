@@ -190,15 +190,6 @@ struct signal_struct;
 #define set_current_state(state_value)					\
 	smp_store_mb(current->__state, (state_value))
 
-#define set_special_state(state_value)					\
-	do {								\
-		unsigned long flags;  			\
-									\
-		raw_spin_lock_irqsave(&current->pi_lock, flags);	\
-		WRITE_ONCE(current->__state, (state_value));		\
-		raw_spin_unlock_irqrestore(&current->pi_lock, flags);	\
-	} while (0)
-
 enum {
 	TASK_COMM_LEN = 16,
 };

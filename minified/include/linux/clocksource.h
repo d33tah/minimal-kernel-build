@@ -13,12 +13,6 @@ struct clocksource;
 struct module;
 
 
-enum vdso_clock_mode {
-	VDSO_CLOCKMODE_NONE,
-	VDSO_CLOCKMODE_TSC, /* from asm/vdso/clocksource.h */
-	VDSO_CLOCKMODE_MAX,
-};
-
 struct clocksource {
 	u64			(*read)(struct clocksource *cs);
 	u64			mask;
@@ -31,11 +25,7 @@ struct clocksource {
 	struct list_head	list;
 	int			rating;
 	enum clocksource_ids	id;
-	enum vdso_clock_mode	vdso_clock_mode;
 	unsigned long		flags;
-
-	int			(*enable)(struct clocksource *cs);
-	void			(*disable)(struct clocksource *cs);
 	struct module		*owner;
 };
 

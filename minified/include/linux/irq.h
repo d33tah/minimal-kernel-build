@@ -44,12 +44,6 @@ enum {
 	 IRQ_PER_CPU | IRQ_NESTED_THREAD | IRQ_NOTHREAD | IRQ_PER_CPU_DEVID | \
 	 IRQ_IS_POLLED | IRQ_DISABLE_UNLAZY | IRQ_HIDDEN)
 
-enum {
-	IRQ_SET_MASK_OK = 0,
-	IRQ_SET_MASK_OK_NOCOPY,
-	IRQ_SET_MASK_OK_DONE,
-};
-
 struct irq_common_data {
 	unsigned int		__private state_use_accessors;
 };
@@ -63,15 +57,11 @@ struct irq_data {
 enum {
 	IRQD_TRIGGER_MASK		= 0xf,
 	IRQD_ACTIVATED			= (1 <<  9),
-	IRQD_NO_BALANCING		= (1 << 10),
-	IRQD_PER_CPU			= (1 << 11),
-	IRQD_LEVEL			= (1 << 13),
 	IRQD_IRQ_DISABLED		= (1 << 16),
 	IRQD_IRQ_MASKED			= (1 << 17),
 	IRQD_IRQ_INPROGRESS		= (1 << 18),
 	IRQD_WAKEUP_ARMED		= (1 << 19),
 	IRQD_IRQ_STARTED		= (1 << 22),
-	IRQD_DEFAULT_TRIGGER_SET	= (1 << 25),
 };
 
 #define __irqd_to_state(d) ACCESS_PRIVATE((d)->common, state_use_accessors)
@@ -118,17 +108,13 @@ struct irq_chip {
 	void		(*irq_mask_ack)(struct irq_data *data);
 	void		(*irq_unmask)(struct irq_data *data);
 
-	int		(*irq_set_type)(struct irq_data *data, unsigned int flow_type);
-
 	void		(*irq_bus_lock)(struct irq_data *data);
 	void		(*irq_bus_sync_unlock)(struct irq_data *data);
 	unsigned long	flags;
 };
 
 enum {
-	IRQCHIP_SET_TYPE_MASKED			= (1 <<  0),
 	IRQCHIP_SKIP_SET_WAKE			= (1 <<  4),
-	IRQCHIP_ONESHOT_SAFE			= (1 <<  5),
 };
 
 #include <linux/kobject.h>

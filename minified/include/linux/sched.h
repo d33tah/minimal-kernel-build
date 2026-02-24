@@ -259,8 +259,6 @@ struct task_struct {
 
 	struct vmacache			vmacache;
 
-	unsigned long			jobctl;
-
 	unsigned int			personality;
 
 	unsigned			restore_sigmask:1;

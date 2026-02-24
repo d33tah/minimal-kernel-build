@@ -14,7 +14,6 @@
 #include <asm/desc.h>
 #include <asm/fpu/api.h>
 #include <asm/cpu.h>
-#include <asm/sigframe.h>
 
 DEFINE_PER_CPU_PAGE_ALIGNED(
 	struct gdt_page,
@@ -192,7 +191,6 @@ void __init early_cpu_init(void)
 		setup_force_cpu_cap(X86_FEATURE_ALWAYS);
 
 		fpu__init_system(c);
-		init_sigframe_size();
 
 		setup_clear_cpu_cap(X86_FEATURE_PCID);
 

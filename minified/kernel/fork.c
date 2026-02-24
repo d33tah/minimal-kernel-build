@@ -367,8 +367,6 @@ copy_process(int node, struct kernel_clone_args *args)
 			INIT_HLIST_NODE(&p->pid_links[type]);
 	}
 	if (likely(p->pid)) {
-		p->jobctl = 0;
-
 		init_task_pid(p, PIDTYPE_PID, pid);
 		init_task_pid(p, PIDTYPE_TGID, pid);
 		init_task_pid(p, PIDTYPE_PGID, task_pgrp(current));

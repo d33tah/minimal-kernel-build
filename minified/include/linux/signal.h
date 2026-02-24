@@ -37,12 +37,6 @@ struct k_sigaction {
 
 struct task_struct;
 
-
-static inline int sigequalsets(const sigset_t *set1, const sigset_t *set2)
-{
-	return (set1->sig[1] == set2->sig[1]) && (set1->sig[0] == set2->sig[0]);
-}
-
 #ifndef __HAVE_ARCH_SIG_SETOPS
 
 static inline void sigemptyset(sigset_t *set)

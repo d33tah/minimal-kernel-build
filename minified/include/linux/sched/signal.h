@@ -5,14 +5,6 @@
 #include <linux/sched.h>
 #include <linux/sched/task.h>
 
-#define JOBCTL_STOP_PENDING_BIT	17
-#define JOBCTL_TRAP_STOP_BIT	19
-#define JOBCTL_TRAP_FREEZE_BIT	23
-#define JOBCTL_STOP_PENDING	(1UL << JOBCTL_STOP_PENDING_BIT)
-#define JOBCTL_TRAP_STOP	(1UL << JOBCTL_TRAP_STOP_BIT)
-#define JOBCTL_TRAP_FREEZE	(1UL << JOBCTL_TRAP_FREEZE_BIT)
-#define JOBCTL_TRAP_MASK	(JOBCTL_TRAP_STOP)
-#define JOBCTL_PENDING_MASK	(JOBCTL_STOP_PENDING | JOBCTL_TRAP_MASK)
 #include <linux/cred.h>
 #include <linux/refcount.h>
 #include <asm/ptrace.h>
@@ -71,9 +63,6 @@ static inline int signal_pending_state(unsigned int state, struct task_struct *p
 
 	return (state & TASK_INTERRUPTIBLE) || __fatal_signal_pending(p);
 }
-
-/* recalc_sigpending_and_wake only used internally in signal.c */
-extern void recalc_sigpending(void);
 
 /* x86 doesn't define TIF_RESTORE_SIGMASK, use current->restore_sigmask */
 static inline bool test_and_clear_restore_sigmask(void)

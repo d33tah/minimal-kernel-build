@@ -3,19 +3,6 @@
 #include <linux/mm.h>
 #include <linux/mmzone.h>
 
-struct pglist_data *first_online_pgdat(void)
-{
-	return NODE_DATA(0);
-}
-
-struct zone *next_zone(struct zone *zone)
-{
-	pg_data_t *pgdat = zone->zone_pgdat;
-	if (zone < pgdat->node_zones + MAX_NR_ZONES - 1)
-		return zone + 1;
-	return NULL;
-}
-
 struct zoneref *__next_zones_zonelist(struct zoneref *z,
 				      enum zone_type highest_zoneidx,
 				      nodemask_t *nodes)

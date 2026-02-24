@@ -173,19 +173,6 @@ long inc_rlimit_ucounts(struct ucounts *ucounts, enum ucount_type type, long v)
 	return ret;
 }
 
-bool dec_rlimit_ucounts(struct ucounts *ucounts, enum ucount_type type, long v)
-{
-	struct ucounts *iter;
-	long new = -1;
-	for (iter = ucounts; iter; iter = iter->ns->ucounts) {
-		long dec = atomic_long_sub_return(v, &iter->ucount[type]);
-		WARN_ON_ONCE(dec < 0);
-		if (iter == ucounts)
-			new = dec;
-	}
-	return (new == 0);
-}
-
 static __init int user_namespace_sysctl_init(void)
 {
 	struct hlist_head *hashent =

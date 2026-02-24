@@ -45,6 +45,3 @@ struct user_struct root_user = {
 	.ratelimit = RATELIMIT_STATE_INIT(root_user.ratelimit, 0, 0),
 };
 
-void free_uid(struct user_struct *up)
-{
-}

@@ -76,7 +76,6 @@ struct ucounts * __must_check get_ucounts(struct ucounts *ucounts);
 void put_ucounts(struct ucounts *ucounts);
 
 long inc_rlimit_ucounts(struct ucounts *ucounts, enum ucount_type type, long v);
-bool dec_rlimit_ucounts(struct ucounts *ucounts, enum ucount_type type, long v);
 
 static inline struct user_namespace *get_user_ns(struct user_namespace *ns)
 {

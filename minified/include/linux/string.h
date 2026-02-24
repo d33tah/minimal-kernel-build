@@ -86,9 +86,6 @@ size_t strlcpy(char *, const char *, size_t);
 ssize_t strscpy(char *, const char *, size_t);
 #endif
 
-#ifndef __HAVE_ARCH_STRLCAT
-extern size_t strlcat(char *, const char *, __kernel_size_t);
-#endif
 #ifndef __HAVE_ARCH_STRRCHR
 extern char * strrchr(const char *,int);
 #endif

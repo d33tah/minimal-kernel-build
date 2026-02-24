@@ -279,14 +279,14 @@ static inline struct pglist_data *NODE_DATA(int nid)
 	return &contig_page_data;
 }
 
-extern struct pglist_data *first_online_pgdat(void);
-extern struct zone *next_zone(struct zone *zone);
-
-#define for_each_populated_zone(zone)                         \
-	for (zone = (first_online_pgdat())->node_zones; zone; \
-	     zone = next_zone(zone))                          \
-		if (!populated_zone(zone))                    \
-			;                                     \
+/* Single-node: iterate zones of contig_page_data directly */
+#define for_each_populated_zone(zone)                              \
+	for (int __zi = 0;                                         \
+	     __zi < MAX_NR_ZONES &&                                \
+	     ({zone = &contig_page_data.node_zones[__zi]; 1; });   \
+	     __zi++)                                               \
+		if (!populated_zone(zone))                         \
+			;                                          \
 		else
 
 static inline struct zone *zonelist_zone(struct zoneref *zoneref)

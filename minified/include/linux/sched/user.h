@@ -9,13 +9,8 @@
 #include <linux/printk.h>
 
 struct user_struct {
-	refcount_t __count;	 
-	unsigned long unix_inflight;	 
-	atomic_long_t pipe_bufs;   
-
-	struct hlist_node uidhash_node;
+	refcount_t __count;
 	kuid_t uid;
-
 	struct ratelimit_state ratelimit;
 };
 
@@ -27,6 +22,4 @@ static inline struct user_struct *get_uid(struct user_struct *u)
 	refcount_inc(&u->__count);
 	return u;
 }
-extern void free_uid(struct user_struct *);
-
 #endif  

@@ -75,10 +75,6 @@ void console_unblank(void)
 	console_unlock();
 }
 
-void console_flush_on_panic(enum con_flush_mode mode)
-{
-}
-
 #define con_printk(lvl, con, fmt, ...)                                       \
 	printk(lvl pr_fmt("%sconsole [%s%d] " fmt),                          \
 	       (con->flags & CON_BOOT) ? "boot" : "", con->name, con->index, \

@@ -44,4 +44,3 @@ struct user_struct root_user = {
 	.uid = GLOBAL_ROOT_UID,
 	.ratelimit = RATELIMIT_STATE_INIT(root_user.ratelimit, 0, 0),
 };
-

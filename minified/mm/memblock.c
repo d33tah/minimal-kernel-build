@@ -1,7 +1,7 @@
 
 #include <linux/memblock.h>
 
-#include <linux/io.h>
+#include <asm/io.h>
 
 #include "internal.h"
 

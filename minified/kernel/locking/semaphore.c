@@ -1,6 +1,5 @@
 
 #include <linux/mutex.h>
-#include <linux/sched/debug.h>
 #include <linux/sched/signal.h>
 #include <linux/atomic.h>
 struct semaphore {

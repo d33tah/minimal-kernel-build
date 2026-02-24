@@ -1,7 +1,6 @@
 
 #include <linux/slab.h>
 #include <linux/init_task.h>
-#include <linux/proc_ns.h>
 #include <linux/sched/signal.h>
 
 struct pid init_struct_pid = {
@@ -32,7 +31,7 @@ struct pid_namespace init_pid_ns = {
 	.level = 0,
 	.child_reaper = &init_task,
 	.user_ns = &init_user_ns,
-	.ns.inum = PROC_PID_INIT_INO,
+	.ns.inum = 0xEFFFFFFCU,
 };
 
 static __cacheline_aligned_in_smp DEFINE_SPINLOCK(pidmap_lock);

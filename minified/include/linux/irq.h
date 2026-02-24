@@ -7,7 +7,7 @@ extern struct irq_desc *irq_to_desc(unsigned int irq);
 extern int nr_irqs;
 typedef void (*irq_flow_handler_t)(struct irq_desc *desc);
 #include <linux/topology.h>
-#include <linux/io.h>
+#include <asm/io.h>
 
 
 struct module;

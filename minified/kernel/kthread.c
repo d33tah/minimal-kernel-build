@@ -1,5 +1,5 @@
 #include <linux/slab.h>
-#include <linux/ptrace.h>
+#include <linux/sched/signal.h>
 
 static DEFINE_SPINLOCK(kthread_create_lock);
 static LIST_HEAD(kthread_create_list);

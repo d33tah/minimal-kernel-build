@@ -1,4 +1,4 @@
-#include <linux/security.h>
+#include <linux/fs.h>
 /* cdev.h inlined */
 #include <linux/device.h>
 struct file_operations;

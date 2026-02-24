@@ -1,6 +1,5 @@
 #include <linux/extable.h>
 #include <asm/extable.h>
-#include <linux/sched/debug.h>
 
 #define __bf_shf(x) (__builtin_ffsll(x) - 1)
 #define FIELD_GET(_mask, _reg) \

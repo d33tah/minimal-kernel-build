@@ -2,7 +2,6 @@
 #include <linux/idr.h>
 #include <linux/sysfs.h>
 #include <linux/fs_struct.h>
-#include <linux/proc_ns.h>
 #include <linux/fs_parser.h>
 
 #include "mount.h"
@@ -202,7 +201,8 @@ static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns)
 		dec_mnt_namespaces(ucounts);
 		return ERR_PTR(-ENOMEM);
 	}
-	ns_alloc_inum(&new_ns->ns);
+	atomic_long_set(&new_ns->ns.stashed, 0);
+	new_ns->ns.inum = 1;
 	new_ns->seq = atomic64_add_return(1, &mnt_ns_seq);
 	refcount_set(&new_ns->ns.count, 1);
 	INIT_LIST_HEAD(&new_ns->list);

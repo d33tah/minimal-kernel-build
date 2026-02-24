@@ -7,6 +7,7 @@
 #define CLONE_FILES	0x00000400
 #define CLONE_UNTRACED		0x00800000
 /* End uapi/linux/sched.h */
+#define __sched __section(".sched.text")
 
 /* pid.h inlined */
 /* rculist.h inlined */

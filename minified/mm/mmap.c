@@ -2,7 +2,6 @@
 #include <linux/vmacache.h>
 #include <linux/mman.h>
 #include <linux/file.h>
-#include <linux/security.h>
 #include <linux/rbtree_augmented.h>
 #include <linux/sched/mm.h>
 
@@ -17,6 +16,11 @@ static struct vm_area_struct *find_vma_prev(struct mm_struct *mm,
 
 /* mmap_min_addr moved from security/min_addr.c */
 unsigned long mmap_min_addr = CONFIG_DEFAULT_MMAP_MIN_ADDR;
+
+static inline int security_vm_enough_memory_mm(struct mm_struct *mm, long pages)
+{
+	return __vm_enough_memory(mm, pages, 1);
+}
 
 #ifndef arch_mmap_check
 #define arch_mmap_check(addr, len, flags) (0)

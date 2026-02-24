@@ -4,7 +4,7 @@
 #include <linux/sched/mm.h>
 #include <linux/binfmts.h>
 #include <linux/namei.h>
-#include <linux/security.h>
+extern unsigned long mmap_min_addr;
 
 #include <asm/mmu_context.h>
 #include <asm/tlb.h>

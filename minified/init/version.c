@@ -41,8 +41,6 @@
 #endif
 #include <linux/utsname.h>
 #include <generated/utsrelease.h>
-#include <linux/proc_ns.h>
-
 struct uts_namespace init_uts_ns = {
 	.ns.count = REFCOUNT_INIT(2),
 	.name = {
@@ -54,7 +52,7 @@ struct uts_namespace init_uts_ns = {
 		.domainname	= UTS_DOMAINNAME,
 	},
 	.user_ns = &init_user_ns,
-	.ns.inum = PROC_UTS_INIT_INO,
+	.ns.inum = 0xEFFFFFFEU,
 };
 
 const char linux_banner[] = "Linux version " UTS_RELEASE " (" LINUX_COMPILE_BY

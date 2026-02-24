@@ -5,8 +5,8 @@
 #include <linux/kernel.h>
 #include <linux/refcount.h>
 #include <linux/errno.h>
-#include <linux/security.h>
 #include <linux/mutex.h>
+#include <linux/fs.h>
 
 struct cred;
 struct dentry;

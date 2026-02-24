@@ -8,8 +8,6 @@ static inline u64 sched_clock_cpu(int cpu)
 	return sched_clock();
 }
 
-#include <linux/sched/debug.h>
-
 #include <asm/mmu_context.h>
 
 #include <asm/switch_to.h>

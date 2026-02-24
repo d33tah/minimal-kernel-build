@@ -1,4 +1,3 @@
-#include <linux/jiffies.h>
 #include "sched.h"
 
 static inline void update_load_add(struct load_weight *lw, unsigned long inc)

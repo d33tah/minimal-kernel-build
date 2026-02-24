@@ -6,16 +6,11 @@ static inline void scr_memcpyw(u16 *d, const u16 *s, unsigned int count)
 {
 	memcpy(d, s, count);
 }
-extern const unsigned char color_table[];
 #include <linux/ioport.h>
 #include <asm/io.h>
 #define VGA_MAP_MEM(x, s) ((unsigned long)phys_to_virt(x))
 
-#define VGA_ATT_W 0x3C0
-#define VGA_IS1_RC 0x3DA
-#define VGA_PEL_D 0x3C9
 #define VGA_CRT_IC 0x3D4
-#define VGA_PEL_IW 0x3C8
 
 static DEFINE_RAW_SPINLOCK(vga_lock);
 
@@ -82,28 +77,12 @@ no_vga:
 			.start = 0x3C0,
 			.end = 0x3DF
 		};
-		int i;
 
 		vga_vram_base = 0xb8000;
 		vga_video_port_reg = VGA_CRT_IC;
 		vga_vram_size = 0x8000;
 		display_desc = "VGA+";
 		request_resource(&ioport_resource, &vga_console_resource);
-
-		for (i = 0; i < 16; i++) {
-			inb_p(VGA_IS1_RC);
-			outb_p(i, VGA_ATT_W);
-			outb_p(i, VGA_ATT_W);
-		}
-		outb_p(0x20, VGA_ATT_W);
-
-		for (i = 0; i < 16; i++) {
-			outb_p(color_table[i], VGA_PEL_IW);
-			/* default_red/grn/blu arrays were all zeros */
-			outb_p(0, VGA_PEL_D);
-			outb_p(0, VGA_PEL_D);
-			outb_p(0, VGA_PEL_D);
-		}
 	}
 
 	vga_vram_base = VGA_MAP_MEM(vga_vram_base, vga_vram_size);

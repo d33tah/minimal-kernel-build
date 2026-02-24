@@ -22,11 +22,6 @@ static inline uid_t __kuid_val(kuid_t uid)
 	return 0;
 }
 
-static inline gid_t __kgid_val(kgid_t gid)
-{
-	return 0;
-}
-
 #define GLOBAL_ROOT_UID KUIDT_INIT(0)
 #define GLOBAL_ROOT_GID KGIDT_INIT(0)
 

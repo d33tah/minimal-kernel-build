@@ -2,14 +2,9 @@
 #include <linux/module.h>
 #include <linux/console.h>
 #include <linux/vt_kern.h>
-#define scr_writew(val, addr) (*(addr) = (val))
 static inline void scr_memsetw(u16 *s, u16 c, unsigned int count)
 {
 	memset16(s, c, count / 2);
-}
-static inline void scr_memmovew(u16 *d, const u16 *s, unsigned int count)
-{
-	memmove(d, s, count);
 }
 const struct consw *conswitchp;
 
@@ -20,32 +15,7 @@ static void vc_init(struct vc_data *vc, unsigned int rows, unsigned int cols,
 static void gotoxy(struct vc_data *vc, int new_x, int new_y);
 static void reset_terminal(struct vc_data *vc, int do_clear);
 
-static int printable;
-
 int fg_console;
-
-static void con_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
-		       enum con_scroll dir, unsigned int nr)
-{
-	u16 *clear, *d, *s;
-
-	if (t + nr >= b)
-		nr = b - t - 1;
-	if (b > vc->vc_rows || t >= b || nr < 1)
-		return;
-	if (con_is_visible(vc) && vc->vc_sw->con_scroll(vc, t, b, dir, nr))
-		return;
-
-	s = clear = (u16 *)(vc->vc_origin + vc->vc_size_row * t);
-	d = (u16 *)(vc->vc_origin + vc->vc_size_row * (t + nr));
-
-	if (dir == SM_UP) {
-		clear = s + (b - t - nr) * vc->vc_cols;
-		swap(s, d);
-	}
-	scr_memmovew(d, s, (b - t - nr) * vc->vc_size_row);
-	scr_memsetw(clear, vc->vc_video_erase_char, vc->vc_size_row * nr);
-}
 
 static void update_attr(struct vc_data *vc)
 {
@@ -81,9 +51,6 @@ int vc_resize(struct vc_data *vc, unsigned int cols, unsigned int rows)
 	return 0;
 }
 
-const unsigned char color_table[] = { 0, 4,  2,	 6,  1, 5,  3,	7,
-				      8, 12, 10, 14, 9, 13, 11, 15 };
-
 static void gotoxy(struct vc_data *vc, int new_x, int new_y)
 {
 	if (new_x < 0)
@@ -102,23 +69,6 @@ static void gotoxy(struct vc_data *vc, int new_x, int new_y)
 	vc->vc_pos = vc->vc_origin + vc->state.y * vc->vc_size_row +
 		     (vc->state.x << 1);
 	vc->vc_need_wrap = 0;
-}
-
-static void lf(struct vc_data *vc)
-{
-	if (vc->state.y + 1 == vc->vc_bottom)
-		con_scroll(vc, vc->vc_top, vc->vc_bottom, SM_UP, 1);
-	else if (vc->state.y < vc->vc_rows - 1) {
-		vc->state.y++;
-		vc->vc_pos += vc->vc_size_row;
-	}
-	vc->vc_need_wrap = 0;
-}
-
-static inline void cr(struct vc_data *vc)
-{
-	vc->vc_pos -= vc->state.x << 1;
-	vc->vc_need_wrap = vc->state.x = 0;
 }
 
 static void csi_J(struct vc_data *vc, int vpar)
@@ -154,30 +104,6 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 
 static void vt_console_print(struct console *co, const char *b, unsigned count)
 {
-	struct vc_data *vc = vc_cons[fg_console].d;
-	static DEFINE_SPINLOCK(printing_lock);
-
-	if (!printable || !spin_trylock(&printing_lock))
-		return;
-
-	if (!(fg_console < MAX_NR_CONSOLES && vc_cons[fg_console].d))
-		goto quit;
-
-	while (count--) {
-		unsigned char c = *b++;
-		if (c == '\n') {
-			lf(vc);
-			cr(vc);
-		} else {
-			scr_writew((vc->vc_attr << 8) + c,
-				   (unsigned short *)vc->vc_pos);
-			vc->vc_pos += 2;
-			vc->state.x++;
-		}
-	}
-
-quit:
-	spin_unlock(&printing_lock);
 }
 
 static struct console vt_console_driver = {
@@ -240,7 +166,6 @@ static int __init con_init(void)
 	csi_J(vc, 0);
 	set_origin(vc);
 	vc->vc_sw->con_switch(vc);
-	printable = 1;
 
 	console_unlock();
 

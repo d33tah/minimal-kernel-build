@@ -9,13 +9,6 @@
 #define printk_safe_exit_irqrestore(flags) local_irq_restore(flags)
 /* end internal.h */
 
-int console_printk[4] = {
-	CONSOLE_LOGLEVEL_DEFAULT,
-	MESSAGE_LOGLEVEL_DEFAULT,
-	CONSOLE_LOGLEVEL_MIN,
-	CONSOLE_LOGLEVEL_DEFAULT,
-};
-
 atomic_t ignore_console_lock_warning __read_mostly = ATOMIC_INIT(0);
 
 int oops_in_progress;
@@ -49,14 +42,6 @@ void console_lock(void)
 {
 	down_console_sem();
 	console_locked = 1;
-}
-
-static int console_trylock(void)
-{
-	if (down_trylock_console_sem())
-		return 0;
-	console_locked = 1;
-	return 1;
 }
 
 int is_console_locked(void)

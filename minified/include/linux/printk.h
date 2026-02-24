@@ -25,17 +25,6 @@ extern const char linux_banner[];
 
 extern int oops_in_progress;
 
-#define MESSAGE_LOGLEVEL_DEFAULT CONFIG_MESSAGE_LOGLEVEL_DEFAULT
-
-#define CONSOLE_LOGLEVEL_MIN	 1
-#define CONSOLE_LOGLEVEL_MOTORMOUTH 15
-
-#define CONSOLE_LOGLEVEL_DEFAULT CONFIG_CONSOLE_LOGLEVEL_DEFAULT
-
-extern int console_printk[];
-
-#define console_loglevel (console_printk[0])
-
 extern void console_verbose(void);
 
 struct va_format {

@@ -1,5 +1,5 @@
 #include <asm/fpu/sched.h>
-#include <asm/fpu/signal.h>
+#include <asm/fpu/types.h>
 #include <asm/irq_regs.h>
 
 /* asm/fpu/xstate.h inlined */
@@ -8,6 +8,8 @@
 #include <asm/fpu/api.h>
 #define XFEATURE_MASK_USER_DYNAMIC XFEATURE_MASK_XTILE_DATA
 #define XFEATURE_MASK_FPSTATE 0x4FF
+
+extern void restore_fpregs_from_fpstate(struct fpstate *fpstate, u64 mask);
 
 static inline int fpregs_state_valid(struct fpu *fpu, unsigned int cpu)
 {

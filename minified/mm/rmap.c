@@ -24,10 +24,6 @@ int __anon_vma_prepare(struct vm_area_struct *vma)
 
 void unlink_anon_vmas(struct vm_area_struct *vma)
 {
-	if (vma->anon_vma) {
-		put_anon_vma(vma->anon_vma);
-		vma->anon_vma = NULL;
-	}
 }
 
 static void anon_vma_ctor(void *data)

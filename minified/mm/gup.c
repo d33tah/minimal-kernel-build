@@ -239,25 +239,8 @@ out:
 long populate_vma_page_range(struct vm_area_struct *vma, unsigned long start,
 			     unsigned long end, int *locked)
 {
-	struct mm_struct *mm = vma->vm_mm;
-	unsigned long nr_pages = (end - start) / PAGE_SIZE;
-	int gup_flags;
-	long ret;
-
-	mmap_assert_locked(mm);
-
-	gup_flags = FOLL_TOUCH;
-
-	if ((vma->vm_flags & (VM_WRITE | VM_SHARED)) == VM_WRITE)
-		gup_flags |= FOLL_WRITE;
-
-	if (vma_is_accessible(vma))
-		gup_flags |= FOLL_FORCE;
-
-	ret = __get_user_pages(mm, start, nr_pages, gup_flags, NULL, NULL,
-			       locked);
-	lru_add_drain();
-	return ret;
+	/* Stub: no VM_LOCKED pages in hello-world kernel */
+	return 0;
 }
 
 long get_user_pages_remote(struct mm_struct *mm, unsigned long start,

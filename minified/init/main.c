@@ -11,7 +11,7 @@ extern unsigned long phys_initrd_size;
 #include <linux/console.h>
 #include <linux/cpu.h>
 #include <linux/interrupt.h>
-#include <linux/rmap.h>
+extern void anon_vma_init(void);
 #include <linux/pid_namespace.h>
 /* inlined from linux/vmalloc.h */
 

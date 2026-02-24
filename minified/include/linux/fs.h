@@ -312,7 +312,22 @@ static inline void do_delayed_call(struct delayed_call *call)
 		call->fn(call->arg);
 }
 
-#include <linux/mount.h>
+/* mount.h inlined */
+#define MNT_NOEXEC	0x04
+#define MNT_READONLY	0x40
+#define MNT_WRITE_HOLD	0x200
+#define MNT_INTERNAL	0x4000
+#define MNT_LOCKED	0x800000
+struct vfsmount {
+	struct dentry *mnt_root;
+	struct super_block *mnt_sb;
+	int mnt_flags;
+	struct user_namespace *mnt_userns;
+} __randomize_layout;
+extern void mntput(struct vfsmount *mnt);
+extern struct vfsmount *mntget(struct vfsmount *mnt);
+extern int __mnt_want_write(struct vfsmount *);
+extern void __mnt_drop_write(struct vfsmount *);
 /* mnt_idmapping.h inlined */
 #include <linux/uidgid.h>
 static inline bool initial_idmapping(const struct user_namespace *ns)

@@ -63,21 +63,23 @@ static inline u64 tk_clock_read(const struct tk_read_base *tkr)
 	return clock->read(clock);
 }
 
-static void tk_setup_internals(struct timekeeper *tk, struct clocksource *clock)
+void __init timekeeping_init(void)
 {
-	u64 interval;
+	struct timekeeper *tk = &tk_core.timekeeper;
+	struct clocksource *clock;
+	unsigned long flags;
 	u64 tmp, ntpinterval;
-	struct clocksource *old_clock;
 
-	++tk->cs_was_changed_seq;
-	old_clock = tk->tkr_mono.clock;
+	raw_spin_lock_irqsave(&timekeeper_lock, flags);
+	write_seqcount_begin(&tk_core.seq);
+
+	clock = clocksource_default_clock();
+
 	tk->tkr_mono.clock = clock;
 	tk->tkr_mono.mask = clock->mask;
 	tk->tkr_mono.cycle_last = tk_clock_read(&tk->tkr_mono);
-
-	tk->tkr_raw.clock = clock;
-	tk->tkr_raw.mask = clock->mask;
-	tk->tkr_raw.cycle_last = tk->tkr_mono.cycle_last;
+	tk->tkr_mono.shift = clock->shift;
+	tk->tkr_mono.mult = clock->mult;
 
 	tmp = NTP_INTERVAL_LENGTH;
 	tmp <<= clock->shift;
@@ -87,51 +89,10 @@ static void tk_setup_internals(struct timekeeper *tk, struct clocksource *clock)
 	if (tmp == 0)
 		tmp = 1;
 
-	interval = (u64)tmp;
-	tk->cycle_interval = interval;
-
-	tk->xtime_interval = interval * clock->mult;
-	tk->xtime_remainder = ntpinterval - tk->xtime_interval;
-	tk->raw_interval = interval * clock->mult;
-
-	if (old_clock) {
-		int shift_change = clock->shift - old_clock->shift;
-		if (shift_change < 0) {
-			tk->tkr_mono.xtime_nsec >>= -shift_change;
-			tk->tkr_raw.xtime_nsec >>= -shift_change;
-		} else {
-			tk->tkr_mono.xtime_nsec <<= shift_change;
-			tk->tkr_raw.xtime_nsec <<= shift_change;
-		}
-	}
-
-	tk->tkr_mono.shift = clock->shift;
-	tk->tkr_raw.shift = clock->shift;
-
-	tk->ntp_error = 0;
+	tk->cycle_interval = tmp;
+	tk->xtime_interval = tmp * clock->mult;
 	tk->ntp_error_shift = NTP_SCALE_SHIFT - clock->shift;
 	tk->ntp_tick = ntpinterval << tk->ntp_error_shift;
-
-	tk->tkr_mono.mult = clock->mult;
-	tk->tkr_raw.mult = clock->mult;
-	tk->ntp_err_mult = 0;
-	tk->skip_second_overflow = 0;
-}
-
-/* read_persistent_clock64 provided by arch/x86/kernel/rtc.c */
-
-void __init timekeeping_init(void)
-{
-	/* Minimal init for Hello World - just setup basic jiffies clock */
-	struct timekeeper *tk = &tk_core.timekeeper;
-	struct clocksource *clock;
-	unsigned long flags;
-
-	raw_spin_lock_irqsave(&timekeeper_lock, flags);
-	write_seqcount_begin(&tk_core.seq);
-
-	clock = clocksource_default_clock();
-	tk_setup_internals(tk, clock);
 
 	write_seqcount_end(&tk_core.seq);
 	raw_spin_unlock_irqrestore(&timekeeper_lock, flags);

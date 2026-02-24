@@ -9,7 +9,6 @@ struct io_bitmap;
 
 #include <asm/segment.h>
 #include <asm/types.h>
-#include <uapi/asm/sigcontext.h>
 #include <asm/current.h>
 #include <asm/cpufeatures.h>
 #include <asm/page.h>

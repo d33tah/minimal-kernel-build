@@ -55,7 +55,6 @@ typedef struct sigaltstack {
 #define __ARCH_HAS_SA_RESTORER
 
 #include <asm/asm.h>
-#include <uapi/asm/sigcontext.h>
 
 /* __i386__ - 32-bit x86 */
 

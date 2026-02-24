@@ -8,7 +8,6 @@
 #include <asm/processor.h>
 #include <asm/ptrace.h>
 #include <asm/thread_info.h>
-#include <asm/sigframe.h>
 #include <asm/bootparam.h>
 #include <asm/desc.h>
 
@@ -18,20 +17,6 @@ static void __used common(void)
 {
 	BLANK();
 	OFFSET(TASK_threadsp, task_struct, thread.sp);
-
-	BLANK();
-	OFFSET(IA32_SIGCONTEXT_ax, sigcontext_32, ax);
-	OFFSET(IA32_SIGCONTEXT_bx, sigcontext_32, bx);
-	OFFSET(IA32_SIGCONTEXT_cx, sigcontext_32, cx);
-	OFFSET(IA32_SIGCONTEXT_dx, sigcontext_32, dx);
-	OFFSET(IA32_SIGCONTEXT_si, sigcontext_32, si);
-	OFFSET(IA32_SIGCONTEXT_di, sigcontext_32, di);
-	OFFSET(IA32_SIGCONTEXT_bp, sigcontext_32, bp);
-	OFFSET(IA32_SIGCONTEXT_sp, sigcontext_32, sp);
-	OFFSET(IA32_SIGCONTEXT_ip, sigcontext_32, ip);
-
-	BLANK();
-	OFFSET(IA32_RT_SIGFRAME_sigcontext, rt_sigframe_ia32, uc.uc_mcontext);
 
 	BLANK();
 	OFFSET(BP_scratch, boot_params, scratch);

@@ -179,8 +179,6 @@ typedef struct { p4d_t p4d; } pud_t;
 #define PUD_SIZE  	(1UL << PUD_SHIFT)
 #define PUD_MASK  	(~(PUD_SIZE-1))
 
-#define pud_ERROR(pud)				((void)0)
-
 static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
 {
 	return (pud_t *)p4d;
@@ -204,7 +202,7 @@ typedef struct { pud_t pud; } pmd_t;
 #define PMD_SIZE  	(1UL << PMD_SHIFT)
 #define PMD_MASK  	(~(PMD_SIZE-1))
 
-#define pmd_ERROR(pmd)				(pud_ERROR((pmd).pud))
+#define pmd_ERROR(pmd)				((void)0)
 
 static inline pmd_t * pmd_offset(pud_t * pud, unsigned long address)
 {

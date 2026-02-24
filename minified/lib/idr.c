@@ -26,21 +26,6 @@ static int idr_alloc_u32(struct idr *idr, void *ptr, u32 *nextid,
 	return 0;
 }
 
-int idr_alloc(struct idr *idr, void *ptr, int start, int end, gfp_t gfp)
-{
-	u32 id = start;
-	int ret;
-
-	if (WARN_ON_ONCE(start < 0))
-		return -EINVAL;
-
-	ret = idr_alloc_u32(idr, ptr, &id, end > 0 ? end - 1 : INT_MAX, gfp);
-	if (ret)
-		return ret;
-
-	return id;
-}
-
 int idr_alloc_cyclic(struct idr *idr, void *ptr, int start, int end, gfp_t gfp)
 {
 	u32 id = idr->idr_next;

@@ -173,11 +173,6 @@ out:
 	return success;
 }
 
-int wake_up_process(struct task_struct *p)
-{
-	return try_to_wake_up(p, TASK_NORMAL, 0);
-}
-
 static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 {
 	p->on_rq = 0;

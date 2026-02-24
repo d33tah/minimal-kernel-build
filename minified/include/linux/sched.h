@@ -196,7 +196,6 @@ enum {
 
 #define	MAX_SCHEDULE_TIMEOUT		LONG_MAX
 
-extern long schedule_timeout(long timeout);
 asmlinkage void schedule(void);
 extern void schedule_preempt_disabled(void);
 
@@ -345,7 +344,6 @@ extern unsigned long init_stack[THREAD_SIZE / sizeof(unsigned long)];
 
 extern struct task_struct *find_task_by_pid_ns(pid_t nr, struct pid_namespace *ns);
 
-extern int wake_up_process(struct task_struct *tsk);
 extern void wake_up_new_task(struct task_struct *tsk);
 
 extern void __set_task_comm(struct task_struct *tsk, const char *from, bool exec);

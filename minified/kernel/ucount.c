@@ -15,15 +15,6 @@ struct ucounts *get_ucounts(struct ucounts *ucounts)
 	return ucounts;
 }
 
-void put_ucounts(struct ucounts *ucounts)
-{
-}
-
-struct ucounts *alloc_ucounts(struct user_namespace *ns, kuid_t uid)
-{
-	return &init_ucounts;
-}
-
 struct ucounts *inc_ucount(struct user_namespace *ns, kuid_t uid,
 			   enum ucount_type type)
 {

@@ -71,9 +71,7 @@ extern struct ucounts init_ucounts;
 
 struct ucounts *inc_ucount(struct user_namespace *ns, kuid_t uid, enum ucount_type type);
 void dec_ucount(struct ucounts *ucounts, enum ucount_type type);
-struct ucounts *alloc_ucounts(struct user_namespace *ns, kuid_t uid);
 struct ucounts * __must_check get_ucounts(struct ucounts *ucounts);
-void put_ucounts(struct ucounts *ucounts);
 
 long inc_rlimit_ucounts(struct ucounts *ucounts, enum ucount_type type, long v);
 

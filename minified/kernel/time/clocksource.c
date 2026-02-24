@@ -123,21 +123,3 @@ int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq)
 	mutex_unlock(&clocksource_mutex);
 	return 0;
 }
-
-int clocksource_unregister(struct clocksource *cs)
-{
-	int ret = 0;
-
-	mutex_lock(&clocksource_mutex);
-	if (!list_empty(&cs->list)) {
-		if (cs == curr_clocksource) {
-			__clocksource_select(true);
-			if (curr_clocksource == cs)
-				ret = -EBUSY;
-		}
-		if (!ret)
-			list_del_init(&cs->list);
-	}
-	mutex_unlock(&clocksource_mutex);
-	return ret;
-}

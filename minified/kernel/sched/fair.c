@@ -13,8 +13,6 @@ static inline void update_load_sub(struct load_weight *lw, unsigned long dec)
 
 const struct sched_class fair_sched_class;
 
-#define for_each_sched_entity(se) for (; se; se = NULL)
-
 #define __node_2_se(node) rb_entry((node), struct sched_entity, run_node)
 
 static void update_min_vruntime(struct cfs_rq *cfs_rq)
@@ -88,11 +86,6 @@ void reweight_task(struct task_struct *p, int prio)
 		update_load_add(&cfs_rq->load, se->load.weight);
 }
 
-#define update_load_avg(cfs_rq, se, flags) \
-	do {                               \
-	} while (0)
-
-/* Stub: single-task kernel, vruntime doesn't matter for scheduling */
 static void place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 			 int initial)
 {
@@ -101,10 +94,8 @@ static void place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 
 static void set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
-	if (se->on_rq) {
+	if (se->on_rq)
 		__dequeue_entity(cfs_rq, se);
-		update_load_avg(cfs_rq, se, 0);
-	}
 
 	se->exec_start = rq_clock_task(rq_of(cfs_rq));
 	cfs_rq->curr = se;
@@ -115,34 +106,22 @@ static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	struct cfs_rq *cfs_rq;
 	struct sched_entity *se = &p->se;
 
-	for_each_sched_entity(se)
-	{
-		if (se->on_rq)
-			break;
-		cfs_rq = cfs_rq_of(se);
-		{
-			bool renorm = !(flags & ENQUEUE_WAKEUP);
-			bool curr = cfs_rq->curr == se;
-			if (renorm && curr)
-				se->vruntime += cfs_rq->min_vruntime;
-			update_curr(cfs_rq);
-			if (renorm && !curr)
-				se->vruntime += cfs_rq->min_vruntime;
-			update_load_avg(cfs_rq, se, 0);
-			update_load_add(&cfs_rq->load, se->load.weight);
-			cfs_rq->nr_running++;
-			if (flags & ENQUEUE_WAKEUP)
-				place_entity(cfs_rq, se, 0);
-			if (!curr)
-				__enqueue_entity(cfs_rq, se);
-			se->on_rq = 1;
-		}
-
-		cfs_rq->h_nr_running++;
-		flags = ENQUEUE_WAKEUP;
-	}
-
-	rq->nr_running++; /* add_nr_running inlined - single caller */
+	if (se->on_rq)
+		goto out;
+	cfs_rq = cfs_rq_of(se);
+	update_curr(cfs_rq);
+	if (!(flags & ENQUEUE_WAKEUP))
+		se->vruntime += cfs_rq->min_vruntime;
+	update_load_add(&cfs_rq->load, se->load.weight);
+	cfs_rq->nr_running++;
+	if (flags & ENQUEUE_WAKEUP)
+		place_entity(cfs_rq, se, 0);
+	if (cfs_rq->curr != se)
+		__enqueue_entity(cfs_rq, se);
+	se->on_rq = 1;
+	cfs_rq->h_nr_running++;
+out:
+	rq->nr_running++;
 }
 
 static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
@@ -150,31 +129,20 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	struct cfs_rq *cfs_rq;
 	struct sched_entity *se = &p->se;
 
-	for_each_sched_entity(se)
-	{
-		cfs_rq = cfs_rq_of(se);
-		update_curr(cfs_rq);
-		update_load_avg(cfs_rq, se, 0);
-		if (se != cfs_rq->curr)
-			__dequeue_entity(cfs_rq, se);
-		se->on_rq = 0;
-		update_load_sub(&cfs_rq->load, se->load.weight);
-		cfs_rq->nr_running--;
-		if (!(flags & DEQUEUE_SLEEP))
-			se->vruntime -= cfs_rq->min_vruntime;
-		if ((flags & (DEQUEUE_SAVE | DEQUEUE_MOVE)) != DEQUEUE_SAVE)
-			update_min_vruntime(cfs_rq);
+	cfs_rq = cfs_rq_of(se);
+	update_curr(cfs_rq);
+	if (se != cfs_rq->curr)
+		__dequeue_entity(cfs_rq, se);
+	se->on_rq = 0;
+	update_load_sub(&cfs_rq->load, se->load.weight);
+	cfs_rq->nr_running--;
+	if (!(flags & DEQUEUE_SLEEP))
+		se->vruntime -= cfs_rq->min_vruntime;
+	if ((flags & (DEQUEUE_SAVE | DEQUEUE_MOVE)) != DEQUEUE_SAVE)
+		update_min_vruntime(cfs_rq);
+	cfs_rq->h_nr_running--;
 
-		cfs_rq->h_nr_running--;
-
-		if (cfs_rq->load.weight) {
-			/* parent_entity always NULL - break is always taken */
-			break;
-		}
-		flags |= DEQUEUE_SLEEP;
-	}
-
-	rq->nr_running--; /* sub_nr_running inlined - single caller */
+	rq->nr_running--;
 }
 
 static void check_preempt_wakeup(struct rq *rq, struct task_struct *p,
@@ -187,43 +155,28 @@ struct task_struct *pick_next_task_fair(struct rq *rq, struct task_struct *prev,
 {
 	struct cfs_rq *cfs_rq = &rq->cfs;
 	struct sched_entity *se;
-	struct task_struct *p;
 
 	if (!sched_fair_runnable(rq))
-		goto idle;
+		return NULL;
 
 	if (prev)
 		put_prev_task(rq, prev);
 
 	se = __pick_first_entity(cfs_rq);
 	set_next_entity(cfs_rq, se);
-
-	p = task_of(se);
-
-	return p;
-
-idle:
-	if (!rf)
-		return NULL;
-	return NULL;
+	return task_of(se);
 }
 
 static void put_prev_task_fair(struct rq *rq, struct task_struct *prev)
 {
 	struct sched_entity *se = &prev->se;
-	struct cfs_rq *cfs_rq;
+	struct cfs_rq *cfs_rq = cfs_rq_of(se);
 
-	for_each_sched_entity(se)
-	{
-		cfs_rq = cfs_rq_of(se);
-		if (se->on_rq)
-			update_curr(cfs_rq);
-		if (se->on_rq) {
-			__enqueue_entity(cfs_rq, se);
-			update_load_avg(cfs_rq, se, 0);
-		}
-		cfs_rq->curr = NULL;
+	if (se->on_rq) {
+		update_curr(cfs_rq);
+		__enqueue_entity(cfs_rq, se);
 	}
+	cfs_rq->curr = NULL;
 }
 
 static void task_fork_fair(struct task_struct *p)

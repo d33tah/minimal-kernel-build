@@ -25,10 +25,6 @@ __cacheline_aligned DEFINE_RWLOCK(tasklist_lock);
 
 static struct kmem_cache *task_struct_cachep;
 
-static void thread_stack_free_rcu(struct rcu_head *rh)
-{
-}
-
 static struct kmem_cache *signal_cachep;
 
 struct kmem_cache *sighand_cachep;
@@ -62,14 +58,8 @@ void vm_area_free(struct vm_area_struct *vma)
 
 void put_task_stack(struct task_struct *tsk)
 {
-	if (refcount_dec_and_test(&tsk->stack_refcount)) {
-		struct rcu_head *rh;
-		if (WARN_ON(READ_ONCE(tsk->__state) != TASK_DEAD))
-			return;
-		rh = tsk->stack;
-		call_rcu(rh, thread_stack_free_rcu);
+	if (refcount_dec_and_test(&tsk->stack_refcount))
 		tsk->stack = NULL;
-	}
 }
 
 #define allocate_mm() (kmem_cache_alloc(mm_cachep, GFP_KERNEL))

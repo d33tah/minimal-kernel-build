@@ -235,24 +235,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 static int __init_or_module do_one_initcall(initcall_t fn)
 {
-	int count = preempt_count();
-	char msgbuf[64];
-	int ret;
-
-	ret = fn();
-	msgbuf[0] = 0;
-
-	if (preempt_count() != count) {
-		strcpy(msgbuf, "preemption imbalance ");
-		preempt_count_set(count);
-	}
-	if (irqs_disabled()) {
-		strlcat(msgbuf, "disabled interrupts ", sizeof(msgbuf));
-		local_irq_enable();
-	}
-	WARN(msgbuf[0], "initcall %pS returned with %s\n", fn, msgbuf);
-
-	return ret;
+	return fn();
 }
 
 extern initcall_entry_t __initcall_start[];

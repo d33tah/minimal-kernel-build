@@ -43,8 +43,6 @@ static int console_locked;
 
 void console_verbose(void)
 {
-	if (console_loglevel)
-		console_loglevel = CONSOLE_LOGLEVEL_MOTORMOUTH;
 }
 
 void console_lock(void)
@@ -94,8 +92,6 @@ void console_unblank(void)
 
 void console_flush_on_panic(enum con_flush_mode mode)
 {
-	console_trylock();
-	console_unlock();
 }
 
 #define con_printk(lvl, con, fmt, ...)                                       \

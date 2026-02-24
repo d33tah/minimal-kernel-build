@@ -105,19 +105,8 @@ static noinline void kernelmode_fixup_or_oops(struct pt_regs *regs,
 {
 	WARN_ON_ONCE(user_mode(regs));
 
-	if (fixup_exception(regs, X86_TRAP_PF, error_code, address)) {
-		if (in_interrupt())
-			return;
-
-		if (current->thread.sig_on_uaccess_err && signal) {
-			sanitize_error_code(address, &error_code);
-			set_signal_archinfo(address, error_code);
-			force_sig_fault(signal, si_code,
-					(void __user *)address);
-		}
-
+	if (fixup_exception(regs, X86_TRAP_PF, error_code, address))
 		return;
-	}
 
 	page_fault_oops(regs, error_code, address);
 }

@@ -234,4 +234,3 @@ void __init inode_init(void)
 					 init_once);
 	/* hashdist==0, so hash table allocated in inode_init_early */
 }
-

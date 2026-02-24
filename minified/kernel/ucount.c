@@ -1,19 +1,5 @@
 
 #include <linux/slab.h>
-/* hash.h inlined */
-#define GOLDEN_RATIO_32 0x61C88647
-#define hash_long(val, bits) hash_32(val, bits)
-#ifndef HAVE_ARCH__HASH_32
-#define __hash_32 __hash_32_generic
-#endif
-static inline u32 __hash_32_generic(u32 val)
-{
-	return val * GOLDEN_RATIO_32;
-}
-static inline u32 hash_32(u32 val, unsigned int bits)
-{
-	return __hash_32(val) >> (32 - bits);
-}
 #include <linux/user_namespace.h>
 
 struct ucounts init_ucounts = {
@@ -22,165 +8,39 @@ struct ucounts init_ucounts = {
 	.count = ATOMIC_INIT(1),
 };
 
-#define UCOUNTS_HASHTABLE_BITS 4 /* Reduced from 10 for minimal boot */
-static struct hlist_head ucounts_hashtable[(1 << UCOUNTS_HASHTABLE_BITS)];
-static DEFINE_SPINLOCK(ucounts_lock);
-
-#define ucounts_hashfn(ns, uid)                                         \
-	hash_long((unsigned long)__kuid_val(uid) + (unsigned long)(ns), \
-		  UCOUNTS_HASHTABLE_BITS)
-#define ucounts_hashentry(ns, uid) (ucounts_hashtable + ucounts_hashfn(ns, uid))
-
-static struct ucounts *find_ucounts(struct user_namespace *ns, kuid_t uid,
-				    struct hlist_head *hashent)
-{
-	struct ucounts *ucounts;
-
-	hlist_for_each_entry(ucounts, hashent, node) {
-		if (uid_eq(ucounts->uid, uid) && (ucounts->ns == ns))
-			return ucounts;
-	}
-	return NULL;
-}
-
-static inline bool get_ucounts_or_wrap(struct ucounts *ucounts)
-{
-	return !atomic_add_negative(1, &ucounts->count);
-}
+/* Stubbed for hello-world kernel: single user, no resource limits */
 
 struct ucounts *get_ucounts(struct ucounts *ucounts)
 {
-	if (!get_ucounts_or_wrap(ucounts)) {
-		put_ucounts(ucounts);
-		ucounts = NULL;
-	}
-	return ucounts;
-}
-
-struct ucounts *alloc_ucounts(struct user_namespace *ns, kuid_t uid)
-{
-	struct hlist_head *hashent = ucounts_hashentry(ns, uid);
-	struct ucounts *ucounts, *new;
-	bool wrapped;
-
-	spin_lock_irq(&ucounts_lock);
-	ucounts = find_ucounts(ns, uid, hashent);
-	if (!ucounts) {
-		spin_unlock_irq(&ucounts_lock);
-
-		new = kzalloc(sizeof(*new), GFP_KERNEL);
-		if (!new)
-			return NULL;
-
-		new->ns = ns;
-		new->uid = uid;
-		atomic_set(&new->count, 1);
-
-		spin_lock_irq(&ucounts_lock);
-		ucounts = find_ucounts(ns, uid, hashent);
-		if (ucounts) {
-			kfree(new);
-		} else {
-			hlist_add_head(&new->node, hashent);
-			get_user_ns(new->ns);
-			spin_unlock_irq(&ucounts_lock);
-			return new;
-		}
-	}
-	wrapped = !get_ucounts_or_wrap(ucounts);
-	spin_unlock_irq(&ucounts_lock);
-	if (wrapped) {
-		put_ucounts(ucounts);
-		return NULL;
-	}
 	return ucounts;
 }
 
 void put_ucounts(struct ucounts *ucounts)
 {
-	unsigned long flags;
+}
 
-	if (atomic_dec_and_lock_irqsave(&ucounts->count, &ucounts_lock,
-					flags)) {
-		hlist_del_init(&ucounts->node);
-		spin_unlock_irqrestore(&ucounts_lock, flags);
-		put_user_ns(ucounts->ns);
-		kfree(ucounts);
-	}
+struct ucounts *alloc_ucounts(struct user_namespace *ns, kuid_t uid)
+{
+	return &init_ucounts;
 }
 
 struct ucounts *inc_ucount(struct user_namespace *ns, kuid_t uid,
 			   enum ucount_type type)
 {
-	struct ucounts *ucounts, *iter, *bad;
-	struct user_namespace *tns;
-	ucounts = alloc_ucounts(ns, uid);
-	for (iter = ucounts; iter; iter = tns->ucounts) {
-		long max, c, old;
-		bool inc_ok;
-		tns = iter->ns;
-		max = READ_ONCE(tns->ucount_max[type]);
-		c = atomic_long_read(&iter->ucount[type]);
-		inc_ok = false;
-		for (;;) {
-			if (unlikely(c >= max))
-				break;
-			old = atomic_long_cmpxchg(&iter->ucount[type], c,
-						  c + 1);
-			if (likely(old == c)) {
-				inc_ok = true;
-				break;
-			}
-			c = old;
-		}
-		if (!inc_ok)
-			goto fail;
-	}
-	return ucounts;
-fail:
-	bad = iter;
-	for (iter = ucounts; iter != bad; iter = iter->ns->ucounts)
-		atomic_long_dec(&iter->ucount[type]);
-
-	put_ucounts(ucounts);
-	return NULL;
+	return &init_ucounts;
 }
 
 void dec_ucount(struct ucounts *ucounts, enum ucount_type type)
 {
-	struct ucounts *iter;
-	for (iter = ucounts; iter; iter = iter->ns->ucounts) {
-		long dec = atomic_long_dec_if_positive(&iter->ucount[type]);
-		WARN_ON_ONCE(dec < 0);
-	}
-	put_ucounts(ucounts);
 }
 
 long inc_rlimit_ucounts(struct ucounts *ucounts, enum ucount_type type, long v)
 {
-	struct ucounts *iter;
-	long max = LONG_MAX;
-	long ret = 0;
-
-	for (iter = ucounts; iter; iter = iter->ns->ucounts) {
-		long new = atomic_long_add_return(v, &iter->ucount[type]);
-		if (new < 0 || new > max)
-			ret = LONG_MAX;
-		else if (iter == ucounts)
-			ret = new;
-		max = READ_ONCE(iter->ns->ucount_max[type]);
-	}
-	return ret;
+	return 0;
 }
 
 static __init int user_namespace_sysctl_init(void)
 {
-	struct hlist_head *hashent =
-		ucounts_hashentry(init_ucounts.ns, init_ucounts.uid);
-	spin_lock_irq(&ucounts_lock);
-	hlist_add_head(&init_ucounts.node, hashent);
-	spin_unlock_irq(&ucounts_lock);
-	inc_rlimit_ucounts(&init_ucounts, UCOUNT_RLIMIT_NPROC, 1);
 	return 0;
 }
 subsys_initcall(user_namespace_sysctl_init);

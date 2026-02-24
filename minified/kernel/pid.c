@@ -19,11 +19,6 @@ struct pid init_struct_pid = {
 
 int pid_max = PID_MAX_DEFAULT;
 
-#define RESERVED_PIDS 300
-
-int pid_max_min = RESERVED_PIDS + 1;
-int pid_max_max = PID_MAX_LIMIT;
-
 struct pid_namespace init_pid_ns = {
 	.ns.count = REFCOUNT_INIT(2),
 	.idr = IDR_INIT(init_pid_ns.idr),
@@ -49,108 +44,51 @@ void put_pid(struct pid *pid)
 	}
 }
 
+/* Simplified for single PID namespace (level=0), no set_tid */
 struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 		      size_t set_tid_size)
 {
 	struct pid *pid;
 	enum pid_type type;
-	int i, nr;
-	struct pid_namespace *tmp;
-	struct upid *upid;
-	int retval = -ENOMEM;
-
-	if (set_tid_size > ns->level + 1)
-		return ERR_PTR(-EINVAL);
+	int nr;
 
 	pid = kmem_cache_alloc(ns->pid_cachep, GFP_KERNEL);
 	if (!pid)
-		return ERR_PTR(retval);
+		return ERR_PTR(-ENOMEM);
 
-	tmp = ns;
-	pid->level = ns->level;
+	pid->level = 0;
 
-	for (i = ns->level; i >= 0; i--) {
-		int tid = 0;
+	idr_preload(GFP_KERNEL);
+	spin_lock_irq(&pidmap_lock);
+	nr = idr_alloc_cyclic(&ns->idr, NULL, 1, pid_max, GFP_ATOMIC);
+	spin_unlock_irq(&pidmap_lock);
+	local_unlock(&radix_tree_preloads.lock);
 
-		if (set_tid_size) {
-			tid = set_tid[ns->level - i];
-
-			retval = -EINVAL;
-			if (tid < 1 || tid >= pid_max)
-				goto out_free;
-
-			if (tid != 1 && !tmp->child_reaper)
-				goto out_free;
-			set_tid_size--;
-		}
-
-		idr_preload(GFP_KERNEL);
-		spin_lock_irq(&pidmap_lock);
-
-		if (tid) {
-			nr = idr_alloc(&tmp->idr, NULL, tid, tid + 1,
-				       GFP_ATOMIC);
-
-			if (nr == -ENOSPC)
-				nr = -EEXIST;
-		} else {
-			int pid_min = 1;
-
-			if (READ_ONCE(tmp->idr.idr_next) > RESERVED_PIDS)
-				pid_min = RESERVED_PIDS;
-
-			nr = idr_alloc_cyclic(&tmp->idr, NULL, pid_min, pid_max,
-					      GFP_ATOMIC);
-		}
-		spin_unlock_irq(&pidmap_lock);
-		local_unlock(&radix_tree_preloads.lock);
-
-		if (nr < 0) {
-			retval = (nr == -ENOSPC) ? -EAGAIN : nr;
-			goto out_free;
-		}
-
-		pid->numbers[i].nr = nr;
-		pid->numbers[i].ns = tmp;
-		tmp = tmp->parent;
+	if (nr < 0) {
+		kmem_cache_free(ns->pid_cachep, pid);
+		return ERR_PTR((nr == -ENOSPC) ? -EAGAIN : nr);
 	}
 
-	retval = -ENOMEM;
+	pid->numbers[0].nr = nr;
+	pid->numbers[0].ns = ns;
 
 	get_pid_ns(ns);
 	refcount_set(&pid->count, 1);
 	for (type = 0; type < PIDTYPE_MAX; ++type)
 		INIT_HLIST_HEAD(&pid->tasks[type]);
 
-	upid = pid->numbers + ns->level;
 	spin_lock_irq(&pidmap_lock);
-	if (!(ns->pid_allocated & PIDNS_ADDING))
-		goto out_unlock;
-	for (; upid >= pid->numbers; --upid) {
-		idr_replace(&upid->ns->idr, pid, upid->nr);
-		upid->ns->pid_allocated++;
+	if (!(ns->pid_allocated & PIDNS_ADDING)) {
+		spin_unlock_irq(&pidmap_lock);
+		idr_remove(&ns->idr, nr);
+		kmem_cache_free(ns->pid_cachep, pid);
+		return ERR_PTR(-ENOMEM);
 	}
+	idr_replace(&ns->idr, pid, nr);
+	ns->pid_allocated++;
 	spin_unlock_irq(&pidmap_lock);
 
 	return pid;
-
-out_unlock:
-	spin_unlock_irq(&pidmap_lock);
-
-out_free:
-	spin_lock_irq(&pidmap_lock);
-	while (++i <= ns->level) {
-		upid = pid->numbers + i;
-		idr_remove(&upid->ns->idr, upid->nr);
-	}
-
-	if (ns->pid_allocated == PIDNS_ADDING)
-		WRITE_ONCE(ns->idr.idr_next, 0);
-
-	spin_unlock_irq(&pidmap_lock);
-
-	kmem_cache_free(ns->pid_cachep, pid);
-	return ERR_PTR(retval);
 }
 
 static struct pid *find_pid_ns(int nr, struct pid_namespace *ns)
@@ -222,20 +160,12 @@ struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
 	return ns_of_pid(tsk->thread_pid); /* task_pid inlined */
 }
 
-/* pidfd_open replaced with COND_SYSCALL */
-
 void __init pid_idr_init(void)
 {
 	BUILD_BUG_ON(PID_MAX_LIMIT >= PIDNS_ADDING);
-
-	/* num_possible_cpus() == 1 in single-CPU kernel */
-	pid_max = min(pid_max_max, max_t(int, pid_max, PIDS_PER_CPU_DEFAULT));
-	pid_max_min = max_t(int, pid_max_min, PIDS_PER_CPU_MIN);
 
 	idr_init_base(&init_pid_ns.idr, 0);
 
 	init_pid_ns.pid_cachep =
 		KMEM_CACHE(pid, SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT);
 }
-
-/* pidfd_getfd replaced with COND_SYSCALL */

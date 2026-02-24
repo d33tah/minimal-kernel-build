@@ -4,11 +4,7 @@
 #include <linux/compiler.h>
 #include <linux/types.h>
 
-/* MODULE is never defined (CONFIG_MODULES=n) */
-/* __noretpoline is never defined, so __noinitretpoline is always empty */
-#define __noinitretpoline
-
-#define __init		__section(".init.text") __cold  __latent_entropy __noinitretpoline __nocfi
+#define __init		__section(".init.text") __cold  __latent_entropy __nocfi
 #define __initdata	__section(".init.data")
 #define __initconst	__section(".init.rodata")
 
@@ -97,9 +93,6 @@ extern void (*late_time_init)(void);
 #define core_initcall(fn)		__define_initcall(fn, 1)
 #define subsys_initcall(fn)		__define_initcall(fn, 4)
 #define fs_initcall(fn)			__define_initcall(fn, 5)
-#define device_initcall(fn)		__define_initcall(fn, 6)
-
-#define __initcall(fn) device_initcall(fn)
 
 #define console_initcall(fn)	___define_initcall(fn, con, .con_initcall)
 

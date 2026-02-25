@@ -56,12 +56,6 @@ void vm_area_free(struct vm_area_struct *vma)
 	kmem_cache_free(vm_area_cachep, vma);
 }
 
-void put_task_stack(struct task_struct *tsk)
-{
-	if (refcount_dec_and_test(&tsk->stack_refcount))
-		tsk->stack = NULL;
-}
-
 #define allocate_mm() (kmem_cache_alloc(mm_cachep, GFP_KERNEL))
 #define free_mm(mm) (kmem_cache_free(mm_cachep, (mm)))
 

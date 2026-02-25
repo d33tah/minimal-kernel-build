@@ -102,12 +102,6 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 		csi_J(vc, 2);
 }
 
-static struct console vt_console_driver = {
-	.name = "tty",
-	.flags = CON_PRINTBUFFER,
-	.index = -1,
-};
-
 static int default_color = 7;
 
 static void vc_init(struct vc_data *vc, unsigned int rows, unsigned int cols,
@@ -163,7 +157,6 @@ static int __init con_init(void)
 
 	console_unlock();
 
-	register_console(&vt_console_driver);
 	return 0;
 }
 console_initcall(con_init);

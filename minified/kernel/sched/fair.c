@@ -69,22 +69,6 @@ static void update_curr(struct cfs_rq *cfs_rq)
 	update_min_vruntime(cfs_rq);
 }
 
-void reweight_task(struct task_struct *p, int prio)
-{
-	struct sched_entity *se = &p->se;
-	struct cfs_rq *cfs_rq = cfs_rq_of(se);
-	unsigned long weight = scale_load(sched_prio_to_weight[prio]);
-
-	if (se->on_rq) {
-		if (cfs_rq->curr == se)
-			update_curr(cfs_rq);
-		update_load_sub(&cfs_rq->load, se->load.weight);
-	}
-	se->load.weight = weight;
-	if (se->on_rq)
-		update_load_add(&cfs_rq->load, se->load.weight);
-}
-
 static void place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 			 int initial)
 {

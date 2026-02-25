@@ -74,16 +74,7 @@ void resched_cpu(int cpu)
 	raw_spin_rq_unlock_irqrestore(rq, flags);
 }
 
-static void set_load_weight(struct task_struct *p, bool update_load)
-{
-	int prio = p->static_prio - MAX_RT_PRIO;
-	struct load_weight *load = &p->se.load;
-
-	if (update_load && p->sched_class == &fair_sched_class)
-		reweight_task(p, prio);
-	else
-		load->weight = scale_load(sched_prio_to_weight[prio]);
-}
+/* set_load_weight inlined into sched_init */
 
 static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 {
@@ -173,24 +164,12 @@ static struct rq *finish_task_switch(struct task_struct *prev)
 {
 	struct rq *rq = this_rq();
 	struct mm_struct *mm = rq->prev_mm;
-	unsigned int prev_state;
-
-	if (WARN_ONCE(preempt_count() != 2 * PREEMPT_DISABLE_OFFSET,
-		      "corrupted preempt_count: %s/%d/0x%x\n", current->comm,
-		      current->pid, preempt_count()))
-		preempt_count_set(FORK_PREEMPT_COUNT);
 
 	rq->prev_mm = NULL;
-
-	prev_state = READ_ONCE(prev->__state);
-
 	raw_spin_rq_unlock_irq(rq);
 
 	if (mm)
 		mmdrop_sched(mm);
-	if (unlikely(prev_state == TASK_DEAD)) {
-		put_task_stack(prev);
-	}
 
 	return rq;
 }
@@ -391,7 +370,9 @@ void __init sched_init(void)
 		init_cfs_rq(&rq->cfs);
 	}
 
-	set_load_weight(&init_task, false);
+	/* set_load_weight inlined */
+	init_task.se.load.weight = scale_load(
+		sched_prio_to_weight[init_task.static_prio - MAX_RT_PRIO]);
 
 	mmgrab(&init_mm);
 	enter_lazy_tlb(&init_mm, current);

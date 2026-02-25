@@ -1,6 +1,18 @@
 #include <linux/user_namespace.h>
 #include <linux/idr.h>
-#include <linux/sysfs.h>
+/* sysfs.h inlined */
+#include <linux/stat.h>
+struct attribute {
+	const char *name;
+	umode_t mode;
+};
+struct attribute_group {
+	struct attribute **attrs;
+};
+static inline int __must_check sysfs_init(void)
+{
+	return 0;
+}
 #include <linux/fs_struct.h>
 #include <linux/fs_parser.h>
 

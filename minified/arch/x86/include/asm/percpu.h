@@ -205,12 +205,6 @@ do {									\
 #ifndef raw_cpu_write_8
 #define raw_cpu_write_8(pcp, val)	raw_cpu_generic_to_op(pcp, val, =)
 #endif
-#ifndef raw_cpu_add_8
-#define raw_cpu_add_8(pcp, val)		raw_cpu_generic_to_op(pcp, val, +=)
-#endif
-#ifndef raw_cpu_and_8
-#define raw_cpu_and_8(pcp, val)		raw_cpu_generic_to_op(pcp, val, &=)
-#endif
 #ifndef raw_cpu_or_8
 #define raw_cpu_or_8(pcp, val)		raw_cpu_generic_to_op(pcp, val, |=)
 #endif
@@ -219,9 +213,6 @@ do {									\
 #endif
 #ifndef this_cpu_write_8
 #define this_cpu_write_8(pcp, val)	this_cpu_generic_to_op(pcp, val, =)
-#endif
-#ifndef this_cpu_add_8
-#define this_cpu_add_8(pcp, val)	this_cpu_generic_to_op(pcp, val, +=)
 #endif
 DECLARE_PER_CPU_READ_MOSTLY(unsigned long, this_cpu_off);
 

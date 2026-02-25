@@ -291,7 +291,6 @@ struct semaphore {
 #define DEFINE_SEMAPHORE(name)	\
 	struct semaphore name = __SEMAPHORE_INITIALIZER(name, 1)
 extern void down(struct semaphore *sem);
-extern int __must_check down_trylock(struct semaphore *sem);
 extern void up(struct semaphore *sem);
 #include <linux/fcntl.h>
 #include <linux/percpu-rwsem.h>

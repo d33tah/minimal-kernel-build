@@ -13,5 +13,4 @@ struct nsproxy {
 };
 extern struct nsproxy init_nsproxy;
 int copy_namespaces(struct task_struct *tsk);
-int __init nsproxy_cache_init(void);
 #endif

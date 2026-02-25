@@ -17,8 +17,3 @@ int copy_namespaces(struct task_struct *tsk)
 	atomic_inc(&old_ns->count); /* get_nsproxy inlined */
 	return 0;
 }
-
-int __init nsproxy_cache_init(void)
-{
-	return 0;
-}

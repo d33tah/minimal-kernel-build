@@ -24,20 +24,6 @@ void down(struct semaphore *sem)
 	raw_spin_unlock_irqrestore(&sem->lock, flags);
 }
 
-int down_trylock(struct semaphore *sem)
-{
-	unsigned long flags;
-	int count;
-
-	raw_spin_lock_irqsave(&sem->lock, flags);
-	count = sem->count - 1;
-	if (likely(count >= 0))
-		sem->count = count;
-	raw_spin_unlock_irqrestore(&sem->lock, flags);
-
-	return (count < 0);
-}
-
 void up(struct semaphore *sem)
 {
 	unsigned long flags;

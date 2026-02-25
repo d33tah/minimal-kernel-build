@@ -453,5 +453,4 @@ void __init proc_caches_init(void)
 		sizeof_field(struct mm_struct, saved_auxv), NULL);
 	vm_area_cachep = KMEM_CACHE(vm_area_struct, SLAB_PANIC | SLAB_ACCOUNT);
 	mmap_init();
-	nsproxy_cache_init();
 }

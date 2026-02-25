@@ -89,7 +89,6 @@ extern struct file_system_type rootfs_fs_type;
 
 #define early_initcall(fn)		__define_initcall(fn, early)
 #define core_initcall(fn)		__define_initcall(fn, 1)
-#define subsys_initcall(fn)		__define_initcall(fn, 4)
 #define fs_initcall(fn)			__define_initcall(fn, 5)
 
 #define console_initcall(fn)	___define_initcall(fn, con, .con_initcall)

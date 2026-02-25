@@ -14,8 +14,6 @@ obj-y			:= filemap.o \
 			   swap.o \
 			   util.o mmzone.o backing-dev.o \
 			   percpu.o slab_common.o \
-			   vmacache.o \
-			   interval_tree.o \
 			   gup.o $(mmu-y)
 
 obj-y += page_alloc.o

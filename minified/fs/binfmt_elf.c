@@ -8,8 +8,6 @@
 
 static int load_elf_binary(struct linux_binprm *bprm);
 
-#define load_elf_library NULL
-
 /* ELF_EXEC_PAGESIZE = PAGE_SIZE = 4096 on x86 */
 #define ELF_MIN_ALIGN PAGE_SIZE
 
@@ -20,7 +18,6 @@ static int load_elf_binary(struct linux_binprm *bprm);
 static struct linux_binfmt elf_format = {
 	.module = THIS_MODULE,
 	.load_binary = load_elf_binary,
-	.load_shlib = load_elf_library,
 };
 
 #define BAD_ADDR(x) (unlikely((unsigned long)(x) >= TASK_SIZE))

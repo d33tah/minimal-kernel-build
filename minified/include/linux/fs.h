@@ -393,10 +393,6 @@ struct kiocb {
 
 struct address_space_operations {
 	int (*read_folio)(struct file *, struct folio *);
-	int (*write_begin)(struct file *, struct address_space *mapping, loff_t pos,
-			   unsigned len, struct page **pagep, void **fsdata);
-	int (*write_end)(struct file *, struct address_space *mapping, loff_t pos,
-			 unsigned len, unsigned copied, struct page *page, void *fsdata);
 };
 
 struct address_space {
@@ -611,8 +607,6 @@ extern void inc_nlink(struct inode *inode);
 struct file_system_type {
 	const char *name;
 	int (*init_fs_context)(struct fs_context *);
-	struct dentry *(*mount) (struct file_system_type *, int,
-		       const char *, void *);
 	void (*kill_sb) (struct super_block *);
 	struct module *owner;
 	struct file_system_type * next;

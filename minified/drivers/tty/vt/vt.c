@@ -102,13 +102,8 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 		csi_J(vc, 2);
 }
 
-static void vt_console_print(struct console *co, const char *b, unsigned count)
-{
-}
-
 static struct console vt_console_driver = {
 	.name = "tty",
-	.write = vt_console_print,
 	.flags = CON_PRINTBUFFER,
 	.index = -1,
 };
@@ -159,7 +154,6 @@ static int __init con_init(void)
 	currcons = fg_console = 0;
 	vc = vc_cons[currcons].d;
 	set_origin(vc);
-	WARN_CONSOLE_UNLOCKED();
 	if (vc->vc_sw->con_save_screen)
 		vc->vc_sw->con_save_screen(vc);
 	gotoxy(vc, vc->state.x, vc->state.y);

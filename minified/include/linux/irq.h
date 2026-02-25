@@ -108,8 +108,6 @@ struct irq_chip {
 	void		(*irq_mask_ack)(struct irq_data *data);
 	void		(*irq_unmask)(struct irq_data *data);
 
-	void		(*irq_bus_lock)(struct irq_data *data);
-	void		(*irq_bus_sync_unlock)(struct irq_data *data);
 	unsigned long	flags;
 };
 

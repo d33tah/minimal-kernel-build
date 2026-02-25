@@ -179,7 +179,6 @@ struct vm_fault {
 };
 
 struct vm_operations_struct {
-	vm_fault_t (*fault)(struct vm_fault *vmf);
 };
 
 static inline void vma_set_anonymous(struct vm_area_struct *vma)

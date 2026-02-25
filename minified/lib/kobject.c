@@ -14,10 +14,7 @@ struct kobject *__must_check kobject_get_unless_zero(struct kobject *kobj)
 static void kobject_release(struct kref *kref)
 {
 	struct kobject *kobj = container_of(kref, struct kobject, kref);
-	const struct kobj_type *t = get_ktype(kobj);
 
-	if (t && t->release)
-		t->release(kobj);
 	if (kobj->name)
 		kfree_const(kobj->name);
 }

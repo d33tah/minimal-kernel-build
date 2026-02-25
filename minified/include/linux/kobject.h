@@ -18,7 +18,6 @@ extern struct kobject * __must_check kobject_get_unless_zero(
 extern void kobject_put(struct kobject *kobj);
 
 struct kobj_type {
-	void (*release)(struct kobject *kobj);
 };
 
 struct kset {

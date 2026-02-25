@@ -5,8 +5,6 @@
 #include <linux/nodemask.h>
 struct shrink_control { gfp_t gfp_mask; int nid; unsigned long nr_to_scan; /* nr_scanned removed */ struct mem_cgroup *memcg; };
 struct shrinker {
-	unsigned long (*count_objects)(struct shrinker *, struct shrink_control *sc);
-	unsigned long (*scan_objects)(struct shrinker *, struct shrink_control *sc);
 };
 #include <linux/xarray.h>
 

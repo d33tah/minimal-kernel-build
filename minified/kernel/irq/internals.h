@@ -48,14 +48,10 @@ static inline int check_irq_resend(struct irq_desc *desc, bool inject)
 
 static inline void chip_bus_lock(struct irq_desc *desc)
 {
-	if (unlikely(desc->irq_data.chip->irq_bus_lock))
-		desc->irq_data.chip->irq_bus_lock(&desc->irq_data);
 }
 
 static inline void chip_bus_sync_unlock(struct irq_desc *desc)
 {
-	if (unlikely(desc->irq_data.chip->irq_bus_sync_unlock))
-		desc->irq_data.chip->irq_bus_sync_unlock(&desc->irq_data);
 }
 
 

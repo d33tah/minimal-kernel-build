@@ -24,7 +24,7 @@ extern const char linux_banner[];
 
 extern int oops_in_progress;
 
-extern void console_verbose(void);
+static inline void console_verbose(void) {}
 
 struct va_format {
 	const char *fmt;

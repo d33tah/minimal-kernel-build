@@ -42,8 +42,6 @@ void setup_arch(char **);
 void prepare_namespace(void);
 extern struct file_system_type rootfs_fs_type;
 
-extern void (*late_time_init)(void);
-
 #endif
 
 #ifndef __ASSEMBLY__

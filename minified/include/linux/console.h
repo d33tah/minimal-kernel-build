@@ -2,7 +2,6 @@
 #ifndef _LINUX_CONSOLE_H_
 #define _LINUX_CONSOLE_H_ 1
 
-#include <linux/atomic.h>
 #include <linux/types.h>
 
 struct vc_data;
@@ -23,36 +22,20 @@ extern const struct consw dummy_con;
 extern const struct consw vga_con;
 
 #define CON_PRINTBUFFER	(1)
-#define CON_CONSDEV	(2)
 #define CON_ENABLED	(4)
-#define CON_BOOT	(8)
-#define CON_BRL		(32)
 
 struct console {
 	char	name[16];
-	void	(*write)(struct console *, const char *, unsigned);
-	struct tty_driver *(*device)(struct console *, int *);
-	void	(*unblank)(void);
-	int	(*setup)(struct console *, char *);
 	short	flags;
 	short	index;
 	struct	 console *next;
 };
-
-#define for_each_console(con) \
-	for (con = console_drivers; con != NULL; con = con->next)
 
 extern void register_console(struct console *);
 extern struct console *console_drivers;
 extern void console_lock(void);
 extern void console_unlock(void);
 extern void console_unblank(void);
-extern int is_console_locked(void);
-
-#define WARN_CONSOLE_UNLOCKED()						\
-	WARN_ON(!atomic_read(&ignore_console_lock_warning) &&		\
-		!is_console_locked() && !oops_in_progress)
-extern atomic_t ignore_console_lock_warning;
 
 extern void console_init(void);
 

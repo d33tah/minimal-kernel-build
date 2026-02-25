@@ -229,21 +229,6 @@ static __always_inline bool atomic_dec_and_test(atomic_t *v)
 	return GEN_UNARY_RMWcc(LOCK_PREFIX "decl", v->counter, e);
 }
 
-static __always_inline bool atomic_add_negative(int i, atomic_t *v)
-{
-	return GEN_BINARY_RMWcc(LOCK_PREFIX "addl", v->counter, s, "er", i);
-}
-
-static __always_inline int atomic_add_return(int i, atomic_t *v)
-{
-	return i + xadd(&v->counter, i);
-}
-
-static __always_inline int atomic_sub_return(int i, atomic_t *v)
-{
-	return atomic_add_return(-i, v);
-}
-
 static __always_inline int atomic_fetch_add(int i, atomic_t *v)
 {
 	return xadd(&v->counter, i);
@@ -255,11 +240,6 @@ static __always_inline int atomic_fetch_sub(int i, atomic_t *v)
 	return xadd(&v->counter, -i);
 }
 #define atomic_fetch_sub atomic_fetch_sub
-
-static __always_inline int atomic_cmpxchg(atomic_t *v, int old, int new)
-{
-	return cmpxchg(&v->counter, old, new);
-}
 
 static __always_inline bool atomic_try_cmpxchg(atomic_t *v, int *old, int new)
 {

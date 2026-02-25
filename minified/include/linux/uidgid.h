@@ -17,17 +17,7 @@ typedef struct {
 #define KUIDT_INIT(value) (kuid_t){ value }
 #define KGIDT_INIT(value) (kgid_t){ value }
 
-static inline uid_t __kuid_val(kuid_t uid)
-{
-	return 0;
-}
-
 #define GLOBAL_ROOT_UID KUIDT_INIT(0)
 #define GLOBAL_ROOT_GID KGIDT_INIT(0)
-
-static inline bool uid_eq(kuid_t left, kuid_t right)
-{
-	return __kuid_val(left) == __kuid_val(right);
-}
 
 #endif

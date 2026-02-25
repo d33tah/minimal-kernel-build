@@ -4,8 +4,8 @@
 #include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/binfmts.h>
-#include <linux/mm_inline.h>
 #include <linux/cpu.h>
+#include <linux/memcontrol.h>
 #define FUTEX_TID_MASK 0x3fffffff
 #include <linux/kthread.h>
 #include <linux/fs_struct.h>

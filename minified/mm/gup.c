@@ -1,5 +1,4 @@
-
-#include <linux/mm_inline.h>
+#include "internal.h"
 
 struct follow_page_context {
 	unsigned int page_mask;

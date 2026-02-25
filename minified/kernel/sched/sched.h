@@ -197,13 +197,6 @@ struct rq_flags {
 #define rq_pin_lock(rq, rf) do { } while (0)
 #define rq_unpin_lock(rq, rf) do { } while (0)
 
-static inline void __task_rq_unlock(struct rq *rq, struct rq_flags *rf)
-	__releases(rq->lock)
-{
-	rq_unpin_lock(rq, rf);
-	raw_spin_rq_unlock(rq);
-}
-
 static inline void
 task_rq_unlock(struct rq *rq, struct task_struct *p, struct rq_flags *rf)
 	__releases(rq->lock)

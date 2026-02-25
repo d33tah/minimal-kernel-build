@@ -57,8 +57,3 @@ void page_add_new_anon_rmap(struct page *page, struct vm_area_struct *vma,
 	page->index = linear_page_index(vma, address);
 	SetPageAnonExclusive(page);
 }
-
-void __put_anon_vma(struct anon_vma *anon_vma)
-{
-	kmem_cache_free(anon_vma_cachep, anon_vma);
-}

@@ -273,12 +273,6 @@ static inline enum zone_type folio_zonenum(const struct folio *folio)
 	return page_zonenum(&folio->page);
 }
 
-static inline void folio_get(struct folio *folio)
-{
-	VM_BUG_ON_FOLIO((unsigned int) folio_ref_count(folio) + 127u <= 127u, folio);
-	folio_ref_inc(folio);
-}
-
 static inline void folio_put(struct folio *folio)
 {
 	if (put_page_testzero(&folio->page))

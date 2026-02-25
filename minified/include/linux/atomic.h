@@ -90,23 +90,6 @@ atomic_dec_unless_positive(atomic_t *v)
 #define atomic_dec_unless_positive atomic_dec_unless_positive
 #endif
 
-#ifndef atomic_dec_if_positive
-static __always_inline int
-atomic_dec_if_positive(atomic_t *v)
-{
-	int dec, c = atomic_read(v);
-
-	do {
-		dec = c - 1;
-		if (unlikely(dec < 0))
-			break;
-	} while (!atomic_try_cmpxchg(v, &c, dec));
-
-	return dec;
-}
-#define atomic_dec_if_positive atomic_dec_if_positive
-#endif
-
 /* atomic_long - on 32-bit, maps to atomic_t */
 typedef atomic_t atomic_long_t;
 #define ATOMIC_LONG_INIT(i)		ATOMIC_INIT(i)
@@ -129,22 +112,10 @@ atomic_long_add(long i, atomic_long_t *v)
 	atomic_add(i, v);
 }
 
-static __always_inline long
-atomic_long_add_return(long i, atomic_long_t *v)
-{
-	return atomic_add_return(i, v);
-}
-
 static __always_inline void
 atomic_long_sub(long i, atomic_long_t *v)
 {
 	atomic_sub(i, v);
-}
-
-static __always_inline long
-atomic_long_sub_return(long i, atomic_long_t *v)
-{
-	return atomic_sub_return(i, v);
 }
 
 static __always_inline void
@@ -159,22 +130,11 @@ atomic_long_dec(atomic_long_t *v)
 	atomic_dec(v);
 }
 
-static __always_inline long
-atomic_long_cmpxchg(atomic_long_t *v, long old, long new)
-{
-	return atomic_cmpxchg(v, old, new);
-}
-
 static __always_inline bool
 atomic_long_dec_and_test(atomic_long_t *v)
 {
 	return atomic_dec_and_test(v);
 }
 
-static __always_inline long
-atomic_long_dec_if_positive(atomic_long_t *v)
-{
-	return atomic_dec_if_positive(v);
-}
 
 #endif

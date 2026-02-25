@@ -8,7 +8,4 @@
 #define PID_MAX_DEFAULT 0x1000
 #define PID_MAX_LIMIT (PAGE_SIZE * 8)
 
-#define PIDS_PER_CPU_DEFAULT	1024
-#define PIDS_PER_CPU_MIN	8
-
 #endif

@@ -193,8 +193,6 @@ enum {
 	TASK_COMM_LEN = 16,
 };
 
-#define	MAX_SCHEDULE_TIMEOUT		LONG_MAX
-
 asmlinkage void schedule(void);
 extern void schedule_preempt_disabled(void);
 

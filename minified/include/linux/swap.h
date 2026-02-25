@@ -9,8 +9,6 @@
 #include <linux/atomic.h>
 #include <asm/page.h>
 #ifdef __KERNEL__
-#define SWAP_CLUSTER_MAX 32UL
-
 extern struct list_lru shadow_nodes;
 /* dax_mapping and shmem_mapping always return false */
 #define mapping_set_update(xas, mapping) do {				\

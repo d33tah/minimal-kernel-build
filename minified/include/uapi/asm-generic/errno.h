@@ -28,6 +28,5 @@
 
 #define	ENAMETOOLONG	36
 #define	ENOSYS		38
-#define	ETIME		62
 #define	EOVERFLOW	75
 #endif

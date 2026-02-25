@@ -27,7 +27,6 @@ typedef struct {
 #define SIGBUS		 7
 #define SIGKILL		 9
 #define SIGSEGV		11
-#define SIGCHLD		17
 
 #ifndef __ASSEMBLY__
 typedef void __signalfn_t(int);

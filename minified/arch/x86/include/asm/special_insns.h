@@ -98,12 +98,6 @@ static inline void __write_cr4(unsigned long x)
 
 #define nop() asm volatile ("nop")
 
-/* Used by sync_core.h */
-static inline void serialize(void)
-{
-	asm volatile(".byte 0xf, 0x1, 0xe8" ::: "memory");
-}
-
 #endif
 
 #endif

@@ -20,10 +20,6 @@ static inline struct group_info *get_group_info(struct group_info *gi)
 	return gi;
 }
 
-static inline void groups_free(struct group_info *group_info)
-{
-}
-
 struct cred {
 	atomic_t	usage;
 	kuid_t		uid;

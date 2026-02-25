@@ -49,16 +49,11 @@ struct console {
 #define for_each_console(con) \
 	for (con = console_drivers; con != NULL; con = con->next)
 
-enum con_flush_mode {
-	CONSOLE_FLUSH_PENDING,
-};
-
 extern void register_console(struct console *);
 extern struct console *console_drivers;
 extern void console_lock(void);
 extern void console_unlock(void);
 extern void console_unblank(void);
-extern void console_flush_on_panic(enum con_flush_mode mode);
 extern int is_console_locked(void);
 
 #define WARN_CONSOLE_UNLOCKED()						\

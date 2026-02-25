@@ -58,10 +58,6 @@ extern enum system_states {
 	SYSTEM_SCHEDULING,
 	SYSTEM_FREEING_INITMEM,
 	SYSTEM_RUNNING,
-	SYSTEM_HALT,
-	SYSTEM_POWER_OFF,
-	SYSTEM_RESTART,
-	SYSTEM_SUSPEND,
 } system_state;
 
 /* hex_asc_upper moved from lib/hexdump.c */

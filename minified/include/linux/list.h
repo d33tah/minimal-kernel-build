@@ -149,9 +149,4 @@ static inline void hlist_add_head(struct hlist_node *n, struct hlist_head *h)
 
 #define hlist_entry(ptr, type, member) container_of(ptr,type,member)
 
-#define hlist_entry_safe(ptr, type, member) \
-	({ typeof(ptr) ____ptr = (ptr); \
-	   ____ptr ? hlist_entry(____ptr, type, member) : NULL; \
-	})
-
 #endif

@@ -268,11 +268,8 @@ enum vm_fault_reason {
 	VM_FAULT_HWPOISON       = (__force vm_fault_t)0x000010,
 	VM_FAULT_HWPOISON_LARGE = (__force vm_fault_t)0x000020,
 	VM_FAULT_SIGSEGV        = (__force vm_fault_t)0x000040,
-	VM_FAULT_NOPAGE         = (__force vm_fault_t)0x000100,
-	VM_FAULT_LOCKED         = (__force vm_fault_t)0x000200,
 	VM_FAULT_RETRY          = (__force vm_fault_t)0x000400,
 	VM_FAULT_FALLBACK       = (__force vm_fault_t)0x000800,
-	VM_FAULT_DONE_COW       = (__force vm_fault_t)0x001000,
 };
 
 #define VM_FAULT_ERROR (VM_FAULT_OOM | VM_FAULT_SIGBUS |	\
@@ -286,7 +283,6 @@ enum fault_flag {
 	FAULT_FLAG_KILLABLE =		1 << 4,
 	FAULT_FLAG_TRIED =		1 << 5,
 	FAULT_FLAG_REMOTE =		1 << 7,
-	FAULT_FLAG_ORIG_PTE_VALID =	1 << 11,
 };
 
 

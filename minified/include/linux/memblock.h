@@ -15,9 +15,6 @@ extern unsigned long max_pfn;
 
 enum memblock_flags {
 	MEMBLOCK_NONE		= 0x0,
-	MEMBLOCK_MIRROR		= 0x2,
-	MEMBLOCK_NOMAP		= 0x4,
-	MEMBLOCK_DRIVER_MANAGED = 0x8,
 };
 
 struct memblock_region {

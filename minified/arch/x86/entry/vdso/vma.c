@@ -6,8 +6,6 @@
 
 unsigned int vclocks_used __read_mostly;
 
-const struct vdso_image vdso_image_32 = {};
-
 int __init sysenter_setup(void)
 {
 	return 0;

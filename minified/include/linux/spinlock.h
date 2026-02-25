@@ -92,11 +92,6 @@ static __always_inline int spin_trylock(spinlock_t *lock)
 	return raw_spin_trylock(&lock->rlock);
 }
 
-#define spin_lock_nested(lock, subclass)			\
-do {								\
-	raw_spin_lock_nested(spinlock_check(lock), subclass);	\
-} while (0)
-
 static __always_inline void spin_lock_irq(spinlock_t *lock)
 {
 	raw_spin_lock_irq(&lock->rlock);

@@ -31,8 +31,6 @@ struct task_struct init_task __aligned(L1_CACHE_BYTES) = {
 	.usage = REFCOUNT_INIT(2),
 	.flags = PF_KTHREAD,
 	.static_prio = MAX_PRIO - 20,
-	.normal_prio = MAX_PRIO - 20,
-
 	.cpus_ptr = &init_task.cpus_mask,
 	.cpus_mask = CPU_MASK_ALL,
 	.mm = NULL,
@@ -51,7 +49,6 @@ struct task_struct init_task __aligned(L1_CACHE_BYTES) = {
 	.nsproxy = &init_nsproxy,
 	.pending = { .list = LIST_HEAD_INIT(init_task.pending.list),
 		     .signal = { { 0 } } },
-	.blocked = { { 0 } },
 	.alloc_lock = __SPIN_LOCK_UNLOCKED(init_task.alloc_lock),
 	.pi_lock = __RAW_SPIN_LOCK_UNLOCKED(init_task.pi_lock),
 	.thread_pid = &init_struct_pid,

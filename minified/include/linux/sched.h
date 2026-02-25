@@ -231,7 +231,6 @@ struct task_struct {
 	int				on_rq;
 
 	int				static_prio;
-	int				normal_prio;
 
 	struct sched_entity		se;
 	const struct sched_class	*sched_class;
@@ -279,7 +278,6 @@ struct task_struct {
 
 	struct signal_struct		*signal;
 	struct sighand_struct __rcu		*sighand;
-	sigset_t			blocked;
 	sigset_t			saved_sigmask;
 	struct sigpending		pending;
 

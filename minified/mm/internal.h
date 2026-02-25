@@ -97,8 +97,7 @@ extern void memblock_free_pages(struct page *page, unsigned long pfn,
 void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 		struct vm_area_struct *prev);
 
-extern long populate_vma_page_range(struct vm_area_struct *vma,
-		unsigned long start, unsigned long end, int *locked);
+
 
 #define ALLOC_WMARK_LOW		WMARK_LOW
 #define ALLOC_NO_WATERMARKS	0x04

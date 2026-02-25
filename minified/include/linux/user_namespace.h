@@ -43,7 +43,6 @@ enum ucount_type {
 struct user_namespace {
 	struct uid_gid_map	uid_map;
 	struct uid_gid_map	gid_map;
-	struct uid_gid_map	projid_map;
 	struct user_namespace	*parent;
 	int			level;
 	kuid_t			owner;

@@ -22,16 +22,6 @@ struct user_namespace init_user_ns = {
 			},
 		},
 	},
-	.projid_map = {
-		.nr_extents = 1,
-		{
-			.extent[0] = {
-				.first = 0,
-				.lower_first = 0,
-				.count = 4294967295U,
-			},
-		},
-	},
 	.ns.count = REFCOUNT_INIT(3),
 	.owner = GLOBAL_ROOT_UID,
 	.group = GLOBAL_ROOT_GID,

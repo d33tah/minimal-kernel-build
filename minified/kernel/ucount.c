@@ -29,9 +29,3 @@ long inc_rlimit_ucounts(struct ucounts *ucounts, enum ucount_type type, long v)
 {
 	return 0;
 }
-
-static __init int user_namespace_sysctl_init(void)
-{
-	return 0;
-}
-subsys_initcall(user_namespace_sysctl_init);

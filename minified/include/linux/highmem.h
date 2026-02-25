@@ -5,7 +5,6 @@
 #include <linux/kernel.h>
 #include <linux/bug.h>
 struct page;
-static inline void flush_dcache_page(struct page *page) { }
 struct folio;
 #include <linux/mm.h>
 #include <linux/uaccess.h>
@@ -51,36 +50,12 @@ do {								\
 	__kunmap_local(__addr);					\
 } while (0)
 
-static inline void zero_user_segments(struct page *page,
-		unsigned start1, unsigned end1,
-		unsigned start2, unsigned end2)
-{
-	void *kaddr = kmap_local_page(page);
-	unsigned int i;
-
-	BUG_ON(end1 > page_size(page) || end2 > page_size(page));
-
-	if (end1 > start1)
-		memset(kaddr + start1, 0, end1 - start1);
-
-	if (end2 > start2)
-		memset(kaddr + start2, 0, end2 - start2);
-
-	kunmap_local(kaddr);
-	for (i = 0; i < compound_nr(page); i++)
-		flush_dcache_page(page + i);
-}
-
-static inline void zero_user(struct page *page,
-	unsigned start, unsigned size)
-{
-	zero_user_segments(page, start, start + size, 0, 0);
-}
-
 static inline void folio_zero_range(struct folio *folio,
 		size_t start, size_t length)
 {
-	zero_user_segments(&folio->page, start, start + length, 0, 0);
+	void *kaddr = kmap_local_page(&folio->page);
+	memset(kaddr + start, 0, length);
+	kunmap_local(kaddr);
 }
 
 #endif  

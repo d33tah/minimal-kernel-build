@@ -495,8 +495,6 @@ struct vm_area_struct *find_extend_vma(struct mm_struct *mm, unsigned long addr)
 	start = vma->vm_start;
 	if (expand_stack(vma, addr))
 		return NULL;
-	if (vma->vm_flags & VM_LOCKED)
-		populate_vma_page_range(vma, addr, start, NULL);
 	return vma;
 }
 

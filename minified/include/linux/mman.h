@@ -10,10 +10,8 @@
 #define PROT_WRITE	0x2
 #define PROT_EXEC	0x4
 #define MAP_FIXED	0x10
-#define MAP_SYNC		0x080000
 #define MAP_FIXED_NOREPLACE	0x100000
 #define MAP_GROWSDOWN	0x0100
-#define MAP_LOCKED	0x2000
 
 #define MAP_SHARED	0x01
 #define MAP_PRIVATE	0x02
@@ -57,8 +55,6 @@ static inline unsigned long
 calc_vm_flag_bits(unsigned long flags)
 {
 	return _calc_vm_trans(flags, MAP_GROWSDOWN,  VM_GROWSDOWN ) |
-	       _calc_vm_trans(flags, MAP_LOCKED,     VM_LOCKED    ) |
-	       _calc_vm_trans(flags, MAP_SYNC,	     VM_SYNC      ) |
 	       arch_calc_vm_flag_bits(flags);
 }
 

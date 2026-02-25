@@ -10,8 +10,6 @@ struct cred;
 
 struct group_info {
 	atomic_t	usage;
-	int		ngroups;
-	kgid_t		gid[];
 } __randomize_layout;
 
 static inline struct group_info *get_group_info(struct group_info *gi)
@@ -22,12 +20,7 @@ static inline struct group_info *get_group_info(struct group_info *gi)
 
 struct cred {
 	atomic_t	usage;
-	kuid_t		uid;
-	kgid_t		gid;
 	kuid_t		euid;
-	kgid_t		egid;
-	kuid_t		fsuid;
-	kgid_t		fsgid;
 	struct user_struct *user;
 	struct user_namespace *user_ns;
 	struct ucounts *ucounts;

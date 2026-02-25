@@ -15,7 +15,6 @@ struct fs_struct {
 	int users;
 	spinlock_t lock;
 	seqcount_spinlock_t seq;
-	int umask;
 	struct path root, pwd;
 } __randomize_layout;
 

@@ -30,7 +30,6 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
 	spin_lock(&pgd_lock);
 	clone_pgd_range(pgd + KERNEL_PGD_BOUNDARY,
 			swapper_pg_dir + KERNEL_PGD_BOUNDARY, KERNEL_PGD_PTRS);
-	virt_to_page(pgd)->pt_mm = mm;
 	list_add(&virt_to_page(pgd)->lru, &pgd_list);
 	spin_unlock(&pgd_lock);
 

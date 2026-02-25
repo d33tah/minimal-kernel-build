@@ -35,5 +35,4 @@ struct fs_struct init_fs = {
 	.users = 1,
 	.lock = __SPIN_LOCK_UNLOCKED(init_fs.lock),
 	.seq = SEQCNT_SPINLOCK_ZERO(init_fs.seq, &init_fs.lock),
-	.umask = 0022,
 };

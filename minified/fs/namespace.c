@@ -86,7 +86,6 @@ static struct mount *alloc_vfsmnt(const char *name)
 
 		mnt->mnt_count = 1;
 		INIT_LIST_HEAD(&mnt->mnt_list);
-		mnt->mnt.mnt_userns = &init_user_ns;
 	}
 	return mnt;
 
@@ -134,7 +133,6 @@ void __mnt_drop_write(struct vfsmount *mnt)
 static struct vfsmount *vfs_create_mount(struct fs_context *fc)
 {
 	struct mount *mnt;
-	struct user_namespace *fs_userns;
 
 	if (!fc->root)
 		return ERR_PTR(-EINVAL);
@@ -149,10 +147,6 @@ static struct vfsmount *vfs_create_mount(struct fs_context *fc)
 	atomic_inc(&fc->root->d_sb->s_active);
 	mnt->mnt.mnt_sb = fc->root->d_sb;
 	mnt->mnt.mnt_root = dget(fc->root);
-
-	fs_userns = mnt->mnt.mnt_sb->s_user_ns;
-	if (!initial_idmapping(fs_userns))
-		mnt->mnt.mnt_userns = get_user_ns(fs_userns);
 
 	lock_mount_hash();
 	list_add_tail(&mnt->mnt_instance, &mnt->mnt.mnt_sb->s_mounts);

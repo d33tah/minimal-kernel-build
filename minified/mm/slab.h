@@ -119,29 +119,19 @@ extern void create_boot_cache(struct kmem_cache *, const char *name,
 			unsigned int size, slab_flags_t flags,
 			unsigned int useroffset, unsigned int usersize);
 
-#define SLAB_CORE_FLAGS (SLAB_HWCACHE_ALIGN | SLAB_CACHE_DMA | \
-			 SLAB_CACHE_DMA32 | SLAB_PANIC | \
-			 SLAB_TYPESAFE_BY_RCU | SLAB_DEBUG_OBJECTS )
+#define SLAB_CORE_FLAGS (SLAB_HWCACHE_ALIGN | SLAB_PANIC | \
+			 SLAB_TYPESAFE_BY_RCU)
 
-#define SLAB_DEBUG_FLAGS (0)
+#define SLAB_CACHE_FLAGS (SLAB_RECLAIM_ACCOUNT | SLAB_ACCOUNT)
 
-#define SLAB_CACHE_FLAGS (SLAB_NOLEAKTRACE | SLAB_RECLAIM_ACCOUNT | \
-			  SLAB_TEMPORARY | SLAB_ACCOUNT | SLAB_NO_USER_FLAGS)
-
-#define CACHE_CREATE_MASK (SLAB_CORE_FLAGS | SLAB_DEBUG_FLAGS | SLAB_CACHE_FLAGS)
+#define CACHE_CREATE_MASK (SLAB_CORE_FLAGS | SLAB_CACHE_FLAGS)
 
 #define SLAB_FLAGS_PERMITTED (SLAB_CORE_FLAGS | \
 			      SLAB_RED_ZONE | \
 			      SLAB_POISON | \
-			      SLAB_STORE_USER | \
-			      SLAB_TRACE | \
-			      SLAB_CONSISTENCY_CHECKS | \
 			      SLAB_MEM_SPREAD | \
-			      SLAB_NOLEAKTRACE | \
 			      SLAB_RECLAIM_ACCOUNT | \
-			      SLAB_TEMPORARY | \
-			      SLAB_ACCOUNT | \
-			      SLAB_NO_USER_FLAGS)
+			      SLAB_ACCOUNT)
 
 static inline struct kmem_cache *slab_pre_alloc_hook(struct kmem_cache *s,
 						     struct list_lru *lru,

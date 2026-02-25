@@ -6,28 +6,16 @@
 #include <linux/overflow.h>
 #include <linux/types.h>
 
-#define SLAB_CONSISTENCY_CHECKS	((slab_flags_t __force)0x00000100U)
 #define SLAB_RED_ZONE		((slab_flags_t __force)0x00000400U)
 #define SLAB_POISON		((slab_flags_t __force)0x00000800U)
 #define SLAB_HWCACHE_ALIGN	((slab_flags_t __force)0x00002000U)
-#define SLAB_CACHE_DMA		((slab_flags_t __force)0x00004000U)
-#define SLAB_CACHE_DMA32	((slab_flags_t __force)0x00008000U)
-#define SLAB_STORE_USER		((slab_flags_t __force)0x00010000U)
 #define SLAB_PANIC		((slab_flags_t __force)0x00040000U)
 #define SLAB_TYPESAFE_BY_RCU	((slab_flags_t __force)0x00080000U)
 #define SLAB_MEM_SPREAD		((slab_flags_t __force)0x00100000U)
-#define SLAB_TRACE		((slab_flags_t __force)0x00200000U)
-
-# define SLAB_DEBUG_OBJECTS	0
-
-#define SLAB_NOLEAKTRACE	((slab_flags_t __force)0x00800000U)
 
 # define SLAB_ACCOUNT		0
 
-#define SLAB_NO_USER_FLAGS	((slab_flags_t __force)0x10000000U)
-
 #define SLAB_RECLAIM_ACCOUNT	((slab_flags_t __force)0x00020000U)
-#define SLAB_TEMPORARY		SLAB_RECLAIM_ACCOUNT	 
 
 #define ZERO_SIZE_PTR ((void *)16)
 
@@ -59,13 +47,7 @@ struct kmem_cache *kmem_cache_create_usercopy(const char *name,
 
 static inline void kfree(const void *objp) {}
 
-#if defined(ARCH_DMA_MINALIGN) && ARCH_DMA_MINALIGN > 8
-#define ARCH_KMALLOC_MINALIGN ARCH_DMA_MINALIGN
-#define KMALLOC_MIN_SIZE ARCH_DMA_MINALIGN
-#define KMALLOC_SHIFT_LOW ilog2(ARCH_DMA_MINALIGN)
-#else
 #define ARCH_KMALLOC_MINALIGN __alignof__(unsigned long long)
-#endif
 
 #ifndef ARCH_SLAB_MINALIGN
 #define ARCH_SLAB_MINALIGN __alignof__(unsigned long long)

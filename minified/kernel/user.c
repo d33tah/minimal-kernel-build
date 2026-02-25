@@ -32,5 +32,4 @@ struct user_namespace init_user_ns = {
 struct user_struct root_user = {
 	.__count = REFCOUNT_INIT(1),
 	.uid = GLOBAL_ROOT_UID,
-	.ratelimit = RATELIMIT_STATE_INIT(root_user.ratelimit, 0, 0),
 };

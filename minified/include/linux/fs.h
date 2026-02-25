@@ -7,7 +7,6 @@
 struct wait_bit_key {
 	void			*flags;
 	int			bit_nr;
-	unsigned long		timeout;
 };
 #define __WAIT_BIT_KEY_INITIALIZER(word, bit)					\
 	{ .flags = word, .bit_nr = bit, }
@@ -315,7 +314,6 @@ struct vfsmount {
 	struct dentry *mnt_root;
 	struct super_block *mnt_sb;
 	int mnt_flags;
-	struct user_namespace *mnt_userns;
 } __randomize_layout;
 extern void mntput(struct vfsmount *mnt);
 extern struct vfsmount *mntget(struct vfsmount *mnt);
@@ -378,15 +376,12 @@ extern void __init files_init(void);
 struct page;
 struct address_space;
 
-#define IOCB_DIRECT		(1 << 17)
-
 struct kiocb {
 	struct file		*ki_filp;
 
 	randomized_struct_fields_start
 
 	loff_t			ki_pos;
-	int			ki_flags;
 	randomized_struct_fields_end
 };
 

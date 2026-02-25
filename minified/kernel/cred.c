@@ -8,12 +8,7 @@ static struct group_info init_groups = { .usage = ATOMIC_INIT(2) };
 
 struct cred init_cred = {
 	.usage = ATOMIC_INIT(4),
-	.uid = GLOBAL_ROOT_UID,
-	.gid = GLOBAL_ROOT_GID,
 	.euid = GLOBAL_ROOT_UID,
-	.egid = GLOBAL_ROOT_GID,
-	.fsuid = GLOBAL_ROOT_UID,
-	.fsgid = GLOBAL_ROOT_GID,
 	.user = INIT_USER,
 	.user_ns = &init_user_ns,
 	.group_info = &init_groups,
@@ -70,16 +65,7 @@ error:
 
 struct cred *prepare_exec_creds(void)
 {
-	struct cred *new;
-
-	new = prepare_creds();
-	if (!new)
-		return new;
-
-	new->fsuid = new->euid;
-	new->fsgid = new->egid;
-
-	return new;
+	return prepare_creds();
 }
 
 int copy_creds(struct task_struct *p)

@@ -49,8 +49,6 @@ extern void add_taint(unsigned flag, enum lockdep_ok);
 #define might_sleep() do { } while (0)
 #define might_sleep_if(cond) do { } while (0)
 
-void do_exit(long error_code) __noreturn;
-
 extern __printf(3, 0)
 int vscnprintf(char *buf, size_t size, const char *fmt, va_list args);
 extern void bust_spinlocks(int yes);

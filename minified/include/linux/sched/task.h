@@ -29,8 +29,6 @@ struct kernel_clone_args {
 	struct css_set *cset;
 };
 
-extern rwlock_t tasklist_lock;
-
 extern union thread_union init_thread_union;
 extern struct task_struct init_task;
 

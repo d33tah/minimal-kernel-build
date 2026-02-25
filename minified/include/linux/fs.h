@@ -629,10 +629,6 @@ struct file_system_type {
 
 void kill_litter_super(struct super_block *sb);
 void deactivate_super(struct super_block *sb);
-struct super_block *sget_fc(struct fs_context *fc,
-			    int (*test)(struct super_block *, struct fs_context *),
-			    int (*set)(struct super_block *, struct fs_context *));
-
 #define fops_get(fops) \
 	((fops) ? (try_module_get((fops)->owner), (fops)) : NULL)
 #define fops_put(fops) \

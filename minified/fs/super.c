@@ -148,7 +148,7 @@ static void generic_shutdown_super(struct super_block *sb)
 	up_write(&sb->s_umount);
 }
 
-struct super_block *
+static struct super_block *
 sget_fc(struct fs_context *fc,
 	int (*test)(struct super_block *, struct fs_context *),
 	int (*set)(struct super_block *, struct fs_context *))

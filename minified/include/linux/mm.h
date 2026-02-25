@@ -417,8 +417,6 @@ static inline unsigned long move_page_tables(struct vm_area_struct *vma,
 		unsigned long new_addr, unsigned long len,
 		bool need_rmap_locks) { return 0; }
 
-int __pte_alloc(struct mm_struct *mm, pmd_t *pmd);
-
 /* pgd_none/p4d_none/pud_none always return 0 - folded paging */
 static inline p4d_t *p4d_alloc(struct mm_struct *mm, pgd_t *pgd,
 		unsigned long address)
@@ -463,8 +461,6 @@ static inline void pgtable_pte_page_dtor(struct page *page)
 	spin_unlock(ptl);				\
 	pte_unmap(pte);					\
 } while (0)
-
-#define pte_alloc(mm, pmd) (unlikely(pmd_none(*(pmd))) && __pte_alloc(mm, pmd))
 
 extern void __init pagecache_init(void);
 extern void free_initmem(void);

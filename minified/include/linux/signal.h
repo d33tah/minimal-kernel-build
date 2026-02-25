@@ -57,6 +57,4 @@ enum pid_type;
 
 extern void __set_current_blocked(const sigset_t *);
 
-extern struct kmem_cache *sighand_cachep;
-
 #endif

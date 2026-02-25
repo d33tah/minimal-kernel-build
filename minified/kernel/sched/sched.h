@@ -66,27 +66,16 @@ struct cfs_rq {
 
 };
 
-struct rt_rq {
-	char dummy; /* Empty struct not allowed in C */
-};
-
-struct dl_rq {
-	char dummy; /* Empty struct not allowed in C */
-};
-
 struct rq {
-	 
+
 	raw_spinlock_t		__lock;
 
 	unsigned int		nr_running;
 
 	struct cfs_rq		cfs;
-	struct rt_rq		rt;
-	struct dl_rq		dl;
 
 	struct task_struct __rcu	*curr;
 	struct task_struct	*idle;
-	struct task_struct	*stop;
 	struct mm_struct	*prev_mm;
 
 	unsigned int		clock_update_flags;

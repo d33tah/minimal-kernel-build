@@ -4,6 +4,7 @@
 #include <linux/signal.h>
 #include <linux/sched.h>
 #include <linux/sched/task.h>
+#include <linux/rwsem.h>
 
 #include <linux/cred.h>
 #include <linux/refcount.h>

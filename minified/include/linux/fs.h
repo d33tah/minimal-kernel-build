@@ -319,12 +319,6 @@ extern void mntput(struct vfsmount *mnt);
 extern struct vfsmount *mntget(struct vfsmount *mnt);
 extern int __mnt_want_write(struct vfsmount *);
 extern void __mnt_drop_write(struct vfsmount *);
-/* mnt_idmapping.h inlined */
-#include <linux/uidgid.h>
-static inline bool initial_idmapping(const struct user_namespace *ns)
-{
-	return ns == &init_user_ns;
-}
 #include <linux/slab.h>
 #define INR_OPEN_CUR 1024
 #define INR_OPEN_MAX 4096

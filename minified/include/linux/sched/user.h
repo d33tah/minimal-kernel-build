@@ -3,7 +3,6 @@
 
 #include <linux/uidgid.h>
 #include <linux/atomic.h>
-#include <linux/percpu_counter.h>
 #include <linux/refcount.h>
 
 struct user_struct {

@@ -35,7 +35,6 @@ enum {
 	IRQ_IS_POLLED		= (1 << 18),
 	IRQ_DISABLE_UNLAZY	= (1 << 19),
 	IRQ_HIDDEN		= (1 << 20),
-	IRQ_NO_DEBUG		= (1 << 21),
 };
 
 #define IRQF_MODIFY_MASK	\
@@ -115,7 +114,6 @@ enum {
 	IRQCHIP_SKIP_SET_WAKE			= (1 <<  4),
 };
 
-#include <linux/kobject.h>
 #include <linux/mutex.h>
 struct module;
 struct irq_desc {
@@ -124,8 +122,8 @@ struct irq_desc {
 	struct irqaction *action; unsigned int status_use_accessors;
 	unsigned int core_internal_state__do_not_mess_with_it; unsigned int depth;
 	raw_spinlock_t lock;
-	unsigned long threads_oneshot; atomic_t threads_active;
-	wait_queue_head_t wait_for_threads; struct rcu_head rcu; struct kobject kobj;
+	unsigned long threads_oneshot;
+	wait_queue_head_t wait_for_threads;
 	struct mutex request_mutex; struct module *owner; const char *name;
 } ____cacheline_internodealigned_in_smp;
 static inline struct irq_data *irq_desc_get_irq_data(struct irq_desc *desc) { return &desc->irq_data; }

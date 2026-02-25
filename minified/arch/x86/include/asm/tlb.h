@@ -62,11 +62,6 @@ struct mmu_gather {
 	unsigned int		freed_tables : 1;
 	unsigned int		cleared_ptes : 1;
 	unsigned int		cleared_pmds : 1;
-	unsigned int		cleared_puds : 1;
-	unsigned int		cleared_p4ds : 1;
-	unsigned int		vma_exec : 1;
-	unsigned int		vma_huge : 1;
-	unsigned int		vma_pfn  : 1;
 
 	unsigned int		batch_count;
 
@@ -96,8 +91,6 @@ static inline void __tlb_reset_range(struct mmu_gather *tlb)
 	tlb->freed_tables = 0;
 	tlb->cleared_ptes = 0;
 	tlb->cleared_pmds = 0;
-	tlb->cleared_puds = 0;
-	tlb->cleared_p4ds = 0;
 }
 
 static inline unsigned long tlb_get_unmap_shift(struct mmu_gather *tlb)
@@ -106,11 +99,6 @@ static inline unsigned long tlb_get_unmap_shift(struct mmu_gather *tlb)
 		return PAGE_SHIFT;
 	if (tlb->cleared_pmds)
 		return PMD_SHIFT;
-	if (tlb->cleared_puds)
-		return PUD_SHIFT;
-	if (tlb->cleared_p4ds)
-		return P4D_SHIFT;
-
 	return PAGE_SHIFT;
 }
 
@@ -131,8 +119,7 @@ static inline void tlb_flush(struct mmu_gather *tlb)
 
 static inline void tlb_flush_mmu_tlbonly(struct mmu_gather *tlb)
 {
-	if (!(tlb->freed_tables || tlb->cleared_ptes || tlb->cleared_pmds ||
-	      tlb->cleared_puds || tlb->cleared_p4ds))
+	if (!(tlb->freed_tables || tlb->cleared_ptes || tlb->cleared_pmds))
 		return;
 
 	tlb_flush(tlb);

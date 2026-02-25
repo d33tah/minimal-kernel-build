@@ -205,12 +205,6 @@ struct dentry {
 	} d_u;
 } __randomize_layout;
 
-enum dentry_d_lock_class
-{
-	DENTRY_D_LOCK_NORMAL,
-	DENTRY_D_LOCK_NESTED
-};
-
 #define DCACHE_DENTRY_KILLED		0x00008000
 #define DCACHE_NEED_AUTOMOUNT		0x00020000
 

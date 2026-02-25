@@ -268,11 +268,6 @@ static inline enum zone_type page_zonenum(const struct page *page)
 	return (page->flags >> ZONES_PGSHIFT) & ZONES_MASK;
 }
 
-static inline enum zone_type folio_zonenum(const struct folio *folio)
-{
-	return page_zonenum(&folio->page);
-}
-
 static inline void folio_put(struct folio *folio)
 {
 	if (put_page_testzero(&folio->page))

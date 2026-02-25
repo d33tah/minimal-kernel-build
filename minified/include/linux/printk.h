@@ -6,7 +6,6 @@
 
 #define KERN_SOH	"\001"
 #define KERN_EMERG	KERN_SOH "0"
-#define KERN_ALERT	KERN_SOH "1"
 #define KERN_CRIT	KERN_SOH "2"
 #define KERN_ERR	KERN_SOH "3"
 #define KERN_WARNING	KERN_SOH "4"
@@ -69,9 +68,6 @@ int _printk_deferred(const char *s, ...)
 	printk(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)
 #define pr_info(fmt, ...) \
 	printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
-
-#define printk_once(fmt, ...)					\
-	no_printk(fmt, ##__VA_ARGS__)
 
 #define printk_ratelimited(fmt, ...)					\
 	no_printk(fmt, ##__VA_ARGS__)

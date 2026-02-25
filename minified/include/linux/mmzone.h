@@ -256,11 +256,6 @@ enum meminit_context {
 
 extern void lruvec_init(struct lruvec *lruvec);
 
-static inline struct pglist_data *lruvec_pgdat(struct lruvec *lruvec)
-{
-	return container_of(lruvec, struct pglist_data, __lruvec);
-}
-
 #define zone_idx(zone) ((zone) - (zone)->zone_pgdat->node_zones)
 
 static inline bool populated_zone(struct zone *zone)

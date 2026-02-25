@@ -148,9 +148,6 @@ __PAGEFLAG(Locked, locked, PF_NO_TAIL)
 CLEARPAGEFLAG(Waiters, waiters, PF_ONLY_HEAD)
 CLEARPAGEFLAG(Error, error, PF_NO_TAIL)
 TESTPAGEFLAG(Dirty, dirty, PF_HEAD)
-TESTPAGEFLAG(LRU, lru, PF_HEAD)
-	SETPAGEFLAG(LRU, lru, PF_HEAD)
-	__CLEARPAGEFLAG(LRU, lru, PF_HEAD)
 TESTPAGEFLAG(Active, active, PF_HEAD)
 	SETPAGEFLAG(Active, active, PF_HEAD)
 	__CLEARPAGEFLAG(Active, active, PF_HEAD)
@@ -158,16 +155,9 @@ __SETPAGEFLAG(Slab, slab, PF_NO_TAIL)
 
 __CLEARPAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
 	__SETPAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
-TESTPAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
 	__SETPAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
 
 TESTPAGEFLAG(Readahead, readahead, PF_NO_COMPOUND)
-
-TESTPAGEFLAG(Unevictable, unevictable, PF_HEAD)
-	__CLEARPAGEFLAG(Unevictable, unevictable, PF_HEAD)
-
-TESTPAGEFLAG(Mlocked, mlocked, PF_NO_TAIL)
-	__CLEARPAGEFLAG(Mlocked, mlocked, PF_NO_TAIL)
 
 #define PAGE_MAPPING_ANON	0x1
 #define PAGE_MAPPING_FLAGS	0x3

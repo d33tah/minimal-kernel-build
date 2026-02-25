@@ -105,7 +105,6 @@
 #define X86_FEATURE_NOPL		( 3*32+20)
 #define X86_FEATURE_ALWAYS		( 3*32+21)
 #define X86_FEATURE_TSC_RELIABLE	( 3*32+23)
-#define X86_FEATURE_NONSTOP_TSC_S3	( 3*32+30)
 #define X86_FEATURE_TSC_KNOWN_FREQ	( 3*32+31)
 
 /* Word 4 - Intel extended */

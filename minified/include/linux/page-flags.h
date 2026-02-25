@@ -186,11 +186,6 @@ static inline bool folio_test_uptodate(struct folio *folio)
 	return ret;
 }
 
-static inline int PageUptodate(struct page *page)
-{
-	return folio_test_uptodate(page_folio(page));
-}
-
 static __always_inline void __folio_mark_uptodate(struct folio *folio)
 {
 	smp_wmb();
@@ -207,11 +202,6 @@ static __always_inline void folio_mark_uptodate(struct folio *folio)
 static __always_inline void __SetPageUptodate(struct page *page)
 {
 	__folio_mark_uptodate((struct folio *)page);
-}
-
-static __always_inline void SetPageUptodate(struct page *page)
-{
-	folio_mark_uptodate((struct folio *)page);
 }
 
 static __always_inline int PageHead(struct page *page)

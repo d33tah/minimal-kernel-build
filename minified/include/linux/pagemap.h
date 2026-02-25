@@ -31,11 +31,6 @@ static inline struct folio *filemap_alloc_folio(gfp_t gfp, unsigned int order)
 	return folio_alloc(gfp, order);
 }
 
-static inline struct page *folio_file_page(struct folio *folio, pgoff_t index)
-{
-	return folio_page(folio, index & (folio_nr_pages(folio) - 1));
-}
-
 static inline loff_t page_offset(struct page *page)
 {
 	return ((loff_t)page->index) << PAGE_SHIFT;

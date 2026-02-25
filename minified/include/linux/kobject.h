@@ -24,9 +24,4 @@ struct kset {
 	struct kobject kobj;
 };
 
-static inline const struct kobj_type *get_ktype(struct kobject *kobj)
-{
-	return kobj->ktype;
-}
-
 #endif

@@ -17,7 +17,6 @@ typedef void (*work_func_t)(struct work_struct *work);
 
 enum {
 	WORK_STRUCT_PENDING_BIT	= 0,
-	WORK_STRUCT_STATIC	= 0,
 	WORK_CPU_UNBOUND	= NR_CPUS,
 	WORK_STRUCT_NO_POOL	= (unsigned long)
 		(((1LU << (BITS_PER_LONG - 5 <= 31 ? BITS_PER_LONG - 5 : 31)) - 1) << 5),
@@ -30,8 +29,6 @@ struct work_struct {
 };
 
 #define WORK_DATA_INIT()	ATOMIC_LONG_INIT((unsigned long)WORK_STRUCT_NO_POOL)
-#define WORK_DATA_STATIC_INIT()	\
-	ATOMIC_LONG_INIT((unsigned long)(WORK_STRUCT_NO_POOL | WORK_STRUCT_STATIC))
 
 
 #define __WORK_INIT_LOCKDEP_MAP(n, k)

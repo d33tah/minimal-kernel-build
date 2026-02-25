@@ -483,11 +483,6 @@ static inline loff_t i_size_read(const struct inode *inode)
 	return inode->i_size;
 }
 
-static inline void i_size_write(struct inode *inode, loff_t i_size)
-{
-	inode->i_size = i_size;
-}
-
 struct file {
 	union {
 		struct rcu_head 	fu_rcuhead;

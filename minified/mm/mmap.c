@@ -10,10 +10,6 @@
 
 #include "internal.h"
 
-static struct vm_area_struct *find_vma_prev(struct mm_struct *mm,
-					    unsigned long addr,
-					    struct vm_area_struct **pprev);
-
 /* mmap_min_addr moved from security/min_addr.c */
 unsigned long mmap_min_addr = CONFIG_DEFAULT_MMAP_MIN_ADDR;
 
@@ -320,7 +316,7 @@ static unsigned long generic_get_unmapped_area(struct file *filp,
 					       unsigned long flags)
 {
 	struct mm_struct *mm = current->mm;
-	struct vm_area_struct *vma, *prev;
+	struct vm_area_struct *vma;
 	struct vm_unmapped_area_info info;
 	const unsigned long mmap_end = arch_get_mmap_end(addr, len, flags);
 
@@ -332,10 +328,9 @@ static unsigned long generic_get_unmapped_area(struct file *filp,
 
 	if (addr) {
 		addr = PAGE_ALIGN(addr);
-		vma = find_vma_prev(mm, addr, &prev);
+		vma = find_vma(mm, addr);
 		if (mmap_end - len >= addr && addr >= mmap_min_addr &&
-		    (!vma || addr + len <= vm_start_gap(vma)) &&
-		    (!prev || addr >= vm_end_gap(prev)))
+		    (!vma || addr + len <= vm_start_gap(vma)))
 			return addr;
 	}
 
@@ -416,15 +411,6 @@ struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
 	if (vma)
 		vmacache_update(addr, vma);
 	return vma;
-}
-
-/* Used by generic_get_unmapped_area and generic_get_unmapped_area_topdown */
-static struct vm_area_struct *find_vma_prev(struct mm_struct *mm,
-					    unsigned long addr,
-					    struct vm_area_struct **pprev)
-{
-	*pprev = NULL;
-	return find_vma(mm, addr);
 }
 
 static int expand_downwards(struct vm_area_struct *vma, unsigned long address)

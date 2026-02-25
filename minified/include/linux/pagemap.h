@@ -31,13 +31,6 @@ static inline struct folio *filemap_alloc_folio(gfp_t gfp, unsigned int order)
 	return folio_alloc(gfp, order);
 }
 
-#define FGP_LOCK		0x00000002
-#define FGP_CREAT		0x00000004
-#define FGP_WRITE		0x00000008
-#define FGP_STABLE		0x00000200
-struct page *pagecache_get_page(struct address_space *mapping, pgoff_t index,
-		int fgp_flags, gfp_t gfp);
-
 static inline struct page *folio_file_page(struct folio *folio, pgoff_t index)
 {
 	return folio_page(folio, index & (folio_nr_pages(folio) - 1));
@@ -69,7 +62,6 @@ struct wait_page_key {
 };
 
 
-void unlock_page(struct page *page);
 void folio_unlock(struct folio *folio);
 
 static inline bool folio_trylock(struct folio *folio)

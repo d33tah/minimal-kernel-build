@@ -161,70 +161,6 @@ void folio_unlock(struct folio *folio)
 		folio_wake_bit(folio, PG_locked);
 }
 
-static struct folio *__filemap_get_folio(struct address_space *mapping,
-					 pgoff_t index, int fgp_flags,
-					 gfp_t gfp)
-{
-	XA_STATE(xas, &mapping->i_pages, index);
-	struct folio *folio;
-
-repeat:
-	rcu_read_lock();
-repeat_xas:
-	xas_reset(&xas);
-	folio = xas_load(&xas);
-	if (xas_retry(&xas, folio))
-		goto repeat_xas;
-	if (!folio || xa_is_value(folio))
-		goto out_rcu;
-	if (!folio_try_get_rcu(folio))
-		goto repeat_xas;
-	if (unlikely(folio != xas_reload(&xas))) {
-		folio_put(folio);
-		goto repeat_xas;
-	}
-out_rcu:
-	rcu_read_unlock();
-	if (xa_is_value(folio))
-		folio = NULL;
-	if (!folio)
-		goto no_page;
-
-	if (fgp_flags & FGP_LOCK) {
-		folio_lock(folio);
-
-		if (unlikely(folio->mapping != mapping)) {
-			folio_unlock(folio);
-			folio_put(folio);
-			goto repeat;
-		}
-	}
-
-no_page:
-	if (!folio && (fgp_flags & FGP_CREAT)) {
-		int err;
-		if ((fgp_flags & FGP_WRITE) && mapping_can_writeback(mapping))
-			gfp |= __GFP_WRITE;
-
-		folio = filemap_alloc_folio(gfp, 0);
-		if (!folio)
-			return NULL;
-
-		if (!(fgp_flags & FGP_LOCK))
-			fgp_flags |= FGP_LOCK;
-
-		err = filemap_add_folio(mapping, folio, index, gfp);
-		if (unlikely(err)) {
-			folio_put(folio);
-			folio = NULL;
-			if (err == -EEXIST)
-				goto repeat;
-		}
-	}
-
-	return folio;
-}
-
 static void filemap_get_read_batch(struct address_space *mapping, pgoff_t index,
 				   pgoff_t max, struct folio_batch *fbatch)
 {
@@ -448,24 +384,7 @@ ssize_t generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 }
 
 /* Merged from folio-compat.c */
-void unlock_page(struct page *page)
-{
-	return folio_unlock(page_folio(page));
-}
-
 bool set_page_dirty(struct page *page)
 {
 	return folio_mark_dirty(page_folio(page));
-}
-
-noinline struct page *pagecache_get_page(struct address_space *mapping,
-					 pgoff_t index, int fgp_flags,
-					 gfp_t gfp)
-{
-	struct folio *folio;
-
-	folio = __filemap_get_folio(mapping, index, fgp_flags, gfp);
-	if (!folio || xa_is_value(folio))
-		return &folio->page;
-	return folio_file_page(folio, index);
 }

@@ -85,8 +85,7 @@ void __init early_alloc_pgt_buf(void)
 
 int after_bootmem;
 
-early_param_on_off("gbpages", "nogbpages", direct_gbpages,
-		   CONFIG_X86_DIRECT_GBPAGES);
+int direct_gbpages;
 
 struct map_range {
 	unsigned long start;

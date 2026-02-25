@@ -111,24 +111,6 @@ struct obs_kernel_param {
 #define early_param(str, fn)						\
 	__setup_param(str, fn, fn, 1)
 
-#define early_param_on_off(str_on, str_off, var, config)		\
-									\
-	int var = IS_ENABLED(config);					\
-									\
-	static int __init parse_##var##_on(char *arg)			\
-	{								\
-		var = 1;						\
-		return 0;						\
-	}								\
-	early_param(str_on, parse_##var##_on);				\
-									\
-	static int __init parse_##var##_off(char *arg)			\
-	{								\
-		var = 0;						\
-		return 0;						\
-	}								\
-	early_param(str_off, parse_##var##_off)
-
 void __init parse_early_param(void);
 #endif  /* __ASSEMBLY__ */
 

@@ -188,8 +188,6 @@ struct zone {
 	unsigned long _watermark[NR_WMARK];
 	unsigned long watermark_boost;
 
-	long lowmem_reserve[MAX_NR_ZONES];
-
 	struct pglist_data *zone_pgdat;
 	struct per_cpu_pages __percpu *per_cpu_pageset;
 	struct per_cpu_zonestat __percpu *per_cpu_zonestats;

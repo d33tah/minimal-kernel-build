@@ -19,13 +19,6 @@ static void dummycon_init(struct vc_data *vc, int init)
 		vc_resize(vc, DUMMY_COLUMNS, DUMMY_ROWS);
 }
 
-static bool dummycon_scroll(struct vc_data *vc, unsigned int top,
-			    unsigned int bottom, enum con_scroll dir,
-			    unsigned int lines)
-{
-	return false;
-}
-
 static int dummycon_switch(struct vc_data *vc)
 {
 	return 0;
@@ -35,6 +28,5 @@ const struct consw dummy_con = {
 	.owner = THIS_MODULE,
 	.con_startup = dummycon_startup,
 	.con_init = dummycon_init,
-	.con_scroll = dummycon_scroll,
 	.con_switch = dummycon_switch,
 };

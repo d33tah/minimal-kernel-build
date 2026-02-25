@@ -8,17 +8,10 @@
 struct vc_data;
 struct module;
 
-enum con_scroll {
-	SM_UP,
-};
-
 struct consw {
 	struct module *owner;
 	const char *(*con_startup)(void);
 	void	(*con_init)(struct vc_data *vc, int init);
-	bool	(*con_scroll)(struct vc_data *vc, unsigned int top,
-			unsigned int bottom, enum con_scroll dir,
-			unsigned int lines);
 	int	(*con_switch)(struct vc_data *vc);
 	int	(*con_set_origin)(struct vc_data *vc);
 	void	(*con_save_screen)(struct vc_data *vc);

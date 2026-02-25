@@ -1,6 +1,8 @@
+#include <linux/cache.h>
 #include <asm/setup.h>
 #include <asm/e820/api.h>
-#include <asm/time.h>
+#include <asm/pgtable_types.h>
+#include <asm/msr.h>
 #include <asm/irq.h>
 #ifndef _ASM_X86_TSC_H
 #define _ASM_X86_TSC_H
@@ -35,5 +37,4 @@ struct x86_init_ops x86_init __initdata = {
 struct x86_platform_ops x86_platform __ro_after_init = {
 	.calibrate_cpu = native_calibrate_cpu_early,
 	.calibrate_tsc = native_calibrate_tsc,
-	.get_wallclock = mach_get_cmos_time,
 };

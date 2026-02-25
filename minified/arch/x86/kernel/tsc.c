@@ -1,7 +1,7 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <asm/timer.h>
-#include <asm/time.h>
+#include <linux/clocksource.h>
 #include <asm/irq.h>
 #include <asm/io.h>
 #include <asm/x86_init.h>

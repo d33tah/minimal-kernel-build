@@ -139,18 +139,10 @@ static void vgacon_save_screen(struct vc_data *c)
 			    c->vc_screenbuf_size);
 }
 
-/* Stub: Hello World doesn't need hardware scrolling */
-static bool vgacon_scroll(struct vc_data *c, unsigned int t, unsigned int b,
-			  enum con_scroll dir, unsigned int lines)
-{
-	return false;
-}
-
 const struct consw vga_con = {
 	.owner = THIS_MODULE,
 	.con_startup = vgacon_startup,
 	.con_init = vgacon_init,
-	.con_scroll = vgacon_scroll,
 	.con_switch = vgacon_switch,
 	.con_set_origin = vgacon_set_origin,
 	.con_save_screen = vgacon_save_screen,

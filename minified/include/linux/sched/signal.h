@@ -16,8 +16,6 @@ struct sighand_struct {
 };
 
 struct signal_struct {
-	struct list_head	thread_head;
-
 	struct sigpending	shared_pending;
 
 	struct pid *pids[PIDTYPE_MAX];

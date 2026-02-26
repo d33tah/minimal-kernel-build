@@ -2,7 +2,6 @@
 #include <linux/fs.h>
 
 static struct signal_struct init_signals = {
-	.thread_head	= LIST_HEAD_INIT(init_task.thread_node),
 	.shared_pending	= {
 		.list = LIST_HEAD_INIT(init_signals.shared_pending.list),
 		.signal =  {{0}}
@@ -25,14 +24,11 @@ static struct sighand_struct init_sighand = {
 
 struct task_struct init_task __aligned(L1_CACHE_BYTES) = {
 	.thread_info = INIT_THREAD_INFO(init_task),
-	.stack_refcount = REFCOUNT_INIT(1),
 	.__state = 0,
 	.stack = init_stack,
 	.usage = REFCOUNT_INIT(2),
 	.flags = PF_KTHREAD,
 	.static_prio = MAX_PRIO - 20,
-	.cpus_ptr = &init_task.cpus_mask,
-	.cpus_mask = CPU_MASK_ALL,
 	.mm = NULL,
 	.active_mm = &init_mm,
 	.se = {},
@@ -52,5 +48,4 @@ struct task_struct init_task __aligned(L1_CACHE_BYTES) = {
 	.alloc_lock = __SPIN_LOCK_UNLOCKED(init_task.alloc_lock),
 	.pi_lock = __RAW_SPIN_LOCK_UNLOCKED(init_task.pi_lock),
 	.thread_pid = &init_struct_pid,
-	.thread_node = LIST_HEAD_INIT(init_signals.thread_head),
 };

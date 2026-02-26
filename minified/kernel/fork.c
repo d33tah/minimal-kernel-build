@@ -221,13 +221,9 @@ copy_process(int node, struct kernel_clone_args *args)
 			goto bad_fork;
 		p->stack = page_address(page);
 	}
-	refcount_set(&p->stack_refcount, 1);
 	mod_lruvec_kmem_state(p->stack, NR_KERNEL_STACK_KB, THREAD_SIZE / 1024);
 	clear_tsk_need_resched(p);
 	set_task_stack_end_magic(p);
-	if (current->cpus_ptr == &current->cpus_mask)
-		p->cpus_ptr = &p->cpus_mask;
-	refcount_set(&p->rcu_users, 2);
 	refcount_set(&p->usage, 1);
 	p->worker_private = NULL;
 	kmap_local_fork(p);
@@ -299,10 +295,6 @@ copy_process(int node, struct kernel_clone_args *args)
 			retval = -ENOMEM;
 			goto bad_fork;
 		}
-		sig->thread_head =
-			(struct list_head)LIST_HEAD_INIT(p->thread_node);
-		p->thread_node =
-			(struct list_head)LIST_HEAD_INIT(sig->thread_head);
 		init_sigpending(&sig->shared_pending);
 		task_lock(current->group_leader);
 		memcpy(sig->rlim, current->signal->rlim, sizeof sig->rlim);

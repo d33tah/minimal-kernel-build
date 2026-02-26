@@ -236,9 +236,6 @@ struct task_struct {
 	const struct sched_class	*sched_class;
 
 
-	const cpumask_t			*cpus_ptr;
-	cpumask_t			cpus_mask;
-
 	struct list_head		tasks;
 
 	struct mm_struct		*mm;
@@ -256,10 +253,6 @@ struct task_struct {
 
 	struct pid			*thread_pid;
 	struct hlist_node		pid_links[PIDTYPE_MAX];
-	struct list_head		thread_node;
-
-
-
 	void				*worker_private;
 
 	const struct cred __rcu		*real_cred;
@@ -287,15 +280,8 @@ struct task_struct {
 
 	raw_spinlock_t			pi_lock;
 
-	union {
-		refcount_t		rcu_users;
-		struct rcu_head		rcu;
-	};
-
 	struct kmap_ctrl		kmap_ctrl;
 	int				pagefault_disabled;
-
-	refcount_t			stack_refcount;
 
 	randomized_struct_fields_end
 

@@ -9,6 +9,7 @@
 extern int irq_init_percpu_irqstack(unsigned int cpu);
 
 struct irq_desc;
+struct pt_regs;
 extern void native_init_IRQ(void);
 
 extern void __handle_irq(struct irq_desc *desc, struct pt_regs *regs);

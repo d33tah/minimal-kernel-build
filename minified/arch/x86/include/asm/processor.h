@@ -59,8 +59,6 @@ struct cpuinfo_x86 {
 
 	unsigned long		loops_per_jiffy;
 	u16			x86_clflush_size;
-	bool			smt_active;
-	unsigned		initialized : 1;
 } __randomize_layout;
 
 #define X86_VENDOR_INTEL	0
@@ -172,15 +170,11 @@ struct thread_struct {
 	unsigned long fs;
 	unsigned long gs;
 
-	unsigned long           virtual_dr6;
-	 
 	unsigned long		cr2;
 	unsigned long		trap_nr;
 	unsigned long		error_code;
-	 
-	struct io_bitmap	*io_bitmap;
 
-	unsigned long		iopl_emul;
+	struct io_bitmap	*io_bitmap;
 
 	unsigned int		iopl_warn:1;
 

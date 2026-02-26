@@ -92,8 +92,6 @@ out:
 	return page;
 no_page:
 	pte_unmap_unlock(ptep, ptl);
-	if (!pte_none(pte))
-		return NULL;
 	return NULL;
 }
 

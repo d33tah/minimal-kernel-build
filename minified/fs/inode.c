@@ -1,5 +1,16 @@
 
 #include <linux/swap.h>
+
+static int _atomic_dec_and_lock(atomic_t *atomic, spinlock_t *lock)
+{
+	if (atomic_add_unless(atomic, -1, 1))
+		return 0;
+	spin_lock(lock);
+	if (atomic_dec_and_test(atomic))
+		return 1;
+	spin_unlock(lock);
+	return 0;
+}
 /* cdev.h inlined */
 #include <linux/device.h>
 struct file_operations;
@@ -213,7 +224,7 @@ void iput(struct inode *inode)
 	if (!inode)
 		return;
 	BUG_ON(inode->i_state & I_CLEAR);
-	if (!atomic_dec_and_lock(&inode->i_count, &inode->i_lock))
+	if (!_atomic_dec_and_lock(&inode->i_count, &inode->i_lock))
 		return;
 
 	WARN_ON(inode->i_state & I_NEW);

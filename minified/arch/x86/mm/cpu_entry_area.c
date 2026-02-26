@@ -7,7 +7,7 @@
 static DEFINE_PER_CPU_PAGE_ALIGNED(struct entry_stack_page,
 				   entry_stack_storage);
 
-DECLARE_PER_CPU_PAGE_ALIGNED(struct doublefault_stack, doublefault_stack);
+DEFINE_PER_CPU_PAGE_ALIGNED(struct doublefault_stack, doublefault_stack) = {};
 
 noinstr struct cpu_entry_area *get_cpu_entry_area(int cpu)
 {

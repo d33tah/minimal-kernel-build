@@ -13,9 +13,6 @@ extern unsigned long phys_initrd_size;
 #include <linux/interrupt.h>
 extern void anon_vma_init(void);
 #include <linux/pid_namespace.h>
-/* inlined from linux/vmalloc.h */
-
-extern void __init vmalloc_init(void);
 
 /* driver_init inlined: only bdi_init needed */
 #include <linux/backing-dev.h>
@@ -192,7 +189,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	trap_init();
 	mem_init();
 	kmem_cache_init();
-	vmalloc_init();
 	sched_init();
 
 	if (WARN(!irqs_disabled(),
@@ -327,7 +323,14 @@ static noinline void __init kernel_init_freeable(void)
 		static char command_line[256];
 		size_t len = strlen(saved_command_line);
 
-		bdi_init(&noop_backing_dev_info);
+		{
+			struct backing_dev_info *bdi = &noop_backing_dev_info;
+			bdi->dev = NULL;
+			kref_init(&bdi->refcnt);
+			INIT_LIST_HEAD(&bdi->bdi_list);
+			INIT_LIST_HEAD(&bdi->wb_list);
+			init_waitqueue_head(&bdi->wb_waitq);
+		}
 
 		if (len >= sizeof(command_line))
 			len = sizeof(command_line) - 1;

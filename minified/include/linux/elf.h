@@ -5,9 +5,6 @@
 #include <asm/ptrace.h>
 /* vdso.h inlined */
 struct vdso_image {};
-extern bool fixup_vdso_exception(struct pt_regs *regs, int trapnr,
-				 unsigned long error_code,
-				 unsigned long fault_addr);
 #define elf_check_arch_ia32(x) \
 	(((x)->e_machine == EM_386) || ((x)->e_machine == EM_486))
 #include <asm/processor.h>

@@ -1,4 +1,5 @@
 #include <linux/fs.h>
+#include <linux/slab.h>
 
 typedef struct kobject *kobj_probe_t(dev_t, int *, void *);
 struct kobj_map;
@@ -26,6 +27,29 @@ static struct kobj_map *cdev_map;
 static DEFINE_MUTEX(chrdevs_lock);
 
 static DEFINE_SPINLOCK(cdev_lock);
+
+static struct kobject *kobject_get_unless_zero(struct kobject *kobj)
+{
+	if (!kobj)
+		return NULL;
+	if (!kref_get_unless_zero(&kobj->kref))
+		kobj = NULL;
+	return kobj;
+}
+
+static void kobject_release(struct kref *kref)
+{
+	struct kobject *kobj = container_of(kref, struct kobject, kref);
+
+	if (kobj->name)
+		kfree_const(kobj->name);
+}
+
+static void kobject_put(struct kobject *kobj)
+{
+	if (kobj)
+		kref_put(&kobj->kref, kobject_release);
+}
 
 static struct kobject *cdev_get(struct cdev *p)
 {

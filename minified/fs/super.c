@@ -3,11 +3,40 @@
 #include <linux/user_namespace.h>
 #include <linux/fs_context.h>
 
+struct backing_dev_info noop_backing_dev_info;
+
 enum vfs_get_super_keying {
 	vfs_get_single_super,
 	vfs_get_keyed_super,
 	vfs_get_independent_super,
 };
+
+static void rcu_sync_init(struct rcu_sync *rsp)
+{
+	memset(rsp, 0, sizeof(*rsp));
+	init_waitqueue_head(&rsp->gp_wait);
+}
+
+static int __percpu_init_rwsem(struct percpu_rw_semaphore *sem,
+			       const char *name, struct lock_class_key *key)
+{
+	sem->read_count = alloc_percpu(int);
+	if (unlikely(!sem->read_count))
+		return -ENOMEM;
+
+	rcu_sync_init(&sem->rss);
+	sem->writer.task = NULL;
+	init_waitqueue_head(&sem->waiters);
+	atomic_set(&sem->block, 0);
+	return 0;
+}
+
+static void percpu_free_rwsem(struct percpu_rw_semaphore *sem)
+{
+	if (!sem->read_count)
+		return;
+	sem->read_count = NULL;
+}
 
 static LIST_HEAD(super_blocks);
 static DEFINE_SPINLOCK(sb_lock);

@@ -20,7 +20,8 @@ enum refcount_saturation_type {
 	REFCOUNT_SUB_UAF,
 };
 
-void refcount_warn_saturate(refcount_t *r, enum refcount_saturation_type t);
+static inline void refcount_warn_saturate(refcount_t *r,
+					  enum refcount_saturation_type t) {}
 
 static inline void refcount_set(refcount_t *r, int n)
 {

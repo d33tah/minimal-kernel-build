@@ -234,8 +234,6 @@ static inline unsigned int cpuid_eax(unsigned int op)
 
 extern void select_idle_routine(const struct cpuinfo_x86 *c);
 
-extern int sysenter_setup(void);
-
 extern void cpu_init(void);
 extern void cpu_init_exception_handling(void);
 

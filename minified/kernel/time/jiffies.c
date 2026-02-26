@@ -1,6 +1,8 @@
 #include <linux/clocksource.h>
 #include <linux/module.h>
 
+__visible u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
+
 /* HZ=100, so JIFFIES_SHIFT=8 */
 #define JIFFIES_SHIFT 8
 

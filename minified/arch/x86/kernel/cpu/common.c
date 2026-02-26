@@ -228,7 +228,7 @@ static void __init identify_boot_cpu(void)
 {
 	identify_cpu(&boot_cpu_data);
 	/* HAS_KERNEL_IBT is 0 */
-	sysenter_setup();
+	/* sysenter_setup: no-op, VDSO disabled */
 	cr4_pinned_bits = this_cpu_read(cpu_tlbstate.cr4) & cr4_pinned_mask;
 	static_key_enable(&cr_pinning.key);
 }

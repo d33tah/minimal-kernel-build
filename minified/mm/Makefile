@@ -8,11 +8,11 @@ CFLAGS_init-mm.o += $(call cc-disable-warning, initializer-overrides)
 
 mmu-$(CONFIG_MMU)	:= memory.o \
 			   mmap.o mmu_gather.o \
-			   rmap.o vmalloc.o
+			   rmap.o
 
 obj-y			:= filemap.o \
 			   swap.o \
-			   util.o mmzone.o backing-dev.o \
+			   util.o mmzone.o \
 			   percpu.o slab_common.o \
 			   gup.o $(mmu-y)
 

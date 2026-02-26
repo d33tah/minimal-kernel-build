@@ -130,8 +130,7 @@ static void __bad_area_nosemaphore(struct pt_regs *regs,
 
 	sanitize_error_code(address, &error_code);
 
-	if (fixup_vdso_exception(regs, X86_TRAP_PF, error_code, address))
-		return;
+	/* fixup_vdso_exception: always false, VDSO disabled */
 
 	set_signal_archinfo(address, error_code);
 

@@ -22,9 +22,6 @@ struct kobject {
 	struct kref		kref;
 };
 
-extern struct kobject * __must_check kobject_get_unless_zero(
-						struct kobject *kobj);
-extern void kobject_put(struct kobject *kobj);
 
 struct kobj_type {
 };

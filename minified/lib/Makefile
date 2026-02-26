@@ -10,16 +10,13 @@ CFLAGS_string.o := -ffreestanding
 
 lib-y := ctype.o string.o vsprintf.o \
 	 rbtree.o radix-tree.o xarray.o \
-	 idr.o extable.o \
-	 dec_and_lock.o
+	 idr.o extable.o
 
-lib-y	+= kobject.o
 obj-y	+= lockref.o
 
 obj-y += sort.o \
 	 iov_iter.o \
-	 find_bit.o \
-	 refcount.o
+	 find_bit.o
 # string_helpers.o removed - functions inlined into callers
 obj-y += kstrtox.o
 

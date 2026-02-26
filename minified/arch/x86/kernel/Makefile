@@ -22,4 +22,3 @@ obj-y			+= fpu/
 # ptrace.o removed - send_sigtrap inlined into traps.c
 obj-y			+= cpu/
 obj-y			+= apic/
-obj-$(CONFIG_X86_32)	+= doublefault_32.o

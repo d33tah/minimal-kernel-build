@@ -29,5 +29,4 @@ struct backing_dev_info {
 
 };
 extern struct backing_dev_info noop_backing_dev_info;
-int bdi_init(struct backing_dev_info *bdi);
 #endif

@@ -25,7 +25,6 @@ enum lockdep_ok {
 extern void add_taint(unsigned flag, enum lockdep_ok);
 #endif /* _LINUX_PANIC_H */
 #include <linux/printk.h>
-#include <linux/static_call_types.h>
 #define _RET_IP_		(unsigned long)__builtin_return_address(0)
 #define _THIS_IP_  ({ __label__ __here; __here: (unsigned long)&&__here; })
 /* x86 is little-endian */

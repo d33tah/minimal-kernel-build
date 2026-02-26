@@ -24,10 +24,6 @@ static void put_cred_rcu(struct rcu_head *rcu)
 
 void __put_cred(struct cred *cred)
 {
-	BUG_ON(atomic_read(&cred->usage) != 0);
-	BUG_ON(cred == current->cred);
-	BUG_ON(cred == current->real_cred);
-
 	if (cred->non_rcu)
 		put_cred_rcu(&cred->rcu);
 	else
@@ -51,21 +47,9 @@ struct cred *prepare_creds(void)
 	get_group_info(new->group_info);
 	get_uid(new->user);
 	get_user_ns(new->user_ns);
-
 	new->ucounts = get_ucounts(new->ucounts);
-	if (!new->ucounts)
-		goto error;
 
 	return new;
-
-error:
-	abort_creds(new);
-	return NULL;
-}
-
-struct cred *prepare_exec_creds(void)
-{
-	return prepare_creds();
 }
 
 int copy_creds(struct task_struct *p)
@@ -91,17 +75,6 @@ int commit_creds(struct cred *new)
 	rcu_assign_pointer(task->cred, new);
 	put_cred(old);
 	put_cred(old);
-	return 0;
-}
-
-void abort_creds(struct cred *new)
-{
-	BUG_ON(atomic_read(&new->usage) < 1);
-	put_cred(new);
-}
-
-int set_cred_ucounts(struct cred *new)
-{
 	return 0;
 }
 

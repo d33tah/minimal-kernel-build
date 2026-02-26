@@ -274,17 +274,11 @@ int begin_new_exec(struct linux_binprm *bprm)
 		__set_task_comm(me, tail ? tail + 1 : bprm->filename, true);
 	}
 
-	retval = set_cred_ucounts(bprm->cred);
-	if (retval < 0)
-		goto out_unlock;
-
 	commit_creds(bprm->cred);
 	bprm->cred = NULL;
 	/* security_bprm_committed_creds, perf_event_exec/exit_task - stubs */
 	return 0;
 
-out_unlock:
-	up_write(&me->signal->exec_update_lock);
 out:
 	return retval;
 }
@@ -304,7 +298,7 @@ static void free_bprm(struct linux_binprm *bprm)
 		mmput(bprm->mm);
 	}
 	if (bprm->cred)
-		abort_creds(bprm->cred);
+		put_cred(bprm->cred);
 	if (bprm->file) {
 		allow_write_access(bprm->file);
 		fput(bprm->file);
@@ -391,7 +385,7 @@ static int bprm_execve(struct linux_binprm *bprm, int fd,
 	struct file *file;
 	int retval;
 
-	bprm->cred = prepare_exec_creds();
+	bprm->cred = prepare_creds();
 	if (unlikely(!bprm->cred))
 		return -ENOMEM;
 

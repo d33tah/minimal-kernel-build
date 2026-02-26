@@ -35,7 +35,6 @@
 #include <asm/rmwcc.h>
 #include <asm/percpu.h>
 #include <linux/thread_info.h>
-#include <linux/static_call_types.h>
 DECLARE_PER_CPU(int, __preempt_count);
 #define PREEMPT_NEED_RESCHED	0x80000000
 #define PREEMPT_ENABLED	(0 + PREEMPT_NEED_RESCHED)

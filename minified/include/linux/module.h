@@ -9,7 +9,6 @@
 #include <linux/jump_label.h>
 
 #include <linux/srcu.h>
-#include <linux/static_call_types.h>
 #include <linux/stringify.h>
 
 /* moduleparam.h inlined */

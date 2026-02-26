@@ -38,32 +38,6 @@ static inline void *phys_to_virt(phys_addr_t address)
 #define phys_to_virt phys_to_virt
 
 
-static inline void native_io_delay(void)
-{
-	asm volatile("outb %al, $0x80");
-}
-
-static inline void slow_down_io(void)
-{
-	native_io_delay();
-}
-
-static inline void outb_p(u8 value, u16 port)
-{
-	outb(value, port);
-	slow_down_io();
-}
-
-static inline u8 inb_p(u16 port)
-{
-	u8 value = inb(port);
-	slow_down_io();
-	return value;
-}
-
-#define inb_p inb_p
-#define outb_p outb_p
-
 #define IO_SPACE_LIMIT 0xffff
 
 #endif  

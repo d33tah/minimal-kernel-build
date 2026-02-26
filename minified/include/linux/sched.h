@@ -158,7 +158,6 @@ struct k_sigaction {
 
 #define VMACACHE_BITS 2
 #define VMACACHE_SIZE (1U << VMACACHE_BITS)
-#define VMACACHE_MASK (VMACACHE_SIZE - 1)
 
 struct vmacache {
 	u64 seqnum;

@@ -12,10 +12,7 @@
 #include <asm/fpu/api.h>
 
 #include <asm/cpufeature.h>
-#define pkru_get_init_value()	0
-static inline u32 read_pkru(void) { if (cpu_feature_enabled(X86_FEATURE_OSPKE)) return rdpkru(); return 0; }
-static inline void pkru_write_default(void) { if (!cpu_feature_enabled(X86_FEATURE_OSPKE)) return; wrpkru(pkru_get_init_value()); }
-/* End of pkru.h */
+static inline void pkru_write_default(void) { if (!cpu_feature_enabled(X86_FEATURE_OSPKE)) return; wrpkru(0); }
 static inline void page_table_check_pte_set(struct mm_struct *mm,
 					    unsigned long addr, pte_t *ptep, pte_t pte) { }
 

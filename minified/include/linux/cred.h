@@ -38,19 +38,14 @@ extern struct cred *prepare_creds(void);
 extern int commit_creds(struct cred *);
 extern void __init cred_init(void);
 
-static inline struct cred *get_new_cred(struct cred *cred)
-{
-	atomic_inc(&cred->usage);
-	return cred;
-}
-
 static inline const struct cred *get_cred(const struct cred *cred)
 {
 	struct cred *nonconst_cred = (struct cred *) cred;
 	if (!cred)
 		return cred;
 	nonconst_cred->non_rcu = 0;
-	return get_new_cred(nonconst_cred);
+	atomic_inc(&nonconst_cred->usage);
+	return nonconst_cred;
 }
 
 static inline void put_cred(const struct cred *_cred)

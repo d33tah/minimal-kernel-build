@@ -139,7 +139,7 @@ enum zone_watermarks {
 
 #define NR_PCP_LISTS (MIGRATE_PCPTYPES * (PAGE_ALLOC_COSTLY_ORDER + 1))
 
-#define wmark_pages(z, i) (z->_watermark[i] + z->watermark_boost)
+#define wmark_pages(z, i) (z->_watermark[i])
 
 struct per_cpu_pages {
 	int count;
@@ -164,7 +164,6 @@ enum zone_type {
 
 struct zone {
 	unsigned long _watermark[NR_WMARK];
-	unsigned long watermark_boost;
 
 	struct pglist_data *zone_pgdat;
 	struct per_cpu_pages __percpu *per_cpu_pageset;

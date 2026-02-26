@@ -121,35 +121,7 @@ struct rlimit {
 #define MAX_RT_PRIO		100
 #define MAX_PRIO		140
 /* end sched/prio.h */
-#ifndef _LINUX_SIGNAL_TYPES_INLINED
-#define _LINUX_SIGNAL_TYPES_INLINED
-#include <asm/signal.h>
-#include <asm-generic/siginfo.h>
-
-typedef struct kernel_siginfo {
-	__SIGINFO;
-} kernel_siginfo_t;
-
-struct sigpending {
-	struct list_head list;
-	sigset_t signal;
-};
-
-struct sigaction {
-	__sighandler_t	sa_handler;
-	unsigned long	sa_flags;
-#ifdef __ARCH_HAS_SA_RESTORER
-	__sigrestore_t sa_restorer;
-#endif
-	sigset_t	sa_mask;
-};
-
-struct k_sigaction {
-	struct sigaction sa;
-};
-
-
-#endif /* _LINUX_SIGNAL_TYPES_INLINED */
+#include <linux/signal.h>
 #ifndef _LINUX_MM_TYPES_TASK_H
 #define _LINUX_MM_TYPES_TASK_H
 

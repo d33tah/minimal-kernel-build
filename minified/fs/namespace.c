@@ -17,10 +17,7 @@ struct mnt_namespace {
 	struct ns_common ns;
 	struct mount *root;
 	struct list_head list;
-	spinlock_t ns_lock;
 	struct user_namespace *user_ns;
-	struct ucounts *ucounts;
-	u64 seq;
 	unsigned int mounts;
 } __randomize_layout;
 
@@ -104,38 +101,15 @@ out_free_cache:
 	return NULL;
 }
 
-static inline void mnt_dec_writers(struct mount *mnt)
-{
-	mnt->mnt_writers--;
-}
-
 int __mnt_want_write(struct vfsmount *m)
 {
-	struct mount *mnt = real_mount(m);
-	int ret = 0;
-
-	preempt_disable();
-	mnt->mnt_writers++;
-
-	smp_mb();
-	while (READ_ONCE(mnt->mnt.mnt_flags) & MNT_WRITE_HOLD)
-		cpu_relax();
-
-	smp_rmb();
-	if ((m->mnt_flags & MNT_READONLY) || (m->mnt_sb->s_flags & SB_RDONLY)) {
-		mnt_dec_writers(mnt);
-		ret = -EROFS;
-	}
-	preempt_enable();
-
-	return ret;
+	real_mount(m)->mnt_writers++;
+	return 0;
 }
 
 void __mnt_drop_write(struct vfsmount *mnt)
 {
-	preempt_disable();
-	mnt_dec_writers(real_mount(mnt));
-	preempt_enable();
+	real_mount(mnt)->mnt_writers--;
 }
 
 static struct vfsmount *vfs_create_mount(struct fs_context *fc)
@@ -213,35 +187,17 @@ struct vfsmount *mntget(struct vfsmount *mnt)
 	return mnt;
 }
 
-static void dec_mnt_namespaces(struct ucounts *ucounts)
-{
-	dec_ucount(ucounts, UCOUNT_MNT_NAMESPACES);
-}
-
-static atomic64_t mnt_ns_seq = ATOMIC64_INIT(1);
-
 static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns)
 {
 	struct mnt_namespace *new_ns;
-	struct ucounts *ucounts;
-
-	ucounts = inc_ucount(user_ns, current_euid(), UCOUNT_MNT_NAMESPACES);
-	if (!ucounts)
-		return ERR_PTR(-ENOSPC);
 
 	new_ns = kzalloc(sizeof(struct mnt_namespace), GFP_KERNEL_ACCOUNT);
-	if (!new_ns) {
-		dec_mnt_namespaces(ucounts);
+	if (!new_ns)
 		return ERR_PTR(-ENOMEM);
-	}
-	atomic_long_set(&new_ns->ns.stashed, 0);
 	new_ns->ns.inum = 1;
-	new_ns->seq = atomic64_add_return(1, &mnt_ns_seq);
 	refcount_set(&new_ns->ns.count, 1);
 	INIT_LIST_HEAD(&new_ns->list);
-	spin_lock_init(&new_ns->ns_lock);
 	new_ns->user_ns = get_user_ns(user_ns);
-	new_ns->ucounts = ucounts;
 	return new_ns;
 }
 

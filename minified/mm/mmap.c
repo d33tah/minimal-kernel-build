@@ -504,13 +504,11 @@ int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 	struct vm_area_struct *vma, *prev;
 	struct rb_node **rb_link, *rb_parent;
 	pgoff_t pgoff;
-	unsigned long len, mapped_addr;
+	unsigned long len;
 	int ret = 0;
 	LIST_HEAD(uf);
 
 	len = PAGE_ALIGN(request);
-	if (len < request)
-		return -ENOMEM;
 	if (!len)
 		return 0;
 
@@ -518,37 +516,15 @@ int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 		return -EINTR;
 
 	pgoff = addr >> PAGE_SHIFT;
-
-	if ((flags & (~VM_EXEC)) != 0) {
-		ret = -EINVAL;
-		goto out_unlock;
-	}
 	flags |= VM_DATA_DEFAULT_FLAGS | VM_ACCOUNT | mm->def_flags;
-
-	mapped_addr = get_unmapped_area(NULL, addr, len, 0, MAP_FIXED);
-	if (IS_ERR_VALUE(mapped_addr)) {
-		ret = mapped_addr;
-		goto out_unlock;
-	}
 
 	if (munmap_vma_range(mm, addr, len, &prev, &rb_link, &rb_parent, &uf)) {
 		ret = -ENOMEM;
 		goto out_unlock;
 	}
 
-	if (mm->map_count > sysctl_max_map_count) {
-		ret = -ENOMEM;
-		goto out_unlock;
-	}
-
-	if (security_vm_enough_memory_mm(mm, len >> PAGE_SHIFT)) {
-		ret = -ENOMEM;
-		goto out_unlock;
-	}
-
 	vma = vm_area_alloc(mm);
 	if (!vma) {
-		vm_unacct_memory(len >> PAGE_SHIFT);
 		ret = -ENOMEM;
 		goto out_unlock;
 	}
@@ -570,7 +546,6 @@ void exit_mmap(struct mm_struct *mm)
 {
 	struct mmu_gather tlb;
 	struct vm_area_struct *vma;
-	unsigned long nr_accounted = 0;
 
 	down_write(&mm->mmap_lock); /* mmap_write_lock inlined */
 	arch_exit_mmap(mm);
@@ -589,14 +564,11 @@ void exit_mmap(struct mm_struct *mm)
 	tlb_finish_mmu(&tlb);
 
 	while (vma) {
-		if (vma->vm_flags & VM_ACCOUNT)
-			nr_accounted += vma_pages(vma);
 		vma = remove_vma(vma);
 		cond_resched();
 	}
 	mm->mmap = NULL;
 	mmap_write_unlock(mm);
-	vm_unacct_memory(nr_accounted);
 }
 
 int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)
@@ -606,9 +578,6 @@ int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)
 
 	if (find_vma_links(mm, vma->vm_start, vma->vm_end, &prev, &rb_link,
 			   &rb_parent))
-		return -ENOMEM;
-	if ((vma->vm_flags & VM_ACCOUNT) &&
-	    security_vm_enough_memory_mm(mm, vma_pages(vma)))
 		return -ENOMEM;
 
 	if (vma_is_anonymous(vma)) {

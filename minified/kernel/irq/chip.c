@@ -37,17 +37,8 @@ int irq_activate(struct irq_desc *desc)
 
 void irq_enable(struct irq_desc *desc)
 {
-	if (!irqd_irq_disabled(&desc->irq_data)) {
-		unmask_irq(desc);
-	} else {
-		irqd_clear(&desc->irq_data, IRQD_IRQ_DISABLED);
-		if (desc->irq_data.chip->irq_enable) {
-			desc->irq_data.chip->irq_enable(&desc->irq_data);
-			irqd_clear(&desc->irq_data, IRQD_IRQ_MASKED);
-		} else {
-			unmask_irq(desc);
-		}
-	}
+	irqd_clear(&desc->irq_data, IRQD_IRQ_DISABLED);
+	unmask_irq(desc);
 }
 
 static inline void mask_ack_irq(struct irq_desc *desc)
@@ -89,22 +80,17 @@ void handle_level_irq(struct irq_desc *desc)
 	raw_spin_lock(&desc->lock);
 	mask_ack_irq(desc);
 
-	if (irqd_has_set(&desc->irq_data,
-			 IRQD_IRQ_INPROGRESS | IRQD_WAKEUP_ARMED))
+	if (irqd_has_set(&desc->irq_data, IRQD_IRQ_INPROGRESS))
 		goto out_unlock;
 
-	desc->istate &= ~(IRQS_REPLAY | IRQS_WAITING);
-
-	if (unlikely(!desc->action || irqd_irq_disabled(&desc->irq_data))) {
-		desc->istate |= IRQS_PENDING;
+	if (unlikely(!desc->action || irqd_irq_disabled(&desc->irq_data)))
 		goto out_unlock;
-	}
 
 	kstat_incr_irqs_this_cpu(desc);
 	handle_irq_event(desc);
 
 	if (!irqd_irq_disabled(&desc->irq_data) &&
-	    irqd_irq_masked(&desc->irq_data) && !desc->threads_oneshot)
+	    irqd_irq_masked(&desc->irq_data))
 		unmask_irq(desc);
 
 out_unlock:
@@ -120,24 +106,12 @@ void __irq_set_handler(unsigned int irq, irq_flow_handler_t handle,
 	if (!desc)
 		return;
 
-	if (!handle) {
+	if (!handle)
 		handle = handle_bad_irq;
-	} else {
-		struct irq_data *irq_data = &desc->irq_data;
-		if (WARN_ON(!irq_data || irq_data->chip == &no_irq_chip))
-			goto out;
-	}
 
-	if (handle == handle_bad_irq) {
-		if (desc->irq_data.chip != &no_irq_chip)
-			mask_ack_irq(desc);
-		irq_state_set_disabled(desc);
-		desc->depth = 1;
-	}
 	desc->handle_irq = handle;
 	desc->name = name;
 
-out:
 	irq_put_desc_busunlock(desc, flags);
 }
 

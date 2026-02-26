@@ -10,12 +10,10 @@ static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp
 
 void __local_bh_enable_ip(unsigned long ip, unsigned int cnt)
 {
-	WARN_ON_ONCE(in_hardirq());
 	__preempt_count_sub(cnt - 1);
 
-	if (unlikely(!in_interrupt() && local_softirq_pending())) {
+	if (unlikely(!in_interrupt() && local_softirq_pending()))
 		do_softirq();
-	}
 
 	preempt_count_dec();
 }
@@ -38,23 +36,15 @@ asmlinkage __visible void do_softirq(void)
 	local_irq_restore(flags);
 }
 
-#define MAX_SOFTIRQ_RESTART 10
-
 asmlinkage __visible void __softirq_entry __do_softirq(void)
 {
-	unsigned long old_flags = current->flags;
-	int max_restart = MAX_SOFTIRQ_RESTART;
 	struct softirq_action *h;
 	__u32 pending;
 	int softirq_bit;
 
-	current->flags &= ~PF_MEMALLOC;
-
 	pending = local_softirq_pending();
 
 	__local_bh_disable_ip(_RET_IP_, SOFTIRQ_OFFSET);
-
-restart:
 
 	set_softirq_pending(0);
 
@@ -63,30 +53,15 @@ restart:
 	h = softirq_vec;
 
 	while ((softirq_bit = ffs(pending))) {
-		int prev_count;
-
 		h += softirq_bit - 1;
-
-		prev_count = preempt_count();
 		h->action(h);
-
-		if (unlikely(prev_count != preempt_count()))
-			preempt_count_set(prev_count);
 		h++;
 		pending >>= softirq_bit;
 	}
 
 	local_irq_disable();
 
-	pending = local_softirq_pending();
-	if (pending) {
-		if (!need_resched() && --max_restart)
-			goto restart;
-	}
-
 	__preempt_count_sub(SOFTIRQ_OFFSET);
-	WARN_ON_ONCE(in_interrupt());
-	current_restore_flags(old_flags, PF_MEMALLOC);
 }
 
 void irq_enter_rcu(void)

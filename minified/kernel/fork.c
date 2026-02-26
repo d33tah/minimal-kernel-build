@@ -74,22 +74,12 @@ int arch_task_struct_size __read_mostly;
 
 void __init fork_init(void)
 {
-#ifndef ARCH_MIN_TASKALIGN
-#define ARCH_MIN_TASKALIGN 0
-#endif
 	int align = max_t(int, L1_CACHE_BYTES, ARCH_MIN_TASKALIGN);
-	unsigned long useroffset, usersize;
 
-	arch_thread_struct_whitelist(&useroffset, &usersize);
-	if (unlikely(usersize == 0))
-		useroffset = 0;
-	else
-		useroffset += offsetof(struct task_struct, thread);
-	task_struct_cachep = kmem_cache_create_usercopy(
-		"task_struct", arch_task_struct_size, align,
-		SLAB_PANIC | SLAB_ACCOUNT, useroffset, usersize, NULL);
+	task_struct_cachep = kmem_cache_create("task_struct",
+					       arch_task_struct_size, align,
+					       SLAB_PANIC | SLAB_ACCOUNT, NULL);
 
-	/* Hardcode max_threads - no need to compute from RAM for hello-world */
 	max_threads = MAX_THREADS;
 }
 
@@ -171,20 +161,9 @@ void mmput(struct mm_struct *mm)
 
 int set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file)
 {
-	struct file *old_exe_file;
-
-	old_exe_file = rcu_dereference_raw(mm->exe_file);
-
-	if (new_exe_file) {
-		if (unlikely(deny_write_access(new_exe_file)))
-			return -EACCES;
+	if (new_exe_file)
 		get_file(new_exe_file);
-	}
 	rcu_assign_pointer(mm->exe_file, new_exe_file);
-	if (old_exe_file) {
-		allow_write_access(old_exe_file);
-		fput(old_exe_file);
-	}
 	return 0;
 }
 
@@ -408,13 +387,6 @@ pid_t user_mode_thread(int (*fn)(void *), void *arg, unsigned long flags)
 #define ARCH_MIN_MMSTRUCT_ALIGN 0
 #endif
 
-static void sighand_ctor(void *data)
-{
-	struct sighand_struct *sighand = data;
-
-	spin_lock_init(&sighand->siglock);
-}
-
 void __init proc_caches_init(void)
 {
 	unsigned int mm_size;
@@ -423,7 +395,7 @@ void __init proc_caches_init(void)
 		"sighand_cache", sizeof(struct sighand_struct), 0,
 		SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_TYPESAFE_BY_RCU |
 			SLAB_ACCOUNT,
-		sighand_ctor);
+		NULL);
 	signal_cachep = kmem_cache_create(
 		"signal_cache", sizeof(struct signal_struct), 0,
 		SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT, NULL);

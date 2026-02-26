@@ -6,45 +6,13 @@
 #include <asm/alternative.h>
 #include <asm/cpufeatures.h>
 
-extern void __xchg_wrong_size(void)
-	__compiletime_error("Bad argument size for xchg");
-extern void __cmpxchg_wrong_size(void)
-	__compiletime_error("Bad argument size for cmpxchg");
-extern void __xadd_wrong_size(void)
-	__compiletime_error("Bad argument size for xadd");
-
-#define __X86_CASE_B	1
-#define __X86_CASE_W	2
-#define __X86_CASE_L	4
-#define	__X86_CASE_Q	-1
-
+/* Only 4-byte (L) case needed - all callers use int/unsigned/pointer */
 #define __xchg_op(ptr, arg, op, lock)					\
 	({								\
 	        __typeof__ (*(ptr)) __ret = (arg);			\
-		switch (sizeof(*(ptr))) {				\
-		case __X86_CASE_B:					\
-			asm volatile (lock #op "b %b0, %1\n"		\
-				      : "+q" (__ret), "+m" (*(ptr))	\
-				      : : "memory", "cc");		\
-			break;						\
-		case __X86_CASE_W:					\
-			asm volatile (lock #op "w %w0, %1\n"		\
-				      : "+r" (__ret), "+m" (*(ptr))	\
-				      : : "memory", "cc");		\
-			break;						\
-		case __X86_CASE_L:					\
-			asm volatile (lock #op "l %0, %1\n"		\
-				      : "+r" (__ret), "+m" (*(ptr))	\
-				      : : "memory", "cc");		\
-			break;						\
-		case __X86_CASE_Q:					\
-			asm volatile (lock #op "q %q0, %1\n"		\
-				      : "+r" (__ret), "+m" (*(ptr))	\
-				      : : "memory", "cc");		\
-			break;						\
-		default:						\
-			__ ## op ## _wrong_size();			\
-		}							\
+		asm volatile (lock #op "l %0, %1\n"			\
+			      : "+r" (__ret), "+m" (*(ptr))		\
+			      : : "memory", "cc");			\
 		__ret;							\
 	})
 
@@ -55,46 +23,11 @@ extern void __xadd_wrong_size(void)
 	__typeof__(*(ptr)) __ret;					\
 	__typeof__(*(ptr)) __old = (old);				\
 	__typeof__(*(ptr)) __new = (new);				\
-	switch (size) {							\
-	case __X86_CASE_B:						\
-	{								\
-		volatile u8 *__ptr = (volatile u8 *)(ptr);		\
-		asm volatile(lock "cmpxchgb %2,%1"			\
-			     : "=a" (__ret), "+m" (*__ptr)		\
-			     : "q" (__new), "0" (__old)			\
-			     : "memory");				\
-		break;							\
-	}								\
-	case __X86_CASE_W:						\
-	{								\
-		volatile u16 *__ptr = (volatile u16 *)(ptr);		\
-		asm volatile(lock "cmpxchgw %2,%1"			\
-			     : "=a" (__ret), "+m" (*__ptr)		\
-			     : "r" (__new), "0" (__old)			\
-			     : "memory");				\
-		break;							\
-	}								\
-	case __X86_CASE_L:						\
-	{								\
-		volatile u32 *__ptr = (volatile u32 *)(ptr);		\
-		asm volatile(lock "cmpxchgl %2,%1"			\
-			     : "=a" (__ret), "+m" (*__ptr)		\
-			     : "r" (__new), "0" (__old)			\
-			     : "memory");				\
-		break;							\
-	}								\
-	case __X86_CASE_Q:						\
-	{								\
-		volatile u64 *__ptr = (volatile u64 *)(ptr);		\
-		asm volatile(lock "cmpxchgq %2,%1"			\
-			     : "=a" (__ret), "+m" (*__ptr)		\
-			     : "r" (__new), "0" (__old)			\
-			     : "memory");				\
-		break;							\
-	}								\
-	default:							\
-		__cmpxchg_wrong_size();					\
-	}								\
+	volatile u32 *__ptr = (volatile u32 *)(ptr);			\
+	asm volatile(lock "cmpxchgl %2,%1"				\
+		     : "=a" (__ret), "+m" (*__ptr)			\
+		     : "r" (__new), "0" (__old)				\
+		     : "memory");					\
 	__ret;								\
 })
 
@@ -111,58 +44,14 @@ extern void __xadd_wrong_size(void)
 	__typeof__(_ptr) _old = (__typeof__(_ptr))(_pold);		\
 	__typeof__(*(_ptr)) __old = *_old;				\
 	__typeof__(*(_ptr)) __new = (_new);				\
-	switch (size) {							\
-	case __X86_CASE_B:						\
-	{								\
-		volatile u8 *__ptr = (volatile u8 *)(_ptr);		\
-		asm volatile(lock "cmpxchgb %[new], %[ptr]"		\
-			     CC_SET(z)					\
-			     : CC_OUT(z) (success),			\
-			       [ptr] "+m" (*__ptr),			\
-			       [old] "+a" (__old)			\
-			     : [new] "q" (__new)			\
-			     : "memory");				\
-		break;							\
-	}								\
-	case __X86_CASE_W:						\
-	{								\
-		volatile u16 *__ptr = (volatile u16 *)(_ptr);		\
-		asm volatile(lock "cmpxchgw %[new], %[ptr]"		\
-			     CC_SET(z)					\
-			     : CC_OUT(z) (success),			\
-			       [ptr] "+m" (*__ptr),			\
-			       [old] "+a" (__old)			\
-			     : [new] "r" (__new)			\
-			     : "memory");				\
-		break;							\
-	}								\
-	case __X86_CASE_L:						\
-	{								\
-		volatile u32 *__ptr = (volatile u32 *)(_ptr);		\
-		asm volatile(lock "cmpxchgl %[new], %[ptr]"		\
-			     CC_SET(z)					\
-			     : CC_OUT(z) (success),			\
-			       [ptr] "+m" (*__ptr),			\
-			       [old] "+a" (__old)			\
-			     : [new] "r" (__new)			\
-			     : "memory");				\
-		break;							\
-	}								\
-	case __X86_CASE_Q:						\
-	{								\
-		volatile u64 *__ptr = (volatile u64 *)(_ptr);		\
-		asm volatile(lock "cmpxchgq %[new], %[ptr]"		\
-			     CC_SET(z)					\
-			     : CC_OUT(z) (success),			\
-			       [ptr] "+m" (*__ptr),			\
-			       [old] "+a" (__old)			\
-			     : [new] "r" (__new)			\
-			     : "memory");				\
-		break;							\
-	}								\
-	default:							\
-		__cmpxchg_wrong_size();					\
-	}								\
+	volatile u32 *__ptr = (volatile u32 *)(_ptr);			\
+	asm volatile(lock "cmpxchgl %[new], %[ptr]"			\
+		     CC_SET(z)						\
+		     : CC_OUT(z) (success),				\
+		       [ptr] "+m" (*__ptr),				\
+		       [old] "+a" (__old)				\
+		     : [new] "r" (__new)				\
+		     : "memory");					\
 	if (unlikely(!success))						\
 		*_old = __old;						\
 	likely(success);						\

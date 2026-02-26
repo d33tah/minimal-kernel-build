@@ -5,7 +5,6 @@
 #include <asm/processor-flags.h>
 
 struct task_struct;
-struct io_bitmap;
 
 #include <asm/segment.h>
 #include <asm/types.h>
@@ -42,7 +41,6 @@ struct cpuinfo_x86 {
 	__u8			x86_vendor;	 
 	__u8			x86_model;
 	__u8			x86_stepping;
-	__u8			x86_virt_bits;
 	__u8			x86_phys_bits;
 	 
 	__u32			extended_cpuid_level;
@@ -170,15 +168,7 @@ struct thread_struct {
 	unsigned long fs;
 	unsigned long gs;
 
-	unsigned long		cr2;
 	unsigned long		trap_nr;
-	unsigned long		error_code;
-
-	struct io_bitmap	*io_bitmap;
-
-	unsigned int		iopl_warn:1;
-
-	u32			pkru;
 
 	struct fpu		fpu;
 	 
@@ -205,15 +195,6 @@ static inline void cpuid(unsigned int op,
 {
 	*eax = op;
 	*ecx = 0;
-	__cpuid(eax, ebx, ecx, edx);
-}
-
-static inline void cpuid_count(unsigned int op, int count,
-			       unsigned int *eax, unsigned int *ebx,
-			       unsigned int *ecx, unsigned int *edx)
-{
-	*eax = op;
-	*ecx = count;
 	__cpuid(eax, ebx, ecx, edx);
 }
 

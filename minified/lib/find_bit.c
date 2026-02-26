@@ -3,15 +3,8 @@
 #include <linux/bitmap.h>
 #include <linux/math.h>
 #include <linux/minmax.h>
-#define __swab32(x) (__u32) __builtin_bswap32((__u32)(x))
-static __always_inline unsigned long __swab(const unsigned long y)
-{
-	return __swab32(y);
-}
 
-#if !defined(find_next_bit) || !defined(find_next_zero_bit) ||           \
-	!defined(find_next_bit_le) || !defined(find_next_zero_bit_le) || \
-	!defined(find_next_and_bit)
+/* All callers pass le=0, so LE support removed */
 unsigned long _find_next_bit(const unsigned long *addr1,
 			     const unsigned long *addr2, unsigned long nbits,
 			     unsigned long start, unsigned long invert,
@@ -27,11 +20,7 @@ unsigned long _find_next_bit(const unsigned long *addr1,
 		tmp &= addr2[start / BITS_PER_LONG];
 	tmp ^= invert;
 
-	mask = BITMAP_FIRST_WORD_MASK(start);
-	if (le)
-		mask = __swab(mask);
-
-	tmp &= mask;
+	tmp &= BITMAP_FIRST_WORD_MASK(start);
 
 	start = round_down(start, BITS_PER_LONG);
 
@@ -46,12 +35,8 @@ unsigned long _find_next_bit(const unsigned long *addr1,
 		tmp ^= invert;
 	}
 
-	if (le)
-		tmp = __swab(tmp);
-
 	return min(start + __ffs(tmp), nbits);
 }
-#endif
 
 #ifndef find_first_bit
 unsigned long _find_first_bit(const unsigned long *addr, unsigned long size)

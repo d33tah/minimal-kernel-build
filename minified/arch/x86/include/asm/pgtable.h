@@ -225,12 +225,7 @@ static inline int pmd_bad(pmd_t pmd)
 	return (pmd_flags(pmd) & ~_PAGE_USER) != _KERNPG_TABLE;
 }
 
-static inline unsigned long pages_to_mb(unsigned long npg)
-{
-	return npg >> (20 - PAGE_SHIFT);
-}
-
-#endif 
+#endif
 
 #define KERNEL_PGD_BOUNDARY	pgd_index(PAGE_OFFSET)
 #define KERNEL_PGD_PTRS		(PTRS_PER_PGD - KERNEL_PGD_BOUNDARY)

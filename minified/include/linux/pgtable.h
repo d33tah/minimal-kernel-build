@@ -55,18 +55,7 @@ static inline pte_t *pte_offset_kernel(pmd_t *pmd, unsigned long address)
 #define pte_offset_map(dir, address)	pte_offset_kernel((dir), (address))
 #define pte_unmap(pte) ((void)(pte))
 
-static inline pgd_t *pgd_offset_pgd(pgd_t *pgd, unsigned long address)
-{
-	return (pgd + pgd_index(address));
-};
-
-#ifndef pgd_offset
-#define pgd_offset(mm, address)		pgd_offset_pgd((mm)->pgd, (address))
-#endif
-
-#ifndef pgd_offset_k
-#define pgd_offset_k(address)		pgd_offset(&init_mm, (address))
-#endif
+#define pgd_offset(mm, address)		((mm)->pgd + pgd_index(address))
 
 /* ptep_set_access_flags - x86 defines __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS */
 /* ptep_get_and_clear - x86 defines __HAVE_ARCH_PTEP_GET_AND_CLEAR */

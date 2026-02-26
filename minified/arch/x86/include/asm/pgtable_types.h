@@ -115,7 +115,6 @@ typedef unsigned long	pgprotval_t;
 
 typedef union {
 	pteval_t pte;
-	pteval_t pte_low;
 } pte_t;
 #endif
 
@@ -139,16 +138,14 @@ typedef struct pgprot { pgprotval_t pgprot; } pgprot_t;
 
 typedef struct { pgdval_t pgd; } pgd_t;
 
-#define PGD_ALLOWED_BITS	(~0ULL)
-
 static inline pgd_t native_make_pgd(pgdval_t val)
 {
-	return (pgd_t) { val & PGD_ALLOWED_BITS };
+	return (pgd_t) { val };
 }
 
 static inline pgdval_t native_pgd_val(pgd_t pgd)
 {
-	return pgd.pgd & PGD_ALLOWED_BITS;
+	return pgd.pgd;
 }
 
 #define __PAGETABLE_P4D_FOLDED 1
@@ -265,14 +262,7 @@ void set_pte_vaddr(unsigned long vaddr, pte_t pte);
 
 extern void native_pagetable_init(void);
 
-enum pg_level {
-	PG_LEVEL_NONE,
-	PG_LEVEL_4K,
-	PG_LEVEL_2M,
-	PG_LEVEL_1G,
-	PG_LEVEL_512G,
-	PG_LEVEL_NUM
-};
+#define PG_LEVEL_2M 2
 
 #endif 
 

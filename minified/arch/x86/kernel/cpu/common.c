@@ -179,7 +179,6 @@ void __init early_cpu_init(void)
 
 		c->x86_clflush_size = 32;
 		c->x86_phys_bits = 32;
-		c->x86_virt_bits = 32;
 		c->x86_cache_alignment = c->x86_clflush_size;
 
 		memset(&c->x86_capability, 0, sizeof(c->x86_capability));
@@ -210,7 +209,6 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 	c->cpuid_level = -1;
 	c->x86_clflush_size = 32;
 	c->x86_phys_bits = 32;
-	c->x86_virt_bits = 32;
 	c->x86_cache_alignment = c->x86_clflush_size;
 	memset(&c->x86_capability, 0, sizeof(c->x86_capability));
 

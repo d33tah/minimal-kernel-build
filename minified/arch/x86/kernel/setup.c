@@ -9,9 +9,6 @@ extern unsigned long phys_initrd_size;
 #include <linux/kdev_t.h>
 
 extern dev_t ROOT_DEV;
-#define tboot_probe() \
-	do {          \
-	} while (0)
 
 #include <asm/apic.h>
 #include <asm/io.h>
@@ -108,14 +105,6 @@ void __init reserve_standard_io_resources(void)
 {
 }
 
-void x86_configure_nx(void)
-{
-	if (boot_cpu_has(X86_FEATURE_NX))
-		__supported_pte_mask |= _PAGE_NX;
-	else
-		__supported_pte_mask &= ~_PAGE_NX;
-}
-
 void __init setup_arch(char **cmdline_p)
 {
 	memcpy(&boot_cpu_data, &new_cpu_data, sizeof(new_cpu_data));
@@ -165,7 +154,10 @@ void __init setup_arch(char **cmdline_p)
 	strscpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
 	*cmdline_p = command_line;
 
-	x86_configure_nx();
+	if (boot_cpu_has(X86_FEATURE_NX))
+		__supported_pte_mask |= _PAGE_NX;
+	else
+		__supported_pte_mask &= ~_PAGE_NX;
 
 	parse_early_param();
 
@@ -230,8 +222,6 @@ void __init setup_arch(char **cmdline_p)
 	x86_init.paging.pagetable_init();
 
 	sync_initial_page_table();
-
-	tboot_probe();
 
 	generic_apic_probe();
 

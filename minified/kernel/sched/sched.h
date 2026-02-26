@@ -6,49 +6,34 @@
 #include <linux/sched/mm.h>
 
 #include <linux/sched/signal.h>
-/* end sched/stat.h */
-
 #include <linux/sched/task.h>
 
 #include <linux/atomic.h>
-#include <linux/bitmap.h>
 #include <linux/bug.h>
-
-#include <linux/ctype.h>
 #include <linux/file.h>
-
 #include <linux/interrupt.h>
 #include <linux/minmax.h>
 #include <linux/timex.h>
 #include <asm/param.h>
 #include <linux/kthread.h>
-
 #include <linux/lockdep.h>
-#include <linux/minmax.h>
 #include <linux/mm.h>
 #include <linux/module.h>
-
 #include <linux/compiler.h>
 #include <linux/wait.h>
 #include <linux/fs.h>
 #include <linux/uaccess.h>
-
 #include <linux/rcupdate.h>
 #include <linux/seqlock.h>
-
 #include <linux/jump_label.h>
 #include <linux/cpu.h>
-
 #include <linux/syscalls.h>
 #include <linux/topology.h>
 #include <linux/types.h>
 
-#include <linux/uaccess.h>
-
 struct rq;
 
 #define TASK_ON_RQ_QUEUED	1
-# define scale_load(w)		(w)
 
 struct cfs_rq {
 	struct load_weight	load;
@@ -209,8 +194,6 @@ static inline int task_on_rq_queued(struct task_struct *p)
 }
 
 #define WF_FORK     0x04
-
-extern const int		sched_prio_to_weight[40];
 
 #define DEQUEUE_SLEEP		0x01
 #define DEQUEUE_SAVE		0x02  

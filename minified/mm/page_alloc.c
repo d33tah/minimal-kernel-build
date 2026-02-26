@@ -389,20 +389,11 @@ struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid,
 	ac.preferred_zoneref = first_zones_zonelist(
 		ac.zonelist, ac.highest_zoneidx, ac.nodemask);
 
-	alloc_flags |= (__force int)(gfp & __GFP_KSWAPD_RECLAIM);
-
 	page = get_page_from_freelist(alloc_gfp, order, alloc_flags, &ac);
 	if (likely(page))
-		goto out;
+		return page;
 
-	alloc_gfp = gfp;
-
-	ac.nodemask = nodemask;
-
-	page = __alloc_pages_slowpath(alloc_gfp, order, &ac);
-
-out:
-	return page;
+	return __alloc_pages_slowpath(alloc_gfp, order, &ac);
 }
 
 struct folio *__folio_alloc(gfp_t gfp, unsigned int order, int preferred_nid,
@@ -531,13 +522,6 @@ static void __init memmap_init_zone_range(struct zone *zone,
 	*hole_pfn = end_pfn;
 }
 
-static void __init *memmap_alloc(phys_addr_t size, phys_addr_t align,
-				 phys_addr_t min_addr, int nid, bool exact_nid)
-{
-	return memblock_alloc_try_nid_raw(size, align, min_addr,
-					  MEMBLOCK_ALLOC_ACCESSIBLE, nid);
-}
-
 static void per_cpu_pages_init(struct per_cpu_pages *pcp,
 			       struct per_cpu_zonestat *pzstats)
 {
@@ -555,18 +539,13 @@ static void per_cpu_pages_init(struct per_cpu_pages *pcp,
 static void __meminit setup_zone_pageset(struct zone *zone)
 {
 	struct per_cpu_pages *pcp;
+	struct per_cpu_zonestat *pzstats;
 
-	if (sizeof(struct per_cpu_zonestat) > 0)
-		zone->per_cpu_zonestats = alloc_percpu(struct per_cpu_zonestat);
-
+	zone->per_cpu_zonestats = alloc_percpu(struct per_cpu_zonestat);
 	zone->per_cpu_pageset = alloc_percpu(struct per_cpu_pages);
 	pcp = per_cpu_ptr(zone->per_cpu_pageset, 0);
-	{
-		struct per_cpu_zonestat *pzstats =
-			per_cpu_ptr(zone->per_cpu_zonestats, 0);
-		per_cpu_pages_init(pcp, pzstats);
-	}
-
+	pzstats = per_cpu_ptr(zone->per_cpu_zonestats, 0);
+	per_cpu_pages_init(pcp, pzstats);
 	WRITE_ONCE(pcp->batch, 1);
 }
 
@@ -643,7 +622,7 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 		pgdat->node_start_pfn = node_start_pfn;
 
 		{
-			unsigned long realtotalpages = 0, totalpages = 0;
+			unsigned long totalpages = 0;
 			enum zone_type zi;
 
 			for (zi = 0; zi < MAX_NR_ZONES; zi++) {
@@ -672,13 +651,11 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 				zone->zone_start_pfn = zsize ? z_start_pfn : 0;
 				zone->spanned_pages = zsize;
 				zone->present_pages = zsize;
-
 				totalpages += zsize;
-				realtotalpages += zsize;
 			}
 
 			pgdat->node_spanned_pages = totalpages;
-			pgdat->node_present_pages = realtotalpages;
+			pgdat->node_present_pages = totalpages;
 		}
 
 		if (pgdat->node_spanned_pages) {
@@ -695,9 +672,11 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 				map_end = ALIGN(map_end, MAX_ORDER_NR_PAGES);
 				map_size = (map_end - map_start) *
 					   sizeof(struct page);
-				map = memmap_alloc(map_size, SMP_CACHE_BYTES,
-						   MEMBLOCK_LOW_LIMIT,
-						   pgdat->node_id, false);
+				map = memblock_alloc_try_nid_raw(
+					map_size, SMP_CACHE_BYTES,
+					MEMBLOCK_LOW_LIMIT,
+					MEMBLOCK_ALLOC_ACCESSIBLE,
+					pgdat->node_id);
 				if (!map)
 					panic("Failed to allocate %ld bytes for node %d memory map\n",
 					      map_size, pgdat->node_id);

@@ -370,9 +370,7 @@ void __init sched_init(void)
 		init_cfs_rq(&rq->cfs);
 	}
 
-	/* set_load_weight inlined */
-	init_task.se.load.weight = scale_load(
-		sched_prio_to_weight[init_task.static_prio - MAX_RT_PRIO]);
+	init_task.se.load.weight = 1024; /* sched_prio_to_weight[20] */
 
 	mmgrab(&init_mm);
 	enter_lazy_tlb(&init_mm, current);
@@ -381,10 +379,3 @@ void __init sched_init(void)
 
 	init_idle(current, smp_processor_id());
 }
-
-const int sched_prio_to_weight[40] = {
-	88761, 71755, 56483, 46273, 36291, 29154, 23254, 18705, 14949, 11916,
-	9548,  7620,  6100,  4904,  3906,  3121,  2501,	 1991,	1586,  1277,
-	1024,  820,   655,   526,   423,   335,	  272,	 215,	172,   137,
-	110,   87,    70,    56,    45,	   36,	  29,	 23,	18,    15,
-};

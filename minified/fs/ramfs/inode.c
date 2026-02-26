@@ -2,19 +2,8 @@
 #include <linux/pagemap.h>
 #include <linux/fs_parser.h>
 
-/* Merged from file-mmu.c */
-static unsigned long ramfs_mmu_get_unmapped_area(struct file *file,
-						 unsigned long addr,
-						 unsigned long len,
-						 unsigned long pgoff,
-						 unsigned long flags)
-{
-	return current->mm->get_unmapped_area(file, addr, len, pgoff, flags);
-}
-
 const struct file_operations ramfs_file_operations = {
 	.read_iter = generic_file_read_iter,
-	.get_unmapped_area = ramfs_mmu_get_unmapped_area,
 };
 
 static const struct inode_operations ramfs_file_inode_operations = {};

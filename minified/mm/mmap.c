@@ -18,10 +18,6 @@ static inline int security_vm_enough_memory_mm(struct mm_struct *mm, long pages)
 	return __vm_enough_memory(mm, pages, 1);
 }
 
-#ifndef arch_mmap_check
-#define arch_mmap_check(addr, len, flags) (0)
-#endif
-
 pgprot_t protection_map[16] __ro_after_init = {
 	[VM_NONE] = __P000,
 	[VM_READ] = __P001,
@@ -77,10 +73,6 @@ static inline unsigned long vma_compute_gap(struct vm_area_struct *vma)
 	return gap;
 }
 
-#define validate_mm(mm) \
-	do {            \
-	} while (0)
-
 RB_DECLARE_CALLBACKS_MAX(static, vma_gap_callbacks, struct vm_area_struct,
 			 vm_rb, unsigned long, rb_subtree_gap, vma_compute_gap)
 
@@ -117,18 +109,6 @@ static int find_vma_links(struct mm_struct *mm, unsigned long addr,
 		*pprev = rb_entry(rb_prev, struct vm_area_struct, vm_rb);
 	*rb_link = __rb_link;
 	*rb_parent = __rb_parent;
-	return 0;
-}
-
-static inline int
-munmap_vma_range(struct mm_struct *mm, unsigned long start, unsigned long len,
-		 struct vm_area_struct **pprev, struct rb_node ***link,
-		 struct rb_node **parent, struct list_head *uf)
-{
-	if (find_vma_links(mm, start, start + len, pprev, link, parent))
-		panic("munmap_vma_range: unexpected VMA overlap at %lx+%lx\n",
-		      start, len);
-
 	return 0;
 }
 
@@ -172,7 +152,6 @@ static void vma_link(struct mm_struct *mm, struct vm_area_struct *vma,
 		i_mmap_unlock_write(mapping);
 
 	mm->map_count++;
-	validate_mm(mm);
 }
 
 int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
@@ -188,7 +167,7 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
 
 static unsigned long mmap_region(struct file *file, unsigned long addr,
 				 unsigned long len, vm_flags_t vm_flags,
-				 unsigned long pgoff, struct list_head *uf);
+				 unsigned long pgoff);
 
 unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len,
 		      unsigned long prot, unsigned long flags,
@@ -252,19 +231,19 @@ unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len,
 		pgoff = addr >> PAGE_SHIFT;
 	}
 
-	return mmap_region(file, addr, len, vm_flags, pgoff, uf);
+	return mmap_region(file, addr, len, vm_flags, pgoff);
 }
 
 static unsigned long mmap_region(struct file *file, unsigned long addr,
 				 unsigned long len, vm_flags_t vm_flags,
-				 unsigned long pgoff, struct list_head *uf)
+				 unsigned long pgoff)
 {
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *vma;
 	struct rb_node **rb_link, *rb_parent;
 	struct vm_area_struct *prev = NULL;
 
-	if (munmap_vma_range(mm, addr, len, &prev, &rb_link, &rb_parent, uf))
+	if (find_vma_links(mm, addr, addr + len, &prev, &rb_link, &rb_parent))
 		return -ENOMEM;
 
 	vma = vm_area_alloc(mm);
@@ -309,11 +288,9 @@ static unsigned long vm_unmapped_area(struct vm_unmapped_area_info *info)
 	return gap_start;
 }
 
-static unsigned long generic_get_unmapped_area(struct file *filp,
-					       unsigned long addr,
-					       unsigned long len,
-					       unsigned long pgoff,
-					       unsigned long flags)
+unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr,
+				     unsigned long len, unsigned long pgoff,
+				     unsigned long flags)
 {
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *vma;
@@ -342,34 +319,14 @@ static unsigned long generic_get_unmapped_area(struct file *filp,
 	return vm_unmapped_area(&info);
 }
 
-#ifndef HAVE_ARCH_UNMAPPED_AREA
-unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr,
-				     unsigned long len, unsigned long pgoff,
-				     unsigned long flags)
-{
-	return generic_get_unmapped_area(filp, addr, len, pgoff, flags);
-}
-#endif
-
 unsigned long get_unmapped_area(struct file *file, unsigned long addr,
 				unsigned long len, unsigned long pgoff,
 				unsigned long flags)
 {
-	unsigned long (*get_area)(struct file *, unsigned long, unsigned long,
-				  unsigned long, unsigned long);
-
-	unsigned long error = arch_mmap_check(addr, len, flags);
-	if (error)
-		return error;
-
 	if (len > TASK_SIZE)
 		return -ENOMEM;
 
-	get_area = current->mm->get_unmapped_area;
-	if (file && file->f_op->get_unmapped_area)
-		get_area = file->f_op->get_unmapped_area;
-
-	addr = get_area(file, addr, len, pgoff, flags);
+	addr = arch_get_unmapped_area(file, addr, len, pgoff, flags);
 	if (IS_ERR_VALUE(addr))
 		return addr;
 
@@ -468,7 +425,6 @@ static int expand_downwards(struct vm_area_struct *vma, unsigned long address)
 		}
 	}
 	anon_vma_unlock_write(vma->anon_vma);
-	validate_mm(mm);
 	return error;
 }
 
@@ -506,7 +462,6 @@ int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 	pgoff_t pgoff;
 	unsigned long len;
 	int ret = 0;
-	LIST_HEAD(uf);
 
 	len = PAGE_ALIGN(request);
 	if (!len)
@@ -518,7 +473,7 @@ int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 	pgoff = addr >> PAGE_SHIFT;
 	flags |= VM_DATA_DEFAULT_FLAGS | VM_ACCOUNT | mm->def_flags;
 
-	if (munmap_vma_range(mm, addr, len, &prev, &rb_link, &rb_parent, &uf)) {
+	if (find_vma_links(mm, addr, addr + len, &prev, &rb_link, &rb_parent)) {
 		ret = -ENOMEM;
 		goto out_unlock;
 	}

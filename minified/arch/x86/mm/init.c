@@ -345,6 +345,5 @@ __visible DEFINE_PER_CPU_ALIGNED(struct tlb_state, cpu_tlbstate) = {
 
 void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
 {
-	mm->get_unmapped_area = arch_get_unmapped_area;
 	mm->mmap_base = __TASK_UNMAPPED_BASE(DEFAULT_MAP_WINDOW);
 }

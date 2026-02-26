@@ -192,12 +192,10 @@ struct dentry {
 } __randomize_layout;
 
 #define DCACHE_DENTRY_KILLED		0x00008000
-#define DCACHE_NEED_AUTOMOUNT		0x00020000
 
 #define DCACHE_ENTRY_TYPE		0x00700000
 #define DCACHE_MISS_TYPE		0x00000000
 #define DCACHE_DIRECTORY_TYPE		0x00200000
-#define DCACHE_AUTODIR_TYPE		0x00300000
 #define DCACHE_REGULAR_TYPE		0x00400000
 #define DCACHE_SPECIAL_TYPE		0x00500000
 
@@ -399,7 +397,6 @@ static inline void i_mmap_unlock_write(struct address_space *mapping)
 }
 
 #define IOP_LOOKUP	0x0002
-#define IOP_NOFOLLOW	0x0004
 
 struct inode {
 	umode_t			i_mode;
@@ -556,7 +553,6 @@ struct file_operations {
 	int (*mmap)(struct file *, struct vm_area_struct *);
 	int (*open)(struct inode *, struct file *);
 	int (*release)(struct inode *, struct file *);
-	unsigned long (*get_unmapped_area)(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
 } __randomize_layout;
 
 struct inode_operations {
@@ -564,10 +560,7 @@ struct inode_operations {
 } ____cacheline_aligned;
 
 #define S_DEAD		(1 << 4)
-#define S_AUTOMOUNT	(1 << 11)
-
 #define IS_DEADDIR(inode)	((inode)->i_flags & S_DEAD)
-#define IS_AUTOMOUNT(inode)	((inode)->i_flags & S_AUTOMOUNT)
 
 #define __I_NEW			3
 #define I_NEW			(1 << __I_NEW)

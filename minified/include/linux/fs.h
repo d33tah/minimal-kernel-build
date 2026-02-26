@@ -10,9 +10,7 @@ struct wait_bit_key {
 };
 #define __WAIT_BIT_KEY_INITIALIZER(word, bit)					\
 	{ .flags = word, .bit_nr = bit, }
-void __wake_up_bit(struct wait_queue_head *wq_head, void *word, int bit);
 void wake_up_bit(void *word, int bit);
-struct wait_queue_head *bit_waitqueue(void *word, int bit);
 extern void __init wait_bit_init(void);
 #include <linux/kdev_t.h>
 /* rculist_bl.h inlined */
@@ -32,7 +30,6 @@ static inline void __bit_spin_unlock(int bitnum, unsigned long *addr)
 #include <linux/rcupdate.h>
 
 #define LIST_BL_LOCKMASK	0UL
-#define LIST_BL_BUG_ON(x)
 
 struct hlist_bl_head {
 	struct hlist_bl_node *first;
@@ -73,8 +70,6 @@ static inline void __hlist_bl_del(struct hlist_bl_node *n)
 	struct hlist_bl_node *next = n->next;
 	struct hlist_bl_node **pprev = n->pprev;
 
-	LIST_BL_BUG_ON((unsigned long)n & LIST_BL_LOCKMASK);
-
 	WRITE_ONCE(*pprev,
 		   (struct hlist_bl_node *)
 			((unsigned long)next |
@@ -96,9 +91,6 @@ static inline void hlist_bl_unlock(struct hlist_bl_head *b)
 static inline void hlist_bl_set_first_rcu(struct hlist_bl_head *h,
 					struct hlist_bl_node *n)
 {
-	LIST_BL_BUG_ON((unsigned long)n & LIST_BL_LOCKMASK);
-	LIST_BL_BUG_ON(((unsigned long)h->first & LIST_BL_LOCKMASK) !=
-							LIST_BL_LOCKMASK);
 	rcu_assign_pointer(h->first,
 		(struct hlist_bl_node *)((unsigned long)n | LIST_BL_LOCKMASK));
 }
@@ -137,22 +129,18 @@ extern int lockref_put_return(struct lockref *);
 extern void lockref_mark_dead(struct lockref *);
 /* hash.h inlined */
 #include <asm/types.h>
-#define GOLDEN_RATIO_32 0x61C88647
-#define hash_long(val, bits) hash_32(val, bits)
-#ifndef HAVE_ARCH__HASH_32
-#define __hash_32 __hash_32_generic
-#endif
-static inline u32 __hash_32_generic(u32 val)
+static inline u32 __hash_32(u32 val)
 {
-	return val * GOLDEN_RATIO_32;
+	return val * 0x61C88647;
 }
 static inline u32 hash_32(u32 val, unsigned int bits)
 {
 	return __hash_32(val) >> (32 - bits);
 }
+#define hash_long(val, bits) hash_32(val, bits)
 static inline u32 hash_ptr(const void *ptr, unsigned int bits)
 {
-	return hash_long((unsigned long)ptr, bits);
+	return hash_32((unsigned long)ptr, bits);
 }
 
 #define hashlen_len(hashlen)  ((u32)((hashlen) >> 32))
@@ -160,12 +148,11 @@ static inline u32 hash_ptr(const void *ptr, unsigned int bits)
 
 #define IS_ROOT(x) ((x) == (x)->d_parent)
 
-#define HASH_LEN_DECLARE u32 hash; u32 len
-
 struct qstr {
 	union {
 		struct {
-			HASH_LEN_DECLARE;
+			u32 hash;
+			u32 len;
 		};
 		u64 hash_len;
 	};
@@ -269,8 +256,6 @@ static inline struct inode *d_inode(const struct dentry *dentry)
 /* end dcache.h inline */
 #ifndef _LINUX_PATH_H
 #define _LINUX_PATH_H
-struct dentry;
-struct vfsmount;
 struct path { struct vfsmount *mnt; struct dentry *dentry; } __randomize_layout;
 extern void path_get(const struct path *);
 extern void path_put(const struct path *);
@@ -378,9 +363,6 @@ extern void __init files_init(void);
 #define FMODE_NONOTIFY		((__force fmode_t)0x4000000)
 
 #define AOP_TRUNCATED_PAGE 0x80001
-
-struct page;
-struct address_space;
 
 struct kiocb {
 	struct file		*ki_filp;
@@ -522,10 +504,7 @@ static inline struct inode *file_inode(const struct file *f)
 #define SB_I_NOEXEC	0x00000002
 #define SB_I_NODEV	0x00000004
 
-enum {
-	SB_FREEZE_WRITE	= 1,
-	SB_FREEZE_COMPLETE = 4,		
-};
+#define SB_FREEZE_COMPLETE 4
 
 #define SB_FREEZE_LEVELS (SB_FREEZE_COMPLETE - 1)
 

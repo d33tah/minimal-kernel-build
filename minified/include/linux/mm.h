@@ -124,14 +124,9 @@ void vm_area_free(struct vm_area_struct *);
 
 #define VM_ACCOUNT	0x00100000
 
-# define VM_SOFTDIRTY	0
-
 #define VM_MIXEDMAP	0x10000000
 #define VM_NOHUGEPAGE	0x40000000
 
-#ifndef VM_GROWSUP
-# define VM_GROWSUP	VM_NONE
-#endif
 
 #define VM_STACK_INCOMPLETE_SETUP	(0x00010000 | 0x00008000)
 
@@ -539,14 +534,7 @@ static inline unsigned long vm_start_gap(struct vm_area_struct *vma)
 
 static inline unsigned long vm_end_gap(struct vm_area_struct *vma)
 {
-	unsigned long vm_end = vma->vm_end;
-
-	if (vma->vm_flags & VM_GROWSUP) {
-		vm_end += stack_guard_gap;
-		if (vm_end < vma->vm_end)
-			vm_end = -PAGE_SIZE;
-	}
-	return vm_end;
+	return vma->vm_end;
 }
 
 static inline unsigned long vma_pages(struct vm_area_struct *vma)

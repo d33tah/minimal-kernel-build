@@ -61,12 +61,7 @@
 #endif /* PAGE_FLAGS_LAYOUT_H */
 
 #define PB_migratetype_bits 3
-enum pageblock_bits {
-	PB_migrate,
-	PB_migrate_end = PB_migrate + PB_migratetype_bits - 1,
-	PB_migrate_skip,
-	NR_PAGEBLOCK_BITS
-};
+#define NR_PAGEBLOCK_BITS 4
 
 #define pageblock_order (MAX_ORDER - 1)
 #define pageblock_nr_pages (1UL << pageblock_order)
@@ -84,9 +79,7 @@ enum pageblock_bits {
 enum migratetype {
 	MIGRATE_UNMOVABLE,
 	MIGRATE_MOVABLE,
-	MIGRATE_RECLAIMABLE,
 	MIGRATE_PCPTYPES,
-	MIGRATE_HIGHATOMIC = MIGRATE_PCPTYPES,
 	MIGRATE_TYPES
 };
 
@@ -112,34 +105,21 @@ struct pglist_data;
 
 enum zone_stat_item {
 	NR_FREE_PAGES,
-	NR_ZONE_LRU_BASE,
-	NR_MLOCK,
 	NR_VM_ZONE_STAT_ITEMS
 };
 
 enum node_stat_item {
-	NR_LRU_BASE,
 	NR_SLAB_RECLAIMABLE_B,
 	NR_SLAB_UNRECLAIMABLE_B,
 	NR_ANON_MAPPED,
-	NR_FILE_MAPPED,
 	NR_FILE_PAGES,
-	NR_SHMEM,
 	NR_KERNEL_STACK_KB,
 	NR_PAGETABLE,
 	NR_VM_NODE_STAT_ITEMS
 };
 
-#define LRU_BASE 0
-#define LRU_ACTIVE 1
-#define LRU_FILE 2
-
 enum lru_list {
-	LRU_INACTIVE_ANON = LRU_BASE,
-	LRU_ACTIVE_ANON = LRU_BASE + LRU_ACTIVE,
-	LRU_INACTIVE_FILE = LRU_BASE + LRU_FILE,
-	LRU_ACTIVE_FILE = LRU_BASE + LRU_FILE + LRU_ACTIVE,
-	LRU_UNEVICTABLE,
+	LRU_UNEVICTABLE = 4,
 	NR_LRU_LISTS
 };
 
@@ -153,9 +133,7 @@ struct lruvec {
 };
 
 enum zone_watermarks {
-	WMARK_MIN,
 	WMARK_LOW,
-	WMARK_HIGH,
 	NR_WMARK
 };
 
@@ -249,7 +227,6 @@ static inline unsigned long pgdat_end_pfn(pg_data_t *pgdat)
 void build_all_zonelists(pg_data_t *pgdat);
 enum meminit_context {
 	MEMINIT_EARLY,
-	MEMINIT_HOTPLUG,
 };
 
 extern void lruvec_init(struct lruvec *lruvec);

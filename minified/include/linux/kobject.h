@@ -11,7 +11,6 @@ struct attribute {
 struct attribute_group {
 	struct attribute	**attrs;
 };
-static inline int __must_check sysfs_init(void) { return 0; }
 #include <linux/kref.h>
 #include <linux/wait.h>
 #include <linux/uidgid.h>

@@ -177,7 +177,6 @@ struct signal_struct;
 #define TASK_RUNNING			0x0000
 #define TASK_INTERRUPTIBLE		0x0001
 #define TASK_UNINTERRUPTIBLE		0x0002
-#define TASK_DEAD			0x0080
 #define TASK_WAKEKILL			0x0100
 #define TASK_NEW			0x0800
 
@@ -188,10 +187,6 @@ struct signal_struct;
 
 #define set_current_state(state_value)					\
 	smp_store_mb(current->__state, (state_value))
-
-enum {
-	TASK_COMM_LEN = 16,
-};
 
 asmlinkage void schedule(void);
 extern void schedule_preempt_disabled(void);
@@ -259,7 +254,7 @@ struct task_struct {
 
 	const struct cred __rcu		*cred;
 
-	char				comm[TASK_COMM_LEN];
+	char				comm[16];
 
 	struct nameidata		*nameidata;
 

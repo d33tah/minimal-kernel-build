@@ -5,12 +5,6 @@
 
 struct backing_dev_info noop_backing_dev_info;
 
-enum vfs_get_super_keying {
-	vfs_get_single_super,
-	vfs_get_keyed_super,
-	vfs_get_independent_super,
-};
-
 static void rcu_sync_init(struct rcu_sync *rsp)
 {
 	memset(rsp, 0, sizeof(*rsp));
@@ -245,9 +239,9 @@ static int set_anon_super_fc(struct super_block *sb, struct fs_context *fc)
 	return get_anon_bdev(&sb->s_dev);
 }
 
-static int
-vfs_get_super(struct fs_context *fc, enum vfs_get_super_keying keying,
-	      int (*fill_super)(struct super_block *sb, struct fs_context *fc))
+static int vfs_get_super(struct fs_context *fc,
+			 int (*fill_super)(struct super_block *sb,
+					   struct fs_context *fc))
 {
 	struct super_block *sb;
 	int err;
@@ -271,7 +265,7 @@ int get_tree_nodev(struct fs_context *fc,
 		   int (*fill_super)(struct super_block *sb,
 				     struct fs_context *fc))
 {
-	return vfs_get_super(fc, vfs_get_independent_super, fill_super);
+	return vfs_get_super(fc, fill_super);
 }
 
 int vfs_get_tree(struct fs_context *fc)

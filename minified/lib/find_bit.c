@@ -10,7 +10,7 @@ unsigned long _find_next_bit(const unsigned long *addr1,
 			     unsigned long start, unsigned long invert,
 			     unsigned long le)
 {
-	unsigned long tmp, mask;
+	unsigned long tmp;
 
 	if (unlikely(start >= nbits))
 		return nbits;

@@ -19,32 +19,11 @@ void wakeme_after_rcu(struct rcu_head *head)
 	complete(&rcu->completion);
 }
 
+/* Simplified: always called with n=1, checktiny=false */
 void __wait_rcu_gp(bool checktiny, int n, call_rcu_func_t *crcu_array,
 		   struct rcu_synchronize *rs_array)
 {
-	int i;
-	int j;
-
-	for (i = 0; i < n; i++) {
-		if (checktiny && (crcu_array[i] == call_rcu))
-			continue;
-		for (j = 0; j < i; j++)
-			if (crcu_array[j] == crcu_array[i])
-				break;
-		if (j == i) {
-			init_completion(&rs_array[i].completion);
-			(crcu_array[i])(&rs_array[i].head, wakeme_after_rcu);
-		}
-	}
-
-	for (i = 0; i < n; i++) {
-		if (checktiny && (crcu_array[i] == call_rcu))
-			continue;
-		for (j = 0; j < i; j++)
-			if (crcu_array[j] == crcu_array[i])
-				break;
-		if (j == i) {
-			wait_for_completion(&rs_array[i].completion);
-		}
-	}
+	init_completion(&rs_array[0].completion);
+	(crcu_array[0])(&rs_array[0].head, wakeme_after_rcu);
+	wait_for_completion(&rs_array[0].completion);
 }

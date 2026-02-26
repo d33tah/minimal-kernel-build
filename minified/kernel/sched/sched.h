@@ -18,18 +18,9 @@
 #include <linux/file.h>
 
 #include <linux/interrupt.h>
-/* jiffies.h inlined */
 #include <linux/minmax.h>
 #include <linux/timex.h>
 #include <asm/param.h>
-#define TICK_NSEC ((NSEC_PER_SEC+HZ/2)/HZ)
-#ifndef __jiffy_arch_data
-#define __jiffy_arch_data
-#endif
-extern u64 __cacheline_aligned_in_smp jiffies_64;
-extern unsigned long volatile __cacheline_aligned_in_smp __jiffy_arch_data jiffies;
-#define INITIAL_JIFFIES ((unsigned long)(unsigned int) (-300*HZ))
-
 #include <linux/kthread.h>
 
 #include <linux/lockdep.h>
@@ -38,8 +29,6 @@ extern unsigned long volatile __cacheline_aligned_in_smp __jiffy_arch_data jiffi
 #include <linux/module.h>
 
 #include <linux/compiler.h>
-/* ktime.h inlined */
-typedef s64 ktime_t;
 #include <linux/wait.h>
 #include <linux/fs.h>
 #include <linux/uaccess.h>
@@ -55,10 +44,6 @@ typedef s64 ktime_t;
 #include <linux/types.h>
 
 #include <linux/uaccess.h>
-
-/* wait_bit.h - now inlined in fs.h, included above */
-
-# define SCHED_WARN_ON(x)      ({ (void)(x), 0; })
 
 struct rq;
 
@@ -171,16 +156,8 @@ extern void update_rq_clock(struct rq *rq);
 #define RQCF_REQ_SKIP		0x01
 #define RQCF_ACT_SKIP		0x02
 
-static inline void assert_clock_updated(struct rq *rq)
-{
-
-	SCHED_WARN_ON(rq->clock_update_flags < RQCF_ACT_SKIP);
-}
-
 static inline u64 rq_clock_task(struct rq *rq)
 {
-	assert_clock_updated(rq);
-
 	return rq->clock_task;
 }
 

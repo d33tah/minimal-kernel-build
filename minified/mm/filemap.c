@@ -154,8 +154,8 @@ static void folio_wake_bit(struct folio *folio, int bit_nr)
 
 void folio_unlock(struct folio *folio)
 {
-	BUILD_BUG_ON(PG_waiters != 7);
-	BUILD_BUG_ON(PG_locked > 7);
+	BUILD_BUG_ON(PG_waiters != 4);
+	BUILD_BUG_ON(PG_locked > 4);
 	clear_bit_unlock(PG_locked, folio_flags(folio, 0));
 	if (test_bit(PG_waiters, folio_flags(folio, 0)))
 		folio_wake_bit(folio, PG_locked);

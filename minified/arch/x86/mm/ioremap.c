@@ -20,7 +20,7 @@ void __init early_ioremap_init(void)
 {
 	pmd_t *pmd;
 
-	WARN_ON((fix_to_virt(0) + PAGE_SIZE) & ((1 << PMD_SHIFT) - 1));
+	BUG_ON((fix_to_virt(0) + PAGE_SIZE) & ((1 << PMD_SHIFT) - 1));
 
 	early_ioremap_setup();
 
@@ -32,17 +32,5 @@ void __init early_ioremap_init(void)
 	BUILD_BUG_ON((__fix_to_virt(FIX_BTMAP_BEGIN) >> PMD_SHIFT) !=
 		     (__fix_to_virt(FIX_BTMAP_END) >> PMD_SHIFT));
 #undef __FIXADDR_TOP
-	if (pmd != early_ioremap_pmd(fix_to_virt(FIX_BTMAP_END))) {
-		WARN_ON(1);
-		printk(KERN_WARNING "pmd %p != %p\n", pmd,
-		       early_ioremap_pmd(fix_to_virt(FIX_BTMAP_END)));
-		printk(KERN_WARNING "fix_to_virt(FIX_BTMAP_BEGIN): %08lx\n",
-		       fix_to_virt(FIX_BTMAP_BEGIN));
-		printk(KERN_WARNING "fix_to_virt(FIX_BTMAP_END):   %08lx\n",
-		       fix_to_virt(FIX_BTMAP_END));
-
-		printk(KERN_WARNING "FIX_BTMAP_END:       %d\n", FIX_BTMAP_END);
-		printk(KERN_WARNING "FIX_BTMAP_BEGIN:     %d\n",
-		       FIX_BTMAP_BEGIN);
-	}
+	BUG_ON(pmd != early_ioremap_pmd(fix_to_virt(FIX_BTMAP_END)));
 }

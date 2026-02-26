@@ -85,8 +85,6 @@ void __init early_alloc_pgt_buf(void)
 
 int after_bootmem;
 
-int direct_gbpages;
-
 struct map_range {
 	unsigned long start;
 	unsigned long end;
@@ -136,14 +134,7 @@ static void __ref adjust_range_page_size_mask(struct map_range *mr,
 			if (memblock_is_region_memory(start, end - start))
 				mr[i].page_size_mask |= 1 << PG_LEVEL_2M;
 		}
-		if ((page_size_mask & (1 << PG_LEVEL_1G)) &&
-		    !(mr[i].page_size_mask & (1 << PG_LEVEL_1G))) {
-			unsigned long start = round_down(mr[i].start, PUD_SIZE);
-			unsigned long end = round_up(mr[i].end, PUD_SIZE);
-
-			if (memblock_is_region_memory(start, end - start))
-				mr[i].page_size_mask |= 1 << PG_LEVEL_1G;
-		}
+		/* No 1G pages on x86-32 */
 	}
 }
 
@@ -308,8 +299,6 @@ void __init init_mem_mapping(void)
 	if (boot_cpu_has(X86_FEATURE_PSE)) {
 		page_size_mask |= 1 << PG_LEVEL_2M;
 		cr4_set_bits_and_update_boot(X86_CR4_PSE);
-	} else {
-		direct_gbpages = 0;
 	}
 	__supported_pte_mask &= ~_PAGE_GLOBAL;
 	if (boot_cpu_has(X86_FEATURE_PGE)) {
@@ -317,12 +306,7 @@ void __init init_mem_mapping(void)
 		__supported_pte_mask |= _PAGE_GLOBAL;
 	}
 	__default_kernel_pte_mask = __supported_pte_mask;
-	if (direct_gbpages && boot_cpu_has(X86_FEATURE_GBPAGES)) {
-		printk(KERN_INFO "Using GB pages for direct mapping\n");
-		page_size_mask |= 1 << PG_LEVEL_1G;
-	} else {
-		direct_gbpages = 0;
-	}
+	/* No GB pages on x86-32 */
 	/* setup_pcid empty - PCID not supported on 32-bit */
 
 	end = max_low_pfn << PAGE_SHIFT;

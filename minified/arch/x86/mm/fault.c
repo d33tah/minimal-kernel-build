@@ -73,22 +73,6 @@ static noinline void pgtable_bad(struct pt_regs *regs, unsigned long error_code,
 	oops_end(oops_begin(), regs, SIGKILL);
 }
 
-static void sanitize_error_code(unsigned long address,
-				unsigned long *error_code)
-{
-	if (address >= TASK_SIZE_MAX)
-		*error_code |= X86_PF_PROT;
-}
-
-static void set_signal_archinfo(unsigned long address, unsigned long error_code)
-{
-	struct task_struct *tsk = current;
-
-	tsk->thread.trap_nr = X86_TRAP_PF;
-	tsk->thread.error_code = error_code | X86_PF_USER;
-	tsk->thread.cr2 = address;
-}
-
 static noinline void page_fault_oops(struct pt_regs *regs,
 				     unsigned long error_code,
 				     unsigned long address)
@@ -100,11 +84,8 @@ static noinline void page_fault_oops(struct pt_regs *regs,
 
 static noinline void kernelmode_fixup_or_oops(struct pt_regs *regs,
 					      unsigned long error_code,
-					      unsigned long address, int signal,
-					      int si_code, u32 pkey)
+					      unsigned long address)
 {
-	WARN_ON_ONCE(user_mode(regs));
-
 	if (fixup_exception(regs, X86_TRAP_PF, error_code, address))
 		return;
 
@@ -113,61 +94,29 @@ static noinline void kernelmode_fixup_or_oops(struct pt_regs *regs,
 
 static void __bad_area_nosemaphore(struct pt_regs *regs,
 				   unsigned long error_code,
-				   unsigned long address, u32 pkey, int si_code)
+				   unsigned long address)
 {
 	if (!user_mode(regs)) {
-		kernelmode_fixup_or_oops(regs, error_code, address, SIGSEGV,
-					 si_code, pkey);
+		kernelmode_fixup_or_oops(regs, error_code, address);
 		return;
 	}
 
-	if (!(error_code & X86_PF_USER)) {
-		page_fault_oops(regs, error_code, address);
-		return;
-	}
-
-	local_irq_enable();
-
-	sanitize_error_code(address, &error_code);
-
-	/* fixup_vdso_exception: always false, VDSO disabled */
-
-	set_signal_archinfo(address, error_code);
-
-	force_sig_fault(SIGSEGV, si_code, (void __user *)address);
-
-	local_irq_disable();
+	/* User-mode fault: force_sig_fault is stubbed to panic() */
+	page_fault_oops(regs, error_code, address);
 }
 
 static noinline void bad_area_nosemaphore(struct pt_regs *regs,
 					  unsigned long error_code,
 					  unsigned long address)
 {
-	__bad_area_nosemaphore(regs, error_code, address, 0, SEGV_MAPERR);
-}
-
-static void __bad_area(struct pt_regs *regs, unsigned long error_code,
-		       unsigned long address, u32 pkey, int si_code)
-{
-	struct mm_struct *mm = current->mm;
-
-	mmap_read_unlock(mm);
-
-	__bad_area_nosemaphore(regs, error_code, address, pkey, si_code);
+	__bad_area_nosemaphore(regs, error_code, address);
 }
 
 static noinline void bad_area(struct pt_regs *regs, unsigned long error_code,
 			      unsigned long address)
 {
-	__bad_area(regs, error_code, address, 0, SEGV_MAPERR);
-}
-
-static noinline void bad_area_access_error(struct pt_regs *regs,
-					   unsigned long error_code,
-					   unsigned long address,
-					   struct vm_area_struct *vma)
-{
-	__bad_area(regs, error_code, address, 0, SEGV_ACCERR);
+	mmap_read_unlock(current->mm);
+	__bad_area_nosemaphore(regs, error_code, address);
 }
 
 static bool fault_in_kernel_space(unsigned long address)
@@ -268,7 +217,7 @@ good_area:
 		      (error_code & X86_PF_PROT)) ||
 		     ((!(error_code & X86_PF_WRITE)) &&
 		      !vma_is_accessible(vma)))) {
-		bad_area_access_error(regs, error_code, address, vma);
+		bad_area(regs, error_code, address);
 		return;
 	}
 
@@ -278,9 +227,7 @@ good_area:
 		     (fatal_signal_pending(current) ||
 		      (user_mode(regs) && signal_pending(current))))) {
 		if (!user_mode(regs))
-			kernelmode_fixup_or_oops(regs, error_code, address,
-						 SIGBUS, BUS_ADRERR,
-						 ARCH_DEFAULT_PKEY);
+			kernelmode_fixup_or_oops(regs, error_code, address);
 		return;
 	}
 
@@ -293,27 +240,13 @@ good_area:
 	if (likely(!(fault & VM_FAULT_ERROR)))
 		return;
 
-	if (fatal_signal_pending(current) && !user_mode(regs)) {
-		kernelmode_fixup_or_oops(regs, error_code, address, 0, 0,
-					 ARCH_DEFAULT_PKEY);
+	if (!user_mode(regs)) {
+		kernelmode_fixup_or_oops(regs, error_code, address);
 		return;
 	}
 
-	if (fault & VM_FAULT_OOM) {
-		if (!user_mode(regs)) {
-			kernelmode_fixup_or_oops(regs, error_code, address,
-						 SIGSEGV, SEGV_MAPERR,
-						 ARCH_DEFAULT_PKEY);
-			return;
-		}
-
-	} else {
-		if (fault & (VM_FAULT_SIGBUS | VM_FAULT_HWPOISON |
-			     VM_FAULT_HWPOISON_LARGE | VM_FAULT_SIGSEGV))
-			bad_area_nosemaphore(regs, error_code, address);
-		else
-			BUG();
-	}
+	/* User-mode fault error: all paths lead to panic */
+	page_fault_oops(regs, error_code, address);
 }
 NOKPROBE_SYMBOL(do_user_addr_fault);
 

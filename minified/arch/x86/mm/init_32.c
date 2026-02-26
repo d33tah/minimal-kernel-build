@@ -244,42 +244,10 @@ void __init early_ioremap_page_table_range_init(void)
 pteval_t __supported_pte_mask __read_mostly = DEFAULT_PTE_MASK;
 pteval_t __default_kernel_pte_mask __read_mostly = DEFAULT_PTE_MASK;
 
-static unsigned int highmem_pages = -1;
-
 void __init find_low_pfn_range(void)
 {
-	if (max_pfn <= MAXMEM_PFN) {
-		/* lowmem_pfn_init */
-		max_low_pfn = max_pfn;
-		if (highmem_pages == -1)
-			highmem_pages = 0;
-		if (highmem_pages)
-			printk(KERN_ERR
-			       "ignoring highmem size on non-highmem kernel!\n");
-	} else {
-		/* highmem_pfn_init */
-		max_low_pfn = MAXMEM_PFN;
-		if (highmem_pages == -1)
-			highmem_pages = max_pfn - MAXMEM_PFN;
-		if (highmem_pages + MAXMEM_PFN < max_pfn)
-			max_pfn = MAXMEM_PFN + highmem_pages;
-		if (highmem_pages + MAXMEM_PFN > max_pfn) {
-			printk(KERN_WARNING
-			       "only %luMB highmem pages available, "
-			       "ignoring highmem size of %luMB!\n",
-			       pages_to_mb(max_pfn - MAXMEM_PFN),
-			       pages_to_mb(highmem_pages));
-			highmem_pages = 0;
-		}
-		printk(KERN_WARNING "Warning only %ldMB will be used.\n",
-		       MAXMEM >> 20);
-		if (max_pfn > MAX_NONPAE_PFN)
-			printk(KERN_WARNING
-			       "Use a HIGHMEM64G enabled kernel.\n");
-		else
-			printk(KERN_WARNING "Use a HIGHMEM enabled kernel.\n");
-		max_pfn = MAXMEM_PFN;
-	}
+	/* No highmem: max_pfn always <= MAXMEM_PFN for this minimal kernel */
+	max_low_pfn = max_pfn;
 }
 
 void __init initmem_init(void)

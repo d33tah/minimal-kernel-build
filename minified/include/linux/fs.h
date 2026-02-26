@@ -292,7 +292,19 @@ struct semaphore {
 extern void down(struct semaphore *sem);
 extern void up(struct semaphore *sem);
 #include <linux/fcntl.h>
-#include <linux/percpu-rwsem.h>
+/* percpu-rwsem.h inlined */
+#include <linux/percpu.h>
+#include <linux/sched/signal.h>
+struct rcuwait { struct task_struct __rcu *task; };
+struct rcu_sync { int gp_state; wait_queue_head_t gp_wait; };
+#include <linux/lockdep.h>
+struct percpu_rw_semaphore {
+	struct rcu_sync		rss;
+	unsigned int __percpu	*read_count;
+	struct rcuwait		writer;
+	wait_queue_head_t	waiters;
+	atomic_t		block;
+};
 
 struct delayed_call {
 	void (*fn)(void *);

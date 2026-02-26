@@ -145,14 +145,6 @@ static __always_inline unsigned long ffz(unsigned long word)
 	return word;
 }
 
-static __always_inline unsigned long __fls(unsigned long word)
-{
-	asm("bsr %1,%0"
-	    : "=r" (word)
-	    : "rm" (word));
-	return word;
-}
-
 #undef ADDR
 
 static __always_inline int ffs(int x)

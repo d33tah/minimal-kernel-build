@@ -10,7 +10,7 @@ CPPFLAGS_vmlinux.lds += -U$(UTS_MACHINE)
 KCSAN_SANITIZE := n
 KCOV_INSTRUMENT := n
 
-obj-y			:= process_$(BITS).o signal.o
+obj-y			:= process_$(BITS).o
 obj-y			+= traps.o idt.o irq_$(BITS).o
 obj-y			+= dumpstack.o
 obj-y			+= setup.o x86_init.o i8259.o irqinit.o

@@ -58,7 +58,10 @@ static __always_inline void arch_exit_to_user_mode(void);
 static __always_inline void arch_exit_to_user_mode(void) { }
 #endif
 
-void arch_do_signal_or_restart(struct pt_regs *regs);
+static inline void arch_do_signal_or_restart(struct pt_regs *regs)
+{
+	restore_saved_sigmask();
+}
 
 void syscall_exit_to_user_mode(struct pt_regs *regs);
 

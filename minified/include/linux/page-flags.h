@@ -146,7 +146,6 @@ CLEARPAGEFLAG(Error, error, PF_NO_TAIL)
 TESTPAGEFLAG(Dirty, dirty, PF_HEAD)
 TESTPAGEFLAG(Active, active, PF_HEAD)
 	SETPAGEFLAG(Active, active, PF_HEAD)
-	__CLEARPAGEFLAG(Active, active, PF_HEAD)
 __SETPAGEFLAG(Slab, slab, PF_NO_TAIL)
 
 __CLEARPAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)

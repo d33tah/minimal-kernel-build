@@ -31,8 +31,6 @@ static __always_inline void __exit_to_user_mode(void)
 	arch_exit_to_user_mode();
 }
 
-/* arch_do_signal_or_restart - x86 provides its own in arch/x86/kernel/signal.c */
-
 static void exit_to_user_mode_prepare(struct pt_regs *regs)
 {
 	unsigned long ti_work = read_thread_flags();

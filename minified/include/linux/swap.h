@@ -12,7 +12,6 @@
 extern struct list_lru shadow_nodes;
 /* dax_mapping and shmem_mapping always return false */
 #define mapping_set_update(xas, mapping) do {				\
-	xas_set_update(xas, NULL);					\
 	xas_set_lru(xas, &shadow_nodes);				\
 } while (0)
 

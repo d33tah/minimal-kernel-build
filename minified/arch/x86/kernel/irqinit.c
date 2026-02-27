@@ -44,10 +44,8 @@ void __init native_init_IRQ(void)
 
 	idt_setup_apic_and_irq_gates();
 
-	if (nr_legacy_irqs()) {
-		if (request_irq(2, no_action, IRQF_NO_THREAD, "cascade", NULL))
-			pr_err("%s: request_irq() failed\n", "cascade");
-	}
+	if (nr_legacy_irqs())
+		request_irq(2, no_action, IRQF_NO_THREAD, "cascade", NULL);
 }
 
 DEFINE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);

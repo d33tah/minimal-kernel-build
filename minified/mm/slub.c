@@ -363,11 +363,6 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 		struct slab *slab;
 		struct kmem_cache_node *n;
 		slab = new_slab(kmem_cache_node, GFP_NOWAIT, 0);
-		if (page_to_nid(&slab_folio(slab)->page) != 0) {
-			pr_err("SLUB: Unable to allocate memory from node %d\n",
-			       0);
-			pr_err("SLUB: Allocating a useless per node structure\n");
-		}
 		n = slab->freelist;
 		slab->freelist = get_freepointer(kmem_cache_node, n);
 		slab->inuse = 1;

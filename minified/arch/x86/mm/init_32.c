@@ -265,13 +265,6 @@ void __init paging_init(void)
 
 void __init mem_init(void)
 {
-	char z = 0;
-
 	memblock_free_all();
 	after_bootmem = 1;
-
-	__set_fixmap(FIX_WP_TEST, __pa_symbol(empty_zero_page), PAGE_KERNEL_RO);
-	if (!copy_to_kernel_nofault((char *)fix_to_virt(FIX_WP_TEST), &z, 1))
-		panic("Linux doesn't support CPUs with broken WP.");
-	clear_fixmap(FIX_WP_TEST);
 }

@@ -31,7 +31,6 @@ enum fixed_addresses {
 	   (__end_of_permanent_fixed_addresses & (TOTAL_FIX_BTMAPS - 1))
 	 : __end_of_permanent_fixed_addresses,
 	FIX_BTMAP_BEGIN = FIX_BTMAP_END + TOTAL_FIX_BTMAPS - 1,
-	FIX_WP_TEST,
 	__end_of_fixed_addresses
 };
 

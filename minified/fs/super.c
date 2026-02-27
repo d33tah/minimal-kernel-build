@@ -154,12 +154,6 @@ static void generic_shutdown_super(struct super_block *sb)
 		shrink_dcache_for_umount(sb);
 		sb->s_flags &= ~SB_ACTIVE;
 		evict_inodes(sb);
-
-		if (!list_empty(&sb->s_inodes)) {
-			printk("VFS: Busy inodes after unmount of %s. "
-			       "Self-destruct in 5 seconds.  Have a nice day...\n",
-			       sb->s_id);
-		}
 	}
 	spin_lock(&sb_lock);
 

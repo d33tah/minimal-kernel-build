@@ -24,14 +24,4 @@ extern void __delay(unsigned long loops);
 #include <linux/init.h>
 void __init use_tsc_delay(void);
 
-#ifndef MAX_UDELAY_MS
-#define MAX_UDELAY_MS	5
-#endif
-
-#ifndef mdelay
-#define mdelay(n) (\
-	(__builtin_constant_p(n) && (n)<=MAX_UDELAY_MS) ? udelay((n)*1000) : \
-	({unsigned long __ms=(n); while (__ms--) udelay(1000);}))
-#endif
-
 #endif

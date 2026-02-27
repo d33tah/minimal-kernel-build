@@ -31,11 +31,4 @@ typedef struct siginfo {
 	};
 } __ARCH_SI_ATTRIBUTES siginfo_t;
 
-/* SEGV codes used by x86 fault handler */
-#define SEGV_MAPERR	1
-#define SEGV_ACCERR	2
-
-/* BUS codes used by x86 */
-#define BUS_ADRERR	2
-
-#endif  
+#endif

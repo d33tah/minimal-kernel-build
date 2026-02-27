@@ -22,7 +22,6 @@
 #define	EMFILE		24
 #define	ETXTBSY		26
 #define	ENOSPC		28
-#define	EROFS		30
 #define	ERANGE		34
 /* end errno-base.h */
 

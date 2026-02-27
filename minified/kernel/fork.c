@@ -15,19 +15,13 @@
 #include <asm/pgalloc.h>
 #include <asm/mmu_context.h>
 
-#define MAX_THREADS FUTEX_TID_MASK
-
-int nr_threads;
-
-static int max_threads;
-
-__cacheline_aligned DEFINE_RWLOCK(tasklist_lock);
+static __cacheline_aligned DEFINE_RWLOCK(tasklist_lock);
 
 static struct kmem_cache *task_struct_cachep;
 
 static struct kmem_cache *signal_cachep;
 
-struct kmem_cache *sighand_cachep;
+static struct kmem_cache *sighand_cachep;
 
 struct kmem_cache *files_cachep;
 
@@ -76,8 +70,6 @@ void __init fork_init(void)
 	task_struct_cachep = kmem_cache_create("task_struct",
 					       arch_task_struct_size, align,
 					       SLAB_PANIC | SLAB_ACCOUNT, NULL);
-
-	max_threads = MAX_THREADS;
 }
 
 /* arch_dup_task_struct provided by arch/x86/kernel/process.c */
@@ -162,11 +154,6 @@ int set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file)
 	return 0;
 }
 
-void exec_mm_release(struct task_struct *tsk, struct mm_struct *mm)
-{
-	deactivate_mm(tsk, mm);
-}
-
 static inline void init_task_pid(struct task_struct *task, enum pid_type type,
 				 struct pid *pid)
 {
@@ -212,9 +199,6 @@ copy_process(int node, struct kernel_clone_args *args)
 	if (retval < 0)
 		goto bad_fork;
 
-	retval = -EAGAIN;
-	if (data_race(nr_threads >= max_threads))
-		goto bad_fork;
 	p->flags &= ~(PF_IDLE | PF_NO_SETAFFINITY);
 	p->flags |= PF_FORKNOEXEC;
 	spin_lock_init(&p->alloc_lock);
@@ -330,7 +314,6 @@ copy_process(int node, struct kernel_clone_args *args)
 		attach_pid(p, PIDTYPE_PGID);
 		attach_pid(p, PIDTYPE_SID);
 		attach_pid(p, PIDTYPE_PID);
-		nr_threads++;
 	}
 	spin_unlock(&current->sighand->siglock);
 	write_unlock_irq(&tasklist_lock);

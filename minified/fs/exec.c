@@ -232,7 +232,7 @@ int begin_new_exec(struct linux_binprm *bprm)
 		struct task_struct *tsk = current;
 		struct mm_struct *old_mm = current->mm, *active_mm;
 
-		exec_mm_release(tsk, old_mm);
+		deactivate_mm(tsk, old_mm);
 		retval = down_write_killable(&tsk->signal->exec_update_lock);
 		if (retval)
 			goto out;

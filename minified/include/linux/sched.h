@@ -118,7 +118,6 @@ struct rlimit {
 	[RLIMIT_NOFILE] = { INR_OPEN_CUR, INR_OPEN_MAX },		\
 }
 /* end resource.h */
-#define MAX_RT_PRIO		100
 #define MAX_PRIO		140
 /* end sched/prio.h */
 #include <linux/signal.h>
@@ -137,8 +136,6 @@ struct vmacache {
 };
 
 #endif /* _LINUX_MM_TYPES_TASK_H */
-#define KM_MAX_IDX 16
-
 struct fs_struct;
 struct nameidata;
 struct nsproxy;
@@ -177,11 +174,6 @@ struct sched_entity {
 	u64				vruntime;
 };
 
-struct kmap_ctrl {
-	int				idx;
-	pte_t				pteval[KM_MAX_IDX];
-};
-
 struct task_struct {
 	 
 	struct thread_info		thread_info;
@@ -195,8 +187,6 @@ struct task_struct {
 	unsigned int			flags;
 
 	int				on_rq;
-
-	int				static_prio;
 
 	struct sched_entity		se;
 	const struct sched_class	*sched_class;
@@ -246,7 +236,6 @@ struct task_struct {
 
 	raw_spinlock_t			pi_lock;
 
-	struct kmap_ctrl		kmap_ctrl;
 	int				pagefault_disabled;
 
 	randomized_struct_fields_end
@@ -258,20 +247,12 @@ struct task_struct {
 #define PF_IDLE			0x00000002
 #define PF_EXITING		0x00000004
 #define PF_FORKNOEXEC		0x00000040
-#define PF_MEMALLOC		0x00000800
 #define PF_NOFREEZE		0x00008000
 #define PF_MEMALLOC_NOFS	0x00040000
 #define PF_MEMALLOC_NOIO	0x00080000
 #define PF_KTHREAD		0x00200000
 #define PF_NO_SETAFFINITY	0x04000000
 #define PF_MEMALLOC_PIN		0x10000000
-
-static inline void
-current_restore_flags(unsigned long orig_flags, unsigned long flags)
-{
-	current->flags &= ~flags;
-	current->flags |= orig_flags & flags;
-}
 
 static inline int set_cpus_allowed_ptr(struct task_struct *p, const struct cpumask *new_mask)
 {

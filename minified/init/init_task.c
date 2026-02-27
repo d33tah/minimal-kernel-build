@@ -28,7 +28,6 @@ struct task_struct init_task __aligned(L1_CACHE_BYTES) = {
 	.stack = init_stack,
 	.usage = REFCOUNT_INIT(2),
 	.flags = PF_KTHREAD,
-	.static_prio = MAX_PRIO - 20,
 	.mm = NULL,
 	.active_mm = &init_mm,
 	.se = {},

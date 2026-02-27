@@ -5,22 +5,11 @@
 #ifndef _LINUX_PAGEVEC_H
 #define _LINUX_PAGEVEC_H
 #define PAGEVEC_SIZE 15
-struct page;
-struct folio;
-struct address_space;
-struct pagevec {
-	unsigned char nr;
-	bool percpu_pvec_drained;
-	struct page *pages[PAGEVEC_SIZE];
-};
 struct folio_batch {
 	unsigned char nr;
 	bool percpu_pvec_drained;
 	struct folio *folios[PAGEVEC_SIZE];
 };
-static_assert(sizeof(struct pagevec) == sizeof(struct folio_batch));
-static_assert(offsetof(struct pagevec, pages) ==
-	      offsetof(struct folio_batch, folios));
 static inline void folio_batch_init(struct folio_batch *fbatch)
 {
 	fbatch->nr = 0;
@@ -378,10 +367,4 @@ ssize_t generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 		return 0;
 
 	return filemap_read(iocb, iter, 0);
-}
-
-/* Merged from folio-compat.c */
-bool set_page_dirty(struct page *page)
-{
-	return folio_mark_dirty(page_folio(page));
 }

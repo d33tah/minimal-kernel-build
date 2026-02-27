@@ -35,7 +35,6 @@ static void inode_init_always(struct super_block *sb, struct inode *inode)
 	inode->i_opflags = 0;
 	atomic_set(&inode->i_writecount, 0);
 	inode->i_size = 0;
-	inode->i_cdev = NULL;
 	inode->i_dir_seq = 0;
 	inode->i_rdev = 0;
 
@@ -67,7 +66,6 @@ static void inode_init_once(struct inode *inode)
 {
 	struct address_space *mapping = &inode->i_data;
 	memset(inode, 0, sizeof(*inode));
-	INIT_LIST_HEAD(&inode->i_devices);
 	INIT_LIST_HEAD(&inode->i_lru);
 	xa_init_flags(&mapping->i_pages, XA_FLAGS_LOCK_IRQ | XA_FLAGS_ACCOUNT);
 	init_rwsem(&mapping->i_mmap_rwsem);

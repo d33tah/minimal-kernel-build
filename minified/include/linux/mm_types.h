@@ -1,25 +1,11 @@
 #ifndef _LINUX_MM_TYPES_H
 #define _LINUX_MM_TYPES_H
 
-#ifndef _LINUX_MM_TYPES_TASK_H
-#define _LINUX_MM_TYPES_TASK_H
-
-
 #include <asm/page.h>
 #include <linux/atomic.h>
 #include <linux/list.h>
 #include <linux/spinlock.h>
 #include <linux/cpumask.h>
-
-#define VMACACHE_BITS 2
-#define VMACACHE_SIZE (1U << VMACACHE_BITS)
-
-struct vmacache {
-	u64 seqnum;
-	struct vm_area_struct *vmas[VMACACHE_SIZE];
-};
-
-#endif /* _LINUX_MM_TYPES_TASK_H */
 
 #define AT_VECTOR_SIZE_ARCH 3
 #define AT_PHDR   3
@@ -205,7 +191,6 @@ struct mm_struct {
 	struct {
 		struct vm_area_struct *mmap;		 
 		struct rb_root mm_rb;
-		u64 vmacache_seqnum;
 		unsigned long mmap_base;
 		unsigned long highest_vm_end;	 
 		pgd_t * pgd;

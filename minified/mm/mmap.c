@@ -1,5 +1,4 @@
 
-#include <linux/vmacache.h>
 #include <linux/mman.h>
 #include <linux/file.h>
 #include <linux/rbtree_augmented.h>
@@ -345,10 +344,6 @@ struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
 
 	mmap_assert_locked(mm);
 
-	vma = vmacache_find(mm, addr);
-	if (likely(vma))
-		return vma;
-
 	rb_node = mm->mm_rb.rb_node;
 
 	while (rb_node) {
@@ -365,8 +360,6 @@ struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
 			rb_node = rb_node->rb_right;
 	}
 
-	if (vma)
-		vmacache_update(addr, vma);
 	return vma;
 }
 

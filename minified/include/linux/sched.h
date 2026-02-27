@@ -121,21 +121,7 @@ struct rlimit {
 #define MAX_PRIO		140
 /* end sched/prio.h */
 #include <linux/signal.h>
-#ifndef _LINUX_MM_TYPES_TASK_H
-#define _LINUX_MM_TYPES_TASK_H
-
 #include <linux/threads.h>
-
-
-#define VMACACHE_BITS 2
-#define VMACACHE_SIZE (1U << VMACACHE_BITS)
-
-struct vmacache {
-	u64 seqnum;
-	struct vm_area_struct *vmas[VMACACHE_SIZE];
-};
-
-#endif /* _LINUX_MM_TYPES_TASK_H */
 struct fs_struct;
 struct nameidata;
 struct nsproxy;
@@ -196,8 +182,6 @@ struct task_struct {
 
 	struct mm_struct		*mm;
 	struct mm_struct		*active_mm;
-
-	struct vmacache			vmacache;
 
 	unsigned int			personality;
 

@@ -259,19 +259,6 @@ extern void path_get(const struct path *);
 extern void path_put(const struct path *);
 #endif
 #include <linux/list_lru.h>
-struct semaphore {
-	raw_spinlock_t		lock;
-	unsigned int		count;
-	struct list_head	wait_list;
-};
-#define __SEMAPHORE_INITIALIZER(name, n)				\
-{									\
-	.lock		= __RAW_SPIN_LOCK_UNLOCKED((name).lock),	\
-	.count		= n,						\
-	.wait_list	= LIST_HEAD_INIT((name).wait_list),		\
-}
-extern void down(struct semaphore *sem);
-extern void up(struct semaphore *sem);
 #include <linux/fcntl.h>
 /* percpu-rwsem.h inlined */
 #include <linux/percpu.h>
@@ -414,9 +401,7 @@ struct inode {
 	atomic_t		i_writecount;
 	const struct file_operations	*i_fop;
 	struct address_space	i_data;
-	struct list_head	i_devices;
 	union {
-		struct cdev		*i_cdev;
 		unsigned		i_dir_seq;
 	};
 
@@ -516,9 +501,7 @@ struct super_block {
 
 	char			s_id[32];
 
-	struct shrinker s_shrink;	
-
-	atomic_long_t s_remove_count;
+	struct shrinker s_shrink;
 
 	struct user_namespace *s_user_ns;
 
@@ -570,13 +553,6 @@ void deactivate_super(struct super_block *sb);
 	((fops) ? (try_module_get((fops)->owner), (fops)) : NULL)
 #define fops_put(fops) \
 	do { if (fops) module_put((fops)->owner); } while(0)
-
-#define replace_fops(f, fops) \
-	do {	\
-		struct file *__file = (f); \
-		fops_put(__file->f_op); \
-		BUG_ON(!(__file->f_op = (fops))); \
-	} while(0)
 
 extern int register_filesystem(struct file_system_type *);
 

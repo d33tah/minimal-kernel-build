@@ -1,6 +1,5 @@
 
 #include <linux/file.h>
-#include <linux/vmacache.h>
 #include <linux/sched/mm.h>
 #include <linux/binfmts.h>
 #include <linux/namei.h>
@@ -250,8 +249,6 @@ int begin_new_exec(struct linux_binprm *bprm)
 		tsk->mm = mm;
 		local_irq_enable();
 		activate_mm(active_mm, mm);
-		tsk->mm->vmacache_seqnum = 0;
-		vmacache_flush(tsk);
 		task_unlock(tsk);
 		if (old_mm) {
 			mmap_read_unlock(old_mm);

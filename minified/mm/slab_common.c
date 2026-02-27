@@ -267,10 +267,7 @@ void __init create_kmalloc_caches(slab_flags_t flags)
 
 gfp_t kmalloc_fix_flags(gfp_t flags)
 {
-	gfp_t invalid_mask = flags & GFP_SLAB_BUG_MASK;
-
 	flags &= ~GFP_SLAB_BUG_MASK;
-
 	return flags;
 }
 

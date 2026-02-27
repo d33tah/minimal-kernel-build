@@ -438,7 +438,6 @@ int expand_stack(struct vm_area_struct *vma, unsigned long address)
 struct vm_area_struct *find_extend_vma(struct mm_struct *mm, unsigned long addr)
 {
 	struct vm_area_struct *vma;
-	unsigned long start;
 
 	addr &= PAGE_MASK;
 	vma = find_vma(mm, addr);
@@ -448,7 +447,6 @@ struct vm_area_struct *find_extend_vma(struct mm_struct *mm, unsigned long addr)
 		return vma;
 	if (!(vma->vm_flags & VM_GROWSDOWN))
 		return NULL;
-	start = vma->vm_start;
 	if (expand_stack(vma, addr))
 		return NULL;
 	return vma;

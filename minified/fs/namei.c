@@ -5,8 +5,6 @@
 
 #include "internal.h"
 
-#define EMBEDDED_NAME_MAX (PATH_MAX - offsetof(struct filename, iname))
-
 struct filename *getname_kernel(const char *filename)
 {
 	struct filename *result;
@@ -16,23 +14,7 @@ struct filename *getname_kernel(const char *filename)
 	if (unlikely(!result))
 		return ERR_PTR(-ENOMEM);
 
-	if (len <= EMBEDDED_NAME_MAX) {
-		result->name = (char *)result->iname;
-	} else if (len <= PATH_MAX) {
-		const size_t size = offsetof(struct filename, iname[1]);
-		struct filename *tmp;
-
-		tmp = kmalloc(size, GFP_KERNEL);
-		if (unlikely(!tmp)) {
-			__putname(result);
-			return ERR_PTR(-ENOMEM);
-		}
-		tmp->name = (char *)result;
-		result = tmp;
-	} else {
-		__putname(result);
-		return ERR_PTR(-ENAMETOOLONG);
-	}
+	result->name = (char *)result->iname;
 	memcpy((char *)result->name, filename, len);
 
 	result->refcnt = 1;
@@ -47,11 +29,7 @@ void putname(struct filename *name)
 	if (--name->refcnt > 0)
 		return;
 
-	if (name->name != name->iname) {
-		__putname(name->name);
-		kfree(name);
-	} else
-		__putname(name);
+	__putname(name);
 }
 
 void path_get(const struct path *path)
@@ -66,7 +44,6 @@ void path_put(const struct path *path)
 	mntput(path->mnt);
 }
 
-#define EMBEDDED_LEVELS 2
 struct nameidata {
 	struct path path;
 	struct qstr last;
@@ -76,12 +53,6 @@ struct nameidata {
 	unsigned seq, m_seq;
 	int last_type;
 	unsigned depth;
-	struct saved {
-		struct path link;
-		struct delayed_call done;
-		const char *name;
-		unsigned seq;
-	} *stack, internal[EMBEDDED_LEVELS];
 	struct filename *name;
 	struct nameidata *saved;
 	unsigned root_seq;
@@ -91,10 +62,9 @@ struct nameidata {
 #define ND_ROOT_GRABBED 2
 
 static inline void set_nameidata(struct nameidata *p, int dfd,
-				 struct filename *name, const struct path *root)
+				 struct filename *name)
 {
 	struct nameidata *old = current->nameidata;
-	p->stack = p->internal;
 	p->depth = 0;
 	p->dfd = dfd;
 	p->name = name;
@@ -110,27 +80,11 @@ static void restore_nameidata(void)
 	struct nameidata *now = current->nameidata, *old = now->saved;
 
 	current->nameidata = old;
-	if (now->stack != now->internal)
-		kfree(now->stack);
-}
-
-static void drop_links(struct nameidata *nd)
-{
-	int i = nd->depth;
-	while (i--) {
-		struct saved *last = nd->stack + i;
-		do_delayed_call(&last->done);
-		last->done.fn = NULL;
-	}
 }
 
 static void terminate_walk(struct nameidata *nd)
 {
-	int i;
-	drop_links(nd);
 	path_put(&nd->path);
-	for (i = 0; i < nd->depth; i++)
-		path_put(&nd->stack[i].link);
 	if (nd->state & ND_ROOT_GRABBED) {
 		path_put(&nd->root);
 		nd->state &= ~ND_ROOT_GRABBED;
@@ -152,13 +106,6 @@ static int set_root(struct nameidata *nd)
 	return 0;
 }
 
-static inline void put_link(struct nameidata *nd)
-{
-	struct saved *last = nd->stack + --nd->depth;
-	do_delayed_call(&last->done);
-	path_put(&last->link);
-}
-
 static inline int handle_mounts(struct nameidata *nd, struct dentry *dentry,
 				struct path *path, struct inode **inode,
 				unsigned int *seqp)
@@ -169,8 +116,6 @@ static inline int handle_mounts(struct nameidata *nd, struct dentry *dentry,
 		unsigned flags = smp_load_acquire(&path->dentry->d_flags);
 		if (unlikely((flags & DCACHE_ENTRY_TYPE) == DCACHE_MISS_TYPE)) {
 			dput(path->dentry);
-			if (path->mnt != nd->path.mnt)
-				mntput(path->mnt);
 			return -ENOENT;
 		}
 	}
@@ -202,8 +147,6 @@ static const char *step_into(struct nameidata *nd, int flags,
 	if (err < 0)
 		return ERR_PTR(err);
 	dput(nd->path.dentry);
-	if (nd->path.mnt != path.mnt)
-		mntput(nd->path.mnt);
 	nd->path = path;
 	nd->inode = inode;
 	nd->seq = seq;
@@ -216,11 +159,8 @@ static const char *walk_component(struct nameidata *nd, int flags)
 	struct inode *inode;
 	unsigned seq;
 
-	if (unlikely(nd->last_type != LAST_NORM)) {
-		if (!(flags & WALK_MORE) && nd->depth)
-			put_link(nd);
+	if (unlikely(nd->last_type != LAST_NORM))
 		return NULL;
-	}
 	dentry = lookup_fast(nd, &inode, &seq);
 	if (IS_ERR(dentry))
 		return ERR_CAST(dentry);
@@ -252,8 +192,6 @@ static const char *walk_component(struct nameidata *nd, int flags)
 		if (IS_ERR(dentry))
 			return ERR_CAST(dentry);
 	}
-	if (!(flags & WALK_MORE) && nd->depth)
-		put_link(nd);
 	return step_into(nd, flags, dentry, inode, seq);
 }
 
@@ -291,8 +229,6 @@ inside:
 
 static int link_path_walk(const char *name, struct nameidata *nd)
 {
-	int depth = 0;
-
 	nd->last_type = LAST_ROOT;
 	nd->flags |= LOOKUP_PARENT;
 	if (IS_ERR(name))
@@ -334,24 +270,13 @@ static int link_path_walk(const char *name, struct nameidata *nd)
 		} while (unlikely(*name == '/'));
 		if (unlikely(!*name)) {
 OK:
-
-			if (!depth) {
-				nd->flags &= ~LOOKUP_PARENT;
-				return 0;
-			}
-
-			name = nd->stack[--depth].name;
-			link = walk_component(nd, 0);
-		} else {
-			link = walk_component(nd, WALK_MORE);
+			nd->flags &= ~LOOKUP_PARENT;
+			return 0;
 		}
+		link = walk_component(nd, WALK_MORE);
 		if (unlikely(link)) {
 			if (IS_ERR(link))
 				return PTR_ERR(link);
-
-			nd->stack[depth++].name = name;
-			name = link;
-			continue;
 		}
 		if (unlikely(!d_can_lookup(nd->path.dentry)))
 			return -ENOTDIR;
@@ -419,7 +344,7 @@ int kern_path(const char *name, unsigned int flags, struct path *path)
 
 	if (IS_ERR(filename))
 		return PTR_ERR(filename);
-	set_nameidata(&nd, AT_FDCWD, filename, NULL);
+	set_nameidata(&nd, AT_FDCWD, filename);
 	ret = path_lookupat(&nd, flags, path);
 	restore_nameidata();
 	putname(filename);
@@ -470,11 +395,8 @@ static const char *open_last_lookups(struct nameidata *nd, struct file *file,
 
 	nd->flags |= op->intent;
 
-	if (nd->last_type != LAST_NORM) {
-		if (nd->depth)
-			put_link(nd);
+	if (nd->last_type != LAST_NORM)
 		return NULL;
-	}
 
 	if (nd->last.name[nd->last.len])
 		nd->flags |= LOOKUP_FOLLOW | LOOKUP_DIRECTORY;
@@ -502,8 +424,6 @@ static const char *open_last_lookups(struct nameidata *nd, struct file *file,
 	}
 
 finish_lookup:
-	if (nd->depth)
-		put_link(nd);
 	res = step_into(nd, WALK_TRAILING, dentry, inode, seq);
 	if (unlikely(res))
 		nd->flags &= ~(LOOKUP_OPEN | LOOKUP_CREATE | LOOKUP_EXCL);
@@ -566,7 +486,7 @@ struct file *do_filp_open(int dfd, struct filename *pathname,
 	int flags = op->lookup_flags;
 	struct file *filp;
 
-	set_nameidata(&nd, dfd, pathname, NULL);
+	set_nameidata(&nd, dfd, pathname);
 	filp = path_openat(&nd, op, flags);
 	restore_nameidata();
 	return filp;

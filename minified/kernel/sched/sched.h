@@ -36,7 +36,6 @@ struct rq;
 #define TASK_ON_RQ_QUEUED	1
 
 struct cfs_rq {
-	struct load_weight	load;
 	unsigned int		nr_running;
 	unsigned int		h_nr_running;
 	u64			min_vruntime;

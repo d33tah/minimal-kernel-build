@@ -2,27 +2,10 @@
 #ifndef _ASM_X86_KDEBUG_H
 #define _ASM_X86_KDEBUG_H
 
-/* notifier.h inlined */
 #include <linux/rwsem.h>
 #include <linux/srcu.h>
-#ifndef _LINUX_NOTIFIER_H
-#define _LINUX_NOTIFIER_H
-struct notifier_block;
-typedef int (*notifier_fn_t)(struct notifier_block *nb, unsigned long action,
-			     void *data);
-struct notifier_block {
-	notifier_fn_t notifier_call;
-	struct notifier_block __rcu *next;
-	int priority;
-};
-#define NOTIFY_DONE 0x0000
-#endif
 
 struct pt_regs;
-
-enum die_val {
-	DIE_OOPS = 1,
-};
 
 enum show_regs_mode { SHOW_REGS_ALL = 2 };
 

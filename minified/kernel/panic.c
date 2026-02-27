@@ -64,10 +64,3 @@ void bust_spinlocks(int yes)
 		--oops_in_progress;
 	}
 }
-
-int notrace notify_die(enum die_val val, const char *str, struct pt_regs *regs,
-		       long err, int trap, int sig)
-{
-	return NOTIFY_DONE;
-}
-NOKPROBE_SYMBOL(notify_die);

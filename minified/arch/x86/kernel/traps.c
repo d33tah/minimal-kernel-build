@@ -2,9 +2,6 @@
 #define NOKPROBE_SYMBOL(fname)
 #endif
 #include <asm/kdebug.h>
-int notify_die(enum die_val val, const char *str, struct pt_regs *regs,
-	       long err, int trap, int sig);
-
 #include <asm/traps.h>
 
 DECLARE_BITMAP(system_vectors, NR_VECTORS);

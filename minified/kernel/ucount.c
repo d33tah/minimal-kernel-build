@@ -15,16 +15,6 @@ struct ucounts *get_ucounts(struct ucounts *ucounts)
 	return ucounts;
 }
 
-struct ucounts *inc_ucount(struct user_namespace *ns, kuid_t uid,
-			   enum ucount_type type)
-{
-	return &init_ucounts;
-}
-
-void dec_ucount(struct ucounts *ucounts, enum ucount_type type)
-{
-}
-
 long inc_rlimit_ucounts(struct ucounts *ucounts, enum ucount_type type, long v)
 {
 	return 0;

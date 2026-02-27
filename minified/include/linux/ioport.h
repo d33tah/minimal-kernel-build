@@ -44,7 +44,6 @@ enum {
 extern struct resource ioport_resource;
 extern struct resource iomem_resource;
 
-extern int request_resource(struct resource *root, struct resource *new);
 extern int insert_resource(struct resource *parent, struct resource *new);
 
 #endif

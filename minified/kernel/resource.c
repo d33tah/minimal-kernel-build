@@ -48,16 +48,6 @@ static struct resource *__request_resource(struct resource *root,
 	}
 }
 
-int request_resource(struct resource *root, struct resource *new)
-{
-	struct resource *conflict;
-
-	write_lock(&resource_lock);
-	conflict = __request_resource(root, new);
-	write_unlock(&resource_lock);
-	return conflict ? -EBUSY : 0;
-}
-
 int insert_resource(struct resource *parent, struct resource *new)
 {
 	struct resource *conflict;

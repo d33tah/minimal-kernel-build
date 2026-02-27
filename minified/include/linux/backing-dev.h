@@ -14,8 +14,6 @@ struct bdi_writeback {
 struct backing_dev_info {
 	u64 id;
 	struct list_head bdi_list;
-	unsigned long ra_pages;
-	unsigned long io_pages;
 
 	struct kref refcnt;
 
@@ -24,9 +22,6 @@ struct backing_dev_info {
 	wait_queue_head_t wb_waitq;
 
 	struct device *dev;
-	char dev_name[64];
-	struct device *owner;
-
 };
 extern struct backing_dev_info noop_backing_dev_info;
 #endif

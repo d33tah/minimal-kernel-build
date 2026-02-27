@@ -3,10 +3,6 @@
 
 #include <linux/timex.h>
 #include <linux/timer.h>
-enum clocksource_ids {
-	CSID_GENERIC		= 0,
-	CSID_MAX,
-};
 void timekeeping_init(void);
 
 struct clocksource;
@@ -24,9 +20,7 @@ struct clocksource {
 	const char		*name;
 	struct list_head	list;
 	int			rating;
-	enum clocksource_ids	id;
 	unsigned long		flags;
-	struct module		*owner;
 };
 
 #define CLOCK_SOURCE_IS_CONTINUOUS		0x01

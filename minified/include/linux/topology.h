@@ -15,13 +15,6 @@ static inline int numa_node_id(void)
 #ifndef cpu_to_node
 #define cpu_to_node(cpu)	((void)(cpu),0)
 #endif
-#ifndef cpu_to_mem
-#define cpu_to_mem(cpu)		((void)(cpu),0)
-#endif
-#ifndef cpumask_of_node
-    #define cpumask_of_node(node)	((void)(node), cpu_online_mask)
-#endif
-
 #ifndef numa_mem_id
 static inline int numa_mem_id(void)
 {

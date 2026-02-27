@@ -18,8 +18,6 @@ static inline void fdput(struct fd fd)
 {
 	fput(fd.file);
 }
-extern void fput(struct file *file);
-
 extern unsigned long __fdget_pos(unsigned int fd);
 
 static inline struct fd __to_fd(unsigned long v)

@@ -302,10 +302,8 @@ static unsigned d_flags_for_inode(struct inode *inode)
 	if (!inode)
 		return DCACHE_MISS_TYPE;
 
-	if (S_ISDIR(inode->i_mode)) {
-		inode->i_opflags |= IOP_LOOKUP;
+	if (S_ISDIR(inode->i_mode))
 		return DCACHE_DIRECTORY_TYPE;
-	}
 
 	if (unlikely(!S_ISREG(inode->i_mode)))
 		return DCACHE_SPECIAL_TYPE;

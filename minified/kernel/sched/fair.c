@@ -44,7 +44,6 @@ static void update_curr(struct cfs_rq *cfs_rq)
 
 	curr->exec_start = now;
 
-	curr->sum_exec_runtime += delta_exec;
 	curr->vruntime += delta_exec;
 	update_min_vruntime(cfs_rq);
 }

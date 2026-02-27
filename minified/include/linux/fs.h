@@ -369,22 +369,15 @@ static inline void i_mmap_unlock_write(struct address_space *mapping)
 	up_write(&mapping->i_mmap_rwsem);
 }
 
-#define IOP_LOOKUP	0x0002
-
 struct inode {
 	umode_t			i_mode;
-	unsigned short		i_opflags;
 	unsigned int		i_flags;
 
 	const struct inode_operations	*i_op;
 	struct super_block	*i_sb;
 	struct address_space	*i_mapping;
 
-	union {
-		const unsigned int i_nlink;
-		unsigned int __i_nlink;
-	};
-	dev_t			i_rdev;
+	unsigned int __i_nlink;
 	loff_t			i_size;
 	spinlock_t		i_lock;
 
@@ -480,26 +473,20 @@ struct sb_writers {
 };
 
 struct super_block {
-	struct list_head	s_list;		
-	dev_t			s_dev;		
+	dev_t			s_dev;
 	loff_t			s_maxbytes;
 	struct file_system_type	*s_type;
 	unsigned long		s_flags;
-	unsigned long		s_iflags;	
+	unsigned long		s_iflags;
 	struct dentry		*s_root;
 	struct rw_semaphore	s_umount;
 	int			s_count;
 	atomic_t		s_active;
 	struct hlist_bl_head	s_roots;
-	struct list_head	s_mounts;
-	struct backing_dev_info *s_bdi;
-	struct hlist_node	s_instances;
 
 	struct sb_writers	s_writers;
 
 	void			*s_fs_info;
-
-	char			s_id[32];
 
 	struct shrinker s_shrink;
 
@@ -542,8 +529,6 @@ struct file_system_type {
 	void (*kill_sb) (struct super_block *);
 	struct module *owner;
 	struct file_system_type * next;
-	struct hlist_head fs_supers;
-
 	struct lock_class_key s_writers_key[SB_FREEZE_LEVELS];
 };
 

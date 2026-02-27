@@ -116,7 +116,6 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 
 	p->se.on_rq = 0;
 	p->se.exec_start = 0;
-	p->se.sum_exec_runtime = 0;
 	p->se.vruntime = 0;
 }
 
@@ -366,8 +365,6 @@ void __init sched_init(void)
 		rq->nr_running = 0;
 		init_cfs_rq(&rq->cfs);
 	}
-
-	init_task.se.load.weight = 1024; /* sched_prio_to_weight[20] */
 
 	mmgrab(&init_mm);
 	enter_lazy_tlb(&init_mm, current);

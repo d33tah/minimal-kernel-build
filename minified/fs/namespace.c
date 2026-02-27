@@ -25,7 +25,6 @@ struct mount {
 	struct vfsmount mnt;
 	int mnt_count;
 	int mnt_writers;
-	struct list_head mnt_instance;
 	const char *mnt_devname;
 	struct list_head mnt_list;
 	struct mnt_namespace *mnt_ns;
@@ -131,7 +130,6 @@ static struct vfsmount *vfs_create_mount(struct fs_context *fc)
 	mnt->mnt.mnt_root = dget(fc->root);
 
 	lock_mount_hash();
-	list_add_tail(&mnt->mnt_instance, &mnt->mnt.mnt_sb->s_mounts);
 	unlock_mount_hash();
 	return &mnt->mnt;
 }

@@ -41,13 +41,7 @@
 #include <asm/alternative.h>
 #include <asm/asm.h>
 #include <asm/smap.h>
-/* --- 2026-01-26 04:25 --- Inlined from asm/frame.h */
-.macro ENCODE_FRAME_POINTER ptregs_offset=0
-.endm
-#define FRAME_BEGIN
-#define FRAME_END
-#define FRAME_OFFSET 0
-/* end frame.h */
+/* frame.h inlined - all empty (no frame pointers) */
 #include <asm/nospec-branch.h>
 /* --- 2026-01-26 01:25 --- Inlined from calling.h */
 #include <linux/jump_label.h>
@@ -58,8 +52,6 @@
 #include <asm/msr.h>
 # undef		UNWIND_HINT_IRET_REGS
 # define	UNWIND_HINT_IRET_REGS
-.macro STACKLEAK_ERASE
-.endm
 /* end calling.h */
 
 	.section .entry.text, "ax"
@@ -76,9 +68,6 @@
 .Lend_\@:
 .endm
 
-/* CONFIG_DEBUG_ENTRY not enabled - BUG_IF_WRONG_CR3 is empty */
-.macro BUG_IF_WRONG_CR3 no_user_check=0
-.endm
 
 /*
  * Switch to kernel cr3 if not already loaded and return current cr3 in
@@ -196,7 +185,7 @@
 .Lfinished_frame_\@:
 .endm
 
-.macro SAVE_ALL pt_regs_ax=%eax switch_stacks=0 skip_gs=0 unwind_espfix=0
+.macro SAVE_ALL pt_regs_ax=%eax switch_stacks=0 skip_gs=0
 	cld
 .if \skip_gs == 0
 	pushl	$0
@@ -206,9 +195,6 @@
 	pushl	%eax
 	movl	$(__KERNEL_PERCPU), %eax
 	movl	%eax, %fs
-.if \unwind_espfix > 0
-	UNWIND_ESPFIX_STACK
-.endif
 	popl	%eax
 
 	FIXUP_FRAME
@@ -230,10 +216,10 @@
 .endif
 .endm
 
-.macro SAVE_ALL_NMI cr3_reg:req unwind_espfix=0
-	SAVE_ALL unwind_espfix=\unwind_espfix
+.macro SAVE_ALL_NMI cr3_reg:req
+	SAVE_ALL
 
-	BUG_IF_WRONG_CR3
+
 
 	/*
 	 * Now switch the CR3 when PTI is enabled.
@@ -291,14 +277,11 @@
 
 .Lswitched_\@:
 
-	BUG_IF_WRONG_CR3
+
 
 	RESTORE_REGS pop=\pop
 .endm
 
-.macro CHECK_AND_APPLY_ESPFIX
-/* CONFIG_X86_ESPFIX32 not set - macro is empty */
-.endm
 
 /*
  * Called with pt_regs fully populated and kernel segments loaded,
@@ -313,7 +296,7 @@
 
 .macro SWITCH_TO_KERNEL_STACK
 
-	BUG_IF_WRONG_CR3
+
 
 	SWITCH_TO_KERNEL_CR3 scratch_reg=%eax
 
@@ -559,7 +542,7 @@ SYM_CODE_END(\asmsym)
 SYM_CODE_START_LOCAL(asm_\cfunc)
 	ASM_CLAC
 	SAVE_ALL switch_stacks=1
-	ENCODE_FRAME_POINTER
+
 	movl	%esp, %eax
 	movl	PT_ORIG_EAX(%esp), %edx		/* get the vector from stack */
 	movl	$-1, PT_ORIG_EAX(%esp)		/* no syscall to restart */
@@ -638,13 +621,13 @@ SYM_CODE_END(__switch_to_asm)
  */
 .pushsection .text, "ax"
 SYM_FUNC_START(schedule_tail_wrapper)
-	FRAME_BEGIN
+
 
 	pushl	%eax
 	call	schedule_tail
 	popl	%eax
 
-	FRAME_END
+
 	RET
 SYM_FUNC_END(schedule_tail_wrapper)
 .popsection
@@ -721,16 +704,16 @@ SYM_FUNC_START(entry_INT80_32)
 	movl	%esp, %eax
 	call	do_int80_syscall_32
 .Lsyscall_32_done:
-	STACKLEAK_ERASE
+
 
 restore_all_switch_stack:
 	SWITCH_TO_ENTRY_STACK
-	CHECK_AND_APPLY_ESPFIX
+
 
 	/* Switch back to user CR3 */
 	SWITCH_TO_USER_CR3 scratch_reg=%eax
 
-	BUG_IF_WRONG_CR3
+
 
 	/* Restore user state */
 	RESTORE_REGS pop=4			# skip orig_eax/error_code
@@ -752,18 +735,12 @@ restore_all_switch_stack:
 	_ASM_EXTABLE(.Lirq_return, .Lasm_iret_error)
 SYM_FUNC_END(entry_INT80_32)
 
-.macro FIXUP_ESPFIX_STACK
-/* CONFIG_X86_ESPFIX32 not set - macro is empty */
-.endm
 
-.macro UNWIND_ESPFIX_STACK
-/* CONFIG_X86_ESPFIX32 not set - macro is empty */
-.endm
 
 SYM_CODE_START_LOCAL_NOALIGN(handle_exception)
 	/* the function address is in %gs's slot on the stack */
-	SAVE_ALL switch_stacks=1 skip_gs=1 unwind_espfix=1
-	ENCODE_FRAME_POINTER
+	SAVE_ALL switch_stacks=1 skip_gs=1
+
 
 	movl	PT_GS(%esp), %edi		# get the function address
 
@@ -784,7 +761,7 @@ handle_exception_return:
 	jnb	ret_to_user
 
 	PARANOID_EXIT_TO_KERNEL_MODE
-	BUG_IF_WRONG_CR3
+
 	RESTORE_REGS 4
 	jmp	.Lirq_return
 
@@ -805,7 +782,7 @@ SYM_CODE_START(asm_exc_nmi)
 
 	pushl	%eax				# pt_regs->orig_ax
 	SAVE_ALL_NMI cr3_reg=%edi
-	ENCODE_FRAME_POINTER
+
 	xorl	%edx, %edx			# zero error code
 	movl	%esp, %eax			# pt_regs pointer
 
@@ -831,7 +808,7 @@ SYM_CODE_START(asm_exc_nmi)
 	movl	%ebx, %esp
 
 .Lnmi_return:
-	CHECK_AND_APPLY_ESPFIX
+
 	RESTORE_ALL_NMI cr3_reg=%edi pop=4
 	jmp	.Lirq_return
 

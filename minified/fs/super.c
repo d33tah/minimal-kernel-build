@@ -32,7 +32,6 @@ static void percpu_free_rwsem(struct percpu_rw_semaphore *sem)
 	sem->read_count = NULL;
 }
 
-static LIST_HEAD(super_blocks);
 static DEFINE_SPINLOCK(sb_lock);
 
 static char *sb_writers_name[SB_FREEZE_LEVELS] = {
@@ -77,7 +76,6 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags,
 	if (!s)
 		return NULL;
 
-	INIT_LIST_HEAD(&s->s_mounts);
 	s->s_user_ns = get_user_ns(user_ns);
 	init_rwsem(&s->s_umount);
 
@@ -89,11 +87,9 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags,
 					&type->s_writers_key[i]))
 			goto fail;
 	}
-	s->s_bdi = &noop_backing_dev_info;
 	s->s_flags = flags;
 	if (s->s_user_ns != &init_user_ns)
 		s->s_iflags |= SB_I_NODEV;
-	INIT_HLIST_NODE(&s->s_instances);
 	INIT_HLIST_BL_HEAD(&s->s_roots);
 	INIT_LIST_HEAD(&s->s_inodes);
 	spin_lock_init(&s->s_inode_list_lock);
@@ -117,7 +113,6 @@ static void put_super(struct super_block *sb)
 {
 	spin_lock(&sb_lock);
 	if (!--sb->s_count) {
-		list_del_init(&sb->s_list);
 		put_user_ns(sb->s_user_ns);
 		call_rcu(&sb->rcu, destroy_super_rcu);
 	}
@@ -156,8 +151,6 @@ static void generic_shutdown_super(struct super_block *sb)
 		evict_inodes(sb);
 	}
 	spin_lock(&sb_lock);
-
-	hlist_del_init(&sb->s_instances);
 	spin_unlock(&sb_lock);
 	up_write(&sb->s_umount);
 }
@@ -188,9 +181,6 @@ sget_fc(struct fs_context *fc,
 	fc->s_fs_info = NULL;
 	s->s_type = fc->fs_type;
 	s->s_iflags |= fc->s_iflags;
-	strlcpy(s->s_id, s->s_type->name, sizeof(s->s_id));
-	list_add_tail(&s->s_list, &super_blocks);
-	hlist_add_head(&s->s_instances, &s->s_type->fs_supers);
 	spin_unlock(&sb_lock);
 	get_filesystem(s->s_type);
 	return s;

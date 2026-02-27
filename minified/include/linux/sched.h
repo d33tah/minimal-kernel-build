@@ -145,17 +145,11 @@ asmlinkage void schedule(void);
 extern void schedule_preempt_disabled(void);
 
 
-struct load_weight {
-	unsigned long			weight;
-};
-
 struct sched_entity {
-	struct load_weight		load;
 	struct rb_node			run_node;
 	unsigned int			on_rq;
 
 	u64				exec_start;
-	u64				sum_exec_runtime;
 	u64				vruntime;
 };
 

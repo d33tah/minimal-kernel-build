@@ -32,11 +32,9 @@ static void inode_init_always(struct super_block *sb, struct inode *inode)
 	inode->i_op = &empty_iops;
 	inode->i_fop = &no_open_fops;
 	inode->__i_nlink = 1;
-	inode->i_opflags = 0;
 	atomic_set(&inode->i_writecount, 0);
 	inode->i_size = 0;
 	inode->i_dir_seq = 0;
-	inode->i_rdev = 0;
 
 	spin_lock_init(&inode->i_lock);
 

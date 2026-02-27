@@ -32,7 +32,7 @@ static inline void fpregs_restore_userregs(void)
 	struct fpu *fpu = &current->thread.fpu;
 	int cpu = smp_processor_id();
 
-	if (WARN_ON_ONCE(current->flags & PF_KTHREAD))
+	if (current->flags & PF_KTHREAD)
 		return;
 
 	if (!fpregs_state_valid(fpu, cpu)) {
@@ -103,9 +103,7 @@ static inline void os_xsave(struct fpstate *fpstate)
 	u32 lmask = mask;
 	u32 hmask = mask >> 32;
 	int err;
-	WARN_ON_FPU(!alternatives_patched);
 	XSTATE_XSAVE(&fpstate->regs.xsave, lmask, hmask, err);
-	WARN_ON_FPU(err);
 }
 static inline void os_xrstor(struct fpstate *fpstate, u64 mask)
 {
@@ -221,8 +219,6 @@ int fpu_clone(struct task_struct *dst, unsigned long clone_flags, bool minimal)
 		       init_fpstate_copy_size());
 		return 0;
 	}
-
-	BUILD_BUG_ON(XFEATURE_MASK_USER_DYNAMIC != XFEATURE_MASK_XTILE_DATA);
 
 	fpregs_lock();
 	if (test_thread_flag(TIF_NEED_FPU_LOAD))

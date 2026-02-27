@@ -296,7 +296,6 @@ asmlinkage __visible void __sched schedule(void)
 
 void __sched schedule_idle(void)
 {
-	WARN_ON_ONCE(current->__state);
 	do {
 		__schedule(SM_NONE);
 	} while (need_resched());
@@ -359,8 +358,6 @@ static void __init init_idle(struct task_struct *idle, int cpu)
 
 void __init sched_init(void)
 {
-	BUG_ON(&idle_sched_class != &fair_sched_class + 1);
-
 	wait_bit_init();
 
 	{
@@ -375,7 +372,7 @@ void __init sched_init(void)
 	mmgrab(&init_mm);
 	enter_lazy_tlb(&init_mm, current);
 
-	WARN_ON(!set_kthread_struct(current));
+	set_kthread_struct(current);
 
 	init_idle(current, smp_processor_id());
 }

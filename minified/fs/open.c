@@ -39,7 +39,7 @@ int vfs_open(const struct path *path, struct file *file)
 		file->f_mode |= FMODE_ATOMIC_POS;
 
 	file->f_op = fops_get(inode->i_fop);
-	if (WARN_ON(!file->f_op)) {
+	if (!file->f_op) {
 		error = -ENODEV;
 		goto cleanup_all;
 	}
@@ -63,7 +63,7 @@ int vfs_open(const struct path *path, struct file *file)
 	return 0;
 
 cleanup_all:
-	if (WARN_ON_ONCE(error > 0))
+	if (error > 0)
 		error = -EINVAL;
 	fops_put(file->f_op);
 	if (file->f_mode & FMODE_WRITER) {

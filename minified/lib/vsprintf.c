@@ -272,12 +272,10 @@ static noinline_for_stack int format_decode(const char *fmt,
 	if (qualifier == 'L')
 		spec->type = FORMAT_TYPE_LONG_LONG;
 	else if (qualifier == 'l') {
-		BUILD_BUG_ON(FORMAT_TYPE_ULONG + SIGN != FORMAT_TYPE_LONG);
 		spec->type = FORMAT_TYPE_ULONG + (spec->flags & SIGN);
 	} else if (qualifier == 'z') {
 		spec->type = FORMAT_TYPE_SIZE_T;
 	} else {
-		BUILD_BUG_ON(FORMAT_TYPE_UINT + SIGN != FORMAT_TYPE_INT);
 		spec->type = FORMAT_TYPE_UINT + (spec->flags & SIGN);
 	}
 
@@ -290,7 +288,7 @@ static int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 	char *str, *end;
 	struct printf_spec spec = { 0 };
 
-	if (WARN_ON_ONCE(size > INT_MAX))
+	if (size > INT_MAX)
 		return 0;
 
 	str = buf;

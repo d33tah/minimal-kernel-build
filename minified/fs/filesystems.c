@@ -29,7 +29,6 @@ int register_filesystem(struct file_system_type *fs)
 	int res = 0;
 	struct file_system_type **p;
 
-	BUG_ON(strchr(fs->name, '.'));
 	if (fs->next)
 		return -EBUSY;
 	write_lock(&file_systems_lock);

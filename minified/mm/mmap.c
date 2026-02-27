@@ -536,7 +536,6 @@ int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)
 		return -ENOMEM;
 
 	if (vma_is_anonymous(vma)) {
-		BUG_ON(vma->anon_vma);
 		vma->vm_pgoff = vma->vm_start >> PAGE_SHIFT;
 	}
 

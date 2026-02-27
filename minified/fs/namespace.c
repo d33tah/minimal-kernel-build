@@ -214,8 +214,8 @@ static struct vfsmount *kern_mount(struct file_system_type *type);
 
 static void __init shmem_init(void)
 {
-	BUG_ON(register_filesystem(&shmem_fs_type) != 0);
-	BUG_ON(IS_ERR(kern_mount(&shmem_fs_type)));
+	register_filesystem(&shmem_fs_type);
+	kern_mount(&shmem_fs_type);
 }
 
 void __init mnt_init(void)

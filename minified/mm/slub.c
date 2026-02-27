@@ -113,8 +113,6 @@ static struct slab *new_slab(struct kmem_cache *s, gfp_t flags, int node)
 	if (unlikely(flags & GFP_SLAB_BUG_MASK))
 		flags = kmalloc_fix_flags(flags);
 
-	WARN_ON_ONCE(s->ctor && (flags & __GFP_ZERO));
-
 	flags = (flags & (GFP_RECLAIM_MASK | GFP_CONSTRAINT_MASK)) &
 		gfp_allowed_mask;
 	flags |= s->allocflags;
@@ -188,7 +186,6 @@ static inline void *acquire_slab(struct kmem_cache *s,
 
 	list_del(&slab->slab_list);
 	n->nr_partial--;
-	WARN_ON(!freelist);
 	return freelist;
 }
 
@@ -365,16 +362,13 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 	if (slab_state == DOWN) {
 		struct slab *slab;
 		struct kmem_cache_node *n;
-		BUG_ON(kmem_cache_node->size < sizeof(struct kmem_cache_node));
 		slab = new_slab(kmem_cache_node, GFP_NOWAIT, 0);
-		BUG_ON(!slab);
 		if (page_to_nid(&slab_folio(slab)->page) != 0) {
 			pr_err("SLUB: Unable to allocate memory from node %d\n",
 			       0);
 			pr_err("SLUB: Allocating a useless per node structure\n");
 		}
 		n = slab->freelist;
-		BUG_ON(!n);
 		slab->freelist = get_freepointer(kmem_cache_node, n);
 		slab->inuse = 1;
 		slab->frozen = 0;
@@ -392,8 +386,6 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 		s->node[0] = n;
 	}
 
-	BUILD_BUG_ON(PERCPU_DYNAMIC_EARLY_SIZE <
-		     KMALLOC_SHIFT_HIGH * sizeof(struct kmem_cache_cpu));
 	s->cpu_slab = __alloc_percpu(sizeof(struct kmem_cache_cpu),
 				     2 * sizeof(void *));
 	if (s->cpu_slab) {

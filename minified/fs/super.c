@@ -118,9 +118,6 @@ static void put_super(struct super_block *sb)
 	spin_lock(&sb_lock);
 	if (!--sb->s_count) {
 		list_del_init(&sb->s_list);
-		WARN_ON(sb->s_dentry_lru.node);
-		WARN_ON(sb->s_inode_lru.node);
-		WARN_ON(!list_empty(&sb->s_mounts));
 		put_user_ns(sb->s_user_ns);
 		call_rcu(&sb->rcu, destroy_super_rcu);
 	}
@@ -288,8 +285,6 @@ int vfs_get_tree(struct fs_context *fc)
 	}
 
 	sb = fc->root->d_sb;
-	WARN_ON(!sb->s_bdi);
-
 	smp_wmb();
 	sb->s_flags |= SB_BORN;
 

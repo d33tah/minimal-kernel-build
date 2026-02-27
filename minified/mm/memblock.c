@@ -86,7 +86,6 @@ static void __init_memblock memblock_remove_region(struct memblock_type *type,
 	type->cnt--;
 
 	if (type->cnt == 0) {
-		WARN_ON(type->total_size != 0);
 		type->cnt = 1;
 		type->regions[0].base = 0;
 		type->regions[0].size = 0;
@@ -117,7 +116,6 @@ static void __init_memblock memblock_insert_region(struct memblock_type *type,
 {
 	struct memblock_region *rgn = &type->regions[idx];
 
-	BUG_ON(type->cnt >= type->max);
 	memmove(rgn + 1, rgn, (type->cnt - idx) * sizeof(*rgn));
 	rgn->base = base;
 	rgn->size = size;
@@ -141,7 +139,6 @@ static int __init_memblock memblock_add_range(struct memblock_type *type,
 		return 0;
 
 	if (type->regions[0].size == 0) {
-		WARN_ON(type->cnt != 1 || type->total_size);
 		type->regions[0].base = base;
 		type->regions[0].size = size;
 		type->regions[0].flags = flags;
@@ -164,7 +161,6 @@ repeat:
 			continue;
 
 		if (rbase > base) {
-			WARN_ON(flags != rgn->flags);
 			nr_new++;
 			if (insert)
 				memblock_insert_region(type, idx++, base,
@@ -198,7 +194,6 @@ repeat:
 			struct memblock_region *next = &type->regions[i + 1];
 			if (this->base + this->size != next->base ||
 			    this->flags != next->flags) {
-				BUG_ON(this->base + this->size > next->base);
 				i++;
 				continue;
 			}
@@ -285,9 +280,7 @@ void __next_mem_range(u64 *idx, int nid, enum memblock_flags flags,
 	int idx_a = *idx & 0xffffffff;
 	int idx_b = *idx >> 32;
 
-	if (WARN_ONCE(
-		    nid == MAX_NUMNODES,
-		    "Usage of MAX_NUMNODES is deprecated. Use NUMA_NO_NODE instead\n"))
+	if (nid == MAX_NUMNODES)
 		nid = NUMA_NO_NODE;
 
 	for (; idx_a < type_a->cnt; idx_a++) {
@@ -351,9 +344,7 @@ void __init_memblock __next_mem_range_rev(u64 *idx, int nid,
 	int idx_a = *idx & 0xffffffff;
 	int idx_b = *idx >> 32;
 
-	if (WARN_ONCE(
-		    nid == MAX_NUMNODES,
-		    "Usage of MAX_NUMNODES is deprecated. Use NUMA_NO_NODE instead\n"))
+	if (nid == MAX_NUMNODES)
 		nid = NUMA_NO_NODE;
 
 	if (*idx == (u64)ULLONG_MAX) {
@@ -451,9 +442,7 @@ static phys_addr_t __init memblock_alloc_range_nid(phys_addr_t size,
 {
 	phys_addr_t found;
 
-	if (WARN_ONCE(
-		    nid == MAX_NUMNODES,
-		    "Usage of MAX_NUMNODES is deprecated. Use NUMA_NO_NODE instead\n"))
+	if (nid == MAX_NUMNODES)
 		nid = NUMA_NO_NODE;
 
 	if (!align)
@@ -489,7 +478,7 @@ static void *__init memblock_alloc_internal(phys_addr_t size, phys_addr_t align,
 {
 	phys_addr_t alloc;
 
-	if (WARN_ON_ONCE(slab_is_available()))
+	if (slab_is_available())
 		return kzalloc_node(size, GFP_NOWAIT, nid);
 
 	if (max_addr > memblock.current_limit)

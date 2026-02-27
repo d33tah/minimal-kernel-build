@@ -41,7 +41,6 @@ static pte_t *__init one_page_table_init(pmd_t *pmd)
 
 		paravirt_alloc_pte(&init_mm, __pa(page_table) >> PAGE_SHIFT);
 		set_pmd(pmd, __pmd(__pa(page_table) | _PAGE_TABLE));
-		BUG_ON(page_table != pte_offset_kernel(pmd, 0));
 	}
 
 	return pte_offset_kernel(pmd, 0);
@@ -268,18 +267,8 @@ void __init mem_init(void)
 {
 	char z = 0;
 
-	BUG_ON(!mem_map);
 	memblock_free_all();
 	after_bootmem = 1;
-
-#define __FIXADDR_TOP (-PAGE_SIZE)
-#define high_memory (-128UL << 20)
-	BUILD_BUG_ON(VMALLOC_START >= VMALLOC_END);
-#undef high_memory
-#undef __FIXADDR_TOP
-
-	BUG_ON(VMALLOC_START >= VMALLOC_END);
-	BUG_ON((unsigned long)high_memory > VMALLOC_START);
 
 	__set_fixmap(FIX_WP_TEST, __pa_symbol(empty_zero_page), PAGE_KERNEL_RO);
 	if (!copy_to_kernel_nofault((char *)fix_to_virt(FIX_WP_TEST), &z, 1))

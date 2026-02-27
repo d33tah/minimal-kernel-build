@@ -180,8 +180,6 @@ char *__init e820__memory_setup_default(void)
 
 void __init e820__memory_setup(void)
 {
-	BUILD_BUG_ON(sizeof(struct boot_e820_entry) != 20);
-
 	x86_init.resources.memory_setup();
 }
 

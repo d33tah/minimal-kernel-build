@@ -147,7 +147,6 @@ void fd_install(unsigned int fd, struct file *file)
 
 	rcu_read_lock_sched();
 	fdt = rcu_dereference_sched(files->fdt);
-	BUG_ON(fdt->fd[fd] != NULL);
 	rcu_assign_pointer(fdt->fd[fd], file);
 	rcu_read_unlock_sched();
 }

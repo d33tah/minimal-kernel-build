@@ -48,10 +48,10 @@ int __init early_irq_init(void)
 	printk(KERN_INFO "NR_IRQS: %d, nr_irqs: %d, preallocated irqs: %d\n",
 	       NR_IRQS, nr_irqs, initcnt);
 
-	if (WARN_ON(nr_irqs > IRQ_BITMAP_BITS))
+	if (nr_irqs > IRQ_BITMAP_BITS)
 		nr_irqs = IRQ_BITMAP_BITS;
 
-	if (WARN_ON(initcnt > IRQ_BITMAP_BITS))
+	if (initcnt > IRQ_BITMAP_BITS)
 		initcnt = IRQ_BITMAP_BITS;
 
 	if (initcnt > nr_irqs)

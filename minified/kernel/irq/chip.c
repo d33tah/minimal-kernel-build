@@ -12,7 +12,6 @@ int irq_startup(struct irq_desc *desc, bool resend, bool force)
 	if (irqd_is_started(d)) {
 		irq_enable(desc);
 	} else {
-		WARN_ON_ONCE(!irqd_is_activated(d));
 		if (d->chip->irq_startup) {
 			ret = d->chip->irq_startup(d);
 			irqd_clear(&desc->irq_data, IRQD_IRQ_DISABLED);

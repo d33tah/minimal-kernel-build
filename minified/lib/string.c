@@ -34,7 +34,7 @@ ssize_t strscpy(char *dest, const char *src, size_t count)
 	size_t max = count;
 	long res = 0;
 
-	if (count == 0 || WARN_ON_ONCE(count > INT_MAX))
+	if (count == 0 || count > INT_MAX)
 		return -E2BIG;
 
 	if ((long)src & (sizeof(long) - 1)) {

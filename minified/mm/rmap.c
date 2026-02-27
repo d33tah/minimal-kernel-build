@@ -48,7 +48,6 @@ void page_add_new_anon_rmap(struct page *page, struct vm_area_struct *vma,
 {
 	struct anon_vma *anon_vma = vma->anon_vma;
 
-	BUG_ON(!anon_vma);
 	__SetPageSwapBacked(page);
 	atomic_set(&page->_mapcount, 0);
 	__mod_lruvec_page_state(page, NR_ANON_MAPPED, 1);

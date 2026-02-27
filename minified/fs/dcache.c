@@ -99,7 +99,6 @@ static void __dentry_kill(struct dentry *dentry)
 	else
 		spin_unlock(&dentry->d_lock);
 
-	WARN_ON(!hlist_unhashed(&dentry->d_u.d_alias));
 	call_rcu(&dentry->d_u.d_rcu, __d_free);
 	cond_resched();
 }
@@ -318,10 +317,8 @@ static unsigned d_flags_for_inode(struct inode *inode)
 
 static void d_instantiate(struct dentry *entry, struct inode *inode)
 {
-	BUG_ON(!hlist_unhashed(&entry->d_u.d_alias));
 	if (inode) {
 		unsigned add_flags = d_flags_for_inode(inode);
-		WARN_ON(d_in_lookup(entry));
 
 		spin_lock(&inode->i_lock);
 		spin_lock(&entry->d_lock);

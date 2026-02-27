@@ -24,7 +24,6 @@ void main(void)
 		};
 		const struct old_cmdline *const oldcmd =
 			absolute_pointer(OLD_CL_ADDRESS);
-		BUILD_BUG_ON(sizeof(boot_params) != 4096);
 		memcpy(&boot_params.hdr, &hdr, sizeof(hdr));
 		if (!boot_params.hdr.cmd_line_ptr &&
 		    oldcmd->cl_magic == OLD_CL_MAGIC) {

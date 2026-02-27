@@ -76,11 +76,6 @@ static void i_callback(struct rcu_head *head)
 
 void inc_nlink(struct inode *inode)
 {
-	if (unlikely(inode->i_nlink == 0)) {
-		WARN_ON(!(inode->i_state & I_LINKABLE));
-		atomic_long_dec(&inode->i_sb->s_remove_count);
-	}
-
 	inode->__i_nlink++;
 }
 
@@ -109,19 +104,12 @@ static void inode_lru_list_del(struct inode *inode)
 
 static void evict(struct inode *inode)
 {
-	BUG_ON(!(inode->i_state & I_FREEING));
-	BUG_ON(!list_empty(&inode->i_lru));
-
 	if (!list_empty(&inode->i_sb_list)) {
 		spin_lock(&inode->i_sb->s_inode_list_lock);
 		list_del_init(&inode->i_sb_list);
 		spin_unlock(&inode->i_sb->s_inode_list_lock);
 	}
 
-	xa_lock_irq(&inode->i_data.i_pages);
-	xa_unlock_irq(&inode->i_data.i_pages);
-	BUG_ON(!(inode->i_state & I_FREEING));
-	BUG_ON(inode->i_state & I_CLEAR);
 	inode->i_state = I_FREEING | I_CLEAR;
 
 	if (S_ISCHR(inode->i_mode) && inode->i_cdev)
@@ -129,15 +117,8 @@ static void evict(struct inode *inode)
 
 	spin_lock(&inode->i_lock);
 	wake_up_bit(&inode->i_state, __I_NEW);
-	BUG_ON(inode->i_state != (I_FREEING | I_CLEAR));
 	spin_unlock(&inode->i_lock);
 
-	BUG_ON(!list_empty(&inode->i_lru));
-	if (!inode->i_nlink) {
-		WARN_ON(atomic_long_read(&inode->i_sb->s_remove_count) == 0);
-		atomic_long_dec(&inode->i_sb->s_remove_count);
-	}
-	/* free_inode is NULL since callback was never assigned */
 	call_rcu(&inode->i_rcu, i_callback);
 }
 
@@ -223,11 +204,8 @@ void iput(struct inode *inode)
 {
 	if (!inode)
 		return;
-	BUG_ON(inode->i_state & I_CLEAR);
 	if (!_atomic_dec_and_lock(&inode->i_count, &inode->i_lock))
 		return;
-
-	WARN_ON(inode->i_state & I_NEW);
 
 	WRITE_ONCE(inode->i_state, inode->i_state | I_FREEING);
 	if (!list_empty(&inode->i_lru))

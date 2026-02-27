@@ -61,9 +61,6 @@ void vm_area_free(struct vm_area_struct *vma)
 
 void __mmdrop(struct mm_struct *mm)
 {
-	BUG_ON(mm == &init_mm);
-	WARN_ON_ONCE(mm == current->mm);
-	WARN_ON_ONCE(mm == current->active_mm);
 	pgd_free(mm, mm->pgd);
 	destroy_context(mm);
 	put_user_ns(mm->user_ns);
@@ -149,8 +146,6 @@ struct mm_struct *mm_alloc(void)
 void mmput(struct mm_struct *mm)
 {
 	if (atomic_dec_and_test(&mm->mm_users)) {
-		VM_BUG_ON(atomic_read(&mm->mm_users));
-
 		exit_mmap(mm);
 		set_mm_exe_file(mm, NULL);
 		if (mm->binfmt)

@@ -33,7 +33,7 @@ static void do_clear_cpu_cap(struct cpuinfo_x86 *c, unsigned int feature)
 	const struct cpuid_dep *d;
 	bool changed;
 
-	if (WARN_ON(feature >= MAX_FEATURE_BITS))
+	if (feature >= MAX_FEATURE_BITS)
 		return;
 
 	clear_feature(c, feature);

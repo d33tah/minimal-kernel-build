@@ -14,7 +14,6 @@ enum KTHREAD_BITS {
 
 static inline struct kthread *to_kthread(struct task_struct *k)
 {
-	WARN_ON(!(k->flags & PF_KTHREAD));
 	return k->worker_private;
 }
 
@@ -22,7 +21,7 @@ bool set_kthread_struct(struct task_struct *p)
 {
 	struct kthread *kthread;
 
-	if (WARN_ON_ONCE(to_kthread(p)))
+	if (to_kthread(p))
 		return false;
 
 	kthread = kzalloc(sizeof(*kthread), GFP_KERNEL);
@@ -38,8 +37,6 @@ void kthread_set_per_cpu(struct task_struct *k, int cpu)
 	struct kthread *kthread = to_kthread(k);
 	if (!kthread)
 		return;
-
-	WARN_ON_ONCE(!(k->flags & PF_NO_SETAFFINITY));
 
 	if (cpu < 0) {
 		clear_bit(KTHREAD_IS_PER_CPU, &kthread->flags);

@@ -128,7 +128,6 @@ int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top,
 		unsigned long new_end = old_end - stack_shift;
 		struct mmu_gather tlb;
 
-		BUG_ON(new_start > new_end);
 		if (vma != find_vma(mm, new_start)) {
 			ret = -EFAULT;
 			goto out_unlock;
@@ -191,8 +190,7 @@ static struct file *do_open_execat(int fd, struct filename *name, int flags)
 		goto out;
 
 	err = -EACCES;
-	if (WARN_ON_ONCE(!S_ISREG(file_inode(file)->i_mode) ||
-			 path_noexec(&file->f_path)))
+	if (!S_ISREG(file_inode(file)->i_mode) || path_noexec(&file->f_path))
 		goto exit;
 
 	err = deny_write_access(file);
@@ -257,7 +255,6 @@ int begin_new_exec(struct linux_binprm *bprm)
 		task_unlock(tsk);
 		if (old_mm) {
 			mmap_read_unlock(old_mm);
-			BUG_ON(active_mm != old_mm);
 			mmput(old_mm);
 		} else {
 			mmdrop(active_mm);
@@ -337,7 +334,6 @@ static struct linux_binprm *alloc_bprm(int fd, struct filename *filename)
 		goto err_vma;
 	}
 
-	BUILD_BUG_ON(VM_STACK_FLAGS & VM_STACK_INCOMPLETE_SETUP);
 	vma->vm_end = STACK_TOP_MAX;
 	vma->vm_start = vma->vm_end - PAGE_SIZE;
 	vma->vm_flags = VM_STACK_FLAGS | VM_STACK_INCOMPLETE_SETUP;
@@ -416,7 +412,7 @@ int kernel_execve(const char *kernel_filename, const char *const *argv,
 	int fd = AT_FDCWD;
 	int retval;
 
-	if (WARN_ON_ONCE(current->flags & PF_KTHREAD))
+	if (current->flags & PF_KTHREAD)
 		return -EINVAL;
 
 	filename = getname_kernel(kernel_filename);
@@ -430,7 +426,7 @@ int kernel_execve(const char *kernel_filename, const char *const *argv,
 	}
 
 	retval = count_strings_kernel(argv);
-	if (WARN_ON_ONCE(retval == 0))
+	if (retval == 0)
 		retval = -EINVAL;
 	if (retval < 0)
 		goto out_free;

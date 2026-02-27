@@ -44,7 +44,7 @@ create_cache(const char *name, unsigned int object_size, unsigned int align,
 	struct kmem_cache *s;
 	int err;
 
-	if (WARN_ON(useroffset + usersize > object_size))
+	if (useroffset + usersize > object_size)
 		useroffset = usersize = 0;
 
 	err = -ENOMEM;
@@ -94,8 +94,8 @@ kmem_cache_create_usercopy(const char *name, unsigned int size,
 
 	flags &= CACHE_CREATE_MASK;
 
-	if (WARN_ON(!usersize && useroffset) ||
-	    WARN_ON(size < usersize || size - usersize < useroffset))
+	if ((!usersize && useroffset) ||
+	    (size < usersize || size - usersize < useroffset))
 		usersize = useroffset = 0;
 
 	cache_name = kstrdup_const(name, GFP_KERNEL);
@@ -205,7 +205,7 @@ struct kmem_cache *kmalloc_slab(size_t size, gfp_t flags)
 
 		index = size_index[size_index_elem(size)];
 	} else {
-		if (WARN_ON_ONCE(size > KMALLOC_MAX_CACHE_SIZE))
+		if (size > KMALLOC_MAX_CACHE_SIZE)
 			return NULL;
 		index = fls(size - 1);
 	}

@@ -13,7 +13,7 @@ ssize_t kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
 	struct iov_iter iter;
 	ssize_t ret;
 
-	if (WARN_ON_ONCE(!(file->f_mode & FMODE_READ)))
+	if (!(file->f_mode & FMODE_READ))
 		return -EINVAL;
 	if (!(file->f_mode & FMODE_CAN_READ))
 		return -EINVAL;
@@ -61,7 +61,6 @@ static ssize_t vfs_write(struct file *file, const char __user *buf,
 		kiocb.ki_pos = (pos ? *pos : 0);
 		iov_iter_init(&iter, WRITE, &iov, 1, count);
 		ret = file->f_op->write_iter(&kiocb, &iter);
-		BUG_ON(ret == -EIOCBQUEUED);
 		if (ret > 0 && pos)
 			*pos = kiocb.ki_pos;
 	} else

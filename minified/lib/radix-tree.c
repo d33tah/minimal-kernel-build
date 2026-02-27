@@ -144,7 +144,6 @@ radix_tree_node_alloc(gfp_t gfp_mask, struct radix_tree_node *parent,
 	}
 	ret = kmem_cache_alloc(radix_tree_node_cachep, gfp_mask);
 out:
-	BUG_ON(radix_tree_is_internal_node(ret));
 	if (ret) {
 		ret->shift = shift;
 		ret->offset = offset;
@@ -225,7 +224,6 @@ static int radix_tree_extend(struct radix_tree_root *root, gfp_t gfp,
 			}
 		}
 
-		BUG_ON(shift > BITS_PER_LONG);
 		if (radix_tree_is_internal_node(entry)) {
 			entry_to_node(entry)->parent = node;
 		} else if (xa_is_value(entry)) {
@@ -275,7 +273,6 @@ static inline bool radix_tree_shrink(struct radix_tree_root *root)
 			node->slots[0] = (void __rcu *)RADIX_TREE_RETRY;
 		}
 
-		WARN_ON_ONCE(!list_empty(&node->private_list));
 		radix_tree_node_free(node);
 		shrunk = true;
 	}
@@ -309,7 +306,6 @@ static bool delete_node(struct radix_tree_root *root,
 			root->xa_head = NULL;
 		}
 
-		WARN_ON_ONCE(!list_empty(&node->private_list));
 		radix_tree_node_free(node);
 		deleted = true;
 
@@ -327,8 +323,6 @@ int radix_tree_insert(struct radix_tree_root *root, unsigned long index,
 	unsigned long maxindex;
 	unsigned int shift, offset = 0;
 	gfp_t gfp = root->xa_flags & (__GFP_BITS_MASK & ~GFP_ZONEMASK);
-
-	BUG_ON(radix_tree_is_internal_node(item));
 
 	shift = radix_tree_load_root(root, &child, &maxindex);
 	if (index > maxindex) {
@@ -450,8 +444,6 @@ void __radix_tree_replace(struct radix_tree_root *root,
 	int values = !!xa_is_value(item) - !!xa_is_value(old);
 	int count = calculate_count(root, node, slot, item, old);
 
-	WARN_ON_ONCE(!node && (slot != (void __rcu **)&root->xa_head) &&
-		     (count || values));
 	replace_slot(slot, item, node, count, values);
 
 	if (!node)
@@ -643,9 +635,6 @@ static void radix_tree_node_ctor(void *arg)
 
 void __init radix_tree_init(void)
 {
-	BUILD_BUG_ON(RADIX_TREE_MAX_TAGS + __GFP_BITS_SHIFT > 32);
-	BUILD_BUG_ON(ROOT_IS_IDR & ~GFP_ZONEMASK);
-	BUILD_BUG_ON(XA_CHUNK_SIZE > 255);
 	radix_tree_node_cachep = kmem_cache_create(
 		"radix_tree_node", sizeof(struct radix_tree_node), 0,
 		SLAB_PANIC | SLAB_RECLAIM_ACCOUNT, radix_tree_node_ctor);

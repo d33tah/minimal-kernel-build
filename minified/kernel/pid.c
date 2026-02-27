@@ -162,8 +162,6 @@ struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
 
 void __init pid_idr_init(void)
 {
-	BUILD_BUG_ON(PID_MAX_LIMIT >= PIDNS_ADDING);
-
 	idr_init_base(&init_pid_ns.idr, 0);
 
 	init_pid_ns.pid_cachep =

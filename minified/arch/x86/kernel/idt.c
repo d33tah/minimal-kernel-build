@@ -103,7 +103,6 @@ static __init void set_intr_gate(unsigned int n, const void *addr)
 {
 	struct idt_data data;
 
-	BUG_ON(n > 0xFF);
 	memset(&data, 0, sizeof(data));
 	data.vector = n;
 	data.addr = addr;

@@ -20,17 +20,9 @@ void __init early_ioremap_init(void)
 {
 	pmd_t *pmd;
 
-	BUG_ON((fix_to_virt(0) + PAGE_SIZE) & ((1 << PMD_SHIFT) - 1));
-
 	early_ioremap_setup();
 
 	pmd = early_ioremap_pmd(fix_to_virt(FIX_BTMAP_BEGIN));
 	memset(bm_pte, 0, sizeof(bm_pte));
 	pmd_populate_kernel(&init_mm, pmd, bm_pte);
-
-#define __FIXADDR_TOP (-PAGE_SIZE)
-	BUILD_BUG_ON((__fix_to_virt(FIX_BTMAP_BEGIN) >> PMD_SHIFT) !=
-		     (__fix_to_virt(FIX_BTMAP_END) >> PMD_SHIFT));
-#undef __FIXADDR_TOP
-	BUG_ON(pmd != early_ioremap_pmd(fix_to_virt(FIX_BTMAP_END)));
 }

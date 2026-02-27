@@ -12,8 +12,6 @@ DEFINE_PER_CPU_PAGE_ALIGNED(struct doublefault_stack, doublefault_stack) = {};
 noinstr struct cpu_entry_area *get_cpu_entry_area(int cpu)
 {
 	unsigned long va = CPU_ENTRY_AREA_PER_CPU + cpu * CPU_ENTRY_AREA_SIZE;
-	BUILD_BUG_ON(sizeof(struct cpu_entry_area) % PAGE_SIZE != 0);
-
 	return (struct cpu_entry_area *)va;
 }
 
@@ -42,11 +40,6 @@ void __init setup_cpu_entry_areas(void)
 	struct cpu_entry_area *cea;
 	pgprot_t gdt_prot, tss_prot;
 
-	BUILD_BUG_ON((CPU_ENTRY_AREA_PAGES + 1) * PAGE_SIZE !=
-		     CPU_ENTRY_AREA_MAP_SIZE);
-	BUILD_BUG_ON(CPU_ENTRY_AREA_TOTAL_SIZE != CPU_ENTRY_AREA_MAP_SIZE);
-	BUG_ON(CPU_ENTRY_AREA_BASE & ~PMD_MASK);
-
 	start = CPU_ENTRY_AREA_BASE;
 	end = start + CPU_ENTRY_AREA_MAP_SIZE;
 
@@ -63,13 +56,6 @@ void __init setup_cpu_entry_areas(void)
 	cea_map_percpu_pages(&cea->entry_stack_page,
 			     per_cpu_ptr(&entry_stack_storage, 0), 1,
 			     PAGE_KERNEL);
-
-	BUILD_BUG_ON((offsetof(struct tss_struct, x86_tss) ^
-		      offsetofend(struct tss_struct, x86_tss)) &
-		     PAGE_MASK);
-	BUILD_BUG_ON(sizeof(struct tss_struct) % PAGE_SIZE != 0);
-	BUILD_BUG_ON(offsetof(struct tss_struct, x86_tss) != 0);
-	BUILD_BUG_ON(sizeof(struct x86_hw_tss) != 0x68);
 
 	cea_map_percpu_pages(&cea->tss, &per_cpu(cpu_tss_rw, 0),
 			     sizeof(struct tss_struct) / PAGE_SIZE, tss_prot);

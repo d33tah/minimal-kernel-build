@@ -12,7 +12,6 @@
 static inline unsigned long *pt_regs_nr(struct pt_regs *regs, int nr)
 {
 	static unsigned long __dummy;
-	WARN_ON_ONCE(true);
 	return &__dummy;
 }
 
@@ -36,9 +35,6 @@ static bool ex_handler_default(const struct exception_table_entry *e,
 static bool ex_handler_uaccess(const struct exception_table_entry *fixup,
 			       struct pt_regs *regs, int trapnr)
 {
-	WARN_ONCE(
-		trapnr == X86_TRAP_GP,
-		"General protection fault in user access. Non-canonical address?");
 	return ex_handler_default(fixup, regs);
 }
 
@@ -63,10 +59,6 @@ int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code,
 		return ex_handler_uaccess(e, regs, trapnr);
 	case EX_TYPE_FPU_RESTORE:
 		regs->ip = ex_fixup_addr(e);
-		WARN_ONCE(
-			1,
-			"Bad FPU state detected at %pB, reinitializing FPU registers.",
-			(void *)instruction_pointer(regs));
 		fpu_reset_from_exception_fixup();
 		return true;
 	case EX_TYPE_POP_REG:

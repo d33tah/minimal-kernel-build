@@ -7,7 +7,7 @@ struct follow_page_context {
 static bool __must_check try_grab_page(struct page *page, unsigned int flags)
 {
 	struct folio *folio = page_folio(page);
-	if (WARN_ON_ONCE(folio_ref_count(folio) <= 0))
+	if (folio_ref_count(folio) <= 0)
 		return false;
 
 	if (flags & FOLL_GET)
@@ -33,7 +33,6 @@ static struct page *follow_page_mask(struct vm_area_struct *vma,
 
 	pgd = pgd_offset(mm, address);
 	p4d = p4d_offset(pgd, address);
-	BUILD_BUG_ON(p4d_huge(*p4d));
 	pud = pud_offset(p4d, address);
 
 	pmd = pmd_offset(pud, address);

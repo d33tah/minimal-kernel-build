@@ -67,9 +67,6 @@ static void set_pfnblock_flags_mask(struct page *page, unsigned long flags,
 	unsigned long bitidx, word_bitidx;
 	unsigned long old_word, word;
 
-	BUILD_BUG_ON(NR_PAGEBLOCK_BITS != 4);
-	BUILD_BUG_ON(MIGRATE_TYPES > (1 << PB_migratetype_bits));
-
 	bitmap = get_pageblock_bitmap(page, pfn);
 	bitidx = pfn_to_bitidx(page, pfn);
 	word_bitidx = bitidx / BITS_PER_LONG;
@@ -108,7 +105,6 @@ static void prep_compound_page(struct page *page, unsigned int order)
 				   1); /* inlined set_compound_head */
 	}
 
-	VM_BUG_ON_PAGE(COMPOUND_PAGE_DTOR >= NR_COMPOUND_DTORS, page);
 	page[1].compound_dtor = COMPOUND_PAGE_DTOR;
 	page[1].compound_order = order; /* inlined set_compound_order */
 }
@@ -300,8 +296,6 @@ static inline struct page *rmqueue(struct zone *zone, unsigned int order,
 		goto out;
 	}
 
-	WARN_ON_ONCE((gfp_flags & __GFP_NOFAIL) && (order > 1));
-
 	page = NULL;
 	spin_lock_irqsave(&zone->lock, flags);
 
@@ -375,7 +369,7 @@ struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid,
 	gfp_t alloc_gfp;
 	struct alloc_context ac = {};
 
-	if (WARN_ON_ONCE_GFP(order >= MAX_ORDER, gfp))
+	if (order >= MAX_ORDER)
 		return NULL;
 
 	gfp &= gfp_allowed_mask;
@@ -607,8 +601,6 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 		unsigned long node_end_pfn = 0;
 		unsigned long this_start_pfn, this_end_pfn;
 		int j;
-
-		WARN_ON(pgdat->nr_zones);
 
 		for_each_mem_pfn_range(j, 0, &this_start_pfn, &this_end_pfn,
 				       NULL) {

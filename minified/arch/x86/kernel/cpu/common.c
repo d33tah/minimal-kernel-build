@@ -52,8 +52,6 @@ set_register:
 			val |= bits_missing;
 			goto set_register;
 		}
-
-		WARN_ONCE(bits_missing, "CR0 WP bit went missing!?\n");
 	}
 }
 
@@ -71,9 +69,6 @@ set_register:
 			val = (val & ~cr4_pinned_mask) | cr4_pinned_bits;
 			goto set_register;
 		}
-
-		WARN_ONCE(bits_changed, "pinned CR4 bits changed: 0x%lx!?\n",
-			  bits_changed);
 	}
 }
 
@@ -281,7 +276,6 @@ void cpu_init(void)
 
 	mmgrab(&init_mm);
 	cur->active_mm = &init_mm;
-	BUG_ON(cur->mm);
 	initialize_tlbstate_and_flush();
 	enter_lazy_tlb(&init_mm, cur);
 

@@ -233,12 +233,6 @@ int fpu_clone(struct task_struct *dst, unsigned long clone_flags, bool minimal)
 	return 0;
 }
 
-void fpu_thread_struct_whitelist(unsigned long *offset, unsigned long *size)
-{
-	*offset = 0;
-	*size = 0;
-}
-
 static void fpu__drop(struct fpu *fpu)
 {
 	preempt_disable();

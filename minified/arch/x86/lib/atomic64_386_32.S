@@ -48,16 +48,6 @@ BEGIN_IRQ_SAVE(set)
 ENDP
 #undef v
 
-#define v %ecx
-BEGIN_IRQ_SAVE(add_return)
-	addl  (v), %eax
-	adcl 4(v), %edx
-	movl %eax,  (v)
-	movl %edx, 4(v)
-	RET_IRQ_RESTORE
-ENDP
-#undef v
-
 #define v %esi
 BEGIN_IRQ_SAVE(inc_return)
 	movl  (v), %eax

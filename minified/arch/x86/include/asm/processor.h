@@ -24,7 +24,6 @@ static __always_inline void cpu_relax(void) { rep_nop(); }
 
 /* personality.h inlined */
 enum { READ_IMPLIES_EXEC = 0x0400000, };
-enum { PER_LINUX = 0x0000, PER_MASK = 0x00ff, };
 #include <linux/cache.h>
 #include <linux/threads.h>
 #include <linux/math64.h>
@@ -171,14 +170,6 @@ struct thread_struct {
 	struct fpu		fpu;
 	 
 };
-
-extern void fpu_thread_struct_whitelist(unsigned long *offset, unsigned long *size);
-
-static inline void arch_thread_struct_whitelist(unsigned long *offset,
-						unsigned long *size)
-{
-	fpu_thread_struct_whitelist(offset, size);
-}
 
 #define __cpuid			native_cpuid
 

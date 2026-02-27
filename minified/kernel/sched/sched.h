@@ -195,9 +195,7 @@ static inline int task_on_rq_queued(struct task_struct *p)
 #define WF_FORK     0x04
 
 #define DEQUEUE_SLEEP		0x01
-#define DEQUEUE_SAVE		0x02  
-#define DEQUEUE_MOVE		0x04  
-#define DEQUEUE_NOCLOCK		0x08  
+#define DEQUEUE_NOCLOCK		0x08
 
 #define ENQUEUE_WAKEUP		0x01
 #define ENQUEUE_NOCLOCK		0x08

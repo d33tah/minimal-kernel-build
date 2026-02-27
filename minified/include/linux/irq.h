@@ -54,21 +54,14 @@ struct irq_data {
 };
 
 enum {
-	IRQD_TRIGGER_MASK		= 0xf,
 	IRQD_ACTIVATED			= (1 <<  9),
 	IRQD_IRQ_DISABLED		= (1 << 16),
 	IRQD_IRQ_MASKED			= (1 << 17),
 	IRQD_IRQ_INPROGRESS		= (1 << 18),
-	IRQD_WAKEUP_ARMED		= (1 << 19),
 	IRQD_IRQ_STARTED		= (1 << 22),
 };
 
 #define __irqd_to_state(d) ACCESS_PRIVATE((d)->common, state_use_accessors)
-
-static inline u32 irqd_get_trigger_type(struct irq_data *d)
-{
-	return __irqd_to_state(d) & IRQD_TRIGGER_MASK;
-}
 
 static inline bool irqd_irq_disabled(struct irq_data *d)
 {
@@ -78,11 +71,6 @@ static inline bool irqd_irq_disabled(struct irq_data *d)
 static inline bool irqd_irq_masked(struct irq_data *d)
 {
 	return __irqd_to_state(d) & IRQD_IRQ_MASKED;
-}
-
-static inline bool irqd_is_activated(struct irq_data *d)
-{
-	return __irqd_to_state(d) & IRQD_ACTIVATED;
 }
 
 static inline void irqd_set_activated(struct irq_data *d)

@@ -164,7 +164,6 @@ typedef struct {
 /* Only declare assembly functions that are actually used */
 ATOMIC64_DECL(read);
 ATOMIC64_DECL(set);
-ATOMIC64_DECL(add_return);
 ATOMIC64_DECL(inc_return);
 
 #undef ATOMIC64_DECL
@@ -186,14 +185,6 @@ static inline s64 atomic64_read(const atomic64_t *v)
 	s64 r;
 	alternative_atomic64(read, "=&A" (r), "c" (v) : "memory");
 	return r;
-}
-
-static inline s64 atomic64_add_return(s64 i, atomic64_t *v)
-{
-	alternative_atomic64(add_return,
-			     ASM_OUTPUT2("+A" (i), "+c" (v)),
-			     ASM_NO_INPUT_CLOBBER("memory"));
-	return i;
 }
 
 static inline s64 atomic64_inc_return(atomic64_t *v)

@@ -143,6 +143,4 @@ extern void *alloc_large_system_hash(const char *tablename,
 #define HASH_EARLY	0x00000001
 #define HASH_ZERO	0x00000004	 
 
-#define hashdist (0)
-
 #endif  

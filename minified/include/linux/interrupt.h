@@ -17,8 +17,6 @@ typedef enum irqreturn irqreturn_t;
 #include <asm/irq.h>
 #include <asm/sections.h>
 
-#define IRQF_TRIGGER_MASK	0x0000000f
-
 #define IRQF_NO_THREAD		0x00010000
 #define IRQF_NO_AUTOEN		0x00080000
 
@@ -79,10 +77,6 @@ extern void open_softirq(int nr, void (*action)(struct softirq_action *));
 extern void raise_softirq_irqoff(unsigned int nr);
 
 extern int early_irq_init(void);
-
-#ifndef __irq_entry
-# define __irq_entry	 __section(".irqentry.text")
-#endif
 
 #define __softirq_entry  __section(".softirqentry.text")
 

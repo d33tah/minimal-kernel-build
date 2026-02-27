@@ -2,6 +2,8 @@
 #include <linux/pagemap.h>
 #include <linux/fs_parser.h>
 
+const struct file_operations def_chr_fops = {};
+
 const struct file_operations ramfs_file_operations = {
 	.read_iter = generic_file_read_iter,
 };

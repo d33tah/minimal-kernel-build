@@ -17,16 +17,7 @@ struct attribute_group {
 
 struct kobject {
 	const char		*name;
-	const struct kobj_type	*ktype;
 	struct kref		kref;
-};
-
-
-struct kobj_type {
-};
-
-struct kset {
-	struct kobject kobj;
 };
 
 #endif

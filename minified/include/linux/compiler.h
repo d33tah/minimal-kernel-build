@@ -34,16 +34,6 @@
 # define __UNIQUE_ID(prefix) __PASTE(__PASTE(__UNIQUE_ID_, prefix), __LINE__)
 #endif
 
-#define data_race(expr)							\
-({									\
-	__unqual_scalar_typeof(({ expr; })) __v = ({			\
-						\
-		expr;							\
-	});								\
-						\
-	__v;								\
-})
-
 #endif
 
 #define __ADDRESSABLE(sym) \

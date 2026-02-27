@@ -118,7 +118,6 @@ struct rlimit {
 	[RLIMIT_NOFILE] = { INR_OPEN_CUR, INR_OPEN_MAX },		\
 }
 /* end resource.h */
-#define MAX_PRIO		140
 /* end sched/prio.h */
 #include <linux/signal.h>
 #include <linux/threads.h>

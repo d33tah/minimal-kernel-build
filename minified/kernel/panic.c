@@ -5,8 +5,6 @@
 
 /* Merged from lib/debug_locks.c */
 int debug_locks __read_mostly = 1;
-#include <linux/console.h>
-
 atomic_t panic_cpu = ATOMIC_INIT(PANIC_CPU_INVALID);
 
 void panic(const char *fmt, ...)
@@ -28,7 +26,6 @@ void panic(const char *fmt, ...)
 
 	pr_emerg("Kernel panic - not syncing: %s\n", buf);
 
-	console_unblank();
 	debug_locks_off();
 
 	pr_emerg("---[ end Kernel panic - not syncing: %s ]---\n", buf);
@@ -60,7 +57,6 @@ void bust_spinlocks(int yes)
 	if (yes) {
 		++oops_in_progress;
 	} else {
-		console_unblank();
 		--oops_in_progress;
 	}
 }

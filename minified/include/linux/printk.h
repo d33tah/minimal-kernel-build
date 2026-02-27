@@ -12,7 +12,6 @@
 #define KERN_NOTICE	KERN_SOH "5"
 #define KERN_INFO	KERN_SOH "6"
 #define KERN_DEBUG	KERN_SOH "7"
-#define KERN_DEFAULT	""
 #include <linux/bits.h>
 #include <asm/param.h>
 #include <linux/spinlock_types.h>

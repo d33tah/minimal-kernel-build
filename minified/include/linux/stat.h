@@ -47,6 +47,5 @@ struct stat {
 #endif
 #define S_IRWXUGO	(S_IRWXU|S_IRWXG|S_IRWXO)
 #define S_IALLUGO	(S_ISUID|S_ISGID|S_ISVTX|S_IRWXUGO)
-#include <linux/time.h>
 #include <linux/uidgid.h>
 #endif

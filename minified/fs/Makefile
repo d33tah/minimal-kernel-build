@@ -4,7 +4,7 @@
 #
 
 obj-y :=	open.o read_write.o file_table.o super.o \
-		char_dev.o exec.o namei.o \
+		exec.o namei.o \
 		dcache.o inode.o \
 		file.o filesystems.o namespace.o \
 		libfs.o \

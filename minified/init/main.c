@@ -8,7 +8,6 @@ extern phys_addr_t phys_initrd_start;
 extern unsigned long phys_initrd_size;
 #include <linux/memblock.h>
 
-#include <linux/console.h>
 #include <linux/cpu.h>
 #include <linux/interrupt.h>
 extern void anon_vma_init(void);
@@ -206,7 +205,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	WARN(!irqs_disabled(), "Interrupts were enabled early\n");
 
 	local_irq_enable();
-	console_init();
 
 	if (initrd_start && !initrd_below_start_ok &&
 	    page_to_pfn(virt_to_page((void *)initrd_start)) < min_low_pfn) {

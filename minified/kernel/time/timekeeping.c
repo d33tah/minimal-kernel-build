@@ -2,6 +2,7 @@
 #ifndef _LINUX_TIMEKEEPER_INTERNAL_H
 #define _LINUX_TIMEKEEPER_INTERNAL_H
 
+#include <linux/thread_info.h>
 #include <linux/clocksource.h>
 
 struct tk_read_base {

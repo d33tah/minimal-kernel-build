@@ -91,8 +91,6 @@ extern struct file_system_type rootfs_fs_type;
 #define core_initcall(fn)		__define_initcall(fn, 1)
 #define fs_initcall(fn)			__define_initcall(fn, 5)
 
-#define console_initcall(fn)	___define_initcall(fn, con, .con_initcall)
-
 struct obs_kernel_param {
 	const char *str;
 	int (*setup_func)(char *);

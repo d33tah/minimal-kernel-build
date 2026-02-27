@@ -1,6 +1,5 @@
 #ifndef _LINUX_TIMEX_H
 #define _LINUX_TIMEX_H
-#include <linux/time.h>
 #include <linux/compiler.h>
 #include <linux/types.h>
 #include <asm/param.h>

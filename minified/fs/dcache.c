@@ -481,5 +481,4 @@ void __init vfs_caches_init(void)
 	inode_init();
 	files_init();
 	mnt_init();
-	chrdev_init();
 }

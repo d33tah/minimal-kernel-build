@@ -7,8 +7,6 @@ struct mount;
 struct fs_context;
 struct user_namespace;
 
-extern void __init chrdev_init(void);
-
 extern int parse_monolithic_mount_data(struct fs_context *, void *);
 
 extern void __init mnt_init(void);

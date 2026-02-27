@@ -222,18 +222,9 @@ check_pfn:
 	return pfn_to_page(pfn);
 }
 
-/* zap chain collapsed: zap_pte_range was a no-op (lock+unlock with no action),
- * so the entire zap_p4d_range -> unmap_page_range -> unmap_single_vma chain
- * is dead. unmap_vmas just does the mmu_notifier calls. */
-
 void unmap_vmas(struct mmu_gather *tlb, struct vm_area_struct *vma,
 		unsigned long start_addr, unsigned long end_addr)
 {
-	struct mmu_notifier_range range;
-	mmu_notifier_range_init(&range, MMU_NOTIFY_UNMAP, 0, vma, vma->vm_mm,
-				start_addr, end_addr);
-	mmu_notifier_invalidate_range_start(&range);
-	mmu_notifier_invalidate_range_end(&range);
 }
 
 static vm_fault_t do_wp_page(struct vm_fault *vmf) __releases(vmf->ptl)

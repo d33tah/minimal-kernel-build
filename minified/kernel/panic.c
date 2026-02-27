@@ -5,8 +5,6 @@
 
 /* Merged from lib/debug_locks.c */
 int debug_locks __read_mostly = 1;
-#include <linux/vt_kern.h>
-
 #include <linux/console.h>
 
 atomic_t panic_cpu = ATOMIC_INIT(PANIC_CPU_INVALID);

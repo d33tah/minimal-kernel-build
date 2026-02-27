@@ -25,8 +25,6 @@ struct signal_struct {
 	struct rw_semaphore exec_update_lock;
 } __randomize_layout;
 
-int force_sig_fault(int sig, int code, void __user *addr);
-/* force_sigsegv now static in signal.c */
 extern void force_sig(int);
 
 

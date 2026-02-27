@@ -1,4 +1,3 @@
-#include <linux/console.h>
 #include <asm/sections.h>
 
 extern int initrd_below_start_ok;
@@ -222,7 +221,6 @@ void __init setup_arch(char **cmdline_p)
 	generic_apic_probe();
 
 	x86_init.resources.reserve_resources();
-	conswitchp = &vga_con;
 }
 
 void __init i386_reserve_resources(void)

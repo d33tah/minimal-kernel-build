@@ -2,8 +2,6 @@
 #include <linux/memblock.h>
 #include "internal.h"
 
-__cacheline_aligned_in_smp DEFINE_SEQLOCK(rename_lock);
-
 static struct kmem_cache *dentry_cache __read_mostly;
 
 static const struct qstr slash_name = QSTR_INIT("/", 1);
@@ -315,22 +313,6 @@ static unsigned d_flags_for_inode(struct inode *inode)
 	return DCACHE_REGULAR_TYPE;
 }
 
-static void d_instantiate(struct dentry *entry, struct inode *inode)
-{
-	if (inode) {
-		unsigned add_flags = d_flags_for_inode(inode);
-
-		spin_lock(&inode->i_lock);
-		spin_lock(&entry->d_lock);
-		hlist_add_head(&entry->d_u.d_alias, &inode->i_dentry);
-		raw_write_seqcount_begin(&entry->d_seq);
-		__d_set_inode_and_type(entry, inode, add_flags);
-		raw_write_seqcount_end(&entry->d_seq);
-		spin_unlock(&entry->d_lock);
-		spin_unlock(&inode->i_lock);
-	}
-}
-
 struct dentry *d_make_root(struct inode *root_inode)
 {
 	struct dentry *res = NULL;
@@ -338,9 +320,19 @@ struct dentry *d_make_root(struct inode *root_inode)
 	if (root_inode) {
 		res = __d_alloc(root_inode->i_sb,
 				NULL); /* inlined d_alloc_anon */
-		if (res)
-			d_instantiate(res, root_inode);
-		else
+		if (res) {
+			unsigned add_flags = d_flags_for_inode(root_inode);
+
+			spin_lock(&root_inode->i_lock);
+			spin_lock(&res->d_lock);
+			hlist_add_head(&res->d_u.d_alias,
+				       &root_inode->i_dentry);
+			raw_write_seqcount_begin(&res->d_seq);
+			__d_set_inode_and_type(res, root_inode, add_flags);
+			raw_write_seqcount_end(&res->d_seq);
+			spin_unlock(&res->d_lock);
+			spin_unlock(&root_inode->i_lock);
+		} else
 			iput(root_inode);
 	}
 	return res;
@@ -357,16 +349,7 @@ static inline bool d_same_name(const struct dentry *dentry,
 
 struct dentry *d_lookup(const struct dentry *parent, const struct qstr *name)
 {
-	struct dentry *dentry;
-	unsigned seq;
-
-	do {
-		seq = read_seqbegin(&rename_lock);
-		dentry = __d_lookup(parent, name);
-		if (dentry)
-			break;
-	} while (read_seqretry(&rename_lock, seq));
-	return dentry;
+	return __d_lookup(parent, name);
 }
 
 struct dentry *__d_lookup(const struct dentry *parent, const struct qstr *name)

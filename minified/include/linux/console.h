@@ -4,23 +4,6 @@
 
 #include <linux/types.h>
 
-struct vc_data;
-struct module;
-
-struct consw {
-	struct module *owner;
-	const char *(*con_startup)(void);
-	void	(*con_init)(struct vc_data *vc, int init);
-	int	(*con_switch)(struct vc_data *vc);
-	int	(*con_set_origin)(struct vc_data *vc);
-	void	(*con_save_screen)(struct vc_data *vc);
-};
-
-extern const struct consw *conswitchp;
-
-extern const struct consw dummy_con;
-extern const struct consw vga_con;
-
 #define CON_PRINTBUFFER	(1)
 #define CON_ENABLED	(4)
 

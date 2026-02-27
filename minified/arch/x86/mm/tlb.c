@@ -1,7 +1,6 @@
 /* Simplified TLB management for single-CPU hello-world kernel */
 #include <asm/mmu_context.h>
 #include <asm/cache.h>
-#include <asm/apic.h>
 
 #define STATIC_NOPV static
 #define __flush_tlb_local native_flush_tlb_local

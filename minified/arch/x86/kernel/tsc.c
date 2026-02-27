@@ -5,7 +5,7 @@
 #include <asm/irq.h>
 #include <asm/io.h>
 #include <asm/x86_init.h>
-#include <asm/apic.h>
+#include <linux/seqlock.h>
 #define INTEL_FAM6_ATOM_GOLDMONT 0x5C
 #define INTEL_FAM6_ATOM_GOLDMONT_D 0x5F
 #include <asm/i8259.h>

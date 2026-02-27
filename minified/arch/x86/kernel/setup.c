@@ -9,7 +9,6 @@ extern unsigned long phys_initrd_size;
 
 extern dev_t ROOT_DEV;
 
-#include <asm/apic.h>
 #include <asm/io.h>
 void reserve_bios_regions(void);
 #include <asm/cpu.h>
@@ -217,8 +216,6 @@ void __init setup_arch(char **cmdline_p)
 	x86_init.paging.pagetable_init();
 
 	sync_initial_page_table();
-
-	generic_apic_probe();
 
 	x86_init.resources.reserve_resources();
 }

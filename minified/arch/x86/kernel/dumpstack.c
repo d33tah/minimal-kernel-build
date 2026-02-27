@@ -2,11 +2,7 @@
 #define NOKPROBE_SYMBOL(fname) /* kprobes disabled */
 #endif
 #include <asm/kdebug.h>
-int notify_die(enum die_val val, const char *str, struct pt_regs *regs,
-	       long err, int trap, int sig);
 #include <linux/ptrace.h>
-
-static int die_counter;
 
 static arch_spinlock_t die_lock = __ARCH_SPIN_LOCK_UNLOCKED;
 static int die_owner = -1;
@@ -57,16 +53,8 @@ void oops_end(unsigned long flags, struct pt_regs *regs, int signr)
 }
 NOKPROBE_SYMBOL(oops_end);
 
-static void __die_header(const char *str, struct pt_regs *regs, long err)
-{
-	printk(KERN_DEFAULT "%s [#%d]\n", str, ++die_counter);
-}
-NOKPROBE_SYMBOL(__die_header);
-
 int __die(const char *str, struct pt_regs *regs, long err)
 {
-	__die_header(str, regs, err);
-	notify_die(DIE_OOPS, str, regs, err, current->thread.trap_nr, SIGSEGV);
 	return 0;
 }
 NOKPROBE_SYMBOL(__die);

@@ -11,22 +11,6 @@ static int _atomic_dec_and_lock(atomic_t *atomic, spinlock_t *lock)
 	spin_unlock(lock);
 	return 0;
 }
-/* cdev.h inlined */
-#include <linux/device.h>
-struct file_operations;
-struct inode;
-struct module;
-struct cdev {
-	struct kobject kobj;
-	struct module *owner;
-	const struct file_operations *ops;
-	struct list_head list;
-	dev_t dev;
-	unsigned int count;
-} __randomize_layout;
-void cdev_put(struct cdev *p);
-void cd_forget(struct inode *);
-
 const struct address_space_operations empty_aops = {};
 
 static struct kmem_cache *inode_cachep __read_mostly;
@@ -111,9 +95,6 @@ static void evict(struct inode *inode)
 	}
 
 	inode->i_state = I_FREEING | I_CLEAR;
-
-	if (S_ISCHR(inode->i_mode) && inode->i_cdev)
-		cd_forget(inode);
 
 	spin_lock(&inode->i_lock);
 	wake_up_bit(&inode->i_state, __I_NEW);

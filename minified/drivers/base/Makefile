@@ -1,4 +1,3 @@
 # SPDX-License-Identifier: GPL-2.0
-# core.o, bus.o, dd.o removed - driver_init inlined into main.c
-obj-y := map.o
+# core.o, bus.o, dd.o, map.o removed
 obj-y += power/

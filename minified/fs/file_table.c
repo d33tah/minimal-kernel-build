@@ -1,19 +1,5 @@
 #include <linux/fs.h>
-/* cdev.h inlined */
 #include <linux/device.h>
-struct file_operations;
-struct inode;
-struct module;
-struct cdev {
-	struct kobject kobj;
-	struct module *owner;
-	const struct file_operations *ops;
-	struct list_head list;
-	dev_t dev;
-	unsigned int count;
-} __randomize_layout;
-void cdev_put(struct cdev *p);
-void cd_forget(struct inode *);
 #include <linux/task_work.h>
 
 static struct kmem_cache *filp_cachep __read_mostly;
@@ -52,10 +38,6 @@ static void __fput(struct file *file)
 
 	if (file->f_op->release)
 		file->f_op->release(inode, file);
-	if (unlikely(S_ISCHR(inode->i_mode) && inode->i_cdev != NULL &&
-		     !(mode & FMODE_PATH))) {
-		cdev_put(inode->i_cdev);
-	}
 	fops_put(file->f_op);
 	if (mode & FMODE_WRITER) {
 		put_write_access(inode);

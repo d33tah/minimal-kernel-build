@@ -23,15 +23,7 @@ irqreturn_t handle_irq_event(struct irq_desc *desc)
 	raw_spin_unlock(&desc->lock);
 
 	for_each_action_of_desc(desc, action)
-	{
-		irqreturn_t res;
-		res = action->handler(irq, action->dev_id);
-		if (WARN_ONCE(!irqs_disabled(),
-			      "irq %u handler %pS enabled interrupts\n", irq,
-			      action->handler))
-			local_irq_disable();
-		retval |= res;
-	}
+		retval |= action->handler(irq, action->dev_id);
 
 	raw_spin_lock(&desc->lock);
 	irqd_clear(&desc->irq_data, IRQD_IRQ_INPROGRESS);

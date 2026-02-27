@@ -14,17 +14,12 @@ static int __setup_irq(unsigned int irq, struct irq_desc *desc,
 		return -ENOSYS;
 
 	new->irq = irq;
-	if (!(new->flags &IRQF_TRIGGER_MASK))
-		new->flags |= irqd_get_trigger_type(&desc->irq_data);
 
 	mutex_lock(&desc->request_mutex);
 	chip_bus_lock(desc);
 	raw_spin_lock_irqsave(&desc->lock, flags);
 
 	irq_activate(desc);
-	desc->istate &= ~(IRQS_AUTODETECT | IRQS_SPURIOUS_DISABLED |
-			  IRQS_ONESHOT | IRQS_WAITING);
-	irqd_clear(&desc->irq_data, IRQD_IRQ_INPROGRESS);
 
 	if (!(new->flags &IRQF_NO_AUTOEN) &&
 	    !(desc->status_use_accessors & _IRQ_NOAUTOEN))

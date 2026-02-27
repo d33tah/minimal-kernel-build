@@ -270,8 +270,6 @@ struct semaphore {
 	.count		= n,						\
 	.wait_list	= LIST_HEAD_INIT((name).wait_list),		\
 }
-#define DEFINE_SEMAPHORE(name)	\
-	struct semaphore name = __SEMAPHORE_INITIALIZER(name, 1)
 extern void down(struct semaphore *sem);
 extern void up(struct semaphore *sem);
 #include <linux/fcntl.h>
@@ -289,20 +287,8 @@ struct percpu_rw_semaphore {
 	atomic_t		block;
 };
 
-struct delayed_call {
-	void (*fn)(void *);
-	void *arg;
-};
-static inline void do_delayed_call(struct delayed_call *call)
-{
-	if (call->fn)
-		call->fn(call->arg);
-}
-
 /* mount.h inlined */
 #define MNT_NOEXEC	0x04
-#define MNT_READONLY	0x40
-#define MNT_WRITE_HOLD	0x200
 #define MNT_INTERNAL	0x4000
 #define MNT_LOCKED	0x800000
 struct vfsmount {
@@ -494,7 +480,6 @@ static inline struct inode *file_inode(const struct file *f)
 	return f->f_inode;
 }
 
-#define SB_RDONLY	 1
 #define SB_KERNMOUNT	(1<<22)
 #define SB_BORN		(1<<29)
 #define SB_ACTIVE	(1<<30)
@@ -563,11 +548,8 @@ struct inode_operations {
 #define IS_DEADDIR(inode)	((inode)->i_flags & S_DEAD)
 
 #define __I_NEW			3
-#define I_NEW			(1 << __I_NEW)
-#define I_WILL_FREE		(1 << 4)
 #define I_FREEING		(1 << 5)
 #define I_CLEAR			(1 << 6)
-#define I_LINKABLE		(1 << 10)
 
 extern void inc_nlink(struct inode *inode);
 

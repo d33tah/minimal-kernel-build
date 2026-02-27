@@ -61,11 +61,6 @@ static inline seqcount_t *__seqprop_ptr(seqcount_t *s)
 	return s;
 }
 
-static inline unsigned __seqprop_sequence(const seqcount_t *s)
-{
-	return READ_ONCE(s->sequence);
-}
-
 static inline bool __seqprop_preemptible(const seqcount_t *s)
 {
 	return false;
@@ -95,40 +90,7 @@ SEQCOUNT_LOCKNAME(spinlock, spinlock_t, __SEQ_RT, s->lock, spin,
 		__seqprop_case((s), spinlock, prop))
 
 #define seqprop_ptr(s) __seqprop(s, ptr)
-#define seqprop_sequence(s) __seqprop(s, sequence)
 #define seqprop_preemptible(s) __seqprop(s, preemptible)
-
-#define __read_seqcount_begin(s)                          \
-	({                                                \
-		unsigned __seq;                           \
-                                                          \
-		while ((__seq = seqprop_sequence(s)) & 1) \
-			cpu_relax();                      \
-                                                          \
-		__seq;                                    \
-	})
-
-#define raw_read_seqcount_begin(s)                        \
-	({                                                \
-		unsigned _seq = __read_seqcount_begin(s); \
-                                                          \
-		smp_rmb();                                \
-		_seq;                                     \
-	})
-
-static inline int do___read_seqcount_retry(const seqcount_t *s, unsigned start)
-{
-	return unlikely(READ_ONCE(s->sequence) != start);
-}
-
-#define read_seqcount_retry(s, start) \
-	do_read_seqcount_retry(seqprop_ptr(s), start)
-
-static inline int do_read_seqcount_retry(const seqcount_t *s, unsigned start)
-{
-	smp_rmb();
-	return do___read_seqcount_retry(s, start);
-}
 
 #define raw_write_seqcount_begin(s)                          \
 	do {                                                 \
@@ -206,18 +168,6 @@ typedef struct {
 	  .lock = __SPIN_LOCK_UNLOCKED(lockname) }
 
 #define DEFINE_SEQLOCK(sl) seqlock_t sl = __SEQLOCK_UNLOCKED(sl)
-
-static inline unsigned read_seqbegin(const seqlock_t *sl)
-{
-	unsigned ret = raw_read_seqcount_begin(&sl->seqcount);
-
-	return ret;
-}
-
-static inline unsigned read_seqretry(const seqlock_t *sl, unsigned start)
-{
-	return read_seqcount_retry(&sl->seqcount, start);
-}
 
 static inline void write_seqlock(seqlock_t *sl)
 {

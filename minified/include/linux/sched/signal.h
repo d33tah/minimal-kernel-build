@@ -61,21 +61,6 @@ static inline int signal_pending_state(unsigned int state, struct task_struct *p
 	return (state & TASK_INTERRUPTIBLE) || __fatal_signal_pending(p);
 }
 
-/* x86 doesn't define TIF_RESTORE_SIGMASK, use current->restore_sigmask */
-static inline bool test_and_clear_restore_sigmask(void)
-{
-	if (!current->restore_sigmask)
-		return false;
-	current->restore_sigmask = false;
-	return true;
-}
-
-static inline void restore_saved_sigmask(void)
-{
-	if (test_and_clear_restore_sigmask())
-		__set_current_blocked(&current->saved_sigmask);
-}
-
 static inline struct pid *task_pgrp(struct task_struct *task)
 {
 	return task->signal->pids[PIDTYPE_PGID];

@@ -55,6 +55,4 @@ static inline void init_sigpending(struct sigpending *sig)
 
 enum pid_type;
 
-extern void __set_current_blocked(const sigset_t *);
-
 #endif

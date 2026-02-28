@@ -38,7 +38,6 @@ static inline void local_irq_disable_exit_to_user(void)
 
 static inline void arch_do_signal_or_restart(struct pt_regs *regs)
 {
-	restore_saved_sigmask();
 }
 
 void syscall_exit_to_user_mode(struct pt_regs *regs);

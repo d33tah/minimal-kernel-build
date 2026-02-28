@@ -22,30 +22,6 @@ unsigned long _brk_end = (unsigned long)__brk_base;
 
 struct boot_params boot_params;
 
-static struct resource rodata_resource = { .name = "Kernel rodata",
-					   .start = 0,
-					   .end = 0,
-					   .flags = IORESOURCE_BUSY |
-						    IORESOURCE_SYSTEM_RAM };
-
-static struct resource data_resource = { .name = "Kernel data",
-					 .start = 0,
-					 .end = 0,
-					 .flags = IORESOURCE_BUSY |
-						  IORESOURCE_SYSTEM_RAM };
-
-static struct resource code_resource = { .name = "Kernel code",
-					 .start = 0,
-					 .end = 0,
-					 .flags = IORESOURCE_BUSY |
-						  IORESOURCE_SYSTEM_RAM };
-
-static struct resource bss_resource = { .name = "Kernel bss",
-					.start = 0,
-					.end = 0,
-					.flags = IORESOURCE_BUSY |
-						 IORESOURCE_SYSTEM_RAM };
-
 struct cpuinfo_x86 new_cpu_data;
 
 struct cpuinfo_x86 boot_cpu_data __read_mostly;
@@ -133,16 +109,7 @@ void __init setup_arch(char **cmdline_p)
 	}
 	reserve_bios_regions();
 
-	iomem_resource.end = (1ULL << boot_cpu_data.x86_phys_bits) - 1;
 	e820__memory_setup();
-	code_resource.start = __pa_symbol(_text);
-	code_resource.end = __pa_symbol(_etext) - 1;
-	rodata_resource.start = __pa_symbol(__start_rodata);
-	rodata_resource.end = __pa_symbol(__end_rodata) - 1;
-	data_resource.start = __pa_symbol(_sdata);
-	data_resource.end = __pa_symbol(_edata) - 1;
-	bss_resource.start = __pa_symbol(__bss_start);
-	bss_resource.end = __pa_symbol(__bss_stop) - 1;
 
 	strscpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
 	*cmdline_p = command_line;
@@ -155,11 +122,6 @@ void __init setup_arch(char **cmdline_p)
 	parse_early_param();
 
 	tsc_early_init();
-
-	insert_resource(&iomem_resource, &code_resource);
-	insert_resource(&iomem_resource, &rodata_resource);
-	insert_resource(&iomem_resource, &data_resource);
-	insert_resource(&iomem_resource, &bss_resource);
 
 	{
 		u64 start = __pa_symbol(_text);

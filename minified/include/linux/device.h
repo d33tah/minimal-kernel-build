@@ -2,7 +2,6 @@
 #ifndef _DEVICE_H_
 #define _DEVICE_H_
 
-#include <linux/ioport.h>
 #include <linux/kobject.h>
 #include <linux/mutex.h>
 #include <linux/gfp.h>

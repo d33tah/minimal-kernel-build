@@ -394,7 +394,6 @@ endif
 
 # Objects we will link into vmlinux / subdirs we need to visit
 core-y		:= init/ usr/ arch/$(SRCARCH)/
-drivers-y	:= drivers/
 libs-y		:= lib/
 
 all: vmlinux
@@ -546,10 +545,10 @@ export KBUILD_IMAGE ?= vmlinux
 
 PHONY += prepare0
 
-core-y			+= kernel/ mm/ fs/ security/
+core-y			+= kernel/ mm/ fs/
 
 vmlinux-dirs	:= $(patsubst %/,%,$(filter %/, \
-		     $(core-y) $(drivers-y) $(libs-y)))
+		     $(core-y) $(libs-y)))
 
 vmlinux-alldirs	:= $(sort $(vmlinux-dirs))
 
@@ -560,7 +559,7 @@ clean-dirs	:= $(vmlinux-alldirs)
 KBUILD_VMLINUX_OBJS := $(head-y) $(patsubst %/,%/built-in.a, $(core-y))
 KBUILD_VMLINUX_OBJS += $(addsuffix built-in.a, $(filter %/, $(libs-y)))
 KBUILD_VMLINUX_LIBS := $(patsubst %/,%/lib.a, $(libs-y))
-KBUILD_VMLINUX_OBJS += $(patsubst %/,%/built-in.a, $(drivers-y))
+
 
 export KBUILD_VMLINUX_OBJS KBUILD_VMLINUX_LIBS
 export KBUILD_LDS          := arch/$(SRCARCH)/kernel/vmlinux.lds

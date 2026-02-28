@@ -2,7 +2,6 @@
 #include <linux/extable.h>
 #include <linux/binfmts.h>
 #include <linux/file.h>
-extern int initrd_below_start_ok;
 extern unsigned long initrd_start, initrd_end;
 extern phys_addr_t phys_initrd_start;
 extern unsigned long phys_initrd_size;
@@ -58,21 +57,11 @@ extern const struct obs_kernel_param __setup_start[], __setup_end[];
 
 unsigned long loops_per_jiffy = (1 << 12);
 
-/* inlined from kernel/rcu/srcutiny.c */
-static LIST_HEAD(srcu_boot_list);
 static bool srcu_init_done;
 
 static void __init srcu_init(void)
 {
-	struct srcu_struct *ssp;
-
 	srcu_init_done = true;
-	while (!list_empty(&srcu_boot_list)) {
-		ssp = list_first_entry(&srcu_boot_list, struct srcu_struct,
-				       srcu_work.entry);
-		list_del_init(&ssp->srcu_work.entry);
-		schedule_work(&ssp->srcu_work);
-	}
 }
 
 static __initdata DECLARE_COMPLETION(kthreadd_done);
@@ -206,13 +195,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	local_irq_enable();
 
-	if (initrd_start && !initrd_below_start_ok &&
-	    page_to_pfn(virt_to_page((void *)initrd_start)) < min_low_pfn) {
-		pr_crit("initrd overwritten (0x%08lx < 0x%08lx) - disabling it.\n",
-			page_to_pfn(virt_to_page((void *)initrd_start)),
-			min_low_pfn);
-		initrd_start = 0;
-	}
 	setup_per_cpu_pageset();
 	loops_per_jiffy = 12500000;
 	pid_idr_init();

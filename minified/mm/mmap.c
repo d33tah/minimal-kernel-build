@@ -503,7 +503,7 @@ void exit_mmap(struct mm_struct *mm)
 	}
 
 	lru_add_drain();
-	tlb_gather_mmu_fullmm(&tlb, mm);
+	tlb_gather_mmu(&tlb, mm, true);
 
 	unmap_vmas(&tlb, vma, 0, -1);
 	free_pgtables(&tlb, vma, FIRST_USER_ADDRESS, USER_PGTABLES_CEILING);

@@ -23,8 +23,7 @@ void tlb_flush_mmu(struct mmu_gather *tlb)
 	tlb->active = &tlb->local;
 }
 
-static void __tlb_gather_mmu(struct mmu_gather *tlb, struct mm_struct *mm,
-			     bool fullmm)
+void tlb_gather_mmu(struct mmu_gather *tlb, struct mm_struct *mm, bool fullmm)
 {
 	tlb->mm = mm;
 	tlb->fullmm = fullmm;
@@ -36,16 +35,6 @@ static void __tlb_gather_mmu(struct mmu_gather *tlb, struct mm_struct *mm,
 	tlb->batch_count = 0;
 	__tlb_reset_range(tlb);
 	atomic_inc(&tlb->mm->tlb_flush_pending);
-}
-
-void tlb_gather_mmu(struct mmu_gather *tlb, struct mm_struct *mm)
-{
-	__tlb_gather_mmu(tlb, mm, false);
-}
-
-void tlb_gather_mmu_fullmm(struct mmu_gather *tlb, struct mm_struct *mm)
-{
-	__tlb_gather_mmu(tlb, mm, true);
 }
 
 void tlb_finish_mmu(struct mmu_gather *tlb)

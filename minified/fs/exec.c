@@ -141,7 +141,7 @@ int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top,
 			goto out_unlock;
 		}
 		lru_add_drain();
-		tlb_gather_mmu(&tlb, mm);
+		tlb_gather_mmu(&tlb, mm, false);
 		if (new_end > old_start)
 			free_pgd_range(&tlb, new_end, old_end, new_end,
 				       vma->vm_next ? vma->vm_next->vm_start :

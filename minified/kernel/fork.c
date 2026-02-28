@@ -299,16 +299,11 @@ copy_process(int node, struct kernel_clone_args *args)
 	if (likely(p->pid)) {
 		init_task_pid(p, PIDTYPE_PID, pid);
 		init_task_pid(p, PIDTYPE_TGID, pid);
-		init_task_pid(p, PIDTYPE_PGID, task_pgrp(current));
-		init_task_pid(p, PIDTYPE_SID, task_session(current));
 
 		if (is_child_reaper(pid))
 			ns_of_pid(pid)->child_reaper = p;
-		sigemptyset(&p->signal->shared_pending.signal);
 		list_add_tail_rcu(&p->tasks, &init_task.tasks);
 		attach_pid(p, PIDTYPE_TGID);
-		attach_pid(p, PIDTYPE_PGID);
-		attach_pid(p, PIDTYPE_SID);
 		attach_pid(p, PIDTYPE_PID);
 	}
 	spin_unlock(&current->sighand->siglock);

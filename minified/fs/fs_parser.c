@@ -23,26 +23,10 @@ int __fs_parse(struct p_log *log, const struct fs_parameter_spec *desc,
 			goto found;
 		other = p;
 	}
-	if (want_flag) {
-		if (name[0] == 'n' && name[1] == 'o' && name[2]) {
-			for (p = desc; p->name; p++) {
-				if (strcmp(p->name, name + 2) != 0)
-					continue;
-				if (!(p->flags & fs_param_neg_with_no))
-					continue;
-				result->negated = true;
-				goto found;
-			}
-		}
-	}
 	p = other;
 	if (!p)
 		return -ENOPARAM;
 found:
-
-	if (p->flags & fs_param_deprecated)
-		warn_plog(log, "Deprecated parameter '%s'", param->key);
-
 	if (is_flag(p)) {
 		if (param->type != fs_value_is_flag)
 			return inval_plog(log, "Unexpected value for '%s'",
@@ -62,8 +46,6 @@ int fs_param_is_u32(struct p_log *log, const struct fs_parameter_spec *p,
 	int base = (unsigned long)p->data;
 	if (param->type != fs_value_is_string)
 		return inval_plog(log, "Bad value for '%s'", param->key);
-	if (!*param->string && (p->flags & fs_param_can_be_empty))
-		return 0;
 	if (kstrtouint(param->string, base, &result->uint_32) < 0)
 		return inval_plog(log, "Bad value for '%s'", param->key);
 	return 0;

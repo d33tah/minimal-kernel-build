@@ -236,8 +236,8 @@ static inline cpumask_t *mm_cpumask(struct mm_struct *mm)
 }
 
 struct mmu_gather;
-extern void tlb_gather_mmu(struct mmu_gather *tlb, struct mm_struct *mm);
-extern void tlb_gather_mmu_fullmm(struct mmu_gather *tlb, struct mm_struct *mm);
+extern void tlb_gather_mmu(struct mmu_gather *tlb, struct mm_struct *mm,
+			   bool fullmm);
 extern void tlb_finish_mmu(struct mmu_gather *tlb);
 
 typedef __bitwise unsigned int vm_fault_t;

@@ -45,10 +45,5 @@ static __always_inline int user_mode(struct pt_regs *regs)
 	return ((regs->cs & SEGMENT_RPL_MASK) | (regs->flags & X86_VM_MASK)) >= USER_RPL;
 }
 
-static inline unsigned long instruction_pointer(struct pt_regs *regs)
-{
-	return regs->ip;
-}
-
 #endif /* !__ASSEMBLY__ */
 #endif /* _ASM_X86_PTRACE_H */

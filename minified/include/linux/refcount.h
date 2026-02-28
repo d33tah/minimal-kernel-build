@@ -14,7 +14,6 @@ typedef struct refcount_struct {
 #define REFCOUNT_INIT(n)	{ .refs = ATOMIC_INIT(n), }
 
 enum refcount_saturation_type {
-	REFCOUNT_ADD_NOT_ZERO_OVF,
 	REFCOUNT_ADD_OVF,
 	REFCOUNT_ADD_UAF,
 	REFCOUNT_SUB_UAF,
@@ -28,29 +27,6 @@ static inline void refcount_set(refcount_t *r, int n)
 	atomic_set(&r->refs, n);
 }
 
-static inline unsigned int refcount_read(const refcount_t *r)
-{
-	return atomic_read(&r->refs);
-}
-
-static inline __must_check bool __refcount_add_not_zero(int i, refcount_t *r, int *oldp)
-{
-	int old = refcount_read(r);
-
-	do {
-		if (!old)
-			break;
-	} while (!atomic_try_cmpxchg_relaxed(&r->refs, &old, old + i));
-
-	if (oldp)
-		*oldp = old;
-
-	if (unlikely(old < 0 || old + i < 0))
-		refcount_warn_saturate(r, REFCOUNT_ADD_NOT_ZERO_OVF);
-
-	return old;
-}
-
 static inline void __refcount_add(int i, refcount_t *r, int *oldp)
 {
 	int old = atomic_fetch_add_relaxed(i, &r->refs);
@@ -62,16 +38,6 @@ static inline void __refcount_add(int i, refcount_t *r, int *oldp)
 		refcount_warn_saturate(r, REFCOUNT_ADD_UAF);
 	else if (unlikely(old < 0 || old + i < 0))
 		refcount_warn_saturate(r, REFCOUNT_ADD_OVF);
-}
-
-static inline __must_check bool __refcount_inc_not_zero(refcount_t *r, int *oldp)
-{
-	return __refcount_add_not_zero(1, r, oldp);
-}
-
-static inline __must_check bool refcount_inc_not_zero(refcount_t *r)
-{
-	return __refcount_inc_not_zero(r, NULL);
 }
 
 static inline void __refcount_inc(refcount_t *r, int *oldp)

@@ -3,9 +3,6 @@
 # Makefile for x86 specific library files.
 #
 
-KCOV_INSTRUMENT_delay.o := n
-KCSAN_SANITIZE_delay.o := n
-
 lib-y := delay.o cpu.o
 lib-y += usercopy_$(BITS).o putuser.o
 lib-y += memcpy_$(BITS).o

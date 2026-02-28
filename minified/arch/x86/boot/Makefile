@@ -1,10 +1,7 @@
 # arch/x86/boot/Makefile
 # Copyright (C) 1994 by Linus Torvalds
 
-KASAN_SANITIZE			:= n
-KCSAN_SANITIZE			:= n
 OBJECT_FILES_NON_STANDARD	:= y
-KCOV_INSTRUMENT		:= n
 
 SVGA_MODE	:= -DSVGA_MODE=NORMAL_VGA
 
@@ -29,8 +26,6 @@ KBUILD_CFLAGS	:= $(REALMODE_CFLAGS) -D_SETUP
 KBUILD_AFLAGS	:= $(KBUILD_CFLAGS) -D__ASSEMBLY__
 KBUILD_CFLAGS	+= $(call cc-option,-fmacro-prefix-map=$(srctree)/=)
 KBUILD_CFLAGS	+= -fno-asynchronous-unwind-tables
-GCOV_PROFILE := n
-UBSAN_SANITIZE := n
 
 $(obj)/bzImage: asflags-y  := $(SVGA_MODE)
 

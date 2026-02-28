@@ -1,10 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0
 # create a compressed vmlinux image from the original vmlinux
 
-KASAN_SANITIZE			:= n
-KCSAN_SANITIZE			:= n
 OBJECT_FILES_NON_STANDARD	:= y
-KCOV_INSTRUMENT		:= n
 
 targets := vmlinux vmlinux.bin vmlinux.bin.none
 
@@ -26,8 +23,6 @@ KBUILD_CFLAGS += $(call as-option,-Wa$(comma)-mrelax-relocations=no)
 KBUILD_CFLAGS += -include $(srctree)/include/linux/hidden.h
 
 KBUILD_AFLAGS  := $(KBUILD_CFLAGS) -D__ASSEMBLY__
-GCOV_PROFILE := n
-UBSAN_SANITIZE :=n
 
 KBUILD_LDFLAGS := -m elf_$(UTS_MACHINE)
 KBUILD_LDFLAGS += $(call ld-option,--no-ld-generated-unwind-info)

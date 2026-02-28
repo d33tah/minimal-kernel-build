@@ -1,6 +1,4 @@
 # SPDX-License-Identifier: GPL-2.0
-KCOV_INSTRUMENT_tlb.o := n
-KCSAN_SANITIZE := n
 
 obj-y := fault.o ioremap.o extable.o pgprot.o
 

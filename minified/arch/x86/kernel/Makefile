@@ -7,8 +7,6 @@ extra-y	+= vmlinux.lds
 
 CPPFLAGS_vmlinux.lds += -U$(UTS_MACHINE)
 
-KCSAN_SANITIZE := n
-KCOV_INSTRUMENT := n
 
 obj-y			:= process_$(BITS).o
 obj-y			+= traps.o idt.o irq_$(BITS).o

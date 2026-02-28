@@ -6,27 +6,15 @@
 
 struct task_struct;
 union thread_union;
-struct css_set;
-
 struct kernel_clone_args {
 	u64 flags;
-	int __user *pidfd;
-	int __user *child_tid;
-	int __user *parent_tid;
 	unsigned long stack;
 	unsigned long stack_size;
-	unsigned long tls;
 	pid_t *set_tid;
-	 
 	size_t set_tid_size;
-	int cgroup;
-	int io_thread;
 	int kthread;
-	int idle;
 	int (*fn)(void *);
 	void *fn_arg;
-	struct cgroup *cgrp;
-	struct css_set *cset;
 };
 
 extern union thread_union init_thread_union;

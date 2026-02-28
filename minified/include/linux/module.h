@@ -27,8 +27,6 @@ struct kernel_param_ops {
 	void (*free)(void *arg);
 };
 enum { KERNEL_PARAM_FL_UNSAFE = (1 << 0), KERNEL_PARAM_FL_HWPARAM = (1 << 1) };
-struct kparam_string;
-struct kparam_array;
 struct kernel_param {
 	const char *name;
 	struct module *mod;
@@ -36,11 +34,7 @@ struct kernel_param {
 	const u16 perm;
 	s8 level;
 	u8 flags;
-	union {
-		void *arg;
-		const struct kparam_string *str;
-		const struct kparam_array *arr;
-	};
+	void *arg;
 };
 extern const struct kernel_param __start___param[], __stop___param[];
 extern bool parameq(const char *name1, const char *name2);

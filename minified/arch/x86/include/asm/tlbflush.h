@@ -92,26 +92,12 @@ extern unsigned long mmu_cr4_features;
 
 extern void initialize_tlbstate_and_flush(void);
 
-struct flush_tlb_info {
-	 
-	struct mm_struct	*mm;
-	unsigned long		start;
-	unsigned long		end;
-	u64			new_tlb_gen;
-	unsigned int		initiating_cpu;
-	u8			stride_shift;
-	u8			freed_tables;
-};
-
 void flush_tlb_local(void);
 void flush_tlb_one_user(unsigned long addr);
 void flush_tlb_one_kernel(unsigned long addr);
-void flush_tlb_multi(const struct cpumask *cpumask,
-		      const struct flush_tlb_info *info);
-
-extern void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
-				unsigned long end, unsigned int stride_shift,
-				bool freed_tables);
+void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
+			unsigned long end, unsigned int stride_shift,
+			bool freed_tables);
 static inline u64 inc_mm_tlb_gen(struct mm_struct *mm)
 {
 	 

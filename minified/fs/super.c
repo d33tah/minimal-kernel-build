@@ -54,8 +54,7 @@ static void destroy_super_work(struct work_struct *work)
 static void destroy_super_rcu(struct rcu_head *head)
 {
 	struct super_block *s = container_of(head, struct super_block, rcu);
-	INIT_WORK(&s->destroy_work, destroy_super_work);
-	schedule_work(&s->destroy_work);
+	destroy_super_work(&s->destroy_work);
 }
 
 static void destroy_unused_super(struct super_block *s)

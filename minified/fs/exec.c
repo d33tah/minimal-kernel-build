@@ -397,7 +397,7 @@ static int bprm_execve(struct linux_binprm *bprm, int fd,
 
 out:
 	if (bprm->point_of_no_return && !fatal_signal_pending(current))
-		force_sig(SIGSEGV);
+		panic("force_sig");
 	return retval;
 }
 

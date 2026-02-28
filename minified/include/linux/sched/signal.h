@@ -25,9 +25,6 @@ struct signal_struct {
 	struct rw_semaphore exec_update_lock;
 } __randomize_layout;
 
-extern void force_sig(int);
-
-
 static inline int task_sigpending(struct task_struct *p)
 {
 	return unlikely(test_tsk_thread_flag(p,TIF_SIGPENDING));

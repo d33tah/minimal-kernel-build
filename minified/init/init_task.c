@@ -1,5 +1,13 @@
 #include <linux/init_task.h>
 #include <linux/fs.h>
+#include <linux/utsname.h>
+
+struct nsproxy init_nsproxy = {
+	.count = ATOMIC_INIT(1),
+	.uts_ns = &init_uts_ns,
+	.mnt_ns = NULL,
+	.pid_ns_for_children = &init_pid_ns,
+};
 
 static struct signal_struct init_signals = {
 	.shared_pending	= {

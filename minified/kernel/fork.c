@@ -259,9 +259,7 @@ copy_process(int node, struct kernel_clone_args *args)
 	}
 	p->mm = NULL;
 	p->active_mm = NULL;
-	retval = copy_namespaces(p);
-	if (retval)
-		goto bad_fork;
+	atomic_inc(&p->nsproxy->count);
 	retval = copy_thread(p, args);
 	if (retval)
 		goto bad_fork;

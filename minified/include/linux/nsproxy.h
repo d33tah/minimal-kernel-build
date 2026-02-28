@@ -12,5 +12,4 @@ struct nsproxy {
 	struct net 	     *net_ns;
 };
 extern struct nsproxy init_nsproxy;
-int copy_namespaces(struct task_struct *tsk);
 #endif

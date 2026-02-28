@@ -6,11 +6,11 @@
 obj-y     = fork.o panic.o \
 	    cpu.o exit.o softirq.o \
 	    user.o \
-	    signal.o workqueue.o pid.o task_work.o \
+	    pid.o task_work.o \
 	    extable.o params.o \
-	    kthread.o sys_ni.o nsproxy.o \
+	    kthread.o sys_ni.o \
 	    cred.o \
-	    range.o ucount.o
+	    range.o
 
 obj-y += sched/
 obj-y += locking/

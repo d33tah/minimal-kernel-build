@@ -1,4 +1,4 @@
-/* Minimal workqueue.h */
+/* Minimal workqueue.h - no actual workqueue, just struct definitions */
 #ifndef _LINUX_WORKQUEUE_H
 #define _LINUX_WORKQUEUE_H
 
@@ -17,7 +17,6 @@ typedef void (*work_func_t)(struct work_struct *work);
 
 enum {
 	WORK_STRUCT_PENDING_BIT	= 0,
-	WORK_CPU_UNBOUND	= NR_CPUS,
 	WORK_STRUCT_NO_POOL	= (unsigned long)
 		(((1LU << (BITS_PER_LONG - 5 <= 31 ? BITS_PER_LONG - 5 : 31)) - 1) << 5),
 };
@@ -39,21 +38,5 @@ struct work_struct {
 
 #define INIT_WORK(_work, _func)						\
 	__INIT_WORK((_work), (_func), 0)
-
-extern struct workqueue_struct *system_wq;
-
-extern bool queue_work_on(int cpu, struct workqueue_struct *wq,
-			struct work_struct *work);
-
-static inline bool queue_work(struct workqueue_struct *wq,
-			      struct work_struct *work)
-{
-	return queue_work_on(WORK_CPU_UNBOUND, wq, work);
-}
-
-static inline bool schedule_work(struct work_struct *work)
-{
-	return queue_work(system_wq, work);
-}
 
 #endif

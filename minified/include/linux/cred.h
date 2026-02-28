@@ -78,11 +78,6 @@ static inline void put_cred(const struct cred *_cred)
 
 #define task_ucounts(task)	(task_cred_xxx((task), ucounts))
 
-#define current_cred_xxx(xxx)			\
-({						\
-	current_cred()->xxx;			\
-})
-
 /* init_user_ns extern from uidgid.h */
 static inline struct user_namespace *current_user_ns(void)
 {

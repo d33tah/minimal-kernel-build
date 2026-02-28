@@ -59,17 +59,6 @@ void page_add_new_anon_rmap(struct page *, struct vm_area_struct *,
 
 #define GFP_SLAB_BUG_MASK (__GFP_DMA32|__GFP_HIGHMEM|~__GFP_BITS_MASK)
 
-#define WARN_ON_ONCE_GFP(cond, gfp)	({				\
-	static bool __section(".data.once") __warned;			\
-	int __ret_warn_once = !!(cond);					\
-									\
-	if (unlikely(!(gfp & __GFP_NOWARN) && __ret_warn_once && !__warned)) { \
-		__warned = true;					\
-		WARN_ON(1);						\
-	}								\
-	unlikely(__ret_warn_once);					\
-})
-
 void free_pgtables(struct mmu_gather *tlb, struct vm_area_struct *start_vma,
 		unsigned long floor, unsigned long ceiling);
 

@@ -27,7 +27,6 @@ do {								\
 __printf(1, 2)
 void panic(const char *fmt, ...) __noreturn __cold;
 #define PANIC_CPU_INVALID	-1
-#define TAINT_USER			6
 #define TAINT_DIE			7
 enum lockdep_ok {
 	LOCKDEP_STILL_OK,

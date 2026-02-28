@@ -10,41 +10,12 @@ void sort(void *base, size_t num, size_t size, cmp_func_t cmp_func,
 int add_range_with_merge(struct range *range, int az, int nr_range, u64 start,
 			 u64 end)
 {
-	int i;
-
-	if (start >= end)
-		return nr_range;
-
-	for (i = 0; i < nr_range; i++) {
-		u64 common_start, common_end;
-
-		if (!range[i].end)
-			continue;
-
-		common_start = max(range[i].start, start);
-		common_end = min(range[i].end, end);
-		if (common_start > common_end)
-			continue;
-
-		start = min(range[i].start, start);
-		end = max(range[i].end, end);
-
-		memmove(&range[i], &range[i + 1],
-			(nr_range - (i + 1)) * sizeof(range[i]));
-		range[nr_range - 1].start = 0;
-		range[nr_range - 1].end = 0;
-		nr_range--;
-		i--;
-	}
-
-	if (nr_range >= az)
+	if (start >= end || nr_range >= az)
 		return nr_range;
 
 	range[nr_range].start = start;
 	range[nr_range].end = end;
-	nr_range++;
-
-	return nr_range;
+	return nr_range + 1;
 }
 
 static int cmp_range(const void *x1, const void *x2)
@@ -61,34 +32,12 @@ static int cmp_range(const void *x1, const void *x2)
 
 int clean_sort_range(struct range *range, int az)
 {
-	int i, j, k = az - 1, nr_range = az;
-
-	for (i = 0; i < k; i++) {
-		if (range[i].end)
-			continue;
-		for (j = k; j > i; j--) {
-			if (range[j].end) {
-				k = j;
-				break;
-			}
-		}
-		if (j == i)
-			break;
-		range[i].start = range[k].start;
-		range[i].end = range[k].end;
-		range[k].start = 0;
-		range[k].end = 0;
-		k--;
-	}
+	int i, nr_range = 0;
 
 	for (i = 0; i < az; i++) {
-		if (!range[i].end) {
-			nr_range = i;
-			break;
-		}
+		if (range[i].end)
+			nr_range = i + 1;
 	}
-
 	sort(range, nr_range, sizeof(struct range), cmp_range, NULL);
-
 	return nr_range;
 }

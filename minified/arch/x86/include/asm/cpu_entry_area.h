@@ -26,8 +26,6 @@ struct cpu_entry_area {
 #define CPU_ENTRY_AREA_SIZE		(sizeof(struct cpu_entry_area))
 #define CPU_ENTRY_AREA_ARRAY_SIZE	(CPU_ENTRY_AREA_SIZE * NR_CPUS)
 
-#define CPU_ENTRY_AREA_TOTAL_SIZE	(CPU_ENTRY_AREA_ARRAY_SIZE + PAGE_SIZE)
-
 DECLARE_PER_CPU(struct cpu_entry_area *, cpu_entry_area);
 
 extern void setup_cpu_entry_areas(void);

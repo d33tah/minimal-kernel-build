@@ -31,7 +31,6 @@ static inline unsigned long array_index_mask_nospec(unsigned long index,
 #define nop()	asm volatile ("nop")
 #endif
 
-#define smp_mb()	barrier()
 #define smp_rmb()	barrier()
 #define smp_wmb()	barrier()
 

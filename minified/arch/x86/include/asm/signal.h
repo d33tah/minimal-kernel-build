@@ -23,7 +23,6 @@ typedef struct {
 
 #endif
 
-#define SIGBUS		 7
 #define SIGKILL		 9
 #define SIGSEGV		11
 

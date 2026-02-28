@@ -6,12 +6,10 @@
 # define BTF_TYPE_TAG(value)
 # define __kernel
 # define __user	BTF_TYPE_TAG(user)
-# define __iomem
 # define __percpu	BTF_TYPE_TAG(percpu)
 # define __rcu
 # define __chk_user_ptr(x)	(void)0
 # define __acquires(x)
-# define __cond_acquires(x)
 # define __releases(x)
 # define __acquire(x)	(void)0
 # define __release(x)	(void)0

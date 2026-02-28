@@ -5,7 +5,6 @@
 #include <asm/desc.h>
 #include <linux/atomic.h>
 #include <linux/mm_types.h>
-#define ARCH_DEFAULT_PKEY 0
 
 #include <asm/tlbflush.h>
 #include <asm/debugreg.h>

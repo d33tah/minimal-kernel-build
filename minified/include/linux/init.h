@@ -105,10 +105,6 @@ struct obs_kernel_param {
 		__aligned(__alignof__(struct obs_kernel_param))		\
 		= { __setup_str_##unique_id, fn, early }
 
-
-#define early_param(str, fn)						\
-	__setup_param(str, fn, fn, 1)
-
 void __init parse_early_param(void);
 #endif  /* __ASSEMBLY__ */
 

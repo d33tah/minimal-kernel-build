@@ -130,9 +130,4 @@ void memblock_set_current_limit(phys_addr_t limit);
 	     region < (memblock.memory.regions + memblock.memory.cnt);	\
 	     region++)
 
-
-
-#define HASH_EARLY	0x00000001
-#define HASH_ZERO	0x00000004	 
-
-#endif  
+#endif

@@ -4,8 +4,6 @@
  
 #include <asm/irq_vectors.h>
 
-#define __irq_entry __invalid_section
-
 extern int irq_init_percpu_irqstack(unsigned int cpu);
 
 struct irq_desc;

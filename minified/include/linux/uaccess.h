@@ -68,16 +68,6 @@ extern int __get_user_bad(void);
 #define __typefits(x,type,not) \
 	__builtin_choose_expr(sizeof(x)<=sizeof(type),(unsigned type)0,not)
 
-#define __put_user_goto_u64(x, addr, label)			\
-	asm_volatile_goto("\n"					\
-		     "1:	movl %%eax,0(%1)\n"		\
-		     "2:	movl %%edx,4(%1)\n"		\
-		     _ASM_EXTABLE_UA(1b, %l2)			\
-		     _ASM_EXTABLE_UA(2b, %l2)			\
-		     : : "A" (x), "r" (addr)			\
-		     : : label)
-
-extern void __put_user_bad(void);
 extern void __put_user_1(void);
 extern void __put_user_2(void);
 extern void __put_user_4(void);
@@ -102,27 +92,6 @@ extern void __put_user_8(void);
 })
 
 #define put_user(x, ptr) do_put_user_call(put_user,x,ptr)
-
-#define __put_user_size(x, ptr, size, label)				\
-do {									\
-	__chk_user_ptr(ptr);						\
-	switch (size) {							\
-	case 1:								\
-		__put_user_goto(x, ptr, "b", "iq", label);		\
-		break;							\
-	case 2:								\
-		__put_user_goto(x, ptr, "w", "ir", label);		\
-		break;							\
-	case 4:								\
-		__put_user_goto(x, ptr, "l", "ir", label);		\
-		break;							\
-	case 8:								\
-		__put_user_goto_u64(x, ptr, label);			\
-		break;							\
-	default:							\
-		__put_user_bad();					\
-	}								\
-} while (0)
 
 #define __get_user_asm_u64(x, ptr, label) do {				\
 	unsigned int __gu_low, __gu_high;				\
@@ -167,13 +136,6 @@ do {									\
 
 struct __large_struct { unsigned long buf[100]; };
 #define __m(x) (*(struct __large_struct __user *)(x))
-
-#define __put_user_goto(x, addr, itype, ltype, label)			\
-	asm_volatile_goto("\n"						\
-		"1:	mov"itype" %0,%1\n"				\
-		_ASM_EXTABLE_UA(1b, %l2)				\
-		: : ltype(x), "m" (__m(addr))				\
-		: : label)
 
 extern __must_check long strnlen_user(const char __user *str, long n);
 unsigned long __must_check clear_user(void __user *mem, unsigned long len);

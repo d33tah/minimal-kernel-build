@@ -61,7 +61,6 @@ extern void add_taint(unsigned flag, enum lockdep_ok);
 #endif
 
 #define WARN_ON_ONCE(condition) WARN_ON(condition)
-#define WARN_ONCE(condition, format...) WARN(condition, format)
 
 #endif /* __ASSEMBLY__ */
 

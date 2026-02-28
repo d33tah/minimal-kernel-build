@@ -30,9 +30,6 @@ struct work_struct {
 
 #define WORK_DATA_INIT()	ATOMIC_LONG_INIT((unsigned long)WORK_STRUCT_NO_POOL)
 
-
-#define __WORK_INIT_LOCKDEP_MAP(n, k)
-
 #define __INIT_WORK(_work, _func, _onstack)				\
 	do {								\
 		(_work)->data = (atomic_long_t) WORK_DATA_INIT();	\

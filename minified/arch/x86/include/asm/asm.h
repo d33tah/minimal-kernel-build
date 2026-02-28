@@ -70,9 +70,7 @@
 	.long type ;						\
 	.popsection
 
-#  define _ASM_NOKPROBE(entry)
-
-#else  
+#else
 
 # define DEFINE_EXTABLE_TYPE_REG \
 	".macro extable_type_reg type:req reg:req\n"						\

@@ -108,9 +108,7 @@ extern int alternatives_patched;
 
 #define ASM_OUTPUT2(a...) a
 
-#define ASM_NO_INPUT_CLOBBER(clbr...) "i" (0) : clbr
-
-#else  
+#else
 
 	.macro LOCK_PREFIX
 	.endm

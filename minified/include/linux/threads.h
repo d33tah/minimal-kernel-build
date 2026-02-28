@@ -6,6 +6,5 @@
 
 /* CONFIG_BASE_SMALL=1 in minimal config */
 #define PID_MAX_DEFAULT 0x1000
-#define PID_MAX_LIMIT (PAGE_SIZE * 8)
 
 #endif

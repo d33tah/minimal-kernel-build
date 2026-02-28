@@ -56,11 +56,6 @@ static __always_inline int cpumask_test_and_set_cpu(int cpu, struct cpumask *cpu
 	return test_and_set_bit(cpumask_check(cpu), cpumask_bits(cpumask));
 }
 
-static __always_inline int cpumask_test_and_clear_cpu(int cpu, struct cpumask *cpumask)
-{
-	return test_and_clear_bit(cpumask_check(cpu), cpumask_bits(cpumask));
-}
-
 static inline void cpumask_clear(struct cpumask *dstp)
 {
 	bitmap_zero(cpumask_bits(dstp), nr_cpumask_bits);

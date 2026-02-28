@@ -37,16 +37,6 @@ enum fixed_addresses {
 #define FIXADDR_TOT_SIZE	(__end_of_fixed_addresses << PAGE_SHIFT)
 #define FIXADDR_TOT_START	(FIXADDR_TOP - FIXADDR_TOT_SIZE)
 
-void __native_set_fixmap(enum fixed_addresses idx, pte_t pte);
-void native_set_fixmap(unsigned   idx,
-		       phys_addr_t phys, pgprot_t flags);
-
-static inline void __set_fixmap(enum fixed_addresses idx,
-				phys_addr_t phys, pgprot_t flags)
-{
-	native_set_fixmap(idx, phys, flags);
-}
-
 #include <linux/bug.h>
 #include <linux/mm_types.h>
 
@@ -57,15 +47,6 @@ static __always_inline unsigned long fix_to_virt(const unsigned int idx)
 	BUILD_BUG_ON(idx >= __end_of_fixed_addresses);
 	return __fix_to_virt(idx);
 }
-
-#ifndef FIXMAP_PAGE_CLEAR
-#define FIXMAP_PAGE_CLEAR __pgprot(0)
-#endif
-
-#ifndef clear_fixmap
-#define clear_fixmap(idx)			\
-	__set_fixmap(idx, 0, FIXMAP_PAGE_CLEAR)
-#endif
 
 #endif
 #endif  

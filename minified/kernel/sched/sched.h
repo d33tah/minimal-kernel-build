@@ -197,7 +197,6 @@ static inline int task_on_rq_queued(struct task_struct *p)
 #define DEQUEUE_SLEEP		0x01
 #define DEQUEUE_NOCLOCK		0x08
 
-#define ENQUEUE_WAKEUP		0x01
 #define ENQUEUE_NOCLOCK		0x08
 
 struct sched_class {

@@ -46,21 +46,7 @@
 	MEM_KEEP(init.data*)						\
 	MEM_KEEP(exit.data*)						\
 	*(.data.unlikely)						\
-	__start_once = .;						\
-	*(.data.once)							\
-	__end_once = .;							\
-	STRUCT_ALIGN();							\
-	. = ALIGN(8);							\
-	__start___dyndbg = .;						\
-	KEEP(*(__dyndbg))						\
-	__stop___dyndbg = .;
-
-#define NOSAVE_DATA							\
-	. = ALIGN(PAGE_SIZE);						\
-	__nosave_begin = .;						\
-	*(.data..nosave)						\
-	. = ALIGN(PAGE_SIZE);						\
-	__nosave_end = .;
+	STRUCT_ALIGN();
 
 #define PAGE_ALIGNED_DATA(page_align)					\
 	. = ALIGN(page_align);						\
@@ -86,18 +72,11 @@
 	. = __start_init_task + THREAD_SIZE;				\
 	__end_init_task = .;
 
-#define JUMP_TABLE_DATA							\
-	. = ALIGN(8);							\
-	__start___jump_table = .;					\
-	KEEP(*(__jump_table))						\
-	__stop___jump_table = .;
-
 #ifndef RO_AFTER_INIT_DATA
 #define RO_AFTER_INIT_DATA						\
 	. = ALIGN(8);							\
 	__start_ro_after_init = .;					\
 	*(.data..ro_after_init)						\
-	JUMP_TABLE_DATA							\
 	__end_ro_after_init = .;
 #endif
 
@@ -110,13 +89,7 @@
 		RO_AFTER_INIT_DATA	 	\
 	}								\
 									\
-	__init_rodata : AT(ADDR(__init_rodata) - LOAD_OFFSET) {		\
-		*(.ref.rodata)						\
-		MEM_KEEP(init.rodata)					\
-		MEM_KEEP(exit.rodata)					\
-	}								\
-									\
-	 				\
+	 \
 	__param : AT(ADDR(__param) - LOAD_OFFSET) {			\
 		__start___param = .;					\
 		KEEP(*(__param))					\
@@ -155,12 +128,6 @@
 		__sched_text_start = .;					\
 		*(.sched.text)						\
 		__sched_text_end = .;
-
-#define CPUIDLE_TEXT							\
-		ALIGN_FUNCTION();					\
-		__cpuidle_text_start = .;				\
-		*(.cpuidle.text)					\
-		__cpuidle_text_end = .;
 
 #define ENTRY_TEXT							\
 		ALIGN_FUNCTION();					\
@@ -254,11 +221,6 @@
 		INIT_CALLS_LEVEL(7)					\
 		__initcall_end = .;
 
-#define CON_INITCALL							\
-		__con_initcall_start = .;				\
-		KEEP(*(.con_initcall.init))				\
-		__con_initcall_end = .;
-
 #define INIT_RAM_FS							\
 	. = ALIGN(4);							\
 	__initramfs_start = .;						\
@@ -311,6 +273,5 @@
 		INIT_DATA						\
 		INIT_SETUP(initsetup_align)				\
 		INIT_CALLS						\
-		CON_INITCALL						\
 		INIT_RAM_FS						\
 	}

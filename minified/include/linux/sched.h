@@ -61,7 +61,6 @@ struct pid {
 	refcount_t count;
 	unsigned int level;
 	struct hlist_head tasks[PIDTYPE_MAX];
-	struct rcu_head rcu;
 	struct upid numbers[1];
 };
 extern struct pid init_struct_pid;
@@ -178,8 +177,6 @@ struct task_struct {
 
 	unsigned int			personality;
 
-	unsigned			restore_sigmask:1;
-
 	pid_t				pid;
 
 	struct task_struct		*group_leader;
@@ -204,7 +201,6 @@ struct task_struct {
 
 	struct signal_struct		*signal;
 	struct sighand_struct __rcu		*sighand;
-	sigset_t			saved_sigmask;
 	struct sigpending		pending;
 
 	struct callback_head		*task_works;

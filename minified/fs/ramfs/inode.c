@@ -32,9 +32,6 @@ static struct inode *ramfs_get_inode(struct super_block *sb,
 		inode->i_mode = mode;
 		inode->i_mapping->a_ops = &ram_aops;
 		mapping_set_gfp_mask(inode->i_mapping, GFP_HIGHUSER);
-		set_bit(AS_UNEVICTABLE,
-			&inode->i_mapping
-				 ->flags); /* mapping_set_unevictable inlined */
 		switch (mode & S_IFMT) {
 		default:
 			inode->i_mode = mode;

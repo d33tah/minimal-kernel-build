@@ -4,9 +4,6 @@
 #include <linux/highmem.h>
 #include <linux/compiler.h>
 #include <linux/gfp.h>
-enum mapping_flags {
-	AS_UNEVICTABLE	= 3,
-};
 
 static inline gfp_t mapping_gfp_mask(struct address_space * mapping)
 {

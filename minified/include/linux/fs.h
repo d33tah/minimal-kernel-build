@@ -292,10 +292,7 @@ extern void __mnt_drop_write(struct vfsmount *);
 #define INR_OPEN_MAX 4096
 /* end uapi/linux/fs.h */
 
-struct backing_dev_info;
-struct kiocb;
 struct vm_area_struct;
-struct cred;
 struct iov_iter;
 struct fs_context;
 extern void __init inode_init(void);
@@ -356,7 +353,6 @@ struct address_space {
 	struct rb_root_cached	i_mmap;
 	struct rw_semaphore	i_mmap_rwsem;
 	const struct address_space_operations *a_ops;
-	unsigned long		flags;
 } __attribute__((aligned(sizeof(long)))) __randomize_layout;
 
 static inline void i_mmap_lock_write(struct address_space *mapping)
@@ -551,7 +547,6 @@ struct filename {
 	int refcnt;
 	const char iname[];
 };
-static_assert(offsetof(struct filename, iname) % sizeof(long) == 0);
 
 extern struct file *filp_open(const char *, int, umode_t);
 

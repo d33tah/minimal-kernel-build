@@ -42,7 +42,6 @@ static void inode_init_always(struct super_block *sb, struct inode *inode)
 
 	mapping->a_ops = &empty_aops;
 	mapping->host = inode;
-	mapping->flags = 0;
 	mapping_set_gfp_mask(mapping, GFP_HIGHUSER_MOVABLE);
 	init_rwsem(&mapping->invalidate_lock);
 	inode->i_mapping = mapping;

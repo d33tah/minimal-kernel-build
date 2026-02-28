@@ -3,14 +3,7 @@
 # kbuild file for usr/ - including initramfs image
 #
 
-compress-y					:= copy
-compress-$(CONFIG_INITRAMFS_COMPRESSION_GZIP)	:= gzip
-compress-$(CONFIG_INITRAMFS_COMPRESSION_BZIP2)	:= bzip2
-compress-$(CONFIG_INITRAMFS_COMPRESSION_LZMA)	:= lzma
-compress-$(CONFIG_INITRAMFS_COMPRESSION_XZ)	:= xzmisc
-compress-$(CONFIG_INITRAMFS_COMPRESSION_LZO)	:= lzo
-compress-$(CONFIG_INITRAMFS_COMPRESSION_LZ4)	:= lz4
-compress-$(CONFIG_INITRAMFS_COMPRESSION_ZSTD)	:= zstd
+compress-y := copy
 
 obj-$(CONFIG_BLK_DEV_INITRD) := initramfs_data.o
 
@@ -25,24 +18,7 @@ ifeq ($(ramfs-input),)
 ramfs-input := $(srctree)/$(src)/default_cpio_list
 endif
 
-ifeq ($(words $(ramfs-input)),1)
-
-# If CONFIG_INITRAMFS_SOURCE specifies a single file, and it is suffixed with
-# .cpio, use it directly as an initramfs.
-ifneq ($(filter %.cpio,$(ramfs-input)),)
-cpio-data := $(ramfs-input)
-endif
-
-# If CONFIG_INITRAMFS_SOURCE specifies a single file, and it is suffixed with
-# .cpio.*, use it directly as an initramfs, and avoid double compression.
-ifeq ($(words $(subst .cpio.,$(space),$(ramfs-input))),2)
-cpio-data := $(ramfs-input)
-compress-y := copy
-endif
-
-endif
-
-# For other cases, generate the initramfs cpio archive based on the contents
+# Generate the initramfs cpio archive based on the contents
 # specified by CONFIG_INITRAMFS_SOURCE.
 ifeq ($(cpio-data),)
 

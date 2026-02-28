@@ -154,8 +154,6 @@ cpp_flags      = -Wp,-MMD,$(depfile) $(NOSTDINC_FLAGS) $(LINUXINCLUDE)     \
 
 ld_flags       = $(KBUILD_LDFLAGS) $(ldflags-y) $(LDFLAGS_$(@F))
 
-delay-objtool := $(or $(CONFIG_LTO_CLANG),$(CONFIG_X86_KERNEL_IBT))
-
 # Useful for describing the dependency of composite objects
 # Usage:
 #   $(call multi_depend, multi_used_targets, suffix_to_remove, suffix_to_add)
@@ -190,12 +188,6 @@ quiet_cmd_ar = AR      $@
 
 quiet_cmd_objcopy = OBJCOPY $@
 cmd_objcopy = $(OBJCOPY) $(OBJCOPYFLAGS) $(OBJCOPYFLAGS_$(@F)) $< $@
-
-# Gzip
-# ---------------------------------------------------------------------------
-
-quiet_cmd_gzip = GZIP    $@
-      cmd_gzip = cat $(real-prereqs) | $(KGZIP) -n -f -9 > $@
 
 # ASM offsets
 # ---------------------------------------------------------------------------

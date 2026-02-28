@@ -229,8 +229,6 @@ ifeq ($(ARCH),x86_64)
         SRCARCH := x86
 endif
 
-
-
 export cross_compiling :=
 ifneq ($(SRCARCH),$(SUBARCH))
 cross_compiling := 1
@@ -252,13 +250,10 @@ LLVM_PREFIX := $(LLVM)
 else ifneq ($(filter -%,$(LLVM)),)
 LLVM_SUFFIX := $(LLVM)
 endif
+endif
 
 HOSTCC	= $(LLVM_PREFIX)clang$(LLVM_SUFFIX)
 HOSTCXX	= $(LLVM_PREFIX)clang++$(LLVM_SUFFIX)
-else
-HOSTCC	= gcc
-HOSTCXX	= g++
-endif
 HOSTPKG_CONFIG	= pkg-config
 
 KBUILD_USERHOSTCFLAGS := -Wall -Wmissing-prototypes -Wstrict-prototypes \
@@ -274,7 +269,6 @@ KBUILD_HOSTLDLIBS   := $(HOST_LFS_LIBS) $(HOSTLDLIBS)
 
 # Make variables (CC, etc...)
 CPP		= $(CC) -E
-ifneq ($(LLVM),)
 CC		= $(LLVM_PREFIX)clang$(LLVM_SUFFIX)
 LD		= $(LLVM_PREFIX)ld.lld$(LLVM_SUFFIX)
 AR		= $(LLVM_PREFIX)llvm-ar$(LLVM_SUFFIX)
@@ -283,16 +277,6 @@ OBJCOPY		= $(LLVM_PREFIX)llvm-objcopy$(LLVM_SUFFIX)
 OBJDUMP		= $(LLVM_PREFIX)llvm-objdump$(LLVM_SUFFIX)
 READELF		= $(LLVM_PREFIX)llvm-readelf$(LLVM_SUFFIX)
 STRIP		= $(LLVM_PREFIX)llvm-strip$(LLVM_SUFFIX)
-else
-CC		= $(CROSS_COMPILE)gcc
-LD		= $(CROSS_COMPILE)ld
-AR		= $(CROSS_COMPILE)ar
-NM		= $(CROSS_COMPILE)nm
-OBJCOPY		= $(CROSS_COMPILE)objcopy
-OBJDUMP		= $(CROSS_COMPILE)objdump
-READELF		= $(CROSS_COMPILE)readelf
-STRIP		= $(CROSS_COMPILE)strip
-endif
 LEX		= flex
 YACC		= bison
 AWK		= awk
@@ -303,9 +287,6 @@ KGZIP		= gzip
 
 
 NOSTDINC_FLAGS :=
-CFLAGS_MODULE   =
-AFLAGS_MODULE   =
-LDFLAGS_MODULE  =
 CFLAGS_KERNEL	=
 AFLAGS_KERNEL	=
 LDFLAGS_vmlinux =
@@ -336,9 +317,6 @@ KBUILD_CFLAGS   := -Wall -Wundef -Werror=strict-prototypes -Wno-trigraphs \
 KBUILD_CPPFLAGS := -D__KERNEL__
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
-KBUILD_AFLAGS_MODULE  := -DMODULE
-KBUILD_CFLAGS_MODULE  := -DMODULE
-KBUILD_LDFLAGS_MODULE :=
 KBUILD_LDFLAGS :=
 CLANG_FLAGS :=
 
@@ -346,20 +324,15 @@ export ARCH SRCARCH CONFIG_SHELL BASH HOSTCC KBUILD_HOSTCFLAGS CROSS_COMPILE LD 
 export CPP AR NM STRIP OBJCOPY OBJDUMP READELF LEX YACC AWK
 export PERL PYTHON3 MAKE UTS_MACHINE HOSTCXX
 export KGZIP
-export KBUILD_HOSTCXXFLAGS KBUILD_HOSTLDFLAGS KBUILD_HOSTLDLIBS LDFLAGS_MODULE
+export KBUILD_HOSTCXXFLAGS KBUILD_HOSTLDFLAGS KBUILD_HOSTLDLIBS
 export KBUILD_USERCFLAGS KBUILD_USERLDFLAGS
 
 export KBUILD_CPPFLAGS NOSTDINC_FLAGS LINUXINCLUDE OBJCOPYFLAGS KBUILD_LDFLAGS
-export KBUILD_CFLAGS CFLAGS_KERNEL CFLAGS_MODULE
-export KBUILD_AFLAGS AFLAGS_KERNEL AFLAGS_MODULE
-export KBUILD_AFLAGS_MODULE KBUILD_CFLAGS_MODULE KBUILD_LDFLAGS_MODULE
+export KBUILD_CFLAGS CFLAGS_KERNEL
+export KBUILD_AFLAGS AFLAGS_KERNEL
 export KBUILD_AFLAGS_KERNEL KBUILD_CFLAGS_KERNEL
 
-# Files to ignore in find ... statements
-
-export RCS_FIND_IGNORE := \( -name SCCS -o -name BitKeeper -o -name .svn -o    \
-			  -name CVS -o -name .pc -o -name .hg -o -name .git \) \
-			  -prune -o
+export RCS_FIND_IGNORE := \( -name .git \) -prune -o
 
 # ===========================================================================
 # Rules shared between *config targets and build targets
@@ -378,9 +351,7 @@ outputmakefile:
 # and from include/config/auto.conf.cmd to detect the compiler upgrade.
 CC_VERSION_TEXT = $(subst $(pound),,$(shell LC_ALL=C $(CC) --version 2>/dev/null | head -n 1))
 
-ifneq ($(findstring clang,$(CC_VERSION_TEXT)),)
 include $(srctree)/scripts/Makefile.clang
-endif
 
 # Include this also for config targets because some architectures need
 # cc-cross-prefix to determine CROSS_COMPILE.
@@ -413,10 +384,9 @@ else #!config-build
 PHONY += all
 __all: all
 
-KBUILD_MODULES :=
 KBUILD_BUILTIN := 1
 
-export KBUILD_MODULES KBUILD_BUILTIN
+export KBUILD_BUILTIN
 
 ifdef need-config
 include include/config/auto.conf
@@ -428,8 +398,6 @@ drivers-y	:= drivers/
 libs-y		:= lib/
 
 all: vmlinux
-
-
 
 include $(srctree)/arch/$(SRCARCH)/Makefile
 
@@ -482,34 +450,19 @@ endif # need-config
 
 KBUILD_CFLAGS	+= -fno-delete-null-pointer-checks
 KBUILD_CFLAGS	+= $(call cc-disable-warning,frame-address,)
-KBUILD_CFLAGS	+= $(call cc-disable-warning, format-truncation)
-KBUILD_CFLAGS	+= $(call cc-disable-warning, format-overflow)
 KBUILD_CFLAGS	+= $(call cc-disable-warning, address-of-packed-member)
 
-ifdef CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE
-KBUILD_CFLAGS += -O2
-else ifdef CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE_O3
-KBUILD_CFLAGS += -O3
-else ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
+ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS += -Os
 endif
-
-# Tell gcc to never replace conditional load with a non-conditional one
-
 
 ifneq ($(CONFIG_FRAME_WARN),0)
 KBUILD_CFLAGS += -Wframe-larger-than=$(CONFIG_FRAME_WARN)
 endif
 
-stackp-flags-y                                    := -fno-stack-protector
-stackp-flags-$(CONFIG_STACKPROTECTOR)             := -fstack-protector
-stackp-flags-$(CONFIG_STACKPROTECTOR_STRONG)      := -fstack-protector-strong
+KBUILD_CFLAGS += -fno-stack-protector
 
-KBUILD_CFLAGS += $(stackp-flags-y)
-
-KBUILD_CFLAGS-$(CONFIG_WERROR) += -Werror
-KBUILD_CFLAGS-$(CONFIG_CC_NO_ARRAY_BOUNDS) += -Wno-array-bounds
-KBUILD_CFLAGS += $(KBUILD_CFLAGS-y) $(CONFIG_CC_IMPLICIT_FALLTHROUGH)
+KBUILD_CFLAGS += $(CONFIG_CC_IMPLICIT_FALLTHROUGH)
 
 KBUILD_CPPFLAGS += -Qunused-arguments
 # The kernel builds with '-std=gnu11' so use of GNU extensions is acceptable.
@@ -520,21 +473,8 @@ KBUILD_CFLAGS += -Wno-gnu
 KBUILD_CFLAGS += $(call cc-disable-warning, unused-but-set-variable)
 KBUILD_CFLAGS += $(call cc-disable-warning, unused-const-variable)
 
-# These result in bogus false positives
-KBUILD_CFLAGS += $(call cc-disable-warning, dangling-pointer)
-
 KBUILD_CFLAGS	+= -fomit-frame-pointer
-
-
-
-# While VLAs have been removed, GCC produces unreachable stack probes
-# for the randomize_kstack_offset feature. Disable it for all compilers.
 KBUILD_CFLAGS	+= $(call cc-option, -fno-stack-clash-protection)
-
-
-
-
-
 
 CC_FLAGS_LTO	:= -flto
 CC_FLAGS_LTO	+= -fvisibility=hidden
@@ -545,8 +485,6 @@ KBUILD_CFLAGS	+= -fno-lto $(CC_FLAGS_LTO)
 KBUILD_AFLAGS	+= -fno-lto
 export CC_FLAGS_LTO
 
-
-
 # arch Makefile may override CC so keep this after arch Makefile is included
 NOSTDINC_FLAGS += -nostdinc
 
@@ -556,7 +494,6 @@ KBUILD_CFLAGS += -Wdeclaration-after-statement
 # Variable Length Arrays (VLAs) should not be used anywhere in the kernel
 KBUILD_CFLAGS += -Wvla
 
-# disable pointer signed / unsigned warnings in gcc 4.0
 KBUILD_CFLAGS += -Wno-pointer-sign
 
 # In order to make sure new function cast mismatches are not introduced
@@ -564,25 +501,11 @@ KBUILD_CFLAGS += -Wno-pointer-sign
 # globally built with -Wcast-function-type.
 KBUILD_CFLAGS += $(call cc-option, -Wcast-function-type)
 
-# disable stringop warnings in gcc 8+
-KBUILD_CFLAGS += $(call cc-disable-warning, stringop-truncation)
-
-# We'll want to enable this eventually, but it's not going away for 5.7 at least
-KBUILD_CFLAGS += $(call cc-disable-warning, stringop-overflow)
-
-# Another good warning that we'll want to enable eventually
-KBUILD_CFLAGS += $(call cc-disable-warning, restrict)
-
-# Enabled with W=2, disabled by default as noisy
-
-
 # disable invalid "can't wrap" optimizations for signed / pointers
 KBUILD_CFLAGS	+= -fno-strict-overflow
 
 # Make sure -fstack-check isn't enabled (like gentoo apparently did)
 KBUILD_CFLAGS  += -fno-stack-check
-
-# conserve stack if available
 
 # Prohibit date/time macros, which would make the build non-deterministic
 KBUILD_CFLAGS   += -Werror=date-time
@@ -609,8 +532,6 @@ KBUILD_CFLAGS   += $(KCFLAGS)
 
 LDFLAGS_vmlinux += --build-id=sha1
 
-
-
 # We never want expected sections to be placed heuristically by the
 # linker. All sections should be explicitly named in the linker script.
 ifdef CONFIG_LD_ORPHAN_WARN
@@ -621,34 +542,16 @@ endif
 KBUILD_USERCFLAGS  += $(filter -m32 -m64 --target=%, $(KBUILD_CFLAGS))
 KBUILD_USERLDFLAGS += $(filter -m32 -m64 --target=%, $(KBUILD_CFLAGS))
 
-
-# Default kernel image to build when no specific target is given.
-# KBUILD_IMAGE may be overruled on the command line or
-# set in the environment
-# Also any assignments in arch/$(ARCH)/Makefile take precedence over
-# this default value
 export KBUILD_IMAGE ?= vmlinux
 
-
-
 PHONY += prepare0
-
-export MODORDER := modules.order
-export MODULES_NSDEPS := modules.nsdeps
 
 core-y			+= kernel/ mm/ fs/ security/
 
 vmlinux-dirs	:= $(patsubst %/,%,$(filter %/, \
-		     $(core-y) $(core-m) $(drivers-y) $(drivers-m) \
-		     $(libs-y) $(libs-m)))
+		     $(core-y) $(drivers-y) $(libs-y)))
 
-vmlinux-alldirs	:= $(sort $(vmlinux-dirs) \
-		     $(patsubst %/,%,$(filter %/, $(core-) \
-			$(drivers-) $(libs-))))
-
-subdir-modorder := $(addsuffix modules.order,$(filter %/, \
-			$(core-y) $(core-m) $(libs-y) $(libs-m) \
-			$(drivers-y) $(drivers-m)))
+vmlinux-alldirs	:= $(sort $(vmlinux-dirs))
 
 build-dirs	:= $(vmlinux-dirs)
 clean-dirs	:= $(vmlinux-alldirs)
@@ -665,12 +568,9 @@ export KBUILD_LDS          := arch/$(SRCARCH)/kernel/vmlinux.lds
 vmlinux-deps := $(KBUILD_LDS) $(KBUILD_VMLINUX_OBJS) $(KBUILD_VMLINUX_LIBS)
 
 
-ARCH_POSTLINK := $(wildcard $(srctree)/arch/$(SRCARCH)/Makefile.postlink)
-
-# Final link of vmlinux with optional arch pass after final link
+# Final link of vmlinux
 cmd_link-vmlinux =                                                 \
-	$(CONFIG_SHELL) $< "$(LD)" "$(KBUILD_LDFLAGS)" "$(LDFLAGS_vmlinux)";    \
-	$(if $(ARCH_POSTLINK), $(MAKE) -f $(ARCH_POSTLINK) $@, true)
+	$(CONFIG_SHELL) $< "$(LD)" "$(KBUILD_LDFLAGS)" "$(LDFLAGS_vmlinux)"
 
 vmlinux: scripts/link-vmlinux.sh $(vmlinux-deps) FORCE
 	+$(call if_changed_dep,link-vmlinux)
@@ -679,7 +579,7 @@ targets := vmlinux
 
 # The actual objects are generated when descending,
 # make sure no implicit rule kicks in
-$(sort $(vmlinux-deps) $(subdir-modorder)): descend ;
+$(sort $(vmlinux-deps)): descend ;
 
 filechk_kernel.release = \
 	echo "$(KERNELVERSION)$$($(CONFIG_SHELL) $(srctree)/scripts/setlocalversion $(srctree))"
@@ -757,21 +657,6 @@ $(version_h): FORCE
 include/generated/utsrelease.h: include/config/kernel.release FORCE
 	$(call filechk,utsrelease.h)
 
-
-
-
-
-# ---------------------------------------------------------------------------
-# Tools
-
-
-
-
-
-# ---------------------------------------------------------------------------
-# Modules
-
-
 # Directories & files removed with 'make clean'
 CLEAN_FILES += include/ksym vmlinux.symvers .thinlto-cache
 
@@ -780,15 +665,12 @@ MRPROPER_FILES += include/config include/generated          \
 		  arch/$(SRCARCH)/include/generated \
 		  .config .config.old .version
 
-# clean - Delete most, but leave enough to build external modules
-#
 clean: rm-files := $(CLEAN_FILES)
 
 PHONY += archclean vmlinuxclean
 
 vmlinuxclean:
 	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/link-vmlinux.sh clean
-	$(Q)$(if $(ARCH_POSTLINK), $(MAKE) -f $(ARCH_POSTLINK) clean)
 
 clean: archclean vmlinuxclean
 
@@ -812,7 +694,7 @@ mrproper: clean $(mrproper-dirs)
 PHONY += descend $(build-dirs)
 descend: $(build-dirs)
 $(build-dirs): prepare
-	$(Q)$(MAKE) $(build)=$@ need-builtin=1 need-modorder=1
+	$(Q)$(MAKE) $(build)=$@ need-builtin=1
 
 clean-dirs := $(addprefix _clean_, $(clean-dirs))
 PHONY += $(clean-dirs) clean
@@ -825,7 +707,6 @@ clean: $(clean-dirs)
 		\( -name '*.[aios]' -o -name '.*.cmd' \
 		-o -name '*.dwo' -o -name '*.lst' \
 		-o -name '.*.d' -o -name '.*.tmp' \
-		-o -name 'modules.order' \
 		-o -name '.tmp_*' \
 		-o -name '*.ll' \) -type f -print | xargs rm -f
 

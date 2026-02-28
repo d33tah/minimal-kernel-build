@@ -45,7 +45,6 @@
 					i->nr_segs -= kvec - i->kvec;          \
 				i->kvec = kvec;                                \
 			}                                                      \
-			/* ITER_BVEC removed - never initialized */            \
 			i->count -= n;                                         \
 		}                                                              \
 	}
@@ -80,104 +79,59 @@ size_t _copy_to_iter(const void *addr, size_t bytes, struct iov_iter *i)
 		return bytes;
 }
 
-static inline bool page_copy_sane(struct page *page, size_t offset, size_t n)
-{
-	struct page *head;
-	size_t v = n + offset;
-
-	if (n <= v && v <= PAGE_SIZE)
-		return true;
-
-	head = compound_head(page);
-	v += (page - head) << PAGE_SHIFT;
-
-	if (likely(n <= v && v <= (page_size(head))))
-		return true;
-	return false;
-}
-
 static size_t __copy_page_to_iter(struct page *page, size_t offset,
 				  size_t bytes, struct iov_iter *i)
 {
-	if (likely(iter_is_iovec(i))) {
-		size_t skip, copy, left, wanted;
-		const struct iovec *iov;
-		char __user *buf;
-		void *kaddr, *from;
+	size_t skip, copy, left, wanted;
+	const struct iovec *iov;
+	char __user *buf;
+	void *kaddr, *from;
 
-		if (unlikely(bytes > i->count))
-			bytes = i->count;
-		if (unlikely(!bytes))
-			return 0;
+	if (unlikely(bytes > i->count))
+		bytes = i->count;
+	if (unlikely(!bytes))
+		return 0;
 
-		wanted = bytes;
-		iov = i->iov;
-		skip = i->iov_offset;
-		buf = iov->iov_base + skip;
-		copy = min(bytes, iov->iov_len - skip);
+	wanted = bytes;
+	iov = i->iov;
+	skip = i->iov_offset;
+	buf = iov->iov_base + skip;
+	copy = min(bytes, iov->iov_len - skip);
 
-		might_sleep();
-		kaddr = page_address(page);
-		from = kaddr + offset;
+	kaddr = page_address(page);
+	from = kaddr + offset;
+	left = copyout(buf, from, copy);
+	copy -= left;
+	skip += copy;
+	from += copy;
+	bytes -= copy;
+	while (unlikely(!left && bytes)) {
+		iov++;
+		buf = iov->iov_base;
+		copy = min(bytes, iov->iov_len);
 		left = copyout(buf, from, copy);
 		copy -= left;
-		skip += copy;
+		skip = copy;
 		from += copy;
 		bytes -= copy;
-		while (unlikely(!left && bytes)) {
-			iov++;
-			buf = iov->iov_base;
-			copy = min(bytes, iov->iov_len);
-			left = copyout(buf, from, copy);
-			copy -= left;
-			skip = copy;
-			from += copy;
-			bytes -= copy;
-		}
-		kunmap(page);
+	}
+	kunmap(page);
 
-		if (skip == iov->iov_len) {
-			iov++;
-			skip = 0;
-		}
-		i->count -= wanted - bytes;
-		i->nr_segs -= iov - i->iov;
-		i->iov = iov;
-		i->iov_offset = skip;
-		return wanted - bytes;
+	if (skip == iov->iov_len) {
+		iov++;
+		skip = 0;
 	}
-	if (iov_iter_is_kvec(i)) {
-		void *kaddr = kmap_local_page(page);
-		size_t wanted = _copy_to_iter(kaddr + offset, bytes, i);
-		kunmap_local(kaddr);
-		return wanted;
-	}
-	return 0;
+	i->count -= wanted - bytes;
+	i->nr_segs -= iov - i->iov;
+	i->iov = iov;
+	i->iov_offset = skip;
+	return wanted - bytes;
 }
 
 size_t copy_page_to_iter(struct page *page, size_t offset, size_t bytes,
 			 struct iov_iter *i)
 {
-	size_t res = 0;
-	if (unlikely(!page_copy_sane(page, offset, bytes)))
-		return 0;
-	page += offset / PAGE_SIZE;
-	offset %= PAGE_SIZE;
-	while (1) {
-		size_t n = __copy_page_to_iter(
-			page, offset, min(bytes, (size_t)PAGE_SIZE - offset),
-			i);
-		res += n;
-		bytes -= n;
-		if (!bytes || !n)
-			break;
-		offset += n;
-		if (offset == PAGE_SIZE) {
-			page++;
-			offset = 0;
-		}
-	}
-	return res;
+	return __copy_page_to_iter(page, offset, bytes, i);
 }
 
 void iov_iter_kvec(struct iov_iter *i, unsigned int direction,

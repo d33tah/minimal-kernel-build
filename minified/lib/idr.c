@@ -174,40 +174,4 @@ nospc:
 
 void ida_free(struct ida *ida, unsigned int id)
 {
-	XA_STATE(xas, &ida->xa, id / IDA_BITMAP_BITS);
-	unsigned bit = id % IDA_BITMAP_BITS;
-	struct ida_bitmap *bitmap;
-	unsigned long flags;
-
-	if ((int)id < 0)
-		return;
-
-	xas_lock_irqsave(&xas, flags);
-	bitmap = xas_load(&xas);
-
-	if (xa_is_value(bitmap)) {
-		unsigned long v = xa_to_value(bitmap);
-		if (bit >= BITS_PER_XA_VALUE)
-			goto err;
-		if (!(v & (1UL << bit)))
-			goto err;
-		v &= ~(1UL << bit);
-		if (!v)
-			goto delete;
-		xas_store(&xas, xa_mk_value(v));
-	} else {
-		if (!test_bit(bit, bitmap->bitmap))
-			goto err;
-		__clear_bit(bit, bitmap->bitmap);
-		xas_set_mark(&xas, XA_FREE_MARK);
-		if (bitmap_empty(bitmap->bitmap, IDA_BITMAP_BITS)) {
-			kfree(bitmap);
-			delete : xas_store(&xas, NULL);
-		}
-	}
-	xas_unlock_irqrestore(&xas, flags);
-	return;
-err:
-	xas_unlock_irqrestore(&xas, flags);
-	WARN(1, "ida_free called for id=%d which is not allocated.\n", id);
 }

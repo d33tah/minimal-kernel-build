@@ -214,55 +214,10 @@ int __init_memblock memblock_add(phys_addr_t base, phys_addr_t size)
 
 void __init_memblock memblock_free(void *ptr, size_t size)
 {
-	if (ptr)
-		memblock_phys_free(__pa(ptr), size);
 }
 
 int __init_memblock memblock_phys_free(phys_addr_t base, phys_addr_t size)
 {
-	struct memblock_type *type = &memblock.reserved;
-	phys_addr_t end = base + memblock_cap_size(base, &size);
-	int idx, start_rgn = 0, end_rgn = 0, i;
-	struct memblock_region *rgn;
-
-	if (!size)
-		return 0;
-
-	while (type->cnt + 2 > type->max)
-		if (memblock_double_array(type, base, size) < 0)
-			return -ENOMEM;
-
-	for_each_memblock_type(idx, type, rgn)
-	{
-		phys_addr_t rbase = rgn->base;
-		phys_addr_t rend = rbase + rgn->size;
-
-		if (rbase >= end)
-			break;
-		if (rend <= base)
-			continue;
-
-		if (rbase < base) {
-			rgn->base = base;
-			rgn->size -= base - rbase;
-			type->total_size -= base - rbase;
-			memblock_insert_region(type, idx, rbase, base - rbase,
-					       0, rgn->flags);
-		} else if (rend > end) {
-			rgn->base = end;
-			rgn->size -= end - rbase;
-			type->total_size -= end - rbase;
-			memblock_insert_region(type, idx--, rbase, end - rbase,
-					       0, rgn->flags);
-		} else {
-			if (!end_rgn)
-				start_rgn = idx;
-			end_rgn = idx + 1;
-		}
-	}
-
-	for (i = end_rgn - 1; i >= start_rgn; i--)
-		memblock_remove_region(type, i);
 	return 0;
 }
 
@@ -527,27 +482,7 @@ phys_addr_t __init_memblock memblock_start_of_DRAM(void)
 bool __init_memblock memblock_is_region_memory(phys_addr_t base,
 					       phys_addr_t size)
 {
-	struct memblock_type *type = &memblock.memory;
-	unsigned int left = 0, right = type->cnt;
-	phys_addr_t end = base + memblock_cap_size(base, &size);
-	int idx = -1;
-
-	do {
-		unsigned int mid = (right + left) / 2;
-		if (base < type->regions[mid].base)
-			right = mid;
-		else if (base >=
-			 (type->regions[mid].base + type->regions[mid].size))
-			left = mid + 1;
-		else {
-			idx = mid;
-			break;
-		}
-	} while (left < right);
-
-	if (idx == -1)
-		return false;
-	return (type->regions[idx].base + type->regions[idx].size) >= end;
+	return true;
 }
 
 void __init_memblock memblock_trim_memory(phys_addr_t align)

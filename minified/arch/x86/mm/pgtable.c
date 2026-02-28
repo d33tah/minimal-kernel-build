@@ -53,4 +53,3 @@ int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,
 
 	return changed;
 }
-

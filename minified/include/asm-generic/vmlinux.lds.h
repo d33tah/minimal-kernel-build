@@ -196,12 +196,6 @@
 	} NOTES_HEADERS							\
 	NOTES_HEADERS_RESTORE
 
-#define INIT_SETUP(initsetup_align)					\
-		. = ALIGN(initsetup_align);				\
-		__setup_start = .;					\
-		KEEP(*(.init.setup))					\
-		__setup_end = .;
-
 #define INIT_CALLS_LEVEL(level)						\
 		__initcall##level##_start = .;				\
 		KEEP(*(.initcall##level##.init))			\
@@ -271,7 +265,6 @@
 #define INIT_DATA_SECTION(initsetup_align)				\
 	.init.data : AT(ADDR(.init.data) - LOAD_OFFSET) {		\
 		INIT_DATA						\
-		INIT_SETUP(initsetup_align)				\
 		INIT_CALLS						\
 		INIT_RAM_FS						\
 	}

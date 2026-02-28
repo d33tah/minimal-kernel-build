@@ -53,8 +53,6 @@ const char *envp_init[MAX_INIT_ENVS + 2] = {
 	"TERM=linux",
 	NULL,
 };
-extern const struct obs_kernel_param __setup_start[], __setup_end[];
-
 unsigned long loops_per_jiffy = (1 << 12);
 
 static bool srcu_init_done;
@@ -95,40 +93,8 @@ static noinline void __ref rest_init(void)
 	cpu_startup_entry(CPUHP_ONLINE);
 }
 
-static int __init do_early_param(char *param, char *val, const char *unused,
-				 void *arg)
-{
-	const struct obs_kernel_param *p;
-
-	for (p = __setup_start; p < __setup_end; p++) {
-		if ((p->early && parameq(param, p->str)) ||
-		    (strcmp(param, "console") == 0 &&
-		     strcmp(p->str, "earlycon") == 0)) {
-			if (p->setup_func(val) != 0)
-				pr_warn("Malformed early option '%s'\n", param);
-		}
-	}
-
-	return 0;
-}
-
-static void __init parse_early_options(char *cmdline)
-{
-	parse_args("early options", cmdline, NULL, 0, 0, 0, NULL,
-		   do_early_param);
-}
-
 void __init parse_early_param(void)
 {
-	static int done __initdata;
-	static char tmp_cmdline[COMMAND_LINE_SIZE] __initdata;
-
-	if (done)
-		return;
-
-	strlcpy(tmp_cmdline, boot_command_line, COMMAND_LINE_SIZE);
-	parse_early_options(tmp_cmdline);
-	done = 1;
 }
 
 void __init trap_init(void); /* in arch/x86/kernel/traps.c */

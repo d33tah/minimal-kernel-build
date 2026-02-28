@@ -89,20 +89,6 @@ extern struct file_system_type rootfs_fs_type;
 #define core_initcall(fn)		__define_initcall(fn, 1)
 #define fs_initcall(fn)			__define_initcall(fn, 5)
 
-struct obs_kernel_param {
-	const char *str;
-	int (*setup_func)(char *);
-	int early;
-};
-
-#define __setup_param(str, unique_id, fn, early)			\
-	static const char __setup_str_##unique_id[] __initconst		\
-		__aligned(1) = str; 					\
-	static struct obs_kernel_param __setup_##unique_id		\
-		__used __section(".init.setup")				\
-		__aligned(__alignof__(struct obs_kernel_param))		\
-		= { __setup_str_##unique_id, fn, early }
-
 void __init parse_early_param(void);
 #endif  /* __ASSEMBLY__ */
 

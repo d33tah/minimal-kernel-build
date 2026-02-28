@@ -95,7 +95,6 @@ static inline pid_t pid_nr(struct pid *pid)
 		nr = pid->numbers[0].nr;
 	return nr;
 }
-pid_t pid_nr_ns(struct pid *pid, struct pid_namespace *ns);
 pid_t pid_vnr(struct pid *pid);
 #include <linux/rbtree.h>
 struct rlimit {
@@ -160,8 +159,6 @@ struct task_struct {
 	randomized_struct_fields_start
 
 	void				*stack;
-	refcount_t			usage;
-	 
 	unsigned int			flags;
 
 	int				on_rq;

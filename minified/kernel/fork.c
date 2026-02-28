@@ -184,7 +184,6 @@ copy_process(int node, struct kernel_clone_args *args)
 	mod_lruvec_kmem_state(p->stack, NR_KERNEL_STACK_KB, THREAD_SIZE / 1024);
 	clear_tsk_need_resched(p);
 	set_task_stack_end_magic(p);
-	refcount_set(&p->usage, 1);
 	p->worker_private = NULL;
 	kmap_local_fork(p);
 

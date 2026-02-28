@@ -26,7 +26,6 @@ struct task_struct init_task __aligned(L1_CACHE_BYTES) = {
 	.thread_info = INIT_THREAD_INFO(init_task),
 	.__state = 0,
 	.stack = init_stack,
-	.usage = REFCOUNT_INIT(2),
 	.flags = PF_KTHREAD,
 	.mm = NULL,
 	.active_mm = &init_mm,

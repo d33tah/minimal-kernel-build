@@ -458,10 +458,14 @@ struct kmem_cache *names_cachep __read_mostly;
 
 void __init vfs_caches_init_early(void)
 {
-	dentry_hashtable = alloc_large_system_hash(
-		"Dentry cache", sizeof(struct hlist_bl_head), dhash_entries, 13,
-		HASH_EARLY | HASH_ZERO, &d_hash_shift, NULL, 0, 0);
-	d_hash_shift = 32 - d_hash_shift;
+	unsigned long numentries =
+		roundup_pow_of_two(dhash_entries ? dhash_entries : 256);
+	unsigned long log2qty = ilog2(numentries);
+	dentry_hashtable = memblock_alloc(
+		sizeof(struct hlist_bl_head) << log2qty, SMP_CACHE_BYTES);
+	if (!dentry_hashtable)
+		panic("Failed to allocate dentry hash\n");
+	d_hash_shift = 32 - log2qty;
 }
 
 void __init vfs_caches_init(void)

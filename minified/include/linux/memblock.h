@@ -130,15 +130,7 @@ void memblock_set_current_limit(phys_addr_t limit);
 	     region < (memblock.memory.regions + memblock.memory.cnt);	\
 	     region++)
 
-extern void *alloc_large_system_hash(const char *tablename,
-				     unsigned long bucketsize,
-				     unsigned long numentries,
-				     int scale,
-				     int flags,
-				     unsigned int *_hash_shift,
-				     unsigned int *_hash_mask,
-				     unsigned long low_limit,
-				     unsigned long high_limit);
+
 
 #define HASH_EARLY	0x00000001
 #define HASH_ZERO	0x00000004	 

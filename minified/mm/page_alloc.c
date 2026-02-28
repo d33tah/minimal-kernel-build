@@ -772,32 +772,3 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 		init_unavailable_range(hole_pfn, m_end_pfn, zone_id, nid);
 	}
 }
-
-void *__init alloc_large_system_hash(const char *tablename,
-				     unsigned long bucketsize,
-				     unsigned long numentries, int scale,
-				     int flags, unsigned int *_hash_shift,
-				     unsigned int *_hash_mask,
-				     unsigned long low_limit,
-				     unsigned long high_limit)
-{
-	unsigned long log2qty, size;
-	void *table;
-
-	if (!numentries)
-		numentries = 256;
-	numentries = roundup_pow_of_two(numentries);
-	log2qty = ilog2(numentries);
-	size = bucketsize << log2qty;
-
-	table = memblock_alloc(size, SMP_CACHE_BYTES);
-	if (!table)
-		panic("Failed to allocate %s hash table\n", tablename);
-
-	if (_hash_shift)
-		*_hash_shift = log2qty;
-	if (_hash_mask)
-		*_hash_mask = (1 << log2qty) - 1;
-
-	return table;
-}

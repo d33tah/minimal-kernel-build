@@ -137,27 +137,22 @@ struct pid *get_task_pid(struct task_struct *task, enum pid_type type)
 	return pid;
 }
 
+/* Simplified: single PID namespace (level=0) */
 pid_t pid_nr_ns(struct pid *pid, struct pid_namespace *ns)
 {
-	struct upid *upid;
-	pid_t nr = 0;
-
-	if (pid && ns->level <= pid->level) {
-		upid = &pid->numbers[ns->level];
-		if (upid->ns == ns)
-			nr = upid->nr;
-	}
-	return nr;
+	if (pid && ns->level <= pid->level && pid->numbers[ns->level].ns == ns)
+		return pid->numbers[ns->level].nr;
+	return 0;
 }
 
 pid_t pid_vnr(struct pid *pid)
 {
-	return pid_nr_ns(pid, task_active_pid_ns(current));
+	return pid ? pid->numbers[0].nr : 0;
 }
 
 struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
 {
-	return ns_of_pid(tsk->thread_pid); /* task_pid inlined */
+	return ns_of_pid(tsk->thread_pid);
 }
 
 void __init pid_idr_init(void)

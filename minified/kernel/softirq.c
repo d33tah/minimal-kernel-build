@@ -69,19 +69,12 @@ void irq_enter_rcu(void)
 	__irq_enter_raw();
 }
 
-static inline void __irq_exit_rcu(void)
+void irq_exit_rcu(void)
 {
 	local_irq_disable();
 	preempt_count_sub(HARDIRQ_OFFSET);
-	if (!in_interrupt() && local_softirq_pending()) {
+	if (!in_interrupt() && local_softirq_pending())
 		do_softirq_own_stack();
-	}
-}
-
-void irq_exit_rcu(void)
-{
-	__irq_exit_rcu();
-	/* lockdep_hardirq_exit is empty do{}while(0) */
 }
 
 inline void raise_softirq_irqoff(unsigned int nr)

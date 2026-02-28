@@ -67,16 +67,6 @@ extern size_t strnlen(const char *s, size_t count);
 extern void *memset(void *, int, size_t);
 #define memset(s, c, count) __builtin_memset(s, c, count)
 
-static inline void *memset16(uint16_t *s, uint16_t v, size_t n)
-{
-	int d0, d1;
-	asm volatile("rep\n\t"
-		     "stosw"
-		     : "=&c" (d0), "=&D" (d1)
-		     : "a" (v), "1" (s), "0" (n)
-		     : "memory");
-	return s;
-}
 /* end string_32.h */
 
 #ifndef __HAVE_ARCH_STRLCPY

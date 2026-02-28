@@ -56,20 +56,15 @@ found:
 	return p->opt;
 }
 
-static int fs_param_bad_value(struct p_log *log, struct fs_parameter *param)
-{
-	return inval_plog(log, "Bad value for '%s'", param->key);
-}
-
 int fs_param_is_u32(struct p_log *log, const struct fs_parameter_spec *p,
 		    struct fs_parameter *param, struct fs_parse_result *result)
 {
 	int base = (unsigned long)p->data;
 	if (param->type != fs_value_is_string)
-		return fs_param_bad_value(log, param);
+		return inval_plog(log, "Bad value for '%s'", param->key);
 	if (!*param->string && (p->flags & fs_param_can_be_empty))
 		return 0;
 	if (kstrtouint(param->string, base, &result->uint_32) < 0)
-		return fs_param_bad_value(log, param);
+		return inval_plog(log, "Bad value for '%s'", param->key);
 	return 0;
 }

@@ -16,19 +16,13 @@
 
 #define list_next_rcu(list)	(*((struct list_head __rcu **)(&(list)->next)))
 
-static inline void __list_add_rcu(struct list_head *new,
-		struct list_head *prev, struct list_head *next)
-{
-	new->next = next;
-	new->prev = prev;
-	rcu_assign_pointer(list_next_rcu(prev), new);
-	next->prev = new;
-}
-
 static inline void list_add_tail_rcu(struct list_head *new,
 					struct list_head *head)
 {
-	__list_add_rcu(new, head->prev, head);
+	new->next = head;
+	new->prev = head->prev;
+	rcu_assign_pointer(list_next_rcu(head->prev), new);
+	head->prev = new;
 }
 
 #define hlist_first_rcu(head)	(*((struct hlist_node __rcu **)(&(head)->first)))

@@ -21,53 +21,28 @@ struct cred init_cred = {
 	.ucounts = &init_ucounts,
 };
 
-static void put_cred_rcu(struct rcu_head *rcu)
-{
-	struct cred *cred = container_of(rcu, struct cred, rcu);
-
-	kmem_cache_free(cred_jar, cred);
-}
-
 void __put_cred(struct cred *cred)
 {
-	if (cred->non_rcu)
-		put_cred_rcu(&cred->rcu);
-	else
-		call_rcu(&cred->rcu, put_cred_rcu);
+	kmem_cache_free(cred_jar, cred);
 }
 
 struct cred *prepare_creds(void)
 {
-	struct task_struct *task = current;
-	const struct cred *old;
 	struct cred *new;
 	new = kmem_cache_alloc(cred_jar, GFP_KERNEL);
 	if (!new)
 		return NULL;
-
-	old = task->cred;
-	memcpy(new, old, sizeof(struct cred));
-
-	new->non_rcu = 0;
+	memcpy(new, current->cred, sizeof(struct cred));
 	atomic_set(&new->usage, 1);
-	get_group_info(new->group_info);
-	get_uid(new->user);
-	get_user_ns(new->user_ns);
-	new->ucounts = get_ucounts(new->ucounts);
-
 	return new;
 }
 
 int copy_creds(struct task_struct *p)
 {
-	struct cred *new;
-
-	new = prepare_creds();
+	struct cred *new = prepare_creds();
 	if (!new)
 		return -ENOMEM;
-
 	p->cred = p->real_cred = get_cred(new);
-	inc_rlimit_ucounts(task_ucounts(p), UCOUNT_RLIMIT_NPROC, 1);
 	return 0;
 }
 

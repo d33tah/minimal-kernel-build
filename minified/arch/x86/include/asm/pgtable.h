@@ -127,7 +127,6 @@ static inline pmd_t pfn_pmd(unsigned long page_nr, pgprot_t pgprot)
 	return __pmd(pfn | check_pgprot(pgprot));
 }
 
-pmd_t *populate_extra_pmd(unsigned long vaddr);
 pte_t *populate_extra_pte(unsigned long vaddr);
 
 #endif	 

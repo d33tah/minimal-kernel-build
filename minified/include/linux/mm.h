@@ -219,12 +219,6 @@ enum compound_dtor_id {
 };
 extern compound_page_dtor * const compound_page_dtors[NR_COMPOUND_DTORS];
 
-static inline void destroy_compound_page(struct page *page)
-{
-	VM_BUG_ON_PAGE(page[1].compound_dtor >= NR_COMPOUND_DTORS, page);
-	compound_page_dtors[page[1].compound_dtor](page);
-}
-
 static inline unsigned long compound_nr(struct page *page)
 {
 	if (!PageHead(page))

@@ -87,16 +87,11 @@ struct fs_context *fs_context_for_mount(struct file_system_type *fs_type,
 	if (!fc)
 		return ERR_PTR(-ENOMEM);
 
-	fc->purpose = FS_CONTEXT_FOR_MOUNT;
 	fc->sb_flags = sb_flags;
-	fc->sb_flags_mask = 0;
 	fc->fs_type = get_filesystem(fs_type);
 	fc->cred = get_current_cred();
 	fc->net_ns = get_net(current->nsproxy->net_ns);
 	fc->log.prefix = fs_type->name;
-
-	mutex_init(&fc->uapi_mutex);
-
 	fc->user_ns = get_user_ns(fc->cred->user_ns);
 
 	/* All fs types have init_fs_context - no legacy fallback needed */

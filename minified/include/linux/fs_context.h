@@ -15,10 +15,6 @@ struct net;
 struct super_block;
 struct user_namespace;
 
-enum fs_context_purpose {
-	FS_CONTEXT_FOR_MOUNT,
-};
-
 enum fs_value_type {
 	fs_value_is_flag = 1,
 	fs_value_is_string,
@@ -44,26 +40,18 @@ struct p_log {
 
 struct fs_context {
 	const struct fs_context_operations *ops;
-	struct mutex		uapi_mutex;	 
 	struct file_system_type	*fs_type;
-	void			*fs_private;	 
-	void			*sget_key;
-	struct dentry		*root;		 
-	struct user_namespace	*user_ns;	 
-	struct net		*net_ns;	 
-	const struct cred	*cred;		 
-	struct p_log		log;		 
-	const char		*source;	 
-	void			*security;	 
-	void			*s_fs_info;	 
-	unsigned int		sb_flags;	 
-	unsigned int		sb_flags_mask;	 
-	unsigned int		s_iflags;	 
-	unsigned int		lsm_flags;	 
-	enum fs_context_purpose	purpose:8;
-	bool			need_free:1;	 
-	bool			global:1;	 
-	bool			oldapi:1;	 
+	struct dentry		*root;
+	struct user_namespace	*user_ns;
+	struct net		*net_ns;
+	const struct cred	*cred;
+	struct p_log		log;
+	const char		*source;
+	void			*s_fs_info;
+	unsigned int		sb_flags;
+	unsigned int		s_iflags;
+	bool			need_free:1;
+	bool			global:1;
 };
 
 struct fs_context_operations {

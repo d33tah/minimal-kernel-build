@@ -16,7 +16,6 @@ struct linux_binprm {
 	struct cred *cred;
 	int argc, envc;
 	const char *filename;
-	const char *interp;
 	unsigned long exec;
 	struct rlimit rlim_stack;
 	char buf[BINPRM_BUF_SIZE];

@@ -5,10 +5,9 @@
 #include <linux/ns_common.h>
 #include <linux/idr.h>
 struct pid_namespace {
-	struct idr idr; struct rcu_head rcu; unsigned int pid_allocated;
-	struct task_struct *child_reaper; struct kmem_cache *pid_cachep;
-	unsigned int level; struct pid_namespace *parent; struct user_namespace *user_ns;
-	struct ucounts *ucounts; int reboot; struct ns_common ns;
+	struct idr idr;
+	unsigned int pid_allocated;
+	struct kmem_cache *pid_cachep;
 } __randomize_layout;
 extern struct pid_namespace init_pid_ns;
 #define PIDNS_ADDING (1U << 31)

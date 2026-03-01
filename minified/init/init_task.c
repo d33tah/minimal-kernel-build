@@ -10,10 +10,6 @@ struct nsproxy init_nsproxy = {
 };
 
 static struct signal_struct init_signals = {
-	.shared_pending	= {
-		.list = LIST_HEAD_INIT(init_signals.shared_pending.list),
-		.signal =  {{0}}
-	},
 	.rlim		= INIT_RLIMITS,
 	.exec_update_lock = __RWSEM_INITIALIZER(init_signals.exec_update_lock),
 	.pids = {

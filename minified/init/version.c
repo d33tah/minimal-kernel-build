@@ -42,7 +42,6 @@
 #include <linux/utsname.h>
 #include <generated/utsrelease.h>
 struct uts_namespace init_uts_ns = {
-	.ns.count = REFCOUNT_INIT(2),
 	.name = {
 		.sysname	= UTS_SYSNAME,
 		.nodename	= UTS_NODENAME,
@@ -51,8 +50,6 @@ struct uts_namespace init_uts_ns = {
 		.machine	= UTS_MACHINE,
 		.domainname	= UTS_DOMAINNAME,
 	},
-	.user_ns = &init_user_ns,
-	.ns.inum = 0xEFFFFFFEU,
 };
 
 const char linux_banner[] = "Linux version " UTS_RELEASE " (" LINUX_COMPILE_BY

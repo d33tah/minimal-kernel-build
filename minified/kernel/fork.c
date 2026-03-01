@@ -250,7 +250,6 @@ copy_process(int node, struct kernel_clone_args *args)
 			retval = -ENOMEM;
 			goto bad_fork;
 		}
-		init_sigpending(&sig->shared_pending);
 		task_lock(current->group_leader);
 		memcpy(sig->rlim, current->signal->rlim, sizeof sig->rlim);
 		task_unlock(current->group_leader);
@@ -299,8 +298,6 @@ copy_process(int node, struct kernel_clone_args *args)
 		init_task_pid(p, PIDTYPE_PID, pid);
 		init_task_pid(p, PIDTYPE_TGID, pid);
 
-		if (is_child_reaper(pid))
-			ns_of_pid(pid)->child_reaper = p;
 		list_add_tail_rcu(&p->tasks, &init_task.tasks);
 		attach_pid(p, PIDTYPE_TGID);
 		attach_pid(p, PIDTYPE_PID);

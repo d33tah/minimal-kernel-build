@@ -20,13 +20,8 @@ struct pid init_struct_pid = {
 int pid_max = PID_MAX_DEFAULT;
 
 struct pid_namespace init_pid_ns = {
-	.ns.count = REFCOUNT_INIT(2),
 	.idr = IDR_INIT(init_pid_ns.idr),
 	.pid_allocated = PIDNS_ADDING,
-	.level = 0,
-	.child_reaper = &init_task,
-	.user_ns = &init_user_ns,
-	.ns.inum = 0xEFFFFFFCU,
 };
 
 static __cacheline_aligned_in_smp DEFINE_SPINLOCK(pidmap_lock);

@@ -17,13 +17,8 @@ struct new_utsname {
 	char domainname[__NEW_UTS_LEN + 1];
 };
 
-struct user_namespace;
-extern struct user_namespace init_user_ns;
-
 struct uts_namespace {
 	struct new_utsname name;
-	struct user_namespace *user_ns;
-	struct ucounts *ucounts;
 	struct ns_common ns;
 } __randomize_layout;
 extern struct uts_namespace init_uts_ns;

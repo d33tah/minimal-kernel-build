@@ -16,8 +16,6 @@ struct sighand_struct {
 };
 
 struct signal_struct {
-	struct sigpending	shared_pending;
-
 	struct pid *pids[PIDTYPE_MAX];
 
 	struct rlimit rlim[RLIM_NLIMITS];

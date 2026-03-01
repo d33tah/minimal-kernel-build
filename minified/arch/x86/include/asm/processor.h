@@ -165,8 +165,6 @@ struct thread_struct {
 
 	unsigned long gs;
 
-	unsigned long		trap_nr;
-
 	struct fpu		fpu;
 	 
 };

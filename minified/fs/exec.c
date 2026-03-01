@@ -309,7 +309,6 @@ static struct linux_binprm *alloc_bprm(int fd, struct filename *filename)
 		goto out;
 
 	bprm->filename = filename->name;
-	bprm->interp = bprm->filename;
 
 	bprm->mm = mm = mm_alloc();
 	if (!mm)

@@ -58,8 +58,6 @@ SECTIONS
 	. = ALIGN(PAGE_SIZE);	/* keep ZO size page aligned */
 	_end = .;
 
-	STABS_DEBUG
-	DWARF_DEBUG
 	ELF_DETAILS
 
 	DISCARDS

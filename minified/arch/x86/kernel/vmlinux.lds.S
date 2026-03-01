@@ -206,8 +206,6 @@ SECTIONS
 
 	/* CONFIG_AMD_MEM_ENCRYPT not set - scratch section removed */
 
-	STABS_DEBUG
-	DWARF_DEBUG
 	ELF_DETAILS
 
 	DISCARDS

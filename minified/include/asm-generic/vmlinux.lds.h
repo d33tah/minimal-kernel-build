@@ -172,10 +172,6 @@
 #define EXIT_CALL							\
 	*(.exitcall.exit)
 
-#define DWARF_DEBUG
-
-#define STABS_DEBUG
-
 #define ELF_DETAILS							\
 		.comment 0 : { *(.comment) }				\
 		.symtab 0 : { *(.symtab) }				\

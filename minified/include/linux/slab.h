@@ -150,18 +150,6 @@ static __always_inline void *kmem_cache_alloc_node(struct kmem_cache *s, gfp_t f
 	return kmem_cache_alloc(s, flags);
 }
 
-static __always_inline __alloc_size(3) void *kmem_cache_alloc_trace(struct kmem_cache *s,
-								    gfp_t flags, size_t size)
-{
-	return kmem_cache_alloc(s, flags);
-}
-
-static __always_inline void *kmem_cache_alloc_node_trace(struct kmem_cache *s, gfp_t gfpflags,
-							 int node, size_t size)
-{
-	return kmem_cache_alloc_node(s, gfpflags, node);
-}
-
 extern void *kmalloc_order(size_t size, gfp_t flags, unsigned int order) __assume_page_alignment
 									 __alloc_size(1);
 
@@ -182,9 +170,9 @@ static __always_inline __alloc_size(1) void *kmalloc(size_t size, gfp_t flags)
 		if (!index)
 			return ZERO_SIZE_PTR;
 
-		return kmem_cache_alloc_trace(
+		return kmem_cache_alloc(
 				kmalloc_caches[kmalloc_type(flags)][index],
-				flags, size);
+				flags);
 	}
 	return __kmalloc(size, flags);
 }
@@ -198,9 +186,9 @@ static __always_inline __alloc_size(1) void *kmalloc_node(size_t size, gfp_t fla
 		if (!i)
 			return ZERO_SIZE_PTR;
 
-		return kmem_cache_alloc_node_trace(
+		return kmem_cache_alloc_node(
 				kmalloc_caches[kmalloc_type(flags)][i],
-						flags, node, size);
+						flags, node);
 	}
 	return __kmalloc_node(size, flags, node);
 }

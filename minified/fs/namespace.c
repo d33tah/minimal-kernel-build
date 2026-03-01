@@ -38,25 +38,11 @@ static inline struct mount *real_mount(struct vfsmount *mnt)
 	return container_of(mnt, struct mount, mnt);
 }
 
-extern seqlock_t mount_lock;
-
 #include "internal.h"
 
 static DEFINE_IDA(mnt_id_ida);
 
 static struct kmem_cache *mnt_cache __read_mostly;
-
-__cacheline_aligned_in_smp DEFINE_SEQLOCK(mount_lock);
-
-static inline void lock_mount_hash(void)
-{
-	write_seqlock(&mount_lock);
-}
-
-static inline void unlock_mount_hash(void)
-{
-	write_sequnlock(&mount_lock);
-}
 
 static void mnt_free_id(struct mount *mnt)
 {
@@ -129,8 +115,6 @@ static struct vfsmount *vfs_create_mount(struct fs_context *fc)
 	mnt->mnt.mnt_sb = fc->root->d_sb;
 	mnt->mnt.mnt_root = dget(fc->root);
 
-	lock_mount_hash();
-	unlock_mount_hash();
 	return &mnt->mnt;
 }
 

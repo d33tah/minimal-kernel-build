@@ -149,8 +149,6 @@ static void generic_shutdown_super(struct super_block *sb)
 		sb->s_flags &= ~SB_ACTIVE;
 		evict_inodes(sb);
 	}
-	spin_lock(&sb_lock);
-	spin_unlock(&sb_lock);
 	up_write(&sb->s_umount);
 }
 

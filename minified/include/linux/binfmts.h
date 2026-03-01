@@ -8,39 +8,21 @@
 
 struct linux_binprm {
 	struct vm_area_struct *vma;
-	unsigned long vma_pages;
 	struct mm_struct *mm;
-	unsigned long p;  
-	unsigned long argmin;  
-	unsigned int
-		 
-		have_execfd:1,
-
-		execfd_creds:1,
-		 
-		secureexec:1,
-		point_of_no_return:1;
-	struct file *executable;  
-	struct file *interpreter;
+	unsigned long p;
+	unsigned long argmin;
+	unsigned int point_of_no_return:1;
 	struct file *file;
-	struct cred *cred;	 
-	int unsafe;		 
-	unsigned int per_clear;	 
+	struct cred *cred;
 	int argc, envc;
-	const char *filename;	 
-	const char *interp;	 
-	const char *fdpath;	 
-	unsigned interp_flags;
-	int execfd;		 
-	unsigned long loader, exec;
-
-	struct rlimit rlim_stack;  
-
+	const char *filename;
+	const char *interp;
+	unsigned long exec;
+	struct rlimit rlim_stack;
 	char buf[BINPRM_BUF_SIZE];
 } __randomize_layout;
 
 struct linux_binfmt {
-	struct list_head lh;
 	struct module *module;
 	int (*load_binary)(struct linux_binprm *);
 } __randomize_layout;

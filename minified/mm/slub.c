@@ -356,9 +356,6 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 	if (!oo_objects(s->oo))
 		goto error;
 
-	s->min_partial = min_t(unsigned long, MAX_PARTIAL, ilog2(s->size) / 2);
-	s->min_partial = max_t(unsigned long, MIN_PARTIAL, s->min_partial);
-
 	if (slab_state == DOWN) {
 		struct slab *slab;
 		struct kmem_cache_node *n;

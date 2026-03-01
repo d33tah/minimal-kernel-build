@@ -33,8 +33,6 @@ struct mmu_gather {
 	unsigned int		cleared_ptes : 1;
 	unsigned int		cleared_pmds : 1;
 
-	unsigned int		batch_count;
-
 	struct mmu_gather_batch *active;
 	struct mmu_gather_batch	local;
 	struct page		*__pages[MMU_GATHER_BUNDLE];

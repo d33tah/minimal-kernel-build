@@ -81,8 +81,6 @@ struct fpstate {
 	 
 	unsigned int		size;
 
-	unsigned int		user_size;
-
 	u64			xfeatures;
 
 	union fpregs_state	regs;
@@ -106,8 +104,6 @@ struct fpu_state_config {
 	u64 max_features;
 
 	u64 default_features;
-	 
-	u64 legacy_features;
 };
 
 extern struct fpu_state_config fpu_kernel_cfg, fpu_user_cfg;

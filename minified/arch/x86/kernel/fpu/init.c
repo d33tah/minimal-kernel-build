@@ -47,13 +47,10 @@ void __init fpu__init_system(struct cpuinfo_x86 *c)
 
 	fpstate_init_user(&init_fpstate);
 
-	if (cpu_feature_enabled(X86_FEATURE_FXSR)) {
+	if (cpu_feature_enabled(X86_FEATURE_FXSR))
 		size = sizeof(struct fxregs_state);
-		fpu_user_cfg.legacy_features = XFEATURE_MASK_FPSSE;
-	} else {
+	else
 		size = sizeof(struct fregs_state);
-		fpu_user_cfg.legacy_features = XFEATURE_MASK_FP;
-	}
 	fpu_kernel_cfg.max_size = size;
 	fpu_kernel_cfg.default_size = size;
 	fpu_user_cfg.max_size = size;

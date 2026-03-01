@@ -61,7 +61,6 @@ struct kmem_cache_order_objects {
 struct kmem_cache {
 	struct kmem_cache_cpu __percpu *cpu_slab;
 	slab_flags_t flags;
-	unsigned long min_partial;
 	unsigned int size;
 	unsigned int object_size;
 	unsigned int offset;
@@ -72,11 +71,8 @@ struct kmem_cache {
 	void (*ctor)(void *);
 	unsigned int inuse;
 	unsigned int align;
-	unsigned int red_left_pad;
 	const char *name;
 	struct list_head list;
-	unsigned int useroffset;
-	unsigned int usersize;
 	struct kmem_cache_node *node[MAX_NUMNODES];
 };
 

@@ -56,8 +56,6 @@ create_cache(const char *name, unsigned int object_size, unsigned int align,
 	s->size = s->object_size = object_size;
 	s->align = align;
 	s->ctor = ctor;
-	s->useroffset = useroffset;
-	s->usersize = usersize;
 
 	err = __kmem_cache_create(s, flags);
 	if (err)
@@ -148,9 +146,6 @@ void __init create_boot_cache(struct kmem_cache *s, const char *name,
 	if (is_power_of_2(size))
 		align = max(align, size);
 	s->align = calculate_alignment(flags, align, size);
-
-	s->useroffset = useroffset;
-	s->usersize = usersize;
 
 	err = __kmem_cache_create(s, flags);
 

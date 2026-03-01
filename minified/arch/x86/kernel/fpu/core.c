@@ -197,7 +197,6 @@ void fpstate_reset(struct fpu *fpu)
 	fpu->fpstate = &fpu->__fpstate;
 	fpstate = fpu->fpstate;
 	fpstate->size = fpu_kernel_cfg.default_size;
-	fpstate->user_size = fpu_user_cfg.default_size;
 	fpstate->xfeatures = fpu_kernel_cfg.default_features;
 }
 

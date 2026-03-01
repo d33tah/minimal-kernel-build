@@ -54,18 +54,10 @@ struct page {
 			 
 			unsigned long private;
 		};
-		struct {	 
-			unsigned long compound_head;	 
+		struct {
+			unsigned long compound_head;
 
 			unsigned char compound_order;
-			atomic_t compound_mapcount;
-		};
-		struct {
-			unsigned long _pt_pad_1;
-			unsigned long _pt_pad_2;
-			unsigned long _pt_pad_3;
-			struct mm_struct *pt_mm;
-			spinlock_t ptl;
 		};
 
 		struct rcu_head rcu_head;

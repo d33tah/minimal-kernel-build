@@ -30,11 +30,6 @@ DEFINE_IDTENTRY(exc_divide_error)
 	die("divide error", regs, 0);
 }
 
-DEFINE_IDTENTRY(exc_overflow)
-{
-	die("overflow", regs, 0);
-}
-
 DEFINE_IDTENTRY_RAW(exc_invalid_op)
 {
 	irqentry_state_t state;
@@ -57,11 +52,6 @@ DEFINE_IDTENTRY_RAW(exc_invalid_op)
 	irqentry_exit(regs, state);
 }
 
-DEFINE_IDTENTRY(exc_coproc_segment_overrun)
-{
-	die("coprocessor segment overrun", regs, 0);
-}
-
 DEFINE_IDTENTRY_ERRORCODE(exc_invalid_tss)
 {
 	die("invalid TSS", regs, error_code);
@@ -75,16 +65,6 @@ DEFINE_IDTENTRY_ERRORCODE(exc_segment_not_present)
 DEFINE_IDTENTRY_ERRORCODE(exc_stack_segment)
 {
 	die("stack segment", regs, error_code);
-}
-
-DEFINE_IDTENTRY_ERRORCODE(exc_alignment_check)
-{
-	die("alignment check", regs, error_code);
-}
-
-DEFINE_IDTENTRY(exc_bounds)
-{
-	die("bounds", regs, 0);
 }
 
 #define GPFSTR "general protection fault"
@@ -120,25 +100,6 @@ DEFINE_IDTENTRY_RAW(exc_nmi)
 DEFINE_IDTENTRY_RAW(exc_debug)
 {
 	set_debugreg(DR6_RESERVED, 6);
-}
-
-DEFINE_IDTENTRY(exc_coprocessor_error)
-{
-	die("fpu exception", regs, 0);
-}
-
-DEFINE_IDTENTRY(exc_simd_coprocessor_error)
-{
-	die("simd exception", regs, 0);
-}
-
-DEFINE_IDTENTRY(exc_spurious_interrupt_bug)
-{
-}
-
-DEFINE_IDTENTRY(exc_device_not_available)
-{
-	die("unexpected #NM exception", regs, 0);
 }
 
 DEFINE_IDTENTRY_SW(iret_error)

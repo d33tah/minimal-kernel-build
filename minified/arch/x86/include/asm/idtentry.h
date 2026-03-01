@@ -6,21 +6,13 @@
 #define X86_TRAP_DB		 1
 #define X86_TRAP_NMI		 2
 #define X86_TRAP_BP		 3
-#define X86_TRAP_OF		 4
-#define X86_TRAP_BR		 5
 #define X86_TRAP_UD		 6
-#define X86_TRAP_NM		 7
 #define X86_TRAP_DF		 8
-#define X86_TRAP_OLD_MF		 9
 #define X86_TRAP_TS		10
 #define X86_TRAP_NP		11
 #define X86_TRAP_SS		12
 #define X86_TRAP_GP		13
 #define X86_TRAP_PF		14
-#define X86_TRAP_SPURIOUS	15
-#define X86_TRAP_MF		16
-#define X86_TRAP_AC		17
-#define X86_TRAP_XF		19
 #define IDT_ALIGN	(8 * (1 + HAS_KERNEL_IBT))
 
 #ifndef __ASSEMBLY__
@@ -151,13 +143,6 @@ SYM_CODE_END(irq_entries_start)
 #define X86_TRAP_OTHER		0xFFFF
 
 DECLARE_IDTENTRY(X86_TRAP_DE,		exc_divide_error);
-DECLARE_IDTENTRY(X86_TRAP_OF,		exc_overflow);
-DECLARE_IDTENTRY(X86_TRAP_BR,		exc_bounds);
-DECLARE_IDTENTRY(X86_TRAP_NM,		exc_device_not_available);
-DECLARE_IDTENTRY(X86_TRAP_OLD_MF,	exc_coproc_segment_overrun);
-DECLARE_IDTENTRY(X86_TRAP_SPURIOUS,	exc_spurious_interrupt_bug);
-DECLARE_IDTENTRY(X86_TRAP_MF,		exc_coprocessor_error);
-DECLARE_IDTENTRY(X86_TRAP_XF,		exc_simd_coprocessor_error);
 
 DECLARE_IDTENTRY_SW(32,	iret_error);
 
@@ -165,7 +150,6 @@ DECLARE_IDTENTRY_ERRORCODE(X86_TRAP_TS,	exc_invalid_tss);
 DECLARE_IDTENTRY_ERRORCODE(X86_TRAP_NP,	exc_segment_not_present);
 DECLARE_IDTENTRY_ERRORCODE(X86_TRAP_SS,	exc_stack_segment);
 DECLARE_IDTENTRY_ERRORCODE(X86_TRAP_GP,	exc_general_protection);
-DECLARE_IDTENTRY_ERRORCODE(X86_TRAP_AC,	exc_alignment_check);
 
 DECLARE_IDTENTRY_RAW(X86_TRAP_UD,		exc_invalid_op);
 DECLARE_IDTENTRY_RAW(X86_TRAP_BP,		exc_int3);

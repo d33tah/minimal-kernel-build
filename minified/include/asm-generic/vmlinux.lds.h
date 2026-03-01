@@ -29,13 +29,9 @@
 
 #define SCHED_DATA				\
 	STRUCT_ALIGN();				\
-	__sched_class_highest = .;		\
-	*(__stop_sched_class)			\
 	*(__fair_sched_class)			\
-	*(__idle_sched_class)			\
-	__sched_class_lowest = .;
+	*(__idle_sched_class)
 
-#define MEM_KEEP(sec)
 #define MEM_DISCARD(sec) *(.mem##sec)
 
 #define DATA_DATA							\
@@ -43,8 +39,6 @@
 	*(DATA_MAIN)							\
 	*(.ref.data)							\
 	*(.data..shared_aligned)  			\
-	MEM_KEEP(init.data*)						\
-	MEM_KEEP(exit.data*)						\
 	*(.data.unlikely)						\
 	STRUCT_ALIGN();
 

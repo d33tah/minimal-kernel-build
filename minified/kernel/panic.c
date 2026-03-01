@@ -5,6 +5,7 @@
 
 /* Merged from lib/debug_locks.c */
 int debug_locks __read_mostly = 1;
+int oops_in_progress;
 atomic_t panic_cpu = ATOMIC_INIT(PANIC_CPU_INVALID);
 
 void panic(const char *fmt, ...)

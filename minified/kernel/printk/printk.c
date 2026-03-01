@@ -1,4 +1,1 @@
-
-#include <linux/init.h>
-
-int oops_in_progress;
+/* oops_in_progress moved to panic.c */

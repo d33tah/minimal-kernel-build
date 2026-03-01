@@ -7,11 +7,6 @@
 #define istate core_internal_state__do_not_mess_with_it
 
 enum {
-	IRQS_AUTODETECT		= 0x00000001,
-	IRQS_SPURIOUS_DISABLED	= 0x00000002,
-	IRQS_ONESHOT		= 0x00000020,
-	IRQS_REPLAY		= 0x00000040,
-	IRQS_WAITING		= 0x00000080,
 	IRQS_PENDING		= 0x00000200,
 };
 

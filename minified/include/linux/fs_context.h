@@ -106,8 +106,6 @@ void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt, 
 #define __plog(p, l, fmt, ...) logfc((p)->log, (p)->prefix, \
 					l, fmt, ## __VA_ARGS__)
 
-#define warn_plog(p, fmt, ...) __plog(p, 'w', fmt, ## __VA_ARGS__)
-
 #define errorf(fc, fmt, ...) __logfc(fc, 'e', fmt, ## __VA_ARGS__)
 #define error_plog(p, fmt, ...) __plog(p, 'e', fmt, ## __VA_ARGS__)
 

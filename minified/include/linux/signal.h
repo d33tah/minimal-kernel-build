@@ -25,18 +25,7 @@ typedef struct {
 typedef void __signalfn_t(int);
 typedef __signalfn_t __user *__sighandler_t;
 
-typedef void __restorefn_t(void);
-typedef __restorefn_t __user *__sigrestore_t;
-
 #define SIG_DFL	((__force __sighandler_t)0)
-
-typedef struct sigaltstack {
-	void __user *ss_sp;
-	int ss_flags;
-	__kernel_size_t ss_size;
-} stack_t;
-
-#define __ARCH_HAS_SA_RESTORER
 
 static inline int __const_sigismember(sigset_t *set, int _sig)
 {
@@ -73,9 +62,6 @@ struct sigpending {
 struct sigaction {
 	__sighandler_t	sa_handler;
 	unsigned long	sa_flags;
-#ifdef __ARCH_HAS_SA_RESTORER
-	__sigrestore_t sa_restorer;
-#endif
 	sigset_t	sa_mask;
 };
 

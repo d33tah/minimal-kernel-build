@@ -84,8 +84,6 @@ unsigned long find_first_zero_bit(const unsigned long *addr, unsigned long size)
 
 #include <linux/string.h>
 
-int bitmap_parse(const char *buf, unsigned int buflen,
-			unsigned long *dst, int nbits);
 #define BITMAP_FIRST_WORD_MASK(start) (~0UL << ((start) & (BITS_PER_LONG - 1)))
 #define BITMAP_LAST_WORD_MASK(nbits) (~0UL >> (-(nbits) & (BITS_PER_LONG - 1)))
 

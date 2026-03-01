@@ -38,7 +38,6 @@ enum system_states system_state __read_mostly;
 #define MAX_INIT_ENVS CONFIG_INIT_ENV_ARG_LIMIT
 
 char __initdata boot_command_line[COMMAND_LINE_SIZE];
-char *saved_command_line;
 
 static char *ramdisk_execute_command = "/init";
 
@@ -122,18 +121,11 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	pr_notice("%s", linux_banner);
 	setup_arch(&command_line);
-	{
-		size_t len = strlen(boot_command_line) + 1;
-		saved_command_line = memblock_alloc(len, SMP_CACHE_BYTES);
-		if (!saved_command_line)
-			panic("Failed to allocate saved_command_line\n");
-		strcpy(saved_command_line, boot_command_line);
-	}
 	setup_per_cpu_areas();
 
 	build_all_zonelists(NULL);
 
-	pr_notice("Kernel command line: %s\n", saved_command_line);
+	pr_notice("Kernel command line: %s\n", boot_command_line);
 
 	jump_label_init();
 	parse_early_param();
@@ -197,16 +189,6 @@ static initcall_entry_t *initcall_levels[] __initdata = {
 	__initcall6_start, __initcall7_start, __initcall_end,
 };
 
-static const char *initcall_level_names[] __initdata = {
-	"pure", "core", "postcore", "arch", "subsys", "fs", "device", "late",
-};
-
-static int __init ignore_unknown_bootoption(char *param, char *val,
-					    const char *unused, void *arg)
-{
-	return 0;
-}
-
 static int run_init_process(const char *init_filename)
 {
 	argv_init[0] = init_filename;
@@ -264,10 +246,7 @@ static noinline void __init kernel_init_freeable(void)
 	memblock_discard(); /* page_alloc_init_late inlined */
 
 	{
-		int level;
 		initcall_entry_t *fn;
-		static char command_line[256];
-		size_t len = strlen(saved_command_line);
 
 		{
 			struct backing_dev_info *bdi = &noop_backing_dev_info;
@@ -278,21 +257,10 @@ static noinline void __init kernel_init_freeable(void)
 			init_waitqueue_head(&bdi->wb_waitq);
 		}
 
-		if (len >= sizeof(command_line))
-			len = sizeof(command_line) - 1;
-
-		for (level = 0; level < ARRAY_SIZE(initcall_levels) - 1;
-		     level++) {
-			memcpy(command_line, saved_command_line, len);
-			command_line[len] = '\0';
-			parse_args(initcall_level_names[level], command_line,
-				   __start___param,
-				   __stop___param - __start___param, level,
-				   level, NULL, ignore_unknown_bootoption);
-			for (fn = initcall_levels[level];
-			     fn < initcall_levels[level + 1]; fn++)
-				do_one_initcall(initcall_from_entry(fn));
-		}
+		for (fn = initcall_levels[0];
+		     fn < initcall_levels[ARRAY_SIZE(initcall_levels) - 1];
+		     fn++)
+			do_one_initcall(initcall_from_entry(fn));
 	}
 	console_on_rootfs();
 

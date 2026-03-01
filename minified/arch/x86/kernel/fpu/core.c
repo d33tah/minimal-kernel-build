@@ -9,7 +9,7 @@
 #define XFEATURE_MASK_USER_DYNAMIC XFEATURE_MASK_XTILE_DATA
 #define XFEATURE_MASK_FPSTATE 0x4FF
 
-extern void restore_fpregs_from_fpstate(struct fpstate *fpstate, u64 mask);
+void restore_fpregs_from_fpstate(struct fpstate *fpstate, u64 mask);
 
 static inline int fpregs_state_valid(struct fpu *fpu, unsigned int cpu)
 {

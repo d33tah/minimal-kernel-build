@@ -209,7 +209,6 @@ struct task_struct {
 };
 
 #define PF_IDLE			0x00000002
-#define PF_EXITING		0x00000004
 #define PF_FORKNOEXEC		0x00000040
 #define PF_NOFREEZE		0x00008000
 #define PF_MEMALLOC_NOFS	0x00040000

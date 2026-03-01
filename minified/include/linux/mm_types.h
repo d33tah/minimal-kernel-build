@@ -57,7 +57,6 @@ struct page {
 		struct {	 
 			unsigned long compound_head;	 
 
-			unsigned char compound_dtor;
 			unsigned char compound_order;
 			atomic_t compound_mapcount;
 		};

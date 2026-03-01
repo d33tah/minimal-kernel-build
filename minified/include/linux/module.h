@@ -37,7 +37,6 @@ struct kernel_param {
 	void *arg;
 };
 extern const struct kernel_param __start___param[], __stop___param[];
-extern bool parameq(const char *name1, const char *name2);
 extern char *parse_args(const char *name, char *args,
 		const struct kernel_param *params, unsigned num,
 		s16 level_min, s16 level_max, void *arg,

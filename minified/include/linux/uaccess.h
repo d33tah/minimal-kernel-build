@@ -68,10 +68,7 @@ extern int __get_user_bad(void);
 #define __typefits(x,type,not) \
 	__builtin_choose_expr(sizeof(x)<=sizeof(type),(unsigned type)0,not)
 
-extern void __put_user_1(void);
-extern void __put_user_2(void);
 extern void __put_user_4(void);
-extern void __put_user_8(void);
 
 #define do_put_user_call(fn,x,ptr)					\
 ({									\

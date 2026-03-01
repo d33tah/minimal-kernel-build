@@ -158,27 +158,4 @@ static inline void raw_write_seqcount_latch(seqcount_latch_t *s)
 	smp_wmb();
 }
 
-typedef struct {
-	seqcount_spinlock_t seqcount;
-	spinlock_t lock;
-} seqlock_t;
-
-#define __SEQLOCK_UNLOCKED(lockname)                                    \
-	{ .seqcount = SEQCNT_SPINLOCK_ZERO(lockname, &(lockname).lock), \
-	  .lock = __SPIN_LOCK_UNLOCKED(lockname) }
-
-#define DEFINE_SEQLOCK(sl) seqlock_t sl = __SEQLOCK_UNLOCKED(sl)
-
-static inline void write_seqlock(seqlock_t *sl)
-{
-	spin_lock(&sl->lock);
-	do_raw_write_seqcount_begin(&sl->seqcount.seqcount);
-}
-
-static inline void write_sequnlock(seqlock_t *sl)
-{
-	do_raw_write_seqcount_end(&sl->seqcount.seqcount);
-	spin_unlock(&sl->lock);
-}
-
 #endif

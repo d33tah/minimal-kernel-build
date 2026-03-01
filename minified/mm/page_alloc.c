@@ -19,12 +19,6 @@ static char *const zone_names[MAX_NR_ZONES] = {
 	"Movable",
 };
 
-static void free_compound_page(struct page *page);
-compound_page_dtor *const compound_page_dtors[NR_COMPOUND_DTORS] = {
-	[NULL_COMPOUND_DTOR] = NULL,
-	[COMPOUND_PAGE_DTOR] = free_compound_page,
-};
-
 static unsigned long arch_zone_lowest_possible_pfn[MAX_NR_ZONES] __initdata;
 static unsigned long arch_zone_highest_possible_pfn[MAX_NR_ZONES] __initdata;
 
@@ -85,11 +79,6 @@ static void set_pfnblock_flags_mask(struct page *page, unsigned long flags,
 	}
 }
 
-static void free_compound_page(struct page *page)
-{
-	/* No-op: bump allocator style - no deallocation */
-}
-
 static void prep_compound_page(struct page *page, unsigned int order)
 {
 	int i;
@@ -105,7 +94,6 @@ static void prep_compound_page(struct page *page, unsigned int order)
 				   1); /* inlined set_compound_head */
 	}
 
-	page[1].compound_dtor = COMPOUND_PAGE_DTOR;
 	page[1].compound_order = order; /* inlined set_compound_order */
 }
 

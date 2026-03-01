@@ -202,14 +202,6 @@ static inline int put_page_testzero(struct page *page)
 
 void __put_page(struct page *page);
 
-typedef void compound_page_dtor(struct page *);
-
-enum compound_dtor_id {
-	NULL_COMPOUND_DTOR,
-	COMPOUND_PAGE_DTOR,
-	NR_COMPOUND_DTORS,
-};
-extern compound_page_dtor * const compound_page_dtors[NR_COMPOUND_DTORS];
 
 static inline unsigned long compound_nr(struct page *page)
 {

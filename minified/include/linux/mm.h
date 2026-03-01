@@ -84,10 +84,6 @@ extern void * high_memory;
 #define untagged_addr(addr) (addr)
 #endif
 
-#ifndef __pa_symbol
-#define __pa_symbol(x)  __pa(RELOC_HIDE((unsigned long)(x), 0))
-#endif
-
 #ifndef page_to_virt
 #define page_to_virt(x)	__va(PFN_PHYS(page_to_pfn(x)))
 #endif
@@ -132,10 +128,6 @@ void vm_area_free(struct vm_area_struct *);
 
 #define VM_DATA_FLAGS_EXEC	(VM_READ | VM_WRITE | VM_EXEC | \
 				 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
-
-#ifndef VM_DATA_DEFAULT_FLAGS		
-#define VM_DATA_DEFAULT_FLAGS  VM_DATA_FLAGS_EXEC
-#endif
 
 #ifndef VM_STACK_DEFAULT_FLAGS		
 #define VM_STACK_DEFAULT_FLAGS VM_DATA_DEFAULT_FLAGS
@@ -224,11 +216,6 @@ static inline unsigned long compound_nr(struct page *page)
 	if (!PageHead(page))
 		return 1;
 	return 1UL << compound_order(page);
-}
-
-static inline unsigned long page_size(struct page *page)
-{
-	return PAGE_SIZE << compound_order(page);
 }
 
 static inline pte_t maybe_mkwrite(pte_t pte, struct vm_area_struct *vma)

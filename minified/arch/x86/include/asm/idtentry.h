@@ -21,8 +21,6 @@
 #define X86_TRAP_MF		16
 #define X86_TRAP_AC		17
 #define X86_TRAP_XF		19
-#define X86_TRAP_IRET		32
-
 #define IDT_ALIGN	(8 * (1 + HAS_KERNEL_IBT))
 
 #ifndef __ASSEMBLY__
@@ -42,7 +40,6 @@
 
 #define DECLARE_IDTENTRY(vector, func)					\
 	asmlinkage void asm_##func(void);				\
-	asmlinkage void xen_asm_##func(void);				\
 	__visible void func(struct pt_regs *regs)
 
 #define DEFINE_IDTENTRY(func)						\
@@ -63,7 +60,6 @@ static __always_inline void __##func(struct pt_regs *regs)
 
 #define DECLARE_IDTENTRY_ERRORCODE(vector, func)			\
 	asmlinkage void asm_##func(void);				\
-	asmlinkage void xen_asm_##func(void);				\
 	__visible void func(struct pt_regs *regs, unsigned long error_code)
 
 #define DEFINE_IDTENTRY_ERRORCODE(func)					\
@@ -163,7 +159,7 @@ DECLARE_IDTENTRY(X86_TRAP_SPURIOUS,	exc_spurious_interrupt_bug);
 DECLARE_IDTENTRY(X86_TRAP_MF,		exc_coprocessor_error);
 DECLARE_IDTENTRY(X86_TRAP_XF,		exc_simd_coprocessor_error);
 
-DECLARE_IDTENTRY_SW(X86_TRAP_IRET,	iret_error);
+DECLARE_IDTENTRY_SW(32,	iret_error);
 
 DECLARE_IDTENTRY_ERRORCODE(X86_TRAP_TS,	exc_invalid_tss);
 DECLARE_IDTENTRY_ERRORCODE(X86_TRAP_NP,	exc_segment_not_present);

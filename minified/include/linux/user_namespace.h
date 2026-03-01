@@ -68,17 +68,6 @@ struct ucounts {
 extern struct user_namespace init_user_ns;
 extern struct ucounts init_ucounts;
 
-static inline struct ucounts *get_ucounts(struct ucounts *ucounts)
-{
-	return ucounts;
-}
-
-static inline long inc_rlimit_ucounts(struct ucounts *ucounts,
-				      enum ucount_type type, long v)
-{
-	return 0;
-}
-
 static inline struct user_namespace *get_user_ns(struct user_namespace *ns)
 {
 	return &init_user_ns;

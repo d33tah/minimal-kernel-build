@@ -12,12 +12,6 @@ struct group_info {
 	atomic_t	usage;
 } __randomize_layout;
 
-static inline struct group_info *get_group_info(struct group_info *gi)
-{
-	atomic_inc(&gi->usage);
-	return gi;
-}
-
 struct cred {
 	atomic_t	usage;
 	kuid_t		euid;

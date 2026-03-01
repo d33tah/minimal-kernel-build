@@ -44,12 +44,6 @@ typedef struct seqcount {
 		return &s->seqcount;                                     \
 	}                                                                \
                                                                          \
-	static __always_inline unsigned __seqprop_##lockname##_sequence( \
-		const seqcount_##lockname##_t *s)                        \
-	{                                                                \
-		return READ_ONCE(s->seqcount.sequence);                  \
-	}                                                                \
-                                                                         \
 	static __always_inline bool __seqprop_##lockname##_preemptible(  \
 		const seqcount_##lockname##_t *s)                        \
 	{                                                                \

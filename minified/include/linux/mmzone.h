@@ -132,8 +132,6 @@ struct per_cpu_pages {
 	struct list_head lists[NR_PCP_LISTS];
 };
 
-struct per_cpu_zonestat {};
-
 #endif
 
 enum zone_type {
@@ -152,7 +150,6 @@ struct zone {
 
 	struct pglist_data *zone_pgdat;
 	struct per_cpu_pages __percpu *per_cpu_pageset;
-	struct per_cpu_zonestat __percpu *per_cpu_zonestats;
 
 	unsigned long *pageblock_flags;
 

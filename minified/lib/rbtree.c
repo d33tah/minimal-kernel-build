@@ -317,46 +317,9 @@ static __always_inline struct rb_node *__rb_erase(struct rb_node *node,
 	return rebalance;
 }
 
-static inline void dummy_rotate(struct rb_node *old, struct rb_node *new)
-{
-}
-
-void rb_insert_color(struct rb_node *node, struct rb_root *root)
-{
-	__rb_insert(node, root, dummy_rotate);
-}
-
-void rb_erase(struct rb_node *node, struct rb_root *root)
-{
-	struct rb_node *rebalance;
-	rebalance = __rb_erase(node, root);
-	if (rebalance)
-		____rb_erase_color(rebalance, root, dummy_rotate);
-}
-
 void __rb_insert_augmented(struct rb_node *node, struct rb_root *root,
 			   void (*augment_rotate)(struct rb_node *old,
 						  struct rb_node *new))
 {
 	__rb_insert(node, root, augment_rotate);
-}
-
-struct rb_node *rb_next(const struct rb_node *node)
-{
-	struct rb_node *parent;
-
-	if (RB_EMPTY_NODE(node))
-		return NULL;
-
-	if (node->rb_right) {
-		node = node->rb_right;
-		while (node->rb_left)
-			node = node->rb_left;
-		return (struct rb_node *)node;
-	}
-
-	while ((parent = rb_parent(node)) && node == parent->rb_right)
-		node = parent;
-
-	return parent;
 }

@@ -61,8 +61,7 @@ static phys_addr_t __init_memblock memblock_find_in_range_node(
 	start = max_t(phys_addr_t, start, PAGE_SIZE);
 	end = max(start, end);
 
-	for_each_free_mem_range_reverse(i, nid, flags, &this_start, &this_end,
-					NULL) {
+	for_each_free_mem_range(i, nid, flags, &this_start, &this_end, NULL) {
 		this_start = clamp(this_start, start, end);
 		this_end = clamp(this_end, start, end);
 
@@ -280,77 +279,6 @@ void __next_mem_range(u64 *idx, int nid, enum memblock_flags flags,
 					idx_a++;
 				else
 					idx_b++;
-				*idx = (u32)idx_a | (u64)idx_b << 32;
-				return;
-			}
-		}
-	}
-
-	*idx = ULLONG_MAX;
-}
-
-void __init_memblock __next_mem_range_rev(u64 *idx, int nid,
-					  enum memblock_flags flags,
-					  struct memblock_type *type_a,
-					  struct memblock_type *type_b,
-					  phys_addr_t *out_start,
-					  phys_addr_t *out_end, int *out_nid)
-{
-	int idx_a = *idx & 0xffffffff;
-	int idx_b = *idx >> 32;
-
-	if (nid == MAX_NUMNODES)
-		nid = NUMA_NO_NODE;
-
-	if (*idx == (u64)ULLONG_MAX) {
-		idx_a = type_a->cnt - 1;
-		if (type_b != NULL)
-			idx_b = type_b->cnt;
-		else
-			idx_b = 0;
-	}
-
-	for (; idx_a >= 0; idx_a--) {
-		struct memblock_region *m = &type_a->regions[idx_a];
-
-		phys_addr_t m_start = m->base;
-		phys_addr_t m_end = m->base + m->size;
-
-		if (!type_b) {
-			if (out_start)
-				*out_start = m_start;
-			if (out_end)
-				*out_end = m_end;
-			if (out_nid)
-				*out_nid = 0;
-			idx_a--;
-			*idx = (u32)idx_a | (u64)idx_b << 32;
-			return;
-		}
-
-		for (; idx_b >= 0; idx_b--) {
-			struct memblock_region *r;
-			phys_addr_t r_start;
-			phys_addr_t r_end;
-
-			r = &type_b->regions[idx_b];
-			r_start = idx_b ? r[-1].base + r[-1].size : 0;
-			r_end = idx_b < type_b->cnt ? r->base : PHYS_ADDR_MAX;
-
-			if (r_end <= m_start)
-				break;
-
-			if (m_end > r_start) {
-				if (out_start)
-					*out_start = max(m_start, r_start);
-				if (out_end)
-					*out_end = min(m_end, r_end);
-				if (out_nid)
-					*out_nid = 0;
-				if (m_start >= r_start)
-					idx_a--;
-				else
-					idx_b--;
 				*idx = (u32)idx_a | (u64)idx_b << 32;
 				return;
 			}

@@ -58,16 +58,6 @@ static inline int signal_pending_state(unsigned int state, struct task_struct *p
 	return (state & TASK_INTERRUPTIBLE) || __fatal_signal_pending(p);
 }
 
-static inline struct pid *task_pgrp(struct task_struct *task)
-{
-	return task->signal->pids[PIDTYPE_PGID];
-}
-
-static inline struct pid *task_session(struct task_struct *task)
-{
-	return task->signal->pids[PIDTYPE_SID];
-}
-
 static inline unsigned long task_rlimit(const struct task_struct *task,
 		unsigned int limit)
 {

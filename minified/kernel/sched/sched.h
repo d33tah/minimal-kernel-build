@@ -147,14 +147,6 @@ rq_lock(struct rq *rq, struct rq_flags *rf)
 	rq_pin_lock(rq, rf);
 }
 
-static inline void
-rq_unlock(struct rq *rq, struct rq_flags *rf)
-	__releases(rq->lock)
-{
-	rq_unpin_lock(rq, rf);
-	raw_spin_rq_unlock(rq);
-}
-
 static inline void __set_task_cpu(struct task_struct *p, unsigned int cpu)
 {
 }

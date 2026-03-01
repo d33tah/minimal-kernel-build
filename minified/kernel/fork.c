@@ -185,7 +185,6 @@ copy_process(int node, struct kernel_clone_args *args)
 	clear_tsk_need_resched(p);
 	set_task_stack_end_magic(p);
 	p->worker_private = NULL;
-	kmap_local_fork(p);
 
 	p->flags &= ~PF_KTHREAD;
 	if (args->kthread)

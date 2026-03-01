@@ -142,11 +142,6 @@ pid_t pid_vnr(struct pid *pid)
 	return pid ? pid->numbers[0].nr : 0;
 }
 
-struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
-{
-	return ns_of_pid(tsk->thread_pid);
-}
-
 void __init pid_idr_init(void)
 {
 	idr_init_base(&init_pid_ns.idr, 0);

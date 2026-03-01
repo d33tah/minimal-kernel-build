@@ -5,9 +5,6 @@
 #include <linux/types.h>
 #include <linux/stdarg.h>
 
-#define __HAVE_ARCH_STRCPY
-extern char *strcpy(char *dest, const char *src);
-
 #define __HAVE_ARCH_STRCMP
 extern int strcmp(const char *cs, const char *ct);
 

@@ -1,16 +1,6 @@
 
 #include <linux/string.h>
 
-#ifdef __HAVE_ARCH_STRCPY
-char *strcpy(char *dest, const char *src)
-{
-	char *d = dest;
-	while ((*d++ = *src++) != '\0')
-		;
-	return dest;
-}
-#endif
-
 #ifdef __HAVE_ARCH_STRCMP
 int strcmp(const char *cs, const char *ct)
 {

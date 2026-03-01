@@ -37,11 +37,6 @@ struct kernel_param {
 	void *arg;
 };
 extern const struct kernel_param __start___param[], __stop___param[];
-extern char *parse_args(const char *name, char *args,
-		const struct kernel_param *params, unsigned num,
-		s16 level_min, s16 level_max, void *arg,
-		int (*unknown)(char *param, char *val,
-			const char *doing, void *arg));
 
 struct module;
 

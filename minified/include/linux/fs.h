@@ -12,7 +12,11 @@ struct wait_bit_key {
 	{ .flags = word, .bit_nr = bit, }
 void wake_up_bit(void *word, int bit);
 extern void __init wait_bit_init(void);
-#include <linux/kdev_t.h>
+/* kdev_t.h inlined */
+#define MINORBITS	20
+#define MINORMASK	((1U << MINORBITS) - 1)
+#define MINOR(dev)	((unsigned int) ((dev) & MINORMASK))
+#define MKDEV(ma,mi)	(((ma) << MINORBITS) | (mi))
 /* rculist_bl.h inlined */
 #include <linux/kernel.h>
 #include <linux/atomic.h>

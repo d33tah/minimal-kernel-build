@@ -4,7 +4,13 @@ extern unsigned long initrd_start, initrd_end;
 extern phys_addr_t phys_initrd_start;
 extern unsigned long phys_initrd_size;
 #include <linux/memblock.h>
-#include <linux/kdev_t.h>
+/* kdev_t inlined */
+#define MINORBITS	20
+#define MKDEV(ma,mi)	(((ma) << MINORBITS) | (mi))
+static __always_inline dev_t old_decode_dev(u16 val)
+{
+	return MKDEV((val >> 8) & 255, val & 255);
+}
 
 extern dev_t ROOT_DEV;
 

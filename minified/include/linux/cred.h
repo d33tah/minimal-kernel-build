@@ -4,7 +4,14 @@
 
 #include <linux/init.h>
 #include <linux/sched.h>
-#include <linux/sched/user.h>
+#include <linux/uidgid.h>
+/* sched/user.h inlined */
+struct user_struct {
+	refcount_t __count;
+	kuid_t uid;
+};
+extern struct user_struct root_user;
+#define INIT_USER (&root_user)
 
 struct cred;
 

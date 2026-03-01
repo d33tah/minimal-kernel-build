@@ -127,19 +127,6 @@ static int cpio_mkfile(const char *name, const char *location,
 		goto error;
 	}
 
-	if (buf.st_mtime > 0xffffffff) {
-		fprintf(stderr,
-			"%s: Timestamp exceeds maximum cpio timestamp, clipping.\n",
-			location);
-		buf.st_mtime = 0xffffffff;
-	}
-
-	if (buf.st_size > 0xffffffff) {
-		fprintf(stderr, "%s: Size exceeds maximum cpio file size\n",
-			location);
-		goto error;
-	}
-
 	if (name[0] == '/')
 		name++;
 	namesize = strlen(name) + 1;
@@ -201,11 +188,6 @@ static int cpio_mkfile_line(const char *line)
 	return cpio_mkfile(name, location, mode, uid, gid);
 }
 
-static void usage(const char *prog)
-{
-	fprintf(stderr, "Usage: %s [-t <timestamp>] <cpio_list>\n", prog);
-}
-
 #define LINE_SIZE (2 * PATH_MAX + 50)
 
 int main(int argc, char *argv[])
@@ -218,45 +200,17 @@ int main(int argc, char *argv[])
 	const char *filename;
 
 	default_mtime = time(NULL);
-	while (1) {
-		int opt = getopt(argc, argv, "t:h");
-		char *invalid;
 
-		if (opt == -1)
-			break;
-		switch (opt) {
-		case 't':
-			default_mtime = strtol(optarg, &invalid, 10);
-			if (!*optarg || *invalid) {
-				fprintf(stderr, "Invalid timestamp: %s\n",
-					optarg);
-				usage(argv[0]);
-				exit(1);
-			}
-			break;
-		case 'h':
-		case '?':
-			usage(argv[0]);
-			exit(opt == 'h' ? 0 : 1);
-		}
-	}
-
-	if (default_mtime > 0xffffffff) {
-		fprintf(stderr, "ERROR: Timestamp too large for cpio format\n");
+	if (argc != 2) {
+		fprintf(stderr, "Usage: %s <cpio_list>\n", argv[0]);
 		exit(1);
 	}
-
-	if (argc - optind != 1) {
-		usage(argv[0]);
-		exit(1);
-	}
-	filename = argv[optind];
+	filename = argv[1];
 	if (!strcmp(filename, "-"))
 		cpio_list = stdin;
 	else if (!(cpio_list = fopen(filename, "r"))) {
-		fprintf(stderr, "ERROR: unable to open '%s': %s\n\n", filename,
+		fprintf(stderr, "ERROR: unable to open '%s': %s\n", filename,
 			strerror(errno));
-		usage(argv[0]);
 		exit(1);
 	}
 

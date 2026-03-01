@@ -38,6 +38,4 @@ static inline void *phys_to_virt(phys_addr_t address)
 #define phys_to_virt phys_to_virt
 
 
-#define IO_SPACE_LIMIT 0xffff
-
-#endif  
+#endif

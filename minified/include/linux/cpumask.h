@@ -114,9 +114,4 @@ static inline const struct cpumask *get_cpu_mask(unsigned int cpu)
 	return to_cpumask(p);
 }
 
-#define CPU_MASK_ALL							\
-(cpumask_t) { {								\
-	[BITS_TO_LONGS(NR_CPUS)-1] = BITMAP_LAST_WORD_MASK(NR_CPUS)	\
-} }
-
-#endif  
+#endif

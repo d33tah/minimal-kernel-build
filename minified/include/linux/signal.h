@@ -29,7 +29,6 @@ typedef void __restorefn_t(void);
 typedef __restorefn_t __user *__sigrestore_t;
 
 #define SIG_DFL	((__force __sighandler_t)0)
-#define SIG_IGN	((__force __sighandler_t)1)
 
 typedef struct sigaltstack {
 	void __user *ss_sp;

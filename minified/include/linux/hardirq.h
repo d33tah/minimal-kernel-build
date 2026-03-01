@@ -4,7 +4,18 @@
 #include <linux/preempt.h>
 #include <linux/lockdep.h>
 #include <linux/sched.h>
-#include <asm/hardirq.h>
+#include <linux/threads.h>
+
+/* Inlined from asm/hardirq.h */
+typedef struct {
+	u16	     __softirq_pending;
+} ____cacheline_aligned irq_cpustat_t;
+
+DECLARE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
+
+#define __ARCH_IRQ_STAT
+
+extern void ack_bad_irq(unsigned int irq);
 
 #define __irq_enter()	preempt_count_add(HARDIRQ_OFFSET)
 #define __irq_enter_raw() __irq_enter()

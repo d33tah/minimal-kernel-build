@@ -4,7 +4,9 @@
 
 
 #include <asm/pgtable_types.h>
-#include <uapi/asm/boot.h>
+
+/* Inlined from uapi/asm/boot.h */
+#define NORMAL_VGA	0xffff
 
  
 #define LOAD_PHYSICAL_ADDR ((CONFIG_PHYSICAL_START \

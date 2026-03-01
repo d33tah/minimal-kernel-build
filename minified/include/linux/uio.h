@@ -18,7 +18,6 @@ static inline enum iter_type iov_iter_type(const struct iov_iter *i) { return i-
 static inline bool iter_is_iovec(const struct iov_iter *i) { return iov_iter_type(i) == ITER_IOVEC; }
 static inline bool iov_iter_is_kvec(const struct iov_iter *i) { return iov_iter_type(i) == ITER_KVEC; }
 size_t copy_page_to_iter(struct page *page, size_t offset, size_t bytes, struct iov_iter *i);
-size_t _copy_to_iter(const void *addr, size_t bytes, struct iov_iter *i);
 static inline size_t copy_folio_to_iter(struct folio *folio, size_t offset, size_t bytes, struct iov_iter *i) { return copy_page_to_iter(&folio->page, offset, bytes, i); }
 void iov_iter_init(struct iov_iter *i, unsigned int direction, const struct iovec *iov, unsigned long nr_segs, size_t count);
 void iov_iter_kvec(struct iov_iter *i, unsigned int direction, const struct kvec *kvec, unsigned long nr_segs, size_t count);

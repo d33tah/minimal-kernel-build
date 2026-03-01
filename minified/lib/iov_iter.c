@@ -3,54 +3,6 @@
 #include <linux/highmem.h>
 #include <linux/uaccess.h>
 
-#define iterate_iovec(i, n, base, len, off, __p, STEP)       \
-	{                                                    \
-		size_t off = 0;                              \
-		size_t skip = i->iov_offset;                 \
-		do {                                         \
-			len = min(n, __p->iov_len - skip);   \
-			if (likely(len)) {                   \
-				base = __p->iov_base + skip; \
-				len -= (STEP);               \
-				off += len;                  \
-				skip += len;                 \
-				n -= len;                    \
-				if (skip < __p->iov_len)     \
-					break;               \
-			}                                    \
-			__p++;                               \
-			skip = 0;                            \
-		} while (n);                                 \
-		i->iov_offset = skip;                        \
-		n = off;                                     \
-	}
-
-#define __iterate_and_advance(i, n, base, len, off, I, K)                      \
-	{                                                                      \
-		if (unlikely(i->count < n))                                    \
-			n = i->count;                                          \
-		if (likely(n)) {                                               \
-			if (likely(iter_is_iovec(i))) {                        \
-				const struct iovec *iov = i->iov;              \
-				void __user *base;                             \
-				size_t len;                                    \
-				iterate_iovec(i, n, base, len, off, iov, (I))  \
-					i->nr_segs -= iov - i->iov;            \
-				i->iov = iov;                                  \
-			} else if (iov_iter_is_kvec(i)) {                      \
-				const struct kvec *kvec = i->kvec;             \
-				void *base;                                    \
-				size_t len;                                    \
-				iterate_iovec(i, n, base, len, off, kvec, (K)) \
-					i->nr_segs -= kvec - i->kvec;          \
-				i->kvec = kvec;                                \
-			}                                                      \
-			i->count -= n;                                         \
-		}                                                              \
-	}
-#define iterate_and_advance(i, n, base, len, off, I, K) \
-	__iterate_and_advance(i, n, base, len, off, I, ((void)(K), 0))
-
 static int copyout(void __user *to, const void *from, size_t n)
 {
 	if (access_ok(to, n))
@@ -68,15 +20,6 @@ void iov_iter_init(struct iov_iter *i, unsigned int direction,
 				.nr_segs = nr_segs,
 				.iov_offset = 0,
 				.count = count };
-}
-
-size_t _copy_to_iter(const void *addr, size_t bytes, struct iov_iter *i)
-{
-	iterate_and_advance(i, bytes, base, len, off,
-			    copyout(base, addr + off, len),
-			    memcpy(base, addr + off, len))
-
-		return bytes;
 }
 
 static size_t __copy_page_to_iter(struct page *page, size_t offset,

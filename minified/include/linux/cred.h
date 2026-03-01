@@ -5,27 +5,12 @@
 #include <linux/init.h>
 #include <linux/sched.h>
 #include <linux/uidgid.h>
-/* sched/user.h inlined */
-struct user_struct {
-	refcount_t __count;
-	kuid_t uid;
-};
-extern struct user_struct root_user;
-#define INIT_USER (&root_user)
 
 struct cred;
 
-struct group_info {
-	atomic_t	usage;
-} __randomize_layout;
-
 struct cred {
 	atomic_t	usage;
-	kuid_t		euid;
-	struct user_struct *user;
 	struct user_namespace *user_ns;
-	struct ucounts *ucounts;
-	struct group_info *group_info;
 
 	union {
 		int non_rcu;
@@ -77,12 +62,10 @@ static inline void put_cred(const struct cred *_cred)
 	___val;						\
 })
 
-#define task_ucounts(task)	(task_cred_xxx((task), ucounts))
-
 /* init_user_ns extern from uidgid.h */
 static inline struct user_namespace *current_user_ns(void)
 {
 	return &init_user_ns;
 }
 
-#endif  
+#endif

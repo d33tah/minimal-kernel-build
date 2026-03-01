@@ -8,65 +8,13 @@
 #include <linux/uidgid.h>
 #include <linux/err.h>
 
-#define UID_GID_MAP_MAX_BASE_EXTENTS 5
-
-struct uid_gid_extent {
-	u32 first;
-	u32 lower_first;
-	u32 count;
-};
-
-struct uid_gid_map {  
-	u32 nr_extents;
-	union {
-		struct uid_gid_extent extent[UID_GID_MAP_MAX_BASE_EXTENTS];
-		struct {
-			struct uid_gid_extent *forward;
-			struct uid_gid_extent *reverse;
-		};
-	};
-};
-
-#define USERNS_SETGROUPS_ALLOWED 1UL
-
-#define USERNS_INIT_FLAGS USERNS_SETGROUPS_ALLOWED
-
 struct ucounts;
 
-enum ucount_type {
-	UCOUNT_MNT_NAMESPACES,
-	UCOUNT_RLIMIT_NPROC,
-	UCOUNT_COUNTS,
-};
-
-
 struct user_namespace {
-	struct uid_gid_map	uid_map;
-	struct uid_gid_map	gid_map;
-	struct user_namespace	*parent;
-	int			level;
-	kuid_t			owner;
-	kgid_t			group;
 	struct ns_common	ns;
-	unsigned long		flags;
-	 
-	bool			parent_could_setfcap;
-
-	struct work_struct	work;
-	struct ucounts		*ucounts;
-	long ucount_max[UCOUNT_COUNTS];
 } __randomize_layout;
 
-struct ucounts {
-	struct hlist_node node;
-	struct user_namespace *ns;
-	kuid_t uid;
-	atomic_t count;
-	atomic_long_t ucount[UCOUNT_COUNTS];
-};
-
 extern struct user_namespace init_user_ns;
-extern struct ucounts init_ucounts;
 
 static inline struct user_namespace *get_user_ns(struct user_namespace *ns)
 {
@@ -77,4 +25,4 @@ static inline void put_user_ns(struct user_namespace *ns)
 {
 }
 
-#endif  
+#endif

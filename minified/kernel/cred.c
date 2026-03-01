@@ -4,21 +4,9 @@
 
 static struct kmem_cache *cred_jar;
 
-static struct group_info init_groups = { .usage = ATOMIC_INIT(2) };
-
-struct ucounts init_ucounts = {
-	.ns = &init_user_ns,
-	.uid = GLOBAL_ROOT_UID,
-	.count = ATOMIC_INIT(1),
-};
-
 struct cred init_cred = {
 	.usage = ATOMIC_INIT(4),
-	.euid = GLOBAL_ROOT_UID,
-	.user = INIT_USER,
 	.user_ns = &init_user_ns,
-	.group_info = &init_groups,
-	.ucounts = &init_ucounts,
 };
 
 void __put_cred(struct cred *cred)

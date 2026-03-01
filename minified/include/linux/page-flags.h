@@ -107,8 +107,6 @@ static __always_inline void __ClearPageReserved(struct page *page)
 { __clear_bit(PG_reserved, &PF_NO_COMPOUND(page, 1)->flags); }
 static __always_inline void __SetPageReserved(struct page *page)
 { __set_bit(PG_reserved, &PF_NO_COMPOUND(page, 1)->flags); }
-static __always_inline void __SetPageSwapBacked(struct page *page)
-{ __set_bit(PG_swapbacked, &PF_NO_TAIL(page, 1)->flags); }
 static __always_inline bool folio_test_readahead(struct folio *folio)
 { return test_bit(PG_readahead, folio_flags(folio, 0)); }
 
@@ -185,11 +183,6 @@ static __always_inline void __ClearPage##uname(struct page *page)	\
 PAGE_TYPE_OPS(Buddy, buddy)
 
 PAGE_TYPE_OPS(Table, table)
-
-static __always_inline void SetPageAnonExclusive(struct page *page)
-{
-	set_bit(PG_anon_exclusive, &PF_ANY(page, 1)->flags);
-}
 
 #undef PF_ANY
 #undef PF_HEAD

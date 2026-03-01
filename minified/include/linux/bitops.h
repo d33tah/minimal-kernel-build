@@ -1,7 +1,6 @@
 #ifndef _LINUX_BITOPS_H
 #define _LINUX_BITOPS_H
 #include <linux/bits.h>
-#define aligned_byte_mask(n) ((1UL << 8*(n))-1)
 #define BITS_PER_TYPE(type)	(sizeof(type) * BITS_PER_BYTE)
 #define BITS_TO_LONGS(nr)	__KERNEL_DIV_ROUND_UP(nr, BITS_PER_TYPE(long))
 
@@ -86,12 +85,6 @@ __test_and_set_bit(long nr, volatile unsigned long *addr)
 	    : CC_OUT(c) (oldbit)
 	    : ADDR, "Ir" (nr) : "memory");
 	return oldbit;
-}
-
-static __always_inline bool
-test_and_clear_bit(long nr, volatile unsigned long *addr)
-{
-	return GEN_BINARY_RMWcc(LOCK_PREFIX __ASM_SIZE(btr), *addr, c, "Ir", nr);
 }
 
 static __always_inline bool

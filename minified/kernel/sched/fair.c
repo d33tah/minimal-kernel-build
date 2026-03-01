@@ -2,65 +2,16 @@
 
 const struct sched_class fair_sched_class;
 
-#define __node_2_se(node) rb_entry((node), struct sched_entity, run_node)
-
-static void update_min_vruntime(struct cfs_rq *cfs_rq)
-{
-	struct sched_entity *curr = cfs_rq->curr;
-	if (curr && curr->on_rq) {
-		s64 delta = (s64)(curr->vruntime - cfs_rq->min_vruntime);
-		if (delta > 0)
-			cfs_rq->min_vruntime = curr->vruntime;
-	}
-}
-
-static inline bool __entity_less(struct rb_node *a, const struct rb_node *b)
-{
-	return (s64)(__node_2_se(a)->vruntime - __node_2_se(b)->vruntime) < 0;
-}
-
-static void __enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
-{
-	rb_add_cached(&se->run_node, &cfs_rq->tasks_timeline, __entity_less);
-}
-
-static void __dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
-{
-	rb_erase_cached(&se->run_node, &cfs_rq->tasks_timeline);
-}
-
-static void update_curr(struct cfs_rq *cfs_rq)
-{
-	struct sched_entity *curr = cfs_rq->curr;
-	u64 now = rq_clock_task(rq_of(cfs_rq));
-	u64 delta_exec;
-
-	if (unlikely(!curr))
-		return;
-
-	delta_exec = now - curr->exec_start;
-	if (unlikely((s64)delta_exec <= 0))
-		return;
-
-	curr->exec_start = now;
-
-	curr->vruntime += delta_exec;
-	update_min_vruntime(cfs_rq);
-}
-
 static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 {
-	struct cfs_rq *cfs_rq;
+	struct cfs_rq *cfs_rq = &rq->cfs;
 	struct sched_entity *se = &p->se;
 
 	if (se->on_rq)
 		goto out;
-	cfs_rq = cfs_rq_of(se);
-	update_curr(cfs_rq);
-	se->vruntime += cfs_rq->min_vruntime;
 	cfs_rq->nr_running++;
 	if (cfs_rq->curr != se)
-		__enqueue_entity(cfs_rq, se);
+		cfs_rq->curr = se;
 	se->on_rq = 1;
 	cfs_rq->h_nr_running++;
 out:
@@ -69,18 +20,14 @@ out:
 
 static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 {
-	struct cfs_rq *cfs_rq;
+	struct cfs_rq *cfs_rq = &rq->cfs;
 	struct sched_entity *se = &p->se;
 
-	cfs_rq = cfs_rq_of(se);
-	update_curr(cfs_rq);
-	if (se != cfs_rq->curr)
-		__dequeue_entity(cfs_rq, se);
 	se->on_rq = 0;
 	cfs_rq->nr_running--;
-	update_min_vruntime(cfs_rq);
+	if (cfs_rq->curr == se)
+		cfs_rq->curr = NULL;
 	cfs_rq->h_nr_running--;
-
 	rq->nr_running--;
 }
 
@@ -93,8 +40,6 @@ struct task_struct *pick_next_task_fair(struct rq *rq, struct task_struct *prev,
 					struct rq_flags *rf)
 {
 	struct cfs_rq *cfs_rq = &rq->cfs;
-	struct sched_entity *se;
-	struct rb_node *left;
 
 	if (!sched_fair_runnable(rq))
 		return NULL;
@@ -102,55 +47,22 @@ struct task_struct *pick_next_task_fair(struct rq *rq, struct task_struct *prev,
 	if (prev)
 		put_prev_task(rq, prev);
 
-	left = rb_first_cached(&cfs_rq->tasks_timeline);
-	if (!left)
-		return NULL;
-	se = __node_2_se(left);
-
-	if (se->on_rq)
-		__dequeue_entity(cfs_rq, se);
-	se->exec_start = rq_clock_task(rq_of(cfs_rq));
-	cfs_rq->curr = se;
-	return task_of(se);
+	return task_of(cfs_rq->curr);
 }
 
 static void put_prev_task_fair(struct rq *rq, struct task_struct *prev)
 {
-	struct sched_entity *se = &prev->se;
-	struct cfs_rq *cfs_rq = cfs_rq_of(se);
-
-	if (se->on_rq) {
-		update_curr(cfs_rq);
-		__enqueue_entity(cfs_rq, se);
-	}
-	cfs_rq->curr = NULL;
+	/* Nothing to do - curr stays set */
 }
 
 static void task_fork_fair(struct task_struct *p)
 {
-	struct cfs_rq *cfs_rq;
-	struct sched_entity *se = &p->se, *curr;
-	struct rq *rq = this_rq();
-	struct rq_flags rf;
-
-	rq_lock(rq, &rf);
-	update_rq_clock(rq);
-
-	cfs_rq = task_cfs_rq(current);
-	curr = cfs_rq->curr;
-	if (curr) {
-		update_curr(cfs_rq);
-		se->vruntime = curr->vruntime;
-	}
-	se->vruntime = cfs_rq->min_vruntime;
-	se->vruntime -= cfs_rq->min_vruntime;
-	rq_unlock(rq, &rf);
+	/* Nothing to do for single-task kernel */
 }
 
 void init_cfs_rq(struct cfs_rq *cfs_rq)
 {
-	cfs_rq->tasks_timeline = RB_ROOT_CACHED;
-	cfs_rq->min_vruntime = (u64)(-(1LL << 20));
+	cfs_rq->curr = NULL;
 }
 
 DEFINE_SCHED_CLASS(fair) = {

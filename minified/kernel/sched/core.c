@@ -50,7 +50,6 @@ void update_rq_clock(struct rq *rq)
 	if (delta < 0)
 		return;
 	rq->clock += delta;
-	rq->clock_task += delta;
 }
 
 void resched_curr(struct rq *rq)
@@ -113,10 +112,7 @@ static void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 {
 	p->on_rq = 0;
-
 	p->se.on_rq = 0;
-	p->se.exec_start = 0;
-	p->se.vruntime = 0;
 }
 
 int sched_fork(unsigned long clone_flags, struct task_struct *p)
@@ -335,7 +331,6 @@ static void __init init_idle(struct task_struct *idle, int cpu)
 	raw_spin_rq_lock(rq);
 
 	idle->__state = TASK_RUNNING;
-	idle->se.exec_start = sched_clock();
 
 	idle->flags |= PF_IDLE | PF_KTHREAD | PF_NO_SETAFFINITY;
 	kthread_set_per_cpu(idle, cpu);

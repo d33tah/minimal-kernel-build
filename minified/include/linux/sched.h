@@ -138,11 +138,7 @@ extern void schedule_preempt_disabled(void);
 
 
 struct sched_entity {
-	struct rb_node			run_node;
 	unsigned int			on_rq;
-
-	u64				exec_start;
-	u64				vruntime;
 };
 
 struct task_struct {

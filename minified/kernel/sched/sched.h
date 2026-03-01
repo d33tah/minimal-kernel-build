@@ -38,11 +38,7 @@ struct rq;
 struct cfs_rq {
 	unsigned int		nr_running;
 	unsigned int		h_nr_running;
-	u64			min_vruntime;
-	struct rb_root_cached	tasks_timeline;
-
 	struct sched_entity	*curr;
-
 };
 
 struct rq {
@@ -59,14 +55,8 @@ struct rq {
 
 	unsigned int		clock_update_flags;
 	u64			clock;
-	u64			clock_task ____cacheline_aligned;
 
 };
-
-static inline struct rq *rq_of(struct cfs_rq *cfs_rq)
-{
-	return container_of(cfs_rq, struct rq, cfs);
-}
 
 static inline raw_spinlock_t *rq_lockp(struct rq *rq)
 {
@@ -122,28 +112,10 @@ static inline struct task_struct *task_of(struct sched_entity *se)
 	return container_of(se, struct task_struct, se);
 }
 
-static inline struct cfs_rq *task_cfs_rq(struct task_struct *p)
-{
-	return &task_rq(p)->cfs;
-}
-
-static inline struct cfs_rq *cfs_rq_of(struct sched_entity *se)
-{
-	struct task_struct *p = task_of(se);
-	struct rq *rq = task_rq(p);
-
-	return &rq->cfs;
-}
-
 extern void update_rq_clock(struct rq *rq);
 
 #define RQCF_REQ_SKIP		0x01
 #define RQCF_ACT_SKIP		0x02
-
-static inline u64 rq_clock_task(struct rq *rq)
-{
-	return rq->clock_task;
-}
 
 static inline void rq_clock_skip_update(struct rq *rq)
 {

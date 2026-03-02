@@ -83,13 +83,6 @@
 		RO_AFTER_INIT_DATA	 	\
 	}								\
 									\
-	 \
-	__param : AT(ADDR(__param) - LOAD_OFFSET) {			\
-		__start___param = .;					\
-		KEEP(*(__param))					\
-		__stop___param = .;					\
-	}								\
-									\
 	RO_EXCEPTION_TABLE						\
 	NOTES								\
 									\
@@ -157,20 +150,7 @@
 	*(.text.startup)						\
 	MEM_DISCARD(init.text*)
 
-#define EXIT_DATA							\
-	*(.exit.data .exit.data.*)					\
-	*(.fini_array .fini_array.*)					\
-	*(.dtors .dtors.*)						\
-	MEM_DISCARD(exit.data*)						\
-	MEM_DISCARD(exit.rodata*)
 
-#define EXIT_TEXT							\
-	*(.exit.text)							\
-	*(.text.exit)							\
-	MEM_DISCARD(exit.text)
-
-#define EXIT_CALL							\
-	*(.exitcall.exit)
 
 #define ELF_DETAILS							\
 		.comment 0 : { *(.comment) }				\
@@ -221,28 +201,9 @@
 
 #define DISCARDS							\
 	/DISCARD/ : {							\
-	EXIT_CALL							\
 	COMMON_DISCARDS							\
 	}
 
-#define PERCPU_INPUT(cacheline)						\
-	__per_cpu_start = .;						\
-	*(.data..percpu..first)						\
-	. = ALIGN(PAGE_SIZE);						\
-	*(.data..percpu..page_aligned)					\
-	. = ALIGN(cacheline);						\
-	*(.data..percpu..read_mostly)					\
-	. = ALIGN(cacheline);						\
-	*(.data..percpu)						\
-	*(.data..percpu..shared_aligned)				\
-	__per_cpu_end = .;
-
-#define PERCPU_SECTION(cacheline)					\
-	. = ALIGN(PAGE_SIZE);						\
-	.data..percpu	: AT(ADDR(.data..percpu) - LOAD_OFFSET) {	\
-		__per_cpu_load = .;					\
-		PERCPU_INPUT(cacheline)					\
-	}
 
 #define INIT_TEXT_SECTION(inittext_align)				\
 	. = ALIGN(inittext_align);					\

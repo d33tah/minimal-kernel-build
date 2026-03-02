@@ -150,22 +150,6 @@ SECTIONS
 		*(.altinstr_replacement)
 	}
 
-	. = ALIGN(8);
-	/*
-	 * .exit.text is discarded at runtime, not link time, to deal with
-	 *  references from .altinstructions
-	 */
-	.exit.text : AT(ADDR(.exit.text) - LOAD_OFFSET) {
-		EXIT_TEXT
-	}
-
-	.exit.data : AT(ADDR(.exit.data) - LOAD_OFFSET) {
-		EXIT_DATA
-	}
-
-	/* X86_32 - PERCPU_SECTION is always included */
-	PERCPU_SECTION(INTERNODE_CACHE_BYTES)
-
 	. = ALIGN(PAGE_SIZE);
 
 	/* freed after init ends here */

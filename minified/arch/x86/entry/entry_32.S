@@ -56,9 +56,7 @@
 
 	.section .entry.text, "ax"
 
-#define PTI_SWITCH_MASK         (1 << PAGE_SHIFT)
-
-/* PTI disabled - these are no-ops */
+/* PTI disabled - CR3 switching macros are no-ops */
 .macro SWITCH_TO_USER_CR3 scratch_reg:req
 .endm
 
@@ -66,7 +64,6 @@
 .endm
 
 #define CS_FROM_ENTRY_STACK	(1 << 31)
-#define CS_FROM_USER_CR3	(1 << 30)
 #define CS_FROM_KERNEL		(1 << 29)
 
 .macro FIXUP_FRAME
@@ -197,19 +194,6 @@
 
 .macro SAVE_ALL_NMI cr3_reg:req
 	SAVE_ALL
-
-
-
-	/*
-	 * Now switch the CR3 when PTI is enabled.
-	 *
-	 * We can enter with either user or kernel cr3, the code will
-	 * store the old cr3 in \cr3_reg and switches to the kernel cr3
-	 * if necessary.
-	 */
-	SWITCH_TO_KERNEL_CR3 scratch_reg=\cr3_reg
-
-.Lend_\@:
 .endm
 
 .macro RESTORE_INT_REGS
@@ -355,20 +339,7 @@
 	/* Mark stackframe as coming from entry stack */
 	orl	$CS_FROM_ENTRY_STACK, PT_CS(%esp)
 
-	/*
-	 * Test the cr3 used to enter the kernel and add a marker
-	 * so that we can switch back to it before iret.
-	 */
-	testl	$PTI_SWITCH_MASK, %eax
-	jz	.Lcopy_pt_regs_\@
-	orl	$CS_FROM_USER_CR3, PT_CS(%esp)
-
-	/*
-	 * %esi and %edi are unchanged, %ecx contains the number of
-	 * bytes to copy. The code at .Lcopy_pt_regs_\@ will allocate
-	 * the stack-frame on task-stack and copy everything over
-	 */
-	jmp .Lcopy_pt_regs_\@
+	/* PTI disabled - no CR3 marker needed, fall through to copy */
 
 .Lend_\@:
 .endm
@@ -460,18 +431,6 @@
 
 	/* Safe to switch to entry-stack now */
 	movl	%ebx, %esp
-
-	/*
-	 * We came from entry-stack and need to check if we also need to
-	 * switch back to user cr3.
-	 */
-	testl	$CS_FROM_USER_CR3, PT_CS(%esp)
-	jz	.Lend_\@
-
-	/* Clear marker from stack-frame */
-	andl	$(~CS_FROM_USER_CR3), PT_CS(%esp)
-
-	SWITCH_TO_USER_CR3 scratch_reg=%eax
 
 .Lend_\@:
 .endm

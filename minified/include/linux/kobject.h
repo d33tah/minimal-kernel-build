@@ -3,6 +3,7 @@
 #define _KOBJECT_H_
 
 /* sysfs.h inlined */
+#include <linux/types.h>
 #include <linux/stat.h>
 struct attribute {
 	const char		*name;

@@ -1,3 +1,4 @@
+#include <linux/nsproxy.h>
 #include <linux/user_namespace.h>
 #include <linux/idr.h>
 /* sysfs.h inlined */

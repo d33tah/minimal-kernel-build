@@ -6,8 +6,6 @@
 #include <linux/sched.h>
 #include <linux/uidgid.h>
 
-struct cred;
-
 struct cred {
 	atomic_t	usage;
 	struct user_namespace *user_ns;
@@ -53,16 +51,6 @@ static inline void put_cred(const struct cred *_cred)
 #define get_current_cred()				\
 	(get_cred(current_cred()))
 
-#define task_cred_xxx(task, xxx)			\
-({							\
-	__typeof__(((struct cred *)NULL)->xxx) ___val;	\
-	rcu_read_lock();				\
-	___val = __task_cred((task))->xxx;		\
-	rcu_read_unlock();				\
-	___val;						\
-})
-
-/* init_user_ns extern from uidgid.h */
 static inline struct user_namespace *current_user_ns(void)
 {
 	return &init_user_ns;

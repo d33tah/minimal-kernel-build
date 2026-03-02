@@ -1,14 +1,8 @@
 #ifndef _LINUX_USER_NAMESPACE_H
 #define _LINUX_USER_NAMESPACE_H
 
-#include <linux/nsproxy.h>
 #include <linux/ns_common.h>
-#include <linux/sched.h>
-#include <linux/workqueue.h>
 #include <linux/uidgid.h>
-#include <linux/err.h>
-
-struct ucounts;
 
 struct user_namespace {
 	struct ns_common	ns;

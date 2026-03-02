@@ -1,4 +1,5 @@
 #include <linux/fs_parser.h>
+#include <linux/nsproxy.h>
 #include <linux/user_namespace.h>
 struct net {
 	atomic_t count;

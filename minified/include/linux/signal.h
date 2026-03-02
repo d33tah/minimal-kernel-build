@@ -3,12 +3,9 @@
 
 #include <linux/bug.h>
 #include <linux/list.h>
-#include <linux/linkage.h>
 #include <linux/types.h>
 #include <linux/compiler.h>
 #include <asm/asm.h>
-#include <asm-generic/siginfo.h>
-#include <linux/string.h>
 
 /* Inlined from asm/signal.h */
 #define _NSIG		64
@@ -50,10 +47,6 @@ static inline int __gen_sigismember(sigset_t *set, int _sig)
 #ifndef _LINUX_SIGNAL_TYPES_INLINED
 #define _LINUX_SIGNAL_TYPES_INLINED
 
-typedef struct kernel_siginfo {
-	__SIGINFO;
-} kernel_siginfo_t;
-
 struct sigpending {
 	struct list_head list;
 	sigset_t signal;
@@ -69,10 +62,7 @@ struct k_sigaction {
 	struct sigaction sa;
 };
 
-
 #endif /* _LINUX_SIGNAL_TYPES_INLINED */
-
-struct task_struct;
 
 #ifndef __HAVE_ARCH_SIG_SETOPS
 
@@ -89,7 +79,5 @@ static inline void init_sigpending(struct sigpending *sig)
 	sigemptyset(&sig->signal);
 	INIT_LIST_HEAD(&sig->list);
 }
-
-enum pid_type;
 
 #endif

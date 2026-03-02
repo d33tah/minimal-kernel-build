@@ -11,6 +11,7 @@
 #include <linux/fs_struct.h>
 #define STACK_END_MAGIC 0x57AC6E9D
 #include <linux/init_task.h>
+#include <linux/nsproxy.h>
 
 #include <asm/pgalloc.h>
 #include <asm/mmu_context.h>

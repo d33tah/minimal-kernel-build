@@ -1,5 +1,6 @@
 #include <linux/init_task.h>
 #include <linux/fs.h>
+#include <linux/nsproxy.h>
 #include <linux/utsname.h>
 
 struct nsproxy init_nsproxy = {

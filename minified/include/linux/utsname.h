@@ -1,10 +1,7 @@
 #ifndef _LINUX_UTSNAME_H
 #define _LINUX_UTSNAME_H
 
-#include <linux/sched.h>
-#include <linux/nsproxy.h>
 #include <linux/ns_common.h>
-#include <linux/err.h>
 
 #define __NEW_UTS_LEN 64
 
@@ -22,11 +19,6 @@ struct uts_namespace {
 	struct ns_common ns;
 } __randomize_layout;
 extern struct uts_namespace init_uts_ns;
-
-static inline struct new_utsname *utsname(void)
-{
-	return &current->nsproxy->uts_ns->name;
-}
 
 static inline struct new_utsname *init_utsname(void)
 {

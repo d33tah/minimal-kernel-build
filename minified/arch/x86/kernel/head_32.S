@@ -176,33 +176,7 @@ SYM_CODE_END(startup_32)
 	movl pa(mmu_cr4_features),%eax
 	movl %eax,%cr4
 
-	testb $X86_CR4_PAE, %al		# check if PAE is enabled
-	jz .Lenable_paging
-
-	/* Check if extended functions are implemented */
-	movl $0x80000000, %eax
-	cpuid
-	/* Value must be in the range 0x80000001 to 0x8000ffff */
-	subl $0x80000001, %eax
-	cmpl $(0x8000ffff-0x80000001), %eax
-	ja .Lenable_paging
-
-	/* Clear bogus XD_DISABLE bits */
-	call verify_cpu
-
-	mov $0x80000001, %eax
-	cpuid
-	/* Execute Disable bit supported? */
-	btl $(X86_FEATURE_NX & 31), %edx
-	jnc .Lenable_paging
-
-	/* Setup EFER (Extended Feature Enable Register) */
-	movl $MSR_EFER, %ecx
-	rdmsr
-
-	btsl $_EFER_NX, %eax
-	/* Make changes effective */
-	wrmsr
+	/* PAE/NX not enabled in tinyconfig - skip to paging setup */
 
 .Lenable_paging:
 
@@ -286,7 +260,6 @@ SYM_CODE_END(startup_32)
 	call *(initial_code)
 1:	jmp 1b
 
-#include "verify_cpu.S"
 
 /*
  *  setup_once

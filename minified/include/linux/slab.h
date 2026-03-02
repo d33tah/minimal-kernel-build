@@ -3,7 +3,6 @@
 #define	_LINUX_SLAB_H
 
 #include <linux/gfp.h>
-#include <linux/overflow.h>
 #include <linux/types.h>
 
 #define SLAB_RED_ZONE		((slab_flags_t __force)0x00000400U)

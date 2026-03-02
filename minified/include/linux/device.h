@@ -5,7 +5,6 @@
 #include <linux/kobject.h>
 #include <linux/mutex.h>
 #include <linux/gfp.h>
-#include <linux/overflow.h>
 #include <linux/module.h>
 
 struct device {

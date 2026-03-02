@@ -34,10 +34,6 @@ struct pt_regs {
 	unsigned short __ssh;
 };
 
-/* inlined from asm/proto.h */
-#ifndef LDT_ENTRY_SIZE
-#define LDT_ENTRY_SIZE 8
-#endif
 void entry_INT80_32(void);
 
 static __always_inline int user_mode(struct pt_regs *regs)

@@ -3,9 +3,6 @@
 #define _ASM_X86_DESC_H
 
 #include <asm/desc_defs.h>
-#ifndef LDT_ENTRY_SIZE
-#define LDT_ENTRY_SIZE 8 /* inlined from asm/ldt.h */
-#endif
 #include <asm/mmu.h>
 #include <asm/fixmap.h>
 #include <asm/irq_vectors.h>
@@ -39,7 +36,6 @@ static inline phys_addr_t get_cpu_gdt_paddr(unsigned int cpu)
 #define load_gdt(dtr)				native_load_gdt(dtr)
 #define load_idt(dtr)				native_load_idt(dtr)
 #define load_TLS(t, cpu)			native_load_tls(t, cpu)
-#define set_ldt					native_set_ldt
 #define write_gdt_entry(dt, entry, desc, type)	native_write_gdt_entry(dt, entry, desc, type)
 #define write_idt_entry(dt, entry, g)		native_write_idt_entry(dt, entry, g)
 
@@ -90,22 +86,6 @@ static inline void __set_tss_desc(unsigned cpu, unsigned int entry, struct x86_h
 
 #define set_tss_desc(cpu, addr) __set_tss_desc(cpu, GDT_ENTRY_TSS, addr)
 
-static inline void native_set_ldt(const void *addr, unsigned int entries)
-{
-	if (likely(entries == 0))
-		asm volatile("lldt %w0"::"q" (0));
-	else {
-		unsigned cpu = smp_processor_id();
-		ldt_desc ldt;
-
-		set_tssldt_descriptor(&ldt, (unsigned long)addr, DESC_LDT,
-				      entries * LDT_ENTRY_SIZE - 1);
-		write_gdt_entry(get_cpu_gdt_rw(cpu), GDT_ENTRY_LDT,
-				&ldt, DESC_LDT);
-		asm volatile("lldt %w0"::"q" (GDT_ENTRY_LDT*8));
-	}
-}
-
 static inline void native_load_gdt(const struct desc_ptr *dtr)
 {
 	asm volatile("lgdt %0"::"m" (*dtr));
@@ -132,7 +112,7 @@ static inline void native_load_tls(struct thread_struct *t, unsigned int cpu)
 
 static inline void clear_LDT(void)
 {
-	set_ldt(NULL, 0);
+	asm volatile("lldt %w0"::"q" (0));
 }
 
 static inline void idt_init_desc(gate_desc *gate, const struct idt_data *d)

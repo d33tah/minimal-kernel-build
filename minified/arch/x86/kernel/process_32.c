@@ -1,8 +1,4 @@
 
-
-#ifndef LDT_ENTRY_SIZE
-#define LDT_ENTRY_SIZE 8 /* inlined from asm/ldt.h */
-#endif
 #include <asm/fpu/sched.h>
 
 #include <asm/tlbflush.h>

@@ -32,11 +32,7 @@ subdir-ym := $(sort $(subdir-y) $(subdir-m) \
 # Generate modules.order to determine modorder. Unfortunately, we don't have
 # information about ordering between -y and -m subdirs. Just put -y's first.
 
-ifdef need-modorder
-obj-m := $(patsubst %/,%/modules.order, $(filter %/, $(obj-y)) $(obj-m))
-else
 obj-m := $(filter-out %/, $(obj-m))
-endif
 
 ifdef need-builtin
 obj-y		:= $(patsubst %/, %/built-in.a, $(obj-y))

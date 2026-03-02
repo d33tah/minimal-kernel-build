@@ -17,14 +17,6 @@
 
 #define asmlinkage CPP_ASMLINKAGE __attribute__((regparm(0)))
 
-#ifdef __ASSEMBLY__
-
-/* X86_32 without X86_ALIGNMENT_16 - use default alignment */
-
-#else
-
-#endif
-
 #define SYM_FUNC_START(name)				\
 	SYM_START(name, SYM_L_GLOBAL, SYM_A_ALIGN)	\
 	ENDBR
@@ -46,11 +38,6 @@
 #endif
 
 #define CPP_ASMLINKAGE
-
-#ifndef asmlinkage
-#define asmlinkage
-#endif
-
 
 #define __page_aligned_bss	__section(".bss..page_aligned") __aligned(PAGE_SIZE)
 

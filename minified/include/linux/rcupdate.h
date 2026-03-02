@@ -34,58 +34,15 @@ void rcu_qs(void);
 	} while (0)
 
 static inline void rcu_scheduler_starting(void) { }
-static inline bool rcu_is_watching(void) { return true; }
 
-# define rcu_lock_acquire(a)		do { } while (0)
-# define rcu_lock_release(a)		do { } while (0)
-
-static inline int rcu_read_lock_held(void)
-{
-	return 1;
-}
-
-static inline int rcu_read_lock_sched_held(void)
-{
-	return !preemptible();
-}
-
-#define RCU_LOCKDEP_WARN(c, s) do { } while (0 && (c))
-
-#ifdef __CHECKER__
-#define rcu_check_sparse(p, space) \
-	((void)(((typeof(*p) space *)p) == p))
-#else  
-#define rcu_check_sparse(p, space)
-#endif  
-
-#define __rcu_dereference_check(p, local, c, space) \
-({ \
-	  \
-	typeof(*p) *local = (typeof(*p) *__force)READ_ONCE(p); \
-	RCU_LOCKDEP_WARN(!(c), "suspicious rcu_dereference_check() usage"); \
-	rcu_check_sparse(p, space); \
-	((typeof(*p) __force __kernel *)(local)); \
-})
-#define __rcu_dereference_protected(p, local, c, space) \
-({ \
-	RCU_LOCKDEP_WARN(!(c), "suspicious rcu_dereference_protected() usage"); \
-	rcu_check_sparse(p, space); \
-	((typeof(*p) __force __kernel *)(p)); \
-})
-#define __rcu_dereference_raw(p, local) \
-({ \
-	  \
-	typeof(p) local = READ_ONCE(p); \
-	((typeof(*p) __force __kernel *)(local)); \
-})
-#define rcu_dereference_raw(p) __rcu_dereference_raw(p, __UNIQUE_ID(rcu))
+#define rcu_dereference_raw(p) \
+	((typeof(*p) __force __kernel *)READ_ONCE(p))
 
 #define RCU_INITIALIZER(v) (typeof(*(v)) __force __rcu *)(v)
 
 #define rcu_assign_pointer(p, v)					      \
 do {									      \
 	uintptr_t _r_a_p__v = (uintptr_t)(v);				      \
-	rcu_check_sparse(p, __rcu);					      \
 									      \
 	if (__builtin_constant_p(v) && (_r_a_p__v) == (uintptr_t)NULL)	      \
 		WRITE_ONCE((p), (typeof(p))(_r_a_p__v));		      \
@@ -94,60 +51,40 @@ do {									      \
 } while (0)
 
 #define rcu_dereference_check(p, c) \
-	__rcu_dereference_check((p), __UNIQUE_ID(rcu), \
-				(c) || rcu_read_lock_held(), __rcu)
-
-#define rcu_dereference_sched_check(p, c) \
-	__rcu_dereference_check((p), __UNIQUE_ID(rcu), \
-				(c) || rcu_read_lock_sched_held(), \
-				__rcu)
+	((typeof(*p) __force __kernel *)READ_ONCE(p))
 
 #define rcu_dereference_protected(p, c) \
-	__rcu_dereference_protected((p), __UNIQUE_ID(rcu), (c), __rcu)
+	((typeof(*p) __force __kernel *)(p))
 
 #define rcu_dereference(p) rcu_dereference_check(p, 0)
 
-#define rcu_dereference_sched(p) rcu_dereference_sched_check(p, 0)
+#define rcu_dereference_sched(p) \
+	((typeof(*p) __force __kernel *)READ_ONCE(p))
 
 static __always_inline void rcu_read_lock(void)
 {
 	__rcu_read_lock();
 	__acquire(RCU);
-	rcu_lock_acquire(&rcu_lock_map);
-	RCU_LOCKDEP_WARN(!rcu_is_watching(),
-			 "rcu_read_lock() used illegally while idle");
 }
 
 static inline void rcu_read_unlock(void)
 {
-	RCU_LOCKDEP_WARN(!rcu_is_watching(),
-			 "rcu_read_unlock() used illegally while idle");
 	__release(RCU);
 	__rcu_read_unlock();
-	rcu_lock_release(&rcu_lock_map);  
 }
 
 static inline void rcu_read_lock_sched(void)
 {
 	preempt_disable();
-	__acquire(RCU_SCHED);
-	rcu_lock_acquire(&rcu_sched_lock_map);
-	RCU_LOCKDEP_WARN(!rcu_is_watching(),
-			 "rcu_read_lock_sched() used illegally while idle");
 }
 
 static inline void rcu_read_unlock_sched(void)
 {
-	RCU_LOCKDEP_WARN(!rcu_is_watching(),
-			 "rcu_read_unlock_sched() used illegally while idle");
-	rcu_lock_release(&rcu_sched_lock_map);
-	__release(RCU_SCHED);
 	preempt_enable();
 }
 
 #define RCU_INIT_POINTER(p, v) \
 	do { \
-		rcu_check_sparse(p, __rcu); \
 		WRITE_ONCE(p, RCU_INITIALIZER(v)); \
 	} while (0)
 

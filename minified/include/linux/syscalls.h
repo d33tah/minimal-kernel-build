@@ -2,7 +2,6 @@
 #define _LINUX_SYSCALLS_H
 
 #include <linux/signal.h>
-#include <asm-generic/siginfo.h>
 #include <linux/fcntl.h>
 
 struct pt_regs;

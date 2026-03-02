@@ -58,32 +58,11 @@
 
 #define PTI_SWITCH_MASK         (1 << PAGE_SHIFT)
 
-/* Unconditionally switch to user cr3 */
+/* PTI disabled - these are no-ops */
 .macro SWITCH_TO_USER_CR3 scratch_reg:req
-	ALTERNATIVE "jmp .Lend_\@", "", X86_FEATURE_PTI
-
-	movl	%cr3, \scratch_reg
-	orl	$PTI_SWITCH_MASK, \scratch_reg
-	movl	\scratch_reg, %cr3
-.Lend_\@:
 .endm
 
-
-/*
- * Switch to kernel cr3 if not already loaded and return current cr3 in
- * \scratch_reg
- */
 .macro SWITCH_TO_KERNEL_CR3 scratch_reg:req
-	ALTERNATIVE "jmp .Lend_\@", "", X86_FEATURE_PTI
-	movl	%cr3, \scratch_reg
-	/* Test if we are already on kernel CR3 */
-	testl	$PTI_SWITCH_MASK, \scratch_reg
-	jz	.Lend_\@
-	andl	$(~PTI_SWITCH_MASK), \scratch_reg
-	movl	\scratch_reg, %cr3
-	/* Return original CR3 in \scratch_reg */
-	orl	$PTI_SWITCH_MASK, \scratch_reg
-.Lend_\@:
 .endm
 
 #define CS_FROM_ENTRY_STACK	(1 << 31)
@@ -261,24 +240,7 @@
 .endm
 
 .macro RESTORE_ALL_NMI cr3_reg:req pop=0
-	/*
-	 * Now switch the CR3 when PTI is enabled.
-	 *
-	 * We enter with kernel cr3 and switch the cr3 to the value
-	 * stored on \cr3_reg, which is either a user or a kernel cr3.
-	 */
-	ALTERNATIVE "jmp .Lswitched_\@", "", X86_FEATURE_PTI
-
-	testl	$PTI_SWITCH_MASK, \cr3_reg
-	jz	.Lswitched_\@
-
-	/* User cr3 in \cr3_reg - write it to hardware cr3 */
-	movl	\cr3_reg, %cr3
-
-.Lswitched_\@:
-
-
-
+	/* PTI disabled - no CR3 switching needed */
 	RESTORE_REGS pop=\pop
 .endm
 
@@ -770,48 +732,16 @@ ret_to_user:
 	jmp	restore_all_switch_stack
 SYM_CODE_END(handle_exception)
 
-/*
- * NMI is doubly nasty.  It can happen on the first instruction of
- * entry_SYSENTER_32 (just like #DB), but it can also interrupt the beginning
- * of the #DB handler even if that #DB in turn hit before entry_SYSENTER_32
- * switched stacks.  We handle both conditions by simply checking whether we
- * interrupted kernel code running on the SYSENTER stack.
- */
+/* NMI handler - simplified (no SYSENTER stack) */
 SYM_CODE_START(asm_exc_nmi)
 	ASM_CLAC
-
 	pushl	%eax				# pt_regs->orig_ax
 	SAVE_ALL_NMI cr3_reg=%edi
-
 	xorl	%edx, %edx			# zero error code
 	movl	%esp, %eax			# pt_regs pointer
-
-	/* Are we currently on the SYSENTER stack? */
-	movl	PER_CPU_VAR(cpu_entry_area), %ecx
-	addl	$CPU_ENTRY_AREA_entry_stack + SIZEOF_entry_stack, %ecx
-	subl	%eax, %ecx	/* ecx = (end of entry_stack) - esp */
-	cmpl	$SIZEOF_entry_stack, %ecx
-	jb	.Lnmi_from_sysenter_stack
-
-	/* Not on SYSENTER stack. */
 	call	exc_nmi
-	jmp	.Lnmi_return
-
-.Lnmi_from_sysenter_stack:
-	/*
-	 * We're on the SYSENTER stack.  Switch off.  No one (not even debug)
-	 * is using the thread stack right now, so it's safe for us to use it.
-	 */
-	movl	%esp, %ebx
-	movl	PER_CPU_VAR(cpu_current_top_of_stack), %esp
-	call	exc_nmi
-	movl	%ebx, %esp
-
-.Lnmi_return:
-
 	RESTORE_ALL_NMI cr3_reg=%edi pop=4
 	jmp	.Lirq_return
-
 SYM_CODE_END(asm_exc_nmi)
 
 .pushsection .text, "ax"

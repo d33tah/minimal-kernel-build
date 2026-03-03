@@ -301,7 +301,6 @@ failed:
 }
 
 static struct page *get_page_from_freelist(gfp_t gfp_mask, unsigned int order,
-					   int alloc_flags,
 					   const struct alloc_context *ac)
 {
 	struct zoneref *z;
@@ -312,17 +311,7 @@ static struct page *get_page_from_freelist(gfp_t gfp_mask, unsigned int order,
 	for_next_zone_zonelist_nodemask(zone, z, ac->highest_zoneidx,
 					ac->nodemask)
 	{
-		unsigned long mark =
-			wmark_pages(zone, alloc_flags & ALLOC_WMARK_MASK);
-
-		if (!(alloc_flags & ALLOC_NO_WATERMARKS)) {
-			long free_pages = zone_page_state(zone, NR_FREE_PAGES);
-			if (free_pages <= (long)mark)
-				continue;
-		}
-
-		page = rmqueue(zone, order, gfp_mask, alloc_flags,
-			       ac->migratetype);
+		page = rmqueue(zone, order, gfp_mask, 0, ac->migratetype);
 		if (page) {
 			set_page_private(page, 0);
 			set_page_refcounted(page);
@@ -336,34 +325,16 @@ static struct page *get_page_from_freelist(gfp_t gfp_mask, unsigned int order,
 	return NULL;
 }
 
-static inline struct page *__alloc_pages_slowpath(gfp_t gfp_mask,
-						  unsigned int order,
-						  struct alloc_context *ac)
-{
-	/* Retry with no watermarks - for hello-world, if fast path fails just
-	 * skip watermarks rather than complex OOM/reclaim logic */
-	ac->preferred_zoneref = first_zones_zonelist(
-		ac->zonelist, ac->highest_zoneidx, ac->nodemask);
-	if (!ac->preferred_zoneref->zone)
-		return NULL;
-	return get_page_from_freelist(gfp_mask, order, ALLOC_NO_WATERMARKS, ac);
-}
-
 struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid,
 			   nodemask_t *nodemask)
 {
-	struct page *page;
-	unsigned int alloc_flags = ALLOC_WMARK_LOW;
-	gfp_t alloc_gfp;
 	struct alloc_context ac = {};
 
 	if (order >= MAX_ORDER)
 		return NULL;
 
 	gfp &= gfp_allowed_mask;
-
 	gfp = current_gfp_context(gfp);
-	alloc_gfp = gfp;
 	ac.highest_zoneidx = gfp_zone(gfp);
 	ac.zonelist = node_zonelist(preferred_nid, gfp);
 	ac.nodemask = nodemask;
@@ -371,11 +342,7 @@ struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid,
 	ac.preferred_zoneref = first_zones_zonelist(
 		ac.zonelist, ac.highest_zoneidx, ac.nodemask);
 
-	page = get_page_from_freelist(alloc_gfp, order, alloc_flags, &ac);
-	if (likely(page))
-		return page;
-
-	return __alloc_pages_slowpath(alloc_gfp, order, &ac);
+	return get_page_from_freelist(gfp, order, &ac);
 }
 
 struct folio *__folio_alloc(gfp_t gfp, unsigned int order, int preferred_nid,

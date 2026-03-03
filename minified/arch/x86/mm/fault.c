@@ -11,59 +11,9 @@
 DEFINE_SPINLOCK(pgd_lock);
 LIST_HEAD(pgd_list);
 
-static inline pmd_t *vmalloc_sync_one(pgd_t *pgd, unsigned long address)
-{
-	unsigned index = pgd_index(address);
-	pgd_t *pgd_k;
-	p4d_t *p4d, *p4d_k;
-	pud_t *pud, *pud_k;
-	pmd_t *pmd, *pmd_k;
-
-	pgd += index;
-	pgd_k = init_mm.pgd + index;
-
-	p4d = p4d_offset(pgd, address);
-	p4d_k = p4d_offset(pgd_k, address);
-
-	pud = pud_offset(p4d, address);
-	pud_k = pud_offset(p4d_k, address);
-
-	pmd = pmd_offset(pud, address);
-	pmd_k = pmd_offset(pud_k, address);
-
-	if (pmd_present(*pmd) != pmd_present(*pmd_k))
-		set_pmd(pmd, *pmd_k);
-
-	if (!pmd_present(*pmd_k))
-		return NULL;
-	else
-		BUG_ON(pmd_pfn(*pmd) != pmd_pfn(*pmd_k));
-
-	return pmd_k;
-}
-
 static noinline int vmalloc_fault(unsigned long address)
 {
-	unsigned long pgd_paddr;
-	pmd_t *pmd_k;
-	pte_t *pte_k;
-
-	if (!(address >= VMALLOC_START && address < VMALLOC_END))
-		return -1;
-
-	pgd_paddr = read_cr3_pa();
-	pmd_k = vmalloc_sync_one(__va(pgd_paddr), address);
-	if (!pmd_k)
-		return -1;
-
-	if (pmd_large(*pmd_k))
-		return 0;
-
-	pte_k = pte_offset_kernel(pmd_k, address);
-	if (!pte_present(*pte_k))
-		return -1;
-
-	return 0;
+	return -1;
 }
 NOKPROBE_SYMBOL(vmalloc_fault);
 
@@ -105,24 +55,11 @@ static void __bad_area_nosemaphore(struct pt_regs *regs,
 	page_fault_oops(regs, error_code, address);
 }
 
-static noinline void bad_area_nosemaphore(struct pt_regs *regs,
-					  unsigned long error_code,
-					  unsigned long address)
-{
-	__bad_area_nosemaphore(regs, error_code, address);
-}
-
 static noinline void bad_area(struct pt_regs *regs, unsigned long error_code,
 			      unsigned long address)
 {
 	mmap_read_unlock(current->mm);
 	__bad_area_nosemaphore(regs, error_code, address);
-}
-
-static bool fault_in_kernel_space(unsigned long address)
-{
-	/* X86_32: no vsyscall check needed */
-	return address >= TASK_SIZE_MAX;
 }
 
 static void do_kern_addr_fault(struct pt_regs *regs,
@@ -134,7 +71,7 @@ static void do_kern_addr_fault(struct pt_regs *regs,
 			return;
 	}
 
-	bad_area_nosemaphore(regs, hw_error_code, address);
+	__bad_area_nosemaphore(regs, hw_error_code, address);
 }
 NOKPROBE_SYMBOL(do_kern_addr_fault);
 
@@ -168,7 +105,7 @@ static inline void do_user_addr_fault(struct pt_regs *regs,
 	}
 
 	if (unlikely(faulthandler_disabled() || !mm)) {
-		bad_area_nosemaphore(regs, error_code, address);
+		__bad_area_nosemaphore(regs, error_code, address);
 		return;
 	}
 
@@ -185,7 +122,7 @@ static inline void do_user_addr_fault(struct pt_regs *regs,
 	if (unlikely(!down_read_trylock(
 		    &mm->mmap_lock))) { /* mmap_read_trylock inlined */
 		if (!user_mode(regs) && !search_exception_tables(regs->ip)) {
-			bad_area_nosemaphore(regs, error_code, address);
+			__bad_area_nosemaphore(regs, error_code, address);
 			return;
 		}
 retry:
@@ -254,7 +191,7 @@ static __always_inline void handle_page_fault(struct pt_regs *regs,
 					      unsigned long error_code,
 					      unsigned long address)
 {
-	if (unlikely(fault_in_kernel_space(address))) {
+	if (unlikely(address >= TASK_SIZE_MAX)) {
 		do_kern_addr_fault(regs, error_code, address);
 	} else {
 		do_user_addr_fault(regs, error_code, address);

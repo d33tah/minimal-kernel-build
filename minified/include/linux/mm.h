@@ -429,14 +429,6 @@ extern void __init mmap_init(void);
 
 extern void setup_per_cpu_pageset(void);
 
-static inline void vma_interval_tree_insert(struct vm_area_struct *node,
-					    struct rb_root_cached *root) { }
-static inline void vma_interval_tree_remove(struct vm_area_struct *node,
-					    struct rb_root_cached *root) { }
-static inline void anon_vma_interval_tree_insert(struct anon_vma_chain *node,
-						 struct rb_root_cached *root) { }
-static inline void anon_vma_interval_tree_remove(struct anon_vma_chain *node,
-						 struct rb_root_cached *root) { }
 
 extern int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin);
 extern int __vma_adjust(struct vm_area_struct *vma, unsigned long start,

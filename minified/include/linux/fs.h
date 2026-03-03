@@ -354,20 +354,8 @@ struct address_space {
 	struct xarray		i_pages;
 	struct rw_semaphore	invalidate_lock;
 	gfp_t			gfp_mask;
-	struct rb_root_cached	i_mmap;
-	struct rw_semaphore	i_mmap_rwsem;
 	const struct address_space_operations *a_ops;
 } __attribute__((aligned(sizeof(long)))) __randomize_layout;
-
-static inline void i_mmap_lock_write(struct address_space *mapping)
-{
-	down_write(&mapping->i_mmap_rwsem);
-}
-
-static inline void i_mmap_unlock_write(struct address_space *mapping)
-{
-	up_write(&mapping->i_mmap_rwsem);
-}
 
 struct inode {
 	umode_t			i_mode;

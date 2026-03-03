@@ -4,16 +4,11 @@
 # (This file is not included when SRCARCH=um since UML does not support UAPI.)
 
 mandatory-y += bitsperlong.h
-mandatory-y += byteorder.h
 mandatory-y += errno.h
-mandatory-y += fcntl.h
 mandatory-y += mman.h
 mandatory-y += param.h
 mandatory-y += posix_types.h
 mandatory-y += ptrace.h
 mandatory-y += setup.h
-mandatory-y += sigcontext.h
 mandatory-y += signal.h
-mandatory-y += statfs.h
 mandatory-y += types.h
-mandatory-y += unistd.h

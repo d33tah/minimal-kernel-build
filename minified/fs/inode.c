@@ -65,8 +65,6 @@ static void inode_init_once(struct inode *inode)
 	memset(inode, 0, sizeof(*inode));
 	INIT_LIST_HEAD(&inode->i_lru);
 	xa_init_flags(&mapping->i_pages, XA_FLAGS_LOCK_IRQ | XA_FLAGS_ACCOUNT);
-	init_rwsem(&mapping->i_mmap_rwsem);
-	mapping->i_mmap = RB_ROOT_CACHED;
 }
 
 static void init_once(void *foo)

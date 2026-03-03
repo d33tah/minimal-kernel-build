@@ -38,14 +38,6 @@ pgprot_t protection_map[16] __ro_after_init = {
 
 void unlink_file_vma(struct vm_area_struct *vma)
 {
-	struct file *file = vma->vm_file;
-
-	if (file) {
-		struct address_space *mapping = file->f_mapping;
-		i_mmap_lock_write(mapping);
-		vma_interval_tree_remove(vma, &mapping->i_mmap);
-		i_mmap_unlock_write(mapping);
-	}
 }
 
 static struct vm_area_struct *remove_vma(struct vm_area_struct *vma)
@@ -129,27 +121,8 @@ static void vma_link(struct mm_struct *mm, struct vm_area_struct *vma,
 		     struct vm_area_struct *prev, struct rb_node **rb_link,
 		     struct rb_node *rb_parent)
 {
-	struct address_space *mapping = NULL;
-	struct file *file;
-
-	if (vma->vm_file) {
-		mapping = vma->vm_file->f_mapping;
-		i_mmap_lock_write(mapping);
-	}
-
 	__vma_link_list(mm, vma, prev);
 	__vma_link_rb(mm, vma, rb_link, rb_parent);
-
-	file = vma->vm_file;
-	if (file) {
-		struct address_space *file_mapping = file->f_mapping;
-
-		vma_interval_tree_insert(vma, &file_mapping->i_mmap);
-	}
-
-	if (mapping)
-		i_mmap_unlock_write(mapping);
-
 	mm->map_count++;
 }
 
@@ -374,45 +347,25 @@ static int expand_downwards(struct vm_area_struct *vma, unsigned long address)
 		return -EPERM;
 
 	prev = vma->vm_prev;
-
 	if (prev && !(prev->vm_flags & VM_GROWSDOWN) &&
-	    vma_is_accessible(prev)) {
-		if (address - prev->vm_end < stack_guard_gap)
-			return -ENOMEM;
-	}
+	    vma_is_accessible(prev) && address - prev->vm_end < stack_guard_gap)
+		return -ENOMEM;
 
 	if (unlikely(anon_vma_prepare(vma)))
 		return -ENOMEM;
 
 	anon_vma_lock_write(vma->anon_vma);
-
 	if (address < vma->vm_start) {
-		unsigned long size, grow;
-
-		size = vma->vm_end - address;
-		grow = (vma->vm_start - address) >> PAGE_SHIFT;
+		unsigned long size = vma->vm_end - address;
+		unsigned long grow = (vma->vm_start - address) >> PAGE_SHIFT;
 
 		error = -ENOMEM;
 		if (grow <= vma->vm_pgoff && size <= rlimit(RLIMIT_STACK) &&
 		    !security_vm_enough_memory_mm(mm, grow)) {
 			error = 0;
 			spin_lock(&mm->page_table_lock);
-			{
-				struct anon_vma_chain *avc;
-				list_for_each_entry(avc, &vma->anon_vma_chain,
-						    same_vma)
-					anon_vma_interval_tree_remove(
-						avc, &avc->anon_vma->rb_root);
-			}
 			vma->vm_start = address;
 			vma->vm_pgoff -= grow;
-			{
-				struct anon_vma_chain *avc;
-				list_for_each_entry(avc, &vma->anon_vma_chain,
-						    same_vma)
-					anon_vma_interval_tree_insert(
-						avc, &avc->anon_vma->rb_root);
-			}
 			vma_gap_update(vma);
 			spin_unlock(&mm->page_table_lock);
 		}

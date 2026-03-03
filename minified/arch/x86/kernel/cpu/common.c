@@ -27,45 +27,18 @@ DEFINE_PER_CPU_PAGE_ALIGNED(
 			      [GDT_ENTRY_DEFAULT_USER_DS] =
 				      GDT_ENTRY_INIT(0xc0f2, 0, 0xfffff),
 
-			      [GDT_ENTRY_ESPFIX_SS] = GDT_ENTRY_INIT(0xc092, 0,
-								     0xfffff),
 			      [GDT_ENTRY_PERCPU] = GDT_ENTRY_INIT(0xc092, 0,
 								  0xfffff),
 		      } };
 
-static const unsigned long cr4_pinned_mask = X86_CR4_SMEP | X86_CR4_SMAP |
-					     X86_CR4_UMIP | X86_CR4_FSGSBASE |
-					     X86_CR4_CET;
-static DEFINE_STATIC_KEY_FALSE_RO(cr_pinning);
-static unsigned long cr4_pinned_bits __ro_after_init;
-
 void native_write_cr0(unsigned long val)
 {
-	unsigned long bits_missing = 0;
-
-set_register:
 	asm volatile("mov %0,%%cr0" : "+r"(val) : : "memory");
-
-	if (static_branch_likely(&cr_pinning)) {
-		if (unlikely((val & X86_CR0_WP) != X86_CR0_WP)) {
-			bits_missing = X86_CR0_WP;
-			val |= bits_missing;
-			goto set_register;
-		}
-	}
 }
 
 void __no_profile native_write_cr4(unsigned long val)
 {
-set_register:
 	asm volatile("mov %0,%%cr4" : "+r"(val) : : "memory");
-
-	if (static_branch_likely(&cr_pinning)) {
-		if (unlikely((val & cr4_pinned_mask) != cr4_pinned_bits)) {
-			val = (val & ~cr4_pinned_mask) | cr4_pinned_bits;
-			goto set_register;
-		}
-	}
 }
 
 void cr4_update_irqsoff(unsigned long set, unsigned long clear)
@@ -130,11 +103,6 @@ static void cpu_detect(struct cpuinfo_x86 *c)
 		c->x86 = x86_family(tfms);
 		c->x86_model = x86_model(tfms);
 		c->x86_stepping = x86_stepping(tfms);
-
-		if (cap0 & (1 << 19)) {
-			c->x86_clflush_size = ((misc >> 8) & 0xff) * 8;
-			c->x86_cache_alignment = c->x86_clflush_size;
-		}
 	}
 }
 
@@ -159,7 +127,6 @@ static void get_cpu_cap(struct cpuinfo_x86 *c)
 		c->x86_capability[CPUID_1_EDX] = edx;
 	}
 
-	c->extended_cpuid_level = cpuid_eax(0x80000000);
 	apply_forced_caps(c);
 }
 
@@ -173,7 +140,6 @@ void __init early_cpu_init(void)
 		c->x86_cache_alignment = c->x86_clflush_size;
 
 		memset(&c->x86_capability, 0, sizeof(c->x86_capability));
-		c->extended_cpuid_level = 0;
 
 		cpu_detect(c);
 		get_cpu_cap(c);
@@ -191,35 +157,10 @@ void __init early_cpu_init(void)
 	}
 }
 
-static void identify_cpu(struct cpuinfo_x86 *c)
-{
-	c->loops_per_jiffy = loops_per_jiffy;
-	c->x86_vendor = X86_VENDOR_UNKNOWN;
-	c->x86_model = c->x86_stepping = 0;
-	c->x86_vendor_id[0] = '\0';
-	c->cpuid_level = -1;
-	c->x86_clflush_size = 32;
-	c->x86_phys_bits = 32;
-	c->x86_cache_alignment = c->x86_clflush_size;
-	memset(&c->x86_capability, 0, sizeof(c->x86_capability));
-
-	c->extended_cpuid_level = 0;
-	cpu_detect(c);
-	get_cpu_cap(c);
-	set_cpu_bug(c, X86_BUG_ESPFIX);
-	apply_forced_caps(c);
-	cr4_clear_bits(X86_CR4_UMIP);
-	apply_forced_caps(c);
-	select_idle_routine(c);
-}
-
 static void __init identify_boot_cpu(void)
 {
-	identify_cpu(&boot_cpu_data);
-	/* HAS_KERNEL_IBT is 0 */
-	/* sysenter_setup: no-op, VDSO disabled */
-	cr4_pinned_bits = this_cpu_read(cpu_tlbstate.cr4) & cr4_pinned_mask;
-	static_key_enable(&cr_pinning.key);
+	boot_cpu_data.loops_per_jiffy = loops_per_jiffy;
+	select_idle_routine(&boot_cpu_data);
 }
 
 /* inlined from bugs.c */

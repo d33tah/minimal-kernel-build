@@ -57,15 +57,11 @@ set_register:
 
 void __no_profile native_write_cr4(unsigned long val)
 {
-	unsigned long bits_changed = 0;
-
 set_register:
 	asm volatile("mov %0,%%cr4" : "+r"(val) : : "memory");
 
 	if (static_branch_likely(&cr_pinning)) {
 		if (unlikely((val & cr4_pinned_mask) != cr4_pinned_bits)) {
-			bits_changed = (val & cr4_pinned_mask) ^
-				       cr4_pinned_bits;
 			val = (val & ~cr4_pinned_mask) | cr4_pinned_bits;
 			goto set_register;
 		}

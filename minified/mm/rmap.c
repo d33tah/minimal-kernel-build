@@ -15,6 +15,7 @@ int __anon_vma_prepare(struct vm_area_struct *vma)
 	if (!anon_vma)
 		return -ENOMEM;
 	atomic_set(&anon_vma->refcount, 1);
+	init_rwsem(&anon_vma->rwsem);
 	vma->anon_vma = anon_vma;
 	return 0;
 }
@@ -23,18 +24,11 @@ void unlink_anon_vmas(struct vm_area_struct *vma)
 {
 }
 
-static void anon_vma_ctor(void *data)
-{
-	struct anon_vma *anon_vma = data;
-	init_rwsem(&anon_vma->rwsem);
-}
-
 void __init anon_vma_init(void)
 {
 	anon_vma_cachep = kmem_cache_create(
 		"anon_vma", sizeof(struct anon_vma), 0,
-		SLAB_TYPESAFE_BY_RCU | SLAB_PANIC | SLAB_ACCOUNT,
-		anon_vma_ctor);
+		SLAB_TYPESAFE_BY_RCU | SLAB_PANIC | SLAB_ACCOUNT, NULL);
 }
 
 void page_add_new_anon_rmap(struct page *page, struct vm_area_struct *vma,

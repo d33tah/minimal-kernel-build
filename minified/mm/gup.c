@@ -147,10 +147,6 @@ static long __get_user_pages(struct mm_struct *mm, unsigned long start,
 		}
 retry:
 
-		if (fatal_signal_pending(current)) {
-			ret = -EINTR;
-			goto out;
-		}
 		cond_resched();
 
 		page = follow_page_mask(vma, start, foll_flags, &ctx);
@@ -171,24 +167,13 @@ retry:
 			fault_ret =
 				handle_mm_fault(vma, start, fault_flags, NULL);
 			if (fault_ret & VM_FAULT_ERROR) {
-				if (fault_ret & VM_FAULT_OOM) {
-					ret = -ENOMEM;
-					goto out;
-				}
-				if (fault_ret &
-				    (VM_FAULT_HWPOISON |
-				     VM_FAULT_HWPOISON_LARGE | VM_FAULT_SIGBUS |
-				     VM_FAULT_SIGSEGV)) {
-					ret = -EFAULT;
-					goto out;
-				}
-				BUG();
+				ret = -EFAULT;
+				goto out;
 			}
 
 			if (fault_ret & VM_FAULT_RETRY) {
 				if (locked)
 					*locked = 0;
-				/* -EBUSY case: ret = 0 and exit */
 				goto out;
 			}
 

@@ -175,8 +175,6 @@ out_unlock:
 
 static struct file *do_open_execat(int fd, struct filename *name, int flags)
 {
-	struct file *file;
-	int err;
 	struct open_flags open_exec_flags = {
 		.open_flag = O_LARGEFILE | O_RDONLY | __FMODE_EXEC,
 		.acc_mode = MAY_EXEC,
@@ -184,24 +182,7 @@ static struct file *do_open_execat(int fd, struct filename *name, int flags)
 		.lookup_flags = LOOKUP_FOLLOW,
 	};
 
-	file = do_filp_open(fd, name, &open_exec_flags);
-	if (IS_ERR(file))
-		goto out;
-
-	err = -EACCES;
-	if (!S_ISREG(file_inode(file)->i_mode) || path_noexec(&file->f_path))
-		goto exit;
-
-	err = deny_write_access(file);
-	if (err)
-		goto exit;
-
-out:
-	return file;
-
-exit:
-	fput(file);
-	return ERR_PTR(err);
+	return do_filp_open(fd, name, &open_exec_flags);
 }
 
 void __set_task_comm(struct task_struct *tsk, const char *buf, bool exec)
@@ -229,19 +210,10 @@ int begin_new_exec(struct linux_binprm *bprm)
 	{
 		struct mm_struct *mm = bprm->mm;
 		struct task_struct *tsk = current;
-		struct mm_struct *old_mm = current->mm, *active_mm;
+		struct mm_struct *active_mm;
 
-		deactivate_mm(tsk, old_mm);
-		retval = down_write_killable(&tsk->signal->exec_update_lock);
-		if (retval)
-			goto out;
-		if (old_mm) {
-			retval = mmap_read_lock_killable(old_mm);
-			if (retval) {
-				up_write(&tsk->signal->exec_update_lock);
-				goto out;
-			}
-		}
+		deactivate_mm(tsk, NULL);
+		down_write(&tsk->signal->exec_update_lock);
 		task_lock(tsk);
 		local_irq_disable();
 		active_mm = tsk->active_mm;
@@ -250,12 +222,7 @@ int begin_new_exec(struct linux_binprm *bprm)
 		local_irq_enable();
 		activate_mm(active_mm, mm);
 		task_unlock(tsk);
-		if (old_mm) {
-			mmap_read_unlock(old_mm);
-			mmput(old_mm);
-		} else {
-			mmdrop(active_mm);
-		}
+		mmdrop(active_mm);
 	}
 
 	bprm->mm = NULL;
@@ -293,10 +260,8 @@ static void free_bprm(struct linux_binprm *bprm)
 	}
 	if (bprm->cred)
 		put_cred(bprm->cred);
-	if (bprm->file) {
-		allow_write_access(bprm->file);
+	if (bprm->file)
 		fput(bprm->file);
-	}
 }
 
 static struct linux_binprm *alloc_bprm(int fd, struct filename *filename)
@@ -421,17 +386,9 @@ int kernel_execve(const char *kernel_filename, const char *const *argv,
 		goto out_ret;
 	}
 
-	retval = count_strings_kernel(argv);
-	if (retval == 0)
-		retval = -EINVAL;
-	if (retval < 0)
-		goto out_free;
-	bprm->argc = retval;
+	bprm->argc = count_strings_kernel(argv);
 
-	retval = count_strings_kernel(envp);
-	if (retval < 0)
-		goto out_free;
-	bprm->envc = retval;
+	bprm->envc = count_strings_kernel(envp);
 
 	bprm->argmin = bprm->p - PAGE_SIZE;
 

@@ -103,13 +103,8 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	atomic_set(&mm->tlb_flush_pending,
 		   0); /* init_tlb_flush_pending inlined */
 
-	if (current->mm) {
-		mm->flags = current->mm->flags & 0x7FF;
-		mm->def_flags = current->mm->def_flags & VM_INIT_DEF_MASK;
-	} else {
-		mm->flags = 0x8C;
-		mm->def_flags = 0;
-	}
+	mm->flags = 0x8C;
+	mm->def_flags = 0;
 
 	mm->pgd = pgd_alloc(mm);
 	if (unlikely(!mm->pgd)) {

@@ -5,8 +5,6 @@
 #include <linux/string.h>
 #include <linux/compiler.h>
 #include <asm/page.h>
-extern void early_ioremap_init(void);
-static inline void early_ioremap_setup(void) {}
 static inline void early_ioremap_reset(void) {}
 #include <asm/pgtable_types.h>
 #define BUILDIO(bwl, bw, type)						\

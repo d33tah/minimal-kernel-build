@@ -34,8 +34,6 @@ struct cpuinfo_x86 boot_cpu_data __read_mostly;
 
 __visible unsigned long mmu_cr4_features __ro_after_init;
 
-struct screen_info screen_info;
-
 static char __initdata command_line[COMMAND_LINE_SIZE];
 
 void *__init extend_brk(size_t size, size_t align)
@@ -95,10 +93,7 @@ void __init setup_arch(char **cmdline_p)
 	idt_setup_early_traps();
 	early_cpu_init();
 	jump_label_init();
-	early_ioremap_init();
-
 	ROOT_DEV = old_decode_dev(boot_params.hdr.root_dev);
-	screen_info = boot_params.screen_info;
 
 	memblock_reserve(__pa_symbol(_text),
 			 (unsigned long)__end_of_kernel_reserve -
@@ -120,24 +115,10 @@ void __init setup_arch(char **cmdline_p)
 	strscpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
 	*cmdline_p = command_line;
 
-	if (boot_cpu_has(X86_FEATURE_NX))
-		__supported_pte_mask |= _PAGE_NX;
-	else
-		__supported_pte_mask &= ~_PAGE_NX;
-
 	parse_early_param();
 
 	tsc_early_init();
 
-	{
-		u64 start = __pa_symbol(_text);
-		u64 size = __pa_symbol(_end) - start;
-		if (!e820__mapped_all(start, start + size, E820_TYPE_RAM)) {
-			pr_warn(".text .data .bss are not marked as E820_TYPE_RAM!\n");
-			e820__range_remove(start, size, E820_TYPE_RAM, 0);
-			e820__range_add(start, size, E820_TYPE_RAM);
-		}
-	}
 	e820__range_update(0, PAGE_SIZE, E820_TYPE_RAM, E820_TYPE_RESERVED);
 	e820__range_remove(BIOS_BEGIN, BIOS_END - BIOS_BEGIN, E820_TYPE_RAM, 1);
 	max_pfn = e820__end_of_ram_pfn();
@@ -153,9 +134,6 @@ void __init setup_arch(char **cmdline_p)
 
 	memblock_set_current_limit(ISA_END_ADDRESS);
 	e820__memblock_setup();
-
-	printk(KERN_DEBUG "initial memory mapped: [mem 0x00000000-%#010lx]\n",
-	       (max_pfn_mapped << PAGE_SHIFT) - 1);
 
 	memblock_reserve(0, SZ_1M);
 

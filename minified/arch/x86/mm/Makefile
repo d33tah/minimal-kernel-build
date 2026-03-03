@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
 
-obj-y := fault.o ioremap.o extable.o pgprot.o
+obj-y := fault.o extable.o pgprot.o
 
 mmu-$(CONFIG_MMU) := init.o init_$(BITS).o pgtable.o tlb.o cpu_entry_area.o
 

@@ -8,24 +8,6 @@ static struct e820_table e820_table_init __initdata;
 
 struct e820_table *e820_table __refdata = &e820_table_init;
 
-/* __e820__mapped_all merged into e820__mapped_all */
-bool __init e820__mapped_all(u64 start, u64 end, enum e820_type type)
-{
-	int i;
-	for (i = 0; i < e820_table->nr_entries; i++) {
-		struct e820_entry *entry = &e820_table->entries[i];
-		if (type && entry->type != type)
-			continue;
-		if (entry->addr >= end || entry->addr + entry->size <= start)
-			continue;
-		if (entry->addr <= start)
-			start = entry->addr + entry->size;
-		if (start >= end)
-			return true;
-	}
-	return false;
-}
-
 static void __init __e820__range_add(struct e820_table *table, u64 start,
 				     u64 size, enum e820_type type)
 {

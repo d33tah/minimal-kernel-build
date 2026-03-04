@@ -69,7 +69,6 @@ struct softirq_action
 	void	(*action)(struct softirq_action *);
 };
 
-asmlinkage void do_softirq(void);
 asmlinkage void __do_softirq(void);
 
 extern void open_softirq(int nr, void (*action)(struct softirq_action *));

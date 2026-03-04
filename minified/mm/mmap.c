@@ -9,6 +9,10 @@
 
 #include "internal.h"
 
+static unsigned long get_unmapped_area(struct file *, unsigned long,
+				       unsigned long, unsigned long,
+				       unsigned long);
+
 /* mmap_min_addr moved from security/min_addr.c */
 unsigned long mmap_min_addr = CONFIG_DEFAULT_MMAP_MIN_ADDR;
 
@@ -260,9 +264,9 @@ static unsigned long vm_unmapped_area(struct vm_unmapped_area_info *info)
 	return gap_start;
 }
 
-unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr,
-				     unsigned long len, unsigned long pgoff,
-				     unsigned long flags)
+static unsigned long
+arch_get_unmapped_area(struct file *filp, unsigned long addr, unsigned long len,
+		       unsigned long pgoff, unsigned long flags)
 {
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *vma;
@@ -291,9 +295,9 @@ unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr,
 	return vm_unmapped_area(&info);
 }
 
-unsigned long get_unmapped_area(struct file *file, unsigned long addr,
-				unsigned long len, unsigned long pgoff,
-				unsigned long flags)
+static unsigned long get_unmapped_area(struct file *file, unsigned long addr,
+				       unsigned long len, unsigned long pgoff,
+				       unsigned long flags)
 {
 	if (len > TASK_SIZE)
 		return -ENOMEM;

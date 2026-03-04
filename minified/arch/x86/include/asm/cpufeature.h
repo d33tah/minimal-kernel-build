@@ -135,8 +135,6 @@ t_no:
 		_static_cpu_has(bit)				\
 )
 
-#define set_cpu_bug(c, bit)		set_cpu_cap(c, (bit))
-
 #define static_cpu_has_bug(bit)		static_cpu_has((bit))
 
 #endif

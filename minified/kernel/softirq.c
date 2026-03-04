@@ -1,6 +1,7 @@
 
 #include <linux/interrupt.h>
 void do_softirq_own_stack(void);
+static asmlinkage __visible void do_softirq(void);
 
 #ifndef __ARCH_IRQ_STAT
 DEFINE_PER_CPU_ALIGNED(irq_cpustat_t, irq_stat);
@@ -18,7 +19,7 @@ void __local_bh_enable_ip(unsigned long ip, unsigned int cnt)
 	preempt_count_dec();
 }
 
-asmlinkage __visible void do_softirq(void)
+static asmlinkage __visible void do_softirq(void)
 {
 	__u32 pending;
 	unsigned long flags;

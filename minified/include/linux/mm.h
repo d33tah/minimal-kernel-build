@@ -121,7 +121,6 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_ACCOUNT	0x00100000
 
 #define VM_MIXEDMAP	0x10000000
-#define VM_NOHUGEPAGE	0x40000000
 
 
 #define VM_STACK_INCOMPLETE_SETUP	(0x00010000 | 0x00008000)
@@ -434,8 +433,6 @@ extern void unlink_file_vma(struct vm_area_struct *);
 extern void exit_mmap(struct mm_struct *);
 
 extern int set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file);
-
-extern unsigned long get_unmapped_area(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
 
 extern unsigned long do_mmap(struct file *file, unsigned long addr,
 	unsigned long len, unsigned long prot, unsigned long flags,

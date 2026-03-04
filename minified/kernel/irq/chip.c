@@ -2,6 +2,9 @@
 
 #include "internals.h"
 
+static void mask_irq(struct irq_desc *desc);
+static void unmask_irq(struct irq_desc *desc);
+
 int irq_startup(struct irq_desc *desc, bool resend, bool force)
 {
 	struct irq_data *d = irq_desc_get_irq_data(desc);
@@ -52,7 +55,7 @@ static inline void mask_ack_irq(struct irq_desc *desc)
 	}
 }
 
-void mask_irq(struct irq_desc *desc)
+static void mask_irq(struct irq_desc *desc)
 {
 	if (irqd_irq_masked(&desc->irq_data))
 		return;
@@ -63,7 +66,7 @@ void mask_irq(struct irq_desc *desc)
 	}
 }
 
-void unmask_irq(struct irq_desc *desc)
+static void unmask_irq(struct irq_desc *desc)
 {
 	if (!irqd_irq_masked(&desc->irq_data))
 		return;
@@ -96,24 +99,6 @@ out_unlock:
 	raw_spin_unlock(&desc->lock);
 }
 
-void __irq_set_handler(unsigned int irq, irq_flow_handler_t handle,
-		       const char *name)
-{
-	unsigned long flags;
-	struct irq_desc *desc = irq_get_desc_buslock(irq, &flags, 0);
-
-	if (!desc)
-		return;
-
-	if (!handle)
-		handle = handle_bad_irq;
-
-	desc->handle_irq = handle;
-	desc->name = name;
-
-	irq_put_desc_busunlock(desc, flags);
-}
-
 void irq_set_chip_and_handler_name(unsigned int irq,
 				   const struct irq_chip *chip,
 				   irq_flow_handler_t handle, const char *name)
@@ -121,9 +106,16 @@ void irq_set_chip_and_handler_name(unsigned int irq,
 	unsigned long flags;
 	struct irq_desc *desc = irq_get_desc_lock(irq, &flags, 0);
 
-	if (desc) {
-		desc->irq_data.chip = (struct irq_chip *)(chip ?: &no_irq_chip);
-		irq_put_desc_unlock(desc, flags);
-	}
-	__irq_set_handler(irq, handle, name);
+	if (!desc)
+		return;
+
+	desc->irq_data.chip = (struct irq_chip *)(chip ?: &no_irq_chip);
+
+	if (!handle)
+		handle = handle_bad_irq;
+
+	desc->handle_irq = handle;
+	desc->name = name;
+
+	irq_put_desc_unlock(desc, flags);
 }

@@ -117,8 +117,4 @@ static inline void irq_set_chip_and_handler(unsigned int irq,
 	irq_set_chip_and_handler_name(irq, chip, handle, NULL);
 }
 
-extern void
-__irq_set_handler(unsigned int irq, irq_flow_handler_t handle,
-		  const char *name);
-
-#endif  
+#endif

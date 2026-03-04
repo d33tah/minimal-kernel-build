@@ -9,7 +9,7 @@
 #define XFEATURE_MASK_USER_DYNAMIC XFEATURE_MASK_XTILE_DATA
 #define XFEATURE_MASK_FPSTATE 0x4FF
 
-void restore_fpregs_from_fpstate(struct fpstate *fpstate, u64 mask);
+static void restore_fpregs_from_fpstate(struct fpstate *fpstate, u64 mask);
 
 static inline int fpregs_state_valid(struct fpu *fpu, unsigned int cpu)
 {
@@ -136,7 +136,7 @@ void save_fpregs_to_fpstate(struct fpu *fpu)
 	frstor(&fpu->fpstate->regs.fsave);
 }
 
-void restore_fpregs_from_fpstate(struct fpstate *fpstate, u64 mask)
+static void restore_fpregs_from_fpstate(struct fpstate *fpstate, u64 mask)
 {
 	if (unlikely(static_cpu_has_bug(X86_BUG_FXSAVE_LEAK))) {
 		asm volatile("fnclex\n\t"

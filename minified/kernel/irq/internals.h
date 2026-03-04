@@ -30,8 +30,6 @@ extern int irq_activate(struct irq_desc *desc);
 extern int irq_startup(struct irq_desc *desc, bool resend, bool force);
 
 extern void irq_enable(struct irq_desc *desc);
-extern void mask_irq(struct irq_desc *desc);
-extern void unmask_irq(struct irq_desc *desc);
 
 irqreturn_t handle_irq_event(struct irq_desc *desc);
 

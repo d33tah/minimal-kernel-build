@@ -68,17 +68,4 @@ static inline void do_write_seqcount_invalidate(seqcount_t *s)
 	s->sequence += 2;
 }
 
-typedef struct {
-	seqcount_t seqcount;
-} seqcount_latch_t;
-
-#define seqcount_latch_init(s) seqcount_init(&(s)->seqcount)
-
-static inline void raw_write_seqcount_latch(seqcount_latch_t *s)
-{
-	smp_wmb();
-	s->seqcount.sequence++;
-	smp_wmb();
-}
-
 #endif

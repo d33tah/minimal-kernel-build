@@ -26,12 +26,6 @@ do {								\
 __printf(1, 2)
 void panic(const char *fmt, ...) __noreturn __cold;
 #define PANIC_CPU_INVALID	-1
-#define TAINT_DIE			7
-enum lockdep_ok {
-	LOCKDEP_STILL_OK,
-	LOCKDEP_NOW_UNRELIABLE,
-};
-extern void add_taint(unsigned flag, enum lockdep_ok);
 #endif /* _LINUX_PANIC_H */
 #include <linux/printk.h>
 

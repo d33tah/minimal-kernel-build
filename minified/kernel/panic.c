@@ -36,12 +36,6 @@ void panic(const char *fmt, ...)
 		cpu_relax();
 }
 
-void add_taint(unsigned flag, enum lockdep_ok lockdep_ok)
-{
-	if (lockdep_ok == LOCKDEP_NOW_UNRELIABLE)
-		__debug_locks_off();
-}
-
 /* Merged from lib/debug_locks.c */
 int debug_locks_off(void)
 {

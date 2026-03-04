@@ -441,11 +441,6 @@ static inline struct file *get_file(struct file *f)
 /* 32-bit only kernel */
 #define MAX_LFS_FILESIZE	((loff_t)ULONG_MAX << PAGE_SHIFT)
 
-static inline struct inode *file_inode(const struct file *f)
-{
-	return f->f_inode;
-}
-
 #define SB_KERNMOUNT	(1<<22)
 #define SB_BORN		(1<<29)
 #define SB_ACTIVE	(1<<30)

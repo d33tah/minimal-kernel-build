@@ -58,7 +58,6 @@ struct cpuinfo_x86 {
 } __randomize_layout;
 
 #define X86_VENDOR_INTEL	0
-#define X86_VENDOR_UNKNOWN	0xff
 
 extern struct cpuinfo_x86	boot_cpu_data;
 extern struct cpuinfo_x86	new_cpu_data;
@@ -183,15 +182,6 @@ static inline void cpuid(unsigned int op,
 	*eax = op;
 	*ecx = 0;
 	__cpuid(eax, ebx, ecx, edx);
-}
-
-static inline unsigned int cpuid_eax(unsigned int op)
-{
-	unsigned int eax, ebx, ecx, edx;
-
-	cpuid(op, &eax, &ebx, &ecx, &edx);
-
-	return eax;
 }
 
 extern void select_idle_routine(const struct cpuinfo_x86 *c);

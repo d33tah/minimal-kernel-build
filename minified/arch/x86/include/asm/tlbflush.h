@@ -10,14 +10,6 @@
 #include <asm/special_insns.h>
 #include <asm/processor-flags.h>
 
-static inline void __invpcid(unsigned long pcid, unsigned long addr, unsigned long type)
-{
-	struct { u64 d[2]; } desc = { { pcid, addr } };
-	asm volatile("invpcid %[desc], %[type]" :: [desc] "m" (desc), [type] "r" (type) : "memory");
-}
-#define INVPCID_TYPE_ALL_INCL_GLOBAL	2
-static inline void invpcid_flush_all(void) { __invpcid(0, 0, INVPCID_TYPE_ALL_INCL_GLOBAL); }
-
 void __flush_tlb_all(void);
 
 #define TLB_FLUSH_ALL	-1UL
@@ -106,9 +98,4 @@ static inline u64 inc_mm_tlb_gen(struct mm_struct *mm)
 
 #endif  
 
-static inline void __native_tlb_flush_global(unsigned long cr4)
-{
-	native_write_cr4(cr4 ^ X86_CR4_PGE);
-	native_write_cr4(cr4);
-}
-#endif  
+#endif

@@ -9,20 +9,7 @@ struct dentry *simple_lookup(struct inode *dir, struct dentry *dentry,
 	return NULL;
 }
 
-static int dcache_dir_open(struct inode *inode, struct file *file)
-{
-	return -ENOMEM;
-}
-
-static int dcache_dir_close(struct inode *inode, struct file *file)
-{
-	return 0;
-}
-
-const struct file_operations simple_dir_operations = {
-	.open = dcache_dir_open,
-	.release = dcache_dir_close,
-};
+const struct file_operations simple_dir_operations = {};
 
 static int simple_read_folio(struct file *file, struct folio *folio)
 {

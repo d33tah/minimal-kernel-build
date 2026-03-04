@@ -4,7 +4,6 @@
 
 #define STATIC_NOPV static
 #define __flush_tlb_local native_flush_tlb_local
-#define __flush_tlb_global native_flush_tlb_global
 #define __flush_tlb_one_user(addr) native_flush_tlb_one_user(addr)
 
 atomic64_t last_mm_ctx_id = ATOMIC64_INIT(1);
@@ -92,20 +91,6 @@ void flush_tlb_one_user(unsigned long addr)
 	__flush_tlb_one_user(addr);
 }
 
-STATIC_NOPV void native_flush_tlb_global(void)
-{
-	unsigned long flags;
-
-	if (static_cpu_has(X86_FEATURE_INVPCID)) {
-		invpcid_flush_all();
-		return;
-	}
-
-	raw_local_irq_save(flags);
-	__native_tlb_flush_global(this_cpu_read(cpu_tlbstate.cr4));
-	raw_local_irq_restore(flags);
-}
-
 STATIC_NOPV void native_flush_tlb_local(void)
 {
 	native_write_cr3(__native_read_cr3());
@@ -118,8 +103,5 @@ void flush_tlb_local(void)
 
 void __flush_tlb_all(void)
 {
-	if (boot_cpu_has(X86_FEATURE_PGE))
-		__flush_tlb_global();
-	else
-		flush_tlb_local();
+	flush_tlb_local();
 }

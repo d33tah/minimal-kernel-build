@@ -1,4 +1,5 @@
 #include <asm/kdebug.h>
+#include <linux/mutex.h>
 #ifndef NOKPROBE_SYMBOL
 #define NOKPROBE_SYMBOL(fname) /* kprobes disabled */
 #endif

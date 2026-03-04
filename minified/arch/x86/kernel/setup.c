@@ -1,4 +1,5 @@
 #include <asm/sections.h>
+#include <linux/timex.h>
 
 extern unsigned long initrd_start, initrd_end;
 extern phys_addr_t phys_initrd_start;

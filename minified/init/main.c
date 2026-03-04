@@ -54,13 +54,6 @@ const char *envp_init[MAX_INIT_ENVS + 2] = {
 };
 unsigned long loops_per_jiffy = (1 << 12);
 
-static bool srcu_init_done;
-
-static void __init srcu_init(void)
-{
-	srcu_init_done = true;
-}
-
 static __initdata DECLARE_COMPLETION(kthreadd_done);
 
 static noinline void __ref rest_init(void)
@@ -146,7 +139,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	early_irq_init();
 	init_IRQ();
-	srcu_init();
 	timekeeping_init();
 
 	WARN(!irqs_disabled(), "Interrupts were enabled early\n");

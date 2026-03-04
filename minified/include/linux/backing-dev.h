@@ -3,8 +3,6 @@
 #include <linux/fs.h>
 #include <linux/device.h>
 #include <linux/spinlock.h>
-#include <linux/percpu_counter.h>
-#include <linux/workqueue.h>
 
 struct device;
 

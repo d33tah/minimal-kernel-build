@@ -23,7 +23,6 @@
 #include <linux/numa.h>
 #include <generated/bounds.h>
 
-#include <linux/workqueue.h>
 #include <linux/seqlock.h>
 
 #include <asm/mmu.h>

@@ -458,7 +458,6 @@ struct super_block {
 	struct list_lru		s_dentry_lru;
 	struct list_lru		s_inode_lru;
 	struct rcu_head		rcu;
-	struct work_struct	destroy_work;
 
 	spinlock_t		s_inode_list_lock ____cacheline_aligned_in_smp;
 	struct list_head	s_inodes;

@@ -3,7 +3,6 @@
 #define _ASM_X86_KDEBUG_H
 
 #include <linux/rwsem.h>
-#include <linux/srcu.h>
 
 struct pt_regs;
 

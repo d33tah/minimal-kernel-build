@@ -5,9 +5,6 @@
 #include <asm/irq.h>
 #include <asm/io.h>
 #include <asm/x86_init.h>
-#include <linux/seqlock.h>
-#define INTEL_FAM6_ATOM_GOLDMONT 0x5C
-#define INTEL_FAM6_ATOM_GOLDMONT_D 0x5F
 #include <asm/i8259.h>
 
 unsigned int __read_mostly cpu_khz;
@@ -18,50 +15,14 @@ unsigned int __read_mostly tsc_khz;
 
 static DEFINE_STATIC_KEY_FALSE(__use_tsc);
 
-struct cyc2ns {
-	struct cyc2ns_data data[2];
-	seqcount_latch_t seq;
-};
-
-static DEFINE_PER_CPU_ALIGNED(struct cyc2ns, cyc2ns);
-
-static __always_inline void cyc2ns_read_begin(struct cyc2ns_data *data)
-{
-	int seq, idx;
-
-	preempt_disable_notrace();
-
-	do {
-		seq = this_cpu_read(cyc2ns.seq.seqcount.sequence);
-		idx = seq & 1;
-
-		data->cyc2ns_offset =
-			this_cpu_read(cyc2ns.data[idx].cyc2ns_offset);
-		data->cyc2ns_mul = this_cpu_read(cyc2ns.data[idx].cyc2ns_mul);
-		data->cyc2ns_shift =
-			this_cpu_read(cyc2ns.data[idx].cyc2ns_shift);
-
-	} while (unlikely(seq != this_cpu_read(cyc2ns.seq.seqcount.sequence)));
-}
-
-static __always_inline void cyc2ns_read_end(void)
-{
-	preempt_enable_notrace();
-}
+static DEFINE_PER_CPU_ALIGNED(struct cyc2ns_data, cyc2ns);
 
 static __always_inline unsigned long long cycles_2_ns(unsigned long long cyc)
 {
-	struct cyc2ns_data data;
-	unsigned long long ns;
+	struct cyc2ns_data *data = this_cpu_ptr(&cyc2ns);
 
-	cyc2ns_read_begin(&data);
-
-	ns = data.cyc2ns_offset;
-	ns += mul_u64_u32_shr(cyc, data.cyc2ns_mul, data.cyc2ns_shift);
-
-	cyc2ns_read_end();
-
-	return ns;
+	return data->cyc2ns_offset +
+	       mul_u64_u32_shr(cyc, data->cyc2ns_mul, data->cyc2ns_shift);
 }
 
 u64 native_sched_clock(void)
@@ -103,7 +64,6 @@ unsigned long native_calibrate_cpu_early(void)
 void __init tsc_early_init(void)
 {
 	u64 lpj;
-	struct cyc2ns *c2n;
 
 	if (!boot_cpu_has(X86_FEATURE_TSC))
 		return;
@@ -131,29 +91,18 @@ void __init tsc_early_init(void)
 	loops_per_jiffy = lpj;
 	use_tsc_delay();
 
-	c2n = this_cpu_ptr(&cyc2ns);
-	seqcount_latch_init(&c2n->seq);
 	{
+		struct cyc2ns_data *c2n = this_cpu_ptr(&cyc2ns);
 		unsigned long long tsc_now = rdtsc();
-		unsigned long long ns_now = cycles_2_ns(tsc_now);
-		struct cyc2ns_data data;
 
-		clocks_calc_mult_shift(&data.cyc2ns_mul, &data.cyc2ns_shift,
+		clocks_calc_mult_shift(&c2n->cyc2ns_mul, &c2n->cyc2ns_shift,
 				       tsc_khz, NSEC_PER_MSEC, 0);
-
-		if (data.cyc2ns_shift == 32) {
-			data.cyc2ns_shift = 31;
-			data.cyc2ns_mul >>= 1;
+		if (c2n->cyc2ns_shift == 32) {
+			c2n->cyc2ns_shift = 31;
+			c2n->cyc2ns_mul >>= 1;
 		}
-
-		data.cyc2ns_offset =
-			ns_now - mul_u64_u32_shr(tsc_now, data.cyc2ns_mul,
-						 data.cyc2ns_shift);
-
-		raw_write_seqcount_latch(&c2n->seq);
-		c2n->data[0] = data;
-		raw_write_seqcount_latch(&c2n->seq);
-		c2n->data[1] = data;
+		c2n->cyc2ns_offset = -mul_u64_u32_shr(tsc_now, c2n->cyc2ns_mul,
+						      c2n->cyc2ns_shift);
 	}
 	static_branch_enable(&__use_tsc);
 }

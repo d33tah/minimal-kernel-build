@@ -59,9 +59,6 @@ void page_add_new_anon_rmap(struct page *, struct vm_area_struct *,
 
 #define GFP_SLAB_BUG_MASK (__GFP_DMA32|__GFP_HIGHMEM|~__GFP_BITS_MASK)
 
-void free_pgtables(struct mmu_gather *tlb, struct vm_area_struct *start_vma,
-		unsigned long floor, unsigned long ceiling);
-
 static inline void set_page_refcounted(struct page *page)
 {
 	VM_BUG_ON_PAGE(page_ref_count(page), page);

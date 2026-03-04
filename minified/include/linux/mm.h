@@ -343,9 +343,6 @@ static inline void __lruvec_stat_mod_folio(struct folio *folio,
 struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 			     pte_t pte);
 
-void unmap_vmas(struct mmu_gather *tlb, struct vm_area_struct *start_vma,
-		unsigned long start, unsigned long end);
-
 void free_pgd_range(struct mmu_gather *tlb, unsigned long addr,
 		unsigned long end, unsigned long floor, unsigned long ceiling);
 
@@ -419,7 +416,6 @@ extern void __init mmap_init(void);
 extern void setup_per_cpu_pageset(void);
 
 
-extern int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin);
 extern int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
 	unsigned long end, pgoff_t pgoff, struct vm_area_struct *insert,
 	struct vm_area_struct *expand);
@@ -429,7 +425,6 @@ static inline int vma_adjust(struct vm_area_struct *vma, unsigned long start,
 	return __vma_adjust(vma, start, end, pgoff, insert, NULL);
 }
 extern int insert_vm_struct(struct mm_struct *, struct vm_area_struct *);
-extern void unlink_file_vma(struct vm_area_struct *);
 extern void exit_mmap(struct mm_struct *);
 
 extern int set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file);

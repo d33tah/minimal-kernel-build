@@ -64,24 +64,6 @@ static inline struct hlist_bl_node *hlist_bl_first(struct hlist_bl_head *h)
 		((unsigned long)h->first & ~LIST_BL_LOCKMASK);
 }
 
-static inline bool hlist_bl_empty(const struct hlist_bl_head *h)
-{
-	return !((unsigned long)READ_ONCE(h->first) & ~LIST_BL_LOCKMASK);
-}
-
-static inline void __hlist_bl_del(struct hlist_bl_node *n)
-{
-	struct hlist_bl_node *next = n->next;
-	struct hlist_bl_node **pprev = n->pprev;
-
-	WRITE_ONCE(*pprev,
-		   (struct hlist_bl_node *)
-			((unsigned long)next |
-			 ((unsigned long)*pprev & LIST_BL_LOCKMASK)));
-	if (next)
-		next->pprev = pprev;
-}
-
 static inline void hlist_bl_lock(struct hlist_bl_head *b)
 {
 	bit_spin_lock(0, (unsigned long *)b);
@@ -150,7 +132,6 @@ static inline u32 hash_ptr(const void *ptr, unsigned int bits)
 #define hashlen_len(hashlen)  ((u32)((hashlen) >> 32))
 #define hashlen_create(hash, len) ((u64)(len)<<32 | (u32)(hash))
 
-#define IS_ROOT(x) ((x) == (x)->d_parent)
 
 struct qstr {
 	union {
@@ -195,7 +176,6 @@ struct dentry {
 	} d_u;
 } __randomize_layout;
 
-#define DCACHE_DENTRY_KILLED		0x00008000
 
 #define DCACHE_ENTRY_TYPE		0x00700000
 #define DCACHE_MISS_TYPE		0x00000000

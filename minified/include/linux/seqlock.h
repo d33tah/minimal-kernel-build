@@ -59,13 +59,4 @@ static inline void do_raw_write_seqcount_end(seqcount_t *s)
 #define write_seqcount_begin(s) do_raw_write_seqcount_begin(seqprop_ptr(s))
 #define write_seqcount_end(s) do_raw_write_seqcount_end(seqprop_ptr(s))
 
-#define write_seqcount_invalidate(s) \
-	do_write_seqcount_invalidate(seqprop_ptr(s))
-
-static inline void do_write_seqcount_invalidate(seqcount_t *s)
-{
-	smp_wmb();
-	s->sequence += 2;
-}
-
 #endif

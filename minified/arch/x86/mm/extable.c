@@ -100,5 +100,5 @@ void __init early_fixup_exception(struct pt_regs *regs, int trapnr)
 fail:
 halt_loop:
 	while (true)
-		halt();
+		asm volatile("hlt" : : : "memory");
 }

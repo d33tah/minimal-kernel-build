@@ -494,7 +494,6 @@ struct vm_area_struct *find_extend_vma(struct mm_struct *, unsigned long addr);
 #define FOLL_TOUCH	0x02
 #define FOLL_GET	0x04
 #define FOLL_FORCE	0x10
-#define FOLL_TRIED	0x800
 #define FOLL_REMOTE	0x2000
 #define FOLL_COW	0x4000
 

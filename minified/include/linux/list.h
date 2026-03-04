@@ -114,29 +114,6 @@ static inline void INIT_HLIST_NODE(struct hlist_node *h)
 	h->pprev = NULL;
 }
 
-static inline int hlist_unhashed(const struct hlist_node *h)
-{
-	return !h->pprev;
-}
-
-static inline void __hlist_del(struct hlist_node *n)
-{
-	struct hlist_node *next = n->next;
-	struct hlist_node **pprev = n->pprev;
-
-	WRITE_ONCE(*pprev, next);
-	if (next)
-		WRITE_ONCE(next->pprev, pprev);
-}
-
-static inline void hlist_del_init(struct hlist_node *n)
-{
-	if (!hlist_unhashed(n)) {
-		__hlist_del(n);
-		INIT_HLIST_NODE(n);
-	}
-}
-
 static inline void hlist_add_head(struct hlist_node *n, struct hlist_head *h)
 {
 	struct hlist_node *first = h->first;

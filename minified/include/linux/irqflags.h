@@ -41,11 +41,6 @@ static inline __cpuidle void native_safe_halt(void)
 	asm volatile("sti; hlt": : :"memory");
 }
 
-static inline __cpuidle void native_halt(void)
-{
-	asm volatile("hlt": : :"memory");
-}
-
 static __always_inline unsigned long arch_local_save_flags(void)
 {
 	return native_save_fl();
@@ -64,11 +59,6 @@ static __always_inline void arch_local_irq_enable(void)
 static inline __cpuidle void arch_safe_halt(void)
 {
 	native_safe_halt();
-}
-
-static inline __cpuidle void halt(void)
-{
-	native_halt();
 }
 
 static __always_inline unsigned long arch_local_irq_save(void)

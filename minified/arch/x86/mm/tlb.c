@@ -93,7 +93,7 @@ void flush_tlb_one_user(unsigned long addr)
 
 STATIC_NOPV void native_flush_tlb_local(void)
 {
-	native_write_cr3(__native_read_cr3());
+	write_cr3(__native_read_cr3());
 }
 
 void flush_tlb_local(void)

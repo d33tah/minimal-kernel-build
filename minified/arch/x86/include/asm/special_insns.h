@@ -13,14 +13,21 @@
 
 void native_write_cr0(unsigned long val);
 
-static inline unsigned long native_read_cr0(void)
+static inline unsigned long read_cr0(void)
 {
 	unsigned long val;
 	asm volatile("mov %%cr0,%0\n\t" : "=r" (val) : __FORCE_ORDER);
 	return val;
 }
 
-static __always_inline unsigned long native_read_cr2(void)
+void native_write_cr0(unsigned long val);
+
+static inline void write_cr0(unsigned long x)
+{
+	native_write_cr0(x);
+}
+
+static __always_inline unsigned long read_cr2(void)
 {
 	unsigned long val;
 	asm volatile("mov %%cr2,%0\n\t" : "=r" (val) : __FORCE_ORDER);
@@ -34,15 +41,14 @@ static inline unsigned long __native_read_cr3(void)
 	return val;
 }
 
-static inline void native_write_cr3(unsigned long val)
+static inline void write_cr3(unsigned long val)
 {
 	asm volatile("mov %0,%%cr3": : "r" (val) : "memory");
 }
 
-static inline unsigned long native_read_cr4(void)
+static inline unsigned long __read_cr4(void)
 {
 	unsigned long val;
-	 
 	asm volatile("1: mov %%cr4, %0\n"
 		     "2:\n"
 		     _ASM_EXTABLE(1b, 2b)
@@ -52,43 +58,13 @@ static inline unsigned long native_read_cr4(void)
 
 void native_write_cr4(unsigned long val);
 
-static inline void wrpkru(u32 pkru)
-{
-}
-
-static inline unsigned long __read_cr4(void)
-{
-	return native_read_cr4();
-}
-
-static inline unsigned long read_cr0(void)
-{
-	return native_read_cr0();
-}
-
-static inline void write_cr0(unsigned long x)
-{
-	native_write_cr0(x);
-}
-
-static __always_inline unsigned long read_cr2(void)
-{
-	return native_read_cr2();
-}
-
-static inline unsigned long __read_cr3(void)
-{
-	return __native_read_cr3();
-}
-
-static inline void write_cr3(unsigned long x)
-{
-	native_write_cr3(x);
-}
-
 static inline void __write_cr4(unsigned long x)
 {
 	native_write_cr4(x);
+}
+
+static inline void wrpkru(u32 pkru)
+{
 }
 
 #define nop() asm volatile ("nop")

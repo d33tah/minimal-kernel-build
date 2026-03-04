@@ -24,17 +24,15 @@ static noinline const char *_parse_integer_fixup_radix(const char *s,
 	return s;
 }
 
-static noinline unsigned int _parse_integer_limit(const char *s,
-						  unsigned int base,
-						  unsigned long long *p,
-						  size_t max_chars)
+static noinline unsigned int _parse_integer(const char *s, unsigned int base,
+					    unsigned long long *p)
 {
 	unsigned long long res;
 	unsigned int rv;
 
 	res = 0;
 	rv = 0;
-	while (max_chars--) {
+	for (;;) {
 		unsigned int c = *s;
 		unsigned int lc = c | 0x20;
 		unsigned int val;
@@ -59,12 +57,6 @@ static noinline unsigned int _parse_integer_limit(const char *s,
 	}
 	*p = res;
 	return rv;
-}
-
-static noinline unsigned int _parse_integer(const char *s, unsigned int base,
-					    unsigned long long *p)
-{
-	return _parse_integer_limit(s, base, p, INT_MAX);
 }
 
 noinline int kstrtoull(const char *s, unsigned int base,

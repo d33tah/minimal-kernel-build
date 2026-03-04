@@ -24,59 +24,17 @@ static unsigned long arch_zone_highest_possible_pfn[MAX_NR_ZONES] __initdata;
 
 /* page_group_by_mobility_disabled always 1 - hardcoded */
 
-static inline unsigned long *get_pageblock_bitmap(const struct page *page,
-						  unsigned long pfn)
-{
-	return page_zone(page)->pageblock_flags;
-}
-
-static inline int pfn_to_bitidx(const struct page *page, unsigned long pfn)
-{
-	pfn = pfn -
-	      round_down(page_zone(page)->zone_start_pfn, pageblock_nr_pages);
-	return (pfn >> pageblock_order) * NR_PAGEBLOCK_BITS;
-}
-
+/* Stub pageblock flags - always MIGRATE_UNMOVABLE for minimal kernel */
 static __always_inline unsigned long
 __get_pfnblock_flags_mask(const struct page *page, unsigned long pfn,
 			  unsigned long mask)
 {
-	unsigned long *bitmap;
-	unsigned long bitidx, word_bitidx;
-	unsigned long word;
-
-	bitmap = get_pageblock_bitmap(page, pfn);
-	bitidx = pfn_to_bitidx(page, pfn);
-	word_bitidx = bitidx / BITS_PER_LONG;
-	bitidx &= (BITS_PER_LONG - 1);
-
-	word = READ_ONCE(bitmap[word_bitidx]);
-	return (word >> bitidx) & mask;
+	return 0; /* MIGRATE_UNMOVABLE */
 }
 
 static void set_pfnblock_flags_mask(struct page *page, unsigned long flags,
 				    unsigned long pfn, unsigned long mask)
 {
-	unsigned long *bitmap;
-	unsigned long bitidx, word_bitidx;
-	unsigned long old_word, word;
-
-	bitmap = get_pageblock_bitmap(page, pfn);
-	bitidx = pfn_to_bitidx(page, pfn);
-	word_bitidx = bitidx / BITS_PER_LONG;
-	bitidx &= (BITS_PER_LONG - 1);
-
-	mask <<= bitidx;
-	flags <<= bitidx;
-
-	word = READ_ONCE(bitmap[word_bitidx]);
-	for (;;) {
-		old_word = cmpxchg(&bitmap[word_bitidx], word,
-				   (word & ~mask) | flags);
-		if (word == old_word)
-			break;
-		word = old_word;
-	}
 }
 
 static void prep_compound_page(struct page *page, unsigned int order)
@@ -604,40 +562,7 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 				if (!fsize)
 					continue;
 
-				{
-					unsigned long usemapsize;
-					unsigned long uzonesize =
-						zone->spanned_pages;
-
-					uzonesize += zone->zone_start_pfn &
-						     (pageblock_nr_pages - 1);
-					usemapsize = roundup(
-						uzonesize, pageblock_nr_pages);
-					usemapsize = usemapsize >>
-						     pageblock_order;
-					usemapsize *= NR_PAGEBLOCK_BITS;
-					usemapsize = roundup(
-						usemapsize,
-						8 * sizeof(unsigned long));
-					usemapsize /= 8;
-					zone->pageblock_flags = NULL;
-					if (usemapsize) {
-						zone->pageblock_flags =
-							memblock_alloc_try_nid(
-								usemapsize,
-								SMP_CACHE_BYTES,
-								MEMBLOCK_LOW_LIMIT,
-								MEMBLOCK_ALLOC_ACCESSIBLE,
-								zone_to_nid(
-									zone));
-						if (!zone->pageblock_flags)
-							panic("Failed to allocate %ld bytes for zone %s pageblock flags on node %d\n",
-							      usemapsize,
-							      zone->name,
-							      zone_to_nid(
-								      zone));
-					}
-				}
+				zone->pageblock_flags = NULL;
 				init_currently_empty_zone(
 					zone, zone->zone_start_pfn, fsize);
 			}

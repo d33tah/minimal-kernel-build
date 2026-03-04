@@ -228,43 +228,9 @@ __rmqueue_smallest(struct zone *zone, unsigned int order, int migratetype)
 	return NULL;
 }
 
-static inline struct page *
-__rmqueue_pcplist(struct zone *zone, unsigned int order, int migratetype,
-		  unsigned int alloc_flags, struct per_cpu_pages *pcp,
-		  struct list_head *list)
-{
-	struct page *page;
-
-	if (list_empty(list)) {
-		int batch = READ_ONCE(pcp->batch);
-		int alloced = 0;
-		{
-			int i;
-			spin_lock(&zone->lock);
-			for (i = 0; i < batch; ++i) {
-				struct page *pg = __rmqueue_smallest(
-					zone, order, migratetype);
-				if (unlikely(pg == NULL))
-					break;
-				list_add_tail(&pg->lru, list);
-				alloced++;
-			}
-			__mod_zone_page_state(zone, NR_FREE_PAGES,
-					      -(i << order));
-			spin_unlock(&zone->lock);
-		}
-
-		pcp->count += alloced << order;
-		if (unlikely(list_empty(list)))
-			return NULL;
-	}
-
-	page = list_first_entry(list, struct page, lru);
-	list_del(&page->lru);
-	pcp->count -= 1 << order;
-	return page;
-}
-
+/*
+ * Simplified rmqueue: bypass PCP batching, always go directly to buddy.
+ */
 static inline struct page *rmqueue(struct zone *zone, unsigned int order,
 				   gfp_t gfp_flags, unsigned int alloc_flags,
 				   int migratetype)
@@ -272,32 +238,12 @@ static inline struct page *rmqueue(struct zone *zone, unsigned int order,
 	unsigned long flags;
 	struct page *page;
 
-	if (likely(order <= PAGE_ALLOC_COSTLY_ORDER)) {
-		struct per_cpu_pages *pcp;
-		struct list_head *list;
-		local_lock_irqsave(&pagesets.lock, flags);
-		pcp = this_cpu_ptr(zone->per_cpu_pageset);
-		list = &pcp->lists[(MIGRATE_PCPTYPES * order) + migratetype];
-		page = __rmqueue_pcplist(zone, order, migratetype, alloc_flags,
-					 pcp, list);
-		local_unlock_irqrestore(&pagesets.lock, flags);
-		goto out;
-	}
-
-	page = NULL;
 	spin_lock_irqsave(&zone->lock, flags);
-
 	page = __rmqueue_smallest(zone, order, migratetype);
-	if (!page)
-		goto failed;
-	__mod_zone_freepage_state(zone, -(1 << order), page->index);
+	if (page)
+		__mod_zone_freepage_state(zone, -(1 << order), page->index);
 	spin_unlock_irqrestore(&zone->lock, flags);
-out:
 	return page;
-
-failed:
-	spin_unlock_irqrestore(&zone->lock, flags);
-	return NULL;
 }
 
 static struct page *get_page_from_freelist(gfp_t gfp_mask, unsigned int order,

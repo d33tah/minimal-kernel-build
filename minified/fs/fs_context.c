@@ -73,11 +73,6 @@ int vfs_parse_fs_string(struct fs_context *fc, const char *key,
 	return ret;
 }
 
-static int generic_parse_monolithic(struct fs_context *fc, void *data)
-{
-	return 0;
-}
-
 struct fs_context *fs_context_for_mount(struct file_system_type *fs_type,
 					unsigned int sb_flags)
 {
@@ -143,11 +138,7 @@ void put_fs_context(struct fs_context *fc)
 
 int parse_monolithic_mount_data(struct fs_context *fc, void *data)
 {
-	int (*monolithic_mount_data)(struct fs_context *, void *);
-
-	monolithic_mount_data = fc->ops->parse_monolithic;
-	if (!monolithic_mount_data)
-		monolithic_mount_data = generic_parse_monolithic;
-
-	return monolithic_mount_data(fc, data);
+	if (fc->ops->parse_monolithic)
+		return fc->ops->parse_monolithic(fc, data);
+	return 0;
 }

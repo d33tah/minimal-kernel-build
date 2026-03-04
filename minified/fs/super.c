@@ -25,13 +25,6 @@ static int __percpu_init_rwsem(struct percpu_rw_semaphore *sem,
 	return 0;
 }
 
-static void percpu_free_rwsem(struct percpu_rw_semaphore *sem)
-{
-	if (!sem->read_count)
-		return;
-	sem->read_count = NULL;
-}
-
 static DEFINE_SPINLOCK(sb_lock);
 
 static char *sb_writers_name[SB_FREEZE_LEVELS] = {
@@ -40,30 +33,13 @@ static char *sb_writers_name[SB_FREEZE_LEVELS] = {
 	"sb_internal",
 };
 
-static void destroy_super_work(struct work_struct *work)
-{
-	struct super_block *s =
-		container_of(work, struct super_block, destroy_work);
-	int i;
-
-	for (i = 0; i < SB_FREEZE_LEVELS; i++)
-		percpu_free_rwsem(&s->s_writers.rw_sem[i]);
-	kfree(s);
-}
-
-static void destroy_super_rcu(struct rcu_head *head)
-{
-	struct super_block *s = container_of(head, struct super_block, rcu);
-	destroy_super_work(&s->destroy_work);
-}
-
 static void destroy_unused_super(struct super_block *s)
 {
 	if (!s)
 		return;
 	up_write(&s->s_umount);
 	put_user_ns(s->s_user_ns);
-	destroy_super_work(&s->destroy_work);
+	kfree(s);
 }
 
 static struct super_block *alloc_super(struct file_system_type *type, int flags,
@@ -108,27 +84,12 @@ fail:
 	return NULL;
 }
 
-static void put_super(struct super_block *sb)
-{
-	spin_lock(&sb_lock);
-	if (!--sb->s_count) {
-		put_user_ns(sb->s_user_ns);
-		call_rcu(&sb->rcu, destroy_super_rcu);
-	}
-	spin_unlock(&sb_lock);
-}
-
 static void deactivate_locked_super(struct super_block *s)
 {
 	struct file_system_type *fs = s->s_type;
 	if (atomic_dec_and_test(&s->s_active)) {
 		fs->kill_sb(s);
-
-		list_lru_destroy(&s->s_dentry_lru);
-		list_lru_destroy(&s->s_inode_lru);
-
 		put_filesystem(fs);
-		put_super(s);
 	} else {
 		up_write(&s->s_umount);
 	}

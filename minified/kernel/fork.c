@@ -275,8 +275,6 @@ copy_process(int node, struct kernel_clone_args *args)
 	p->pid = pid_nr(pid);
 	p->group_leader = p;
 
-	p->task_works = NULL;
-
 	sched_cgroup_fork(p, args);
 
 	write_lock_irq(&tasklist_lock);

@@ -5,7 +5,7 @@
 
 obj-y     = fork.o panic.o \
 	    cpu.o exit.o softirq.o \
-	    pid.o task_work.o \
+	    pid.o \
 	    extable.o \
 	    kthread.o sys_ni.o \
 	    cred.o

@@ -1,6 +1,5 @@
 
 #include <linux/entry-common.h>
-#include <linux/task_work.h>
 #include <linux/highmem.h>
 
 noinstr long syscall_enter_from_user_mode(struct pt_regs *regs, long syscall)
@@ -21,13 +20,6 @@ static void exit_to_user_mode_prepare(struct pt_regs *regs)
 
 		if (ti_work & (_TIF_SIGPENDING | _TIF_NOTIFY_SIGNAL))
 			arch_do_signal_or_restart(regs);
-
-		if (ti_work & _TIF_NOTIFY_RESUME) {
-			clear_thread_flag(TIF_NOTIFY_RESUME);
-			smp_mb__after_atomic();
-			if (unlikely(task_work_pending(current)))
-				task_work_run();
-		}
 
 		local_irq_disable_exit_to_user();
 		ti_work = read_thread_flags();

@@ -186,8 +186,6 @@ struct task_struct {
 	struct sighand_struct __rcu		*sighand;
 	struct sigpending		pending;
 
-	struct callback_head		*task_works;
-
 	spinlock_t			alloc_lock;
 
 	raw_spinlock_t			pi_lock;

@@ -1,6 +1,5 @@
 #include <linux/fs.h>
 #include <linux/device.h>
-#include <linux/task_work.h>
 
 static struct kmem_cache *filp_cachep __read_mostly;
 
@@ -49,23 +48,10 @@ out:
 	call_rcu(&file->f_u.fu_rcuhead, file_free_rcu);
 }
 
-static void ____fput(struct callback_head *work)
-{
-	__fput(container_of(work, struct file, f_u.fu_rcuhead));
-}
-
 void fput(struct file *file)
 {
-	if (atomic_long_dec_and_test(&file->f_count)) {
-		struct task_struct *task = current;
-
-		init_task_work(&file->f_u.fu_rcuhead, ____fput);
-		if (!task_work_add(task, &file->f_u.fu_rcuhead, TWA_RESUME))
-			return;
-
-		/* Fallback: shouldn't happen in this minimal kernel */
+	if (atomic_long_dec_and_test(&file->f_count))
 		__fput(file);
-	}
 }
 
 void __init files_init(void)

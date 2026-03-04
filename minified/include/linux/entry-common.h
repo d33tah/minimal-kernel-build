@@ -8,22 +8,8 @@
 #include <asm/nospec-branch.h>
 #include <asm/fpu/api.h>
 
-#ifndef _TIF_PATCH_PENDING
-# define _TIF_PATCH_PENDING		(0)
-#endif
-
-#ifndef _TIF_UPROBE
-# define _TIF_UPROBE			(0)
-#endif
-
-#ifndef ARCH_EXIT_TO_USER_MODE_WORK
-# define ARCH_EXIT_TO_USER_MODE_WORK		(0)
-#endif
-
 #define EXIT_TO_USER_MODE_WORK						\
-	(_TIF_SIGPENDING | _TIF_NOTIFY_RESUME | _TIF_UPROBE |		\
-	 _TIF_NEED_RESCHED | _TIF_PATCH_PENDING | _TIF_NOTIFY_SIGNAL |	\
-	 ARCH_EXIT_TO_USER_MODE_WORK)
+	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | _TIF_NOTIFY_SIGNAL)
 
 long syscall_enter_from_user_mode(struct pt_regs *regs, long syscall);
 

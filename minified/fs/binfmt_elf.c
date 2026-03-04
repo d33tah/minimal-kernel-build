@@ -212,7 +212,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	int retval, i;
 	unsigned long elf_entry;
 	unsigned long e_entry;
-	int executable_stack = EXSTACK_DEFAULT;
 	struct elfhdr *elf_ex = (struct elfhdr *)bprm->buf;
 	struct pt_regs *regs;
 
@@ -232,28 +231,14 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	if (!elf_phdata)
 		goto out;
 
-	elf_ppnt = elf_phdata;
-	for (i = 0; i < elf_ex->e_phnum; i++, elf_ppnt++)
-		switch (elf_ppnt->p_type) {
-		case PT_GNU_STACK:
-			if (elf_ppnt->p_flags & PF_X)
-				executable_stack = EXSTACK_ENABLE_X;
-			else
-				executable_stack = EXSTACK_DISABLE_X;
-			break;
-		}
-
 	retval = begin_new_exec(bprm);
 	if (retval)
 		goto out_free_ph;
 
-	SET_PERSONALITY2(*elf_ex, NULL);
-	if (elf_read_implies_exec(*elf_ex, executable_stack))
-		current->personality |= READ_IMPLIES_EXEC;
-
 	setup_new_exec(bprm);
 
-	retval = setup_arg_pages(bprm, PAGE_ALIGN(STACK_TOP), executable_stack);
+	retval =
+		setup_arg_pages(bprm, PAGE_ALIGN(STACK_TOP), EXSTACK_DISABLE_X);
 	if (retval < 0)
 		goto out_free_ph;
 

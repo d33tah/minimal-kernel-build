@@ -94,17 +94,3 @@ unsigned long vm_mmap(struct file *file, unsigned long addr, unsigned long len,
 int sysctl_max_map_count __read_mostly = DEFAULT_MAX_MAP_COUNT;
 
 struct percpu_counter vm_committed_as ____cacheline_aligned_in_smp;
-
-/* Simplified: always OVERCOMMIT_GUESS mode */
-int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin)
-{
-	vm_acct_memory(pages);
-
-	if (pages > totalram_pages() + total_swap_pages)
-		goto error;
-	return 0;
-
-error:
-	vm_unacct_memory(pages);
-	return -ENOMEM;
-}

@@ -16,11 +16,6 @@ static unsigned long get_unmapped_area(struct file *, unsigned long,
 /* mmap_min_addr moved from security/min_addr.c */
 unsigned long mmap_min_addr = CONFIG_DEFAULT_MMAP_MIN_ADDR;
 
-static inline int security_vm_enough_memory_mm(struct mm_struct *mm, long pages)
-{
-	return __vm_enough_memory(mm, pages, 1);
-}
-
 pgprot_t protection_map[16] __ro_after_init = {
 	[VM_NONE] = __P000,
 	[VM_READ] = __P001,
@@ -42,15 +37,6 @@ pgprot_t protection_map[16] __ro_after_init = {
 
 void unlink_file_vma(struct vm_area_struct *vma)
 {
-}
-
-static struct vm_area_struct *remove_vma(struct vm_area_struct *vma)
-{
-	struct vm_area_struct *next = vma->vm_next;
-	if (vma->vm_file)
-		fput(vma->vm_file);
-	vm_area_free(vma);
-	return next;
 }
 
 static inline unsigned long vma_compute_gap(struct vm_area_struct *vma)
@@ -340,49 +326,25 @@ struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
 	return vma;
 }
 
-static int expand_downwards(struct vm_area_struct *vma, unsigned long address)
-{
-	struct mm_struct *mm = vma->vm_mm;
-	struct vm_area_struct *prev;
-	int error = 0;
-
-	address &= PAGE_MASK;
-	if (address < mmap_min_addr)
-		return -EPERM;
-
-	prev = vma->vm_prev;
-	if (prev && !(prev->vm_flags & VM_GROWSDOWN) &&
-	    vma_is_accessible(prev) && address - prev->vm_end < stack_guard_gap)
-		return -ENOMEM;
-
-	if (unlikely(anon_vma_prepare(vma)))
-		return -ENOMEM;
-
-	anon_vma_lock_write(vma->anon_vma);
-	if (address < vma->vm_start) {
-		unsigned long size = vma->vm_end - address;
-		unsigned long grow = (vma->vm_start - address) >> PAGE_SHIFT;
-
-		error = -ENOMEM;
-		if (grow <= vma->vm_pgoff && size <= rlimit(RLIMIT_STACK) &&
-		    !security_vm_enough_memory_mm(mm, grow)) {
-			error = 0;
-			spin_lock(&mm->page_table_lock);
-			vma->vm_start = address;
-			vma->vm_pgoff -= grow;
-			vma_gap_update(vma);
-			spin_unlock(&mm->page_table_lock);
-		}
-	}
-	anon_vma_unlock_write(vma->anon_vma);
-	return error;
-}
-
 unsigned long stack_guard_gap = 256UL << PAGE_SHIFT;
 
 int expand_stack(struct vm_area_struct *vma, unsigned long address)
 {
-	return expand_downwards(vma, address);
+	struct mm_struct *mm = vma->vm_mm;
+
+	address &= PAGE_MASK;
+	if (address < vma->vm_start) {
+		unsigned long grow = (vma->vm_start - address) >> PAGE_SHIFT;
+
+		if (unlikely(anon_vma_prepare(vma)))
+			return -ENOMEM;
+		spin_lock(&mm->page_table_lock);
+		vma->vm_start = address;
+		vma->vm_pgoff -= grow;
+		vma_gap_update(vma);
+		spin_unlock(&mm->page_table_lock);
+	}
+	return 0;
 }
 
 struct vm_area_struct *find_extend_vma(struct mm_struct *mm, unsigned long addr)
@@ -395,8 +357,6 @@ struct vm_area_struct *find_extend_vma(struct mm_struct *mm, unsigned long addr)
 		return NULL;
 	if (vma->vm_start <= addr)
 		return vma;
-	if (!(vma->vm_flags & VM_GROWSDOWN))
-		return NULL;
 	if (expand_stack(vma, addr))
 		return NULL;
 	return vma;
@@ -447,31 +407,7 @@ out_unlock:
 
 void exit_mmap(struct mm_struct *mm)
 {
-	struct mmu_gather tlb;
-	struct vm_area_struct *vma;
-
-	down_write(&mm->mmap_lock); /* mmap_write_lock inlined */
-	arch_exit_mmap(mm);
-
-	vma = mm->mmap;
-	if (!vma) {
-		mmap_write_unlock(mm);
-		return;
-	}
-
-	lru_add_drain();
-	tlb_gather_mmu(&tlb, mm, true);
-
-	unmap_vmas(&tlb, vma, 0, -1);
-	free_pgtables(&tlb, vma, FIRST_USER_ADDRESS, USER_PGTABLES_CEILING);
-	tlb_finish_mmu(&tlb);
-
-	while (vma) {
-		vma = remove_vma(vma);
-		cond_resched();
-	}
-	mm->mmap = NULL;
-	mmap_write_unlock(mm);
+	/* Hello World process never exits - stub */
 }
 
 int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)

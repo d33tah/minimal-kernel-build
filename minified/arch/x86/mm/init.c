@@ -117,33 +117,11 @@ static int __meminit save_mr(struct map_range *mr, int nr_range,
 	return nr_range;
 }
 
-static void __ref adjust_range_page_size_mask(struct map_range *mr,
-					      int nr_range)
-{
-	int i;
-
-	for (i = 0; i < nr_range; i++) {
-		if ((page_size_mask & (1 << PG_LEVEL_2M)) &&
-		    !(mr[i].page_size_mask & (1 << PG_LEVEL_2M))) {
-			unsigned long start = round_down(mr[i].start, PMD_SIZE);
-			unsigned long end = round_up(mr[i].end, PMD_SIZE);
-
-			if ((end >> PAGE_SHIFT) > max_low_pfn)
-				continue;
-
-			if (memblock_is_region_memory(start, end - start))
-				mr[i].page_size_mask |= 1 << PG_LEVEL_2M;
-		}
-		/* No 1G pages on x86-32 */
-	}
-}
-
 static int __meminit split_mem_range(struct map_range *mr, int nr_range,
 				     unsigned long start, unsigned long end)
 {
 	unsigned long start_pfn, end_pfn, limit_pfn;
 	unsigned long pfn;
-	int i;
 
 	limit_pfn = PFN_DOWN(end);
 
@@ -172,22 +150,6 @@ static int __meminit split_mem_range(struct map_range *mr, int nr_range,
 	start_pfn = pfn;
 	end_pfn = limit_pfn;
 	nr_range = save_mr(mr, nr_range, start_pfn, end_pfn, 0);
-
-	if (!after_bootmem)
-		adjust_range_page_size_mask(mr, nr_range);
-
-	for (i = 0; nr_range > 1 && i < nr_range - 1; i++) {
-		unsigned long old_start;
-		if (mr[i].end != mr[i + 1].start ||
-		    mr[i].page_size_mask != mr[i + 1].page_size_mask)
-			continue;
-
-		old_start = mr[i].start;
-		memmove(&mr[i], &mr[i + 1],
-			(nr_range - 1 - i) * sizeof(struct map_range));
-		mr[i--].start = old_start;
-		nr_range--;
-	}
 
 	return nr_range;
 }
@@ -249,47 +211,12 @@ static unsigned long __init init_range_memory_mapping(unsigned long r_start,
 	return mapped_ram_size;
 }
 
-static unsigned long __init get_new_step_size(unsigned long step_size)
-{
-	return step_size << (PMD_SHIFT - PAGE_SHIFT - 1);
-}
-
 static void __init memory_map_top_down(unsigned long map_start,
 				       unsigned long map_end)
 {
-	unsigned long real_end, last_start;
-	unsigned long step_size;
-	unsigned long addr;
-	unsigned long mapped_ram_size = 0;
-
-	addr = memblock_phys_alloc_range(PMD_SIZE, PMD_SIZE, map_start,
-					 map_end);
-	memblock_phys_free(addr, PMD_SIZE);
-	real_end = addr + PMD_SIZE;
-
-	step_size = PMD_SIZE;
 	max_pfn_mapped = 0;
-	min_pfn_mapped = real_end >> PAGE_SHIFT;
-	last_start = real_end;
-
-	while (last_start > map_start) {
-		unsigned long start;
-
-		if (last_start > step_size) {
-			start = round_down(last_start - 1, step_size);
-			if (start < map_start)
-				start = map_start;
-		} else
-			start = map_start;
-		mapped_ram_size += init_range_memory_mapping(start, last_start);
-		last_start = start;
-		min_pfn_mapped = last_start >> PAGE_SHIFT;
-		if (mapped_ram_size >= step_size)
-			step_size = get_new_step_size(step_size);
-	}
-
-	if (real_end < map_end)
-		init_range_memory_mapping(real_end, map_end);
+	min_pfn_mapped = map_end >> PAGE_SHIFT;
+	init_range_memory_mapping(map_start, map_end);
 }
 
 void __init init_mem_mapping(void)

@@ -154,11 +154,6 @@ bool xas_nomem(struct xa_state *xas, gfp_t gfp)
 	return true;
 }
 
-/* xas_update: xa_update callback is always NULL in this codebase */
-static inline void xas_update(struct xa_state *xas, struct xa_node *node)
-{
-}
-
 static void *xas_alloc(struct xa_state *xas, unsigned int shift)
 {
 	struct xa_node *parent = xas->xa_node;
@@ -186,7 +181,6 @@ static void *xas_alloc(struct xa_state *xas, unsigned int shift)
 	if (parent) {
 		node->offset = xas->xa_offset;
 		parent->count++;
-		xas_update(xas, parent);
 	}
 	node->shift = shift;
 	node->count = 0;
@@ -228,7 +222,6 @@ static void xas_delete_node(struct xa_state *xas)
 		parent->slots[xas->xa_offset] = NULL;
 		parent->count--;
 		node = parent;
-		xas_update(xas, node);
 	}
 
 	if (!node->parent) {
@@ -255,7 +248,6 @@ static void xas_delete_node(struct xa_state *xas)
 			if (!xa_is_node(entry))
 				RCU_INIT_POINTER(node->slots[0],
 						 XA_RETRY_ENTRY);
-			xas_update(xas, node);
 			xa_node_free(node);
 			if (!xa_is_node(entry))
 				break;
@@ -288,7 +280,6 @@ static void xas_free_nodes(struct xa_state *xas, struct xa_node *top)
 			offset = node->offset + 1;
 			node->count = 0;
 			node->nr_values = 0;
-			xas_update(xas, node);
 			xa_node_free(node);
 			if (node == top)
 				return;
@@ -349,7 +340,6 @@ static int xas_expand(struct xa_state *xas, void *head)
 		}
 		head = xa_mk_node(node);
 		rcu_assign_pointer(xa->xa_head, head);
-		xas_update(xas, node);
 
 		shift += XA_CHUNK_SHIFT;
 	}
@@ -452,7 +442,6 @@ void *xas_store(struct xa_state *xas, void *entry)
 	if (node && (count || values)) {
 		node->count += count;
 		node->nr_values += values;
-		xas_update(xas, node);
 		if (count < 0)
 			xas_delete_node(xas);
 	}

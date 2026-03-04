@@ -215,11 +215,6 @@ void __init_memblock memblock_free(void *ptr, size_t size)
 {
 }
 
-int __init_memblock memblock_phys_free(phys_addr_t base, phys_addr_t size)
-{
-	return 0;
-}
-
 int __init_memblock memblock_reserve(phys_addr_t base, phys_addr_t size)
 {
 	return memblock_add_range(&memblock.reserved, base, size, MAX_NUMNODES,
@@ -405,12 +400,6 @@ void *__init memblock_alloc_try_nid(phys_addr_t size, phys_addr_t align,
 phys_addr_t __init_memblock memblock_start_of_DRAM(void)
 {
 	return memblock.memory.regions[0].base;
-}
-
-bool __init_memblock memblock_is_region_memory(phys_addr_t base,
-					       phys_addr_t size)
-{
-	return true;
 }
 
 void __init_memblock memblock_trim_memory(phys_addr_t align)

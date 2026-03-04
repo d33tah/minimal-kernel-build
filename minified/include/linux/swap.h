@@ -22,8 +22,9 @@ extern void lru_cache_add_inactive_or_unevictable(struct page *page,
 
 #define total_swap_pages			0L
 
-#define free_pages_and_swap_cache(pages, nr) \
-	release_pages((pages), (nr));
+#define free_pages_and_swap_cache(pages, nr) do { \
+	int _i; for (_i = 0; _i < (nr); _i++) put_page_testzero((pages)[_i]); \
+} while(0)
 
 #endif /* __KERNEL__ */
 #endif /* _LINUX_SWAP_H */

@@ -44,7 +44,6 @@ extern struct memblock memblock;
 void memblock_discard(void);
 
 int memblock_add(phys_addr_t base, phys_addr_t size);
-int memblock_phys_free(phys_addr_t base, phys_addr_t size);
 int memblock_reserve(phys_addr_t base, phys_addr_t size);
 void memblock_trim_memory(phys_addr_t align);
 
@@ -102,7 +101,6 @@ static __always_inline void *memblock_alloc(phys_addr_t size, phys_addr_t align)
 }
 
 phys_addr_t memblock_start_of_DRAM(void);
-bool memblock_is_region_memory(phys_addr_t base, phys_addr_t size);
 
 void memblock_set_current_limit(phys_addr_t limit);
 

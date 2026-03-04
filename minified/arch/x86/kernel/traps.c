@@ -6,25 +6,6 @@
 
 DECLARE_BITMAP(system_vectors, NR_VECTORS);
 
-static inline void cond_local_irq_enable(struct pt_regs *regs)
-{
-	if (regs->flags & X86_EFLAGS_IF)
-		local_irq_enable();
-}
-
-static inline void cond_local_irq_disable(struct pt_regs *regs)
-{
-	if (regs->flags & X86_EFLAGS_IF)
-		local_irq_disable();
-}
-
-static __always_inline int is_valid_bugaddr(unsigned long addr)
-{
-	if (addr < TASK_SIZE_MAX)
-		return 0;
-	return *(unsigned short *)addr == INSN_UD2;
-}
-
 DEFINE_IDTENTRY(exc_divide_error)
 {
 	die("divide error", regs, 0);
@@ -32,24 +13,7 @@ DEFINE_IDTENTRY(exc_divide_error)
 
 DEFINE_IDTENTRY_RAW(exc_invalid_op)
 {
-	irqentry_state_t state;
-
-	if (!user_mode(regs) && is_valid_bugaddr(regs->ip)) {
-		if (regs->flags & X86_EFLAGS_IF)
-			raw_local_irq_enable();
-		if (report_bug(regs->ip, regs) == BUG_TRAP_TYPE_WARN) {
-			regs->ip += LEN_UD2;
-			if (regs->flags & X86_EFLAGS_IF)
-				raw_local_irq_disable();
-			return;
-		}
-		if (regs->flags & X86_EFLAGS_IF)
-			raw_local_irq_disable();
-	}
-
-	state = irqentry_enter(regs);
 	die("invalid opcode", regs, 0);
-	irqentry_exit(regs, state);
 }
 
 DEFINE_IDTENTRY_ERRORCODE(exc_invalid_tss)
@@ -67,19 +31,11 @@ DEFINE_IDTENTRY_ERRORCODE(exc_stack_segment)
 	die("stack segment", regs, error_code);
 }
 
-#define GPFSTR "general protection fault"
-
 DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
 {
-	cond_local_irq_enable(regs);
-
 	if (fixup_exception(regs, X86_TRAP_GP, error_code, 0))
-		goto exit;
-
-	die(GPFSTR, regs, error_code);
-
-exit:
-	cond_local_irq_disable(regs);
+		return;
+	die("general protection fault", regs, error_code);
 }
 
 DEFINE_IDTENTRY_RAW(exc_int3)

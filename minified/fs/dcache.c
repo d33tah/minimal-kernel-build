@@ -21,12 +21,6 @@ static inline int dentry_cmp(const struct dentry *dentry,
 	return memcmp(READ_ONCE(dentry->d_name.name), ct, tcount);
 }
 
-static void __d_free(struct rcu_head *head)
-{
-	struct dentry *dentry = container_of(head, struct dentry, d_u.d_rcu);
-	kmem_cache_free(dentry_cache, dentry);
-}
-
 static inline void __d_set_inode_and_type(struct dentry *dentry,
 					  struct inode *inode,
 					  unsigned type_flags)
@@ -40,208 +34,24 @@ static inline void __d_set_inode_and_type(struct dentry *dentry,
 	smp_store_release(&dentry->d_flags, flags);
 }
 
-static void dentry_unlink_inode(struct dentry *dentry)
-	__releases(dentry->d_lock) __releases(dentry->d_inode->i_lock)
-{
-	struct inode *inode = dentry->d_inode;
-	unsigned flags;
-
-	raw_write_seqcount_begin(&dentry->d_seq);
-	flags = READ_ONCE(dentry->d_flags);
-	flags &= ~(DCACHE_ENTRY_TYPE | DCACHE_FALLTHRU);
-	WRITE_ONCE(dentry->d_flags, flags);
-	dentry->d_inode = NULL;
-	hlist_del_init(&dentry->d_u.d_alias);
-	raw_write_seqcount_end(&dentry->d_seq);
-	spin_unlock(&dentry->d_lock);
-	spin_unlock(&inode->i_lock);
-	iput(inode);
-}
-
-static void __d_drop(struct dentry *dentry)
-{
-	if (!d_unhashed(dentry)) {
-		struct hlist_bl_head *b;
-
-		if (unlikely(IS_ROOT(dentry)))
-			b = &dentry->d_sb->s_roots;
-		else
-			b = d_hash(dentry->d_name.hash);
-
-		hlist_bl_lock(b);
-		__hlist_bl_del(&dentry->d_hash);
-		hlist_bl_unlock(b);
-		dentry->d_hash.pprev = NULL;
-		write_seqcount_invalidate(&dentry->d_seq);
-	}
-}
-
-static void __dentry_kill(struct dentry *dentry)
-{
-	struct dentry *parent = NULL;
-	if (!IS_ROOT(dentry))
-		parent = dentry->d_parent;
-
-	lockref_mark_dead(&dentry->d_lockref);
-
-	__d_drop(dentry);
-	{
-		dentry->d_flags |= DCACHE_DENTRY_KILLED;
-		if (!unlikely(list_empty(&dentry->d_child)))
-			__list_del_entry(&dentry->d_child);
-	}
-	if (parent)
-		spin_unlock(&parent->d_lock);
-	if (dentry->d_inode)
-		dentry_unlink_inode(dentry);
-	else
-		spin_unlock(&dentry->d_lock);
-
-	call_rcu(&dentry->d_u.d_rcu, __d_free);
-	cond_resched();
-}
-
-static struct dentry *__lock_parent(struct dentry *dentry)
-{
-	struct dentry *parent;
-	rcu_read_lock();
-	spin_unlock(&dentry->d_lock);
-again:
-	parent = READ_ONCE(dentry->d_parent);
-	spin_lock(&parent->d_lock);
-
-	if (unlikely(parent != dentry->d_parent)) {
-		spin_unlock(&parent->d_lock);
-		goto again;
-	}
-	rcu_read_unlock();
-	if (parent != dentry)
-		spin_lock(&dentry->d_lock);
-	else
-		parent = NULL;
-	return parent;
-}
-
-static inline bool retain_dentry(struct dentry *dentry)
-{
-	if (unlikely(d_unhashed(dentry)))
-		return false;
-	dentry->d_lockref.count--;
-	return true;
-}
-
-static struct dentry *dentry_kill(struct dentry *dentry)
-	__releases(dentry->d_lock)
-{
-	struct inode *inode = dentry->d_inode;
-	struct dentry *parent = NULL;
-
-	if (inode && unlikely(!spin_trylock(&inode->i_lock)))
-		goto slow_positive;
-
-	if (!IS_ROOT(dentry)) {
-		parent = dentry->d_parent;
-		if (unlikely(!spin_trylock(&parent->d_lock))) {
-			parent = __lock_parent(dentry);
-			if (likely(inode || !dentry->d_inode))
-				goto got_locks;
-
-			if (parent)
-				spin_unlock(&parent->d_lock);
-			inode = dentry->d_inode;
-			goto slow_positive;
-		}
-	}
-	__dentry_kill(dentry);
-	return parent;
-
-slow_positive:
-	spin_unlock(&dentry->d_lock);
-	spin_lock(&inode->i_lock);
-	spin_lock(&dentry->d_lock);
-	{
-		struct dentry *p = dentry->d_parent;
-		parent = IS_ROOT(dentry) ? NULL :
-			 likely(spin_trylock(&p->d_lock)) ?
-					   p :
-					   __lock_parent(dentry);
-	}
-got_locks:
-	if (unlikely(dentry->d_lockref.count != 1)) {
-		dentry->d_lockref.count--;
-	} else if (likely(!retain_dentry(dentry))) {
-		__dentry_kill(dentry);
-		return parent;
-	}
-
-	if (inode)
-		spin_unlock(&inode->i_lock);
-	if (parent)
-		spin_unlock(&parent->d_lock);
-	spin_unlock(&dentry->d_lock);
-	return NULL;
-}
-
-static inline bool fast_dput(struct dentry *dentry)
-{
-	int ret = lockref_put_return(&dentry->d_lockref);
-
-	if (unlikely(ret < 0)) {
-		spin_lock(&dentry->d_lock);
-		if (dentry->d_lockref.count > 1) {
-			dentry->d_lockref.count--;
-			spin_unlock(&dentry->d_lock);
-			return true;
-		}
-		return false;
-	}
-	return ret != 0;
-}
-
+/*
+ * Simplified dput: just decrement refcount, never kill dentries.
+ * For a boot-to-hello-world kernel, dentries are never freed.
+ */
 void dput(struct dentry *dentry)
 {
-	while (dentry) {
-		rcu_read_lock();
-		if (likely(fast_dput(dentry))) {
-			rcu_read_unlock();
+	if (dentry) {
+		if (lockref_put_return(&dentry->d_lockref) >= 0)
 			return;
-		}
-
-		rcu_read_unlock();
-
-		if (likely(retain_dentry(dentry))) {
-			spin_unlock(&dentry->d_lock);
-			return;
-		}
-
-		dentry = dentry_kill(dentry);
+		spin_lock(&dentry->d_lock);
+		dentry->d_lockref.count--;
+		spin_unlock(&dentry->d_lock);
 	}
-}
-
-static void do_one_tree(struct dentry *dentry)
-{
-	spin_lock(&dentry->d_lock);
-	__d_drop(dentry);
-	spin_unlock(&dentry->d_lock);
-	dput(dentry);
 }
 
 void shrink_dcache_for_umount(struct super_block *sb)
 {
-	struct dentry *dentry;
-
-	WARN(down_read_trylock(&sb->s_umount),
-	     "s_umount should've been locked");
-
-	dentry = sb->s_root;
 	sb->s_root = NULL;
-	do_one_tree(dentry);
-
-	while (!hlist_bl_empty(&sb->s_roots)) {
-		dentry = dget(hlist_bl_entry(hlist_bl_first(&sb->s_roots),
-					     struct dentry, d_hash));
-		do_one_tree(dentry);
-	}
 }
 
 static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)

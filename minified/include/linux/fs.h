@@ -560,19 +560,9 @@ static inline int path_permission(const struct path *path, int mask)
 	return 0;
 }
 
-static inline int deny_write_access(struct file *file)
-{
-	struct inode *inode = file_inode(file);
-	return atomic_dec_unless_positive(&inode->i_writecount) ? 0 : -ETXTBSY;
-}
 static inline void put_write_access(struct inode * inode)
 {
 	atomic_dec(&inode->i_writecount);
-}
-static inline void allow_write_access(struct file *file)
-{
-	if (file)
-		atomic_inc(&file_inode(file)->i_writecount);
 }
 extern ssize_t kernel_read(struct file *, void *, size_t, loff_t *);
 

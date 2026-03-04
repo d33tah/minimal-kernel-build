@@ -35,10 +35,6 @@ pgprot_t protection_map[16] __ro_after_init = {
 	[VM_SHARED | VM_EXEC | VM_WRITE | VM_READ] = __S111
 };
 
-void unlink_file_vma(struct vm_area_struct *vma)
-{
-}
-
 static inline unsigned long vma_compute_gap(struct vm_area_struct *vma)
 {
 	unsigned long gap, prev_end;

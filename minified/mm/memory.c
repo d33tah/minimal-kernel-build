@@ -21,155 +21,11 @@ static int __init init_zero_pfn(void)
 }
 early_initcall(init_zero_pfn);
 
-static inline void free_pmd_range(struct mmu_gather *tlb, pud_t *pud,
-				  unsigned long addr, unsigned long end,
-				  unsigned long floor, unsigned long ceiling)
-{
-	pmd_t *pmd;
-	unsigned long next;
-	unsigned long start;
-
-	start = addr;
-	pmd = pmd_offset(pud, addr);
-	do {
-		next = pmd_addr_end(addr, end);
-		if (pmd_none_or_clear_bad(pmd))
-			continue;
-		{
-			pgtable_t token = pmd_pgtable(*pmd);
-			pmd_clear(pmd);
-			pte_free_tlb(tlb, token, addr);
-			atomic_long_sub(PTRS_PER_PTE * sizeof(pte_t),
-					&tlb->mm->pgtables_bytes);
-		}
-	} while (pmd++, addr = next, addr != end);
-
-	start &= PUD_MASK;
-	if (start < floor)
-		return;
-	if (ceiling) {
-		ceiling &= PUD_MASK;
-		if (!ceiling)
-			return;
-	}
-	if (end - 1 > ceiling - 1)
-		return;
-
-	pmd = pmd_offset(pud, start);
-	pmd_free_tlb(tlb, pmd, start);
-}
-
-static inline void free_pud_range(struct mmu_gather *tlb, p4d_t *p4d,
-				  unsigned long addr, unsigned long end,
-				  unsigned long floor, unsigned long ceiling)
-{
-	pud_t *pud;
-	unsigned long next;
-	unsigned long start;
-
-	start = addr;
-	pud = pud_offset(p4d, addr);
-	do {
-		next = pud_addr_end(addr, end);
-		free_pmd_range(tlb, pud, addr, next, floor, ceiling);
-	} while (pud++, addr = next, addr != end);
-
-	start &= P4D_MASK;
-	if (start < floor)
-		return;
-	if (ceiling) {
-		ceiling &= P4D_MASK;
-		if (!ceiling)
-			return;
-	}
-	if (end - 1 > ceiling - 1)
-		return;
-
-	pud = pud_offset(p4d, start);
-	pud_free_tlb(tlb, pud, start);
-}
-
-static inline void free_p4d_range(struct mmu_gather *tlb, pgd_t *pgd,
-				  unsigned long addr, unsigned long end,
-				  unsigned long floor, unsigned long ceiling)
-{
-	p4d_t *p4d;
-	unsigned long next;
-	unsigned long start;
-
-	start = addr;
-	p4d = p4d_offset(pgd, addr);
-	do {
-		next = p4d_addr_end(addr, end);
-		free_pud_range(tlb, p4d, addr, next, floor, ceiling);
-	} while (p4d++, addr = next, addr != end);
-
-	start &= PGDIR_MASK;
-	if (start < floor)
-		return;
-	if (ceiling) {
-		ceiling &= PGDIR_MASK;
-		if (!ceiling)
-			return;
-	}
-	if (end - 1 > ceiling - 1)
-		return;
-
-	p4d = p4d_offset(pgd, start);
-	p4d_free_tlb(tlb, p4d, start);
-}
-
 void free_pgd_range(struct mmu_gather *tlb, unsigned long addr,
 		    unsigned long end, unsigned long floor,
 		    unsigned long ceiling)
 {
-	pgd_t *pgd;
-	unsigned long next;
-
-	addr &= PMD_MASK;
-	if (addr < floor) {
-		addr += PMD_SIZE;
-		if (!addr)
-			return;
-	}
-	if (ceiling) {
-		ceiling &= PMD_MASK;
-		if (!ceiling)
-			return;
-	}
-	if (end - 1 > ceiling - 1)
-		end -= PMD_SIZE;
-	if (addr > end - 1)
-		return;
-
-	tlb_change_page_size(tlb, PAGE_SIZE);
-	pgd = pgd_offset(tlb->mm, addr);
-	do {
-		next = pgd_addr_end(addr, end);
-		free_p4d_range(tlb, pgd, addr, next, floor, ceiling);
-	} while (pgd++, addr = next, addr != end);
-}
-
-void free_pgtables(struct mmu_gather *tlb, struct vm_area_struct *vma,
-		   unsigned long floor, unsigned long ceiling)
-{
-	while (vma) {
-		struct vm_area_struct *next = vma->vm_next;
-		unsigned long addr = vma->vm_start;
-
-		unlink_anon_vmas(vma);
-		unlink_file_vma(vma);
-
-		while (next && next->vm_start <= vma->vm_end + PMD_SIZE) {
-			vma = next;
-			next = vma->vm_next;
-			unlink_anon_vmas(vma);
-			unlink_file_vma(vma);
-		}
-		free_pgd_range(tlb, addr, vma->vm_end, floor,
-			       next ? next->vm_start : ceiling);
-		vma = next;
-	}
+	/* Stub: page table freeing not needed for Hello World kernel */
 }
 
 static void pmd_install(struct mm_struct *mm, pmd_t *pmd, pgtable_t *pte)
@@ -220,11 +76,6 @@ check_pfn:
 		return NULL;
 
 	return pfn_to_page(pfn);
-}
-
-void unmap_vmas(struct mmu_gather *tlb, struct vm_area_struct *vma,
-		unsigned long start_addr, unsigned long end_addr)
-{
 }
 
 static vm_fault_t do_wp_page(struct vm_fault *vmf) __releases(vmf->ptl)

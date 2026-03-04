@@ -11,7 +11,6 @@ mmu-$(CONFIG_MMU)	:= memory.o \
 			   rmap.o
 
 obj-y			:= filemap.o \
-			   swap.o \
 			   util.o mmzone.o \
 			   percpu.o slab_common.o \
 			   gup.o $(mmu-y)

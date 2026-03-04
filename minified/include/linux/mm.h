@@ -197,7 +197,7 @@ static inline int put_page_testzero(struct page *page)
 	return atomic_dec_and_test(&page->_refcount);
 }
 
-void __put_page(struct page *page);
+static inline void __put_page(struct page *page) {}
 
 
 static inline unsigned long compound_nr(struct page *page)

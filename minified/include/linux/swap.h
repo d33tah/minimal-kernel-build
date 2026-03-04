@@ -14,11 +14,10 @@ extern struct list_lru shadow_nodes;
 	xas_set_lru(xas, &shadow_nodes);				\
 } while (0)
 
-extern void folio_add_lru(struct folio *);
-
-extern void lru_add_drain(void);
-extern void lru_cache_add_inactive_or_unevictable(struct page *page,
-						struct vm_area_struct *vma);
+static inline void folio_add_lru(struct folio *f) {}
+static inline void lru_add_drain(void) {}
+static inline void lru_cache_add_inactive_or_unevictable(struct page *page,
+						struct vm_area_struct *vma) {}
 
 #define total_swap_pages			0L
 

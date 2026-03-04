@@ -8,8 +8,7 @@ obj-y     = fork.o panic.o \
 	    pid.o task_work.o \
 	    extable.o \
 	    kthread.o sys_ni.o \
-	    cred.o \
-	    range.o
+	    cred.o
 
 obj-y += sched/
 obj-y += locking/

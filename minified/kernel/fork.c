@@ -5,7 +5,6 @@
 #include <linux/fdtable.h>
 #include <linux/binfmts.h>
 #include <linux/cpu.h>
-#include <linux/memcontrol.h>
 #define FUTEX_TID_MASK 0x3fffffff
 #include <linux/kthread.h>
 #include <linux/fs_struct.h>
@@ -177,7 +176,11 @@ copy_process(int node, struct kernel_clone_args *args)
 			goto bad_fork;
 		p->stack = page_address(page);
 	}
-	mod_lruvec_kmem_state(p->stack, NR_KERNEL_STACK_KB, THREAD_SIZE / 1024);
+	{
+		struct page *page = compound_head(virt_to_page(p->stack));
+		mod_node_page_state(page_pgdat(page), NR_KERNEL_STACK_KB,
+				    THREAD_SIZE / 1024);
+	}
 	clear_tsk_need_resched(p);
 	set_task_stack_end_magic(p);
 	p->worker_private = NULL;

@@ -2,7 +2,6 @@
 #define _LINUX_USER_NAMESPACE_H
 
 #include <linux/ns_common.h>
-#include <linux/uidgid.h>
 
 struct user_namespace {
 	struct ns_common	ns;

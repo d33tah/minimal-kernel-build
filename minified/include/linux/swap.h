@@ -3,7 +3,6 @@
 #define _LINUX_SWAP_H
 
 #include <linux/mmzone.h>
-#include <linux/memcontrol.h>
 #include <linux/fs.h>
 #include <linux/pagemap.h>
 #include <linux/atomic.h>

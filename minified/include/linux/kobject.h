@@ -14,7 +14,6 @@ struct attribute_group {
 };
 #include <linux/kref.h>
 #include <linux/wait.h>
-#include <linux/uidgid.h>
 
 struct kobject {
 	const char		*name;

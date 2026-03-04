@@ -4,7 +4,7 @@
 
 #include <linux/init.h>
 #include <linux/sched.h>
-#include <linux/uidgid.h>
+#include <linux/user_namespace.h>
 
 struct cred {
 	atomic_t	usage;

@@ -76,7 +76,7 @@ struct kmem_cache {
 	struct kmem_cache_node *node[MAX_NUMNODES];
 };
 
-#include <linux/memcontrol.h>
+struct obj_cgroup;
 /* end fault-inject.h */
 #include <linux/sched/mm.h>
 #include <linux/list_lru.h>

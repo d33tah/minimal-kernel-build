@@ -5,7 +5,6 @@
 #include <linux/compiler.h>
 #include <linux/uaccess.h>
 #include <asm/page.h>
-#include <linux/memcontrol.h>
 
 #include "internal.h"
 

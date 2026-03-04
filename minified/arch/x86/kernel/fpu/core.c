@@ -232,26 +232,15 @@ int fpu_clone(struct task_struct *dst, unsigned long clone_flags, bool minimal)
 	return 0;
 }
 
-static void fpu__drop(struct fpu *fpu)
-{
-	preempt_disable();
-
-	if (fpu == &current->thread.fpu) {
-		asm volatile("1: fwait\n"
-			     "2:\n" _ASM_EXTABLE(1b, 2b));
-		fpregs_deactivate(fpu);
-	}
-
-	preempt_enable();
-}
-
 void fpu_flush_thread(void)
 {
 	struct fpu *fpu = &current->thread.fpu;
 
 	fpstate_reset(fpu);
 	fpregs_lock();
-	fpu__drop(fpu);
+	asm volatile("1: fwait\n"
+		     "2:\n" _ASM_EXTABLE(1b, 2b));
+	fpregs_deactivate(fpu);
 	memcpy(&fpu->fpstate->regs, &init_fpstate.regs,
 	       init_fpstate_copy_size());
 	set_thread_flag(TIF_NEED_FPU_LOAD);

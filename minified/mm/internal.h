@@ -64,7 +64,6 @@ void free_pgtables(struct mmu_gather *tlb, struct vm_area_struct *start_vma,
 
 static inline void set_page_refcounted(struct page *page)
 {
-	VM_BUG_ON_PAGE(PageTail(page), page);
 	VM_BUG_ON_PAGE(page_ref_count(page), page);
 	set_page_count(page, 1);
 }

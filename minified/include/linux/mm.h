@@ -139,8 +139,6 @@ void vm_area_free(struct vm_area_struct *);
 
 #define VM_ACCESS_FLAGS (VM_READ | VM_WRITE | VM_EXEC)
 
-#define VM_INIT_DEF_MASK	VM_NOHUGEPAGE
-
 extern pgprot_t protection_map[16];
 
 #define FAULT_FLAG_DEFAULT  (FAULT_FLAG_ALLOW_RETRY | \
@@ -250,8 +248,7 @@ static inline bool is_cow_mapping(vm_flags_t flags)
 
 static inline int page_to_nid(const struct page *page)
 {
-	struct page *p = (struct page *)page;
-	return (PF_POISONED_CHECK(p)->flags >> NODES_PGSHIFT) & NODES_MASK;
+	return (page->flags >> NODES_PGSHIFT) & NODES_MASK;
 }
 
 static inline struct zone *page_zone(const struct page *page)
@@ -295,13 +292,6 @@ static inline void node_page_state_add(long x, struct pglist_data *pgdat,
 {
 	atomic_long_add(x, &pgdat->vm_stat[item]);
 	atomic_long_add(x, &vm_node_stat[item]);
-}
-
-static inline unsigned long zone_page_state(struct zone *zone,
-					enum zone_stat_item item)
-{
-	long x = atomic_long_read(&zone->vm_stat[item]);
-	return x;
 }
 
 static inline void __mod_zone_page_state(struct zone *zone,

@@ -45,46 +45,15 @@ static inline unsigned long _compound_head(const struct page *page)
 
 #define folio_page(folio, n)	nth_page(&(folio)->page, n)
 
-static __always_inline int PageTail(struct page *page)
-{
-	return READ_ONCE(page->compound_head) & 1;
-}
-
-static __always_inline int PageCompound(struct page *page)
-{
-	return test_bit(PG_head, &page->flags) ||
-	       READ_ONCE(page->compound_head) & 1;
-}
-
-#define	PAGE_POISON_PATTERN	-1l
-static inline int PagePoisoned(const struct page *page)
-{
-	return READ_ONCE(page->flags) == PAGE_POISON_PATTERN;
-}
-
 static unsigned long *folio_flags(struct folio *folio, unsigned n)
 {
 	struct page *page = &folio->page;
 
-	VM_BUG_ON_PGFLAGS(PageTail(page), page);
-	VM_BUG_ON_PGFLAGS(n > 0 && !test_bit(PG_head, &page->flags), page);
 	return &page[n].flags;
 }
 
-#define PF_POISONED_CHECK(page) ({					\
-		VM_BUG_ON_PGFLAGS(PagePoisoned(page), page);		\
-		page; })
-#define PF_ANY(page, enforce)	PF_POISONED_CHECK(page)
-#define PF_HEAD(page, enforce)	PF_POISONED_CHECK(compound_head(page))
-#define PF_ONLY_HEAD(page, enforce) ({					\
-		VM_BUG_ON_PGFLAGS(PageTail(page), page);		\
-		PF_POISONED_CHECK(page); })
-#define PF_NO_TAIL(page, enforce) ({					\
-		VM_BUG_ON_PGFLAGS(enforce && PageTail(page), page);	\
-		PF_POISONED_CHECK(compound_head(page)); })
-#define PF_NO_COMPOUND(page, enforce) ({				\
-		VM_BUG_ON_PGFLAGS(enforce && PageCompound(page), page);	\
-		PF_POISONED_CHECK(page); })
+#define PF_ANY(page, enforce)	(page)
+#define PF_NO_COMPOUND(page, enforce)	(page)
 
 /* Hand-written page flag functions - only the variants actually used */
 static __always_inline bool folio_test_locked(struct folio *folio)
@@ -150,7 +119,6 @@ static __always_inline void __SetPageUptodate(struct page *page)
 
 static __always_inline int PageHead(struct page *page)
 {
-	PF_POISONED_CHECK(page);
 	return test_bit(PG_head, &page->flags);
 }
 
@@ -185,9 +153,6 @@ PAGE_TYPE_OPS(Buddy, buddy)
 PAGE_TYPE_OPS(Table, table)
 
 #undef PF_ANY
-#undef PF_HEAD
-#undef PF_ONLY_HEAD
-#undef PF_NO_TAIL
 #undef PF_NO_COMPOUND
 #endif  
 

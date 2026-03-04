@@ -5,11 +5,6 @@
  * entry_32.S contains the system-call and low-level fault and trap handling routines.
  *
  * Stack layout while running C code:
- *	ptrace needs to have all registers on the stack.
- *	If the order here is changed, it needs to be
- *	updated in fork.c:copy_process(), signal.c:do_signal(),
- *	ptrace.c and ptrace.h
- *
  *	 0(%esp) - %ebx
  *	 4(%esp) - %ecx
  *	 8(%esp) - %edx
@@ -41,18 +36,14 @@
 #include <asm/alternative.h>
 #include <asm/asm.h>
 #include <asm/smap.h>
-/* frame.h inlined - all empty (no frame pointers) */
 #include <asm/nospec-branch.h>
-/* --- 2026-01-26 01:25 --- Inlined from calling.h */
 #include <linux/jump_label.h>
 #include <asm/unwind_hints.h>
 #include <asm/page_types.h>
 #include <generated/asm-offsets.h>
-/* ptrace-abi.h inlined - was empty (all ptrace constants removed) */
 #include <asm/msr.h>
 # undef		UNWIND_HINT_IRET_REGS
 # define	UNWIND_HINT_IRET_REGS
-/* end calling.h */
 
 	.section .entry.text, "ax"
 
@@ -67,10 +58,7 @@
 #define CS_FROM_KERNEL		(1 << 29)
 
 .macro FIXUP_FRAME
-	/*
-	 * The high bits of the CS dword (__csh) are used for CS_FROM_*.
-	 * Clear them in case hardware didn't do this for us.
-	 */
+	/* Clear high bits of CS dword used for CS_FROM_* markers */
 	andl	$0x0000ffff, 4*4(%esp)
 
 	testl	$USER_SEGMENT_RPL_MASK, 4*4(%esp)
@@ -79,40 +67,12 @@
 	orl	$CS_FROM_KERNEL, 4*4(%esp)
 
 	/*
-	 * When we're here from kernel mode; the (exception) stack looks like:
-	 *
-	 *  6*4(%esp) - <previous context>
-	 *  5*4(%esp) - flags
-	 *  4*4(%esp) - cs
-	 *  3*4(%esp) - ip
-	 *  2*4(%esp) - orig_eax
-	 *  1*4(%esp) - gs / function
-	 *  0*4(%esp) - fs
-	 *
-	 * Lets build a 5 entry IRET frame after that, such that struct pt_regs
-	 * is complete and in particular regs->sp is correct. This gives us
-	 * the original 6 entries as gap:
-	 *
-	 * 14*4(%esp) - <previous context>
-	 * 13*4(%esp) - gap / flags
-	 * 12*4(%esp) - gap / cs
-	 * 11*4(%esp) - gap / ip
-	 * 10*4(%esp) - gap / orig_eax
-	 *  9*4(%esp) - gap / gs / function
-	 *  8*4(%esp) - gap / fs
-	 *  7*4(%esp) - ss
-	 *  6*4(%esp) - sp
-	 *  5*4(%esp) - flags
-	 *  4*4(%esp) - cs
-	 *  3*4(%esp) - ip
-	 *  2*4(%esp) - orig_eax
-	 *  1*4(%esp) - gs / function
-	 *  0*4(%esp) - fs
+	 * Kernel-mode exception: build a 5-entry IRET frame so that
+	 * struct pt_regs is complete and regs->sp is correct.
 	 */
-
-	pushl	%ss		# ss
-	pushl	%esp		# sp (points at ss)
-	addl	$7*4, (%esp)	# point sp back at the previous context
+	pushl	%ss
+	pushl	%esp
+	addl	$7*4, (%esp)
 	pushl	7*4(%esp)	# flags
 	pushl	7*4(%esp)	# cs
 	pushl	7*4(%esp)	# ip
@@ -123,21 +83,10 @@
 .endm
 
 .macro IRET_FRAME
-	/*
-	 * We're called with %ds, %es, %fs, and %gs from the interrupted
-	 * frame, so we shouldn't use them.  Also, we may be in ESPFIX
-	 * mode and therefore have a nonzero SS base and an offset ESP,
-	 * so any attempt to access the stack needs to use SS.  (except for
-	 * accesses through %esp, which automatically use SS.)
-	 */
 	testl $CS_FROM_KERNEL, 1*4(%esp)
 	jz .Lfinished_frame_\@
 
-	/*
-	 * Reconstruct the 3 entry IRET frame right after the (modified)
-	 * regs->sp without lowering %esp in between, such that an NMI in the
-	 * middle doesn't scribble our stack.
-	 */
+	/* Reconstruct 3-entry IRET frame at regs->sp without lowering %esp */
 	pushl	%eax
 	pushl	%ecx
 	movl	5*4(%esp), %eax		# (modified) regs->sp
@@ -186,7 +135,6 @@
 	movl	$(__USER_DS), %edx
 	movl	%edx, %ds
 	movl	%edx, %es
-	/* Switch to kernel stack if necessary */
 .if \switch_stacks > 0
 	SWITCH_TO_KERNEL_STACK
 .endif
@@ -214,51 +162,31 @@
 4:	addl	$(4 + \pop), %esp	/* pop the unused "gs" slot */
 	IRET_FRAME
 
-	/*
-	 * There is no _ASM_EXTABLE_TYPE_REG() for ASM, however since this is
-	 * ASM the registers are known and we can trivially hard-code them.
-	 */
 	_ASM_EXTABLE_TYPE(1b, 2b, EX_TYPE_POP_ZERO|EX_REG_DS)
 	_ASM_EXTABLE_TYPE(2b, 3b, EX_TYPE_POP_ZERO|EX_REG_ES)
 	_ASM_EXTABLE_TYPE(3b, 4b, EX_TYPE_POP_ZERO|EX_REG_FS)
 .endm
 
 .macro RESTORE_ALL_NMI cr3_reg:req pop=0
-	/* PTI disabled - no CR3 switching needed */
 	RESTORE_REGS pop=\pop
 .endm
 
 
 /*
- * Called with pt_regs fully populated and kernel segments loaded,
- * so we can access PER_CPU and use the integer registers.
- *
- * We need to be very careful here with the %esp switch, because an NMI
- * can happen everywhere. If the NMI handler finds itself on the
- * entry-stack, it will overwrite the task-stack and everything we
- * copied there. So allocate the stack-frame on the task-stack and
- * switch to it before we do any copying.
+ * SWITCH_TO_KERNEL_STACK: called with pt_regs on stack and kernel
+ * segments loaded. Copies entry-stack frame to task-stack if needed.
  */
-
 .macro SWITCH_TO_KERNEL_STACK
 
-
-
 	SWITCH_TO_KERNEL_CR3 scratch_reg=%eax
-
-	/*
-	 * %eax now contains the entry cr3 and we carry it forward in
-	 * that register for the time this macro runs
-	 */
 
 	/* Are we on the entry stack? Bail out if not! */
 	movl	PER_CPU_VAR(cpu_entry_area), %ecx
 	addl	$CPU_ENTRY_AREA_entry_stack + SIZEOF_entry_stack, %ecx
-	subl	%esp, %ecx	/* ecx = (end of entry_stack) - esp */
+	subl	%esp, %ecx
 	cmpl	$SIZEOF_entry_stack, %ecx
 	jae	.Lend_\@
 
-	/* Load stack pointer into %esi and %edi */
 	movl	%esp, %esi
 	movl	%esi, %edi
 
@@ -275,21 +203,12 @@
 	cmpl	$USER_RPL, %ecx
 	jb	.Lentry_from_kernel_\@
 
-	/* Bytes to copy */
 	movl	$PTREGS_SIZE, %ecx
 
 .Lcopy_pt_regs_\@:
-
-	/* Allocate frame on task-stack */
 	subl	%ecx, %edi
-
-	/* Switch to task-stack */
 	movl	%edi, %esp
 
-	/*
-	 * We are now on the task-stack and can safely copy over the
-	 * stack-frame
-	 */
 	shrl	$2, %ecx
 	cld
 	rep movsl
@@ -297,139 +216,60 @@
 	jmp .Lend_\@
 
 .Lentry_from_kernel_\@:
-
-	/*
-	 * This handles the case when we enter the kernel from
-	 * kernel-mode and %esp points to the entry-stack. When this
-	 * happens we need to switch to the task-stack to run C code,
-	 * but switch back to the entry-stack again when we approach
-	 * iret and return to the interrupted code-path. This usually
-	 * happens when we hit an exception while restoring user-space
-	 * segment registers on the way back to user-space or when the
-	 * sysenter handler runs with eflags.tf set.
-	 *
-	 * When we switch to the task-stack here, we can't trust the
-	 * contents of the entry-stack anymore, as the exception handler
-	 * might be scheduled out or moved to another CPU. Therefore we
-	 * copy the complete entry-stack to the task-stack and set a
-	 * marker in the iret-frame (bit 31 of the CS dword) to detect
-	 * what we've done on the iret path.
-	 *
-	 * On the iret path we copy everything back and switch to the
-	 * entry-stack, so that the interrupted kernel code-path
-	 * continues on the same stack it was interrupted with.
-	 *
-	 * Be aware that an NMI can happen anytime in this code.
-	 *
-	 * %esi: Entry-Stack pointer (same as %esp)
-	 * %edi: Top of the task stack
-	 * %eax: CR3 on kernel entry
-	 */
-
 	/* Calculate number of bytes on the entry stack in %ecx */
 	movl	%esi, %ecx
-
-	/* %ecx to the top of entry-stack */
 	andl	$(MASK_entry_stack), %ecx
 	addl	$(SIZEOF_entry_stack), %ecx
-
-	/* Number of bytes on the entry stack to %ecx */
 	sub	%esi, %ecx
 
 	/* Mark stackframe as coming from entry stack */
 	orl	$CS_FROM_ENTRY_STACK, PT_CS(%esp)
 
-	/* PTI disabled - no CR3 marker needed, fall through to copy */
-
 .Lend_\@:
 .endm
 
 /*
- * Switch back from the kernel stack to the entry stack.
- *
- * The %esp register must point to pt_regs on the task stack. It uses
- * 'rep movsl' to copy the contents of the stack over to the entry stack.
- *
- * We must be very careful here, as we can't trust the contents of the
- * task-stack once we switched to the entry-stack. When an NMI happens
- * while on the entry-stack, the NMI handler will switch back to the top
- * of the task stack, overwriting our stack-frame we are about to copy.
- * Therefore we switch the stack only after everything is copied over.
+ * SWITCH_TO_ENTRY_STACK: copy task-stack pt_regs to entry-stack for iret.
  */
 .macro SWITCH_TO_ENTRY_STACK
-
-	/* Bytes to copy */
 	movl	$PTREGS_SIZE, %ecx
-
-	/* Initialize source and destination for movsl */
 	movl	PER_CPU_VAR(cpu_tss_rw + TSS_sp0), %edi
 	subl	%ecx, %edi
 	movl	%esp, %esi
-
-	/* Save future stack pointer in %ebx */
 	movl	%edi, %ebx
 
-	/* Copy over the stack-frame */
 	shrl	$2, %ecx
 	cld
 	rep movsl
 
-	/*
-	 * Switch to entry-stack - needs to happen after everything is
-	 * copied because the NMI handler will overwrite the task-stack
-	 * when on entry-stack
-	 */
 	movl	%ebx, %esp
 
 .Lend_\@:
 .endm
 
 /*
- * This macro handles the case when we return to kernel-mode on the iret
- * path and have to switch back to the entry stack and/or user-cr3
- *
- * See the comments below the .Lentry_from_kernel_\@ label in the
- * SWITCH_TO_KERNEL_STACK macro for more details.
+ * PARANOID_EXIT_TO_KERNEL_MODE: on return-to-kernel, switch back to
+ * entry-stack if we came from there.
  */
 .macro PARANOID_EXIT_TO_KERNEL_MODE
-
-	/*
-	 * Test if we entered the kernel with the entry-stack. Most
-	 * likely we did not, because this code only runs on the
-	 * return-to-kernel path.
-	 */
 	testl	$CS_FROM_ENTRY_STACK, PT_CS(%esp)
 	jz	.Lend_\@
 
-	/* Unlikely slow-path */
-
-	/* Clear marker from stack-frame */
 	andl	$(~CS_FROM_ENTRY_STACK), PT_CS(%esp)
 
-	/* Copy the remaining task-stack contents to entry-stack */
 	movl	%esp, %esi
 	movl	PER_CPU_VAR(cpu_tss_rw + TSS_sp0), %edi
 
-	/* Bytes on the task-stack to ecx */
 	movl	PER_CPU_VAR(cpu_tss_rw + TSS_sp1), %ecx
 	subl	%esi, %ecx
 
-	/* Allocate stack-frame on entry-stack */
 	subl	%ecx, %edi
-
-	/*
-	 * Save future stack-pointer, we must not switch until the
-	 * copy is done, otherwise the NMI handler could destroy the
-	 * contents of the task-stack we are about to copy.
-	 */
 	movl	%edi, %ebx
 
-	/* Do the copy */
 	shrl	$2, %ecx
 	cld
 	rep movsl
 
-	/* Safe to switch to entry-stack now */
 	movl	%ebx, %esp
 
 .Lend_\@:
@@ -437,10 +277,6 @@
 
 /**
  * idtentry - Macro to generate entry stubs for simple IDT entries
- * @vector:		Vector number
- * @asmsym:		ASM symbol for the entry point
- * @cfunc:		C function to be called
- * @has_error_code:	Hardware pushed error code on stack
  */
 .macro idtentry vector asmsym cfunc has_error_code:req
 SYM_CODE_START(\asmsym)
@@ -451,9 +287,7 @@ SYM_CODE_START(\asmsym)
 		pushl	$0		/* Clear the error code */
 	.endif
 
-	/* Push the C-function address into the GS slot */
 	pushl	$\cfunc
-	/* Invoke the common exception entry */
 	jmp	handle_exception
 SYM_CODE_END(\asmsym)
 .endm
@@ -472,11 +306,6 @@ SYM_CODE_START_LOCAL(asm_\cfunc)
 SYM_CODE_END(asm_\cfunc)
 .endm
 
-/*
- * Include the defines which emit the idt entries which are shared
- * shared between 32 and 64 bit and emit the __irqentry_text_* markers
- * so the stacktrace boundary checks work.
- */
 	.align 16
 	.globl __irqentry_text_start
 __irqentry_text_start:
@@ -488,42 +317,23 @@ __irqentry_text_start:
 __irqentry_text_end:
 
 /*
- * %eax: prev task
- * %edx: next task
+ * __switch_to_asm: %eax=prev, %edx=next
  */
 .pushsection .text, "ax"
 SYM_CODE_START(__switch_to_asm)
-	/*
-	 * Save callee-saved registers
-	 * This must match the order in struct inactive_task_frame
-	 */
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%edi
 	pushl	%esi
-	/*
-	 * Flags are saved to prevent AC leakage. This could go
-	 * away if objtool would have 32bit support to verify
-	 * the STAC/CLAC correctness.
-	 */
 	pushfl
 
 	/* switch stack */
 	movl	%esp, TASK_threadsp(%eax)
 	movl	TASK_threadsp(%edx), %esp
 
-	/*
-	 * When switching from a shallower to a deeper call stack
-	 * the RSB may either underflow or use entries populated
-	 * with userspace addresses. On CPUs where those concerns
-	 * exist, overwrite the RSB with entries which capture
-	 * speculative execution to prevent attack.
-	 */
 	FILL_RETURN_BUFFER %ebx, RSB_CLEAR_LOOPS, X86_FEATURE_RSB_CTXSW
 
-	/* Restore flags or the incoming task to restore AC state. */
 	popfl
-	/* restore callee-saved registers */
 	popl	%esi
 	popl	%edi
 	popl	%ebx
@@ -533,32 +343,18 @@ SYM_CODE_START(__switch_to_asm)
 SYM_CODE_END(__switch_to_asm)
 .popsection
 
-/*
- * The unwinder expects the last frame on the stack to always be at the same
- * offset from the end of the page, which allows it to validate the stack.
- * Calling schedule_tail() directly would break that convention because its an
- * asmlinkage function so its argument has to be pushed on the stack.  This
- * wrapper creates a proper "end of stack" frame header before the call.
- */
 .pushsection .text, "ax"
 SYM_FUNC_START(schedule_tail_wrapper)
-
-
 	pushl	%eax
 	call	schedule_tail
 	popl	%eax
-
-
 	RET
 SYM_FUNC_END(schedule_tail_wrapper)
 .popsection
 
 /*
- * A newly forked process directly context switches into this address.
- *
- * eax: prev task we switched from
- * ebx: kernel thread func (NULL for user thread)
- * edi: kernel thread arg
+ * ret_from_fork: entered by newly forked processes.
+ * eax: prev task, ebx: kernel thread func (NULL for user), edi: arg
  */
 .pushsection .text, "ax"
 SYM_CODE_START(ret_from_fork)
@@ -568,7 +364,6 @@ SYM_CODE_START(ret_from_fork)
 	jnz	1f		/* kernel threads are uncommon */
 
 2:
-	/* When we fork, we trace the syscall return in the child, too. */
 	movl    %esp, %eax
 	call    syscall_exit_to_user_mode
 	jmp     .Lsyscall_32_done
@@ -576,96 +371,43 @@ SYM_CODE_START(ret_from_fork)
 	/* kernel thread */
 1:	movl	%edi, %eax
 	CALL_NOSPEC ebx
-	/*
-	 * A kernel thread is allowed to return here after successfully
-	 * calling kernel_execve().  Exit to userspace to complete the execve()
-	 * syscall.
-	 */
 	movl	$0, PT_EAX(%esp)
 	jmp	2b
 SYM_CODE_END(ret_from_fork)
 .popsection
 
-/* SYSENTER entry removed - init uses INT $0x80 only */
-
-/*
- * 32-bit legacy system call entry.
- *
- * 32-bit x86 Linux system calls traditionally used the INT $0x80
- * instruction.  INT $0x80 lands here.
- *
- * This entry point can be used by any 32-bit perform system calls.
- * Instances of INT $0x80 can be found inline in various programs and
- * libraries.  It is also used by the vDSO's __kernel_vsyscall
- * fallback for hardware that doesn't support a faster entry method.
- * Restarted 32-bit system calls also fall back to INT $0x80
- * regardless of what instruction was originally used to do the system
- * call.  (64-bit programs can use INT $0x80 as well, but they can
- * only run on 64-bit kernels and therefore land in
- * entry_INT80_compat.)
- *
- * This is considered a slow path.  It is not used by most libc
- * implementations on modern hardware except during process startup.
- *
- * Arguments:
- * eax  system call number
- * ebx  arg1
- * ecx  arg2
- * edx  arg3
- * esi  arg4
- * edi  arg5
- * ebp  arg6
- */
+/* 32-bit legacy system call entry via INT $0x80 */
 SYM_FUNC_START(entry_INT80_32)
 	ASM_CLAC
 	pushl	%eax			/* pt_regs->orig_ax */
 
-	SAVE_ALL pt_regs_ax=$-ENOSYS switch_stacks=1	/* save rest */
+	SAVE_ALL pt_regs_ax=$-ENOSYS switch_stacks=1
 
 	movl	%esp, %eax
 	call	do_int80_syscall_32
 .Lsyscall_32_done:
 
-
 restore_all_switch_stack:
 	SWITCH_TO_ENTRY_STACK
-
-
-	/* Switch back to user CR3 */
 	SWITCH_TO_USER_CR3 scratch_reg=%eax
 
-
-
-	/* Restore user state */
 	RESTORE_REGS pop=4			# skip orig_eax/error_code
 .Lirq_return:
-	/*
-	 * ARCH_HAS_MEMBARRIER_SYNC_CORE rely on IRET core serialization
-	 * when returning from IPI handler and when returning from
-	 * scheduler to user-space.
-	 */
 	iret
 
 .Lasm_iret_error:
 	pushl	$0				# no error code
 	pushl	$iret_error
-
-	/* CONFIG_DEBUG_ENTRY not enabled - no CR3 switch needed */
 	jmp	handle_exception
 
 	_ASM_EXTABLE(.Lirq_return, .Lasm_iret_error)
 SYM_FUNC_END(entry_INT80_32)
 
 
-
 SYM_CODE_START_LOCAL_NOALIGN(handle_exception)
-	/* the function address is in %gs's slot on the stack */
 	SAVE_ALL switch_stacks=1 skip_gs=1
 
-
 	movl	PT_GS(%esp), %edi		# get the function address
-
-	/* fixup orig %eax */
 	movl	PT_ORIG_EAX(%esp), %edx		# get the error code
 	movl	$-1, PT_ORIG_EAX(%esp)		# no syscall to restart
 
@@ -673,12 +415,9 @@ SYM_CODE_START_LOCAL_NOALIGN(handle_exception)
 	CALL_NOSPEC edi
 
 handle_exception_return:
-	/*
-	 * We can be coming here from child spawned by kernel_thread().
-	 */
 	movl	PT_CS(%esp), %eax
 	andl	$SEGMENT_RPL_MASK, %eax
-	cmpl	$USER_RPL, %eax			# returning to v8086 or userspace ?
+	cmpl	$USER_RPL, %eax			# returning to userspace?
 	jnb	ret_to_user
 
 	PARANOID_EXIT_TO_KERNEL_MODE
@@ -691,7 +430,6 @@ ret_to_user:
 	jmp	restore_all_switch_stack
 SYM_CODE_END(handle_exception)
 
-/* NMI handler - simplified (no SYSENTER stack) */
 SYM_CODE_START(asm_exc_nmi)
 	ASM_CLAC
 	pushl	%eax				# pt_regs->orig_ax
@@ -705,12 +443,9 @@ SYM_CODE_END(asm_exc_nmi)
 
 .pushsection .text, "ax"
 SYM_CODE_START(rewind_stack_and_make_dead)
-	/* Prevent any naive code from trying to unwind to our caller. */
 	xorl	%ebp, %ebp
-
 	movl	PER_CPU_VAR(cpu_current_top_of_stack), %esi
 	leal	-TOP_OF_KERNEL_STACK_PADDING-PTREGS_SIZE(%esi), %esp
-
 	call	make_task_dead
 1:	jmp 1b
 SYM_CODE_END(rewind_stack_and_make_dead)

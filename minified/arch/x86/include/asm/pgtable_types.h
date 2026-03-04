@@ -7,25 +7,15 @@
 
 #include <asm/page_types.h>
 
-#define _PAGE_BIT_PRESENT	0	 
-#define _PAGE_BIT_RW		1	 
-#define _PAGE_BIT_USER		2	 
-#define _PAGE_BIT_ACCESSED	5	 
-#define _PAGE_BIT_DIRTY		6	 
-#define _PAGE_BIT_PSE		7	 
-#define _PAGE_BIT_GLOBAL	8	 
-#define _PAGE_BIT_SOFTW1	9
-#define _PAGE_BIT_SPECIAL	_PAGE_BIT_SOFTW1
-#define _PAGE_BIT_PROTNONE	_PAGE_BIT_GLOBAL
-
-#define _PAGE_PRESENT	(_AT(pteval_t, 1) << _PAGE_BIT_PRESENT)
-#define _PAGE_RW	(_AT(pteval_t, 1) << _PAGE_BIT_RW)
-#define _PAGE_USER	(_AT(pteval_t, 1) << _PAGE_BIT_USER)
-#define _PAGE_ACCESSED	(_AT(pteval_t, 1) << _PAGE_BIT_ACCESSED)
-#define _PAGE_DIRTY	(_AT(pteval_t, 1) << _PAGE_BIT_DIRTY)
-#define _PAGE_PSE	(_AT(pteval_t, 1) << _PAGE_BIT_PSE)
-#define _PAGE_GLOBAL	(_AT(pteval_t, 1) << _PAGE_BIT_GLOBAL)
-#define _PAGE_SPECIAL	(_AT(pteval_t, 1) << _PAGE_BIT_SPECIAL)
+#define _PAGE_PRESENT	(_AT(pteval_t, 1) << 0)
+#define _PAGE_RW	(_AT(pteval_t, 1) << 1)
+#define _PAGE_USER	(_AT(pteval_t, 1) << 2)
+#define _PAGE_ACCESSED	(_AT(pteval_t, 1) << 5)
+#define _PAGE_DIRTY	(_AT(pteval_t, 1) << 6)
+#define _PAGE_PSE	(_AT(pteval_t, 1) << 7)
+#define _PAGE_GLOBAL	(_AT(pteval_t, 1) << 8)
+#define _PAGE_SPECIAL	(_AT(pteval_t, 1) << 9)
+#define _PAGE_PROTNONE	_PAGE_GLOBAL
 
 #define _PAGE_KNL_ERRATUM_MASK 0
 
@@ -33,56 +23,35 @@
 
 #define _PAGE_NX	(_AT(pteval_t, 0))
 
-#define _PAGE_PROTNONE	(_AT(pteval_t, 1) << _PAGE_BIT_PROTNONE)
-
 #ifndef __ASSEMBLY__
 struct mm_struct;
 #endif
 
 #define _PAGE_ENC		(_AT(pteval_t, sme_me_mask))
 
-#define __PP _PAGE_PRESENT
-#define __RW _PAGE_RW
-#define _USR _PAGE_USER
-#define ___A _PAGE_ACCESSED
-#define ___D _PAGE_DIRTY
-#define ___G _PAGE_GLOBAL
-#define __NX _PAGE_NX
-
-#define _ENC _PAGE_ENC
-#define _PSE _PAGE_PSE
-
 #define pgprot_val(x)		((x).pgprot)
 #define __pgprot(x)		((pgprot_t) { (x) } )
-#define __pg(x)			__pgprot(x)
 
-#define PAGE_NONE	     __pg(   0|   0|   0|___A|   0|   0|   0|___G)
-#define PAGE_SHARED	     __pg(__PP|__RW|_USR|___A|__NX|   0|   0|   0)
-#define PAGE_SHARED_EXEC     __pg(__PP|__RW|_USR|___A|   0|   0|   0|   0)
-#define PAGE_COPY_EXEC	     __pg(__PP|   0|_USR|___A|   0|   0|   0|   0)
-#define PAGE_COPY	     __pg(__PP|   0|_USR|___A|__NX|   0|   0|   0)
-#define PAGE_READONLY	     __pg(__PP|   0|_USR|___A|__NX|   0|   0|   0)
-#define PAGE_READONLY_EXEC   __pg(__PP|   0|_USR|___A|   0|   0|   0|   0)
+#define PAGE_NONE	     __pgprot(_PAGE_ACCESSED|_PAGE_GLOBAL)
+#define PAGE_SHARED	     __pgprot(_PAGE_PRESENT|_PAGE_RW|_PAGE_USER|_PAGE_ACCESSED|_PAGE_NX)
+#define PAGE_SHARED_EXEC     __pgprot(_PAGE_PRESENT|_PAGE_RW|_PAGE_USER|_PAGE_ACCESSED)
+#define PAGE_COPY_EXEC	     __pgprot(_PAGE_PRESENT|_PAGE_USER|_PAGE_ACCESSED)
+#define PAGE_COPY	     __pgprot(_PAGE_PRESENT|_PAGE_USER|_PAGE_ACCESSED|_PAGE_NX)
+#define PAGE_READONLY	     __pgprot(_PAGE_PRESENT|_PAGE_USER|_PAGE_ACCESSED|_PAGE_NX)
+#define PAGE_READONLY_EXEC   __pgprot(_PAGE_PRESENT|_PAGE_USER|_PAGE_ACCESSED)
 
-#define __PAGE_KERNEL		 (__PP|__RW|   0|___A|__NX|___D|   0|___G)
-#define __PAGE_KERNEL_EXEC	 (__PP|__RW|   0|___A|   0|___D|   0|___G)
-#define _KERNPG_TABLE		 (__PP|__RW|   0|___A|   0|___D|   0|   0| _ENC)
-#define _PAGE_TABLE		 (__PP|__RW|_USR|___A|   0|___D|   0|   0| _ENC)
-#define __PAGE_KERNEL_RO	 (__PP|   0|   0|___A|__NX|___D|   0|___G)
-#define __PAGE_KERNEL_LARGE	 (__PP|__RW|   0|___A|__NX|___D|_PSE|___G)
-#define __PAGE_KERNEL_LARGE_EXEC (__PP|__RW|   0|___A|   0|___D|_PSE|___G)
+#define _KERNPG_TABLE	(_PAGE_PRESENT|_PAGE_RW|_PAGE_ACCESSED|_PAGE_DIRTY|_PAGE_ENC)
+#define _PAGE_TABLE	(_PAGE_PRESENT|_PAGE_RW|_PAGE_USER|_PAGE_ACCESSED|_PAGE_DIRTY|_PAGE_ENC)
 
 #ifndef __ASSEMBLY__
 
-#define __pgprot_mask(x)	__pgprot((x) & __default_kernel_pte_mask)
+#define PAGE_KERNEL		__pgprot((_PAGE_PRESENT|_PAGE_RW|_PAGE_ACCESSED|_PAGE_NX|_PAGE_DIRTY|_PAGE_GLOBAL|_PAGE_ENC) & __default_kernel_pte_mask)
+#define PAGE_KERNEL_RO		__pgprot((_PAGE_PRESENT|_PAGE_ACCESSED|_PAGE_NX|_PAGE_DIRTY|_PAGE_GLOBAL|_PAGE_ENC) & __default_kernel_pte_mask)
+#define PAGE_KERNEL_EXEC	__pgprot((_PAGE_PRESENT|_PAGE_RW|_PAGE_ACCESSED|_PAGE_DIRTY|_PAGE_GLOBAL|_PAGE_ENC) & __default_kernel_pte_mask)
+#define PAGE_KERNEL_LARGE	__pgprot((_PAGE_PRESENT|_PAGE_RW|_PAGE_ACCESSED|_PAGE_NX|_PAGE_DIRTY|_PAGE_PSE|_PAGE_GLOBAL|_PAGE_ENC) & __default_kernel_pte_mask)
+#define PAGE_KERNEL_LARGE_EXEC	__pgprot((_PAGE_PRESENT|_PAGE_RW|_PAGE_ACCESSED|_PAGE_DIRTY|_PAGE_PSE|_PAGE_GLOBAL|_PAGE_ENC) & __default_kernel_pte_mask)
 
-#define PAGE_KERNEL		__pgprot_mask(__PAGE_KERNEL            | _ENC)
-#define PAGE_KERNEL_RO		__pgprot_mask(__PAGE_KERNEL_RO         | _ENC)
-#define PAGE_KERNEL_EXEC	__pgprot_mask(__PAGE_KERNEL_EXEC       | _ENC)
-#define PAGE_KERNEL_LARGE	__pgprot_mask(__PAGE_KERNEL_LARGE      | _ENC)
-#define PAGE_KERNEL_LARGE_EXEC	__pgprot_mask(__PAGE_KERNEL_LARGE_EXEC | _ENC)
-
-#endif	 
+#endif
 
 #define __P000	PAGE_NONE
 #define __P001	PAGE_READONLY
@@ -132,7 +101,6 @@ typedef union {
 #include <linux/types.h>
 
 #define PTE_PFN_MASK		((pteval_t)PHYSICAL_PAGE_MASK)
-#define PTE_FLAGS_MASK		(~PTE_PFN_MASK)
 
 typedef struct pgprot { pgprotval_t pgprot; } pgprot_t;
 
@@ -245,7 +213,7 @@ static inline pteval_t native_pte_val(pte_t pte)
 
 static inline pteval_t pte_flags(pte_t pte)
 {
-	return native_pte_val(pte) & PTE_FLAGS_MASK;
+	return native_pte_val(pte) & ~PTE_PFN_MASK;
 }
 
 typedef struct page *pgtable_t;

@@ -170,7 +170,6 @@ static inline void native_pte_clear(struct mm_struct *mm,
 
 #ifndef __ASSEMBLY__
 #include <linux/mm_types.h>
-#include <linux/mmdebug.h>
 #include <linux/log2.h>
 #include <asm/fixmap.h>
 

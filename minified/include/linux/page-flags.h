@@ -2,7 +2,6 @@
 #ifndef PAGE_FLAGS_H
 #define PAGE_FLAGS_H
 
-#include <linux/mmdebug.h>
 #ifndef __GENERATING_BOUNDS_H
 #include <linux/mm_types.h>
 #include <generated/bounds.h>

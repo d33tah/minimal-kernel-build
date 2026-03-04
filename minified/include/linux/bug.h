@@ -18,4 +18,10 @@ static inline enum bug_trap_type report_bug(unsigned long bug_addr,
 	return BUG_TRAP_TYPE_BUG;
 }
 
+#define VM_BUG_ON(cond) BUILD_BUG_ON_INVALID(cond)
+#define VM_BUG_ON_PAGE(cond, page) VM_BUG_ON(cond)
+#define VM_BUG_ON_MM(cond, mm) VM_BUG_ON(cond)
+#define VM_WARN_ON(cond) BUILD_BUG_ON_INVALID(cond)
+#define VM_WARN_ON_ONCE(cond) BUILD_BUG_ON_INVALID(cond)
+
 #endif

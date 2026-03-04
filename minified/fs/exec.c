@@ -24,14 +24,12 @@ bool path_noexec(const struct path *path)
 	       (path->mnt->mnt_sb->s_iflags & SB_I_NOEXEC);
 }
 
-static int count_strings_kernel(const char *const *argv)
+static int count_strings_kernel(const char *const *p)
 {
-	int i;
-
-	if (!argv)
-		return 0;
-	for (i = 0; argv[i]; ++i)
-		;
+	int i = 0;
+	if (p)
+		for (; p[i]; i++)
+			;
 	return i;
 }
 
@@ -173,18 +171,6 @@ out_unlock:
 	return ret;
 }
 
-static struct file *do_open_execat(int fd, struct filename *name, int flags)
-{
-	struct open_flags open_exec_flags = {
-		.open_flag = O_LARGEFILE | O_RDONLY | __FMODE_EXEC,
-		.acc_mode = MAY_EXEC,
-		.intent = LOOKUP_OPEN,
-		.lookup_flags = LOOKUP_FOLLOW,
-	};
-
-	return do_filp_open(fd, name, &open_exec_flags);
-}
-
 void __set_task_comm(struct task_struct *tsk, const char *buf, bool exec)
 {
 	task_lock(tsk);
@@ -253,116 +239,32 @@ void setup_new_exec(struct linux_binprm *bprm)
 	up_write(&me->signal->exec_update_lock);
 }
 
-static void free_bprm(struct linux_binprm *bprm)
-{
-	if (bprm->mm) {
-		mmput(bprm->mm);
-	}
-	if (bprm->cred)
-		put_cred(bprm->cred);
-	if (bprm->file)
-		fput(bprm->file);
-}
-
 static struct linux_binprm *alloc_bprm(int fd, struct filename *filename)
 {
 	struct linux_binprm *bprm = kzalloc(sizeof(*bprm), GFP_KERNEL);
-	struct vm_area_struct *vma = NULL;
-	struct mm_struct *mm = NULL;
-	int retval = -ENOMEM;
 	if (!bprm)
-		goto out;
-
+		panic("alloc_bprm: kzalloc");
 	bprm->filename = filename->name;
-
-	bprm->mm = mm = mm_alloc();
-	if (!mm)
-		goto out_free;
-
+	bprm->mm = mm_alloc();
+	if (!bprm->mm)
+		panic("alloc_bprm: mm_alloc");
 	task_lock(current->group_leader);
 	bprm->rlim_stack = current->signal->rlim[RLIMIT_STACK];
 	task_unlock(current->group_leader);
-
-	bprm->vma = vma = vm_area_alloc(mm);
-	if (!vma) {
-		retval = -ENOMEM;
-		goto err_mm;
-	}
-	vma_set_anonymous(vma);
-
-	if (mmap_write_lock_killable(mm)) {
-		retval = -EINTR;
-		goto err_vma;
-	}
-
-	vma->vm_end = STACK_TOP_MAX;
-	vma->vm_start = vma->vm_end - PAGE_SIZE;
-	vma->vm_flags = VM_STACK_FLAGS | VM_STACK_INCOMPLETE_SETUP;
-	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
-
-	retval = insert_vm_struct(mm, vma);
-	if (retval)
-		goto err_unlock;
-
-	mmap_write_unlock(mm);
-	bprm->p = vma->vm_end - sizeof(void *);
+	bprm->vma = vm_area_alloc(bprm->mm);
+	if (!bprm->vma)
+		panic("alloc_bprm: vm_area_alloc");
+	vma_set_anonymous(bprm->vma);
+	down_write(&bprm->mm->mmap_lock);
+	bprm->vma->vm_end = STACK_TOP_MAX;
+	bprm->vma->vm_start = bprm->vma->vm_end - PAGE_SIZE;
+	bprm->vma->vm_flags = VM_STACK_FLAGS | VM_STACK_INCOMPLETE_SETUP;
+	bprm->vma->vm_page_prot = vm_get_page_prot(bprm->vma->vm_flags);
+	if (insert_vm_struct(bprm->mm, bprm->vma))
+		panic("alloc_bprm: insert_vm_struct");
+	mmap_write_unlock(bprm->mm);
+	bprm->p = bprm->vma->vm_end - sizeof(void *);
 	return bprm;
-
-err_unlock:
-	mmap_write_unlock(mm);
-err_vma:
-	bprm->vma = NULL;
-	vm_area_free(vma);
-err_mm:
-	bprm->mm = NULL;
-	mmdrop(mm);
-out_free:
-	free_bprm(bprm);
-out:
-	return ERR_PTR(retval);
-}
-
-static int search_binary_handler(struct linux_binprm *bprm)
-{
-	int retval;
-	loff_t pos = 0;
-
-	memset(bprm->buf, 0, BINPRM_BUF_SIZE);
-	retval = kernel_read(bprm->file, bprm->buf, BINPRM_BUF_SIZE, &pos);
-	if (retval < 0)
-		return retval;
-
-	/* Single binfmt (ELF) - direct call replaces list iteration */
-	return the_binfmt->load_binary(bprm);
-}
-
-static int bprm_execve(struct linux_binprm *bprm, int fd,
-		       struct filename *filename, int flags)
-{
-	struct file *file;
-	int retval;
-
-	bprm->cred = prepare_creds();
-	if (unlikely(!bprm->cred))
-		return -ENOMEM;
-
-	file = do_open_execat(fd, filename, flags);
-	retval = PTR_ERR(file);
-	if (IS_ERR(file))
-		return retval;
-
-	bprm->file = file;
-
-	retval = search_binary_handler(bprm);
-	if (retval < 0)
-		goto out;
-
-	return retval;
-
-out:
-	if (bprm->point_of_no_return && !fatal_signal_pending(current))
-		panic("force_sig");
-	return retval;
 }
 
 int kernel_execve(const char *kernel_filename, const char *const *argv,
@@ -370,7 +272,13 @@ int kernel_execve(const char *kernel_filename, const char *const *argv,
 {
 	struct filename *filename;
 	struct linux_binprm *bprm;
-	int fd = AT_FDCWD;
+	struct open_flags open_exec_flags = {
+		.open_flag = O_LARGEFILE | O_RDONLY | __FMODE_EXEC,
+		.acc_mode = MAY_EXEC,
+		.intent = LOOKUP_OPEN,
+		.lookup_flags = LOOKUP_FOLLOW,
+	};
+	loff_t pos = 0;
 	int retval;
 
 	if (current->flags & PF_KTHREAD)
@@ -380,35 +288,48 @@ int kernel_execve(const char *kernel_filename, const char *const *argv,
 	if (IS_ERR(filename))
 		return PTR_ERR(filename);
 
-	bprm = alloc_bprm(fd, filename);
-	if (IS_ERR(bprm)) {
-		retval = PTR_ERR(bprm);
-		goto out_ret;
-	}
-
+	bprm = alloc_bprm(AT_FDCWD, filename);
 	bprm->argc = count_strings_kernel(argv);
-
 	bprm->envc = count_strings_kernel(envp);
-
 	bprm->argmin = bprm->p - PAGE_SIZE;
 
 	retval = copy_string_kernel(bprm->filename, bprm);
 	if (retval < 0)
-		goto out_free;
+		goto out;
 	bprm->exec = bprm->p;
 
 	retval = copy_strings_kernel(bprm->envc, envp, bprm);
 	if (retval < 0)
-		goto out_free;
+		goto out;
 
 	retval = copy_strings_kernel(bprm->argc, argv, bprm);
 	if (retval < 0)
-		goto out_free;
+		goto out;
 
-	retval = bprm_execve(bprm, fd, filename, 0);
-out_free:
-	free_bprm(bprm);
-out_ret:
+	bprm->cred = prepare_creds();
+	if (!bprm->cred) {
+		retval = -ENOMEM;
+		goto out;
+	}
+
+	bprm->file = do_filp_open(AT_FDCWD, filename, &open_exec_flags);
+	if (IS_ERR(bprm->file)) {
+		retval = PTR_ERR(bprm->file);
+		goto out;
+	}
+
+	memset(bprm->buf, 0, BINPRM_BUF_SIZE);
+	retval = kernel_read(bprm->file, bprm->buf, BINPRM_BUF_SIZE, &pos);
+	if (retval >= 0)
+		retval = the_binfmt->load_binary(bprm);
+
+out:
+	if (bprm->mm)
+		mmput(bprm->mm);
+	if (bprm->cred)
+		put_cred(bprm->cred);
+	if (bprm->file)
+		fput(bprm->file);
 	putname(filename);
 	return retval;
 }

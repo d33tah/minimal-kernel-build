@@ -35,9 +35,6 @@ struct pcpu_alloc_info {
 	struct pcpu_group_info	groups[];
 };
 
-extern void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
-					 void *base_addr);
-
 extern void __init setup_per_cpu_areas(void);
 
 extern void __percpu *__alloc_percpu(size_t size, size_t align) __alloc_size(1);

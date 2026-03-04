@@ -25,7 +25,7 @@ static void __init __e820__range_add(struct e820_table *table, u64 start,
 	table->nr_entries++;
 }
 
-void __init e820__range_add(u64 start, u64 size, enum e820_type type)
+static void __init e820__range_add(u64 start, u64 size, enum e820_type type)
 {
 	__e820__range_add(e820_table, start, size, type);
 }

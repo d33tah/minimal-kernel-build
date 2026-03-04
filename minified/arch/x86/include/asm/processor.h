@@ -41,8 +41,6 @@ struct cpuinfo_x86 {
 	__u8			x86_stepping;
 	__u8			x86_phys_bits;
 	 
-	__u32			extended_cpuid_level;
-	 
 	int			cpuid_level;
 	 
 	union {

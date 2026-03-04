@@ -29,7 +29,7 @@ int vfs_parse_fs_param_source(struct fs_context *fc, struct fs_parameter *param)
 	return 0;
 }
 
-int vfs_parse_fs_param(struct fs_context *fc, struct fs_parameter *param)
+static int vfs_parse_fs_param(struct fs_context *fc, struct fs_parameter *param)
 {
 	int ret;
 
@@ -73,7 +73,7 @@ int vfs_parse_fs_string(struct fs_context *fc, const char *key,
 	return ret;
 }
 
-int generic_parse_monolithic(struct fs_context *fc, void *data)
+static int generic_parse_monolithic(struct fs_context *fc, void *data)
 {
 	return 0;
 }

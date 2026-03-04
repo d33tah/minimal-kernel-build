@@ -87,8 +87,4 @@ void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 
 
 
-#define ALLOC_WMARK_LOW		WMARK_LOW
-#define ALLOC_NO_WATERMARKS	0x04
-#define ALLOC_WMARK_MASK	(ALLOC_NO_WATERMARKS-1)
-
 #endif

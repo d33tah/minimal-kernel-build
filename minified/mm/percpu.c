@@ -76,8 +76,8 @@ phys_addr_t per_cpu_ptr_to_phys(void *addr)
 	return __pa(addr);
 }
 
-void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
-				   void *base_addr)
+static void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
+					  void *base_addr)
 {
 	size_t static_size;
 	unsigned long *unit_off;

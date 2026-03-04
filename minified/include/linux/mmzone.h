@@ -117,11 +117,6 @@ struct lruvec {
 
 };
 
-enum zone_watermarks {
-	WMARK_LOW,
-	NR_WMARK
-};
-
 #define NR_PCP_LISTS (MIGRATE_PCPTYPES * (PAGE_ALLOC_COSTLY_ORDER + 1))
 
 struct per_cpu_pages {
@@ -144,8 +139,6 @@ enum zone_type {
 #ifndef __GENERATING_BOUNDS_H
 
 struct zone {
-	unsigned long _watermark[NR_WMARK];
-
 	struct pglist_data *zone_pgdat;
 	struct per_cpu_pages __percpu *per_cpu_pageset;
 

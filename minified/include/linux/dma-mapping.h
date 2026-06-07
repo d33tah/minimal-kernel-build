@@ -12,11 +12,6 @@ enum dma_data_direction {
 	DMA_NONE = 3,
 };
 
-static inline int valid_dma_direction(enum dma_data_direction dir)
-{
-	return dir == DMA_BIDIRECTIONAL || dir == DMA_TO_DEVICE ||
-		dir == DMA_FROM_DEVICE;
-}
 /* end dma-direction.h */
 #include <linux/scatterlist.h>
 #include <linux/bug.h>
@@ -77,24 +72,8 @@ int dma_mmap_attrs(struct device *dev, struct vm_area_struct *vma,
 		void *cpu_addr, dma_addr_t dma_addr, size_t size,
 		unsigned long attrs);
 int dma_supported(struct device *dev, u64 mask);
-u64 dma_get_required_mask(struct device *dev);
 /* dma_max_mapping_size, dma_need_sync, dma_get_merge_boundary,
    dma_alloc/free/vmap/vunmap/mmap_noncontiguous, dma_alloc/free/mmap_pages removed - unused */
-
-static inline u64 dma_get_mask(struct device *dev)
-{
-	if (dev->dma_mask && *dev->dma_mask)
-		return *dev->dma_mask;
-	return DMA_BIT_MASK(32);
-}
-
-
-static inline bool dma_addressing_limited(struct device *dev)
-{
-	return min_not_zero(dma_get_mask(dev), dev->bus_dma_limit) <
-			    dma_get_required_mask(dev);
-}
-
 
 #define DEFINE_DMA_UNMAP_ADDR(ADDR_NAME)
 #define DEFINE_DMA_UNMAP_LEN(LEN_NAME)

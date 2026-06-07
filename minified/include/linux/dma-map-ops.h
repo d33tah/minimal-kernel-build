@@ -54,42 +54,13 @@ struct dma_map_ops {
 	unsigned long (*get_merge_boundary)(struct device *dev);
 };
 
-static inline const struct dma_map_ops *get_dma_ops(struct device *dev)
-{
-	return NULL;
-}
-
-static inline struct cma *dev_get_cma_area(struct device *dev)
-{
-	return NULL;
-}
 static inline void dma_contiguous_reserve(phys_addr_t limit)
 {
-}
-static inline struct page *dma_alloc_contiguous(struct device *dev, size_t size,
-		gfp_t gfp)
-{
-	return NULL;
-}
-static inline void dma_free_contiguous(struct device *dev, struct page *page,
-		size_t size)
-{
-	__free_pages(page, get_order(size));
 }
 
 #define dma_alloc_from_dev_coherent(dev, size, handle, ret) (0)
 #define dma_release_from_dev_coherent(dev, order, vaddr) (0)
 #define dma_mmap_from_dev_coherent(dev, vma, vaddr, order, ret) (0)
-
-static inline void *dma_alloc_from_global_coherent(struct device *dev,
-		ssize_t size, dma_addr_t *dma_handle)
-{
-	return NULL;
-}
-static inline int dma_release_from_global_coherent(int order, void *vaddr)
-{
-	return 0;
-}
 
 /* Only keeping functions actually used in kernel/dma/ */
 void *dma_common_contiguous_remap(struct page *page, size_t size, pgprot_t prot,
@@ -126,28 +97,6 @@ void arch_dma_free(struct device *dev, size_t size, void *cpu_addr,
 #define pgprot_dmacoherent(prot)	pgprot_noncached(prot)
 #endif
 
-
-static inline void arch_sync_dma_for_device(phys_addr_t paddr, size_t size,
-		enum dma_data_direction dir)
-{
-}
-
-static inline void arch_sync_dma_for_cpu(phys_addr_t paddr, size_t size,
-		enum dma_data_direction dir)
-{
-}
-
-static inline void arch_sync_dma_for_cpu_all(void)
-{
-}
-
-static inline void arch_dma_prep_coherent(struct page *page, size_t size)
-{
-}
-
-static inline void arch_dma_mark_clean(phys_addr_t paddr, size_t size)
-{
-}
 
 void *arch_dma_set_uncached(void *addr, size_t size);
 void arch_dma_clear_uncached(void *addr, size_t size);

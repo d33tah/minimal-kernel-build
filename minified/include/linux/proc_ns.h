@@ -20,8 +20,6 @@ struct proc_ns_operations {
 	struct ns_common *(*get_parent)(struct ns_common *ns);
 } __randomize_layout;
 
-extern const struct proc_ns_operations mntns_operations;
-
 enum {
 	PROC_ROOT_INO		= 1,
 	PROC_IPC_INIT_INO	= 0xEFFFFFFFU,

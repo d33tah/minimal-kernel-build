@@ -1039,12 +1039,6 @@ SYSCALL_DEFINE1(oldumount, char __user *, name)
 
 #endif
 
-static struct mnt_namespace *to_mnt_ns(struct ns_common *ns)
-{
-	return container_of(ns, struct mnt_namespace, ns);
-}
-
-
 struct mount *copy_tree(struct mount *mnt, struct dentry *dentry,
 					int flag)
 {
@@ -1550,7 +1544,6 @@ static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns, bool a
 			return ERR_PTR(ret);
 		}
 	}
-	new_ns->ns.ops = &mntns_operations;
 	if (!anon)
 		new_ns->seq = atomic64_add_return(1, &mnt_ns_seq);
 	refcount_set(&new_ns->ns.count, 1);
@@ -1831,83 +1824,4 @@ bool mnt_may_suid(struct vfsmount *mnt)
 	return !(mnt->mnt_flags & MNT_NOSUID) && check_mnt(real_mount(mnt)) &&
 	       current_in_userns(mnt->mnt_sb->s_user_ns);
 }
-
-static struct ns_common *mntns_get(struct task_struct *task)
-{
-	struct ns_common *ns = NULL;
-	struct nsproxy *nsproxy;
-
-	task_lock(task);
-	nsproxy = task->nsproxy;
-	if (nsproxy) {
-		ns = &nsproxy->mnt_ns->ns;
-		get_mnt_ns(to_mnt_ns(ns));
-	}
-	task_unlock(task);
-
-	return ns;
-}
-
-static void mntns_put(struct ns_common *ns)
-{
-	put_mnt_ns(to_mnt_ns(ns));
-}
-
-static int mntns_install(struct nsset *nsset, struct ns_common *ns)
-{
-	struct nsproxy *nsproxy = nsset->nsproxy;
-	struct fs_struct *fs = nsset->fs;
-	struct mnt_namespace *mnt_ns = to_mnt_ns(ns), *old_mnt_ns;
-	struct user_namespace *user_ns = nsset->cred->user_ns;
-	struct path root;
-	int err;
-
-	if (!ns_capable(mnt_ns->user_ns, CAP_SYS_ADMIN) ||
-	    !ns_capable(user_ns, CAP_SYS_CHROOT) ||
-	    !ns_capable(user_ns, CAP_SYS_ADMIN))
-		return -EPERM;
-
-	if (is_anon_ns(mnt_ns))
-		return -EINVAL;
-
-	if (fs->users != 1)
-		return -EINVAL;
-
-	get_mnt_ns(mnt_ns);
-	old_mnt_ns = nsproxy->mnt_ns;
-	nsproxy->mnt_ns = mnt_ns;
-
-	
-	err = vfs_path_lookup(mnt_ns->root->mnt.mnt_root, &mnt_ns->root->mnt,
-				"/", LOOKUP_DOWN, &root);
-	if (err) {
-		
-		nsproxy->mnt_ns = old_mnt_ns;
-		put_mnt_ns(mnt_ns);
-		return err;
-	}
-
-	put_mnt_ns(old_mnt_ns);
-
-	
-	set_fs_pwd(fs, &root);
-	set_fs_root(fs, &root);
-
-	path_put(&root);
-	return 0;
-}
-
-static struct user_namespace *mntns_owner(struct ns_common *ns)
-{
-	return to_mnt_ns(ns)->user_ns;
-}
-
-const struct proc_ns_operations mntns_operations = {
-	.name		= "mnt",
-	.type		= CLONE_NEWNS,
-	.get		= mntns_get,
-	.put		= mntns_put,
-	.install	= mntns_install,
-	.owner		= mntns_owner,
-};
 

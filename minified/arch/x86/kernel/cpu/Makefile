@@ -1,3 +1,61 @@
 # SPDX-License-Identifier: GPL-2.0
-CFLAGS_common.o := -fno-stack-protector
-obj-y := common.o cpuid-deps.o
+#
+# Makefile for x86-compatible CPU details, features and quirks
+#
+
+# Don't trace early stages of a secondary CPU boot
+ifdef CONFIG_FUNCTION_TRACER
+CFLAGS_REMOVE_common.o = -pg
+CFLAGS_REMOVE_perf_event.o = -pg
+endif
+
+# If these files are instrumented, boot hangs during the first second.
+KCOV_INSTRUMENT_common.o := n
+KCOV_INSTRUMENT_perf_event.o := n
+
+# As above, instrumenting secondary CPU boot code causes boot hangs.
+KCSAN_SANITIZE_common.o := n
+
+# Make sure load_percpu_segment has no stackprotector
+CFLAGS_common.o		:= -fno-stack-protector
+
+obj-y			:= cacheinfo.o scattered.o topology.o
+obj-y			+= common.o
+obj-y			+= match.o
+obj-y			+= bugs.o
+# aperfmperf.o removed - inlined in topology.h
+obj-y			+= cpuid-deps.o
+
+obj-$(CONFIG_PROC_FS)	+= proc.o
+obj-$(CONFIG_X86_FEATURE_NAMES) += capflags.o powerflags.o
+
+# feat_ctl.o removed - empty file
+ifdef CONFIG_CPU_SUP_INTEL
+obj-y			+= intel.o tsx.o
+obj-$(CONFIG_PM)	+= intel_epb.o
+endif
+obj-$(CONFIG_CPU_SUP_AMD)		+= amd.o
+obj-$(CONFIG_CPU_SUP_HYGON)		+= hygon.o
+# obj-$(CONFIG_CPU_SUP_CYRIX_32)		+= cyrix.o  # deleted
+# obj-$(CONFIG_CPU_SUP_CENTAUR)		+= centaur.o  # deleted
+# obj-$(CONFIG_CPU_SUP_TRANSMETA_32)	+= transmeta.o  # deleted
+# obj-$(CONFIG_CPU_SUP_UMC_32)		+= umc.o  # deleted
+# obj-$(CONFIG_CPU_SUP_ZHAOXIN)		+= zhaoxin.o  # deleted
+# obj-$(CONFIG_CPU_SUP_VORTEX_32)		+= vortex.o  # deleted
+
+obj-$(CONFIG_X86_LOCAL_APIC)		+= perfctr-watchdog.o
+
+obj-$(CONFIG_HYPERVISOR_GUEST)		+= vmware.o hypervisor.o mshyperv.o
+obj-$(CONFIG_ACRN_GUEST)		+= acrn.o
+
+ifdef CONFIG_X86_FEATURE_NAMES
+quiet_cmd_mkcapflags = MKCAP   $@
+      cmd_mkcapflags = $(CONFIG_SHELL) $(srctree)/$(src)/mkcapflags.sh $@ $^
+
+cpufeature = $(src)/../../include/asm/cpufeatures.h
+vmxfeature = $(src)/../../include/asm/vmxfeatures.h
+
+$(obj)/capflags.c: $(cpufeature) $(vmxfeature) $(src)/mkcapflags.sh FORCE
+	$(call if_changed,mkcapflags)
+endif
+targets += capflags.c

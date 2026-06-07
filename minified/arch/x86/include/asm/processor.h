@@ -4,10 +4,21 @@
 
 #include <asm/processor-flags.h>
 
+ 
 struct task_struct;
+struct mm_struct;
+struct io_bitmap;
+struct vm86;
+
+/* Inlined from asm/math_emu.h */
+struct math_emu_info {
+	long ___orig_eip;
+	struct pt_regs *regs;
+};
 
 #include <asm/segment.h>
 #include <asm/types.h>
+#include <uapi/asm/sigcontext.h>
 #include <asm/current.h>
 #include <asm/cpufeatures.h>
 #include <asm/page.h>
@@ -15,15 +26,14 @@ struct task_struct;
 #include <asm/percpu.h>
 #include <asm/msr.h>
 #include <asm/desc_defs.h>
-#include <asm/asm.h>
+#include <asm/nops.h>
 #include <asm/special_insns.h>
 #include <asm/fpu/types.h>
 #include <asm/unwind_hints.h>
-static __always_inline void rep_nop(void) { asm volatile("rep; nop" ::: "memory"); }
-static __always_inline void cpu_relax(void) { rep_nop(); }
+/* Removed: #include <asm/vmxfeatures.h> - not needed for minimal kernel */
+#include <asm/vdso/processor.h>
 
-/* personality.h inlined */
-enum { READ_IMPLIES_EXEC = 0x0400000, };
+#include <linux/personality.h>
 #include <linux/cache.h>
 #include <linux/threads.h>
 #include <linux/math64.h>
@@ -31,15 +41,31 @@ enum { READ_IMPLIES_EXEC = 0x0400000, };
 #include <linux/irqflags.h>
 #include <linux/mem_encrypt.h>
 
+/* NET_IP_ALIGN removed - unused */
+#define HBP_NUM 4
+
+ 
 # define ARCH_MIN_TASKALIGN		__alignof__(union fpregs_state)
 # define ARCH_MIN_MMSTRUCT_ALIGN	0
+
+enum tlb_infos {
+	ENTRIES,
+	NR_INFO
+};
+/* TLB arrays removed - never used in minimal kernel */
 
 struct cpuinfo_x86 {
 	__u8			x86;		 
 	__u8			x86_vendor;	 
 	__u8			x86_model;
 	__u8			x86_stepping;
+	__u8			x86_virt_bits;
 	__u8			x86_phys_bits;
+	 
+	__u8			x86_coreid_bits;
+	__u8			cu_id;
+	 
+	__u32			extended_cpuid_level;
 	 
 	int			cpuid_level;
 	 
@@ -48,15 +74,62 @@ struct cpuinfo_x86 {
 		unsigned long	x86_capability_alignment;
 	};
 	char			x86_vendor_id[16];
-
-	int			x86_cache_alignment;
-
+	char			x86_model_id[64];
+	 
+	unsigned int		x86_cache_size;
+	int			x86_cache_alignment;	 
+	 
+	int			x86_cache_max_rmid;	 
+	int			x86_cache_occ_scale;	 
+	int			x86_cache_mbm_width_offset;
+	int			x86_power;
 	unsigned long		loops_per_jiffy;
+	 
+	u64			ppin;
+	 
+	u16			x86_max_cores;
+	u16			apicid;
+	u16			initial_apicid;
 	u16			x86_clflush_size;
+	 
+	u16			booted_cores;
+	 
+	u16			phys_proc_id;
+	 
+	u16			logical_proc_id;
+	 
+	u16			cpu_core_id;
+	u16			cpu_die_id;
+	u16			logical_die_id;
+	 
+	u16			cpu_index;
+	 
+	bool			smt_active;
+	u32			microcode;
+	 
+	u8			x86_cache_bits;
+	unsigned		initialized : 1;
 } __randomize_layout;
 
-#define X86_VENDOR_INTEL	0
+struct cpuid_regs {
+	u32 eax, ebx, ecx, edx;
+};
 
+enum cpuid_regs_idx {
+	CPUID_EAX = 0,
+	CPUID_EBX,
+	CPUID_ECX,
+	CPUID_EDX,
+};
+
+#define X86_VENDOR_INTEL	0
+/* X86_VENDOR_CYRIX, UMC, CENTAUR, TRANSMETA, NSC, HYGON, ZHAOXIN, VORTEX removed - unused */
+#define X86_VENDOR_AMD		2
+#define X86_VENDOR_NUM		12
+
+#define X86_VENDOR_UNKNOWN	0xff
+
+ 
 extern struct cpuinfo_x86	boot_cpu_data;
 extern struct cpuinfo_x86	new_cpu_data;
 
@@ -64,11 +137,23 @@ extern __u32			cpu_caps_cleared[NCAPINTS + NBUGINTS];
 extern __u32			cpu_caps_set[NCAPINTS + NBUGINTS];
 
 #define cpu_info		boot_cpu_data
+#define cpu_data(cpu)		boot_cpu_data
+/* cpuinfo_op declaration removed - no implementation */
 
 #define cache_line_size()	(boot_cpu_data.x86_cache_alignment)
 
-extern void early_cpu_init(void);
+extern void cpu_detect(struct cpuinfo_x86 *c);
 
+static inline unsigned long long l1tf_pfn_limit(void)
+{
+	return BIT_ULL(boot_cpu_data.x86_cache_bits - 1 - PAGE_SHIFT);
+}
+
+extern void early_cpu_init(void);
+extern void identify_boot_cpu(void);
+/* identify_secondary_cpu, print_cpu_info, print_cpu_msr removed - never called */
+
+extern int have_cpuid_p(void);
 static inline void native_cpuid(unsigned int *eax, unsigned int *ebx,
 				unsigned int *ecx, unsigned int *edx)
 {
@@ -82,17 +167,44 @@ static inline void native_cpuid(unsigned int *eax, unsigned int *ebx,
 	    : "memory");
 }
 
+#define native_cpuid_reg(reg)					\
+static inline unsigned int native_cpuid_##reg(unsigned int op)	\
+{								\
+	unsigned int eax = op, ebx, ecx = 0, edx;		\
+								\
+	native_cpuid(&eax, &ebx, &ecx, &edx);			\
+								\
+	return reg;						\
+}
+
+ 
+native_cpuid_reg(eax)
+native_cpuid_reg(ebx)
+native_cpuid_reg(ecx)
+native_cpuid_reg(edx)
+
+ 
+static inline unsigned long read_cr3_pa(void)
+{
+	return __read_cr3() & CR3_ADDR_MASK;
+}
+
+/* native_read_cr3_pa removed - unused */
+
 static inline void load_cr3(pgd_t *pgdir)
 {
 	write_cr3(__sme_pa(pgdir));
 }
 
+ 
+ 
 struct x86_hw_tss {
 	unsigned short		back_link, __blh;
 	unsigned long		sp0;
 	unsigned short		ss0, __ss0h;
 	unsigned long		sp1;
 
+	 
 	unsigned short		ss1;	 
 
 	unsigned short		__ss1h;
@@ -121,9 +233,14 @@ struct x86_hw_tss {
 
 } __attribute__((packed));
 
+ 
+#define IO_BITMAP_BYTES			(65536 / BITS_PER_BYTE)
+#define IO_BITMAP_LONGS			(IO_BITMAP_BYTES / sizeof(long))
+
 # define __KERNEL_TSS_LIMIT	\
 	(offsetof(struct tss_struct, x86_tss) + sizeof(struct x86_hw_tss) - 1)
 
+ 
 #define IO_BITMAP_OFFSET_INVALID	(__KERNEL_TSS_LIMIT + 1)
 
 struct entry_stack {
@@ -134,12 +251,31 @@ struct entry_stack_page {
 	struct entry_stack stack;
 } __aligned(PAGE_SIZE);
 
+ 
+struct x86_io_bitmap {
+	 
+	u64			prev_sequence;
+
+	 
+	unsigned int		prev_max;
+
+	 
+	unsigned long		bitmap[IO_BITMAP_LONGS + 1];
+
+	 
+	unsigned long		mapall[IO_BITMAP_LONGS + 1];
+};
+
 struct tss_struct {
+	 
 	struct x86_hw_tss	x86_tss;
+
+	struct x86_io_bitmap	io_bitmap;
 } __aligned(PAGE_SIZE);
 
 DECLARE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw);
 
+ 
 struct irq_stack {
 	char		stack[IRQ_STACK_SIZE];
 } __aligned(IRQ_STACK_SIZE);
@@ -149,24 +285,83 @@ DECLARE_PER_CPU(unsigned long, cpu_current_top_of_stack);
 DECLARE_PER_CPU(struct irq_stack *, hardirq_stack_ptr);
 DECLARE_PER_CPU(struct irq_stack *, softirq_stack_ptr);
 
-struct thread_struct {
+struct perf_event;
 
+struct thread_struct {
+	 
 	struct desc_struct	tls_array[GDT_ENTRY_TLS_ENTRIES];
 	unsigned long		sp0;
 	unsigned long		sp;
+	unsigned long		sysenter_cs;
 
+	 
+	unsigned long fs;
 	unsigned long gs;
 
+	 
+	struct perf_event	*ptrace_bps[HBP_NUM];
+	 
+	unsigned long           virtual_dr6;
+	 
+	unsigned long           ptrace_dr7;
+	 
+	unsigned long		cr2;
+	unsigned long		trap_nr;
+	unsigned long		error_code;
+	 
+	struct io_bitmap	*io_bitmap;
+
+	 
+	unsigned long		iopl_emul;
+
+	unsigned int		iopl_warn:1;
+	unsigned int		sig_on_uaccess_err:1;
+
+	 
+	u32			pkru;
+
+	 
 	struct fpu		fpu;
 	 
 };
+
+extern void fpu_thread_struct_whitelist(unsigned long *offset, unsigned long *size);
+
+static inline void arch_thread_struct_whitelist(unsigned long *offset,
+						unsigned long *size)
+{
+	fpu_thread_struct_whitelist(offset, size);
+}
+
+static inline void
+native_load_sp0(unsigned long sp0)
+{
+	this_cpu_write(cpu_tss_rw.x86_tss.sp0, sp0);
+}
+
+static __always_inline unsigned long current_top_of_stack(void)
+{
+	 
+	return this_cpu_read_stable(cpu_current_top_of_stack);
+}
+
+static __always_inline bool on_thread_stack(void)
+{
+	return (unsigned long)(current_top_of_stack() -
+			       current_stack_pointer) < THREAD_SIZE;
+}
 
 #define __cpuid			native_cpuid
 
 static inline void load_sp0(unsigned long sp0)
 {
-	this_cpu_write(cpu_tss_rw.x86_tss.sp0, sp0);
+	native_load_sp0(sp0);
 }
+
+
+ 
+extern void release_thread(struct task_struct *);
+
 
 static inline void cpuid(unsigned int op,
 			 unsigned int *eax, unsigned int *ebx,
@@ -177,13 +372,73 @@ static inline void cpuid(unsigned int op,
 	__cpuid(eax, ebx, ecx, edx);
 }
 
-extern void select_idle_routine(const struct cpuinfo_x86 *c);
+ 
+static inline void cpuid_count(unsigned int op, int count,
+			       unsigned int *eax, unsigned int *ebx,
+			       unsigned int *ecx, unsigned int *edx)
+{
+	*eax = op;
+	*ecx = count;
+	__cpuid(eax, ebx, ecx, edx);
+}
 
+ 
+static inline unsigned int cpuid_eax(unsigned int op)
+{
+	unsigned int eax, ebx, ecx, edx;
+
+	cpuid(op, &eax, &ebx, &ecx, &edx);
+
+	return eax;
+}
+
+static inline unsigned int cpuid_ebx(unsigned int op)
+{
+	unsigned int eax, ebx, ecx, edx;
+
+	cpuid(op, &eax, &ebx, &ecx, &edx);
+
+	return ebx;
+}
+
+static inline unsigned int cpuid_edx(unsigned int op)
+{
+	unsigned int eax, ebx, ecx, edx;
+
+	cpuid(op, &eax, &ebx, &ecx, &edx);
+
+	return edx;
+}
+
+extern void select_idle_routine(const struct cpuinfo_x86 *c);
+/* amd_e400_c1e_apic_setup declaration removed - implementation was removed */
+
+enum idle_boot_override {IDLE_NO_OVERRIDE=0, IDLE_HALT, IDLE_NOMWAIT,
+			 IDLE_POLL};
+
+extern void enable_sep_cpu(void);
+extern int sysenter_setup(void);
+
+
+ 
+extern struct desc_ptr		early_gdt_descr;
+
+extern void switch_to_new_gdt(int);
+extern void load_direct_gdt(int);
+extern void load_fixmap_gdt(int);
+extern void load_percpu_segment(int);
 extern void cpu_init(void);
+/* cpu_init_secondary declaration removed - no implementation */
 extern void cpu_init_exception_handling(void);
+extern void cr4_init(void);
+/* set_task_blockstep, bootloader_type, bootloader_version removed - unused */
+
+#define HAVE_ARCH_PICK_MMAP_LAYOUT 1
+/* ARCH_HAS_PREFETCHW, ARCH_HAS_SPINLOCK_PREFETCH, ARCH_HAS_PREFETCH removed - unused */
 
 # define BASE_PREFETCH		""
 
+ 
 static inline void prefetch(const void *x)
 {
 	alternative_input(BASE_PREFETCH, "prefetchnta %P1",
@@ -191,6 +446,7 @@ static inline void prefetch(const void *x)
 			  "m" (*(const char *)x));
 }
 
+ 
 static __always_inline void prefetchw(const void *x)
 {
 	alternative_input(BASE_PREFETCH, "prefetchw %P1",
@@ -206,6 +462,8 @@ static inline void spin_lock_prefetch(const void *x)
 #define TOP_OF_INIT_STACK ((unsigned long)&init_stack + sizeof(init_stack) - \
 			   TOP_OF_KERNEL_STACK_PADDING)
 
+#define task_top_of_stack(task) ((unsigned long)(task_pt_regs(task) + 1))
+
 #define task_pt_regs(task) \
 ({									\
 	unsigned long __ptr = (unsigned long)task_stack_page(task);	\
@@ -215,15 +473,38 @@ static inline void spin_lock_prefetch(const void *x)
 
 #define INIT_THREAD  {							  \
 	.sp0			= TOP_OF_INIT_STACK,			  \
+	.sysenter_cs		= __KERNEL_CS,				  \
 }
+
+#define KSTK_ESP(task)		(task_pt_regs(task)->sp)
+
 
 extern void start_thread(struct pt_regs *regs, unsigned long new_ip,
 					       unsigned long new_sp);
 
+ 
 #define __TASK_UNMAPPED_BASE(task_size)	(PAGE_ALIGN(task_size / 3))
+#define TASK_UNMAPPED_BASE		__TASK_UNMAPPED_BASE(TASK_SIZE_LOW)
+
+#define KSTK_EIP(task)		(task_pt_regs(task)->ip)
+
+DECLARE_PER_CPU(u64, msr_misc_features_shadow);
 
 extern unsigned long arch_align_stack(unsigned long sp);
+void free_init_pages(const char *what, unsigned long begin, unsigned long end);
+extern void free_kernel_image_pages(const char *what, void *begin, void *end);
 
 void default_idle(void);
+#define xen_set_default_idle 0
+
+void __noreturn stop_this_cpu(void *dummy);
+void microcode_check(void);
+
+enum mds_mitigations {
+	MDS_MITIGATION_OFF,
+	MDS_MITIGATION_FULL,
+	MDS_MITIGATION_VMWERV,
+};
+
 
 #endif  

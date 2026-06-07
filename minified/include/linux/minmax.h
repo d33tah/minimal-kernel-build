@@ -44,4 +44,7 @@
 
 #define clamp_val(val, lo, hi) clamp_t(typeof(val), val, lo, hi)
 
-#endif
+#define swap(a, b) \
+	do { typeof(a) __tmp = (a); (a) = (b); (b) = __tmp; } while (0)
+
+#endif	 

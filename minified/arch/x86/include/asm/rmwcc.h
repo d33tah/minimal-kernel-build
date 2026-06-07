@@ -11,6 +11,26 @@
 
 #define __CLOBBERS_MEM(clb...)	"memory", ## clb
 
+#if !defined(__GCC_ASM_FLAG_OUTPUTS__) && defined(CONFIG_CC_HAS_ASM_GOTO)
+
+ 
+
+#define __GEN_RMWcc(fullop, _var, cc, clobbers, ...)			\
+({									\
+	bool c = false;							\
+	asm_volatile_goto (fullop "; j" #cc " %l[cc_label]"		\
+			: : [var] "m" (_var), ## __VA_ARGS__		\
+			: clobbers : cc_label);				\
+	if (0) {							\
+cc_label:	c = true;						\
+	}								\
+	c;								\
+})
+
+#else  
+
+ 
+
 #define __GEN_RMWcc(fullop, _var, cc, clobbers, ...)			\
 ({									\
 	bool c;								\
@@ -19,6 +39,8 @@
 			: __VA_ARGS__ : clobbers);			\
 	c;								\
 })
+
+#endif  
 
 #define GEN_UNARY_RMWcc_4(op, var, cc, arg0)				\
 	__GEN_RMWcc(op " " arg0, var, cc, __CLOBBERS_MEM())
@@ -36,5 +58,13 @@
 	GEN_BINARY_RMWcc_6(op, var, cc, vcon, val, "%[var]")
 
 #define GEN_BINARY_RMWcc(X...) RMWcc_CONCAT(GEN_BINARY_RMWcc_, RMWcc_ARGS(X))(X)
+
+#define GEN_UNARY_SUFFIXED_RMWcc(op, suffix, var, cc, clobbers...)	\
+	__GEN_RMWcc(op " %[var]\n\t" suffix, var, cc,			\
+		    __CLOBBERS_MEM(clobbers))
+
+#define GEN_BINARY_SUFFIXED_RMWcc(op, suffix, var, cc, vcon, _val, clobbers...)\
+	__GEN_RMWcc(op " %[val], %[var]\n\t" suffix, var, cc,		\
+		    __CLOBBERS_MEM(clobbers), [val] vcon (_val))
 
 #endif  

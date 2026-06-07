@@ -1,10 +1,14 @@
 #ifndef _LINUX_PERCPU_COUNTER_H
 #define _LINUX_PERCPU_COUNTER_H
 
+#include <linux/spinlock.h>
+#include <linux/smp.h>
+#include <linux/list.h>
 #include <linux/threads.h>
 #include <linux/percpu.h>
 #include <linux/types.h>
 #include <linux/gfp.h>
+
 
 struct percpu_counter {
 	s64 count;
@@ -16,6 +20,11 @@ static inline int percpu_counter_init(struct percpu_counter *fbc, s64 amount,
 	fbc->count = amount;
 	return 0;
 }
+
+static inline void percpu_counter_destroy(struct percpu_counter *fbc)
+{
+}
+
 
 static inline void
 percpu_counter_add(struct percpu_counter *fbc, s64 amount)
@@ -30,5 +39,27 @@ percpu_counter_add_batch(struct percpu_counter *fbc, s64 amount, s32 batch)
 {
 	percpu_counter_add(fbc, amount);
 }
+
+static inline s64 percpu_counter_read_positive(struct percpu_counter *fbc)
+{
+	return fbc->count;
+}
+
+static inline s64 percpu_counter_sum_positive(struct percpu_counter *fbc)
+{
+	return percpu_counter_read_positive(fbc);
+}
+
+
+static inline void percpu_counter_inc(struct percpu_counter *fbc)
+{
+	percpu_counter_add(fbc, 1);
+}
+
+static inline void percpu_counter_dec(struct percpu_counter *fbc)
+{
+	percpu_counter_add(fbc, -1);
+}
+
 
 #endif  

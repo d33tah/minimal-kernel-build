@@ -15,6 +15,8 @@
 # define __ASM_REGPFX			%%
 #endif
 
+#define _ASM_BYTES(x, ...)	__ASM_FORM(.byte x,##__VA_ARGS__ ;)
+
 /* 32-bit only kernel */
 #define __ASM_SEL(a,b)		__ASM_FORM(a)
 #define __ASM_SEL_RAW(a,b)	__ASM_FORM_RAW(a)
@@ -23,43 +25,60 @@
 					  inst##q##__VA_ARGS__)
 #define __ASM_REG(reg)         __ASM_SEL_RAW(e##reg, r##reg)
 
-/* Keep only used register macros */
+#define _ASM_PTR	__ASM_SEL(.long, .quad)
+#define _ASM_ALIGN	__ASM_SEL(.balign 4, .balign 8)
+
+#define _ASM_MOV	__ASM_SIZE(mov)
+#define _ASM_INC	__ASM_SIZE(inc)
+#define _ASM_DEC	__ASM_SIZE(dec)
+#define _ASM_ADD	__ASM_SIZE(add)
+#define _ASM_SUB	__ASM_SIZE(sub)
+#define _ASM_XADD	__ASM_SIZE(xadd)
+#define _ASM_MUL	__ASM_SIZE(mul)
+
 #define _ASM_AX		__ASM_REG(ax)
 #define _ASM_BX		__ASM_REG(bx)
 #define _ASM_CX		__ASM_REG(cx)
+#define _ASM_DX		__ASM_REG(dx)
 #define _ASM_SP		__ASM_REG(sp)
+#define _ASM_BP		__ASM_REG(bp)
+#define _ASM_SI		__ASM_REG(si)
+#define _ASM_DI		__ASM_REG(di)
 
+ 
 #define _ASM_RIP(x)	__ASM_SEL_RAW(x, x (__ASM_REGPFX rip))
 
+/* 32-bit only kernel - i386 calling convention */
+#define _ASM_ARG1	_ASM_AX
+#define _ASM_ARG2	_ASM_DX
+#define _ASM_ARG3	_ASM_CX
+
+#define _ASM_ARG1L	eax
+#define _ASM_ARG2L	edx
+#define _ASM_ARG3L	ecx
+
+#define _ASM_ARG1W	ax
+#define _ASM_ARG2W	dx
+#define _ASM_ARG3W	cx
+
+#define _ASM_ARG1B	al
+#define _ASM_ARG2B	dl
+#define _ASM_ARG3B	cl
+
+ 
+#ifdef __GCC_ASM_FLAG_OUTPUTS__
 # define CC_SET(c) "\n\t/* output condition code " #c "*/\n"
 # define CC_OUT(c) "=@cc" #c
+#else
+# define CC_SET(c) "\n\tset" #c " %[_cc_" #c "]\n"
+# define CC_OUT(c) [_cc_ ## c] "=qm"
+#endif
 
 #ifdef __KERNEL__
 
-/* EX_TYPE/EX_REG/EX_DATA defines from extable_fixup_types.h (assembly-safe) */
-#define EX_DATA_REG_SHIFT		8
-#define EX_DATA_FLAG_SHIFT		12
-#define EX_DATA_IMM_SHIFT		16
-#define EX_DATA_REG(reg)		((reg) << EX_DATA_REG_SHIFT)
-#define EX_DATA_FLAG(flag)		((flag) << EX_DATA_FLAG_SHIFT)
-#define EX_DATA_IMM(imm)		((imm) << EX_DATA_IMM_SHIFT)
-#define EX_REG_DS			EX_DATA_REG(8)
-#define EX_REG_ES			EX_DATA_REG(9)
-#define EX_REG_FS			EX_DATA_REG(10)
-#define EX_FLAG_CLEAR_AX		EX_DATA_FLAG(1)
-#define EX_FLAG_CLEAR_DX		EX_DATA_FLAG(2)
-#define	EX_TYPE_DEFAULT			 1
-#define	EX_TYPE_UACCESS			 3
-#define	EX_TYPE_FPU_RESTORE		 6
-#define	EX_TYPE_POP_REG			16
-#define EX_TYPE_POP_ZERO		(EX_TYPE_POP_REG | EX_DATA_IMM(0))
-#define	EX_TYPE_IMM_REG			17
-#define	EX_TYPE_EFAULT_REG		(EX_TYPE_IMM_REG | EX_DATA_IMM(-14))
-#define	EX_TYPE_ZERO_REG		(EX_TYPE_IMM_REG | EX_DATA_IMM(0))
-#define	EX_TYPE_UCOPY_LEN		19
-#define	EX_TYPE_UCOPY_LEN1		(EX_TYPE_UCOPY_LEN | EX_DATA_IMM(1))
-#define	EX_TYPE_UCOPY_LEN4		(EX_TYPE_UCOPY_LEN | EX_DATA_IMM(4))
+# include <asm/extable_fixup_types.h>
 
+ 
 #ifdef __ASSEMBLY__
 
 # define _ASM_EXTABLE_TYPE(from, to, type)			\
@@ -70,7 +89,9 @@
 	.long type ;						\
 	.popsection
 
-#else
+#  define _ASM_NOKPROBE(entry)
+
+#else  
 
 # define DEFINE_EXTABLE_TYPE_REG \
 	".macro extable_type_reg type:req reg:req\n"						\
@@ -117,6 +138,9 @@
 	UNDEFINE_EXTABLE_TYPE_REG						\
 	" .popsection\n"
 
+ 
+
+ 
 register unsigned long current_stack_pointer asm(_ASM_SP);
 #define ASM_CALL_CONSTRAINT "+r" (current_stack_pointer)
 #endif  
@@ -126,6 +150,12 @@ register unsigned long current_stack_pointer asm(_ASM_SP);
 
 #define _ASM_EXTABLE_UA(from, to)				\
 	_ASM_EXTABLE_TYPE(from, to, EX_TYPE_UACCESS)
+
+#define _ASM_EXTABLE_CPY(from, to)				\
+	_ASM_EXTABLE_TYPE(from, to, EX_TYPE_COPY)
+
+#define _ASM_EXTABLE_FAULT(from, to)				\
+	_ASM_EXTABLE_TYPE(from, to, EX_TYPE_FAULT)
 
 #endif  
 #endif  

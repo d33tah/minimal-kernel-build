@@ -1,14 +1,16 @@
+
 #ifndef __MEM_ENCRYPT_H__
 #define __MEM_ENCRYPT_H__
+
 #ifndef __ASSEMBLY__
-#include <linux/init.h>
-
-#include <asm/bootparam.h>
 
 
-#define sme_me_mask	0ULL
+#include <asm/mem_encrypt.h>
 
-#define __sme_pa(x)		(__pa(x) | sme_me_mask)
-#define __sme_set(x) (x)
-#endif
-#endif
+
+#define __sme_set(x)		(x)
+#define __sme_clr(x)		(x)
+
+#endif	 
+
+#endif	 

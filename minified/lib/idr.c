@@ -1,15 +1,20 @@
+#include <linux/bitmap.h>
+#include <linux/bug.h>
+#include <linux/export.h>
 #include <linux/idr.h>
 #include <linux/slab.h>
+#include <linux/spinlock.h>
+#include <linux/xarray.h>
 
-static int idr_alloc_u32(struct idr *idr, void *ptr, u32 *nextid,
-			 unsigned long max, gfp_t gfp)
+int idr_alloc_u32(struct idr *idr, void *ptr, u32 *nextid,
+			unsigned long max, gfp_t gfp)
 {
 	struct radix_tree_iter iter;
 	void __rcu **slot;
 	unsigned int base = idr->idr_base;
 	unsigned int id = *nextid;
 
-	if (!(idr->idr_rt.xa_flags & ROOT_IS_IDR))
+	if (WARN_ON_ONCE(!(idr->idr_rt.xa_flags & ROOT_IS_IDR)))
 		idr->idr_rt.xa_flags |= IDR_RT_MARKER;
 
 	id = (id < base) ? 0 : id - base;
@@ -19,11 +24,26 @@ static int idr_alloc_u32(struct idr *idr, void *ptr, u32 *nextid,
 		return PTR_ERR(slot);
 
 	*nextid = iter.index + base;
-
+	 
 	radix_tree_iter_replace(&idr->idr_rt, &iter, slot, ptr);
 	radix_tree_iter_tag_clear(&idr->idr_rt, &iter, IDR_FREE);
 
 	return 0;
+}
+
+int idr_alloc(struct idr *idr, void *ptr, int start, int end, gfp_t gfp)
+{
+	u32 id = start;
+	int ret;
+
+	if (WARN_ON_ONCE(start < 0))
+		return -EINVAL;
+
+	ret = idr_alloc_u32(idr, ptr, &id, end > 0 ? end - 1 : INT_MAX, gfp);
+	if (ret)
+		return ret;
+
+	return id;
 }
 
 int idr_alloc_cyclic(struct idr *idr, void *ptr, int start, int end, gfp_t gfp)
@@ -48,7 +68,7 @@ int idr_alloc_cyclic(struct idr *idr, void *ptr, int start, int end, gfp_t gfp)
 
 void *idr_remove(struct idr *idr, unsigned long id)
 {
-	return NULL;
+	return radix_tree_delete_item(&idr->idr_rt, id - idr->idr_base, NULL);
 }
 
 void *idr_find(const struct idr *idr, unsigned long id)
@@ -73,8 +93,10 @@ void *idr_replace(struct idr *idr, void *ptr, unsigned long id)
 	return entry;
 }
 
+
+
 int ida_alloc_range(struct ida *ida, unsigned int min, unsigned int max,
-		    gfp_t gfp)
+			gfp_t gfp)
 {
 	XA_STATE(xas, &ida->xa, min / IDA_BITMAP_BITS);
 	unsigned bit = min % IDA_BITMAP_BITS;
@@ -130,8 +152,7 @@ next:
 			goto next;
 
 		__set_bit(bit, bitmap->bitmap);
-		if (find_first_zero_bit(bitmap->bitmap, IDA_BITMAP_BITS) ==
-		    IDA_BITMAP_BITS)
+		if (bitmap_full(bitmap->bitmap, IDA_BITMAP_BITS))
 			xas_clear_mark(&xas, XA_FREE_MARK);
 	} else {
 		if (bit < BITS_PER_XA_VALUE) {
@@ -174,4 +195,42 @@ nospc:
 
 void ida_free(struct ida *ida, unsigned int id)
 {
+	XA_STATE(xas, &ida->xa, id / IDA_BITMAP_BITS);
+	unsigned bit = id % IDA_BITMAP_BITS;
+	struct ida_bitmap *bitmap;
+	unsigned long flags;
+
+	if ((int)id < 0)
+		return;
+
+	xas_lock_irqsave(&xas, flags);
+	bitmap = xas_load(&xas);
+
+	if (xa_is_value(bitmap)) {
+		unsigned long v = xa_to_value(bitmap);
+		if (bit >= BITS_PER_XA_VALUE)
+			goto err;
+		if (!(v & (1UL << bit)))
+			goto err;
+		v &= ~(1UL << bit);
+		if (!v)
+			goto delete;
+		xas_store(&xas, xa_mk_value(v));
+	} else {
+		if (!test_bit(bit, bitmap->bitmap))
+			goto err;
+		__clear_bit(bit, bitmap->bitmap);
+		xas_set_mark(&xas, XA_FREE_MARK);
+		if (bitmap_empty(bitmap->bitmap, IDA_BITMAP_BITS)) {
+			kfree(bitmap);
+delete:
+			xas_store(&xas, NULL);
+		}
+	}
+	xas_unlock_irqrestore(&xas, flags);
+	return;
+ err:
+	xas_unlock_irqrestore(&xas, flags);
+	WARN(1, "ida_free called for id=%d which is not allocated.\n", id);
 }
+

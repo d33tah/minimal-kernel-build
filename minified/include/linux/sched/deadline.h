@@ -1,0 +1,19 @@
+
+
+#include <linux/sched.h>
+
+#define MAX_DL_PRIO		0
+
+static inline int dl_prio(int prio)
+{
+	if (unlikely(prio < MAX_DL_PRIO))
+		return 1;
+	return 0;
+}
+
+static inline int dl_task(struct task_struct *p)
+{
+	return dl_prio(p->prio);
+}
+
+

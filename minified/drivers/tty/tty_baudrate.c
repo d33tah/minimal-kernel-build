@@ -1,0 +1,65 @@
+/* Minimal includes for tty_baudrate */
+#include <linux/tty.h>
+#include "tty.h"
+
+
+static const speed_t baud_table[] = {
+	0, 50, 75, 110, 134, 150, 200, 300, 600, 1200, 1800, 2400,
+	4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800,
+#ifdef __sparc__
+	76800, 153600, 307200, 614400, 921600, 500000, 576000,
+	1000000, 1152000, 1500000, 2000000
+#else
+	500000, 576000, 921600, 1000000, 1152000, 1500000, 2000000,
+	2500000, 3000000, 3500000, 4000000
+#endif
+};
+
+
+static int n_baud_table = ARRAY_SIZE(baud_table);
+
+
+speed_t tty_termios_baud_rate(struct ktermios *termios)
+{
+	unsigned int cbaud;
+
+	cbaud = termios->c_cflag & CBAUD;
+
+	 
+	if (cbaud == BOTHER)
+		return termios->c_ospeed;
+
+	if (cbaud & CBAUDEX) {
+		cbaud &= ~CBAUDEX;
+
+		if (cbaud < 1 || cbaud + 15 > n_baud_table)
+			termios->c_cflag &= ~CBAUDEX;
+		else
+			cbaud += 15;
+	}
+	return cbaud >= n_baud_table ? 0 : baud_table[cbaud];
+}
+
+
+speed_t tty_termios_input_baud_rate(struct ktermios *termios)
+{
+	unsigned int cbaud = (termios->c_cflag >> IBSHIFT) & CBAUD;
+
+	if (cbaud == B0)
+		return tty_termios_baud_rate(termios);
+
+	 
+	if (cbaud == BOTHER)
+		return termios->c_ispeed;
+
+	if (cbaud & CBAUDEX) {
+		cbaud &= ~CBAUDEX;
+
+		if (cbaud < 1 || cbaud + 15 > n_baud_table)
+			termios->c_cflag &= ~(CBAUDEX << IBSHIFT);
+		else
+			cbaud += 15;
+	}
+	return cbaud >= n_baud_table ? 0 : baud_table[cbaud];
+}
+

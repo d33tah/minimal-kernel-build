@@ -1,0 +1,133 @@
+#ifndef _LINUX_RCULIST_H
+#define _LINUX_RCULIST_H
+
+#ifdef __KERNEL__
+
+#include <linux/list.h>
+#include <linux/rcupdate.h>
+
+
+#define list_next_rcu(list)	(*((struct list_head __rcu **)(&(list)->next)))
+
+
+#define check_arg_count_one(dummy)
+
+#define __list_check_rcu(dummy, cond, extra...)				\
+	({ check_arg_count_one(extra); })
+
+static inline void __list_add_rcu(struct list_head *new,
+		struct list_head *prev, struct list_head *next)
+{
+	if (!__list_add_valid(new, prev, next))
+		return;
+
+	new->next = next;
+	new->prev = prev;
+	rcu_assign_pointer(list_next_rcu(prev), new);
+	next->prev = new;
+}
+
+static inline void list_add_rcu(struct list_head *new, struct list_head *head)
+{
+	__list_add_rcu(new, head, head->next);
+}
+
+static inline void list_add_tail_rcu(struct list_head *new,
+					struct list_head *head)
+{
+	__list_add_rcu(new, head->prev, head);
+}
+
+static inline void list_del_rcu(struct list_head *entry)
+{
+	__list_del_entry(entry);
+	entry->prev = LIST_POISON2;
+}
+
+static inline void hlist_del_init_rcu(struct hlist_node *n)
+{
+	if (!hlist_unhashed(n)) {
+		__hlist_del(n);
+		WRITE_ONCE(n->pprev, NULL);
+	}
+}
+
+static inline void list_replace_rcu(struct list_head *old,
+				struct list_head *new)
+{
+	new->next = old->next;
+	new->prev = old->prev;
+	rcu_assign_pointer(list_next_rcu(new->prev), new);
+	new->next->prev = new;
+	old->prev = LIST_POISON2;
+}
+
+#define list_entry_rcu(ptr, type, member) \
+	container_of(READ_ONCE(ptr), type, member)
+
+
+#define list_for_each_entry_rcu(pos, head, member, cond...)		\
+	for (__list_check_rcu(dummy, ## cond, 0),			\
+	     pos = list_entry_rcu((head)->next, typeof(*pos), member);	\
+		&pos->member != (head);					\
+		pos = list_entry_rcu(pos->member.next, typeof(*pos), member))
+
+
+
+static inline void hlist_del_rcu(struct hlist_node *n)
+{
+	__hlist_del(n);
+	WRITE_ONCE(n->pprev, LIST_POISON2);
+}
+
+static inline void hlist_replace_rcu(struct hlist_node *old,
+					struct hlist_node *new)
+{
+	struct hlist_node *next = old->next;
+
+	new->next = next;
+	WRITE_ONCE(new->pprev, old->pprev);
+	rcu_assign_pointer(*(struct hlist_node __rcu **)new->pprev, new);
+	if (next)
+		WRITE_ONCE(new->next->pprev, &new->next);
+	WRITE_ONCE(old->pprev, LIST_POISON2);
+}
+
+static inline void hlists_swap_heads_rcu(struct hlist_head *left, struct hlist_head *right)
+{
+	struct hlist_node *node1 = left->first;
+	struct hlist_node *node2 = right->first;
+
+	rcu_assign_pointer(left->first, node2);
+	rcu_assign_pointer(right->first, node1);
+	WRITE_ONCE(node2->pprev, &left->first);
+	WRITE_ONCE(node1->pprev, &right->first);
+}
+
+#define hlist_first_rcu(head)	(*((struct hlist_node __rcu **)(&(head)->first)))
+#define hlist_next_rcu(node)	(*((struct hlist_node __rcu **)(&(node)->next)))
+#define hlist_pprev_rcu(node)	(*((struct hlist_node __rcu **)((node)->pprev)))
+
+static inline void hlist_add_head_rcu(struct hlist_node *n,
+					struct hlist_head *h)
+{
+	struct hlist_node *first = h->first;
+
+	n->next = first;
+	WRITE_ONCE(n->pprev, &h->first);
+	rcu_assign_pointer(hlist_first_rcu(h), n);
+	if (first)
+		WRITE_ONCE(first->pprev, &n->next);
+}
+
+#define hlist_for_each_entry_rcu(pos, head, member, cond...)		\
+	for (__list_check_rcu(dummy, ## cond, 0),			\
+	     pos = hlist_entry_safe(rcu_dereference_raw(hlist_first_rcu(head)),\
+			typeof(*(pos)), member);			\
+		pos;							\
+		pos = hlist_entry_safe(rcu_dereference_raw(hlist_next_rcu(\
+			&(pos)->member)), typeof(*(pos)), member))
+
+
+#endif	 
+#endif

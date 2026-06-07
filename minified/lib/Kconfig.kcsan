@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+# Minimal KCSAN config - not needed for minimal kernel
+
+config HAVE_ARCH_KCSAN
+	bool

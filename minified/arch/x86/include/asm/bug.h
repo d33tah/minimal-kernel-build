@@ -5,10 +5,14 @@
 #include <linux/stringify.h>
 #include <linux/objtool.h>
 
+ 
 #define ASM_UD2		".byte 0x0f, 0x0b"
+#define INSN_UD2	0x0b0f
 #define LEN_UD2		2
 
+
 #define _BUG_FLAGS(ins, flags, extra)  asm volatile(ins)
+
 
 #define HAVE_ARCH_BUG
 #define BUG()							\
@@ -17,17 +21,26 @@ do {								\
 	__builtin_unreachable();				\
 } while (0)
 
+#define __WARN_FLAGS(flags)					\
+do {								\
+	__auto_type __flags = BUGFLAG_WARNING|(flags);		\
+	_BUG_FLAGS(ASM_UD2, __flags, ASM_REACHABLE);		\
+} while (0)
+
+/* --- 2025-12-07 10:25 --- Inlined asm-generic/bug.h content */
 #include <linux/compiler.h>
 
+#define CUT_HERE		"------------[ cut here ]------------\n"
+
 #ifndef __ASSEMBLY__
-#ifndef _LINUX_PANIC_H
-#define _LINUX_PANIC_H
-#include <linux/compiler_attributes.h>
-__printf(1, 2)
-void panic(const char *fmt, ...) __noreturn __cold;
-#define PANIC_CPU_INVALID	-1
-#endif /* _LINUX_PANIC_H */
+#include <linux/panic.h>
 #include <linux/printk.h>
+
+struct warn_args;
+struct pt_regs;
+
+void __warn(const char *file, int line, void *caller, unsigned taint,
+	    struct pt_regs *regs, struct warn_args *args);
 
 #ifndef HAVE_ARCH_BUG
 #define BUG() do {} while (1)
@@ -53,6 +66,13 @@ void panic(const char *fmt, ...) __noreturn __cold;
 #endif
 
 #define WARN_ON_ONCE(condition) WARN_ON(condition)
+#define WARN_ONCE(condition, format...) WARN(condition, format)
+#define WARN_TAINT(condition, taint, format...) WARN(condition, format)
+#define WARN_TAINT_ONCE(condition, taint, format...) WARN(condition, format)
+
+# define WARN_ON_SMP(x)			({0;})
+
+# define WARN_ON_FUNCTION_MISMATCH(x, fn) WARN_ON_ONCE((x) != (fn))
 
 #endif /* __ASSEMBLY__ */
 

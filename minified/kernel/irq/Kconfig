@@ -1,0 +1,73 @@
+# SPDX-License-Identifier: GPL-2.0-only
+# Minimal IRQ configuration
+menu "IRQ subsystem"
+
+config MAY_HAVE_SPARSE_IRQ
+	bool
+
+config GENERIC_IRQ_LEGACY
+	bool
+
+config GENERIC_IRQ_PROBE
+	bool
+
+config GENERIC_IRQ_SHOW
+	bool
+
+config GENERIC_IRQ_SHOW_LEVEL
+	bool
+
+config GENERIC_IRQ_EFFECTIVE_AFF_MASK
+	bool
+
+config GENERIC_PENDING_IRQ
+	bool
+
+config GENERIC_IRQ_MIGRATION
+	bool
+
+config GENERIC_IRQ_INJECTION
+	bool
+
+config HARDIRQS_SW_RESEND
+	bool
+
+config GENERIC_IRQ_CHIP
+	bool
+	select IRQ_DOMAIN
+
+config IRQ_DOMAIN
+	bool
+
+config IRQ_DOMAIN_HIERARCHY
+	bool
+	select IRQ_DOMAIN
+
+config GENERIC_IRQ_IPI
+	bool
+	select IRQ_DOMAIN_HIERARCHY
+
+config GENERIC_MSI_IRQ
+	bool
+
+config GENERIC_MSI_IRQ_DOMAIN
+	bool
+	select IRQ_DOMAIN_HIERARCHY
+	select GENERIC_MSI_IRQ
+
+config GENERIC_IRQ_MATRIX_ALLOCATOR
+	bool
+
+config GENERIC_IRQ_RESERVATION_MODE
+	bool
+
+config IRQ_FORCED_THREADING
+	bool
+
+config SPARSE_IRQ
+	bool "Support sparse irq numbering" if MAY_HAVE_SPARSE_IRQ
+
+endmenu
+
+config GENERIC_IRQ_MULTI_HANDLER
+	bool

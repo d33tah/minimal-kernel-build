@@ -1,0 +1,216 @@
+/* Minimal memcontrol.h - stub for CONFIG_MEMCG disabled */
+
+#ifndef _LINUX_MEMCONTROL_H
+#define _LINUX_MEMCONTROL_H
+
+#include <linux/cgroup.h>
+#include <linux/mm.h>
+#include <linux/vmstat.h>
+#include <linux/writeback.h>
+
+struct mem_cgroup;
+struct obj_cgroup;
+struct page;
+struct mm_struct;
+struct kmem_cache;
+
+enum memcg_stat_item {
+	MEMCG_VMALLOC = NR_VM_NODE_STAT_ITEMS,
+	MEMCG_NR_STAT,
+};
+
+enum memcg_memory_event { MEMCG_NR_MEMORY_EVENTS };
+
+struct mem_cgroup_reclaim_cookie;
+
+#define MEM_CGROUP_ID_SHIFT	0
+#define MEM_CGROUP_ID_MAX	0
+
+static inline struct mem_cgroup *folio_memcg(struct folio *folio)
+{
+	return NULL;
+}
+
+
+static inline bool PageMemcgKmem(struct page *page)
+{
+	return false;
+}
+
+static inline int mem_cgroup_charge(struct folio *folio,
+		struct mm_struct *mm, gfp_t gfp)
+{
+	return 0;
+}
+
+static inline void mem_cgroup_uncharge(struct folio *folio)
+{
+}
+
+static inline void mem_cgroup_uncharge_list(struct list_head *page_list)
+{
+}
+
+
+static inline struct lruvec *folio_lruvec_lock_irq(struct folio *folio)
+{
+	struct pglist_data *pgdat = folio_pgdat(folio);
+	spin_lock_irq(&pgdat->__lruvec.lru_lock);
+	return &pgdat->__lruvec;
+}
+
+static inline struct lruvec *folio_lruvec_lock_irqsave(struct folio *folio,
+		unsigned long *flagsp)
+{
+	struct pglist_data *pgdat = folio_pgdat(folio);
+	spin_lock_irqsave(&pgdat->__lruvec.lru_lock, *flagsp);
+	return &pgdat->__lruvec;
+}
+
+static inline struct mem_cgroup *
+mem_cgroup_iter(struct mem_cgroup *root,
+		struct mem_cgroup *prev,
+		struct mem_cgroup_reclaim_cookie *reclaim)
+{
+	return NULL;
+}
+
+static inline struct mem_cgroup *lruvec_memcg(struct lruvec *lruvec)
+{
+	return NULL;
+}
+
+static inline
+unsigned long mem_cgroup_get_zone_lru_size(struct lruvec *lruvec,
+		enum lru_list lru, int zone_idx)
+{
+	return 0;
+}
+
+static inline void lock_page_memcg(struct page *page)
+{
+}
+
+static inline void unlock_page_memcg(struct page *page)
+{
+}
+
+static inline void mem_cgroup_handle_over_high(void)
+{
+}
+
+static inline void mem_cgroup_enter_user_fault(void)
+{
+}
+
+static inline void mem_cgroup_exit_user_fault(void)
+{
+}
+
+static inline bool mem_cgroup_oom_synchronize(bool wait)
+{
+	return false;
+}
+
+static inline void mod_memcg_page_state(struct page *page, int idx, int val)
+{
+}
+
+
+static inline void mod_lruvec_kmem_state(void *p, enum node_stat_item idx,
+					 int val)
+{
+	struct page *page = virt_to_head_page(p);
+	mod_node_page_state(page_pgdat(page), idx, val);
+}
+
+static inline void __count_memcg_events(struct mem_cgroup *memcg,
+					enum vm_event_item idx, unsigned long count)
+{
+}
+
+static inline void split_page_memcg(struct page *head, unsigned int nr)
+{
+}
+
+
+static inline void unlock_page_lruvec_irq(struct lruvec *lruvec)
+{
+	spin_unlock_irq(&lruvec->lru_lock);
+}
+
+static inline void unlock_page_lruvec_irqrestore(struct lruvec *lruvec,
+		unsigned long flags)
+{
+	spin_unlock_irqrestore(&lruvec->lru_lock, flags);
+}
+
+static inline bool folio_matches_lruvec(struct folio *folio,
+		struct lruvec *lruvec)
+{
+	return lruvec_pgdat(lruvec) == folio_pgdat(folio) &&
+	       lruvec_memcg(lruvec) == folio_memcg(folio);
+}
+
+
+static inline struct lruvec *folio_lruvec_relock_irqsave(struct folio *folio,
+		struct lruvec *locked_lruvec, unsigned long *flags)
+{
+	if (locked_lruvec) {
+		if (folio_matches_lruvec(folio, locked_lruvec))
+			return locked_lruvec;
+		unlock_page_lruvec_irqrestore(locked_lruvec, *flags);
+	}
+	return folio_lruvec_lock_irqsave(folio, flags);
+}
+
+#define mem_cgroup_sockets_enabled 0
+
+static inline void set_shrinker_bit(struct mem_cgroup *memcg,
+				    int nid, int shrinker_id)
+{
+}
+
+static inline bool mem_cgroup_kmem_disabled(void)
+{
+	return true;
+}
+
+
+static inline void memcg_kmem_uncharge_page(struct page *page, int order)
+{
+}
+
+static inline int __memcg_kmem_charge_page(struct page *page, gfp_t gfp,
+					   int order)
+{
+	return 0;
+}
+
+static inline void __memcg_kmem_uncharge_page(struct page *page, int order)
+{
+}
+
+
+static inline bool memcg_kmem_enabled(void)
+{
+	return false;
+}
+
+static inline int memcg_kmem_id(struct mem_cgroup *memcg)
+{
+	return -1;
+}
+
+static inline
+void count_memcg_event_mm(struct mm_struct *mm, enum vm_event_item idx)
+{
+}
+
+static inline bool task_in_memcg_oom(struct task_struct *p)
+{
+	return false;
+}
+
+
+#endif /* _LINUX_MEMCONTROL_H */

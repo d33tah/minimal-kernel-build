@@ -1,21 +1,72 @@
 #include <linux/extable.h>
-#include <asm/extable.h>
+#include <linux/uaccess.h>
+#include <linux/sched/debug.h>
+
+/* Inlined from bitfield.h */
+#include <linux/build_bug.h>
+#include <asm/byteorder.h>
 
 #define __bf_shf(x) (__builtin_ffsll(x) - 1)
-#define FIELD_GET(_mask, _reg) \
-	((typeof(_mask))(((_reg) & (_mask)) >> __bf_shf(_mask)))
+
+#define __scalar_type_to_unsigned_cases(type)				\
+		unsigned type:	(unsigned type)0,			\
+		signed type:	(unsigned type)0
+
+#define __unsigned_scalar_typeof(x) typeof(				\
+		_Generic((x),						\
+			char:	(unsigned char)0,			\
+			__scalar_type_to_unsigned_cases(char),		\
+			__scalar_type_to_unsigned_cases(short),		\
+			__scalar_type_to_unsigned_cases(int),		\
+			__scalar_type_to_unsigned_cases(long),		\
+			__scalar_type_to_unsigned_cases(long long),	\
+			default: (x)))
+
+#define __bf_cast_unsigned(type, x)	((__unsigned_scalar_typeof(type))(x))
+
+#define __BF_FIELD_CHECK(_mask, _reg, _val, _pfx)			\
+	({								\
+		BUILD_BUG_ON_MSG(!__builtin_constant_p(_mask),		\
+				 _pfx "mask is not constant");		\
+		BUILD_BUG_ON_MSG((_mask) == 0, _pfx "mask is zero");	\
+		BUILD_BUG_ON_MSG(__builtin_constant_p(_val) ?		\
+				 ~((_mask) >> __bf_shf(_mask)) & (_val) : 0, \
+				 _pfx "value too large for the field"); \
+		BUILD_BUG_ON_MSG(__bf_cast_unsigned(_mask, _mask) >	\
+				 __bf_cast_unsigned(_reg, ~0ull),	\
+				 _pfx "type of reg too small for mask"); \
+		__BUILD_BUG_ON_NOT_POWER_OF_2((_mask) +			\
+					      (1ULL << __bf_shf(_mask))); \
+	})
+
+#define FIELD_GET(_mask, _reg)						\
+	({								\
+		__BF_FIELD_CHECK(_mask, _reg, 0U, "FIELD_GET: ");	\
+		(typeof(_mask))(((_reg) & (_mask)) >> __bf_shf(_mask));	\
+	})
 
 #include <asm/fpu/api.h>
+#include <asm/sev.h>
 #include <asm/traps.h>
 #include <asm/kdebug.h>
+#include <asm/insn-eval.h>
+
+/* Inlined from asm/sgx.h */
+#define SGX_ENCLS_FAULT_FLAG 0x40000000
 
 static inline unsigned long *pt_regs_nr(struct pt_regs *regs, int nr)
 {
+	int reg_offset = pt_regs_offset(regs, nr);
 	static unsigned long __dummy;
-	return &__dummy;
+
+	if (WARN_ON_ONCE(reg_offset < 0))
+		return &__dummy;
+
+	return (unsigned long *)((unsigned long)regs + reg_offset);
 }
 
-static inline unsigned long ex_fixup_addr(const struct exception_table_entry *x)
+static inline unsigned long
+ex_fixup_addr(const struct exception_table_entry *x)
 {
 	return (unsigned long)&x->fixup + x->fixup;
 }
@@ -32,10 +83,100 @@ static bool ex_handler_default(const struct exception_table_entry *e,
 	return true;
 }
 
+static bool ex_handler_fault(const struct exception_table_entry *fixup,
+			     struct pt_regs *regs, int trapnr)
+{
+	regs->ax = trapnr;
+	return ex_handler_default(fixup, regs);
+}
+
+static bool ex_handler_sgx(const struct exception_table_entry *fixup,
+			   struct pt_regs *regs, int trapnr)
+{
+	regs->ax = trapnr | SGX_ENCLS_FAULT_FLAG;
+	return ex_handler_default(fixup, regs);
+}
+
+static bool ex_handler_fprestore(const struct exception_table_entry *fixup,
+				 struct pt_regs *regs)
+{
+	regs->ip = ex_fixup_addr(fixup);
+
+	WARN_ONCE(1, "Bad FPU state detected at %pB, reinitializing FPU registers.",
+		  (void *)instruction_pointer(regs));
+
+	fpu_reset_from_exception_fixup();
+	return true;
+}
+
 static bool ex_handler_uaccess(const struct exception_table_entry *fixup,
 			       struct pt_regs *regs, int trapnr)
 {
+	WARN_ONCE(trapnr == X86_TRAP_GP, "General protection fault in user access. Non-canonical address?");
 	return ex_handler_default(fixup, regs);
+}
+
+static bool ex_handler_copy(const struct exception_table_entry *fixup,
+			    struct pt_regs *regs, int trapnr)
+{
+	WARN_ONCE(trapnr == X86_TRAP_GP, "General protection fault in user access. Non-canonical address?");
+	return ex_handler_fault(fixup, regs, trapnr);
+}
+
+static bool ex_handler_msr(const struct exception_table_entry *fixup,
+			   struct pt_regs *regs, bool wrmsr, bool safe, int reg)
+{
+	if (!safe && wrmsr &&
+	    pr_warn_once("unchecked MSR access error: WRMSR to 0x%x (tried to write 0x%08x%08x) at rIP: 0x%lx (%pS)\n",
+			 (unsigned int)regs->cx, (unsigned int)regs->dx,
+			 (unsigned int)regs->ax,  regs->ip, (void *)regs->ip))
+		show_stack_regs(regs);
+
+	if (!safe && !wrmsr &&
+	    pr_warn_once("unchecked MSR access error: RDMSR from 0x%x at rIP: 0x%lx (%pS)\n",
+			 (unsigned int)regs->cx, regs->ip, (void *)regs->ip))
+		show_stack_regs(regs);
+
+	if (!wrmsr) {
+		 
+		regs->ax = 0;
+		regs->dx = 0;
+	}
+
+	if (safe)
+		*pt_regs_nr(regs, reg) = -EIO;
+
+	return ex_handler_default(fixup, regs);
+}
+
+static bool ex_handler_clear_fs(const struct exception_table_entry *fixup,
+				struct pt_regs *regs)
+{
+	if (static_cpu_has(X86_BUG_NULL_SEG))
+		asm volatile ("mov %0, %%fs" : : "rm" (__USER_DS));
+	asm volatile ("mov %0, %%fs" : : "rm" (0));
+	return ex_handler_default(fixup, regs);
+}
+
+static bool ex_handler_imm_reg(const struct exception_table_entry *fixup,
+			       struct pt_regs *regs, int reg, int imm)
+{
+	*pt_regs_nr(regs, reg) = (long)imm;
+	return ex_handler_default(fixup, regs);
+}
+
+static bool ex_handler_ucopy_len(const struct exception_table_entry *fixup,
+				  struct pt_regs *regs, int trapnr, int reg, int imm)
+{
+	regs->cx = imm * regs->cx + *pt_regs_nr(regs, reg);
+	return ex_handler_uaccess(fixup, regs, trapnr);
+}
+
+int ex_get_fixup_type(unsigned long ip)
+{
+	const struct exception_table_entry *e = search_exception_tables(ip);
+
+	return e ? FIELD_GET(EX_DATA_TYPE_MASK, e->data) : EX_TYPE_NONE;
 }
 
 int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code,
@@ -44,32 +185,55 @@ int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code,
 	const struct exception_table_entry *e;
 	int type, reg, imm;
 
+
 	e = search_exception_tables(regs->ip);
 	if (!e)
 		return 0;
 
 	type = FIELD_GET(EX_DATA_TYPE_MASK, e->data);
-	reg = FIELD_GET(EX_DATA_REG_MASK, e->data);
-	imm = FIELD_GET(EX_DATA_IMM_MASK, e->data);
+	reg  = FIELD_GET(EX_DATA_REG_MASK,  e->data);
+	imm  = FIELD_GET(EX_DATA_IMM_MASK,  e->data);
 
 	switch (type) {
 	case EX_TYPE_DEFAULT:
+	case EX_TYPE_DEFAULT_MCE_SAFE:
 		return ex_handler_default(e, regs);
+	case EX_TYPE_FAULT:
+	case EX_TYPE_FAULT_MCE_SAFE:
+		return ex_handler_fault(e, regs, trapnr);
 	case EX_TYPE_UACCESS:
 		return ex_handler_uaccess(e, regs, trapnr);
+	case EX_TYPE_COPY:
+		return ex_handler_copy(e, regs, trapnr);
+	case EX_TYPE_CLEAR_FS:
+		return ex_handler_clear_fs(e, regs);
 	case EX_TYPE_FPU_RESTORE:
-		regs->ip = ex_fixup_addr(e);
-		fpu_reset_from_exception_fixup();
-		return true;
+		return ex_handler_fprestore(e, regs);
+	case EX_TYPE_BPF:
+		return ex_handler_bpf(e, regs);
+	case EX_TYPE_WRMSR:
+		return ex_handler_msr(e, regs, true, false, reg);
+	case EX_TYPE_RDMSR:
+		return ex_handler_msr(e, regs, false, false, reg);
+	case EX_TYPE_WRMSR_SAFE:
+		return ex_handler_msr(e, regs, true, true, reg);
+	case EX_TYPE_RDMSR_SAFE:
+		return ex_handler_msr(e, regs, false, true, reg);
+	case EX_TYPE_WRMSR_IN_MCE:
+		ex_handler_msr_mce(regs, true);
+		break;
+	case EX_TYPE_RDMSR_IN_MCE:
+		ex_handler_msr_mce(regs, false);
+		break;
 	case EX_TYPE_POP_REG:
 		regs->sp += sizeof(long);
 		fallthrough;
 	case EX_TYPE_IMM_REG:
-		*pt_regs_nr(regs, reg) = (long)imm;
-		return ex_handler_default(e, regs);
+		return ex_handler_imm_reg(e, regs, reg, imm);
+	case EX_TYPE_FAULT_SGX:
+		return ex_handler_sgx(e, regs, trapnr);
 	case EX_TYPE_UCOPY_LEN:
-		regs->cx = imm * regs->cx + *pt_regs_nr(regs, reg);
-		return ex_handler_uaccess(e, regs, trapnr);
+		return ex_handler_ucopy_len(e, regs, trapnr, reg, imm);
 	}
 	BUG();
 }
@@ -78,27 +242,39 @@ extern unsigned int early_recursion_flag;
 
 void __init early_fixup_exception(struct pt_regs *regs, int trapnr)
 {
+	 
 	if (trapnr == X86_TRAP_NMI)
 		return;
 
 	if (early_recursion_flag > 2)
 		goto halt_loop;
 
+	 
 	if (regs->cs != __KERNEL_CS)
 		goto fail;
 
+	 
 	if (fixup_exception(regs, trapnr, regs->orig_ax, 0))
 		return;
 
 	if (trapnr == X86_TRAP_UD) {
 		if (report_bug(regs->ip, regs) == BUG_TRAP_TYPE_WARN) {
+			 
 			regs->ip += LEN_UD2;
 			return;
 		}
+
+		 
 	}
 
 fail:
+	early_printk("PANIC: early exception 0x%02x IP %lx:%lx error %lx cr2 0x%lx\n",
+		     (unsigned)trapnr, (unsigned long)regs->cs, regs->ip,
+		     regs->orig_ax, read_cr2());
+
+	show_regs(regs);
+
 halt_loop:
 	while (true)
-		asm volatile("hlt" : : : "memory");
+		halt();
 }

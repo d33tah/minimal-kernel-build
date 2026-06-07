@@ -1,21 +1,52 @@
 #ifndef __ASM_GENERIC_EXPORT_H
 #define __ASM_GENERIC_EXPORT_H
 
+
 #ifndef KSYM_FUNC
 #define KSYM_FUNC(x) x
 #endif
+#define KSYM_ALIGN 4
 
 .macro __put, val, name
 	.long	\val - ., \name - ., 0
 .endm
 
+
 .macro ___EXPORT_SYMBOL name,val,sec
 .endm
 
-/* CONFIG_TRIM_UNUSED_KSYMS not set - using simple export */
+#if defined(CONFIG_TRIM_UNUSED_KSYMS)
+
+#include <linux/kconfig.h>
+#include <generated/autoksyms.h>
+
+.macro __ksym_marker sym
+	.section ".discard.ksym","a"
+__ksym_marker_\sym:
+	 .previous
+.endm
+
+#define __EXPORT_SYMBOL(sym, val, sec)				\
+	__ksym_marker sym;					\
+	__cond_export_sym(sym, val, sec, __is_defined(__KSYM_##sym))
+#define __cond_export_sym(sym, val, sec, conf)			\
+	___cond_export_sym(sym, val, sec, conf)
+#define ___cond_export_sym(sym, val, sec, enabled)		\
+	__cond_export_sym_##enabled(sym, val, sec)
+#define __cond_export_sym_1(sym, val, sec) ___EXPORT_SYMBOL sym, val, sec
+#define __cond_export_sym_0(sym, val, sec)  
+
+#else
 #define __EXPORT_SYMBOL(sym, val, sec) ___EXPORT_SYMBOL sym, val, sec
+#endif
 
 #define EXPORT_SYMBOL(name)					\
 	__EXPORT_SYMBOL(name, KSYM_FUNC(name),)
+#define EXPORT_SYMBOL_GPL(name) 				\
+	__EXPORT_SYMBOL(name, KSYM_FUNC(name), _gpl)
+#define EXPORT_DATA_SYMBOL(name)				\
+	__EXPORT_SYMBOL(name, name,)
+#define EXPORT_DATA_SYMBOL_GPL(name)				\
+	__EXPORT_SYMBOL(name, name,_gpl)
 
 #endif

@@ -1,0 +1,118 @@
+#ifndef _ASM_GENERIC_FCNTL_H
+#define _ASM_GENERIC_FCNTL_H
+
+#include <linux/types.h>
+
+
+
+#define O_ACCMODE	00000003
+#define O_RDONLY	00000000
+#define O_WRONLY	00000001
+#define O_RDWR		00000002
+#ifndef O_CREAT
+#define O_CREAT		00000100	 
+#endif
+#ifndef O_EXCL
+#define O_EXCL		00000200	 
+#endif
+#ifndef O_NOCTTY
+#define O_NOCTTY	00000400	 
+#endif
+#ifndef O_TRUNC
+#define O_TRUNC		00001000	 
+#endif
+#ifndef O_APPEND
+#define O_APPEND	00002000
+#endif
+#ifndef O_NONBLOCK
+#define O_NONBLOCK	00004000
+#endif
+#ifndef O_DSYNC
+#define O_DSYNC		00010000	 
+#endif
+#ifndef FASYNC
+#define FASYNC		00020000	 
+#endif
+#ifndef O_DIRECT
+#define O_DIRECT	00040000	 
+#endif
+#ifndef O_LARGEFILE
+#define O_LARGEFILE	00100000
+#endif
+#ifndef O_DIRECTORY
+#define O_DIRECTORY	00200000	 
+#endif
+#ifndef O_NOFOLLOW
+#define O_NOFOLLOW	00400000	 
+#endif
+#ifndef O_NOATIME
+#define O_NOATIME	01000000
+#endif
+#ifndef O_CLOEXEC
+#define O_CLOEXEC	02000000	 
+#endif
+
+#ifndef O_SYNC
+#define __O_SYNC	04000000
+#define O_SYNC		(__O_SYNC|O_DSYNC)
+#endif
+
+#ifndef O_PATH
+#define O_PATH		010000000
+#endif
+
+#ifndef __O_TMPFILE
+#define __O_TMPFILE	020000000
+#endif
+
+#define O_TMPFILE (__O_TMPFILE | O_DIRECTORY)
+#define O_TMPFILE_MASK (__O_TMPFILE | O_DIRECTORY | O_CREAT)      
+
+#ifndef O_NDELAY
+#define O_NDELAY	O_NONBLOCK
+#endif
+
+#define F_DUPFD		0	 
+#define F_GETFD		1	 
+#define F_SETFD		2	 
+#define F_GETFL		3	 
+#define F_SETFL		4	 
+#ifndef F_GETLK
+#define F_GETLK		5
+#define F_SETLK		6
+#define F_SETLKW	7
+#endif
+#ifndef F_SETOWN
+#define F_SETOWN	8	 
+#define F_GETOWN	9	 
+#endif
+
+
+#define FD_CLOEXEC	1	 
+
+#ifndef F_RDLCK
+#define F_RDLCK		0
+#define F_WRLCK		1
+#define F_UNLCK		2
+#endif
+
+
+
+#define F_LINUX_SPECIFIC_BASE	1024
+
+struct flock {
+	short	l_type;
+	short	l_whence;
+	__kernel_off_t	l_start;
+	__kernel_off_t	l_len;
+	__kernel_pid_t	l_pid;
+#ifdef	__ARCH_FLOCK_EXTRA_SYSID
+	__ARCH_FLOCK_EXTRA_SYSID
+#endif
+#ifdef	__ARCH_FLOCK_PAD
+	__ARCH_FLOCK_PAD
+#endif
+};
+
+
+#endif  

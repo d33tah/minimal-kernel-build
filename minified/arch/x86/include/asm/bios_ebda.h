@@ -1,0 +1,18 @@
+ 
+#ifndef _ASM_X86_BIOS_EBDA_H
+#define _ASM_X86_BIOS_EBDA_H
+
+#include <asm/io.h>
+
+ 
+static inline unsigned int get_bios_ebda(void)
+{
+	 
+	unsigned int address = *(unsigned short *)phys_to_virt(0x40E);
+	address <<= 4;
+	return address;	 
+}
+
+void reserve_bios_regions(void);
+
+#endif  

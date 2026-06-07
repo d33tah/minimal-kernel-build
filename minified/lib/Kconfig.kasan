@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: GPL-2.0-only
+# Minimal KASAN config - not needed for minimal kernel
+
+config HAVE_ARCH_KASAN
+	bool
+
+config HAVE_ARCH_KASAN_SW_TAGS
+	bool
+
+config HAVE_ARCH_KASAN_HW_TAGS
+	bool
+
+config HAVE_ARCH_KASAN_VMALLOC
+	bool

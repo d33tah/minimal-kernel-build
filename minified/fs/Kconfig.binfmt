@@ -1,0 +1,43 @@
+# SPDX-License-Identifier: GPL-2.0-only
+# Minimal executable file format configuration
+
+menu "Executable file formats"
+
+config BINFMT_ELF
+	bool "Kernel support for ELF binaries"
+	depends on MMU
+	select ELFCORE
+	default y
+	help
+	  ELF (Executable and Linkable Format) is a format for libraries and
+	  executables. Say Y here to enable your kernel to run ELF binaries.
+
+config COMPAT_BINFMT_ELF
+	def_bool y
+	depends on COMPAT && BINFMT_ELF
+	select ELFCORE
+
+config ARCH_BINFMT_ELF_STATE
+	bool
+
+config ARCH_BINFMT_ELF_EXTRA_PHDRS
+	bool
+
+config ARCH_HAVE_ELF_PROT
+	bool
+
+config ARCH_USE_GNU_PROPERTY
+	bool
+
+config ELFCORE
+	bool
+
+config BINFMT_SCRIPT
+	tristate "Kernel support for scripts starting with #!"
+	default y
+
+config COREDUMP
+	bool "Enable core dump support" if EXPERT
+	default y
+
+endmenu

@@ -1,30 +1,46 @@
 #include <linux/clocksource.h>
+#include <linux/jiffies.h>
 #include <linux/module.h>
+#include <linux/init.h>
 
-__visible u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
+#include "timekeeping.h"
+#include "tick-internal.h"
 
-/* HZ=100, so JIFFIES_SHIFT=8 */
-#define JIFFIES_SHIFT 8
 
 static u64 jiffies_read(struct clocksource *cs)
 {
-	return (u64)jiffies;
+	return (u64) jiffies;
 }
 
 static struct clocksource clocksource_jiffies = {
-	.name = "jiffies",
-	.rating = 1,
-	.uncertainty_margin = 32 * NSEC_PER_MSEC,
-	.read = jiffies_read,
-	.mask = CLOCKSOURCE_MASK(32),
-	.mult = TICK_NSEC << JIFFIES_SHIFT,
-	.shift = JIFFIES_SHIFT,
-	.max_cycles = 10,
+	.name			= "jiffies",
+	.rating			= 1,  
+	.uncertainty_margin	= 32 * NSEC_PER_MSEC,
+	.read			= jiffies_read,
+	.mask			= CLOCKSOURCE_MASK(32),
+	.mult			= TICK_NSEC << JIFFIES_SHIFT,  
+	.shift			= JIFFIES_SHIFT,
+	.max_cycles		= 10,
 };
 
 __cacheline_aligned_in_smp DEFINE_RAW_SPINLOCK(jiffies_lock);
 __cacheline_aligned_in_smp seqcount_raw_spinlock_t jiffies_seq =
 	SEQCNT_RAW_SPINLOCK_ZERO(jiffies_seq, &jiffies_lock);
+
+#if (BITS_PER_LONG < 64)
+u64 get_jiffies_64(void)
+{
+	unsigned int seq;
+	u64 ret;
+
+	do {
+		seq = read_seqcount_begin(&jiffies_seq);
+		ret = jiffies_64;
+	} while (read_seqcount_retry(&jiffies_seq, seq));
+	return ret;
+}
+#endif
+
 
 static int __init init_jiffies_clocksource(void)
 {
@@ -33,7 +49,37 @@ static int __init init_jiffies_clocksource(void)
 
 core_initcall(init_jiffies_clocksource);
 
-struct clocksource *__init __weak clocksource_default_clock(void)
+struct clocksource * __init __weak clocksource_default_clock(void)
 {
 	return &clocksource_jiffies;
+}
+
+static struct clocksource refined_jiffies;
+
+int register_refined_jiffies(long cycles_per_second)
+{
+	u64 nsec_per_tick, shift_hz;
+	long cycles_per_tick;
+
+
+
+	refined_jiffies = clocksource_jiffies;
+	refined_jiffies.name = "refined-jiffies";
+	refined_jiffies.rating++;
+
+	 
+	cycles_per_tick = (cycles_per_second + HZ/2)/HZ;
+	 
+	shift_hz = (u64)cycles_per_second << 8;
+	shift_hz += cycles_per_tick/2;
+	do_div(shift_hz, cycles_per_tick);
+	 
+	nsec_per_tick = (u64)NSEC_PER_SEC << 8;
+	nsec_per_tick += (u32)shift_hz/2;
+	do_div(nsec_per_tick, (u32)shift_hz);
+
+	refined_jiffies.mult = ((u32)nsec_per_tick) << JIFFIES_SHIFT;
+
+	__clocksource_register(&refined_jiffies);
+	return 0;
 }

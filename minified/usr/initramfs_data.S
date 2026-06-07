@@ -29,5 +29,8 @@ __irf_end:
 .section .init.ramfs.info,"a"
 .globl __initramfs_size
 __initramfs_size:
-/* 32-bit only - use .long */
+#ifdef CONFIG_64BIT
+	.quad __irf_end - __irf_start
+#else
 	.long __irf_end - __irf_start
+#endif

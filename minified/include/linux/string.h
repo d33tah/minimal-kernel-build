@@ -1,71 +1,24 @@
 #ifndef _LINUX_STRING_H_
 #define _LINUX_STRING_H_
 
-#include <linux/compiler.h>
-#include <linux/types.h>
+#include <linux/compiler.h>	 
+#include <linux/types.h>	 
+#include <linux/stddef.h>	 
+#include <linux/errno.h>	 
 #include <linux/stdarg.h>
 
-#define __HAVE_ARCH_STRCMP
-extern int strcmp(const char *cs, const char *ct);
 
-#define __HAVE_ARCH_STRNCMP
-extern int strncmp(const char *cs, const char *ct, size_t count);
+extern char *strndup_user(const char __user *, long);
+extern void *memdup_user(const void __user *, size_t);
 
-#define __HAVE_ARCH_STRCHR
-extern char *strchr(const char *s, int c);
+#include <asm/string_32.h>
 
-#define __HAVE_ARCH_STRLEN
-extern size_t strlen(const char *s);
-
-static __always_inline void *__memcpy(void *to, const void *from, size_t n)
-{
-	int d0, d1, d2;
-	asm volatile("rep ; movsl\n\t"
-		     "movl %4,%%ecx\n\t"
-		     "andl $3,%%ecx\n\t"
-		     "jz 1f\n\t"
-		     "rep ; movsb\n\t"
-		     "1:"
-		     : "=&c" (d0), "=&D" (d1), "=&S" (d2)
-		     : "0" (n / 4), "g" (n), "1" ((long)to), "2" ((long)from)
-		     : "memory");
-	return to;
-}
-
-extern void *memcpy(void *, const void *, size_t);
-#define memcpy(t, f, n) __builtin_memcpy(t, f, n)
-
-void *memmove(void *dest, const void *src, size_t n);
-
-extern int memcmp(const void *, const void *, size_t);
-#define memcmp __builtin_memcmp
-
-static inline void *__memset_generic(void *s, char c, size_t count)
-{
-	int d0, d1;
-	asm volatile("rep\n\t"
-		     "stosb"
-		     : "=&c" (d0), "=&D" (d1)
-		     : "a" (c), "1" (s), "0" (count)
-		     : "memory");
-	return s;
-}
-
-#define __constant_count_memset(s, c, count) __memset_generic((s), (c), (count))
-
-#define __HAVE_ARCH_STRNLEN
-extern size_t strnlen(const char *s, size_t count);
-
-#define __memset(s, c, count)				\
-	(__builtin_constant_p(count)			\
-	 ? __constant_count_memset((s), (c), (count))	\
-	 : __memset_generic((s), (c), (count)))
-
-extern void *memset(void *, int, size_t);
-#define memset(s, c, count) __builtin_memset(s, c, count)
-
-/* end string_32.h */
-
+#ifndef __HAVE_ARCH_STRCPY
+extern char * strcpy(char *,const char *);
+#endif
+#ifndef __HAVE_ARCH_STRNCPY
+extern char * strncpy(char *,const char *, __kernel_size_t);
+#endif
 #ifndef __HAVE_ARCH_STRLCPY
 size_t strlcpy(char *, const char *, size_t);
 #endif
@@ -73,12 +26,89 @@ size_t strlcpy(char *, const char *, size_t);
 ssize_t strscpy(char *, const char *, size_t);
 #endif
 
+ssize_t strscpy_pad(char *dest, const char *src, size_t count);
+
+#ifndef __HAVE_ARCH_STRLCAT
+extern size_t strlcat(char *, const char *, __kernel_size_t);
+#endif
+#ifndef __HAVE_ARCH_STRCMP
+extern int strcmp(const char *,const char *);
+#endif
+#ifndef __HAVE_ARCH_STRNCMP
+extern int strncmp(const char *,const char *,__kernel_size_t);
+#endif
+#ifndef __HAVE_ARCH_STRCHR
+extern char * strchr(const char *,int);
+#endif
+#ifndef __HAVE_ARCH_STRNCHR
+extern char * strnchr(const char *, size_t, int);
+#endif
 #ifndef __HAVE_ARCH_STRRCHR
 extern char * strrchr(const char *,int);
 #endif
+extern char * __must_check skip_spaces(const char *);
+
+
+#ifndef __HAVE_ARCH_STRSTR
+extern char * strstr(const char *, const char *);
+#endif
+#ifndef __HAVE_ARCH_STRLEN
+extern __kernel_size_t strlen(const char *);
+#endif
+#ifndef __HAVE_ARCH_STRNLEN
+extern __kernel_size_t strnlen(const char *,__kernel_size_t);
+#endif
+#ifndef __HAVE_ARCH_STRPBRK
+extern char * strpbrk(const char *,const char *);
+#endif
+#ifndef __HAVE_ARCH_STRSEP
+extern char * strsep(char **,const char *);
+#endif
+#ifndef __HAVE_ARCH_STRCSPN
+extern __kernel_size_t strcspn(const char *,const char *);
+#endif
+
+#ifndef __HAVE_ARCH_MEMSET
+extern void * memset(void *,int,__kernel_size_t);
+#endif
+
+
+
+#ifndef __HAVE_ARCH_MEMCPY
+extern void * memcpy(void *,const void *,__kernel_size_t);
+#endif
+#ifndef __HAVE_ARCH_MEMMOVE
+extern void * memmove(void *,const void *,__kernel_size_t);
+#endif
+#ifndef __HAVE_ARCH_MEMCMP
+extern int memcmp(const void *,const void *,__kernel_size_t);
+#endif
+#ifndef __HAVE_ARCH_BCMP
+#endif
+#ifndef __HAVE_ARCH_MEMCHR
+extern void * memchr(const void *,int,__kernel_size_t);
+#endif
+
+char *strreplace(char *s, char old, char new);
 
 extern void kfree_const(const void *x);
+
+extern char *kstrdup(const char *s, gfp_t gfp) __malloc;
 extern const char *kstrdup_const(const char *s, gfp_t gfp);
+extern void *kmemdup(const void *src, size_t len, gfp_t gfp);
 extern char *kmemdup_nul(const char *s, size_t len, gfp_t gfp);
 
-#endif
+
+static inline void memzero_explicit(void *s, size_t count)
+{
+	memset(s, 0, count);
+	barrier_data(s);
+}
+
+static inline const char *kbasename(const char *path)
+{
+	const char *tail = strrchr(path, '/');
+	return tail ? tail + 1 : path;
+}
+
+#endif  

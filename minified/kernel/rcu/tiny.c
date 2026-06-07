@@ -1,41 +1,32 @@
-#include <linux/interrupt.h>
-#include <linux/rcupdate.h>
 #include <linux/completion.h>
+#include <linux/interrupt.h>
+#include <linux/notifier.h>
+#include <linux/rcupdate_wait.h>
+#include <linux/kernel.h>
+#include <linux/export.h>
+#include <linux/mutex.h>
+#include <linux/sched.h>
+#include <linux/types.h>
+#include <linux/init.h>
+#include <linux/time.h>
+#include <linux/cpu.h>
 
-/* inlined from linux/rcupdate_wait.h */
-struct rcu_synchronize {
-	struct rcu_head head;
-	struct completion completion;
-};
-void wakeme_after_rcu(struct rcu_head *head);
+#include <linux/slab.h>
+#include <linux/mm.h>
 
-void __wait_rcu_gp(bool checktiny, int n, call_rcu_func_t *crcu_array,
-		   struct rcu_synchronize *rs_array);
-
-#define _wait_rcu_gp(checktiny, ...)                                         \
-	do {                                                                 \
-		call_rcu_func_t __crcu_array[] = { __VA_ARGS__ };            \
-		struct rcu_synchronize __rs_array[ARRAY_SIZE(__crcu_array)]; \
-		__wait_rcu_gp(checktiny, ARRAY_SIZE(__crcu_array),           \
-			      __crcu_array, __rs_array);                     \
-	} while (0)
-
-#define wait_rcu_gp(...) _wait_rcu_gp(false, __VA_ARGS__)
-
-/* rcu.h inlined */
-extern void resched_cpu(int cpu);
+#include "rcu.h"
 
 struct rcu_ctrlblk {
-	struct rcu_head *rcucblist;
-	struct rcu_head **donetail;
-	struct rcu_head **curtail;
-	unsigned long gp_seq;
+	struct rcu_head *rcucblist;	 
+	struct rcu_head **donetail;	 
+	struct rcu_head **curtail;	 
+	unsigned long gp_seq;		 
 };
 
 static struct rcu_ctrlblk rcu_ctrlblk = {
-	.donetail = &rcu_ctrlblk.rcucblist,
-	.curtail = &rcu_ctrlblk.rcucblist,
-	.gp_seq = 0 - 300UL,
+	.donetail	= &rcu_ctrlblk.rcucblist,
+	.curtail	= &rcu_ctrlblk.rcucblist,
+	.gp_seq		= 0 - 300UL,
 };
 
 void rcu_barrier(void)
@@ -56,14 +47,46 @@ void rcu_qs(void)
 	local_irq_restore(flags);
 }
 
-static __latent_entropy void
-rcu_process_callbacks(struct softirq_action *unused)
+void rcu_sched_clock_irq(int user)
+{
+	if (user) {
+		rcu_qs();
+	} else if (rcu_ctrlblk.donetail != rcu_ctrlblk.curtail) {
+		set_tsk_need_resched(current);
+		set_preempt_need_resched();
+	}
+}
+
+static inline bool rcu_reclaim_tiny(struct rcu_head *head)
+{
+	rcu_callback_t f;
+	unsigned long offset = (unsigned long)head->func;
+
+	rcu_lock_acquire(&rcu_callback_map);
+	if (__is_kvfree_rcu_offset(offset)) {
+		 
+		kvfree((void *)head - offset);
+		rcu_lock_release(&rcu_callback_map);
+		return true;
+	}
+
+	 
+	f = head->func;
+	WRITE_ONCE(head->func, (rcu_callback_t)0L);
+	f(head);
+	rcu_lock_release(&rcu_callback_map);
+	return false;
+}
+
+static __latent_entropy void rcu_process_callbacks(struct softirq_action *unused)
 {
 	struct rcu_head *next, *list;
 	unsigned long flags;
 
+	 
 	local_irq_save(flags);
 	if (rcu_ctrlblk.donetail == &rcu_ctrlblk.rcucblist) {
+		 
 		local_irq_restore(flags);
 		return;
 	}
@@ -75,27 +98,31 @@ rcu_process_callbacks(struct softirq_action *unused)
 	rcu_ctrlblk.donetail = &rcu_ctrlblk.rcucblist;
 	local_irq_restore(flags);
 
+	 
 	while (list) {
 		next = list->next;
 		prefetch(next);
+		debug_rcu_head_unqueue(list);
 		local_bh_disable();
-		{
-			unsigned long offset = (unsigned long)list->func;
-			if (!__is_kvfree_rcu_offset(offset)) {
-				rcu_callback_t f = list->func;
-				WRITE_ONCE(list->func, (rcu_callback_t)0L);
-				f(list);
-			}
-		}
+		rcu_reclaim_tiny(list);
 		local_bh_enable();
 		list = next;
 	}
+}
+
+void synchronize_rcu(void)
+{
+	RCU_LOCKDEP_WARN(lock_is_held(&rcu_bh_lock_map) ||
+			 lock_is_held(&rcu_lock_map) ||
+			 lock_is_held(&rcu_sched_lock_map),
+			 "Illegal synchronize_rcu() in RCU read-side critical section");
 }
 
 void call_rcu(struct rcu_head *head, rcu_callback_t func)
 {
 	unsigned long flags;
 
+	debug_rcu_head_queue(head);
 	head->func = func;
 	head->next = NULL;
 
@@ -104,12 +131,30 @@ void call_rcu(struct rcu_head *head, rcu_callback_t func)
 	rcu_ctrlblk.curtail = &head->next;
 	local_irq_restore(flags);
 
-	if (unlikely(current->flags & PF_IDLE)) {
+	if (unlikely(is_idle_task(current))) {
+		 
 		resched_cpu(0);
 	}
+}
+
+unsigned long get_state_synchronize_rcu(void)
+{
+	return READ_ONCE(rcu_ctrlblk.gp_seq);
+}
+
+unsigned long start_poll_synchronize_rcu(void)
+{
+	unsigned long gp_seq = get_state_synchronize_rcu();
+
+	if (unlikely(is_idle_task(current))) {
+		 
+		resched_cpu(0);
+	}
+	return gp_seq;
 }
 
 void __init rcu_init(void)
 {
 	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
+	rcu_early_boot_tests();
 }

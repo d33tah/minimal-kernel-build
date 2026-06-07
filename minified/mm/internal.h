@@ -26,7 +26,6 @@ struct anon_vma_chain {
 
 void anon_vma_init(void);
 int  __anon_vma_prepare(struct vm_area_struct *);
-void unlink_anon_vmas(struct vm_area_struct *);
 
 static inline int anon_vma_prepare(struct vm_area_struct *vma)
 {

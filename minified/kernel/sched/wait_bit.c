@@ -4,25 +4,16 @@
 
 static wait_queue_head_t bit_wait_table[WAIT_TABLE_SIZE] __cacheline_aligned;
 
-wait_queue_head_t *bit_waitqueue(void *word, int bit)
+void wake_up_bit(void *word, int bit)
 {
 	const int shift = BITS_PER_LONG == 32 ? 5 : 6;
 	unsigned long val = (unsigned long)word << shift | bit;
-
-	return bit_wait_table + hash_long(val, WAIT_TABLE_BITS);
-}
-
-void __wake_up_bit(struct wait_queue_head *wq_head, void *word, int bit)
-{
+	struct wait_queue_head *wq_head =
+		bit_wait_table + hash_long(val, WAIT_TABLE_BITS);
 	struct wait_bit_key key = __WAIT_BIT_KEY_INITIALIZER(word, bit);
 
 	if (waitqueue_active(wq_head))
 		__wake_up(wq_head, TASK_NORMAL, 1, &key);
-}
-
-void wake_up_bit(void *word, int bit)
-{
-	__wake_up_bit(bit_waitqueue(word, bit), word, bit);
 }
 
 void __init wait_bit_init(void)

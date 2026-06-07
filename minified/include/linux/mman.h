@@ -19,11 +19,6 @@
 /* sysctl_overcommit_* externs already in mm.h */
 extern struct percpu_counter vm_committed_as;
 
-static inline void vm_acct_memory(long pages)
-{
-	percpu_counter_add_batch(&vm_committed_as, pages, 0);
-}
-
 #ifndef arch_calc_vm_prot_bits
 #define arch_calc_vm_prot_bits(prot, pkey) 0
 #endif

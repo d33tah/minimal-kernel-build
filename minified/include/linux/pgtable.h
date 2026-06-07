@@ -70,12 +70,6 @@ static inline pte_t *pte_offset_kernel(pmd_t *pmd, unsigned long address)
 
 /* p4d_addr_end, pud_addr_end, pmd_addr_end - x86 overrides with #undef/#define */
 
-static inline void pmd_clear_bad(pmd_t *pmd)
-{
-	pmd_ERROR(*pmd);
-	pmd_clear(pmd);
-}
-
 static inline int is_zero_pfn(unsigned long pfn)
 {
 	extern unsigned long zero_pfn;

@@ -43,7 +43,6 @@
 36	i386	sync			sys_sync
 41	i386	dup			sys_dup
 42	i386	pipe			sys_pipe
-43	i386	times			sys_times			compat_sys_times
 44	i386	prof
 45	i386	brk			sys_brk
 46	i386	setgid			sys_setgid16
@@ -56,23 +55,15 @@
 54	i386	ioctl			sys_ioctl			compat_sys_ioctl
 55	i386	fcntl			sys_fcntl			compat_sys_fcntl64
 56	i386	mpx
-57	i386	setpgid			sys_setpgid
 58	i386	ulimit
-59	i386	oldolduname		sys_olduname
 60	i386	umask			sys_umask
 62	i386	ustat			sys_ustat			compat_sys_ustat
 63	i386	dup2			sys_dup2
 64	i386	getppid			sys_getppid
-65	i386	getpgrp			sys_getpgrp
-66	i386	setsid			sys_setsid
 68	i386	sgetmask		sys_sgetmask
 69	i386	ssetmask		sys_ssetmask
 70	i386	setreuid		sys_setreuid16
 71	i386	setregid		sys_setregid16
-74	i386	sethostname		sys_sethostname
-75	i386	setrlimit		sys_setrlimit			compat_sys_setrlimit
-76	i386	getrlimit		sys_old_getrlimit		compat_sys_old_getrlimit
-77	i386	getrusage		sys_getrusage			compat_sys_getrusage
 78	i386	gettimeofday		sys_gettimeofday		compat_sys_gettimeofday
 79	i386	settimeofday		sys_settimeofday		compat_sys_settimeofday
 80	i386	getgroups		sys_getgroups16
@@ -87,8 +78,6 @@
 90	i386	mmap			sys_old_mmap			compat_sys_ia32_mmap
 91	i386	munmap			sys_munmap
 95	i386	fchown			sys_fchown16
-96	i386	getpriority		sys_getpriority
-97	i386	setpriority		sys_setpriority
 98	i386	profil
 99	i386	statfs			sys_statfs			compat_sys_statfs
 100	i386	fstatfs			sys_fstatfs			compat_sys_fstatfs
@@ -100,17 +89,14 @@
 106	i386	stat			sys_newstat			compat_sys_newstat
 107	i386	lstat			sys_newlstat			compat_sys_newlstat
 108	i386	fstat			sys_newfstat			compat_sys_newfstat
-109	i386	olduname		sys_uname
 110	i386	iopl			sys_iopl
 112	i386	idle
 113	i386	vm86old			sys_vm86old			sys_ni_syscall
 # 114 wait4 removed (unreachable)
 115	i386	swapoff			sys_swapoff
-116	i386	sysinfo			sys_sysinfo			compat_sys_sysinfo
 117	i386	ipc			sys_ipc				compat_sys_ipc
 118	i386	fsync			sys_fsync
 120	i386	clone			sys_clone			compat_sys_ia32_clone
-121	i386	setdomainname		sys_setdomainname
 122	i386	uname			sys_newuname
 123	i386	modify_ldt		sys_modify_ldt
 124	i386	adjtimex		sys_adjtimex_time32
@@ -120,7 +106,6 @@
 129	i386	delete_module		sys_delete_module
 130	i386	get_kernel_syms
 131	i386	quotactl		sys_quotactl
-132	i386	getpgid			sys_getpgid
 134	i386	bdflush			sys_ni_syscall
 135	i386	sysfs			sys_sysfs
 136	i386	personality		sys_personality
@@ -134,7 +119,6 @@
 144	i386	msync			sys_msync
 145	i386	readv			sys_readv
 146	i386	writev			sys_writev
-147	i386	getsid			sys_getsid
 148	i386	fdatasync		sys_fdatasync
 149	i386	_sysctl			sys_ni_syscall
 150	i386	mlock			sys_mlock
@@ -159,7 +143,6 @@
 169	i386	nfsservctl
 170	i386	setresgid		sys_setresgid16
 171	i386	getresgid		sys_getresgid16
-172	i386	prctl			sys_prctl
 180	i386	pread64			sys_ia32_pread64
 181	i386	pwrite64		sys_ia32_pwrite64
 182	i386	chown			sys_chown16
@@ -170,7 +153,6 @@
 188	i386	getpmsg
 189	i386	putpmsg
 190	i386	vfork			sys_vfork
-191	i386	ugetrlimit		sys_getrlimit			compat_sys_getrlimit
 192	i386	mmap2			sys_mmap_pgoff
 193	i386	truncate64		sys_ia32_truncate64
 194	i386	ftruncate64		sys_ia32_ftruncate64
@@ -283,7 +265,6 @@
 315	i386	tee			sys_tee
 316	i386	vmsplice		sys_vmsplice
 317	i386	move_pages		sys_move_pages
-318	i386	getcpu			sys_getcpu
 319	i386	epoll_pwait		sys_epoll_pwait
 320	i386	utimensat		sys_utimensat_time32
 321	i386	signalfd		sys_signalfd			compat_sys_signalfd
@@ -304,7 +285,6 @@
 337	i386	recvmmsg		sys_recvmmsg_time32		compat_sys_recvmmsg_time32
 338	i386	fanotify_init		sys_fanotify_init
 339	i386	fanotify_mark		sys_fanotify_mark		compat_sys_fanotify_mark
-340	i386	prlimit64		sys_prlimit64
 341	i386	name_to_handle_at	sys_name_to_handle_at
 342	i386	open_by_handle_at	sys_open_by_handle_at		compat_sys_open_by_handle_at
 343	i386	clock_adjtime		sys_clock_adjtime32

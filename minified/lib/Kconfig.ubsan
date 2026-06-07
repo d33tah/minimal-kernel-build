@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+# Minimal UBSAN config - not needed for minimal kernel
+
+config ARCH_HAS_UBSAN_SANITIZE_ALL
+	bool

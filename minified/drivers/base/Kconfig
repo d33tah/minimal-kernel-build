@@ -1,0 +1,46 @@
+# SPDX-License-Identifier: GPL-2.0
+# Minimal driver base configuration
+
+menu "Generic Driver Options"
+
+config DEVTMPFS
+	bool "Maintain a devtmpfs filesystem to mount at /dev"
+	help
+	  This creates a tmpfs/ramfs filesystem instance at bootup.
+
+config DEVTMPFS_MOUNT
+	bool "Automount devtmpfs at /dev"
+	depends on DEVTMPFS
+	help
+	  Auto-mount devtmpfs at /dev after root mount.
+
+config DEVTMPFS_SAFE
+	bool "Safe devtmpfs"
+	depends on DEVTMPFS
+	default n
+	help
+	  Restrict permissions of files created by devtmpfs.
+
+config FW_LOADER
+	bool "Firmware loading facility"
+	default n
+
+config WANT_DEV_COREDUMP
+	bool
+
+config DEV_COREDUMP
+	bool "Allow device coredump"
+	depends on WANT_DEV_COREDUMP
+	default y if WANT_DEV_COREDUMP
+
+config GENERIC_CPU_DEVICES
+	bool
+	default n
+
+config GENERIC_CPU_AUTOPROBE
+	bool
+
+config SOC_BUS
+	bool
+
+endmenu

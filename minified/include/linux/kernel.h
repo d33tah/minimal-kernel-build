@@ -1,33 +1,53 @@
 #ifndef _LINUX_KERNEL_H
 #define _LINUX_KERNEL_H
 
+#include <linux/stdarg.h>
 #include <linux/limits.h>
+#include <linux/const.h>
 
+/* Inlined from align.h */
 #define ALIGN(x, a)		__ALIGN_KERNEL((x), (a))
 #define ALIGN_DOWN(x, a)	__ALIGN_KERNEL((x) - ((a) - 1), (a))
+#define __ALIGN_MASK(x, mask)	__ALIGN_KERNEL_MASK((x), (mask))
+#define PTR_ALIGN(p, a)		((typeof(p))ALIGN((unsigned long)(p), (a)))
 #define IS_ALIGNED(x, a)		(((x) & ((typeof(x))(a) - 1)) == 0)
-int __must_check kstrtoull(const char *s, unsigned int base, unsigned long long *res);
-int __must_check kstrtouint(const char *s, unsigned int base, unsigned int *res);
+#include <linux/linkage.h>
+#include <linux/stddef.h>
+#include <linux/types.h>
+#include <linux/compiler.h>
+#include <linux/container_of.h>
+#include <linux/bitops.h>
+#include <linux/kstrtox.h>
 #include <linux/log2.h>
 #include <linux/math.h>
 #include <linux/minmax.h>
-#ifndef _LINUX_PANIC_H
-#define _LINUX_PANIC_H
-__printf(1, 2)
-void panic(const char *fmt, ...) __noreturn __cold;
-#define PANIC_CPU_INVALID	-1
-#endif /* _LINUX_PANIC_H */
+#include <linux/typecheck.h>
+#include <linux/panic.h>
 #include <linux/printk.h>
+#include <linux/build_bug.h>
+#include <linux/static_call_types.h>
 #define _RET_IP_		(unsigned long)__builtin_return_address(0)
 #define _THIS_IP_  ({ __label__ __here; __here: (unsigned long)&&__here; })
-/* x86 is little-endian */
-#ifndef __LITTLE_ENDIAN
-#define __LITTLE_ENDIAN 1234
-#endif
-#ifndef __LITTLE_ENDIAN_BITFIELD
-#define __LITTLE_ENDIAN_BITFIELD
-#endif
+#include <asm/byteorder.h>
 
+struct sysinfo {
+	__kernel_long_t uptime;
+	__kernel_ulong_t loads[3];
+	__kernel_ulong_t totalram;
+	__kernel_ulong_t freeram;
+	__kernel_ulong_t sharedram;
+	__kernel_ulong_t bufferram;
+	__kernel_ulong_t totalswap;
+	__kernel_ulong_t freeswap;
+	__u16 procs;
+	__u16 pad;
+	__kernel_ulong_t totalhigh;
+	__kernel_ulong_t freehigh;
+	__u32 mem_unit;
+	char _f[20-2*sizeof(__kernel_ulong_t)-sizeof(__u32)];
+};
+
+#include <linux/const.h>
 
 #define REPEAT_BYTE(x)	((~0ul / 0xff) * (x))
 
@@ -36,23 +56,100 @@ void panic(const char *fmt, ...) __noreturn __cold;
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
 
+
+#define upper_32_bits(n) ((u32)(((n) >> 16) >> 16))
+
 #define lower_32_bits(n) ((u32)((n) & 0xffffffff))
 
-#define might_sleep() do { } while (0)
-#define might_sleep_if(cond) do { } while (0)
 
+struct completion;
+
+
+# define might_resched() do { } while (0)
+
+
+  static inline void __might_resched(const char *file, int line,
+				     unsigned int offsets) { }
+# define might_sleep() do { might_resched(); } while (0)
+# define cant_sleep() do { } while (0)
+# define cant_migrate()		do { } while (0)
+# define sched_annotate_sleep() do { } while (0)
+# define non_block_start() do { } while (0)
+# define non_block_end() do { } while (0)
+
+#define might_sleep_if(cond) do { if (cond) might_sleep(); } while (0)
+
+#if defined(CONFIG_MMU) && \
+	(defined(CONFIG_PROVE_LOCKING) || defined(CONFIG_DEBUG_ATOMIC_SLEEP))
+#define might_fault() __might_fault(__FILE__, __LINE__)
+void __might_fault(const char *file, int line);
+#else
+static inline void might_fault(void) { }
+#endif
+
+void do_exit(long error_code) __noreturn;
+
+extern __printf(2, 3) int sprintf(char *buf, const char * fmt, ...);
+extern __printf(2, 0) int vsprintf(char *buf, const char *, va_list);
+extern __printf(3, 4)
+int snprintf(char *buf, size_t size, const char *fmt, ...);
+extern __printf(3, 0)
+int vsnprintf(char *buf, size_t size, const char *fmt, va_list args);
+extern __printf(3, 4)
+int scnprintf(char *buf, size_t size, const char *fmt, ...);
 extern __printf(3, 0)
 int vscnprintf(char *buf, size_t size, const char *fmt, va_list args);
+extern __printf(2, 3) __malloc
+char *kasprintf(gfp_t gfp, const char *fmt, ...);
+extern __printf(2, 0) __malloc
+char *kvasprintf(gfp_t gfp, const char *fmt, va_list args);
+extern __printf(2, 0)
+const char *kvasprintf_const(gfp_t gfp, const char *fmt, va_list args);
+
+extern __scanf(2, 3)
+int sscanf(const char *, const char *, ...);
+extern __scanf(2, 0)
+int vsscanf(const char *, const char *, va_list);
+
+extern int no_hash_pointers_enable(char *str);
+
+extern bool parse_option_str(const char *str, const char *option);
+extern char *next_arg(char *args, char **param, char **val);
+
+extern int __kernel_text_address(unsigned long addr);
+extern int kernel_text_address(unsigned long addr);
+
 extern void bust_spinlocks(int yes);
+
+extern int root_mountflags;
+
 
 extern enum system_states {
 	SYSTEM_BOOTING,
 	SYSTEM_SCHEDULING,
 	SYSTEM_FREEING_INITMEM,
 	SYSTEM_RUNNING,
+	SYSTEM_HALT,
+	SYSTEM_POWER_OFF,
+	SYSTEM_RESTART,
+	SYSTEM_SUSPEND,
 } system_state;
 
-/* hex_asc_upper moved from lib/hexdump.c */
-static const char hex_asc_upper[] = "0123456789ABCDEF";
+extern const char hex_asc_upper[];
+/* Removed: hex_to_bin, hex2bin, bin2hex, mac_pton - never called */
 
+
+static inline void tracing_off(void) { }
+
+#define VERIFY_OCTAL_PERMISSIONS(perms)						\
+	(BUILD_BUG_ON_ZERO((perms) < 0) +					\
+	 BUILD_BUG_ON_ZERO((perms) > 0777) +					\
+	  		\
+	 BUILD_BUG_ON_ZERO((((perms) >> 6) & 4) < (((perms) >> 3) & 4)) +	\
+	 BUILD_BUG_ON_ZERO((((perms) >> 3) & 4) < ((perms) & 4)) +		\
+	  					\
+	 BUILD_BUG_ON_ZERO((((perms) >> 6) & 2) < (((perms) >> 3) & 2)) +	\
+	  		\
+	 BUILD_BUG_ON_ZERO((perms) & 2) +					\
+	 (perms))
 #endif

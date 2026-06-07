@@ -3,12 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <inttypes.h>
-
-static inline uint32_t get_unaligned_le32(const void *p)
-{
-	const uint8_t *b = (const uint8_t *)p;
-	return b[0] | b[1] << 8 | b[2] << 16 | b[3] << 24;
-}
+#include <tools/le_byteshift.h>
 
 int main(int argc, char *argv[])
 {
@@ -22,11 +17,14 @@ int main(int argc, char *argv[])
 		goto bail;
 	}
 
+	 
+
 	f = fopen(argv[1], "r");
 	if (!f) {
 		perror(argv[1]);
 		goto bail;
 	}
+
 
 	if (fseek(f, -4L, SEEK_END)) {
 		perror(argv[1]);

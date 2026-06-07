@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+# Minimal power management configuration - no suspend/hibernate needed
+
+config PM_QOS_KUNIT_TEST
+	bool

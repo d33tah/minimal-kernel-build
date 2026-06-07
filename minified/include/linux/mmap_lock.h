@@ -1,0 +1,113 @@
+#ifndef _LINUX_MMAP_LOCK_H
+#define _LINUX_MMAP_LOCK_H
+
+#include <linux/lockdep.h>
+#include <linux/mm_types.h>
+#include <linux/mmdebug.h>
+#include <linux/rwsem.h>
+#include <linux/types.h>
+
+#define MMAP_LOCK_INITIALIZER(name) \
+	.mmap_lock = __RWSEM_INITIALIZER((name).mmap_lock),
+
+
+static inline void __mmap_lock_trace_start_locking(struct mm_struct *mm,
+						   bool write)
+{
+}
+
+static inline void __mmap_lock_trace_acquire_returned(struct mm_struct *mm,
+						      bool write, bool success)
+{
+}
+
+static inline void __mmap_lock_trace_released(struct mm_struct *mm, bool write)
+{
+}
+
+
+static inline void mmap_init_lock(struct mm_struct *mm)
+{
+	init_rwsem(&mm->mmap_lock);
+}
+
+static inline void mmap_write_lock(struct mm_struct *mm)
+{
+	__mmap_lock_trace_start_locking(mm, true);
+	down_write(&mm->mmap_lock);
+	__mmap_lock_trace_acquire_returned(mm, true, true);
+}
+
+static inline void mmap_write_lock_nested(struct mm_struct *mm, int subclass)
+{
+	__mmap_lock_trace_start_locking(mm, true);
+	down_write_nested(&mm->mmap_lock, subclass);
+	__mmap_lock_trace_acquire_returned(mm, true, true);
+}
+
+static inline int mmap_write_lock_killable(struct mm_struct *mm)
+{
+	int ret;
+
+	__mmap_lock_trace_start_locking(mm, true);
+	ret = down_write_killable(&mm->mmap_lock);
+	__mmap_lock_trace_acquire_returned(mm, true, ret == 0);
+	return ret;
+}
+
+
+static inline void mmap_write_unlock(struct mm_struct *mm)
+{
+	__mmap_lock_trace_released(mm, true);
+	up_write(&mm->mmap_lock);
+}
+
+static inline void mmap_write_downgrade(struct mm_struct *mm)
+{
+	__mmap_lock_trace_acquire_returned(mm, false, true);
+	downgrade_write(&mm->mmap_lock);
+}
+
+static inline void mmap_read_lock(struct mm_struct *mm)
+{
+	__mmap_lock_trace_start_locking(mm, false);
+	down_read(&mm->mmap_lock);
+	__mmap_lock_trace_acquire_returned(mm, false, true);
+}
+
+static inline int mmap_read_lock_killable(struct mm_struct *mm)
+{
+	int ret;
+
+	__mmap_lock_trace_start_locking(mm, false);
+	ret = down_read_killable(&mm->mmap_lock);
+	__mmap_lock_trace_acquire_returned(mm, false, ret == 0);
+	return ret;
+}
+
+static inline bool mmap_read_trylock(struct mm_struct *mm)
+{
+	bool ret;
+
+	__mmap_lock_trace_start_locking(mm, false);
+	ret = down_read_trylock(&mm->mmap_lock) != 0;
+	__mmap_lock_trace_acquire_returned(mm, false, ret);
+	return ret;
+}
+
+static inline void mmap_read_unlock(struct mm_struct *mm)
+{
+	__mmap_lock_trace_released(mm, false);
+	up_read(&mm->mmap_lock);
+}
+
+/* mmap_read_unlock_non_owner, mmap_assert_write_locked,
+ * mmap_lock_is_contended removed - unused */
+
+static inline void mmap_assert_locked(struct mm_struct *mm)
+{
+	lockdep_assert_held(&mm->mmap_lock);
+	VM_BUG_ON_MM(!rwsem_is_locked(&mm->mmap_lock), mm);
+}
+
+#endif  

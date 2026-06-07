@@ -1,0 +1,34 @@
+#ifndef _LINUX_RATELIMIT_H
+#define _LINUX_RATELIMIT_H
+
+#include <linux/ratelimit_types.h>
+#include <linux/sched.h>
+#include <linux/spinlock.h>
+
+static inline void ratelimit_state_init(struct ratelimit_state *rs,
+					int interval, int burst)
+{
+	memset(rs, 0, sizeof(*rs));
+
+	raw_spin_lock_init(&rs->lock);
+	rs->interval	= interval;
+	rs->burst	= burst;
+}
+
+static inline void
+ratelimit_set_flags(struct ratelimit_state *rs, unsigned long flags)
+{
+	rs->flags = flags;
+}
+
+#define WARN_ON_RATELIMIT(condition, state)			\
+	WARN_ON(condition)
+
+#define WARN_RATELIMIT(condition, format, ...)			\
+({								\
+	int rtn = WARN(condition, format, ##__VA_ARGS__);	\
+	rtn;							\
+})
+
+
+#endif  

@@ -2,10 +2,46 @@
 #ifndef _ASM_X86_DEBUGREG_H
 #define _ASM_X86_DEBUGREG_H
 
+
 #include <linux/bug.h>
-#define DR6_RESERVED	(0xFFFF0FF0)
+#include <uapi/asm/debugreg.h>
+
+DECLARE_PER_CPU(unsigned long, cpu_dr7);
+
+ 
+#define get_debugreg(var, register)				\
+	(var) = native_get_debugreg(register)
 #define set_debugreg(value, register)				\
 	native_set_debugreg(register, value)
+
+static __always_inline unsigned long native_get_debugreg(int regno)
+{
+	unsigned long val = 0;	 
+
+	switch (regno) {
+	case 0:
+		asm("mov %%db0, %0" :"=r" (val));
+		break;
+	case 1:
+		asm("mov %%db1, %0" :"=r" (val));
+		break;
+	case 2:
+		asm("mov %%db2, %0" :"=r" (val));
+		break;
+	case 3:
+		asm("mov %%db3, %0" :"=r" (val));
+		break;
+	case 6:
+		asm("mov %%db6, %0" :"=r" (val));
+		break;
+	case 7:
+		asm("mov %%db7, %0" :"=r" (val));
+		break;
+	default:
+		BUG();
+	}
+	return val;
+}
 
 static __always_inline void native_set_debugreg(int regno, unsigned long value)
 {
@@ -33,4 +69,50 @@ static __always_inline void native_set_debugreg(int regno, unsigned long value)
 	}
 }
 
-#endif
+static inline void hw_breakpoint_disable(void)
+{
+	 
+	set_debugreg(0UL, 7);
+
+	 
+	set_debugreg(0UL, 0);
+	set_debugreg(0UL, 1);
+	set_debugreg(0UL, 2);
+	set_debugreg(0UL, 3);
+}
+
+static __always_inline bool hw_breakpoint_active(void)
+{
+	return __this_cpu_read(cpu_dr7) & DR_GLOBAL_ENABLE_MASK;
+}
+
+/* hw_breakpoint_restore removed - unused */
+
+static __always_inline unsigned long local_db_save(void)
+{
+	unsigned long dr7;
+
+	if (static_cpu_has(X86_FEATURE_HYPERVISOR) && !hw_breakpoint_active())
+		return 0;
+
+	get_debugreg(dr7, 7);
+	dr7 &= ~0x400;  
+	if (dr7)
+		set_debugreg(0, 7);
+	 
+	barrier();
+
+	return dr7;
+}
+
+static __always_inline void local_db_restore(unsigned long dr7)
+{
+	 
+	barrier();
+	if (dr7)
+		set_debugreg(dr7, 7);
+}
+
+/* set_dr_addr_mask removed - never defined/used */
+
+#endif  

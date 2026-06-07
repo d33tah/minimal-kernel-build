@@ -3,17 +3,29 @@
 
 #include <linux/list.h>
 #include <linux/nodemask.h>
-struct shrink_control { gfp_t gfp_mask; int nid; unsigned long nr_to_scan; /* nr_scanned removed */ struct mem_cgroup *memcg; };
-struct shrinker {
-};
+#include <linux/shrinker.h>
 #include <linux/xarray.h>
 
 struct mem_cgroup;
+
+enum lru_status {
+	LRU_REMOVED,		 
+	LRU_REMOVED_RETRY,	 
+	LRU_ROTATE,		 
+	LRU_SKIP,		 
+	LRU_RETRY,		 
+};
 
 struct list_lru_one {
 	struct list_head	list;
 	 
 	long			nr_items;
+};
+
+struct list_lru_memcg {
+	struct rcu_head		rcu;
+	 
+	struct list_lru_one	node[];
 };
 
 struct list_lru_node {
@@ -28,12 +40,62 @@ struct list_lru {
 	struct list_lru_node	*node;
 };
 
-static inline int __list_lru_init(struct list_lru *lru, bool memcg_aware,
-		    struct lock_class_key *key, struct shrinker *shrinker) { return 0; }
+void list_lru_destroy(struct list_lru *lru);
+int __list_lru_init(struct list_lru *lru, bool memcg_aware,
+		    struct lock_class_key *key, struct shrinker *shrinker);
 
+#define list_lru_init(lru)				\
+	__list_lru_init((lru), false, NULL, NULL)
+#define list_lru_init_key(lru, key)			\
+	__list_lru_init((lru), false, (key), NULL)
 #define list_lru_init_memcg(lru, shrinker)		\
 	__list_lru_init((lru), true, NULL, shrinker)
 
-static inline bool list_lru_del(struct list_lru *lru, struct list_head *item) { return false; }
+int memcg_list_lru_alloc(struct mem_cgroup *memcg, struct list_lru *lru,
+			 gfp_t gfp);
+void memcg_reparent_list_lrus(struct mem_cgroup *memcg, struct mem_cgroup *parent);
+
+bool list_lru_add(struct list_lru *lru, struct list_head *item);
+
+bool list_lru_del(struct list_lru *lru, struct list_head *item);
+
+unsigned long list_lru_count_one(struct list_lru *lru,
+				 int nid, struct mem_cgroup *memcg);
+unsigned long list_lru_count_node(struct list_lru *lru, int nid);
+
+static inline unsigned long list_lru_shrink_count(struct list_lru *lru,
+						  struct shrink_control *sc)
+{
+	return list_lru_count_one(lru, sc->nid, sc->memcg);
+}
+
+
+void list_lru_isolate(struct list_lru_one *list, struct list_head *item);
+void list_lru_isolate_move(struct list_lru_one *list, struct list_head *item,
+			   struct list_head *head);
+
+typedef enum lru_status (*list_lru_walk_cb)(struct list_head *item,
+		struct list_lru_one *list, spinlock_t *lock, void *cb_arg);
+
+unsigned long list_lru_walk_one(struct list_lru *lru,
+				int nid, struct mem_cgroup *memcg,
+				list_lru_walk_cb isolate, void *cb_arg,
+				unsigned long *nr_to_walk);
+unsigned long list_lru_walk_one_irq(struct list_lru *lru,
+				    int nid, struct mem_cgroup *memcg,
+				    list_lru_walk_cb isolate, void *cb_arg,
+				    unsigned long *nr_to_walk);
+unsigned long list_lru_walk_node(struct list_lru *lru, int nid,
+				 list_lru_walk_cb isolate, void *cb_arg,
+				 unsigned long *nr_to_walk);
+
+static inline unsigned long
+list_lru_shrink_walk(struct list_lru *lru, struct shrink_control *sc,
+		     list_lru_walk_cb isolate, void *cb_arg)
+{
+	return list_lru_walk_one(lru, sc->nid, sc->memcg, isolate, cb_arg,
+				 &sc->nr_to_scan);
+}
+
 
 #endif

@@ -2,6 +2,9 @@
 #define __LINUX_PREEMPT_H
 
 
+#include <linux/linkage.h>
+#include <linux/list.h>
+
 #define PREEMPT_BITS	8
 #define SOFTIRQ_BITS	8
 #define HARDIRQ_BITS	4
@@ -14,6 +17,7 @@
 
 #define __IRQ_MASK(x)	((1UL << (x))-1)
 
+#define PREEMPT_MASK	(__IRQ_MASK(PREEMPT_BITS) << PREEMPT_SHIFT)
 #define SOFTIRQ_MASK	(__IRQ_MASK(SOFTIRQ_BITS) << SOFTIRQ_SHIFT)
 #define HARDIRQ_MASK	(__IRQ_MASK(HARDIRQ_BITS) << HARDIRQ_SHIFT)
 #define NMI_MASK	(__IRQ_MASK(NMI_BITS)     << NMI_SHIFT)
@@ -29,49 +33,10 @@
 
 #define INIT_PREEMPT_COUNT	PREEMPT_OFFSET
 
-/* asm/preempt.h inlined */
-#include <asm/rmwcc.h>
-#include <asm/percpu.h>
-#include <linux/thread_info.h>
-DECLARE_PER_CPU(int, __preempt_count);
-#define PREEMPT_NEED_RESCHED	0x80000000
-#define PREEMPT_ENABLED	(0 + PREEMPT_NEED_RESCHED)
-static __always_inline int preempt_count(void)
-{
-	return raw_cpu_read_4(__preempt_count) & ~PREEMPT_NEED_RESCHED;
-}
-static __always_inline void preempt_count_set(int pc)
-{
-	int old, new;
-	do {
-		old = raw_cpu_read_4(__preempt_count);
-		new = (old & PREEMPT_NEED_RESCHED) |
-			(pc & ~PREEMPT_NEED_RESCHED);
-	} while (raw_cpu_cmpxchg_4(__preempt_count, old, new) != old);
-}
-#define init_idle_preempt_count(p, cpu) do { \
-	per_cpu(__preempt_count, (cpu)) = PREEMPT_DISABLED; \
-} while (0)
-static __always_inline void set_preempt_need_resched(void)
-{
-	raw_cpu_and_4(__preempt_count, ~PREEMPT_NEED_RESCHED);
-}
-static __always_inline void clear_preempt_need_resched(void)
-{
-	raw_cpu_or_4(__preempt_count, PREEMPT_NEED_RESCHED);
-}
-static __always_inline void __preempt_count_add(int val)
-{
-	raw_cpu_add_4(__preempt_count, val);
-}
-static __always_inline void __preempt_count_sub(int val)
-{
-	raw_cpu_add_4(__preempt_count, -val);
-}
-static __always_inline bool should_resched(int preempt_offset)
-{
-	return unlikely(raw_cpu_read_4(__preempt_count) == preempt_offset);
-}
+#define FORK_PREEMPT_COUNT	(2*PREEMPT_DISABLE_OFFSET + PREEMPT_ENABLED)
+
+#include <asm/preempt.h>
+
 
 #define nmi_count()	(preempt_count() & NMI_MASK)
 #define hardirq_count()	(preempt_count() & HARDIRQ_MASK)
@@ -79,9 +44,19 @@ static __always_inline bool should_resched(int preempt_offset)
 #define irq_count()	(nmi_count() | hardirq_count() | softirq_count())
 
 #define in_nmi()		(nmi_count())
+#define in_hardirq()		(hardirq_count())
+#define in_serving_softirq()	(softirq_count() & SOFTIRQ_OFFSET)
+#define in_task()		(!(in_nmi() | in_hardirq() | in_serving_softirq()))
+
+#define in_irq()		(hardirq_count())
+#define in_softirq()		(softirq_count())
 #define in_interrupt()		(irq_count())
 
 # define PREEMPT_DISABLE_OFFSET	0
+
+#define PREEMPT_LOCK_OFFSET		PREEMPT_DISABLE_OFFSET
+
+#define SOFTIRQ_LOCK_OFFSET (SOFTIRQ_DISABLE_OFFSET + PREEMPT_LOCK_OFFSET)
 
 #define in_atomic()	(preempt_count() != 0)
 
@@ -89,16 +64,47 @@ static __always_inline bool should_resched(int preempt_offset)
 
 #define preempt_count_add(val)	__preempt_count_add(val)
 #define preempt_count_sub(val)	__preempt_count_sub(val)
+#define preempt_count_dec_and_test() __preempt_count_dec_and_test()
+
+#define __preempt_count_inc() __preempt_count_add(1)
+#define __preempt_count_dec() __preempt_count_sub(1)
 
 #define preempt_count_dec() preempt_count_sub(1)
+
 
 #define preempt_disable()			barrier()
 #define sched_preempt_enable_no_resched()	barrier()
 #define preempt_enable_no_resched()		barrier()
 #define preempt_enable()			barrier()
+#define preempt_check_resched()			do { } while (0)
+
 #define preempt_disable_notrace()		barrier()
 #define preempt_enable_no_resched_notrace()	barrier()
 #define preempt_enable_notrace()		barrier()
 #define preemptible()				0
+
+
+#ifdef MODULE
+#undef sched_preempt_enable_no_resched
+#undef preempt_enable_no_resched
+#undef preempt_enable_no_resched_notrace
+#undef preempt_check_resched
+#endif
+
+#define preempt_set_need_resched() \
+do { \
+	set_preempt_need_resched(); \
+} while (0)
+#define preempt_fold_need_resched() \
+do { \
+	if (tif_need_resched()) \
+		set_preempt_need_resched(); \
+} while (0)
+
+
+
+static inline void migrate_disable(void) { }
+static inline void migrate_enable(void) { }
+
 
 #endif  

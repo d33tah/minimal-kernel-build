@@ -5,23 +5,65 @@
 #include <linux/percpu_counter.h>
 
 #include <linux/atomic.h>
-/* inlined from asm/mman.h */
-#define PROT_READ	0x1
-#define PROT_WRITE	0x2
-#define PROT_EXEC	0x4
-#define MAP_FIXED	0x10
-#define MAP_FIXED_NOREPLACE	0x100000
-#define MAP_GROWSDOWN	0x0100
+#include <asm/mman.h>
 
+#define OVERCOMMIT_GUESS		0
+#define OVERCOMMIT_ALWAYS		1
+#define OVERCOMMIT_NEVER		2
 #define MAP_SHARED	0x01
 #define MAP_PRIVATE	0x02
+#define MAP_SHARED_VALIDATE 0x03
 
-/* sysctl_overcommit_* externs already in mm.h */
+/* hugetlb encoding constants - only shift/mask used */
+#define HUGETLB_FLAG_ENCODE_SHIFT	26
+#define HUGETLB_FLAG_ENCODE_MASK	0x3f
+#define MAP_HUGE_SHIFT	HUGETLB_FLAG_ENCODE_SHIFT
+#define MAP_HUGE_MASK	HUGETLB_FLAG_ENCODE_MASK
+
+#ifndef MAP_32BIT
+#define MAP_32BIT 0
+#endif
+#ifndef MAP_HUGE_2MB
+#define MAP_HUGE_2MB 0
+#endif
+#ifndef MAP_HUGE_1GB
+#define MAP_HUGE_1GB 0
+#endif
+#ifndef MAP_UNINITIALIZED
+#define MAP_UNINITIALIZED 0
+#endif
+#ifndef MAP_SYNC
+#define MAP_SYNC 0
+#endif
+
+#define LEGACY_MAP_MASK (MAP_SHARED \
+		| MAP_PRIVATE \
+		| MAP_FIXED \
+		| MAP_ANONYMOUS \
+		| MAP_DENYWRITE \
+		| MAP_EXECUTABLE \
+		| MAP_UNINITIALIZED \
+		| MAP_GROWSDOWN \
+		| MAP_LOCKED \
+		| MAP_NORESERVE \
+		| MAP_POPULATE \
+		| MAP_NONBLOCK \
+		| MAP_STACK \
+		| MAP_HUGETLB \
+		| MAP_32BIT \
+		| MAP_HUGE_2MB \
+		| MAP_HUGE_1GB)
+
+extern int sysctl_overcommit_memory;
+extern int sysctl_overcommit_ratio;
+extern unsigned long sysctl_overcommit_kbytes;
 extern struct percpu_counter vm_committed_as;
+
+#define vm_committed_as_batch 0
 
 static inline void vm_acct_memory(long pages)
 {
-	percpu_counter_add_batch(&vm_committed_as, pages, 0);
+	percpu_counter_add_batch(&vm_committed_as, pages, vm_committed_as_batch);
 }
 
 static inline void vm_unacct_memory(long pages)
@@ -29,12 +71,29 @@ static inline void vm_unacct_memory(long pages)
 	vm_acct_memory(-pages);
 }
 
+
 #ifndef arch_calc_vm_prot_bits
 #define arch_calc_vm_prot_bits(prot, pkey) 0
 #endif
 
 #ifndef arch_calc_vm_flag_bits
 #define arch_calc_vm_flag_bits(flags) 0
+#endif
+
+#ifndef arch_validate_prot
+static inline bool arch_validate_prot(unsigned long prot, unsigned long addr)
+{
+	return (prot & ~(PROT_READ | PROT_WRITE | PROT_EXEC | PROT_SEM)) == 0;
+}
+#define arch_validate_prot arch_validate_prot
+#endif
+
+#ifndef arch_validate_flags
+static inline bool arch_validate_flags(unsigned long flags)
+{
+	return true;
+}
+#define arch_validate_flags arch_validate_flags
 #endif
 
 #define _calc_vm_trans(x, bit1, bit2) \
@@ -55,7 +114,10 @@ static inline unsigned long
 calc_vm_flag_bits(unsigned long flags)
 {
 	return _calc_vm_trans(flags, MAP_GROWSDOWN,  VM_GROWSDOWN ) |
+	       _calc_vm_trans(flags, MAP_LOCKED,     VM_LOCKED    ) |
+	       _calc_vm_trans(flags, MAP_SYNC,	     VM_SYNC      ) |
 	       arch_calc_vm_flag_bits(flags);
 }
 
+unsigned long vm_commit_limit(void);
 #endif  

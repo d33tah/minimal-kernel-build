@@ -6,6 +6,7 @@
 #include <linux/types.h>
 #include <linux/mem_encrypt.h>
 
+ 
 #define PAGE_SHIFT		12
 #define PAGE_SIZE		(_AC(1,UL) << PAGE_SHIFT)
 #define PAGE_MASK		(~(PAGE_SIZE-1))
@@ -13,43 +14,34 @@
 #define PMD_PAGE_SIZE		(_AC(1, UL) << PMD_SHIFT)
 #define PMD_PAGE_MASK		(~(PMD_PAGE_SIZE-1))
 
+#define PUD_PAGE_SIZE		(_AC(1, UL) << PUD_SHIFT)
+#define PUD_PAGE_MASK		(~(PUD_PAGE_SIZE-1))
+
+#define __VIRTUAL_MASK		((1UL << __VIRTUAL_MASK_SHIFT) - 1)
+
+ 
 #define PHYSICAL_PAGE_MASK	(((signed long)PAGE_MASK) & __PHYSICAL_MASK)
 #define PHYSICAL_PMD_PAGE_MASK	(((signed long)PMD_PAGE_MASK) & __PHYSICAL_MASK)
+#define PHYSICAL_PUD_PAGE_MASK	(((signed long)PUD_PAGE_MASK) & __PHYSICAL_MASK)
+
+#define HPAGE_SHIFT		PMD_SHIFT
+#define HPAGE_SIZE		(_AC(1,UL) << HPAGE_SHIFT)
+#define HPAGE_MASK		(~(HPAGE_SIZE - 1))
+#define HUGETLB_PAGE_ORDER	(HPAGE_SHIFT - PAGE_SHIFT)
+
+#define HUGE_MAX_HSTATE 2
 
 #define PAGE_OFFSET		((unsigned long)__PAGE_OFFSET)
 
-#define VM_DATA_DEFAULT_FLAGS	VM_DATA_FLAGS_EXEC
+#define VM_DATA_DEFAULT_FLAGS	VM_DATA_FLAGS_TSK_EXEC
 
-#ifndef _ASM_X86_PAGE_32_DEFS_H
-#define _ASM_X86_PAGE_32_DEFS_H
+#define __PHYSICAL_START	ALIGN(CONFIG_PHYSICAL_START, \
+				      CONFIG_PHYSICAL_ALIGN)
 
-#define __PAGE_OFFSET_BASE	_AC(CONFIG_PAGE_OFFSET, UL)
-#define __PAGE_OFFSET		__PAGE_OFFSET_BASE
+#define __START_KERNEL		(__START_KERNEL_map + __PHYSICAL_START)
 
-#define THREAD_SIZE_ORDER	1
-#define THREAD_SIZE		(PAGE_SIZE << THREAD_SIZE_ORDER)
-
-#define IRQ_STACK_SIZE		THREAD_SIZE
-
-#define __PHYSICAL_MASK_SHIFT	32
-
-#define TASK_SIZE		__PAGE_OFFSET
-#define TASK_SIZE_MAX		TASK_SIZE
-#define DEFAULT_MAP_WINDOW	TASK_SIZE
-#define STACK_TOP		TASK_SIZE
-#define STACK_TOP_MAX		STACK_TOP
-
-#define KERNEL_IMAGE_SIZE	(512 * 1024 * 1024)
-
-#ifndef __ASSEMBLY__
-
-extern unsigned int __VMALLOC_RESERVE;
-
-extern void find_low_pfn_range(void);
-
-#endif
-
-#endif /* _ASM_X86_PAGE_32_DEFS_H */
+#include <asm/page_32_types.h>
+#define IOREMAP_MAX_ORDER       (PMD_SHIFT)
 
 #ifndef __ASSEMBLY__
 
@@ -62,6 +54,8 @@ static inline phys_addr_t get_max_mapped(void)
 {
 	return (phys_addr_t)max_pfn_mapped << PAGE_SHIFT;
 }
+
+bool pfn_range_is_mapped(unsigned long start_pfn, unsigned long end_pfn);
 
 extern void initmem_init(void);
 

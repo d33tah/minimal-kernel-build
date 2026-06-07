@@ -2,7 +2,7 @@
 #ifndef _ASM_X86_SMAP_H
 #define _ASM_X86_SMAP_H
 
-#include <asm/asm.h>
+#include <asm/nops.h>
 #include <asm/cpufeatures.h>
 #include <asm/alternative.h>
 

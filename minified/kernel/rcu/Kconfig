@@ -1,0 +1,45 @@
+# SPDX-License-Identifier: GPL-2.0-only
+# Minimal RCU configuration
+
+menu "RCU Subsystem"
+
+config TREE_RCU
+	bool
+	default y if SMP
+
+config PREEMPT_RCU
+	bool
+	default y if PREEMPTION
+	select TREE_RCU
+
+config TINY_RCU
+	bool
+	default y if !PREEMPTION && !SMP
+
+config SRCU
+	bool
+
+config TINY_SRCU
+	bool
+	default y if SRCU && TINY_RCU
+
+config TREE_SRCU
+	bool
+	default y if SRCU && !TINY_SRCU
+
+config NEED_SRCU_NMI_SAFE
+	bool
+
+config TASKS_RCU_GENERIC
+	def_bool TASKS_RCU || TASKS_TRACE_RCU
+
+config TASKS_RCU
+	bool
+
+config TASKS_TRACE_RCU
+	bool
+
+config RCU_NEED_SEGCBLIST
+	def_bool ( TREE_RCU || TREE_SRCU )
+
+endmenu

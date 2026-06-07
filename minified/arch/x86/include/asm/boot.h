@@ -4,9 +4,9 @@
 
 
 #include <asm/pgtable_types.h>
+#include <uapi/asm/boot.h>
 
-#define NORMAL_VGA	0xffff
-
+ 
 #define LOAD_PHYSICAL_ADDR ((CONFIG_PHYSICAL_START \
 				+ (CONFIG_PHYSICAL_ALIGN - 1)) \
 				& ~(CONFIG_PHYSICAL_ALIGN - 1))
@@ -20,8 +20,8 @@
 # error "Invalid value for CONFIG_PHYSICAL_ALIGN"
 #endif
 
-# define BOOT_HEAP_SIZE		 0x1000  /* Reduced from 64KB to 4KB */
+# define BOOT_HEAP_SIZE		 0x10000
 
-# define BOOT_STACK_SIZE	0x800  /* Reduced from 4KB to 2KB */
+# define BOOT_STACK_SIZE	0x1000
 
 #endif  

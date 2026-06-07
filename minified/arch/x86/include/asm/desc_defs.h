@@ -1,11 +1,15 @@
  
+ 
 #ifndef _ASM_X86_DESC_DEFS_H
 #define _ASM_X86_DESC_DEFS_H
+
+ 
 
 #ifndef __ASSEMBLY__
 
 #include <linux/types.h>
 
+ 
 struct desc_struct {
 	u16	limit0;
 	u16	base0;
@@ -32,14 +36,18 @@ struct desc_struct {
 
 enum {
 	GATE_INTERRUPT = 0xE,
+	GATE_TRAP = 0xF,
+	GATE_CALL = 0xC,
 	GATE_TASK = 0x5,
 };
 
 enum {
 	DESC_TSS = 0x9,
 	DESC_LDT = 0x2,
+	DESCTYPE_S = 0x10,	 
 };
 
+ 
 struct ldttss_desc {
 	u16	limit0;
 	u16	base0;
@@ -75,11 +83,47 @@ struct gate_struct {
 
 typedef struct gate_struct gate_desc;
 
+static inline unsigned long gate_offset(const gate_desc *g)
+{
+	return g->offset_low | ((unsigned long)g->offset_middle << 16);
+}
+
+static inline unsigned long gate_segment(const gate_desc *g)
+{
+	return g->segment;
+}
+
 struct desc_ptr {
 	unsigned short size;
 	unsigned long address;
 } __attribute__((packed)) ;
 
-#endif
+#endif  
 
-#endif
+ 
+#define	BOOT_IDT_ENTRIES	32
+
+ 
+#define AR_TYPE_RODATA		(0 * (1 << 9))
+#define AR_TYPE_RWDATA		(1 * (1 << 9))
+#define AR_TYPE_RODATA_EXPDOWN	(2 * (1 << 9))
+#define AR_TYPE_RWDATA_EXPDOWN	(3 * (1 << 9))
+#define AR_TYPE_XOCODE		(4 * (1 << 9))
+#define AR_TYPE_XRCODE		(5 * (1 << 9))
+#define AR_TYPE_XOCODE_CONF	(6 * (1 << 9))
+#define AR_TYPE_XRCODE_CONF	(7 * (1 << 9))
+#define AR_TYPE_MASK		(7 * (1 << 9))
+
+#define AR_DPL0			(0 * (1 << 13))
+#define AR_DPL3			(3 * (1 << 13))
+#define AR_DPL_MASK		(3 * (1 << 13))
+
+#define AR_A			(1 << 8)    
+#define AR_S			(1 << 12)   
+#define AR_P			(1 << 15)   
+#define AR_AVL			(1 << 20)   
+#define AR_L			(1 << 21)   
+#define AR_DB			(1 << 22)   
+#define AR_G			(1 << 23)   
+
+#endif  

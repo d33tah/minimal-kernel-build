@@ -1,12 +1,9 @@
 #!/bin/bash
-# Find unused static inline functions in a header file
-cd /home/user/minimal-kernel-build
-
-header="$1"
-grep -oP '(?<=static inline [^(]+ )\w+(?=\()' "$header" 2>/dev/null | while read func; do
-    # Count occurrences in C files, excluding the definition itself
-    count=$(grep -rw "$func" minified --include="*.c" 2>/dev/null | wc -l)
+cd minified
+for h in include/linux/*.h; do
+    name=$(basename "$h")
+    count=$(grep -r "include.*$name" --include="*.c" --include="*.h" . 2>/dev/null | grep -v "^$h:" | wc -l)
     if [ "$count" -eq 0 ]; then
-        echo "UNUSED: $func"
+        wc -l "$h"
     fi
-done
+done | sort -rn | head -30

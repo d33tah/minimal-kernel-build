@@ -2,36 +2,74 @@
 #define _LINUX_INTERRUPT_H
 
 #include <linux/kernel.h>
+#include <linux/bitops.h>
+#include <linux/cpumask.h>
 
+/* Inlined from irqreturn.h */
 enum irqreturn {
 	IRQ_NONE		= (0 << 0),
+	IRQ_HANDLED		= (1 << 0),
+	IRQ_WAKE_THREAD		= (1 << 1),
 };
 typedef enum irqreturn irqreturn_t;
+#define IRQ_RETVAL(x)	((x) ? IRQ_HANDLED : IRQ_NONE)
 
+#include <linux/irqnr.h>
 #include <linux/hardirq.h>
 #include <linux/irqflags.h>
+#include <linux/hrtimer.h>
 #include <linux/kref.h>
+#include <linux/workqueue.h>
 #include <linux/jump_label.h>
 
+#include <linux/atomic.h>
 #include <asm/ptrace.h>
 #include <asm/irq.h>
 #include <asm/sections.h>
 
+#define IRQF_TRIGGER_MASK	0x0000000f
+
+#define IRQF_SHARED		0x00000080
+#define IRQF_PROBE_SHARED	0x00000100
+#define __IRQF_TIMER		0x00000200
+#define IRQF_PERCPU		0x00000400
+#define IRQF_NOBALANCING	0x00000800
+#define IRQF_IRQPOLL		0x00001000
+#define IRQF_ONESHOT		0x00002000
+#define IRQF_NO_SUSPEND		0x00004000
 #define IRQF_NO_THREAD		0x00010000
+#define IRQF_COND_SUSPEND	0x00040000
 #define IRQF_NO_AUTOEN		0x00080000
+#define IRQF_NO_DEBUG		0x00100000
+
+#define IRQF_TIMER		(__IRQF_TIMER | IRQF_NO_SUSPEND | IRQF_NO_THREAD)
+
+enum {
+	IRQC_IS_HARDIRQ	= 0,
+	IRQC_IS_NESTED,
+};
 
 typedef irqreturn_t (*irq_handler_t)(int, void *);
 
 struct irqaction {
 	irq_handler_t		handler;
 	void			*dev_id;
+	void __percpu		*percpu_dev_id;
 	struct irqaction	*next;
+	irq_handler_t		thread_fn;
+	struct task_struct	*thread;
+	struct irqaction	*secondary;
 	unsigned int		irq;
 	unsigned int		flags;
+	unsigned long		thread_flags;
+	unsigned long		thread_mask;
 	const char		*name;
+	struct proc_dir_entry	*dir;
 } ____cacheline_internodealigned_in_smp;
 
 extern irqreturn_t no_action(int cpl, void *dev_id);
+
+#define IRQ_NOTCONNECTED	(1U << 31)
 
 extern int __must_check
 request_threaded_irq(unsigned int irq, irq_handler_t handler,
@@ -45,6 +83,39 @@ request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
 	return request_threaded_irq(irq, handler, NULL, flags, name, dev);
 }
 
+extern const void *free_irq(unsigned int, void *);
+
+struct device;
+
+bool irq_has_action(unsigned int irq);
+extern void disable_irq_nosync(unsigned int irq);
+extern void enable_irq(unsigned int irq);
+
+struct irq_affinity_desc {
+	struct cpumask	mask;
+	unsigned int	is_managed : 1;
+};
+
+static inline int irq_set_affinity(unsigned int irq, const struct cpumask *m)
+{
+	return -EINVAL;
+}
+
+static inline int irq_can_set_affinity(unsigned int irq)
+{
+	return 0;
+}
+
+
+enum irqchip_irq_state {
+	IRQCHIP_STATE_PENDING,
+	IRQCHIP_STATE_ACTIVE,
+};
+
+
+DECLARE_STATIC_KEY_FALSE(force_irqthreads_key);
+#  define force_irqthreads()	(static_branch_unlikely(&force_irqthreads_key))
+
 #ifndef local_softirq_pending
 
 #ifndef local_softirq_pending_ref
@@ -57,9 +128,23 @@ request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
 
 #endif  
 
+#ifndef hard_irq_disable
+#define hard_irq_disable()	do { } while(0)
+#endif
+
+
 enum
 {
-	RCU_SOFTIRQ = 0,
+	HI_SOFTIRQ=0,
+	TIMER_SOFTIRQ,
+	NET_TX_SOFTIRQ,
+	NET_RX_SOFTIRQ,
+	BLOCK_SOFTIRQ,
+	IRQ_POLL_SOFTIRQ,
+	TASKLET_SOFTIRQ,
+	SCHED_SOFTIRQ,
+	HRTIMER_SOFTIRQ,
+	RCU_SOFTIRQ,     
 
 	NR_SOFTIRQS
 };
@@ -69,13 +154,36 @@ struct softirq_action
 	void	(*action)(struct softirq_action *);
 };
 
+asmlinkage void do_softirq(void);
 asmlinkage void __do_softirq(void);
 
 extern void open_softirq(int nr, void (*action)(struct softirq_action *));
+extern void softirq_init(void);
+extern void __raise_softirq_irqoff(unsigned int nr);
 
 extern void raise_softirq_irqoff(unsigned int nr);
+extern void raise_softirq(unsigned int nr);
+
+DECLARE_PER_CPU(struct task_struct *, ksoftirqd);
+
+
+
+static inline void init_irq_proc(void)
+{
+}
+
+
+struct seq_file;
+int show_interrupts(struct seq_file *p, void *v);
+int arch_show_interrupts(struct seq_file *p, int prec);
 
 extern int early_irq_init(void);
+extern int arch_probe_nr_irqs(void);
+extern int arch_early_irq_init(void);
+
+#ifndef __irq_entry
+# define __irq_entry	 __section(".irqentry.text")
+#endif
 
 #define __softirq_entry  __section(".softirqentry.text")
 

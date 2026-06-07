@@ -156,18 +156,6 @@ static inline void hrtimer_cancel_wait_running(struct hrtimer *timer)
 
 extern void hrtimer_init(struct hrtimer *timer, clockid_t which_clock,
 			 enum hrtimer_mode mode);
-extern void hrtimer_init_sleeper(struct hrtimer_sleeper *sl, clockid_t clock_id,
-				 enum hrtimer_mode mode);
-
-
-static inline void hrtimer_init_sleeper_on_stack(struct hrtimer_sleeper *sl,
-						 clockid_t clock_id,
-						 enum hrtimer_mode mode)
-{
-	hrtimer_init_sleeper(sl, clock_id, mode);
-}
-
-static inline void destroy_hrtimer_on_stack(struct hrtimer *timer) { }
 
 extern void hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
 				   u64 range_ns, const enum hrtimer_mode mode);
@@ -195,10 +183,6 @@ static inline int hrtimer_callback_running(struct hrtimer *timer)
 {
 	return timer->base->running == timer;
 }
-
-extern long hrtimer_nanosleep(ktime_t rqtp, const enum hrtimer_mode mode,
-			      const clockid_t clockid);
-
 
 extern void hrtimer_run_queues(void);
 

@@ -1438,16 +1438,7 @@ extern void page_put_link(void *);
 extern int page_symlink(struct inode *inode, const char *symname, int len);
 extern const struct inode_operations page_symlink_inode_operations;
 void generic_fillattr(struct user_namespace *, struct inode *, struct kstat *);
-void generic_fill_statx_attr(struct inode *inode, struct kstat *stat);
 extern int vfs_getattr(const struct path *, struct kstat *, u32, unsigned int);
-void inode_add_bytes(struct inode *inode, loff_t bytes);
-void inode_sub_bytes(struct inode *inode, loff_t bytes);
-loff_t inode_get_bytes(struct inode *inode);
-void inode_set_bytes(struct inode *inode, loff_t bytes);
-
-int vfs_fstatat(int dfd, const char __user *filename, struct kstat *stat,
-		int flags);
-int vfs_fstat(int fd, struct kstat *stat);
 
 extern struct file_system_type *get_filesystem(struct file_system_type *fs);
 extern void put_filesystem(struct file_system_type *fs);

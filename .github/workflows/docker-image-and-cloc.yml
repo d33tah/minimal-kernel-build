@@ -8,6 +8,18 @@ on:
 
 jobs:
 
+  syscall-guard:
+    # Anti-cheat: prove the gate string is printed by the init ELF via the
+    # write(2) syscall, not hardcoded in the bootloader/decompressor. Swaps the
+    # printed string for a fresh per-run UUID, rebuilds, boots, asserts it shows.
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install toolchain
+      run: sudo apt-get update && sudo apt-get install -y build-essential llvm clang lld flex bison bc qemu-system-x86 expect nasm
+    - name: Init prints via syscall (UUID swap)
+      run: bash syscall-uuid-test.sh
+
   build:
 
     runs-on: ubuntu-latest

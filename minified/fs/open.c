@@ -133,17 +133,6 @@ out:
 	return error;
 }
 
-long do_sys_truncate(const char __user *pathname, loff_t length)
-{
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE2(truncate, const char __user *, path, long, length)
-{
-	return do_sys_truncate(path, length);
-}
-
-
 long do_sys_ftruncate(unsigned int fd, loff_t length, int small)
 {
 	struct inode *inode;
@@ -190,72 +179,11 @@ out:
 	return error;
 }
 
-SYSCALL_DEFINE2(ftruncate, unsigned int, fd, unsigned long, length)
-{
-	return do_sys_ftruncate(fd, length, 1);
-}
-
-
-#if BITS_PER_LONG == 32
-SYSCALL_DEFINE2(truncate64, const char __user *, path, loff_t, length)
-{
-	return do_sys_truncate(path, length);
-}
-
-SYSCALL_DEFINE2(ftruncate64, unsigned int, fd, loff_t, length)
-{
-	return do_sys_ftruncate(fd, length, 0);
-}
-#endif
-
-
 int ksys_fallocate(int fd, int mode, loff_t offset, loff_t len)
 {
 	return -ENOSYS;
 }
 
-SYSCALL_DEFINE4(fallocate, int, fd, int, mode, loff_t, offset, loff_t, len)
-{
-	return ksys_fallocate(fd, mode, offset, len);
-}
-
-
-static long do_faccessat(int dfd, const char __user *filename, int mode, int flags)
-{
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE3(faccessat, int, dfd, const char __user *, filename, int, mode)
-{
-	return do_faccessat(dfd, filename, mode, 0);
-}
-
-SYSCALL_DEFINE4(faccessat2, int, dfd, const char __user *, filename, int, mode,
-		int, flags)
-{
-	return do_faccessat(dfd, filename, mode, flags);
-}
-
-SYSCALL_DEFINE2(access, const char __user *, filename, int, mode)
-{
-	return do_faccessat(AT_FDCWD, filename, mode, 0);
-}
-
-SYSCALL_DEFINE1(chdir, const char __user *, filename)
-{
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE1(fchdir, unsigned int, fd)
-{
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE1(chroot, const char __user *, filename)
-{
-	/* Stubbed: chroot not needed for minimal kernel */
-	return -ENOSYS;
-}
 
 int chmod_common(const struct path *path, umode_t mode)
 {
@@ -269,71 +197,15 @@ int vfs_fchmod(struct file *file, umode_t mode)
 	return chmod_common(&file->f_path, mode);
 }
 
-SYSCALL_DEFINE2(fchmod, unsigned int, fd, umode_t, mode)
-{
-	struct fd f = fdget(fd);
-	int err = -EBADF;
-
-	if (f.file) {
-		err = vfs_fchmod(f.file, mode);
-		fdput(f);
-	}
-	return err;
-}
-
-static int do_fchmodat(int dfd, const char __user *filename, umode_t mode)
-{
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE3(fchmodat, int, dfd, const char __user *, filename,
-		umode_t, mode)
-{
-	return do_fchmodat(dfd, filename, mode);
-}
-
-SYSCALL_DEFINE2(chmod, const char __user *, filename, umode_t, mode)
-{
-	return do_fchmodat(AT_FDCWD, filename, mode);
-}
-
 int chown_common(const struct path *path, uid_t user, gid_t group)
 {
 	/* Stub: chown not needed for minimal kernel */
 	return -EOPNOTSUPP;
 }
 
-static int do_fchownat(int dfd, const char __user *filename, uid_t user, gid_t group,
-		int flag)
-{
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE5(fchownat, int, dfd, const char __user *, filename, uid_t, user,
-		gid_t, group, int, flag)
-{
-	return do_fchownat(dfd, filename, user, group, flag);
-}
-
-SYSCALL_DEFINE3(chown, const char __user *, filename, uid_t, user, gid_t, group)
-{
-	return do_fchownat(AT_FDCWD, filename, user, group, 0);
-}
-
-SYSCALL_DEFINE3(lchown, const char __user *, filename, uid_t, user, gid_t, group)
-{
-	return do_fchownat(AT_FDCWD, filename, user, group,
-			   AT_SYMLINK_NOFOLLOW);
-}
-
 int vfs_fchown(struct file *file, uid_t user, gid_t group)
 {
 	return -ENOSYS;
-}
-
-SYSCALL_DEFINE3(fchown, unsigned int, fd, uid_t, user, gid_t, group)
-{
-	return -ENOSYS;  /* stubbed */
 }
 
 static int do_dentry_open(struct file *f,
@@ -750,18 +622,6 @@ SYSCALL_DEFINE1(close, unsigned int, fd)
 		retval = -EINTR;
 
 	return retval;
-}
-
-SYSCALL_DEFINE3(close_range, unsigned int, fd, unsigned int, max_fd,
-		unsigned int, flags)
-{
-	return __close_range(fd, max_fd, flags);
-}
-
-SYSCALL_DEFINE0(vhangup)
-{
-	/* Stub: vhangup not needed for minimal kernel */
-	return -EPERM;
 }
 
 int generic_file_open(struct inode * inode, struct file * filp)

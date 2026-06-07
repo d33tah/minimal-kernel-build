@@ -21,9 +21,7 @@
 # 7 waitpid removed (unreachable)
 8	i386	creat			sys_creat
 11	i386	execve			sys_execve			compat_sys_execve
-12	i386	chdir			sys_chdir
 13	i386	time			sys_time32
-15	i386	chmod			sys_chmod
 16	i386	lchown			sys_lchown16
 17	i386	break
 18	i386	oldstat			sys_stat
@@ -40,7 +38,6 @@
 30	i386	utime			sys_utime32
 31	i386	stty
 32	i386	gtty
-33	i386	access			sys_access
 34	i386	nice			sys_nice
 35	i386	ftime
 36	i386	sync			sys_sync
@@ -63,7 +60,6 @@
 58	i386	ulimit
 59	i386	oldolduname		sys_olduname
 60	i386	umask			sys_umask
-61	i386	chroot			sys_chroot
 62	i386	ustat			sys_ustat			compat_sys_ustat
 63	i386	dup2			sys_dup2
 64	i386	getppid			sys_getppid
@@ -90,9 +86,6 @@
 89	i386	readdir			sys_old_readdir			compat_sys_old_readdir
 90	i386	mmap			sys_old_mmap			compat_sys_ia32_mmap
 91	i386	munmap			sys_munmap
-92	i386	truncate		sys_truncate			compat_sys_truncate
-93	i386	ftruncate		sys_ftruncate			compat_sys_ftruncate
-94	i386	fchmod			sys_fchmod
 95	i386	fchown			sys_fchown16
 96	i386	getpriority		sys_getpriority
 97	i386	setpriority		sys_setpriority
@@ -109,7 +102,6 @@
 108	i386	fstat			sys_newfstat			compat_sys_newfstat
 109	i386	olduname		sys_uname
 110	i386	iopl			sys_iopl
-111	i386	vhangup			sys_vhangup
 112	i386	idle
 113	i386	vm86old			sys_vm86old			sys_ni_syscall
 # 114 wait4 removed (unreachable)
@@ -129,7 +121,6 @@
 130	i386	get_kernel_syms
 131	i386	quotactl		sys_quotactl
 132	i386	getpgid			sys_getpgid
-133	i386	fchdir			sys_fchdir
 134	i386	bdflush			sys_ni_syscall
 135	i386	sysfs			sys_sysfs
 136	i386	personality		sys_personality
@@ -186,7 +177,6 @@
 195	i386	stat64			sys_stat64			compat_sys_ia32_stat64
 196	i386	lstat64			sys_lstat64			compat_sys_ia32_lstat64
 197	i386	fstat64			sys_fstat64			compat_sys_ia32_fstat64
-198	i386	lchown32		sys_lchown
 199	i386	getuid32		sys_getuid
 200	i386	getgid32		sys_getgid
 201	i386	geteuid32		sys_geteuid
@@ -195,12 +185,10 @@
 204	i386	setregid32		sys_setregid
 205	i386	getgroups32		sys_getgroups
 206	i386	setgroups32		sys_setgroups
-207	i386	fchown32		sys_fchown
 208	i386	setresuid32		sys_setresuid
 209	i386	getresuid32		sys_getresuid
 210	i386	setresgid32		sys_setresgid
 211	i386	getresgid32		sys_getresgid
-212	i386	chown32			sys_chown
 213	i386	setuid32		sys_setuid
 214	i386	setgid32		sys_setgid
 215	i386	setfsuid32		sys_setfsuid
@@ -282,12 +270,9 @@
 293	i386	inotify_rm_watch	sys_inotify_rm_watch
 294	i386	migrate_pages		sys_migrate_pages
 295	i386	openat			sys_openat			compat_sys_openat
-298	i386	fchownat		sys_fchownat
 299	i386	futimesat		sys_futimesat_time32
 300	i386	fstatat64		sys_fstatat64			compat_sys_ia32_fstatat64
 305	i386	readlinkat		sys_readlinkat
-306	i386	fchmodat		sys_fchmodat
-307	i386	faccessat		sys_faccessat
 308	i386	pselect6		sys_pselect6_time32		compat_sys_pselect6_time32
 309	i386	ppoll			sys_ppoll_time32		compat_sys_ppoll_time32
 310	i386	unshare			sys_unshare
@@ -405,10 +390,8 @@
 433	i386	fspick			sys_fspick
 434	i386	pidfd_open		sys_pidfd_open
 435	i386	clone3			sys_clone3
-436	i386	close_range		sys_close_range
 437	i386	openat2			sys_openat2
 438	i386	pidfd_getfd		sys_pidfd_getfd
-439	i386	faccessat2		sys_faccessat2
 440	i386	process_madvise		sys_process_madvise
 441	i386	epoll_pwait2		sys_epoll_pwait2		compat_sys_epoll_pwait2
 442	i386	mount_setattr		sys_mount_setattr

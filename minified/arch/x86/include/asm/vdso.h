@@ -25,12 +25,8 @@ struct vdso_image {
 	long sym_hvclock_page;
 	long sym_timens_page;
 	long sym_VDSO32_NOTE_MASK;
-	long sym___kernel_sigreturn;
-	long sym___kernel_rt_sigreturn;
 	long sym___kernel_vsyscall;
 	long sym_int80_landing_pad;
-	long sym_vdso32_sigreturn_landing_pad;
-	long sym_vdso32_rt_sigreturn_landing_pad;
 };
 
 

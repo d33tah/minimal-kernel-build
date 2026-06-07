@@ -254,14 +254,6 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
 
 bool arch_syscall_is_vdso_sigreturn(struct pt_regs *regs)
 {
-	const struct vdso_image *image = current->mm->context.vdso_image;
-	unsigned long vdso = (unsigned long) current->mm->context.vdso;
-
-	if (in_ia32_syscall() && image == &vdso_image_32) {
-		if (regs->ip == vdso + image->sym_vdso32_sigreturn_landing_pad ||
-		    regs->ip == vdso + image->sym_vdso32_rt_sigreturn_landing_pad)
-			return true;
-	}
 	return false;
 }
 

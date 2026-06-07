@@ -736,7 +736,6 @@ static inline int task_nice(const struct task_struct *p)
 	return PRIO_TO_NICE((p)->static_prio);
 }
 
-extern int sched_setscheduler(struct task_struct *, int, const struct sched_param *);
 extern int sched_setscheduler_nocheck(struct task_struct *, int, const struct sched_param *);
 extern void sched_set_fifo(struct task_struct *p);
 
@@ -845,8 +844,6 @@ static inline unsigned int task_cpu(const struct task_struct *p)
 	return 0;
 }
 
-extern long sched_setaffinity(pid_t pid, const struct cpumask *new_mask);
-extern long sched_getaffinity(pid_t pid, struct cpumask *mask);
 
 #ifndef TASK_SIZE_OF
 #define TASK_SIZE_OF(tsk)	TASK_SIZE

@@ -1217,18 +1217,6 @@ static void __setscheduler_prio(struct task_struct *p, int prio)
 	p->prio = prio;
 }
 
-#ifdef __ARCH_WANT_SYS_NICE
-
-SYSCALL_DEFINE1(nice, int, increment)
-{
-	/* Stub: nice not needed for minimal kernel */
-	return 0;
-}
-
-#endif
-
-
-
 #define SETPARAM_POLICY	-1
 
 static void __setscheduler_params(struct task_struct *p,
@@ -1353,17 +1341,6 @@ static int _sched_setscheduler(struct task_struct *p, int policy,
 	return __sched_setscheduler(p, &attr, check, true);
 }
 
-int sched_setscheduler(struct task_struct *p, int policy,
-		       const struct sched_param *param)
-{
-	return _sched_setscheduler(p, policy, param, true);
-}
-
-int sched_setattr(struct task_struct *p, const struct sched_attr *attr)
-{
-	return __sched_setscheduler(p, attr, true, true);
-}
-
 int sched_setscheduler_nocheck(struct task_struct *p, int policy,
 			       const struct sched_param *param)
 {
@@ -1374,96 +1351,6 @@ void sched_set_fifo(struct task_struct *p)
 {
 	struct sched_param sp = { .sched_priority = MAX_RT_PRIO / 2 };
 	WARN_ON_ONCE(sched_setscheduler_nocheck(p, SCHED_FIFO, &sp) != 0);
-}
-
-SYSCALL_DEFINE3(sched_setscheduler, pid_t, pid, int, policy, struct sched_param __user *, param)
-{
-	/* Stub: sched_setscheduler not needed for minimal kernel */
-	return 0;
-}
-
-SYSCALL_DEFINE2(sched_setparam, pid_t, pid, struct sched_param __user *, param)
-{
-	/* Stub: sched_setparam not needed for minimal kernel */
-	return 0;
-}
-
-SYSCALL_DEFINE3(sched_setattr, pid_t, pid, struct sched_attr __user *, uattr,
-			       unsigned int, flags)
-{
-	/* Stubbed: sched_setattr not needed for minimal kernel */
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE1(sched_getscheduler, pid_t, pid)
-{
-	/* Stub: sched_getscheduler not needed for minimal kernel */
-	return SCHED_NORMAL;
-}
-
-SYSCALL_DEFINE2(sched_getparam, pid_t, pid, struct sched_param __user *, param)
-{
-	/* Stub: sched_getparam not needed for minimal kernel */
-	struct sched_param lp = { .sched_priority = 0 };
-	if (!param || pid < 0)
-		return -EINVAL;
-	return copy_to_user(param, &lp, sizeof(*param)) ? -EFAULT : 0;
-}
-
-SYSCALL_DEFINE4(sched_getattr, pid_t, pid, struct sched_attr __user *, uattr,
-		unsigned int, usize, unsigned int, flags)
-{
-	/* Stubbed: sched_getattr not needed for minimal kernel */
-	return -ENOSYS;
-}
-
-long sched_setaffinity(pid_t pid, const struct cpumask *in_mask)
-{
-	/* Stub: not needed for minimal kernel */
-	return 0;
-}
-
-/* Stub: setaffinity not needed for single-CPU minimal kernel */
-SYSCALL_DEFINE3(sched_setaffinity, pid_t, pid, unsigned int, len,
-		unsigned long __user *, user_mask_ptr)
-{
-	return 0;
-}
-
-long sched_getaffinity(pid_t pid, struct cpumask *mask)
-{
-	/* Stub: not needed for minimal kernel */
-	return -ESRCH;
-}
-
-SYSCALL_DEFINE3(sched_getaffinity, pid_t, pid, unsigned int, len,
-		unsigned long __user *, user_mask_ptr)
-{
-	/* Stub: just return success for minimal kernel */
-	return -ENOSYS;
-}
-
-static void do_sched_yield(void)
-{
-	struct rq_flags rf;
-	struct rq *rq;
-
-	rq = this_rq_lock_irq(&rf);
-
-	schedstat_inc(rq->yld_count);
-	current->sched_class->yield_task(rq);
-
-	preempt_disable();
-	rq_unlock_irq(rq, &rf);
-	sched_preempt_enable_no_resched();
-
-	schedule();
-}
-
-SYSCALL_DEFINE0(sched_yield)
-{
-	do_sched_yield();
-	return 0;
 }
 
 int __sched __cond_resched(void)
@@ -1502,35 +1389,6 @@ void __sched io_schedule(void)
 	token = io_schedule_prepare();
 	schedule();
 	io_schedule_finish(token);
-}
-
-SYSCALL_DEFINE1(sched_get_priority_max, int, policy)
-{
-	/* Stub: just return 0 for minimal kernel */
-	return 0;
-}
-
-SYSCALL_DEFINE1(sched_get_priority_min, int, policy)
-{
-	/* Stub: just return 0 for minimal kernel */
-	return 0;
-}
-
-static int sched_rr_get_interval(pid_t pid, struct timespec64 *t)
-{
-	return -EINVAL;
-}
-
-SYSCALL_DEFINE2(sched_rr_get_interval, pid_t, pid,
-		struct __kernel_timespec __user *, interval)
-{
-	struct timespec64 t;
-	int retval = sched_rr_get_interval(pid, &t);
-
-	if (retval == 0)
-		retval = put_timespec64(&t, interval);
-
-	return retval;
 }
 
 void __init init_idle(struct task_struct *idle, int cpu)

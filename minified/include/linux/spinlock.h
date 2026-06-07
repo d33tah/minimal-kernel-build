@@ -247,6 +247,5 @@ int __alloc_bucket_spinlocks(spinlock_t **locks, unsigned int *lock_mask,
 		ret;							     \
 	})
 
-void free_bucket_spinlocks(spinlock_t *locks);
 
 #endif  

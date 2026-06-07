@@ -10,7 +10,6 @@
 #include <linux/rcupdate.h>
 
 extern void __init tick_init(void);
-extern void tick_handover_do_timer(void);
 
 static inline void tick_irq_enter(void) { }
 

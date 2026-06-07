@@ -167,7 +167,6 @@ int bitmap_parse(const char *buf, unsigned int buflen,
  * bitmap_bitremap, bitmap_onto, bitmap_fold, bitmap_find_free_region,
  * bitmap_release_region, bitmap_allocate_region removed - unused */
 
-unsigned int bitmap_ord_to_pos(const unsigned long *bitmap, unsigned int ord, unsigned int nbits);
 int bitmap_print_to_pagebuf(bool list, char *buf,
 				   const unsigned long *maskp, int nmaskbits);
 

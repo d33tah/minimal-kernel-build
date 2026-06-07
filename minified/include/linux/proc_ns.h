@@ -50,6 +50,5 @@ static inline int ns_alloc_inum(struct ns_common *ns)
 #define get_proc_ns(inode) ((struct ns_common *)(inode)->i_private)
 typedef struct ns_common *ns_get_path_helper_t(void *);
 
-extern void nsfs_init(void);
 
 #endif  

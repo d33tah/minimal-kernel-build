@@ -14,7 +14,6 @@ search_extable(const struct exception_table_entry *base,
 void sort_extable(struct exception_table_entry *start,
 		  struct exception_table_entry *finish);
 void sort_main_extable(void);
-void trim_init_extable(struct module *m);
 
 const struct exception_table_entry *search_exception_tables(unsigned long add);
 const struct exception_table_entry *

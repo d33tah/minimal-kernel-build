@@ -114,6 +114,5 @@ void platform_unregister_drivers(struct platform_driver * const *drivers,
 
 #define USE_PLATFORM_PM_SLEEP_OPS
 
-void early_platform_cleanup(void);
 
 #endif  

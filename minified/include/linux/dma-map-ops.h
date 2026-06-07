@@ -96,13 +96,11 @@ void *dma_common_contiguous_remap(struct page *page, size_t size, pgprot_t prot,
 		const void *caller);
 void *dma_common_pages_remap(struct page **pages, size_t size, pgprot_t prot,
 		const void *caller);
-void dma_common_free_remap(void *cpu_addr, size_t size);
 struct page **dma_common_find_pages(void *cpu_addr);
 
 struct page *dma_alloc_from_pool(struct device *dev, size_t size,
 		void **cpu_addr, gfp_t flags,
 		bool (*phys_addr_ok)(struct device *, phys_addr_t, size_t));
-bool dma_free_from_pool(struct device *dev, void *start, size_t size);
 
 #if defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_DEVICE) || \
 	defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU) || \
@@ -128,7 +126,6 @@ void arch_dma_free(struct device *dev, size_t size, void *cpu_addr,
 #define pgprot_dmacoherent(prot)	pgprot_noncached(prot)
 #endif
 
-pgprot_t dma_pgprot(struct device *dev, pgprot_t prot, unsigned long attrs);
 
 static inline void arch_sync_dma_for_device(phys_addr_t paddr, size_t size,
 		enum dma_data_direction dir)

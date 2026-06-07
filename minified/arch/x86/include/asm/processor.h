@@ -498,7 +498,6 @@ void default_idle(void);
 #define xen_set_default_idle 0
 
 void __noreturn stop_this_cpu(void *dummy);
-void microcode_check(void);
 
 enum mds_mitigations {
 	MDS_MITIGATION_OFF,

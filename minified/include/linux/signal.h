@@ -21,8 +21,6 @@ static inline void clear_siginfo(kernel_siginfo_t *info)
 }
 
 
-int copy_siginfo_to_user(siginfo_t __user *to, const kernel_siginfo_t *from);
-int copy_siginfo_from_user(kernel_siginfo_t *to, const siginfo_t __user *from);
 
 enum siginfo_layout {
 	SIL_KILL,
@@ -228,7 +226,6 @@ extern int group_send_sig_info(int sig, struct kernel_siginfo *info,
 			       struct task_struct *p, enum pid_type type);
 extern int send_signal_locked(int sig, struct kernel_siginfo *info,
 			      struct task_struct *p, enum pid_type type);
-extern int sigprocmask(int, sigset_t *, sigset_t *);
 extern void set_current_blocked(sigset_t *);
 extern void __set_current_blocked(const sigset_t *);
 extern int show_unhandled_signals;
@@ -285,8 +282,6 @@ extern struct kmem_cache *sighand_cachep;
 
 void signals_init(void);
 
-int restore_altstack(const stack_t __user *);
-int __save_altstack(stack_t __user *, unsigned long);
 
 #define unsafe_save_altstack(uss, sp, label) do { \
 	stack_t __user *__uss = uss; \

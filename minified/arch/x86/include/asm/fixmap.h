@@ -50,7 +50,6 @@ enum fixed_addresses {
 };
 
 
-extern void reserve_top_address(unsigned long reserve);
 
 #define FIXADDR_SIZE		(__end_of_permanent_fixed_addresses << PAGE_SHIFT)
 #define FIXADDR_START		(FIXADDR_TOP - FIXADDR_SIZE)

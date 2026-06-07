@@ -70,9 +70,7 @@ DECLARE_PER_CPU(struct fpu *, fpu_fpregs_owner_ctx);
 /* fpstate_free, fpu_update_guest_xfd, fpu_sync_guest_vmexit_xfd_state,
    fpstate_set_confidential, fpstate_is_confidential removed - unused */
 
-extern void fpstate_clear_xstate_component(struct fpstate *fps, unsigned int xfeature);
 
-extern u64 xstate_get_guest_group_perm(void);
 
 extern bool fpu_alloc_guest_fpstate(struct fpu_guest *gfpu);
 extern void fpu_free_guest_fpstate(struct fpu_guest *gfpu);

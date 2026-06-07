@@ -76,10 +76,7 @@ int dma_get_sgtable_attrs(struct device *dev, struct sg_table *sgt,
 int dma_mmap_attrs(struct device *dev, struct vm_area_struct *vma,
 		void *cpu_addr, dma_addr_t dma_addr, size_t size,
 		unsigned long attrs);
-bool dma_can_mmap(struct device *dev);
 int dma_supported(struct device *dev, u64 mask);
-int dma_set_mask(struct device *dev, u64 mask);
-int dma_set_coherent_mask(struct device *dev, u64 mask);
 u64 dma_get_required_mask(struct device *dev);
 /* dma_max_mapping_size, dma_need_sync, dma_get_merge_boundary,
    dma_alloc/free/vmap/vunmap/mmap_noncontiguous, dma_alloc/free/mmap_pages removed - unused */

@@ -46,7 +46,6 @@ int __must_check idr_alloc_u32(struct idr *, void *ptr, u32 *id,
 int idr_alloc_cyclic(struct idr *, void *ptr, int start, int end, gfp_t);
 void *idr_remove(struct idr *, unsigned long id);
 void *idr_find(const struct idr *, unsigned long id);
-void *idr_get_next_ul(struct idr *, unsigned long *nextid);
 void *idr_replace(struct idr *, void *, unsigned long id);
 
 static inline void idr_init_base(struct idr *idr, int base)
@@ -89,7 +88,6 @@ struct ida {
 
 int ida_alloc_range(struct ida *, unsigned int min, unsigned int max, gfp_t);
 void ida_free(struct ida *, unsigned int id);
-void ida_destroy(struct ida *ida);
 
 static inline int ida_alloc(struct ida *ida, gfp_t gfp)
 {

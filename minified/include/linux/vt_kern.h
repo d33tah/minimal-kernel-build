@@ -144,7 +144,6 @@ struct unipair;
 
 int con_set_default_unimap(struct vc_data *vc);
 void con_free_unimap(struct vc_data *vc);
-int con_copy_unimap(struct vc_data *dst_vc, struct vc_data *src_vc);
 
 
 void reset_vc(struct vc_data *vc);

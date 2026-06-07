@@ -24,16 +24,10 @@ struct pvclock_wall_clock {
 #define PVCLOCK_COUNTS_FROM_ZERO (1 << 2)
 
  
-u64 pvclock_clocksource_read(struct pvclock_vcpu_time_info *src);
-u8 pvclock_read_flags(struct pvclock_vcpu_time_info *src);
-void pvclock_set_flags(u8 flags);
-unsigned long pvclock_tsc_khz(struct pvclock_vcpu_time_info *src);
 void pvclock_read_wallclock(struct pvclock_wall_clock *wall,
 			    struct pvclock_vcpu_time_info *vcpu,
 			    struct timespec64 *ts);
-void pvclock_resume(void);
 
-void pvclock_touch_watchdogs(void);
 
 static __always_inline
 unsigned pvclock_read_begin(const struct pvclock_vcpu_time_info *src)

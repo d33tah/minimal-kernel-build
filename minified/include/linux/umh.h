@@ -61,7 +61,5 @@ static inline void usermodehelper_enable(void)
 	__usermodehelper_set_disable_depth(UMH_ENABLED);
 }
 
-extern int usermodehelper_read_trylock(void);
-extern void usermodehelper_read_unlock(void);
 
 #endif  

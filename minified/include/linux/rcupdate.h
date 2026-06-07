@@ -29,8 +29,6 @@ static inline void __rcu_read_unlock(void)
 void rcu_init(void);
 extern int rcu_scheduler_active;
 void rcu_sched_clock_irq(int user);
-void rcu_report_dead(unsigned int cpu);
-void rcutree_migrate_callbacks(int cpu);
 
 static inline void rcu_init_tasks_generic(void) { }
 

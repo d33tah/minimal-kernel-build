@@ -36,7 +36,6 @@ static inline void e820__memblock_alloc_reserved_mpc_new(void) { }
 #define default_find_smp_config x86_init_noop
 #define default_get_smp_config x86_init_uint_noop
 
-int generic_processor_info(int apicid, int version);
 
 /* physid_mask_t needed by struct apic */
 #define PHYSID_ARRAY_SIZE	BITS_TO_LONGS(MAX_LOCAL_APIC)

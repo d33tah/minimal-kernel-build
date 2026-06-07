@@ -38,8 +38,6 @@ enum cc_vendor {
 	CC_VENDOR_HYPERV,
 	CC_VENDOR_INTEL,
 };
-void cc_set_vendor(enum cc_vendor v);
-void cc_set_mask(u64 mask);
 static inline u64 cc_mkenc(u64 val)
 {
 	return val;
@@ -58,13 +56,9 @@ static __always_inline pte_t pte_swp_clear_uffd_wp(pte_t pte) { return pte; }
    pte_swp_mkuffd_wp, pmd_swp_* removed - never called */
 
 extern pgd_t early_top_pgt[PTRS_PER_PGD];
-bool __init __early_make_pgtable(unsigned long address, pmdval_t pmd);
 
-void ptdump_walk_pgd_level(struct seq_file *m, struct mm_struct *mm);
 void ptdump_walk_pgd_level_debugfs(struct seq_file *m, struct mm_struct *mm,
 				   bool user);
-void ptdump_walk_pgd_level_checkwx(void);
-void ptdump_walk_user_pgd_level_checkwx(void);
 
  
 #define pgprot_encrypted(prot)	__pgprot(cc_mkenc(pgprot_val(prot)))

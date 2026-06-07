@@ -19,9 +19,6 @@ struct fprop_global {
 	seqcount_t sequence;
 };
 
-int fprop_global_init(struct fprop_global *p, gfp_t gfp);
-void fprop_global_destroy(struct fprop_global *p);
-bool fprop_new_period(struct fprop_global *p, int periods);
 
 struct fprop_local_percpu {
 	 

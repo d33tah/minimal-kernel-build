@@ -71,6 +71,5 @@ static inline void elf_core_copy_regs(elf_gregset_t *elfregs, struct pt_regs *re
 #endif
 }
 
-extern int dump_fpu (struct pt_regs *, elf_fpregset_t *);
 
 #endif  

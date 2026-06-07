@@ -126,7 +126,6 @@ bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw);
 
 int folio_mkclean(struct folio *);
 
-void remove_migration_ptes(struct folio *src, struct folio *dst, bool locked);
 
 int page_mapped_in_vma(struct page *page, struct vm_area_struct *vma);
 

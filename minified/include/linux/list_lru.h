@@ -53,7 +53,6 @@ int __list_lru_init(struct list_lru *lru, bool memcg_aware,
 
 int memcg_list_lru_alloc(struct mem_cgroup *memcg, struct list_lru *lru,
 			 gfp_t gfp);
-void memcg_reparent_list_lrus(struct mem_cgroup *memcg, struct mem_cgroup *parent);
 
 bool list_lru_add(struct list_lru *lru, struct list_head *item);
 

@@ -16,7 +16,6 @@ void bdi_unregister(struct backing_dev_info *bdi);
 
 struct backing_dev_info *bdi_alloc(int node_id);
 
-void wb_start_background_writeback(struct bdi_writeback *wb);
 void wb_workfn(struct work_struct *work);
 
 /* wb_has_dirty_io, bdi_has_dirty_io, wb_stat_mod, inc_wb_stat, dec_wb_stat,

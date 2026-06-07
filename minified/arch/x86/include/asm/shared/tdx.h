@@ -26,10 +26,8 @@ struct tdx_hypercall_args {
 };
 
  
-u64 __tdx_hypercall(struct tdx_hypercall_args *args, unsigned long flags);
 
  
-void __tdx_hypercall_failed(void);
 
 #endif  
 #endif  

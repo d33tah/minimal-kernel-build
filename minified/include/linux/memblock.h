@@ -172,7 +172,6 @@ phys_addr_t memblock_phys_alloc_range(phys_addr_t size, phys_addr_t align,
 phys_addr_t memblock_alloc_range_nid(phys_addr_t size,
 				      phys_addr_t align, phys_addr_t start,
 				      phys_addr_t end, int nid, bool exact_nid);
-phys_addr_t memblock_phys_alloc_try_nid(phys_addr_t size, phys_addr_t align, int nid);
 
 static __always_inline phys_addr_t memblock_phys_alloc(phys_addr_t size,
 						       phys_addr_t align)

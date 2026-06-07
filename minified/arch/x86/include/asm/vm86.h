@@ -40,8 +40,6 @@ static inline int handle_vm86_trap(struct kernel_vm86_regs *a, long b, int c)
 	return 0;
 }
 
-static inline void save_v86_state(struct kernel_vm86_regs *a, int b) { }
-
 #define free_vm86(t) do { } while(0)
 
 

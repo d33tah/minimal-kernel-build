@@ -51,24 +51,6 @@ static inline void x86_ce4100_early_setup(void) { }
 extern struct boot_params boot_params;
 extern char _text[];
 
-static inline bool kaslr_enabled(void)
-{
-	return IS_ENABLED(CONFIG_RANDOMIZE_MEMORY) &&
-		!!(boot_params.hdr.loadflags & KASLR_FLAG);
-}
-
- 
-static inline bool kaslr_memory_enabled(void)
-{
-	return kaslr_enabled() && !IS_ENABLED(CONFIG_KASAN);
-}
-
-static inline unsigned long kaslr_offset(void)
-{
-	return (unsigned long)&_text - __START_KERNEL;
-}
-
- 
 #define LOWMEMSIZE()	(0x9f000)
 
  

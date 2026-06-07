@@ -14,7 +14,6 @@
 #include <asm/setup.h>
 
 static inline void add_dtb(u64 data) { }
-static inline void x86_of_pci_init(void) { }
 static inline void x86_dtb_init(void) { }
 #define of_ioapic 0
 

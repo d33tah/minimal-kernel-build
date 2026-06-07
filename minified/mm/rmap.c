@@ -20,10 +20,6 @@ int __anon_vma_prepare(struct vm_area_struct *vma)
 	return 0;
 }
 
-void unlink_anon_vmas(struct vm_area_struct *vma)
-{
-}
-
 void __init anon_vma_init(void)
 {
 	anon_vma_cachep = kmem_cache_create(

@@ -95,12 +95,6 @@ atomic_long_add(long i, atomic_long_t *v)
 }
 
 static __always_inline void
-atomic_long_sub(long i, atomic_long_t *v)
-{
-	atomic_sub(i, v);
-}
-
-static __always_inline void
 atomic_long_inc(atomic_long_t *v)
 {
 	atomic_inc(v);

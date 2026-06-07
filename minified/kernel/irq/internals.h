@@ -57,18 +57,6 @@ __irq_get_desc_lock(unsigned int irq, unsigned long *flags, bool bus,
 void __irq_put_desc_unlock(struct irq_desc *desc, unsigned long flags, bool bus);
 
 static inline struct irq_desc *
-irq_get_desc_buslock(unsigned int irq, unsigned long *flags, unsigned int check)
-{
-	return __irq_get_desc_lock(irq, flags, true, check);
-}
-
-static inline void
-irq_put_desc_busunlock(struct irq_desc *desc, unsigned long flags)
-{
-	__irq_put_desc_unlock(desc, flags, true);
-}
-
-static inline struct irq_desc *
 irq_get_desc_lock(unsigned int irq, unsigned long *flags, unsigned int check)
 {
 	return __irq_get_desc_lock(irq, flags, false, check);

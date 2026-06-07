@@ -63,8 +63,4 @@ do {						\
 	loadsegment(gs, 0);			\
 } while (0)
 
-static inline void arch_exit_mmap(struct mm_struct *mm)
-{
-}
-
 #endif

@@ -87,11 +87,6 @@ static __always_inline void spin_lock(spinlock_t *lock)
 	raw_spin_lock(&lock->rlock);
 }
 
-static __always_inline int spin_trylock(spinlock_t *lock)
-{
-	return raw_spin_trylock(&lock->rlock);
-}
-
 static __always_inline void spin_lock_irq(spinlock_t *lock)
 {
 	raw_spin_lock_irq(&lock->rlock);

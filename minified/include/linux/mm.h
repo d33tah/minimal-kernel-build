@@ -73,11 +73,6 @@ struct pt_regs;
 extern unsigned long max_mapnr;
 
 extern atomic_long_t _totalram_pages;
-static inline unsigned long totalram_pages(void)
-{
-	return (unsigned long)atomic_long_read(&_totalram_pages);
-}
-
 extern void * high_memory;
 
 #ifndef untagged_addr

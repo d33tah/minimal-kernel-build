@@ -20,12 +20,9 @@
 6	i386	close			sys_close
 # 7 waitpid removed (unreachable)
 8	i386	creat			sys_creat
-9	i386	link			sys_link
-10	i386	unlink			sys_unlink
 11	i386	execve			sys_execve			compat_sys_execve
 12	i386	chdir			sys_chdir
 13	i386	time			sys_time32
-14	i386	mknod			sys_mknod
 15	i386	chmod			sys_chmod
 16	i386	lchown			sys_lchown16
 17	i386	break
@@ -49,9 +46,6 @@
 35	i386	ftime
 36	i386	sync			sys_sync
 37	i386	kill			sys_kill
-38	i386	rename			sys_rename
-39	i386	mkdir			sys_mkdir
-40	i386	rmdir			sys_rmdir
 41	i386	dup			sys_dup
 42	i386	pipe			sys_pipe
 43	i386	times			sys_times			compat_sys_times
@@ -94,7 +88,6 @@
 80	i386	getgroups		sys_getgroups16
 81	i386	setgroups		sys_setgroups16
 82	i386	select			sys_old_select			compat_sys_old_select
-83	i386	symlink			sys_symlink
 84	i386	oldlstat		sys_lstat
 85	i386	readlink		sys_readlink
 86	i386	uselib			sys_uselib
@@ -305,15 +298,9 @@
 293	i386	inotify_rm_watch	sys_inotify_rm_watch
 294	i386	migrate_pages		sys_migrate_pages
 295	i386	openat			sys_openat			compat_sys_openat
-296	i386	mkdirat			sys_mkdirat
-297	i386	mknodat			sys_mknodat
 298	i386	fchownat		sys_fchownat
 299	i386	futimesat		sys_futimesat_time32
 300	i386	fstatat64		sys_fstatat64			compat_sys_ia32_fstatat64
-301	i386	unlinkat		sys_unlinkat
-302	i386	renameat		sys_renameat
-303	i386	linkat			sys_linkat
-304	i386	symlinkat		sys_symlinkat
 305	i386	readlinkat		sys_readlinkat
 306	i386	fchmodat		sys_fchmodat
 307	i386	faccessat		sys_faccessat
@@ -362,7 +349,6 @@
 350	i386	finit_module		sys_finit_module
 351	i386	sched_setattr		sys_sched_setattr
 352	i386	sched_getattr		sys_sched_getattr
-353	i386	renameat2		sys_renameat2
 354	i386	seccomp			sys_seccomp
 355	i386	getrandom		sys_getrandom
 356	i386	memfd_create		sys_memfd_create

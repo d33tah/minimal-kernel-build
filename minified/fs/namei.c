@@ -2068,24 +2068,6 @@ int vfs_mknod(struct user_namespace *mnt_userns, struct inode *dir,
 	return error;
 }
 
-static int do_mknodat(int dfd, struct filename *name, umode_t mode,
-		unsigned int dev)
-{
-	putname(name);
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE4(mknodat, int, dfd, const char __user *, filename, umode_t, mode,
-		unsigned int, dev)
-{
-	return do_mknodat(dfd, getname(filename), mode, dev);
-}
-
-SYSCALL_DEFINE3(mknod, const char __user *, filename, umode_t, mode, unsigned, dev)
-{
-	return do_mknodat(AT_FDCWD, getname(filename), mode, dev);
-}
-
 int vfs_mkdir(struct user_namespace *mnt_userns, struct inode *dir,
 	      struct dentry *dentry, umode_t mode)
 {
@@ -2112,54 +2094,16 @@ int vfs_mkdir(struct user_namespace *mnt_userns, struct inode *dir,
 	return error;
 }
 
-int do_mkdirat(int dfd, struct filename *name, umode_t mode)
-{
-	putname(name);
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE3(mkdirat, int, dfd, const char __user *, pathname, umode_t, mode)
-{
-	return do_mkdirat(dfd, getname(pathname), mode);
-}
-
-SYSCALL_DEFINE2(mkdir, const char __user *, pathname, umode_t, mode)
-{
-	return do_mkdirat(AT_FDCWD, getname(pathname), mode);
-}
-
-
 int do_rmdir(int dfd, struct filename *name)
 {
 	putname(name);
 	return -ENOSYS;
 }
 
-SYSCALL_DEFINE1(rmdir, const char __user *, pathname)
-{
-	return do_rmdir(AT_FDCWD, getname(pathname));
-}
-
-
 int do_unlinkat(int dfd, struct filename *name)
 {
 	putname(name);
 	return -ENOSYS;
-}
-
-SYSCALL_DEFINE3(unlinkat, int, dfd, const char __user *, pathname, int, flag)
-{
-	if ((flag & ~AT_REMOVEDIR) != 0)
-		return -EINVAL;
-
-	if (flag & AT_REMOVEDIR)
-		return do_rmdir(dfd, getname(pathname));
-	return do_unlinkat(dfd, getname(pathname));
-}
-
-SYSCALL_DEFINE1(unlink, const char __user *, pathname)
-{
-	return do_unlinkat(AT_FDCWD, getname(pathname));
 }
 
 int vfs_symlink(struct user_namespace *mnt_userns, struct inode *dir,
@@ -2169,79 +2113,12 @@ int vfs_symlink(struct user_namespace *mnt_userns, struct inode *dir,
 	return -EPERM;
 }
 
-int do_symlinkat(struct filename *from, int newdfd, struct filename *to)
-{
-	putname(to);
-	putname(from);
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE3(symlinkat, const char __user *, oldname,
-		int, newdfd, const char __user *, newname)
-{
-	return do_symlinkat(getname(oldname), newdfd, getname(newname));
-}
-
-SYSCALL_DEFINE2(symlink, const char __user *, oldname, const char __user *, newname)
-{
-	return do_symlinkat(getname(oldname), AT_FDCWD, getname(newname));
-}
-
 int vfs_link(struct dentry *old_dentry, struct user_namespace *mnt_userns,
 	     struct inode *dir, struct dentry *new_dentry,
 	     struct inode **delegated_inode)
 {
 	/* Stub: hard link creation not needed for minimal kernel */
 	return -EPERM;
-}
-
-int do_linkat(int olddfd, struct filename *old, int newdfd,
-	      struct filename *new, int flags)
-{
-	putname(old);
-	putname(new);
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE5(linkat, int, olddfd, const char __user *, oldname,
-		int, newdfd, const char __user *, newname, int, flags)
-{
-	return do_linkat(olddfd, getname_uflags(oldname, flags),
-		newdfd, getname(newname), flags);
-}
-
-SYSCALL_DEFINE2(link, const char __user *, oldname, const char __user *, newname)
-{
-	return do_linkat(AT_FDCWD, getname(oldname), AT_FDCWD, getname(newname), 0);
-}
-
-
-int do_renameat2(int olddfd, struct filename *from, int newdfd,
-		 struct filename *to, unsigned int flags)
-{
-	putname(from);
-	putname(to);
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE5(renameat2, int, olddfd, const char __user *, oldname,
-		int, newdfd, const char __user *, newname, unsigned int, flags)
-{
-	return do_renameat2(olddfd, getname(oldname), newdfd, getname(newname),
-				flags);
-}
-
-SYSCALL_DEFINE4(renameat, int, olddfd, const char __user *, oldname,
-		int, newdfd, const char __user *, newname)
-{
-	return do_renameat2(olddfd, getname(oldname), newdfd, getname(newname),
-				0);
-}
-
-SYSCALL_DEFINE2(rename, const char __user *, oldname, const char __user *, newname)
-{
-	return do_renameat2(AT_FDCWD, getname(oldname), AT_FDCWD,
-				getname(newname), 0);
 }
 
 const char *page_get_link(struct dentry *dentry, struct inode *inode,

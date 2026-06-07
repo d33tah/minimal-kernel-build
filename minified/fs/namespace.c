@@ -1265,58 +1265,6 @@ static int graft_tree(struct mount *mnt, struct mount *p, struct mountpoint *mp)
 	return attach_recursive_mnt(mnt, p, mp, false);
 }
 
-static int flags_to_propagation_type(int ms_flags)
-{
-	int type = ms_flags & ~(MS_REC | MS_SILENT);
-
-	
-	if (type & ~(MS_SHARED | MS_PRIVATE | MS_SLAVE | MS_UNBINDABLE))
-		return 0;
-	
-	if (!is_power_of_2(type))
-		return 0;
-	return type;
-}
-
-static int do_change_type(struct path *path, int ms_flags)
-{
-	struct mount *m;
-	struct mount *mnt = real_mount(path->mnt);
-	int recurse = ms_flags & MS_REC;
-	int type;
-	int err = 0;
-
-	if (path->dentry != path->mnt->mnt_root)
-		return -EINVAL;
-
-	type = flags_to_propagation_type(ms_flags);
-	if (!type)
-		return -EINVAL;
-
-	namespace_lock();
-	if (type == MS_SHARED) {
-		err = invent_group_ids(mnt, recurse);
-		if (err)
-			goto out_unlock;
-	}
-
-	lock_mount_hash();
-	for (m = mnt; m; m = (recurse ? next_mnt(m, mnt) : NULL))
-		change_mnt_propagation(m, type);
-	unlock_mount_hash();
-
- out_unlock:
-	namespace_unlock();
-	return err;
-}
-
-static int do_loopback(struct path *path, const char *old_name,
-				int recurse)
-{
-	/* Stubbed: loopback mounts not needed for minimal boot */
-	return -EINVAL;
-}
-
 SYSCALL_DEFINE3(open_tree, int, dfd, const char __user *, filename, unsigned, flags)
 {
 	/* Stubbed: open_tree not needed for minimal kernel */
@@ -1326,41 +1274,6 @@ SYSCALL_DEFINE3(open_tree, int, dfd, const char __user *, filename, unsigned, fl
 static void mnt_warn_timestamp_expiry(struct path *mountpoint, struct vfsmount *mnt)
 {
 	/* Stub: timestamp expiry warning not needed for minimal kernel */
-}
-
-static int do_reconfigure_mnt(struct path *path, unsigned int mnt_flags)
-{
-	return -ENOSYS;
-}
-
-static int do_remount(struct path *path, int ms_flags, int sb_flags,
-		      int mnt_flags, void *data)
-{
-	return -ENOSYS;
-}
-
-
-static int do_move_mount(struct path *old_path, struct path *new_path)
-{
-	/* Stub: mount movement not needed for minimal kernel */
-	return -EINVAL;
-}
-
-static int do_move_mount_old(struct path *path, const char *old_name)
-{
-	struct path old_path;
-	int err;
-
-	if (!old_name || !*old_name)
-		return -EINVAL;
-
-	err = kern_path(old_name, LOOKUP_FOLLOW, &old_path);
-	if (err)
-		return err;
-
-	err = do_move_mount(&old_path, path);
-	path_put(&old_path);
-	return err;
 }
 
 static int do_add_mount(struct mount *newmnt, struct mountpoint *mp,
@@ -1579,16 +1492,9 @@ int path_mount(const char *dev_name, struct path *path,
 			    SB_LAZYTIME |
 			    SB_I_VERSION);
 
-	if ((flags & (MS_REMOUNT | MS_BIND)) == (MS_REMOUNT | MS_BIND))
-		return do_reconfigure_mnt(path, mnt_flags);
-	if (flags & MS_REMOUNT)
-		return do_remount(path, flags, sb_flags, mnt_flags, data_page);
-	if (flags & MS_BIND)
-		return do_loopback(path, dev_name, flags & MS_REC);
-	if (flags & (MS_SHARED | MS_PRIVATE | MS_SLAVE | MS_UNBINDABLE))
-		return do_change_type(path, flags);
-	if (flags & MS_MOVE)
-		return do_move_mount_old(path, dev_name);
+	if (flags & (MS_REMOUNT | MS_BIND | MS_SHARED | MS_PRIVATE |
+		     MS_SLAVE | MS_UNBINDABLE | MS_MOVE))
+		return -ENOSYS;
 
 	return do_new_mount(path, type_page, sb_flags, mnt_flags, dev_name,
 			    data_page);

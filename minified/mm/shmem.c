@@ -36,30 +36,11 @@ void __init shmem_init(void)
 	BUG_ON(IS_ERR(shm_mnt));
 }
 
-int shmem_unuse(unsigned int type)
-{
-	return 0;
-}
-
-int shmem_lock(struct file *file, int lock, struct ucounts *ucounts)
-{
-	return 0;
-}
-
-void shmem_unlock_mapping(struct address_space *mapping)
-{
-}
-
 unsigned long shmem_get_unmapped_area(struct file *file,
 				      unsigned long addr, unsigned long len,
 				      unsigned long pgoff, unsigned long flags)
 {
 	return current->mm->get_unmapped_area(file, addr, len, pgoff, flags);
-}
-
-void shmem_truncate_range(struct inode *inode, loff_t lstart, loff_t lend)
-{
-	truncate_inode_pages_range(inode->i_mapping, lstart, lend);
 }
 
 #define shmem_vm_ops				generic_file_vm_ops
@@ -108,11 +89,6 @@ struct file *shmem_kernel_file_setup(const char *name, loff_t size, unsigned lon
 	return __shmem_file_setup(shm_mnt, name, size, flags, S_PRIVATE);
 }
 
-struct file *shmem_file_setup(const char *name, loff_t size, unsigned long flags)
-{
-	return __shmem_file_setup(shm_mnt, name, size, flags, 0);
-}
-
 int shmem_zero_setup(struct vm_area_struct *vma)
 {
 	struct file *file;
@@ -129,11 +105,4 @@ int shmem_zero_setup(struct vm_area_struct *vma)
 	vma->vm_ops = &shmem_vm_ops;
 
 	return 0;
-}
-
-struct page *shmem_read_mapping_page_gfp(struct address_space *mapping,
-					 pgoff_t index, gfp_t gfp)
-{
-	 
-	return read_cache_page_gfp(mapping, index, gfp);
 }

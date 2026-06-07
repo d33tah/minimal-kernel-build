@@ -1,7 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
-#include <stdbool.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <string.h>
@@ -9,7 +7,6 @@
 #include <time.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <ctype.h>
 #include <limits.h>
 
 #define xstr(s) #s
@@ -19,12 +16,6 @@
 static unsigned int offset;
 static unsigned int ino = 721;
 static time_t default_mtime;
-static bool do_csum = false;
-
-struct file_handler {
-	const char *type;
-	int (*handler)(const char *line);
-};
 
 static void push_string(const char *name)
 {
@@ -72,10 +63,10 @@ static void cpio_trailer(void)
 	const char name[] = "TRAILER!!!";
 
 	sprintf(s,
-		"%s%08X%08X%08lX%08lX%08X%08lX"
+		"070701%08X%08X%08lX%08lX%08X%08lX"
 		"%08X%08X%08X%08X%08X%08X%08X",
-		do_csum ? "070702" : "070701", 0, 0, (long)0, (long)0, 1,
-		(long)0, 0, 0, 0, 0, 0, (unsigned)strlen(name) + 1, 0);
+		0, 0, (long)0, (long)0, 1, (long)0, 0, 0, 0, 0, 0,
+		(unsigned)strlen(name) + 1, 0);
 	push_hdr(s);
 	push_rest(name);
 
@@ -85,193 +76,41 @@ static void cpio_trailer(void)
 	}
 }
 
-static int cpio_mkslink(const char *name, const char *target, unsigned int mode,
-			uid_t uid, gid_t gid)
-{
-	char s[256];
-
-	if (name[0] == '/')
-		name++;
-	sprintf(s,
-		"%s%08X%08X%08lX%08lX%08X%08lX"
-		"%08X%08X%08X%08X%08X%08X%08X",
-		do_csum ? "070702" : "070701", ino++, S_IFLNK | mode, (long)uid,
-		(long)gid, 1, (long)default_mtime, (unsigned)strlen(target) + 1,
-		3, 1, 0, 0, (unsigned)strlen(name) + 1, 0);
-	push_hdr(s);
-	push_string(name);
-	push_pad();
-	push_string(target);
-	push_pad();
-	return 0;
-}
-
-static int cpio_mkslink_line(const char *line)
+static int cpio_mkdir_line(const char *line)
 {
 	char name[PATH_MAX + 1];
-	char target[PATH_MAX + 1];
+	char s[256];
 	unsigned int mode;
 	int uid;
 	int gid;
-	int rc = -1;
-
-	if (5 != sscanf(line,
-			"%" str(PATH_MAX) "s %" str(PATH_MAX) "s %o %d %d",
-			name, target, &mode, &uid, &gid)) {
-		fprintf(stderr, "Unrecognized dir format '%s'", line);
-		goto fail;
-	}
-	rc = cpio_mkslink(name, target, mode, uid, gid);
-fail:
-	return rc;
-}
-
-static int cpio_mkgeneric(const char *name, unsigned int mode, uid_t uid,
-			  gid_t gid)
-{
-	char s[256];
-
-	if (name[0] == '/')
-		name++;
-	sprintf(s,
-		"%s%08X%08X%08lX%08lX%08X%08lX"
-		"%08X%08X%08X%08X%08X%08X%08X",
-		do_csum ? "070702" : "070701", ino++, mode, (long)uid,
-		(long)gid, 2, (long)default_mtime, 0, 3, 1, 0, 0,
-		(unsigned)strlen(name) + 1, 0);
-	push_hdr(s);
-	push_rest(name);
-	return 0;
-}
-
-enum generic_types { GT_DIR, GT_PIPE, GT_SOCK };
-
-struct generic_type {
-	const char *type;
-	mode_t mode;
-};
-
-static const struct generic_type generic_type_table[] = {
-	[GT_DIR] = { .type = "dir", .mode = S_IFDIR },
-	[GT_PIPE] = { .type = "pipe", .mode = S_IFIFO },
-	[GT_SOCK] = { .type = "sock", .mode = S_IFSOCK }
-};
-
-static int cpio_mkgeneric_line(const char *line, enum generic_types gt)
-{
-	char name[PATH_MAX + 1];
-	unsigned int mode;
-	int uid;
-	int gid;
-	int rc = -1;
+	const char *n;
 
 	if (4 != sscanf(line, "%" str(PATH_MAX) "s %o %d %d", name, &mode, &uid,
 			&gid)) {
-		fprintf(stderr, "Unrecognized %s format '%s'", line,
-			generic_type_table[gt].type);
-		goto fail;
-	}
-	mode |= generic_type_table[gt].mode;
-	rc = cpio_mkgeneric(name, mode, uid, gid);
-fail:
-	return rc;
-}
-
-static int cpio_mkdir_line(const char *line)
-{
-	return cpio_mkgeneric_line(line, GT_DIR);
-}
-
-static int cpio_mkpipe_line(const char *line)
-{
-	return cpio_mkgeneric_line(line, GT_PIPE);
-}
-
-static int cpio_mksock_line(const char *line)
-{
-	return cpio_mkgeneric_line(line, GT_SOCK);
-}
-
-static int cpio_mknod(const char *name, unsigned int mode, uid_t uid, gid_t gid,
-		      char dev_type, unsigned int maj, unsigned int min)
-{
-	char s[256];
-
-	if (dev_type == 'b')
-		mode |= S_IFBLK;
-	else
-		mode |= S_IFCHR;
-
-	if (name[0] == '/')
-		name++;
-	sprintf(s,
-		"%s%08X%08X%08lX%08lX%08X%08lX"
-		"%08X%08X%08X%08X%08X%08X%08X",
-		do_csum ? "070702" : "070701", ino++, mode, (long)uid,
-		(long)gid, 1, (long)default_mtime, 0, 3, 1, maj, min,
-		(unsigned)strlen(name) + 1, 0);
-	push_hdr(s);
-	push_rest(name);
-	return 0;
-}
-
-static int cpio_mknod_line(const char *line)
-{
-	char name[PATH_MAX + 1];
-	unsigned int mode;
-	int uid;
-	int gid;
-	char dev_type;
-	unsigned int maj;
-	unsigned int min;
-	int rc = -1;
-
-	if (7 != sscanf(line, "%" str(PATH_MAX) "s %o %d %d %c %u %u", name,
-			&mode, &uid, &gid, &dev_type, &maj, &min)) {
-		fprintf(stderr, "Unrecognized nod format '%s'", line);
-		goto fail;
-	}
-	rc = cpio_mknod(name, mode, uid, gid, dev_type, maj, min);
-fail:
-	return rc;
-}
-
-static int cpio_mkfile_csum(int fd, unsigned long size, uint32_t *csum)
-{
-	while (size) {
-		unsigned char filebuf[65536];
-		ssize_t this_read;
-		size_t i, this_size = MIN(size, sizeof(filebuf));
-
-		this_read = read(fd, filebuf, this_size);
-		if (this_read <= 0 || this_read > this_size)
-			return -1;
-
-		for (i = 0; i < this_read; i++)
-			*csum += filebuf[i];
-
-		size -= this_read;
-	}
-
-	if (lseek(fd, 0, SEEK_SET) < 0)
+		fprintf(stderr, "Unrecognized dir format '%s'", line);
 		return -1;
-
+	}
+	n = name[0] == '/' ? name + 1 : name;
+	mode |= S_IFDIR;
+	sprintf(s,
+		"070701%08X%08X%08lX%08lX%08X%08lX"
+		"%08X%08X%08X%08X%08X%08X%08X",
+		ino++, mode, (long)uid, (long)gid, 2, (long)default_mtime, 0, 3,
+		1, 0, 0, (unsigned)strlen(n) + 1, 0);
+	push_hdr(s);
+	push_rest(n);
 	return 0;
 }
 
 static int cpio_mkfile(const char *name, const char *location,
-		       unsigned int mode, uid_t uid, gid_t gid,
-		       unsigned int nlinks)
+		       unsigned int mode, uid_t uid, gid_t gid)
 {
 	char s[256];
 	struct stat buf;
-	unsigned long size;
 	int file = -1;
 	int retval;
 	int rc = -1;
 	int namesize;
-	unsigned int i;
-	uint32_t csum = 0;
 
 	mode |= S_IFREG;
 
@@ -288,42 +127,20 @@ static int cpio_mkfile(const char *name, const char *location,
 		goto error;
 	}
 
-	if (buf.st_mtime > 0xffffffff) {
-		fprintf(stderr,
-			"%s: Timestamp exceeds maximum cpio timestamp, clipping.\n",
-			location);
-		buf.st_mtime = 0xffffffff;
-	}
+	if (name[0] == '/')
+		name++;
+	namesize = strlen(name) + 1;
+	sprintf(s,
+		"070701%08X%08X%08lX%08lX%08X%08lX"
+		"%08lX%08X%08X%08X%08X%08X%08X",
+		ino, mode, (long)uid, (long)gid, 1, (long)buf.st_mtime,
+		(long)buf.st_size, 3, 1, 0, 0, namesize, 0);
+	push_hdr(s);
+	push_string(name);
+	push_pad();
 
-	if (buf.st_size > 0xffffffff) {
-		fprintf(stderr, "%s: Size exceeds maximum cpio file size\n",
-			location);
-		goto error;
-	}
-
-	if (do_csum && cpio_mkfile_csum(file, buf.st_size, &csum) < 0) {
-		fprintf(stderr, "Failed to checksum file %s\n", location);
-		goto error;
-	}
-
-	size = 0;
-	for (i = 1; i <= nlinks; i++) {
-		if (i == nlinks)
-			size = buf.st_size;
-
-		if (name[0] == '/')
-			name++;
-		namesize = strlen(name) + 1;
-		sprintf(s,
-			"%s%08X%08X%08lX%08lX%08X%08lX"
-			"%08lX%08X%08X%08X%08X%08X%08X",
-			do_csum ? "070702" : "070701", ino, mode, (long)uid,
-			(long)gid, nlinks, (long)buf.st_mtime, size, 3, 1, 0, 0,
-			namesize, size ? csum : 0);
-		push_hdr(s);
-		push_string(name);
-		push_pad();
-
+	{
+		unsigned long size = buf.st_size;
 		while (size) {
 			unsigned char filebuf[65536];
 			ssize_t this_read;
@@ -343,10 +160,9 @@ static int cpio_mkfile(const char *name, const char *location,
 			offset += this_read;
 			size -= this_read;
 		}
-		push_pad();
-
-		name += namesize;
 	}
+	push_pad();
+
 	ino++;
 	rc = 0;
 
@@ -356,111 +172,21 @@ error:
 	return rc;
 }
 
-static char *cpio_replace_env(char *new_location)
-{
-	char expanded[PATH_MAX + 1];
-	char *start, *end, *var;
-
-	while ((start = strstr(new_location, "${")) &&
-	       (end = strchr(start + 2, '}'))) {
-		*start = *end = 0;
-		var = getenv(start + 2);
-		snprintf(expanded, sizeof expanded, "%s%s%s", new_location,
-			 var ? var : "", end + 1);
-		strcpy(new_location, expanded);
-	}
-
-	return new_location;
-}
-
 static int cpio_mkfile_line(const char *line)
 {
 	char name[PATH_MAX + 1];
-	char *dname = NULL;
 	char location[PATH_MAX + 1];
 	unsigned int mode;
 	int uid;
 	int gid;
-	int nlinks = 1;
-	int end = 0, dname_len = 0;
-	int rc = -1;
 
-	if (5 > sscanf(line,
-		       "%" str(PATH_MAX) "s %" str(PATH_MAX) "s %o %d %d %n",
-		       name, location, &mode, &uid, &gid, &end)) {
+	if (5 > sscanf(line, "%" str(PATH_MAX) "s %" str(PATH_MAX) "s %o %d %d",
+		       name, location, &mode, &uid, &gid)) {
 		fprintf(stderr, "Unrecognized file format '%s'", line);
-		goto fail;
+		return -1;
 	}
-	if (end && isgraph(line[end])) {
-		int len;
-		int nend;
-
-		dname = malloc(strlen(line));
-		if (!dname) {
-			fprintf(stderr, "out of memory (%d)\n", dname_len);
-			goto fail;
-		}
-
-		dname_len = strlen(name) + 1;
-		memcpy(dname, name, dname_len);
-
-		do {
-			nend = 0;
-			if (sscanf(line + end, "%" str(PATH_MAX) "s %n", name,
-				   &nend) < 1)
-				break;
-			len = strlen(name) + 1;
-			memcpy(dname + dname_len, name, len);
-			dname_len += len;
-			nlinks++;
-			end += nend;
-		} while (isgraph(line[end]));
-	} else {
-		dname = name;
-	}
-	rc = cpio_mkfile(dname, cpio_replace_env(location), mode, uid, gid,
-			 nlinks);
-fail:
-	if (dname_len)
-		free(dname);
-	return rc;
+	return cpio_mkfile(name, location, mode, uid, gid);
 }
-
-static void usage(const char *prog)
-{
-	fprintf(stderr, "Usage: %s [-t <timestamp>] [-c] <cpio_list>\n", prog);
-}
-
-static const struct file_handler file_handler_table[] = {
-	{
-		.type = "file",
-		.handler = cpio_mkfile_line,
-	},
-	{
-		.type = "nod",
-		.handler = cpio_mknod_line,
-	},
-	{
-		.type = "dir",
-		.handler = cpio_mkdir_line,
-	},
-	{
-		.type = "slink",
-		.handler = cpio_mkslink_line,
-	},
-	{
-		.type = "pipe",
-		.handler = cpio_mkpipe_line,
-	},
-	{
-		.type = "sock",
-		.handler = cpio_mksock_line,
-	},
-	{
-		.type = NULL,
-		.handler = NULL,
-	}
-};
 
 #define LINE_SIZE (2 * PATH_MAX + 50)
 
@@ -474,60 +200,28 @@ int main(int argc, char *argv[])
 	const char *filename;
 
 	default_mtime = time(NULL);
-	while (1) {
-		int opt = getopt(argc, argv, "t:ch");
-		char *invalid;
 
-		if (opt == -1)
-			break;
-		switch (opt) {
-		case 't':
-			default_mtime = strtol(optarg, &invalid, 10);
-			if (!*optarg || *invalid) {
-				fprintf(stderr, "Invalid timestamp: %s\n",
-					optarg);
-				usage(argv[0]);
-				exit(1);
-			}
-			break;
-		case 'c':
-			do_csum = true;
-			break;
-		case 'h':
-		case '?':
-			usage(argv[0]);
-			exit(opt == 'h' ? 0 : 1);
-		}
-	}
-
-	if (default_mtime > 0xffffffff) {
-		fprintf(stderr, "ERROR: Timestamp too large for cpio format\n");
+	if (argc != 2) {
+		fprintf(stderr, "Usage: %s <cpio_list>\n", argv[0]);
 		exit(1);
 	}
-
-	if (argc - optind != 1) {
-		usage(argv[0]);
-		exit(1);
-	}
-	filename = argv[optind];
+	filename = argv[1];
 	if (!strcmp(filename, "-"))
 		cpio_list = stdin;
 	else if (!(cpio_list = fopen(filename, "r"))) {
-		fprintf(stderr, "ERROR: unable to open '%s': %s\n\n", filename,
+		fprintf(stderr, "ERROR: unable to open '%s': %s\n", filename,
 			strerror(errno));
-		usage(argv[0]);
 		exit(1);
 	}
 
 	while (fgets(line, LINE_SIZE, cpio_list)) {
-		int type_idx;
 		size_t slen = strlen(line);
+		int rc;
 
 		line_nr++;
 
-		if ('#' == *line) {
+		if ('#' == *line || '\n' == *line)
 			continue;
-		}
 
 		if (!(type = strtok(line, " \t"))) {
 			fprintf(stderr,
@@ -537,13 +231,11 @@ int main(int argc, char *argv[])
 			break;
 		}
 
-		if ('\n' == *type) {
+		if ('\n' == *type)
 			continue;
-		}
 
-		if (slen == strlen(type)) {
+		if (slen == strlen(type))
 			continue;
-		}
 
 		if (!(args = strtok(NULL, "\n"))) {
 			fprintf(stderr,
@@ -552,22 +244,18 @@ int main(int argc, char *argv[])
 			ec = -1;
 		}
 
-		for (type_idx = 0; file_handler_table[type_idx].type;
-		     type_idx++) {
-			int rc;
-			if (!strcmp(line, file_handler_table[type_idx].type)) {
-				if ((rc = file_handler_table[type_idx].handler(
-					     args))) {
-					ec = rc;
-					fprintf(stderr, " line %d\n", line_nr);
-				}
-				break;
-			}
-		}
-
-		if (NULL == file_handler_table[type_idx].type) {
+		if (!strcmp(type, "file"))
+			rc = cpio_mkfile_line(args);
+		else if (!strcmp(type, "dir"))
+			rc = cpio_mkdir_line(args);
+		else {
 			fprintf(stderr, "unknown file type line %d: '%s'\n",
-				line_nr, line);
+				line_nr, type);
+			rc = 0;
+		}
+		if (rc) {
+			ec = rc;
+			fprintf(stderr, " line %d\n", line_nr);
 		}
 	}
 	if (ec == 0)

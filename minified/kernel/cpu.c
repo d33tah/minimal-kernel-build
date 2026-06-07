@@ -1,22 +1,5 @@
 /* Minimal includes for CPU hotplug */
-#include <linux/smp.h>
-#include <linux/init.h>
-#include <linux/cpu.h>
-#include <linux/cpumask.h>
 #include <linux/percpu.h>
-
-/* cpuhp_cpu_state, cpuhp_step, cpuhp_hp_states array,
-   cpuhp_get_step, cpuhp_step_empty, cpuhp_invoke_callback,
-   cpuhp_reserve_state, cpuhp_store_callbacks, cpuhp_issue_call,
-   cpuhp_rollback_install, __cpuhp_setup_state_cpuslocked,
-   __cpuhp_setup_state removed - no callers after CPU hotplug
-   callback removal (~180 LOC) */
-
-struct cpuhp_cpu_state {
-	enum cpuhp_state state;
-};
-
-static DEFINE_PER_CPU(struct cpuhp_cpu_state, cpuhp_state);
 
 #define MASK_DECLARE_1(x) [x + 1][0] = (1UL << (x))
 #define MASK_DECLARE_2(x) MASK_DECLARE_1(x), MASK_DECLARE_1(x + 1)
@@ -30,8 +13,6 @@ const unsigned long cpu_bit_bitmap[BITS_PER_LONG + 1][BITS_TO_LONGS(NR_CPUS)] = 
 	/* BITS_PER_LONG == 32, no 64-bit masks */
 };
 
-const DECLARE_BITMAP(cpu_all_bits, NR_CPUS) = CPU_BITS_ALL;
-
 struct cpumask __cpu_possible_mask __read_mostly;
 
 struct cpumask __cpu_online_mask __read_mostly;
@@ -40,30 +21,12 @@ struct cpumask __cpu_present_mask __read_mostly;
 
 struct cpumask __cpu_active_mask __read_mostly;
 
-atomic_t __num_online_cpus __read_mostly;
-
-void set_cpu_online(unsigned int cpu, bool online)
-{
-	if (online) {
-		if (!cpumask_test_and_set_cpu(cpu, &__cpu_online_mask))
-			atomic_inc(&__num_online_cpus);
-	} else {
-		if (cpumask_test_and_clear_cpu(cpu, &__cpu_online_mask))
-			atomic_dec(&__num_online_cpus);
-	}
-}
-
 void __init boot_cpu_init(void)
 {
 	int cpu = smp_processor_id();
 
-	set_cpu_online(cpu, true);
+	cpumask_test_and_set_cpu(cpu, &__cpu_online_mask);
 	set_cpu_active(cpu, true);
 	set_cpu_present(cpu, true);
 	set_cpu_possible(cpu, true);
-}
-
-void __init boot_cpu_hotplug_init(void)
-{
-	this_cpu_write(cpuhp_state.state, CPUHP_ONLINE);
 }

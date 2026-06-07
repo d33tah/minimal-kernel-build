@@ -1,11 +1,9 @@
 #ifndef __LINUX_COMPILER_ATTRIBUTES_H
 #define __LINUX_COMPILER_ATTRIBUTES_H
 
-
 #define __alias(symbol)                 __attribute__((__alias__(#symbol)))
 
 #define __aligned(x)                    __attribute__((__aligned__(x)))
-/* __aligned_largest removed - unused */
 
 #define __alloc_size__(x, ...)		__attribute__((__alloc_size__(x, ## __VA_ARGS__)))
 
@@ -20,8 +18,6 @@
 #define __cold                          __attribute__((__cold__))
 
 #define __attribute_const__             __attribute__((__const__))
-
-/* __deprecated removed - never used */
 
 #if __has_attribute(__designated_init__)
 # define __designated_init              __attribute__((__designated_init__))
@@ -42,27 +38,16 @@
 #endif
 
 #define __printf(a, b)                  __attribute__((__format__(printf, a, b)))
-#define __scanf(a, b)                   __attribute__((__format__(scanf, a, b)))
 
 #define __gnu_inline                    __attribute__((__gnu_inline__))
 
 #define __malloc                        __attribute__((__malloc__))
 
-#define __mode(x)                       __attribute__((__mode__(x)))
-
-#if __has_attribute(__noclone__)
-# define __noclone                      __attribute__((__noclone__))
-#else
-# define __noclone
-#endif
-
 #if __has_attribute(__fallthrough__)
 # define fallthrough                    __attribute__((__fallthrough__))
 #else
-# define fallthrough                    do {} while (0)   
+# define fallthrough                    do {} while (0)
 #endif
-
-# define __flatten			__attribute__((flatten))
 
 #define   noinline                      __attribute__((__noinline__))
 
@@ -80,7 +65,6 @@
 
 #define __section(section)              __attribute__((__section__(section)))
 
-/* __always_unused removed - never used */
 #define __maybe_unused                  __attribute__((__unused__))
 
 #define __used                          __attribute__((__used__))

@@ -1,8 +1,7 @@
+#include <linux/types.h>
 
-#include <linux/bsearch.h>
-#include <linux/module.h>
-#include <linux/init.h>
-#include <linux/sort.h>
+void sort(void *base, size_t num, size_t size, cmp_func_t cmp_func,
+	  swap_func_t swap_func);
 #include <linux/uaccess.h>
 #include <linux/extable.h>
 
@@ -42,22 +41,26 @@ void sort_extable(struct exception_table_entry *start,
 	     cmp_ex_sort, swap_ex);
 }
 
-static int cmp_ex_search(const void *key, const void *elt)
-{
-	const struct exception_table_entry *_elt = elt;
-	unsigned long _key = *(unsigned long *)key;
-
-	if (_key > ex_to_insn(_elt))
-		return 1;
-	if (_key < ex_to_insn(_elt))
-		return -1;
-	return 0;
-}
-
 const struct exception_table_entry *
 search_extable(const struct exception_table_entry *base, const size_t num,
 	       unsigned long value)
 {
-	return bsearch(&value, base, num, sizeof(struct exception_table_entry),
-		       cmp_ex_search);
+	const struct exception_table_entry *pivot;
+	const struct exception_table_entry *b = base;
+	size_t n = num;
+
+	while (n > 0) {
+		pivot = b + (n >> 1);
+		if (value > ex_to_insn(pivot)) {
+			b = pivot + 1;
+			n--;
+		} else if (value < ex_to_insn(pivot)) {
+			/* fall through */
+		} else {
+			return pivot;
+		}
+		n >>= 1;
+	}
+
+	return NULL;
 }

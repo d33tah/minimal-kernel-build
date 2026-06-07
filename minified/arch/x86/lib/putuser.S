@@ -38,36 +38,7 @@
 	mov $(TASK_SIZE_MAX - (n)),%_ASM_BX
 
 .text
-SYM_FUNC_START(__put_user_1)
-	LOAD_TASK_SIZE_MINUS_N(0)
-	cmp %_ASM_BX,%_ASM_CX
-	jae .Lbad_put_user
-SYM_INNER_LABEL(__put_user_nocheck_1, SYM_L_GLOBAL)
-	ENDBR
-	ASM_STAC
-1:	movb %al,(%_ASM_CX)
-	xor %ecx,%ecx
-	ASM_CLAC
-	RET
-SYM_FUNC_END(__put_user_1)
-EXPORT_SYMBOL(__put_user_1)
-EXPORT_SYMBOL(__put_user_nocheck_1)
-
-SYM_FUNC_START(__put_user_2)
-	LOAD_TASK_SIZE_MINUS_N(1)
-	cmp %_ASM_BX,%_ASM_CX
-	jae .Lbad_put_user
-SYM_INNER_LABEL(__put_user_nocheck_2, SYM_L_GLOBAL)
-	ENDBR
-	ASM_STAC
-2:	movw %ax,(%_ASM_CX)
-	xor %ecx,%ecx
-	ASM_CLAC
-	RET
-SYM_FUNC_END(__put_user_2)
-EXPORT_SYMBOL(__put_user_2)
-EXPORT_SYMBOL(__put_user_nocheck_2)
-
+/* Only __put_user_4 needed: all put_user calls use elf_addr_t* (32-bit) */
 SYM_FUNC_START(__put_user_4)
 	LOAD_TASK_SIZE_MINUS_N(3)
 	cmp %_ASM_BX,%_ASM_CX
@@ -75,30 +46,12 @@ SYM_FUNC_START(__put_user_4)
 SYM_INNER_LABEL(__put_user_nocheck_4, SYM_L_GLOBAL)
 	ENDBR
 	ASM_STAC
-3:	movl %eax,(%_ASM_CX)
+1:	movl %eax,(%_ASM_CX)
 	xor %ecx,%ecx
 	ASM_CLAC
 	RET
 SYM_FUNC_END(__put_user_4)
 EXPORT_SYMBOL(__put_user_4)
-EXPORT_SYMBOL(__put_user_nocheck_4)
-
-SYM_FUNC_START(__put_user_8)
-	LOAD_TASK_SIZE_MINUS_N(7)
-	cmp %_ASM_BX,%_ASM_CX
-	jae .Lbad_put_user
-SYM_INNER_LABEL(__put_user_nocheck_8, SYM_L_GLOBAL)
-	ENDBR
-	ASM_STAC
-4:	mov %_ASM_AX,(%_ASM_CX)
-/* X86_32 only */
-5:	movl %edx,4(%_ASM_CX)
-	xor %ecx,%ecx
-	ASM_CLAC
-	RET
-SYM_FUNC_END(__put_user_8)
-EXPORT_SYMBOL(__put_user_8)
-EXPORT_SYMBOL(__put_user_nocheck_8)
 
 SYM_CODE_START_LOCAL(.Lbad_put_user_clac)
 	ASM_CLAC
@@ -108,8 +61,3 @@ SYM_CODE_START_LOCAL(.Lbad_put_user_clac)
 SYM_CODE_END(.Lbad_put_user_clac)
 
 	_ASM_EXTABLE_UA(1b, .Lbad_put_user_clac)
-	_ASM_EXTABLE_UA(2b, .Lbad_put_user_clac)
-	_ASM_EXTABLE_UA(3b, .Lbad_put_user_clac)
-	_ASM_EXTABLE_UA(4b, .Lbad_put_user_clac)
-/* X86_32 only */
-	_ASM_EXTABLE_UA(5b, .Lbad_put_user_clac)

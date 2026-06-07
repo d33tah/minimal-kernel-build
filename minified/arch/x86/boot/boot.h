@@ -1,8 +1,4 @@
  
- 
-
- 
-
 #ifndef BOOT_BOOT_H
 #define BOOT_BOOT_H
 
@@ -12,15 +8,37 @@
 
 #include <linux/stdarg.h>
 #include <linux/types.h>
-#include <linux/edd.h>
 #include <asm/setup.h>
 #include <asm/asm.h>
 #include "bitops.h"
-#include "ctype.h"
-#include "cpuflags.h"
+/* inlined from ctype.h */
+static inline int isdigit(int ch)
+{
+	return (ch >= '0') && (ch <= '9');
+}
+static inline int isxdigit(int ch)
+{
+	if (isdigit(ch))
+		return 1;
+	if ((ch >= 'a') && (ch <= 'f'))
+		return 1;
+	return (ch >= 'A') && (ch <= 'F');
+}
+#include <asm/cpufeatures.h>
+#include <asm/processor-flags.h>
+struct cpu_features {
+	int level;
+	int family;
+	int model;
+	u32 flags[NCAPINTS];
+};
+extern struct cpu_features cpu;
+extern u32 cpu_vendor[3];
+int has_eflag(unsigned long mask);
+void get_cpuflags(void);
+void cpuid_count(u32 id, u32 count, u32 *a, u32 *b, u32 *c, u32 *d);
 #include "io.h"
 
- 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(*(x)))
 
 extern struct setup_header hdr;
@@ -33,8 +51,6 @@ static inline void io_delay(void)
 	const u16 DELAY_PORT = 0x80;
 	outb(0, DELAY_PORT);
 }
-
- 
 
 static inline u16 ds(void)
 {
@@ -103,25 +119,13 @@ static inline u32 rdgs32(addr_t addr)
 	return v;
 }
 
-
-
- 
 extern char _end[];
 extern char *HEAP;
 extern char *heap_end;
 #define RESET_HEAP() ((void *)( HEAP = _end ))
 
- 
-
-/* copy_to/from_fs/gs removed - never called */
-
- 
 int enable_a20(void);
 
- 
-int query_apm_bios(void);
-
- 
 struct biosregs {
 	union {
 		struct {
@@ -164,81 +168,42 @@ struct biosregs {
 };
 void intcall(u8 int_no, const struct biosregs *ireg, struct biosregs *oreg);
 
- 
-int __cmdline_find_option(unsigned long cmdline_ptr, const char *option, char *buffer, int bufsize);
 int __cmdline_find_option_bool(unsigned long cmdline_ptr, const char *option);
-static inline int cmdline_find_option(const char *option, char *buffer, int bufsize)
-{
-	unsigned long cmd_line_ptr = boot_params.hdr.cmd_line_ptr;
-
-	if (cmd_line_ptr >= 0x100000)
-		return -1;       
-
-	return __cmdline_find_option(cmd_line_ptr, option, buffer, bufsize);
-}
-
 static inline int cmdline_find_option_bool(const char *option)
 {
 	unsigned long cmd_line_ptr = boot_params.hdr.cmd_line_ptr;
 
 	if (cmd_line_ptr >= 0x100000)
-		return -1;       
+		return -1;
 
 	return __cmdline_find_option_bool(cmd_line_ptr, option);
 }
 
- 
 int check_cpu(int *cpu_level_ptr, int *req_level_ptr, u32 **err_flags_ptr);
 int check_knl_erratum(void);
 int validate_cpu(void);
 
- 
-extern int early_serial_base;
-void console_init(void);
-
- 
-void query_edd(void);
-
- 
 void __attribute__((noreturn)) die(void);
 
- 
 void detect_memory(void);
 
- 
 void __attribute__((noreturn)) go_to_protected_mode(void);
 
- 
 void __attribute__((noreturn))
 	protected_mode_jump(u32 entrypoint, u32 bootparams);
 
- 
 int sprintf(char *buf, const char *fmt, ...);
 int vsprintf(char *buf, const char *fmt, va_list args);
 int printf(const char *fmt, ...);
 
- 
 void initregs(struct biosregs *regs);
-
- 
-int strcmp(const char *str1, const char *str2);
-int strncmp(const char *cs, const char *ct, size_t count);
-size_t strnlen(const char *s, size_t maxlen);
-unsigned int atou(const char *s);
-size_t strlen(const char *s);
-char *strchr(const char *s, int c);
 
 
 void puts(const char *);
 void putchar(int);
-/* getchar removed - never called */
 
 void set_video(void);
 
-int set_mode(u16 mode);
-void probe_cards(int unsafe);
-/* vesa_store_edid removed - empty stub */
-
-#endif  
+#endif
 
 #endif  

@@ -1,16 +1,61 @@
 
 #include "misc.h"
-#include "error.h"
-#include "pgtable.h"
+void warn(char *m);
+void error(char *m) __noreturn;
 #include "../string.h"
 #include "../voffset.h"
-#include <asm/bootparam_utils.h>
+static void sanitize_boot_params(struct boot_params *boot_params)
+{
+	(void)boot_params;
+}
 
 #define STATIC static
 #define MALLOC_VISIBLE
-#include <linux/decompress/mm.h>
+#ifdef STATIC
 
-#define memzero(s, n) memset((s), 0, (n))
+#ifndef STATIC_RW_DATA
+#define STATIC_RW_DATA static
+#endif
+
+#ifndef MALLOC_VISIBLE
+#define MALLOC_VISIBLE static
+#endif
+
+STATIC_RW_DATA unsigned long malloc_ptr;
+STATIC_RW_DATA int malloc_count;
+
+MALLOC_VISIBLE void *malloc(int size)
+{
+	void *p;
+
+	if (size < 0)
+		return NULL;
+	if (!malloc_ptr)
+		malloc_ptr = free_mem_ptr;
+
+	malloc_ptr = (malloc_ptr + 3) & ~3;
+
+	p = (void *)malloc_ptr;
+	malloc_ptr += size;
+
+	if (free_mem_end_ptr && malloc_ptr >= free_mem_end_ptr)
+		return NULL;
+
+	malloc_count++;
+	return p;
+}
+
+MALLOC_VISIBLE void free(void *where)
+{
+	malloc_count--;
+	if (!malloc_count)
+		malloc_ptr = free_mem_ptr;
+}
+
+#define INIT
+
+#endif /* STATIC */
+
 #ifndef memmove
 #define memmove memmove
 void *memmove(void *dest, const void *src, size_t n);
@@ -104,28 +149,6 @@ void __putstr(const char *s)
 	outb(0xff & (pos >> 1), vidport + 1);
 }
 
-void __puthex(unsigned long value)
-{
-	char alpha[2] = "0";
-	int bits;
-
-	for (bits = sizeof(value) * 8 - 4; bits >= 0; bits -= 4) {
-		unsigned long digit = (value >> bits) & 0xf;
-
-		if (digit < 0xA)
-			alpha[0] = '0' + digit;
-		else
-			alpha[0] = 'a' + (digit - 0xA);
-
-		__putstr(alpha);
-	}
-}
-
-static inline void handle_relocations(void *output, unsigned long output_len,
-				      unsigned long virt_addr)
-{
-}
-
 static void parse_elf(void *output)
 {
 	Elf32_Ehdr ehdr;
@@ -194,8 +217,6 @@ asmlinkage __visible void *extract_kernel(void *rmode, memptr heap,
 	cols = boot_params->screen_info.orig_video_cols;
 
 	init_default_io_ops();
-	/* early_tdx_detect removed - was empty stub */
-	console_init();
 
 	/* Ultra-early VGA Hello World - in decompressor */
 	{
@@ -208,7 +229,6 @@ asmlinkage __visible void *extract_kernel(void *rmode, memptr heap,
 		}
 	}
 
-	/* get_rsdp_addr always returns 0 */
 	boot_params->acpi_rsdp_addr = 0;
 
 	debug_putstr("early console in extract_kernel\n");
@@ -225,10 +245,6 @@ asmlinkage __visible void *extract_kernel(void *rmode, memptr heap,
 	debug_putaddr(kernel_total_size);
 	debug_putaddr(needed_size);
 
-	choose_random_location((unsigned long)input_data, input_len,
-			       (unsigned long *)&output, needed_size,
-			       &virt_addr);
-
 	if ((unsigned long)output & (MIN_KERNEL_ALIGN - 1))
 		error("Destination physical address inappropriately aligned");
 	if (virt_addr & (MIN_KERNEL_ALIGN - 1))
@@ -242,13 +258,6 @@ asmlinkage __visible void *extract_kernel(void *rmode, memptr heap,
 	__decompress(input_data, input_len, NULL, NULL, output, output_len,
 		     NULL, error);
 	parse_elf(output);
-	handle_relocations(output, output_len, virt_addr);
 	debug_putstr("done.\nBooting the kernel.\n");
-	/* cleanup_exception_handling removed - was empty stub */
 	return output;
-}
-
-void fortify_panic(const char *name)
-{
-	error("detected buffer overflow");
 }

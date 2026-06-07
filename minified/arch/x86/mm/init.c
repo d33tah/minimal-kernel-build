@@ -1,70 +1,18 @@
 #include <linux/gfp.h>
-#include <linux/initrd.h>
-#include <linux/ioport.h>
-#include <linux/swap.h>
 #include <linux/memblock.h>
-#include <linux/sched/task.h>
-
-#include <asm/set_memory.h>
+#include <linux/sched/mm.h>
 #include <asm/e820/api.h>
-#include <asm/page.h>
-#include <asm/page_types.h>
-#include <asm/sections.h>
 #include <asm/setup.h>
-#include <asm/tlbflush.h>
 #include <asm/tlb.h>
-#include <asm/proto.h>
-unsigned long kaslr_get_random_long(const char *purpose);
-/* end kaslr.h */
-#include <asm/cpufeature.h>
-/* pti_check_boottime_disable removed - empty stub */
-#include <asm/text-patching.h>
+extern int after_bootmem;
 
-#include "mm_internal.h"
-
-static uint16_t __cachemode2pte_tbl[_PAGE_CACHE_MODE_NUM] = {
-	[_PAGE_CACHE_MODE_WB] = 0 | 0,
-	[_PAGE_CACHE_MODE_WC] = 0 | _PAGE_PCD,
-	[_PAGE_CACHE_MODE_UC_MINUS] = 0 | _PAGE_PCD,
-	[_PAGE_CACHE_MODE_UC] = _PAGE_PWT | _PAGE_PCD,
-	[_PAGE_CACHE_MODE_WT] = 0 | _PAGE_PCD,
-	[_PAGE_CACHE_MODE_WP] = 0 | _PAGE_PCD,
-};
-
-unsigned long cachemode2protval(enum page_cache_mode pcm)
-{
-	if (likely(pcm == 0))
-		return 0;
-	return __cachemode2pte_tbl[pcm];
-}
-
-static uint8_t __pte2cachemode_tbl[8] = {
-	[__pte2cm_idx(0 | 0 | 0)] = _PAGE_CACHE_MODE_WB,
-	[__pte2cm_idx(_PAGE_PWT | 0 | 0)] = _PAGE_CACHE_MODE_UC_MINUS,
-	[__pte2cm_idx(0 | _PAGE_PCD | 0)] = _PAGE_CACHE_MODE_UC_MINUS,
-	[__pte2cm_idx(_PAGE_PWT | _PAGE_PCD | 0)] = _PAGE_CACHE_MODE_UC,
-	[__pte2cm_idx(0 | 0 | _PAGE_PAT)] = _PAGE_CACHE_MODE_WB,
-	[__pte2cm_idx(_PAGE_PWT | 0 | _PAGE_PAT)] = _PAGE_CACHE_MODE_UC_MINUS,
-	[__pte2cm_idx(0 | _PAGE_PCD | _PAGE_PAT)] = _PAGE_CACHE_MODE_UC_MINUS,
-	[__pte2cm_idx(_PAGE_PWT | _PAGE_PCD | _PAGE_PAT)] = _PAGE_CACHE_MODE_UC,
-};
-
-bool x86_has_pat_wp(void)
-{
-	uint16_t prot = __cachemode2pte_tbl[_PAGE_CACHE_MODE_WP];
-
-	return __pte2cachemode_tbl[__pte2cm_idx(prot)] == _PAGE_CACHE_MODE_WP;
-}
-
-enum page_cache_mode pgprot2cachemode(pgprot_t pgprot)
-{
-	unsigned long masked;
-
-	masked = pgprot_val(pgprot) & _PAGE_CACHE_MASK;
-	if (likely(masked == 0))
-		return 0;
-	return __pte2cachemode_tbl[__pte2cm_idx(masked)];
-}
+void *alloc_low_pages(unsigned int num);
+void early_ioremap_page_table_range_init(void);
+unsigned long kernel_physical_mapping_init(unsigned long start,
+					   unsigned long end,
+					   unsigned long page_size_mask,
+					   pgprot_t prot);
+void zone_sizes_init(void);
 
 static unsigned long __initdata pgt_buf_start;
 static unsigned long __initdata pgt_buf_end;
@@ -137,9 +85,6 @@ void __init early_alloc_pgt_buf(void)
 
 int after_bootmem;
 
-early_param_on_off("gbpages", "nogbpages", direct_gbpages,
-		   CONFIG_X86_DIRECT_GBPAGES);
-
 struct map_range {
 	unsigned long start;
 	unsigned long end;
@@ -151,41 +96,7 @@ static int page_size_mask;
 static inline void cr4_set_bits_and_update_boot(unsigned long mask)
 {
 	mmu_cr4_features |= mask;
-	if (trampoline_cr4_features)
-		*trampoline_cr4_features = mmu_cr4_features;
 	cr4_set_bits(mask);
-}
-
-static void __init probe_page_size_mask(void)
-{
-	/* debug_pagealloc_enabled() always returns false */
-	if (boot_cpu_has(X86_FEATURE_PSE))
-		page_size_mask |= 1 << PG_LEVEL_2M;
-	else
-		direct_gbpages = 0;
-
-	if (boot_cpu_has(X86_FEATURE_PSE))
-		cr4_set_bits_and_update_boot(X86_CR4_PSE);
-
-	__supported_pte_mask &= ~_PAGE_GLOBAL;
-	if (boot_cpu_has(X86_FEATURE_PGE)) {
-		cr4_set_bits_and_update_boot(X86_CR4_PGE);
-		__supported_pte_mask |= _PAGE_GLOBAL;
-	}
-
-	__default_kernel_pte_mask = __supported_pte_mask;
-	/* X86_FEATURE_PTI is disabled */
-	if (direct_gbpages && boot_cpu_has(X86_FEATURE_GBPAGES)) {
-		printk(KERN_INFO "Using GB pages for direct mapping\n");
-		page_size_mask |= 1 << PG_LEVEL_1G;
-	} else {
-		direct_gbpages = 0;
-	}
-}
-
-static void setup_pcid(void)
-{
-	/* !X86_64: PCID not supported on 32-bit */
 }
 
 #define NR_RANGE_MR 3
@@ -206,40 +117,11 @@ static int __meminit save_mr(struct map_range *mr, int nr_range,
 	return nr_range;
 }
 
-static void __ref adjust_range_page_size_mask(struct map_range *mr,
-					      int nr_range)
-{
-	int i;
-
-	for (i = 0; i < nr_range; i++) {
-		if ((page_size_mask & (1 << PG_LEVEL_2M)) &&
-		    !(mr[i].page_size_mask & (1 << PG_LEVEL_2M))) {
-			unsigned long start = round_down(mr[i].start, PMD_SIZE);
-			unsigned long end = round_up(mr[i].end, PMD_SIZE);
-
-			if ((end >> PAGE_SHIFT) > max_low_pfn)
-				continue;
-
-			if (memblock_is_region_memory(start, end - start))
-				mr[i].page_size_mask |= 1 << PG_LEVEL_2M;
-		}
-		if ((page_size_mask & (1 << PG_LEVEL_1G)) &&
-		    !(mr[i].page_size_mask & (1 << PG_LEVEL_1G))) {
-			unsigned long start = round_down(mr[i].start, PUD_SIZE);
-			unsigned long end = round_up(mr[i].end, PUD_SIZE);
-
-			if (memblock_is_region_memory(start, end - start))
-				mr[i].page_size_mask |= 1 << PG_LEVEL_1G;
-		}
-	}
-}
-
 static int __meminit split_mem_range(struct map_range *mr, int nr_range,
 				     unsigned long start, unsigned long end)
 {
 	unsigned long start_pfn, end_pfn, limit_pfn;
 	unsigned long pfn;
-	int i;
 
 	limit_pfn = PFN_DOWN(end);
 
@@ -269,53 +151,40 @@ static int __meminit split_mem_range(struct map_range *mr, int nr_range,
 	end_pfn = limit_pfn;
 	nr_range = save_mr(mr, nr_range, start_pfn, end_pfn, 0);
 
-	if (!after_bootmem)
-		adjust_range_page_size_mask(mr, nr_range);
+	return nr_range;
+}
 
-	for (i = 0; nr_range > 1 && i < nr_range - 1; i++) {
-		unsigned long old_start;
-		if (mr[i].end != mr[i + 1].start ||
-		    mr[i].page_size_mask != mr[i + 1].page_size_mask)
-			continue;
+void sort(void *base, size_t num, size_t size, cmp_func_t cmp_func,
+	  swap_func_t swap_func);
 
-		old_start = mr[i].start;
-		memmove(&mr[i], &mr[i + 1],
-			(nr_range - 1 - i) * sizeof(struct map_range));
-		mr[i--].start = old_start;
-		nr_range--;
-	}
+static int cmp_range(const void *x1, const void *x2)
+{
+	const struct range *r1 = x1, *r2 = x2;
+	return r1->start < r2->start ? -1 : r1->start > r2->start ? 1 : 0;
+}
 
+static int add_range_with_merge(struct range *range, int az, int nr_range,
+				u64 start, u64 end)
+{
+	if (start >= end || nr_range >= az)
+		return nr_range;
+	range[nr_range].start = start;
+	range[nr_range].end = end;
+	return nr_range + 1;
+}
+
+static int clean_sort_range(struct range *range, int az)
+{
+	int i, nr_range = 0;
+	for (i = 0; i < az; i++)
+		if (range[i].end)
+			nr_range = i + 1;
+	sort(range, nr_range, sizeof(struct range), cmp_range, NULL);
 	return nr_range;
 }
 
 struct range pfn_mapped[E820_MAX_ENTRIES];
 int nr_pfn_mapped;
-
-static void add_pfn_range_mapped(unsigned long start_pfn, unsigned long end_pfn)
-{
-	nr_pfn_mapped = add_range_with_merge(pfn_mapped, E820_MAX_ENTRIES,
-					     nr_pfn_mapped, start_pfn, end_pfn);
-	nr_pfn_mapped = clean_sort_range(pfn_mapped, E820_MAX_ENTRIES);
-
-	max_pfn_mapped = max(max_pfn_mapped, end_pfn);
-
-	if (start_pfn < (1UL << (32 - PAGE_SHIFT)))
-		max_low_pfn_mapped =
-			max(max_low_pfn_mapped,
-			    min(end_pfn, 1UL << (32 - PAGE_SHIFT)));
-}
-
-bool pfn_range_is_mapped(unsigned long start_pfn, unsigned long end_pfn)
-{
-	int i;
-
-	for (i = 0; i < nr_pfn_mapped; i++)
-		if ((start_pfn >= pfn_mapped[i].start) &&
-		    (end_pfn <= pfn_mapped[i].end))
-			return true;
-
-	return false;
-}
 
 unsigned long __ref init_memory_mapping(unsigned long start, unsigned long end,
 					pgprot_t prot)
@@ -331,7 +200,19 @@ unsigned long __ref init_memory_mapping(unsigned long start, unsigned long end,
 		ret = kernel_physical_mapping_init(mr[i].start, mr[i].end,
 						   mr[i].page_size_mask, prot);
 
-	add_pfn_range_mapped(start >> PAGE_SHIFT, ret >> PAGE_SHIFT);
+	{
+		unsigned long start_pfn = start >> PAGE_SHIFT;
+		unsigned long end_pfn = ret >> PAGE_SHIFT;
+		nr_pfn_mapped =
+			add_range_with_merge(pfn_mapped, E820_MAX_ENTRIES,
+					     nr_pfn_mapped, start_pfn, end_pfn);
+		nr_pfn_mapped = clean_sort_range(pfn_mapped, E820_MAX_ENTRIES);
+		max_pfn_mapped = max(max_pfn_mapped, end_pfn);
+		if (start_pfn < (1UL << (32 - PAGE_SHIFT)))
+			max_low_pfn_mapped =
+				max(max_low_pfn_mapped,
+				    min(end_pfn, 1UL << (32 - PAGE_SHIFT)));
+	}
 
 	return ret >> PAGE_SHIFT;
 }
@@ -359,159 +240,46 @@ static unsigned long __init init_range_memory_mapping(unsigned long r_start,
 	return mapped_ram_size;
 }
 
-static unsigned long __init get_new_step_size(unsigned long step_size)
-{
-	return step_size << (PMD_SHIFT - PAGE_SHIFT - 1);
-}
-
 static void __init memory_map_top_down(unsigned long map_start,
 				       unsigned long map_end)
 {
-	unsigned long real_end, last_start;
-	unsigned long step_size;
-	unsigned long addr;
-	unsigned long mapped_ram_size = 0;
-
-	addr = memblock_phys_alloc_range(PMD_SIZE, PMD_SIZE, map_start,
-					 map_end);
-	memblock_phys_free(addr, PMD_SIZE);
-	real_end = addr + PMD_SIZE;
-
-	step_size = PMD_SIZE;
 	max_pfn_mapped = 0;
-	min_pfn_mapped = real_end >> PAGE_SHIFT;
-	last_start = real_end;
-
-	while (last_start > map_start) {
-		unsigned long start;
-
-		if (last_start > step_size) {
-			start = round_down(last_start - 1, step_size);
-			if (start < map_start)
-				start = map_start;
-		} else
-			start = map_start;
-		mapped_ram_size += init_range_memory_mapping(start, last_start);
-		last_start = start;
-		min_pfn_mapped = last_start >> PAGE_SHIFT;
-		if (mapped_ram_size >= step_size)
-			step_size = get_new_step_size(step_size);
-	}
-
-	if (real_end < map_end)
-		init_range_memory_mapping(real_end, map_end);
+	min_pfn_mapped = map_end >> PAGE_SHIFT;
+	init_range_memory_mapping(map_start, map_end);
 }
-
-static void __init memory_map_bottom_up(unsigned long map_start,
-					unsigned long map_end)
-{
-	unsigned long next, start;
-	unsigned long mapped_ram_size = 0;
-
-	unsigned long step_size = PMD_SIZE;
-
-	start = map_start;
-	min_pfn_mapped = start >> PAGE_SHIFT;
-
-	while (start < map_end) {
-		if (step_size && map_end - start > step_size) {
-			next = round_up(start + 1, step_size);
-			if (next > map_end)
-				next = map_end;
-		} else {
-			next = map_end;
-		}
-
-		mapped_ram_size += init_range_memory_mapping(start, next);
-		start = next;
-
-		if (mapped_ram_size >= step_size)
-			step_size = get_new_step_size(step_size);
-	}
-}
-
-/* init_trampoline removed - empty stub */
 
 void __init init_mem_mapping(void)
 {
 	unsigned long end;
-	/* pti_check_boottime_disable removed - empty stub */
-	probe_page_size_mask();
-	setup_pcid();
+
+	if (boot_cpu_has(X86_FEATURE_PSE)) {
+		page_size_mask |= 1 << PG_LEVEL_2M;
+		cr4_set_bits_and_update_boot(X86_CR4_PSE);
+	}
+	__supported_pte_mask &= ~_PAGE_GLOBAL;
+	if (boot_cpu_has(X86_FEATURE_PGE)) {
+		cr4_set_bits_and_update_boot(X86_CR4_PGE);
+		__supported_pte_mask |= _PAGE_GLOBAL;
+	}
+	__default_kernel_pte_mask = __supported_pte_mask;
+	/* No GB pages on x86-32 */
+	/* setup_pcid empty - PCID not supported on 32-bit */
 
 	end = max_low_pfn << PAGE_SHIFT;
 
 	init_memory_mapping(0, ISA_END_ADDRESS, PAGE_KERNEL);
 
-	if (memblock_bottom_up()) {
-		unsigned long kernel_end = __pa_symbol(_end);
-
-		memory_map_bottom_up(kernel_end, end);
-		memory_map_bottom_up(ISA_END_ADDRESS, kernel_end);
-	} else {
-		memory_map_top_down(ISA_END_ADDRESS, end);
-	}
+	memory_map_top_down(ISA_END_ADDRESS, end);
 
 	early_ioremap_page_table_range_init();
 
 	load_cr3(swapper_pg_dir);
 	__flush_tlb_all();
-
-	/* x86_init.hyper.init_mem_mapping removed - is x86_init_noop */
-	/* early_memtest removed - empty stub */
 }
-
-void __init poking_init(void)
-{
-	spinlock_t *ptl;
-	pte_t *ptep;
-
-	poking_mm = copy_init_mm();
-	BUG_ON(!poking_mm);
-
-	/* RANDOMIZE_BASE not enabled */
-	poking_addr = TASK_UNMAPPED_BASE;
-
-	if (((poking_addr + PAGE_SIZE) & ~PMD_MASK) == 0)
-		poking_addr += PAGE_SIZE;
-
-	ptep = get_locked_pte(poking_mm, poking_addr, &ptl);
-	BUG_ON(!ptep);
-	pte_unmap_unlock(ptep, ptl);
-}
-
-void free_init_pages(const char *what, unsigned long begin, unsigned long end)
-{
-	unsigned long begin_aligned, end_aligned;
-
-	begin_aligned = PAGE_ALIGN(begin);
-	end_aligned = end & PAGE_MASK;
-
-	if (WARN_ON(begin_aligned != begin || end_aligned != end)) {
-		begin = begin_aligned;
-		end = end_aligned;
-	}
-
-	if (begin >= end)
-		return;
-
-	/* debug_pagealloc_enabled() always returns false */
-	set_memory_nx(begin, (end - begin) >> PAGE_SHIFT);
-	set_memory_rw(begin, (end - begin) >> PAGE_SHIFT);
-	free_reserved_area((void *)begin, (void *)end, POISON_FREE_INITMEM,
-			   what);
-}
-
-/* free_kernel_image_pages removed - never called in minimal kernel */
 
 void __ref free_initmem(void)
 {
 	/* Skip freeing init memory - hangs with 4MB RAM */
-}
-
-void __init free_initrd_mem(unsigned long start, unsigned long end)
-{
-	free_init_pages("initrd", start, PAGE_ALIGN(end));
 }
 
 void __init zone_sizes_init(void)
@@ -530,3 +298,8 @@ __visible DEFINE_PER_CPU_ALIGNED(struct tlb_state, cpu_tlbstate) = {
 	.next_asid = 1,
 	.cr4 = ~0UL,
 };
+
+void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
+{
+	mm->mmap_base = __TASK_UNMAPPED_BASE(DEFAULT_MAP_WINDOW);
+}

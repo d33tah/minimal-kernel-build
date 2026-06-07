@@ -5,14 +5,10 @@
 #include <linux/stringify.h>
 #include <linux/objtool.h>
 
- 
 #define ASM_UD2		".byte 0x0f, 0x0b"
-#define INSN_UD2	0x0b0f
 #define LEN_UD2		2
 
-
 #define _BUG_FLAGS(ins, flags, extra)  asm volatile(ins)
-
 
 #define HAVE_ARCH_BUG
 #define BUG()							\
@@ -21,18 +17,17 @@ do {								\
 	__builtin_unreachable();				\
 } while (0)
 
-/* --- 2025-12-07 10:25 --- Inlined asm-generic/bug.h content */
 #include <linux/compiler.h>
 
 #ifndef __ASSEMBLY__
-#include <linux/panic.h>
+#ifndef _LINUX_PANIC_H
+#define _LINUX_PANIC_H
+#include <linux/compiler_attributes.h>
+__printf(1, 2)
+void panic(const char *fmt, ...) __noreturn __cold;
+#define PANIC_CPU_INVALID	-1
+#endif /* _LINUX_PANIC_H */
 #include <linux/printk.h>
-
-struct warn_args;
-struct pt_regs;
-
-void __warn(const char *file, int line, void *caller, unsigned taint,
-	    struct pt_regs *regs, struct warn_args *args);
 
 #ifndef HAVE_ARCH_BUG
 #define BUG() do {} while (1)
@@ -58,7 +53,6 @@ void __warn(const char *file, int line, void *caller, unsigned taint,
 #endif
 
 #define WARN_ON_ONCE(condition) WARN_ON(condition)
-#define WARN_ONCE(condition, format...) WARN(condition, format)
 
 #endif /* __ASSEMBLY__ */
 

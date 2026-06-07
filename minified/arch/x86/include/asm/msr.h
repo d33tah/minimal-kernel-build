@@ -2,90 +2,21 @@
 #ifndef _ASM_X86_MSR_H
 #define _ASM_X86_MSR_H
 
-#include "msr-index.h"
+/* msr-index.h inlined */
+#include <linux/bits.h>
+#define MSR_EFER		0xc0000080
+#define _EFER_NX		11
 
 #ifndef __ASSEMBLY__
 
 #include <asm/asm.h>
-#include <asm/errno.h>
-#include <asm/cpumask.h>
-/* uapi/asm/msr.h was empty stub, removed */
-#include <asm/shared/msr.h>
+#include <linux/cpumask.h>
 
-/* msr_info, msr_regs_info, saved_msr, saved_msrs structs removed - unused */
-
- 
 #define DECLARE_ARGS(val, low, high)	unsigned long long val
 #define EAX_EDX_VAL(val, low, high)	(val)
 #define EAX_EDX_RET(val, low, high)	"=A" (val)
 
- 
 #include <asm/atomic.h>
-#include <linux/tracepoint-defs.h>
-
-/* do_trace_write_msr, do_trace_read_msr, do_trace_rdpmc removed - tracepoint_enabled always false */
-
- 
-static __always_inline unsigned long long __rdmsr(unsigned int msr)
-{
-	DECLARE_ARGS(val, low, high);
-
-	asm volatile("1: rdmsr\n"
-		     "2:\n"
-		     _ASM_EXTABLE_TYPE(1b, 2b, EX_TYPE_RDMSR)
-		     : EAX_EDX_RET(val, low, high) : "c" (msr));
-
-	return EAX_EDX_VAL(val, low, high);
-}
-
-static __always_inline void __wrmsr(unsigned int msr, u32 low, u32 high)
-{
-	asm volatile("1: wrmsr\n"
-		     "2:\n"
-		     _ASM_EXTABLE_TYPE(1b, 2b, EX_TYPE_WRMSR)
-		     : : "c" (msr), "a"(low), "d" (high) : "memory");
-}
-
-#define native_rdmsr(msr, val1, val2)			\
-do {							\
-	u64 __val = __rdmsr((msr));			\
-	(void)((val1) = (u32)__val);			\
-	(void)((val2) = (u32)(__val >> 32));		\
-} while (0)
-
-#define native_wrmsr(msr, low, high)			\
-	__wrmsr(msr, low, high)
-
-#define native_wrmsrl(msr, val)				\
-	__wrmsr((msr), (u32)((u64)(val)),		\
-		       (u32)((u64)(val) >> 32))
-
-static inline unsigned long long native_read_msr(unsigned int msr)
-{
-	return __rdmsr(msr);
-}
-
-static inline unsigned long long native_read_msr_safe(unsigned int msr,
-						      int *err)
-{
-	DECLARE_ARGS(val, low, high);
-
-	asm volatile("1: rdmsr ; xor %[err],%[err]\n"
-		     "2:\n\t"
-		     _ASM_EXTABLE_TYPE_REG(1b, 2b, EX_TYPE_RDMSR_SAFE, %[err])
-		     : [err] "=r" (*err), EAX_EDX_RET(val, low, high)
-		     : "c" (msr));
-	return EAX_EDX_VAL(val, low, high);
-}
-
- 
-static inline void notrace
-native_write_msr(unsigned int msr, u32 low, u32 high)
-{
-	__wrmsr(msr, low, high);
-}
-
-/* native_write_msr_safe, rdmsr_safe_regs, wrmsr_safe_regs removed - never called */
 
 static __always_inline unsigned long long rdtsc(void)
 {
@@ -96,12 +27,10 @@ static __always_inline unsigned long long rdtsc(void)
 	return EAX_EDX_VAL(val, low, high);
 }
 
- 
 static __always_inline unsigned long long rdtsc_ordered(void)
 {
 	DECLARE_ARGS(val, low, high);
 
-	 
 	asm volatile(ALTERNATIVE_2("rdtsc",
 				   "lfence; rdtsc", X86_FEATURE_LFENCE_RDTSC,
 				   "rdtscp", X86_FEATURE_RDTSCP)
@@ -111,40 +40,6 @@ static __always_inline unsigned long long rdtsc_ordered(void)
 
 	return EAX_EDX_VAL(val, low, high);
 }
-
-#include <linux/errno.h>
- 
-
-#define rdmsr(msr, low, high)					\
-do {								\
-	u64 __val = native_read_msr((msr));			\
-	(void)((low) = (u32)__val);				\
-	(void)((high) = (u32)(__val >> 32));			\
-} while (0)
-
-static inline void wrmsr(unsigned int msr, u32 low, u32 high)
-{
-	native_write_msr(msr, low, high);
-}
-
-#define rdmsrl(msr, val)			\
-	((val) = native_read_msr((msr)))
-
-static inline void wrmsrl(unsigned int msr, u64 val)
-{
-	native_write_msr(msr, (u32)(val & 0xffffffffULL), (u32)(val >> 32));
-}
-
-#define rdmsr_safe(msr, low, high)				\
-({								\
-	int __err;						\
-	u64 __val = native_read_msr_safe((msr), &__err);	\
-	(*low) = (u32)__val;					\
-	(*high) = (u32)(__val >> 32);				\
-	__err;							\
-})
-
-/* Removed unused declarations: msrs_alloc, msrs_free, msr_set_bit, msr_clear_bit, rdmsrl_safe, wrmsrl_safe */
 
 #endif
 #endif

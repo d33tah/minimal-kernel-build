@@ -3,7 +3,6 @@
 
 #include <linux/types.h>
 
-/* Inlined from uapi/linux/screen_info.h */
 struct screen_info {
 	__u8  orig_x;
 	__u8  orig_y;
@@ -42,13 +41,6 @@ struct screen_info {
 	__u8  _reserved[2];
 } __attribute__((packed));
 
-#define VIDEO_TYPE_MDA		0x10
-#define VIDEO_TYPE_CGA		0x11
-#define VIDEO_TYPE_EGAM		0x20
-#define VIDEO_TYPE_EGAC		0x21
-#define VIDEO_TYPE_VGAC		0x22
-#define VIDEO_TYPE_VLFB		0x23
-#define VIDEO_TYPE_EFI		0x70
 #define VIDEO_FLAGS_NOCURSOR	(1 << 0)
 
 extern struct screen_info screen_info;

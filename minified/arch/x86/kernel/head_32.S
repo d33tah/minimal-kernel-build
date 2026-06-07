@@ -16,17 +16,26 @@
 #include <asm/pgtable_types.h>
 #include <asm/cache.h>
 #include <asm/thread_info.h>
-#include <asm/asm-offsets.h>
+#include <generated/asm-offsets.h>
 #include <asm/setup.h>
 #include <asm/processor-flags.h>
-#include <asm/msr-index.h>
+/* msr-index.h inlined */
+#define MSR_EFER		0xc0000080
+#define _EFER_NX		11
 #include <asm/cpufeatures.h>
 #include <asm/percpu.h>
 /* asm/nops.h removed - was empty */
 #include <asm/nospec-branch.h>
 #include <asm/bootparam.h>
 #include <asm/export.h>
-#include <asm/pgtable_32.h>
+/* --- Inlined from asm/pgtable_32.h (asm-visible part) --- */
+#if PTRS_PER_PMD > 1
+#define PAGE_TABLE_SIZE(pages) (((pages) / PTRS_PER_PMD) + PTRS_PER_PGD)
+#else
+#define PAGE_TABLE_SIZE(pages) ((pages) / PTRS_PER_PGD)
+#endif
+#define LOWMEM_PAGES (2 * 1024 * 1024 / 4096)
+/* end pgtable_32.h */
 
 /* Physical address */
 #define pa(X) ((X) - __PAGE_OFFSET)
@@ -112,69 +121,18 @@ SYM_CODE_START(startup_32)
 	movsl
 1:
 
-#ifdef CONFIG_OLPC
-	/* save OFW's pgdir table for later use when calling into OFW */
-	movl %cr3, %eax
-	movl %eax, pa(olpc_ofw_pgd)
-#endif
-
-#ifdef CONFIG_MICROCODE
-	/* Early load ucode on BSP. */
-	call load_ucode_bsp
-#endif
+/* CONFIG_OLPC, CONFIG_MICROCODE blocks removed - not set */
 
 	/* Create early pagetables. */
 	call  mk_early_pgtbl_32
 
 	/* Do early initialization of the fixmap area */
+	/* CONFIG_X86_PAE not set - resolved to non-PAE branch */
 	movl $pa(initial_pg_fixmap)+PDE_IDENT_ATTR,%eax
-#ifdef  CONFIG_X86_PAE
-#define KPMDS (((-__PAGE_OFFSET) >> 30) & 3) /* Number of kernel PMDs */
-	movl %eax,pa(initial_pg_pmd+0x1000*KPMDS-8)
-#else
 	movl %eax,pa(initial_page_table+0xffc)
-#endif
 
 	jmp .Ldefault_entry
 SYM_CODE_END(startup_32)
-
-#ifdef CONFIG_HOTPLUG_CPU
-/*
- * Boot CPU0 entry point. It's called from play_dead(). Everything has been set
- * up already except stack. We just set up stack here. Then call
- * start_secondary().
- */
-SYM_FUNC_START(start_cpu0)
-	movl initial_stack, %ecx
-	movl %ecx, %esp
-	call *(initial_code)
-1:	jmp 1b
-SYM_FUNC_END(start_cpu0)
-#endif
-
-/*
- * Non-boot CPU entry point; entered from trampoline.S
- * We can't lgdt here, because lgdt itself uses a data segment, but
- * we know the trampoline has already loaded the boot_gdt for us.
- *
- * If cpu hotplug is not supported then this code can go in init section
- * which will be freed later
- */
-SYM_FUNC_START(startup_32_smp)
-	cld
-	movl $(__BOOT_DS),%eax
-	movl %eax,%ds
-	movl %eax,%es
-	movl %eax,%fs
-	movl %eax,%gs
-	movl pa(initial_stack),%ecx
-	movl %eax,%ss
-	leal -__PAGE_OFFSET(%ecx),%esp
-
-#ifdef CONFIG_MICROCODE
-	/* Early load ucode on AP. */
-	call load_ucode_ap
-#endif
 
 .Ldefault_entry:
 	movl $(CR0_STATE & ~X86_CR0_PG),%eax
@@ -218,33 +176,7 @@ SYM_FUNC_START(startup_32_smp)
 	movl pa(mmu_cr4_features),%eax
 	movl %eax,%cr4
 
-	testb $X86_CR4_PAE, %al		# check if PAE is enabled
-	jz .Lenable_paging
-
-	/* Check if extended functions are implemented */
-	movl $0x80000000, %eax
-	cpuid
-	/* Value must be in the range 0x80000001 to 0x8000ffff */
-	subl $0x80000001, %eax
-	cmpl $(0x8000ffff-0x80000001), %eax
-	ja .Lenable_paging
-
-	/* Clear bogus XD_DISABLE bits */
-	call verify_cpu
-
-	mov $0x80000001, %eax
-	cpuid
-	/* Execute Disable bit supported? */
-	btl $(X86_FEATURE_NX & 31), %edx
-	jnc .Lenable_paging
-
-	/* Setup EFER (Extended Feature Enable Register) */
-	movl $MSR_EFER, %ecx
-	rdmsr
-
-	btsl $_EFER_NX, %eax
-	/* Make changes effective */
-	wrmsr
+	/* PAE/NX not enabled in tinyconfig - skip to paging setup */
 
 .Lenable_paging:
 
@@ -327,9 +259,7 @@ SYM_FUNC_START(startup_32_smp)
 
 	call *(initial_code)
 1:	jmp 1b
-SYM_FUNC_END(startup_32_smp)
 
-#include "verify_cpu.S"
 
 /*
  *  setup_once
@@ -429,27 +359,18 @@ __REFDATA
 SYM_DATA(initial_code,		.long i386_start_kernel)
 SYM_DATA(setup_once_ref,	.long setup_once)
 
-#ifdef CONFIG_PAGE_TABLE_ISOLATION
-#define	PGD_ALIGN	(2 * PAGE_SIZE)
-#define PTI_USER_PGD_FILL	1024
-#else
+/* CONFIG_PAGE_TABLE_ISOLATION not set - use simplified values */
 #define	PGD_ALIGN	(PAGE_SIZE)
 #define PTI_USER_PGD_FILL	0
-#endif
 /*
  * BSS section
  */
 __PAGE_ALIGNED_BSS
 	.align PGD_ALIGN
-#ifdef CONFIG_X86_PAE
-.globl initial_pg_pmd
-initial_pg_pmd:
-	.fill 1024*KPMDS,4,0
-#else
+/* CONFIG_X86_PAE not set - non-PAE page table */
 .globl initial_page_table
 initial_page_table:
 	.fill 1024,4,0
-#endif
 	.align PGD_ALIGN
 initial_pg_fixmap:
 	.fill 1024,4,0
@@ -463,44 +384,7 @@ empty_zero_page:
 	.fill 4096,1,0
 EXPORT_SYMBOL(empty_zero_page)
 
-/*
- * This starts the data section.
- */
-#ifdef CONFIG_X86_PAE
-__PAGE_ALIGNED_DATA
-	/* Page-aligned for the benefit of paravirt? */
-	.align PGD_ALIGN
-SYM_DATA_START(initial_page_table)
-	.long	pa(initial_pg_pmd+PGD_IDENT_ATTR),0	/* low identity map */
-# if KPMDS == 3
-	.long	pa(initial_pg_pmd+PGD_IDENT_ATTR),0
-	.long	pa(initial_pg_pmd+PGD_IDENT_ATTR+0x1000),0
-	.long	pa(initial_pg_pmd+PGD_IDENT_ATTR+0x2000),0
-# elif KPMDS == 2
-	.long	0,0
-	.long	pa(initial_pg_pmd+PGD_IDENT_ATTR),0
-	.long	pa(initial_pg_pmd+PGD_IDENT_ATTR+0x1000),0
-# elif KPMDS == 1
-	.long	0,0
-	.long	0,0
-	.long	pa(initial_pg_pmd+PGD_IDENT_ATTR),0
-# else
-#  error "Kernel PMDs should be 1, 2 or 3"
-# endif
-	.align PAGE_SIZE		/* needs to be page-sized too */
-
-#ifdef CONFIG_PAGE_TABLE_ISOLATION
-	/*
-	 * PTI needs another page so sync_initial_pagetable() works correctly
-	 * and does not scribble over the data which is placed behind the
-	 * actual initial_page_table. See clone_pgd_range().
-	 */
-	.fill 1024, 4, 0
-#endif
-
-SYM_DATA_END(initial_page_table)
-#endif
-
+/* CONFIG_X86_PAE block removed - not set (~27 LOC) */
 .data
 .balign 4
 /*

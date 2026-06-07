@@ -1,103 +1,22 @@
 
-
-#include <linux/compiler.h>
-#include <linux/kernel.h>
-#include <linux/export.h>
-#include <linux/sched.h>
-#include <linux/sched/debug.h>
+#include <linux/mutex.h>
 #include <linux/sched/signal.h>
-#include <linux/semaphore.h>
-#include <linux/spinlock.h>
+#include <linux/atomic.h>
 
-static noinline void __down(struct semaphore *sem);
-static noinline void __up(struct semaphore *sem);
-
-void down(struct semaphore *sem)
+void __mutex_init(struct mutex *lock, const char *name,
+		  struct lock_class_key *key)
 {
-	unsigned long flags;
-
-	raw_spin_lock_irqsave(&sem->lock, flags);
-	if (likely(sem->count > 0))
-		sem->count--;
-	else
-		__down(sem);
-	raw_spin_unlock_irqrestore(&sem->lock, flags);
+	atomic_long_set(&lock->owner, 0);
+	raw_spin_lock_init(&lock->wait_lock);
+	INIT_LIST_HEAD(&lock->wait_list);
 }
 
-int down_trylock(struct semaphore *sem)
+void __sched mutex_lock(struct mutex *lock)
 {
-	unsigned long flags;
-	int count;
-
-	raw_spin_lock_irqsave(&sem->lock, flags);
-	count = sem->count - 1;
-	if (likely(count >= 0))
-		sem->count = count;
-	raw_spin_unlock_irqrestore(&sem->lock, flags);
-
-	return (count < 0);
+	atomic_long_set(&lock->owner, (unsigned long)current);
 }
 
-void up(struct semaphore *sem)
+void __sched mutex_unlock(struct mutex *lock)
 {
-	unsigned long flags;
-
-	raw_spin_lock_irqsave(&sem->lock, flags);
-	if (likely(list_empty(&sem->wait_list)))
-		sem->count++;
-	else
-		__up(sem);
-	raw_spin_unlock_irqrestore(&sem->lock, flags);
-}
-
-struct semaphore_waiter {
-	struct list_head list;
-	struct task_struct *task;
-	bool up;
-};
-
-static inline int __sched ___down_common(struct semaphore *sem, long state,
-					 long timeout)
-{
-	struct semaphore_waiter waiter;
-
-	list_add_tail(&waiter.list, &sem->wait_list);
-	waiter.task = current;
-	waiter.up = false;
-
-	for (;;) {
-		if (signal_pending_state(state, current))
-			goto interrupted;
-		if (unlikely(timeout <= 0))
-			goto timed_out;
-		__set_current_state(state);
-		raw_spin_unlock_irq(&sem->lock);
-		timeout = schedule_timeout(timeout);
-		raw_spin_lock_irq(&sem->lock);
-		if (waiter.up)
-			return 0;
-	}
-
-timed_out:
-	list_del(&waiter.list);
-	return -ETIME;
-
-interrupted:
-	list_del(&waiter.list);
-	return -EINTR;
-}
-
-static noinline void __sched __down(struct semaphore *sem)
-{
-	/* __down_common inlined */
-	___down_common(sem, TASK_UNINTERRUPTIBLE, MAX_SCHEDULE_TIMEOUT);
-}
-
-static noinline void __sched __up(struct semaphore *sem)
-{
-	struct semaphore_waiter *waiter = list_first_entry(
-		&sem->wait_list, struct semaphore_waiter, list);
-	list_del(&waiter->list);
-	waiter->up = true;
-	wake_up_process(waiter->task);
+	atomic_long_set(&lock->owner, 0UL);
 }

@@ -1,12 +1,5 @@
-#include <linux/elf.h>
 #include <linux/extable.h>
-#include <linux/module.h>
-#include <linux/mutex.h>
-#include <linux/init.h>
-#include <linux/hardirq.h>
-#include <linux/kallsyms.h>
 
-#include <asm/sections.h>
 #include <linux/uaccess.h>
 
 extern struct exception_table_entry __start___ex_table[];
@@ -22,15 +15,9 @@ void __init sort_main_extable(void)
 	}
 }
 
-const struct exception_table_entry *
-search_kernel_exception_table(unsigned long addr)
-{
-	return search_extable(__start___ex_table,
-			      __stop___ex_table - __start___ex_table, addr);
-}
-
 const struct exception_table_entry *search_exception_tables(unsigned long addr)
 {
 	/* search_module_extables and search_bpf_extables always return NULL */
-	return search_kernel_exception_table(addr);
+	return search_extable(__start___ex_table,
+			      __stop___ex_table - __start___ex_table, addr);
 }

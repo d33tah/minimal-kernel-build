@@ -1,77 +1,32 @@
 
-#include <linux/fs_context.h>
 #include <linux/fs_parser.h>
-#include <linux/slab.h>
-#include <linux/namei.h>
-#include "internal.h"
-
-static const struct constant_table *
-__lookup_constant(const struct constant_table *tbl, const char *name)
-{
-	for (; tbl->name; tbl++)
-		if (strcmp(name, tbl->name) == 0)
-			return tbl;
-	return NULL;
-}
-
-int lookup_constant(const struct constant_table *tbl, const char *name,
-		    int not_found)
-{
-	const struct constant_table *p = __lookup_constant(tbl, name);
-
-	return p ? p->value : not_found;
-}
 
 static inline bool is_flag(const struct fs_parameter_spec *p)
 {
 	return p->type == NULL;
 }
 
-static const struct fs_parameter_spec *
-fs_lookup_key(const struct fs_parameter_spec *desc, struct fs_parameter *param,
-	      bool *negated)
+int __fs_parse(struct p_log *log, const struct fs_parameter_spec *desc,
+	       struct fs_parameter *param, struct fs_parse_result *result)
 {
 	const struct fs_parameter_spec *p, *other = NULL;
 	const char *name = param->key;
 	bool want_flag = param->type == fs_value_is_flag;
 
-	*negated = false;
+	result->uint_64 = 0;
+	result->negated = false;
+
 	for (p = desc; p->name; p++) {
 		if (strcmp(p->name, name) != 0)
 			continue;
 		if (likely(is_flag(p) == want_flag))
-			return p;
+			goto found;
 		other = p;
 	}
-	if (want_flag) {
-		if (name[0] == 'n' && name[1] == 'o' && name[2]) {
-			for (p = desc; p->name; p++) {
-				if (strcmp(p->name, name + 2) != 0)
-					continue;
-				if (!(p->flags & fs_param_neg_with_no))
-					continue;
-				*negated = true;
-				return p;
-			}
-		}
-	}
-	return other;
-}
-
-int __fs_parse(struct p_log *log, const struct fs_parameter_spec *desc,
-	       struct fs_parameter *param, struct fs_parse_result *result)
-{
-	const struct fs_parameter_spec *p;
-
-	result->uint_64 = 0;
-
-	p = fs_lookup_key(desc, param, &result->negated);
+	p = other;
 	if (!p)
 		return -ENOPARAM;
-
-	if (p->flags & fs_param_deprecated)
-		warn_plog(log, "Deprecated parameter '%s'", param->key);
-
+found:
 	if (is_flag(p)) {
 		if (param->type != fs_value_is_flag)
 			return inval_plog(log, "Unexpected value for '%s'",
@@ -85,28 +40,13 @@ int __fs_parse(struct p_log *log, const struct fs_parameter_spec *desc,
 	return p->opt;
 }
 
-/* fs_lookup_param removed - never called */
-
-static int fs_param_bad_value(struct p_log *log, struct fs_parameter *param)
-{
-	return inval_plog(log, "Bad value for '%s'", param->key);
-}
-
-/* fs_param_is_bool removed - unused */
-
 int fs_param_is_u32(struct p_log *log, const struct fs_parameter_spec *p,
 		    struct fs_parameter *param, struct fs_parse_result *result)
 {
 	int base = (unsigned long)p->data;
 	if (param->type != fs_value_is_string)
-		return fs_param_bad_value(log, param);
-	if (!*param->string && (p->flags & fs_param_can_be_empty))
-		return 0;
+		return inval_plog(log, "Bad value for '%s'", param->key);
 	if (kstrtouint(param->string, base, &result->uint_32) < 0)
-		return fs_param_bad_value(log, param);
+		return inval_plog(log, "Bad value for '%s'", param->key);
 	return 0;
 }
-
-/* fs_param_is_s32, fs_param_is_u64, fs_param_is_enum, fs_param_is_string,
-   fs_param_is_blob, fs_param_is_fd, fs_param_is_blockdev, fs_param_is_path
-   removed - unused */

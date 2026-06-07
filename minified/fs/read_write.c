@@ -1,17 +1,7 @@
-#include <linux/slab.h>
-#include <linux/stat.h>
-#include <linux/fcntl.h>
 #include <linux/file.h>
 #include <linux/uio.h>
 #include <linux/syscalls.h>
-#include <linux/pagemap.h>
-#include <linux/splice.h>
-#include <linux/mount.h>
 #include <linux/fs.h>
-#include "internal.h"
-
-#include <linux/uaccess.h>
-#include <asm/unistd.h>
 
 ssize_t kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
 {
@@ -23,19 +13,21 @@ ssize_t kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
 	struct iov_iter iter;
 	ssize_t ret;
 
-	if (WARN_ON_ONCE(!(file->f_mode & FMODE_READ)))
+	if (!(file->f_mode & FMODE_READ))
 		return -EINVAL;
 	if (!(file->f_mode & FMODE_CAN_READ))
 		return -EINVAL;
 
-	if (unlikely(!file->f_op->read_iter || file->f_op->read)) {
+	if (unlikely(!file->f_op->read_iter)) {
 		pr_warn_ratelimited(
 			"kernel read not supported for file %pD4 (pid: %d comm: %.20s)\n",
 			file, current->pid, current->comm);
 		return -EINVAL;
 	}
 
-	init_sync_kiocb(&kiocb, file);
+	kiocb = (struct kiocb){
+		.ki_filp = file,
+	};
 	kiocb.ki_pos = pos ? *pos : 0;
 	iov_iter_kvec(&iter, READ, &iov, 1, iov.iov_len);
 	ret = file->f_op->read_iter(&kiocb, &iter);
@@ -44,8 +36,8 @@ ssize_t kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
 	return ret;
 }
 
-ssize_t vfs_write(struct file *file, const char __user *buf, size_t count,
-		  loff_t *pos)
+static ssize_t vfs_write(struct file *file, const char __user *buf,
+			 size_t count, loff_t *pos)
 {
 	ssize_t ret;
 
@@ -58,24 +50,21 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count,
 
 	if (count > MAX_RW_COUNT)
 		count = MAX_RW_COUNT;
-	file_start_write(file);
-	if (file->f_op->write)
-		ret = file->f_op->write(file, buf, count, pos);
-	else if (file->f_op->write_iter) {
+	if (file->f_op->write_iter) {
 		struct iovec iov = { .iov_base = (void __user *)buf,
 				     .iov_len = count };
 		struct kiocb kiocb;
 		struct iov_iter iter;
-		init_sync_kiocb(&kiocb, file);
+		kiocb = (struct kiocb){
+			.ki_filp = file,
+		};
 		kiocb.ki_pos = (pos ? *pos : 0);
 		iov_iter_init(&iter, WRITE, &iov, 1, count);
-		ret = call_write_iter(file, &kiocb, &iter);
-		BUG_ON(ret == -EIOCBQUEUED);
+		ret = file->f_op->write_iter(&kiocb, &iter);
 		if (ret > 0 && pos)
 			*pos = kiocb.ki_pos;
 	} else
 		ret = -EINVAL;
-	file_end_write(file);
 	return ret;
 }
 
@@ -96,14 +85,8 @@ SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf, size_t,
 		ret = vfs_write(f.file, buf, count, ppos);
 		if (ret >= 0 && ppos)
 			f.file->f_pos = pos;
-		fdput_pos(f);
+		fdput(f);
 	}
 
 	return ret;
-}
-
-ssize_t generic_write_checks(struct kiocb *iocb, struct iov_iter *from)
-{
-	iov_iter_truncate(from, iov_iter_count(from));
-	return iov_iter_count(from);
 }

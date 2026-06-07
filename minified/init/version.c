@@ -1,11 +1,34 @@
 
 #include <generated/compile.h>
-#include <linux/build-salt.h>
-#include <linux/elfnote.h>
+#include <uapi/linux/elf.h>
+#define _ELFNOTE_PASTE(a, b) a##b
+#define _ELFNOTE(size, name, unique, type, desc)                            \
+	static const struct {                                               \
+		struct elf##size##_note _nhdr;                              \
+		unsigned char _name[sizeof(name)]                           \
+			__attribute__((aligned(sizeof(Elf##size##_Word)))); \
+		typeof(desc) _desc                                          \
+			__attribute__((aligned(sizeof(Elf##size##_Word)))); \
+	} _ELFNOTE_PASTE(_note_, unique) __used                             \
+		__attribute__((section(".note." name),                      \
+			       aligned(sizeof(Elf##size##_Word)),           \
+			       unused)) = { {                               \
+						    sizeof(name),           \
+						    sizeof(desc),           \
+						    type,                   \
+					    },                              \
+					    name,                           \
+					    desc }
+#define ELFNOTE(size, name, type, desc) \
+	_ELFNOTE(size, name, __LINE__, type, desc)
+#define ELFNOTE32(name, type, desc) ELFNOTE(32, name, type, desc)
+/* end elfnote.h */
+
+#define LINUX_ELFNOTE_BUILD_SALT 0x100
+#define BUILD_SALT \
+	ELFNOTE32("Linux", LINUX_ELFNOTE_BUILD_SALT, CONFIG_BUILD_SALT)
 #define LINUX_ELFNOTE_LTO_INFO 0x101
 #define BUILD_LTO_INFO ELFNOTE32("Linux", LINUX_ELFNOTE_LTO_INFO, 0)
-/* end elfnote-lto.h */
-#include <linux/export.h>
 
 #ifndef UTS_SYSNAME
 #define UTS_SYSNAME "Linux"
@@ -18,11 +41,7 @@
 #endif
 #include <linux/utsname.h>
 #include <generated/utsrelease.h>
-#include <linux/version.h>
-#include <linux/proc_ns.h>
-
 struct uts_namespace init_uts_ns = {
-	.ns.count = REFCOUNT_INIT(2),
 	.name = {
 		.sysname	= UTS_SYSNAME,
 		.nodename	= UTS_NODENAME,
@@ -31,8 +50,6 @@ struct uts_namespace init_uts_ns = {
 		.machine	= UTS_MACHINE,
 		.domainname	= UTS_DOMAINNAME,
 	},
-	.user_ns = &init_user_ns,
-	.ns.inum = PROC_UTS_INIT_INO,
 };
 
 const char linux_banner[] = "Linux version " UTS_RELEASE " (" LINUX_COMPILE_BY

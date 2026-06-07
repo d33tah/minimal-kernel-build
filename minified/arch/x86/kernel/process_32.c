@@ -1,61 +1,11 @@
 
-
-#include <linux/cpu.h>
-#include <linux/errno.h>
-#include <linux/sched.h>
-#include <linux/sched/task.h>
-#include <linux/sched/task_stack.h>
-#include <linux/fs.h>
-#include <linux/kernel.h>
-#include <linux/mm.h>
-#include <linux/smp.h>
-#include <linux/stddef.h>
-#include <linux/slab.h>
-#include <linux/vmalloc.h>
-#include <asm/user.h> /* linux/user.h redirect */
-#include <linux/interrupt.h>
-#include <linux/delay.h>
-#include <linux/reboot.h>
-#include <linux/mc146818rtc.h>
-#include <linux/export.h>
-#include <linux/kallsyms.h>
-#include <linux/ptrace.h>
-#include <linux/personality.h>
-#include <linux/percpu.h>
-#include <linux/uaccess.h>
-#include <linux/io.h>
-#include <linux/kdebug.h>
-#include <linux/syscalls.h>
-
-#include <asm/ldt.h>
-#include <asm/processor.h>
 #include <asm/fpu/sched.h>
-#include <asm/desc.h>
-
-#include <linux/err.h>
 
 #include <asm/tlbflush.h>
 #include <asm/cpu.h>
-#include <asm/debugreg.h>
 #include <asm/switch_to.h>
-#include <asm/vm86.h>
-#include <asm/proto.h>
 
-/* resctrl_sched_in removed - empty stub */
-
-#include "process.h"
-
-void __show_regs(struct pt_regs *regs, enum show_regs_mode mode,
-		 const char *log_lvl)
-{
-	/* Stub: register dump not needed for minimal kernel */
-}
-
-void release_thread(struct task_struct *dead_task)
-{
-	BUG_ON(dead_task->mm);
-	release_vm86_irqs(dead_task);
-}
+#include <asm/kdebug.h>
 
 void start_thread(struct pt_regs *regs, unsigned long new_ip,
 		  unsigned long new_sp)
@@ -85,12 +35,12 @@ __visible struct task_struct *__switch_to(struct task_struct *prev_p,
 
 	load_TLS(next, cpu);
 
-	switch_to_extra(prev_p, next_p);
-
 	arch_end_context_switch(next_p);
 
-	update_task_stack(next_p);
-	refresh_sysenter_cs(next);
+	if (static_cpu_has(X86_FEATURE_XENPV))
+		load_sp0(next_p->thread.sp0);
+	else
+		this_cpu_write(cpu_tss_rw.x86_tss.sp1, next_p->thread.sp0);
 	this_cpu_write(cpu_current_top_of_stack,
 		       (unsigned long)task_stack_page(next_p) + THREAD_SIZE);
 
@@ -100,7 +50,6 @@ __visible struct task_struct *__switch_to(struct task_struct *prev_p,
 	this_cpu_write(current_task, next_p);
 
 	switch_fpu_finish();
-	/* resctrl_sched_in removed - empty stub */
 	return prev_p;
 }
 

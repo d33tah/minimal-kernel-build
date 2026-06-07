@@ -1,4 +1,3 @@
-/* --- 2025-12-06 13:40 --- uapi/asm/setup.h removed (empty file) */
 #ifndef _ASM_X86_SETUP_H
 #define _ASM_X86_SETUP_H
 
@@ -12,7 +11,6 @@
 #include <linux/pfn.h>
 
 #define MAXMEM_PFN	PFN_DOWN(MAXMEM)
-#define MAX_NONPAE_PFN	(1 << 20)  
 
 #define PARAM_SIZE 4096		 
 
@@ -24,15 +22,8 @@
 #include <asm/bootparam.h>
 #include <asm/x86_init.h>
 
-extern u64 relocated_ramdisk;
-
-struct pt_regs;
-
-/* early_platform_quirks, saved_video_mode removed - unused */
-
 extern void reserve_standard_io_resources(void);
 extern void i386_reserve_resources(void);
-/* x86_intel_mid_early_setup, x86_ce4100_early_setup removed - empty stubs */
 #ifndef _SETUP
 
 #include <linux/kernel.h>
@@ -40,20 +31,14 @@ extern void i386_reserve_resources(void);
 extern struct boot_params boot_params;
 extern char _text[];
 
-/* kaslr_enabled, kaslr_memory_enabled, kaslr_offset removed - unused */
-
 #define LOWMEMSIZE()	(0x9f000)
 
- 
 extern unsigned long _brk_end;
 void *extend_brk(size_t size, size_t align);
 
- 
 #define RESERVE_BRK(name, size)					\
 	__section(".bss..brk") __aligned(1) __used	\
 	static char __brk_##name[size]
-
-/* probe_roms, clear_bss removed - never called */
 
 /* 32-bit only kernel */
 asmlinkage void __init i386_start_kernel(void);

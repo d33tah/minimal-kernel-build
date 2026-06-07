@@ -1,35 +1,12 @@
-#include <linux/sched/clock.h>
-#include <linux/sched/cputime.h>
-#include <linux/sched/debug.h>
-#include <linux/sched/isolation.h>
-#include <linux/sched/loadavg.h>
-#include <linux/sched/mm.h>
-
-#include <linux/sched/task_stack.h>
-
-#include <linux/ctype.h>
-
-#include <linux/irq.h>
-
-#include <linux/mempolicy.h>
-#include <linux/nospec.h>
-#include <linux/proc_fs.h>
-
-#include <linux/timex.h>
-#include <linux/utsname.h>
-
-#include <linux/sched/types.h>
-
-#include <asm/switch_to.h>
+#include <linux/sched/signal.h>
 
 #include "sched.h"
-/* end sched-pelt.h */
-#include "stats.h"
 
-/* loadavg.c removed - calc_global_load/calc_global_load_tick calls removed */
-unsigned long calc_load_update;
-
-#include "completion.c"
-#include "swait.c"
+void __init_swait_queue_head(struct swait_queue_head *q, const char *name,
+			     struct lock_class_key *key)
+{
+	raw_spin_lock_init(&q->lock);
+	INIT_LIST_HEAD(&q->task_list);
+}
 #include "wait_bit.c"
 #include "wait.c"

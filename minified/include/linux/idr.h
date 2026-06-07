@@ -3,8 +3,6 @@
 #define __IDR_H__
 
 #include <linux/radix-tree.h>
-#include <linux/gfp.h>
-#include <linux/percpu.h>
 
 struct idr {
 	struct radix_tree_root	idr_rt;
@@ -24,22 +22,9 @@ struct idr {
 }
 
 #define IDR_INIT(name) IDR_INIT_BASE(name, 0)
-static inline unsigned int idr_get_cursor(const struct idr *idr)
-{
-	return READ_ONCE(idr->idr_next);
-}
-
-static inline void idr_set_cursor(struct idr *idr, unsigned int val)
-{
-	WRITE_ONCE(idr->idr_next, val);
-}
-
 
 void idr_preload(gfp_t gfp_mask);
 
-int idr_alloc(struct idr *, void *ptr, int start, int end, gfp_t);
-int __must_check idr_alloc_u32(struct idr *, void *ptr, u32 *id,
-				unsigned long max, gfp_t);
 int idr_alloc_cyclic(struct idr *, void *ptr, int start, int end, gfp_t);
 void *idr_remove(struct idr *, unsigned long id);
 void *idr_find(const struct idr *, unsigned long id);
@@ -52,19 +37,7 @@ static inline void idr_init_base(struct idr *idr, int base)
 	idr->idr_next = 0;
 }
 
-static inline void idr_init(struct idr *idr)
-{
-	idr_init_base(idr, 0);
-}
-
-
-static inline void idr_preload_end(void)
-{
-	local_unlock(&radix_tree_preloads.lock);
-}
-
-
-#define IDA_CHUNK_SIZE		128	 
+#define IDA_CHUNK_SIZE		128
 #define IDA_BITMAP_LONGS	(IDA_CHUNK_SIZE / sizeof(long))
 #define IDA_BITMAP_BITS 	(IDA_BITMAP_LONGS * sizeof(long) * 8)
 
@@ -85,16 +58,5 @@ struct ida {
 
 int ida_alloc_range(struct ida *, unsigned int min, unsigned int max, gfp_t);
 void ida_free(struct ida *, unsigned int id);
-
-static inline int ida_alloc(struct ida *ida, gfp_t gfp)
-{
-	return ida_alloc_range(ida, 0, ~0, gfp);
-}
-
-static inline int ida_alloc_min(struct ida *ida, unsigned int min, gfp_t gfp)
-{
-	return ida_alloc_range(ida, min, ~0, gfp);
-}
-
 
 #endif  

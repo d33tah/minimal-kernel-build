@@ -1,30 +1,40 @@
 
-#include <linux/kernel.h>
-#include <linux/sched.h>
-#include <linux/sched/task_stack.h>
 #include <linux/entry-common.h>
-#include <linux/mm.h>
-#include <linux/smp.h>
-#include <linux/errno.h>
-#include <linux/ptrace.h>
-#include <linux/export.h>
-#include <linux/nospec.h>
-#include <linux/syscalls.h>
-#include <linux/uaccess.h>
 
-#include <asm/desc.h>
-#include <asm/traps.h>
-#include <asm/vdso.h>
-#include <asm/cpufeature.h>
-#include <asm/fpu/api.h>
-#include <asm/nospec-branch.h>
-#include <asm/io_bitmap.h>
+#ifndef array_index_mask_nospec
+static inline unsigned long array_index_mask_nospec(unsigned long index,
+						    unsigned long size)
+{
+	OPTIMIZER_HIDE_VAR(index);
+	return ~(long)(index | (size - 1UL - index)) >> (BITS_PER_LONG - 1);
+}
+#endif
+
+#define array_index_nospec(index, size)                                \
+	({                                                             \
+		typeof(index) _i = (index);                            \
+		typeof(size) _s = (size);                              \
+		unsigned long _mask = array_index_mask_nospec(_i, _s); \
+                                                                       \
+		BUILD_BUG_ON(sizeof(_i) > sizeof(long));               \
+		BUILD_BUG_ON(sizeof(_s) > sizeof(long));               \
+                                                                       \
+		(typeof(_i))(_i & _mask);                              \
+	})
+#include <linux/syscalls.h>
+
 #include <asm/syscall.h>
-#include <asm/irq_stack.h>
+
+/* inlined from asm/irq_stack.h */
+#define run_irq_on_irqstack_cond(func, regs, vector) \
+	{                                            \
+		irq_enter_rcu();                     \
+		func(regs, vector);                  \
+		irq_exit_rcu();                      \
+	}
 
 static __always_inline int syscall_32_enter(struct pt_regs *regs)
 {
-	/* IA32_EMULATION disabled - skip TS_COMPAT */
 	return (int)regs->orig_ax;
 }
 
@@ -49,58 +59,6 @@ __visible noinstr void do_int80_syscall_32(struct pt_regs *regs)
 	do_syscall_32_irqs_on(regs, nr);
 
 	syscall_exit_to_user_mode(regs);
-}
-
-static noinstr bool __do_fast_syscall_32(struct pt_regs *regs)
-{
-	int nr = syscall_32_enter(regs);
-	int res;
-
-	syscall_enter_from_user_mode_prepare(regs);
-
-	/* X86_32: use get_user */
-	res = get_user(*(u32 *)&regs->bp,
-		       (u32 __user __force *)(unsigned long)(u32)regs->sp);
-
-	if (res) {
-		regs->ax = -EFAULT;
-
-		local_irq_disable();
-		irqentry_exit_to_user_mode(regs);
-		return false;
-	}
-
-	nr = syscall_enter_from_user_mode_work(regs, nr);
-
-	do_syscall_32_irqs_on(regs, nr);
-
-	syscall_exit_to_user_mode(regs);
-	return true;
-}
-
-__visible noinstr long do_fast_syscall_32(struct pt_regs *regs)
-{
-	unsigned long landing_pad = (unsigned long)current->mm->context.vdso +
-				    vdso_image_32.sym_int80_landing_pad;
-
-	regs->ip = landing_pad;
-
-	if (!__do_fast_syscall_32(regs))
-		return 0;
-
-	return static_cpu_has(X86_FEATURE_SEP) && regs->cs == __USER_CS &&
-	       regs->ss == __USER_DS && regs->ip == landing_pad &&
-	       (regs->flags &
-		(X86_EFLAGS_RF | X86_EFLAGS_TF | X86_EFLAGS_VM)) == 0;
-}
-
-__visible noinstr long do_SYSENTER_32(struct pt_regs *regs)
-{
-	regs->sp = regs->bp;
-
-	regs->flags |= X86_EFLAGS_IF;
-
-	return do_fast_syscall_32(regs);
 }
 
 SYSCALL_DEFINE0(ni_syscall)

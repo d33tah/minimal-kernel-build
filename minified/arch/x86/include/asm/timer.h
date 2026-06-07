@@ -1,22 +1,16 @@
  
 #ifndef _ASM_X86_TIMER_H
 #define _ASM_X86_TIMER_H
-#include <linux/pm.h>
 #include <linux/percpu.h>
 #include <linux/interrupt.h>
 #include <linux/math64.h>
 
 unsigned long long native_sched_clock(void);
-/* using_native_sched_clock removed - never called */
-
 
 struct cyc2ns_data {
 	u32 cyc2ns_mul;
 	u32 cyc2ns_shift;
 	u64 cyc2ns_offset;
 };  
-
-extern void cyc2ns_read_begin(struct cyc2ns_data *);
-extern void cyc2ns_read_end(void);
 
 #endif  

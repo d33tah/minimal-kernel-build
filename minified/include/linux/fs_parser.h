@@ -4,12 +4,6 @@
 
 #include <linux/fs_context.h>
 
-struct path;
-
-struct constant_table {
-	const char	*name;
-	int		value;
-};
 
 struct fs_parameter_spec;
 struct fs_parse_result;
@@ -17,7 +11,6 @@ typedef int fs_param_type(struct p_log *,
 			  const struct fs_parameter_spec *,
 			  struct fs_parameter *,
 			  struct fs_parse_result *);
-/* Only fs_param_is_u32 kept - others unused */
 fs_param_type fs_param_is_u32;
 
 struct fs_parameter_spec {
@@ -46,18 +39,6 @@ extern int __fs_parse(struct p_log *log,
 		    struct fs_parameter *value,
 		    struct fs_parse_result *result);
 
-static inline int fs_parse(struct fs_context *fc,
-	     const struct fs_parameter_spec *desc,
-	     struct fs_parameter *param,
-	     struct fs_parse_result *result)
-{
-	return __fs_parse(&fc->log, desc, param, result);
-}
-
-/* fs_lookup_param, fs_validate_description removed - never called / always returned true */
-
-extern int lookup_constant(const struct constant_table tbl[], const char *name, int not_found);
-
 #define __fsparam(TYPE, NAME, OPT, FLAGS, DATA) \
 	{ \
 		.name = NAME, \
@@ -67,9 +48,6 @@ extern int lookup_constant(const struct constant_table tbl[], const char *name, 
 		.data = DATA \
 	}
 
-/* Unused fsparam macros removed: fsparam_flag, fsparam_flag_no, fsparam_bool,
-   fsparam_u32, fsparam_u32hex, fsparam_s32, fsparam_u64, fsparam_enum,
-   fsparam_string, fsparam_blob, fsparam_bdev, fsparam_path, fsparam_fd */
 #define fsparam_u32oct(NAME, OPT) \
 			__fsparam(fs_param_is_u32, NAME, OPT, 0, (void *)8)
 

@@ -1,15 +1,14 @@
 #include <linux/ctype.h>
-#include <linux/errno.h>
-#include <linux/export.h>
-#include <linux/kstrtox.h>
-#include <linux/math64.h>
-#include <linux/types.h>
+int __must_check kstrtoull(const char *s, unsigned int base,
+			   unsigned long long *res);
+int __must_check kstrtouint(const char *s, unsigned int base,
+			    unsigned int *res);
 #include <linux/uaccess.h>
 
-#include "kstrtox.h"
+#define KSTRTOX_OVERFLOW (1U << 31)
 
-noinline const char *_parse_integer_fixup_radix(const char *s,
-						unsigned int *base)
+static noinline const char *_parse_integer_fixup_radix(const char *s,
+						       unsigned int *base)
 {
 	if (*base == 0) {
 		if (s[0] == '0') {
@@ -25,16 +24,15 @@ noinline const char *_parse_integer_fixup_radix(const char *s,
 	return s;
 }
 
-noinline unsigned int _parse_integer_limit(const char *s, unsigned int base,
-					   unsigned long long *p,
-					   size_t max_chars)
+static noinline unsigned int _parse_integer(const char *s, unsigned int base,
+					    unsigned long long *p)
 {
 	unsigned long long res;
 	unsigned int rv;
 
 	res = 0;
 	rv = 0;
-	while (max_chars--) {
+	for (;;) {
 		unsigned int c = *s;
 		unsigned int lc = c | 0x20;
 		unsigned int val;
@@ -61,17 +59,14 @@ noinline unsigned int _parse_integer_limit(const char *s, unsigned int base,
 	return rv;
 }
 
-noinline unsigned int _parse_integer(const char *s, unsigned int base,
-				     unsigned long long *p)
-{
-	return _parse_integer_limit(s, base, p, INT_MAX);
-}
-
-static int _kstrtoull(const char *s, unsigned int base, unsigned long long *res)
+noinline int kstrtoull(const char *s, unsigned int base,
+		       unsigned long long *res)
 {
 	unsigned long long _res;
 	unsigned int rv;
 
+	if (s[0] == '+')
+		s++;
 	s = _parse_integer_fixup_radix(s, &base);
 	rv = _parse_integer(s, base, &_res);
 	if (rv & KSTRTOX_OVERFLOW)
@@ -87,16 +82,6 @@ static int _kstrtoull(const char *s, unsigned int base, unsigned long long *res)
 	return 0;
 }
 
-noinline int kstrtoull(const char *s, unsigned int base,
-		       unsigned long long *res)
-{
-	if (s[0] == '+')
-		s++;
-	return _kstrtoull(s, base, res);
-}
-
-/* kstrtoll, _kstrtoul, _kstrtol removed - no callers */
-
 noinline int kstrtouint(const char *s, unsigned int base, unsigned int *res)
 {
 	unsigned long long tmp;
@@ -110,4 +95,3 @@ noinline int kstrtouint(const char *s, unsigned int base, unsigned int *res)
 	*res = tmp;
 	return 0;
 }
-/* kstrtoint, kstrtou16, kstrtos16, kstrtou8, kstrtobool removed - no callers */

@@ -1,9 +1,0 @@
-# SPDX-License-Identifier: GPL-2.0-only
-# Minimal RTC configuration - only MC146818 support
-
-config RTC_LIB
-	bool
-
-config RTC_MC146818_LIB
-	bool
-	select RTC_LIB

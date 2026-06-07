@@ -6,24 +6,17 @@
 # define BTF_TYPE_TAG(value)
 # define __kernel
 # define __user	BTF_TYPE_TAG(user)
-# define __iomem
 # define __percpu	BTF_TYPE_TAG(percpu)
 # define __rcu
 # define __chk_user_ptr(x)	(void)0
-# define __chk_io_ptr(x)	(void)0
-# define __must_hold(x)
 # define __acquires(x)
-# define __cond_acquires(x)
 # define __releases(x)
 # define __acquire(x)	(void)0
 # define __release(x)	(void)0
 # define __cond_lock(x,c) (c)
 # define __force
-# define __nocast
-# define __safe
 # define __private
 # define ACCESS_PRIVATE(p, member) ((p)->member)
-# define __builtin_warning(x, y...) (1)
 
 #define ___PASTE(a,b) a##b
 #define __PASTE(a,b) ___PASTE(a,b)
@@ -32,37 +25,19 @@
 
 #include <linux/compiler_attributes.h>
 
-
-/* Clang-specific definitions - inlined from compiler-clang.h */
 #define __UNIQUE_ID(prefix) __PASTE(__PASTE(__UNIQUE_ID_, prefix), __COUNTER__)
 #define __no_sanitize_address
-#define __no_sanitize_thread
-#define __HAVE_BUILTIN_BSWAP32__
-#define __HAVE_BUILTIN_BSWAP64__
-#define __HAVE_BUILTIN_BSWAP16__
 #define __no_sanitize_coverage
 #define __nocfi		__attribute__((__no_sanitize__("cfi")))
-
-#define __diag_clang(version, severity, s) \
-	__diag_clang_ ## version(__diag_clang_ ## severity s)
-#define __diag_clang_ignore	ignored
-#define __diag_str1(s)		#s
-#define __diag_str(s)		__diag_str1(s)
-#define __diag(s)		_Pragma(__diag_str(clang diagnostic s))
-#define __diag_clang_11(s)	__diag(s)
-/* __diag_ignore_all removed - unused */
 
 #define notrace			__attribute__((__no_instrument_function__))
 
 #define inline inline __gnu_inline __inline_maybe_unused notrace
 
-/* __inline__ removed - unused */
-
 #define __inline_maybe_unused __maybe_unused
 #define noinline_for_stack noinline
 #define __no_kasan_or_inline __always_inline
 #define __no_kcsan
-#define __no_sanitize_or_inline __always_inline
 
 #define noinstr								\
 	noinline notrace __attribute((__section__(".noinstr.text")))	\
@@ -120,13 +95,5 @@
 #define compiletime_assert_atomic_type(t)				\
 	compiletime_assert(__native_word(t),				\
 		"Need native word sized stores/loads for atomicity.")
-
-#define __diag_GCC(version, severity, string)
-
-#define __diag_push()	__diag(push)
-#define __diag_pop()	__diag(pop)
-
-#define __diag_ignore(compiler, version, option, comment) \
-	__diag_ ## compiler(version, ignore, option)
 
 #endif  

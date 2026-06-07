@@ -9,14 +9,8 @@
 typedef struct wait_queue_entry wait_queue_entry_t;
 
 typedef int (*wait_queue_func_t)(struct wait_queue_entry *wq_entry, unsigned mode, int flags, void *key);
-int default_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, int flags, void *key);
-
 #define WQ_FLAG_EXCLUSIVE	0x01
-#define WQ_FLAG_WOKEN		0x02
 #define WQ_FLAG_BOOKMARK	0x04
-#define WQ_FLAG_CUSTOM		0x08
-#define WQ_FLAG_DONE		0x10
-#define WQ_FLAG_PRIORITY	0x20
 
 struct wait_queue_entry {
 	unsigned int		flags;
@@ -30,16 +24,6 @@ struct wait_queue_head {
 	struct list_head	head;
 };
 typedef struct wait_queue_head wait_queue_head_t;
-
-/* struct task_struct forward decl removed - unused */
-
-#define __WAITQUEUE_INITIALIZER(name, tsk) {					\
-	.private	= tsk,							\
-	.func		= default_wake_function,				\
-	.entry		= { NULL, NULL } }
-
-#define DECLARE_WAITQUEUE(name, tsk)						\
-	struct wait_queue_entry name = __WAITQUEUE_INITIALIZER(name, tsk)
 
 #define __WAIT_QUEUE_HEAD_INITIALIZER(name) {					\
 	.lock		= __SPIN_LOCK_UNLOCKED(name.lock),			\
@@ -64,120 +48,11 @@ static inline int waitqueue_active(struct wait_queue_head *wq_head)
 	return !list_empty(&wq_head->head);
 }
 
-extern void add_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry);
-extern void remove_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry);
-
-static inline void __add_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
-{
-	struct list_head *head = &wq_head->head;
-	struct wait_queue_entry *wq;
-
-	list_for_each_entry(wq, &wq_head->head, entry) {
-		if (!(wq->flags & WQ_FLAG_PRIORITY))
-			break;
-		head = &wq->entry;
-	}
-	list_add(&wq_entry->entry, head);
-}
-
-
-static inline void __add_wait_queue_entry_tail(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
-{
-	list_add_tail(&wq_entry->entry, &wq_head->head);
-}
-
-static inline void
-__remove_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
-{
-	list_del(&wq_entry->entry);
-}
-
 void __wake_up(struct wait_queue_head *wq_head, unsigned int mode, int nr, void *key);
-void __wake_up_locked_key(struct wait_queue_head *wq_head, unsigned int mode, void *key);
 void __wake_up_locked_key_bookmark(struct wait_queue_head *wq_head,
 		unsigned int mode, void *key, wait_queue_entry_t *bookmark);
-/* __wake_up_sync_key removed - no callers */
-void __wake_up_locked(struct wait_queue_head *wq_head, unsigned int mode, int nr);
 
-#define wake_up(x)			__wake_up(x, TASK_NORMAL, 1, NULL)
 #define wake_up_all(x)			__wake_up(x, TASK_NORMAL, 0, NULL)
-#define wake_up_locked(x)		__wake_up_locked((x), TASK_NORMAL, 1)
-
-#define wake_up_interruptible(x)	__wake_up(x, TASK_INTERRUPTIBLE, 1, NULL)
-#define wake_up_interruptible_all(x)	__wake_up(x, TASK_INTERRUPTIBLE, 0, NULL)
-
-#define poll_to_key(m) ((void *)(__force uintptr_t)(__poll_t)(m))
-/* key_to_poll, wake_up_poll removed - unused */
-#define wake_up_interruptible_poll(x, m)					\
-	__wake_up(x, TASK_INTERRUPTIBLE, 1, poll_to_key(m))
-
-/* ___wait_cond_timeout removed - never used */
-
-#define ___wait_is_interruptible(state)						\
-	(!__builtin_constant_p(state) ||					\
-		state == TASK_INTERRUPTIBLE || state == TASK_KILLABLE)		\
-
-extern void init_wait_entry(struct wait_queue_entry *wq_entry, int flags);
 
 
-#define ___wait_event(wq_head, condition, state, exclusive, ret, cmd)		\
-({										\
-	__label__ __out;							\
-	struct wait_queue_entry __wq_entry;					\
-	long __ret = ret;	 				\
-										\
-	init_wait_entry(&__wq_entry, exclusive ? WQ_FLAG_EXCLUSIVE : 0);	\
-	for (;;) {								\
-		long __int = prepare_to_wait_event(&wq_head, &__wq_entry, state);\
-										\
-		if (condition)							\
-			break;							\
-										\
-		if (___wait_is_interruptible(state) && __int) {			\
-			__ret = __int;						\
-			goto __out;						\
-		}								\
-										\
-		cmd;								\
-	}									\
-	finish_wait(&wq_head, &__wq_entry);					\
-__out:	__ret;									\
-})
-
-#define __wait_event(wq_head, condition)					\
-	(void)___wait_event(wq_head, condition, TASK_UNINTERRUPTIBLE, 0, 0,	\
-			    schedule())
-
-#define wait_event(wq_head, condition)						\
-do {										\
-	might_sleep();								\
-	if (condition)								\
-		break;								\
-	__wait_event(wq_head, condition);					\
-} while (0)
-
-/* __wait_event_interruptible removed - unused */
-
-void prepare_to_wait(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry, int state);
-long prepare_to_wait_event(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry, int state);
-void finish_wait(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry);
-int autoremove_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, int sync, void *key);
-
-#define DEFINE_WAIT_FUNC(name, function)					\
-	struct wait_queue_entry name = {					\
-		.private	= current,					\
-		.func		= function,					\
-		.entry		= LIST_HEAD_INIT((name).entry),			\
-	}
-/* DEFINE_WAIT removed - unused */
-
-#define init_wait(wait)								\
-	do {									\
-		(wait)->private = current;					\
-		(wait)->func = autoremove_wake_function;			\
-		INIT_LIST_HEAD(&(wait)->entry);					\
-		(wait)->flags = 0;						\
-	} while (0)
-
-
-#endif  
+#endif

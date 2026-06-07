@@ -1,20 +1,10 @@
 #ifndef _LINUX_THREADS_H
 #define _LINUX_THREADS_H
 
+/* CONFIG_NR_CPUS always 1 in our minimal config */
+#define NR_CPUS		1
 
-
-#ifndef CONFIG_NR_CPUS
-#define CONFIG_NR_CPUS	1
-#endif
-
-#define NR_CPUS		CONFIG_NR_CPUS
-
-#define PID_MAX_DEFAULT (CONFIG_BASE_SMALL ? 0x1000 : 0x8000)
-
-#define PID_MAX_LIMIT (CONFIG_BASE_SMALL ? PAGE_SIZE * 8 : \
-	(sizeof(long) > 4 ? 4 * 1024 * 1024 : PID_MAX_DEFAULT))
-
-#define PIDS_PER_CPU_DEFAULT	1024
-#define PIDS_PER_CPU_MIN	8
+/* CONFIG_BASE_SMALL=1 in minimal config */
+#define PID_MAX_DEFAULT 0x1000
 
 #endif

@@ -1,19 +1,7 @@
 
-#include <linux/mm.h>
 #include <linux/slab.h>
-#include <linux/init.h>
-#include <linux/rculist.h>
-#include <linux/memblock.h>
-#include <linux/pid_namespace.h>
 #include <linux/init_task.h>
-#include <linux/syscalls.h>
-#include <linux/proc_ns.h>
-#include <linux/refcount.h>
 #include <linux/sched/signal.h>
-#include <linux/sched/task.h>
-#include <linux/ptrace.h>
-#include <linux/idr.h>
-#include <linux/file.h>
 
 struct pid init_struct_pid = {
 	.count		= REFCOUNT_INIT(1),
@@ -31,19 +19,9 @@ struct pid init_struct_pid = {
 
 int pid_max = PID_MAX_DEFAULT;
 
-#define RESERVED_PIDS 300
-
-int pid_max_min = RESERVED_PIDS + 1;
-int pid_max_max = PID_MAX_LIMIT;
-
 struct pid_namespace init_pid_ns = {
-	.ns.count = REFCOUNT_INIT(2),
 	.idr = IDR_INIT(init_pid_ns.idr),
 	.pid_allocated = PIDNS_ADDING,
-	.level = 0,
-	.child_reaper = &init_task,
-	.user_ns = &init_user_ns,
-	.ns.inum = PROC_PID_INIT_INO,
 };
 
 static __cacheline_aligned_in_smp DEFINE_SPINLOCK(pidmap_lock);
@@ -61,152 +39,57 @@ void put_pid(struct pid *pid)
 	}
 }
 
-static void delayed_put_pid(struct rcu_head *rhp)
-{
-	struct pid *pid = container_of(rhp, struct pid, rcu);
-	put_pid(pid);
-}
-
-void free_pid(struct pid *pid)
-{
-	int i;
-	unsigned long flags;
-
-	spin_lock_irqsave(&pidmap_lock, flags);
-	for (i = 0; i <= pid->level; i++) {
-		struct upid *upid = pid->numbers + i;
-		struct pid_namespace *ns = upid->ns;
-		switch (--ns->pid_allocated) {
-		case 2:
-		case 1:
-
-			wake_up_process(ns->child_reaper);
-			break;
-		case PIDNS_ADDING:
-
-			WARN_ON(ns->child_reaper);
-			ns->pid_allocated = 0;
-			break;
-		}
-
-		idr_remove(&ns->idr, upid->nr);
-	}
-	spin_unlock_irqrestore(&pidmap_lock, flags);
-
-	call_rcu(&pid->rcu, delayed_put_pid);
-}
-
+/* Simplified for single PID namespace (level=0), no set_tid */
 struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 		      size_t set_tid_size)
 {
 	struct pid *pid;
 	enum pid_type type;
-	int i, nr;
-	struct pid_namespace *tmp;
-	struct upid *upid;
-	int retval = -ENOMEM;
-
-	if (set_tid_size > ns->level + 1)
-		return ERR_PTR(-EINVAL);
+	int nr;
 
 	pid = kmem_cache_alloc(ns->pid_cachep, GFP_KERNEL);
 	if (!pid)
-		return ERR_PTR(retval);
+		return ERR_PTR(-ENOMEM);
 
-	tmp = ns;
-	pid->level = ns->level;
+	pid->level = 0;
 
-	for (i = ns->level; i >= 0; i--) {
-		int tid = 0;
+	idr_preload(GFP_KERNEL);
+	spin_lock_irq(&pidmap_lock);
+	nr = idr_alloc_cyclic(&ns->idr, NULL, 1, pid_max, GFP_ATOMIC);
+	spin_unlock_irq(&pidmap_lock);
+	local_unlock(&radix_tree_preloads.lock);
 
-		if (set_tid_size) {
-			tid = set_tid[ns->level - i];
-
-			retval = -EINVAL;
-			if (tid < 1 || tid >= pid_max)
-				goto out_free;
-
-			if (tid != 1 && !tmp->child_reaper)
-				goto out_free;
-			/* checkpoint_restore_ns_capable always true - removed check */
-			set_tid_size--;
-		}
-
-		idr_preload(GFP_KERNEL);
-		spin_lock_irq(&pidmap_lock);
-
-		if (tid) {
-			nr = idr_alloc(&tmp->idr, NULL, tid, tid + 1,
-				       GFP_ATOMIC);
-
-			if (nr == -ENOSPC)
-				nr = -EEXIST;
-		} else {
-			int pid_min = 1;
-
-			if (idr_get_cursor(&tmp->idr) > RESERVED_PIDS)
-				pid_min = RESERVED_PIDS;
-
-			nr = idr_alloc_cyclic(&tmp->idr, NULL, pid_min, pid_max,
-					      GFP_ATOMIC);
-		}
-		spin_unlock_irq(&pidmap_lock);
-		idr_preload_end();
-
-		if (nr < 0) {
-			retval = (nr == -ENOSPC) ? -EAGAIN : nr;
-			goto out_free;
-		}
-
-		pid->numbers[i].nr = nr;
-		pid->numbers[i].ns = tmp;
-		tmp = tmp->parent;
+	if (nr < 0) {
+		kmem_cache_free(ns->pid_cachep, pid);
+		return ERR_PTR((nr == -ENOSPC) ? -EAGAIN : nr);
 	}
 
-	retval = -ENOMEM;
+	pid->numbers[0].nr = nr;
+	pid->numbers[0].ns = ns;
 
 	get_pid_ns(ns);
 	refcount_set(&pid->count, 1);
 	for (type = 0; type < PIDTYPE_MAX; ++type)
 		INIT_HLIST_HEAD(&pid->tasks[type]);
 
-	upid = pid->numbers + ns->level;
 	spin_lock_irq(&pidmap_lock);
-	if (!(ns->pid_allocated & PIDNS_ADDING))
-		goto out_unlock;
-	for (; upid >= pid->numbers; --upid) {
-		idr_replace(&upid->ns->idr, pid, upid->nr);
-		upid->ns->pid_allocated++;
+	if (!(ns->pid_allocated & PIDNS_ADDING)) {
+		spin_unlock_irq(&pidmap_lock);
+		idr_remove(&ns->idr, nr);
+		kmem_cache_free(ns->pid_cachep, pid);
+		return ERR_PTR(-ENOMEM);
 	}
+	idr_replace(&ns->idr, pid, nr);
+	ns->pid_allocated++;
 	spin_unlock_irq(&pidmap_lock);
 
 	return pid;
-
-out_unlock:
-	spin_unlock_irq(&pidmap_lock);
-
-out_free:
-	spin_lock_irq(&pidmap_lock);
-	while (++i <= ns->level) {
-		upid = pid->numbers + i;
-		idr_remove(&upid->ns->idr, upid->nr);
-	}
-
-	if (ns->pid_allocated == PIDNS_ADDING)
-		idr_set_cursor(&ns->idr, 0);
-
-	spin_unlock_irq(&pidmap_lock);
-
-	kmem_cache_free(ns->pid_cachep, pid);
-	return ERR_PTR(retval);
 }
 
-struct pid *find_pid_ns(int nr, struct pid_namespace *ns)
+static struct pid *find_pid_ns(int nr, struct pid_namespace *ns)
 {
 	return idr_find(&ns->idr, nr);
 }
-
-/* find_vpid removed - only used by find_get_pid which is also unused */
 
 static struct pid **task_pid_ptr(struct task_struct *task, enum pid_type type)
 {
@@ -220,55 +103,7 @@ void attach_pid(struct task_struct *task, enum pid_type type)
 	hlist_add_head_rcu(&task->pid_links[type], &pid->tasks[type]);
 }
 
-static void __change_pid(struct task_struct *task, enum pid_type type,
-			 struct pid *new)
-{
-	struct pid **pid_ptr = task_pid_ptr(task, type);
-	struct pid *pid;
-	int tmp;
-
-	pid = *pid_ptr;
-
-	hlist_del_rcu(&task->pid_links[type]);
-	*pid_ptr = new;
-
-	for (tmp = PIDTYPE_MAX; --tmp >= 0;)
-		if (pid_has_task(pid, tmp))
-			return;
-
-	free_pid(pid);
-}
-
-void detach_pid(struct task_struct *task, enum pid_type type)
-{
-	__change_pid(task, type, NULL);
-}
-
-void exchange_tids(struct task_struct *left, struct task_struct *right)
-{
-	struct pid *pid1 = left->thread_pid;
-	struct pid *pid2 = right->thread_pid;
-	struct hlist_head *head1 = &pid1->tasks[PIDTYPE_PID];
-	struct hlist_head *head2 = &pid2->tasks[PIDTYPE_PID];
-
-	hlists_swap_heads_rcu(head1, head2);
-
-	rcu_assign_pointer(left->thread_pid, pid2);
-	rcu_assign_pointer(right->thread_pid, pid1);
-
-	WRITE_ONCE(left->pid, pid_nr(pid2));
-	WRITE_ONCE(right->pid, pid_nr(pid1));
-}
-
-void transfer_pid(struct task_struct *old, struct task_struct *new,
-		  enum pid_type type)
-{
-	if (type == PIDTYPE_PID)
-		new->thread_pid = old->thread_pid;
-	hlist_replace_rcu(&old->pid_links[type], &new->pid_links[type]);
-}
-
-struct task_struct *pid_task(struct pid *pid, enum pid_type type)
+static struct task_struct *pid_task(struct pid *pid, enum pid_type type)
 {
 	struct task_struct *result = NULL;
 	if (pid) {
@@ -297,59 +132,15 @@ struct pid *get_task_pid(struct task_struct *task, enum pid_type type)
 	return pid;
 }
 
-pid_t pid_nr_ns(struct pid *pid, struct pid_namespace *ns)
-{
-	struct upid *upid;
-	pid_t nr = 0;
-
-	if (pid && ns->level <= pid->level) {
-		upid = &pid->numbers[ns->level];
-		if (upid->ns == ns)
-			nr = upid->nr;
-	}
-	return nr;
-}
-
 pid_t pid_vnr(struct pid *pid)
 {
-	return pid_nr_ns(pid, task_active_pid_ns(current));
+	return pid ? pid->numbers[0].nr : 0;
 }
-
-pid_t __task_pid_nr_ns(struct task_struct *task, enum pid_type type,
-		       struct pid_namespace *ns)
-{
-	pid_t nr = 0;
-
-	rcu_read_lock();
-	if (!ns)
-		ns = task_active_pid_ns(current);
-	nr = pid_nr_ns(rcu_dereference(*task_pid_ptr(task, type)), ns);
-	rcu_read_unlock();
-
-	return nr;
-}
-
-struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
-{
-	return ns_of_pid(task_pid(tsk));
-}
-
-/* pidfd_open replaced with COND_SYSCALL */
 
 void __init pid_idr_init(void)
 {
-	BUILD_BUG_ON(PID_MAX_LIMIT >= PIDNS_ADDING);
-
-	pid_max = min(pid_max_max,
-		      max_t(int, pid_max,
-			    PIDS_PER_CPU_DEFAULT *num_possible_cpus()));
-	pid_max_min =
-		max_t(int, pid_max_min, PIDS_PER_CPU_MIN *num_possible_cpus());
-
-	idr_init(&init_pid_ns.idr);
+	idr_init_base(&init_pid_ns.idr, 0);
 
 	init_pid_ns.pid_cachep =
 		KMEM_CACHE(pid, SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT);
 }
-
-/* pidfd_getfd replaced with COND_SYSCALL */

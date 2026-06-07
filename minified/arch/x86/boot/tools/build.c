@@ -1,19 +1,36 @@
 
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <stdint.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/mman.h>
-#include <tools/le_byteshift.h>
 
 typedef unsigned char u8;
-typedef unsigned short u16;
 typedef unsigned int u32;
+
+static inline uint16_t get_unaligned_le16(const void *p)
+{
+	const uint8_t *b = (const uint8_t *)p;
+	return b[0] | b[1] << 8;
+}
+
+static inline void put_unaligned_le16(uint16_t val, void *p)
+{
+	uint8_t *b = (uint8_t *)p;
+	b[0] = val;
+	b[1] = val >> 8;
+}
+
+static inline void put_unaligned_le32(uint32_t val, void *p)
+{
+	put_unaligned_le16(val, p);
+	put_unaligned_le16(val >> 16, (uint8_t *)p + 2);
+}
 
 #define DEFAULT_MAJOR_ROOT 0
 #define DEFAULT_MINOR_ROOT 0
@@ -24,18 +41,9 @@ typedef unsigned int u32;
 
 u8 buf[SETUP_SECT_MAX * 512];
 
-#define PECOFF_RELOC_RESERVE 0x20
-
 #define PECOFF_COMPAT_RESERVE 0x0
 
-static unsigned long efi32_stub_entry;
-static unsigned long efi64_stub_entry;
-static unsigned long efi_pe_entry;
-static unsigned long efi32_pe_entry;
 static unsigned long kernel_info;
-static unsigned long startup_64;
-static unsigned long _ehead;
-static unsigned long _end;
 
 static const u32 crctab32[] = {
 	0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
@@ -110,21 +118,6 @@ static void usage(void)
 	die("Usage: build setup system zoffset.h image");
 }
 
-static inline void update_pecoff_setup_and_reloc(unsigned int size)
-{
-}
-static inline void update_pecoff_text(unsigned int text_start,
-				      unsigned int file_sz,
-				      unsigned int init_sz)
-{
-}
-/* efi_stub_defaults, efi_stub_entry_update removed - empty stubs */
-
-static inline int reserve_pecoff_reloc_section(int c)
-{
-	return 0;
-}
-
 static int reserve_pecoff_compat_section(int c)
 {
 	memset(buf + c, 0, PECOFF_COMPAT_RESERVE);
@@ -155,14 +148,7 @@ static void parse_zoffset(char *fname)
 	p = (char *)buf;
 
 	while (p && *p) {
-		PARSE_ZOFS(p, efi32_stub_entry);
-		PARSE_ZOFS(p, efi64_stub_entry);
-		PARSE_ZOFS(p, efi_pe_entry);
-		PARSE_ZOFS(p, efi32_pe_entry);
 		PARSE_ZOFS(p, kernel_info);
-		PARSE_ZOFS(p, startup_64);
-		PARSE_ZOFS(p, _ehead);
-		PARSE_ZOFS(p, _end);
 
 		p = strchr(p, '\n');
 		while (p && (*p == '\r' || *p == '\n'))
@@ -172,7 +158,7 @@ static void parse_zoffset(char *fname)
 
 int main(int argc, char **argv)
 {
-	unsigned int i, sz, setup_sectors, init_sz;
+	unsigned int i, sz, setup_sectors;
 	int c;
 	u32 sys_size;
 	struct stat sb;
@@ -181,7 +167,6 @@ int main(int argc, char **argv)
 	void *kernel;
 	u32 crc = 0xffffffffUL;
 
-	/* efi_stub_defaults removed - empty stub */
 	if (argc != 5)
 		usage();
 	parse_zoffset(argv[3]);
@@ -203,15 +188,12 @@ int main(int argc, char **argv)
 	fclose(file);
 
 	c += reserve_pecoff_compat_section(c);
-	c += reserve_pecoff_reloc_section(c);
 
 	setup_sectors = (c + 511) / 512;
 	if (setup_sectors < SETUP_SECT_MIN)
 		setup_sectors = SETUP_SECT_MIN;
 	i = setup_sectors * 512;
 	memset(buf + c, 0, i - c);
-
-	update_pecoff_setup_and_reloc(i);
 
 	put_unaligned_le16(DEFAULT_ROOT_DEV, &buf[508]);
 
@@ -230,10 +212,6 @@ int main(int argc, char **argv)
 	buf[0x1f1] = setup_sectors - 1;
 	put_unaligned_le32(sys_size, &buf[0x1f4]);
 
-	init_sz = get_unaligned_le32(&buf[0x260]);
-	update_pecoff_text(setup_sectors * 512, i + (sys_size * 16), init_sz);
-
-	/* efi_stub_entry_update removed - empty stub */
 	put_unaligned_le32(kernel_info, &buf[0x268]);
 
 	crc = partial_crc32(buf, i, crc);

@@ -1,4 +1,3 @@
-/* Stubbed - sorttable for minimal kernel (skip table sorting) */
 #include <stdio.h>
 #include <stdlib.h>
 

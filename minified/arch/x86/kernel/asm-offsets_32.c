@@ -1,7 +1,6 @@
-#ifndef __LINUX_KBUILD_H
+#ifndef DEFINE
 #error "Please do not build this file directly, build asm-offsets.c instead"
 #endif
-/* efi.h, ucontext.h removed - EFI_svam offset no longer used */
 void foo(void);
 
 void foo(void)
@@ -15,7 +14,6 @@ void foo(void)
 	OFFSET(CPUINFO_x86_vendor_id, cpuinfo_x86, x86_vendor_id);
 	BLANK();
 
-	/* PT_EBX, PT_ECX, PT_EDX, PT_ESI, PT_EDI, PT_EBP, PT_DS, PT_ES removed - not used in assembly */
 	OFFSET(PT_EAX, pt_regs, ax);
 	OFFSET(PT_FS, pt_regs, fs);
 	OFFSET(PT_GS, pt_regs, gs);
@@ -27,12 +25,8 @@ void foo(void)
 	OFFSET(PT_OLDSS, pt_regs, ss);
 	BLANK();
 
-	/* saved_context_gdt_desc removed - not used in assembly */
-
 	DEFINE(TSS_entry2task_stack,
 	       offsetof(struct cpu_entry_area, tss.x86_tss.sp1) -
 		       offsetofend(struct cpu_entry_area,
 				   entry_stack_page.stack));
-
-	/* EFI_svam removed - not used */
 }

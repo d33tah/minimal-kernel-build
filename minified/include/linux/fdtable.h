@@ -2,13 +2,28 @@
 #ifndef __LINUX_FDTABLE_H
 #define __LINUX_FDTABLE_H
 
-#include <asm/posix_types.h>
-#include <linux/compiler.h>
-#include <linux/spinlock.h>
 #include <linux/rcupdate.h>
-#include <linux/nospec.h>
-#include <linux/types.h>
-#include <linux/init.h>
+#include <asm/barrier.h>
+#ifndef array_index_mask_nospec
+						    unsigned long size)
+{
+	 
+	OPTIMIZER_HIDE_VAR(index);
+	return ~(long)(index | (size - 1UL - index)) >> (BITS_PER_LONG - 1);
+}
+#endif
+
+#define array_index_nospec(index, size)					\
+({									\
+	typeof(index) _i = (index);					\
+	typeof(size) _s = (size);					\
+	unsigned long _mask = array_index_mask_nospec(_i, _s);		\
+									\
+	BUILD_BUG_ON(sizeof(_i) > sizeof(long));			\
+	BUILD_BUG_ON(sizeof(_s) > sizeof(long));			\
+									\
+	(typeof(_i)) (_i & _mask);					\
+})
 #include <linux/fs.h>
 
 #include <linux/atomic.h>
@@ -32,8 +47,6 @@ static inline bool close_on_exec(unsigned int fd, const struct fdtable *fdt)
 struct files_struct {
    
 	atomic_t count;
-	bool resize_in_progress;
-	wait_queue_head_t resize_wait;
 
 	struct fdtable __rcu *fdt;
 	struct fdtable fdtab;
@@ -45,8 +58,6 @@ struct files_struct {
 	unsigned long full_fds_bits_init[1];
 	struct file __rcu * fd_array[NR_OPEN_DEFAULT];
 };
-
-/* struct file_operations, vfsmount, dentry forward decls removed - unused */
 
 #define rcu_dereference_check_fdtable(files, fdtfd) \
 	rcu_dereference_check((fdtfd), lockdep_is_held(&(files)->file_lock))
@@ -65,17 +76,7 @@ static inline struct file *files_lookup_fd_raw(struct files_struct *files, unsig
 	return NULL;
 }
 
-struct file *task_lookup_fd_rcu(struct task_struct *task, unsigned int fd);
-struct file *task_lookup_next_fd_rcu(struct task_struct *task, unsigned int *fd);
-
-struct task_struct;
-
-void put_files_struct(struct files_struct *fs);
-int unshare_files(void);
 struct files_struct *dup_fd(struct files_struct *, unsigned, int *) __latent_entropy;
-void do_close_on_exec(struct files_struct *);
-
-/* close_fd, __close_range, iterate_fd removed - never called */
 
 extern struct kmem_cache *files_cachep;
 

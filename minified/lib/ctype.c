@@ -1,7 +1,6 @@
 
 #include <linux/ctype.h>
 #include <linux/compiler.h>
-#include <linux/export.h>
 
 const unsigned char _ctype[] = {
 	_C,	  _C,	   _C,	    _C,	     _C,      _C,      _C,	_C,

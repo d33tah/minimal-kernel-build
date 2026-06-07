@@ -4,7 +4,6 @@
 
 #include <linux/threads.h>
 
-/* NMI_VECTOR removed - unused */
 #define FIRST_EXTERNAL_VECTOR		0x20
 #define IA32_SYSCALL_VECTOR		0x80
 #define ISA_IRQ_VECTOR(irq)		(((FIRST_EXTERNAL_VECTOR + 16) & ~15) + irq)

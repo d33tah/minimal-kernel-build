@@ -1,56 +1,11 @@
-#include <linux/irq.h>
 #include <linux/slab.h>
-#include <linux/export.h>
 #include <linux/interrupt.h>
-#include <linux/kernel_stat.h>
 #include <linux/radix-tree.h>
-#include <linux/bitmap.h>
-#include <linux/irqdomain.h>
-#include <linux/sysfs.h>
-
 #include "internals.h"
-
-static void desc_set_defaults(unsigned int irq, struct irq_desc *desc, int node,
-			      const struct cpumask *affinity,
-			      struct module *owner)
-{
-	desc->irq_common_data.handler_data = NULL;
-	desc->irq_common_data.msi_desc = NULL;
-
-	desc->irq_data.common = &desc->irq_common_data;
-	desc->irq_data.irq = irq;
-	desc->irq_data.chip = &no_irq_chip;
-	desc->irq_data.chip_data = NULL;
-	irq_settings_clr_and_set(desc, ~0, _IRQ_DEFAULT_INIT_FLAGS);
-	irqd_set(&desc->irq_data, IRQD_IRQ_DISABLED);
-	irqd_set(&desc->irq_data, IRQD_IRQ_MASKED);
-	desc->handle_irq = handle_bad_irq;
-	desc->depth = 1;
-	desc->irq_count = 0;
-	desc->irqs_unhandled = 0;
-	desc->name = NULL;
-	desc->owner = owner;
-	/* for_each_possible_cpu simplified - single CPU */
-	*per_cpu_ptr(desc->kstat_irqs, 0) = 0;
-}
 
 int nr_irqs = NR_IRQS;
 
-static DEFINE_MUTEX(sparse_irq_lock);
-static DECLARE_BITMAP(allocated_irqs, IRQ_BITMAP_BITS);
-
-static void irq_kobj_release(struct kobject *kobj);
-
-static struct kobj_type irq_kobj_type = {
-	.release = irq_kobj_release,
-};
-
 static RADIX_TREE(irq_desc_tree, GFP_KERNEL);
-
-static void irq_insert_desc(unsigned int irq, struct irq_desc *desc)
-{
-	radix_tree_insert(&irq_desc_tree, irq, desc);
-}
 
 struct irq_desc *irq_to_desc(unsigned int irq)
 {
@@ -58,7 +13,6 @@ struct irq_desc *irq_to_desc(unsigned int irq)
 }
 
 static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
-				   const struct cpumask *affinity,
 				   struct module *owner)
 {
 	struct irq_desc *desc;
@@ -67,188 +21,47 @@ static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
 	if (!desc)
 		return NULL;
 
-	desc->kstat_irqs = alloc_percpu(unsigned int);
-	if (!desc->kstat_irqs)
-		goto err_desc;
-
 	raw_spin_lock_init(&desc->lock);
-	/* lockdep_set_class removed - empty stub */
 	mutex_init(&desc->request_mutex);
 	init_waitqueue_head(&desc->wait_for_threads);
 
-	desc_set_defaults(irq, desc, node, affinity, owner);
+	desc->irq_data.common = &desc->irq_common_data;
+	desc->irq_data.irq = irq;
+	desc->irq_data.chip = &no_irq_chip;
+	irq_settings_clr_and_set(desc, ~0, _IRQ_DEFAULT_INIT_FLAGS);
+	irqd_set(&desc->irq_data, IRQD_IRQ_DISABLED);
+	irqd_set(&desc->irq_data, IRQD_IRQ_MASKED);
+	desc->handle_irq = handle_bad_irq;
+	desc->depth = 1;
+	desc->owner = owner;
 	irqd_set(&desc->irq_data, flags);
-	kobject_init(&desc->kobj, &irq_kobj_type);
 
 	return desc;
-
-err_desc:
-	kfree(desc);
-	return NULL;
-}
-
-static void irq_kobj_release(struct kobject *kobj)
-{
-	struct irq_desc *desc = container_of(kobj, struct irq_desc, kobj);
-
-	free_percpu(desc->kstat_irqs);
-	kfree(desc);
-}
-
-static void delayed_free_desc(struct rcu_head *rhp)
-{
-	struct irq_desc *desc = container_of(rhp, struct irq_desc, rcu);
-
-	kobject_put(&desc->kobj);
-}
-
-static void free_desc(unsigned int irq)
-{
-	struct irq_desc *desc = irq_to_desc(irq);
-
-	/* irq_remove_debugfs_entry, unregister_irq_proc removed - empty stubs */
-	radix_tree_delete(&irq_desc_tree, irq);
-	call_rcu(&desc->rcu, delayed_free_desc);
-}
-
-static int alloc_descs(unsigned int start, unsigned int cnt, int node,
-		       const struct irq_affinity_desc *affinity,
-		       struct module *owner)
-{
-	struct irq_desc *desc;
-	int i;
-
-	if (affinity) {
-		for (i = 0; i < cnt; i++) {
-			if (cpumask_empty(&affinity[i].mask))
-				return -EINVAL;
-		}
-	}
-
-	for (i = 0; i < cnt; i++) {
-		const struct cpumask *mask = NULL;
-		unsigned int flags = 0;
-
-		if (affinity) {
-			if (affinity->is_managed) {
-				flags = IRQD_AFFINITY_MANAGED |
-					IRQD_MANAGED_SHUTDOWN;
-			}
-			mask = &affinity->mask;
-			node = cpu_to_node(cpumask_first(mask));
-			affinity++;
-		}
-
-		desc = alloc_desc(start + i, node, flags, mask, owner);
-		if (!desc)
-			goto err;
-		irq_insert_desc(start + i, desc);
-		/* irq_add_debugfs_entry removed - empty stub */
-	}
-	bitmap_set(allocated_irqs, start, cnt);
-	return start;
-
-err:
-	for (i--; i >= 0; i--)
-		free_desc(start + i);
-	return -ENOMEM;
 }
 
 int __init early_irq_init(void)
 {
-	int i, node = first_online_node;
-	int initcnt = NR_IRQS_LEGACY; /* arch_probe_nr_irqs inlined */
+	int i;
+	int initcnt = NR_IRQS_LEGACY;
 	struct irq_desc *desc;
 
 	printk(KERN_INFO "NR_IRQS: %d, nr_irqs: %d, preallocated irqs: %d\n",
 	       NR_IRQS, nr_irqs, initcnt);
 
-	if (WARN_ON(nr_irqs > IRQ_BITMAP_BITS))
+	if (nr_irqs > IRQ_BITMAP_BITS)
 		nr_irqs = IRQ_BITMAP_BITS;
 
-	if (WARN_ON(initcnt > IRQ_BITMAP_BITS))
+	if (initcnt > IRQ_BITMAP_BITS)
 		initcnt = IRQ_BITMAP_BITS;
 
 	if (initcnt > nr_irqs)
 		nr_irqs = initcnt;
 
 	for (i = 0; i < initcnt; i++) {
-		desc = alloc_desc(i, node, 0, NULL, NULL);
-		set_bit(i, allocated_irqs);
-		irq_insert_desc(i, desc);
+		desc = alloc_desc(i, 0, 0, NULL);
+		radix_tree_insert(&irq_desc_tree, i, desc);
 	}
-	return 0; /* arch_early_irq_init inlined */
-}
-
-int handle_irq_desc(struct irq_desc *desc)
-{
-	if (!desc)
-		return -EINVAL;
-
-	/* handle_enforce_irqctx always returns false - check removed */
-	generic_handle_irq_desc(desc);
 	return 0;
-}
-
-int generic_handle_irq(unsigned int irq)
-{
-	return handle_irq_desc(irq_to_desc(irq));
-}
-
-int generic_handle_irq_safe(unsigned int irq)
-{
-	unsigned long flags;
-	int ret;
-
-	local_irq_save(flags);
-	ret = handle_irq_desc(irq_to_desc(irq));
-	local_irq_restore(flags);
-	return ret;
-}
-
-/* irq_free_descs removed - never called */
-
-int __ref __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt,
-			    int node, struct module *owner,
-			    const struct irq_affinity_desc *affinity)
-{
-	int start, ret;
-
-	if (!cnt)
-		return -EINVAL;
-
-	if (irq >= 0) {
-		if (from > irq)
-			return -EINVAL;
-		from = irq;
-	}
-	/* arch_dynirq_lower_bound inlined - weak impl just returns from */
-
-	mutex_lock(&sparse_irq_lock);
-
-	start = bitmap_find_next_zero_area(allocated_irqs, IRQ_BITMAP_BITS,
-					   from, cnt, 0);
-	ret = -EEXIST;
-	if (irq >= 0 && start != irq)
-		goto unlock;
-
-	/* Inlined irq_expand_nr_irqs */
-	if (start + cnt > nr_irqs) {
-		if (start + cnt > IRQ_BITMAP_BITS) {
-			ret = -ENOMEM;
-			goto unlock;
-		}
-		nr_irqs = start + cnt;
-	}
-	ret = alloc_descs(start, cnt, node, affinity, owner);
-unlock:
-	mutex_unlock(&sparse_irq_lock);
-	return ret;
-}
-
-unsigned int irq_get_next_irq(unsigned int offset)
-{
-	return find_next_bit(allocated_irqs, nr_irqs, offset);
 }
 
 struct irq_desc *__irq_get_desc_lock(unsigned int irq, unsigned long *flags,
@@ -257,16 +70,6 @@ struct irq_desc *__irq_get_desc_lock(unsigned int irq, unsigned long *flags,
 	struct irq_desc *desc = irq_to_desc(irq);
 
 	if (desc) {
-		if (check & _IRQ_DESC_CHECK) {
-			if ((check & _IRQ_DESC_PERCPU) &&
-			    !irq_settings_is_per_cpu_devid(desc))
-				return NULL;
-
-			if (!(check & _IRQ_DESC_PERCPU) &&
-			    irq_settings_is_per_cpu_devid(desc))
-				return NULL;
-		}
-
 		if (bus)
 			chip_bus_lock(desc);
 		raw_spin_lock_irqsave(&desc->lock, *flags);

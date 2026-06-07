@@ -3,12 +3,9 @@
 
 #include <linux/compiler_types.h>
 
-/* Inlined from uapi/linux/stddef.h */
 #ifndef __always_inline
 #define __always_inline inline
 #endif
-
-/* __struct_group, struct_group*, __DECLARE_FLEX_ARRAY removed - unused */
 
 #undef NULL
 #define NULL ((void *)0)

@@ -1,24 +1,17 @@
 
-#include <linux/spinlock.h>
-#include <linux/percpu.h>
-#include <linux/kallsyms.h>
 
 #include <linux/pgtable.h>
 
-#include <asm/cpu_entry_area.h>
-#include <asm/fixmap.h>
 #include <asm/desc.h>
 
 static DEFINE_PER_CPU_PAGE_ALIGNED(struct entry_stack_page,
 				   entry_stack_storage);
 
-DECLARE_PER_CPU_PAGE_ALIGNED(struct doublefault_stack, doublefault_stack);
+DEFINE_PER_CPU_PAGE_ALIGNED(struct doublefault_stack, doublefault_stack) = {};
 
 noinstr struct cpu_entry_area *get_cpu_entry_area(int cpu)
 {
 	unsigned long va = CPU_ENTRY_AREA_PER_CPU + cpu * CPU_ENTRY_AREA_SIZE;
-	BUILD_BUG_ON(sizeof(struct cpu_entry_area) % PAGE_SIZE != 0);
-
 	return (struct cpu_entry_area *)va;
 }
 
@@ -41,73 +34,36 @@ static void __init cea_map_percpu_pages(void *cea_vaddr, void *ptr, int pages,
 		cea_set_pte(cea_vaddr, per_cpu_ptr_to_phys(ptr), prot);
 }
 
-/* CONFIG_PERF_EVENTS is not set - only empty stub compiled */
-static inline void percpu_setup_debug_store(unsigned int cpu)
-{
-}
-
-static inline void percpu_setup_exception_stacks(unsigned int cpu)
-{
-	struct cpu_entry_area *cea = get_cpu_entry_area(cpu);
-
-	cea_map_percpu_pages(&cea->doublefault_stack,
-			     &per_cpu(doublefault_stack, cpu), 1, PAGE_KERNEL);
-}
-
-static void __init setup_cpu_entry_area(unsigned int cpu)
-{
-	struct cpu_entry_area *cea = get_cpu_entry_area(cpu);
-
-	pgprot_t gdt_prot = boot_cpu_has(X86_FEATURE_XENPV) ? PAGE_KERNEL_RO :
-							      PAGE_KERNEL;
-	pgprot_t tss_prot = PAGE_KERNEL;
-
-	cea_set_pte(&cea->gdt, get_cpu_gdt_paddr(cpu), gdt_prot);
-
-	cea_map_percpu_pages(&cea->entry_stack_page,
-			     per_cpu_ptr(&entry_stack_storage, cpu), 1,
-			     PAGE_KERNEL);
-
-	BUILD_BUG_ON((offsetof(struct tss_struct, x86_tss) ^
-		      offsetofend(struct tss_struct, x86_tss)) &
-		     PAGE_MASK);
-	BUILD_BUG_ON(sizeof(struct tss_struct) % PAGE_SIZE != 0);
-
-	BUILD_BUG_ON(offsetof(struct tss_struct, x86_tss) != 0);
-	BUILD_BUG_ON(sizeof(struct x86_hw_tss) != 0x68);
-
-	cea_map_percpu_pages(&cea->tss, &per_cpu(cpu_tss_rw, cpu),
-			     sizeof(struct tss_struct) / PAGE_SIZE, tss_prot);
-
-	per_cpu(cpu_entry_area, cpu) = cea;
-
-	percpu_setup_exception_stacks(cpu);
-
-	percpu_setup_debug_store(cpu);
-}
-
-static __init void setup_cpu_entry_area_ptes(void)
+void __init setup_cpu_entry_areas(void)
 {
 	unsigned long start, end;
-
-	BUILD_BUG_ON((CPU_ENTRY_AREA_PAGES + 1) * PAGE_SIZE !=
-		     CPU_ENTRY_AREA_MAP_SIZE);
-	BUILD_BUG_ON(CPU_ENTRY_AREA_TOTAL_SIZE != CPU_ENTRY_AREA_MAP_SIZE);
-	BUG_ON(CPU_ENTRY_AREA_BASE & ~PMD_MASK);
+	struct cpu_entry_area *cea;
+	pgprot_t gdt_prot, tss_prot;
 
 	start = CPU_ENTRY_AREA_BASE;
 	end = start + CPU_ENTRY_AREA_MAP_SIZE;
 
 	for (; start < end && start >= CPU_ENTRY_AREA_BASE; start += PMD_SIZE)
 		populate_extra_pte(start);
-}
 
-void __init setup_cpu_entry_areas(void)
-{
-	setup_cpu_entry_area_ptes();
+	cea = get_cpu_entry_area(0);
+	gdt_prot = boot_cpu_has(X86_FEATURE_XENPV) ? PAGE_KERNEL_RO :
+						     PAGE_KERNEL;
+	tss_prot = PAGE_KERNEL;
 
-	/* for_each_possible_cpu simplified - single CPU */
-	setup_cpu_entry_area(0);
+	cea_set_pte(&cea->gdt, get_cpu_gdt_paddr(0), gdt_prot);
+
+	cea_map_percpu_pages(&cea->entry_stack_page,
+			     per_cpu_ptr(&entry_stack_storage, 0), 1,
+			     PAGE_KERNEL);
+
+	cea_map_percpu_pages(&cea->tss, &per_cpu(cpu_tss_rw, 0),
+			     sizeof(struct tss_struct) / PAGE_SIZE, tss_prot);
+
+	per_cpu(cpu_entry_area, 0) = cea;
+
+	cea_map_percpu_pages(&cea->doublefault_stack,
+			     &per_cpu(doublefault_stack, 0), 1, PAGE_KERNEL);
 
 	sync_initial_page_table();
 }

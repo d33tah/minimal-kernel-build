@@ -1,51 +1,25 @@
 
-#include <linux/signal.h>
-#include <linux/sched.h>
-#include <linux/kernel.h>
-#include <linux/errno.h>
-#include <linux/string.h>
-#include <linux/types.h>
-#include <linux/ptrace.h>
-#include <linux/mman.h>
-#include <linux/mm.h>
-#include <linux/hugetlb.h>
-#include <linux/swap.h>
-#include <linux/smp.h>
-#include <linux/init.h>
-#include <linux/highmem.h>
-#include <linux/pagemap.h>
-#include <linux/pci.h>
-#include <linux/pfn.h>
-#include <linux/poison.h>
 #include <linux/memblock.h>
-#include <linux/proc_fs.h>
-#include <linux/memory_hotplug.h>
-#include <linux/initrd.h>
-#include <linux/cpumask.h>
-#include <linux/gfp.h>
 
-#include <asm/asm.h>
-#include <asm/bios_ebda.h>
-#include <asm/processor.h>
-#include <linux/uaccess.h>
-#include <asm/fixmap.h>
-#include <asm/e820/api.h>
-#include <asm/apic.h>
-#include <asm/bugs.h>
-#include <asm/tlb.h>
 #include <asm/tlbflush.h>
-/* olpc_dt_build_devicetree removed - empty stub */
+#include <asm/io.h>
 #include <asm/pgalloc.h>
 #include <asm/sections.h>
-#include <asm/paravirt.h>
 #include <asm/setup.h>
-#include <asm/set_memory.h>
-#include <asm/page_types.h>
-#include <asm/cpu_entry_area.h>
 #include <asm/pgtable_areas.h>
-#include <asm/numa.h>
 
-#include "mm_internal.h"
+void *alloc_low_pages(unsigned int num);
+static inline void *alloc_low_page(void)
+{
+	return alloc_low_pages(1);
+}
+void early_ioremap_page_table_range_init(void);
+unsigned long kernel_physical_mapping_init(unsigned long start,
+					   unsigned long end,
+					   unsigned long page_size_mask,
+					   pgprot_t prot);
+void zone_sizes_init(void);
+extern int after_bootmem;
 
 static pmd_t *__init one_md_table_init(pgd_t *pgd)
 {
@@ -67,13 +41,12 @@ static pte_t *__init one_page_table_init(pmd_t *pmd)
 
 		paravirt_alloc_pte(&init_mm, __pa(page_table) >> PAGE_SHIFT);
 		set_pmd(pmd, __pmd(__pa(page_table) | _PAGE_TABLE));
-		BUG_ON(page_table != pte_offset_kernel(pmd, 0));
 	}
 
 	return pte_offset_kernel(pmd, 0);
 }
 
-pmd_t *__init populate_extra_pmd(unsigned long vaddr)
+static pmd_t *__init populate_extra_pmd(unsigned long vaddr)
 {
 	int pgd_idx = pgd_index(vaddr);
 	int pmd_idx = pmd_index(vaddr);
@@ -90,20 +63,6 @@ pte_t *__init populate_extra_pte(unsigned long vaddr)
 	return one_page_table_init(pmd) + pte_idx;
 }
 
-static unsigned long __init page_table_range_init_count(unsigned long start,
-							unsigned long end)
-{
-	unsigned long count = 0;
-	return count;
-}
-
-static pte_t *__init page_table_kmap_check(pte_t *pte, pmd_t *pmd,
-					   unsigned long vaddr, pte_t *lastpte,
-					   void **adr)
-{
-	return pte;
-}
-
 static void __init page_table_range_init(unsigned long start, unsigned long end,
 					 pgd_t *pgd_base)
 {
@@ -111,12 +70,6 @@ static void __init page_table_range_init(unsigned long start, unsigned long end,
 	unsigned long vaddr;
 	pgd_t *pgd;
 	pmd_t *pmd;
-	pte_t *pte = NULL;
-	unsigned long count = page_table_range_init_count(start, end);
-	void *adr = NULL;
-
-	if (count)
-		adr = alloc_low_pages(count);
 
 	vaddr = start;
 	pgd_idx = pgd_index(vaddr);
@@ -128,9 +81,7 @@ static void __init page_table_range_init(unsigned long start, unsigned long end,
 		pmd = pmd + pmd_index(vaddr);
 		for (; (pmd_idx < PTRS_PER_PMD) && (vaddr != end);
 		     pmd++, pmd_idx++) {
-			pte = page_table_kmap_check(one_page_table_init(pmd),
-						    pmd, vaddr, pte, &adr);
-
+			one_page_table_init(pmd);
 			vaddr += PMD_SIZE;
 		}
 		pmd_idx = 0;
@@ -157,8 +108,7 @@ unsigned long __init kernel_physical_mapping_init(unsigned long start,
 	unsigned long pfn;
 	pgd_t *pgd;
 	pmd_t *pmd;
-	pte_t *pte;
-	unsigned pages_2m, pages_4k;
+	pte_t *pte = NULL;
 	int mapping_iter;
 
 	start_pfn = start >> PAGE_SHIFT;
@@ -170,7 +120,6 @@ unsigned long __init kernel_physical_mapping_init(unsigned long start,
 		use_pse = 0;
 
 repeat:
-	pages_2m = pages_4k = 0;
 	pfn = start_pfn;
 	pgd_idx = pgd_index((pfn << PAGE_SHIFT) + PAGE_OFFSET);
 	pgd = pgd_base + pgd_idx;
@@ -199,7 +148,6 @@ repeat:
 				    is_x86_32_kernel_text(addr2))
 					prot = PAGE_KERNEL_LARGE_EXEC;
 
-				pages_2m++;
 				if (mapping_iter == 1)
 					set_pmd(pmd, pfn_pmd(pfn, init_prot));
 				else
@@ -208,7 +156,7 @@ repeat:
 				pfn += PTRS_PER_PTE;
 				continue;
 			}
-			pte = one_page_table_init(pmd);
+			one_page_table_init(pmd);
 
 			pte_ofs = pte_index((pfn << PAGE_SHIFT) + PAGE_OFFSET);
 			pte += pte_ofs;
@@ -221,7 +169,6 @@ repeat:
 				if (is_x86_32_kernel_text(addr))
 					prot = PAGE_KERNEL_EXEC;
 
-				pages_4k++;
 				if (mapping_iter == 1) {
 					set_pte(pte, pfn_pte(pfn, init_prot));
 					last_map_addr =
@@ -232,18 +179,12 @@ repeat:
 		}
 	}
 	if (mapping_iter == 1) {
-		/* update_page_count removed - empty stub */
-
 		__flush_tlb_all();
 
 		mapping_iter = 2;
 		goto repeat;
 	}
 	return last_map_addr;
-}
-
-static inline void permanent_kmaps_init(pgd_t *pgd_base)
-{
 }
 
 void __init sync_initial_page_table(void)
@@ -268,8 +209,6 @@ void __init native_pagetable_init(void)
 	for (pfn = max_low_pfn; pfn < 1 << (32 - PAGE_SHIFT); pfn++) {
 		va = PAGE_OFFSET + (pfn << PAGE_SHIFT);
 		pgd = base + pgd_index(va);
-		if (!pgd_present(*pgd))
-			break;
 
 		p4d = p4d_offset(pgd, va);
 		pud = pud_offset(p4d, va);
@@ -277,11 +216,7 @@ void __init native_pagetable_init(void)
 		if (!pmd_present(*pmd))
 			break;
 
-		if (pmd_large(*pmd)) {
-			pr_warn("try to clear pte for ram above max_low_pfn: pfn: %lx pmd: %p pmd phys: %lx, but pmd is big page and is not using pte !\n",
-				pfn, pmd, __pa(pmd));
-			BUG_ON(1);
-		}
+		/* pmd_large check kept - it checks actual page flags */
 
 		pte = pte_offset_kernel(pmd, va);
 		if (!pte_present(*pte))
@@ -304,155 +239,32 @@ void __init early_ioremap_page_table_range_init(void)
 	early_ioremap_reset();
 }
 
-static void __init pagetable_init(void)
-{
-	pgd_t *pgd_base = swapper_pg_dir;
-
-	permanent_kmaps_init(pgd_base);
-}
-
 #define DEFAULT_PTE_MASK ~(_PAGE_NX | _PAGE_GLOBAL)
 pteval_t __supported_pte_mask __read_mostly = DEFAULT_PTE_MASK;
 pteval_t __default_kernel_pte_mask __read_mostly = DEFAULT_PTE_MASK;
 
-static unsigned int highmem_pages = -1;
-
-#define MSG_HIGHMEM_TOO_BIG \
-	"highmem size (%luMB) is bigger than pages available (%luMB)!\n"
-
-#define MSG_LOWMEM_TOO_SMALL \
-	"highmem size (%luMB) results in <64MB lowmem, ignoring it!\n"
-static void __init lowmem_pfn_init(void)
-{
-	max_low_pfn = max_pfn;
-
-	if (highmem_pages == -1)
-		highmem_pages = 0;
-	if (highmem_pages)
-		printk(KERN_ERR
-		       "ignoring highmem size on non-highmem kernel!\n");
-}
-
-#define MSG_HIGHMEM_TOO_SMALL \
-	"only %luMB highmem pages available, ignoring highmem size of %luMB!\n"
-
-#define MSG_HIGHMEM_TRIMMED \
-	"Warning: only 4GB will be used. Use a HIGHMEM64G enabled kernel!\n"
-static void __init highmem_pfn_init(void)
-{
-	max_low_pfn = MAXMEM_PFN;
-
-	if (highmem_pages == -1)
-		highmem_pages = max_pfn - MAXMEM_PFN;
-
-	if (highmem_pages + MAXMEM_PFN < max_pfn)
-		max_pfn = MAXMEM_PFN + highmem_pages;
-
-	if (highmem_pages + MAXMEM_PFN > max_pfn) {
-		printk(KERN_WARNING MSG_HIGHMEM_TOO_SMALL,
-		       pages_to_mb(max_pfn - MAXMEM_PFN),
-		       pages_to_mb(highmem_pages));
-		highmem_pages = 0;
-	}
-
-	printk(KERN_WARNING "Warning only %ldMB will be used.\n", MAXMEM >> 20);
-	if (max_pfn > MAX_NONPAE_PFN)
-		printk(KERN_WARNING "Use a HIGHMEM64G enabled kernel.\n");
-	else
-		printk(KERN_WARNING "Use a HIGHMEM enabled kernel.\n");
-	max_pfn = MAXMEM_PFN;
-}
-
 void __init find_low_pfn_range(void)
 {
-	if (max_pfn <= MAXMEM_PFN)
-		lowmem_pfn_init();
-	else
-		highmem_pfn_init();
+	/* No highmem: max_pfn always <= MAXMEM_PFN for this minimal kernel */
+	max_low_pfn = max_pfn;
 }
 
-/* imdbg debug function removed */
 void __init initmem_init(void)
 {
 	high_memory = (void *)__va(max_low_pfn * PAGE_SIZE - 1) + 1;
 
-	/* memblock_set_node removed - returns 0 */
-
 	max_mapnr = max_low_pfn; /* !HIGHMEM */
-	/* setup_bootmem_allocator removed - empty stub */
 }
 
-/* pidbg debug function removed */
 void __init paging_init(void)
 {
-	pagetable_init();
-
 	__flush_tlb_all();
-	/* olpc_dt_build_devicetree removed - empty stub */
 	sparse_init();
 	zone_sizes_init();
 }
 
-static void __init test_wp_bit(void)
-{
-	char z = 0;
-
-	__set_fixmap(FIX_WP_TEST, __pa_symbol(empty_zero_page), PAGE_KERNEL_RO);
-
-	if (copy_to_kernel_nofault((char *)fix_to_virt(FIX_WP_TEST), &z, 1)) {
-		clear_fixmap(FIX_WP_TEST);
-		return;
-	}
-
-	panic("Linux doesn't support CPUs with broken WP.");
-}
-
 void __init mem_init(void)
 {
-	pci_iommu_alloc();
-
-	BUG_ON(!mem_map);
-
-	/* set_highmem_pages_init removed - empty stub */
-
 	memblock_free_all();
-
 	after_bootmem = 1;
-	/* x86_init.hyper.init_after_bootmem removed - is x86_init_noop */
-
-#define __FIXADDR_TOP (-PAGE_SIZE)
-#define high_memory (-128UL << 20)
-	BUILD_BUG_ON(VMALLOC_START >= VMALLOC_END);
-#undef high_memory
-#undef __FIXADDR_TOP
-
-	BUG_ON(VMALLOC_START >= VMALLOC_END);
-	BUG_ON((unsigned long)high_memory > VMALLOC_START);
-
-	test_wp_bit();
-}
-
-static void mark_nxdata_nx(void)
-{
-	unsigned long start = PFN_ALIGN(_etext);
-
-	unsigned long size =
-		(((unsigned long)__init_end + HPAGE_SIZE) & HPAGE_MASK) - start;
-
-	if (__supported_pte_mask & _PAGE_NX)
-		printk(KERN_INFO "NX-protecting the kernel data: %luk\n",
-		       size >> 10);
-	set_memory_nx(start, size >> PAGE_SHIFT);
-}
-
-void mark_rodata_ro(void)
-{
-	unsigned long start = PFN_ALIGN(_text);
-	unsigned long size = (unsigned long)__end_rodata - start;
-
-	set_pages_ro(virt_to_page(start), size >> PAGE_SHIFT);
-	pr_info("Write protecting kernel text and read-only data: %luk\n",
-		size >> 10);
-
-	mark_nxdata_nx();
 }

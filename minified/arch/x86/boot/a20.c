@@ -1,5 +1,4 @@
 
-
 #include "boot.h"
 
 #define MAX_8042_LOOPS 100000
@@ -56,77 +55,50 @@ static int a20_test(int loops)
 	return ok;
 }
 
-static int a20_test_short(void)
-{
-	return a20_test(A20_TEST_SHORT);
-}
-
-static int a20_test_long(void)
-{
-	return a20_test(A20_TEST_LONG);
-}
-
-static void enable_a20_bios(void)
-{
-	struct biosregs ireg;
-
-	initregs(&ireg);
-	ireg.ax = 0x2401;
-	intcall(0x15, &ireg, NULL);
-}
-
-static void enable_a20_kbc(void)
-{
-	empty_8042();
-
-	outb(0xd1, 0x64);
-	empty_8042();
-
-	outb(0xdf, 0x60);
-	empty_8042();
-
-	outb(0xff, 0x64);
-	empty_8042();
-}
-
-static void enable_a20_fast(void)
-{
-	u8 port_a;
-
-	port_a = inb(0x92);
-	port_a |= 0x02;
-	port_a &= ~0x01;
-	outb(port_a, 0x92);
-}
-
 #define A20_ENABLE_LOOPS 255
 
 int enable_a20(void)
 {
 	int loops = A20_ENABLE_LOOPS;
 	int kbc_err;
+	struct biosregs ireg;
+	u8 port_a;
 
 	while (loops--) {
-		if (a20_test_short())
+		if (a20_test(A20_TEST_SHORT))
 			return 0;
 
-		enable_a20_bios();
-		if (a20_test_short())
+		initregs(&ireg);
+		ireg.ax = 0x2401;
+		intcall(0x15, &ireg, NULL);
+
+		if (a20_test(A20_TEST_SHORT))
 			return 0;
 
 		kbc_err = empty_8042();
 
-		if (a20_test_short())
+		if (a20_test(A20_TEST_SHORT))
 			return 0;
 
 		if (!kbc_err) {
-			enable_a20_kbc();
-			if (a20_test_long())
+			empty_8042();
+			outb(0xd1, 0x64);
+			empty_8042();
+			outb(0xdf, 0x60);
+			empty_8042();
+			outb(0xff, 0x64);
+			empty_8042();
+
+			if (a20_test(A20_TEST_LONG))
 				return 0;
 		}
 
-		enable_a20_fast();
-		if (a20_test_long())
+		port_a = inb(0x92);
+		port_a |= 0x02;
+		port_a &= ~0x01;
+		outb(port_a, 0x92);
+
+		if (a20_test(A20_TEST_LONG))
 			return 0;
 	}
 

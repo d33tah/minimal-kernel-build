@@ -1,23 +1,18 @@
 #ifndef __LINUX_CPUMASK_H
 #define __LINUX_CPUMASK_H
 
-#include <linux/kernel.h>
 #include <linux/threads.h>
 #include <linux/bitmap.h>
 #include <linux/atomic.h>
-#include <linux/bug.h>
 
 typedef struct cpumask { DECLARE_BITMAP(bits, NR_CPUS); } cpumask_t;
 
 #define cpumask_bits(maskp) ((maskp)->bits)
 
-#define cpumask_pr_args(maskp)		nr_cpu_ids, cpumask_bits(maskp)
-
 /* NR_CPUS == 1 */
 #define nr_cpu_ids		1U
 
 #define nr_cpumask_bits	((unsigned int)NR_CPUS)
-
 
 extern struct cpumask __cpu_possible_mask;
 extern struct cpumask __cpu_online_mask;
@@ -25,11 +20,6 @@ extern struct cpumask __cpu_present_mask;
 extern struct cpumask __cpu_active_mask;
 #define cpu_possible_mask ((const struct cpumask *)&__cpu_possible_mask)
 #define cpu_online_mask   ((const struct cpumask *)&__cpu_online_mask)
-#define cpu_present_mask  ((const struct cpumask *)&__cpu_present_mask)
-/* cpu_active_mask removed - never used */
-
-extern atomic_t __num_online_cpus;
-
 
 static __always_inline void cpu_max_bits_warn(unsigned int cpu, unsigned int bits)
 {
@@ -41,33 +31,15 @@ static __always_inline unsigned int cpumask_check(unsigned int cpu)
 	return cpu;
 }
 
-#if NR_CPUS == 1
-static inline unsigned int cpumask_first(const struct cpumask *srcp)
-{
-	return 0;
-}
-
-static inline unsigned int cpumask_any_but(const struct cpumask *mask,
-					   unsigned int cpu)
-{
-	return 1;
-}
-
-#define for_each_cpu(cpu, mask)			\
-	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)
-#endif
-
 #define CPU_BITS_NONE						\
 {								\
 	[0 ... BITS_TO_LONGS(NR_CPUS)-1] = 0UL			\
 }
 
-
 static __always_inline void cpumask_set_cpu(unsigned int cpu, struct cpumask *dstp)
 {
 	set_bit(cpumask_check(cpu), cpumask_bits(dstp));
 }
-
 
 static __always_inline void cpumask_clear_cpu(int cpu, struct cpumask *dstp)
 {
@@ -84,47 +56,17 @@ static __always_inline int cpumask_test_and_set_cpu(int cpu, struct cpumask *cpu
 	return test_and_set_bit(cpumask_check(cpu), cpumask_bits(cpumask));
 }
 
-static __always_inline int cpumask_test_and_clear_cpu(int cpu, struct cpumask *cpumask)
-{
-	return test_and_clear_bit(cpumask_check(cpu), cpumask_bits(cpumask));
-}
-
-
 static inline void cpumask_clear(struct cpumask *dstp)
 {
 	bitmap_zero(cpumask_bits(dstp), nr_cpumask_bits);
 }
 
-
-
-
-/* cpumask_equal removed - no callers */
-
-static inline bool cpumask_empty(const struct cpumask *srcp)
-{
-	return bitmap_empty(cpumask_bits(srcp), nr_cpumask_bits);
-}
-
-
-/* cpumask_any removed - unused */
 #define cpumask_of(cpu) (get_cpu_mask(cpu))
-
 
 static inline unsigned int cpumask_size(void)
 {
 	return BITS_TO_LONGS(nr_cpumask_bits) * sizeof(long);
 }
-
-typedef struct cpumask cpumask_var_t[1];
-
-/* __cpumask_var_read_mostly, alloc_bootmem_cpumask_var removed - never used */
-
-extern const DECLARE_BITMAP(cpu_all_bits, NR_CPUS);
-#define cpu_all_mask to_cpumask(cpu_all_bits)
-
-#define for_each_possible_cpu(cpu) for_each_cpu((cpu), cpu_possible_mask)
-#define for_each_online_cpu(cpu)   for_each_cpu((cpu), cpu_online_mask)
-#define for_each_present_cpu(cpu)  for_each_cpu((cpu), cpu_present_mask)
 
 static inline void
 set_cpu_possible(unsigned int cpu, bool possible)
@@ -144,8 +86,6 @@ set_cpu_present(unsigned int cpu, bool present)
 		cpumask_clear_cpu(cpu, &__cpu_present_mask);
 }
 
-void set_cpu_online(unsigned int cpu, bool online);
-
 static inline void
 set_cpu_active(unsigned int cpu, bool active)
 {
@@ -155,8 +95,6 @@ set_cpu_active(unsigned int cpu, bool active)
 		cpumask_clear_cpu(cpu, &__cpu_active_mask);
 }
 
-
-
 #define to_cpumask(bitmap)						\
 	((struct cpumask *)(1 ? (bitmap)				\
 			    : (void *)sizeof(__check_is_bitmap(bitmap))))
@@ -165,7 +103,6 @@ static inline int __check_is_bitmap(const unsigned long *bitmap)
 {
 	return 1;
 }
-
 
 extern const unsigned long
 	cpu_bit_bitmap[BITS_PER_LONG+1][BITS_TO_LONGS(NR_CPUS)];
@@ -177,37 +114,4 @@ static inline const struct cpumask *get_cpu_mask(unsigned int cpu)
 	return to_cpumask(p);
 }
 
-/* NR_CPUS == 1 - simplified */
-#define num_online_cpus()	1U
-#define num_possible_cpus()	1U
-#define num_present_cpus()	1U
-
-static inline bool cpu_online(unsigned int cpu)
-{
-	return cpu == 0;
-}
-
-static inline bool cpu_possible(unsigned int cpu)
-{
-	return cpu == 0;
-}
-
-/* cpu_is_offline removed - unused */
-
-/* NR_CPUS <= BITS_PER_LONG always true */
-#define CPU_BITS_ALL						\
-{								\
-	[BITS_TO_LONGS(NR_CPUS)-1] = BITMAP_LAST_WORD_MASK(NR_CPUS)	\
-}
-
-/* cpumap_print_to_pagebuf removed - never called */
-
-
-/* NR_CPUS <= BITS_PER_LONG always true */
-#define CPU_MASK_ALL							\
-(cpumask_t) { {								\
-	[BITS_TO_LONGS(NR_CPUS)-1] = BITMAP_LAST_WORD_MASK(NR_CPUS)	\
-} }
-
-
-#endif  
+#endif

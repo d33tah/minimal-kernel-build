@@ -1,23 +1,27 @@
 #ifndef _LINUX_TYPES_H
 #define _LINUX_TYPES_H
 
-#define __EXPORTED_HEADERS__
-#include <uapi/linux/types.h>
+#include <asm/types.h>
 
 #ifndef __ASSEMBLY__
+
+#include <asm/posix_types.h>
+
+#ifdef __CHECKER__
+#define __bitwise	__attribute__((bitwise))
+#else
+#define __bitwise
+#endif
+
+
+typedef unsigned __bitwise __poll_t;
 
 #define DECLARE_BITMAP(name,bits) \
 	unsigned long name[BITS_TO_LONGS(bits)]
 
-typedef __kernel_fd_set		fd_set;
 typedef u32			dev_t;
-typedef __kernel_ulong_t	ino_t;
-typedef __kernel_mode_t		mode_t;
 typedef unsigned short		umode_t;
-/* nlink_t removed - unused */
-typedef __kernel_off_t		off_t;
 typedef __kernel_pid_t		pid_t;
-typedef __kernel_clockid_t	clockid_t;
 
 typedef _Bool			bool;
 
@@ -40,38 +44,11 @@ typedef __kernel_size_t		size_t;
 typedef __kernel_ssize_t	ssize_t;
 #endif
 
-#ifndef _PTRDIFF_T
-#define _PTRDIFF_T
-typedef __kernel_ptrdiff_t	ptrdiff_t;
-#endif
-
-/* clock_t removed - unused */
-
-typedef unsigned short		ushort;
-/* typedef uint, ulong removed - never used */
-
-#ifndef __BIT_TYPES_DEFINED__
-#define __BIT_TYPES_DEFINED__
-typedef s32			int32_t;
-#endif
-
 typedef u8			uint8_t;
 typedef u16			uint16_t;
 typedef u32			uint32_t;
 
-#if defined(__GNUC__)
-typedef u64			uint64_t;
-typedef s64			int64_t;
-#endif
-
-/* aligned_u64/be64/le64 removed - unused */
-
-typedef u64 sector_t;
-/* blkcnt_t removed - unused */
-
 #define pgoff_t unsigned long
-
-typedef u32 dma_addr_t;
 
 typedef unsigned int __bitwise gfp_t;
 typedef unsigned int __bitwise slab_flags_t;
@@ -81,14 +58,11 @@ typedef u32 phys_addr_t;
 
 typedef phys_addr_t resource_size_t;
 
-typedef unsigned long irq_hw_number_t;
-
 typedef struct {
 	int counter;
 } atomic_t;
 
 #define ATOMIC_INIT(i) { (i) }
-
 
 struct list_head {
 	struct list_head *next, *prev;
@@ -102,8 +76,6 @@ struct hlist_node {
 	struct hlist_node *next, **pprev;
 };
 
-/* struct ustat removed - ustat syscall is COND_SYSCALL */
-
 struct callback_head {
 	struct callback_head *next;
 	void (*func)(struct callback_head *head);
@@ -113,10 +85,7 @@ struct callback_head {
 typedef void (*rcu_callback_t)(struct rcu_head *head);
 typedef void (*call_rcu_func_t)(struct rcu_head *head, rcu_callback_t func);
 
-typedef void (*swap_r_func_t)(void *a, void *b, int size, const void *priv);
 typedef void (*swap_func_t)(void *a, void *b, int size);
-
-typedef int (*cmp_r_func_t)(const void *a, const void *b, const void *priv);
 typedef int (*cmp_func_t)(const void *a, const void *b);
 
 #endif  

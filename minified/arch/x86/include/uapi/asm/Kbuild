@@ -1,3 +1,2 @@
 # SPDX-License-Identifier: GPL-2.0
 generated-y += unistd_32.h
-# Removed for 32-bit only kernel: unistd_64.h, unistd_x32.h

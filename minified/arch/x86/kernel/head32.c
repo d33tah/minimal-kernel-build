@@ -2,46 +2,29 @@
 #include <linux/init.h>
 #include <linux/linkage.h>
 extern asmlinkage void __init start_kernel(void);
-#include <linux/mm.h>
-#include <linux/memblock.h>
 
 #include <asm/desc.h>
 #include <asm/setup.h>
 #include <asm/sections.h>
-#include <asm/e820/api.h>
-#include <asm/page.h>
-#include <asm/apic.h>
-#include <asm/io_apic.h>
-#include <asm/bios_ebda.h>
 #include <asm/tlbflush.h>
-#include <asm/bootparam_utils.h>
-
-static void __init i386_default_early_setup(void)
+static void sanitize_boot_params(struct boot_params *boot_params)
 {
-	x86_init.resources.reserve_resources = i386_reserve_resources;
+	(void)boot_params;
 }
-
-/* vdbg debug function removed */
 
 asmlinkage __visible void __init i386_start_kernel(void)
 {
 	idt_setup_early_handler();
-
 	cr4_init_shadow();
-
 	sanitize_boot_params(&boot_params);
 
-	x86_early_init_platform_quirks();
+	x86_platform.legacy.reserve_bios_regions = 0;
+	if (boot_params.hdr.hardware_subarch == X86_SUBARCH_PC)
+		x86_platform.legacy.reserve_bios_regions = 1;
 
-	/* x86_intel_mid_early_setup and x86_ce4100_early_setup are empty stubs */
-	switch (boot_params.hdr.hardware_subarch) {
-	case X86_SUBARCH_INTEL_MID:
-	case X86_SUBARCH_CE4100:
-		break;
-	default:
-		i386_default_early_setup();
-		break;
-	}
+	if (boot_params.hdr.hardware_subarch != X86_SUBARCH_INTEL_MID &&
+	    boot_params.hdr.hardware_subarch != X86_SUBARCH_CE4100)
+		x86_init.resources.reserve_resources = i386_reserve_resources;
 
 	start_kernel();
 }

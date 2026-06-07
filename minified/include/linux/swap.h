@@ -2,56 +2,28 @@
 #ifndef _LINUX_SWAP_H
 #define _LINUX_SWAP_H
 
-#include <linux/spinlock.h>
-#include <linux/linkage.h>
 #include <linux/mmzone.h>
-#include <linux/list.h>
-#include <linux/memcontrol.h>
-#include <linux/sched.h>
 #include <linux/fs.h>
 #include <linux/pagemap.h>
 #include <linux/atomic.h>
-#include <linux/page-flags.h>
-#include <linux/mempolicy.h>
 #include <asm/page.h>
-
-/* MAX_SWAPFILES_SHIFT, SWP_SWAPIN_ERROR_NUM removed - unused */
-
 #ifdef __KERNEL__
-
-#define SWAP_CLUSTER_MAX 32UL
-
 extern struct list_lru shadow_nodes;
-/* workingset_update_node removed - was empty stub */
 /* dax_mapping and shmem_mapping always return false */
 #define mapping_set_update(xas, mapping) do {				\
-	xas_set_update(xas, NULL);					\
 	xas_set_lru(xas, &shadow_nodes);				\
 } while (0)
 
-#define nr_free_pages() global_zone_page_state(NR_FREE_PAGES)
-
-extern void folio_add_lru(struct folio *);
-extern void lru_cache_add(struct page *);
-void mark_page_accessed(struct page *);
-void folio_mark_accessed(struct folio *);
-
-/* lru_disable_count, lru_cache_disabled removed - never used, always 0/false */
-
-extern void lru_add_drain(void);
-extern void lru_add_drain_cpu(int cpu);
-extern void lru_cache_add_inactive_or_unevictable(struct page *page,
-						struct vm_area_struct *vma);
-
-/* remove_mapping removed - always returned 0, inlined in truncate.c */
+static inline void folio_add_lru(struct folio *f) {}
+static inline void lru_add_drain(void) {}
+static inline void lru_cache_add_inactive_or_unevictable(struct page *page,
+						struct vm_area_struct *vma) {}
 
 #define total_swap_pages			0L
 
-/* free_page_and_swap_cache removed - unused */
-#define free_pages_and_swap_cache(pages, nr) \
-	release_pages((pages), (nr));
-
-/* cgroup_throttle_swaprate removed - empty stub, no callers */
+#define free_pages_and_swap_cache(pages, nr) do { \
+	int _i; for (_i = 0; _i < (nr); _i++) put_page_testzero((pages)[_i]); \
+} while(0)
 
 #endif /* __KERNEL__ */
 #endif /* _LINUX_SWAP_H */

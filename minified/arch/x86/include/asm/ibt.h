@@ -4,21 +4,15 @@
 
 #include <linux/types.h>
 
-
 #define HAS_KERNEL_IBT	0
 
 #ifndef __ASSEMBLY__
-
-/* ASM_ENDBR removed - unused */
-
-#define __noendbr
 
 #else
 
 #define ENDBR
 
 #endif
-
 
 #define ENDBR_INSN_SIZE		(4*HAS_KERNEL_IBT)
 

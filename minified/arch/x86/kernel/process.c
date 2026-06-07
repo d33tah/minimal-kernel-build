@@ -1,58 +1,13 @@
-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-
-#include <linux/errno.h>
-#include <linux/kernel.h>
-#include <linux/mm.h>
-#include <linux/smp.h>
-#include <linux/slab.h>
-#include <linux/sched.h>
-#include <linux/sched/debug.h>
-#include <linux/sched/task.h>
-#include <linux/sched/task_stack.h>
-#include <linux/init.h>
-#include <linux/export.h>
-#include <linux/random.h>
-#include <linux/utsname.h>
-/* boot_init_stack_canary removed - empty stub, never called */
-/* end stackprotector.h */
-#include <linux/acpi.h>
-/* flush_ptrace_hw_breakpoint removed - was empty stub */
-#include <asm/cpu.h>
-#include <asm/apic.h>
-#include <linux/uaccess.h>
-#include <asm/mwait.h>
-#include <asm/fpu/api.h>
+#include <linux/ptrace.h>
 #include <asm/fpu/sched.h>
-#include <asm/fpu/xstate.h>
-#include <asm/debugreg.h>
-#include <asm/nmi.h>
+#include <asm/irq.h>
+#include <asm/io.h>
 #include <asm/tlbflush.h>
-/* mce.h removed - header is empty */
-#include <asm/vm86.h>
 #include <asm/switch_to.h>
-#include <asm/desc.h>
-#include <asm/prctl.h>
-#include <asm/spec-ctrl.h>
-#include <asm/io_bitmap.h>
-#include <asm/proto.h>
-/* --- 2025-12-07 20:47 --- Inlined frame.h */
-#include <asm/asm.h>
-#define ENCODE_FRAME_POINTER
-static inline unsigned long encode_frame_pointer(struct pt_regs *regs)
-{
-	return 0;
-}
-#define FRAME_BEGIN
-#define FRAME_END
-#define FRAME_OFFSET 0
-#include <asm/unwind.h>
-#include <asm/tdx.h>
-
-#include "process.h"
 
 __visible DEFINE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw) = {
 	.x86_tss = {
-		 
+
 		.sp0 = (1UL << (BITS_PER_LONG-1)) + 1,
 
 		.sp1 = TOP_OF_INIT_STACK,
@@ -63,8 +18,6 @@ __visible DEFINE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw) = {
 	 },
 };
 
-DEFINE_PER_CPU(bool, __tss_limit_invalid);
-
 int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)
 {
 	memcpy(dst, src, arch_task_struct_size);
@@ -74,23 +27,10 @@ int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)
 	return 0;
 }
 
-void exit_thread(struct task_struct *tsk)
-{
-	struct thread_struct *t = &tsk->thread;
-	struct fpu *fpu = &t->fpu;
-
-	/* io_bitmap_exit, free_vm86 removed - empty stubs */
-
-	fpu__drop(fpu);
-}
-
-/* set_new_tls removed - CLONE_SETTLS never used */
-
 int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 {
 	unsigned long clone_flags = args->flags;
 	unsigned long sp = args->stack;
-	unsigned long tls = args->tls;
 	struct inactive_task_frame *frame;
 	struct fork_frame *fork_frame;
 	struct pt_regs *childregs;
@@ -100,13 +40,9 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 	fork_frame = container_of(childregs, struct fork_frame, regs);
 	frame = &fork_frame->frame;
 
-	frame->bp = encode_frame_pointer(childregs);
+	frame->bp = 0;
 	frame->ret_addr = (unsigned long)ret_from_fork;
 	p->thread.sp = (unsigned long)fork_frame;
-	p->thread.io_bitmap = NULL;
-	p->thread.iopl_warn = 0;
-	memset(p->thread.ptrace_bps, 0, sizeof(p->thread.ptrace_bps));
-
 	p->thread.sp0 = (unsigned long)(childregs + 1);
 	savesegment(gs, p->thread.gs);
 
@@ -115,13 +51,10 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 	fpu_clone(p, clone_flags, args->fn);
 
 	if (unlikely(p->flags & PF_KTHREAD)) {
-		p->thread.pkru = pkru_get_init_value();
 		memset(childregs, 0, sizeof(struct pt_regs));
 		kthread_frame_init(frame, args->fn, args->fn_arg);
 		return 0;
 	}
-
-	p->thread.pkru = read_pkru();
 
 	frame->bx = 0;
 	*childregs = *current_pt_regs();
@@ -136,185 +69,24 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 		return 0;
 	}
 
-	/* CLONE_SETTLS check removed - kernel_thread/user_mode_thread never set it */
-	/* io_bitmap_share removed - empty stub */
-
 	return ret;
 }
-
-/* pkru_flush_thread inlined into flush_thread */
 
 void flush_thread(void)
 {
 	struct task_struct *tsk = current;
 
-	/* flush_ptrace_hw_breakpoint removed - was empty stub */
 	memset(tsk->thread.tls_array, 0, sizeof(tsk->thread.tls_array));
 
 	fpu_flush_thread();
 	pkru_write_default();
 }
 
-DEFINE_PER_CPU(u64, msr_misc_features_shadow);
-
-static void set_cpuid_faulting(bool on)
-{
-	u64 msrval;
-
-	msrval = this_cpu_read(msr_misc_features_shadow);
-	msrval &= ~MSR_MISC_FEATURES_ENABLES_CPUID_FAULT;
-	msrval |= (on << MSR_MISC_FEATURES_ENABLES_CPUID_FAULT_BIT);
-	this_cpu_write(msr_misc_features_shadow, msrval);
-	wrmsrl(MSR_MISC_FEATURES_ENABLES, msrval);
-}
-
-static void disable_cpuid(void)
-{
-	preempt_disable();
-	if (!test_and_set_thread_flag(TIF_NOCPUID)) {
-		set_cpuid_faulting(true);
-	}
-	preempt_enable();
-}
-
-static void enable_cpuid(void)
-{
-	preempt_disable();
-	if (test_and_clear_thread_flag(TIF_NOCPUID)) {
-		set_cpuid_faulting(false);
-	}
-	preempt_enable();
-}
-
-/* get_cpuid_mode and set_cpuid_mode removed - only called from do_arch_prctl_common */
-
-void arch_setup_new_exec(void)
-{
-	if (test_thread_flag(TIF_NOCPUID))
-		enable_cpuid();
-
-	if (test_thread_flag(TIF_SSBD) && task_spec_ssb_noexec(current)) {
-		clear_thread_flag(TIF_SSBD);
-		task_clear_spec_ssb_disable(current);
-		task_clear_spec_ssb_noexec(current);
-		speculation_ctrl_update(read_thread_flags());
-	}
-}
-
-static inline void switch_to_bitmap(unsigned long tifp)
-{
-}
-
-static __always_inline void amd_set_core_ssb_state(unsigned long tifn)
-{
-	u64 msr = x86_amd_ls_cfg_base | ssbd_tif_to_amd_ls_cfg(tifn);
-
-	wrmsrl(MSR_AMD64_LS_CFG, msr);
-}
-
-static __always_inline void amd_set_ssb_virt_state(unsigned long tifn)
-{
-	wrmsrl(MSR_AMD64_VIRT_SPEC_CTRL, ssbd_tif_to_spec_ctrl(tifn));
-}
-
-static __always_inline void __speculation_ctrl_update(unsigned long tifp,
-						      unsigned long tifn)
-{
-	unsigned long tif_diff = tifp ^ tifn;
-
-	if (static_cpu_has(X86_FEATURE_VIRT_SSBD)) {
-		if (tif_diff & _TIF_SSBD)
-			amd_set_ssb_virt_state(tifn);
-	} else if (static_cpu_has(X86_FEATURE_LS_CFG_SSBD)) {
-		if (tif_diff & _TIF_SSBD)
-			amd_set_core_ssb_state(tifn);
-	}
-}
-
-static unsigned long speculation_ctrl_update_tif(struct task_struct *tsk)
-{
-	if (test_and_clear_tsk_thread_flag(tsk, TIF_SPEC_FORCE_UPDATE)) {
-		if (task_spec_ssb_disable(tsk))
-			set_tsk_thread_flag(tsk, TIF_SSBD);
-		else
-			clear_tsk_thread_flag(tsk, TIF_SSBD);
-
-		if (task_spec_ib_disable(tsk))
-			set_tsk_thread_flag(tsk, TIF_SPEC_IB);
-		else
-			clear_tsk_thread_flag(tsk, TIF_SPEC_IB);
-	}
-
-	return read_task_thread_flags(tsk);
-}
-
-void speculation_ctrl_update(unsigned long tif)
-{
-	unsigned long flags;
-
-	local_irq_save(flags);
-	__speculation_ctrl_update(~tif, tif);
-	local_irq_restore(flags);
-}
-
-static inline void cr4_toggle_bits_irqsoff(unsigned long mask)
-{
-	unsigned long newval, cr4 = this_cpu_read(cpu_tlbstate.cr4);
-
-	newval = cr4 ^ mask;
-	if (newval != cr4) {
-		this_cpu_write(cpu_tlbstate.cr4, newval);
-		__write_cr4(newval);
-	}
-}
-
-void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
-{
-	unsigned long tifp, tifn;
-
-	tifn = read_task_thread_flags(next_p);
-	tifp = read_task_thread_flags(prev_p);
-
-	switch_to_bitmap(tifp);
-
-	if ((tifp & _TIF_BLOCKSTEP || tifn & _TIF_BLOCKSTEP) &&
-	    arch_has_block_step()) {
-		unsigned long debugctl, msk;
-
-		rdmsrl(MSR_IA32_DEBUGCTLMSR, debugctl);
-		debugctl &= ~DEBUGCTLMSR_BTF;
-		msk = tifn & _TIF_BLOCKSTEP;
-		debugctl |= (msk >> TIF_BLOCKSTEP) << DEBUGCTLMSR_BTF_SHIFT;
-		wrmsrl(MSR_IA32_DEBUGCTLMSR, debugctl);
-	}
-
-	if ((tifp ^ tifn) & _TIF_NOTSC)
-		cr4_toggle_bits_irqsoff(X86_CR4_TSD);
-
-	if ((tifp ^ tifn) & _TIF_NOCPUID)
-		set_cpuid_faulting(!!(tifn & _TIF_NOCPUID));
-
-	if (likely(!((tifp | tifn) & _TIF_SPEC_FORCE_UPDATE))) {
-		__speculation_ctrl_update(tifp, tifn);
-	} else {
-		speculation_ctrl_update_tif(prev_p);
-		tifn = speculation_ctrl_update_tif(next_p);
-
-		__speculation_ctrl_update(~tifn, tifn);
-	}
-}
-
 static void (*x86_idle)(void);
-
-/* play_dead removed - never called */
 
 void arch_cpu_idle_enter(void)
 {
-	/* tsc_verify_tsc_adjust removed - was empty stub */
-	local_touch_nmi();
 }
-
-/* arch_cpu_idle_dead removed - declared but never called */
 
 void arch_cpu_idle(void)
 {
@@ -326,54 +98,13 @@ void __cpuidle default_idle(void)
 	raw_safe_halt();
 }
 
-void __noreturn stop_this_cpu(void *dummy)
-{
-	local_irq_disable();
-
-	set_cpu_online(smp_processor_id(), false);
-	/* disable_local_APIC removed - empty stub */
-	if (cpuid_eax(0x8000001f) & BIT(0))
-		native_wbinvd();
-	for (;;) {
-		native_halt();
-	}
-}
-
-/* Simplified: just use default_idle for minimal kernel */
 void select_idle_routine(const struct cpuinfo_x86 *c)
 {
 	if (!x86_idle)
 		x86_idle = default_idle;
 }
 
-void __init arch_post_acpi_subsys_init(void)
-{
-	u32 lo, hi;
-
-	if (!boot_cpu_has_bug(X86_BUG_AMD_E400))
-		return;
-
-	rdmsr(MSR_K8_INT_PENDING_MSG, lo, hi);
-	if (!(lo & K8_INTP_C1E_ACTIVE_MASK))
-		return;
-
-	boot_cpu_set_bug(X86_BUG_AMD_APIC_C1E);
-
-	if (!boot_cpu_has(X86_FEATURE_NONSTOP_TSC))
-		mark_tsc_unstable("TSC halt in AMD C1E");
-	pr_info("System has AMD C1E enabled\n");
-}
-
 unsigned long arch_align_stack(unsigned long sp)
 {
-	if (!(current->personality & ADDR_NO_RANDOMIZE) && randomize_va_space)
-		sp -= get_random_int() % 8192;
 	return sp & ~0xf;
 }
-
-unsigned long arch_randomize_brk(struct mm_struct *mm)
-{
-	return randomize_page(mm->brk, 0x02000000);
-}
-
-/* do_arch_prctl_common removed - arch_prctl syscall uses COND_SYSCALL */

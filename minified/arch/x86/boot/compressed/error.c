@@ -1,5 +1,6 @@
 #include "misc.h"
-#include "error.h"
+void warn(char *m);
+void error(char *m) __noreturn;
 void warn(char *m)
 {
 	error_putstr("\n\n");

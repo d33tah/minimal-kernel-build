@@ -1,13 +1,5 @@
-
-#include <linux/syscalls.h>
 #include <linux/fs.h>
-#include <linux/proc_fs.h>
-/* seq_file.h, kmod.h removed - headers empty */
-#include <linux/init.h>
 #include <linux/module.h>
-#include <linux/slab.h>
-#include <linux/uaccess.h>
-#include <linux/fs_parser.h>
 
 static struct file_system_type *file_systems;
 static DEFINE_RWLOCK(file_systems_lock);
@@ -37,9 +29,6 @@ int register_filesystem(struct file_system_type *fs)
 	int res = 0;
 	struct file_system_type **p;
 
-	/* fs_validate_description() always returns true - condition removed */
-
-	BUG_ON(strchr(fs->name, '.'));
 	if (fs->next)
 		return -EBUSY;
 	write_lock(&file_systems_lock);
@@ -50,27 +39,4 @@ int register_filesystem(struct file_system_type *fs)
 		*p = fs;
 	write_unlock(&file_systems_lock);
 	return res;
-}
-
-int __init list_bdev_fs_names(char *buf, size_t size)
-{
-	/* No filesystem sets FS_REQUIRES_DEV, so always returns empty list */
-	return 0;
-}
-
-static struct file_system_type *__get_fs_type(const char *name, int len)
-{
-	struct file_system_type *fs;
-
-	read_lock(&file_systems_lock);
-	fs = *(find_filesystem(name, len));
-	/* try_module_get always returns true - dead check removed */
-	read_unlock(&file_systems_lock);
-	return fs;
-}
-
-struct file_system_type *get_fs_type(const char *name)
-{
-	/* request_module & FS_HAS_SUBTYPE handling removed - dead code */
-	return __get_fs_type(name, strlen(name));
 }

@@ -4,7 +4,6 @@
 #include <linux/const.h>
 #include <asm/cache.h>
 
-/* L1_CACHE_ALIGN removed - unused */
 #ifndef SMP_CACHE_BYTES
 #define SMP_CACHE_BYTES L1_CACHE_BYTES
 #endif
@@ -42,6 +41,5 @@
 #if !defined(____cacheline_internodealigned_in_smp)
 #define ____cacheline_internodealigned_in_smp
 #endif
-
 
 #endif  

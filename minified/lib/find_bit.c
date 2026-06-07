@@ -1,20 +1,16 @@
 
 #include <linux/bitops.h>
 #include <linux/bitmap.h>
-#include <linux/export.h>
 #include <linux/math.h>
 #include <linux/minmax.h>
-#include <linux/swab.h>
 
-#if !defined(find_next_bit) || !defined(find_next_zero_bit) ||           \
-	!defined(find_next_bit_le) || !defined(find_next_zero_bit_le) || \
-	!defined(find_next_and_bit)
+/* All callers pass le=0, so LE support removed */
 unsigned long _find_next_bit(const unsigned long *addr1,
 			     const unsigned long *addr2, unsigned long nbits,
 			     unsigned long start, unsigned long invert,
 			     unsigned long le)
 {
-	unsigned long tmp, mask;
+	unsigned long tmp;
 
 	if (unlikely(start >= nbits))
 		return nbits;
@@ -24,11 +20,7 @@ unsigned long _find_next_bit(const unsigned long *addr1,
 		tmp &= addr2[start / BITS_PER_LONG];
 	tmp ^= invert;
 
-	mask = BITMAP_FIRST_WORD_MASK(start);
-	if (le)
-		mask = swab(mask);
-
-	tmp &= mask;
+	tmp &= BITMAP_FIRST_WORD_MASK(start);
 
 	start = round_down(start, BITS_PER_LONG);
 
@@ -43,12 +35,8 @@ unsigned long _find_next_bit(const unsigned long *addr1,
 		tmp ^= invert;
 	}
 
-	if (le)
-		tmp = swab(tmp);
-
 	return min(start + __ffs(tmp), nbits);
 }
-#endif
 
 #ifndef find_first_bit
 unsigned long _find_first_bit(const unsigned long *addr, unsigned long size)
@@ -76,25 +64,6 @@ unsigned long _find_first_zero_bit(const unsigned long *addr,
 			return min(idx * BITS_PER_LONG + ffz(addr[idx]), size);
 	}
 
-	return size;
-}
-#endif
-
-#ifndef find_last_bit
-unsigned long _find_last_bit(const unsigned long *addr, unsigned long size)
-{
-	if (size) {
-		unsigned long val = BITMAP_LAST_WORD_MASK(size);
-		unsigned long idx = (size - 1) / BITS_PER_LONG;
-
-		do {
-			val &= addr[idx];
-			if (val)
-				return idx * BITS_PER_LONG + __fls(val);
-
-			val = ~0ul;
-		} while (idx--);
-	}
 	return size;
 }
 #endif

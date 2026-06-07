@@ -1,21 +1,14 @@
 
-
-#include <linux/fs.h>
 #include <linux/pagemap.h>
-#include <linux/highmem.h>
-#include <linux/time.h>
-#include <linux/init.h>
-#include <linux/string.h>
-#include <linux/backing-dev.h>
-#include <linux/ramfs.h>
-#include <linux/sched.h>
-#include <linux/magic.h>
-#include <linux/slab.h>
-#include <linux/uaccess.h>
-#include <linux/fs_context.h>
 #include <linux/fs_parser.h>
-/* seq_file.h removed - header is empty */
-extern const struct inode_operations ramfs_file_inode_operations;
+
+const struct file_operations def_chr_fops = {};
+
+const struct file_operations ramfs_file_operations = {
+	.read_iter = generic_file_read_iter,
+};
+
+static const struct inode_operations ramfs_file_inode_operations = {};
 
 struct ramfs_mount_opts {
 	umode_t mode;
@@ -27,24 +20,22 @@ struct ramfs_fs_info {
 
 #define RAMFS_DEFAULT_MODE 0755
 
-static const struct super_operations ramfs_ops;
 static const struct inode_operations ramfs_dir_inode_operations;
 
-struct inode *ramfs_get_inode(struct super_block *sb, const struct inode *dir,
-			      umode_t mode, dev_t dev)
+static struct inode *ramfs_get_inode(struct super_block *sb,
+				     const struct inode *dir, umode_t mode,
+				     dev_t dev)
 {
 	struct inode *inode = new_inode(sb);
 
 	if (inode) {
-		inode->i_ino = get_next_ino();
-		inode_init_owner(&init_user_ns, inode, dir, mode);
+		inode->i_mode = mode;
 		inode->i_mapping->a_ops = &ram_aops;
 		mapping_set_gfp_mask(inode->i_mapping, GFP_HIGHUSER);
-		mapping_set_unevictable(inode->i_mapping);
-		/* i_atime, i_mtime assignment removed - never read */
 		switch (mode & S_IFMT) {
 		default:
-			init_special_inode(inode, mode, dev);
+			inode->i_mode = mode;
+			inode->i_fop = &def_chr_fops;
 			break;
 		case S_IFREG:
 			inode->i_op = &ramfs_file_inode_operations;
@@ -56,40 +47,13 @@ struct inode *ramfs_get_inode(struct super_block *sb, const struct inode *dir,
 
 			inc_nlink(inode);
 			break;
-			/* S_IFLNK case removed - symlinks never created */
 		}
 	}
 	return inode;
 }
 
-/* ramfs_mkdir, ramfs_symlink, ramfs_tmpfile removed - syscalls return ENOSYS */
-
-static int ramfs_create(struct user_namespace *mnt_userns, struct inode *dir,
-			struct dentry *dentry, umode_t mode, bool excl)
-{
-	/* ramfs_mknod inlined */
-	struct inode *inode =
-		ramfs_get_inode(dir->i_sb, dir, mode | S_IFREG, 0);
-	if (!inode)
-		return -ENOSPC;
-	d_instantiate(dentry, inode);
-	dget(dentry);
-	/* dir->i_mtime assignment removed - never read */
-	return 0;
-}
-
 static const struct inode_operations ramfs_dir_inode_operations = {
-	.create = ramfs_create,
 	.lookup = simple_lookup,
-	/* link, unlink, symlink, mkdir, rmdir, mknod, rename, tmpfile removed - syscalls return ENOSYS */
-};
-
-/* ramfs_show_options removed - show_options callback never called */
-
-static const struct super_operations ramfs_ops = {
-	/* statfs removed - statfs syscalls return ENOSYS */
-	.drop_inode = generic_delete_inode,
-	/* show_options removed - never called */
 };
 
 enum ramfs_param {
@@ -107,7 +71,7 @@ static int ramfs_parse_param(struct fs_context *fc, struct fs_parameter *param)
 	struct ramfs_fs_info *fsi = fc->s_fs_info;
 	int opt;
 
-	opt = fs_parse(fc, ramfs_fs_parameters, param, &result);
+	opt = __fs_parse(&fc->log, ramfs_fs_parameters, param, &result);
 	if (opt == -ENOPARAM) {
 		opt = vfs_parse_fs_param_source(fc, param);
 		if (opt != -ENOPARAM)
@@ -133,12 +97,6 @@ static int ramfs_fill_super(struct super_block *sb, struct fs_context *fc)
 	struct inode *inode;
 
 	sb->s_maxbytes = MAX_LFS_FILESIZE;
-	sb->s_blocksize = PAGE_SIZE;
-	sb->s_blocksize_bits = PAGE_SHIFT;
-	sb->s_magic = RAMFS_MAGIC;
-	sb->s_op = &ramfs_ops;
-	/* s_time_gran removed - field removed */
-
 	inode = ramfs_get_inode(sb, NULL, S_IFDIR | fsi->mount_opts.mode, 0);
 	sb->s_root = d_make_root(inode);
 	if (!sb->s_root)
@@ -186,9 +144,7 @@ static void ramfs_kill_sb(struct super_block *sb)
 static struct file_system_type ramfs_fs_type = {
 	.name = "ramfs",
 	.init_fs_context = ramfs_init_fs_context,
-	.parameters = ramfs_fs_parameters,
 	.kill_sb = ramfs_kill_sb,
-	.fs_flags = FS_USERNS_MOUNT,
 };
 
 static int __init init_ramfs_fs(void)

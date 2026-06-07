@@ -11,17 +11,10 @@
 #define likely(x)	__builtin_expect(!!(x), 1)
 #define unlikely(x)	__builtin_expect(!!(x), 0)
 #define likely_notrace(x)	likely(x)
-#define unlikely_notrace(x)	unlikely(x)
 
 #ifndef barrier
 # define barrier() __asm__ __volatile__("": : :"memory")
 #endif
-
-#ifndef barrier_data
-# define barrier_data(ptr) __asm__ __volatile__("": :"r"(ptr) :"memory")
-#endif
-
-/* unreachable() macro removed - never used */
 
 #ifndef RELOC_HIDE
 # define RELOC_HIDE(ptr, off)					\
@@ -41,18 +34,6 @@
 # define __UNIQUE_ID(prefix) __PASTE(__PASTE(__UNIQUE_ID_, prefix), __LINE__)
 #endif
 
-#define data_race(expr)							\
-({									\
-	__unqual_scalar_typeof(({ expr; })) __v = ({			\
-						\
-		expr;							\
-	});								\
-						\
-	__v;								\
-})
-
-/* ASSERT_EXCLUSIVE_BITS, ASSERT_EXCLUSIVE_WRITER removed - unused */
-
 #endif
 
 #define __ADDRESSABLE(sym) \
@@ -64,12 +45,42 @@ static inline void *offset_to_ptr(const int *off)
 	return (void *)((unsigned long)off + *off);
 }
 
-#endif  
-
 #define __must_be_array(a)	BUILD_BUG_ON_ZERO(__same_type((a), &(a)[0]))
 
 #define prevent_tail_call_optimization()	mb()
 
-#include <asm/rwonce.h>
+#include <linux/stddef.h>
+#define compiletime_assert_rwonce_type(t)					\
+	compiletime_assert(__native_word(t) || sizeof(t) == sizeof(long long),	\
+		"Unsupported access size for {READ,WRITE}_ONCE().")
 
-#endif  
+#ifndef __READ_ONCE
+#define __READ_ONCE(x)	(*(const volatile __unqual_scalar_typeof(x) *)&(x))
+#endif
+
+#define READ_ONCE(x)							\
+({									\
+	compiletime_assert_rwonce_type(x);				\
+	__READ_ONCE(x);							\
+})
+
+#define __WRITE_ONCE(x, val)						\
+do {									\
+	*(volatile typeof(x) *)&(x) = (val);				\
+} while (0)
+
+#define WRITE_ONCE(x, val)						\
+do {									\
+	compiletime_assert_rwonce_type(x);				\
+	__WRITE_ONCE(x, val);						\
+} while (0)
+
+static __no_kasan_or_inline
+unsigned long read_word_at_a_time(const void *addr)
+{
+	return *(unsigned long *)addr;
+}
+
+#endif  /* __ASSEMBLY__ */
+
+#endif

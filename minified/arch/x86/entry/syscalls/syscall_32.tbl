@@ -116,8 +116,8 @@
 142	i386	_newselect		sys_select			compat_sys_select
 143	i386	flock			sys_flock
 144	i386	msync			sys_msync
-145	i386	readv			sys_readv
-146	i386	writev			sys_writev
+145	i386	readv
+146	i386	writev
 148	i386	fdatasync		sys_fdatasync
 149	i386	_sysctl			sys_ni_syscall
 150	i386	mlock			sys_mlock
@@ -140,7 +140,7 @@
 183	i386	getcwd			sys_getcwd
 184	i386	capget			sys_capget
 185	i386	capset			sys_capset
-187	i386	sendfile		sys_sendfile			compat_sys_sendfile
+187	i386	sendfile
 188	i386	getpmsg
 189	i386	putpmsg
 190	i386	vfork			sys_vfork
@@ -187,7 +187,7 @@
 235	i386	removexattr		sys_removexattr
 236	i386	lremovexattr		sys_lremovexattr
 237	i386	fremovexattr		sys_fremovexattr
-239	i386	sendfile64		sys_sendfile64
+239	i386	sendfile64
 240	i386	futex			sys_futex_time32
 243	i386	set_thread_area		sys_set_thread_area
 244	i386	get_thread_area		sys_get_thread_area
@@ -268,8 +268,8 @@
 330	i386	dup3			sys_dup3
 331	i386	pipe2			sys_pipe2
 332	i386	inotify_init1		sys_inotify_init1
-333	i386	preadv			sys_preadv			compat_sys_preadv
-334	i386	pwritev			sys_pwritev			compat_sys_pwritev
+333	i386	preadv
+334	i386	pwritev
 336	i386	perf_event_open		sys_perf_event_open
 337	i386	recvmmsg		sys_recvmmsg_time32		compat_sys_recvmmsg_time32
 338	i386	fanotify_init		sys_fanotify_init
@@ -307,9 +307,9 @@
 374	i386	userfaultfd		sys_userfaultfd
 375	i386	membarrier		sys_membarrier
 376	i386	mlock2			sys_mlock2
-377	i386	copy_file_range		sys_copy_file_range
-378	i386	preadv2			sys_preadv2			compat_sys_preadv2
-379	i386	pwritev2		sys_pwritev2			compat_sys_pwritev2
+377	i386	copy_file_range
+378	i386	preadv2
+379	i386	pwritev2
 380	i386	pkey_mprotect		sys_pkey_mprotect
 381	i386	pkey_alloc		sys_pkey_alloc
 382	i386	pkey_free		sys_pkey_free

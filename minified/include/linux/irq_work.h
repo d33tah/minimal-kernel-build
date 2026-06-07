@@ -28,15 +28,6 @@ void init_irq_work(struct irq_work *work, void (*func)(struct irq_work *))
 	*work = IRQ_WORK_INIT(func);
 }
 
-bool irq_work_queue(struct irq_work *work);
-bool irq_work_queue_on(struct irq_work *work, int cpu);
-
 void irq_work_tick(void);
-void irq_work_sync(struct irq_work *work);
-
-
-void irq_work_run(void);
-bool irq_work_needs_cpu(void);
-void irq_work_single(void *arg);
 
 #endif  

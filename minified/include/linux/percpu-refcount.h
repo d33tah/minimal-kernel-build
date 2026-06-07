@@ -48,20 +48,6 @@ struct percpu_ref {
 	struct percpu_ref_data  *data;
 };
 
-int __must_check percpu_ref_init(struct percpu_ref *ref,
-				 percpu_ref_func_t *release, unsigned int flags,
-				 gfp_t gfp);
-void percpu_ref_exit(struct percpu_ref *ref);
-void percpu_ref_switch_to_atomic(struct percpu_ref *ref,
-				 percpu_ref_func_t *confirm_switch);
-void percpu_ref_switch_to_atomic_sync(struct percpu_ref *ref);
-void percpu_ref_switch_to_percpu(struct percpu_ref *ref);
-void percpu_ref_kill_and_confirm(struct percpu_ref *ref,
-				 percpu_ref_func_t *confirm_kill);
-void percpu_ref_resurrect(struct percpu_ref *ref);
-void percpu_ref_reinit(struct percpu_ref *ref);
-bool percpu_ref_is_zero(struct percpu_ref *ref);
-
 static inline bool __ref_is_percpu(struct percpu_ref *ref,
 					  unsigned long __percpu **percpu_countp)
 {

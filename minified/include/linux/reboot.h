@@ -55,54 +55,12 @@ extern int reboot_cpu;
  * register_restart_handler, unregister_restart_handler, do_kernel_restart removed - unused */
 
 
-extern void migrate_to_reboot_cpu(void);
 extern void machine_restart(char *cmd);
 extern void machine_halt(void);
 extern void machine_power_off(void);
 
 extern void machine_shutdown(void);
 struct pt_regs;
-extern void machine_crash_shutdown(struct pt_regs *);
-
-void do_kernel_power_off(void);
-
-
-#define SYS_OFF_PRIO_PLATFORM		-256
-#define SYS_OFF_PRIO_LOW		-128
-#define SYS_OFF_PRIO_DEFAULT		0
-#define SYS_OFF_PRIO_HIGH		192
-#define SYS_OFF_PRIO_FIRMWARE		224
-
-enum sys_off_mode {
-	 
-	SYS_OFF_MODE_POWER_OFF_PREPARE,
-
-	 
-	SYS_OFF_MODE_POWER_OFF,
-
-	 
-	SYS_OFF_MODE_RESTART,
-};
-
-struct sys_off_data {
-	int mode;
-	void *cb_data;
-	const char *cmd;
-};
-
-struct sys_off_handler *
-register_sys_off_handler(enum sys_off_mode mode,
-			 int priority,
-			 int (*callback)(struct sys_off_data *data),
-			 void *cb_data);
-void unregister_sys_off_handler(struct sys_off_handler *handler);
-
-extern void kernel_restart_prepare(char *cmd);
-extern void kernel_restart(char *cmd);
-extern void kernel_halt(void);
-extern void kernel_power_off(void);
-extern bool kernel_can_power_off(void);
-
 
 extern void emergency_restart(void);
 

@@ -142,13 +142,6 @@ void unblank_screen(void);
 
 struct unipair;
 
-int con_set_trans_old(unsigned char __user * table);
-int con_get_trans_old(unsigned char __user * table);
-int con_set_trans_new(unsigned short __user * table);
-int con_get_trans_new(unsigned short __user * table);
-int con_clear_unimap(struct vc_data *vc);
-int con_set_unimap(struct vc_data *vc, ushort ct, struct unipair __user *list);
-int con_get_unimap(struct vc_data *vc, ushort ct, ushort __user *uct, struct unipair __user *list);
 int con_set_default_unimap(struct vc_data *vc);
 void con_free_unimap(struct vc_data *vc);
 int con_copy_unimap(struct vc_data *dst_vc, struct vc_data *src_vc);

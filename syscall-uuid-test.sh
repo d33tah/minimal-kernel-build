@@ -6,7 +6,9 @@
 # the init ELF and the kernel, boots under qemu, and asserts the UUID appears in
 # the console output. If the string were printed by a decompressor stub instead
 # of the running init, the swapped UUID would never show up and this fails.
-set -euo pipefail
+# Note: no `pipefail` — `yes "" | make olddefconfig` makes `yes` die with SIGPIPE
+# (exit 141) once make stops reading, which would abort the script spuriously.
+set -eu
 
 MARKER="syscall-$(cat /proc/sys/kernel/random/uuid)"
 echo ">>> anti-cheat marker: $MARKER"

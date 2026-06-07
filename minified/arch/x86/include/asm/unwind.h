@@ -30,11 +30,6 @@ static inline bool unwind_done(struct unwind_state *state)
 	return state->stack_info.type == STACK_TYPE_UNKNOWN;
 }
 
-static inline bool unwind_error(struct unwind_state *state)
-{
-	return state->error;
-}
-
 static inline
 void unwind_start(struct unwind_state *state, struct task_struct *task,
 		  struct pt_regs *regs, unsigned long *first_frame)
@@ -42,12 +37,6 @@ void unwind_start(struct unwind_state *state, struct task_struct *task,
 	first_frame = first_frame ? : get_stack_pointer(task, regs);
 
 	__unwind_start(state, task, regs, first_frame);
-}
-
-static inline struct pt_regs *unwind_get_entry_regs(struct unwind_state *state,
-						    bool *partial)
-{
-	return NULL;
 }
 
 static inline void unwind_init(void) {}
@@ -85,9 +74,4 @@ unsigned long unwind_recover_ret_addr(struct unwind_state *state,
 	val;						\
 })
 
-static inline bool task_on_another_cpu(struct task_struct *task)
-{
-	return false;
-}
-
-#endif  
+#endif

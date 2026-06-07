@@ -13,14 +13,6 @@ static inline int numa_node_id(void)
  
 #define numa_node_id numa_node_id
 
-static inline int early_cpu_to_node(int cpu)
-{
-	return 0;
-}
-
-static inline void setup_node_to_cpumask_map(void) { }
-
-
 /* Inlined from asm-generic/topology.h */
 #ifndef cpu_to_node
 #define cpu_to_node(cpu)	((void)(cpu),0)
@@ -44,40 +36,12 @@ static inline void setup_node_to_cpumask_map(void) { }
 extern unsigned int __max_die_per_package;
 
 #define topology_max_packages()			(1)
-static inline int
-topology_update_package_map(unsigned int apicid, unsigned int cpu) { return 0; }
-static inline int
-topology_update_die_map(unsigned int dieid, unsigned int cpu) { return 0; }
-static inline int topology_phys_to_logical_pkg(unsigned int pkg) { return 0; }
-static inline int topology_phys_to_logical_die(unsigned int die,
-		unsigned int cpu) { return 0; }
-static inline int topology_max_die_per_package(void) { return 1; }
-static inline int topology_max_smt_threads(void) { return 1; }
-static inline bool topology_is_primary_thread(unsigned int cpu) { return true; }
-static inline bool topology_smt_supported(void) { return false; }
-
-static inline void arch_fix_phys_package_id(int num, u32 slot)
-{
-}
 
 struct pci_bus;
 
 /* x86_topology_update declaration removed - no implementation */
 
 #define sysctl_sched_itmt_enabled	0
-static inline void sched_set_itmt_core_prio(int prio, int core_cpu)
-{
-}
-static inline int sched_set_itmt_support(void)
-{
-	return 0;
-}
-static inline void sched_clear_itmt_support(void)
-{
-}
-
-static inline void arch_set_max_freq_ratio(bool turbo_disabled) { }
-static inline void freq_invariance_set_perf_ratio(u64 ratio, bool turbo_disabled) { }
 
 static inline void arch_scale_freq_tick(void) { }
 #define arch_scale_freq_tick arch_scale_freq_tick

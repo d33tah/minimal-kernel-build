@@ -328,25 +328,6 @@ done:
 }
 
 
-int driver_probe_done(void)
-{
-	int local_probe_count = atomic_read(&probe_count);
-
-	if (local_probe_count)
-		return -EBUSY;
-	return 0;
-}
-
-void wait_for_device_probe(void)
-{
-	 
-	flush_work(&deferred_probe_work);
-
-	 
-	wait_event(probe_waitqueue, atomic_read(&probe_count) == 0);
-	async_synchronize_full();
-}
-
 static int __driver_probe_device(struct device_driver *drv, struct device *dev)
 {
 	int ret = 0;

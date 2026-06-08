@@ -16,9 +16,6 @@ static inline void rcuwait_init(struct rcuwait *w)
 	w->task = NULL;
 }
 
-extern int rcuwait_wake_up(struct rcuwait *w);
-
-
 static inline void prepare_to_rcuwait(struct rcuwait *w)
 {
 	rcu_assign_pointer(w->task, current);

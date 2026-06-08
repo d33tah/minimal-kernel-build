@@ -816,32 +816,6 @@ context_switch(struct rq *rq, struct task_struct *prev,
 	return finish_task_switch(prev);
 }
 
-unsigned int nr_running(void)
-{
-	unsigned int i, sum = 0;
-
-	for_each_online_cpu(i)
-		sum += cpu_rq(i)->nr_running;
-
-	return sum;
-}
-
-
-unsigned int nr_iowait_cpu(int cpu)
-{
-	return atomic_read(&cpu_rq(cpu)->nr_iowait);
-}
-
-unsigned int nr_iowait(void)
-{
-	unsigned int i, sum = 0;
-
-	for_each_possible_cpu(i)
-		sum += nr_iowait_cpu(i);
-
-	return sum;
-}
-
 DEFINE_PER_CPU(struct kernel_stat, kstat);
 DEFINE_PER_CPU(struct kernel_cpustat, kernel_cpustat);
 

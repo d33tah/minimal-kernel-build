@@ -41,11 +41,6 @@ struct platform_device {
 extern struct bus_type platform_bus_type;
 extern struct device platform_bus;
 
-extern struct resource *platform_get_resource(struct platform_device *,
-					      unsigned int, unsigned int);
-extern int platform_get_irq(struct platform_device *, unsigned int);
-extern int platform_get_irq_optional(struct platform_device *, unsigned int);
-
 struct platform_driver {
 	int (*probe)(struct platform_device *);
 	int (*remove)(struct platform_device *);

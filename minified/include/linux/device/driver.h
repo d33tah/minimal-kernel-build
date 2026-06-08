@@ -70,10 +70,6 @@ extern int __must_check driver_create_file(struct device_driver *driver,
 extern void driver_remove_file(struct device_driver *driver,
 			       const struct driver_attribute *attr);
 
-struct device *driver_find_device(struct device_driver *drv,
-				  struct device *start, const void *data,
-				  int (*match)(struct device *dev, const void *data));
-
 
 extern int driver_deferred_probe_timeout;
 void driver_deferred_probe_add(struct device *dev);

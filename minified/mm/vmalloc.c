@@ -1042,8 +1042,6 @@ static atomic_long_t vmap_lazy_nr = ATOMIC_LONG_INIT(0);
 
 static DEFINE_MUTEX(vmap_purge_lock);
 
-static void purge_fragmented_blocks_allcpus(void);
-
 static bool __purge_vmap_area_lazy(unsigned long start, unsigned long end)
 {
 	return false;
@@ -1052,7 +1050,6 @@ static bool __purge_vmap_area_lazy(unsigned long start, unsigned long end)
 static void purge_vmap_area_lazy(void)
 {
 	mutex_lock(&vmap_purge_lock);
-	purge_fragmented_blocks_allcpus();
 	__purge_vmap_area_lazy(ULONG_MAX, 0);
 	mutex_unlock(&vmap_purge_lock);
 }
@@ -1114,81 +1111,14 @@ static struct vmap_area *find_vmap_area(unsigned long addr)
 	return va;
 }
 
-#if BITS_PER_LONG == 32
-#define VMALLOC_SPACE		(128UL*1024*1024)
-#else
-#define VMALLOC_SPACE		(128UL*1024*1024*1024)
-#endif
-
-#define VMALLOC_PAGES		(VMALLOC_SPACE / PAGE_SIZE)
-#define VMAP_MAX_ALLOC		BITS_PER_LONG	
-#define VMAP_BBMAP_BITS_MAX	1024	
-#define VMAP_BBMAP_BITS_MIN	(VMAP_MAX_ALLOC*2)
-#define VMAP_MIN(x, y)		((x) < (y) ? (x) : (y)) 
-#define VMAP_MAX(x, y)		((x) > (y) ? (x) : (y)) 
-#define VMAP_BBMAP_BITS		\
-		VMAP_MIN(VMAP_BBMAP_BITS_MAX,	\
-		VMAP_MAX(VMAP_BBMAP_BITS_MIN,	\
-			VMALLOC_PAGES / roundup_pow_of_two(NR_CPUS) / 16))
-
-struct vmap_block_queue {
-	spinlock_t lock;
-	struct list_head free;
-};
-
-struct vmap_block {
-	spinlock_t lock;
-	struct vmap_area *va;
-	unsigned long free, dirty;
-	unsigned long dirty_min, dirty_max; 
-	struct list_head free_list;
-	struct rcu_head rcu_head;
-	struct list_head purge;
-};
-
-static DEFINE_PER_CPU(struct vmap_block_queue, vmap_block_queue);
-
-
-static void purge_fragmented_blocks_allcpus(void)
-{
-	/* Stub: calls purge_fragmented_blocks which is already stubbed */
-}
-
 static void _vm_unmap_aliases(unsigned long start, unsigned long end, int flush)
 {
-	int cpu;
-
 	if (unlikely(!vmap_initialized))
 		return;
 
 	might_sleep();
 
-	for_each_possible_cpu(cpu) {
-		struct vmap_block_queue *vbq = &per_cpu(vmap_block_queue, cpu);
-		struct vmap_block *vb;
-
-		rcu_read_lock();
-		list_for_each_entry_rcu(vb, &vbq->free, free_list) {
-			spin_lock(&vb->lock);
-			if (vb->dirty && vb->dirty != VMAP_BBMAP_BITS) {
-				unsigned long va_start = vb->va->va_start;
-				unsigned long s, e;
-
-				s = va_start + (vb->dirty_min << PAGE_SHIFT);
-				e = va_start + (vb->dirty_max << PAGE_SHIFT);
-
-				start = min(s, start);
-				end   = max(e, end);
-
-				flush = 1;
-			}
-			spin_unlock(&vb->lock);
-		}
-		rcu_read_unlock();
-	}
-
 	mutex_lock(&vmap_purge_lock);
-	purge_fragmented_blocks_allcpus();
 	if (!__purge_vmap_area_lazy(start, end) && flush)
 		flush_tlb_kernel_range(start, end);
 	mutex_unlock(&vmap_purge_lock);
@@ -1253,12 +1183,8 @@ void __init vmalloc_init(void)
 	vmap_area_cachep = KMEM_CACHE(vmap_area, SLAB_PANIC);
 
 	for_each_possible_cpu(i) {
-		struct vmap_block_queue *vbq;
 		struct vfree_deferred *p;
 
-		vbq = &per_cpu(vmap_block_queue, i);
-		spin_lock_init(&vbq->lock);
-		INIT_LIST_HEAD(&vbq->free);
 		p = &per_cpu(vfree_deferred, i);
 		init_llist_head(&p->list);
 		INIT_WORK(&p->wq, free_work);

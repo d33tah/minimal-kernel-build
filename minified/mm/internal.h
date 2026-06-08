@@ -176,7 +176,6 @@ extern void *memmap_alloc(phys_addr_t size, phys_addr_t align,
 
 void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 		struct vm_area_struct *prev);
-void __vma_unlink_list(struct mm_struct *mm, struct vm_area_struct *vma);
 struct anon_vma *folio_anon_vma(struct folio *folio);
 
 void unmap_mapping_folio(struct folio *folio);

@@ -64,12 +64,6 @@ SYSCALL_DEFINE2(gettimeofday, struct __kernel_old_timeval __user *, tv,
 }
 
 
-int do_sys_settimeofday64(const struct timespec64 *tv, const struct timezone *tz)
-{
-	/* Stub: setting time not needed for minimal kernel */
-	return -EPERM;
-}
-
 SYSCALL_DEFINE2(settimeofday, struct __kernel_old_timeval __user *, tv,
 		struct timezone __user *, tz)
 {

@@ -3,15 +3,6 @@
 
 #include <linux/pipe_fs_i.h>
 
-#define SPLICE_F_MOVE	(0x01)	 
-#define SPLICE_F_NONBLOCK (0x02)  
-				  
-				  
-#define SPLICE_F_MORE	(0x04)	 
-#define SPLICE_F_GIFT	(0x08)	 
-
-#define SPLICE_F_ALL (SPLICE_F_MOVE|SPLICE_F_NONBLOCK|SPLICE_F_MORE|SPLICE_F_GIFT)
-
 struct splice_desc {
 	size_t total_len;		 
 	unsigned int len;		 
@@ -28,25 +19,8 @@ struct splice_desc {
 	bool need_wakeup;		 
 };
 
-struct partial_page {
-	unsigned int offset;
-	unsigned int len;
-	unsigned long private;
-};
-
-struct splice_pipe_desc {
-	struct page **pages;		 
-	struct partial_page *partial;	 
-	int nr_pages;			 
-	unsigned int nr_pages_max;	 
-	const struct pipe_buf_operations *ops; 
-	void (*spd_release)(struct splice_pipe_desc *, unsigned int);
-};
-
 typedef int (splice_actor)(struct pipe_inode_info *, struct pipe_buffer *,
 			   struct splice_desc *);
-typedef int (splice_direct_actor)(struct pipe_inode_info *,
-				  struct splice_desc *);
 
 extern ssize_t splice_from_pipe(struct pipe_inode_info *, struct file *,
 				loff_t *, size_t, unsigned int,

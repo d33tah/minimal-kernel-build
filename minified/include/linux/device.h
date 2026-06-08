@@ -333,8 +333,6 @@ void put_device(struct device *dev);
 
 static inline int devtmpfs_mount(void) { return 0; }
 
-void device_shutdown(void);
-
 /* device_link_add, device_link_del, device_link_remove,
    device_links_supplier_sync_state_pause, device_links_supplier_sync_state_resume removed - unused */
 

@@ -6,26 +6,6 @@
 
 static DEFINE_SPINLOCK(pin_lock);
 
-void pin_remove(struct fs_pin *pin)
-{
-	spin_lock(&pin_lock);
-	hlist_del_init(&pin->m_list);
-	hlist_del_init(&pin->s_list);
-	spin_unlock(&pin_lock);
-	spin_lock_irq(&pin->wait.lock);
-	pin->done = 1;
-	wake_up_locked(&pin->wait);
-	spin_unlock_irq(&pin->wait.lock);
-}
-
-void pin_insert(struct fs_pin *pin, struct vfsmount *m)
-{
-	spin_lock(&pin_lock);
-	hlist_add_head(&pin->s_list, &m->mnt_sb->s_pins);
-	hlist_add_head(&pin->m_list, &real_mount(m)->mnt_pins);
-	spin_unlock(&pin_lock);
-}
-
 void pin_kill(struct fs_pin *p)
 {
 	wait_queue_entry_t wait;

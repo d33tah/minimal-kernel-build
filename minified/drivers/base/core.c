@@ -773,9 +773,4 @@ void device_destroy(struct class *class, dev_t devt)
 	}
 }
 
-void device_shutdown(void)
-{
-	/* Stubbed: device shutdown not needed for minimal boot */
-}
-
 int device_match_devt(struct device *dev, const void *pdevt) { return 0; }

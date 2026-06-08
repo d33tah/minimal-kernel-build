@@ -25,15 +25,6 @@ static DEFINE_SPINLOCK(ucounts_lock);
 
 
 
-bool setup_userns_sysctls(struct user_namespace *ns)
-{
-	return true;
-}
-
-void retire_userns_sysctls(struct user_namespace *ns)
-{
-}
-
 static struct ucounts *find_ucounts(struct user_namespace *ns, kuid_t uid, struct hlist_head *hashent)
 {
 	struct ucounts *ucounts;

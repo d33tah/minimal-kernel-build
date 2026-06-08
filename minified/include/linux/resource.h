@@ -34,13 +34,6 @@ struct rlimit {
 	__kernel_ulong_t	rlim_max;
 };
 
-#define RLIM64_INFINITY		(~0ULL)
-
-struct rlimit64 {
-	__u64 rlim_cur;
-	__u64 rlim_max;
-};
-
 #define	PRIO_MIN	(-20)
 #define	PRIO_MAX	20
 #define	PRIO_PROCESS	0

@@ -34,12 +34,6 @@ enum iter_type {
 	ITER_DISCARD,
 };
 
-struct iov_iter_state {
-	size_t iov_offset;
-	size_t count;
-	unsigned long nr_segs;
-};
-
 struct iov_iter {
 	u8 iter_type;
 	bool nofault;

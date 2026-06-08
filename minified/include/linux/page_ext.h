@@ -6,13 +6,6 @@
 #include <linux/stackdepot.h>
 
 struct pglist_data;
-struct page_ext_operations {
-	size_t offset;
-	size_t size;
-	bool (*need)(void);
-	void (*init)(void);
-};
-
 struct page_ext;
 
 static inline void pgdat_page_ext_init(struct pglist_data *pgdat)

@@ -12,10 +12,5 @@ struct old_timespec32 {
 	s32		tv_nsec;
 };
 
-struct old_timeval32 {
-	old_time32_t	tv_sec;
-	s32		tv_usec;
-};
-
 
 #endif

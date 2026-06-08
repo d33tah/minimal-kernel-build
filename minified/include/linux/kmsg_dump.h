@@ -13,11 +13,6 @@ enum kmsg_dump_reason {
 	KMSG_DUMP_MAX
 };
 
-struct kmsg_dump_iter {
-	u64	cur_seq;
-	u64	next_seq;
-};
-
 struct kmsg_dumper {
 	struct list_head list;
 	void (*dump)(struct kmsg_dumper *dumper, enum kmsg_dump_reason reason);

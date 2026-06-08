@@ -50,62 +50,10 @@ static inline bool sg_is_last(struct scatterlist *sg)
 	return __sg_flags(sg) & SG_END;
 }
 
-static inline void sg_assign_page(struct scatterlist *sg, struct page *page)
-{
-	unsigned long page_link = sg->page_link & (SG_CHAIN | SG_END);
-
-	 
-	BUG_ON((unsigned long)page & SG_PAGE_LINK_MASK);
-	sg->page_link = page_link | (unsigned long) page;
-}
-
-static inline void sg_set_page(struct scatterlist *sg, struct page *page,
-			       unsigned int len, unsigned int offset)
-{
-	sg_assign_page(sg, page);
-	sg->offset = offset;
-	sg->length = len;
-}
-
-
-static inline void sg_set_buf(struct scatterlist *sg, const void *buf,
-			      unsigned int buflen)
-{
-	sg_set_page(sg, virt_to_page(buf), buflen, offset_in_page(buf));
-}
-
 #define for_each_sg(sglist, sg, nr, __i)	\
 	for (__i = 0, sg = (sglist); __i < (nr); __i++, sg = sg_next(sg))
 
-#define for_each_sgtable_sg(sgt, sg, i)		\
-	for_each_sg((sgt)->sgl, sg, (sgt)->orig_nents, i)
-
-#define for_each_sgtable_dma_sg(sgt, sg, i)	\
-	for_each_sg((sgt)->sgl, sg, (sgt)->nents, i)
-
-
-
-static inline void sg_mark_end(struct scatterlist *sg)
-{
-	 
-	sg->page_link |= SG_END;
-	sg->page_link &= ~SG_CHAIN;
-}
-
-
-static inline void sg_init_marker(struct scatterlist *sgl,
-				  unsigned int nents)
-{
-	sg_mark_end(&sgl[nents - 1]);
-}
-
-/* Basic functions - only sg_nents, sg_next, sg_init_table, sg_init_one used */
-int sg_nents(struct scatterlist *sg);
+/* Basic functions - only sg_next used (via for_each_sg) */
 struct scatterlist *sg_next(struct scatterlist *);
-void sg_init_table(struct scatterlist *, unsigned int);
-void sg_init_one(struct scatterlist *, const void *, unsigned int);
-int sg_alloc_table(struct sg_table *, unsigned int, gfp_t);
 
-#define SG_MAX_SINGLE_ALLOC		(PAGE_SIZE / sizeof(struct scatterlist))
-
-#endif  
+#endif

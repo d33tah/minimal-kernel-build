@@ -588,11 +588,6 @@ struct lock_manager;
 struct net;
 struct file_lock_context;
 
-#ifndef OFFSET_MAX
-#define INT_LIMIT(x)	(~((x)1 << (sizeof(x)*8 - 1)))
-#define OFFSET_MAX	INT_LIMIT(loff_t)
-#endif
-
 
 #define locks_inode(f) file_inode(f)
 
@@ -665,7 +660,6 @@ extern void __f_setown(struct file *filp, struct pid *, enum pid_type, int force
 #define SB_I_NODEV	0x00000004
 #define SB_I_USERNS_VISIBLE		0x00000010
 #define SB_I_PERSB_BDI	0x00000200
-#define SB_I_TS_EXPIRY_WARNED 0x00000400 
 
 enum {
 	SB_UNFROZEN = 0,		
@@ -849,11 +843,6 @@ static inline bool __sb_start_write_trylock(struct super_block *sb, int level)
 	return percpu_down_read_trylock(sb->s_writers.rw_sem + level - 1);
 }
 
-#define __sb_writers_acquired(sb, lev)	\
-	percpu_rwsem_acquire(&(sb)->s_writers.rw_sem[(lev)-1], 1, _THIS_IP_)
-#define __sb_writers_release(sb, lev)	\
-	percpu_rwsem_release(&(sb)->s_writers.rw_sem[(lev)-1], 1, _THIS_IP_)
-
 static inline void sb_end_write(struct super_block *sb)
 {
 	__sb_end_write(sb, SB_FREEZE_WRITE);
@@ -1025,12 +1014,10 @@ struct super_operations {
 				    struct shrink_control *);
 };
 
-#define S_SYNC		(1 << 0)
 #define S_NOATIME	(1 << 1)
 #define S_APPEND	(1 << 2)
 #define S_IMMUTABLE	(1 << 3)
 #define S_DEAD		(1 << 4)
-#define S_DIRSYNC	(1 << 6)
 #define S_NOCMTIME	(1 << 7)
 #define S_SWAPFILE	(1 << 8)
 #define S_PRIVATE	(1 << 9)
@@ -1043,11 +1030,6 @@ struct super_operations {
 #define __IS_FLG(inode, flg)	((inode)->i_sb->s_flags & (flg))
 
 static inline bool sb_rdonly(const struct super_block *sb) { return sb->s_flags & SB_RDONLY; }
-#define IS_RDONLY(inode)	sb_rdonly((inode)->i_sb)
-#define IS_SYNC(inode)		(__IS_FLG(inode, SB_SYNCHRONOUS) || \
-					((inode)->i_flags & S_SYNC))
-#define IS_DIRSYNC(inode)	(__IS_FLG(inode, SB_SYNCHRONOUS|SB_DIRSYNC) || \
-					((inode)->i_flags & (S_SYNC|S_DIRSYNC)))
 #define IS_NOATIME(inode)	__IS_FLG(inode, SB_RDONLY|SB_NOATIME)
 #define IS_I_VERSION(inode)	__IS_FLG(inode, SB_I_VERSION)
 #define IS_APPEND(inode)	((inode)->i_flags & S_APPEND)
@@ -1056,7 +1038,6 @@ static inline bool sb_rdonly(const struct super_block *sb) { return sb->s_flags 
 #define IS_DEADDIR(inode)	((inode)->i_flags & S_DEAD)
 #define IS_NOCMTIME(inode)	((inode)->i_flags & S_NOCMTIME)
 #define IS_SWAPFILE(inode)	((inode)->i_flags & S_SWAPFILE)
-#define IS_PRIVATE(inode)	((inode)->i_flags & S_PRIVATE)
 #define IS_AUTOMOUNT(inode)	((inode)->i_flags & S_AUTOMOUNT)
 #define IS_NOSEC(inode)		((inode)->i_flags & S_NOSEC)
 #define IS_DAX(inode)		((inode)->i_flags & S_DAX)
@@ -1091,8 +1072,6 @@ static inline void init_sync_kiocb(struct kiocb *kiocb, struct file *filp)
 #define __I_SYNC		7
 #define I_SYNC			(1 << __I_SYNC)
 #define I_REFERENCED		(1 << 8)
-#define __I_DIO_WAKEUP		9
-#define I_DIO_WAKEUP		(1 << __I_DIO_WAKEUP)
 #define I_LINKABLE		(1 << 10)
 #define I_DIRTY_TIME		(1 << 11)
 #define I_CREATING		(1 << 15)
@@ -1147,10 +1126,7 @@ struct file_system_type {
 #define FS_REQUIRES_DEV		1 
 #define FS_BINARY_MOUNTDATA	2
 #define FS_HAS_SUBTYPE		4
-#define FS_USERNS_MOUNT		8	
-#define FS_DISALLOW_NOTIFY_PERM	16	
-#define FS_ALLOW_IDMAP         32      
-#define FS_RENAME_DOES_D_MOVE	32768	
+#define FS_USERNS_MOUNT		8
 	int (*init_fs_context)(struct fs_context *);
 	const struct fs_parameter_spec *parameters;
 	struct dentry *(*mount) (struct file_system_type *, int,
@@ -1479,8 +1455,6 @@ extern int simple_pin_fs(struct file_system_type *, struct vfsmount **mount, int
 extern void simple_release_fs(struct vfsmount **mount, int *count);
 
 
-#define buffer_migrate_page NULL
-#define buffer_migrate_page_norefs NULL
 
 int may_setattr(struct user_namespace *mnt_userns, struct inode *inode,
 		unsigned int ia_valid);

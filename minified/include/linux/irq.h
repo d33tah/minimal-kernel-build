@@ -288,9 +288,6 @@ void irq_modify_status(unsigned int irq, unsigned long clr, unsigned long set);
 
 
 extern int irq_set_chip(unsigned int irq, const struct irq_chip *chip);
-extern int irq_set_chip_data(unsigned int irq, void *data);
-extern int irq_set_irq_type(unsigned int irq, unsigned int type);
-extern struct irq_data *irq_get_irq_data(unsigned int irq);
 
 static inline struct irq_chip *irq_data_get_irq_chip(struct irq_data *d)
 {

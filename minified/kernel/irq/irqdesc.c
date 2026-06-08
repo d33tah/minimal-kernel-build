@@ -255,19 +255,6 @@ int generic_handle_irq(unsigned int irq)
 	return handle_irq_desc(irq_to_desc(irq));
 }
 
-int generic_handle_irq_safe(unsigned int irq)
-{
-	unsigned long flags;
-	int ret;
-
-	local_irq_save(flags);
-	ret = handle_irq_desc(irq_to_desc(irq));
-	local_irq_restore(flags);
-	return ret;
-}
-
-
-
 void irq_free_descs(unsigned int from, unsigned int cnt)
 {
 	int i;

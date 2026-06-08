@@ -141,26 +141,6 @@ bool __bitmap_equal(const unsigned long *bitmap1,
 void __bitmap_set(unsigned long *map, unsigned int start, int len);
 void __bitmap_clear(unsigned long *map, unsigned int start, int len);
 
-unsigned long bitmap_find_next_zero_area_off(unsigned long *map,
-					     unsigned long size,
-					     unsigned long start,
-					     unsigned int nr,
-					     unsigned long align_mask,
-					     unsigned long align_offset);
-
-static inline unsigned long
-bitmap_find_next_zero_area(unsigned long *map,
-			   unsigned long size,
-			   unsigned long start,
-			   unsigned int nr,
-			   unsigned long align_mask)
-{
-	return bitmap_find_next_zero_area_off(map, size, start, nr,
-					      align_mask, 0);
-}
-
-int bitmap_parse(const char *buf, unsigned int buflen,
-			unsigned long *dst, int nbits);
 /* bitmap_parse_user, bitmap_parselist, bitmap_parselist_user, bitmap_remap,
  * bitmap_bitremap, bitmap_onto, bitmap_fold, bitmap_find_free_region,
  * bitmap_release_region, bitmap_allocate_region removed - unused */

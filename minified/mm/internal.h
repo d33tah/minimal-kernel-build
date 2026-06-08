@@ -216,54 +216,6 @@ void mlock_page_drain_remote(int cpu);
 /* maybe_pmd_mkwrite removed - unused */
 
 
-static inline unsigned long
-vma_pgoff_address(pgoff_t pgoff, unsigned long nr_pages,
-		  struct vm_area_struct *vma)
-{
-	unsigned long address;
-
-	if (pgoff >= vma->vm_pgoff) {
-		address = vma->vm_start +
-			((pgoff - vma->vm_pgoff) << PAGE_SHIFT);
-		 
-		if (address < vma->vm_start || address >= vma->vm_end)
-			address = -EFAULT;
-	} else if (pgoff + nr_pages - 1 >= vma->vm_pgoff) {
-		 
-		address = vma->vm_start;
-	} else {
-		address = -EFAULT;
-	}
-	return address;
-}
-
- 
-static inline unsigned long
-vma_address(struct page *page, struct vm_area_struct *vma)
-{
-	VM_BUG_ON_PAGE(PageKsm(page), page);	 
-	return vma_pgoff_address(page_to_pgoff(page), compound_nr(page), vma);
-}
-
- 
-static inline unsigned long vma_address_end(struct page_vma_mapped_walk *pvmw)
-{
-	struct vm_area_struct *vma = pvmw->vma;
-	pgoff_t pgoff;
-	unsigned long address;
-
-	 
-	if (pvmw->nr_pages == 1)
-		return pvmw->address + PAGE_SIZE;
-
-	pgoff = pvmw->pgoff + pvmw->nr_pages;
-	address = vma->vm_start + ((pgoff - vma->vm_pgoff) << PAGE_SHIFT);
-	 
-	if (address < vma->vm_start || address > vma->vm_end)
-		address = vma->vm_end;
-	return address;
-}
-
 static inline struct file *maybe_unlock_mmap_for_io(struct vm_fault *vmf,
 						    struct file *fpin)
 {

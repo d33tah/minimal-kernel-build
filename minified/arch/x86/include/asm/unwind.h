@@ -19,8 +19,6 @@ struct unwind_state {
 	unsigned long *sp;
 };
 
-void __unwind_start(struct unwind_state *state, struct task_struct *task,
-		    struct pt_regs *regs, unsigned long *first_frame);
 bool unwind_next_frame(struct unwind_state *state);
 unsigned long unwind_get_return_address(struct unwind_state *state);
 unsigned long *unwind_get_return_address_ptr(struct unwind_state *state);
@@ -30,19 +28,7 @@ static inline bool unwind_done(struct unwind_state *state)
 	return state->stack_info.type == STACK_TYPE_UNKNOWN;
 }
 
-static inline
-void unwind_start(struct unwind_state *state, struct task_struct *task,
-		  struct pt_regs *regs, unsigned long *first_frame)
-{
-	first_frame = first_frame ? : get_stack_pointer(task, regs);
-
-	__unwind_start(state, task, regs, first_frame);
-}
-
 static inline void unwind_init(void) {}
-static inline
-void unwind_module_init(struct module *mod, void *orc_ip, size_t orc_ip_size,
-			void *orc, size_t orc_size) {}
 
 static inline
 unsigned long unwind_recover_rethook(struct unwind_state *state,

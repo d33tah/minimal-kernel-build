@@ -22,12 +22,6 @@ struct irq_work {
 #define DEFINE_IRQ_WORK(name, _f)				\
 	struct irq_work name = IRQ_WORK_INIT(_f)
 
-static inline
-void init_irq_work(struct irq_work *work, void (*func)(struct irq_work *))
-{
-	*work = IRQ_WORK_INIT(func);
-}
-
 void irq_work_tick(void);
 
 #endif  

@@ -359,16 +359,6 @@ extern void __cleanup_sighand(struct sighand_struct *);
 	__for_each_thread((p)->signal, t)
 
 
-static inline
-struct pid *task_pid_type(struct task_struct *task, enum pid_type type)
-{
-	struct pid *pid;
-	if (type == PIDTYPE_PID)
-		pid = task_pid(task);
-	else
-		pid = task->signal->pids[type];
-	return pid;
-}
 
 
 static inline struct pid *task_pgrp(struct task_struct *task)

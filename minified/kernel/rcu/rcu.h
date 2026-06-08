@@ -191,7 +191,4 @@ long rcutorture_sched_setaffinity(pid_t pid, const struct cpumask *in_mask);
 #endif
 
 
-static inline unsigned long
-srcu_batches_completed(struct srcu_struct *sp) { return 0; }
-
 #endif  

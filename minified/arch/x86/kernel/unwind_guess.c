@@ -44,20 +44,3 @@ bool unwind_next_frame(struct unwind_state *state)
 	return false;
 }
 
-void __unwind_start(struct unwind_state *state, struct task_struct *task,
-		    struct pt_regs *regs, unsigned long *first_frame)
-{
-	memset(state, 0, sizeof(*state));
-
-	state->task = task;
-	state->sp   = PTR_ALIGN(first_frame, sizeof(long));
-
-	get_stack_info(first_frame, state->task, &state->stack_info,
-		       &state->stack_mask);
-
-	 
-	if (!unwind_done(state) &&
-	    (!on_stack(&state->stack_info, first_frame, sizeof(long)) ||
-	    !__kernel_text_address(*first_frame)))
-		unwind_next_frame(state);
-}

@@ -16,12 +16,6 @@ struct tick_device {
 	enum tick_device_mode mode;
 };
 
-static inline int
-__tick_broadcast_oneshot_control(enum tick_broadcast_state state)
-{
-	return -EBUSY;
-}
-
 
 # define TICK_DO_TIMER_NONE	-1
 # define TICK_DO_TIMER_BOOT	-2

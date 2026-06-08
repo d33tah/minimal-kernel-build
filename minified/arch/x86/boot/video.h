@@ -77,23 +77,6 @@ extern int do_restore;
 extern int graphic_mode;	 
 
  
-static inline u8 in_idx(u16 port, u8 index)
-{
-	outb(index, port);
-	return inb(port+1);
-}
-
-static inline void out_idx(u8 v, u16 port, u8 index)
-{
-	outw(index+(v << 8), port);
-}
-
- 
-static inline u8 tst_idx(u8 v, u16 port, u8 index)
-{
-	out_idx(port, index, v);
-	return in_idx(port, index);
-}
 
  
 u16 vga_crtc(void);		 

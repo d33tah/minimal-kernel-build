@@ -390,17 +390,6 @@ static inline struct kmem_cache *cache_from_obj(struct kmem_cache *s, void *x)
 	return cachep;
 }
 
-static inline size_t slab_ksize(const struct kmem_cache *s)
-{
-	if (s->flags & SLAB_KASAN)
-		return s->object_size;
-	 
-	if (s->flags & (SLAB_TYPESAFE_BY_RCU | SLAB_STORE_USER))
-		return s->inuse;
-	 
-	return s->size;
-}
-
 static inline struct kmem_cache *slab_pre_alloc_hook(struct kmem_cache *s,
 						     struct list_lru *lru,
 						     struct obj_cgroup **objcgp,

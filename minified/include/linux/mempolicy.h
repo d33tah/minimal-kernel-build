@@ -24,12 +24,6 @@ static inline void mpol_put(struct mempolicy *p)
 
 struct shared_policy {};
 
-static inline struct mempolicy *
-mpol_shared_policy_lookup(struct shared_policy *sp, unsigned long idx)
-{
-	return NULL;
-}
-
 #define vma_policy(vma) NULL
 
 static inline int

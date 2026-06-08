@@ -59,25 +59,7 @@ static inline bool on_stack(struct stack_info *info, void *addr, size_t len)
 
 #define STACKSLOTS_PER_LINE 8
 
-static inline unsigned long *
-get_frame_pointer(struct task_struct *task, struct pt_regs *regs)
-{
-	return NULL;
-}
 
-static inline unsigned long *
-get_stack_pointer(struct task_struct *task, struct pt_regs *regs)
-{
-	if (regs)
-		return (unsigned long *)regs->sp;
-
-	if (task == current)
-		return __builtin_frame_address(0);
-
-	return (unsigned long *)task->thread.sp;
-}
-
- 
 struct stack_frame {
 	struct stack_frame *next_frame;
 	unsigned long return_address;

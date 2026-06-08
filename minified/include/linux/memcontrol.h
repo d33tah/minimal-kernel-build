@@ -67,24 +67,9 @@ static inline struct lruvec *folio_lruvec_lock_irqsave(struct folio *folio,
 	return &pgdat->__lruvec;
 }
 
-static inline struct mem_cgroup *
-mem_cgroup_iter(struct mem_cgroup *root,
-		struct mem_cgroup *prev,
-		struct mem_cgroup_reclaim_cookie *reclaim)
-{
-	return NULL;
-}
-
 static inline struct mem_cgroup *lruvec_memcg(struct lruvec *lruvec)
 {
 	return NULL;
-}
-
-static inline
-unsigned long mem_cgroup_get_zone_lru_size(struct lruvec *lruvec,
-		enum lru_list lru, int zone_idx)
-{
-	return 0;
 }
 
 static inline void lock_page_memcg(struct page *page)

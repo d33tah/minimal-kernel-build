@@ -74,14 +74,6 @@ extern void __init_waitqueue_head(struct wait_queue_head *wq_head, const char *n
 
 # define DECLARE_WAIT_QUEUE_HEAD_ONSTACK(name) DECLARE_WAIT_QUEUE_HEAD(name)
 
-static inline void
-init_waitqueue_func_entry(struct wait_queue_entry *wq_entry, wait_queue_func_t func)
-{
-	wq_entry->flags		= 0;
-	wq_entry->private	= NULL;
-	wq_entry->func		= func;
-}
-
 static inline int waitqueue_active(struct wait_queue_head *wq_head)
 {
 	return !list_empty(&wq_head->head);

@@ -494,22 +494,6 @@ task_rq_unlock(struct rq *rq, struct task_struct *p, struct rq_flags *rf)
 }
 
 static inline void
-rq_lock_irqsave(struct rq *rq, struct rq_flags *rf)
-	__acquires(rq->lock)
-{
-	raw_spin_rq_lock_irqsave(rq, rf->flags);
-	rq_pin_lock(rq, rf);
-}
-
-static inline void
-rq_lock_irq(struct rq *rq, struct rq_flags *rf)
-	__acquires(rq->lock)
-{
-	raw_spin_rq_lock_irq(rq);
-	rq_pin_lock(rq, rf);
-}
-
-static inline void
 rq_lock(struct rq *rq, struct rq_flags *rf)
 	__acquires(rq->lock)
 {
@@ -518,39 +502,11 @@ rq_lock(struct rq *rq, struct rq_flags *rf)
 }
 
 static inline void
-rq_unlock_irqrestore(struct rq *rq, struct rq_flags *rf)
-	__releases(rq->lock)
-{
-	rq_unpin_lock(rq, rf);
-	raw_spin_rq_unlock_irqrestore(rq, rf->flags);
-}
-
-static inline void
-rq_unlock_irq(struct rq *rq, struct rq_flags *rf)
-	__releases(rq->lock)
-{
-	rq_unpin_lock(rq, rf);
-	raw_spin_rq_unlock_irq(rq);
-}
-
-static inline void
 rq_unlock(struct rq *rq, struct rq_flags *rf)
 	__releases(rq->lock)
 {
 	rq_unpin_lock(rq, rf);
 	raw_spin_rq_unlock(rq);
-}
-
-static inline struct rq *
-this_rq_lock_irq(struct rq_flags *rf)
-	__acquires(rq->lock)
-{
-	struct rq *rq;
-
-	local_irq_disable();
-	rq = this_rq();
-	rq_lock(rq, rf);
-	return rq;
 }
 
 /* sched_init_numa, sched_update_numa, sched_domains_numa_masks_set/clear, sched_numa_find_closest removed - unused */

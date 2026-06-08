@@ -133,33 +133,6 @@ COND_SYSCALL_COMPAT(mq_notify);
 COND_SYSCALL(mq_getsetattr);
 COND_SYSCALL_COMPAT(mq_getsetattr);
 
-COND_SYSCALL(msgget);
-COND_SYSCALL(old_msgctl);
-COND_SYSCALL(msgctl);
-COND_SYSCALL_COMPAT(msgctl);
-COND_SYSCALL_COMPAT(old_msgctl);
-COND_SYSCALL(msgrcv);
-COND_SYSCALL_COMPAT(msgrcv);
-COND_SYSCALL(msgsnd);
-COND_SYSCALL_COMPAT(msgsnd);
-
-COND_SYSCALL(semget);
-COND_SYSCALL(old_semctl);
-COND_SYSCALL(semctl);
-COND_SYSCALL_COMPAT(semctl);
-COND_SYSCALL_COMPAT(old_semctl);
-COND_SYSCALL(semtimedop);
-COND_SYSCALL(semtimedop_time32);
-COND_SYSCALL(semop);
-
-COND_SYSCALL(shmget);
-COND_SYSCALL(old_shmctl);
-COND_SYSCALL(shmctl);
-COND_SYSCALL_COMPAT(shmctl);
-COND_SYSCALL_COMPAT(old_shmctl);
-COND_SYSCALL(shmat);
-COND_SYSCALL_COMPAT(shmat);
-COND_SYSCALL(shmdt);
 
 COND_SYSCALL(socket);
 COND_SYSCALL(socketpair);
@@ -334,9 +307,5 @@ COND_SYSCALL(sgetmask);
 COND_SYSCALL(ssetmask);
 
 COND_SYSCALL(sysfs);
-
-COND_SYSCALL(ipc);
-COND_SYSCALL_COMPAT(ipc);
-
 
 COND_SYSCALL(rseq);

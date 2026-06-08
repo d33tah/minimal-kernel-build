@@ -59,6 +59,7 @@ struct iommu_group;
 struct dev_pin_info;
 struct dev_iommu;
 struct msi_device_data;
+struct bus_dma_region;
 
 struct subsys_interface {
 	const char *name;

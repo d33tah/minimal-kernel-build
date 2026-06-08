@@ -206,9 +206,4 @@ struct dev_pm_domain {
 #define pm_generic_poweroff		NULL
 #define pm_generic_complete		NULL
 
-/* Reduced dpm_order enum - only DPM_ORDER_NONE needed for stub function type */
-enum dpm_order {
-	DPM_ORDER_NONE,
-};
-
-#endif  
+#endif

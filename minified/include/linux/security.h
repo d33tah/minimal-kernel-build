@@ -46,12 +46,6 @@ typedef int (*initxattrs) (struct inode *inode,
 			   const struct xattr *xattr_array, void *fs_data);
 
 
-#define __data_id_enumify(ENUM, dummy) LOADING_ ## ENUM,
-#define __data_id_stringify(dummy, str) #str,
-
-enum kernel_load_data_id {
-	__kernel_read_file_id(__data_id_enumify)
-};
 
 
 static inline void security_free_mnt_opts(void **mnt_opts)

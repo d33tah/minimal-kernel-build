@@ -19,8 +19,6 @@ enum memcg_stat_item {
 	MEMCG_NR_STAT,
 };
 
-enum memcg_memory_event { MEMCG_NR_MEMORY_EVENTS };
-
 struct mem_cgroup_reclaim_cookie;
 
 #define MEM_CGROUP_ID_SHIFT	0

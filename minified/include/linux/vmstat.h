@@ -23,8 +23,6 @@ enum vm_event_item {
 
 struct reclaim_stat;
 
-enum writeback_stat_item { NR_VM_WRITEBACK_STAT_ITEMS };
-
 
 static inline void count_vm_event(enum vm_event_item item)
 {

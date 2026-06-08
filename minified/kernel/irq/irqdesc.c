@@ -61,10 +61,6 @@ static struct kobj_type irq_kobj_type = {
 	.release	= irq_kobj_release,
 };
 
-static void irq_sysfs_add(int irq, struct irq_desc *desc) {}
-static void irq_sysfs_del(struct irq_desc *desc) {}
-
-
 static RADIX_TREE(irq_desc_tree, GFP_KERNEL);
 
 static void irq_insert_desc(unsigned int irq, struct irq_desc *desc)

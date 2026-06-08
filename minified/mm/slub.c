@@ -261,16 +261,6 @@ static inline void setup_object_debug(struct kmem_cache *s, void *object) {}
 static inline
 void setup_slab_debug(struct kmem_cache *s, struct slab *slab, void *addr) {}
 
-static inline int free_debug_processing(
-	struct kmem_cache *s, struct slab *slab,
-	void *head, void *tail, int bulk_cnt,
-	unsigned long addr) { return 0; }
-
-static inline void slab_pad_check(struct kmem_cache *s, struct slab *slab) {}
-static inline int check_object(struct kmem_cache *s, struct slab *slab,
-			void *object, u8 val) { return 1; }
-static inline void add_full(struct kmem_cache *s, struct kmem_cache_node *n,
-					struct slab *slab) {}
 static inline void remove_full(struct kmem_cache *s, struct kmem_cache_node *n,
 					struct slab *slab) {}
 slab_flags_t kmem_cache_flags(unsigned int object_size,
@@ -490,14 +480,6 @@ static void __free_slab(struct kmem_cache *s, struct slab *slab)
 	int order = folio_order(folio);
 	int pages = 1 << order;
 
-	if (kmem_cache_debug_flags(s, SLAB_CONSISTENCY_CHECKS)) {
-		void *p;
-
-		slab_pad_check(s, slab);
-		for_each_object(p, s, slab_address(slab), slab->objects)
-			check_object(s, slab, p, SLUB_RED_INACTIVE);
-	}
-
 	__slab_clear_pfmemalloc(slab);
 	__folio_clear_slab(folio);
 	folio->mapping = NULL;
@@ -686,7 +668,7 @@ static void init_kmem_cache_cpus(struct kmem_cache *s)
 static void deactivate_slab(struct kmem_cache *s, struct slab *slab,
 			    void *freelist)
 {
-	enum slab_modes { M_NONE, M_PARTIAL, M_FULL, M_FREE, M_FULL_NOLIST };
+	enum slab_modes { M_NONE, M_PARTIAL, M_FREE, M_FULL_NOLIST };
 	struct kmem_cache_node *n = get_node(s, slab_nid(slab));
 	int free_delta = 0;
 	enum slab_modes mode = M_NONE;
@@ -739,11 +721,7 @@ redo:
 		mode = M_FREE;
 	} else if (new.freelist) {
 		mode = M_PARTIAL;
-		
-		spin_lock_irqsave(&n->list_lock, flags);
-	} else if (kmem_cache_debug_flags(s, SLAB_STORE_USER)) {
-		mode = M_FULL;
-		
+
 		spin_lock_irqsave(&n->list_lock, flags);
 	} else {
 		mode = M_FULL_NOLIST;
@@ -753,7 +731,7 @@ redo:
 				old.freelist, old.counters,
 				new.freelist, new.counters,
 				"unfreezing slab")) {
-		if (mode == M_PARTIAL || mode == M_FULL)
+		if (mode == M_PARTIAL)
 			spin_unlock_irqrestore(&n->list_lock, flags);
 		goto redo;
 	}
@@ -766,10 +744,6 @@ redo:
 		stat(s, DEACTIVATE_EMPTY);
 		discard_slab(s, slab);
 		stat(s, FREE_SLAB);
-	} else if (mode == M_FULL) {
-		add_full(s, n, slab);
-		spin_unlock_irqrestore(&n->list_lock, flags);
-		stat(s, DEACTIVATE_FULL);
 	} else if (mode == M_FULL_NOLIST) {
 		stat(s, DEACTIVATE_FULL);
 	}
@@ -1086,10 +1060,6 @@ static void __slab_free(struct kmem_cache *s, struct slab *slab,
 	stat(s, FREE_SLOWPATH);
 
 	if (kfence_free(head))
-		return;
-
-	if (kmem_cache_debug(s) &&
-	    !free_debug_processing(s, slab, head, tail, cnt, addr))
 		return;
 
 	do {

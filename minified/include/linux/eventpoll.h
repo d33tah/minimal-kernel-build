@@ -27,11 +27,6 @@
 #define EPOLLONESHOT	((__force __poll_t)(1U << 30))
 #define EPOLLET		((__force __poll_t)(1U << 31))
 
-struct epoll_event {
-	__poll_t events;
-	__u64 data;
-};
-
 struct file;
 
 

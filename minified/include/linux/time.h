@@ -19,26 +19,6 @@ extern time64_t mktime64(const unsigned int year, const unsigned int mon,
 			const unsigned int min, const unsigned int sec);
 
 
-struct tm {
-	 
-	int tm_sec;
-	 
-	int tm_min;
-	 
-	int tm_hour;
-	 
-	int tm_mday;
-	 
-	int tm_mon;
-	 
-	long tm_year;
-	 
-	int tm_wday;
-	 
-	int tm_yday;
-};
-
-
 # include <linux/time32.h>
 
 

@@ -107,38 +107,6 @@ static size_t copy_page_to_iter_iovec(struct page *page, size_t offset, size_t b
 	buf = iov->iov_base + skip;
 	copy = min(bytes, iov->iov_len - skip);
 
-	if (IS_ENABLED(CONFIG_HIGHMEM) && !fault_in_writeable(buf, copy)) {
-		kaddr = kmap_atomic(page);
-		from = kaddr + offset;
-
-		 
-		left = copyout(buf, from, copy);
-		copy -= left;
-		skip += copy;
-		from += copy;
-		bytes -= copy;
-
-		while (unlikely(!left && bytes)) {
-			iov++;
-			buf = iov->iov_base;
-			copy = min(bytes, iov->iov_len);
-			left = copyout(buf, from, copy);
-			copy -= left;
-			skip = copy;
-			from += copy;
-			bytes -= copy;
-		}
-		if (likely(!bytes)) {
-			kunmap_atomic(kaddr);
-			goto done;
-		}
-		offset = from - kaddr;
-		buf += copy;
-		kunmap_atomic(kaddr);
-		copy = min(bytes, iov->iov_len - skip);
-	}
-	 
-
 	kaddr = kmap(page);
 	from = kaddr + offset;
 	left = copyout(buf, from, copy);
@@ -158,7 +126,6 @@ static size_t copy_page_to_iter_iovec(struct page *page, size_t offset, size_t b
 	}
 	kunmap(page);
 
-done:
 	if (skip == iov->iov_len) {
 		iov++;
 		skip = 0;

@@ -353,9 +353,6 @@ void vunmap_range_noflush(unsigned long start, unsigned long end);
 
 void free_zone_device_page(struct page *page);
 
- 
-struct folio *try_grab_folio(struct page *page, int refs, unsigned int flags);
-
 DECLARE_PER_CPU(struct per_cpu_nodestat, boot_nodestats);
 
 #endif	 

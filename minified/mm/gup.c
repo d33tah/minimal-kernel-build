@@ -29,59 +29,6 @@ struct follow_page_context {
 };
 
 
-static inline struct folio *try_get_folio(struct page *page, int refs)
-{
-	struct folio *folio;
-
-retry:
-	folio = page_folio(page);
-	if (WARN_ON_ONCE(folio_ref_count(folio) < 0))
-		return NULL;
-	if (unlikely(!folio_ref_try_add_rcu(folio, refs)))
-		return NULL;
-
-	
-	if (unlikely(page_folio(page) != folio)) {
-		folio_put_refs(folio, refs);
-		goto retry;
-	}
-
-	return folio;
-}
-
-struct folio *try_grab_folio(struct page *page, int refs, unsigned int flags)
-{
-	if (flags & FOLL_GET)
-		return try_get_folio(page, refs);
-	else if (flags & FOLL_PIN) {
-		struct folio *folio;
-
-		
-		if (unlikely((flags & FOLL_LONGTERM) &&
-			     !is_pinnable_page(page)))
-			return NULL;
-
-		
-		folio = try_get_folio(page, refs);
-		if (!folio)
-			return NULL;
-
-		
-		if (folio_test_large(folio))
-			atomic_add(refs, folio_pincount_ptr(folio));
-		else
-			folio_ref_add(folio,
-					refs * (GUP_PIN_COUNTING_BIAS - 1));
-		node_stat_mod_folio(folio, NR_FOLL_PIN_ACQUIRED, refs);
-
-		return folio;
-	}
-
-	WARN_ON_ONCE(1);
-	return NULL;
-}
-
-
 bool __must_check try_grab_page(struct page *page, unsigned int flags)
 {
 	struct folio *folio = page_folio(page);
@@ -900,62 +847,6 @@ int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)
 	if (locked)
 		mmap_read_unlock(mm);
 	return ret;	
-}
-
-size_t fault_in_writeable(char __user *uaddr, size_t size)
-{
-	char __user *start = uaddr, *end;
-
-	if (unlikely(size == 0))
-		return 0;
-	if (!user_write_access_begin(uaddr, size))
-		return size;
-	if (!PAGE_ALIGNED(uaddr)) {
-		unsafe_put_user(0, uaddr, out);
-		uaddr = (char __user *)PAGE_ALIGN((unsigned long)uaddr);
-	}
-	end = (char __user *)PAGE_ALIGN((unsigned long)start + size);
-	if (unlikely(end < start))
-		end = NULL;
-	while (uaddr != end) {
-		unsafe_put_user(0, uaddr, out);
-		uaddr += PAGE_SIZE;
-	}
-
-out:
-	user_write_access_end();
-	if (size > uaddr - start)
-		return size - (uaddr - start);
-	return 0;
-}
-
-size_t fault_in_readable(const char __user *uaddr, size_t size)
-{
-	const char __user *start = uaddr, *end;
-	volatile char c;
-
-	if (unlikely(size == 0))
-		return 0;
-	if (!user_read_access_begin(uaddr, size))
-		return size;
-	if (!PAGE_ALIGNED(uaddr)) {
-		unsafe_get_user(c, uaddr, out);
-		uaddr = (const char __user *)PAGE_ALIGN((unsigned long)uaddr);
-	}
-	end = (const char __user *)PAGE_ALIGN((unsigned long)start + size);
-	if (unlikely(end < start))
-		end = NULL;
-	while (uaddr != end) {
-		unsafe_get_user(c, uaddr, out);
-		uaddr += PAGE_SIZE;
-	}
-
-out:
-	user_read_access_end();
-	(void)c;
-	if (size > uaddr - start)
-		return size - (uaddr - start);
-	return 0;
 }
 
 static long check_and_migrate_movable_pages(unsigned long nr_pages,

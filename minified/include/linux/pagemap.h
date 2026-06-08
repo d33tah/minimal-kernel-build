@@ -352,9 +352,6 @@ void folio_invalidate(struct folio *folio, size_t offset, size_t length);
 int __set_page_dirty_nobuffers(struct page *page);
 bool noop_dirty_folio(struct address_space *mapping, struct folio *folio);
 
-size_t fault_in_writeable(char __user *uaddr, size_t size);
-size_t fault_in_readable(const char __user *uaddr, size_t size);
-
 int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
 		pgoff_t index, gfp_t gfp);
 int filemap_add_folio(struct address_space *mapping, struct folio *folio,

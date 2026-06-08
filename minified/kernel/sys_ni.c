@@ -156,7 +156,6 @@ COND_SYSCALL(mincore);
 COND_SYSCALL(madvise);
 COND_SYSCALL(process_madvise);
 COND_SYSCALL(process_mrelease);
-COND_SYSCALL(remap_file_pages);
 
 COND_SYSCALL(accept4);
 COND_SYSCALL(recvmmsg);
@@ -192,9 +191,6 @@ COND_SYSCALL(mlock2);
 
 COND_SYSCALL(copy_file_range);
 
-COND_SYSCALL(pkey_mprotect);
-COND_SYSCALL(pkey_alloc);
-COND_SYSCALL(pkey_free);
 
 COND_SYSCALL(memfd_secret);
 

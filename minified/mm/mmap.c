@@ -1487,12 +1487,6 @@ SYSCALL_DEFINE2(munmap, unsigned long, addr, size_t, len)
 	return __vm_munmap(addr, len, true);
 }
 
-SYSCALL_DEFINE5(remap_file_pages, unsigned long, start, unsigned long, size,
-		unsigned long, prot, unsigned long, pgoff, unsigned long, flags)
-{
-	return -ENOSYS;
-}
-
 static int do_brk_flags(unsigned long addr, unsigned long len, unsigned long flags, struct list_head *uf)
 {
 	struct mm_struct *mm = current->mm;

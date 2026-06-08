@@ -381,12 +381,3 @@ unsigned long move_page_tables(struct vm_area_struct *vma,
 
 	return len + old_addr - old_end;	 
 }
-
-
-SYSCALL_DEFINE5(mremap, unsigned long, addr, unsigned long, old_len,
-		unsigned long, new_len, unsigned long, flags,
-		unsigned long, new_addr)
-{
-	/* Stubbed: mremap not needed for minimal kernel */
-	return -ENOSYS;
-}

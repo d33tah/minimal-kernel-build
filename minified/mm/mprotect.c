@@ -14,12 +14,3 @@ int mprotect_fixup(struct mmu_gather *tlb, struct vm_area_struct *vma,
 	*pprev = vma;
 	return 0;
 }
-
-// Stub: mprotect syscall - return success without doing anything
-SYSCALL_DEFINE3(mprotect, unsigned long, start, size_t, len,
-		unsigned long, prot)
-{
-	// For hello world, we don't need to change memory protection
-	// Just return success
-	return 0;
-}

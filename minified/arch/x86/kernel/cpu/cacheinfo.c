@@ -44,12 +44,8 @@ struct cpu_cacheinfo {
 	bool cpu_map_populated;
 };
 
-struct cpu_cacheinfo *get_cpu_cacheinfo(unsigned int cpu);
 int init_cache_level(unsigned int cpu);
 int populate_cache_leaves(unsigned int cpu);
-int cache_setup_acpi(unsigned int cpu);
-
-const struct attribute_group *cache_get_priv_group(struct cacheinfo *this_leaf);
 
 int init_cache_level(unsigned int cpu)
 {

@@ -111,13 +111,6 @@ struct cpuinfo_x86 {
 	unsigned		initialized : 1;
 } __randomize_layout;
 
-enum cpuid_regs_idx {
-	CPUID_EAX = 0,
-	CPUID_EBX,
-	CPUID_ECX,
-	CPUID_EDX,
-};
-
 #define X86_VENDOR_INTEL	0
 /* X86_VENDOR_CYRIX, UMC, CENTAUR, TRANSMETA, NSC, HYGON, ZHAOXIN, VORTEX removed - unused */
 #define X86_VENDOR_AMD		2
@@ -408,9 +401,6 @@ static inline unsigned int cpuid_edx(unsigned int op)
 
 extern void select_idle_routine(const struct cpuinfo_x86 *c);
 /* amd_e400_c1e_apic_setup declaration removed - implementation was removed */
-
-enum idle_boot_override {IDLE_NO_OVERRIDE=0, IDLE_HALT, IDLE_NOMWAIT,
-			 IDLE_POLL};
 
 extern void enable_sep_cpu(void);
 extern int sysenter_setup(void);

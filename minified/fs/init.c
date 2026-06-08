@@ -22,20 +22,6 @@ int __init init_mount(const char *dev_name, const char *dir_name,
 	return ret;
 }
 
-int __init init_umount(const char *name, int flags)
-{
-	int lookup_flags = LOOKUP_MOUNTPOINT;
-	struct path path;
-	int ret;
-
-	if (!(flags & UMOUNT_NOFOLLOW))
-		lookup_flags |= LOOKUP_FOLLOW;
-	ret = kern_path(name, lookup_flags, &path);
-	if (ret)
-		return ret;
-	return path_umount(&path, flags);
-}
-
 int __init init_chdir(const char *filename)
 {
 	struct path path;
@@ -237,19 +223,6 @@ int __init init_mkdir(const char *pathname, umode_t mode)
 int __init init_rmdir(const char *pathname)
 {
 	return do_rmdir(AT_FDCWD, getname_kernel(pathname));
-}
-
-int __init init_utimes(char *filename, struct timespec64 *ts)
-{
-	struct path path;
-	int error;
-
-	error = kern_path(filename, 0, &path);
-	if (error)
-		return error;
-	error = vfs_utimes(&path, ts);
-	path_put(&path);
-	return error;
 }
 
 int __init init_dup(struct file *file)

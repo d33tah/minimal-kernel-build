@@ -50,7 +50,6 @@ extern bool may_mount(void);
 
 int path_mount(const char *dev_name, struct path *path,
 		const char *type_page, unsigned long flags, void *data_page);
-int path_umount(struct path *path, int flags);
 
  
 extern struct file *alloc_empty_file(int, const struct cred *);

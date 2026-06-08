@@ -852,29 +852,6 @@ static void umount_tree(struct mount *mnt, enum umount_tree_flags how)
 	}
 }
 
-static int do_umount(struct mount *mnt, int flags)
-{
-	int retval = security_sb_umount(&mnt->mnt, flags);
-	if (retval)
-		return retval;
-
-	if (&mnt->mnt == current->fs->root.mnt)
-		return (flags & MNT_DETACH) ? 0 : -EINVAL;
-
-	namespace_lock();
-	lock_mount_hash();
-	if (mnt->mnt.mnt_flags & MNT_LOCKED)
-		retval = -EINVAL;
-	else {
-		if (!list_empty(&mnt->mnt_list))
-			umount_tree(mnt, UMOUNT_PROPAGATE);
-		retval = 0;
-	}
-	unlock_mount_hash();
-	namespace_unlock();
-	return retval;
-}
-
 /* Stub: __detach_mounts not used externally */
 void __detach_mounts(struct dentry *dentry)
 {
@@ -885,38 +862,6 @@ bool may_mount(void)
 	return ns_capable(current->nsproxy->mnt_ns->user_ns, CAP_SYS_ADMIN);
 }
 
-
-static int can_umount(const struct path *path, int flags)
-{
-	struct mount *mnt = real_mount(path->mnt);
-
-	if (!may_mount())
-		return -EPERM;
-	if (path->dentry != path->mnt->mnt_root)
-		return -EINVAL;
-	if (!check_mnt(mnt))
-		return -EINVAL;
-	if (mnt->mnt.mnt_flags & MNT_LOCKED) 
-		return -EINVAL;
-	if (flags & MNT_FORCE && !capable(CAP_SYS_ADMIN))
-		return -EPERM;
-	return 0;
-}
-
-int path_umount(struct path *path, int flags)
-{
-	struct mount *mnt = real_mount(path->mnt);
-	int ret;
-
-	ret = can_umount(path, flags);
-	if (!ret)
-		ret = do_umount(mnt, flags);
-
-	
-	dput(path->dentry);
-	mntput_no_expire(mnt);
-	return ret;
-}
 
 static int ksys_umount(char __user *name, int flags)
 {

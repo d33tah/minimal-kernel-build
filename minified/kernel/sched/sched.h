@@ -172,13 +172,6 @@ struct rt_bandwidth {
 
 void __dl_clear_params(struct task_struct *p);
 
-struct dl_bandwidth {
-	raw_spinlock_t		dl_runtime_lock;
-	u64			dl_runtime;
-	u64			dl_period;
-};
-
-
 struct dl_bw {
 	raw_spinlock_t		lock;
 	u64			bw;
@@ -191,10 +184,6 @@ struct dl_bw {
 extern void __setparam_dl(struct task_struct *p, const struct sched_attr *attr);
 
 
-struct cfs_bandwidth { };
-
-
- 
 struct cfs_rq {
 	struct load_weight	load;
 	unsigned int		nr_running;

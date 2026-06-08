@@ -31,11 +31,6 @@ struct mnt_namespace {
 	unsigned int		pending_mounts;
 } __randomize_layout;
 
-struct mnt_pcp {
-	int mnt_count;
-	int mnt_writers;
-};
-
 struct mountpoint {
 	struct hlist_node m_hash;
 	struct dentry *m_dentry;
@@ -110,15 +105,6 @@ static inline void get_mnt_ns(struct mnt_namespace *ns)
 }
 
 extern seqlock_t mount_lock;
-
-struct proc_mounts {
-	struct mnt_namespace *ns;
-	struct path root;
-	int (*show)(struct seq_file *, struct vfsmount *);
-	struct mount cursor;
-};
-
-extern const struct seq_operations mounts_op;
 
 static inline bool is_anon_ns(struct mnt_namespace *ns)
 {

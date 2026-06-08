@@ -48,14 +48,6 @@ static inline bool is_migrate_isolate(int migratetype)
 void set_pageblock_migratetype(struct page *page, int migratetype);
 /* end page-isolation.h */
 
-enum compact_priority {
-	COMPACT_PRIO_SYNC_FULL,
-};
-
-enum compact_result {
-	COMPACT_SKIPPED,
-};
-
 struct alloc_context;
 
 #include <linux/mm_inline.h>

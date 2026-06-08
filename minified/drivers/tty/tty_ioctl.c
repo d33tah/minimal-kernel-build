@@ -26,41 +26,16 @@ unsigned int tty_chars_in_buffer(struct tty_struct *tty)
 	return 0;
 }
 
-unsigned int tty_write_room(struct tty_struct *tty)
-{
-	if (tty->ops->write_room)
-		return tty->ops->write_room(tty);
-	return 2048;
-}
-
 void tty_driver_flush_buffer(struct tty_struct *tty)
 {
 	if (tty->ops->flush_buffer)
 		tty->ops->flush_buffer(tty);
 }
 
-void tty_unthrottle(struct tty_struct *tty)
-{
-	down_write(&tty->termios_rwsem);
-	if (test_and_clear_bit(TTY_THROTTLED, &tty->flags) &&
-	    tty->ops->unthrottle)
-		tty->ops->unthrottle(tty);
-	tty->flow_change = 0;
-	up_write(&tty->termios_rwsem);
-}
-
-
 void tty_wait_until_sent(struct tty_struct *tty, long timeout)
 {
-	 
+
 }
-
-/* tty_termios_copy_hw, tty_termios_hw_change, tty_get_char_size, tty_get_frame_size stubbed - no callers */
-void tty_termios_copy_hw(struct ktermios *new, struct ktermios *old) { }
-int tty_termios_hw_change(const struct ktermios *a, const struct ktermios *b) { return 0; }
-unsigned char tty_get_char_size(unsigned int cflag) { return 8; }
-unsigned char tty_get_frame_size(unsigned int cflag) { return 10; }
-
 
 int tty_mode_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg)
 {

@@ -200,7 +200,6 @@ static inline bool tty_io_error(struct tty_struct *tty)
 void tty_kref_put(struct tty_struct *tty);
 struct pid *tty_get_pgrp(struct tty_struct *tty);
 void disassociate_ctty(int priv);
-void proc_clear_tty(struct task_struct *p);
 struct tty_struct *get_current_tty(void);
 int __init tty_init(void);
 const char *tty_name(const struct tty_struct *tty);
@@ -222,24 +221,15 @@ static inline struct tty_struct *tty_kref_get(struct tty_struct *tty)
 const char *tty_driver_name(const struct tty_struct *tty);
 void tty_wait_until_sent(struct tty_struct *tty, long timeout);
 unsigned int tty_chars_in_buffer(struct tty_struct *tty);
-unsigned int tty_write_room(struct tty_struct *tty);
 void tty_driver_flush_buffer(struct tty_struct *tty);
-void tty_unthrottle(struct tty_struct *tty);
 void tty_hangup(struct tty_struct *tty);
 int tty_hung_up_p(struct file *filp);
-void no_tty(void);
 speed_t tty_termios_baud_rate(struct ktermios *termios);
 
 static inline speed_t tty_get_baud_rate(struct tty_struct *tty)
 {
 	return tty_termios_baud_rate(&tty->termios);
 }
-
-unsigned char tty_get_char_size(unsigned int cflag);
-unsigned char tty_get_frame_size(unsigned int cflag);
-
-void tty_termios_copy_hw(struct ktermios *new, struct ktermios *old);
-int tty_termios_hw_change(const struct ktermios *a, const struct ktermios *b);
 
 void tty_wakeup(struct tty_struct *tty);
 
@@ -264,9 +254,6 @@ int n_tty_ioctl_helper(struct tty_struct *tty, unsigned int cmd,
 
 
 int vt_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg);
-
-long vt_compat_ioctl(struct tty_struct *tty, unsigned int cmd,
-		unsigned long arg);
 
 void tty_lock(struct tty_struct *tty);
 int  tty_lock_interruptible(struct tty_struct *tty);

@@ -19,12 +19,3 @@ void page_cache_async_ra(struct readahead_control *ractl,
 	 
 }
 
-SYSCALL_DEFINE3(readahead, int, fd, loff_t, offset, size_t, count)
-{
-	return -ENOSYS;   
-}
-
-ssize_t ksys_readahead(int fd, loff_t offset, size_t count)
-{
-	return -ENOSYS;
-}

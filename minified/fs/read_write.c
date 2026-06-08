@@ -410,18 +410,6 @@ SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf,
 	return ret;
 }
 
-ssize_t ksys_pread64(unsigned int fd, char __user *buf, size_t count,
-		     loff_t pos)
-{
-	return -ENOSYS;
-}
-
-ssize_t ksys_pwrite64(unsigned int fd, const char __user *buf,
-		      size_t count, loff_t pos)
-{
-	return -ENOSYS;
-}
-
 ssize_t generic_write_checks(struct kiocb *iocb, struct iov_iter *from)
 {
 	iov_iter_truncate(from, iov_iter_count(from));

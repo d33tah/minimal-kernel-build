@@ -157,12 +157,6 @@ out:
 	return error;
 }
 
-int ksys_fallocate(int fd, int mode, loff_t offset, loff_t len)
-{
-	return -ENOSYS;
-}
-
-
 int chmod_common(const struct path *path, umode_t mode)
 {
 	/* Stub: chmod not needed for minimal kernel */

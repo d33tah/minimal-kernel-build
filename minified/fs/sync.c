@@ -10,6 +10,3 @@ SYSCALL_DEFINE1(syncfs, int, fd) { return -ENOSYS; }
 SYSCALL_DEFINE1(fsync, unsigned int, fd) { return -ENOSYS; }
 SYSCALL_DEFINE1(fdatasync, unsigned int, fd) { return -ENOSYS; }
 
-int ksys_sync_file_range(int fd, loff_t offset, loff_t nbytes, unsigned int flags) { return -ENOSYS; }
-SYSCALL_DEFINE4(sync_file_range, int, fd, loff_t, offset, loff_t, nbytes, unsigned int, flags) { return -ENOSYS; }
-SYSCALL_DEFINE4(sync_file_range2, int, fd, unsigned int, flags, loff_t, offset, loff_t, nbytes) { return -ENOSYS; }

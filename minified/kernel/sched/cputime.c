@@ -129,11 +129,3 @@ void account_process_tick(struct task_struct *p, int user_tick)
 		account_idle_time(cputime);
 }
 
-
-/* thread_group_cputime_adjusted - used by exit.c */
-void thread_group_cputime_adjusted(struct task_struct *p, u64 *ut, u64 *st)
-{
-	*ut = 0;
-	*st = 0;
-}
-

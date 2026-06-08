@@ -18,8 +18,6 @@ static inline u64 task_gtime(struct task_struct *t)
 	return t->gtime;
 }
 
-extern void thread_group_cputime_adjusted(struct task_struct *p, u64 *ut, u64 *st);
-
 
 
 static inline

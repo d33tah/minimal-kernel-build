@@ -23,6 +23,4 @@ static inline unsigned long perf_misc_flags(struct pt_regs *regs) { return 0; }
 	(regs)->flags = 0; \
 } while (0)
 
-#define arch_perf_out_copy_user copy_from_user_nmi
-
-#endif  
+#endif

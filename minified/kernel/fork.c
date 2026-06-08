@@ -1081,19 +1081,9 @@ const struct file_operations pidfd_fops = {
 	.poll = pidfd_poll,
 };
 
-static void __delayed_free_task(struct rcu_head *rhp)
-{
-	struct task_struct *tsk = container_of(rhp, struct task_struct, rcu);
-
-	free_task(tsk);
-}
-
 static __always_inline void delayed_free_task(struct task_struct *tsk)
 {
-	if (IS_ENABLED(CONFIG_MEMCG))
-		call_rcu(&tsk->rcu, __delayed_free_task);
-	else
-		free_task(tsk);
+	free_task(tsk);
 }
 
 static void copy_oom_score_adj(u64 clone_flags, struct task_struct *tsk)

@@ -9,7 +9,6 @@
 #include <linux/init.h>
 #include <linux/interrupt.h>
 #include <linux/ioport.h>
-#include <linux/dma-mapping.h>
 #include <linux/memblock.h>
 #include <linux/err.h>
 #include <linux/slab.h>

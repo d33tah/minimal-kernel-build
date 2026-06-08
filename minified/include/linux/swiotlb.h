@@ -4,7 +4,6 @@
 
 #include <linux/types.h>
 #include <linux/limits.h>
-#include <linux/dma-mapping.h>
 
 static inline void swiotlb_init(bool addressing_limited, unsigned int flags)
 {

@@ -19,6 +19,4 @@
 #include <asm/pci.h>
 #endif
 
-#include <linux/dma-mapping.h>
-
 #endif

@@ -53,13 +53,6 @@ struct k_sigaction {
 #endif
 };
 
-struct old_sigaction {
-	__sighandler_t sa_handler;
-	old_sigset_t sa_mask;
-	unsigned long sa_flags;
-	__sigrestore_t sa_restorer;
-};
-
 struct ksignal {
 	struct k_sigaction ka;
 	kernel_siginfo_t info;

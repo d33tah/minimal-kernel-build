@@ -35,8 +35,6 @@
 #include "internal.h"
 #include "pgalloc-track.h"
 
-static const unsigned int ioremap_max_page_shift = PAGE_SHIFT;
-
 static const bool vmap_allow_huge = false;
 
 bool is_vmalloc_addr(const void *x)
@@ -212,17 +210,6 @@ static int vmap_range_noflush(unsigned long addr, unsigned long end,
 	if (mask & ARCH_PAGE_TABLE_SYNC_MASK)
 		arch_sync_kernel_mappings(start, end);
 
-	return err;
-}
-
-int ioremap_page_range(unsigned long addr, unsigned long end,
-		phys_addr_t phys_addr, pgprot_t prot)
-{
-	int err;
-
-	err = vmap_range_noflush(addr, end, phys_addr, pgprot_nx(prot),
-				 ioremap_max_page_shift);
-	flush_cache_vmap(addr, end);
 	return err;
 }
 
@@ -1360,14 +1347,6 @@ static struct vm_struct *__get_vm_area_node(unsigned long size,
 	return area;
 }
 
-
-struct vm_struct *get_vm_area_caller(unsigned long size, unsigned long flags,
-				const void *caller)
-{
-	return __get_vm_area_node(size, 1, PAGE_SHIFT, flags,
-				  VMALLOC_START, VMALLOC_END,
-				  NUMA_NO_NODE, GFP_KERNEL, caller);
-}
 
 struct vm_struct *find_vm_area(const void *addr)
 {

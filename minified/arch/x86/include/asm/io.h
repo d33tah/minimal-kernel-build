@@ -55,16 +55,6 @@ static inline void *phys_to_virt(phys_addr_t address)
 }
 #define phys_to_virt phys_to_virt
 
-extern void __iomem *ioremap_prot(resource_size_t offset, unsigned long size, unsigned long prot_val);
-#define ioremap_prot ioremap_prot
-/* ioremap_uc, ioremap_cache, ioremap_encrypted declarations removed - no callers */
-
-void __iomem *ioremap(resource_size_t offset, unsigned long size);
-#define ioremap ioremap
-
-extern void iounmap(volatile void __iomem *addr);
-#define iounmap iounmap
-
 extern void native_io_delay(void);
 extern void io_delay_init(void);
 

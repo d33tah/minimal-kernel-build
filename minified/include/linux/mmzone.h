@@ -194,10 +194,6 @@ enum vmscan_throttle_state {
 #define for_each_lru(lru) for (lru = 0; lru < NR_LRU_LISTS; lru++)
 
 
-enum lruvec_flags {
-	LRUVEC_CONGESTED,
-};
-
 struct lruvec {
 	struct list_head		lists[NR_LRU_LISTS];
 
@@ -327,12 +323,6 @@ struct zone {
 	atomic_long_t		vm_stat[NR_VM_ZONE_STAT_ITEMS];
 	atomic_long_t		vm_numa_event[NR_VM_NUMA_EVENT_ITEMS];
 } ____cacheline_internodealigned_in_smp;
-
-enum pgdat_flags {
-	PGDAT_DIRTY,			 
-	PGDAT_WRITEBACK,		 
-	PGDAT_RECLAIM_LOCKED,		 
-};
 
 enum zone_flags {
 	ZONE_BOOSTED_WATERMARK,		 

@@ -132,16 +132,6 @@ const struct dev_pm_ops __maybe_unused name = { \
    USER_SUSPEND, USER_RESUME, REMOTE_RESUME, AUTO_SUSPEND, AUTO_RESUME, IS_AUTO */
 
 
-enum rpm_status {
-	RPM_INVALID = -1,
-	RPM_ACTIVE = 0,
-	RPM_RESUMING,
-	RPM_SUSPENDED,
-	RPM_SUSPENDING,
-};
-
-
-
 struct wakeup_source;
 struct wake_irq;
 struct pm_domain_data;

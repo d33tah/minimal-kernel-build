@@ -104,7 +104,6 @@
 183	i386	getcwd			sys_getcwd
 184	i386	capget			sys_capget
 185	i386	capset			sys_capset
-187	i386	sendfile
 188	i386	getpmsg
 189	i386	putpmsg
 190	i386	vfork			sys_vfork
@@ -123,7 +122,6 @@
 # 222 is unused
 # 223 is unused
 224	i386	gettid			sys_gettid
-239	i386	sendfile64
 240	i386	futex			sys_futex_time32
 243	i386	set_thread_area		sys_set_thread_area
 244	i386	get_thread_area		sys_get_thread_area
@@ -158,9 +156,6 @@
 310	i386	unshare			sys_unshare
 311	i386	set_robust_list		sys_set_robust_list		compat_sys_set_robust_list
 312	i386	get_robust_list		sys_get_robust_list		compat_sys_get_robust_list
-313	i386	splice			sys_splice
-315	i386	tee			sys_tee
-316	i386	vmsplice		sys_vmsplice
 320	i386	utimensat		sys_utimensat_time32
 330	i386	dup3			sys_dup3
 331	i386	pipe2			sys_pipe2

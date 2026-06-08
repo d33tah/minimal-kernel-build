@@ -15,11 +15,3 @@ ssize_t iter_file_splice_write(struct pipe_inode_info *pipe, struct file *out,
 ssize_t splice_from_pipe(struct pipe_inode_info *pipe, struct file *out,
 			 loff_t *ppos, size_t len, unsigned int flags,
 			 splice_actor *actor) { return 0; }
-
-
-SYSCALL_DEFINE6(splice, int, fd_in, loff_t __user *, off_in,
-		int, fd_out, loff_t __user *, off_out,
-		size_t, len, unsigned int, flags) { return -ENOSYS; }
-SYSCALL_DEFINE4(tee, int, fdin, int, fdout, size_t, len, unsigned int, flags) { return -ENOSYS; }
-SYSCALL_DEFINE4(vmsplice, int, fd, const struct iovec __user *, iov,
-		unsigned long, nr_segs, unsigned int, flags) { return -ENOSYS; }

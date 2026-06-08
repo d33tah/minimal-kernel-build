@@ -70,8 +70,6 @@ void __noreturn cpu_startup_entry(enum cpuhp_state state);
 
 #define __cpuidle	__section(".cpuidle.text")
 
-bool cpu_in_idle(unsigned long pc);
-
 void arch_cpu_idle(void);
 void arch_cpu_idle_prepare(void);
 void arch_cpu_idle_enter(void);

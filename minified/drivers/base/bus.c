@@ -241,15 +241,6 @@ int bus_for_each_drv(struct bus_type *bus, struct device_driver *start,
 }
 
 /* Simplified: sysfs functions are stubs, so no error paths needed */
-int bus_add_device(struct device *dev)
-{
-	struct bus_type *bus = bus_get(dev->bus);
-
-	if (bus)
-		klist_add_tail(&dev->p->knode_bus, &bus->p->klist_devices);
-	return 0;
-}
-
 void bus_probe_device(struct device *dev)
 {
 	struct bus_type *bus = dev->bus;

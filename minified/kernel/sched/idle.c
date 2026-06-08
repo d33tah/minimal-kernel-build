@@ -132,12 +132,6 @@ static void do_idle(void)
 		klp_update_patch_state(current);
 }
 
-bool cpu_in_idle(unsigned long pc)
-{
-	return pc >= (unsigned long)__cpuidle_text_start &&
-		pc < (unsigned long)__cpuidle_text_end;
-}
-
 void cpu_startup_entry(enum cpuhp_state state)
 {
 	arch_cpu_idle_prepare();

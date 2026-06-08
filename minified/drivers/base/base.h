@@ -65,7 +65,6 @@ static inline void auxiliary_bus_init(void) { }
 
 /* virtual_device_parent removed - unused */
 
-extern int bus_add_device(struct device *dev);
 extern void bus_probe_device(struct device *dev);
 extern void bus_remove_device(struct device *dev);
 

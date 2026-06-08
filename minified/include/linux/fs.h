@@ -1220,9 +1220,6 @@ extern struct filename *getname(const char __user *);
 extern struct filename *getname_kernel(const char *);
 extern void putname(struct filename *name);
 
-extern int finish_open(struct file *file, struct dentry *dentry,
-			int (*open)(struct inode *, struct file *));
-
 extern void __init vfs_caches_init_early(void);
 extern void __init vfs_caches_init(void);
 
@@ -1383,7 +1380,6 @@ extern loff_t generic_file_llseek(struct file *file, loff_t offset, int whence);
 extern loff_t generic_file_llseek_size(struct file *file, loff_t offset,
 		int whence, loff_t maxsize, loff_t eof);
 int rw_verify_area(int, struct file *, const loff_t *, size_t);
-extern int generic_file_open(struct inode * inode, struct file * filp);
 extern int nonseekable_open(struct inode * inode, struct file * filp);
 /* Removed: stream_open - never called */
 

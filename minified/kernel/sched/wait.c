@@ -17,15 +17,6 @@ void add_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq
 	spin_unlock_irqrestore(&wq_head->lock, flags);
 }
 
-void remove_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
-{
-	unsigned long flags;
-
-	spin_lock_irqsave(&wq_head->lock, flags);
-	__remove_wait_queue(wq_head, wq_entry);
-	spin_unlock_irqrestore(&wq_head->lock, flags);
-}
-
 #define WAITQUEUE_WALK_BREAK_CNT 64
 
 static int __wake_up_common(struct wait_queue_head *wq_head, unsigned int mode,

@@ -136,32 +136,6 @@ char *parse_args(const char *doing,
 	return err;
 }
 
-#define STANDARD_PARAM_DEF(name, type, format, strtolfn)      		\
-	int param_set_##name(const char *val, const struct kernel_param *kp) \
-	{								\
-		return strtolfn(val, 0, (type *)kp->arg);		\
-	}								\
-	int param_get_##name(char *buffer, const struct kernel_param *kp) \
-	{								\
-		return scnprintf(buffer, PAGE_SIZE, format "\n",	\
-				*((type *)kp->arg));			\
-	}								\
-	const struct kernel_param_ops param_ops_##name = {			\
-		.set = param_set_##name,				\
-		.get = param_get_##name,				\
-	};								\
-	EXPORT_SYMBOL(param_set_##name);				\
-	EXPORT_SYMBOL(param_get_##name);				\
-	EXPORT_SYMBOL(param_ops_##name)
-
-
-STANDARD_PARAM_DEF(int,		int,			"%i",		kstrtoint);
-STANDARD_PARAM_DEF(uint,	unsigned int,		"%u",		kstrtouint);
-STANDARD_PARAM_DEF(long,	long,			"%li",		kstrtol);
-STANDARD_PARAM_DEF(ulong,	unsigned long,		"%lu",		kstrtoul);
-STANDARD_PARAM_DEF(ullong,	unsigned long long,	"%llu",		kstrtoull);
-
-
 #define to_module_attr(n) container_of(n, struct module_attribute, attr)
 #define to_module_kobject(n) container_of(n, struct module_kobject, kobj)
 

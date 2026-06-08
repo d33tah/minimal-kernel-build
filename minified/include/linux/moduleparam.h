@@ -173,20 +173,6 @@ extern char *parse_args(const char *name,
 				     const char *doing, void *arg));
 
 
-#define __param_check(name, p, type) \
-	static inline type __always_unused *__check_##name(void) { return(p); }
-
-extern const struct kernel_param_ops param_ops_int;
-#define param_check_int(name, p) __param_check(name, p, int)
-
-extern const struct kernel_param_ops param_ops_uint;
-#define param_check_uint(name, p) __param_check(name, p, unsigned int)
-
-#define param_check_long(name, p) __param_check(name, p, long)
-#define param_check_ulong(name, p) __param_check(name, p, unsigned long)
-#define param_check_ullong(name, p) __param_check(name, p, unsigned long long)
-
-
 struct module;
 
 #endif  

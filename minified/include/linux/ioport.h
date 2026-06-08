@@ -54,7 +54,6 @@ extern struct resource iomem_resource;
 
 extern struct resource *request_resource_conflict(struct resource *root, struct resource *new);
 extern int request_resource(struct resource *root, struct resource *new);
-extern int release_resource(struct resource *new);
 extern struct resource *insert_resource_conflict(struct resource *parent, struct resource *new);
 extern int insert_resource(struct resource *parent, struct resource *new);
 static inline unsigned long resource_type(const struct resource *res)
@@ -67,14 +66,6 @@ static inline unsigned long resource_ext_type(const struct resource *res)
 }
 
 
-
-extern struct resource * __request_region(struct resource *,
-					resource_size_t start,
-					resource_size_t n,
-					const char *name, int flags);
-
-extern void __release_region(struct resource *, resource_size_t,
-				resource_size_t);
 
 struct device;
 

@@ -13,7 +13,6 @@
 
 extern const struct fs_parameter_spec shmem_fs_parameters[];
 extern void shmem_init(void);
-extern int shmem_init_fs_context(struct fs_context *fc);
 extern struct file *shmem_file_setup(const char *name,
 					loff_t size, unsigned long flags);
 extern struct file *shmem_kernel_file_setup(const char *name, loff_t size,

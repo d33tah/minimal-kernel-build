@@ -16,14 +16,12 @@
 #include <linux/fs_struct.h>
 #include <linux/slab.h>
 #include <linux/ramfs.h>
-#include <linux/shmem_fs.h>
 
 #include <uapi/linux/mount.h>
 
 #include "do_mounts.h"
 
 int root_mountflags = MS_RDONLY | MS_SILENT;
-static char __initdata saved_root_name[64];
 
 dev_t ROOT_DEV;
 
@@ -40,7 +38,6 @@ __setup("rootwait", rootwait_setup);
 /* Stub: rootflags= not needed for minimal kernel */
 static int __init root_data_setup(char *str) { return 1; }
 
-static char * __initdata root_fs_names;
 /* Stub: rootfstype= not needed for minimal kernel */
 static int __init fs_names_setup(char *str) { return 1; }
 
@@ -51,12 +48,8 @@ __setup("rootflags=", root_data_setup);
 __setup("rootfstype=", fs_names_setup);
 __setup("rootdelay=", root_delay_setup);
 
-static bool is_tmpfs;
 static int rootfs_init_fs_context(struct fs_context *fc)
 {
-	if (IS_ENABLED(CONFIG_TMPFS) && is_tmpfs)
-		return shmem_init_fs_context(fc);
-
 	return ramfs_init_fs_context(fc);
 }
 
@@ -68,7 +61,4 @@ struct file_system_type rootfs_fs_type = {
 
 void __init init_rootfs(void)
 {
-	if (IS_ENABLED(CONFIG_TMPFS) && !saved_root_name[0] &&
-		(!root_fs_names || strstr(root_fs_names, "tmpfs")))
-		is_tmpfs = true;
 }

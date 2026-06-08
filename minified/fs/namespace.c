@@ -251,17 +251,6 @@ int __mnt_want_write_file(struct file *file)
 	return __mnt_want_write(file->f_path.mnt);
 }
 
-int mnt_want_write_file(struct file *file)
-{
-	int ret;
-
-	sb_start_write(file_inode(file)->i_sb);
-	ret = __mnt_want_write_file(file);
-	if (ret)
-		sb_end_write(file_inode(file)->i_sb);
-	return ret;
-}
-
 void __mnt_drop_write(struct vfsmount *mnt)
 {
 	preempt_disable();
@@ -279,21 +268,6 @@ void __mnt_drop_write_file(struct file *file)
 {
 	if (!(file->f_mode & FMODE_WRITER))
 		__mnt_drop_write(file->f_path.mnt);
-}
-
-void mnt_drop_write_file(struct file *file)
-{
-	__mnt_drop_write_file(file);
-	sb_end_write(file_inode(file)->i_sb);
-}
-
-int sb_prepare_remount_readonly(struct super_block *sb)
-{
-	/* Stub: minimal remount handling for simple system */
-	if (atomic_long_read(&sb->s_remove_count))
-		return -EBUSY;
-	sb->s_readonly_remount = 1;
-	return 0;
 }
 
 static void free_vfsmnt(struct mount *mnt)

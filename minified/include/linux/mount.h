@@ -64,9 +64,7 @@ static inline struct user_namespace *mnt_user_ns(const struct vfsmount *mnt)
 }
 
 extern int mnt_want_write(struct vfsmount *mnt);
-extern int mnt_want_write_file(struct file *file);
 extern void mnt_drop_write(struct vfsmount *mnt);
-extern void mnt_drop_write_file(struct file *file);
 extern void mntput(struct vfsmount *mnt);
 extern struct vfsmount *mntget(struct vfsmount *mnt);
 extern bool mnt_may_suid(struct vfsmount *mnt);

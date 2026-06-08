@@ -1503,22 +1503,6 @@ int kern_path(const char *name, unsigned int flags, struct path *path)
 
 }
 
-int vfs_path_lookup(struct dentry *dentry, struct vfsmount *mnt,
-		    const char *name, unsigned int flags,
-		    struct path *path)
-{
-	struct filename *filename;
-	struct path root = {.mnt = mnt, .dentry = dentry};
-	int ret;
-
-	filename = getname_kernel(name);
-	
-	ret = filename_lookup(AT_FDCWD, filename, flags, path, &root);
-	putname(filename);
-	return ret;
-}
-
-
 static inline int may_create(struct user_namespace *mnt_userns,
 			     struct inode *dir, struct dentry *child)
 {

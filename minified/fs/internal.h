@@ -33,16 +33,12 @@ extern int parse_monolithic_mount_data(struct fs_context *, void *);
  
 extern int filename_lookup(int dfd, struct filename *name, unsigned flags,
 			   struct path *path, struct path *root);
-extern int vfs_path_lookup(struct dentry *, struct vfsmount *,
-			   const char *, unsigned int, struct path *);
 int do_rmdir(int dfd, struct filename *name);
 int do_unlinkat(int dfd, struct filename *name);
 int may_linkat(struct user_namespace *mnt_userns, struct path *link);
 
  
 extern struct vfsmount *lookup_mnt(const struct path *);
-
-extern int sb_prepare_remount_readonly(struct super_block *);
 
 extern void __init mnt_init(void);
 

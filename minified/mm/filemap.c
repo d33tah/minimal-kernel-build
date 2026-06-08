@@ -350,24 +350,6 @@ int file_check_and_advance_wb_err(struct file *file)
 	return err;
 }
 
-int file_write_and_wait_range(struct file *file, loff_t lstart, loff_t lend)
-{
-	int err = 0, err2;
-	struct address_space *mapping = file->f_mapping;
-
-	if (mapping_needs_writeback(mapping)) {
-		err = __filemap_fdatawrite_range(mapping, lstart, lend,
-						 WB_SYNC_ALL);
-		
-		if (err != -EIO)
-			__filemap_fdatawait_range(mapping, lstart, lend);
-	}
-	err2 = file_check_and_advance_wb_err(file);
-	if (!err)
-		err = err2;
-	return err;
-}
-
 noinline int __filemap_add_folio(struct address_space *mapping,
 		struct folio *folio, pgoff_t index, gfp_t gfp, void **shadowp)
 {
@@ -455,13 +437,6 @@ error:
 	return xas_error(&xas);
 }
 ALLOW_ERROR_INJECTION(__filemap_add_folio, ERRNO);
-
-int add_to_page_cache_locked(struct page *page, struct address_space *mapping,
-		pgoff_t offset, gfp_t gfp_mask)
-{
-	return __filemap_add_folio(mapping, page_folio(page), offset,
-					  gfp_mask, NULL);
-}
 
 int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 				pgoff_t index, gfp_t gfp)
@@ -1692,13 +1667,6 @@ out:
 	return folio;
 }
 
-struct folio *read_cache_folio(struct address_space *mapping, pgoff_t index,
-		filler_t filler, struct file *file)
-{
-	return do_read_cache_folio(mapping, index, filler, file,
-			mapping_gfp_mask(mapping));
-}
-
 static struct page *do_read_cache_page(struct address_space *mapping,
 		pgoff_t index, filler_t *filler, struct file *file, gfp_t gfp)
 {
@@ -1715,13 +1683,6 @@ struct page *read_cache_page(struct address_space *mapping,
 {
 	return do_read_cache_page(mapping, index, filler, file,
 			mapping_gfp_mask(mapping));
-}
-
-struct page *read_cache_page_gfp(struct address_space *mapping,
-				pgoff_t index,
-				gfp_t gfp)
-{
-	return do_read_cache_page(mapping, index, NULL, NULL, gfp);
 }
 
 static void dio_warn_stale_pagecache(struct file *filp)

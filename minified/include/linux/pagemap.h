@@ -208,12 +208,8 @@ unsigned find_get_pages_range_tag(struct address_space *mapping, pgoff_t *index,
 struct page *grab_cache_page_write_begin(struct address_space *mapping,
 			pgoff_t index);
 
-struct folio *read_cache_folio(struct address_space *, pgoff_t index,
-		filler_t *filler, struct file *file);
 struct page *read_cache_page(struct address_space *, pgoff_t index,
 		filler_t *filler, struct file *file);
-extern struct page * read_cache_page_gfp(struct address_space *mapping,
-				pgoff_t index, gfp_t gfp_mask);
 
 static inline struct page *read_mapping_page(struct address_space *mapping,
 				pgoff_t index, struct file *file)
@@ -359,8 +355,6 @@ bool noop_dirty_folio(struct address_space *mapping, struct folio *folio);
 size_t fault_in_writeable(char __user *uaddr, size_t size);
 size_t fault_in_readable(const char __user *uaddr, size_t size);
 
-int add_to_page_cache_locked(struct page *page, struct address_space *mapping,
-		pgoff_t index, gfp_t gfp);
 int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
 		pgoff_t index, gfp_t gfp);
 int filemap_add_folio(struct address_space *mapping, struct folio *folio,

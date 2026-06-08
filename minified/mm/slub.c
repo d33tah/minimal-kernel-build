@@ -1593,21 +1593,6 @@ void *__kmalloc(size_t size, gfp_t flags)
 	return ret;
 }
 
-size_t __ksize(const void *object)
-{
-	struct folio *folio;
-
-	if (unlikely(object == ZERO_SIZE_PTR))
-		return 0;
-
-	folio = virt_to_folio(object);
-
-	if (unlikely(!folio_test_slab(folio)))
-		return folio_size(folio);
-
-	return slab_ksize(folio_slab(folio)->slab_cache);
-}
-
 void kfree(const void *x)
 {
 	struct folio *folio;

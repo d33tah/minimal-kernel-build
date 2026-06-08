@@ -47,11 +47,6 @@ void mlock_folio(struct folio *folio)
 	 
 }
 
-void munlock_page(struct page *page)
-{
-	 
-}
-
 void mlock_new_page(struct page *page)
 {
 	 

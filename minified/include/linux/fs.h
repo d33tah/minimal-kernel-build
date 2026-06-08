@@ -60,8 +60,6 @@ static inline void clear_delayed_call(struct delayed_call *call)
 typedef u32	errseq_t;
 errseq_t errseq_set(errseq_t *eseq, int err);
 errseq_t errseq_sample(errseq_t *eseq);
-int errseq_check(errseq_t *eseq, errseq_t since);
-int errseq_check_and_advance(errseq_t *eseq, errseq_t *since);
 #include <linux/build_bug.h>
 
 #define DT_DIR		4
@@ -1253,8 +1251,6 @@ static inline int register_chrdev(unsigned int major, const char *name,
 }
 
 extern void init_special_inode(struct inode *, umode_t, dev_t);
-
-extern int __must_check file_check_and_advance_wb_err(struct file *file);
 
 static inline ssize_t generic_write_sync(struct kiocb *iocb, ssize_t count)
 {

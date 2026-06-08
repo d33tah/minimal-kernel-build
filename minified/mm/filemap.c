@@ -327,29 +327,6 @@ int filemap_write_and_wait_range(struct address_space *mapping,
 }
 
 
-int file_check_and_advance_wb_err(struct file *file)
-{
-	int err = 0;
-	errseq_t old = READ_ONCE(file->f_wb_err);
-	struct address_space *mapping = file->f_mapping;
-
-	
-	if (errseq_check(&mapping->wb_err, old)) {
-		
-		spin_lock(&file->f_lock);
-		old = file->f_wb_err;
-		err = errseq_check_and_advance(&mapping->wb_err,
-						&file->f_wb_err);
-		
-		spin_unlock(&file->f_lock);
-	}
-
-	
-	clear_bit(AS_EIO, &mapping->flags);
-	clear_bit(AS_ENOSPC, &mapping->flags);
-	return err;
-}
-
 noinline int __filemap_add_folio(struct address_space *mapping,
 		struct folio *folio, pgoff_t index, gfp_t gfp, void **shadowp)
 {

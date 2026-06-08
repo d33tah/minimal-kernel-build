@@ -267,9 +267,6 @@ DEFINE_IDTENTRY_RAW(exc_nmi)
 	 
 	sev_es_nmi_complete();
 
-	if (IS_ENABLED(CONFIG_SMP) && arch_cpu_is_offline(smp_processor_id()))
-		return;
-
 	if (this_cpu_read(nmi_state) != NMI_NOT_RUNNING) {
 		this_cpu_write(nmi_state, NMI_LATCHED);
 		return;

@@ -295,13 +295,6 @@ static __always_inline void __speculation_ctrl_update(unsigned long tifp,
 		msr |= ssbd_tif_to_spec_ctrl(tifn);
 	}
 
-	 
-	if (IS_ENABLED(CONFIG_SMP) &&
-	    static_branch_unlikely(&switch_to_cond_stibp)) {
-		updmsr |= !!(tif_diff & _TIF_SPEC_IB);
-		msr |= stibp_tif_to_spec_ctrl(tifn);
-	}
-
 	if (updmsr)
 		write_spec_ctrl_current(msr, false);
 }

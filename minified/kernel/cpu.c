@@ -291,17 +291,6 @@ unlock:
 	return ret;
 }
 
-int __cpuhp_state_add_instance(enum cpuhp_state state, struct hlist_node *node,
-			       bool invoke)
-{
-	int ret;
-
-	cpus_read_lock();
-	ret = __cpuhp_state_add_instance_cpuslocked(state, node, invoke);
-	cpus_read_unlock();
-	return ret;
-}
-
 int __cpuhp_setup_state_cpuslocked(enum cpuhp_state state,
 				   const char *name, bool invoke,
 				   int (*startup)(unsigned int cpu),

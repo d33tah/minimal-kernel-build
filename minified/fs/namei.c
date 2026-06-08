@@ -77,13 +77,6 @@ getname_flags(const char __user *filename, int flags, int *empty)
 	return result;
 }
 
-static struct filename *
-getname_uflags(const char __user *filename, int uflags)
-{
-	/* Used by linkat syscall */
-	return getname(filename);
-}
-
 struct filename *
 getname(const char __user * filename)
 {

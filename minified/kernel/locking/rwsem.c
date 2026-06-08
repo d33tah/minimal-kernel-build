@@ -130,15 +130,6 @@ static inline struct task_struct *rwsem_owner(struct rw_semaphore *sem)
 		(atomic_long_read(&sem->owner) & ~RWSEM_OWNER_FLAGS_MASK);
 }
 
-static inline struct task_struct *
-rwsem_owner_flags(struct rw_semaphore *sem, unsigned long *pflags)
-{
-	unsigned long owner = atomic_long_read(&sem->owner);
-
-	*pflags = owner & RWSEM_OWNER_FLAGS_MASK;
-	return (struct task_struct *)(owner & ~RWSEM_OWNER_FLAGS_MASK);
-}
-
 
 void __init_rwsem(struct rw_semaphore *sem, const char *name,
 		  struct lock_class_key *key)

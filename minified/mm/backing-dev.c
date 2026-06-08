@@ -33,45 +33,12 @@ static inline void bdi_debug_unregister(struct backing_dev_info *bdi)
 {
 }
 
-/* Stub: BDI sysfs attributes simplified for minimal kernel */
-static ssize_t read_ahead_kb_store(struct device *dev,
-		struct device_attribute *attr, const char *buf, size_t count) { return count; }
-static ssize_t read_ahead_kb_show(struct device *dev,
-		struct device_attribute *attr, char *buf) { return sysfs_emit(buf, "0\n"); }
-static DEVICE_ATTR_RW(read_ahead_kb);
-
-static ssize_t min_ratio_store(struct device *dev,
-		struct device_attribute *attr, const char *buf, size_t count) { return count; }
-static ssize_t min_ratio_show(struct device *dev,
-		struct device_attribute *attr, char *buf) { return sysfs_emit(buf, "0\n"); }
-static DEVICE_ATTR_RW(min_ratio);
-
-static ssize_t max_ratio_store(struct device *dev,
-		struct device_attribute *attr, const char *buf, size_t count) { return count; }
-static ssize_t max_ratio_show(struct device *dev,
-		struct device_attribute *attr, char *buf) { return sysfs_emit(buf, "0\n"); }
-static DEVICE_ATTR_RW(max_ratio);
-
-static ssize_t stable_pages_required_show(struct device *dev,
-		struct device_attribute *attr, char *buf) { return sysfs_emit(buf, "0\n"); }
-static DEVICE_ATTR_RO(stable_pages_required);
-
-static struct attribute *bdi_dev_attrs[] = {
-	&dev_attr_read_ahead_kb.attr,
-	&dev_attr_min_ratio.attr,
-	&dev_attr_max_ratio.attr,
-	&dev_attr_stable_pages_required.attr,
-	NULL,
-};
-ATTRIBUTE_GROUPS(bdi_dev);
-
 static __init int bdi_class_init(void)
 {
 	bdi_class = class_create(THIS_MODULE, "bdi");
 	if (IS_ERR(bdi_class))
 		return PTR_ERR(bdi_class);
 
-	bdi_class->dev_groups = bdi_dev_groups;
 	bdi_debug_init();
 
 	return 0;

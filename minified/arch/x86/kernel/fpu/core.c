@@ -108,26 +108,6 @@ void fpu_reset_from_exception_fixup(void)
 #if IS_ENABLED(CONFIG_KVM)
 static void __fpstate_reset(struct fpstate *fpstate, u64 xfd);
 
-static void fpu_init_guest_permissions(struct fpu_guest *gfpu)
-{
-	struct fpu_state_perm *fpuperm;
-	u64 perm;
-
-	if (!IS_ENABLED(CONFIG_X86_64))
-		return;
-
-	spin_lock_irq(&current->sighand->siglock);
-	fpuperm = &current->group_leader->thread.fpu.guest_perm;
-	perm = fpuperm->__state_perm;
-
-	 
-	WRITE_ONCE(fpuperm->__state_perm, perm | FPU_GUEST_PERM_LOCKED);
-
-	spin_unlock_irq(&current->sighand->siglock);
-
-	gfpu->perm = perm & ~FPU_GUEST_PERM_LOCKED;
-}
-
 bool fpu_alloc_guest_fpstate(struct fpu_guest *gfpu)
 {
 	/* Stub: KVM guest FPU not needed for minimal kernel */

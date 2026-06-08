@@ -531,11 +531,6 @@ out_unlock:
 	return ret;
 }
 
-int device_attach(struct device *dev)
-{
-	return __device_attach(dev, false);
-}
-
 void device_initial_probe(struct device *dev)
 {
 	__device_attach(dev, true);

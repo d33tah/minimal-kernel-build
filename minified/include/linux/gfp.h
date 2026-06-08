@@ -189,11 +189,6 @@ unsigned long __alloc_pages_bulk(gfp_t gfp, int preferred_nid,
 				struct list_head *page_list,
 				struct page **page_array);
 
-unsigned long alloc_pages_bulk_array_mempolicy(gfp_t gfp,
-				unsigned long nr_pages,
-				struct page **page_array);
-
-
 static inline unsigned long
 alloc_pages_bulk_array_node(gfp_t gfp, int nid, unsigned long nr_pages, struct page **page_array)
 {

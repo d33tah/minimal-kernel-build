@@ -10,43 +10,6 @@
 #include <linux/security.h>
 
 
-struct kmalloced_param {
-	struct list_head list;
-	char val[];
-};
-static LIST_HEAD(kmalloced_params);
-static DEFINE_SPINLOCK(kmalloced_params_lock);
-
-static void *kmalloc_parameter(unsigned int size)
-{
-	struct kmalloced_param *p;
-
-	p = kmalloc(sizeof(*p) + size, GFP_KERNEL);
-	if (!p)
-		return NULL;
-
-	spin_lock(&kmalloced_params_lock);
-	list_add(&p->list, &kmalloced_params);
-	spin_unlock(&kmalloced_params_lock);
-
-	return p->val;
-}
-
-static void maybe_kfree_parameter(void *param)
-{
-	struct kmalloced_param *p;
-
-	spin_lock(&kmalloced_params_lock);
-	list_for_each_entry(p, &kmalloced_params, list) {
-		if (p->val == param) {
-			list_del(&p->list);
-			kfree(p);
-			break;
-		}
-	}
-	spin_unlock(&kmalloced_params_lock);
-}
-
 static char dash2underscore(char c)
 {
 	if (c == '-')
@@ -197,65 +160,6 @@ STANDARD_PARAM_DEF(uint,	unsigned int,		"%u",		kstrtouint);
 STANDARD_PARAM_DEF(long,	long,			"%li",		kstrtol);
 STANDARD_PARAM_DEF(ulong,	unsigned long,		"%lu",		kstrtoul);
 STANDARD_PARAM_DEF(ullong,	unsigned long long,	"%llu",		kstrtoull);
-
-
-int param_set_charp(const char *val, const struct kernel_param *kp)
-{
-	if (strlen(val) > 1024) {
-		pr_err("%s: string parameter too long\n", kp->name);
-		return -ENOSPC;
-	}
-
-	maybe_kfree_parameter(*(char **)kp->arg);
-
-	 
-	if (slab_is_available()) {
-		*(char **)kp->arg = kmalloc_parameter(strlen(val)+1);
-		if (!*(char **)kp->arg)
-			return -ENOMEM;
-		strcpy(*(char **)kp->arg, val);
-	} else
-		*(const char **)kp->arg = val;
-
-	return 0;
-}
-
-int param_get_charp(char *buffer, const struct kernel_param *kp)
-{
-	return scnprintf(buffer, PAGE_SIZE, "%s\n", *((char **)kp->arg));
-}
-
-static void param_free_charp(void *arg)
-{
-	maybe_kfree_parameter(*((char **)arg));
-}
-
-const struct kernel_param_ops param_ops_charp = {
-	.set = param_set_charp,
-	.get = param_get_charp,
-	.free = param_free_charp,
-};
-
-int param_set_bool(const char *val, const struct kernel_param *kp)
-{
-	 
-	if (!val) val = "1";
-
-	 
-	return strtobool(val, kp->arg);
-}
-
-int param_get_bool(char *buffer, const struct kernel_param *kp)
-{
-	 
-	return sprintf(buffer, "%c\n", *(bool *)kp->arg ? 'Y' : 'N');
-}
-
-const struct kernel_param_ops param_ops_bool = {
-	.flags = KERNEL_PARAM_OPS_FL_NOARG,
-	.set = param_set_bool,
-	.get = param_get_bool,
-};
 
 
 #define to_module_attr(n) container_of(n, struct module_attribute, attr)

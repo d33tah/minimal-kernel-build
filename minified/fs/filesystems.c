@@ -58,30 +58,6 @@ int register_filesystem(struct file_system_type * fs)
 }
 
 
-int __init list_bdev_fs_names(char *buf, size_t size)
-{
-	struct file_system_type *p;
-	size_t len;
-	int count = 0;
-
-	read_lock(&file_systems_lock);
-	for (p = file_systems; p; p = p->next) {
-		if (!(p->fs_flags & FS_REQUIRES_DEV))
-			continue;
-		len = strlen(p->name) + 1;
-		if (len > size) {
-			break;
-		}
-		memcpy(buf, p->name, len);
-		buf += len;
-		size -= len;
-		count++;
-	}
-	read_unlock(&file_systems_lock);
-	return count;
-}
-
-
 static struct file_system_type *__get_fs_type(const char *name, int len)
 {
 	struct file_system_type *fs;

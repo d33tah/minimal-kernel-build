@@ -941,13 +941,7 @@ static noinline void __init kernel_init_freeable(void)
 	wait_for_initramfs();
 	console_on_rootfs();
 
-	 
-	if (init_eaccess(ramdisk_execute_command) != 0) {
-		ramdisk_execute_command = NULL;
-		prepare_namespace();
-	}
 
-	 
 
 	integrity_load_keys();
 }

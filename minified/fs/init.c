@@ -91,19 +91,6 @@ int __init init_chmod(const char *filename, umode_t mode)
 	return error;
 }
 
-int __init init_eaccess(const char *filename)
-{
-	struct path path;
-	int error;
-
-	error = kern_path(filename, LOOKUP_FOLLOW, &path);
-	if (error)
-		return error;
-	error = path_permission(&path, MAY_ACCESS);
-	path_put(&path);
-	return error;
-}
-
 int __init init_stat(const char *filename, struct kstat *stat, int flags)
 {
 	int lookup_flags = (flags & AT_SYMLINK_NOFOLLOW) ? 0 : LOOKUP_FOLLOW;

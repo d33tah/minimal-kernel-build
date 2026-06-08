@@ -66,7 +66,6 @@ extern int do_one_initcall(initcall_t fn);
 extern char __initdata boot_command_line[];
 
 void setup_arch(char **);
-void prepare_namespace(void);
 void __init init_rootfs(void);
 extern struct file_system_type rootfs_fs_type;
 

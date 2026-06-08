@@ -1476,7 +1476,6 @@ static inline ino_t parent_ino(struct dentry *dentry)
 
 
 struct ctl_table;
-int __init list_bdev_fs_names(char *buf, size_t size);
 
 #define __FMODE_EXEC		((__force int) FMODE_EXEC)
 #define __FMODE_NONOTIFY	((__force int) FMODE_NONOTIFY)

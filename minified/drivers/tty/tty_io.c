@@ -287,27 +287,6 @@ void tty_wakeup(struct tty_struct *tty)
 	wake_up_interruptible_poll(&tty->write_wait, EPOLLOUT);
 }
 
-static void __tty_hangup(struct tty_struct *tty, int exit_session)
-{
-	/* Stub: minimal TTY hangup for simple kernel */
-	if (!tty)
-		return;
-
-	tty_lock(tty);
-	set_bit(TTY_HUPPED, &tty->flags);
-	if (tty->ops->hangup)
-		tty->ops->hangup(tty);
-	tty_unlock(tty);
-}
-
-static void do_tty_hangup(struct work_struct *work)
-{
-	struct tty_struct *tty =
-		container_of(work, struct tty_struct, hangup_work);
-
-	__tty_hangup(tty, 0);
-}
-
 int tty_hung_up_p(struct file *filp)
 {
 	return (filp && filp->f_op == &hung_up_tty_fops);
@@ -1266,7 +1245,6 @@ struct tty_struct *alloc_tty_struct(struct tty_driver *driver, int idx)
 	init_ldsem(&tty->ldisc_sem);
 	init_waitqueue_head(&tty->write_wait);
 	init_waitqueue_head(&tty->read_wait);
-	INIT_WORK(&tty->hangup_work, do_tty_hangup);
 	mutex_init(&tty->atomic_write_lock);
 	spin_lock_init(&tty->ctrl.lock);
 	spin_lock_init(&tty->flow.lock);

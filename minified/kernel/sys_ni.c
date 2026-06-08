@@ -22,32 +22,13 @@ asmlinkage long sys_ni_syscall(void)
 #endif  
 
 
-COND_SYSCALL(io_setup);
-COND_SYSCALL_COMPAT(io_setup);
-COND_SYSCALL(io_destroy);
-COND_SYSCALL(io_submit);
-COND_SYSCALL_COMPAT(io_submit);
-COND_SYSCALL(io_cancel);
-COND_SYSCALL(io_getevents_time32);
-COND_SYSCALL(io_getevents);
-COND_SYSCALL(io_pgetevents_time32);
-COND_SYSCALL(io_pgetevents);
-COND_SYSCALL_COMPAT(io_pgetevents_time32);
-COND_SYSCALL_COMPAT(io_pgetevents);
 
 
 
 COND_SYSCALL(lookup_dcookie);
 COND_SYSCALL_COMPAT(lookup_dcookie);
 
-COND_SYSCALL(eventfd2);
 
-COND_SYSCALL(epoll_create1);
-COND_SYSCALL(epoll_ctl);
-COND_SYSCALL(epoll_pwait);
-COND_SYSCALL_COMPAT(epoll_pwait);
-COND_SYSCALL(epoll_pwait2);
-COND_SYSCALL_COMPAT(epoll_pwait2);
 
 
 
@@ -67,17 +48,10 @@ COND_SYSCALL(flock);
 
 
 
-COND_SYSCALL(signalfd4);
-COND_SYSCALL_COMPAT(signalfd4);
 
 
 
 
-COND_SYSCALL(timerfd_create);
-COND_SYSCALL(timerfd_settime);
-COND_SYSCALL(timerfd_settime32);
-COND_SYSCALL(timerfd_gettime);
-COND_SYSCALL(timerfd_gettime32);
 
 
 COND_SYSCALL(acct);
@@ -137,9 +111,6 @@ COND_SYSCALL_COMPAT(recvmsg);
 COND_SYSCALL(mremap);
 
 
-COND_SYSCALL(landlock_create_ruleset);
-COND_SYSCALL(landlock_add_rule);
-COND_SYSCALL(landlock_restrict_self);
 
 
 COND_SYSCALL(fadvise64_64);
@@ -165,9 +136,6 @@ COND_SYSCALL_COMPAT(recvmmsg_time64);
 
 
 
-COND_SYSCALL(name_to_handle_at);
-COND_SYSCALL(open_by_handle_at);
-COND_SYSCALL_COMPAT(open_by_handle_at);
 
 COND_SYSCALL(sendmmsg);
 COND_SYSCALL_COMPAT(sendmmsg);
@@ -176,23 +144,18 @@ COND_SYSCALL(kcmp);
 
 COND_SYSCALL(finit_module);
 
-COND_SYSCALL(seccomp);
 
-COND_SYSCALL(memfd_create);
 
 
 COND_SYSCALL(execveat);
 
-COND_SYSCALL(userfaultfd);
 
-COND_SYSCALL(membarrier);
 
 COND_SYSCALL(mlock2);
 
 COND_SYSCALL(copy_file_range);
 
 
-COND_SYSCALL(memfd_secret);
 
 
 COND_SYSCALL(pciconfig_read);
@@ -220,14 +183,9 @@ COND_SYSCALL(subpage_prot);
 
 
 
-COND_SYSCALL(epoll_create);
-COND_SYSCALL(eventfd);
-COND_SYSCALL(signalfd);
-COND_SYSCALL_COMPAT(signalfd);
 
 COND_SYSCALL(fadvise64);
 
-COND_SYSCALL(epoll_wait);
 COND_SYSCALL(recv);
 COND_SYSCALL_COMPAT(recv);
 COND_SYSCALL(send);

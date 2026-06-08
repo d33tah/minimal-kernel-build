@@ -129,17 +129,9 @@
 240	i386	futex			sys_futex_time32
 243	i386	set_thread_area		sys_set_thread_area
 244	i386	get_thread_area		sys_get_thread_area
-245	i386	io_setup		sys_io_setup			compat_sys_io_setup
-246	i386	io_destroy		sys_io_destroy
-247	i386	io_getevents		sys_io_getevents_time32
-248	i386	io_submit		sys_io_submit			compat_sys_io_submit
-249	i386	io_cancel		sys_io_cancel
 # 251 is available for reuse (was briefly sys_set_zone_reclaim)
 252	i386	exit_group		sys_exit_group
 253	i386	lookup_dcookie		sys_lookup_dcookie		compat_sys_lookup_dcookie
-254	i386	epoll_create		sys_epoll_create
-255	i386	epoll_ctl		sys_epoll_ctl
-256	i386	epoll_wait		sys_epoll_wait
 258	i386	set_tid_address		sys_set_tid_address
 259	i386	timer_create		sys_timer_create		compat_sys_timer_create
 260	i386	timer_settime		sys_timer_settime32
@@ -171,32 +163,19 @@
 313	i386	splice			sys_splice
 315	i386	tee			sys_tee
 316	i386	vmsplice		sys_vmsplice
-319	i386	epoll_pwait		sys_epoll_pwait
 320	i386	utimensat		sys_utimensat_time32
-321	i386	signalfd		sys_signalfd			compat_sys_signalfd
-322	i386	timerfd_create		sys_timerfd_create
-323	i386	eventfd			sys_eventfd
-325	i386	timerfd_settime		sys_timerfd_settime32
-326	i386	timerfd_gettime		sys_timerfd_gettime32
-327	i386	signalfd4		sys_signalfd4			compat_sys_signalfd4
-328	i386	eventfd2		sys_eventfd2
-329	i386	epoll_create1		sys_epoll_create1
 330	i386	dup3			sys_dup3
 331	i386	pipe2			sys_pipe2
 333	i386	preadv
 334	i386	pwritev
 337	i386	recvmmsg		sys_recvmmsg_time32		compat_sys_recvmmsg_time32
-341	i386	name_to_handle_at	sys_name_to_handle_at
-342	i386	open_by_handle_at	sys_open_by_handle_at		compat_sys_open_by_handle_at
 343	i386	clock_adjtime		sys_clock_adjtime32
 344	i386	syncfs			sys_syncfs
 345	i386	sendmmsg		sys_sendmmsg			compat_sys_sendmmsg
 346	i386	setns			sys_setns
 349	i386	kcmp			sys_kcmp
 350	i386	finit_module		sys_finit_module
-354	i386	seccomp			sys_seccomp
 355	i386	getrandom		sys_getrandom
-356	i386	memfd_create		sys_memfd_create
 358	i386	execveat		sys_execveat			compat_sys_execveat
 359	i386	socket			sys_socket
 360	i386	socketpair		sys_socketpair
@@ -213,14 +192,11 @@
 371	i386	recvfrom		sys_recvfrom			compat_sys_recvfrom
 372	i386	recvmsg			sys_recvmsg			compat_sys_recvmsg
 373	i386	shutdown		sys_shutdown
-374	i386	userfaultfd		sys_userfaultfd
-375	i386	membarrier		sys_membarrier
 377	i386	copy_file_range
 378	i386	preadv2
 379	i386	pwritev2
 383	i386	statx			sys_statx
 384	i386	arch_prctl		sys_arch_prctl			compat_sys_arch_prctl
-385	i386	io_pgetevents		sys_io_pgetevents_time32	compat_sys_io_pgetevents
 386	i386	rseq			sys_rseq
 # 393-402 SysV IPC (sem/shm/msg) removed (unreachable)
 403	i386	clock_gettime64		sys_clock_gettime
@@ -230,12 +206,9 @@
 407	i386	clock_nanosleep_time64	sys_clock_nanosleep
 408	i386	timer_gettime64		sys_timer_gettime
 409	i386	timer_settime64		sys_timer_settime
-410	i386	timerfd_gettime64	sys_timerfd_gettime
-411	i386	timerfd_settime64	sys_timerfd_settime
 412	i386	utimensat_time64	sys_utimensat
 413	i386	pselect6_time64		sys_pselect6			compat_sys_pselect6_time64
 414	i386	ppoll_time64		sys_ppoll			compat_sys_ppoll_time64
-416	i386	io_pgetevents_time64	sys_io_pgetevents
 417	i386	recvmmsg_time64		sys_recvmmsg			compat_sys_recvmmsg_time64
 # 418-419 mq_timed*_time64 removed (unreachable)
 # 420 semtimedop_time64 removed (unreachable)
@@ -252,11 +225,6 @@
 437	i386	openat2			sys_openat2
 438	i386	pidfd_getfd		sys_pidfd_getfd
 440	i386	process_madvise		sys_process_madvise
-441	i386	epoll_pwait2		sys_epoll_pwait2		compat_sys_epoll_pwait2
 442	i386	mount_setattr		sys_mount_setattr
-444	i386	landlock_create_ruleset	sys_landlock_create_ruleset
-445	i386	landlock_add_rule	sys_landlock_add_rule
-446	i386	landlock_restrict_self	sys_landlock_restrict_self
-447	i386	memfd_secret		sys_memfd_secret
 448	i386	process_mrelease	sys_process_mrelease
 449	i386	futex_waitv		sys_futex_waitv

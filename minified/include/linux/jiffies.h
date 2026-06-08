@@ -93,7 +93,6 @@ extern unsigned long preset_lpj;
 	(long)((u64)((u64)MAX_JIFFY_OFFSET * TICK_NSEC) / NSEC_PER_SEC)
 
 extern unsigned int jiffies_to_msecs(const unsigned long j);
-extern unsigned int jiffies_to_usecs(const unsigned long j);
 
 
 extern unsigned long __msecs_to_jiffies(const unsigned int m);
@@ -128,24 +127,5 @@ static __always_inline unsigned long msecs_to_jiffies(const unsigned int m)
 		return __msecs_to_jiffies(m);
 	}
 }
-
-extern unsigned long __usecs_to_jiffies(const unsigned int u);
-#if !(USEC_PER_SEC % HZ)
-static inline unsigned long _usecs_to_jiffies(const unsigned int u)
-{
-	return (u + (USEC_PER_SEC / HZ) - 1) / (USEC_PER_SEC / HZ);
-}
-#else
-static inline unsigned long _usecs_to_jiffies(const unsigned int u)
-{
-	return (USEC_TO_HZ_MUL32 * u + USEC_TO_HZ_ADJ32)
-		>> USEC_TO_HZ_SHR32;
-}
-#endif
-
-
-extern unsigned long timespec64_to_jiffies(const struct timespec64 *value);
-extern u64 nsecs_to_jiffies64(u64 n);
-extern unsigned long nsecs_to_jiffies(u64 n);
 
 #endif

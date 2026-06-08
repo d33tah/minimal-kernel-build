@@ -96,22 +96,6 @@ unsigned int jiffies_to_msecs(const unsigned long j)
 #endif
 }
 
-unsigned int jiffies_to_usecs(const unsigned long j)
-{
-	 
-	BUILD_BUG_ON(HZ > USEC_PER_SEC);
-
-#if !(USEC_PER_SEC % HZ)
-	return (USEC_PER_SEC / HZ) * j;
-#else
-# if BITS_PER_LONG == 32
-	return (HZ_TO_USEC_MUL32 * j) >> HZ_TO_USEC_SHR32;
-# else
-	return (j * HZ_TO_USEC_NUM) / HZ_TO_USEC_DEN;
-# endif
-#endif
-}
-
 time64_t mktime64(const unsigned int year0, const unsigned int mon0,
 		const unsigned int day, const unsigned int hour,
 		const unsigned int min, const unsigned int sec)
@@ -173,84 +157,6 @@ unsigned long __msecs_to_jiffies(const unsigned int m)
 	if ((int)m < 0)
 		return MAX_JIFFY_OFFSET;
 	return _msecs_to_jiffies(m);
-}
-
-unsigned long __usecs_to_jiffies(const unsigned int u)
-{
-	if (u > jiffies_to_usecs(MAX_JIFFY_OFFSET))
-		return MAX_JIFFY_OFFSET;
-	return _usecs_to_jiffies(u);
-}
-
-
-unsigned long
-timespec64_to_jiffies(const struct timespec64 *value)
-{
-	u64 sec = value->tv_sec;
-	long nsec = value->tv_nsec + TICK_NSEC - 1;
-
-	if (sec >= MAX_SEC_IN_JIFFIES){
-		sec = MAX_SEC_IN_JIFFIES;
-		nsec = 0;
-	}
-	return ((sec * SEC_CONVERSION) +
-		(((u64)nsec * NSEC_CONVERSION) >>
-		 (NSEC_JIFFIE_SC - SEC_JIFFIE_SC))) >> SEC_JIFFIE_SC;
-
-}
-
-
-u64 nsecs_to_jiffies64(u64 n)
-{
-#if (NSEC_PER_SEC % HZ) == 0
-	 
-	return div_u64(n, NSEC_PER_SEC / HZ);
-#elif (HZ % 512) == 0
-	 
-	return div_u64(n * HZ / 512, NSEC_PER_SEC / 512);
-#else
-	 
-	return div_u64(n * 9, (9ull * NSEC_PER_SEC + HZ / 2) / HZ);
-#endif
-}
-
-unsigned long nsecs_to_jiffies(u64 n)
-{
-	return (unsigned long)nsecs_to_jiffies64(n);
-}
-
-
-int get_timespec64(struct timespec64 *ts,
-		   const struct __kernel_timespec __user *uts)
-{
-	struct __kernel_timespec kts;
-	int ret;
-
-	ret = copy_from_user(&kts, uts, sizeof(kts));
-	if (ret)
-		return -EFAULT;
-
-	ts->tv_sec = kts.tv_sec;
-
-	 
-	if (in_compat_syscall())
-		kts.tv_nsec &= 0xFFFFFFFFUL;
-
-	 
-	ts->tv_nsec = kts.tv_nsec;
-
-	return 0;
-}
-
-int put_timespec64(const struct timespec64 *ts,
-		   struct __kernel_timespec __user *uts)
-{
-	struct __kernel_timespec kts = {
-		.tv_sec = ts->tv_sec,
-		.tv_nsec = ts->tv_nsec
-	};
-
-	return copy_to_user(uts, &kts, sizeof(kts)) ? -EFAULT : 0;
 }
 
 

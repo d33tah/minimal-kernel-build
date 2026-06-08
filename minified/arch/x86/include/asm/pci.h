@@ -5,11 +5,6 @@
 
 #include <linux/types.h>
 
-struct pci_sysdata {
-	int		domain;
-	int		node;
-};
-
 struct pci_bus;
 struct pci_dev;
 
@@ -32,10 +27,4 @@ extern int pcibios_enabled;
 static inline void early_quirks(void) { }
 extern void pci_iommu_alloc(void);
 
-struct pci_setup_rom {
-	unsigned long data;
-	uint16_t vendor;
-	uint16_t devid;
-};
-
-#endif  
+#endif

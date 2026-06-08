@@ -111,10 +111,6 @@ struct cpuinfo_x86 {
 	unsigned		initialized : 1;
 } __randomize_layout;
 
-struct cpuid_regs {
-	u32 eax, ebx, ecx, edx;
-};
-
 enum cpuid_regs_idx {
 	CPUID_EAX = 0,
 	CPUID_EBX,

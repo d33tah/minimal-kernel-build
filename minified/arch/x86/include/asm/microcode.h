@@ -13,15 +13,6 @@ struct cpio_data {
 };
 struct cpio_data find_cpio_data(const char *path, void *data, size_t len, long *offset);
 
-struct ucode_patch {
-	struct list_head plist;
-	void *data;		 
-	u32 patch_id;
-	u16 equiv_cpu;
-};
-
-extern struct list_head microcode_cache;
-
 struct cpu_signature {
 	unsigned int sig;
 	unsigned int pf;
@@ -29,28 +20,6 @@ struct cpu_signature {
 };
 
 struct device;
-
-enum ucode_state {
-	UCODE_OK	= 0,
-	UCODE_NEW,
-	UCODE_UPDATED,
-	UCODE_NFOUND,
-	UCODE_ERROR,
-};
-
-struct microcode_ops {
-	enum ucode_state (*request_microcode_user) (int cpu,
-				const void __user *buf, size_t size);
-
-	enum ucode_state (*request_microcode_fw) (int cpu, struct device *,
-						  bool refresh_fw);
-
-	void (*microcode_fini_cpu) (int cpu);
-
-	 
-	enum ucode_state (*apply_microcode) (int cpu);
-	int (*collect_cpu_info) (int cpu, struct cpu_signature *csig);
-};
 
 struct ucode_cpu_info {
 	struct cpu_signature	cpu_sig;

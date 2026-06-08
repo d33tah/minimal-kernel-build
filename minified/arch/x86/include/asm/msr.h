@@ -19,11 +19,6 @@ struct msr_info {
 	int err;
 };
 
-struct msr_regs_info {
-	u32 *regs;
-	int err;
-};
-
 struct saved_msr {
 	bool valid;
 	struct msr_info info;

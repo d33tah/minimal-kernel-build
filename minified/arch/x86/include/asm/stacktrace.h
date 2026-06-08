@@ -65,10 +65,5 @@ struct stack_frame {
 	unsigned long return_address;
 };
 
-struct stack_frame_ia32 {
-    u32 next_frame;
-    u32 return_address;
-};
-
 /* show_opcodes, show_ip removed - unused */
 #endif  

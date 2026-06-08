@@ -15,28 +15,6 @@
 
 #ifndef __ASSEMBLY__
 
- 
-struct tdx_module_output {
-	u64 rcx;
-	u64 rdx;
-	u64 r8;
-	u64 r9;
-	u64 r10;
-	u64 r11;
-};
-
- 
-struct ve_info {
-	u64 exit_reason;
-	u64 exit_qual;
-	 
-	u64 gla;
-	 
-	u64 gpa;
-	u32 instr_len;
-	u32 instr_info;
-};
-
 
 #endif
 #endif  

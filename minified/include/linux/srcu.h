@@ -90,8 +90,6 @@ int __srcu_read_lock(struct srcu_struct *ssp) __acquires(ssp);
 void __srcu_read_unlock(struct srcu_struct *ssp, int idx) __releases(ssp);
 void synchronize_srcu(struct srcu_struct *ssp);
 unsigned long get_state_synchronize_srcu(struct srcu_struct *ssp);
-unsigned long start_poll_synchronize_srcu(struct srcu_struct *ssp);
-bool poll_state_synchronize_srcu(struct srcu_struct *ssp, unsigned long cookie);
 
 void srcu_init(void);
 

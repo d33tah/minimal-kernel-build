@@ -148,22 +148,6 @@ unsigned long get_state_synchronize_srcu(struct srcu_struct *ssp)
 	return ret & USHRT_MAX;
 }
 
-unsigned long start_poll_synchronize_srcu(struct srcu_struct *ssp)
-{
-	unsigned long ret = get_state_synchronize_srcu(ssp);
-
-	srcu_gp_start_if_needed(ssp);
-	return ret;
-}
-
-bool poll_state_synchronize_srcu(struct srcu_struct *ssp, unsigned long cookie)
-{
-	bool ret = USHORT_CMP_GE(READ_ONCE(ssp->srcu_idx), cookie);
-
-	barrier();
-	return ret;
-}
-
 void __init rcu_scheduler_starting(void)
 {
 	rcu_scheduler_active = RCU_SCHEDULER_RUNNING;

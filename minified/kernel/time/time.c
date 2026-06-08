@@ -21,30 +21,6 @@
 struct timezone sys_tz;
 
 
-#ifdef __ARCH_WANT_SYS_TIME
-
-SYSCALL_DEFINE1(time, __kernel_old_time_t __user *, tloc)
-{
-	__kernel_old_time_t i = (__kernel_old_time_t)ktime_get_real_seconds();
-
-	if (tloc) {
-		if (put_user(i,tloc))
-			return -EFAULT;
-	}
-	force_successful_syscall_return();
-	return i;
-}
-
-
-SYSCALL_DEFINE1(stime, __kernel_old_time_t __user *, tptr)
-{
-	/* Stub: setting time not needed for minimal kernel */
-	return -EPERM;
-}
-
-#endif  
-
-
 SYSCALL_DEFINE2(gettimeofday, struct __kernel_old_timeval __user *, tv,
 		struct timezone __user *, tz)
 {

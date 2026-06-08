@@ -75,7 +75,6 @@ void __radix_tree_replace(struct radix_tree_root *, struct radix_tree_node *,
 void radix_tree_iter_replace(struct radix_tree_root *,
 		const struct radix_tree_iter *, void __rcu **slot, void *entry);
 void *radix_tree_delete_item(struct radix_tree_root *, unsigned long, void *);
-void *radix_tree_delete(struct radix_tree_root *, unsigned long);
 void radix_tree_init(void);
 int radix_tree_tag_get(const struct radix_tree_root *,
 			unsigned long index, unsigned int tag);

@@ -301,12 +301,4 @@ static inline struct cpumask *irq_data_get_affinity_mask(struct irq_data *d)
 }
 
 
-unsigned int arch_dynirq_lower_bound(unsigned int from);
-
-int __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt, int node,
-		      struct module *owner,
-		      const struct irq_affinity_desc *affinity);
-
-void irq_free_descs(unsigned int irq, unsigned int cnt);
-
-#endif  
+#endif

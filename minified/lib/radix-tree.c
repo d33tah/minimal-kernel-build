@@ -734,11 +734,6 @@ void *radix_tree_delete_item(struct radix_tree_root *root,
 	return entry;
 }
 
-void *radix_tree_delete(struct radix_tree_root *root, unsigned long index)
-{
-	return radix_tree_delete_item(root, index, NULL);
-}
-
 /* radix_tree_tagged used internally by idr_get_free */
 static int radix_tree_tagged(const struct radix_tree_root *root, unsigned int tag)
 {

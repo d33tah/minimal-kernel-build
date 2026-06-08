@@ -349,30 +349,7 @@ static inline bool rwsem_try_write_lock(struct rw_semaphore *sem,
 	return true;
 }
 
-enum owner_state {
-	OWNER_NULL		= 1 << 0,
-	OWNER_WRITER		= 1 << 1,
-	OWNER_READER		= 1 << 2,
-	OWNER_NONSPINNABLE	= 1 << 3,
-};
-
-static inline bool rwsem_can_spin_on_owner(struct rw_semaphore *sem)
-{
-	return false;
-}
-
-static inline bool rwsem_optimistic_spin(struct rw_semaphore *sem)
-{
-	return false;
-}
-
 static inline void clear_nonspinnable(struct rw_semaphore *sem) { }
-
-static inline enum owner_state
-rwsem_spin_on_owner(struct rw_semaphore *sem)
-{
-	return OWNER_NONSPINNABLE;
-}
 
 static inline void rwsem_cond_wake_waiter(struct rw_semaphore *sem, long count,
 					  struct wake_q_head *wake_q)
@@ -490,13 +467,6 @@ rwsem_down_write_slowpath(struct rw_semaphore *sem, int state)
 	struct rwsem_waiter waiter;
 	DEFINE_WAKE_Q(wake_q);
 
-	 
-	if (rwsem_can_spin_on_owner(sem) && rwsem_optimistic_spin(sem)) {
-		 
-		return sem;
-	}
-
-	 
 	waiter.task = current;
 	waiter.type = RWSEM_WAITING_FOR_WRITE;
 	waiter.timeout = jiffies + RWSEM_WAIT_TIMEOUT;
@@ -534,22 +504,9 @@ rwsem_down_write_slowpath(struct rw_semaphore *sem, int state)
 		if (signal_pending_state(state, current))
 			goto out_nolock;
 
-		 
-		if (waiter.handoff_set) {
-			enum owner_state owner_state;
-
-			preempt_disable();
-			owner_state = rwsem_spin_on_owner(sem);
-			preempt_enable();
-
-			if (owner_state == OWNER_NULL)
-				goto trylock_again;
-		}
-
 		schedule();
 		lockevent_inc(rwsem_sleep_writer);
 		set_current_state(state);
-trylock_again:
 		raw_spin_lock_irq(&sem->wait_lock);
 	}
 	__set_current_state(TASK_RUNNING);

@@ -34,9 +34,6 @@ COND_SYSCALL(io_pgetevents_time32);
 COND_SYSCALL(io_pgetevents);
 COND_SYSCALL_COMPAT(io_pgetevents_time32);
 COND_SYSCALL_COMPAT(io_pgetevents);
-COND_SYSCALL(io_uring_setup);
-COND_SYSCALL(io_uring_enter);
-COND_SYSCALL(io_uring_register);
 
 
 
@@ -107,9 +104,6 @@ COND_SYSCALL(futex_waitv);
 
 
 
-COND_SYSCALL(kexec_load);
-COND_SYSCALL_COMPAT(kexec_load);
-
 COND_SYSCALL(init_module);
 COND_SYSCALL(delete_module);
 
@@ -121,17 +115,6 @@ COND_SYSCALL(syslog);
 
 
 
-COND_SYSCALL(mq_open);
-COND_SYSCALL_COMPAT(mq_open);
-COND_SYSCALL(mq_unlink);
-COND_SYSCALL(mq_timedsend);
-COND_SYSCALL(mq_timedsend_time32);
-COND_SYSCALL(mq_timedreceive);
-COND_SYSCALL(mq_timedreceive_time32);
-COND_SYSCALL(mq_notify);
-COND_SYSCALL_COMPAT(mq_notify);
-COND_SYSCALL(mq_getsetattr);
-COND_SYSCALL_COMPAT(mq_getsetattr);
 
 
 COND_SYSCALL(socket);
@@ -158,10 +141,6 @@ COND_SYSCALL_COMPAT(recvmsg);
 
 COND_SYSCALL(mremap);
 
-COND_SYSCALL(add_key);
-COND_SYSCALL(request_key);
-COND_SYSCALL(keyctl);
-COND_SYSCALL_COMPAT(keyctl);
 
 COND_SYSCALL(landlock_create_ruleset);
 COND_SYSCALL(landlock_add_rule);

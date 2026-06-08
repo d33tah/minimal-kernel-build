@@ -14,11 +14,6 @@
 #include <linux/delay.h>
 #include <linux/module.h>
 
-struct tty_port;
-struct tty_driver;
-static inline struct device *serdev_tty_port_register(struct tty_port *port,
-				   struct device *parent, struct tty_driver *drv, int idx)
-{ return ERR_PTR(-ENODEV); }
 #include "tty.h"
 
 static int tty_port_default_receive_buf(struct tty_port *port,
@@ -72,83 +67,6 @@ void tty_port_init(struct tty_port *port)
 	port->closing_wait = (3000 * HZ) / 100;
 	port->client_ops = &tty_port_default_client_ops;
 	kref_init(&port->kref);
-}
-
-void tty_port_link_device(struct tty_port *port,
-		struct tty_driver *driver, unsigned index)
-{
-	if (WARN_ON(index >= driver->num))
-		return;
-	driver->ports[index] = port;
-}
-
-struct device *tty_port_register_device(struct tty_port *port,
-		struct tty_driver *driver, unsigned index,
-		struct device *device)
-{
-	return tty_port_register_device_attr(port, driver, index, device, NULL, NULL);
-}
-
-struct device *tty_port_register_device_attr(struct tty_port *port,
-		struct tty_driver *driver, unsigned index,
-		struct device *device, void *drvdata,
-		const struct attribute_group **attr_grp)
-{
-	tty_port_link_device(port, driver, index);
-	return tty_register_device_attr(driver, index, device, drvdata,
-			attr_grp);
-}
-
-struct device *tty_port_register_device_attr_serdev(struct tty_port *port,
-		struct tty_driver *driver, unsigned index,
-		struct device *device, void *drvdata,
-		const struct attribute_group **attr_grp)
-{
-	struct device *dev;
-
-	tty_port_link_device(port, driver, index);
-
-	dev = serdev_tty_port_register(port, device, driver, index);
-	if (PTR_ERR(dev) != -ENODEV) {
-		 
-		return dev;
-	}
-
-	return tty_register_device_attr(driver, index, device, drvdata,
-			attr_grp);
-}
-
-struct device *tty_port_register_device_serdev(struct tty_port *port,
-		struct tty_driver *driver, unsigned index,
-		struct device *device)
-{
-	return tty_port_register_device_attr_serdev(port, driver, index,
-			device, NULL, NULL);
-}
-
-
-int tty_port_alloc_xmit_buf(struct tty_port *port)
-{
-	 
-	mutex_lock(&port->buf_mutex);
-	if (port->xmit_buf == NULL) {
-		port->xmit_buf = (unsigned char *)get_zeroed_page(GFP_KERNEL);
-		if (port->xmit_buf)
-			kfifo_init(&port->xmit_fifo, port->xmit_buf, PAGE_SIZE);
-	}
-	mutex_unlock(&port->buf_mutex);
-	if (port->xmit_buf == NULL)
-		return -ENOMEM;
-	return 0;
-}
-
-void tty_port_free_xmit_buf(struct tty_port *port)
-{
-	mutex_lock(&port->buf_mutex);
-	free_page((unsigned long)port->xmit_buf);
-	port->xmit_buf = NULL;
-	INIT_KFIFO(port->xmit_fifo);
-	mutex_unlock(&port->buf_mutex);
 }
 
 void tty_port_destroy(struct tty_port *port)

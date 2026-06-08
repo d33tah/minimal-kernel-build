@@ -122,7 +122,6 @@
 # 222 is unused
 # 223 is unused
 224	i386	gettid			sys_gettid
-240	i386	futex			sys_futex_time32
 243	i386	set_thread_area		sys_set_thread_area
 244	i386	get_thread_area		sys_get_thread_area
 # 251 is available for reuse (was briefly sys_set_zone_reclaim)
@@ -154,8 +153,6 @@
 308	i386	pselect6		sys_pselect6_time32		compat_sys_pselect6_time32
 309	i386	ppoll			sys_ppoll_time32		compat_sys_ppoll_time32
 310	i386	unshare			sys_unshare
-311	i386	set_robust_list		sys_set_robust_list		compat_sys_set_robust_list
-312	i386	get_robust_list		sys_get_robust_list		compat_sys_get_robust_list
 320	i386	utimensat		sys_utimensat_time32
 330	i386	dup3			sys_dup3
 331	i386	pipe2			sys_pipe2
@@ -187,7 +184,6 @@
 414	i386	ppoll_time64		sys_ppoll			compat_sys_ppoll_time64
 # 418-419 mq_timed*_time64 removed (unreachable)
 # 420 semtimedop_time64 removed (unreachable)
-422	i386	futex_time64		sys_futex
 # 425-427 io_uring_* removed (unreachable)
 434	i386	pidfd_open		sys_pidfd_open
 435	i386	clone3			sys_clone3
@@ -196,4 +192,3 @@
 440	i386	process_madvise		sys_process_madvise
 442	i386	mount_setattr		sys_mount_setattr
 448	i386	process_mrelease	sys_process_mrelease
-449	i386	futex_waitv		sys_futex_waitv

@@ -22,24 +22,6 @@ static struct device *next_device(struct klist_iter *i)
 }
 
 
-int driver_for_each_device(struct device_driver *drv, struct device *start,
-			   void *data, int (*fn)(struct device *, void *))
-{
-	struct klist_iter i;
-	struct device *dev;
-	int error = 0;
-
-	if (!drv)
-		return -EINVAL;
-
-	klist_iter_init_node(&drv->p->klist_devices, &i,
-			     start ? &start->p->knode_driver : NULL);
-	while (!error && (dev = next_device(&i)))
-		error = fn(dev, data);
-	klist_iter_exit(&i);
-	return error;
-}
-
 struct device *driver_find_device(struct device_driver *drv,
 				  struct device *start, const void *data,
 				  int (*match)(struct device *dev, const void *data))

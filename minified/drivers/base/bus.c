@@ -210,26 +210,6 @@ int bus_for_each_dev(struct bus_type *bus, struct device *start,
 	return error;
 }
 
-struct device *bus_find_device(struct bus_type *bus,
-			       struct device *start, const void *data,
-			       int (*match)(struct device *dev, const void *data))
-{
-	struct klist_iter i;
-	struct device *dev;
-
-	if (!bus || !bus->p)
-		return NULL;
-
-	klist_iter_init_node(&bus->p->klist_devices, &i,
-			     (start ? &start->p->knode_bus : NULL));
-	while ((dev = next_device(&i)))
-		if (match(dev, data) && get_device(dev))
-			break;
-	klist_iter_exit(&i);
-	return dev;
-}
-
-
 static struct device_driver *next_driver(struct klist_iter *i)
 {
 	struct klist_node *n = klist_next(i);

@@ -778,11 +778,4 @@ void device_shutdown(void)
 	/* Stubbed: device shutdown not needed for minimal boot */
 }
 
-int dev_err_probe(const struct device *dev, int err, const char *fmt, ...)
-{
-	/* Stub: minimal error probe for tiny kernel */
-	return err;
-}
-
-
 int device_match_devt(struct device *dev, const void *pdevt) { return 0; }

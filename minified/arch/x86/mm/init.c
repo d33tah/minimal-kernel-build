@@ -19,7 +19,6 @@
 #include <asm/microcode.h>
 unsigned long kaslr_get_random_long(const char *purpose);
 static inline void kernel_randomize_memory(void) { }
-static inline void init_trampoline_kaslr(void) {}
 /* end kaslr.h */
 #include <asm/hypervisor.h>
 #include <asm/cpufeature.h>

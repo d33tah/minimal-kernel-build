@@ -56,7 +56,6 @@ struct tick_sched {
 extern struct tick_sched *tick_get_tick_sched(int cpu);
 
 extern void tick_setup_sched_timer(void);
-static inline void tick_cancel_sched_timer(int cpu) { }
 
 static inline int
 __tick_broadcast_oneshot_control(enum tick_broadcast_state state)
@@ -114,12 +113,7 @@ extern ssize_t sysfs_get_uname(const char *buf, char *dst, size_t cnt);
 static inline void tick_install_broadcast_device(struct clock_event_device *dev, int cpu) { }
 static inline int tick_is_broadcast_device(struct clock_event_device *dev) { return 0; }
 static inline int tick_device_uses_broadcast(struct clock_event_device *dev, int cpu) { return 0; }
-static inline void tick_do_periodic_broadcast(struct clock_event_device *d) { }
-static inline void tick_suspend_broadcast(void) { }
-static inline void tick_resume_broadcast(void) { }
-static inline bool tick_resume_check_broadcast(void) { return false; }
 static inline void tick_broadcast_init(void) { }
-static inline int tick_broadcast_update_freq(struct clock_event_device *dev, u32 freq) { return -ENODEV; }
 
  
 static inline void tick_set_periodic_handler(struct clock_event_device *dev, int broadcast)
@@ -133,7 +127,6 @@ static inline
 void tick_setup_oneshot(struct clock_event_device *newdev,
 			void (*handler)(struct clock_event_device *),
 			ktime_t nextevt) { BUG(); }
-static inline void tick_resume_oneshot(void) { BUG(); }
 static inline int tick_program_event(ktime_t expires, int force) { return 0; }
 static inline void tick_oneshot_notify(void) { }
 static inline bool tick_oneshot_possible(void) { return false; }
@@ -142,17 +135,12 @@ static inline void tick_clock_notify(void) { }
 static inline int tick_check_oneshot_change(int allow_nohz) { return 0; }
 
  
-static inline void tick_broadcast_switch_to_oneshot(void) { }
 static inline int tick_broadcast_oneshot_active(void) { return 0; }
-static inline void tick_check_oneshot_broadcast_this_cpu(void) { }
-static inline bool tick_broadcast_oneshot_available(void) { return tick_oneshot_possible(); }
 
-static inline void tick_broadcast_offline(unsigned int cpu) { }
 
  
 static inline void tick_nohz_init(void) { }
 
-static inline void timers_update_nohz(void) { }
 #define tick_nohz_active (0)
 
 DECLARE_PER_CPU(struct hrtimer_cpu_base, hrtimer_bases);

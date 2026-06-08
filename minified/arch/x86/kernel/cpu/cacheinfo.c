@@ -49,23 +49,7 @@ int init_cache_level(unsigned int cpu);
 int populate_cache_leaves(unsigned int cpu);
 int cache_setup_acpi(unsigned int cpu);
 
-static inline int acpi_find_last_cache_level(unsigned int cpu) { return 0; }
-
 const struct attribute_group *cache_get_priv_group(struct cacheinfo *this_leaf);
-
-static inline int get_cpu_cacheinfo_id(int cpu, int level)
-{
-	struct cpu_cacheinfo *ci = get_cpu_cacheinfo(cpu);
-	int i;
-	for (i = 0; i < ci->num_leaves; i++) {
-		if (ci->info_list[i].level == level) {
-			if (ci->info_list[i].attributes & CACHE_ID)
-				return ci->info_list[i].id;
-			return -1;
-		}
-	}
-	return -1;
-}
 
 int init_cache_level(unsigned int cpu)
 {

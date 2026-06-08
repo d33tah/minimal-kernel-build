@@ -11,7 +11,6 @@
 #include <linux/namei.h>
 #include <linux/writeback.h>
 
-static inline int sync_mapping_buffers(struct address_space *mapping) { return 0; }
 #include <linux/fs_context.h>
 #include <linux/fsnotify.h>
 

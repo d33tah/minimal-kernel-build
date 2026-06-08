@@ -175,37 +175,10 @@ struct msi_desc *msi_next_desc(struct device *dev, enum msi_desc_filter filter);
 
 #define msi_desc_to_dev(desc)		((desc)->dev)
 
-static inline const void *msi_desc_get_iommu_cookie(struct msi_desc *desc)
-{
-	return NULL;
-}
-
-static inline void msi_desc_set_iommu_cookie(struct msi_desc *desc,
-					     const void *iommu_cookie)
-{
-}
-
-static inline void pci_write_msi_msg(unsigned int irq, struct msi_msg *msg)
-{
-}
-
-int msi_add_msi_desc(struct device *dev, struct msi_desc *init_desc);
-void msi_free_msi_descs_range(struct device *dev, enum msi_desc_filter filter,
-			      unsigned int first_index, unsigned int last_index);
-
-static inline void msi_free_msi_descs(struct device *dev)
-{
-	msi_free_msi_descs_range(dev, MSI_DESC_ALL, 0, MSI_MAX_INDEX);
-}
-
 /* MSI-related declarations removed - never defined or called:
- * __pci_read_msi_msg, __pci_write_msi_msg, pci_msi_mask_irq,
- * pci_msi_unmask_irq, arch_restore_msi_irqs */
-
-static inline struct irq_domain *pci_msi_get_device_domain(struct pci_dev *pdev)
-{
-	return NULL;
-}
+ * msi_desc_get/set_iommu_cookie, pci_write_msi_msg, msi_free_msi_descs,
+ * pci_msi_get_device_domain, __pci_read_msi_msg, __pci_write_msi_msg,
+ * pci_msi_mask_irq, pci_msi_unmask_irq, arch_restore_msi_irqs */
 /* end msi.h */
 #include <linux/interrupt.h>
 #include <linux/kernel_stat.h>

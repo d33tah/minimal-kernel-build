@@ -9,76 +9,8 @@
 
 extern int sysctl_sched_rt_runtime;
 
- 
-static inline unsigned long rcu_seq_ctr(unsigned long s)
-{
-	return s >> RCU_SEQ_CTR_SHIFT;
-}
-
- 
-static inline int rcu_seq_state(unsigned long s)
-{
-	return s & RCU_SEQ_STATE_MASK;
-}
-
- 
-static inline void rcu_seq_set_state(unsigned long *sp, int newstate)
-{
-	WARN_ON_ONCE(newstate & ~RCU_SEQ_STATE_MASK);
-	WRITE_ONCE(*sp, (*sp & ~RCU_SEQ_STATE_MASK) + newstate);
-}
-
- 
-static inline void rcu_seq_start(unsigned long *sp)
-{
-	WRITE_ONCE(*sp, *sp + 1);
-	smp_mb();  
-	WARN_ON_ONCE(rcu_seq_state(*sp) != 1);
-}
-
- 
-static inline unsigned long rcu_seq_endval(unsigned long *sp)
-{
-	return (*sp | RCU_SEQ_STATE_MASK) + 1;
-}
-
- 
-static inline void rcu_seq_end(unsigned long *sp)
-{
-	smp_mb();  
-	WARN_ON_ONCE(!rcu_seq_state(*sp));
-	WRITE_ONCE(*sp, rcu_seq_endval(sp));
-}
-
- 
-static inline unsigned long rcu_seq_snap(unsigned long *sp)
-{
-	unsigned long s;
-
-	s = (READ_ONCE(*sp) + 2 * RCU_SEQ_STATE_MASK + 1) & ~RCU_SEQ_STATE_MASK;
-	smp_mb();  
-	return s;
-}
-
- 
-static inline unsigned long rcu_seq_current(unsigned long *sp)
-{
-	return READ_ONCE(*sp);
-}
-
- 
-static inline bool rcu_seq_started(unsigned long *sp, unsigned long s)
-{
-	return ULONG_CMP_LT((s - 1) & ~RCU_SEQ_STATE_MASK, READ_ONCE(*sp));
-}
-
- 
-static inline bool rcu_seq_done(unsigned long *sp, unsigned long s)
-{
-	return ULONG_CMP_GE(READ_ONCE(*sp), s);
-}
-
-/* rcu_seq_completed_gp, rcu_seq_new_gp, rcu_seq_diff removed - unused */
+/* rcu_seq_ctr/set_state/start/end/endval/snap/current/started/done,
+ * rcu_seq_completed_gp, rcu_seq_new_gp, rcu_seq_diff removed - unused */
 
 static inline int debug_rcu_head_queue(struct rcu_head *head)
 {
@@ -261,34 +193,7 @@ long rcutorture_sched_setaffinity(pid_t pid, const struct cpumask *in_mask);
 #endif
 
 
-static inline void srcutorture_get_gp_data(enum rcutorture_type test_type,
-					   struct srcu_struct *sp, int *flags,
-					   unsigned long *gp_seq)
-{
-	if (test_type != SRCU_FLAVOR)
-		return;
-	*flags = 0;
-	*gp_seq = sp->srcu_idx;
-}
-
-
-static inline bool rcu_dynticks_zero_in_eqs(int cpu, int *vp) { return false; }
-static inline unsigned long rcu_get_gp_seq(void) { return 0; }
-static inline unsigned long rcu_exp_batches_completed(void) { return 0; }
 static inline unsigned long
 srcu_batches_completed(struct srcu_struct *sp) { return 0; }
-static inline void rcu_force_quiescent_state(void) { }
-static inline bool rcu_check_boost_fail(unsigned long gp_state, int *cpup) { return true; }
-static inline void show_rcu_gp_kthreads(void) { }
-static inline int rcu_get_gp_kthreads_prio(void) { return 0; }
-static inline void rcu_fwd_progress_check(unsigned long j) { }
-static inline void rcu_gp_slow_register(atomic_t *rgssp) { }
-static inline void rcu_gp_slow_unregister(atomic_t *rgssp) { }
-
-static inline void rcu_bind_current_to_nocb(void) { }
-
-static inline void show_rcu_tasks_classic_gp_kthread(void) {}
-static inline void show_rcu_tasks_rude_gp_kthread(void) {}
-static inline void show_rcu_tasks_trace_gp_kthread(void) {}
 
 #endif  

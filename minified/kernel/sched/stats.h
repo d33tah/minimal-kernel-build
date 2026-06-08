@@ -3,9 +3,6 @@
 #define _KERNEL_STATS_H
 
 
-static inline void rq_sched_info_arrive  (struct rq *rq, unsigned long long delta) { }
-static inline void rq_sched_info_dequeue(struct rq *rq, unsigned long long delta) { }
-static inline void rq_sched_info_depart  (struct rq *rq, unsigned long long delta) { }
 # define   schedstat_enabled()		0
 # define __schedstat_inc(var)		do { } while (0)
 # define   schedstat_inc(var)		do { } while (0)
@@ -31,7 +28,6 @@ __schedstats_from_se(struct sched_entity *se)
 
 static inline void psi_enqueue(struct task_struct *p, bool wakeup) {}
 static inline void psi_dequeue(struct task_struct *p, bool sleep) {}
-static inline void psi_ttwu_dequeue(struct task_struct *p) {}
 static inline void psi_sched_switch(struct task_struct *prev,
 				    struct task_struct *next,
 				    bool sleep) {}

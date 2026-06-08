@@ -302,29 +302,6 @@ int vfs_open(const struct path *path, struct file *file)
 	return do_dentry_open(file, d_backing_inode(path->dentry), NULL);
 }
 
-struct file *dentry_open(const struct path *path, int flags,
-			 const struct cred *cred)
-{
-	int error;
-	struct file *f;
-
-	validate_creds(cred);
-
-	 
-	BUG_ON(!path->mnt);
-
-	f = alloc_empty_file(flags, cred);
-	if (!IS_ERR(f)) {
-		error = vfs_open(path, f);
-		if (error) {
-			fput(f);
-			f = ERR_PTR(error);
-		}
-	}
-	return f;
-}
-
-
 #define WILL_CREATE(flags)	(flags & (O_CREAT | __O_TMPFILE))
 #define O_PATH_FLAGS		(O_DIRECTORY | O_NOFOLLOW | O_PATH | O_CLOEXEC)
 

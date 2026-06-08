@@ -26,17 +26,6 @@ unsigned int tty_chars_in_buffer(struct tty_struct *tty)
 	return 0;
 }
 
-void tty_driver_flush_buffer(struct tty_struct *tty)
-{
-	if (tty->ops->flush_buffer)
-		tty->ops->flush_buffer(tty);
-}
-
-void tty_wait_until_sent(struct tty_struct *tty, long timeout)
-{
-
-}
-
 int tty_mode_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg)
 {
 

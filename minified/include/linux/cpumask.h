@@ -34,13 +34,8 @@ extern struct cpumask __cpu_active_mask;
 extern atomic_t __num_online_cpus;
 
 
-static __always_inline void cpu_max_bits_warn(unsigned int cpu, unsigned int bits)
-{
-}
-
 static __always_inline unsigned int cpumask_check(unsigned int cpu)
 {
-	cpu_max_bits_warn(cpu, nr_cpumask_bits);
 	return cpu;
 }
 
@@ -120,8 +115,6 @@ static inline bool cpumask_empty(const struct cpumask *srcp)
 }
 
 
-#define cpumask_any(srcp) cpumask_first(srcp)
-
 #define cpumask_of(cpu) (get_cpu_mask(cpu))
 
 
@@ -132,16 +125,12 @@ static inline unsigned int cpumask_size(void)
 
 typedef struct cpumask cpumask_var_t[1];
 
-#define __cpumask_var_read_mostly
-
 static inline void alloc_bootmem_cpumask_var(cpumask_var_t *mask)
 {
 }
 
 extern const DECLARE_BITMAP(cpu_all_bits, NR_CPUS);
 #define cpu_all_mask to_cpumask(cpu_all_bits)
-
-#define cpu_none_mask to_cpumask(cpu_bit_bitmap[0])
 
 #define for_each_possible_cpu(cpu) for_each_cpu((cpu), cpu_possible_mask)
 #define for_each_online_cpu(cpu)   for_each_cpu((cpu), cpu_online_mask)

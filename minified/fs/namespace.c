@@ -48,15 +48,6 @@ static DECLARE_RWSEM(namespace_sem);
 static HLIST_HEAD(unmounted);	
 static LIST_HEAD(ex_mountpoints); 
 
-struct mount_kattr {
-	unsigned int attr_set;
-	unsigned int attr_clr;
-	unsigned int propagation;
-	unsigned int lookup_flags;
-	bool recurse;
-	struct user_namespace *mnt_userns;
-};
-
 __cacheline_aligned_in_smp DEFINE_SEQLOCK(mount_lock);
 
 static inline void lock_mount_hash(void)

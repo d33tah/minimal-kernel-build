@@ -299,13 +299,6 @@ void flush_tlb_batched_pending(struct mm_struct *mm)
 }
 
 
-struct folio_referenced_arg {
-	int mapcount;
-	int referenced;
-	unsigned long vm_flags;
-	struct mem_cgroup *memcg;
-};
-
 /* Stubbed: folio_mkclean used by truncate.c */
 int folio_mkclean(struct folio *folio) { return 0; }
 

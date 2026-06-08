@@ -71,12 +71,6 @@ int platform_get_irq(struct platform_device *dev, unsigned int num)
 }
 
 
-struct platform_object {
-	struct platform_device pdev;
-	char name[];
-};
-
-
 /* Removed: platform_device_add_resources, platform_device_add_data, platform_device_add,
    platform_device_del, platform_device_register, platform_device_unregister,
    platform_device_register_full - no external callers */

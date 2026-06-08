@@ -55,9 +55,6 @@ static inline bool kmem_cache_has_cpu_partial(struct kmem_cache *s)
 
 #define MAX_PARTIAL 10
 
-#define DEBUG_DEFAULT_FLAGS (SLAB_CONSISTENCY_CHECKS | SLAB_RED_ZONE | \
-				SLAB_POISON | SLAB_STORE_USER)
-
 #define SLAB_NO_CMPXCHG (SLAB_CONSISTENCY_CHECKS | SLAB_STORE_USER | \
 				SLAB_TRACE)
 
@@ -67,19 +64,7 @@ static inline bool kmem_cache_has_cpu_partial(struct kmem_cache *s)
 #define OO_MASK		((1 << OO_SHIFT) - 1)
 #define MAX_OBJS_PER_PAGE	32767 
 
-#define __OBJECT_POISON		((slab_flags_t __force)0x80000000U)
-
 #define __CMPXCHG_DOUBLE	((slab_flags_t __force)0x40000000U)
-
-#define TRACK_ADDRS_COUNT 16
-struct track {
-	unsigned long addr;	
-	int cpu;		
-	int pid;		
-	unsigned long when;	
-};
-
-enum track_item { TRACK_ALLOC, TRACK_FREE };
 
 static inline int sysfs_slab_add(struct kmem_cache *s) { return 0; }
 static inline int sysfs_slab_alias(struct kmem_cache *s, const char *p)

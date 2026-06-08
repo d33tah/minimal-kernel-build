@@ -685,11 +685,6 @@ int __init devices_init(void)
 	return -ENOMEM;
 }
 
-struct root_device {
-	struct device dev;
-	struct module *owner;
-};
-
 /* Removed: __root_device_register, root_device_unregister - no callers */
 
 static void device_create_release(struct device *dev)

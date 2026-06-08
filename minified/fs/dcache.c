@@ -47,15 +47,6 @@ static inline struct hlist_bl_head *in_lookup_hash(const struct dentry *parent,
 	return in_lookup_hashtable + hash_32(hash, IN_LOOKUP_SHIFT);
 }
 
-struct dentry_stat_t {
-	long nr_dentry;
-	long nr_unused;
-	long age_limit;		
-	long want_pages;	
-	long nr_negative;	
-	long dummy;		
-};
-
 static DEFINE_PER_CPU(long, nr_dentry);
 static DEFINE_PER_CPU(long, nr_dentry_unused);
 static DEFINE_PER_CPU(long, nr_dentry_negative);
@@ -583,11 +574,6 @@ static void d_walk(struct dentry *parent, void *data,
 {
 	/* Stub: not needed for minimal boot */
 }
-
-struct check_mount {
-	struct vfsmount *mnt;
-	unsigned int mounted;
-};
 
 int d_set_mounted(struct dentry *dentry)
 {

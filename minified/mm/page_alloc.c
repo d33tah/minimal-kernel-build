@@ -45,9 +45,6 @@ static inline bool is_migrate_isolate(int migratetype)
 	return false;
 }
 
-#define MEMORY_OFFLINE	0x1
-#define REPORT_FAILURE	0x2
-
 void set_pageblock_migratetype(struct page *page, int migratetype);
 /* end page-isolation.h */
 
@@ -96,8 +93,6 @@ typedef int __bitwise fpi_t;
 #define FPI_TO_TAIL		((__force fpi_t)BIT(1))
 
 #define FPI_SKIP_KASAN_POISON	((__force fpi_t)BIT(2))
-
-#define MIN_PERCPU_PAGELIST_HIGH_FRACTION (8)
 
 struct pagesets {
 	local_lock_t lock;
@@ -2309,12 +2304,6 @@ int __meminit init_per_zone_wmark_min(void)
 	return 0;
 }
 postcore_initcall(init_per_zone_wmark_min)
-
-#if __BITS_PER_LONG > 32
-#define ADAPT_SCALE_BASE	(64ul << 30)
-#define ADAPT_SCALE_SHIFT	2
-#define ADAPT_SCALE_NPAGES	(ADAPT_SCALE_BASE >> PAGE_SHIFT)
-#endif
 
 void *__init alloc_large_system_hash(const char *tablename,
 				     unsigned long bucketsize,

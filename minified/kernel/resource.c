@@ -35,13 +35,6 @@ struct resource iomem_resource = {
 	.flags	= IORESOURCE_MEM,
 };
 
-struct resource_constraint {
-	resource_size_t min, max, align;
-	resource_size_t (*alignf)(void *, const struct resource *,
-			resource_size_t, resource_size_t);
-	void *alignf_data;
-};
-
 static DEFINE_RWLOCK(resource_lock);
 
 static struct resource *next_resource(struct resource *p)

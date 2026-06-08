@@ -83,13 +83,6 @@ struct printk_ringbuffer {
 	atomic_long_t		fail;
 };
 
-struct prb_reserved_entry {
-	struct printk_ringbuffer	*rb;
-	unsigned long			irqflags;
-	unsigned long			id;
-	unsigned int			text_space;
-};
-
 enum desc_state {
 	desc_miss	=  -1,
 	desc_reserved	= 0x0,
@@ -103,12 +96,10 @@ enum desc_state {
 #define DESC_SV_BITS		(sizeof(unsigned long) * 8)
 #define DESC_FLAGS_SHIFT	(DESC_SV_BITS - 2)
 #define DESC_FLAGS_MASK		(3UL << DESC_FLAGS_SHIFT)
-#define DESC_STATE(sv)		(3UL & (sv >> DESC_FLAGS_SHIFT))
 #define DESC_SV(id, state)	(((unsigned long)state << DESC_FLAGS_SHIFT) | id)
 #define DESC_ID_MASK		(~DESC_FLAGS_MASK)
 #define DESC_ID(sv)		((sv) & DESC_ID_MASK)
 #define FAILED_LPOS		0x1
-#define NO_LPOS			0x3
 
 #define FAILED_BLK_LPOS	\
 {				\

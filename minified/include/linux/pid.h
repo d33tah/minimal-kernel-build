@@ -42,9 +42,6 @@ extern const struct file_operations pidfd_fops;
 
 struct file;
 
-extern struct pid *pidfd_pid(const struct file *file);
-struct pid *pidfd_get_pid(unsigned int fd, unsigned int *flags);
-
 static inline struct pid *get_pid(struct pid *pid)
 {
 	if (pid)
@@ -72,9 +69,6 @@ struct pid_namespace;
 extern struct pid_namespace init_pid_ns;
 
 extern struct pid *find_pid_ns(int nr, struct pid_namespace *ns);
-extern struct pid *find_vpid(int nr);
-
-extern struct pid *find_get_pid(int nr);
 
 extern struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 			     size_t set_tid_size);

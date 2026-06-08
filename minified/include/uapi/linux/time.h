@@ -26,38 +26,8 @@ struct __kernel_old_timespec {
 	long			tv_nsec;
 };
 
-struct __kernel_old_itimerval {
-	struct __kernel_old_timeval it_interval;
-	struct __kernel_old_timeval it_value;
-};
-
 /* __kernel_sock_timeval - unused */
 /* End time_types.h */
-
-#ifndef __KERNEL__
-#ifndef _STRUCT_TIMESPEC
-#define _STRUCT_TIMESPEC
-struct timespec {
-	__kernel_old_time_t	tv_sec;
-	long			tv_nsec;
-};
-#endif
-
-struct timeval {
-	__kernel_old_time_t	tv_sec;
-	__kernel_suseconds_t	tv_usec;
-};
-
-struct itimerspec {
-	struct timespec it_interval;
-	struct timespec it_value;
-};
-
-struct itimerval {
-	struct timeval it_interval;
-	struct timeval it_value;
-};
-#endif
 
 struct timezone {
 	int	tz_minuteswest;

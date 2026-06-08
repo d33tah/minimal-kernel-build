@@ -558,7 +558,6 @@ static const_debug __maybe_unused unsigned int sysctl_sched_features =
 #define sched_feat(x) !!(sysctl_sched_features & (1UL << __SCHED_FEAT_##x))
 
 
-extern struct static_key_false sched_numa_balancing;
 
 static inline u64 global_rt_period(void)
 {

@@ -37,74 +37,6 @@ typedef __u32 __wsum;
 	n = off;						\
 }
 
-#define iterate_bvec(i, n, base, len, off, p, STEP) {		\
-	size_t off = 0;						\
-	unsigned skip = i->iov_offset;				\
-	while (n) {						\
-		unsigned offset = p->bv_offset + skip;		\
-		unsigned left;					\
-		void *kaddr = kmap_local_page(p->bv_page +	\
-					offset / PAGE_SIZE);	\
-		base = kaddr + offset % PAGE_SIZE;		\
-		len = min(min(n, (size_t)(p->bv_len - skip)),	\
-		     (size_t)(PAGE_SIZE - offset % PAGE_SIZE));	\
-		left = (STEP);					\
-		kunmap_local(kaddr);				\
-		len -= left;					\
-		off += len;					\
-		skip += len;					\
-		if (skip == p->bv_len) {			\
-			skip = 0;				\
-			p++;					\
-		}						\
-		n -= len;					\
-		if (left)					\
-			break;					\
-	}							\
-	i->iov_offset = skip;					\
-	n = off;						\
-}
-
-#define iterate_xarray(i, n, base, len, __off, STEP) {		\
-	__label__ __out;					\
-	size_t __off = 0;					\
-	struct folio *folio;					\
-	loff_t start = i->xarray_start + i->iov_offset;		\
-	pgoff_t index = start / PAGE_SIZE;			\
-	XA_STATE(xas, i->xarray, index);			\
-								\
-	len = PAGE_SIZE - offset_in_page(start);		\
-	rcu_read_lock();					\
-	xas_for_each(&xas, folio, ULONG_MAX) {			\
-		unsigned left;					\
-		size_t offset;					\
-		if (xas_retry(&xas, folio))			\
-			continue;				\
-		if (WARN_ON(xa_is_value(folio)))		\
-			break;					\
-		if (WARN_ON(folio_test_hugetlb(folio)))		\
-			break;					\
-		offset = offset_in_folio(folio, start + __off);	\
-		while (offset < folio_size(folio)) {		\
-			base = kmap_local_folio(folio, offset);	\
-			len = min(n, len);			\
-			left = (STEP);				\
-			kunmap_local(base);			\
-			len -= left;				\
-			__off += len;				\
-			n -= len;				\
-			if (left || n == 0)			\
-				goto __out;			\
-			offset += len;				\
-			len = PAGE_SIZE;			\
-		}						\
-	}							\
-__out:								\
-	rcu_read_unlock();					\
-	i->iov_offset += __off;					\
-	n = __off;						\
-}
-
 #define __iterate_and_advance(i, n, base, len, off, I, K) {	\
 	if (unlikely(i->count < n))				\
 		n = i->count;					\
@@ -117,14 +49,6 @@ __out:								\
 						iov, (I))	\
 			i->nr_segs -= iov - i->iov;		\
 			i->iov = iov;				\
-		} else if (iov_iter_is_bvec(i)) {		\
-			const struct bio_vec *bvec = i->bvec;	\
-			void *base;				\
-			size_t len;				\
-			iterate_bvec(i, n, base, len, off,	\
-						bvec, (K))	\
-			i->nr_segs -= bvec - i->bvec;		\
-			i->bvec = bvec;				\
 		} else if (iov_iter_is_kvec(i)) {		\
 			const struct kvec *kvec = i->kvec;	\
 			void *base;				\
@@ -133,11 +57,6 @@ __out:								\
 						kvec, (K))	\
 			i->nr_segs -= kvec - i->kvec;		\
 			i->kvec = kvec;				\
-		} else if (iov_iter_is_xarray(i)) {		\
-			void *base;				\
-			size_t len;				\
-			iterate_xarray(i, n, base, len, off,	\
-							(K))	\
 		}						\
 		i->count -= n;					\
 	}							\
@@ -316,17 +235,11 @@ static size_t __copy_page_to_iter(struct page *page, size_t offset, size_t bytes
 {
 	if (likely(iter_is_iovec(i)))
 		return copy_page_to_iter_iovec(page, offset, bytes, i);
-	if (iov_iter_is_bvec(i) || iov_iter_is_kvec(i) || iov_iter_is_xarray(i)) {
+	if (iov_iter_is_kvec(i)) {
 		void *kaddr = kmap_local_page(page);
 		size_t wanted = _copy_to_iter(kaddr + offset, bytes, i);
 		kunmap_local(kaddr);
 		return wanted;
-	}
-	if (unlikely(iov_iter_is_discard(i))) {
-		if (unlikely(i->count < bytes))
-			bytes = i->count;
-		i->count -= bytes;
-		return bytes;
 	}
 	WARN_ON(1);
 	return 0;
@@ -374,32 +287,12 @@ size_t copy_page_from_iter_atomic(struct page *page, unsigned offset, size_t byt
 		kunmap_atomic(kaddr);
 		return 0;
 	}
-	if (unlikely(iov_iter_is_discard(i))) {
-		kunmap_atomic(kaddr);
-		WARN_ON(1);
-		return 0;
-	}
 	iterate_and_advance(i, bytes, base, len, off,
 		copyin(p + off, base, len),
 		memcpy(p + off, base, len)
 	)
 	kunmap_atomic(kaddr);
 	return bytes;
-}
-
-static void iov_iter_bvec_advance(struct iov_iter *i, size_t size)
-{
-	struct bvec_iter bi;
-
-	bi.bi_size = i->count;
-	bi.bi_bvec_done = i->iov_offset;
-	bi.bi_idx = 0;
-	bvec_iter_advance(i->bvec, &bi, size);
-
-	i->bvec += bi.bi_idx;
-	i->nr_segs -= bi.bi_idx;
-	i->count = bi.bi_size;
-	i->iov_offset = bi.bi_bvec_done;
 }
 
 static void iov_iter_iovec_advance(struct iov_iter *i, size_t size)
@@ -426,15 +319,8 @@ void iov_iter_advance(struct iov_iter *i, size_t size)
 	if (unlikely(i->count < size))
 		size = i->count;
 	if (likely(iter_is_iovec(i) || iov_iter_is_kvec(i))) {
-		 
+
 		iov_iter_iovec_advance(i, size);
-	} else if (iov_iter_is_bvec(i)) {
-		iov_iter_bvec_advance(i, size);
-	} else if (unlikely(iov_iter_is_xarray(i))) {
-		i->iov_offset += size;
-		i->count -= size;
-	} else if (iov_iter_is_discard(i)) {
-		i->count -= size;
 	}
 }
 
@@ -445,28 +331,12 @@ void iov_iter_revert(struct iov_iter *i, size_t unroll)
 	if (WARN_ON(unroll > MAX_RW_COUNT))
 		return;
 	i->count += unroll;
-	if (unlikely(iov_iter_is_discard(i)))
-		return;
 	if (unroll <= i->iov_offset) {
 		i->iov_offset -= unroll;
 		return;
 	}
 	unroll -= i->iov_offset;
-	if (iov_iter_is_xarray(i)) {
-		BUG();  
-	} else if (iov_iter_is_bvec(i)) {
-		const struct bio_vec *bvec = i->bvec;
-		while (1) {
-			size_t n = (--bvec)->bv_len;
-			i->nr_segs++;
-			if (unroll <= n) {
-				i->bvec = bvec;
-				i->iov_offset = n - unroll;
-				return;
-			}
-			unroll -= n;
-		}
-	} else {  
+	{
 		const struct iovec *iov = i->iov;
 		while (1) {
 			size_t n = (--iov)->iov_len;

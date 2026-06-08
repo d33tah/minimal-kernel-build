@@ -464,7 +464,7 @@ struct vm_area_struct *vma_merge(struct mm_struct *mm,
 			struct vm_area_struct *prev, unsigned long addr,
 			unsigned long end, unsigned long vm_flags,
 			struct anon_vma *anon_vma, struct file *file,
-			pgoff_t pgoff, struct mempolicy *policy,
+			pgoff_t pgoff,
 			struct vm_userfaultfd_ctx vm_userfaultfd_ctx,
 			struct anon_vma_name *anon_name)
 {
@@ -488,13 +488,11 @@ struct vm_area_struct *vma_merge(struct mm_struct *mm,
 
 	
 	if (prev && prev->vm_end == addr &&
-			mpol_equal(vma_policy(prev), policy) &&
 			can_vma_merge_after(prev, vm_flags,
 					    anon_vma, file, pgoff,
 					    vm_userfaultfd_ctx, anon_name)) {
-		
+
 		if (next && end == next->vm_start &&
-				mpol_equal(policy, vma_policy(next)) &&
 				can_vma_merge_before(next, vm_flags,
 						     anon_vma, file,
 						     pgoff+pglen,
@@ -516,7 +514,6 @@ struct vm_area_struct *vma_merge(struct mm_struct *mm,
 
 	
 	if (next && end == next->vm_start &&
-			mpol_equal(policy, vma_policy(next)) &&
 			can_vma_merge_before(next, vm_flags,
 					     anon_vma, file, pgoff+pglen,
 					     vm_userfaultfd_ctx, anon_name)) {
@@ -541,7 +538,6 @@ struct vm_area_struct *vma_merge(struct mm_struct *mm,
 static int anon_vma_compatible(struct vm_area_struct *a, struct vm_area_struct *b)
 {
 	return a->vm_end == b->vm_start &&
-		mpol_equal(vma_policy(a), vma_policy(b)) &&
 		a->vm_file == b->vm_file &&
 		!((a->vm_flags ^ b->vm_flags) & ~(VM_ACCESS_FLAGS | VM_SOFTDIRTY)) &&
 		b->vm_pgoff == a->vm_pgoff + ((b->vm_start - a->vm_start) >> PAGE_SHIFT);
@@ -1535,7 +1531,7 @@ static int do_brk_flags(unsigned long addr, unsigned long len, unsigned long fla
 
 	
 	vma = vma_merge(mm, prev, addr, addr + len, flags,
-			NULL, NULL, pgoff, NULL, NULL_VM_UFFD_CTX, NULL);
+			NULL, NULL, pgoff, NULL_VM_UFFD_CTX, NULL);
 	if (vma)
 		goto out;
 

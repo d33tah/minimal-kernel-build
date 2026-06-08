@@ -408,17 +408,6 @@ repeat:
 	}
 }
 
-int __init_memblock memblock_add_node(phys_addr_t base, phys_addr_t size,
-				      int nid, enum memblock_flags flags)
-{
-	phys_addr_t end = base + size - 1;
-
-	memblock_dbg("%s: [%pa-%pa] nid=%d flags=%x %pS\n", __func__,
-		     &base, &end, nid, flags, (void *)_RET_IP_);
-
-	return memblock_add_range(&memblock.memory, base, size, nid, flags);
-}
-
 int __init_memblock memblock_add(phys_addr_t base, phys_addr_t size)
 {
 	phys_addr_t end = base + size - 1;
@@ -495,16 +484,6 @@ static int __init_memblock memblock_remove_range(struct memblock_type *type,
 	for (i = end_rgn - 1; i >= start_rgn; i--)
 		memblock_remove_region(type, i);
 	return 0;
-}
-
-int __init_memblock memblock_remove(phys_addr_t base, phys_addr_t size)
-{
-	phys_addr_t end = base + size - 1;
-
-	memblock_dbg("%s: [%pa-%pa] %pS\n", __func__,
-		     &base, &end, (void *)_RET_IP_);
-
-	return memblock_remove_range(&memblock.memory, base, size);
 }
 
 void __init_memblock memblock_free(void *ptr, size_t size)
@@ -970,11 +949,6 @@ void __init_memblock memblock_trim_memory(phys_addr_t align)
 void __init_memblock memblock_set_current_limit(phys_addr_t limit)
 {
 	memblock.current_limit = limit;
-}
-
-phys_addr_t __init_memblock memblock_get_current_limit(void)
-{
-	return memblock.current_limit;
 }
 
 void __init_memblock memblock_dump_all(void)

@@ -51,10 +51,7 @@ extern struct memblock memblock;
 void memblock_discard(void);
 
 void memblock_allow_resize(void);
-int memblock_add_node(phys_addr_t base, phys_addr_t size, int nid,
-		      enum memblock_flags flags);
 int memblock_add(phys_addr_t base, phys_addr_t size);
-int memblock_remove(phys_addr_t base, phys_addr_t size);
 int memblock_phys_free(phys_addr_t base, phys_addr_t size);
 int memblock_reserve(phys_addr_t base, phys_addr_t size);
 void memblock_trim_memory(phys_addr_t align);
@@ -223,7 +220,6 @@ void memblock_dump_all(void);
 void memblock_set_current_limit(phys_addr_t limit);
 
 
-phys_addr_t memblock_get_current_limit(void);
 
 
 

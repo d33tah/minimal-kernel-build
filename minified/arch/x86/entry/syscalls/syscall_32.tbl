@@ -36,7 +36,6 @@
 31	i386	stty
 32	i386	gtty
 35	i386	ftime
-36	i386	sync			sys_sync
 41	i386	dup			sys_dup
 42	i386	pipe			sys_pipe
 44	i386	prof
@@ -77,7 +76,6 @@
 # 114 wait4 removed (unreachable)
 115	i386	swapoff			sys_swapoff
 # 117 ipc removed (unreachable)
-118	i386	fsync			sys_fsync
 120	i386	clone			sys_clone			compat_sys_ia32_clone
 122	i386	uname			sys_newuname
 123	i386	modify_ldt		sys_modify_ldt
@@ -95,7 +93,6 @@
 144	i386	msync			sys_msync
 145	i386	readv
 146	i386	writev
-148	i386	fdatasync		sys_fdatasync
 149	i386	_sysctl			sys_ni_syscall
 162	i386	nanosleep		sys_nanosleep_time32
 166	i386	vm86			sys_vm86			sys_ni_syscall
@@ -159,7 +156,6 @@
 333	i386	preadv
 334	i386	pwritev
 343	i386	clock_adjtime		sys_clock_adjtime32
-344	i386	syncfs			sys_syncfs
 346	i386	setns			sys_setns
 349	i386	kcmp			sys_kcmp
 350	i386	finit_module		sys_finit_module

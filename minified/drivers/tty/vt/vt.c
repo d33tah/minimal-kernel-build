@@ -951,12 +951,6 @@ static void console_callback(struct work_struct *ignored)
 	/* Stub: console_work never scheduled */
 }
 
-int set_console(int nr)
-{
-	/* Stub: no console switching in minimal kernel */
-	return -EINVAL;
-}
-
 struct tty_driver *console_driver;
 
 static void vt_console_print(struct console *co, const char *b, unsigned count)

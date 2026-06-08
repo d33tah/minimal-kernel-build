@@ -61,8 +61,6 @@ struct raw_notifier_head {
 
 extern int atomic_notifier_chain_register(struct atomic_notifier_head *nh,
 		struct notifier_block *nb);
-extern int blocking_notifier_chain_register(struct blocking_notifier_head *nh,
-		struct notifier_block *nb);
 
 
 extern int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
@@ -72,8 +70,6 @@ extern int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
 extern int raw_notifier_call_chain(struct raw_notifier_head *nh,
 		unsigned long val, void *v);
 
-
-extern bool atomic_notifier_call_chain_is_empty(struct atomic_notifier_head *nh);
 
 #define NOTIFY_DONE		0x0000
 #define NOTIFY_OK		0x0001

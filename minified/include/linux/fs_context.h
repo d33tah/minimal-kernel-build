@@ -99,9 +99,6 @@ struct fs_context_operations {
 
 extern struct fs_context *fs_context_for_mount(struct file_system_type *fs_type,
 						unsigned int sb_flags);
-extern struct fs_context *fs_context_for_reconfigure(struct dentry *dentry,
-						unsigned int sb_flags,
-						unsigned int sb_flags_mask);
 
 extern int vfs_parse_fs_param(struct fs_context *fc, struct fs_parameter *param);
 extern int vfs_parse_fs_string(struct fs_context *fc, const char *key,
@@ -112,8 +109,6 @@ extern void put_fs_context(struct fs_context *fc);
 extern int vfs_parse_fs_param_source(struct fs_context *fc,
 				     struct fs_parameter *param);
 extern void fc_drop_locked(struct fs_context *fc);
-int reconfigure_single(struct super_block *s,
-		       int flags, void *data);
 
 enum vfs_get_super_keying {
 	vfs_get_single_super,
@@ -128,12 +123,6 @@ extern int vfs_get_super(struct fs_context *fc,
 extern int get_tree_nodev(struct fs_context *fc,
 			 int (*fill_super)(struct super_block *sb,
 					   struct fs_context *fc));
-
-extern int get_tree_bdev(struct fs_context *fc,
-			       int (*fill_super)(struct super_block *sb,
-						 struct fs_context *fc));
-
-extern const struct file_operations fscontext_fops;
 
 struct fc_log {
 	refcount_t	usage;

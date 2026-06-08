@@ -11,12 +11,6 @@
 #include <linux/percpu-refcount.h>
 #include <linux/percpu-rwsem.h>
 
-struct u64_stats_sync {
-};
-
-typedef struct {
-	u64		v;
-} u64_stats_t;
 
 #include <linux/workqueue.h>
 

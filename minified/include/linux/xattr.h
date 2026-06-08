@@ -50,10 +50,5 @@ ssize_t vfs_getxattr_alloc(struct user_namespace *mnt_userns,
 			   char **xattr_value, size_t size, gfp_t flags);
 
 
-struct simple_xattrs {
-	struct list_head head;
-	spinlock_t lock;
-};
 
-
-#endif	 
+#endif

@@ -44,14 +44,6 @@ struct pcpu_alloc_info {
 	struct pcpu_group_info	groups[];
 };
 
-enum pcpu_fc {
-	PCPU_FC_AUTO,
-	PCPU_FC_EMBED,
-	PCPU_FC_PAGE,
-
-	PCPU_FC_NR,
-};
-
 typedef int (pcpu_fc_cpu_to_node_fn_t)(int cpu);
 typedef int (pcpu_fc_cpu_distance_fn_t)(unsigned int from, unsigned int to);
 

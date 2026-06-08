@@ -22,8 +22,6 @@ static inline void mpol_put(struct mempolicy *p)
 }
 
 
-struct shared_policy {};
-
 #define vma_policy(vma) NULL
 
 static inline int

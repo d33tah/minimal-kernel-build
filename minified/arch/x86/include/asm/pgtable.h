@@ -32,12 +32,6 @@ static inline void pkru_write_default(void) { if (!cpu_feature_enabled(X86_FEATU
 /* End of pkru.h */
 /* --- 2025-12-07 20:42 --- Inlined coco.h */
 #include <asm/types.h>
-enum cc_vendor {
-	CC_VENDOR_NONE,
-	CC_VENDOR_AMD,
-	CC_VENDOR_HYPERV,
-	CC_VENDOR_INTEL,
-};
 static inline u64 cc_mkenc(u64 val)
 {
 	return val;

@@ -176,10 +176,6 @@ extern char *parse_args(const char *name,
 #define __param_check(name, p, type) \
 	static inline type __always_unused *__check_##name(void) { return(p); }
 
-#define param_check_byte(name, p) __param_check(name, p, unsigned char)
-#define param_check_short(name, p) __param_check(name, p, short)
-#define param_check_ushort(name, p) __param_check(name, p, unsigned short)
-
 extern const struct kernel_param_ops param_ops_int;
 #define param_check_int(name, p) __param_check(name, p, int)
 
@@ -189,7 +185,6 @@ extern const struct kernel_param_ops param_ops_uint;
 #define param_check_long(name, p) __param_check(name, p, long)
 #define param_check_ulong(name, p) __param_check(name, p, unsigned long)
 #define param_check_ullong(name, p) __param_check(name, p, unsigned long long)
-#define param_check_hexint(name, p) param_check_uint(name, p)
 
 extern const struct kernel_param_ops param_ops_charp;
 extern int param_set_charp(const char *val, const struct kernel_param *kp);

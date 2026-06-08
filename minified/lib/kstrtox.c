@@ -178,52 +178,6 @@ int kstrtoint(const char *s, unsigned int base, int *res)
 }
 
 noinline
-int kstrtou16(const char *s, unsigned int base, u16 *res)
-{
-	unsigned long long tmp;
-	int rv;
-
-	rv = kstrtoull(s, base, &tmp);
-	if (rv < 0)
-		return rv;
-	if (tmp != (u16)tmp)
-		return -ERANGE;
-	*res = tmp;
-	return 0;
-}
-
-noinline
-int kstrtos16(const char *s, unsigned int base, s16 *res)
-{
-	long long tmp;
-	int rv;
-
-	rv = kstrtoll(s, base, &tmp);
-	if (rv < 0)
-		return rv;
-	if (tmp != (s16)tmp)
-		return -ERANGE;
-	*res = tmp;
-	return 0;
-}
-
-noinline
-int kstrtou8(const char *s, unsigned int base, u8 *res)
-{
-	unsigned long long tmp;
-	int rv;
-
-	rv = kstrtoull(s, base, &tmp);
-	if (rv < 0)
-		return rv;
-	if (tmp != (u8)tmp)
-		return -ERANGE;
-	*res = tmp;
-	return 0;
-}
-
-
-noinline
 int kstrtobool(const char *s, bool *res)
 {
 	if (!s)

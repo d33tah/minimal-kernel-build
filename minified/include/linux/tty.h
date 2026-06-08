@@ -37,7 +37,6 @@ do {								\
 int ldsem_down_read(struct ld_semaphore *sem, long timeout);
 int ldsem_down_read_trylock(struct ld_semaphore *sem);
 int ldsem_down_write(struct ld_semaphore *sem, long timeout);
-int ldsem_down_write_trylock(struct ld_semaphore *sem);
 void ldsem_up_read(struct ld_semaphore *sem);
 void ldsem_up_write(struct ld_semaphore *sem);
 
@@ -222,7 +221,6 @@ const char *tty_driver_name(const struct tty_struct *tty);
 void tty_wait_until_sent(struct tty_struct *tty, long timeout);
 unsigned int tty_chars_in_buffer(struct tty_struct *tty);
 void tty_driver_flush_buffer(struct tty_struct *tty);
-void tty_hangup(struct tty_struct *tty);
 int tty_hung_up_p(struct file *filp);
 speed_t tty_termios_baud_rate(struct ktermios *termios);
 

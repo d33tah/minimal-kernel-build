@@ -308,18 +308,10 @@ static void do_tty_hangup(struct work_struct *work)
 	__tty_hangup(tty, 0);
 }
 
-void tty_hangup(struct tty_struct *tty)
-{
-	tty_debug_hangup(tty, "hangup\n");
-	schedule_work(&tty->hangup_work);
-}
-
-
 int tty_hung_up_p(struct file *filp)
 {
 	return (filp && filp->f_op == &hung_up_tty_fops);
 }
-
 
 static void tty_update_time(struct timespec64 *time)
 {

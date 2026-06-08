@@ -283,20 +283,6 @@ int __sched ldsem_down_write(struct ld_semaphore *sem, long timeout)
 	return __ldsem_down_write_nested(sem, 0, timeout);
 }
 
-int ldsem_down_write_trylock(struct ld_semaphore *sem)
-{
-	long count = atomic_long_read(&sem->count);
-
-	while ((count & LDSEM_ACTIVE_MASK) == 0) {
-		if (atomic_long_try_cmpxchg(&sem->count, &count, count + LDSEM_WRITE_BIAS)) {
-			rwsem_acquire(&sem->dep_map, 0, 1, _RET_IP_);
-			lock_acquired(&sem->dep_map, _RET_IP_);
-			return 1;
-		}
-	}
-	return 0;
-}
-
 void ldsem_up_read(struct ld_semaphore *sem)
 {
 	long count;

@@ -34,8 +34,6 @@ is_static struct percpu_rw_semaphore name = {				\
 #define DEFINE_STATIC_PERCPU_RWSEM(name)	\
 	__DEFINE_PERCPU_RWSEM(name, static)
 
-extern bool __percpu_down_read(struct percpu_rw_semaphore *, bool);
-
 static inline void percpu_down_read(struct percpu_rw_semaphore *sem)
 {
 	might_sleep();
@@ -43,32 +41,19 @@ static inline void percpu_down_read(struct percpu_rw_semaphore *sem)
 	rwsem_acquire_read(&sem->dep_map, 0, 0, _RET_IP_);
 
 	preempt_disable();
-	 
-	if (likely(rcu_sync_is_idle(&sem->rss)))
-		this_cpu_inc(*sem->read_count);
-	else
-		__percpu_down_read(sem, false);  
-	 
+	this_cpu_inc(*sem->read_count);
 	preempt_enable();
 }
 
 static inline bool percpu_down_read_trylock(struct percpu_rw_semaphore *sem)
 {
-	bool ret = true;
-
 	preempt_disable();
-	 
-	if (likely(rcu_sync_is_idle(&sem->rss)))
-		this_cpu_inc(*sem->read_count);
-	else
-		ret = __percpu_down_read(sem, true);  
+	this_cpu_inc(*sem->read_count);
 	preempt_enable();
-	 
 
-	if (ret)
-		rwsem_acquire_read(&sem->dep_map, 0, 1, _RET_IP_);
+	rwsem_acquire_read(&sem->dep_map, 0, 1, _RET_IP_);
 
-	return ret;
+	return true;
 }
 
 static inline void percpu_up_read(struct percpu_rw_semaphore *sem)
@@ -76,16 +61,7 @@ static inline void percpu_up_read(struct percpu_rw_semaphore *sem)
 	rwsem_release(&sem->dep_map, _RET_IP_);
 
 	preempt_disable();
-	 
-	if (likely(rcu_sync_is_idle(&sem->rss))) {
-		this_cpu_dec(*sem->read_count);
-	} else {
-		 
-		smp_mb();  
-		 
-		this_cpu_dec(*sem->read_count);
-		rcuwait_wake_up(&sem->writer);
-	}
+	this_cpu_dec(*sem->read_count);
 	preempt_enable();
 }
 

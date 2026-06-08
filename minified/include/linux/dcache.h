@@ -187,8 +187,6 @@ extern struct dentry *__d_lookup_rcu(const struct dentry *parent,
 extern __printf(4, 5)
 char *dynamic_dname(struct dentry *, char *, int, const char *, ...);
 
-extern char *d_path(const struct path *, char *, int);
-
 static inline struct dentry *dget_dlock(struct dentry *dentry)
 {
 	if (dentry)

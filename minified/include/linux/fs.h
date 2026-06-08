@@ -1265,13 +1265,6 @@ extern void init_special_inode(struct inode *, umode_t, dev_t);
 
 extern int __must_check file_check_and_advance_wb_err(struct file *file);
 
-extern int vfs_fsync_range(struct file *file, loff_t start, loff_t end,
-			   int datasync);
-extern int vfs_fsync(struct file *file, int datasync);
-
-extern int sync_file_range(struct file *file, loff_t offset, loff_t nbytes,
-				unsigned int flags);
-
 static inline ssize_t generic_write_sync(struct kiocb *iocb, ssize_t count)
 {
 	return count;

@@ -13,22 +13,6 @@
 
 #include <asm/kmap_size.h>
 
-# define KM_INCR	1
-
-static inline int kmap_local_idx_push(void)
-{
-	WARN_ON_ONCE(in_hardirq() && !irqs_disabled());
-	current->kmap_ctrl.idx += KM_INCR;
-	BUG_ON(current->kmap_ctrl.idx >= KM_MAX_IDX);
-	return current->kmap_ctrl.idx - 1;
-}
-
-static inline int kmap_local_idx(void)
-{
-	return current->kmap_ctrl.idx - 1;
-}
-
-
 #ifndef arch_kmap_local_post_map
 # define arch_kmap_local_post_map(vaddr, pteval)	do { } while (0)
 #endif
@@ -49,17 +33,6 @@ static inline int kmap_local_idx(void)
 #define arch_kmap_local_unmap_idx(idx, vaddr)	kmap_local_calc_idx(idx)
 #endif
 
-#ifndef arch_kmap_local_high_get
-static inline void *arch_kmap_local_high_get(struct page *page)
-{
-	return NULL;
-}
-#endif
-
-#ifndef arch_kmap_local_set_pte
-#define arch_kmap_local_set_pte(mm, vaddr, ptep, ptev)	\
-	set_pte_at(mm, vaddr, ptep, ptev)
-#endif
 
 
 static inline int kmap_local_calc_idx(int idx)
@@ -78,45 +51,6 @@ static pte_t *kmap_get_pte(unsigned long vaddr, int idx)
 		__kmap_pte = virt_to_kpte(__fix_to_virt(FIX_KMAP_BEGIN));
 	return &__kmap_pte[-idx];
 }
-
-void *__kmap_local_pfn_prot(unsigned long pfn, pgprot_t prot)
-{
-	pte_t pteval, *kmap_pte;
-	unsigned long vaddr;
-	int idx;
-
-	 
-	migrate_disable();
-	preempt_disable();
-	idx = arch_kmap_local_map_idx(kmap_local_idx_push(), pfn);
-	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
-	kmap_pte = kmap_get_pte(vaddr, idx);
-	BUG_ON(!pte_none(*kmap_pte));
-	pteval = pfn_pte(pfn, prot);
-	arch_kmap_local_set_pte(&init_mm, vaddr, kmap_pte, pteval);
-	arch_kmap_local_post_map(vaddr, pteval);
-	current->kmap_ctrl.pteval[kmap_local_idx()] = pteval;
-	preempt_enable();
-
-	return (void *)vaddr;
-}
-
-void *__kmap_local_page_prot(struct page *page, pgprot_t prot)
-{
-	void *kmap;
-
-	 
-	if (!IS_ENABLED(CONFIG_DEBUG_KMAP_LOCAL_FORCE_MAP) && !PageHighMem(page))
-		return page_address(page);
-
-	 
-	kmap = arch_kmap_local_high_get(page);
-	if (kmap)
-		return kmap;
-
-	return __kmap_local_pfn_prot(page_to_pfn(page), prot);
-}
-
 
 void __kmap_local_sched_out(void)
 {

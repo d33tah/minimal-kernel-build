@@ -12,7 +12,7 @@
 #include <linux/file.h>
 #include <linux/slab.h>
 #include <linux/personality.h>
-#include <linux/elfcore.h>
+#include <linux/ptrace.h>
 #include <linux/init.h>
 #include <linux/highuid.h>
 #include <linux/compiler.h>

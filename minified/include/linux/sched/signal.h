@@ -290,10 +290,6 @@ static inline void clear_restore_sigmask(void)
 {
 	current->restore_sigmask = false;
 }
-static inline bool test_restore_sigmask(void)
-{
-	return current->restore_sigmask;
-}
 static inline bool test_and_clear_restore_sigmask(void)
 {
 	if (!current->restore_sigmask)

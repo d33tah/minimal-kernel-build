@@ -455,18 +455,6 @@ static inline pteval_t pte_flags(pte_t pte)
 
 unsigned long cachemode2protval(enum page_cache_mode pcm);
 
-static inline pgprotval_t protval_4k_2_large(pgprotval_t val)
-{
-	return (val & ~(_PAGE_PAT | _PAGE_PAT_LARGE)) |
-		((val & _PAGE_PAT) << (_PAGE_BIT_PAT_LARGE - _PAGE_BIT_PAT));
-}
-static inline pgprotval_t protval_large_2_4k(pgprotval_t val)
-{
-	return (val & ~(_PAGE_PAT | _PAGE_PAT_LARGE)) |
-		((val & _PAGE_PAT_LARGE) >>
-		 (_PAGE_BIT_PAT_LARGE - _PAGE_BIT_PAT));
-}
-
 
 typedef struct page *pgtable_t;
 

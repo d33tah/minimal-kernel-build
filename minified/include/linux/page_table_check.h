@@ -16,16 +16,6 @@ static inline void page_table_check_pte_clear(struct mm_struct *mm,
 {
 }
 
-static inline void page_table_check_pmd_clear(struct mm_struct *mm,
-					      unsigned long addr, pmd_t pmd)
-{
-}
-
-static inline void page_table_check_pud_clear(struct mm_struct *mm,
-					      unsigned long addr, pud_t pud)
-{
-}
-
 static inline void page_table_check_pte_set(struct mm_struct *mm,
 					    unsigned long addr, pte_t *ptep,
 					    pte_t pte)
@@ -38,11 +28,5 @@ static inline void page_table_check_pmd_set(struct mm_struct *mm,
 {
 }
 
-static inline void page_table_check_pud_set(struct mm_struct *mm,
-					    unsigned long addr, pud_t *pudp,
-					    pud_t pud)
-{
-}
 
-
-#endif  
+#endif

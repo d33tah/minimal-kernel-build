@@ -273,13 +273,6 @@ static inline pmd_t pmd_set_flags(pmd_t pmd, pmdval_t set)
 	return native_make_pmd(v | set);
 }
 
-static inline pmd_t pmd_clear_flags(pmd_t pmd, pmdval_t clear)
-{
-	pmdval_t v = native_pmd_val(pmd);
-
-	return native_make_pmd(v & ~clear);
-}
-
 
 /* pmd_mkold, pmd_mkclean removed - unused */
 

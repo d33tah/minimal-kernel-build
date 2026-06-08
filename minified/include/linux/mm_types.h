@@ -415,8 +415,6 @@ struct vm_special_mapping {
 		     struct vm_area_struct *new_vma);
 };
 
-enum tlb_flush_reason { NR_TLB_FLUSH_REASONS };
-
   
 typedef struct {
 	unsigned long val;

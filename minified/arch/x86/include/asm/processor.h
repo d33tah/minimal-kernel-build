@@ -48,10 +48,6 @@ struct math_emu_info {
 # define ARCH_MIN_TASKALIGN		__alignof__(union fpregs_state)
 # define ARCH_MIN_MMSTRUCT_ALIGN	0
 
-enum tlb_infos {
-	ENTRIES,
-	NR_INFO
-};
 /* TLB arrays removed - never used in minimal kernel */
 
 struct cpuinfo_x86 {
@@ -484,12 +480,6 @@ void default_idle(void);
 #define xen_set_default_idle 0
 
 void __noreturn stop_this_cpu(void *dummy);
-
-enum mds_mitigations {
-	MDS_MITIGATION_OFF,
-	MDS_MITIGATION_FULL,
-	MDS_MITIGATION_VMWERV,
-};
 
 
 #endif  

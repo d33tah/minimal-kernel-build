@@ -211,7 +211,6 @@ struct prev_cputime {
 };
 
 
-enum uclamp_id { UCLAMP_CNT };
 
 
 struct sched_info {
@@ -291,16 +290,6 @@ struct sched_dl_entity {
 
 };
 
-
-union rcu_special {
-	struct {
-		u8			blocked;
-		u8			need_qs;
-		u8			exp_hint;  
-		u8			need_mb;  
-	} b;  
-	u32 s;  
-};
 
 enum perf_event_task_context { perf_nr_task_contexts };
 

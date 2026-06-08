@@ -88,8 +88,6 @@ static inline struct file *files_lookup_fd_rcu(struct files_struct *files, unsig
 }
 
 
-struct file *task_lookup_fd_rcu(struct task_struct *task, unsigned int fd);
-struct file *task_lookup_next_fd_rcu(struct task_struct *task, unsigned int *fd);
 
 struct task_struct;
 

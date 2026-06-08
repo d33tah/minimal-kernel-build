@@ -280,11 +280,8 @@ slab_flags_t kmem_cache_flags(unsigned int object_size,
 			      SLAB_ACCOUNT | \
 			      SLAB_NO_USER_FLAGS)
 
-bool __kmem_cache_empty(struct kmem_cache *);
 int __kmem_cache_shutdown(struct kmem_cache *);
 void __kmem_cache_release(struct kmem_cache *);
-int __kmem_cache_shrink(struct kmem_cache *);
-void slab_kmem_cache_release(struct kmem_cache *);
 
 struct seq_file;
 struct file;
@@ -481,8 +478,6 @@ static inline struct kmem_cache_node *get_node(struct kmem_cache *s, int node)
 
 
 /* dump_unreclaimable_slab removed - unused */
-
-void ___cache_free(struct kmem_cache *cache, void *x, unsigned long addr);
 
 static inline void cache_random_seq_destroy(struct kmem_cache *cachep) { }
 

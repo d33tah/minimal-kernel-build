@@ -124,5 +124,3 @@ static inline bool is_anon_ns(struct mnt_namespace *ns)
 {
 	return ns->seq == 0;
 }
-
-extern void mnt_cursor_del(struct mnt_namespace *ns, struct mount *cursor);

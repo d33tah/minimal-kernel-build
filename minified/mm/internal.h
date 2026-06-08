@@ -77,7 +77,6 @@ void unmap_page_range(struct mmu_gather *tlb,
 
 void page_cache_ra_order(struct readahead_control *, struct file_ra_state *,
 		unsigned int order);
-void force_page_cache_ra(struct readahead_control *, unsigned long nr);
 /* force_page_cache_readahead removed - unused */
 
 unsigned find_lock_entries(struct address_space *mapping, pgoff_t start,
@@ -212,7 +211,6 @@ static inline void munlock_vma_page(struct page *page,
 		munlock_page(page);
 }
 void mlock_new_page(struct page *page);
-bool need_mlock_page_drain(int cpu);
 void mlock_page_drain_local(void);
 void mlock_page_drain_remote(int cpu);
 
@@ -299,8 +297,6 @@ static inline void mminit_dprintk(enum mminit_level level,
 static inline void mminit_verify_zonelist(void)
 {
 }
-
-extern int hwpoison_filter(struct page *p);
 
 extern unsigned long  __must_check vm_mmap_pgoff(struct file *, unsigned long,
         unsigned long, unsigned long,

@@ -147,7 +147,6 @@ static inline void addr_limit_user_check(void)
 
 
 
-void ksys_sync(void);
 int ksys_sync_file_range(int fd, loff_t offset, loff_t nbytes,
 			 unsigned int flags);
 ssize_t ksys_pread64(unsigned int fd, char __user *buf, size_t count,

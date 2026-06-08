@@ -29,8 +29,6 @@ extern void __init chrdev_init(void);
  
 extern const struct fs_context_operations legacy_fs_context_ops;
 extern int parse_monolithic_mount_data(struct fs_context *, void *);
-extern void vfs_clean_context(struct fs_context *fc);
-extern int finish_clean_context(struct fs_context *fc);
 
  
 extern int filename_lookup(int dfd, struct filename *name, unsigned flags,
@@ -43,7 +41,6 @@ int may_linkat(struct user_namespace *mnt_userns, struct path *link);
 
  
 extern struct vfsmount *lookup_mnt(const struct path *);
-extern int finish_automount(struct vfsmount *, const struct path *);
 
 extern int sb_prepare_remount_readonly(struct super_block *);
 
@@ -60,11 +57,7 @@ int path_mount(const char *dev_name, struct path *path,
 int path_umount(struct path *path, int flags);
 
  
-extern void chroot_fs_refs(const struct path *, const struct path *);
-
- 
 extern struct file *alloc_empty_file(int, const struct cred *);
-extern struct file *alloc_empty_file_noaccount(int, const struct cred *);
 
 /* reconfigure_super, user_get_super removed - unused */
 extern bool trylock_super(struct super_block *sb);
@@ -97,8 +90,6 @@ extern long prune_icache_sb(struct super_block *sb, struct shrink_control *sc);
 extern int dentry_needs_remove_privs(struct dentry *dentry);
 
  
-extern long get_nr_dirty_inodes(void);
-extern int invalidate_inodes(struct super_block *, bool);
 
  
 extern int d_set_mounted(struct dentry *dentry);
@@ -120,11 +111,6 @@ extern void mnt_pin_kill(struct mount *m);
 extern const struct dentry_operations ns_dentry_operations;
 
  
-int sb_init_dio_done_wq(struct super_block *sb);
-
- 
-
-int getname_statx_lookup_flags(int flags);
 int do_statx(int dfd, struct filename *filename, unsigned int flags,
 	     unsigned int mask, struct statx __user *buffer);
 
@@ -152,6 +138,5 @@ ssize_t do_getxattr(struct user_namespace *mnt_userns,
 		    struct dentry *d,
 		    struct xattr_ctx *ctx);
 
-int setxattr_copy(const char __user *name, struct xattr_ctx *ctx);
 int do_setxattr(struct user_namespace *mnt_userns, struct dentry *dentry,
 		struct xattr_ctx *ctx);

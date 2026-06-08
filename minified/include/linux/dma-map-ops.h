@@ -67,7 +67,6 @@ void *dma_common_contiguous_remap(struct page *page, size_t size, pgprot_t prot,
 		const void *caller);
 void *dma_common_pages_remap(struct page **pages, size_t size, pgprot_t prot,
 		const void *caller);
-struct page **dma_common_find_pages(void *cpu_addr);
 
 struct page *dma_alloc_from_pool(struct device *dev, size_t size,
 		void **cpu_addr, gfp_t flags,
@@ -98,8 +97,6 @@ void arch_dma_free(struct device *dev, size_t size, void *cpu_addr,
 #endif
 
 
-void *arch_dma_set_uncached(void *addr, size_t size);
-void arch_dma_clear_uncached(void *addr, size_t size);
 
 #define arch_dma_map_page_direct(d, a)		(false)
 #define arch_dma_unmap_page_direct(d, a)	(false)

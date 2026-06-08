@@ -53,10 +53,6 @@ struct tick_sched {
 	unsigned int			stalled_jiffies;
 };
 
-extern struct tick_sched *tick_get_tick_sched(int cpu);
-
-extern void tick_setup_sched_timer(void);
-
 static inline int
 __tick_broadcast_oneshot_control(enum tick_broadcast_state state)
 {
@@ -74,7 +70,6 @@ extern int tick_do_timer_cpu __read_mostly;
 extern void tick_setup_periodic(struct clock_event_device *dev, int broadcast);
 extern void tick_handle_periodic(struct clock_event_device *dev);
 extern void tick_check_new_device(struct clock_event_device *dev);
-extern void tick_shutdown(unsigned int cpu);
 /* tick_suspend, tick_resume removed - unused */
 extern bool tick_check_replacement(struct clock_event_device *curdev,
 				   struct clock_event_device *newdev);
@@ -107,7 +102,6 @@ extern void clockevents_switch_state(struct clock_event_device *dev,
 extern int clockevents_program_event(struct clock_event_device *dev,
 				     ktime_t expires, bool force);
 extern void clockevents_handle_noop(struct clock_event_device *dev);
-extern ssize_t sysfs_get_uname(const char *buf, char *dst, size_t cnt);
 
  
 static inline void tick_install_broadcast_device(struct clock_event_device *dev, int cpu) { }
@@ -143,9 +137,6 @@ static inline void tick_nohz_init(void) { }
 #define tick_nohz_active (0)
 
 DECLARE_PER_CPU(struct hrtimer_cpu_base, hrtimer_bases);
-
-extern u64 get_next_timer_interrupt(unsigned long basej, u64 basem);
-void timer_clear_idle(void);
 
 #define CLOCK_SET_WALL							\
 	(BIT(HRTIMER_BASE_REALTIME) | BIT(HRTIMER_BASE_REALTIME_SOFT) |	\

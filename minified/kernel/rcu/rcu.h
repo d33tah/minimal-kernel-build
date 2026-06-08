@@ -63,8 +63,6 @@ extern int rcu_num_nodes;
 
 /* rcu_init_levelspread removed - unused */
 
-extern void rcu_init_geometry(void);
-
  
 #define rcu_first_leaf_node() (rcu_state.level[rcu_num_lvls - 1])
 

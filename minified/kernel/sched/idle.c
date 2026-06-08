@@ -60,90 +60,22 @@ void __cpuidle default_idle_call(void)
 	}
 }
 
-static int call_cpuidle_s2idle(struct cpuidle_driver *drv,
-			       struct cpuidle_device *dev)
-{
-	if (current_clr_polling_and_test())
-		return -EBUSY;
-
-	return cpuidle_enter_s2idle(drv, dev);
-}
-
-static int call_cpuidle(struct cpuidle_driver *drv, struct cpuidle_device *dev,
-		      int next_state)
-{
-	 
-	if (current_clr_polling_and_test()) {
-		dev->last_residency_ns = 0;
-		local_irq_enable();
-		return -EBUSY;
-	}
-
-	 
-	return cpuidle_enter(drv, dev, next_state);
-}
-
 static void cpuidle_idle_call(void)
 {
-	struct cpuidle_device *dev = cpuidle_get_device();
-	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
-	int next_state, entered_state;
 
-	 
 	if (need_resched()) {
 		local_irq_enable();
 		return;
 	}
 
-	 
 
-	if (cpuidle_not_available(drv, dev)) {
-		tick_nohz_idle_stop_tick();
+	tick_nohz_idle_stop_tick();
 
-		default_idle_call();
-		goto exit_idle;
-	}
+	default_idle_call();
 
-	 
-
-	if (idle_should_enter_s2idle() || dev->forced_idle_latency_limit_ns) {
-		u64 max_latency_ns;
-
-		if (idle_should_enter_s2idle()) {
-
-			entered_state = call_cpuidle_s2idle(drv, dev);
-			if (entered_state > 0)
-				goto exit_idle;
-
-			max_latency_ns = U64_MAX;
-		} else {
-			max_latency_ns = dev->forced_idle_latency_limit_ns;
-		}
-
-		tick_nohz_idle_stop_tick();
-
-		next_state = cpuidle_find_deepest_state(drv, dev, max_latency_ns);
-		call_cpuidle(drv, dev, next_state);
-	} else {
-		bool stop_tick = true;
-
-		 
-		next_state = cpuidle_select(drv, dev, &stop_tick);
-
-		if (stop_tick || tick_nohz_tick_stopped())
-			tick_nohz_idle_stop_tick();
-		else
-			tick_nohz_idle_retain_tick();
-
-		entered_state = call_cpuidle(drv, dev, next_state);
-		 
-		cpuidle_reflect(dev, entered_state);
-	}
-
-exit_idle:
 	__current_set_polling();
 
-	 
+
 	if (WARN_ON_ONCE(irqs_disabled()))
 		local_irq_enable();
 }

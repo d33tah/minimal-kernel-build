@@ -9,18 +9,6 @@
 #define _LINUX_CAPABILITY_VERSION_3  0x20080522
 #define _LINUX_CAPABILITY_U32S_3     2
 
-typedef struct __user_cap_header_struct {
-	__u32 version;
-	int pid;
-} __user *cap_user_header_t;
-
-typedef struct __user_cap_data_struct {
-        __u32 effective;
-        __u32 permitted;
-        __u32 inheritable;
-} __user *cap_user_data_t;
-
-
 #define CAP_CHOWN            0
 #define CAP_DAC_OVERRIDE     1
 #define CAP_DAC_READ_SEARCH  2
@@ -52,9 +40,6 @@ typedef struct __user_cap_data_struct {
 #define CAP_LEASE            28
 #define CAP_AUDIT_WRITE      29
 #define CAP_AUDIT_CONTROL    30
-#define CAP_OPT_NONE    0
-#define CAP_OPT_NOAUDIT 2
-#define CAP_OPT_INSETID 4
 #define CAP_SETFCAP	     31
 #define CAP_MAC_OVERRIDE     32
 #define CAP_MAC_ADMIN        33
@@ -66,8 +51,6 @@ typedef struct __user_cap_data_struct {
 #define CAP_BPF			39
 #define CAP_CHECKPOINT_RESTORE	40
 #define CAP_LAST_CAP         CAP_CHECKPOINT_RESTORE
-#define cap_valid(x) ((x) >= 0 && (x) <= CAP_LAST_CAP)
-#define CAP_TO_INDEX(x)     ((x) >> 5)
 #define CAP_TO_MASK(x)      (1 << ((x) & 31))
 /* End uapi/linux/capability.h */
 
@@ -78,10 +61,6 @@ typedef struct __user_cap_data_struct {
 typedef struct kernel_cap_struct {
 	__u32 cap[_KERNEL_CAPABILITY_U32S];
 } kernel_cap_t;
-
-
-#define _USER_CAP_HEADER_SIZE  (sizeof(struct __user_cap_header_struct))
-#define _KERNEL_CAP_T_SIZE     (sizeof(kernel_cap_t))
 
 
 struct file;
@@ -96,52 +75,22 @@ extern const kernel_cap_t __cap_empty_set;
 	for (__capi = 0; __capi < _KERNEL_CAPABILITY_U32S; ++__capi)
 
 
-# define CAP_FS_MASK_B0     (CAP_TO_MASK(CAP_CHOWN)		\
-			    | CAP_TO_MASK(CAP_MKNOD)		\
-			    | CAP_TO_MASK(CAP_DAC_OVERRIDE)	\
-			    | CAP_TO_MASK(CAP_DAC_READ_SEARCH)	\
-			    | CAP_TO_MASK(CAP_FOWNER)		\
-			    | CAP_TO_MASK(CAP_FSETID))
-
-# define CAP_FS_MASK_B1     (CAP_TO_MASK(CAP_MAC_OVERRIDE))
-
 #if _KERNEL_CAPABILITY_U32S != 2
 # error Fix up hand-coded capability macro initializers
 #else
 
-#define CAP_LAST_U32			((_KERNEL_CAPABILITY_U32S) - 1)
 #define CAP_LAST_U32_VALID_MASK		(CAP_TO_MASK(CAP_LAST_CAP + 1) -1)
 
 # define CAP_EMPTY_SET    ((kernel_cap_t){{ 0, 0 }})
 # define CAP_FULL_SET     ((kernel_cap_t){{ ~0, CAP_LAST_U32_VALID_MASK }})
-# define CAP_FS_SET       ((kernel_cap_t){{ CAP_FS_MASK_B0 \
-				    | CAP_TO_MASK(CAP_LINUX_IMMUTABLE), \
-				    CAP_FS_MASK_B1 } })
-# define CAP_NFSD_SET     ((kernel_cap_t){{ CAP_FS_MASK_B0 \
-				    | CAP_TO_MASK(CAP_SYS_RESOURCE), \
-				    CAP_FS_MASK_B1 } })
 
 #endif
-
-# define cap_clear(c)         do { (c) = __cap_empty_set; } while (0)
-
-#define cap_raise(c, flag)  ((c).cap[CAP_TO_INDEX(flag)] |= CAP_TO_MASK(flag))
-#define cap_lower(c, flag)  ((c).cap[CAP_TO_INDEX(flag)] &= ~CAP_TO_MASK(flag))
-#define cap_raised(c, flag) ((c).cap[CAP_TO_INDEX(flag)] & CAP_TO_MASK(flag))
 
 #define CAP_BOP_ALL(c, a, b, OP)                                    \
 do {                                                                \
 	unsigned __capi;                                            \
 	CAP_FOR_EACH_U32(__capi) {                                  \
 		c.cap[__capi] = a.cap[__capi] OP b.cap[__capi];     \
-	}                                                           \
-} while (0)
-
-#define CAP_UOP_ALL(c, a, OP)                                       \
-do {                                                                \
-	unsigned __capi;                                            \
-	CAP_FOR_EACH_U32(__capi) {                                  \
-		c.cap[__capi] = OP a.cap[__capi];                   \
 	}                                                           \
 } while (0)
 

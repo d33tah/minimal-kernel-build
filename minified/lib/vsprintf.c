@@ -1283,11 +1283,6 @@ int sprintf(char *buf, const char *fmt, ...)
 	return i;
 }
 
-int vsscanf(const char *buf, const char *fmt, va_list args)
-{
-	return 0;  
-}
-
 int sscanf(const char *buf, const char *fmt, ...)
 {
 	return 0;  

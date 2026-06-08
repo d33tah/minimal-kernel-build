@@ -83,13 +83,7 @@ request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
 	return request_threaded_irq(irq, handler, NULL, flags, name, dev);
 }
 
-extern const void *free_irq(unsigned int, void *);
-
 struct device;
-
-bool irq_has_action(unsigned int irq);
-extern void disable_irq_nosync(unsigned int irq);
-extern void enable_irq(unsigned int irq);
 
 struct irq_affinity_desc {
 	struct cpumask	mask;

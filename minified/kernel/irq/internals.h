@@ -204,7 +204,6 @@ static inline bool irq_settings_no_debug(struct irq_desc *desc)
 }
 
 extern int __irq_set_trigger(struct irq_desc *desc, unsigned long flags);
-extern void __disable_irq(struct irq_desc *desc);
 extern void __enable_irq(struct irq_desc *desc);
 
 #define IRQ_RESEND	true

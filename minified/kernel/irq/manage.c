@@ -20,55 +20,6 @@
 DEFINE_STATIC_KEY_FALSE(force_irqthreads_key);
 
 
-static void __synchronize_hardirq(struct irq_desc *desc, bool sync_chip)
-{
-	struct irq_data *irqd = irq_desc_get_irq_data(desc);
-	bool inprogress;
-
-	do {
-		unsigned long flags;
-
-		while (irqd_irq_inprogress(&desc->irq_data))
-			cpu_relax();
-
-		raw_spin_lock_irqsave(&desc->lock, flags);
-		inprogress = irqd_irq_inprogress(&desc->irq_data);
-
-		if (!inprogress && sync_chip) {
-			
-			__irq_get_irqchip_state(irqd, IRQCHIP_STATE_ACTIVE,
-						&inprogress);
-		}
-		raw_spin_unlock_irqrestore(&desc->lock, flags);
-
-	} while (inprogress);
-}
-
-
-void __disable_irq(struct irq_desc *desc)
-{
-	if (!desc->depth++)
-		irq_disable(desc);
-}
-
-static int __disable_irq_nosync(unsigned int irq)
-{
-	unsigned long flags;
-	struct irq_desc *desc = irq_get_desc_buslock(irq, &flags, IRQ_GET_DESC_CHECK_GLOBAL);
-
-	if (!desc)
-		return -EINVAL;
-	__disable_irq(desc);
-	irq_put_desc_busunlock(desc, flags);
-	return 0;
-}
-
-void disable_irq_nosync(unsigned int irq)
-{
-	__disable_irq_nosync(irq);
-}
-
-
 void __enable_irq(struct irq_desc *desc)
 {
 	switch (desc->depth) {
@@ -90,23 +41,6 @@ void __enable_irq(struct irq_desc *desc)
 		desc->depth--;
 	}
 }
-
-void enable_irq(unsigned int irq)
-{
-	unsigned long flags;
-	struct irq_desc *desc = irq_get_desc_buslock(irq, &flags, IRQ_GET_DESC_CHECK_GLOBAL);
-
-	if (!desc)
-		return;
-	if (WARN(!desc->irq_data.chip,
-		 KERN_ERR "enable_irq before setup/request_irq: irq %u\n", irq))
-		goto out;
-
-	__enable_irq(desc);
-out:
-	irq_put_desc_busunlock(desc, flags);
-}
-
 
 int __irq_set_trigger(struct irq_desc *desc, unsigned long flags)
 {
@@ -665,102 +599,6 @@ out_thread:
 out_mput:
 	module_put(desc->owner);
 	return ret;
-}
-
-static struct irqaction *__free_irq(struct irq_desc *desc, void *dev_id)
-{
-	unsigned irq = desc->irq_data.irq;
-	struct irqaction *action, **action_ptr;
-	unsigned long flags;
-
-	WARN(in_interrupt(), "Trying to free IRQ %d from IRQ context!\n", irq);
-
-	mutex_lock(&desc->request_mutex);
-	chip_bus_lock(desc);
-	raw_spin_lock_irqsave(&desc->lock, flags);
-
-	action_ptr = &desc->action;
-	for (;;) {
-		action = *action_ptr;
-
-		if (!action) {
-			WARN(1, "Trying to free already-free IRQ %d\n", irq);
-			raw_spin_unlock_irqrestore(&desc->lock, flags);
-			chip_bus_sync_unlock(desc);
-			mutex_unlock(&desc->request_mutex);
-			return NULL;
-		}
-
-		if (action->dev_id == dev_id)
-			break;
-		action_ptr = &action->next;
-	}
-
-	*action_ptr = action->next;
-
-	irq_pm_remove_action(desc, action);
-
-	if (!desc->action) {
-		irq_settings_clr_disable_unlazy(desc);
-		
-		irq_shutdown(desc);
-	}
-
-	raw_spin_unlock_irqrestore(&desc->lock, flags);
-	
-	chip_bus_sync_unlock(desc);
-
-	unregister_handler_proc(irq, action);
-
-	__synchronize_hardirq(desc, true);
-
-	if (action->thread) {
-		kthread_stop(action->thread);
-		put_task_struct(action->thread);
-		if (action->secondary && action->secondary->thread) {
-			kthread_stop(action->secondary->thread);
-			put_task_struct(action->secondary->thread);
-		}
-	}
-
-	if (!desc->action) {
-		
-		chip_bus_lock(desc);
-		
-		raw_spin_lock_irqsave(&desc->lock, flags);
-		irq_domain_deactivate_irq(&desc->irq_data);
-		raw_spin_unlock_irqrestore(&desc->lock, flags);
-
-		irq_release_resources(desc);
-		chip_bus_sync_unlock(desc);
-		irq_remove_timings(desc);
-	}
-
-	mutex_unlock(&desc->request_mutex);
-
-	irq_chip_pm_put(&desc->irq_data);
-	module_put(desc->owner);
-	kfree(action->secondary);
-	return action;
-}
-
-const void *free_irq(unsigned int irq, void *dev_id)
-{
-	struct irq_desc *desc = irq_to_desc(irq);
-	struct irqaction *action;
-	const char *devname;
-
-	if (!desc || WARN_ON(irq_settings_is_per_cpu_devid(desc)))
-		return NULL;
-
-	action = __free_irq(desc, dev_id);
-
-	if (!action)
-		return NULL;
-
-	devname = action->name;
-	kfree(action);
-	return devname;
 }
 
 int request_threaded_irq(unsigned int irq, irq_handler_t handler,

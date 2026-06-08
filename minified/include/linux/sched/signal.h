@@ -9,14 +9,12 @@
 /* Inlined from sched/jobctl.h - trimmed to used flags only */
 #define JOBCTL_STOP_PENDING_BIT	17
 #define JOBCTL_TRAP_STOP_BIT	19
-#define JOBCTL_LISTENING_BIT	22
 #define JOBCTL_TRAP_FREEZE_BIT	23
 #define JOBCTL_PTRACE_FROZEN_BIT	24
 #define JOBCTL_STOPPED_BIT	26
 #define JOBCTL_TRACED_BIT	27
 #define JOBCTL_STOP_PENDING	(1UL << JOBCTL_STOP_PENDING_BIT)
 #define JOBCTL_TRAP_STOP	(1UL << JOBCTL_TRAP_STOP_BIT)
-#define JOBCTL_LISTENING	(1UL << JOBCTL_LISTENING_BIT)
 #define JOBCTL_TRAP_FREEZE	(1UL << JOBCTL_TRAP_FREEZE_BIT)
 #define JOBCTL_PTRACE_FROZEN	(1UL << JOBCTL_PTRACE_FROZEN_BIT)
 #define JOBCTL_STOPPED		(1UL << JOBCTL_STOPPED_BIT)
@@ -49,12 +47,6 @@ struct task_cputime_atomic {
 	atomic64_t sum_exec_runtime;
 };
 
-#define INIT_CPUTIME_ATOMIC \
-	(struct task_cputime_atomic) {				\
-		.utime = ATOMIC64_INIT(0),			\
-		.stime = ATOMIC64_INIT(0),			\
-		.sum_exec_runtime = ATOMIC64_INIT(0),		\
-	}
 struct thread_group_cputimer {
 	struct task_cputime_atomic cputime_atomic;
 };
@@ -151,17 +143,9 @@ struct signal_struct {
 	struct rw_semaphore exec_update_lock;	 
 } __randomize_layout;
 
-#define SIGNAL_STOP_STOPPED	0x00000001  
-#define SIGNAL_STOP_CONTINUED	0x00000002  
-#define SIGNAL_GROUP_EXIT	0x00000004  
-#define SIGNAL_CLD_STOPPED	0x00000010
-#define SIGNAL_CLD_CONTINUED	0x00000020
-#define SIGNAL_CLD_MASK		(SIGNAL_CLD_STOPPED|SIGNAL_CLD_CONTINUED)
+#define SIGNAL_GROUP_EXIT	0x00000004
 
-#define SIGNAL_UNKILLABLE	0x00000040  
-
-#define SIGNAL_STOP_MASK (SIGNAL_CLD_MASK | SIGNAL_STOP_STOPPED | \
-			  SIGNAL_STOP_CONTINUED)
+#define SIGNAL_UNKILLABLE	0x00000040
 
 
 extern void ignore_signals(struct task_struct *);

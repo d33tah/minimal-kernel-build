@@ -209,10 +209,5 @@ static inline int wrmsrl_safe(u32 msr, u64 val)
 	return wrmsr_safe(msr, (u32)val,  (u32)(val >> 32));
 }
 
-struct msr *msrs_alloc(void);
-void msrs_free(struct msr *msrs);
-int msr_set_bit(u32 msr, u8 bit);
-int msr_clear_bit(u32 msr, u8 bit);
-
 #endif
 #endif

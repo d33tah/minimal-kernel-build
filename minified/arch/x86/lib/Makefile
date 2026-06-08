@@ -50,7 +50,7 @@ lib-$(CONFIG_RANDOMIZE_BASE) += kaslr.o
 lib-$(CONFIG_FUNCTION_ERROR_INJECTION)	+= error-inject.o
 lib-$(CONFIG_RETPOLINE) += retpoline.o
 
-obj-y += msr.o msr-reg.o hweight.o
+obj-y += msr-reg.o hweight.o
 obj-y += iomem.o
 
 ifeq ($(CONFIG_X86_32),y)

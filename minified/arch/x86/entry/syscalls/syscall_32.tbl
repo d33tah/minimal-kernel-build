@@ -89,7 +89,6 @@
 128	i386	init_module		sys_init_module
 129	i386	delete_module		sys_delete_module
 130	i386	get_kernel_syms
-131	i386	quotactl		sys_quotactl
 134	i386	bdflush			sys_ni_syscall
 135	i386	sysfs			sys_sysfs
 137	i386	afs_syscall
@@ -159,9 +158,6 @@
 267	i386	clock_nanosleep		sys_clock_nanosleep_time32
 271	i386	utimes			sys_utimes_time32
 273	i386	vserver
-274	i386	mbind			sys_mbind
-275	i386	get_mempolicy		sys_get_mempolicy
-276	i386	set_mempolicy		sys_set_mempolicy
 # 277-282 mq_* removed (unreachable)
 # 283 kexec_load removed (unreachable)
 # 284 waitid removed (unreachable)
@@ -169,10 +165,6 @@
 # 286-288 add_key/request_key/keyctl removed (unreachable)
 289	i386	ioprio_set		sys_ioprio_set
 290	i386	ioprio_get		sys_ioprio_get
-291	i386	inotify_init		sys_inotify_init
-292	i386	inotify_add_watch	sys_inotify_add_watch
-293	i386	inotify_rm_watch	sys_inotify_rm_watch
-294	i386	migrate_pages		sys_migrate_pages
 295	i386	openat			sys_openat			compat_sys_openat
 299	i386	futimesat		sys_futimesat_time32
 300	i386	fstatat64		sys_fstatat64			compat_sys_ia32_fstatat64
@@ -185,7 +177,6 @@
 313	i386	splice			sys_splice
 315	i386	tee			sys_tee
 316	i386	vmsplice		sys_vmsplice
-317	i386	move_pages		sys_move_pages
 319	i386	epoll_pwait		sys_epoll_pwait
 320	i386	utimensat		sys_utimensat_time32
 321	i386	signalfd		sys_signalfd			compat_sys_signalfd
@@ -198,27 +189,20 @@
 329	i386	epoll_create1		sys_epoll_create1
 330	i386	dup3			sys_dup3
 331	i386	pipe2			sys_pipe2
-332	i386	inotify_init1		sys_inotify_init1
 333	i386	preadv
 334	i386	pwritev
-336	i386	perf_event_open		sys_perf_event_open
 337	i386	recvmmsg		sys_recvmmsg_time32		compat_sys_recvmmsg_time32
-338	i386	fanotify_init		sys_fanotify_init
-339	i386	fanotify_mark		sys_fanotify_mark		compat_sys_fanotify_mark
 341	i386	name_to_handle_at	sys_name_to_handle_at
 342	i386	open_by_handle_at	sys_open_by_handle_at		compat_sys_open_by_handle_at
 343	i386	clock_adjtime		sys_clock_adjtime32
 344	i386	syncfs			sys_syncfs
 345	i386	sendmmsg		sys_sendmmsg			compat_sys_sendmmsg
 346	i386	setns			sys_setns
-347	i386	process_vm_readv	sys_process_vm_readv
-348	i386	process_vm_writev	sys_process_vm_writev
 349	i386	kcmp			sys_kcmp
 350	i386	finit_module		sys_finit_module
 354	i386	seccomp			sys_seccomp
 355	i386	getrandom		sys_getrandom
 356	i386	memfd_create		sys_memfd_create
-357	i386	bpf			sys_bpf
 358	i386	execveat		sys_execveat			compat_sys_execveat
 359	i386	socket			sys_socket
 360	i386	socketpair		sys_socketpair
@@ -279,11 +263,9 @@
 440	i386	process_madvise		sys_process_madvise
 441	i386	epoll_pwait2		sys_epoll_pwait2		compat_sys_epoll_pwait2
 442	i386	mount_setattr		sys_mount_setattr
-443	i386	quotactl_fd		sys_quotactl_fd
 444	i386	landlock_create_ruleset	sys_landlock_create_ruleset
 445	i386	landlock_add_rule	sys_landlock_add_rule
 446	i386	landlock_restrict_self	sys_landlock_restrict_self
 447	i386	memfd_secret		sys_memfd_secret
 448	i386	process_mrelease	sys_process_mrelease
 449	i386	futex_waitv		sys_futex_waitv
-450	i386	set_mempolicy_home_node		sys_set_mempolicy_home_node

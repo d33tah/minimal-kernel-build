@@ -50,9 +50,6 @@ COND_SYSCALL(epoll_pwait2);
 COND_SYSCALL_COMPAT(epoll_pwait2);
 
 
-COND_SYSCALL(inotify_init1);
-COND_SYSCALL(inotify_add_watch);
-COND_SYSCALL(inotify_rm_watch);
 
 
 COND_SYSCALL(ioprio_set);
@@ -65,8 +62,6 @@ COND_SYSCALL(flock);
 
 
 
-COND_SYSCALL(quotactl);
-COND_SYSCALL(quotactl_fd);
 
 
 
@@ -162,14 +157,7 @@ COND_SYSCALL(madvise);
 COND_SYSCALL(process_madvise);
 COND_SYSCALL(process_mrelease);
 COND_SYSCALL(remap_file_pages);
-COND_SYSCALL(mbind);
-COND_SYSCALL(get_mempolicy);
-COND_SYSCALL(set_mempolicy);
-COND_SYSCALL(migrate_pages);
-COND_SYSCALL(move_pages);
-COND_SYSCALL(set_mempolicy_home_node);
 
-COND_SYSCALL(perf_event_open);
 COND_SYSCALL(accept4);
 COND_SYSCALL(recvmmsg);
 COND_SYSCALL(recvmmsg_time32);
@@ -177,8 +165,6 @@ COND_SYSCALL_COMPAT(recvmmsg_time32);
 COND_SYSCALL_COMPAT(recvmmsg_time64);
 
 
-COND_SYSCALL(fanotify_init);
-COND_SYSCALL(fanotify_mark);
 
 COND_SYSCALL(name_to_handle_at);
 COND_SYSCALL(open_by_handle_at);
@@ -186,10 +172,6 @@ COND_SYSCALL_COMPAT(open_by_handle_at);
 
 COND_SYSCALL(sendmmsg);
 COND_SYSCALL_COMPAT(sendmmsg);
-COND_SYSCALL(process_vm_readv);
-COND_SYSCALL_COMPAT(process_vm_readv);
-COND_SYSCALL(process_vm_writev);
-COND_SYSCALL_COMPAT(process_vm_writev);
 
 COND_SYSCALL(kcmp);
 
@@ -199,7 +181,6 @@ COND_SYSCALL(seccomp);
 
 COND_SYSCALL(memfd_create);
 
-COND_SYSCALL(bpf);
 
 COND_SYSCALL(execveat);
 
@@ -225,7 +206,6 @@ COND_SYSCALL(pciconfig_iobase);
 COND_SYSCALL(socketcall);
 COND_SYSCALL_COMPAT(socketcall);
 
-COND_SYSCALL_COMPAT(fanotify_mark);
 
 COND_SYSCALL(vm86old);
 COND_SYSCALL(modify_ldt);
@@ -245,7 +225,6 @@ COND_SYSCALL(subpage_prot);
 
 
 COND_SYSCALL(epoll_create);
-COND_SYSCALL(inotify_init);
 COND_SYSCALL(eventfd);
 COND_SYSCALL(signalfd);
 COND_SYSCALL_COMPAT(signalfd);

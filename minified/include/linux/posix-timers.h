@@ -19,9 +19,5 @@ static inline void posix_cputimers_init_work(void) { }
 
 struct k_itimer;
 
-void run_posix_cpu_timers(void);
-void set_process_cpu_timer(struct task_struct *task, unsigned int clock_idx,
-			   u64 *newval, u64 *oldval);
-
 
 #endif

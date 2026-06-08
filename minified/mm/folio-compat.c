@@ -14,11 +14,6 @@ void unlock_page(struct page *page)
 	return folio_unlock(page_folio(page));
 }
 
-void end_page_writeback(struct page *page)
-{
-	return folio_end_writeback(page_folio(page));
-}
-
 void wait_on_page_writeback(struct page *page)
 {
 	return folio_wait_writeback(page_folio(page));
@@ -36,36 +31,14 @@ void mark_page_accessed(struct page *page)
 }
 
 
-bool set_page_writeback(struct page *page)
-{
-	return folio_start_writeback(page_folio(page));
-}
-
 bool set_page_dirty(struct page *page)
 {
 	return folio_mark_dirty(page_folio(page));
 }
 
-int __set_page_dirty_nobuffers(struct page *page)
-{
-	return filemap_dirty_folio(page_mapping(page), page_folio(page));
-}
-
-bool clear_page_dirty_for_io(struct page *page)
-{
-	return folio_clear_dirty_for_io(page_folio(page));
-}
-
-
 void lru_cache_add(struct page *page)
 {
 	folio_add_lru(page_folio(page));
-}
-
-int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
-		pgoff_t index, gfp_t gfp)
-{
-	return filemap_add_folio(mapping, page_folio(page), index, gfp);
 }
 
 noinline

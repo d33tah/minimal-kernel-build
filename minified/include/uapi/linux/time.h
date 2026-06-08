@@ -21,11 +21,6 @@ struct __kernel_old_timeval {
 };
 #endif
 
-struct __kernel_old_timespec {
-	__kernel_old_time_t	tv_sec;
-	long			tv_nsec;
-};
-
 /* __kernel_sock_timeval - unused */
 /* End time_types.h */
 

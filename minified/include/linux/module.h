@@ -41,8 +41,6 @@ enum {
 #define ELF_R_TYPE(X)	ELF32_R_TYPE(X)
 #define ELF_R_SYM(X)	ELF32_R_SYM(X)
 #include <asm/orc_types.h>
-struct mod_arch_specific {
-};
 
 #define MODULE_NAME_LEN MAX_PARAM_PREFIX_LEN
 

@@ -22,12 +22,6 @@ struct list_lru_one {
 	long			nr_items;
 };
 
-struct list_lru_memcg {
-	struct rcu_head		rcu;
-	 
-	struct list_lru_one	node[];
-};
-
 struct list_lru_node {
 	 
 	spinlock_t		lock;

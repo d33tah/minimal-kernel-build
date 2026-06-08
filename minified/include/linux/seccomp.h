@@ -32,7 +32,6 @@ struct seccomp_data {
 #include <linux/errno.h>
 
 struct seccomp { };
-struct seccomp_filter { };
 struct seccomp_data;
 
 static inline int __secure_computing(const struct seccomp_data *sd) { return 0; }

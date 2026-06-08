@@ -37,13 +37,6 @@ struct cacheinfo {
 	void *priv;
 };
 
-struct cpu_cacheinfo {
-	struct cacheinfo *info_list;
-	unsigned int num_levels;
-	unsigned int num_leaves;
-	bool cpu_map_populated;
-};
-
 int init_cache_level(unsigned int cpu);
 int populate_cache_leaves(unsigned int cpu);
 

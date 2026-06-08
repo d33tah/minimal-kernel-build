@@ -127,20 +127,6 @@ static inline void memalloc_nofs_restore(unsigned int flags)
 }
 
 
-static inline unsigned int memalloc_pin_save(void)
-{
-	unsigned int flags = current->flags & PF_MEMALLOC_PIN;
-
-	current->flags |= PF_MEMALLOC_PIN;
-	return flags;
-}
-
-static inline void memalloc_pin_restore(unsigned int flags)
-{
-	current->flags = (current->flags & ~PF_MEMALLOC_PIN) | flags;
-}
-
-
 static inline void membarrier_exec_mmap(struct mm_struct *mm)
 {
 }

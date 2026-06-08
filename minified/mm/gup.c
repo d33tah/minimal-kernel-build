@@ -849,39 +849,6 @@ int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)
 	return ret;	
 }
 
-static long check_and_migrate_movable_pages(unsigned long nr_pages,
-					    struct page **pages,
-					    unsigned int gup_flags)
-{
-	return nr_pages;
-}
-
-static long __gup_longterm_locked(struct mm_struct *mm,
-				  unsigned long start,
-				  unsigned long nr_pages,
-				  struct page **pages,
-				  struct vm_area_struct **vmas,
-				  unsigned int gup_flags)
-{
-	unsigned int flags;
-	long rc;
-
-	if (!(gup_flags & FOLL_LONGTERM))
-		return __get_user_pages_locked(mm, start, nr_pages, pages, vmas,
-					       NULL, gup_flags);
-	flags = memalloc_pin_save();
-	do {
-		rc = __get_user_pages_locked(mm, start, nr_pages, pages, vmas,
-					     NULL, gup_flags);
-		if (rc <= 0)
-			break;
-		rc = check_and_migrate_movable_pages(rc, pages, gup_flags);
-	} while (!rc);
-	memalloc_pin_restore(flags);
-
-	return rc;
-}
-
 static bool is_valid_gup_flags(unsigned int gup_flags)
 {
 	
@@ -899,16 +866,6 @@ static long __get_user_pages_remote(struct mm_struct *mm,
 				    unsigned int gup_flags, struct page **pages,
 				    struct vm_area_struct **vmas, int *locked)
 {
-	
-	if (gup_flags & FOLL_LONGTERM) {
-		if (WARN_ON_ONCE(locked))
-			return -EINVAL;
-		
-		return __gup_longterm_locked(mm, start, nr_pages, pages,
-					     vmas, gup_flags | FOLL_TOUCH |
-					     FOLL_REMOTE);
-	}
-
 	return __get_user_pages_locked(mm, start, nr_pages, pages, vmas,
 				       locked,
 				       gup_flags | FOLL_TOUCH | FOLL_REMOTE);

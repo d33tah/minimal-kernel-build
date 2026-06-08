@@ -12,11 +12,6 @@ struct trace_print_flags {
 	const char		*name;
 };
 
-struct trace_print_flags_u64 {
-	unsigned long long	mask;
-	const char		*name;
-};
-
 struct tracepoint_func {
 	void *func;
 	void *data;
@@ -35,13 +30,6 @@ struct tracepoint {
 };
 
 typedef const int tracepoint_ptr_t;
-
-struct bpf_raw_event_map {
-	struct tracepoint	*tp;
-	void			*bpf_func;
-	u32			num_args;
-	u32			writable_size;
-} __aligned(32);
 
 #define DECLARE_TRACEPOINT(tp) \
 	extern struct tracepoint __tracepoint_##tp

@@ -33,17 +33,6 @@ struct pollfd {
 	short revents;
 };
 
-#ifdef __clang__
-#define MAX_STACK_ALLOC 768
-#else
-#define MAX_STACK_ALLOC 832
-#endif
-#define FRONTEND_STACK_ALLOC	256
-#define SELECT_STACK_ALLOC	FRONTEND_STACK_ALLOC
-#define POLL_STACK_ALLOC	FRONTEND_STACK_ALLOC
-#define WQUEUES_STACK_ALLOC	(MAX_STACK_ALLOC - FRONTEND_STACK_ALLOC)
-#define N_INLINE_POLL_ENTRIES	(WQUEUES_STACK_ALLOC / sizeof(struct poll_table_entry))
-
 #define DEFAULT_POLLMASK (EPOLLIN | EPOLLOUT | EPOLLRDNORM | EPOLLWRNORM)
 
 struct poll_table_struct;
@@ -60,24 +49,6 @@ static inline void poll_wait(struct file * filp, wait_queue_head_t * wait_addres
 	if (p && p->_qproc && wait_address)
 		p->_qproc(filp, wait_address, p);
 }
-
-
-struct poll_table_entry {
-	struct file *filp;
-	__poll_t key;
-	wait_queue_entry_t wait;
-	wait_queue_head_t *wait_address;
-};
-
-struct poll_wqueues {
-	poll_table pt;
-	struct poll_table_page *table;
-	struct task_struct *polling_task;
-	int triggered;
-	int error;
-	int inline_index;
-	struct poll_table_entry inline_entries[N_INLINE_POLL_ENTRIES];
-};
 
 
 #define MAX_INT64_SECONDS (((s64)(~((u64)0)>>1)/HZ)-1)

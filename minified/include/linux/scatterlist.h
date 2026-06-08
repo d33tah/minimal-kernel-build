@@ -25,13 +25,6 @@ struct sg_table {
 	unsigned int orig_nents;	 
 };
 
-struct sg_append_table {
-	struct sg_table sgt;		 
-	struct scatterlist *prv;	 
-	unsigned int total_nents;	 
-};
-
-
 #define SG_CHAIN	0x01UL
 #define SG_END		0x02UL
 

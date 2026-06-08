@@ -185,8 +185,6 @@ struct kmem_cache {
 
 /* sysfs_slab_unlink/release removed - unused */
 
-void *fixup_red_left(struct kmem_cache *s, void *p);
-
 #include <linux/memcontrol.h>
 int should_failslab(struct kmem_cache *s, gfp_t gfpflags);
 static inline bool __should_failslab(struct kmem_cache *s, gfp_t gfpflags)

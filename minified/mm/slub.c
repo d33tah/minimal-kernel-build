@@ -33,14 +33,6 @@
 #define slub_get_cpu_ptr(var)	get_cpu_ptr(var)
 #define slub_put_cpu_ptr(var)	put_cpu_ptr(var)
 
-void *fixup_red_left(struct kmem_cache *s, void *p)
-{
-	if (kmem_cache_debug_flags(s, SLAB_RED_ZONE))
-		p += s->red_left_pad;
-
-	return p;
-}
-
 static inline bool kmem_cache_has_cpu_partial(struct kmem_cache *s)
 {
 	return false;
@@ -120,7 +112,7 @@ static inline void set_freepointer(struct kmem_cache *s, void *object, void *fp)
 }
 
 #define for_each_object(__p, __s, __addr, __objects) \
-	for (__p = fixup_red_left(__s, __addr); \
+	for (__p = (__addr); \
 		__p < (__addr) + (__objects) * (__s)->size; \
 		__p += (__s)->size)
 
@@ -252,12 +244,6 @@ static inline bool cmpxchg_double_slab(struct kmem_cache *s, struct slab *slab,
 	return false;
 }
 
-static inline void setup_object_debug(struct kmem_cache *s, void *object) {}
-static inline
-void setup_slab_debug(struct kmem_cache *s, struct slab *slab, void *addr) {}
-
-static inline void remove_full(struct kmem_cache *s, struct kmem_cache_node *n,
-					struct slab *slab) {}
 slab_flags_t kmem_cache_flags(unsigned int object_size,
 	slab_flags_t flags, const char *name)
 {
@@ -347,7 +333,6 @@ static inline bool slab_free_freelist_hook(struct kmem_cache *s,
 
 static void *setup_object(struct kmem_cache *s, void *object)
 {
-	setup_object_debug(s, object);
 	object = kasan_init_slab_obj(s, object);
 	if (unlikely(s->ctor)) {
 		kasan_unpoison_object_data(s, object);
@@ -429,12 +414,9 @@ static struct slab *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 
 	start = slab_address(slab);
 
-	setup_slab_debug(s, slab, start);
-
 	shuffle = shuffle_freelist(s, slab);
 
 	if (!shuffle) {
-		start = fixup_red_left(s, start);
 		start = setup_object(s, start);
 		slab->freelist = start;
 		for (idx = 0, p = start; idx < slab->objects - 1; idx++) {
@@ -1108,7 +1090,6 @@ static void __slab_free(struct kmem_cache *s, struct slab *slab,
 
 	
 	if (!kmem_cache_has_cpu_partial(s) && unlikely(!prior)) {
-		remove_full(s, n, slab);
 		add_partial(n, slab, DEACTIVATE_TO_TAIL);
 		stat(s, FREE_ADD_PARTIAL);
 	}
@@ -1120,9 +1101,6 @@ slab_empty:
 		
 		remove_partial(n, slab);
 		stat(s, FREE_REMOVE_PARTIAL);
-	} else {
-		
-		remove_full(s, n, slab);
 	}
 
 	spin_unlock_irqrestore(&n->list_lock, flags);
@@ -1592,10 +1570,6 @@ void __init kmem_cache_init(void)
 
 	if (debug_guardpage_minorder())
 		slub_max_order = 0;
-
-	
-	if (__slub_debug_enabled())
-		no_hash_pointers_enable(NULL);
 
 	kmem_cache_node = &boot_kmem_cache_node;
 	kmem_cache = &boot_kmem_cache;

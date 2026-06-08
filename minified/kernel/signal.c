@@ -513,11 +513,6 @@ void force_exit_sig(int sig)
 	force_sig_info_to_task(&info, current, HANDLER_EXIT);
 }
 
-/* Stubbed - now static, only used internally */
-static void force_sigsegv(int sig)
-{
-}
-
 int force_sig_fault(int sig, int code, void __user *addr
 	___ARCH_SI_IA64(int imm, unsigned int flags, unsigned long isr))
 {
@@ -603,31 +598,6 @@ bool get_signal(struct ksignal *ksig)
 {
 	/* Minimal stub: init doesn't use signals */
 	return false;
-}
-
-static void signal_delivered(struct ksignal *ksig, int stepping)
-{
-	sigset_t blocked;
-
-	
-	clear_restore_sigmask();
-
-	sigorsets(&blocked, &current->blocked, &ksig->ka.sa.sa_mask);
-	if (!(ksig->ka.sa.sa_flags & SA_NODEFER))
-		sigaddset(&blocked, ksig->sig);
-	set_current_blocked(&blocked);
-	if (current->sas_ss_flags & SS_AUTODISARM)
-		sas_ss_reset(current);
-	if (stepping)
-		ptrace_notify(SIGTRAP, 0);
-}
-
-void signal_setup_done(int failed, struct ksignal *ksig, int stepping)
-{
-	if (failed)
-		force_sigsegv(ksig->sig);
-	else
-		signal_delivered(ksig, stepping);
 }
 
 static void retarget_shared_pending(struct task_struct *tsk, sigset_t *which)

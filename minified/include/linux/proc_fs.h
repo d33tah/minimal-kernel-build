@@ -53,6 +53,5 @@ static inline void proc_flush_pid(struct pid *pid)
 {
 }
 
-static inline void *pde_data(const struct inode *inode) {BUG(); return NULL;}
 
 #endif

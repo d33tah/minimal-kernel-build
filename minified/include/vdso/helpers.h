@@ -5,16 +5,6 @@
 
 #include <vdso/datapage.h>
 
-static __always_inline u32 vdso_read_begin(const struct vdso_data *vd)
-{
-	u32 seq;
-
-	while (unlikely((seq = READ_ONCE(vd->seq)) & 1))
-		cpu_relax();
-
-	smp_rmb();
-	return seq;
-}
 
 static __always_inline u32 vdso_read_retry(const struct vdso_data *vd,
 					   u32 start)

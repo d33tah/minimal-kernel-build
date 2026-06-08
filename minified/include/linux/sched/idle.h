@@ -56,14 +56,5 @@ static inline bool __must_check current_clr_polling_and_test(void)
 }
 #endif
 
-static inline void current_clr_polling(void)
-{
-	__current_clr_polling();
-
-	 
-	smp_mb();  
-
-	preempt_fold_need_resched();
-}
 
 #endif  

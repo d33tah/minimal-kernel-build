@@ -87,13 +87,6 @@ enum syscall_work_bit {
 #define arch_set_restart_data(restart) do { } while (0)
 #endif
 
-static inline long set_restart_fn(struct restart_block *restart,
-					long (*fn)(struct restart_block *))
-{
-	restart->fn = fn;
-	arch_set_restart_data(restart);
-	return -ERESTART_RESTARTBLOCK;
-}
 
 #ifndef THREAD_ALIGN
 #define THREAD_ALIGN	THREAD_SIZE

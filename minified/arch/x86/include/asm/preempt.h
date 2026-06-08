@@ -51,10 +51,6 @@ static __always_inline void clear_preempt_need_resched(void)
 	raw_cpu_or_4(__preempt_count, PREEMPT_NEED_RESCHED);
 }
 
-static __always_inline bool test_preempt_need_resched(void)
-{
-	return !(raw_cpu_read_4(__preempt_count) & PREEMPT_NEED_RESCHED);
-}
 
  
 

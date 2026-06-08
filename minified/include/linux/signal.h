@@ -165,28 +165,12 @@ static inline void sigemptyset(sigset_t *set)
 
 
 
-static inline void sigaddsetmask(sigset_t *set, unsigned long mask)
-{
-	set->sig[0] |= mask;
-}
 
 static inline void sigdelsetmask(sigset_t *set, unsigned long mask)
 {
 	set->sig[0] &= ~mask;
 }
 
-static inline void siginitset(sigset_t *set, unsigned long mask)
-{
-	set->sig[0] = mask;
-	switch (_NSIG_WORDS) {
-	default:
-		memset(&set->sig[1], 0, sizeof(long)*(_NSIG_WORDS-1));
-		break;
-	case 2: set->sig[1] = 0;
-		break;
-	case 1: ;
-	}
-}
 
 static inline void siginitsetinv(sigset_t *set, unsigned long mask)
 {

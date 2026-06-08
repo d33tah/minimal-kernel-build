@@ -29,12 +29,6 @@ static inline void syscall_rollback(struct task_struct *task,
 	regs->ax = regs->orig_ax;
 }
 
-static inline long syscall_get_error(struct task_struct *task,
-				     struct pt_regs *regs)
-{
-	unsigned long error = regs->ax;
-	return IS_ERR_VALUE(error) ? error : 0;
-}
 
 static inline long syscall_get_return_value(struct task_struct *task,
 					    struct pt_regs *regs)
@@ -42,12 +36,6 @@ static inline long syscall_get_return_value(struct task_struct *task,
 	return regs->ax;
 }
 
-static inline void syscall_set_return_value(struct task_struct *task,
-					    struct pt_regs *regs,
-					    int error, long val)
-{
-	regs->ax = (long) error ?: val;
-}
 
 
 static inline void syscall_get_arguments(struct task_struct *task,

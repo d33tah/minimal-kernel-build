@@ -34,9 +34,5 @@ struct kstatfs {
 
 struct dentry;
 
-static inline __kernel_fsid_t u64_to_fsid(u64 v)
-{
-	return (__kernel_fsid_t){.val = {(u32)v, (u32)(v>>32)}};
-}
 
 #endif

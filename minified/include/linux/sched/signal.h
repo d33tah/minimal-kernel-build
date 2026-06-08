@@ -303,19 +303,7 @@ static inline bool test_and_clear_restore_sigmask(void)
 }
 #endif
 
-static inline void restore_saved_sigmask(void)
-{
-	if (test_and_clear_restore_sigmask())
-		__set_current_blocked(&current->saved_sigmask);
-}
 
-static inline sigset_t *sigmask_to_save(void)
-{
-	sigset_t *res = &current->blocked;
-	if (unlikely(test_restore_sigmask()))
-		res = &current->saved_sigmask;
-	return res;
-}
 
 #define SEND_SIG_NOINFO ((struct kernel_siginfo *) 0)
 #define SEND_SIG_PRIV	((struct kernel_siginfo *) 1)
@@ -386,10 +374,6 @@ struct pid *task_pid_type(struct task_struct *task, enum pid_type type)
 	return pid;
 }
 
-static inline struct pid *task_tgid(struct task_struct *task)
-{
-	return task->signal->pids[PIDTYPE_TGID];
-}
 
 static inline struct pid *task_pgrp(struct task_struct *task)
 {

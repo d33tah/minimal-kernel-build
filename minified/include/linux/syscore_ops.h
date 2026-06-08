@@ -11,6 +11,5 @@ struct syscore_ops {
 	void (*shutdown)(void);
 };
 
-static inline void syscore_shutdown(void) {}
 
 #endif

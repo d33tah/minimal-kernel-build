@@ -855,10 +855,6 @@ static inline void rseq_handle_notify_resume(struct ksignal *ksig,
 					     struct pt_regs *regs)
 {
 }
-static inline void rseq_signal_deliver(struct ksignal *ksig,
-				       struct pt_regs *regs)
-{
-}
 static inline void rseq_preempt(struct task_struct *t)
 {
 }

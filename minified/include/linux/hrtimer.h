@@ -108,11 +108,6 @@ static inline void hrtimer_set_expires_range_ns(struct hrtimer *timer, ktime_t t
 	timer->node.expires = ktime_add_safe(time, ns_to_ktime(delta));
 }
 
-static inline void hrtimer_set_expires_tv64(struct hrtimer *timer, s64 tv64)
-{
-	timer->node.expires = tv64;
-	timer->_softexpires = tv64;
-}
 
 
 static inline ktime_t hrtimer_get_expires(const struct hrtimer *timer)
@@ -135,10 +130,6 @@ static inline s64 hrtimer_get_softexpires_tv64(const struct hrtimer *timer)
 }
 
 
-static inline ktime_t hrtimer_expires_remaining(const struct hrtimer *timer)
-{
-	return ktime_sub(timer->node.expires, timer->base->get_time());
-}
 
 
 #define hrtimer_resolution	(unsigned int)LOW_RES_NSEC
@@ -163,16 +154,6 @@ extern void hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
 
 extern int hrtimer_cancel(struct hrtimer *timer);
 
-static inline void hrtimer_start_expires(struct hrtimer *timer,
-					 enum hrtimer_mode mode)
-{
-	u64 delta;
-	ktime_t soft, hard;
-	soft = hrtimer_get_softexpires(timer);
-	hard = hrtimer_get_expires(timer);
-	delta = ktime_to_ns(ktime_sub(hard, soft));
-	hrtimer_start_range_ns(timer, soft, delta, mode);
-}
 
 
 

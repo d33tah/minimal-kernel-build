@@ -174,16 +174,6 @@ static inline unsigned long _usecs_to_jiffies(const unsigned int u)
 }
 #endif
 
-static __always_inline unsigned long usecs_to_jiffies(const unsigned int u)
-{
-	if (__builtin_constant_p(u)) {
-		if (u > jiffies_to_usecs(MAX_JIFFY_OFFSET))
-			return MAX_JIFFY_OFFSET;
-		return _usecs_to_jiffies(u);
-	} else {
-		return __usecs_to_jiffies(u);
-	}
-}
 
 extern unsigned long timespec64_to_jiffies(const struct timespec64 *value);
 extern u64 nsecs_to_jiffies64(u64 n);

@@ -74,10 +74,6 @@ static inline void sg_set_page(struct scatterlist *sg, struct page *page,
 	sg->length = len;
 }
 
-static inline struct page *sg_page(struct scatterlist *sg)
-{
-	return (struct page *)((sg)->page_link & ~SG_PAGE_LINK_MASK);
-}
 
 static inline void sg_set_buf(struct scatterlist *sg, const void *buf,
 			      unsigned int buflen)
@@ -94,16 +90,6 @@ static inline void sg_set_buf(struct scatterlist *sg, const void *buf,
 #define for_each_sgtable_dma_sg(sgt, sg, i)	\
 	for_each_sg((sgt)->sgl, sg, (sgt)->nents, i)
 
-static inline void __sg_chain(struct scatterlist *chain_sg,
-			      struct scatterlist *sgl)
-{
-	 
-	chain_sg->offset = 0;
-	chain_sg->length = 0;
-
-	 
-	chain_sg->page_link = ((unsigned long) sgl | SG_CHAIN) & ~SG_END;
-}
 
 
 static inline void sg_mark_end(struct scatterlist *sg)

@@ -38,19 +38,7 @@ typedef struct {
 	unsigned long addr;
 } func_desc_t;
 
-static inline bool memory_contains(void *begin, void *end, void *virt,
-				   size_t size)
-{
-	return virt >= begin && virt + size <= end;
-}
 
-static inline bool memory_intersects(void *begin, void *end, void *virt,
-				     size_t size)
-{
-	void *vend = virt + size;
-
-	return (virt >= begin && virt < end) || (vend >= begin && vend < end);
-}
 
 static inline bool is_kernel_rodata(unsigned long addr)
 {

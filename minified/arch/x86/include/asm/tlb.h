@@ -145,10 +145,6 @@ static inline void tlb_remove_page_size(struct mmu_gather *tlb,
 		tlb_flush_mmu(tlb);
 }
 
-static inline bool __tlb_remove_page(struct mmu_gather *tlb, struct page *page)
-{
-	return __tlb_remove_page_size(tlb, page, PAGE_SIZE);
-}
 
 static inline void tlb_remove_page(struct mmu_gather *tlb, struct page *page)
 {
@@ -271,9 +267,5 @@ static inline bool huge_pmd_needs_flush(pmd_t oldpmd, pmd_t newpmd)
 }
 #endif
 
-static inline void __tlb_remove_table(void *table)
-{
-	free_page_and_swap_cache(table);
-}
 
 #endif /* _ASM_X86_TLB_H */

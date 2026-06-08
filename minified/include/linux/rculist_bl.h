@@ -54,17 +54,6 @@ static inline bool hlist_bl_empty(const struct hlist_bl_head *h)
 	return !((unsigned long)READ_ONCE(h->first) & ~LIST_BL_LOCKMASK);
 }
 
-static inline void hlist_bl_add_head(struct hlist_bl_node *n,
-					struct hlist_bl_head *h)
-{
-	struct hlist_bl_node *first = hlist_bl_first(h);
-
-	n->next = first;
-	if (first)
-		first->pprev = &n->next;
-	n->pprev = &h->first;
-	hlist_bl_set_first(h, n);
-}
 
 
 static inline void __hlist_bl_del(struct hlist_bl_node *n)
@@ -83,20 +72,7 @@ static inline void __hlist_bl_del(struct hlist_bl_node *n)
 		next->pprev = pprev;
 }
 
-static inline void hlist_bl_del(struct hlist_bl_node *n)
-{
-	__hlist_bl_del(n);
-	n->next = LIST_POISON1;
-	n->pprev = LIST_POISON2;
-}
 
-static inline void hlist_bl_del_init(struct hlist_bl_node *n)
-{
-	if (!hlist_bl_unhashed(n)) {
-		__hlist_bl_del(n);
-		INIT_HLIST_BL_NODE(n);
-	}
-}
 
 static inline void hlist_bl_lock(struct hlist_bl_head *b)
 {
@@ -143,11 +119,6 @@ static inline struct hlist_bl_node *hlist_bl_first_rcu(struct hlist_bl_head *h)
 		((unsigned long)rcu_dereference_check(h->first, hlist_bl_is_locked(h)) & ~LIST_BL_LOCKMASK);
 }
 
-static inline void hlist_bl_del_rcu(struct hlist_bl_node *n)
-{
-	__hlist_bl_del(n);
-	n->pprev = LIST_POISON2;
-}
 
 static inline void hlist_bl_add_head_rcu(struct hlist_bl_node *n,
 					struct hlist_bl_head *h)

@@ -437,10 +437,6 @@ static inline pgprot_t pgprot_modify(pgprot_t oldprot, pgprot_t newprot)
 #endif
 
 #ifndef __HAVE_ARCH_PTE_SWP_EXCLUSIVE
-static inline pte_t pte_swp_mkexclusive(pte_t pte)
-{
-	return pte;
-}
 
 static inline int pte_swp_exclusive(pte_t pte)
 {
@@ -488,9 +484,6 @@ static inline void untrack_pfn(struct vm_area_struct *vma,
 {
 }
 
-static inline void untrack_pfn_moved(struct vm_area_struct *vma)
-{
-}
 #else
 extern int track_pfn_remap(struct vm_area_struct *vma, pgprot_t *prot,
 			   unsigned long pfn, unsigned long addr,

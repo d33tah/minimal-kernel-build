@@ -56,10 +56,6 @@ static inline void zap_pid_ns_processes(struct pid_namespace *ns)
 	BUG();
 }
 
-static inline int reboot_pid_ns(struct pid_namespace *pid_ns, int cmd)
-{
-	return 0;
-}
 
 extern struct pid_namespace *task_active_pid_ns(struct task_struct *tsk);
 void pid_idr_init(void);

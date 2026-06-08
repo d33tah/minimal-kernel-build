@@ -39,7 +39,5 @@ struct of_phandle_args {
 
 static inline void of_core_init(void) { }
 static inline struct device_node *of_find_matching_node(struct device_node *from, const struct of_device_id *matches) { return NULL; }
-static inline const char *of_node_full_name(const struct device_node *np) { return "<no-node>"; }
 static inline int of_device_is_available(const struct device_node *device) { return 0; }
-static inline struct device_node *of_get_cpu_node(int cpu, unsigned int *thread) { return NULL; }
 #endif  

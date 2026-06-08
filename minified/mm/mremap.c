@@ -247,19 +247,9 @@ static inline bool move_normal_pud(struct vm_area_struct *vma,
 }
 #endif
 
-static bool move_huge_pud(struct vm_area_struct *vma, unsigned long old_addr,
-			  unsigned long new_addr, pud_t *old_pud, pud_t *new_pud)
-{
-	WARN_ON_ONCE(1);
-	return false;
-
-}
-
 enum pgt_entry {
 	NORMAL_PMD,
-	HPAGE_PMD,
 	NORMAL_PUD,
-	HPAGE_PUD,
 };
 
 static __always_inline unsigned long get_extent(enum pgt_entry entry,
@@ -269,12 +259,10 @@ static __always_inline unsigned long get_extent(enum pgt_entry entry,
 	unsigned long next, extent, mask, size;
 
 	switch (entry) {
-	case HPAGE_PMD:
 	case NORMAL_PMD:
 		mask = PMD_MASK;
 		size = PMD_SIZE;
 		break;
-	case HPAGE_PUD:
 	case NORMAL_PUD:
 		mask = PUD_MASK;
 		size = PUD_SIZE;
@@ -313,16 +301,6 @@ static bool move_pgt_entry(enum pgt_entry entry, struct vm_area_struct *vma,
 	case NORMAL_PUD:
 		moved = move_normal_pud(vma, old_addr, new_addr, old_entry,
 					new_entry);
-		break;
-	case HPAGE_PMD:
-		moved = IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE) &&
-			move_huge_pmd(vma, old_addr, new_addr, old_entry,
-				      new_entry);
-		break;
-	case HPAGE_PUD:
-		moved = IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE) &&
-			move_huge_pud(vma, old_addr, new_addr, old_entry,
-				      new_entry);
 		break;
 
 	default:
@@ -371,14 +349,7 @@ unsigned long move_page_tables(struct vm_area_struct *vma,
 		new_pud = alloc_new_pud(vma->vm_mm, vma, new_addr);
 		if (!new_pud)
 			break;
-		if (pud_trans_huge(*old_pud) || pud_devmap(*old_pud)) {
-			if (extent == HPAGE_PUD_SIZE) {
-				move_pgt_entry(HPAGE_PUD, vma, old_addr, new_addr,
-					       old_pud, new_pud, need_rmap_locks);
-				 
-				continue;
-			}
-		} else if (IS_ENABLED(CONFIG_HAVE_MOVE_PUD) && extent == PUD_SIZE) {
+		if (IS_ENABLED(CONFIG_HAVE_MOVE_PUD) && extent == PUD_SIZE) {
 
 			if (move_pgt_entry(NORMAL_PUD, vma, old_addr, new_addr,
 					   old_pud, new_pud, true))
@@ -392,16 +363,7 @@ unsigned long move_page_tables(struct vm_area_struct *vma,
 		new_pmd = alloc_new_pmd(vma->vm_mm, vma, new_addr);
 		if (!new_pmd)
 			break;
-		if (is_swap_pmd(*old_pmd) || pmd_trans_huge(*old_pmd) ||
-		    pmd_devmap(*old_pmd)) {
-			if (extent == HPAGE_PMD_SIZE &&
-			    move_pgt_entry(HPAGE_PMD, vma, old_addr, new_addr,
-					   old_pmd, new_pmd, need_rmap_locks))
-				continue;
-			split_huge_pmd(vma, old_pmd, old_addr);
-			if (pmd_trans_unstable(old_pmd))
-				continue;
-		} else if (IS_ENABLED(CONFIG_HAVE_MOVE_PMD) &&
+		if (IS_ENABLED(CONFIG_HAVE_MOVE_PMD) &&
 			   extent == PMD_SIZE) {
 			 
 			if (move_pgt_entry(NORMAL_PMD, vma, old_addr, new_addr,

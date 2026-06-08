@@ -118,18 +118,6 @@ COND_SYSCALL(syslog);
 
 
 
-COND_SYSCALL(setregid);
-COND_SYSCALL(setgid);
-COND_SYSCALL(setreuid);
-COND_SYSCALL(setuid);
-COND_SYSCALL(setresuid);
-COND_SYSCALL(getresuid);
-COND_SYSCALL(setresgid);
-COND_SYSCALL(getresgid);
-COND_SYSCALL(setfsuid);
-COND_SYSCALL(setfsgid);
-COND_SYSCALL(setgroups);
-COND_SYSCALL(getgroups);
 
 
 
@@ -350,24 +338,5 @@ COND_SYSCALL(sysfs);
 COND_SYSCALL(ipc);
 COND_SYSCALL_COMPAT(ipc);
 
-COND_SYSCALL(chown16);
-COND_SYSCALL(fchown16);
-COND_SYSCALL(getegid16);
-COND_SYSCALL(geteuid16);
-COND_SYSCALL(getgid16);
-COND_SYSCALL(getgroups16);
-COND_SYSCALL(getresgid16);
-COND_SYSCALL(getresuid16);
-COND_SYSCALL(getuid16);
-COND_SYSCALL(lchown16);
-COND_SYSCALL(setfsgid16);
-COND_SYSCALL(setfsuid16);
-COND_SYSCALL(setgid16);
-COND_SYSCALL(setgroups16);
-COND_SYSCALL(setregid16);
-COND_SYSCALL(setresgid16);
-COND_SYSCALL(setresuid16);
-COND_SYSCALL(setreuid16);
-COND_SYSCALL(setuid16);
 
 COND_SYSCALL(rseq);

@@ -22,15 +22,12 @@
 8	i386	creat			sys_creat
 11	i386	execve			sys_execve			compat_sys_execve
 13	i386	time			sys_time32
-16	i386	lchown			sys_lchown16
 17	i386	break
 18	i386	oldstat			sys_stat
 19	i386	lseek			sys_lseek			compat_sys_lseek
 20	i386	getpid			sys_getpid
 21	i386	mount			sys_mount
 22	i386	umount			sys_oldumount
-23	i386	setuid			sys_setuid16
-24	i386	getuid			sys_getuid16
 25	i386	stime			sys_stime32
 26	i386	ptrace			sys_ptrace			compat_sys_ptrace
 27	i386	alarm			sys_alarm
@@ -44,10 +41,6 @@
 42	i386	pipe			sys_pipe
 44	i386	prof
 45	i386	brk			sys_brk
-46	i386	setgid			sys_setgid16
-47	i386	getgid			sys_getgid16
-49	i386	geteuid			sys_geteuid16
-50	i386	getegid			sys_getegid16
 51	i386	acct			sys_acct
 52	i386	umount2			sys_umount
 53	i386	lock
@@ -61,12 +54,8 @@
 64	i386	getppid			sys_getppid
 68	i386	sgetmask		sys_sgetmask
 69	i386	ssetmask		sys_ssetmask
-70	i386	setreuid		sys_setreuid16
-71	i386	setregid		sys_setregid16
 78	i386	gettimeofday		sys_gettimeofday		compat_sys_gettimeofday
 79	i386	settimeofday		sys_settimeofday		compat_sys_settimeofday
-80	i386	getgroups		sys_getgroups16
-81	i386	setgroups		sys_setgroups16
 82	i386	select			sys_old_select			compat_sys_old_select
 84	i386	oldlstat		sys_lstat
 85	i386	readlink		sys_readlink
@@ -76,7 +65,6 @@
 89	i386	readdir			sys_old_readdir			compat_sys_old_readdir
 90	i386	mmap			sys_old_mmap			compat_sys_ia32_mmap
 91	i386	munmap			sys_munmap
-95	i386	fchown			sys_fchown16
 98	i386	profil
 99	i386	statfs			sys_statfs			compat_sys_statfs
 100	i386	fstatfs			sys_fstatfs			compat_sys_fstatfs
@@ -108,8 +96,6 @@
 134	i386	bdflush			sys_ni_syscall
 135	i386	sysfs			sys_sysfs
 137	i386	afs_syscall
-138	i386	setfsuid		sys_setfsuid16
-139	i386	setfsgid		sys_setfsgid16
 140	i386	_llseek			sys_llseek
 141	i386	getdents		sys_getdents			compat_sys_getdents
 142	i386	_newselect		sys_select			compat_sys_select
@@ -121,15 +107,10 @@
 149	i386	_sysctl			sys_ni_syscall
 162	i386	nanosleep		sys_nanosleep_time32
 163	i386	mremap			sys_mremap
-164	i386	setresuid		sys_setresuid16
-165	i386	getresuid		sys_getresuid16
 166	i386	vm86			sys_vm86			sys_ni_syscall
 167	i386	query_module
 168	i386	poll			sys_poll
 169	i386	nfsservctl
-170	i386	setresgid		sys_setresgid16
-171	i386	getresgid		sys_getresgid16
-182	i386	chown			sys_chown16
 183	i386	getcwd			sys_getcwd
 184	i386	capget			sys_capget
 185	i386	capset			sys_capset
@@ -145,18 +126,6 @@
 200	i386	getgid32		sys_getgid
 201	i386	geteuid32		sys_geteuid
 202	i386	getegid32		sys_getegid
-203	i386	setreuid32		sys_setreuid
-204	i386	setregid32		sys_setregid
-205	i386	getgroups32		sys_getgroups
-206	i386	setgroups32		sys_setgroups
-208	i386	setresuid32		sys_setresuid
-209	i386	getresuid32		sys_getresuid
-210	i386	setresgid32		sys_setresgid
-211	i386	getresgid32		sys_getresgid
-213	i386	setuid32		sys_setuid
-214	i386	setgid32		sys_setgid
-215	i386	setfsuid32		sys_setfsuid
-216	i386	setfsgid32		sys_setfsgid
 217	i386	pivot_root		sys_pivot_root
 218	i386	mincore			sys_mincore
 219	i386	madvise			sys_madvise

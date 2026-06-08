@@ -60,7 +60,6 @@ bool list_lru_del(struct list_lru *lru, struct list_head *item);
 
 unsigned long list_lru_count_one(struct list_lru *lru,
 				 int nid, struct mem_cgroup *memcg);
-unsigned long list_lru_count_node(struct list_lru *lru, int nid);
 
 static inline unsigned long list_lru_shrink_count(struct list_lru *lru,
 						  struct shrink_control *sc)
@@ -80,13 +79,6 @@ unsigned long list_lru_walk_one(struct list_lru *lru,
 				int nid, struct mem_cgroup *memcg,
 				list_lru_walk_cb isolate, void *cb_arg,
 				unsigned long *nr_to_walk);
-unsigned long list_lru_walk_one_irq(struct list_lru *lru,
-				    int nid, struct mem_cgroup *memcg,
-				    list_lru_walk_cb isolate, void *cb_arg,
-				    unsigned long *nr_to_walk);
-unsigned long list_lru_walk_node(struct list_lru *lru, int nid,
-				 list_lru_walk_cb isolate, void *cb_arg,
-				 unsigned long *nr_to_walk);
 
 static inline unsigned long
 list_lru_shrink_walk(struct list_lru *lru, struct shrink_control *sc,

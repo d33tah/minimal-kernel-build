@@ -474,11 +474,6 @@ static int vmap_pages_range(unsigned long addr, unsigned long end,
 	return err;
 }
 
-struct page *vmalloc_to_page(const void *vmalloc_addr)
-{
-	return NULL;
-}
-
 static DEFINE_SPINLOCK(vmap_area_lock);
 static DEFINE_SPINLOCK(free_vmap_area_lock);
 
@@ -1536,48 +1531,6 @@ void vfree(const void *addr)
 	__vfree(addr);
 }
 
-void vunmap(const void *addr)
-{
-	BUG_ON(in_interrupt());
-	might_sleep();
-	if (addr)
-		__vunmap(addr, 0);
-}
-
-void *vmap(struct page **pages, unsigned int count,
-	   unsigned long flags, pgprot_t prot)
-{
-	struct vm_struct *area;
-	unsigned long addr;
-	unsigned long size;		
-
-	might_sleep();
-
-	
-	if (WARN_ON_ONCE(flags & VM_NO_GUARD))
-		flags &= ~VM_NO_GUARD;
-
-	if (count > totalram_pages())
-		return NULL;
-
-	size = (unsigned long)count << PAGE_SHIFT;
-	area = get_vm_area_caller(size, flags, __builtin_return_address(0));
-	if (!area)
-		return NULL;
-
-	addr = (unsigned long)area->addr;
-	if (vmap_pages_range(addr, addr + size, pgprot_nx(prot),
-				pages, PAGE_SHIFT) < 0) {
-		vunmap(area->addr);
-		return NULL;
-	}
-
-	if (flags & VM_MAP_PUT_PAGES) {
-		area->pages = pages;
-		area->nr_pages = count;
-	}
-	return area->addr;
-}
 
 static inline unsigned int
 vm_area_alloc_pages(gfp_t gfp, int nid,

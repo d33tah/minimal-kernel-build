@@ -423,7 +423,6 @@ static inline int folio_put_testzero(struct folio *folio)
 }
 
 
-struct page *vmalloc_to_page(const void *addr);
 
 #ifndef is_ioremap_addr
 #define is_ioremap_addr(x) is_vmalloc_addr(x)

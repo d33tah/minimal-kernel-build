@@ -101,10 +101,6 @@ void *__vmalloc_node(unsigned long size, unsigned long align, gfp_t gfp_mask,
 
 extern void vfree(const void *addr);
 
-extern void *vmap(struct page **pages, unsigned int count,
-			unsigned long flags, pgprot_t prot);
-extern void vunmap(const void *addr);
-
 
 #ifndef ARCH_PAGE_TABLE_SYNC_MASK
 #define ARCH_PAGE_TABLE_SYNC_MASK 0

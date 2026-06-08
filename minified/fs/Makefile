@@ -15,7 +15,7 @@ obj-y :=	open.o read_write.o file_table.o super.o \
 		seq_file.o libfs.o fs-writeback.o \
 		pnode.o splice.o sync.o utimes.o d_path.o \
 		fs_struct.o fs_pin.o \
-		fs_context.o fs_parser.o fsopen.o init.o
+		fs_context.o fs_parser.o init.o
 
 ifeq ($(CONFIG_BLOCK),y)
 obj-y +=	buffer.o direct-io.o mpage.o

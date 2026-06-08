@@ -116,7 +116,6 @@
 200	i386	getgid32		sys_getgid
 201	i386	geteuid32		sys_geteuid
 202	i386	getegid32		sys_getegid
-217	i386	pivot_root		sys_pivot_root
 218	i386	mincore			sys_mincore
 219	i386	madvise			sys_madvise
 220	i386	getdents64		sys_getdents64
@@ -195,12 +194,6 @@
 # 420 semtimedop_time64 removed (unreachable)
 422	i386	futex_time64		sys_futex
 # 425-427 io_uring_* removed (unreachable)
-428	i386	open_tree		sys_open_tree
-429	i386	move_mount		sys_move_mount
-430	i386	fsopen			sys_fsopen
-431	i386	fsconfig		sys_fsconfig
-432	i386	fsmount			sys_fsmount
-433	i386	fspick			sys_fspick
 434	i386	pidfd_open		sys_pidfd_open
 435	i386	clone3			sys_clone3
 437	i386	openat2			sys_openat2

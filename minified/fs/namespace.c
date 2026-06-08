@@ -1095,12 +1095,6 @@ static int graft_tree(struct mount *mnt, struct mount *p, struct mountpoint *mp)
 	return attach_recursive_mnt(mnt, p, mp, false);
 }
 
-SYSCALL_DEFINE3(open_tree, int, dfd, const char __user *, filename, unsigned, flags)
-{
-	/* Stubbed: open_tree not needed for minimal kernel */
-	return -ENOSYS;
-}
-
 static void mnt_warn_timestamp_expiry(struct path *mountpoint, struct vfsmount *mnt)
 {
 	/* Stub: timestamp expiry warning not needed for minimal kernel */
@@ -1437,29 +1431,6 @@ out_type:
 	return ret;
 }
 
-SYSCALL_DEFINE3(fsmount, int, fs_fd, unsigned int, flags,
-		unsigned int, attr_flags)
-{
-	/* Stubbed: fsmount not needed for minimal kernel */
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE5(move_mount,
-		int, from_dfd, const char __user *, from_pathname,
-		int, to_dfd, const char __user *, to_pathname,
-		unsigned int, flags)
-{
-	/* Stubbed: move_mount not needed for minimal kernel */
-	return -ENOSYS;
-}
-
-
-SYSCALL_DEFINE2(pivot_root, const char __user *, new_root,
-		const char __user *, put_old)
-{
-	/* Stubbed: pivot_root not needed for minimal kernel */
-	return -ENOSYS;
-}
 
 
 SYSCALL_DEFINE5(mount_setattr, int, dfd, const char __user *, path,

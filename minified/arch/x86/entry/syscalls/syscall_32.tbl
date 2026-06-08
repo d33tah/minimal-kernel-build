@@ -65,7 +65,6 @@
 91	i386	munmap			sys_munmap
 98	i386	profil
 101	i386	ioperm			sys_ioperm
-102	i386	socketcall		sys_socketcall			compat_sys_socketcall
 103	i386	syslog			sys_syslog
 104	i386	setitimer		sys_setitimer			compat_sys_setitimer
 105	i386	getitimer		sys_getitimer			compat_sys_getitimer
@@ -168,30 +167,13 @@
 331	i386	pipe2			sys_pipe2
 333	i386	preadv
 334	i386	pwritev
-337	i386	recvmmsg		sys_recvmmsg_time32		compat_sys_recvmmsg_time32
 343	i386	clock_adjtime		sys_clock_adjtime32
 344	i386	syncfs			sys_syncfs
-345	i386	sendmmsg		sys_sendmmsg			compat_sys_sendmmsg
 346	i386	setns			sys_setns
 349	i386	kcmp			sys_kcmp
 350	i386	finit_module		sys_finit_module
 355	i386	getrandom		sys_getrandom
 358	i386	execveat		sys_execveat			compat_sys_execveat
-359	i386	socket			sys_socket
-360	i386	socketpair		sys_socketpair
-361	i386	bind			sys_bind
-362	i386	connect			sys_connect
-363	i386	listen			sys_listen
-364	i386	accept4			sys_accept4
-365	i386	getsockopt		sys_getsockopt			sys_getsockopt
-366	i386	setsockopt		sys_setsockopt			sys_setsockopt
-367	i386	getsockname		sys_getsockname
-368	i386	getpeername		sys_getpeername
-369	i386	sendto			sys_sendto
-370	i386	sendmsg			sys_sendmsg			compat_sys_sendmsg
-371	i386	recvfrom		sys_recvfrom			compat_sys_recvfrom
-372	i386	recvmsg			sys_recvmsg			compat_sys_recvmsg
-373	i386	shutdown		sys_shutdown
 377	i386	copy_file_range
 378	i386	preadv2
 379	i386	pwritev2
@@ -209,7 +191,6 @@
 412	i386	utimensat_time64	sys_utimensat
 413	i386	pselect6_time64		sys_pselect6			compat_sys_pselect6_time64
 414	i386	ppoll_time64		sys_ppoll			compat_sys_ppoll_time64
-417	i386	recvmmsg_time64		sys_recvmmsg			compat_sys_recvmmsg_time64
 # 418-419 mq_timed*_time64 removed (unreachable)
 # 420 semtimedop_time64 removed (unreachable)
 422	i386	futex_time64		sys_futex

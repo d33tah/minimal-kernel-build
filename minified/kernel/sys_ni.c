@@ -86,28 +86,6 @@ COND_SYSCALL(syslog);
 
 
 
-COND_SYSCALL(socket);
-COND_SYSCALL(socketpair);
-COND_SYSCALL(bind);
-COND_SYSCALL(listen);
-COND_SYSCALL(accept);
-COND_SYSCALL(connect);
-COND_SYSCALL(getsockname);
-COND_SYSCALL(getpeername);
-COND_SYSCALL(setsockopt);
-COND_SYSCALL_COMPAT(setsockopt);
-COND_SYSCALL(getsockopt);
-COND_SYSCALL_COMPAT(getsockopt);
-COND_SYSCALL(sendto);
-COND_SYSCALL(shutdown);
-COND_SYSCALL(recvfrom);
-COND_SYSCALL_COMPAT(recvfrom);
-COND_SYSCALL(sendmsg);
-COND_SYSCALL_COMPAT(sendmsg);
-COND_SYSCALL(recvmsg);
-COND_SYSCALL_COMPAT(recvmsg);
-
-
 COND_SYSCALL(mremap);
 
 
@@ -127,18 +105,6 @@ COND_SYSCALL(mincore);
 COND_SYSCALL(madvise);
 COND_SYSCALL(process_madvise);
 COND_SYSCALL(process_mrelease);
-
-COND_SYSCALL(accept4);
-COND_SYSCALL(recvmmsg);
-COND_SYSCALL(recvmmsg_time32);
-COND_SYSCALL_COMPAT(recvmmsg_time32);
-COND_SYSCALL_COMPAT(recvmmsg_time64);
-
-
-
-
-COND_SYSCALL(sendmmsg);
-COND_SYSCALL_COMPAT(sendmmsg);
 
 COND_SYSCALL(kcmp);
 
@@ -162,8 +128,6 @@ COND_SYSCALL(pciconfig_read);
 COND_SYSCALL(pciconfig_write);
 COND_SYSCALL(pciconfig_iobase);
 
-COND_SYSCALL(socketcall);
-COND_SYSCALL_COMPAT(socketcall);
 
 
 COND_SYSCALL(vm86old);

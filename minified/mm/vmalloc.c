@@ -1144,8 +1144,6 @@ static struct vmap_area *find_vmap_area(unsigned long addr)
 		VMAP_MAX(VMAP_BBMAP_BITS_MIN,	\
 			VMALLOC_PAGES / roundup_pow_of_two(NR_CPUS) / 16))
 
-#define VMAP_BLOCK_SIZE		(VMAP_BBMAP_BITS * PAGE_SIZE)
-
 struct vmap_block_queue {
 	spinlock_t lock;
 	struct list_head free;

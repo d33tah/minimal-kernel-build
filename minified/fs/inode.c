@@ -459,7 +459,6 @@ long prune_icache_sb(struct super_block *sb, struct shrink_control *sc)
 }
 
 
-#define LAST_INO_BATCH 1024
 static DEFINE_PER_CPU(unsigned int, last_ino);
 
 unsigned int get_next_ino(void)

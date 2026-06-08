@@ -278,8 +278,6 @@ slab_flags_t kmem_cache_flags(unsigned int object_size,
 {
 	return flags;
 }
-#define slub_debug 0
-
 #define disable_higher_order_debug 0
 
 static inline unsigned long slabs_node(struct kmem_cache *s, int node)

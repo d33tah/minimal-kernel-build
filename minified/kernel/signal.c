@@ -134,11 +134,6 @@ void calculate_sigpending(void)
 	spin_unlock_irq(&current->sighand->siglock);
 }
 
-#define SYNCHRONOUS_MASK \
-	(sigmask(SIGSEGV) | sigmask(SIGBUS) | sigmask(SIGILL) | \
-	 sigmask(SIGTRAP) | sigmask(SIGFPE) | sigmask(SIGSYS))
-
-
 static inline void print_dropped_signal(int sig)
 {
 	/* Stub: skip signal drop reporting for minimal kernel */

@@ -46,11 +46,6 @@ static struct resource *next_resource(struct resource *p)
 	return p->sibling;
 }
 
-#define for_each_resource(_root, _p, _skip_children) \
-	for ((_p) = (_root)->child; (_p); \
-	     (_p) = next_resource(_p))
-
-
 static void free_resource(struct resource *res)
 {
 	 
@@ -425,8 +420,6 @@ __devm_request_region(struct device *dev, struct resource *parent,
 
 void __devm_release_region(struct device *dev, struct resource *parent,
 			   resource_size_t start, resource_size_t n) { }
-
-#define MAXRESERVE 4
 
 int iomem_map_sanity_check(resource_size_t addr, unsigned long size)
 {

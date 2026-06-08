@@ -1566,16 +1566,6 @@ out_type:
 	return ret;
 }
 
-#define FSMOUNT_VALID_FLAGS                                                    \
-	(MOUNT_ATTR_RDONLY | MOUNT_ATTR_NOSUID | MOUNT_ATTR_NODEV |            \
-	 MOUNT_ATTR_NOEXEC | MOUNT_ATTR__ATIME | MOUNT_ATTR_NODIRATIME |       \
-	 MOUNT_ATTR_NOSYMFOLLOW)
-
-#define MOUNT_SETATTR_VALID_FLAGS (FSMOUNT_VALID_FLAGS | MOUNT_ATTR_IDMAP)
-
-#define MOUNT_SETATTR_PROPAGATION_FLAGS \
-	(MS_UNBINDABLE | MS_PRIVATE | MS_SLAVE | MS_SHARED)
-
 SYSCALL_DEFINE3(fsmount, int, fs_fd, unsigned int, flags,
 		unsigned int, attr_flags)
 {

@@ -185,21 +185,6 @@ static inline void hrtick_rq_init(struct rq *rq)
 {
 }
 
-#define fetch_or(ptr, mask)						\
-	({								\
-		typeof(ptr) _ptr = (ptr);				\
-		typeof(mask) _mask = (mask);				\
-		typeof(*_ptr) _old, _val = *_ptr;			\
-									\
-		for (;;) {						\
-			_old = cmpxchg(_ptr, _val, _val | _mask);	\
-			if (_old == _val)				\
-				break;					\
-			_val = _old;					\
-		}							\
-	_old;								\
-})
-
 static bool set_nr_and_not_polling(struct task_struct *p)
 {
 	set_tsk_need_resched(p);
@@ -999,7 +984,6 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 
 #define SM_NONE			0x0
 #define SM_PREEMPT		0x1
-#define SM_RTLOCK_WAIT		0x2
 
 # define SM_MASK_PREEMPT	(~0U)
 

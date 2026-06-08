@@ -107,7 +107,6 @@ static void add_mm_counter_fast(struct mm_struct *mm, int member, int val)
 #define inc_mm_counter_fast(mm, member) add_mm_counter_fast(mm, member, 1)
 #define dec_mm_counter_fast(mm, member) add_mm_counter_fast(mm, member, -1)
 
-#define TASK_RSS_EVENTS_THRESH	(64)
 static void check_sync_rss_stat(struct task_struct *task)
 {
 	/* Stub: skip RSS stat syncing for minimal kernel */

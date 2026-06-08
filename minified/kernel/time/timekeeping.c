@@ -371,36 +371,6 @@ ktime_t ktime_get_with_offset(enum tk_offsets offs)
 
 /* Removed: ktime_get_coarse_with_offset, ktime_mono_to_any, ktime_get_raw - no callers */
 
-void ktime_get_ts64(struct timespec64 *ts)
-{
-	struct timekeeper *tk = &tk_core.timekeeper;
-	struct timespec64 tomono;
-	unsigned int seq;
-	u64 nsec;
-
-	WARN_ON(timekeeping_suspended);
-
-	do {
-		seq = read_seqcount_begin(&tk_core.seq);
-		ts->tv_sec = tk->xtime_sec;
-		nsec = timekeeping_get_ns(&tk->tkr_mono);
-		tomono = tk->wall_to_monotonic;
-
-	} while (read_seqcount_retry(&tk_core.seq, seq));
-
-	ts->tv_sec += tomono.tv_sec;
-	ts->tv_nsec = 0;
-	timespec64_add_ns(ts, nsec + tomono.tv_nsec);
-}
-
-time64_t ktime_get_seconds(void)
-{
-	struct timekeeper *tk = &tk_core.timekeeper;
-
-	WARN_ON(timekeeping_suspended);
-	return tk->ktime_sec;
-}
-
 time64_t ktime_get_real_seconds(void)
 {
 	struct timekeeper *tk = &tk_core.timekeeper;

@@ -16,12 +16,10 @@ void timekeeping_init(void);
 extern int do_sys_settimeofday64(const struct timespec64 *tv,
 				 const struct timezone *tz);
 
-extern void ktime_get_ts64(struct timespec64 *ts);
 extern void ktime_get_real_ts64(struct timespec64 *tv);
 extern void ktime_get_coarse_real_ts64(struct timespec64 *ts);
 
 
-extern time64_t ktime_get_seconds(void);
 extern time64_t ktime_get_real_seconds(void);
 
 

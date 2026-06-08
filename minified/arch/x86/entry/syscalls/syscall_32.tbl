@@ -55,7 +55,6 @@
 69	i386	ssetmask		sys_ssetmask
 78	i386	gettimeofday		sys_gettimeofday		compat_sys_gettimeofday
 79	i386	settimeofday		sys_settimeofday		compat_sys_settimeofday
-82	i386	select			sys_old_select			compat_sys_old_select
 84	i386	oldlstat		sys_lstat
 85	i386	readlink		sys_readlink
 86	i386	uselib			sys_uselib
@@ -93,7 +92,6 @@
 137	i386	afs_syscall
 140	i386	_llseek			sys_llseek
 141	i386	getdents		sys_getdents			compat_sys_getdents
-142	i386	_newselect		sys_select			compat_sys_select
 143	i386	flock			sys_flock
 144	i386	msync			sys_msync
 145	i386	readv
@@ -103,7 +101,6 @@
 162	i386	nanosleep		sys_nanosleep_time32
 166	i386	vm86			sys_vm86			sys_ni_syscall
 167	i386	query_module
-168	i386	poll			sys_poll
 169	i386	nfsservctl
 183	i386	getcwd			sys_getcwd
 184	i386	capget			sys_capget

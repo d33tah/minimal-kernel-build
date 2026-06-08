@@ -36,7 +36,6 @@ void tty_open_proc_set_tty(struct file *filp, struct tty_struct *tty);
 void tty_buffer_free_all(struct tty_port *port);
 void tty_buffer_flush(struct tty_struct *tty, struct tty_ldisc *ld);
 void tty_buffer_init(struct tty_port *port);
-bool tty_buffer_restart_work(struct tty_port *port);
 bool tty_buffer_cancel_work(struct tty_port *port);
 /* tty_buffer_flush_work removed - unused */
 speed_t tty_termios_input_baud_rate(struct ktermios *termios);

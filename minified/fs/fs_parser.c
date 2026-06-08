@@ -6,16 +6,6 @@
 #include <linux/namei.h>
 #include "internal.h"
 
-static const struct constant_table bool_names[] = {
-	{ "0",		false },
-	{ "1",		true },
-	{ "false",	false },
-	{ "no",		false },
-	{ "true",	true },
-	{ "yes",	true },
-	{ },
-};
-
 static const struct constant_table *
 __lookup_constant(const struct constant_table *tbl, const char *name)
 {
@@ -98,71 +88,9 @@ int __fs_parse(struct p_log *log,
 	return p->opt;
 }
 
-int fs_lookup_param(struct fs_context *fc,
-		    struct fs_parameter *param,
-		    bool want_bdev,
-		    struct path *_path)
-{
-	struct filename *f;
-	unsigned int flags = 0;
-	bool put_f;
-	int ret;
-
-	switch (param->type) {
-	case fs_value_is_string:
-		f = getname_kernel(param->string);
-		if (IS_ERR(f))
-			return PTR_ERR(f);
-		put_f = true;
-		break;
-	case fs_value_is_filename:
-		f = param->name;
-		put_f = false;
-		break;
-	default:
-		return invalf(fc, "%s: not usable as path", param->key);
-	}
-
-	ret = filename_lookup(param->dirfd, f, flags, _path, NULL);
-	if (ret < 0) {
-		errorf(fc, "%s: Lookup failure for '%s'", param->key, f->name);
-		goto out;
-	}
-
-	if (want_bdev &&
-	    !S_ISBLK(d_backing_inode(_path->dentry)->i_mode)) {
-		path_put(_path);
-		_path->dentry = NULL;
-		_path->mnt = NULL;
-		errorf(fc, "%s: Non-blockdev passed as '%s'",
-		       param->key, f->name);
-		ret = -ENOTBLK;
-	}
-
-out:
-	if (put_f)
-		putname(f);
-	return ret;
-}
-
 static int fs_param_bad_value(struct p_log *log, struct fs_parameter *param)
 {
 	return inval_plog(log, "Bad value for '%s'", param->key);
-}
-
-int fs_param_is_bool(struct p_log *log, const struct fs_parameter_spec *p,
-		     struct fs_parameter *param, struct fs_parse_result *result)
-{
-	int b;
-	if (param->type != fs_value_is_string)
-		return fs_param_bad_value(log, param);
-	if (!*param->string && (p->flags & fs_param_can_be_empty))
-		return 0;
-	b = lookup_constant(bool_names, param->string, -1);
-	if (b == -1)
-		return fs_param_bad_value(log, param);
-	result->boolean = b;
-	return 0;
 }
 
 int fs_param_is_u32(struct p_log *log, const struct fs_parameter_spec *p,
@@ -178,93 +106,4 @@ int fs_param_is_u32(struct p_log *log, const struct fs_parameter_spec *p,
 	return 0;
 }
 
-int fs_param_is_s32(struct p_log *log, const struct fs_parameter_spec *p,
-		    struct fs_parameter *param, struct fs_parse_result *result)
-{
-	if (param->type != fs_value_is_string)
-		return fs_param_bad_value(log, param);
-	if (!*param->string && (p->flags & fs_param_can_be_empty))
-		return 0;
-	if (kstrtoint(param->string, 0, &result->int_32) < 0)
-		return fs_param_bad_value(log, param);
-	return 0;
-}
-
-int fs_param_is_u64(struct p_log *log, const struct fs_parameter_spec *p,
-		    struct fs_parameter *param, struct fs_parse_result *result)
-{
-	if (param->type != fs_value_is_string)
-		return fs_param_bad_value(log, param);
-	if (!*param->string && (p->flags & fs_param_can_be_empty))
-		return 0;
-	if (kstrtoull(param->string, 0, &result->uint_64) < 0)
-		return fs_param_bad_value(log, param);
-	return 0;
-}
-
-int fs_param_is_enum(struct p_log *log, const struct fs_parameter_spec *p,
-		     struct fs_parameter *param, struct fs_parse_result *result)
-{
-	const struct constant_table *c;
-	if (param->type != fs_value_is_string)
-		return fs_param_bad_value(log, param);
-	if (!*param->string && (p->flags & fs_param_can_be_empty))
-		return 0;
-	c = __lookup_constant(p->data, param->string);
-	if (!c)
-		return fs_param_bad_value(log, param);
-	result->uint_32 = c->value;
-	return 0;
-}
-
-int fs_param_is_string(struct p_log *log, const struct fs_parameter_spec *p,
-		       struct fs_parameter *param, struct fs_parse_result *result)
-{
-	if (param->type != fs_value_is_string ||
-	    (!*param->string && !(p->flags & fs_param_can_be_empty)))
-		return fs_param_bad_value(log, param);
-	return 0;
-}
-
-int fs_param_is_blob(struct p_log *log, const struct fs_parameter_spec *p,
-		     struct fs_parameter *param, struct fs_parse_result *result)
-{
-	if (param->type != fs_value_is_blob)
-		return fs_param_bad_value(log, param);
-	return 0;
-}
-
-int fs_param_is_fd(struct p_log *log, const struct fs_parameter_spec *p,
-		  struct fs_parameter *param, struct fs_parse_result *result)
-{
-	switch (param->type) {
-	case fs_value_is_string:
-		if ((!*param->string && !(p->flags & fs_param_can_be_empty)) ||
-		    kstrtouint(param->string, 0, &result->uint_32) < 0)
-			break;
-		if (result->uint_32 <= INT_MAX)
-			return 0;
-		break;
-	case fs_value_is_file:
-		result->uint_32 = param->dirfd;
-		if (result->uint_32 <= INT_MAX)
-			return 0;
-		break;
-	default:
-		break;
-	}
-	return fs_param_bad_value(log, param);
-}
-
-int fs_param_is_blockdev(struct p_log *log, const struct fs_parameter_spec *p,
-		  struct fs_parameter *param, struct fs_parse_result *result)
-{
-	return 0;
-}
-
-int fs_param_is_path(struct p_log *log, const struct fs_parameter_spec *p,
-		     struct fs_parameter *param, struct fs_parse_result *result)
-{
-	return 0;
-}
 

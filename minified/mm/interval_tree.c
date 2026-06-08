@@ -170,17 +170,3 @@ void anon_vma_interval_tree_remove(struct anon_vma_chain *node,
 {
 	__anon_vma_interval_tree_remove(node, root);
 }
-
-struct anon_vma_chain *
-anon_vma_interval_tree_iter_first(struct rb_root_cached *root,
-				  unsigned long first, unsigned long last)
-{
-	return __anon_vma_interval_tree_iter_first(root, first, last);
-}
-
-struct anon_vma_chain *
-anon_vma_interval_tree_iter_next(struct anon_vma_chain *node,
-				 unsigned long first, unsigned long last)
-{
-	return __anon_vma_interval_tree_iter_next(node, first, last);
-}

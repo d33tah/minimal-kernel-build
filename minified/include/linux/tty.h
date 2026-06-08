@@ -97,9 +97,6 @@ int tty_register_ldisc(struct tty_ldisc_ops *new_ldisc);
 
 
 
-#define __DISABLED_CHAR '\0'
-
-
 /* Flag accessor macros - only keep used ones */
 #define _C_FLAG(tty, f)	((tty)->termios.c_cflag & (f))
 #define _L_FLAG(tty, f)	((tty)->termios.c_lflag & (f))
@@ -187,14 +184,11 @@ struct tty_file_private {
 
 #define TTY_THROTTLED		0
 #define TTY_IO_ERROR		1
-#define TTY_OTHER_CLOSED	2
 #define TTY_EXCLUSIVE		3
 #define TTY_DO_WRITE_WAKEUP	5
 #define TTY_LDISC_OPEN		11
-#define TTY_PTY_LOCK		16
 #define TTY_NO_WRITE_SPLIT	17
 #define TTY_HUPPED		18
-#define TTY_HUPPING		19
 #define TTY_LDISC_CHANGING	20
 #define TTY_LDISC_HALTED	22
 

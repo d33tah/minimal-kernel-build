@@ -69,12 +69,6 @@ static inline unsigned long resource_ext_type(const struct resource *res)
 
 struct device;
 
-extern int iomem_map_sanity_check(resource_size_t addr, unsigned long size);
-
-extern int
-walk_mem_res(u64 start, u64 end, void *arg,
-	     int (*func)(struct resource *, void *));
-
 
 #endif
 #endif	 

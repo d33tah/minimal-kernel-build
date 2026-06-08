@@ -37,15 +37,6 @@ struct resource iomem_resource = {
 
 static DEFINE_RWLOCK(resource_lock);
 
-static struct resource *next_resource(struct resource *p)
-{
-	if (p->child)
-		return p->child;
-	while (!p->sibling && p->parent)
-		p = p->parent;
-	return p->sibling;
-}
-
 
 static struct resource * __request_resource(struct resource *root, struct resource *new)
 {
@@ -93,85 +84,6 @@ int request_resource(struct resource *root, struct resource *new)
 	conflict = request_resource_conflict(root, new);
 	return conflict ? -EBUSY : 0;
 }
-
-
-
-static int find_next_iomem_res(resource_size_t start, resource_size_t end,
-			       unsigned long flags, unsigned long desc,
-			       struct resource *res)
-{
-	struct resource *p;
-
-	if (!res)
-		return -EINVAL;
-
-	if (start >= end)
-		return -EINVAL;
-
-	read_lock(&resource_lock);
-
-	for (p = iomem_resource.child; p; p = next_resource(p)) {
-		 
-		if (p->start > end) {
-			p = NULL;
-			break;
-		}
-
-		 
-		if (p->end < start)
-			continue;
-
-		if ((p->flags & flags) != flags)
-			continue;
-		if ((desc != IORES_DESC_NONE) && (desc != p->desc))
-			continue;
-
-		 
-		break;
-	}
-
-	if (p) {
-		 
-		*res = (struct resource) {
-			.start = max(start, p->start),
-			.end = min(end, p->end),
-			.flags = p->flags,
-			.desc = p->desc,
-			.parent = p->parent,
-		};
-	}
-
-	read_unlock(&resource_lock);
-	return p ? 0 : -ENODEV;
-}
-
-static int __walk_iomem_res_desc(resource_size_t start, resource_size_t end,
-				 unsigned long flags, unsigned long desc,
-				 void *arg,
-				 int (*func)(struct resource *, void *))
-{
-	struct resource res;
-	int ret = -EINVAL;
-
-	while (start < end &&
-	       !find_next_iomem_res(start, end, flags, desc, &res)) {
-		ret = (*func)(&res, arg);
-		if (ret)
-			break;
-
-		start = res.end + 1;
-	}
-
-	return ret;
-}
-
-int walk_mem_res(u64 start, u64 end, void *arg,
-		 int (*func)(struct resource *, void *))
-{
-	unsigned long flags = IORESOURCE_MEM | IORESOURCE_BUSY;
-	return __walk_iomem_res_desc(start, end, flags, IORES_DESC_NONE, arg, func);
-}
-
 
 
 
@@ -245,13 +157,6 @@ int insert_resource(struct resource *parent, struct resource *new)
 
 
 static struct inode *iomem_inode;
-
-
-int iomem_map_sanity_check(resource_size_t addr, unsigned long size)
-{
-	/* Stub: sanity check not needed for minimal kernel */
-	return 0;
-}
 
 
 static int iomem_fs_init_fs_context(struct fs_context *fc)

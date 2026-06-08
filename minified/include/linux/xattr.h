@@ -31,24 +31,4 @@ struct xattr {
 	size_t value_len;
 };
 
-ssize_t vfs_getxattr(struct user_namespace *, struct dentry *, const char *,
-		     void *, size_t);
-int __vfs_setxattr(struct user_namespace *, struct dentry *, struct inode *,
-		   const char *, const void *, size_t, int);
-int __vfs_setxattr_noperm(struct user_namespace *, struct dentry *,
-			  const char *, const void *, size_t, int);
-int __vfs_setxattr_locked(struct user_namespace *, struct dentry *,
-			  const char *, const void *, size_t, int,
-			  struct inode **);
-int vfs_setxattr(struct user_namespace *, struct dentry *, const char *,
-		 const void *, size_t, int);
-int __vfs_removexattr_locked(struct user_namespace *, struct dentry *,
-			     const char *, struct inode **);
-
-ssize_t vfs_getxattr_alloc(struct user_namespace *mnt_userns,
-			   struct dentry *dentry, const char *name,
-			   char **xattr_value, size_t size, gfp_t flags);
-
-
-
 #endif

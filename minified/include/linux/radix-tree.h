@@ -70,8 +70,6 @@ int radix_tree_insert(struct radix_tree_root *, unsigned long index,
 void *__radix_tree_lookup(const struct radix_tree_root *, unsigned long index,
 			  struct radix_tree_node **nodep, void __rcu ***slotp);
 void *radix_tree_lookup(const struct radix_tree_root *, unsigned long);
-void __rcu **radix_tree_lookup_slot(const struct radix_tree_root *,
-					unsigned long index);
 void __radix_tree_replace(struct radix_tree_root *, struct radix_tree_node *,
 			  void __rcu **slot, void *entry);
 void radix_tree_iter_replace(struct radix_tree_root *,

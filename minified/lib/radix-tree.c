@@ -532,16 +532,6 @@ void *__radix_tree_lookup(const struct radix_tree_root *root,
 	return node;
 }
 
-void __rcu **radix_tree_lookup_slot(const struct radix_tree_root *root,
-				unsigned long index)
-{
-	void __rcu **slot;
-
-	if (!__radix_tree_lookup(root, index, NULL, &slot))
-		return NULL;
-	return slot;
-}
-
 void *radix_tree_lookup(const struct radix_tree_root *root, unsigned long index)
 {
 	return __radix_tree_lookup(root, index, NULL, NULL);

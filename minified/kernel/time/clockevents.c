@@ -110,17 +110,6 @@ void clockevents_shutdown(struct clock_event_device *dev)
 	dev->next_event = KTIME_MAX;
 }
 
-int clockevents_tick_resume(struct clock_event_device *dev)
-{
-	int ret = 0;
-
-	if (dev->tick_resume)
-		ret = dev->tick_resume(dev);
-
-	return ret;
-}
-
-
 #define MIN_DELTA_LIMIT		(NSEC_PER_SEC / HZ)
 
 static int clockevents_increase_min_delta(struct clock_event_device *dev)

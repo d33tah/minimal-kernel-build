@@ -483,26 +483,6 @@ void hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
 	unlock_hrtimer_base(timer, &flags);
 }
 
-int hrtimer_try_to_cancel(struct hrtimer *timer)
-{
-	struct hrtimer_clock_base *base;
-	unsigned long flags;
-	int ret = -1;
-
-	if (!hrtimer_active(timer))
-		return 0;
-
-	base = lock_hrtimer_base(timer, &flags);
-
-	if (!hrtimer_callback_running(timer))
-		ret = remove_hrtimer(timer, base, false, false);
-
-	unlock_hrtimer_base(timer, &flags);
-
-	return ret;
-
-}
-
 static inline void
 hrtimer_cpu_base_init_expiry_lock(struct hrtimer_cpu_base *base) { }
 static inline void
@@ -511,19 +491,6 @@ static inline void
 hrtimer_cpu_base_unlock_expiry(struct hrtimer_cpu_base *base) { }
 static inline void hrtimer_sync_wait_running(struct hrtimer_cpu_base *base,
 					     unsigned long flags) { }
-
-int hrtimer_cancel(struct hrtimer *timer)
-{
-	int ret;
-
-	do {
-		ret = hrtimer_try_to_cancel(timer);
-
-		if (ret < 0)
-			hrtimer_cancel_wait_running(timer);
-	} while (ret < 0);
-	return ret;
-}
 
 static inline int hrtimer_clockid_to_base(clockid_t clock_id)
 {
@@ -567,25 +534,6 @@ void hrtimer_init(struct hrtimer *timer, clockid_t clock_id,
 {
 	debug_init(timer, clock_id, mode);
 	__hrtimer_init(timer, clock_id, mode);
-}
-
-bool hrtimer_active(const struct hrtimer *timer)
-{
-	struct hrtimer_clock_base *base;
-	unsigned int seq;
-
-	do {
-		base = READ_ONCE(timer->base);
-		seq = raw_read_seqcount_begin(&base->seq);
-
-		if (timer->state != HRTIMER_STATE_INACTIVE ||
-		    base->running == timer)
-			return true;
-
-	} while (read_seqcount_retry(&base->seq, seq) ||
-		 base != READ_ONCE(timer->base));
-
-	return false;
 }
 
 static void __run_hrtimer(struct hrtimer_cpu_base *cpu_base,

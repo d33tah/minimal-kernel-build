@@ -142,14 +142,6 @@ extern void hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
 				   u64 range_ns, const enum hrtimer_mode mode);
 
 
-extern int hrtimer_cancel(struct hrtimer *timer);
-
-
-
-
-extern bool hrtimer_active(const struct hrtimer *timer);
-
-
 static inline int hrtimer_callback_running(struct hrtimer *timer)
 {
 	return timer->base->running == timer;

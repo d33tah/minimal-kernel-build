@@ -16,16 +16,6 @@
 #define CLEAR_MNT_MARK(m) ((m)->mnt.mnt_flags &= ~MNT_MARKED)
 #define IS_MNT_LOCKED(m) ((m)->mnt.mnt_flags & MNT_LOCKED)
 
-#define CL_EXPIRE    		0x01
-#define CL_SLAVE     		0x02
-#define CL_COPY_UNBINDABLE	0x04
-#define CL_MAKE_SHARED 		0x08
-#define CL_PRIVATE 		0x10
-#define CL_SHARED_TO_SLAVE	0x20
-#define CL_COPY_MNT_NS_FILE	0x40
-
-#define CL_COPY_ALL		(CL_COPY_UNBINDABLE | CL_COPY_MNT_NS_FILE)
-
 static inline void set_mnt_shared(struct mount *mnt)
 {
 	mnt->mnt.mnt_flags &= ~MNT_SHARED_MASK;
@@ -45,8 +35,5 @@ void mnt_set_mountpoint(struct mount *, struct mountpoint *,
 			struct mount *);
 void mnt_change_mountpoint(struct mount *parent, struct mountpoint *mp,
 			   struct mount *mnt);
-struct mount *copy_tree(struct mount *, struct dentry *, int);
-bool is_path_reachable(struct mount *, struct dentry *,
-			 const struct path *root);
 /* count_mounts removed - unused */
 #endif  

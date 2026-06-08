@@ -456,23 +456,6 @@ static int __kill_pgrp_info(int sig, struct kernel_siginfo *info, struct pid *pg
 	return -ESRCH;
 }
 
-int kill_pid_info(int sig, struct kernel_siginfo *info, struct pid *pid)
-{
-	struct task_struct *p;
-	int error;
-
-	rcu_read_lock();
-	p = pid_task(pid, PIDTYPE_PID);
-	if (p)
-		error = group_send_sig_info(sig, info, p, PIDTYPE_TGID);
-	else
-		error = -ESRCH;
-	rcu_read_unlock();
-
-	return error;
-}
-
-
 int send_sig_info(int sig, struct kernel_siginfo *info, struct task_struct *p)
 {
 	

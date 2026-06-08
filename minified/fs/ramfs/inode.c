@@ -97,26 +97,6 @@ static int ramfs_create(struct user_namespace *mnt_userns, struct inode *dir,
 	return ramfs_mknod(&init_user_ns, dir, dentry, mode | S_IFREG, 0);
 }
 
-static int ramfs_symlink(struct user_namespace *mnt_userns, struct inode *dir,
-			 struct dentry *dentry, const char *symname)
-{
-	struct inode *inode;
-	int error = -ENOSPC;
-
-	inode = ramfs_get_inode(dir->i_sb, dir, S_IFLNK|S_IRWXUGO, 0);
-	if (inode) {
-		int l = strlen(symname)+1;
-		error = page_symlink(inode, symname, l);
-		if (!error) {
-			d_instantiate(dentry, inode);
-			dget(dentry);
-			dir->i_mtime = dir->i_ctime = current_time(dir);
-		} else
-			iput(inode);
-	}
-	return error;
-}
-
 static int ramfs_tmpfile(struct user_namespace *mnt_userns,
 			 struct inode *dir, struct dentry *dentry, umode_t mode)
 {
@@ -134,7 +114,6 @@ static const struct inode_operations ramfs_dir_inode_operations = {
 	.lookup		= simple_lookup,
 	.link		= simple_link,
 	.unlink		= simple_unlink,
-	.symlink	= ramfs_symlink,
 	.mkdir		= ramfs_mkdir,
 	.rmdir		= simple_rmdir,
 	.mknod		= ramfs_mknod,

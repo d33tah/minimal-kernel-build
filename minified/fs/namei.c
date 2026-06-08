@@ -2106,12 +2106,6 @@ void page_put_link(void *arg)
 }
 
 
-int page_symlink(struct inode *inode, const char *symname, int len)
-{
-	/* Stub: symlink creation not needed for minimal kernel */
-	return -EPERM;
-}
-
 const struct inode_operations page_symlink_inode_operations = {
 	.get_link	= page_get_link,
 };

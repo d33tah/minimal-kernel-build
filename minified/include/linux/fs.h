@@ -1383,7 +1383,6 @@ extern int nonseekable_open(struct inode * inode, struct file * filp);
 extern const char *page_get_link(struct dentry *, struct inode *,
 				 struct delayed_call *);
 extern void page_put_link(void *);
-extern int page_symlink(struct inode *inode, const char *symname, int len);
 extern const struct inode_operations page_symlink_inode_operations;
 void generic_fillattr(struct user_namespace *, struct inode *, struct kstat *);
 extern int vfs_getattr(const struct path *, struct kstat *, u32, unsigned int);

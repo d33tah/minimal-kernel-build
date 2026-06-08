@@ -125,11 +125,6 @@ static inline void wbinvd(void)
 
 /* load_gs_index removed - unused */
 
-static inline void clflush(volatile void *__p)
-{
-	asm volatile("clflush %0" : "+m" (*(volatile char __force *)__p));
-}
-
 #define nop() asm volatile ("nop")
 
 /* Used by sync_core.h */

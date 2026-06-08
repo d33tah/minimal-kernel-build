@@ -107,7 +107,6 @@
 131	i386	quotactl		sys_quotactl
 134	i386	bdflush			sys_ni_syscall
 135	i386	sysfs			sys_sysfs
-136	i386	personality		sys_personality
 137	i386	afs_syscall
 138	i386	setfsuid		sys_setfsuid16
 139	i386	setfsgid		sys_setfsgid16

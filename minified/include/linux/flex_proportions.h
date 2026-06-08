@@ -30,12 +30,5 @@ struct fprop_local_percpu {
 
 int fprop_local_init_percpu(struct fprop_local_percpu *pl, gfp_t gfp);
 void fprop_local_destroy_percpu(struct fprop_local_percpu *pl);
-void __fprop_add_percpu(struct fprop_global *p, struct fprop_local_percpu *pl,
-		long nr);
-void __fprop_add_percpu_max(struct fprop_global *p,
-		struct fprop_local_percpu *pl, int max_frac, long nr);
-void fprop_fraction_percpu(struct fprop_global *p,
-	struct fprop_local_percpu *pl, unsigned long *numerator,
-	unsigned long *denominator);
 
 #endif

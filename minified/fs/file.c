@@ -495,36 +495,6 @@ void fd_install(unsigned int fd, struct file *file)
 }
 
 
-static struct file *pick_file(struct files_struct *files, unsigned fd)
-{
-	struct fdtable *fdt = files_fdtable(files);
-	struct file *file;
-
-	if (fd >= fdt->max_fds)
-		return NULL;
-
-	file = fdt->fd[fd];
-	if (file) {
-		rcu_assign_pointer(fdt->fd[fd], NULL);
-		__put_unused_fd(files, fd);
-	}
-	return file;
-}
-
-int close_fd(unsigned fd)
-{
-	struct files_struct *files = current->files;
-	struct file *file;
-
-	spin_lock(&files->file_lock);
-	file = pick_file(files, fd);
-	spin_unlock(&files->file_lock);
-	if (!file)
-		return -EBADF;
-
-	return filp_close(file, files);
-}
-
 void do_close_on_exec(struct files_struct *files)
 {
 	unsigned i;

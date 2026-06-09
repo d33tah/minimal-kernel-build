@@ -380,91 +380,6 @@ struct file *filp_open(const char *filename, int flags, umode_t mode)
 }
 
 
-static long do_sys_openat2(int dfd, const char __user *filename,
-			   struct open_how *how)
-{
-	struct open_flags op;
-	int fd = build_open_flags(how, &op);
-	struct filename *tmp;
-
-	if (fd)
-		return fd;
-
-	tmp = getname(filename);
-	if (IS_ERR(tmp))
-		return PTR_ERR(tmp);
-
-	fd = get_unused_fd_flags(how->flags);
-	if (fd >= 0) {
-		struct file *f = do_filp_open(dfd, tmp, &op);
-		if (IS_ERR(f)) {
-			put_unused_fd(fd);
-			fd = PTR_ERR(f);
-		} else {
-			fd_install(fd, f);
-		}
-	}
-	putname(tmp);
-	return fd;
-}
-
-long do_sys_open(int dfd, const char __user *filename, int flags, umode_t mode)
-{
-	struct open_how how = build_open_how(flags, mode);
-	return do_sys_openat2(dfd, filename, &how);
-}
-
-
-SYSCALL_DEFINE3(open, const char __user *, filename, int, flags, umode_t, mode)
-{
-	if (force_o_largefile())
-		flags |= O_LARGEFILE;
-	return do_sys_open(AT_FDCWD, filename, flags, mode);
-}
-
-SYSCALL_DEFINE4(openat, int, dfd, const char __user *, filename, int, flags,
-		umode_t, mode)
-{
-	if (force_o_largefile())
-		flags |= O_LARGEFILE;
-	return do_sys_open(dfd, filename, flags, mode);
-}
-
-SYSCALL_DEFINE4(openat2, int, dfd, const char __user *, filename,
-		struct open_how __user *, how, size_t, usize)
-{
-	int err;
-	struct open_how tmp;
-
-	BUILD_BUG_ON(sizeof(struct open_how) < OPEN_HOW_SIZE_VER0);
-	BUILD_BUG_ON(sizeof(struct open_how) != OPEN_HOW_SIZE_LATEST);
-
-	if (unlikely(usize < OPEN_HOW_SIZE_VER0))
-		return -EINVAL;
-
-	err = copy_struct_from_user(&tmp, sizeof(tmp), how, usize);
-	if (err)
-		return err;
-
-	if (!(tmp.flags & O_PATH) && force_o_largefile())
-		tmp.flags |= O_LARGEFILE;
-
-	return do_sys_openat2(dfd, filename, &tmp);
-}
-
-
-#ifndef __alpha__
-
-SYSCALL_DEFINE2(creat, const char __user *, pathname, umode_t, mode)
-{
-	int flags = O_CREAT | O_WRONLY | O_TRUNC;
-
-	if (force_o_largefile())
-		flags |= O_LARGEFILE;
-	return do_sys_open(AT_FDCWD, pathname, flags, mode);
-}
-#endif
-
 int filp_close(struct file *filp, fl_owner_t id)
 {
 	int retval = 0;
@@ -481,20 +396,6 @@ int filp_close(struct file *filp, fl_owner_t id)
 	return retval;
 }
 
-
-SYSCALL_DEFINE1(close, unsigned int, fd)
-{
-	int retval = close_fd(fd);
-
-	 
-	if (unlikely(retval == -ERESTARTSYS ||
-		     retval == -ERESTARTNOINTR ||
-		     retval == -ERESTARTNOHAND ||
-		     retval == -ERESTART_RESTARTBLOCK))
-		retval = -EINTR;
-
-	return retval;
-}
 
 int nonseekable_open(struct inode *inode, struct file *filp)
 {

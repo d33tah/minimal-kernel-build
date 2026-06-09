@@ -98,8 +98,6 @@ int iterate_fd(struct files_struct *, unsigned,
 		int (*)(const void *, struct file *, unsigned),
 		const void *);
 
-extern int close_fd(unsigned int fd);
-
 extern struct kmem_cache *files_cachep;
 
 #endif  

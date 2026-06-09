@@ -49,7 +49,7 @@
 68	i386	sgetmask		sys_sgetmask
 69	i386	ssetmask		sys_ssetmask
 78	i386	gettimeofday		sys_gettimeofday		compat_sys_gettimeofday
-79	i386	settimeofday		sys_settimeofday		compat_sys_settimeofday
+# 79 settimeofday removed (unreachable)
 86	i386	uselib			sys_uselib
 87	i386	swapon			sys_swapon
 88	i386	reboot

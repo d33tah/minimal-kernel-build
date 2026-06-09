@@ -39,16 +39,7 @@ SYSCALL_DEFINE2(gettimeofday, struct __kernel_old_timeval __user *, tv,
 	return 0;
 }
 
-
-SYSCALL_DEFINE2(settimeofday, struct __kernel_old_timeval __user *, tv,
-		struct timezone __user *, tz)
-{
-	/* Stub: setting time not needed for minimal kernel */
-	return -EPERM;
-}
-
-
-
+/* settimeofday syscall removed - init does write(2)+exit only */
 
 unsigned int jiffies_to_msecs(const unsigned long j)
 {

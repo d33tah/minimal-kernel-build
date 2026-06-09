@@ -786,13 +786,6 @@ static inline void cpufreq_update_util(struct rq *rq, unsigned int flags) {}
 #define perf_domain_span(pd) NULL
 
 
-static inline void membarrier_switch_mm(struct rq *rq,
-					struct mm_struct *prev_mm,
-					struct mm_struct *next_mm)
-{
-}
-
-
 /* swake_up_all_locked removed - unused */
 extern void __prepare_to_swait(struct swait_queue_head *q, struct swait_queue *wait);
 

@@ -739,7 +739,6 @@ static struct rq *finish_task_switch(struct task_struct *prev)
 	fire_sched_in_preempt_notifiers(current);
 	
 	if (mm) {
-		membarrier_mm_sync_core_before_usermode(mm);
 		mmdrop_sched(mm);
 	}
 	if (unlikely(prev_state == TASK_DEAD)) {
@@ -787,9 +786,7 @@ context_switch(struct rq *rq, struct task_struct *prev,
 			mmgrab(prev->active_mm);
 		else
 			prev->active_mm = NULL;
-	} else {                                         
-		membarrier_switch_mm(rq, prev->active_mm, next->mm);
-		
+	} else {
 		switch_mm_irqs_off(prev->active_mm, next->mm, next);
 
 		if (!prev->mm) {                         

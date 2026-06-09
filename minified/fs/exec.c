@@ -607,7 +607,6 @@ static int exec_mmap(struct mm_struct *mm)
 	}
 
 	task_lock(tsk);
-	membarrier_exec_mmap(mm);
 
 	local_irq_disable();
 	active_mm = tsk->active_mm;

@@ -13,8 +13,6 @@
 
 #include <linux/fs_context.h>
 
-#include <linux/fscrypt.h>
-
 #include <linux/uaccess.h>
 
 #include "internal.h"

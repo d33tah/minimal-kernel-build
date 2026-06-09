@@ -22,7 +22,7 @@
 13	i386	time			sys_time32
 17	i386	break
 19	i386	lseek			sys_lseek			compat_sys_lseek
-20	i386	getpid			sys_getpid
+# 20 getpid removed (unreachable)
 21	i386	mount			sys_mount
 22	i386	umount			sys_oldumount
 25	i386	stime			sys_stime32
@@ -43,9 +43,9 @@
 55	i386	fcntl			sys_fcntl			compat_sys_fcntl64
 56	i386	mpx
 58	i386	ulimit
-60	i386	umask			sys_umask
+# 60 umask removed (unreachable)
 63	i386	dup2			sys_dup2
-64	i386	getppid			sys_getppid
+# 64 getppid removed (unreachable)
 68	i386	sgetmask		sys_sgetmask
 69	i386	ssetmask		sys_ssetmask
 78	i386	gettimeofday		sys_gettimeofday		compat_sys_gettimeofday
@@ -67,7 +67,7 @@
 # 114 wait4 removed (unreachable)
 115	i386	swapoff			sys_swapoff
 # 117 ipc removed (unreachable)
-122	i386	uname			sys_newuname
+# 122 uname removed (unreachable)
 123	i386	modify_ldt		sys_modify_ldt
 124	i386	adjtimex		sys_adjtimex_time32
 127	i386	create_module
@@ -94,17 +94,17 @@
 188	i386	getpmsg
 189	i386	putpmsg
 192	i386	mmap2			sys_mmap_pgoff
-199	i386	getuid32		sys_getuid
-200	i386	getgid32		sys_getgid
-201	i386	geteuid32		sys_geteuid
-202	i386	getegid32		sys_getegid
+# 199 getuid32 removed (unreachable)
+# 200 getgid32 removed (unreachable)
+# 201 geteuid32 removed (unreachable)
+# 202 getegid32 removed (unreachable)
 218	i386	mincore			sys_mincore
 219	i386	madvise			sys_madvise
 220	i386	getdents64		sys_getdents64
 221	i386	fcntl64			sys_fcntl64			compat_sys_fcntl64
 # 222 is unused
 # 223 is unused
-224	i386	gettid			sys_gettid
+# 224 gettid removed (unreachable)
 243	i386	set_thread_area		sys_set_thread_area
 244	i386	get_thread_area		sys_get_thread_area
 # 251 is available for reuse (was briefly sys_set_zone_reclaim)

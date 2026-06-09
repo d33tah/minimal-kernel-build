@@ -59,6 +59,4 @@ static inline struct new_utsname *init_utsname(void)
 	return &init_uts_ns.name;
 }
 
-extern struct rw_semaphore uts_sem;
-
-#endif  
+#endif

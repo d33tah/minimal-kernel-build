@@ -24,76 +24,6 @@ static char *sb_writers_name[SB_FREEZE_LEVELS] = {
 	"sb_internal",
 };
 
-static unsigned long super_cache_scan(struct shrinker *shrink,
-				      struct shrink_control *sc)
-{
-	struct super_block *sb;
-	long	fs_objects = 0;
-	long	total_objects;
-	long	freed = 0;
-	long	dentries;
-	long	inodes;
-
-	sb = container_of(shrink, struct super_block, s_shrink);
-
-	if (!(sc->gfp_mask & __GFP_FS))
-		return SHRINK_STOP;
-
-	if (!trylock_super(sb))
-		return SHRINK_STOP;
-
-	if (sb->s_op->nr_cached_objects)
-		fs_objects = sb->s_op->nr_cached_objects(sb, sc);
-
-	inodes = list_lru_shrink_count(&sb->s_inode_lru, sc);
-	dentries = list_lru_shrink_count(&sb->s_dentry_lru, sc);
-	total_objects = dentries + inodes + fs_objects + 1;
-	if (!total_objects)
-		total_objects = 1;
-
-	dentries = mult_frac(sc->nr_to_scan, dentries, total_objects);
-	inodes = mult_frac(sc->nr_to_scan, inodes, total_objects);
-	fs_objects = mult_frac(sc->nr_to_scan, fs_objects, total_objects);
-
-	sc->nr_to_scan = dentries + 1;
-	freed = prune_dcache_sb(sb, sc);
-	sc->nr_to_scan = inodes + 1;
-	freed += prune_icache_sb(sb, sc);
-
-	if (fs_objects) {
-		sc->nr_to_scan = fs_objects + 1;
-		freed += sb->s_op->free_cached_objects(sb, sc);
-	}
-
-	up_read(&sb->s_umount);
-	return freed;
-}
-
-static unsigned long super_cache_count(struct shrinker *shrink,
-				       struct shrink_control *sc)
-{
-	struct super_block *sb;
-	long	total_objects = 0;
-
-	sb = container_of(shrink, struct super_block, s_shrink);
-
-	if (!(sb->s_flags & SB_BORN))
-		return 0;
-	smp_rmb();
-
-	if (sb->s_op && sb->s_op->nr_cached_objects)
-		total_objects = sb->s_op->nr_cached_objects(sb, sc);
-
-	total_objects += list_lru_shrink_count(&sb->s_dentry_lru, sc);
-	total_objects += list_lru_shrink_count(&sb->s_inode_lru, sc);
-
-	if (!total_objects)
-		return SHRINK_EMPTY;
-
-	total_objects = vfs_pressure_ratio(total_objects);
-	return total_objects;
-}
-
 static void destroy_super_work(struct work_struct *work)
 {
 	struct super_block *s = container_of(work, struct super_block,
@@ -174,8 +104,6 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags,
 	s->s_time_max = TIME64_MAX;
 
 	s->s_shrink.seeks = DEFAULT_SEEKS;
-	s->s_shrink.scan_objects = super_cache_scan;
-	s->s_shrink.count_objects = super_cache_count;
 	s->s_shrink.batch = 1024;
 	s->s_shrink.flags = SHRINKER_NUMA_AWARE | SHRINKER_MEMCG_AWARE;
 	if (prealloc_shrinker(&s->s_shrink))
@@ -250,10 +178,6 @@ static int grab_super(struct super_block *s) __releases(sb_lock)
 	up_write(&s->s_umount);
 	put_super(s);
 	return 0;
-}
-
-bool trylock_super(struct super_block *sb) {
-	return down_read_trylock(&sb->s_umount) && sb->s_root && (sb->s_flags & SB_BORN);
 }
 
 void generic_shutdown_super(struct super_block *sb)

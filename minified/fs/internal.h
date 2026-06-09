@@ -55,7 +55,6 @@ int path_mount(const char *dev_name, struct path *path,
 extern struct file *alloc_empty_file(int, const struct cred *);
 
 /* reconfigure_super, user_get_super removed - unused */
-extern bool trylock_super(struct super_block *sb);
 void put_super(struct super_block *sb);
 extern bool mount_capable(struct fs_context *);
 
@@ -79,14 +78,12 @@ int chown_common(const struct path *path, uid_t user, gid_t group);
 extern int vfs_open(const struct path *, struct file *);
 
  
-extern long prune_icache_sb(struct super_block *sb, struct shrink_control *sc);
 extern int dentry_needs_remove_privs(struct dentry *dentry);
 
  
 
  
 extern int d_set_mounted(struct dentry *dentry);
-extern long prune_dcache_sb(struct super_block *sb, struct shrink_control *sc);
 extern struct dentry *d_alloc_cursor(struct dentry *);
 extern struct dentry * d_alloc_pseudo(struct super_block *, const struct qstr *);
 extern char *simple_dname(struct dentry *, char *, int);

@@ -1595,58 +1595,6 @@ pid_t user_mode_thread(int (*fn)(void *), void *arg, unsigned long flags)
 	return kernel_clone(&args);
 }
 
-#ifdef __ARCH_WANT_SYS_FORK
-SYSCALL_DEFINE0(fork)
-{
-	struct kernel_clone_args args = {
-		.exit_signal = SIGCHLD,
-	};
-
-	return kernel_clone(&args);
-}
-#endif
-
-#ifdef __ARCH_WANT_SYS_VFORK
-SYSCALL_DEFINE0(vfork)
-{
-	struct kernel_clone_args args = {
-		.flags		= CLONE_VFORK | CLONE_VM,
-		.exit_signal	= SIGCHLD,
-	};
-
-	return kernel_clone(&args);
-}
-#endif
-
-#ifdef __ARCH_WANT_SYS_CLONE
-SYSCALL_DEFINE5(clone, unsigned long, clone_flags, unsigned long, newsp,
-		 int __user *, parent_tidptr,
-		 unsigned long, tls,
-		 int __user *, child_tidptr)
-{
-	struct kernel_clone_args args = {
-		.flags		= (lower_32_bits(clone_flags) & ~CSIGNAL),
-		.pidfd		= parent_tidptr,
-		.child_tid	= child_tidptr,
-		.parent_tid	= parent_tidptr,
-		.exit_signal	= (lower_32_bits(clone_flags) & CSIGNAL),
-		.stack		= newsp,
-		.tls		= tls,
-	};
-
-	return kernel_clone(&args);
-}
-#endif
-
-#ifdef __ARCH_WANT_SYS_CLONE3
-
-/* Stub: clone3 syscall not needed for minimal kernel - use clone() instead */
-SYSCALL_DEFINE2(clone3, struct clone_args __user *, uargs, size_t, size)
-{
-	return -ENOSYS;
-}
-#endif
-
 #ifndef ARCH_MIN_MMSTRUCT_ALIGN
 #define ARCH_MIN_MMSTRUCT_ALIGN 0
 #endif

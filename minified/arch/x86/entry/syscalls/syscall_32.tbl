@@ -13,7 +13,6 @@
 #
 0	i386	restart_syscall		sys_restart_syscall
 1	i386	exit			sys_exit
-2	i386	fork			sys_fork
 3	i386	read			sys_read
 4	i386	write			sys_write
 5	i386	open			sys_open			compat_sys_open
@@ -68,7 +67,6 @@
 # 114 wait4 removed (unreachable)
 115	i386	swapoff			sys_swapoff
 # 117 ipc removed (unreachable)
-120	i386	clone			sys_clone			compat_sys_ia32_clone
 122	i386	uname			sys_newuname
 123	i386	modify_ldt		sys_modify_ldt
 124	i386	adjtimex		sys_adjtimex_time32
@@ -95,7 +93,6 @@
 185	i386	capset			sys_capset
 188	i386	getpmsg
 189	i386	putpmsg
-190	i386	vfork			sys_vfork
 192	i386	mmap2			sys_mmap_pgoff
 199	i386	getuid32		sys_getuid
 200	i386	getgid32		sys_getgid
@@ -167,7 +164,6 @@
 # 420 semtimedop_time64 removed (unreachable)
 # 425-427 io_uring_* removed (unreachable)
 434	i386	pidfd_open		sys_pidfd_open
-435	i386	clone3			sys_clone3
 437	i386	openat2			sys_openat2
 438	i386	pidfd_getfd		sys_pidfd_getfd
 440	i386	process_madvise		sys_process_madvise

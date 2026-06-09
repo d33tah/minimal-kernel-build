@@ -64,7 +64,6 @@ struct tty_ldisc_ops {
 	void	(*hangup)(struct tty_struct *tty);
 	void	(*receive_buf)(struct tty_struct *tty, const unsigned char *cp,
 			       const char *fp, int count);
-	void	(*write_wakeup)(struct tty_struct *tty);
 	void	(*dcd_change)(struct tty_struct *tty, unsigned int status);
 	int	(*receive_buf2)(struct tty_struct *tty, const unsigned char *cp,
 				const char *fp, int count);
@@ -182,7 +181,6 @@ struct tty_file_private {
 #define TTY_THROTTLED		0
 #define TTY_IO_ERROR		1
 #define TTY_EXCLUSIVE		3
-#define TTY_DO_WRITE_WAKEUP	5
 #define TTY_LDISC_OPEN		11
 #define TTY_NO_WRITE_SPLIT	17
 #define TTY_HUPPED		18
@@ -225,7 +223,6 @@ static inline speed_t tty_get_baud_rate(struct tty_struct *tty)
 	return tty_termios_baud_rate(&tty->termios);
 }
 
-void tty_wakeup(struct tty_struct *tty);
 
 int tty_mode_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg);
 struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx);

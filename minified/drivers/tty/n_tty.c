@@ -31,12 +31,6 @@ struct n_tty_data {
 	char read_buf[N_TTY_BUF_SIZE];
 };
 
-static void n_tty_write_wakeup(struct tty_struct *tty)
-{
-	if (tty->fasync && test_and_clear_bit(TTY_DO_WRITE_WAKEUP, &tty->flags))
-		kill_fasync(&tty->fasync, SIGIO, POLL_OUT);
-}
-
 static void n_tty_flush_buffer(struct tty_struct *tty)
 {
 	struct n_tty_data *ldata = tty->disc_data;
@@ -184,7 +178,6 @@ static struct tty_ldisc_ops n_tty_ops = {
 	.set_termios     = n_tty_set_termios,
 	.poll            = n_tty_poll,
 	.receive_buf     = n_tty_receive_buf,
-	.write_wakeup    = n_tty_write_wakeup,
 	.receive_buf2	 = n_tty_receive_buf2,
 };
 

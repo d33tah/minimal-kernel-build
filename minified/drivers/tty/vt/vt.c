@@ -70,7 +70,6 @@ static void con_flush_chars(struct tty_struct *tty);
 static void set_cursor(struct vc_data *vc);
 static void hide_cursor(struct vc_data *vc);
 static void console_callback(struct work_struct *ignored);
-static void blank_screen_t(struct timer_list *unused);
 static void set_palette(struct vc_data *vc);
 
 static int printable;
@@ -78,7 +77,6 @@ int default_utf8 = true;
 int global_cursor_default = -1;
 static int cur_default = CUR_UNDERLINE;
 int console_blanked;
-static int blankinterval;
 
 static DECLARE_WORK(console_work, console_callback);
 
@@ -87,16 +85,6 @@ int last_console;
 int want_console = -1;
 
 static struct vc_data *master_display_fg;
-
-int (*console_blank_hook)(int);
-
-static DEFINE_TIMER(console_timer, blank_screen_t);
-static int blank_state;
-enum {
-	blank_off = 0,
-	blank_normal_wait,
-	blank_vesa_wait,
-};
 
 static struct device *tty0dev;
 
@@ -1202,11 +1190,6 @@ static int __init con_init(void)
 	for (i = 0; i < MAX_NR_CONSOLES; i++)
 		con_driver_map[i] = conswitchp;
 
-	if (blankinterval) {
-		blank_state = blank_normal_wait;
-		mod_timer(&console_timer, jiffies + (blankinterval * HZ));
-	}
-
 	for (currcons = 0; currcons < MIN_NR_CONSOLES; currcons++) {
 		vc_cons[currcons].d = vc = kzalloc(sizeof(struct vc_data), GFP_NOWAIT);
 		INIT_WORK(&vc_cons[currcons].SAK_work, vc_SAK);
@@ -1338,12 +1321,6 @@ void unblank_screen(void)
 {
 	do_unblank_screen(0);
 }
-
-static void blank_screen_t(struct timer_list *unused)
-{
-	/* Stub: no screen blanking in minimal kernel */
-}
-
 
 static void set_palette(struct vc_data *vc)
 {

@@ -49,7 +49,6 @@ static inline void task_io_accounting_init(struct task_io_accounting *ioac) {}
 #include <linux/rmap.h>
 #include <linux/userfaultfd_k.h>
 static inline void proc_fork_connector(struct task_struct *task) {}
-#include <linux/freezer.h>
 #include <linux/random.h>
 #include <linux/tty.h>
 #include <linux/fs_struct.h>
@@ -739,9 +738,7 @@ static int wait_for_vfork_done(struct task_struct *child,
 {
 	int killed;
 
-	freezer_do_not_count();
 	killed = wait_for_completion_killable(vfork);
-	freezer_count();
 
 	if (killed) {
 		task_lock(child);

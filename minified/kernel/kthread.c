@@ -13,7 +13,6 @@
 #include <linux/export.h>
 #include <linux/mutex.h>
 #include <linux/slab.h>
-#include <linux/freezer.h>
 #include <linux/ptrace.h>
 #include <linux/uaccess.h>
 #include <linux/numa.h>

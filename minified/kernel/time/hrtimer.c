@@ -14,7 +14,6 @@
 #include <linux/sched/deadline.h>
 #include <linux/sched/debug.h>
 #include <linux/timer.h>
-#include <linux/freezer.h>
 #include <linux/compat.h>
 
 #include <linux/uaccess.h>

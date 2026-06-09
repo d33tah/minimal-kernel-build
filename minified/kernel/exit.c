@@ -18,7 +18,6 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <linux/cpu.h>
 #include <linux/file.h>
 #include <linux/fdtable.h>
-#include <linux/freezer.h>
 #include <linux/binfmts.h>
 #include <linux/nsproxy.h>
 #include <linux/pid_namespace.h>

@@ -5,7 +5,6 @@
 #include <linux/sched/task_stack.h>
 #include <linux/sched/cputime.h>
 #include <linux/file.h>
-#include <linux/freezer.h>
 #include <linux/pid_namespace.h>
 #include <linux/cgroup.h>
 #include <linux/task_work.h>
@@ -118,7 +117,7 @@ static void recalc_sigpending_and_wake(struct task_struct *t)
 
 void recalc_sigpending(void)
 {
-	if (!recalc_sigpending_tsk(current) && !freezing(current))
+	if (!recalc_sigpending_tsk(current))
 		clear_thread_flag(TIF_SIGPENDING);
 
 }

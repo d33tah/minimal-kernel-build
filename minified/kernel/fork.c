@@ -945,15 +945,6 @@ void __cleanup_sighand(struct sighand_struct *sighand)
 	}
 }
 
-static void posix_cpu_timers_init_group(struct signal_struct *sig)
-{
-	struct posix_cputimers *pct = &sig->posix_cputimers;
-	unsigned long cpu_limit;
-
-	cpu_limit = READ_ONCE(sig->rlim[RLIMIT_CPU].rlim_cur);
-	posix_cputimers_group_init(pct, cpu_limit);
-}
-
 static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 {
 	struct signal_struct *sig;
@@ -984,8 +975,6 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 	task_lock(current->group_leader);
 	memcpy(sig->rlim, current->signal->rlim, sizeof sig->rlim);
 	task_unlock(current->group_leader);
-
-	posix_cpu_timers_init_group(sig);
 
 	tty_audit_fork(sig);
 	/* sched_autogroup_fork - stubbed */
@@ -1157,8 +1146,6 @@ static __latent_entropy struct task_struct *copy_process(
 
 	task_io_accounting_init(&p->ioac);
 
-	posix_cputimers_init(&p->posix_cputimers);
-
 	p->io_context = NULL;
 	cgroup_fork(p);
 	if (args->kthread) {
@@ -1241,7 +1228,6 @@ static __latent_entropy struct task_struct *copy_process(
 	p->pdeath_signal = 0;
 	INIT_LIST_HEAD(&p->thread_group);
 	p->task_works = NULL;
-	clear_posix_cputimers_work(p);
 
 	sched_cgroup_fork(p, args);
 

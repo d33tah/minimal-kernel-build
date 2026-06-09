@@ -100,10 +100,7 @@ struct signal_struct {
 	unsigned int		is_child_subreaper:1;
 	unsigned int		has_child_subreaper:1;
 
-	 
-	struct posix_cputimers posix_cputimers;
 
-	 
 	struct pid *pids[PIDTYPE_MAX];
 
 

@@ -416,7 +416,6 @@ struct task_struct {
 	unsigned long			maj_flt;
 
 	 
-	struct posix_cputimers		posix_cputimers;
 
 
 	 

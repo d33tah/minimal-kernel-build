@@ -74,11 +74,6 @@ static void tty_buffer_free(struct tty_port *port, struct tty_buffer *b)
 		llist_add(&b->free, &buf->free);
 }
 
-void tty_buffer_flush(struct tty_struct *tty, struct tty_ldisc *ld)
-{
-	 
-}
-
 int tty_ldisc_receive_buf(struct tty_ldisc *ld, const unsigned char *p,
 			  const char *f, int count)
 {

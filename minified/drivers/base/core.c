@@ -47,7 +47,6 @@ void device_pm_move_to_tail(struct device *dev)
 /* Stub: no device links since device_link_add returns NULL */
 int device_links_check_suppliers(struct device *dev)
 {
-	dev->links.status = DL_DEV_PROBING;
 	return 0;
 }
 
@@ -303,10 +302,6 @@ void device_initialize(struct device *dev)
 	INIT_LIST_HEAD(&dev->devres_head);
 	device_pm_init(dev);
 	set_dev_node(dev, NUMA_NO_NODE);
-	INIT_LIST_HEAD(&dev->links.consumers);
-	INIT_LIST_HEAD(&dev->links.suppliers);
-	INIT_LIST_HEAD(&dev->links.defer_sync);
-	dev->links.status = DL_DEV_NO_DRIVER;
 #if defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_DEVICE) || \
     defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU) || \
     defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU_ALL)

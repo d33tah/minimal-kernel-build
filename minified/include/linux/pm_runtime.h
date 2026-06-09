@@ -50,7 +50,6 @@ static inline void pm_runtime_put_noidle(struct device *dev) {}
    removed - unused */
 static inline void pm_runtime_get_suppliers(struct device *dev) {}
 static inline void pm_runtime_put_suppliers(struct device *dev) {}
-static inline void pm_runtime_release_supplier(struct device_link *link) {}
 
 
 /* Compact pm_runtime_* wrapper functions */

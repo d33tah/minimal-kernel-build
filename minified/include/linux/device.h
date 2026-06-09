@@ -114,31 +114,8 @@ struct device_dma_parameters {
 	unsigned long segment_boundary_mask;
 };
 
-enum device_link_state {
-	DL_STATE_NONE = -1,
-};
-
-#define DL_FLAG_PM_RUNTIME		BIT(2)
-#define DL_FLAG_RPM_ACTIVE		BIT(3)
-#define DL_FLAG_AUTOREMOVE_SUPPLIER	BIT(4)
-#define DL_FLAG_AUTOPROBE_CONSUMER	BIT(5)
-#define DL_FLAG_SYNC_STATE_ONLY		BIT(7)
-#define DL_FLAG_INFERRED		BIT(8)
-
-enum dl_dev_state {
-	DL_DEV_NO_DRIVER = 0,
-	DL_DEV_PROBING,
-};
-
 enum device_removable {
 	DEVICE_REMOVABLE_NOT_SUPPORTED = 0,
-};
-
-struct dev_links_info {
-	struct list_head suppliers;
-	struct list_head consumers;
-	struct list_head defer_sync;
-	enum dl_dev_state status;
 };
 
 struct dev_msi_info {
@@ -162,7 +139,6 @@ struct device {
 	void		*driver_data;	 
 	struct mutex		mutex;	 
 
-	struct dev_links_info	links;
 	struct dev_pm_info	power;
 	struct dev_pm_domain	*pm_domain;
 
@@ -210,20 +186,6 @@ struct device {
     defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU_ALL)
 	bool			dma_coherent:1;
 #endif
-};
-
-struct device_link {
-	struct device *supplier;
-	struct list_head s_node;
-	struct device *consumer;
-	struct list_head c_node;
-	struct device link_dev;
-	enum device_link_state status;
-	u32 flags;
-	refcount_t rpm_active;
-	struct kref kref;
-	struct work_struct rm_work;
-	bool supplier_preactivated;  
 };
 
 static inline struct device *kobj_to_dev(struct kobject *kobj)

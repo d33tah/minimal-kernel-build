@@ -189,7 +189,6 @@ int should_failslab(struct kmem_cache *s, gfp_t gfpflags);
 static inline bool __should_failslab(struct kmem_cache *s, gfp_t gfpflags)
 { return false; }
 /* end fault-inject.h */
-#include <linux/kasan.h>
 #include <linux/random.h>
 #include <linux/sched/mm.h>
 #include <linux/list_lru.h>
@@ -414,8 +413,7 @@ static inline void slab_post_alloc_hook(struct kmem_cache *s,
 
 	 
 	for (i = 0; i < size; i++) {
-		p[i] = kasan_slab_alloc(s, p[i], flags, init);
-		if (p[i] && init && !kasan_has_integrated_init())
+		if (p[i] && init)
 			memset(p[i], 0, s->object_size);
 	}
 

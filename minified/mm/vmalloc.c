@@ -38,7 +38,7 @@ static const bool vmap_allow_huge = false;
 
 bool is_vmalloc_addr(const void *x)
 {
-	unsigned long addr = (unsigned long)kasan_reset_tag(x);
+	unsigned long addr = (unsigned long)x;
 
 	return addr >= VMALLOC_START && addr < VMALLOC_END;
 }
@@ -508,8 +508,6 @@ static struct vmap_area *__find_vmap_area(unsigned long addr)
 {
 	struct rb_node *n = vmap_area_root.rb_node;
 
-	addr = (unsigned long)kasan_reset_tag((void *)addr);
-
 	while (n) {
 		struct vmap_area *va;
 
@@ -957,7 +955,6 @@ static struct vmap_area *alloc_vmap_area(unsigned long size,
 	unsigned long freed;
 	unsigned long addr;
 	int purged = 0;
-	int ret;
 
 	BUG_ON(!size);
 	BUG_ON(offset_in_page(size));
@@ -993,12 +990,6 @@ retry:
 	BUG_ON(!IS_ALIGNED(va->va_start, align));
 	BUG_ON(va->va_start < vstart);
 	BUG_ON(va->va_end > vend);
-
-	ret = kasan_populate_vmalloc(addr, size);
-	if (ret) {
-		free_vmap_area(va);
-		return ERR_PTR(ret);
-	}
 
 	return va;
 
@@ -1235,7 +1226,6 @@ static struct vm_struct *__get_vm_area_node(unsigned long size,
 {
 	struct vmap_area *va;
 	struct vm_struct *area;
-	unsigned long requested_size = size;
 
 	BUG_ON(in_interrupt());
 	size = ALIGN(size, 1ul << shift);
@@ -1260,11 +1250,6 @@ static struct vm_struct *__get_vm_area_node(unsigned long size,
 	}
 
 	setup_vmalloc_vm(area, va, flags, caller);
-
-	
-	if (!(flags & VM_ALLOC))
-		area->addr = kasan_unpoison_vmalloc(area->addr, requested_size,
-						    KASAN_VMALLOC_PROT_NORMAL);
 
 	return area;
 }
@@ -1295,7 +1280,6 @@ struct vm_struct *remove_vm_area(const void *addr)
 		va->vm = NULL;
 		spin_unlock(&vmap_area_lock);
 
-		kasan_free_module_shadow(vm);
 		free_unmap_vmap_area(va);
 
 		return vm;
@@ -1374,8 +1358,6 @@ static void __vunmap(const void *addr, int deallocate_pages)
 	}
 
 	debug_check_no_locks_freed(area->addr, get_vm_area_size(area));
-
-	kasan_poison_vmalloc(area->addr, get_vm_area_size(area));
 
 	vm_remove_mappings(area, deallocate_pages);
 
@@ -1576,7 +1558,6 @@ void *__vmalloc_node_range(unsigned long size, unsigned long align,
 {
 	struct vm_struct *area;
 	void *ret;
-	kasan_vmalloc_flags_t kasan_flags = KASAN_VMALLOC_NONE;
 	unsigned long real_size = size;
 	unsigned long real_align = align;
 	unsigned int shift = PAGE_SHIFT;
@@ -1624,33 +1605,10 @@ again:
 		goto fail;
 	}
 
-	
-	if (pgprot_val(prot) == pgprot_val(PAGE_KERNEL)) {
-		if (kasan_hw_tags_enabled()) {
-			
-			prot = arch_vmap_pgprot_tagged(prot);
-
-			
-			gfp_mask |= __GFP_SKIP_KASAN_UNPOISON | __GFP_SKIP_ZERO;
-		}
-
-		
-		kasan_flags |= KASAN_VMALLOC_PROT_NORMAL;
-	}
-
-	
 	ret = __vmalloc_area_node(area, gfp_mask, prot, shift, node);
 	if (!ret)
 		goto fail;
 
-	
-	kasan_flags |= KASAN_VMALLOC_VM_ALLOC;
-	if (!want_init_on_free() && want_init_on_alloc(gfp_mask))
-		kasan_flags |= KASAN_VMALLOC_INIT;
-	
-	area->addr = kasan_unpoison_vmalloc(area->addr, real_size, kasan_flags);
-
-	
 	clear_vm_uninitialized_flag(area);
 
 	return area->addr;

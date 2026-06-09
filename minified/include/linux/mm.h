@@ -121,7 +121,6 @@ static inline bool folio_try_get_rcu(struct folio *folio)
 #include <linux/sizes.h>
 #include <linux/sched.h>
 #include <linux/pgtable.h>
-#include <linux/kasan.h>
 
 struct mempolicy;
 struct anon_vma;
@@ -627,8 +626,6 @@ static inline int page_cpupid_xchg_last(struct page *page, int cpupid)
 static inline void page_cpupid_reset_last(struct page *page)
 {
 }
-
-static inline void page_kasan_tag_reset(struct page *page) { }
 
 static inline struct zone *page_zone(const struct page *page)
 {

@@ -1494,34 +1494,9 @@ void __init proc_caches_init(void)
 	nsproxy_cache_init();
 }
 
-/* unshare_fd - used internally */
-static int unshare_fd(unsigned long unshare_flags, unsigned int max_fds,
-	       struct files_struct **new_fdp)
-{
-	return 0;
-}
-
 SYSCALL_DEFINE1(unshare, unsigned long, unshare_flags)
 {
 	/* Stubbed: namespace unsharing not needed for minimal boot */
 	return -EINVAL;
-}
-
-int unshare_files(void)
-{
-	struct task_struct *task = current;
-	struct files_struct *old, *copy = NULL;
-	int error;
-
-	error = unshare_fd(CLONE_FILES, NR_OPEN_MAX, &copy);
-	if (error || !copy)
-		return error;
-
-	old = task->files;
-	task_lock(task);
-	task->files = copy;
-	task_unlock(task);
-	put_files_struct(old);
-	return 0;
 }
 

@@ -778,10 +778,6 @@ int begin_new_exec(struct linux_binprm * bprm)
 	if (retval)
 		goto out;
 
-	retval = unshare_files();
-	if (retval)
-		goto out;
-
 	retval = set_mm_exe_file(bprm->mm, bprm->file);
 	if (retval)
 		goto out;

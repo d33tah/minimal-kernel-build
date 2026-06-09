@@ -92,7 +92,6 @@ static inline struct file *files_lookup_fd_rcu(struct files_struct *files, unsig
 struct task_struct;
 
 void put_files_struct(struct files_struct *fs);
-int unshare_files(void);
 struct files_struct *dup_fd(struct files_struct *, unsigned, int *) __latent_entropy;
 void do_close_on_exec(struct files_struct *);
 int iterate_fd(struct files_struct *, unsigned,

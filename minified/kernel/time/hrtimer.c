@@ -254,23 +254,11 @@ static inline ktime_t hrtimer_update_base(struct hrtimer_cpu_base *base)
 	return now;
 }
 
-static inline int __hrtimer_hres_active(struct hrtimer_cpu_base *cpu_base)
-{
-	return IS_ENABLED(CONFIG_HIGH_RES_TIMERS) ?
-		cpu_base->hres_active : 0;
-}
-
-
 static void __hrtimer_reprogram(struct hrtimer_cpu_base *cpu_base,
 				struct hrtimer *next_timer,
 				ktime_t expires_next)
 {
 	cpu_base->expires_next = expires_next;
-
-	if (!__hrtimer_hres_active(cpu_base) || cpu_base->hang_detected)
-		return;
-
-	tick_program_event(expires_next, 1);
 }
 
 static void
@@ -285,9 +273,6 @@ hrtimer_force_reprogram(struct hrtimer_cpu_base *cpu_base, int skip_equal)
 
 	__hrtimer_reprogram(cpu_base, cpu_base->next_timer, expires_next);
 }
-
-static inline int hrtimer_is_hres_enabled(void) { return 0; }
-static inline void hrtimer_switch_to_hres(void) { }
 
 static void hrtimer_reprogram(struct hrtimer *timer, bool reprogram)
 {
@@ -629,14 +614,6 @@ void hrtimer_run_queues(void)
 	struct hrtimer_cpu_base *cpu_base = this_cpu_ptr(&hrtimer_bases);
 	unsigned long flags;
 	ktime_t now;
-
-	if (__hrtimer_hres_active(cpu_base))
-		return;
-
-	if (tick_check_oneshot_change(!hrtimer_is_hres_enabled())) {
-		hrtimer_switch_to_hres();
-		return;
-	}
 
 	raw_spin_lock_irqsave(&cpu_base->lock, flags);
 	now = hrtimer_update_base(cpu_base);

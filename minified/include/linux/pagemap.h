@@ -135,8 +135,6 @@ static inline struct folio *filemap_alloc_folio(gfp_t gfp, unsigned int order)
 	return folio_alloc(gfp, order);
 }
 
-typedef int filler_t(struct file *, struct folio *);
-
 pgoff_t page_cache_next_miss(struct address_space *mapping,
 			     pgoff_t index, unsigned long max_scan);
 pgoff_t page_cache_prev_miss(struct address_space *mapping,
@@ -157,13 +155,6 @@ struct folio *__filemap_get_folio(struct address_space *mapping, pgoff_t index,
 		int fgp_flags, gfp_t gfp);
 struct page *pagecache_get_page(struct address_space *mapping, pgoff_t index,
 		int fgp_flags, gfp_t gfp);
-
-static inline struct folio *filemap_get_folio(struct address_space *mapping,
-					pgoff_t index)
-{
-	return __filemap_get_folio(mapping, index, 0, 0);
-}
-
 
 static inline struct page *find_get_page(struct address_space *mapping,
 					pgoff_t offset)
@@ -204,15 +195,6 @@ unsigned find_get_pages_range_tag(struct address_space *mapping, pgoff_t *index,
 			struct page **pages);
 struct page *grab_cache_page_write_begin(struct address_space *mapping,
 			pgoff_t index);
-
-struct page *read_cache_page(struct address_space *, pgoff_t index,
-		filler_t *filler, struct file *file);
-
-static inline struct page *read_mapping_page(struct address_space *mapping,
-				pgoff_t index, struct file *file)
-{
-	return read_cache_page(mapping, index, NULL, file);
-}
 
 static inline pgoff_t page_to_index(struct page *page)
 {

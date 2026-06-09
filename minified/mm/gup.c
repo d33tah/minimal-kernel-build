@@ -191,62 +191,15 @@ static struct page *follow_pmd_mask(struct vm_area_struct *vma,
 				    struct follow_page_context *ctx)
 {
 	pmd_t *pmd, pmdval;
-	spinlock_t *ptl;
-	struct page *page;
-	struct mm_struct *mm = vma->vm_mm;
 
 	pmd = pmd_offset(pudp, address);
-	
+
 	pmdval = READ_ONCE(*pmd);
 	if (pmd_none(pmdval))
 		return no_page_table(vma, flags);
 	if (!pmd_present(pmdval))
 		return no_page_table(vma, flags);
-	if (pmd_devmap(pmdval)) {
-		ptl = pmd_lock(mm, pmd);
-		page = follow_devmap_pmd(vma, address, pmd, flags, &ctx->pgmap);
-		spin_unlock(ptl);
-		if (page)
-			return page;
-	}
-	if (likely(!pmd_trans_huge(pmdval)))
-		return follow_page_pte(vma, address, pmd, flags, &ctx->pgmap);
-
-	ptl = pmd_lock(mm, pmd);
-	if (unlikely(pmd_none(*pmd))) {
-		spin_unlock(ptl);
-		return no_page_table(vma, flags);
-	}
-	if (unlikely(!pmd_present(*pmd))) {
-		spin_unlock(ptl);
-		return no_page_table(vma, flags);
-	}
-	if (unlikely(!pmd_trans_huge(*pmd))) {
-		spin_unlock(ptl);
-		return follow_page_pte(vma, address, pmd, flags, &ctx->pgmap);
-	}
-	if (flags & FOLL_SPLIT_PMD) {
-		int ret;
-		page = pmd_page(*pmd);
-		if (is_huge_zero_page(page)) {
-			spin_unlock(ptl);
-			ret = 0;
-			split_huge_pmd(vma, pmd, address);
-			if (pmd_trans_unstable(pmd))
-				ret = -EBUSY;
-		} else {
-			spin_unlock(ptl);
-			split_huge_pmd(vma, pmd, address);
-			ret = pte_alloc(mm, pmd) ? -ENOMEM : 0;
-		}
-
-		return ret ? ERR_PTR(ret) :
-			follow_page_pte(vma, address, pmd, flags, &ctx->pgmap);
-	}
-	page = follow_trans_huge_pmd(vma, address, pmd, flags);
-	spin_unlock(ptl);
-	ctx->page_mask = HPAGE_PMD_NR - 1;
-	return page;
+	return follow_page_pte(vma, address, pmd, flags, &ctx->pgmap);
 }
 
 static struct page *follow_pud_mask(struct vm_area_struct *vma,
@@ -255,20 +208,10 @@ static struct page *follow_pud_mask(struct vm_area_struct *vma,
 				    struct follow_page_context *ctx)
 {
 	pud_t *pud;
-	spinlock_t *ptl;
-	struct page *page;
-	struct mm_struct *mm = vma->vm_mm;
 
 	pud = pud_offset(p4dp, address);
 	if (pud_none(*pud))
 		return no_page_table(vma, flags);
-	if (pud_devmap(*pud)) {
-		ptl = pud_lock(mm, pud);
-		page = follow_devmap_pud(vma, address, pud, flags, &ctx->pgmap);
-		spin_unlock(ptl);
-		if (page)
-			return page;
-	}
 	if (unlikely(pud_bad(*pud)))
 		return no_page_table(vma, flags);
 

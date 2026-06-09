@@ -1348,8 +1348,7 @@ vm_fault_t vmf_insert_mixed_mkwrite(struct vm_area_struct *vma,
 #define FOLL_REMOTE	0x2000	
 #define FOLL_COW	0x4000	
 #define FOLL_ANON	0x8000	
-#define FOLL_LONGTERM	0x10000	
-#define FOLL_SPLIT_PMD	0x20000	
+#define FOLL_LONGTERM	0x10000
 #define FOLL_PIN	0x40000
 
 static inline int vm_fault_to_errno(vm_fault_t vm_fault, int foll_flags)

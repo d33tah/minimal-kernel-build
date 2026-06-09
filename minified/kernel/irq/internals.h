@@ -145,11 +145,6 @@ static inline void irq_settings_set_norequest(struct irq_desc *desc)
 	desc->status_use_accessors |= _IRQ_NOREQUEST;
 }
 
-static inline bool irq_settings_can_thread(struct irq_desc *desc)
-{
-	return !(desc->status_use_accessors & _IRQ_NOTHREAD);
-}
-
 /* irq_settings_clr_nothread removed - unused */
 
 static inline void irq_settings_set_nothread(struct irq_desc *desc)
@@ -239,7 +234,6 @@ static inline int check_irq_resend(struct irq_desc *desc, bool inject)
 	return 0;
 }
 bool irq_wait_for_poll(struct irq_desc *desc);
-void __irq_wake_thread(struct irq_desc *desc, struct irqaction *action);
 
 static inline void register_irq_proc(unsigned int irq, struct irq_desc *desc) { }
 static inline void unregister_irq_proc(unsigned int irq, struct irq_desc *desc) { }

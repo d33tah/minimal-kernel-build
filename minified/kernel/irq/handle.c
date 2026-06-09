@@ -25,34 +25,6 @@ irqreturn_t no_action(int cpl, void *dev_id)
 	return IRQ_NONE;
 }
 
-static void warn_no_thread(unsigned int irq, struct irqaction *action)
-{
-	if (test_and_set_bit(IRQTF_WARNED, &action->thread_flags))
-		return;
-
-	printk(KERN_WARNING "IRQ %d device %s returned IRQ_WAKE_THREAD "
-	       "but no thread function available.", irq, action->name);
-}
-
-void __irq_wake_thread(struct irq_desc *desc, struct irqaction *action)
-{
-	 
-	if (action->thread->flags & PF_EXITING)
-		return;
-
-	 
-	if (test_and_set_bit(IRQTF_RUNTHREAD, &action->thread_flags))
-		return;
-
-	 
-	desc->threads_oneshot |= action->thread_mask;
-
-	 
-	atomic_inc(&desc->threads_active);
-
-	wake_up_process(action->thread);
-}
-
 irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc)
 {
 	irqreturn_t retval = IRQ_NONE;
@@ -64,33 +36,13 @@ irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc)
 	for_each_action_of_desc(desc, action) {
 		irqreturn_t res;
 
-		 
-		if (irq_settings_can_thread(desc) &&
-		    !(action->flags & (IRQF_NO_THREAD | IRQF_PERCPU | IRQF_ONESHOT)))
-			lockdep_hardirq_threaded();
 
-		 
 		res = action->handler(irq, action->dev_id);
-		 
+
 
 		if (WARN_ONCE(!irqs_disabled(),"irq %u handler %pS enabled interrupts\n",
 			      irq, action->handler))
 			local_irq_disable();
-
-		switch (res) {
-		case IRQ_WAKE_THREAD:
-			 
-			if (unlikely(!action->thread_fn)) {
-				warn_no_thread(irq, action);
-				break;
-			}
-
-			__irq_wake_thread(desc, action);
-			break;
-
-		default:
-			break;
-		}
 
 		retval |= res;
 	}

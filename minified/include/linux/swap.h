@@ -49,7 +49,7 @@ void workingset_activation(struct folio *folio);
 void workingset_update_node(struct xa_node *node);
 extern struct list_lru shadow_nodes;
 #define mapping_set_update(xas, mapping) do {				\
-	if (!dax_mapping(mapping) && !shmem_mapping(mapping)) {		\
+	if (!shmem_mapping(mapping)) {					\
 		xas_set_update(xas, workingset_update_node);		\
 		xas_set_lru(xas, &shadow_nodes);			\
 	}								\

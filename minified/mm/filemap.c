@@ -1,7 +1,6 @@
 
 #include <linux/export.h>
 #include <linux/compiler.h>
-#include <linux/dax.h>
 #include <linux/fs.h>
 #include <linux/sched/signal.h>
 #include <linux/uaccess.h>
@@ -1342,7 +1341,7 @@ generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 			iov_iter_revert(iter, count - iov_iter_count(iter));
 
 		
-		if (retval < 0 || !count || IS_DAX(inode))
+		if (retval < 0 || !count)
 			return retval;
 		if (iocb->ki_pos >= i_size_read(inode))
 			return retval;
@@ -1764,7 +1763,7 @@ ssize_t __generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 
 		written = generic_file_direct_write(iocb, from);
 		
-		if (written < 0 || !iov_iter_count(from) || IS_DAX(inode))
+		if (written < 0 || !iov_iter_count(from))
 			goto out;
 
 		pos = iocb->ki_pos;

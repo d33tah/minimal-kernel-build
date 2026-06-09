@@ -166,9 +166,6 @@ static int se_is_idle(struct sched_entity *se)
 	return 0;
 }
 
-static __always_inline
-void account_cfs_rq_runtime(struct cfs_rq *cfs_rq, u64 delta_exec);
-
 static inline u64 max_vruntime(u64 max_vruntime, u64 vruntime)
 {
 	s64 delta = (s64)(vruntime - max_vruntime);
@@ -369,8 +366,6 @@ static void update_curr(struct cfs_rq *cfs_rq)
 		cgroup_account_cputime(curtask, delta_exec);
 		account_group_exec_runtime(curtask, delta_exec);
 	}
-
-	account_cfs_rq_runtime(cfs_rq, delta_exec);
 }
 
 static void update_curr_fair(struct rq *rq)
@@ -630,10 +625,6 @@ place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
 	se->vruntime = max_vruntime(se->vruntime, vruntime);
 }
 
-static void check_enqueue_throttle(struct cfs_rq *cfs_rq);
-
-static inline bool cfs_bandwidth_used(void);
-
 static void
 enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 {
@@ -663,11 +654,8 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 		__enqueue_entity(cfs_rq, se);
 	se->on_rq = 1;
 
-	if (cfs_rq->nr_running == 1 || cfs_bandwidth_used())
-		list_add_leaf_cfs_rq(cfs_rq);
-
 	if (cfs_rq->nr_running == 1)
-		check_enqueue_throttle(cfs_rq);
+		list_add_leaf_cfs_rq(cfs_rq);
 }
 
 static void __clear_buddies_last(struct sched_entity *se)
@@ -715,8 +703,6 @@ static void clear_buddies(struct cfs_rq *cfs_rq, struct sched_entity *se)
 		__clear_buddies_skip(se);
 }
 
-static __always_inline void return_cfs_rq_runtime(struct cfs_rq *cfs_rq);
-
 static void
 dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 {
@@ -737,8 +723,6 @@ dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 
 	if (!(flags & DEQUEUE_SLEEP))
 		se->vruntime -= cfs_rq->min_vruntime;
-
-	return_cfs_rq_runtime(cfs_rq);
 
 	update_cfs_group(se);
 
@@ -843,15 +827,11 @@ pick_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *curr)
 	return se;
 }
 
-static bool check_cfs_rq_runtime(struct cfs_rq *cfs_rq);
-
 static void put_prev_entity(struct cfs_rq *cfs_rq, struct sched_entity *prev)
 {
-	
+
 	if (prev->on_rq)
 		update_curr(cfs_rq);
-
-	check_cfs_rq_runtime(cfs_rq);
 
 	check_spread(cfs_rq, prev);
 
@@ -876,26 +856,6 @@ entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr, int queued)
 
 	if (cfs_rq->nr_running > 1)
 		check_preempt_tick(cfs_rq, curr);
-}
-
-static inline bool cfs_bandwidth_used(void)
-{
-	return false;
-}
-
-static void account_cfs_rq_runtime(struct cfs_rq *cfs_rq, u64 delta_exec) {}
-static bool check_cfs_rq_runtime(struct cfs_rq *cfs_rq) { return false; }
-static void check_enqueue_throttle(struct cfs_rq *cfs_rq) {}
-static __always_inline void return_cfs_rq_runtime(struct cfs_rq *cfs_rq) {}
-
-static inline int cfs_rq_throttled(struct cfs_rq *cfs_rq)
-{
-	return 0;
-}
-
-static inline int throttled_hierarchy(struct cfs_rq *cfs_rq)
-{
-	return 0;
 }
 
 static inline void
@@ -946,9 +906,6 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		if (cfs_rq_is_idle(cfs_rq))
 			idle_h_nr_running = 1;
 
-		if (cfs_rq_throttled(cfs_rq))
-			goto enqueue_throttle;
-
 		flags = ENQUEUE_WAKEUP;
 	}
 
@@ -964,29 +921,12 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 
 		if (cfs_rq_is_idle(cfs_rq))
 			idle_h_nr_running = 1;
-
-		if (cfs_rq_throttled(cfs_rq))
-			goto enqueue_throttle;
-
-               if (throttled_hierarchy(cfs_rq))
-                       list_add_leaf_cfs_rq(cfs_rq);
 	}
 
 	add_nr_running(rq, 1);
 
 	if (!task_new)
 		update_overutilized_status(rq);
-
-enqueue_throttle:
-	if (cfs_bandwidth_used()) {
-		
-		for_each_sched_entity(se) {
-			cfs_rq = cfs_rq_of(se);
-
-			if (list_add_leaf_cfs_rq(cfs_rq))
-				break;
-		}
-	}
 
 	assert_list_leaf_cfs_rq(rq);
 
@@ -1015,14 +955,11 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		if (cfs_rq_is_idle(cfs_rq))
 			idle_h_nr_running = 1;
 
-		if (cfs_rq_throttled(cfs_rq))
-			goto dequeue_throttle;
-
 		if (cfs_rq->load.weight) {
-			
+
 			se = parent_entity(se);
-			
-			if (task_sleep && se && !throttled_hierarchy(cfs_rq))
+
+			if (task_sleep && se)
 				set_next_buddy(se);
 			break;
 		}
@@ -1041,10 +978,6 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 
 		if (cfs_rq_is_idle(cfs_rq))
 			idle_h_nr_running = 1;
-
-		if (cfs_rq_throttled(cfs_rq))
-			goto dequeue_throttle;
-
 	}
 
 	sub_nr_running(rq, 1);
@@ -1052,7 +985,6 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	if (unlikely(!was_sched_idle && sched_idle_rq(rq)))
 		rq->next_balance = jiffies;
 
-dequeue_throttle:
 	util_est_update(&rq->cfs, p, task_sleep);
 	hrtick_update(rq);
 }
@@ -1117,9 +1049,6 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
 	int cse_is_idle, pse_is_idle;
 
 	if (unlikely(se == pse))
-		return;
-
-	if (unlikely(throttled_hierarchy(cfs_rq_of(pse))))
 		return;
 
 	if (sched_feat(NEXT_BUDDY) && scale && !(wake_flags & WF_FORK)) {
@@ -1259,7 +1188,7 @@ static bool yield_to_task_fair(struct rq *rq, struct task_struct *p)
 {
 	struct sched_entity *se = &p->se;
 
-	if (!se->on_rq || throttled_hierarchy(cfs_rq_of(se)))
+	if (!se->on_rq)
 		return false;
 
 	set_next_buddy(se);
@@ -1418,8 +1347,6 @@ static void set_next_task_fair(struct rq *rq, struct task_struct *p, bool first)
 		struct cfs_rq *cfs_rq = cfs_rq_of(se);
 
 		set_next_entity(cfs_rq, se);
-		
-		account_cfs_rq_runtime(cfs_rq, 0);
 	}
 }
 

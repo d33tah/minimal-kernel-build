@@ -40,7 +40,6 @@ static inline void shm_init_task(struct task_struct *task) { }
 #include <linux/swap.h>
 #include <linux/syscalls.h>
 #include <linux/jiffies.h>
-#include <linux/futex.h>
 #include <linux/compat.h>
 #include <linux/kthread.h>
 static inline void task_io_accounting_init(struct task_io_accounting *ioac) {}
@@ -88,7 +87,7 @@ static inline void scs_release(struct task_struct *tsk) {}
 
 #define MIN_THREADS 20
 
-#define MAX_THREADS FUTEX_TID_MASK
+#define MAX_THREADS 0x3fffffff
 
 unsigned long total_forks;	
 int nr_threads;			
@@ -776,8 +775,6 @@ static void mm_release(struct task_struct *tsk, struct mm_struct *mm)
 		if (atomic_read(&mm->mm_users) > 1) {
 			
 			put_user(0, tsk->clear_child_tid);
-			do_futex(tsk->clear_child_tid, FUTEX_WAKE,
-					1, NULL, NULL, 0, 0);
 		}
 		tsk->clear_child_tid = NULL;
 	}
@@ -789,13 +786,11 @@ static void mm_release(struct task_struct *tsk, struct mm_struct *mm)
 
 void exit_mm_release(struct task_struct *tsk, struct mm_struct *mm)
 {
-	futex_exit_release(tsk);
 	mm_release(tsk, mm);
 }
 
 void exec_mm_release(struct task_struct *tsk, struct mm_struct *mm)
 {
-	futex_exec_release(tsk);
 	mm_release(tsk, mm);
 }
 
@@ -1198,10 +1193,7 @@ static __latent_entropy struct task_struct *copy_process(
 		}
 	}
 
-	
-	futex_init_task(p);
 
-	
 	if ((clone_flags & (CLONE_VM|CLONE_VFORK)) == CLONE_VM)
 		sas_ss_reset(p);
 

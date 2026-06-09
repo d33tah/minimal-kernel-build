@@ -33,7 +33,6 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <linux/posix-timers.h>
 static inline void proc_exit_connector(struct task_struct *task) {}
 #include <linux/mutex.h>
-#include <linux/futex.h>
 #include <linux/pipe_fs_i.h>
 #include <linux/resource.h>
 static inline unsigned long task_io_get_inblock(const struct task_struct *p) { return 0; }
@@ -476,7 +475,6 @@ void __noreturn make_task_dead(int signr)
 
 	if (unlikely(tsk->flags & PF_EXITING)) {
 		pr_alert("Fixing recursive fault but reboot is needed!\n");
-		futex_exit_recursive(tsk);
 		tsk->exit_state = EXIT_DEAD;
 		refcount_inc(&tsk->rcu_users);
 		do_task_dead();

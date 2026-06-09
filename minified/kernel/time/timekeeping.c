@@ -753,13 +753,3 @@ ktime_t ktime_get_update_offsets_now(unsigned int *cwsseq, ktime_t *offs_real,
 	return base;
 }
 
-unsigned long random_get_entropy_fallback(void)
-{
-	struct tk_read_base *tkr = &tk_core.timekeeper.tkr_mono;
-	struct clocksource *clock = READ_ONCE(tkr->clock);
-
-	if (unlikely(timekeeping_suspended || !clock))
-		return 0;
-	return clock->read(clock);
-}
-

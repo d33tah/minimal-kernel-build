@@ -346,16 +346,7 @@ static void update_curr(struct cfs_rq *cfs_rq)
 
 	curr->exec_start = now;
 
-	if (schedstat_enabled()) {
-		struct sched_statistics *stats;
-
-		stats = __schedstats_from_se(curr);
-		__schedstat_set(stats->exec_max,
-				max(delta_exec, stats->exec_max));
-	}
-
 	curr->sum_exec_runtime += delta_exec;
-	schedstat_add(cfs_rq->exec_clock, delta_exec);
 
 	curr->vruntime += calc_delta_fair(delta_exec, curr);
 	update_min_vruntime(cfs_rq);
@@ -370,97 +361,6 @@ static void update_curr(struct cfs_rq *cfs_rq)
 static void update_curr_fair(struct rq *rq)
 {
 	update_curr(cfs_rq_of(&rq->curr->se));
-}
-
-static inline void
-update_stats_wait_start_fair(struct cfs_rq *cfs_rq, struct sched_entity *se)
-{
-	struct sched_statistics *stats;
-	struct task_struct *p = NULL;
-
-	if (!schedstat_enabled())
-		return;
-
-	stats = __schedstats_from_se(se);
-
-	if (entity_is_task(se))
-		p = task_of(se);
-
-	__update_stats_wait_start(rq_of(cfs_rq), p, stats);
-}
-
-static inline void
-update_stats_wait_end_fair(struct cfs_rq *cfs_rq, struct sched_entity *se)
-{
-	struct sched_statistics *stats;
-	struct task_struct *p = NULL;
-
-	if (!schedstat_enabled())
-		return;
-
-	stats = __schedstats_from_se(se);
-
-	if (unlikely(!schedstat_val(stats->wait_start)))
-		return;
-
-	if (entity_is_task(se))
-		p = task_of(se);
-
-	__update_stats_wait_end(rq_of(cfs_rq), p, stats);
-}
-
-static inline void
-update_stats_enqueue_sleeper_fair(struct cfs_rq *cfs_rq, struct sched_entity *se)
-{
-	struct sched_statistics *stats;
-	struct task_struct *tsk = NULL;
-
-	if (!schedstat_enabled())
-		return;
-
-	stats = __schedstats_from_se(se);
-
-	if (entity_is_task(se))
-		tsk = task_of(se);
-
-	__update_stats_enqueue_sleeper(rq_of(cfs_rq), tsk, stats);
-}
-
-static inline void
-update_stats_enqueue_fair(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
-{
-	if (!schedstat_enabled())
-		return;
-
-	if (se != cfs_rq->curr)
-		update_stats_wait_start_fair(cfs_rq, se);
-
-	if (flags & ENQUEUE_WAKEUP)
-		update_stats_enqueue_sleeper_fair(cfs_rq, se);
-}
-
-static inline void
-update_stats_dequeue_fair(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
-{
-
-	if (!schedstat_enabled())
-		return;
-
-	if (se != cfs_rq->curr)
-		update_stats_wait_end_fair(cfs_rq, se);
-
-	if ((flags & DEQUEUE_SLEEP) && entity_is_task(se)) {
-		struct task_struct *tsk = task_of(se);
-		unsigned int state;
-
-		state = READ_ONCE(tsk->__state);
-		if (state & TASK_INTERRUPTIBLE)
-			__schedstat_set(tsk->stats.sleep_start,
-				      rq_clock(rq_of(cfs_rq)));
-		if (state & TASK_UNINTERRUPTIBLE)
-			__schedstat_set(tsk->stats.block_start,
-				      rq_clock(rq_of(cfs_rq)));
-	}
 }
 
 static inline void
@@ -646,8 +546,6 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 	if (flags & ENQUEUE_WAKEUP)
 		place_entity(cfs_rq, se, 0);
 
-	check_schedstat_required();
-	update_stats_enqueue_fair(cfs_rq, se, flags);
 	check_spread(cfs_rq, se);
 	if (!curr)
 		__enqueue_entity(cfs_rq, se);
@@ -711,8 +609,6 @@ dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 	update_load_avg(cfs_rq, se, UPDATE_TG);
 	se_update_runnable(se);
 
-	update_stats_dequeue_fair(cfs_rq, se, flags);
-
 	clear_buddies(cfs_rq, se);
 
 	if (se != cfs_rq->curr)
@@ -764,24 +660,12 @@ set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 	clear_buddies(cfs_rq, se);
 
 	if (se->on_rq) {
-		
-		update_stats_wait_end_fair(cfs_rq, se);
 		__dequeue_entity(cfs_rq, se);
 		update_load_avg(cfs_rq, se, UPDATE_TG);
 	}
 
 	update_stats_curr_start(cfs_rq, se);
 	cfs_rq->curr = se;
-
-	if (schedstat_enabled() &&
-	    rq_of(cfs_rq)->cfs.load.weight >= 2*se->load.weight) {
-		struct sched_statistics *stats;
-
-		stats = __schedstats_from_se(se);
-		__schedstat_set(stats->slice_max,
-				max((u64)stats->slice_max,
-				    se->sum_exec_runtime - se->prev_sum_exec_runtime));
-	}
 
 	se->prev_sum_exec_runtime = se->sum_exec_runtime;
 }
@@ -835,8 +719,6 @@ static void put_prev_entity(struct cfs_rq *cfs_rq, struct sched_entity *prev)
 	check_spread(cfs_rq, prev);
 
 	if (prev->on_rq) {
-		update_stats_wait_start_fair(cfs_rq, prev);
-		
 		__enqueue_entity(cfs_rq, prev);
 		
 		update_load_avg(cfs_rq, prev, 0);

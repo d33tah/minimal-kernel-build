@@ -10,7 +10,6 @@ static inline void inc_syscr(struct task_struct *tsk) {}
 static inline void inc_syscw(struct task_struct *tsk) {}
 #include <linux/file.h>
 #include <linux/uio.h>
-#include <linux/fsnotify.h>
 #include <linux/export.h>
 #include <linux/syscalls.h>
 #include <linux/pagemap.h>
@@ -220,7 +219,6 @@ ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
 	if (ret > 0) {
 		if (pos)
 			*pos = kiocb.ki_pos;
-		fsnotify_access(file);
 		add_rchar(current, ret);
 	}
 	inc_syscr(current);
@@ -261,7 +259,6 @@ ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
 	else
 		ret = -EINVAL;
 	if (ret > 0) {
-		fsnotify_access(file);
 		add_rchar(current, ret);
 	}
 	inc_syscr(current);
@@ -311,7 +308,6 @@ ssize_t __kernel_write(struct file *file, const void *buf, size_t count, loff_t 
 	if (ret > 0) {
 		if (pos)
 			*pos = kiocb.ki_pos;
-		fsnotify_modify(file);
 		add_wchar(current, ret);
 	}
 	inc_syscw(current);
@@ -357,7 +353,6 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
 	else
 		ret = -EINVAL;
 	if (ret > 0) {
-		fsnotify_modify(file);
 		add_wchar(current, ret);
 	}
 	inc_syscw(current);

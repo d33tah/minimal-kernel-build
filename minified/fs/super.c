@@ -10,7 +10,6 @@
 #include <linux/backing-dev.h>
 #include <linux/rculist_bl.h>
 #include <linux/fscrypt.h>
-#include <linux/fsnotify.h>
 #include <linux/lockdep.h>
 #include <linux/user_namespace.h>
 #include <linux/fs_context.h>
@@ -276,8 +275,7 @@ void generic_shutdown_super(struct super_block *sb)
 		cgroup_writeback_umount();
 
 		evict_inodes(sb);
-		
-		fsnotify_sb_delete(sb);
+
 		security_sb_delete(sb);
 
 		if (sb->s_dio_done_wq) {

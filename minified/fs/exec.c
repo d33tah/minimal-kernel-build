@@ -33,7 +33,6 @@ static inline void acct_update_integrals(struct task_struct *tsk) {}
 static inline void proc_exec_connector(struct task_struct *task) {}
 #include <linux/audit.h>
 #include <linux/kmod.h>
-#include <linux/fsnotify.h>
 #include <linux/fs_struct.h>
 #include <linux/oom.h>
 #include <linux/compat.h>
@@ -564,9 +563,6 @@ static struct file *do_open_execat(int fd, struct filename *name, int flags)
 	err = deny_write_access(file);
 	if (err)
 		goto exit;
-
-	if (name->name[0] != '\0')
-		fsnotify_open(file);
 
 out:
 	return file;

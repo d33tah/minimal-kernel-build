@@ -3,7 +3,6 @@
 #include <linux/mm.h>
 #include <linux/file.h>
 #include <linux/fdtable.h>
-#include <linux/fsnotify.h>
 #include <linux/module.h>
 #include <linux/tty.h>
 #include <linux/namei.h>
@@ -459,7 +458,6 @@ static long do_sys_openat2(int dfd, const char __user *filename,
 			put_unused_fd(fd);
 			fd = PTR_ERR(f);
 		} else {
-			fsnotify_open(f);
 			fd_install(fd, f);
 		}
 	}

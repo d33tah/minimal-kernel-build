@@ -5,7 +5,6 @@
 #include <linux/string.h>
 #include <linux/sched/signal.h>
 #include <linux/capability.h>
-#include <linux/fsnotify.h>
 #include <linux/fcntl.h>
 #include <linux/security.h>
 static inline void ima_inode_post_setattr(struct user_namespace *mnt_userns,
@@ -241,7 +240,6 @@ int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 		error = simple_setattr(mnt_userns, dentry, attr);
 
 	if (!error) {
-		fsnotify_change(dentry, ia_valid);
 		ima_inode_post_setattr(mnt_userns, dentry);
 		evm_inode_post_setattr(dentry, ia_valid);
 	}

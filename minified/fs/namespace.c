@@ -10,7 +10,6 @@
 #include <linux/idr.h>
 #include <linux/init.h>		
 #include <linux/fs_struct.h>	
-#include <linux/fsnotify.h>	
 #include <linux/file.h>
 #include <linux/uaccess.h>
 #include <linux/proc_ns.h>
@@ -634,7 +633,6 @@ static void cleanup_mnt(struct mount *mnt)
 		hlist_del(&m->mnt_umount);
 		mntput(&m->mnt);
 	}
-	fsnotify_vfsmount_delete(&mnt->mnt);
 	dput(mnt->mnt.mnt_root);
 	deactivate_super(mnt->mnt.mnt_sb);
 	mnt_free_id(mnt);

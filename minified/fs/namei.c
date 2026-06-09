@@ -7,7 +7,6 @@
 #include <linux/namei.h>
 #include <linux/pagemap.h>
 #include <linux/sched/mm.h>
-#include <linux/fsnotify.h>
 #include <linux/personality.h>
 #include <linux/security.h>
 static inline int ima_file_check(struct file *file, int mask) { return 0; }
@@ -1754,8 +1753,6 @@ static const char *open_last_lookups(struct nameidata *nd,
 	else
 		inode_lock_shared(dir->d_inode);
 	dentry = lookup_open(nd, file, op, got_write);
-	if (!IS_ERR(dentry) && (file->f_mode & FMODE_CREATED))
-		fsnotify_create(dir->d_inode, dentry);
 	if (open_flag & O_CREAT)
 		inode_unlock(dir->d_inode);
 	else
@@ -2014,8 +2011,6 @@ int vfs_mknod(struct user_namespace *mnt_userns, struct inode *dir,
 		return error;
 
 	error = dir->i_op->mknod(mnt_userns, dir, dentry, mode, dev);
-	if (!error)
-		fsnotify_create(dir, dentry);
 	return error;
 }
 
@@ -2040,8 +2035,6 @@ int vfs_mkdir(struct user_namespace *mnt_userns, struct inode *dir,
 		return -EMLINK;
 
 	error = dir->i_op->mkdir(mnt_userns, dir, dentry, mode);
-	if (!error)
-		fsnotify_mkdir(dir, dentry);
 	return error;
 }
 

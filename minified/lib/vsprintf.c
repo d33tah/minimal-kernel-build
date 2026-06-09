@@ -2,8 +2,7 @@
 #include <linux/stdarg.h>
 #include <linux/build_bug.h>
 
-static inline const char *errname(int err) { return NULL; }
-#include <linux/module.h>	
+#include <linux/module.h>
 #include <linux/types.h>
 #include <linux/string.h>
 #include <linux/ctype.h>
@@ -477,21 +476,6 @@ static char *string_nocheck(char *buf, char *end, const char *s,
 	return widen_string(buf, len, end, spec);
 }
 
-static char *err_ptr(char *buf, char *end, void *ptr,
-		     struct printf_spec spec)
-{
-	int err = PTR_ERR(ptr);
-	const char *sym = errname(err);
-
-	if (sym)
-		return string_nocheck(buf, end, sym, spec);
-
-	
-	spec.flags |= SIGN;
-	spec.base = 10;
-	return number(buf, end, err, spec);
-}
-
 static char *error_string(char *buf, char *end, const char *s,
 			  struct printf_spec spec)
 {
@@ -628,14 +612,6 @@ static char *default_pointer(char *buf, char *end, const void *ptr,
 
 
 static noinline_for_stack
-char *restricted_pointer(char *buf, char *end, const void *ptr,
-			 struct printf_spec spec)
-{
-	/* Stub: pointer restriction not needed for minimal kernel */
-	return pointer_string(buf, end, ptr, spec);
-}
-
-static noinline_for_stack
 char *dentry_name(char *buf, char *end, const struct dentry *d, struct printf_spec spec,
 		  const char *fmt)
 {
@@ -666,60 +642,11 @@ char *symbol_string(char *buf, char *end, void *ptr,
 
 
 static noinline_for_stack
-char *resource_string(char *buf, char *end, struct resource *res,
-		      struct printf_spec spec, const char *fmt)
-{
-	 
-	return error_string(buf, end, "(rsrc)", spec);
-}
-
-static noinline_for_stack
-char *hex_string(char *buf, char *end, u8 *addr, struct printf_spec spec,
-		 const char *fmt)
-{
-	 
-	return error_string(buf, end, "(hex)", spec);
-}
-
-static noinline_for_stack
 char *bitmap_string(char *buf, char *end, unsigned long *bitmap,
 		    struct printf_spec spec, const char *fmt)
 {
-	 
+
 	return error_string(buf, end, "(bitmap)", spec);
-}
-
-static noinline_for_stack
-char *bitmap_list_string(char *buf, char *end, unsigned long *bitmap,
-			 struct printf_spec spec, const char *fmt)
-{
-	 
-	return error_string(buf, end, "(blist)", spec);
-}
-
-static noinline_for_stack
-char *mac_address_string(char *buf, char *end, u8 *addr,
-			 struct printf_spec spec, const char *fmt)
-{
-	 
-	return error_string(buf, end, "(mac)", spec);
-}
-
-
-static noinline_for_stack
-char *ip_addr_string(char *buf, char *end, const void *ptr,
-		     struct printf_spec spec, const char *fmt)
-{
-	 
-	return error_string(buf, end, "(ip)", spec);
-}
-
-static noinline_for_stack
-char *escaped_string(char *buf, char *end, u8 *addr, struct printf_spec spec,
-		     const char *fmt)
-{
-	 
-	return error_string(buf, end, "(esc)", spec);
 }
 
 static char *va_format(char *buf, char *end, struct va_format *va_fmt,
@@ -738,30 +665,6 @@ static char *va_format(char *buf, char *end, struct va_format *va_fmt,
 }
 
 static noinline_for_stack
-char *uuid_string(char *buf, char *end, const u8 *addr,
-		  struct printf_spec spec, const char *fmt)
-{
-	 
-	return error_string(buf, end, "(uuid)", spec);
-}
-
-static noinline_for_stack
-char *netdev_bits(char *buf, char *end, const void *addr,
-		  struct printf_spec spec,  const char *fmt)
-{
-	 
-	return error_string(buf, end, "(netdev)", spec);
-}
-
-static noinline_for_stack
-char *fourcc_string(char *buf, char *end, const u32 *fourcc,
-		    struct printf_spec spec, const char *fmt)
-{
-	 
-	return error_string(buf, end, "(fourcc)", spec);
-}
-
-static noinline_for_stack
 char *address_val(char *buf, char *end, const void *addr,
 		  struct printf_spec spec, const char *fmt)
 {
@@ -770,43 +673,11 @@ char *address_val(char *buf, char *end, const void *addr,
 }
 
 static noinline_for_stack
-char *time_and_date(char *buf, char *end, void *ptr, struct printf_spec spec,
-		    const char *fmt)
-{
-	 
-	return error_string(buf, end, "(time)", spec);
-}
-
-static noinline_for_stack
-char *clock(char *buf, char *end, struct clk *clk, struct printf_spec spec,
-	    const char *fmt)
-{
-	 
-	return error_string(buf, end, "(clock)", spec);
-}
-
-static noinline_for_stack
 char *flags_string(char *buf, char *end, void *flags_ptr,
 		   struct printf_spec spec, const char *fmt)
 {
 	 
 	return error_string(buf, end, "(flags)", spec);
-}
-
-static noinline_for_stack
-char *device_node_string(char *buf, char *end, struct device_node *dn,
-			 struct printf_spec spec, const char *fmt)
-{
-	 
-	return error_string(buf, end, "(devnode)", spec);
-}
-
-static noinline_for_stack
-char *fwnode_string(char *buf, char *end, struct fwnode_handle *fwnode,
-		    struct printf_spec spec, const char *fmt)
-{
-	 
-	return error_string(buf, end, "(fwnode)", spec);
 }
 
 
@@ -821,70 +692,21 @@ char *pointer(const char *fmt, char *buf, char *end, void *ptr,
 		fallthrough;
 	case 'B':
 		return symbol_string(buf, end, ptr, spec, fmt);
-	case 'R':
-	case 'r':
-		return resource_string(buf, end, ptr, spec, fmt);
-	case 'h':
-		return hex_string(buf, end, ptr, spec, fmt);
 	case 'b':
-		switch (fmt[1]) {
-		case 'l':
-			return bitmap_list_string(buf, end, ptr, spec, fmt);
-		default:
-			return bitmap_string(buf, end, ptr, spec, fmt);
-		}
-	case 'M':			
-	case 'm':			
-					
-					
-		return mac_address_string(buf, end, ptr, spec, fmt);
-	case 'I':			
-	case 'i':			
-		return ip_addr_string(buf, end, ptr, spec, fmt);
-	case 'E':
-		return escaped_string(buf, end, ptr, spec, fmt);
-	case 'U':
-		return uuid_string(buf, end, ptr, spec, fmt);
+		return bitmap_string(buf, end, ptr, spec, fmt);
 	case 'V':
 		return va_format(buf, end, ptr, spec, fmt);
-	case 'K':
-		return restricted_pointer(buf, end, ptr, spec);
-	case 'N':
-		return netdev_bits(buf, end, ptr, spec, fmt);
-	case '4':
-		return fourcc_string(buf, end, ptr, spec, fmt);
 	case 'a':
 		return address_val(buf, end, ptr, spec, fmt);
 	case 'd':
 		return dentry_name(buf, end, ptr, spec, fmt);
-	case 't':
-		return time_and_date(buf, end, ptr, spec, fmt);
-	case 'C':
-		return clock(buf, end, ptr, spec, fmt);
 	case 'D':
 		return file_dentry_name(buf, end, ptr, spec, fmt);
 
 	case 'G':
 		return flags_string(buf, end, ptr, spec, fmt);
-	case 'O':
-		return device_node_string(buf, end, ptr, spec, fmt + 1);
-	case 'f':
-		return fwnode_string(buf, end, ptr, spec, fmt + 1);
 	case 'x':
 		return pointer_string(buf, end, ptr, spec);
-	case 'e':
-		
-		if (!IS_ERR(ptr))
-			return default_pointer(buf, end, ptr, spec);
-		return err_ptr(buf, end, ptr, spec);
-	case 'u':
-	case 'k':
-		switch (fmt[1]) {
-		case 's':
-			return string(buf, end, ptr, spec);
-		default:
-			return error_string(buf, end, "(einval)", spec);
-		}
 	default:
 		return default_pointer(buf, end, ptr, spec);
 	}

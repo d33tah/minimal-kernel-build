@@ -5,7 +5,6 @@
 #include <linux/highmem.h>
 #include <linux/jump_label.h>
 #include <linux/init_task.h>
-#include <linux/audit.h>
 #include <linux/tick.h>
 #include <linux/tracepoint.h>
 
@@ -26,16 +25,6 @@ static __always_inline void __enter_from_user_mode(struct pt_regs *regs)
 void noinstr enter_from_user_mode(struct pt_regs *regs)
 {
 	__enter_from_user_mode(regs);
-}
-
-static inline void syscall_enter_audit(struct pt_regs *regs, long syscall)
-{
-	if (unlikely(audit_context())) {
-		unsigned long args[6];
-
-		syscall_get_arguments(current, regs, args);
-		audit_syscall_entry(syscall, args[0], args[1], args[2], args[3]);
-	}
 }
 
 static long syscall_trace_enter(struct pt_regs *regs, long syscall,
@@ -65,11 +54,6 @@ static long syscall_trace_enter(struct pt_regs *regs, long syscall,
 
 	 
 	syscall = syscall_get_nr(current, regs);
-
-	if (unlikely(work & SYSCALL_WORK_SYSCALL_TRACEPOINT))
-		 
-
-	syscall_enter_audit(regs, syscall);
 
 	return ret ? : syscall;
 }
@@ -204,8 +188,6 @@ static void syscall_exit_work(struct pt_regs *regs, unsigned long work)
 			return;
 		}
 	}
-
-	audit_syscall_exit(regs);
 
 	if (work & SYSCALL_WORK_SYSCALL_TRACEPOINT)
 		trace_sys_exit(regs, syscall_get_return_value(current, regs));

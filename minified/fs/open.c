@@ -19,7 +19,6 @@
 #include <linux/pagemap.h>
 #include <linux/syscalls.h>
 #include <linux/rcupdate.h>
-#include <linux/audit.h>
 
 #include <linux/fs_struct.h>
 
@@ -160,7 +159,6 @@ int chmod_common(const struct path *path, umode_t mode)
 
 int vfs_fchmod(struct file *file, umode_t mode)
 {
-	audit_file(file);
 	return chmod_common(&file->f_path, mode);
 }
 
@@ -495,9 +493,6 @@ SYSCALL_DEFINE4(openat2, int, dfd, const char __user *, filename,
 	if (err)
 		return err;
 
-	audit_openat2_how(&tmp);
-
-	 
 	if (!(tmp.flags & O_PATH) && force_o_largefile())
 		tmp.flags |= O_LARGEFILE;
 

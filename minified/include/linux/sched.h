@@ -85,7 +85,6 @@ struct task_io_accounting { };
 #include <linux/seqlock.h>
 #include <asm/kmap_size.h>
 
-struct audit_context;
 struct backing_dev_info;
 struct bio_list;
 struct blk_plug;

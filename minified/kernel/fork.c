@@ -49,7 +49,6 @@ static inline void task_io_accounting_init(struct task_io_accounting *ioac) {}
 #include <linux/rcupdate.h>
 #include <linux/ptrace.h>
 #include <linux/mount.h>
-#include <linux/audit.h>
 #include <linux/memcontrol.h>
 #include <linux/proc_fs.h>
 #include <linux/rmap.h>
@@ -1182,7 +1181,6 @@ static __latent_entropy struct task_struct *copy_process(
 	posix_cputimers_init(&p->posix_cputimers);
 
 	p->io_context = NULL;
-	audit_set_context(p, NULL);
 	cgroup_fork(p);
 	if (args->kthread) {
 		if (!set_kthread_struct(p))
@@ -1199,10 +1197,7 @@ static __latent_entropy struct task_struct *copy_process(
 	retval = perf_event_init_task(p, clone_flags);
 	if (retval)
 		goto bad_fork_cleanup_policy;
-	retval = audit_alloc(p);
-	if (retval)
-		goto bad_fork_cleanup_perf;
-	
+
 	shm_init_task(p);
 	retval = copy_semundo(clone_flags, p);
 	if (retval)
@@ -1415,9 +1410,6 @@ bad_fork_cleanup_files:
 bad_fork_cleanup_semundo:
 	exit_sem(p);
 bad_fork_cleanup_security:
-bad_fork_cleanup_audit:
-	audit_free(p);
-bad_fork_cleanup_perf:
 	perf_event_free_task(p);
 bad_fork_cleanup_policy:
 	lockdep_free_task(p);

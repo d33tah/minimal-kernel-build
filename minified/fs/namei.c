@@ -12,7 +12,6 @@
 static inline int ima_file_check(struct file *file, int mask) { return 0; }
 #include <linux/syscalls.h>
 #include <linux/mount.h>
-#include <linux/audit.h>
 #include <linux/capability.h>
 #include <linux/file.h>
 #include <linux/fcntl.h>
@@ -36,10 +35,6 @@ getname_flags(const char __user *filename, int flags, int *empty)
 	struct filename *result;
 	char *kname;
 	int len;
-
-	result = audit_reusename(filename);
-	if (result)
-		return result;
 
 	result = __getname();
 	if (unlikely(!result))
@@ -72,7 +67,6 @@ getname_flags(const char __user *filename, int flags, int *empty)
 
 	result->uptr = filename;
 	result->aname = NULL;
-	audit_getname(result);
 	return result;
 }
 
@@ -113,7 +107,6 @@ getname_kernel(const char * filename)
 	result->uptr = NULL;
 	result->aname = NULL;
 	result->refcnt = 1;
-	audit_getname(result);
 
 	return result;
 }
@@ -1433,9 +1426,6 @@ int filename_lookup(int dfd, struct filename *name, unsigned flags,
 	if (unlikely(retval == -ESTALE))
 		retval = path_lookupat(&nd, flags | LOOKUP_REVAL, path);
 
-	if (likely(!retval))
-		audit_inode(name, path->dentry,
-			    flags & LOOKUP_MOUNTPOINT ? AUDIT_INODE_NOEVAL : 0);
 	restore_nameidata();
 	return retval;
 }
@@ -1474,7 +1464,6 @@ static int filename_parentat(int dfd, struct filename *name,
 	if (likely(!retval)) {
 		*last = nd.last;
 		*type = nd.last_type;
-		audit_inode(name, parent->dentry, AUDIT_INODE_PARENT);
 	}
 	restore_nameidata();
 	return retval;
@@ -1493,7 +1482,6 @@ int kern_path(const char *name, unsigned int flags, struct path *path)
 static inline int may_create(struct user_namespace *mnt_userns,
 			     struct inode *dir, struct dentry *child)
 {
-	audit_inode_child(dir, child, AUDIT_TYPE_CHILD_CREATE);
 	if (child->d_inode)
 		return -EEXIST;
 	if (IS_DEADDIR(dir))
@@ -1730,8 +1718,6 @@ static const char *open_last_lookups(struct nameidata *nd,
 			if (!try_to_unlazy(nd))
 				return ERR_PTR(-ECHILD);
 		}
-		audit_inode(nd->name, dir, AUDIT_INODE_PARENT);
-		
 		if (unlikely(nd->last.name[nd->last.len]))
 			return ERR_PTR(-EISDIR);
 	}
@@ -1785,8 +1771,6 @@ static int do_open(struct nameidata *nd,
 		if (error)
 			return error;
 	}
-	if (!(file->f_mode & FMODE_CREATED))
-		audit_inode(nd->name, nd->path.dentry, 0);
 	mnt_userns = mnt_user_ns(nd->path.mnt);
 	if (open_flag & O_CREAT) {
 		if ((open_flag & O_EXCL) && !(file->f_mode & FMODE_CREATED))
@@ -1841,7 +1825,6 @@ static int do_o_path(struct nameidata *nd, unsigned flags, struct file *file)
 	struct path path;
 	int error = path_lookupat(nd, flags, &path);
 	if (!error) {
-		audit_inode(nd->name, path.dentry, 0);
 		error = vfs_open(&path, file);
 		path_put(&path);
 	}

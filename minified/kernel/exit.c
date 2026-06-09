@@ -41,7 +41,6 @@ static inline void proc_exit_connector(struct task_struct *task) {}
 #include <linux/mutex.h>
 #include <linux/futex.h>
 #include <linux/pipe_fs_i.h>
-#include <linux/audit.h> 
 #include <linux/resource.h>
 static inline unsigned long task_io_get_inblock(const struct task_struct *p) { return 0; }
 static inline unsigned long task_io_get_oublock(const struct task_struct *p) { return 0; }
@@ -423,7 +422,6 @@ void __noreturn do_exit(long code)
 	acct_collect(code, group_dead);
 	if (group_dead)
 		tty_audit_exit();
-	audit_free(tsk);
 
 	tsk->exit_code = code;
 	taskstats_exit(tsk, group_dead);

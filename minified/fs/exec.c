@@ -31,7 +31,6 @@ static inline void task_numa_free(struct task_struct *p, bool final) {}
 #include <linux/syscalls.h>
 static inline void acct_update_integrals(struct task_struct *tsk) {}
 static inline void proc_exec_connector(struct task_struct *task) {}
-#include <linux/audit.h>
 #include <linux/kmod.h>
 #include <linux/fs_struct.h>
 #include <linux/oom.h>
@@ -1070,8 +1069,6 @@ static int exec_binprm(struct linux_binprm *bprm)
 	ret = search_binary_handler(bprm);
 	if (ret < 0)
 		return ret;
-
-	audit_bprm(bprm);
 
 	ptrace_event(PTRACE_EVENT_EXEC, old_vpid);
 	proc_exec_connector(current);

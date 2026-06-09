@@ -26,7 +26,6 @@
 #include <linux/mmu_notifier.h>
 #include <linux/mmdebug.h>
 #include <linux/perf_event.h>
-#include <linux/audit.h>
 #include <linux/khugepaged.h>
 #include <linux/uprobes.h>
 #include <linux/rbtree_augmented.h>
@@ -780,7 +779,6 @@ unsigned long ksys_mmap_pgoff(unsigned long addr, unsigned long len,
 	unsigned long retval;
 
 	if (!(flags & MAP_ANONYMOUS)) {
-		audit_mmap_fd(fd, flags);
 		file = fget(fd);
 		if (!file)
 			return -EBADF;

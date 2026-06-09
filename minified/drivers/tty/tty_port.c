@@ -39,19 +39,8 @@ static int tty_port_default_receive_buf(struct tty_port *port,
 	return ret;
 }
 
-static void tty_port_default_wakeup(struct tty_port *port)
-{
-	struct tty_struct *tty = tty_port_tty_get(port);
-
-	if (tty) {
-		tty_wakeup(tty);
-		tty_kref_put(tty);
-	}
-}
-
 const struct tty_port_client_operations tty_port_default_client_ops = {
 	.receive_buf = tty_port_default_receive_buf,
-	.write_wakeup = tty_port_default_wakeup,
 };
 
 void tty_port_init(struct tty_port *port)
@@ -94,17 +83,6 @@ void tty_port_put(struct tty_port *port)
 {
 	if (port)
 		kref_put(&port->kref, tty_port_destructor);
-}
-
-struct tty_struct *tty_port_tty_get(struct tty_port *port)
-{
-	unsigned long flags;
-	struct tty_struct *tty;
-
-	spin_lock_irqsave(&port->lock, flags);
-	tty = tty_kref_get(port->tty);
-	spin_unlock_irqrestore(&port->lock, flags);
-	return tty;
 }
 
 int tty_port_install(struct tty_port *port, struct tty_driver *driver,

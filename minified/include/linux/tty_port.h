@@ -62,7 +62,6 @@ struct tty_port_operations {
 
 struct tty_port_client_operations {
 	int (*receive_buf)(struct tty_port *port, const unsigned char *, const unsigned char *, size_t);
-	void (*write_wakeup)(struct tty_port *port);
 };
 
 extern const struct tty_port_client_operations tty_port_default_client_ops;
@@ -134,7 +133,6 @@ static inline bool tty_port_kopened(const struct tty_port *port)
 }
 
 
-struct tty_struct *tty_port_tty_get(struct tty_port *port);
 int tty_port_install(struct tty_port *port, struct tty_driver *driver,
 		struct tty_struct *tty);
 

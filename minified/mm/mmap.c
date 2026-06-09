@@ -749,12 +749,8 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 
 	
 	if (flags & MAP_NORESERVE) {
-		
-		if (sysctl_overcommit_memory != OVERCOMMIT_NEVER)
-			vm_flags |= VM_NORESERVE;
 
-		
-		if (file && is_file_hugepages(file))
+		if (sysctl_overcommit_memory != OVERCOMMIT_NEVER)
 			vm_flags |= VM_NORESERVE;
 	}
 
@@ -777,31 +773,9 @@ unsigned long ksys_mmap_pgoff(unsigned long addr, unsigned long len,
 		file = fget(fd);
 		if (!file)
 			return -EBADF;
-		if (is_file_hugepages(file)) {
-			len = ALIGN(len, huge_page_size(hstate_file(file)));
-		} else if (unlikely(flags & MAP_HUGETLB)) {
-			retval = -EINVAL;
-			goto out_fput;
-		}
-	} else if (flags & MAP_HUGETLB) {
-		struct hstate *hs;
-
-		hs = hstate_sizelog((flags >> MAP_HUGE_SHIFT) & MAP_HUGE_MASK);
-		if (!hs)
-			return -EINVAL;
-
-		len = ALIGN(len, huge_page_size(hs));
-		
-		file = hugetlb_file_setup(HUGETLB_ANON_FILE, len,
-				VM_NORESERVE,
-				HUGETLB_ANONHUGE_INODE,
-				(flags >> MAP_HUGE_SHIFT) & MAP_HUGE_MASK);
-		if (IS_ERR(file))
-			return PTR_ERR(file);
 	}
 
 	retval = vm_mmap_pgoff(file, addr, len, prot, flags, pgoff);
-out_fput:
 	if (file)
 		fput(file);
 	return retval;
@@ -1123,27 +1097,19 @@ static int acct_stack_growth(struct vm_area_struct *vma,
 			     unsigned long size, unsigned long grow)
 {
 	struct mm_struct *mm = vma->vm_mm;
-	unsigned long new_start;
 
-	
+
 	if (!may_expand_vm(mm, vma->vm_flags, grow))
 		return -ENOMEM;
 
-	
+
 	if (size > rlimit(RLIMIT_STACK))
 		return -ENOMEM;
 
-	
+
 	if (mlock_future_check(mm, vma->vm_flags, grow << PAGE_SHIFT))
 		return -ENOMEM;
 
-	
-	new_start = (vma->vm_flags & VM_GROWSUP) ? vma->vm_start :
-			vma->vm_end - size;
-	if (is_hugepage_only_range(vma->vm_mm, new_start, size))
-		return -EFAULT;
-
-	
 	if (security_vm_enough_memory_mm(mm, grow))
 		return -ENOMEM;
 

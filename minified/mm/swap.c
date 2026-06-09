@@ -40,8 +40,6 @@ struct lru_pvecs {
 	local_lock_t lock;
 	struct pagevec lru_add;
 	struct pagevec lru_deactivate_file;
-	struct pagevec lru_deactivate;
-	struct pagevec lru_lazyfree;
 };
 static DEFINE_PER_CPU(struct lru_pvecs, lru_pvecs) = {
 	.lock = INIT_LOCAL_LOCK(lock),
@@ -286,37 +284,6 @@ static void lru_deactivate_file_fn(struct page *page, struct lruvec *lruvec)
 	}
 }
 
-static void lru_deactivate_fn(struct page *page, struct lruvec *lruvec)
-{
-	if (PageActive(page) && !PageUnevictable(page)) {
-		int nr_pages = thp_nr_pages(page);
-
-		del_page_from_lru_list(page, lruvec);
-		ClearPageActive(page);
-		ClearPageReferenced(page);
-		add_page_to_lru_list(page, lruvec);
-
-		__count_vm_events(PGDEACTIVATE, nr_pages);
-	}
-}
-
-static void lru_lazyfree_fn(struct page *page, struct lruvec *lruvec)
-{
-	if (PageAnon(page) && PageSwapBacked(page) &&
-	    !PageSwapCache(page) && !PageUnevictable(page)) {
-		int nr_pages = thp_nr_pages(page);
-
-		del_page_from_lru_list(page, lruvec);
-		ClearPageActive(page);
-		ClearPageReferenced(page);
-		 
-		ClearPageSwapBacked(page);
-		add_page_to_lru_list(page, lruvec);
-
-		__count_vm_events(PGLAZYFREE, nr_pages);
-	}
-}
-
 void lru_add_drain_cpu(int cpu)
 {
 	struct pagevec *pvec = &per_cpu(lru_pvecs.lru_add, cpu);
@@ -338,14 +305,6 @@ void lru_add_drain_cpu(int cpu)
 	pvec = &per_cpu(lru_pvecs.lru_deactivate_file, cpu);
 	if (pagevec_count(pvec))
 		pagevec_lru_move_fn(pvec, lru_deactivate_file_fn);
-
-	pvec = &per_cpu(lru_pvecs.lru_deactivate, cpu);
-	if (pagevec_count(pvec))
-		pagevec_lru_move_fn(pvec, lru_deactivate_fn);
-
-	pvec = &per_cpu(lru_pvecs.lru_lazyfree, cpu);
-	if (pagevec_count(pvec))
-		pagevec_lru_move_fn(pvec, lru_lazyfree_fn);
 
 	activate_page_drain(cpu);
 }

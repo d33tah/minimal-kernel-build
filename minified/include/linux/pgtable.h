@@ -538,25 +538,6 @@ static inline int pud_write(pud_t pud)
 }
 #endif  
 
-static inline int pmd_devmap(pmd_t pmd)
-{
-	return 0;
-}
-static inline int pud_devmap(pud_t pud)
-{
-	return 0;
-}
-
-#if !defined(CONFIG_TRANSPARENT_HUGEPAGE) || \
-	(defined(CONFIG_TRANSPARENT_HUGEPAGE) && \
-	 !defined(CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD))
-static inline int pud_trans_huge(pud_t pud)
-{
-	return 0;
-}
-#endif
-
-
 #ifndef pmd_read_atomic
 static inline pmd_t pmd_read_atomic(pmd_t *pmdp)
 {
@@ -579,17 +560,6 @@ static inline int pmd_none_or_trans_huge_or_clear_bad(pmd_t *pmd)
 	}
 	return 0;
 }
-
-static inline int pmd_trans_unstable(pmd_t *pmd)
-{
-	return 0;
-}
-
-static inline int pmd_devmap_trans_unstable(pmd_t *pmd)
-{
-	return pmd_devmap(*pmd) || pmd_trans_unstable(pmd);
-}
-
 
 /* p4d_set_huge, pud_set_huge, pmd_set_huge, p4d_free_pud_page, pud_free_pmd_page,
    pmd_free_pte_page removed - unused */

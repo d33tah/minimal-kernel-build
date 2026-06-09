@@ -20,7 +20,6 @@
 6	i386	close			sys_close
 # 7 waitpid removed (unreachable)
 8	i386	creat			sys_creat
-11	i386	execve			sys_execve			compat_sys_execve
 13	i386	time			sys_time32
 17	i386	break
 18	i386	oldstat			sys_stat
@@ -160,7 +159,6 @@
 349	i386	kcmp			sys_kcmp
 350	i386	finit_module		sys_finit_module
 355	i386	getrandom		sys_getrandom
-358	i386	execveat		sys_execveat			compat_sys_execveat
 377	i386	copy_file_range
 378	i386	preadv2
 379	i386	pwritev2

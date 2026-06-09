@@ -1302,15 +1302,6 @@ out_ret:
 	return retval;
 }
 
-static int do_execve(struct filename *filename,
-	const char __user *const __user *__argv,
-	const char __user *const __user *__envp)
-{
-	struct user_arg_ptr argv = { .ptr.native = __argv };
-	struct user_arg_ptr envp = { .ptr.native = __envp };
-	return do_execveat_common(AT_FDCWD, filename, argv, envp, 0);
-}
-
 void set_binfmt(struct linux_binfmt *new)
 {
 	struct mm_struct *mm = current->mm;
@@ -1329,22 +1320,4 @@ void set_dumpable(struct mm_struct *mm, int value)
 		return;
 
 	set_mask_bits(&mm->flags, MMF_DUMPABLE_MASK, value);
-}
-
-SYSCALL_DEFINE3(execve,
-		const char __user *, filename,
-		const char __user *const __user *, argv,
-		const char __user *const __user *, envp)
-{
-	return do_execve(getname(filename), argv, envp);
-}
-
-SYSCALL_DEFINE5(execveat,
-		int, fd, const char __user *, filename,
-		const char __user *const __user *, argv,
-		const char __user *const __user *, envp,
-		int, flags)
-{
-	/* Stub: execveat not needed for minimal kernel, execve suffices */
-	return -ENOSYS;
 }

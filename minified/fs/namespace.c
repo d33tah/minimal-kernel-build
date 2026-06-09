@@ -625,10 +625,8 @@ static void cleanup_mnt(struct mount *mnt)
 {
 	struct hlist_node *p;
 	struct mount *m;
-	
+
 	WARN_ON(mnt_get_writers(mnt));
-	if (unlikely(mnt->mnt_pins.first))
-		mnt_pin_kill(mnt);
 	hlist_for_each_entry_safe(m, p, &mnt->mnt_stuck_children, mnt_umount) {
 		hlist_del(&m->mnt_umount);
 		mntput(&m->mnt);

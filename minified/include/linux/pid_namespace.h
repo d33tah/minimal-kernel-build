@@ -12,8 +12,6 @@
 
 #define MAX_PID_NS_LEVEL 32
 
-struct fs_pin;
-
 struct pid_namespace {
 	struct idr idr;
 	struct rcu_head rcu;

@@ -4,15 +4,7 @@
 #include <linux/poll.h>
 #include <linux/ns_common.h>
 
-struct fs_pin {
-	wait_queue_head_t	wait;
-	int			done;
-	struct hlist_node	s_list;
-	struct hlist_node	m_list;
-	void (*kill)(struct fs_pin *);
-};
 struct vfsmount;
-void pin_kill(struct fs_pin *);
 
 struct mnt_namespace {
 	struct ns_common	ns;
@@ -67,7 +59,6 @@ struct mount {
 	int mnt_id;			 
 	int mnt_group_id;		 
 	int mnt_expiry_mark;		 
-	struct hlist_head mnt_pins;
 	struct hlist_head mnt_stuck_children;
 } __randomize_layout;
 

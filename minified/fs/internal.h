@@ -92,11 +92,7 @@ extern void shrink_dentry_list(struct list_head *);
  
 extern const struct file_operations pipefifo_fops;
 
- 
-/* group_pin_kill removed - unused */
-extern void mnt_pin_kill(struct mount *m);
 
- 
 extern const struct dentry_operations ns_dentry_operations;
 
  

@@ -103,13 +103,6 @@ int setattr_prepare(struct user_namespace *mnt_userns, struct dentry *dentry,
 
 kill_priv:
 	 
-	if (ia_valid & ATTR_KILL_PRIV) {
-		int error;
-
-		error = security_inode_killpriv(mnt_userns, dentry);
-		if (error)
-			return error;
-	}
 
 	return 0;
 }
@@ -181,11 +174,7 @@ int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 		attr->ia_mtime = timestamp_truncate(attr->ia_mtime, inode);
 
 	if (ia_valid & ATTR_KILL_PRIV) {
-		error = security_inode_need_killpriv(dentry);
-		if (error < 0)
-			return error;
-		if (error == 0)
-			ia_valid = attr->ia_valid &= ~ATTR_KILL_PRIV;
+		ia_valid = attr->ia_valid &= ~ATTR_KILL_PRIV;
 	}
 
 	 
@@ -227,9 +216,6 @@ int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 	    !gid_valid(i_gid_into_mnt(mnt_userns, inode)))
 		return -EOVERFLOW;
 
-	error = security_inode_setattr(dentry, attr);
-	if (error)
-		return error;
 	error = try_break_deleg(inode, delegated_inode);
 	if (error)
 		return error;

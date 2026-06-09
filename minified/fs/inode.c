@@ -101,8 +101,6 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 	inode->i_rdev = 0;
 	inode->dirtied_when = 0;
 
-	if (security_inode_alloc(inode))
-		goto out;
 	spin_lock_init(&inode->i_lock);
 	lockdep_set_class(&inode->i_lock, &sb->s_type->i_lock_key);
 
@@ -131,8 +129,6 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 	this_cpu_inc(nr_inodes);
 
 	return 0;
-out:
-	return -ENOMEM;
 }
 
 static void free_inode_nonrcu(struct inode *inode)
@@ -180,7 +176,6 @@ void __destroy_inode(struct inode *inode)
 {
 	BUG_ON(inode_has_buffers(inode));
 	inode_detach_wb(inode);
-	security_inode_free(inode);
 	locks_free_lock_context(inode);
 	if (!inode->i_nlink) {
 		WARN_ON(atomic_long_read(&inode->i_sb->s_remove_count) == 0);
@@ -683,17 +678,11 @@ int dentry_needs_remove_privs(struct dentry *dentry)
 {
 	struct inode *inode = d_inode(dentry);
 	int mask = 0;
-	int ret;
 
 	if (IS_NOSEC(inode))
 		return 0;
 
 	mask = should_remove_suid(dentry);
-	ret = security_inode_need_killpriv(dentry);
-	if (ret < 0)
-		return ret;
-	if (ret)
-		mask |= ATTR_KILL_PRIV;
 	return mask;
 }
 

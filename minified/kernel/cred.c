@@ -68,7 +68,6 @@ static void put_cred_rcu(struct rcu_head *rcu)
 		panic("CRED: put_cred_rcu() sees %p with usage %d\n",
 		      cred, atomic_read(&cred->usage));
 
-	security_cred_free(cred);
 	key_put(cred->session_keyring);
 	key_put(cred->process_keyring);
 	key_put(cred->thread_keyring);
@@ -150,9 +149,6 @@ struct cred *prepare_creds(void)
 
 	new->ucounts = get_ucounts(new->ucounts);
 	if (!new->ucounts)
-		goto error;
-
-	if (security_prepare_creds(new, old, GFP_KERNEL_ACCOUNT) < 0)
 		goto error;
 
 	validate_creds(new);

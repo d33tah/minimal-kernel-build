@@ -98,9 +98,7 @@ long vfs_truncate(const struct path *path, loff_t length)
 	if (error)
 		goto put_write_and_out;
 
-	error = security_path_truncate(path);
-	if (!error)
-		error = do_truncate(mnt_userns, path->dentry, length, 0, NULL);
+	error = do_truncate(mnt_userns, path->dentry, length, 0, NULL);
 
 put_write_and_out:
 	put_write_access(inode);
@@ -145,10 +143,8 @@ long do_sys_ftruncate(unsigned int fd, loff_t length, int small)
 	if (IS_APPEND(file_inode(f.file)))
 		goto out_putf;
 	sb_start_write(inode->i_sb);
-	error = security_path_truncate(&f.file->f_path);
-	if (!error)
-		error = do_truncate(file_mnt_user_ns(f.file), dentry, length,
-				    ATTR_MTIME | ATTR_CTIME, f.file);
+	error = do_truncate(file_mnt_user_ns(f.file), dentry, length,
+			    ATTR_MTIME | ATTR_CTIME, f.file);
 	sb_end_write(inode->i_sb);
 out_putf:
 	fdput(f);
@@ -219,10 +215,6 @@ static int do_dentry_open(struct file *f,
 		error = -ENODEV;
 		goto cleanup_all;
 	}
-
-	error = security_file_open(f);
-	if (error)
-		goto cleanup_all;
 
 	error = break_lease(locks_inode(f), f->f_flags);
 	if (error)

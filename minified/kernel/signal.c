@@ -270,7 +270,7 @@ static int check_kill_permission(int sig, struct kernel_siginfo *info,
 		return 0;
 
 	/* Skip session/cred checks for minimal kernel */
-	return security_task_kill(t, info, sig, NULL);
+	return 0;
 }
 
 static bool prepare_signal(int sig, struct task_struct *p, bool force)

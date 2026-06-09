@@ -35,10 +35,6 @@ bool parameq(const char *a, const char *b)
 
 static bool param_check_unsafe(const struct kernel_param *kp)
 {
-	if (kp->flags & KERNEL_PARAM_FL_HWPARAM &&
-	    security_locked_down(LOCKDOWN_MODULE_PARAMETERS))
-		return false;
-
 	if (kp->flags & KERNEL_PARAM_FL_UNSAFE) {
 		add_taint(TAINT_USER, LOCKDEP_STILL_OK);
 	}

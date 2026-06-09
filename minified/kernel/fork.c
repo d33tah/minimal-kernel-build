@@ -445,8 +445,7 @@ void __put_task_struct(struct task_struct *tsk)
 	io_uring_free(tsk);
 	cgroup_free(tsk);
 	task_numa_free(tsk, true);
-	security_task_free(tsk);
-	 
+
 	exit_creds(tsk);
 	delayacct_tsk_free(tsk);
 	put_signal_struct(tsk->signal);
@@ -1205,9 +1204,6 @@ static __latent_entropy struct task_struct *copy_process(
 		goto bad_fork_cleanup_perf;
 	
 	shm_init_task(p);
-	retval = security_task_alloc(p, clone_flags);
-	if (retval)
-		goto bad_fork_cleanup_audit;
 	retval = copy_semundo(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_security;
@@ -1419,7 +1415,6 @@ bad_fork_cleanup_files:
 bad_fork_cleanup_semundo:
 	exit_sem(p);
 bad_fork_cleanup_security:
-	security_task_free(p);
 bad_fork_cleanup_audit:
 	audit_free(p);
 bad_fork_cleanup_perf:

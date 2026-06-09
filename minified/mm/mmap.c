@@ -1080,8 +1080,7 @@ get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
 	if (offset_in_page(addr))
 		return -EINVAL;
 
-	error = security_mmap_addr(addr);
-	return error ? error : addr;
+	return addr;
 }
 
 

@@ -846,15 +846,11 @@ int begin_new_exec(struct linux_binprm * bprm)
 	if (retval < 0)
 		goto out_unlock;
 
-	security_bprm_committing_creds(bprm);
-
 	commit_creds(bprm->cred);
 	bprm->cred = NULL;
 
 	if (get_dumpable(me->mm) != SUID_DUMP_USER)
 		perf_event_exit_task(me);
-	
-	security_bprm_committed_creds(bprm);
 
 	return 0;
 
@@ -1041,10 +1037,6 @@ static int search_binary_handler(struct linux_binprm *bprm)
 	if (retval < 0)
 		return retval;
 
-	retval = security_bprm_check(bprm);
-	if (retval)
-		return retval;
-
 	retval = -ENOENT;
 	read_lock(&binfmt_lock);
 	list_for_each_entry(fmt, &formats, lh) {
@@ -1110,10 +1102,6 @@ static int bprm_execve(struct linux_binprm *bprm,
 	
 	if (bprm->fdpath && get_close_on_exec(fd))
 		bprm->interp_flags |= BINPRM_FLAGS_PATH_INACCESSIBLE;
-
-	retval = security_bprm_creds_for_exec(bprm);
-	if (retval)
-		goto out;
 
 	retval = exec_binprm(bprm);
 	if (retval < 0)

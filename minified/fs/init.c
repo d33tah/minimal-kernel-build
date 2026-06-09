@@ -51,9 +51,7 @@ int __init init_chroot(const char *filename)
 	error = -EPERM;
 	if (!ns_capable(current_user_ns(), CAP_SYS_CHROOT))
 		goto dput_and_out;
-	error = security_path_chroot(&path);
-	if (error)
-		goto dput_and_out;
+	error = 0;
 	set_fs_root(current->fs, &path);
 dput_and_out:
 	path_put(&path);
@@ -123,10 +121,8 @@ int __init init_mknod(const char *filename, umode_t mode, unsigned int dev)
 
 	if (!IS_POSIXACL(path.dentry->d_inode))
 		mode &= ~current_umask();
-	error = security_path_mknod(&path, dentry, mode, dev);
-	if (!error)
-		error = vfs_mknod(mnt_user_ns(path.mnt), path.dentry->d_inode,
-				  dentry, mode, new_decode_dev(dev));
+	error = vfs_mknod(mnt_user_ns(path.mnt), path.dentry->d_inode,
+			  dentry, mode, new_decode_dev(dev));
 	done_path_create(&path, dentry);
 	return error;
 }
@@ -154,9 +150,6 @@ int __init init_link(const char *oldname, const char *newname)
 	error = may_linkat(mnt_userns, &old_path);
 	if (unlikely(error))
 		goto out_dput;
-	error = security_path_link(old_path.dentry, &new_path, new_dentry);
-	if (error)
-		goto out_dput;
 	error = vfs_link(old_path.dentry, mnt_userns, new_path.dentry->d_inode,
 			 new_dentry, NULL);
 out_dput:
@@ -175,10 +168,8 @@ int __init init_symlink(const char *oldname, const char *newname)
 	dentry = kern_path_create(AT_FDCWD, newname, &path, 0);
 	if (IS_ERR(dentry))
 		return PTR_ERR(dentry);
-	error = security_path_symlink(&path, dentry, oldname);
-	if (!error)
-		error = vfs_symlink(mnt_user_ns(path.mnt), path.dentry->d_inode,
-				    dentry, oldname);
+	error = vfs_symlink(mnt_user_ns(path.mnt), path.dentry->d_inode,
+			    dentry, oldname);
 	done_path_create(&path, dentry);
 	return error;
 }
@@ -199,10 +190,8 @@ int __init init_mkdir(const char *pathname, umode_t mode)
 		return PTR_ERR(dentry);
 	if (!IS_POSIXACL(path.dentry->d_inode))
 		mode &= ~current_umask();
-	error = security_path_mkdir(&path, dentry, mode);
-	if (!error)
-		error = vfs_mkdir(mnt_user_ns(path.mnt), path.dentry->d_inode,
-				  dentry, mode);
+	error = vfs_mkdir(mnt_user_ns(path.mnt), path.dentry->d_inode,
+			  dentry, mode);
 	done_path_create(&path, dentry);
 	return error;
 }

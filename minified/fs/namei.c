@@ -268,7 +268,7 @@ int inode_permission(struct user_namespace *mnt_userns,
 	if (retval)
 		return retval;
 
-	return security_inode_permission(inode, mask);
+	return 0;
 }
 
 void path_get(const struct path *path)
@@ -953,11 +953,6 @@ static const char *pick_link(struct nameidata *nd, struct path *link,
 		touch_atime(&last->link);
 	}
 
-	error = security_inode_follow_link(link->dentry, inode,
-					   nd->flags & LOOKUP_RCU);
-	if (unlikely(error))
-		return ERR_PTR(error);
-
 	res = READ_ONCE(inode->i_link);
 	if (!res) {
 		const char * (*get)(struct dentry *, struct inode *,
@@ -1579,12 +1574,9 @@ static int handle_truncate(struct user_namespace *mnt_userns, struct file *filp)
 	if (error)
 		return error;
 
-	error = security_path_truncate(path);
-	if (!error) {
-		error = do_truncate(mnt_userns, path->dentry, 0,
-				    ATTR_MTIME|ATTR_CTIME|ATTR_OPEN,
-				    filp);
-	}
+	error = do_truncate(mnt_userns, path->dentry, 0,
+			    ATTR_MTIME|ATTR_CTIME|ATTR_OPEN,
+			    filp);
 	put_write_access(inode);
 	return error;
 }
@@ -2006,10 +1998,6 @@ int vfs_mknod(struct user_namespace *mnt_userns, struct inode *dir,
 	if (error)
 		return error;
 
-	error = security_inode_mknod(dir, dentry, mode, dev);
-	if (error)
-		return error;
-
 	error = dir->i_op->mknod(mnt_userns, dir, dentry, mode, dev);
 	return error;
 }
@@ -2027,9 +2015,6 @@ int vfs_mkdir(struct user_namespace *mnt_userns, struct inode *dir,
 		return -EPERM;
 
 	mode &= (S_IRWXUGO|S_ISVTX);
-	error = security_inode_mkdir(dir, dentry, mode);
-	if (error)
-		return error;
 
 	if (max_links && dir->i_nlink >= max_links)
 		return -EMLINK;

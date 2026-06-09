@@ -9,16 +9,11 @@ struct mem_cgroup;
 
 struct list_lru_one {
 	struct list_head	list;
-	 
-	long			nr_items;
 };
 
 struct list_lru_node {
-	 
 	spinlock_t		lock;
-	 
 	struct list_lru_one	lru;
-	long			nr_items;
 } ____cacheline_aligned_in_smp;
 
 struct list_lru {
